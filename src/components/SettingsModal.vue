@@ -1,26 +1,38 @@
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue'
 import { useUIStore } from '@/stores/ui'
 import BaseModal from '@/components/common/BaseModal.vue'
 
-defineProps({
-  show: { type: Boolean, default: false }
+interface Props {
+  show?: boolean
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  show: false
 })
 
-const emit = defineEmits(['close'])
+const emit = defineEmits<{
+  (e: 'close'): void
+}>()
 
-const uiStore = useUIStore()
+const uiStore = useUIStore() as any
 
 const currentZoom = computed(() => {
   return Math.round(uiStore.appZoom * 100)
 })
 
-const updateZoom = (val) => {
+const updateZoom = (val: number) => {
   const zoomVal = val / 100
   uiStore.setZoom(zoomVal)
   
-  if (typeof window.updateZoom === 'function') {
-    window.updateZoom(val)
+  if (typeof (window as any).updateZoom === 'function') {
+    (window as any).updateZoom(val)
+  }
+}
+
+const handleZoomInput = (e: Event) => {
+  if (e.target) {
+    updateZoom(Number((e.target as HTMLInputElement).value))
   }
 }
 </script>
@@ -48,7 +60,7 @@ const updateZoom = (val) => {
           max="150" 
           step="5"
           class="zoom-slider"
-          @input="updateZoom($event.target.value)"
+          @input="handleZoomInput"
         >
         
         <div class="zoom-labels">

@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue';
 import { useGameStore } from '@/stores/game';
 import { useBreedingStore } from '@/stores/breeding';
@@ -7,23 +7,32 @@ import { getPokemonTier } from '@/logic/pokemonUtils';
 import { checkCompatibility } from '@/logic/breeding/breedingEngine';
 import { validateMissionPokemon } from '@/logic/breeding/missionEngine';
 
-const props = defineProps({
-  slotIndex: { type: Number, required: true },
-  otherParent: { type: Object, default: null },
-  mode: { type: String, default: 'deposit' }, // deposit | delivery
-  mission: { type: Object, default: null }
+interface Props {
+  slotIndex: number;
+  otherParent?: any | null;
+  mode?: 'deposit' | 'delivery';
+  mission?: any | null;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  otherParent: null,
+  mode: 'deposit',
+  mission: null
 });
 
-const emit = defineEmits(['select', 'close']);
+const emit = defineEmits<{
+  (e: 'select', pokemon: any): void;
+  (e: 'close'): void;
+}>();
 
-const gameStore = useGameStore();
-const breedingStore = useBreedingStore();
+const gameStore = useGameStore() as any;
+const breedingStore = useBreedingStore() as any;
 
 const availablePokemon = computed(() => {
   // Filter out pokemon already in daycare
-  const inDaycareUids = breedingStore.slots.map(s => s.pokemon?.uid);
+  const inDaycareUids = (breedingStore.slots as any[]).map(s => s.pokemon?.uid);
   
-  const all = [...gameStore.state.team, ...(gameStore.state.box || [])];
+  const all = [...(gameStore.state.team || []), ...(gameStore.state.box || [])];
   
   let filtered = all.filter(p => !inDaycareUids.includes(p.uid) && !p.onMission && !p.onDefense);
 
@@ -44,7 +53,7 @@ const availablePokemon = computed(() => {
   return filtered;
 });
 
-const selectPokemon = (p) => {
+const selectPokemon = (p: any) => {
   emit('select', p);
 };
 </script>
@@ -86,7 +95,7 @@ const selectPokemon = (p) => {
               <img
                 :src="getAssetUrl(ASSET_TYPES.POKEMON, p.id, { shiny: p.isShiny })"
                 :alt="p.name"
-                @error="e => e.target.style.display = 'none'"
+                @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
               >
             </div>
             <div class="info">

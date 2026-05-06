@@ -1,35 +1,35 @@
-<script setup>
+<script setup lang="ts">
 import { onMounted } from 'vue'
 import { useEventStore } from '@/stores/events'
 import { storeToRefs } from 'pinia'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
-const eventStore = useEventStore()
-const { activeEvents, pendingAwards, isLoading } = storeToRefs(eventStore)
+const eventStore = useEventStore() as any
+const { activeEvents, pendingAwards, isLoading } = storeToRefs(eventStore) as any
 
 onMounted(() => {
   eventStore.fetchEvents()
   eventStore.checkPendingAwards()
 })
 
-const formatTime = (isoTime) => {
+const formatTime = (isoTime: string) => {
   if (!isoTime) return 'Indefinido'
-  const diff = new Date(isoTime) - new Date()
+  const diff = new Date(isoTime).getTime() - new Date().getTime()
   if (diff <= 0) return 'Terminando...'
   const min = Math.floor(diff / 60000)
   const sec = Math.floor((diff % 60000) / 1000)
   return `${min}m ${sec}s`
 }
 
-const openParticipationModal = (event) => {
-  window._openPokemonSelectionModal({
+const openParticipationModal = (event: any) => {
+  (window as any)._openPokemonSelectionModal({
     title: 'SELECCIONAR POKÉMON',
     subtitle: `Elige un Pokémon para inscribir en: ${event.name}`,
     maxSelect: 1,
     minSelect: 1,
     includeTeam: true,
     context: 'event',
-    onConfirm: async (selectedObjects) => {
+    onConfirm: async (selectedObjects: any[]) => {
       const pokemon = selectedObjects[0];
       if (pokemon) {
         await eventStore.submitCompetitionEntry(pokemon, event.id);
@@ -109,7 +109,7 @@ const openParticipationModal = (event) => {
         >
           <img
             :src="getAssetUrl(ASSET_TYPES.BANNER, event.config.banner)"
-            @error="e => e.target.style.display='none'"
+            @error="(e: Event) => (e.target as HTMLImageElement).style.display='none'"
           >
         </div>
         

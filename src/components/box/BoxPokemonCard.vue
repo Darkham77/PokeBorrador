@@ -1,28 +1,30 @@
-<script setup>
-import { computed } from 'vue'
+<script setup lang="ts">
+import { computed, inject, type Ref } from 'vue'
 import { getPokemonTier } from '@/logic/pokemonUtils'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
-
 import UnifiedBadgePill from '@/components/shared/UnifiedBadgePill.vue'
 import { getPokemonVisualBadges } from '@/logic/constants/tags'
-
-import { inject } from 'vue'
 import { useUIStore } from '@/stores/ui'
 import PokemonTypePills from '@/components/shared/PokemonTypePills.vue'
 
-const uiStore = useUIStore()
+const uiStore = useUIStore() as any
 
-const props = defineProps({
-  pokemon: { type: Object, required: true },
-  index: { type: Number, required: true },
-  isSelected: { type: Boolean, default: false },
-  selectionType: { type: String, default: null }, // 'rocket' | 'release' | null
-  isPerformanceMode: { type: Boolean, default: false },
-  hideStats: { type: Boolean, default: false }
+const props = withDefaults(defineProps<{
+  pokemon: any
+  index: number
+  isSelected?: boolean
+  selectionType?: string | null
+  isPerformanceMode?: boolean
+  hideStats?: boolean
+}>(), {
+  isSelected: false,
+  selectionType: null,
+  isPerformanceMode: false,
+  hideStats: false
 })
 
-const isModalPerformance = inject('isModalPerformanceMode', null)
+const isModalPerformance = inject<Ref<boolean> | null>('isModalPerformanceMode', null)
 const isPerformanceActive = computed(() => {
   if (props.isPerformanceMode || uiStore.isSimplifiedModalsMode) return true
   
@@ -33,7 +35,9 @@ const isPerformanceActive = computed(() => {
   }
 })
 
-const emit = defineEmits(['click'])
+const emit = defineEmits<{
+  (e: 'click', event: MouseEvent, index: number): void
+}>()
 
 const visualBadges = computed(() => props.pokemon ? getPokemonVisualBadges(props.pokemon) : [])
 const numBadges = computed(() => visualBadges.value.length)
@@ -141,7 +145,7 @@ const isPremiumTier = computed(() => props.pokemon && (tierInfo.value.tier === '
           class="box-card-sprite"
           :class="[(pokemon.aura && !isPerformanceActive) ? `aura-${pokemon.aura}-mini` : '']"
           alt="pokemon"
-          @error="e => e.target.style.display = 'none'"
+          @error="e => { (e.target as HTMLImageElement).style.display = 'none' }"
         >
       </PVSpriteFX>
     </div>

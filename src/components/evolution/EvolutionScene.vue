@@ -1,10 +1,10 @@
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useEvolutionStore } from '@/stores/evolution';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 
-const evolutionStore = useEvolutionStore();
+const evolutionStore = useEvolutionStore() as any;
 const step = ref('intro'); // intro | flashing | transformed | final
 const oldName = ref('');
 const newName = ref('');
@@ -47,7 +47,7 @@ const runFlashes = () => {
 
 const completeEvolution = () => {
   // Actually mutate the data in the store
-  const _result = evolutionStore.evolve();
+  evolutionStore.evolve();
   step.value = 'transformed';
   
   // Final message delay
@@ -89,7 +89,7 @@ const close = () => {
             :src="fromSprite"
             class="pokemon-sprite from" 
             :class="{ flashing: step === 'flashing', 'flash-on': flashesDone % 2 !== 0 }" 
-            @error="e => e.target.style.display = 'none'"
+            @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
           >
 
           <img 
@@ -97,7 +97,7 @@ const close = () => {
             :src="toSprite"
             class="pokemon-sprite to" 
             :class="{ 'scale-in': step === 'transformed' }"
-            @error="e => e.target.style.display = 'none'"
+            @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
           >
         </div>
 

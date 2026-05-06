@@ -1,5 +1,4 @@
-// [PureVue-Ignore-Length]
-<script setup>
+<script setup lang="ts">
 import { onMounted, computed } from 'vue'
 import { usePvPStore } from '@/stores/pvp'
 import { useLivePvPStore } from '@/stores/livePvP'
@@ -8,19 +7,19 @@ import { useUIStore } from '@/stores/ui'
 import { RANKED_REWARD_MILESTONES, RANKED_TYPE_META } from '@/data/rankedData'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
-const pvp = usePvPStore()
-const livePvP = useLivePvPStore()
-const auth = useAuthStore()
-const ui = useUIStore()
+const pvp = usePvPStore() as any
+const livePvP = useLivePvPStore() as any
+const auth = useAuthStore() as any
+const ui = useUIStore() as any
 
 onMounted(() => {
   pvp.loadPvPData()
 })
 
 const milestones = RANKED_REWARD_MILESTONES
-const allowedTypes = computed(() => pvp.currentSeasonRules?.allowedTypes || [])
+const allowedTypes = computed(() => (pvp.currentSeasonRules?.allowedTypes || []) as any[])
 
-const getRankIcon = (tierId) => {
+const getRankIcon = (tierId: string) => {
   return getAssetUrl(ASSET_TYPES.UI, `ranks/${tierId}`)
 }
 
@@ -29,12 +28,12 @@ const seasonActive = computed(() => {
   return now >= pvp.seasonRange.start && now <= pvp.seasonRange.end
 })
 
-function isUnlocked(eloReq) {
+function isUnlocked(eloReq: number) {
   return pvp.maxElo >= eloReq
 }
 
-function isClaimed(id) {
-  return pvp.rewardsClaimed.includes(id)
+function isClaimed(id: string | number) {
+  return (pvp.rewardsClaimed as any[]).includes(id)
 }
 
 function startSearch() {
@@ -71,7 +70,7 @@ function startSearch() {
               :src="getRankIcon(pvp.eloTier.id)"
               :alt="pvp.eloTier.name"
               class="tier-image"
-              @error="e => e.target.style.display = 'none'"
+              @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
             >
           </div>
           <div class="tier-info">

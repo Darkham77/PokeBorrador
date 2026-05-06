@@ -1,18 +1,41 @@
-<script setup>
+<script setup lang="ts">
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
-defineProps({
-  title: { type: String, required: true },
-  pokemon: { type: Object, default: null },
-  inventory: { type: Object, default: () => ({}) },
-  selectedItems: { type: Object, default: () => ({}) },
-  money: { type: Number, default: 0 },
-  maxMoney: { type: Number, default: 999999 },
-  isGift: { type: Boolean, default: false },
-  isFriendSide: { type: Boolean, default: false }
+interface Props {
+  title: string
+  pokemon?: any
+  inventory?: Record<string, number>
+  selectedItems?: Record<string, any>
+  money?: number
+  maxMoney?: number
+  isGift?: boolean
+  isFriendSide?: boolean
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  pokemon: null,
+  inventory: () => ({}),
+  selectedItems: () => ({}),
+  money: 0,
+  maxMoney: 999999,
+  isGift: false,
+  isFriendSide: false
 })
 
-defineEmits(['open-selector', 'toggle-item', 'update:money'])
+const emit = defineEmits<{
+  (e: 'open-selector'): void
+  (e: 'toggle-item', name: string): void
+  (e: 'update:money', val: number): void
+}>()
+
+const handleImgError = (e: Event) => {
+  (e.target as HTMLImageElement).style.display = 'none'
+}
+
+const handleMoneyInput = (e: Event) => {
+  const val = parseInt((e.target as HTMLInputElement).value) || 0
+  emit('update:money', val)
+}
 </script>
 
 <template>
@@ -36,7 +59,7 @@ defineEmits(['open-selector', 'toggle-item', 'update:money'])
         <img
           :src="getAssetUrl(ASSET_TYPES.POKEMON, pokemon.id, { isShiny: pokemon.isShiny })"
           class="preview-sprite"
-          @error="e => e.target.style.display = 'none'"
+          @error="handleImgError"
         >
         <div class="preview-info">
           <div class="name">
@@ -84,7 +107,7 @@ defineEmits(['open-selector', 'toggle-item', 'update:money'])
         type="number"
         min="0"
         :max="maxMoney"
-        @input="$emit('update:money', parseInt($event.target.value) || 0)"
+        @input="handleMoneyInput"
       >
     </div>
 

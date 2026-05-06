@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
@@ -15,16 +15,22 @@ import { calculateTotalPower, getPokemonTier, calculateRocketSellPrice as calcul
 import { PDEX_TYPE_COLORS } from '@/logic/pokedexConstants'
 import PokemonTypePills from '@/components/shared/PokemonTypePills.vue'
 
-const props = defineProps({
-  show: { type: Boolean, default: true },
-  boxIndex: { type: Number, required: true }
+interface Props {
+  show?: boolean
+  boxIndex: number
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  show: true
 })
 
-const emit = defineEmits(['close'])
+const emit = defineEmits<{
+  (e: 'close'): void
+}>()
 
-const gameStore = useGameStore()
-const uiStore = useUIStore()
-const boxStore = useBoxStore()
+const gameStore = useGameStore() as any
+const uiStore = useUIStore() as any
+const boxStore = useBoxStore() as any
 
 const pokemon = computed(() => gameStore.state.box[props.boxIndex])
 const team = computed(() => gameStore.state.team)
@@ -154,7 +160,7 @@ const getTypeColor = (type) => PDEX_TYPE_COLORS[type?.toLowerCase()] || 'Rgba(17
               {{ pokemon?.gender === 'M' ? '♂' : '♀' }}
             </span>
             <span class="m-badge-level">Nv. {{ pokemon?.level }}</span>
-            <span class="m-badge-iv">IV {{ Object.values(pokemon?.ivs || {}).reduce((s,v)=>s+(v||0),0) }}</span>
+            <span class="m-badge-iv">IV {{ (Object.values(pokemon?.ivs || {}) as number[]).reduce((s,v)=>s+(v||0),0) }}</span>
             <span class="m-badge-tot">TOT {{ totalPower }}</span>
           </div>
         </div>
@@ -178,7 +184,7 @@ const getTypeColor = (type) => PDEX_TYPE_COLORS[type?.toLowerCase()] || 'Rgba(17
             <img
               :src="getAssetUrl(ASSET_TYPES.POKEMON, pokemon?.id, { isShiny: pokemon?.isShiny })"
               class="menu-sprite"
-              @error="e => e.target.style.display = 'none'"
+              @error="e => { (e.target as HTMLImageElement).style.display = 'none' }"
             >
           </PVSpriteFX>
         </div>
@@ -279,7 +285,7 @@ const getTypeColor = (type) => PDEX_TYPE_COLORS[type?.toLowerCase()] || 'Rgba(17
                   <img
                     :src="getAssetUrl(ASSET_TYPES.POKEMON, t.id, { isShiny: t.isShiny })"
                     class="ts-sprite"
-                    @error="e => e.target.style.display = 'none'"
+                    @error="e => { (e.target as HTMLImageElement).style.display = 'none' }"
                   >
                 </PVSpriteFX>
               </div>

@@ -1,0 +1,395 @@
+<script setup>
+// Universal Pokémon info panel (Pokedex + Instance).
+import { ref, computed } from 'vue'
+import { useWindowListener } from '@/composables/useWindowListener'
+import { useUIStore } from '@/stores/ui'
+import { useGameStore } from '@/stores/game'
+import { usePokemonDetail } from '@/composables/usePokemonDetail'
+import { PDEX_TYPE_COLORS } from '@/logic/pokedexConstants'
+import BaseModal from '@/components/common/BaseModal.vue'
+import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
+import PVTooltip from '@/components/common/PVTooltip.vue'
+
+import UnifiedBadgePill from '@/components/shared/UnifiedBadgePill.vue'
+
+import PokemonTmsTab from '@/components/pokemon-detail/PokemonTmsTab.vue'
+import PokemonEvolutionsTab from '@/components/pokemon-detail/PokemonEvolutionsTab.vue'
+import PokemonStatsTab from '@/components/pokemon-detail/PokemonStatsTab.vue'
+import PokemonMovesTab from '@/components/pokemon-detail/PokemonMovesTab.vue'
+import PokemonStatusSection from '@/components/pokemon-detail/PokemonStatusSection.vue'
+import PokemonActionFooter from '@/components/pokemon-detail/PokemonActionFooter.vue'
+
+const props = defineProps({
+  show: { type: Boolean, default: false },
+  speciesId: { type: String, default: '' },
+  pokemon: { type: Object, default: null },
+  index: { type: Number, default: -1 },
+  context: { type: String, default: 'pokedex' }, // 'team', 'box', 'market', 'pokedex'
+  extra: { type: Object, default: null }
+})
+
+const emit = defineEmits(['close'])
+const uiStore = useUIStore()
+const gameStore = useGameStore()
+
+// --- COMPOSABLE LOGIC ---
+const {
+  targetPokemon,
+  isInstance,
+  targetSpeciesId,
+  species,
+  cleanCategory,
+  evolutions,
+  displayStats,
+  moveDetails,
+  currentMoves,
+  canStoneEvolve,
+  instancePhysicalData,
+  captureDateFormatted,
+  getSprite,
+  finalIndex,
+  finalContext
+} = usePokemonDetail(props)
+
+// --- LOCAL UI STATE ---
+const isSmallScreen = ref(window.innerWidth <= 950)
+const handleResize = () => { isSmallScreen.value = window.innerWidth <= 950 }
+useWindowListener('resize', handleResize)
+
+const activeTab = ref('summary')
+
+const tabs = computed(() => {
+  const base = [
+    { id: 'summary', label: 'RESUMEN', icon: '📝' },
+    { id: 'stats', label: isInstance.value ? 'STATS+' : 'STATS', icon: '📊' },
+    { id: 'moves', label: 'ATAQUES', icon: '⚔️' },
+  ]
+  
+  if (props.context === 'pokedex') {
+    base.push({ id: 'tms', label: 'MTs', icon: '💿' })
+  }
+
+  if (evolutions.value.length > 0) {
+    base.push({ id: 'evolve', label: 'EVOL.', icon: '✨' })
+  }
+  
+  return base
+})
+
+const formatRange = (val, unit, factor = 0.15) => {
+  if (!val) return '—'
+  if (Array.isArray(val)) return `${val[0]}${unit} - ${val[1]}${unit}`
+  const min = (val * (1 - factor)).toFixed(1)
+  const max = (val * (1 + factor)).toFixed(1)
+  return `${min}${unit} - ${max}${unit}`
+}
+
+const getCategoryDescription = (cat) => {
+  const c = cat.toLowerCase()
+  if (c.includes('nueva especie')) return 'Pokémon extremadamente raro que contiene el ADN de todos los demás Pokémon. Se creía puramente mitológico.'
+  if (c.includes('genético')) return 'Pokémon creado artificialmente mediante manipulación avanzada de ADN y experimentos científicos.'
+  if (c.includes('legendario')) return 'Pokémon de gran poder que aparece en los mitos y leyendas. Suele ser único en su especie.'
+  if (c.includes('mítico')) return 'Pokémon tan singular que su existencia es cuestionada por muchos científicos y exploradores.'
+  if (c.includes('inicial')) return 'Pokémon que suele entregarse a los entrenadores que comienzan su aventura regional.'
+  if (c.includes('fósil')) return 'Pokémon prehistórico resucitado a partir de material genético preservado en fósiles.'
+  
+  return `Clasificación: ${cat}. Define los rasgos biológicos principales y el comportamiento predominante de esta especie.`
+}
+
+// --- HANDLERS ---
+const handleBuy = () => {
+  if (props.extra && typeof window.buyFromMarket === 'function') {
+    window.buyFromMarket(props.extra.offerId, props.extra.price, props.extra.type)
+    emit('close')
+  }
+}
+
+const handleEvolve = () => {
+  if (typeof window.showStonePicker === 'function') {
+    emit('close')
+    window.showStonePicker(props.index)
+  }
+}
+
+const hexToRgb = (hex) => {
+  if (!hex) return '255, 255, 255'
+  const r = parseInt(hex.slice(1, 3), 16)
+  const g = parseInt(hex.slice(3, 5), 16)
+  const b = parseInt(hex.slice(5, 7), 16)
+  return `${r}, ${g}, ${b}`
+}
+
+const handleToggleTag = (tagOrId) => {
+  const tagId = typeof tagOrId === 'string' ? tagOrId : (tagOrId.id || tagOrId.dbId)
+  if (isInstance.value && finalIndex.value > -1) {
+    gameStore.togglePokeTag(finalContext.value, finalIndex.value, tagId)
+  }
+}
+
+const handleEditNickname = () => {
+  if (!isInstance.value) return
+  
+  uiStore.openPrompt({
+    title: 'Cambiar Apodo',
+    message: `Introduce un nuevo nombre para tu ${species.value.name}:`,
+    initialValue: targetPokemon.value.nickname || species.value.name,
+    confirmText: 'Guardar',
+    onConfirm: (val) => {
+      const newNick = val?.trim() || null
+      targetPokemon.value.nickname = newNick
+      uiStore.notify(`¡Apodo cambiado a ${newNick || species.value.name}!`, '✨')
+      gameStore.save(false)
+    }
+  })
+}
+
+const handleReorderMoves = (from, to) => {
+  if (isInstance.value) {
+    gameStore.reorderMoves(targetPokemon.value, from, to)
+  }
+}
+</script>
+
+<template>
+  <BaseModal
+    :show="show"
+    :type="isSmallScreen ? 'fullscreen' : 'center'"
+    :width="isSmallScreen ? '100dvw' : '700px'"
+    :max-width="isSmallScreen ? '100dvw' : '700px'"
+    padding="raw"
+    :hide-header="true"
+    custom-class="pokedex-detail-modal"
+    @close="emit('close')"
+  >
+    <div
+      v-if="species"
+      class="upd-core-container"
+      :class="{ 'instance-mode': isInstance }"
+      :style="{ 
+        '--type-color': PDEX_TYPE_COLORS[species.type[0].toLowerCase()],
+        '--type-color-rgb': hexToRgb(PDEX_TYPE_COLORS[species.type[0].toLowerCase()])
+      }"
+    >
+      <!-- Custom Content Header -->
+      <header class="pdex-custom-header">
+        <div
+          class="poke-identity"
+          :class="{ 'has-nickname': targetPokemon?.nickname }"
+        >
+          <span class="p-id">#{{ species.nationalId.padStart(3, '0') }}</span>
+          <div
+            class="name-with-edit"
+            style="display: flex; align-items: center; gap: 8px;"
+          >
+            <button 
+              v-if="isInstance" 
+              class="edit-nick-btn" 
+              style="font-size: 10px; padding: 0; opacity: 0.5; cursor: pointer; flex-shrink: 0;"
+              @click.stop="handleEditNickname"
+            >
+              ✏️
+            </button>
+            <div class="name-container">
+              <span
+                v-if="targetPokemon?.nickname"
+                class="p-nickname-prefix"
+              >
+                {{ targetPokemon.nickname }}
+              </span>
+              <h2
+                class="p-name"
+                style="margin: 0;"
+              >
+                {{ species.name.toUpperCase() }}
+              </h2>
+            </div>
+          </div>
+        </div>
+
+        <div class="header-right">
+          <div class="p-types">
+            <span
+              v-for="t in species.type"
+              :key="t"
+              class="m-type-tag pixelated"
+              :style="{ background: PDEX_TYPE_COLORS[t.toLowerCase()] }"
+            >
+              {{ t.toUpperCase() }}
+            </span>
+          </div>
+        </div>
+      </header>
+
+      <!-- TOP DISPLAY -->
+      <div class="upd-main-display">
+        <div class="upd-sprite-container">
+          <PVSpriteFX
+            :is-shiny="targetPokemon?.isShiny"
+            :is-guardian="targetPokemon?.isGuardian"
+          >
+            <img
+              :src="getSprite(targetSpeciesId, targetPokemon?.isShiny)"
+              class="main-sprite"
+              @error="e => e.target.style.display = 'none'"
+            >
+          </PVSpriteFX>
+        </div>
+
+        <!-- Píldora de Insignias Global (Fuera de tabs) -->
+        <div
+          v-if="isInstance"
+          class="upd-floating-tags"
+        >
+          <UnifiedBadgePill
+            :pokemon="targetPokemon"
+            :vertical="false"
+            size="xl"
+            editable
+            show-all
+            top="0"
+            left="0"
+            style="position: relative;"
+            @toggle-tag="handleToggleTag"
+          />
+        </div>
+      </div>
+
+
+      <!-- TABS NAVIGATION -->
+      <nav class="pdex-detail-tabs premium-tabs">
+        <button
+          v-for="tab in tabs"
+          :key="tab.id"
+          class="upd-tab-btn"
+          :class="{ active: activeTab === tab.id }"
+          :style="{ '--tab-color': activeTab === tab.id ? 'var(--type-color)' : 'Rgba(255,255,255,0.4)' }"
+          @click.stop="activeTab = tab.id"
+        >
+          <span class="tab-icon">{{ tab.icon }}</span>
+          <span class="tab-label pixelated">{{ tab.label }}</span>
+        </button>
+      </nav>
+
+      <!-- TAB BODY -->
+      <div class="upd-core-body">
+        <!-- Summary Tab -->
+        <div
+          v-if="activeTab === 'summary'"
+          class="pdex-summary-pane"
+        >
+          <div class="info-grid">
+            <PVTooltip
+              :title="'CATEGORÍA: ' + cleanCategory"
+              :description="getCategoryDescription(cleanCategory)"
+              position="top"
+              tag="div"
+              class="info-item"
+            >
+              <span class="upd-info-label pixelated">CATEGORÍA</span>
+              <span class="ps-info-value pixelated">{{ cleanCategory }}</span>
+            </PVTooltip>
+
+            <PVTooltip
+              title="ALTURA"
+              description="La altura promedio de esta especie de Pokémon."
+              position="top"
+              tag="div"
+              class="info-item"
+            >
+              <span class="upd-info-label pixelated">ALTURA</span>
+              <span class="ps-info-value pixelated">{{ isInstance ? instancePhysicalData.height + 'm' : formatRange(species.height, 'm') }}</span>
+            </PVTooltip>
+
+            <PVTooltip
+              title="PESO"
+              description="El peso promedio de esta especie de Pokémon."
+              position="top"
+              tag="div"
+              class="info-item"
+            >
+              <span class="upd-info-label pixelated">PESO</span>
+              <span class="ps-info-value pixelated">{{ isInstance ? instancePhysicalData.weight + 'kg' : formatRange(species.weight, 'kg') }}</span>
+            </PVTooltip>
+          </div>
+          <div
+            v-if="isInstance"
+            class="instance-status-section"
+          >
+            <PokemonStatusSection
+              :pokemon="targetPokemon"
+              :context="context"
+            />
+          </div>
+
+          <p class="description">
+            {{ species.description || 'No hay datos disponibles en la Pokédex.' }}
+          </p>
+
+          <!-- DB Info (UID + Capture Date) -->
+          <div
+            v-if="isInstance"
+            class="db-info-section"
+          >
+            <div class="uid-display">
+              <span class="upd-info-label pixelated">ID ÚNICO DB:</span>
+              <span class="uid-value pixelated">{{ targetPokemon.uid }}</span>
+            </div>
+            <div
+              v-if="captureDateFormatted"
+              class="capture-date-display"
+            >
+              <span class="upd-info-label pixelated">CAPTURADO EL:</span>
+              <span class="date-value pixelated">{{ captureDateFormatted.toUpperCase() }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stats Tab -->
+        <PokemonStatsTab
+          v-if="activeTab === 'stats'"
+          :display-stats="displayStats"
+          :species="species"
+          :is-instance="isInstance"
+          :pokemon="targetPokemon"
+        />
+
+        <!-- Moves Tab -->
+        <PokemonMovesTab
+          v-if="activeTab === 'moves'"
+          :is-instance="isInstance"
+          :current-moves="currentMoves"
+          :move-details="moveDetails"
+          @reorder-moves="handleReorderMoves"
+        />
+
+        <!-- TMs Tab -->
+        <PokemonTmsTab
+          v-if="activeTab === 'tms'"
+          :species-id="targetSpeciesId"
+        />
+
+        <!-- Evolution Tab -->
+        <PokemonEvolutionsTab
+          v-if="activeTab === 'evolve'"
+          :evolutions="evolutions"
+          :species-name="species.name"
+          :species-id="targetSpeciesId"
+        />
+      </div>
+
+      <PokemonActionFooter
+        v-if="isInstance"
+        :context="context"
+        :extra="extra"
+        :can-evolve-stone="canStoneEvolve"
+        @buy="handleBuy"
+        @evolve="handleEvolve"
+      />
+    </div>
+  </BaseModal>
+</template>
+
+<style scoped lang="scss">
+@use "../../styles/components/pokedex-detail" as *;
+@use "../../styles/components/unified-pokemon-detail" as *;
+</style>

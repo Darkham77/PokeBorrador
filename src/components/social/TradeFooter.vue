@@ -1,11 +1,29 @@
-<script setup>
-defineProps({
-  message: { type: String, default: '' },
-  isGift: { type: Boolean, default: false },
-  isSending: { type: Boolean, default: false }
+<script setup lang="ts">
+interface Props {
+  message?: string
+  isGift?: boolean
+  isSending?: boolean
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  message: '',
+  isGift: false,
+  isSending: false
 })
 
-defineEmits(['update:message', 'update:isGift', 'send'])
+const emit = defineEmits<{
+  (e: 'update:message', val: string): void
+  (e: 'update:isGift', val: boolean): void
+  (e: 'send'): void
+}>()
+
+const handleMessageInput = (e: Event) => {
+  emit('update:message', (e.target as HTMLTextAreaElement).value)
+}
+
+const handleGiftChange = (e: Event) => {
+  emit('update:isGift', (e.target as HTMLInputElement).checked)
+}
 </script>
 
 <template>
@@ -15,7 +33,7 @@ defineEmits(['update:message', 'update:isGift', 'send'])
         :value="message" 
         placeholder="Escribe un mensaje para tu oferta..." 
         class="trade-message-input"
-        @input="$emit('update:message', $event.target.value)"
+        @input="handleMessageInput"
       />
     </div>
 
@@ -24,7 +42,7 @@ defineEmits(['update:message', 'update:isGift', 'send'])
         <input
           :checked="isGift"
           type="checkbox"
-          @change="$emit('update:isGift', $event.target.checked)"
+          @change="handleGiftChange"
         >
         <span class="toggle-label">🎁 Es un regalo</span>
       </label>

@@ -1,15 +1,9 @@
-<script setup>
+<script setup lang="ts">
 import { ref } from 'vue'
-import { useAuthStore } from '@/stores/auth'
 import { useGameStore } from '@/stores/game'
 import { usePvPStore } from '@/stores/pvp'
-import { useMapStore } from '@/stores/map'
-import PVTooltip from '@/components/common/PVTooltip.vue'
-
-const _auth = useAuthStore()
-const game = useGameStore()
-const pvp = usePvPStore()
-const _mapStore = useMapStore()
+const game = useGameStore() as any
+const pvp = usePvPStore() as any
 
 const debugMoney = ref(10000)
 const debugElo = ref(pvp.elo)
@@ -19,23 +13,23 @@ const currentForcedFaction = ref('none')
 
 // Call console commands directly (they handle securityCheck internally)
 const addMoney = () => {
-  const current = game.state.money
-  window.__VITE_DEBUG__.setMoney(current + debugMoney.value)
+  const current = game.state.money;
+  (window as any).__VITE_DEBUG__.setMoney(current + debugMoney.value)
 }
-const setElo = () => window.__VITE_DEBUG__.setElo(debugElo.value)
-const setLevel = () => window.__VITE_DEBUG__.setLevel(debugLevel.value)
-const setBadges = () => window.__VITE_DEBUG__.setBadges(debugBadges.value)
-const forceDominance = (f) => {
-  window.__VITE_DEBUG__.setDominance(f)
+const setElo = () => (window as any).__VITE_DEBUG__.setElo(debugElo.value)
+const setLevel = () => (window as any).__VITE_DEBUG__.setLevel(debugLevel.value)
+const setBadges = () => (window as any).__VITE_DEBUG__.setBadges(debugBadges.value)
+const forceDominance = (f: string) => {
+  (window as any).__VITE_DEBUG__.setDominance(f);
   currentForcedFaction.value = f
 }
 
-function setFaction(f) {
-  window.__VITE_DEBUG__.setFaction(f)
+function setFaction(f: string) {
+  (window as any).__VITE_DEBUG__.setFaction(f)
 }
 
-function setPlayerClass(c) {
-  window.__VITE_DEBUG__.setPlayerClass(c)
+function setPlayerClass(c: string) {
+  (window as any).__VITE_DEBUG__.setPlayerClass(c)
 }
 </script>
 

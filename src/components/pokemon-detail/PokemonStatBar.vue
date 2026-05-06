@@ -1,23 +1,30 @@
-<script setup>
+<script setup lang="ts">
 import PVTooltip from '@/components/common/PVTooltip.vue'
 
-defineProps({
-  label: { type: String, required: true },
-  value: { type: Number, required: true },
-  max: { type: Number, default: 255 },
-  color: { type: String, default: '$white' },
-  iv: { type: Number, default: null },
-  mode: { type: String, default: 'full' } // 'full', 'stat', 'iv'
+interface Props {
+  label: string
+  value: number
+  max?: number
+  color?: string
+  iv?: number | null
+  mode?: 'full' | 'stat' | 'iv'
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  max: 255,
+  color: '$white',
+  iv: null,
+  mode: 'full'
 })
 
-const getIvColor = (val) => {
+const getIvColor = (val: number) => {
   if (val >= 28) return 'Rgba(107, 203, 119, 1)' 
   if (val >= 15) return 'Rgba(255, 217, 61, 1)' 
   if (val >= 8) return 'Rgba(255, 159, 67, 1)' 
   return 'Rgba(255, 89, 89, 1)' 
 }
 
-const getStatGrade = (iv) => {
+const getStatGrade = (iv: number) => {
   if (iv === 31) return { label: 'S', color: 'Rgba(255, 239, 61, 1)' }
   if (iv >= 25) return { label: 'A', color: 'Rgba(52, 211, 153, 1)' }
   if (iv >= 15) return { label: 'B', color: 'Rgba(96, 165, 250, 1)' }
@@ -25,8 +32,8 @@ const getStatGrade = (iv) => {
   return { label: 'D', color: 'Rgba(148, 163, 184, 1)' }
 }
 
-const getStatLabel = (key) => {
-  const map = {
+const getStatLabel = (key: string) => {
+  const map: Record<string, { name: string, desc: string }> = {
     'HP': { name: 'Puntos de Salud', desc: 'Determina cuánto daño puede recibir el Pokémon antes de debilitarse.' },
     'ATK': { name: 'Ataque Físico', desc: 'Aumenta el daño de los movimientos de categoría Física.' },
     'DEF': { name: 'Defensa Física', desc: 'Reduce el daño recibido por movimientos de categoría Física.' },

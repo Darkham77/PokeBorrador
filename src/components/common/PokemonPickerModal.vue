@@ -1,27 +1,40 @@
-<script setup>
+<script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
-const props = defineProps({
-  title: { type: String, default: 'Seleccionar Pokémon' },
-  subtitle: { type: String, default: '' },
-  maxSelect: { type: Number, default: 1 },
-  typeFilter: { type: String, default: null },
-  context: { type: String, default: 'box' }, // 'box' or 'team'
-  excludeOnMission: { type: Boolean, default: true },
-  excludeInDaycare: { type: Boolean, default: true }
+interface Props {
+  title?: string
+  subtitle?: string
+  maxSelect?: number
+  typeFilter?: string | null
+  context?: string // 'box' or 'team'
+  excludeOnMission?: boolean
+  excludeInDaycare?: boolean
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  title: 'Seleccionar Pokémon',
+  subtitle: '',
+  maxSelect: 1,
+  typeFilter: null,
+  context: 'box',
+  excludeOnMission: true,
+  excludeInDaycare: true
 })
 
-const emit = defineEmits(['confirm', 'close'])
+const emit = defineEmits<{
+  (e: 'confirm', indices: number[]): void
+  (e: 'close'): void
+}>()
 
-const gameStore = useGameStore()
-const selectedIndices = ref([])
+const gameStore = useGameStore() as any
+const selectedIndices = ref<number[]>([])
 
 const pokemonList = computed(() => {
   const source = props.context === 'team' ? (gameStore.state.team || []) : (gameStore.state.box || [])
-  return source.map((p, i) => ({ ...p, originalIndex: i }))
-    .filter(p => {
+  return source.map((p: any, i: number) => ({ ...p, originalIndex: i }))
+    .filter((p: any) => {
       if (props.typeFilter && p.type !== props.typeFilter) return false
       if (props.excludeOnMission && p.onMission) return false
       if (props.excludeInDaycare && p.inDaycare) return false
@@ -29,7 +42,7 @@ const pokemonList = computed(() => {
     })
 })
 
-const toggleSelect = (index) => {
+const toggleSelect = (index: number) => {
   const pos = selectedIndices.value.indexOf(index)
   if (pos > -1) {
     selectedIndices.value.splice(pos, 1)
@@ -94,7 +107,7 @@ const handleConfirm = () => {
             <img
               :src="getAssetUrl(ASSET_TYPES.POKEMON, p.id, { shiny: p.isShiny })"
               class="p-sprite"
-              @error="e => e.target.style.display = 'none'"
+              @error="e => { (e.target as HTMLImageElement).style.display = 'none' }"
             >
             <div class="p-info">
               <div class="p-name">

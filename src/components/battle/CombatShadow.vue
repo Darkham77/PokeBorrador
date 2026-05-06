@@ -1,14 +1,17 @@
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue'
 import { useCombatShadowStore } from '@/stores/combatShadows'
 import { WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator'
-const { SHADOW_WIDTH, SHADOW_HEIGHT } = WORLD_CONSTANTS
 
-const props = defineProps({
-  shadowId: { type: String, required: true }
-})
+interface Props {
+  shadowId: string
+}
 
-const shadowStore = useCombatShadowStore()
+const props = defineProps<Props>()
+
+const { SHADOW_WIDTH, SHADOW_HEIGHT } = WORLD_CONSTANTS as any
+
+const shadowStore = useCombatShadowStore() as any
 const shadow = computed(() => shadowStore.activeShadows.get(props.shadowId))
 
 /**
@@ -17,11 +20,11 @@ const shadow = computed(() => shadowStore.activeShadows.get(props.shadowId))
  */
 const generatePixelShadow = (w = SHADOW_WIDTH, h = SHADOW_HEIGHT) => {
   if (typeof document === 'undefined') return ''
-  // [PureVue-Ignore]
   const canvas = document.createElement('canvas')
   canvas.width = w
   canvas.height = h
   const ctx = canvas.getContext('2d')
+  if (!ctx) return ''
   ctx.fillStyle = 'Rgba(0, 0, 0, 0.35)'
   ctx.beginPath()
   ctx.ellipse(w / 2, h / 2, w / 2, h / 2, 0, 0, Math.PI * 2)
@@ -42,7 +45,6 @@ const shadowStyle = computed(() => {
   const heightPx = entitySize * 0.08
   
   // Desfase horizontal relativo al centro (50%)
-  // feetX va de 0 a 1. 0.5 es el centro.
   const offsetX = (feetX - 0.5) * entitySize
 
   return {

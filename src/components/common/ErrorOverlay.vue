@@ -1,4 +1,5 @@
-<script setup>
+<script setup lang="ts">
+
 import { ref } from 'vue'
 import { useErrorStore } from '@/stores/errorStore'
 import { useGameStore } from '@/stores/game'

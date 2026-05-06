@@ -1,15 +1,15 @@
-<script setup>
+<script setup lang="ts">
+
 import { computed } from 'vue'
 import { useWarStore } from '@/stores/war'
 
-const props = defineProps({
-  mapId: {
-    type: String,
-    required: true
-  }
-})
+interface Props {
+  mapId: string
+}
 
-const warStore = useWarStore()
+const props = defineProps<Props>()
+
+const warStore = useWarStore() as any
 
 const mapData = computed(() => warStore.mapDominance[props.mapId] || { union: 0, poder: 0, winner: null })
 

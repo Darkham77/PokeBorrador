@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, defineAsyncComponent } from 'vue'
 import { useDocumentListener } from '@/composables/useWindowListener'
 import { useBodyClass } from '@/composables/useBodyClass'
@@ -45,20 +45,20 @@ import GlobalMarket from '@/components/market/GlobalMarket.vue'
 import RankedArena from '@/components/social/RankedArena.vue'
 import GlobalRanking from '@/components/social/GlobalRanking.vue'
 
-const gameStore = useGameStore()
-const uiStore = useUIStore()
-const battleStore = useBattleStore()
-const chatStore = useChatStore()
-const warStore = useWarStore()
-const eventStore = useEventStore()
-const audioStore = useAudioStore()
-const livePvP = useLivePvPStore()
-const breedingStore = useBreedingStore()
+const gameStore = useGameStore() as any
+const uiStore = useUIStore() as any
+const battleStore = useBattleStore() as any
+const chatStore = useChatStore() as any
+const warStore = useWarStore() as any
+const eventStore = useEventStore() as any
+const audioStore = useAudioStore() as any
+const livePvP = useLivePvPStore() as any
+const breedingStore = useBreedingStore() as any
 
 // --- Refs for Layout ---
-const hudRef = ref(null)
-const hudBottomRef = ref(null)
-const innerHudRef = ref(null)
+const hudRef = ref<HTMLElement | null>(null)
+const hudBottomRef = ref<HTMLElement | null>(null)
+const innerHudRef = ref<HTMLElement | null>(null)
 
 // --- Composable Layout ---
 const {
@@ -89,7 +89,7 @@ onMounted(() => {
   breedingStore.checkDailyReset()
 
   // Signal that DOM is ready
-  const loadingStore = useLoadingStore()
+  const loadingStore = useLoadingStore() as any
   loadingStore.markAppMounted()
 })
 
@@ -105,7 +105,6 @@ const initAudio = () => {
 }
 useDocumentListener('click', initAudio, { once: true })
 useDocumentListener('keydown', initAudio, { once: true })
-
 </script>
 
 <template>
@@ -289,9 +288,9 @@ useDocumentListener('keydown', initAudio, { once: true })
         <BuffsOverlay />
         <CriminalityBar />
         <DirectChatWindow 
-          v-for="(chat, friendId) in chatStore.privateChats" 
+          v-for="(_chat, friendId) in chatStore.privateChats" 
           :key="friendId"
-          :friend-id="friendId"
+          :friend-id="(friendId as string)"
         />
       </div>
 

@@ -1,11 +1,17 @@
-<script setup>
+<script setup lang="ts">
 import { ref } from 'vue'
 
-const _props = defineProps({
-  loading: { type: Boolean, default: false }
+interface Props {
+  loading?: boolean
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  loading: false
 })
 
-const emit = defineEmits(['signup'])
+const emit = defineEmits<{
+  (e: 'signup', payload: any): void
+}>()
 
 const email = ref('')
 const password = ref('')

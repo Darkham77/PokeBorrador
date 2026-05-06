@@ -1,44 +1,42 @@
-<script setup>
+<script setup lang="ts">
 import { ref, computed } from 'vue'
-import PVTooltip from '@/components/common/PVTooltip.vue'
 import { MOVE_DATA } from '@/data/moves'
 
-const props = defineProps({
-  modelValue: {
-    type: Array,
-    required: true
-  },
-  speciesMoves: {
-    type: Array,
-    required: true
-  }
-})
+interface Props {
+  modelValue: (string | null)[]
+  speciesMoves: string[]
+}
 
-const emit = defineEmits(['update:modelValue', 'autoFill', 'randomFill'])
+const props = defineProps<Props>()
 
+const emit = defineEmits<{
+  (e: 'update:modelValue', value: (string | null)[]): void
+  (e: 'autoFill'): void
+  (e: 'randomFill'): void
+}>()
 const moveSearch = ref('')
-const activeMoveSlot = ref(null)
+const activeMoveSlot = ref<number | null>(null)
 
 const allMovesList = Object.keys(MOVE_DATA)
 const filteredMoves = computed(() => {
   const s = moveSearch.value.toLowerCase()
-  if (!s) return props.speciesMoves
+  if (!s) return props.speciesMoves as string[]
   return allMovesList.filter(m => m.toLowerCase().includes(s)).slice(0, 30)
 })
 
-function addMove(m, slotIndex) {
+function addMove(m: string, slotIndex: number) {
   const newMoves = [...props.modelValue]
   newMoves[slotIndex] = m
-  emit('update:modelValue', newMoves)
+  emit('update:modelValue', newMoves as (string | null)[])
   activeMoveSlot.value = null
   moveSearch.value = ''
 }
 
-function removeMove(slotIndex) {
+function removeMove(slotIndex: number) {
   const newMoves = [...props.modelValue]
   newMoves.splice(slotIndex, 1)
   newMoves.push(null)
-  emit('update:modelValue', newMoves)
+  emit('update:modelValue', newMoves as (string | null)[])
 }
 </script>
 

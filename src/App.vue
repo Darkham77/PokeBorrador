@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { onMounted, ref, computed, watch } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useGameStore } from '@/stores/game'
@@ -23,15 +23,15 @@ import { useWindowListener } from '@/composables/useWindowListener'
 import { useProfileStore } from '@/stores/profile'
 import { useRoute } from 'vue-router'
 
-const authStore = useAuthStore()
-const gameStore = useGameStore()
-const uiStore = useUIStore()
-const profileStore = useProfileStore()
-const _battleStore = useBattleStore()
-const loadingStore = useLoadingStore()
+const authStore = useAuthStore() as any
+const gameStore = useGameStore() as any
+const uiStore = useUIStore() as any
+const profileStore = useProfileStore() as any
+const battleStore = useBattleStore() as any
+const loadingStore = useLoadingStore() as any
 const route = useRoute()
 const dbIncompatible = ref(false)
-const dbVersionInfo = ref(null)
+const dbVersionInfo = ref<any>(null)
 
 const isLoginPage = computed(() => {
   if (typeof window === 'undefined') return false
@@ -112,7 +112,7 @@ onMounted(async () => {
     // Restaurar combate si existe uno activo en el estado guardado
     if (gameStore.state.activeBattle && !gameStore.state.activeBattle.over) {
       console.log('[App] Detectado combate persistente. Restaurando estado...')
-      _battleStore.restoreBattle(gameStore.state.activeBattle)
+      battleStore.restoreBattle(gameStore.state.activeBattle)
     }
     
     // Sincronizar datos del perfil
@@ -132,11 +132,12 @@ watch(() => authStore.user, (newUser) => {
 })
 
 // Intercept low-level events to prevent them from reaching background interactions when modals are open
-const blockEvents = (e) => {
-  if (!e.target || typeof e.target.closest !== 'function') return
+const blockEvents = (e: Event) => {
+  const target = e.target as HTMLElement | null
+  if (!target || typeof target.closest !== 'function') return
 
-  const isInsideModal = e.target.closest('.base-modal-root, .base-modal-content, .modal-host')
-  const isScrollable = (el) => {
+  const isInsideModal = target.closest('.base-modal-root, .base-modal-content, .modal-host')
+  const isScrollable = (el: HTMLElement) => {
     if (!el || el === document.body || el === document.documentElement) return false
     const style = window.getComputedStyle(el)
     const overflow = style.overflow + style.overflowY + style.overflowX
@@ -144,7 +145,7 @@ const blockEvents = (e) => {
   }
 
   // Find the nearest scrollable parent
-  let curr = e.target
+  let curr: HTMLElement | null = target
   let foundScrollable = null
   while (curr && curr !== document.body) {
     if (isScrollable(curr)) {

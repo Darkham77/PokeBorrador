@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useWindowListener } from '@/composables/useWindowListener'
 import { useShopStore } from '@/stores/shop'
@@ -7,15 +7,21 @@ import { useUIStore } from '@/stores/ui'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import BaseModal from '@/components/common/BaseModal.vue'
 
-defineProps({
-  show: { type: Boolean, default: false }
+interface Props {
+  show?: boolean
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  show: false
 })
 
-const emit = defineEmits(['close'])
+const emit = defineEmits<{
+  (e: 'close'): void
+}>()
 
-const shopStore = useShopStore()
-const gameStore = useGameStore()
-const uiStore = useUIStore()
+const shopStore = useShopStore() as any
+const gameStore = useGameStore() as any
+const uiStore = useUIStore() as any
 
 const isSmallScreen = ref(window.innerWidth <= 950)
 const handleResize = () => { isSmallScreen.value = window.innerWidth <= 950 }
@@ -25,7 +31,7 @@ const activeTab = ref('todos')
 const search = ref('')
 
 const filteredItems = computed(() => {
-  return shopStore.SHOP_ITEMS.filter(item => {
+  return (shopStore.SHOP_ITEMS as any[]).filter(item => {
     if (item.market === false) return false
     if (activeTab.value !== 'todos' && item.cat !== activeTab.value) return false
     if (search.value && !item.name.toLowerCase().includes(search.value.toLowerCase())) return false
@@ -33,14 +39,26 @@ const filteredItems = computed(() => {
   })
 })
 
-const isUnlocked = (item) => gameStore.state.trainerLevel >= (item.unlockLv || 1)
+const isUnlocked = (item: any) => gameStore.state.trainerLevel >= (item.unlockLv || 1)
 
-const buy = (item) => {
+const buy = (item: any) => {
   if (!isUnlocked(item)) {
     uiStore.notify('¡Item bloqueado! Sube tu nivel de entrenador.', '🔒')
     return
   }
   shopStore.buyItem(item.id)
+}
+
+const handleImageError = (e: Event) => {
+  if (e.target) {
+    (e.target as HTMLImageElement).style.display = 'none'
+  }
+}
+
+const handleQuantityChange = (itemId: string, e: Event) => {
+  if (e.target) {
+    shopStore.setQuantity(itemId, Number((e.target as HTMLInputElement).value))
+  }
 }
 </script>
 
@@ -63,7 +81,7 @@ const buy = (item) => {
             v-for="(label, cat) in shopStore.CATEGORY_LABELS" 
             :key="cat"
             :class="{ active: activeTab === cat }"
-            @click.stop="activeTab = cat"
+            @click.stop="activeTab = String(cat)"
           >
             {{ label }}
           </button>
@@ -100,7 +118,7 @@ const buy = (item) => {
               <img
                 :src="getAssetUrl(ASSET_TYPES.ITEM, item.sprite)"
                 :alt="item.name"
-                @error="e => e.target.style.display = 'none'"
+                @error="handleImageError"
               >
               <div
                 v-if="!isUnlocked(item)"
@@ -131,7 +149,7 @@ const buy = (item) => {
                 <input 
                   type="number" 
                   :value="shopStore.getQuantity(item.id)"
-                  @change="e => shopStore.setQuantity(item.id, e.target.value)"
+                  @change="e => handleQuantityChange(item.id, e)"
                 >
                 <button @click.stop="shopStore.setQuantity(item.id, shopStore.getQuantity(item.id) + 1)">
                   +

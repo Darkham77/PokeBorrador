@@ -1,12 +1,12 @@
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue'
 import { useBreedingStore } from '@/stores/breeding'
 import { usePlayerClassStore } from '@/stores/playerClass'
 import { getGeneticsForecast } from '@/logic/breeding/breedingEngine'
 import { COMPAT_TEXT } from '@/data/breeding/breedingConstants'
 
-const breedingStore = useBreedingStore()
-const classStore = usePlayerClassStore()
+const breedingStore = useBreedingStore() as any
+const classStore = usePlayerClassStore() as any
 
 const forecast = computed(() => {
   if (!breedingStore.isBreeding) return null
@@ -14,10 +14,10 @@ const forecast = computed(() => {
     breedingStore.slots[0].pokemon,
     breedingStore.slots[1].pokemon,
     classStore.activeClass
-  )
+  ) as any
 })
 
-const formatTime = (ms) => {
+const formatTime = (ms: number | null) => {
   if (!ms) return '--:--'
   const left = Math.max(0, Math.floor((ms - Date.now()) / 1000))
   const m = String(Math.floor(left / 60)).padStart(2, '0')

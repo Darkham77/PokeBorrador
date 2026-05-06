@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
@@ -7,14 +7,13 @@ import { useModalStore } from '@/stores/modals'
 import { useAuthStore } from '@/stores/auth'
 import { useTradeStore } from '@/stores/trade'
 import TrainerAvatar from '@/components/TrainerAvatar.vue'
-
 import PVTooltip from '@/components/common/PVTooltip.vue'
 
-const gameStore = useGameStore()
-const uiStore = useUIStore()
-const authStore = useAuthStore()
-const classStore = usePlayerClassStore()
-const tradeStore = useTradeStore()
+const gameStore = useGameStore() as any
+const uiStore = useUIStore() as any
+const authStore = useAuthStore() as any
+const classStore = usePlayerClassStore() as any
+const tradeStore = useTradeStore() as any
 const gs = computed(() => gameStore.state)
 
 const displayName = computed(() => {
@@ -27,15 +26,15 @@ const trainerExpPct = computed(() => {
   return Math.min(100, (gs.value.exp / gs.value.expNeeded) * 100)
 })
 
-const handlePanelClick = (event) => {
+const handlePanelClick = (event: Event) => {
   // If clicking specifically the avatar area, handle class logic
-  const isAvatar = event.target.closest('#hud-class-avatar')
+  const isAvatar = (event.target as HTMLElement).closest('#hud-class-avatar')
   
   if (isAvatar) {
     if (!gameStore.state.playerClass) {
-      useModalStore().open('ClassSelection')
+      (useModalStore() as any).open('ClassSelection')
     } else {
-      useModalStore().open('ClassMissions')
+      (useModalStore() as any).open('ClassMissions')
     }
     return
   }

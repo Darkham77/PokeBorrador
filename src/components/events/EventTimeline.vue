@@ -1,15 +1,15 @@
-<script setup>
+<script setup lang="ts">
 import { onMounted } from 'vue';
 import { useEventStore } from '@/stores/events';
 
-const eventStore = useEventStore();
+const eventStore = useEventStore() as any;
 
 onMounted(() => {
   eventStore.fetchEvents();
 });
 
-const getBonusColor = (key) => {
-  const map = {
+const getBonusColor = (key: string) => {
+  const map: Record<string, string> = {
     expMult: 'Rgba(167, 139, 250, 1)',
     moneyMult: 'Rgba(251, 191, 36, 1)',
     bcMult: 'Rgba(96, 165, 250, 1)',
@@ -20,8 +20,8 @@ const getBonusColor = (key) => {
   return map[key] || 'Rgba(148, 163, 184, 1)';
 };
 
-const formatBonus = (key, val) => {
-  const map = {
+const formatBonus = (key: string, val: any) => {
+  const map: Record<string, string> = {
     expMult: 'EXP',
     moneyMult: 'DINERO',
     bcMult: 'BATTLE COINS',
@@ -89,11 +89,11 @@ const formatBonus = (key, val) => {
             :key="key"
           >
             <div
-              v-if="val > 1 && getBonusColor(key) !== 'Rgba(148, 163, 184, 1)'" 
+              v-if="val > 1 && getBonusColor(String(key)) !== 'Rgba(148, 163, 184, 1)'" 
               class="bonus-pill" 
-              :style="{ backgroundColor: getBonusColor(key) + '15', borderColor: getBonusColor(key) + '40', color: getBonusColor(key) }"
+              :style="{ backgroundColor: getBonusColor(String(key)) + '15', borderColor: getBonusColor(String(key)) + '40', color: getBonusColor(String(key)) }"
             >
-              {{ formatBonus(key, val) }}
+              {{ formatBonus(String(key), val) }}
             </div>
           </template>
         </div>

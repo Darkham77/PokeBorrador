@@ -1,44 +1,65 @@
-// [PureVue-Ignore-Length]
-<script setup>
+<script setup lang="ts">
 import { BOX_TIER_CONFIG } from '@/logic/pokemon/tierEngine'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 
-const props = defineProps({
-  filters: { type: Object, required: true },
-  isFiltersOpen: { type: Boolean, required: true },
-  sortMode: { type: String, required: true },
-  sortDirection: { type: String, default: 'desc' },
-  hasActiveFilters: { type: Boolean, required: true },
-  resultsCount: { type: Number, required: true }
+interface Props {
+  filters: any
+  isFiltersOpen: boolean
+  sortMode: string
+  sortDirection?: string
+  hasActiveFilters: boolean
+  resultsCount: number
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  sortDirection: 'desc'
 })
 
-const emit = defineEmits([
-  'update:isFiltersOpen', 
-  'update:sortMode', 
-  'update:sortDirection', 
-  'update:filters', 
-  'reset'
-])
-const setSortMode = (val) => {
+const emit = defineEmits<{
+  (e: 'update:isFiltersOpen', val: boolean): void
+  (e: 'update:sortMode', val: string): void
+  (e: 'update:sortDirection', val: string): void
+  (e: 'update:filters', val: any): void
+  (e: 'reset'): void
+}>()
+
+const toggleFilters = () => {
+  emit('update:isFiltersOpen', !props.isFiltersOpen)
+}
+
+const setSortMode = (val: string) => {
   if (props.sortMode === val) emit('update:sortMode', 'none')
   else emit('update:sortMode', val)
 }
-const toggleSortDirection = () => emit('update:sortDirection', props.sortDirection === 'desc' ? 'asc' : 'desc')
 
-const updateFilter = (key, val) => {
+const toggleSortDirection = () => {
+  emit('update:sortDirection', props.sortDirection === 'desc' ? 'asc' : 'desc')
+}
+
+const updateFilter = (key: string, val: any) => {
   emit('update:filters', { ...props.filters, [key]: val })
 }
 
-const toggleTag = (tag) => {
-  const currentTags = [...props.filters.tags]
+const toggleTag = (tag: string) => {
+  const currentTags = [...(props.filters.tags || [])]
   const idx = currentTags.indexOf(tag)
   if (idx > -1) currentTags.splice(idx, 1)
   else currentTags.push(tag)
   updateFilter('tags', currentTags)
 }
 
+const onSearchInput = (e: Event) => {
+  const val = (e.target as HTMLInputElement).value
+  updateFilter('search', val)
+}
+
+const onRangeInput = (key: string, e: Event) => {
+  const val = Number((e.target as HTMLInputElement).value)
+  updateFilter(key, val)
+}
+
 // Colores de estadísticas estandarizados (Corregidos con Hexadecimales)
-const STAT_COLORS = {
+const STAT_COLORS: Record<string, string> = {
   HP: '#4ade80',
   ATK: '#f87171',
   DEF: '#60a5fa',
@@ -49,7 +70,7 @@ const STAT_COLORS = {
   TOTAL: '#fbbf24'
 }
 
-const getSliderStyle = (val, max, color) => {
+const getSliderStyle = (val: number, max: number, color: string) => {
   const percentage = (val / max) * 100
   return {
     background: `Linear-Gradient(to right, ${color} 0%, ${color} ${percentage}%, Rgba(255,255,255,0.1) ${percentage}%, Rgba(255,255,255,0.1) 100%)`
@@ -85,7 +106,7 @@ const AVAILABLE_TAGS = [
             type="text"
             placeholder="Buscar..."
             class="box-search-input"
-            @input="updateFilter('search', $event.target.value)"
+            @input="onSearchInput"
           >
           <button
             v-if="filters.search"
@@ -295,7 +316,7 @@ const AVAILABLE_TAGS = [
                     min="1"
                     max="100"
                     :style="[getSliderStyle(filters.levelMin, 100, STAT_COLORS.LEVEL), { '--stat-color': STAT_COLORS.LEVEL }]"
-                    @input="updateFilter('levelMin', Number($event.target.value))"
+                    @input="onRangeInput('levelMin', $event)"
                   >
                   <span class="val">{{ filters.levelMin }}</span>
                 </div>
@@ -307,7 +328,7 @@ const AVAILABLE_TAGS = [
                     min="1"
                     max="100"
                     :style="[getSliderStyle(filters.levelMax, 100, STAT_COLORS.LEVEL), { '--stat-color': STAT_COLORS.LEVEL }]"
-                    @input="updateFilter('levelMax', Number($event.target.value))"
+                    @input="onRangeInput('levelMax', $event)"
                   >
                   <span class="val">{{ filters.levelMax }}</span>
                 </div>
@@ -319,7 +340,7 @@ const AVAILABLE_TAGS = [
                     min="0"
                     max="31"
                     :style="[getSliderStyle(filters.ivMin, 31, '#4ade80'), { '--stat-color': '#4ade80' }]"
-                    @input="updateFilter('ivMin', Number($event.target.value))"
+                    @input="onRangeInput('ivMin', $event)"
                   >
                   <span class="val">{{ filters.ivMin }}</span>
                 </div>
@@ -331,7 +352,7 @@ const AVAILABLE_TAGS = [
                     min="0"
                     max="31"
                     :style="[getSliderStyle(filters.ivMax, 31, '#4ade80'), { '--stat-color': '#4ade80' }]"
-                    @input="updateFilter('ivMax', Number($event.target.value))"
+                    @input="onRangeInput('ivMax', $event)"
                   >
                   <span class="val">{{ filters.ivMax }}</span>
                 </div>
@@ -344,7 +365,7 @@ const AVAILABLE_TAGS = [
                     max="1000"
                     step="10"
                     :style="[getSliderStyle(filters.bstMin, 1000, '#fbbf24'), { '--stat-color': '#fbbf24' }]"
-                    @input="updateFilter('bstMin', Number($event.target.value))"
+                    @input="onRangeInput('bstMin', $event)"
                   >
                   <span class="val">{{ filters.bstMin }}</span>
                 </div>
@@ -371,7 +392,7 @@ const AVAILABLE_TAGS = [
                     min="0"
                     max="31"
                     :style="[getSliderStyle(filters['iv' + stat], 31, STAT_COLORS[stat]), { '--stat-color': STAT_COLORS[stat] }]"
-                    @input="updateFilter('iv' + stat, Number($event.target.value))"
+                    @input="onRangeInput('iv' + stat, $event)"
                   >
                   <span
                     class="stat-val"

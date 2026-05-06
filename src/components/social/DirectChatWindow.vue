@@ -1,21 +1,20 @@
-<script setup>
+<script setup lang="ts">
 import { ref, computed, onMounted, nextTick, watch } from 'vue';
 import { useChatStore } from '@/stores/chat';
 import { useAuthStore } from '@/stores/auth';
 
-const props = defineProps({
-  friendId: {
-    type: String,
-    required: true
-  }
-});
+interface Props {
+  friendId: string;
+}
 
-const chatStore = useChatStore();
-const authStore = useAuthStore();
+const props = defineProps<Props>();
+
+const chatStore = useChatStore() as any;
+const authStore = useAuthStore() as any;
 
 const newMessage = ref('');
-const messagesContainer = ref(null);
-const inputField = ref(null);
+const messagesContainer = ref<HTMLDivElement | null>(null);
+const inputField = ref<HTMLInputElement | null>(null);
 
 const chat = computed(() => chatStore.privateChats[props.friendId]);
 

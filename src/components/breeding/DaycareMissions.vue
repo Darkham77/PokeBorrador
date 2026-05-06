@@ -1,26 +1,31 @@
-<script setup>
+<script setup lang="ts">
 import { useBreedingStore } from '@/stores/breeding';
-import { useUIStore } from '@/stores/ui';
 import { ref } from 'vue';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import DaycarePicker from './DaycarePicker.vue';
 
-const breedingStore = useBreedingStore();
-const _uiStore = useUIStore();
+const breedingStore = useBreedingStore() as any;
 
 const isDeliveryPickerOpen = ref(false);
 const activeMissionIndex = ref(-1);
 
-const openDelivery = (idx) => {
+const openDelivery = (idx: number) => {
   activeMissionIndex.value = idx;
   isDeliveryPickerOpen.value = true;
 };
 
-const handleDelivery = (pokemon) => {
+const handleDelivery = (pokemon: any) => {
   if (confirm(`¿Seguro que quieres entregar a ${pokemon.name}? Se irá para siempre.`)) {
     breedingStore.completeMission(activeMissionIndex.value, pokemon.uid);
     isDeliveryPickerOpen.value = false;
   }
+};
+
+const handleImgError = (e: Event) => {
+  const target = e.target as HTMLImageElement;
+  target.style.display = 'none';
+  const placeholder = target.nextElementSibling as HTMLElement;
+  if (placeholder) placeholder.style.display = 'flex';
 };
 </script>
 
@@ -42,7 +47,7 @@ const handleDelivery = (pokemon) => {
 
     <div class="missions-grid">
       <div 
-        v-for="(mission, index) in breedingStore.dailyMissions" 
+        v-for="(mission, index) in (breedingStore.dailyMissions as any[])" 
         :key="index"
         class="mission-card"
         :class="{ completed: mission.completed }"
@@ -59,7 +64,7 @@ const handleDelivery = (pokemon) => {
             <img 
               :src="getAssetUrl(ASSET_TYPES.TRAINER, mission.trainerSprite)" 
               class="pixelated"
-              @error="$event.target.style.display = 'none'; $event.target.nextSibling.style.display = 'flex'"
+              @error="handleImgError"
             >
             <span
               class="avatar-placeholder"

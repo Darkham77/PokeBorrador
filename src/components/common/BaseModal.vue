@@ -132,7 +132,8 @@
   </Teleport>
 </template>
 
-<script setup>
+<script setup lang="ts">
+
 import { ref, watch, computed, inject } from 'vue'
 import { useBodyClass } from '@/composables/useBodyClass'
 
@@ -152,7 +153,7 @@ const props = defineProps({
   type: {
     type: String,
     default: 'center',
-    validator: (val) => ['center', 'side-left', 'side-right', 'side', 'top', 'down', 'left', 'right', 'fullscreen'].includes(val)
+    validator: (val: any) => ['center', 'side-left', 'side-right', 'side', 'top', 'down', 'left', 'right', 'fullscreen'].includes(val)
   },
   height: { type: String, default: 'auto' },
   zIndex: { type: Number, default: 11000 },
@@ -164,12 +165,12 @@ const props = defineProps({
   overlay: {
     type: String,
     default: 'dark',
-    validator: (val) => ['dark', 'none'].includes(val)
+    validator: (val: any) => ['dark', 'none'].includes(val)
   },
   variant: {
     type: String,
     default: 'modern',
-    validator: (val) => ['modern', 'retro'].includes(val)
+    validator: (val: any) => ['modern', 'retro'].includes(val)
   },
   titleColor: { type: String, default: null },
   headerBackground: { type: String, default: null },
@@ -177,7 +178,7 @@ const props = defineProps({
   corners: {
     type: String,
     default: null,
-    validator: (val) => ['all', 'none', 'top', 'bottom', 'left', 'right'].includes(val)
+    validator: (val: any) => ['all', 'none', 'top', 'bottom', 'left', 'right'].includes(val)
   },
   showBorder: { type: Boolean, default: true },
   blurOverlay: { type: Boolean, default: true },
@@ -185,12 +186,12 @@ const props = defineProps({
   positionMode: {
     type: String,
     default: null, // If null, auto-calculate
-    validator: (val) => ['stuck', 'floating'].includes(val)
+    validator: (val: any) => ['stuck', 'floating'].includes(val)
   },
   closeButtonVariant: {
     type: String,
     default: 'transparent',
-    validator: (val) => ['transparent', 'solid', 'yellow-solid'].includes(val)
+    validator: (val: any) => ['transparent', 'solid', 'yellow-solid'].includes(val)
   }
 })
 

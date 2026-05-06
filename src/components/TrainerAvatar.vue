@@ -1,34 +1,27 @@
-<script setup>
-import { computed } from 'vue';
+<script setup lang="ts">
+import { computed, type CSSProperties } from 'vue';
 import { PLAYER_CLASSES } from '@/data/playerClasses';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 
-const props = defineProps({
-  playerClass: {
-    type: String,
-    default: null
-  },
-  level: {
-    type: Number,
-    default: 1
-  },
-  size: {
-    type: Number,
-    default: 40
-  },
-  avatarStyle: {
-    type: String,
-    default: ''
-  },
-  borderOverride: {
-    type: String,
-    default: null
-  }
+interface Props {
+  playerClass?: string | null
+  level?: number
+  size?: number
+  avatarStyle?: string
+  borderOverride?: string | null
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  playerClass: null,
+  level: 1,
+  size: 40,
+  avatarStyle: '',
+  borderOverride: null
 });
 
 const cls = computed(() => {
   if (!props.playerClass) return null;
-  return PLAYER_CLASSES[props.playerClass] || null;
+  return (PLAYER_CLASSES as any)[props.playerClass] || null;
 });
 
 const borderColor = computed(() => {
@@ -42,11 +35,11 @@ const avatarClass = computed(() => {
   return props.avatarStyle ? ` ${props.avatarStyle}` : '';
 });
 
-const avatarStyles = computed(() => {
+const avatarStyles = computed((): CSSProperties => {
   const sizePx = props.size;
   const bColor = borderColor.value;
   
-  const baseStyles = {
+  const baseStyles: CSSProperties = {
     width: `${sizePx}px`,
     height: `${sizePx}px`,
     minWidth: `${sizePx}px`,
@@ -84,7 +77,7 @@ const avatarStyles = computed(() => {
     imageRendering: 'pixelated',
     transition: 'background-position 0.2s',
     '--avatar-seed': Math.random()
-  };
+  } as CSSProperties;
 });
 </script>
 

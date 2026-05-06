@@ -1,10 +1,20 @@
-<script setup>
+<script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { useBattleStore } from '@/stores/battle'
 import { useUIStore } from '@/stores/ui'
 import { useWindowListener } from '@/composables/useWindowListener'
 import { useMapStore } from '@/stores/map'
 import { getRouteWeather } from '@/logic/weatherUtils'
+
+const battleStore = useBattleStore() as any
+const uiStore = useUIStore() as any
+const mapStore = useMapStore() as any
+
+// Responsive logic
+const isSmallScreen = ref(window.innerWidth <= 1080)
+useWindowListener('resize', () => {
+  isSmallScreen.value = window.innerWidth <= 1080
+})
 
 // Sub-components
 import BattleLog from './battle/BattleLog.vue'
@@ -13,20 +23,10 @@ import BattleArenaControls from './battle/BattleArenaControls.vue'
 import BaseModal from '@/components/common/BaseModal.vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 
-const battleStore = useBattleStore()
-const uiStore = useUIStore()
-
-// Responsive logic
-const isSmallScreen = ref(window.innerWidth <= 1080)
-useWindowListener('resize', () => {
-  isSmallScreen.value = window.innerWidth <= 1080
-})
-
 const battle = computed(() => battleStore.state)
-const mapStore = useMapStore()
 
 const cycleEmoji = computed(() => {
-  const emojis = { morning: '🌅', day: '☀️', dusk: '🌇', night: '🌙' }
+  const emojis: Record<string, string> = { morning: '🌅', day: '☀️', dusk: '🌇', night: '🌙' }
   return emojis[mapStore.currentCycle] || '☀️'
 })
 const seasonEmoji = computed(() => mapStore.currentSeason.icon)
@@ -35,23 +35,23 @@ const computedWeather = computed(() => {
   return getRouteWeather(battle.value?.locationId || 'route1', mapStore.currentSeason.id, mapStore.currentEpochHour)
 })
 const weatherEmoji = computed(() => {
-  const emojis = { clear: '', rain: '🌧️', storm: '⚡', fog: '🌫️', snow: '🌨️', blizzard: '❄️', sandstorm: '🏜️', heatwave: '🔥' }
+  const emojis: Record<string, string> = { clear: '', rain: '🌧️', storm: '⚡', fog: '🌫️', snow: '🌨️', blizzard: '❄️', sandstorm: '🏜️', heatwave: '🔥' }
   return emojis[computedWeather.value] || ''
 })
 
 const cycleName = computed(() => {
-  const names = { morning: 'Mañana', day: 'Día', dusk: 'Atardecer', night: 'Noche' }
+  const names: Record<string, string> = { morning: 'Mañana', day: 'Día', dusk: 'Atardecer', night: 'Noche' }
   return names[mapStore.currentCycle] || 'Día'
 })
 const seasonName = computed(() => mapStore.currentSeason.label)
 const weatherName = computed(() => {
-  const names = { clear: 'Despejado', rain: 'Lluvia', storm: 'Tormenta', snow: 'Nieve', blizzard: 'Ventisca', sandstorm: 'Tormenta de Arena', fog: 'Niebla', heatwave: 'Ola de Calor' }
+  const names: Record<string, string> = { clear: 'Despejado', rain: 'Lluvia', storm: 'Tormenta', snow: 'Nieve', blizzard: 'Ventisca', sandstorm: 'Tormenta de Arena', fog: 'Niebla', heatwave: 'Ola de Calor' }
   return names[computedWeather.value] || 'Normal'
 })
 
 const weatherAnimClass = computed(() => {
   if (uiStore.isPerformanceMode) return ''
-  const anims = {
+  const anims: Record<string, string> = {
     clear: 'anim-glow',
     heatwave: 'anim-glow',
     mist: 'anim-drift',

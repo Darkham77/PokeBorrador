@@ -1,10 +1,9 @@
-<script setup>
-defineProps({
-  stats: {
-    type: Object,
-    required: true
-  }
-})
+<script setup lang="ts">
+interface Props {
+  stats: Record<string, number>
+}
+
+defineProps<Props>()
 </script>
 
 <template>

@@ -1,21 +1,27 @@
-<script setup>
-import { useUIStore } from '@/stores/ui'
+<script setup lang="ts">
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import MoveTooltip from '@/components/battle/MoveTooltip.vue'
 import BattleMovesGrid from '@/components/battle/BattleMovesGrid.vue'
 import { PDEX_TYPE_COLORS } from '@/logic/pokedexConstants'
 
-const _props = defineProps({
-  isInstance: { type: Boolean, default: false },
-  currentMoves: { type: Array, default: () => [] },
-  moveDetails: { type: Array, required: true },
-  canReorder: { type: Boolean, default: true }
+interface Props {
+  isInstance?: boolean
+  currentMoves?: any[]
+  moveDetails: any[]
+  canReorder?: boolean
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  isInstance: false,
+  currentMoves: () => [],
+  canReorder: true
 })
 
-const emit = defineEmits(['reorder-moves'])
-const _uiStore = useUIStore()
+const emit = defineEmits<{
+  (e: 'reorder-moves', fromIndex: number, toIndex: number): void
+}>()
 
-function handleReorder(fromIndex, toIndex) {
+function handleReorder(fromIndex: number, toIndex: number) {
   emit('reorder-moves', fromIndex, toIndex)
 }
 </script>
@@ -90,13 +96,13 @@ function handleReorder(fromIndex, toIndex) {
             <div class="grid-cell move-type">
               <span
                 class="mv-type-tag pixelated"
-                :style="{ background: PDEX_TYPE_COLORS[m.type.toLowerCase()] }"
+                :style="{ background: (PDEX_TYPE_COLORS as any)[m.type.toLowerCase()] }"
               >
                 {{ m.type.toUpperCase() }}
               </span>
             </div>
             <div class="grid-cell move-cat pixelated">
-              {{ { physical: '⚔️ FÍSICO', special: '✨ ESPECIAL', status: '🔮 ESTADO' }[m.cat] || '🔮 ESTADO' }}
+              {{ ({ physical: '⚔️ FÍSICO', special: '✨ ESPECIAL', status: '🔮 ESTADO' } as any)[m.cat] || '🔮 ESTADO' }}
             </div>
             <div class="grid-cell move-power pixelated">
               {{ m.power }}

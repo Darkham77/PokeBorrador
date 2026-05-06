@@ -1,6 +1,6 @@
-<script setup>
+<script setup lang="ts">
 import { useUIStore } from '@/stores/ui'
-const uiStore = useUIStore()
+const uiStore = useUIStore() as any
 </script>
 
 <template>

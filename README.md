@@ -73,7 +73,7 @@ Para iniciar el servidor de desarrollo local:
     Instala las dependencias necesarias para los scripts de optimización (conversión a WebP, etc.):
 
     ```bash
-    pip install -r requirements.txt
+    python3 -m pip install -r requirements.txt
     ```
 
 5. **Iniciar Vite**:

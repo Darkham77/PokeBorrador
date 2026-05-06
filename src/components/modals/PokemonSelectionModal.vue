@@ -1,8 +1,8 @@
-<script setup>
+<script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { useUIStore } from '@/stores/ui'
 import { useGameStore } from '@/stores/game'
-import { useBattleVisuals } from '@/composables/useBattleVisuals'
+
 import { useModalStore } from '@/stores/modals'
 import { safeStorage } from '@/logic/utils/storage'
 import BaseModal from '@/components/common/BaseModal.vue'
@@ -11,33 +11,59 @@ import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { POKEMON_TAGS, POKEMON_BADGES, hasPokemonTag } from '@/logic/constants/tags'
 import PokemonSelectionItem from './PokemonSelectionItem.vue'
 
-const uiStore = useUIStore()
-const gameStore = useGameStore()
-const props = defineProps({
-  title: { type: String, default: 'SELECCIONAR POKÉMON' },
-  subtitle: { type: String, default: '' },
-  excludeUids: { type: Array, default: () => [] },
-  includeTeam: { type: Boolean, default: true },
-  multi: { type: Boolean, default: false },
-  maxSelect: { type: Number, default: 1 },
-  minSelect: { type: Number, default: 1 },
-  autoConfirm: { type: Boolean, default: true },
-  callbackConfirm: { type: Function, default: null },
-  onConfirm: { type: Function, default: null },
-  // Battle context props
-  isBattleSwitch: { type: Boolean, default: false },
-  battleMode: { type: String, default: null }, // 'wild', 'pvp', 'war'
-  activePokemonUid: { type: String, default: null },
-  preventClose: { type: Boolean, default: false },
-  allowDead: { type: Boolean, default: false },
-  // Filter by specific unique IDs (used for item application)
-  allowedIds: { type: Array, default: () => [] },
-  isItemContext: { type: Boolean, default: false }
+const uiStore = useUIStore() as any
+const gameStore = useGameStore() as any
+
+interface Props {
+  title?: string
+  subtitle?: string
+  excludeUids?: string[]
+  includeTeam?: boolean
+  multi?: boolean
+  maxSelect?: number
+  minSelect?: number
+  autoConfirm?: boolean
+  callbackConfirm?: ((selected: any[]) => void) | null
+  onConfirm?: ((selected: any[]) => void) | null
+  isBattleSwitch?: boolean
+  battleMode?: string | null
+  activePokemonUid?: string | null
+  preventClose?: boolean
+  allowDead?: boolean
+  allowedIds?: string[]
+  isItemContext?: boolean
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  title: 'SELECCIONAR POKÉMON',
+  subtitle: '',
+  excludeUids: () => [],
+  includeTeam: true,
+  multi: false,
+  maxSelect: 1,
+  minSelect: 1,
+  autoConfirm: true,
+  callbackConfirm: null,
+  onConfirm: null,
+  isBattleSwitch: false,
+  battleMode: null,
+  activePokemonUid: null,
+  preventClose: false,
+  allowDead: false,
+  allowedIds: () => [],
+  isItemContext: false
 })
 
-const { _getHpColor } = useBattleVisuals()
 
-let savedFilters = {}
+
+interface SavedFilters {
+  searchQuery?: string
+  sortBy?: string
+  sortOrder?: string
+  activeTags?: string[]
+}
+
+let savedFilters: SavedFilters = {}
 try {
   savedFilters = JSON.parse(safeStorage.getItem('pv_selection_filters') || '{}')
 } catch (e) {
@@ -47,8 +73,8 @@ try {
 const searchQuery = ref(savedFilters.searchQuery || '')
 const sortBy = ref(savedFilters.sortBy || 'recent') // 'recent', 'level', 'ivs', 'total'
 const sortOrder = ref(savedFilters.sortOrder || 'desc')
-const activeTags = ref(Array.isArray(savedFilters.activeTags) ? savedFilters.activeTags : [])
-const selectedUids = ref([])
+const activeTags = ref<string[]>(Array.isArray(savedFilters.activeTags) ? savedFilters.activeTags : [])
+const selectedUids = ref<string[]>([])
 
 // Persist filters
 watch([sortBy, sortOrder, activeTags, searchQuery], () => {
@@ -60,9 +86,9 @@ watch([sortBy, sortOrder, activeTags, searchQuery], () => {
   }))
 }, { deep: true })
 
-const getPokemonTotalPower = (p) => {
-  if (!p) return 0;
-  const base = pokemonDataProvider.getPokemonData(p.id);
+const getPokemonTotalPower = (p: any) => {
+  if (!p) return 0
+  const base = pokemonDataProvider.getPokemonData(p.id)
   const s = base?.stats || base || {}
   const TOT = (s.hp || 0) + (s.atk || 0) + (s.def || 0) + (s.spa || 0) + (s.spd || 0) + (s.spe || 0)
   const ivs = p.ivs || {}
@@ -70,14 +96,14 @@ const getPokemonTotalPower = (p) => {
   return TOT + totalIvs
 }
 
-const availablePokemon = computed(() => {
-  const box = gameStore.state.box || []
-  const team = gameStore.state.team || []
+const availablePokemon = computed<{ pokemon: any, _source: string, index: number }[]>(() => {
+  const box = (gameStore.state.box || []) as any[]
+  const team = (gameStore.state.team || []) as any[]
   
-  let sourceList;
+  let sourceList: { pokemon: any, _source: string, index: number }[] = []
   
   if (props.battleMode === 'pvp') {
-    const pvpUids = gameStore.state.pvpTeam || []
+    const pvpUids = (gameStore.state.pvpTeam || []) as string[]
     const allPokes = [...team, ...box]
     sourceList = allPokes
       .filter(p => pvpUids.includes(p.uid))
@@ -87,7 +113,7 @@ const availablePokemon = computed(() => {
         index: pvpUids.indexOf(p.uid) 
       }))
   } else if (props.battleMode === 'war') {
-    const warUids = gameStore.state.warTeam || []
+    const warUids = (gameStore.state.warTeam || []) as string[]
     const allPokes = [...team, ...box]
     sourceList = allPokes
       .filter(p => warUids.includes(p.uid))
@@ -107,7 +133,7 @@ const availablePokemon = computed(() => {
       : box.map((p, i) => ({ pokemon: p, _source: 'box', index: i }))
   }
 
-  let filtered = sourceList.filter(item => {
+  const filtered = sourceList.filter(item => {
     const p = item.pokemon
     if (!p) return false
     if (p.onMission || p.inDaycare) return false
@@ -142,13 +168,13 @@ const availablePokemon = computed(() => {
   return filtered.sort((a, b) => {
     const pA = a.pokemon
     const pB = b.pokemon
-    let valA, valB
+    let valA: number, valB: number
 
     if (sortBy.value === 'level') {
       valA = pA.level || 0
       valB = pB.level || 0
     } else if (sortBy.value === 'ivs') {
-      const sum = (ivs) => Object.values(ivs || {}).reduce((s, v) => s + (v || 0), 0)
+      const sum = (ivs: any) => Object.values(ivs || {}).reduce((s: number, v: any) => s + (v || 0), 0)
       valA = sum(pA.ivs)
       valB = sum(pB.ivs)
     } else if (sortBy.value === 'TOT') {
@@ -168,7 +194,7 @@ const availablePokemon = computed(() => {
   })
 })
 
-function toggleSelection(item) {
+function toggleSelection(item: any) {
   const uid = item.pokemon.uid
   const sIdx = selectedUids.value.indexOf(uid)
   if (sIdx > -1) {
@@ -213,7 +239,7 @@ function forceClose() {
   useModalStore().close('PokemonSelection')
 }
 
-function setSort(type) {
+function setSort(type: string) {
   if (sortBy.value === type) {
     sortOrder.value = sortOrder.value === 'desc' ? 'asc' : 'desc'
   } else {
@@ -222,7 +248,7 @@ function setSort(type) {
   }
 }
 
-function toggleTagFilter(tagId) {
+function toggleTagFilter(tagId: string) {
   const idx = activeTags.value.indexOf(tagId)
   if (idx > -1) {
     activeTags.value.splice(idx, 1)
@@ -239,7 +265,7 @@ function clearFilters() {
 }
 
 if (typeof window !== 'undefined') {
-  window._openPokemonSelectionModal = (opts) => {
+  (window as any)._openPokemonSelectionModal = (opts: any) => {
     uiStore.open('PokemonSelection', { 
       title: 'SELECCIONAR POKÉMON',
       subtitle: 'Elige un Pokémon para la tarea.',
@@ -251,7 +277,7 @@ if (typeof window !== 'undefined') {
   }
 }
 
-function openDetail(item) {
+function openDetail(item: any) {
   uiStore.open('PokemonDetail', {
     pokemon: item.pokemon,
     index: item.index,

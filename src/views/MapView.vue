@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue' // HMR Trigger
 import { useGameStore } from '@/stores/game'
 import { useMapStore } from '@/stores/map'
@@ -10,15 +10,15 @@ import { useEventStore } from '@/stores/events'
 import { GYMS } from '@/data/gyms'
 import { useModalStore } from '@/stores/modals'
 
-const gameStore = useGameStore()
-const mapStore = useMapStore()
-const uiStore = useUIStore()
-const eventStore = useEventStore()
-const modalStore = useModalStore()
+const gameStore = useGameStore() as any
+const mapStore = useMapStore() as any
+const uiStore = useUIStore() as any
+const eventStore = useEventStore() as any
+const modalStore = useModalStore() as any
 
-const navigateToMap = (mapId) => mapStore.navigate(mapId)
+const navigateToMap = (mapId: string | number) => mapStore.navigate(mapId)
 
-const openTab = (tab) => {
+const openTab = (tab: string) => {
   uiStore.activeTab = tab
 }
 

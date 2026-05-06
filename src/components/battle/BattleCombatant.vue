@@ -1,5 +1,5 @@
 // [PureVue-Ignore-Length]
-<script setup>
+<script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
@@ -11,31 +11,54 @@ import { useCombatShadowStore } from '@/stores/combatShadows'
 import { gameBus } from '@/logic/gameBus'
 import { WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator'
 
-const props = defineProps({
-  side: { type: String, required: true }, // 'player' | 'enemy'
-  pokemon: { type: Object, default: null },
-  position: { type: Object, required: true }, // { x, y }
-  baseSize: { type: Number, required: true },
-  groundY: { type: String, default: '90%' },
-  shadowKey: { type: String, default: null },
-  animState: { type: String, default: null }, // 'catching' | 'trapped' | 'releasing'
-  ballId: { type: String, default: 'pokeball' },
-  isShaking: { type: Boolean, default: false },
-  isBlinking: { type: Boolean, default: false },
-  isSilhouette: { type: Boolean, default: false },
-  isAttacking: { type: Boolean, default: false },
-  activeMove: { type: Object, default: null },
-  showGuides: { type: Boolean, default: false },
-  isCaptureSuccess: { type: Boolean, default: false },
-  sparkles: { type: Array, default: () => [] },
-  isFainting: { type: Boolean, default: false },
-  isEmerging: { type: Boolean, default: false },
-  suppressFX: { type: Boolean, default: false },
-  hidden: { type: Boolean, default: false },
-  stages: { type: Object, default: () => ({}) }
+interface Props {
+  side: string // 'player' | 'enemy'
+  pokemon?: any
+  position: { x: number; y: number }
+  baseSize: number
+  groundY?: string
+  shadowKey?: string | null
+  animState?: string | null // 'catching' | 'trapped' | 'releasing'
+  ballId?: string
+  isShaking?: boolean
+  isBlinking?: boolean
+  isSilhouette?: boolean
+  isAttacking?: boolean
+  activeMove?: any
+  showGuides?: boolean
+  isCaptureSuccess?: boolean
+  sparkles?: any[]
+  isFainting?: boolean
+  isEmerging?: boolean
+  suppressFX?: boolean
+  hidden?: boolean
+  stages?: any
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  pokemon: null,
+  groundY: '90%',
+  shadowKey: null,
+  animState: null,
+  ballId: 'pokeball',
+  isShaking: false,
+  isBlinking: false,
+  isSilhouette: false,
+  isAttacking: false,
+  activeMove: null,
+  showGuides: false,
+  isCaptureSuccess: false,
+  sparkles: () => [],
+  isFainting: false,
+  isEmerging: false,
+  suppressFX: false,
+  hidden: false,
+  stages: () => ({})
 })
 
-const emit = defineEmits(['load'])
+const emit = defineEmits<{
+  (e: 'load', size: { w: number; h: number }): void
+}>()
 
 const naturalSize = ref({ w: 0, h: 0 })
 const animSeed = Math.random()
@@ -53,7 +76,7 @@ const imageUrl = computed(() => {
 const isFloating = computed(() => {
   if (!props.pokemon) return false
   if (props.pokemon.isFloating !== undefined) return props.pokemon.isFloating
-  const data = pokemonDataProvider.getPokemonData(props.pokemon.id)
+  const data = pokemonDataProvider.getPokemonData(props.pokemon.id) as any
   if (data?.isFloating) return true
   const types = []
   if (props.pokemon.type) types.push(props.pokemon.type.toLowerCase())
@@ -61,8 +84,9 @@ const isFloating = computed(() => {
   return types.includes('flying')
 })
 
-const handleLoad = (e) => {
-  naturalSize.value = { w: e.target.naturalWidth, h: e.target.naturalHeight }
+const handleLoad = (e: Event) => {
+  const target = e.target as HTMLImageElement
+  naturalSize.value = { w: target.naturalWidth, h: target.naturalHeight }
   emit('load', naturalSize.value)
 }
 
@@ -81,9 +105,10 @@ const virtualStyle = { width: '100%', height: '100%' }
 const pokeballShadowUrl = computed(() => {
   if (typeof document === 'undefined') return ''
   const w = 10, h = 7
-  const canvas = document.createElement('canvas') // [PureVue-Ignore]
+  const canvas = document.createElement('canvas')
   canvas.width = w; canvas.height = h
   const ctx = canvas.getContext('2d')
+  if (!ctx) return ''
   ctx.fillStyle = 'Rgba(0, 0, 0, 0.45)'
   ctx.beginPath()
   ctx.ellipse(w / 2, h / 2, w / 2, h / 2, 0, 0, Math.PI * 2)
@@ -91,7 +116,7 @@ const pokeballShadowUrl = computed(() => {
   return `url(${canvas.toDataURL('image/png')})`
 })
 
-const shadowStore = useCombatShadowStore()
+const shadowStore = useCombatShadowStore() as any
 const currentShadow = computed(() => props.shadowKey ? shadowStore.activeShadows.get(props.shadowKey) : null)
 
 const localGroundY = computed(() => {
@@ -108,7 +133,7 @@ const stickyCoords = computed(() => {
   let top = localGroundY.value
   
   if (shadow) {
-    const scale = WORLD_CONSTANTS.OBJECT_SCALE || 2
+    const scale = (WORLD_CONSTANTS as any).OBJECT_SCALE || 2
     const entitySize = props.baseSize * scale
 
     if (shadow.feetX !== undefined) {
@@ -120,17 +145,16 @@ const stickyCoords = computed(() => {
   return { top, left }
 })
 
-const handleImageError = (e) => {
-  e.target.src = getAssetUrl(ASSET_TYPES.ENVIRONMENT, 'tall-grass')
+const handleImageError = (e: Event) => {
+  (e.target as HTMLImageElement).src = getAssetUrl(ASSET_TYPES.ENVIRONMENT, 'tall-grass')
 }
 
-const handleBallError = (e) => {
-  // Si falla la bola, mejor dejarla invisible o usar una pokeball básica, NO pasto
-  e.target.src = getAssetUrl(ASSET_TYPES.ITEM, 'pokeball')
+const handleBallError = (e: Event) => {
+  (e.target as HTMLImageElement).src = getAssetUrl(ASSET_TYPES.ITEM, 'pokeball')
 }
 
 // --- ANIMACIONES DE STATS ---
-const statArrows = ref([])
+const statArrows = ref<any[]>([])
 watch(() => props.stages, (newS, oldS) => {
   if (!oldS) return
   
@@ -145,7 +169,7 @@ watch(() => props.stages, (newS, oldS) => {
   })
 }, { deep: true })
 
-const triggerStatArrow = (stat, dir) => {
+const triggerStatArrow = (stat: string, dir: 'up' | 'down') => {
   const id = Date.now() + Math.random()
   statArrows.value.push({ id, dir, stat })
   setTimeout(() => {

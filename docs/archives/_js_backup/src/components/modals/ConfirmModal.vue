@@ -1,0 +1,151 @@
+<script setup>
+import BaseModal from '@/components/common/BaseModal.vue'
+
+defineProps({
+  show: { type: Boolean, default: false },
+  title: { type: String, default: '¿ESTÁS SEGURO?' },
+  message: { type: String, default: '' },
+  confirmText: { type: String, default: 'ACEPTAR' },
+  cancelText: { type: String, default: 'CANCELAR' },
+  type: { type: String, default: 'primary' },
+  variant: { type: String, default: 'modern' }
+})
+
+const emit = defineEmits(['confirm', 'cancel', 'close'])
+
+const handleConfirm = () => {
+  emit('confirm')
+  emit('close')
+}
+
+const handleCancel = () => {
+  emit('cancel')
+  emit('close')
+}
+</script>
+
+<template>
+  <BaseModal
+    :show="show"
+    :title="title"
+    max-width="400px"
+    :variant="variant"
+    padding="raw"
+    @close="handleCancel"
+  >
+    <div class="confirm-body">
+      <p>{{ message }}</p>
+    </div>
+    
+    <template #footer>
+      <div class="confirm-footer">
+        <button 
+          class="btn-cancel" 
+          @click.stop="handleCancel"
+        >
+          {{ cancelText }}
+        </button>
+        <button 
+          class="btn-confirm" 
+          :class="{ 'is-danger': type === 'danger' }"
+          @click.stop="handleConfirm"
+        >
+          {{ confirmText }}
+        </button>
+      </div>
+    </template>
+  </BaseModal>
+</template>
+
+<style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
+@use "sass:math";
+@use "@/styles/core/tools" as *;
+
+.confirm-body {
+  padding: 24px;
+  
+  p {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.6;
+    color: Rgba(255, 255, 255, 0.8);
+    font-family: 'Inter', sans-serif;
+    text-align: center;
+  }
+}
+
+// Retro Yellow Variant Styles
+:deep(.variant-retro) {
+  .confirm-body p {
+    color: $coin-gold; // Gold/Yellow text for retro
+    @include pixelated;
+    font-size: 12px;
+    text-shadow: 2px 2px 0 Rgba(0,0,0,0.5);
+  }
+
+  .confirm-footer {
+    .btn-cancel {
+      border: 2px solid var(--gray);
+      background: var(--card-dark);
+      color: var(--muted);
+    }
+    .btn-confirm {
+      background: Linear-Gradient(135deg, $coin-gold, #b8860b);
+      color: $black;
+      border: 2px solid $black;
+      box-shadow: 4px 4px 0 Rgba(0,0,0,0.3);
+      
+      &:hover {
+        background: Linear-Gradient(135deg, $white, $coin-gold);
+        transform: Translate(-2px, -2px);
+        box-shadow: 6px 6px 0 Rgba(0,0,0,0.4);
+      }
+    }
+  }
+}
+
+.confirm-footer {
+  display: flex;
+  gap: 12px;
+  
+  button {
+    flex: 1;
+    padding: 14px;
+    border: none;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: 700;
+    @include pixelated;
+    cursor: pointer;
+    transition: all 0.2s;
+    
+    &:active {
+      transform: Scale(0.95);
+    }
+  }
+  
+  .btn-cancel {
+    background: Rgba(255, 255, 255, 0.05);
+    color: Rgba(255, 255, 255, 0.5);
+    &:hover {
+      background: Rgba(255, 255, 255, 0.1);
+      color: var(--white);
+    }
+  }
+  
+  .btn-confirm {
+    @include btn-vicio-primary;
+    padding: 14px; 
+
+    &.is-danger {
+      background: Linear-Gradient(135deg, var(--red), #dc2626);
+      box-shadow: 0 4px 15px Rgba(220, 38, 38, 0.4);
+      &:hover {
+        background: Linear-Gradient(135deg, #ef4444, #b91c1c);
+        box-shadow: 0 6px 20px Rgba(220, 38, 38, 0.5);
+      }
+    }
+  }
+}
+</style>

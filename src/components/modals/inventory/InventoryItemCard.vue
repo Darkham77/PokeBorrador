@@ -1,19 +1,26 @@
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 
-const props = defineProps({
-  item: { type: Object, required: true },
-  isSelected: { type: Boolean, default: false },
-  multiSelectMode: { type: Boolean, default: false }
+interface Props {
+  item: any
+  isSelected?: boolean
+  multiSelectMode?: boolean
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  isSelected: false,
+  multiSelectMode: false
 })
 
-defineEmits(['click'])
+const emit = defineEmits<{
+  (e: 'click', event: MouseEvent): void
+}>()
 
 const tierClass = computed(() => `tier-${props.item.tier || 'common'}`)
 const tierLabel = computed(() => {
-  const labels = {
+  const labels: Record<string, string> = {
     common: 'Común',
     rare: 'Raro',
     epic: 'Épico',
@@ -58,7 +65,7 @@ const itemIcon = computed(() => {
           :src="itemIcon"
           :alt="item.name"
           class="item-sprite"
-          @error="e => e.target.style.display = 'none'"
+          @error="e => { (e.target as HTMLImageElement).style.display = 'none' }"
         >
         <span
           v-else

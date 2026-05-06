@@ -1,7 +1,13 @@
-<script setup>
-defineProps({
-  stats: { type: Object, required: true }
-})
+<script setup lang="ts">
+interface Props {
+  stats: {
+    seen: number
+    caught: number
+    total: number
+  }
+}
+
+const props = defineProps<Props>()
 </script>
 
 <template>

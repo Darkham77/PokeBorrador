@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
@@ -12,24 +12,39 @@ import { getPokemonVisualBadges } from '@/logic/constants/tags'
 import PokemonTypePills from '@/components/shared/PokemonTypePills.vue'
 import { calculateTotalPower } from '@/logic/pokemonUtils'
 
-const props = defineProps({
-  pokemon: { type: Object, required: true },
-  index: { type: Number, default: -1 },
-  isPvp: { type: Boolean, default: false },
-  maxObeyLv: { type: Number, default: 100 },
+interface Props {
+  pokemon: any
+  index?: number
+  isPvp?: boolean
+  maxObeyLv?: number
   // Permite configurar qué botones se muestran: 'item', 'details', 'box'
-  actions: { type: Array, default: () => ['item', 'details', 'box'] },
-  disableCardClick: { type: Boolean, default: false }
+  actions?: string[]
+  disableCardClick?: boolean
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  index: -1,
+  isPvp: false,
+  maxObeyLv: 100,
+  actions: () => ['item', 'details', 'box'],
+  disableCardClick: false
 })
 
-const emit = defineEmits(['click', 'openDetail', 'openItem', 'sendToBox', 'select', 'toggle-tag'])
+const emit = defineEmits<{
+  (e: 'click'): void
+  (e: 'openDetail', index: number): void
+  (e: 'openItem', index: number): void
+  (e: 'sendToBox', index: number): void
+  (e: 'select', index: number): void
+  (e: 'toggle-tag', tagId: any): void
+}>()
 
 const cardRef = ref(null)
 const { isVisible } = useElementVisibility(cardRef)
-const uiStore = useUIStore()
+const uiStore = useUIStore() as any
 
 // Hierarchy & Performance Injections
-const isModalPerformance = inject('isModalPerformanceMode', null)
+const isModalPerformance = inject<any>('isModalPerformanceMode', null)
 const isPerformanceActive = computed(() => {
   if (uiStore.isSimplifiedModalsMode) return true
   
@@ -42,13 +57,13 @@ const isPerformanceActive = computed(() => {
 
 const hpPct = computed(() => props.pokemon.hp / props.pokemon.maxHp)
 
-const getHpClass = (pct) => {
+const getHpClass = (pct: number) => {
   if (pct > 0.5) return 'hp-high'
   if (pct > 0.25) return 'hp-mid'
   return 'hp-low'
 }
 
-const tierInfo = computed(() => getPokemonTier(props.pokemon))
+const tierInfo = computed<any>(() => getPokemonTier(props.pokemon))
 
 const badgesCount = computed(() => getPokemonVisualBadges(props.pokemon).length)
 const hasBadges = computed(() => badgesCount.value > 0)
@@ -58,7 +73,7 @@ const disobeys = computed(() => props.pokemon.level > props.maxObeyLv)
 
 const spriteUrl = computed(() => {
   return getAssetUrl(ASSET_TYPES.POKEMON, props.pokemon.id, { 
-    isShiny: props.pokemon.isShiny 
+    shiny: props.pokemon.isShiny 
   })
 })
 
@@ -83,13 +98,13 @@ const cardClasses = computed(() => {
   return classes
 })
 
-function renderGenderSymbol(gender) {
+function renderGenderSymbol(gender: string) {
   if (gender === 'M') return '♂'
   if (gender === 'F') return '♀'
   return ''
 }
 
-function getGenderClass(gender) {
+function getGenderClass(gender: string) {
   if (gender === 'M') return 'gender-male'
   if (gender === 'F') return 'gender-female'
   return 'gender-none'
@@ -138,7 +153,7 @@ function getGenderClass(gender) {
           :src="spriteUrl"
           :alt="pokemon.name"
           class="pokemon-sprite"
-          @error="e => e.target.style.display = 'none'"
+          @error="e => { (e.target as HTMLImageElement).style.display = 'none' }"
         >
       </PVSpriteFX>
     </div>

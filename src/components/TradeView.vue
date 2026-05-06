@@ -1,8 +1,4 @@
-<script setup>
-/**
- * TradeView
- * Standardized modal for P2P trading.
- */
+<script setup lang="ts">
 import { ref, reactive, computed } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useTradeStore } from '@/stores/trade'
@@ -11,14 +7,20 @@ import BaseModal from '@/components/common/BaseModal.vue'
 import TradeSidePanel from './social/TradeSidePanel.vue'
 import TradeFooter from './social/TradeFooter.vue'
 
-defineProps({
-  show: { type: Boolean, default: false }
+interface Props {
+  show?: boolean
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  show: false
 })
 
-const emit = defineEmits(['close'])
+const emit = defineEmits<{
+  (e: 'close'): void
+}>()
 
-const gameStore = useGameStore()
-const tradeStore = useTradeStore()
+const gameStore = useGameStore() as any
+const tradeStore = useTradeStore() as any
 
 const gs = computed(() => gameStore.state)
 const target = computed(() => tradeStore.tradeTarget)
@@ -35,27 +37,27 @@ const selectorState = reactive({
   show: false,
   side: 'offer', // 'offer' or 'request'
   title: '',
-  list: []
+  list: [] as any[]
 })
 
-const openSelector = (side) => {
+const openSelector = (side: string) => {
   selectorState.side = side
   selectorState.show = true
   
   if (side === 'offer') {
     selectorState.title = 'SELECCIONA TU POKÉMON'
-    const team = gs.value.team.map(p => ({ ...p, _source: 'team' }))
-    const box = gs.value.box.map(p => ({ ...p, _source: 'box' }))
+    const team = gs.value.team.map((p: any) => ({ ...p, _source: 'team' }))
+    const box = gs.value.box.map((p: any) => ({ ...p, _source: 'box' }))
     selectorState.list = [...team, ...box]
   } else {
     selectorState.title = `POKÉMON DE ${target.value?.username}`
-    const team = friendSave.value.team.map(p => ({ ...p, _source: 'team' }))
-    const box = (friendSave.value.box || []).map(p => ({ ...p, _source: 'box' }))
+    const team = friendSave.value.team.map((p: any) => ({ ...p, _source: 'team' }))
+    const box = (friendSave.value.box || []).map((p: any) => ({ ...p, _source: 'box' }))
     selectorState.list = [...team, ...box]
   }
 }
 
-const handleSelectorSelect = (poke) => {
+const handleSelectorSelect = (poke: any) => {
   if (selectorState.side === 'offer') {
     tradeStore.tradeOfferPoke = poke
   } else {
@@ -69,7 +71,7 @@ const closeTrade = () => {
   emit('close')
 }
 
-const toggleOfferItem = (itemName) => {
+const toggleOfferItem = (itemName: string) => {
   if (tradeStore.tradeOfferItems[itemName]) {
     delete tradeStore.tradeOfferItems[itemName]
   } else {
@@ -77,7 +79,7 @@ const toggleOfferItem = (itemName) => {
   }
 }
 
-const toggleRequestItem = (itemName) => {
+const toggleRequestItem = (itemName: string) => {
   if (tradeStore.tradeRequestItems[itemName]) {
     delete tradeStore.tradeRequestItems[itemName]
   } else {
@@ -104,7 +106,7 @@ const handleSend = async () => {
 
 // Summary helpers
 const offerSummary = computed(() => {
-  const lines = []
+  const lines: string[] = []
   if (tradeStore.tradeOfferPoke) lines.push(tradeStore.tradeOfferPoke.name)
   Object.entries(tradeStore.tradeOfferItems).forEach(([name, qty]) => lines.push(`${name} x${qty}`))
   if (offerMoney.value > 0) lines.push(`₽${offerMoney.value.toLocaleString()}`)
@@ -113,7 +115,7 @@ const offerSummary = computed(() => {
 
 const requestSummary = computed(() => {
   if (isGift.value) return '🎁 REGALO'
-  const lines = []
+  const lines: string[] = []
   if (tradeStore.tradeRequestPoke) lines.push(tradeStore.tradeRequestPoke.name)
   Object.entries(tradeStore.tradeRequestItems).forEach(([name, qty]) => lines.push(`${name} x${qty}`))
   if (requestMoney.value > 0) lines.push(`₽${requestMoney.value.toLocaleString()}`)

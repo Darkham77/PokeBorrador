@@ -1,12 +1,19 @@
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 
-const props = defineProps({
-  enemy: { type: Object, required: true },
-  rarity: { type: Number, default: 50 }, // 1-100 (lower is rarer/harder)
+interface Props {
+  enemy: any
+  rarity?: number // 1-100 (lower is rarer/harder)
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  rarity: 50
 })
 
-const emit = defineEmits(['success', 'fail'])
+const emit = defineEmits<{
+  (e: 'success'): void
+  (e: 'fail'): void
+}>()
 
 // Game Config (Adapted from Legacy)
 const totalNotes = Math.min(22, 5 + Math.floor(props.rarity / 7))
@@ -14,13 +21,21 @@ const speedBase = Math.max(380, 1100 - (props.rarity * 7.5))
 const hitWindow = Math.max(100, 190 - (props.rarity / 1.3))
 const spawnInterval = speedBase * 0.7
 
-const activeNotes = ref([])
+interface Note {
+  id: number
+  x: string
+  y: string
+  startTime: number
+  clicked: boolean
+}
+
+const activeNotes = ref<Note[]>([])
 const clickedNotesCount = ref(0)
 const spawnedNotesCount = ref(0)
 const gameActive = ref(true)
 const feedback = ref('')
 
-let gameTimeout = null
+let gameTimeout: any = null
 
 const spawnNext = () => {
   if (!gameActive.value || spawnedNotesCount.value >= totalNotes) return
@@ -33,7 +48,7 @@ const spawnNext = () => {
   const x = padding + Math.random() * (100 - padding * 2)
   const y = padding + Math.random() * (100 - padding * 2)
 
-  const note = {
+  const note: Note = {
     id: noteId,
     x: `${x}%`,
     y: `${y}%`,
@@ -53,7 +68,7 @@ const spawnNext = () => {
   gameTimeout = setTimeout(spawnNext, spawnInterval)
 }
 
-const handleNoteClick = (note) => {
+const handleNoteClick = (note: Note) => {
   if (note.clicked || !gameActive.value) return
 
   if (note.id !== clickedNotesCount.value + 1) {
@@ -80,16 +95,16 @@ const handleNoteClick = (note) => {
   }
 }
 
-const failGame = (msg) => {
+const failGame = (msg: string) => {
   if (!gameActive.value) return
   gameActive.value = false
   feedback.value = msg
   setTimeout(() => finishGame(false), 1000)
 }
 
-const finishGame = (success) => {
+const finishGame = (success: boolean) => {
   gameActive.value = false
-  clearTimeout(gameTimeout)
+  if (gameTimeout) clearTimeout(gameTimeout)
   if (success) {
     emit('success')
   } else {
@@ -102,7 +117,7 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
-  clearTimeout(gameTimeout)
+  if (gameTimeout) clearTimeout(gameTimeout)
 })
 </script>
 

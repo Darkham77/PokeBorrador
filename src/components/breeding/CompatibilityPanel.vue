@@ -1,10 +1,12 @@
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue'
 
-const props = defineProps({
-  compatibility: { type: Object, required: true },
-  compatText: { type: Object, required: true }
-})
+interface Props {
+  compatibility: any
+  compatText: Record<number, { label: string, color: string }>
+}
+
+const props = defineProps<Props>()
 
 const compatStyle = computed(() => props.compatText[props.compatibility.level] || props.compatText[0])
 </script>

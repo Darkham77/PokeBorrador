@@ -1,13 +1,15 @@
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue'
 
-const props = defineProps({
-  pokemon: { type: Object, required: true }
-})
+interface Props {
+  pokemon: any
+}
+
+const props = defineProps<Props>()
 
 const p = computed(() => props.pokemon)
 
-const labels = { 
+const labels: Record<string, string> = { 
   hp: 'HP', 
   atk: 'Ataque', 
   def: 'Defensa', 
@@ -16,7 +18,7 @@ const labels = {
   spe: 'Velocidad' 
 }
 
-const getIvColor = (val) => {
+const getIvColor = (val: number) => {
   if (val >= 28) return 'Rgba(107, 203, 119, 1)' // Green (Elite)
   if (val >= 15) return 'Rgba(255, 217, 61, 1)' // Yellow (Good)
   return 'Rgba(255, 59, 59, 1)' // Red (Poor)
@@ -59,20 +61,20 @@ const getIvColor = (val) => {
       </h3>
       <div class="iv-bars">
         <div
-          v-for="(val, stat) in p.ivs"
+          v-for="(val, stat) in (p.ivs as any)"
           :key="stat"
           class="iv-row"
         >
-          <span class="iv-label">{{ labels[stat] }}</span>
+          <span class="iv-label">{{ labels[stat as string] }}</span>
           <div class="iv-track">
             <div
               class="iv-fill"
-              :style="{ width: (val/31*100)+'%', background: getIvColor(val) }"
+              :style="{ width: (Number(val)/31*100)+'%', background: getIvColor(Number(val)) }"
             />
           </div>
           <span
             class="iv-val"
-            :style="{ color: getIvColor(val) }"
+            :style="{ color: getIvColor(Number(val)) }"
           >{{ val }}</span>
         </div>
       </div>

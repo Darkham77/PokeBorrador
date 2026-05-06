@@ -1,0 +1,150 @@
+<script setup>
+</script>
+
+<template>
+  <div class="game-view">
+    <div class="stars" />
+    <div class="game-container">
+      <div class="placeholder-hud">
+        HUD (Migrada a LegacyInterface)
+      </div>
+      
+      <main class="content-area">
+        <router-view v-slot="{ Component }">
+          <transition
+            name="fade"
+            mode="out-in"
+          >
+            <component :is="Component" />
+          </transition>
+        </router-view>
+      </main>
+
+      <nav class="bottom-nav">
+        <router-link
+          to="/"
+          class="nav-item"
+          active-class="active"
+        >
+          <span>🗺️</span>
+          <span>Mapa</span>
+        </router-link>
+        <router-link
+          to="/team"
+          class="nav-item"
+          active-class="active"
+        >
+          <span>🐾</span>
+          <span>Equipo</span>
+        </router-link>
+        <router-link
+          to="/pokedex"
+          class="nav-item"
+          active-class="active"
+        >
+          <span>📖</span>
+          <span>Pokedex</span>
+        </router-link>
+      </nav>
+    </div>
+  </div>
+</template>
+
+<style scoped>
+.game-view {
+  min-height: 100dvh;
+  background: var(--darker);
+  color: var(--white);
+  padding: 20px;
+}
+
+.game-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100dvh - 40px);
+}
+
+.content-area {
+  flex: 1;
+  padding-top: 100px; /* Space for the floating HUD */
+  padding-bottom: 90px; /* Space for the floating bottom nav */
+}
+
+@media (max-width: 768px) {
+  .content-area {
+    padding-top: 85px;
+  }
+}
+
+.bottom-nav {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: Rgba(0, 0, 0, 0.95);
+  -webkit-backdrop-filter: Blur(10px);
+  backdrop-filter: Blur(10px);
+  @include gpu-layer;
+  border: 1px solid Rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 8px 16px;
+  display: flex;
+  gap: 12px;
+  box-shadow: 0 10px 30px Rgba(0, 0, 0, 0.5);
+  z-index: var(--z-navigation);
+  transform: translateX(-50%) translateZ(0);
+}
+
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 16px;
+  border-radius: 12px;
+  text-decoration: none;
+  color: var(--gray);
+  font-size: 11px;
+  font-weight: bold;
+  transition: all 0.2s;
+}
+
+.nav-item span:first-child {
+  font-size: 18px;
+}
+
+.nav-item:hover {
+  background: Rgba(255, 255, 255, 0.05);
+  color: var(--white);
+}
+
+.nav-item.active {
+  background: Rgba(255, 184, 0, 0.1);
+  color: var(--yellow);
+}
+
+/* Transitions */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+@media (max-width: 768px) {
+  .game-view {
+    padding: 10px;
+  }
+  .bottom-nav {
+    width: 90%;
+    bottom: 10px;
+    justify-content: space-around;
+  }
+}
+</style>

@@ -1,11 +1,15 @@
-<script setup>
+<script setup lang="ts">
 import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
 
-defineProps({
+interface Props {
+  p: any
+}
 
-  p: { type: Object, required: true }
-})
-defineEmits(['click'])
+const props = defineProps<Props>()
+
+const emit = defineEmits<{
+  (e: 'click', event: MouseEvent): void
+}>()
 </script>
 
 <template>
@@ -38,7 +42,7 @@ defineEmits(['click'])
               { 'silhouette': !p.isCaught },
               p.aura ? `aura-${p.aura}-mini` : ''
             ]"
-            @error="e => e.target.style.display = 'none'"
+            @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
           >
         </PVSpriteFX>
       </template>

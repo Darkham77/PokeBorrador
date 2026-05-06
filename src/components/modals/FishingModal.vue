@@ -1,14 +1,24 @@
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 
-const props = defineProps({
-  pokemon: { type: Object, required: true },
-  rarity: { type: Number, default: 0 },
-  onWin: { type: Function, default: null },
-  onFail: { type: Function, default: null }
+interface Props {
+  pokemon: any
+  rarity?: number
+  onWin?: (() => void) | null
+  onFail?: (() => void) | null
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  rarity: 0,
+  onWin: null,
+  onFail: null
 })
 
-const emit = defineEmits(['win', 'fail', 'close'])
+const emit = defineEmits<{
+  (e: 'win'): void
+  (e: 'fail'): void
+  (e: 'close'): void
+}>()
 
 // Game configuration
 const totalNotes = Math.min(22, 5 + Math.floor(props.rarity / 7))
@@ -16,10 +26,19 @@ const speedBase = Math.max(380, 1100 - (props.rarity * 7.5))
 const hitWindow = Math.max(100, 190 - (props.rarity / 1.3))
 const spawnInterval = speedBase * 0.7
 
+interface FishingNote {
+  id: number
+  x: number
+  y: number
+  startTime: number
+  isHit: boolean
+  timeout: any
+}
+
 // State
 const spawnedNotesCount = ref(0)
 const clickedNotesCount = ref(0)
-const notes = ref([])
+const notes = ref<FishingNote[]>([])
 const gameActive = ref(true)
 const isFailed = ref(false)
 
@@ -31,7 +50,7 @@ const spawnNext = () => {
   const x = 15 + Math.random() * 70
   const y = 20 + Math.random() * 60
 
-  const note = {
+  const note: FishingNote = {
     id,
     x,
     y,
@@ -55,7 +74,7 @@ const spawnNext = () => {
   }
 }
 
-const handleNoteClick = (note) => {
+const handleNoteClick = (note: FishingNote) => {
   if (!gameActive.value || note.isHit) return
 
   const elapsed = Date.now() - note.startTime
@@ -99,7 +118,9 @@ onMounted(() => {
 
 onUnmounted(() => {
   gameActive.value = false
-  notes.value.forEach(n => clearTimeout(n.timeout))
+  notes.value.forEach(n => {
+    if (n.timeout) clearTimeout(n.timeout)
+  })
 })
 </script>
 

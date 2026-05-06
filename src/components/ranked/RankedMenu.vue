@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { useGameStore } from '@/stores/game';
 import { usePvPStore } from '@/stores/pvp';
@@ -8,10 +8,10 @@ import { useUIStore } from '@/stores/ui';
 import Leaderboard from './Leaderboard.vue';
 import RewardsTrack from './RewardsTrack.vue';
 
-const gameStore = useGameStore();
-const rankedStore = usePvPStore();
-const passivePvpStore = usePassivePvpStore();
-const uiStore = useUIStore();
+const gameStore = useGameStore() as any;
+const rankedStore = usePvPStore() as any;
+const passivePvpStore = usePassivePvpStore() as any;
+const uiStore = useUIStore() as any;
 const { validateTeam } = useRankedValidation();
 
 const isSearching = ref(false);
@@ -25,8 +25,8 @@ onMounted(() => {
 const currentTier = computed(() => rankedStore.currentTier(gameStore.state.eloRating));
 
 const startSearch = async () => {
-  const team = gameStore.state.team.filter(p => p.hp > 0 && !p.onMission);
-  const validation = validateTeam(team);
+  const team = (gameStore.state.team as any[]).filter(p => p.hp > 0 && !p.onMission);
+  const validation = validateTeam(team) as { ok: boolean, reason: string };
   
   if (!validation.ok) {
     uiStore.notify(validation.reason, '⚠️');
@@ -37,7 +37,7 @@ const startSearch = async () => {
   uiStore.notify('Buscando rival en el ranking...', '⚔️');
   
   // En un sistema real, aquí llamaríamos a un RPC de Supabase para entrar en la cola
-  // window.isRankedSearching = true; // Compatibilidad con legacy
+  // (window as any).isRankedSearching = true; // Compatibilidad con legacy
 };
 
 const cancelSearch = () => {

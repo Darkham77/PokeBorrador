@@ -1,10 +1,10 @@
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useBoxStore } from '@/stores/box'
 
-const gameStore = useGameStore()
-const boxStore = useBoxStore()
+const gameStore = useGameStore() as any
+const boxStore = useBoxStore() as any
 
 const playerClass = computed(() => gameStore.state.playerClass)
 

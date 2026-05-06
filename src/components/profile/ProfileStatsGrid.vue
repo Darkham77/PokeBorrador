@@ -1,13 +1,23 @@
-<script setup>
-defineProps({
-  stats: { type: Object, required: true },
-  level: { type: Number, required: true },
-  badges: { type: Number, required: true },
-  money: { type: Number, default: 0 },
-  battleCoins: { type: Number, default: 0 }
+<script setup lang="ts">
+interface Stats {
+  wins?: number
+  trainersDefeated?: number
+}
+
+interface Props {
+  stats: Stats
+  level: number
+  badges: number
+  money?: number
+  battleCoins?: number
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  money: 0,
+  battleCoins: 0
 })
 
-const formatNum = (num) => (num || 0).toLocaleString().replace(/,/g, '.')
+const formatNum = (num: number) => (num || 0).toLocaleString().replace(/,/g, '.')
 </script>
 
 <template>

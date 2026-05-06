@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { computed, ref } from 'vue'
 import PokemonDisplayCard from '@/components/pokemon/PokemonDisplayCard.vue'
 
@@ -13,7 +13,7 @@ const props = defineProps({
 
 const emit = defineEmits(['select', 'open-detail', 'open-item', 'send-to-box', 'drag-start', 'drag-over', 'drop-pokemon', 'drag-end'])
 
-const touchTimer = ref(null)
+const touchTimer = ref<any>(null)
 const isTouchDragging = ref(false)
 const touchStartX = ref(0)
 const touchStartY = ref(0)
@@ -21,13 +21,13 @@ const touchStartY = ref(0)
 const isEmpty = computed(() => !props.pokemon)
 const isDragOver = ref(false)
 
-function onDragStart(e) {
+function onDragStart(e: DragEvent) {
   if (isEmpty.value) return
-  e.dataTransfer.effectAllowed = 'move'
+  if (e.dataTransfer) e.dataTransfer.effectAllowed = 'move'
   emit('drag-start', props.index)
 }
 
-function onDragOver(e) {
+function onDragOver(e: DragEvent) {
   e.preventDefault()
   if (props.isDraggingAny) {
     isDragOver.value = true
@@ -38,7 +38,7 @@ function onDragLeave() {
   isDragOver.value = false
 }
 
-function onDrop(e) {
+function onDrop(e: DragEvent) {
   e.preventDefault()
   isDragOver.value = false
   emit('drop-pokemon', props.index)
@@ -46,7 +46,7 @@ function onDrop(e) {
 
 // ── TOUCH HANDLERS (MOBILE LONG-PRESS) ───────────────────────────────────────
 
-function handleTouchStart(e) {
+function handleTouchStart(e: TouchEvent) {
   if (isEmpty.value) return
   const touch = e.touches[0]
   touchStartX.value = touch.clientX
@@ -55,26 +55,26 @@ function handleTouchStart(e) {
   
   touchTimer.value = setTimeout(() => {
     isTouchDragging.value = true
-    if (e.currentTarget) e.currentTarget.style.touchAction = 'none'
+    if (e.currentTarget) (e.currentTarget as HTMLElement).style.touchAction = 'none'
     emit('drag-start', props.index)
     if ('vibrate' in navigator) navigator.vibrate(50)
   }, 800) // Long press threshold
 }
 
-function handleTouchMove(e) {
+function handleTouchMove(e: TouchEvent) {
   if (isTouchDragging.value) {
     e.preventDefault()
     
     // Temporarily disable pointer events to detect what's UNDER the finger
-    const el = e.currentTarget
-    el.style.pointerEvents = 'none'
+    const el = e.currentTarget as HTMLElement
+    if (el) el.style.pointerEvents = 'none'
     
     const touch = e.touches[0]
     const target = document.elementFromPoint(touch.clientX, touch.clientY)
-    const slot = target?.closest('.team-slot')
+    const slot = target?.closest('.team-slot') as HTMLElement | null
     
     // Restore pointer events
-    el.style.pointerEvents = 'auto'
+    if (el) el.style.pointerEvents = 'auto'
 
     if (slot && slot.dataset.index !== undefined) {
       const targetIndex = parseInt(slot.dataset.index)
@@ -88,18 +88,18 @@ function handleTouchMove(e) {
     const deltaX = Math.abs(touch.clientX - touchStartX.value)
     const deltaY = Math.abs(touch.clientY - touchStartY.value)
     if (deltaX > 10 || deltaY > 10) {
-      clearTimeout(touchTimer.value)
+      if (touchTimer.value) clearTimeout(touchTimer.value)
     }
   }
 }
 
-function handleTouchEnd(e) {
-  clearTimeout(touchTimer.value)
+function handleTouchEnd(e: TouchEvent) {
+  if (touchTimer.value) clearTimeout(touchTimer.value)
   if (isTouchDragging.value) {
-    if (e.currentTarget) e.currentTarget.style.touchAction = ''
+    if (e.currentTarget) (e.currentTarget as HTMLElement).style.touchAction = ''
     const touch = e.changedTouches[0]
     const target = document.elementFromPoint(touch.clientX, touch.clientY)
-    const slot = target?.closest('.team-slot')
+    const slot = target?.closest('.team-slot') as HTMLElement | null
     
     if (slot && slot.dataset.index !== undefined) {
       const targetIndex = parseInt(slot.dataset.index)

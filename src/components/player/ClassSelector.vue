@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue';
 import { useGameStore } from '@/stores/game';
 import { useUIStore } from '@/stores/ui';
@@ -6,11 +6,11 @@ import { usePlayerClassStore } from '@/stores/playerClass';
 import { PLAYER_CLASSES } from '@/data/playerClasses';
 import PlayerAvatar from './PlayerAvatar.vue';
 
-const gameStore = useGameStore();
-const uiStore = useUIStore();
-const classStore = usePlayerClassStore();
+const gameStore = useGameStore() as any;
+const uiStore = useUIStore() as any;
+const classStore = usePlayerClassStore() as any;
 
-const classes = computed(() => Object.values(PLAYER_CLASSES));
+const classes = computed<any[]>(() => Object.values(PLAYER_CLASSES));
 const currentClassId = computed(() => gameStore.state.playerClass);
 const isChange = computed(() => !!currentClassId.value);
 const COST = 10000;
@@ -19,7 +19,7 @@ const close = () => {
   uiStore.isClassSelectionOpen = false;
 };
 
-const select = (id) => {
+const select = (id: string) => {
   classStore.selectClass(id);
 };
 </script>

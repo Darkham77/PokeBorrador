@@ -1,9 +1,7 @@
-// [PureVue-Ignore-Length] 
-<script setup>
+<script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useBattleStore } from '@/stores/battle'
 import { useGameStore } from '@/stores/game'
-import { useUIStore } from '@/stores/ui'
 import { useAudioStore } from '@/stores/audio'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import { PDEX_ORDER, GEN2_PDEX_ORDER } from '@/data/pokedex'
@@ -12,14 +10,13 @@ import DebugAudioAnimTab from '@/components/admin/debug/DebugAudioAnimTab.vue'
 
 const ALL_PDEX = [...PDEX_ORDER, ...GEN2_PDEX_ORDER]
 
-const battleStore = useBattleStore()
-const gameStore = useGameStore()
-const uiStore = useUIStore()
-const audio = useAudioStore()
+const battleStore = useBattleStore() as any
+const gameStore = useGameStore() as any
+const audio = useAudioStore() as any
 const isOpen = ref(false)
 const isEffectsOpen = ref(false)
 
-const isDebug = computed(() => typeof window !== 'undefined' && !!window.__VITE_DEBUG__)
+const isDebug = computed(() => typeof window !== 'undefined' && !!(window as any).__VITE_DEBUG__)
 
 const defeatEnemy = async () => {
   const e = battleStore.enemy
@@ -104,14 +101,14 @@ const toggleSearchMode = async () => {
     const { useEventStore } = await import('@/stores/events')
     
     const encounter = await generateEncounter(battleStore.state.locationId, gameStore.state, {
-      activeEvents: useMapStore().activeEvents,
-      dominanceData: useMapStore().mapWinners,
-      shinyMultiplier: useEventStore().globalMultipliers?.shiny || 1,
+      activeEvents: (useMapStore() as any).activeEvents,
+      dominanceData: (useMapStore() as any).mapWinners,
+      shinyMultiplier: (useEventStore() as any).globalMultipliers?.shiny || 1,
       forceEncounter: true
     })
     
     if (encounter && encounter.type === 'wild') {
-      battleStore.upcomingPokemon = { ...encounter.pokemon }
+      battleStore.upcomingPokemon = { ...(encounter as any).pokemon }
     }
   }
 }
@@ -142,7 +139,7 @@ const decrementSwap = (side = 'enemy') => {
   updateVisualSwap(side)
 }
 
-const toggleStatus = (side, type) => {
+const toggleStatus = (side: string, type: string) => {
   if (side === 'player') {
     const p = battleStore.state?.player
     if (!p) return

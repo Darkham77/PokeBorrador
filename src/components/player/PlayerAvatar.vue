@@ -1,25 +1,22 @@
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue';
 import { useGameStore } from '@/stores/game';
 import { PLAYER_CLASSES } from '@/data/playerClasses';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 
-const props = defineProps({
-  classId: {
-    type: String,
-    default: null
-  },
-  size: {
-    type: Number,
-    default: 40
-  },
-  customBorder: {
-    type: String,
-    default: null
-  }
-});
+interface Props {
+  classId?: string | null
+  size?: number
+  customBorder?: string | null
+}
 
-const gameStore = useGameStore();
+const props = withDefaults(defineProps<Props>(), {
+  classId: null,
+  size: 40,
+  customBorder: null
+})
+
+const gameStore = useGameStore() as any;
 
 const activeClassId = computed(() => props.classId || gameStore.state.playerClass);
 const cls = computed(() => activeClassId.value ? PLAYER_CLASSES[activeClassId.value] : null);

@@ -1,7 +1,7 @@
-<script setup>
+<script setup lang="ts">
 import { useAuthStore } from '@/stores/auth'
 
-const authStore = useAuthStore()
+const authStore = useAuthStore() as any
 </script>
 
 <template>

@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { useVirtualPosition } from '@/composables/useVirtualPosition'
 
 /**
@@ -6,13 +6,15 @@ import { useVirtualPosition } from '@/composables/useVirtualPosition'
  * Standard wrapper for any element that exists within the 3000x3000px virtual world.
  * Automatically handles coordinate mapping and scaling.
  */
-const props = defineProps({
-  x: { type: [Number, String], required: true },
-  y: { type: [Number, String], required: true },
-  w: { type: [Number, String], default: undefined },
-  h: { type: [Number, String], default: undefined },
-  zIndex: { type: [Number, String], default: undefined }
-})
+interface Props {
+  x: number | string
+  y: number | string
+  w?: number | string
+  h?: number | string
+  zIndex?: number | string
+}
+
+const props = defineProps<Props>()
 
 const { styles } = useVirtualPosition(
   () => props.x,

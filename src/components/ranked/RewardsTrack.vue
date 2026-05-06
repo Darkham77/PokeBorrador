@@ -1,12 +1,12 @@
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue';
 import { useGameStore } from '@/stores/game';
 import { usePvPStore, RANKED_REWARD_MILESTONES, RANKED_REWARD_TIER_MARKS } from '@/stores/pvp';
 import { useUIStore } from '@/stores/ui';
 
-const gameStore = useGameStore();
-const rankedStore = usePvPStore();
-const uiStore = useUIStore();
+const gameStore = useGameStore() as any;
+const rankedStore = usePvPStore() as any;
+const uiStore = useUIStore() as any;
 
 const MIN_ELO = 1000;
 const MAX_ELO = 3400;
@@ -24,20 +24,20 @@ const progressPct = computed(() => {
   return ((maxElo.value - MIN_ELO) / span) * 100;
 });
 
-const getProgressPos = (elo) => {
+const getProgressPos = (elo: number) => {
   const span = MAX_ELO - MIN_ELO;
   return ((elo - MIN_ELO) / span) * 100;
 };
 
-const isClaimed = (id) => {
+const isClaimed = (id: string | number) => {
   return gameStore.state.rankedRewardsClaimed?.includes(id);
 };
 
-const canClaim = (milestone) => {
+const canClaim = (milestone: any) => {
   return maxElo.value >= milestone.elo && !isClaimed(milestone.id);
 };
 
-const claimReward = async (milestone) => {
+const claimReward = async (milestone: any) => {
   if (!canClaim(milestone)) return;
   
   // En un sistema real, esto llamaría a un RPC de Supabase
@@ -49,7 +49,7 @@ const claimReward = async (milestone) => {
   gameStore.state.rankedRewardsClaimed.push(milestone.id);
   
   // Dar ítems
-  Object.entries(milestone.rewards).forEach(([item, qty]) => {
+  Object.entries(milestone.rewards as Record<string, number>).forEach(([item, qty]) => {
     gameStore.state.inventory[item] = (gameStore.state.inventory[item] || 0) + qty;
   });
 

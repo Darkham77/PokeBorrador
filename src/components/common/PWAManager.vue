@@ -13,7 +13,7 @@
           <img
             src="/assets/fondo/logo 3.webp"
             alt="Poké Vicio Logo"
-            @error="e => e.target.style.display = 'none'"
+            @error="e => { (e.target as HTMLImageElement).style.display = 'none' }"
           >
         </div>
         <p class="pwa-description">
@@ -85,7 +85,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted, watch } from 'vue'
 import { usePWA } from '@/composables/usePWA'
 import { useAuthStore } from '@/stores/auth'
@@ -93,10 +93,10 @@ import { useAudioStore } from '@/stores/audio'
 import { useGameStore } from '@/stores/game'
 import BaseModal from './BaseModal.vue'
 
-const authStore = useAuthStore()
-const audioStore = useAudioStore()
-const gameStore = useGameStore()
-const { canInstall, installApp, needRefresh, updateServiceWorker } = usePWA()
+const authStore = useAuthStore() as any
+const audioStore = useAudioStore() as any
+const gameStore = useGameStore() as any
+const { canInstall, installApp, needRefresh, updateServiceWorker } = usePWA() as any
 
 const showInstallModal = ref(false)
 const showPermissionsModal = ref(false)

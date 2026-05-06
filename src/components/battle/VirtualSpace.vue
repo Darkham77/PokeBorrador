@@ -1,11 +1,20 @@
-<script setup>
+<script setup lang="ts">
 import { getCombatantPosition, WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator'
-const { ENTITY_SIZE_PLAYER, ENTITY_SIZE_ENEMY, SAFE_ZONE_WIDTH, SAFE_ZONE_HEIGHT, SAFE_ZONE_X, SAFE_ZONE_Y } = WORLD_CONSTANTS
 
-defineProps({
-  showGuides: { type: Boolean, default: false },
-  worldStyles: { type: Object, required: true }
+interface Props {
+  showGuides?: boolean
+  worldStyles: any
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  showGuides: false
 })
+
+const { 
+  ENTITY_SIZE_PLAYER, ENTITY_SIZE_ENEMY, 
+  SAFE_ZONE_WIDTH, SAFE_ZONE_HEIGHT, 
+  SAFE_ZONE_X, SAFE_ZONE_Y 
+} = WORLD_CONSTANTS as any
 
 const p1Anchor = getCombatantPosition('player')
 const p2Anchor = getCombatantPosition('enemy')

@@ -1,21 +1,29 @@
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
-const props = defineProps({
-  slotId: { type: String, required: true },
-  pokemon: { type: Object, default: null },
-  item: { type: String, default: null }
+interface Props {
+  slotId: string
+  pokemon?: any | null
+  item?: string | null
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  pokemon: null,
+  item: null
 })
 
-const emit = defineEmits(['deposit', 'withdraw'])
+const emit = defineEmits<{
+  (e: 'deposit'): void
+  (e: 'withdraw'): void
+}>()
 
 const genderIcon = computed(() => {
   if (!props.pokemon?.gender) return ''
   return props.pokemon.gender === 'M' ? '♂' : '♀'
 })
 
-const getSprite = (id, shiny) => {
+const getSprite = (id: string | number, shiny: boolean) => {
   return getAssetUrl(ASSET_TYPES.POKEMON, id, { shiny })
 }
 </script>
@@ -53,7 +61,7 @@ const getSprite = (id, shiny) => {
           <img
             :src="getSprite(pokemon.id, pokemon.isShiny)"
             class="pixel-sprite"
-            @error="e => e.target.style.display = 'none'"
+            @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
           >
         </div>
         <div class="poke-info">

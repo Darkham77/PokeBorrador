@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /**
  * FactionChoiceModal
  * Standardized modal for faction selection.
@@ -8,16 +8,23 @@ import { usePlayerClassStore } from '@/stores/playerClass'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import BaseModal from '@/components/common/BaseModal.vue'
 
-defineProps({
-  show: { type: Boolean, default: false }
+interface Props {
+  show?: boolean
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  show: false
 })
 
-const emit = defineEmits(['close'])
-const classStore = usePlayerClassStore()
+const emit = defineEmits<{
+  (e: 'close'): void
+}>()
+
+const classStore = usePlayerClassStore() as any
 
 const isProcessing = ref(false)
 
-const chooseFaction = async (faction) => {
+const chooseFaction = async (faction: string) => {
   if (isProcessing.value) return
   
   isProcessing.value = true
@@ -29,6 +36,10 @@ const chooseFaction = async (faction) => {
   } finally {
     isProcessing.value = false
   }
+}
+
+const handleImgError = (e: Event) => {
+  (e.target as HTMLImageElement).style.display = 'none'
 }
 
 // Expose to template
@@ -69,7 +80,7 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
             <img
               :src="getAssetUrlLocal(ASSET_TYPES_LOCAL.FACTION, 'union')"
               class="faction-icon-large"
-              @error="e => e.target.style.display = 'none'"
+              @error="handleImgError"
             >
           </div>
           <div class="faction-info">
@@ -87,7 +98,7 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
             <img
               :src="getAssetUrlLocal(ASSET_TYPES_LOCAL.FACTION, 'poder')"
               class="faction-icon-large"
-              @error="e => e.target.style.display = 'none'"
+              @error="handleImgError"
             >
           </div>
           <div class="faction-info">

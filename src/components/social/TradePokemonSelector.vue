@@ -1,22 +1,26 @@
-<script setup>
+<script setup lang="ts">
 import { ref, computed } from 'vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
-const props = defineProps({
-  show: Boolean,
-  side: { type: String, default: 'offer' }, 
-  title: { type: String, default: 'SELECCIONAR' },
-  pokemonList: {
-    type: Array,
-    default: () => []
-  },
-  lockedUids: {
-    type: Set,
-    default: () => new Set()
-  }
+interface Props {
+  show: boolean
+  side?: string
+  title?: string
+  pokemonList?: any[]
+  lockedUids?: Set<string>
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  side: 'offer',
+  title: 'SELECCIONAR',
+  pokemonList: () => [],
+  lockedUids: () => new Set()
 })
 
-const emit = defineEmits(['close', 'select'])
+const emit = defineEmits<{
+  (e: 'close'): void
+  (e: 'select', poke: any): void
+}>()
 
 const filters = ref({
   search: '',
@@ -27,11 +31,11 @@ const filters = ref({
 })
 
 const filteredList = computed(() => {
-  return props.pokemonList.filter(p => {
+  return (props.pokemonList || []).filter(p => {
     // Name/ID filter
     if (filters.value.search) {
       const q = filters.value.search.toLowerCase()
-      if (!p.name.toLowerCase().includes(q) && !p.id.toLowerCase().includes(q)) return false
+      if (!p.name?.toLowerCase().includes(q) && !p.id?.toLowerCase().includes(q)) return false
     }
     
     // Tag filters
@@ -48,18 +52,22 @@ const filteredList = computed(() => {
   })
 })
 
-const getIVTotal = (ivs) => {
-  return Object.values(ivs || {}).reduce((s, v) => s + (v || 0), 0)
+const getIVTotal = (ivs: any) => {
+  return Object.values(ivs || {}).reduce((s: number, v: any) => s + (Number(v) || 0), 0)
 }
 
-const getIVColor = (val) => {
+const getIVColor = (val: number) => {
   if (val >= 28) return 'Rgba(74, 222, 128, 1)'
   if (val >= 15) return 'Rgba(251, 191, 36, 1)'
   return 'Rgba(248, 113, 113, 1)'
 }
 
-const select = (poke) => {
-  if (props.lockedUids.has(poke.uid)) return
+const handleImgError = (e: Event) => {
+  (e.target as HTMLImageElement).style.display = 'none'
+}
+
+const select = (poke: any) => {
+  if (props.lockedUids?.has(poke.uid)) return
   emit('select', poke)
 }
 </script>
@@ -162,7 +170,7 @@ const select = (poke) => {
                 <img
                   :src="getAssetUrl(ASSET_TYPES.POKEMON, poke.id, { isShiny: poke.isShiny })"
                   :class="{ shiny: poke.isShiny }"
-                  @error="e => e.target.style.display = 'none'"
+                  @error="handleImgError"
                 >
                 <span
                   v-if="poke.isShiny"

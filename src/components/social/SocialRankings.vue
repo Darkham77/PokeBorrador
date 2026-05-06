@@ -1,16 +1,16 @@
-<script setup>
+<script setup lang="ts">
 import { onMounted } from 'vue'
 import { useSocialStore } from '@/stores/social.js'
 import TrainerAvatar from '@/components/TrainerAvatar.vue'
 
-const socialStore = useSocialStore()
+const socialStore = useSocialStore() as any
 
 onMounted(() => {
   socialStore.fetchLeaderboard()
 })
 
-const getFactionColor = (faction) => {
-  const colors = {
+const getFactionColor = (faction: string) => {
+  const colors: Record<string, string> = {
     'magma': 'Rgba(239, 68, 68, 1)',
     'aqua': 'Rgba(59, 130, 246, 1)',
     'galactic': 'Rgba(167, 139, 250, 1)'
@@ -62,13 +62,13 @@ const getFactionColor = (faction) => {
 
       <template v-else>
         <div
-          v-for="(player, index) in socialStore.leaderboard"
+          v-for="(player, index) in (socialStore.leaderboard as any[])"
           :key="player.id"
           class="rank-card"
-          :class="`rank-${index + 1}`"
+          :class="`rank-${Number(index) + 1}`"
         >
           <div class="rank-number">
-            {{ index + 1 }}
+            {{ Number(index) + 1 }}
           </div>
           
           <div class="rank-avatar">

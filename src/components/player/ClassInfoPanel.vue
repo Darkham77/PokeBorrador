@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue';
 import { useGameStore } from '@/stores/game';
 import { useUIStore } from '@/stores/ui';
@@ -6,11 +6,11 @@ import { PLAYER_CLASSES } from '@/data/playerClasses';
 import PlayerAvatar from './PlayerAvatar.vue';
 import PVTooltip from '@/components/common/PVTooltip.vue';
 
-const gameStore = useGameStore();
-const uiStore = useUIStore();
+const gameStore = useGameStore() as any;
+const uiStore = useUIStore() as any;
 
 const classId = computed(() => gameStore.state.playerClass);
-const cls = computed(() => classId.value ? PLAYER_CLASSES[classId.value] : null);
+const cls = computed<any>(() => classId.value ? PLAYER_CLASSES[classId.value as keyof typeof PLAYER_CLASSES] : null);
 const trainerLevel = computed(() => gameStore.state.trainerLevel || 1);
 
 const close = () => {
@@ -66,7 +66,7 @@ const rankTitle = computed(() => {
                 :src="cls.sprite"
                 :alt="cls.name"
                 class="class-sprite"
-                @error="e => e.target.style.display = 'none'"
+                @error="e => { (e.target as HTMLImageElement).style.display = 'none' }"
               >
               <div class="avatar-floating">
                 <PlayerAvatar :size="60" />

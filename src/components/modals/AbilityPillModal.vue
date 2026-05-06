@@ -1,20 +1,20 @@
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue'
 import { useUIStore } from '@/stores/ui'
 import { useGameStore } from '@/stores/game'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import BaseModal from '@/components/common/BaseModal.vue'
 
-const uiStore = useUIStore()
-const gameStore = useGameStore()
+const uiStore = useUIStore() as any
+const gameStore = useGameStore() as any
 
 const abilityPokemon = computed(() => uiStore.activePokemonForAbility)
-const availableAbilities = computed(() => {
+const availableAbilities = computed<string[]>(() => {
   if (!abilityPokemon.value) return []
   return pokemonDataProvider.getSpeciesAbilities(abilityPokemon.value.id)
 })
 
-const handleApplyAbility = (ability) => {
+const handleApplyAbility = (ability: string) => {
   if (!abilityPokemon.value) return
   if (abilityPokemon.value.ability === ability) {
     uiStore.notify('Ya tiene esa habilidad.', '⚠️')

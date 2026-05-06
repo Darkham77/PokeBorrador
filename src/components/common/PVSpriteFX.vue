@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /**
  * PVSpriteFX.vue
  * Componente centralizado para efectos visuales en sprites de Pokémon.
@@ -105,7 +105,7 @@ const particles = computed(() => {
   if (!statusEmoji.value) return []
   
   // Incluimos pokeId para re-randomizar si cambia el bicho aunque mantenga el estado
-  const _id = props.pokeId 
+  if (props.pokeId) {}
   
   return Array.from({ length: 3 }).map((_, i) => ({
     id: i,

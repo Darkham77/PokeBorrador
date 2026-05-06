@@ -1,10 +1,10 @@
-<script setup>
+<script setup lang="ts">
 import { reactive, onMounted } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 
-const gameStore = useGameStore()
-const uiStore = useUIStore()
+const gameStore = useGameStore() as any
+const uiStore = useUIStore() as any
 
 const DEFAULT_RANKED_RULES = {
   seasonName: 'TEMPORADA ACTUAL',
@@ -41,8 +41,8 @@ const loadRankedRules = async () => {
 
 const saveRankedRules = async () => {
   try {
-    await window.__VITE_DEBUG__.saveRankedRules(rankedRules)
-  } catch (e) {
+    await (window as any).__VITE_DEBUG__.saveRankedRules(rankedRules)
+  } catch (e: any) {
     uiStore.notify('Error: ' + e.message, '❌')
   }
 }
@@ -51,8 +51,8 @@ const closeRankedSeason = async () => {
   if (!confirm(`¿Estás seguro de cerrar la temporada "${rankedRules.seasonName}"?\nSe entregarán premios al Top 50 automáticamente.`)) return
   
   try {
-    await window.__VITE_DEBUG__.closeRankedSeason(rankedRules.seasonName)
-  } catch (e) {
+    await (window as any).__VITE_DEBUG__.closeRankedSeason(rankedRules.seasonName)
+  } catch (e: any) {
     uiStore.notify('Error RPC: ' + e.message, '❌')
   }
 }

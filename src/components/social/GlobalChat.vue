@@ -1,27 +1,25 @@
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted, nextTick, computed, watch } from 'vue';
 import { useDocumentListener } from '@/composables/useWindowListener';
 import { useChatStore } from '@/stores/chat';
-import { useAuthStore } from '@/stores/auth';
 import { useGameStore } from '@/stores/game';
 import { useUIStore } from '@/stores/ui';
 import TrainerAvatar from '@/components/TrainerAvatar.vue';
 import BaseModal from '@/components/common/BaseModal.vue';
 
-const chatStore = useChatStore();
-const _authStore = useAuthStore();
-const gameStore = useGameStore();
-const uiStore = useUIStore();
+const chatStore = useChatStore() as any;
+const gameStore = useGameStore() as any;
+const uiStore = useUIStore() as any;
 
 const isOpen = computed({
   get: () => uiStore.isChatOpen,
-  set: (val) => { uiStore.isChatOpen = val }
+  set: (val: boolean) => { uiStore.isChatOpen = val }
 });
 const newMessage = ref('');
-const messagesContainer = ref(null);
-const inputField = ref(null);
-const chatPanelRef = ref(null);
-const chatToggleRef = ref(null);
+const messagesContainer = ref<HTMLDivElement | null>(null);
+const inputField = ref<HTMLInputElement | null>(null);
+const chatPanelRef = ref<HTMLElement | null>(null);
+const chatToggleRef = ref<HTMLButtonElement | null>(null);
 
 const MIN_LEVEL = 10;
 const MAX_CHARS = 100;
@@ -53,7 +51,7 @@ function scrollToBottom() {
   }
 }
 
-function formatTime(iso) {
+function formatTime(iso: string | Date) {
   if (!iso) return '';
   const d = new Date(iso);
   return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -66,12 +64,14 @@ watch(() => chatStore.globalMessages.length, () => {
   }
 });
 
-function handleOutsideClick(e) {
+function handleOutsideClick(e: Event) {
   if (!isOpen.value || !chatPanelRef.value) return;
   
+  const target = e.target as Node;
+  
   // Check if click is outside the panel and the toggle button
-  const isInsidePanel = chatPanelRef.value.contains(e.target);
-  const isToggleButton = chatToggleRef.value?.contains(e.target);
+  const isInsidePanel = chatPanelRef.value.contains(target);
+  const isToggleButton = chatToggleRef.value?.contains(target);
   
   if (!isInsidePanel && !isToggleButton) {
     isOpen.value = false;

@@ -1,27 +1,36 @@
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import { calculateTotalPower } from '@/logic/pokemonUtils'
 
-const props = defineProps({
-  pokemon: { type: Object, required: true }
-})
+interface Props {
+  pokemon: any
+}
 
-const emit = defineEmits(['close', 'toggle-tag'])
+const props = defineProps<Props>()
+
+const emit = defineEmits<{
+  (e: 'close'): void
+  (e: 'toggle-tag', tag: string): void
+}>()
 
 const p = computed(() => props.pokemon)
 
-const getSprite = (id, isShiny) => {
+const getSprite = (id: string | number, isShiny: boolean) => {
   return getAssetUrl(ASSET_TYPES.POKEMON, id, { isShiny })
 }
 
 const totalPower = computed(() => calculateTotalPower(p.value))
 const totalIvs = computed(() => {
   const ivs = p.value.ivs || {}
-  return Object.values(ivs).reduce((s, v) => s + (v || 0), 0)
+  return Object.values(ivs).reduce((s: number, v: any) => s + (Number(v) || 0), 0)
 })
 const hasIvs = computed(() => Object.keys(p.value.ivs || {}).length > 0)
+
+const handleImgError = (e: Event) => {
+  (e.target as HTMLImageElement).style.display = 'none'
+}
 </script>
 
 <template>
@@ -35,7 +44,7 @@ const hasIvs = computed(() => Object.keys(p.value.ivs || {}).length > 0)
           :src="getSprite(p.id, p.isShiny)"
           :alt="p.name"
           class="main-sprite"
-          @error="e => e.target.style.display = 'none'"
+          @error="handleImgError"
         >
         <span
           v-if="p.isShiny"

@@ -1,13 +1,19 @@
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue'
 import BaseModal from '@/components/common/BaseModal.vue'
 
-const props = defineProps({
-  show: Boolean,
-  event: { type: Object, required: true }
+interface Props {
+  show?: boolean
+  event: any
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  show: false
 })
 
-const emit = defineEmits(['close'])
+const emit = defineEmits<{
+  (e: 'close'): void
+}>()
 
 const cfg = computed(() => {
   if (typeof props.event.config === 'string') {
@@ -23,7 +29,7 @@ const sched = computed(() => {
   return props.event.schedule || {}
 })
 
-const bonusMap = {
+const bonusMap: Record<string, { label: string, color: string }> = {
   expMult:      { label: '⚡ EXP', color: 'Rgba(167, 139, 250, 1)' },
   moneyMult:    { label: '💰 Dinero', color: 'Rgba(251, 191, 36, 1)' },
   bcMult:       { label: '🪙 Battle Coins', color: 'Rgba(96, 165, 250, 1)' },
@@ -50,7 +56,7 @@ const prizes = computed(() => {
   return cfg.value.prizes
 })
 
-const getPrizeDesc = (p) => {
+const getPrizeDesc = (p: any) => {
   if (!p) return null
   if (p.type === 'money') return `₽${(p.amount || 0).toLocaleString()}`
   if (p.type === 'bc') return `${(p.amount || 0).toLocaleString()} BC`
@@ -64,7 +70,7 @@ const getPrizeDesc = (p) => {
 const metricText = computed(() => {
   if (cfg.value.hasCompetition === false) return null
   const sortBy = cfg.value.sortBy || 'data.total_ivs'
-  const labels = {
+  const labels: Record<string, string> = {
     'data.total_ivs': '🧬 Mayor cantidad de IVs totales',
     'data.level': '📈 Mayor Nivel',
     'data.isShiny': '✨ Criterio Shiny',
@@ -76,7 +82,7 @@ const scheduleText = computed(() => {
   if (props.event.manual) return '🟢 Evento activo ahora mismo'
   if (sched.value.type === 'weekly' && sched.value.days) {
     const dayNames = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb']
-    const days = sched.value.days.map(d => dayNames[d]).join(', ')
+    const days = sched.value.days.map((d: number) => dayNames[d]).join(', ')
     const hours = (sched.value.startHour !== undefined && sched.value.endHour !== undefined)
       ? ` · ${sched.value.startHour}:00 – ${sched.value.endHour}:00 hs (ARG)` : ''
     return `${days}${hours}`

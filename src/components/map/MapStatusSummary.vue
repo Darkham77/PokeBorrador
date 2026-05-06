@@ -1,21 +1,37 @@
 // [PureVue-Ignore-Length]
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
-defineProps({
-  missionsRemaining: { type: Number, default: 0 },
-  missionSprites: { type: Array, default: () => [] },
-  gymRematches: { type: Number, default: 0 },
-  gymSprites: { type: Array, default: () => [] },
-  eggCount: { type: Number, default: 0 },
-  rivalEventActive: { type: Boolean, default: true },
-  rivalEventText: { type: String, default: 'Doble chance de encuentro con El Rival durante todo el día' },
-  rivalEventIcon: { type: String, default: '⚡' },
-  isReady: { type: Boolean, default: false }
+interface Props {
+  missionsRemaining?: number
+  missionSprites?: any[]
+  gymRematches?: number
+  gymSprites?: any[]
+  eggCount?: number
+  rivalEventActive?: boolean
+  rivalEventText?: string
+  rivalEventIcon?: string
+  isReady?: boolean
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  missionsRemaining: 0,
+  missionSprites: () => [],
+  gymRematches: 0,
+  gymSprites: () => [],
+  eggCount: 0,
+  rivalEventActive: true,
+  rivalEventText: 'Doble chance de encuentro con El Rival durante todo el día',
+  rivalEventIcon: '⚡',
+  isReady: false
 })
 
-const emit = defineEmits(['openTab', 'openCenter', 'openEvent'])
+const emit = defineEmits<{
+  (e: 'openTab', tab: string): void
+  (e: 'openCenter'): void
+  (e: 'openEvent'): void
+}>()
 
 const bannerUrl = computed(() => {
   return getAssetUrl(ASSET_TYPES.BANNER, 'pokecenter_banner')
@@ -110,7 +126,7 @@ const bannerStyle = computed(() => ({
                   <img
                     :src="getAssetUrl(ASSET_TYPES.TRAINER, spriteId)"
                     class="pixelated"
-                    @error="$event.target.style.display = 'none'; $event.target.nextSibling.style.display = 'flex'"
+                    @error="(e: Event) => { (e.target as HTMLImageElement).style.display = 'none'; ((e.target as HTMLImageElement).nextSibling as HTMLElement).style.display = 'flex' }"
                   >
                   <div
                     class="sprite-fallback"
@@ -156,7 +172,7 @@ const bannerStyle = computed(() => ({
                   :key="i"
                   :src="getAssetUrl(ASSET_TYPES.TRAINER, spriteId)"
                   class="pixelated"
-                  @error="e => e.target.style.display = 'none'"
+                  @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
                 >
                 <div 
                   v-if="gymSprites.length > 4" 

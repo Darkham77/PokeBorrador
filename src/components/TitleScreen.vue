@@ -1,16 +1,14 @@
-<script setup>
+<script setup lang="ts">
 import { useGameStore } from '@/stores/game'
 import { useAuthStore } from '@/stores/auth'
-import { useUIStore } from '@/stores/ui'
 import { computed } from 'vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
-const _uiStore = useUIStore()
-const gameStore = useGameStore()
-const authStore = useAuthStore()
+const gameStore = useGameStore() as any
+const authStore = useAuthStore() as any
 const gs = computed(() => gameStore.state)
 
-const handleChooseStarter = async (id) => {
+const handleChooseStarter = async (id: string) => {
   await gameStore.chooseStarter(id)
 }
 
@@ -48,7 +46,7 @@ const handleLogout = () => {
             :src="getAssetUrl(ASSET_TYPES.POKEMON, 'bulbasaur')"
             alt="Bulbasaur"
             class="starter-sprite"
-            @error="e => e.target.style.display = 'none'"
+            @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
           >
         </div>
         <div class="starter-name">
@@ -80,7 +78,7 @@ const handleLogout = () => {
             :src="getAssetUrl(ASSET_TYPES.POKEMON, 'charmander')"
             alt="Charmander"
             class="starter-sprite"
-            @error="e => e.target.style.display = 'none'"
+            @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
           >
         </div>
         <div class="starter-name">
@@ -112,7 +110,7 @@ const handleLogout = () => {
             :src="getAssetUrl(ASSET_TYPES.POKEMON, 'squirtle')"
             alt="Squirtle"
             class="starter-sprite"
-            @error="e => e.target.style.display = 'none'"
+            @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
           >
         </div>
         <div class="starter-name">

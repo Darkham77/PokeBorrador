@@ -1,15 +1,22 @@
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
-const props = defineProps({
-  locationId: { type: String, default: 'route1' },
-  layer: { type: String, required: true, validator: v => ['back', 'front'].includes(v) },
-  groundY: { type: String, required: true },
-  visible: { type: Boolean, default: true },
-  instant: { type: Boolean, default: false },
+interface Props {
+  locationId?: string
+  layer: 'back' | 'front'
+  groundY: string
+  visible?: boolean
+  instant?: boolean
   // ENCOUNTER_ANIM - Paso BUSHES_BACK: mueve la capa frontal detrás del sprite durante el salto
-  forceBehind: { type: Boolean, default: false }
+  forceBehind?: boolean
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  locationId: 'route1',
+  visible: true,
+  instant: false,
+  forceBehind: false
 })
 
 const transitionName = computed(() => props.instant ? 'grass-instant' : 'grass-fade')
@@ -20,17 +27,18 @@ const grassUrl = computed(() => {
   return getAssetUrl(ASSET_TYPES.ENVIRONMENT, id)
 })
 
-const handleImageError = (e) => {
+const handleImageError = (e: Event) => {
+  const target = e.target as HTMLImageElement
   // Si falla el específico, forzar el genérico
-  if (e.target.src.includes('_tallgrass')) {
-    e.target.src = getAssetUrl(ASSET_TYPES.ENVIRONMENT, 'tall-grass')
+  if (target.src.includes('_tallgrass')) {
+    target.src = getAssetUrl(ASSET_TYPES.ENVIRONMENT, 'tall-grass')
   } else {
-    e.target.style.display = 'none' 
+    target.style.display = 'none' 
   }
 }
 
 // Configuraciones de los arbustos para mantener consistencia visual absoluta
-const bushes = {
+const bushes: Record<string, any[]> = {
   front: [
     { id: 1, cls: 'bush-front-1', scale: 1.3, tx: -60, ty: 10, ad: '1.2s', ay: '0s' },
     { id: 2, cls: 'bush-front-2', scale: 1.1, tx: 60, ty: 10, ad: '1.5s', ay: '-0.4s' },

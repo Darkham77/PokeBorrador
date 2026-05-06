@@ -1,8 +1,4 @@
-<script setup>
-/**
- * MoveRelearnerModal
- * Standardized modal for relearning forgotten moves.
- */
+<script setup lang="ts">
 import { computed } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
@@ -10,16 +6,23 @@ import { POKEMON_DB } from '@/data/pokemonDB'
 import { EVOLUTION_TABLE } from '@/data/evolutionData'
 import BaseModal from '@/components/common/BaseModal.vue'
 
-const props = defineProps({
-  show: { type: Boolean, default: false },
-  pokemon: { type: Object, required: true },
-  onLearned: { type: Function, default: () => {} }
+interface Props {
+  show?: boolean
+  pokemon: any
+  onLearned?: (success: boolean) => void
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  show: false,
+  onLearned: () => {}
 })
 
-const emit = defineEmits(['close'])
+const emit = defineEmits<{
+  (e: 'close'): void
+}>()
 
-const gameStore = useGameStore()
-const uiStore = useUIStore()
+const gameStore = useGameStore() as any
+const uiStore = useUIStore() as any
 
 const forgottenMoves = computed(() => {
   const p = props.pokemon
@@ -49,14 +52,14 @@ const forgottenMoves = computed(() => {
     }
     
     // Find previous stage
-    const prevEntry = Object.entries(EVOLUTION_TABLE).find(([_id, data]) => data.to === currentId)
+    const prevEntry = Object.entries(EVOLUTION_TABLE).find(([_id, data]) => (data as any).to === currentId)
     currentId = prevEntry ? prevEntry[0] : null
   }
   
   return possibleMoves.sort((a, b) => (a.lv || 0) - (b.lv || 0))
 })
 
-const handleRelearn = (move) => {
+const handleRelearn = (move: any) => {
   const p = props.pokemon
   const itemName = 'Recordador de Movimientos'
   

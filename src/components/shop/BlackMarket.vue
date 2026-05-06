@@ -1,24 +1,24 @@
-<script setup>
+<script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { useShopStore } from '@/stores/shop'
 import { useGameStore } from '@/stores/game'
 import { PLAYER_CLASSES } from '@/data/playerClasses'
 
-const shopStore = useShopStore()
-const gameStore = useGameStore()
+const shopStore = useShopStore() as any
+const gameStore = useGameStore() as any
 
-const items = ref([])
+const items = ref<any[]>([])
 const discount = PLAYER_CLASSES.rocket.modifiers.shopDiscount || 0.20
 
 function refresh() {
   items.value = shopStore.getBlackMarketItems()
 }
 
-function getPrice(item) {
+function getPrice(item: any) {
   return Math.floor((item.bcPrice * 50) * (1 - discount))
 }
 
-function isPurchased(itemId) {
+function isPurchased(itemId: string) {
   return gameStore.state.classData?.blackMarketDaily?.purchased?.includes(itemId)
 }
 
@@ -58,7 +58,7 @@ onMounted(() => {
             <img
               :src="item.sprite"
               class="pixel-sprite"
-              @error="e => e.target.style.display = 'none'"
+              @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
             >
             <div class="glow" />
           </div>

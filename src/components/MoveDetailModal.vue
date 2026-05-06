@@ -1,30 +1,37 @@
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue'
 import BaseModal from '@/components/common/BaseModal.vue'
 import { MOVE_DATA } from '@/data/moves'
 import { PDEX_TYPE_COLORS } from '@/logic/pokedexConstants'
 import { getMoveDescription } from '@/logic/pokemonUtils'
 
-const props = defineProps({
-  show: { type: Boolean, default: false },
-  moveName: { type: String, default: '' }
+interface Props {
+  show?: boolean
+  moveName?: string
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  show: false,
+  moveName: ''
 })
 
-const emit = defineEmits(['close'])
+const emit = defineEmits<{
+  (e: 'close'): void
+}>()
 
 const md = computed(() => {
   if (!props.moveName) return null
-  return MOVE_DATA[props.moveName] || null
+  return (MOVE_DATA as any)[props.moveName] || null
 })
 
 const typeColor = computed(() => {
   if (!md.value) return '#aaa'
-  return PDEX_TYPE_COLORS[md.value.type.toLowerCase()] || '#aaa'
+  return (PDEX_TYPE_COLORS as any)[md.value.type.toLowerCase()] || '#aaa'
 })
 
 const catInfo = computed(() => {
   if (!md.value) return { icon: '', text: '' }
-  const cats = {
+  const cats: Record<string, { icon: string, text: string }> = {
     physical: { icon: '⚔️', text: 'Físico' },
     special: { icon: '✨', text: 'Especial' },
     status: { icon: '🔮', text: 'Estado' }
@@ -37,7 +44,7 @@ const description = computed(() => {
   return getMoveDescription(props.moveName, md.value)
 })
 
-const hexToRgba = (hex, alpha) => {
+const hexToRgba = (hex: string, alpha: number) => {
   if (!hex || hex === '—') return `Rgba(255, 255, 255, ${alpha})`
   const r = parseInt(hex.slice(1, 3), 16)
   const g = parseInt(hex.slice(3, 5), 16)

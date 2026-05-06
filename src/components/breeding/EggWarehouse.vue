@@ -1,16 +1,12 @@
-<script setup>
+<script setup lang="ts">
 import { useBreedingStore } from '@/stores/breeding';
-import { useGameStore } from '@/stores/game';
-import { useUIStore } from '@/stores/ui';
 import { POKEMON_DB } from '@/data/pokemonDB';
 
-const breedingStore = useBreedingStore();
-const _gameStore = useGameStore();
-const _uiStore = useUIStore();
+const breedingStore = useBreedingStore() as any;
 
-const getPokemonName = (id) => POKEMON_DB[id]?.name || 'Huevo';
+const getPokemonName = (id: string | number) => (POKEMON_DB as any)[id]?.name || 'Huevo';
 
-const handleClaim = (egg) => {
+const handleClaim = (egg: any) => {
   const cost = egg.inherited_ivs?._cost || 0;
   if (confirm(`¿Quieres recoger este huevo de ${getPokemonName(egg.species)}? Costo: ₽${cost.toLocaleString()}`)) {
     breedingStore.claimEgg(egg.id);

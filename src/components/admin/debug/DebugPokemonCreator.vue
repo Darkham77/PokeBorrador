@@ -1,17 +1,10 @@
-// [PureVue-Ignore-Length]
-<script setup>
+<script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { NATURE_DATA } from '@/data/natures'
 import { ABILITY_DATA } from '@/data/abilities'
-import PVTooltip from '@/components/common/PVTooltip.vue'
-import PokemonIVEditor from './PokemonIVEditor.vue'
-import PokemonBaseStats from './PokemonBaseStats.vue'
-import PokemonPreview from './PokemonPreview.vue'
-import PokemonMovePicker from './PokemonMovePicker.vue'
 
-
-const creatorRef = ref(null)
+const creatorRef = ref<HTMLElement | null>(null)
 
 // --- STATE ---
 const config = ref({
@@ -26,8 +19,8 @@ const config = ref({
   friendship: 70,
   heldItem: '',
   mapId: 'route_1',
-  ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
-  moves: [],
+  ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 } as Record<string, number>,
+  moves: [] as (string | null)[],
   protocol: 'catch'
 })
 
@@ -37,12 +30,11 @@ const natureSearch = ref('')
 const abilitySearch = ref('')
 const mapSearch = ref('')
 
-
 const showSpeciesDropdown = ref(false)
 const showNatureDropdown = ref(false)
 const showAbilityDropdown = ref(false)
 const showMapDropdown = ref(false)
-const activeMoveSlot = ref(null)
+const activeMoveSlot = ref<number | null>(null)
 
 const allSpecies = computed(() => {
   const db = pokemonDataProvider.getPokemonDb()
@@ -96,7 +88,7 @@ const baseStats = computed(() => {
   }
 })
 
-function selectSpecies(p) {
+function selectSpecies(p: any) {
   config.value.id = p.id
   speciesSearch.value = p.name.toUpperCase()
   showSpeciesDropdown.value = false
@@ -115,24 +107,23 @@ watch(() => config.value.level, () => {
   autoFillMoves()
 })
 
-function selectNature(n) {
+function selectNature(n: string) {
   config.value.nature = n
   natureSearch.value = n.toUpperCase()
   showNatureDropdown.value = false
 }
 
-function selectAbility(a) {
+function selectAbility(a: string) {
   config.value.ability = a
   abilitySearch.value = a.toUpperCase()
   showAbilityDropdown.value = false
 }
 
-function selectMap(m) {
+function selectMap(m: any) {
   config.value.mapId = m.id
   mapSearch.value = m.name.toUpperCase()
   showMapDropdown.value = false
 }
-
 
 function autoFillMoves() {
   const data = pokemonDataProvider.getPokemonData(config.value.id)
@@ -140,9 +131,9 @@ function autoFillMoves() {
   
   // Filter moves learned at or below current level, sort by level desc
   const learnedMoves = data.learnset
-    .filter(m => m.lv <= config.value.level)
-    .sort((a, b) => b.lv - a.lv)
-    .map(m => m.name)
+    .filter((m: any) => m.lv <= config.value.level)
+    .sort((a: any, b: any) => b.lv - a.lv)
+    .map((m: any) => m.name)
   
   // Get the 4 most recent unique moves
   const uniqueMoves = [...new Set(learnedMoves)].slice(0, 4)
@@ -151,7 +142,7 @@ function autoFillMoves() {
   const finalMoves = [...uniqueMoves]
   while (finalMoves.length < 4) finalMoves.push(null)
   
-  config.value.moves = finalMoves
+  config.value.moves = finalMoves as (string | null)[]
 }
 
 function randomFillMoves() {
@@ -159,29 +150,29 @@ function randomFillMoves() {
   if (!data?.learnset || data.learnset.length === 0) return
 
   // Get all unique move names from learnset
-  const allLearnsetMoves = [...new Set(data.learnset.map(m => m.name))]
+  const allLearnsetMoves = [...new Set(data.learnset.map((m: any) => m.name))]
   
   // Shuffle and pick 4
   const shuffled = allLearnsetMoves.sort(() => 0.5 - Math.random())
   const selected = shuffled.slice(0, 4)
   
   // Pad with nulls
-  while (selected.length < 4) selected.push(null)
+  while (selected.length < 4) (selected as any).push(null)
   
-  config.value.moves = selected
+  config.value.moves = selected as (string | null)[]
 }
 
 // --- ACTIONS ---
-async function executeAction(protocol) {
-  if (!window.__VITE_DEBUG__) return
+async function executeAction(protocol: string) {
+  if (!(window as any).__VITE_DEBUG__) return
   
   config.value.protocol = protocol
   if (protocol === 'encounter') {
     // Note: User flagged encounter logic as potentially non-migrated. 
     // Manual testing only for now.
-    await window.__VITE_DEBUG__.spawnEncounter(config.value)
+    await (window as any).__VITE_DEBUG__.spawnEncounter(config.value)
   } else {
-    await window.__VITE_DEBUG__.createPokemon(config.value)
+    await (window as any).__VITE_DEBUG__.createPokemon(config.value)
   }
 }
 
@@ -233,8 +224,8 @@ function handleRandomize() {
   randomFillMoves()
 }
 
-function handleClickOutside(e) {
-  if (creatorRef.value && !creatorRef.value.contains(e.target)) {
+function handleClickOutside(e: MouseEvent) {
+  if (creatorRef.value && !creatorRef.value.contains(e.target as Node)) {
     showSpeciesDropdown.value = false
     showNatureDropdown.value = false
     showAbilityDropdown.value = false
@@ -316,7 +307,7 @@ onUnmounted(() => {
               <img
                 :src="pokemonDataProvider.getSpriteUrl(p.id)"
                 class="item-icon"
-                @error="e => e.target.style.display = 'none'"
+                @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
               >
               {{ p.name.toUpperCase() }}
             </div>

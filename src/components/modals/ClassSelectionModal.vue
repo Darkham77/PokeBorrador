@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { ref } from 'vue';
 import { useWindowListener } from '@/composables/useWindowListener';
 import { usePlayerClassStore } from '@/stores/playerClass';
@@ -6,18 +6,24 @@ import { PLAYER_CLASSES } from '@/data/playerClasses';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import BaseModal from '@/components/common/BaseModal.vue';
 
-/**
- * ClassSelectionModal
- * Managed by ModalHost. Receives 'show' prop from the host.
- */
-defineProps({
-  show: { type: Boolean, default: false }
+interface Props {
+  show?: boolean
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  show: false
 });
 
-const emit = defineEmits(['close', 'confirm', 'cancel', 'submit']);
+const emit = defineEmits<{
+  (e: 'close'): void
+  (e: 'confirm'): void
+  (e: 'cancel'): void
+  (e: 'submit'): void
+}>();
+
 defineOptions({ inheritAttrs: false });
 
-const classStore = usePlayerClassStore();
+const classStore = usePlayerClassStore() as any;
 const isSmallScreen = ref(window.innerWidth <= 950);
 const handleResize = () => { isSmallScreen.value = window.innerWidth <= 950 };
 useWindowListener('resize', handleResize);
@@ -26,22 +32,28 @@ const close = () => {
   emit('close');
 };
 
-const handleSelect = async (id) => {
+const handleSelect = async (id: string) => {
   const res = await classStore.selectClass(id);
   if (res.success) close();
 };
 
-const getTrainerSprite = (id) => {
+const getTrainerSprite = (id: string) => {
   return getAssetUrl(ASSET_TYPES.TRAINER, id);
 };
 
-const getButtonVariant = (clsId) => {
+const getButtonVariant = (clsId: string) => {
   switch (clsId) {
     case 'rocket': return 'danger';
     case 'cazabichos': return 'success';
     case 'entrenador': return 'info';
     case 'criador': return 'secondary';
     default: return 'primary';
+  }
+};
+
+const handleImageError = (e: Event) => {
+  if (e.target) {
+    (e.target as HTMLImageElement).style.display = 'none';
   }
 };
 </script>
@@ -79,7 +91,7 @@ const getButtonVariant = (clsId) => {
               <img 
                 :src="getTrainerSprite(cls.showdownSpriteId || cls.id)"
                 class="trainer-pixel-art" 
-                @error="e => e.target.style.display = 'none'"
+                @error="handleImageError"
               >
             </div>
           </div>

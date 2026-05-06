@@ -1,23 +1,32 @@
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue'
 import { useInventoryStore } from '@/stores/inventory'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 
-defineProps({
-  multiSelectMode: { type: String, default: null },
-  selectedCount: { type: Number, default: 0 }
+interface Props {
+  multiSelectMode?: string | null
+  selectedCount?: number
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  multiSelectMode: null,
+  selectedCount: 0
 })
 
-const emit = defineEmits(['update:multiSelectMode', 'execute', 'cancel'])
+const emit = defineEmits<{
+  (e: 'update:multiSelectMode', mode: string | null): void
+  (e: 'execute'): void
+  (e: 'cancel'): void
+}>()
 
-const inventoryStore = useInventoryStore()
+const inventoryStore = useInventoryStore() as any
 
 const searchQuery = computed({
   get: () => inventoryStore.searchQuery,
-  set: (val) => inventoryStore.searchQuery = val
+  set: (val: string) => { inventoryStore.searchQuery = val }
 })
 
-const startMode = (mode) => {
+const startMode = (mode: string) => {
   emit('update:multiSelectMode', mode)
 }
 </script>

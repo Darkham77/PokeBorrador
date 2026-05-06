@@ -1,20 +1,20 @@
-<script setup>
+<script setup lang="ts">
 import { onMounted, onUnmounted } from 'vue';
 import { usePvPStore } from '@/stores/pvp';
-import { useUIStore } from '@/stores/ui';
 
-const props = defineProps({
-  invite: {
-    type: Object,
-    required: true
-  }
-});
+interface Props {
+  invite: any
+}
 
-const emit = defineEmits(['close']);
-const pvpStore = usePvPStore();
-const _uiStore = useUIStore();
+const props = defineProps<Props>();
 
-let timer = null;
+const emit = defineEmits<{
+  (e: 'close'): void
+}>();
+
+const pvpStore = usePvPStore() as any;
+
+let timer: ReturnType<typeof setTimeout> | null = null;
 
 onMounted(() => {
   timer = setTimeout(() => {

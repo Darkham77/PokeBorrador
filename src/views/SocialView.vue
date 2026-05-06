@@ -1,6 +1,6 @@
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { useSocialStore } from '@/stores/social.js'
+import { useSocialStore } from '@/stores/social'
 
 // Components
 import SocialFriends from '@/components/social/SocialFriends.vue'
@@ -8,7 +8,7 @@ import SocialSearch from '@/components/social/SocialSearch.vue'
 import SocialRequests from '@/components/social/SocialRequests.vue'
 import SocialRankings from '@/components/social/SocialRankings.vue'
 
-const socialStore = useSocialStore()
+const socialStore = useSocialStore() as any
 
 // 'friends', 'rankings', 'search', 'requests'
 const activeTab = ref('friends') 

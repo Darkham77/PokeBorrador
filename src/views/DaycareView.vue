@@ -1,28 +1,24 @@
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useBreedingStore } from '@/stores/breeding';
-import { useGameStore } from '@/stores/game';
-import { useUIStore } from '@/stores/ui';
 import DaycarePicker from '@/components/breeding/DaycarePicker.vue';
 import DaycareMissions from '@/components/breeding/DaycareMissions.vue';
 import EggWarehouse from '@/components/breeding/EggWarehouse.vue';
 import BreedingSummary from '@/components/breeding/BreedingSummary.vue';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 
-const breedingStore = useBreedingStore();
-const _gameStore = useGameStore();
-const _uiStore = useUIStore();
+const breedingStore = useBreedingStore() as any;
 
 const activeTab = ref('breeding'); // breeding | missions | eggs
 const isPickerOpen = ref(false);
 const activeSlotIndex = ref(0);
 
-const openPicker = (slotIdx) => {
+const openPicker = (slotIdx: number) => {
   activeSlotIndex.value = slotIdx;
   isPickerOpen.value = true;
 };
 
-const handleSelect = (pokemon) => {
+const handleSelect = (pokemon: any) => {
   breedingStore.deposit(pokemon, activeSlotIndex.value);
   isPickerOpen.value = false;
 };
@@ -32,12 +28,11 @@ onMounted(() => {
   breedingStore.checkDailyReset();
 });
 
-const getGenderClass = (gender) => {
+const getGenderClass = (gender: string) => {
   if (gender === 'M') return 'gender-m';
   if (gender === 'F') return 'gender-f';
   return '';
 };
-
 </script>
 
 <template>
@@ -85,7 +80,7 @@ const getGenderClass = (gender) => {
                 <img
                   :src="getAssetUrl(ASSET_TYPES.POKEMON, breedingStore.slots[0].pokemon.id, { shiny: breedingStore.slots[0].pokemon.isShiny })"
                   alt="Parent A"
-                  @error="e => e.target.style.display = 'none'"
+                  @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
                 >
                 <h3>{{ breedingStore.slots[0].pokemon.name }}</h3>
                 <span
@@ -121,7 +116,7 @@ const getGenderClass = (gender) => {
                 <img
                   :src="getAssetUrl(ASSET_TYPES.POKEMON, breedingStore.slots[1].pokemon.id, { shiny: breedingStore.slots[1].pokemon.isShiny })"
                   alt="Parent B"
-                  @error="e => e.target.style.display = 'none'"
+                  @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
                 >
                 <h3>{{ breedingStore.slots[1].pokemon.name }}</h3>
                 <span

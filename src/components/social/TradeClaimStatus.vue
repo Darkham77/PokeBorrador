@@ -1,19 +1,19 @@
-<script setup>
+<script setup lang="ts">
 import { computed, ref, reactive } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
-const gameStore = useGameStore()
-const uiStore = useUIStore()
+const gameStore = useGameStore() as any
+const uiStore = useUIStore() as any
 
-const claims = computed(() => gameStore.state.claimQueue || [])
+const claims = computed(() => (gameStore.state.claimQueue || []) as any[])
 const hasClaims = computed(() => claims.value.length > 0)
 
-const processingId = ref(null)
-const cooldowns = reactive(new Set())
+const processingId = ref<string | number | null>(null)
+const cooldowns = reactive(new Set<string | number>())
 
-const claimAsset = async (claimId) => {
+const claimAsset = async (claimId: string | number) => {
   if (cooldowns.has(claimId)) {
     uiStore.notify('Debes esperar 5 segundos entre reclamos', '⏳')
     return
@@ -40,12 +40,12 @@ const receiveAll = async () => {
   }
 }
 
-const getAssetIcon = (asset) => {
+const getAssetIcon = (asset: any) => {
   if (asset.type === 'money') return getAssetUrl(ASSET_TYPES.ITEM, 'nugget')
   return getAssetUrl(ASSET_TYPES.ITEM, 'pokeball')
 }
 
-const getSpriteUrl = (id) => {
+const getSpriteUrl = (id: string | number) => {
   return getAssetUrl(ASSET_TYPES.POKEMON, id)
 }
 </script>
@@ -61,7 +61,7 @@ const getSpriteUrl = (id) => {
       </div>
       <button
         class="receive-all-btn"
-        :disabled="processingId"
+        :disabled="!!processingId"
         @click.stop="receiveAll"
       >
         RECIBIR TODO
@@ -79,13 +79,13 @@ const getSpriteUrl = (id) => {
             v-if="claim.asset_data.type === 'pokemon'"
             :src="getSpriteUrl(claim.asset_data.data.id)" 
             class="pixel-art pokemon-sprite" 
-            @error="e => e.target.style.display = 'none'"
+            @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
           >
           <img
             v-else
             :src="getAssetIcon(claim.asset_data)"
             class="pixel-art"
-            @error="e => e.target.style.display = 'none'"
+            @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
           >
           
           <div class="asset-info">

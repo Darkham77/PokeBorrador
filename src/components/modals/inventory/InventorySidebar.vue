@@ -1,12 +1,12 @@
-<script setup>
+<script setup lang="ts">
+import { computed, watch } from 'vue'
 import { useInventoryStore } from '@/stores/inventory'
 import { useUIStore } from '@/stores/ui'
-import { computed } from 'vue'
 
-const inventoryStore = useInventoryStore()
+const inventoryStore = useInventoryStore() as any
+const uiStore = useUIStore() as any
 
 const activeCategory = computed(() => inventoryStore.activeCategory)
-const uiStore = useUIStore()
 
 const categories = computed(() => {
   const list = [
@@ -26,12 +26,11 @@ const categories = computed(() => {
   return list
 })
 
-const setCategory = (id) => {
+const setCategory = (id: string) => {
   inventoryStore.activeCategory = id
 }
 
 // Ensure the active category is always valid within the current context
-import { watch } from 'vue'
 watch(() => categories.value, (newCats) => {
   if (!newCats.find(c => c.id === inventoryStore.activeCategory)) {
     inventoryStore.activeCategory = 'todos'

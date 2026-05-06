@@ -1,29 +1,33 @@
-<script setup>
-/**
- * PassiveTeamEditorModal
- * Standardized modal for managing defense team.
- */
-defineProps({
-  show: { type: Boolean, default: false }
+<script setup lang="ts">
+import BaseModal from '@/components/common/BaseModal.vue'
+
+interface Props {
+  show?: boolean
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  show: false
 })
 
-const emit = defineEmits(['close'])
+const emit = defineEmits<{
+  (e: 'close'): void
+}>()
 
 const closeEditor = () => {
   emit('close')
 }
 
 const confirmSave = () => {
-  if (typeof window.confirmPassiveTeamEdit === 'function') {
-    window.confirmPassiveTeamEdit()
+  if (typeof (window as any).confirmPassiveTeamEdit === 'function') {
+    (window as any).confirmPassiveTeamEdit()
   }
 }
 
 // Shim for legacy code - we keep this but use the prop as source of truth
 if (typeof window !== 'undefined') {
-  window.openPassiveTeamEditor = () => {
+  (window as any).openPassiveTeamEditor = () => {
     // This is now managed by the store/host, but we keep the shim for event-based calls
-    import('@/stores/modals').then(m => m.useModalStore().open('PassiveTeamEditor'))
+    import('@/stores/modals').then(m => m.useModalStore().open('PassiveTeamEditor' as any))
   }
 }
 </script>

@@ -1,13 +1,13 @@
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue'
 import { useUIStore } from '@/stores/ui'
 import { useCosmeticsStore } from '@/stores/cosmetics'
 import { useProfileStore } from '@/stores/profile'
 import BaseModal from '@/components/common/BaseModal.vue'
 
-const uiStore = useUIStore()
-const cosmeticsStore = useCosmeticsStore()
-const profileStore = useProfileStore()
+const uiStore = useUIStore() as any
+const cosmeticsStore = useCosmeticsStore() as any
+const profileStore = useProfileStore() as any
 
 const isOpen = computed(() => uiStore.isCosmeticsModalOpen)
 
@@ -15,11 +15,11 @@ const closeCosmetics = () => {
   uiStore.isCosmeticsModalOpen = false
 }
 
-const selectNick = (id) => {
+const selectNick = (id: string) => {
   cosmeticsStore.equipNickStyle(id)
 }
 
-const selectAvatar = (id) => {
+const selectAvatar = (id: string) => {
   cosmeticsStore.equipAvatarStyle(id)
 }
 </script>

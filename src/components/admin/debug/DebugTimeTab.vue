@@ -1,51 +1,50 @@
-<script setup>
+<script setup lang="ts">
 import { ref } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useMapStore } from '@/stores/map'
 import { useModalStore } from '@/stores/modals'
-import PVTooltip from '@/components/common/PVTooltip.vue'
 
-const game = useGameStore()
-const mapStore = useMapStore()
-const modalStore = useModalStore()
+const game = useGameStore() as any
+const mapStore = useMapStore() as any
+const modalStore = useModalStore() as any
 
 const debugDate = ref(new Date().toISOString().slice(0, 16))
 const timeOffsetLabel = ref(`${game.db.getTimeOffset()}ms`)
 
 function updateMockTime() {
-  window.__VITE_DEBUG__.setMockTime(debugDate.value)
+  (window as any).__VITE_DEBUG__.setMockTime(debugDate.value)
   timeOffsetLabel.value = `${game.db.getTimeOffset()}ms`
   window.dispatchEvent(new CustomEvent('time-sync-update'))
 }
 
 function resetTime() {
-  window.__VITE_DEBUG__.resetTime()
+  (window as any).__VITE_DEBUG__.resetTime()
   timeOffsetLabel.value = '0ms'
   debugDate.value = new Date().toISOString().slice(0, 16)
   window.dispatchEvent(new CustomEvent('time-sync-update'))
   mapStore.setGlobalCycle(null)
 }
 
-function addHours(h) {
-  window.__VITE_DEBUG__.addHours(h)
+function addHours(h: number) {
+  (window as any).__VITE_DEBUG__.addHours(h)
   timeOffsetLabel.value = `${game.db.getTimeOffset()}ms`
   window.dispatchEvent(new CustomEvent('time-sync-update'))
 }
 
-function addWeeks(w) {
-  window.__VITE_DEBUG__.addWeeks(w)
+function addWeeks(w: number) {
+  (window as any).__VITE_DEBUG__.addWeeks(w)
   timeOffsetLabel.value = `${game.db.getTimeOffset()}ms`
   window.dispatchEvent(new CustomEvent('time-sync-update'))
 }
 
-function toggleWeather(w) {
-  const next = mapStore.globalWeather === w ? null : w
-  window.__VITE_DEBUG__.setWeather(next)
+function toggleWeather(w: string | null) {
+  const next = mapStore.globalWeather === w ? null : w;
+  (window as any).__VITE_DEBUG__.setWeather(next);
 }
 
-function toggleCycle(c) {
-  const next = mapStore.forcedCycle === c ? null : c
-  window.__VITE_DEBUG__.setCycle(next)
+function toggleCycle(c: string | null) {
+  const next = mapStore.forcedCycle === c ? null : c;
+  (window as any).__VITE_DEBUG__.setCycle(next);
 }
 </script>
 

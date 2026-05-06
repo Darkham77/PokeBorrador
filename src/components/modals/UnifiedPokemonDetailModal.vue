@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 // Universal Pokémon info panel (Pokedex + Instance).
 import { ref, computed } from 'vue'
 import { useWindowListener } from '@/composables/useWindowListener'
@@ -19,18 +19,30 @@ import PokemonMovesTab from '@/components/pokemon-detail/PokemonMovesTab.vue'
 import PokemonStatusSection from '@/components/pokemon-detail/PokemonStatusSection.vue'
 import PokemonActionFooter from '@/components/pokemon-detail/PokemonActionFooter.vue'
 
-const props = defineProps({
-  show: { type: Boolean, default: false },
-  speciesId: { type: String, default: '' },
-  pokemon: { type: Object, default: null },
-  index: { type: Number, default: -1 },
-  context: { type: String, default: 'pokedex' }, // 'team', 'box', 'market', 'pokedex'
-  extra: { type: Object, default: null }
+interface Props {
+  show?: boolean
+  speciesId?: string
+  pokemon?: any | null
+  index?: number
+  context?: string // 'team', 'box', 'market', 'pokedex'
+  extra?: any | null
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  show: false,
+  speciesId: '',
+  pokemon: null,
+  index: -1,
+  context: 'pokedex',
+  extra: null
 })
 
-const emit = defineEmits(['close'])
-const uiStore = useUIStore()
-const gameStore = useGameStore()
+const emit = defineEmits<{
+  (e: 'close'): void
+}>()
+
+const uiStore = useUIStore() as any
+const gameStore = useGameStore() as any
 
 // --- COMPOSABLE LOGIC ---
 const {
@@ -49,7 +61,7 @@ const {
   getSprite,
   finalIndex,
   finalContext
-} = usePokemonDetail(props)
+} = usePokemonDetail(props as any)
 
 // --- LOCAL UI STATE ---
 const isSmallScreen = ref(window.innerWidth <= 950)
@@ -76,7 +88,7 @@ const tabs = computed(() => {
   return base
 })
 
-const formatRange = (val, unit, factor = 0.15) => {
+const formatRange = (val: any, unit: string, factor = 0.15) => {
   if (!val) return '—'
   if (Array.isArray(val)) return `${val[0]}${unit} - ${val[1]}${unit}`
   const min = (val * (1 - factor)).toFixed(1)
@@ -84,7 +96,7 @@ const formatRange = (val, unit, factor = 0.15) => {
   return `${min}${unit} - ${max}${unit}`
 }
 
-const getCategoryDescription = (cat) => {
+const getCategoryDescription = (cat: string) => {
   const c = cat.toLowerCase()
   if (c.includes('nueva especie')) return 'Pokémon extremadamente raro que contiene el ADN de todos los demás Pokémon. Se creía puramente mitológico.'
   if (c.includes('genético')) return 'Pokémon creado artificialmente mediante manipulación avanzada de ADN y experimentos científicos.'
@@ -98,20 +110,20 @@ const getCategoryDescription = (cat) => {
 
 // --- HANDLERS ---
 const handleBuy = () => {
-  if (props.extra && typeof window.buyFromMarket === 'function') {
-    window.buyFromMarket(props.extra.offerId, props.extra.price, props.extra.type)
+  if (props.extra && typeof (window as any).buyFromMarket === 'function') {
+    (window as any).buyFromMarket(props.extra.offerId, props.extra.price, props.extra.type)
     emit('close')
   }
 }
 
 const handleEvolve = () => {
-  if (typeof window.showStonePicker === 'function') {
-    emit('close')
-    window.showStonePicker(props.index)
+  if (typeof (window as any).showStonePicker === 'function') {
+    emit('close');
+    (window as any).showStonePicker(props.index)
   }
 }
 
-const hexToRgb = (hex) => {
+const hexToRgb = (hex: string) => {
   if (!hex) return '255, 255, 255'
   const r = parseInt(hex.slice(1, 3), 16)
   const g = parseInt(hex.slice(3, 5), 16)
@@ -119,7 +131,7 @@ const hexToRgb = (hex) => {
   return `${r}, ${g}, ${b}`
 }
 
-const handleToggleTag = (tagOrId) => {
+const handleToggleTag = (tagOrId: any) => {
   const tagId = typeof tagOrId === 'string' ? tagOrId : (tagOrId.id || tagOrId.dbId)
   if (isInstance.value && finalIndex.value > -1) {
     gameStore.togglePokeTag(finalContext.value, finalIndex.value, tagId)
@@ -134,7 +146,7 @@ const handleEditNickname = () => {
     message: `Introduce un nuevo nombre para tu ${species.value.name}:`,
     initialValue: targetPokemon.value.nickname || species.value.name,
     confirmText: 'Guardar',
-    onConfirm: (val) => {
+    onConfirm: (val: string) => {
       const newNick = val?.trim() || null
       targetPokemon.value.nickname = newNick
       uiStore.notify(`¡Apodo cambiado a ${newNick || species.value.name}!`, '✨')
@@ -143,7 +155,7 @@ const handleEditNickname = () => {
   })
 }
 
-const handleReorderMoves = (from, to) => {
+const handleReorderMoves = (from: number, to: number) => {
   if (isInstance.value) {
     gameStore.reorderMoves(targetPokemon.value, from, to)
   }
@@ -230,7 +242,7 @@ const handleReorderMoves = (from, to) => {
             <img
               :src="getSprite(targetSpeciesId, targetPokemon?.isShiny)"
               class="main-sprite"
-              @error="e => e.target.style.display = 'none'"
+              @error="e => { (e.target as HTMLImageElement).style.display = 'none' }"
             >
           </PVSpriteFX>
         </div>

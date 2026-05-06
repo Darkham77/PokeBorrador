@@ -2,9 +2,11 @@ import js from '@eslint/js';
 import pluginVue from 'eslint-plugin-vue';
 import globals from 'globals';
 import unusedImports from 'eslint-plugin-unused-imports';
+import tseslint from 'typescript-eslint';
 
-export default [
+export default tseslint.config(
   js.configs.recommended,
+  ...tseslint.configs.recommended,
   ...pluginVue.configs['flat/recommended'],
   {
     plugins: {
@@ -13,6 +15,8 @@ export default [
     rules: {
       'vue/multi-word-component-names': 'off',
       'no-unused-vars': 'off', // Turn off default
+      '@typescript-eslint/no-unused-vars': 'off',
+      '@typescript-eslint/no-explicit-any': 'warn',
       'unused-imports/no-unused-imports': 'error',
       'unused-imports/no-unused-vars': [
         'warn',
@@ -26,11 +30,15 @@ export default [
         },
       ],
       'no-console': 'off',
-      'no-undef': 'error',
+      'no-undef': 'off', // TS ya maneja el chequeo de no-undef
     },
     languageOptions: {
       ecmaVersion: 'latest',
       sourceType: 'module',
+      parserOptions: {
+        parser: tseslint.parser,
+        extraFileExtensions: ['.vue'],
+      },
       globals: {
         ...globals.browser,
         ...globals.node,
@@ -53,4 +61,4 @@ export default [
       'tmp/**',
     ],
   },
-];
+);

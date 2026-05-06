@@ -1,19 +1,16 @@
-<script setup>
-import { useBreedingStore } from '@/stores/breeding'
+<script setup lang="ts">
 import { useGameStore } from '@/stores/game'
 import { useDebugStore } from '@/stores/debug'
-import PVTooltip from '@/components/common/PVTooltip.vue'
 
-const _breeding = useBreedingStore()
-const game = useGameStore()
-const debug = useDebugStore()
+const game = useGameStore() as any
+const debug = useDebugStore() as any
 
 const regenerate = () => {
-  if (window.__VITE_DEBUG__?.regenerateMissions) {
-    window.__VITE_DEBUG__.regenerateMissions()
+  if ((window as any).__VITE_DEBUG__?.regenerateMissions) {
+    (window as any).__VITE_DEBUG__.regenerateMissions()
   } else {
     console.warn('[DEBUG] Fallback: regenerateMissions from store directly')
-    const tool = debug.tools.find(t => t.command === 'regenerateMissions')
+    const tool = (debug.tools as any[]).find(t => t.command === 'regenerateMissions')
     if (tool) tool.action()
   }
 }
@@ -21,11 +18,11 @@ const regenerate = () => {
 const clear = () => {
   if (!confirm('¿Seguro que quieres borrar todas las misiones actuales?')) return
 
-  if (window.__VITE_DEBUG__?.clearMissions) {
-    window.__VITE_DEBUG__.clearMissions()
+  if ((window as any).__VITE_DEBUG__?.clearMissions) {
+    (window as any).__VITE_DEBUG__.clearMissions()
   } else {
     console.warn('[DEBUG] Fallback: clearMissions from store directly')
-    const tool = debug.tools.find(t => t.command === 'clearMissions')
+    const tool = (debug.tools as any[]).find(t => t.command === 'clearMissions')
     if (tool) tool.action()
   }
 }

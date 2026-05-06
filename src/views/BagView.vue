@@ -1,18 +1,18 @@
-<script setup>
+<script setup lang="ts">
 import { useInventoryStore } from '@/stores/inventory'
 import { useGameStore } from '@/stores/game'
 import { getItemSpriteUrl } from '@/logic/inventory/inventoryEngine'
 import { ITEM_CATEGORIES, CATEGORY_LABELS } from '@/data/items'
 
-const inventoryStore = useInventoryStore()
-const gameStore = useGameStore()
+const inventoryStore = useInventoryStore() as any
+const gameStore = useGameStore() as any
 
 const categories = ITEM_CATEGORIES.map(id => ({
   id,
   label: CATEGORY_LABELS[id] || id
 }))
 
-const onUseItem = (name) => {
+const onUseItem = (name: string) => {
   inventoryStore.useItem(name)
 }
 </script>
@@ -103,7 +103,7 @@ const onUseItem = (name) => {
                 :src="getItemSpriteUrl(item.name)"
                 :alt="item.name"
                 class="item-sprite"
-                @error="e => e.target.style.display = 'none'"
+                @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
               >
               <span class="item-qty">x{{ item.qty }}</span>
             </div>
@@ -138,7 +138,7 @@ const onUseItem = (name) => {
               <input 
                 type="number" 
                 :value="inventoryStore.bagSellSelected[item.name]" 
-                @input="inventoryStore.updateBagSellQty(item.name, $event.target.value, item.qty)"
+                @input="(e: Event) => inventoryStore.updateBagSellQty(item.name, (e.target as HTMLInputElement).value, item.qty)"
               >
               <button @click.stop="inventoryStore.updateBagSellQty(item.name, inventoryStore.bagSellSelected[item.name] + 1, item.qty)">
                 +

@@ -1,22 +1,20 @@
-<script setup>
+<script setup lang="ts">
 import { ref, computed } from 'vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import { useAuthStore } from '@/stores/auth'
 import { useGameStore } from '@/stores/game'
 import { useGTSStore } from '@/stores/gts'
 import { getPokemonTier } from '@/logic/pokemon/tierEngine'
 
-const _auth = useAuthStore()
-const game = useGameStore()
-const gtsStore = useGTSStore()
+const game = useGameStore() as any
+const gtsStore = useGTSStore() as any
 
-const activeMode = ref('pokemon') // 'pokemon' | 'item'
-const selection = ref(null)
+const activeMode = ref<'pokemon' | 'item'>('pokemon')
+const selection = ref<any>(null)
 const price = ref(1000)
 
 const box = computed(() => game.state.box)
 const inventory = computed(() => {
-  return Object.entries(game.state.inventory)
+  return Object.entries(game.state.inventory as Record<string, number>)
     .filter(([_name, qty]) => qty > 0)
     .map(([name, qty]) => ({ name, qty }))
 })
@@ -32,7 +30,7 @@ async function handlePublish() {
   }
 }
 
-function selectItem(item) {
+function selectItem(item: any) {
   selection.value = item
   // Suggest a default price?
 }
@@ -81,7 +79,7 @@ const net = computed(() => price.value - fee.value)
             <img
               :src="getAssetUrl(ASSET_TYPES.POKEMON, p.id)"
               class="p-sprite pixelated"
-              @error="e => e.target.style.display = 'none'"
+              @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
             >
             <div class="p-info">
               <span class="p-name">{{ p.name }}</span>

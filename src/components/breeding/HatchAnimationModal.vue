@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /**
  * HatchAnimationModal
  * Standardized full-screen animation for egg hatching.
@@ -10,19 +10,27 @@ import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
 
 import { useGameStore } from '@/stores/game'
 
-const props = defineProps({
-  show: { type: Boolean, default: false },
-  pokemon: { type: Object, default: null },
-  egg: { type: Object, default: null }
+interface Props {
+  show?: boolean
+  pokemon?: any | null
+  egg?: any | null
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  show: false,
+  pokemon: null,
+  egg: null
 })
 
-const emit = defineEmits(['close'])
+const emit = defineEmits<{
+  (e: 'close'): void
+}>()
 
 const stage = ref('egg') // 'egg', 'crack', 'reveal'
 const showParticles = ref(false)
-const resultPokemon = ref(null)
+const resultPokemon = ref<any>(null)
 
-const gameStore = useGameStore()
+const gameStore = useGameStore() as any
 
 const prepareResult = async () => {
   if (props.pokemon) {
@@ -50,7 +58,7 @@ const handleClose = async () => {
   emit('close')
 }
 
-const getSprite = (id, isShiny) => {
+const getSprite = (id: string | number, isShiny: boolean) => {
   return getAssetUrl(ASSET_TYPES.POKEMON, id, { shiny: isShiny })
 }
 
@@ -58,13 +66,13 @@ const handleEggClick = () => {
   if (stage.value !== 'egg') return
   
   stage.value = 'crack'
-  window.playSound?.('egg_crack')
+  ;(window as any).playSound?.('egg_crack')
   
   // Final reveal after a short delay of cracking
   setTimeout(() => {
     stage.value = 'reveal'
     showParticles.value = true
-    window.playSound?.('evolution_complete')
+    ;(window as any).playSound?.('evolution_complete')
   }, 1200)
 }
 
@@ -102,7 +110,7 @@ onMounted(async () => {
           :src="getAssetUrl(ASSET_TYPES.ITEM, 'egg')"
           class="egg-sprite"
           :class="{ shake: stage === 'crack' }"
-          @error="e => e.target.style.display = 'none'"
+          @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
         >
         <div class="glow-ring" />
         <div class="hatch-hint">
@@ -128,7 +136,7 @@ onMounted(async () => {
               v-if="resultPokemon"
               :src="getSprite(resultPokemon.id, resultPokemon.isShiny)"
               class="pokemon-sprite"
-              @error="e => e.target.style.display = 'none'"
+              @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
             >
           </PVSpriteFX>
           <div class="splash-text">

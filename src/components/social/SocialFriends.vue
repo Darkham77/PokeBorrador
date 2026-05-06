@@ -1,16 +1,16 @@
-<script setup>
+<script setup lang="ts">
 import { useSocialStore } from '@/stores/social.js'
 import { useChatStore } from '@/stores/chat.js'
 import TrainerAvatar from '@/components/TrainerAvatar.vue'
 
-const socialStore = useSocialStore()
-const chatStore = useChatStore()
+const socialStore = useSocialStore() as any
+const chatStore = useChatStore() as any
 
-const openChat = (friend) => {
+const openChat = (friend: any) => {
   chatStore.openChat(friend.id, friend.username)
 }
 
-const getUnreadCount = (friendId) => {
+const getUnreadCount = (friendId: string | number) => {
   return chatStore.privateChats[friendId]?.unreadCount || 0
 }
 </script>

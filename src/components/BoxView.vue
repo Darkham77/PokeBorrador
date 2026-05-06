@@ -1,11 +1,10 @@
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useBoxStore } from '@/stores/box'
 import { useUIStore } from '@/stores/ui'
 import { usePlayerClassStore } from '@/stores/playerClass'
 import { useBoxFilters } from '@/composables/useBoxFilters'
-import PVTooltip from '@/components/common/PVTooltip.vue'
 
 // Sub-componentes
 import BoxHeader from './box/BoxHeader.vue'
@@ -13,11 +12,10 @@ import BoxTabs from './box/BoxTabs.vue'
 import BoxFilters from './box/BoxFilters.vue'
 import BoxGrid from './box/BoxGrid.vue'
 
-
-const gameStore = useGameStore()
-const boxStore = useBoxStore()
-const uiStore = useUIStore()
-const classStore = usePlayerClassStore()
+const gameStore = useGameStore() as any
+const boxStore = useBoxStore() as any
+const uiStore = useUIStore() as any
+const classStore = usePlayerClassStore() as any
 const gs = computed(() => gameStore.state)
 
 // Clase Rocket: fuente canónica reactiva
@@ -55,7 +53,7 @@ const displayList = computed(() => {
 })
 
 // ----- ACCIONES -----
-const switchBox = (i) => {
+const switchBox = (i: number) => {
   sortMode.value = 'none'
   boxStore.switchBox(i)
 }
@@ -117,7 +115,7 @@ const handleConfirmRelease = () => {
   })
 }
 
-const handlePokemonClick = (index) => {
+const handlePokemonClick = (index: number) => {
   const pokemon = gs.value.box[index]
   if (!pokemon) return
 

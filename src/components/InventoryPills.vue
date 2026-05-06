@@ -1,19 +1,19 @@
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 import { useMapStore } from '@/stores/map'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 
-const _gameStore = useGameStore()
-const _uiStore = useUIStore()
-const mapStore = useMapStore()
+const _gameStore = useGameStore() as any
+const _uiStore = useUIStore() as any
+const mapStore = useMapStore() as any
 const gs = computed(() => _gameStore.state)
 
 // Time cycle logic synced with Map/Logic
 const dayCycle = computed(() => {
   const cycle = mapStore.currentCycle
-  const info = {
+  const info: Record<string, { icon: string, label: string, color: string }> = {
     morning: { icon: '🌅', label: 'Amanecer', color: '#FFD93D' },
     day: { icon: '☀️', label: 'Día', color: '#FFEEAD' },
     dusk: { icon: '🌇', label: 'Atardecer', color: '#FF6B35' },
@@ -23,7 +23,6 @@ const dayCycle = computed(() => {
 })
 
 const currentSeason = computed(() => mapStore.currentSeason)
-
 </script>
 
 <template>
@@ -109,7 +108,7 @@ const currentSeason = computed(() => mapStore.currentSeason)
             width="24"
             height="24"
             data-ignore="[PureVue-Ignore]"
-            @error="e => e.target.style.display = 'none'"
+            @error="e => { (e.target as HTMLImageElement).style.display = 'none' }"
           >
         </div>
         <span

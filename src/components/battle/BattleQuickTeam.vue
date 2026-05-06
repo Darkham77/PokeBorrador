@@ -1,16 +1,16 @@
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useBattleStore } from '@/stores/battle'
 import BoxPokemonCard from '@/components/box/BoxPokemonCard.vue'
 
-const gameStore = useGameStore()
-const battleStore = useBattleStore()
+const gameStore = useGameStore() as any
+const battleStore = useBattleStore() as any
 
-const team = computed(() => gameStore.state.team || [])
+const team = computed<any[]>(() => gameStore.state.team || [])
 const activePokemonUid = computed(() => battleStore.state?.player?.uid)
 
-const handleSwitch = (index) => {
+const handleSwitch = (index: number) => {
   const pokemon = team.value[index]
   if (!pokemon || pokemon.hp <= 0 || pokemon.uid === activePokemonUid.value) return
   if (battleStore.isProcessing || battleStore.isIntroAnimating) return

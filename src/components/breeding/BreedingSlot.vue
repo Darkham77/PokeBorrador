@@ -1,23 +1,32 @@
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
-const props = defineProps({
-  slotIndex: { type: Number, required: true },
-  slotData: { type: Object, default: () => ({}) },
-  availableItems: { type: Array, default: () => [] }
+interface Props {
+  slotIndex: number
+  slotData?: any
+  availableItems?: any[]
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  slotData: () => ({}),
+  availableItems: () => []
 })
 
-const emit = defineEmits(['deposit', 'withdraw', 'setItem'])
+const emit = defineEmits<{
+  (e: 'deposit', index: number): void
+  (e: 'withdraw', index: number): void
+  (e: 'setItem', itemId: string): void
+}>()
 
 const pokemon = computed(() => props.slotData?.pokemon || null)
 
-const getSpriteUrl = (id, isShiny) => {
+const getSpriteUrl = (id: string | number, isShiny: boolean) => {
   if (!id) return ''
   return getAssetUrl(ASSET_TYPES.POKEMON, id, { isShiny })
 }
 
-const genderSymbol = (g) => {
+const genderSymbol = (g: string) => {
   if (g === 'M') return '♂'
   if (g === 'F') return '♀'
   return ''
@@ -37,7 +46,7 @@ const genderSymbol = (g) => {
         <img
           :src="getSpriteUrl(pokemon.id, pokemon.isShiny)"
           :alt="pokemon.name"
-          @error="e => e.target.style.display = 'none'"
+          @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
         >
       </div>
       
@@ -74,7 +83,7 @@ const genderSymbol = (g) => {
           v-else
           class="item-picker"
         >
-          <select @change="(e) => emit('setItem', e.target.value)">
+          <select @change="(e: Event) => emit('setItem', (e.target as HTMLSelectElement).value)">
             <option value="">
               -- Sin Ítem --
             </option>

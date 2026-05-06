@@ -1,10 +1,11 @@
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue'
 import { useCombatShadowStore } from '@/stores/combatShadows'
 import { WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator'
-const { SHADOW_WIDTH, SHADOW_HEIGHT } = WORLD_CONSTANTS
 
-const shadowStore = useCombatShadowStore()
+const { SHADOW_WIDTH, SHADOW_HEIGHT } = WORLD_CONSTANTS as any
+
+const shadowStore = useCombatShadowStore() as any
 
 /**
  * Generates the standard low-resolution pixel shadow.
@@ -12,11 +13,11 @@ const shadowStore = useCombatShadowStore()
  */
 const generatePixelShadow = (w = SHADOW_WIDTH, h = SHADOW_HEIGHT) => {
   if (typeof document === 'undefined') return ''
-  // [PureVue-Ignore]
   const canvas = document.createElement('canvas')
   canvas.width = w
   canvas.height = h
   const ctx = canvas.getContext('2d')
+  if (!ctx) return ''
   ctx.fillStyle = 'Rgba(0, 0, 0, 0.35)'
   ctx.beginPath()
   ctx.ellipse(w / 2, h / 2, w / 2, h / 2, 0, 0, Math.PI * 2)
@@ -30,7 +31,7 @@ const shadowUrl = generatePixelShadow()
  * Calculates absolute coordinates and styles for a shadow.
  * All calculations are based on the 3000x3000px virtual world.
  */
-const getShadowStyle = (shadow) => {
+const getShadowStyle = (shadow: any) => {
   const { entityX, entityY, entitySize, feetX, feetY, width, isFlying } = shadow
   
   // Horizontal Position: Center of the entity adjusted by feet offset
@@ -57,8 +58,8 @@ const getShadowStyle = (shadow) => {
 }
 
 // Filtramos solo las sombras visibles para que TransitionGroup maneje las salidas
-const shadowsArray = computed(() => {
-  return Array.from(shadowStore.activeShadows.values()).filter(s => s.visible)
+const shadowsArray = computed<any[]>(() => {
+  return Array.from(shadowStore.activeShadows.values()).filter((s: any) => s.visible)
 })
 </script>
 

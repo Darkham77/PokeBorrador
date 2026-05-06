@@ -1,14 +1,16 @@
-<script setup>
+<script setup lang="ts">
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
-defineProps({
-  evolutions: { type: Array, required: true },
-  speciesName: { type: String, required: true },
-  speciesId: { type: String, required: true }
-})
+interface Props {
+  evolutions: any[]
+  speciesName: string
+  speciesId: string
+}
 
-const getSprite = (id) => getAssetUrl(ASSET_TYPES.POKEMON, id)
+const props = defineProps<Props>()
+
+const getSprite = (id: string) => getAssetUrl(ASSET_TYPES.POKEMON, id)
 </script>
 
 <template>
@@ -26,7 +28,7 @@ const getSprite = (id) => getAssetUrl(ASSET_TYPES.POKEMON, id)
           <img
             :src="getSprite(speciesId)"
             class="evo-sprite"
-            @error="e => e.target.style.display = 'none'"
+            @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
           >
           <span class="evo-target-name">{{ speciesName }}</span>
         </div>
@@ -41,7 +43,7 @@ const getSprite = (id) => getAssetUrl(ASSET_TYPES.POKEMON, id)
                 :src="getSprite(evo.to.toLowerCase())"
                 class="evo-sprite"
                 :class="{ 'silhouette': !evo.isCaught }"
-                @error="e => e.target.style.display = 'none'"
+                @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
               >
             </template>
             <div

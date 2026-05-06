@@ -1,14 +1,21 @@
-<script setup>
+<script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { libraryContent, libraryCategories } from '@/data/libraryData'
 import BaseModal from '@/components/common/BaseModal.vue'
 
-const props = defineProps({
-  show: { type: Boolean, default: false },
-  initialTab: { type: String, default: 'gimnasios' }
+interface Props {
+  show?: boolean
+  initialTab?: string
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  show: false,
+  initialTab: 'gimnasios'
 })
 
-const emit = defineEmits(['close'])
+const emit = defineEmits<{
+  (e: 'close'): void
+}>()
 
 // Default to 'gimnasios' if initialTab is null or not in categories
 const selectedTab = ref(props.initialTab || 'gimnasios')
@@ -19,10 +26,10 @@ watch(() => props.initialTab, (newTab) => {
 })
 
 const currentContent = computed(() => {
-  return libraryContent[selectedTab.value] || '<h1>Próximamente</h1><p>En construcción.</p>'
+  return (libraryContent as any)[selectedTab.value] || '<h1>Próximamente</h1><p>En construcción.</p>'
 })
 
-const selectTab = (tabId) => {
+const selectTab = (tabId: string) => {
   if (selectedTab.value === tabId) return
   
   contentFade.value = false

@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useWindowListener } from '@/composables/useWindowListener'
 import { useUIStore } from '@/stores/ui'
@@ -12,16 +12,25 @@ import BaseModal from '@/components/common/BaseModal.vue'
 import ClassDashboard from './class/ClassDashboard.vue'
 import ClassMissionsList from './class/ClassMissionsList.vue'
 
-defineProps({
-  show: { type: Boolean, default: false }
+interface Props {
+  show?: boolean
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  show: false
 })
 
 defineOptions({ inheritAttrs: false })
-const emit = defineEmits(['close', 'confirm', 'cancel', 'submit'])
+const emit = defineEmits<{
+  (e: 'close'): void
+  (e: 'confirm'): void
+  (e: 'cancel'): void
+  (e: 'submit'): void
+}>()
 
-const uiStore = useUIStore()
-const classStore = usePlayerClassStore()
-const gameStore = useGameStore()
+const uiStore = useUIStore() as any
+const classStore = usePlayerClassStore() as any
+const gameStore = useGameStore() as any
 
 const isSmallScreen = ref(window.innerWidth <= 950)
 const handleResize = () => { isSmallScreen.value = window.innerWidth <= 950 }
@@ -37,7 +46,7 @@ const trainerRank = computed(() => gameStore.state.rank || 'NOVATO')
 // View State
 const viewMode = ref('dashboard') // 'dashboard' or 'missions'
 const now = ref(Date.now())
-let timer = null
+let timer: any = null
 
 onMounted(() => {
   timer = setInterval(() => { now.value = Date.now() }, 1000)
@@ -60,11 +69,11 @@ const pickerConfig = ref({
   title: '',
   subtitle: '',
   maxSelect: 1,
-  typeFilter: null,
-  missionId: null
+  typeFilter: null as string | null,
+  missionId: null as string | null
 })
 
-async function startMission(missionId) {
+async function startMission(missionId: string) {
   const m = CLASS_MISSIONS.find(x => x.id === missionId)
   if (!m) return
   const cls = classStore.playerClass
@@ -92,9 +101,11 @@ async function startMission(missionId) {
   }
 }
 
-function handlePickerConfirm(indices) {
+function handlePickerConfirm(indices: number[]) {
   const mId = pickerConfig.value.missionId
-  classStore.startMission(mId, { targetPokemonIdx: indices[0] })
+  if (mId) {
+    classStore.startMission(mId, { targetPokemonIdx: indices[0] })
+  }
   isPickerOpen.value = false
 }
 

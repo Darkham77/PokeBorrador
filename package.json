@@ -14,7 +14,7 @@
     "type-check": "vue-tsc --noEmit",
     "test": "vitest run",
     "lint": "eslint . --fix",
-    "postinstall": "python -m pip install -r requirements.txt --quiet --break-system-packages || echo 'Warning: Python dependencies could not be installed automatically. Please run: python -m pip install -r requirements.txt'"
+    "postinstall": "(python -m pip install -r requirements.txt --quiet --break-system-packages || python3 -m pip install -r requirements.txt --quiet --break-system-packages) || echo 'Warning: Python dependencies could not be installed automatically. Please run: python -m pip install -r requirements.txt or python3 -m pip install -r requirements.txt'"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.103.0",
@@ -34,6 +34,7 @@
     "jsdom": "^26.0.0",
     "sass": "^1.99.0",
     "typescript": "^6.0.3",
+    "typescript-eslint": "^8.59.2",
     "vite": "^7.3.2",
     "vite-plugin-pwa": "^1.2.0",
     "vitest": "^3.0.7",

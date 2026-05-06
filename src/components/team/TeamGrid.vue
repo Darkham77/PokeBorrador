@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useBoxStore } from '@/stores/box'
@@ -6,14 +6,14 @@ import { useUIStore } from '@/stores/ui'
 import { useInventoryStore } from '@/stores/inventory'
 import UnifiedTeamSlot from './UnifiedTeamSlot.vue'
 
-const gameStore = useGameStore()
-const uiStore = useUIStore()
-const invStore = useInventoryStore()
-const boxStore = useBoxStore()
+const gameStore = useGameStore() as any
+const uiStore = useUIStore() as any
+const invStore = useInventoryStore() as any
+const boxStore = useBoxStore() as any
 
-defineProps({
-  team: { type: Array, required: true }
-})
+defineProps<{
+  team: any[]
+}>()
 
 const maxObeyLv = computed(() => gameStore.getMaxObeyLevel())
 
@@ -28,17 +28,17 @@ const selectType = computed(() => {
   return null
 })
 
-const isSelected = (index) => {
+const isSelected = (index: number): boolean => {
   if (selectType.value === 'release') {
-    return boxStore.teamReleaseSelected.includes(index)
+    return (boxStore.teamReleaseSelected as number[]).includes(index)
   }
   if (selectType.value === 'rocket') {
-    return boxStore.teamRocketSelected.includes(index)
+    return (boxStore.teamRocketSelected as number[]).includes(index)
   }
   return false
 }
 
-const handleCardClick = (index) => {
+const handleCardClick = (index: number) => {
   if (selectType.value === 'release') {
     boxStore.toggleTeamReleaseSelect(index)
   } else if (selectType.value === 'rocket') {
@@ -48,34 +48,37 @@ const handleCardClick = (index) => {
   }
 }
 
-const openItem = (index) => {
+const openItem = (index: number) => {
   const p = gameStore.state.team[index]
   if (p && p.heldItem) {
     invStore.unequipItem('team', index)
   } else {
-    invStore.openItemMenu(null)
+    uiStore.toggleInventory('team', index)
   }
 }
 
-const sendToBox = (index) => {
+const sendToBox = (index: number) => {
   gameStore.sendToBox(index)
 }
 
 // Drag & Drop
-const onDragStart = (e, index) => {
+const onDragStart = (e: DragEvent, index: number) => {
   if (isSelectMode.value) {
     e.preventDefault()
     return
   }
-  e.dataTransfer.setData('text/plain', index)
-  e.dataTransfer.effectAllowed = 'move'
+  if (e.dataTransfer) {
+    e.dataTransfer.setData('text/plain', String(index))
+    e.dataTransfer.effectAllowed = 'move'
+  }
 }
 
-const onDrop = (e, targetIndex) => {
-  const draggedIndex = parseInt(e.dataTransfer.getData('text/plain'), 10)
-  if (draggedIndex === targetIndex || isNaN(draggedIndex)) return
-  
-  gameStore.reorderTeam(draggedIndex, targetIndex)
+const onDrop = (e: DragEvent, targetIndex: number) => {
+  if (e.dataTransfer) {
+    const draggedIndex = parseInt(e.dataTransfer.getData('text/plain'), 10)
+    if (draggedIndex === targetIndex || isNaN(draggedIndex)) return
+    gameStore.reorderTeam(draggedIndex, targetIndex)
+  }
 }
 </script>
 

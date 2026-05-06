@@ -1,12 +1,12 @@
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue'
 import { usePlayerClassStore } from '@/stores/playerClass'
 import { useUIStore } from '@/stores/ui'
 import { useBattleStore } from '@/stores/battle'
 
-const classStore = usePlayerClassStore()
-const uiStore = useUIStore()
-const battleStore = useBattleStore()
+const classStore = usePlayerClassStore() as any
+const uiStore = useUIStore() as any
+const battleStore = useBattleStore() as any
 
 const isPerformanceMode = computed(() => {
   return uiStore.isAnyBlockingModalOpen || battleStore.isBattleActive || uiStore.isDebugPerformanceMode

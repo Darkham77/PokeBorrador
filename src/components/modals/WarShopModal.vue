@@ -1,13 +1,13 @@
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue'
 import { useUIStore } from '@/stores/ui'
 import BaseModal from '@/components/common/BaseModal.vue'
 
-const uiStore = useUIStore()
+const uiStore = useUIStore() as any
 
 const isOpen = computed({
   get: () => uiStore.isWarShopOpen,
-  set: (val) => { uiStore.isWarShopOpen = val }
+  set: (val: boolean) => { uiStore.isWarShopOpen = val }
 })
 
 const closeWarShop = () => {
@@ -16,10 +16,10 @@ const closeWarShop = () => {
 
 // Shim for legacy code
 if (typeof window !== 'undefined') {
-  window.showWarShop = () => {
+  (window as any).showWarShop = () => {
     isOpen.value = true
   }
-  window.closeWarShop = () => {
+  (window as any).closeWarShop = () => {
     isOpen.value = false
   }
 }

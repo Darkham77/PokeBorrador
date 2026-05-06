@@ -1,16 +1,26 @@
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue'
 import { useUIStore } from '@/stores/ui'
 
-const uiStore = useUIStore()
+const uiStore = useUIStore() as any
 
-defineProps({
-  history: { type: Array, default: () => [] }
+interface NotificationItem {
+  icon?: string
+  msg?: string
+  ts: number | string | Date
+}
+
+interface Props {
+  history?: NotificationItem[]
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  history: () => []
 })
 
 const isHistoryOpen = computed({
   get: () => uiStore.isHistoryOpen,
-  set: (val) => { uiStore.isHistoryOpen = val }
+  set: (val: boolean) => { uiStore.isHistoryOpen = val }
 })
 </script>
 

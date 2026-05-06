@@ -1,0 +1,169 @@
+<script setup>
+import { ref, onMounted, onUnmounted, computed } from 'vue'
+
+const props = defineProps({
+  events: { type: Array, default: () => [] },
+  awards: { type: Array, default: () => [] }
+})
+
+const emit = defineEmits(['openEvent', 'openAward'])
+
+const currentIndex = ref(0)
+let timer = null
+
+const slides = computed(() => {
+  const result = []
+  
+  // Eventos activos
+  props.events.forEach(ev => {
+    result.push({
+      id: ev.id,
+      type: 'event',
+      icon: ev.icon || '🎁',
+      title: ev.name,
+      content: ev.description || '¡Evento especial activo ahora!',
+      color: 'Rgba(255, 204, 0, 1)'
+    })
+  })
+
+  // Premios
+  props.awards.forEach(aw => {
+     result.push({
+       id: aw.event_id,
+       type: 'award',
+       icon: '🏆',
+       title: '¡HAS GANADO!',
+       content: `¡Reclamá tus premios de ${aw.event_name}!`,
+        color: 'Rgba(34, 197, 94, 1)'
+     })
+  })
+
+  return result
+})
+
+const startTimer = () => {
+  if (slides.value.length <= 1) return
+  timer = setInterval(() => {
+    currentIndex.value = (currentIndex.value + 1) % slides.value.length
+  }, 5000)
+}
+
+onMounted(startTimer)
+onUnmounted(() => clearInterval(timer))
+
+const handleAction = (slide) => {
+  if (slide.type === 'event') emit('openEvent', slide.id)
+  else emit('openAward', slide.id)
+}
+</script>
+
+<template>
+  <div
+    v-if="slides.length > 0"
+    class="legacy-carousel legacy-panel"
+    :class="{ 'event-active': slides.length > 0 }"
+  >
+    <div
+      v-for="(slide, i) in slides"
+      :key="i"
+      :class="['carousel-slide', { active: currentIndex === i }]"
+      @click.stop="handleAction(slide)"
+    >
+      <div class="slide-icon">
+        {{ slide.icon }}
+      </div>
+      <div class="slide-content">
+        <div
+          class="slide-title"
+          :style="{ color: slide.color }"
+        >
+          {{ slide.title }}
+        </div>
+        <div class="slide-text">
+          {{ slide.content }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Dots -->
+    <div
+      v-if="slides.length > 1"
+      class="carousel-dots"
+    >
+      <div
+        v-for="(_, i) in slides"
+        :key="i"
+        :class="['carousel-dot', { active: currentIndex === i }]"
+      />
+    </div>
+  </div>
+</template>
+
+<style scoped>
+@use "@/styles/core/_mixins" as *;
+.legacy-carousel {
+  position: relative;
+  min-height: 80px;
+  background: Rgba(17, 17, 17, 1);
+  border: 4px solid Rgba(51, 51, 51, 1);
+  box-shadow: 0 0 0 4px $black;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.legacy-carousel.event-active {
+  border-color: Rgba(255, 204, 0, 1);
+}
+
+.carousel-slide {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  gap: 15px;
+  padding: 15px;
+  opacity: 0;
+  pointer-events: none;
+  cursor: pointer;
+}
+
+.carousel-slide.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.slide-icon { font-size: 24px; display: flex; align-items: center; }
+
+.slide-content { display: flex; flex-direction: column; justify-content: center; }
+
+.slide-title {
+  @include pixelated;
+  font-size: 8px;
+  margin-bottom: 8px;
+  text-shadow: 2px 2px $black;
+}
+
+.slide-text {
+  font-size: 11px;
+  color: Rgba(136, 136, 136, 1);
+  line-height: 1.4;
+}
+
+.carousel-dots {
+  position: absolute;
+  bottom: 10px;
+  right: 15px;
+  display: flex;
+  gap: 5px;
+}
+
+.carousel-dot {
+  width: 6px;
+  height: 6px;
+  background: Rgba(68, 68, 68, 1);
+  border: 1px solid $black;
+}
+
+.carousel-dot.active {
+  background: Rgba(255, 204, 0, 1);
+}
+</style>

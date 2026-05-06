@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue'
 import { useUIStore } from '@/stores/ui'
 import { useGameStore } from '@/stores/game'
@@ -6,24 +6,28 @@ import { useAuthStore } from '@/stores/auth'
 import { useProfileStore } from '@/stores/profile'
 import { usePlayerClassStore } from '@/stores/playerClass'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import BaseModal from '@/components/common/BaseModal.vue'
-import TrainerAvatar from '@/components/TrainerAvatar.vue'
-import ProfileStatsGrid from './profile/ProfileStatsGrid.vue'
-import ProfileNotifications from './profile/ProfileNotifications.vue'
-import ProfileTradeNotifs from './profile/ProfileTradeNotifs.vue'
 
-const uiStore = useUIStore()
-const gameStore = useGameStore()
-const authStore = useAuthStore()
-const profileStore = useProfileStore()
-const classStore = usePlayerClassStore()
+interface Props {
+  show?: boolean
+}
 
-defineProps({
-  show: { type: Boolean, default: false }
+const props = withDefaults(defineProps<Props>(), {
+  show: false
 })
 
 defineOptions({ inheritAttrs: false })
-const emit = defineEmits(['close', 'confirm', 'cancel', 'submit'])
+const emit = defineEmits<{
+  (e: 'close'): void
+  (e: 'confirm'): void
+  (e: 'cancel'): void
+  (e: 'submit'): void
+}>()
+
+const uiStore = useUIStore() as any
+const gameStore = useGameStore() as any
+const authStore = useAuthStore() as any
+const profileStore = useProfileStore() as any
+const classStore = usePlayerClassStore() as any
 
 const gs = computed(() => gameStore.state)
 const profileData = computed(() => profileStore.profileData)
@@ -81,8 +85,8 @@ const handleFactionChoice = () => {
 
 const handleResetEncounter = () => {
   // Legacy logic: window.resetEncounters?.()
-  if (typeof window.resetEncounters === 'function') {
-    window.resetEncounters()
+  if (typeof (window as any).resetEncounters === 'function') {
+    (window as any).resetEncounters()
     uiStore.notify('Encuentros reseteados', '⚠️')
   }
 }
@@ -155,7 +159,7 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
                 v-if="gs.faction"
                 :src="getAssetUrlLocal(ASSET_TYPES_LOCAL.FACTION, gs.faction)"
                 class="faction-img"
-                @error="e => e.target.style.display = 'none'"
+                @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
               >
               {{ factionLabel }}
             </div>

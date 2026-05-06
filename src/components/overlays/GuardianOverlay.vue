@@ -1,14 +1,19 @@
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue';
 
-const props = defineProps({
+interface Props {
   guardian: {
-    type: Object,
-    required: true
-  }
-});
+    id: string;
+    lv: number;
+    pts: number;
+  };
+}
 
-const emit = defineEmits(['battle']);
+const props = defineProps<Props>();
+
+const emit = defineEmits<{
+  (e: 'battle'): void
+}>();
 
 const name = computed(() => props.guardian.id.toUpperCase());
 </script>

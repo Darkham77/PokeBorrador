@@ -1,9 +1,13 @@
-<script setup>
-const _props = defineProps({
-  serverType: { type: String, required: true }
-})
+<script setup lang="ts">
+interface Props {
+  serverType: string
+}
 
-const emit = defineEmits(['update:serverType'])
+const props = defineProps<Props>()
+
+const emit = defineEmits<{
+  (e: 'update:serverType', type: string): void
+}>()
 </script>
 
 <template>

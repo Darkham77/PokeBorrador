@@ -1,24 +1,27 @@
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { useGTSStore } from '@/stores/gts'
 import { getPokemonTier } from '@/logic/pokemon/tierEngine'
+import { PDEX_TYPE_COLORS } from '@/logic/pokedexConstants'
 
-const gtsStore = useGTSStore()
+const gtsStore = useGTSStore() as any
 
 const listings = computed(() => gtsStore.filteredListings)
 
-function handleBuy(listing) {
+function handleBuy(listing: any) {
   gtsStore.buyListing(listing)
 }
 
-function getTierData(pokemon) {
+function getTierData(pokemon: any) {
   return getPokemonTier(pokemon)
 }
 
-function getSprite(pokemon) {
+function getSprite(pokemon: any) {
   return getAssetUrl(ASSET_TYPES.POKEMON, pokemon.id)
 }
+
+const getTypeColor = (type: string) => (PDEX_TYPE_COLORS as any)[type?.toLowerCase()] || 'Rgba(170, 170, 170, 1)'
 </script>
 
 <template>
@@ -68,7 +71,7 @@ function getSprite(pokemon) {
               <img
                 :src="getSprite(item.data)"
                 class="pokemon-sprite pixelated"
-                @error="e => e.target.style.display = 'none'"
+                @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
               >
             </template>
             <template v-else>

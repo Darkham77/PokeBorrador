@@ -1,16 +1,26 @@
-<script setup>
+<script setup lang="ts">
 import BoxPokemonCard from './BoxPokemonCard.vue'
 
-defineProps({
-  displayList: { type: Array, required: true },
-  selection: { type: Array, default: () => [] },
-  selectionType: { type: String, default: null }, // 'rocket' | 'release' | null
-  isBoxEmpty: { type: Boolean, default: false },
-  hasActiveFilters: { type: Boolean, default: false },
-  isPerformanceMode: { type: Boolean, default: false }
+interface Props {
+  displayList: any[]
+  selection?: number[]
+  selectionType?: string | null
+  isBoxEmpty?: boolean
+  hasActiveFilters?: boolean
+  isPerformanceMode?: boolean
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  selection: () => [],
+  selectionType: null,
+  isBoxEmpty: false,
+  hasActiveFilters: false,
+  isPerformanceMode: false
 })
 
-const emit = defineEmits(['pokemonClick'])
+const emit = defineEmits<{
+  (e: 'pokemonClick', index: number): void
+}>()
 </script>
 
 <template>
@@ -41,7 +51,7 @@ const emit = defineEmits(['pokemonClick'])
       :selection-type="selectionType"
       :is-performance-mode="isPerformanceMode"
       data-ignore="[PureVue-Ignore]"
-      @click.stop="(e, idx) => emit('pokemonClick', idx ?? item.index)"
+      @click.stop="(_, idx) => emit('pokemonClick', idx ?? item.index)"
     />
   </div>
 </template>

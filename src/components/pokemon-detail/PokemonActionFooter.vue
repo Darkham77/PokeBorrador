@@ -1,16 +1,24 @@
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue'
 import { useGameStore } from '@/stores/game'
 
-const props = defineProps({
-  context: { type: String, required: true },
-  canEvolveStone: { type: Boolean, default: false },
-  extra: { type: Object, default: null }
+interface Props {
+  context: string
+  canEvolveStone?: boolean
+  extra?: any | null
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  canEvolveStone: false,
+  extra: null
 })
 
-const emit = defineEmits(['buy', 'evolve'])
+const emit = defineEmits<{
+  (e: 'buy'): void
+  (e: 'evolve'): void
+}>()
 
-const gameStore = useGameStore()
+const gameStore = useGameStore() as any
 
 const canBuy = computed(() => {
   if (!props.extra) return false

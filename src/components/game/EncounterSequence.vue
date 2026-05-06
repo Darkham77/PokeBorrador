@@ -1,15 +1,24 @@
-<script setup>
+<script setup lang="ts">
 import { onMounted } from 'vue'
 
-const props = defineProps({
-  type: { type: String, required: true }, // 'rival' or 'fishing'
-  pokemon: { type: Object, default: null },
-  rarity: { type: String, default: '' },
-  onStart: { type: Function, default: null },
-  onComplete: { type: Function, default: null }
+interface Props {
+  type: string // 'rival' or 'fishing'
+  pokemon?: any
+  rarity?: string
+  onStart?: (() => void) | null
+  onComplete?: (() => void) | null
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  pokemon: null,
+  rarity: '',
+  onStart: null,
+  onComplete: null
 })
 
-const emit = defineEmits(['close'])
+const emit = defineEmits<{
+  (e: 'close'): void
+}>()
 
 onMounted(() => {
   if (props.type === 'rival') {

@@ -1,11 +1,16 @@
-<script setup>
-const props = defineProps({
-  boxCount: { type: Number, default: 4 },
-  currentIndex: { type: Number, required: true },
-  buyCost: { type: Number, required: true }
+<script setup lang="ts">
+const props = withDefaults(defineProps<{
+  boxCount?: number
+  currentIndex: number
+  buyCost: number
+}>(), {
+  boxCount: 4
 })
 
-const emit = defineEmits(['switch', 'buy'])
+const emit = defineEmits<{
+  (e: 'switch', index: number): void
+  (e: 'buy'): void
+}>()
 </script>
 
 <template>

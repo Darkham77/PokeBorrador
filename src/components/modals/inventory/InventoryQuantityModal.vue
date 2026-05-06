@@ -1,23 +1,31 @@
-<script setup>
+<script setup lang="ts">
 import { ref, computed } from 'vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import BaseModal from '@/components/common/BaseModal.vue'
 
-const props = defineProps({
-  item: { type: Object, required: true },
-  mode: { type: String, default: 'sell' }, // 'sell' | 'release' | 'use'
-  show: { type: Boolean, default: false }
+interface Props {
+  item: any
+  mode?: string // 'sell' | 'release' | 'use'
+  show?: boolean
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  mode: 'sell',
+  show: false
 })
 
-const emit = defineEmits(['close', 'confirm'])
+const emit = defineEmits<{
+  (e: 'close'): void
+  (e: 'confirm', qty: number): void
+}>()
 
 const quantity = ref(1)
 
 const maxQuantity = computed(() => props.item.qty || 1)
 const sellPrice = computed(() => Math.floor((props.item.price || 0) * 0.5) * quantity.value)
 
-const setQuantity = (val) => {
-  const n = parseInt(val)
+const setQuantity = (val: string | number) => {
+  const n = parseInt(val as string)
   if (isNaN(n)) return
   quantity.value = Math.max(1, Math.min(maxQuantity.value, n))
 }
@@ -43,7 +51,7 @@ const handleConfirm = () => {
         <img 
           :src="getAssetUrl(ASSET_TYPES.ITEM, item.sprite)" 
           class="item-mini-sprite"
-          @error="e => e.target.style.display = 'none'"
+          @error="e => { (e.target as HTMLImageElement).style.display = 'none' }"
         >
         <div class="title-wrap">
           <div class="main-title">
@@ -75,7 +83,7 @@ const handleConfirm = () => {
             type="number" 
             :value="quantity" 
             class="quantity-input"
-            @input="e => setQuantity(e.target.value)"
+            @input="e => setQuantity((e.target as HTMLInputElement).value)"
           >
           <button
             class="max-badge"

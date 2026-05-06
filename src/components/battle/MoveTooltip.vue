@@ -1,4 +1,5 @@
-<script setup>
+<script setup lang="ts">
+
 import { computed } from 'vue'
 import { MOVE_DATA } from '@/data/moves'
 import { getMoveDescription } from '@/logic/pokemonUtils'
@@ -6,11 +7,13 @@ import { getMechanicalWeather, WEATHER_MECHANICAL } from '@/logic/battle/weather
 import { getDayCycle } from '@/logic/timeUtils'
 import { useBattleStore } from '@/stores/battle'
 
-const props = defineProps({
-  move: { type: Object, required: true }
-})
+interface Props {
+  move: any
+}
 
-const battleStore = useBattleStore()
+const props = defineProps<Props>()
+
+const battleStore = useBattleStore() as any
 
 const modifierInfo = computed(() => {
   if (!battleStore.isBattleActive) return null

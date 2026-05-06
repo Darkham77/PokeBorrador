@@ -1,24 +1,18 @@
-<script setup>
+<script setup lang="ts">
 import { ref, computed } from 'vue'
-import { useGameStore } from '@/stores/game'
-import { useUIStore } from '@/stores/ui'
 import { SHOP_ITEMS } from '@/data/items'
-import PVTooltip from '@/components/common/PVTooltip.vue'
-
-const _game = useGameStore()
-const _ui = useUIStore()
 
 const searchQuery = ref('')
 const filteredItems = computed(() => {
-  if (!searchQuery.value) return SHOP_ITEMS.slice(0, 10)
-  return SHOP_ITEMS.filter(i => 
+  if (!searchQuery.value) return (SHOP_ITEMS as any[]).slice(0, 10)
+  return (SHOP_ITEMS as any[]).filter(i => 
     i.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
     i.id.toLowerCase().includes(searchQuery.value.toLowerCase())
   ).slice(0, 15)
 })
 
-async function addItem(item, qty = 10) {
-  window.__VITE_DEBUG__.addItem(item.name, qty)
+async function addItem(item: any, qty = 10) {
+  (window as any).__VITE_DEBUG__.addItem(item.name, qty)
 }
 </script>
 

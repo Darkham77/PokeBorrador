@@ -1,17 +1,31 @@
-<script setup>
+<script setup lang="ts">
 import BaseModal from '@/components/common/BaseModal.vue'
 
-defineProps({
-  show: { type: Boolean, default: false },
-  title: { type: String, default: '¿ESTÁS SEGURO?' },
-  message: { type: String, default: '' },
-  confirmText: { type: String, default: 'ACEPTAR' },
-  cancelText: { type: String, default: 'CANCELAR' },
-  type: { type: String, default: 'primary' },
-  variant: { type: String, default: 'modern' }
+interface Props {
+  show?: boolean
+  title?: string
+  message?: string
+  confirmText?: string
+  cancelText?: string
+  type?: string
+  variant?: string
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  show: false,
+  title: '¿ESTÁS SEGURO?',
+  message: '',
+  confirmText: 'ACEPTAR',
+  cancelText: 'CANCELAR',
+  type: 'primary',
+  variant: 'modern'
 })
 
-const emit = defineEmits(['confirm', 'cancel', 'close'])
+const emit = defineEmits<{
+  (e: 'confirm'): void
+  (e: 'cancel'): void
+  (e: 'close'): void
+}>()
 
 const handleConfirm = () => {
   emit('confirm')

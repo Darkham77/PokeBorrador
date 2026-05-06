@@ -1,18 +1,34 @@
 // [PureVue-Ignore-Length]
-<script setup>
+<script setup lang="ts">
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import TrainerAvatar from '@/components/TrainerAvatar.vue'
 
-defineProps({
-  currentClass: { type: Object, default: () => ({}) },
-  trainerLevel: { type: Number, default: 1 },
-  trainerRank: { type: String, default: 'Novato' }
+interface Props {
+  currentClass?: any
+  trainerLevel?: number
+  trainerRank?: string
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  currentClass: () => ({}),
+  trainerLevel: 1,
+  trainerRank: 'Novato'
 })
 
-const emit = defineEmits(['openMissions', 'changeClass', 'close'])
+const emit = defineEmits<{
+  (e: 'openMissions'): void
+  (e: 'changeClass'): void
+  (e: 'close'): void
+}>()
 
-const getTrainerSprite = (id) => {
+const getTrainerSprite = (id: string | undefined) => {
   return getAssetUrl(ASSET_TYPES.TRAINER, id);
+}
+
+const handleImageError = (e: Event) => {
+  if (e.target) {
+    (e.target as HTMLImageElement).style.display = 'none'
+  }
 }
 </script>
 
@@ -25,7 +41,7 @@ const getTrainerSprite = (id) => {
         <img 
           :src="getTrainerSprite(currentClass?.showdownSpriteId || currentClass?.id)"
           class="trainer-big-img" 
-          @error="e => e.target.style.display = 'none'"
+          @error="handleImageError"
         >
         <div class="avatar-mini-circle">
           <TrainerAvatar
@@ -79,27 +95,27 @@ const getTrainerSprite = (id) => {
             v-for="(bonus, idx) in currentClass?.bonuses" 
             :key="idx"
             class="ability-item"
-            :class="{ locked: idx + 1 > (currentClass?.bonusLevels?.[idx] || 1) && trainerLevel < (currentClass?.bonusLevels?.[idx] || 0) }"
+            :class="{ locked: Number(idx) + 1 > (currentClass?.bonusLevels?.[Number(idx)] || 1) && trainerLevel < (currentClass?.bonusLevels?.[Number(idx)] || 0) }"
           >
             <div class="ability-checkbox">
-              {{ (currentClass?.bonusLevels?.[idx] || 1) <= trainerLevel ? '✅' : '🔒' }}
+              {{ (currentClass?.bonusLevels?.[Number(idx)] || 1) <= trainerLevel ? '✅' : '🔒' }}
             </div>
             <div class="ability-content">
-              <p :class="{ 'text-locked': (currentClass?.bonusLevels?.[idx] || 1) > trainerLevel }">
+              <p :class="{ 'text-locked': (currentClass?.bonusLevels?.[Number(idx)] || 1) > trainerLevel }">
                 {{ bonus }}
               </p>
               <span
-                v-if="(currentClass?.bonusLevels?.[idx] || 1) > trainerLevel"
+                v-if="(currentClass?.bonusLevels?.[Number(idx)] || 1) > trainerLevel"
                 class="req-hint"
               >
-                Requiere Nivel de Entrenador {{ currentClass?.bonusLevels?.[idx] }}
+                Requiere Nivel de Entrenador {{ currentClass?.bonusLevels?.[Number(idx)] }}
               </span>
             </div>
             <div
-              v-if="(currentClass?.bonusLevels?.[idx] || 1) > trainerLevel"
+              v-if="(currentClass?.bonusLevels?.[Number(idx)] || 1) > trainerLevel"
               class="lv-badge"
             >
-              Nv. {{ currentClass?.bonusLevels?.[idx] }}
+              Nv. {{ currentClass?.bonusLevels?.[Number(idx)] }}
             </div>
             <div class="ability-help">
               ?

@@ -1,18 +1,28 @@
-<script setup>
+<script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useBattleStore } from '@/stores/battle'
 import { SHOP_ITEMS } from '@/data/items'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
-const props = defineProps({
-  isFinishing: { type: Boolean, default: false }
+interface Props {
+  isFinishing?: boolean
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  isFinishing: false
 })
 
-const emit = defineEmits(['switch', 'bag', 'run', 'catch', 'select-ball'])
+const emit = defineEmits<{
+  (e: 'switch'): void
+  (e: 'bag'): void
+  (e: 'run'): void
+  (e: 'catch'): void
+  (e: 'select-ball', ballName: string): void
+}>()
 
-const gameStore = useGameStore()
-const battleStore = useBattleStore()
+const gameStore = useGameStore() as any
+const battleStore = useBattleStore() as any
 
 const isBallMenuOpen = ref(false)
 
@@ -20,12 +30,12 @@ const availableBalls = computed(() => {
   const inventory = gameStore.state.inventory || {}
   return Object.entries(inventory)
     .filter(([name, qty]) => {
-      if (qty <= 0) return false
+      if ((qty as number) <= 0) return false
       const item = SHOP_ITEMS.find(i => i.name === name)
       return item && item.cat === 'pokeballs'
     })
     .map(([name, qty]) => {
-      const item = SHOP_ITEMS.find(i => i.name === name)
+      const item = SHOP_ITEMS.find(i => i.name === name) as any
       return {
         name,
         qty,
@@ -34,18 +44,17 @@ const availableBalls = computed(() => {
         id: item.id
       }
     })
-    .sort((a, b) => b.price - a.price) // Mas cara arriba (index 0), mas barata abajo
+    .sort((a, b) => b.price - a.price)
 })
 
 const toggleBallMenu = () => {
   if (battleStore.isProcessing || props.isFinishing || battleStore.isIntroAnimating) return
   
   if (availableBalls.value.length === 0) {
-    emit('catch') // Let parent handle "no balls" state
+    emit('catch')
     return
   }
 
-  // Si solo hay una, lanzamos directamente para agilizar
   if (availableBalls.value.length === 1 && !isBallMenuOpen.value) {
     emit('select-ball', availableBalls.value[0].name)
     return
@@ -54,19 +63,20 @@ const toggleBallMenu = () => {
   isBallMenuOpen.value = !isBallMenuOpen.value
 }
 
-const selectBall = (ballName) => {
+const selectBall = (ballName: string) => {
   emit('select-ball', ballName)
   isBallMenuOpen.value = false
 }
 
-const handleClickOutside = (e) => {
-  if (isBallMenuOpen.value && !e.target.closest('.catch-btn-wrapper')) {
+const handleClickOutside = (e: MouseEvent) => {
+  const target = e.target as HTMLElement
+  if (isBallMenuOpen.value && !target.closest('.catch-btn-wrapper')) {
     isBallMenuOpen.value = false
   }
 }
 
 onMounted(() => {
-  window.addEventListener('click', handleClickOutside) // [PureVue-Ignore]
+  window.addEventListener('click', handleClickOutside)
 })
 
 onUnmounted(() => {
@@ -108,7 +118,7 @@ onUnmounted(() => {
                 :src="getAssetUrl(ASSET_TYPES.ITEM, ball.sprite)" 
                 :alt="ball.name" 
                 class="ball-icon-mini" 
-                @error="e => e.target.style.display = 'none'"
+                @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
               > <!-- [PureVue-Ignore] -->
               <div class="ball-info">
                 <span class="ball-name">{{ ball.name }}</span>

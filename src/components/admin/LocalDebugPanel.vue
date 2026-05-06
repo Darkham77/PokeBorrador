@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 
@@ -17,9 +17,9 @@ import PVTooltip from '@/components/common/PVTooltip.vue'
 
 import { useDebugStore } from '@/stores/debug'
 
-const auth = useAuthStore()
-const debug = useDebugStore()
-const canAccess = computed(() => debug.canAccess)
+const auth = useAuthStore() as any
+const debugStore = useDebugStore() as any
+const canAccess = computed(() => debugStore.canAccess)
 
 const isOpen = ref(false)
 const selectedCategory = ref('stats')

@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue'
 import { useUIStore } from '@/stores/ui'
 import { useGameStore } from '@/stores/game'
@@ -6,13 +6,13 @@ import { NATURES } from '@/data/natures'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import BaseModal from '@/components/common/BaseModal.vue'
 
-const uiStore = useUIStore()
-const gameStore = useGameStore()
+const uiStore = useUIStore() as any
+const gameStore = useGameStore() as any
 
 const naturePokemon = computed(() => uiStore.activePokemonForNature)
 const sortedNatures = [...NATURES].sort()
 
-const handleApplyNature = (nature) => {
+const handleApplyNature = (nature: string) => {
   if (!naturePokemon.value) return
   naturePokemon.value.nature = nature
   
@@ -26,7 +26,7 @@ const handleApplyNature = (nature) => {
   })
 }
 
-const getNatureInfo = (nature) => {
+const getNatureInfo = (nature: string) => {
   const data = pokemonDataProvider.getNatureData(nature)
   if (!data || !data.up) return 'Sin cambios'
   return `+${data.up} / -${data.down}`

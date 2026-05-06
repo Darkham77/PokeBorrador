@@ -1,11 +1,11 @@
-<script setup>
+<script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 
-const gameStore = useGameStore()
-const uiStore = useUIStore()
-const events = ref([])
+const gameStore = useGameStore() as any
+const uiStore = useUIStore() as any
+const events = ref<any[]>([])
 const isEditing = ref(false)
 
 const DEFAULT_EVENT = {
@@ -45,22 +45,24 @@ const loadEvents = async () => {
   events.value = data || []
 }
 
-const editEvent = (ev) => {
+const editEvent = (ev: any) => {
   Object.assign(currentEvent, JSON.parse(JSON.stringify(ev)))
   isEditing.value = true
 }
 
 const saveEvent = async () => {
   try {
-    await window.__VITE_DEBUG__.saveEvent(currentEvent)
+    await (window as any).__VITE_DEBUG__.saveEvent(currentEvent)
     isEditing.value = false
     await loadEvents()
-  } catch (e) {
+  } catch (e: any) {
     uiStore.notify('Error al guardar: ' + e.message, '❌')
   }
 }
 
-defineEmits(['toggle-editing'])
+defineEmits<{
+  (e: 'toggle-editing'): void
+}>()
 </script>
 
 <template>

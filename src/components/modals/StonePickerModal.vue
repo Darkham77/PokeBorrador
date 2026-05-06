@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /**
  * StonePickerModal
  * Standardized modal for using evolution stones.
@@ -12,15 +12,21 @@ import { STONE_EVOLUTIONS } from '@/data/evolutionData';
 import { SHOP_ITEMS } from '@/data/items';
 import BaseModal from '@/components/common/BaseModal.vue';
 
-defineProps({
-  show: { type: Boolean, default: false }
-});
+interface Props {
+  show?: boolean
+}
 
-const emit = defineEmits(['close']);
+const props = withDefaults(defineProps<Props>(), {
+  show: false
+})
 
-const gameStore = useGameStore();
-const uiStore = useUIStore();
-const evolutionStore = useEvolutionStore();
+const emit = defineEmits<{
+  (e: 'close'): void
+}>()
+
+const gameStore = useGameStore() as any;
+const uiStore = useUIStore() as any;
+const evolutionStore = useEvolutionStore() as any;
 
 const pokemon = computed(() => uiStore.selectedPokemon);
 
@@ -36,7 +42,7 @@ const options = computed(() => {
     ];
   }
   
-  const evo = STONE_EVOLUTIONS[p.id];
+  const evo = STONE_EVOLUTIONS[p.id as keyof typeof STONE_EVOLUTIONS];
   return evo ? [evo] : [];
 });
 
@@ -44,7 +50,7 @@ const close = () => {
   emit('close');
 };
 
-const useStone = (stoneName, toId) => {
+const useStone = (stoneName: string, toId: string) => {
   const qty = gameStore.state.inventory[stoneName] || 0;
   if (qty <= 0) return;
 
@@ -60,11 +66,11 @@ const useStone = (stoneName, toId) => {
   gameStore.save(false);
 };
 
-const getStoneInfo = (name) => {
+const getStoneInfo = (name: string) => {
   return SHOP_ITEMS.find(i => i.name === name) || { icon: '💎', sprite: '' };
 };
 
-const getPokemonName = (id) => {
+const getPokemonName = (id: string) => {
   return pokemonDataProvider.getPokemonData(id)?.name || id;
 };
 </script>
@@ -96,7 +102,7 @@ const getPokemonName = (id) => {
               v-if="getStoneInfo(opt.stone).sprite"
               :src="getStoneInfo(opt.stone).sprite" 
               class="stone-sprite" 
-              @error="e => e.target.style.display = 'none'"
+              @error="e => { (e.target as HTMLImageElement).style.display = 'none' }"
             >
             <span
               v-else

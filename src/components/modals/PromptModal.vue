@@ -1,19 +1,35 @@
-<script setup>
+<script setup lang="ts">
 import { ref, watch } from 'vue'
 import BaseModal from '@/components/common/BaseModal.vue'
 
-const props = defineProps({
-  show: { type: Boolean, default: false },
-  title: { type: String, default: 'INGRESAR VALOR' },
-  message: { type: String, default: '' },
-  initialValue: { type: String, default: '' },
-  placeholder: { type: String, default: '' },
-  confirmText: { type: String, default: 'CONFIRMAR' },
-  cancelText: { type: String, default: 'CANCELAR' },
-  type: { type: String, default: 'text' }
+interface Props {
+  show?: boolean
+  title?: string
+  message?: string
+  initialValue?: string
+  placeholder?: string
+  confirmText?: string
+  cancelText?: string
+  type?: string
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  show: false,
+  title: 'INGRESAR VALOR',
+  message: '',
+  initialValue: '',
+  placeholder: '',
+  confirmText: 'CONFIRMAR',
+  cancelText: 'CANCELAR',
+  type: 'text'
 })
 
-const emit = defineEmits(['confirm', 'cancel', 'close'])
+const emit = defineEmits<{
+  (e: 'confirm', val: string): void
+  (e: 'cancel'): void
+  (e: 'close'): void
+}>()
+
 const inputValue = ref(props.initialValue)
 
 // Update internal value when initialValue prop changes (e.g. modal reused)

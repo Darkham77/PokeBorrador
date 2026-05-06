@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { ref, computed, reactive, watch } from 'vue'
 import { useWindowListener } from '@/composables/useWindowListener'
 import { useGameStore } from '@/stores/game'
@@ -16,17 +16,26 @@ import InventoryItemCard from './inventory/InventoryItemCard.vue'
 import InventoryControls from './inventory/InventoryControls.vue'
 import InventoryQuantityModal from './inventory/InventoryQuantityModal.vue'
 
-const props = defineProps({ 
-  show: { type: Boolean, default: false },
-  battleMode: { type: Boolean, default: false },
-  initialCategory: { type: String, default: null }
-})
-const emit = defineEmits(['close'])
+interface Props { 
+  show?: boolean
+  battleMode?: boolean
+  initialCategory?: string | null
+}
 
-const gameStore = useGameStore()
-const uiStore = useUIStore()
-const inventoryStore = useInventoryStore()
-const modalStore = useModalStore()
+const props = withDefaults(defineProps<Props>(), {
+  show: false,
+  battleMode: false,
+  initialCategory: null
+})
+
+const emit = defineEmits<{
+  (e: 'close'): void
+}>()
+
+const gameStore = useGameStore() as any
+const uiStore = useUIStore() as any
+const inventoryStore = useInventoryStore() as any
+const modalStore = useModalStore() as any
 
 const isSmallScreen = ref(window.innerWidth <= 950)
 const handleResize = () => { isSmallScreen.value = window.innerWidth <= 950 }
@@ -44,22 +53,24 @@ watch(() => props.show, (val) => {
 }, { immediate: true })
 
 // State
-const multiSelectMode = ref(null)
-const selectedItems = reactive(new Map()) // name -> qty
-const quantitySelectionItem = ref(null)
-const itemActionMenu = ref(null) // { item, type: 'sell'|'release'|'menu' }
+const multiSelectMode = ref<string | null>(null)
+const selectedItems = reactive(new Map<string, number>()) // name -> qty
+const quantitySelectionItem = ref<any | null>(null)
+const itemActionMenu = ref<any | null>(null) // { item, type: 'sell'|'release'|'menu' }
 
 // Getters
 const modalWidth = computed(() => props.battleMode ? '480px' : '800px')
-const filteredItems = computed(() => inventoryStore.bagItems)
+const filteredItems = computed<any[]>(() => inventoryStore.bagItems || [])
 const totalObjectsCount = computed(() => {
-  const source = props.battleMode ? filteredItems.value : Object.entries(gameStore.state.inventory || {}).map(([name, qty]) => ({ name, qty }))
+  const source = props.battleMode 
+    ? (filteredItems.value || []) as any[]
+    : Object.entries(gameStore.state.inventory || {}).map(([name, qty]) => ({ name, qty: qty as number }))
   return source.reduce((s, v) => s + (v.qty || 0), 0)
 })
 const selectedObjectsTotal = computed(() => Array.from(selectedItems.values()).reduce((s, v) => s + v, 0))
 
 // Handlers
-const handleItemClick = (item) => {
+const handleItemClick = (item: any) => {
   if (multiSelectMode.value) {
     if (selectedItems.has(item.name)) {
       selectedItems.delete(item.name)
@@ -80,7 +91,7 @@ const handleItemClick = (item) => {
   itemActionMenu.value = item
 }
 
-const handleActionSelect = (type) => {
+const handleActionSelect = (type: string) => {
   const item = itemActionMenu.value
   if (!item) return
   
@@ -95,7 +106,7 @@ const handleActionSelect = (type) => {
     
     // Battle Mode: Handle Pokeballs directly
     if (props.battleMode && dbItem.cat === 'pokeballs') {
-      const battleStore = useBattleStore()
+      const battleStore = useBattleStore() as any
       battleStore.useItemInBattle(dbItem.name)
       itemActionMenu.value = null
       close()
@@ -119,7 +130,7 @@ const handleActionSelect = (type) => {
     }
 
     // Traditional targeting if no pre-selected target
-    const validTargets = gameStore.state.team.filter(p => isValidTarget(dbItem.name, p))
+    const validTargets = (gameStore.state.team || []).filter((p: any) => isValidTarget(dbItem.name, p))
     
     if (validTargets.length === 0) {
       uiStore.notify(`Este objeto no tiene objetivos válidos en tu equipo`, '🎒')
@@ -127,17 +138,17 @@ const handleActionSelect = (type) => {
       return
     }
 
-    const battleStore = useBattleStore()
+    const battleStore = useBattleStore() as any
     modalStore.open('PokemonSelection', {
       title: `USAR ${dbItem.name?.toUpperCase()}`,
       isBattleSwitch: false, // Permitir seleccionar al activo para curaciones
       includeTeam: true,
       allowDead: dbItem.name?.toLowerCase().includes('revivir') || !props.battleMode,
-      allowedIds: validTargets.map(p => p.uid), // ONLY show valid targets
+      allowedIds: validTargets.map((p: any) => p.uid), // ONLY show valid targets
       activePokemonUid: battleStore.isBattleActive ? battleStore.player?.uid : null,
-      onConfirm: (selected) => {
+      onConfirm: (selected: any) => {
         if (selected && selected.length > 0) {
-          const index = gameStore.state.team.findIndex(p => p.uid === selected[0].uid)
+          const index = (gameStore.state.team || []).findIndex((p: any) => p.uid === selected[0].uid)
           if (index !== -1) {
             const res = inventoryStore.useItem(dbItem.name, 'team', index)
             if (res.success) {
@@ -198,7 +209,7 @@ const handleMultiExecute = async () => {
   })
 }
 
-const handleQuantityConfirm = async (qty) => {
+const handleQuantityConfirm = async (qty: number) => {
   if (quantitySelectionItem.value) {
     const itemName = quantitySelectionItem.value.name
     

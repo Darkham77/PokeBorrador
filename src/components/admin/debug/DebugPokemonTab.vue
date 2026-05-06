@@ -1,33 +1,32 @@
-<script setup>
+<script setup lang="ts">
 import { useUIStore } from '@/stores/ui'
-import PVTooltip from '@/components/common/PVTooltip.vue'
 import DebugPokemonCreator from './DebugPokemonCreator.vue'
 
-const ui = useUIStore()
+const ui = useUIStore() as any
 
 // Direct store manipulation (avoids stale proxy closures from HMR)
-async function setDebugPokedex(mode) {
-  window.__VITE_DEBUG__.setPokedexMode(mode)
+async function setDebugPokedex(mode: string) {
+  (window as any).__VITE_DEBUG__.setPokedexMode(mode)
 }
 
 async function resetPokedexDB() {
-  window.__VITE_DEBUG__.resetPokedexDB()
+  (window as any).__VITE_DEBUG__.resetPokedexDB()
 }
 
 async function syncPokedexFromCollection() {
-  window.__VITE_DEBUG__.syncPokedex()
+  (window as any).__VITE_DEBUG__.syncPokedex()
 }
 
 async function clearPvpTeam() {
-  window.__VITE_DEBUG__.clearPvpTeam()
+  (window as any).__VITE_DEBUG__.clearPvpTeam()
 }
 
 async function clearWarTeam() {
-  window.__VITE_DEBUG__.clearWarTeam()
+  (window as any).__VITE_DEBUG__.clearWarTeam()
 }
 
 async function forceStarterScreen() {
-  window.__VITE_DEBUG__.forceStarterScreen()
+  (window as any).__VITE_DEBUG__.forceStarterScreen()
 }
 </script>
 

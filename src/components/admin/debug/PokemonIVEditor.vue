@@ -1,13 +1,13 @@
-<script setup>
-import PVTooltip from '@/components/common/PVTooltip.vue'
-defineProps({
-  ivs: {
-    type: Object,
-    required: true
-  }
-})
+<script setup lang="ts">
+interface Props {
+  ivs: Record<string, number>
+}
 
-defineEmits(['update:iv'])
+defineProps<Props>()
+
+const emit = defineEmits<{
+  (e: 'update:iv', stat: string, val: number): void
+}>()
 </script>
 
 <template>
@@ -28,7 +28,7 @@ defineEmits(['update:iv'])
             type="number"
             min="0"
             max="31"
-            @input="e => $emit('update:iv', stat, parseInt(e.target.value))"
+            @input="(e: Event) => emit('update:iv', stat as string, parseInt((e.target as HTMLInputElement).value))"
           >
         </div>
       </div>

@@ -1,30 +1,43 @@
-<script setup>
+<script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useBreedingStore } from '@/stores/breeding'
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
-const _props = defineProps({
-  isOpen: Boolean
+
+interface Props {
+  isOpen?: boolean
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  isOpen: false
 })
 
-const emit = defineEmits(['close'])
+const emit = defineEmits<{
+  (e: 'close'): void
+}>()
 
-const gameStore = useGameStore()
-const breedingStore = useBreedingStore()
+const gameStore = useGameStore() as any
+const breedingStore = useBreedingStore() as any
 
-const scanningResult = ref(null)
+const scanningResult = ref<any>(null)
 const isScanning = ref(false)
 
-const allEggs = computed(() => {
-  const inventoryEggs = (gameStore.state.eggs || []).map((e, idx) => ({ 
+interface EggItem {
+  type: string
+  data: any
+  id: any
+  species: string
+}
+
+const allEggs = computed<EggItem[]>(() => {
+  const inventoryEggs = ((gameStore.state.eggs || []) as any[]).map((e, idx) => ({ 
     type: 'inventory', 
     data: e, 
     id: idx,
     species: e.pokemonId || e.species
   }))
   
-  const daycareEggs = (breedingStore.eggs || []).map(e => ({ 
+  const daycareEggs = ((breedingStore.eggs || []) as any[]).map(e => ({ 
     type: 'daycare', 
     data: e, 
     id: e.egg_id,
@@ -34,7 +47,7 @@ const allEggs = computed(() => {
   return [...inventoryEggs, ...daycareEggs]
 })
 
-const scanEgg = async (egg) => {
+const scanEgg = async (egg: EggItem) => {
   isScanning.value = true
   // Simulate scanning delay for "wow" effect
   await new Promise(r => setTimeout(r, 800))
@@ -75,7 +88,7 @@ const handleKeep = async () => {
     await breedingStore.updateEggIvs(res.id, newIvs)
   }
   
-  window.notify?.('Datos registrados.', '📋')
+  ;(window as any).notify?.('Datos registrados.', '📋')
   scanningResult.value = null
 }
 
@@ -91,13 +104,9 @@ const handleSell = async () => {
   }
   
   gameStore.state.money += res.sellPrice
-  window.notify?.('Huevo vendido.', '💰')
+  ;(window as any).notify?.('Huevo vendido.', '💰')
   await gameStore.saveGame(true)
   scanningResult.value = null
-}
-
-const _getSprite = (id, shiny) => {
-  return getAssetUrl(ASSET_TYPES.POKEMON, id, { shiny })
 }
 </script>
 

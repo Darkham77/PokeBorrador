@@ -1,32 +1,36 @@
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import { NATURE_DATA } from '@/data/natures'
 import { ABILITY_DATA } from '@/data/abilities'
 
-const props = defineProps({
-  pokemon: { type: Object, required: true },
-  context: { type: String, default: 'box' }
+interface Props {
+  pokemon: any
+  context?: string
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  context: 'box'
 })
 
 const p = computed(() => props.pokemon)
 
-const getHpPct = (cur, max) => (cur / max) * 100
-const getHpClass = (pct) => {
+const getHpPct = (cur: number, max: number) => (cur / max) * 100
+const getHpClass = (pct: number) => {
   if (pct > 50) return 'hp-high'
   if (pct > 25) return 'hp-mid'
   return 'hp-low'
 }
 
-const getNatureInfo = (nature) => {
+const getNatureInfo = (nature: string) => {
   if (!nature) return { up: null, down: null, desc: 'Sin datos de naturaleza.' }
-  const entry = NATURE_DATA[nature] || Object.entries(NATURE_DATA).find(([k]) => k.toLowerCase() === nature.toLowerCase())?.[1]
+  const entry = (NATURE_DATA as any)[nature] || Object.entries(NATURE_DATA).find(([k]) => k.toLowerCase() === nature.toLowerCase())?.[1]
   return entry || { up: null, down: null, desc: 'Naturaleza desconocida.' }
 }
 
-const getAbilityDesc = (ability) => {
+const getAbilityDesc = (ability: string) => {
   if (!ability) return 'Habilidad especial de este Pokémon.'
-  const entry = ABILITY_DATA[ability] || Object.entries(ABILITY_DATA).find(([k]) => k.toLowerCase() === ability.toLowerCase())?.[1]
+  const entry = (ABILITY_DATA as any)[ability] || Object.entries(ABILITY_DATA).find(([k]) => k.toLowerCase() === ability.toLowerCase())?.[1]
   if (!entry) return 'Habilidad especial de este Pokémon.'
   return typeof entry === 'string' ? entry : (entry.desc || 'Habilidad especial de este Pokémon.')
 }
@@ -35,7 +39,7 @@ const natureStyle = computed(() => {
   const info = getNatureInfo(p.value.nature)
   if (!info.up) return { color: '$gray' } // Neutral gray
   
-  const colors = {
+  const colors: Record<string, string> = {
     'Ataque': '$red',
     'Defensa': '$yellow',
     'At. Esp': 'Rgba(59, 139, 255, 1)',

@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useBattleStore } from '@/stores/battle'
@@ -10,16 +10,16 @@ import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { isValidTarget } from '@/logic/items/itemEffects'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 
-const gameStore = useGameStore()
-const battleStore = useBattleStore()
-const uiStore = useUIStore()
-const modalStore = useModalStore()
-const inventoryStore = useInventoryStore()
+const gameStore = useGameStore() as any
+const battleStore = useBattleStore() as any
+const uiStore = useUIStore() as any
+const modalStore = useModalStore() as any
+const inventoryStore = useInventoryStore() as any
 
 const inventory = computed(() => gameStore.state.inventory || {})
 
 const battleItems = computed(() => {
-  const items = []
+  const items: any[] = []
   Object.entries(inventory.value).forEach(([name, qty]) => {
     const itemData = SHOP_ITEMS.find(i => i.name === name)
     if (!itemData) return
@@ -36,11 +36,10 @@ const battleItems = computed(() => {
   })
 })
 
-const handleUseItem = (item) => {
+const handleUseItem = (item: any) => {
   if (battleStore.isProcessing || battleStore.isIntroAnimating) return
 
-  // Algoritmo idéntico a InventoryModal.vue
-  const dbItem = SHOP_ITEMS.find(i => i.id === item.id || i.name === item.name)
+  const dbItem = SHOP_ITEMS.find(i => i.id === item.id || i.name === item.name) as any
   if (!dbItem) return
 
   // 1. Pokéballs: Uso directo
@@ -50,14 +49,14 @@ const handleUseItem = (item) => {
   }
 
   // 2. Objetos de Selección: Buscar objetivos válidos
-  const validTargets = gameStore.state.team.filter(p => isValidTarget(dbItem.name, p))
+  const validTargets = (gameStore.state.team as any[]).filter(p => isValidTarget(dbItem.name, p))
   
   if (validTargets.length === 0) {
     uiStore.notify(`Este objeto no tiene objetivos válidos en tu equipo`, '🎒')
     return
   }
 
-  // 3. Abrir modal de selección (mismo algoritmo que Mochila)
+  // 3. Abrir modal de selección
   modalStore.open('PokemonSelection', {
     title: `USAR ${dbItem.name?.toUpperCase()}`,
     isBattleSwitch: false, 
@@ -65,9 +64,9 @@ const handleUseItem = (item) => {
     allowDead: dbItem.name?.toLowerCase().includes('revivir'),
     allowedIds: validTargets.map(p => p.uid),
     activePokemonUid: battleStore.isBattleActive ? battleStore.player?.uid : null,
-    onConfirm: (selected) => {
+    onConfirm: (selected: any[]) => {
       if (selected && selected.length > 0) {
-        const index = gameStore.state.team.findIndex(p => p.uid === selected[0].uid)
+        const index = (gameStore.state.team as any[]).findIndex(p => p.uid === selected[0].uid)
         if (index !== -1) {
           const res = inventoryStore.useItem(dbItem.name, 'team', index)
           if (res.success) {
@@ -104,7 +103,7 @@ const handleUseItem = (item) => {
                 :src="getAssetUrl(ASSET_TYPES.ITEM, item.sprite)" 
                 class="item-sprite"
                 :alt="item.name"
-                @error="e => e.target.style.display = 'none'"
+                @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
               >
             </div>
             <div class="item-qty-badge">

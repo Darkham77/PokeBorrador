@@ -1,23 +1,38 @@
-<script setup>
+<script setup lang="ts">
 import BaseModal from '@/components/common/BaseModal.vue'
 
-defineProps({
-  number: { type: Number, required: true },
-  type: { type: String, default: 'center' },
-  // Estética
-  variant: { type: String, default: 'modern' },
-  hideHeader: { type: Boolean, default: false },
-  corners: { type: String, default: null },
-  showBorder: { type: Boolean, default: true },
-  blurOverlay: { type: Boolean, default: true },
-  yellowBorder: { type: Boolean, default: false },
-  overlay: { type: String, default: 'dark' },
-  maxWidth: { type: String, default: '340px' },
-  padding: { type: String, default: 'standard' },
-  positionMode: { type: String, default: null }
+interface Props {
+  number: number
+  type?: string
+  variant?: string
+  hideHeader?: boolean
+  corners?: string | null
+  showBorder?: boolean
+  blurOverlay?: boolean
+  yellowBorder?: boolean
+  overlay?: string
+  maxWidth?: string
+  padding?: string
+  positionMode?: string | null
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  type: 'center',
+  variant: 'modern',
+  hideHeader: false,
+  corners: null,
+  showBorder: true,
+  blurOverlay: true,
+  yellowBorder: false,
+  overlay: 'dark',
+  maxWidth: '340px',
+  padding: 'standard',
+  positionMode: null
 })
 
-const emit = defineEmits(['close'])
+const emit = defineEmits<{
+  (e: 'close'): void
+}>()
 </script>
 
 <template>

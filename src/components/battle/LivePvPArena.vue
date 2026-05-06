@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { computed, onMounted } from 'vue'
 import { useLivePvPStore } from '@/stores/livePvP'
 import { useAuthStore } from '@/stores/auth'
@@ -6,16 +6,16 @@ import { useUIStore } from '@/stores/ui'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { PLAYER_CLASSES } from '@/data/playerClasses'
 
-const livePvP = useLivePvPStore()
-const auth = useAuthStore()
-const ui = useUIStore()
+const livePvP = useLivePvPStore() as any
+const auth = useAuthStore() as any
+const ui = useUIStore() as any
 
-const battle = computed(() => livePvP.battleState)
+const battle = computed(() => livePvP.battleState as any)
 
 // Local animations/visual state
 const playerAvatarId = computed(() => {
   const pClass = auth.user?.user_metadata?.playerClass
-  return PLAYER_CLASSES[pClass]?.avatarSpriteId || 'red-lgpe'
+  return (PLAYER_CLASSES as any)[pClass]?.avatarSpriteId || 'red-lgpe'
 })
 
 const opponentAvatarId = computed(() => {
@@ -27,7 +27,7 @@ onMounted(() => {
   // Sync logic if needed
 })
 
-function handleMove(moveIdx) {
+function handleMove(moveIdx: number) {
   if (battle.value.phase !== 'choosing') return
   livePvP.commitPick({ type: 'move', moveIndex: moveIdx })
 }
@@ -66,7 +66,7 @@ function handleForfeit() {
             <img
               :src="getAssetUrl(ASSET_TYPES.TRAINER, playerAvatarId)"
               class="trainer-img"
-              @error="e => e.target.style.display = 'none'"
+              @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
             >
           </div>
           <div class="trainer-meta">
@@ -152,7 +152,7 @@ function handleForfeit() {
             class="moves-grid"
           >
             <button 
-              v-for="(move, i) in battle.myTeam[battle.myActiveIdx]?.moves" 
+              v-for="(move, i) in (battle.myTeam[battle.myActiveIdx]?.moves as any[])" 
               :key="i"
               class="move-btn"
               @click.stop="handleMove(i)"
@@ -197,7 +197,7 @@ function handleForfeit() {
             <img
               :src="getAssetUrl(ASSET_TYPES.TRAINER, opponentAvatarId)"
               class="trainer-img"
-              @error="e => e.target.style.display = 'none'"
+              @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
             >
           </div>
           <div class="trainer-meta">

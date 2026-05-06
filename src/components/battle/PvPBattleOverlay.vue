@@ -1,8 +1,7 @@
-<script setup>
+<script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from 'vue';
 import { useGameStore } from '@/stores/game';
 import { usePvPStore } from '@/stores/pvp';
-import { useBattleVisuals } from '@/composables/useBattleVisuals';
 
 // Sub-components
 import BattleLog from './BattleLog.vue';
@@ -10,12 +9,11 @@ import BattleInfoCard from './BattleInfoCard.vue';
 import BattleMovesGrid from './BattleMovesGrid.vue';
 import PlayerAvatar from '@/components/player/PlayerAvatar.vue';
 
-const gameStore = useGameStore();
-const pvpStore = usePvPStore();
-const { _getHpPct, _getHpClass } = useBattleVisuals();
+const gameStore = useGameStore() as any;
+const pvpStore = usePvPStore() as any;
 
 const timeRemaining = ref(40);
-let timer = null;
+let timer: any = null;
 
 onMounted(() => {
   startTurnTimer();
@@ -44,11 +42,11 @@ const stopTurnTimer = () => {
 };
 
 // Computeds for convenience
-const playerPoke = computed(() => pvpStore.myTeam[pvpStore.myActiveIndex] || {});
-const enemyPoke = computed(() => pvpStore.enemyTeam[pvpStore.enemyActiveIndex] || {});
+const playerPoke = computed(() => (pvpStore.myTeam && pvpStore.myTeam[pvpStore.myActiveIndex]) || {});
+const enemyPoke = computed(() => (pvpStore.enemyTeam && pvpStore.enemyTeam[pvpStore.enemyActiveIndex]) || {});
 const isRanked = computed(() => pvpStore.activeBattle?.isRanked);
 
-const handleMoveSelection = (moveIdx) => {
+const handleMoveSelection = (moveIdx: number) => {
   pvpStore.makePick({ type: 'move', index: moveIdx });
   stopTurnTimer();
 };

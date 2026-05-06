@@ -1,9 +1,9 @@
-<script setup>
+<script setup lang="ts">
 import { ref } from 'vue'
 import { useSocialStore } from '@/stores/social.js'
 import TrainerAvatar from '@/components/TrainerAvatar.vue'
 
-const socialStore = useSocialStore()
+const socialStore = useSocialStore() as any
 const searchInput = ref('')
 
 const handleSearch = () => {

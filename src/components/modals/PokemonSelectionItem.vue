@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue'
 import { PDEX_TYPE_COLORS } from '@/logic/pokedexConstants'
 import PVTooltip from '@/components/common/PVTooltip.vue'
@@ -10,20 +10,33 @@ import { useBattleVisuals } from '@/composables/useBattleVisuals'
 
 const { getHpColor } = useBattleVisuals()
 
-const props = defineProps({
-  item: { type: Object, required: true },
-  isSelected: { type: Boolean, default: false },
-  total: { type: Number, required: true },
-  isBattleContext: { type: Boolean, default: false },
-  autoConfirm: { type: Boolean, default: false }
+interface Props {
+  item: {
+    pokemon: any
+    _source: string
+    index: number
+  }
+  isSelected?: boolean
+  total: number
+  isBattleContext?: boolean
+  autoConfirm?: boolean
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  isSelected: false,
+  isBattleContext: false,
+  autoConfirm: false
 })
 
-const emit = defineEmits(['select', 'openDetail'])
+const emit = defineEmits<{
+  (e: 'select', item: any): void
+  (e: 'openDetail', item: any): void
+}>()
 
-const getTypeColor = (type) => PDEX_TYPE_COLORS[type?.toLowerCase()] || 'Rgba(170, 170, 170, 1)'
+const getTypeColor = (type: string) => PDEX_TYPE_COLORS[type?.toLowerCase()] || 'Rgba(170, 170, 170, 1)'
 
 const tierData = computed(() => getPokemonTier(props.item.pokemon))
-const ivTotal = computed(() => Object.values(props.item.pokemon.ivs || {}).reduce((s, v) => s + (v || 0), 0))
+const ivTotal = computed(() => Object.values(props.item.pokemon.ivs || {}).reduce((s: number, v: any) => s + (v || 0), 0))
 const isPremiumTier = computed(() => tierData.value.tier === 'S' || tierData.value.tier === 'S+')
 </script>
 
@@ -57,7 +70,7 @@ const isPremiumTier = computed(() => tierData.value.tier === 'S' || tierData.val
             :src="getAssetUrl(ASSET_TYPES.POKEMON, item.pokemon.id, { isShiny: item.pokemon.isShiny })"
             alt=""
             class="pixelated"
-            @error="e => e.target.style.display = 'none'"
+            @error="e => { (e.target as HTMLImageElement).style.display = 'none' }"
           >
         </PVSpriteFX>
       </PVTooltip>

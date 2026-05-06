@@ -1,11 +1,11 @@
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue'
 import { useEventStore } from '@/stores/events'
 
-const eventStore = useEventStore()
+const eventStore = useEventStore() as any
 
 const activeDisplayEvents = computed(() => {
-  return eventStore.activeEvents.map(ev => ({
+  return eventStore.activeEvents.map((ev: any) => ({
     id: ev.id,
     name: ev.name,
     icon: ev.icon || '🌟',
@@ -25,7 +25,7 @@ const activeDisplayEvents = computed(() => {
         v-for="(event, index) in activeDisplayEvents" 
         :key="event.id" 
         class="event-banner"
-        :style="{ '--event-color': event.color, '--event-seed': index * 0.33 }"
+        :style="{ '--event-color': event.color, '--event-seed': (index as number) * 0.33 }"
       >
         <div class="glow" />
         <div class="event-banner-content">

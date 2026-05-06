@@ -1,18 +1,26 @@
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed } from 'vue'
 
-const props = defineProps({
-  events: { type: Array, default: () => [] },
-  awards: { type: Array, default: () => [] }
+interface Props {
+  events?: any[]
+  awards?: any[]
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  events: () => [],
+  awards: () => []
 })
 
-const emit = defineEmits(['openEvent', 'openAward'])
+const emit = defineEmits<{
+  (e: 'openEvent', id: string | number): void
+  (e: 'openAward', id: string | number): void
+}>()
 
 const currentIndex = ref(0)
-let timer = null
+let timer: any = null
 
 const slides = computed(() => {
-  const result = []
+  const result: any[] = []
   
   // Eventos activos
   props.events.forEach(ev => {
@@ -51,7 +59,7 @@ const startTimer = () => {
 onMounted(startTimer)
 onUnmounted(() => clearInterval(timer))
 
-const handleAction = (slide) => {
+const handleAction = (slide: any) => {
   if (slide.type === 'event') emit('openEvent', slide.id)
   else emit('openAward', slide.id)
 }

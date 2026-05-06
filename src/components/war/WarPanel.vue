@@ -1,27 +1,30 @@
-<script setup>
+<script setup lang="ts">
 import { computed, onMounted } from 'vue'
 import { useMapStore } from '@/stores/map'
 import { useUIStore } from '@/stores/ui'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import WarMapCard from './WarMapCard.vue'
 
-const mapStore = useMapStore()
-const uiStore = useUIStore()
+const mapStore = useMapStore() as any
+const uiStore = useUIStore() as any
 
 onMounted(() => {
   mapStore.fetchWarStatus()
 })
 
 const dominance = computed(() => mapStore.warStatus || { union: 0, poder: 0, contested: 0 })
-const totalPoints = computed(() => dominance.value.union + dominance.value.poder + dominance.value.contested || 1)
+const totalPoints = computed(() => {
+  const d = dominance.value
+  return (Number(d.union) || 0) + (Number(d.poder) || 0) + (Number(d.contested) || 0) || 1
+})
 
-const getWidth = (val) => (val / totalPoints.value * 100) + '%'
+const getWidth = (val: number) => (val / totalPoints.value * 100) + '%'
 
 const close = () => {
   uiStore.isWarPanelOpen = false
 }
 
-const getFactionIcon = (faction) => {
+const getFactionIcon = (faction: string) => {
   return getAssetUrl(ASSET_TYPES.FACTION, faction)
 }
 </script>
@@ -52,7 +55,7 @@ const getFactionIcon = (faction) => {
               <img
                 :src="getFactionIcon('union')"
                 class="faction-icon"
-                @error="e => e.target.style.display = 'none'"
+                @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
               >
               <span>TEAM UNIÓN</span>
               <span class="points">{{ dominance.union }} Puntos</span>
@@ -63,7 +66,7 @@ const getFactionIcon = (faction) => {
               <img
                 :src="getFactionIcon('poder')"
                 class="faction-icon"
-                @error="e => e.target.style.display = 'none'"
+                @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
               >
             </div>
           </div>

@@ -1,15 +1,22 @@
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue'
 import { useGymsStore } from '@/stores/gyms'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
-const props = defineProps({
-  gym: { type: Object, required: true },
-  isDefeated: { type: Boolean, default: false },
-  isLocked: { type: Boolean, default: false }
+interface Props {
+  gym: any
+  isDefeated?: boolean
+  isLocked?: boolean
+  isReaffirming?: boolean
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  isDefeated: false,
+  isLocked: false,
+  isReaffirming: false
 })
 
-const gymsStore = useGymsStore()
+const gymsStore = useGymsStore() as any
 const selectedDifficulty = defineModel('difficulty', { type: String, default: 'easy' })
 
 const handleChallenge = () => {
@@ -18,7 +25,7 @@ const handleChallenge = () => {
 }
 
 const typeIcon = computed(() => {
-  const icons = {
+  const icons: Record<string, string> = {
     rock: '🪨', water: '💧', electric: '⚡', grass: '🌿',
     poison: '☠️', psychic: '🔮', fire: '🔥', ground: '🌍'
   }
@@ -66,7 +73,7 @@ const leaderSpriteUrl = computed(() => {
             :src="leaderSpriteUrl"
             :alt="gym.name"
             class="pixel-sprite"
-            @error="e => e.target.style.display = 'none'"
+            @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
           >
         </div>
       </div>

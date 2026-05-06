@@ -1,11 +1,15 @@
-<script setup>
+<script setup lang="ts">
 import { useAuthStore } from '@/stores/auth'
 
-defineProps({
-  show: { type: Boolean, default: false }
+interface Props {
+  show?: boolean
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  show: false
 })
 
-const authStore = useAuthStore()
+const authStore = useAuthStore() as any
 
 function handleReconnect() {
   window.location.reload()

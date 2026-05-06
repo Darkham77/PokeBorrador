@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useBoxStore } from '@/stores/box'
@@ -6,15 +6,17 @@ import { useUIStore } from '@/stores/ui'
 import { useModalStore } from '@/stores/modals'
 import BaseModal from '@/components/common/BaseModal.vue'
 
-const props = defineProps({
-  pokemon: { type: Object, required: true },
-  boxIndex: { type: Number, required: true }
-})
+interface Props {
+  pokemon: any
+  boxIndex: number
+}
 
-const gameStore = useGameStore()
-const boxStore = useBoxStore()
-const uiStore = useUIStore()
-const modalStore = useModalStore()
+const props = defineProps<Props>()
+
+const gameStore = useGameStore() as any
+const boxStore = useBoxStore() as any
+const uiStore = useUIStore() as any
+const modalStore = useModalStore() as any
 
 const currentBox = computed(() => Math.floor(props.boxIndex / 50))
 

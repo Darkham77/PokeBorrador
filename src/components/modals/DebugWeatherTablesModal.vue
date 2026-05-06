@@ -1,12 +1,14 @@
-<script setup>
+<script setup lang="ts">
 import { ref, computed } from 'vue'
 import BaseModal from '@/components/common/BaseModal.vue'
 import { ROUTE_WEATHER_TABLES } from '@/data/weather-tables'
 import { FIRE_RED_MAPS } from '@/data/maps'
 
-const emit = defineEmits(['close'])
+const emit = defineEmits<{
+  (e: 'close'): void
+}>()
 
-const weatherIcons = {
+const weatherIcons: Record<string, string> = {
   clear: '☀️',
   rain: '🌧️',
   storm: '⚡',
@@ -17,14 +19,14 @@ const weatherIcons = {
   heatwave: '🔥'
 }
 
-const cycleLabels = {
+const cycleLabels: Record<string, string> = {
   morning: '🌅 Amanecer',
   day: '☀️ Día',
   dusk: '🌇 Ocaso',
   night: '🌙 Noche'
 }
 
-const seasonLabels = {
+const seasonLabels: Record<string, string> = {
   spring: 'Primavera',
   summer: 'Verano',
   autumn: 'Otoño',
@@ -32,7 +34,13 @@ const seasonLabels = {
 }
 
 // Region definitions
-const REGIONS = [
+interface Region {
+  id: string
+  name: string
+  maps: string[]
+}
+
+const REGIONS: Region[] = [
   { id: 'kanto', name: 'Kanto', maps: FIRE_RED_MAPS.map(m => m.id) },
   { id: 'johto', name: 'Johto', maps: [] },
   { id: 'hoenn', name: 'Hoenn', maps: [] },
@@ -46,16 +54,16 @@ const filteredRoutes = computed(() => {
   if (!region) return []
   
   // Only return routes that are in the region AND have weather tables
-  return region.maps.filter(id => ROUTE_WEATHER_TABLES[id])
+  return region.maps.filter(id => (ROUTE_WEATHER_TABLES as any)[id])
 })
 
-const hasWeatherTables = (regionId) => {
+const hasWeatherTables = (regionId: string) => {
   const region = REGIONS.find(r => r.id === regionId)
   if (!region) return false
-  return region.maps.some(id => ROUTE_WEATHER_TABLES[id])
+  return region.maps.some(id => (ROUTE_WEATHER_TABLES as any)[id])
 }
 
-function formatRouteName(id) {
+function formatRouteName(id: string) {
   const map = FIRE_RED_MAPS.find(m => m.id === id)
   if (map) return map.name
   return id.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())

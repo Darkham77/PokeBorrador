@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useWindowListener } from '@/composables/useWindowListener'
 import { useGameStore } from '@/stores/game'
@@ -8,8 +8,8 @@ import BaseModal from '@/components/common/BaseModal.vue'
 import UnifiedTeamSlot from '@/components/team/UnifiedTeamSlot.vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 
-const gameStore = useGameStore()
-const uiStore = useUIStore()
+const gameStore = useGameStore() as any
+const uiStore = useUIStore() as any
 
 const isSmallScreen = ref(window.innerWidth <= 950)
 const handleResize = () => { isSmallScreen.value = window.innerWidth <= 950 }
@@ -28,7 +28,7 @@ const adventureTeam = computed(() => {
 
 const pvpTeam = computed(() => {
   const pvpUids = gameStore.state.pvpTeam || []
-  const allPokes = [...gameStore.state.team, ...(gameStore.state.box || [])]
+  const allPokes = [...(gameStore.state.team || []), ...(gameStore.state.box || [])].filter(Boolean) as any[]
   const slots = []
   for (let i = 0; i < 3; i++) {
     const uid = pvpUids[i]
@@ -40,7 +40,7 @@ const pvpTeam = computed(() => {
 const warTeam = computed(() => {
   const warUids = gameStore.state.warTeam || []
   const maxSlots = gameStore.state.warSlots || 6
-  const allPokes = [...gameStore.state.team, ...(gameStore.state.box || [])]
+  const allPokes = [...(gameStore.state.team || []), ...(gameStore.state.box || [])].filter(Boolean) as any[]
   const slots = []
   for (let i = 0; i < maxSlots; i++) {
     const uid = warUids[i]
@@ -49,17 +49,17 @@ const warTeam = computed(() => {
   return slots
 })
 
-const adventureCount = computed(() => gameStore.state.team.filter(Boolean).length)
+const adventureCount = computed(() => (gameStore.state.team || []).filter(Boolean).length)
 const pvpCount = computed(() => (gameStore.state.pvpTeam || []).length)
 const warCount = computed(() => (gameStore.state.warTeam || []).length)
 const maxWarSlots = computed(() => gameStore.state.warSlots || 6)
 
 // Drag and Drop Logic
-const draggedIndex = ref(null)
-const touchOverIndex = ref(null)
+const draggedIndex = ref<number | null>(null)
+const touchOverIndex = ref<number | null>(null)
 const isDragging = ref(false)
 
-function handleDragStart(index) {
+function handleDragStart(index: number) {
   draggedIndex.value = index
   isDragging.value = true
   
@@ -73,7 +73,7 @@ function handleDragEnd() {
   touchOverIndex.value = null
 }
 
-function handleDrop(targetIndex) {
+function handleDrop(targetIndex: number) {
   if (draggedIndex.value === null || draggedIndex.value === targetIndex) return
   
   if (activeTab.value === 'adventure') {
@@ -90,38 +90,38 @@ function handleDrop(targetIndex) {
   handleDragEnd()
 }
 
-function openDetail(pokemon) {
+function openDetail(pokemon: any) {
   if (!pokemon) return
-  const idx = gameStore.state.team.findIndex(p => p.uid === pokemon.uid)
+  const idx = (gameStore.state.team || []).findIndex((p: any) => p && p.uid === pokemon.uid)
   uiStore.openPokemonDetail(pokemon, idx, idx > -1 ? 'team' : 'box')
 }
 
-function openItem(pokemon) {
+function openItem(pokemon: any) {
   if (!pokemon) return
   // Try to find in team first
-  let idx = gameStore.state.team.findIndex(p => p && p.uid === pokemon.uid)
+  let idx = (gameStore.state.team || []).findIndex((p: any) => p && p.uid === pokemon.uid)
   if (idx > -1) {
     uiStore.toggleInventory('team', idx)
     return
   }
   // Fallback to box (for PVP/WAR slots that might be in box)
-  idx = gameStore.state.box.findIndex(p => p && p.uid === pokemon.uid)
+  idx = (gameStore.state.box || []).findIndex((p: any) => p && p.uid === pokemon.uid)
   if (idx > -1) {
     uiStore.toggleInventory('box', idx)
   }
 }
 
-function sendToBox(pokemon) {
+function sendToBox(pokemon: any) {
   if (!pokemon) return
-  const idx = gameStore.state.team.findIndex(p => p.uid === pokemon.uid)
+  const idx = (gameStore.state.team || []).findIndex((p: any) => p && p.uid === pokemon.uid)
   if (idx > -1) {
     gameStore.sendToBox(idx)
   }
 }
 
-function selectPvp(slotIndex) {
+function selectPvp(slotIndex: number) {
   const pvpTeam = gameStore.state.pvpTeam || []
-  const allPokes = [...gameStore.state.team, ...(gameStore.state.box || [])]
+  const allPokes = [...(gameStore.state.team || []), ...(gameStore.state.box || [])]
   const available = allPokes.filter(p => p && !pvpTeam.includes(p.uid))
   
   if (available.length === 0) {
@@ -133,7 +133,7 @@ function selectPvp(slotIndex) {
     title: 'SELECCIONAR POKÉMON',
     subtitle: 'Elige un Pokémon para tu equipo de combate.',
     excludeUids: pvpTeam,
-    callbackConfirm: (selected) => {
+    callbackConfirm: (selected: any) => {
       if (selected && selected.length > 0) {
         gameStore.swapPvpSlot(slotIndex, selected[0].uid)
       }
@@ -141,9 +141,9 @@ function selectPvp(slotIndex) {
   })
 }
 
-function selectWar(slotIndex) {
+function selectWar(slotIndex: number) {
   const warTeam = gameStore.state.warTeam || []
-  const allPokes = [...gameStore.state.team, ...(gameStore.state.box || [])]
+  const allPokes = [...(gameStore.state.team || []), ...(gameStore.state.box || [])]
   const available = allPokes.filter(p => p && !warTeam.includes(p.uid))
   
   if (available.length === 0) {
@@ -155,7 +155,7 @@ function selectWar(slotIndex) {
     title: 'SELECCIONAR POKÉMON',
     subtitle: 'Elige un Pokémon para tu equipo de guerra.',
     excludeUids: warTeam,
-    callbackConfirm: (selected) => {
+    callbackConfirm: (selected: any) => {
       if (selected && selected.length > 0) {
         gameStore.swapWarSlot(slotIndex, selected[0].uid)
       }
@@ -163,22 +163,22 @@ function selectWar(slotIndex) {
   })
 }
 
-function selectAdventure(_slotIndex) {
-  const currentTeamUids = gameStore.state.team.map(p => p?.uid).filter(Boolean)
+function selectAdventure(_slotIndex: number) {
+  const currentTeamUids = (gameStore.state.team || []).map((p: any) => p?.uid).filter(Boolean)
   
   uiStore.open('PokemonSelection', {
     title: 'SELECCIONAR POKÉMON',
     subtitle: 'Selecciona un Pokémon de tu caja para añadir al equipo.',
     excludeUids: currentTeamUids,
     includeTeam: false,
-    callbackConfirm: (selected) => {
+    callbackConfirm: (selected: any) => {
       if (selected && selected.length > 0) {
         const selectedPoke = selected[0]
         
-        const boxIdx = gameStore.state.box.findIndex(p => p && p.uid === selectedPoke.uid)
+        const boxIdx = (gameStore.state.box || []).findIndex((p: any) => p && p.uid === selectedPoke.uid)
         
         if (boxIdx > -1) {
-          const boxStore = useBoxStore()
+          const boxStore = useBoxStore() as any
           const currentTeamPoke = gameStore.state.team[_slotIndex]
           
           if (currentTeamPoke) {
@@ -187,7 +187,7 @@ function selectAdventure(_slotIndex) {
             boxStore.moveBoxToTeam(boxIdx)
           }
         } else {
-          const teamIdx = gameStore.state.team.findIndex(p => p && p.uid === selectedPoke.uid)
+          const teamIdx = (gameStore.state.team || []).findIndex((p: any) => p && p.uid === selectedPoke.uid)
           if (teamIdx > -1) {
             uiStore.notify('Este Pokémon ya está en tu equipo.', '⚠️')
           }

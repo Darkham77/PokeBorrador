@@ -1,10 +1,17 @@
-<script setup>
-defineProps({
-  currentGen: { type: Number, required: true },
-  sortBy: { type: String, required: true },
-  searchQuery: { type: String, required: true }
-})
-defineEmits(['update:currentGen', 'update:sortBy', 'update:searchQuery'])
+<script setup lang="ts">
+interface Props {
+  currentGen: number
+  sortBy: string
+  searchQuery: string
+}
+
+const props = defineProps<Props>()
+
+const emit = defineEmits<{
+  (e: 'update:currentGen', gen: number): void
+  (e: 'update:sortBy', sortBy: string): void
+  (e: 'update:searchQuery', query: string): void
+}>()
 </script>
 
 <template>
@@ -47,7 +54,7 @@ defineEmits(['update:currentGen', 'update:sortBy', 'update:searchQuery'])
           type="text" 
           placeholder="Buscar..."
           class="pdex-search-input"
-          @input="$emit('update:searchQuery', $event.target.value)"
+          @input="$emit('update:searchQuery', ($event.target as HTMLInputElement).value)"
         >
       </div>
     </div>

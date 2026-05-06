@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue'
 import { useSocialStore } from '@/stores/social'
 import { useChatStore } from '@/stores/chat'
@@ -7,22 +7,24 @@ import { useLivePvPStore } from '@/stores/livePvP'
 import TrainerAvatar from '@/components/TrainerAvatar.vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 
-const socialStore = useSocialStore()
-const chatStore = useChatStore()
-const tradeStore = useTradeStore()
-const livePvP = useLivePvPStore()
+const socialStore = useSocialStore() as any
+const chatStore = useChatStore() as any
+const tradeStore = useTradeStore() as any
+const livePvP = useLivePvPStore() as any
 
-const filteredFriends = computed(() => socialStore.friends)
+const filteredFriends = computed(() => socialStore.friends as any[])
 
-function openChat(friend) {
+function openChat(friend: any) {
   chatStore.openChat(friend.id, friend.username)
 }
 
-function openTrade(friend) {
+function openTrade(friend: any) {
   tradeStore.openTradeModal(friend.id, friend.username)
 }
 
-defineEmits(['search-tab'])
+const emit = defineEmits<{
+  (e: 'search-tab'): void
+}>()
 </script>
 
 <template>

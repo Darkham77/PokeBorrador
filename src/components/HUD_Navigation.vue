@@ -1,27 +1,29 @@
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue'
-import { useRouter } from 'vue-router'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 import { useSocialStore } from '@/stores/social.js'
 import { useModalStore } from '@/stores/modals'
 
-defineProps({
-  position: { type: String, default: 'top' } // 'top' or 'bottom'
+interface Props {
+  position?: string
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  position: 'top'
 })
 
-const gameStore = useGameStore()
-const uiStore = useUIStore()
-const socialStore = useSocialStore()
-const _router = useRouter()
+const gameStore = useGameStore() as any
+const uiStore = useUIStore() as any
+const socialStore = useSocialStore() as any
 
 const activeTab = computed({
   get: () => uiStore.activeTab,
-  set: (val) => { uiStore.activeTab = val }
+  set: (val: string) => { uiStore.activeTab = val }
 })
 
-const handleTabChange = (tab) => {
-  const modalStore = useModalStore()
+const handleTabChange = (tab: string, _event?: Event) => {
+  const modalStore = useModalStore() as any
   
   if (tab === 'bag') {
     modalStore.open('Inventory')
@@ -46,7 +48,7 @@ const handleTabChange = (tab) => {
   }
 }
 
-const toggleGroupMenu = (name) => {
+const toggleGroupMenu = (name: string) => {
   uiStore.toggleHudGroup(name)
 }
 </script>

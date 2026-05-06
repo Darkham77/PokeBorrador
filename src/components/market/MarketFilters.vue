@@ -1,16 +1,14 @@
-<script setup>
+<script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useGTSStore } from '@/stores/gts'
-import PVTooltip from '@/components/common/PVTooltip.vue'
 
-defineProps({
-  context: {
-    type: String,
-    required: true // 'explore' or 'my-inventory'
-  }
-})
+interface Props {
+  context: string // 'explore' or 'my-inventory'
+}
 
-const gtsStore = useGTSStore()
+const props = defineProps<Props>()
+
+const gtsStore = useGTSStore() as any
 
 const isExpanded = ref(false)
 
@@ -28,7 +26,7 @@ const categories = [
 
 const tiers = ['all', 'S+', 'S', 'A', 'B', 'C', 'D', 'F']
 
-const setFilter = (key, value) => {
+const setFilter = (key: string, value: any) => {
   gtsStore.filters[key] = value
 }
 
@@ -49,8 +47,8 @@ const resetFilters = () => {
   }
 }
 
-const getTypeEmoji = (type) => {
-  const emojis = {
+const getTypeEmoji = (type: string) => {
+  const emojis: Record<string, string> = {
     fire: '🔥', water: '💧', grass: '🌿', electric: '⚡', psychic: '🔮',
     normal: '🔘', rock: '🪨', ground: '🏜️', poison: '☣️', bug: '🐛',
     flying: '🦅', ghost: '👻', ice: '❄️', dragon: '🐲', fighting: '🥊',

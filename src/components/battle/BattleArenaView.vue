@@ -1,5 +1,4 @@
-<script setup>
-// [PureVue-Ignore-Length]
+<script setup lang="ts">
 import { computed, watch, onMounted, provide, ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useBattleStore } from '@/stores/battle'
@@ -30,18 +29,18 @@ import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 
 const { BASE_ENTITY_SIZE_PLAYER, BASE_ENTITY_SIZE_ENEMY } = WORLD_CONSTANTS
 
-const battleStore = useBattleStore()
-const { currentFsmState, isSearching, upcomingPokemon } = storeToRefs(battleStore)
-const gameStore = useGameStore()
-const mapStore = useMapStore()
-const uiStore = useUIStore()
+const battleStore = useBattleStore() as any
+const { isSearching } = storeToRefs(battleStore) as any
+const gameStore = useGameStore() as any
+const mapStore = useMapStore() as any
+const uiStore = useUIStore() as any
 
 // Forzar Alta Fidelidad en el Combate
 provide('forceHighFidelity', true)
 provide('isModalPerformanceMode', computed(() => false))
 
-const arenaRef = ref(null)
-const { cameraStyles, worldStyles, showGuides } = useCombatCamera(arenaRef)
+const arenaRef = ref<HTMLElement | null>(null)
+const { cameraStyles, worldStyles, showGuides } = useCombatCamera(arenaRef as any) as any
 
 const gs = computed(() => gameStore.state)
 const battle = computed(() => battleStore.state)
@@ -55,9 +54,9 @@ const {
   currentPlayerShadowKey, currentEnemyShadowKey, 
   enemyGroundY, playerGroundY, 
   syncEnemyShadow, syncPlayerShadow, preloadCombatCoords 
-} = useBattleShadows()
+} = useBattleShadows() as any
 
-const animations = useBattleAnimations(battleStore, enemy)
+const animations = useBattleAnimations(battleStore, enemy) as any
 const {
   isWildEntryAnimation, isWildSilhouette, wildRevealActive, upcomingIsEmerging, isEmerging,
   isInitialLoad, isCaptureSequenceActive, caughtPokemonSnapshot,
@@ -65,8 +64,8 @@ const {
   playerAnimState, enemyAnimState, activePokeballId, catchSparkles,
   playerCaptureActive, enemyCaptureActive,
   playerIsShaking, playerIsBlinking, enemyIsShaking, enemyIsBlinking,
-  isIntroInProgress, triggerWildEmergence, triggerSearchEntry, triggerSearchEncounter, initListeners,
-  trainerAnimState, isTrainerVisible, isGlobalFadeActive, isPlayerSpriteSuppressed, isEnemySpriteSuppressed
+  isIntroInProgress, triggerSearchEncounter, initListeners,
+  trainerAnimState, isTrainerVisible, isGlobalFadeActive
 } = animations
 
 
@@ -75,13 +74,10 @@ const {
   isPlayerHudSuppressed,
   activeEnemyHudData,
   shouldScrambleEnemyData
-} = useBattleHud(animations, battleStore, enemy)
+} = useBattleHud(animations, battleStore, enemy) as any
 
-const isFinishing = computed(() => {
-  if (isCaptureSequenceActive.value || isFaintInProgress.value) return true
-  if (battle.value?.over || battleStore.isFinishing) return true
-  return false
-})
+
+const unwrap = (val: any) => (val && typeof val === 'object' && 'value' in val ? val.value : val)
 
 const activeEnemyData = computed(() => {
   const s = unwrap(battleStore.fsm?.currentState)
@@ -100,8 +96,6 @@ const activeEnemyData = computed(() => {
 
   return realEnemy
 })
-
-const unwrap = (val) => (val && typeof val === 'object' && 'value' in val ? val.value : val)
 
 const activeEnemyIsSilhouette = computed(() => {
   const sub = unwrap(battleStore.fsm?.currentSubState)
@@ -220,10 +214,6 @@ const atmosphereSeed = computed(() => {
 // Watchers de Sincronización
 // Watcher para sincronizar sombras (Jugador y Enemigo)
 watch([enemy, p2Pos, () => enemyAnimState.value], ([data, pos, anim]) => {
-  const fsm = battleStore.fsm
-  const sub = unwrap(fsm?.currentSubState)
-  const s = unwrap(fsm?.currentState)
-  
   // El Pokémon es visible si el asiento está ocupado
   const visible = !!data
   syncEnemyShadow(visible, data, pos, anim)
@@ -391,7 +381,7 @@ watch(() => battleStore.isBattleActive, (active) => {
               <img 
                 :src="getAssetUrl(ASSET_TYPES.TRAINER, battle.trainerName || 'entrenador')" 
                 class="trainer-image"
-                @error="e => e.target.src = getAssetUrl(ASSET_TYPES.TRAINER, 'entrenador')"
+                @error="(e: Event) => (e.target as HTMLImageElement).src = getAssetUrl(ASSET_TYPES.TRAINER, 'entrenador')"
               >
             </div>
           </VirtualEntity>

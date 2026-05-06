@@ -1,15 +1,15 @@
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { useGTSStore } from '@/stores/gts'
 import { getPokemonTier } from '@/logic/pokemon/tierEngine'
 
-const gtsStore = useGTSStore()
+const gtsStore = useGTSStore() as any
 
 const activeListings = computed(() => gtsStore.activeMyListings)
 const history = computed(() => gtsStore.salesHistory)
 
-async function handleCancel(id) {
+async function handleCancel(id: string | number) {
   if (confirm('¿Estás seguro de que deseas cancelar esta publicación? El objeto/Pokémon volverá a tu inventario.')) {
     await gtsStore.cancelListing(id)
   }
@@ -48,7 +48,7 @@ async function handleCancel(id) {
               <img
                 :src="getAssetUrl(ASSET_TYPES.POKEMON, item.data.id)"
                 class="p-sprite pixelated"
-                @error="e => e.target.style.display = 'none'"
+                @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
               >
             </template>
             <template v-else>

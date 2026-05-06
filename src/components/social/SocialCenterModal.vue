@@ -1,7 +1,6 @@
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useSocialStore } from '@/stores/social';
-import { useAuthStore } from '@/stores/auth';
 import TradeClaimStatus from '@/components/social/TradeClaimStatus.vue';
 import { useGameStore } from '@/stores/game';
 import BaseModal from '@/components/common/BaseModal.vue';
@@ -9,16 +8,22 @@ import SocialFriendsTab from './SocialFriendsTab.vue';
 import SocialRequestsTab from './SocialRequestsTab.vue';
 import SocialSearchTab from './SocialSearchTab.vue';
 
-defineProps({
-  show: { type: Boolean, default: false }
+interface Props {
+  show?: boolean;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  show: false
 });
 
-const socialStore = useSocialStore();
-const _authStore = useAuthStore();
-const gameStore = useGameStore();
+const socialStore = useSocialStore() as any;
+const gameStore = useGameStore() as any;
 
 const activeTab = ref('friends'); // 'friends', 'requests', 'search', 'claims'
-const emit = defineEmits(['close']);
+
+const emit = defineEmits<{
+  (e: 'close'): void
+}>();
 
 onMounted(() => {
   socialStore.loadSocialData();

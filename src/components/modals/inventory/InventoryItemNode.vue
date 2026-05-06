@@ -1,13 +1,20 @@
-<script setup>
+<script setup lang="ts">
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
-defineProps({
-  item: { type: Object, required: true },
-  isSelected: { type: Boolean, default: false },
-  multiSelectMode: { type: Boolean, default: false }
+interface Props {
+  item: any
+  isSelected?: boolean
+  multiSelectMode?: boolean
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  isSelected: false,
+  multiSelectMode: false
 })
 
-defineEmits(['click'])
+const emit = defineEmits<{
+  (e: 'click'): void
+}>()
 </script>
 
 <template>
@@ -24,8 +31,7 @@ defineEmits(['click'])
         :src="getAssetUrl(ASSET_TYPES.ITEM, item.sprite)"
         :alt="item.name"
         class="item-sprite"
-        onerror="this.style.display='none'"
-        @error="e => e.target.style.display = 'none'"
+        @error="e => { (e.target as HTMLImageElement).style.display = 'none' }"
       >
       <span
         v-if="!item.sprite"

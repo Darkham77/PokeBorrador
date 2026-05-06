@@ -1,17 +1,17 @@
-<script setup>
+<script setup lang="ts">
 import { onMounted } from 'vue'
 import { useSocialStore } from '@/stores/social'
 import { useAuthStore } from '@/stores/auth'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
-const social = useSocialStore()
-const auth = useAuthStore()
+const social = useSocialStore() as any
+const auth = useAuthStore() as any
 
 onMounted(() => {
   social.fetchLeaderboard()
 })
 
-function getTierBadge(elo) {
+function getTierBadge(elo: number) {
   if (elo >= 3400) return { id: 'master', name: 'Maestro', class: 'master' }
   if (elo >= 2700) return { id: 'diamond', name: 'Diamante', class: 'diamond' }
   if (elo >= 2100) return { id: 'platinum', name: 'Platino', class: 'platinum' }
@@ -20,7 +20,7 @@ function getTierBadge(elo) {
   return { id: 'bronze', name: 'Bronce', class: 'bronze' }
 }
 
-const getRankIcon = (tierId) => {
+const getRankIcon = (tierId: string) => {
   return getAssetUrl(ASSET_TYPES.RANK, tierId)
 }
 </script>
@@ -60,16 +60,16 @@ const getRankIcon = (tierId) => {
         class="leaderboard-list scrollbar"
       >
         <div
-          v-for="(p, index) in social.leaderboard"
+          v-for="(p, index) in (social.leaderboard as any[])"
           :key="p.id" 
           class="rank-row"
           :class="{ 'is-me': p.id === auth.user?.id }"
         >
           <div
             class="rank-num"
-            :class="'pos-' + (index + 1)"
+            :class="'pos-' + (Number(index) + 1)"
           >
-            {{ index + 1 }}
+            {{ Number(index) + 1 }}
           </div>
 
           <div class="player-avatar">
@@ -108,14 +108,14 @@ const getRankIcon = (tierId) => {
             <span class="elo">{{ p.elo }}</span>
             <div
               class="tier-pill"
-              :class="getTierBadge(p.elo).class"
+              :class="getTierBadge(Number(p.elo)).class"
             >
               <img 
-                :src="getRankIcon(getTierBadge(p.elo).id)"
+                :src="getRankIcon(getTierBadge(Number(p.elo)).id)"
                 class="mini-badge" 
-                @error="e => e.target.style.display = 'none'"
+                @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
               >
-              {{ getTierBadge(p.elo).name }}
+              {{ getTierBadge(Number(p.elo)).name }}
             </div>
           </div>
         </div>

@@ -1,15 +1,11 @@
-<script setup>
+<script setup lang="ts">
 import { useWarStore } from '@/stores/war'
-import { useGameStore } from '@/stores/game'
-import { useAuthStore } from '@/stores/auth'
 import { computed, onMounted } from 'vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { WEEKLY_REWARD_MILESTONES } from '@/logic/war/warEngine'
 import MapControlList from './MapControlList.vue'
 
-const warStore = useWarStore()
-const _gameStore = useGameStore()
-const _authStore = useAuthStore()
+const warStore = useWarStore() as any
 
 const dispute = computed(() => warStore.isDisputeActive)
 
@@ -17,7 +13,7 @@ const dispute = computed(() => warStore.isDisputeActive)
 const globalScore = computed(() => {
   let union = 0
   let poder = 0
-  Object.values(warStore.mapDominance).forEach(m => {
+  Object.values(warStore.mapDominance).forEach((m: any) => {
     if (m.winner === 'union') union++
     else if (m.winner === 'poder') poder++
     else if (m.union > m.poder) union++
@@ -27,13 +23,13 @@ const globalScore = computed(() => {
 })
 
 const nextReward = computed(() => {
-  return WEEKLY_REWARD_MILESTONES.find(m => warStore.weeklyPoints < m.pt) || 
+  return (WEEKLY_REWARD_MILESTONES as any[]).find(m => warStore.weeklyPoints < m.pt) || 
          WEEKLY_REWARD_MILESTONES[WEEKLY_REWARD_MILESTONES.length - 1]
 })
 
 const progressPercent = computed(() => {
   const current = warStore.weeklyPoints
-  const target = nextReward.value.pt
+  const target = (nextReward.value as any).pt
   return Math.min(100, (current / target) * 100)
 })
 
@@ -63,7 +59,7 @@ onMounted(async () => {
         <img
           :src="getAssetUrl(ASSET_TYPES.FACTION, 'union')"
           alt="Union"
-          @error="e => e.target.style.display = 'none'"
+          @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
         >
         <div class="count">
           {{ globalScore.union }}
@@ -79,7 +75,7 @@ onMounted(async () => {
         <img
           :src="getAssetUrl(ASSET_TYPES.FACTION, 'poder')"
           alt="Poder"
-          @error="e => e.target.style.display = 'none'"
+          @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
         >
         <div class="count">
           {{ globalScore.poder }}

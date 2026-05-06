@@ -1,17 +1,29 @@
-<script setup>
+<script setup lang="ts">
+interface Props {
+  currentClass?: any
+  activeMission?: any
+  missions?: any[]
+  trainerLevel?: number
+  missionProgress?: number
+  isMissionDone?: boolean
+}
 
-defineProps({
-  currentClass: { type: Object, default: () => ({}) },
-  activeMission: { type: Object, default: null },
-  missions: { type: Array, default: () => [] },
-  trainerLevel: { type: Number, default: 1 },
-  missionProgress: { type: Number, default: 0 },
-  isMissionDone: { type: Boolean, default: false }
+const props = withDefaults(defineProps<Props>(), {
+  currentClass: () => ({}),
+  activeMission: null,
+  missions: () => [],
+  trainerLevel: 1,
+  missionProgress: 0,
+  isMissionDone: false
 })
 
-const emit = defineEmits(['back', 'startMission', 'collectReward'])
+const emit = defineEmits<{
+  (e: 'back'): void
+  (e: 'startMission', missionId: string): void
+  (e: 'collectReward'): void
+}>()
 
-function getMissionDesc(mId, clsId) {
+function getMissionDesc(_mId: string, clsId: string | undefined) {
   if (clsId === 'cazabichos') return 'Recolecta néctar y captura especímenes con IVs garantizados.'
   if (clsId === 'rocket') return 'Exportación de especímenes al mercado negro por altos dividendos.'
   if (clsId === 'entrenador') return 'Gimnasio de alto rendimiento para potenciar la experiencia.'

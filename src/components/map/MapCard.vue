@@ -1,5 +1,4 @@
-// [PureVue-Ignore-Length]
-<script setup>
+<script setup lang="ts">
 import { computed, ref, onUnmounted, onMounted } from 'vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import AtmosphereLayer from '@/components/common/AtmosphereLayer.vue'
@@ -15,45 +14,59 @@ import { getRouteWeather } from '@/logic/weatherUtils'
 
 import { checkPlayerWinner, calculateSpawnGrid } from '@/logic/map/mapCardHelper'
 
-const props = defineProps({
-  map: { type: Object, required: true },
-  isLocked: { type: Boolean, default: false },
-  isSafariLocked: { type: Boolean, default: false },
-  cycle: { type: String, default: 'day' }, 
-  weather: { type: String, default: 'clear' },
-  badgeCount: { type: Number, default: 0 },
-  dominance: { type: Object, default: null },
-  isRocketExtorted: { type: Boolean, default: false },
-  spawnPool: { type: Object, default: () => ({ generic: [], specific: [], rates: {} }) },
-  forcedWeather: { type: String, default: null }
+interface Props {
+  map: any
+  isLocked?: boolean
+  isSafariLocked?: boolean
+  cycle?: string
+  weather?: string
+  badgeCount?: number
+  dominance?: any
+  isRocketExtorted?: boolean
+  spawnPool?: any
+  forcedWeather?: string | null
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  isLocked: false,
+  isSafariLocked: false,
+  cycle: 'day',
+  weather: 'clear',
+  badgeCount: 0,
+  dominance: null,
+  isRocketExtorted: false,
+  spawnPool: () => ({ generic: [], specific: [], rates: {} }),
+  forcedWeather: null
 })
 
-const emit = defineEmits(['navigate'])
+const emit = defineEmits<{
+  (e: 'navigate', mapId: string): void
+}>()
 
-const uiStore = useUIStore()
-const battleStore = useBattleStore()
-const mapStore = useMapStore()
+const uiStore = useUIStore() as any
+const battleStore = useBattleStore() as any
+const mapStore = useMapStore() as any
+const gameStore = useGameStore() as any
 
-const cardRef = ref(null)
-
+const cardRef = ref<HTMLElement | null>(null)
 
 const isPerformanceMode = computed(() => {
   return uiStore.isAnyBlockingModalOpen || battleStore.isBattleActive || uiStore.isDebugPerformanceMode
 })
 
 const imgPath = computed(() => {
-  const fileName = MAP_ROUTE_MAPPING[props.map.id] || 'default'
-  return getAssetUrl(ASSET_TYPES.MAP, fileName, { cycle: props.cycle })
+  const fileName = (MAP_ROUTE_MAPPING as any)[props.map.id] || 'default'
+  return getAssetUrl(ASSET_TYPES.MAP, fileName, { cycle: props.cycle as any })
 })
 
 const cycleEmoji = computed(() => {
-  const emojis = { morning: '🌅', day: '☀️', dusk: '🌇', night: '🌙' }
-  return emojis[props.cycle] || '☀️'
+  const emojis: Record<string, string> = { morning: '🌅', day: '☀️', dusk: '🌇', night: '🌙' }
+  return emojis[props.cycle as string] || '☀️'
 })
 
 const cycleName = computed(() => {
-  const names = { morning: 'Mañana', day: 'Día', afternoon: 'Tarde', dusk: 'Atardecer', night: 'Noche' }
-  return names[props.cycle] || 'Normal'
+  const names: Record<string, string> = { morning: 'Mañana', day: 'Día', afternoon: 'Tarde', dusk: 'Atardecer', night: 'Noche' }
+  return names[props.cycle as string] || 'Normal'
 })
 
 const seasonName = computed(() => mapStore.currentSeason.label)
@@ -67,24 +80,23 @@ const computedWeather = computed(() => {
 })
 
 const weatherEmoji = computed(() => {
-  const emojis = { clear: '', rain: '🌧️', storm: '⚡', fog: '🌫️', snow: '🌨️', blizzard: '❄️', sandstorm: '🏜️', heatwave: '🔥' }
-  return emojis[computedWeather.value] || ''
+  const emojis: Record<string, string> = { clear: '', rain: '🌧️', storm: '⚡', fog: '🌫️', snow: '🌨️', blizzard: '❄️', sandstorm: '🏜️', heatwave: '🔥' }
+  return emojis[computedWeather.value as string] || ''
 })
 
 const weatherName = computed(() => {
-  const names = { clear: 'Despejado', rain: 'Lluvia', storm: 'Tormenta', snow: 'Nieve', blizzard: 'Ventisca', sandstorm: 'Tormenta de Arena', fog: 'Niebla', heatwave: 'Ola de Calor' }
-  return names[computedWeather.value] || 'Normal'
+  const names: Record<string, string> = { clear: 'Despejado', rain: 'Lluvia', storm: 'Tormenta', snow: 'Nieve', blizzard: 'Ventisca', sandstorm: 'Tormenta de Arena', fog: 'Niebla', heatwave: 'Ola de Calor' }
+  return names[computedWeather.value as string] || 'Normal'
 })
 
-const atmosphere = ref(null)
+const atmosphere = ref<any>(null)
 
 const factionAnimClass = computed(() => {
   if (!props.dominance?.winner) return ''
   return props.dominance.winner === 'union' ? 'anim-shine' : 'anim-thump'
 })
 
-const gameStore = useGameStore()
-const getPokemonSprite = (id) => getAssetUrl(ASSET_TYPES.POKEMON, id)
+const getPokemonSprite = (id: string) => getAssetUrl(ASSET_TYPES.POKEMON, id)
 
 const processedGuardian = computed(() => {
   if (!props.dominance?.guardian) return null
@@ -102,7 +114,7 @@ const processedGuardian = computed(() => {
   
   const data = isSeen ? pokemonDataProvider.getPokemonData(id) : null
   const name = isSeen ? (data?.name || id.toUpperCase()) : 'Desconocido'
-  const typeInfo = (isSeen && data?.type) ? data.type.toUpperCase() : '???'
+  const typeInfo = (isSeen && data?.type) ? (Array.isArray(data.type) ? data.type.join('/') : data.type).toUpperCase() : '???'
   const captured = props.dominance.guardian.captured || false
 
   return { 
@@ -125,7 +137,7 @@ const processedGrid = computed(() => {
   const seenPokedex = gameStore.state.seenPokedex || []
   const caughtPokedex = gameStore.state.pokedex || []
   
-  const weatherBoosts = {
+  const weatherBoosts: Record<string, string[]> = {
     rain: ['water', 'bug', 'grass'],
     storm: ['electric', 'dragon'],
     sun: ['fire', 'grass'],
@@ -135,14 +147,14 @@ const processedGrid = computed(() => {
     heatwave: ['fire']
   };
 
-  const isSpeciesBoostedLocal = (id, weather) => {
+  const isSpeciesBoostedLocal = (id: string, weather: string) => {
     const data = pokemonDataProvider.getPokemonData(id);
     if (!data || !weatherBoosts[weather]) return false;
     const types = Array.isArray(data.type) ? data.type : [data.type];
-    return types.some(t => weatherBoosts[weather].includes(t.toLowerCase()));
+    return types.some((t: string) => weatherBoosts[weather].includes(t.toLowerCase()));
   }
 
-  return slots.map((id, index) => {
+  return slots.map((id: string | null, index: number) => {
     if (!id) return { id: null, key: `empty-${index}` }
     let isSeen = seenPokedex.includes(id) || caughtPokedex.includes(id)
     let isCaught = caughtPokedex.includes(id)
@@ -155,16 +167,15 @@ const processedGrid = computed(() => {
       isSeen = false; isCaught = false
     }
     const rate = props.spawnPool?.rates?.[id] || 10
-    const isRare = rate < 10
     const data = isSeen ? pokemonDataProvider.getPokemonData(id) : null
     const name = isSeen ? (data?.name || id.toUpperCase()) : 'Desconocido'
-    const typeInfo = (isSeen && data?.type) ? `Tipo: ${data.type.toUpperCase()}` : ''
+    const typeInfo = (isSeen && data?.type) ? `Tipo: ${(Array.isArray(data.type) ? data.type.join('/') : data.type).toUpperCase()}` : ''
 
     const cycles = ['morning', 'day', 'dusk', 'night']
     const appearingCycles = cycles.filter(c => props.map.wild?.[c]?.includes(id))
     const isLimited = appearingCycles.length > 0 && appearingCycles.length < cycles.length
     
-    const emojiMap = { morning: '🌅', day: '☀️', dusk: '🌇', night: '🌙' }
+    const emojiMap: Record<string, string> = { morning: '🌅', day: '☀️', dusk: '🌇', night: '🌙' }
     
     // Detección Atmosférica temprana para el texto
     const weather = computedWeather.value
@@ -198,8 +209,6 @@ const processedGrid = computed(() => {
       timeText = 'Habitante común.'
     }
 
-
-
     return {
       id, 
       key: `${id}-${index}`, 
@@ -217,10 +226,9 @@ const processedGrid = computed(() => {
   })
 })
 
-
 const allSpawns = computed(() => [...props.spawnPool.generic, ...props.spawnPool.specific])
 const currentCols = ref(3)
-let resizeObserver = null
+let resizeObserver: ResizeObserver | null = null
 
 onMounted(() => {
   if (cardRef.value) {
@@ -299,7 +307,7 @@ const spawnGrid = computed(() => {
         class="guardian-mini-sprite" 
         :class="{ captured: processedGuardian.captured, 'spawn-silhouette': !processedGuardian.isCaught }"
         :style="{ '--spawn-seed': processedGuardian.seed }"
-        @error="e => e.target.style.display = 'none'"
+        @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
       >
       <span :class="['guardian-label', { captured: processedGuardian.captured }]">
         {{ processedGuardian.captured ? 'DERROTADO' : 'GUARDIÁN' }}
@@ -379,7 +387,7 @@ const spawnGrid = computed(() => {
                   :src="item.sprite"
                   class="pixelated"
                   :class="{ 'spawn-silhouette': !item.isCaught }"
-                  @error="e => e.target.style.display = 'none'"
+                  @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
                 >
               </PVTooltip>
             </div>

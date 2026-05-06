@@ -1,25 +1,22 @@
-// [PureVue-Ignore-Length]
-<script setup>
+<script setup lang="ts">
 import { ref } from 'vue'
 import { useModalStore } from '@/stores/modals'
 import { useUIStore } from '@/stores/ui'
-import PVTooltip from '@/components/common/PVTooltip.vue'
 
-const modalStore = useModalStore()
-const uiStore = useUIStore()
+const modalStore = useModalStore() as any
+const uiStore = useUIStore() as any
 const modalCount = ref(5)
 const isTesting = ref(false)
 
 async function startTest() {
   if (isTesting.value) return
   isTesting.value = true
-  await window.__VITE_DEBUG__.testModalStack(modalCount.value)
+  await (window as any).__VITE_DEBUG__.testModalStack(modalCount.value)
   isTesting.value = false
 }
 
-
 function triggerSampleError() {
-  window.__VITE_DEBUG__.triggerTestError()
+  (window as any).__VITE_DEBUG__.triggerTestError()
 }
 </script>
 

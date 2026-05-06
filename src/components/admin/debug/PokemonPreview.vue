@@ -1,15 +1,26 @@
-<script setup>
+<script setup lang="ts">
 import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 
-defineProps({
-  spriteUrl: { type: String, default: '' },
-  isShiny: { type: Boolean, default: false },
-  isGuardian: { type: Boolean, default: false },
-  gender: { type: String, default: 'M' }
+interface Props {
+  spriteUrl?: string
+  isShiny?: boolean
+  isGuardian?: boolean
+  gender?: string
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  spriteUrl: '',
+  isShiny: false,
+  isGuardian: false,
+  gender: 'M'
 })
 
-defineEmits(['toggleShiny', 'toggleGuardian', 'toggleGender'])
+const emit = defineEmits<{
+  (e: 'toggleShiny'): void
+  (e: 'toggleGuardian'): void
+  (e: 'toggleGender'): void
+}>()
 </script>
 
 <template>
@@ -21,7 +32,7 @@ defineEmits(['toggleShiny', 'toggleGuardian', 'toggleGender'])
       <img
         :src="spriteUrl" 
         class="preview-sprite"
-        @error="e => e.target.style.display = 'none'"
+        @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
       >
     </PVSpriteFX>
 
@@ -33,7 +44,7 @@ defineEmits(['toggleShiny', 'toggleGuardian', 'toggleGender'])
         <button
           class="flag-btn shiny"
           :class="{ active: isShiny }"
-          @click.stop="$emit('toggleShiny')"
+          @click.stop="emit('toggleShiny')"
         >
           ✨
         </button>
@@ -45,7 +56,7 @@ defineEmits(['toggleShiny', 'toggleGuardian', 'toggleGender'])
         <button
           class="flag-btn guardian"
           :class="{ active: isGuardian }"
-          @click.stop="$emit('toggleGuardian')"
+          @click.stop="emit('toggleGuardian')"
         >
           🛡️
         </button>
@@ -57,7 +68,7 @@ defineEmits(['toggleShiny', 'toggleGuardian', 'toggleGender'])
         <button
           class="flag-btn gender"
           :class="[gender === 'M' ? 'male' : 'female']"
-          @click.stop="$emit('toggleGender')"
+          @click.stop="emit('toggleGender')"
         >
           {{ gender === 'M' ? '♂️' : '♀️' }}
         </button>

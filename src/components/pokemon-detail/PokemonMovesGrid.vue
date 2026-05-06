@@ -1,11 +1,15 @@
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue'
 
-const props = defineProps({
-  pokemon: { type: Object, required: true }
-})
+interface Props {
+  pokemon: any
+}
 
-const emit = defineEmits(['show-move'])
+const props = defineProps<Props>()
+
+const emit = defineEmits<{
+  (e: 'show-move', name: string): void
+}>()
 
 const p = computed(() => props.pokemon)
 </script>

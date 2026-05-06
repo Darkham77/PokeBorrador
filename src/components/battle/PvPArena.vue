@@ -1,19 +1,15 @@
-<script setup>
+<script setup lang="ts">
 import { computed, onMounted } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useLivePvPStore } from '@/stores/livePvP'
-import { useUIStore } from '@/stores/ui'
-import { useBattleVisuals } from '@/composables/useBattleVisuals'
 import BattleInfoCard from './BattleInfoCard.vue'
 import BattleMovesGrid from './BattleMovesGrid.vue'
 import { useModalStore } from '@/stores/modals'
 
-const gameStore = useGameStore()
-const livePvP = useLivePvPStore()
-const _uiStore = useUIStore()
-const { _getHpPct, _getHpClass } = useBattleVisuals()
+const gameStore = useGameStore() as any
+const livePvP = useLivePvPStore() as any
 
-const battle = computed(() => livePvP.battleState)
+const battle = computed(() => livePvP.battleState as any)
 
 // PvP Sync (Pure Vue)
 const syncToGameBus = () => {
@@ -25,7 +21,7 @@ onMounted(() => {
 })
 
 // Actions
-const handleMove = (idx) => {
+const handleMove = (idx: number) => {
   livePvP._commitPick({ type: 'move', moveIndex: idx })
 }
 
@@ -42,9 +38,9 @@ const handleSwitch = () => {
     battleMode: 'pvp',
     includeTeam: true,
     activePokemonUid: battle.value.myTeam[battle.value.myActiveIdx].uid,
-    onConfirm: (pokes) => {
+    onConfirm: (pokes: any[]) => {
       if (pokes.length > 0) {
-        const index = gameStore.state.team.findIndex(p => p.uid === pokes[0].uid)
+        const index = (gameStore.state.team as any[]).findIndex(p => p.uid === pokes[0].uid)
         if (index !== -1) {
           livePvP._commitPick({ type: 'switch', switchIndex: index })
         }
@@ -52,7 +48,6 @@ const handleSwitch = () => {
     }
   })
 }
-
 </script>
 
 <template>

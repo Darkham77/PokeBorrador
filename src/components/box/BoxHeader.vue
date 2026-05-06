@@ -1,11 +1,9 @@
-<script setup>
-
-defineProps({
-  count: { type: Number, default: 0 },
-  max: { type: Number, default: 0 },
-  hint: { type: String, default: '' }
-})
-
+<script setup lang="ts">
+defineProps<{
+  count: number
+  max: number
+  hint?: string
+}>()
 </script>
 
 <template>

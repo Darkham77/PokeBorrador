@@ -1,19 +1,23 @@
-<script setup>
+<script setup lang="ts">
 import { onMounted } from 'vue'
 import { useBuffsStore } from '@/stores/buffs'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 
-const buffsStore = useBuffsStore()
+const buffsStore = useBuffsStore() as any
 
 onMounted(() => {
   buffsStore.initTick()
 })
 
-const formatTime = (secs) => {
+const formatTime = (secs: number) => {
   if (secs <= 0) return '0:00'
   const m = Math.floor(secs / 60)
   const s = secs % 60
   return `${m}:${s.toString().padStart(2, '0')}`
+}
+
+const handleImgError = (e: Event) => {
+  (e.target as HTMLImageElement).style.display = 'none'
 }
 </script>
 
@@ -34,7 +38,7 @@ const formatTime = (secs) => {
             :src="buff.icon"
             :alt="buff.name"
             class="buff-icon"
-            @error="e => e.target.style.display = 'none'"
+            @error="handleImgError"
           >
           <div class="buff-info">
             <span class="buff-name">{{ buff.name }}</span>

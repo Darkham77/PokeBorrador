@@ -1,8 +1,13 @@
-<script setup>
-defineProps({
-  modelValue: { type: String, required: true }
-})
-defineEmits(['update:modelValue'])
+<script setup lang="ts">
+interface Props {
+  modelValue: string
+}
+
+const props = defineProps<Props>()
+
+const emit = defineEmits<{
+  (e: 'update:modelValue', value: string): void
+}>()
 </script>
 
 <template>

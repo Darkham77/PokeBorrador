@@ -1,0 +1,296 @@
+<script setup>
+import { ref, onMounted } from 'vue';
+import { useEvolutionStore } from '@/stores/evolution';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+
+const evolutionStore = useEvolutionStore();
+const step = ref('intro'); // intro | flashing | transformed | final
+const oldName = ref('');
+const newName = ref('');
+const fromSprite = ref('');
+const toSprite = ref('');
+
+const FLASH_COUNT = 6; // 3 flashes (on/off)
+const flashesDone = ref(0);
+
+onMounted(() => {
+  if (!evolutionStore.sourcePokemon || !evolutionStore.targetId) return;
+
+  const toData = pokemonDataProvider.getPokemonData(evolutionStore.targetId);
+  oldName.value = evolutionStore.sourcePokemon.name;
+  newName.value = toData?.name || evolutionStore.targetId;
+  
+  fromSprite.value = getAssetUrl(ASSET_TYPES.POKEMON, evolutionStore.sourcePokemon.id, { shiny: evolutionStore.sourcePokemon.isShiny });
+  toSprite.value = getAssetUrl(ASSET_TYPES.POKEMON, evolutionStore.targetId, { shiny: evolutionStore.sourcePokemon.isShiny });
+
+  startSequence();
+});
+
+const startSequence = () => {
+  // Wait a bit in intro
+  setTimeout(() => {
+    step.value = 'flashing';
+    runFlashes();
+  }, 1500);
+};
+
+const runFlashes = () => {
+  const interval = setInterval(() => {
+    flashesDone.value++;
+    if (flashesDone.value >= FLASH_COUNT) {
+      clearInterval(interval);
+      completeEvolution();
+    }
+  }, 250);
+};
+
+const completeEvolution = () => {
+  // Actually mutate the data in the store
+  const _result = evolutionStore.evolve();
+  step.value = 'transformed';
+  
+  // Final message delay
+  setTimeout(() => {
+    step.value = 'final';
+  }, 1000);
+};
+
+const close = () => {
+  evolutionStore.finishEvolution();
+};
+</script>
+
+<template>
+  <Teleport to="body">
+    <div
+      v-if="evolutionStore.isEvolving"
+      class="evolution-overlay"
+    >
+      <div class="evolution-container">
+        <!-- Background FX -->
+        <div class="particles">
+          <div
+            v-for="n in 20"
+            :key="n"
+            class="particle"
+          />
+        </div>
+
+        <!-- Sprites -->
+        <div class="sprite-stage">
+          <div
+            class="glow-bg"
+            :class="step"
+          />
+          
+          <img 
+            v-if="step !== 'transformed' && step !== 'final'"
+            :src="fromSprite"
+            class="pokemon-sprite from" 
+            :class="{ flashing: step === 'flashing', 'flash-on': flashesDone % 2 !== 0 }" 
+            @error="e => e.target.style.display = 'none'"
+          >
+
+          <img 
+            v-if="step === 'transformed' || step === 'final'"
+            :src="toSprite"
+            class="pokemon-sprite to" 
+            :class="{ 'scale-in': step === 'transformed' }"
+            @error="e => e.target.style.display = 'none'"
+          >
+        </div>
+
+        <!-- Text Info -->
+        <div class="evolution-info">
+          <p
+            v-if="step === 'intro' || step === 'flashing'"
+            class="status-text"
+          >
+            ¡{{ oldName }} está evolucionando!
+          </p>
+          
+          <div
+            v-if="step === 'final'"
+            class="result-text"
+          >
+            <p>¡{{ oldName }} evolucionó a <span class="highlight">{{ newName }}</span>!</p>
+            <button
+              class="btn-confirm"
+              @click.stop="close"
+            >
+              CONTINUAR
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </Teleport>
+</template>
+
+<style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
+@use "sass:math";
+@use "sass:string";
+
+.evolution-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-overlay);
+  background: Radial-Gradient(circle at center, Rgba(26, 26, 46, 1) 0%, $dark 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  @include pixelated;
+  -webkit-backdrop-filter: Blur(10px);
+  backdrop-filter: Blur(10px);
+  @include gpu-layer;
+  transform: translateZ(0);
+}
+
+.evolution-container {
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+  position: relative;
+}
+
+.sprite-stage {
+  position: relative;
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.glow-bg {
+  position: absolute;
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background: var(--blue, Rgba(59, 130, 246, 1));
+  filter: Blur(40px);
+  opacity: 0.2;
+  transition: all 1s ease;
+  
+  &.flashing {
+    background: var(--white);
+    opacity: 0.5;
+    transform: Scale(1.5);
+  }
+  
+  &.transformed, &.final {
+    background: var(--yellow, Rgba(251, 191, 36, 1));
+    opacity: 0.6;
+    transform: Scale(1.5);
+    box-shadow: 0 0 60px Rgba(251, 191, 36, 0.4);
+  }
+}
+
+.pokemon-sprite {
+  width: 160px;
+  height: 160px;
+  image-rendering: pixelated;
+  position: relative;
+  z-index: var(--z-base);
+  
+  &.from {
+    filter: Brightness(1);
+    transition: filter 0.1s;
+    
+    &.flash-on {
+      filter: Brightness(10) Contrast(10) Grayscale(100%);
+    }
+  }
+  
+  &.scale-in {
+    animation: bounceIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+}
+
+.evolution-info {
+  margin-top: 40px;
+  padding: 0 20px;
+  height: 80px;
+}
+
+.status-text {
+  color: var(--white);
+  font-size: 12px;
+  line-height: 1.6;
+  text-shadow: 0 2px 4px Rgba(0,0,0,0.5);
+}
+
+.result-text {
+  animation: fadeIn 0.5s ease;
+  p {
+    color: var(--white);
+    font-size: 13px;
+    margin-bottom: 24px;
+    line-height: 1.8;
+  }
+  .highlight {
+    color: var(--yellow, Rgba(251, 191, 36, 1));
+    font-weight: bold;
+  }
+}
+
+.btn-confirm {
+  background: var(--blue, Rgba(59, 130, 246, 1));
+  color: var(--white);
+  border: none;
+  padding: 12px 24px;
+  font-family: inherit;
+  font-size: 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 0 4px 0 Rgba(37, 99, 235, 1);
+  transition: transform 0.1s;
+  
+  &:active {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 Rgba(37, 99, 235, 1);
+  }
+}
+
+// Particles effect
+.particles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: var(--white);
+  border-radius: 2px;
+  opacity: 0;
+  
+  @for $i from 1 through 20 {
+    &:nth-child(#{$i}) {
+      left: math.random(100) * 1%;
+      top: math.random(100) * 1%;
+      animation: float #{math.random(3000) + 2000}ms infinite ease-in-out;
+      animation-delay: #{math.random(2000)}ms;
+    }
+  }
+}
+
+@keyframes bounceIn {
+  from { transform: Scale(0); opacity: 0; }
+  to { transform: Scale(1.0); opacity: 1; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes float {
+  0% { transform: translateY(0) Scale(1.0); opacity: 0; }
+  50% { opacity: 0.8; }
+  100% { transform: translateY(-40px) Scale(0); opacity: 0; }
+}
+</style>

@@ -1,37 +1,40 @@
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue'
 import { useUIStore } from '@/stores/ui'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 
-const uiStore = useUIStore()
+const uiStore = useUIStore() as any
 
 const currentData = computed(() => uiStore.currentMoveToLearn)
 const pokemon = computed(() => currentData.value?.pokemon)
 const newMove = computed(() => currentData.value?.move)
 
-const typeColors = {
+const typeColors: Record<string, string> = {
   normal:'#A8A878', fire:'#F08030', water:'#6890F0', grass:'#78C850', electric:'#F8D030',
   ice:'#98D8D8', fighting:'#C03028', poison:'#A040A0', ground:'#E0C068', flying:'#A890F0',
   psychic:'#F85888', bug:'#A8B820', rock:'#B8A038', ghost:'#705898', dragon:'#7038F8',
   dark:'#705848', steel:'#B8B8D0', fairy:'#EE99AC',
 }
 
-const getMoveColor = (name) => {
-  const md = pokemonDataProvider.getMoveData(name) || {}
-  return typeColors[md.type] || '#6b7280'
+const getMoveColor = (name: string | undefined) => {
+  if (!name) return '#6b7280'
+  const md = pokemonDataProvider.getMoveData(name) as any || {}
+  return typeColors[md.type as keyof typeof typeColors] || '#6b7280'
 }
 
-const getMoveType = (name) => {
-  const md = pokemonDataProvider.getMoveData(name) || {}
+const getMoveType = (name: string | undefined) => {
+  if (!name) return '?'
+  const md = pokemonDataProvider.getMoveData(name) as any || {}
   return md.type ? md.type.toUpperCase() : '?'
 }
 
-const getMovePower = (name) => {
-  const md = pokemonDataProvider.getMoveData(name) || {}
+const getMovePower = (name: string | undefined) => {
+  if (!name) return '—'
+  const md = pokemonDataProvider.getMoveData(name) as any || {}
   return md.power || '—'
 }
 
-const handleReplace = (slotIndex) => {
+const handleReplace = (slotIndex: number) => {
   if (!pokemon.value || !newMove.value) return
   
   const oldMoveName = pokemon.value.moves[slotIndex].name
@@ -88,7 +91,7 @@ const handleForget = () => {
           :key="index"
           class="move-card"
           :style="{ '--move-color': getMoveColor(m.name) }"
-          @click.stop="handleReplace(index)"
+          @click.stop="handleReplace(Number(index))"
         >
           <div class="move-main">
             <span class="move-name">{{ m.name }}</span>

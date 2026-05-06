@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { ref, computed } from 'vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import MoveTooltip from '@/components/battle/MoveTooltip.vue'
@@ -8,15 +8,25 @@ import { getMechanicalWeather, WEATHER_MECHANICAL } from '@/logic/battle/weather
 import { getDayCycle } from '@/logic/timeUtils'
 import { useBattleStore } from '@/stores/battle'
 
-const props = defineProps({
-  moves: { type: Array, required: true },
-  isProcessing: { type: Boolean, default: false },
-  playerInfo: { type: Object, default: () => ({}) }, // Opcional para modo información
-  canReorder: { type: Boolean, default: false }
+interface Props {
+  moves: any[]
+  isProcessing?: boolean
+  playerInfo?: any
+  canReorder?: boolean
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  isProcessing: false,
+  playerInfo: () => ({}),
+  canReorder: false
 })
 
-const emit = defineEmits(['use-move', 'reorder-moves'])
-const battleStore = useBattleStore()
+const emit = defineEmits<{
+  (e: 'use-move', index: number): void
+  (e: 'reorder-moves', fromIndex: number, toIndex: number): void
+}>()
+
+const battleStore = useBattleStore() as any
 
 // Grid Stability: Always 4 slots
 const fullMoves = computed(() => {
@@ -28,24 +38,26 @@ const fullMoves = computed(() => {
 })
 
 // Drag and Drop Logic (Modular)
-const draggedIndex = ref(null)
+const draggedIndex = ref<number | null>(null)
 const isDragging = ref(false)
-const dragOverIndex = ref(null)
+const dragOverIndex = ref<number | null>(null)
 
-const onDragStart = (index, e) => {
+const onDragStart = (index: number, e: DragEvent) => {
   if (!props.canReorder || !fullMoves.value[index]) return
   draggedIndex.value = index
   isDragging.value = true
-  e.dataTransfer.effectAllowed = 'move'
+  if (e.dataTransfer) {
+    e.dataTransfer.effectAllowed = 'move'
+  }
 }
 
-const onDragOver = (index, e) => {
+const onDragOver = (index: number, e: DragEvent) => {
   if (!props.canReorder) return
   e.preventDefault()
   dragOverIndex.value = index
 }
 
-const onDrop = (targetIndex, e) => {
+const onDrop = (targetIndex: number, e: DragEvent) => {
   if (!props.canReorder) return
   e.preventDefault()
   if (draggedIndex.value !== null && draggedIndex.value !== targetIndex) {
@@ -60,9 +72,9 @@ const onDragEnd = () => {
   dragOverIndex.value = null
 }
 
-const getMoveData = (move) => {
+const getMoveData = (move: any) => {
   if (!move) return null
-  const md = MOVE_DATA[move.name] || {}
+  const md = (MOVE_DATA as any)[move.name] || {}
   return {
     ...move,
     type: move.type || md.type || 'normal',
@@ -72,7 +84,7 @@ const getMoveData = (move) => {
   }
 }
 
-const hexToRgb = (hex) => {
+const hexToRgb = (hex: string) => {
   if (!hex) return '255, 255, 255'
   let h = hex.replace('#', '')
   if (h.length === 3) {
@@ -84,7 +96,7 @@ const hexToRgb = (hex) => {
   return `${r}, ${g}, ${b}`
 }
 
-const getMoveModifier = (move) => {
+const getMoveModifier = (move: any) => {
   if (!move || !battleStore.isBattleActive) return null
   const md = getMoveData(move)
   const weather = battleStore.state?.weather?.type
@@ -134,7 +146,7 @@ const getMoveModifier = (move) => {
   return null
 }
 
-const isMoveDisabled = (move) => {
+const isMoveDisabled = (move: any) => {
   if (props.isProcessing) return true
   if (!move || move.pp <= 0) return true
   

@@ -1,9 +1,9 @@
-<script setup>
+<script setup lang="ts">
 import { computed, watch, ref, nextTick, onMounted } from 'vue'
 import { useBattleStore } from '@/stores/battle'
 
-const battleStore = useBattleStore()
-const logContainer = ref(null)
+const battleStore = useBattleStore() as any
+const logContainer = ref<HTMLDivElement | null>(null)
 
 const logs = computed(() => battleStore.battleLogs)
 
@@ -19,6 +19,10 @@ const scrollToBottom = async () => {
 // Watch both length and internal content changes
 watch(logs, scrollToBottom, { deep: true })
 
+const handleImgError = (e: Event) => {
+  (e.target as HTMLImageElement).style.display = 'none'
+}
+
 onMounted(() => {
   scrollToBottom()
   if (logContainer.value) {
@@ -26,7 +30,6 @@ onMounted(() => {
     observer.observe(logContainer.value)
   }
 })
-
 </script>
 
 <template>
@@ -56,7 +59,7 @@ onMounted(() => {
             :src="log.icon"
             class="log-icon"
             loading="lazy"
-            @error="e => e.target.style.display = 'none'"
+            @error="handleImgError"
           >
         </div>
         <span

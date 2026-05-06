@@ -1,19 +1,22 @@
-<script setup>
+<script setup lang="ts">
+
 import { computed } from 'vue'
 import { useWarStore } from '@/stores/war'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { MAP_ROUTE_MAPPING } from '@/data/map-assets'
 
 
-const props = defineProps({
-  map: { type: Object, required: true }
-})
+interface Props {
+  map: any
+}
 
-const warStore = useWarStore()
+const props = defineProps<Props>()
+
+const warStore = useWarStore() as any
 
 const mapData = computed(() => {
   const data = warStore.mapDominance[props.map.id] || { union: 0, poder: 0, winner: null }
-  const total = data.union + data.poder
+  const total = (Number(data.union) || 0) + (Number(data.poder) || 0)
   return {
     ...data,
     total,
@@ -23,20 +26,20 @@ const mapData = computed(() => {
   }
 })
 
-const getWinnerLabel = (winner) => {
+const getWinnerLabel = (winner: string | null) => {
   if (winner === 'union') return 'UNIÓN'
   if (winner === 'poder') return 'PODER'
   return 'SIN CONQUISTAR'
 }
 
 const mapImageUrl = computed(() => {
-  const fileName = MAP_ROUTE_MAPPING[props.map.id] || 'default'
+  const fileName = (MAP_ROUTE_MAPPING as any)[props.map.id] || 'default'
   // En WarMapCard usamos la versión de día por defecto si el mapa soporta ciclos
   return getAssetUrl(ASSET_TYPES.MAP, fileName, { cycle: 'day' })
 })
-
-
-
+const openDefenseModal = (mapId: string) => {
+  (window as any).openSelectDefensePokeModal?.(mapId)
+}
 </script>
 
 <template>
@@ -107,7 +110,7 @@ const mapImageUrl = computed(() => {
         <button 
           v-if="mapData.winner === warStore.faction"
           class="protect-btn"
-          @click.stop="window.openSelectDefensePokeModal?.(map.id)"
+          @click.stop="openDefenseModal(map.id)"
         >
           🛡️ PROTEGER
         </button>

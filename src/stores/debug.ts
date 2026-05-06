@@ -1,0 +1,129 @@
+import { defineStore } from 'pinia'
+import { ref, computed, watch } from 'vue'
+import { useAuthStore } from './auth'
+import { useGameStore } from './game'
+import { useUIStore } from './ui'
+import { useMapStore } from './map'
+import { usePvPStore } from './pvp'
+import { useBreedingStore } from './breeding'
+import { useModalStore } from './modals'
+import { useErrorStore } from './errorStore'
+
+// Section Registrations
+import { registerStatsTools } from './debug/sections/statsTools'
+import { registerMapTools } from './debug/sections/mapTools'
+import { registerPokeTools } from './debug/sections/pokeTools'
+import { registerTimeTools } from './debug/sections/timeTools'
+import { registerItemTools } from './debug/sections/itemTools'
+import { registerSystemTools } from './debug/sections/systemTools'
+import { registerAudioTools } from './debug/sections/audioTools'
+
+export const useDebugStore = defineStore('debug', () => {
+  const auth = useAuthStore() as any
+  const game = useGameStore() as any
+  const ui = useUIStore() as any
+  const map = useMapStore() as any
+  const pvp = usePvPStore() as any
+  const modalStore = useModalStore() as any
+  const errorStore = useErrorStore() as any
+  const breedingStore = useBreedingStore() as any
+
+  const tools = ref([])
+
+  const canAccess = computed(() => {
+    if (auth.sessionMode === 'offline') return true
+    return auth.user?.role === 'admin'
+  })
+
+  function securityCheck() {
+    if (auth.sessionMode === 'online' && auth.user?.role !== 'admin') {
+      console.error('[SECURITY] Unauthorized debug access detected. Banning user and force logout.')
+      const userId = auth.user?.id
+      if (userId) {
+        game.db.from('profiles').update({ 
+          is_banned: true, 
+          ban_reason: 'Intento de uso indebido de herramientas de debug' 
+        }).eq('id', userId).then(() => {
+          console.log('[SECURITY] DB Ban applied.')
+        })
+      }
+      auth.logout()
+      return false
+    }
+    return true
+  }
+
+  function register(config) {
+    const existingIdx = tools.value.findIndex(t => t.id === config.id)
+    if (existingIdx !== -1) {
+      tools.value[existingIdx] = config 
+    } else {
+      tools.value.push(config)
+    }
+    updateGlobalProxy()
+  }
+
+  function unregister(id) {
+    tools.value = tools.value.filter(t => t.id !== id)
+    updateGlobalProxy()
+  }
+
+  function updateGlobalProxy() {
+    if (typeof window === 'undefined') return
+    if (!canAccess.value) {
+      delete (window as any).__VITE_DEBUG__
+      return
+    }
+    if (!(window as any).__VITE_DEBUG__) (window as any).__VITE_DEBUG__ = {}
+
+    tools.value.forEach(tool => {
+      (window as any).__VITE_DEBUG__[tool.command] = (...args) => {
+        if (securityCheck()) {
+          return tool.action(...args)
+        }
+      }
+    })
+  }
+
+  async function init() {
+    console.log('[DEBUG] Initializing debug tools (Modular)...');
+    
+    // Pass all necessary stores to the specialized registration functions
+    const context = { game, ui, pvp, auth, map, mapStore: map, breedingStore, modalStore, errorStore }
+
+    // Synchronous registrations (fastest availability)
+    registerStatsTools({ register }, context)
+    registerMapTools({ register }, context)
+    registerPokeTools({ register }, context)
+    registerTimeTools({ register }, context)
+    registerItemTools({ register }, context)
+    registerAudioTools({ register }, context)
+    
+    // SystemTools registration (now synchronous registration, async module resolution)
+    registerSystemTools({ register }, { ...context } as any)
+
+    updateGlobalProxy()
+    
+    // Delayed dependency resolution for Admin tools
+    try {
+      const eventStoreModule = await import('./events')
+      registerSystemTools({ register }, { ...context, eventStoreModule })
+      updateGlobalProxy()
+    } catch (e) {
+      console.warn('[DEBUG] Failed to load optional eventStoreModule for SystemTools', e)
+    }
+  }
+
+  watch(canAccess, () => updateGlobalProxy())
+
+  init()
+
+  return {
+    tools,
+    canAccess,
+    securityCheck,
+    register,
+    unregister,
+    updateGlobalProxy
+  }
+})

@@ -1,13 +1,13 @@
-<script setup>
+<script setup lang="ts">
 import { useSocialStore } from '@/stores/social';
 import { useAuthStore } from '@/stores/auth';
 import { usePvPStore } from '@/stores/pvp';
 import PlayerAvatar from '@/components/player/PlayerAvatar.vue';
 import { ref, onMounted, watch } from 'vue';
 
-const socialStore = useSocialStore();
-const authStore = useAuthStore();
-const rankedStore = usePvPStore();
+const socialStore = useSocialStore() as any;
+const authStore = useAuthStore() as any;
+const rankedStore = usePvPStore() as any;
 
 const activeSort = ref('elo_rating');
 
@@ -19,7 +19,7 @@ watch(activeSort, (newVal) => {
   socialStore.fetchLeaderboard(newVal);
 });
 
-const formatRank = (index) => `#${index + 1}`;
+const formatRank = (index: number) => `#${index + 1}`;
 </script>
 
 <template>
@@ -67,7 +67,7 @@ const formatRank = (index) => `#${index + 1}`;
         :class="{ 'is-me': row.id === authStore.user?.id }"
       >
         <div class="rank">
-          {{ formatRank(index) }}
+          {{ formatRank(Number(index)) }}
         </div>
         
         <div class="trainer-info">

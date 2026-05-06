@@ -1,14 +1,6 @@
-<script setup>
+<script setup lang="ts">
 import { ref } from 'vue'
-import { useDebugStore } from '@/stores/debug'
-import { useAudioStore } from '@/stores/audio'
 import { useBattleStore } from '@/stores/battle'
-
-const debug = useDebugStore()
-const audio = useAudioStore()
-const battleStore = useBattleStore()
-
-const activeSide = ref('enemy')
 
 import { 
   DEBUG_SOUNDS, 
@@ -21,36 +13,44 @@ import {
   DEBUG_WEATHER_EFFECTS 
 } from './debugConstants'
 
-const playSound = (id) => {
-  window.__VITE_DEBUG__.playSound(id)
+const battleStore = useBattleStore() as any
+
+const activeSide = ref('enemy')
+
+const setStatStage = (side: string, stat: string, val: number) => {
+  (window as any).__VITE_DEBUG__.setStatStage(side, stat, val)
 }
 
-const triggerAnim = (id, options = {}) => {
-  window.__VITE_DEBUG__.triggerAnim(id, activeSide.value, options)
+const playSound = (id: string) => {
+  (window as any).__VITE_DEBUG__.playSound(id)
 }
 
-const triggerAttack = (cat) => {
-  window.__VITE_DEBUG__.triggerAnim('attack', activeSide.value, { cat })
+const triggerAnim = (id: string, options = {}) => {
+  (window as any).__VITE_DEBUG__.triggerAnim(id, activeSide.value, options)
 }
 
-const setStatus = (status) => {
-  window.__VITE_DEBUG__.setStatus(activeSide.value, status)
+const triggerAttack = (cat: string) => {
+  (window as any).__VITE_DEBUG__.triggerAnim('attack', activeSide.value, { cat })
 }
 
-const toggleSecondary = (type) => {
+const setStatus = (status: string) => {
+  (window as any).__VITE_DEBUG__.setStatus(activeSide.value, status)
+}
+
+const toggleSecondary = (type: string) => {
   // Ahora el comando de debug maneja el toggle internamente
-  window.__VITE_DEBUG__.setSecondaryStatus(activeSide.value, type)
+  (window as any).__VITE_DEBUG__.setSecondaryStatus(activeSide.value, type)
 }
 
-const modifyStat = (stat, delta) => {
-  window.__VITE_DEBUG__.modifyStatStage(activeSide.value, stat, delta)
+const modifyStat = (stat: string, delta: number) => {
+  (window as any).__VITE_DEBUG__.modifyStatStage(activeSide.value, stat, delta)
 }
 
-const setField = (effect, val) => {
-  window.__VITE_DEBUG__.setFieldEffect(activeSide.value, effect, val)
+const setField = (effect: string, val: number) => {
+  (window as any).__VITE_DEBUG__.setFieldEffect(activeSide.value, effect, val)
 }
 
-const isEffectActive = (type, category) => {
+const isEffectActive = (type: string, category: string) => {
   const side = activeSide.value
   const poke = side === 'player' ? battleStore.activeBattle?.player : (battleStore.upcomingPokemon || battleStore.activeBattle?.enemy)
   const stages = side === 'player' ? battleStore.playerStages : battleStore.enemyStages
@@ -140,7 +140,7 @@ const isEffectActive = (type, category) => {
             </button>
             <button
               class="mini-tool-btn reset"
-              @click.stop="window.__VITE_DEBUG__.setStatStage(activeSide.value, s.id, 0)"
+              @click.stop="setStatStage(activeSide, s.id, 0)"
             >
               ✕
             </button>

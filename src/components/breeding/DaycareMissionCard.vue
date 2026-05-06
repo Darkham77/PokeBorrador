@@ -1,9 +1,13 @@
-<script setup>
-const _props = defineProps({
-  mission: { type: Object, required: true }
-})
+<script setup lang="ts">
+interface Props {
+  mission: any
+}
 
-const emit = defineEmits(['deliver'])
+const props = defineProps<Props>()
+
+const emit = defineEmits<{
+  (e: 'deliver'): void
+}>()
 </script>
 
 <template>

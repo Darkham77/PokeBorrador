@@ -1,15 +1,19 @@
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue'
 
-const props = defineProps({
-  pokemon: { type: Object, required: true },
-  size: { type: String, default: 'md' } // 'sm', 'md', 'lg'
+interface Props {
+  pokemon: any
+  size?: string // 'sm', 'md', 'lg'
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  size: 'md'
 })
 
-const types = computed(() => {
-  const t = []
-  if (props.pokemon.type) t.push(props.pokemon.type)
-  if (props.pokemon.type2) t.push(props.pokemon.type2)
+const types = computed<string[]>(() => {
+  const t: string[] = []
+  if (props.pokemon?.type) t.push(props.pokemon.type)
+  if (props.pokemon?.type2) t.push(props.pokemon.type2)
   return t
 })
 </script>

@@ -1,15 +1,12 @@
-<script setup>
+<script setup lang="ts">
 import { useUIStore } from '@/stores/ui'
-import { useDebugStore } from '@/stores/debug'
-import PVTooltip from '@/components/common/PVTooltip.vue'
 
-const ui = useUIStore()
-const _debug = useDebugStore()
+const ui = useUIStore() as any
 
 // These tools are already registered in debugStore init()
 // But we can retrieve them to use in the template or just call them directly
-const toggleGrid = () => window.__VITE_DEBUG__.toggleGrid()
-const togglePerf = () => window.__VITE_DEBUG__.togglePerf()
+const toggleGrid = () => (window as any).__VITE_DEBUG__.toggleGrid()
+const togglePerf = () => (window as any).__VITE_DEBUG__.togglePerf()
 </script>
 
 <template>

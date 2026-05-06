@@ -1,10 +1,10 @@
-<script setup>
+<script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { useWarStore } from '@/stores/war'
 import WarDashboard from '@/components/war/WarDashboard.vue'
 import FactionChoiceModal from '@/components/FactionChoiceModal.vue'
 
-const warStore = useWarStore()
+const warStore = useWarStore() as any
 const showChoiceModal = ref(false)
 
 onMounted(async () => {

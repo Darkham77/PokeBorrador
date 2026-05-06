@@ -1,5 +1,6 @@
-<script setup>
-/* global __APP_VERSION__ */
+<script setup lang="ts">
+declare const __APP_VERSION__: string
+
 import { ref, computed, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useGameStore } from '@/stores/game'
@@ -11,8 +12,8 @@ import AuthServerSelector from '@/components/auth/AuthServerSelector.vue'
 
 const wallpaperUrl = computed(() => `url('${getAssetUrl(ASSET_TYPES.UI, '../fondo/WALLPAPER')}')`)
 
-const authStore = useAuthStore()
-const gameStore = useGameStore()
+const authStore = useAuthStore() as any
+const gameStore = useGameStore() as any
 
 const authTab = ref('login') // 'login' | 'signup'
 const serverMode = ref('local') // 'online' | 'local'
@@ -25,13 +26,13 @@ const handleInstallApp = async () => {
 const username = ref('')
 const email = ref('')
 const password = ref('')
-const error = ref(null)
-const success = ref(null)
+const error = ref<string | null>(null)
+const success = ref<string | null>(null)
 const loading = ref(false)
 
 const appVersion = __APP_VERSION__
 
-const switchAuthTab = (tab) => {
+const switchAuthTab = (tab: string) => {
   authTab.value = tab
   error.value = null
   success.value = null
@@ -48,7 +49,7 @@ const handleLogin = async () => {
     await authStore.login(email.value, password.value)
     await gameStore.loadGame()
     window.location.href = '/'
-  } catch (err) {
+  } catch (err: any) {
     error.value = err.message || 'Error al iniciar sesión'
   } finally {
     loading.value = false
@@ -66,7 +67,7 @@ const handleSignup = async () => {
     await authStore.signup(email.value, password.value, username.value)
     success.value = '¡Cuenta creada! Revisa tu email para confirmar.'
     authTab.value = 'login'
-  } catch (err) {
+  } catch (err: any) {
     error.value = err.message || 'Error al registrarse'
   } finally {
     loading.value = false

@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useGameStore } from '@/stores/game'
@@ -8,12 +8,15 @@ import MarketFilters from './MarketFilters.vue'
 import MarketPublish from './MarketPublish.vue'
 import MarketMyItems from './MarketMyItems.vue'
 
-const auth = useAuthStore()
-const game = useGameStore()
-const gtsStore = useGTSStore()
+const auth = useAuthStore() as any
+const game = useGameStore() as any
+const gtsStore = useGTSStore() as any
 
 const activeTab = ref('explore') // 'explore' | 'publish' | 'my_items'
-defineEmits(['close'])
+
+const emit = defineEmits<{
+  (e: 'close'): void
+}>()
 
 const TABS = [
   { id: 'explore', label: 'EXPLORAR', icon: '🔍' },
@@ -89,7 +92,7 @@ async function refresh() {
         <span class="icon">🛰️</span>
         <h2>SIN CONEXIÓN</h2>
         <p>El GTS requiere conexión a la Red Satelital de Kanto para sincronizar ofertas con otros entrenadores.</p>
-        <button @click.stop="$emit('close')">
+        <button @click.stop="emit('close')">
           VOLVER
         </button>
       </div>
@@ -103,7 +106,7 @@ async function refresh() {
         v-if="activeTab === 'explore'"
         class="tab-pane explore"
       >
-        <MarketFilters />
+        <MarketFilters context="explore" />
         <div class="explorer-wrap scrollable">
           <MarketExplorer />
         </div>

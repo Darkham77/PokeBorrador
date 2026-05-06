@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { PDEX_ORDER, GEN2_PDEX_ORDER } from '@/logic/pokedexConstants'
@@ -10,8 +10,8 @@ import PokedexControls from '@/components/pokedex/PokedexControls.vue'
 import PokedexPokemonCard from '@/components/pokedex/PokedexPokemonCard.vue'
 import { useUIStore } from '@/stores/ui'
 
-const gameStore = useGameStore()
-const uiStore = useUIStore()
+const gameStore = useGameStore() as any
+const uiStore = useUIStore() as any
 const gs = computed(() => gameStore.state)
 
 const currentGen = ref(1)
@@ -23,13 +23,13 @@ const stats = computed(() => {
   const caught = gs.value.pokedex || []
   const seen = gs.value.seenPokedex || []
   const currentGenTotal = currentOrder.value.length
-  const currentGenSeen = currentOrder.value.filter(id => seen.includes(id) || caught.includes(id)).length
-  const currentGenCaught = currentOrder.value.filter(id => caught.includes(id)).length
+  const currentGenSeen = currentOrder.value.filter((id: string) => seen.includes(id) || caught.includes(id)).length
+  const currentGenCaught = currentOrder.value.filter((id: string) => caught.includes(id)).length
 
   return { seen: currentGenSeen, caught: currentGenCaught, total: currentGenTotal }
 })
 
-const openDetail = (p) => {
+const openDetail = (p: any) => {
   if (!p.isSeen) return
   uiStore.open('PokedexDetail', { speciesId: p.id, context: 'pokedex' })
 }

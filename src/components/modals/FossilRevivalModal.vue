@@ -1,12 +1,11 @@
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { useUIStore } from '@/stores/ui'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { SHOP_ITEMS } from '@/data/items'
 import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
 
-
-const uiStore = useUIStore()
+const uiStore = useUIStore() as any
 
 const step = ref(0) // 0: initial, 1: glowing, 2: flash, 3: revealed
 
@@ -69,7 +68,7 @@ function handleClose() {
           class="fossil-img"
           :class="{ 'step-1': step === 1 }"
           alt="Fossil"
-          @error="e => e.target.style.display = 'none'" 
+          @error="e => { (e.target as HTMLImageElement).style.display = 'none' }" 
         >
         <PVSpriteFX
           v-else
@@ -80,7 +79,7 @@ function handleClose() {
             :src="pokemonSprite"
             class="pokemon-img" 
             alt="Pokemon"
-            @error="e => e.target.style.display = 'none'"
+            @error="e => { (e.target as HTMLImageElement).style.display = 'none' }"
           >
         </PVSpriteFX>
       </div>

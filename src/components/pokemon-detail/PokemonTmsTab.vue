@@ -1,22 +1,24 @@
-<script setup>
+<script setup lang="ts">
 import { ref, computed } from 'vue'
 import { PDEX_TYPE_COLORS } from '@/logic/pokedexConstants'
 import { GAME_TMS, TM_COMPAT } from '@/data/pokedex'
 import { useUIStore } from '@/stores/ui'
 
-const props = defineProps({
-  speciesId: { type: String, required: true }
-})
+interface Props {
+  speciesId: string
+}
 
-const ui = useUIStore()
+const props = defineProps<Props>()
+
+const ui = useUIStore() as any
 
 const tmSearchQuery = ref('')
 const tmSortBy = ref('id')
 
 const tms = computed(() => {
-  const compatibleList = TM_COMPAT[props.speciesId] || []
+  const compatibleList = (TM_COMPAT as any)[props.speciesId] || []
 
-  const allTms = GAME_TMS.map(tm => ({
+  const allTms = (GAME_TMS as any[]).map(tm => ({
     ...tm,
     isCompatible: compatibleList.includes(tm.id)
   }))

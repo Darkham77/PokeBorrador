@@ -1,24 +1,30 @@
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue'
 import { useBattleBackground } from '@/composables/useBattleBackground'
 
-const props = defineProps({
-  locationId: { type: String, default: 'route1' },
-  currentCycle: { type: String, default: 'dia' }
+interface Props {
+  locationId?: string
+  currentCycle?: string
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  locationId: 'route1',
+  currentCycle: 'dia'
 })
 
 const { getBackgroundUrl } = useBattleBackground()
 
 const bgData = computed(() => {
-  return getBackgroundUrl(props.locationId, props.currentCycle)
+  return getBackgroundUrl(props.locationId, props.currentCycle) as any
 })
 
-const handleBackgroundError = (e) => {
-  const currentSrc = e.target.src
+const handleBackgroundError = (e: Event) => {
+  const target = e.target as HTMLImageElement
+  const currentSrc = target.src
   if (currentSrc.includes('_')) {
     const baseSrc = currentSrc.substring(0, currentSrc.lastIndexOf('_')) + '.webp'
     if (baseSrc !== currentSrc) {
-      e.target.src = baseSrc
+      target.src = baseSrc
     }
   }
 }

@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { computed, onMounted } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
@@ -6,9 +6,9 @@ import { useShopStore } from '@/stores/shop'
 import BlackMarket from '@/components/shop/BlackMarket.vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
-const gameStore = useGameStore()
-const uiStore = useUIStore()
-const shopStore = useShopStore()
+const gameStore = useGameStore() as any
+const uiStore = useUIStore() as any
+const shopStore = useShopStore() as any
 
 const activeTab = computed(() => uiStore.activeTab)
 const gs = computed(() => gameStore.state)
@@ -18,7 +18,7 @@ const currentRank = computed(() => shopStore.getTrainerRank)
 const displayItems = computed(() => {
   const isTrainerShop = activeTab.value === 'trainer-shop'
   
-  return shopStore.SHOP_ITEMS.filter(item => {
+  return shopStore.SHOP_ITEMS.filter((item: any) => {
     if (isTrainerShop) {
       if (!item.trainerShop) return false
     } else {
@@ -29,7 +29,7 @@ const displayItems = computed(() => {
     if (shopStore.searchQuery && !item.name.toLowerCase().includes(shopStore.searchQuery.toLowerCase())) return false
 
     return true
-  }).sort((a, b) => {
+  }).sort((a: any, b: any) => {
     const aLocked = gs.value.trainerLevel < (a.unlockLv || 1) ? 1 : 0
     const bLocked = gs.value.trainerLevel < (b.unlockLv || 1) ? 1 : 0
     if (aLocked !== bLocked) return aLocked - bLocked
@@ -37,7 +37,7 @@ const displayItems = computed(() => {
   })
 })
 
-const getPrice = (item) => {
+const getPrice = (item: any) => {
   if (activeTab.value === 'trainer-shop') return item.bcPrice
   
   let price = item.price
@@ -47,7 +47,7 @@ const getPrice = (item) => {
   return price
 }
 
-const handleBuy = (item) => {
+const handleBuy = (item: any) => {
   if (activeTab.value === 'trainer-shop') {
     shopStore.buyItemBC(item.id)
   } else {
@@ -136,7 +136,7 @@ onMounted(() => {
             v-if="item.sprite"
             :src="getAssetUrl(ASSET_TYPES.ITEM, item.sprite)"
             class="pixel-sprite"
-            @error="e => e.target.style.display = 'none'"
+            @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
           >
           <span
             v-else
@@ -192,7 +192,7 @@ onMounted(() => {
             max="999" 
             :value="shopStore.getQuantity(item.id)"
             class="qty-input"
-            @input="e => shopStore.setQuantity(item.id, e.target.value)"
+            @input="(e: Event) => shopStore.setQuantity(item.id, (e.target as HTMLInputElement).value)"
           >
         </div>
 

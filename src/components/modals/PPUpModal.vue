@@ -1,18 +1,28 @@
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue'
 import { useUIStore } from '@/stores/ui'
 import { useGameStore } from '@/stores/game'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import BaseModal from '@/components/common/BaseModal.vue'
 
-const uiStore = useUIStore()
-const gameStore = useGameStore()
+const uiStore = useUIStore() as any
+const gameStore = useGameStore() as any
 
 const ppPokemon = computed(() => uiStore.activePokemonForPPUp)
 
-const handleApplyPPUp = (moveIndex) => {
+const getPPProgressWidth = (move: any) => {
+  if (!move) return '0%'
+  const moveData = pokemonDataProvider.getMoveData(move.name)
+  const basePP = moveData?.pp || 35
+  const maxPossible = Math.floor(basePP * 1.6)
+  if (maxPossible === 0) return '0%'
+  return `${(move.maxPP / maxPossible) * 100}%`
+}
+
+const handleApplyPPUp = (moveIndex: string | number) => {
   if (!ppPokemon.value) return
-  const move = ppPokemon.value.moves[moveIndex]
+  const moveIdx = Number(moveIndex)
+  const move = ppPokemon.value.moves[moveIdx]
   if (!move) return
   
   const moveData = pokemonDataProvider.getMoveData(move.name) || {}
@@ -67,7 +77,7 @@ const close = () => {
           <div class="mv-bar">
             <div
               class="mv-fill"
-              :style="{ width: (m.maxPP / (pokemonDataProvider.getMoveData(m.name)?.pp * 1.6 || 64) * 100) + '%' }"
+              :style="{ width: getPPProgressWidth(m) }"
             />
           </div>
         </button>

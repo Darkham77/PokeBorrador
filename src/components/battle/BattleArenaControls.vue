@@ -1,5 +1,5 @@
-<script setup>
-import { computed, watch } from 'vue'
+<script setup lang="ts">
+import { computed, watch, defineAsyncComponent, type Component } from 'vue'
 import { useBattleStore } from '@/stores/battle'
 import { useUIStore } from '@/stores/ui'
 import { useGameStore } from '@/stores/game'
@@ -9,18 +9,17 @@ import BattleMovesGrid from './BattleMovesGrid.vue'
 import BattleActionButtons from './BattleActionButtons.vue'
 import BattleQuickTeam from './BattleQuickTeam.vue'
 import BattleQuickBag from './BattleQuickBag.vue'
-import { defineAsyncComponent } from 'vue'
 
-const isDebugActive = !!window.__VITE_DEBUG__
+const isDebugActive = !!(window as any).__VITE_DEBUG__
 const BattleDebugTools = isDebugActive 
-  ? defineAsyncComponent(() => import('./BattleDebugTools.vue'))
+  ? defineAsyncComponent(() => import('./BattleDebugTools.vue')) as Component
   : null
 
-const battleStore = useBattleStore()
-const uiStore = useUIStore()
-const gameStore = useGameStore()
-const modalStore = useModalStore()
-const livePvP = useLivePvPStore()
+const battleStore = useBattleStore() as any
+const uiStore = useUIStore() as any
+const gameStore = useGameStore() as any
+const modalStore = useModalStore() as any
+const livePvP = useLivePvPStore() as any
 
 const battle = computed(() => battleStore.state)
 const player = computed(() => battle.value?.player)
@@ -46,9 +45,9 @@ const execShowBattleSwitch = () => {
     includeTeam: true,
     preventClose: isForced, 
     activePokemonUid: player.value?.uid,
-    onConfirm: (pokes) => {
+    onConfirm: (pokes: any[]) => {
       if (pokes.length > 0) {
-        const index = gameStore.state.team.findIndex(p => p.uid === pokes[0].uid)
+        const index = (gameStore.state.team as any[]).findIndex(p => p.uid === pokes[0].uid)
         if (index !== -1) {
           if (livePvP.battleState.active) {
             livePvP._commitPick({ type: 'switch', switchIndex: index })
@@ -62,7 +61,8 @@ const execShowBattleSwitch = () => {
 }
 
 const execTryCatch = () => { 
-  const balls = Object.keys(gs.value.inventory).filter(n => n.toLowerCase().includes('ball'))
+  const inventory = gs.value.inventory || {}
+  const balls = Object.keys(inventory).filter(n => n.toLowerCase().includes('ball'))
   if (balls.length === 0) {
     uiStore.notify('¡No tienes Poké Balls!', '🚫')
     return

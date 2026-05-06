@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import MapCard from './MapCard.vue'
 import { getEncounterPool } from '@/logic/encounters'
 import { useEventStore } from '@/stores/events'
@@ -7,42 +7,55 @@ import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { getRouteWeather } from '@/logic/weatherUtils'
 import { useMapStore } from '@/stores/map'
 
-const props = defineProps({
-  maps: { type: Array, required: true },
-  badgeCount: { type: Number, default: 0 },
-  cycle: { type: String, default: 'day' },
-  weather: { type: String, default: 'clear' },
-  playerClass: { type: String, default: 'trainer' },
-  classData: { type: Object, default: () => ({}) },
-  safariTicketSecs: { type: Number, default: 0 },
-  ceruleanTicketSecs: { type: Number, default: 0 },
-  dominanceData: { type: Object, default: () => ({}) },
-  dailyGuardianCaptures: { type: Array, default: () => [] }
+interface Props {
+  maps: any[]
+  badgeCount?: number
+  cycle?: string
+  weather?: string
+  playerClass?: string
+  classData?: any
+  safariTicketSecs?: number
+  ceruleanTicketSecs?: number
+  dominanceData?: any
+  dailyGuardianCaptures?: any[]
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  badgeCount: 0,
+  cycle: 'day',
+  weather: 'clear',
+  playerClass: 'trainer',
+  classData: () => ({}),
+  safariTicketSecs: 0,
+  ceruleanTicketSecs: 0,
+  dominanceData: () => ({}),
+  dailyGuardianCaptures: () => []
 })
 
-const emit = defineEmits(['navigate'])
-const eventStore = useEventStore()
-const mapStore = useMapStore()
+const emit = defineEmits<{
+  (e: 'navigate', loc: any): void
+}>()
 
-const getMapData = (loc) => {
+const eventStore = useEventStore() as any
+const mapStore = useMapStore() as any
+
+const getMapData = (loc: any) => {
   if (!loc.wild) return { generic: [], specific: [], rates: {}, weather: 'clear' }
 
   const activeEvents = eventStore.activeEvents || []
   
   // Determinar clima para esta ruta específica si no hay uno global
   // RE-TRACK: Asegurar que el pool se recalcule si cambia la hora del epoch
-  const _epoch = mapStore.currentEpochHour;
   const activeWeather = (props.weather && props.weather !== 'clear') ? props.weather : getRouteWeather(loc.id, mapStore.currentSeason.id, mapStore.currentEpochHour)
   
   const { pool, rates } = getEncounterPool(loc, props.cycle, activeWeather, activeEvents)
 
-  
   const baseWild = loc.wild?.day || []
-  const generic = []
-  const specific = []
-  const ratesMap = {}
+  const generic: any[] = []
+  const specific: any[] = []
+  const ratesMap: Record<string, number> = {}
 
-  pool.forEach((id, index) => {
+  pool.forEach((id: string, index: number) => {
     ratesMap[id] = rates[index] || 10
     if (baseWild.includes(id)) generic.push(id)
     else specific.push(id)
@@ -50,7 +63,7 @@ const getMapData = (loc) => {
 
   // Add fishing pool to generic if not already there
   if (loc.fishing) {
-    loc.fishing.pool.forEach((id, index) => {
+    loc.fishing.pool.forEach((id: string, index: number) => {
       if (!generic.includes(id) && !specific.includes(id)) {
         generic.push(id)
         ratesMap[id] = loc.fishing.rates[index] || 10
@@ -61,12 +74,12 @@ const getMapData = (loc) => {
   return { generic, specific, rates: ratesMap, weather: activeWeather }
 }
 
-const isMapLocked = (loc) => {
+const isMapLocked = (loc: any) => {
   if (loc.id === 'safari_zone') return props.safariTicketSecs <= 0
   return props.badgeCount < loc.badges
 }
 
-const getDominanceForMap = (mapId) => {
+const getDominanceForMap = (mapId: string) => {
   const data = props.dominanceData[mapId] || {}
   const captured = props.dailyGuardianCaptures.includes(mapId)
   

@@ -1,23 +1,29 @@
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue'
 
-const props = defineProps({
-  parentA: { type: Object, required: true },
-  parentB: { type: Object, required: true },
-  compatibility: { type: Object, required: true },
-  itemA: { type: String, default: '' },
-  itemB: { type: String, default: '' },
-  cost: { type: Number, default: 2000 },
-  intervalText: { type: String, default: '—' }
+interface Props {
+  parentA: any
+  parentB: any
+  compatibility: any
+  itemA?: string
+  itemB?: string
+  cost?: number
+  intervalText?: string
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  itemA: '',
+  itemB: '',
+  cost: 2000,
+  intervalText: '—'
 })
 
 const eggSpeciesName = computed(() => {
   if (!props.compatibility.eggSpecies) return '—'
-  // Aquí idealmente usaríamos un i18n o la DB de Pokémon
   return props.compatibility.eggSpecies.charAt(0).toUpperCase() + props.compatibility.eggSpecies.slice(1)
 })
 
-const powerMap = {
+const powerMap: Record<string, { stat: string, label: string }> = {
   'Pesa Recia': { stat: 'hp', label: 'PS' },
   'Brazal Recio': { stat: 'atk', label: 'Ataque' },
   'Cinto Recio': { stat: 'def', label: 'Defensa' },
@@ -38,7 +44,7 @@ const guaranteedNature = computed(() => {
 const geneticsSummary = computed(() => {
   const forcedA = powerMap[props.itemA]
   const forcedB = powerMap[props.itemB]
-  let lines = []
+  let lines: string[] = []
 
   if (forcedA) {
     lines.push(`✓ 100% ${forcedA.label} (${props.parentA.name})`)

@@ -1,11 +1,15 @@
-<script setup>
-const _props = defineProps({
-  egg: { type: Object, required: true }
-})
+<script setup lang="ts">
+interface Props {
+  egg: any
+}
 
-const emit = defineEmits(['collect'])
+const props = defineProps<Props>()
 
-const formatDate = (dateStr) => {
+const emit = defineEmits<{
+  (e: 'collect', egg: any): void
+}>()
+
+const formatDate = (dateStr: string) => {
   const date = new Date(dateStr)
   return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
 }

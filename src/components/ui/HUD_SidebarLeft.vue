@@ -4,7 +4,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 /**
  * HUD_SidebarLeft.vue
  * Orchestrates a vertical stack of floating buttons (Chat, Debug, etc)

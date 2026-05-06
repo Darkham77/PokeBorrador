@@ -1,21 +1,33 @@
-<script setup>
+<script setup lang="ts">
 import { computed, ref } from 'vue'
 import { getPokemonVisualBadges, getPokemonEditorBadges } from '@/logic/constants/tags'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
-const props = defineProps({
-  pokemon: { type: Object, required: true },
-  size: { type: String, default: 'md' }, // 'sm' (Box), 'md' (Default), 'lg' (Team)
-  vertical: { type: Boolean, default: true },
-  editable: { type: Boolean, default: false },
-  inline: { type: Boolean, default: false },
-  top: { type: String, default: '10px' },
-  left: { type: String, default: '6px' },
-  showAll: { type: Boolean, default: false }
+interface Props {
+  pokemon: any
+  size?: string // 'sm' (Box), 'md' (Default), 'lg' (Team)
+  vertical?: boolean
+  editable?: boolean
+  inline?: boolean
+  top?: string
+  left?: string
+  showAll?: boolean
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  size: 'md',
+  vertical: true,
+  editable: false,
+  inline: false,
+  top: '10px',
+  left: '6px',
+  showAll: false
 })
 
-const emit = defineEmits(['toggle-tag'])
+const emit = defineEmits<{
+  (e: 'toggle-tag', tagId: string): void
+}>()
 
 const badges = computed(() => {
   return props.showAll 
@@ -23,7 +35,7 @@ const badges = computed(() => {
     : getPokemonVisualBadges(props.pokemon)
 })
 
-const containerStyle = computed(() => {
+const containerStyle = computed<any>(() => {
   if (props.inline) return { position: 'relative', top: 'auto', left: 'auto', zIndex: 'var(--z-low)' }
   return {
     position: 'absolute',
@@ -35,14 +47,16 @@ const containerStyle = computed(() => {
 
 const itemImageError = ref(false)
 
-const handleBadgeClick = (badge) => {
+const handleBadgeClick = (badge: any) => {
   if (!props.editable || badge.isAutomatic || badge.isLocked) return
   emit('toggle-tag', badge.id)
 }
 
-const handleItemImageError = (e) => {
+const handleItemImageError = (e: Event) => {
   itemImageError.value = true
-  e.target.style.display = 'none'
+  if (e.target) {
+    (e.target as HTMLImageElement).style.display = 'none'
+  }
 }
 </script>
 
@@ -56,8 +70,8 @@ const handleItemImageError = (e) => {
       <PVTooltip
         v-for="badge in badges"
         :key="badge.id"
-        :description="badge.desc || badge.description"
-        :title="badge.label || badge.title"
+        :description="(badge as any).desc || (badge as any).description"
+        :title="(badge as any).label || (badge as any).title"
         :position="vertical ? 'right' : 'top'"
         @click.stop="handleBadgeClick(badge)"
       >

@@ -1,10 +1,9 @@
-// [PureVue-Ignore-Length]
-<script setup>
+<script setup lang="ts">
 import { computed, ref, onMounted, onUnmounted, watch } from 'vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import PokemonTypePills from '@/components/shared/PokemonTypePills.vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
-import { storeToRefs } from 'pinia'
+import { STATUS_EMOJI_MAP, STATUS_TOOLTIP_MAP, STAT_EMOJI_MAP } from '@/logic/battle/battleUiUtils'
 import { useBattleStore } from '@/stores/battle'
 import { useProfileStore } from '@/stores/profile'
 import { getMechanicalWeather, WEATHER_MECHANICAL, WEATHER_UI_METADATA, WEATHER_VISUAL_METADATA } from '@/logic/battle/weatherMapper'
@@ -13,21 +12,25 @@ import { ABILITY_DATA } from '@/data/abilities'
 import { supabase } from '@/logic/supabase'
 import { getStatBreakdown, getStatMultiplier } from '@/logic/battle/battleEngine'
 
+interface Props {
+  pokemon: any
+  isPlayer?: boolean
+  nickStyle?: string
+  isScrambled?: boolean
+}
 
-const props = defineProps({
-  pokemon: { type: Object, required: true },
-  isPlayer: { type: Boolean, default: false },
-  nickStyle: { type: String, default: '' },
-  isScrambled: { type: Boolean, default: false }
+const props = withDefaults(defineProps<Props>(), {
+  isPlayer: false,
+  nickStyle: '',
+  isScrambled: false
 })
 
 const p = computed(() => props.pokemon)
-const battleStore = useBattleStore()
-const profileStore = useProfileStore()
-const { playerStages, enemyStages } = storeToRefs(battleStore)
+const battleStore = useBattleStore() as any
+const profileStore = useProfileStore() as any
 
 const isAdmin = computed(() => {
-  return profileStore.profileData.isAdmin || window.__ADMIN_DEBUG__ || supabase.isLocal
+  return profileStore.profileData.isAdmin || (window as any).__ADMIN_DEBUG__ || supabase.isLocal
 })
 
 // displayHp permite animar la barra desde 0 cuando el componente aparece (Fase 3)
@@ -87,17 +90,15 @@ watch(() => p.value.exp, (newExp) => {
   }
 })
 
-const getHpPct = (cur, max) => (cur / max) * 100
-const getHpClass = (pct) => {
+const getHpPct = (cur: number, max: number) => (cur / max) * 100
+const getHpClass = (pct: number) => {
   if (pct > 50) return 'hp-high'
   if (pct > 25) return 'hp-mid'
   return 'hp-low'
 }
 
-const getGenderText = (g) => ({ M: '♂', F: '♀' }[g] || '')
-const getGenderCls = (g) => ({ M: 'gender-male', F: 'gender-female' }[g] || 'gender-none')
-
-import { STATUS_EMOJI_MAP, STATUS_TOOLTIP_MAP, STAT_EMOJI_MAP } from '@/logic/battle/battleUiUtils'
+const getGenderText = (g: string) => ({ M: '♂', F: '♀' } as any)[g] || ''
+const getGenderCls = (g: string) => ({ M: 'gender-male', F: 'gender-female' } as any)[g] || 'gender-none'
 
 const activeStages = computed(() => {
   const s = props.isPlayer ? battleStore.playerStages : battleStore.enemyStages
@@ -271,19 +272,19 @@ const adminStatConfig = [
   { key: 'spe', label: 'SPE', icon: '⚡' }
 ]
 
-const getStatModifier = (key) => {
+const getStatModifier = (key: string) => {
   const stages = props.isPlayer ? battleStore.playerStages : battleStore.enemyStages
   if (!stages) return 0
   return stages[key] || 0
 }
 
-const getBreakdown = (key) => {
+const getBreakdown = (key: string) => {
   const stages = props.isPlayer ? battleStore.playerStages : battleStore.enemyStages
   const weather = battleStore.state?.weather
-  return getStatBreakdown(p.value, key, stages, weather)
+  return getStatBreakdown(p.value, key, stages, weather) as any
 }
 
-const formatMult = (m) => {
+const formatMult = (m: number) => {
   if (m === 1) return ''
   return ` x${m.toFixed(1)}`
 }
@@ -320,7 +321,7 @@ const formatMult = (m) => {
           v-if="!isPlayer && p.caught"
           :src="getAssetUrl(ASSET_TYPES.ITEM, 'poke-ball')"
           class="caught-icon"
-          @error="e => e.target.style.display = 'none'"
+          @error="e => (e.target as any).style.display = 'none'"
         >
 
         <!-- Admin Info Icon -->

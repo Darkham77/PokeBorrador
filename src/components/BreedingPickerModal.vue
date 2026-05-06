@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /**
  * BreedingPickerModal
  * Standardized modal for selecting parents in daycare.
@@ -9,19 +9,27 @@ import { useBreedingStore } from '@/stores/breeding'
 import { COMPAT_TEXT } from '@/logic/breeding/breedingData'
 import { checkCompatibility } from '@/logic/breeding/breedingEngine'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import BaseModal from '@/components/common/BaseModal.vue'
 
-const props = defineProps({
-  show: { type: Boolean, default: false },
-  mode: { type: String, default: 'daycare' }, // 'daycare' or 'mission'
-  slotIdx: { type: Number, default: 0 },
-  missionIdx: { type: Number, default: -1 }
+interface Props {
+  show?: boolean
+  mode?: string
+  slotIdx?: number
+  missionIdx?: number
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  show: false,
+  mode: 'daycare',
+  slotIdx: 0,
+  missionIdx: -1
 })
 
-const emit = defineEmits(['close'])
+const emit = defineEmits<{
+  (e: 'close'): void
+}>()
 
-const gameStore = useGameStore()
-const breedingStore = useBreedingStore()
+const gameStore = useGameStore() as any
+const breedingStore = useBreedingStore() as any
 
 const searchQuery = ref('')
 
@@ -64,7 +72,7 @@ const filteredPokemon = computed(() => {
   return list
 })
 
-const selectPokemon = (p) => {
+const selectPokemon = (p: any) => {
   if (props.mode === 'daycare') {
     breedingStore.depositPokemon(p, props.slotIdx)
   } else {
@@ -74,7 +82,7 @@ const selectPokemon = (p) => {
   emit('close')
 }
 
-const getListCompatibility = (p) => {
+const getListCompatibility = (p: any) => {
   if (props.mode !== 'daycare') return null
   const otherSlotIdx = props.slotIdx === 1 ? 2 : 1
   const otherSlot = breedingStore.daycareSlots.find(s => s.slot_index === otherSlotIdx)
@@ -121,7 +129,7 @@ const getSprite = (id, shiny) => {
             <img
               :src="getSprite(p.id, p.isShiny)"
               class="poke-sprite"
-              @error="e => e.target.style.display = 'none'"
+              @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
             >
           </div>
           <div class="poke-info">
