@@ -23,7 +23,7 @@ export const useMapStore = defineStore('map', () => {
   const currentEpochHour = ref(Math.floor(getServerTime() / 3600000))
 
   // Sync epoch hour every minute
-  if (typeof window !== 'undefined') {
+  if (typeof window !== 'undefined' && typeof process !== 'undefined' && process.env.NODE_ENV !== 'test') {
     setInterval(() => {
       currentEpochHour.value = Math.floor(getServerTime() / 3600000)
     }, 60000)

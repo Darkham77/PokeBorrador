@@ -4,6 +4,7 @@ import { useUIStore } from '@/stores/ui'
 import { useGameStore } from '@/stores/game'
 import { useBattleVisuals } from '@/composables/useBattleVisuals'
 import { useModalStore } from '@/stores/modals'
+import { safeStorage } from '@/logic/utils/storage'
 import BaseModal from '@/components/common/BaseModal.vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
@@ -38,7 +39,7 @@ const { _getHpColor } = useBattleVisuals()
 
 let savedFilters = {}
 try {
-  savedFilters = JSON.parse(localStorage.getItem('pv_selection_filters') || '{}')
+  savedFilters = JSON.parse(safeStorage.getItem('pv_selection_filters') || '{}')
 } catch (e) {
   console.warn('[PokemonSelectionModal] Error loading filters:', e)
 }
@@ -51,7 +52,7 @@ const selectedUids = ref([])
 
 // Persist filters
 watch([sortBy, sortOrder, activeTags, searchQuery], () => {
-  localStorage.setItem('pv_selection_filters', JSON.stringify({
+  safeStorage.setItem('pv_selection_filters', JSON.stringify({
     sortBy: sortBy.value,
     sortOrder: sortOrder.value,
     activeTags: activeTags.value,

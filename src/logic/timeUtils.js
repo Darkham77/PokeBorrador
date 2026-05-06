@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import { safeStorage } from './utils/storage';
 
 /**
  * Time Synchronization Utility (Pure Vue version)
@@ -14,7 +15,7 @@ let _timeSynced = false;
  */
 export async function syncServerTime() {
   // Prevent sync in offline mode or if connection is lost
-  if (typeof window !== 'undefined' && localStorage.getItem('pokevicio_session_mode') === 'offline') {
+  if (typeof window !== 'undefined' && safeStorage.getItem('pokevicio_session_mode') === 'offline') {
     _serverTimeOffset = 0;
     _timeSynced = true;
     return;
@@ -34,7 +35,7 @@ export async function syncServerTime() {
     console.log(`[TIME] Server Sync Completed. Offset: ${_serverTimeOffset}ms`);
   } catch (_err) {
     // Only log error if not in local/offline mode to avoid console noise
-    if (typeof window !== 'undefined' && localStorage.getItem('pokevicio_session_mode') !== 'offline') {
+    if (typeof window !== 'undefined' && safeStorage.getItem('pokevicio_session_mode') !== 'offline') {
       console.warn('[TIME] Failed to sync with server, using local time as fallback.');
     }
     _serverTimeOffset = 0;
@@ -102,8 +103,10 @@ export function getSeason(now = getServerTime()) {
 // syncServerTime();
 
 // Re-sync every 5 minutes to stay accurate (only if synced once)
-setInterval(() => {
-  if (_timeSynced && typeof window !== 'undefined' && localStorage.getItem('pokevicio_session_mode') === 'online') {
-    syncServerTime();
-  }
-}, 300000);
+if (typeof window !== 'undefined' && typeof process !== 'undefined' && process.env.NODE_ENV !== 'test') {
+  setInterval(() => {
+    if (_timeSynced && safeStorage.getItem('pokevicio_session_mode') === 'online') {
+      syncServerTime();
+    }
+  }, 300000);
+}

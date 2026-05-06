@@ -22,13 +22,13 @@ describe('Battle Store - Turn Count Logic', () => {
 
   it('should initialize turnCount at 1', async () => {
     const battle = useBattleStore()
-    await battle._startBattle({ id: 'rattata', hp: 50, maxHp: 50, catchRate: 100 }, { locationId: 'test' })
+    await battle._startBattle({ id: 'rattata', hp: 50, maxHp: 50, catchRate: 100 }, { locationId: 'test', wasSearching: false })
     expect(battle.state.turnCount).toBe(1)
   })
 
   it('should increment turnCount after applyEndTurnEffects', async () => {
     const battle = useBattleStore()
-    await battle._startBattle({ id: 'rattata', hp: 50, maxHp: 50 }, { locationId: 'test' })
+    await battle._startBattle({ id: 'rattata', hp: 50, maxHp: 50 }, { locationId: 'test', wasSearching: false })
     
     expect(battle.state.turnCount).toBe(1)
     
@@ -43,7 +43,7 @@ describe('Battle Store - Turn Count Logic', () => {
 
   it('should not increment turnCount if the battle is over', async () => {
     const battle = useBattleStore()
-    await battle._startBattle({ id: 'rattata', hp: 50, maxHp: 50 }, { locationId: 'test' })
+    await battle._startBattle({ id: 'rattata', hp: 50, maxHp: 50 }, { locationId: 'test', wasSearching: false })
     
     battle.state.over = true
     await battle.applyEndTurnEffects()

@@ -22,6 +22,7 @@ export function getStatusIcon(status) {
  * @returns {boolean} True si el Pokémon sigue en combate, False si se debilitó (aunque las funciones de daño usualmente no despachan muerte aquí)
  */
 export function tickStatus(pokemon, addLogFn, role = 'info') {
+  if (!pokemon) return false;
   // 1. Efectos de control temporal
   if (pokemon.disabledTurns > 0) {
     pokemon.disabledTurns--;
@@ -126,7 +127,7 @@ export function tickStatus(pokemon, addLogFn, role = 'info') {
  * Procesa efectos de campo como Drenadoras.
  */
 export function tickLeechSeed(pokemon, opponent, addLogFn) {
-  if (!pokemon.seeded || pokemon.hp <= 0) return false;
+  if (!pokemon || !pokemon.seeded || pokemon.hp <= 0) return false;
 
   const dmg = Math.max(1, Math.floor(pokemon.maxHp / 8));
   pokemon.hp = Math.max(0, pokemon.hp - dmg);
@@ -147,7 +148,7 @@ export function tickLeechSeed(pokemon, opponent, addLogFn) {
  * Limpia todos los estados temporales/volátiles de un Pokémon al salir o entrar en combate.
  */
 export function clearVolatileStatus(poke) {
-  if (!poke) return
+  if (!poke) return;
   poke.confused = 0
   poke.flinched = false
   poke.substitute = 0

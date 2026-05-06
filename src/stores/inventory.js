@@ -3,6 +3,7 @@ import { ref, computed, watch } from 'vue'
 import { useGameStore } from './game'
 import { useBattleStore } from './battle'
 import { useUIStore } from './ui'
+import { safeStorage } from '@/logic/utils/storage'
 import { SHOP_ITEMS } from '@/data/items'
 import { itemEffects as ITEM_EFFECTS, getDynamicItemEffect } from '@/logic/items/itemEffects'
 import { isGlobalItem } from '../logic/providers/itemProvider'
@@ -15,11 +16,11 @@ export const useInventoryStore = defineStore('inventory', () => {
   // --- BAG STATE ---
   const bagSellMode = ref(false)
   const bagSellSelected = ref({}) // { itemName: quantity }
-  const activeCategory = ref(localStorage.getItem('inventory_last_tab') || 'todos')
+  const activeCategory = ref(safeStorage.getItem('inventory_last_tab') || 'todos')
   const searchQuery = ref('')
 
   watch(activeCategory, (newVal) => {
-    localStorage.setItem('inventory_last_tab', newVal)
+    safeStorage.setItem('inventory_last_tab', newVal)
   })
 
   // We no longer force "utilizables" category on target change 

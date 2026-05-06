@@ -3,6 +3,7 @@ import { ref, computed } from 'vue'
 import { useModalStore } from './modals'
 import { useBattleStore } from './battle'
 import { useLoadingStore } from '@/stores/loading'
+import { safeStorage } from '@/logic/utils/storage'
 
 export const useUIStore = defineStore('ui', () => {
   const libraryTab = ref('gimnasios')
@@ -49,7 +50,7 @@ export const useUIStore = defineStore('ui', () => {
 
   // Zoom initialization
   const getInitialZoom = () => {
-    const saved = localStorage.getItem('app-zoom')
+    const saved = safeStorage.getItem('app-zoom')
     if (saved) {
       const val = parseFloat(saved)
       if (!isNaN(val) && val > 0) return val
@@ -313,7 +314,7 @@ export const useUIStore = defineStore('ui', () => {
     appZoom,
     setZoom: (val) => {
       appZoom.value = val
-      localStorage.setItem('app-zoom', val)
+      safeStorage.setItem('app-zoom', val)
       document.documentElement.style.setProperty('--app-zoom', val)
     },
     toggleTrade,

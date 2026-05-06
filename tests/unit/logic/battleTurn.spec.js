@@ -68,6 +68,11 @@ describe('battleTurn.js', () => {
     // Mock e.hp = 0 to trigger faint emission
     mockStore.activeBattle.enemy.hp = 1
     await runPlayerAction(mockStore, 0)
+    
+    if (mockStore.activeBattle.enemy.hp <= 0) {
+      await mockStore.handleFaint('enemy')
+    }
+
     expect(gameBus.emit).toHaveBeenCalledWith('PLAY_FAINT', { side: 'enemy' })
   })
 
@@ -78,6 +83,11 @@ describe('battleTurn.js', () => {
     mockStore.activeBattle.enemyTeam = [nextPokemon]
 
     await runPlayerAction(mockStore, 0)
+    
+    // Manually trigger handleFaint in the test as it's now decoupled from runPlayerAction
+    if (mockStore.activeBattle.enemy.hp <= 0) {
+      await mockStore.handleFaint('enemy')
+    }
 
     expect(gameBus.emit).toHaveBeenCalledWith('PLAY_WITHDRAW', { side: 'enemy' })
     expect(gameBus.emit).toHaveBeenCalledWith('PLAY_SEND_OUT', expect.objectContaining({ side: 'enemy', pokemon: nextPokemon }))

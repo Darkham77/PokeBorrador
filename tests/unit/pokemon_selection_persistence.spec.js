@@ -13,6 +13,17 @@ vi.mock('@/stores/game', () => ({
   useGameStore: () => mockGameStore
 }))
 
+// Mock localStorage for environments where it's missing
+if (typeof localStorage === 'undefined') {
+  const store = {}
+  global.localStorage = {
+    getItem: (key) => store[key] || null,
+    setItem: (key, value) => { store[key] = value.toString() },
+    clear: () => { for (const key in store) delete store[key] },
+    removeItem: (key) => { delete store[key] }
+  }
+}
+
 describe('PokemonSelectionModal Persistence', () => {
   beforeEach(() => {
     setActivePinia(createPinia())

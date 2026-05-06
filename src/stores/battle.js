@@ -206,8 +206,9 @@ export const useBattleStore = defineStore('battle', () => {
   }
 
   const applyEndTurnEffects = async () => {
-    const p = activeBattle.value.player
-    const e = activeBattle.value.enemy
+    const p = activeBattle.value?.player
+    const e = activeBattle.value?.enemy
+    if (!p || !e) return
     
     // Procesar Premonición (Future Sight)
     if (activeBattle.value.futureSightTurns > 0) {

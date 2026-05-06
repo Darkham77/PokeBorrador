@@ -105,8 +105,8 @@ export function getStatBreakdown(pokemon, statKey, stages, weather) {
     val = Math.floor(val * results.abilityMult);
 
     if (pokemon.status === 'paralyze') {
-      results.statusMult = 0.25; // Gen 2 rule: 25% speed (1/4), in Gen 7+ it's 50%
-      val = Math.floor(val * 0.25);
+      results.statusMult = 0.5; // Modern mechanics (Gen 7+): 50% speed reduction
+      val = Math.floor(val * 0.5);
     }
   }
 
