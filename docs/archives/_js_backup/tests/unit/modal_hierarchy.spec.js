@@ -2,7 +2,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { mount } from '@vue/test-utils'
-import { defineComponent, h, ref } from 'vue'
+import { defineComponent, ref } from 'vue'
 import { useModalStore } from '@/stores/modals'
 import { useUIStore } from '@/stores/ui'
 import ModalHost from '@/components/common/ModalHost.vue'

@@ -54,7 +54,7 @@ export function dispatchMoveEffect(effect: any, src: any, tgt: any, srcStages: a
 
   // 3. Buscar y ejecutar la acción
   // Prioridad al efecto completo (ej: stat_up_self_atk_2)
-  let actionFn = ALL_ACTIONS[effect] || ALL_ACTIONS[effectBase];
+  const actionFn = ALL_ACTIONS[effect] || ALL_ACTIONS[effectBase];
 
   console.log(`%c[ActionRegistry] Dispatching: ${effect} (Base: ${effectBase}) -> Found: ${!!actionFn}`, 'color: #10b981; font-weight: bold');
 

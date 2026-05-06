@@ -210,7 +210,7 @@ export const useInventoryStore = defineStore('inventory', () => {
 
     if (!pokemon) return { success: false, msg: 'Seleccioná un Pokémon.' }
 
-    let effectFn = ITEM_EFFECTS[itemName]
+    const effectFn = ITEM_EFFECTS[itemName]
     let result;
 
     if (effectFn) {

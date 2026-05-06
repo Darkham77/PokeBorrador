@@ -31,7 +31,7 @@ export function registerAudioTools({ register }, _context) {
       }
       
       const event = eventMap[type] || type
-      let payload = { side, ...options }
+      const payload = { side, ...options }
       
       // Manejo especial para START_BATTLE (Introducciones)
       if (type === 'emergence') payload.animationPhase = 1

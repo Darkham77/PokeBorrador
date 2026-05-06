@@ -64,7 +64,7 @@ export async function executeTurn(store: any, moveIndex: any) {
   else if (ePrio > pPrio) playerFirst = false
   else playerFirst = pSpe >= eSpe
 
-  let queue: any[] = []
+  const queue: any[] = []
   if (playerFirst) {
     queue.push({ source: 'player', action: () => runPlayerAction(store, moveIndex) })
     if (eMove) queue.push({ source: 'enemy', action: () => runEnemyAction(store) })

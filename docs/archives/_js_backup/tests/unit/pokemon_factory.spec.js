@@ -1,6 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { makePokemon, levelUpPokemon } from '@/logic/pokemonFactory';
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 
 // Mock dependencies
 vi.mock('@/logic/providers/pokemonDataProvider', () => ({

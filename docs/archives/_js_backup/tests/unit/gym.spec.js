@@ -3,7 +3,7 @@
  * Unit tests for Gym TM Rewards and Progress logic.
  */
 import { describe, it, expect } from 'vitest';
-import { processGymVictory, GYM_RATIOS } from '@/logic/gym/gymEngine';
+import { processGymVictory } from '@/logic/gym/gymEngine';
 
 describe('Gym Engine', () => {
   const mockGym = { id: 'pewter', leader: 'Brock', rewardTM: 'MT39 Tumba Rocas' };

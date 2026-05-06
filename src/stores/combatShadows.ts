@@ -82,8 +82,8 @@ export const useCombatShadowStore = defineStore('combatShadows', () => {
     // Si es volador, ignoramos el valor detectado y forzamos el suelo
     if (options.isFlying) feetY = 0.9
     
-    let feetX = options.feetX || (cachedPoints?.feetX ?? (existing?.feetX ?? 0.5))
-    let visible = options.visible !== undefined ? options.visible : true
+    const feetX = options.feetX || (cachedPoints?.feetX ?? (existing?.feetX ?? 0.5))
+    const visible = options.visible !== undefined ? options.visible : true
 
     // Guardamos/actualizamos la sombra inmediatamente para que sea visible
     const newShadow = {

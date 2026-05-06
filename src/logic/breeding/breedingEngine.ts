@@ -90,8 +90,8 @@ export function calculateInheritance(pA: Pokemon, pB: Pokemon, itemA: string, it
     'Franja Recia': 'spe'
   }
   
-  let forcedA = powerMap[itemA]
-  let forcedB = powerMap[itemB]
+  const forcedA = powerMap[itemA]
+  const forcedB = powerMap[itemB]
   
   if (forcedA) ivs[forcedA] = pA.ivs[forcedA]
   if (forcedB && forcedB !== forcedA) ivs[forcedB] = pB.ivs[forcedB]

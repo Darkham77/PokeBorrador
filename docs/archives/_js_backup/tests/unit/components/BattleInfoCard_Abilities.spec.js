@@ -5,7 +5,6 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { setActivePinia, createPinia } from 'pinia'
 import BattleInfoCard from '@/components/battle/BattleInfoCard.vue'
-import { useBattleStore } from '@/stores/battle'
 
 vi.mock('@/stores/battle', () => ({
   useBattleStore: vi.fn(() => ({

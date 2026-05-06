@@ -1,8 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { generateEncounter } from '@/logic/encounters'
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
-import { makePokemon } from '@/logic/pokemonFactory'
-import { isDisputePhase } from '@/logic/war/warEngine'
 
 vi.mock('@/logic/providers/pokemonDataProvider', () => ({
   pokemonDataProvider: {

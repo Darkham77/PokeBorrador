@@ -148,7 +148,7 @@ export function calculateInheritance(pA: Pokemon, pB: Pokemon, itemA: string = '
   
   const forcedCount = (forcedA && forcedB && forcedA !== forcedB) ? 2 : ((forcedA || forcedB) ? 1 : 0);
   const baseInheritCount = (playerClass === 'criador') ? 4 : 3;
-  let count = Math.max(0, baseInheritCount - forcedCount);
+  const count = Math.max(0, baseInheritCount - forcedCount);
   
   const rem = STATS.filter(s => s !== forcedA && s !== forcedB).sort(() => Math.random() - 0.5).slice(0, count);
   rem.forEach(s => ivs[s] = Math.random() < 0.5 ? pA.ivs[s] : pB.ivs[s]);

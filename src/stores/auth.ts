@@ -304,7 +304,7 @@ export const useAuthStore = defineStore('auth', () => {
     // que NO TENÍA los meta tags de PWA ni el width:100% que acabo de añadir.
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.getRegistrations().then((registrations) => {
-        for (let registration of registrations) {
+        for (const registration of registrations) {
           registration.unregister()
         }
       })

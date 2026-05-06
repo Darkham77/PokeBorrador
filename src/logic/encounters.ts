@@ -44,8 +44,8 @@ function isSpeciesBoosted(id: string, weather: string): boolean {
 export function getEncounterPool(loc: MapLocation, cycle: string, weather: string = 'clear', activeEvents: any[] = []) {
   if (!loc || !loc.wild) return { pool: [] as string[], rates: [] as number[] };
   
-  let pool = [...(loc.wild[cycle] || loc.wild.day || [])];
-  let rates = [...((loc.rates && (loc.rates[cycle] || loc.rates.day)) ? (loc.rates[cycle] || loc.rates.day) : []) as number[]];
+  const pool = [...(loc.wild[cycle] || loc.wild.day || [])];
+  const rates = [...((loc.rates && (loc.rates[cycle] || loc.rates.day)) ? (loc.rates[cycle] || loc.rates.day) : []) as number[]];
   
   // Ensure rates match pool length before transformations
   while (rates.length < pool.length) rates.push(10);
@@ -113,7 +113,7 @@ export function getEncounterPool(loc: MapLocation, cycle: string, weather: strin
 export function selectFromPool(pool: string[], rates: number[]): string {
   if (!pool.length) return '';
   const totalRate = rates.reduce((a, b) => a + b, 0);
-  let rand = Math.random() * totalRate;
+  const rand = Math.random() * totalRate;
   let cumulative = 0;
   
   for (let i = 0; i < pool.length; i++) {

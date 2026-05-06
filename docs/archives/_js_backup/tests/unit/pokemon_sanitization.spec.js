@@ -1,6 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
 import { sanitizePokemon, recalcPokemonStats } from '@/logic/pokemonFactory';
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 
 // Mock dependencies
 vi.mock('@/logic/providers/pokemonDataProvider', () => ({

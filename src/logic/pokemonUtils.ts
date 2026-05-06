@@ -49,7 +49,7 @@ export function getBackSpriteUrl(id: string, isShiny: boolean = false): string {
  */
 export function getMovesAtLevel(id: string, level: number): PokemonMove[] {
   const history = getSpeciesHistory(id);
-  let allPotentialMoves: any[] = [];
+  const allPotentialMoves: any[] = [];
   const seenNames = new Set<string>();
 
   history.forEach(spId => {

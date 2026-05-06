@@ -8,7 +8,7 @@ export const safeStorage = {
   getItem(key: string): string | null {
     try {
       if (typeof localStorage === 'undefined') return null
-      let val = localStorage.getItem(key)
+      const val = localStorage.getItem(key)
       
       // Shadow Backup Rescue: If primary is missing, try backup
       if (val === null) {

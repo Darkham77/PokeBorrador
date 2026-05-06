@@ -2,7 +2,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { ref } from 'vue'
 import { useBoxFilters } from '@/composables/useBoxFilters'
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 
 // Mock the data provider
 vi.mock('@/logic/providers/pokemonDataProvider', () => ({

@@ -227,8 +227,8 @@ export function calculateDamage(attacker: any, defender: any, move: any, ctx: an
   }
 
   const isPhysical = moveCat === 'physical';
-  let aStages = { [isPhysical ? 'atk' : 'spa']: atkStages };
-  let dStages = { [isPhysical ? 'def' : 'spd']: defStages };
+  const aStages = { [isPhysical ? 'atk' : 'spa']: atkStages };
+  const dStages = { [isPhysical ? 'def' : 'spd']: defStages };
 
   // Critical Hit logic
   let critRate = (attacker.heldItem === 'Lente Zoom') ? 0.12 : 0.06;

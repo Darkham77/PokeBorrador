@@ -3,7 +3,6 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { useBoxStore } from '@/stores/box'
 import { useGameStore } from '@/stores/game'
-import { useUIStore } from '@/stores/ui'
 
 describe('BoxStore Modernization', () => {
   beforeEach(() => {
