@@ -294,10 +294,8 @@ export const useBattleStore = defineStore('battle', () => {
     activeMove.value = null
     
     if (res.action === 'capture') {
-      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.CATCH_SUCCESS)
       activeBattle.value.isCapture = true
-      activeBattle.value.over = true // Regla del Vacio (Ocultar Interfaz Inmediatamente)
-      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ADD_TO_STORAGE)
+      activeBattle.value.over = true 
       gs.addPokemon(res.pokemon, { notify: true })
       await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.VACATE_SEAT)
       activeBattle.value.enemy = null
@@ -341,12 +339,14 @@ export const useBattleStore = defineStore('battle', () => {
    * Útil para asegurar persistencia atómica tras combates o cambios.
    */
   const syncTeamHP = () => syncTeamHP(getContext())
-
+  
   const _executeSwitch = async (teamIndex, isForced = false) => {
     if (isProcessing.value && !isForced) return
     isProcessing.value = true
-    fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.CHECK_PLAYER_SEAT)
-    fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.EXEC_TURN)
+    
+    // REORDER_TEAM (Manual 11. Team Reordering)
+    await fsm.transition(BATTLE_STATES.REORDER_TEAM)
+    await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.FIND_HEALTHY)
     
     // Regla de Atomicidad: Limpiar estados de animación antes de cambiar
     activeMove.value = null
@@ -354,28 +354,55 @@ export const useBattleStore = defineStore('battle', () => {
     
     const newPoke = gs.state.team[teamIndex]
     if (!newPoke || newPoke.hp <= 0) { isProcessing.value = false; return }
+    
+    await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.CHECK_ACTIVE_SEAT)
     const oldPoke = activeBattle.value.player
+    
+    if (oldPoke && oldPoke.uid === newPoke.uid) {
+      isProcessing.value = false
+      return
+    }
 
     // Animación de Retirada (solo si el pokemon actual está vivo)
     if (oldPoke && oldPoke.hp > 0) {
-      fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.SWITCHING)
-      fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.RECALL_FLOW)
-      fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.POKEMON_RECALL)
+      await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.SWITCHING)
+      await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.POKEMON_RECALL)
+      await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.RENDER_BALL)
       addLog(`¡Bien hecho, ${oldPoke.name}! ¡Regresa!`, 'log-info', 'player')
       gameBus.emit('PLAY_WITHDRAW', { side: 'player' })
-      await new Promise(r => setTimeout(r, 800))
-      fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.VACATE_SEAT)
+      
+      await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.WAIT_TIMER, 500) // Manual: Min 0.5s Delay
+      await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.VACATE_SEAT)
       activeBattle.value.player = null
       clearVolatileStatus(oldPoke)
     }
 
     // Cambio de estado
-    fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.POKEMON_CALL)
-    fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.RENDER_BALL)
-    await new Promise(r => setTimeout(r, 400))
+    // RECALL_FLOW
+    if (activeBattle.value.player && activeBattle.value.player.hp > 0) {
+      await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.POKEMON_RECALL)
+      await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.RENDER_BALL)
+      gameBus.emit('PLAY_WITHDRAW', { side: 'player' })
+      await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.ENERGY_RECALL)
+      await new Promise(r => setTimeout(r, 800))
+      await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.VACATE_SEAT)
+      activeBattle.value.player = null
+    }
+
+    // CALL_FLOW
+    await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.POKEMON_CALL)
+    await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.RENDER_BALL)
     
-    fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.OCCUPY_SEAT)
-    activeBattle.value.player = newPoke; activeBattle.value.playerTeamIndex = teamIndex
+    await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.OCCUPY_SEAT)
+    activeBattle.value.player = newPoke; 
+    activeBattle.value.playerTeamIndex = teamIndex
+    
+    gameBus.emit('PLAY_SEND_OUT', { side: 'player', pokemon: newPoke })
+    await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.ENERGY_RELEASE)
+    await new Promise(r => setTimeout(r, 800))
+    
+    await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.POKEMON_APPEAR)
+    
     if (!activeBattle.value.participants.includes(newPoke.uid)) {
       activeBattle.value.participants.push(newPoke.uid)
     }
@@ -386,11 +413,7 @@ export const useBattleStore = defineStore('battle', () => {
       reflect: s.reflect || 0, lightScreen: s.lightScreen || 0, safeguard: s.safeguard || 0, mist: s.mist || 0, spikes: s.spikes || 0 }
     
     addLog(`¡Adelante, ${newPoke.name}!`, 'log-player', newPoke)
-    fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ENERGY_RELEASE)
-    gameBus.emit('PLAY_SEND_OUT', { side: 'player', pokemon: newPoke })
-    await new Promise(r => setTimeout(r, 800))
-    fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.POKEMON_APPEAR, 400)
-    await new Promise(r => setTimeout(r, 800))
+    await new Promise(r => setTimeout(r, 400))
 
     // Daño por Púas
     if (playerStages.value.spikes > 0 && newPoke.type !== 'flying' && newPoke.type2 !== 'flying' && newPoke.ability !== 'Levitación') {
@@ -409,6 +432,8 @@ export const useBattleStore = defineStore('battle', () => {
     })
     
     if (!isForced) await runEnemyAction(thisStore)
+    
+    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT)
     isProcessing.value = false
   }
 
@@ -538,8 +563,6 @@ export const useBattleStore = defineStore('battle', () => {
             addLog('¡Escapaste sin problemas!', 'log-info', 'player');
             
             fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ESCAPE_PROCESS);
-            fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.HIDE_ENEMY_COMBAT_HUD_ESC);
-            fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.HIDE_PLAYER_COMBAT_HUD);
             fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.PLAY_ESCAPE_ANIM);
             gameBus.emit('PLAY_ESCAPE_ANIM', { side: 'player' });
             

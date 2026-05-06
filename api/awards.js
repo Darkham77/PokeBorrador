@@ -36,7 +36,7 @@ export default async function handler(req, res) {
 
     const { error } = await supabase
       .from('awards')
-      .update({ claimed: true, claimed_at: new Date().toISOString() })
+      .update({ claimed: true, claimed_at: Temporal.Now.instant().toString() })
       .eq('id', award_id)
 
     if (error) return res.status(500).json({ error: error.message })

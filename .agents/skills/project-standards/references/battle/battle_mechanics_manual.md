@@ -5,37 +5,43 @@ This manual documents the internal workings of the battle engine, focusing on lo
 > [!NOTE]
 > All mathematical formulas (Damage, Escape, Stats) have been centralized in the [Game Formulas Manual](../core/game_formulas_manual.md).
 
-## 🏛️ Architecture: Seats vs. Slots
+## 🏛️ Architecture: Seats vs. Team Slots
 
-To support future expansions (Double Battles) and maintain deterministic transitions, the engine distinguishes between **Physical Positions** and **Data Reservations**.
+To support future expansions (Double Battles) and maintain deterministic transitions, the engine distinguishes between **Physical Positions (Seats)** and **Data Participants (Team Slots)**.
 
 ### 1. Seats (Physical Positions)
 
-A **Seat** is a fixed position on the battlefield where a Pokémon is rendered and its interface is synchronized.
+A **Seat** is a fixed position on the battlefield where a Pokémon is rendered and its interface is synchronized. The engine supports 4 seats:
 
-- **Seat 1**: The active position for the **Player Side** (Side 1).
-- **Seat 2**: The active position for the **Enemy Side** (Side 2).
-- **Behavior**: A seat can be **Empty** (Null) or **Occupied**.
+- **Seat 1 (Player Side)**: Primary active position for the **Player**.
+- **Seat 2 (Enemy Side)**: Primary active position for the **Enemy 1**.
+- **Seat 3 (Player Side)**: Position for the **Ally** (active in 2vs2).
+- **Seat 4 (Enemy Side)**: Position for the **Enemy 2** (active in 2vs2).
+
+**Behavior & Visibility Rules:**
+
+- **Current Support**: Currently, the game only supports 1v1 (Seat 1 vs Seat 2). Seats 3 and 4 are reserved for future 2vs2 development.
+- **Empty State**: A seat is **Empty** if there is no active Pokémon from its associated Team Slot.
+- **Mandatory Suppression**: If a seat is empty, **NO Pokémon MUST be rendered** under any circumstances.
 - **Master Signal for HUDs**: Seat occupancy is the **atomic trigger** for Combat HUD visibility.
   - `Seat != Null` ➔ HUD is Visible (Entry animation triggered).
   - `Seat == Null` ➔ HUD is Hidden (Exit animation triggered).
-- **Animation Rule**: `POKEMON_CALL` always targets an Empty Seat. If a seat is occupied, it must be vacated via `POKEMON_RECALL` or a `VACATE` state (setting the seat to `null`) first. This vacancy is what logically clears the HUD.
 
-### 2. Slots (Data Reservations - Enemy Only)
+### 2. Team Slots (Data Participants)
 
-A **Slot** is a background data container used for encounter prediction and pre-generation.
+Each Seat has an associated **Team Slot** that contains the party data for that participant.
 
-- **Slot 1 (Active Slot)**: The **Source of Truth** for **Seat 2**. Holds the data for the encounter currently being scouted or battled. All rendering, HUDs, and logic MUST point to Slot 1.
-- **Slot 2 (Predictive Slot)**: A background **Data Cache** for the *next* encounter. It exists only to hide generation latency. It MUST NEVER be used for direct rendering.
-- **Promotion**: During the `INITIALIZING` phase (after a battle ends), Slot 2 data is promoted to Slot 1. Only after promotion is Slot 1 used for the `SEARCH_PHASE` display.
+- **Participant Link**: Each active participant (Player, Ally, Enemy 1, Enemy 2) occupies a seat and brings their own Team Slot.
+- **Capacity**: A Team Slot can contain more than one Pokémon, with a **maximum of 6**.
+- **Inactivity**: If a Team Slot is empty, it means there is no participant playing in that seat.
+- **Wild Encounters**: Wild Pokémon are also considered participants and occupy an Enemy Team Slot (usually with 1 member).
 
 ### 3. Transition Matrix
 
-| Event | Action on Seat | Action on Slot |
+| Event | Action on Seat | Action on Team Data |
 | :--- | :--- | :--- |
-| **New Battle** | `VACATE_ALL_SEATS` (Clean both) | Populate Slot 1 & 2 |
-| **Search Loop** | *Managed by Reward Phase* | Promote S2 -> S1, Generate S2 |
-| **Mid-Battle Switch** | `POKEMON_RECALL` -> `POKEMON_CALL` | No change to Slots |
+| **New Battle** | `VACATE_ALL_SEATS` | Populate Team Slots |
+| **Mid-Battle Switch** | `POKEMON_RECALL` -> `POKEMON_CALL` | No change to Team data |
 
 ---
 
@@ -151,23 +157,24 @@ These can coexist with primary status and other secondary effects:
 
 - **Interaction Guard**: The switch action must be blocked if `isProcessing` or `isIntroAnimating` is true.
 - **Logic Sequence**:
-    1. Check if `oldPoke.hp > 0`. If true, invoke the `POKEMON_RECALL` modular protocol.
-    2. Swap the active player reference in the store.
-    3. **Differential Reset**:
-       - Clear stat stages (`atk`, `def`, `spa`, `spd`, `spe`, `acc`, `eva`).
-       - Clear volatile status conditions (`confusion`, `attract`, `curse`, `trapped`, `infatuation`) of the withdrawn Pokémon.
-       - PRESERVE field effects (`reflect`, `lightScreen`, `spikes`, `mist`).
-    4. Invoke the `POKEMON_CALL` modular protocol.
-    5. **Entry Hazard Application**: Apply entry hazards (e.g. Spikes) immediately after the new Pokémon touches the ground (End of `ENERGY_RELEASE`).
-    6. Execute entry abilities (e.g., Intimidate).
+    1. Scan the team slot to find the **First Healthy Member** (HP > 0). Fainted members are ignored.
+    2. If the target is already in the seat, skip to end.
+    3. Invoke the `POKEMON_RECALL` modular protocol for the current occupant (if any).
+    4. **Wait Timer**: Execute a mandatory delay of **0.5 seconds**.
+    5. Swap the active reference in the store to the new healthy member.
+    6. **Differential Reset**:
+       - Clear stat stages and volatile status conditions.
+       - PRESERVE field effects (Reflect, Spikes, etc.).
+    7. Invoke the `POKEMON_CALL` modular protocol using the **cached shadow coordinates** of the entering member.
+    8. **Entry Hazard Application**: Apply hazards (Spikes) at the end of `ENERGY_RELEASE`.
 
 ### 2. Coordinate Synchronization & Poké Ball Alignment
 
 To ensure the Poké Ball and the shadow align perfectly during switching:
 
-- **Reactive Anchor Sync**: The Poké Ball MUST calculate its position (`left`, `top`) reactively based on the `feetX` and `feetY` points from the `shadowStore`. Do not use fixed values (e.g., 90%) if sprite data is available.
-- **Dynamic Anchor Calculation**: The Poké Ball impact must be calculated dynamically by adding the `feet-shadow` offsets to the entity's base. This ensures the ball "touches" the Pokémon's feet regardless of its height or centering on the sprite.
-- **Immediate Cache Usage**: If a Pokémon has already been scanned previously, the system must inject its coordinates from the `feetCache` in the first frame of the animation to avoid visual jumps.
+- **Reactive Anchor Sync**: The Poké Ball MUST calculate its position reactively based on the **shadow coordinates** of the target member. Do not use fixed values or the previous member's position.
+- **Dynamic Anchor Calculation**: The Poké Ball impact must be calculated dynamically by adding the `shadow` offsets to the entity's base. This ensures the ball "touches" the ground/shadow regardless of the sprite's height (critical for flying species).
+- **Immediate Cache Usage**: If a Pokémon has been scanned previously, inject its **feet and shadow** coordinates from the cache in the first frame to avoid visual jumps.
 - **Component Integrity (Key Fix)**: The `BattleCombatant` component must use a `:key` based on the Pokémon's `uid`. This forces a clean recreation of the component during the switch, preventing the new Pokémon from inheriting stale coordinates from the previous one.
 
 ### 3. State Reactivity & HUD Integrity (Stages)
@@ -206,10 +213,7 @@ To ensure absolute continuity during proactive pre-generation and transitions, t
 
 1. **Capture Success**: Show a persistent snapshot of the caught Pokémon.
 2. **Faint Animation**: Show a persistent snapshot of the defeated Pokémon until the `VOID` transition.
-3. **Active/Search State**: Show the **Active Slot 1** (`battleStore.state.enemy`).
-4. **Predictive Cache**: The `upcomingPokemon` (Slot 2) is strictly ignored by the UI and only used for background promotion.
-
-**WHY**: Using Slot 1 as the single source for both Search and Battle phases prevents "transformation" artifacts where a Pokémon appears to change species during the intro transition.
+3. **Active/Search State**: Show the active combatant from the Team Slot.
 
 ### 2. State Mapping & Tooltips
 
@@ -245,10 +249,10 @@ To ensure flicker-free state transitions, the battle engine must enforce visual 
 
 ### 1. Parallel Preloading (Combat Prep)
 
-Before any entry animation begins, the system MUST execute a `preloadCombatCoords` cycle that includes **ALL** team members (player and rival).
+Before any entry animation begins, the system MUST execute a `preloadCombatCoords` cycle (within the `ASYNC_THREAD`) that includes **ALL** team members.
 
-- **Parallel Execution**: Use `Promise.all` to scan the feet points of the entire team simultaneously during arena mounting.
-- **Pre-loading Mandate**: `preloadCombatCoords` must be invoked BEFORE any wild entry transition to ensure anchor points are available at Frame 0, avoiding the "jump" or "teleport" effect upon appearing.
+- **Parallel Execution**: Use `Promise.all` to scan the **feet and shadow** points of the entire team simultaneously during the initialization phase.
+- **Pre-loading Mandate**: `preloadCombatCoords` must be invoked BEFORE the `SEARCH_PHASE` to ensure anchor points are available at Frame 0, avoiding the "jump" or "teleport" effect.
 - **Goal**: Ensures that shadows and Poké Balls are positioned correctly on their first visible frame, eliminating lag from asynchronous pixel scanning.
 
 ### 2. Shadow Ownership & Lock
@@ -305,44 +309,26 @@ The log processing engine handles diverse data types. To prevent runtime errors 
 - **Null-Safety**: Always implement defensive checks when resolving the log's side or icon. Use `source && typeof source === 'object'` before accessing properties.
 - **Array Validation**: When scanning the team for UID matches, ensure each member `p` is truthy before accessing `p.uid`.
 
-## 📡 Encounter Lifecycle & Proactive Pre-generation
+### 1. The Generation Gate
 
-To ensure absolute visual continuity and eliminate latency between encounters, the system uses proactive pre-generation in the background.
+To maintain combat focus, generation of new encounters must occur silently.
 
-### 1. The Proactive Generation Gate
+- **Animation Guard**: Background generation MUST NOT trigger any visual "emergence" or "bounce" animations on the current battlefield.
+- **Implementation**: Entrance animations (`is-emerging`) must be explicitly gated by the `isSearching` phase.
 
-To maintain combat focus, pre-generation of the **Predictive Slot (2)** must occur silently while the **Active Slot (1)** is in combat.
+- **Rule**: Never show encounter layers (Search Phase) until the encounter data is fully loaded and pre-calculated.
 
-- **Animation Guard**: Background pre-generation MUST NOT trigger any visual "emergence" or "bounce" animations on the current battlefield.
-- **Implementation**: Entrance animations (`is-emerging`) must be explicitly gated by the `isSearching` phase. If `isSearching` is false (active combat), the data in the **Predictive Slot (2)** must remain static and hidden until the transition phase begins.
+### 2. Team Data Architecture
 
-### 2. Visual Synchronization (Bushes & Shadows)
+To support seamless transitions and the "Search Phase" preview, the engine maintains party data for all participants:
 
-The environmental "sandwich" (CombatGrass) and ground anchors must only be revealed when the underlying data is fully ready.
-
-- **Rule**: Never show encounter layers (Search Phase) until the **Predictive Slot (2)** data is fully loaded and pre-calculated.
-- **Stabilization Continuity**: During the transition from `REWARDS_PHASE` to `SEARCH_PHASE`, the system must wait for the definitive faint animation or capture sequence to complete.
-- **Silhouette Override (Binoculars)**: By default, the wild Pokémon appears as a black silhouette during `ENTRY_ANIM` and `ENCOUNTER_ANIM`.
-  - **Mechanic**: If the player has the **Binoculars** item in their bag, the silhouette filter is bypassed in both modular phases.
-  - **HUD Visibility**: Binoculars also reveal the Enemy Combat HUD (Level, HP, Name) during the `SEARCH_PHASE`. Without them, the HUD is suppressed until `ACTIVE_BATTLE` begins.
-  - **Effect**: The Pokémon is rendered with its standard sprite (colored) while in the bushes and during the entry jump, allowing for immediate identification before the battle starts.
-
-### 3. Dual-Slot Prediction Architecture
-
-To support seamless transitions and the "Search Phase" preview, the engine maintains two dedicated memory slots for encounter data:
-
-- **Slot 1 (Active Slot)**: Reserved for the **Current Combat**. It stores the full team and trainer data for the active encounter.
-- **Slot 2 (Predictive Slot)**: Reserved for the **Next Encounter**. This data is pre-generated in the background while the current battle is active. It is used to render silhouettes in the bushes during the Search Phase before the encounter is triggered.
-- **Data Capacity & Structure**:
-  - Each slot stores a complete **Combat Encounter** object with an `encounterType` discriminator to define entry logic.
-  - **Encounter Types**:
-    - `WILD`: Standard encounter with wild Pokémon (usually 1 member team, no trainer).
-    - `TRAINER`: Combat against an NPC trainer (includes full party and trainer metadata).
-    - `NPC`: Combat against generic route trainers or citizens.
-    - `FISHING`: Special encounter triggered by water interaction. **MANDATORY**: This type triggers a specific **Fishing Minigame** before transitioning to the battle state.
-    - `SPECIAL_EVENT`: Scripted encounters or boss battles with unique entry protocols.
-  - **Team Integrity**: Regardless of type, the slot MUST store the full party data to allow immediate HUD initialization and coordinate pre-calculation.
-- **Lifecycle Management**: When a battle ends and a new search begins, the data in **Slot 2** is promoted to **Slot 1**, and a new prediction is generated for **Slot 2**. This "rolling" strategy eliminates load times between consecutive encounters.
+- **Team Integrity**: Regardless of type, the engine MUST store the full party data to allow immediate HUD initialization and coordinate pre-calculation.
+- **Encounter Types**:
+  - `WILD`: Standard encounter with wild Pokémon (usually 1 member team, no trainer).
+  - `TRAINER`: Combat against an NPC trainer (includes full party and trainer metadata).
+  - `NPC`: Combat against generic route trainers or citizens.
+  - `FISHING`: Special encounter triggered by water interaction. **MANDATORY**: This type triggers a specific **Fishing Minigame** before transitioning to the battle state.
+  - `SPECIAL_EVENT`: Scripted encounters or boss battles with unique entry protocols.
 
 ### 4. Context Setup (Generation Parameters)
 
@@ -354,20 +340,26 @@ When the player enters a specific area (Route, Gym, Cave), the engine triggers t
 stateDiagram-v2
         state CONTEXT_SETUP {
             [*] --> RECEIVE_CONFIG
-            RECEIVE_CONFIG --> VALIDATE_WEIGHTS : "Sum Probabilities"
-            VALIDATE_WEIGHTS --> INJECT_FILTERS : "Apply Pool Restrictions"
+            RECEIVE_CONFIG --> APPLY_ITEM_MODIFIERS : "Inventory Scan (Items)"
+            APPLY_ITEM_MODIFIERS --> WEIGHT_CALCULATION : "Calculate Total Weight"
+            WEIGHT_CALCULATION --> INJECT_FILTERS : "Apply Pool Restrictions"
             INJECT_FILTERS --> READY_FOR_GEN : "Generator Primed"
             READY_FOR_GEN --> [*] : "Generator Primed"
         }
 ```
 
-- **Generation Context Configuration** object dictates how both slots are populated:
-  - **Encounter Probability Table**: A dictionary mapping `EncounterType` to its weight (0-100%).
+- **Generation Context Configuration** object dictates how team slots are populated:
+  - **Encounter Probability Table**: A dictionary mapping `EncounterType` to its relative **Weight** (ponderated). The sum of weights may exceed 100 in case of active bonuses.
   - **Injected Filters**: Pool restrictions for levels and species.
-  - **Persistence Mode (persistenceMode)**: Mandatory flag defining the post-rewards destination:
-    - `SINGLE`: After victory/capture, transition to `EXIT_BATTLE` (closes modal).
-    - `PERSISTENT`: After victory/capture, transition to `SEARCH_PHASE` (continues session).
-- **Execution Rule**: The `generateEncounter()` logic MUST query this injected table before selecting the type for a new slot.
+  - **Persistence Mode (persistenceMode)**: Mandatory flag defining the post-rewards destination (`SINGLE` or `PERSISTENT`).
+  - **Mode (1v1 / 2v2)**: Defines the number of active seats and participants.
+- **Item Modifiers (Inventory Interaction)**: During `CONTEXT_SETUP`, the engine scans the player's inventory to apply bonuses or penalties to the encounter tables.
+  - **Items**: Binoculars, Incenses, Fishing Rods, etc.
+  - **Effect**: These items modify the weights or inject specific species into the pool before the generation phase begins.
+- **Cleanup & Pre-prep**: At the end of `CONTEXT_SETUP`, the engine MUST:
+    1. Execute `VACATE_ALL_SEATS`.
+    2. Execute `PRELOAD_COORDS` for **Already Defined Teams** (Real Players / Allies).
+- **Execution Rule**: The `generateEncounter()` logic MUST query the injected table before selecting the encounter parameters.
 - **Backward Compatibility**: If NO configuration or table is provided, the engine defaults to **100% WILD** and **PERSISTENT** mode.
 
 ---
@@ -385,7 +377,7 @@ stateDiagram-v2
     [*] --> CONTEXT_SETUP : Injected Configuration
     CONTEXT_SETUP --> INITIALIZING : Context Injected
     
-    INITIALIZING --> SEARCH_PHASE : Slots Ready
+    INITIALIZING --> SEARCH_PHASE : Teams Ready
     
     REWARDS_PHASE --> CHECK_PERSISTENCE : Rewards Completed
     
@@ -403,44 +395,30 @@ stateDiagram-v2
     EXIT_BATTLE --> [*]
     
     note left of CONTEXT_SETUP: Probabilities injected on area entry
-    note left of INITIALIZING: Handles slot promotion and new data generation
-    note right of SEARCH_PHASE: Purely visual interaction and minigames
 ```
 
 ### 2. Initialization Phase (Pre-Battle)
 
-Handles data generation and coordinate pre-loading to ensure a flicker-free start.
+Handles dynamic data generation and coordinate pre-loading in an asynchronous "thread" to maintain 60 FPS performance.
 
 ```mermaid
 stateDiagram-v2
     state INITIALIZING {
-        [*] --> CHECK_SLOTS : wasSearching = true (Default)
+        [*] --> CHECK_CONTEXT : "Check Mode (1v1 / 2v2)"
         
-        state CHECK_SLOTS <<choice>>
-        CHECK_SLOTS --> POPULATE_BOTH : Slots 1&2 are Empty
-        CHECK_SLOTS --> PROMOTE_AND_REPOPULATE : Slot 2 exists
-        
-        state POPULATE_BOTH {
-            [*] --> GEN_DATA : Generate Slot 1 & 2
-            GEN_DATA --> VACATE_ALL_SEATS : Clean Stage Protocol
-            VACATE_ALL_SEATS --> [*]
+        state ASYNC_THREAD {
+            CHECK_CONTEXT --> GEN_TEAMS : "Generate AI Parties (from context tables)"
+            GEN_TEAMS --> MARK_EVENT : "Identify Encounter Type (Wild, Fishing, NPC, etc.)"
+            MARK_EVENT --> PRELOAD_FINAL_COORDS : "Preload Coords for New/Uncached Teams"
+            PRELOAD_FINAL_COORDS --> SET_SEARCH_FLAG : "Set isSearching = true"
+            SET_SEARCH_FLAG --> [*]
         }
-        
-        state PROMOTE_AND_REPOPULATE {
-            [*] --> PROMOTE : Slot 2 to Slot 1
-            PROMOTE --> GEN_NEW_S2 : Generate new Slot 2
-            GEN_NEW_S2 --> [*]
-        }
-        
-        POPULATE_BOTH --> PRELOAD_COORDS
-        PROMOTE_AND_REPOPULATE --> PRELOAD_COORDS
-        
-        PRELOAD_COORDS --> [*]
     }
     
-    note right of INITIALIZING: Seats are active combatants on Side 1 and Side 2
-    note right of INITIALIZING: Slots are data reservations (Enemy Side)
-    note right of PRELOAD_COORDS: Preloads all available Seat and Team coordinates
+    note right of ASYNC_THREAD: All generation logic occurs in a separate async process to protect FPS.
+    note right of PRELOAD_FINAL_COORDS: Only scans newly generated members or those missing from cache. MUST pre-calculate both 'feet' and 'shadow' anchors (critical for flyers).
+    note right of INITIALIZING: Seats 1-4 are active combatants depending on mode.
+    note right of INITIALIZING: Team Slots hold the party data for each participant.
 ```
 
 ### 3. Active Battle Loop
@@ -450,7 +428,7 @@ The core interaction cycle. It manages user input, turn execution, and terminal 
 ```mermaid
 stateDiagram-v2
     state ACTIVE_BATTLE {
-        [*] --> WAIT_INPUT : "Seat Occupied"
+        [*] --> WAIT_INPUT : "Intro / Encounter Anim Finished"
         
         state WAIT_INPUT {
             [*] --> [*] : "Unlock Control Panel"
@@ -554,8 +532,8 @@ stateDiagram-v2
         CLEANUP_MEMORY --> CHECK_REMAINING: "Has healthy members?"
         
         state CHECK_REMAINING <<choice>>
-        CHECK_REMAINING --> STABILIZE_STAGE: "Yes"
-        CHECK_REMAINING --> REWARDS_PHASE: "No (Battle Won)"
+        CHECK_REMAINING --> STABILIZE_STAGE: "Yes (Any Team Slot has HP > 0)"
+        CHECK_REMAINING --> REWARDS_PHASE: "No (All Enemy Teams Defeated)"
         
         state STABILIZE_STAGE {
             [*] --> EMPTY_WAIT: "Wait 1.0s (Stage Clear)"
@@ -622,30 +600,32 @@ Allows the player to find new encounters without closing the modal.
 ```mermaid
 stateDiagram-v2
     state SEARCH_PHASE {
-        [*] --> PARALLEL_PREP: "Data Ready"
+        [*] --> PARALLEL_PREP: "Data Ready (Pick First Members)"
         
         state PARALLEL_PREP {
             [*] --> UPDATE_BUTTON: "Label Search/Challenge"
             --
-            [*] --> ENTRY_ANIM: "Bushes / Silhouette Layer"
+            [*] --> ENTRY_ANIM: "Bushes / Silhouette Layer (All Active Enemy Seats)"
             --
-            [*] --> REORDER_TEAM: "Sync Active Fighter"
+            [*] --> REORDER_TEAM: "Sync Active Fighters (All Player/Ally Seats)"
         }
         
         PARALLEL_PREP --> BUSH_IDLE : "Control Panel Blocked"
         
-        BUSH_IDLE --> MINIGAME_CHECK : "Click COMBATIR"
-        BUSH_IDLE --> EXIT_BATTLE : "Click VOLVER AL MAPA"
+        BUSH_IDLE --> MINIGAME_CHECK : "Click BATTLE / Clear Logs"
+        BUSH_IDLE --> EXIT_BATTLE : "Click RETURN TO MAP"
         
         state MINIGAME_CHECK <<choice>>
-        MINIGAME_CHECK --> ENCOUNTER_ANIM : "Success / No Minigame"
-        MINIGAME_CHECK --> [*] : "Fail (Vanish)"
-        
-        ENCOUNTER_ANIM --> [*] : "To Active Battle"
+        MINIGAME_CHECK --> ENCOUNTER_ANIM : "Success (All Enemy Seats)"
+        MINIGAME_CHECK --> [*] : "Fail (Vanish) / Set isSearching = false"
+        ENCOUNTER_ANIM --> [*] : "Set isSearching = false"
     }
-    
-    note right of SEARCH_PHASE : "Search Interface - Replaces standard combat HUD with 'Search Again' and 'Return to Map' buttons during BUSH_IDLE."
 ```
+
+> [!NOTE]
+> **Search Interface**: Replaces standard combat HUD with "Search Again" and "Return to Map" buttons during `BUSH_IDLE`.
+>
+> **Participation**: For new encounters, the engine automatically selects the **FIRST healthy Pokémon** from each participant's Team Slot. In 2vs2, both enemy seats (2 & 4) and player/ally seats (1 & 3) trigger parallel entry and sync sequences.
 
 ### 7. Modal Persistence & Lifecycle Rules
 
@@ -694,8 +674,8 @@ stateDiagram-v2
         RECALL_FLOW --> CHECK_TEAM: "Recall Finished"
         
         state CHECK_TEAM {
-            [*] --> HAS_HEALTHY: "Any HP > 0"
-            [*] --> ALL_FAINTED: "All HP <= 0"
+            [*] --> HAS_HEALTHY: "Any Player/Ally member HP > 0"
+            [*] --> ALL_FAINTED: "All Player & Ally members HP <= 0"
         }
         
         HAS_HEALTHY --> SWITCH_MENU : Open Selection
@@ -716,23 +696,23 @@ To ensure visual consistency, the sending and receiving of Pokémon follow these
 
 #### Team Reordering / Manual Switch
 
-Ensures the active combatant matches the target slot (used for auto-syncing to first healthy, or manual mid-battle switching).
+Ensures the active combatant matches the **First Healthy Member** of the Team Slot (HP > 0), following the team's defined order. Fainted members are systematically ignored during automatic synchronization.
 
 ```mermaid
 stateDiagram-v2
     state REORDER_TEAM {
-        [*] --> CHECK_PLAYER_SEAT : "Is Seat 1 == Target Member?"
+        [*] --> FIND_HEALTHY : "Scan Team Slot"
+        FIND_HEALTHY --> CHECK_ACTIVE_SEAT : "Pick First with HP > 0"
         
-        state CHECK_PLAYER_SEAT <<choice>>
-        CHECK_PLAYER_SEAT --> [*] : "Already Active"
-        CHECK_PLAYER_SEAT --> SWITCHING : "Mismatch or Empty Seat"
+        state CHECK_ACTIVE_SEAT <<choice>>
+        CHECK_ACTIVE_SEAT --> [*] : "Target Already in Seat"
+        CHECK_ACTIVE_SEAT --> SWITCHING : "Seat Empty or Different Member"
         
         state SWITCHING {
-            POKEMON_RECALL --> POKEMON_CALL : "Recall current"
+            POKEMON_RECALL --> WAIT_TIMER : "Recall current (if any)"
+            WAIT_TIMER --> POKEMON_CALL : "Min 0.5s Delay"
             POKEMON_CALL --> [*]
         }
-        
-        SWITCHING --> [*]
     }
 ```
 
@@ -746,7 +726,7 @@ stateDiagram-v2
         ENERGY_RECALL --> VACATE_SEAT: Free Seat
         VACATE_SEAT --> [*]
         
-        note right of RENDER_BALL: Positioned at shadow feet
+        note right of RENDER_BALL: MUST use the cached SHADOW coordinates of the LEAVING member.
         note right of ENERGY_RECALL: Shrinking Blue Energy FX (Sprite -> Ball)
     }
 ```
@@ -762,7 +742,7 @@ stateDiagram-v2
         ENERGY_RELEASE --> POKEMON_APPEAR: Show_Sprite
         POKEMON_APPEAR --> [*]
         
-        note right of RENDER_BALL: Arcs to shadow feet coordinates
+        note right of RENDER_BALL: MUST use the cached SHADOW coordinates of the ENTERING member.
         note right of ENERGY_RELEASE: Expanding Blue Energy FX (Ball -> Sprite)
     }
 ```
@@ -780,7 +760,7 @@ stateDiagram-v2
         
         state TRAINER_ENTRY {
             [*] --> T_VISUAL: "Show Trainer Sprite (Visual Overlay)"
-            T_VISUAL --> [*]: "Seat 2 remains EMPTY"
+            T_VISUAL --> [*]: "Seats 2 & 4 remain EMPTY"
         }
         
         state WILD_ENTRY {
@@ -805,7 +785,8 @@ stateDiagram-v2
         ENCOUNTER_TYPE_CHECK --> WILD_ENCOUNTER: "WILD / FISHING"
 
         state TRAINER_ENCOUNTER {
-            [*] --> TRAINER_RETREAT: "Fadeout Animation"
+            [*] --> SHOW_DIALOGS: "Intro / Special Event Messages"
+            SHOW_DIALOGS --> TRAINER_RETREAT: "Accepted / Dialog Finished"
             TRAINER_RETREAT --> POKEMON_CALL: "Calls Pokemon"
             POKEMON_CALL --> [*]
         }

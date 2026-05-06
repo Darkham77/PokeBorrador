@@ -4,7 +4,10 @@ Este manual detalla los comandos y configuraciones necesarios para trabajar en l
 
 ## 📋 Requisitos Previos
 
-Antes de comenzar, asegúrate de tener instalado **Node.js (NPM)** y **Python** en tu sistema.
+Antes de comenzar, asegúrate de tener instalado **Node.js (v26.0.0 o superior)** y **Python (v3.12 o superior)** en tu sistema.
+
+> [!IMPORTANT]
+> El proyecto utiliza características modernas del motor V8 y requiere explícitamente Node 26+. Si tu versión es inferior, el comando `npm install` lanzará una advertencia sugiriendo la actualización.
 
 ### 🌐 Instalación de Node.js y NPM
 
@@ -16,8 +19,11 @@ Antes de comenzar, asegúrate de tener instalado **Node.js (NPM)** y **Python** 
 
 - **Linux (Ubuntu/Debian)**:
 
+     Para asegurar que instalas la versión 26+ (los repositorios de apt suelen estar desactualizados), usa NodeSource:
+
      ```bash
-     sudo apt update && sudo apt install nodejs npm
+     curl -fsSL https://deb.nodesource.com/setup_26.x | sudo -E bash -
+     sudo apt install -y nodejs
      ```
 
 - **Actualizar NPM** (Opcional):

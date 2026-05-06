@@ -72,6 +72,8 @@ export async function executeTurn(store, moveIndex) {
     queue.push({ source: 'player', action: () => runPlayerAction(store, moveIndex) })
   }
 
+  fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.BUILD_QUEUE)
+  
   while (queue.length > 0) {
     fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.POP_ACTION)
     const currentAction = queue.shift()
@@ -344,9 +346,13 @@ export async function runEnemyAction(store) {
     if (bestIdx !== -1) {
       const newPoke = store.activeBattle.enemyTeam[bestIdx]
       store.addLog(`¡${store.activeBattle.trainerName || 'El entrenador'} retira a ${e.name}!`, 'log-enemy', 'enemy_trainer')
-      fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.TRAINER_RETREAT)
+      
+      // AI SWITCH FLOW (Manual Standard Alignment)
+      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.TRAINER_RETREAT)
+      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.POKEMON_RECALL)
       gameBus.emit('PLAY_WITHDRAW', { side: 'enemy' })
       await new Promise(r => setTimeout(r, 800))
+      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.VACATE_SEAT)
       
       const _oldEnemy = e
       store.activeBattle.enemy = newPoke
@@ -355,6 +361,8 @@ export async function runEnemyAction(store) {
       const s = store.enemyStages
       store.enemyStages.atk = 0; store.enemyStages.def = 0; store.enemyStages.spa = 0; store.enemyStages.spd = 0; store.enemyStages.spe = 0; store.enemyStages.acc = 0; store.enemyStages.eva = 0;
 
+      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.POKEMON_CALL)
+      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.OCCUPY_SEAT)
       store.addLog(`¡Envía a ${newPoke.name}!`, 'log-enemy', newPoke)
       gameBus.emit('PLAY_SEND_OUT', { side: 'enemy', pokemon: newPoke })
       await new Promise(r => setTimeout(r, 800))

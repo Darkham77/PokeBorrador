@@ -46,19 +46,8 @@ export async function startBattleSequence(ctx, enemyPoke, options = {}) {
   ctx.clearVolatileStatus(playerPoke)
   ctx.clearVolatileStatus(finalEnemyPoke)
 
+  // Initial context values
   let rarity = 50
-  if (isFishing) {
-    const loc = FIRE_RED_MAPS.find(l => l.id === locationId)
-    if (loc && loc.fishing) {
-      const pool = loc.fishing.pool
-      const rates = loc.fishing.rates
-      const idx = pool.indexOf(finalEnemyPoke.id)
-      if (idx !== -1) {
-        const totalRate = rates.reduce((a, b) => a + b, 0)
-        rarity = (rates[idx] / totalRate) * 100
-      }
-    }
-  }
 
   ctx.activeBattle.value = {
     // Escenario Limpio: Iniciamos SIEMPRE en NULL para permitir animaciones de entrada
@@ -106,36 +95,56 @@ export async function startBattleSequence(ctx, enemyPoke, options = {}) {
   
   ctx.clearLogs()
 
-  if (wasSearching) {
-    fsm.transition(BATTLE_STATES.INITIALIZING, BATTLE_SUBSTATES.PROMOTE_AND_REPOPULATE)
-    fsm.transition(BATTLE_STATES.INITIALIZING, BATTLE_SUBSTATES.PROMOTE)
-    fsm.transition(BATTLE_STATES.INITIALIZING, BATTLE_SUBSTATES.GEN_NEW_S2)
-  } else {
-    fsm.transition(BATTLE_STATES.INITIALIZING, BATTLE_SUBSTATES.POPULATE_BOTH)
-    fsm.transition(BATTLE_STATES.INITIALIZING, BATTLE_SUBSTATES.GEN_DATA)
-    await fsm.transition(BATTLE_STATES.INITIALIZING, BATTLE_SUBSTATES.VACATE_ALL_SEATS)
-    ctx.activeBattle.value.enemy = null
-    ctx.activeBattle.value.player = null
-  }
+  // [PHASE] CONTEXT_SETUP (Manual 4. Context Setup)
+  await fsm.transition(BATTLE_STATES.CONTEXT_SETUP, BATTLE_SUBSTATES.RECEIVE_CONFIG)
   
-  ctx.clearLogs()
+  // Apply Item Modifiers (Manual 356)
+  await fsm.transition(BATTLE_STATES.CONTEXT_SETUP, BATTLE_SUBSTATES.APPLY_ITEM_MODIFIERS)
+  const hasBinoculars = ctx.debugBinoculars.value || (ctx.gs.state.inventory?.['binoculars'] > 0)
+  
+  // Weight Calculation (Manual 344)
+  await fsm.transition(BATTLE_STATES.CONTEXT_SETUP, BATTLE_SUBSTATES.WEIGHT_CALCULATION)
+  if (isFishing) {
+    const loc = FIRE_RED_MAPS.find(l => l.id === locationId)
+    if (loc && loc.fishing) {
+      const pool = loc.fishing.pool
+      const rates = loc.fishing.rates
+      const idx = pool.indexOf(finalEnemyPoke.id)
+      if (idx !== -1) {
+        const totalRate = rates.reduce((a, b) => a + b, 0)
+        rarity = (rates[idx] / totalRate) * 100
+      }
+    }
+  }
+  ctx.activeBattle.value.rarity = rarity
+
+  await fsm.transition(BATTLE_STATES.CONTEXT_SETUP, BATTLE_SUBSTATES.INJECT_FILTERS)
+  await fsm.transition(BATTLE_STATES.CONTEXT_SETUP, BATTLE_SUBSTATES.READY_FOR_GEN)
+  await fsm.transition(BATTLE_STATES.CONTEXT_SETUP, BATTLE_SUBSTATES.VACATE_ALL_SEATS)
+
+  // [PHASE] INITIALIZING (Manual 2. Initialization Phase)
+  await fsm.transition(BATTLE_STATES.INITIALIZING, BATTLE_SUBSTATES.CHECK_CONTEXT)
+  
+  // ASYNC_THREAD START (Manual 409)
+  await fsm.transition(BATTLE_STATES.INITIALIZING, BATTLE_SUBSTATES.ASYNC_THREAD)
+  await fsm.transition(BATTLE_STATES.INITIALIZING, BATTLE_SUBSTATES.GEN_TEAMS)
+  await fsm.transition(BATTLE_STATES.INITIALIZING, BATTLE_SUBSTATES.MARK_EVENT)
+  
+  // PRELOAD_FINAL_COORDS (Manual 412)
+  await fsm.transition(BATTLE_STATES.INITIALIZING, BATTLE_SUBSTATES.PRELOAD_FINAL_COORDS, 50)
+  
+  // SET_SEARCH_FLAG (Manual 413)
+  await fsm.transition(BATTLE_STATES.INITIALIZING, BATTLE_SUBSTATES.SET_SEARCH_FLAG)
+  ctx.isSearching.value = wasSearching
 
   if (wasSearching) {
     // FLUJO DE BÚSQUEDA (Manual 6. SEARCH PHASE)
-    await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.GEN_DATA)
-    await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.RECEIVE_CONFIG)
-    await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.VALIDATE_WEIGHTS)
-    await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.INJECT_FILTERS)
-    await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.READY_FOR_GEN)
-    await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.CHECK_PERSISTENCE)
-
-    // ACTIVACIÓN PARALELA PARA BÚSQUEDA (Según Manual: OCCUPY_SEAT ocurre durante PARALLEL_PREP)
-    // 1. Preparamos el terreno (Arbustos y Filtros de Silueta)
     await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.PARALLEL_PREP)
+    await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.UPDATE_BUTTON)
     await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.BUSH_VISIBLE)
     await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.SILHOUETTE_MODE)
     
-    // 2. OCUPACIÓN DEL ASIENTO: El Pokémon aparece visualmente con su silueta ya preparada
+    // OCUPACIÓN DEL ASIENTO: El Pokémon aparece visualmente con su silueta ya preparada
     ctx.activeBattle.value.enemy = finalEnemyPoke
     
     return // BLOQUEO: Esperamos interacción del usuario
@@ -170,8 +179,8 @@ export async function initBattleSequence(ctx, { locationId, isTrainer, trainerNa
 
   ctx.isIntroAnimating.value = true
 
-  // PRECARGA DE COORDENADAS
-  await fsm.transition(BATTLE_STATES.INITIALIZING, BATTLE_SUBSTATES.PRELOAD_COORDS, 50)
+  // PRECARGA DE COORDENADAS FINAL (Manual 412)
+  await fsm.transition(BATTLE_STATES.INITIALIZING, BATTLE_SUBSTATES.PRELOAD_FINAL_COORDS, 50)
 
   if (wasSearching) {
     // --- FLUJO BÚSQUEDA (Manual 7. ENCOUNTER ANIMATION) ---
@@ -196,6 +205,7 @@ export async function initBattleSequence(ctx, { locationId, isTrainer, trainerNa
 
     if (isTrainer || isGym) {
       await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.TRAINER_ENCOUNTER)
+      await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.SHOW_DIALOGS)
       await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.TRAINER_RETREAT, 800)
       
       // Llamado del Pokémon del rival (Según diagrama 840)

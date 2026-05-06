@@ -20,7 +20,6 @@ export async function handleItemUsage(itemName, p, e, options = {}) {
   if (isBall) {
     if (options.fsm) {
       options.fsm.transition('ACTIVE_BATTLE', 'CATCH_PROCESS')
-      options.fsm.transition('ACTIVE_BATTLE', 'HIDE_ENEMY_COMBAT_HUD')
     }
     addLog(`Usaste ${itemName}`, 'log-info', 'player')
     addLog(`¡Has lanzado una ${itemName}!`, 'log-catch', itemName, 'player')
@@ -78,9 +77,6 @@ export async function handleItemUsage(itemName, p, e, options = {}) {
       
       // Wait for release animation to finish before showing HUD again
       await new Promise(r => setTimeout(r, 800))
-      if (options.fsm) {
-        options.fsm.transition('ACTIVE_BATTLE', 'SHOW_ENEMY_HUD')
-      }
     }
   } else {
     // Entrada de entrenador (siempre, para feedback inmediato)

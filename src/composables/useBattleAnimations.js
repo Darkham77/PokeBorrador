@@ -125,7 +125,6 @@ export function useBattleAnimations(battleStore, enemyRef) {
 
       switch (sub) {
         // 1. ENTRADA PARALELA (Búsqueda o Primer Encuentro)
-        case 'GEN_DATA':
         case 'INITIALIZING':
           isWildSilhouette.value = true
           wildRevealActive.value = true

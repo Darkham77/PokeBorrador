@@ -107,7 +107,7 @@ const activeEnemyIsSilhouette = computed(() => {
   const sub = unwrap(battleStore.fsm?.currentSubState)
   return [
     'PARALLEL_PREP', 'PARALLEL_ENTRY', 'SILHOUETTE_MODE', 'BUSH_IDLE', 
-    'POPULATE_BOTH', 'GEN_DATA', 'ENTRY_ANIM', 'ENCOUNTER_ANIM', 'PARALLEL_JUMP'
+    'ENTRY_ANIM', 'ENCOUNTER_ANIM', 'PARALLEL_JUMP'
   ].includes(sub)
 })
 
@@ -120,7 +120,7 @@ const bushIsBehind = computed(() => {
 
 const enemyIsJumping = computed(() => {
   const sub = unwrap(battleStore.fsm?.currentSubState)
-  return isEmerging.value || sub === 'SPRITE_JUMP' || sub === 'ENCOUNTER_ANIM' || sub === 'PARALLEL_JUMP'
+  return isEmerging.value || sub === 'ENCOUNTER_ANIM' || sub === 'PARALLEL_JUMP'
 })
 
 const isInstantBush = computed(() => {
@@ -154,13 +154,13 @@ const isEnemyTechnicalHidden = computed(() => {
   const isTrainer = !isWildEncounter.value
   
   // 1. Forzar ocultación en estados de promoción técnica (Slot 2 -> Slot 1)
-  if (['PROMOTE_AND_REPOPULATE', 'PROMOTE'].includes(sub)) return true
+  if (sub === 'GEN_TEAMS') return true
   
   // 2. Si estamos en búsqueda, ocultar durante la generación técnica de datos
   if (state === 'SEARCH_PHASE') {
     const technicalSubstates = [
-      'GEN_DATA', 'RECEIVE_CONFIG', 'VALIDATE_WEIGHTS', 'INJECT_FILTERS', 
-      'READY_FOR_GEN', 'CHECK_PERSISTENCE'
+      'RECEIVE_CONFIG', 'WEIGHT_CALCULATION', 'INJECT_FILTERS', 
+      'READY_FOR_GEN'
     ]
     if (technicalSubstates.includes(sub)) return true
   }
@@ -309,7 +309,7 @@ onMounted(async () => {
 
 // Ejecutar PRELOAD_COORDS para combates consecutivos
 watch(() => battleStore.currentSubState, async (sub) => {
-  if (sub === 'PRELOAD_COORDS') {
+  if (sub === 'PRELOAD_FINAL_COORDS') {
     await preloadCombatCoords(
       battle.value?.player, 
       battle.value?.enemy, 

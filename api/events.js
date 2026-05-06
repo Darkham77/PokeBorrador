@@ -24,10 +24,13 @@ export default async function handler(req, res) {
       const sched = ev.schedule
       if (!sched) return false
 
-      // GMT-3 logic as seen in legacy server
-      const now = new Date(Date.now() - 3 * 60 * 60 * 1000)
-      const day = now.getUTCDay()
-      const hour = now.getUTCHours() + now.getUTCMinutes() / 60
+      // GMT-3 logic using Node 26 Temporal API
+      const now = Temporal.Now.zonedDateTimeISO('-03:00')
+      
+      // Temporal dayOfWeek: 1 is Monday, 7 is Sunday. 
+      // Legacy getUTCDay(): 0 is Sunday, 1 is Monday.
+      const day = now.dayOfWeek === 7 ? 0 : now.dayOfWeek
+      const hour = now.hour + now.minute / 60
 
       if (sched.type === 'weekly') {
         if (!sched.days.includes(day)) return false
