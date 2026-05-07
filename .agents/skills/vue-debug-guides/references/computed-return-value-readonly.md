@@ -156,5 +156,5 @@ fullName.value = 'Jane Smith'  // Updates firstName and lastName
 ```
 
 ## Reference
-- [Vue.js Computed Properties - Avoid Mutating Computed Value](https://vuejs.org/guide/essentials/computed.html#avoid-mutating-computed-value)
-- [Vue.js Computed Properties - Writable Computed](https://vuejs.org/guide/essentials/computed.html#writable-computed)
+- [Vue.ts Computed Properties - Avoid Mutating Computed Value](https://vuejs.org/guide/essentials/computed.html#avoid-mutating-computed-value)
+- [Vue.ts Computed Properties - Writable Computed](https://vuejs.org/guide/essentials/computed.html#writable-computed)

@@ -192,5 +192,5 @@ import './modal-styles.css'
 
 ## Reference
 
-- [Vue.js SFC CSS Features - Scoped CSS](https://vuejs.org/api/sfc-css-features.html#scoped-css)
+- [Vue.ts SFC CSS Features - Scoped CSS](https://vuejs.org/api/sfc-css-features.html#scoped-css)
 - [GitHub Issue #2047 - Scoped styles and teleport](https://github.com/vuejs/core/issues/2047)

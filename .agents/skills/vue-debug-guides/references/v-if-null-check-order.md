@@ -167,5 +167,5 @@ onMounted(async () => {
 ```
 
 ## Reference
-- [Vue.js Conditional Rendering](https://vuejs.org/guide/essentials/conditional.html)
+- [Vue.ts Conditional Rendering](https://vuejs.org/guide/essentials/conditional.html)
 - [MDN - Optional Chaining](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Optional_chaining)

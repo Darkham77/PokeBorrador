@@ -156,5 +156,5 @@ const optimized = computed((oldValue) => {
 
 ## Reference
 
-- [Vue.js Performance - Computed Stability](https://vuejs.org/guide/best-practices/performance.html#computed-stability)
-- [Vue.js Computed Properties](https://vuejs.org/guide/essentials/computed.html)
+- [Vue.ts Performance - Computed Stability](https://vuejs.org/guide/best-practices/performance.html#computed-stability)
+- [Vue.ts Computed Properties](https://vuejs.org/guide/essentials/computed.html)

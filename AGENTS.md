@@ -39,5 +39,10 @@ This file defines the immutable DNA of the Poké Vicio project. Every AI agent i
 - **Speed & Reliability**: CLI-based state simulation is faster and more reliable for automated tests and subagent tasks.
 - **Standardized Execution**: Follow the exact simulation patterns and security protocols defined in the `@/project-browser-testing` skill.
 
+## 7. TypeScript Integrity & Zero-Ignore Policy
+
+- **Zero-Ignore Policy**: The use of `@ts-ignore`, `@ts-nocheck`, or any variant that bypasses TypeScript compiler checks is STRICTLY FORBIDDEN.
+- **Verification Workflow**: Always run `npm run type-check` BEFORE `npm run lint` or any commit operation. Type safety is non-negotiable.
+
 ---
 *Note: If you are an AI agent and haven't loaded `@/project-standards` yet, do it now.*

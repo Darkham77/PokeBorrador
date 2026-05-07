@@ -105,4 +105,4 @@ watch(state, (newState) => {
 ```
 
 ## Reference
-- [Vue.js Watchers - Watch Source Types](https://vuejs.org/guide/essentials/watchers.html#watch-source-types)
+- [Vue.ts Watchers - Watch Source Types](https://vuejs.org/guide/essentials/watchers.html#watch-source-types)

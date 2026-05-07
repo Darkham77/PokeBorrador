@@ -155,5 +155,5 @@ Using `:deep()` with element selectors can be slower:
 
 ## Reference
 
-- [Vue.js Scoped CSS - Deep Selectors](https://vuejs.org/api/sfc-css-features.html#deep-selectors)
+- [Vue.ts Scoped CSS - Deep Selectors](https://vuejs.org/api/sfc-css-features.html#deep-selectors)
 - [Vue Loader Scoped CSS](https://vue-loader.vuejs.org/guide/scoped-css.html)

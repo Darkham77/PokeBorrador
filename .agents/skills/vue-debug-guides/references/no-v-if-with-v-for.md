@@ -134,6 +134,6 @@ const filteredUsers = computed(() =>
 
 ## Reference
 
-- [Vue.js Style Guide - Avoid v-if with v-for](https://vuejs.org/style-guide/rules-essential.html#avoid-v-if-with-v-for)
+- [Vue.ts Style Guide - Avoid v-if with v-for](https://vuejs.org/style-guide/rules-essential.html#avoid-v-if-with-v-for)
 - [Vue 3 Migration Guide - v-if vs v-for Precedence](https://v3-migration.vuejs.org/breaking-changes/v-if-v-for)
 - [ESLint Plugin Vue - no-use-v-if-with-v-for](https://eslint.vuejs.org/rules/no-use-v-if-with-v-for)

@@ -148,8 +148,14 @@ export const usePvPStore = defineStore('pvp', () => {
         name: p.name,
         level: p.level,
         type: p.type,
-        stats: p.stats, 
-        moves: p.moves.map((m) => ({ name: m.name, pp: m.maxPP || 20 })),
+        hp: p.hp,
+        maxHp: p.maxHp,
+        atk: p.atk,
+        def: p.def,
+        spa: p.spa,
+        spd: p.spd,
+        spe: p.spe,
+        moves: p.moves.filter(m => !!m).map((m) => ({ name: m!.name, pp: m!.maxPP || 20 })),
         heldItem: p.heldItem,
         isShiny: p.isShiny
       }))

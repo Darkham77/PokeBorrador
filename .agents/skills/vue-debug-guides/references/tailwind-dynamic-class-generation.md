@@ -96,7 +96,7 @@ const props = defineProps({
 If you must use dynamic classes, add them to Tailwind's safelist:
 
 ```javascript
-// tailwind.config.js
+// tailwind.config.ts
 module.exports = {
   safelist: [
     'bg-red-500',

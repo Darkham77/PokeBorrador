@@ -192,6 +192,6 @@ test('button works', async () => {
 ```
 
 ## Reference
-- [Vue.js Testing Guide - What Not to Test](https://vuejs.org/guide/scaling-up/testing)
+- [Vue.ts Testing Guide - What Not to Test](https://vuejs.org/guide/scaling-up/testing)
 - [Effective Snapshot Testing](https://kentcdodds.com/blog/effective-snapshot-testing)
 - [Vitest Snapshot Testing](https://vitest.dev/guide/snapshot.html)

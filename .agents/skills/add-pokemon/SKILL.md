@@ -15,18 +15,18 @@ description: Orchestrator for adding new Pokémon to the system. Uses fetch scri
 Use the fetch script to generate base code blocks:
 
 ```bash
-node .agents/skills/add-pokemon/scripts/fetch_pokemon.js <english_name>
+npx tsx .agents/skills/add-pokemon/scripts/fetch_pokemon.ts <english_name>
 ```
 
 ### 2. Code Integration
 
 Follow the integration order defined in the standards manual:
 
-1. `POKEMON_DB` (`pokemonDB.js`)
-2. Secondary Types (`types.js`)
-3. Abilities (`abilities.js`)
-4. Evolutions (`evolutionData.js`)
-5. Pokédex and TMs (`pokedexConstants.js`)
+1. `POKEMON_DB` (`pokemonDB.ts`)
+2. Secondary Types (`types.ts`)
+3. Abilities (`abilities.ts`)
+4. Evolutions (`evolutionData.ts`)
+5. Pokédex and TMs (`pokedexConstants.ts`)
 
 ### 3. Validation and Verification
 

@@ -147,6 +147,6 @@ async function testUnmountHooks() {
 
 ## Reference
 
-- [Vue.js GitHub Issue #6260](https://github.com/vuejs/core/issues/6260)
-- [Vue.js Transition](https://vuejs.org/guide/built-ins/transition.html)
-- [Vue.js Lifecycle Hooks](https://vuejs.org/guide/essentials/lifecycle.html)
+- [Vue.ts GitHub Issue #6260](https://github.com/vuejs/core/issues/6260)
+- [Vue.ts Transition](https://vuejs.org/guide/built-ins/transition.html)
+- [Vue.ts Lifecycle Hooks](https://vuejs.org/guide/essentials/lifecycle.html)

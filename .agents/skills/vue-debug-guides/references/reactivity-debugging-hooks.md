@@ -133,6 +133,6 @@ export default {
 
 ## Reference
 
-- [Vue.js Reactivity in Depth - Debugging](https://vuejs.org/guide/extras/reactivity-in-depth.html#reactivity-debugging)
-- [Vue.js computed() API](https://vuejs.org/api/reactivity-core.html#computed)
-- [Vue.js onRenderTracked()](https://vuejs.org/api/composition-api-lifecycle.html#onrendertracked)
+- [Vue.ts Reactivity in Depth - Debugging](https://vuejs.org/guide/extras/reactivity-in-depth.html#reactivity-debugging)
+- [Vue.ts computed() API](https://vuejs.org/api/reactivity-core.html#computed)
+- [Vue.ts onRenderTracked()](https://vuejs.org/api/composition-api-lifecycle.html#onrendertracked)

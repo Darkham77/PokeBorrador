@@ -172,5 +172,5 @@ watchSyncEffect(() => { ... }) // Shorthand
 | Performance-critical sync updates | `sync` (with caution) |
 
 ## Reference
-- [Vue.js Watchers - Callback Flush Timing](https://vuejs.org/guide/essentials/watchers.html#callback-flush-timing)
-- [Vue.js watchEffect API](https://vuejs.org/api/reactivity-core.html#watcheffect)
+- [Vue.ts Watchers - Callback Flush Timing](https://vuejs.org/guide/essentials/watchers.html#callback-flush-timing)
+- [Vue.ts watchEffect API](https://vuejs.org/api/reactivity-core.html#watcheffect)

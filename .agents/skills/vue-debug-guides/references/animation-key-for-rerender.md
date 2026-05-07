@@ -161,6 +161,6 @@ Using `:key` forces full component re-creation. For frequently changing data:
 
 ## Reference
 
-- [Vue.js Animation Techniques](https://vuejs.org/guide/extras/animation.html)
+- [Vue.ts Animation Techniques](https://vuejs.org/guide/extras/animation.html)
 - [AutoAnimate with Vue](https://auto-animate.formkit.com/#usage-vue)
-- [Vue.js v-for with key](https://vuejs.org/guide/essentials/list.html#maintaining-state-with-key)
+- [Vue.ts v-for with key](https://vuejs.org/guide/essentials/list.html#maintaining-state-with-key)

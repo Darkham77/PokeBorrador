@@ -73,7 +73,7 @@ const disobeys = computed(() => props.pokemon.level > props.maxObeyLv)
 
 const spriteUrl = computed(() => {
   return getAssetUrl(ASSET_TYPES.POKEMON, props.pokemon.id, { 
-    shiny: props.pokemon.isShiny 
+    isShiny: props.pokemon.isShiny 
   })
 })
 

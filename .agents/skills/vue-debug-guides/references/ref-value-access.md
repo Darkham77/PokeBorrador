@@ -14,7 +14,7 @@ When using `ref()` in Vue 3's Composition API, the reactive value is wrapped in 
 
 ## Task Checklist
 
-- [ ] Always use `.value` when reading or writing ref values in `<script>` or `.js`/`.ts` files
+- [ ] Always use `.value` when reading or writing ref values in `<script>` or `.ts`/`.ts` files
 - [ ] Never use `.value` in `<template>` - Vue unwraps refs automatically there
 - [ ] When passing refs to functions, decide whether to pass the ref object or `.value`
 - [ ] Use IDE/TypeScript to catch missing `.value` errors early
@@ -58,4 +58,4 @@ items.value.push(4)     // Correctly adds 4 to the array
 ```
 
 ## Reference
-- [Vue.js Reactivity Fundamentals - ref()](https://vuejs.org/guide/essentials/reactivity-fundamentals.html#ref)
+- [Vue.ts Reactivity Fundamentals - ref()](https://vuejs.org/guide/essentials/reactivity-fundamentals.html#ref)

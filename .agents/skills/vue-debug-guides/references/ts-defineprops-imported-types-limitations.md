@@ -281,6 +281,6 @@ Always check the Vue changelog for updates to type support in defineProps.
 
 ## Reference
 
-- [Vue.js TypeScript with Composition API](https://vuejs.org/guide/typescript/composition-api.html)
+- [Vue.ts TypeScript with Composition API](https://vuejs.org/guide/typescript/composition-api.html)
 - [GitHub Issue: defineProps with imported interfaces](https://github.com/vuejs/core/issues/8612)
 - [GitHub Issue: Union types in defineProps](https://github.com/vuejs/core/issues/5804)

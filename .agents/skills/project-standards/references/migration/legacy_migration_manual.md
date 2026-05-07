@@ -18,14 +18,14 @@ This manual governs the process of modernizing pre-Vue code into the current Pok
 
 ### 2. Logic Isolation
 
-- Extract logic from legacy `.js` files into Vue 3 composables (`src/logic/` or `src/composables/`).
+- Extract logic from legacy `.ts` files into Vue 3 composables (`src/logic/` or `src/composables/`).
 - Keep logic files under 500 lines (Golden Rule).
 
 ### 3. Regression Verification
 
 After migrating a critical module (e.g., the box system or inventory):
 
-- Compare behavior with the legacy unit test script: `node backup_legacy_code/unit_test_battle.js`.
+- Compare behavior with the legacy unit test script: `node backup_legacy_code/unit_test_battle.ts`.
 - Verify that the save state persists correctly between versions.
 
 ---

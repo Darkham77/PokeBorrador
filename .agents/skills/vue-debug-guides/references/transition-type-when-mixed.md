@@ -174,4 +174,4 @@ tags: [vue3, transition, animation, css, type, timing]
 
 ## Reference
 
-- [Vue.js Transition Documentation](https://vuejs.org/guide/built-ins/transition.html#css-based-transitions)
+- [Vue.ts Transition Documentation](https://vuejs.org/guide/built-ins/transition.html#css-based-transitions)

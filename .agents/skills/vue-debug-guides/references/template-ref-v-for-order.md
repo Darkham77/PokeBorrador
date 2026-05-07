@@ -172,4 +172,4 @@ onMounted(() => {
 
 ## Reference
 
-- [Vue.js Template Refs - Refs inside v-for](https://vuejs.org/guide/essentials/template-refs.html#refs-inside-v-for)
+- [Vue.ts Template Refs - Refs inside v-for](https://vuejs.org/guide/essentials/template-refs.html#refs-inside-v-for)

@@ -95,5 +95,5 @@ function areEqual(a, b) {
 
 ## Reference
 
-- [Vue.js Reactivity in Depth](https://vuejs.org/guide/extras/reactivity-in-depth.html)
-- [Vue.js toRaw() API](https://vuejs.org/api/reactivity-advanced.html#toraw)
+- [Vue.ts Reactivity in Depth](https://vuejs.org/guide/extras/reactivity-in-depth.html)
+- [Vue.ts toRaw() API](https://vuejs.org/api/reactivity-advanced.html#toraw)

@@ -189,4 +189,4 @@ computed: {
 
 ## Reference
 
-- [Vue.js TypeScript with Options API - Typing Computed Properties](https://vuejs.org/guide/typescript/options-api.html#typing-computed-properties)
+- [Vue.ts TypeScript with Options API - Typing Computed Properties](https://vuejs.org/guide/typescript/options-api.html#typing-computed-properties)

@@ -154,6 +154,6 @@ Many UI libraries use Teleport internally. Element Plus components that use Tele
 
 ## Reference
 
-- [Vue.js SSR - Teleports](https://vuejs.org/guide/scaling-up/ssr.html#teleports)
+- [Vue.ts SSR - Teleports](https://vuejs.org/guide/scaling-up/ssr.html#teleports)
 - [Element Plus SSR Guide](https://element-plus.org/en-US/guide/ssr.html)
 - [Nuxt ClientOnly Component](https://nuxt.com/docs/api/components/client-only)

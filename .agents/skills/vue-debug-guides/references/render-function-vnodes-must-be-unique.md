@@ -135,4 +135,4 @@ Each vnode maintains its own identity and position in the tree, which is essenti
 
 ## Reference
 
-- [Vue.js Render Functions - Vnodes Must Be Unique](https://vuejs.org/guide/extras/render-function.html#vnodes-must-be-unique)
+- [Vue.ts Render Functions - Vnodes Must Be Unique](https://vuejs.org/guide/extras/render-function.html#vnodes-must-be-unique)

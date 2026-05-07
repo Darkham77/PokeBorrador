@@ -115,4 +115,4 @@ async function submitForm() {
 ```
 
 ## Reference
-- [Vue.js Form Input Bindings - Checkbox](https://vuejs.org/guide/essentials/forms.html#checkbox)
+- [Vue.ts Form Input Bindings - Checkbox](https://vuejs.org/guide/essentials/forms.html#checkbox)

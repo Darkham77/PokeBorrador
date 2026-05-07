@@ -38,7 +38,7 @@ interface Props {
   classData?: { extortedRouteId?: string | null }
   safariTicketSecs?: number
   ceruleanTicketSecs?: number
-  dominanceData?: Record<string, { winner_faction?: string | null }>
+  dominanceData?: Record<string, import('@/types/stores').DominanceInfo>
   dailyGuardianCaptures?: string[]
 }
 
@@ -113,7 +113,7 @@ const getDominanceForMap = (mapId: string) => {
   }
 
   return {
-    winner: data.winner_faction || null,
+    winner: data.winner || null,
     guardian
   }
 }

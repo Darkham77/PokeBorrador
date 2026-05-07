@@ -97,4 +97,4 @@ When you have **any** named slots (`<template #name>`), always use explicit temp
 
 ## Reference
 
-- [Vue.js Slots - Named Scoped Slots](https://vuejs.org/guide/components/slots.html#named-scoped-slots)
+- [Vue.ts Slots - Named Scoped Slots](https://vuejs.org/guide/components/slots.html#named-scoped-slots)

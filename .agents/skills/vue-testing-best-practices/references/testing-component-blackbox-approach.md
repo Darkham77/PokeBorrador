@@ -139,6 +139,6 @@ test('emits close event when X clicked', async () => {
 ```
 
 ## Reference
-- [Vue.js Testing Guide](https://vuejs.org/guide/scaling-up/testing)
+- [Vue.ts Testing Guide](https://vuejs.org/guide/scaling-up/testing)
 - [Vue Test Utils - Testing Philosophy](https://test-utils.vuejs.org/guide/)
 - [Testing Library Guiding Principles](https://testing-library.com/docs/guiding-principles)

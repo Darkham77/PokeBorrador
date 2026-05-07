@@ -9,7 +9,7 @@ The system uses a nested coordinate system:
 
 ### 1. Spatial Coordinator (The Source of Truth)
 
-All spatial logic is centralized in `@/logic/combat/spatialCoordinator.js`. Components and manuals must use these symbolic references to ensure integrity when constants change.
+All spatial logic is centralized in `@/logic/combat/spatialCoordinator.ts`. Components and manuals must use these symbolic references to ensure integrity when constants change.
 
 | Constant | Symbolic Role | Description |
 | :--- | :--- | :--- |
@@ -56,7 +56,7 @@ When `showGuides` is enabled, the system MUST display:
 3. **Entity Anchors**: Side-specific boxes representing the `ENTITY_SIZE_P1/P2` footprint.
 
 > [!IMPORTANT]
-> **Zero-Hardcoding Policy**: Documentation must explain the **Logic and Ratios**. The **Numbers** live exclusively in `spatialCoordinator.js`. If a value needs to be cited for clarity, it must be marked as "Current Example" or "Variable".
+> **Zero-Hardcoding Policy**: Documentation must explain the **Logic and Ratios**. The **Numbers** live exclusively in `spatialCoordinator.ts`. If a value needs to be cited for clarity, it must be marked as "Current Example" or "Variable".
 
 ## 📐 Resolution Independence
 

@@ -143,4 +143,4 @@ npm update vue
 
 - [GitHub Issue #9842: Memory leak with transition and keep-alive](https://github.com/vuejs/vue/issues/9842)
 - [GitHub Issue #9840: Memory leak with transition and keep-alive](https://github.com/vuejs/vue/issues/9840)
-- [Vue.js KeepAlive Documentation](https://vuejs.org/guide/built-ins/keep-alive.html)
+- [Vue.ts KeepAlive Documentation](https://vuejs.org/guide/built-ins/keep-alive.html)

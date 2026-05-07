@@ -6,6 +6,8 @@
 import type { Pokemon } from '@/types/pokemon';
 import type { GameState } from '@/types/game';
 import type { AuthUser } from '@/types/auth';
+import { compress } from '@/logic/utils/compression';
+import { writeOpfsFile } from '@/logic/utils/opfsStorage';
 
 export interface SaveData {
   trainer: string;
@@ -344,11 +346,16 @@ export async function saveGame(state: GameState, user: AuthUser, options: SaveOp
 
   (save_data as any)._last_updated = Date.now();
 
-  // 1. LocalStorage
+  // 1. Local Persistence (Legacy LocalStorage + Modern OPFS GZIP)
   try {
-    localStorage.setItem('pokemon_local_save_' + user.id, JSON.stringify(save_data));
+    const json = JSON.stringify(save_data);
+    localStorage.setItem('pokemon_local_save_' + user.id, json);
+    
+    // Modern High-Fidelity Binary Storage (OPFS)
+    const compressed = await compress(json);
+    await writeOpfsFile(`save_${user.id}.gz`, compressed);
   } catch (e) {
-    console.warn('[SAVE] Error en localStorage:', e);
+    console.warn('[SAVE] Error en persistencia local (LS/OPFS):', e);
   }
 
   // 2. Database

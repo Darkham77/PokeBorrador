@@ -123,5 +123,5 @@ Another error occurs when you have multiple v-slot directives - only the first i
 
 ## Reference
 
-- [Vue.js Slots](https://vuejs.org/guide/components/slots.html)
+- [Vue.ts Slots](https://vuejs.org/guide/components/slots.html)
 - [DeepScan - vue-misused-v-slot](https://deepscan.io/docs/rules/vue-misused-v-slot)

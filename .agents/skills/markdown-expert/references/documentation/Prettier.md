@@ -3,7 +3,7 @@
 [`Prettier`](https://prettier.io) is a popular code formatter.
 For the most part, Prettier works seamlessly with `markdownlint`.
 
-You can `extend` the [`prettier.json`](../style/prettier.json) style to disable
+You can `extend` the [`prettier.tson`](../style/prettier.tson) style to disable
 all `markdownlint` rules that overlap with Prettier.
 
 Other scenarios are documented below.

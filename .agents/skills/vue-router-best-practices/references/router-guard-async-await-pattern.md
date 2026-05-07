@@ -87,7 +87,7 @@ router.beforeEach((to, from) => {
 ## Loading State During Async Guards
 
 ```javascript
-// app/composables/useNavigationLoading.js
+// app/composables/useNavigationLoading.ts
 import { ref } from 'vue'
 
 const isNavigating = ref(false)

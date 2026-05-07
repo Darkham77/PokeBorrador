@@ -145,4 +145,4 @@ Vue 3's `h` is globally importable to:
 
 ## Reference
 - [Vue 3 Migration Guide - Render Function API](https://v3-migration.vuejs.org/breaking-changes/render-function-api.html)
-- [Vue.js Render Functions & JSX](https://vuejs.org/guide/extras/render-function.html)
+- [Vue.ts Render Functions & JSX](https://vuejs.org/guide/extras/render-function.html)

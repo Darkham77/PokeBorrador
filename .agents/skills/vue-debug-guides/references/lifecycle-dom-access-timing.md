@@ -190,7 +190,7 @@ async function addItem(item) {
 // CORRECT: Initialize in mounted
 export default {
   mounted() {
-    // Chart.js
+    // Chart.ts
     this.chart = new Chart(this.$refs.canvas, config)
 
     // Leaflet maps
@@ -199,7 +199,7 @@ export default {
     // Monaco Editor
     this.editor = monaco.editor.create(this.$refs.editorContainer, options)
 
-    // Video.js
+    // Video.ts
     this.player = videojs(this.$refs.videoElement)
   },
   beforeUnmount() {
@@ -214,6 +214,6 @@ export default {
 
 ## Reference
 
-- [Vue.js Lifecycle Hooks](https://vuejs.org/guide/essentials/lifecycle.html)
-- [Vue.js Template Refs](https://vuejs.org/guide/essentials/template-refs.html)
-- [Vue.js nextTick](https://vuejs.org/api/general.html#nexttick)
+- [Vue.ts Lifecycle Hooks](https://vuejs.org/guide/essentials/lifecycle.html)
+- [Vue.ts Template Refs](https://vuejs.org/guide/essentials/template-refs.html)
+- [Vue.ts nextTick](https://vuejs.org/api/general.html#nexttick)

@@ -155,4 +155,4 @@ Local registration provides:
 
 ## Reference
 
-- [Vue.js Component Registration - Local Registration](https://vuejs.org/guide/components/registration.html#local-registration)
+- [Vue.ts Component Registration - Local Registration](https://vuejs.org/guide/components/registration.html#local-registration)

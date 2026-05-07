@@ -162,9 +162,6 @@ const handleReorderMoves = (from: number, to: number) => {
     gameStore.reorderMoves(targetPokemon.value, from, to)
   }
 }
-erMoves(targetPokemon.value, from, to)
-  }
-}
 </script>
 
 <template>

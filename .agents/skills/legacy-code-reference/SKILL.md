@@ -37,9 +37,9 @@ Use this skill when:
 - `/assets`: Old images, sounds, and global assets.
 - `index.html`: The monolithic entry point of the old system.
 - `style_v5.css`: The primary legacy stylesheet.
-- `server.js`: The original backend logic.
+- `server.ts`: The original backend logic.
 
 ## Comparison Example
 
 **User**: "The battle text used to be slower, how was it before?"
-**Action**: Search `backup_legacy_code/js/battle.js` for speed variables, compare with current `src/logic/battle/`.
+**Action**: Search `backup_legacy_code/js/battle.ts` for speed variables, compare with current `src/logic/battle/`.

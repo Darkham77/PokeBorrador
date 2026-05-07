@@ -136,4 +136,4 @@ function Child(slotCallback) {
 
 ## Reference
 
-- [Vue.js Slots - Render Scope](https://vuejs.org/guide/components/slots.html#render-scope)
+- [Vue.ts Slots - Render Scope](https://vuejs.org/guide/components/slots.html#render-scope)

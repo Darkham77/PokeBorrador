@@ -121,4 +121,4 @@ tags: [vue3, conditional-rendering, v-show, template, limitations]
 | Frequent toggle, need "else" | Two `v-show` with negated conditions |
 
 ## Reference
-- [Vue.js Conditional Rendering - v-show](https://vuejs.org/guide/essentials/conditional.html#v-show)
+- [Vue.ts Conditional Rendering - v-show](https://vuejs.org/guide/essentials/conditional.html#v-show)

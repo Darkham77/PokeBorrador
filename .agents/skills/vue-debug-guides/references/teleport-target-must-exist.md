@@ -109,5 +109,5 @@ The `defer` prop only waits for elements rendered in the **same mount/update tic
 ```
 
 ## Reference
-- [Vue.js Teleport - Using with Vue-rendered Targets](https://vuejs.org/guide/built-ins/teleport.html#using-with-vue-rendered-targets)
-- [Vue.js Teleport - Deferred Teleport](https://vuejs.org/guide/built-ins/teleport.html#deferred-teleport)
+- [Vue.ts Teleport - Using with Vue-rendered Targets](https://vuejs.org/guide/built-ins/teleport.html#using-with-vue-rendered-targets)
+- [Vue.ts Teleport - Deferred Teleport](https://vuejs.org/guide/built-ins/teleport.html#deferred-teleport)

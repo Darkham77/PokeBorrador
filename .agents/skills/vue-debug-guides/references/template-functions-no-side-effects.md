@@ -60,7 +60,7 @@ function incrementAndGet() {
 // BAD: Async operation in template
 async function fetchUserName() {
   const res = await fetch('/api/user')  // Side effect!
-  return (await res.json()).name
+  return (await res.tson()).name
 }
 
 // BAD: Logging is a side effect
@@ -125,7 +125,7 @@ function increment() {
 // Fetch data in lifecycle hook
 onMounted(async () => {
   const res = await fetch('/api/user')
-  userName.value = (await res.json()).name
+  userName.value = (await res.tson()).name
 })
 
 // Pure function - same input, same output
@@ -187,5 +187,5 @@ function updateAndReturn(obj, key, value) {
 
 ## Reference
 
-- [Vue.js Template Syntax - Calling Functions](https://vuejs.org/guide/essentials/template-syntax.html#calling-functions)
-- [Vue.js Computed Properties](https://vuejs.org/guide/essentials/computed.html)
+- [Vue.ts Template Syntax - Calling Functions](https://vuejs.org/guide/essentials/template-syntax.html#calling-functions)
+- [Vue.ts Computed Properties](https://vuejs.org/guide/essentials/computed.html)

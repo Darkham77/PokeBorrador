@@ -123,6 +123,8 @@ export interface Pokemon {
   thrashTurns?: number;
   encoreMove?: Move | null;
   disabledMove?: Move | null;
+  pendingMoves?: string[];
+  originalForm?: any;
 }
 
 export interface PokemonEgg {

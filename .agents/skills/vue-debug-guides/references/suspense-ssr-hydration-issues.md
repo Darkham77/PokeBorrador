@@ -154,7 +154,7 @@ onErrorCaptured((err) => {
 
 ## References
 
-- [Vue.js Suspense Documentation](https://vuejs.org/guide/built-ins/suspense)
+- [Vue.ts Suspense Documentation](https://vuejs.org/guide/built-ins/suspense)
 - [Vue Issue #6638 - Suspense hydration](https://github.com/vuejs/core/issues/6638)
 - [Vue Issue #7672 - defineAsyncComponent SSR](https://github.com/vuejs/core/issues/7672)
 - [TanStack Query SSR Discussion](https://github.com/TanStack/query/discussions/4870)

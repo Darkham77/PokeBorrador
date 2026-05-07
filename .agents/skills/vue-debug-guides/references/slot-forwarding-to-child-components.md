@@ -143,4 +143,4 @@ If you only want to forward certain slots:
 ## Reference
 
 - [Vue Land FAQ - Forwarding Slots](https://vue-land.github.io/faq/forwarding-slots)
-- [Vue.js Slots - Scoped Slots](https://vuejs.org/guide/components/slots.html#scoped-slots)
+- [Vue.ts Slots - Scoped Slots](https://vuejs.org/guide/components/slots.html#scoped-slots)

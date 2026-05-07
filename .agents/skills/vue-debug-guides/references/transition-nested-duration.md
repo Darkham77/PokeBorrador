@@ -184,4 +184,4 @@ Example:
 
 ## Reference
 
-- [Vue.js Transition - Nested Transitions](https://vuejs.org/guide/built-ins/transition.html#nested-transitions-and-explicit-transition-durations)
+- [Vue.ts Transition - Nested Transitions](https://vuejs.org/guide/built-ins/transition.html#nested-transitions-and-explicit-transition-durations)

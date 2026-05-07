@@ -143,5 +143,5 @@ const result = computed(() => {
 ```
 
 ## Reference
-- [Vue.js Reactivity in Depth](https://vuejs.org/guide/extras/reactivity-in-depth.html)
+- [Vue.ts Reactivity in Depth](https://vuejs.org/guide/extras/reactivity-in-depth.html)
 - [GitHub Discussion: Dependency collection gotcha with conditionals](https://github.com/vuejs/Discussion/issues/15)

@@ -108,5 +108,5 @@ const widgetState = inject('widgetState')
 
 ## References
 
-- [Vue.js GitHub Discussion #11334](https://github.com/orgs/vuejs/discussions/11334)
-- [Vue.js Async Components Documentation](https://vuejs.org/guide/components/async)
+- [Vue.ts GitHub Discussion #11334](https://github.com/orgs/vuejs/discussions/11334)
+- [Vue.ts Async Components Documentation](https://vuejs.org/guide/components/async)

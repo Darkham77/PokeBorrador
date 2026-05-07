@@ -87,5 +87,5 @@ vm.someExposedMethod()
 
 ## Reference
 
-- [Vue.js - Mounting the App](https://vuejs.org/guide/essentials/application.html#mounting-the-app)
-- [Vue.js Application API - mount()](https://vuejs.org/api/application.html#app-mount)
+- [Vue.ts - Mounting the App](https://vuejs.org/guide/essentials/application.html#mounting-the-app)
+- [Vue.ts Application API - mount()](https://vuejs.org/api/application.html#app-mount)

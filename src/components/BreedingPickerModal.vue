@@ -91,8 +91,8 @@ const getListCompatibility = (p: any) => {
   return checkCompatibility(p, otherPoke)
 }
 
-const getSprite = (id: string, shiny: boolean) => {
-  return getAssetUrl(ASSET_TYPES.POKEMON, id, { shiny })
+const getSprite = (id: string, isShiny: boolean) => {
+  return getAssetUrl(ASSET_TYPES.POKEMON, id, { isShiny })
 }
 </script>
 

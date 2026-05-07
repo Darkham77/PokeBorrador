@@ -236,6 +236,6 @@ Consider alternatives when:
 ```
 
 ## Reference
-- [Vue.js TransitionGroup](https://vuejs.org/guide/built-ins/transition-group.html)
+- [Vue.ts TransitionGroup](https://vuejs.org/guide/built-ins/transition-group.html)
 - [GitHub Issue: transition-group DOM update lag](https://github.com/vuejs/vue/issues/5845)
 - [Vue Virtual Scroller](https://github.com/Akryum/vue-virtual-scroller)

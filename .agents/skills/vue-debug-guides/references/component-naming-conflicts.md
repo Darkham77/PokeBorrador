@@ -19,7 +19,7 @@ tags: [vue3, component-registration, naming-conflicts, global-local, debugging]
 
 **Incorrect:**
 ```javascript
-// main.js
+// main.ts
 import { createApp } from 'vue'
 import Button from './components/Button.vue'
 
@@ -55,7 +55,7 @@ import MyButton from './MyButton.vue'
 
 **Correct:**
 ```javascript
-// main.js - use prefixes for global components
+// main.ts - use prefixes for global components
 import { createApp } from 'vue'
 import BaseButton from './components/BaseButton.vue'
 import BaseIcon from './components/BaseIcon.vue'
@@ -155,5 +155,5 @@ import { Button as ElButton } from 'element-plus'
 | Layout components | `*Layout` suffix | `DefaultLayout`, `AdminLayout` |
 
 ## Reference
-- [Vue.js Component Registration](https://vuejs.org/guide/components/registration.html)
+- [Vue.ts Component Registration](https://vuejs.org/guide/components/registration.html)
 - [GitHub Issue: Global component naming conflicts](https://github.com/vuejs/vue/issues/4434)

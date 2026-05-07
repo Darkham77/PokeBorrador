@@ -155,4 +155,4 @@ function addRangeToSelection(file) {
 
 ## Reference
 
-- [Vue.js Event Handling - .exact Modifier](https://vuejs.org/guide/essentials/event-handling.html#exact-modifier)
+- [Vue.ts Event Handling - .exact Modifier](https://vuejs.org/guide/essentials/event-handling.html#exact-modifier)

@@ -268,15 +268,17 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
       if (mission.targetPokemonIdx !== undefined) {
         const p = gameStore.state.box[mission.targetPokemonIdx]
         if (p) {
-          const stats = ['hp', 'atk', 'def', 'spa', 'spd', 'spe']
-          const stat = stats[Math.floor(Math.random() * stats.length)]
-          const gain = Math.floor(Math.random() * 3) + 1;
-          if (!p.ivs) p.ivs = { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 };
-          const curVal = (p.ivs as Record<string, number>)[stat] || 0;
-          (p.ivs as Record<string, number>)[stat] = Math.min(31, curVal + gain);
-          p.vigor = Math.max(0, (p.vigor || 20) - 5);
-          p.onMission = false;
-          msg += `¡${p.name} mejoró su ${String(stat).toUpperCase()} (+${gain})! 🧬`
+          const stats = ['hp', 'atk', 'def', 'spa', 'spd', 'spe'] as const;
+          const stat = stats[Math.floor(Math.random() * stats.length)];
+          if (stat) {
+            const gain = Math.floor(Math.random() * 3) + 1;
+            if (!p.ivs) p.ivs = { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 };
+            const curVal = p.ivs[stat] || 0;
+            p.ivs[stat] = Math.min(31, curVal + gain);
+            p.vigor = Math.max(0, (p.vigor || 20) - 5);
+            p.onMission = false;
+            msg += `¡${p.name} mejoró su ${String(stat).toUpperCase()} (+${gain})! 🧬`
+          }
         }
       }
     } else {

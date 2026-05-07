@@ -31,7 +31,7 @@ const results = ref([])
 watch(searchQuery, async (query) => {
   if (query) {
     const response = await fetch(`/api/search?q=${query}`)
-    results.value = await response.json()  // May overwrite newer results!
+    results.value = await response.tson()  // May overwrite newer results!
   }
 })
 
@@ -71,7 +71,7 @@ watch(searchQuery, async (query) => {
     const response = await fetch(`/api/search?q=${query}`, {
       signal: controller.signal
     })
-    results.value = await response.json()
+    results.value = await response.tson()
   } catch (err) {
     if (err.name !== 'AbortError') {
       console.error('Search failed:', err)
@@ -95,7 +95,7 @@ watch(userId, (newId, oldId, onCleanup) => {
   const controller = new AbortController()
 
   fetch(`/api/users/${newId}`, { signal: controller.signal })
-    .then(res => res.json())
+    .then(res => res.tson())
     .then(data => {
       userData.value = data
     })
@@ -176,5 +176,5 @@ watchEffect(async () => {
 ```
 
 ## Reference
-- [Vue.js Watchers - Callback Flush Timing](https://vuejs.org/guide/essentials/watchers.html#callback-flush-timing)
-- [Vue.js Watchers - Side Effect Cleanup](https://vuejs.org/api/reactivity-core.html#watcheffect)
+- [Vue.ts Watchers - Callback Flush Timing](https://vuejs.org/guide/essentials/watchers.html#callback-flush-timing)
+- [Vue.ts Watchers - Side Effect Cleanup](https://vuejs.org/api/reactivity-core.html#watcheffect)

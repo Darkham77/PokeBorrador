@@ -60,7 +60,7 @@ export const useMapStore = defineStore('map', () => {
   const activeEvents = ref<any[]>([])
   const lastNavigateTime = ref(0)
   const dailyGuardianCaptures = ref<string[]>([])
-  const mapWinners = ref<Record<string, string>>({}) // locId -> winner
+  const mapWinners = ref<Record<string, import('@/types/stores').DominanceInfo>>({}) // locId -> winner
   const pendingAwards = ref<any[]>([])
   
   const setGlobalWeather = (w: any) => { globalWeather.value = w }

@@ -65,7 +65,7 @@ const currentView = computed(() => routes[currentPath.value])
 ## Production Setup with Vue Router
 
 ```javascript
-// router/index.js
+// router/index.ts
 import { createRouter, createWebHistory } from 'vue-router'
 
 const routes = [
@@ -120,7 +120,7 @@ export default router
 ```
 
 ```javascript
-// main.js
+// main.ts
 import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'
@@ -178,6 +178,6 @@ const router = createRouter({
 6. **New features keep coming** - Data Loading API, View Transitions
 
 ## Reference
-- [Vue.js Routing Guide](https://vuejs.org/guide/scaling-up/routing.html)
+- [Vue.ts Routing Guide](https://vuejs.org/guide/scaling-up/routing.html)
 - [Vue Router Documentation](https://router.vuejs.org/)
 - [Vue Router Getting Started](https://router.vuejs.org/guide/)

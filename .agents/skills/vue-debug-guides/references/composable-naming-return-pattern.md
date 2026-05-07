@@ -135,5 +135,5 @@ const { count, doubleCount, increment, reset } = useCounter(10)
 | `useWindowSize` | `getWindowSize` | "get" implies synchronous getter |
 
 ## Reference
-- [Vue.js Composables - Conventions and Best Practices](https://vuejs.org/guide/reusability/composables.html#conventions-and-best-practices)
-- [Vue.js Composables - Return Values](https://vuejs.org/guide/reusability/composables.html#return-values)
+- [Vue.ts Composables - Conventions and Best Practices](https://vuejs.org/guide/reusability/composables.html#conventions-and-best-practices)
+- [Vue.ts Composables - Return Values](https://vuejs.org/guide/reusability/composables.html#return-values)

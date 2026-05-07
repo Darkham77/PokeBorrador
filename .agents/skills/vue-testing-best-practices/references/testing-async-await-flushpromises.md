@@ -155,7 +155,7 @@ import { setupServer } from 'msw/node'
 
 const server = setupServer(
   rest.get('/api/user', (req, res, ctx) => {
-    return res(ctx.json({ name: 'John' }))
+    return res(ctx.tson({ name: 'John' }))
   })
 )
 
@@ -172,4 +172,4 @@ test('displays user data', async () => {
 
 ## Reference
 - [Vue Test Utils - Asynchronous Behavior](https://test-utils.vuejs.org/guide/advanced/async-suspense)
-- [Vue.js Testing Guide](https://vuejs.org/guide/scaling-up/testing)
+- [Vue.ts Testing Guide](https://vuejs.org/guide/scaling-up/testing)

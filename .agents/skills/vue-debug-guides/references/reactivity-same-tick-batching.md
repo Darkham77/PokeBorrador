@@ -169,6 +169,6 @@ Object.defineProperty(count, 'value', {
 
 ## Reference
 
-- [Vue.js Reactivity in Depth](https://vuejs.org/guide/extras/reactivity-in-depth.html)
-- [Vue.js Watchers - Callback Flush Timing](https://vuejs.org/guide/essentials/watchers.html#callback-flush-timing)
-- [Vue.js nextTick()](https://vuejs.org/api/general.html#nexttick)
+- [Vue.ts Reactivity in Depth](https://vuejs.org/guide/extras/reactivity-in-depth.html)
+- [Vue.ts Watchers - Callback Flush Timing](https://vuejs.org/guide/essentials/watchers.html#callback-flush-timing)
+- [Vue.ts nextTick()](https://vuejs.org/api/general.html#nexttick)

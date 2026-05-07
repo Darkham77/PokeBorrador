@@ -140,7 +140,7 @@ const selectedTags = useRouteQuery('tags', [], {
 For complex state, sync URL with store:
 
 ```javascript
-// stores/productFilters.js
+// stores/productFilters.ts
 import { defineStore } from 'pinia'
 import { useRoute, useRouter } from 'vue-router'
 import { watch } from 'vue'

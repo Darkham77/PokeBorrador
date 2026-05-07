@@ -13,11 +13,12 @@
     "preview": "vite preview",
     "type-check": "vue-tsc --noEmit",
     "test": "vitest run",
-    "lint": "eslint . --fix",
+    "lint": "npm run type-check && eslint . --fix",
     "lint:analyze": "eslint . -f json -o lint-results.json || node analyze_lint.cjs",
     "postinstall": "(python -m pip install -r requirements.txt --quiet --break-system-packages || python3 -m pip install -r requirements.txt --quiet --break-system-packages) || echo 'Warning: Python dependencies could not be installed automatically. Please run: python -m pip install -r requirements.txt or python3 -m pip install -r requirements.txt'"
   },
   "dependencies": {
+    "@js-temporal/polyfill": "^0.5.1",
     "@supabase/supabase-js": "^2.103.0",
     "pinia": "^2.3.1",
     "vue": "^3.5.32",

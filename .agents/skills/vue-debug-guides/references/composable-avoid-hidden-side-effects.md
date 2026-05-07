@@ -207,5 +207,5 @@ const { data, fetch } = useDataFetcher(apiClient, cache)
 
 ## Reference
 
-- [Vue.js Composables](https://vuejs.org/guide/reusability/composables.html)
+- [Vue.ts Composables](https://vuejs.org/guide/reusability/composables.html)
 - [Common Mistakes Creating Composition Functions](https://www.telerik.com/blogs/common-mistakes-creating-composition-functions-vue)

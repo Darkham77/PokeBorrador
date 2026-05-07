@@ -90,5 +90,5 @@ Keys are absolutely required when v-for loops contain:
 
 ## Reference
 
-- [Vue.js List Rendering - Key](https://vuejs.org/guide/essentials/list.html#maintaining-state-with-key)
+- [Vue.ts List Rendering - Key](https://vuejs.org/guide/essentials/list.html#maintaining-state-with-key)
 - [Vue 3 Migration Guide - Key on Template](https://v3-migration.vuejs.org/breaking-changes/key-attribute)

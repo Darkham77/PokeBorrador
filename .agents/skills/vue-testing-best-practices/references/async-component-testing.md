@@ -160,4 +160,4 @@ await flushPromises()
 ## References
 
 - [Vue Test Utils - Asynchronous Behavior](https://test-utils.vuejs.org/guide/advanced/async-suspense)
-- [Vue.js Async Components Documentation](https://vuejs.org/guide/components/async)
+- [Vue.ts Async Components Documentation](https://vuejs.org/guide/components/async)

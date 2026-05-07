@@ -46,7 +46,7 @@ onUnmounted(() => window.removeEventListener('mousemove', onMove))
 
 **GOOD:**
 ```javascript
-// composables/useEventListener.js
+// composables/useEventListener.ts
 import { onMounted, onUnmounted, toValue } from 'vue'
 
 export function useEventListener(target, event, callback) {
@@ -56,7 +56,7 @@ export function useEventListener(target, event, callback) {
 ```
 
 ```javascript
-// composables/useMouse.js
+// composables/useMouse.ts
 import { ref } from 'vue'
 import { useEventListener } from './useEventListener'
 
@@ -74,7 +74,7 @@ export function useMouse() {
 ```
 
 ```javascript
-// composables/useMouseInElement.js
+// composables/useMouseInElement.ts
 import { computed } from 'vue'
 import { useMouse } from './useMouse'
 
@@ -202,7 +202,7 @@ const { formatDate } = useFormatters()
 
 **GOOD:**
 ```javascript
-// utils/formatters.js
+// utils/formatters.ts
 export function formatDate(date) {
   return new Intl.DateTimeFormat('en-US').format(date)
 }
@@ -216,7 +216,7 @@ export function formatCurrency(amount) {
 ```
 
 ```javascript
-// composables/useInvoiceSummary.js
+// composables/useInvoiceSummary.ts
 import { computed } from 'vue'
 import { formatCurrency } from '@/utils/formatters'
 
@@ -268,7 +268,7 @@ const { selectedItem, isModalOpen, selectItem, closeModal } = useSelectionModal(
 ```
 
 ```javascript
-// composables/useItems.js
+// composables/useItems.ts
 import { ref, onMounted } from 'vue'
 
 export function useItems() {

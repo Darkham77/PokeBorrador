@@ -167,5 +167,5 @@ h('div', [
 
 ## Reference
 
-- [Vue.js Render Functions - Passing Slots](https://vuejs.org/guide/extras/render-function.html#passing-slots)
-- [Vue.js Render Functions - Children](https://vuejs.org/guide/extras/render-function.html#children)
+- [Vue.ts Render Functions - Passing Slots](https://vuejs.org/guide/extras/render-function.html#passing-slots)
+- [Vue.ts Render Functions - Children](https://vuejs.org/guide/extras/render-function.html#children)

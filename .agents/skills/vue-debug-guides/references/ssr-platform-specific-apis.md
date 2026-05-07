@@ -1,14 +1,14 @@
 ---
 title: Guard Platform-Specific APIs in Universal SSR Code
 impact: HIGH
-impactDescription: Accessing browser-only APIs on server causes crashes; Node.js APIs fail in browser
+impactDescription: Accessing browser-only APIs on server causes crashes; Node.ts APIs fail in browser
 type: gotcha
 tags: [vue3, ssr, browser-api, nodejs, universal, isomorphic, server-side-rendering]
 ---
 
 # Guard Platform-Specific APIs in Universal SSR Code
 
-**Impact: HIGH** - SSR applications run the same code on both server (Node.js) and client (browser). Browser APIs like `window`, `document`, and `localStorage` don't exist in Node.js and will throw `ReferenceError`. Similarly, Node.js APIs like `fs` and `process` aren't available in browsers.
+**Impact: HIGH** - SSR applications run the same code on both server (Node.ts) and client (browser). Browser APIs like `window`, `document`, and `localStorage` don't exist in Node.ts and will throw `ReferenceError`. Similarly, Node.ts APIs like `fs` and `process` aren't available in browsers.
 
 Universal/isomorphic code must guard platform-specific API access or use libraries that work on both platforms.
 
@@ -22,7 +22,7 @@ Universal/isomorphic code must guard platform-specific API access or use librari
 
 ## Common Browser APIs That Break SSR
 
-| API | Node.js Behavior |
+| API | Node.ts Behavior |
 |-----|-----------------|
 | `window` | `ReferenceError: window is not defined` |
 | `document` | `ReferenceError: document is not defined` |
@@ -38,7 +38,7 @@ Universal/isomorphic code must guard platform-specific API access or use librari
 **Incorrect - Crashes on Server:**
 
 ```javascript
-// WRONG: These run during setup/SSR - crashes in Node.js
+// WRONG: These run during setup/SSR - crashes in Node.ts
 const width = ref(window.innerWidth)
 const theme = localStorage.getItem('theme')
 const userAgent = navigator.userAgent
@@ -125,7 +125,7 @@ export function useMediaQuery(query) {
 }
 ```
 
-## Nuxt.js Guards
+## Nuxt.ts Guards
 
 ```vue
 <script setup>
@@ -159,10 +159,10 @@ if (process.server) {
 Use libraries that abstract platform differences:
 
 ```javascript
-// Fetch - works in both Node.js 18+ and browsers
+// Fetch - works in both Node.ts 18+ and browsers
 const response = await fetch('/api/data')
 
-// For older Node.js, use node-fetch or axios
+// For older Node.ts, use node-fetch or axios
 import axios from 'axios'
 const { data } = await axios.get('/api/data')
 ```
@@ -176,7 +176,7 @@ import { parse } from 'cookie' // Works both
 const token = useCookie('auth-token')
 ```
 
-## Common Node.js APIs That Break in Browser
+## Common Node.ts APIs That Break in Browser
 
 | API | Browser Behavior |
 |-----|-----------------|
@@ -190,28 +190,28 @@ const token = useCookie('auth-token')
 **Incorrect:**
 
 ```javascript
-// WRONG: Node.js APIs in universal code
+// WRONG: Node.ts APIs in universal code
 import fs from 'fs'
-const config = JSON.parse(fs.readFileSync('./config.json'))
+const config = JSON.parse(fs.readFileSync('./config.tson'))
 ```
 
 **Correct - Separate Server Code:**
 
 ```javascript
-// server/utils.js - Server-only file
+// server/utils.ts - Server-only file
 import fs from 'fs'
 export function loadConfig() {
-  return JSON.parse(fs.readFileSync('./config.json'))
+  return JSON.parse(fs.readFileSync('./config.tson'))
 }
 
-// app.js - Universal code uses API instead
-const config = await fetch('/api/config').then(r => r.json())
+// app.ts - Universal code uses API instead
+const config = await fetch('/api/config').then(r => r.tson())
 ```
 
 ## Environment Detection Utility
 
 ```javascript
-// utils/environment.js
+// utils/environment.ts
 export const isClient = typeof window !== 'undefined'
 export const isServer = !isClient
 
@@ -258,6 +258,6 @@ const Chart = defineAsyncComponent(() =>
 
 ## Reference
 
-- [Vue.js SSR - Platform-Specific APIs](https://vuejs.org/guide/scaling-up/ssr.html#access-to-platform-specific-apis)
+- [Vue.ts SSR - Platform-Specific APIs](https://vuejs.org/guide/scaling-up/ssr.html#access-to-platform-specific-apis)
 - [Nuxt ClientOnly Component](https://nuxt.com/docs/api/components/client-only)
 - [MDN: Web APIs](https://developer.mozilla.org/en-US/docs/Web/API)

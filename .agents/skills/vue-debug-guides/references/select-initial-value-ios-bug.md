@@ -91,4 +91,4 @@ const country = ref('us')  // Pre-selects "United States"
 
 ## Reference
 
-- [Vue.js Form Input Bindings - Select](https://vuejs.org/guide/essentials/forms.html#select)
+- [Vue.ts Form Input Bindings - Select](https://vuejs.org/guide/essentials/forms.html#select)

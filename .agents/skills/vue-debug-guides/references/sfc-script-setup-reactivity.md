@@ -190,6 +190,6 @@ But in event handlers written inline, you might still need `.value`:
 ```
 
 ## Reference
-- [Vue.js Reactivity Fundamentals](https://vuejs.org/guide/essentials/reactivity-fundamentals.html)
-- [Vue.js ref()](https://vuejs.org/api/reactivity-core.html#ref)
-- [Vue.js reactive()](https://vuejs.org/api/reactivity-core.html#reactive)
+- [Vue.ts Reactivity Fundamentals](https://vuejs.org/guide/essentials/reactivity-fundamentals.html)
+- [Vue.ts ref()](https://vuejs.org/api/reactivity-core.html#ref)
+- [Vue.ts reactive()](https://vuejs.org/api/reactivity-core.html#reactive)

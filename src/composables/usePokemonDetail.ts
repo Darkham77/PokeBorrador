@@ -191,7 +191,7 @@ export function usePokemonDetail(propsRefs: Record<string, any>) {
     }
   })
 
-  const getSprite = (id: string, isShiny: boolean = false) => getAssetUrl(ASSET_TYPES.POKEMON, id, { shiny: isShiny })
+  const getSprite = (id: string, isShiny: boolean = false) => getAssetUrl(ASSET_TYPES.POKEMON, id, { isShiny })
 
   return {
     targetPokemon,

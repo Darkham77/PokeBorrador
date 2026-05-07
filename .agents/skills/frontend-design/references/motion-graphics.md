@@ -170,9 +170,9 @@ CSS 3D Space:
 | Library | Best For |
 | :--- | :--- |
 | **tsParticles** | Configurable, lightweight |
-| **particles.js** | Simple backgrounds |
+| **particles.ts** | Simple backgrounds |
 | **Canvas API** | Custom, maximum control |
-| **Three.js** | Complex 3D particles |
+| **Three.ts** | Complex 3D particles |
 
 ### Principles
 
@@ -265,7 +265,7 @@ What animation do you need?
 │   └── SVG animation (stroke or morph)
 │
 ├── Interactive 3D effect?
-│   └── CSS 3D Transforms (simple) or Three.js (complex)
+│   └── CSS 3D Transforms (simple) or Three.ts (complex)
 │
 ├── Atmospheric background?
 │   └── tsParticles or Canvas

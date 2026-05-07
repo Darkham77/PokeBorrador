@@ -131,11 +131,11 @@ props: {
 # Check installed TypeScript version
 npx tsc --version
 
-# Or check package.json
-grep typescript package.json
+# Or check package.tson
+grep typescript package.tson
 ```
 
 ## Reference
 
-- [Vue.js TypeScript with Options API](https://vuejs.org/guide/typescript/options-api.html#caveats)
+- [Vue.ts TypeScript with Options API](https://vuejs.org/guide/typescript/options-api.html#caveats)
 - [TypeScript 4.7 Release Notes](https://devblogs.microsoft.com/typescript/announcing-typescript-4-7/)

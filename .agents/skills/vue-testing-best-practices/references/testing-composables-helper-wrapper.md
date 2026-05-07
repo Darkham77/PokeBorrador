@@ -22,7 +22,7 @@ Simple composables using only reactivity APIs can be tested directly. Complex co
 
 **Simple Composable - Test Directly:**
 ```javascript
-// composables/useCounter.js
+// composables/useCounter.ts
 import { ref, computed } from 'vue'
 
 export function useCounter(initialValue = 0) {
@@ -35,7 +35,7 @@ export function useCounter(initialValue = 0) {
 ```
 
 ```javascript
-// useCounter.test.js
+// useCounter.test.ts
 import { describe, it, expect } from 'vitest'
 import { useCounter } from './useCounter'
 
@@ -63,7 +63,7 @@ describe('useCounter', () => {
 
 **Complex Composable - Use Host Wrapper:**
 ```javascript
-// composables/useFetch.js
+// composables/useFetch.ts
 import { ref, onMounted, onUnmounted, inject } from 'vue'
 
 export function useFetch(url) {
@@ -97,7 +97,7 @@ export function useFetch(url) {
 ```
 
 ```javascript
-// test-utils.js
+// test-utils.ts
 import { createApp } from 'vue'
 
 /**
@@ -121,7 +121,7 @@ export function withSetup(composable) {
 ```
 
 ```javascript
-// useFetch.test.js
+// useFetch.test.ts
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { flushPromises } from '@vue/test-utils'
 import { withSetup } from './test-utils'
@@ -173,7 +173,7 @@ describe('useFetch', () => {
 
 ## Enhanced withSetup Helper with Provide Support
 ```javascript
-// test-utils.js
+// test-utils.ts
 export function withSetup(composable, options = {}) {
   let result
 
@@ -234,5 +234,5 @@ test('useFetch in component context', async () => {
 ```
 
 ## Reference
-- [Vue.js Testing Guide - Testing Composables](https://vuejs.org/guide/scaling-up/testing#testing-composables)
+- [Vue.ts Testing Guide - Testing Composables](https://vuejs.org/guide/scaling-up/testing#testing-composables)
 - [Vue Test Utils - Mounting Components](https://test-utils.vuejs.org/guide/)

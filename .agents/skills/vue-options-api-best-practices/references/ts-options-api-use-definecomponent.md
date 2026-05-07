@@ -13,7 +13,7 @@ tags: [vue3, typescript, options-api, defineComponent, type-inference]
 ## Task Checklist
 
 - [ ] Always import and use `defineComponent` from 'vue' for Options API components
-- [ ] Enable `strict: true` (or at minimum `noImplicitThis: true`) in tsconfig.json
+- [ ] Enable `strict: true` (or at minimum `noImplicitThis: true`) in tsconfig.tson
 - [ ] Consider migrating to Composition API with `<script setup>` for better type inference
 
 ## The Problem
@@ -90,7 +90,7 @@ export default defineComponent({
 For proper `this` type checking, enable strict mode or at minimum `noImplicitThis`:
 
 ```json
-// tsconfig.json
+// tsconfig.tson
 {
   "compilerOptions": {
     "strict": true,
@@ -168,5 +168,5 @@ Always add `defineComponent` when converting to TypeScript.
 
 ## Reference
 
-- [Vue.js TypeScript with Options API](https://vuejs.org/guide/typescript/options-api.html)
-- [Vue.js Using Vue with TypeScript](https://vuejs.org/guide/typescript/overview.html)
+- [Vue.ts TypeScript with Options API](https://vuejs.org/guide/typescript/options-api.html)
+- [Vue.ts Using Vue with TypeScript](https://vuejs.org/guide/typescript/overview.html)

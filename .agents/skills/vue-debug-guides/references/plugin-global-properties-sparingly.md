@@ -105,5 +105,5 @@ console.log(app.config.globalProperties)
 
 ## References
 
-- [Vue.js Plugins Documentation](https://vuejs.org/guide/reusability/plugins.html)
-- [Vue.js Global Properties](https://vuejs.org/api/application.html#app-config-globalproperties)
+- [Vue.ts Plugins Documentation](https://vuejs.org/guide/reusability/plugins.html)
+- [Vue.ts Global Properties](https://vuejs.org/api/application.html#app-config-globalproperties)

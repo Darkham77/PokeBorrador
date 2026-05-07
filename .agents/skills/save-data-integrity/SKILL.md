@@ -15,3 +15,9 @@ description: Ensures the integrity of save data. Delegates technical rules to th
 - **Atomicity**: Avoid partial or corrupt saves during massive operations.
 
 For specific protocols on database migrations and schema parity, consult the standards manual.
+
+## 🛠️ Session & Migration Lessons
+
+- **Multi-tab Protection**: Use `BroadcastChannel` or Supabase Realtime to implement a "Last-Tab Wins" lock. If a secondary tab is opened, it MUST display a non-dismissible warning to prevent data corruption.
+- **Safe Migration Protocol**: Before migrating to a new database schema or compression method (e.g., during Node.js/Vite upgrades), the system MUST perform an automated backup of the raw local data.
+- **Version Check**: Always verify the `save_version` before attempting to load or migrate a user session.

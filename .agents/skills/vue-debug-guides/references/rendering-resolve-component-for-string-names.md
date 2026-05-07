@@ -232,4 +232,4 @@ render() {
 ## Reference
 
 - [Vue 3 Migration - Render Function API](https://v3-migration.vuejs.org/breaking-changes/render-function-api.html)
-- [Vue.js Render Function API - resolveComponent](https://vuejs.org/api/render-function.html#resolvecomponent)
+- [Vue.ts Render Function API - resolveComponent](https://vuejs.org/api/render-function.html#resolvecomponent)

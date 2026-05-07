@@ -32,7 +32,7 @@ Unlike props which are clearly visible in Vue DevTools for each component, provi
 ### 1. Use Descriptive Symbol Names
 
 ```js
-// injection-keys.js
+// injection-keys.ts
 
 // BETTER: Descriptive names appear in errors and debugging
 export const UserAuthKey = Symbol('UserAuthenticationState')
@@ -73,7 +73,7 @@ provide(AuthActionsKey, { login, logout, refresh })
 ### 3. Development-Only Logging
 
 ```js
-// composables/useProvideWithLogging.js
+// composables/useProvideWithLogging.ts
 import { provide, watch, getCurrentInstance } from 'vue'
 
 export function useProvideWithLogging(key, value, name) {
@@ -111,7 +111,7 @@ useProvideWithLogging(ThemeKey, theme, 'Theme')
 ### 4. Inject with Missing Provider Warnings
 
 ```js
-// composables/useSafeInject.js
+// composables/useSafeInject.ts
 import { inject, getCurrentInstance } from 'vue'
 
 export function useSafeInject(key, fallback, keyName) {
@@ -149,7 +149,7 @@ const theme = useSafeInject(ThemeKey, () => ({ mode: 'light' }), 'ThemeConfig')
 ### 5. Create Provider Registry for Complex Apps
 
 ```js
-// utils/provider-registry.js
+// utils/provider-registry.ts
 const providerRegistry = new Map()
 
 export function registerProvider(key, componentName, value) {

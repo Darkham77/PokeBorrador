@@ -5,6 +5,7 @@ import { useGameStore } from './game'
 import { useUIStore } from './ui'
 import { usePvPStore } from './pvp'
 import { resolvePvPTurn, applyPvPTurnResult, type PvPBattleState, type PvPTurnResult, type PvPAction } from '@/logic/pvp/pvpEngine'
+import type { RealtimeChannel } from '@supabase/supabase-js'
 import type { Pokemon } from '@/types/pokemon'
 
 export interface BattleInvite {
@@ -30,16 +31,12 @@ export const useLivePvPStore = defineStore('livePvP', () => {
     opponentName: string;
     opponentElo: number;
     deadline: number | null;
+    ch: RealtimeChannel | null;
   }
 
   const battleState = reactive<LiveBattleState>({
     active: false, 
-    ch: { 
-      send: () => {}, 
-      on: () => ({ on: () => ({ on: () => ({ on: () => ({ subscribe: () => {} }) }) }) }), 
-      subscribe: () => {}, 
-      unsubscribe: () => {} 
-    } as any, 
+    ch: null,
     isHost: false, isRanked: false,
     opponentId: null, opponentName: 'Rival', opponentElo: 1000,
     phase: 'sync', myTeam: [], enemyTeam: [],
@@ -123,7 +120,7 @@ export const useLivePvPStore = defineStore('livePvP', () => {
   function _forfeit() { if (battleState.ch) battleState.ch.send({ type: 'broadcast', event: 'pvp_forfeit', payload: {} }); endBattle(false, 'Te has rendido.') }
 
   async function endBattle(won: boolean, reason: string) {
-    battleState.active = false; battleState.phase = 'over'; if (battleState.ch) (battleState.ch as any).unsubscribe()
+    battleState.active = false; battleState.phase = 'over'; if (battleState.ch) battleState.ch.unsubscribe()
     let eloDelta = 0; if (battleState.isRanked) eloDelta = await _pvpStore.updateElo(won)
     uiStore.notify(`${reason || (won ? '¡Has ganado!' : 'Has perdido.')}${eloDelta !== 0 ? ` (${eloDelta > 0 ? '+' : ''}${eloDelta} ELO)` : ''}`, won ? '🏆' : '💀')
     if (gameStore.state) { (gameStore.state as any).activeBattle = null; gameStore.save(false) }
@@ -145,9 +142,13 @@ export const useLivePvPStore = defineStore('livePvP', () => {
 
   function setupBattleChannel(inviteId: string) {
     if (!gameStore.db) return
-    battleState.ch = gameStore.db.channel(`pvp-${inviteId}`)
-    battleState.ch.on('broadcast', { event: 'pvp_team' }, handleOpponentTeam).on('broadcast', { event: 'pvp_pick' }, handleOpponentPick).on('broadcast', { event: 'pvp_turn_result' }, handleTurnResult).on('broadcast', { event: 'pvp_forfeit' }, handleOpponentForfeit)
-      .subscribe((status: string) => { if (status === 'SUBSCRIBED' && battleState.ch) battleState.ch.send({ type: 'broadcast', event: 'pvp_team', payload: { team: battleState.myTeam } }) })
+    const ch = gameStore.db.channel(`pvp-${inviteId}`)
+    battleState.ch = ch
+    ch.on('broadcast' as any, { event: 'pvp_team' }, handleOpponentTeam)
+      .on('broadcast' as any, { event: 'pvp_pick' }, handleOpponentPick)
+      .on('broadcast' as any, { event: 'pvp_turn_result' }, handleTurnResult)
+      .on('broadcast' as any, { event: 'pvp_forfeit' }, handleOpponentForfeit)
+      .subscribe((status: string) => { if (status === 'SUBSCRIBED') ch.send({ type: 'broadcast', event: 'pvp_team', payload: { team: battleState.myTeam } }) })
   }
 
   function handleOpponentTeam({ payload }: { payload: { team: Pokemon[] } }) {

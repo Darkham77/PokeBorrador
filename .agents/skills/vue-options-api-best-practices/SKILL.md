@@ -6,7 +6,7 @@ license: MIT
 author: github.com/vuejs-ai
 ---
 
-Vue.js Options API best practices, TypeScript integration, and common gotchas.
+Vue.ts Options API best practices, TypeScript integration, and common gotchas.
 
 ### TypeScript
 - Need to enable TypeScript type inference for component properties → See [ts-options-api-use-definecomponent](references/ts-options-api-use-definecomponent.md)

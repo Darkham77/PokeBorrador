@@ -241,5 +241,5 @@ For complex slot styling, unscoped styles may be cleaner:
 
 ## Reference
 
-- [Vue.js Scoped CSS - Slotted Selectors](https://vuejs.org/api/sfc-css-features.html#slotted-selectors)
-- [Vue.js Deep Selectors](https://vuejs.org/api/sfc-css-features.html#deep-selectors)
+- [Vue.ts Scoped CSS - Slotted Selectors](https://vuejs.org/api/sfc-css-features.html#slotted-selectors)
+- [Vue.ts Deep Selectors](https://vuejs.org/api/sfc-css-features.html#deep-selectors)

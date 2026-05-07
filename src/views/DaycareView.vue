@@ -80,7 +80,7 @@ const getGenderClass = (gender: string | null | undefined) => {
             <template v-if="breedingStore.slots[0]?.pokemon">
               <div class="slot-info">
                 <img
-                  :src="getAssetUrl(ASSET_TYPES.POKEMON, breedingStore.slots[0].pokemon.id, { shiny: breedingStore.slots[0].pokemon.isShiny })"
+                  :src="getAssetUrl(ASSET_TYPES.POKEMON, breedingStore.slots[0].pokemon.id, { isShiny: breedingStore.slots[0].pokemon.isShiny })"
                   alt="Parent A"
                   @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
                 >
@@ -116,7 +116,7 @@ const getGenderClass = (gender: string | null | undefined) => {
             <template v-if="breedingStore.slots[1]?.pokemon">
               <div class="slot-info">
                 <img
-                  :src="getAssetUrl(ASSET_TYPES.POKEMON, breedingStore.slots[1].pokemon.id, { shiny: breedingStore.slots[1].pokemon.isShiny })"
+                  :src="getAssetUrl(ASSET_TYPES.POKEMON, breedingStore.slots[1].pokemon.id, { isShiny: breedingStore.slots[1].pokemon.isShiny })"
                   alt="Parent B"
                   @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
                 >

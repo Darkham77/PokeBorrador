@@ -393,7 +393,4 @@ export const useInventoryStore = defineStore('inventory', () => {
     processBatchAction
   }
 })
-ction
-  }
-})
 

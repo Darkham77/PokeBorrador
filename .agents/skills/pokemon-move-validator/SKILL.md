@@ -12,8 +12,8 @@ description: Move validator. Delegates business rules and schemas to the `@/proj
 
 Run these scripts after modifying any move:
 
-1. **Structure**: `node .agents/skills/pokemon-move-validator/scripts/validator.js`
-2. **PokeAPI Sync**: `node .agents/skills/pokemon-move-validator/scripts/pokeapi_sync.js`
-3. **Battle Integrity**: `node .agents/skills/pokemon-move-validator/scripts/check_battle_integrity.js`
+1. **Structure**: `npx tsx .agents/skills/pokemon-move-validator/scripts/validator.ts`
+2. **PokeAPI Sync**: `npx tsx .agents/skills/pokemon-move-validator/scripts/pokeapi_sync.ts`
+3. **Battle Integrity**: `npx tsx .agents/skills/pokemon-move-validator/scripts/check_battle_integrity.ts`
 
 For the detailed `MOVE_DATA` schema and damage rules, consult the standards manual.

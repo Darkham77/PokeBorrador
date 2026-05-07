@@ -142,7 +142,8 @@ export async function generateEncounter(locId: string, state: EncounterState, op
     // Chance de encontrar defensor (20% normal)
     if (Math.random() < 0.20 && state.faction) {
       // Determinamos si el mapa está dominado por el enemigo
-      const winner = (options.dominanceData || {})[locId];
+      const dominance = (options.dominanceData || {})[locId];
+      const winner = dominance?.winner || null;
       if (winner && winner !== state.faction) {
         return { type: 'defender', faction: winner };
       }

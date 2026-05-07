@@ -193,6 +193,6 @@ The issue only arises when:
 
 ## Reference
 
-- [Vue.js TypeScript with Composition API - Typing reactive()](https://vuejs.org/guide/typescript/composition-api.html#typing-reactive)
+- [Vue.ts TypeScript with Composition API - Typing reactive()](https://vuejs.org/guide/typescript/composition-api.html#typing-reactive)
 - [GitHub Issue: ref with generic type](https://github.com/vuejs/core/discussions/9564)
 - [Vue TypeScript Caveats Gist](https://gist.github.com/LinusBorg/e041ff635994b50b7cec9383c3a067f1)

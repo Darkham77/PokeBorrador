@@ -115,6 +115,6 @@ declare module 'vue' {
 
 ## References
 
-- [Vue.js Plugins Documentation](https://vuejs.org/guide/reusability/plugins.html)
-- [Vue.js Provide/Inject](https://vuejs.org/guide/components/provide-inject.html)
+- [Vue.ts Plugins Documentation](https://vuejs.org/guide/reusability/plugins.html)
+- [Vue.ts Provide/Inject](https://vuejs.org/guide/components/provide-inject.html)
 - [TypeScript with Options API](https://vuejs.org/guide/typescript/options-api.html)

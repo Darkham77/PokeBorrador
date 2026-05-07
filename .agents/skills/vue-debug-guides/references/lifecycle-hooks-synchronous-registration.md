@@ -155,5 +155,5 @@ export default {
 
 ## Reference
 
-- [Vue.js Lifecycle Hooks](https://vuejs.org/guide/essentials/lifecycle.html)
+- [Vue.ts Lifecycle Hooks](https://vuejs.org/guide/essentials/lifecycle.html)
 - [Composition API Lifecycle Hooks](https://vuejs.org/api/composition-api-lifecycle.html)

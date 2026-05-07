@@ -31,6 +31,7 @@ const loadingStore = useLoadingStore()
 const route = useRoute()
 const dbIncompatible = ref(false)
 const dbVersionInfo = ref<DBCompatibilityResponse | null>(null)
+const dismissedLock = ref(false)
 
 const isLoginPage = computed(() => {
   if (typeof window === 'undefined') return false
@@ -211,7 +212,6 @@ const handleRetry = () => {
     <template v-else-if="authStore.user">
       <template v-if="gameStore.isReady">
         <MainGameView v-show="!uiStore.isAnyFullscreenModalOpen" />
-        
         <!-- Bloqueo por Versión Outdated -->
         <div
           v-if="dbIncompatible"
@@ -230,6 +230,41 @@ const handleRetry = () => {
             @click.stop="handleRetry"
           >
             REINTENTAR
+          </div>
+        </div>
+
+        <!-- Bloqueo por Sesión (Last-In-Wins) -->
+        <div
+          v-if="gameStore.isSaveLocked && !dismissedLock"
+          class="loading-overlay session-lock-overlay"
+        >
+          <div class="lock-icon-wrapper">
+            <span class="lock-emoji">🔒</span>
+          </div>
+          
+          <h2 class="lock-title">SESIÓN BLOQUEADA</h2>
+          
+          <div class="lock-content">
+            <p>Se ha detectado una sesión más reciente en otra pestaña o dispositivo.</p>
+            <p class="warning-box">
+              Este navegador está ahora en modo <strong>SOLO LECTURA</strong>.
+            </p>
+          </div>
+
+          <div class="lock-actions">
+            <div
+              class="retry-btn primary"
+              @click.stop="handleRetry"
+            >
+              REFRESCAR PARA RECUPERAR CONTROL
+            </div>
+            
+            <div
+              class="risk-btn"
+              @click.stop="dismissedLock = true"
+            >
+              CONTINUAR SIN GUARDAR (RIESGO ALTO)
+            </div>
           </div>
         </div>
       </template>
@@ -461,6 +496,101 @@ const handleRetry = () => {
   transform: Scale(1.1);
   background: $white;
   color: #ff3333;
+}
+
+.session-lock-overlay {
+  background: Rgba(0, 0, 0, 0.85);
+  -webkit-backdrop-filter: Blur(20px);
+  backdrop-filter: Blur(20px);
+  border: 2px solid var(--blue);
+  box-shadow: inset 0 0 50px Rgba(0, 150, 255, 0.2), 0 0 100px Rgba(0, 100, 255, 0.3);
+  padding: 40px;
+  
+  .lock-icon-wrapper {
+    margin-bottom: 30px;
+    filter: Drop-Shadow(0 0 20px Rgba(0, 150, 255, 0.6));
+    animation: lock-pulse 2s ease-in-out infinite;
+  }
+
+  .lock-emoji {
+    font-size: 80px;
+    display: block;
+    line-height: 1;
+  }
+  
+  .lock-title {
+    color: var(--blue);
+    font-size: 24px;
+    letter-spacing: 2px;
+    text-shadow: 0 0 15px Rgba(0, 150, 255, 0.8);
+    margin-bottom: 25px;
+  }
+
+  .lock-content {
+    max-width: 400px;
+    margin-bottom: 35px;
+    
+    p {
+      color: $white;
+      font-size: 11px;
+      line-height: 1.6;
+      margin: 10px 0;
+    }
+
+    .warning-box {
+      margin-top: 20px;
+      padding: 12px;
+      background: Rgba(0, 150, 255, 0.1);
+      border: 1px dashed var(--blue);
+      color: var(--blue);
+      font-size: 10px;
+      @include pixelated;
+    }
+  }
+
+  .lock-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    width: 100%;
+    max-width: 350px;
+  }
+  
+  .retry-btn {
+    margin: 0;
+    padding: 15px;
+    background: var(--blue);
+    font-size: 10px;
+    font-weight: bold;
+    border-radius: 4px;
+    box-shadow: 0 4px 0 Rgba(0, 0, 0, 0.3);
+    
+    &:hover {
+      background: $white;
+      color: var(--blue);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 0 Rgba(0, 0, 0, 0.2);
+    }
+  }
+
+  .risk-btn {
+    font-size: 8px;
+    color: $white;
+    opacity: 0.5;
+    cursor: pointer;
+    text-decoration: underline;
+    transition: opacity 0.2s;
+    
+    &:hover {
+      opacity: 1;
+      color: #ff3333;
+    }
+  }
+}
+
+@keyframes lock-pulse {
+  0%, 100% { transform: Scale(1); }
+  50% { transform: Scale(1.05); }
 }
 
 </style>

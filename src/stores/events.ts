@@ -7,23 +7,7 @@ import { useGameStore } from './game'
 import { isEventActiveNow, getGlobalMultipliers, getSpeciesBoosts, type Event as GameEvent } from '@/logic/events/eventEngine'
 import { getServerTime } from '@/logic/timeUtils'
 import type { Pokemon } from '@/types/pokemon'
-
-interface CompetitionResult {
-  id: string
-  event_id: string
-  winner_id: string
-  winner_name: string
-  winner_email: string
-  data: any
-  ended_at: string
-}
-
-interface PendingAward {
-  id: string
-  winner_id: string
-  prize: string
-  received_at: string | null
-}
+import type { PendingAward } from '@/types/stores'
 
 export const useEventStore = defineStore('events', () => {
   const gameStore = useGameStore()

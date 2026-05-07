@@ -22,6 +22,7 @@ export const useGameStore = defineStore('game', () => {
   const db = ref<SupabaseClient | null>(supabase as any)
   const isDataLoaded = ref(false)
   const isEngineReady = ref(false)
+  const isSaveLocked = ref(false)
   const isReady = computed(() => isDataLoaded.value && isEngineReady.value)
 
   function updateState(newData: Partial<GameState>) {
@@ -62,6 +63,16 @@ export const useGameStore = defineStore('game', () => {
     if (res.success) {
       isDataLoaded.value = true
       isEngineReady.value = true
+      
+      // Initialize Session Hub for multi-tab/device locking
+      if (authStore.user) {
+        const { initSessionHub } = await import('@/logic/auth/sessionHub')
+        initSessionHub(authStore.user.id)
+        
+        window.addEventListener('pv-save-lock', () => {
+          isSaveLocked.value = true
+        })
+      }
     }
   }
 
@@ -85,6 +96,7 @@ export const useGameStore = defineStore('game', () => {
     isDataLoaded,
     isEngineReady,
     isReady,
+    isSaveLocked,
     chooseStarter,
     addTrainerExp,
     checkLevelUp,

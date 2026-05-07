@@ -148,5 +148,5 @@ The `.move` class must have `transform` in its `transition` property:
 ```
 
 ## Reference
-- [Vue.js TransitionGroup Move Transitions](https://vuejs.org/guide/built-ins/transition-group.html#move-transitions)
+- [Vue.ts TransitionGroup Move Transitions](https://vuejs.org/guide/built-ins/transition-group.html#move-transitions)
 - [MDN CSS Transform - Formal Definition](https://developer.mozilla.org/en-US/docs/Web/CSS/transform#formal_definition)

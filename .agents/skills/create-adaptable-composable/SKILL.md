@@ -12,7 +12,7 @@ compatibility: Requires Vue 3 (or above) or Nuxt 3 (or above) project
 
 Adaptable composables are reusable functions that can accept both reactive and non-reactive inputs. This allows developers to use the composable in a variety of contexts without worrying about the reactivity of the inputs.
 
-Steps to design an adaptable composable in Vue.js:
+Steps to design an adaptable composable in Vue.ts:
 
 1. Confirm the composable's purpose and API design and expected inputs/outputs.
 2. Identify inputs params that should be reactive (MaybeRef / MaybeRefOrGetter).

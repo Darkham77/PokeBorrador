@@ -31,7 +31,7 @@ tags: [vue3, keepalive, vue-router, nested-routes, double-mount, bug]
 ```
 
 ```javascript
-// router.js
+// router.ts
 const routes = [
   {
     path: '/parent',
@@ -178,7 +178,7 @@ const shouldCache = computed(() => {
 ```
 
 ```javascript
-// router.js
+// router.ts
 const routes = [
   {
     path: '/parent',
@@ -221,4 +221,4 @@ const routes = [
 
 - [Vue Router Issue #626: keep-alive in nested route mounted twice](https://github.com/vuejs/router/issues/626)
 - [GitHub: vue3-keep-alive-component workaround](https://github.com/emiyalee1005/vue3-keep-alive-component)
-- [Vue.js KeepAlive Documentation](https://vuejs.org/guide/built-ins/keep-alive.html)
+- [Vue.ts KeepAlive Documentation](https://vuejs.org/guide/built-ins/keep-alive.html)

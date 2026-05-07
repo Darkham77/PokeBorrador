@@ -10,7 +10,7 @@ tags: [vue3, props, emits, v-model, provide-inject, data-flow, typescript]
 
 **Impact: HIGH** - Vue components stay reliable when data flow is explicit: props go down, events go up, `v-model` handles two-way bindings, and provide/inject supports cross-tree dependencies. Blurring these boundaries leads to stale state, hidden coupling, and hard-to-debug UI.
 
-The main principle of data flow in Vue.js is **Props Down / Events Up**. This is the most maintainable default, and one-way flow scales well.
+The main principle of data flow in Vue.ts is **Props Down / Events Up**. This is the most maintainable default, and one-way flow scales well.
 
 ## Task List
 

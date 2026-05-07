@@ -22,7 +22,7 @@ Even if newer versions exist, the plugin ecosystem (specifically `vite-plugin-pw
 
 ## 🩹 Patches and Overrides
 
-When critical vulnerabilities are detected in deep sub-dependencies that have not been updated by their maintainers, the project uses the `overrides` field in `package.json`.
+When critical vulnerabilities are detected in deep sub-dependencies that have not been updated by their maintainers, the project uses the `overrides` field in `package.tson`.
 
 > [!IMPORTANT]
 > **Current Build Patches**: All overrides (such as the one for `serialize-javascript`) are corrective measures for the current build and ecosystem state. They must be reviewed during every major version jump.
@@ -36,7 +36,7 @@ Before attempting to upgrade any library in the "Core Stack", this protocol MUST
 1. **Wave Analysis**: Do not update a single piece in isolation. Vite, Pinia, and Vue Router usually move in "waves". Verify that stable versions exist for all three before migrating any of them.
 2. **Peer Dependencies Audit**: Explicitly verify that `vite-plugin-pwa` supports the new major version of Vite.
 3. **SASS Mixin Validation**: Sass updates (e.g., towards 2.0) can break pixel-art mixins. Keep `sass` at versions that do not force massive color refactorings unless necessary.
-4. **PWA Build Test**: A migration is only considered successful if `npm run build` generates a valid and functional `sw.js`.
+4. **PWA Build Test**: A migration is only considered successful if `npm run build` generates a valid and functional `sw.ts`.
 
 ---
 
@@ -44,4 +44,4 @@ Before attempting to upgrade any library in the "Core Stack", this protocol MUST
 
 - **Verify Vulnerabilities**: `npm audit`
 - **Clean Cache**: `npm cache clean --force`
-- **Clean Reinstall**: `rm -rf node_modules package-lock.json && npm install`
+- **Clean Reinstall**: `rm -rf node_modules package-lock.tson && npm install`

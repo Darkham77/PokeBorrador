@@ -207,6 +207,6 @@ function handleSubmit() {
 ```
 
 ## Reference
-- [Vue.js Component Events - Declaring Emitted Events](https://vuejs.org/guide/components/events.html#declaring-emitted-events)
-- [Vue.js Component Events - Events Validation](https://vuejs.org/guide/components/events.html#events-validation)
+- [Vue.ts Component Events - Declaring Emitted Events](https://vuejs.org/guide/components/events.html#declaring-emitted-events)
+- [Vue.ts Component Events - Events Validation](https://vuejs.org/guide/components/events.html#events-validation)
 - [Vue 3 Migration - emits Option](https://v3-migration.vuejs.org/breaking-changes/emits-option)

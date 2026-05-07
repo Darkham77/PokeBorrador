@@ -2,7 +2,7 @@
 
 ## 1. Evolution by Level
 
-- **Standard**: Activated upon reaching the level defined in `evolutionData.js`.
+- **Standard**: Activated upon reaching the level defined in `evolutionData.ts`.
 - **Tyrogue**: Evolves at level 20 based on its stats: Atk > Def (**Hitmonlee**), Def > Atk (**Hitmonchan**), Tie (50/50).
 
 ## 2. Wild Evolution (Auto-Evo)

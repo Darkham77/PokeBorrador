@@ -154,5 +154,5 @@ const element = useTemplateRef('my-element') // Any variable name
 ```
 
 ## Reference
-- [Vue.js Template Refs - Composition API](https://vuejs.org/guide/essentials/template-refs.html#accessing-the-refs)
+- [Vue.ts Template Refs - Composition API](https://vuejs.org/guide/essentials/template-refs.html#accessing-the-refs)
 - [Vue 3.5 Release Notes](https://blog.vuejs.org/posts/vue-3-5)

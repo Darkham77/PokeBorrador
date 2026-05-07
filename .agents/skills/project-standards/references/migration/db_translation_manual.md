@@ -6,7 +6,7 @@ This manual provides detailed instructions on how the application translates Pos
 
 ## Core Translation Rules
 
-The `translatePostgresToSqlite` function in `sqliteEngine.js` applies the following transformations:
+The `translatePostgresToSqlite` function in `sqliteEngine.ts` applies the following transformations:
 
 ### 1. Type Mapping
 
@@ -93,8 +93,8 @@ SQLite's `ALTER TABLE` is extremely limited. It does NOT support:
 
 PostgreSQL triggers call external functions (`EXECUTE FUNCTION`). SQLite triggers MUST embed the entire logic inside `BEGIN ... END;` blocks and are restricted to simple DML (`INSERT`, `UPDATE`, `DELETE`).
 
-- **Policy**: Complex business logic should be handled in the Javascript layer (`../../../../src/logic/db/dbRouter.js`) rather than database triggers when targeting hybrid environments.
+- **Policy**: Complex business logic should be handled in the Javascript layer (`../../../../src/logic/db/dbRouter.ts`) rather than database triggers when targeting hybrid environments.
 
 ## Testing & Validation
 
-All new SQL patterns MUST be added to the unit test suite in `../../../../tests/unit/db_translation.spec.js`.
+All new SQL patterns MUST be added to the unit test suite in `../../../../tests/unit/db_translation.spec.ts`.

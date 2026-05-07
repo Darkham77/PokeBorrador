@@ -86,5 +86,5 @@ async function addItem() {
 ```
 
 ## Reference
-- [Vue.js Reactivity Fundamentals - DOM Update Timing](https://vuejs.org/guide/essentials/reactivity-fundamentals.html#dom-update-timing)
-- [Vue.js nextTick API](https://vuejs.org/api/general.html#nexttick)
+- [Vue.ts Reactivity Fundamentals - DOM Update Timing](https://vuejs.org/guide/essentials/reactivity-fundamentals.html#dom-update-timing)
+- [Vue.ts nextTick API](https://vuejs.org/api/general.html#nexttick)

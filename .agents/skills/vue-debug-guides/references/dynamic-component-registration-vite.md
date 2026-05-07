@@ -20,7 +20,7 @@ tags: [vue3, component-registration, vite, dynamic-import, migration, webpack]
 **Incorrect (Webpack pattern - doesn't work in Vite):**
 
 ```javascript
-// main.js - WRONG for Vite
+// main.ts - WRONG for Vite
 import { createApp } from 'vue'
 import App from './App.vue'
 
@@ -49,7 +49,7 @@ app.mount('#app')
 **Correct (Vite pattern):**
 
 ```javascript
-// main.js - Correct for Vite
+// main.ts - Correct for Vite
 import { createApp } from 'vue'
 import App from './App.vue'
 
@@ -70,7 +70,7 @@ app.mount('#app')
 ## Lazy Loading with Async Components
 
 ```javascript
-// main.js - Lazy loading variant
+// main.ts - Lazy loading variant
 import { createApp, defineAsyncComponent } from 'vue'
 import App from './App.vue'
 
@@ -147,4 +147,4 @@ app.mount('#app')
 ## Reference
 
 - [Vite - Glob Import](https://vitejs.dev/guide/features.html#glob-import)
-- [Vue.js Component Registration](https://vuejs.org/guide/components/registration.html)
+- [Vue.ts Component Registration](https://vuejs.org/guide/components/registration.html)

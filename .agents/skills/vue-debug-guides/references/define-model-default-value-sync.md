@@ -135,5 +135,5 @@ const model = defineModel({
 ```
 
 ## Reference
-- [Vue.js Component v-model](https://vuejs.org/guide/components/v-model.html)
+- [Vue.ts Component v-model](https://vuejs.org/guide/components/v-model.html)
 - [Vue School - defineModel Guide](https://vueschool.io/articles/vuejs-tutorials/v-model-and-definemodel-a-comprehensive-guide-to-two-way-binding-in-vue-js-3/)

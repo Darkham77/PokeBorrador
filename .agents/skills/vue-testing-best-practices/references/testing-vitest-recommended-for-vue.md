@@ -15,9 +15,9 @@ Use Vitest for new Vue 3 projects. Only consider Jest if migrating an existing t
 ## Task Checklist
 
 - [ ] Install Vitest and related packages for Vue testing
-- [ ] Configure vitest in vite.config.js or vitest.config.js
+- [ ] Configure vitest in vite.config.ts or vitest.config.ts
 - [ ] Set up proper test environment (happy-dom or jsdom)
-- [ ] Add test scripts to package.json
+- [ ] Add test scripts to package.tson
 - [ ] Configure globals if desired for cleaner test syntax
 - [ ] Use @vue/test-utils for component mounting
 
@@ -30,7 +30,7 @@ npm install -D vitest @vue/test-utils happy-dom
 npm install -D vitest @vue/test-utils jsdom
 ```
 
-**vite.config.js:**
+**vite.config.ts:**
 ```javascript
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
@@ -43,12 +43,12 @@ export default defineConfig({
     // Use happy-dom for faster tests (or 'jsdom' for better compatibility)
     environment: 'happy-dom',
     // Optional: Setup files for global configuration
-    setupFiles: ['./src/test/setup.js']
+    setupFiles: ['./src/test/setup.ts']
   }
 })
 ```
 
-**package.json:**
+**package.tson:**
 ```json
 {
   "scripts": {
@@ -59,7 +59,7 @@ export default defineConfig({
 }
 ```
 
-**tsconfig.json (if using TypeScript):**
+**tsconfig.tson (if using TypeScript):**
 ```json
 {
   "compilerOptions": {
@@ -71,7 +71,7 @@ export default defineConfig({
 ## Test File Example
 
 ```javascript
-// src/components/Counter.test.js
+// src/components/Counter.test.ts
 import { describe, it, expect, beforeEach } from 'vitest'  // optional with globals: true
 import { mount } from '@vue/test-utils'
 import Counter from './Counter.vue'
@@ -112,7 +112,7 @@ npm install -D @testing-library/vue @testing-library/jest-dom
 ```
 
 ```javascript
-// src/test/setup.js
+// src/test/setup.ts
 import { expect } from 'vitest'
 import * as matchers from '@testing-library/jest-dom/matchers'
 
@@ -120,7 +120,7 @@ expect.extend(matchers)
 ```
 
 ```javascript
-// Component.test.js
+// Component.test.ts
 import { render, screen, fireEvent } from '@testing-library/vue'
 import UserCard from './UserCard.vue'
 
@@ -136,7 +136,7 @@ test('displays user name', () => {
 ## Advanced Configuration
 
 ```javascript
-// vitest.config.js (separate file if preferred)
+// vitest.config.ts (separate file if preferred)
 import { defineConfig } from 'vitest/config'
 import vue from '@vitejs/plugin-vue'
 
@@ -200,5 +200,5 @@ test('debounced search', async () => {
 
 ## Reference
 - [Vitest Documentation](https://vitest.dev/)
-- [Vue.js Testing Guide](https://vuejs.org/guide/scaling-up/testing)
+- [Vue.ts Testing Guide](https://vuejs.org/guide/scaling-up/testing)
 - [Vue Test Utils](https://test-utils.vuejs.org/)

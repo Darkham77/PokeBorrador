@@ -136,5 +136,5 @@ function saveDocument(event) {
 
 ## Reference
 
-- [Vue.js Event Handling - Key Modifiers](https://vuejs.org/guide/essentials/event-handling.html#key-modifiers)
-- [Vue.js Event Handling - System Modifier Keys](https://vuejs.org/guide/essentials/event-handling.html#system-modifier-keys)
+- [Vue.ts Event Handling - Key Modifiers](https://vuejs.org/guide/essentials/event-handling.html#key-modifiers)
+- [Vue.ts Event Handling - System Modifier Keys](https://vuejs.org/guide/essentials/event-handling.html#system-modifier-keys)

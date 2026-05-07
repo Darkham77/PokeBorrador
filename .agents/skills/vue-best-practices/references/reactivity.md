@@ -339,6 +339,6 @@ watch(query, async (q, _prev, onCleanup) => {
     signal: controller.signal,
   })
 
-  results.value = await res.json()
+  results.value = await res.tson()
 })
 ```

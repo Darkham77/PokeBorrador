@@ -91,5 +91,5 @@ The following Options API hooks must NOT use arrow functions:
 - `renderTriggered`
 
 ## Reference
-- [Vue.js Lifecycle Hooks](https://vuejs.org/guide/essentials/lifecycle.html)
-- [Vue.js Options Lifecycle](https://vuejs.org/api/options-lifecycle.html)
+- [Vue.ts Lifecycle Hooks](https://vuejs.org/guide/essentials/lifecycle.html)
+- [Vue.ts Options Lifecycle](https://vuejs.org/api/options-lifecycle.html)

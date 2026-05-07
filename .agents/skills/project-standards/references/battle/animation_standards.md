@@ -166,11 +166,16 @@ To maintain a coherent sense of depth in the 2D-perspective virtual world, all c
 | **Environment (Floor)** | `calc(var(--z-base) + 1)` | 1 (Bottom) |
 | **Shadows** | `calc(var(--z-map-spawns) - 7)` | 3 |
 | **Grass (Back)** | `calc(var(--z-map-spawns) - 5)` | 5 |
-| **Pokemon/Spawns** | `var(--z-map-spawns)` | 10 |
+| **Pokemon/Spawns** | `var(--z-map-spawns)` | 10 (Base) |
+| **Sprite Layer** | `calc(var(--z-map-spawns) + 1)` | 11 |
+| **Shiny Sparkles** | `calc(var(--z-map-spawns) + 2)` | 12 |
+| **Status Icons (Emojis)** | `calc(var(--z-map-spawns) + 3)` | 13 |
+| **Auras/Screens** | `calc(var(--z-map-spawns) + 4)` | 14 |
 | **Ground Effects** | `calc(var(--z-map-spawns) + 5)` | 15 (Over feet) |
 | **Grass (Front)** | `calc(var(--z-map-spawns) + 5)` | 15 (Top) |
+| **Tactical FX (🛡️, 🎯)** | `calc(var(--z-map-spawns) + 5)` | 15 (Global Critical) |
 
-- **Rule**: This hierarchy ensures that shadows project onto the floor but are correctly occluded by grass blades and the Pokémon's feet. Ground effects (hazards) must appear over the feet to ensure visual impact.
+- **Rule**: This hierarchy ensures that shadows project onto the floor but are correctly occluded by grass blades and the Pokémon's feet. Visual effects (FX) are layered sequentially over the sprite to prevent occlusion and maintain mechanical clarity.
 
 ## 17. Feedback Lifecycle Decoupling
 

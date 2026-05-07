@@ -131,5 +131,5 @@ The Options API `inject` array syntax `inject: ['theme']` doesn't provide type i
 
 ## Reference
 
-- [Vue.js Provide/Inject](https://vuejs.org/guide/components/provide-inject.html)
+- [Vue.ts Provide/Inject](https://vuejs.org/guide/components/provide-inject.html)
 - [GitHub Issue: Add type inference to Options API provide/inject](https://github.com/vuejs/core/issues/3031)

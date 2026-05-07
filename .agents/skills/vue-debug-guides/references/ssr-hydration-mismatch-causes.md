@@ -132,7 +132,7 @@ onMounted(() => {
 
 **Correct - Seeded Random:**
 ```javascript
-// utils/seededRandom.js
+// utils/seededRandom.ts
 export function createSeededRandom(seed) {
   return function() {
     seed = (seed * 9301 + 49297) % 233280
@@ -245,7 +245,7 @@ Valid `data-allow-mismatch` values:
 
 ```javascript
 // Enable detailed hydration mismatch warnings in development
-// vite.config.js
+// vite.config.ts
 export default {
   define: {
     __VUE_PROD_HYDRATION_MISMATCH_DETAILS__: true
@@ -275,6 +275,6 @@ onMounted(() => {
 | "Hydration node mismatch" | Completely different elements rendered |
 
 ## Reference
-- [Vue.js SSR Guide - Hydration Mismatch](https://vuejs.org/guide/scaling-up/ssr.html#hydration-mismatch)
+- [Vue.ts SSR Guide - Hydration Mismatch](https://vuejs.org/guide/scaling-up/ssr.html#hydration-mismatch)
 - [Nuxt Hydration Best Practices](https://nuxt.com/docs/guide/best-practices/hydration)
 - [data-allow-mismatch RFC](https://github.com/vuejs/core/pull/9562)

@@ -157,4 +157,4 @@ All three `<p>` elements end up in the default slot together, which may not be t
 
 ## Reference
 
-- [Vue.js Slots - Named Slots](https://vuejs.org/guide/components/slots.html#named-slots)
+- [Vue.ts Slots - Named Slots](https://vuejs.org/guide/components/slots.html#named-slots)

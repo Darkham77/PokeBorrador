@@ -1,5 +1,6 @@
 
 import { Pokemon } from './pokemon';
+import type { DominanceInfo } from './stores';
 
 export type EncounterType = 'wild' | 'trainer' | 'fishing' | 'guardian' | 'defender';
 
@@ -48,7 +49,7 @@ export interface EncounterOptions {
   activeEvents?: any[];
   shinyMultiplier?: number;
   weather?: string;
-  dominanceData?: Record<string, string> | null;
+  dominanceData?: Record<string, DominanceInfo> | null;
   eventTrainerBonus?: number;
   eventFishingBonus?: number;
 }

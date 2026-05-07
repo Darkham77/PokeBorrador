@@ -4,7 +4,7 @@ This manual defines the structure, categories, and validation protocols for all 
 
 ## 📦 Data Structure
 
-Items are managed in `src/data/items.js` through two main objects:
+Items are managed in `src/data/items.ts` through two main objects:
 
 ### 1. `SHOP_ITEMS` (Catalog)
 
@@ -23,7 +23,7 @@ Defines how the item looks and how much it costs.
 }
 ```
 
-### 2. `itemEffects.js` (Usable Logic)
+### 2. `itemEffects.ts` (Usable Logic)
 
 Defines what the item does when used on a Pokémon or globally.
 
@@ -70,7 +70,7 @@ To provide clear visual feedback without redundancy, item usage logs must be spl
 
 ### 2. Evolutionary Stones
 
-- **Validation**: The item only appears as "Usable" if the Pokémon has an evolution defined with that specific item in `evolutionData.js`.
+- **Validation**: The item only appears as "Usable" if the Pokémon has an evolution defined with that specific item in `evolutionData.ts`.
 - **Trigger**: Activates the evolution logic and updates the state.
 
 ### 3. Special Objects (Held Items)
@@ -96,11 +96,11 @@ To provide clear visual feedback without redundancy, item usage logs must be spl
 
 1. **Registration**: Add entry in `SHOP_ITEMS`.
 2. **Logic**: If usable, add function in `HEALING_ITEMS`.
-3. **Battle Restriction**: If not usable in battle, add it to the `nonCombat` list in `items.js`.
+3. **Battle Restriction**: If not usable in battle, add it to the `nonCombat` list in `items.ts`.
 4. **Validation**: Run the script:
 
     ```bash
-    node .agents/skills/item-validator/scripts/validate_items.js
+    node .agents/skills/item-validator/scripts/validate_items.ts
     ```
 
 ---

@@ -137,8 +137,15 @@ export const useBattleStore = defineStore('battle', () => {
 
   const persistBattle = () => syncAndPersist(getContext())
 
-  const startBattle = async (enemyPoke: Pokemon, options?: { isTrainer?: boolean, trainerName?: string, isGym?: boolean, gymId?: string }) => 
-    startBattleSequence(getContext(), enemyPoke, options)
+  const startBattle = async (enemyPoke: Pokemon, options?: { 
+    isTrainer?: boolean, 
+    trainerName?: string, 
+    isGym?: boolean, 
+    gymId?: string,
+    locationId?: string,
+    wasSearching?: boolean,
+    battleOptions?: any
+  }) => startBattleSequence(getContext(), enemyPoke, options)
     
   const initBattle = async (locId: string, isTr: boolean, trName: string, isGym: boolean, gymId: string, wasSearching: boolean) => 
     initBattleSequence(getContext(), { 
@@ -209,8 +216,8 @@ export const useBattleStore = defineStore('battle', () => {
   const executeMove = async (moveIndex: number) => {
     if (isProcessing.value || !isBattleActive.value) return
     isProcessing.value = true
-    fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.EXEC_TURN as any)
-    fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.TURN_ENGINE as any)
+    fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.EXEC_TURN)
+    fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.TURN_ENGINE)
     await executeTurn(getContext(), moveIndex)
     
     if (!activeBattle.value) {
@@ -222,9 +229,9 @@ export const useBattleStore = defineStore('battle', () => {
     activeMove.value = null
     
     if (activeBattle.value && !activeBattle.value.over) {
-      fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ANIM_SYNC as any)
-      fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.UPDATE_BUTTON as any)
-      fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT as any)
+      fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ANIM_SYNC)
+      fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.UPDATE_BUTTON)
+      fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT)
       isProcessing.value = false
     }
   }
@@ -319,12 +326,12 @@ export const useBattleStore = defineStore('battle', () => {
       activeBattle.value.isCapture = true
       activeBattle.value.over = true 
       gs.addPokemon(castRes.pokemon, { notify: true })
-      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.VACATE_SEAT as any)
+      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.VACATE_SEAT)
       activeBattle.value.enemy = null
       await new Promise(r => setTimeout(r, 2000))
       
       isProcessing.value = false
-      await fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.EMPTY_WAIT as any)
+      await fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.EMPTY_WAIT)
       await endBattle(true, false)
       return
     } else if (castRes.action !== 'fail') {
@@ -340,7 +347,7 @@ export const useBattleStore = defineStore('battle', () => {
     }
     
     if (activeBattle.value && !activeBattle.value.over) {
-      fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT as any)
+      fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT)
     }
     isProcessing.value = false
   }
@@ -362,7 +369,7 @@ export const useBattleStore = defineStore('battle', () => {
     isProcessing.value = true
     
     await fsm.transition(BATTLE_STATES.REORDER_TEAM)
-    await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.FIND_HEALTHY as any)
+    await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.FIND_HEALTHY)
     
     activeMove.value = null
     attackerSide.value = null
@@ -370,7 +377,7 @@ export const useBattleStore = defineStore('battle', () => {
     const newPoke = gs.state.team[teamIndex]
     if (!newPoke || newPoke.hp <= 0) { isProcessing.value = false; return }
     
-    await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.CHECK_ACTIVE_SEAT as any)
+    await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.CHECK_ACTIVE_SEAT)
     if (!activeBattle.value) { isProcessing.value = false; return }
     const oldPoke = activeBattle.value.player
     
@@ -380,30 +387,30 @@ export const useBattleStore = defineStore('battle', () => {
     }
 
     if (oldPoke && oldPoke.hp > 0) {
-      await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.SWITCHING as any)
-      await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.POKEMON_RECALL as any)
-      await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.RENDER_BALL as any)
+      await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.SWITCHING)
+      await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.POKEMON_RECALL)
+      await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.RENDER_BALL)
       addLog(`¡Bien hecho, ${oldPoke.name}! ¡Regresa!`, 'log-info', 'player')
       gameBus.emit('PLAY_WITHDRAW', { side: 'player' })
       
       await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.WAIT_TIMER as any, 500)
-      await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.VACATE_SEAT as any)
+      await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.VACATE_SEAT)
       activeBattle.value.player = null
       clearVolatileStatus(oldPoke)
     }
 
-    await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.POKEMON_CALL as any)
-    await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.RENDER_BALL as any)
+    await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.POKEMON_CALL)
+    await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.RENDER_BALL)
     
-    await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.OCCUPY_SEAT as any)
+    await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.OCCUPY_SEAT)
     activeBattle.value.player = newPoke; 
     activeBattle.value.playerTeamIndex = teamIndex
     
     gameBus.emit('PLAY_SEND_OUT', { side: 'player', pokemon: newPoke })
-    await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.ENERGY_RELEASE as any)
+    await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.ENERGY_RELEASE)
     await new Promise(r => setTimeout(r, 800))
     
-    await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.POKEMON_APPEAR as any)
+    await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.POKEMON_APPEAR)
     
     if (!activeBattle.value.participants.includes(newPoke.uid)) {
       activeBattle.value.participants.push(newPoke.uid)
@@ -428,7 +435,7 @@ export const useBattleStore = defineStore('battle', () => {
     
     if (!isForced) await runEnemyAction(getContext())
     
-    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT as any)
+    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT)
     isProcessing.value = false
   }
 
@@ -449,7 +456,7 @@ export const useBattleStore = defineStore('battle', () => {
     win.__VITE_DEBUG__ = win.__VITE_DEBUG__ || {};
     win.__VITE_DEBUG__.forceFlee = async () => {
       console.warn('[DEBUG] Forzando huida del combate...')
-      fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.FLEE_ATTEMPT as any)
+      fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.FLEE_ATTEMPT)
       await endBattle(false, true)
     };
 
@@ -527,12 +534,12 @@ export const useBattleStore = defineStore('battle', () => {
             audio.flee();
             addLog('¡Escapaste sin problemas!', 'log-info', 'player');
             
-            fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ESCAPE_PROCESS as any);
-            fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.PLAY_ESCAPE_ANIM as any);
+            fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ESCAPE_PROCESS);
+            fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.PLAY_ESCAPE_ANIM);
             gameBus.emit('PLAY_ESCAPE_ANIM', { side: 'player' });
             
             await new Promise(r => setTimeout(r, 1000));
-            await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.VACATE_SEAT as any);
+            await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.VACATE_SEAT);
             if (activeBattle.value) activeBattle.value.enemy = null;
             await endBattle(false, true);
           } else {
@@ -562,8 +569,5 @@ export const useBattleStore = defineStore('battle', () => {
     fsm,
     currentFsmState,
     currentSubState
-  }
-})
-rrentSubState
   }
 })

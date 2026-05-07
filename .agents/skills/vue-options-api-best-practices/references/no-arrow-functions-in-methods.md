@@ -55,7 +55,7 @@ export default {
     // Arrow functions ARE fine for callbacks INSIDE methods
     fetchData() {
       fetch('/api/data')
-        .then(response => response.json())
+        .then(response => response.tson())
         .then(data => {
           this.data = data // Arrow function inherits `this` from fetchData
         })
@@ -65,4 +65,4 @@ export default {
 ```
 
 ## Reference
-- [Vue.js Methods - Avoid Arrow Functions](https://vuejs.org/guide/essentials/reactivity-fundamentals.html#methods)
+- [Vue.ts Methods - Avoid Arrow Functions](https://vuejs.org/guide/essentials/reactivity-fundamentals.html#methods)

@@ -93,7 +93,7 @@ const selectPokemon = (p: any) => {
           >
             <div class="sprite-wrap">
               <img
-                :src="getAssetUrl(ASSET_TYPES.POKEMON, p.id, { shiny: p.isShiny })"
+                :src="getAssetUrl(ASSET_TYPES.POKEMON, p.id, { isShiny: p.isShiny })"
                 :alt="p.name"
                 @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
               >

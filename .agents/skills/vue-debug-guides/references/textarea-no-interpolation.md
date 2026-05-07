@@ -69,4 +69,4 @@ const message = ref('Hello World')
 ```
 
 ## Reference
-- [Vue.js Form Input Bindings - Multiline text](https://vuejs.org/guide/essentials/forms.html#multiline-text)
+- [Vue.ts Form Input Bindings - Multiline text](https://vuejs.org/guide/essentials/forms.html#multiline-text)

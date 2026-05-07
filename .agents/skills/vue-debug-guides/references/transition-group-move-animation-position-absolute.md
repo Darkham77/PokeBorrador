@@ -126,5 +126,5 @@ With position: absolute:
 ```
 
 ## Reference
-- [Vue.js TransitionGroup Move Transitions](https://vuejs.org/guide/built-ins/transition-group.html#move-transitions)
+- [Vue.ts TransitionGroup Move Transitions](https://vuejs.org/guide/built-ins/transition-group.html#move-transitions)
 - [FLIP Animation Technique](https://aerotwist.com/blog/flip-your-animations/)

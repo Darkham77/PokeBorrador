@@ -97,8 +97,10 @@ export const ASSET_TYPES = {
 export type AssetType = typeof ASSET_TYPES[keyof typeof ASSET_TYPES];
 
 export interface AssetOptions {
-  shiny?: boolean;
-  back?: boolean;
+  isShiny?: boolean;
+  shiny?: boolean; // Legacy fallback
+  isBack?: boolean;
+  back?: boolean; // Legacy fallback
   cycle?: 'morning' | 'day' | 'dusk' | 'night';
   [key: string]: any;
 }
@@ -110,9 +112,14 @@ export interface AssetOptions {
 export const getAssetUrl = (type: AssetType, rawId: string | number, options: AssetOptions = {}): string => {
   if (!rawId) return '';
   const { 
-    shiny: isShiny = false, 
-    back: isBack = false 
+    isShiny: isShinyPrimary,
+    shiny: isShinyLegacy,
+    isBack: isBackPrimary,
+    back: isBackLegacy
   } = options;
+
+  const isShiny = isShinyPrimary ?? isShinyLegacy ?? false;
+  const isBack = isBackPrimary ?? isBackLegacy ?? false;
 
   // If it's already a full URL, return it
   if (typeof rawId === 'string' && (rawId.startsWith('http') || rawId.startsWith('data:'))) {

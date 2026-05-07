@@ -28,7 +28,7 @@ Did you forget to install pinia?
 ## Common Cause 1: Wrong Plugin Order
 
 ```javascript
-// main.js - WRONG ORDER
+// main.ts - WRONG ORDER
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import router from './router'  // Router uses a store in navigation guard
@@ -45,7 +45,7 @@ app.mount('#app')
 **Fix: Install Pinia first:**
 
 ```javascript
-// main.js - CORRECT ORDER
+// main.ts - CORRECT ORDER
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import router from './router'
@@ -62,7 +62,7 @@ app.mount('#app')
 ## Common Cause 2: Store Used at Module Level
 
 ```javascript
-// api.js - WRONG: Module-level store usage
+// api.ts - WRONG: Module-level store usage
 import { useAuthStore } from '@/stores/auth'
 
 // This runs immediately when the module is imported!
@@ -80,7 +80,7 @@ export function fetchUser() {
 **Fix: Call useStore inside functions:**
 
 ```javascript
-// api.js - CORRECT: Store used inside function
+// api.ts - CORRECT: Store used inside function
 import { useAuthStore } from '@/stores/auth'
 
 export function fetchUser() {
@@ -173,7 +173,7 @@ export default {
 ## Common Cause 5: Router Guards Before Pinia
 
 ```javascript
-// router/index.js - WRONG
+// router/index.ts - WRONG
 import { createRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 
@@ -193,7 +193,7 @@ router.beforeEach((to) => {
 **Fix: Use lazy store access or ensure plugin order:**
 
 ```javascript
-// router/index.js - CORRECT
+// router/index.ts - CORRECT
 import { createRouter } from 'vue-router'
 
 const router = createRouter({ /* ... */ })
@@ -208,7 +208,7 @@ router.beforeEach((to) => {
   }
 })
 
-// OR ensure main.js has correct order:
+// OR ensure main.ts has correct order:
 // app.use(pinia)
 // app.use(router)
 ```
@@ -217,7 +217,7 @@ router.beforeEach((to) => {
 
 When you see "No active Pinia":
 
-1. **Check main.js order**: Is `app.use(pinia)` before other plugins?
+1. **Check main.ts order**: Is `app.use(pinia)` before other plugins?
 2. **Search for top-level useStore calls**: Any store usage outside functions/setup?
 3. **Check script tags**: Using `<script>` instead of `<script setup>`?
 4. **Check mapStores usage**: Using `useStore()` instead of `useStore`?

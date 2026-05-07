@@ -151,5 +151,5 @@ Code relying on internal properties will break silently or throw errors when upg
 
 ## Reference
 
-- [Vue.js Render Function APIs](https://vuejs.org/api/render-function.html)
-- [Vue.js Render Functions - The Virtual DOM](https://vuejs.org/guide/extras/render-function.html#the-virtual-dom)
+- [Vue.ts Render Function APIs](https://vuejs.org/api/render-function.html)
+- [Vue.ts Render Functions - The Virtual DOM](https://vuejs.org/guide/extras/render-function.html#the-virtual-dom)

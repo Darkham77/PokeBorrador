@@ -105,7 +105,7 @@ const handleConfirm = () => {
               <span v-if="selectedIndices.includes(p.originalIndex)">✓</span>
             </div>
             <img
-              :src="getAssetUrl(ASSET_TYPES.POKEMON, p.id, { shiny: p.isShiny })"
+              :src="getAssetUrl(ASSET_TYPES.POKEMON, p.id, { isShiny: p.isShiny })"
               class="p-sprite"
               @error="e => { (e.target as HTMLImageElement).style.display = 'none' }"
             >

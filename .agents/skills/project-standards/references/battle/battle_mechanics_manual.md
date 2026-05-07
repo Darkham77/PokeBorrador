@@ -49,7 +49,7 @@ Each Seat has an associated **Team Slot** that contains the party data for that 
 
 ### 1. Atmospheric Synchronization & Integrity Protocol
 
-To prevent desynchronization between the Map's visual weather and the Combat Engine's mechanical effects, all weather interactions MUST pass through the `weatherMapper.js` system and use the global state.
+To prevent desynchronization between the Map's visual weather and the Combat Engine's mechanical effects, all weather interactions MUST pass through the `weatherMapper.ts` system and use the global state.
 
 - **Single Source of Truth**: UI components (Grid, Tooltips) MUST consume weather data from `battleStore.state.weather` instead of local props or direct map state to ensure visual parity during combat transitions.
 - **Centralized Mapping**: Environmental tokens (e.g., `heatwave`, `blizzard`, `storm`) are normalized to mechanical keys (`sun`, `hail`, `rain`) via `getMechanicalWeather()`.
@@ -58,7 +58,7 @@ To prevent desynchronization between the Map's visual weather and the Combat Eng
 - **Integrity Guard**: If a weather token is NOT registered in the mapper, the system returns an `UNKNOWN` state.
   - **HUD Feedback**: Displays a `⚠️` warning icon to notify that the weather lacks combat effects.
   - **Dev Feedback**: Triggers a `[WeatherIntegrity]` warning in the console.
-- **Mandatory Registry**: Any new weather added to `weather-tables.js` MUST be added to `MAP_TO_MECHANICAL` and `WEATHER_UI_METADATA` in `weatherMapper.js`.
+- **Mandatory Registry**: Any new weather added to `weather-tables.ts` MUST be added to `MAP_TO_MECHANICAL` and `WEATHER_UI_METADATA` in `weatherMapper.ts`.
 - **Map Persistence**: Battles inherit the current route's weather. If the weather is "permanent" (turns: -1), it remains active for the entire battle duration unless manually overridden.
 - **Move Override**: Weather induced by moves (e.g., Rain Dance, Hail) lasts **5 turns** and takes absolute priority over the map weather.
 - **Restoration**: Once a temporary weather effect expires, the system MUST restore the original map/route weather instead of clearing to "Clear".
@@ -143,8 +143,8 @@ These can coexist with primary status and other secondary effects:
 
 ### 3. Combat Loop Integration
 
-- **Tick Logic**: Status damage and healing (Leech Seed) are processed in `battleStatus.js` at the end of each round.
-- **Skip Logic**: Conditions like Sleep, Freeze, Paralysis, Confusion, and Attraction are evaluated in `battleFlow.js` within the `canAttack` function BEFORE move execution.
+- **Tick Logic**: Status damage and healing (Leech Seed) are processed in `battleStatus.ts` at the end of each round.
+- **Skip Logic**: Conditions like Sleep, Freeze, Paralysis, Confusion, and Attraction are evaluated in `battleFlow.ts` within the `canAttack` function BEFORE move execution.
 - **Immediate Faint Handling**: During multi-hit moves or standard damage, the engine MUST invoke `store.handleFaint(side)` immediately if the HP is <= 0.
 - **Persistence Mandate (isFinishing)**: Throughout the fainting and replacement sequence, the `isFinishing` flag of the battle store MUST remain `true`. This prevents premature closing of the battle modal and ensures the player transitions correctly to `SEARCH_PHASE`.
 - **One-Turn Volatile Cleanup**: Short-duration volatile states like `destiny_bond` and `snatch` must expire at the start of the user's next action to ensure they last exactly one turn cycle.
@@ -296,7 +296,7 @@ To ensure every log entry displays the correct sprite, the `addLog(msg, type, so
 
 - **Pokémon (Mandatory)**: Pass the actual Pokémon instance/object. This is REQUIRED for all status effects and stat changes to enable automatic icon rendering. Failure to pass the source results in "anonymous" logs without sprites.
 - **UID Priority**: The side detection logic MUST prioritize matching the source's `uid` against the player's team or the active enemy. Global flags like `attackerSide` should only be used as a fallback when no identity can be established from the source.
-- **Centralized Formatting**: All log formatting logic is delegated to `battleLogger.js`. This allows for independent unit testing and keeps the store logic focused on state management.
+- **Centralized Formatting**: All log formatting logic is delegated to `battleLogger.ts`. This allows for independent unit testing and keeps the store logic focused on state management.
 - **Player**: Pass the string `'player'` to show the player's current class avatar. This is MANDATORY for trainer-sourced actions like "Send out" or "Withdraw".
 - **Enemy Trainer**: Pass the string `'enemy_trainer'` to show the rival's avatar.
 - **Items**: Pass the Item name or ID (string). The system will resolve the item's sprite automatically.
@@ -855,10 +855,10 @@ The battle engine uses a decoupled architecture where move effects are mapped to
     2. **Primary Damage**: Calculation and application of HP.
     3. **Post-Action Effects**: Execution of Recoil, Drain, and Self-KO (Explosion) consuming the registered `lastDamage`.
 - **Modular Implementation**: Logic for new effects should be grouped by type:
-  - `statActions.js`: For all stage modifiers (Atk, Def, etc.).
-  - `fieldActions.js`: For side-based effects (Screens, Weather, Hazards).
-  - `statusActions.js`: For primary status conditions (Burn, Sleep, etc.).
-  - `specialActions.js`: For unique mechanics (Transform, Roar, Metronome).
+  - `statActions.ts`: For all stage modifiers (Atk, Def, etc.).
+  - `fieldActions.ts`: For side-based effects (Screens, Weather, Hazards).
+  - `statusActions.ts`: For primary status conditions (Burn, Sleep, etc.).
+  - `specialActions.ts`: For unique mechanics (Transform, Roar, Metronome).
 - **Source Propagation**: All action functions MUST receive and propagate the `src` and `tgt` objects to the `addLogFn` to maintain the visual link between the action and the combatant's sprite.
 - **Data Integrity (Move Sync)**: Moves in the player's team may have stale metadata. Before processing an effect, the engine MUST verify/sync the `effect` property from the `pokemonDataProvider` if it is missing or null.
 - **Battle Context (Team Access)**: Actions that force switches (e.g., *Roar*, *Whirlwind*) or involve team data MUST have access to `activeBattle.playerTeam`. This team reference is injected during battle initialization.
@@ -974,7 +974,7 @@ To ensure capture difficulty aligns with official game standards and species ide
 
 ### 1. Species-Specific Catch Rates
 
-- **Database Mandate**: Every Pokémon species in `pokemonDB.js` MUST have an explicit `catchRate` property (values 3 to 255).
+- **Database Mandate**: Every Pokémon species in `pokemonDB.ts` MUST have an explicit `catchRate` property (values 3 to 255).
 - **Zero-Fallback Policy**: The battle engine MUST NOT use hardcoded magic numbers (e.g., `|| 45`) for capture rates.
 - **Diagnostic Safety**: If a Pokémon is encountered without a `catchRate`, the system MUST use a safe fallback (`?? 45`) AND trigger a `console.warn` to notify developers of the data gap.
 

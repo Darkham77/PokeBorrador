@@ -66,7 +66,7 @@ router.beforeEach((to, from) => {
 ## Solution 2: Use Route Meta Fields
 
 ```javascript
-// router.js
+// router.ts
 const routes = [
   {
     path: '/login',
@@ -122,7 +122,7 @@ router.beforeEach((to, from) => {
 ## Solution 4: Centralized Redirect Logic
 
 ```javascript
-// guards/auth.js
+// guards/auth.ts
 export function createAuthGuard(router) {
   const publicRoutes = new Set(['Login', 'Register', 'ForgotPassword', 'ResetPassword'])
   const guestOnlyRoutes = new Set(['Login', 'Register'])

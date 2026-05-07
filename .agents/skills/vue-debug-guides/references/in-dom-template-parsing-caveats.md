@@ -156,4 +156,4 @@ import BlogPost from './BlogPost.vue'
 
 ## Reference
 
-- [Vue.js - In-DOM Template Parsing Caveats](https://vuejs.org/guide/essentials/component-basics.html#in-dom-template-parsing-caveats)
+- [Vue.ts - In-DOM Template Parsing Caveats](https://vuejs.org/guide/essentials/component-basics.html#in-dom-template-parsing-caveats)

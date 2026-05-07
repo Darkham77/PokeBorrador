@@ -121,7 +121,7 @@ export default {
 }
 ```
 
-## Nuxt.js Specific Patterns
+## Nuxt.ts Specific Patterns
 
 ```vue
 <!-- CORRECT: Using Nuxt's ClientOnly for client-specific components -->
@@ -182,6 +182,6 @@ onMounted(() => {
 
 ## Reference
 
-- [Vue.js SSR Guide](https://vuejs.org/guide/scaling-up/ssr.html)
-- [Nuxt.js Lifecycle](https://nuxt.com/docs/api/composables/use-nuxt-app#lifecycle-hooks)
+- [Vue.ts SSR Guide](https://vuejs.org/guide/scaling-up/ssr.html)
+- [Nuxt.ts Lifecycle](https://nuxt.com/docs/api/composables/use-nuxt-app#lifecycle-hooks)
 - [Vue SSR Hydration](https://vuejs.org/guide/scaling-up/ssr.html#client-hydration)

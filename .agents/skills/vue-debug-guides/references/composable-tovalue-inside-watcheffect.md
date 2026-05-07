@@ -35,7 +35,7 @@ export function useFetch(url) {
     try {
       // urlValue is a static string - no dependency tracked!
       const response = await fetch(urlValue)
-      data.value = await response.json()
+      data.value = await response.tson()
     } catch (e) {
       error.value = e
     }
@@ -67,7 +67,7 @@ export function useFetch(url) {
 
     try {
       const response = await fetch(urlValue)
-      data.value = await response.json()
+      data.value = await response.tson()
     } catch (e) {
       error.value = e
     }
@@ -178,5 +178,5 @@ export function useMyComposable(input) {
 ```
 
 ## Reference
-- [Vue.js Reactivity API - toValue](https://vuejs.org/api/reactivity-utilities.html#tovalue)
-- [Vue.js Composables - Accepting Ref Arguments](https://vuejs.org/guide/reusability/composables.html#accepting-reactive-state)
+- [Vue.ts Reactivity API - toValue](https://vuejs.org/api/reactivity-utilities.html#tovalue)
+- [Vue.ts Composables - Accepting Ref Arguments](https://vuejs.org/guide/reusability/composables.html#accepting-reactive-state)

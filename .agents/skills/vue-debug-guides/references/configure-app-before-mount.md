@@ -85,5 +85,5 @@ createApp(App)
 ```
 
 ## Reference
-- [Vue.js - Creating a Vue Application](https://vuejs.org/guide/essentials/application.html)
-- [Vue.js Application API](https://vuejs.org/api/application.html)
+- [Vue.ts - Creating a Vue Application](https://vuejs.org/guide/essentials/application.html)
+- [Vue.ts Application API](https://vuejs.org/api/application.html)

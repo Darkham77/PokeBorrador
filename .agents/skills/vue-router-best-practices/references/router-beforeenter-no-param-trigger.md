@@ -20,7 +20,7 @@ tags: [vue3, vue-router, navigation-guards, params, query]
 ## The Problem
 
 ```javascript
-// router.js
+// router.ts
 const routes = [
   {
     path: '/orders/:id',
@@ -74,7 +74,7 @@ onBeforeRouteUpdate(async (to, from) => {
 ## Solution 2: Use Global beforeEach Instead
 
 ```javascript
-// router.js
+// router.ts
 router.beforeEach(async (to, from) => {
   // Handle all order access checks globally
   if (to.name === 'OrderDetail') {
@@ -90,7 +90,7 @@ router.beforeEach(async (to, from) => {
 ## Solution 3: Combine Both Guards
 
 ```javascript
-// router.js - For entering from different route
+// router.ts - For entering from different route
 const routes = [
   {
     path: '/orders/:id',
@@ -115,7 +115,7 @@ async function validateOrderAccess(orderId) {
 ## Solution 4: Use beforeEnter with Array of Guards
 
 ```javascript
-// guards/orderGuards.js
+// guards/orderGuards.ts
 export const orderAccessGuard = async (to) => {
   const order = await checkOrderAccess(to.params.id)
   if (!order.canView) {
@@ -123,7 +123,7 @@ export const orderAccessGuard = async (to) => {
   }
 }
 
-// router.js
+// router.ts
 const routes = [
   {
     path: '/orders/:id',

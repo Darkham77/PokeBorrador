@@ -143,6 +143,6 @@ model.value.name = 'New Name'  // Properly syncs with parent
 ```
 
 ## Reference
-- [Vue.js Component v-model](https://vuejs.org/guide/components/v-model.html)
+- [Vue.ts Component v-model](https://vuejs.org/guide/components/v-model.html)
 - [GitHub Discussion: defineModel with objects](https://github.com/orgs/vuejs/discussions/10538)
 - [SIMPL Engineering: Vue defineModel Pitfalls](https://engineering.simpl.de/post/vue_definemodel/)

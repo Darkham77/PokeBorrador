@@ -245,5 +245,5 @@ Slotted content comes from the parent component and gets the parent's data attri
 
 ## Reference
 
-- [Vue.js Reusable Transitions](https://vuejs.org/guide/built-ins/transition.html#reusable-transitions)
-- [Vue.js Scoped CSS](https://vuejs.org/api/sfc-css-features.html#scoped-css)
+- [Vue.ts Reusable Transitions](https://vuejs.org/guide/built-ins/transition.html#reusable-transitions)
+- [Vue.ts Scoped CSS](https://vuejs.org/api/sfc-css-features.html#scoped-css)

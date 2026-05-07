@@ -186,4 +186,4 @@ function addMessage(text) {
 ```
 
 ## Reference
-- [Vue.js Watchers - Callback Flush Timing](https://vuejs.org/guide/essentials/watchers.html#callback-flush-timing)
+- [Vue.ts Watchers - Callback Flush Timing](https://vuejs.org/guide/essentials/watchers.html#callback-flush-timing)

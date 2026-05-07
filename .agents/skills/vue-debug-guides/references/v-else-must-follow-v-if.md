@@ -136,4 +136,4 @@ In most modern Vue projects using Single File Components, this is caught at buil
 
 ## Reference
 
-- [Vue.js Conditional Rendering - v-else](https://vuejs.org/guide/essentials/conditional.html#v-else)
+- [Vue.ts Conditional Rendering - v-else](https://vuejs.org/guide/essentials/conditional.html#v-else)

@@ -1,6 +1,6 @@
 # UI/UX & Aesthetic Standards
 
-## 🛠️ Vue.js & Component Standards
+## 🛠️ Vue.ts & Component Standards
 
 To prevent initialization race conditions (TDZ) and ensure reactive stability:
 
@@ -120,8 +120,8 @@ We prioritize a deliberate contrast between modern, sleek UI shells and classic,
 - **High-Density Layouts**: When horizontal space is limited (e.g., within Grid cards), use **Vertical Pills**.
 - **Vertical Pill Standard**: Use `writing-mode: vertical-rl` and `text-orientation: upright` for the text, combined with a large icon (16-18px) positioned at the top.
 - **Glassmorphism**: Always apply `@include glass-solid` with a thin themed border (`rgba(79, 172, 254, 0.4)` for Fishing).
-- **Abbreviated Labels (shortLabel)**: In compact UI (list buttons, small cards), use the `shortLabel` property from `tags.js` to prevent text overflow. Maintain the full `label` in tooltips.
-- **Badge Centralization**: All Pokémon status indicators (shiny, items, tags) MUST have their icon and label metadata centralized in `src/logic/constants/tags.js`.
+- **Abbreviated Labels (shortLabel)**: In compact UI (list buttons, small cards), use the `shortLabel` property from `tags.ts` to prevent text overflow. Maintain the full `label` in tooltips.
+- **Badge Centralization**: All Pokémon status indicators (shiny, items, tags) MUST have their icon and label metadata centralized in `src/logic/constants/tags.ts`.
 - **Gender Badge Module**: ALWAYS use the `.m-badge-gender` standard class and symbols (♂/♀) for gender rendering. For compact displays (e.g., inside level badges), use a `.mini` modifier that utilizes `@include badge-gender(Npx)` to maintain design token consistency.
 - **Pokemon Identity Stack**: Standardize name display on cards using the "Name Stack": The current nickname (or name) as the primary pixel title, with the species name as a small, uppercase, low-opacity subtitle.
 - **Dynamic Abbreviation Toggle**: In responsive grids (like combat moves), use a dual-label system (`cat-full` and `cat-short`) controlled by CSS media queries.
@@ -188,6 +188,10 @@ We prioritize a deliberate contrast between modern, sleek UI shells and classic,
 - **Hardware Acceleration**: Apply `transform: translateZ(0);` only when necessary for performance. **AVOID** it on text containers if it triggers interpolation blur.
 - **Stacking Order**: The modal overlay MUST be a sibling **BEHIND** the content.
 - **FORBIDDEN**: Applying `backdrop-filter` to a parent that contains the modal card, as it will blur the card content.
+- **Dynamic Stacking Protocol (LIFO)**: Every modal MUST be registered in the global `activeModalStack` within `uiStore` to manage stacking depth.
+  - **Implementation**: `BaseModal` must register its unique `instanceId` upon mounting/showing and calculate its `z-index` using `MODAL_BASE + (depth * MODAL_STEP)`.
+  - **Closing Guard**: To prevent visual artifacts during transitions, the unregistration from the stack MUST be delayed (approx. 600ms) until the closing animation completes.
+  - **Standalone Modals**: This protocol applies to BOTH stack-managed modals and standalone template-based modals to ensure "last-opened" always sits on top.
 
 ### 2. Interaction in Locked States
 
@@ -349,7 +353,7 @@ To maintain pixel-perfect alignment in the high-fidelity 2D combat arena:
 - **Rendered Parity**: Shadow positions MUST be calculated based on the *rendered* height of the sprite (`object-fit: contain`) inside the entity square.
 - **Formula**: The vertical offset is derived from the ratio between the sprite's `feetY` (ground level) and the total `ENTITY_SIZE`.
 - **Pixelation Technique**: Generate shadows on a low-resolution canvas (e.g., 10x7), disable anti-aliasing (`imageSmoothingEnabled = false`), and scale up via CSS with `image-rendering: pixelated`.
-- **Centralization**: All shadow dimensions and base offsets MUST be controlled by `spatialCoordinator.js`. Prohibit hardcoded dimensions in CSS (scoped or global) to avoid layout collisions.
+- **Centralization**: All shadow dimensions and base offsets MUST be controlled by `spatialCoordinator.ts`. Prohibit hardcoded dimensions in CSS (scoped or global) to avoid layout collisions.
 - **WHY**: Ensures the shadow sits exactly at the feet even if the sprite is wide or centered, maintaining a consistent "Retro Heart" aesthetic even during camera zooms.
 
 ### 3. Depth Sorting (3D Perspective in 2D)

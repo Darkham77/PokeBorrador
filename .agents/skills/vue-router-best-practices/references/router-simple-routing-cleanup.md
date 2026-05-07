@@ -132,7 +132,7 @@ export default {
 ## Solution: Composable for Reusable Hash Routing
 
 ```javascript
-// composables/useHashRouter.js
+// composables/useHashRouter.ts
 import { ref, computed, onUnmounted } from 'vue'
 
 export function useHashRouter(routes, notFoundComponent = null) {
@@ -205,5 +205,5 @@ const { currentView } = useHashRouter({
 5. **Composables help encapsulate cleanup logic** - Reusable and automatic
 
 ## Reference
-- [Vue.js Routing Documentation](https://vuejs.org/guide/scaling-up/routing.html)
+- [Vue.ts Routing Documentation](https://vuejs.org/guide/scaling-up/routing.html)
 - [Vue Router Official Library](https://router.vuejs.org/)

@@ -124,7 +124,7 @@ onBeforeRouteUpdate(async (to, from) => {
 For data that should load BEFORE navigation, use route-level guards:
 
 ```javascript
-// router.js
+// router.ts
 const routes = [
   {
     path: '/users/:id',

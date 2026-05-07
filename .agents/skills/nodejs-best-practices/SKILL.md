@@ -1,12 +1,12 @@
 ---
 name: nodejs-best-practices
-description: MASTER Node.js development in 2025. YOU MUST implement Hono, Fastify, and NestJS with layered architecture. ELIMINATE blocking code and MANDATE robust security. Deliver high-performance Node.js applications.
+description: MASTER Node.ts development in 2025. YOU MUST implement Hono, Fastify, and NestJS with layered architecture. ELIMINATE blocking code and MANDATE robust security. Deliver high-performance Node.ts applications.
 allowed-tools: Read, Write, Edit, Glob, Grep
 ---
 
-# Node.js Best Practices
+# Node.ts Best Practices
 
-> Principles and decision-making for Node.js development in 2025.
+> Principles and decision-making for Node.ts development in 2025.
 > **Learn to THINK, not memorize code patterns.**
 
 ---
@@ -41,7 +41,7 @@ What are you building?
 │   └── Express (mature, most middleware)
 │
 └── Full-stack with frontend
-    └── Next.js API Routes or tRPC
+    └── Next.ts API Routes or tRPC
 ```
 
 ### Comparison Principles
@@ -68,7 +68,7 @@ What are you building?
 ### Native TypeScript
 
 ```text
-Node.js 22+: --experimental-strip-types
+Node.ts 22+: --experimental-strip-types
 ├── Run .ts files directly
 ├── No build step needed for simple projects
 └── Consider for: scripts, simple APIs
@@ -93,7 +93,7 @@ CommonJS (require)
 
 | Runtime | Best For |
 | :--- | :--- |
-| **Node.js** | General purpose, largest ecosystem |
+| **Node.ts** | General purpose, largest ecosystem |
 | **Bun** | Performance, built-in bundler |
 | **Deno** | Security-first, built-in TypeScript |
 
@@ -252,7 +252,7 @@ Where to validate:
 - [ ] **Password hashing**: bcrypt or argon2
 - [ ] **JWT verification**: Always verify signature and expiry
 - [ ] **Rate limiting**: Protect from abuse
-- [ ] **Security headers**: Helmet.js or equivalent
+- [ ] **Security headers**: Helmet.ts or equivalent
 - [ ] **HTTPS**: Everywhere in production
 - [ ] **CORS**: Properly configured
 - [ ] **Secrets**: Environment variables only
@@ -289,7 +289,7 @@ Trust nothing:
 3. **Error handling**: What happens when things fail?
 4. **Not worth testing**: Framework code, trivial getters
 
-### Built-in Test Runner (Node.js 22+)
+### Built-in Test Runner (Node.ts 22+)
 
 ```bash
 node --test src/**/*.test.ts
@@ -337,4 +337,4 @@ Before implementing:
 
 ---
 
-> **Remember**: Node.js best practices are about decision-making, not memorizing patterns. Every project deserves fresh consideration based on its requirements.
+> **Remember**: Node.ts best practices are about decision-making, not memorizing patterns. Every project deserves fresh consideration based on its requirements.

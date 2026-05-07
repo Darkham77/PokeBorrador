@@ -23,7 +23,7 @@ This is one of the most critical gotchas in Vue state management that can have s
 ## The Problem: Singleton State in SSR
 
 ```javascript
-// store.js - DANGEROUS for SSR
+// store.ts - DANGEROUS for SSR
 import { reactive } from 'vue'
 
 // This is a singleton - same instance for ALL requests
@@ -50,7 +50,7 @@ This creates unpredictable behavior and potential security vulnerabilities.
 Pinia handles SSR correctly by creating fresh store instances per request:
 
 ```javascript
-// stores/user.js
+// stores/user.ts
 import { defineStore } from 'pinia'
 
 export const useUserStore = defineStore('user', {
@@ -67,7 +67,7 @@ export const useUserStore = defineStore('user', {
 ```
 
 ```javascript
-// main.js (or entry-server.js)
+// main.ts (or entry-server.ts)
 import { createPinia } from 'pinia'
 import { createApp } from 'vue'
 import App from './App.vue'
@@ -84,7 +84,7 @@ export function createAppInstance() {
 ```
 
 ```javascript
-// entry-server.js
+// entry-server.ts
 import { createAppInstance } from './main'
 import { renderToString } from 'vue/server-renderer'
 
@@ -104,7 +104,7 @@ export async function render(url, context) {
 ```
 
 ```javascript
-// entry-client.js - Hydrate from serialized state
+// entry-client.ts - Hydrate from serialized state
 import { createAppInstance } from './main'
 
 const { app, pinia } = createAppInstance()
@@ -122,7 +122,7 @@ app.mount('#app')
 If not using Pinia, create a factory function:
 
 ```javascript
-// store.js - SSR-safe with factory
+// store.ts - SSR-safe with factory
 import { reactive, readonly } from 'vue'
 
 // Factory function creates fresh state per call
@@ -146,7 +146,7 @@ export function createStore() {
 ```
 
 ```javascript
-// entry-server.js
+// entry-server.ts
 import { createStore } from './store'
 import { provide } from 'vue'
 
@@ -166,7 +166,7 @@ export async function render(url) {
 For frameworks like Nuxt, use request context:
 
 ```javascript
-// composables/useRequestState.js
+// composables/useRequestState.ts
 import { useSSRContext } from 'vue'
 
 export function useRequestState(key, initialValue) {
@@ -186,7 +186,7 @@ export function useRequestState(key, initialValue) {
 }
 ```
 
-## Nuxt.js Handles This Automatically
+## Nuxt.ts Handles This Automatically
 
 In Nuxt 3, state isolation is handled automatically:
 
@@ -203,7 +203,7 @@ export default defineNuxtPlugin(async (nuxtApp) => {
 ## Testing for State Pollution
 
 ```javascript
-// test/ssr-state-isolation.test.js
+// test/ssr-state-isolation.test.ts
 import { describe, it, expect } from 'vitest'
 import { render } from './entry-server'
 
@@ -228,7 +228,7 @@ describe('SSR State Isolation', () => {
 
 ```javascript
 // Alternative: Test store isolation directly
-import { createApp } from './app.js'
+import { createApp } from './app.ts'
 
 test('requests do not share state', async () => {
   // Simulate two concurrent requests
@@ -272,6 +272,6 @@ let requestCount = 0  // Shared across requests
 
 ## Reference
 
-- [Vue.js State Management - SSR Considerations](https://vuejs.org/guide/scaling-up/state-management.html#ssr-considerations)
+- [Vue.ts State Management - SSR Considerations](https://vuejs.org/guide/scaling-up/state-management.html#ssr-considerations)
 - [Pinia SSR Guide](https://pinia.vuejs.org/ssr/)
 - [Vue SSR Guide](https://vuejs.org/guide/scaling-up/ssr.html)

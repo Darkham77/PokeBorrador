@@ -58,4 +58,4 @@ export default {
 ```
 
 ## Reference
-- [Vue.js Reactivity Fundamentals - Stateful Methods](https://vuejs.org/guide/essentials/reactivity-fundamentals.html#stateful-methods)
+- [Vue.ts Reactivity Fundamentals - Stateful Methods](https://vuejs.org/guide/essentials/reactivity-fundamentals.html#stateful-methods)

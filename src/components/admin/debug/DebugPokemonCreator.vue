@@ -3,6 +3,11 @@ import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { NATURE_DATA } from '@/data/natures'
 import { ABILITY_DATA } from '@/data/abilities'
+import PokemonBaseStats from './PokemonBaseStats.vue'
+import PokemonIVEditor from './PokemonIVEditor.vue'
+import PokemonMovePicker from './PokemonMovePicker.vue'
+import PVTooltip from '@/components/common/PVTooltip.vue'
+import PokemonPreview from './PokemonPreview.vue'
 
 interface PokemonConfig {
   id: string

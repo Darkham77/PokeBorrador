@@ -121,4 +121,4 @@ function handlePriceInput(event) {
 ```
 
 ## Reference
-- [Vue.js Form Input Bindings - .number](https://vuejs.org/guide/essentials/forms.html#number)
+- [Vue.ts Form Input Bindings - .number](https://vuejs.org/guide/essentials/forms.html#number)

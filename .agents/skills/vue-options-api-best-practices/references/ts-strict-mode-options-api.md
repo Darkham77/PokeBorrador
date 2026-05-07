@@ -8,11 +8,11 @@ tags: [typescript, options-api, tsconfig, this-typing, configuration]
 
 # Enable strict Mode for Proper Options API TypeScript Support
 
-**Impact: HIGH** - Without `strict: true` (or at minimum `noImplicitThis: true`) in your tsconfig.json, the `this` context in Options API components is typed as `any`. This silently disables type checking for all property access on component instances.
+**Impact: HIGH** - Without `strict: true` (or at minimum `noImplicitThis: true`) in your tsconfig.tson, the `this` context in Options API components is typed as `any`. This silently disables type checking for all property access on component instances.
 
 ## Task Checklist
 
-- [ ] Enable `strict: true` in tsconfig.json (recommended)
+- [ ] Enable `strict: true` in tsconfig.tson (recommended)
 - [ ] Or enable `noImplicitThis: true` at minimum
 - [ ] Wrap components with `defineComponent()` for proper inference
 - [ ] Verify type errors appear when accessing non-existent properties
@@ -21,7 +21,7 @@ tags: [typescript, options-api, tsconfig, this-typing, configuration]
 
 TypeScript's default behavior without strict mode allows implicit `any` typing, which defeats the purpose of using TypeScript with Vue's Options API.
 
-**tsconfig.json without strict mode:**
+**tsconfig.tson without strict mode:**
 ```json
 {
   "compilerOptions": {
@@ -57,7 +57,7 @@ All of the above errors compile successfully without strict mode because `this` 
 
 ## Correct Configuration
 
-**Recommended tsconfig.json:**
+**Recommended tsconfig.tson:**
 ```json
 {
   "compilerOptions": {
@@ -192,6 +192,6 @@ export default defineComponent({
 
 ## Reference
 
-- [Vue.js TypeScript Overview - tsconfig.json](https://vuejs.org/guide/typescript/overview.html#configuring-tsconfig-json)
-- [Vue.js TypeScript with Options API](https://vuejs.org/guide/typescript/options-api.html)
+- [Vue.ts TypeScript Overview - tsconfig.tson](https://vuejs.org/guide/typescript/overview.html#configuring-tsconfig-json)
+- [Vue.ts TypeScript with Options API](https://vuejs.org/guide/typescript/options-api.html)
 - [TypeScript strict Mode](https://www.typescriptlang.org/tsconfig#strict)

@@ -31,7 +31,8 @@ export interface PvPActionResult {
 }
 
 export interface PvPChannel {
-  send: (payload: { type: string, event: string, payload: any }) => void
+  send: (payload: { type: 'presence' | 'postgres_changes' | 'broadcast', event: string, payload: any }) => any;
+  unsubscribe: () => any;
 }
 
 export interface PvPBattleState {

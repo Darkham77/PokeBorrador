@@ -156,4 +156,4 @@ defineProps({
 
 ## Reference
 
-- [Vue.js Component Registration](https://vuejs.org/guide/components/registration.html)
+- [Vue.ts Component Registration](https://vuejs.org/guide/components/registration.html)

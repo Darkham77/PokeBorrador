@@ -134,9 +134,12 @@
 
 <script setup lang="ts">
 
-import { ref, watch, computed, inject } from 'vue'
+import { ref, watch, computed, inject, onMounted, onUnmounted } from 'vue'
 import { useBodyClass } from '@/composables/useBodyClass'
+import { useUIStore } from '@/stores/ui'
+import { Z_LAYERS } from '@/logic/constants/visuals'
 
+const uiStore = useUIStore()
 const isSimplified = inject('isModalPerformanceMode', ref(false))
 
 defineOptions({
@@ -156,7 +159,7 @@ const props = defineProps({
     validator: (val: any) => ['center', 'side-left', 'side-right', 'side', 'top', 'down', 'left', 'right', 'fullscreen'].includes(val)
   },
   height: { type: String, default: 'auto' },
-  zIndex: { type: Number, default: 11000 },
+  zIndex: { type: Number, default: null }, // If null, use dynamic stacking
   hideHeader: { type: Boolean, default: false },
   padding: { type: String, default: 'standard' },
   customClass: { type: String, default: '' },
@@ -205,18 +208,34 @@ const handleOverlayClick = () => {
   if (props.closeOnClickOutside && !props.preventClose) handleClose() 
 }
 
-const computedZIndex = ref(props.zIndex)
+// Stacking Logic
+const modalInstanceId = `modal-${Math.random().toString(36).substr(2, 9)}`
 const localShow = ref(props.show)
 
-// Manage scroll locking reactively
-useBodyClass('modal-open', computed(() => props.show && props.lockScroll))
+const computedZIndex = computed(() => {
+  if (props.zIndex !== null) return props.zIndex
+  const depth = uiStore.getModalDepth(modalInstanceId)
+  return Z_LAYERS.MODAL_BASE + (Math.max(0, depth) * Z_LAYERS.MODAL_STEP)
+})
 
 watch(() => props.show, (val) => {
   if (val) {
     localShow.value = true
-    computedZIndex.value = props.zIndex
+    uiStore.registerModal(modalInstanceId)
+  } else {
+    // We don't unregister immediately to allow closing animations to finish at the correct depth
+    setTimeout(() => {
+      if (!props.show) uiStore.unregisterModal(modalInstanceId)
+    }, 600)
   }
 }, { immediate: true })
+
+onUnmounted(() => {
+  uiStore.unregisterModal(modalInstanceId)
+})
+
+// Manage scroll locking reactively
+useBodyClass('modal-open', computed(() => props.show && props.lockScroll))
 
 const onContentLeave = () => {
   if (!props.show) {

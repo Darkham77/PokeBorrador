@@ -155,5 +155,5 @@ function filterByStatus(status) {
 ```
 
 ## Reference
-- [Vue.js Computed Properties](https://vuejs.org/guide/essentials/computed.html)
-- [Vue.js Methods](https://vuejs.org/guide/essentials/reactivity-fundamentals.html#declaring-methods)
+- [Vue.ts Computed Properties](https://vuejs.org/guide/essentials/computed.html)
+- [Vue.ts Methods](https://vuejs.org/guide/essentials/reactivity-fundamentals.html#declaring-methods)

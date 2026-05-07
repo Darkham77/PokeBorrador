@@ -222,6 +222,6 @@ const props = defineProps<Props>()
 
 ## Reference
 
-- [Vue.js Props - Boolean Casting](https://vuejs.org/guide/components/props.html#boolean-casting)
+- [Vue.ts Props - Boolean Casting](https://vuejs.org/guide/components/props.html#boolean-casting)
 - [GitHub Issue: Boolean props default to false](https://github.com/vuejs/core/issues/8576)
 - [TypeScript Vue 3 Props](https://madewithlove.com/blog/typescript-vue-3-and-strongly-typed-props/)

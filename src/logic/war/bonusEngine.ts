@@ -2,19 +2,20 @@
 import { calculateMapBonuses } from './warEngine'
 import { recalcPokemonStats } from '@/logic/pokemonFactory'
 import type { Pokemon, PokemonIVs } from '@/types/pokemon'
+import type { DominanceInfo } from '@/types/stores'
 
 /**
  * Applies map dominance bonuses to a generated Pokémon.
  * @param {Pokemon} pokemon 
  * @param {string} mapId 
  * @param {string} faction 
- * @param {Record<string, string>} dominanceData 
+ * @param {Record<string, DominanceInfo>} dominanceData 
  * @returns {Pokemon} The modified pokemon
  */
-export function applyEncounterBonuses(pokemon: Pokemon, mapId: string, faction: string | null, dominanceData?: Record<string, string> | null): Pokemon {
+export function applyEncounterBonuses(pokemon: Pokemon, mapId: string, faction: string | null, dominanceData?: Record<string, DominanceInfo> | null): Pokemon {
   if (!faction || !dominanceData) return pokemon
 
-  const winner = dominanceData[mapId]
+  const winner = dominanceData[mapId]?.winner
   const isDominant = winner === faction
   const bonuses = calculateMapBonuses(isDominant)
 
@@ -43,13 +44,13 @@ export function applyEncounterBonuses(pokemon: Pokemon, mapId: string, faction: 
  * Calculates experience and money multipliers based on dominance.
  * @param {string} mapId 
  * @param {string} faction 
- * @param {Record<string, string>} dominanceData 
+ * @param {Record<string, DominanceInfo>} dominanceData 
  * @returns {object} { expMult, moneyMult }
  */
-export function getBattleRewardModifiers(mapId: string, faction: string | null, dominanceData: Record<string, string>): { expMult: number; moneyMult: number } {
+export function getBattleRewardModifiers(mapId: string, faction: string | null, dominanceData: Record<string, DominanceInfo>): { expMult: number; moneyMult: number } {
   if (!faction || !dominanceData) return { expMult: 1, moneyMult: 1 }
 
-  const winner = dominanceData[mapId]
+  const winner = dominanceData[mapId]?.winner
   const isDominant = winner === faction
   const bonuses = calculateMapBonuses(isDominant)
 

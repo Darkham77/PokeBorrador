@@ -42,7 +42,7 @@ This checklist is used to verify the visual and functional integrity of the Pok√
   - **Exit**: Restore the full map AS SOON AS the last obscuring modal starts its closing animation.
 - [ ] **Discovery Logic**: Fog of War (Unknown/Seen/Caught) states follow standard opacities and filters.
 - [ ] **Sync**: Database changes follow Triple Parity rules.
-- [ ] **DB Parity**: WASM versions in `sqliteEngine.js` match `index.html`.
+- [ ] **DB Parity**: WASM versions in `sqliteEngine.ts` match `index.html`.
 
 ## 6. Automated Validations
 

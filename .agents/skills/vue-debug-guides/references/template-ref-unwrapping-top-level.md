@@ -104,4 +104,4 @@ const object = reactive({ id: 1 })
 
 ## Reference
 
-- [Vue.js Reactivity Fundamentals - Caveat when Unwrapping in Templates](https://vuejs.org/guide/essentials/reactivity-fundamentals.html#caveat-when-unwrapping-in-templates)
+- [Vue.ts Reactivity Fundamentals - Caveat when Unwrapping in Templates](https://vuejs.org/guide/essentials/reactivity-fundamentals.html#caveat-when-unwrapping-in-templates)

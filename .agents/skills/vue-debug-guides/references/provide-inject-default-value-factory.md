@@ -243,5 +243,5 @@ it('test with provider', () => {
 
 ## Reference
 
-- [Vue.js inject() API Reference](https://vuejs.org/api/composition-api-dependency-injection.html#inject)
-- [Vue.js Provide/Inject Guide](https://vuejs.org/guide/components/provide-inject.html)
+- [Vue.ts inject() API Reference](https://vuejs.org/api/composition-api-dependency-injection.html#inject)
+- [Vue.ts Provide/Inject Guide](https://vuejs.org/guide/components/provide-inject.html)

@@ -2,7 +2,6 @@
 import { gameBus } from '@/logic/gameBus'
 import { useAudioStore } from '@/stores/audio'
 import type { Pokemon } from '@/types/pokemon'
-import type { BattleStages } from '@/types/battle'
 
 interface DebugAction {
   id: string;

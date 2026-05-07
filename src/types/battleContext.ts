@@ -1,15 +1,15 @@
 import { Ref } from 'vue';
 import { BattleState, BattleStages, BattleLog } from './battle';
 import { Pokemon, Move } from './pokemon';
-import { GameStore, BattleStore, UIStore } from './stores';
+import { GameStore, BattleStore, UIStore, WarStore, EventStore, PlayerClassStore, AudioStore } from './stores';
 import { BATTLE_STATES, BATTLE_SUBSTATES } from '@/logic/battle/battleStateMachine';
 
 export interface BattleContext {
   gs: GameStore;
-  warStore: any;
-  eventStore: any;
-  classStore: any;
-  audio: any;
+  warStore: WarStore;
+  eventStore: EventStore;
+  classStore: PlayerClassStore;
+  audio: AudioStore;
   uiStore: UIStore;
   activeBattle: Ref<BattleState | null>;
   player: Ref<Pokemon | null | undefined>;

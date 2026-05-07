@@ -86,4 +86,4 @@ function getSortedChildren(parent) {
 
 ## Reference
 
-- [Vue.js List Rendering - Displaying Filtered/Sorted Results](https://vuejs.org/guide/essentials/list.html#displaying-filtered-sorted-results)
+- [Vue.ts List Rendering - Displaying Filtered/Sorted Results](https://vuejs.org/guide/essentials/list.html#displaying-filtered-sorted-results)

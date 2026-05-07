@@ -175,6 +175,6 @@ function handleClick(event) {
 ```
 
 ## Reference
-- [Vue.js Component Events](https://vuejs.org/guide/components/events.html)
-- [Vue.js Fallthrough Attributes](https://vuejs.org/guide/components/attrs.html)
+- [Vue.ts Component Events](https://vuejs.org/guide/components/events.html)
+- [Vue.ts Fallthrough Attributes](https://vuejs.org/guide/components/attrs.html)
 - [Vue 3 Migration - .native Modifier Removed](https://v3-migration.vuejs.org/breaking-changes/v-on-native-modifier-removed.html)

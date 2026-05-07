@@ -20,7 +20,7 @@ export function useBattleVisuals() {
   }
 
   const getSprite = (id: string, isShiny: boolean, isBack = false) => {
-    return getAssetUrl(ASSET_TYPES.POKEMON, id, { shiny: isShiny, isBack })
+    return getAssetUrl(ASSET_TYPES.POKEMON, id, { isShiny, isBack })
   }
 
   const redrawBackground = (isBattleActive: boolean, locationId: string, cycle: string) => {

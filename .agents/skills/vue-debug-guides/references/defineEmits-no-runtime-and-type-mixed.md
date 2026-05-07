@@ -166,5 +166,5 @@ const props = defineProps({ name: String })
 ```
 
 ## Reference
-- [Vue.js SFC script setup - defineEmits](https://vuejs.org/api/sfc-script-setup.html#defineprops-defineemits)
-- [Vue.js TypeScript with Composition API](https://vuejs.org/guide/typescript/composition-api.html#typing-component-emits)
+- [Vue.ts SFC script setup - defineEmits](https://vuejs.org/api/sfc-script-setup.html#defineprops-defineemits)
+- [Vue.ts TypeScript with Composition API](https://vuejs.org/guide/typescript/composition-api.html#typing-component-emits)

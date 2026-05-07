@@ -112,7 +112,7 @@ To ensure game assets are correctly precached and the service worker remains sta
 
 ### 1. Workbox Validation Rules
 
-- **FORBIDDEN**: The property `suppressGlobWarnings` is deprecated in recent versions of `workbox-build`. Including it in `vite.config.js` will trigger a `ReferenceError` or validation failure that prevents the server from starting.
+- **FORBIDDEN**: The property `suppressGlobWarnings` is deprecated in recent versions of `workbox-build`. Including it in `vite.config.ts` will trigger a `ReferenceError` or validation failure that prevents the server from starting.
 - **Maximum File Size**: Large assets (like high-res backgrounds) may exceed the default Workbox limit. Use `maximumFileSizeToCacheInBytes: 5 * 1024 * 1024` (5MB) in the `workbox` config if needed.
 
 ### 2. Asset Manifest Integrity

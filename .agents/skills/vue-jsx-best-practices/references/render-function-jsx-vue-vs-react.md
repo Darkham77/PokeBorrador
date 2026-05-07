@@ -76,7 +76,7 @@ const Button = () => (
 
 ## TypeScript Configuration for Vue JSX
 
-To enable proper type inference and IntelliSense for Vue JSX/TSX, configure your `tsconfig.json`:
+To enable proper type inference and IntelliSense for Vue JSX/TSX, configure your `tsconfig.tson`:
 
 ```json
 {
@@ -138,4 +138,4 @@ export default {
 ```
 
 ## Reference
-- [Vue.js JSX and TSX](https://vuejs.org/guide/extras/render-function.html#jsx-tsx)
+- [Vue.ts JSX and TSX](https://vuejs.org/guide/extras/render-function.html#jsx-tsx)

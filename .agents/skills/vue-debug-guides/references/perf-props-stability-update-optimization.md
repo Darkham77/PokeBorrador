@@ -140,4 +140,4 @@ defineProps({
 
 ## Reference
 
-- [Vue.js Performance - Props Stability](https://vuejs.org/guide/best-practices/performance.html#props-stability)
+- [Vue.ts Performance - Props Stability](https://vuejs.org/guide/best-practices/performance.html#props-stability)

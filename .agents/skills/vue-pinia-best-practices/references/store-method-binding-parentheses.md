@@ -22,7 +22,7 @@ This is a subtle gotcha that can cause hard-to-debug issues with hand-rolled rea
 ## The Problem
 
 ```javascript
-// store.js
+// store.ts
 import { reactive } from 'vue'
 
 export const store = reactive({
@@ -96,7 +96,7 @@ Vue's event handler behavior:
 ### 2. Bind Methods in the Store Definition
 
 ```javascript
-// store.js
+// store.ts
 import { reactive } from 'vue'
 
 const state = reactive({
@@ -115,7 +115,7 @@ export const store = {
 Pinia handles method binding correctly:
 
 ```javascript
-// stores/counter.js
+// stores/counter.ts
 import { defineStore } from 'pinia'
 
 export const useCounterStore = defineStore('counter', {
@@ -187,5 +187,5 @@ It does NOT affect:
 *Only problematic if the method uses `this`
 
 ## Reference
-- [Vue.js State Management - Tip on Method Binding](https://vuejs.org/guide/scaling-up/state-management.html#simple-state-management-with-reactivity-api)
+- [Vue.ts State Management - Tip on Method Binding](https://vuejs.org/guide/scaling-up/state-management.html#simple-state-management-with-reactivity-api)
 - [MDN - this in JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/this)

@@ -172,5 +172,5 @@ const props = withDefaults(defineProps<Props>(), {
 
 ## Reference
 
-- [Vue.js TypeScript with Composition API - Default Props](https://vuejs.org/guide/typescript/composition-api.html#props-default-values)
+- [Vue.ts TypeScript with Composition API - Default Props](https://vuejs.org/guide/typescript/composition-api.html#props-default-values)
 - [Vue RFC - Reactive Props Destructure](https://github.com/vuejs/rfcs/discussions/502)

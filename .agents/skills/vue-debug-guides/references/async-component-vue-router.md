@@ -106,4 +106,4 @@ Use Vue Router's lazy loading for:
 ## References
 
 - [Vue Router Lazy Loading Routes](https://router.vuejs.org/guide/advanced/lazy-loading.html)
-- [Vue.js Async Components Documentation](https://vuejs.org/guide/components/async)
+- [Vue.ts Async Components Documentation](https://vuejs.org/guide/components/async)

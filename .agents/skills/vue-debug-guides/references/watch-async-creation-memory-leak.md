@@ -173,4 +173,4 @@ onUnmounted(() => {
 ```
 
 ## Reference
-- [Vue.js Watchers - Stopping a Watcher](https://vuejs.org/guide/essentials/watchers.html#stopping-a-watcher)
+- [Vue.ts Watchers - Stopping a Watcher](https://vuejs.org/guide/essentials/watchers.html#stopping-a-watcher)

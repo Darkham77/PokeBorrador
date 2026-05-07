@@ -18,7 +18,7 @@ const uiStore = useUIStore()
 const eventStore = useEventStore()
 const modalStore = useModalStore()
 
-const navigateToMap = (mapId: string | number) => mapStore.navigate(String(mapId))
+const navigateToMap = (loc: any) => mapStore.navigate(loc.id)
 
 const openTab = (tab: string) => {
   uiStore.activeTab = tab

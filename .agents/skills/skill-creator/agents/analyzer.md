@@ -196,7 +196,7 @@ Review all benchmark run results and generate freeform notes that help the user 
 
 You receive these parameters in your prompt:
 
-- **benchmark_data_path**: Path to the in-progress benchmark.json with all run results
+- **benchmark_data_path**: Path to the in-progress benchmark.tson with all run results
 - **skill_path**: Path to the skill being benchmarked
 - **output_path**: Where to save the notes (as JSON array of strings)
 
@@ -204,7 +204,7 @@ You receive these parameters in your prompt:
 
 ### Step 1: Read Benchmark Data
 
-1. Read the benchmark.json containing all run results
+1. Read the benchmark.tson containing all run results
 2. Note the configurations tested (with_skill, without_skill)
 3. Understand the run_summary aggregates already calculated
 

@@ -10,7 +10,7 @@ tags: [vue3, transition, javascript, animation, hooks, gsap, done-callback]
 
 **Impact: HIGH** - When using JavaScript-only transitions (with `:css="false"`), the `@enter` and `@leave` hooks **must** call the `done()` callback to signal when the animation completes. Without calling `done()`, Vue considers the transition finished immediately, causing elements to appear/disappear without animation.
 
-This is especially important when using animation libraries like GSAP, Anime.js, or the Web Animations API.
+This is especially important when using animation libraries like GSAP, Anime.ts, or the Web Animations API.
 
 ## Task Checklist
 
@@ -250,5 +250,5 @@ function onEnter(el, done) {
 
 ## Reference
 
-- [Vue.js Transition - JavaScript Hooks](https://vuejs.org/guide/built-ins/transition.html#javascript-hooks)
+- [Vue.ts Transition - JavaScript Hooks](https://vuejs.org/guide/built-ins/transition.html#javascript-hooks)
 - [GSAP with Vue](https://gsap.com/resources/vue/)

@@ -32,7 +32,7 @@ Best for:
 - Fast CI/CD pipelines
 
 ```javascript
-// vitest.config.js
+// vitest.config.ts
 export default defineConfig({
   test: {
     environment: 'happy-dom',  // or 'jsdom'
@@ -66,7 +66,7 @@ npm install -D @vitest/browser playwright
 ```
 
 ```javascript
-// vitest.config.js
+// vitest.config.ts
 import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
@@ -81,7 +81,7 @@ export default defineConfig({
 ```
 
 ```javascript
-// Button.browser.test.js
+// Button.browser.test.ts
 import { render } from 'vitest-browser-vue'
 import Button from './Button.vue'
 
@@ -174,7 +174,7 @@ test('reorders items on drag', async () => {
 ## Recommended Testing Strategy
 
 ```javascript
-// vitest.config.js - Separate test configurations
+// vitest.config.ts - Separate test configurations
 
 export default defineConfig({
   test: {
@@ -194,15 +194,15 @@ export default defineConfig({
 ```text
 tests/
 ├── unit/              # Fast node-based tests
-│   ├── Button.test.js
-│   └── useCounter.test.js
+│   ├── Button.test.ts
+│   └── useCounter.test.ts
 ├── component/         # Slower browser-based tests
-│   ├── Button.browser.test.js
-│   └── DragDrop.browser.test.js
+│   ├── Button.browser.test.ts
+│   └── DragDrop.browser.test.ts
 └── e2e/               # Full E2E tests (Playwright)
     └── user-flow.spec.ts
 ```
 
 ## Reference
-- [Vue.js Testing - Component Testing](https://vuejs.org/guide/scaling-up/testing#component-testing)
+- [Vue.ts Testing - Component Testing](https://vuejs.org/guide/scaling-up/testing#component-testing)
 - [Vitest Browser Mode](https://vitest.dev/guide/browser.html)

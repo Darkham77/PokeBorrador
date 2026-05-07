@@ -57,7 +57,7 @@ When testing complex states (e.g., defeat), verify the Pinia state directly:
 
 When testing visual states (e.g., forcing Pokedex "Caught" status via debug buttons), remember that these are **ephemeral Pinia states** (`uiStore`).
 
-- **Safety**: Visual overrides NEVER modify the actual save file (`saveService.js`).
+- **Safety**: Visual overrides NEVER modify the actual save file (`saveService.ts`).
 - **Clarification**: Always inform the user that changes are temporary and will disappear on refresh, to avoid confusion regarding data persistence.
 
 ### 6. Debug Flip/Toggle Pattern

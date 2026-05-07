@@ -63,4 +63,4 @@ This gotcha commonly causes off-by-one errors when the generated numbers are use
 - Repeating template structures a set number of times
 
 ## Reference
-- [Vue.js List Rendering - v-for with a Range](https://vuejs.org/guide/essentials/list.html#v-for-with-a-range)
+- [Vue.ts List Rendering - v-for with a Range](https://vuejs.org/guide/essentials/list.html#v-for-with-a-range)

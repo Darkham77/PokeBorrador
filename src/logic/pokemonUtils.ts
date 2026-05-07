@@ -34,11 +34,11 @@ import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import type { LearnsetMove, MoveBaseData } from '@/types/database';
 
 export function getSpriteUrl(id: string, isShiny: boolean = false): string {
-  return getAssetUrl(ASSET_TYPES.POKEMON, id, { shiny: isShiny });
+  return getAssetUrl(ASSET_TYPES.POKEMON, id, { isShiny });
 }
 
 export function getBackSpriteUrl(id: string, isShiny: boolean = false): string {
-  return getAssetUrl(ASSET_TYPES.POKEMON, id, { shiny: isShiny, back: true });
+  return getAssetUrl(ASSET_TYPES.POKEMON, id, { isShiny, isBack: true });
 }
 
 /**

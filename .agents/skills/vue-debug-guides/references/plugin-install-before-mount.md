@@ -119,6 +119,6 @@ app.use(myPlugin) // This second call is ignored - no double installation
 
 ## References
 
-- [Vue.js Plugins Documentation](https://vuejs.org/guide/reusability/plugins.html)
-- [Vue.js Application API](https://vuejs.org/api/application.html)
+- [Vue.ts Plugins Documentation](https://vuejs.org/guide/reusability/plugins.html)
+- [Vue.ts Application API](https://vuejs.org/api/application.html)
 - [Vue 3 Migration Guide - Global API](https://v3-migration.vuejs.org/breaking-changes/global-api.html)

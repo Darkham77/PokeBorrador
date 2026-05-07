@@ -21,8 +21,8 @@ onMounted(() => {
   oldName.value = evolutionStore.sourcePokemon.name;
   newName.value = toData?.name || evolutionStore.targetId;
   
-  fromSprite.value = getAssetUrl(ASSET_TYPES.POKEMON, evolutionStore.sourcePokemon.id, { shiny: evolutionStore.sourcePokemon.isShiny });
-  toSprite.value = getAssetUrl(ASSET_TYPES.POKEMON, evolutionStore.targetId, { shiny: evolutionStore.sourcePokemon.isShiny });
+  fromSprite.value = getAssetUrl(ASSET_TYPES.POKEMON, evolutionStore.sourcePokemon.id, { isShiny: evolutionStore.sourcePokemon.isShiny });
+  toSprite.value = getAssetUrl(ASSET_TYPES.POKEMON, evolutionStore.targetId, { isShiny: evolutionStore.sourcePokemon.isShiny });
 
   startSequence();
 });

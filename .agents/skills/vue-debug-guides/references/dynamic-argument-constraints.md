@@ -142,5 +142,5 @@ const attr6 = { foo: 1 } // Warning: should be string
 ```
 
 ## Reference
-- [Vue.js Template Syntax - Dynamic Arguments](https://vuejs.org/guide/essentials/template-syntax.html#dynamic-arguments)
-- [Vue.js Template Syntax - Dynamic Argument Value Constraints](https://vuejs.org/guide/essentials/template-syntax.html#dynamic-argument-value-constraints)
+- [Vue.ts Template Syntax - Dynamic Arguments](https://vuejs.org/guide/essentials/template-syntax.html#dynamic-arguments)
+- [Vue.ts Template Syntax - Dynamic Argument Value Constraints](https://vuejs.org/guide/essentials/template-syntax.html#dynamic-argument-value-constraints)

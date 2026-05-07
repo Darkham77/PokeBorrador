@@ -157,4 +157,4 @@ When using in-DOM templates (not SFCs), remember to use kebab-case:
 ## Reference
 
 - [Vue 3 Migration Guide - TransitionGroup Root Element](https://v3-migration.vuejs.org/breaking-changes/transition-group.html)
-- [Vue.js TransitionGroup](https://vuejs.org/guide/built-ins/transition-group.html)
+- [Vue.ts TransitionGroup](https://vuejs.org/guide/built-ins/transition-group.html)

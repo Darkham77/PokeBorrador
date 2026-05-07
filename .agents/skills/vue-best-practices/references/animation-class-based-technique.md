@@ -208,7 +208,7 @@ function triggerAnimation() {
 ## Composable for Reusable Animations
 
 ```javascript
-// composables/useAnimation.js
+// composables/useAnimation.ts
 import { ref } from 'vue'
 
 export function useAnimation(duration = 500) {

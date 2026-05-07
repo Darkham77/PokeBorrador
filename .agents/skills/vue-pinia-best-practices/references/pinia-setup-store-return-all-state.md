@@ -23,7 +23,7 @@ This is a critical gotcha that can cause silent failures in production.
 ## The Problem: Private State in Setup Stores
 
 ```javascript
-// stores/user.js - WRONG: Private state breaks SSR/DevTools
+// stores/user.ts - WRONG: Private state breaks SSR/DevTools
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 
@@ -43,7 +43,7 @@ export const useUserStore = defineStore('user', () => {
       method: 'POST',
       body: JSON.stringify(credentials)
     })
-    const data = await response.json()
+    const data = await response.tson()
 
     authToken.value = data.token  // This state won't transfer to client in SSR!
     name.value = data.name
@@ -71,7 +71,7 @@ export const useUserStore = defineStore('user', () => {
 ## The Solution: Return Everything
 
 ```javascript
-// stores/user.js - CORRECT: All state returned
+// stores/user.ts - CORRECT: All state returned
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 
@@ -91,7 +91,7 @@ export const useUserStore = defineStore('user', () => {
       method: 'POST',
       body: JSON.stringify(credentials)
     })
-    const data = await response.json()
+    const data = await response.tson()
 
     authToken.value = data.token
     name.value = data.name
@@ -159,7 +159,7 @@ export const useUserStore = defineStore('user', () => {
 With the Options API syntax, all state is automatically tracked:
 
 ```javascript
-// stores/user.js - Options syntax: all state is tracked automatically
+// stores/user.ts - Options syntax: all state is tracked automatically
 import { defineStore } from 'pinia'
 
 export const useUserStore = defineStore('user', {

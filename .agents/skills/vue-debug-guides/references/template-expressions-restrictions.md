@@ -113,5 +113,5 @@ function formatDate(date) {
 
 ## Reference
 
-- [Vue.js Template Syntax - Using JavaScript Expressions](https://vuejs.org/guide/essentials/template-syntax.html#using-javascript-expressions)
-- [Vue.js Conditional Rendering](https://vuejs.org/guide/essentials/conditional.html)
+- [Vue.ts Template Syntax - Using JavaScript Expressions](https://vuejs.org/guide/essentials/template-syntax.html#using-javascript-expressions)
+- [Vue.ts Conditional Rendering](https://vuejs.org/guide/essentials/conditional.html)

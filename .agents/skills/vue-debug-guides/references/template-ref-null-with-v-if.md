@@ -123,4 +123,4 @@ const showInput = ref(true)
 
 ## Reference
 
-- [Vue.js Template Refs](https://vuejs.org/guide/essentials/template-refs.html)
+- [Vue.ts Template Refs](https://vuejs.org/guide/essentials/template-refs.html)

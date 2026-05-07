@@ -92,4 +92,4 @@ defineProps({
 4. **Maintainability**: Easier to understand what data a component needs
 
 ## Reference
-- [Vue.js List Rendering - v-for with Components](https://vuejs.org/guide/essentials/list.html#v-for-with-a-component)
+- [Vue.ts List Rendering - v-for with Components](https://vuejs.org/guide/essentials/list.html#v-for-with-a-component)

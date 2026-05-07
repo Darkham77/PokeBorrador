@@ -90,4 +90,4 @@ Legacy code **MUST** be modified during migration to comply with all current pro
 
 - "Migrate the mission system from the old code."
 - "Restore the original aesthetic of the battle menu."
-- "Move the pvp.js file from public to a Vue composable."
+- "Move the pvp.ts file from public to a Vue composable."

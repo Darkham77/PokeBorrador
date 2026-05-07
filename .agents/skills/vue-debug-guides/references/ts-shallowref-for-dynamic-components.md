@@ -213,6 +213,6 @@ const routes = reactive(new Map([
 
 ## Reference
 
-- [Vue.js Reactivity in Depth - Reducing Reactivity Overhead](https://vuejs.org/guide/extras/reactivity-in-depth.html#reducing-reactivity-overhead-for-large-immutable-structures)
-- [Vue.js API - shallowRef](https://vuejs.org/api/reactivity-advanced.html#shallowref)
-- [Vue.js API - markRaw](https://vuejs.org/api/reactivity-advanced.html#markraw)
+- [Vue.ts Reactivity in Depth - Reducing Reactivity Overhead](https://vuejs.org/guide/extras/reactivity-in-depth.html#reducing-reactivity-overhead-for-large-immutable-structures)
+- [Vue.ts API - shallowRef](https://vuejs.org/api/reactivity-advanced.html#shallowref)
+- [Vue.ts API - markRaw](https://vuejs.org/api/reactivity-advanced.html#markraw)

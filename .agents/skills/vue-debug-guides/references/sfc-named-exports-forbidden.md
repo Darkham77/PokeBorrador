@@ -14,7 +14,7 @@ tags: [vue3, sfc, export, script-block, composition-api]
 
 - [ ] Always use `export default` in `<script>` blocks (Options API)
 - [ ] Use `<script setup>` which handles exports automatically (Composition API)
-- [ ] Move shared utilities to separate `.js`/`.ts` files, not the component's script block
+- [ ] Move shared utilities to separate `.ts`/`.ts` files, not the component's script block
 - [ ] If you need to export types, use a separate `<script>` block alongside `<script setup>`
 
 **Problematic Code:**
@@ -183,5 +183,5 @@ const { state, increment } = useSharedLogic()
 
 ## Reference
 
-- [Vue.js SFC Specification](https://vuejs.org/api/sfc-spec.html)
-- [Vue.js Composition API - Composables](https://vuejs.org/guide/reusability/composables.html)
+- [Vue.ts SFC Specification](https://vuejs.org/api/sfc-spec.html)
+- [Vue.ts Composition API - Composables](https://vuejs.org/guide/reusability/composables.html)

@@ -123,5 +123,5 @@ defineExpose({ reset })
 
 ## References
 
-- [Vue.js Suspense Documentation](https://vuejs.org/guide/built-ins/suspense#error-handling)
-- [Vue.js onErrorCaptured](https://vuejs.org/api/composition-api-lifecycle#onerrorcaptured)
+- [Vue.ts Suspense Documentation](https://vuejs.org/guide/built-ins/suspense#error-handling)
+- [Vue.ts onErrorCaptured](https://vuejs.org/api/composition-api-lifecycle#onerrorcaptured)

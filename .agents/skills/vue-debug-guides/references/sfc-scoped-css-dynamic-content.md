@@ -193,5 +193,5 @@ const items = ref([
 
 ## Reference
 
-- [Vue.js Scoped CSS](https://vuejs.org/api/sfc-css-features.html#scoped-css)
+- [Vue.ts Scoped CSS](https://vuejs.org/api/sfc-css-features.html#scoped-css)
 - [GitHub Issue: Scoped CSS not applied for programmatically added elements](https://github.com/vuejs/vue/issues/7649)

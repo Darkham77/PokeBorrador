@@ -135,6 +135,24 @@ export const useUIStore = defineStore('ui', () => {
     isHistoryOpen.value = false
     isChatOpen.value = false
     openHudGroup.value = null
+    activeModalStack.value = []
+  }
+
+  // ── MODAL STACKING SYSTEM (Z-INDEX) ────────────────────────────────────────
+  const activeModalStack = ref<string[]>([])
+  
+  function registerModal(modalId: string) {
+    if (!activeModalStack.value.includes(modalId)) {
+      activeModalStack.value.push(modalId)
+    }
+  }
+
+  function unregisterModal(modalId: string) {
+    activeModalStack.value = activeModalStack.value.filter(id => id !== modalId)
+  }
+
+  const getModalDepth = (modalId: string) => {
+    return activeModalStack.value.indexOf(modalId)
   }
 
   function toggleHudGroup(name: string | null) {
@@ -415,6 +433,12 @@ export const useUIStore = defineStore('ui', () => {
     isRankedMenuOpen: ref(false),
     currentPvPInvite: ref(null),
     isBattleSwitchForced,
+
+    // Stacking
+    activeModalStack,
+    registerModal,
+    unregisterModal,
+    getModalDepth,
 
     // Confirmation
     openConfirm: (options: Record<string, unknown>) => useModalStore().open('Confirm', options),

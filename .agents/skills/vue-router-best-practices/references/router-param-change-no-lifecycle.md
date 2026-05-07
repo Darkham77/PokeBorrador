@@ -116,7 +116,7 @@ onBeforeRouteUpdate(async (to, from) => {
 ## Solution 4: Composable for Route-Reactive Data
 
 ```javascript
-// composables/useRouteData.js
+// composables/useRouteData.ts
 import { ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 

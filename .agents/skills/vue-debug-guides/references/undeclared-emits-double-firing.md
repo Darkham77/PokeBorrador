@@ -198,5 +198,5 @@ If you see two stack traces with different origins, you have the double-firing i
 ## Reference
 
 - [Vue 3 Migration - emits Option](https://v3-migration.vuejs.org/breaking-changes/emits-option)
-- [Vue.js Component Events](https://vuejs.org/guide/components/events.html)
-- [Vue.js Fallthrough Attributes](https://vuejs.org/guide/components/attrs.html)
+- [Vue.ts Component Events](https://vuejs.org/guide/components/events.html)
+- [Vue.ts Fallthrough Attributes](https://vuejs.org/guide/components/attrs.html)

@@ -111,5 +111,5 @@ Using `onError` with SSR can cause issues in some configurations, potentially le
 
 ## References
 
-- [Vue.js Async Components Documentation](https://vuejs.org/guide/components/async)
+- [Vue.ts Async Components Documentation](https://vuejs.org/guide/components/async)
 - [Handling Async Components' loading errors](https://awad.dev/blog/handling-async-component-loading-errors/)

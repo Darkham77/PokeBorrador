@@ -46,6 +46,10 @@ export interface BattleState {
   isFishing?: boolean;
   lastDamage?: number;
   enemyUsedItem?: boolean;
+  rewardTM?: string;
+  playerStages?: BattleStages;
+  enemyStages?: BattleStages;
+  battleLogs?: BattleLog[];
 }
 
 export interface BattleLog {
@@ -56,17 +60,7 @@ export interface BattleLog {
   side?: 'player' | 'enemy' | null;
 }
 
-export interface BattleContext {
-  atkStages?: number;
-  defStages?: number;
-  playerStages?: Partial<BattleStages>;
-  enemyStages?: Partial<BattleStages>;
-  weather?: BattleWeather | null;
-  turnCount?: number;
-  locationId?: string;
-  cycle?: string;
-  magnitudeSet?: number;
-}
+import type { BattleContext } from './battleContext';
 
 export type LogFn = (msg: string, type?: string, actor?: any) => void;
 
@@ -76,5 +70,5 @@ export type MoveAction = (
   srcStages: BattleStages, 
   tgtStages: BattleStages, 
   addLogFn: LogFn, 
-  battleCtx?: any
+  battleCtx?: BattleContext
 ) => void;

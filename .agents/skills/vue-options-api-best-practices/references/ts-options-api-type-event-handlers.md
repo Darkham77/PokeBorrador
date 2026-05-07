@@ -15,7 +15,7 @@ tags: [vue3, typescript, options-api, events, type-safety, DOM]
 - [ ] Always add type annotations to event handler method parameters
 - [ ] Use the correct DOM event type (Event, MouseEvent, KeyboardEvent, etc.)
 - [ ] Use type assertions for event.target when accessing element-specific properties
-- [ ] Enable `strict: true` in tsconfig.json to catch implicit any errors
+- [ ] Enable `strict: true` in tsconfig.tson to catch implicit any errors
 
 ## The Problem
 
@@ -197,6 +197,6 @@ methods: {
 
 ## Reference
 
-- [Vue.js TypeScript with Options API - Typing Event Handlers](https://vuejs.org/guide/typescript/options-api.html#typing-event-handlers)
+- [Vue.ts TypeScript with Options API - Typing Event Handlers](https://vuejs.org/guide/typescript/options-api.html#typing-event-handlers)
 - [MDN Event Interface](https://developer.mozilla.org/en-US/docs/Web/API/Event)
 - [TypeScript DOM Types](https://github.com/microsoft/TypeScript/blob/main/lib/lib.dom.d.ts)

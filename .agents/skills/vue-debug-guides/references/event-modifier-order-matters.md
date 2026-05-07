@@ -98,4 +98,4 @@ tags: [vue3, events, modifiers, v-on, click, form]
 ```
 
 ## Reference
-- [Vue.js Event Handling - Event Modifiers](https://vuejs.org/guide/essentials/event-handling.html#event-modifiers)
+- [Vue.ts Event Handling - Event Modifiers](https://vuejs.org/guide/essentials/event-handling.html#event-modifiers)

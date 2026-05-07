@@ -109,7 +109,7 @@ You MUST run these commands and fix EVERY issue until a clean pass is achieved.
 If the database schema has changed:
 
 1. Verify the SQL migration exists in `database/migrations/`.
-2. Verify the Vite plugin has regenerated `src/logic/db/migrations_data.js`.
+2. Verify the Vite plugin has regenerated `src/logic/db/migrations_data.ts`.
 3. Verify the absolute schema in `database/schemas/` is updated.
 4. **Local Sync**: If testing locally, ensure the WASM SQLite engine is initialized correctly with the new delta.
 
@@ -126,7 +126,7 @@ If the database schema has changed:
 Before extracting lessons or committing, you MUST delete all temporary artifacts created during the development or verification process.
 
 - Delete all files and content in the **scratchpad** that are no longer needed.
-- Delete any ad-hoc test files (e.g., `test_output.txt`, `tmp_log.json`) created in the root or subdirectories.
+- Delete any ad-hoc test files (e.g., `test_output.txt`, `tmp_log.tson`) created in the root or subdirectories.
 - **Audit Cleanup**: Delete all `.txt` files related to auditing (generally containing `_audit_` in the name, like `audit_results.txt` or `gpu_audit_results.txt`). **CRITICAL: NEVER delete `requirements.txt` in the root.**
 - Ensure `git status` does not show untracked temporary files that should not be in the repository.
 
@@ -185,7 +185,7 @@ feat(battle): optimize silhouette rendering and sync wild encounter timing
 - Reduced wild Pokémon emergence Phase 1 duration from 2.2s to 1.1s for faster gameplay.
 - Synchronized isWildSilhouetteHalfway trigger at 550ms with the sprite jump animation.
 - Implemented isFloating metadata check to automatically hide ground grass bushes for flying species.
-- Refactored useBattleAnimations.js to centralize encounter phase constants.
+- Refactored useBattleAnimations.ts to centralize encounter phase constants.
 ```
 
 ### 3. Forbidden Patterns

@@ -228,6 +228,6 @@ If your injected value isn't updating:
 
 ## Reference
 
-- [Vue.js Provide/Inject - Working with Reactivity](https://vuejs.org/guide/components/provide-inject.html#working-with-reactivity)
+- [Vue.ts Provide/Inject - Working with Reactivity](https://vuejs.org/guide/components/provide-inject.html#working-with-reactivity)
 - [How to make provide/inject reactive - LogRocket Blog](https://blog.logrocket.com/how-to-make-provide-inject-reactive/)
 - [GitHub Issue: Inject/Provide is not reactive](https://github.com/vuejs/vue/issues/7017)

@@ -2,7 +2,6 @@ import { gameBus } from '@/logic/gameBus'
 import { calculateBaseExp, processExpGain, calculateMoneyGain } from './battleRewards'
 import { getBattleRewardModifiers } from '@/logic/war/bonusEngine'
 import { levelUpPokemon } from '@/logic/pokemonFactory'
-import { useUIStore } from '@/stores/ui'
 import type { BattleContext } from '@/types/battleContext'
 import type { Pokemon } from '@/types/pokemon'
 
@@ -10,17 +9,20 @@ import type { Pokemon } from '@/types/pokemon'
  * Handles the fainting of a Pokémon.
  */
 export async function processFaint(ctx: BattleContext, side: 'player' | 'enemy') {
+  const active = ctx.activeBattle.value;
+  if (!active) return;
+
   const isPlayer = side === 'player'
   const { BATTLE_STATES, BATTLE_SUBSTATES } = ctx
   const fsm = ctx.fsm
 
-  fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, isPlayer ? BATTLE_SUBSTATES.PLAYER_FAINT_SEQ : BATTLE_SUBSTATES.ENEMY_FAINT as any)
+  await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, isPlayer ? BATTLE_SUBSTATES.PLAYER_FAINT_SEQ : BATTLE_SUBSTATES.ENEMY_FAINT)
   
   if (ctx.faintedSides.value.has(side)) return
   ctx.faintedSides.value.add(side)
   
-  const pokemon = isPlayer ? ctx.activeBattle.value?.player : ctx.activeBattle.value?.enemy
-  const opponent = isPlayer ? ctx.activeBattle.value?.enemy : ctx.activeBattle.value?.player
+  const pokemon = isPlayer ? active.player : active.enemy
+  const opponent = isPlayer ? active.enemy : active.player
   
   if (pokemon?.destinyBond && opponent && opponent.hp > 0) {
     ctx.addLog(`¡${pokemon.name} se llevó a ${opponent.name} con él!`, 'log-info', pokemon)
@@ -32,66 +34,66 @@ export async function processFaint(ctx: BattleContext, side: 'player' | 'enemy')
   if (isPlayer && pokemon) {
     ctx.addLog(`¡${pokemon.name} se ha debilitado!`, 'log-player', pokemon)
     
-    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.PLAYER_FAINT_SEQ as any)
-    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.RECALL_FLOW as any)
-    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.POKEMON_RECALL as any)
+    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.PLAYER_FAINT_SEQ)
+    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.RECALL_FLOW)
+    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.POKEMON_RECALL)
     gameBus.emit('PLAY_WITHDRAW', { side: 'player', isFaint: true })
     await new Promise(r => setTimeout(r, 800))
-    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.VACATE_SEAT as any)
-    if (ctx.activeBattle.value) ctx.activeBattle.value.player = null 
+    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.VACATE_SEAT)
+    active.player = null 
     
-    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.CHECK_TEAM as any)
+    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.CHECK_TEAM)
     const nextPoke = ctx.gs.state.team.find((p: Pokemon) => p.hp > 0)
     
     if (!nextPoke) {
-      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ALL_FAINTED as any)
-      if (ctx.activeBattle.value) ctx.activeBattle.value.over = true
+      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ALL_FAINTED)
+      active.over = true
       ctx.addLog('¡No te quedan Pokémon sanos!', 'log-error', 'player')
       await new Promise(r => setTimeout(r, 1500))
-      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.DEFEAT_SCREEN as any)
+      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.DEFEAT_SCREEN)
       await terminateBattle(ctx, false)
     } else {
-      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.HAS_HEALTHY as any)
+      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.HAS_HEALTHY)
       ctx.addLog('¡Elige a tu próximo Pokémon!', 'log-info', 'player')
       ctx.faintedSides.value.delete('player')
-      (useUIStore() as any).isBattleSwitchForced = true
-      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.SWITCH_MENU as any)
+      ctx.uiStore.isBattleSwitchForced = true
+      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.SWITCH_MENU)
     }
   } else if (pokemon) {
-    const isTr = ctx.activeBattle.value?.isTrainer || ctx.activeBattle.value?.isGym
+    const isTr = active.isTrainer || active.isGym
     const enemyName = isTr ? pokemon.name : `¡${pokemon.name} salvaje`
     ctx.addLog(`${enemyName} fue derrotado!`, 'log-enemy', pokemon)
     
-    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ENEMY_DEFEAT as any)
+    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ENEMY_DEFEAT)
     
     gameBus.emit('PLAY_SOUND', 'faint')
     gameBus.emit('PLAY_FAINT', { side: 'enemy' })
-    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.PLAY_ENEMY_FAINT as any)
+    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.PLAY_ENEMY_FAINT)
     
     await new Promise(r => setTimeout(r, 1000))
     
-    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.VACATE_SEAT as any)
-    if (ctx.activeBattle.value) ctx.activeBattle.value.enemy = null
+    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.VACATE_SEAT)
+    active.enemy = null
 
-    if (isTr && ctx.activeBattle.value?.enemyTeam) {
-      fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ENEMY_REPLACEMENT_SEQ as any)
-      fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.CLEANUP_MEMORY as any)
+    if (isTr && active.enemyTeam) {
+      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ENEMY_REPLACEMENT_SEQ)
+      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.CLEANUP_MEMORY)
       
-      fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.CHECK_REMAINING as any)
-      const nextEnemy = ctx.activeBattle.value.enemyTeam.find((p: Pokemon) => p.hp > 0)
+      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.CHECK_REMAINING)
+      const nextEnemy = active.enemyTeam.find((p: Pokemon) => p.hp > 0)
       if (nextEnemy) {
-        fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.STABILIZE_STAGE as any)
+        await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.STABILIZE_STAGE)
         
         const s = ctx.enemyStages.value
         ctx.enemyStages.value = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0, 
           reflect: s.reflect || 0, lightScreen: s.lightScreen || 0, safeguard: s.safeguard || 0, mist: s.mist || 0, spikes: s.spikes || 0 }
         
-        fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.AI_NEXT_PICK as any)
-        fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.SELECT_COUNTER as any)
+        await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.AI_NEXT_PICK)
+        await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.SELECT_COUNTER)
         
-        fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.POKEMON_CALL as any)
-        fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.OCCUPY_SEAT as any)
-        ctx.activeBattle.value.enemy = nextEnemy
+        await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.POKEMON_CALL)
+        await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.OCCUPY_SEAT)
+        active.enemy = nextEnemy
         ctx.addLog(`¡Entrenador envía a ${nextEnemy.name}!`, 'log-enemy', 'enemy_trainer')
         gameBus.emit('PLAY_SEND_OUT', { side: 'enemy', pokemon: nextEnemy })
         await new Promise(r => setTimeout(r, 800))
@@ -99,10 +101,8 @@ export async function processFaint(ctx: BattleContext, side: 'player' | 'enemy')
       }
     }
     
-    if (ctx.activeBattle.value) {
-      ctx.activeBattle.value.over = true 
-      ctx.activeBattle.value.enemy = null
-    }
+    active.over = true 
+    active.enemy = null
     ctx.faintedSides.value.add('enemy')
     await terminateBattle(ctx, true)
   }
@@ -114,48 +114,47 @@ export async function processFaint(ctx: BattleContext, side: 'player' | 'enemy')
 export async function terminateBattle(ctx: BattleContext, win: boolean, fled = false) {
   const { BATTLE_STATES, BATTLE_SUBSTATES } = ctx
   const fsm = ctx.fsm
+  const active = ctx.activeBattle.value;
 
-  if (!ctx.activeBattle.value) {
-    fsm.transition(BATTLE_STATES.EXIT_BATTLE)
+  if (!active) {
+    await fsm.transition(BATTLE_STATES.EXIT_BATTLE)
     return
   }
 
-  ctx.activeBattle.value.over = true
+  active.over = true
   ctx.faintedSides.value.clear()
   
   if (win && !fled) await calculateBattleRewards(ctx)
   
   syncAndPersist(ctx)
 
-  if (ctx.activeBattle.value) {
-    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.VACATE_SEAT as any)
-    ctx.activeBattle.value.enemy = null
-    ctx.activeBattle.value._initialEnemy = null
-  }
+  await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.VACATE_SEAT)
+  active.enemy = null
+  active._initialEnemy = null
 
-  fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.CHECK_OUTCOME as any)
+  await fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.CHECK_OUTCOME)
 
   if (!win && !fled) {
-    await fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.EMPTY_WAIT as any)
+    await fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.EMPTY_WAIT)
     await new Promise(r => setTimeout(r, 1000))
     await ctx.gs.save(false)
     
-    fsm.transition(BATTLE_STATES.EXIT_BATTLE)
-    fsm.transition(BATTLE_STATES.EXIT_BATTLE, BATTLE_SUBSTATES.ENTRY_CHECK as any)
-    fsm.transition(BATTLE_STATES.EXIT_BATTLE, BATTLE_SUBSTATES.DEFEAT_SCREEN as any)
-    fsm.transition(BATTLE_STATES.EXIT_BATTLE, BATTLE_SUBSTATES.DEFEAT_WAIT as any)
+    await fsm.transition(BATTLE_STATES.EXIT_BATTLE)
+    await fsm.transition(BATTLE_STATES.EXIT_BATTLE, BATTLE_SUBSTATES.ENTRY_CHECK)
+    await fsm.transition(BATTLE_STATES.EXIT_BATTLE, BATTLE_SUBSTATES.DEFEAT_SCREEN)
+    await fsm.transition(BATTLE_STATES.EXIT_BATTLE, BATTLE_SUBSTATES.DEFEAT_WAIT)
     return
   }
 
   if (fled) {
-    fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.WAIT_LOG_QUEUE_ONLY as any)
+    await fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.WAIT_LOG_QUEUE_ONLY)
     await ctx.waitForLogs()
     
-    fsm.transition(BATTLE_STATES.EXIT_BATTLE, BATTLE_SUBSTATES.ENTRY_CHECK as any)
-    fsm.transition(BATTLE_STATES.EXIT_BATTLE, BATTLE_SUBSTATES.EXECUTE_CLEANUP as any)
-    fsm.transition(BATTLE_STATES.EXIT_BATTLE, BATTLE_SUBSTATES.CLEAR_UI as any)
-    fsm.transition(BATTLE_STATES.EXIT_BATTLE, BATTLE_SUBSTATES.TRIGGER_CLOSE as any)
-    fsm.transition(BATTLE_STATES.EXIT_BATTLE, BATTLE_SUBSTATES.RESET_FLAGS as any)
+    await fsm.transition(BATTLE_STATES.EXIT_BATTLE, BATTLE_SUBSTATES.ENTRY_CHECK)
+    await fsm.transition(BATTLE_STATES.EXIT_BATTLE, BATTLE_SUBSTATES.EXECUTE_CLEANUP)
+    await fsm.transition(BATTLE_STATES.EXIT_BATTLE, BATTLE_SUBSTATES.CLEAR_UI)
+    await fsm.transition(BATTLE_STATES.EXIT_BATTLE, BATTLE_SUBSTATES.TRIGGER_CLOSE)
+    await fsm.transition(BATTLE_STATES.EXIT_BATTLE, BATTLE_SUBSTATES.RESET_FLAGS)
     await ctx.completeBattleFlow('map')
     return
   }
@@ -164,51 +163,49 @@ export async function terminateBattle(ctx: BattleContext, win: boolean, fled = f
   await ctx.waitForLogs()
   syncTeamHP(ctx)
 
-  await fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.EMPTY_WAIT as any)
+  await fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.EMPTY_WAIT)
   await new Promise(r => setTimeout(r, 1000))
 
   const firstHealthy = ctx.gs.state.team.find((p: Pokemon) => p.hp > 0)
-  const currentActive = ctx.activeBattle.value.player
+  const currentActive = active.player
   const needsReorder = firstHealthy && (!currentActive || firstHealthy.uid !== currentActive.uid)
   
   if (needsReorder) {
-    await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.SWITCHING as any)
+    await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.SWITCHING)
     if (currentActive && currentActive.hp > 0) {
-      await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.POKEMON_RECALL as any)
-      await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.RENDER_BALL as any)
+      await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.POKEMON_RECALL)
+      await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.RENDER_BALL)
       gameBus.emit('PLAY_WITHDRAW', { side: 'player' })
-      await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.ENERGY_RECALL as any)
+      await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.ENERGY_RECALL)
       await new Promise(r => setTimeout(r, 800))
-      await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.VACATE_SEAT as any)
-      if (ctx.activeBattle.value) ctx.activeBattle.value.player = null
+      await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.VACATE_SEAT)
+      active.player = null
     }
 
-    if (ctx.activeBattle.value) {
-      await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.POKEMON_CALL as any)
-      await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.RENDER_BALL as any)
-      
-      await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.OCCUPY_SEAT as any)
-      ctx.activeBattle.value.player = firstHealthy
-      ctx.activeBattle.value.playerTeamIndex = ctx.gs.state.team.findIndex((p: Pokemon) => p.uid === firstHealthy.uid)
+    await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.POKEMON_CALL)
+    await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.RENDER_BALL)
+    
+    await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.OCCUPY_SEAT)
+    active.player = firstHealthy
+    active.playerTeamIndex = ctx.gs.state.team.findIndex((p: Pokemon) => p.uid === firstHealthy.uid)
 
-      gameBus.emit('PLAY_SEND_OUT', { side: 'player', pokemon: firstHealthy })
-      await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.ENERGY_RELEASE as any)
-      await new Promise(r => setTimeout(r, 800))
-      
-      await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.POKEMON_APPEAR as any)
-      await new Promise(r => setTimeout(r, 400))
-    }
+    gameBus.emit('PLAY_SEND_OUT', { side: 'player', pokemon: firstHealthy })
+    await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.ENERGY_RELEASE)
+    await new Promise(r => setTimeout(r, 800))
+    
+    await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.POKEMON_APPEAR)
+    await new Promise(r => setTimeout(r, 400))
   }
   
-  const persistenceMode = ctx.activeBattle.value?.persistenceMode || 'PERSISTENT'
-  const isSingle = persistenceMode === 'SINGLE' || ctx.activeBattle.value?.isTrainer
+  const persistenceMode = active.persistenceMode as string || 'PERSISTENT'
+  const isSingle = persistenceMode === 'SINGLE' || active.isTrainer
   
-  await fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.CHECK_PERSISTENCE as any)
+  await fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.CHECK_PERSISTENCE)
   
   if (!isSingle) {
     await ctx.completeBattleFlow('search')
   } else {
-    fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.EMPTY_WAIT as any)
+    await fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.EMPTY_WAIT)
   }
 }
 
@@ -216,47 +213,48 @@ export async function terminateBattle(ctx: BattleContext, win: boolean, fled = f
  * Calculates and distributes XP and money rewards.
  */
 export async function calculateBattleRewards(ctx: BattleContext) {
-  if (!ctx.activeBattle.value) return
-  const e = ctx.activeBattle.value.enemy || ctx.activeBattle.value._initialEnemy
+  const active = ctx.activeBattle.value;
+  if (!active) return;
+  const e = active.enemy || active._initialEnemy
   if (!e) return
 
   const { BATTLE_STATES, BATTLE_SUBSTATES } = ctx
   const fsm = ctx.fsm
   
-  await fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.DISTRIBUTE_XP as any)
+  await fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.DISTRIBUTE_XP)
   
-  const isTr = ctx.activeBattle.value.isTrainer || ctx.activeBattle.value.isGym
-  const locId = ctx.activeBattle.value.locationId
+  const isTr = active.isTrainer || active.isGym
+  const locId = active.locationId
   const enemyRef = e
 
   if (enemyRef?.isGuardian) await ctx.warStore.addPoints(locId, 'guardian', true)
   else await ctx.warStore.addPoints(locId, isTr ? 'trainer_win' : 'wild_win', true)
   
-  if (ctx.activeBattle.value.isCapture) await ctx.eventStore.submitCompetitionEntry(enemyRef as any, 'hourly_competition')
+  if (active.isCapture) await ctx.eventStore.submitCompetitionEntry(enemyRef, 'hourly_competition')
   
-  if (ctx.activeBattle.value.isGym && ctx.activeBattle.value.gymId) {
-    const gid = ctx.activeBattle.value.gymId
+  if (active.isGym && active.gymId) {
+    const gid = active.gymId
     if (!ctx.gs.state.defeatedGyms.includes(gid)) {
       ctx.gs.state.defeatedGyms.push(gid); ctx.gs.state.badges++
-      if (ctx.activeBattle.value.rewardTM) { 
-        const tm = ctx.activeBattle.value.rewardTM
+      if (active.rewardTM) { 
+        const tm = active.rewardTM
         ctx.gs.state.inventory[tm] = (ctx.gs.state.inventory[tm] || 0) + 1
         ctx.addLog(`¡Recibiste la ${tm}!`, 'log-info', tm) 
       }
-      (useUIStore() as any).notify(`¡Ganaste la medalla del Gimnasio ${gid}!`, '🏆')
+      ctx.uiStore.notify(`¡Ganaste la medalla del Gimnasio ${gid}!`, '🏆')
       await ctx.gs.save(false)
     }
   }
 
   const baseExp = calculateBaseExp(e)
-  const warMods = getBattleRewardModifiers(ctx.activeBattle.value.locationId, ctx.gs.state.faction, ctx.warStore.mapDominance)
+  const warMods = getBattleRewardModifiers(active.locationId, ctx.gs.state.faction, ctx.warStore.mapDominance)
   const totalExpMult = warMods.expMult + ((ctx.eventStore.globalMultipliers?.exp || 1) - 1)
-  const classMult = ctx.classStore.getModifier('expMult', { isTrainer: ctx.activeBattle.value.isTrainer })
-  const participantsSet = new Set(ctx.activeBattle.value.participants)
+  const classMult = ctx.classStore.getModifier('expMult', { isTrainer: active.isTrainer })
+  const participantsSet = new Set(active.participants)
 
   for (const p of ctx.gs.state.team) {
     const reward = processExpGain(p, baseExp, participantsSet, {
-      isActive: p.uid === ctx.activeBattle.value.player?.uid,
+      isActive: p.uid === active.player?.uid,
       classMult,
       totalExpMult,
       participantsSet
@@ -268,18 +266,18 @@ export async function calculateBattleRewards(ctx: BattleContext) {
       ctx.audio.levelUp()
       ctx.addLog(`¡${p.name} subió al nivel ${p.level}!`, 'log-info', p)
       
-      await fsm.transition(BATTLE_STATES.LEVEL_UP_MODAL, BATTLE_SUBSTATES.CHECK_PENDING as any)
+      await fsm.transition(BATTLE_STATES.LEVEL_UP_MODAL, BATTLE_SUBSTATES.CHECK_PENDING)
       const pendingMoves = levelUpPokemon(p)
       
       if (pendingMoves && pendingMoves.length > 0) {
-        await fsm.transition(BATTLE_STATES.LEVEL_UP_MODAL, BATTLE_SUBSTATES.SHOW_CHOICE as any)
+        await fsm.transition(BATTLE_STATES.LEVEL_UP_MODAL, BATTLE_SUBSTATES.SHOW_CHOICE)
         p.pendingMoves = pendingMoves
       }
     }
   }
 
   const moneyGained = calculateMoneyGain(e, { 
-    bcMult: ctx.classStore.getModifier('bcMult', { isGym: ctx.activeBattle.value.isGym }), 
+    bcMult: ctx.classStore.getModifier('bcMult', { isGym: active.isGym }), 
     totalMoneyMult: warMods.moneyMult + ((ctx.eventStore.globalMultipliers?.money || 1) - 1) 
   })
   
@@ -292,13 +290,17 @@ export async function calculateBattleRewards(ctx: BattleContext) {
  * Syncs team HP to GameStore.
  */
 export function syncTeamHP(ctx: BattleContext) {
-  if (!ctx.activeBattle.value) return;
+  const active = ctx.activeBattle.value;
+  if (!active) return;
   
-  if (ctx.activeBattle.value.player) {
-    const currentIdx = ctx.activeBattle.value.playerTeamIndex ?? ctx.gs.state.team.findIndex((p: Pokemon) => p.uid === ctx.activeBattle.value.player?.uid);
+  if (active.player) {
+    const currentIdx = active.playerTeamIndex ?? ctx.gs.state.team.findIndex((p: Pokemon) => p.uid === active.player?.uid);
     if (currentIdx !== -1) {
-      ctx.gs.state.team[currentIdx].hp = ctx.activeBattle.value.player.hp;
-      ctx.gs.state.team[currentIdx].status = ctx.activeBattle.value.player.status;
+      const teamPoke = ctx.gs.state.team[currentIdx];
+      if (teamPoke) {
+        teamPoke.hp = active.player.hp;
+        teamPoke.status = active.player.status;
+      }
     }
   }
 }
@@ -307,18 +309,16 @@ export function syncTeamHP(ctx: BattleContext) {
  * Persists battle state to GameStore.
  */
 export function syncAndPersist(ctx: BattleContext) {
-  if (!ctx.activeBattle.value || ctx.activeBattle.value.over) {
+  const active = ctx.activeBattle.value;
+  if (!active || active.over) {
     ctx.gs.state.activeBattle = null
     return
   }
   ctx.gs.state.activeBattle = {
-    ...ctx.activeBattle.value,
+    ...active,
     playerStages: ctx.playerStages.value,
     enemyStages: ctx.enemyStages.value,
     battleLogs: ctx.battleLogs.value.slice(-10)
   }
-  ctx.gs.save(false)
-}
-
   ctx.gs.save(false)
 }

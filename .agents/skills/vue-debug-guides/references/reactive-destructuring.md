@@ -88,5 +88,5 @@ const name = ref('Vue')
 
 ## Reference
 
-- [Vue.js Reactivity Fundamentals - reactive()](https://vuejs.org/guide/essentials/reactivity-fundamentals.html#reactive)
-- [Vue.js Reactivity API - toRefs()](https://vuejs.org/api/reactivity-utilities.html#torefs)
+- [Vue.ts Reactivity Fundamentals - reactive()](https://vuejs.org/guide/essentials/reactivity-fundamentals.html#reactive)
+- [Vue.ts Reactivity API - toRefs()](https://vuejs.org/api/reactivity-utilities.html#torefs)

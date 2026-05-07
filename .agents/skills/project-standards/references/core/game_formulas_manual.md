@@ -4,7 +4,7 @@ This manual documents the mathematical formulas and balance constants that gover
 
 ## ⚙️ Global Generation Configuration
 
-To support multi-generation mechanics and maintain the historical integrity of earlier games while supporting retro-modern environments, the engine uses a centralized formulas module (`battleFormulas.js`) driven by two global constants:
+To support multi-generation mechanics and maintain the historical integrity of earlier games while supporting retro-modern environments, the engine uses a centralized formulas module (`battleFormulas.ts`) driven by two global constants:
 
 - **`CURRENT_GENERATION`**: `2` (Default base for the database of species and moves).
 - **`ACTIVE_RULE_SET`**: `2` (Determines the active battle calculations, critical hit calculations, and STAB modifiers).
@@ -136,7 +136,7 @@ Capture = 4 consecutive checks where Random(0-65535) < b
 
 *Multipliers:*
 
-- **Base_Ratio**: Species-specific `catchRate` from `pokemonDB.js` (e.g., 255 for Rattata, 3 for Mewtwo).
+- **Base_Ratio**: Species-specific `catchRate` from `pokemonDB.ts` (e.g., 255 for Rattata, 3 for Mewtwo).
 - **Ball Multipliers**:
   - **Standard**: Poké (1.0x), Great (1.5x), Ultra (2.0x), Master (Guaranteed).
   - **Dusk Ball**: **3.0x** if the environment is `Night`, `Cave`, or `Fog`.

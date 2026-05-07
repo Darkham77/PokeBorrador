@@ -109,4 +109,4 @@ const activeTab = ref(1)
 
 ## Reference
 
-- [Vue.js Slots - Scoped Slots](https://vuejs.org/guide/components/slots.html#scoped-slots)
+- [Vue.ts Slots - Scoped Slots](https://vuejs.org/guide/components/slots.html#scoped-slots)

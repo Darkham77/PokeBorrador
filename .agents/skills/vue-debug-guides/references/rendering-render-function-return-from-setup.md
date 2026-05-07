@@ -147,5 +147,5 @@ export default {
 
 ## Reference
 
-- [Vue.js Render Functions with Composition API](https://vuejs.org/guide/extras/render-function.html#render-functions-jsx)
-- [Vue.js Composition API setup()](https://vuejs.org/api/composition-api-setup.html)
+- [Vue.ts Render Functions with Composition API](https://vuejs.org/guide/extras/render-function.html#render-functions-jsx)
+- [Vue.ts Composition API setup()](https://vuejs.org/api/composition-api-setup.html)

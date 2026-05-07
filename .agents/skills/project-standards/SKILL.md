@@ -1,6 +1,6 @@
 ---
 name: project-standards
-description: Core governance for the Poké Vicio project. Enforces Hybrid Retro-Modern identity, 500-line modularity, and Zero-Warning SASS/Vue standards. Includes diagnostic scripts for automated auditing (viewport, GPU). For ANY task involving the battle engine or FSM transitions, you MUST use verify_fsm_diagrams.js, audit_fsm_implementation.js, and audit_fsm_flow_parity.js to ensure 1:1 parity with documentation and zero race conditions. Acts as a Navigation Hub to access technical manuals.
+description: Core governance for the Poké Vicio project. Enforces Hybrid Retro-Modern identity, 500-line modularity, Zero-Warning SASS/Vue standards, and Zero-Ignore TypeScript policy. Includes diagnostic scripts for automated auditing (viewport, GPU, items). For ANY task involving the battle engine or FSM transitions, you MUST use verify_fsm_diagrams.ts, audit_fsm_implementation.ts, and audit_fsm_flow_parity.ts to ensure 1:1 parity with documentation and zero race conditions. Acts as a Navigation Hub to access technical manuals.
 ---
 
 # Project Standards (Lean Core)
@@ -78,7 +78,7 @@ Consult these manuals for detailed implementation specifications:
   - `// [PureVue-Ignore-Aesthetics]`: Bypasses hardcoded color/shadow audits for specialized FX or legacy styles.
 - **Unitless Variable Pattern**: When passing coordinates or dynamic sizes from JS to CSS variables, ALWAYS use pure numeric values. Add units in CSS using `calc(var(--val) * 1px)`.
 - **Zero Bridges Policy**: The use of `window.state` or any global compatibility bridge (`src/logic/bridges`) is forbidden. All communication must be handled via direct imports (ESM) and dependency injection through Pinia stores. Global state manipulation from the console must be reserved exclusively for `window.__VITE_DEBUG__`.
-- **Modular Orchestration (HUD)**: High-complexity visibility logic, snapshots, and combat interface states MUST be extracted to dedicated composables (e.g., `useBattleHud.js`). The arena view (`BattleArenaView.vue`) must act exclusively as a simplified visual orchestrator.
+- **Modular Orchestration (HUD)**: High-complexity visibility logic, snapshots, and combat interface states MUST be extracted to dedicated composables (e.g., `useBattleHud.ts`). The arena view (`BattleArenaView.vue`) must act exclusively as a simplified visual orchestrator.
 - **Reactive State Propagation**: When passing state subsets to external logic functions via `reactive({...})`, it is MANDATORY to include all control flags (e.g., `isFinishing`) to prevent the logic engine from making decisions based on incomplete or undefined states.
 - **Grid-to-Card Sync**: In grid components (e.g., `MapGrid`), environment-dependent state (weather, cycle) must be calculated once and propagated to children via props (`forced-weather`). This avoids visual desynchronization between the data pool and the interface.
 - **Robustness (Deterministic Environment)**: Treat `null` or undefined environmental states as triggers for deterministic calculation, ensuring that atmospheric content (visitors) injection is never skipped.
@@ -89,9 +89,14 @@ Consult these manuals for detailed implementation specifications:
   - **SASS Filters**: Use capitalized filters (`Scale()`, `Blur()`, `Brightness()`) to avoid collisions with Dart Sass 2.0 native functions.
   - **Browser Transforms**: Use standard LOWERCASE for CSS transformations (`translate`, `scale`, `rotate`). Capitalizing these may cause browser interpretation failures and break layout positioning.
 - **@use Standard**: Forbidden use of `@import`. Use `@use` and `@forward`.
-- **Zero-Warning**: Always maintain 0 errors and 0 warnings in `lint` and `vue-tsc`.
+- **Zero-Warning**: Always maintain 0 errors and 0 warnings in `lint` and `vue-tsc`. It is MANDATORY to run `npm run type-check` before `npm run lint`.
 - **Template Event Casting**: When using strict TypeScript in `.vue` files, it is mandatory to cast event targets in the template (e.g., `(e.target as HTMLImageElement)`) to satisfy `vue-tsc` checks on specific DOM properties.
 - **Dependency Shield**: Scripts using external libraries must handle `ImportError` and provide installation instructions.
+
+### 9. TypeScript Integrity & Zero-Ignore Policy
+
+- **Zero-Ignore Policy**: The use of `@ts-ignore`, `@ts-nocheck`, or any variant that bypasses TypeScript compiler checks is STRICTLY FORBIDDEN.
+- **Verification Workflow**: Always run `npm run type-check` BEFORE `npm run lint` or any commit operation. Type safety is non-negotiable.
 
 ### 5. CLI-First Debugging
 
@@ -100,14 +105,15 @@ Consult these manuals for detailed implementation specifications:
 ### 7. Symbolic Documentation & Source of Truth (Zero-Hardcoding)
 
 - **Referential Integrity**: Documentation and manuals MUST avoid hardcoded game constants (e.g., pixel sizes, coordinate values).
-- **Source of Truth**: Always point to the centralized logic file (e.g., `spatialCoordinator.js`) as the owner of the numbers.
+- **Source of Truth**: Always point to the centralized logic file (e.g., `spatialCoordinator.ts`) or `visuals.ts` as the owner of the numbers.
 - **Relativity**: Explain technical specs using symbolic names (`ENTITY_SIZE_P1/P2`) and logical relationships (`SAFE_ZONE_BOTTOM - ENTITY_SIZE_P1`) rather than absolute values.
+- **Z-Index Single Source of Truth**: All visual layering constants MUST be defined in `src/logic/constants/visuals.ts`. The use of JSON files or hardcoded integers is forbidden. SCSS variables in `_variables.scss` must reflect these TS constants.
 
 ### 8. Battle Engine Integrity (FSM)
 
 - **Documentation Parity**: The code MUST remain a 1:1 implementation of the Mermaid diagrams in `battle_mechanics_manual.md`.
 - **Deterministic Flow**: Avoid naked `setTimeout` calls in combat logic. Use `await new Promise(r => setTimeout(r, ms))` to maintain atomic control.
-- **Mandatory Audit**: Run `verify_fsm_diagrams.js`, `audit_fsm_implementation.js`, and `audit_fsm_flow_parity.js` before every commit that touches battle logic. Zero critical errors are allowed.
+- **Mandatory Audit**: Run `verify_fsm_diagrams.ts`, `audit_fsm_implementation.ts`, and `audit_fsm_flow_parity.ts` before every commit that touches battle logic. Zero critical errors are allowed.
 
 ---
 
@@ -133,9 +139,10 @@ To ensure rigor and traceability, every complex task MUST follow the artifact li
 
 Use these scripts to verify project standards:
 
-- `verify_fsm_diagrams.js`: Scans `battle_mechanics_manual.md` Mermaid diagrams and verifies 1:1 mapping against `battleStateMachine.js` FSM. Use to detect missing states or broken transitions.
-- `audit_fsm_implementation.js`: Deep audit of the battle engine. Detects race conditions (setTimeout vs await), unimplemented sub-states, HUD suppression gaps, and persistence gate integrity.
-- `audit_fsm_flow_parity.js`: Sequential flow auditor. Compares Mermaid diagrams in the manual against the execution order in the orchestrator.
+- `verify_fsm_diagrams.ts`: `npx tsx .agents/skills/project-standards/scripts/verify_fsm_diagrams.ts`. Scans `battle_mechanics_manual.md` Mermaid diagrams and verifies 1:1 mapping against `battleStateMachine.ts` FSM.
+- `audit_fsm_implementation.ts`: `npx tsx .agents/skills/project-standards/scripts/audit_fsm_implementation.ts`. Deep audit of the battle engine. Detects race conditions, unimplemented sub-states, and persistence gate integrity.
+- `audit_fsm_flow_parity.ts`: `npx tsx .agents/skills/project-standards/scripts/audit_fsm_flow_parity.ts`. Sequential flow auditor. Compares Mermaid diagrams against execution order.
+- `validate_items.ts`: `npx tsx .agents/skills/project-standards/scripts/validate_items.ts`. Ensures that changes in items data do not break inventory or combat integrity.
 - `detect_gpu_gaps.py`: Scans for missing layer promotion or expensive filters.
 - `detect_outline_traps.py`: Detects expensive Quad Drop-Shadow outlines that should be migrated to SVG.
 - `detect_viewport_units.py`: Detects legacy `vw`/`vh` units that should be migrated to `dvw`/`dvh`.

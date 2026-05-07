@@ -6,7 +6,7 @@ This manual ensures the integrity of player data and compatibility between game 
 
 ### 1. Backward Compatibility
 
-When adding properties to `INITIAL_STATE` (`src/stores/game.js`), old saves will have `undefined`.
+When adding properties to `INITIAL_STATE` (`src/stores/game.ts`), old saves will have `undefined`.
 
 - **Mandatory**: Use fallbacks: `state.newFeature = state.newFeature || defaultValue;`.
 - **Migrations**: If you change the format of a critical data point, implement a migration block in the store's initialization.
@@ -28,7 +28,7 @@ NEVER trust indices passed from the UI (which may be filtered or sorted).
 
 Direct access to `localStorage` or `sessionStorage` can throw `SecurityError` if blocked by the browser's "Tracking Prevention" or strict privacy settings.
 
-- **Mandatory**: NEVER use `localStorage` directly. ALWAYS use the `safeStorage` helper (`src/logic/utils/storage.js`).
+- **Mandatory**: NEVER use `localStorage` directly. ALWAYS use the `safeStorage` helper (`src/logic/utils/storage.ts`).
 - **Graceful Failure**: If storage is blocked, the system should return `null` and allow the application to continue in "Volatile Mode" instead of crashing.
 - **Boot Privacy**: During `checkSession`, skip cloud validation if `sessionMode` is `offline` to prevent unnecessary storage access triggers and browser warnings.
 
@@ -41,7 +41,7 @@ Direct access to `localStorage` or `sessionStorage` can throw `SecurityError` if
 If you modify the database schema:
 
 1. Create the SQL migration in `database/migrations/`.
-2. Verify that the Vite plugin regenerates `src/logic/db/migrations_data.js`.
+2. Verify that the Vite plugin regenerates `src/logic/db/migrations_data.ts`.
 3. Update the absolute schema in `database/schemas/`.
 
 ## 🆔 UID Integrity (Anti-Cloning)
@@ -91,7 +91,7 @@ To optimize performance and server load:
 
 ### 1. Pinia Action Destructuring
 
-When adding actions to store modules (e.g., `pokemonActions.js`, `trainerActions.js`), they MUST be explicitly destructured in the root store file (e.g., `src/stores/game.js`) to be exposed to the rest of the application.
+When adding actions to store modules (e.g., `pokemonActions.ts`, `trainerActions.ts`), they MUST be explicitly destructured in the root store file (e.g., `src/stores/game.ts`) to be exposed to the rest of the application.
 
 - **Defense**: Failure to destructure new actions will result in a `ReferenceError` when attempting to call them from components or other stores.
 
@@ -121,7 +121,7 @@ Business logic that affects both **Team** and **Box** contexts (e.g., toggling f
 
 Pokémon created by debug tools or legacy systems may lack critical properties (`power`, `type`, `pp`).
 
-- **Mandatory**: Implement "Self-Healing" logic at centralization points (e.g., `recalcPokemonStats` in `pokemonFactory.js`) to fill in missing data from `MOVE_DATA`.
+- **Mandatory**: Implement "Self-Healing" logic at centralization points (e.g., `recalcPokemonStats` in `pokemonFactory.ts`) to fill in missing data from `MOVE_DATA`.
 
 ---
 
@@ -140,7 +140,7 @@ To prevent data loss during background service worker updates:
 
 ### 1. The "Save-Before-Update" Protocol
 
-- **Configuration**: `vite.config.js` MUST use `registerType: 'prompt'`. Using `'autoUpdate'` is strictly FORBIDDEN as it can trigger reloads while the player is in an unsaved state.
+- **Configuration**: `vite.config.ts` MUST use `registerType: 'prompt'`. Using `'autoUpdate'` is strictly FORBIDDEN as it can trigger reloads while the player is in an unsaved state.
 - **Implementation**: The update modal (`PWAManager.vue`) MUST call `gameStore.save(false)` before executing `updateServiceWorker()`.
 - **WHY**: Ensures that any progress made since the last 60s auto-save is persisted before the browser context is destroyed by the update.
 

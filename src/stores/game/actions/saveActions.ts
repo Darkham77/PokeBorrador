@@ -12,15 +12,16 @@ export function useSaveActions(
   db: Ref<any>, 
   updateState: (data: GameState) => void
 ) {
+  const uiStore = useUIStore()
+  const loadingStore = useLoadingStore()
+
   async function loadGame() {
-    const loadingStore = useLoadingStore()
     loadingStore.start('game_data', 'Cargando datos...', 'Leyendo partida guardada', false)
     
     if (!authStore.user) {
       return { success: true, guest: true }
     }
     
-    const uiStore = useUIStore()
     let data: GameState | null = null;
     let issues: string[] = [];
     let lastSaveId: string | null = null;
@@ -117,7 +118,13 @@ export function useSaveActions(
   async function save(showNotif = true) {
     if (!authStore.user) return
     
-    const uiStore = useUIStore()
+    // Check session lock (Last-In-Wins)
+    const { isSaveLocked } = await import('@/logic/auth/sessionHub')
+    if (isSaveLocked()) {
+      if (showNotif) useUIStore().notify('GUARDADO DESHABILITADO: Sesión activa en otra pestaña', '🚫')
+      console.warn('[SAVE] Guardado cancelado. La sesión está bloqueada.')
+      return
+    }
     const notifyFn = uiStore.notify
     const result = await performSave(state, authStore.user, { 
       showNotif, 

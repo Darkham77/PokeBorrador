@@ -34,7 +34,7 @@ function increment() {
 
 // WRONG: await before defineExpose
 const response = await fetch('/api/data')
-data.value = await response.json()
+data.value = await response.tson()
 
 // BROKEN: This won't work - called after await!
 defineExpose({
@@ -93,7 +93,7 @@ defineExpose({
 
 // Now safe to use await
 const response = await fetch('/api/data')
-data.value = await response.json()
+data.value = await response.tson()
 </script>
 
 <template>
@@ -116,7 +116,7 @@ function getData() {
 async function refreshData() {
   loading.value = true
   const response = await fetch('/api/data')
-  data.value = await response.json()
+  data.value = await response.tson()
   loading.value = false
 }
 
@@ -161,8 +161,8 @@ async function loadData() {
     fetch('/api/user'),
     fetch('/api/posts')
   ])
-  user.value = await userRes.json()
-  posts.value = await postsRes.json()
+  user.value = await userRes.tson()
+  posts.value = await postsRes.tson()
 }
 
 // Top-level await after defineExpose is safe
@@ -188,5 +188,5 @@ async setup() {
 ```
 
 ## Reference
-- [Vue.js Script Setup - defineExpose](https://vuejs.org/api/sfc-script-setup.html#defineexpose)
-- [Vue.js Async Components](https://vuejs.org/guide/components/async.html)
+- [Vue.ts Script Setup - defineExpose](https://vuejs.org/api/sfc-script-setup.html#defineexpose)
+- [Vue.ts Async Components](https://vuejs.org/guide/components/async.html)

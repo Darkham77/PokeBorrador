@@ -210,5 +210,5 @@ If you find yourself casting frequently in templates, consider:
 
 ## Reference
 
-- [Vue.js TypeScript Overview - TypeScript in Templates](https://vuejs.org/guide/typescript/overview.html#typescript-in-templates)
-- [Vue.js TypeScript with Composition API](https://vuejs.org/guide/typescript/composition-api.html)
+- [Vue.ts TypeScript Overview - TypeScript in Templates](https://vuejs.org/guide/typescript/overview.html#typescript-in-templates)
+- [Vue.ts TypeScript with Composition API](https://vuejs.org/guide/typescript/composition-api.html)

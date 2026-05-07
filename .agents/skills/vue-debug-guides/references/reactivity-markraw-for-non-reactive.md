@@ -63,7 +63,7 @@ onMounted(() => {
 })
 
 // CORRECT: Large static data
-const geoJsonData = markRaw(await fetch('/huge-geojson.json').then(r => r.json()))
+const geoJsonData = markRaw(await fetch('/huge-geojson.tson').then(r => r.tson()))
 const state = reactive({
   mapData: geoJsonData  // Won't be proxied
 })
@@ -144,6 +144,6 @@ export function useMapbox(containerId) {
 ```
 
 ## Reference
-- [Vue.js markRaw() API](https://vuejs.org/api/reactivity-advanced.html#markraw)
-- [Vue.js Reducing Reactivity Overhead](https://vuejs.org/guide/best-practices/performance.html#reduce-reactivity-overhead-for-large-immutable-structures)
-- [Vue.js Reactivity in Depth](https://vuejs.org/guide/extras/reactivity-in-depth.html)
+- [Vue.ts markRaw() API](https://vuejs.org/api/reactivity-advanced.html#markraw)
+- [Vue.ts Reducing Reactivity Overhead](https://vuejs.org/guide/best-practices/performance.html#reduce-reactivity-overhead-for-large-immutable-structures)
+- [Vue.ts Reactivity in Depth](https://vuejs.org/guide/extras/reactivity-in-depth.html)

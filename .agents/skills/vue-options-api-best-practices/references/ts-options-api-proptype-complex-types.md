@@ -208,5 +208,5 @@ props: {
 
 ## Reference
 
-- [Vue.js TypeScript with Options API - Typing Component Props](https://vuejs.org/guide/typescript/options-api.html#typing-component-props)
-- [Vue.js Props Documentation](https://vuejs.org/guide/components/props.html)
+- [Vue.ts TypeScript with Options API - Typing Component Props](https://vuejs.org/guide/typescript/options-api.html#typing-component-props)
+- [Vue.ts Props Documentation](https://vuejs.org/guide/components/props.html)

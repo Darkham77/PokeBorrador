@@ -1,6 +1,8 @@
 
 import { validateAndSanitize } from './saveService';
 import type { Pokemon } from '@/types/pokemon';
+import { decompress, isGzip } from '@/logic/utils/compression';
+import { readOpfsFile, writeOpfsFile } from '@/logic/utils/opfsStorage';
 
 /**
  * Modernized Load Service.
@@ -40,20 +42,51 @@ export async function loadBestSave(user: AuthUser | null, db: any): Promise<Load
     }
   }
 
-  // 2. Fetch Local Save
-  const localSaveKey = 'pokemon_local_save_' + user.id;
-  let localRaw = localStorage.getItem(localSaveKey);
-  
-  // Legacy Fallback (v1 -> v2 migration)
-  if (!localRaw) {
-    localRaw = localStorage.getItem('pokevicio_save_v3_ash');
-    if (localRaw) {
-      console.log('[LOAD] Legacy save found for migration:', localRaw.substring(0, 50) + '...');
+  // 2. Fetch Local Save (Prioritize OPFS Binary over LocalStorage)
+  const opfsKey = `save_${user.id}.gz`
+  let localData: any = null
+  let source = 'NONE'
+
+  try {
+    const binary = await readOpfsFile(opfsKey)
+    if (binary) {
+      const json = isGzip(binary) ? await decompress(binary) : new TextDecoder().decode(binary)
+      localData = JSON.parse(json)
+      source = 'OPFS'
+    }
+  } catch (e) {
+    console.warn('[LOAD] Error reading OPFS save:', e)
+  }
+
+  // Fallback to LocalStorage + Migration
+  if (!localData) {
+    const lsKey = 'pokemon_local_save_' + user.id
+    let lsRaw = localStorage.getItem(lsKey)
+    
+    // Legacy Fallback (v1 -> v2 migration)
+    if (!lsRaw) {
+      lsRaw = localStorage.getItem('pokevicio_save_v3_ash')
+      if (lsRaw) console.log('[LOAD] Legacy save found for migration.')
+    }
+
+    if (lsRaw) {
+      try {
+        localData = JSON.parse(lsRaw)
+        source = 'LS_MIGRATION'
+        
+        // AUTOMATED BACKUP & MIGRATION
+        console.log('[LOAD] Migrating localStorage to OPFS...')
+        const timestamp = Date.now()
+        const { compress } = await import('@/logic/utils/compression')
+        const compressed = await compress(lsRaw)
+        await writeOpfsFile(`backup_migration_${user.id}_${timestamp}.gz`, compressed)
+        await writeOpfsFile(opfsKey, compressed)
+      } catch (e) {
+        console.warn('[LOAD] Error parsing localStorage save:', e)
+      }
     }
   }
 
-  const localData = localRaw ? JSON.parse(localRaw) : null;
-  
   // Set as initial fallback if cloud failed or was skipped
   if (localData && !finalSaveData) {
     finalSaveData = localData;

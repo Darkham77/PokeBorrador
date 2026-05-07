@@ -124,7 +124,7 @@ const { handleSubmit, handleCancel } = useFormEvents(emit)
 ```
 
 ```js
-// composables/useFormEvents.js
+// composables/useFormEvents.ts
 export function useFormEvents(emit) {
   function handleSubmit(data) {
     emit('submit', data)
@@ -143,7 +143,7 @@ export function useFormEvents(emit) {
 The `eslint-plugin-vue` provides the `vue/valid-define-emits` rule that catches these errors:
 
 ```js
-// eslint.config.js
+// eslint.config.ts
 export default [
   {
     rules: {
@@ -160,5 +160,5 @@ This rule reports:
 - `defineEmits` used outside `<script setup>`
 
 ## Reference
-- [Vue.js SFC script setup](https://vuejs.org/api/sfc-script-setup.html#defineprops-defineemits)
+- [Vue.ts SFC script setup](https://vuejs.org/api/sfc-script-setup.html#defineprops-defineemits)
 - [ESLint vue/valid-define-emits](https://eslint.vuejs.org/rules/valid-define-emits)

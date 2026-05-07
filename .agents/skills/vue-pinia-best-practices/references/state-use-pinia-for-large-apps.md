@@ -108,14 +108,14 @@ Pinia enforces conventions that help teams:
 
 ```javascript
 // Consistent structure across all stores
-// stores/products.js
+// stores/products.ts
 export const useProductsStore = defineStore('products', {
   state: () => ({ /* ... */ }),
   getters: { /* ... */ },
   actions: { /* ... */ }
 })
 
-// stores/cart.js - Same structure
+// stores/cart.ts - Same structure
 export const useCartStore = defineStore('cart', {
   state: () => ({ /* ... */ }),
   getters: { /* ... */ },
@@ -246,7 +246,7 @@ npm install pinia
 ```
 
 ```javascript
-// main.js
+// main.ts
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import App from './App.vue'
@@ -257,6 +257,6 @@ app.mount('#app')
 ```
 
 ## Reference
-- [Vue.js - State Management](https://vuejs.org/guide/scaling-up/state-management.html)
+- [Vue.ts - State Management](https://vuejs.org/guide/scaling-up/state-management.html)
 - [Pinia Documentation](https://pinia.vuejs.org/)
 - [Pinia vs Vuex](https://pinia.vuejs.org/introduction.html#comparison-with-vuex)

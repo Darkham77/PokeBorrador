@@ -10,9 +10,9 @@ This document provides Node/TypeScript-specific best practices and examples for 
 
 ### Key Imports
 ```typescript
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.ts";
+import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.ts";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.ts";
 import express from "express";
 import { z } from "zod";
 ```
@@ -80,8 +80,8 @@ Create the following structure for Node/TypeScript MCP servers:
 
 ```text
 {service}-mcp-server/
-├── package.json
-├── tsconfig.json
+├── package.tson
+├── tsconfig.tson
 ├── README.md
 ├── src/
 │   ├── index.ts          # Main entry point with McpServer initialization
@@ -90,7 +90,7 @@ Create the following structure for Node/TypeScript MCP servers:
 │   ├── services/         # API clients and shared utilities
 │   ├── schemas/          # Zod validation schemas
 │   └── constants.ts      # Shared constants (API_URL, CHARACTER_LIMIT, etc.)
-└── dist/                 # Built JavaScript files (entry point: dist/index.js)
+└── dist/                 # Built JavaScript files (entry point: dist/index.ts)
 ```
 
 ## Tool Implementation
@@ -114,7 +114,7 @@ Tools are registered using the `registerTool` method with the following requirem
 - Type all parameters and return values explicitly
 
 ```typescript
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.ts";
 import { z } from "zod";
 
 const server = new McpServer({
@@ -484,7 +484,7 @@ function fetchData(resourceId: string): Promise<ResourceData> {
 
 ## TypeScript Best Practices
 
-1. **Use Strict TypeScript**: Enable strict mode in tsconfig.json
+1. **Use Strict TypeScript**: Enable strict mode in tsconfig.tson
 2. **Define Interfaces**: Create clear interface definitions for all data structures
 3. **Avoid `any`**: Use proper types or `unknown` instead of `any`
 4. **Zod for Runtime Validation**: Use Zod schemas to validate external data
@@ -525,7 +525,7 @@ async function getUser(id: string): Promise<any> {
 
 ## Package Configuration
 
-### package.json
+### package.tson
 
 ```json
 {
@@ -533,9 +533,9 @@ async function getUser(id: string): Promise<any> {
   "version": "1.0.0",
   "description": "MCP server for {Service} API integration",
   "type": "module",
-  "main": "dist/index.js",
+  "main": "dist/index.ts",
   "scripts": {
-    "start": "node dist/index.js",
+    "start": "node dist/index.ts",
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
     "clean": "rm -rf dist"
@@ -556,7 +556,7 @@ async function getUser(id: string): Promise<any> {
 }
 ```
 
-### tsconfig.json
+### tsconfig.tson
 
 ```json
 {
@@ -592,8 +592,8 @@ async function getUser(id: string): Promise<any> {
  * project management, and data export capabilities.
  */
 
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.ts";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.ts";
 import { z } from "zod";
 import axios, { AxiosError } from "axios";
 
@@ -722,7 +722,7 @@ async function runHTTP() {
   }
 
   const app = express();
-  app.use(express.json());
+  app.use(express.tson());
 
   app.post('/mcp', async (req, res) => {
     const transport = new StreamableHTTPServerTransport({
@@ -764,7 +764,7 @@ if (transport === 'http') {
 Expose data as resources for efficient, URI-based access:
 
 ```typescript
-import { ResourceTemplate } from "@modelcontextprotocol/sdk/types.js";
+import { ResourceTemplate } from "@modelcontextprotocol/sdk/types.ts";
 
 // Register a resource with URI template
 server.registerResource(
@@ -821,11 +821,11 @@ The TypeScript SDK supports two main transport mechanisms:
 #### Streamable HTTP (Recommended for Remote Servers)
 
 ```typescript
-import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
+import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.ts";
 import express from "express";
 
 const app = express();
-app.use(express.json());
+app.use(express.tson());
 
 app.post('/mcp', async (req, res) => {
   // Create new transport for each request (stateless, prevents request ID collisions)
@@ -846,7 +846,7 @@ app.listen(3000);
 #### stdio (For Local Integrations)
 
 ```typescript
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.ts";
 
 const transport = new StdioServerTransport();
 await server.connect(transport);
@@ -936,7 +936,7 @@ Before finalizing your Node/TypeScript MCP server implementation, ensure:
 
 ### TypeScript Quality
 - [ ] TypeScript interfaces are defined for all data structures
-- [ ] Strict TypeScript is enabled in tsconfig.json
+- [ ] Strict TypeScript is enabled in tsconfig.tson
 - [ ] No use of `any` type - use `unknown` or proper types instead
 - [ ] All async functions have explicit Promise<T> return types
 - [ ] Error handling uses proper type guards (e.g., `axios.isAxiosError`, `z.ZodError`)
@@ -948,11 +948,11 @@ Before finalizing your Node/TypeScript MCP server implementation, ensure:
 - [ ] Type-safe with SDK interfaces
 
 ### Project Configuration
-- [ ] Package.json includes all necessary dependencies
+- [ ] Package.tson includes all necessary dependencies
 - [ ] Build script produces working JavaScript in dist/ directory
-- [ ] Main entry point is properly configured as dist/index.js
+- [ ] Main entry point is properly configured as dist/index.ts
 - [ ] Server name follows format: `{service}-mcp-server`
-- [ ] tsconfig.json properly configured with strict mode
+- [ ] tsconfig.tson properly configured with strict mode
 
 ### Code Quality
 - [ ] Pagination is properly implemented where applicable
@@ -964,7 +964,7 @@ Before finalizing your Node/TypeScript MCP server implementation, ensure:
 
 ### Testing and Build
 - [ ] `npm run build` completes successfully without errors
-- [ ] dist/index.js created and executable
-- [ ] Server runs: `node dist/index.js --help`
+- [ ] dist/index.ts created and executable
+- [ ] Server runs: `node dist/index.ts --help`
 - [ ] All imports resolve correctly
 - [ ] Sample tool calls work as expected

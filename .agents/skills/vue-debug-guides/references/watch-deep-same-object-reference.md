@@ -162,4 +162,4 @@ watch(
 ```
 
 ## Reference
-- [Vue.js Watchers - Deep Watchers](https://vuejs.org/guide/essentials/watchers.html#deep-watchers)
+- [Vue.ts Watchers - Deep Watchers](https://vuejs.org/guide/essentials/watchers.html#deep-watchers)

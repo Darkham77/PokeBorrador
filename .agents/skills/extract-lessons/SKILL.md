@@ -17,7 +17,7 @@ Scan the full conversation history, artifacts, tasks, scratchpads, implementatio
 | **Bugs fixed**             | `p.moves.some` is undefined → `@/project-standards` (Validation)    |
 | **Workarounds discovered** | SASS capitalization collision → `@/project-standards` (Styling)      |
 | **Infrastructure issues**  | Vite proxy mismatch, port busy → Generic Dev Ops rules              |
-| **Repeated patterns**      | Vue `computed` vs `ref` optimization → Generic Vue.js patterns      |
+| **Repeated patterns**      | Vue `computed` vs `ref` optimization → Generic Vue.ts patterns      |
 | **Aesthetic feedback**     | "Use Glassmorphism for panels" → `@/project-standards` (UI/UX)      |
 
 Produce a numbered **Lessons List** with one-line summaries.
@@ -28,7 +28,7 @@ For each lesson, determine the **target skill**:
 
 1. Read the list of existing skills from the skill descriptions. **CRITICAL: You must EXCLUDE any global skills (e.g., skills located outside the current workspace or in generic directories like Google Drive). ONLY consider skills that are local to the current project's `.agents/skills/` directory.**
 2. **Prioritize @/project-standards**: If the lesson involves game rules, game-specific styles (SASS/UI), game mechanisms, formulas, or project-specific architecture, it **MUST** be mapped to **@/project-standards** (or one of its reference manuals in `@/project-standards/references/`).
-3. Only map to other skills if the knowledge is **genuinely generic** and tool-related (e.g., Vue.js best practices, Javascript patterns, Markdown formatting standards, or Skill Creation protocols) and a dedicated local skill already exists for it.
+3. Only map to other skills if the knowledge is **genuinely generic** and tool-related (e.g., Vue.ts best practices, Javascript patterns, Markdown formatting standards, or Skill Creation protocols) and a dedicated local skill already exists for it.
 4. If no existing local skill covers a *generic* lesson → mark it for **new skill creation** (which must also be saved locally in the project).
 
 Produce a **mapping table**:

@@ -1,6 +1,6 @@
 ---
 name: vue-best-practices
-description: MUST be used for Vue.js tasks. Strongly recommends Composition API with `<script setup>` and TypeScript as the standard approach. Covers Vue 3, SSR, Volar, vue-tsc. Load for any Vue, .vue files, Vue Router, Pinia, or Vite with Vue work. ALWAYS use Composition API unless the project explicitly requires Options API.
+description: MUST be used for Vue.ts tasks. Strongly recommends Composition API with `<script setup>` and TypeScript as the standard approach. Covers Vue 3, SSR, Volar, vue-tsc. Load for any Vue, .vue files, Vue Router, Pinia, or Vite with Vue work. ALWAYS use Composition API unless the project explicitly requires Options API.
 license: MIT
 metadata:
   author: github.com/vuejs-ai
@@ -62,7 +62,7 @@ These are essential, must-know foundations. Apply all of them in every Vue task 
 
 - Must-read reference from `1.1`: [sfc](references/sfc.md)
 - Keep SFC sections in this order: `<script>` → `<template>` → `<style>`.
-- **500-Line Threshold Compliance**: If a file exceeds 500 lines, extract independent UI sections (e.g., Tabs, complex Stat Bars) into child components and move large data definitions (e.g., `INITIAL_STATE`, `MAP_DATA`) into dedicated `.js` files.
+- **500-Line Threshold Compliance**: If a file exceeds 500 lines, extract independent UI sections (e.g., Tabs, complex Stat Bars) into child components and move large data definitions (e.g., `INITIAL_STATE`, `MAP_DATA`) into dedicated `.ts` files.
 - Keep SFC responsibilities focused; split large components.
 - Keep templates declarative; move branching/derivation to script.
 - Apply Vue template safety rules (`v-html`, list rendering, conditional rendering choices).
@@ -171,7 +171,7 @@ Performance work is a post-functionality pass. Do not optimize before core behav
 
 - **CLI-First Admin Delegation**: Administrative UI components (Debug panels, Event managers) MUST NOT manipulate stores or databases directly.
   - **Pattern**: `const save = () => window.__VITE_DEBUG__.saveEvent(data)`.
-  - **Why**: Centralizes logic in `debugStore.js`, ensures security wrappers are applied, and makes all actions programmatically accessible.
+  - **Why**: Centralizes logic in `debugStore.ts`, ensures security wrappers are applied, and makes all actions programmatically accessible.
 
 - **Dynamic Z-Index Stacking**: For components that can overlap (modals, overlays), use a `computedZIndex` based on the current number of active overlays. This ensures that the most recently opened element (e.g., an item selector) always appears on top of previous layers.
   - **REQUIRED**: In the `uiStore`, when computing `isAnyBlockingModalOpen`, you **MUST** explicitly exclude side-panels (e.g., `'Chat'`, `'Profile'`) if they are intended to allow background interaction.
@@ -189,7 +189,7 @@ Performance work is a post-functionality pass. Do not optimize before core behav
   - **Rule**: For complex modals or views with long lists, always separate the header and the body using flexbox to keep the header fixed.
   - **Implementation**: Parent `.wrapper { display: flex; flex-direction: column; height: 100%; overflow: hidden; }`. Header `.header { flex: 0 0 auto; }`. Body `.body { flex: 1 1 auto; overflow-y: auto; @include smooth-scroll; }`.
   - **Why**: This prevents the header from scrolling away and eliminates nested scroll conflicts.
-- **Business Logic Parity Mandate**: Critical logic used in multiple contexts (e.g., selling prices calculated in both individual menus and mass selection) MUST be centralized in utility files (e.g., `src/logic/pokemonUtils.js`). This prevents calculation discrepancies between different UI layers.
+- **Business Logic Parity Mandate**: Critical logic used in multiple contexts (e.g., selling prices calculated in both individual menus and mass selection) MUST be centralized in utility files (e.g., `src/logic/pokemonUtils.ts`). This prevents calculation discrepancies between different UI layers.
 - **Utility Component Schema Awareness**: Always verify the prop schema for common utility components. For example, `PVTooltip` expects `title` and `description` props; using an incorrect prop like `text` will result in empty tooltips.
 - **Style Binding with !important**: Vue's object style binding `:style="{ prop: 'value !important' }"` does NOT work as the compiler automatically strips the `!important` modifier. You **must** move the important rule to a CSS class and apply it via `:class` to ensure it is respected by the browser.
 - **Mandatory SFC Imports**: When using Vue core features (like `watch`, `nextTick`, `onMounted`, `onUnmounted`) inside `<script setup>`, always verify their explicit import from `'vue'`. Missing imports can lead to silent failures or `ReferenceError` crashes during component initialization, especially after adding new logic to existing files.

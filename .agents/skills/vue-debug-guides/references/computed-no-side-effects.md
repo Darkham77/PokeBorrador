@@ -38,7 +38,7 @@ const doubledCount = computed(() => {
 // BAD: Makes async request
 const userData = computed(async () => {
   const response = await fetch('/api/user')  // Side effect - API call!
-  return response.json()
+  return response.tson()
 })
 
 // BAD: Modifies DOM
@@ -72,7 +72,7 @@ const doubledCount = computed(() => {
 // GOOD: Use lifecycle hook for initial fetch
 onMounted(async () => {
   const response = await fetch('/api/user')
-  userData.value = await response.json()
+  userData.value = await response.tson()
 })
 
 // GOOD: Pure filtering
@@ -104,4 +104,4 @@ function increment() {
 | Timer setup | `setTimeout()` | Use lifecycle hook |
 
 ## Reference
-- [Vue.js Computed Properties - Getters Should Be Side-Effect Free](https://vuejs.org/guide/essentials/computed.html#getters-should-be-side-effect-free)
+- [Vue.ts Computed Properties - Getters Should Be Side-Effect Free](https://vuejs.org/guide/essentials/computed.html#getters-should-be-side-effect-free)

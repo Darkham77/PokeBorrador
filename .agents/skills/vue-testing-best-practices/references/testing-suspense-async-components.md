@@ -73,7 +73,7 @@ test('displays user data', async () => {
 
 **Correct - Reusable Helper Function:**
 ```javascript
-// test-utils.js
+// test-utils.ts
 import { mount, flushPromises } from '@vue/test-utils'
 import { defineComponent, Suspense, h } from 'vue'
 
@@ -108,7 +108,7 @@ export async function mountSuspense(component, options = {}) {
 ```
 
 ```javascript
-// AsyncUserProfile.test.js
+// AsyncUserProfile.test.ts
 import { mountSuspense } from './test-utils'
 import AsyncUserProfile from './AsyncUserProfile.vue'
 
@@ -225,5 +225,5 @@ test('access vm on async component', async () => {
 
 ## Reference
 - [Vue Test Utils - Async Suspense](https://test-utils.vuejs.org/guide/advanced/async-suspense)
-- [Vue.js Suspense Documentation](https://vuejs.org/guide/built-ins/suspense.html)
+- [Vue.ts Suspense Documentation](https://vuejs.org/guide/built-ins/suspense.html)
 - [Testing Library Vue Suspense Issue](https://github.com/testing-library/vue-testing-library/issues/230)

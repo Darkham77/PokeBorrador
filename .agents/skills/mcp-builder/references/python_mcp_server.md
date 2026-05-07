@@ -240,7 +240,7 @@ async def _make_api_request(endpoint: str, method: str = "GET", **kwargs) -> dic
             **kwargs
         )
         response.raise_for_status()
-        return response.json()
+        return response.tson()
 ```
 
 ## Async/Await Best Practices
@@ -253,12 +253,12 @@ async def fetch_data(resource_id: str) -> dict:
     async with httpx.AsyncClient() as client:
         response = await client.get(f"{API_URL}/resource/{resource_id}")
         response.raise_for_status()
-        return response.json()
+        return response.tson()
 
 # Bad: Synchronous request
 def fetch_data(resource_id: str) -> dict:
     response = requests.get(f"{API_URL}/resource/{resource_id}")  # Blocks
-    return response.json()
+    return response.tson()
 ```
 
 ## Type Hints
@@ -389,7 +389,7 @@ async def _make_api_request(endpoint: str, method: str = "GET", **kwargs) -> dic
             **kwargs
         )
         response.raise_for_status()
-        return response.json()
+        return response.tson()
 
 def _handle_api_error(e: Exception) -> str:
     '''Consistent error formatting across all tools.'''

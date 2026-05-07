@@ -181,7 +181,7 @@ throws an exception.
 [electron]: https://github.com/electron/lint-roller/tree/main/markdownlint-rules
 [extended-ascii]: https://github.com/DavidAnson/markdownlint-rule-extended-ascii
 [github-docs]: https://github.com/github/docs/tree/main/src/content-linter/lib/linting-rules
-[hint]: https://github.com/webhintio/hint/blob/main/scripts/lint-markdown.js
+[hint]: https://github.com/webhintio/hint/blob/main/scripts/lint-markdown.ts
 [lib]: ../lib
 [markdown-it]: https://github.com/markdown-it/markdown-it
 [markdown-it-token]: https://markdown-it.github.io/markdown-it/#Token

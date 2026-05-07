@@ -296,7 +296,7 @@ const particles = computed(() => {
   position: absolute;
   inset: -10%;
   pointer-events: none;
-  z-index: var(--z-base);
+  z-index: calc(var(--z-map-spawns, 10) + 4);
   border-radius: 50%;
   opacity: 0.6;
   animation: screen-pulse 2s infinite ease-in-out;
@@ -317,7 +317,7 @@ const particles = computed(() => {
   position: absolute;
   inset: -5%;
   pointer-events: none;
-  z-index: var(--z-base);
+  z-index: calc(var(--z-map-spawns, 10) + 4);
   border-radius: 40%;
   opacity: 0.4;
   animation: aura-drift 4s infinite ease-in-out;

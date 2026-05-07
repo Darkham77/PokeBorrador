@@ -137,5 +137,5 @@ export function useFetch(url) {
 ```
 
 ## Reference
-- [Vue.js Composables - Usage Restrictions](https://vuejs.org/guide/reusability/composables.html#usage-restrictions)
-- [Vue.js Composition API - Setup Context](https://vuejs.org/api/composition-api-setup.html)
+- [Vue.ts Composables - Usage Restrictions](https://vuejs.org/guide/reusability/composables.html#usage-restrictions)
+- [Vue.ts Composition API - Setup Context](https://vuejs.org/api/composition-api-setup.html)

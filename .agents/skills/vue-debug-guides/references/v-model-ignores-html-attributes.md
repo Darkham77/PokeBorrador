@@ -80,4 +80,4 @@ export default {
 ```
 
 ## Reference
-- [Vue.js Form Input Bindings](https://vuejs.org/guide/essentials/forms.html)
+- [Vue.ts Form Input Bindings](https://vuejs.org/guide/essentials/forms.html)

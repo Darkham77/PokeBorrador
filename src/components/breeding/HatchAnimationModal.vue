@@ -61,7 +61,7 @@ const handleClose = async () => {
 }
 
 const getSprite = (id: string | number, isShiny: boolean) => {
-  return getAssetUrl(ASSET_TYPES.POKEMON, id, { shiny: isShiny })
+  return getAssetUrl(ASSET_TYPES.POKEMON, id, { isShiny })
 }
 
 const handleEggClick = () => {

@@ -12,7 +12,7 @@ tags: [vue3, sfc, scoped-css, styles, build-tools, performance, template, v-html
 
 ## Task List
 
-- Use `.vue` SFCs instead of separate `.js`/`.ts` and `.css` files for components
+- Use `.vue` SFCs instead of separate `.ts`/`.ts` and `.css` files for components
 - Colocate template, script, and styles in the same SFC by default
 - Use PascalCase for component names in templates and filenames
 - Prefer component-scoped styles
@@ -29,7 +29,7 @@ tags: [vue3, sfc, scoped-css, styles, build-tools, performance, template, v-html
 ```text
 components/
 ├── UserCard.vue
-├── UserCard.js
+├── UserCard.ts
 └── UserCard.css
 ```
 

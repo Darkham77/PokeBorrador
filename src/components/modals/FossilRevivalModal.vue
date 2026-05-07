@@ -20,7 +20,7 @@ const itemSprite = computed(() => {
 
 const pokemonSprite = computed(() => {
   if (!pokemon.value) return ''
-  return getAssetUrl(ASSET_TYPES.POKEMON, pokemon.value.id, { shiny: pokemon.value.isShiny })
+  return getAssetUrl(ASSET_TYPES.POKEMON, pokemon.value.id, { isShiny: pokemon.value.isShiny })
 })
 
 onMounted(() => {

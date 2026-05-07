@@ -34,8 +34,8 @@ Model Context Protocol - standard for connecting AI systems with external tools 
 my-mcp-server/
 ├── src/
 │   └── index.ts      # Main entry
-├── package.json
-│── tsconfig.json
+├── package.tson
+│── tsconfig.tson
 ```
 
 ### Transport Types

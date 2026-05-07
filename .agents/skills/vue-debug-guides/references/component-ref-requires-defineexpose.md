@@ -172,5 +172,5 @@ const emit = defineEmits(['update:modelValue'])
 ```
 
 ## Reference
-- [Vue.js Component Refs](https://vuejs.org/guide/essentials/template-refs.html#ref-on-component)
+- [Vue.ts Component Refs](https://vuejs.org/guide/essentials/template-refs.html#ref-on-component)
 - [Script Setup - defineExpose](https://vuejs.org/api/sfc-script-setup.html#defineexpose)

@@ -81,4 +81,4 @@ counts.set('clicks', counts.get('clicks') + 1)  // Works
 
 ## Reference
 
-- [Vue.js Reactivity Fundamentals - Caveat in Arrays and Collections](https://vuejs.org/guide/essentials/reactivity-fundamentals.html#caveat-in-arrays-and-collections)
+- [Vue.ts Reactivity Fundamentals - Caveat in Arrays and Collections](https://vuejs.org/guide/essentials/reactivity-fundamentals.html#caveat-in-arrays-and-collections)

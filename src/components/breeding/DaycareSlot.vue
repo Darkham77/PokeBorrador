@@ -23,8 +23,8 @@ const genderIcon = computed(() => {
   return props.pokemon.gender === 'M' ? '♂' : '♀'
 })
 
-const getSprite = (id: string | number, shiny: boolean) => {
-  return getAssetUrl(ASSET_TYPES.POKEMON, id, { shiny })
+const getSprite = (id: string | number, isShiny: boolean) => {
+  return getAssetUrl(ASSET_TYPES.POKEMON, id, { isShiny })
 }
 </script>
 

@@ -168,5 +168,5 @@ export default {
 ```
 
 ## Reference
-- [Vue.js Lifecycle Hooks](https://vuejs.org/guide/essentials/lifecycle.html)
+- [Vue.ts Lifecycle Hooks](https://vuejs.org/guide/essentials/lifecycle.html)
 - [VueUse - useEventListener](https://vueuse.org/core/useEventListener/)

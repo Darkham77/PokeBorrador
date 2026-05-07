@@ -62,7 +62,7 @@ function getPokemonFX(p: any) {
   
   return {
     typeColor: TYPE_COLORS[primaryType as keyof typeof TYPE_COLORS] || '#A8A878',
-    isShiny: p.shiny,
+    isShiny: p.isShiny,
     isLegendary: tier.tier === 'S+' || tier.tier === 'S',
     tierColor: tier.color
   }
@@ -182,7 +182,7 @@ onMounted(() => {
           >
             <!-- Standardized FX Module -->
             <PVSpriteFX
-              :is-shiny="p.shiny"
+              :is-shiny="p.isShiny"
               :is-guardian="p.isGuardian"
               :sparkle-count="8"
               :vibrant="true"
@@ -199,7 +199,7 @@ onMounted(() => {
               <div class="type-aura" />
               
               <img 
-                :src="getAssetUrl(ASSET_TYPES.POKEMON, p.id || p.name, { shiny: p.shiny })" 
+                :src="getAssetUrl(ASSET_TYPES.POKEMON, p.id || p.name, { isShiny: p.isShiny })" 
                 class="poke-sprite"
                 :alt="p.name"
                 @error="e => { (e.target as HTMLImageElement).style.display = 'none' }"

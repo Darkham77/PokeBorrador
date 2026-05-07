@@ -31,7 +31,7 @@ const userData = ref(null)
 // BAD: includeDetails is accessed after await - NOT TRACKED!
 watchEffect(async () => {
   const response = await fetch(`/api/users/${userId.value}`)
-  const data = await response.json()
+  const data = await response.tson()
 
   // This dependency is NOT tracked - changes won't trigger re-run
   if (includeDetails.value) {
@@ -70,7 +70,7 @@ watchEffect(async () => {
 
   // Now these are tracked
   const response = await fetch(`/api/users/${id}`)
-  const data = await response.json()
+  const data = await response.tson()
 
   if (withDetails) {
     userData.value = { ...data, details: await fetchDetails(data.id) }
@@ -84,7 +84,7 @@ watch(
   [userId, includeDetails],
   async ([id, withDetails]) => {
     const response = await fetch(`/api/users/${id}`)
-    const data = await response.json()
+    const data = await response.tson()
 
     if (withDetails) {
       userData.value = { ...data, details: await fetchDetails(data.id) }
@@ -117,7 +117,7 @@ watchEffect(async () => {
   const response = await fetch(
     `/api/items?status=${status}&sort=${sortBy}&page=${currentPage}`
   )
-  results.value = await response.json()
+  results.value = await response.tson()
 })
 </script>
 ```
@@ -169,5 +169,5 @@ watchEffect(async () => {
 ```
 
 ## Reference
-- [Vue.js Watchers - watchEffect](https://vuejs.org/guide/essentials/watchers.html#watcheffect)
-- [Vue.js API - watchEffect](https://vuejs.org/api/reactivity-core.html#watcheffect)
+- [Vue.ts Watchers - watchEffect](https://vuejs.org/guide/essentials/watchers.html#watcheffect)
+- [Vue.ts API - watchEffect](https://vuejs.org/api/reactivity-core.html#watcheffect)

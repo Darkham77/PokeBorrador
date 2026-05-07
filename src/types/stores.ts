@@ -1,5 +1,6 @@
 
 import { Ref } from 'vue';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { GameState } from './game';
 import { Pokemon } from './pokemon';
 import { BattleState, BattleStages, BattleLog } from './battle';
@@ -7,13 +8,25 @@ import { BattleStateName, BattleSubStateName } from '@/logic/battle/battleStateM
 
 export interface GameStore {
   state: GameState;
-  addPokemon: (p: Pokemon, options?: { silent?: boolean; source?: string }) => void;
+  db: SupabaseClient;
+  isDataLoaded: boolean;
+  isEngineReady: boolean;
+  isReady: boolean;
+  isSaveLocked: boolean;
+  addPokemon: (p: Pokemon, options?: { silent?: boolean; source?: string; notify?: boolean }) => void;
+  removePokemon: (uid: string) => void;
   hatchEggs: () => void;
   scheduleSave: () => void;
+  save: (showNotif?: boolean) => Promise<void>;
+  loadGame: () => Promise<void>;
   registerPokedex: (speciesId: string) => void;
   addTrainerExp: (amount: number) => void;
   checkLevelUp: (pokemon: Pokemon) => void;
   updateState: (newData: Partial<GameState>) => void;
+  resetToInitial: () => void;
+  chooseStarter: (pokeId: string) => void;
+  togglePokeTag: (context: 'team' | 'box' | 'market', index: number, tagId: string) => void;
+  reorderMoves: (pokemon: Pokemon, from: number, to: number) => void;
 }
 
 export interface BattleStore {
@@ -60,14 +73,14 @@ export interface PromptOptions {
 
 export interface UIStore {
   activeTab: string;
+  isBattleSwitchForced: boolean;
   notify: (msg: string, icon?: string) => void;
-  openConfirm: (options: ConfirmOptions) => void;
-  openPrompt: (options: PromptOptions) => void;
+  openConfirm: (options: any) => void;
+  openPrompt: (options: any) => void;
   open: (name: string, props?: Record<string, unknown>) => void;
   close: (name: string) => void;
   closeAll: () => void;
   setLoading: (val: boolean, msg?: string, sub?: string) => void;
-  isBattleSwitchForced: boolean;
 }
 
 export interface MapStore {
@@ -80,10 +93,57 @@ export interface MapStore {
   currentEpochHour: number;
 }
 
+export interface PendingAward {
+  id: string;
+  winner_id: string;
+  prize: string;
+  received_at: string | null;
+  event_id?: string;
+  prize_summary?: string;
+}
+
 export interface EventStore {
+  activeEvents: any[];
+  pendingAwards: PendingAward[];
+  isLoading: boolean;
   globalMultipliers: {
     shiny: number;
     exp: number;
     money: number;
   };
+  fetchEvents: () => Promise<void>;
+  checkPendingAwards: () => Promise<void>;
+  submitCompetitionEntry: (pokemon: Pokemon, eventId: string) => Promise<void>;
+  claimAward: (awardId: string) => Promise<void>;
+  getEventMultiplier: (pokemon: Pokemon, eventId: string) => number;
+  getCaptureEvent: (speciesId: string) => any;
+}
+
+export interface DominanceInfo {
+  union: number;
+  poder: number;
+  winner: string | null;
+}
+
+export interface WarStore {
+  faction: 'union' | 'poder' | null;
+  warCoins: number;
+  weeklyPoints: number;
+  mapDominance: Record<string, DominanceInfo>;
+  addPoints: (mapId: string, eventType: string, success: boolean) => Promise<number>;
+}
+
+export interface PlayerClassStore {
+  playerClass: string | null;
+  classLevel: number;
+  getModifier: (type: string, context?: Record<string, unknown>) => number;
+}
+
+export interface AudioStore {
+  play: (type: string) => Promise<void>;
+  shiny: () => void;
+  levelUp: () => void;
+  money: () => void;
+  faint: () => void;
+  heal: () => void;
 }

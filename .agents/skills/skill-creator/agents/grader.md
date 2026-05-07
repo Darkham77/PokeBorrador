@@ -80,7 +80,7 @@ Keep the bar high. The goal is to flag things the eval author would say "good ca
 
 ### Step 7: Write Grading Results
 
-Save results to `{outputs_dir}/../grading.json` (sibling to outputs_dir).
+Save results to `{outputs_dir}/../grading.tson` (sibling to outputs_dir).
 
 ## Grading Criteria
 
@@ -100,8 +100,8 @@ Save results to `{outputs_dir}/../grading.json` (sibling to outputs_dir).
 
 ### Step 8: Read Executor Metrics and Timing
 
-1. If `{outputs_dir}/metrics.json` exists, read it and include in grading output
-2. If `{outputs_dir}/../timing.json` exists, read it and include timing data
+1. If `{outputs_dir}/metrics.tson` exists, read it and include in grading output
+2. If `{outputs_dir}/../timing.tson` exists, read it and include timing data
 
 ## Output Format
 
@@ -154,7 +154,7 @@ Write a JSON file with this structure:
       "claim": "The form has 12 fillable fields",
       "type": "factual",
       "verified": true,
-      "evidence": "Counted 12 fields in field_info.json"
+      "evidence": "Counted 12 fields in field_info.tson"
     },
     {
       "claim": "All required fields were populated",
@@ -194,10 +194,10 @@ Write a JSON file with this structure:
   - **failed**: Count of failed expectations
   - **total**: Total expectations evaluated
   - **pass_rate**: Fraction passed (0.0 to 1.0)
-- **execution_metrics**: Copied from executor's metrics.json (if available)
+- **execution_metrics**: Copied from executor's metrics.tson (if available)
   - **output_chars**: Total character count of output files (proxy for tokens)
   - **transcript_chars**: Character count of transcript
-- **timing**: Wall clock timing from timing.json (if available)
+- **timing**: Wall clock timing from timing.tson (if available)
   - **executor_duration_seconds**: Time spent in executor subagent
   - **total_duration_seconds**: Total elapsed time for the run
 - **claims**: Extracted and verified claims from the output

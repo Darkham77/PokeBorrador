@@ -174,7 +174,7 @@ If you're fine with initial animation (often desired), use the standard pattern:
 ```
 
 ```javascript
-// router.js
+// router.ts
 const routes = [
   {
     path: '/',
@@ -190,4 +190,4 @@ const routes = [
 
 ## Reference
 - [Vue Router Transitions](https://router.vuejs.org/guide/advanced/transitions.html)
-- [Vue.js Transition appear](https://vuejs.org/guide/built-ins/transition.html#transition-on-appear)
+- [Vue.ts Transition appear](https://vuejs.org/guide/built-ins/transition.html#transition-on-appear)

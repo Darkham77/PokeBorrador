@@ -16,8 +16,8 @@ What type of game?
 │   └── Raw rendering power? → PixiJS
 │
 ├── 3D Game
-│   ├── Full engine (physics, XR)? → Babylon.js
-│   └── Rendering focused? → Three.js
+│   ├── Full engine (physics, XR)? → Babylon.ts
+│   └── Rendering focused? → Three.ts
 │
 └── Hybrid / Canvas
     └── Custom → Raw Canvas/WebGL
@@ -28,8 +28,8 @@ What type of game?
 | Framework | Type | Best For |
 | :--- | :--- | :--- |
 | **PixiJS 8** | 2D | Rendering, UI |
-| **Three.js** | 3D | Visualizations, lightweight |
-| **Babylon.js 7** | 3D | Full engine, XR |
+| **Three.ts** | 3D | Visualizations, lightweight |
+| **Babylon.ts 7** | 3D | Full engine, XR |
 
 ---
 

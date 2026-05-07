@@ -4,9 +4,9 @@ This document defines the JSON schemas used by skill-creator.
 
 ---
 
-## evals.json
+## evals.tson
 
-Defines the evals for a skill. Located at `evals/evals.json` within the skill directory.
+Defines the evals for a skill. Located at `evals/evals.tson` within the skill directory.
 
 ```json
 {
@@ -36,7 +36,7 @@ Defines the evals for a skill. Located at `evals/evals.json` within the skill di
 
 ---
 
-## history.json
+## history.tson
 
 Tracks version progression in Improve mode. Located at workspace root.
 
@@ -83,9 +83,9 @@ Tracks version progression in Improve mode. Located at workspace root.
 
 ---
 
-## grading.json
+## grading.tson
 
-Output from the grader agent. Located at `<run-dir>/grading.json`.
+Output from the grader agent. Located at `<run-dir>/grading.tson`.
 
 ```json
 {
@@ -129,7 +129,7 @@ Output from the grader agent. Located at `<run-dir>/grading.json`.
       "claim": "The form has 12 fillable fields",
       "type": "factual",
       "verified": true,
-      "evidence": "Counted 12 fields in field_info.json"
+      "evidence": "Counted 12 fields in field_info.tson"
     }
   ],
   "user_notes_summary": {
@@ -152,17 +152,17 @@ Output from the grader agent. Located at `<run-dir>/grading.json`.
 **Fields:**
 - `expectations[]`: Graded expectations with evidence
 - `summary`: Aggregate pass/fail counts
-- `execution_metrics`: Tool usage and output size (from executor's metrics.json)
-- `timing`: Wall clock timing (from timing.json)
+- `execution_metrics`: Tool usage and output size (from executor's metrics.tson)
+- `timing`: Wall clock timing (from timing.tson)
 - `claims`: Extracted and verified claims from the output
 - `user_notes_summary`: Issues flagged by the executor
 - `eval_feedback`: (optional) Improvement suggestions for the evals, only present when the grader identifies issues worth raising
 
 ---
 
-## metrics.json
+## metrics.tson
 
-Output from the executor agent. Located at `<run-dir>/outputs/metrics.json`.
+Output from the executor agent. Located at `<run-dir>/outputs/metrics.tson`.
 
 ```json
 {
@@ -176,7 +176,7 @@ Output from the executor agent. Located at `<run-dir>/outputs/metrics.json`.
   },
   "total_tool_calls": 18,
   "total_steps": 6,
-  "files_created": ["filled_form.pdf", "field_values.json"],
+  "files_created": ["filled_form.pdf", "field_values.tson"],
   "errors_encountered": 0,
   "output_chars": 12450,
   "transcript_chars": 3200
@@ -194,9 +194,9 @@ Output from the executor agent. Located at `<run-dir>/outputs/metrics.json`.
 
 ---
 
-## timing.json
+## timing.tson
 
-Wall clock timing for a run. Located at `<run-dir>/timing.json`.
+Wall clock timing for a run. Located at `<run-dir>/timing.tson`.
 
 **How to capture:** When a subagent task completes, the task notification includes `total_tokens` and `duration_ms`. Save these immediately — they are not persisted anywhere else and cannot be recovered after the fact.
 
@@ -216,9 +216,9 @@ Wall clock timing for a run. Located at `<run-dir>/timing.json`.
 
 ---
 
-## benchmark.json
+## benchmark.tson
 
-Output from Benchmark mode. Located at `benchmarks/<timestamp>/benchmark.json`.
+Output from Benchmark mode. Located at `benchmarks/<timestamp>/benchmark.tson`.
 
 ```json
 {
@@ -302,13 +302,13 @@ Output from Benchmark mode. Located at `benchmarks/<timestamp>/benchmark.json`.
   - `delta`: Difference strings like `"+0.50"`, `"+13.0"`, `"+1700"`
 - `notes`: Freeform observations from the analyzer
 
-**Important:** The viewer reads these field names exactly. Using `config` instead of `configuration`, or putting `pass_rate` at the top level of a run instead of nested under `result`, will cause the viewer to show empty/zero values. Always reference this schema when generating benchmark.json manually.
+**Important:** The viewer reads these field names exactly. Using `config` instead of `configuration`, or putting `pass_rate` at the top level of a run instead of nested under `result`, will cause the viewer to show empty/zero values. Always reference this schema when generating benchmark.tson manually.
 
 ---
 
-## comparison.json
+## comparison.tson
 
-Output from blind comparator. Located at `<grading-dir>/comparison-N.json`.
+Output from blind comparator. Located at `<grading-dir>/comparison-N.tson`.
 
 ```json
 {
@@ -381,9 +381,9 @@ Output from blind comparator. Located at `<grading-dir>/comparison-N.json`.
 
 ---
 
-## analysis.json
+## analysis.tson
 
-Output from post-hoc analyzer. Located at `<grading-dir>/analysis.json`.
+Output from post-hoc analyzer. Located at `<grading-dir>/analysis.tson`.
 
 ```json
 {

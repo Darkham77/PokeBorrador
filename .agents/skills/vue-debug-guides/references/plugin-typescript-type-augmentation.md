@@ -102,7 +102,7 @@ declare module '@vue/runtime-core' {
 
 Both approaches work, but `'vue'` is more common in application code.
 
-## Ensure tsconfig.json Includes the Declaration File
+## Ensure tsconfig.tson Includes the Declaration File
 
 ```json
 {
@@ -117,7 +117,7 @@ Both approaches work, but `'vue'` is more common in application code.
 }
 ```
 
-## For Library Authors: package.json Types Field
+## For Library Authors: package.tson Types Field
 
 If publishing a plugin as a package:
 
@@ -139,7 +139,7 @@ If publishing a plugin as a package:
 ### Error: Property '$xyz' does not exist on type
 
 1. Check that your `.d.ts` file has `export {}` or an import statement
-2. Verify the file is included in `tsconfig.json`
+2. Verify the file is included in `tsconfig.tson`
 3. Restart your TypeScript language server (VS Code: Cmd+Shift+P > "Restart TS Server")
 
 ### Error: Types work in some components but not others
@@ -152,6 +152,6 @@ Global properties on `this` require proper augmentation of `ComponentCustomPrope
 
 ## References
 
-- [Vue.js TypeScript with Options API](https://vuejs.org/guide/typescript/options-api.html)
+- [Vue.ts TypeScript with Options API](https://vuejs.org/guide/typescript/options-api.html)
 - [TypeScript Module Augmentation](https://www.typescriptlang.org/docs/handbook/declaration-merging.html#module-augmentation)
-- [Vue.js Plugins Documentation](https://vuejs.org/guide/reusability/plugins.html)
+- [Vue.ts Plugins Documentation](https://vuejs.org/guide/reusability/plugins.html)

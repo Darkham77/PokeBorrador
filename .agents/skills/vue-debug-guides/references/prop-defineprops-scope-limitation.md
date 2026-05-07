@@ -71,7 +71,7 @@ defineProps({
 ## Pattern: Import from External File
 
 ```javascript
-// validation.js
+// validation.ts
 export const VALID_SIZES = ['sm', 'md', 'lg']
 export const VALID_COLORS = ['red', 'blue', 'green']
 export const sizeValidator = (v) => VALID_SIZES.includes(v)
@@ -161,4 +161,4 @@ export default {
 
 ## Reference
 
-- [Vue.js Script Setup - defineProps](https://vuejs.org/api/sfc-script-setup.html#defineprops-defineemits)
+- [Vue.ts Script Setup - defineProps](https://vuejs.org/api/sfc-script-setup.html#defineprops-defineemits)

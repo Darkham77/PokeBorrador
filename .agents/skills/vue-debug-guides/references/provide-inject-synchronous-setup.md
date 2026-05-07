@@ -53,7 +53,7 @@ setTimeout(() => {
 import { provide } from 'vue'
 
 const response = await fetch('/api/config')
-const config = await response.json()
+const config = await response.tson()
 
 // WRONG: This is after an await, setup context may be lost
 provide('config', config) // May not work reliably
@@ -216,7 +216,7 @@ function debugProvide(key, value) {
 `app.provide()` can be called anytime during app initialization:
 
 ```js
-// main.js
+// main.ts
 import { createApp } from 'vue'
 import App from './App.vue'
 
@@ -236,5 +236,5 @@ But once the app is mounted, `app.provide()` should not be called.
 
 ## Reference
 
-- [Vue.js Composition API - provide()](https://vuejs.org/api/composition-api-dependency-injection.html#provide)
-- [Vue.js Provide/Inject Guide](https://vuejs.org/guide/components/provide-inject.html)
+- [Vue.ts Composition API - provide()](https://vuejs.org/api/composition-api-dependency-injection.html#provide)
+- [Vue.ts Provide/Inject Guide](https://vuejs.org/guide/components/provide-inject.html)

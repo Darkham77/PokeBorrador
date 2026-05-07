@@ -66,7 +66,7 @@ export function formatBattleLog(msg: string, type: string, source: any, ctx: Log
       const poke = source as Partial<Pokemon>;
       const pokeId = poke.id || poke.id_pokemon;
       if (pokeId) {
-        icon = getAssetUrl(ASSET_TYPES.POKEMON, pokeId, { shiny: poke.isShiny });
+        icon = getAssetUrl(ASSET_TYPES.POKEMON, pokeId, { isShiny: poke.isShiny });
         iconType = 'pokemon';
       }
     } else if (typeof source === 'string') {
