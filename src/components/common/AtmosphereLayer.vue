@@ -92,7 +92,7 @@ const weatherOnlyStyles = computed(() => {
 // 2. Shake/Wobble Animation Class
 const animClass = computed(() => {
   if (props.isLocked || props.isPerformanceMode) return ''
-  const anims = {
+  const anims: Record<string, string> = {
     clear: 'anim-glow',
     heatwave: 'anim-glow',
     mist: 'anim-drift',
@@ -105,7 +105,7 @@ const animClass = computed(() => {
 
 // 3. Lightning Randomization
 const lightningPos = ref({ x1: 20, x2: 60 })
-let lightningInterval = null
+let lightningInterval: ReturnType<typeof setInterval> | null = null
 
 function updateLightningPos() {
   const x1 = Math.floor(Math.random() * 60) + 10
@@ -132,7 +132,7 @@ defineExpose({
   animClass
 })
 
-const getLeafStyle = (n) => {
+const getLeafStyle = (n: number) => {
   // Use different seeds for different properties to break alignment
   const s1 = Math.abs(Math.sin(animSeed.value * 123.456 + n * 78.910))
   const s2 = Math.abs(Math.cos(animSeed.value * 987.654 + n * 32.109))

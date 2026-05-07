@@ -30,11 +30,8 @@ export function calculateRocketSellPrice(p: Pokemon): number {
   // Formula: (Level * 50 + (Total IVs / 186) * 500) * 0.8 (Rocket Cut)
   return Math.floor((p.level * 50 + (totalIvs / 186) * 500) * 0.8);
 }
-
-/**
- * Genera la URL del sprite usando el sistema centralizado de AssetService.
- */
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import type { LearnsetMove, MoveBaseData } from '@/types/database';
 
 export function getSpriteUrl(id: string, isShiny: boolean = false): string {
   return getAssetUrl(ASSET_TYPES.POKEMON, id, { shiny: isShiny });
@@ -49,13 +46,13 @@ export function getBackSpriteUrl(id: string, isShiny: boolean = false): string {
  */
 export function getMovesAtLevel(id: string, level: number): PokemonMove[] {
   const history = getSpeciesHistory(id);
-  const allPotentialMoves: any[] = [];
+  const allPotentialMoves: LearnsetMove[] = [];
   const seenNames = new Set<string>();
 
   history.forEach(spId => {
     const db = pokemonDataProvider.getPokemonData(spId);
     if (db && db.learnset) {
-      (db.learnset as any[]).forEach(m => {
+      (db.learnset as LearnsetMove[]).forEach(m => {
         if (m.lv <= level) {
           allPotentialMoves.push(m);
         }
@@ -65,10 +62,10 @@ export function getMovesAtLevel(id: string, level: number): PokemonMove[] {
 
   allPotentialMoves.sort((a, b) => a.lv - b.lv);
 
-  const uniqueMoves: any[] = [];
+  const uniqueMoves: LearnsetMove[] = [];
   for (let i = allPotentialMoves.length - 1; i >= 0; i--) {
     const m = allPotentialMoves[i];
-    if (!seenNames.has(m.name)) {
+    if (m && !seenNames.has(m.name)) {
       uniqueMoves.unshift(m);
       seenNames.add(m.name);
     }
@@ -76,15 +73,15 @@ export function getMovesAtLevel(id: string, level: number): PokemonMove[] {
 
   const last4 = uniqueMoves.slice(-4);
   return last4.map(m => {
-    const moveData = pokemonDataProvider.getMoveData(m.name) || {};
+    const moveData = pokemonDataProvider.getMoveData(m.name)
     return { 
       name: m.name || '???', 
-      pp: m.pp || moveData.pp || 35, 
-      maxPP: m.pp || moveData.pp || 35,
-      type: moveData.type || 'normal',
-      power: moveData.power || 0,
-      acc: moveData.acc || 100,
-      cat: moveData.cat || 'physical'
+      pp: m.pp || moveData?.pp || 35, 
+      maxPP: m.pp || moveData?.pp || 35,
+      type: moveData?.type || 'normal',
+      power: moveData?.power || 0,
+      acc: moveData?.acc || 100,
+      cat: moveData?.cat || 'physical'
     };
   });
 }
@@ -107,7 +104,7 @@ export function getTypeEffectivenessMsg(eff: number): string | null {
 /**
  * Get display description for a move based on its effect
  */
-export function getMoveDescription(name: string, md: any): string {
+export function getMoveDescription(name: string, md?: MoveBaseData | null): string {
   if (!md) md = pokemonDataProvider.getMoveData(name);
   if (!md) return "Causa daño al oponente sin efectos secundarios adicionales.";
   
@@ -117,7 +114,7 @@ export function getMoveDescription(name: string, md: any): string {
   if (md.recoil) return "El usuario recibe daño por retroceso al golpear.";
   if (md.drain && md.cat !== 'status') return "Restaura PS al usuario según el daño causado.";
   if (md.selfKO) return "El usuario se debilita para causar un daño masivo.";
-  if (md.priority > 0) return "Ataque rápido que siempre golpea primero.";
+  if (md.priority && md.priority > 0) return "Ataque rápido que siempre golpea primero.";
   if (md.levelDmg) return "Causa un daño igual al nivel del usuario.";
   if (md.counter) return "Devuelve al rival el doble del daño físico recibido este turno.";
   
@@ -232,7 +229,8 @@ export function getMoveDescription(name: string, md: any): string {
     'stat_down_self_spa_2': "Reduce contundentemente su Ataque Especial luego del uso desmedido.",
   };
   
-  if (effects[md.effect]) return effects[md.effect];
+  const desc = effects[md.effect || ''];
+  if (desc) return desc;
   if (md.cat === 'status') return "Un movimiento que causa un efecto de estado o alteración.";
   return "Causa daño al oponente sin efectos secundarios adicionales.";
 }

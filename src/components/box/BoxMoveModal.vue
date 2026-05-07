@@ -29,7 +29,7 @@ const boxesOccupation = computed(() => {
     const start = i * 50
     const end = start + 50
     const slice = boxArray.slice(start, end)
-    const count = slice.filter(p => p != null).length
+    const count = slice.filter((p: any) => p != null).length
     result.push({ 
       index: i, 
       number: i + 1, 
@@ -41,9 +41,9 @@ const boxesOccupation = computed(() => {
   return result
 })
 
-const handleMove = (targetBoxIndex) => {
+const handleMove = (targetBoxIndex: number) => {
   const target = boxesOccupation.value[targetBoxIndex]
-  if (target.isFull) {
+  if (target?.isFull) {
     uiStore.notify('Esa caja está llena.', '⚠️')
     return
   }

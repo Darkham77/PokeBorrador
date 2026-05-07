@@ -25,10 +25,12 @@ export const TYPE_CHART: Record<string, Record<string, number>> = {
   fairy: { fire: 0.5, fighting: 2, poison: 0.5, dragon: 2, dark: 2, steel: 0.5 }
 };
 
+import type { Pokemon } from '@/types/pokemon';
+
 /**
  * Get type effectiveness multiplier
  */
-export function getTypeEffectiveness(moveType: string | undefined, defType: string | undefined, attacker: any = null): number {
+export function getTypeEffectiveness(moveType: string | undefined, defType: string | undefined, attacker: Pokemon | null = null): number {
   if (!moveType || !defType) return 1;
   
   // Scrappy (Intrépido) logic: Normal/Fighting can hit Ghost
@@ -44,7 +46,7 @@ export function getTypeEffectiveness(moveType: string | undefined, defType: stri
 /**
  * Get combined effectiveness for dual types
  */
-export function getCombinedEffectiveness(moveType: string, defender: any, attacker: any = null): number {
+export function getCombinedEffectiveness(moveType: string, defender: Partial<Pokemon>, attacker: Pokemon | null = null): number {
   let eff = getTypeEffectiveness(moveType, defender.type, attacker);
   if (defender.type2) {
     eff *= getTypeEffectiveness(moveType, defender.type2, attacker);

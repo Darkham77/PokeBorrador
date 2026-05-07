@@ -3,14 +3,16 @@ import { generateEncounter } from '@/logic/encounters'
 import { useUIStore } from '@/stores/ui'
 import { useMapStore } from '@/stores/map'
 import { useEventStore } from '@/stores/events'
+import type { BattleContext } from '@/types/battleContext'
+import type { UIStore, MapStore, EventStore } from '@/types/stores'
 
 /**
  * Handles the completion of a battle flow (either going to map or search loop).
  */
-export async function handleBattleFlowCompletion(ctx: any, option = 'map') {
+export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'map') {
   const { BATTLE_STATES, BATTLE_SUBSTATES } = ctx
   const fsm = ctx.fsm
-  const uiStore = useUIStore() as any
+  const uiStore = useUIStore() as unknown as UIStore
 
   if (option === 'search' && ctx.activeBattle.value) {
     ctx.isProcessing.value = true
@@ -29,15 +31,17 @@ export async function handleBattleFlowCompletion(ctx: any, option = 'map') {
     }
     // GEN_NEW_S2: Generar próximo encuentro si no hay uno en el slot
     if (!ctx.upcomingPokemon.value) {
+      const mapStore = useMapStore() as unknown as MapStore
+      const eventStore = useEventStore() as unknown as EventStore
       const encounterOptions = {
-        activeEvents: (useMapStore() as any).activeEvents,
-        dominanceData: (useMapStore() as any).mapWinners,
-        shinyMultiplier: (useEventStore() as any).globalMultipliers?.shiny || 1,
+        activeEvents: mapStore.activeEvents,
+        dominanceData: mapStore.mapWinners,
+        shinyMultiplier: eventStore.globalMultipliers?.shiny || 1,
         forceEncounter: true
       }
-      const encounter = (await generateEncounter(locId, ctx.gs.state, encounterOptions)) as any
-      if (encounter && encounter.type === 'wild') {
-        ctx.upcomingPokemon.value = { ...encounter.pokemon }
+      const encounter = await generateEncounter(locId, ctx.gs.state, encounterOptions)
+      if (encounter && (encounter.type === 'wild' || encounter.type === 'fishing' || encounter.type === 'guardian') && encounter.pokemon) {
+        ctx.upcomingPokemon.value = encounter.pokemon
       }
     }
     
@@ -73,7 +77,7 @@ export async function handleBattleFlowCompletion(ctx: any, option = 'map') {
 /**
  * Triggers an encounter from the search loop.
  */
-export async function triggerNextEncounter(ctx: any) {
+export async function triggerNextEncounter(ctx: BattleContext) {
   const { BATTLE_STATES, BATTLE_SUBSTATES } = ctx
   const fsm = ctx.fsm
   
@@ -102,14 +106,14 @@ export async function triggerNextEncounter(ctx: any) {
 /**
  * Transition from SEARCH_PHASE to ACTIVE_BATTLE.
  */
-export async function startEncounter(ctx: any) {
+export async function startEncounter(ctx: BattleContext) {
   ctx.isIntroAnimating.value = true
   
-  const locId = ctx.activeBattle.value?.locationId
-  const isTr = ctx.activeBattle.value?.isTrainer
-  const trName = ctx.activeBattle.value?.trainerName
-  const isGym = ctx.activeBattle.value?.isGym
-  const gymId = ctx.activeBattle.value?.gymId
+  const locId = ctx.activeBattle.value?.locationId || 'route1'
+  const isTr = ctx.activeBattle.value?.isTrainer || false
+  const trName = ctx.activeBattle.value?.trainerName || ''
+  const isGym = ctx.activeBattle.value?.isGym || false
+  const gymId = ctx.activeBattle.value?.gymId || ''
   
   await ctx.initBattle(locId, isTr, trName, isGym, gymId, true);
   

@@ -21,8 +21,8 @@ const emit = defineEmits<{
   (e: 'select-ball', ballName: string): void
 }>()
 
-const gameStore = useGameStore() as any
-const battleStore = useBattleStore() as any
+const gameStore = useGameStore()
+const battleStore = useBattleStore()
 
 const isBallMenuOpen = ref(false)
 
@@ -56,7 +56,8 @@ const toggleBallMenu = () => {
   }
 
   if (availableBalls.value.length === 1 && !isBallMenuOpen.value) {
-    emit('select-ball', availableBalls.value[0].name)
+    const ball = availableBalls.value[0]
+    if (ball) emit('select-ball', ball.name)
     return
   }
 

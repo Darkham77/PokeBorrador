@@ -44,7 +44,7 @@ export function getPokemonTier(pokemon: Partial<Pokemon> | null) {
     }
   }
 
-  return { tier: 'F', total, ...BOX_TIER_CONFIG['F'] };
+  return { tier: 'F', total, ...(BOX_TIER_CONFIG['F'] || { min: 0, max: 55, color: '#FF3B3B', bg: 'Rgba(255,59,59,0.14)', label: 'F' }) };
 }
 
 /**

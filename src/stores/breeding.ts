@@ -15,37 +15,46 @@ import { EGG_SPAWN_INTERVAL_MS } from '@/logic/breeding/breedingData';
 import { POKEMON_DB } from '@/data/pokemonDB';
 import { usePlayerClassStore } from './playerClass';
 import { useEventStore } from './events';
+import type { DaycareSlot, DaycareEgg, DaycareMission } from '@/types/breeding';
+import type { Pokemon, PokemonEgg } from '@/types/pokemon';
 
 export const useBreedingStore = defineStore('breeding', () => {
-  const gameStore = useGameStore() as any;
-  const uiStore = useUIStore() as any;
-  const classStore = usePlayerClassStore() as any;
-  const eventStore = useEventStore() as any;
+  const gameStore = useGameStore();
+  const uiStore = useUIStore();
+  const classStore = usePlayerClassStore();
+  const eventStore = useEventStore();
 
   // --- STATE ---
-  const slots = ref([]) as any; // [{ pokemon, slot_index, deposited_at }]
-  const warehouseEggs = ref([]) as any; // Eggs waiting to be claimed
-  const dailyMissions = computed({
+  const slots = ref<DaycareSlot[]>([]); // [{ pokemon, slot_index, deposited_at }]
+  const warehouseEggs = ref<DaycareEgg[]>([]); // Eggs waiting to be claimed
+  const dailyMissions = computed<DaycareMission[]>({
     get: () => gameStore.state.daycare_missions || [],
     set: (val) => { gameStore.state.daycare_missions = val }
   });
-  const missionRefreshes = computed({
+  const missionRefreshes = computed<number>({
     get: () => gameStore.state.daycare_mission_refreshes || 0,
     set: (val) => { gameStore.state.daycare_mission_refreshes = val }
   });
   const loading = ref(false);
 
   // --- GETTERS ---
-  const isBreeding = computed(() => slots.value.length === 2 && slots.value[0].pokemon && slots.value[1].pokemon);
+  const isBreeding = computed(() => slots.value.length === 2 && !!slots.value[0]?.pokemon && !!slots.value[1]?.pokemon);
   
   const compatibility = computed(() => {
-    if (!isBreeding.value) return { level: 0, reason: 'Deposita 2 Pokémon' };
-    return checkCompatibility(slots.value[0].pokemon, slots.value[1].pokemon);
+    if (!isBreeding.value) {
+      return { level: 0, reason: 'Deposita 2 Pokémon', sharedGroups: [] };
+    }
+    const p1 = slots.value[0]?.pokemon;
+    const p2 = slots.value[1]?.pokemon;
+    if (!p1 || !p2) return { level: 0, reason: 'Deposita 2 Pokémon', sharedGroups: [] };
+    return checkCompatibility(p1, p2);
   });
-
+  
   const nextEggTime = computed(() => {
-    if ((compatibility.value as any).level === 0) return null;
-    const interval = EGG_SPAWN_INTERVAL_MS[(compatibility.value as any).level];
+    const level = compatibility.value.level;
+    if (level === 0) return null;
+    const interval = (EGG_SPAWN_INTERVAL_MS as any)[level];
+    if (!interval) return null;
     
     if (!slots.value[0]?.deposited_at || !slots.value[1]?.deposited_at) return null;
 
@@ -67,7 +76,7 @@ export const useBreedingStore = defineStore('breeding', () => {
     }
   }
 
-  async function deposit(pokemon: any, slotIndex: any) {
+  async function deposit(pokemon: Pokemon, slotIndex: number) {
     if (pokemon.onMission || pokemon.onDefense) {
       uiStore.notify('Este Pokémon está ocupado.', '⚠️');
       return false;
@@ -76,30 +85,30 @@ export const useBreedingStore = defineStore('breeding', () => {
     pokemon.inDaycare = true;
     
     const now = new Date().toISOString();
-    const existing = slots.value.findIndex((s: any) => s.slotIndex === slotIndex);
+    const existing = slots.value.findIndex((s) => s.slotIndex === slotIndex);
     if (existing !== -1) {
       slots.value[existing] = { pokemon, slotIndex, deposited_at: now };
     } else {
       slots.value.push({ pokemon, slotIndex, deposited_at: now });
     }
 
-    slots.value.forEach((s: any) => s.deposited_at = now);
+    slots.value.forEach((s) => s.deposited_at = now);
 
     uiStore.notify(`¡${pokemon.name} depositado en la Guardería!`, '🏡');
     gameStore.scheduleSave();
     return true;
   }
 
-  // @ts-ignore
-  async function _checkAndGenerateEgg() {
-    if (!isBreeding.value || (compatibility.value as any).level === 0) return;
+  async function checkAndGenerateEgg() {
+    if (!isBreeding.value || compatibility.value.level === 0) return;
+    if (!slots.value[0]?.pokemon || !slots.value[1]?.pokemon) return;
     
     const now = Date.now();
     if (nextEggTime.value && now < nextEggTime.value) return;
 
-    const pA = slots.value[0].pokemon;
-    const pB = slots.value[1].pokemon;
-    const compat = compatibility.value as any;
+    const pA = slots.value[0].pokemon as Pokemon;
+    const pB = slots.value[1].pokemon as Pokemon;
+    const compat = compatibility.value as any; // breedingEngine might need better typing too
 
     if ((pA.vigor || 0) <= 0 || (pB.vigor || 0) <= 0) {
       uiStore.notify('Uno de los padres no tiene vigor suficiente.', '💤');
@@ -109,10 +118,13 @@ export const useBreedingStore = defineStore('breeding', () => {
     const eggSpecies = compat.eggSpecies;
     const itemA = pA.heldItem || '';
     const itemB = pB.heldItem || '';
-    const playerClass = classStore.activeClass;
+    const playerClass = classStore.playerClass as string;
 
-    const egg = {
-      id: `egg_${now}_${Math.random().toString(36).substr(2, 5)}`,
+    const abilityName = inheritAbility(pA, pB);
+    const abilityIndex = abilityName ? 1 : 0; // Simplified conversion for now
+
+    const egg: DaycareEgg = {
+      id: `egg_${now}_${Math.random().toString(36).substring(2, 7)}`,
       species: eggSpecies,
       name: 'Huevo Pokémon',
       level: 1,
@@ -123,7 +135,7 @@ export const useBreedingStore = defineStore('breeding', () => {
       ivs: calculateInheritance(pA, pB, itemA, itemB, playerClass),
       nature: inheritNature(pA, pB, itemA, itemB) || 'Serio',
       movesAtBirth: inheritMoves(pA, pB, eggSpecies),
-      abilityIndex: inheritAbility(pA, pB),
+      abilityIndex: abilityIndex,
       isShiny: Math.random() < calculateShinyChance(pA, pB, 1/4096, eventStore.globalMultipliers?.shiny || 1),
       cost: 5000
     };
@@ -131,18 +143,20 @@ export const useBreedingStore = defineStore('breeding', () => {
     warehouseEggs.value.push(egg);
     
     const isoNow = new Date().toISOString();
-    slots.value[0].deposited_at = isoNow;
-    slots.value[1].deposited_at = isoNow;
+    if (slots.value[0]) slots.value[0].deposited_at = isoNow;
+    if (slots.value[1]) slots.value[1].deposited_at = isoNow;
 
     uiStore.notify(' ¡Apareció un huevo en la Guardería!', '🥚');
     gameStore.scheduleSave();
   }
 
-  function claimEgg(eggId: any) {
-    const eggIndex = warehouseEggs.value.findIndex((e: any) => e.id === eggId);
+  function claimEgg(eggId: string) {
+    const eggIndex = warehouseEggs.value.findIndex((e) => e.id === eggId);
     if (eggIndex === -1) return;
     
     const egg = warehouseEggs.value[eggIndex];
+    if (!egg) return;
+
     if (gameStore.state.money < egg.cost) {
       uiStore.notify(`No tienes suficiente dinero ($${egg.cost.toLocaleString()}).`, '💰');
       return;
@@ -150,12 +164,11 @@ export const useBreedingStore = defineStore('breeding', () => {
 
     if (!gameStore.state.eggs) gameStore.state.eggs = [];
     
-    const eggForInventory = {
+    const eggForInventory: PokemonEgg = {
       uid: egg.id,
       id: egg.species,
-      name: 'Huevo Pokémon',
-      isEgg: true,
       steps: egg.steps,
+      ready: false,
       ivs: egg.ivs,
       nature: egg.nature,
       movesAtBirth: egg.movesAtBirth,
@@ -163,7 +176,12 @@ export const useBreedingStore = defineStore('breeding', () => {
       isShiny: egg.isShiny
     };
     
-    gameStore.state.eggs.push(eggForInventory);
+    const eggToPush = {
+      ...eggForInventory,
+      uid: `${eggForInventory.id}-${Date.now()}`,
+      ready: false
+    };
+    gameStore.state.eggs.push(eggToPush as any);
     gameStore.state.money -= egg.cost;
     warehouseEggs.value.splice(eggIndex, 1);
     
@@ -171,16 +189,17 @@ export const useBreedingStore = defineStore('breeding', () => {
     gameStore.scheduleSave();
   }
 
-  function scanEgg(eggId: any) {
-    if (classStore.activeClass !== 'criador') {
+  function scanEgg(eggId: string) {
+    if (classStore.playerClass !== 'criador') {
       uiStore.notify('Solo los Criadores pueden escanear huevos.', '🔒');
       return;
     }
     
-    const egg = warehouseEggs.value.find((e: any) => e.id === eggId);
+    const egg = warehouseEggs.value.find((e) => e.id === eggId);
     if (!egg) return;
 
-    if (egg.inherited_ivs) {
+    if (egg.ivs) {
+      if (!egg.inherited_ivs) egg.inherited_ivs = { };
       egg.inherited_ivs._scanned = true;
       uiStore.notify(`¡Huevo de ${(POKEMON_DB as any)[egg.species]?.name} escaneado!`, '🔍');
       gameStore.scheduleSave();
@@ -188,8 +207,9 @@ export const useBreedingStore = defineStore('breeding', () => {
   }
 
   function checkDailyReset() {
-    const today = new Date().toISOString().split('T')[0];
-    const lastDate = dailyMissions.value.length > 0 ? dailyMissions.value[0].date : '';
+    const today = new Date().toISOString().split('T')[0] as string;
+    const missions = dailyMissions.value;
+    const lastDate = missions.length > 0 && missions[0] ? missions[0].date : '';
 
     if (lastDate !== today) {
       regenerateMissions(today);
@@ -197,13 +217,13 @@ export const useBreedingStore = defineStore('breeding', () => {
     }
   }
 
-  function regenerateMissions(dateStr: any) {
+  function regenerateMissions(dateStr: string) {
     const level = gameStore.state.trainerLevel || 1;
-    const m1 = generateMission(level, dateStr);
-    let m2 = generateMission(level, dateStr);
+    const m1 = generateMission(level, dateStr) as DaycareMission;
+    let m2 = generateMission(level, dateStr) as DaycareMission;
 
-    while ((m2 as any).targetId === (m1 as any).targetId) {
-      m2 = generateMission(level, dateStr);
+    while (m2.targetId === m1.targetId) {
+      m2 = generateMission(level, dateStr) as DaycareMission;
     }
 
     dailyMissions.value = [m1, m2];
@@ -217,25 +237,27 @@ export const useBreedingStore = defineStore('breeding', () => {
     }
 
     missionRefreshes.value--;
-    const today = new Date().toISOString().split('T')[0];
+    const today = new Date().toISOString().split('T')[0] as string;
     regenerateMissions(today);
     uiStore.notify('Misiones actualizadas.', '🔄');
   }
 
-  function completeMission(missionIndex: any, pokemonUid: any) {
+  function completeMission(missionIndex: number, pokemonUid: string) {
     const mission = dailyMissions.value[missionIndex];
-    if (mission.completed) return;
+    if (!mission || mission.completed) return;
 
-    const all = [...gameStore.state.team, ...(gameStore.state.box || [])];
+    const team = gameStore.state.team || [];
+    const box = gameStore.state.box || [];
+    const all = [...team, ...box];
     const pokemon = all.find(p => p.uid === pokemonUid);
 
     if (!pokemon) return;
-    if (!validateMissionPokemon(pokemon, mission)) {
+    if (!validateMissionPokemon(pokemon, mission as any)) {
       uiStore.notify('Este Pokémon no cumple los requisitos.', '❌');
       return;
     }
 
-    if (gameStore.state.team.length <= 1 && gameStore.state.team.some((p: any) => p.uid === pokemonUid)) {
+    if (team.length <= 1 && team.some((p) => p.uid === pokemonUid)) {
       uiStore.notify('No puedes entregar tu único Pokémon.', '⚠️');
       return;
     }
@@ -246,14 +268,15 @@ export const useBreedingStore = defineStore('breeding', () => {
     }
 
     mission.completed = true;
-    gameStore.state.inventory[mission.reward.name] = (gameStore.state.inventory[mission.reward.name] || 0) + mission.reward.qty;
+    const inv = gameStore.state.inventory as any;
+    inv[mission.reward.name] = (inv[mission.reward.name] || 0) + mission.reward.qty;
     
     uiStore.notify(`¡Misión completada! Recibiste ${mission.reward.name} x${mission.reward.qty}`, mission.reward.icon);
     gameStore.scheduleSave();
   }
 
-  function reduceHatchTimers(activity: any) {
-    const REDUCTIONS = { battle: 2 * 60000, capture: 3 * 60000, gym: 10 * 60000 } as any;
+  function reduceHatchTimers(activity: 'battle' | 'capture' | 'gym') {
+    const REDUCTIONS = { battle: 2 * 60000, capture: 3 * 60000, gym: 10 * 60000 };
     const reduction = REDUCTIONS[activity] || 0;
     if (reduction === 0) return;
 
@@ -261,7 +284,7 @@ export const useBreedingStore = defineStore('breeding', () => {
     if (eggs.length === 0) return;
 
     let newlyReady = false;
-    eggs.forEach((egg: any) => {
+    eggs.forEach((egg) => {
       if (egg.steps > 0) {
         egg.steps = Math.max(0, egg.steps - (reduction / 1000));
         if (egg.steps === 0) newlyReady = true;
@@ -290,6 +313,7 @@ export const useBreedingStore = defineStore('breeding', () => {
     regenerateMissions,
     completeMission,
     reduceHatchTimers,
-    scanEgg
+    scanEgg,
+    checkAndGenerateEgg
   };
 });

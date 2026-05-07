@@ -1,15 +1,15 @@
-
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { EVOLUTION_TABLE, STONE_EVOLUTIONS, TRADE_EVOLUTIONS } from '@/data/evolutionData';
 import { recalcPokemonStats } from '@/logic/pokemonFactory';
 import type { Pokemon, PokemonMove } from '@/types/pokemon';
+import type { PokemonData, LearnsetMove } from '@/types/database';
 
 /**
  * Realiza la evolución de los datos de un Pokémon.
  * @returns {Object} { pendingMoves, fromId, toId }
  */
 export function evolvePokemonData(pokemon: Pokemon, toId: string) {
-  const toData = pokemonDataProvider.getPokemonData(toId);
+  const toData: PokemonData | null = pokemonDataProvider.getPokemonData(toId);
   if (!toData) return null;
   
   const fromId = pokemon.id;
@@ -18,12 +18,12 @@ export function evolvePokemonData(pokemon: Pokemon, toId: string) {
   // Actualizar especie
   pokemon.id = toId;
   pokemon.name = toData.name;
-  (pokemon as any).emoji = (toData as any).emoji;
+  if (toData.emoji) pokemon.emoji = toData.emoji;
   pokemon.type = toData.type;
   
   // Actualizar habilidad si no es compatible
   const abilityList = pokemonDataProvider.getSpeciesAbilities(toId);
-  if (!abilityList.includes(pokemon.ability)) {
+  if (!pokemon.ability || !abilityList.includes(pokemon.ability)) {
     pokemon.ability = abilityList[Math.floor(Math.random() * abilityList.length)];
   }
   
@@ -35,8 +35,8 @@ export function evolvePokemonData(pokemon: Pokemon, toId: string) {
   // Movimientos pendientes del nuevo learnset para el nivel actual
   const pendingMoves: PokemonMove[] = [];
   if (toData.learnset) {
-    (toData.learnset as any[]).filter(m => m.lv === pokemon.level).forEach(m => {
-      if (!pokemon.moves.find(em => em.name === m.name)) {
+    (toData.learnset as LearnsetMove[]).filter(m => m.lv === pokemon.level).forEach(m => {
+      if (!pokemon.moves.find(em => em && em.name === m.name)) {
         pendingMoves.push({ name: m.name, pp: m.pp, maxPP: m.pp });
       }
     });
@@ -93,7 +93,7 @@ export function getEvolvedForm(id: string, level: number): string {
   // 2. Backtrack to the very first base form
   let current = id;
   while (PRE_EVO[current]) {
-    current = PRE_EVO[current];
+    current = PRE_EVO[current] || current;
   }
 
   // 3. Evolve forward as much as level permits
@@ -113,7 +113,7 @@ export function getEvolvedForm(id: string, level: number): string {
     if (!changed && level >= 30 && Math.random() < 0.5) {
       if (evolved === 'eevee') {
         const options = ['vaporeon', 'jolteon', 'flareon'];
-        evolved = options[Math.floor(Math.random() * options.length)];
+        evolved = options[Math.floor(Math.random() * options.length)] || evolved;
         changed = true;
       } else {
         const stoneEvo = (STONE_EVOLUTIONS as Record<string, { stone: string; to: string }>)[evolved];

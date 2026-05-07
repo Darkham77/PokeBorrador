@@ -4,12 +4,12 @@ import { useGameStore } from '@/stores/game'
 import { getItemSpriteUrl } from '@/logic/inventory/inventoryEngine'
 import { ITEM_CATEGORIES, CATEGORY_LABELS } from '@/data/items'
 
-const inventoryStore = useInventoryStore() as any
-const gameStore = useGameStore() as any
+const inventoryStore = useInventoryStore()
+const gameStore = useGameStore()
 
 const categories = ITEM_CATEGORIES.map(id => ({
   id,
-  label: CATEGORY_LABELS[id] || id
+  label: (CATEGORY_LABELS as Record<string, string>)[id] || id
 }))
 
 const onUseItem = (name: string) => {
@@ -46,7 +46,7 @@ const onUseItem = (name: string) => {
             v-for="cat in categories" 
             :key="cat.id"
             :class="['tab-btn', { active: inventoryStore.activeCategory === cat.id }]"
-            @click.stop="inventoryStore.setCategory(cat.id)"
+            @click.stop="inventoryStore.activeCategory = cat.id"
           >
             {{ cat.label }}
           </button>
@@ -96,16 +96,21 @@ const onUseItem = (name: string) => {
             v-for="item in inventoryStore.bagItems" 
             :key="item.name"
             :class="['item-card', { selected: !!inventoryStore.bagSellSelected[item.name] }]"
-            @click.stop="inventoryStore.bagSellMode ? inventoryStore.toggleBagSellSelect(item.name, item.qty) : null"
+            @click.stop="inventoryStore.bagSellMode ? inventoryStore.toggleBagSellSelect(item.name, Number(item.qty)) : null"
           >
             <div class="item-icon-container">
+              <div
+                class="bag-item-qty"
+                @click.stop="inventoryStore.toggleBagSellSelect(item.name, Number(item.qty))"
+              >
+                {{ item.qty }}
+              </div>
               <img
                 :src="getItemSpriteUrl(item.name)"
                 :alt="item.name"
                 class="item-sprite"
                 @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
               >
-              <span class="item-qty">x{{ item.qty }}</span>
             </div>
             
             <div class="item-details">
@@ -128,21 +133,30 @@ const onUseItem = (name: string) => {
 
             <!-- Sell Qty Selector -->
             <div
-              v-else-if="inventoryStore.bagSellSelected[item.name]"
+              v-else-if="inventoryStore.bagSellSelected[item.name] !== undefined"
               class="sell-qty-selector"
-              @click.stop
             >
-              <button @click.stop="inventoryStore.updateBagSellQty(item.name, inventoryStore.bagSellSelected[item.name] - 1, item.qty)">
-                -
-              </button>
-              <input 
-                type="number" 
-                :value="inventoryStore.bagSellSelected[item.name]" 
-                @input="(e: Event) => inventoryStore.updateBagSellQty(item.name, (e.target as HTMLInputElement).value, item.qty)"
-              >
-              <button @click.stop="inventoryStore.updateBagSellQty(item.name, inventoryStore.bagSellSelected[item.name] + 1, item.qty)">
-                +
-              </button>
+              <div class="qty-controls">
+                <button @click.stop="inventoryStore.updateBagSellQty(item.name, (inventoryStore.bagSellSelected[item.name] || 0) - 1, Number(item.qty))">
+                  -
+                </button>
+                <input 
+                  type="number" 
+                  min="1" 
+                  :max="Number(item.qty)"
+                  :value="inventoryStore.bagSellSelected[item.name]" 
+                  @input="(e: Event) => inventoryStore.updateBagSellQty(item.name, (e.target as HTMLInputElement).value, Number(item.qty))"
+                >
+                <button @click="inventoryStore.updateBagSellQty(item.name, 1, Number(item.qty))">
+                  MIN
+                </button>
+                <button @click="inventoryStore.updateBagSellQty(item.name, Number(item.qty), Number(item.qty))">
+                  MAX
+                </button>
+                <button @click.stop="inventoryStore.updateBagSellQty(item.name, (inventoryStore.bagSellSelected[item.name] || 0) + 1, Number(item.qty))">
+                  +
+                </button>
+              </div>
             </div>
           </div>
         </div>

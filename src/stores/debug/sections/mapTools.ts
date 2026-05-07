@@ -1,4 +1,4 @@
-export function registerMapTools(debug, { map, ui }) {
+export function registerMapTools(debug: any, { map, ui }: { map: any, ui: any }) {
   debug.register({
     id: 'map-toggle-grid',
     label: 'MOSTRAR BORDES',
@@ -24,42 +24,42 @@ export function registerMapTools(debug, { map, ui }) {
   })
 
   debug.register({
-    id: 'map-force-dominance',
+    id: 'map-set-dominance',
     label: 'DOMINIO GLOBAL',
     command: 'setDominance',
     category: 'map',
-    action: (faction) => {
-      const winnerMap = {}
+    action: (faction: string) => {
+      const winnerMap: any = {}
       if (faction && faction !== 'none') {
-        map.maps.forEach(m => { winnerMap[m.id] = { winner_faction: faction } })
+        map.maps.forEach((m: any) => { winnerMap[m.id] = { winner_faction: faction } })
       }
-      map.mapWinners = winnerMap
-      ui.notify(`Dominio: ${faction || 'NEUTRAL'}`, '🚩')
+      map.maps_dominance = winnerMap
+      ui.notify(`Debug: Dominio global asignado a ${faction}`, '🚩')
     },
-    description: 'Fuerza el bando dominante en todo el mapa.'
+    description: 'Establece el bando dominante en todos los mapas.'
   })
 
   debug.register({
     id: 'map-set-weather',
-    label: 'FIJAR CLIMA',
+    label: 'SET WEATHER',
     command: 'setWeather',
-    category: 'time',
-    action: (w) => {
-      map.setGlobalWeather(w)
-      ui.notify(`Clima: ${w ? w.toUpperCase() : 'RESETEADO'}`, '🌥️')
+    category: 'map',
+    action: (w: string) => {
+      map.forcedWeather = w
+      ui.notify(`Debug: Clima forzado a ${w}`, '⛅')
     },
-    description: 'Cambia el clima global.'
+    description: 'Fuerza un clima específico en el mapa actual.'
   })
 
   debug.register({
     id: 'map-set-cycle',
-    label: 'FIJAR CICLO',
+    label: 'SET CYCLE',
     command: 'setCycle',
-    category: 'time',
-    action: (c) => {
-      map.setGlobalCycle(c)
-      ui.notify(`Ciclo: ${c ? c.toUpperCase() : 'REAL'}`, '⌛')
+    category: 'map',
+    action: (c: string) => {
+      map.forcedCycle = c
+      ui.notify(`Debug: Ciclo forzado a ${c}`, '☀️')
     },
-    description: 'Fuerza un ciclo horario (morning, day, dusk, night) o null para real.'
+    description: 'Fuerza un ciclo día/noche específico.'
   })
 }

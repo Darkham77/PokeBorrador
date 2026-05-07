@@ -9,6 +9,8 @@ import { getCombinedEffectiveness } from '../pokemon/typeEngine';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { getMechanicalWeather, WEATHER_MECHANICAL } from './weatherMapper';
 import { getDayCycle } from '../timeUtils';
+import type { Pokemon, Move } from '../../types/pokemon';
+import type { BattleStages, BattleWeather, BattleContext } from '../../types/battle';
 
 export const CURRENT_GENERATION = 2;
 export const ACTIVE_RULE_SET = 2;
@@ -16,36 +18,32 @@ export const ACTIVE_RULE_SET = 2;
 /**
  * Stage Multipliers (-6 to +6) mapping
  */
-export const STAGE_MULTIPLIERS_STAT: any = {
+export const STAGE_MULTIPLIERS_STAT: Record<string, number> = {
   '-6': 0.25, '-5': 0.28, '-4': 0.33, '-3': 0.40, '-2': 0.50, '-1': 0.66,
   '0': 1.0, '1': 1.5, '2': 2.0, '3': 2.5, '4': 3.0, '5': 3.5, '6': 4.0
 };
-export const STAGE_MULTIPLIERS_ACC: any = {
+export const STAGE_MULTIPLIERS_ACC: Record<string, number> = {
   '-6': 0.33, '-5': 0.37, '-4': 0.43, '-3': 0.50, '-2': 0.60, '-1': 0.75,
   '0': 1.0, '1': 1.33, '2': 1.66, '3': 2.0, '4': 2.33, '5': 2.66, '6': 3.0
 };
 
 /**
  * Returns the effective stat of a pokemon considering stages, weather, status, and abilities.
- * @param {Object} pokemon 
- * @param {string} statKey 
- * @param {Object} stages 
- * @param {Object} weather 
  */
-export function getEffectiveStat(pokemon: any, statKey: any, stages: any, weather: any) {
+export function getEffectiveStat(pokemon: Pokemon, statKey: keyof Pokemon, stages: Partial<BattleStages>, weather: BattleWeather | null) {
   const breakdown = getStatBreakdown(pokemon, statKey, stages, weather);
   return breakdown.final;
 }
 
-export function getStatBreakdown(pokemon: any, statKey: any, stages: any, weather: any) {
+export function getStatBreakdown(pokemon: Pokemon, statKey: keyof Pokemon, stages: Partial<BattleStages>, weather: BattleWeather | null) {
   const mechWeather = getMechanicalWeather(weather?.type);
   const cycle = getDayCycle();
   
-  let baseVal = pokemon[statKey] || 10;
+  let baseVal = (pokemon[statKey] as number) || 10;
   if (statKey === 'spa' && !pokemon.spa) baseVal = pokemon.atk;
   if (statKey === 'spd' && !pokemon.spd) baseVal = pokemon.def;
 
-  const results: any = {
+  const results = {
     base: baseVal,
     weatherMult: 1,
     stageMult: 1,
@@ -69,8 +67,8 @@ export function getStatBreakdown(pokemon: any, statKey: any, stages: any, weathe
   }
 
   // Stage Multipliers
-  const stage = stages ? Math.max(-6, Math.min(6, (stages[statKey] || 0))) : 0;
-  results.stageMult = STAGE_MULTIPLIERS_STAT[String(stage)] || 1.0;
+  const stage = stages ? Math.max(-6, Math.min(6, (stages[statKey as keyof BattleStages] || 0))) : 0;
+  results.stageMult = (STAGE_MULTIPLIERS_STAT[String(stage)] as number) || 1.0;
   let val = Math.floor(baseVal * results.stageMult);
 
   // Ability & Status Modifiers
@@ -105,7 +103,7 @@ export function getStatBreakdown(pokemon: any, statKey: any, stages: any, weathe
     
     val = Math.floor(val * results.abilityMult);
 
-    if (pokemon.status === 'paralyze') {
+    if (pokemon.status === 'paralysis') {
       results.statusMult = 0.5; // Modern mechanics (Gen 7+): 50% speed reduction
       val = Math.floor(val * 0.5);
     }
@@ -118,7 +116,7 @@ export function getStatBreakdown(pokemon: any, statKey: any, stages: any, weathe
 /**
  * Determines the category of a move based on Generation rules.
  */
-export function getMoveCategory(move: any) {
+export function getMoveCategory(move: Partial<Move>): 'status' | 'physical' | 'special' {
   if (ACTIVE_RULE_SET === 2) {
     // Category by Type
     const physicalTypes = ['normal', 'fighting', 'flying', 'poison', 'ground', 'rock', 'bug', 'ghost', 'steel'];
@@ -126,19 +124,19 @@ export function getMoveCategory(move: any) {
     
     if (move.cat === 'status') return 'status'; // Status moves keep their category
     
-    if (physicalTypes.includes(move.type)) return 'physical';
-    if (specialTypes.includes(move.type)) return 'special';
+    if (move.type && physicalTypes.includes(move.type)) return 'physical';
+    if (move.type && specialTypes.includes(move.type)) return 'special';
   }
   // Gen 4+ uses direct category
-  return move.cat || 'physical';
+  return (move.cat as any) || 'physical';
 }
 
 /**
  * Returns ability multiplier for offensive calculations.
  */
-export function getAbilityMultiplier(attacker: any, _defender: any, move: any) {
+export function getAbilityMultiplier(attacker: Pokemon, _defender: Pokemon, move: Partial<Move>) {
   let mult = 1;
-  let triggeredAbility = null;
+  let triggeredAbility: string | null = null;
   const ab = attacker.ability;
   const power = move.power || 0;
 
@@ -167,14 +165,14 @@ export function getAbilityMultiplier(attacker: any, _defender: any, move: any) {
 /**
  * Central Damage Formula.
  */
-export function calculateDamage(attacker: any, defender: any, move: any, ctx: any = {}) {
+export function calculateDamage(attacker: Pokemon, defender: Pokemon, move: Partial<Move>, ctx: BattleContext = {}) {
   const { atkStages = 0, defStages = 0, weather = null } = ctx;
   
   let power = move.power;
   let moveType = move.type;
 
   if (power === undefined || !moveType) {
-    const md = (pokemonDataProvider as any).getMoveData(move.name);
+    const md = pokemonDataProvider.getMoveData(move.name || '');
     if (md) {
       if (power === undefined) power = md.power || 0;
       if (!moveType) moveType = md.type || 'normal';
@@ -202,7 +200,7 @@ export function calculateDamage(attacker: any, defender: any, move: any, ctx: an
   }
 
   if (move.id === 'fury_cutter' && attacker.furyCutterCount) {
-    power = Math.min(160, power * Math.pow(2, attacker.furyCutterCount - 1));
+    power = Math.min(160, (power || 0) * Math.pow(2, attacker.furyCutterCount - 1));
   }
 
   const mechWeather = getMechanicalWeather(weather?.type);
@@ -210,7 +208,7 @@ export function calculateDamage(attacker: any, defender: any, move: any, ctx: an
   const isSolarBoosted = mechWeather === WEATHER_MECHANICAL.SUN || (mechWeather === WEATHER_MECHANICAL.CLEAR && (cycle === 'day' || cycle === 'morning'));
   
   if ((move.id === 'solar_beam' || move.id === 'solar_blade') && !isSolarBoosted && mechWeather !== WEATHER_MECHANICAL.CLEAR) {
-    power = Math.floor(power * 0.5);
+    power = Math.floor((power || 0) * 0.5);
   }
 
   if (move.fixedDmg) return { dmg: move.fixedDmg, eff: 1, isNoEffect: false };
@@ -222,7 +220,7 @@ export function calculateDamage(attacker: any, defender: any, move: any, ctx: an
 
   const eff = getCombinedEffectiveness(moveType, defender, attacker);
 
-  if (moveCat === 'status' || (power === 0 && moveCat !== 'status')) {
+  if ((moveCat as string) === 'status' || (power === 0 && (moveCat as string) !== 'status')) {
     return { dmg: 0, eff, isNoEffect: eff === 0 };
   }
 
@@ -240,8 +238,10 @@ export function calculateDamage(attacker: any, defender: any, move: any, ctx: an
   
   // Stat Reset Rule for Crits
   if (isCrit) {
-    if (aStages[isPhysical ? 'atk' : 'spa'] < 0) aStages[isPhysical ? 'atk' : 'spa'] = 0;
-    if (dStages[isPhysical ? 'def' : 'spd'] > 0) dStages[isPhysical ? 'def' : 'spd'] = 0;
+    const aKey = isPhysical ? 'atk' : 'spa' as keyof Partial<BattleStages>;
+    const dKey = isPhysical ? 'def' : 'spd' as keyof Partial<BattleStages>;
+    if ((aStages[aKey] ?? 0) < 0) aStages[aKey] = 0;
+    if ((dStages[dKey] ?? 0) > 0) dStages[dKey] = 0;
   }
 
   const critMult = isCrit ? (ACTIVE_RULE_SET === 2 ? 2.0 : 1.5) : 1;
@@ -250,7 +250,7 @@ export function calculateDamage(attacker: any, defender: any, move: any, ctx: an
   const D = getEffectiveStat(defender, isPhysical ? 'def' : 'spd', dStages, weather);
 
   // Base Damage Formula
-  const baseDamage = Math.floor(((2 * attacker.level / 5 + 2) * power * A / D) / 50) + 2;
+  const baseDamage = Math.floor(((2 * attacker.level / 5 + 2) * (power || 0) * A / D) / 50) + 2;
 
   let { mult: finalAbilityMult, triggeredAbility } = getAbilityMultiplier(attacker, defender, { ...move, type: moveType, power, cat: moveCat });
   
@@ -262,7 +262,7 @@ export function calculateDamage(attacker: any, defender: any, move: any, ctx: an
   let itemMult = 1;
   if (attacker.heldItem) {
     const h = attacker.heldItem;
-    const typeBoosters: any = { 'Carbón': 'fire', 'Imán': 'electric', 'Agua Mística': 'water', 'Semilla Milagro': 'grass', 'Cinturón Negro': 'fighting', 'Cuchara Torcida': 'psychic', 'Hechizo': 'ghost', 'Polvo Plata': 'bug', 'Flecha Venenosa': 'poison' };
+    const typeBoosters: Record<string, string> = { 'Carbón': 'fire', 'Imán': 'electric', 'Agua Mística': 'water', 'Semilla Milagro': 'grass', 'Cinturón Negro': 'fighting', 'Cuchara Torcida': 'psychic', 'Hechizo': 'ghost', 'Polvo Plata': 'bug', 'Flecha Venenosa': 'poison' };
     if (typeBoosters[h] === moveType) itemMult = 1.2;
     if (h === 'Cinta Elegida' && moveCat === 'physical') itemMult = 1.5;
   }
@@ -305,37 +305,37 @@ export function calculateDamage(attacker: any, defender: any, move: any, ctx: an
     isNotVeryEffective: eff < 1 && eff > 0,
     isNoEffect: eff === 0,
     triggeredAbility
-  } as any;
+  };
 }
 
 /**
  * Capture Math
  */
-export function calculateCatchRate(pokemon: any, rawBallType = 'poke-ball', eventCatchMult = 1, ctx: any = {}) {
+export function calculateCatchRate(pokemon: Pokemon, rawBallType = 'poke-ball', eventCatchMult = 1, ctx: BattleContext = {}) {
   const ballName = String(rawBallType || '').toLowerCase();
   
-  const BALL_BEHAVIORS: any = {
+  const BALL_BEHAVIORS: Record<string, { guaranteed?: boolean, mult?: number | ((p: Pokemon, c: any) => number) }> = {
     'master': { guaranteed: true },
     '100': { guaranteed: true },
     'ultra': { mult: 2.0 },
     'super': { mult: 1.5 },
     'súper': { mult: 1.5 },
     'red': { 
-      mult: (p: any, c: any) => {
+      mult: (p, c) => {
         const isWaterOrBug = [p.type, p.type2].some(t => t === 'water' || t === 'bug');
         const isRain = c.weather && (c.weather.type === 'rain' || c.weather.type === 'storm');
         return (isWaterOrBug || isRain) ? 3.5 : 1.0;
       }
     },
     'net': { 
-      mult: (p: any, c: any) => {
+      mult: (p, c) => {
         const isWaterOrBug = [p.type, p.type2].some(t => t === 'water' || t === 'bug');
         const isRain = c.weather && (c.weather.type === 'rain' || c.weather.type === 'storm');
         return (isWaterOrBug || isRain) ? 3.5 : 1.0;
       }
     },
     'ocaso': {
-      mult: (_p: any, c: any) => {
+      mult: (_p, c) => {
         const cycle = c.cycle || getDayCycle();
         const isNight = cycle === 'night' || cycle === 'dusk';
         const isCave = c.locationId && /cave|moon|tunnel|islands|mountain|victory|mansion/i.test(c.locationId);
@@ -344,7 +344,7 @@ export function calculateCatchRate(pokemon: any, rawBallType = 'poke-ball', even
       }
     },
     'dusk': { 
-      mult: (_p: any, c: any) => {
+      mult: (_p, c) => {
         const cycle = c.cycle || getDayCycle();
         const isNight = cycle === 'night' || cycle === 'dusk';
         const isCave = c.locationId && /cave|moon|tunnel|islands|mountain|victory|mansion/i.test(c.locationId);
@@ -353,15 +353,15 @@ export function calculateCatchRate(pokemon: any, rawBallType = 'poke-ball', even
       }
     },
     'turno': {
-      mult: (_p: any, c: any) => Math.min(4.0, 1.0 + ((c.turnCount || 1) * 0.3))
+      mult: (_p, c) => Math.min(4.0, 1.0 + ((c.turnCount || 1) * 0.3))
     },
     'timer': { 
-      mult: (_p: any, c: any) => Math.min(4.0, 1.0 + ((c.turnCount || 1) * 0.3))
+      mult: (_p, c) => Math.min(4.0, 1.0 + ((c.turnCount || 1) * 0.3))
     }
   };
 
   const behaviorEntry = Object.entries(BALL_BEHAVIORS).find(([key]) => ballName.includes(key));
-  const behavior = behaviorEntry ? (behaviorEntry[1] as any) : { mult: 1.0 };
+  const behavior = behaviorEntry ? behaviorEntry[1] : { mult: 1.0 };
 
   if (behavior.guaranteed) {
     return { caught: true, shakes: 3 };
@@ -406,15 +406,15 @@ export function calculateCatchRate(pokemon: any, rawBallType = 'poke-ball', even
 
 /**
  * Calculates escape chance from Wild Pokémon.
- * @param {Object} playerPoke 
- * @param {Object} wildPoke 
+ * @param {Pokemon} playerPoke 
+ * @param {Pokemon} wildPoke 
  * @param {number} attempts 
  * @param {Object} ctx 
  * @returns {boolean} Whether escape is successful.
  */
-export function calculateEscapeChance(playerPoke: any, wildPoke: any, attempts: any, ctx: any = {}) {
-  const pSpe = getEffectiveStat(playerPoke, 'spe', ctx.playerStages || {}, ctx.weather);
-  const eSpe = getEffectiveStat(wildPoke, 'spe', ctx.enemyStages || {}, ctx.weather);
+export function calculateEscapeChance(playerPoke: Pokemon, wildPoke: Pokemon, attempts: number, ctx: BattleContext = {}) {
+  const pSpe = getEffectiveStat(playerPoke, 'spe', ctx.playerStages || {}, ctx.weather || null);
+  const eSpe = getEffectiveStat(wildPoke, 'spe', ctx.enemyStages || {}, ctx.weather || null);
   
   // Guard against division by zero
   const safeESpe = Math.max(1, eSpe);

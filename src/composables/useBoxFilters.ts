@@ -3,7 +3,7 @@ import { getPokemonTier } from '@/logic/pokemon/tierEngine';
 import { PDEX_ORDER } from '@/data/pokedex';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 
-export function useBoxFilters(boxArray, _currentBoxIndex) {
+export function useBoxFilters(boxArray: any, _currentBoxIndex: any) {
   const filters = ref({
     tier: 'all',
     type: 'all',
@@ -23,7 +23,7 @@ export function useBoxFilters(boxArray, _currentBoxIndex) {
     bstMin: 0,
     bstMax: 1000,
     search: '',
-    tags: []
+    tags: [] as string[]
   });
 
   const sortMode = ref('none'); 
@@ -51,21 +51,19 @@ export function useBoxFilters(boxArray, _currentBoxIndex) {
     const isSorted = sortMode.value !== 'none';
     
     const rawList = boxArray.value || [];
-    let result = rawList.map((p, index) => ({ p, index }));
+    let result = rawList.map((p: any, index: number) => ({ p, index }));
 
     if (isFiltered || isSorted) {
-      // Filter out nulls only when we are doing active searching/sorting
-      result = result.filter(item => item.p != null);
+      result = result.filter((item: any) => item.p != null);
       
       if (isFiltered) {
-      result = result.filter(({ p }) => {
+      result = result.filter(({ p }: any) => {
         const f = filters.value;
         const tierInfo = getPokemonTier(p);
         const ivs = p.ivs || {};
         const allIvs = [ivs.hp||0, ivs.atk||0, ivs.def||0, ivs.spa||0, ivs.spd||0, ivs.spe||0];
-        const totalIvs = allIvs.reduce((s, v) => s + v, 0);
+        const totalIvs = allIvs.reduce((s: number, v: number) => s + v, 0);
         
-        // TOTAL Power calculation (BST + IVs)
         const species = pokemonDataProvider.getPokemonData(p.id);
         const bst = species ? ((species.hp||0)+(species.atk||0)+(species.def||0)+(species.spa||0)+(species.spd||0)+(species.spe||0)) : 0;
         const totalPower = bst + totalIvs;
@@ -110,7 +108,7 @@ export function useBoxFilters(boxArray, _currentBoxIndex) {
 
     if (isSorted) {
       const isAsc = sortDirection.value === 'asc';
-      result.sort((a, b) => {
+      result.sort((a: any, b: any) => {
         let cmp = 0;
         const pA = a.p;
         const pB = b.p;

@@ -51,11 +51,11 @@ export function useBattleBackground() {
    * @param {boolean} isFishing 
    * @returns {{ url: string, isBakedIn: boolean }}
    */
-  function getBackgroundUrl(locationId, cycle = 'day', isFishing = false) {
+  function getBackgroundUrl(locationId: string, cycle = 'day', isFishing = false) {
     if (isFishing) return { url: getAssetUrl(ASSET_TYPES.BATTLE_BG, 'bg_fishing'), isBakedIn: false }
 
-    const biome = BIOME_MAP[locationId] || 'ruta'
-    const assetDef = BG_ASSETS[biome]
+    const biome = (BIOME_MAP as any)[locationId] || 'ruta'
+    const assetDef = (BG_ASSETS as any)[biome]
 
     let fileName;
     let isBakedIn = false

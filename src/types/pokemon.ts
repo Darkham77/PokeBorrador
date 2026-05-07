@@ -1,5 +1,12 @@
+export type PokemonStatus = 'paralysis' | 'burn' | 'poison' | 'sleep' | 'freeze' | null;
 
-export type PokemonStatus = 'paralyze' | 'burn' | 'freeze' | 'poison' | 'toxic' | 'sleep' | null;
+export interface BreedingCompatibility {
+  level: number;
+  reason: string;
+  sharedGroups: string[];
+  eggSpecies?: string;
+  motherId?: string;
+}
 
 export interface PokemonIVs {
   hp: number;
@@ -10,49 +17,47 @@ export interface PokemonIVs {
   spe: number;
 }
 
-export interface PokemonMove {
+export interface MoveEffect {
+  type: 'status' | 'stat' | 'flinch' | 'confuse' | 'trap' | 'drain' | 'recoil' | 'recharge' | 'fixed' | 'multi' | 'heal' | string;
+  status?: PokemonStatus;
+  stat?: keyof PokemonIVs;
+  stages?: number;
+  chance?: number;
+  val?: number;
+  percent?: number;
+  text?: string;
+}
+
+export interface Move {
+  id?: string;
   name: string;
-  pp: number;
-  maxPP: number;
   type?: string;
+  cat?: 'physical' | 'special' | 'status';
   power?: number;
   acc?: number;
-  cat?: 'physical' | 'special' | 'status';
-  effect?: string | null;
-  flinch?: boolean;
-  selfKO?: boolean;
+  pp: number;
+  maxPP: number;
+  desc?: string;
+  drain?: number | boolean;
+  priority?: number;
+  crit?: number;
+  target?: 'enemy' | 'self' | 'all';
+  effect?: MoveEffect | MoveEffect[] | string;
+  fixedDmg?: number;
+  levelDmg?: boolean;
+  halfHP?: boolean;
 }
+
+export interface PokemonMove extends Move {}
 
 export interface Pokemon {
   uid: string;
   id: string;
   name: string;
-  emoji?: string;
-  type: string;
-  type2?: string;
-  catchRate: number;
+  nickname?: string | null;
   level: number;
   exp: number;
   expNeeded: number;
-  ivs: PokemonIVs;
-  nature: string;
-  ability: string;
-  gender: 'M' | 'F' | null;
-  isShiny: boolean;
-  isGuardian?: boolean;
-  moves: PokemonMove[];
-  status: PokemonStatus;
-  sleepTurns: number;
-  friendship: number;
-  vigor: number;
-  heldItem: string | null;
-  nickname: string | null;
-  obtainedAt: number;
-  obtainedMethod?: 'wild' | 'egg' | 'trade' | 'event';
-  isAtmospheric?: boolean;
-  weatherOrigin?: string;
-  
-  // Stats (calculated)
   hp: number;
   maxHp: number;
   atk: number;
@@ -60,38 +65,77 @@ export interface Pokemon {
   spa: number;
   spd: number;
   spe: number;
-
-  // Battle volatile states
+  type: string;
+  type2?: string;
+  isShiny?: boolean;
+  isGuardian?: boolean;
+  isFloating?: boolean;
+  gender?: 'M' | 'F' | 'N' | null;
+  status?: PokemonStatus;
+  sleepTurns?: number;
   confused?: number;
-  flinched?: boolean;
+  attracted?: boolean;
+  cursed?: boolean;
   seeded?: boolean;
-  tauntTurns?: number;
-  disabledTurns?: number;
-  disabledMove?: string | null;
-  encoreTurns?: number;
-  encoreMove?: string | null;
+  badPoison?: boolean;
+  ingrain?: boolean;
+  protect?: boolean;
+  detect?: boolean;
+  endure?: boolean;
+  substitute?: number;
   focusEnergy?: boolean;
   lockOn?: boolean;
-  ingrain?: boolean;
-  futureSightTurns?: number;
-  futureSightDmg?: number;
-  badPoison?: number;
-  onMission?: boolean;
-  onDefense?: boolean;
-  
-  // Metadata
-  isEgg?: boolean;
-  steps?: number;
-
-  // Breeding/Ownership
+  isTransformed?: boolean;
+  rageActive?: boolean;
+  snatching?: boolean;
+  tormentActive?: boolean;
+  mustRecharge?: boolean;
+  bound?: number;
+  tauntTurns?: number;
+  encoreTurns?: number;
+  disabledTurns?: number;
+  flinched?: boolean;
+  destinyBond?: boolean;
+  perishSongCount?: number;
+  ability?: string;
+  moves: (Move | null)[];
+  caught?: boolean;
+  isBoxed?: boolean;
+  ivs: PokemonIVs;
+  nature: string;
+  heldItem?: string | null;
+  emoji?: string;
+  friendship?: number;
+  vigor?: number;
+  catchRate?: number;
+  obtainedAt?: number;
+  obtainedMethod?: string;
+  isAtmospheric?: boolean;
+  weatherOrigin?: string;
   region?: string;
   ot_id?: string;
+  tags?: string[];
+  onMission?: boolean;
+  onDefense?: boolean;
+  inDaycare?: boolean;
+  furyCutterCount?: number;
+  lastMove?: Move | null;
+  thrashTurns?: number;
+  encoreMove?: Move | null;
+  disabledMove?: Move | null;
 }
 
-export interface BreedingCompatibility {
-  level: number;
-  reason: string;
-  sharedGroups: string[];
-  eggSpecies?: string;
-  motherId?: string;
+export interface PokemonEgg {
+  uid: string;
+  id: string;
+  steps: number;
+  ready: boolean;
+  isShiny?: boolean;
+  isGuardian?: boolean;
+  nature?: string;
+  abilitySlot?: number;
+  gender?: 'M' | 'F' | 'N' | null;
+  ivs?: Partial<PokemonIVs>;
+  movesAtBirth?: string[];
+  obtainedAt?: number;
 }

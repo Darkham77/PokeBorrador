@@ -58,7 +58,7 @@ function getPokemonFX(p: any) {
   if (!p) return {}
   const data = pokemonDataProvider.getPokemonData(p.id || p.name)
   const tier = getPokemonTier(p)
-  const primaryType = data?.types?.[0] || 'normal'
+  const primaryType = data?.type || 'normal'
   
   return {
     typeColor: TYPE_COLORS[primaryType as keyof typeof TYPE_COLORS] || '#A8A878',

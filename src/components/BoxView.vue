@@ -44,11 +44,11 @@ const displayList = computed(() => {
   const isSorted = sortMode.value !== 'none'
   
   if (hasActiveFilters.value || isSorted) {
-    return list.filter(item => item.p != null) // Show all matches without nulls
+    return list.filter((item: any) => item.p != null) // Show all matches without nulls
   } else {
     const start = currentBoxIndex.value * 50
     const slice = list.slice(start, start + 50)
-    return slice.filter(item => item.p != null) // Remove empty slots from the grid
+    return slice.filter((item: any) => item.p != null) // Remove empty slots from the grid
   }
 })
 

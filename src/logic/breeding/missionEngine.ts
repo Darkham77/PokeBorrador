@@ -119,16 +119,16 @@ const NATURES = ['Audaz', 'Firme', 'Pícaro', 'Manso', 'Serio', 'Osado', 'Pláci
  * Generates a new mission object.
  */
 export function generateMission(trainerLevel: number, dateStr: string): DaycareMission {
-  let possibleTargets = [...POOLS.novice];
-  if (trainerLevel >= 10) possibleTargets = possibleTargets.concat(POOLS.apprentice);
-  if (trainerLevel >= 25) possibleTargets = possibleTargets.concat(POOLS.veteran);
-  if (trainerLevel >= 40) possibleTargets = possibleTargets.concat(POOLS.master);
+  let possibleTargets = [...(POOLS['novice'] || [])];
+  if (trainerLevel >= 10) possibleTargets = possibleTargets.concat(POOLS['apprentice'] || []);
+  if (trainerLevel >= 25) possibleTargets = possibleTargets.concat(POOLS['veteran'] || []);
+  if (trainerLevel >= 40) possibleTargets = possibleTargets.concat(POOLS['master'] || []);
 
-  const targetId = possibleTargets[Math.floor(Math.random() * possibleTargets.length)];
+  const targetId = possibleTargets[Math.floor(Math.random() * possibleTargets.length)] || 'magikarp';
   const missionTypes = ['level', 'nature', 'iv_total'];
   if (trainerLevel >= 15) missionTypes.push('iv_31');
 
-  const type = missionTypes[Math.floor(Math.random() * missionTypes.length)];
+  const type = missionTypes[Math.floor(Math.random() * missionTypes.length)] || 'level';
   const requirement: MissionRequirement = { type };
   let reqText = '';
 
@@ -142,15 +142,15 @@ export function generateMission(trainerLevel: number, dateStr: string): DaycareM
     requirement.minIvTotal = minIvTotal;
     reqText = `${minIvTotal}+ IVs totales`;
   } else if (type === 'nature') {
-    const targetNature = NATURES[Math.floor(Math.random() * NATURES.length)];
+    const targetNature = NATURES[Math.floor(Math.random() * NATURES.length)] || 'Serio';
     requirement.nature = targetNature;
     reqText = `naturaleza ${targetNature}`;
   } else if (type === 'iv_31') {
     const stats: (keyof PokemonIVs)[] = ['hp', 'atk', 'def', 'spa', 'spd', 'spe'];
     const statLabels: Record<string, string> = { hp: 'PS', atk: 'Ataque', def: 'Defensa', spa: 'At. Esp', spd: 'Def. Esp', spe: 'Velocidad' };
-    const targetStat = stats[Math.floor(Math.random() * stats.length)];
+    const targetStat = stats[Math.floor(Math.random() * stats.length)] || 'hp';
     requirement.stat31 = targetStat;
-    reqText = `IV 31 en ${statLabels[targetStat]}`;
+    reqText = `IV 31 en ${statLabels[targetStat] || 'PS'}`;
   }
 
   // Rewards
@@ -174,14 +174,14 @@ export function generateMission(trainerLevel: number, dateStr: string): DaycareM
     possibleRewards.push(...powerItems);
   }
 
-  const reward = possibleRewards[Math.floor(Math.random() * possibleRewards.length)];
+  const reward = possibleRewards[Math.floor(Math.random() * possibleRewards.length)] || possibleRewards[0] as MissionReward;
   const tKeys = Object.keys(TRAINER_TYPES);
-  const tKey = tKeys[Math.floor(Math.random() * tKeys.length)];
-  const trainer = TRAINER_TYPES[tKey];
+  const tKey = tKeys[Math.floor(Math.random() * tKeys.length)] || 'caza_bichos';
+  const trainer = TRAINER_TYPES[tKey] || TRAINER_TYPES['caza_bichos'] as { name: string; sprite: string };
 
   const targetName = (POKEMON_DB as any)[targetId]?.name || targetId;
-  const templates = MISSION_DIALOGUES_BASE[tKey] || MISSION_DIALOGUES_BASE['default'];
-  const template = templates[Math.floor(Math.random() * templates.length)];
+  const templates = MISSION_DIALOGUES_BASE[tKey] || MISSION_DIALOGUES_BASE['default'] || [];
+  const template = templates[Math.floor(Math.random() * templates.length)] || '...';
   const dialogue = template.replace('${pokemon}', targetName).replace('${req}', reqText);
 
   return {

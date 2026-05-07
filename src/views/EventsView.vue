@@ -3,9 +3,10 @@ import { onMounted } from 'vue'
 import { useEventStore } from '@/stores/events'
 import { storeToRefs } from 'pinia'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
+import type { Event as GameEvent } from '@/logic/events/eventEngine'
 
-const eventStore = useEventStore() as any
-const { activeEvents, pendingAwards, isLoading } = storeToRefs(eventStore) as any
+const eventStore = useEventStore()
+const { activeEvents, pendingAwards, isLoading } = storeToRefs(eventStore)
 
 onMounted(() => {
   eventStore.fetchEvents()
@@ -21,8 +22,9 @@ const formatTime = (isoTime: string) => {
   return `${min}m ${sec}s`
 }
 
-const openParticipationModal = (event: any) => {
-  (window as any)._openPokemonSelectionModal({
+const openParticipationModal = (event: GameEvent) => {
+  const win = window as unknown as { _openPokemonSelectionModal: (config: any) => void };
+  win._openPokemonSelectionModal({
     title: 'SELECCIONAR POKÉMON',
     subtitle: `Elige un Pokémon para inscribir en: ${event.name}`,
     maxSelect: 1,
@@ -100,14 +102,15 @@ const openParticipationModal = (event: any) => {
         v-for="event in activeEvents"
         :key="event.id"
         class="event-card"
-        :class="{ 'has-banner': event.config?.banner }"
+        :class="{ 'has-banner': typeof event.config === 'object' && event.config?.banner }"
       >
         <!-- Banner with Pixel border overlay if needed, but legacy used simple borders -->
         <div
-          v-if="event.config?.banner"
+          v-if="typeof event.config === 'object' && event.config?.banner"
           class="banner-box"
         >
           <img
+            v-if="typeof event.config === 'object' && event.config?.banner"
             :src="getAssetUrl(ASSET_TYPES.BANNER, event.config.banner)"
             @error="(e: Event) => (e.target as HTMLImageElement).style.display='none'"
           >
@@ -134,7 +137,7 @@ const openParticipationModal = (event: any) => {
           <footer class="card-footer">
             <div class="timer-box">
               <span class="label">FINALIZA EN:</span>
-              <span class="value">{{ formatTime(event.ends_at) }}</span>
+              <span class="value">{{ formatTime(event.ends_at || '') }}</span>
             </div>
             
             <button 

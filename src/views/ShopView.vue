@@ -5,10 +5,11 @@ import { useUIStore } from '@/stores/ui'
 import { useShopStore } from '@/stores/shop'
 import BlackMarket from '@/components/shop/BlackMarket.vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
+import type { ShopItem } from '@/types/items'
 
-const gameStore = useGameStore() as any
-const uiStore = useUIStore() as any
-const shopStore = useShopStore() as any
+const gameStore = useGameStore()
+const uiStore = useUIStore()
+const shopStore = useShopStore()
 
 const activeTab = computed(() => uiStore.activeTab)
 const gs = computed(() => gameStore.state)
@@ -18,7 +19,7 @@ const currentRank = computed(() => shopStore.getTrainerRank)
 const displayItems = computed(() => {
   const isTrainerShop = activeTab.value === 'trainer-shop'
   
-  return shopStore.SHOP_ITEMS.filter((item: any) => {
+  return (shopStore.SHOP_ITEMS as ShopItem[]).filter((item: ShopItem) => {
     if (isTrainerShop) {
       if (!item.trainerShop) return false
     } else {
@@ -29,7 +30,7 @@ const displayItems = computed(() => {
     if (shopStore.searchQuery && !item.name.toLowerCase().includes(shopStore.searchQuery.toLowerCase())) return false
 
     return true
-  }).sort((a: any, b: any) => {
+  }).sort((a: ShopItem, b: ShopItem) => {
     const aLocked = gs.value.trainerLevel < (a.unlockLv || 1) ? 1 : 0
     const bLocked = gs.value.trainerLevel < (b.unlockLv || 1) ? 1 : 0
     if (aLocked !== bLocked) return aLocked - bLocked
@@ -37,7 +38,7 @@ const displayItems = computed(() => {
   })
 })
 
-const getPrice = (item: any) => {
+const getPrice = (item: ShopItem) => {
   if (activeTab.value === 'trainer-shop') return item.bcPrice
   
   let price = item.price
@@ -47,7 +48,7 @@ const getPrice = (item: any) => {
   return price
 }
 
-const handleBuy = (item: any) => {
+const handleBuy = (item: ShopItem) => {
   if (activeTab.value === 'trainer-shop') {
     shopStore.buyItemBC(item.id)
   } else {
@@ -65,7 +66,7 @@ onMounted(() => {
     <!-- RANK STATUS BAR (Legacy Style) -->
     <div class="rank-status-bar">
       <span class="rank-txt">
-        ⭐ Rango: <strong class="rank-name">{{ currentRank.title }}</strong> (Nv. {{ gs.trainerLevel }})
+        ⭐ Rango: <strong class="rank-name">{{ currentRank?.title || 'Desconocido' }}</strong> (Nv. {{ gs.trainerLevel }})
       </span>
       <span class="rank-hint">
         {{ activeTab === 'market' ? 'Más ítems se desbloquean al subir de nivel.' : 'Comprá ítems exclusivos con Battle Coins.' }}
@@ -102,7 +103,7 @@ onMounted(() => {
         :class="{ active: shopStore.marketCategory === cat }"
         @click.stop="shopStore.marketCategory = cat"
       >
-        {{ shopStore.CATEGORY_LABELS[cat] }}
+        {{ (shopStore.CATEGORY_LABELS as Record<string, string>)[cat] }}
       </button>
     </div>
 
@@ -175,7 +176,7 @@ onMounted(() => {
             💰 {{ item.bcPrice }} BC
           </template>
           <template v-else>
-            ₽ {{ getPrice(item).toLocaleString() }}
+            ₽ {{ (getPrice(item) || 0).toLocaleString() }}
             <small v-if="gs.playerClass === 'rocket'">(+20%)</small>
           </template>
         </div>
@@ -200,21 +201,21 @@ onMounted(() => {
           v-if="gs.trainerLevel >= (item.unlockLv || 1) && activeTab === 'market'"
           class="item-total"
         >
-          TOTAL: ₽<span>{{ (getPrice(item) * shopStore.getQuantity(item.id)).toLocaleString() }}</span>
+          TOTAL: ₽<span>{{ ((getPrice(item) || 0) * shopStore.getQuantity(item.id)).toLocaleString() }}</span>
         </div>
 
         <button 
           class="buy-btn-retro"
-          :disabled="gs.trainerLevel < (item.unlockLv || 1) || (activeTab === 'market' ? gs.money < (getPrice(item) * shopStore.getQuantity(item.id)) : (gs.battleCoins || 0) < item.bcPrice)"
+          :disabled="gs.trainerLevel < (item.unlockLv || 1) || (activeTab === 'market' ? gs.money < ((getPrice(item) || 0) * shopStore.getQuantity(item.id)) : (gs.battleCoins || 0) < (item.bcPrice || 0))"
           @click.stop="handleBuy(item)"
         >
           <template v-if="gs.trainerLevel < (item.unlockLv || 1)">
             BLOQUEADO
           </template>
-          <template v-else-if="activeTab === 'market' && gs.money < (getPrice(item) * shopStore.getQuantity(item.id))">
+          <template v-else-if="activeTab === 'market' && gs.money < ((getPrice(item) || 0) * shopStore.getQuantity(item.id))">
             SIN FONDOS
           </template>
-          <template v-else-if="activeTab === 'trainer-shop' && (gs.battleCoins || 0) < item.bcPrice">
+          <template v-else-if="activeTab === 'trainer-shop' && (gs.battleCoins || 0) < (item.bcPrice || 0)">
             SIN BC
           </template>
           <template v-else>

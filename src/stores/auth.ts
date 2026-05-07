@@ -4,17 +4,19 @@ import { supabase } from '@/logic/supabase'
 import { syncServerTime } from '@/logic/timeUtils'
 import { useLoadingStore } from './loading'
 import { safeStorage } from '@/logic/utils/storage'
+import type { AuthUser, SessionMode } from '@/types/auth'
+import type { Session } from '@supabase/supabase-js'
 
 export const useAuthStore = defineStore('auth', () => {
-  const user = ref(null)
-  const session = ref(null)
+  const user = ref<AuthUser | null>(null)
+  const session = ref<Session | null>(null)
   const loading = ref(true)
   const sessionId = ref(crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2))
   const sessionConflict = ref(false)
-  const sessionMode = ref(safeStorage.getItem('pokevicio_session_mode') || 'online') // 'online' | 'offline'
+  const sessionMode = ref<SessionMode>((safeStorage.getItem('pokevicio_session_mode') as SessionMode) || 'online') // 'online' | 'offline'
   const isOnline = ref(navigator.onLine)
   const connectionLost = ref(false)
-  const sessionCheckInterval = ref(null)
+  const sessionCheckInterval = ref<ReturnType<typeof setInterval> | null>(null)
   const isBanned = ref(false)
   const banReason = ref('')
 
@@ -85,11 +87,11 @@ export const useAuthStore = defineStore('auth', () => {
         const sessionPromise = supabase.auth.getSession();
         const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('TIMEOUT')), 3000));
         
-        const { data } = await Promise.race([sessionPromise, timeoutPromise]);
+        const { data } = await Promise.race([sessionPromise, timeoutPromise]) as { data: { session: Session | null } };
         
         if (data?.session?.user) {
           session.value = data.session
-          user.value = data.session.user
+          user.value = data.session.user as unknown as AuthUser
           sessionMode.value = 'online'
           if (supabase && typeof supabase.setMode === 'function') {
             supabase.setMode('online')
@@ -97,7 +99,7 @@ export const useAuthStore = defineStore('auth', () => {
           
           // Registrar sesión en DB para unicidad con timeout
           try {
-            const updatePromise = supabase.from('profiles').update({ current_session_id: sessionId.value }).eq('id', user.value.id)
+            const updatePromise = supabase.from('profiles').update({ current_session_id: sessionId.value }).eq('id', user.value?.id)
             await Promise.race([updatePromise, new Promise((_, reject) => setTimeout(() => reject(new Error('UPDATE_TIMEOUT')), 3000))])
           } catch (e) {
             console.warn('[Auth] Session ID update failed or timed out:', e)
@@ -107,10 +109,10 @@ export const useAuthStore = defineStore('auth', () => {
           
           // Fetch profile meta con timeout
           try {
-            const profilePromise = supabase.from('profiles').select('db_version, is_banned, ban_reason').eq('id', user.value.id).single()
-            const { data: profile } = await Promise.race([profilePromise, new Promise((_, reject) => setTimeout(() => reject(new Error('FETCH_TIMEOUT')), 3000))]) as any
+            const profilePromise = supabase.from('profiles').select('db_version, is_banned, ban_reason').eq('id', user.value?.id).single()
+            const { data: profile } = await Promise.race([profilePromise, new Promise((_, reject) => setTimeout(() => reject(new Error('FETCH_TIMEOUT')), 3000))]) as { data: { db_version: number, is_banned: boolean, ban_reason: string | null } | null }
             
-            if (profile) {
+            if (profile && user.value) {
               user.value.db_version = profile.db_version || 1
               if (profile.is_banned) {
                 isBanned.value = true
@@ -139,7 +141,7 @@ export const useAuthStore = defineStore('auth', () => {
         if (supabase && typeof supabase.setMode === 'function') {
           supabase.setMode('offline')
         }
-        if (!user.value.db_version) user.value.db_version = 1
+        if (user.value && !user.value.db_version) user.value.db_version = 1
       }
     } catch (e) {
       console.warn('[Auth] CheckSession failed or timed out:', e)
@@ -156,8 +158,8 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  async function login(email, password) {
-    const loadingStore = useLoadingStore() as any
+  async function login(email: string, password: string) {
+    const loadingStore = useLoadingStore()
     loadingStore.start('auth_action', 'Verificando credenciales...', 'Por favor espera', true)
     
     if (supabase && typeof supabase.setMode === 'function') {
@@ -167,16 +169,16 @@ export const useAuthStore = defineStore('auth', () => {
     if (error) throw error
     
     session.value = data.session
-    user.value = data.user
+    user.value = data.user as unknown as AuthUser
     sessionMode.value = 'online'
     if (supabase && typeof supabase.setMode === 'function') {
       supabase.setMode('online')
     }
     
     // Registrar sesión
-    await (supabase as any).from('profiles').update({ current_session_id: sessionId.value }).eq('id', data.user.id)
+    await supabase.from('profiles').update({ current_session_id: sessionId.value }).eq('id', data.user.id)
     
-    const { data: profile } = await (supabase as any).from('profiles').select('db_version, is_banned, ban_reason').eq('id', data.user.id).single()
+    const { data: profile } = await supabase.from('profiles').select('db_version, is_banned, ban_reason').eq('id', data.user.id).single()
     
     if (profile?.is_banned) {
       isBanned.value = true
@@ -187,7 +189,7 @@ export const useAuthStore = defineStore('auth', () => {
       throw new Error('BAN:' + banReason.value)
     }
 
-    if (profile) user.value.db_version = profile.db_version || 1
+    if (profile && user.value) user.value.db_version = profile.db_version || 1
     
     startSessionMonitoring()
     syncServerTime()
@@ -195,16 +197,17 @@ export const useAuthStore = defineStore('auth', () => {
     return data
   }
 
-  async function signup(email, password, username) {
+  async function signup(email: string, password: string, username: string) {
     const { data, error } = await supabase.auth.signUp({ 
       email, 
       password, 
       options: { data: { username } } 
     })
     if (error) throw error
+    if (!data.user) throw new Error('No user created')
     
     // Crear perfil inicial
-    await (supabase as any).from('profiles').upsert({ 
+    await supabase.from('profiles').upsert({ 
       id: data.user.id, 
       username, 
       email, 
@@ -224,7 +227,7 @@ export const useAuthStore = defineStore('auth', () => {
         schema: 'public', 
         table: 'profiles', 
         filter: `id=eq.${user.value.id}` 
-      }, payload => {
+      }, (payload: { new: { current_session_id: string } }) => {
         const newSessionId = payload.new.current_session_id
         if (newSessionId && newSessionId !== sessionId.value) {
           console.warn('[SESSION] Nueva sesión detectada en otro lugar. Bloqueando esta pestaña.')
@@ -233,7 +236,7 @@ export const useAuthStore = defineStore('auth', () => {
           window.dispatchEvent(new CustomEvent('session-conflict'))
         }
       })
-      .subscribe((status) => {
+      .subscribe((status: string) => {
         if (status === 'SUBSCRIBED') {
           connectionLost.value = false
         }
@@ -246,9 +249,9 @@ export const useAuthStore = defineStore('auth', () => {
       })
   }
 
-  async function localLogin(name) {
+  async function localLogin(name: string) {
     loading.value = true
-    const loadingStore = useLoadingStore() as any
+    const loadingStore = useLoadingStore()
     loadingStore.start('auth_action', 'Entrando como invitado...', 'Preparando partida local', true)
     try {
       const userData = {
@@ -256,7 +259,7 @@ export const useAuthStore = defineStore('auth', () => {
         email: name + '@local',
         user_metadata: { full_name: name, username: name }
       }
-      user.value = userData
+      user.value = userData as AuthUser
       sessionMode.value = 'offline'
       safeStorage.setItem('pokevicio_session_mode', 'offline')
       if (supabase && typeof supabase.setMode === 'function') {
@@ -328,7 +331,7 @@ export const useAuthStore = defineStore('auth', () => {
     useLoadingStore().clearAll()
   }
 
-  function setConnectionLost(val) {
+  function setConnectionLost(val: boolean) {
     if (sessionMode.value === 'online') {
       connectionLost.value = val
     }

@@ -78,9 +78,10 @@ export const GuardianService = {
     if (rarityRand >= 90) tier = 'elite';
     else if (rarityRand >= 60) tier = 'rare';
 
-    const pool = GUARDIAN_POOL[tier];
+    const pool = GUARDIAN_POOL[tier] || GUARDIAN_POOL['common'] || [];
+    if (pool.length === 0) return null;
     const index = seed % pool.length;
-    return pool[index];
+    return pool[index] || null;
   },
 
   /**

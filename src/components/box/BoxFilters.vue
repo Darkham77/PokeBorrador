@@ -221,13 +221,13 @@ const AVAILABLE_TAGS = [
               v-for="tag in AVAILABLE_TAGS" 
               :key="tag.id"
               :title="tag.label"
-              :description="tag.id === 'fav' ? 'Pokémon marcados con estrella.' : 
+              :description="(tag.id === 'fav' ? 'Pokémon marcados con estrella.' : 
                 tag.id === 'breed' ? 'Pokémon aptos para reproducirse.' :
                 tag.id === 'comp' ? 'Pokémon entrenados para torneos.' :
                 tag.id === 'trade' ? 'Pokémon listos para intercambio.' :
                 tag.id === 'iv31' ? 'Pokémon con estadísticas perfectas (31 IV).' :
                 tag.id === 'shy' ? 'Pokémon Shiny con colores alternativos.' :
-                tag.id === 'team' ? 'Pokémon asignados a tu equipo actual.' : ''"
+                tag.id === 'team' ? 'Pokémon asignados a tu equipo actual.' : '') || ''"
               position="bottom"
             >
               <button
@@ -289,8 +289,8 @@ const AVAILABLE_TAGS = [
               :key="tier"
               :class="['filter-pill tier-pill', { active: filters.tier === tier }]"
               :style="{ 
-                '--tier-color': cfg.color,
-                '--tier-bg': cfg.bg
+                '--tier-color': (cfg as any).color,
+                '--tier-bg': (cfg as any).bg
               }"
               @click.stop="updateFilter('tier', tier)"
             >
@@ -315,7 +315,7 @@ const AVAILABLE_TAGS = [
                     type="range"
                     min="1"
                     max="100"
-                    :style="[getSliderStyle(filters.levelMin, 100, STAT_COLORS.LEVEL), { '--stat-color': STAT_COLORS.LEVEL }]"
+                    :style="[getSliderStyle(filters.levelMin, 100, (STAT_COLORS as any).LEVEL), { '--stat-color': (STAT_COLORS as any).LEVEL }]"
                     @input="onRangeInput('levelMin', $event)"
                   >
                   <span class="val">{{ filters.levelMin }}</span>
@@ -327,7 +327,7 @@ const AVAILABLE_TAGS = [
                     type="range"
                     min="1"
                     max="100"
-                    :style="[getSliderStyle(filters.levelMax, 100, STAT_COLORS.LEVEL), { '--stat-color': STAT_COLORS.LEVEL }]"
+                    :style="[getSliderStyle(filters.levelMax, 100, (STAT_COLORS as any).LEVEL), { '--stat-color': (STAT_COLORS as any).LEVEL }]"
                     @input="onRangeInput('levelMax', $event)"
                   >
                   <span class="val">{{ filters.levelMax }}</span>
@@ -391,12 +391,12 @@ const AVAILABLE_TAGS = [
                     type="range"
                     min="0"
                     max="31"
-                    :style="[getSliderStyle(filters['iv' + stat], 31, STAT_COLORS[stat]), { '--stat-color': STAT_COLORS[stat] }]"
+                    :style="[getSliderStyle(filters['iv' + stat], 31, (STAT_COLORS as any)[stat]), { '--stat-color': (STAT_COLORS as any)[stat] }]"
                     @input="onRangeInput('iv' + stat, $event)"
                   >
                   <span
                     class="stat-val"
-                    :style="{ color: STAT_COLORS[stat] }"
+                    :style="{ color: (STAT_COLORS as any)[stat] }"
                   >{{ filters['iv' + stat] }}</span>
                 </div>
               </div>

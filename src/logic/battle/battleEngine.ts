@@ -17,6 +17,9 @@ import {
   calculateEscapeChance
 } from './battleFormulas';
 
+import type { Pokemon } from '@/types/pokemon';
+import type { BattleStages, BattleWeather } from '@/types/battle';
+
 export {
   getEffectiveStat, 
   getStatBreakdown, 
@@ -26,7 +29,7 @@ export {
   calculateEscapeChance
 };
 
-export function getEffectiveSpeed(pokemon: any, stages: any, options: any = {}) {
+export function getEffectiveSpeed(pokemon: Pokemon, stages: Partial<BattleStages>, options: { weather?: BattleWeather | null } = {}) {
   // Uses fallback pattern to avoid runtime crashes
-  return getEffectiveStat(pokemon, 'spe', stages, options.weather);
+  return getEffectiveStat(pokemon, 'spe', stages, options.weather || null);
 }

@@ -18,17 +18,43 @@ import { registerItemTools } from './debug/sections/itemTools'
 import { registerSystemTools } from './debug/sections/systemTools'
 import { registerAudioTools } from './debug/sections/audioTools'
 
-export const useDebugStore = defineStore('debug', () => {
-  const auth = useAuthStore() as any
-  const game = useGameStore() as any
-  const ui = useUIStore() as any
-  const map = useMapStore() as any
-  const pvp = usePvPStore() as any
-  const modalStore = useModalStore() as any
-  const errorStore = useErrorStore() as any
-  const breedingStore = useBreedingStore() as any
+export interface DebugTool {
+  id: string
+  command: string
+  action: (...args: any[]) => any
+  description?: string
+}
 
-  const tools = ref([])
+export interface DebugContext {
+  game: ReturnType<typeof useGameStore>
+  ui: ReturnType<typeof useUIStore>
+  pvp: ReturnType<typeof usePvPStore>
+  auth: ReturnType<typeof useAuthStore>
+  map: ReturnType<typeof useMapStore>
+  mapStore: ReturnType<typeof useMapStore>
+  breedingStore: ReturnType<typeof useBreedingStore>
+  modalStore: ReturnType<typeof useModalStore>
+  errorStore: ReturnType<typeof useErrorStore>
+  eventStoreModule?: any
+}
+
+declare global {
+  interface Window {
+    __VITE_DEBUG__?: Record<string, (...args: any[]) => any>
+  }
+}
+
+export const useDebugStore = defineStore('debug', () => {
+  const auth = useAuthStore()
+  const game = useGameStore()
+  const ui = useUIStore()
+  const map = useMapStore()
+  const pvp = usePvPStore()
+  const modalStore = useModalStore()
+  const errorStore = useErrorStore()
+  const breedingStore = useBreedingStore()
+
+  const tools = ref<DebugTool[]>([])
 
   const canAccess = computed(() => {
     if (auth.sessionMode === 'offline') return true
@@ -40,12 +66,16 @@ export const useDebugStore = defineStore('debug', () => {
       console.error('[SECURITY] Unauthorized debug access detected. Banning user and force logout.')
       const userId = auth.user?.id
       if (userId) {
-        game.db.from('profiles').update({ 
-          is_banned: true, 
-          ban_reason: 'Intento de uso indebido de herramientas de debug' 
-        }).eq('id', userId).then(() => {
-          console.log('[SECURITY] DB Ban applied.')
-        })
+        // game.db is typed as SupabaseClient | null in game.ts, but let's assume it has from()
+        const db = (game as any).db
+        if (db) {
+          db.from('profiles').update({ 
+            is_banned: true, 
+            ban_reason: 'Intento de uso indebido de herramientas de debug' 
+          }).eq('id', userId).then(() => {
+            console.log('[SECURITY] DB Ban applied.')
+          })
+        }
       }
       auth.logout()
       return false
@@ -53,7 +83,7 @@ export const useDebugStore = defineStore('debug', () => {
     return true
   }
 
-  function register(config) {
+  function register(config: DebugTool) {
     const existingIdx = tools.value.findIndex(t => t.id === config.id)
     if (existingIdx !== -1) {
       tools.value[existingIdx] = config 
@@ -63,7 +93,7 @@ export const useDebugStore = defineStore('debug', () => {
     updateGlobalProxy()
   }
 
-  function unregister(id) {
+  function unregister(id: string) {
     tools.value = tools.value.filter(t => t.id !== id)
     updateGlobalProxy()
   }
@@ -71,13 +101,13 @@ export const useDebugStore = defineStore('debug', () => {
   function updateGlobalProxy() {
     if (typeof window === 'undefined') return
     if (!canAccess.value) {
-      delete (window as any).__VITE_DEBUG__
+      delete window.__VITE_DEBUG__
       return
     }
-    if (!(window as any).__VITE_DEBUG__) (window as any).__VITE_DEBUG__ = {}
+    if (!window.__VITE_DEBUG__) window.__VITE_DEBUG__ = {}
 
     tools.value.forEach(tool => {
-      (window as any).__VITE_DEBUG__[tool.command] = (...args) => {
+      window.__VITE_DEBUG__![tool.command] = (...args: any[]) => {
         if (securityCheck()) {
           return tool.action(...args)
         }
@@ -89,15 +119,15 @@ export const useDebugStore = defineStore('debug', () => {
     console.log('[DEBUG] Initializing debug tools (Modular)...');
     
     // Pass all necessary stores to the specialized registration functions
-    const context = { game, ui, pvp, auth, map, mapStore: map, breedingStore, modalStore, errorStore }
+    const context: DebugContext = { game, ui, pvp, auth, map, mapStore: map, breedingStore, modalStore, errorStore }
 
     // Synchronous registrations (fastest availability)
-    registerStatsTools({ register }, context)
-    registerMapTools({ register }, context)
-    registerPokeTools({ register }, context)
-    registerTimeTools({ register }, context)
-    registerItemTools({ register }, context)
-    registerAudioTools({ register }, context)
+    registerStatsTools({ register }, context as any)
+    registerMapTools({ register }, context as any)
+    registerPokeTools({ register }, context as any)
+    registerTimeTools({ register }, context as any)
+    registerItemTools({ register }, context as any)
+    registerAudioTools({ register }, context as any)
     
     // SystemTools registration (now synchronous registration, async module resolution)
     registerSystemTools({ register }, { ...context } as any)
@@ -107,7 +137,7 @@ export const useDebugStore = defineStore('debug', () => {
     // Delayed dependency resolution for Admin tools
     try {
       const eventStoreModule = await import('./events')
-      registerSystemTools({ register }, { ...context, eventStoreModule })
+      registerSystemTools({ register }, { ...context, eventStoreModule } as any)
       updateGlobalProxy()
     } catch (e) {
       console.warn('[DEBUG] Failed to load optional eventStoreModule for SystemTools', e)

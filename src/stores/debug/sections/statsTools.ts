@@ -1,79 +1,81 @@
-export function registerStatsTools(debug, { game, ui, pvp, auth }) {
+export function registerStatsTools(debug: any, { game, ui }: { game: any, ui: any }) {
   debug.register({
-    id: 'core-set-money',
-    label: 'FIJAR DINERO',
+    id: 'stats-set-money',
+    label: 'SET MONEY',
     command: 'setMoney',
     category: 'stats',
-    action: (val) => { 
-      game.state.money = parseInt(val) || 0
-      ui.notify(`Debug: Dinero fijado en ₽${game.state.money}`, '💰')
+    action: (val: number) => {
+      game.state.money = val
+      ui.notify(`Debug: Dinero ajustado a ${val}`, '💰')
       game.saveGame(false)
     },
     description: 'Establece el dinero del jugador.'
   })
 
   debug.register({
-    id: 'core-set-level',
-    label: 'FIJAR NIVEL',
+    id: 'stats-set-exp',
+    label: 'SET EXP',
+    command: 'setExp',
+    category: 'stats',
+    action: (val: number) => {
+      game.state.trainerExp = val
+      ui.notify(`Debug: Experiencia ajustada a ${val}`, '📈')
+      game.saveGame(false)
+    },
+    description: 'Establece la experiencia actual del entrenador.'
+  })
+
+  debug.register({
+    id: 'stats-set-level',
+    label: 'SET LEVEL',
     command: 'setLevel',
     category: 'stats',
-    action: (val) => { 
-      game.state.trainerLevel = parseInt(val) || 1
-      ui.notify(`Debug: Nivel fijado en ${game.state.trainerLevel}`, '📈')
+    action: (val: number) => {
+      game.state.trainerLevel = val
+      ui.notify(`Debug: Nivel ajustado a ${val}`, '⭐')
       game.saveGame(false)
     },
     description: 'Establece el nivel del entrenador.'
   })
 
   debug.register({
-    id: 'core-set-elo',
-    label: 'FIJAR ELO',
+    id: 'stats-set-elo',
+    label: 'SET ELO',
     command: 'setElo',
     category: 'stats',
-    action: (val) => { 
-      pvp.elo = parseInt(val) || 1000
-      ui.notify(`Debug: ELO fijado en ${pvp.elo}`, '⚔️')
-      game.db.from('profiles').update({ elo_rating: pvp.elo }).eq('id', auth.user.id)
-    },
-    description: 'Establece el ELO de combate.'
-  })
-
-  debug.register({
-    id: 'core-set-badges',
-    label: 'FIJAR MEDALLAS',
-    command: 'setBadges',
-    category: 'stats',
-    action: (val) => { 
-      game.state.badges = parseInt(val) || 0
-      ui.notify(`Debug: Medallas fijadas en ${game.state.badges}`, '🎖️')
+    action: (val: number) => {
+      game.state.eloRating = val
+      ui.notify(`Debug: ELO ajustado a ${val}`, '📊')
       game.saveGame(false)
     },
-    description: 'Establece la cantidad de medallas (0-8).'
+    description: 'Establece el ELO del jugador para PvP.'
   })
 
+
+
   debug.register({
-    id: 'core-set-faction',
-    label: 'FIJAR BANDO',
+    id: 'stats-set-faction',
+    label: 'SET FACTION',
     command: 'setFaction',
     category: 'stats',
-    action: (f) => {
-      game.state.faction = f === 'none' ? null : f
-      ui.notify(`Debug: Bando cambiado a ${f ? f.toUpperCase() : 'LIBRE'}`, '🚩')
+    action: (f: string) => {
+      game.state.faction = f
+      ui.notify(`Debug: Facción cambiada a ${f}`, '🛡️')
       game.saveGame(false)
     },
-    description: 'Cambia el bando del jugador (poder, union, none).'
+    description: 'Cambia la facción del jugador (magma, aqua, rocket, etc).'
   })
 
   debug.register({
-    id: 'core-set-class',
-    label: 'FIJAR CLASE',
+    id: 'stats-set-class',
+    label: 'SET PLAYER CLASS',
     command: 'setPlayerClass',
     category: 'stats',
-    action: (c) => {
-      game.state.playerClass = c === 'none' ? null : c
-      ui.notify(`Debug: Clase cambiada a ${c ? c.toUpperCase() : 'RESETEADA'}`, '🎓')
+    action: (c: string) => {
+      game.state.playerClass = c
+      ui.notify(`Debug: Clase cambiada a ${c}`, '🎭')
       game.saveGame(false)
     },
-    description: 'Cambia la clase del entrenador (entrenador, criador, cazabichos, rocket, none).'
+    description: 'Establece la clase activa del jugador.'
   })
 }

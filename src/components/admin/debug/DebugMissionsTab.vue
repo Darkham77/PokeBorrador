@@ -2,15 +2,23 @@
 import { useGameStore } from '@/stores/game'
 import { useDebugStore } from '@/stores/debug'
 
-const game = useGameStore() as any
-const debug = useDebugStore() as any
+interface ViteDebugBridge {
+  regenerateMissions?: () => void;
+  clearMissions?: () => void;
+}
+
+const game = useGameStore()
+const debug = useDebugStore()
+
+const getDebugBridge = () => (window as unknown as { __VITE_DEBUG__: ViteDebugBridge }).__VITE_DEBUG__
 
 const regenerate = () => {
-  if ((window as any).__VITE_DEBUG__?.regenerateMissions) {
-    (window as any).__VITE_DEBUG__.regenerateMissions()
+  const bridge = getDebugBridge()
+  if (bridge?.regenerateMissions) {
+    bridge.regenerateMissions()
   } else {
     console.warn('[DEBUG] Fallback: regenerateMissions from store directly')
-    const tool = (debug.tools as any[]).find(t => t.command === 'regenerateMissions')
+    const tool = debug.tools.find(t => t.command === 'regenerateMissions')
     if (tool) tool.action()
   }
 }
@@ -18,11 +26,12 @@ const regenerate = () => {
 const clear = () => {
   if (!confirm('¿Seguro que quieres borrar todas las misiones actuales?')) return
 
-  if ((window as any).__VITE_DEBUG__?.clearMissions) {
-    (window as any).__VITE_DEBUG__.clearMissions()
+  const bridge = getDebugBridge()
+  if (bridge?.clearMissions) {
+    bridge.clearMissions()
   } else {
     console.warn('[DEBUG] Fallback: clearMissions from store directly')
-    const tool = (debug.tools as any[]).find(t => t.command === 'clearMissions')
+    const tool = debug.tools.find(t => t.command === 'clearMissions')
     if (tool) tool.action()
   }
 }

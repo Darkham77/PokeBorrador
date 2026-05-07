@@ -16,21 +16,26 @@ export const GYM_RATIOS = {
   rematchTMRateHard: 0.05
 };
 
+import type { GameState } from '@/types/game';
+
 /**
  * Calculates the rewards for a gym battle.
  * @param {Gym} gym - Gym definition (id, leader, rewardTM, etc.)
  * @param {string} difficulty - 'easy' | 'normal' | 'hard'
- * @param {any} state - Current player state
+ * @param {GameState} state - Current player state
  * @returns {any} { newInventory, extraCoins, tmDropped, newProgress }
  */
-export function processGymVictory(gym: Gym, difficulty: 'easy' | 'normal' | 'hard', state: any): any {
+export function processGymVictory(gym: Gym, difficulty: 'easy' | 'normal' | 'hard', state: GameState): any {
   const diffMap: Record<string, number> = { easy: 1, normal: 2, hard: 3 };
   const diffValue = diffMap[difficulty] || 1;
   const isFirstTime = !state.defeatedGyms.includes(gym.id);
   
   let tmDropped = false;
   let extraCoins = 0;
-  let newProgress = state.gymProgress?.[gym.id] || 0;
+  let newProgress = 0;
+  const currentEntry = state.gymProgress?.[gym.id];
+  if (typeof currentEntry === 'number') newProgress = currentEntry;
+  else if (currentEntry && typeof currentEntry === 'object') newProgress = currentEntry.attempts || 0; // Fallback to attempts or similar if it was object
 
   if (isFirstTime) {
     tmDropped = !!gym.rewardTM;

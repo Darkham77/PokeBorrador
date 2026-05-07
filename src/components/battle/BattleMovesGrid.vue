@@ -181,14 +181,14 @@ const isMoveDisabled = (move: any) => {
         }
       ]"
       :style="{ 
-        '--m-type-color': move ? PDEX_TYPE_COLORS[getMoveData(move).type.toLowerCase() || 'normal'] : '#444',
-        '--m-type-rgb': hexToRgb(move ? PDEX_TYPE_COLORS[getMoveData(move).type.toLowerCase() || 'normal'] : '#444'),
+        '--m-type-color': move ? ((PDEX_TYPE_COLORS as any)[getMoveData(move).type.toLowerCase()] || '#444') : '#444',
+        '--m-type-rgb': hexToRgb(move ? ((PDEX_TYPE_COLORS as any)[getMoveData(move).type.toLowerCase()] || '#444') : '#444'),
         background: move 
-          ? `Linear-Gradient(${i % 2 === 0 ? '90deg' : '270deg'}, Rgba(${hexToRgb(PDEX_TYPE_COLORS[getMoveData(move).type.toLowerCase() || 'normal'])}, 0.25) 0%, Rgba(255, 255, 255, 0.05) 100%)`
+          ? `Linear-Gradient(${i % 2 === 0 ? '90deg' : '270deg'}, Rgba(${hexToRgb((PDEX_TYPE_COLORS as any)[getMoveData(move).type.toLowerCase()] || '#444')}, 0.25) 0%, Rgba(255, 255, 255, 0.05) 100%)`
           : `Linear-Gradient(${i % 2 === 0 ? '90deg' : '270deg'}, Rgba(50, 50, 50, 0.2) 0%, Rgba(0, 0, 0, 0.1) 100%)`,
         borderColor: move && getMoveModifier(move) === 'boosted' ? '$coin-gold' : 
           move && getMoveModifier(move) === 'penalized' ? '#ff4444' :
-          move ? `Rgba(${hexToRgb(PDEX_TYPE_COLORS[getMoveData(move).type.toLowerCase() || 'normal'])}, 0.7)` : 
+          move ? `Rgba(${hexToRgb((PDEX_TYPE_COLORS as any)[getMoveData(move).type.toLowerCase()] || '#444')}, 0.7)` : 
           'Rgba(255, 255, 255, 0.1)'
       }"
       :draggable="canReorder && !!move"
@@ -263,8 +263,8 @@ const isMoveDisabled = (move: any) => {
             <div class="detail-item">
               <span class="d-label pixelated">CAT:</span>
               <span class="d-val pixelated">
-                <span class="cat-full">{{ { physical: '⚔️ Físico', special: '✨ Especial', status: '🔮 Estado' }[getMoveData(move).cat] || '🔮 Estado' }}</span>
-                <span class="cat-short">{{ { physical: '⚔️ FIS', special: '✨ ESP', status: '🔮 EST' }[getMoveData(move).cat] || '🔮 EST' }}</span>
+                <span class="cat-full">{{ ({ physical: '⚔️ Físico', special: '✨ Especial', status: '🔮 Estado' } as any)[getMoveData(move).cat] || '🔮 Estado' }}</span>
+                <span class="cat-short">{{ ({ physical: '⚔️ FIS', special: '✨ ESP', status: '🔮 EST' } as any)[getMoveData(move).cat] || '🔮 EST' }}</span>
               </span>
             </div>
             <div class="mv-pp-wrap">

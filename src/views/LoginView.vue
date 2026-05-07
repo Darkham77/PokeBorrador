@@ -12,8 +12,8 @@ import AuthServerSelector from '@/components/auth/AuthServerSelector.vue'
 
 const wallpaperUrl = computed(() => `url('${getAssetUrl(ASSET_TYPES.UI, '../fondo/WALLPAPER')}')`)
 
-const authStore = useAuthStore() as any
-const gameStore = useGameStore() as any
+const authStore = useAuthStore()
+const gameStore = useGameStore()
 
 const authTab = ref('login') // 'login' | 'signup'
 const serverMode = ref('local') // 'online' | 'local'
@@ -49,8 +49,8 @@ const handleLogin = async () => {
     await authStore.login(email.value, password.value)
     await gameStore.loadGame()
     window.location.href = '/'
-  } catch (err: any) {
-    error.value = err.message || 'Error al iniciar sesión'
+  } catch (err: unknown) {
+    error.value = (err as any).message || 'Error al iniciar sesión'
   } finally {
     loading.value = false
   }
@@ -67,8 +67,8 @@ const handleSignup = async () => {
     await authStore.signup(email.value, password.value, username.value)
     success.value = '¡Cuenta creada! Revisa tu email para confirmar.'
     authTab.value = 'login'
-  } catch (err: any) {
-    error.value = err.message || 'Error al registrarse'
+  } catch (err: unknown) {
+    error.value = (err as any).message || 'Error al registrarse'
   } finally {
     loading.value = false
   }

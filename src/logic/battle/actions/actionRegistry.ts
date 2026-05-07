@@ -1,4 +1,6 @@
 
+import type { Pokemon } from '@/types/pokemon';
+import type { BattleStages, LogFn } from '@/types/battle';
 import { STAT_ACTIONS } from './statActions';
 import { STATUS_ACTIONS } from './statusActions';
 import { HEALING_ACTIONS } from './healingActions';
@@ -11,7 +13,16 @@ import { SPECIAL_ACTIONS } from './specialActions';
  * Despacha efectos de movimientos de forma modular.
  */
 
-const ALL_ACTIONS: any = {
+type BattleAction = (
+  src: Pokemon, 
+  tgt: Pokemon, 
+  srcStages: BattleStages, 
+  tgtStages: BattleStages, 
+  addLogFn: LogFn, 
+  battleCtx: any
+) => void;
+
+const ALL_ACTIONS: Record<string, BattleAction> = {
   ...STAT_ACTIONS,
   ...STATUS_ACTIONS,
   ...HEALING_ACTIONS,
@@ -24,7 +35,15 @@ const ALL_ACTIONS: any = {
  * Despacha un efecto de movimiento a la función correspondiente.
  * Maneja la probabilidad de activación (ej: burn_10).
  */
-export function dispatchMoveEffect(effect: any, src: any, tgt: any, srcStages: any, tgtStages: any, addLogFn: any, battleCtx: any) {
+export function dispatchMoveEffect(
+  effect: string | null, 
+  src: Pokemon, 
+  tgt: Pokemon, 
+  srcStages: BattleStages, 
+  tgtStages: BattleStages, 
+  addLogFn: LogFn, 
+  battleCtx: any
+) {
   if (!effect) return;
 
   // 1. Parshear probabilidad (ej: burn_10 -> 10% de chance, efecto base 'burn')
@@ -33,11 +52,13 @@ export function dispatchMoveEffect(effect: any, src: any, tgt: any, srcStages: a
 
   if (/_(\d+)$/.test(effect) && !effect.startsWith('heal_') && !effect.includes('self_atk_2')) {
     const match = effect.match(/_(\d+)$/);
-    const val = parseInt(match[1]);
-    // Evitar parshear niveles de stat (_2) como probabilidad
-    if (val > 2) {
-      chance = val;
-      effectBase = effect.replace(/_\d+$/, '');
+    if (match) {
+      const val = parseInt(match[1]);
+      // Evitar parshear niveles de stat (_2) como probabilidad
+      if (val > 2) {
+        chance = val;
+        effectBase = effect.replace(/_\d+$/, '');
+      }
     }
   }
 
@@ -62,18 +83,19 @@ export function dispatchMoveEffect(effect: any, src: any, tgt: any, srcStages: a
     try {
       // Snatch (Robo) Logic: Intercept beneficial status moves
       const snatchablePrefixes = ['stat_up_self', 'heal_50', 'heal_weather', 'rest', 'reflect', 'light_screen', 'safeguard', 'focus_energy'];
-      const isSnatchable = snatchablePrefixes.some((p: any) => effect.startsWith(p));
+      const isSnatchable = snatchablePrefixes.some((p) => effect.startsWith(p));
       
-      if (isSnatchable && tgt.snatching) {
+      const tgtInternal = tgt as any; // Dynamic battle property
+      if (isSnatchable && tgtInternal.snatching) {
         addLogFn(`¡${tgt.name} robó el efecto con Robo!`, 'log-info', tgt);
-        tgt.snatching = false;
+        tgtInternal.snatching = false;
         // Execute action with swapped src/tgt
         actionFn(tgt, src, tgtStages, srcStages, addLogFn, battleCtx);
         return;
       }
 
       actionFn(src, tgt, srcStages, tgtStages, addLogFn, battleCtx);
-    } catch (e: any) {
+    } catch (e) {
       console.error(`[ActionRegistry] Error executing ${effect}:`, e);
     }
   } else {

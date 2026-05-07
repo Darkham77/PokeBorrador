@@ -25,7 +25,7 @@ const handleApplyPPUp = (moveIndex: string | number) => {
   const move = ppPokemon.value.moves[moveIdx]
   if (!move) return
   
-  const moveData = pokemonDataProvider.getMoveData(move.name) || {}
+  const moveData = (pokemonDataProvider.getMoveData(move.name) || {}) as any
   const basePP = moveData.pp || 35
   const maxPossible = Math.floor(basePP * 1.6)
   

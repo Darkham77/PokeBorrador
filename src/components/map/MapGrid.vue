@@ -7,17 +7,39 @@ import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { getRouteWeather } from '@/logic/weatherUtils'
 import { useMapStore } from '@/stores/map'
 
+
+interface MapLocation {
+  id: string
+  name: string
+  badges: number
+  wild?: {
+    day?: string[]
+    night?: string[]
+  }
+  fishing?: {
+    pool: string[]
+    rates: number[]
+  }
+}
+
+interface SpawnPool {
+  generic: string[]
+  specific: string[]
+  rates: Record<string, number>
+  weather: string
+}
+
 interface Props {
-  maps: any[]
+  maps: MapLocation[]
   badgeCount?: number
   cycle?: string
   weather?: string
   playerClass?: string
-  classData?: any
+  classData?: { extortedRouteId?: string | null }
   safariTicketSecs?: number
   ceruleanTicketSecs?: number
-  dominanceData?: any
-  dailyGuardianCaptures?: any[]
+  dominanceData?: Record<string, { winner_faction?: string | null }>
+  dailyGuardianCaptures?: string[]
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -33,26 +55,25 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits<{
-  (e: 'navigate', loc: any): void
+  (e: 'navigate', loc: MapLocation): void
 }>()
 
-const eventStore = useEventStore() as any
-const mapStore = useMapStore() as any
+const eventStore = useEventStore()
+const mapStore = useMapStore()
 
-const getMapData = (loc: any) => {
+const getMapData = (loc: MapLocation): SpawnPool => {
   if (!loc.wild) return { generic: [], specific: [], rates: {}, weather: 'clear' }
 
   const activeEvents = eventStore.activeEvents || []
   
   // Determinar clima para esta ruta específica si no hay uno global
-  // RE-TRACK: Asegurar que el pool se recalcule si cambia la hora del epoch
   const activeWeather = (props.weather && props.weather !== 'clear') ? props.weather : getRouteWeather(loc.id, mapStore.currentSeason.id, mapStore.currentEpochHour)
   
-  const { pool, rates } = getEncounterPool(loc, props.cycle, activeWeather, activeEvents)
+  const { pool, rates } = getEncounterPool(loc as any, props.cycle || 'day', activeWeather, activeEvents)
 
   const baseWild = loc.wild?.day || []
-  const generic: any[] = []
-  const specific: any[] = []
+  const generic: string[] = []
+  const specific: string[] = []
   const ratesMap: Record<string, number> = {}
 
   pool.forEach((id: string, index: number) => {
@@ -74,14 +95,14 @@ const getMapData = (loc: any) => {
   return { generic, specific, rates: ratesMap, weather: activeWeather }
 }
 
-const isMapLocked = (loc: any) => {
+const isMapLocked = (loc: MapLocation) => {
   if (loc.id === 'safari_zone') return props.safariTicketSecs <= 0
-  return props.badgeCount < loc.badges
+  return (props.badgeCount || 0) < loc.badges
 }
 
 const getDominanceForMap = (mapId: string) => {
-  const data = props.dominanceData[mapId] || {}
-  const captured = props.dailyGuardianCaptures.includes(mapId)
+  const data = (props.dominanceData || {})[mapId] || {}
+  const captured = (props.dailyGuardianCaptures || []).includes(mapId)
   
   const allMaps = pokemonDataProvider.getMaps()
   const guardianData = getGuardianData(mapId, allMaps.map(m => m.id))

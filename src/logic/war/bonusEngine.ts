@@ -11,7 +11,7 @@ import type { Pokemon, PokemonIVs } from '@/types/pokemon'
  * @param {Record<string, string>} dominanceData 
  * @returns {Pokemon} The modified pokemon
  */
-export function applyEncounterBonuses(pokemon: Pokemon, mapId: string, faction: string | null, dominanceData: Record<string, string>): Pokemon {
+export function applyEncounterBonuses(pokemon: Pokemon, mapId: string, faction: string | null, dominanceData?: Record<string, string> | null): Pokemon {
   if (!faction || !dominanceData) return pokemon
 
   const winner = dominanceData[mapId]

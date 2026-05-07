@@ -3,6 +3,33 @@ import { useGameStore } from './game'
 import { useBattleStore } from './battle'
 import { makePokemon } from '@/logic/pokemonFactory'
 
+interface GymDifficulty {
+  pokemon: string[];
+  levels: number[];
+}
+
+interface Gym {
+  id: string;
+  name: string;
+  city: string;
+  leader: string;
+  type: string;
+  typeColor: string;
+  badge: string;
+  badgeName: string;
+  quote: string;
+  victoryQuote: string;
+  rewardTM: string;
+  pokemon: string[];
+  levels: number[];
+  badgesRequired: number;
+  difficulties: {
+    easy: GymDifficulty;
+    normal: GymDifficulty;
+    hard: GymDifficulty;
+  };
+}
+
 export const useGymsStore = defineStore('gyms', {
   state: () => ({
     gyms: [
@@ -118,27 +145,27 @@ export const useGymsStore = defineStore('gyms', {
           hard: { pokemon: ['dugtrio', 'nidoqueen', 'nidoking', 'marowak', 'sandslash', 'rhydon'], levels: [85, 87, 87, 87, 87, 90] }
         }
       }
-    ],
-    defeatedGyms: []
+    ] as Gym[],
+    defeatedGyms: [] as string[]
   }),
   actions: {
     async loadGymProgress() {
-      const gameStore = useGameStore() as any
+      const gameStore = useGameStore()
       this.defeatedGyms = gameStore.state.defeatedGyms || []
     },
-    isGymDefeated(gymId) {
+    isGymDefeated(gymId: string) {
       return this.defeatedGyms.includes(gymId)
     },
-    async challengeGym(gymId, difficulty = 'easy') {
-      const battleStore = useBattleStore() as any
+    async challengeGym(gymId: string, difficulty: 'easy' | 'normal' | 'hard' = 'easy') {
+      const battleStore = useBattleStore()
       
       const gym = this.gyms.find(g => g.id === gymId)
       if (!gym) return
 
       const diffData = gym.difficulties[difficulty] || gym.difficulties.easy
-      const enemyTeam = diffData.pokemon.map((id, idx) => makePokemon(id, diffData.levels[idx]))
+      const enemyTeam = diffData.pokemon.map((id: string, idx: number) => makePokemon(id, diffData.levels[idx] || 1))
       
-      const mainEnemy = enemyTeam[enemyTeam.length - 1] // The ace
+      const mainEnemy = enemyTeam[enemyTeam.length - 1] as any // The ace
 
       await battleStore.startBattle(mainEnemy, {
         isGym: true,

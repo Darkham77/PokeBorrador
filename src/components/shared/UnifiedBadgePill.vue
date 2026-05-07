@@ -93,7 +93,7 @@ const handleItemImageError = (e: Event) => {
           <template v-if="badge.id === 'item'">
             <img 
               v-if="!itemImageError"
-              :src="getAssetUrl(ASSET_TYPES.ITEM, badge.itemId)" 
+              :src="getAssetUrl(ASSET_TYPES.ITEM, badge.itemId || '')" 
               class="badge-item-img"
               @error="handleItemImageError"
             >

@@ -5,8 +5,8 @@ import { useAuthStore } from './auth'
 import { NICK_STYLES, AVATAR_STYLES } from '@/data/cosmeticsData'
 
 export const useCosmeticsStore = defineStore('cosmetics', () => {
-  const gameStore = useGameStore() as any
-  const authStore = useAuthStore() as any
+  const gameStore = useGameStore()
+  const authStore = useAuthStore()
 
   // --- STATE ---
   const isLoading = ref(false)
@@ -20,8 +20,8 @@ export const useCosmeticsStore = defineStore('cosmetics', () => {
   const equippedAvatarStyle = computed(() => gameStore.state.avatar_style || null)
 
   // --- ACTIONS ---
-  async function equipNickStyle(styleId) {
-    if (!authStore.user) return
+  async function equipNickStyle(styleId: string) {
+    if (!authStore.user || !gameStore.db) return
     
     isLoading.value = true
     try {
@@ -39,8 +39,8 @@ export const useCosmeticsStore = defineStore('cosmetics', () => {
     }
   }
 
-  async function equipAvatarStyle(styleId) {
-    if (!authStore.user) return
+  async function equipAvatarStyle(styleId: string) {
+    if (!authStore.user || !gameStore.db) return
     
     isLoading.value = true
     try {

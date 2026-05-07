@@ -26,8 +26,8 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const p = computed(() => props.pokemon)
-const battleStore = useBattleStore() as any
-const profileStore = useProfileStore() as any
+const battleStore = useBattleStore()
+const profileStore = useProfileStore()
 
 const isAdmin = computed(() => {
   return profileStore.profileData.isAdmin || (window as any).__ADMIN_DEBUG__ || supabase.isLocal
@@ -36,7 +36,7 @@ const isAdmin = computed(() => {
 // displayHp permite animar la barra desde 0 cuando el componente aparece (Fase 3)
 const displayHp = ref(0)
 
-const hpTimeout = ref(null)
+const hpTimeout = ref<ReturnType<typeof setTimeout> | null>(null)
 onMounted(() => {
   // Sincronizar con la transición de aparición del HUD
   hpTimeout.value = setTimeout(() => {
@@ -109,9 +109,9 @@ const activeStages = computed(() => {
   const keys = ['atk', 'def', 'spa', 'spd', 'spe', 'acc', 'eva']
   
   for (const key of keys) {
-    const val = s[key]
+    const val = (s as any)[key]
     if (val !== 0) {
-      const config = STAT_EMOJI_MAP[key] || { icon: '❓', name: key }
+      const config = (STAT_EMOJI_MAP as any)[key] || { icon: '❓', name: key }
       const mult = getStatMultiplier(val)
       const pct = Math.round((mult - 1) * 100)
       const pctText = pct > 0 ? `+${pct}%` : `${pct}%`
@@ -143,8 +143,8 @@ const volatileStatuses = computed(() => {
     const cycle = getDayCycle()
     
     let isAbBoosted = false
-    const abEntry = ABILITY_DATA[ab] || Object.entries(ABILITY_DATA).find(([k]) => k.toLowerCase() === ab.toLowerCase())?.[1]
-    const abDescription = abEntry?.desc || 'Sin descripción disponible.'
+    const abEntry = (ABILITY_DATA as any)[ab] || Object.entries(ABILITY_DATA).find(([k]) => k.toLowerCase() === ab.toLowerCase())?.[1]
+    const abDescription = (abEntry as any)?.desc || 'Sin descripción disponible.'
     let abText = `HABILIDAD: ${ab.toUpperCase()}. ${abDescription}`
 
     const isSunActive = mechWeather === WEATHER_MECHANICAL.SUN || (mechWeather === WEATHER_MECHANICAL.CLEAR && (cycle === 'day' || cycle === 'morning'))
@@ -203,8 +203,8 @@ const volatileStatuses = computed(() => {
   const types = []
   if (p.value.type) types.push(p.value.type.toLowerCase())
   if (p.value.type2) types.push(p.value.type2.toLowerCase())
-  const moveTypes = (p.value.moves || []).map(m => (m?.type || '').toLowerCase())
-  const moveNames = (p.value.moves || []).map(m => (m?.name || '').toLowerCase())
+  const moveTypes = (p.value.moves || []).map((m: any) => (m?.type || '').toLowerCase())
+  const moveNames = (p.value.moves || []).map((m: any) => (m?.name || '').toLowerCase())
   const cycle = getDayCycle()
 
   let weatherAffects = false
@@ -214,17 +214,17 @@ const volatileStatuses = computed(() => {
       weatherAffects = true
     } else if (mechWeather === 'sun') {
       const sunMoves = ['synthesis', 'síntesis', 'morning sun', 'sol beam', 'rayo solar', 'solar beam', 'solar blade', 'cuchilla solar']
-      if (types.includes('fire') || types.includes('water') || moveTypes.includes('fire') || moveTypes.includes('water') || moveNames.some(n => sunMoves.includes(n))) {
+      if (types.includes('fire') || types.includes('water') || moveTypes.includes('fire') || moveTypes.includes('water') || moveNames.some((n: any) => sunMoves.includes(n))) {
         weatherAffects = true
       }
     } else if (mechWeather === 'rain') {
       const rainMoves = ['thunder', 'trueno', 'hurricane', 'vendaval', 'weather ball']
-      if (types.includes('fire') || types.includes('water') || moveTypes.includes('fire') || moveTypes.includes('water') || moveTypes.includes('electric') || moveNames.some(n => rainMoves.includes(n))) {
+      if (types.includes('fire') || types.includes('water') || moveTypes.includes('fire') || moveTypes.includes('water') || moveTypes.includes('electric') || moveNames.some((n: any) => rainMoves.includes(n))) {
         weatherAffects = true
       }
     } else if (mechWeather === 'snow') {
       const snowMoves = ['blizzard', 'ventisca', 'aurora veil', 'velo aurora']
-      if (types.includes('ice') || moveTypes.includes('ice') || moveNames.some(n => snowMoves.includes(n))) {
+      if (types.includes('ice') || moveTypes.includes('ice') || moveNames.some((n: any) => snowMoves.includes(n))) {
         weatherAffects = true
       }
     }
@@ -233,7 +233,7 @@ const volatileStatuses = computed(() => {
   let cycleAffects = false
   if (cycle === 'morning' || cycle === 'day') {
     const sunMoves = ['synthesis', 'síntesis', 'morning sun', 'sol beam', 'rayo solar', 'solar beam', 'solar blade', 'cuchilla solar']
-    if (types.includes('fire') || types.includes('water') || moveTypes.includes('fire') || moveTypes.includes('water') || moveNames.some(n => sunMoves.includes(n))) {
+    if (types.includes('fire') || types.includes('water') || moveTypes.includes('fire') || moveTypes.includes('water') || moveNames.some((n: any) => sunMoves.includes(n))) {
       cycleAffects = true
     }
   } else if (cycle === 'dusk' || cycle === 'night') {
@@ -250,12 +250,12 @@ const volatileStatuses = computed(() => {
       list.push({ icon: config.icon, text: `${config.label}: ${config.description}` })
     }
   } else if (cycleAffects) {
-    const cycleData = {
+    const cycleData = ({
       morning: { icon: '🌅', label: 'MAÑANA', desc: 'Bonifica movimientos FUEGO (1.2x) y habilidades solares.' },
       day: { icon: '☀️', label: 'DÍA', desc: 'Bonifica movimientos FUEGO (1.2x) y habilidades solares.' },
       dusk: { icon: '🌆', label: 'OCASO', desc: 'Bonifica movimientos AGUA (1.2x) y habilidades nocturnas.' },
       night: { icon: '🌙', label: 'NOCHE', desc: 'Bonifica movimientos AGUA (1.2x) y habilidades nocturnas.' }
-    }[cycle]
+    } as any)[cycle]
     if (cycleData) {
       list.push({ icon: cycleData.icon, text: `HORARIO (${cycleData.label}): ${cycleData.desc}` })
     }
@@ -275,13 +275,13 @@ const adminStatConfig = [
 const getStatModifier = (key: string) => {
   const stages = props.isPlayer ? battleStore.playerStages : battleStore.enemyStages
   if (!stages) return 0
-  return stages[key] || 0
+  return (stages as any)[key] || 0
 }
 
 const getBreakdown = (key: string) => {
   const stages = props.isPlayer ? battleStore.playerStages : battleStore.enemyStages
   const weather = battleStore.state?.weather
-  return getStatBreakdown(p.value, key, stages, weather) as any
+  return getStatBreakdown(p.value, key as any, stages, weather || null) as any
 }
 
 const formatMult = (m: number) => {
@@ -419,14 +419,14 @@ const formatMult = (m: number) => {
         <!-- Estado Primario -->
         <PVTooltip
           v-if="p.status"
-          :description="STATUS_TOOLTIP_MAP[p.status.toLowerCase()] || p.status"
+          :description="(STATUS_TOOLTIP_MAP as any)[p.status.toLowerCase()] || p.status"
           position="bottom"
         >
           <div
             class="status-badge"
             :class="p.status.toLowerCase()"
           >
-            {{ STATUS_EMOJI_MAP[p.status.toLowerCase()] || p.status.toUpperCase() }}
+            {{ (STATUS_EMOJI_MAP as any)[p.status.toLowerCase()] || p.status.toUpperCase() }}
             <span
               v-if="p.status.toLowerCase() === 'sleep' && p.sleepTurns"
               class="status-counter"

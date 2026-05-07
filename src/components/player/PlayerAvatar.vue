@@ -19,7 +19,7 @@ const props = withDefaults(defineProps<Props>(), {
 const gameStore = useGameStore() as any;
 
 const activeClassId = computed(() => props.classId || gameStore.state.playerClass);
-const cls = computed(() => activeClassId.value ? PLAYER_CLASSES[activeClassId.value] : null);
+const cls = computed(() => activeClassId.value ? (PLAYER_CLASSES as any)[activeClassId.value] : null);
 
 const trainerLevel = computed(() => gameStore.state.trainerLevel || 1);
 

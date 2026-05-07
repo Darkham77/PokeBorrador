@@ -7,7 +7,9 @@ import EggWarehouse from '@/components/breeding/EggWarehouse.vue';
 import BreedingSummary from '@/components/breeding/BreedingSummary.vue';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 
-const breedingStore = useBreedingStore() as any;
+import type { Pokemon } from '@/types/pokemon';
+
+const breedingStore = useBreedingStore();
 
 const activeTab = ref('breeding'); // breeding | missions | eggs
 const isPickerOpen = ref(false);
@@ -18,7 +20,7 @@ const openPicker = (slotIdx: number) => {
   isPickerOpen.value = true;
 };
 
-const handleSelect = (pokemon: any) => {
+const handleSelect = (pokemon: Pokemon) => {
   breedingStore.deposit(pokemon, activeSlotIndex.value);
   isPickerOpen.value = false;
 };
@@ -28,7 +30,7 @@ onMounted(() => {
   breedingStore.checkDailyReset();
 });
 
-const getGenderClass = (gender: string) => {
+const getGenderClass = (gender: string | null | undefined) => {
   if (gender === 'M') return 'gender-m';
   if (gender === 'F') return 'gender-f';
   return '';

@@ -131,15 +131,15 @@ export function inheritMoves(pA: Pokemon, pB: Pokemon, eggSpeciesId: string): st
   // 1. Egg Moves (si el padre o la madre lo conocen Y está en la DB de posibles egg moves)
   const parentsMoves = [...(pA.moves || []), ...(pB.moves || [])]
   possibleEggMoves.forEach(moveId => {
-    if (parentsMoves.some(m => m.name === moveId)) {
+    if (parentsMoves.some(m => m && m.name === moveId)) {
       if (!inheritedMoves.includes(moveId)) inheritedMoves.push(moveId)
     }
   })
 
   // 2. TMs: Si ambos padres conocen una MT que la cría puede aprender (simplificación legacy)
-  const sharedMoves = (pA.moves || []).filter(ma => (pB.moves || []).some(mb => mb.name === ma.name))
+  const sharedMoves = (pA.moves || []).filter(ma => ma && (pB.moves || []).some(mb => mb && mb.name === ma.name))
   sharedMoves.forEach(m => {
-    if (!inheritedMoves.includes(m.name) && inheritedMoves.length < 4) {
+    if (m && !inheritedMoves.includes(m.name) && inheritedMoves.length < 4) {
       inheritedMoves.push(m.name)
     }
   })
@@ -165,7 +165,7 @@ export function inheritAbility(pA: Pokemon, pB: Pokemon): string | null {
   if (!source) return null
   
   if (Math.random() < BREEDING_CONSTANTS.HIDDEN_ABILITY_CHANCE) {
-    return source.ability
+    return source.ability || null
   }
   
   return null // Habilidad aleatoria (slot 1 o 2 estándar)
@@ -216,7 +216,7 @@ export function getGeneticsForecast(pA: Pokemon, pB: Pokemon, playerClass: strin
   const babyId = getBreedingBaseId(getEggSpecies(pA.id))
   const possibleEggMoves = EGG_MOVES_DB[babyId] || []
   const parentsMoves = [...(pA.moves || []), ...(pB.moves || [])]
-  const eggMovesDetected = possibleEggMoves.filter(moveId => parentsMoves.some(m => m.name === moveId))
+  const eggMovesDetected = possibleEggMoves.filter(moveId => parentsMoves.some(m => m && m.name === moveId))
 
   return {
     natureGuaranteed: hasEverstone,

@@ -7,6 +7,36 @@ import { useModalStore } from '@/stores/modals';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import type { Pokemon } from '@/types/pokemon';
 
+interface GenerateParams {
+  id?: string
+  level?: number
+  ivs?: Partial<Pokemon['ivs']> | null
+  isShiny?: boolean
+  isGuardian?: boolean
+  nature?: string | null
+  ability?: string | null
+  gender?: 'male' | 'female' | 'genderless' | null
+  moves?: string[] | null
+  nickname?: string | null
+  friendship?: number
+  heldItem?: string | null
+}
+
+interface EggData {
+  uid: string
+  id: string
+  name: string
+  isEgg: boolean
+  steps: number
+  ivs: Pokemon['ivs']
+  nature: string
+  movesAtBirth: string[]
+  abilitySlot: number
+  isShiny: boolean
+  isGuardian: boolean
+  ready: boolean
+}
+
 /**
  * Service for administrative and debug operations related to Pokémon.
  * CLI-First implementation.
@@ -15,7 +45,7 @@ export const pokemonDebugService = {
   /**
    * Generates a custom pokemon object with specific overrides.
    */
-  generate(params: any = {}): Pokemon {
+  generate(params: GenerateParams = {}): Pokemon {
     const {
       id = 'pidgey',
       level = 5,
@@ -46,15 +76,15 @@ export const pokemonDebugService = {
     // 3. Handle Moves
     if (moves && Array.isArray(moves)) {
       p.moves = moves.map((mName: string) => {
-        const mData = pokemonDataProvider.getMoveData(mName) || {};
+        const mData = pokemonDataProvider.getMoveData(mName)
         return { 
           name: mName || '???', 
-          pp: mData.pp || 35, 
-          maxPP: mData.pp || 35,
-          type: mData.type || 'normal',
-          power: mData.power || 0,
-          acc: mData.acc || 100,
-          cat: (mData.cat || 'physical') as any
+          pp: mData?.pp || 35, 
+          maxPP: mData?.pp || 35,
+          type: mData?.type || 'normal',
+          power: mData?.power || 0,
+          acc: mData?.acc || 100,
+          cat: (mData?.cat || 'physical') as 'physical' | 'special' | 'status'
         };
       }).slice(0, 4);
     }
@@ -71,8 +101,8 @@ export const pokemonDebugService = {
    * Adds the pokemon to the state using a specific protocol.
    */
   async executeProtocol(p: Pokemon, protocol: string = 'catch'): Promise<void> {
-    const game = useGameStore() as any;
-    const ui = useUIStore() as any;
+    const game = useGameStore();
+    const ui = useUIStore();
     const animationsEnabled = ui.debugAnimationsEnabled ?? true;
 
     console.log(`[DEBUG] Executing ${protocol.toUpperCase()} protocol for ${p.name}`);
@@ -91,7 +121,7 @@ export const pokemonDebugService = {
       case 'hatch':
       case 'egg_silent': {
         // Protocol: Add UNHATCHED egg to inventory
-        const eggForInventory = {
+        const eggForInventory: Partial<EggData> = {
           uid: `egg_${Date.now()}`,
           id: p.id,
           name: 'Huevo Pokémon',
@@ -99,14 +129,25 @@ export const pokemonDebugService = {
           steps: 100, // Low steps for quick debug testing
           ivs: p.ivs,
           nature: p.nature,
-          movesAtBirth: p.moves.map(m => m.name),
+          movesAtBirth: p.moves.map(m => m?.name || '???'),
           abilitySlot: (p as any).abilityIndex || 0,
           isShiny: p.isShiny,
           isGuardian: p.isGuardian
         };
         
+        const state = game.state as Record<string, any>;
+        const key = `${p.id}TicketSecs`;
+        if (state[key] !== undefined) {
+          state[key] = (state[key] || 0) + 12 * 3600;
+        }
+
         if (!game.state.eggs) game.state.eggs = [];
-        game.state.eggs.push(eggForInventory);
+        const eggToPush: EggData = {
+          ...(eggForInventory as any),
+          uid: `${eggForInventory.id}-${Date.now()}`,
+          ready: false
+        };
+        game.state.eggs.push(eggToPush as any);
         ui.notify(`[DEBUG] Huevo de ${p.name} añadido a la mochila`, '🥚');
         break;
       }
@@ -134,7 +175,7 @@ export const pokemonDebugService = {
    * Starts a custom encounter.
    */
   async triggerEncounter(p: Pokemon, mapId: string = 'plains'): Promise<void> {
-    const battleStore = useBattleStore() as any;
+    const battleStore = useBattleStore();
     // const _ui = useUIStore();
 
     // 1. Force flee if there's an active battle
@@ -146,7 +187,7 @@ export const pokemonDebugService = {
     console.log(`[DEBUG] Triggering encounter with ${p.name} at ${mapId}`);
     
     // Register as seen
-    const game = useGameStore() as any;
+    const game = useGameStore();
     game.registerPokedex(p.id, false);
 
     // Start battle
@@ -155,7 +196,7 @@ export const pokemonDebugService = {
       battleOptions: { isDebug: true }
     });
 
-    const modalStore = useModalStore() as any;
+    const modalStore = useModalStore();
     modalStore.closeAll();
   }
 };

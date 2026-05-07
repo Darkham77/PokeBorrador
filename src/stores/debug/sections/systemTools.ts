@@ -1,11 +1,11 @@
-export function registerSystemTools(debug, { game, ui, modalStore, errorStore, eventStoreModule }) {
+export function registerSystemTools(debug: any, { game, ui, modalStore, errorStore, eventStoreModule }: any) {
   // MODALS
   debug.register({
     id: 'modal-test-stack',
     label: 'TEST MODAL STACK',
     command: 'testModalStack',
     category: 'modals',
-    action: async (count = 5) => {
+    action: async (count: number = 5) => {
       for (let i = 1; i <= count; i++) {
         modalStore.open('DebugStackTest', { number: i })
         if (i < count) await new Promise(resolve => setTimeout(resolve, 500))
@@ -31,7 +31,7 @@ export function registerSystemTools(debug, { game, ui, modalStore, errorStore, e
     label: 'TEST MODAL POS',
     command: 'openTestModal',
     category: 'modals',
-    action: (type = 'center') => {
+    action: (type: string = 'center') => {
       modalStore.open('DebugStackTest', { 
         number: Math.floor(Math.random() * 100),
         type 
@@ -60,7 +60,7 @@ export function registerSystemTools(debug, { game, ui, modalStore, errorStore, e
     label: 'SAVE EVENT',
     command: 'saveEvent',
     category: 'admin',
-    action: async (eventData) => {
+    action: async (eventData: any) => {
       const { error } = await (game.db as any).from('events_config').upsert(eventData)
       if (error) throw error
       ui.notify('Evento guardado (CLI)', '✅')
@@ -77,7 +77,7 @@ export function registerSystemTools(debug, { game, ui, modalStore, errorStore, e
     label: 'SAVE RANKED RULES',
     command: 'saveRankedRules',
     category: 'admin',
-    action: async (rules) => {
+    action: async (rules: any) => {
       const { error } = await (game.db as any).from('ranked_rules_config').upsert({
         id: 'current',
         season_name: rules.seasonName,
@@ -95,7 +95,7 @@ export function registerSystemTools(debug, { game, ui, modalStore, errorStore, e
     label: 'CLOSE RANKED SEASON',
     command: 'closeRankedSeason',
     category: 'admin',
-    action: async (seasonName) => {
+    action: async (seasonName: string) => {
       const { data, error } = await (game.db as any).rpc('fn_award_ranked_season_automated', {
         target_season_name: seasonName
       })
@@ -137,7 +137,7 @@ export function registerSystemTools(debug, { game, ui, modalStore, errorStore, e
     label: 'NAVEGAR A TABS',
     command: 'navigate',
     category: 'navigation',
-    action: (tabId) => {
+    action: (tabId: string) => {
       ui.activeTab = tabId
       ui.notify(`Navegando a: ${tabId.toUpperCase()}`, '🚀')
     },
@@ -149,7 +149,7 @@ export function registerSystemTools(debug, { game, ui, modalStore, errorStore, e
     label: 'ABRIR MODAL',
     command: 'openModal',
     category: 'navigation',
-    action: (name, props = {}) => {
+    action: (name: string, props: any = {}) => {
       ui.open(name, props)
     },
     description: 'Abre cualquier ventana modal por su nombre.'
@@ -160,7 +160,7 @@ export function registerSystemTools(debug, { game, ui, modalStore, errorStore, e
     label: 'CERRAR MODAL',
     command: 'closeModal',
     category: 'navigation',
-    action: (name) => {
+    action: (name?: string) => {
       if (name) ui.close(name)
       else ui.closeModal()
     },
@@ -172,7 +172,7 @@ export function registerSystemTools(debug, { game, ui, modalStore, errorStore, e
     label: 'TABS DE LIBRERÍA',
     command: 'setLibraryTab',
     category: 'navigation',
-    action: (tabId) => {
+    action: (tabId: string) => {
       ui.libraryTab = tabId
     },
     description: 'Cambia la pestaña activa dentro de la Librería/Pokedex.'
@@ -183,7 +183,7 @@ export function registerSystemTools(debug, { game, ui, modalStore, errorStore, e
     label: 'INSPECCIONAR POKE',
     command: 'inspectPokemon',
     category: 'navigation',
-    action: (index, context = 'team') => {
+    action: (index: number, context: 'team' | 'box' = 'team') => {
       const pokes = context === 'team' ? game.state.team : game.state.box
       const p = pokes[index]
       if (p) ui.openPokemonDetail(p, index, context)
@@ -197,7 +197,7 @@ export function registerSystemTools(debug, { game, ui, modalStore, errorStore, e
     label: 'TOGGLE HUD GROUP',
     command: 'toggleHud',
     category: 'navigation',
-    action: (group) => {
+    action: (group: string) => {
       ui.toggleHudGroup(group)
     },
     description: 'Alterna la visibilidad de grupos del HUD (MARKET, POKEMON, etc).'

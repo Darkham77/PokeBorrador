@@ -4,21 +4,32 @@ import { useGameStore } from '@/stores/game'
 import { useMapStore } from '@/stores/map'
 import { useModalStore } from '@/stores/modals'
 
-const game = useGameStore() as any
-const mapStore = useMapStore() as any
-const modalStore = useModalStore() as any
+interface ViteDebugBridge {
+  setMockTime: (date: string) => void;
+  resetTime: () => void;
+  addHours: (h: number) => void;
+  addWeeks: (w: number) => void;
+  setWeather: (w: string | null) => void;
+  setCycle: (c: string | null) => void;
+}
+
+const game = useGameStore()
+const mapStore = useMapStore()
+const modalStore = useModalStore()
 
 const debugDate = ref(new Date().toISOString().slice(0, 16))
 const timeOffsetLabel = ref(`${game.db.getTimeOffset()}ms`)
 
+const getDebugBridge = () => (window as unknown as { __VITE_DEBUG__: ViteDebugBridge }).__VITE_DEBUG__
+
 function updateMockTime() {
-  (window as any).__VITE_DEBUG__.setMockTime(debugDate.value)
+  getDebugBridge().setMockTime(debugDate.value)
   timeOffsetLabel.value = `${game.db.getTimeOffset()}ms`
   window.dispatchEvent(new CustomEvent('time-sync-update'))
 }
 
 function resetTime() {
-  (window as any).__VITE_DEBUG__.resetTime()
+  getDebugBridge().resetTime()
   timeOffsetLabel.value = '0ms'
   debugDate.value = new Date().toISOString().slice(0, 16)
   window.dispatchEvent(new CustomEvent('time-sync-update'))
@@ -26,25 +37,25 @@ function resetTime() {
 }
 
 function addHours(h: number) {
-  (window as any).__VITE_DEBUG__.addHours(h)
+  getDebugBridge().addHours(h)
   timeOffsetLabel.value = `${game.db.getTimeOffset()}ms`
   window.dispatchEvent(new CustomEvent('time-sync-update'))
 }
 
 function addWeeks(w: number) {
-  (window as any).__VITE_DEBUG__.addWeeks(w)
+  getDebugBridge().addWeeks(w)
   timeOffsetLabel.value = `${game.db.getTimeOffset()}ms`
   window.dispatchEvent(new CustomEvent('time-sync-update'))
 }
 
 function toggleWeather(w: string | null) {
   const next = mapStore.globalWeather === w ? null : w;
-  (window as any).__VITE_DEBUG__.setWeather(next);
+  getDebugBridge().setWeather(next);
 }
 
 function toggleCycle(c: string | null) {
   const next = mapStore.forcedCycle === c ? null : c;
-  (window as any).__VITE_DEBUG__.setCycle(next);
+  getDebugBridge().setCycle(next);
 }
 </script>
 

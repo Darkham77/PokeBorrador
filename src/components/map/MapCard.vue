@@ -14,16 +14,38 @@ import { getRouteWeather } from '@/logic/weatherUtils'
 
 import { checkPlayerWinner, calculateSpawnGrid } from '@/logic/map/mapCardHelper'
 
+
+interface MapData {
+  id: string
+  name: string
+  desc: string
+  badges: number
+  wild?: Record<string, string[]>
+  fishing?: { pool: string[], rates: number[] }
+  weather?: Record<string, { visitors?: Record<string, unknown>, exclusive?: Record<string, unknown> }>
+}
+
+interface DominanceInfo {
+  winner?: string | null
+  guardian?: { id: string, captured: boolean } | null
+}
+
+interface SpawnPool {
+  generic: string[]
+  specific: string[]
+  rates: Record<string, number>
+}
+
 interface Props {
-  map: any
+  map: MapData
   isLocked?: boolean
   isSafariLocked?: boolean
   cycle?: string
   weather?: string
   badgeCount?: number
-  dominance?: any
+  dominance?: DominanceInfo | null
   isRocketExtorted?: boolean
-  spawnPool?: any
+  spawnPool?: SpawnPool
   forcedWeather?: string | null
 }
 
@@ -43,10 +65,10 @@ const emit = defineEmits<{
   (e: 'navigate', mapId: string): void
 }>()
 
-const uiStore = useUIStore() as any
-const battleStore = useBattleStore() as any
-const mapStore = useMapStore() as any
-const gameStore = useGameStore() as any
+const uiStore = useUIStore()
+const battleStore = useBattleStore()
+const mapStore = useMapStore()
+const gameStore = useGameStore()
 
 const cardRef = ref<HTMLElement | null>(null)
 
@@ -55,7 +77,7 @@ const isPerformanceMode = computed(() => {
 })
 
 const imgPath = computed(() => {
-  const fileName = (MAP_ROUTE_MAPPING as any)[props.map.id] || 'default'
+  const fileName = (MAP_ROUTE_MAPPING as Record<string, string>)[props.map.id] || 'default'
   return getAssetUrl(ASSET_TYPES.MAP, fileName, { cycle: props.cycle as any })
 })
 
@@ -89,7 +111,7 @@ const weatherName = computed(() => {
   return names[computedWeather.value as string] || 'Normal'
 })
 
-const atmosphere = ref<any>(null)
+const atmosphere = ref<{ atmosphereStyles?: { filter?: string }, animClass?: string } | null>(null)
 
 const factionAnimClass = computed(() => {
   if (!props.dominance?.winner) return ''
@@ -101,8 +123,8 @@ const getPokemonSprite = (id: string) => getAssetUrl(ASSET_TYPES.POKEMON, id)
 const processedGuardian = computed(() => {
   if (!props.dominance?.guardian) return null
   const id = props.dominance.guardian.id
-  let isSeen = gameStore.state.seenPokedex?.includes(id) || gameStore.state.pokedex?.includes(id)
-  let isCaught = gameStore.state.pokedex?.includes(id)
+  let isSeen = (gameStore.state.seenPokedex || []).includes(id) || (gameStore.state.pokedex || []).includes(id)
+  let isCaught = (gameStore.state.pokedex || []).includes(id)
 
   if (uiStore.debugPokedexMode === 'caught') {
     isSeen = true; isCaught = true
@@ -125,13 +147,27 @@ const processedGuardian = computed(() => {
     typeInfo, 
     captured,
     sprite: getPokemonSprite(id), 
-    seed: id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) / 100
+    seed: id.split('').reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0) / 100
   }
 })
 
-const isPlayerWinner = computed(() => checkPlayerWinner(props.dominance?.winner, gameStore.state.faction))
+const isPlayerWinner = computed(() => checkPlayerWinner(props.dominance?.winner || null, gameStore.state.faction))
 
-const processedGrid = computed(() => {
+interface ProcessedSpawn {
+  id: string | null
+  key: string
+  name?: string
+  sprite?: string
+  isSeen?: boolean
+  isCaught?: boolean
+  isRare?: boolean
+  isAtmospheric?: boolean
+  tooltipTitle?: string
+  tooltipDesc?: string
+  seed?: number
+}
+
+const processedGrid = computed<ProcessedSpawn[]>(() => {
   const gridData = spawnGrid.value
   const slots = gridData.slots || []
   const seenPokedex = gameStore.state.seenPokedex || []
@@ -151,10 +187,10 @@ const processedGrid = computed(() => {
     const data = pokemonDataProvider.getPokemonData(id);
     if (!data || !weatherBoosts[weather]) return false;
     const types = Array.isArray(data.type) ? data.type : [data.type];
-    return types.some((t: string) => weatherBoosts[weather].includes(t.toLowerCase()));
+    return types.some((t: string) => (weatherBoosts[weather] as string[]).includes(t.toLowerCase()));
   }
 
-  return slots.map((id: string | null, index: number) => {
+  return slots.map((id: string | null, index: number): ProcessedSpawn => {
     if (!id) return { id: null, key: `empty-${index}` }
     let isSeen = seenPokedex.includes(id) || caughtPokedex.includes(id)
     let isCaught = caughtPokedex.includes(id)
@@ -172,15 +208,15 @@ const processedGrid = computed(() => {
     const typeInfo = (isSeen && data?.type) ? `Tipo: ${(Array.isArray(data.type) ? data.type.join('/') : data.type).toUpperCase()}` : ''
 
     const cycles = ['morning', 'day', 'dusk', 'night']
-    const appearingCycles = cycles.filter(c => props.map.wild?.[c]?.includes(id))
+    const appearingCycles = cycles.filter(c => (props.map.wild?.[c] || []).includes(id))
     const isLimited = appearingCycles.length > 0 && appearingCycles.length < cycles.length
     
     const emojiMap: Record<string, string> = { morning: '🌅', day: '☀️', dusk: '🌇', night: '🌙' }
     
     // Detección Atmosférica temprana para el texto
     const weather = computedWeather.value
-    const isVisitor = !!props.map.weather?.[weather]?.visitors?.[id]
-    const isExclusive = !!props.map.weather?.[weather]?.exclusive?.[id]
+    const isVisitor = !!(props.map.weather?.[weather]?.visitors as Record<string, unknown>)?.[id]
+    const isExclusive = !!(props.map.weather?.[weather]?.exclusive as Record<string, unknown>)?.[id]
 
     const isBoosted = !isVisitor && !isExclusive && isSpeciesBoostedLocal(id, weather)
     const isAtmospheric = isVisitor || isExclusive || isBoosted
@@ -216,11 +252,11 @@ const processedGrid = computed(() => {
       sprite: getAssetUrl(ASSET_TYPES.POKEMON, id), 
       isSeen, 
       isCaught, 
-      isRare: (rate < 10) || isVisitor || isExclusive, // Solo roja para raros, visitantes o exclusivos
+      isRare: (rate < 10) || isVisitor || isExclusive, 
       isAtmospheric,
       tooltipTitle: name, 
       tooltipDesc: typeInfo ? `${typeInfo}\n${timeText}` : timeText, 
-      seed: (id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) + index) / 100
+      seed: (id.split('').reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0) + index) / 100
     }
 
   })
@@ -282,7 +318,7 @@ const spawnGrid = computed(() => {
       :season="mapStore.currentSeason.id"
       :is-performance-mode="isPerformanceMode"
       :is-locked="isLocked || isSafariLocked"
-      :seed="props.map.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)"
+      :seed="props.map.id.split('').reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0)"
     />
 
     <div

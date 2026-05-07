@@ -4,7 +4,7 @@
  * Componente centralizado para efectos visuales en sprites de Pokémon.
  * Soporta: Shiny Sparkles, Guardian Aura y es fácilmente extensible.
  */
-import { computed, inject } from 'vue'
+import { computed, inject, type Ref } from 'vue'
 import { useUIStore } from '@/stores/ui'
 
 const props = defineProps({
@@ -48,7 +48,7 @@ const props = defineProps({
 })
 
 const uiStore = useUIStore()
-const isModalPerformance = inject('isModalPerformanceMode', null)
+const isModalPerformance = inject<Ref<boolean> | null>('isModalPerformanceMode', null)
 const forceHighFidelity = inject('forceHighFidelity', false)
 
 const isSimplified = computed(() => {
@@ -90,14 +90,14 @@ const wrapperClasses = computed(() => ({
 }))
 
 const statusEmoji = computed(() => {
-  const map = {
+  const map: Record<string, string> = {
     burn: '🔥',
     poison: '☠️',
     sleep: '💤',
     paralyze: '⚡',
     freeze: '🧊'
   }
-  return map[props.status] || null
+  return (map as any)[props.status as string] || null
 })
 
 // Generar partículas con posiciones y órbitas aleatorias para que no salgan todas del centro

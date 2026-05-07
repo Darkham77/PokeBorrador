@@ -12,7 +12,9 @@ export const BATTLE_STATES = {
   POST_BATTLE_STABILIZATION: 'POST_BATTLE_STABILIZATION',
   REORDER_TEAM: 'REORDER_TEAM',
   EXIT_BATTLE: 'EXIT_BATTLE'
-};
+} as const;
+
+export type BattleStateName = typeof BATTLE_STATES[keyof typeof BATTLE_STATES];
 
 export const BATTLE_SUBSTATES = {
   WAIT_INPUT: 'WAIT_INPUT',
@@ -34,6 +36,7 @@ export const BATTLE_SUBSTATES = {
   RECEIVE_CONFIG: 'RECEIVE_CONFIG',
   GEN_NEW_S2: 'GEN_NEW_S2',
   CHECK_PERSISTENCE: 'CHECK_PERSISTENCE',
+  PRELOAD_COORDS: 'PRELOAD_COORDS',
   PRELOAD_FINAL_COORDS: 'PRELOAD_FINAL_COORDS',
   TURN_ENGINE: 'TURN_ENGINE',
   ENEMY_REPLACEMENT_SEQ: 'ENEMY_REPLACEMENT_SEQ',
@@ -113,15 +116,20 @@ export const BATTLE_SUBSTATES = {
   CHECK_ACTIVE_SEAT: 'CHECK_ACTIVE_SEAT',
   WAIT_TIMER: 'WAIT_TIMER',
   SHOW_DIALOGS: 'SHOW_DIALOGS',
-};
+  CHECK_SLOTS: 'CHECK_SLOTS',
+  PROMOTE_AND_REPOPULATE: 'PROMOTE_AND_REPOPULATE',
+  PROMOTE: 'PROMOTE'
+} as const;
+
+export type BattleSubStateName = typeof BATTLE_SUBSTATES[keyof typeof BATTLE_SUBSTATES];
 
 export function createBattleStateMachine() {
-  const currentState = ref(BATTLE_STATES.EXIT_BATTLE);
-  const currentSubState = ref(null);
-  let transitionTimeout = null;
+  const currentState = ref<BattleStateName>(BATTLE_STATES.EXIT_BATTLE);
+  const currentSubState = ref<BattleSubStateName | null>(null);
+  let transitionTimeout: any = null;
 
   // Simple strict transitions check based on the Mermaid diagram.
-  const validTransitions = {
+  const validTransitions: Record<string, string[]> = {
     [BATTLE_STATES.CONTEXT_SETUP]: [BATTLE_STATES.INITIALIZING],
     [BATTLE_STATES.INITIALIZING]: [BATTLE_STATES.FIRST_INTRO, BATTLE_STATES.SEARCH_PHASE],
     [BATTLE_STATES.FIRST_INTRO]: [BATTLE_STATES.ACTIVE_BATTLE, BATTLE_STATES.REORDER_TEAM],
@@ -142,7 +150,7 @@ export function createBattleStateMachine() {
    * Translates to a specific state or substate.
    * If a delay is provided, returns a Promise that resolves when the transition happens.
    */
-  const transition = (newState, newSubState = null, delayMs = 0) => {
+  const transition = (newState: BattleStateName | BattleSubStateName, newSubState: BattleSubStateName | null = null, delayMs: number = 0) => {
     return new Promise((resolve) => {
       if (transitionTimeout) {
         clearTimeout(transitionTimeout);
@@ -151,16 +159,16 @@ export function createBattleStateMachine() {
 
       const executeTransition = () => {
         // Validation check (can be expanded for strict enforcement)
-        if (newState && Object.values(BATTLE_STATES).includes(newState)) {
+        if (newState && Object.values(BATTLE_STATES).includes(newState as any)) {
           const isSameState = currentState.value === newState;
-          if (!isSameState && validTransitions[currentState.value] && !validTransitions[currentState.value].includes(newState) && newState !== BATTLE_STATES.EXIT_BATTLE) {
+          const allowedTransitions = validTransitions[currentState.value];
+          if (!isSameState && allowedTransitions && !allowedTransitions.includes(newState) && newState !== BATTLE_STATES.EXIT_BATTLE) {
             console.warn(`[FSM] Unexpected transition: ${currentState.value} -> ${newState}`);
           }
-          currentState.value = newState;
-        } else if (newState && Object.values(BATTLE_SUBSTATES).includes(newState)) {
+          currentState.value = newState as BattleStateName;
+        } else if (newState && Object.values(BATTLE_SUBSTATES).includes(newState as any)) {
           // Si recibimos un sub-estado como primer argumento, mantenemos el estado actual 
-          // a menos que sea necesario forzar uno (pero GEN_NEW_S2 es background)
-          newSubState = newState;
+          newSubState = newState as BattleSubStateName;
         }
 
         if (newSubState) {
@@ -181,8 +189,8 @@ export function createBattleStateMachine() {
     });
   };
 
-  const isState = (state) => currentState.value === state;
-  const isSubState = (subState) => currentSubState.value === subState;
+  const isState = (state: string) => currentState.value === state;
+  const isSubState = (subState: string | null) => currentSubState.value === subState;
 
   return {
     currentState,

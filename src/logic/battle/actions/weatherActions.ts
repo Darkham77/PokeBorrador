@@ -1,22 +1,19 @@
+import type { MoveAction } from '@/types/battle';
 
-/**
- * Módulo de Acciones de Clima (Weather)
- */
-
-export const WEATHER_ACTIONS = {
-  'sun': (src: any, _tgt: any, _srcStages: any, _tgtStages: any, addLogFn: any, battleCtx: any) => {
+export const WEATHER_ACTIONS: Record<string, MoveAction> = {
+  'sun': (src, _tgt, _srcStages, _tgtStages, addLogFn, battleCtx) => {
     if (battleCtx) {
       battleCtx.weather = { type: 'sun', turns: 5 };
       addLogFn("¡El sol empezó a brillar con fuerza!", 'log-info', src);
     }
   },
-  'rain': (src: any, _tgt: any, _srcStages: any, _tgtStages: any, addLogFn: any, battleCtx: any) => {
+  'rain': (src, _tgt, _srcStages, _tgtStages, addLogFn, battleCtx) => {
     if (battleCtx) {
       battleCtx.weather = { type: 'rain', turns: 5 };
       addLogFn("¡Empezó a llover!", 'log-info', src);
     }
   },
-  'sandstorm': (src: any, _tgt: any, _srcStages: any, _tgtStages: any, addLogFn: any, battleCtx: any) => {
+  'sandstorm': (src, _tgt, _srcStages, _tgtStages, addLogFn, battleCtx) => {
     if (battleCtx) {
       battleCtx.weather = { type: 'sandstorm', turns: 5 };
       addLogFn("¡Se desató una tormenta de arena!", 'log-info', src);

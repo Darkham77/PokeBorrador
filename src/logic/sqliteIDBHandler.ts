@@ -8,8 +8,27 @@
  * you MUST update the DBRouter (src/logic/db/dbRouter.ts) to keep Online/Offline parity.
  */
 
-let db: any = null;
-let initPromise: Promise<any> | null = null;
+
+interface SQLiteStatement {
+  bind: (params: unknown[]) => void;
+  step: () => boolean;
+  getAsObject: () => Record<string, unknown>;
+  free: () => void;
+}
+
+interface SQLiteDatabase {
+  run: (sql: string, params?: unknown[]) => void;
+  exec: (sql: string) => Array<{ columns: string[]; values: unknown[][] }>;
+  prepare: (sql: string) => SQLiteStatement;
+  export: () => Uint8Array;
+}
+
+interface SQLInstance {
+  Database: new (data?: Uint8Array) => SQLiteDatabase;
+}
+
+let db: SQLiteDatabase | null = null;
+let initPromise: Promise<SQLiteDatabase> | null = null;
 let isMigrating = false;
 export let isNewDatabase = false;
 
@@ -24,10 +43,11 @@ async function openIDB(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
     if (typeof indexedDB === 'undefined') return reject(new Error('IndexedDB not supported'));
     const request = indexedDB.open('pokevicio_idb', 1);
-    request.onupgradeneeded = (e: any) => {
-      const db = e.target.result;
-      if (!db.objectStoreNames.contains('keyval')) {
-        db.createObjectStore('keyval');
+    request.onupgradeneeded = (e: IDBVersionChangeEvent) => {
+      const target = e.target as IDBOpenDBRequest;
+      const database = target.result;
+      if (!database.objectStoreNames.contains('keyval')) {
+        database.createObjectStore('keyval');
       }
     };
     request.onsuccess = () => resolve(request.result);
@@ -35,24 +55,24 @@ async function openIDB(): Promise<IDBDatabase> {
   });
 }
 
-async function getFromIDB(key: string): Promise<any> {
+async function getFromIDB(key: string): Promise<Uint8Array | null> {
   try {
-    const db = await openIDB();
+    const database = await openIDB();
     return new Promise((resolve, reject) => {
-      const transaction = db.transaction('keyval', 'readonly');
+      const transaction = database.transaction('keyval', 'readonly');
       const store = transaction.objectStore('keyval');
       const request = store.get(key);
-      request.onsuccess = () => resolve(request.result);
+      request.onsuccess = () => resolve(request.result as Uint8Array);
       request.onerror = () => reject(request.error);
     });
   } catch { return null; }
 }
 
-async function setToIDB(key: string, value: any): Promise<void> {
+async function setToIDB(key: string, value: Uint8Array): Promise<void> {
   try {
-    const db = await openIDB();
+    const database = await openIDB();
     return new Promise((resolve, reject) => {
-      const transaction = db.transaction('keyval', 'readwrite');
+      const transaction = database.transaction('keyval', 'readwrite');
       const store = transaction.objectStore('keyval');
       const request = store.put(value, key);
       request.onsuccess = () => resolve();
@@ -61,13 +81,14 @@ async function setToIDB(key: string, value: any): Promise<void> {
   } catch (e) { console.error('[SQLite] IDB Save Error:', e); }
 }
 
-export async function initSQLite(): Promise<any> {
+export async function initSQLite(): Promise<SQLiteDatabase> {
   if (db) return db;
   if (initPromise) return initPromise;
 
   initPromise = (async () => {
     try {
-      const SQL = await (window as any).initSqlJs({
+      const initSqlJs = (window as any).initSqlJs as (config: any) => Promise<SQLInstance>;
+      const SQL = await initSqlJs({
         locateFile: (file: string) => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.12.0/${file}`
       });
 
@@ -91,7 +112,7 @@ export async function initSQLite(): Promise<any> {
                     }
                 }
                 // Guardar inmediatamente en IDB
-                await setToIDB('pokevicio_sqlite_v2', binaryData);
+                if (binaryData) await setToIDB('pokevicio_sqlite_v2', binaryData);
             } catch (e) { console.error('[SQLite] Migration failed:', e); }
         }
       }
@@ -105,6 +126,8 @@ export async function initSQLite(): Promise<any> {
         isNewDatabase = true;
         console.log('[SQLite] New database created');
       }
+
+      if (!db) throw new Error('Failed to create database');
 
       const tables = [
         "profiles (id TEXT PRIMARY KEY, username TEXT, email TEXT, trainer_level INTEGER DEFAULT 1, player_class TEXT, faction TEXT, nick_style TEXT, avatar_style TEXT, role TEXT DEFAULT 'user', created_at TEXT, current_session_id TEXT)",
@@ -139,7 +162,7 @@ export async function initSQLite(): Promise<any> {
 
       tables.forEach(tableDef => {
         try {
-          db.run(`CREATE TABLE IF NOT EXISTS ${tableDef};`);
+          db!.run(`CREATE TABLE IF NOT EXISTS ${tableDef};`);
         } catch (e) {
           console.error(`[SQLite] Error creating table: ${tableDef.split(' ')[0]}`, e);
         }
@@ -170,8 +193,8 @@ export async function initSQLite(): Promise<any> {
       
       // Force Version Sync: Ensure local DB matches the latest client-defined migration
       try {
-        const latestMig = DATABASE_MIGRATIONS[DATABASE_MIGRATIONS.length - 1];
-        const latestVer = latestMig.id.split('_')[0];
+        const latestMig = DATABASE_MIGRATIONS.length > 0 ? DATABASE_MIGRATIONS[DATABASE_MIGRATIONS.length - 1] : { id: '0' };
+        const latestVer = (latestMig?.id || '0').split('_')[0];
         db.run(`INSERT OR REPLACE INTO config (key, value) VALUES ('db_version', '${latestVer}')`);
         console.log(`[SQLite] Local DB Version synchronized to: ${latestVer}`);
       } catch (e) {
@@ -201,19 +224,19 @@ export async function initSQLite(): Promise<any> {
 /**
  * Runs sequential migrations and tracks them in _migrations table.
  */
-function runMigrations(db: any, migrations: Migration[]): void {
+function runMigrations(database: SQLiteDatabase, migrations: Migration[]): void {
   migrations.forEach(m => {
     try {
       // 1. Check if already applied via _migrations table
-      const applied = db.exec(`SELECT 1 FROM _migrations WHERE id = '${m.id}'`);
+      const applied = database.exec(`SELECT 1 FROM _migrations WHERE id = '${m.id}'`);
       if (applied.length > 0) return;
 
       // 2. Double check via schema info (Check-then-Apply) if defined
       if (m.check) {
-        const info = db.exec(`PRAGMA table_info(${m.check.table})`);
-        const exists = info[0] && info[0].values.some((row: any) => row[1] === m.check!.column);
+        const info = database.exec(`PRAGMA table_info(${m.check.table})`);
+        const exists = info[0] && info[0].values.some((row) => (row as unknown[])[1] === m.check!.column);
         if (exists) {
-          db.run(`INSERT OR IGNORE INTO _migrations (id) VALUES ('${m.id}')`);
+          database.run(`INSERT OR IGNORE INTO _migrations (id) VALUES ('${m.id}')`);
           return;
         }
       }
@@ -222,16 +245,16 @@ function runMigrations(db: any, migrations: Migration[]): void {
       console.log(`[SQLite Migration] Applying: ${m.id}`);
       // Split by semicolon and execute individually to avoid multiple statement issues in some environments
       m.sql.split(';').filter(s => s.trim()).forEach(stmt => {
-        db.run(stmt);
+        database.run(stmt);
       });
 
       // 4. Mark as applied
-      db.run(`INSERT INTO _migrations (id) VALUES ('${m.id}')`);
+      database.run(`INSERT INTO _migrations (id) VALUES ('${m.id}')`);
 
       // 5. Auto-establish version (Safety Guard)
-      const version = m.id.split('_')[0];
+      const version = m.id.split('_')[0] || '0';
       if (/^\d+$/.test(version)) {
-        db.run(`INSERT OR REPLACE INTO config (key, value) VALUES ('db_version', '${version}')`);
+        database.run(`INSERT OR REPLACE INTO config (key, value) VALUES ('db_version', '${version}')`);
       }
     } catch (e) {
       console.warn(`[SQLite Migration] Failed to apply ${m.id}:`, e);
@@ -240,8 +263,9 @@ function runMigrations(db: any, migrations: Migration[]): void {
 }
 
 function seedSQLite(): void {
+  if (!db) return;
   const check = db.exec("SELECT COUNT(*) FROM events_config");
-  if (check[0].values[0][0] === 0) {
+  if (check[0] && check[0].values[0] && (check[0].values[0] as unknown[])[0] === 0) {
     console.log('[SQLite] Seeding initial data...');
     db.run("INSERT INTO events_config (name, icon, type, is_active, config) VALUES (?, ?, ?, ?, ?)", [
       'Hora Magikarp', '🐟', 'fishing', 1, JSON.stringify({ target: 'Magikarp', weight: 'giant' })
@@ -264,28 +288,28 @@ function seedSQLite(): void {
     const weekId = '2026-W14'; 
     kantoMaps.forEach((mapId, index) => {
       const winner = (index % 5 === 0) ? 'union' : (index % 5 === 1 ? 'poder' : null);
-      db.run("INSERT OR IGNORE INTO war_dominance (id, map_id, week_id, winner_faction, faction, updated_at) VALUES (?, ?, ?, ?, ?, ?)", [
-        `${mapId}_${weekId}`, mapId, weekId, winner, winner || 'neutral', new Date().toISOString()
+      db!.run("INSERT OR IGNORE INTO war_dominance (week_id, map_id, winner_faction, resolved_at) VALUES (?, ?, ?, ?)", [
+        weekId, mapId, winner, new Date().toISOString()
       ]);
-      db.run("INSERT OR IGNORE INTO war_points (map_id, week_id, faction, points, updated_at) VALUES (?, ?, ?, ?, ?)", [
+      db!.run("INSERT OR IGNORE INTO war_points (map_id, week_id, faction, points, updated_at) VALUES (?, ?, ?, ?, ?)", [
         mapId, weekId, 'union', index * 10, new Date().toISOString()
       ]);
-      db.run("INSERT OR IGNORE INTO war_points (map_id, week_id, faction, points, updated_at) VALUES (?, ?, ?, ?, ?)", [
+      db!.run("INSERT OR IGNORE INTO war_points (map_id, week_id, faction, points, updated_at) VALUES (?, ?, ?, ?, ?)", [
         mapId, weekId, 'poder', index * 5, new Date().toISOString()
       ]);
     });
   }
 }
 
-export async function queryLocal(sql: string, params: any[] = []): Promise<any[]> {
+export async function queryLocal<T = Record<string, unknown>>(sql: string, params: unknown[] = []): Promise<T[]> {
   await initSQLite();
   if (!db) return [];
   try {
     const stmt = db.prepare(sql);
     stmt.bind(params);
-    const results = [];
+    const results: T[] = [];
     while (stmt.step()) {
-      results.push(stmt.getAsObject());
+      results.push(stmt.getAsObject() as unknown as T);
     }
     stmt.free();
     return results;
@@ -296,14 +320,14 @@ export async function queryLocal(sql: string, params: any[] = []): Promise<any[]
   }
 }
 
-export async function execLocal(sql: string, params: any[] = []): Promise<void> {
+export async function execLocal(sql: string, params: unknown[] = []): Promise<void> {
   await initSQLite();
   if (!db) return;
   db.run(sql, params);
   persistSQLite();
 }
 
-export async function insertLocal(table: string, values: any): Promise<any> {
+export async function insertLocal<T = Record<string, unknown>>(table: string, values: Record<string, unknown>): Promise<T | null> {
   await initSQLite();
   if (!db) return null;
   const cols = Object.keys(values);
@@ -314,15 +338,16 @@ export async function insertLocal(table: string, values: any): Promise<any> {
   });
   
   const sql = `INSERT OR REPLACE INTO ${table} (${cols.join(', ')}) VALUES (${placeholders})`;
-  db.run(sql, vals);
+  db.run(sql, vals as unknown[]);
   
-  let lastId;
+  let lastId: unknown;
   try {
-    lastId = db.exec("SELECT last_insert_rowid()")[0].values[0][0];
+    const lastRowIdResult = db.exec("SELECT last_insert_rowid()");
+    lastId = lastRowIdResult[0]?.values[0]?.[0];
   } catch { lastId = values.id || values.user_id; }
   
   persistSQLite();
-  return { id: lastId, ...values };
+  return { id: lastId, ...values } as unknown as T;
 }
 
 async function persistSQLite(): Promise<void> {
@@ -337,3 +362,4 @@ async function persistSQLite(): Promise<void> {
     console.error('[SQLite] CRITICAL: Failed to persist database to IndexedDB!', e);
   }
 }
+

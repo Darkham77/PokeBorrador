@@ -7,12 +7,12 @@ import { MOVE_DATA } from '@/data/moves'
 import { EVOLUTION_TABLE, STONE_EVOLUTIONS, TRADE_EVOLUTIONS } from '@/data/evolutionData'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
-export function usePokemonDetail(propsRefs: any) {
+export function usePokemonDetail(propsRefs: Record<string, any>) {
   const uiStore = useUIStore()
   const gameStore = useGameStore()
 
   // Normalize inputs (props are passed as a reactive object or refs)
-  const getProp = (key) => toValue(propsRefs[key])
+  const getProp = (key: string) => toValue(propsRefs[key])
 
   const uiData = computed(() => (uiStore as any).modals?.PokemonDetail?.data || {})
   
@@ -75,35 +75,35 @@ export function usePokemonDetail(propsRefs: any) {
     const caught = gameStore.state.pokedex || []
     const seen = gameStore.state.seenPokedex || []
 
-    const enrichEvo = (evo) => {
+    const enrichEvo = (evo: any) => {
       const toId = evo.to.toLowerCase()
       const isCaught = caught.includes(toId)
       const isSeen = isCaught || seen.includes(toId)
       return { ...evo, isSeen, isCaught }
     }
 
-    if (EVOLUTION_TABLE[id]) {
-      const ev = EVOLUTION_TABLE[id]
+    if ((EVOLUTION_TABLE as any)[id]) {
+      const ev = (EVOLUTION_TABLE as any)[id]
       list.push(enrichEvo({ type: 'level', requirement: `Nv. ${ev.level}`, to: ev.to }))
     }
     
     Object.keys(STONE_EVOLUTIONS).forEach(key => {
       if (key === id || key.startsWith(`${id}_`)) {
-        const ev = STONE_EVOLUTIONS[key]
+        const ev = (STONE_EVOLUTIONS as any)[key]
         list.push(enrichEvo({ type: 'stone', requirement: ev.stone, to: ev.to }))
       }
     })
 
-    if (TRADE_EVOLUTIONS[id]) {
-      list.push(enrichEvo({ type: 'trade', requirement: 'Intercambio', to: TRADE_EVOLUTIONS[id] }))
+    if ((TRADE_EVOLUTIONS as any)[id]) {
+      list.push(enrichEvo({ type: 'trade', requirement: 'Intercambio', to: (TRADE_EVOLUTIONS as any)[id] }))
     }
     return list
   })
 
   const displayStats = computed(() => {
     if (!species.value) return []
-    const labels = { hp: 'HP', atk: 'ATK', def: 'DEF', spa: 'SPA', spd: 'SPD', spe: 'SPE' }
-    const colors = { 
+    const labels: Record<string, string> = { hp: 'HP', atk: 'ATK', def: 'DEF', spa: 'SPA', spd: 'SPD', spe: 'SPE' }
+    const colors: Record<string, string> = { 
       hp: 'Rgba(255, 89, 89, 1)', 
       atk: 'Rgba(245, 172, 120, 1)', 
       def: 'Rgba(250, 224, 120, 1)', 
@@ -112,7 +112,7 @@ export function usePokemonDetail(propsRefs: any) {
       spe: 'Rgba(250, 146, 178, 1)' 
     }
     return Object.keys(species.value.stats).map(key => {
-      const base = species.value.stats[key]
+      const base = (species.value?.stats as any)[key]
       const current = isInstance.value ? (targetPokemon.value[key] || base) : base
       return {
         id: key,
@@ -128,8 +128,8 @@ export function usePokemonDetail(propsRefs: any) {
 
   const moveDetails = computed(() => {
     if (!species.value || !species.value.learnset) return []
-    return species.value.learnset.map(m => {
-      const data = MOVE_DATA[m.name] || {}
+    return species.value.learnset.map((m: any) => {
+      const data = (MOVE_DATA as any)[m.name] || {}
       return {
         level: m.lv,
         name: m.name,
@@ -139,13 +139,13 @@ export function usePokemonDetail(propsRefs: any) {
         acc: data.acc || '-',
         pp: data.pp || '-'
       }
-    }).sort((a, b) => a.level - b.level)
+    }).sort((a: any, b: any) => a.level - b.level)
   })
 
   const currentMoves = computed(() => {
     if (!isInstance.value || !targetPokemon.value.moves) return []
-    return targetPokemon.value.moves.map(m => {
-      const data = MOVE_DATA[m.name] || {}
+    return targetPokemon.value.moves.map((m: any) => {
+      const data = (MOVE_DATA as any)[m.name] || {}
       return { ...m, ...data }
     })
   })
@@ -159,7 +159,7 @@ export function usePokemonDetail(propsRefs: any) {
     if (!isInstance.value || !species.value) return null
     const p = targetPokemon.value
     const uid = p.uid || 'def'
-    const getRand = (seed, range) => {
+    const getRand = (seed: string, range: any) => {
       if (!range) return '0.0'
       const min = Array.isArray(range) ? range[0] : range * 0.85
       const max = Array.isArray(range) ? range[1] : range * 1.15
@@ -191,7 +191,7 @@ export function usePokemonDetail(propsRefs: any) {
     }
   })
 
-  const getSprite = (id, isShiny = false) => getAssetUrl(ASSET_TYPES.POKEMON, id, { shiny: isShiny })
+  const getSprite = (id: string, isShiny: boolean = false) => getAssetUrl(ASSET_TYPES.POKEMON, id, { shiny: isShiny })
 
   return {
     targetPokemon,

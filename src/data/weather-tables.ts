@@ -1,5 +1,5 @@
 // [PureVue-Ignore-Length]
-export const ROUTE_WEATHER_TABLES = {
+export const ROUTE_WEATHER_TABLES: Record<string, any> = {
   "route1": {
     "spring": {
       "morning": {

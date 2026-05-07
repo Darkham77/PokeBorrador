@@ -11,7 +11,7 @@ import { toVirtualStyles } from '@/logic/combat/spatialCoordinator'
  * @param {number} w - Optional virtual width (will be multiplied by OBJECT_SCALE)
  * @param {number} h - Optional virtual height (will be multiplied by OBJECT_SCALE)
  */
-export function useVirtualPosition(x, y, w, h) {
+export function useVirtualPosition(x: any, y: any, w?: any, h?: any) {
   const styles = computed(() => {
     return toVirtualStyles(toValue(x), toValue(y), toValue(w), toValue(h))
   })

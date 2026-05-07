@@ -2,13 +2,14 @@
 import { ref, computed, reactive, watch } from 'vue'
 import { useWindowListener } from '@/composables/useWindowListener'
 import { useGameStore } from '@/stores/game'
-import { useInventoryStore } from '@/stores/inventory'
+import { useInventoryStore, type Item } from '@/stores/inventory'
 import { useUIStore } from '@/stores/ui'
 import { useBattleStore } from '@/stores/battle'
 import { useModalStore } from '@/stores/modals'
 import BaseModal from '@/components/common/BaseModal.vue'
 import { SHOP_ITEMS } from '@/data/items'
 import { isValidTarget } from '@/logic/items/itemEffects'
+import type { Pokemon } from '@/types/pokemon'
 
 // Sub-components
 import InventorySidebar from './inventory/InventorySidebar.vue'
@@ -32,10 +33,10 @@ const emit = defineEmits<{
   (e: 'close'): void
 }>()
 
-const gameStore = useGameStore() as any
-const uiStore = useUIStore() as any
-const inventoryStore = useInventoryStore() as any
-const modalStore = useModalStore() as any
+const gameStore = useGameStore()
+const uiStore = useUIStore()
+const inventoryStore = useInventoryStore()
+const modalStore = useModalStore()
 
 const isSmallScreen = ref(window.innerWidth <= 950)
 const handleResize = () => { isSmallScreen.value = window.innerWidth <= 950 }
@@ -55,22 +56,22 @@ watch(() => props.show, (val) => {
 // State
 const multiSelectMode = ref<string | null>(null)
 const selectedItems = reactive(new Map<string, number>()) // name -> qty
-const quantitySelectionItem = ref<any | null>(null)
-const itemActionMenu = ref<any | null>(null) // { item, type: 'sell'|'release'|'menu' }
+const quantitySelectionItem = ref<Item | null>(null)
+const itemActionMenu = ref<Item | null>(null) // { item, type: 'sell'|'release'|'menu' }
 
 // Getters
 const modalWidth = computed(() => props.battleMode ? '480px' : '800px')
-const filteredItems = computed<any[]>(() => inventoryStore.bagItems || [])
+const filteredItems = computed<Item[]>(() => (inventoryStore.bagItems as Item[]) || [])
 const totalObjectsCount = computed(() => {
   const source = props.battleMode 
-    ? (filteredItems.value || []) as any[]
+    ? (filteredItems.value || [])
     : Object.entries(gameStore.state.inventory || {}).map(([name, qty]) => ({ name, qty: qty as number }))
   return source.reduce((s, v) => s + (v.qty || 0), 0)
 })
 const selectedObjectsTotal = computed(() => Array.from(selectedItems.values()).reduce((s, v) => s + v, 0))
 
 // Handlers
-const handleItemClick = (item: any) => {
+const handleItemClick = (item: Item) => {
   if (multiSelectMode.value) {
     if (selectedItems.has(item.name)) {
       selectedItems.delete(item.name)
@@ -106,8 +107,9 @@ const handleActionSelect = (type: string) => {
     
     // Battle Mode: Handle Pokeballs directly
     if (props.battleMode && dbItem.cat === 'pokeballs') {
-      const battleStore = useBattleStore() as any
-      battleStore.useItemInBattle(dbItem.name)
+      const battleStore = useBattleStore()
+      // battleStore.useItemInBattle might still be as any if not fully typed in store
+      ;(battleStore as any).useItemInBattle(dbItem.name)
       itemActionMenu.value = null
       close()
       return
@@ -130,7 +132,7 @@ const handleActionSelect = (type: string) => {
     }
 
     // Traditional targeting if no pre-selected target
-    const validTargets = (gameStore.state.team || []).filter((p: any) => isValidTarget(dbItem.name, p))
+    const validTargets = (gameStore.state.team || []).filter((p: Pokemon) => isValidTarget(dbItem.name, p))
     
     if (validTargets.length === 0) {
       uiStore.notify(`Este objeto no tiene objetivos válidos en tu equipo`, '🎒')
@@ -138,17 +140,17 @@ const handleActionSelect = (type: string) => {
       return
     }
 
-    const battleStore = useBattleStore() as any
+    const battleStore = useBattleStore()
     modalStore.open('PokemonSelection', {
       title: `USAR ${dbItem.name?.toUpperCase()}`,
       isBattleSwitch: false, // Permitir seleccionar al activo para curaciones
       includeTeam: true,
       allowDead: dbItem.name?.toLowerCase().includes('revivir') || !props.battleMode,
-      allowedIds: validTargets.map((p: any) => p.uid), // ONLY show valid targets
+      allowedIds: validTargets.map((p: Pokemon) => p.uid), // ONLY show valid targets
       activePokemonUid: battleStore.isBattleActive ? battleStore.player?.uid : null,
-      onConfirm: (selected: any) => {
+      onConfirm: (selected: Pokemon[]) => {
         if (selected && selected.length > 0) {
-          const index = (gameStore.state.team || []).findIndex((p: any) => p.uid === selected[0].uid)
+          const index = (gameStore.state.team || []).findIndex((p: Pokemon) => p.uid === selected[0]!.uid)
           if (index !== -1) {
             const res = inventoryStore.useItem(dbItem.name, 'team', index)
             if (res.success) {
@@ -174,6 +176,7 @@ const handleActionSelect = (type: string) => {
 const handleMultiExecute = async () => {
   if (selectedItems.size === 0) return
   const mode = multiSelectMode.value
+  if (!mode) return
   
   let estimatedGain = 0
   if (mode === 'sell') {
@@ -195,7 +198,7 @@ const handleMultiExecute = async () => {
     message,
     confirmText: mode === 'sell' ? 'VENDER' : 'TIRAR',
     onConfirm: async () => {
-      const totalGain = await inventoryStore.processBatchAction(selectedItems, mode)
+      const totalGain = await inventoryStore.processBatchAction(selectedItems, mode as 'sell' | 'release')
 
       if (mode === 'sell') {
         uiStore.notify(`Venta realizada: +₱${totalGain.toLocaleString()}`, '💰')
@@ -217,10 +220,12 @@ const handleQuantityConfirm = async (qty: number) => {
     if (selectedItems.size === 0) {
       const singleMap = new Map([[itemName, qty]])
       const mode = multiSelectMode.value
-      const totalGain = await inventoryStore.processBatchAction(singleMap, mode)
-      
-      if (mode === 'sell') uiStore.notify(`Venta realizada: +₱${totalGain.toLocaleString()}`, '💰')
-      else uiStore.notify('Objeto eliminado', '🗑️')
+      if (mode) {
+        const totalGain = await inventoryStore.processBatchAction(singleMap, mode as 'sell' | 'release')
+        
+        if (mode === 'sell') uiStore.notify(`Venta realizada: +₱${totalGain.toLocaleString()}`, '💰')
+        else uiStore.notify('Objeto eliminado', '🗑️')
+      }
       
       multiSelectMode.value = null
     } else {
@@ -340,7 +345,7 @@ const close = () => {
       v-if="quantitySelectionItem"
       :show="!!quantitySelectionItem"
       :item="quantitySelectionItem"
-      :mode="multiSelectMode"
+      :mode="multiSelectMode || undefined"
       @close="() => { quantitySelectionItem = null; if (selectedItems.size === 0) multiSelectMode = null; }"
       @confirm="handleQuantityConfirm"
     />

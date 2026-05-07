@@ -1,12 +1,12 @@
 import { SHOP_ITEMS } from '@/data/items'
 
-export function registerItemTools(debug, { game, ui, breedingStore }) {
+export function registerItemTools(debug: any, { game, ui, breedingStore }: { game: any, ui: any, breedingStore: any }) {
   debug.register({
     id: 'item-add',
     label: 'AÑADIR ITEM',
     command: 'addItem',
     category: 'items',
-    action: (name, qty = 10) => {
+    action: (name: string, qty = 10) => {
       game.state.inventory[name] = (game.state.inventory[name] || 0) + qty
       ui.notify(`Debug: +${qty} ${name}`, '🎒')
       game.saveGame(false)

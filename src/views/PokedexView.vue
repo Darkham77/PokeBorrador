@@ -9,9 +9,10 @@ import PokedexHeader from '@/components/pokedex/PokedexHeader.vue'
 import PokedexControls from '@/components/pokedex/PokedexControls.vue'
 import PokedexPokemonCard from '@/components/pokedex/PokedexPokemonCard.vue'
 import { useUIStore } from '@/stores/ui'
+import type { PokedexItem } from '@/types/game'
 
-const gameStore = useGameStore() as any
-const uiStore = useUIStore() as any
+const gameStore = useGameStore()
+const uiStore = useUIStore()
 const gs = computed(() => gameStore.state)
 
 const currentGen = ref(1)
@@ -29,7 +30,7 @@ const stats = computed(() => {
   return { seen: currentGenSeen, caught: currentGenCaught, total: currentGenTotal }
 })
 
-const openDetail = (p: any) => {
+const openDetail = (p: PokedexItem) => {
   if (!p.isSeen) return
   uiStore.open('PokedexDetail', { speciesId: p.id, context: 'pokedex' })
 }

@@ -8,7 +8,7 @@ import SocialSearch from '@/components/social/SocialSearch.vue'
 import SocialRequests from '@/components/social/SocialRequests.vue'
 import SocialRankings from '@/components/social/SocialRankings.vue'
 
-const socialStore = useSocialStore() as any
+const socialStore = useSocialStore()
 
 // 'friends', 'rankings', 'search', 'requests'
 const activeTab = ref('friends') 

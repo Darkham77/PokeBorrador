@@ -8,10 +8,10 @@ export const useEvolutionStore = defineStore('evolution', () => {
 
   // --- STATE ---
   const isEvolving = ref(false);
-  const sourcePokemon = ref(null);
-  const targetId = ref(null);
-  const onComplete = ref(null);
-  const pendingMoves = ref([]);
+  const sourcePokemon = ref<any>(null);
+  const targetId = ref<string | null>(null);
+  const onComplete = ref<((data: any) => void) | null>(null);
+  const pendingMoves = ref<any[]>([]);
 
   // --- ACTIONS ---
 
@@ -21,7 +21,7 @@ export const useEvolutionStore = defineStore('evolution', () => {
    * @param {String} targetSpeciesId - The ID of the target species.
    * @param {Function} callback - Callback after the animation finishes.
    */
-  function startEvolution(pokemon, targetSpeciesId, callback = null) {
+  function startEvolution(pokemon: any, targetSpeciesId: string, callback: ((data: any) => void) | null = null) {
     sourcePokemon.value = pokemon;
     targetId.value = targetSpeciesId;
     isEvolving.value = true;

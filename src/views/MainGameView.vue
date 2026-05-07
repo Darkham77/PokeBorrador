@@ -45,15 +45,15 @@ import GlobalMarket from '@/components/market/GlobalMarket.vue'
 import RankedArena from '@/components/social/RankedArena.vue'
 import GlobalRanking from '@/components/social/GlobalRanking.vue'
 
-const gameStore = useGameStore() as any
-const uiStore = useUIStore() as any
-const battleStore = useBattleStore() as any
-const chatStore = useChatStore() as any
-const warStore = useWarStore() as any
-const eventStore = useEventStore() as any
-const audioStore = useAudioStore() as any
-const livePvP = useLivePvPStore() as any
-const breedingStore = useBreedingStore() as any
+const gameStore = useGameStore()
+const uiStore = useUIStore()
+const battleStore = useBattleStore()
+const chatStore = useChatStore()
+const warStore = useWarStore()
+const eventStore = useEventStore()
+const audioStore = useAudioStore()
+const livePvP = useLivePvPStore()
+const breedingStore = useBreedingStore()
 
 // --- Refs for Layout ---
 const hudRef = ref<HTMLElement | null>(null)
@@ -89,7 +89,7 @@ onMounted(() => {
   breedingStore.checkDailyReset()
 
   // Signal that DOM is ready
-  const loadingStore = useLoadingStore() as any
+  const loadingStore = useLoadingStore()
   loadingStore.markAppMounted()
 })
 

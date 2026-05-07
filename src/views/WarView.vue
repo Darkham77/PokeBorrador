@@ -4,7 +4,7 @@ import { useWarStore } from '@/stores/war'
 import WarDashboard from '@/components/war/WarDashboard.vue'
 import FactionChoiceModal from '@/components/FactionChoiceModal.vue'
 
-const warStore = useWarStore() as any
+const warStore = useWarStore()
 const showChoiceModal = ref(false)
 
 onMounted(async () => {

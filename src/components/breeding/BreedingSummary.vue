@@ -17,6 +17,11 @@ const forecast = computed(() => {
   ) as any
 })
 
+const compatStyle = computed(() => {
+  const level = breedingStore.compatibility?.level ?? 0
+  return (COMPAT_TEXT as any)[level] || { label: 'Desconocido', color: 'gray' }
+})
+
 const formatTime = (ms: number | null) => {
   if (!ms) return '--:--'
   const left = Math.max(0, Math.floor((ms - Date.now()) / 1000))
@@ -31,10 +36,10 @@ const formatTime = (ms: number | null) => {
     <div class="compat-section">
       <div
         class="compat-indicator"
-        :style="{ color: COMPAT_TEXT[breedingStore.compatibility.level]?.color || 'Rgba(148, 163, 184, 1)' }"
+        :style="{ color: compatStyle.color }"
       >
         <div class="compat-label">
-          {{ breedingStore.compatibility.label || COMPAT_TEXT[breedingStore.compatibility.level]?.label }}
+          {{ breedingStore.compatibility.label || compatStyle.label }}
         </div>
         <div
           v-if="breedingStore.isBreeding"

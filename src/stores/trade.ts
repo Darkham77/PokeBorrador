@@ -15,19 +15,19 @@ export const useTradeStore = defineStore('trade', () => {
   const audioStore = useAudioStore() as any
   const loadingStore = useLoadingStore() as any
 
-  const tradeTarget = ref(null)
-  const tradeFriendSave = ref(null)
+  const tradeTarget = ref<{ id: string; username: string } | null>(null)
+  const tradeFriendSave = ref<any>(null)
   
-  const tradeOfferPoke = ref(null)
-  const tradeRequestPoke = ref(null)
-  const tradeOfferItems = reactive({})
-  const tradeRequestItems = reactive({})
+  const tradeOfferPoke = ref<any>(null)
+  const tradeRequestPoke = ref<any>(null)
+  const tradeOfferItems = reactive<Record<string, number>>({})
+  const tradeRequestItems = reactive<Record<string, number>>({})
   
-  const pendingIncoming = ref([])
-  const pendingOutgoing = ref([])
-  const pendingAccepted = ref([])
+  const pendingIncoming = ref<any[]>([])
+  const pendingOutgoing = ref<any[]>([])
+  const pendingAccepted = ref<any[]>([])
 
-  let tradeChannel = null
+  let tradeChannel: any = null
 
   async function subscribeTradeNotifs() {
     if (!authStore.user || authStore.sessionMode === 'offline') return
@@ -71,7 +71,7 @@ export const useTradeStore = defineStore('trade', () => {
     await socialStore.refreshNotificationCount()
   }
 
-  async function openTradeModal(friendId, friendUsername) {
+  async function openTradeModal(friendId: string, friendUsername: string) {
     tradeTarget.value = { id: friendId, username: friendUsername }
     tradeOfferPoke.value = null
     tradeRequestPoke.value = null
@@ -89,7 +89,7 @@ export const useTradeStore = defineStore('trade', () => {
     }
   }
 
-  async function sendTradeOffer({ isGift, offerMoney, requestMoney, message }) {
+  async function sendTradeOffer({ isGift, offerMoney, requestMoney, message }: { isGift: boolean; offerMoney: number; requestMoney: number; message: string }) {
     if (!tradeTarget.value) return false
     if (authStore.sessionMode === 'offline') return false
 
@@ -136,7 +136,7 @@ export const useTradeStore = defineStore('trade', () => {
     return false
   }
 
-  async function acceptTrade(tradeId) {
+  async function acceptTrade(tradeId: string | number) {
     if (authStore.sessionMode === 'offline') return false
     
     try {
@@ -167,19 +167,19 @@ export const useTradeStore = defineStore('trade', () => {
     }
   }
 
-  async function rejectTrade(tradeId) {
+  async function rejectTrade(tradeId: string | number) {
     await (gameStore.db as any).from('trade_offers').update({ status: 'rejected' }).eq('id', tradeId)
     uiStore.notify('Oferta rechazada.', '👋')
     await refreshPendingTrades()
   }
 
-  async function claimTrade(tradeId) {
+  async function claimTrade(tradeId: string | number) {
     const { error } = await (gameStore.db as any).from('trade_offers').update({ status: 'claimed' }).eq('id', tradeId)
     if (!error) await refreshPendingTrades()
   }
 
   const lockedUids = computed(() => {
-    const locked = new Set()
+    const locked = new Set<string>()
     pendingIncoming.value.forEach(t => {
       if (t.request_pokemon?.uid) locked.add(t.request_pokemon.uid)
     })

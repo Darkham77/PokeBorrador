@@ -8,14 +8,26 @@ import { SHOP_ITEMS } from '@/data/items'
 import { itemEffects as ITEM_EFFECTS, getDynamicItemEffect } from '@/logic/items/itemEffects'
 import { isGlobalItem } from '../logic/providers/itemProvider'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
+import type { Pokemon } from '@/types/pokemon'
+
+export interface Item {
+  name: string;
+  qty: number;
+  id?: string;
+  cat?: string;
+  type?: string;
+  sprite?: string;
+  desc?: string;
+  price?: number;
+}
 
 export const useInventoryStore = defineStore('inventory', () => {
-  const gameStore = useGameStore() as any
-  const uiStore = useUIStore() as any
+  const gameStore = useGameStore()
+  const uiStore = useUIStore()
 
   // --- BAG STATE ---
   const bagSellMode = ref(false)
-  const bagSellSelected = ref({}) // { itemName: quantity }
+  const bagSellSelected = ref<Record<string, number>>({}) // { itemName: quantity }
   const activeCategory = ref(safeStorage.getItem('inventory_last_tab') || 'todos')
   const searchQuery = ref('')
 
@@ -29,11 +41,11 @@ export const useInventoryStore = defineStore('inventory', () => {
   // --- GETTERS ---
   const bagItems = computed(() => {
     const inventory = gameStore.state.inventory || {}
-    let items = Object.entries(inventory)
+    let items: Item[] = Object.entries(inventory)
       .map(([name, qty]) => {
         const item = SHOP_ITEMS.find(i => i.name === name)
-        if (!item) return { name, qty, id: name, cat: 'otros', sprite: '', desc: 'Objeto desconocido' }
-        return { ...item, qty }
+        if (!item) return { name, qty, id: name, cat: 'otros', sprite: '', desc: 'Objeto desconocido' } as Item
+        return { ...item, qty } as Item
       })
 
     if (activeCategory.value === 'utilizables') {
@@ -41,7 +53,9 @@ export const useInventoryStore = defineStore('inventory', () => {
       if (target) {
         const list = target.context === 'team' ? gameStore.state.team : gameStore.state.box
         const pokemon = list[target.index]
-        items = items.filter(item => isItemUsableOn(item.name, pokemon))
+        if (pokemon) {
+          items = items.filter(item => isItemUsableOn(item.name, pokemon))
+        }
       }
     }
 
@@ -69,7 +83,7 @@ export const useInventoryStore = defineStore('inventory', () => {
     bagSellSelected.value = {}
   }
 
-  function toggleBagSellSelect(itemName, maxQty) {
+  function toggleBagSellSelect(itemName: string, maxQty: number) {
     if (bagSellSelected.value[itemName]) {
       delete bagSellSelected.value[itemName]
     } else {
@@ -77,8 +91,8 @@ export const useInventoryStore = defineStore('inventory', () => {
     }
   }
 
-  function updateBagSellQty(itemName, qty, maxQty) {
-    let q = parseInt(qty)
+  function updateBagSellQty(itemName: string, qty: string | number, maxQty: number) {
+    let q = typeof qty === 'string' ? parseInt(qty) : qty
     if (isNaN(q) || q < 1) q = 1
     if (q > maxQty) q = maxQty
     bagSellSelected.value[itemName] = q
@@ -88,7 +102,7 @@ export const useInventoryStore = defineStore('inventory', () => {
     let total = 0
     Object.entries(bagSellSelected.value).forEach(([name, q]) => {
       const itemInfo = SHOP_ITEMS.find(i => i.name === name)
-      if (itemInfo) total += Math.floor((itemInfo as any).price * 0.5) * (q as any)
+      if (itemInfo) total += Math.floor((itemInfo.price || 0) * 0.5) * q
     })
     return total
   }
@@ -100,12 +114,12 @@ export const useInventoryStore = defineStore('inventory', () => {
     const totalGain = getBagSellTotalGain()
     
     selectedEntries.forEach(([name, qty]) => {
-      gameStore.state.inventory[name] -= (qty as any)
-      if (gameStore.state.inventory[name] <= 0) delete gameStore.state.inventory[name]
+      const inv = gameStore.state.inventory
+      if (!inv) return
+      inv[name] = (inv[name] || 0) - qty
+      if (inv[name] <= 0) delete inv[name]
+      gameStore.state.inventory = { ...inv }
     })
-
-    // Force reactivity for inventory object
-    gameStore.state.inventory = { ...gameStore.state.inventory }
 
     gameStore.state.money += totalGain
     toggleBagSellMode()
@@ -113,13 +127,13 @@ export const useInventoryStore = defineStore('inventory', () => {
     return totalGain
   }
 
-  function removeItem(itemName, qty = 1) {
+  function removeItem(itemName: string, qty: number = 1) {
     if (!gameStore.state.inventory || !gameStore.state.inventory[itemName]) return
     
     if (qty === 999) {
       delete gameStore.state.inventory[itemName]
     } else {
-      gameStore.state.inventory[itemName] -= (qty as any)
+      gameStore.state.inventory[itemName] -= qty
       if (gameStore.state.inventory[itemName] <= 0) delete gameStore.state.inventory[itemName]
     }
     
@@ -128,7 +142,7 @@ export const useInventoryStore = defineStore('inventory', () => {
     gameStore.save(false)
   }
 
-  function addItem(itemName, qty = 1) {
+  function addItem(itemName: string, qty: number = 1) {
     if (!itemName) return
     const inventory = gameStore.state.inventory || {}
     inventory[itemName] = (inventory[itemName] || 0) + qty
@@ -136,17 +150,17 @@ export const useInventoryStore = defineStore('inventory', () => {
     gameStore.save(false)
   }
 
-  function sellItem(itemName, qty = 1) {
+  function sellItem(itemName: string, qty: number = 1) {
     const itemInfo = SHOP_ITEMS.find(i => i.name === itemName || i.id === itemName)
     if (!itemInfo) return
     
-    const actualName = (itemInfo as any).name
+    const actualName = itemInfo.name
     if (!gameStore.state.inventory || !gameStore.state.inventory[actualName]) return
     
     const inventoryQty = gameStore.state.inventory[actualName]
     const sellQty = qty === 999 ? inventoryQty : Math.min(qty, inventoryQty)
     
-    const gain = Math.floor(((itemInfo as any).price || 0) * 0.5) * sellQty
+    const gain = Math.floor((itemInfo.price || 0) * 0.5) * sellQty
     
     removeItem(actualName, sellQty)
     gameStore.state.money += gain
@@ -158,7 +172,7 @@ export const useInventoryStore = defineStore('inventory', () => {
    * @param {Map<string, number>} itemMap - name -> quantity
    * @param {string} mode - 'sell' | 'release'
    */
-  async function processBatchAction(itemMap, mode) {
+  async function processBatchAction(itemMap: Map<string, number>, mode: 'sell' | 'release') {
     let totalGain = 0
     const inventory = gameStore.state.inventory || {}
 
@@ -169,7 +183,7 @@ export const useInventoryStore = defineStore('inventory', () => {
       
       if (mode === 'sell') {
         const itemInfo = SHOP_ITEMS.find(i => i.name === name)
-        if (itemInfo) totalGain += Math.floor(((itemInfo as any).price || 0) * 0.5) * actualQty
+        if (itemInfo) totalGain += Math.floor((itemInfo.price || 0) * 0.5) * actualQty
       }
 
       inventory[name] -= actualQty
@@ -184,23 +198,23 @@ export const useInventoryStore = defineStore('inventory', () => {
   }
 
   // --- ITEM ACTIONS ---
-  function useItem(itemName, context, index) {
+  function useItem(itemName: string, context: 'team' | 'box' | null = null, index: number | null = null) {
     const list = context === 'team' ? gameStore.state.team : gameStore.state.box
-    const pokemon = list[index]
+    const pokemon = index !== null ? list[index] : null
     
     // --- INTEGRACIÓN CON COMBATE (Prioridad Absoluta) ---
     // Si estamos en combate, delegamos toda la lógica (aplicación, consumo y logs) 
     // al battleStore para mantener la sincronía del turno.
-    const battleStore = useBattleStore() as any
+    const battleStore = useBattleStore()
     if (battleStore.isBattleActive && !battleStore.isProcessing) {
-      battleStore.useItemInBattle(itemName, context === 'team' ? index : null)
+      (battleStore as any).useItemInBattle(itemName, context === 'team' ? index : null)
       return { success: true, msg: 'Usando objeto en combate...' }
     }
 
     // --- LÓGICA FUERA DE COMBATE ---
     // Global items (Repels, etc.)
     if (isGlobalItem(itemName)) {
-      const effectFn = ITEM_EFFECTS[itemName]
+      const effectFn = (ITEM_EFFECTS as Record<string, any>)[itemName]
       if (!effectFn) return { success: false, msg: 'Efecto global no implementado.' }
       
       const result = effectFn(gameStore.state)
@@ -210,8 +224,8 @@ export const useInventoryStore = defineStore('inventory', () => {
 
     if (!pokemon) return { success: false, msg: 'Seleccioná un Pokémon.' }
 
-    const effectFn = ITEM_EFFECTS[itemName]
-    let result;
+    const effectFn = (ITEM_EFFECTS as Record<string, any>)[itemName]
+    let result: any;
 
     if (effectFn) {
       result = effectFn(pokemon)
@@ -220,86 +234,83 @@ export const useInventoryStore = defineStore('inventory', () => {
       result = getDynamicItemEffect(itemName, pokemon)
     }
 
-    if (!result || !(result as any).success) return { success: false, msg: result?.message || 'Efecto no implementado.' }
+    if (!result || !result.success) return { success: false, msg: result?.message || 'Efecto no implementado.' }
 
     // --- DEFERRED LOGIC (Modals) ---
-    if ((result as any).resultType === 'relearner') {
+    if (result.resultType === 'relearner') {
       uiStore.activePokemonForRelearner = pokemon
       uiStore.isMoveRelearnerOpen = true
-      return { success: true, msg: (result as any).message }
+      return { success: true, msg: result.message }
     }
 
-    if ((result as any).resultType === 'evolution') {
-      uiStore.startEvolution(pokemon, (result as any).targetId, itemName)
-      return { success: true, msg: (result as any).message }
+    if (result.resultType === 'evolution') {
+      uiStore.startEvolution(pokemon, result.targetId, itemName)
+      return { success: true, msg: result.message }
     }
 
-    if ((result as any).resultType === 'levelup') {
+    if (result.resultType === 'levelup') {
       gameStore.checkLevelUp(pokemon)
       consumeItem(itemName)
-      return { success: true, msg: (result as any).message }
+      return { success: true, msg: result.message }
     }
 
-    if ((result as any).resultType === 'learn_move') {
-      const moveData = pokemonDataProvider.getMoveData((result as any).moveName) || {}
+    if (result.resultType === 'learn_move') {
+      const moveData = pokemonDataProvider.getMoveData(result.moveName)
       const moveObj = { 
-        name: (result as any).moveName, 
-        pp: moveData.pp || 35, 
-        maxPP: moveData.pp || 35 
+        name: result.moveName, 
+        pp: moveData?.pp || 35, 
+        maxPP: moveData?.pp || 35 
       }
 
-      if ((pokemon as any).moves.length < 4) {
-        (pokemon as any).moves.push(moveObj)
-        uiStore.notify(`¡${(pokemon as any).name} aprendió ${(result as any).moveName}!`, '📖')
+      if (pokemon.moves.length < 4) {
+        pokemon.moves.push(moveObj)
+        uiStore.notify(`¡${pokemon.name} aprendió ${result.moveName}!`, '📖')
       } else {
         uiStore.addToLearnQueue({ pokemon, move: moveObj })
       }
       consumeItem(itemName)
-      return { success: true, msg: (result as any).message }
+      return { success: true, msg: result.message }
     }
 
-    if ((result as any).resultType === 'nature_patch') {
+    if (result.resultType === 'nature_patch') {
       uiStore.activePokemonForNature = pokemon
       uiStore.isNaturePatchOpen = true
-      // Item consumed AFTER selection in modal or here? 
-      // Legacy usually consumes it when opening the menu to avoid dupes?
-      // Actually, it's safer to consume it now or when confirmed.
-      // I'll follow the "consume on use" pattern.
       consumeItem(itemName)
-      return { success: true, msg: (result as any).message }
+      return { success: true, msg: result.message }
     }
 
-    if ((result as any).resultType === 'pp_up') {
+    if (result.resultType === 'pp_up') {
       uiStore.activePokemonForPPUp = pokemon
       uiStore.isPPUpOpen = true
       consumeItem(itemName)
-      return { success: true, msg: (result as any).message }
+      return { success: true, msg: result.message }
     }
 
-    if ((result as any).resultType === 'ability_pill') {
+    if (result.resultType === 'ability_pill') {
       uiStore.activePokemonForAbility = pokemon
       uiStore.isAbilityPillOpen = true
       consumeItem(itemName)
-      return { success: true, msg: (result as any).message }
+      return { success: true, msg: result.message }
     }
 
     // --- LÓGICA DE PERSISTENCIA (Fuera de Combate) ---
     consumeItem(itemName)
     gameStore.save()
 
-    return { success: true, msg: (result as any).message }
+    return { success: true, msg: result.message }
   }
 
-  function consumeItem(itemName) {
-    if (gameStore.state.inventory[itemName]) {
-      gameStore.state.inventory[itemName]--
-      if (gameStore.state.inventory[itemName] <= 0) {
-        delete gameStore.state.inventory[itemName]
+  function consumeItem(itemName: string) {
+    const inv = gameStore.state.inventory
+    if (inv && inv[itemName]) {
+      inv[itemName]--
+      if (inv[itemName] <= 0) {
+        delete inv[itemName]
       }
     }
   }
 
-  function isItemUsableOn(itemName, pokemon) {
+  function isItemUsableOn(itemName: string, pokemon: Pokemon) {
     if (!pokemon) return false
     if (isGlobalItem(itemName)) return false
 
@@ -311,7 +322,7 @@ export const useInventoryStore = defineStore('inventory', () => {
     const p = JSON.parse(JSON.stringify(pokemon))
 
     // Check main effects
-    const effectFn = ITEM_EFFECTS[itemName]
+    const effectFn = (ITEM_EFFECTS as Record<string, any>)[itemName]
     if (effectFn) {
       const res = effectFn(p)
       return res && res.success
@@ -322,33 +333,37 @@ export const useInventoryStore = defineStore('inventory', () => {
     return dynamicRes && dynamicRes.success
   }
 
-  function equipItem(itemName, context, index) {
+  function equipItem(itemName: string, context: 'team' | 'box', index: number) {
     const list = context === 'team' ? gameStore.state.team : gameStore.state.box
     const pokemon = list[index]
     if (!pokemon) return false
 
     // If already has an item, return it to inventory
-    if ((pokemon as any).heldItem) {
-      const oldItem = (pokemon as any).heldItem
+    if (pokemon.heldItem) {
+      const oldItem = pokemon.heldItem
       gameStore.state.inventory[oldItem] = (gameStore.state.inventory[oldItem] || 0) + 1
     }
 
-    (pokemon as any).heldItem = itemName
-    gameStore.state.inventory[itemName]--
-    if (gameStore.state.inventory[itemName] <= 0) delete gameStore.state.inventory[itemName]
+    pokemon.heldItem = itemName
+    const inv = gameStore.state.inventory
+    if (inv) {
+      inv[itemName] = (inv[itemName] || 0) - 1
+      if (inv[itemName] <= 0) delete inv[itemName]
+      gameStore.state.inventory = { ...inv }
+    }
 
     gameStore.save()
     return true
   }
 
-  function unequipItem(context, index) {
+  function unequipItem(context: 'team' | 'box', index: number) {
     const list = context === 'team' ? gameStore.state.team : gameStore.state.box
     const pokemon = list[index]
-    if (!pokemon || !(pokemon as any).heldItem) return false
+    if (!pokemon || !pokemon.heldItem) return false
 
-    const item = (pokemon as any).heldItem
+    const item = pokemon.heldItem
     gameStore.state.inventory[item] = (gameStore.state.inventory[item] || 0) + 1;
-    (pokemon as any).heldItem = null
+    pokemon.heldItem = null
 
     gameStore.save()
     return item
@@ -376,6 +391,9 @@ export const useInventoryStore = defineStore('inventory', () => {
     removeItem,
     sellItem,
     processBatchAction
+  }
+})
+ction
   }
 })
 

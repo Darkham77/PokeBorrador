@@ -6,11 +6,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Cámara Dinámica Vue 3 - Zona Asimétrica</title>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;700&display=swap');
+
     :root {
-      --bg-color: #121212;
-      --panel-bg: #1e1e1e;
+      --bg-color: #0a0a0c;
+      --panel-bg: rgba(30, 30, 35, 0.7);
       --text-color: #e0e0e0;
       --accent: #42b883;
+      --accent-gradient: linear-gradient(135deg, #42b883 0%, #35495e 100%);
+      --glass-border: 1px solid rgba(255, 255, 255, 0.1);
+      --pixel-font: 'Press Start 2P', cursive;
     }
 
     body {
@@ -18,36 +23,56 @@
       padding: 20px;
       background-color: var(--bg-color);
       color: var(--text-color);
-      font-family: monospace;
+      font-family: 'Inter', sans-serif;
       display: flex;
       flex-direction: column;
       align-items: center;
-      height: 100vh;
+      min-height: 100vh;
       box-sizing: border-box;
+      background-image: 
+        radial-gradient(circle at 20% 30%, rgba(66, 184, 131, 0.05) 0%, transparent 40%),
+        radial-gradient(circle at 80% 70%, rgba(53, 73, 94, 0.05) 0%, transparent 40%);
     }
 
     h1 {
-      font-size: 1.2rem;
-      margin-bottom: 10px;
+      font-family: var(--pixel-font);
+      font-size: 1rem;
+      margin-bottom: 20px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--accent);
+      text-shadow: 0 0 10px rgba(66, 184, 131, 0.3);
     }
 
     /* Contenedor Resizable (Viewport) */
     .viewport {
-      width: 500px;
-      height: 300px;
-      min-width: 150px;
-      min-height: 150px;
-      max-width: 90vw;
-      max-height: 70vh;
+      width: 600px;
+      height: 400px;
+      min-width: 200px;
+      min-height: 200px;
+      max-width: 100vw;
+      max-height: 90vh;
       resize: both;
       overflow: hidden;
       position: relative;
       background-color: #000;
-      border: 2px solid var(--accent);
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      border: 2px solid transparent;
+      background-clip: padding-box;
+      border-radius: 12px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
       display: flex;
       align-items: center;
       justify-content: center;
+      cursor: var(--viewport-cursor, default);
+    }
+
+    .viewport::before {
+      content: '';
+      position: absolute;
+      top: -2px; left: -2px; right: -2px; bottom: -2px;
+      background: var(--accent-gradient);
+      z-index: -1;
+      border-radius: 14px;
     }
 
     .viewport::after {
@@ -71,21 +96,30 @@
       box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1);
     }
 
-    /* El Mapa Virtual 3000x3000 */
+    /* El Mapa Virtual (Contenedor de Mundo) */
     .map-canvas {
       position: absolute;
       top: 0;
       left: 0;
-      width: 3000px;
-      height: 3000px;
       transform-origin: 0 0;
       will-change: transform;
+      background-color: #1a1a1a;
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      box-sizing: border-box;
+      overflow: visible;
+    }
+
+    .image-layer {
+      position: absolute;
+      top: 0;
+      left: 0;
       background-size: contain;
       background-position: center;
       background-repeat: no-repeat;
-      background-color: #ff69b4;
-      /* Fondo rosa de advertencia */
+      background-color: #ff69b4; /* Fondo rosa de advertencia */
       image-rendering: pixelated;
+      will-change: transform;
+      transform-origin: 0 0;
     }
 
     .map-canvas::before {
@@ -100,38 +134,41 @@
       pointer-events: none;
     }
 
+    /* Punto focal (Centro dinámico) */
     .focal-point {
       position: absolute;
-      left: 1500px;
-      top: 1500px;
-      width: 20px;
-      height: 20px;
-      background-color: red;
+      width: 16px;
+      height: 16px;
+      background-color: #ff3e3e;
       border: 2px solid white;
       border-radius: 50%;
       transform: translate(-50%, -50%);
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
+      box-shadow: 0 0 15px rgba(255, 62, 62, 0.6);
       z-index: 10;
     }
 
-    .focal-point::after {
-      content: '1500,1500';
+    .focal-label {
       position: absolute;
-      top: -20px;
-      font-size: 12px;
+      top: -25px;
+      font-family: var(--pixel-font);
+      font-size: 8px;
       color: white;
-      text-shadow: 1px 1px 2px black;
+      text-shadow: 2px 2px 0px black;
       white-space: nowrap;
+      pointer-events: none;
+      transform: scale(calc(1 / var(--cam-scale, 1)));
+      transform-origin: bottom center;
     }
 
     .safe-zone {
       position: absolute;
-      border: 2px dashed rgba(255, 255, 255, 0.7);
+      border: calc(2px / var(--cam-scale, 1)) dashed rgba(255, 255, 255, 0.8);
       background: rgba(255, 255, 255, 0.1);
       pointer-events: none;
+      box-sizing: border-box;
     }
 
     .safe-zone-text {
@@ -139,14 +176,18 @@
       bottom: 5px;
       left: 5px;
       color: white;
-      font-size: 10px;
-      text-shadow: 1px 1px 2px black;
+      font-family: var(--pixel-font);
+      font-size: 8px;
+      text-shadow: 2px 2px 0px black;
+      opacity: 0.8;
+      transform: scale(calc(1 / var(--cam-scale, 1)));
+      transform-origin: bottom left;
     }
 
     /* Rectángulos guía rojos */
     .guide-rect {
       position: absolute;
-      border: 2px solid red;
+      border: calc(2px / var(--cam-scale, 1)) solid red;
       color: white;
       font-size: 12px;
       display: flex;
@@ -208,6 +249,50 @@
       color: var(--text-color);
     }
 
+    .btn-export {
+      margin-top: 10px;
+      padding: 12px;
+      background: var(--accent-gradient);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-family: var(--pixel-font);
+      font-size: 10px;
+      cursor: pointer;
+      text-transform: uppercase;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 15px rgba(66, 184, 131, 0.4);
+    }
+
+    .btn-export:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(66, 184, 131, 0.6);
+      filter: brightness(1.1);
+    }
+
+    .btn-export:active {
+      transform: translateY(0);
+    }
+
+    .btn-reset {
+      margin-top: 5px;
+      padding: 8px;
+      background: rgba(255, 62, 62, 0.2);
+      color: #ff3e3e;
+      border: 1px solid rgba(255, 62, 62, 0.4);
+      border-radius: 8px;
+      font-family: var(--pixel-font);
+      font-size: 8px;
+      cursor: pointer;
+      text-transform: uppercase;
+      transition: all 0.2s ease;
+    }
+
+    .btn-reset:hover {
+      background: rgba(255, 62, 62, 0.4);
+      color: white;
+    }
+
     .controls-row {
       display: flex;
       gap: 10px;
@@ -234,67 +319,140 @@
 <body>
 
   <div id="app">
-    <h1>Cámara Dinámica (Zona {{ visibleWidth }}x{{ visibleHeight }})</h1>
+    <h1>Map Spatial Tester</h1>
 
-    <div ref="viewportRef" class="viewport">
+    <div class="views-container">
+      <!-- VISTA GENERAL (ARRIBA) -->
+      <h2 class="view-label">VISTA GENERAL (MUNDO COMPLETO)</h2>
+      <div ref="viewportGeneralRef" class="viewport"
+        @mousedown="handleMouseDown"
+        @mousemove="handleMouseMove"
+        @mouseup="handleMouseUp"
+        @mouseleave="handleMouseUp"
+        @wheel="handleWheel"
+        :style="{ '--viewport-cursor': isDragging ? 'grabbing' : 'grab' }">
 
-      <div class="camera-frame" :style="{ width: `${camWidth}px`, height: `${camHeight}px` }">
-        <div class="map-canvas" :style="{ 
-            transform: `translate(${tx}px, ${ty}px) scale(${scale})`,
-            backgroundImage: `url(${bgUrl})`
-          }">
-          <!-- Zona Segura Dinámica -->
-          <div class="safe-zone" :style="{
-            width: visibleWidth + 'px',
-            height: visibleHeight + 'px',
-            left: (TARGET_X - visibleWidth / 2) + 'px',
-            top: (TARGET_Y - visibleHeight / 2) + 'px'
-          }">
-            <div class="safe-zone-text">Zona Base {{ visibleWidth }}x{{ visibleHeight }}</div>
-          </div>
+        <div class="camera-frame" :style="{ width: `${camGeneralWidth}px`, height: `${camGeneralHeight}px` }">
+          <div class="map-canvas" :style="{ 
+              width: mapWidth + 'px',
+              height: mapHeight + 'px',
+              transform: `translate(${txGeneral}px, ${tyGeneral}px) scale(${scaleGeneral})`,
+              backgroundColor: worldBgColor,
+              '--cam-scale': scaleGeneral
+            }">
+            
+            <div class="image-layer" :style="{
+                width: mapWidth + 'px',
+                height: mapHeight + 'px',
+                backgroundImage: `url(${bgUrl})`,
+                transform: `translate(${imgTx}px, ${imgTy}px) scale(${imgScale})`
+              }"></div>
 
-          <div class="focal-point"></div>
+            <div class="safe-zone" :style="{
+              width: visibleWidth + 'px',
+              height: visibleHeight + 'px',
+              left: (targetX - visibleWidth / 2) + 'px',
+              top: (targetY - visibleHeight / 2) + 'px'
+            }">
+              <div class="safe-zone-text">ACTION ZONE: {{ visibleWidth }}x{{ visibleHeight }}</div>
+            </div>
 
-          <!-- Rectángulos Guía vinculados matemáticamente a la zona de acción -->
-          <div class="guide-rect" :style="{ 
-            width: rect1Size + 'px', 
-            height: rect1Size + 'px', 
-            left: (TARGET_X - visibleWidth / 2) + 'px', 
-            bottom: (MAP_HEIGHT - TARGET_Y - visibleHeight / 2) + 'px',
-            backgroundImage: rect1Img ? `url(${rect1Img})` : 'none',
-            backgroundColor: rect1Img ? 'transparent' : 'rgba(255, 0, 0, 0.4)'
-          }">
-            <span v-if="!rect1Img">Inf. Izq.</span>
-          </div>
-          <div class="guide-rect" :style="{ 
-            width: rect2Size + 'px', 
-            height: rect2Size + 'px', 
-            right: (MAP_WIDTH - TARGET_X - visibleWidth / 2) + 'px', 
-            top: (TARGET_Y - visibleHeight / 2) + 'px',
-            backgroundImage: rect2Img ? `url(${rect2Img})` : 'none',
-            backgroundColor: rect2Img ? 'transparent' : 'rgba(255, 0, 0, 0.4)'
-          }">
-            <span v-if="!rect2Img">Sup. Der.</span>
+            <div class="focal-point" :style="{ left: targetX + 'px', top: targetY + 'px' }">
+              <div class="focal-label">{{ targetX }},{{ targetY }}</div>
+            </div>
+
+            <div class="guide-rect" :style="{ 
+              width: rect1Size + 'px', 
+              height: rect1Size + 'px', 
+              left: (targetX - visibleWidth / 2) + 'px', 
+              bottom: (mapHeight - targetY - visibleHeight / 2) + 'px',
+              backgroundImage: rect1Img ? `url(${rect1Img})` : 'none',
+              backgroundColor: rect1Img ? 'transparent' : 'rgba(255, 0, 0, 0.4)',
+              zIndex: 5
+            }">
+              <span v-if="!rect1Img">LB</span>
+            </div>
+            <div class="guide-rect" :style="{ 
+              width: rect2Size + 'px', 
+              height: rect2Size + 'px', 
+              right: (mapWidth - targetX - visibleWidth / 2) + 'px', 
+              top: (targetY - visibleHeight / 2) + 'px',
+              backgroundImage: rect2Img ? `url(${rect2Img})` : 'none',
+              backgroundColor: rect2Img ? 'transparent' : 'rgba(255, 0, 0, 0.4)',
+              zIndex: 5
+            }">
+              <span v-if="!rect2Img">RT</span>
+            </div>
           </div>
         </div>
       </div>
 
+      <!-- VISTA DINÁMICA (ABAJO) -->
+      <h2 class="view-label">VISTA DINÁMICA (CÁMARA DE JUEGO)</h2>
+      <div ref="viewportDynamicRef" class="viewport">
+
+        <div class="camera-frame" :style="{ width: `${camDynamicWidth}px`, height: `${camDynamicHeight}px` }">
+          <div class="map-canvas" :style="{ 
+              width: mapWidth + 'px',
+              height: mapHeight + 'px',
+              transform: `translate(${txDynamic}px, ${tyDynamic}px) scale(${scaleDynamic})`,
+              backgroundColor: worldBgColor,
+              '--cam-scale': scaleDynamic
+            }">
+            
+            <div class="image-layer" :style="{
+                width: mapWidth + 'px',
+                height: mapHeight + 'px',
+                backgroundImage: `url(${bgUrl})`,
+                transform: `translate(${imgTx}px, ${imgTy}px) scale(${imgScale})`
+              }"></div>
+
+            <div class="safe-zone" :style="{
+              width: visibleWidth + 'px',
+              height: visibleHeight + 'px',
+              left: (targetX - visibleWidth / 2) + 'px',
+              top: (targetY - visibleHeight / 2) + 'px'
+            }">
+              <div class="safe-zone-text">ACTION ZONE</div>
+            </div>
+
+            <div class="focal-point" :style="{ left: targetX + 'px', top: targetY + 'px' }">
+              <div class="focal-label">{{ targetX }},{{ targetY }}</div>
+            </div>
+
+            <!-- Rectángulos Guía (Restaurados) -->
+            <div class="guide-rect" :style="{ 
+              width: rect1Size + 'px', 
+              height: rect1Size + 'px', 
+              left: (targetX - visibleWidth / 2) + 'px', 
+              bottom: (mapHeight - targetY - visibleHeight / 2) + 'px',
+              backgroundImage: rect1Img ? `url(${rect1Img})` : 'none',
+              backgroundColor: rect1Img ? 'transparent' : 'rgba(255, 0, 0, 0.4)',
+              zIndex: 5
+            }">
+              <span v-if="!rect1Img">LB</span>
+            </div>
+            <div class="guide-rect" :style="{ 
+              width: rect2Size + 'px', 
+              height: rect2Size + 'px', 
+              right: (mapWidth - targetX - visibleWidth / 2) + 'px', 
+              top: (targetY - visibleHeight / 2) + 'px',
+              backgroundImage: rect2Img ? `url(${rect2Img})` : 'none',
+              backgroundColor: rect2Img ? 'transparent' : 'rgba(255, 0, 0, 0.4)',
+              zIndex: 5
+            }">
+              <span v-if="!rect2Img">RT</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Controles -->
     <div class="controls">
-      <label>Zona de Acción (Ancho x Alto):</label>
-      <div class="controls-row">
-        <input type="number" v-model.number="visibleWidth" min="100" max="3000" title="Ancho">
-        <input type="number" v-model.number="visibleHeight" min="100" max="3000" title="Alto">
-      </div>
-
-      <hr>
-
-      <label>Subir imagen local:</label>
-      <input type="file" @change="cambiarFondoArchivo" accept="image/*">
-      <label>O ingresar URL:</label>
-      <input type="text" v-model="bgUrl" placeholder="https://ejemplo.com/imagen.jpg">
+      <label>Imagen del Mundo:</label>
+      <input type="file" @change="cambiarFondoArchivo" accept="image/*" style="margin-bottom: 10px;">
+      <input type="text" v-model="bgUrl" placeholder="URL de la imagen...">
 
       <hr>
 
@@ -309,38 +467,100 @@
         <input type="number" v-model.number="rect2Size" min="10" max="1000" title="Tamaño">
         <input type="file" @change="cargarImgRect2" accept="image/*" title="Cargar imagen en guía 2">
       </div>
+
+      <hr>
+
+      <label>Tamaño del Mundo Virtual (Ancho x Alto):</label>
+      <div class="controls-row">
+        <input type="number" v-model.number="mapWidth" min="1000" max="10000" title="Ancho del Mapa">
+        <input type="number" v-model.number="mapHeight" min="1000" max="10000" title="Alto del Mapa">
+      </div>
+
+      <hr>
+
+      <label>Zona de Acción Fija (Ancho x Alto):</label>
+      <div class="controls-row">
+        <input type="number" v-model.number="visibleWidth" min="100" max="10000" title="Ancho">
+        <input type="number" v-model.number="visibleHeight" min="100" max="10000" title="Alto">
+      </div>
+
+      <hr>
+
+      <label>Calibración de Imagen de Fondo:</label>
+      <div class="controls-row">
+        <div style="flex: 1">
+          <label style="font-size: 9px; opacity: 0.7">X:</label>
+          <input type="number" v-model.number="imgTx" step="10">
+        </div>
+        <div style="flex: 1">
+          <label style="font-size: 9px; opacity: 0.7">Y:</label>
+          <input type="number" v-model.number="imgTy" step="10">
+        </div>
+        <div style="flex: 1">
+          <label style="font-size: 9px; opacity: 0.7">Zoom:</label>
+          <input type="number" v-model.number="imgScale" step="0.01" min="0.01">
+        </div>
+      </div>
+      <button class="btn-reset" @click="resetCalibracion">Resetear Alineación</button>
+
+      <div class="controls-row" style="margin-top: 10px;">
+        <label style="display: flex; align-items: center; gap: 5px; cursor: pointer; flex: 1">
+          <input type="checkbox" v-model="snapToEdge" style="width: auto"> Snap edges
+        </label>
+        <div style="flex: 1; display: flex; align-items: center; gap: 5px;">
+          <label style="font-size: 9px; opacity: 0.7">Fondo:</label>
+          <input type="color" v-model="worldBgColor" style="height: 30px; padding: 2px;">
+        </div>
+      </div>
+
+      <div class="controls-row" style="margin-top: 5px;">
+        <label style="display: flex; align-items: center; gap: 5px; cursor: pointer; flex: 1">
+          <input type="checkbox" v-model="addPadding" style="width: auto"> Margen extra V
+        </label>
+        <div style="flex: 1; display: flex; align-items: center; gap: 5px;">
+          <label style="font-size: 9px; opacity: 0.7">%:</label>
+          <input type="number" v-model.number="paddingPercent" min="0" max="100" style="padding: 2px;">
+        </div>
+      </div>
+
+      <button class="btn-export" @click="exportarMundo">Exportar Mundo (PNG)</button>
     </div>
 
     <!-- HUD -->
     <div class="hud">
-      <p>Viewport Total: <span class="highlight">{{ Math.round(vpWidth) }}x{{ Math.round(vpHeight) }}</span></p>
-      <p>Resolución Cámara: <span class="highlight">{{ Math.round(camWidth) }}x{{ Math.round(camHeight) }}</span></p>
-      <p>Ratio actual: <span class="highlight">{{ (camWidth / camHeight).toFixed(2) }}:1</span>
-        <span v-if="vpWidth / vpHeight > currentRatioMax || vpHeight / vpWidth > (1 / currentRatioMin)"
-          class="warning">(Barras activas)</span>
-      </p>
-      <p>Escala: <span class="highlight">{{ scale.toFixed(2) }}x</span></p>
+      <p>Escala General: <span class="highlight">{{ scaleGeneral.toFixed(3) }}x</span></p>
+      <p>Escala Dinámica: <span class="highlight">{{ scaleDynamic.toFixed(3) }}x</span></p>
+      <hr>
+      <p>Ajuste Imagen: <span class="highlight">{{ Math.round(imgTx) }}, {{ Math.round(imgTy) }}</span> (Escala: {{ imgScale.toFixed(2) }}x)</p>
     </div>
   </div>
 
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 
   <script>
-    const { createApp, ref, onMounted, onUnmounted, watch } = Vue;
+    const { createApp, ref, computed, onMounted, onUnmounted, watch } = Vue;
 
     createApp({
       setup() {
-        const viewportRef = ref(null);
+        const viewportGeneralRef = ref(null);
+        const viewportDynamicRef = ref(null);
 
-        const vpWidth = ref(500);
-        const vpHeight = ref(300);
+        const vpGeneralWidth = ref(600);
+        const vpGeneralHeight = ref(300);
+        const vpDynamicWidth = ref(600);
+        const vpDynamicHeight = ref(300);
 
-        const camWidth = ref(500);
-        const camHeight = ref(300);
+        const camGeneralWidth = ref(600);
+        const camGeneralHeight = ref(300);
+        const txGeneral = ref(0);
+        const tyGeneral = ref(0);
+        const scaleGeneral = ref(1);
 
-        const tx = ref(0);
-        const ty = ref(0);
-        const scale = ref(1);
+        const camDynamicWidth = ref(600);
+        const camDynamicHeight = ref(300);
+        const txDynamic = ref(0);
+        const tyDynamic = ref(0);
+        const scaleDynamic = ref(1);
 
         const bgUrl = ref('https://picsum.photos/id/1018/3000/3000');
 
@@ -350,14 +570,31 @@
         const rect1Img = ref('');
         const rect2Img = ref('');
 
-        const TARGET_X = 1500;
-        const TARGET_Y = 1500;
-        const MAP_WIDTH = 3000;
-        const MAP_HEIGHT = 3000;
+        // --- NUEVAS VARIABLES REACTIVAS DEL TAMAÑO DEL MAPA ---
+        const mapWidth = ref(3000);
+        const mapHeight = ref(3000);
 
-        // --- NUEVAS VARIABLES REACTIVAS DE LA ZONA DE ACCIÓN ---
+        // --- CÁLCULO DINÁMICO DEL CENTRO FOCAL ---
+        const targetX = computed(() => mapWidth.value / 2);
+        const targetY = computed(() => mapHeight.value / 2);
+
+        // --- VARIABLES REACTIVAS DE LA ZONA DE ACCIÓN ---
         const visibleWidth = ref(1000);
-        const visibleHeight = ref(666); // Inicializado en 1000x666 como solicitaste
+        const visibleHeight = ref(666);
+
+        const isDragging = ref(false);
+        const dragStartX = ref(0);
+        const dragStartY = ref(0);
+        
+        const imgTx = ref(0);
+        const imgTy = ref(0);
+        const imgScale = ref(1);
+
+        const worldBgColor = ref('#ff69b4');
+        const snapToEdge = ref(true);
+
+        const addPadding = ref(true);
+        const paddingPercent = ref(10);
 
         const currentRatioMax = ref(3.0);
         const currentRatioMin = ref(0.33);
@@ -379,78 +616,253 @@
           if (file) rect2Img.value = URL.createObjectURL(file);
         };
 
-        const actualizarCamara = (width = vpWidth.value, height = vpHeight.value) => {
+        const actualizarVistas = () => {
+          actualizarCamaraGeneral();
+          actualizarCamaraDynamic();
+        };
+
+        const actualizarCamaraGeneral = (width = vpGeneralWidth.value, height = vpGeneralHeight.value) => {
           if (width === 0 || height === 0) return;
 
           let cw = width;
           let ch = height;
           const ratio = width / height;
 
-          // 1. Recalculamos matemáticamente los topes según la nueva proporción asimétrica
-          const RATIO_MAX = MAP_WIDTH / visibleHeight.value;
-          const RATIO_MIN = visibleWidth.value / MAP_HEIGHT;
+          const targetVisibleWidth = mapWidth.value;
+          const targetVisibleHeight = mapHeight.value;
 
-          currentRatioMax.value = RATIO_MAX;
-          currentRatioMin.value = RATIO_MIN;
+          const RATIO_MAX = mapWidth.value / targetVisibleHeight;
+          const RATIO_MIN = targetVisibleWidth / mapHeight.value;
 
-          // 2. Aplicamos las barreras de Letterbox / Pillarbox
-          if (ratio > RATIO_MAX) {
-            cw = height * RATIO_MAX;
-          } else if (ratio < RATIO_MIN) {
-            ch = width / RATIO_MIN;
-          }
+          if (ratio > RATIO_MAX) cw = height * RATIO_MAX;
+          else if (ratio < RATIO_MIN) ch = width / RATIO_MIN;
 
-          camWidth.value = cw;
-          camHeight.value = ch;
+          camGeneralWidth.value = cw;
+          camGeneralHeight.value = ch;
 
-          // 3. Escala determinista con soporte para zonas asimétricas
-          // Garantiza que tanto el Ancho como el Alto de la zona encajen perfectamente en cámara.
-          const currentScale = Math.min(cw / visibleWidth.value, ch / visibleHeight.value);
+          const currentScale = Math.min(cw / targetVisibleWidth, ch / targetVisibleHeight);
 
-          // 4. Centrado
-          tx.value = (cw / 2) - (TARGET_X * currentScale);
-          ty.value = (ch / 2) - (TARGET_Y * currentScale);
-          scale.value = currentScale;
+          txGeneral.value = (cw / 2) - (targetX.value * currentScale);
+          tyGeneral.value = (ch / 2) - (targetY.value * currentScale);
+          scaleGeneral.value = currentScale;
         };
 
-        // Escuchamos los cambios que el usuario haga en los inputs de la Zona de Acción
-        watch([visibleWidth, visibleHeight], () => {
-          actualizarCamara();
+        const actualizarCamaraDynamic = (width = vpDynamicWidth.value, height = vpDynamicHeight.value) => {
+          if (width === 0 || height === 0) return;
+
+          let cw = width;
+          let ch = height;
+          const ratio = width / height;
+
+          const targetVisibleWidth = visibleWidth.value;
+          const targetVisibleHeight = visibleHeight.value;
+
+          const RATIO_MAX = mapWidth.value / targetVisibleHeight;
+          const RATIO_MIN = targetVisibleWidth / mapHeight.value;
+
+          if (ratio > RATIO_MAX) cw = height * RATIO_MAX;
+          else if (ratio < RATIO_MIN) ch = width / RATIO_MIN;
+
+          camDynamicWidth.value = cw;
+          camDynamicHeight.value = ch;
+
+          const currentScale = Math.min(cw / targetVisibleWidth, ch / targetVisibleHeight);
+
+          txDynamic.value = (cw / 2) - (targetX.value * currentScale);
+          tyDynamic.value = (ch / 2) - (targetY.value * currentScale);
+          scaleDynamic.value = currentScale;
+        };
+
+        // --- INTERACCIÓN MANUAL (DRAG & ZOOM) ---
+        const handleMouseDown = (e) => {
+          isDragging.value = true;
+          dragStartX.value = e.clientX - (imgTx.value * scaleGeneral.value);
+          dragStartY.value = e.clientY - (imgTy.value * scaleGeneral.value);
+        };
+
+        const handleMouseMove = (e) => {
+          if (!isDragging.value) return;
+          
+          let nextX = (e.clientX - dragStartX.value) / scaleGeneral.value;
+          let nextY = (e.clientY - dragStartY.value) / scaleGeneral.value;
+
+          if (snapToEdge.value) {
+            // Umbral de 15 píxeles de pantalla, convertido a coordenadas de mundo
+            const threshold = 15 / scaleGeneral.value; 
+            
+            // Snap a X=0 (Borde Izquierdo)
+            if (Math.abs(nextX) < threshold) nextX = 0;
+            // Snap a Y=0 (Borde Superior)
+            if (Math.abs(nextY) < threshold) nextY = 0;
+            
+            // Snap a bordes derechos/inferiores (Borde del Mundo - Borde de la Imagen escalada)
+            const rightEdge = mapWidth.value - (mapWidth.value * imgScale.value);
+            if (Math.abs(nextX - rightEdge) < threshold) nextX = rightEdge;
+            
+            const bottomEdge = mapHeight.value - (mapHeight.value * imgScale.value);
+            if (Math.abs(nextY - bottomEdge) < threshold) nextY = bottomEdge;
+          }
+
+          imgTx.value = nextX;
+          imgTy.value = nextY;
+        };
+
+        const handleMouseUp = () => {
+          isDragging.value = false;
+        };
+
+        const handleWheel = (e) => {
+          e.preventDefault();
+          const zoomSpeed = 0.001;
+          const delta = -e.deltaY;
+          const factor = Math.exp(delta * zoomSpeed);
+          
+          const rect = viewportGeneralRef.value.getBoundingClientRect();
+          const mouseX_world = (e.clientX - rect.left - txGeneral.value) / scaleGeneral.value;
+          const mouseY_world = (e.clientY - rect.top - tyGeneral.value) / scaleGeneral.value;
+          
+          const mouseInImgX = (mouseX_world - imgTx.value) / imgScale.value;
+          const mouseInImgY = (mouseY_world - imgTy.value) / imgScale.value;
+          
+          const oldImgScale = imgScale.value;
+          const newImgScale = Math.max(0.01, Math.min(50, oldImgScale * factor));
+          
+          if (newImgScale === oldImgScale) return;
+
+          imgScale.value = newImgScale;
+          imgTx.value -= mouseInImgX * (newImgScale - oldImgScale);
+          imgTy.value -= mouseInImgY * (newImgScale - oldImgScale);
+        };
+
+        const resetCalibracion = () => {
+          imgTx.value = 0;
+          imgTy.value = 0;
+          imgScale.value = 1;
+        };
+
+        const exportarMundo = () => {
+          const canvas = document.createElement('canvas');
+          
+          const baseWidth = mapWidth.value;
+          const baseHeight = mapHeight.value;
+          
+          let paddingPx = 0;
+          if (addPadding.value) {
+            paddingPx = Math.round(baseHeight * (paddingPercent.value / 100));
+          }
+
+          canvas.width = baseWidth;
+          canvas.height = baseHeight + (paddingPx * 2);
+          
+          const ctx = canvas.getContext('2d');
+
+          // 1. Fondo sólido (Cubre todo el canvas incluyendo márgenes)
+          ctx.fillStyle = worldBgColor.value;
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+          // 2. Dibujar imagen respetando el "contain" y "center" del CSS
+          const img = new Image();
+          img.crossOrigin = "anonymous";
+          img.onload = () => {
+            ctx.imageSmoothingEnabled = false;
+            
+            const nw = img.naturalWidth;
+            const nh = img.naturalHeight;
+            const cw = baseWidth;
+            const ch = baseHeight;
+
+            // Lógica de "background-size: contain"
+            const s = Math.min(cw / nw, ch / nh);
+            const rw = nw * s;
+            const rh = nh * s;
+            
+            // Lógica de "background-position: center"
+            const ox = (cw - rw) / 2;
+            const oy = (ch - rh) / 2;
+            
+            // Aplicamos las transformaciones del usuario
+            const finalW = rw * imgScale.value;
+            const finalH = rh * imgScale.value;
+            
+            // El desplazamiento en Y debe incluir el paddingPx superior
+            const finalX = imgTx.value + (ox * imgScale.value);
+            const finalY = imgTy.value + (oy * imgScale.value) + paddingPx;
+            
+            ctx.drawImage(img, finalX, finalY, finalW, finalH);
+            
+            // 3. Descarga
+            const link = document.createElement('a');
+            link.download = `map_export_${Date.now()}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+          };
+          img.src = bgUrl.value;
+        };
+
+        watch(bgUrl, () => {
+          resetCalibracion();
+        });
+
+        watch([visibleWidth, visibleHeight, mapWidth, mapHeight], () => {
+          actualizarVistas();
         });
 
         onMounted(() => {
-          resizeObserver = new ResizeObserver((entries) => {
+          const resizeObserverGeneral = new ResizeObserver((entries) => {
             for (const entry of entries) {
               const { width, height } = entry.contentRect;
               if (width > 0 && height > 0) {
-                vpWidth.value = width;
-                vpHeight.value = height;
-                actualizarCamara(width, height);
+                vpGeneralWidth.value = width;
+                vpGeneralHeight.value = height;
+                actualizarCamaraGeneral(width, height);
               }
             }
           });
 
-          if (viewportRef.value) {
-            resizeObserver.observe(viewportRef.value);
-          }
-        });
+          const resizeObserverDynamic = new ResizeObserver((entries) => {
+            for (const entry of entries) {
+              const { width, height } = entry.contentRect;
+              if (width > 0 && height > 0) {
+                vpDynamicWidth.value = width;
+                vpDynamicHeight.value = height;
+                actualizarCamaraDynamic(width, height);
+              }
+            }
+          });
 
-        onUnmounted(() => {
-          if (resizeObserver) resizeObserver.disconnect();
+          if (viewportGeneralRef.value) resizeObserverGeneral.observe(viewportGeneralRef.value);
+          if (viewportDynamicRef.value) resizeObserverDynamic.observe(viewportDynamicRef.value);
+
+          // Limpieza al desmontar (simplificado)
+          onUnmounted(() => {
+            resizeObserverGeneral.disconnect();
+            resizeObserverDynamic.disconnect();
+          });
         });
 
         return {
-          viewportRef,
-          vpWidth, vpHeight,
-          camWidth, camHeight,
-          tx, ty, scale,
+          viewportGeneralRef, viewportDynamicRef,
+          vpGeneralWidth, vpGeneralHeight,
+          vpDynamicWidth, vpDynamicHeight,
+          camGeneralWidth, camGeneralHeight,
+          camDynamicWidth, camDynamicHeight,
+          txGeneral, tyGeneral, scaleGeneral,
+          txDynamic, tyDynamic, scaleDynamic,
           bgUrl, cambiarFondoArchivo,
           rect1Size, rect2Size,
           rect1Img, rect2Img,
-          cargarImgRect1, cargarImgRect2,
+          mapWidth, mapHeight,
+          targetX, targetY,
           visibleWidth, visibleHeight,
-          TARGET_X, TARGET_Y, MAP_WIDTH, MAP_HEIGHT,
-          currentRatioMax, currentRatioMin
+          imgTx, imgTy, imgScale,
+          worldBgColor, snapToEdge,
+          addPadding, paddingPercent,
+          isDragging,
+          handleMouseDown, handleMouseMove, handleMouseUp, handleWheel,
+          resetCalibracion,
+          exportarMundo,
+          currentRatioMax, currentRatioMin,
+          cargarImgRect1, cargarImgRect2
         };
       }
     }).mount('#app');

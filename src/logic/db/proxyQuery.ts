@@ -12,8 +12,8 @@ export class ProxyQuery {
   table: string;
   chain: ProxyQueryChainItem[];
   action: 'select' | 'upsert' | 'update' | 'delete' | 'insert';
-  actionData: any;
-  actionOpts: any;
+  actionData: unknown;
+  actionOpts: unknown;
 
   constructor(router: DBRouter, table: string) {
     this.router = router;
@@ -24,34 +24,39 @@ export class ProxyQuery {
     this.actionOpts = null;
   }
 
-  select(cols: string = '*') { this.chain.push({ type: 'select', args: [cols] }); return this; }
-  eq(c: string, v: any) { this.chain.push({ type: 'eq', args: [c, v] }); return this; }
-  neq(c: string, v: any) { this.chain.push({ type: 'neq', args: [c, v] }); return this; }
-  gt(c: string, v: any) { this.chain.push({ type: 'gt', args: [c, v] }); return this; }
-  lt(c: string, v: any) { this.chain.push({ type: 'lt', args: [c, v] }); return this; }
-  gte(c: string, v: any) { this.chain.push({ type: 'gte', args: [c, v] }); return this; }
-  lte(c: string, v: any) { this.chain.push({ type: 'lte', args: [c, v] }); return this; }
-  in(c: string, arr: any[]) { this.chain.push({ type: 'in', args: [c, arr] }); return this; }
-  is(c: string, v: any) { this.chain.push({ type: 'is', args: [c, v] }); return this; }
+  select(cols: string = '*', opts: { count?: 'exact' | 'planned' | 'estimated' | null, head?: boolean } = {}) { 
+    this.chain.push({ type: 'select', args: [cols, opts] }); 
+    return this; 
+  }
+  eq(c: string, v: unknown) { this.chain.push({ type: 'eq', args: [c, v] }); return this; }
+  neq(c: string, v: unknown) { this.chain.push({ type: 'neq', args: [c, v] }); return this; }
+  gt(c: string, v: unknown) { this.chain.push({ type: 'gt', args: [c, v] }); return this; }
+  lt(c: string, v: unknown) { this.chain.push({ type: 'lt', args: [c, v] }); return this; }
+  gte(c: string, v: unknown) { this.chain.push({ type: 'gte', args: [c, v] }); return this; }
+  lte(c: string, v: unknown) { this.chain.push({ type: 'lte', args: [c, v] }); return this; }
+  in(c: string, arr: unknown[]) { this.chain.push({ type: 'in', args: [c, arr] }); return this; }
+  is(c: string, v: unknown) { this.chain.push({ type: 'is', args: [c, v] }); return this; }
+  not(c: string, op: string, v: unknown) { this.chain.push({ type: 'not', args: [c, op, v] }); return this; }
   or(c: string) { this.chain.push({ type: 'or', args: [c] }); return this; }
-  order(c: string, { ascending = false } = {}) { this.chain.push({ type: 'order', args: [c, { ascending }] }); return this; }
+  order(c: string, opts: { ascending?: boolean } = {}) { this.chain.push({ type: 'order', args: [c, opts] }); return this; }
   limit(n: number) { this.chain.push({ type: 'limit', args: [n] }); return this; }
-  match(obj: Record<string, any>) { this.chain.push({ type: 'match', args: [obj] }); return this; }
+  match(obj: Record<string, unknown>) { this.chain.push({ type: 'match', args: [obj] }); return this; }
+  ilike(c: string, v: string) { this.chain.push({ type: 'ilike', args: [c, v] }); return this; }
 
-  upsert(data: any, opts?: any) {
+  upsert(data: unknown, opts?: unknown) {
     this.action = 'upsert';
     this.actionData = data;
     this.actionOpts = opts;
     return this;
   }
 
-  insert(data: any) {
+  insert(data: unknown) {
     this.action = 'insert';
     this.actionData = data;
     return this;
   }
 
-  update(data: any) {
+  update(data: unknown) {
     this.action = 'update';
     this.actionData = data;
     return this;
@@ -66,7 +71,7 @@ export class ProxyQuery {
   async single(): Promise<DBResponse> { return this.execute('single'); }
   
   // compatibility with 'await q'
-  async then(onFulfilled?: (value: DBResponse) => any, onRejected?: (reason: any) => any): Promise<any> {
+  async then<T = DBResponse>(onFulfilled?: (value: DBResponse) => T | Promise<T>, onRejected?: (reason: unknown) => T | Promise<T>): Promise<T | DBResponse> {
     try {
       const res = await this.execute();
       return onFulfilled ? onFulfilled(res) : res;
@@ -90,24 +95,24 @@ export class ProxyQuery {
         
         if (this.action === 'update') {
           q = q.update(this.actionData);
-          this.chain.forEach(s => { q = q[s.type](...s.args); });
+          this.chain.forEach(s => { (q as any)[s.type](...s.args); });
           return await q;
         }
         
         if (this.action === 'delete') {
           q = q.delete();
-          this.chain.forEach(s => { q = q[s.type](...s.args); });
+          this.chain.forEach(s => { (q as any)[s.type](...s.args); });
           return await q;
         }
 
         // Default: select
-        this.chain.forEach(s => { q = q[s.type](...s.args); });
-        return final ? await q[final]() : await q;
-      } catch (err: any) {
+        this.chain.forEach(s => { (q as any)[s.type](...s.args); });
+        return final ? await (q as any)[final]() : await q;
+      } catch (err: unknown) {
         console.error(`[DBRouter] Online query failed for table ${this.table}:`, err);
         
         // Detect network errors (fetch failures)
-        const errMsg = err.message?.toLowerCase() || '';
+        const errMsg = (err instanceof Error ? err.message : String(err)).toLowerCase();
         if (errMsg.includes('fetch') || errMsg.includes('network') || errMsg.includes('failed to fetch')) {
           if (typeof window !== 'undefined') {
             window.dispatchEvent(new CustomEvent('db-connection-error'));
@@ -125,6 +130,7 @@ export class ProxyQuery {
   async executeLocal(final: 'single' | 'maybeSingle' | null = null): Promise<DBResponse> {
     try {
       const sqliteDb = await initSQLite();
+      if (!sqliteDb) return { data: null, error: 'Database not initialized' };
       
       if (this.action === 'upsert') return await this._executeLocalUpsert(sqliteDb);
       if (this.action === 'insert') return await this._executeLocalUpsert(sqliteDb); // Reusing upsert for simplicity in local mode
@@ -134,7 +140,7 @@ export class ProxyQuery {
       // Default: select
       let sql = `SELECT * FROM ${this.table}`; // Simplistic, cols not used yet
       const where: string[] = [];
-      const params: any[] = [];
+      const params: unknown[] = [];
 
       this.chain.forEach(s => {
         if (s.type === 'eq') { where.push(`${s.args[0]} = ?`); params.push(s.args[1]); }
@@ -144,19 +150,33 @@ export class ProxyQuery {
         if (s.type === 'gte') { where.push(`${s.args[0]} >= ?`); params.push(s.args[1]); }
         if (s.type === 'lte') { where.push(`${s.args[0]} <= ?`); params.push(s.args[1]); }
         if (s.type === 'in') {
-          const marks = (s.args[1] as any[]).map(() => '?').join(',');
+          const arr = (s.args[1] as any[]) || [];
+          const marks = arr.map(() => '?').join(',');
           where.push(`${s.args[0]} IN (${marks})`);
-          params.push(...s.args[1]);
+          params.push(...arr);
         }
         if (s.type === 'is') {
           if (s.args[1] === null) where.push(`${s.args[0]} IS NULL`);
           else { where.push(`${s.args[0]} IS ?`); params.push(s.args[1]); }
         }
+        if (s.type === 'not') {
+          const [colNot, opNot, valNot] = s.args as [string, string, unknown];
+          if (opNot === 'eq') {
+            where.push(`${colNot} <> ?`);
+            params.push(valNot);
+          } else if (opNot === 'is' && valNot === null) {
+            where.push(`${colNot} IS NOT NULL`);
+          }
+        }
         if (s.type === 'match') {
-          Object.entries(s.args[0]).forEach(([k, v]) => {
+          Object.entries(s.args[0] as Record<string, unknown>).forEach(([k, v]) => {
             where.push(`${k} = ?`);
             params.push(v);
           });
+        }
+        if (s.type === 'ilike') {
+          where.push(`${s.args[0]} LIKE ?`);
+          params.push((s.args[1] as string).replace(/\*/g, '%'));
         }
       });
 
@@ -164,14 +184,32 @@ export class ProxyQuery {
       
       // Order and Limit
       this.chain.forEach(s => {
-        if (s.type === 'order') sql += ` ORDER BY ${s.args[0]} ${s.args[1].ascending ? 'ASC' : 'DESC'}`;
+        if (s.type === 'order') {
+          const opts = s.args[1] as { ascending?: boolean };
+          sql += ` ORDER BY ${s.args[0]} ${opts.ascending ? 'ASC' : 'DESC'}`;
+        }
         if (s.type === 'limit') sql += ` LIMIT ${s.args[0]}`;
       });
+
+      let count: number | undefined = undefined;
+      const selectItem = this.chain.find(s => s.type === 'select');
+      const selectOpts = (selectItem?.args[1] as { count?: string, head?: boolean }) || {};
+
+      if (selectOpts.count) {
+        let countSql = `SELECT COUNT(*) as total FROM ${this.table}`;
+        if (where.length > 0) countSql += ` WHERE ${where.join(' AND ')}`;
+        const countRes = await queryLocal(countSql, params);
+        count = countRes[0]?.total || 0;
+      }
+
+      if (selectOpts.head) {
+        return { data: [], error: null, count };
+      }
 
       const data = await queryLocal(sql, params);
       
       // Auto-parse JSON fields (known to be JSON in this project)
-      data.forEach((row: any) => {
+      data.forEach((row: Record<string, unknown>) => {
         if (row.save_data && typeof row.save_data === 'string') try { row.save_data = JSON.parse(row.save_data); } catch(_e){ /* ignore */ }
         if (row.team_data && typeof row.team_data === 'string') try { row.team_data = JSON.parse(row.team_data); } catch(_e){ /* ignore */ }
         if (row.data && typeof row.data === 'string') try { row.data = JSON.parse(row.data); } catch(_e){ /* ignore */ }
@@ -179,42 +217,45 @@ export class ProxyQuery {
         if (row.schedule && typeof row.schedule === 'string') try { row.schedule = JSON.parse(row.schedule); } catch(_e){ /* ignore */ }
       });
 
-      if (final === 'single') return { data: data[0] || null, error: data.length === 0 ? { message: 'Not found' } : null };
-      if (final === 'maybeSingle') return { data: data[0] || null, error: null };
-      return { data, error: null };
-    } catch (e) {
+      if (final === 'single') return { data: data[0] || null, error: data.length === 0 ? { message: 'Not found' } : null, count };
+      if (final === 'maybeSingle') return { data: data[0] || null, error: null, count };
+      return { data, error: null, count };
+    } catch (e: unknown) {
       console.error(`[ProxyQuery] executeLocal critical failure:`, e);
       return { data: null, error: e };
     }
   }
 
-  async _executeLocalUpsert(sqliteDb: any): Promise<DBResponse> {
+  async _executeLocalUpsert(sqliteDb: { run: (sql: string, params: unknown[]) => void }): Promise<DBResponse> {
     try {
       const values = Array.isArray(this.actionData) ? this.actionData : [this.actionData];
       for (const row of values) {
-        const cols = Object.keys(row);
+        if (typeof row !== 'object' || row === null) continue;
+        const r = row as Record<string, unknown>;
+        const cols = Object.keys(r);
         const marks = cols.map(() => '?').join(',');
-        const vals = cols.map(c => typeof row[c] === 'object' ? JSON.stringify(row[c]) : row[c]);
+        const vals = cols.map(c => typeof r[c] === 'object' ? JSON.stringify(r[c]) : r[c]);
         sqliteDb.run(`INSERT OR REPLACE INTO ${this.table} (${cols.join(',')}) VALUES (${marks})`, vals);
       }
       await persistSQLite();
       return { data: this.actionData, error: null };
-    } catch (e) {
+    } catch (e: unknown) {
       console.error(`[ProxyQuery] Upsert/Insert failed for ${this.table}:`, e);
       return { data: null, error: e };
     }
   }
 
-  async _executeLocalUpdate(sqliteDb: any): Promise<DBResponse> {
+  async _executeLocalUpdate(sqliteDb: { run: (sql: string, params: unknown[]) => void }): Promise<DBResponse> {
     try {
-      const setClause = Object.keys(this.actionData).map(k => `${k} = ?`).join(',');
-      const params = Object.values(this.actionData).map(v => typeof v === 'object' ? JSON.stringify(v) : v);
+      const data = this.actionData as Record<string, unknown>;
+      const setClause = Object.keys(data).map(k => `${k} = ?`).join(',');
+      const params: unknown[] = Object.values(data).map(v => typeof v === 'object' ? JSON.stringify(v) : v);
       
       const where: string[] = [];
       this.chain.forEach(s => {
         if (s.type === 'eq') { where.push(`${s.args[0]} = ?`); params.push(s.args[1]); }
         if (s.type === 'match') {
-          Object.entries(s.args[0]).forEach(([k, v]) => {
+          Object.entries(s.args[0] as Record<string, unknown>).forEach(([k, v]) => {
             where.push(`${k} = ?`); params.push(v);
           });
         }
@@ -225,15 +266,15 @@ export class ProxyQuery {
       sqliteDb.run(sql, params);
       await persistSQLite();
       return { data: this.actionData, error: null };
-    } catch (e) {
+    } catch (e: unknown) {
       console.error(`[ProxyQuery] Update failed for ${this.table}:`, e);
       return { data: null, error: e };
     }
   }
 
-  async _executeLocalDelete(sqliteDb: any): Promise<DBResponse> {
+  async _executeLocalDelete(sqliteDb: { run: (sql: string, params: unknown[]) => void }): Promise<DBResponse> {
     try {
-      const params: any[] = [];
+      const params: unknown[] = [];
       const where: string[] = [];
       this.chain.forEach(s => {
         if (s.type === 'eq') { where.push(`${s.args[0]} = ?`); params.push(s.args[1]); }
@@ -244,7 +285,7 @@ export class ProxyQuery {
       sqliteDb.run(sql, params);
       await persistSQLite();
       return { data: null, error: null };
-    } catch (e) {
+    } catch (e: unknown) {
       console.error(`[ProxyQuery] Delete failed for ${this.table}:`, e);
       return { data: null, error: e };
     }

@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useBattleStore } from '@/stores/battle'
+import type { Pokemon } from '@/types/pokemon'
+import type { BattleStages } from '@/types/battle'
 
 import { 
   DEBUG_SOUNDS, 
@@ -13,41 +15,52 @@ import {
   DEBUG_WEATHER_EFFECTS 
 } from './debugConstants'
 
-const battleStore = useBattleStore() as any
+interface ViteDebugBridge {
+  setStatStage: (side: string, stat: string, val: number) => void;
+  playSound: (id: string) => void;
+  triggerAnim: (id: string, side: string, options?: Record<string, unknown>) => void;
+  setStatus: (side: string, status: string) => void;
+  setSecondaryStatus: (side: string, type: string) => void;
+  modifyStatStage: (side: string, stat: string, delta: number) => void;
+  setFieldEffect: (side: string, effect: string, val: number) => void;
+}
 
-const activeSide = ref('enemy')
+const battleStore = useBattleStore()
+
+const activeSide = ref<'player' | 'enemy'>('enemy')
+
+const getDebugBridge = () => (window as unknown as { __VITE_DEBUG__: ViteDebugBridge }).__VITE_DEBUG__
 
 const setStatStage = (side: string, stat: string, val: number) => {
-  (window as any).__VITE_DEBUG__.setStatStage(side, stat, val)
+  getDebugBridge().setStatStage(side, stat, val)
 }
 
 const playSound = (id: string) => {
-  (window as any).__VITE_DEBUG__.playSound(id)
+  getDebugBridge().playSound(id)
 }
 
 const triggerAnim = (id: string, options = {}) => {
-  (window as any).__VITE_DEBUG__.triggerAnim(id, activeSide.value, options)
+  getDebugBridge().triggerAnim(id, activeSide.value, options)
 }
 
 const triggerAttack = (cat: string) => {
-  (window as any).__VITE_DEBUG__.triggerAnim('attack', activeSide.value, { cat })
+  getDebugBridge().triggerAnim('attack', activeSide.value, { cat })
 }
 
 const setStatus = (status: string) => {
-  (window as any).__VITE_DEBUG__.setStatus(activeSide.value, status)
+  getDebugBridge().setStatus(activeSide.value, status)
 }
 
 const toggleSecondary = (type: string) => {
-  // Ahora el comando de debug maneja el toggle internamente
-  (window as any).__VITE_DEBUG__.setSecondaryStatus(activeSide.value, type)
+  getDebugBridge().setSecondaryStatus(activeSide.value, type)
 }
 
 const modifyStat = (stat: string, delta: number) => {
-  (window as any).__VITE_DEBUG__.modifyStatStage(activeSide.value, stat, delta)
+  getDebugBridge().modifyStatStage(activeSide.value, stat, delta)
 }
 
 const setField = (effect: string, val: number) => {
-  (window as any).__VITE_DEBUG__.setFieldEffect(activeSide.value, effect, val)
+  getDebugBridge().setFieldEffect(activeSide.value, effect, val)
 }
 
 const isEffectActive = (type: string, category: string) => {
@@ -55,15 +68,16 @@ const isEffectActive = (type: string, category: string) => {
   const poke = side === 'player' ? battleStore.activeBattle?.player : (battleStore.upcomingPokemon || battleStore.activeBattle?.enemy)
   const stages = side === 'player' ? battleStore.playerStages : battleStore.enemyStages
 
-  if (category === 'status') return poke?.status === type
+  if (category === 'status') return (poke as Pokemon | undefined)?.status === type
   if (category === 'secondary') {
-    if (type === 'confused') return (poke?.confused || 0) > 0
-    if (type === 'focus_energy') return !!poke?.focusEnergy
-    if (type === 'lock_on') return !!poke?.lockOn
-    if (type === 'seeded') return !!poke?.seeded
-    return !!poke?.[type]
+    const p = poke as (Pokemon & Record<string, unknown>) | undefined
+    if (type === 'confused') return (p?.confused || 0) > 0
+    if (type === 'focus_energy') return !!p?.focusEnergy
+    if (type === 'lock_on') return !!p?.lockOn
+    if (type === 'seeded') return !!p?.seeded
+    return !!p?.[type]
   }
-  if (category === 'field') return (stages?.[type] || 0) > 0
+  if (category === 'field') return ((stages as BattleStages | undefined)?.[type as keyof BattleStages] || 0) > 0
   if (category === 'weather') return battleStore.state?.weather?.type === type
 
   return false

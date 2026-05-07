@@ -2,16 +2,22 @@ import { makePokemon } from '@/logic/pokemonFactory'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { useUIStore } from '@/stores/ui'
 import { useEventStore } from '@/stores/events'
+import type { GameState } from '@/types/game'
+import type { Pokemon, PokemonEgg } from '@/types/pokemon'
 
-export function useBreedingActions(state, scheduleSave, addPokemon) {
+export function useBreedingActions(
+  state: GameState, 
+  scheduleSave: () => Promise<void>, 
+  addPokemon: (pokemon: Pokemon, options?: { notify: boolean }) => any
+) {
   function hatchEggs() {
     if (!state.eggs || state.eggs.length === 0) return false
     let anyReady = false
-    const eventStore = useEventStore() as any
+    const eventStore = useEventStore()
     const evHatchMult = (eventStore.globalMultipliers?.hatch || 1) - 1
     const hatchMult = 1 + evHatchMult
     
-    state.eggs.forEach(egg => {
+    state.eggs.forEach((egg: PokemonEgg) => {
       if (!egg.ready && typeof egg.steps === 'number' && egg.steps > 0) {
         egg.steps -= hatchMult
         if (egg.steps <= 0) {
@@ -25,10 +31,10 @@ export function useBreedingActions(state, scheduleSave, addPokemon) {
     return anyReady
   }
 
-  async function executeHatch(egg) {
+  async function executeHatch(egg: PokemonEgg) {
     const { recalcPokemonStats } = await import('@/logic/pokemonFactory')
     
-    const p = (makePokemon as any)(egg.id, 1, {
+    const p = makePokemon(egg.id, 1, {
       isShiny: egg.isShiny,
       isGuardian: egg.isGuardian,
       nature: egg.nature,
@@ -36,16 +42,22 @@ export function useBreedingActions(state, scheduleSave, addPokemon) {
       gender: egg.gender
     })
 
-    p.ivs = { ...p.ivs, ...egg.ivs }
+    if (!p) throw new Error(`Failed to create pokemon from egg ${egg.id}`)
+
+    if (egg.ivs) {
+      p.ivs = { ...p.ivs, ...egg.ivs }
+    }
+    
     if (egg.movesAtBirth) {
-      (p as any).moves = egg.movesAtBirth.map(mName => {
-        const mData = pokemonDataProvider.getMoveData(mName) || {}
-        return { name: mName, pp: mData.pp || 35, maxPP: mData.pp || 35 }
+      p.moves = egg.movesAtBirth.map(mName => {
+        const mData = pokemonDataProvider.getMoveData(mName)
+        return { name: mName, pp: mData?.pp || 35, maxPP: mData?.pp || 35 }
       })
-    };
-    (p as any).obtainedMethod = 'egg'
-    recalcPokemonStats(p);
-    (p as any).hp = (p as any).maxHp
+    }
+    
+    p.obtainedMethod = 'egg'
+    recalcPokemonStats(p)
+    p.hp = p.maxHp
 
     state.eggs = state.eggs.filter(e => e.uid !== egg.uid)
     addPokemon(p, { notify: false })

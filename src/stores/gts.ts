@@ -15,9 +15,9 @@ export const useGTSStore = defineStore('gts', () => {
   const audio = useAudioStore() as any
 
   // State
-  const listings = ref([])
-  const myListings = ref([])
-  const salesHistory = ref([])
+  const listings = ref<any[]>([])
+  const myListings = ref<any[]>([])
+  const salesHistory = ref<any[]>([])
   const loading = ref(false)
   const publishing = ref(false)
 
@@ -41,7 +41,7 @@ export const useGTSStore = defineStore('gts', () => {
   const MARKET_FEE = 0.05
   const MAX_LISTINGS = 10
 
-  let salesChannel = null
+  let salesChannel: any = null
 
   // Getters
   const filteredListings = computed(() => {
@@ -94,7 +94,7 @@ export const useGTSStore = defineStore('gts', () => {
 
     // Check for new sales
     if (history.data && history.data.length > 0) {
-      history.data.forEach(sale => {
+      (history.data as any[]).forEach(sale => {
         if (!isMarketSoldSeen(sale.id, game.state)) {
           ui.notify(`¡Tu ${sale.data.name} se vendió por ₽${sale.price.toLocaleString()}!`, '💰')
           markMarketSoldSeen(sale.id, game.state)
@@ -113,7 +113,7 @@ export const useGTSStore = defineStore('gts', () => {
         schema: 'public',
         table: 'market_listings',
         filter: `seller_id=eq.${auth.user.id}`
-      }, (payload) => {
+      }, (payload: any) => {
         if (payload.new.status === 'sold' && payload.old.status !== 'sold') {
           ui.notify('¡ Venta realizada en el GTS !', '💰')
           audio.money()
@@ -130,7 +130,7 @@ export const useGTSStore = defineStore('gts', () => {
     }
   }
 
-  async function buyListing(listing) {
+  async function buyListing(listing: any) {
     if (game.state.money < listing.price) {
       ui.notify('Saldo insuficiente', '💸')
       return false
@@ -167,7 +167,7 @@ export const useGTSStore = defineStore('gts', () => {
     }
   }
 
-  async function publishListing(type, selection, price) {
+  async function publishListing(type: string, selection: any, price: number) {
     if (activeMyListings.value.length >= MAX_LISTINGS) {
       ui.notify(`Límite de publicaciones alcanzado (${MAX_LISTINGS})`, '⚠️')
       return false
@@ -205,7 +205,7 @@ export const useGTSStore = defineStore('gts', () => {
     }
   }
 
-  async function cancelListing(listingId) {
+  async function cancelListing(listingId: string | number) {
     try {
       ui.notify('Retirando publicación...', '🔄')
       const { error } = await (game.db as any).rpc('cancel_listing_v2', {

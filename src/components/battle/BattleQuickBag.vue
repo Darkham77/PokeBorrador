@@ -10,23 +10,32 @@ import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { isValidTarget } from '@/logic/items/itemEffects'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 
-const gameStore = useGameStore() as any
-const battleStore = useBattleStore() as any
-const uiStore = useUIStore() as any
-const modalStore = useModalStore() as any
-const inventoryStore = useInventoryStore() as any
+const gameStore = useGameStore()
+const battleStore = useBattleStore()
+const uiStore = useUIStore()
+const modalStore = useModalStore()
+const inventoryStore = useInventoryStore()
+
+interface BattleItem {
+  id: string
+  name: string
+  desc: string
+  cat: string
+  sprite: string
+  qty: number
+}
 
 const inventory = computed(() => gameStore.state.inventory || {})
 
-const battleItems = computed(() => {
-  const items: any[] = []
+const battleItems = computed<BattleItem[]>(() => {
+  const items: BattleItem[] = []
   Object.entries(inventory.value).forEach(([name, qty]) => {
     const itemData = SHOP_ITEMS.find(i => i.name === name)
     if (!itemData) return
     
     const isTrainer = battleStore.state?.isTrainer
     if (itemData.cat === 'pociones' || (itemData.cat === 'pokeballs' && !isTrainer)) {
-      items.push({ ...itemData, qty })
+      items.push({ ...itemData, qty: qty as number })
     }
   })
   
@@ -36,10 +45,10 @@ const battleItems = computed(() => {
   })
 })
 
-const handleUseItem = (item: any) => {
+const handleUseItem = (item: BattleItem) => {
   if (battleStore.isProcessing || battleStore.isIntroAnimating) return
 
-  const dbItem = SHOP_ITEMS.find(i => i.id === item.id || i.name === item.name) as any
+  const dbItem = SHOP_ITEMS.find(i => i.id === item.id || i.name === item.name)
   if (!dbItem) return
 
   // 1. Pokéballs: Uso directo
@@ -49,7 +58,7 @@ const handleUseItem = (item: any) => {
   }
 
   // 2. Objetos de Selección: Buscar objetivos válidos
-  const validTargets = (gameStore.state.team as any[]).filter(p => isValidTarget(dbItem.name, p))
+  const validTargets = (gameStore.state.team || []).filter(p => isValidTarget(dbItem.name, p))
   
   if (validTargets.length === 0) {
     uiStore.notify(`Este objeto no tiene objetivos válidos en tu equipo`, '🎒')
@@ -64,9 +73,10 @@ const handleUseItem = (item: any) => {
     allowDead: dbItem.name?.toLowerCase().includes('revivir'),
     allowedIds: validTargets.map(p => p.uid),
     activePokemonUid: battleStore.isBattleActive ? battleStore.player?.uid : null,
-    onConfirm: (selected: any[]) => {
-      if (selected && selected.length > 0) {
-        const index = (gameStore.state.team as any[]).findIndex(p => p.uid === selected[0].uid)
+    onConfirm: (selected: unknown) => {
+      const selectedPokes = selected as any[]
+      if (selectedPokes && selectedPokes.length > 0) {
+        const index = (gameStore.state.team || []).findIndex(p => p.uid === selectedPokes[0].uid)
         if (index !== -1) {
           const res = inventoryStore.useItem(dbItem.name, 'team', index)
           if (res.success) {

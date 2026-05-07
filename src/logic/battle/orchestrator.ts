@@ -6,26 +6,29 @@ import { FIRE_RED_MAPS } from '@/data/maps'
 import { useUIStore } from '@/stores/ui'
 import { useMapStore } from '@/stores/map'
 import { useEventStore } from '@/stores/events'
+import type { BattleContext } from '@/types/battleContext'
+import type { Pokemon } from '@/types/pokemon'
+import type { UIStore, MapStore, EventStore } from '@/types/stores'
 
 /**
  * Orchestrates the start of a battle.
- * @param {Object} ctx - The battle store context (refs, state, etc)
+ * @param {BattleContext} ctx - The battle store context (refs, state, etc)
  */
-export async function startBattleSequence(ctx: any, enemyPoke: any, options: any = {}) {
+export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon, options: any = {}) {
   const { 
     isGym = false, gymId = null, locationId = 'plains', 
     isTrainer = false, enemyTeam = null, trainerName = 'Entrenador',
     battleOptions = {}, isFishing = false, wasSearching: wasSearchingOpt = null
   } = options
 
-  const playerPoke = ctx.gs.state.team.find((p: any) => p.hp > 0 && !p.onMission && !p.onDefense)
+  const playerPoke = ctx.gs.state.team.find((p) => p.hp > 0 && !p.onMission && !p.onDefense)
   if (!playerPoke) {
-    (useUIStore() as any).notify('No tienes Pokémon sanos para combatir', '❌')
+    (useUIStore() as unknown as UIStore).notify('No tienes Pokémon sanos para combatir', '❌')
     return
   }
 
   // Si hay un combate activo pero NO está en fase de finalización, forzamos huida.
-  if (ctx.isBattleActive && !ctx.isFinishing && !ctx.activeBattle.value?.over && !ctx.isSearching) {
+  if (ctx.isBattleActive.value && !ctx.isFinishing.value && !ctx.activeBattle.value?.over && !ctx.isSearching.value) {
     console.warn('[BATTLE] Combate en curso detectado. Forzando huida del anterior.')
     await ctx.endBattle(false, true)
   }
@@ -33,10 +36,10 @@ export async function startBattleSequence(ctx: any, enemyPoke: any, options: any
   const wasSearching = wasSearchingOpt !== null ? wasSearchingOpt : true
   
   const { sanitizePokemon } = await import('@/logic/pokemonFactory')
-  const mapStore = useMapStore() as any
+  const mapStore = useMapStore() as unknown as MapStore
 
   const isFromUpcoming = wasSearching && ctx.upcomingPokemon.value && (ctx.upcomingPokemon.value.id === enemyPoke.id)
-  const finalEnemyPoke = isFromUpcoming ? ctx.upcomingPokemon.value : enemyPoke
+  const finalEnemyPoke = isFromUpcoming ? ctx.upcomingPokemon.value as Pokemon : enemyPoke
 
   sanitizePokemon(playerPoke)
   sanitizePokemon(finalEnemyPoke)
@@ -71,8 +74,8 @@ export async function startBattleSequence(ctx: any, enemyPoke: any, options: any
     if (!wasSearching) ctx.debugLoopPokemon.value = null
   }
 
-  ctx.gs.registerPokedex(enemyPoke.id, false)
-  if (isTrainer && enemyTeam) enemyTeam.forEach((p: any) => ctx.gs.registerPokedex(p.id, false))
+  ctx.gs.registerPokedex(enemyPoke.id)
+  if (isTrainer && enemyTeam) enemyTeam.forEach((p: any) => ctx.gs.registerPokedex(p.id))
   ctx.persistBattle()
   
   const { BATTLE_STATES, BATTLE_SUBSTATES } = ctx
@@ -81,12 +84,15 @@ export async function startBattleSequence(ctx: any, enemyPoke: any, options: any
   ctx.isIntroAnimating.value = true
 
   // PROTOCOLO DE ASIENTOS
-  ctx.activeBattle.value.enemy = null 
-  
-  const currentP = ctx.activeBattle.value.player
-  const leaderP = ctx.player.value?.team?.[0]
-  if (!currentP || !leaderP || currentP.uid !== leaderP.uid) {
-    ctx.activeBattle.value.player = null
+  if (ctx.activeBattle.value) {
+    ctx.activeBattle.value.enemy = null 
+    
+    const currentP = ctx.activeBattle.value.player
+    const team = (ctx.gs.state.team as any[]) || []
+    const leaderP = team[0]
+    if (!currentP || !leaderP || currentP.uid !== (leaderP?.uid)) {
+      ctx.activeBattle.value.player = null
+    }
   }
   
   ctx.clearLogs()
@@ -104,11 +110,12 @@ export async function startBattleSequence(ctx: any, enemyPoke: any, options: any
       const idx = pool.indexOf(finalEnemyPoke.id)
       if (idx !== -1) {
         const totalRate = rates.reduce((a, b) => a + b, 0)
-        rarity = (rates[idx] / totalRate) * 100
+        const rateVal = rates[idx]
+        rarity = ((rateVal !== undefined ? rateVal : 0) / totalRate) * 100
       }
     }
   }
-  ctx.activeBattle.value.rarity = rarity
+  if (ctx.activeBattle.value) ctx.activeBattle.value.rarity = rarity
 
   await fsm.transition(BATTLE_STATES.CONTEXT_SETUP, BATTLE_SUBSTATES.INJECT_FILTERS)
   await fsm.transition(BATTLE_STATES.CONTEXT_SETUP, BATTLE_SUBSTATES.READY_FOR_GEN)
@@ -127,7 +134,7 @@ export async function startBattleSequence(ctx: any, enemyPoke: any, options: any
     await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.UPDATE_BUTTON)
     await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.BUSH_VISIBLE)
     await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.SILHOUETTE_MODE)
-    ctx.activeBattle.value.enemy = finalEnemyPoke
+    if (ctx.activeBattle.value) ctx.activeBattle.value.enemy = finalEnemyPoke
     return 
   } else {
     fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.ENTRY_ANIM)
@@ -138,7 +145,7 @@ export async function startBattleSequence(ctx: any, enemyPoke: any, options: any
       fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.T_VISUAL)
     } else {
       await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.WILD_ENTRY)
-      ctx.activeBattle.value.enemy = finalEnemyPoke
+      if (ctx.activeBattle.value) ctx.activeBattle.value.enemy = finalEnemyPoke
     }
   }
 
@@ -152,7 +159,7 @@ export async function startBattleSequence(ctx: any, enemyPoke: any, options: any
 /**
  * Visual initialization and first turn setup.
  */
-export async function initBattleSequence(ctx: any, { locationId, isTrainer, trainerName, isGym, wasSearching, initialEnemy, initialPlayer }: any) {
+export async function initBattleSequence(ctx: BattleContext, { locationId, isTrainer, trainerName, isGym, wasSearching, initialEnemy, initialPlayer }: any) {
   const { BATTLE_STATES, BATTLE_SUBSTATES } = ctx
   const fsm = ctx.fsm
 
@@ -165,7 +172,8 @@ export async function initBattleSequence(ctx: any, { locationId, isTrainer, trai
     await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.CHECK_BINOCULARS)
     fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.PARALLEL_JUMP)
     
-    const hasBinoculars = ctx.debugBinoculars.value || (ctx.gs.state.inventory?.['binoculars'] > 0)
+    const inventoryBinoculars = (ctx.gs.state.inventory as any)?.['binoculars'] || 0
+    const hasBinoculars = ctx.debugBinoculars.value || (inventoryBinoculars > 0)
     if (!hasBinoculars) {
       await new Promise(r => setTimeout(r, 150))
       await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.BUSH_FADE, 100)
@@ -181,7 +189,7 @@ export async function initBattleSequence(ctx: any, { locationId, isTrainer, trai
       await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.SHOW_DIALOGS)
       await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.TRAINER_RETREAT, 800)
       await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.POKEMON_CALL, 100)
-      ctx.activeBattle.value.enemy = initialEnemy
+      if (ctx.activeBattle.value) ctx.activeBattle.value.enemy = initialEnemy
     } else {
       await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.WILD_ENTRY)
       await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.PARALLEL_PREP, 400)
@@ -190,16 +198,16 @@ export async function initBattleSequence(ctx: any, { locationId, isTrainer, trai
     }
   }
 
-  const currentPlayer = ctx.activeBattle.value.player
+  const currentPlayer = ctx.activeBattle.value?.player
   const needsCall = !currentPlayer || (currentPlayer.uid !== initialPlayer.uid)
 
-  if (needsCall) {
-    await fsm.transition(ctx.BATTLE_STATES.REORDER_TEAM, ctx.BATTLE_SUBSTATES.POKEMON_CALL, 100)
+  if (needsCall && ctx.activeBattle.value) {
+    await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.POKEMON_CALL, 100)
     ctx.activeBattle.value.player = initialPlayer
   }
   
-  await fsm.transition(ctx.BATTLE_STATES.REORDER_TEAM, ctx.BATTLE_SUBSTATES.ANIM_SYNC, 800)
-  await fsm.transition(ctx.BATTLE_STATES.REORDER_TEAM, null)
+  await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.ANIM_SYNC, 800)
+  await fsm.transition(BATTLE_STATES.REORDER_TEAM, null)
   
   window.dispatchEvent(new Event('resize'))
   
@@ -213,21 +221,23 @@ export async function initBattleSequence(ctx: any, { locationId, isTrainer, trai
   ctx.addLog(startMsg, 'log-info', initialEnemy)
   handleEntryAbilities(initialPlayer, initialEnemy, ctx.playerStages.value, ctx.enemyStages.value, ctx.addLog)
   
-  if (isTrainer || isGym) await ctx.gs.save()
+  if (isTrainer || isGym) await ctx.gs.scheduleSave()
   
   if (!isTrainer && !isGym) {
+    const mapStore = useMapStore() as unknown as MapStore
+    const eventStore = useEventStore() as unknown as EventStore
     const encounterOptions = {
-      activeEvents: (useMapStore() as any).activeEvents,
-      dominanceData: (useMapStore() as any).mapWinners,
-      shinyMultiplier: (useEventStore() as any).globalMultipliers?.shiny || 1,
+      activeEvents: mapStore.activeEvents,
+      dominanceData: mapStore.mapWinners,
+      shinyMultiplier: eventStore.globalMultipliers?.shiny || 1,
       forceEncounter: true 
     }
     
-    generateEncounter(locationId, ctx.gs.state, encounterOptions).then((encounter: any) => {
-      if (encounter && encounter.type === 'wild') {
+    generateEncounter(locationId, ctx.gs.state, encounterOptions).then((encounter) => {
+      if (encounter && encounter.type === 'wild' && encounter.pokemon) {
         if (fsm.currentState.value !== BATTLE_STATES.EXIT_BATTLE) {
-          fsm.transition(null, ctx.BATTLE_SUBSTATES.GEN_NEW_S2)
-          ctx.upcomingPokemon.value = { ...encounter.pokemon }
+          fsm.transition(BATTLE_STATES.INITIALIZING, BATTLE_SUBSTATES.GEN_NEW_S2)
+          ctx.upcomingPokemon.value = encounter.pokemon
         }
       }
     })
@@ -242,10 +252,11 @@ export async function initBattleSequence(ctx: any, { locationId, isTrainer, trai
 /**
  * Restores a battle state from saved data.
  */
-export function restoreBattleState(ctx: any, battleData: any) {
+export function restoreBattleState(ctx: BattleContext, battleData: any) {
+  const { BATTLE_STATES, BATTLE_SUBSTATES } = ctx
   if (!battleData) {
     ctx.activeBattle.value = null
-    ctx.fsm.transition(ctx.BATTLE_STATES.EXIT_BATTLE)
+    ctx.fsm.transition(BATTLE_STATES.EXIT_BATTLE)
     return
   }
   ctx.activeBattle.value = battleData
@@ -254,8 +265,8 @@ export function restoreBattleState(ctx: any, battleData: any) {
   if (battleData.battleLogs) ctx.battleLogs.value = battleData.battleLogs
   
   if (!battleData.over) {
-    ctx.fsm.transition(ctx.BATTLE_STATES.ACTIVE_BATTLE, ctx.BATTLE_SUBSTATES.WAIT_INPUT)
+    ctx.fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT)
   } else {
-    ctx.fsm.transition(ctx.BATTLE_STATES.EXIT_BATTLE)
+    ctx.fsm.transition(BATTLE_STATES.EXIT_BATTLE)
   }
 }

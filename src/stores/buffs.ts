@@ -4,9 +4,9 @@ import { useGameStore } from './game'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
 export const useBuffsStore = defineStore('buffs', () => {
-  const gameStore = useGameStore() as any
+  const gameStore = useGameStore()
   
-  let tickInterval = null
+  let tickInterval: ReturnType<typeof setInterval> | null = null
 
   function initTick() {
     if (tickInterval) clearInterval(tickInterval)
@@ -14,46 +14,48 @@ export const useBuffsStore = defineStore('buffs', () => {
       // Pause timers if player is in an active battle
       if (gameStore.state.battle && !gameStore.state.battle.over) return;
 
+      const s = gameStore.state
       let changed = false
-      if (gameStore.state.repelSecs > 0) { gameStore.state.repelSecs--; changed = true }
-      if (gameStore.state.shinyBoostSecs > 0) { gameStore.state.shinyBoostSecs--; changed = true }
-      if (gameStore.state.amuletCoinSecs > 0) { gameStore.state.amuletCoinSecs--; changed = true }
-      if (gameStore.state.luckyEggSecs > 0) { gameStore.state.luckyEggSecs--; changed = true }
-      if (gameStore.state.safariTicketSecs > 0) { gameStore.state.safariTicketSecs--; changed = true }
-      if (gameStore.state.ceruleanTicketSecs > 0) { gameStore.state.ceruleanTicketSecs--; changed = true }
-      if (gameStore.state.articunoTicketSecs > 0) { gameStore.state.articunoTicketSecs--; changed = true }
-      if (gameStore.state.mewtwoTicketSecs > 0) { gameStore.state.mewtwoTicketSecs--; changed = true }
-      if (gameStore.state.ivScannerSecs > 0) { gameStore.state.ivScannerSecs--; changed = true }
-      if (gameStore.state.incenseSecs > 0) { gameStore.state.incenseSecs--; changed = true }
+      if (s.repelSecs > 0) { s.repelSecs--; changed = true }
+      if (s.shinyBoostSecs > 0) { s.shinyBoostSecs--; changed = true }
+      if (s.amuletCoinSecs > 0) { s.amuletCoinSecs--; changed = true }
+      if (s.luckyEggSecs > 0) { s.luckyEggSecs--; changed = true }
+      if (s.safariTicketSecs > 0) { s.safariTicketSecs--; changed = true }
+      if (s.ceruleanTicketSecs > 0) { s.ceruleanTicketSecs--; changed = true }
+      if (s.articunoTicketSecs > 0) { s.articunoTicketSecs--; changed = true }
+      if (s.mewtwoTicketSecs > 0) { s.mewtwoTicketSecs--; changed = true }
+      if (s.ivScannerSecs > 0) { s.ivScannerSecs--; changed = true }
+      if (s.incenseSecs > 0) { s.incenseSecs--; changed = true }
 
       if (changed) {
         // Silent save every 30 seconds to persist timers
-        if (gameStore.state.repelSecs % 30 === 0) {
+        if (s.repelSecs % 30 === 0) {
           gameStore.save(false)
         }
       }
     }, 1000)
   }
 
-  function addBuff(buffName, seconds, extraData = null) {
-    if (buffName === 'repel') gameStore.state.repelSecs = (gameStore.state.repelSecs || 0) + seconds
-    else if (buffName === 'shiny') gameStore.state.shinyBoostSecs = (gameStore.state.shinyBoostSecs || 0) + seconds
-    else if (buffName === 'amulet') gameStore.state.amuletCoinSecs = (gameStore.state.amuletCoinSecs || 0) + seconds
-    else if (buffName === 'lucky-egg') gameStore.state.luckyEggSecs = (gameStore.state.luckyEggSecs || 0) + seconds
-    else if (buffName === 'safari') gameStore.state.safariTicketSecs = (gameStore.state.safariTicketSecs || 0) + seconds
-    else if (buffName === 'cerulean') gameStore.state.ceruleanTicketSecs = (gameStore.state.ceruleanTicketSecs || 0) + seconds
-    else if (buffName === 'articuno') gameStore.state.articunoTicketSecs = (gameStore.state.articunoTicketSecs || 0) + seconds
-    else if (buffName === 'mewtwo') gameStore.state.mewtwoTicketSecs = (gameStore.state.mewtwoTicketSecs || 0) + seconds
-    else if (buffName === 'iv-scanner') gameStore.state.ivScannerSecs = (gameStore.state.ivScannerSecs || 0) + seconds
+  function addBuff(buffName: string, seconds: number, extraData: string | null = null) {
+    const s = gameStore.state
+    if (buffName === 'repel') s.repelSecs = (s.repelSecs || 0) + seconds
+    else if (buffName === 'shiny') s.shinyBoostSecs = (s.shinyBoostSecs || 0) + seconds
+    else if (buffName === 'amulet') s.amuletCoinSecs = (s.amuletCoinSecs || 0) + seconds
+    else if (buffName === 'lucky-egg') s.luckyEggSecs = (s.luckyEggSecs || 0) + seconds
+    else if (buffName === 'safari') s.safariTicketSecs = (s.safariTicketSecs || 0) + seconds
+    else if (buffName === 'cerulean') s.ceruleanTicketSecs = (s.ceruleanTicketSecs || 0) + seconds
+    else if (buffName === 'articuno') s.articunoTicketSecs = (s.articunoTicketSecs || 0) + seconds
+    else if (buffName === 'mewtwo') s.mewtwoTicketSecs = (s.mewtwoTicketSecs || 0) + seconds
+    else if (buffName === 'iv-scanner') s.ivScannerSecs = (s.ivScannerSecs || 0) + seconds
     else if (buffName === 'incense') {
-      gameStore.state.incenseSecs = (gameStore.state.incenseSecs || 0) + seconds
-      if (extraData) gameStore.state.incenseType = extraData
+      s.incenseSecs = (s.incenseSecs || 0) + seconds
+      if (extraData) s.incenseType = extraData
     }
     gameStore.save(false)
   }
 
   const activeBuffs = computed(() => {
-    const s = gameStore.state
+    const s = gameStore.state as any
     const list = []
     if (s.repelSecs > 0) list.push({ id: 'repel', secs: s.repelSecs, name: 'Repelente', desc: 'Aleja Pokémon salvajes de nivel inferior al tuyo.', icon: getAssetUrl(ASSET_TYPES.ITEM, 'repel') })
     if (s.shinyBoostSecs > 0) list.push({ id: 'shiny', secs: s.shinyBoostSecs, name: '✨ Ticket Shiny', desc: 'Aumenta la probabilidad de encontrar Pokémon shiny.', icon: getAssetUrl(ASSET_TYPES.ITEM, 'eon-ticket') })
@@ -66,8 +68,8 @@ export const useBuffsStore = defineStore('buffs', () => {
     if (s.ivScannerSecs > 0) list.push({ id: 'iv-scanner', secs: s.ivScannerSecs, name: '🔍 Escáner de IVs', desc: 'Muestra los IVs totales de Pokémon salvajes.', icon: getAssetUrl(ASSET_TYPES.ITEM, 'poke-radar') })
     
     if (s.incenseSecs > 0) {
-      const types = { fire: 'Fuego', water: 'Agua', grass: 'Planta', normal: 'Normal', ghost: 'Fantasma', psychic: 'Psíquico' }
-      const sprites = { fire: 'incense', water: 'sea-incense', grass: 'rose-incense', normal: 'luck-incense', ghost: 'pure-incense', psychic: 'odd-incense' }
+      const types: Record<string, string> = { fire: 'Fuego', water: 'Agua', grass: 'Planta', normal: 'Normal', ghost: 'Fantasma', psychic: 'Psíquico' }
+      const sprites: Record<string, string> = { fire: 'incense', water: 'sea-incense', grass: 'rose-incense', normal: 'luck-incense', ghost: 'pure-incense', psychic: 'odd-incense' }
       const tName = types[s.incenseType] || 'Desconocido'
       const tSprite = sprites[s.incenseType] || 'incense'
       list.push({ 

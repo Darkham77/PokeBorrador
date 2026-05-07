@@ -35,7 +35,7 @@ const boxStore = useBoxStore() as any
 const pokemon = computed(() => gameStore.state.box[props.boxIndex])
 const team = computed(() => gameStore.state.team)
 const totalPower = computed(() => pokemon.value ? calculateTotalPower(pokemon.value) : 0)
-const tierInfo = computed(() => pokemon.value ? getPokemonTier(pokemon.value) : getPokemonTier(null))
+const tierInfo = computed(() => pokemon.value ? getPokemonTier(pokemon.value) : getPokemonTier(null as any))
 const isRocketMode = computed(() => gameStore.state.playerClass === 'rocket')
 
 const handleMoveToTeam = () => {
@@ -48,7 +48,7 @@ const handleMoveToTeam = () => {
   }
 }
 
-const handleSwap = (teamIndex) => {
+const handleSwap = (teamIndex: number) => {
   const res = boxStore.swapBoxWithTeam(props.boxIndex, teamIndex)
   if (res.success) {
     uiStore.notify(res.msg, '↔️')
@@ -110,7 +110,7 @@ const handleSellRocket = () => {
   })
 }
 
-const getTypeColor = (type) => PDEX_TYPE_COLORS[type?.toLowerCase()] || 'Rgba(170, 170, 170, 1)'
+const getTypeColor = (type: string) => (PDEX_TYPE_COLORS as any)[type?.toLowerCase()] || 'Rgba(170, 170, 170, 1)'
 
 </script>
 
@@ -205,7 +205,7 @@ const getTypeColor = (type) => PDEX_TYPE_COLORS[type?.toLowerCase()] || 'Rgba(17
             <PVTooltip
               v-if="pokemon?.nature"
               :title="pokemon?.nature"
-              :description="NATURE_DATA[pokemon?.nature]?.desc"
+              :description="(NATURE_DATA as any)[pokemon?.nature]?.desc"
               position="top"
             >
               <span class="interactive-text">{{ pokemon?.nature }}</span>
@@ -217,7 +217,7 @@ const getTypeColor = (type) => PDEX_TYPE_COLORS[type?.toLowerCase()] || 'Rgba(17
             <PVTooltip
               v-if="pokemon?.ability"
               :title="pokemon?.ability"
-              :description="ABILITY_DATA[pokemon?.ability]?.desc"
+              :description="(ABILITY_DATA as any)[pokemon?.ability]?.desc"
               position="top"
             >
               <span class="interactive-text">{{ pokemon?.ability }}</span>
@@ -256,7 +256,7 @@ const getTypeColor = (type) => PDEX_TYPE_COLORS[type?.toLowerCase()] || 'Rgba(17
               v-for="(t, i) in team"
               :key="t.uid"
               class="team-swap-card"
-              @click.stop="handleSwap(i)"
+              @click.stop="handleSwap(i as number)"
             >
               <!-- Tier Badge (Top Left) -->
               <div 

@@ -6,21 +6,44 @@ import { useUIStore } from './ui'
 import { getPokemonTier } from '@/logic/pokemon/tierEngine'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { calculateRocketSellPrice as calculatePrice } from '@/logic/pokemonUtils'
+import type { Pokemon } from '@/types/pokemon'
+
+export interface FilterState {
+  tier: string
+  type: string
+  levelMin: number
+  levelMax: number
+  ivTotalMin: number
+  ivTotalMax: number
+  ivAny31: boolean
+  ivMin: number
+  ivMax: number
+  bstMin: number
+  bstMax: number
+  ivHP: number
+  ivATK: number
+  ivDEF: number
+  ivSPA: number
+  ivSPD: number
+  ivSPE: number
+  search: string
+  isOpen: boolean
+}
 
 export const useBoxStore = defineStore('box', () => {
-  const gameStore = useGameStore() as any
-  const uiStore = useUIStore() as any
+  const gameStore = useGameStore()
+  const uiStore = useUIStore()
 
   // --- BOX STATE ---
   const currentBoxIndex = ref(0)
   const boxSortMode = ref('none')
   const boxReleaseMode = ref(false)
-  const boxReleaseSelected = ref([]) // Indices
+  const boxReleaseSelected = ref<number[]>([]) // Indices
   const boxRocketMode = ref(false)
-  const boxRocketSelected = ref([]) // Indices
+  const boxRocketSelected = ref<number[]>([]) // Indices
 
   // --- FILTER STATE ---
-  const filters = ref({
+  const filters = ref<FilterState>({
     tier: 'all',
     type: 'all',
     levelMin: 1,
@@ -44,27 +67,27 @@ export const useBoxStore = defineStore('box', () => {
 
   // --- TEAM STATE ---
   const teamReleaseMode = ref(false)
-  const teamReleaseSelected = ref([]) // Indices
+  const teamReleaseSelected = ref<number[]>([]) // Indices
   const teamRocketMode = ref(false)
-  const teamRocketSelected = ref([]) // Indices
+  const teamRocketSelected = ref<number[]>([]) // Indices
 
   // --- COMPUTED ---
   const filteredBox = computed(() => {
     if (!gameStore.state.box) return []
     
-    let list = gameStore.state.box.map((p, i) => ({ p, i }))
+    let list = gameStore.state.box.map((p: Pokemon | null, i: number) => ({ p, i }))
 
     // Apply Filters
-    list = list.filter(({ p }) => {
+    list = list.filter(({ p }: { p: Pokemon | null }) => {
       if (!p) return false // Skip empty slots
       const f = filters.value
-      const ivs = (p as any).ivs || {}
+      const ivs = p.ivs || { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 }
       const totalIv = (ivs.hp || 0) + (ivs.atk || 0) + (ivs.def || 0) +
                      (ivs.spa || 0) + (ivs.spd || 0) + (ivs.spe || 0)
       
       if (f.tier !== 'all' && getPokemonTier(p).tier !== f.tier) return false
-      if (f.type !== 'all' && (p as any).type !== f.type) return false
-      if ((p as any).level < f.levelMin || (p as any).level > f.levelMax) return false
+      if (f.type !== 'all' && p.type !== f.type) return false
+      if (p.level < f.levelMin || p.level > f.levelMax) return false
       if (totalIv < f.ivTotalMin || totalIv > f.ivTotalMax) return false
       if (f.ivAny31 && !Object.values(ivs).some(v => v === 31)) return false
       
@@ -81,7 +104,7 @@ export const useBoxStore = defineStore('box', () => {
       if ((ivs.spe || 0) < f.ivSPE) return false
 
       // TOTAL Filter (Species Base Stats + IVs)
-      const species = pokemonDataProvider.getPokemonData((p as any).id)
+      const species = pokemonDataProvider.getPokemonData(p.id)
       if (species) {
         const bst = (species.hp || 0) + (species.atk || 0) + (species.def || 0) +
                     (species.spa || 0) + (species.spd || 0) + (species.spe || 0)
@@ -91,8 +114,8 @@ export const useBoxStore = defineStore('box', () => {
 
       if (f.search) {
         const query = f.search.toLowerCase()
-        const nameMatch = (p as any).name.toLowerCase().includes(query)
-        const nickMatch = (p as any).nickname?.toLowerCase().includes(query)
+        const nameMatch = p.name.toLowerCase().includes(query)
+        const nickMatch = p.nickname?.toLowerCase().includes(query)
         if (!nameMatch && !nickMatch) return false
       }
       
@@ -101,23 +124,25 @@ export const useBoxStore = defineStore('box', () => {
 
     // Apply Sorting
     if (boxSortMode.value !== 'none') {
-      list.sort((a, b) => {
-        if (boxSortMode.value === 'level') return b.p.level - a.p.level
-        if (boxSortMode.value === 'tier') return getPokemonTier(b.p).total - getPokemonTier(a.p).total
+      list.sort((a: { p: Pokemon | null; i: number }, b: { p: Pokemon | null; i: number }) => {
+        const pA = a.p as Pokemon;
+        const pB = b.p as Pokemon;
+        if (boxSortMode.value === 'level') return pB.level - pA.level;
+        if (boxSortMode.value === 'tier') return getPokemonTier(pB).total - getPokemonTier(pA).total;
         if (boxSortMode.value === 'bst') {
-          const specA = pokemonDataProvider.getPokemonData(a.p.id)
-          const specB = pokemonDataProvider.getPokemonData(b.p.id)
-          const bstA = specA ? ((specA.hp||0)+(specA.atk||0)+(specA.def||0)+(specA.spa||0)+(specA.spd||0)+(specA.spe||0)) : 0
-          const bstB = specB ? ((specB.hp||0)+(specB.atk||0)+(specB.def||0)+(specB.spa||0)+(specB.spd||0)+(specB.spe||0)) : 0
+          const specA = pokemonDataProvider.getPokemonData(pA.id);
+          const specB = pokemonDataProvider.getPokemonData(pB.id);
+          const bstA = specA ? ((specA.hp || 0) + (specA.atk || 0) + (specA.def || 0) + (specA.spa || 0) + (specA.spd || 0) + (specA.spe || 0)) : 0;
+          const bstB = specB ? ((specB.hp || 0) + (specB.atk || 0) + (specB.def || 0) + (specB.spa || 0) + (specB.spd || 0) + (specB.spe || 0)) : 0;
           
-          const ivsA = a.p.ivs || {}
-          const totalIvsA = Object.values(ivsA).reduce((s:any,v:any)=>s+(v||0),0)
-          const ivsB = b.p.ivs || {}
-          const totalIvsB = Object.values(ivsB).reduce((s:any,v:any)=>s+(v||0),0)
+          const ivsA = pA.ivs;
+          const totalIvsA = Object.values(ivsA).reduce((s: number, v: number) => s + (v || 0), 0);
+          const ivsB = pB.ivs;
+          const totalIvsB = Object.values(ivsB).reduce((s: number, v: number) => s + (v || 0), 0);
           
-          return (bstB + totalIvsB) - (bstA + totalIvsA)
+          return (bstB + totalIvsB) - (bstA + totalIvsA);
         }
-        if (boxSortMode.value === 'type') return a.p.type.localeCompare(b.p.type)
+        if (boxSortMode.value === 'type') return pA.type.localeCompare(pB.type);
         // Pokedex sorting would need the order array, we'll keep it simple for now or import it
         return 0
       })
@@ -173,11 +198,11 @@ export const useBoxStore = defineStore('box', () => {
     boxSortMode.value = 'none'
   }
 
-  function switchBox(index) {
+  function switchBox(index: number) {
     currentBoxIndex.value = index
   }
 
-  function setBoxSort(mode) {
+  function setBoxSort(mode: string) {
     boxSortMode.value = mode
   }
 
@@ -190,7 +215,7 @@ export const useBoxStore = defineStore('box', () => {
     }
   }
 
-  function toggleBoxReleaseSelect(index) {
+  function toggleBoxReleaseSelect(index: number) {
     const idx = boxReleaseSelected.value.indexOf(index)
     if (idx > -1) {
       boxReleaseSelected.value.splice(idx, 1)
@@ -201,12 +226,12 @@ export const useBoxStore = defineStore('box', () => {
 
   function doBoxRelease() {
     const indices = [...boxReleaseSelected.value].sort((a, b) => b - a)
-    const releasedNames = []
+    const releasedNames: string[] = []
     
     indices.forEach(i => {
       const p = gameStore.state.box[i]
       if (p) {
-        releasedNames.push((p as any).name)
+        releasedNames.push(p.name)
         returnHeldItem(p)
         gameStore.state.box.splice(i, 1)
       }
@@ -215,7 +240,7 @@ export const useBoxStore = defineStore('box', () => {
     boxReleaseMode.value = false
     boxReleaseSelected.value = []
     gameStore.autoFillPvpTeam()
-    gameStore.save()
+    gameStore.scheduleSave()
     return releasedNames
   }
 
@@ -229,12 +254,12 @@ export const useBoxStore = defineStore('box', () => {
     }
   }
 
-  function toggleSelection(index) {
+  function toggleSelection(index: number) {
     if (boxReleaseMode.value) toggleBoxReleaseSelect(index)
     else if (boxRocketMode.value) toggleBoxRocketSelect(index)
   }
 
-  function toggleBoxRocketSelect(index) {
+  function toggleBoxRocketSelect(index: number) {
     const idx = boxRocketSelected.value.indexOf(index)
     if (idx > -1) {
       boxRocketSelected.value.splice(idx, 1)
@@ -267,16 +292,18 @@ export const useBoxStore = defineStore('box', () => {
     })
 
     gameStore.state.money += value
-    gameStore.state.classData.blackMarketSales = (gameStore.state.classData.blackMarketSales || 0) + count
+    if (gameStore.state.classData) {
+      gameStore.state.classData.blackMarketSales = (gameStore.state.classData.blackMarketSales || 0) + count
+    }
     
     boxRocketMode.value = false
     boxRocketSelected.value = []
     gameStore.autoFillPvpTeam()
-    gameStore.save()
+    gameStore.scheduleSave()
     return { value, count }
   }
 
-  function movePokemonToBox(boxIndex, targetBoxIndex) {
+  function movePokemonToBox(boxIndex: number, targetBoxIndex: number) {
     const p = gameStore.state.box[boxIndex]
     if (!p) return { success: false, msg: 'Pokémon no encontrado.' }
     
@@ -290,12 +317,18 @@ export const useBoxStore = defineStore('box', () => {
     
     gameStore.state.box.splice(targetStart, 0, p)
     
-    gameStore.save()
-    return { success: true, msg: `¡${(p as any).name} movido a la Caja ${targetBoxIndex + 1}!` }
+    gameStore.scheduleSave()
+    return { success: true, msg: `¡${p.name} movido a la Caja ${targetBoxIndex + 1}!` }
   }
 
-  function togglePokeTag(boxIndex, tag) {
-    gameStore.togglePokeTag('box', boxIndex, tag)
+  function togglePokeTag(boxIndex: number, tag: string) {
+    const p = gameStore.state.box[boxIndex]
+    if (!p) return
+    if (!p.tags) p.tags = []
+    const idx = p.tags.indexOf(tag)
+    if (idx > -1) p.tags.splice(idx, 1)
+    else p.tags.push(tag)
+    gameStore.scheduleSave()
   }
 
   // --- TEAM ACTIONS ---
@@ -308,7 +341,7 @@ export const useBoxStore = defineStore('box', () => {
     }
   }
 
-  function toggleTeamReleaseSelect(index) {
+  function toggleTeamReleaseSelect(index: number) {
     const idx = teamReleaseSelected.value.indexOf(index)
     if (idx > -1) {
       teamReleaseSelected.value.splice(idx, 1)
@@ -320,7 +353,8 @@ export const useBoxStore = defineStore('box', () => {
   function confirmTeamRelease() {
     if (teamReleaseSelected.value.length === 0) return
 
-    if (gameStore.state.team.length - teamReleaseSelected.value.length < 1) {
+    const team = gameStore.state.team || []
+    if (team.length - teamReleaseSelected.value.length < 1) {
       uiStore.notify('No puedes soltar a todos tus Pokémon.', '⚠️')
       return
     }
@@ -330,14 +364,14 @@ export const useBoxStore = defineStore('box', () => {
       message: `¿Estás seguro de que quieres soltar ${teamReleaseSelected.value.length} Pokémon?`,
       onConfirm: () => {
         const indices = [...teamReleaseSelected.value].sort((a, b) => b - a)
-        const names = []
+        const names: string[] = []
         
         indices.forEach(i => {
-          const p = gameStore.state.team[i]
+          const p = team[i]
           if (p) {
-            names.push((p as any).name)
+            names.push(p.name)
             returnHeldItem(p)
-            gameStore.state.team.splice(i, 1)
+            team.splice(i, 1)
           }
         })
 
@@ -345,7 +379,7 @@ export const useBoxStore = defineStore('box', () => {
         teamReleaseMode.value = false
         teamReleaseSelected.value = []
         gameStore.autoFillPvpTeam()
-        gameStore.save()
+        gameStore.scheduleSave()
       }
     })
   }
@@ -360,7 +394,7 @@ export const useBoxStore = defineStore('box', () => {
     }
   }
 
-  function toggleTeamRocketSelect(index) {
+  function toggleTeamRocketSelect(index: number) {
     const idx = teamRocketSelected.value.indexOf(index)
     if (idx > -1) {
       teamRocketSelected.value.splice(idx, 1)
@@ -373,9 +407,10 @@ export const useBoxStore = defineStore('box', () => {
     const count = teamRocketSelected.value.length
     if (count === 0) return
 
+    const team = gameStore.state.team || []
     let totalGain = 0
     teamRocketSelected.value.forEach(i => {
-      const p = gameStore.state.team[i]
+      const p = team[i]
       if (p) totalGain += calculatePrice(p)
     })
 
@@ -384,39 +419,41 @@ export const useBoxStore = defineStore('box', () => {
       message: `¿Vender ${count} Pokémon por ₽${totalGain.toLocaleString()}?`,
       onConfirm: () => {
         const indices = [...teamRocketSelected.value].sort((a, b) => b - a)
-        const names = []
+        const names: string[] = []
         
         indices.forEach(i => {
-          const p = gameStore.state.team[i]
+          const p = team[i]
           if (p) {
-            names.push((p as any).name)
+            names.push(p.name)
             returnHeldItem(p)
-            gameStore.state.team.splice(i, 1)
+            team.splice(i, 1)
           }
         })
 
         gameStore.state.money += totalGain
-        gameStore.state.classData.blackMarketSales = (gameStore.state.classData.blackMarketSales || 0) + count
+        if (gameStore.state.classData) {
+          gameStore.state.classData.blackMarketSales = (gameStore.state.classData.blackMarketSales || 0) + count
+        }
         
         uiStore.notify(`¡${count} Pokémon vendidos por ₽${totalGain.toLocaleString()}! 🚀`, '🚀')
         teamRocketMode.value = false
         teamRocketSelected.value = []
         gameStore.autoFillPvpTeam()
-        gameStore.save()
+        gameStore.scheduleSave()
       }
     })
   }
 
   // Helpers
-  function returnHeldItem(pokemon) {
-    if (!pokemon || !(pokemon as any).heldItem) return
-    const item = (pokemon as any).heldItem
-    gameStore.state.inventory[item] = (gameStore.state.inventory[item] || 0) + 1;
-    (pokemon as any).heldItem = null
-    // gameStore.save() // Not saving here to allow batch operations to save once
+  function returnHeldItem(pokemon: Pokemon) {
+    if (!pokemon || !pokemon.heldItem) return
+    const item = pokemon.heldItem
+    const inv = gameStore.state.inventory
+    inv[item] = (inv[item] || 0) + 1;
+    pokemon.heldItem = null
   }
 
-  function moveBoxToTeam(boxIndex) {
+  function moveBoxToTeam(boxIndex: number) {
     const boxPoke = gameStore.state.box[boxIndex]
     if (!boxPoke) return { success: false, msg: 'Pokémon no encontrado.' }
     if (gameStore.state.team.length >= 6) return { success: false, msg: 'Equipo lleno.' }
@@ -427,11 +464,11 @@ export const useBoxStore = defineStore('box', () => {
     gameStore.state.box.splice(boxIndex, 1)
     gameStore.state.team.push(boxPoke)
     gameStore.autoFillPvpTeam()
-    gameStore.save()
+    gameStore.scheduleSave()
     return { success: true, msg: `${boxPoke.name} se unió al equipo.` }
   }
 
-  function swapBoxWithTeam(boxIndex, teamIndex) {
+  function swapBoxWithTeam(boxIndex: number, teamIndex: number) {
     const boxPoke = gameStore.state.box[boxIndex]
     const teamPoke = gameStore.state.team[teamIndex]
     if (!boxPoke || !teamPoke) return { success: false, msg: 'Pokémon no encontrado.' }
@@ -439,16 +476,16 @@ export const useBoxStore = defineStore('box', () => {
     if (boxPoke.onMission || boxPoke.inDaycare) return { success: false, msg: 'Pokémon ocupado.' }
     
     gameStore.state.box.splice(boxIndex, 1)
-    const swapped = gameStore.state.team.splice(teamIndex, 1, boxPoke)[0]
+    const swapped = gameStore.state.team.splice(teamIndex, 1, boxPoke)[0]!
     
     // Auto-heal on storage
     swapped.hp = swapped.maxHp
     swapped.status = null
-    swapped.moves?.forEach(m => { m.pp = m.maxPP })
+    swapped.moves?.forEach((m) => { if (m) m.pp = m.maxPP })
     
     gameStore.state.box.splice(boxIndex, 0, swapped)
     gameStore.autoFillPvpTeam()
-    gameStore.save()
+    gameStore.scheduleSave()
     return { success: true, msg: 'Intercambio realizado.' }
   }
 
@@ -466,7 +503,7 @@ export const useBoxStore = defineStore('box', () => {
     
     gameStore.state.money -= cost
     gameStore.state.boxCount = (gameStore.state.boxCount || 4) + 1
-    gameStore.save()
+    gameStore.scheduleSave()
     return { success: true, boxNum: gameStore.state.boxCount }
   }
 

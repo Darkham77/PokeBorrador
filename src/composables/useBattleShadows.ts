@@ -3,18 +3,24 @@ import { useCombatShadowStore } from '@/stores/combatShadows'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
+import type { Pokemon } from '@/types/pokemon'
 
 const { ENTITY_SIZE_PLAYER, ENTITY_SIZE_ENEMY } = WORLD_CONSTANTS
+
+interface Position {
+  x: number
+  y: number
+}
 
 export function useBattleShadows() {
   const shadowStore = useCombatShadowStore()
 
   // Claves únicas para las sombras en el store
-  const currentPlayerShadowKey = ref(null)
-  const currentEnemyShadowKey = ref(null)
+  const currentPlayerShadowKey = ref<string | null>(null)
+  const currentEnemyShadowKey = ref<string | null>(null)
 
-  const lastEnemyShadowId = ref(null)
-  const lastPlayerShadowId = ref(null)
+  const lastEnemyShadowId = ref<string | null>(null)
+  const lastPlayerShadowId = ref<string | null>(null)
 
   // Coordenadas de "suelo" persistentes para evitar saltos
   const stableEnemyGroundY = ref('90%')
@@ -23,13 +29,13 @@ export function useBattleShadows() {
   const enemyGroundY = computed(() => stableEnemyGroundY.value)
   const playerGroundY = computed(() => stablePlayerGroundY.value)
 
-  function getStableShadowId(pokemon, side) {
+  function getStableShadowId(pokemon: Pokemon | null, side: string): string | null {
     if (!pokemon) return null
     if (pokemon.uid) return `shadow_${pokemon.uid}`
     return `${side}_${pokemon.id}`
   }
 
-  const isFlying = (pokemon) => {
+  const isFlying = (pokemon: Pokemon | null) => {
     if (!pokemon || !pokemon.id) return false
     // Si el objeto ya trae la propiedad (ej: inyectada), la usamos
     if (pokemon.isFloating !== undefined) return pokemon.isFloating
@@ -39,12 +45,12 @@ export function useBattleShadows() {
   }
 
   // Sincronizar visibilidad y posición de la sombra enemiga
-  const syncEnemyShadow = async (visible, data, pos, animState) => {
+  const syncEnemyShadow = async (visible: boolean, data: Pokemon | null, pos: Position, animState: any) => {
     const shadowId = getStableShadowId(data, 'enemy')
     
     // Limpieza de sombras huérfanas si el ID cambia (evita duplicados al capturar/cambiar)
     if (lastEnemyShadowId.value && lastEnemyShadowId.value !== shadowId) {
-      shadowStore.hideShadow(lastEnemyShadowId.value)
+      if (lastEnemyShadowId.value) shadowStore.hideShadow(lastEnemyShadowId.value)
       
       // Intentar usar caché inmediatamente para evitar saltos al 90% si no es necesario
       const url = data ? getAssetUrl(ASSET_TYPES.POKEMON, data.id, { isShiny: data.isShiny, isBack: false }) : null
@@ -63,25 +69,27 @@ export function useBattleShadows() {
       return
     }
 
-    await shadowStore.requestShadow(shadowId, {
-      side: 'enemy',
-      entityX: pos.x,
-      entityY: pos.y,
-      entitySize: ENTITY_SIZE_ENEMY,
-      isFlying: isFlying(data),
-      spriteUrl: getAssetUrl(ASSET_TYPES.POKEMON, data.id, { isShiny: data.isShiny, isBack: false }),
-      precalculate: true,
-      visible: true
-    })
+    if (shadowId) {
+      await shadowStore.requestShadow(shadowId, {
+        side: 'enemy',
+        entityX: pos.x,
+        entityY: pos.y,
+        entitySize: ENTITY_SIZE_ENEMY,
+        isFlying: isFlying(data),
+        spriteUrl: getAssetUrl(ASSET_TYPES.POKEMON, data.id, { isShiny: data.isShiny, isBack: false }),
+        precalculate: true,
+        visible: true
+      })
+    }
   }
 
   // Sincronizar visibilidad y posición de la sombra del jugador
-  const syncPlayerShadow = async (pokemon, pos, animState) => {
+  const syncPlayerShadow = async (pokemon: Pokemon | null, pos: Position, animState: any) => {
     const shadowId = getStableShadowId(pokemon, 'player')
 
     // Limpieza de sombras huérfanas
     if (lastPlayerShadowId.value && lastPlayerShadowId.value !== shadowId) {
-      shadowStore.hideShadow(lastPlayerShadowId.value)
+      if (lastPlayerShadowId.value) shadowStore.hideShadow(lastPlayerShadowId.value)
       
       const url = pokemon ? getAssetUrl(ASSET_TYPES.POKEMON, pokemon.id, { isShiny: pokemon.isShiny, isBack: true }) : null
       const cached = url ? shadowStore.feetCache.get(url) : null
@@ -99,24 +107,26 @@ export function useBattleShadows() {
       return
     }
 
-    await shadowStore.requestShadow(shadowId, {
-      side: 'player',
-      entityX: pos.x,
-      entityY: pos.y,
-      entitySize: ENTITY_SIZE_PLAYER,
-      isFlying: isFlying(pokemon),
-      spriteUrl: getAssetUrl(ASSET_TYPES.POKEMON, pokemon.id, { isShiny: pokemon.isShiny, isBack: true }),
-      precalculate: true,
-      visible: true
-    })
+    if (shadowId) {
+      await shadowStore.requestShadow(shadowId, {
+        side: 'player',
+        entityX: pos.x,
+        entityY: pos.y,
+        entitySize: ENTITY_SIZE_PLAYER,
+        isFlying: isFlying(pokemon),
+        spriteUrl: getAssetUrl(ASSET_TYPES.POKEMON, pokemon.id, { isShiny: pokemon.isShiny, isBack: true }),
+        precalculate: true,
+        visible: true
+      })
+    }
   }
 
   // Watchers de actualización de feetY basados en el store
-  watch(() => shadowStore.activeShadows.get(currentEnemyShadowKey.value), (shadow) => {
+  watch(() => shadowStore.activeShadows.get(currentEnemyShadowKey.value || ''), (shadow) => {
     if (shadow) stableEnemyGroundY.value = `${shadow.feetY * 100}%`
   }, { deep: true })
 
-  watch(() => shadowStore.activeShadows.get(currentPlayerShadowKey.value), (shadow) => {
+  watch(() => shadowStore.activeShadows.get(currentPlayerShadowKey.value || ''), (shadow) => {
     if (shadow) stablePlayerGroundY.value = `${shadow.feetY * 100}%`
   }, { deep: true })
 
@@ -128,7 +138,7 @@ export function useBattleShadows() {
     if (!val) stablePlayerGroundY.value = '90%'
   })
 
-  const preloadTeamFeet = async (team, side) => {
+  const preloadTeamFeet = async (team: Pokemon[], side: string) => {
     if (!team || !Array.isArray(team)) return
     const tasks = team.map(p => {
       const isBack = side === 'player'
@@ -138,7 +148,14 @@ export function useBattleShadows() {
     return Promise.all(tasks)
   }
 
-  const preloadCombatCoords = async (p1Data, p2Data, p1Position, p2Position, p1Team, p2Team) => {
+  const preloadCombatCoords = async (
+    p1Data: Pokemon | null, 
+    p2Data: Pokemon | null, 
+    p1Position: Position, 
+    p2Position: Position, 
+    p1Team: Pokemon[], 
+    p2Team: Pokemon[]
+  ) => {
     const tasks = []
     
     // Pre-cargar puntos de pies de TODOS los equipos para evitar el lag de la "primera vez"
@@ -149,32 +166,35 @@ export function useBattleShadows() {
       const shadowId = getStableShadowId(p1Data, 'player')
       currentPlayerShadowKey.value = shadowId
       const url = getAssetUrl(ASSET_TYPES.POKEMON, p1Data.id, { isShiny: p1Data.isShiny, isBack: true })
-      tasks.push(shadowStore.requestShadow(shadowId, {
-        side: 'player',
-        entityX: p1Position.x,
-        entityY: p1Position.y,
-        entitySize: ENTITY_SIZE_PLAYER,
-        isFlying: isFlying(p1Data),
-        spriteUrl: url,
-        visible: true
-      }))
+      if (shadowId) {
+        tasks.push(shadowStore.requestShadow(shadowId, {
+          side: 'player',
+          entityX: p1Position.x,
+          entityY: p1Position.y,
+          entitySize: ENTITY_SIZE_PLAYER,
+          isFlying: isFlying(p1Data),
+          spriteUrl: url,
+          visible: true
+        }))
+      }
     }
     
     if (p2Data) {
       const shadowId = getStableShadowId(p2Data, 'enemy')
       currentEnemyShadowKey.value = shadowId
       const url = getAssetUrl(ASSET_TYPES.POKEMON, p2Data.id, { isShiny: p2Data.isShiny, isBack: false })
-      tasks.push(shadowStore.requestShadow(shadowId, {
-        side: 'enemy',
-        entityX: p2Position.x,
-        entityY: p2Position.y,
-        entitySize: ENTITY_SIZE_ENEMY,
-        isFlying: isFlying(p2Data),
-        spriteUrl: url,
-        visible: true
-      }))
+      if (shadowId) {
+        tasks.push(shadowStore.requestShadow(shadowId, {
+          side: 'enemy',
+          entityX: p2Position.x,
+          entityY: p2Position.y,
+          entitySize: ENTITY_SIZE_ENEMY,
+          isFlying: isFlying(p2Data),
+          spriteUrl: url,
+          visible: true
+        }))
+      }
     }
-
     if (tasks.length > 0) {
       await Promise.all(tasks).catch(err => console.warn('[useBattleShadows] Preloading failed:', err))
     }

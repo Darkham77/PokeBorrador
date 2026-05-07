@@ -20,14 +20,19 @@ export interface EventConfig {
   speciesRateMult?: number;
   speciesShinyMult?: number;
   ignoreTimeRestrictions?: boolean;
+  banner?: string;
 }
 
 export interface Event {
   id: string;
+  name: string;
+  description: string;
+  type?: 'competition' | 'boost' | string;
+  icon?: string;
   active: boolean;
   manual?: boolean;
   start_at?: string;
-  end_at?: string;
+  ends_at?: string;
   schedule?: string | any;
   config?: string | EventConfig;
 }
@@ -48,9 +53,9 @@ export function isEventActiveNow(event: Event, date: Date = new Date()): boolean
   if (event.manual) return true
 
   // 1. Absolute date check
-  if (event.start_at && event.end_at) {
+  if (event.start_at && event.ends_at) {
     const start = new Date(event.start_at)
-    const end = new Date(event.end_at)
+    const end = new Date(event.ends_at)
     if (date >= start && date <= end) return true
   }
 

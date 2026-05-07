@@ -14,7 +14,7 @@ export const useLibraryStore = defineStore('library', () => {
     isOpen.value = false
   }
 
-  function switchTab(tab) {
+  function switchTab(tab: string) {
     currentTab.value = tab
   }
 

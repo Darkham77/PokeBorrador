@@ -4,6 +4,8 @@
  * Matches the legacy 01_auth.js structure exactly for backward compatibility.
  */
 import type { Pokemon } from '@/types/pokemon';
+import type { GameState } from '@/types/game';
+import type { AuthUser } from '@/types/auth';
 
 export interface SaveData {
   trainer: string;
@@ -11,24 +13,24 @@ export interface SaveData {
   balls: number;
   money: number;
   battleCoins: number;
-  eggs: any[];
+  eggs: unknown[];
   trainerLevel: number;
   trainerExp: number;
   trainerExpNeeded: number;
   inventory: Record<string, number>;
   team: Pokemon[];
   box: Pokemon[];
-  pokedex: number[];
-  seenPokedex: number[];
+  pokedex: string[];
+  seenPokedex: string[];
   defeatedGyms: string[];
-  gymProgress: Record<string, any>;
+  gymProgress: Record<string, unknown>;
   lastGymWins: Record<string, number>;
   lastGymAttempts: Record<string, number>;
   starterChosen: boolean;
   lastRankedSeason: string | null;
   nick_style: string | null;
   avatar_style: string | null;
-  stats: Record<string, any>;
+  stats: Record<string, unknown>;
   eloRating: number;
   pvpStats: {
     wins: number;
@@ -39,8 +41,8 @@ export interface SaveData {
   rankedRewardsClaimed: string[];
   passiveTeamUids: string[];
   passiveTeamActive: boolean;
-  activeBattle: any;
-  daycare_missions: any[];
+  activeBattle: unknown;
+  daycare_missions: unknown[];
   daycare_mission_refreshes: number;
   safariTicketSecs: number;
   ceruleanTicketSecs: number;
@@ -55,7 +57,7 @@ export interface SaveData {
   incenseType: string | null;
   daycare_berry_egg_time: number;
   boxCount: number;
-  chats: Record<string, any>;
+  chats: Record<string, unknown>;
   playerClass: string | null;
   classLevel: number;
   classXP: number;
@@ -69,16 +71,57 @@ export interface SaveData {
   faction: string | null;
   warCoins: number;
   warCoinsSpent: number;
-  warDailyCap: Record<string, number>;
+  warDailyCap: Record<string, Record<string, number>>;
   warDailyCoins: Record<string, number>;
   warMyPtsLocal: Record<string, number>;
-  notificationHistory: any[];
+  notificationHistory: unknown[];
   marketSoldSeenIds: string[];
   _last_updated?: number;
 }
 
-export function serializeState(state: any): SaveData {
-  let activeBattle = null;
+
+interface EnemyPokemonSerialized {
+  uid: string
+  id: string
+  name: string
+  emoji: string
+  type: string
+  level: number
+  hp: number
+  maxHp: number
+  atk: number
+  def: number
+  spa: number
+  spd: number
+  spe: number
+  moves: unknown[]
+  status: string | null
+  isShiny: boolean
+  gender: string | null
+  ivs: Record<string, number>
+  nature: string
+  ability: string
+  exp: number
+  expNeeded: number
+  friendship: number
+  _revealed: boolean
+  _gymLeader: string | null
+  _gymBadge: string | null
+}
+
+interface ActiveBattleSerialized {
+  isGym: boolean
+  gymId: string | null
+  isTrainer: boolean
+  trainerName: string | null
+  locationId: string | null
+  enemyTeam: EnemyPokemonSerialized[] | null
+  timestamp: number
+  isPvP?: boolean
+}
+
+export function serializeState(state: GameState): SaveData {
+  let activeBattle: ActiveBattleSerialized | null = null;
   if (state.battle && !state.battle.over && (state.battle.isTrainer || state.battle.isGym)) {
     try {
       activeBattle = {
@@ -96,8 +139,9 @@ export function serializeState(state: any): SaveData {
               gender: p.gender || null, ivs: p.ivs, nature: p.nature,
               ability: p.ability, exp: p.exp || 0, expNeeded: p.expNeeded || 100,
               friendship: p.friendship || 70,
-              _revealed: (p as any)._revealed || false, _gymLeader: (p as any)._gymLeader || null,
-              _gymBadge: (p as any)._gymBadge || null,
+              _revealed: (p as Pokemon & { _revealed?: boolean })._revealed || false,
+              _gymLeader: (p as Pokemon & { _gymLeader?: string })._gymLeader || null,
+              _gymBadge: (p as Pokemon & { _gymBadge?: string })._gymBadge || null,
             }))
           : null,
         timestamp: Date.now(),
@@ -106,8 +150,8 @@ export function serializeState(state: any): SaveData {
       console.warn('[SAVE] Error serializando batalla activa:', e);
       activeBattle = null;
     }
-  } else if (state.activeBattle && state.activeBattle.isPvP) {
-    activeBattle = { ...state.activeBattle };
+  } else if ((state as any).activeBattle && (state as any).activeBattle.isPvP) {
+    activeBattle = { ...(state as any).activeBattle } as ActiveBattleSerialized;
   }
 
   return {
@@ -144,7 +188,7 @@ export function serializeState(state: any): SaveData {
       ? Math.max(1000, Math.floor(Number(state.rankedMaxElo)))
       : Math.max(1000, Number(state.eloRating) || 1000),
     rankedRewardsClaimed: Array.isArray(state.rankedRewardsClaimed)
-      ? Array.from(new Set(state.rankedRewardsClaimed.map((id: any) => String(id))))
+      ? Array.from(new Set(state.rankedRewardsClaimed.map((id) => String(id))))
       : [],
     passiveTeamUids: state.passiveTeamUids || [],
     passiveTeamActive: state.passiveTeamActive,
@@ -179,8 +223,8 @@ export function serializeState(state: any): SaveData {
     warCoins: state.warCoins || 0,
     warCoinsSpent: state.warCoinsSpent || 0,
     warDailyCap: state.warDailyCap || {},
-    warDailyCoins: state.warDailyCoins || {},
-    warMyPtsLocal: state.warMyPtsLocal || {},
+    warDailyCoins: (state.warDailyCoins || {}) as Record<string, number>,
+    warMyPtsLocal: (state.warMyPtsLocal || {}) as Record<string, number>,
     notificationHistory: state.notificationHistory || [],
     marketSoldSeenIds: state.marketSoldSeenIds || []
   };
@@ -189,8 +233,8 @@ export function serializeState(state: any): SaveData {
 /**
  * Validates the state before saving to prevent cache hacking or data corruption.
  */
-export function validateAndSanitize(data: any): { valid: boolean, data?: any, hadDuplicates?: boolean, issues: string[], error?: string } {
-  if (!data) return { valid: false, issues: [], error: 'No data' };
+export function validateAndSanitize(data: SaveData): { valid: boolean, data: SaveData, hadDuplicates?: boolean, issues: string[], error?: string } {
+  if (!data) return { valid: false, data: {} as SaveData, issues: [], error: 'No data' };
   
   const issues: string[] = [];
   
@@ -202,7 +246,8 @@ export function validateAndSanitize(data: any): { valid: boolean, data?: any, ha
   // 2. Inventory sanity
   if (data.inventory) {
     Object.keys(data.inventory).forEach(item => {
-      if (data.inventory[item] < 0) {
+      const qty = data.inventory[item]
+      if (typeof qty === 'number' && qty < 0) {
         data.inventory[item] = 0;
         issues.push(`Cantidad negativa de ${item} corregida`);
       }
@@ -213,7 +258,7 @@ export function validateAndSanitize(data: any): { valid: boolean, data?: any, ha
   const uids = new Set<string>();
   const duplicateUids = new Set<string>();
   
-  const checkPoke = (p: any, listName: string) => {
+  const checkPoke = (p: Pokemon, listName: string) => {
     if (!p || !p.uid) return;
     if (uids.has(p.uid)) {
       duplicateUids.add(p.uid);
@@ -222,14 +267,14 @@ export function validateAndSanitize(data: any): { valid: boolean, data?: any, ha
     uids.add(p.uid);
   };
 
-  if (Array.isArray(data.team)) data.team.forEach((p: any) => checkPoke(p, 'equipo'));
-  if (Array.isArray(data.box)) data.box.forEach((p: any) => checkPoke(p, 'caja'));
+    if (data.team) data.team.forEach((p) => checkPoke(p, 'equipo'));
+    if (data.box) data.box.forEach((p) => checkPoke(p, 'caja'));
 
   if (duplicateUids.size > 0) {
     // We sanitize by removing subsequent duplicates
     const finalUids = new Set<string>();
     if (Array.isArray(data.team)) {
-      data.team = data.team.filter((p: any) => {
+      data.team = data.team.filter((p) => {
         if (!p.uid) return true;
         if (finalUids.has(p.uid)) return false;
         finalUids.add(p.uid);
@@ -237,7 +282,7 @@ export function validateAndSanitize(data: any): { valid: boolean, data?: any, ha
       });
     }
     if (Array.isArray(data.box)) {
-      data.box = data.box.filter((p: any) => {
+      data.box = data.box.filter((p) => {
         if (!p.uid) return true;
         if (finalUids.has(p.uid)) return false;
         finalUids.add(p.uid);
@@ -254,7 +299,7 @@ export function validateAndSanitize(data: any): { valid: boolean, data?: any, ha
   };
 }
 
-export function isValidState(data: any): boolean {
+export function isValidState(data: SaveData): boolean {
   return validateAndSanitize(data).valid;
 }
 
@@ -262,7 +307,16 @@ export function isValidState(data: any): boolean {
  * Saves the game to localStorage and the database.
  */
 let _isSaving = false;
-export async function saveGame(state: any, user: any, options: any = {}): Promise<any> {
+
+interface SaveOptions {
+  showNotif?: boolean
+  notifyFn?: (msg: string, icon?: string) => void
+  db?: any // DBRouter is complex, keeping as any for now but could be typed if needed
+  userVersion?: number
+  lastSaveId?: string
+}
+
+export async function saveGame(state: GameState, user: AuthUser, options: SaveOptions = {}): Promise<any> {
   const { showNotif = true, notifyFn, db } = options;
   if (!user || _isSaving) return null;
 
@@ -288,7 +342,7 @@ export async function saveGame(state: any, user: any, options: any = {}): Promis
     return { rollback: true, error: 'Inconsistencia detectada. Recarga la página.' };
   }
 
-  save_data._last_updated = Date.now();
+  (save_data as any)._last_updated = Date.now();
 
   // 1. LocalStorage
   try {

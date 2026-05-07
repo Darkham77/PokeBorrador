@@ -98,7 +98,7 @@ const getFactionIcon = (faction: string) => {
           </div>
           <div class="map-grid">
             <WarMapCard
-              v-for="m in mapStore.maps.filter(x => x.war)"
+              v-for="m in (mapStore.maps as any[]).filter((x: any) => x.war)"
               :key="m.id"
               :map="m"
             />

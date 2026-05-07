@@ -9,7 +9,7 @@ export function initGlobalErrorHandlers(): void {
   const errorStore = useErrorStore()
 
   // Capture synchronous errors
-  window.onerror = function(message, source, lineno, colno, error) {
+  window.onerror = function(message: string | Event, source?: string, lineno?: number, colno?: number, error?: Error): boolean {
     errorStore.setError(error || (message as string), {
       source,
       lineno,
@@ -20,14 +20,14 @@ export function initGlobalErrorHandlers(): void {
   }
 
   // Capture unhandled promise rejections
-  window.onunhandledrejection = function(event) {
+  window.onunhandledrejection = function(event: PromiseRejectionEvent): void {
     errorStore.setError(event.reason, {
       type: 'Unhandled Promise Rejection'
     })
-  }
+  };
 
   // Legacy bridge
-  (window as any)['showGameError'] = (error: any, context: any = {}) => {
+  (window as unknown as { showGameError: (error: Error | string, context?: Record<string, unknown>) => void }).showGameError = (error: Error | string, context: Record<string, unknown> = {}) => {
     errorStore.setError(error, context)
   }
 

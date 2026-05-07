@@ -15,12 +15,12 @@ export const ACC_STAGE_MULT: number[] = [0.33, 0.37, 0.43, 0.50, 0.60, 0.75, 1, 
  * Index 6 is stage 0 (neutral).
  */
 export function getStatMultiplier(stage: number): number {
-  return STAGE_MULT[Math.max(0, Math.min(12, (stage || 0) + 6))];
+  return STAGE_MULT[Math.max(0, Math.min(12, (stage || 0) + 6))] || 1;
 }
 
 /**
  * Get the multiplier for an accuracy/evasion stage (-6 to +6).
  */
 export function getAccuracyMultiplier(stage: number): number {
-  return ACC_STAGE_MULT[Math.max(0, Math.min(12, (stage || 0) + 6))];
+  return ACC_STAGE_MULT[Math.max(0, Math.min(12, (stage || 0) + 6))] || 1;
 }

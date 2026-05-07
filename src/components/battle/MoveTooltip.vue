@@ -69,7 +69,7 @@ const modifierInfo = computed(() => {
 <template>
   <div class="move-tooltip-rich">
     <div class="move-desc">
-      {{ getMoveDescription(move.name, MOVE_DATA[move.name]) }}
+      {{ getMoveDescription(move.name, (MOVE_DATA as any)[move.name]) }}
     </div>
     <div
       v-if="modifierInfo"

@@ -1,9 +1,18 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 
+export interface LoadingItem {
+  id: string;
+  message: string;
+  subMessage: string;
+  isGlobal: boolean;
+  timestamp: number;
+}
+
 export const useLoadingStore = defineStore('loading', () => {
+
   // A stack of loading states to support nested/parallel operations without overwriting each other
-  const stack = ref([])
+  const stack = ref<LoadingItem[]>([])
   const isAppMounted = ref(false)
 
   /**
@@ -13,10 +22,10 @@ export const useLoadingStore = defineStore('loading', () => {
    * @param {string} subMessage - Secondary/hint text
    * @param {boolean} isGlobal - If true, it uses the dark global overlay (higher priority)
    */
-  function start(id, message = 'Procesando...', subMessage = 'Por favor, no cierres la ventana', isGlobal = true) {
+  function start(id: string, message = 'Procesando...', subMessage = 'Por favor, no cierres la ventana', isGlobal = true) {
     // If ID already exists, update it instead of pushing
     const index = stack.value.findIndex(item => item.id === id)
-    const payload = { id, message, subMessage, isGlobal, timestamp: Date.now() }
+    const payload: LoadingItem = { id, message, subMessage, isGlobal, timestamp: Date.now() }
     
     if (index !== -1) {
       stack.value[index] = payload
@@ -31,7 +40,7 @@ export const useLoadingStore = defineStore('loading', () => {
    * Removes a loading operation from the stack by its ID.
    * @param {string} id - The identifier used in start()
    */
-  function finish(id) {
+  function finish(id: string) {
     const originalLen = stack.value.length
     stack.value = stack.value.filter(item => item.id !== id)
     
@@ -69,10 +78,10 @@ export const useLoadingStore = defineStore('loading', () => {
    * @param {string} message - New primary message (optional)
    * @param {string} subMessage - New secondary message (optional)
    */
-  function setProgress(id, message = null, subMessage = null) {
+  function setProgress(id: string, message: string | null = null, subMessage: string | null = null) {
     const item = stack.value.find(i => i.id === id)
     if (item) {
-      if (message !== null) (item as any).message = message
+      if (message !== null) item.message = message
       if (subMessage !== null) item.subMessage = subMessage
     }
   }

@@ -42,14 +42,14 @@ const emit = defineEmits<{
     :type="type"
     :variant="variant"
     :hide-header="hideHeader"
-    :corners="corners"
+    :corners="corners || undefined"
     :show-border="showBorder"
     :blur-overlay="blurOverlay"
     :yellow-border="yellowBorder"
     :overlay="overlay"
     :max-width="maxWidth"
     :padding="padding"
-    :position-mode="positionMode"
+    :position-mode="positionMode || undefined"
     @close="emit('close')"
   >
     <div class="test-content">

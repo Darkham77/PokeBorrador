@@ -8,6 +8,11 @@ import { makePokemon } from '../pokemonFactory';
 import type { Pokemon } from '@/types/pokemon';
 import type { ItemEffectResult } from '@/types/items';
 
+interface TMData {
+  id: string
+  name: string
+}
+
 /**
  * Item Effects Core Logic
  * Stateless functions to apply items to Pokémon.
@@ -19,16 +24,16 @@ import type { ItemEffectResult } from '@/types/items';
  */
 export const isValidTarget = (itemName: string, pokemon: Pokemon): boolean => {
   if (!pokemon) return false;
-  const effect = (itemEffects as Record<string, Function>)[itemName] || ((p: Pokemon) => getDynamicItemEffect(itemName, p));
+  const effect = (itemEffects as Record<string, (p: Pokemon) => ItemEffectResult>)[itemName] || ((p: Pokemon) => getDynamicItemEffect(itemName, p));
   if (typeof effect !== 'function') return false;
 
   // Clone to avoid mutation during check
-  const pClone = { ...pokemon, moves: pokemon.moves ? pokemon.moves.map(m => ({ ...m })) : [] } as Pokemon;
+  const pClone = { ...pokemon, moves: pokemon.moves ? pokemon.moves.map(m => m ? ({ ...m }) : null) : [] } as Pokemon;
   const result = effect(pClone);
-  return result && result.success;
+  return !!(result && result.success);
 };
 
-export const itemEffects: Record<string, (p: any) => ItemEffectResult> = {
+export const itemEffects: Record<string, (p: Pokemon) => ItemEffectResult> = {
   // --- Healing & Status ---
   'Poción': (p) => healHp(p, 20),
   'Súper Poción': (p) => healHp(p, 50),
@@ -82,23 +87,23 @@ export const itemEffects: Record<string, (p: any) => ItemEffectResult> = {
   },
 
   // --- Buffs Globales ---
-  'Repelente': (_state) => { (useBuffsStore() as any).addBuff('repel', 5 * 60); return { success: true, message: `activó un Repelente (5 min)` }; },
-  'Superrepelente': (_state) => { (useBuffsStore() as any).addBuff('repel', 15 * 60); return { success: true, message: `activó un Superrepelente (15 min)` }; },
-  'Máximo Repelente': (_state) => { (useBuffsStore() as any).addBuff('repel', 30 * 60); return { success: true, message: `activó un Máximo Repelente (30 min)` }; },
-  'Ticket Shiny': (_state) => { (useBuffsStore() as any).addBuff('shiny', 60 * 60); return { success: true, message: `activó el Ticket Shiny (60 min)` }; },
-  'Moneda Amuleto': (_state) => { (useBuffsStore() as any).addBuff('amulet', 60 * 60); return { success: true, message: `activó la Moneda Amuleto (60 min)` }; },
-  'Huevo Suerte Pequeño': (_state) => { (useBuffsStore() as any).addBuff('lucky-egg', 30 * 60); return { success: true, message: `activó un Huevo Suerte (30 min)` }; },
-  'Ticket Safari': (_state) => { (useBuffsStore() as any).addBuff('safari', 30 * 60); return { success: true, message: `activó el Ticket Safari (30 min)` }; },
-  'Ticket Cueva Celeste': (_state) => { (useBuffsStore() as any).addBuff('cerulean', 30 * 60); return { success: true, message: `activó el Ticket Cueva Celeste (30 min)` }; },
-  'Ticket Articuno': (_state) => { (useBuffsStore() as any).addBuff('articuno', 30 * 60); return { success: true, message: `activó el Ticket Articuno (30 min)` }; },
-  'Ticket Mewtwo': (_state) => { (useBuffsStore() as any).addBuff('mewtwo', 30 * 60); return { success: true, message: `activó el Ticket Mewtwo (30 min)` }; },
-  'Escáner de IVs': (_state) => { (useBuffsStore() as any).addBuff('iv-scanner', 60 * 60); return { success: true, message: `activó el Escáner de IVs (60 min)` }; },
-  'Incienso Fuego': (_state) => { (useBuffsStore() as any).addBuff('incense', 30 * 60, 'fire'); return { success: true, message: `activó el Incienso Fuego (30 min)` }; },
-  'Incienso Agua': (_state) => { (useBuffsStore() as any).addBuff('incense', 30 * 60, 'water'); return { success: true, message: `activó el Incienso Agua (30 min)` }; },
-  'Incienso Planta': (_state) => { (useBuffsStore() as any).addBuff('incense', 30 * 60, 'grass'); return { success: true, message: `activó el Incienso Planta (30 min)` }; },
-  'Incienso Normal': (_state) => { (useBuffsStore() as any).addBuff('incense', 30 * 60, 'normal'); return { success: true, message: `activó el Incienso Normal (30 min)` }; },
-  'Incienso Fantasma': (_state) => { (useBuffsStore() as any).addBuff('incense', 30 * 60, 'ghost'); return { success: true, message: `activó el Incienso Fantasma (30 min)` }; },
-  'Incienso Psíquico': (_state) => { (useBuffsStore() as any).addBuff('incense', 30 * 60, 'psychic'); return { success: true, message: `activó el Incienso Psíquico (30 min)` }; },
+  'Repelente': (_state) => { useBuffsStore().addBuff('repel', 5 * 60); return { success: true, message: `activó un Repelente (5 min)` }; },
+  'Superrepelente': (_state) => { useBuffsStore().addBuff('repel', 15 * 60); return { success: true, message: `activó un Superrepelente (15 min)` }; },
+  'Máximo Repelente': (_state) => { useBuffsStore().addBuff('repel', 30 * 60); return { success: true, message: `activó un Máximo Repelente (30 min)` }; },
+  'Ticket Shiny': (_state) => { useBuffsStore().addBuff('shiny', 60 * 60); return { success: true, message: `activó el Ticket Shiny (60 min)` }; },
+  'Moneda Amuleto': (_state) => { useBuffsStore().addBuff('amulet', 60 * 60); return { success: true, message: `activó la Moneda Amuleto (60 min)` }; },
+  'Huevo Suerte Pequeño': (_state) => { useBuffsStore().addBuff('lucky-egg', 30 * 60); return { success: true, message: `activó un Huevo Suerte (30 min)` }; },
+  'Ticket Safari': (_state) => { useBuffsStore().addBuff('safari', 30 * 60); return { success: true, message: `activó el Ticket Safari (30 min)` }; },
+  'Ticket Cueva Celeste': (_state) => { useBuffsStore().addBuff('cerulean', 30 * 60); return { success: true, message: `activó el Ticket Cueva Celeste (30 min)` }; },
+  'Ticket Articuno': (_state) => { useBuffsStore().addBuff('articuno', 30 * 60); return { success: true, message: `activó el Ticket Articuno (30 min)` }; },
+  'Ticket Mewtwo': (_state) => { useBuffsStore().addBuff('mewtwo', 30 * 60); return { success: true, message: `activó el Ticket Mewtwo (30 min)` }; },
+  'Escáner de IVs': (_state) => { useBuffsStore().addBuff('iv-scanner', 60 * 60); return { success: true, message: `activó el Escáner de IVs (60 min)` }; },
+  'Incienso Fuego': (_state) => { useBuffsStore().addBuff('incense', 30 * 60, 'fire'); return { success: true, message: `activó el Incienso Fuego (30 min)` }; },
+  'Incienso Agua': (_state) => { useBuffsStore().addBuff('incense', 30 * 60, 'water'); return { success: true, message: `activó el Incienso Agua (30 min)` }; },
+  'Incienso Planta': (_state) => { useBuffsStore().addBuff('incense', 30 * 60, 'grass'); return { success: true, message: `activó el Incienso Planta (30 min)` }; },
+  'Incienso Normal': (_state) => { useBuffsStore().addBuff('incense', 30 * 60, 'normal'); return { success: true, message: `activó el Incienso Normal (30 min)` }; },
+  'Incienso Fantasma': (_state) => { useBuffsStore().addBuff('incense', 30 * 60, 'ghost'); return { success: true, message: `activó el Incienso Fantasma (30 min)` }; },
+  'Incienso Psíquico': (_state) => { useBuffsStore().addBuff('incense', 30 * 60, 'psychic'); return { success: true, message: `activó el Incienso Psíquico (30 min)` }; },
 
   // --- Fósiles ---
   'Fósil Hélix': () => { return { success: true, message: reviveFossilTrigger('omanyte', 'Fósil Hélix') }; },
@@ -107,14 +112,14 @@ export const itemEffects: Record<string, (p: any) => ItemEffectResult> = {
 };
 
 function reviveFossilTrigger(pokemonId: string, itemName: string): string {
-  const gameStore = useGameStore() as any;
-  const uiStore = useUIStore() as any;
+  const gameStore = useGameStore();
+  const uiStore = useUIStore();
   
   const p = makePokemon(pokemonId, 1);
   if (!p) return 'error';
-  const result = gameStore.addPokemon(p, { notify: false });
+  gameStore.addPokemon(p, { notify: false });
   
-  uiStore.activeFossil = { pokemon: p, sentTo: result.target, itemName };
+  uiStore.activeFossil = { pokemonId: p.id, itemName };
   uiStore.isFossilRevivalOpen = true;
   return 'iniciando restauración...';
 }
@@ -132,11 +137,11 @@ export const getDynamicItemEffect = (itemName: string, p: Pokemon): ItemEffectRe
     if (!compatList.includes(tmId)) {
       return { success: false, message: 'Incompatible.' };
     }
-    const tmData = (GAME_TMS as any[]).find(t => t.id === tmId);
+    const tmData = (GAME_TMS as TMData[]).find(t => t.id === tmId);
     if (!tmData) return { success: false, message: 'MT inválida.' };
     
     // Check if pokemon already knows the move
-    if (p.moves.some(m => m.name === tmData.name)) {
+    if (p.moves.some(m => m && m.name === tmData.name)) {
       return { success: false, message: 'Ya conoce este movimiento.' };
     }
 
@@ -193,9 +198,10 @@ function curaTotal(p: Pokemon): ItemEffectResult {
 function restorePP(p: Pokemon, amount: number): ItemEffectResult {
   let changed = false;
   p.moves.forEach(m => {
+    if (!m) return;
     const max = m.maxPP || 35; // Fallback
     if (m.pp < max) {
-      m.pp = Math.min(max, m.pp + amount);
+      m.pp = Math.min(max, (m.pp || 0) + amount);
       changed = true;
     }
   });
@@ -214,3 +220,4 @@ function handleStone(p: Pokemon, stoneName: string): ItemEffectResult {
     targetId: nextId 
   };
 }
+

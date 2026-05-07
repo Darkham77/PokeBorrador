@@ -14,13 +14,13 @@ const props = defineProps({
 
 const isSimplified = inject('isModalPerformanceMode', ref(false))
 const isVisible = ref(false)
-const trigger = ref(null)
-const tooltip = ref(null)
+const trigger = ref<HTMLElement | null>(null)
+const tooltip = ref<HTMLElement | null>(null)
 const coords = ref({ top: 0, left: 0 })
 const activePosition = ref(props.position)
 const arrowOffset = ref({ x: 0, y: 0 })
 
-let timeout = null
+let timeout: ReturnType<typeof setTimeout> | null = null
 
 const updatePosition = () => {
   if (!trigger.value || !tooltip.value) return
@@ -135,7 +135,7 @@ const show = () => {
 }
 
 const isBlockedByClick = ref(false)
-let clickBlockTimeout = null
+let clickBlockTimeout: ReturnType<typeof setTimeout> | null = null
 
 const hide = () => {
   if (timeout) clearTimeout(timeout)
@@ -145,7 +145,7 @@ const hide = () => {
   window.removeEventListener('touchmove', hide)
 }
 
-const handleTriggerClick = (event) => {
+const handleTriggerClick = (event: MouseEvent) => {
   if (!props.hideOnClick) return
   
   // Intercept if we need to hide it

@@ -6,8 +6,8 @@ import { watch, onUnmounted } from 'vue'
  * Reactively manages a class on the document.body.
  * Ensures the class is removed when the component is unmounted.
  */
-export function useBodyClass(className, isEnabled) {
-  const updateClass = (val) => {
+export function useBodyClass(className: string, isEnabled: any) {
+  const updateClass = (val: boolean) => {
     if (val) {
       document.body.classList.add(className)
     } else {

@@ -16,7 +16,8 @@ export function getSpeciesHistory(id: string): string[] {
   const findPreEvo = (speciesId: string): string | null => {
     // 1. Level Evolutions
     for (const [from, data] of Object.entries(EVOLUTION_TABLE)) {
-      if ((data as any).to === speciesId) return from;
+      const evolutionTo = (data as any).to || (data as any).species;
+      if (evolutionTo === speciesId) return from;
     }
     // 2. Stone Evolutions
     for (const [from, data] of Object.entries(STONE_EVOLUTIONS)) {
@@ -43,5 +44,5 @@ export function getSpeciesHistory(id: string): string[] {
  */
 export function getFirstEvolution(id: string): string {
   const history = getSpeciesHistory(id);
-  return history[0];
+  return history[0] || id;
 }

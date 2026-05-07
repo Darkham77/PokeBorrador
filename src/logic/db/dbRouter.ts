@@ -1,10 +1,12 @@
 
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { createClient, type SupabaseClient, type RealtimeChannel, type User, type Session } from '@supabase/supabase-js';
 import { ProxyQuery } from './proxyQuery';
 import { initSQLite, persistSQLite, queryLocal } from './sqliteEngine';
 import { DATABASE_MIGRATIONS } from './migrations_data';
 import { useLoadingStore } from '@/stores/loading';
 import type { DBConfig, DBMode, DBRouterOptions, DBCompatibilityResponse, DBResponse } from '@/types/database';
+
+export type { DBCompatibilityResponse };
 
 /**
  * Unified Data Persistence Layer with Strict Session Isolation.
@@ -18,10 +20,10 @@ export class DBRouter {
   options: DBRouterOptions;
   _initialized: boolean;
   currentSessionId: string | null;
-  userSubscription: any;
+  userSubscription: RealtimeChannel | null;
   _timeOffset: number;
 
-  constructor(config: DBConfig = {}, mode: DBMode = 'online', options: DBRouterOptions = {}) {
+  constructor(config: DBConfig = { url: '', key: '' }, mode: DBMode = 'online', options: DBRouterOptions = {}) {
     this.config = config;
     this._realClient = null;
     this.mode = mode;
@@ -124,8 +126,8 @@ export class DBRouter {
         schema: 'public',
         table: 'profiles',
         filter: `id=eq.${userId}`
-      }, (payload: any) => {
-        const newSessionId = payload.new.current_session_id;
+      }, (payload: { new: { current_session_id?: string } }) => {
+        const newSessionId = payload?.new?.current_session_id;
         if (newSessionId && newSessionId !== this.currentSessionId) {
           this.handleSessionConflict();
         }
@@ -198,7 +200,7 @@ export class DBRouter {
   /**
    * Emulates Supabase RPC calls.
    */
-  async rpc(name: string, params: Record<string, any> = {}): Promise<DBResponse> {
+  async rpc(name: string, params: Record<string, unknown> = {}): Promise<DBResponse> {
     if (this.mode === 'offline') {
       console.log(`[DBRouter] Local RPC: ${name}`, params);
       const sqliteDb = await initSQLite();
@@ -206,10 +208,12 @@ export class DBRouter {
       // Implement specific local logic for critical RPCs
       if (name === 'fn_report_passive_battle') {
         const { p_opponent_id, p_result, p_report_data } = params;
-        sqliteDb.run(
-          `INSERT INTO passive_battle_reports (user_id, opponent_id, result, report_data) VALUES (?, ?, ?, ?)`,
-          ['local_user', p_opponent_id, p_result, JSON.stringify(p_report_data)]
-        );
+        if (sqliteDb && typeof sqliteDb.run === 'function') {
+          sqliteDb.run(
+            `INSERT INTO passive_battle_reports (user_id, opponent_id, result, report_data) VALUES (?, ?, ?, ?)`,
+            ['local_user', p_opponent_id, p_result, JSON.stringify(p_report_data)]
+          );
+        }
         await persistSQLite();
         return { data: { success: true }, error: null };
       }
@@ -224,8 +228,8 @@ export class DBRouter {
     // Online mode: direct call to Supabase
     try {
       return await client.rpc(name, params) as DBResponse;
-    } catch (err: any) {
-      const errMsg = err.message?.toLowerCase() || '';
+    } catch (err: unknown) {
+      const errMsg = (err instanceof Error ? err.message : String(err)).toLowerCase();
       if (errMsg.includes('fetch') || errMsg.includes('network') || errMsg.includes('failed to fetch')) {
         if (typeof window !== 'undefined') {
           window.dispatchEvent(new CustomEvent('db-connection-error'));
@@ -238,16 +242,19 @@ export class DBRouter {
   /**
    * Emulates Supabase Auth API.
    */
-  get auth(): any {
+  get auth() {
     if (this.mode === 'offline') {
-      const localUser = typeof localStorage !== 'undefined' ? JSON.parse(localStorage.getItem('pokevicio_local_user') || 'null') : null;
-      const user = localUser || { id: 'local_user', email: 'offline@pkv.io' };
+      const localUserStr = typeof localStorage !== 'undefined' ? localStorage.getItem('pokevicio_local_user') : null;
+      const localUser = localUserStr ? JSON.parse(localUserStr) as User : null;
+      const user = localUser || { id: 'local_user', email: 'offline@pkv.io' } as User;
+      const session = { access_token: 'mock', token_type: 'bearer', user, expires_at: 9999999999 } as unknown as Session;
       
       return {
         signOut: async () => ({ error: null }),
-        signInWithPassword: async () => ({ data: { user }, error: null }),
+        signInWithPassword: async () => ({ data: { user, session }, error: null }),
+        signUp: async () => ({ data: { user, session }, error: null }),
         getUser: async () => ({ data: { user }, error: null }),
-        getSession: async () => ({ data: { session: null }, error: null }),
+        getSession: async () => ({ data: { session }, error: null }),
         onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } })
       };
     }
@@ -263,35 +270,39 @@ export class DBRouter {
   /**
    * Emulates Supabase Realtime Channels.
    */
-  channel(name: string): any {
+  channel(name: string): RealtimeChannel {
     if (this.mode === 'offline') {
       const mockChannel = {
-        on: (type: string, _config: any, _callback: any) => {
-          // If only 2 args provided, config is the callback
+        on: (type: string, _filter: any, _callback: any) => {
           console.log(`[DBRouter] Mock Channel '${name}' subscribed to:`, type);
-          return mockChannel; // Chainable
+          return mockChannel; 
         },
-        subscribe: (cb: any) => {
+        subscribe: (cb?: (status: string) => void) => {
           if (cb) setTimeout(() => cb('SUBSCRIBED'), 10);
           return { unsubscribe: () => {} };
         },
-        send: (payload: any) => {
-          console.log(`[DBRouter] Mock Channel '${name}' send:`, payload);
+        send: (_args: any) => {
           return Promise.resolve('ok');
-        }
+        },
+        unsubscribe: () => {}
       };
-      return mockChannel;
+      return mockChannel as unknown as RealtimeChannel;
     }
 
     const client = this.realClient;
     if (!client) {
       console.warn(`[DBRouter] Channel '${name}' requested but online client not ready. Returning mock.`);
       // Return a basic mock that doesn't do anything to avoid crashes
-      return {
-        on: () => ({ subscribe: () => ({ unsubscribe: () => {} }) }),
-        subscribe: () => ({ unsubscribe: () => {} }),
-        send: () => Promise.resolve('ok')
-      };
+      const basicMock = {
+        on: () => basicMock,
+        subscribe: (cb?: (status: string) => void) => {
+          if (cb) setTimeout(() => cb('SUBSCRIBED'), 10);
+          return { unsubscribe: () => {} };
+        },
+        send: () => Promise.resolve('ok'),
+        unsubscribe: () => {}
+      } as unknown as RealtimeChannel;
+      return basicMock;
     }
 
     return client.channel(name);
@@ -303,21 +314,24 @@ export class DBRouter {
  * Ensures the client version is not greater than the DB version.
  */
 // Use the last migration ID as the client version (Automated)
-export const CLIENT_DB_VERSION = DATABASE_MIGRATIONS.length > 0 
-  ? parseInt(DATABASE_MIGRATIONS[DATABASE_MIGRATIONS.length - 1].id.split('_')[0]) 
+const lastMigration = DATABASE_MIGRATIONS.length > 0 ? DATABASE_MIGRATIONS[DATABASE_MIGRATIONS.length - 1] : null;
+export const CLIENT_DB_VERSION = lastMigration 
+  ? parseInt(lastMigration.id.split('_')[0] || '0') 
   : 0;
 
+
+
 export async function checkDBCompatibility(router: DBRouter): Promise<DBCompatibilityResponse> {
-  const loadingStore = useLoadingStore() as any;
+  const loadingStore = useLoadingStore();
   loadingStore.start('db_compat', 'Verificando Versión...', 'Comprobando compatibilidad de DB', false)
   try {
     let dbVersion = 0;
-    let rawValue: any = null;
+    let rawValue: unknown = null;
 
     const client = router.realClient;
     if (router.mode === 'offline' || !client) {
       const results = await queryLocal("SELECT value FROM system_config WHERE key = 'db_version'");
-      if (results.length > 0) rawValue = results[0].value;
+      if (results.length > 0) rawValue = (results[0] as { value: unknown }).value;
     } else {
       const { data, error } = await client
         .from('system_config')
@@ -325,7 +339,7 @@ export async function checkDBCompatibility(router: DBRouter): Promise<DBCompatib
         .eq('key', 'db_version')
         .single();
       
-      if (!error && data) rawValue = data.value;
+      if (!error && data) rawValue = (data as { value: unknown }).value;
     }
 
     if (rawValue) {
@@ -334,9 +348,10 @@ export async function checkDBCompatibility(router: DBRouter): Promise<DBCompatib
         try { rawValue = JSON.parse(rawValue); } catch (_e) { /* ignore */ }
       }
       
-      dbVersion = typeof rawValue === 'object' && rawValue !== null 
-        ? parseInt(rawValue.db_version || 0) 
-        : parseInt(rawValue || 0);
+      const valObj = rawValue as Record<string, unknown> | null;
+      dbVersion = (typeof rawValue === 'object' && valObj !== null && 'db_version' in valObj) 
+        ? parseInt((valObj.db_version as string | number) + '' || '0') 
+        : parseInt((rawValue as string | number) + '' || '0');
     }
 
     console.log(`[DBRouter] Compatibility Check: Client v${CLIENT_DB_VERSION} | DB v${dbVersion}`);
@@ -354,7 +369,7 @@ export async function checkDBCompatibility(router: DBRouter): Promise<DBCompatib
 
     loadingStore.finish('db_compat')
     return response;
-  } catch (e) {
+  } catch (e: unknown) {
     loadingStore.finish('db_compat')
     console.warn('[DBRouter] Compatibility check failed, assuming compatible.', e);
     return { compatible: true, client: CLIENT_DB_VERSION, db: 0 };

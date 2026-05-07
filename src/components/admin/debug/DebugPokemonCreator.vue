@@ -4,10 +4,37 @@ import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { NATURE_DATA } from '@/data/natures'
 import { ABILITY_DATA } from '@/data/abilities'
 
+interface PokemonConfig {
+  id: string
+  level: number
+  isShiny: boolean
+  isGuardian: boolean
+  nature: string
+  ability: string
+  gender: 'M' | 'F'
+  nickname: string
+  friendship: number
+  heldItem: string
+  mapId: string
+  ivs: Record<string, number>
+  moves: (string | null)[]
+  protocol: string
+}
+
+interface SpeciesOption {
+  id: string
+  name: string
+}
+
+interface MapOption {
+  id: string
+  name: string
+}
+
 const creatorRef = ref<HTMLElement | null>(null)
 
 // --- STATE ---
-const config = ref({
+const config = ref<PokemonConfig>({
   id: 'bulbasaur',
   level: 5,
   isShiny: false,
@@ -19,8 +46,8 @@ const config = ref({
   friendship: 70,
   heldItem: '',
   mapId: 'route_1',
-  ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 } as Record<string, number>,
-  moves: [] as (string | null)[],
+  ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
+  moves: [],
   protocol: 'catch'
 })
 
@@ -36,9 +63,9 @@ const showAbilityDropdown = ref(false)
 const showMapDropdown = ref(false)
 const activeMoveSlot = ref<number | null>(null)
 
-const allSpecies = computed(() => {
+const allSpecies = computed<SpeciesOption[]>(() => {
   const db = pokemonDataProvider.getPokemonDb()
-  return Object.keys(db).map(id => ({ id, name: db[id].name }))
+  return Object.keys(db).map(id => ({ id, name: db[id]?.name || id }))
 })
 
 const filteredSpecies = computed(() => {
@@ -58,9 +85,9 @@ const filteredAbilities = computed(() => {
   return allAbilities.filter(a => a.toLowerCase().includes(s))
 })
 
-const allMaps = computed(() => {
+const allMaps = computed<MapOption[]>(() => {
   const maps = pokemonDataProvider.getMaps()
-  return Object.keys(maps).map(id => ({ id, name: maps[id].name || id }))
+  return Object.keys(maps).map(id => ({ id, name: maps[id]?.name || id }))
 })
 
 const filteredMaps = computed(() => {
@@ -68,7 +95,7 @@ const filteredMaps = computed(() => {
   return allMaps.value.filter(m => m.id.includes(s) || m.name.toLowerCase().includes(s))
 })
 
-const speciesMoves = computed(() => {
+const speciesMoves = computed<string[]>(() => {
   const data = pokemonDataProvider.getPokemonData(config.value.id)
   if (!data || !data.learnset) return []
   return [...new Set(data.learnset.map(m => m.name))]
@@ -88,7 +115,7 @@ const baseStats = computed(() => {
   }
 })
 
-function selectSpecies(p: any) {
+function selectSpecies(p: SpeciesOption) {
   config.value.id = p.id
   speciesSearch.value = p.name.toUpperCase()
   showSpeciesDropdown.value = false
@@ -96,7 +123,7 @@ function selectSpecies(p: any) {
   // Update default ability for species
   const abilities = pokemonDataProvider.getSpeciesAbilities(p.id)
   if (abilities.length > 0) {
-    config.value.ability = abilities[0]
+    config.value.ability = abilities[0] || ''
     abilitySearch.value = config.value.ability.toUpperCase()
   }
   
@@ -119,7 +146,7 @@ function selectAbility(a: string) {
   showAbilityDropdown.value = false
 }
 
-function selectMap(m: any) {
+function selectMap(m: MapOption) {
   config.value.mapId = m.id
   mapSearch.value = m.name.toUpperCase()
   showMapDropdown.value = false
@@ -131,9 +158,9 @@ function autoFillMoves() {
   
   // Filter moves learned at or below current level, sort by level desc
   const learnedMoves = data.learnset
-    .filter((m: any) => m.lv <= config.value.level)
-    .sort((a: any, b: any) => b.lv - a.lv)
-    .map((m: any) => m.name)
+    .filter(m => m.lv <= config.value.level)
+    .sort((a, b) => b.lv - a.lv)
+    .map(m => m.name)
   
   // Get the 4 most recent unique moves
   const uniqueMoves = [...new Set(learnedMoves)].slice(0, 4)
@@ -142,7 +169,7 @@ function autoFillMoves() {
   const finalMoves = [...uniqueMoves]
   while (finalMoves.length < 4) finalMoves.push(null)
   
-  config.value.moves = finalMoves as (string | null)[]
+  config.value.moves = finalMoves
 }
 
 function randomFillMoves() {
@@ -150,29 +177,30 @@ function randomFillMoves() {
   if (!data?.learnset || data.learnset.length === 0) return
 
   // Get all unique move names from learnset
-  const allLearnsetMoves = [...new Set(data.learnset.map((m: any) => m.name))]
+  const allLearnsetMoves = [...new Set(data.learnset.map(m => m.name))]
   
   // Shuffle and pick 4
   const shuffled = allLearnsetMoves.sort(() => 0.5 - Math.random())
   const selected = shuffled.slice(0, 4)
   
   // Pad with nulls
-  while (selected.length < 4) (selected as any).push(null)
+  const finalMoves: (string | null)[] = [...selected]
+  while (finalMoves.length < 4) finalMoves.push(null)
   
-  config.value.moves = selected as (string | null)[]
+  config.value.moves = finalMoves
 }
 
 // --- ACTIONS ---
 async function executeAction(protocol: string) {
-  if (!(window as any).__VITE_DEBUG__) return
+  if (!window.__VITE_DEBUG__) return
   
   config.value.protocol = protocol
   if (protocol === 'encounter') {
     // Note: User flagged encounter logic as potentially non-migrated. 
     // Manual testing only for now.
-    await (window as any).__VITE_DEBUG__.spawnEncounter(config.value)
+    await window.__VITE_DEBUG__.spawnEncounter?.(config.value)
   } else {
-    await (window as any).__VITE_DEBUG__.createPokemon(config.value)
+    await window.__VITE_DEBUG__.createPokemon?.(config.value)
   }
 }
 
@@ -181,9 +209,10 @@ function handleRandomize() {
   if (speciesList.length === 0) return
   
   const randomSpecies = speciesList[Math.floor(Math.random() * speciesList.length)]
+  if (!randomSpecies) return
   
   config.value.id = randomSpecies.id
-  speciesSearch.value = randomSpecies.name.toUpperCase()
+  speciesSearch.value = (randomSpecies.name || '').toUpperCase()
   
   config.value.level = Math.floor(Math.random() * 100) + 1
   
@@ -191,13 +220,19 @@ function handleRandomize() {
   config.value.isGuardian = Math.random() < 0.01 // 1% guardian
   
   const natures = allNatures
-  config.value.nature = natures[Math.floor(Math.random() * natures.length)]
-  natureSearch.value = config.value.nature.toUpperCase()
+  const randomNature = natures[Math.floor(Math.random() * natures.length)]
+  if (randomNature) {
+    config.value.nature = randomNature
+    natureSearch.value = randomNature.toUpperCase()
+  }
   
   const abilities = pokemonDataProvider.getSpeciesAbilities(randomSpecies.id)
   if (abilities.length > 0) {
-    config.value.ability = abilities[Math.floor(Math.random() * abilities.length)]
-    abilitySearch.value = config.value.ability.toUpperCase()
+    const randomAbility = abilities[Math.floor(Math.random() * abilities.length)]
+    if (randomAbility) {
+      config.value.ability = randomAbility
+      abilitySearch.value = randomAbility.toUpperCase()
+    }
   }
   
   config.value.gender = Math.random() > 0.5 ? 'M' : 'F'
@@ -207,8 +242,10 @@ function handleRandomize() {
   const maps = allMaps.value
   if (maps.length > 0) {
     const randomMap = maps[Math.floor(Math.random() * maps.length)]
-    config.value.mapId = randomMap.id
-    mapSearch.value = randomMap.name.toUpperCase()
+    if (randomMap) {
+      config.value.mapId = randomMap.id
+      mapSearch.value = (randomMap.name || '').toUpperCase()
+    }
   }
   
   // IVs
@@ -244,8 +281,10 @@ onMounted(() => {
   
   if (allMaps.value.length > 0) {
     const firstMap = allMaps.value[0]
-    config.value.mapId = firstMap.id
-    mapSearch.value = firstMap.name.toUpperCase()
+    if (firstMap) {
+      config.value.mapId = firstMap.id
+      mapSearch.value = (firstMap.name || '').toUpperCase()
+    }
   }
   
   window.addEventListener('mousedown', handleClickOutside)
@@ -333,7 +372,7 @@ onUnmounted(() => {
           
         <PokemonIVEditor 
           :ivs="config.ivs" 
-          @update:iv="(stat, val) => config.ivs[stat] = val" 
+          @update:iv="(stat: string, val: number) => (config.ivs)[stat] = val" 
         />
 
         <!-- Nature & Ability -->

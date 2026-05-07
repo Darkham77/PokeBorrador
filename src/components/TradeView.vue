@@ -6,6 +6,7 @@ import TradePokemonSelector from './social/TradePokemonSelector.vue'
 import BaseModal from '@/components/common/BaseModal.vue'
 import TradeSidePanel from './social/TradeSidePanel.vue'
 import TradeFooter from './social/TradeFooter.vue'
+import type { Pokemon } from '@/types/pokemon'
 
 interface Props {
   show?: boolean
@@ -19,8 +20,8 @@ const emit = defineEmits<{
   (e: 'close'): void
 }>()
 
-const gameStore = useGameStore() as any
-const tradeStore = useTradeStore() as any
+const gameStore = useGameStore()
+const tradeStore = useTradeStore()
 
 const gs = computed(() => gameStore.state)
 const target = computed(() => tradeStore.tradeTarget)
@@ -33,11 +34,13 @@ const offerMoney = ref(0)
 const requestMoney = ref(0)
 const message = ref('')
 
+type TradePoke = Pokemon & { _source: 'team' | 'box' }
+
 const selectorState = reactive({
   show: false,
   side: 'offer', // 'offer' or 'request'
   title: '',
-  list: [] as any[]
+  list: [] as TradePoke[]
 })
 
 const openSelector = (side: string) => {
@@ -46,18 +49,18 @@ const openSelector = (side: string) => {
   
   if (side === 'offer') {
     selectorState.title = 'SELECCIONA TU POKÉMON'
-    const team = gs.value.team.map((p: any) => ({ ...p, _source: 'team' }))
-    const box = gs.value.box.map((p: any) => ({ ...p, _source: 'box' }))
+    const team = gs.value.team.map((p) => ({ ...p, _source: 'team' as const }))
+    const box = gs.value.box.map((p) => ({ ...p, _source: 'box' as const }))
     selectorState.list = [...team, ...box]
   } else {
     selectorState.title = `POKÉMON DE ${target.value?.username}`
-    const team = friendSave.value.team.map((p: any) => ({ ...p, _source: 'team' }))
-    const box = (friendSave.value.box || []).map((p: any) => ({ ...p, _source: 'box' }))
+    const team = (friendSave.value.team || []).map((p) => ({ ...p, _source: 'team' as const }))
+    const box = (friendSave.value.box || []).map((p) => ({ ...p, _source: 'box' as const }))
     selectorState.list = [...team, ...box]
   }
 }
 
-const handleSelectorSelect = (poke: any) => {
+const handleSelectorSelect = (poke: TradePoke) => {
   if (selectorState.side === 'offer') {
     tradeStore.tradeOfferPoke = poke
   } else {

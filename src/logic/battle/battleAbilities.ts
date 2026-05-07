@@ -1,9 +1,20 @@
 
-/**
- * Battle Abilities logic.
- */
+import type { Pokemon } from '@/types/pokemon';
+import type { BattleStages, LogFn } from '@/types/battle';
 
-export function handleEntryAbilities(p1: any, p2: any, p1Stages: any, p2Stages: any, addLogFn: any) {
+interface BattleMove {
+  name: string
+  flinch?: boolean
+}
+
+interface BattleMoveData {
+  cat?: 'physical' | 'special' | 'status'
+  type?: string
+  sound?: boolean
+  [key: string]: unknown
+}
+
+export function handleEntryAbilities(p1: Pokemon, p2: Pokemon, p1Stages: BattleStages, p2Stages: BattleStages, addLogFn: LogFn) {
   if (!p1 || !p2) return;
 
   // Intimidación (Intimidate)
@@ -27,7 +38,7 @@ export function handleEntryAbilities(p1: any, p2: any, p1Stages: any, p2Stages: 
   }
 }
 
-export function applyAbilityEffects(attacker: any, defender: any, move: any, _damageResult: any, MOVE_DATA: any, addLogFn: any) {
+export function applyAbilityEffects(attacker: Pokemon, defender: Pokemon, move: BattleMove, _damageResult: unknown, MOVE_DATA: Record<string, BattleMoveData>, addLogFn: LogFn) {
   const ab = defender.ability;
   const md = MOVE_DATA[move.name] || {};
 
@@ -48,7 +59,8 @@ export function applyAbilityEffects(attacker: any, defender: any, move: any, _da
     if (ab === 'Efecto Espora' && !attacker.status) {
       const roll = Math.random();
       if (roll < 0.33) {
-        attacker.status = 'sleep'; attacker.sleepTurns = 1 + Math.floor(Math.random() * 3);
+        attacker.status = 'sleep'; 
+        (attacker as any).sleepTurns = 1 + Math.floor(Math.random() * 3);
         addLogFn(`¡El Efecto Espora de ${defender.name} durmió a ${attacker.name}!`, 'log-info', defender);
       } else if (roll < 0.66) {
         attacker.status = 'paralyze';
@@ -62,8 +74,8 @@ export function applyAbilityEffects(attacker: any, defender: any, move: any, _da
 
   // Stench (Hedor)
   if (attacker.ability === 'Hedor' && Math.random() < 0.1) {
-    if (!defender.flinched) {
-      defender.flinched = true;
+    if (!(defender as any).flinched) {
+      (defender as any).flinched = true;
       addLogFn(`¡El Hedor de ${attacker.name} hizo retroceder a ${defender.name}!`, 'log-info', attacker);
     }
   }
@@ -72,7 +84,7 @@ export function applyAbilityEffects(attacker: any, defender: any, move: any, _da
 /**
  * Checks for ability-based immunities (Absorb, Levitate, etc.)
  */
-export function checkAbilityImmunity(_attacker: any, defender: any, move: any, MOVE_DATA: any, addLogFn: any, ctx: any = {}) {
+export function checkAbilityImmunity(_attacker: Pokemon, defender: Pokemon, move: BattleMove, MOVE_DATA: Record<string, BattleMoveData>, addLogFn: LogFn, ctx: { b?: { player: Pokemon, enemy: Pokemon }, playerStages?: BattleStages, enemyStages?: BattleStages } = {}) {
   const ab = defender.ability;
   const md = MOVE_DATA[move.name] || {};
 
@@ -126,14 +138,14 @@ export function checkAbilityImmunity(_attacker: any, defender: any, move: any, M
   return false;
 }
 
-export function handleOnSwitchOut(pokemon: any, addLogFn: any) {
+export function handleOnSwitchOut(pokemon: Pokemon, addLogFn: LogFn) {
   if (pokemon.ability === 'Cura Natural' && pokemon.status) {
     pokemon.status = null;
     addLogFn(`¡La Cura Natural de ${pokemon.name} sanó sus problemas de estado!`, 'log-info', pokemon);
   }
 }
 
-export function handleStatusSync(attacker: any, defender: any, status: any, addLogFn: any) {
+export function handleStatusSync(attacker: Pokemon, defender: Pokemon, status: string | null, addLogFn: LogFn) {
   if (defender.ability === 'Sincronía' && status) {
     if (!attacker.status) {
       attacker.status = status;

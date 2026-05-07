@@ -88,8 +88,8 @@ export function getConflictZones(allMapIds: string[], date: Date = new Date()): 
   
   while (zones.length < 5 && zones.length < allMapIds.length) {
     const idx = Math.abs(tempSeed) % allMapIds.length
-    const mId = allMapIds[idx]
-    if (!zones.includes(mId)) zones.push(mId)
+    const mId = allMapIds[idx] || '';
+    if (mId && !zones.includes(mId)) zones.push(mId)
     tempSeed = hashString(tempSeed.toString())
   }
   return zones
@@ -114,10 +114,14 @@ export function getGuardianData(mapId: string, allMapIds: string[], date: Date =
   if (rarityRand >= 90) tier = 'elite'
   else if (rarityRand >= 60) tier = 'rare'
 
-  const pool = GUARDIAN_POOL[tier]
-  const index = seed % pool.length
+  const pool = GUARDIAN_POOL[tier] || GUARDIAN_POOL['common'] || [];
+  if (pool.length === 0) return null;
+  const index = seed % pool.length;
+  const base = pool[index];
+  if (!base) return null;
+
   return {
-    ...pool[index],
+    ...base,
     tier,
     isGuardian: true
   }

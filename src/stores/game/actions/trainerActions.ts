@@ -2,16 +2,18 @@ import { TRAINER_RANKS, MARKET_UNLOCKS } from '@/data/trainer'
 import { levelUpPokemon } from '@/logic/pokemonFactory'
 import { useUIStore } from '@/stores/ui'
 import { useEventStore } from '@/stores/events'
+import type { GameState } from '@/types/game'
+import type { Pokemon } from '@/types/pokemon'
 
-export function useTrainerActions(state, scheduleSave) {
+export function useTrainerActions(state: GameState, scheduleSave: () => Promise<void>) {
   function getTrainerRank() {
     const idx = Math.min(state.trainerLevel - 1, TRAINER_RANKS.length - 1)
     return TRAINER_RANKS[idx]
   }
 
-  function addTrainerExp(amount) {
-    const uiStore = useUIStore() as any
-    const eventStore = useEventStore() as any
+  function addTrainerExp(amount: number) {
+    const uiStore = useUIStore()
+    const eventStore = useEventStore()
     const evBonus = (eventStore.globalMultipliers?.exp || 1) - 1
     const totalMult = 1 + evBonus
     if (totalMult > 1) amount = Math.round(amount * totalMult)
@@ -20,17 +22,18 @@ export function useTrainerActions(state, scheduleSave) {
     const MAX_LEVEL = 30
     
     let currentRank = getTrainerRank()
+    if (!currentRank) return
 
-
-    while (state.trainerExp >= currentRank.expNeeded && state.trainerLevel < MAX_LEVEL) {
-      state.trainerExp -= currentRank.expNeeded
+    while (state.trainerExp >= (currentRank?.expNeeded || 0) && state.trainerLevel < MAX_LEVEL) {
+      state.trainerExp -= (currentRank?.expNeeded || 0)
       state.trainerLevel++
-
       
       currentRank = getTrainerRank()
-      uiStore.notify(`¡Subiste al rango ${currentRank.title}! Nivel ${state.trainerLevel}`, '⭐')
+      if (currentRank) {
+        uiStore.notify(`¡Subiste al rango ${currentRank.title}! Nivel ${state.trainerLevel}`, '⭐')
+      }
       
-      const unlocks = MARKET_UNLOCKS[state.trainerLevel]
+      const unlocks = (MARKET_UNLOCKS as any)[state.trainerLevel]
       if (unlocks) {
         setTimeout(() => uiStore.notify(`¡Nuevos items en el Poké Market!`, '🛒'), 1500)
       }
@@ -39,19 +42,19 @@ export function useTrainerActions(state, scheduleSave) {
     scheduleSave()
   }
 
-  function checkLevelUp(pokemon) {
-    const uiStore = useUIStore() as any
-    const learnQueue = []
+  function checkLevelUp(pokemon: Pokemon) {
+    const uiStore = useUIStore()
+    const learnQueue: any[] = []
 
-    while ((pokemon as any).exp >= (pokemon as any).expNeeded && (pokemon as any).level < 100) {
-      (pokemon as any).exp -= (pokemon as any).expNeeded
+    while (pokemon.exp >= pokemon.expNeeded && pokemon.level < 100) {
+      pokemon.exp -= pokemon.expNeeded
       const pendingMoves = levelUpPokemon(pokemon)
       
       if (pendingMoves === null) break // Blocked by Everstone
 
-      uiStore.notify(`¡${(pokemon as any).name} subió al nivel ${(pokemon as any).level}!`, '📈')
+      uiStore.notify(`¡${pokemon.name} subió al nivel ${pokemon.level}!`, '📈')
       
-      if (pendingMoves.length > 0) {
+      if (pendingMoves && pendingMoves.length > 0) {
         pendingMoves.forEach(m => learnQueue.push({ pokemon, move: m }))
       }
     }

@@ -82,8 +82,8 @@ const getStatLabel = (key: string) => {
         <div 
           class="fill iv-fill" 
           :style="{ 
-            width: (iv/31*100) + '%', 
-            background: getIvColor(iv)
+            width: ((iv as number)/31*100) + '%', 
+            background: getIvColor(iv as number)
           }"
         />
       </div>
@@ -96,12 +96,12 @@ const getStatLabel = (key: string) => {
     >
       <span
         class="grade"
-        :style="{ color: getStatGrade(mode === 'iv' ? value : iv).color }"
-      >{{ getStatGrade(mode === 'iv' ? value : iv).label }}</span>
+        :style="{ color: getStatGrade(mode === 'iv' ? (value || 0) : (iv || 0)).color }"
+      >{{ getStatGrade(mode === 'iv' ? (value || 0) : (iv || 0)).label }}</span>
       <span
         v-if="mode === 'full'"
         class="iv-num"
-        :style="{ color: getIvColor(iv) }"
+        :style="{ color: getIvColor(iv || 0) }"
       >{{ iv }} IV</span>
     </div>
   </div>

@@ -6,17 +6,17 @@ import { useUIStore } from './ui'
 import { useAudioStore } from './audio'
 
 export const useChatStore = defineStore('chat', () => {
-  const authStore = useAuthStore() as any
-  const gameStore = useGameStore() as any
-  const uiStore = useUIStore() as any
-  const audioStore = useAudioStore() as any
+  const authStore = useAuthStore()
+  const gameStore = useGameStore()
+  const uiStore = useUIStore()
+  const audioStore = useAudioStore()
 
-  const globalMessages = ref([])
+  const globalMessages = ref<any[]>([])
   const activeChatId = ref('global') // 'global' or userId
   
-  let globalChannel = null
-  let inboxChannel = null
-  const outboxChannels = {}
+  let globalChannel: any = null
+  let inboxChannel: any = null
+  const outboxChannels: any = {}
 
   // Computed proxy to private chats in game state for persistence
   const privateChats = reactive(gameStore.state.chats || {})
@@ -29,7 +29,9 @@ export const useChatStore = defineStore('chat', () => {
   async function loadGlobalHistory() {
     // If offline, ProxyQuery will handle the local SELECT
 
-    const { data, error } = await gameStore.db
+    const db = gameStore.db
+    if (!db) return
+    const { data, error } = await db
       .from('global_chat_messages')
       .select('*')
       .order('created_at', { ascending: false })
@@ -46,12 +48,13 @@ export const useChatStore = defineStore('chat', () => {
     await loadGlobalHistory()
 
     const db = gameStore.db
+    if (!db) return
     globalChannel = db.channel('global-chat-room')
       .on('postgres_changes', {
         event: 'INSERT',
         schema: 'public',
         table: 'global_chat_messages'
-      }, ({ new: row }) => {
+      }, ({ new: row }: { new: any }) => {
         if (!globalMessages.value.some(m => m.id === row.id)) {
           globalMessages.value.push(row)
           if (globalMessages.value.length > 50) globalMessages.value.shift()
@@ -69,15 +72,16 @@ export const useChatStore = defineStore('chat', () => {
     if (!authStore.user || inboxChannel) return
 
     const db = gameStore.db
+    if (!db) return
     inboxChannel = db.channel(`chat-inbox-${authStore.user.id}`)
-      .on('broadcast', { event: 'chat_msg' }, ({ payload }) => {
+      inboxChannel.on('broadcast', { event: 'private_message' }, ({ payload }: { payload: any }) => {
         handleIncomingPrivate(payload)
         audioStore.receivedMsg(); // Sonido al recibir mensaje privado
       })
       .subscribe()
   }
 
-  function handleIncomingPrivate(payload) {
+  function handleIncomingPrivate(payload: any) {
     const friendId = payload.senderId
     
     if (!privateChats[friendId]) {
@@ -93,16 +97,16 @@ export const useChatStore = defineStore('chat', () => {
     const chat = privateChats[friendId]
     
     // Evitar duplicados sutiles (broadcast propio)
-    const isDup = (chat as any).messages.some(m => m.timestamp === payload.timestamp && m.text === payload.text)
+    const isDup = chat.messages.some((m: any) => m.timestamp === payload.timestamp && m.text === payload.text)
     if (isDup) return
 
-    (chat as any).messages.push(payload)
+    chat.messages.push(payload)
     chat.lastInteraction = Date.now()
     
     // Limitar historial por chat (25 mensajes)
-    if ((chat as any).messages.length > 25) (chat as any).messages.shift()
+    if (chat.messages.length > 25) chat.messages.shift()
 
-    if (activeChatId.value !== friendId && payload.senderId !== authStore.user.id) {
+    if (activeChatId.value !== friendId && payload.senderId !== authStore.user?.id) {
       chat.unreadCount++
       uiStore.notify(`Mensaje de ${chat.username}`, '💬')
     }
@@ -111,18 +115,18 @@ export const useChatStore = defineStore('chat', () => {
     gameStore.state.chats = { ...privateChats }
   }
 
-  async function sendGlobalMessage(text) {
-    if (!authStore.user || !text.trim()) return
+  async function sendGlobalMessage(text: string) {
+    if (!authStore.user || !text.trim() || !gameStore.db) return
 
     const payload = {
       user_id: authStore.user.id,
-      username: gameStore.state.trainer || authStore.user?.user_metadata?.username || 'Entrenador',
+      username: gameStore.state.trainer || (authStore.user as any).user_metadata?.username || 'Entrenador',
       message: text.slice(0, 180),
       player_class: gameStore.state.playerClass,
       trainer_level: gameStore.state.trainerLevel || 1
     }
 
-    const { error } = await (gameStore.db as any).from('global_chat_messages').insert(payload)
+    const { error } = await gameStore.db.from('global_chat_messages').insert(payload)
     if (error) {
       console.error('[ChatStore] Global message error:', error)
     } else {
@@ -135,32 +139,32 @@ export const useChatStore = defineStore('chat', () => {
           ...payload,
           created_at: new Date().toISOString()
         }
-        globalMessages.value.push(localRow)
+        globalMessages.value.push(localRow as any)
         if (globalMessages.value.length > 50) globalMessages.value.shift()
       }
     }
   }
 
-  async function sendPrivateMessage(friendId, text) {
-    if (!authStore.user || !text.trim() || !privateChats[friendId]) return
+  async function sendPrivateMessage(friendId: string, text: string) {
+    if (!authStore.user || !text.trim() || !privateChats[friendId] || !gameStore.db) return
 
     const payload = {
       senderId: authStore.user.id,
-      senderName: gameStore.state.trainer || authStore.user?.user_metadata?.username || 'Entrenador',
+      senderName: gameStore.state.trainer || (authStore.user as any).user_metadata?.username || 'Entrenador',
       text: text.slice(0, 250),
       timestamp: new Date().toISOString()
     }
 
     const db = gameStore.db
     // 1. Enviar vía broadcast
-    if (!outboxChannels[friendId]) {
-      outboxChannels[friendId] = db.channel(`chat-inbox-${friendId}`).subscribe((status) => {
-        if (status === 'SUBSCRIBED') {
-          outboxChannels[friendId].send({ type: 'broadcast', event: 'chat_msg', payload })
+    if (!(outboxChannels as any)[friendId]) {
+      (outboxChannels as any)[friendId] = db.channel(`chat-inbox-${friendId}`).subscribe((status: string) => {
+        if (status === 'SUBSCRIBED' && (outboxChannels as any)[friendId]) {
+          (outboxChannels as any)[friendId].send({ type: 'broadcast', event: 'private_message', payload })
         }
       })
     } else {
-      outboxChannels[friendId].send({ type: 'broadcast', event: 'chat_msg', payload })
+      (outboxChannels as any)[friendId].send({ type: 'broadcast', event: 'private_message', payload })
     }
 
     // 2. Agregar a historial propio y persistir
@@ -168,7 +172,7 @@ export const useChatStore = defineStore('chat', () => {
     audioStore.sentMsg(); // Sonido al enviar privado
   }
 
-  function openChat(friendId, username) {
+  function openChat(friendId: string, username: string) {
     if (!privateChats[friendId]) {
       privateChats[friendId] = {
         username: username || 'Entrenador',
@@ -183,7 +187,7 @@ export const useChatStore = defineStore('chat', () => {
     activeChatId.value = friendId
   }
 
-  function closeChat(friendId) {
+  function closeChat(friendId: string) {
     if (privateChats[friendId]) {
       delete privateChats[friendId]
       gameStore.state.chats = { ...privateChats }

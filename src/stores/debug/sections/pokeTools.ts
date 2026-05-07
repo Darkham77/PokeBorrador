@@ -1,10 +1,10 @@
-export function registerPokeTools(debug, { game, ui, mapStore }) {
+export function registerPokeTools(debug: any, { game, ui, mapStore }: { game: any, ui: any, mapStore: any }) {
   debug.register({
     id: 'poke-set-pokedex-mode',
     label: 'MODO POKEDEX',
     command: 'setPokedexMode',
     category: 'pokes',
-    action: async (mode) => {
+    action: async (mode: string) => {
       if (mode === 'real') {
         ui.debugPokedexMode = null
         await game.loadGame()
@@ -27,9 +27,9 @@ export function registerPokeTools(debug, { game, ui, mapStore }) {
       
       const caughtIds = new Set()
       const seenIds = new Set()
-      game.state.team.forEach(p => { if (p?.id) { caughtIds.add((p as any).id); seenIds.add((p as any).id) } })
+      game.state.team.forEach((p: any) => { if (p?.id) { caughtIds.add((p as any).id); seenIds.add((p as any).id) } })
       if (game.state.box) {
-        game.state.box.forEach(p => { if (p?.id) { caughtIds.add((p as any).id); seenIds.add((p as any).id) } })
+        game.state.box.forEach((p: any) => { if (p?.id) { caughtIds.add((p as any).id); seenIds.add((p as any).id) } })
       }
       game.state.pokedex = Array.from(caughtIds)
       game.state.seenPokedex = Array.from(seenIds)
@@ -144,5 +144,23 @@ export function registerPokeTools(debug, { game, ui, mapStore }) {
       ui.notify('Debug: Pantalla de Iniciales forzada', '🛡️')
     },
     description: 'Fuerza la aparición de la pantalla de selección de Pokémon inicial.'
+  })
+
+  debug.register({
+    id: 'poke-heal-all',
+    label: 'CURAR EQUIPO',
+    command: 'healAll',
+    category: 'pokes',
+    action: () => {
+      game.state.team.forEach((p: any) => {
+        if (p) {
+          p.hp = p.maxHp
+          if (p.moves) (p.moves as any[]).forEach((m: any) => { if (m) m.pp = m.maxPP })
+          p.status = null
+        }
+      })
+      ui.notify('Equipo curado', '💊')
+    },
+    description: 'Cura completamente a todos los Pokémon del equipo.'
   })
 }

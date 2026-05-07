@@ -3,7 +3,7 @@ import { useUIStore } from '@/stores/ui'
 import { useGameStore } from '@/stores/game'
 import { useWindowListener, useDocumentListener } from '@/composables/useWindowListener'
 
-export function useMainLayout(hudRef, hudBottomRef, innerHudRef) {
+export function useMainLayout(hudRef: any, hudBottomRef: any, innerHudRef: any) {
   const uiStore = useUIStore()
   const gameStore = useGameStore()
 
@@ -17,7 +17,7 @@ export function useMainLayout(hudRef, hudBottomRef, innerHudRef) {
   })
 
   // 1. Outside Click logic
-  function handleOutsideClick(e) {
+  function handleOutsideClick(e: any) {
     if (!uiStore.openHudGroup) return
 
     const isInsideTopHud = hudRef.value?.contains(e.target)
@@ -32,7 +32,7 @@ export function useMainLayout(hudRef, hudBottomRef, innerHudRef) {
   // 2. Scroll logic
   let lastScrollY = 0
   let scrollTicking = false
-  function handleScroll(e) {
+  function handleScroll(e: any) {
     if (scrollTicking) return
     scrollTicking = true
     

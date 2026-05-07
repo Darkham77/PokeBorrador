@@ -9,14 +9,16 @@ import { useUIStore } from '@/stores/ui'
 import { useEventStore } from '@/stores/events'
 import { GYMS } from '@/data/gyms'
 import { useModalStore } from '@/stores/modals'
+import type { DaycareMission } from '@/types/breeding'
+import type { Event as GameEvent } from '@/logic/events/eventEngine'
 
-const gameStore = useGameStore() as any
-const mapStore = useMapStore() as any
-const uiStore = useUIStore() as any
-const eventStore = useEventStore() as any
-const modalStore = useModalStore() as any
+const gameStore = useGameStore()
+const mapStore = useMapStore()
+const uiStore = useUIStore()
+const eventStore = useEventStore()
+const modalStore = useModalStore()
 
-const navigateToMap = (mapId: string | number) => mapStore.navigate(mapId)
+const navigateToMap = (mapId: string | number) => mapStore.navigate(String(mapId))
 
 const openTab = (tab: string) => {
   uiStore.activeTab = tab
@@ -29,7 +31,7 @@ const openCenter = () => {
 // Mapeo de misiones para los sprites
 const missionSprites = computed(() => {
   const missions = gameStore.state.daycare_missions || []
-  return Array.from(new Set(missions.map(m => m?.trainerSprite).filter(Boolean))).slice(0, 4)
+  return Array.from(new Set(missions.map((m: DaycareMission) => m?.trainerSprite).filter(Boolean))).slice(0, 4) as string[]
 })
 
 const gymSprites = computed(() => {
@@ -40,7 +42,7 @@ const gymSprites = computed(() => {
 })
 
 const activeEventData = computed(() => {
-  const active = eventStore.activeEvents?.[0]
+  const active = eventStore.activeEvents?.[0] as GameEvent | undefined
   if (!active) return { active: false, text: 'No hay eventos activos en este momento', icon: '⚡' }
   return {
     active: true,
@@ -85,8 +87,8 @@ const activeEventData = computed(() => {
       :maps="mapStore.maps"
       :badge-count="gameStore.state.badges || 0"
       :cycle="mapStore.currentCycle"
-      :weather="mapStore.globalWeather"
-      :player-class="gameStore.state.playerClass"
+      :weather="mapStore.globalWeather || undefined"
+      :player-class="gameStore.state.playerClass || undefined"
       :class-data="gameStore.state.classData"
       :safari-ticket-secs="gameStore.state.safariTicketSecs || 0"
       :cerulean-ticket-secs="gameStore.state.ceruleanTicketSecs || 0"

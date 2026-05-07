@@ -1,11 +1,23 @@
 
-/**
- * Módulo de Acciones de Estado (Status)
- * Gestiona la aplicación de quemaduras, parálisis, veneno, etc.
- */
+import type { Pokemon } from '@/types/pokemon';
+import type { BattleStages, LogFn } from '@/types/battle';
 
-export const STATUS_ACTIONS = {
-  'burn': (_src: any, tgt: any, _srcStages: any, _tgtStages: any, addLogFn: any) => {
+export type MoveAction = (
+  src: Pokemon, 
+  tgt: Pokemon, 
+  srcStages: BattleStages, 
+  tgtStages: BattleStages, 
+  addLogFn: LogFn, 
+  battleCtx?: { 
+    player: Pokemon, 
+    enemy: Pokemon, 
+    playerTeam?: Pokemon[], 
+    enemyTeam?: Pokemon[] 
+  }
+) => void;
+
+export const STATUS_ACTIONS: Record<string, MoveAction> = {
+  'burn': (_src, tgt, _srcStages, _tgtStages, addLogFn) => {
     if (tgt.status) return;
     if (tgt.type === 'fire' || tgt.type2 === 'fire') {
       addLogFn(`¡${tgt.name} es inmune a las quemaduras!`, 'log-info', tgt);
@@ -15,7 +27,7 @@ export const STATUS_ACTIONS = {
     addLogFn(`¡${tgt.name} fue quemado!`, 'log-info', tgt);
   },
   
-  'paralyze': (_src: any, tgt: any, _srcStages: any, _tgtStages: any, addLogFn: any) => {
+  'paralyze': (_src, tgt, _srcStages, _tgtStages, addLogFn) => {
     if (tgt.status) return;
     if (tgt.ability === 'Flexibilidad') {
       addLogFn(`¡La Flexibilidad de ${tgt.name} evitó la parálisis!`, 'log-info', tgt);
@@ -25,7 +37,7 @@ export const STATUS_ACTIONS = {
     addLogFn(`¡${tgt.name} fue paralizado!`, 'log-info', tgt);
   },
   
-  'poison': (_src: any, tgt: any, _srcStages: any, _tgtStages: any, addLogFn: any) => {
+  'poison': (_src, tgt, _srcStages, _tgtStages, addLogFn) => {
     if (tgt.status) return;
     if (tgt.type === 'poison' || tgt.type2 === 'poison' || tgt.type === 'steel' || tgt.type2 === 'steel') {
       addLogFn(`¡${tgt.name} es inmune al veneno!`, 'log-info', tgt);
@@ -39,7 +51,7 @@ export const STATUS_ACTIONS = {
     addLogFn(`¡${tgt.name} fue envenenado!`, 'log-info', tgt);
   },
   
-  'bad_poison': (_src: any, tgt: any, _srcStages: any, _tgtStages: any, addLogFn: any) => {
+  'bad_poison': (_src, tgt, _srcStages, _tgtStages, addLogFn) => {
     if (tgt.status) return;
     if (tgt.type === 'poison' || tgt.type2 === 'poison' || tgt.type === 'steel' || tgt.type2 === 'steel') {
       addLogFn(`¡${tgt.name} es inmune al veneno!`, 'log-info', tgt);
@@ -50,11 +62,11 @@ export const STATUS_ACTIONS = {
       return;
     }
     tgt.status = 'poison';
-    tgt.badPoison = 1;
+    tgt.badPoison = true;
     addLogFn(`¡${tgt.name} fue gravemente envenenado!`, 'log-info', tgt);
   },
   
-  'sleep': (_src: any, tgt: any, _srcStages: any, _tgtStages: any, addLogFn: any) => {
+  'sleep': (_src, tgt, _srcStages, _tgtStages, addLogFn) => {
     if (tgt.status) return;
     if (tgt.ability === 'Insomnio' || tgt.ability === 'Espíritu Vital') {
       addLogFn(`¡${tgt.name} tiene ${tgt.ability} y no puede dormir!`, 'log-info', tgt);
@@ -65,7 +77,7 @@ export const STATUS_ACTIONS = {
     addLogFn(`¡${tgt.name} se quedó dormido!`, 'log-info', tgt);
   },
   
-  'freeze': (_src: any, tgt: any, _srcStages: any, _tgtStages: any, addLogFn: any) => {
+  'freeze': (_src, tgt, _srcStages, _tgtStages, addLogFn) => {
     if (tgt.status) return;
     if (tgt.type === 'ice' || tgt.type2 === 'ice') {
       addLogFn(`¡${tgt.name} es inmune al congelamiento!`, 'log-info', tgt);
@@ -75,7 +87,7 @@ export const STATUS_ACTIONS = {
     addLogFn(`¡${tgt.name} fue congelado!`, 'log-info', tgt);
   },
   
-  'confuse': (_src: any, tgt: any, _srcStages: any, _tgtStages: any, addLogFn: any) => {
+  'confuse': (_src, tgt, _srcStages, _tgtStages, addLogFn) => {
     if (tgt.confused) return;
     if (tgt.ability === 'Ritmo Propio') {
       addLogFn(`¡El Ritmo Propio de ${tgt.name} evitó la confusión!`, 'log-info', tgt);
@@ -85,7 +97,7 @@ export const STATUS_ACTIONS = {
     addLogFn(`¡${tgt.name} está confundido!`, 'log-info', tgt);
   },
   
-  'attract': (src: any, tgt: any, _srcStages: any, _tgtStages: any, addLogFn: any) => {
+  'attract': (src, tgt, _srcStages, _tgtStages, addLogFn) => {
     if (tgt.attracted) return;
     if (tgt.ability === 'Despiste') {
       addLogFn(`¡El Despiste de ${tgt.name} evitó la atracción!`, 'log-info', tgt);
@@ -95,7 +107,7 @@ export const STATUS_ACTIONS = {
     addLogFn(`¡${tgt.name} se ha enamorado de ${src.name}!`, 'log-info', tgt);
   },
   
-  'curse': (src: any, tgt: any, srcStages: any, _tgtStages: any, addLogFn: any) => {
+  'curse': (src, tgt, srcStages, _tgtStages, addLogFn) => {
     const isGhost = (src.type === 'ghost' || src.type2 === 'ghost');
     
     if (isGhost) {
@@ -115,12 +127,12 @@ export const STATUS_ACTIONS = {
     }
   },
   
-  'heal_status_party': (src: any, _tgt: any, _srcStages: any, _tgtStages: any, addLogFn: any, battleCtx: any) => {
+  'heal_status_party': (src, _tgt, _srcStages, _tgtStages, addLogFn, battleCtx) => {
     if (!battleCtx) return;
     const isPlayer = (src === battleCtx.player);
     const team = isPlayer ? (battleCtx.playerTeam || []) : (battleCtx.enemyTeam || []);
     
-    team.forEach((p: any) => {
+    team.forEach((p) => {
       p.status = null;
       p.sleepTurns = 0;
     });

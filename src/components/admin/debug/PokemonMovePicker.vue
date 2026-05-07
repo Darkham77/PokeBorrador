@@ -80,7 +80,7 @@ function removeMove(slotIndex: number) {
           class="move-pill"
           @click.stop="activeMoveSlot = i"
         >
-          <span class="mv-name">{{ modelValue[i-1].toUpperCase() }}</span>
+          <span class="mv-name">{{ modelValue[i-1]?.toUpperCase() }}</span>
           <button
             class="remove-move"
             @click.stop="removeMove(i-1)"

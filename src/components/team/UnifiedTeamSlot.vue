@@ -48,7 +48,8 @@ function onDrop(e: DragEvent) {
 
 function handleTouchStart(e: TouchEvent) {
   if (isEmpty.value) return
-  const touch = e.touches[0]
+  const touch = e.touches?.[0]
+  if (!touch) return
   touchStartX.value = touch.clientX
   touchStartY.value = touch.clientY
   isTouchDragging.value = false
@@ -69,7 +70,8 @@ function handleTouchMove(e: TouchEvent) {
     const el = e.currentTarget as HTMLElement
     if (el) el.style.pointerEvents = 'none'
     
-    const touch = e.touches[0]
+    const touch = e.touches?.[0]
+    if (!touch) return
     const target = document.elementFromPoint(touch.clientX, touch.clientY)
     const slot = target?.closest('.team-slot') as HTMLElement | null
     
@@ -84,11 +86,13 @@ function handleTouchMove(e: TouchEvent) {
       emit('drag-over', null)
     }
   } else {
-    const touch = e.touches[0]
-    const deltaX = Math.abs(touch.clientX - touchStartX.value)
-    const deltaY = Math.abs(touch.clientY - touchStartY.value)
-    if (deltaX > 10 || deltaY > 10) {
-      if (touchTimer.value) clearTimeout(touchTimer.value)
+    const touch = e.touches?.[0]
+    if (touch) {
+      const deltaX = Math.abs(touch.clientX - touchStartX.value)
+      const deltaY = Math.abs(touch.clientY - touchStartY.value)
+      if (deltaX > 10 || deltaY > 10) {
+        if (touchTimer.value) clearTimeout(touchTimer.value)
+      }
     }
   }
 }
@@ -97,7 +101,8 @@ function handleTouchEnd(e: TouchEvent) {
   if (touchTimer.value) clearTimeout(touchTimer.value)
   if (isTouchDragging.value) {
     if (e.currentTarget) (e.currentTarget as HTMLElement).style.touchAction = ''
-    const touch = e.changedTouches[0]
+    const touch = e.changedTouches?.[0]
+    if (!touch) return
     const target = document.elementFromPoint(touch.clientX, touch.clientY)
     const slot = target?.closest('.team-slot') as HTMLElement | null
     

@@ -6,10 +6,45 @@ import { PLAYER_CLASSES, CLASS_MISSIONS } from '@/data/playerClasses'
 import { supabase } from '@/logic/supabase'
 import { useInventoryStore } from '@/stores/inventory'
 import { getClassModifier } from '@/logic/player/classEngine'
+import type { Pokemon } from '@/types/pokemon'
+
+
+interface ActiveMission {
+  id: string
+  startedAt: number
+  endsAt: number
+  targetPokemonIdx?: number
+  projectedReward?: number
+  [key: string]: unknown
+}
+
+interface ClassData {
+  captureStreak?: number
+  longestStreak?: number
+  reputation?: number
+  blackMarketSales?: number
+  criminality?: number
+  activeMission?: ActiveMission | null
+  blackMarketDaily?: { date: string, items: unknown[], purchased: unknown[] }
+  extortedRouteId?: string | null
+  officialRouteId?: string | null
+  kitCaptures?: number
+}
+
+interface ClassDefinition {
+  id: string
+  name: string
+  icon: string
+  color: string
+  colorDark: string
+  description: string
+}
+
+
 
 export const usePlayerClassStore = defineStore('playerClass', () => {
-  const gameStore = useGameStore() as any
-  const uiStore = useUIStore() as any
+  const gameStore = useGameStore()
+  const uiStore = useUIStore()
   
   const db = supabase
 
@@ -17,11 +52,11 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
   const playerClass = computed(() => gameStore.state.playerClass)
   const classLevel = computed(() => gameStore.state.classLevel || 1)
   const classXP = computed(() => gameStore.state.classXP || 0)
-  const classData = computed(() => gameStore.state.classData || {})
+  const classData = computed<ClassData>(() => (gameStore.state.classData as ClassData) || {})
   
-  const currentClassDef = computed(() => {
+  const currentClassDef = computed<ClassDefinition | null>(() => {
     if (!playerClass.value) return null
-    return PLAYER_CLASSES[playerClass.value]
+    return (PLAYER_CLASSES as Record<string, ClassDefinition>)[playerClass.value] || null
   })
 
   const activeMission = computed(() => classData.value.activeMission || null)
@@ -30,10 +65,10 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
    * Obtiene modificadores de clase para batalla o economía.
    * Centraliza la lógica de getClassModifier() de legacy.
    */
-  function getModifier(type, context: any = {}) {
-    return getClassModifier(playerClass.value, type, {
+  function getModifier(type: string, context: Record<string, unknown> = {}) {
+    return getClassModifier(playerClass.value || '', type, {
       ...context,
-      isPvP: gameStore.state.activeBattle?.isPvP
+      isPvP: (gameStore.state as { activeBattle?: { isPvP?: boolean } }).activeBattle?.isPvP
     })
   }
 
@@ -62,8 +97,8 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
   /**
    * Selecciona o cambia la clase del jugador.
    */
-  async function selectClass(classId) {
-    const cls = PLAYER_CLASSES[classId]
+  async function selectClass(classId: string) {
+    const cls = (PLAYER_CLASSES as Record<string, ClassDefinition>)[classId]
     if (!cls) return { success: false, msg: 'Clase no válida' }
 
     const isChange = !!playerClass.value
@@ -77,8 +112,8 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
     }
 
     // Reset de datos específicos y liberación de Pokémon en misión
-    [...(gameStore.state.team || []), ...(gameStore.state.box || [])].forEach(p => {
-      if ((p as any).onMission) (p as any).onMission = false
+    [...(gameStore.state.team || []), ...(gameStore.state.box || [])].forEach((p: Pokemon) => {
+      if (p.onMission) p.onMission = false
     })
 
     gameStore.state.playerClass = classId
@@ -90,6 +125,7 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
       reputation: 0,
       blackMarketSales: 0,
       criminality: 0,
+      blackMarketDaily: { date: '', items: [], purchased: [] },
       extortedRouteId: null,
       officialRouteId: null,
       kitCaptures: 0
@@ -103,7 +139,7 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
   /**
    * Establece la facción del jugador (Unión o Poder).
    */
-  async function setFaction(factionId) {
+  async function setFaction(factionId: string) {
     if (!['union', 'poder', 'rocket'].includes(factionId)) return { success: false }
     
     const currentFaction = gameStore.state.faction
@@ -132,7 +168,7 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
   /**
    * Incrementa XP de clase (se sincroniza con el nivel de entrenador por ahora, como en legacy).
    */
-  function addXP(amount) {
+  function addXP(amount: number) {
     if (!playerClass.value || amount <= 0) return
     gameStore.addTrainerExp(amount)
   }
@@ -140,12 +176,13 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
   /**
    * Maneja el nivel de criminalidad del Rocket.
    */
-  function addCriminality(amount) {
+  function addCriminality(amount: number) {
     if (playerClass.value !== 'rocket' || amount <= 0) return
-    const prev = classData.value.criminality || 0
-    gameStore.state.classData.criminality = Math.min(100, prev + amount)
+    const currentData = gameStore.state.classData as ClassData
+    const prev = currentData.criminality || 0
+    currentData.criminality = Math.min(100, prev + amount)
     
-    if (prev < 100 && gameStore.state.classData.criminality >= 100) {
+    if (prev < 100 && currentData.criminality >= 100) {
       uiStore.notify("¡Nivel de criminalidad máximo! La policía te busca.", "🚔")
     }
   }
@@ -153,22 +190,23 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
   /**
    * Inicia una misión idle con validación de tiempo del servidor.
    */
-  async function startMission(missionId, extraData = {}) {
+  async function startMission(missionId: string, extraData: Record<string, unknown> = {}) {
     const m = CLASS_MISSIONS.find(x => x.id === missionId)
     if (!m) return
 
     // Marcar pokemon como ocupado
-    if ((extraData as any).targetPokemonIdx !== undefined) {
-      const p = gameStore.state.box[(extraData as any).targetPokemonIdx]
-      if (p) (p as any).onMission = true
+    if (extraData.targetPokemonIdx !== undefined) {
+      const p = gameStore.state.box[extraData.targetPokemonIdx as number]
+      if (p) p.onMission = true
     }
 
-    const now = await db.getServerTime()
+    const now = await (db as any).getServerTime()
+    const currentData = gameStore.state.classData as ClassData
 
-    gameStore.state.classData.activeMission = {
+    currentData.activeMission = {
       id: missionId,
-      startedAt: now,
-      endsAt: now + (m.durationHs * 3600 * 1000),
+      startedAt: now as number,
+      endsAt: (now as number) + (m.durationHs * 3600 * 1000),
       ...extraData
     }
     
@@ -183,8 +221,8 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
     const mission = activeMission.value
     if (!mission) return
 
-    const now = await db.getServerTime()
-    if (now < mission.endsAt) {
+    const now = await (db as any).getServerTime()
+    if ((now as number) < mission.endsAt) {
       uiStore.notify('La misión aún no ha terminado.', '⏳')
       return;
     }
@@ -202,11 +240,11 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
       if (mission.targetPokemonIdx !== undefined) {
         const p = gameStore.state.box[mission.targetPokemonIdx]
         if (p) {
-          if ((p as any).heldItem) {
-            const invStore = useInventoryStore() as any
-            invStore.addItem((p as any).heldItem, 1)
+          if (p.heldItem) {
+            const invStore = useInventoryStore()
+            invStore.addItem(p.heldItem, 1)
           }
-          gameStore.removePokemon((p as any).uid)
+          gameStore.removePokemon(p.uid)
         }
       }
     } else if (cls === 'cazabichos') {
@@ -218,14 +256,11 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
         const p = gameStore.state.box[mission.targetPokemonIdx]
         if (p) {
           const blocks = (mission.endsAt - mission.startedAt) / (3600000 * 6) // bloques de 6h
-          const expGain = (25000 + ((p as any).level || 1) * 1000) * blocks;
-          (p as any).exp = ((p as any).exp || 0) + expGain;
+          const expGain = (25000 + (p.level || 1) * 1000) * blocks;
+          p.exp = (p.exp || 0) + expGain;
           
-          // Logic for checkLevelUp (stub until implemented in Vue)
-          // if (typeof window.checkLevelUp === 'function') window.checkLevelUp(p)
-          
-          (p as any).onMission = false;
-          msg += `¡${(p as any).name} ganó ${expGain.toLocaleString()} EXP! 🏅`
+          p.onMission = false;
+          msg += `¡${p.name} ganó ${expGain.toLocaleString()} EXP! 🏅`
         }
       }
     } else if (cls === 'criador') {
@@ -236,22 +271,25 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
           const stats = ['hp', 'atk', 'def', 'spa', 'spd', 'spe']
           const stat = stats[Math.floor(Math.random() * stats.length)]
           const gain = Math.floor(Math.random() * 3) + 1;
-          (p as any).ivs[stat] = Math.min(31, ((p as any).ivs[stat] || 0) + gain);
-          (p as any).vigor = Math.max(0, ((p as any).vigor || 20) - 5);
-          (p as any).onMission = false;
-          msg += `¡${(p as any).name} mejoró su ${stat.toUpperCase()} (+${gain})! 🧬`
+          if (!p.ivs) p.ivs = { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 };
+          const curVal = (p.ivs as Record<string, number>)[stat] || 0;
+          (p.ivs as Record<string, number>)[stat] = Math.min(31, curVal + gain);
+          p.vigor = Math.max(0, (p.vigor || 20) - 5);
+          p.onMission = false;
+          msg += `¡${p.name} mejoró su ${String(stat).toUpperCase()} (+${gain})! 🧬`
         }
       }
     } else {
       // Liberar al Pokémon que estaba en misión
       if (mission.targetPokemonIdx !== undefined) {
         const p = gameStore.state.box[mission.targetPokemonIdx]
-        if (p) (p as any).onMission = false
+        if (p) p.onMission = false
       }
       msg += 'Tus Pokémon han regresado con éxito.'
     }
 
-    gameStore.state.classData.activeMission = null
+    const currentData = gameStore.state.classData as ClassData
+    currentData.activeMission = null
     uiStore.notify(msg, '🎁')
     await gameStore.save()
   }

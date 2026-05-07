@@ -88,7 +88,7 @@ watch([sortBy, sortOrder, activeTags, searchQuery], () => {
 
 const getPokemonTotalPower = (p: any) => {
   if (!p) return 0
-  const base = pokemonDataProvider.getPokemonData(p.id)
+  const base = pokemonDataProvider.getPokemonData(p.id) as any
   const s = base?.stats || base || {}
   const TOT = (s.hp || 0) + (s.atk || 0) + (s.def || 0) + (s.spa || 0) + (s.spd || 0) + (s.spe || 0)
   const ivs = p.ivs || {}
@@ -414,6 +414,7 @@ function openDetail(item: any) {
               </PVTooltip>
               
               <PVTooltip 
+                v-if="POKEMON_BADGES.shiny"
                 :title="POKEMON_BADGES.shiny.label" 
                 :description="POKEMON_BADGES.shiny.desc" 
                 position="bottom"

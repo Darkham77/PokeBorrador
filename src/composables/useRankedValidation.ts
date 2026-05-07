@@ -6,7 +6,7 @@ export function useRankedValidation() {
   /**
    * Valida un único Pokémon contra las reglas actuales.
    */
-  const validatePokemon = (pokemon) => {
+  const validatePokemon = (pokemon: any) => {
     if (!pokemon) return { ok: false, reason: 'Pokémon inválido.' };
 
     const rules = rankedStore.rules;
@@ -25,7 +25,7 @@ export function useRankedValidation() {
     // 3. Type Restrictions
     if (rules.allowedTypes?.length > 0) {
       const types = Array.isArray(pokemon.type) ? pokemon.type : [pokemon.type];
-      const hasAllowedType = types.some(t => rules.allowedTypes.includes(t.toLowerCase()));
+      const hasAllowedType = types.some((t: any) => rules.allowedTypes.includes(t.toLowerCase()));
       if (!hasAllowedType) {
         return { ok: false, reason: `${pokemon.name} no cumple con los tipos permitidos.` };
       }
@@ -37,7 +37,7 @@ export function useRankedValidation() {
   /**
    * Valida un equipo completo.
    */
-  const validateTeam = (team) => {
+  const validateTeam = (team: any[]) => {
     if (!team || team.length === 0) {
       return { ok: false, reason: 'El equipo está vacío.' };
     }

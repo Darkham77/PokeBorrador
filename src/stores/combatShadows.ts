@@ -9,7 +9,7 @@ export const useCombatShadowStore = defineStore('combatShadows', () => {
   const activeShadows = reactive(new Map<string, any>())
   const feetCache = reactive(new Map<string, any>()) // Caché persistente de puntos de anclaje por spriteUrl
 
-  async function detectFeetPoints(url) {
+  async function detectFeetPoints(url: string): Promise<{ feetY: number, feetX: number }> {
     if (!url) return { feetY: 0.9, feetX: 0.5 }
     
     // Si ya está en caché, lo devolvemos inmediatamente
@@ -22,6 +22,7 @@ export const useCombatShadowStore = defineStore('combatShadows', () => {
         // [PureVue-Ignore]
         const canvas = document.createElement('canvas')
         const ctx = canvas.getContext('2d')
+        if (!ctx) { resolve({ feetY: 0.9, feetX: 0.5 }); return }
         canvas.width = img.width
         canvas.height = img.height
         ctx.drawImage(img, 0, 0)
@@ -33,7 +34,8 @@ export const useCombatShadowStore = defineStore('combatShadows', () => {
           
           for (let y = 0; y < canvas.height; y++) {
             for (let x = 0; x < canvas.width; x++) {
-              const alpha = data[(y * canvas.width + x) * 4 + 3]
+              const index = (y * canvas.width + x) * 4
+              const alpha = data[index + 3] || 0
               if (alpha > 50) {
                 if (x < minX) minX = x
                 if (x > maxX) maxX = x
@@ -62,7 +64,7 @@ export const useCombatShadowStore = defineStore('combatShadows', () => {
     })
   }
 
-  async function requestShadow(id, options: any = {}) {
+  async function requestShadow(id: string, options: any = {}) {
     if (!id) return
     const existing = activeShadows.get(id)
     
@@ -125,7 +127,7 @@ export const useCombatShadowStore = defineStore('combatShadows', () => {
     return Promise.resolve(newShadow)
   }
 
-  function showShadow(id) {
+  function showShadow(id: string) {
     if (!id) return
     const shadow = activeShadows.get(id)
     if (shadow) {
@@ -133,7 +135,7 @@ export const useCombatShadowStore = defineStore('combatShadows', () => {
     }
   }
 
-  function hideShadow(id) {
+  function hideShadow(id: string) {
     if (!id) return
     const shadow = activeShadows.get(id)
     if (shadow) {
@@ -141,7 +143,7 @@ export const useCombatShadowStore = defineStore('combatShadows', () => {
     }
   }
 
-  function removeShadow(id) {
+  function removeShadow(id: string) {
     activeShadows.delete(id)
   }
 

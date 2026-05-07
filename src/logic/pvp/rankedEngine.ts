@@ -1,8 +1,4 @@
-
-/**
- * src/logic/pvp/rankedEngine.ts
- * Modern logic for Ranked PvP, ELO Tiers, and Validation.
- */
+import type { Pokemon } from '@/types/pokemon';
 
 export interface EloTier {
   name: string;
@@ -36,12 +32,12 @@ export const RANKED_TIERS: Record<string, EloTier> = {
  */
 export function getEloTier(elo: number | string): EloTier {
   const e = Number(elo) || 0;
-  if (e >= RANKED_TIERS.MAESTRO.minElo)  return RANKED_TIERS.MAESTRO;
-  if (e >= RANKED_TIERS.DIAMANTE.minElo) return RANKED_TIERS.DIAMANTE;
-  if (e >= RANKED_TIERS.PLATINO.minElo)  return RANKED_TIERS.PLATINO;
-  if (e >= RANKED_TIERS.ORO.minElo)      return RANKED_TIERS.ORO;
-  if (e >= RANKED_TIERS.PLATA.minElo)    return RANKED_TIERS.PLATA;
-  return RANKED_TIERS.BRONCE;
+  if (e >= (RANKED_TIERS.MAESTRO?.minElo || 3400)) return RANKED_TIERS.MAESTRO || { name: 'Maestro', minElo: 3400, color: '', icon: '' };
+  if (e >= (RANKED_TIERS.DIAMANTE?.minElo || 2700)) return RANKED_TIERS.DIAMANTE || { name: 'Diamante', minElo: 2700, color: '', icon: '' };
+  if (e >= (RANKED_TIERS.PLATINO?.minElo || 2100)) return RANKED_TIERS.PLATINO || { name: 'Platino', minElo: 2100, color: '', icon: '' };
+  if (e >= (RANKED_TIERS.ORO?.minElo || 1600)) return RANKED_TIERS.ORO || { name: 'Oro', minElo: 1600, color: '', icon: '' };
+  if (e >= (RANKED_TIERS.PLATA?.minElo || 1200)) return RANKED_TIERS.PLATA || { name: 'Plata', minElo: 1200, color: '', icon: '' };
+  return RANKED_TIERS.BRONCE || { name: 'Bronce', minElo: 0, color: '', icon: '' };
 }
 
 /**
@@ -62,7 +58,7 @@ export function isAllowedRankGap(myElo: number | string, opponentElo: number | s
 /**
  * Normalizes ranked rules from raw configuration.
  */
-export function normalizeRankedRules(raw: any = {}, seasonName: string = 'TEMPORADA ACTUAL'): RankedRules {
+export function normalizeRankedRules(raw: Partial<RankedRules> = {}, seasonName: string = 'TEMPORADA ACTUAL'): RankedRules {
   return {
     seasonName: seasonName || 'TEMPORADA ACTUAL',
     maxPokemon: Math.max(1, Math.min(6, Number(raw.maxPokemon) || 6)),
@@ -75,7 +71,7 @@ export function normalizeRankedRules(raw: any = {}, seasonName: string = 'TEMPOR
 /**
  * Validates a single Pokemon against the rules.
  */
-export function validatePokemonForRanked(pokemon: any, rules: RankedRules): { ok: boolean; reason?: string } {
+export function validatePokemonForRanked(pokemon: Pokemon | null, rules: RankedRules): { ok: boolean; reason?: string } {
   if (!pokemon) return { ok: false, reason: 'Pokémon inválido.' };
 
   const id = (pokemon.id || '').toLowerCase();
@@ -88,8 +84,8 @@ export function validatePokemonForRanked(pokemon: any, rules: RankedRules): { ok
   }
 
   if (rules.allowedTypes.length > 0) {
-    const types = Array.isArray(pokemon.type) ? pokemon.type.map((t: string) => t.toLowerCase()) : [String(pokemon.type).toLowerCase()];
-    const hasAllowedType = types.some(t => rules.allowedTypes.includes(t));
+    const types = [pokemon.type, pokemon.type2].filter(Boolean).map(t => t!.toLowerCase());
+    const hasAllowedType = types.some((t: string) => rules.allowedTypes.includes(t));
     if (!hasAllowedType) {
       return { ok: false, reason: `${pokemon.name || id} no tiene un tipo permitido.` };
     }
@@ -101,8 +97,8 @@ export function validatePokemonForRanked(pokemon: any, rules: RankedRules): { ok
 /**
  * Validates a full team against the rules.
  */
-export function validateTeamForRanked(team: any[], rules: RankedRules): { ok: boolean; reason?: string } {
-  const members = (team || []).filter(Boolean);
+export function validateTeamForRanked(team: (Pokemon | null)[], rules: RankedRules): { ok: boolean; reason?: string } {
+  const members = (team || []).filter((p): p is Pokemon => p !== null);
   if (members.length === 0) return { ok: false, reason: 'El equipo está vacío.' };
   if (members.length > rules.maxPokemon) return { ok: false, reason: `Máximo ${rules.maxPokemon} Pokémon permitidos.` };
 

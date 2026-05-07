@@ -1,5 +1,5 @@
 <script setup lang="ts">
-// Universal Pokémon info panel (Pokedex + Instance).
+// Universal Pokémon info panel (Pokedex + Instance)
 import { ref, computed } from 'vue'
 import { useWindowListener } from '@/composables/useWindowListener'
 import { useUIStore } from '@/stores/ui'
@@ -18,14 +18,16 @@ import PokemonStatsTab from '@/components/pokemon-detail/PokemonStatsTab.vue'
 import PokemonMovesTab from '@/components/pokemon-detail/PokemonMovesTab.vue'
 import PokemonStatusSection from '@/components/pokemon-detail/PokemonStatusSection.vue'
 import PokemonActionFooter from '@/components/pokemon-detail/PokemonActionFooter.vue'
+import type { Pokemon } from '@/types/pokemon'
+
 
 interface Props {
   show?: boolean
   speciesId?: string
-  pokemon?: any | null
+  pokemon?: Pokemon | null
   index?: number
   context?: string // 'team', 'box', 'market', 'pokedex'
-  extra?: any | null
+  extra?: { offerId?: string, price?: number, type?: string } | null
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -41,8 +43,8 @@ const emit = defineEmits<{
   (e: 'close'): void
 }>()
 
-const uiStore = useUIStore() as any
-const gameStore = useGameStore() as any
+const uiStore = useUIStore()
+const gameStore = useGameStore()
 
 // --- COMPOSABLE LOGIC ---
 const {
@@ -61,7 +63,7 @@ const {
   getSprite,
   finalIndex,
   finalContext
-} = usePokemonDetail(props as any)
+} = usePokemonDetail(props as { pokemon?: Pokemon | null, speciesId?: string })
 
 // --- LOCAL UI STATE ---
 const isSmallScreen = ref(window.innerWidth <= 950)
@@ -88,7 +90,7 @@ const tabs = computed(() => {
   return base
 })
 
-const formatRange = (val: any, unit: string, factor = 0.15) => {
+const formatRange = (val: number | [number, number] | undefined, unit: string, factor = 0.15) => {
   if (!val) return '—'
   if (Array.isArray(val)) return `${val[0]}${unit} - ${val[1]}${unit}`
   const min = (val * (1 - factor)).toFixed(1)
@@ -131,33 +133,36 @@ const hexToRgb = (hex: string) => {
   return `${r}, ${g}, ${b}`
 }
 
-const handleToggleTag = (tagOrId: any) => {
+const handleToggleTag = (tagOrId: string | { id?: string, dbId?: string }) => {
   const tagId = typeof tagOrId === 'string' ? tagOrId : (tagOrId.id || tagOrId.dbId)
-  if (isInstance.value && finalIndex.value > -1) {
-    gameStore.togglePokeTag(finalContext.value, finalIndex.value, tagId)
+  if (tagId && isInstance.value && finalIndex.value > -1) {
+    gameStore.togglePokeTag(finalContext.value as 'team' | 'box' | 'market', finalIndex.value, tagId)
   }
 }
 
 const handleEditNickname = () => {
-  if (!isInstance.value) return
+  if (!isInstance.value || !targetPokemon.value) return
   
   uiStore.openPrompt({
     title: 'Cambiar Apodo',
-    message: `Introduce un nuevo nombre para tu ${species.value.name}:`,
-    initialValue: targetPokemon.value.nickname || species.value.name,
+    message: `Introduce un nuevo nombre para tu ${species.value?.name || 'Pokémon'}:`,
+    initialValue: targetPokemon.value.nickname || species.value?.name || '',
     confirmText: 'Guardar',
     onConfirm: (val: string) => {
       const newNick = val?.trim() || null
-      targetPokemon.value.nickname = newNick
-      uiStore.notify(`¡Apodo cambiado a ${newNick || species.value.name}!`, '✨')
+      if (targetPokemon.value) targetPokemon.value.nickname = newNick
+      uiStore.notify(`¡Apodo cambiado a ${newNick || species.value?.name || 'Pokémon'}!`, '✨')
       gameStore.save(false)
     }
   })
 }
 
 const handleReorderMoves = (from: number, to: number) => {
-  if (isInstance.value) {
+  if (isInstance.value && targetPokemon.value) {
     gameStore.reorderMoves(targetPokemon.value, from, to)
+  }
+}
+erMoves(targetPokemon.value, from, to)
   }
 }
 </script>
@@ -178,8 +183,8 @@ const handleReorderMoves = (from: number, to: number) => {
       class="upd-core-container"
       :class="{ 'instance-mode': isInstance }"
       :style="{ 
-        '--type-color': PDEX_TYPE_COLORS[species.type[0].toLowerCase()],
-        '--type-color-rgb': hexToRgb(PDEX_TYPE_COLORS[species.type[0].toLowerCase()])
+        '--type-color': (PDEX_TYPE_COLORS as any)[species.type[0].toLowerCase()] || '#888',
+        '--type-color-rgb': hexToRgb((PDEX_TYPE_COLORS as any)[species.type[0].toLowerCase()] || '#888')
       }"
     >
       <!-- Custom Content Header -->
@@ -309,7 +314,7 @@ const handleReorderMoves = (from: number, to: number) => {
               class="info-item"
             >
               <span class="upd-info-label pixelated">ALTURA</span>
-              <span class="ps-info-value pixelated">{{ isInstance ? instancePhysicalData.height + 'm' : formatRange(species.height, 'm') }}</span>
+              <span class="ps-info-value pixelated">{{ isInstance && instancePhysicalData ? instancePhysicalData.height + 'm' : formatRange(species.height, 'm') }}</span>
             </PVTooltip>
 
             <PVTooltip
@@ -320,7 +325,7 @@ const handleReorderMoves = (from: number, to: number) => {
               class="info-item"
             >
               <span class="upd-info-label pixelated">PESO</span>
-              <span class="ps-info-value pixelated">{{ isInstance ? instancePhysicalData.weight + 'kg' : formatRange(species.weight, 'kg') }}</span>
+              <span class="ps-info-value pixelated">{{ isInstance && instancePhysicalData ? instancePhysicalData.weight + 'kg' : formatRange(species.weight, 'kg') }}</span>
             </PVTooltip>
           </div>
           <div

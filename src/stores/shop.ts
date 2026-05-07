@@ -7,8 +7,8 @@ import { PLAYER_CLASSES } from '@/data/playerClasses'
 import { TRAINER_RANKS } from '@/data/trainer'
 
 export const useShopStore = defineStore('shop', () => {
-  const gameStore = useGameStore() as any
-  const uiStore = useUIStore() as any
+  const gameStore = useGameStore()
+  const uiStore = useUIStore()
   
   
   const marketCategory = ref('todos')
@@ -21,33 +21,33 @@ export const useShopStore = defineStore('shop', () => {
     return TRAINER_RANKS[idx]
   })
 
-  function getQuantity(itemId) {
-    return quantities.value[itemId] || 1
+  function getQuantity(itemId: string) {
+    return (quantities.value as any)[itemId] || 1
   }
 
-  function setQuantity(itemId, val) {
+  function setQuantity(itemId: string, val: any) {
     let q = parseInt(val)
     if (isNaN(q) || q < 1) q = 1
     if (q > 999) q = 999
-    quantities.value[itemId] = q
+    ;(quantities.value as any)[itemId] = q
   }
 
   /**
    * Calculates the price modifier based on player class.
    */
   function getPriceModifier() {
-    const playerClass = gameStore.state.playerClass
+    const playerClass = gameStore.state.playerClass as keyof typeof PLAYER_CLASSES | null
     if (!playerClass) return 1.0
     
     const classDef = PLAYER_CLASSES[playerClass]
     if (!classDef || !classDef.modifiers) return 1.0
     
     // For regular shop, we use the recargo penalty if member of Rocket
-    if (playerClass === 'rocket') return 1.20 
+    if ((playerClass as string) === 'rocket') return 1.20 
     return 1.0
   }
 
-  function buyItem(itemId) {
+  function buyItem(itemId: string) {
     const item = SHOP_ITEMS.find(i => i.id === itemId)
     if (!item) return
     
@@ -81,7 +81,7 @@ export const useShopStore = defineStore('shop', () => {
     gameStore.scheduleSave()
   }
 
-  function buyItemBC(itemId) {
+  function buyItemBC(itemId: string) {
     const item = SHOP_ITEMS.find(i => i.id === itemId)
     if (!item || !item.trainerShop) return
 
@@ -90,12 +90,12 @@ export const useShopStore = defineStore('shop', () => {
       return
     }
 
-    if ((gameStore.state.battleCoins || 0) < item.bcPrice) {
+    if ((gameStore.state.battleCoins || 0) < (item.bcPrice || 0)) {
       uiStore.notify('¡No tenés suficientes Battle Coins!', '💰')
       return
     }
 
-    gameStore.state.battleCoins -= item.bcPrice
+    gameStore.state.battleCoins = (gameStore.state.battleCoins || 0) - (item.bcPrice || 0)
     gameStore.state.inventory[item.name] = (gameStore.state.inventory[item.name] || 0) + 1
     
     if (item.cat === 'pokeballs') {
@@ -113,9 +113,9 @@ export const useShopStore = defineStore('shop', () => {
   function getHealCost() {
     const team = gameStore.state.team || []
     const damagedCount = team.filter(p => {
-      const isDamaged = (p as any).hp < (p as any).maxHp
-      const hasStatus = !!(p as any).status
-      const needsPP = (p as any).moves?.some(m => m.pp < (m.maxPP || 0))
+      const isDamaged = (p).hp < (p).maxHp
+      const hasStatus = !!(p).status
+      const needsPP = (p).moves?.some(m => m && m.pp < (m.maxPP || 0)) || false
       return isDamaged || hasStatus || needsPP
     }).length
 
@@ -144,11 +144,11 @@ export const useShopStore = defineStore('shop', () => {
     
     // Restore all pokemon in team
     gameStore.state.team.forEach(p => {
-      (p as any).hp = (p as any).maxHp;
-      (p as any).status = null
-      if ((p as any).moves) {
-        (p as any).moves.forEach(m => {
-          m.pp = m.maxPP || 20
+      (p).hp = (p).maxHp;
+      (p).status = null
+      if ((p).moves) {
+        (p).moves.forEach(m => {
+          if (m) m.pp = m.maxPP || 20
         })
       }
     })
@@ -168,7 +168,16 @@ export const useShopStore = defineStore('shop', () => {
   function getBlackMarketItems() {
     if (gameStore.state.playerClass !== 'rocket') return []
     
-    if (!gameStore.state.classData) gameStore.state.classData = {}
+    if (!gameStore.state.classData) {
+      gameStore.state.classData = {
+        captureStreak: 0,
+        longestStreak: 0,
+        reputation: 0,
+        blackMarketSales: 0,
+        criminality: 0,
+        blackMarketDaily: { date: '', items: [], purchased: [] }
+      }
+    }
     if (!gameStore.state.classData.blackMarketDaily) {
       gameStore.state.classData.blackMarketDaily = { date: '', items: [], purchased: [] }
     }
@@ -179,16 +188,19 @@ export const useShopStore = defineStore('shop', () => {
     if (daily.date !== today) {
       const possibleItems = SHOP_ITEMS.filter(i => i.trainerShop === true && (i.bcPrice || 0) > 0)
       const shuffled = [...possibleItems].sort(() => 0.5 - Math.random())
-      daily.items = shuffled.slice(0, 3).map(i => i.id)
-      daily.date = today
-      daily.purchased = []
+      const bmd = (gameStore.state.classData as any).blackMarketDaily
+      if (bmd) {
+        bmd.items = shuffled.slice(0, 3).map(i => (i.id || '') as string)
+        bmd.date = today
+        bmd.purchased = [] as string[]
+      }
       gameStore.scheduleSave()
     }
     
     return daily.items.map(id => SHOP_ITEMS.find(i => i.id === id)).filter(Boolean)
   }
 
-  function buyBlackMarketItem(itemId) {
+  function buyBlackMarketItem(itemId: string) {
     if (gameStore.state.playerClass !== 'rocket') return
     const daily = gameStore.state.classData.blackMarketDaily
     if (!daily || !daily.items.includes(itemId)) return
@@ -201,8 +213,8 @@ export const useShopStore = defineStore('shop', () => {
     const item = SHOP_ITEMS.find(i => i.id === itemId)
     if (!item) return
 
-    const discount = PLAYER_CLASSES.rocket.modifiers.shopDiscount || 0.20
-    const priceInMoney = Math.floor((item.bcPrice * 50) * (1 - discount))
+    const discount = PLAYER_CLASSES.rocket.modifiers?.shopDiscount || 0.20
+    const priceInMoney = Math.floor(((item.bcPrice || 0) * 50) * (1 - discount))
     
     if (gameStore.state.money < priceInMoney) {
       useUIStore().notify('No tenés suficiente dinero (₽).', '❌')

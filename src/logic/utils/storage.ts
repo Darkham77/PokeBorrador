@@ -20,8 +20,8 @@ export const safeStorage = {
         }
       }
       return val
-    } catch (e: any) {
-      console.warn(`[Storage] Failed to get item "${key}":`, e.message)
+    } catch (e: unknown) {
+      console.warn(`[Storage] Failed to get item "${key}":`, e instanceof Error ? e.message : String(e))
       return null
     }
   },
@@ -32,8 +32,8 @@ export const safeStorage = {
       localStorage.setItem(key, value)
       // Create shadow backup for everything
       localStorage.setItem(key + '_backup', value)
-    } catch (e: any) {
-      console.warn(`[Storage] Failed to set item "${key}":`, e.message)
+    } catch (e: unknown) {
+      console.warn(`[Storage] Failed to set item "${key}":`, e instanceof Error ? e.message : String(e))
     }
   },
 
@@ -41,8 +41,8 @@ export const safeStorage = {
     try {
       if (typeof localStorage === 'undefined') return
       localStorage.removeItem(key)
-    } catch (e: any) {
-      console.warn(`[Storage] Failed to remove item "${key}":`, e.message)
+    } catch (e: unknown) {
+      console.warn(`[Storage] Failed to remove item "${key}":`, e instanceof Error ? e.message : String(e))
     }
   }
 }

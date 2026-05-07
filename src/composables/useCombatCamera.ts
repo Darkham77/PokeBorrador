@@ -1,4 +1,4 @@
-import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed, CSSProperties } from 'vue'
 import { gameBus } from '@/logic/gameBus'
 import { WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator'
 
@@ -6,7 +6,7 @@ import { WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator'
  * useCombatCamera
  * Implements a dynamic 2D camera system based on docs/architecture/combat_camera.md
  */
-export function useCombatCamera(viewportRef) {
+export function useCombatCamera(viewportRef: any) {
   // Reactive State
   const vpWidth = ref(0)
   const vpHeight = ref(0)
@@ -19,19 +19,19 @@ export function useCombatCamera(viewportRef) {
   const debugZoom = ref(1)
 
   // Computed Styles
-  const cameraStyles = computed(() => ({
+  const cameraStyles = computed<CSSProperties>(() => ({
     width: `${camWidth.value}px`,
     height: `${camHeight.value}px`,
-    position: 'relative',
-    overflow: 'hidden',
+    position: 'relative' as const,
+    overflow: 'hidden' as const,
     backgroundColor: '#000',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center'
+    display: 'flex' as const,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const
   }))
 
-  const worldStyles = computed(() => ({
-    position: 'absolute',
+  const worldStyles = computed<any>(() => ({
+    position: 'absolute' as const,
     top: '0',
     left: '0',
     width: `${WORLD_CONSTANTS.MAP_WIDTH}px`,
@@ -45,7 +45,7 @@ export function useCombatCamera(viewportRef) {
     '--preview-size': WORLD_CONSTANTS.PREVIEW_SIZE
   }))
 
-  const updateCamera = (width, height) => {
+  const updateCamera = (width: any, height: any) => {
     // Filtro de Estabilidad: Ignoramos dimensiones nulas o valores de inicialización del navegador (0 o window.innerWidth exacto si no es fullscreen)
     if (!width || !height || width < 100 || height < 100) return
 
@@ -75,7 +75,7 @@ export function useCombatCamera(viewportRef) {
     ty.value = (ch / 2) - (WORLD_CONSTANTS.TARGET_Y * currentScale)
   }
 
-  let resizeObserver = null
+  let resizeObserver: ResizeObserver | null = null
 
   onMounted(() => {
     resizeObserver = new ResizeObserver((entries) => {

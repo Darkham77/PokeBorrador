@@ -3,19 +3,84 @@ import { calculateDamage } from '@/logic/battle/battleEngine'
 import { getStatMultiplier, getAccuracyMultiplier } from '@/logic/pokemon/statEngine'
 import { applyMoveEffect } from '@/logic/battle/battleMoves'
 import { MOVE_DATA } from '@/data/moves'
+import type { Pokemon } from '@/types/pokemon'
+import type { BattleStages } from '@/types/battle'
+import type { MoveBaseData } from '@/types/database'
 
 /**
  * Resolves a turn in a Live PvP battle. (Host only)
  */
-export function resolvePvPTurn(battleState: any): any {
+
+export interface PvPAction {
+  type: 'move' | 'switch';
+  moveIndex?: number;
+  switchIndex?: number;
+}
+
+export interface PvPActionResult {
+  type: 'move' | 'switch';
+  moveName?: string;
+  actorIsHost: boolean;
+  damage?: number;
+  eff?: number;
+  newHp?: number;
+  newIdx?: number;
+  missed?: boolean;
+  statusBlocked?: string;
+  effectLog: string[];
+}
+
+export interface PvPChannel {
+  send: (payload: { type: string, event: string, payload: any }) => void
+}
+
+export interface PvPBattleState {
+  isHost: boolean;
+  isRanked: boolean;
+  phase: 'sync' | 'choosing' | 'resolving' | 'animating' | 'faint_switch' | 'over' | 'waiting';
+  myTeam: Pokemon[];
+  enemyTeam: Pokemon[];
+  myActiveIdx: number;
+  enemyActiveIdx: number;
+  myHp: number[];
+  enemyHp: number[];
+  myStages: BattleStages;
+  enemyStages: BattleStages;
+  myPick: PvPAction | null;
+  enemyPick: PvPAction | null;
+  logs: string[];
+  ch: PvPChannel | null;
+  isPvP?: boolean;
+}
+
+export interface PvPTurnResult {
+  firstIsHost: boolean;
+  first: PvPActionResult;
+  second: PvPActionResult | null;
+  hostActiveIdx: number;
+  clientActiveIdx: number;
+  hostHp: number[];
+  clientHp: number[];
+  hostStages: BattleStages;
+  clientStages: BattleStages;
+}
+
+/**
+ * Resolves a turn in a Live PvP battle. (Host only)
+ */
+export function resolvePvPTurn(battleState: PvPBattleState): PvPTurnResult | undefined {
   if (!battleState.isHost || battleState.phase === 'resolving') return
   battleState.phase = 'resolving'
   
   const hostPoke = battleState.myTeam[battleState.myActiveIdx]
   const clientPoke = battleState.enemyTeam[battleState.enemyActiveIdx]
   
+  if (!hostPoke || !clientPoke) return
+
   const hostPick = battleState.myPick
   const clientPick = battleState.enemyPick
+
+  if (!hostPick || !clientPick) return
 
   // 1. Determine priority and order
   let firstIsHost = true
@@ -24,10 +89,12 @@ export function resolvePvPTurn(battleState: any): any {
   } else if (clientPick.type === 'switch' && hostPick.type !== 'switch') {
     firstIsHost = false
   } else if (hostPick.type === 'move' && clientPick.type === 'move') {
-    const hMove = hostPoke.moves[hostPick.moveIndex]
-    const cMove = clientPoke.moves[clientPick.moveIndex]
-    const hPrio = (MOVE_DATA as any)[hMove?.name]?.priority || 0
-    const cPrio = (MOVE_DATA as any)[cMove?.name]?.priority || 0
+    const hIdx = hostPick.moveIndex ?? 0
+    const cIdx = clientPick.moveIndex ?? 0
+    const hMove = hostPoke.moves[hIdx]
+    const cMove = clientPoke.moves[cIdx]
+    const hPrio = (MOVE_DATA as Record<string, MoveBaseData>)[hMove?.name || '']?.priority || 0
+    const cPrio = (MOVE_DATA as Record<string, MoveBaseData>)[cMove?.name || '']?.priority || 0
 
     if (hPrio !== cPrio) {
       firstIsHost = hPrio > cPrio
@@ -39,7 +106,7 @@ export function resolvePvPTurn(battleState: any): any {
   }
 
   // 2. Helper to calculate a single action
-  const calcAction = (actorIsHost: boolean) => {
+  const calcAction = (actorIsHost: boolean): PvPActionResult => {
     const effectLog: string[] = []
     const attacker = actorIsHost ? hostPoke : clientPoke
     const defender = actorIsHost ? clientPoke : hostPoke
@@ -51,21 +118,30 @@ export function resolvePvPTurn(battleState: any): any {
       return { type: 'switch', newIdx: pick.switchIndex, actorIsHost, effectLog }
     }
 
-    const move = attacker.moves[pick.moveIndex]
+    const moveIdx = pick.moveIndex ?? 0
+    const move = attacker.moves[moveIdx]
     const moveName = move?.name || '???'
-    const md = (MOVE_DATA as any)[moveName] || { power: 40, type: 'normal', cat: 'physical', acc: 100 }
+    const md = ((MOVE_DATA as unknown) as Record<string, MoveBaseData>)[moveName] || { 
+      power: 40, 
+      type: 'normal', 
+      cat: 'physical' as const, 
+      acc: 100, 
+      priority: 0, 
+      effect: 'none' 
+    } as MoveBaseData
 
     if (attacker.status === 'sleep') {
-      if (attacker.sleepTurns > 0) {
-        attacker.sleepTurns--
+      const sleepTurns = (attacker as any).sleepTurns ?? 0
+      if (sleepTurns > 0) {
+        (attacker as any).sleepTurns = sleepTurns - 1
         return { type: 'move', moveName, actorIsHost, statusBlocked: 'sleep', effectLog }
       }
       attacker.status = null
       effectLog.push(`¡${attacker.name} se despertó!`)
     }
 
-    if (attacker.status === 'paralyze' && Math.random() < 0.25) {
-      return { type: 'move', moveName, actorIsHost, statusBlocked: 'paralyze', effectLog }
+    if (attacker.status === 'paralysis' && Math.random() < 0.25) {
+      return { type: 'move', moveName, actorIsHost, statusBlocked: 'paralysis', effectLog }
     }
 
     if (md.acc && Math.random() * 100 > md.acc * getAccuracyMultiplier(atkS.acc || 0)) {
@@ -74,13 +150,16 @@ export function resolvePvPTurn(battleState: any): any {
 
     if (md.cat === 'status') {
       applyMoveEffect(md.effect, attacker, defender, atkS, defS, (m: string) => effectLog.push(m))
-      return { type: 'move', moveName, actorIsHost, isStatus: true, effectLog }
+      return { type: 'move', moveName, actorIsHost, effectLog }
     }
 
-    const { dmg, eff } = calculateDamage(attacker, defender, md, { atkStages: atkS[md.cat === 'physical' ? 'atk' : 'spa'], defStages: defS[md.cat === 'physical' ? 'def' : 'spd'] })
+    const { dmg, eff } = calculateDamage(attacker, defender, md, { 
+      atkStages: (atkS as Record<string, any>)[md.cat === 'physical' ? 'atk' : 'spa'], 
+      defStages: (defS as Record<string, any>)[md.cat === 'physical' ? 'def' : 'spd'] 
+    })
     const targetHpArr = actorIsHost ? battleState.enemyHp : battleState.myHp
     const targetIdx = actorIsHost ? battleState.enemyActiveIdx : battleState.myActiveIdx
-    const newHp = Math.max(0, targetHpArr[targetIdx] - dmg)
+    const newHp = Math.max(0, (targetHpArr[targetIdx] ?? 0) - dmg)
     
     if (md.effect && md.effect !== 'none' && dmg > 0) {
       applyMoveEffect(md.effect, attacker, defender, atkS, defS, (m: string) => effectLog.push(m))
@@ -92,50 +171,62 @@ export function resolvePvPTurn(battleState: any): any {
   // 3. Execute actions
   const firstAction = calcAction(firstIsHost)
   if (firstAction.newHp !== undefined) {
-    if (firstIsHost) battleState.enemyHp[battleState.enemyActiveIdx] = firstAction.newHp
-    else battleState.myHp[battleState.myActiveIdx] = firstAction.newHp
+    if (firstIsHost) {
+      if (battleState.enemyHp) battleState.enemyHp[battleState.enemyActiveIdx] = firstAction.newHp
+    } else {
+      if (battleState.myHp) battleState.myHp[battleState.myActiveIdx] = firstAction.newHp
+    }
   }
 
-  let secondAction: any = null
-  const defenderHp = firstIsHost ? battleState.enemyHp[battleState.enemyActiveIdx] : battleState.myHp[battleState.myActiveIdx]
+  let secondAction: PvPActionResult | null = null
+  const defenderHp = firstIsHost ? (battleState.enemyHp[battleState.enemyActiveIdx] ?? 0) : (battleState.myHp[battleState.myActiveIdx] ?? 0)
   if (defenderHp > 0 && firstAction.type !== 'switch') {
     secondAction = calcAction(!firstIsHost)
   }
 
-  const result = {
+  const result: PvPTurnResult = {
     firstIsHost, first: firstAction, second: secondAction,
     hostActiveIdx: battleState.myActiveIdx, clientActiveIdx: battleState.enemyActiveIdx,
     hostHp: battleState.myHp, clientHp: battleState.enemyHp,
     hostStages: battleState.myStages, clientStages: battleState.enemyStages
   }
   
-  battleState.ch.send({ type: 'broadcast', event: 'pvp_turn_result', payload: result })
+  if (battleState.ch && typeof battleState.ch.send === 'function') {
+    battleState.ch.send({ type: 'broadcast', event: 'pvp_turn_result', payload: result })
+  }
   return result
 }
 
-export async function applyPvPTurnResult(battleState: any, result: any, endBattleCallback: Function): Promise<void> {
+export async function applyPvPTurnResult(battleState: PvPBattleState, result: PvPTurnResult, endBattleCallback: (won: boolean, msg: string) => void): Promise<void> {
   battleState.phase = 'animating'
   const isHost = battleState.isHost
-  const actions = [result.first, result.second].filter(Boolean)
+  const actions = [result.first, result.second].filter((a): a is PvPActionResult => a !== null)
 
   for (const action of actions) {
-    if (battleState.phase === 'over') break
+    if ((battleState.phase as string) === 'over') break
     const isMyAction = isHost ? action.actorIsHost : !action.actorIsHost
     
     if (action.type === 'switch') {
       const team = isMyAction ? battleState.myTeam : battleState.enemyTeam
-      battleState.logs.push(`¡${isMyAction ? 'Vas a cambiar a' : 'El rival cambió a'} ${team[action.newIdx].name}!`)
+      const targetPoke = team[action.newIdx ?? 0]
+      if (targetPoke) {
+        battleState.logs.push(`¡${isMyAction ? 'Vas a cambiar a' : 'El rival cambió a'} ${targetPoke.name}!`)
+      }
       await new Promise(r => setTimeout(r, 600))
-      if (isMyAction) battleState.myActiveIdx = action.newIdx
-      else battleState.enemyActiveIdx = action.newIdx
+      if (isMyAction) battleState.myActiveIdx = action.newIdx ?? 0
+      else battleState.enemyActiveIdx = action.newIdx ?? 0
     } else {
-      battleState.logs.push(`¡${isMyAction ? 'Tu' : 'El'} ${action.actorName || 'Pokémon'} usó ${action.moveName}!`)
+      const team = action.actorIsHost ? (isHost ? battleState.myTeam : battleState.enemyTeam) : (isHost ? battleState.enemyTeam : battleState.myTeam)
+      const actorIdx = action.actorIsHost ? (isHost ? battleState.myActiveIdx : battleState.enemyActiveIdx) : (isHost ? battleState.enemyActiveIdx : battleState.myActiveIdx)
+      const actorPoke = team[actorIdx]
+      
+      battleState.logs.push(`¡${isMyAction ? 'Tu' : 'El'} ${actorPoke?.name || 'Pokémon'} usó ${action.moveName}!`)
       if (action.statusBlocked) battleState.logs.push(`¡No pudo moverse por ${action.statusBlocked}!`)
       else if (action.missed) battleState.logs.push('¡Falló!')
-      else if (action.damage > 0) {
-        battleState.logs.push(`(-${action.damage} HP)${action.eff >= 2 ? ' ¡Muy eficaz!' : action.eff <= 0.5 ? ' No muy eficaz...' : ''}`)
-        if (isMyAction) battleState.enemyHp[battleState.enemyActiveIdx] = action.newHp
-        else battleState.myHp[battleState.myActiveIdx] = action.newHp
+      else if (action.damage !== undefined && action.damage > 0) {
+        battleState.logs.push(`(-${action.damage} HP)${action.eff !== undefined && action.eff >= 2 ? ' ¡Muy eficaz!' : action.eff !== undefined && action.eff <= 0.5 ? ' No muy eficaz...' : ''}`)
+        if (isMyAction) battleState.enemyHp[battleState.enemyActiveIdx] = action.newHp ?? 0
+        else battleState.myHp[battleState.myActiveIdx] = action.newHp ?? 0
       }
       action.effectLog?.forEach((m: string) => battleState.logs.push(m))
     }
@@ -143,8 +234,8 @@ export async function applyPvPTurnResult(battleState: any, result: any, endBattl
   }
   
   // Post-turn checks
-  const myHp = battleState.myHp[battleState.myActiveIdx]
-  const enHp = battleState.enemyHp[battleState.enemyActiveIdx]
+  const myHp = battleState.myHp[battleState.myActiveIdx] ?? 0
+  const enHp = battleState.enemyHp[battleState.enemyActiveIdx] ?? 0
 
   if (myHp <= 0) {
     if (!battleState.myHp.some((h: number) => h > 0)) endBattleCallback(false, '¡Has sido derrotado!')

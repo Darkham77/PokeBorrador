@@ -45,9 +45,11 @@ const prepareResult = async () => {
       isGuardian: props.egg.isGuardian,
       nature: props.egg.nature
     })
-    p.ivs = { ...p.ivs, ...props.egg.ivs }
-    recalcPokemonStats(p)
-    resultPokemon.value = p
+    if (p) {
+      p.ivs = { ...p.ivs, ...props.egg.ivs }
+      recalcPokemonStats(p)
+      resultPokemon.value = p
+    }
   }
 }
 

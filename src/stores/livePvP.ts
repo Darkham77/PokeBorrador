@@ -4,36 +4,62 @@ import { useAuthStore } from './auth'
 import { useGameStore } from './game'
 import { useUIStore } from './ui'
 import { usePvPStore } from './pvp'
-import { resolvePvPTurn, applyPvPTurnResult } from '@/logic/pvp/pvpEngine'
+import { resolvePvPTurn, applyPvPTurnResult, type PvPBattleState, type PvPTurnResult, type PvPAction } from '@/logic/pvp/pvpEngine'
+import type { Pokemon } from '@/types/pokemon'
+
+export interface BattleInvite {
+  id: string;
+  challenger_id: string;
+  opponent_id: string;
+  status: 'pending' | 'accepted' | 'declined' | 'ranked_match' | 'ranked_accepted';
+  created_at: string;
+}
 
 export const useLivePvPStore = defineStore('livePvP', () => {
-  const authStore = useAuthStore() as any
-  const gameStore = useGameStore() as any
-  const uiStore = useUIStore() as any
-  const _pvpStore = usePvPStore() as any
+  const authStore = useAuthStore()
+  const gameStore = useGameStore()
+  const uiStore = useUIStore()
+  const _pvpStore = usePvPStore()
 
-  const activeInvite = ref(null)
+  const activeInvite = ref<BattleInvite | null>(null)
   const isSearching = ref(false)
-  const battleState = reactive({
-    active: false, ch: null, isHost: false, isRanked: false,
+
+  interface LiveBattleState extends PvPBattleState {
+    active: boolean;
+    opponentId: string | null;
+    opponentName: string;
+    opponentElo: number;
+    deadline: number | null;
+  }
+
+  const battleState = reactive<LiveBattleState>({
+    active: false, 
+    ch: { 
+      send: () => {}, 
+      on: () => ({ on: () => ({ on: () => ({ on: () => ({ subscribe: () => {} }) }) }) }), 
+      subscribe: () => {}, 
+      unsubscribe: () => {} 
+    } as any, 
+    isHost: false, isRanked: false,
     opponentId: null, opponentName: 'Rival', opponentElo: 1000,
     phase: 'sync', myTeam: [], enemyTeam: [],
     myActiveIdx: 0, enemyActiveIdx: 0, myHp: [], enemyHp: [],
-    myStages: { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0 },
-    enemyStages: { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0 },
+    myStages: { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0, reflect: 0, lightScreen: 0, safeguard: 0, mist: 0, spikes: 0 },
+    enemyStages: { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0, reflect: 0, lightScreen: 0, safeguard: 0, mist: 0, spikes: 0 },
     myPick: null, enemyPick: null, logs: [], deadline: null,
   })
 
-  let invitePoller = null; let matchmakingPoller = null
+  let invitePoller: ReturnType<typeof setInterval> | null = null
+  let matchmakingPoller: ReturnType<typeof setInterval> | null = null
 
   function _pollMatchmaking() {
-    if (!isSearching.value) return
-    gameStore.db.from('ranked_queue').select('*').neq('user_id', authStore.user.id).order('looking_since', { ascending: true }).limit(1).then(async ({ data }) => {
-      if (data?.length) {
+    if (!isSearching.value || !gameStore.db || !authStore.user) return
+    gameStore.db.from('ranked_queue').select('*').neq('user_id', authStore.user.id).order('looking_since', { ascending: true }).limit(1).then(async ({ data }: { data: any[] | null }) => {
+      if (data?.length && authStore.user && gameStore.db) {
         const match = data[0]
-        const { data: invite, error } = await (gameStore.db as any).from('battle_invites').insert({ challenger_id: authStore.user.id, opponent_id: match.user_id, status: 'ranked_match' }).select().single()
+        const { data: invite, error } = await gameStore.db.from('battle_invites').insert({ challenger_id: authStore.user.id, opponent_id: match.user_id, status: 'ranked_match' }).select().single()
         if (!error && invite) {
-          await (gameStore.db as any).from('ranked_queue').delete().in('user_id', [authStore.user.id, match.user_id])
+          await gameStore.db.from('ranked_queue').delete().in('user_id', [authStore.user.id, match.user_id])
           isSearching.value = false; startBattle(invite, true, true)
         }
       }
@@ -44,88 +70,101 @@ export const useLivePvPStore = defineStore('livePvP', () => {
     if (invitePoller) clearInterval(invitePoller)
     if (authStore.sessionMode === 'offline') return
     invitePoller = setInterval(async () => {
-      if (!authStore.user) return
-      const { data } = await (gameStore.db as any).from('battle_invites').select('*').eq('opponent_id', authStore.user.id).in('status', ['pending', 'ranked_match']).order('created_at', { ascending: false }).limit(1)
-      if (data?.length) {
+      if (!authStore.user || !gameStore.db) return
+      const { data } = await gameStore.db.from('battle_invites').select('*').eq('opponent_id', authStore.user.id).in('status', ['pending', 'ranked_match']).order('created_at', { ascending: false }).limit(1)
+      if (data?.length && gameStore.db) {
         const inv = data[0]
         if (Date.now() - new Date(inv.created_at).getTime() > 60000) return
-        if (inv.status === 'ranked_match') { if (isSearching.value) acceptInvite(inv.id, true); else await (gameStore.db as any).from('battle_invites').update({ status: 'declined' }).eq('id', inv.id) }
+        if (inv.status === 'ranked_match') { if (isSearching.value) acceptInvite(inv.id, true); else await gameStore.db.from('battle_invites').update({ status: 'declined' }).eq('id', inv.id) }
         else activeInvite.value = inv
       }
-    }, 4000)
+    }, 4000) as any
   }
 
   async function startSearch() {
+    if (!authStore.user || !gameStore.db) return
     isSearching.value = true
-    await (gameStore.db as any).from('ranked_queue').upsert({ user_id: authStore.user.id, elo: gameStore.state.eloRating || 1000, looking_since: new Date().toISOString() })
+    await gameStore.db.from('ranked_queue').upsert({ user_id: authStore.user.id, elo: gameStore.state.eloRating || 1000, looking_since: new Date().toISOString() })
     uiStore.notify('Buscando oponente...', '🔍')
     if (matchmakingPoller) clearInterval(matchmakingPoller)
-    matchmakingPoller = setInterval(_pollMatchmaking, 3000)
+    matchmakingPoller = setInterval(_pollMatchmaking, 3000) as any
   }
 
   async function cancelSearch() {
+    if (!authStore.user || !gameStore.db) return
     isSearching.value = false; if (matchmakingPoller) clearInterval(matchmakingPoller)
-    await (gameStore.db as any).from('ranked_queue').delete().eq('user_id', authStore.user.id)
+    await gameStore.db.from('ranked_queue').delete().eq('user_id', authStore.user.id)
   }
 
-  async function sendInvite(opponentId, opponentName) {
-    const { data, error } = await (gameStore.db as any).from('battle_invites').insert({ challenger_id: authStore.user.id, opponent_id: opponentId, status: 'pending' }).select().single()
+  async function sendInvite(opponentId: string, opponentName: string) {
+    if (!authStore.user || !gameStore.db) return
+    const { data, error } = await gameStore.db.from('battle_invites').insert({ challenger_id: authStore.user.id, opponent_id: opponentId, status: 'pending' }).select().single()
     if (error) { uiStore.notify('Error al enviar invitación', '❌'); return }
     uiStore.notify(`Invitación enviada a ${opponentName}`, '✉️'); startBattle(data, true, false)
   }
 
-  async function acceptInvite(inviteId, isRanked = false) {
+  async function acceptInvite(inviteId: string, isRanked = false) {
+    if (!gameStore.db) return
     const status = isRanked ? 'ranked_accepted' : 'accepted'
-    await (gameStore.db as any).from('battle_invites').update({ status }).eq('id', inviteId)
-    const { data: invite } = await (gameStore.db as any).from('battle_invites').select('*').eq('id', inviteId).single()
+    await gameStore.db.from('battle_invites').update({ status }).eq('id', inviteId)
+    const { data: invite } = await gameStore.db.from('battle_invites').select('*').eq('id', inviteId).single()
     if (invite) startBattle(invite, false, isRanked)
     activeInvite.value = null
   }
 
-  async function declineInvite(inviteId) { await (gameStore.db as any).from('battle_invites').update({ status: 'declined' }).eq('id', inviteId); activeInvite.value = null }
+  async function declineInvite(inviteId: string) { 
+    if (!gameStore.db) return
+    await gameStore.db.from('battle_invites').update({ status: 'declined' }).eq('id', inviteId); 
+    activeInvite.value = null 
+  }
 
-  function _commitPick(pick) { if (battleState.phase !== 'choosing') return; battleState.myPick = pick; battleState.phase = 'waiting'; if (battleState.isHost) { if (battleState.enemyPick) resolveTurn() } else { battleState.ch.send({ type: 'broadcast', event: 'pvp_pick', payload: pick }) } }
+  function _commitPick(pick: PvPAction) { if (battleState.phase !== 'choosing') return; battleState.myPick = pick; battleState.phase = 'waiting'; if (battleState.isHost) { if (battleState.enemyPick) resolveTurn() } else { if (battleState.ch) battleState.ch.send({ type: 'broadcast', event: 'pvp_pick', payload: pick }) } }
 
   function _forfeit() { if (battleState.ch) battleState.ch.send({ type: 'broadcast', event: 'pvp_forfeit', payload: {} }); endBattle(false, 'Te has rendido.') }
 
-  async function endBattle(won, reason) {
-    battleState.active = false; battleState.phase = 'over'; if (battleState.ch) battleState.ch.unsubscribe()
+  async function endBattle(won: boolean, reason: string) {
+    battleState.active = false; battleState.phase = 'over'; if (battleState.ch) (battleState.ch as any).unsubscribe()
     let eloDelta = 0; if (battleState.isRanked) eloDelta = await _pvpStore.updateElo(won)
     uiStore.notify(`${reason || (won ? '¡Has ganado!' : 'Has perdido.')}${eloDelta !== 0 ? ` (${eloDelta > 0 ? '+' : ''}${eloDelta} ELO)` : ''}`, won ? '🏆' : '💀')
-    if (gameStore.state) { gameStore.state.activeBattle = null; gameStore.save(false) }
+    if (gameStore.state) { (gameStore.state as any).activeBattle = null; gameStore.save(false) }
   }
 
   function resolveTurn() { const res = resolvePvPTurn(battleState); if (res) applyTurnResult(res) }
-  async function applyTurnResult(result) { await applyPvPTurnResult(battleState, result, endBattle) }
+  async function applyTurnResult(result: PvPTurnResult) { await applyPvPTurnResult(battleState, result, endBattle) }
 
-  function startBattle(invite, isHost, isRanked) {
+  function startBattle(invite: BattleInvite, isHost: boolean, isRanked: boolean) {
     battleState.active = true; battleState.isHost = isHost; battleState.isRanked = isRanked; battleState.opponentId = isHost ? invite.opponent_id : invite.challenger_id
-    battleState.myTeam = JSON.parse(JSON.stringify(gameStore.state.team)); battleState.myHp = battleState.myTeam.map(p => (p as any).hp); battleState.myActiveIdx = 0
+    battleState.myTeam = JSON.parse(JSON.stringify(gameStore.state.team)); 
+    battleState.myHp = battleState.myTeam.map((p: Pokemon) => p.hp); 
+    battleState.myActiveIdx = 0
     battleState.phase = 'sync'; battleState.logs = ['¡Comienza la batalla!']; battleState.myPick = null; battleState.enemyPick = null
     setupBattleChannel(invite.id)
     const broadcastTeam = () => { if (battleState.ch) battleState.ch.send({ type: 'broadcast', event: 'pvp_team', payload: { team: battleState.myTeam } }) }
     setTimeout(broadcastTeam, 500); setTimeout(broadcastTeam, 2000)
   }
 
-  function setupBattleChannel(inviteId) {
+  function setupBattleChannel(inviteId: string) {
+    if (!gameStore.db) return
     battleState.ch = gameStore.db.channel(`pvp-${inviteId}`)
     battleState.ch.on('broadcast', { event: 'pvp_team' }, handleOpponentTeam).on('broadcast', { event: 'pvp_pick' }, handleOpponentPick).on('broadcast', { event: 'pvp_turn_result' }, handleTurnResult).on('broadcast', { event: 'pvp_forfeit' }, handleOpponentForfeit)
-      .subscribe((status) => { if (status === 'SUBSCRIBED') battleState.ch.send({ type: 'broadcast', event: 'pvp_team', payload: { team: battleState.myTeam } }) })
+      .subscribe((status: string) => { if (status === 'SUBSCRIBED' && battleState.ch) battleState.ch.send({ type: 'broadcast', event: 'pvp_team', payload: { team: battleState.myTeam } }) })
   }
 
-  function handleOpponentTeam({ payload }) {
+  function handleOpponentTeam({ payload }: { payload: { team: Pokemon[] } }) {
     if (battleState.enemyTeam.length > 0) return
-    battleState.enemyTeam = payload.team; battleState.enemyHp = payload.team.map(p => (p as any).hp); battleState.enemyActiveIdx = 0
+    battleState.enemyTeam = payload.team; 
+    battleState.enemyHp = payload.team.map((p: Pokemon) => p.hp); 
+    battleState.enemyActiveIdx = 0
     if (battleState.phase === 'sync') { battleState.phase = 'choosing'; battleState.logs.push(`¡El rival está listo!`) }
   }
 
-  function handleOpponentPick({ payload }) { battleState.enemyPick = payload; if (battleState.isHost && battleState.myPick) resolveTurn() }
-  function handleTurnResult({ payload }) { if (!battleState.isHost) applyTurnResult(payload) }
+  function handleOpponentPick({ payload }: { payload: PvPAction }) { battleState.enemyPick = payload; if (battleState.isHost && battleState.myPick) resolveTurn() }
+  function handleTurnResult({ payload }: { payload: PvPTurnResult }) { if (!battleState.isHost) applyTurnResult(payload) }
   function handleOpponentForfeit() { endBattle(true, 'El oponente se ha rendido.') }
 
   function _checkPostTurn() {
-    const myHp = battleState.myHp[battleState.myActiveIdx]
-    const enHp = battleState.enemyHp[battleState.enemyActiveIdx]
+    const myHp = battleState.myHp[battleState.myActiveIdx] || 0
+    const enHp = battleState.enemyHp[battleState.enemyActiveIdx] || 0
     if (myHp <= 0) {
       if (!battleState.myHp.some(h => h > 0)) endBattle(false, '¡Has sido derrotado!')
       else battleState.phase = 'faint_switch'

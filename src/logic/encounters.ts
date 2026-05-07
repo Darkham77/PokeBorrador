@@ -8,7 +8,7 @@ import { getGuardianData, GUARDIAN_CHANCE } from '@/logic/war/guardianEngine';
 import { applyEncounterBonuses } from '@/logic/war/bonusEngine';
 import { useEventStore } from '@/stores/events';
 import type { Pokemon } from '@/types/pokemon';
-import type { MapLocation, Encounter } from '@/types/encounters';
+import type { MapLocation, Encounter, EncounterOptions, EncounterState } from '@/types/encounters';
 
 const WEATHER_BUFF_MULTIPLIER = 1.5;
 
@@ -33,7 +33,7 @@ function isSpeciesBoosted(id: string, weather: string): boolean {
   };
 
   const boostedTypes = weatherBoosts[w] || [];
-  return types.some(t => boostedTypes.includes(t.toLowerCase()));
+  return types.some((t: string) => boostedTypes.includes(t.toLowerCase()));
 }
 
 
@@ -118,22 +118,22 @@ export function selectFromPool(pool: string[], rates: number[]): string {
   
   for (let i = 0; i < pool.length; i++) {
     cumulative += rates[i] || 0;
-    if (rand <= cumulative) return pool[i];
+    if (rand <= cumulative) return pool[i] || '';
   }
-  return pool[0];
+  return pool[0] || '';
 }
 
 /**
  * Main logic to generate a wild encounter.
  * Handles repellent, incense, fishing, and specialty spawns.
  */
-export async function generateEncounter(locId: string, state: any, options: any = {}): Promise<Encounter | null> {
-  const maps = pokemonDataProvider.getMaps() as MapLocation[];
+export async function generateEncounter(locId: string, state: EncounterState, options: EncounterOptions = {}): Promise<Encounter | null> {
+  const maps = pokemonDataProvider.getMaps() as unknown as MapLocation[];
   const loc = maps.find(l => l.id === locId);
   if (!loc) return null;
 
   const cycle = getDayCycle();
-  const eventStore = useEventStore() as any;
+  const eventStore = useEventStore() as { activeEvents: any[] };
   const activeEvents = options.activeEvents || (eventStore.activeEvents || []) || [];
   const allMapIds = maps.map(m => m.id);
   
@@ -181,7 +181,9 @@ export async function generateEncounter(locId: string, state: any, options: any 
     // Find a pokemon with level >= firstPokemon.level
     for (let attempt = 0; attempt < 10; attempt++) {
       const selectedId = selectFromPool(pool, rates);
-      const level = Math.floor(Math.random() * (loc.lv[1] - loc.lv[0] + 1)) + loc.lv[0];
+      const minLv = loc.lv[0] || 2;
+      const maxLv = loc.lv[1] || 5;
+      const level = Math.floor(Math.random() * (maxLv - minLv + 1)) + minLv;
 
       if (!firstPokemon || level >= firstPokemon.level) {
         return { type: 'wild', pokemon: makePokemon(selectedId, level, { shinyMultiplier: options.shinyMultiplier }) as Pokemon };
@@ -202,9 +204,13 @@ export async function generateEncounter(locId: string, state: any, options: any 
   if (loc.fishing && Math.random() < GAME_RATIOS.encounters.fishing * fishingBonus) {
     const { pool, rates } = loc.fishing;
     const selectedId = selectFromPool(pool, rates);
-    const level = Math.floor(Math.random() * (loc.fishing.lv[1] - loc.fishing.lv[0] + 1)) + loc.fishing.lv[0];
+    const minLv = loc.fishing.lv[0] || 10;
+    const maxLv = loc.fishing.lv[1] || 20;
+    const level = Math.floor(Math.random() * (maxLv - minLv + 1)) + minLv;
     const totalRate = rates.reduce((a, b) => a + b, 0);
-    const rarity = (rates[pool.indexOf(selectedId)] / totalRate) * 100;
+    const rateIdx = pool.indexOf(selectedId);
+    const rateVal = rates[rateIdx];
+    const rarity = ((rateVal !== undefined ? rateVal : 0) / (totalRate || 1)) * 100;
     
     return { 
       type: 'fishing', 
@@ -224,49 +230,59 @@ export async function generateEncounter(locId: string, state: any, options: any 
 
     // Buff x1.5 a nativos que coinciden con el clima
     nativeIndices.forEach(idx => {
-      if (isSpeciesBoosted(pool[idx], weather)) {
-        rates[idx] *= WEATHER_BUFF_MULTIPLIER;
+      const spId = pool[idx];
+      if (spId && isSpeciesBoosted(spId, weather)) {
+        rates[idx] = (rates[idx] || 0) * WEATHER_BUFF_MULTIPLIER;
       }
     });
 
     // Normalización Proporcional de Visitantes (10% del peso total)
     if (visitorIndices.length > 0) {
-      const totalNativeWeight = nativeIndices.reduce((sum, idx) => sum + rates[idx], 0);
+      const totalNativeWeight = nativeIndices.reduce((sum, idx) => sum + (rates[idx] || 0), 0);
       const visitorQuota = totalNativeWeight / 9; // 10% del total final
       
       // Calculamos la suma de los pesos relativos (valores absolutos de los pesos negativos)
-      const sumRelativeWeights = visitorIndices.reduce((sum, idx) => sum + Math.abs(rates[idx]), 0);
+      const sumRelativeWeights = visitorIndices.reduce((sum, idx) => sum + Math.abs(rates[idx] || 0), 0);
       
       visitorIndices.forEach(idx => {
-        const relativeWeight = Math.abs(rates[idx]) / sumRelativeWeights;
+        const relativeWeight = Math.abs(rates[idx] || 0) / (sumRelativeWeights || 1);
         rates[idx] = visitorQuota * relativeWeight;
       });
     }
   }
 
   // 5. Incense Effect
-  if (state.incenseSecs > 0 && state.incenseType) {
+  if (state.incenseSecs && state.incenseSecs > 0 && state.incenseType) {
     const typeIndices = pool.map((id, idx) => {
       const pData = pokemonDataProvider.getPokemonData(id);
-      return (pData && pData.type === state.incenseType) ? idx : -1;
+      return (pData && (pData.type === state.incenseType || pData.type2 === state.incenseType)) ? idx : -1;
     }).filter(idx => idx !== -1);
 
     if (typeIndices.length > 0) {
-      pool = typeIndices.map(idx => pool[idx]);
-      rates = typeIndices.map(idx => rates[idx]);
+      pool = typeIndices.map(idx => pool[idx]).filter((id): id is string => id !== undefined);
+      rates = typeIndices.map(idx => rates[idx]).filter((r): r is number => r !== undefined);
     }
   }
 
   // 6. Final Select
   const selectedId = selectFromPool(pool, rates);
-  const level = Math.floor(Math.random() * (loc.lv[1] - loc.lv[0] + 1)) + loc.lv[0];
+  const minLv = loc.lv[0] || 2;
+  const maxLv = loc.lv[1] || 5;
+  const level = Math.floor(Math.random() * (maxLv - minLv + 1)) + minLv;
   
   const pokemon = makePokemon(selectedId, level, { shinyMultiplier: options.shinyMultiplier }) as Pokemon;
+  if (!pokemon) return null;
 
   // Marcar si es atmosférico para efectos visuales posteriores
-  const weatherCfg = loc.weather?.[weather] as any;
-  const isVisitor = !!(weatherCfg?.visitors?.[selectedId] || (Array.isArray(weatherCfg?.visitors) && weatherCfg?.visitors.includes(selectedId)));
-  const isExclusive = !!(weatherCfg?.exclusive?.[selectedId] || (Array.isArray(weatherCfg?.exclusive) && weatherCfg?.exclusive.includes(selectedId)));
+  const weatherCfg = loc.weather?.[weather];
+  const isVisitor = !!(weatherCfg?.visitors && (
+    (!Array.isArray(weatherCfg.visitors) && (weatherCfg.visitors as Record<string, number>)[selectedId]) || 
+    (Array.isArray(weatherCfg.visitors) && weatherCfg.visitors.includes(selectedId))
+  ));
+  const isExclusive = !!(weatherCfg?.exclusive && (
+    (!Array.isArray(weatherCfg.exclusive) && (weatherCfg.exclusive as Record<string, number>)[selectedId]) || 
+    (Array.isArray(weatherCfg.exclusive) && weatherCfg.exclusive.includes(selectedId))
+  ));
 
   const isBuffed = !isVisitor && !isExclusive && isSpeciesBoosted(selectedId, weather);
   

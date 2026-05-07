@@ -2,35 +2,45 @@ import { loadBestSave } from '@/logic/auth/loadService'
 import { saveGame as performSave } from '@/logic/auth/saveService'
 import { useLoadingStore } from '@/stores/loading'
 import { useUIStore } from '@/stores/ui'
+import type { GameState, ClaimItem } from '@/types/game'
+import type { AuthUser } from '@/types/auth'
+import type { Ref } from 'vue'
 
-export function useSaveActions(state, authStore, db, updateState) {
+export function useSaveActions(
+  state: GameState, 
+  authStore: { user: AuthUser | null }, 
+  db: Ref<any>, 
+  updateState: (data: GameState) => void
+) {
   async function loadGame() {
-    const loadingStore = useLoadingStore() as any
+    const loadingStore = useLoadingStore()
     loadingStore.start('game_data', 'Cargando datos...', 'Leyendo partida guardada', false)
     
     if (!authStore.user) {
-      // isDataLoaded is managed by the store itself or passed as ref
       return { success: true, guest: true }
     }
     
-    const uiStore = useUIStore() as any
-    let data, issues, lastSaveId, isNewerThanCloud;
+    const uiStore = useUIStore()
+    let data: GameState | null = null;
+    let issues: string[] = [];
+    let lastSaveId: string | null = null;
+    let isNewerThanCloud: boolean | undefined;
     let attempts = 0;
     const maxAttempts = 2;
-    let lastError = null;
+    let lastError: any = null;
 
     while (attempts < maxAttempts) {
       try {
-        const loadPromise = loadBestSave(authStore.user, db.value)
+        const loadPromise = loadBestSave(authStore.user as any, db.value)
         const timeoutPromise = new Promise((_, reject) => 
           setTimeout(() => reject(new Error('LOAD_TIMEOUT')), 8000)
         );
         
-        const result = await Promise.race([loadPromise, timeoutPromise]);
-        data = (result as any).data;
-        issues = (result as any).issues;
-        lastSaveId = (result as any).lastSaveId;
-        isNewerThanCloud = (result as any).isNewerThanCloud;
+        const result = await Promise.race([loadPromise, timeoutPromise]) as { data: GameState, issues: string[], lastSaveId: string | null, isNewerThanCloud: boolean };
+        data = result.data;
+        issues = result.issues;
+        lastSaveId = result.lastSaveId;
+        isNewerThanCloud = result.isNewerThanCloud;
         
         if (typeof sessionStorage !== 'undefined') {
           sessionStorage.setItem('load_retry_count', '0');
@@ -51,10 +61,10 @@ export function useSaveActions(state, authStore, db, updateState) {
     if (!data && lastError) {
       console.error('[LOAD] Todos los intentos de carga fallaron.', lastError);
       
-      const isTimeout = (lastError as any).message === 'LOAD_TIMEOUT';
-      const isNetworkError = (lastError as any).message && (
-        (lastError as any).message.toLowerCase().includes('fetch') ||
-        (lastError as any).message.toLowerCase().includes('network')
+      const isTimeout = lastError.message === 'LOAD_TIMEOUT';
+      const isNetworkError = lastError.message && (
+        lastError.message.toLowerCase().includes('fetch') ||
+        lastError.message.toLowerCase().includes('network')
       );
       
       if (isTimeout || isNetworkError || !navigator.onLine) {
@@ -71,7 +81,6 @@ export function useSaveActions(state, authStore, db, updateState) {
             return { success: false, reconnecting: true };
           } else {
             loadingStore.setProgress('game_data', 'Error de conexión', 'La red no responde. Toca en cualquier lugar para reintentar.');
-            // [PureVue-Ignore] - Disaster recovery listener for network failures
             window.addEventListener('click', () => {
               if (typeof sessionStorage !== 'undefined') sessionStorage.setItem('load_retry_count', '0');
               window.location.reload();
@@ -82,9 +91,9 @@ export function useSaveActions(state, authStore, db, updateState) {
       }
     }
     
-    if (data) {
+    if (data && authStore.user) {
       updateState(data)
-      authStore.user.last_save_id = lastSaveId
+      authStore.user.last_save_id = lastSaveId || undefined
       
       if (issues && issues.length > 0) {
         console.warn('[LOAD] Saneamiento realizado:', issues)
@@ -107,12 +116,8 @@ export function useSaveActions(state, authStore, db, updateState) {
 
   async function save(showNotif = true) {
     if (!authStore.user) return
-    if (authStore.sessionMode === 'online' && authStore.connectionLost) {
-      console.warn('[GameStore] Guardado bloqueado por falta de conexión en modo Online.')
-      return
-    }
-
-    const uiStore = useUIStore() as any
+    
+    const uiStore = useUIStore()
     const notifyFn = uiStore.notify
     const result = await performSave(state, authStore.user, { 
       showNotif, 
@@ -120,15 +125,15 @@ export function useSaveActions(state, authStore, db, updateState) {
       db: db.value,
       userVersion: authStore.user.db_version,
       lastSaveId: authStore.user.last_save_id
-    })
+    }) as { success: boolean, migrated?: boolean, lastSaveId?: string, rollback?: boolean, outOfSync?: boolean, error?: string }
 
     if (result) {
-      if ((result as any).migrated) authStore.user.db_version = 2
-      if ((result as any).lastSaveId) authStore.user.last_save_id = (result as any).lastSaveId
+      if (result.migrated) authStore.user.db_version = 2
+      if (result.lastSaveId) authStore.user.last_save_id = result.lastSaveId
       
-      if ((result as any).rollback) {
-        if ((result as any).outOfSync) notifyFn('Desincronización detectada. Restaurando...', '🔄')
-        const { data: freshSave } = await (db.value as any).from('game_saves').select('save_data, last_save_id').eq('user_id', authStore.user.id).single()
+      if (result.rollback && db.value) {
+        if (result.outOfSync) notifyFn('Desincronización detectada. Restaurando...', '🔄')
+        const { data: freshSave } = await db.value.from('game_saves').select('save_data, last_save_id').eq('user_id', authStore.user.id).single()
         if (freshSave) {
           updateState(freshSave.save_data)
           authStore.user.last_save_id = freshSave.last_save_id
@@ -137,18 +142,18 @@ export function useSaveActions(state, authStore, db, updateState) {
     }
   }
 
-  function scheduleSave() {
-    save(false)
+  async function scheduleSave() {
+    await save(false)
   }
 
-  async function claimAsset(claimId) {
-    if (!authStore.user) return false
+  async function claimAsset(claimId: string) {
+    if (!authStore.user || !db.value) return false
     try {
-      const { data, error } = await (db.value as any).rpc('claim_asset_v2', { p_claim_id: claimId })
+      const { data, error } = await db.value.rpc('claim_asset_v2', { p_claim_id: claimId })
       if (error) throw error
       if (data) {
-        updateState(data)
-        state.claimQueue = state.claimQueue.filter(c => c.id !== claimId)
+        updateState(data as GameState)
+        state.claimQueue = state.claimQueue.filter((c: ClaimItem) => c.id !== claimId)
         return true
       }
     } catch (e) {
@@ -156,11 +161,12 @@ export function useSaveActions(state, authStore, db, updateState) {
       useUIStore().notify('Error al reclamar activo', '❌')
       return false
     }
+    return false
   }
 
   async function fetchClaimQueue() {
-    if (!authStore.user || authStore.sessionMode === 'offline') return
-    const { data, error } = await (db.value as any).from('claim_queue')
+    if (!authStore.user || !db.value) return
+    const { data, error } = await db.value.from('claim_queue')
       .select('*')
       .eq('user_id', authStore.user.id)
       .order('created_at', { ascending: true })

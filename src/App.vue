@@ -3,8 +3,7 @@ import { onMounted, ref, computed, watch } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useGameStore } from '@/stores/game'
 import { initGlobalErrorHandlers } from '@/logic/errorHandler'
-
-import { checkDBCompatibility } from '@/logic/db/dbRouter'
+import { checkDBCompatibility, type DBCompatibilityResponse } from '@/logic/db/dbRouter'
 
 import MainGameView from '@/views/MainGameView.vue'
 import ErrorOverlay from '@/components/common/ErrorOverlay.vue'
@@ -23,19 +22,19 @@ import { useWindowListener } from '@/composables/useWindowListener'
 import { useProfileStore } from '@/stores/profile'
 import { useRoute } from 'vue-router'
 
-const authStore = useAuthStore() as any
-const gameStore = useGameStore() as any
-const uiStore = useUIStore() as any
-const profileStore = useProfileStore() as any
-const battleStore = useBattleStore() as any
-const loadingStore = useLoadingStore() as any
+const authStore = useAuthStore()
+const gameStore = useGameStore()
+const uiStore = useUIStore()
+const profileStore = useProfileStore()
+const battleStore = useBattleStore()
+const loadingStore = useLoadingStore()
 const route = useRoute()
 const dbIncompatible = ref(false)
-const dbVersionInfo = ref<any>(null)
+const dbVersionInfo = ref<DBCompatibilityResponse | null>(null)
 
 const isLoginPage = computed(() => {
   if (typeof window === 'undefined') return false
-  return window.location.pathname === '/login' || route.path === '/login'
+  return window.location?.pathname === '/login' || route.path === '/login'
 })
 
 const loadingInfo = computed(() => {
@@ -44,9 +43,9 @@ const loadingInfo = computed(() => {
     const cur = loadingStore.current
     return { 
       active: true, 
-      msg: cur.message, 
-      sub: cur.subMessage,
-      global: cur.isGlobal 
+      msg: cur?.message || 'Cargando...', 
+      sub: cur?.subMessage || '',
+      global: cur?.isGlobal || false
     }
   }
 
@@ -99,7 +98,7 @@ onMounted(async () => {
 
   // 3. Check DB Compatibility & Load Game (Omitir si estamos en login para evitar bloqueos)
   if (authStore.user && !isLoginPage.value) {
-    const comp = await checkDBCompatibility(gameStore.db)
+    const comp = await checkDBCompatibility(gameStore.db as any)
     if (!comp.compatible) {
       dbIncompatible.value = true
       dbVersionInfo.value = comp
@@ -116,7 +115,7 @@ onMounted(async () => {
     }
     
     // Sincronizar datos del perfil
-    profileStore.syncProfileFromAuth(authStore.user, gameStore.state)
+    profileStore.syncProfileFromAuth(authStore.user!, gameStore.state)
   }
   
   // 4. Restore & Sync Zoom Level
@@ -222,7 +221,7 @@ const handleRetry = () => {
             ⚠️
           </div>
           <h2>SERVIDOR DESACTUALIZADO</h2>
-          <p>Tu cliente (v{{ dbVersionInfo.client }}) es más moderno que el servidor (v{{ dbVersionInfo.db }}).</p>
+          <p>Tu cliente (v{{ dbVersionInfo?.client }}) es más moderno que el servidor (v{{ dbVersionInfo?.db }}).</p>
           <p class="admin-note">
             Por favor, contacta al administrador para actualizar la base de datos.
           </p>

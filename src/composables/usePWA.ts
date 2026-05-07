@@ -2,7 +2,7 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import { registerSW } from 'virtual:pwa-register'
 
 export function usePWA() {
-  const installEvent = ref(null)
+  const installEvent = ref<any>(null)
   const canInstall = ref(false)
   const isInstalled = ref(false)
 
@@ -16,15 +16,15 @@ export function usePWA() {
     onOfflineReady() {
       console.log('PWA Offline Ready')
     },
-    onRegistered(r) {
+    onRegistered(r: any) {
       console.log('SW Registered:', r)
     },
-    onRegisterError(error) {
+    onRegisterError(error: any) {
       console.error('SW registration error', error)
     },
   })
 
-  const handleInstallPrompt = (e) => {
+  const handleInstallPrompt = (e: any) => {
     // Prevent the mini-infobar from appearing on mobile
     e.preventDefault()
     // Stash the event so it can be triggered later.
@@ -46,17 +46,21 @@ export function usePWA() {
     if (!installEvent.value) return false
     
     // Show the install prompt
-    installEvent.value.prompt()
-    
-    // Wait for the user to respond to the prompt
-    const { outcome } = await installEvent.value.userChoice
-    console.log(`User response to the install prompt: ${outcome}`)
-    
-    // We've used the prompt, and can't use it again, throw it away
-    installEvent.value = null
-    canInstall.value = false
-    
-    return outcome === 'accepted'
+    const event = installEvent.value;
+    if (event && typeof event.prompt === 'function') {
+      event.prompt()
+      
+      // Wait for the user to respond to the prompt
+      const { outcome } = await event.userChoice
+      console.log(`User response to the install prompt: ${outcome}`)
+      
+      // We've used the prompt, and can't use it again, throw it away
+      installEvent.value = null
+      canInstall.value = false
+      
+      return outcome === 'accepted'
+    }
+    return false
   }
 
   onMounted(() => {

@@ -16,7 +16,7 @@ export function useClassModifiers() {
    * Generic function to get a modifier.
    * Returns 1.0 (no change) if not applicable or in PvP.
    */
-  const getModifier = (type, context = {}) => {
+  const getModifier = (type: any, context: any = {}) => {
     // PvP Balance: No class advantages allowed in competitive matches
     if (isPvP.value) {
       if (type === 'shopDiscount') return 0;

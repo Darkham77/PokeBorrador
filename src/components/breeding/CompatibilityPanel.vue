@@ -8,7 +8,7 @@ interface Props {
 
 const props = defineProps<Props>()
 
-const compatStyle = computed(() => props.compatText[props.compatibility.level] || props.compatText[0])
+const compatStyle = computed(() => (props.compatText as any)[props.compatibility.level] || (props.compatText as any)[0] || { label: 'Desconocido', color: 'gray' })
 </script>
 
 <template>

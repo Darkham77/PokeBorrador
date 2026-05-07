@@ -25,15 +25,17 @@ const getRankIcon = (tierId: string) => {
 
 const seasonActive = computed(() => {
   const now = new Date()
-  return now >= pvp.seasonRange.start && now <= pvp.seasonRange.end
+  const range = pvp.seasonRange || {}
+  if (!range.start || !range.end) return false
+  return now >= range.start && now <= range.end
 })
 
 function isUnlocked(eloReq: number) {
-  return pvp.maxElo >= eloReq
+  return (pvp.maxElo || 0) >= eloReq
 }
 
 function isClaimed(id: string | number) {
-  return (pvp.rewardsClaimed as any[]).includes(id)
+  return ((pvp.rewardsClaimed || []) as any[]).includes(id)
 }
 
 function startSearch() {
@@ -67,34 +69,34 @@ function startSearch() {
         <div class="tier-display">
           <div class="tier-icon-wrapper">
             <img 
-              :src="getRankIcon(pvp.eloTier.id)"
-              :alt="pvp.eloTier.name"
+              :src="getRankIcon(pvp.eloTier?.id || 'bronce')"
+              :alt="pvp.eloTier?.name || 'Bronce'"
               class="tier-image"
               @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
             >
           </div>
           <div class="tier-info">
             <span class="tier-label">RANGO ACTUAL</span>
-            <h2 :style="{ color: pvp.eloTier.color }">
-              {{ pvp.eloTier.name }}
+            <h2 :style="{ color: pvp.eloTier?.color || '#888' }">
+              {{ pvp.eloTier?.name || 'Bronce' }}
             </h2>
             <div class="elo-badge">
-              {{ pvp.elo }} ELO
+              {{ pvp.elo || 1000 }} ELO
             </div>
           </div>
         </div>
 
         <div class="arena-stats">
           <div class="stat-item">
-            <span class="val">{{ pvp.stats.wins }}</span>
+            <span class="val">{{ pvp.stats?.wins || 0 }}</span>
             <span class="lab">VICTORIAS</span>
           </div>
           <div class="stat-item">
-            <span class="val">{{ pvp.stats.losses }}</span>
+            <span class="val">{{ pvp.stats?.losses || 0 }}</span>
             <span class="lab">DERROTAS</span>
           </div>
           <div class="stat-item">
-            <span class="val">{{ (pvp.stats.wins / (pvp.stats.wins + pvp.stats.losses || 1) * 100).toFixed(1) }}%</span>
+            <span class="val">{{ (pvp.stats?.wins / (pvp.stats?.wins + pvp.stats?.losses || 1) * 100).toFixed(1) }}%</span>
             <span class="lab">WIN RATE</span>
           </div>
         </div>
@@ -133,7 +135,7 @@ function startSearch() {
         <div class="header-with-timer">
           <h3>RECOMPENSAS DE TEMPORADA</h3>
           <span class="season-timer">
-            {{ pvp.seasonRange.daysLeft > 0 ? `Termina en ${pvp.seasonRange.daysLeft}d` : 'Temporada Finalizada' }}
+            {{ (pvp.seasonRange?.daysLeft || 0) > 0 ? `Termina en ${pvp.seasonRange.daysLeft}d` : 'Temporada Finalizada' }}
           </span>
         </div>
         
@@ -193,7 +195,7 @@ function startSearch() {
               class="type-badge"
               :class="t"
             >
-              {{ RANKED_TYPE_META[t]?.icon }} {{ RANKED_TYPE_META[t]?.label }}
+              {{ (RANKED_TYPE_META as any)[t]?.icon }} {{ (RANKED_TYPE_META as any)[t]?.label }}
             </span>
           </div>
           <div

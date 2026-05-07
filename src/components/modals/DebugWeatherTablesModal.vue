@@ -116,12 +116,12 @@ function formatRouteName(id: string) {
           
           <div class="seasons-grid">
             <div
-              v-for="(cycles, seasonId) in ROUTE_WEATHER_TABLES[routeId]"
+              v-for="(cycles, seasonId) in (ROUTE_WEATHER_TABLES as any)[routeId]"
               :key="seasonId"
               class="season-card"
             >
               <h3 class="season-title">
-                {{ seasonLabels[seasonId] || seasonId }}
+                {{ (seasonLabels as any)[seasonId] || seasonId }}
               </h3>
               
               <div class="cycles-list">
@@ -131,17 +131,17 @@ function formatRouteName(id: string) {
                   class="cycle-row"
                 >
                   <div class="cycle-name">
-                    {{ cycleLabels[cycleId] || cycleId }}
+                    {{ (cycleLabels as any)[cycleId] || cycleId }}
                   </div>
                   <div class="probs-tags">
                     <div 
-                      v-for="(chance, weather) in probs" 
-                      :key="weather" 
+                      v-for="(chance, weather) in (probs as any)" 
+                      :key="String(weather)" 
                       class="prob-tag"
-                      :class="weather"
+                      :class="String(weather)"
                     >
-                      <span class="icon">{{ weatherIcons[weather] || '❓' }}</span>
-                      <span class="label">{{ weather.toUpperCase() }}</span>
+                      <span class="icon">{{ (weatherIcons as any)[weather] || '❓' }}</span>
+                      <span class="label">{{ String(weather).toUpperCase() }}</span>
                       <span class="chance">{{ chance }}%</span>
                     </div>
                   </div>

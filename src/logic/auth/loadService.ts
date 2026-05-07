@@ -7,19 +7,17 @@ import type { Pokemon } from '@/types/pokemon';
  * Ported from legacy 01_auth.js 'onLogin' logic.
  */
 
+import type { GameState } from '@/types/game';
+import type { AuthUser } from '@/types/auth';
+
 export interface LoadResult {
-  data: any;
+  data: GameState | null;
   issues: string[];
   lastSaveId: string | null;
   isNewerThanCloud: boolean;
 }
 
-/**
- * Loads the best available save data (Cloud vs Local).
- * @param {Object} user - Current authenticated user.
- * @param {any} db - Database router instance.
- */
-export async function loadBestSave(user: any, db: any): Promise<LoadResult> {
+export async function loadBestSave(user: AuthUser | null, db: any): Promise<LoadResult> {
   if (!user) return { data: null, issues: [], lastSaveId: null, isNewerThanCloud: false };
 
   let cloudSaveRow: any = null;
@@ -98,7 +96,7 @@ export async function loadBestSave(user: any, db: any): Promise<LoadResult> {
   const { data: sanitized, issues } = validateAndSanitize(finalSaveData);
   
   // 4. Backfill and Deep Normalization (Legacy Parity)
-  const normalized = normalizeData(sanitized);
+  const normalized = normalizeData(sanitized as any);
 
   return {
     data: normalized,
@@ -111,7 +109,7 @@ export async function loadBestSave(user: any, db: any): Promise<LoadResult> {
 /**
  * Deep normalization for legacy data compatibility.
  */
-function normalizeData(state: any): any {
+function normalizeData(state: any): GameState {
   if (!state) return state;
 
   // Ensure arrays exist
@@ -121,7 +119,7 @@ function normalizeData(state: any): any {
   if (!Array.isArray(state.seenPokedex)) state.seenPokedex = [];
 
   // Data fix: ensure UID and Gender for all Pokemon
-  const fixPoke = (p: any): Pokemon | null => {
+  const fixPoke = (p: Pokemon): Pokemon | null => {
     if (!p) return null;
     if (!p.uid) p.uid = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
     
@@ -136,20 +134,20 @@ function normalizeData(state: any): any {
 
     // Clean legacy iv fields if corrupted
     if (p.ivs) {
-      delete p.ivs._cost;
-      delete p.ivs._nature;
+      delete (p.ivs as any)._cost;
+      delete (p.ivs as any)._nature;
     }
 
     // Backfill capture date if missing
-    if (!p.obtainedAt && !p.created_at && !p.captureDate && !p.timestamp && !p.date) {
+    if (!p.obtainedAt && !(p as any).created_at && !(p as any).captureDate && !(p as any).timestamp && !(p as any).date) {
       p.obtainedAt = Date.now();
     }
 
     return p;
   };
 
-  state.team = state.team.map(fixPoke).filter((p: any) => p !== null);
-  state.box = state.box.map(fixPoke).filter((p: any) => p !== null);
+  state.team = state.team.map((p: any) => fixPoke(p)).filter((p: any): p is Pokemon => p !== null);
+  state.box = state.box.map((p: any) => fixPoke(p)).filter((p: any): p is Pokemon => p !== null);
 
   // Normalize legacy badges (array to count)
   if (Array.isArray(state.badges)) {

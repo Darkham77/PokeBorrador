@@ -105,7 +105,7 @@ export function getSeason(now: number = getServerTime()): Season {
     { id: 'winter', label: 'Invierno', icon: '❄️' }
   ];
   
-  return seasons[seasonIndex];
+  return seasons[seasonIndex] || (seasons[0] as Season);
 }
 
 // Initial sync on module load REMOVED to avoid errors before login

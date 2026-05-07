@@ -10,13 +10,15 @@ import { getMechanicalWeather, WEATHER_MECHANICAL } from './weatherMapper'
 import { getDayCycle } from '@/logic/timeUtils'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { MOVE_DATA } from '@/data/moves'
+import type { BattleContext } from '@/types/battleContext'
+// import type { Pokemon, Move } from '@/types/pokemon'
 
 /**
  * Handles the turn logic for a single move execution.
  */
-export async function executeTurn(store: any, moveIndex: any) {
-  const p = store.activeBattle.player as any
-  const e = store.activeBattle.enemy as any
+export async function executeTurn(store: BattleContext, moveIndex: number) {
+  const p = store.activeBattle.value?.player
+  const e = store.activeBattle.value?.enemy
   
   if (!p || !e) {
     console.warn('[BattleTurn] Aborting turn: Player or Enemy is null', { p, e })
@@ -24,47 +26,41 @@ export async function executeTurn(store: any, moveIndex: any) {
   }
 
   const fsm = store.fsm
-  const BATTLE_STATES = store.BATTLE_STATES || { ACTIVE_BATTLE: 'ACTIVE_BATTLE' }
-  const BATTLE_SUBSTATES = store.BATTLE_SUBSTATES || { 
-    BUILD_QUEUE: 'BUILD_QUEUE', POP_ACTION: 'POP_ACTION', APPLY_MOVE: 'APPLY_MOVE', 
-    EVAL_HP: 'EVAL_HP', RESOLVE_PLAYER_FAINT: 'RESOLVE_PLAYER_FAINT', 
-    RESOLVE_ENEMY_FAINT: 'RESOLVE_ENEMY_FAINT', EVAL_CONTINUE: 'EVAL_CONTINUE',
-    TURN_ENGINE: 'TURN_ENGINE'
-  } as any
+  const { BATTLE_STATES, BATTLE_SUBSTATES } = store
 
   // Thrash check
-  if (p.thrashTurns > 0) {
-    const forcedIdx = p.moves.findIndex((m: any) => m.effect === 'thrash');
+  if (p.thrashTurns && p.thrashTurns > 0) {
+    const forcedIdx = p.moves.findIndex((m) => m?.effect === 'thrash');
     if (forcedIdx !== -1) moveIndex = forcedIdx;
-  } else if (p.encoreTurns > 0 && p.encoreMove) {
-    const forcedIdx = p.moves.findIndex((m: any) => m.id === p.encoreMove.id);
+  } else if (p.encoreTurns && p.encoreTurns > 0 && p.encoreMove) {
+    const forcedIdx = p.moves.findIndex((m) => m?.id === p.encoreMove?.id);
     if (forcedIdx !== -1) moveIndex = forcedIdx;
   }
 
   const move = p.moves[moveIndex]
-  if (move.pp <= 0) {
-    store.addLog(`¡No queda PP para ${move.name}!`, 'log-info', p)
+  if (!move || move.pp <= 0) {
+    store.addLog(`¡No queda PP para ${move?.name || 'este movimiento'}!`, 'log-info', p)
     return
   }
 
   fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.BUILD_QUEUE)
 
   // Determine Turn Order (Consider Priority)
-  const isWild = !store.activeBattle.isTrainer && !store.activeBattle.isGym
-  const eMove = decideEnemyMove(e, p, store.enemyStages, isWild) as any
+  const isWild = !store.activeBattle.value?.isTrainer && !store.activeBattle.value?.isGym
+  const eMove = decideEnemyMove(e, p, store.enemyStages.value, isWild)
   
-  const pPrio = move?.priority || 0
+  const pPrio = move.priority || 0
   const ePrio = eMove?.priority || 0
 
-  const pSpe = getEffectiveSpeed(p, store.playerStages, { weather: store.activeBattle.weather, getStatMultiplier: (_s: any) => 1 + (0.5 * _s) })
-  const eSpe = getEffectiveSpeed(e, store.enemyStages, { weather: store.activeBattle.weather, getStatMultiplier: (_s: any) => 1 + (0.5 * _s) })
+  const pSpe = getEffectiveSpeed(p, store.playerStages.value, { weather: store.activeBattle.value?.weather })
+  const eSpe = getEffectiveSpeed(e, store.enemyStages.value, { weather: store.activeBattle.value?.weather })
   
   let playerFirst = true
   if (pPrio > ePrio) playerFirst = true
   else if (ePrio > pPrio) playerFirst = false
   else playerFirst = pSpe >= eSpe
 
-  const queue: any[] = []
+  const queue: { source: 'player' | 'enemy'; action: () => Promise<void> }[] = []
   if (playerFirst) {
     queue.push({ source: 'player', action: () => runPlayerAction(store, moveIndex) })
     if (eMove) queue.push({ source: 'enemy', action: () => runEnemyAction(store) })
@@ -78,25 +74,26 @@ export async function executeTurn(store: any, moveIndex: any) {
   while (queue.length > 0) {
     fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.POP_ACTION)
     const currentAction = queue.shift()
+    if (!currentAction) break
 
     fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.APPLY_MOVE)
     await currentAction.action()
 
     fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.EVAL_HP)
 
-    if (store.activeBattle.player.hp <= 0) {
+    if (store.activeBattle.value?.player && store.activeBattle.value.player.hp <= 0) {
       fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.RESOLVE_PLAYER_FAINT)
-      if (store.handleFaint) await store.handleFaint('player')
+      await store.handleFaint('player')
       break;
     }
 
-    if (store.activeBattle.enemy.hp <= 0) {
+    if (store.activeBattle.value?.enemy && store.activeBattle.value.enemy.hp <= 0) {
       fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.RESOLVE_ENEMY_FAINT)
-      if (store.handleFaint) await store.handleFaint('enemy')
+      await store.handleFaint('enemy')
       break;
     }
 
-    if (store.activeBattle.over) break;
+    if (store.activeBattle.value?.over) break;
 
     if (queue.length > 0) {
       fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.EVAL_CONTINUE)
@@ -104,19 +101,22 @@ export async function executeTurn(store: any, moveIndex: any) {
     }
   }
   
-  if (store.activeBattle?.over) {
+  if (store.activeBattle.value?.over) {
     return
   }
   
   if (store.persistBattle) store.persistBattle()
 }
 
-export async function runPlayerAction(store: any, moveIndex: any) {
-  const p = store.activeBattle.player as any
-  const e = store.activeBattle.enemy as any
-  const move = p.moves[moveIndex] as any
+export async function runPlayerAction(store: BattleContext, moveIndex: number) {
+  const p = store.activeBattle.value?.player
+  const e = store.activeBattle.value?.enemy
+  if (!p || !e) return
+
+  const move = p.moves[moveIndex]
+  if (!move) return
   
-  if (p.tauntTurns > 0 && move.cat === 'status') {
+  if (p.tauntTurns && p.tauntTurns > 0 && move.cat === 'status') {
     store.addLog(`¡La mofa impide a ${p.name} usar ${move.name}!`, 'log-info', p)
     return
   }
@@ -131,7 +131,7 @@ export async function runPlayerAction(store: any, moveIndex: any) {
   p.destinyBond = false;
   p.snatching = false;
   p.lastMove = move;
-  store.attackerSide = 'player'
+  store.attackerSide.value = 'player'
   
   move.pp--
   store.addLog(`¡${p.name} usó ${move.name}!`, 'log-player', p)
@@ -139,8 +139,8 @@ export async function runPlayerAction(store: any, moveIndex: any) {
   let executableMove: any = { ...move };
   if (move.effect === 'metronome') {
     const moveNames = Object.keys(MOVE_DATA).filter(n => n !== 'Metrónomo');
-    const randomName = moveNames[Math.floor(Math.random() * moveNames.length)];
-    executableMove = { ...(MOVE_DATA as any)[randomName], name: randomName, id: randomName.toLowerCase().replace(/\s/g, '_') };
+    const randomName = moveNames[Math.floor(Math.random() * moveNames.length)] || 'Combate';
+    executableMove = { ...((MOVE_DATA as any)[randomName] || {}), name: randomName, id: randomName.toLowerCase().replace(/\s/g, '_') };
     store.addLog(`¡El Metrónomo escogió ${randomName}!`, 'log-info', p);
   } else if (move.effect === 'mirror_move') {
     if (e.lastMove) {
@@ -152,13 +152,13 @@ export async function runPlayerAction(store: any, moveIndex: any) {
     }
   }
 
-  const normalizeCat = (c: any) => {
+  const normalizeCat = (c: any): 'status' | 'special' | 'physical' => {
     if (c === 'Estado' || c === 'status' || c === 3) return 'status'
     if (c === 'Especial' || c === 'special' || c === 2) return 'special'
     return 'physical'
   }
   
-  store.activeMove = { ...executableMove, side: 'player' }
+  store.activeMove.value = { ...executableMove, side: 'player' }
   gameBus.emit('PLAY_ATTACK_ANIM', { side: 'player', cat: normalizeCat(executableMove.cat) })
 
   // Sanity check
@@ -170,16 +170,16 @@ export async function runPlayerAction(store: any, moveIndex: any) {
   if (!p.atk || !e.def || (executableMove.power === undefined && executableMove.cat !== 'status')) {
     store.addLog(`[Error] Datos faltantes: Atk:${p.atk} Def:${e.def} Pwr:${executableMove.power}`, 'log-error', p)
   }
-  if (!store.activeBattle.participants.includes(p.uid)) {
-    store.activeBattle.participants.push(p.uid)
+  if (store.activeBattle.value && !store.activeBattle.value.participants.includes(p.uid)) {
+    store.activeBattle.value.participants.push(p.uid)
   }
 
   // Precision Check
   const moveAcc = executableMove.acc || 100;
   if (moveAcc < 100 && !p.lockOn) {
-    const accStage = store.playerStages.acc || 0;
-    const evaStage = store.enemyStages.eva || 0;
-    const weather = store.activeBattle.weather?.type;
+    const accStage = store.playerStages.value.acc || 0;
+    const evaStage = store.enemyStages.value.eva || 0;
+    const weather = store.activeBattle.value?.weather?.type;
     const mechWeather = getMechanicalWeather(weather);
     const cycle = getDayCycle();
     const isSunActive = mechWeather === WEATHER_MECHANICAL.SUN || (mechWeather === WEATHER_MECHANICAL.CLEAR && (cycle === 'day' || cycle === 'morning'))
@@ -211,7 +211,7 @@ export async function runPlayerAction(store: any, moveIndex: any) {
     if (typeof executableMove.hits === 'number') totalHits = executableMove.hits;
     else if (executableMove.hits === '2-5') {
       const rolls = [2, 2, 2, 3, 3, 3, 4, 5];
-      totalHits = rolls[Math.floor(Math.random() * rolls.length)];
+      totalHits = (rolls[Math.floor(Math.random() * rolls.length)] as number);
     }
   }
 
@@ -223,9 +223,9 @@ export async function runPlayerAction(store: any, moveIndex: any) {
       if (e.hp <= 0) break;
 
       const result = calculateDamage(p, e, executableMove, { 
-        atkStages: store.playerStages.atk, 
-        defStages: store.enemyStages.def,
-        weather: store.activeBattle.weather
+        atkStages: store.playerStages.value.atk, 
+        defStages: store.enemyStages.value.def,
+        weather: store.activeBattle.value?.weather
       })
 
       if (result.isNoEffect) {
@@ -243,20 +243,20 @@ export async function runPlayerAction(store: any, moveIndex: any) {
         if (result.isSuperEffective && i === 0) store.addLog('¡Es muy eficaz!', 'log-player', p)
 
         if (executableMove.effect === 'magnitude' && result.power) {
-          const magMap: any = { 10: 4, 30: 5, 50: 6, 70: 7, 90: 8, 110: 9, 150: 10 };
+          const magMap: Record<number, number> = { 10: 4, 30: 5, 50: 6, 70: 7, 90: 8, 110: 9, 150: 10 };
           const mag = magMap[result.power] || 7;
           store.addLog(`¡Magnitud ${mag}!`, 'log-info', e);
         }
 
-        store.activeBattle.enemy.hp = Math.max(0, e.hp - damage)
+        e.hp = Math.max(0, e.hp - damage)
         gameBus.emit('PLAY_DAMAGE', { side: 'enemy', damage })
-        store.activeBattle.lastDamage = damage
+        if (store.activeBattle.value) store.activeBattle.value.lastDamage = damage
         hitsDealt++;
         
         if (e.hp <= 0) break;
         
         if (e.rageActive && damage > 0 && e.hp > 0) {
-          store.enemyStages.atk = Math.min(6, (store.enemyStages.atk || 0) + 1);
+          store.enemyStages.value.atk = Math.min(6, (store.enemyStages.value.atk || 0) + 1);
           store.addLog(`¡La furia de ${e.name} está creciendo!`, 'log-info', e);
         }
 
@@ -293,10 +293,10 @@ export async function runPlayerAction(store: any, moveIndex: any) {
       store.addLog(`¡${p.name} se sacrificó!`, 'log-info', p);
     }
 
-    store.attackerSide = null
+    store.attackerSide.value = null
 
-    if (executableMove.effect && hitsDealt > 0) {
-      dispatchMoveEffect(executableMove.effect, p, e, store.playerStages, store.enemyStages, store.addLog, store.activeBattle)
+    if (executableMove.effect && hitsDealt > 0 && store.activeBattle.value) {
+      dispatchMoveEffect(executableMove.effect, p, e, store.playerStages.value, store.enemyStages.value, store.addLog, store.activeBattle.value)
     }
 
   } catch (err) {
@@ -305,23 +305,23 @@ export async function runPlayerAction(store: any, moveIndex: any) {
   }
 }
 
-export async function runEnemyAction(store: any) {
-  const p = store.activeBattle.player as any
-  const e = store.activeBattle.enemy as any
-  if (e.hp <= 0) return
+export async function runEnemyAction(store: BattleContext) {
+  const p = store.activeBattle.value?.player
+  const e = store.activeBattle.value?.enemy
+  if (!p || !e || e.hp <= 0) return
   const fsm = store.fsm
-  const BATTLE_STATES = store.BATTLE_STATES || { ACTIVE_BATTLE: 'ACTIVE_BATTLE' }
-  const BATTLE_SUBSTATES = store.BATTLE_SUBSTATES || {} as any
+  const { BATTLE_STATES, BATTLE_SUBSTATES } = store
 
   if (!canAttack(e, store.addLog)) return
 
-  const isWild = !store.activeBattle.isTrainer && !store.activeBattle.isGym
+  const isWild = !store.activeBattle.value?.isTrainer && !store.activeBattle.value?.isGym
   
-  if (!isWild && shouldEnemySwitch(e, p, store.activeBattle.enemyTeam)) {
-    const bestIdx = findBestSwitchIndex(store.activeBattle.enemyTeam, p, e.uid)
-    if (bestIdx !== -1) {
-      const newPoke = store.activeBattle.enemyTeam[bestIdx] as any
-      store.addLog(`¡${store.activeBattle.trainerName || 'El entrenador'} retira a ${e.name}!`, 'log-enemy', 'enemy_trainer')
+  if (!isWild && store.activeBattle.value && shouldEnemySwitch(e, p, store.activeBattle.value.enemyTeam)) {
+    const bestIdx = findBestSwitchIndex(store.activeBattle.value.enemyTeam, p, e.uid)
+    if (store.activeBattle.value.enemyTeam && bestIdx !== -1) {
+      const newPoke = store.activeBattle.value.enemyTeam[bestIdx]
+      if (!newPoke) return
+      store.addLog(`¡${store.activeBattle.value.trainerName || 'El entrenador'} retira a ${e.name}!`, 'log-enemy', 'enemy_trainer')
       
       await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.TRAINER_RETREAT)
       await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.POKEMON_RECALL)
@@ -329,9 +329,9 @@ export async function runEnemyAction(store: any) {
       await new Promise(r => setTimeout(r, 800))
       await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.VACATE_SEAT)
       
-      store.activeBattle.enemy = newPoke
+      store.activeBattle.value.enemy = newPoke
       
-      store.enemyStages.atk = 0; store.enemyStages.def = 0; store.enemyStages.spa = 0; store.enemyStages.spd = 0; store.enemyStages.spe = 0; store.enemyStages.acc = 0; store.enemyStages.eva = 0;
+      store.enemyStages.value.atk = 0; store.enemyStages.value.def = 0; store.enemyStages.value.spa = 0; store.enemyStages.value.spd = 0; store.enemyStages.value.spe = 0; store.enemyStages.value.acc = 0; store.enemyStages.value.eva = 0;
 
       await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.POKEMON_CALL)
       await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.OCCUPY_SEAT)
@@ -339,8 +339,8 @@ export async function runEnemyAction(store: any) {
       gameBus.emit('PLAY_SEND_OUT', { side: 'enemy', pokemon: newPoke })
       await new Promise(r => setTimeout(r, 800))
 
-      if (store.enemyStages.spikes > 0 && newPoke.type !== 'flying' && newPoke.type2 !== 'flying' && newPoke.ability !== 'Levitación') {
-        const dmg = Math.floor(newPoke.maxHp * (store.enemyStages.spikes / 8))
+      if (store.enemyStages.value.spikes && store.enemyStages.value.spikes > 0 && newPoke.type !== 'flying' && newPoke.type2 !== 'flying' && newPoke.ability !== 'Levitación') {
+        const dmg = Math.floor(newPoke.maxHp * (store.enemyStages.value.spikes / 8))
         newPoke.hp = Math.max(0, newPoke.hp - dmg)
         store.addLog(`¡${newPoke.name} recibió daño por las púas!`, 'log-info', newPoke)
         gameBus.emit('PLAY_SOUND', 'statusDamage')
@@ -349,8 +349,8 @@ export async function runEnemyAction(store: any) {
     }
   }
 
-  if ((store.activeBattle.isGym) && e.hp < (e.maxHp * 0.25) && !store.activeBattle.enemyUsedItem) {
-    store.activeBattle.enemyUsedItem = true
+  if ((store.activeBattle.value?.isGym) && e.hp < (e.maxHp * 0.25) && !store.activeBattle.value.enemyUsedItem) {
+    store.activeBattle.value.enemyUsedItem = true
     const heal = Math.floor(e.maxHp * 0.5)
     e.hp = Math.min(e.maxHp, e.hp + heal)
     store.addLog(`¡El Líder usó una Hiper Poción!`, 'log-enemy', 'enemy_trainer')
@@ -358,7 +358,7 @@ export async function runEnemyAction(store: any) {
     return
   }
 
-  const enemyMove = decideEnemyMove(e, p, store.playerStages, isWild) as any
+  const enemyMove = decideEnemyMove(e, p, store.playerStages.value, isWild)
   if (!enemyMove) {
     store.addLog(`¡${e.name} no tiene más PP y usa Forcejeo!`, 'log-enemy', e)
     return
@@ -372,14 +372,14 @@ export async function runEnemyAction(store: any) {
   e.destinyBond = false;
   e.snatching = false;
   e.lastMove = enemyMove
-  store.attackerSide = 'enemy'
+  store.attackerSide.value = 'enemy'
   store.addLog(`¡${e.name} usó ${enemyMove.name}!`, 'log-enemy', e)
 
   let executableMove: any = { ...enemyMove };
   if (enemyMove.effect === 'metronome') {
     const moveNames = Object.keys(MOVE_DATA).filter(n => n !== 'Metrónomo');
-    const randomName = moveNames[Math.floor(Math.random() * moveNames.length)];
-    executableMove = { ...(MOVE_DATA as any)[randomName], name: randomName, id: randomName.toLowerCase().replace(/\s/g, '_') };
+    const randomName = moveNames[Math.floor(Math.random() * moveNames.length)] || 'Combate';
+    executableMove = { ...((MOVE_DATA as any)[randomName] || {}), name: randomName, id: randomName.toLowerCase().replace(/\s/g, '_') };
     store.addLog(`¡El Metrónomo escogió ${randomName}!`, 'log-info', e);
   } else if (enemyMove.effect === 'mirror_move') {
     if (p.lastMove) {
@@ -391,21 +391,21 @@ export async function runEnemyAction(store: any) {
     }
   }
 
-  const normalizeCat = (c: any) => {
+  const normalizeCat = (c: any): 'status' | 'special' | 'physical' => {
     if (c === 'Estado' || c === 'status' || c === 3) return 'status'
     if (c === 'Especial' || c === 'special' || c === 2) return 'special'
     return 'physical'
   }
 
-  store.activeMove = { ...executableMove, side: 'enemy' }
+  store.activeMove.value = { ...executableMove, side: 'enemy' }
   gameBus.emit('PLAY_ATTACK_ANIM', { side: 'enemy', cat: normalizeCat(executableMove.cat) })
 
   // Precision Check
   const moveAcc = executableMove.acc || 100;
   if (moveAcc < 100 && !e.lockOn) {
-    const accStage = store.enemyStages.acc || 0;
-    const evaStage = store.playerStages.eva || 0;
-    const weather = store.activeBattle.weather?.type;
+    const accStage = store.enemyStages.value.acc || 0;
+    const evaStage = store.playerStages.value.eva || 0;
+    const weather = store.activeBattle.value?.weather?.type;
     const mechWeather = getMechanicalWeather(weather);
     const cycle = getDayCycle();
     const isRaining = mechWeather === WEATHER_MECHANICAL.RAIN
@@ -434,7 +434,7 @@ export async function runEnemyAction(store: any) {
     if (typeof executableMove.hits === 'number') totalHits = executableMove.hits;
     else if (executableMove.hits === '2-5') {
       const rolls = [2, 2, 2, 3, 3, 3, 4, 5];
-      totalHits = rolls[Math.floor(Math.random() * rolls.length)];
+      totalHits = (rolls[Math.floor(Math.random() * rolls.length)] as number);
     }
   }
 
@@ -446,9 +446,9 @@ export async function runEnemyAction(store: any) {
       if (p.hp <= 0) break;
 
       const eResult = calculateDamage(e, p, executableMove, {
-        atkStages: store.enemyStages.atk,
-        defStages: store.playerStages.def,
-        weather: store.activeBattle.weather
+        atkStages: store.enemyStages.value.atk,
+        defStages: store.playerStages.value.def,
+        weather: store.activeBattle.value?.weather
       })
 
       if (eResult.isNoEffect) {
@@ -467,20 +467,20 @@ export async function runEnemyAction(store: any) {
         if (eResult.isNotVeryEffective && i === 0) store.addLog('No es muy eficaz...', 'log-enemy', e)
         
         if (enemyMove.effect === 'magnitude' && eResult.power) {
-          const magMap: any = { 10: 4, 30: 5, 50: 6, 70: 7, 90: 8, 110: 9, 150: 10 };
+          const magMap: Record<number, number> = { 10: 4, 30: 5, 50: 6, 70: 7, 90: 8, 110: 9, 150: 10 };
           const mag = magMap[eResult.power] || 7;
           store.addLog(`¡Magnitud ${mag}!`, 'log-info', p);
         }
 
         p.hp = Math.max(0, p.hp - damage)
         gameBus.emit('PLAY_DAMAGE', { side: 'player', damage })
-        store.activeBattle.lastDamage = damage
+        if (store.activeBattle.value) store.activeBattle.value.lastDamage = damage
         hitsDealt++;
 
         if (p.hp <= 0) break;
 
         if (p.rageActive && damage > 0 && p.hp > 0) {
-          store.playerStages.atk = Math.min(6, (store.playerStages.atk || 0) + 1);
+          store.playerStages.value.atk = Math.min(6, (store.playerStages.value.atk || 0) + 1);
           store.addLog(`¡La furia de ${p.name} está creciendo!`, 'log-info', p);
         }
         
@@ -517,10 +517,10 @@ export async function runEnemyAction(store: any) {
       store.addLog(`¡${e.name} se sacrificó!`, 'log-info', e);
     }
 
-    store.attackerSide = null
+    store.attackerSide.value = null
 
-    if (executableMove.effect && hitsDealt > 0) {
-      dispatchMoveEffect(executableMove.effect, e, p, store.enemyStages, store.playerStages, store.addLog, store.activeBattle)
+    if (executableMove.effect && hitsDealt > 0 && store.activeBattle.value) {
+      dispatchMoveEffect(executableMove.effect, e, p, store.enemyStages.value, store.playerStages.value, store.addLog, store.activeBattle.value)
     }
   } catch (err) {
     console.error('[Battle] Error in runEnemyAction:', err)

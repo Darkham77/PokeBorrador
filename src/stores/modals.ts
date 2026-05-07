@@ -3,20 +3,31 @@ import { ref, markRaw } from 'vue'
 
 import { MODAL_REGISTRY } from '@/logic/modals/registry'
 
+import type { Component } from 'vue'
+
+export interface Modal {
+  id: string;
+  name: string;
+  component: Component;
+  props: Record<string, unknown>;
+  opening: boolean;
+  closing: boolean;
+}
+
 /**
  * Modal Store
  * Manages a dynamic stack of active modals (LIFO).
  */
 export const useModalStore = defineStore('modals', () => {
-  const stack = ref([])
+  const stack = ref<Modal[]>([])
 
   /**
    * Opens a new modal.
    * @param {string} name - Key in MODAL_REGISTRY
    * @param {Object} props - Props to pass to the component
    */
-  const open = (name, props = {}) => {
-    const component = MODAL_REGISTRY[name]
+  const open = (name: string, props: Record<string, any> = {}) => {
+    const component = (MODAL_REGISTRY as any)[name]
     if (!component) {
       console.warn(`[Modals] Modal "${name}" not found in registry.`)
       return null
@@ -51,11 +62,11 @@ export const useModalStore = defineStore('modals', () => {
    * Closes a specific modal by ID or Name.
    * @param {string} identifier - The id or name of the modal to close.
    */
-  const close = (identifier) => {
+  const close = (identifier: string) => {
     const index = stack.value.findIndex(m => m.id === identifier || m.name === identifier)
     if (index !== -1) {
       const modal = stack.value[index]
-      if (modal.closing) return // Already closing
+      if (!modal || modal.closing) return // Already closing
 
       modal.closing = true
       
@@ -76,7 +87,7 @@ export const useModalStore = defineStore('modals', () => {
   const closeTop = () => {
     if (stack.value.length > 0) {
       const topModal = stack.value[stack.value.length - 1]
-      close(topModal.id)
+      if (topModal) close(topModal.id)
     }
   }
 
@@ -84,7 +95,7 @@ export const useModalStore = defineStore('modals', () => {
     stack.value = []
   }
 
-  const isOpen = (name) => {
+  const isOpen = (name: string) => {
     return stack.value.some(m => m.name === name && !m.closing)
   }
 

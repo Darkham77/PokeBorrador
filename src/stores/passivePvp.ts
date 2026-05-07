@@ -6,13 +6,13 @@ import { useUIStore } from './ui';
 import { supabase } from '@/logic/supabase';
 
 export const usePassivePvpStore = defineStore('passivePvp', () => {
-  const gameStore = useGameStore() as any;
-  const authStore = useAuthStore() as any;
-  const uiStore = useUIStore() as any;
+  const gameStore = useGameStore();
+  const authStore = useAuthStore();
+  const uiStore = useUIStore();
 
   const isPassiveActive = ref(false);
   const lastKnownElo = ref(1000);
-  const watcherInterval = ref(null);
+  const watcherInterval = ref<any>(null);
 
   /**
    * Carga el estado inicial del equipo pasivo desde la DB.
@@ -58,7 +58,7 @@ export const usePassivePvpStore = defineStore('passivePvp', () => {
 
           if (newElo !== lastKnownElo.value) {
             const delta = newElo - lastKnownElo.value;
-            const won = delta > 0 || data.pvp_wins > (gameStore.state.pvpStats?.wins || 0);
+            const won = delta > 0 || (data.pvp_wins || 0) > ((gameStore.state.pvpStats as any)?.wins || 0);
 
             // Notificar si no estamos en una batalla activa para evitar distracciones
             if (!gameStore.state.activeBattle) {
@@ -74,7 +74,7 @@ export const usePassivePvpStore = defineStore('passivePvp', () => {
               wins: data.pvp_wins || 0,
               losses: data.pvp_losses || 0,
               draws: data.pvp_draws || 0
-            };
+            } as any;
 
             lastKnownElo.value = newElo;
             gameStore.save(false); // Guardado silencioso de la metadata

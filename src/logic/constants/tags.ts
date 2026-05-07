@@ -97,19 +97,22 @@ export function getPokemonVisualBadges(pokemon: Partial<Pokemon> | null): TagDef
   const badges: TagDefinition[] = []
 
   // 1. Automatic: Shiny
-  if (pokemon.isShiny) {
-    badges.push({ ...POKEMON_BADGES.shiny, isAutomatic: true })
+  const shinyBadge = POKEMON_BADGES['shiny'];
+  if (pokemon.isShiny && shinyBadge) {
+    badges.push({ ...shinyBadge, isAutomatic: true })
   }
 
   // 2. Automatic: IV 31 (Perfect)
   const ivs = pokemon.ivs || { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 }
-  if (Object.values(ivs).some(v => v === 31)) {
-    badges.push({ ...TAG_DEFINITIONS.iv31, isAutomatic: true })
+  const iv31Badge = TAG_DEFINITIONS['iv31'];
+  if (Object.values(ivs).some(v => v === 31) && iv31Badge) {
+    badges.push({ ...iv31Badge, isAutomatic: true })
   }
 
   // 3. Automatic: Held Item
   const heldItemRaw = pokemon.heldItem || ((pokemon as any).item && (pokemon as any).item !== 'none' ? (pokemon as any).item : null)
-  if (heldItemRaw) {
+  const itemBadge = POKEMON_BADGES['item'];
+  if (heldItemRaw && itemBadge) {
     // Normalizar para búsqueda: "Rare Candy" -> "rare_candy" o "Caramelo Raro" -> "Caramelo Raro"
     const normalizedId = String(heldItemRaw).toLowerCase().replace(/ /g, '_')
     const itemData = getItemById(heldItemRaw) || 
@@ -118,10 +121,11 @@ export function getPokemonVisualBadges(pokemon: Partial<Pokemon> | null): TagDef
                     getItemByName(heldItemRaw.charAt(0).toUpperCase() + heldItemRaw.slice(1).toLowerCase())
 
     badges.push({ 
-      ...POKEMON_BADGES.item, 
+      ...itemBadge, 
       id: 'item',
       label: itemData ? itemData.name.toUpperCase() : String(heldItemRaw).toUpperCase(),
-      desc: itemData ? itemData.desc : POKEMON_BADGES.item.desc,
+      shortLabel: itemBadge.shortLabel,
+      desc: itemData ? itemData.desc : itemBadge.desc,
       isAutomatic: true,
       itemId: itemData ? itemData.id : normalizedId
     })

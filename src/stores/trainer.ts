@@ -38,8 +38,8 @@ export const TRAINER_RANKS = [
 ]
 
 export const useTrainerStore = defineStore('trainer', () => {
-  const gameStore = useGameStore() as any
-  const uiStore = useUIStore() as any
+  const gameStore = useGameStore()
+  const uiStore = useUIStore()
 
   const level = computed(() => gameStore.state.trainerLevel || 1)
   const exp = computed(() => gameStore.state.trainerExp || 0)
@@ -54,26 +54,26 @@ export const useTrainerStore = defineStore('trainer', () => {
   })
 
   const expProgress = computed(() => {
-    const needed = currentRank.value.expNeeded
+    const needed = currentRank.value!.expNeeded
     return Math.min(100, (exp.value / needed) * 100)
   })
 
-  function addExp(amount) {
+  function addExp(amount: number) {
     let currentExp = gameStore.state.trainerExp + amount
     let currentLevel = gameStore.state.trainerLevel
     const MAX_LEVEL = 30
 
     let rank = TRAINER_RANKS[Math.min(currentLevel - 1, TRAINER_RANKS.length - 1)]
     
-    while (currentExp >= rank.expNeeded && currentLevel < MAX_LEVEL) {
-      currentExp -= rank.expNeeded
+    while (currentLevel < MAX_LEVEL && currentExp >= rank!.expNeeded) {
+      currentExp -= rank!.expNeeded
       currentLevel++
       rank = TRAINER_RANKS[Math.min(currentLevel - 1, TRAINER_RANKS.length - 1)]
       
-      uiStore.notify(`¡Subiste al rango ${rank.title}! Nivel ${currentLevel}`, '⭐')
+      uiStore.notify(`¡Subiste al rango ${rank!.title}! Nivel ${currentLevel}`, '⭐')
       
       // Check for market unlocks
-      if (MARKET_UNLOCKS[currentLevel]) {
+      if ((MARKET_UNLOCKS as Record<number, unknown>)[currentLevel]) {
         setTimeout(() => {
           uiStore.notify(`¡Nuevos items en el Poké Market!`, '🛒')
         }, 1500)

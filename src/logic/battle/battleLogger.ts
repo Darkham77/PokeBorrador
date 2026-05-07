@@ -7,6 +7,31 @@
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import { SHOP_ITEMS } from '@/data/items';
 import { PLAYER_CLASSES } from '@/data/playerClasses';
+import type { Pokemon } from '@/types/pokemon';
+
+interface LogContext {
+  gs: {
+    state: {
+      playerClass: string
+      avatar_style?: string
+      team: Pokemon[]
+    }
+  }
+  activeBattle?: {
+    trainerSprite?: string
+    enemy?: Pokemon
+  }
+  attackerSide?: 'player' | 'enemy'
+}
+
+interface FormattedLog {
+  id: number
+  msg: string
+  type: string
+  side: string
+  icon: string | null
+  iconType: string | null
+}
 
 /**
  * Procesa un mensaje de log y devuelve el objeto listo para la cola del store.
@@ -15,10 +40,10 @@ import { PLAYER_CLASSES } from '@/data/playerClasses';
  * @param {Object|string} source Fuente del sprite (Pokemon, 'player', 'enemy_trainer', o nombre de ítem)
  * @param {Object} ctx Contexto necesario (gs, activeBattle, attackerSide)
  */
-export function formatBattleLog(msg: any, type: any, source: any, ctx: any) {
+export function formatBattleLog(msg: string, type: string, source: any, ctx: LogContext): FormattedLog {
   const { gs, activeBattle, attackerSide } = ctx;
-  let icon: any = null;
-  let iconType: any = null;
+  let icon: string | null = null;
+  let iconType: string | null = null;
 
   if (!source && !msg.startsWith('DEBUG:')) {
     console.warn(`[BattleLogger] Log sin fuente detectado: "${msg}". Se recomienda pasar un Pokémon o 'player'/'enemy_trainer'.`);
@@ -38,14 +63,15 @@ export function formatBattleLog(msg: any, type: any, source: any, ctx: any) {
       icon = getAssetUrl(ASSET_TYPES.TRAINER, spriteId);
       iconType = 'trainer';
     } else if (typeof source === 'object' && source) {
-      const pokeId = source.id || source.pokemonId || source.pokedexId || source.id_pokemon;
+      const poke = source as Partial<Pokemon>;
+      const pokeId = poke.id || poke.id_pokemon;
       if (pokeId) {
-        icon = getAssetUrl(ASSET_TYPES.POKEMON, pokeId, { isShiny: source.isShiny });
+        icon = getAssetUrl(ASSET_TYPES.POKEMON, pokeId, { shiny: poke.isShiny });
         iconType = 'pokemon';
       }
     } else if (typeof source === 'string') {
       const sLower = source.toLowerCase();
-      const item = SHOP_ITEMS.find((i: any) => i.name.toLowerCase() === sLower || i.id.toLowerCase() === sLower);
+      const item = SHOP_ITEMS.find((i) => i.name.toLowerCase() === sLower || i.id.toLowerCase() === sLower);
       const spriteId = item ? item.sprite : source;
       icon = getAssetUrl(ASSET_TYPES.ITEM, spriteId);
       iconType = 'item';
@@ -53,9 +79,9 @@ export function formatBattleLog(msg: any, type: any, source: any, ctx: any) {
   }
 
   let side = 'enemy';
-  if (source === 'player' || (source && typeof source === 'object' && gs.state.team.some((p: any) => p && p.uid === source.uid))) {
+  if (source === 'player' || (source && typeof source === 'object' && gs.state.team.some((p) => p && p.uid === (source as Pokemon).uid))) {
     side = 'player';
-  } else if (source === 'enemy_trainer' || (source && typeof source === 'object' && source.uid === activeBattle?.enemy?.uid)) {
+  } else if (source === 'enemy_trainer' || (source && typeof source === 'object' && (source as Pokemon).uid === activeBattle?.enemy?.uid)) {
     side = 'enemy';
   } else if (attackerSide) {
     side = attackerSide;

@@ -4,16 +4,17 @@ import { useGymsStore } from '@/stores/gyms'
 import { useGameStore } from '@/stores/game'
 import GymCard from '@/components/gyms/GymCard.vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
+import type { Gym } from '@/types/gym'
 
-const gymsStore = useGymsStore() as any
-const gameStore = useGameStore() as any
+const gymsStore = useGymsStore()
+const gameStore = useGameStore()
 
 // Local state for difficulties to keep them reactive per card
 const cardDifficulties = reactive<Record<string, string>>({})
 
 onMounted(async () => {
   await gymsStore.loadGymProgress()
-  gymsStore.gyms.forEach((gym: any) => {
+  gymsStore.gyms.forEach((gym: Gym) => {
     cardDifficulties[gym.id] = 'easy'
   })
 })

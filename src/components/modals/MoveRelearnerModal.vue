@@ -5,10 +5,18 @@ import { useUIStore } from '@/stores/ui'
 import { POKEMON_DB } from '@/data/pokemonDB'
 import { EVOLUTION_TABLE } from '@/data/evolutionData'
 import BaseModal from '@/components/common/BaseModal.vue'
+import type { Pokemon, Move } from '@/types/pokemon'
+
+interface LearnsetEntry {
+  lv: number
+  name: string
+  pp: number
+  fromId?: string
+}
 
 interface Props {
   show?: boolean
-  pokemon: any
+  pokemon: Pokemon | null
   onLearned?: (success: boolean) => void
 }
 
@@ -21,49 +29,53 @@ const emit = defineEmits<{
   (e: 'close'): void
 }>()
 
-const gameStore = useGameStore() as any
-const uiStore = useUIStore() as any
+const gameStore = useGameStore()
+const uiStore = useUIStore()
 
 const forgottenMoves = computed(() => {
   const p = props.pokemon
   if (!p) return []
   
-  const learnedMoves = p.moves.map(m => m.name)
-  const possibleMoves = []
-  const processedIds = new Set()
+  const learnedMoves = p.moves.map((m: Move) => m.name)
+  const possibleMoves: LearnsetEntry[] = []
+  const processedIds = new Set<string>()
   
-  let currentId = p.id
+  let currentId: string | null = p.id
   
   // Trace back evolution chain to gather all potential moves
   while (currentId && !processedIds.has(currentId)) {
     processedIds.add(currentId)
-    const dbEntry = POKEMON_DB[currentId]
+    const dbEntry = (POKEMON_DB as Record<string, any>)[currentId]
     
     if (dbEntry && dbEntry.learnset) {
-      dbEntry.learnset.forEach(m => {
+      (dbEntry.learnset as LearnsetEntry[]).forEach(m => {
         // Only moves at or below current level
         if (m.lv <= p.level && !learnedMoves.includes(m.name)) {
           // Avoid duplicates if multiple stages learn the same move
           if (!possibleMoves.find(pm => pm.name === m.name)) {
-            possibleMoves.push({ ...m, fromId: currentId })
+            possibleMoves.push({ ...m, fromId: currentId as string })
           }
         }
       })
     }
     
     // Find previous stage
-    const prevEntry = Object.entries(EVOLUTION_TABLE).find(([_id, data]) => (data as any).to === currentId)
+    const currentIdRef = currentId
+    const prevEntry = Object.entries(EVOLUTION_TABLE).find(([_id, data]) => (data as any).to === currentIdRef)
     currentId = prevEntry ? prevEntry[0] : null
   }
   
   return possibleMoves.sort((a, b) => (a.lv || 0) - (b.lv || 0))
 })
 
-const handleRelearn = (move: any) => {
+const handleRelearn = (move: LearnsetEntry) => {
   const p = props.pokemon
-  const itemName = 'Recordador de Movimientos'
+  if (!p) return
   
-  if (!gameStore.state.inventory[itemName]) {
+  const itemName = 'Recordador de Movimientos'
+  const inventory = gameStore.state.inventory as Record<string, number>
+  
+  if (!inventory[itemName]) {
     uiStore.notify('No tienes Recordadores de Movimientos.', '⚠️')
     return
   }
@@ -77,19 +89,20 @@ const handleRelearn = (move: any) => {
     emit('close')
   } else {
     // If moves == 4, we need to forget one
-    uiStore.openLearnMoveMenu(p, { name: move.name, pp: move.pp, maxPP: move.pp }, (success) => {
+    uiStore.openLearnMoveMenu(p, { name: move.name, pp: move.pp, maxPP: move.pp }, (success: boolean) => {
       if (success) {
         consumeItem(itemName)
-        props.onLearned(true)
+        props.onLearned(success)
         emit('close')
       }
     })
   }
 }
 
-const consumeItem = (name) => {
-  gameStore.state.inventory[name]--
-  if (gameStore.state.inventory[name] <= 0) delete gameStore.state.inventory[name]
+const consumeItem = (name: string) => {
+  const inventory = gameStore.state.inventory as Record<string, number>
+  inventory[name]--
+  if (inventory[name] <= 0) delete inventory[name]
   gameStore.save()
 }
 </script>

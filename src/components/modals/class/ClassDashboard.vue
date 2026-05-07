@@ -21,8 +21,8 @@ const emit = defineEmits<{
   (e: 'close'): void
 }>()
 
-const getTrainerSprite = (id: string | undefined) => {
-  return getAssetUrl(ASSET_TYPES.TRAINER, id);
+const getTrainerSprite = (id: string | number | undefined) => {
+  return getAssetUrl(ASSET_TYPES.TRAINER, id as string);
 }
 
 const handleImageError = (e: Event) => {

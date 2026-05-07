@@ -8,8 +8,8 @@ import * as engine from '@/logic/audioEngine';
  * Handles 8-bit sound synthesis using Web Audio API via audioEngine logic.
  */
 export const useAudioStore = defineStore('audio', () => {
-  const context = ref(null);
-  const masterGain = ref(null);
+  const context = ref<AudioContext | null>(null);
+  const masterGain = ref<GainNode | null>(null);
   const isInitialized = ref(false);
 
   /**
@@ -19,11 +19,11 @@ export const useAudioStore = defineStore('audio', () => {
     if (isInitialized.value) return;
 
     try {
-      const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
-      (context as any).value = new AudioContext();
-      masterGain.value = (context as any).value.createGain();
+      const AudioContextClass = (window.AudioContext || (window as any).webkitAudioContext) as typeof AudioContext;
+      context.value = new AudioContextClass();
+      masterGain.value = context.value.createGain();
       masterGain.value.gain.value = 0.15; // Global volume
-      masterGain.value.connect((context as any).value.destination);
+      masterGain.value.connect(context.value.destination);
       isInitialized.value = true;
       initListeners();
     } catch (e) {
@@ -42,20 +42,20 @@ export const useAudioStore = defineStore('audio', () => {
    * Resumes the context.
    */
   const resume = async () => {
-    if (!(context as any).value) init();
-    if ((context as any).value && (context as any).value.state === 'suspended') {
-      await (context as any).value.resume();
+    if (!context.value) init();
+    if (context.value && context.value.state === 'suspended') {
+      await context.value.resume();
     }
   };
 
   /**
    * Plays a sound using the centralized engine.
    */
-  const play = async (type) => {
+  const play = async (type: string) => {
     if (!isInitialized.value) init();
     await resume();
 
-    const ctx = (context as any).value;
+    const ctx = context.value;
     const dest = masterGain.value;
     if (!ctx || !dest) return;
 

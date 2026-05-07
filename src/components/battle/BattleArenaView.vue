@@ -29,18 +29,18 @@ import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 
 const { BASE_ENTITY_SIZE_PLAYER, BASE_ENTITY_SIZE_ENEMY } = WORLD_CONSTANTS
 
-const battleStore = useBattleStore() as any
-const { isSearching } = storeToRefs(battleStore) as any
-const gameStore = useGameStore() as any
-const mapStore = useMapStore() as any
-const uiStore = useUIStore() as any
+const battleStore = useBattleStore()
+const { isSearching } = storeToRefs(battleStore)
+const gameStore = useGameStore()
+const mapStore = useMapStore()
+const uiStore = useUIStore()
 
 // Forzar Alta Fidelidad en el Combate
 provide('forceHighFidelity', true)
 provide('isModalPerformanceMode', computed(() => false))
 
 const arenaRef = ref<HTMLElement | null>(null)
-const { cameraStyles, worldStyles, showGuides } = useCombatCamera(arenaRef as any) as any
+const { cameraStyles, worldStyles, showGuides } = useCombatCamera(arenaRef)
 
 const gs = computed(() => gameStore.state)
 const battle = computed(() => battleStore.state)
@@ -54,9 +54,9 @@ const {
   currentPlayerShadowKey, currentEnemyShadowKey, 
   enemyGroundY, playerGroundY, 
   syncEnemyShadow, syncPlayerShadow, preloadCombatCoords 
-} = useBattleShadows() as any
+} = useBattleShadows()
 
-const animations = useBattleAnimations(battleStore, enemy) as any
+const animations = useBattleAnimations(battleStore, enemy)
 const {
   isWildEntryAnimation, isWildSilhouette, wildRevealActive, upcomingIsEmerging, isEmerging,
   isInitialLoad, isCaptureSequenceActive, caughtPokemonSnapshot,
@@ -74,14 +74,12 @@ const {
   isPlayerHudSuppressed,
   activeEnemyHudData,
   shouldScrambleEnemyData
-} = useBattleHud(animations, battleStore, enemy) as any
+} = useBattleHud(animations, battleStore, enemy)
 
-
-const unwrap = (val: any) => (val && typeof val === 'object' && 'value' in val ? val.value : val)
 
 const activeEnemyData = computed(() => {
-  const s = unwrap(battleStore.fsm?.currentState)
-  const sub = unwrap(battleStore.fsm?.currentSubState)
+  const s = battleStore.fsm?.currentState
+  const sub = battleStore.fsm?.currentSubState
 
   if (s === 'REWARDS_PHASE' && sub === 'EMPTY_WAIT') {
     return null
@@ -91,14 +89,15 @@ const activeEnemyData = computed(() => {
   // mostramos el 'initialEnemy' como silueta de seguridad (Evita fantasmas)
   const realEnemy = activeEnemyHudData.value
   if (!realEnemy && (s === 'FIRST_INTRO' || s === 'SEARCH_PHASE' || s === 'INITIALIZING')) {
-    return unwrap(battleStore.state)?._initialEnemy || null
+    return battleStore.state?._initialEnemy || null
   }
 
   return realEnemy
 })
 
 const activeEnemyIsSilhouette = computed(() => {
-  const sub = unwrap(battleStore.fsm?.currentSubState)
+  const sub = battleStore.fsm?.currentSubState
+  if (!sub) return false
   return [
     'PARALLEL_PREP', 'PARALLEL_ENTRY', 'SILHOUETTE_MODE', 'BUSH_IDLE', 
     'ENTRY_ANIM', 'ENCOUNTER_ANIM', 'PARALLEL_JUMP'
@@ -108,20 +107,22 @@ const activeEnemyIsSilhouette = computed(() => {
 // Determinismo de profundidad: El arbusto se va al fondo SOLO durante el salto o revelación cromática.
 // En PARALLEL_PREP / BUSH_VISIBLE se mantiene el efecto "sándwich" (detrás de la capa frontal).
 const bushIsBehind = computed(() => {
-  const sub = unwrap(battleStore.fsm?.currentSubState)
+  const sub = battleStore.fsm?.currentSubState
+  if (!sub) return false
   return isEmerging.value || ['ENCOUNTER_ANIM', 'PARALLEL_JUMP', 'REVEAL_COLORS', 'BUSH_FADE'].includes(sub)
 })
 
 const enemyIsJumping = computed(() => {
-  const sub = unwrap(battleStore.fsm?.currentSubState)
+  const sub = battleStore.fsm?.currentSubState
+  if (!sub) return false
   return isEmerging.value || sub === 'ENCOUNTER_ANIM' || sub === 'PARALLEL_JUMP'
 })
 
 const isInstantBush = computed(() => {
   if (isInitialLoad.value) return true
-  const sub = unwrap(battleStore.fsm?.currentSubState)
+  const sub = battleStore.fsm?.currentSubState
   // En FIRST_INTRO (Entrada directa), los arbustos son instantáneos
-  return unwrap(battleStore.fsm?.currentState) === 'FIRST_INTRO' || sub === 'BUSH_VISIBLE'
+  return battleStore.fsm?.currentState === 'FIRST_INTRO' || sub === 'BUSH_VISIBLE'
 })
 
 const enemyIsFloating = computed(() => {
@@ -139,12 +140,12 @@ const enemyIsFloating = computed(() => {
 
 const isWildEncounter = computed(() => {
   if (isSearching.value) return true
-  return battleStore.state && !battleStore.state.isTrainer && !battleStore.state.isGym
+  return !!(battleStore.state && !battleStore.state.isTrainer && !battleStore.state.isGym)
 })
 
 const isEnemyTechnicalHidden = computed(() => {
-  const sub = unwrap(battleStore.fsm?.currentSubState)
-  const state = unwrap(battleStore.fsm?.currentState)
+  const sub = (battleStore.fsm as any)?.currentSubState
+  const state = (battleStore.fsm as any)?.currentState
   const isTrainer = !isWildEncounter.value
   
   // 1. Forzar ocultación en estados de promoción técnica (Slot 2 -> Slot 1)
@@ -167,12 +168,12 @@ const isEnemyTechnicalHidden = computed(() => {
 })
 
 const isPlayerTechnicalHidden = computed(() => {
-  const sub = unwrap(battleStore.fsm?.currentSubState)
-  const isTrainer = battleStore.activeBattle?.isTrainer || battleStore.activeBattle?.isGym
+  const sub = battleStore.currentSubState
+  const isTrainer = battleStore.state?.isTrainer || battleStore.state?.isGym
   
   // El jugador está oculto mientras el entrenador del jugador es visible (Mood Visual)
   // Por ahora la lógica de entrada de entrenador jugador es síncrona con POKEMON_CALL
-  return isTrainer && ['TRAINER_ENTRY', 'T_VISUAL'].includes(sub)
+  return !!isTrainer && ['TRAINER_ENTRY', 'T_VISUAL'].includes(sub || '')
 })
 
 const computedWeather = computed(() => {
@@ -197,9 +198,9 @@ const shouldShowEncounterLayers = computed(() => {
   // Si el Pokémon vuela, no mostramos capas ambientales (arbustos)
   if (enemyIsFloating.value) return false
 
-  const fsmSub = unwrap(battleStore.fsm?.currentSubState)
+  const fsmSub = (battleStore.fsm as any)?.currentSubState
   // Mostrar capas (arbustos) en todos los estados de búsqueda y entrada salvaje plana
-  if (['PARALLEL_ENTRY', 'PARALLEL_JUMP', 'ENTRY_ANIM', 'ENCOUNTER_ANIM', 'BUSH_IDLE', 'WILD_ENTRY', 'BUSH_FADE', 'REVEAL_COLORS'].includes(fsmSub)) {
+  if (fsmSub && ['PARALLEL_ENTRY', 'PARALLEL_JUMP', 'ENTRY_ANIM', 'ENCOUNTER_ANIM', 'BUSH_IDLE', 'WILD_ENTRY', 'BUSH_FADE', 'REVEAL_COLORS'].includes(fsmSub)) {
     return isWildEncounter.value
   }
 
@@ -230,7 +231,7 @@ watch(
   () => {
     const fsm = battleStore.fsm
     if (!fsm) return [null, null]
-    return [unwrap(fsm.currentState), unwrap(fsm.currentSubState)]
+    return [(fsm as any).currentState, (fsm as any).currentSubState]
   },
   async ([newState, newSubState]) => {
     console.log('[BattleArenaView] FSM:', newState, newSubState || '')
@@ -291,8 +292,8 @@ onMounted(async () => {
     battle.value?.enemy, 
     p1Pos.value, 
     p2Pos.value,
-    battle.value?.playerTeam,
-    battle.value?.enemyTeam
+    battle.value?.playerTeam || [],
+    battle.value?.enemyTeam || []
   )
   setTimeout(() => { isInitialLoad.value = false }, 500)
 })
@@ -305,8 +306,8 @@ watch(() => battleStore.currentSubState, async (sub) => {
       battle.value?.enemy, 
       p1Pos.value, 
       p2Pos.value,
-      battle.value?.playerTeam,
-      battle.value?.enemyTeam
+      battle.value?.playerTeam || [],
+      battle.value?.enemyTeam || []
     )
   }
 })
@@ -464,7 +465,7 @@ watch(() => battleStore.isBattleActive, (active) => {
       :weather="computedWeather"
       :cycle="mapStore.currentCycle"
       :season="mapStore.currentSeason.id"
-      :is-performance-mode="uiStore.isPerformanceMode"
+      :is-performance-mode="uiStore.isDebugPerformanceMode"
       :z-index="'calc(var(--z-base) + 20)'"
       :seed="atmosphereSeed"
     />
@@ -490,7 +491,7 @@ watch(() => battleStore.isBattleActive, (active) => {
           <BattleInfoCard
             :pokemon="player"
             :is-player="true"
-            :nick-style="gs.nick_style"
+            :nick-style="gs.nick_style || undefined"
           />
         </div>
       </Transition>
@@ -498,7 +499,7 @@ watch(() => battleStore.isBattleActive, (active) => {
 
     <!-- Minijuego de Pesca -->
     <FishingMinigame
-      v-if="unwrap(battleStore.fsm?.currentSubState) === 'MINIGAME_CHECK'"
+      v-if="(battleStore.fsm as any)?.currentSubState === 'MINIGAME_CHECK'"
       :enemy="enemy"
       :rarity="battle?.rarity || 50"
       @success="handleFishingSuccess"

@@ -4,26 +4,56 @@ import { useModalStore } from './modals'
 import { useBattleStore } from './battle'
 import { useLoadingStore } from '@/stores/loading'
 import { safeStorage } from '@/logic/utils/storage'
+import type { Pokemon, Move } from '@/types/pokemon'
+
+export interface UINotification {
+  id: string | number;
+  msg: string;
+  icon: string;
+}
+
+export interface EvolutionData {
+  pokemon: Pokemon;
+  targetId: string;
+  itemName: string;
+}
+
+export interface PokemonSelectionConfig {
+  title?: string;
+  subtitle?: string;
+  multi?: boolean;
+  maxSelect?: number;
+  minSelect?: number;
+  allowedIds?: string[];
+  excludeUids?: string[];
+  callbackConfirm?: (selected: Pokemon[]) => void;
+  [key: string]: unknown;
+}
+
+export interface LearnItem {
+  pokemon: Pokemon;
+  move: Move;
+}
 
 export const useUIStore = defineStore('ui', () => {
   const libraryTab = ref('gimnasios')
   const activeTab = ref('map')
-  const hatchedPokemon = ref(null)
+  const hatchedPokemon = ref<Pokemon | null>(null)
   const _selectedBoxIndex = ref(-1)
   const isBoxMenuOpen = ref(false)
   const selectedBoxIndex = computed({
     get: () => _selectedBoxIndex.value,
     set: (val) => { _selectedBoxIndex.value = val }
   })
-  const pokemonSelectionConfig = ref({})
+  const pokemonSelectionConfig = ref<PokemonSelectionConfig>({})
   
   // Notifications
-  const notifications = ref([])
+  const notifications = ref<UINotification[]>([])
   
   const isDebugPerformanceMode = ref(false)
   const isSimplifiedModalsMode = ref(false) // Forzado vía debug
   const isDebugGridMode = ref(false)
-  const debugPokedexMode = ref(null) // 'none' | 'seen' | 'caught' | null (real)
+  const debugPokedexMode = ref<'none' | 'seen' | 'caught' | null>(null) // 'none' | 'seen' | 'caught' | null (real)
   
   // Team Management Debug Flags
   const pvpAutoFillDisabled = ref(false)
@@ -32,21 +62,21 @@ export const useUIStore = defineStore('ui', () => {
   const isBattleSwitchForced = ref(false) // Para cuando un poke es debilitado
   
   // Data for modals (still needed in the store if shared)
-  const activePokemonForRelearner = ref(null)
-  const evolutionData = ref(null) // { pokemon, targetId, itemName }
-  const currentMoveToLearn = ref(null) // { pokemon, move }
-  const learnQueue = ref([])
-  const activePokemonForNature = ref(null)
-  const activePokemonForPPUp = ref(null)
-  const activePokemonForAbility = ref(null)
-  const activeFossil = ref(null) // { pokemonId, itemName }
+  const activePokemonForRelearner = ref<Pokemon | null>(null)
+  const evolutionData = ref<EvolutionData | null>(null)
+  const currentMoveToLearn = ref<LearnItem | null>(null)
+  const learnQueue = ref<LearnItem[]>([])
+  const activePokemonForNature = ref<Pokemon | null>(null)
+  const activePokemonForPPUp = ref<Pokemon | null>(null)
+  const activePokemonForAbility = ref<Pokemon | null>(null)
+  const activeFossil = ref<{ pokemonId: string; itemName: string } | null>(null)
   
   // Detalle data
-  const selectedPokemon = ref(null)
-  const selectedMove = ref(null)
+  const selectedPokemon = ref<Pokemon | null>(null)
+  const selectedMove = ref<string | null>(null)
 
   // Item Target context (for using items from Box Menu, etc)
-  const inventoryTarget = ref(null) // { context: 'team' | 'box', index: number }
+  const inventoryTarget = ref<{ context: 'team' | 'box'; index: number } | null>(null) // { context: 'team' | 'box', index: number }
 
   // Zoom initialization
   const getInitialZoom = () => {
@@ -62,18 +92,18 @@ export const useUIStore = defineStore('ui', () => {
   // Static flags for non-modal elements
   const isChatOpen = ref(false)
   const isHistoryOpen = ref(false)
-  const openHudGroup = ref(null) // Tracks which HUD menu group is open (e.g., 'POKEMON', 'MARKET')
+  const openHudGroup = ref<string | null>(null) // Tracks which HUD menu group is open (e.g., 'POKEMON', 'MARKET')
 
   // ── MODAL TRIGGERS ─────────────────────────────────────────────────────────
   
   function toggleProfile() { 
-    const modalStore = useModalStore() as any
+    const modalStore = useModalStore()
     if (modalStore.isOpen('Profile')) modalStore.close('Profile')
     else modalStore.open('Profile')
   }
   
   function toggleSettings() { 
-    const modalStore = useModalStore() as any
+    const modalStore = useModalStore()
     if (modalStore.isOpen('Settings')) modalStore.close('Settings')
     else modalStore.open('Settings')
   }
@@ -81,22 +111,22 @@ export const useUIStore = defineStore('ui', () => {
   function toggleHistory() { isHistoryOpen.value = !isHistoryOpen.value }
   
   function toggleSocial() { 
-    const modalStore = useModalStore() as any
+    const modalStore = useModalStore()
     if (modalStore.isOpen('SocialCenter')) modalStore.close('SocialCenter')
     else modalStore.open('SocialCenter')
   }
 
   function toggleLibrary(tabId = null) { 
-    const modalStore = useModalStore() as any
+    const modalStore = useModalStore()
     if (modalStore.isOpen('Library')) modalStore.close('Library')
     else modalStore.open('Library', { initialTab: tabId })
   }
   
-  function open(name, props = {}) {
+  function open(name: string, props: Record<string, unknown> = {}) {
     useModalStore().open(name, props)
   }
 
-  function close(name) {
+  function close(name: string) {
     useModalStore().close(name)
   }
 
@@ -107,7 +137,7 @@ export const useUIStore = defineStore('ui', () => {
     openHudGroup.value = null
   }
 
-  function toggleHudGroup(name) {
+  function toggleHudGroup(name: string | null) {
     if (openHudGroup.value === name) {
       openHudGroup.value = null
     } else {
@@ -115,8 +145,8 @@ export const useUIStore = defineStore('ui', () => {
     }
   }
 
-  function toggleInventory(context = null, index = null) {
-    const modalStore = useModalStore() as any
+  function toggleInventory(context: 'team' | 'box' | null = null, index: number | null = null) {
+    const modalStore = useModalStore()
     if (context !== null && index !== null) {
       inventoryTarget.value = { context, index }
     } else {
@@ -127,7 +157,7 @@ export const useUIStore = defineStore('ui', () => {
     else modalStore.open('Inventory')
   }
 
-  function notify(msg, icon = '🔔') {
+  function notify(msg: string, icon: string = '🔔') {
     const id = Date.now() + Math.random().toString(36).substr(2, 9)
     notifications.value.push({ id, msg, icon })
     setTimeout(() => {
@@ -136,8 +166,8 @@ export const useUIStore = defineStore('ui', () => {
   }
 
   const isAnyFullscreenModalOpen = computed(() => {
-    const modalStore = useModalStore() as any
-    const battleStore = useBattleStore() as any
+    const modalStore = useModalStore()
+    const battleStore = useBattleStore()
     
     // Check if battle is active and we are in mobile/fullscreen mode (<= 950px)
     const isBattleFullscreen = battleStore.isBattleActive && window.innerWidth <= 950
@@ -147,30 +177,30 @@ export const useUIStore = defineStore('ui', () => {
   })
 
   const isLoading = ref(false)
-  function setLoading(val, msg = 'Procesando...', sub = 'Por favor espera') { 
+  function setLoading(val: boolean, msg: string = 'Procesando...', sub: string = 'Por favor espera') { 
     isLoading.value = val 
-    const loadingStore = useLoadingStore() as any
+    const loadingStore = useLoadingStore()
     if (val) loadingStore.start('ui_generic', msg, sub, true)
     else loadingStore.finish('ui_generic')
   }
 
   function toggleTrade() { useModalStore().open('SocialCenter') }
 
-  function openPokemonDetail(pokemon, index, context = 'team', extra = null) {
+  function openPokemonDetail(pokemon: Pokemon, index: number, context: string = 'team', extra: unknown = null) {
     selectedPokemon.value = pokemon
     useModalStore().open('PokemonDetail', { pokemon, index, context, extra })
   }
 
   function closePokemonDetail() { useModalStore().close('PokemonDetail') }
 
-  function openMoveDetail(moveName) {
+  function openMoveDetail(moveName: string) {
     selectedMove.value = moveName
     useModalStore().open('MoveDetail', { moveName })
   }
 
   function closeMoveDetail() { useModalStore().close('MoveDetail') }
 
-  function startEvolution(pokemon, targetId, itemName) {
+  function startEvolution(pokemon: Pokemon, targetId: string, itemName: string) {
     evolutionData.value = { pokemon, targetId, itemName }
     useModalStore().open('Evolution')
     
@@ -183,7 +213,7 @@ export const useUIStore = defineStore('ui', () => {
     })
   }
 
-  function addToLearnQueue(items) {
+  function addToLearnQueue(items: LearnItem | LearnItem[]) {
     if (Array.isArray(items)) {
       learnQueue.value.push(...items)
     } else {
@@ -193,9 +223,9 @@ export const useUIStore = defineStore('ui', () => {
   }
 
   function checkLearnQueue() {
-    const modalStore = useModalStore() as any
+    const modalStore = useModalStore()
     if (modalStore.isOpen('MoveLearning') || learnQueue.value.length === 0) return
-    currentMoveToLearn.value = learnQueue.value.shift()
+    currentMoveToLearn.value = learnQueue.value.shift() || null
     modalStore.open('MoveLearning')
   }
 
@@ -216,8 +246,8 @@ export const useUIStore = defineStore('ui', () => {
    * Returns true if there is any active modal that obscures the background.
    */
   const isAnyBlockingModalOpen = computed(() => {
-    const modalStore = useModalStore() as any
-    const battleStore = useBattleStore() as any
+    const modalStore = useModalStore()
+    const battleStore = useBattleStore()
     const obscuringModals = modalStore.stack.filter(m => {
       if (NON_OBSCURING_MODALS.includes(m.name)) return false
       if (m.props?.overlay === 'none') return false
@@ -233,12 +263,12 @@ export const useUIStore = defineStore('ui', () => {
   })
   
   const isAnyModalOpen = computed(() => {
-    const modalStore = useModalStore() as any
+    const modalStore = useModalStore()
     return modalStore.stack.length > 0 || isChatOpen.value || isHistoryOpen.value
   })
 
   // ── DYNAMIC FLAGS FOR BACKWARD COMPATIBILITY (WRITABLE) ───────────────────
-  const createModalRef = (name) => computed({
+  const createModalRef = (name: string) => computed({
     get: () => useModalStore().isOpen(name),
     set: (val) => {
       if (val) useModalStore().open(name)
@@ -312,10 +342,10 @@ export const useUIStore = defineStore('ui', () => {
     isPokemonSelectionOpen,
     pokemonSelectionConfig,
     appZoom,
-    setZoom: (val) => {
+    setZoom: (val: number) => {
       appZoom.value = val
-      safeStorage.setItem('app-zoom', val)
-      document.documentElement.style.setProperty('--app-zoom', val)
+      safeStorage.setItem('app-zoom', val.toString())
+      document.documentElement.style.setProperty('--app-zoom', val.toString())
     },
     toggleTrade,
     toggleSocial,
@@ -339,12 +369,12 @@ export const useUIStore = defineStore('ui', () => {
     closeMoveDetail,
     
     toggleTeamManagement: () => {
-      const modalStore = useModalStore() as any
+      const modalStore = useModalStore()
       if (modalStore.isOpen('TeamManagement')) modalStore.close('TeamManagement')
       else modalStore.open('TeamManagement')
     },
     
-    setDebugPokedex: (mode) => { debugPokedexMode.value = mode },
+    setDebugPokedex: (mode: 'none' | 'seen' | 'caught' | null) => { debugPokedexMode.value = mode },
     
     pvpAutoFillDisabled,
     warAutoFillDisabled,
@@ -387,7 +417,7 @@ export const useUIStore = defineStore('ui', () => {
     isBattleSwitchForced,
 
     // Confirmation
-    openConfirm: (options) => useModalStore().open('Confirm', options),
-    openPrompt: (options) => useModalStore().open('Prompt', options)
+    openConfirm: (options: Record<string, unknown>) => useModalStore().open('Confirm', options),
+    openPrompt: (options: Record<string, unknown>) => useModalStore().open('Prompt', options)
   }
 })

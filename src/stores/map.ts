@@ -8,9 +8,11 @@ import { useGameStore } from './game'
 import { useBattleStore } from './battle'
 import { useUIStore } from './ui'
 import { useEventStore } from './events'
+import type { GameStore, BattleStore, UIStore, EventStore } from '@/types/stores'
+import type { Pokemon } from '@/types/pokemon'
 
 export const useMapStore = defineStore('map', () => {
-  const gs = useGameStore() as any
+  const gs = useGameStore() as unknown as GameStore
   const currentMap = computed({
     get: () => gs.state.map?.currentMap || 'route1',
     set: (val) => { if (gs.state.map) gs.state.map.currentMap = val }
@@ -55,26 +57,26 @@ export const useMapStore = defineStore('map', () => {
   // Sync time on store init (safer than onMounted in a store)
   syncServerTime()
   const maps = ref(FIRE_RED_MAPS)
-  const activeEvents = ref([])
+  const activeEvents = ref<any[]>([])
   const lastNavigateTime = ref(0)
-  const dailyGuardianCaptures = ref([])
-  const mapWinners = ref({}) // locId -> winner
-  const pendingAwards = ref([])
+  const dailyGuardianCaptures = ref<string[]>([])
+  const mapWinners = ref<Record<string, string>>({}) // locId -> winner
+  const pendingAwards = ref<any[]>([])
   
-  const setGlobalWeather = (w) => { globalWeather.value = w }
-  const setGlobalCycle = (c) => { forcedCycle.value = c }
+  const setGlobalWeather = (w: any) => { globalWeather.value = w }
+  const setGlobalCycle = (c: any) => { forcedCycle.value = c }
 
-  const navigate = async (locId) => {
+  const navigate = async (locId: string) => {
     const now = Date.now()
     if (now - lastNavigateTime.value < 400) return // Throttling
     lastNavigateTime.value = now
 
-    const gs = useGameStore() as any
-    const battleStore = useBattleStore() as any
-    const uiStore = useUIStore() as any
+    const gs = useGameStore() as unknown as GameStore
+    const battleStore = useBattleStore() as unknown as BattleStore
+    const uiStore = useUIStore() as unknown as UIStore
 
     // 1. Verificar salud del equipo
-    const healthy = gs.state.team.find(p => (p as any).hp > 0 && !(p as any).onMission && !(p as any).onDefense)
+    const healthy = (gs.state.team as any[]).find(p => (p as any).hp > 0 && !(p as any).onMission && !(p as any).onDefense)
     if (!healthy) {
       uiStore.notify('Todos tus Pokémon están debilitados. ¡Ve al Centro Pokémon!', '🏥')
       return
@@ -89,12 +91,12 @@ export const useMapStore = defineStore('map', () => {
     gs.hatchEggs()
 
     // 3. Generar Encuentro
-    const eventStore = useEventStore() as any
+    const eventStore = useEventStore() as unknown as EventStore
     
     // MODO DEBUG: Si hay un bucle infinito activo, lo usamos
     const encounter = battleStore.debugLoopPokemon 
       ? (() => {
-          const nextPoke = JSON.parse(JSON.stringify(battleStore.debugLoopPokemon))
+          const nextPoke = JSON.parse(JSON.stringify(battleStore.debugLoopPokemon)) as Pokemon
           nextPoke.hp = nextPoke.maxHp
           nextPoke.status = null
           nextPoke.confused = 0
@@ -116,24 +118,25 @@ export const useMapStore = defineStore('map', () => {
     }
 
     // 4. Procesar Tipo de Encuentro
-    if ((encounter as any).type === 'wild') {
-      battleStore._startBattle((encounter as any).pokemon, { 
+    const wildEnc = encounter as { type: string; pokemon: Pokemon; pts?: number; faction?: string };
+    if (wildEnc.type === 'wild') {
+      battleStore._startBattle(wildEnc.pokemon, { 
         locationId: locId,
         wasSearching: true 
       })
-    } else if ((encounter as any).type === 'guardian') {
+    } else if (wildEnc.type === 'guardian') {
       // El componente MapView debe manejar la notificación visual o podemos dispararla aquí si es modal
       // Por ahora, iniciamos la batalla marcando que es un Guardián;
-      (encounter as any).pokemon.isGuardian = true
-      battleStore._startBattle((encounter as any).pokemon, { 
+      wildEnc.pokemon.isGuardian = true
+      battleStore._startBattle(wildEnc.pokemon, { 
         locationId: locId,
         wasSearching: true,
-        battleOptions: { isGuardian: true, pts: (encounter as any).pts }
+        battleOptions: { isGuardian: true, pts: wildEnc.pts }
       })
-    } else if ((encounter as any).type === 'defender') {
+    } else if (wildEnc.type === 'defender') {
       // TODO: Implementar búsqueda de defensores reales desde Supabase
       // Por ahora notificamos
-      uiStore.notify(`¡Defensor del Team ${(encounter as any).faction.toUpperCase()} detectado!`, '⚔️')
+      uiStore.notify(`¡Defensor del Team ${wildEnc.faction?.toUpperCase()} detectado!`, '⚔️')
     }
   }
 

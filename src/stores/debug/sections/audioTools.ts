@@ -1,16 +1,54 @@
+
 import { gameBus } from '@/logic/gameBus'
 import { useAudioStore } from '@/stores/audio'
+import type { Pokemon } from '@/types/pokemon'
+import type { BattleStages } from '@/types/battle'
 
-export function registerAudioTools({ register }, _context) {
-  const audio = useAudioStore() as any
+interface DebugAction {
+  id: string;
+  label?: string;
+  command: string;
+  description: string;
+  action: (...args: any[]) => string | void;
+}
+
+interface DebugRegisterOptions {
+  register: (action: DebugAction) => void;
+}
+
+export function registerAudioTools({ register }: DebugRegisterOptions, _context: unknown) {
+  const audio = useAudioStore()
 
   register({
-    id: 'play_sound',
+    id: 'audio-play-sound',
+    label: 'REPRODUCIR SONIDO',
     command: 'playSound',
     description: 'Reproducir un sonido del sistema.',
-    action: (type) => {
+    action: (type: string) => {
       audio.play(type)
       return `Reproduciendo sonido: ${type}`
+    }
+  })
+
+  register({
+    id: 'audio-stop-all',
+    label: 'DETENER AUDIO',
+    command: 'stopAllAudio',
+    description: 'Detener todos los sonidos y música.',
+    action: () => {
+      audio.stopAll()
+      return 'Todos los audios detenidos'
+    }
+  })
+
+  register({
+    id: 'audio-set-volume',
+    label: 'FIJAR VOLUMEN',
+    command: 'setVolume',
+    description: 'Ajustar el volumen maestro.',
+    action: (val: number) => {
+      audio.setVolume(val)
+      return `Volumen ajustado a ${val}`
     }
   })
 
@@ -18,8 +56,8 @@ export function registerAudioTools({ register }, _context) {
     id: 'trigger_anim',
     command: 'triggerAnim',
     description: 'Disparar una animación de combate via Bus.',
-    action: (type, side = 'enemy', options: any = {}) => {
-      const eventMap = {
+    action: (type: string, side = 'enemy', options: Record<string, unknown> = {}) => {
+      const eventMap: Record<string, string> = {
         'release': 'PLAY_RELEASE_ENERGY',
         'catch': 'PLAY_CATCH_ENERGY',
         'shake': 'CATCH_SHAKE',
@@ -31,7 +69,7 @@ export function registerAudioTools({ register }, _context) {
       }
       
       const event = eventMap[type] || type
-      const payload = { side, ...options }
+      const payload: Record<string, unknown> = { side, ...options }
       
       // Manejo especial para START_BATTLE (Introducciones)
       if (type === 'emergence') payload.animationPhase = 1
@@ -46,16 +84,16 @@ export function registerAudioTools({ register }, _context) {
     id: 'set_status',
     command: 'setStatus',
     description: 'Cambiar estado de un pokemon (burn, poison, paralyze, freeze, sleep, null). Toggle si ya lo tiene.',
-    action: (side, status) => {
+    action: (side: string, status: string) => {
       import('@/stores/battle').then(({ useBattleStore }) => {
-        const battle = useBattleStore() as any
-        const poke = side === 'player' ? battle.state?.player : (battle.upcomingPokemon || battle.state?.enemy)
+        const battle = useBattleStore()
+        const poke = side === 'player' ? battle.activeBattle?.player : (battle.upcomingPokemon || battle.activeBattle?.enemy)
         if (poke) {
           if (status === 'null') {
             poke.status = null
           } else {
             // Toggle logic
-            poke.status = poke.status === status ? null : status
+            poke.status = poke.status === (status as any) ? null : (status as any)
             if (poke.status === 'sleep') poke.sleepTurns = 3
           }
         }
@@ -68,16 +106,16 @@ export function registerAudioTools({ register }, _context) {
     id: 'set_secondary_status',
     command: 'setSecondaryStatus',
     description: 'Cambiar estados secundarios (confused, attracted, cursed, seeded). Toggle automático.',
-    action: (side, type) => {
+    action: (side: string, type: string) => {
       import('@/stores/battle').then(({ useBattleStore }) => {
-        const battle = useBattleStore() as any
-        const poke = side === 'player' ? battle.state?.player : (battle.upcomingPokemon || battle.state?.enemy)
+        const battle = useBattleStore()
+        const poke = (side === 'player' ? battle.activeBattle?.player : (battle.upcomingPokemon || battle.activeBattle?.enemy)) as (Pokemon & Record<string, unknown>) | undefined
         if (poke) {
-          if (type === 'confused') poke.confused = poke.confused > 0 ? 0 : 4
+          if (type === 'confused') poke.confused = (poke.confused || 0) > 0 ? 0 : 4
           if (type === 'attracted') poke.attracted = !poke.attracted
           if (type === 'cursed') poke.cursed = !poke.cursed
           if (type === 'seeded') poke.seeded = !poke.seeded
-          if (type === 'trapped') poke.trapped = !poke.trapped
+          if (type === 'trapped') (poke as any).trapped = !(poke as any).trapped
           if (type === 'ingrain') poke.ingrain = !poke.ingrain
           if (type === 'protect') poke.protect = !poke.protect
           if (type === 'endure') poke.endure = !poke.endure
@@ -93,12 +131,12 @@ export function registerAudioTools({ register }, _context) {
     id: 'set_stat_stage',
     command: 'setStatStage',
     description: 'Cambiar nivel de estadística (-6 a +6).',
-    action: (side, stat, val) => {
+    action: (side: string, stat: string, val: string) => {
       import('@/stores/battle').then(({ useBattleStore }) => {
-        const battle = useBattleStore() as any
+        const battle = useBattleStore()
         const stages = side === 'player' ? battle.playerStages : battle.enemyStages
-        if (stages && stages[stat] !== undefined) {
-          stages[stat] = Math.max(-6, Math.min(6, parseInt(val)))
+        if (stages && (stages as any)[stat] !== undefined) {
+          (stages as any)[stat] = Math.max(-6, Math.min(6, parseInt(val)))
         }
       })
       return `setStatStage(${side}, ${stat}, ${val})`
@@ -109,12 +147,12 @@ export function registerAudioTools({ register }, _context) {
     id: 'modify_stat_stage',
     command: 'modifyStatStage',
     description: 'Modificar nivel de estadística relativo (ej: +1, -1).',
-    action: (side, stat, delta) => {
+    action: (side: string, stat: string, delta: string) => {
       import('@/stores/battle').then(({ useBattleStore }) => {
-        const battle = useBattleStore() as any
+        const battle = useBattleStore()
         const stages = side === 'player' ? battle.playerStages : battle.enemyStages
-        if (stages && stages[stat] !== undefined) {
-          stages[stat] = Math.max(-6, Math.min(6, (stages[stat] || 0) + parseInt(delta)))
+        if (stages && (stages as any)[stat] !== undefined) {
+          (stages as any)[stat] = Math.max(-6, Math.min(6, ((stages as any)[stat] || 0) + parseInt(delta)))
         }
       })
       return `modifyStatStage(${side}, ${stat}, ${delta})`
@@ -125,10 +163,10 @@ export function registerAudioTools({ register }, _context) {
     id: 'set_field_effect',
     command: 'setFieldEffect',
     description: 'Activar efecto de campo (screens, weather). Toggle automático.',
-    action: (side, effect, val) => {
+    action: (side: string, effect: string, val: string) => {
       import('@/stores/battle').then(({ useBattleStore }) => {
-        const battle = useBattleStore() as any
-        const stages = side === 'player' ? battle.playerStages : battle.enemyStages
+        const battle = useBattleStore()
+        const stages = (side === 'player' ? battle.playerStages : battle.enemyStages) as any
         
         // Screens & Hazards (Stage based)
         const isStageEffect = ['reflect', 'lightScreen', 'safeguard', 'mist', 'spikes'].includes(effect)
@@ -140,16 +178,18 @@ export function registerAudioTools({ register }, _context) {
         // Weather (Context based)
         const ALL_WEATHER = ['sun', 'rain', 'hail', 'sandstorm', 'snow', 'fog', 'clear', 'storm', 'blizzard', 'heatwave']
         if (ALL_WEATHER.includes(effect)) {
-          if (battle.state) {
-            const current = battle.state.weather?.type
+          if (battle.activeBattle) {
+            const current = battle.state?.weather?.type
             // Lógica FLIP: si el clima actual es el mismo que tocamos, lo limpiamos.
             if (current === effect && effect !== 'clear') {
-              battle.state.weather = { type: 'clear', visual: 'clear', turns: -1 }
+              if (battle.state) battle.state.weather = { type: 'clear', visual: 'clear', turns: -1 }
             } else {
-              battle.state.weather = { 
-                type: effect, 
-                visual: effect,
-                turns: effect === 'clear' ? -1 : (parseInt(val) || 5) 
+              if (battle.state) {
+                battle.state.weather = { 
+                  type: effect as any, 
+                  visual: effect as any,
+                  turns: effect === 'clear' ? -1 : (parseInt(val) || 5) 
+                }
               }
             }
           }

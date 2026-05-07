@@ -42,3 +42,24 @@ export interface MapLocation {
     visitors?: string[] | Record<string, number>;
   }>;
 }
+
+export interface EncounterOptions {
+  forceEncounter?: boolean;
+  activeEvents?: any[];
+  shinyMultiplier?: number;
+  weather?: string;
+  dominanceData?: Record<string, string> | null;
+  eventTrainerBonus?: number;
+  eventFishingBonus?: number;
+}
+
+export interface EncounterState {
+  faction: string | null;
+  dailyGuardianCaptures?: string[];
+  repelSecs?: number;
+  incenseSecs?: number;
+  incenseType?: string | null;
+  team?: Pokemon[];
+  trainerChance?: number;
+  eloRating?: number;
+}

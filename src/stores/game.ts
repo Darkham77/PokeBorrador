@@ -3,6 +3,8 @@ import { reactive, ref, computed, watch } from 'vue'
 import { useAuthStore } from './auth'
 import { supabase } from '@/logic/supabase'
 import { INITIAL_STATE } from './gameInitialState'
+import type { GameState } from '@/types/game'
+
 
 // Actions Modules
 import { useSaveActions } from './game/actions/saveActions'
@@ -11,23 +13,27 @@ import { useTrainerActions } from './game/actions/trainerActions'
 import { useBreedingActions } from './game/actions/breedingActions'
 import { useTeamActions } from './game/actions/teamActions'
 
+import type { SupabaseClient } from '@supabase/supabase-js'
+
 export const useGameStore = defineStore('game', () => {
-  const authStore = useAuthStore() as any
-  const state = reactive(JSON.parse(JSON.stringify(INITIAL_STATE)))
+  const authStore = useAuthStore()
+  const state = reactive<GameState>(JSON.parse(JSON.stringify(INITIAL_STATE)))
   
-  const db = ref(supabase)
+  const db = ref<SupabaseClient | null>(supabase as any)
   const isDataLoaded = ref(false)
   const isEngineReady = ref(false)
   const isReady = computed(() => isDataLoaded.value && isEngineReady.value)
 
-  function updateState(newData) {
+  function updateState(newData: Partial<GameState>) {
     if (newData.team && newData.team.length > 0) newData.starterChosen = true
     Object.assign(state, newData)
     console.log('[STORE] Game state updated.');
   }
 
   function resetToInitial() {
-    Object.keys(state).forEach(key => delete state[key])
+    Object.keys(state).forEach(key => {
+      delete (state as Record<string, unknown>)[key]
+    })
     Object.assign(state, JSON.parse(JSON.stringify(INITIAL_STATE)))
     isDataLoaded.value = false
   }
@@ -50,8 +56,9 @@ export const useGameStore = defineStore('game', () => {
   const { hatchEggs, executeHatch } = useBreedingActions(state, scheduleSave, addPokemon)
 
   // Wrapper for LoadGame to manage local state
-  async function loadGame() {
+  async function loadGame(): Promise<void> {
     const res = await rawLoad()
+
     if (res.success) {
       isDataLoaded.value = true
       isEngineReady.value = true

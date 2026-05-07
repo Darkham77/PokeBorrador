@@ -1,4 +1,3 @@
-
 /**
  * src/logic/db/sqliteEngine.ts
  * Unified SQL.js (SQLite WASM) Engine with IndexedDB Persistence.
@@ -8,19 +7,32 @@ import { TABLES_SCHEMA } from './schema'
 import { DATABASE_MIGRATIONS } from './migrations_data'
 import { useLoadingStore } from '@/stores/loading'
 
-let _sqliteDb: any = null
-let _initPromise: Promise<any> | null = null
+export interface SQLiteResult {
+  columns: string[];
+  values: unknown[][];
+}
+
+export interface SQLiteDatabase {
+  run: (sql: string, params?: unknown[]) => void;
+  exec: (sql: string, params?: unknown[]) => SQLiteResult[];
+  export: () => Uint8Array;
+  prepare: (sql: string) => unknown;
+}
+
+let _sqliteDb: SQLiteDatabase | null = null
+let _initPromise: Promise<SQLiteDatabase | null> | null = null
 let _sqliteKey = 'pokevicio_sqlite_v2'
 let _isInMemory = false
 
 export { getFromIDB, setToIDB }
 
-export async function queryLocal(sql: string, params: any[] = []): Promise<any[]> {
+export async function queryLocal(sql: string, params: unknown[] = []): Promise<Record<string, unknown>[]> {
   if (!_sqliteDb) await initSQLite()
+  if (!_sqliteDb) return []
   const res = _sqliteDb.exec(sql, params)
   if (!res.length) return []
-  return res[0].values.map((row: any) => {
-    const obj: any = {}
+  return res[0].values.map((row: unknown[]) => {
+    const obj: Record<string, unknown> = {}
     res[0].columns.forEach((col: string, i: number) => obj[col] = row[i])
     return obj
   })
@@ -34,10 +46,10 @@ export async function persistSQLite(): Promise<void> {
     // Shadow Backup for DB
     await setToIDB(_sqliteKey + '_backup', binary)
     console.log(`[SQLite] Persistence successful (Main + Backup)`)
-  } catch (e) { console.error('[SQLite] Persistence failed', e) }
+  } catch (e: unknown) { console.error('[SQLite] Persistence failed', e) }
 }
 
-export async function initSQLite(options: any = {}): Promise<any> {
+export async function initSQLite(options: { sqliteKey?: string, inMemory?: boolean } = {}): Promise<SQLiteDatabase | null> {
   if (_initPromise) return _initPromise
   _initPromise = (async () => {
     if (options.sqliteKey) _sqliteKey = options.sqliteKey
@@ -56,22 +68,22 @@ export async function initSQLite(options: any = {}): Promise<any> {
 
     if (savedBinary) {
       try {
-        _sqliteDb = new SQL.Database(new Uint8Array(savedBinary))
+        _sqliteDb = new SQL.Database(new Uint8Array(savedBinary)) as unknown as SQLiteDatabase
         console.log('[SQLite] Loaded from IndexedDB')
       } catch (dbErr) {
         console.error('[SQLite] Database corruption detected! Attempting Backup Rescue...', dbErr)
         const backupBinary = await getFromIDB(_sqliteKey + '_backup')
         if (backupBinary) {
-          _sqliteDb = new SQL.Database(new Uint8Array(backupBinary))
+          _sqliteDb = new SQL.Database(new Uint8Array(backupBinary)) as unknown as SQLiteDatabase
           console.log('[SQLite] Rescue successful from Backup.')
         } else {
           throw dbErr
         }
       }
     } else {
-      _sqliteDb = new SQL.Database()
+      _sqliteDb = new SQL.Database() as unknown as SQLiteDatabase
       console.log('[SQLite] Created new in-memory database')
-      TABLES_SCHEMA.forEach(schema => _sqliteDb.run(`CREATE TABLE IF NOT EXISTS ${schema}`))
+      TABLES_SCHEMA.forEach(schema => { if (_sqliteDb) _sqliteDb.run(`CREATE TABLE IF NOT EXISTS ${schema}`) })
       await persistSQLite()
     }
 
@@ -82,26 +94,24 @@ export async function initSQLite(options: any = {}): Promise<any> {
   return _initPromise
 }
 
-/**
- * Ensures all tables have all columns defined in TABLES_SCHEMA.
- * Self-healing mechanism for local SQLite schema drift.
- */
 async function ensureSchemaIntegrity(): Promise<void> {
   if (!_sqliteDb) return
   console.log('[SQLite] Verifying schema integrity...')
   
   for (const schemaStr of TABLES_SCHEMA) {
     try {
-      const tableName = schemaStr.split('(')[0].trim()
-      const info = _sqliteDb.exec(`PRAGMA table_info(${tableName})`)
+      const parts = schemaStr.split('(')
+      if (parts.length < 2) continue
+      const tableName = parts[0]!.replace('CREATE TABLE IF NOT EXISTS', '').trim()
+      const info = _sqliteDb!.exec(`PRAGMA table_info(${tableName})`)
       
       if (!info.length) {
         console.warn(`[SQLite] Table "${tableName}" missing from DB, creating...`)
-        _sqliteDb.run(`CREATE TABLE IF NOT EXISTS ${schemaStr}`)
+        _sqliteDb!.run(`CREATE TABLE IF NOT EXISTS ${schemaStr}`)
         continue
       }
 
-      const existingCols = info[0].values.map((v: any) => v[1].toLowerCase())
+      const existingCols = info[0]!.values.map((v: unknown[]) => (v[1] as string).toLowerCase())
       const colPart = schemaStr.substring(schemaStr.indexOf('(') + 1, schemaStr.lastIndexOf(')'))
       
       const colDefs: string[] = []
@@ -126,18 +136,18 @@ async function ensureSchemaIntegrity(): Promise<void> {
           continue
         }
 
-        const colName = def.split(/\s+/)[0].toLowerCase()
+        const colName = def.split(/\s+/)[0]!.toLowerCase()
         if (!existingCols.includes(colName)) {
           console.log(`[SQLite] Auto-repair: Adding missing column "${colName}" to "${tableName}"`)
           try {
             const cleanDef = def.replace(/\s+PRIMARY\s+KEY/gi, '').replace(/\s+AUTOINCREMENT/gi, '')
-            _sqliteDb.run(`ALTER TABLE ${tableName} ADD COLUMN ${cleanDef}`)
-          } catch (e: any) {
-            console.warn(`[SQLite] Auto-repair failed for ${tableName}.${colName}:`, e.message)
+            _sqliteDb!.run(`ALTER TABLE ${tableName} ADD COLUMN ${cleanDef}`)
+          } catch (e: unknown) {
+            console.warn(`[SQLite] Auto-repair failed for ${tableName}.${colName}:`, (e as Error).message)
           }
         }
       }
-    } catch (e) {
+    } catch (e: unknown) {
       console.error(`[SQLite] Error during integrity check for: ${schemaStr}`, e)
     }
   }
@@ -150,11 +160,11 @@ async function runMigrations(): Promise<void> {
   _sqliteDb.run("PRAGMA foreign_keys = OFF") // Disable FKs during structural changes
   _sqliteDb.run("CREATE TABLE IF NOT EXISTS _migrations (id TEXT PRIMARY KEY, applied_at TEXT DEFAULT (datetime('now')))")
   const appliedRes = _sqliteDb.exec("SELECT id FROM _migrations")
-  const applied = appliedRes[0]?.values.map((v: any) => v[0]) || []
+  const applied = appliedRes[0]?.values.map((v: unknown[]) => v[0] as string) || []
 
   const loadingStore = useLoadingStore()
   
-  for (const m of DATABASE_MIGRATIONS) {
+  for (const m of DATABASE_MIGRATIONS as { id: string, sql: string }[]) {
     if (!applied.includes(m.id)) {
       console.log(`[SQLite] Applying migration: ${m.id}`)
       loadingStore.start('db_migration', 'Actualizando Base de Datos...', `Aplicando: ${m.id}`, false)
@@ -164,9 +174,9 @@ async function runMigrations(): Promise<void> {
           const sql = translatePostgresToSqlite(stmt)
           if (sql) {
             try {
-              _sqliteDb.run(sql)
-            } catch (stmtErr: any) {
-              const msg = stmtErr.message.toLowerCase()
+              if (_sqliteDb) _sqliteDb.run(sql)
+            } catch (stmtErr: unknown) {
+              const msg = (stmtErr as Error).message.toLowerCase()
               const isDuplicate = msg.includes('duplicate column name') || msg.includes('already exists')
               const isMissing = msg.includes('no such column')
               
@@ -183,16 +193,16 @@ async function runMigrations(): Promise<void> {
         console.log(`[SQLite] Migration applied successfully: ${m.id}`)
         await persistSQLite()
         loadingStore.finish('db_migration')
-      } catch (e: any) { 
+      } catch (e: unknown) { 
         loadingStore.finish('db_migration')
-        console.error(`[SQLite] Migration ${m.id} failed:`, e.message) 
+        console.error(`[SQLite] Migration ${m.id} failed:`, (e as Error).message) 
       }
     }
   }
   // Update system_config.db_version to match the latest migration
   if (DATABASE_MIGRATIONS.length > 0) {
-    const latestId = DATABASE_MIGRATIONS[DATABASE_MIGRATIONS.length - 1].id
-    const version = parseInt(latestId.split('_')[0])
+    const latestId = DATABASE_MIGRATIONS[DATABASE_MIGRATIONS.length - 1]!.id
+    const version = parseInt(latestId.split('_')[0] || '0')
     console.log(`[SQLite] Updating system_config.db_version to ${version}`)
     _sqliteDb.run("INSERT OR REPLACE INTO system_config (key, value, updated_at) VALUES ('db_version', ?, datetime('now'))", [version])
   }
@@ -361,31 +371,67 @@ export function resetSQLite(): void {
   _sqliteKey = 'pokevicio_sqlite_v2';
 }
 
-export const db: any = {
-  run: (sql: string, params: any[] = []) => { if (!_sqliteDb) return; _sqliteDb.run(sql, params); persistSQLite() },
-  exec: (sql: string, params: any[] = []) => { if (!_sqliteDb) return []; return _sqliteDb.exec(sql, params) },
+interface QueryFilter {
+  col: string;
+  val: unknown;
+  op: string;
+}
+
+export interface QueryBuilder {
+  _table: string;
+  _filters: QueryFilter[];
+  _limit: number | null;
+  _order: string | null;
+  _select: string;
+  select: (fields: string) => QueryBuilder;
+  eq: (col: string, val: unknown) => QueryBuilder;
+  neq: (col: string, val: unknown) => QueryBuilder;
+  in: (col: string, vals: unknown[]) => QueryBuilder;
+  order: (col: string, options?: { ascending?: boolean }) => QueryBuilder;
+  limit: (n: number) => QueryBuilder;
+  single: () => Promise<{ data: Record<string, unknown> | null, error: string | null }>;
+  then: (resolve?: (val: Record<string, unknown>[]) => void) => Promise<Record<string, unknown>[]>;
+  insert: (payload: unknown) => Promise<{ data: unknown, error: string | null }>;
+  update: (payload: Record<string, unknown>) => Promise<{ data: Record<string, unknown>, error: string | null }>;
+  delete: () => Promise<{ data: boolean, error: string | null }>;
+  rpc: (_fn: string, _params: unknown) => Promise<{ data: boolean, error: string | null }>;
+}
+
+export const db: {
+  run: (sql: string, params?: unknown[]) => void;
+  exec: (sql: string, params?: unknown[]) => SQLiteResult[];
+  prepare: (sql: string) => unknown;
+  from: (table: string) => QueryBuilder;
+} = {
+  run: (sql: string, params: unknown[] = []) => { if (!_sqliteDb) return; _sqliteDb.run(sql, params); persistSQLite() },
+  exec: (sql: string, params: unknown[] = []) => { if (!_sqliteDb) return []; return _sqliteDb.exec(sql, params) },
   prepare: (sql: string) => { if (!_sqliteDb) return null; return _sqliteDb.prepare(sql) },
   from: (table: string) => {
-    const builder: any = {
-      _table: table, _filters: [] as any[], _limit: null as number | null, _order: null as string | null, _select: '*',
+    const builder: QueryBuilder = {
+      _table: table, 
+      _filters: [], 
+      _limit: null, 
+      _order: null, 
+      _select: '*',
       select: (fields: string) => { builder._select = fields; return builder },
-      eq: (col: string, val: any) => { builder._filters.push({ col, val, op: '=' }); return builder },
-      neq: (col: string, val: any) => { builder._filters.push({ col, val, op: '!=' }); return builder },
-      in: (col: string, vals: any[]) => { builder._filters.push({ col, val: vals, op: 'IN' }); return builder },
+      eq: (col: string, val: unknown) => { builder._filters.push({ col, val, op: '=' }); return builder },
+      neq: (col: string, val: unknown) => { builder._filters.push({ col, val, op: '!=' }); return builder },
+      in: (col: string, vals: unknown[]) => { builder._filters.push({ col, val: vals, op: 'IN' }); return builder },
       order: (col: string, { ascending = true } = {}) => { builder._order = `${col} ${ascending ? 'ASC' : 'DESC'}`; return builder },
       limit: (n: number) => { builder._limit = n; return builder },
       single: async () => {
         const res = await builder.then()
         return { data: res[0] || null, error: null }
       },
-      then: async (resolve: any) => {
+      then: async (resolve?: (val: Record<string, unknown>[]) => void) => {
+        if (!_sqliteDb) return []
         let sql = `SELECT ${builder._select} FROM ${builder._table}`
-        const params: any[] = []
+        const params: unknown[] = []
         if (builder._filters.length) {
-          sql += ' WHERE ' + builder._filters.map((f: any) => {
+          sql += ' WHERE ' + builder._filters.map((f: QueryFilter) => {
             if (f.op === 'IN') {
-              const placeholders = f.val.map(() => '?').join(',')
-              f.val.forEach((v: any) => params.push(v))
+              const placeholders = (f.val as unknown[]).map(() => '?').join(',');
+              (f.val as unknown[]).forEach((v) => params.push(v));
               return `${f.col} IN (${placeholders})`
             }
             params.push(f.val)
@@ -396,52 +442,54 @@ export const db: any = {
         if (builder._limit) sql += ` LIMIT ${builder._limit}`
         
         const res = _sqliteDb.exec(sql, params)
-        const data = res[0] ? res[0].values.map((row: any) => {
-          const obj: any = {}
+        const data = res[0] ? res[0].values.map((row: unknown[]) => {
+          const obj: Record<string, unknown> = {}
           res[0].columns.forEach((col: string, i: number) => obj[col] = row[i])
           return obj
         }) : []
         if (resolve) resolve(data)
         return data
       },
-      insert: async (payload: any) => {
+      insert: async (payload: unknown) => {
+        if (!_sqliteDb) return { data: null, error: 'DB not ready' }
         const items = Array.isArray(payload) ? payload : [payload]
         for (const item of items) {
-          const cols = Object.keys(item)
-          const vals = Object.values(item)
+          if (typeof item !== 'object' || item === null) continue;
+          const r = item as Record<string, unknown>;
+          const cols = Object.keys(r)
+          const vals = Object.values(r)
           const sql = `INSERT INTO ${builder._table} (${cols.join(',')}) VALUES (${cols.map(() => '?').join(',')})`
           _sqliteDb.run(sql, vals)
         }
         await persistSQLite()
         return { data: payload, error: null }
       },
-      update: async (payload: any) => {
+      update: async (payload: Record<string, unknown>) => {
+        if (!_sqliteDb) return { data: null, error: 'DB not ready' }
         const cols = Object.keys(payload)
         const vals = Object.values(payload)
         let sql = `UPDATE ${builder._table} SET ` + cols.map(c => `${c} = ?`).join(',')
         const params = [...vals]
         if (builder._filters.length) {
-          sql += ' WHERE ' + builder._filters.map((f: any) => { params.push(f.val); return `${f.col} ${f.op} ?` }).join(' AND ')
+          sql += ' WHERE ' + builder._filters.map((f: QueryFilter) => { params.push(f.val); return `${f.col} ${f.op} ?` }).join(' AND ')
         }
         _sqliteDb.run(sql, params)
         await persistSQLite()
         return { data: payload, error: null }
       },
       delete: async () => {
+        if (!_sqliteDb) return { data: null, error: 'DB not ready' }
         let sql = `DELETE FROM ${builder._table}`
-        const params: any[] = []
+        const params: unknown[] = []
         if (builder._filters.length) {
-          sql += ' WHERE ' + builder._filters.map((f: any) => { params.push(f.val); return `${f.col} ${f.op} ?` }).join(' AND ')
+          sql += ' WHERE ' + builder._filters.map((f: QueryFilter) => { params.push(f.val); return `${f.col} ${f.op} ?` }).join(' AND ')
         }
         _sqliteDb.run(sql, params)
         await persistSQLite()
         return { data: true, error: null }
       },
-      rpc: async (fn: string, _params: any) => {
+      rpc: async (_fn: string, _params: unknown) => {
         // Mock RPC for local mode
-        if (fn === 'handle_guardian_defeat') {
-          // Special logic for local guardian defeat if needed
-        }
         return { data: true, error: null }
       }
     }

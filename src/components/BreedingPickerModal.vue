@@ -37,7 +37,7 @@ const allPokemon = computed(() => {
   const team = gameStore.state.team || []
   const box = gameStore.state.box || []
   // Filter out pokemon already in daycare
-  return [...team, ...box].filter(p => !breedingStore.daycareSlots.some(s => s.pokemon_id === p.uid))
+  return [...team, ...box].filter(p => !breedingStore.daycareSlots.some((s: any) => s.pokemon_id === p.uid))
 })
 
 const filteredPokemon = computed(() => {
@@ -85,13 +85,13 @@ const selectPokemon = (p: any) => {
 const getListCompatibility = (p: any) => {
   if (props.mode !== 'daycare') return null
   const otherSlotIdx = props.slotIdx === 1 ? 2 : 1
-  const otherSlot = breedingStore.daycareSlots.find(s => s.slot_index === otherSlotIdx)
+  const otherSlot = breedingStore.daycareSlots.find((s: any) => s.slot_index === otherSlotIdx)
   const otherPoke = otherSlot?.pokemon
   if (!otherPoke) return null
   return checkCompatibility(p, otherPoke)
 }
 
-const getSprite = (id, shiny) => {
+const getSprite = (id: string, shiny: boolean) => {
   return getAssetUrl(ASSET_TYPES.POKEMON, id, { shiny })
 }
 </script>
@@ -125,42 +125,47 @@ const getSprite = (id, shiny) => {
           class="poke-card-vicio"
           @click.stop="selectPokemon(p)"
         >
-          <div class="sprite-box">
-            <img
-              :src="getSprite(p.id, p.isShiny)"
-              class="poke-sprite"
-              @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
-            >
-          </div>
-          <div class="poke-info">
-            <div class="top-row">
-              <span class="name">{{ p.name }}</span>
-              <span class="lv">Nv.{{ p.level }}</span>
+          <template
+            v-for="compatibility in [getListCompatibility(p)]"
+            :key="p.uid + '-compat'"
+          >
+            <div class="sprite-box">
+              <img
+                :src="getSprite(p.id, p.isShiny)"
+                class="poke-sprite"
+                @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
+              >
             </div>
-            <div class="genetics">
-              IVs: {{ p.ivs.hp }}/{{ p.ivs.atk }}/{{ p.ivs.def }}/{{ p.ivs.spa }}/{{ p.ivs.spd }}/{{ p.ivs.spe }}
+            <div class="poke-info">
+              <div class="top-row">
+                <span class="name">{{ p.name }}</span>
+                <span class="lv">Nv.{{ p.level }}</span>
+              </div>
+              <div class="genetics">
+                IVs: {{ p.ivs.hp }}/{{ p.ivs.atk }}/{{ p.ivs.def }}/{{ p.ivs.spa }}/{{ p.ivs.spd }}/{{ p.ivs.spe }}
+              </div>
+              
+              <div
+                v-if="mode === 'daycare'"
+                class="compat-status"
+              >
+                <template v-if="compatibility">
+                  <span :style="{ color: (COMPAT_TEXT as any)[compatibility.level].color }">
+                    {{ (COMPAT_TEXT as any)[compatibility.level].label }}
+                  </span>
+                  <span
+                    v-if="compatibility.eggSpecies"
+                    class="egg-hint"
+                  >
+                    🥚 {{ compatibility.eggSpecies }}
+                  </span>
+                </template>
+                <template v-else>
+                  <span class="waiting-status">Sin pareja</span>
+                </template>
+              </div>
             </div>
-            
-            <div
-              v-if="mode === 'daycare'"
-              class="compat-status"
-            >
-              <template v-if="getListCompatibility(p)">
-                <span :style="{ color: COMPAT_TEXT[getListCompatibility(p).level].color }">
-                  {{ COMPAT_TEXT[getListCompatibility(p).level].label }}
-                </span>
-                <span
-                  v-if="getListCompatibility(p).eggSpecies"
-                  class="egg-hint"
-                >
-                  🥚 {{ getListCompatibility(p).eggSpecies }}
-                </span>
-              </template>
-              <template v-else>
-                <span class="waiting-status">Sin pareja</span>
-              </template>
-            </div>
-          </div>
+          </template>
           <div
             v-if="p.vigor !== undefined"
             class="vigor-badge"

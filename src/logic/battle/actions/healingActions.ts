@@ -1,9 +1,9 @@
-
+import type { MoveAction } from '@/types/battle';
 import { getDayCycle } from '@/logic/timeUtils';
 import { getMechanicalWeather, WEATHER_MECHANICAL } from '../weatherMapper';
 
-export const HEALING_ACTIONS = {
-  'heal_50': (src: any, _tgt: any, _srcStages: any, _tgtStages: any, addLogFn: any) => {
+export const HEALING_ACTIONS: Record<string, MoveAction> = {
+  'heal_50': (src, _tgt, _srcStages, _tgtStages, addLogFn) => {
     if (src.hp >= src.maxHp) {
       addLogFn('¡Pero falló!', 'log-info', src);
       return;
@@ -13,7 +13,7 @@ export const HEALING_ACTIONS = {
     addLogFn(`¡${src.name} recuperó salud! (+${healAmt} HP)`, 'log-info', src);
   },
 
-  'heal_weather': (src: any, _tgt: any, _srcStages: any, _tgtStages: any, addLogFn: any, battleCtx: any) => {
+  'heal_weather': (src, _tgt, _srcStages, _tgtStages, addLogFn, battleCtx) => {
     if (src.hp >= src.maxHp) return;
     
     let healPct = 0.5;
@@ -38,20 +38,20 @@ export const HEALING_ACTIONS = {
     addLogFn(`¡${src.name} recuperó salud con el clima! (+${hwAmt} HP)`, 'log-info', src);
   },
 
-  'rest': (src: any, _tgt: any, _srcStages: any, _tgtStages: any, addLogFn: any) => {
+  'rest': (src, _tgt, _srcStages, _tgtStages, addLogFn) => {
     src.hp = src.maxHp;
     src.status = 'sleep';
-    src.sleepTurns = 2;
+    (src as any).sleepTurns = 2;
     addLogFn(`¡${src.name} se recuperó completamente y se quedó dormido!`, 'log-info', src);
   },
 
-  'leech_seed': (_src: any, tgt: any, _srcStages: any, _tgtStages: any, addLogFn: any) => {
+  'leech_seed': (_src, tgt, _srcStages, _tgtStages, addLogFn) => {
     if (tgt.type === 'grass' || tgt.type2 === 'grass') {
       addLogFn(`¡No afecta a ${tgt.name}!`, 'log-info', tgt);
       return;
     }
-    if (!tgt.seeded) {
-      tgt.seeded = true;
+    if (!(tgt as any).seeded) {
+      (tgt as any).seeded = true;
       addLogFn(`¡${tgt.name} fue infectado por drenadoras!`, 'log-info', tgt);
     } else {
       addLogFn(`¡${tgt.name} ya está infectado!`, 'log-info', tgt);

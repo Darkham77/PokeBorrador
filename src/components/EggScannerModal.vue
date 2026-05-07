@@ -2,7 +2,31 @@
 import { ref, computed } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useBreedingStore } from '@/stores/breeding'
+import type { PokemonEgg } from '@/types/pokemon'
 
+interface IVs {
+  hp: number
+  atk: number
+  def: number
+  spa: number
+  spd: number
+  spe: number
+  [key: string]: number | boolean | undefined
+}
+
+interface EggItem {
+  type: 'inventory' | 'daycare'
+  data: PokemonEgg & { inherited_ivs?: IVs, pokemonId?: string, species?: string, scanned?: boolean, predictedInfo?: { name: string, ivTotal: number } }
+  id: string | number
+  species: string
+}
+
+interface ScanningResult extends EggItem {
+  totalIV: number
+  sellPrice: number
+  ivs: IVs
+  isShiny: boolean
+}
 
 interface Props {
   isOpen?: boolean
@@ -16,32 +40,25 @@ const emit = defineEmits<{
   (e: 'close'): void
 }>()
 
-const gameStore = useGameStore() as any
-const breedingStore = useBreedingStore() as any
+const gameStore = useGameStore()
+const breedingStore = useBreedingStore()
 
-const scanningResult = ref<any>(null)
+const scanningResult = ref<ScanningResult | null>(null)
 const isScanning = ref(false)
 
-interface EggItem {
-  type: string
-  data: any
-  id: any
-  species: string
-}
-
 const allEggs = computed<EggItem[]>(() => {
-  const inventoryEggs = ((gameStore.state.eggs || []) as any[]).map((e, idx) => ({ 
-    type: 'inventory', 
-    data: e, 
+  const inventoryEggs = (gameStore.state.eggs || []).map((e, idx) => ({ 
+    type: 'inventory' as const, 
+    data: e as any, 
     id: idx,
-    species: e.pokemonId || e.species
+    species: e.pokemonId || e.id
   }))
   
-  const daycareEggs = ((breedingStore.eggs || []) as any[]).map(e => ({ 
-    type: 'daycare', 
-    data: e, 
-    id: e.egg_id,
-    species: e.species
+  const daycareEggs = (breedingStore.eggs || []).map(e => ({ 
+    type: 'daycare' as const, 
+    data: e as any, 
+    id: e.uid || (e as any).egg_id,
+    species: e.id || (e as any).species
   }))
   
   return [...inventoryEggs, ...daycareEggs]
@@ -52,7 +69,7 @@ const scanEgg = async (egg: EggItem) => {
   // Simulate scanning delay for "wow" effect
   await new Promise(r => setTimeout(r, 800))
   
-  const ivs = egg.data.inherited_ivs || {}
+  const ivs = (egg.data.inherited_ivs || {}) as IVs
   const totalIV = (ivs.hp || 0) + (ivs.atk || 0) + (ivs.def || 0) + (ivs.spa || 0) + (ivs.spd || 0) + (ivs.spe || 0)
   
   // Basic calculation for selling price (parity with legacy)
@@ -63,7 +80,7 @@ const scanEgg = async (egg: EggItem) => {
     totalIV,
     sellPrice,
     ivs,
-    isShiny: egg.data.isShiny || egg.data.shiny_roll
+    isShiny: !!(egg.data.isShiny)
   }
   isScanning.value = false
 }
@@ -73,11 +90,12 @@ const handleKeep = async () => {
   const res = scanningResult.value
   
   if (res.type === 'inventory') {
-    const egg = gameStore.state.eggs[res.id]
+    const eggs = gameStore.state.eggs
+    const egg = eggs[res.id as number]
     if (egg) {
-      egg.scanned = true
-      egg.predictedInfo = { 
-          name: gameStore.POKEMON_DB?.[res.species]?.name || res.species, 
+      (egg as any).scanned = true
+      ;(egg as any).predictedInfo = { 
+          name: (gameStore as any).POKEMON_DB?.[res.species]?.name || res.species, 
           ivTotal: res.totalIV 
       }
     }
@@ -85,7 +103,7 @@ const handleKeep = async () => {
   } else {
     // daycare egg update
     const newIvs = { ...res.ivs, _scanned: true, _predictedTotalIV: res.totalIV }
-    await breedingStore.updateEggIvs(res.id, newIvs)
+    await breedingStore.updateEggIvs(res.id as string, newIvs)
   }
   
   ;(window as any).notify?.('Datos registrados.', '📋')
@@ -98,9 +116,10 @@ const handleSell = async () => {
   
   const res = scanningResult.value
   if (res.type === 'inventory') {
-    gameStore.state.eggs.splice(res.id, 1)
+    const eggs = gameStore.state.eggs
+    eggs.splice(res.id as number, 1)
   } else {
-    await breedingStore.deleteEgg(res.id)
+    await breedingStore.deleteEgg(res.id as string)
   }
   
   gameStore.state.money += res.sellPrice

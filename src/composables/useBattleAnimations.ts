@@ -1,7 +1,7 @@
 import { ref, computed, nextTick, watch, toValue } from 'vue'
 import { gameBus } from '@/logic/gameBus'
 
-export function useBattleAnimations(battleStore, enemyRef) {
+export function useBattleAnimations(battleStore: any, enemyRef: any) {
   // Estados de Entrada Salvaje
   const isWildEntryAnimation = ref(false)
   const isEmerging = ref(false)
@@ -15,15 +15,15 @@ export function useBattleAnimations(battleStore, enemyRef) {
   const playerCaptureActive = ref(false)
   const enemyCaptureActive = ref(false)
   const isCaptureSequenceActive = computed(() => playerCaptureActive.value || enemyCaptureActive.value)
-  const caughtPokemonSnapshot = ref(null) 
+  const caughtPokemonSnapshot = ref<any | null>(null) 
   const isFaintInProgress = ref(false)
-  const faintedPokemonSnapshot = ref(null)
+  const faintedPokemonSnapshot = ref<any | null>(null)
 
   // Estados de Energía y Poké Ball
-  const playerAnimState = ref(null) 
-  const enemyAnimState = ref(null)
+  const playerAnimState = ref<string | null>(null) 
+  const enemyAnimState = ref<string | null>(null)
   const activePokeballId = ref('pokeball')
-  const catchSparkles = ref([])
+  const catchSparkles = ref<any[]>([])
 
   const playerIsShaking = ref(false)
   const playerIsBlinking = ref(false)
@@ -31,7 +31,7 @@ export function useBattleAnimations(battleStore, enemyRef) {
   const enemyIsBlinking = ref(false)
 
   // Estados de Entrenador
-  const trainerAnimState = ref(null) // 'entering' | 'retreating' | 'idle'
+  const trainerAnimState = ref<string | null>(null) // 'entering' | 'retreating' | 'idle'
   const isTrainerVisible = ref(false)
 
   // Transiciones Globales
@@ -55,11 +55,6 @@ export function useBattleAnimations(battleStore, enemyRef) {
     return !toValue(battleStore.player)
   })
 
-  // @ts-ignore
-  const isEnemySpriteSuppressed = computed(() => {
-    return !toValue(battleStore.enemy)
-  })
-
   const revealWildPokemon = (isInstant = false) => {
     if (isInstant) {
       isWildSilhouette.value = false
@@ -78,14 +73,6 @@ export function useBattleAnimations(battleStore, enemyRef) {
       isWildEntryAnimation.value = false
       wildRevealActive.value = false
     }, 600)
-  }
-
-  // SEARCH_PHASE - ENTRY_ANIM: muestra arbustos + silueta sin animar el salto
-  // @ts-ignore
-  const triggerSearchEntry = () => {
-    wildRevealActive.value = true
-    isWildEntryAnimation.value = false
-    isWildSilhouette.value = true // Aseguramos silueta inicial en arbustos
   }
 
   // Sincroniza las banderas de animación visual con el estado lógico de la FSM.
@@ -131,7 +118,7 @@ export function useBattleAnimations(battleStore, enemyRef) {
           isWildSilhouette.value = true
           wildRevealActive.value = true
           isWildEntryAnimation.value = false
-          isEmerging.value = false // RESET AL INICIO ABSOLUTO
+          isEmerging.value = false // RESET AL ATERRIZAR
           break
 
         case 'PARALLEL_PREP':
@@ -250,7 +237,7 @@ export function useBattleAnimations(battleStore, enemyRef) {
     })
   }
 
-  const triggerCatchSparkles = (side) => {
+  const triggerCatchSparkles = (side: string) => {
     const count = 8 // Subido un poco para que se vea más lleno
     for (let i = 0; i < count; i++) {
       // Alternar bando para asegurar dispersión equilibrada
@@ -275,7 +262,7 @@ export function useBattleAnimations(battleStore, enemyRef) {
     }, 1200)
   }
 
-  const handleReleaseRequest = (detail) => {
+  const handleReleaseRequest = (detail: any) => {
     const side = detail?.side || detail
     
     // Limpiar estados de captura inmediatamente al liberar
@@ -291,7 +278,7 @@ export function useBattleAnimations(battleStore, enemyRef) {
     }, 800)
   }
 
-  const handleCatchRequest = (detail) => {
+  const handleCatchRequest = (detail: any) => {
     const side = detail?.side || detail
     if (detail?.ballId) activePokeballId.value = detail.ballId
     
@@ -303,7 +290,7 @@ export function useBattleAnimations(battleStore, enemyRef) {
     }, 800)
   }
 
-  const handleShakeRequest = (detail) => {
+  const handleShakeRequest = (detail: any) => {
     const side = detail?.side || detail
     if (side === 'player') {
       playerIsShaking.value = false
@@ -330,7 +317,7 @@ export function useBattleAnimations(battleStore, enemyRef) {
     }
   }
 
-  const handleFaintAnim = (e) => {
+  const handleFaintAnim = (e: any) => {
     if (isFaintInProgress.value) return // Idempotente
     
     const data = e?.detail || e

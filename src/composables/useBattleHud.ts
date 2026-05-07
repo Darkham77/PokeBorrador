@@ -1,27 +1,25 @@
 import { computed } from 'vue'
 import { useGameStore } from '@/stores/game'
+import type { useBattleStore } from '@/stores/battle'
+import type { useBattleAnimations } from '@/composables/useBattleAnimations'
 
 /**
  * Composable para gestionar la visibilidad y estados del HUD en combate.
  * Centraliza la lógica de supresión para evitar interferencias entre bandos.
  */
-export function useBattleHud(animations, battleStore, enemyRef) {
+export function useBattleHud(
+  animations: ReturnType<typeof useBattleAnimations>, 
+  battleStore: ReturnType<typeof useBattleStore>, 
+  enemyRef: any
+) {
   const {
-    // @ts-ignore
-    playerAnimState,
-    // @ts-ignore
-    enemyAnimState,
     isFaintInProgress,
     faintedPokemonSnapshot,
-    // @ts-ignore
-    enemyCaptureActive,
     isCaptureSequenceActive,
-    caughtPokemonSnapshot,
-    // @ts-ignore
-    isIntroInProgress
+    caughtPokemonSnapshot
   } = animations
 
-  const unwrap = (val) => (val && typeof val === 'object' && 'value' in val ? val.value : val)
+  const unwrap = (val: any) => (val && typeof val === 'object' && 'value' in val ? val.value : val)
 
   /**
    * Determina si el HUD del enemigo debe estar oculto.
@@ -38,7 +36,7 @@ export function useBattleHud(animations, battleStore, enemyRef) {
    * REGLA MAESTRA: Asiento ocupado -> HUD Visible. Asiento vacío -> HUD Oculto.
    */
   const isPlayerHudSuppressed = computed(() => {
-    return !battleStore.state.player
+    return !unwrap(battleStore.state)?.player
   })
 
   /**
@@ -59,7 +57,7 @@ export function useBattleHud(animations, battleStore, enemyRef) {
     if (isCaptureSequenceActive.value && caughtPokemonSnapshot.value) return caughtPokemonSnapshot.value
     
     // 2. Prioridad: Snapshot de desmayo (mientras desaparece)
-    if (isFaintInProgress.value && faintedPokemonSnapshot.value?.side === 'enemy') return faintedPokemonSnapshot.value
+    if (isFaintInProgress.value && (faintedPokemonSnapshot.value as any)?.side === 'enemy') return faintedPokemonSnapshot.value
     
     // 3. Prioridad: Búsqueda / Previsualización (Encuentro Actual)
     if (battleStore.isSearching || battleStore.isFinishing) {
@@ -78,7 +76,8 @@ export function useBattleHud(animations, battleStore, enemyRef) {
    */
   const shouldScrambleEnemyData = computed(() => {
     const subState = unwrap(battleStore.fsm?.currentSubState)
-    const hasBinoculars = gs.state.inventory?.binoculars > 0
+    const inventory = (gs.state as any).inventory || {}
+    const hasBinoculars = (inventory.binoculars || 0) > 0
     
     const isSilhouetteState = [
       'ENTRY_ANIM', 

@@ -4,15 +4,27 @@ export type ItemCategory = 'pokeballs' | 'pociones' | 'stones' | 'combat' | 'etc
 export interface Item {
   id: string;
   name: string;
-  description: string;
+  desc?: string;
+  description?: string;
   price: number;
   cat: ItemCategory;
   market?: boolean;
+  trainerShop?: boolean;
+  bcPrice?: number;
+  unlockLv?: number;
+  tier?: string;
+  icon?: string;
+  sprite?: string;
   effect?: string;
   heal?: number;
   boost?: string;
   catchRate?: number;
+  type?: string;
+  stoneType?: string;
+  heldEffect?: string;
 }
+
+export type ShopItem = Item; // Alias for now as they share same structure in data/items.ts
 
 export interface ItemEffectResult {
   success: boolean;
