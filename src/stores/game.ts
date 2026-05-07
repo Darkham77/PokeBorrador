@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { reactive, ref, computed, watch } from 'vue'
+import { logger } from '@/logic/utils/logger'
 import { useAuthStore } from './auth'
 import { supabase } from '@/logic/supabase'
 import { INITIAL_STATE } from './gameInitialState'
@@ -28,7 +29,8 @@ export const useGameStore = defineStore('game', () => {
   function updateState(newData: Partial<GameState>) {
     if (newData.team && newData.team.length > 0) newData.starterChosen = true
     Object.assign(state, newData)
-    console.log('[STORE] Game state updated.');
+    // Standard state updates
+    logger.debug('STORE', 'Game state updated.')
   }
 
   function resetToInitial() {

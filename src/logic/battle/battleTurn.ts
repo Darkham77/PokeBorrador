@@ -11,6 +11,7 @@ import { getDayCycle } from '@/logic/timeUtils'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { MOVE_DATA } from '@/data/moves'
 import type { BattleContext } from '@/types/battleContext'
+import { logger } from '../utils/logger'
 // import type { Pokemon, Move } from '@/types/pokemon'
 
 /**
@@ -21,7 +22,7 @@ export async function executeTurn(store: BattleContext, moveIndex: number) {
   const e = store.activeBattle.value?.enemy
   
   if (!p || !e) {
-    console.warn('[BattleTurn] Aborting turn: Player or Enemy is null', { p, e })
+    logger.warn('BattleTurn', 'Aborting turn: Player or Enemy is null', { p, e })
     return
   }
 
@@ -298,9 +299,9 @@ export async function runPlayerAction(store: BattleContext, moveIndex: number) {
     if (executableMove.effect && hitsDealt > 0 && store.activeBattle.value) {
       dispatchMoveEffect(executableMove.effect, p, e, store.playerStages.value, store.enemyStages.value, store.addLog, store.activeBattle.value)
     }
-
+ 
   } catch (err) {
-    console.error('[Battle] Error in runPlayerAction:', err)
+    logger.error('Battle', `Error in runPlayerAction: ${(err as Error).message}`)
     store.addLog('¡Error en el turno del jugador!', 'log-error', p)
   }
 }
@@ -523,7 +524,7 @@ export async function runEnemyAction(store: BattleContext) {
       dispatchMoveEffect(executableMove.effect, e, p, store.enemyStages.value, store.playerStages.value, store.addLog, store.activeBattle.value)
     }
   } catch (err) {
-    console.error('[Battle] Error in runEnemyAction:', err)
+    logger.error('Battle', `Error in runEnemyAction: ${(err as Error).message}`)
     store.addLog('¡Error en el turno del oponente!', 'log-error', e)
   }
 }

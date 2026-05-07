@@ -1,4 +1,3 @@
-
 /**
  * Event Engine - Global Event Logic
  * Handles scheduled intervals, bonus multipliers, and competition validation.
@@ -44,29 +43,42 @@ const safeParse = (val: any): any => {
   return val || {};
 };
 
+import { Temporal } from '@js-temporal/polyfill'
+import { logger } from '../utils/logger'
 
 /**
  * Checks if an event is active based on current time (America/Argentina/Buenos_Aires).
  */
-export function isEventActiveNow(event: Event, date: Date = new Date()): boolean {
+export function isEventActiveNow(event: Event, date: Date | Temporal.ZonedDateTime = new Date()): boolean {
   if (!event.active) return false
   if (event.manual) return true
 
+  const zdt = (date instanceof Temporal.ZonedDateTime)
+    ? date
+    : date.toTemporalInstant().toZonedDateTimeISO('America/Argentina/Buenos_Aires')
+
   // 1. Absolute date check
   if (event.start_at && event.ends_at) {
-    const start = new Date(event.start_at)
-    const end = new Date(event.ends_at)
-    if (date >= start && date <= end) return true
+    try {
+      const start = Temporal.Instant.from(event.start_at)
+      const end = Temporal.Instant.from(event.ends_at)
+      const current = zdt.toInstant()
+      
+      if (Temporal.Instant.compare(current, start) >= 0 && Temporal.Instant.compare(current, end) <= 0) {
+        return true
+      }
+    } catch (e) {
+      logger.warn('EventEngine', `Invalid date format in event: ${event.id}`, e)
+    }
   }
 
   // 2. Weekly schedule check (Argentina Time UTC-3)
   const sched = safeParse(event.schedule)
   if (!sched || sched.type !== 'weekly' || !sched.days) return false
 
-  // Convert current date to Argentina Time
-  const argTime = new Date(date.toLocaleString('en-US', { timeZone: 'America/Argentina/Buenos_Aires' }))
-  const day = argTime.getDay()
-  const hour = argTime.getHours() + argTime.getMinutes() / 60
+  // Mapping Temporal (1=Mon, 7=Sun) to JS (0=Sun, 1=Mon)
+  const day = zdt.dayOfWeek % 7
+  const hour = zdt.hour + zdt.minute / 60
 
   // Check if today is one of the scheduled days
   const isScheduledToday = (sched.days as number[]).includes(day)

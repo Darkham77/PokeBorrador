@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import { logger } from '@/logic/utils/logger'
 
 export interface LoadingItem {
   id: string;
@@ -33,7 +34,7 @@ export const useLoadingStore = defineStore('loading', () => {
       stack.value.push(payload)
     }
     
-    console.log(`[LoadingStore] Started: ${id} ("${message}")`)
+    logger.debug('LoadingStore', `Started: ${id} ("${message}")`)
   }
 
   /**
@@ -45,7 +46,7 @@ export const useLoadingStore = defineStore('loading', () => {
     stack.value = stack.value.filter(item => item.id !== id)
     
     if (stack.value.length !== originalLen) {
-      console.log(`[LoadingStore] Finished: ${id}`)
+      logger.debug('LoadingStore', `Finished: ${id}`)
     }
   }
 
@@ -88,7 +89,7 @@ export const useLoadingStore = defineStore('loading', () => {
 
   function markAppMounted() {
     isAppMounted.value = true
-    console.log('[LoadingStore] App View Mounted')
+    logger.success('LoadingStore', 'App View Mounted')
   }
 
   const isGateOpen = computed(() => {

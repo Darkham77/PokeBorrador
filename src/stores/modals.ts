@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, markRaw } from 'vue'
+import { logger } from '@/logic/utils/logger'
 
 import { MODAL_REGISTRY } from '@/logic/modals/registry'
 
@@ -29,7 +30,7 @@ export const useModalStore = defineStore('modals', () => {
   const open = (name: string, props: Record<string, any> = {}) => {
     const component = (MODAL_REGISTRY as any)[name]
     if (!component) {
-      console.warn(`[Modals] Modal "${name}" not found in registry.`)
+      logger.warn('Modals', `Modal "${name}" not found in registry.`)
       return null
     }
 

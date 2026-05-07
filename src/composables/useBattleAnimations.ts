@@ -1,5 +1,6 @@
 import { ref, computed, nextTick, watch, toValue } from 'vue'
 import { gameBus } from '@/logic/gameBus'
+import { logger } from '@/logic/utils/logger'
 
 export function useBattleAnimations(battleStore: any, enemyRef: any) {
   // Estados de Entrada Salvaje
@@ -110,7 +111,7 @@ export function useBattleAnimations(battleStore: any, enemyRef: any) {
         return
       }
 
-      if (sub) console.log(`[useBattleAnimations] SubState: ${sub}`);
+      if (sub) logger.debug('useBattleAnimations', `SubState: ${sub}`);
 
       switch (sub) {
         // 1. ENTRADA PARALELA (Búsqueda o Primer Encuentro)
@@ -140,7 +141,7 @@ export function useBattleAnimations(battleStore: any, enemyRef: any) {
         case 'JUMP_SHADOW':
         case 'JUMP_COLOR':
         case 'BUSH_FADE':
-          console.log('[useBattleAnimations] TRIGGER JUMP');
+          logger.debug('useBattleAnimations', 'TRIGGER JUMP');
           isWildEntryAnimation.value = true
           wildRevealActive.value = true 
           isWildSilhouette.value = true

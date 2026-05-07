@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed, watch } from 'vue'
+import { logger } from '@/logic/utils/logger'
 import { useGameStore } from './game'
 import { useWarStore } from './war'
 import { useEventStore } from './events'
@@ -144,9 +145,10 @@ export const useBattleStore = defineStore('battle', () => {
     gymId?: string,
     locationId?: string,
     wasSearching?: boolean,
+    enemyTeam?: Pokemon[],
     battleOptions?: any
   }) => {
-    console.log('[BattleStore] startBattle called for', enemyPoke.name, options)
+    logger.info('BattleStore', `startBattle called for ${enemyPoke.name}`, options)
     return startBattleSequence(getContext(), enemyPoke, options)
   }
     
@@ -315,6 +317,8 @@ export const useBattleStore = defineStore('battle', () => {
     const ctx = {
       turnCount: activeBattle.value.turnCount,
       locationId: activeBattle.value.locationId,
+      isCave: activeBattle.value.isCave,
+      isIndoors: activeBattle.value.isIndoors,
       weather: activeBattle.value.weather,
       cycle: mapStore.currentCycle
     }
@@ -356,7 +360,7 @@ export const useBattleStore = defineStore('battle', () => {
   }
 
   const endBattle = async (win: boolean, fled: boolean) => {
-    console.log('[BattleStore] endBattle called. Win:', win, 'Fled:', fled)
+    logger.info('BattleStore', `endBattle called. Win: ${win}, Fled: ${fled}`)
     return terminateBattle(getContext(), win, fled)
   }
 
@@ -452,7 +456,7 @@ export const useBattleStore = defineStore('battle', () => {
     }
   }
 
-  const completeBattleFlow = async (option: unknown) => await handleBattleFlowCompletion(getContext(), option)
+  const completeBattleFlow = async (option: any) => await handleBattleFlowCompletion(getContext(), option)
 
   const triggerSearchEncounter = async () => await triggerNextEncounter(getContext())
 
@@ -461,7 +465,7 @@ export const useBattleStore = defineStore('battle', () => {
     const win = window as any
     win.__VITE_DEBUG__ = win.__VITE_DEBUG__ || {};
     win.__VITE_DEBUG__.forceFlee = async () => {
-      console.warn('[DEBUG] Forzando huida del combate...')
+      logger.warn('DEBUG', 'Forzando huida del combate...')
       fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.FLEE_ATTEMPT)
       await endBattle(false, true)
     };

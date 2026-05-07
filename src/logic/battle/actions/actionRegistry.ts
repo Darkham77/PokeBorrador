@@ -7,6 +7,7 @@ import { HEALING_ACTIONS } from './healingActions';
 import { WEATHER_ACTIONS } from './weatherActions';
 import { FIELD_ACTIONS } from './fieldActions';
 import { SPECIAL_ACTIONS } from './specialActions';
+import { logger } from '@/logic/utils/logger';
 
 /**
  * Registro Central de Acciones y Efectos
@@ -77,7 +78,7 @@ export function dispatchMoveEffect(
   // Prioridad al efecto completo (ej: stat_up_self_atk_2)
   const actionFn = ALL_ACTIONS[effect] || ALL_ACTIONS[effectBase];
 
-  console.log(`%c[ActionRegistry] Dispatching: ${effect} (Base: ${effectBase}) -> Found: ${!!actionFn}`, 'color: #10b981; font-weight: bold');
+  logger.debug('ActionRegistry', `Dispatching: ${effect} (Base: ${effectBase}) -> Found: ${!!actionFn}`);
 
   if (actionFn) {
     try {
@@ -96,10 +97,10 @@ export function dispatchMoveEffect(
 
       actionFn(src, tgt, srcStages, tgtStages, addLogFn, battleCtx);
     } catch (e) {
-      console.error(`[ActionRegistry] Error executing ${effect}:`, e);
+      logger.error('ActionRegistry', `Error executing ${effect}: ${(e as Error).message}`);
     }
   } else {
     // Casos especiales no modulares aún o logs de depuración
-    console.warn(`[ActionRegistry] No se encontró acción para el efecto: ${effect} (${effectBase})`);
+    logger.warn('ActionRegistry', `No se encontró acción para el efecto: ${effect} (${effectBase})`);
   }
 }

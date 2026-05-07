@@ -91,6 +91,7 @@ import { usePWA } from '@/composables/usePWA'
 import { useAuthStore } from '@/stores/auth'
 import { useAudioStore } from '@/stores/audio'
 import { useGameStore } from '@/stores/game'
+import { logger } from '@/logic/utils/logger'
 import BaseModal from './BaseModal.vue'
 
 const authStore = useAuthStore() as any
@@ -168,9 +169,9 @@ const handleUpdate = async () => {
   if (authStore.user && gameStore.save) {
     try {
       await gameStore.save(false)
-      console.log('Juego guardado antes de actualizar SW')
+      logger.success('PWA', 'Juego guardado antes de actualizar SW')
     } catch (e) {
-      console.error('Error al guardar antes de actualizar:', e)
+      logger.error('PWA', `Error al guardar antes de actualizar: ${(e as Error).message}`)
     }
   }
   

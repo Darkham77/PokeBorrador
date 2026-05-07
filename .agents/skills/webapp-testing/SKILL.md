@@ -180,4 +180,16 @@ tests/
 
 ---
 
-> **Remember:** E2E tests are expensive. Use them for critical paths only.
+---
+
+## 10. Mandatory Poké Vicio Flow
+
+Before finalizing any testing task or reported progress, you **MUST** run the full verification chain:
+
+1. **Type Check**: `npm run type-check`
+2. **SQL Validation**: `npm run validate-sql`
+3. **Lint/Fix**: `npm run lint`
+4. **Unit Tests**: `npm run test`
+5. **Production Build**: `npm run build`
+
+> **Remember:** E2E tests are expensive. Use them for critical paths only. Absolute build integrity is non-negotiable.

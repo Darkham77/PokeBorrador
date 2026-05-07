@@ -9,15 +9,17 @@ description: "Automatic quality control, linting, and static analysis procedures
 
 ## Procedures by Ecosystem
 
-### Node.ts / TypeScript
+### Node.ts / TypeScript (Poké Vicio Flow)
 
-1. **Lint/Fix:** Run `npm run lint` or `npx eslint "path" --fix`
-2. **Type Check:** Execute `npx tsc --noEmit`
-3. **Audit Security:** Run `npm audit --audit-level=high`
-4. **Production Build Integrity**: ALWAYS run `npm run build` after UI/SASS changes to catch syntax errors that may break the production bundle.
-5. **Reliable Lint Suppression**: In Vue templates, use `<!-- eslint-disable ... -->` at the template level or consolidate the tag into a single line if using `eslint-disable-next-line` to ensure the rule is correctly applied to attributes.
-6. **PWA Artifacts**: Auto-generated PWA directories (e.g., `dev-dist/`) must be added to `.eslintignore` or `eslint.config.ts` to prevent linting failures on binary/generated artifacts.
-7. **Merge Marker Integrity**: After any `rebase` or `merge` operation, ALWAYS run `grep -r "<<<<<<< HEAD" .` to ensure no conflict markers leaked into the codebase, even if the files appear staged/resolved in Git.
+It is MANDATORY to run the full verification chain before reporting a task as completed:
+
+1. **Type Check**: `npm run type-check`
+2. **SQL Validation**: `npm run validate-sql` (Mandatory if migrations/SQL files were modified)
+3. **Lint/Fix**: `npm run lint`
+4. **Unit Tests**: `npm run test`
+5. **Production Build**: `npm run build`
+
+> **Note**: Do not skip steps. High-fidelity web games require absolute build integrity.
 
 ### Python
 

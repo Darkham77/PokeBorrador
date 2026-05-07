@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useGameStore } from '@/stores/game'
 import { useDebugStore } from '@/stores/debug'
+import { logger } from '@/logic/utils/logger'
 
 interface ViteDebugBridge {
   regenerateMissions?: () => void;
@@ -17,7 +18,7 @@ const regenerate = () => {
   if (bridge?.regenerateMissions) {
     bridge.regenerateMissions()
   } else {
-    console.warn('[DEBUG] Fallback: regenerateMissions from store directly')
+    logger.warn('Debug', 'Fallback: regenerateMissions from store directly')
     const tool = debug.tools.find(t => t.command === 'regenerateMissions')
     if (tool) tool.action()
   }
@@ -30,7 +31,7 @@ const clear = () => {
   if (bridge?.clearMissions) {
     bridge.clearMissions()
   } else {
-    console.warn('[DEBUG] Fallback: clearMissions from store directly')
+    logger.warn('Debug', 'Fallback: clearMissions from store directly')
     const tool = debug.tools.find(t => t.command === 'clearMissions')
     if (tool) tool.action()
   }

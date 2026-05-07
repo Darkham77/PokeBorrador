@@ -42,10 +42,29 @@ export interface BattleStore {
   fsm: {
     currentState: Ref<BattleStateName>;
     currentSubState: Ref<BattleSubStateName | null>;
-    transition: (newState: BattleStateName | BattleSubStateName, newSubState?: BattleSubStateName | null, delayMs?: number) => Promise<void>;
+    transition: (newState: BattleStateName | BattleSubStateName, newSubState?: BattleSubStateName | null, delayMs?: number) => Promise<any>;
   };
   addLog: (msg: string, type?: string, source?: Pokemon | string | null, sideOverride?: 'player' | 'enemy' | null) => void;
-  _startBattle: (enemy: Pokemon, options: { isWild?: boolean; mapId?: string }) => void;
+  startBattle: (enemy: Pokemon, options?: { 
+    isTrainer?: boolean; 
+    trainerName?: string; 
+    isGym?: boolean; 
+    gymId?: string;
+    locationId?: string;
+    wasSearching?: boolean;
+    enemyTeam?: Pokemon[];
+    battleOptions?: any;
+  }) => Promise<void>;
+  _startBattle: (enemy: Pokemon, options?: { 
+    isTrainer?: boolean; 
+    trainerName?: string; 
+    isGym?: boolean; 
+    gymId?: string;
+    locationId?: string;
+    wasSearching?: boolean;
+    enemyTeam?: Pokemon[];
+    battleOptions?: any;
+  }) => Promise<void>;
   executeMove: (moveIndex: number) => Promise<void>;
   endBattle: (win: boolean, fled: boolean) => Promise<void>;
   handleFaint: (side: 'player' | 'enemy') => Promise<void>;
@@ -114,7 +133,7 @@ export interface EventStore {
   fetchEvents: () => Promise<void>;
   checkPendingAwards: () => Promise<void>;
   submitCompetitionEntry: (pokemon: Pokemon, eventId: string) => Promise<void>;
-  claimAward: (awardId: string) => Promise<void>;
+  claimAward: (awardId: string) => Promise<any>;
   getEventMultiplier: (pokemon: Pokemon, eventId: string) => number;
   getCaptureEvent: (speciesId: string) => any;
 }
@@ -123,6 +142,13 @@ export interface DominanceInfo {
   union: number;
   poder: number;
   winner: string | null;
+}
+
+export interface CompetitionResult {
+  id: string;
+  event_id: string;
+  winners: string; // JSON string in DB
+  ended_at: string;
 }
 
 export interface WarStore {

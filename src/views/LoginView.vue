@@ -6,6 +6,7 @@ import { useAuthStore } from '@/stores/auth'
 import { useGameStore } from '@/stores/game'
 import { usePWA } from '@/composables/usePWA'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
+import { logger } from '@/logic/utils/logger'
 
 // Components
 import AuthServerSelector from '@/components/auth/AuthServerSelector.vue'
@@ -97,7 +98,7 @@ const handleLocalLogin = async () => {
 // Corregir bucle infinito si ya se está logueado
 onMounted(() => {
   if (authStore.user) {
-    console.warn('[Login] Usuario ya logueado detectado en ruta /login. Forzando logout para resetear estado.')
+    logger.warn('Login', 'Usuario ya logueado detectado en ruta /login. Forzando logout para resetear estado.')
     authStore.logout()
   }
 })

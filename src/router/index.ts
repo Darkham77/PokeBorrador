@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { logger } from '@/logic/utils/logger'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -66,7 +67,7 @@ router.beforeEach(async (to, _from) => {
   if (authStore.loading) await authStore.checkSession()
   
   if (to.path === '/login' && authStore.user) {
-    console.log('[Router] Forzando limpieza de sesión por acceso a /login');
+    logger.info('Router', 'Forzando limpieza de sesión por acceso a /login');
     authStore.clearSessionLocal();
   }
   

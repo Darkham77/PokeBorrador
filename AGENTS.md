@@ -43,6 +43,7 @@ This file defines the immutable DNA of the Poké Vicio project. Every AI agent i
 
 - **Zero-Ignore Policy**: The use of `@ts-ignore`, `@ts-nocheck`, or any variant that bypasses TypeScript compiler checks is STRICTLY FORBIDDEN.
 - **Verification Workflow**: Always run `npm run type-check` BEFORE `npm run lint` or any commit operation. Type safety is non-negotiable.
+- **Node.js 26+ Modernization**: Use `Temporal` instead of `Date` for engine logic. Mandatory use of `node:` prefix for built-in imports. Run `npm run validate-sql` before database commits.
 
 ---
 *Note: If you are an AI agent and haven't loaded `@/project-standards` yet, do it now.*

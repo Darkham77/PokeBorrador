@@ -4,6 +4,7 @@ import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import type { Pokemon } from '@/types/pokemon'
+import { logger } from '@/logic/utils/logger'
 
 const { ENTITY_SIZE_PLAYER, ENTITY_SIZE_ENEMY } = WORLD_CONSTANTS
 
@@ -196,7 +197,7 @@ export function useBattleShadows() {
       }
     }
     if (tasks.length > 0) {
-      await Promise.all(tasks).catch(err => console.warn('[useBattleShadows] Preloading failed:', err))
+      await Promise.all(tasks).catch(err => logger.warn('Shadow', `Preloading failed: ${(err as Error).message}`))
     }
   }
 

@@ -7,6 +7,8 @@ import { useEventStore } from '@/stores/events';
 import { usePlayerClassStore } from '@/stores/playerClass';
 import { useWarStore } from '@/stores/war';
 import type { Pokemon, PokemonMove, PokemonIVs } from '@/types/pokemon';
+import { logger } from './utils/logger';
+import { Temporal } from '@js-temporal/polyfill';
 
 /**
  * Probabilidades de items equipados en estado salvaje
@@ -98,7 +100,7 @@ export function sanitizePokemon(p: Pokemon): void {
   // 1. Validar Habilidad
   const validAbilities = pokemonDataProvider.getSpeciesAbilities(p.id);
   if (!p.ability || !validAbilities.includes(p.ability)) {
-    console.warn(`[Self-Healing] Reparando habilidad inválida (${p.ability}) para ${p.id}`);
+    logger.warn('Self-Healing', `Reparando habilidad inválida (${p.ability}) para ${p.id}`);
     p.ability = validAbilities[0] || 'Presión';
   }
 
@@ -112,13 +114,13 @@ export function sanitizePokemon(p: Pokemon): void {
     if (!m) return;
     // Si el nombre es inválido, intentar recuperar de DB o asignar Placaje
     if (!m.name || m.name === 'null' || m.name === 'undefined' || m.name === '???') {
-      console.warn(`[Self-Healing] Movimiento ${idx} corrupto detectado en ${p.id}`);
+      logger.warn('Self-Healing', `Movimiento ${idx} corrupto detectado en ${p.id}`);
       m.name = 'Placaje';
     }
 
     const moveData = pokemonDataProvider.getMoveData(m.name);
     if (!moveData) {
-      console.warn(`[Self-Healing] Movimiento ${m.name} no existe en DB, reasignando a Placaje`);
+      logger.warn('Self-Healing', `Movimiento ${m.name} no existe en DB, reasignando a Placaje`);
       m.name = 'Placaje';
       const fallback = pokemonDataProvider.getMoveData('Placaje');
       if (fallback) {
@@ -146,7 +148,7 @@ export function sanitizePokemon(p: Pokemon): void {
 
   // Si no tiene movimientos, darle al menos uno
   if (p.moves.length === 0) {
-    console.warn(`[Self-Healing] ${p.id} no tiene movimientos, asignando Placaje`);
+    logger.warn('Self-Healing', `${p.id} no tiene movimientos, asignando Placaje`);
     const fallback = pokemonDataProvider.getMoveData('Placaje');
     if (fallback) {
       p.moves.push({
@@ -191,7 +193,7 @@ export function makePokemon(id: string, level: number, options: PokemonCreationO
   if (level > 100) level = 100;
   let base = pokemonDataProvider.getPokemonData(id);
   if (!base) {
-    console.error("Missing Pokémon in DB:", id);
+    logger.error('Factory', `Missing Pokémon in DB: ${id}`);
     base = pokemonDataProvider.getPokemonData('pidgey');
     id = 'pidgey';
   }
@@ -258,7 +260,7 @@ export function makePokemon(id: string, level: number, options: PokemonCreationO
   }
   
   const vigor = Math.floor(Math.random() * 4) + 3; // 3 a 6
-  const getUidStr = () => crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substr(2,9) + Date.now().toString(36);
+  const getUidStr = () => crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2,9) + Temporal.Now.instant().epochMilliseconds.toString(36);
 
   let heldItem = options.heldItem || null;
   if (!heldItem) {
@@ -281,7 +283,7 @@ export function makePokemon(id: string, level: number, options: PokemonCreationO
     status: null, sleepTurns: 0, friendship: 70, vigor,
     heldItem,
     nickname: null,
-    obtainedAt: Date.now(),
+    obtainedAt: Temporal.Now.instant().epochMilliseconds,
     hp: 0, maxHp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0
   };
 

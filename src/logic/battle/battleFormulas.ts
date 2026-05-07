@@ -11,6 +11,7 @@ import { getMechanicalWeather, WEATHER_MECHANICAL } from './weatherMapper';
 import { getDayCycle } from '../timeUtils';
 import type { Pokemon, Move } from '../../types/pokemon';
 import type { BattleStages, BattleWeather, BattleContext } from '../../types/battle';
+import { logger } from '../utils/logger';
 
 export const CURRENT_GENERATION = 2;
 export const ACTIVE_RULE_SET = 2;
@@ -338,7 +339,7 @@ export function calculateCatchRate(pokemon: Pokemon, rawBallType = 'poke-ball', 
       mult: (_p, c) => {
         const cycle = c.cycle || getDayCycle();
         const isNight = cycle === 'night' || cycle === 'dusk';
-        const isCave = c.locationId && /cave|moon|tunnel|islands|mountain|victory|mansion/i.test(c.locationId);
+        const isCave = !!c.isCave;
         const isFog = c.weather && c.weather.type === 'fog';
         return (isNight || isCave || isFog) ? 3.0 : 1.0;
       }
@@ -347,7 +348,7 @@ export function calculateCatchRate(pokemon: Pokemon, rawBallType = 'poke-ball', 
       mult: (_p, c) => {
         const cycle = c.cycle || getDayCycle();
         const isNight = cycle === 'night' || cycle === 'dusk';
-        const isCave = c.locationId && /cave|moon|tunnel|islands|mountain|victory|mansion/i.test(c.locationId);
+        const isCave = !!c.isCave;
         const isFog = c.weather && c.weather.type === 'fog';
         return (isNight || isCave || isFog) ? 3.0 : 1.0;
       }
@@ -377,7 +378,7 @@ export function calculateCatchRate(pokemon: Pokemon, rawBallType = 'poke-ball', 
   const hpFactor = (3 * pokemon.maxHp - 2 * pokemon.hp) / (3 * pokemon.maxHp);
   const catchRate = pokemon.catchRate ?? 45;
   if (!pokemon.catchRate) {
-    console.warn(`Capture warning: Pokémon ${pokemon.name} (${pokemon.id}) missing catchRate. Falling back to 45.`);
+    logger.warn('Battle', `Capture warning: Pokémon ${pokemon.name} (${pokemon.id}) missing catchRate. Falling back to 45.`);
   }
   const statusMult = (pokemon.status === 'sleep' || pokemon.status === 'freeze') ? 2.0 : 
                      (pokemon.status ? 1.5 : 1.0);

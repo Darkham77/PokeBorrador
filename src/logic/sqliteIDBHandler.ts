@@ -1,4 +1,3 @@
-
 /**
  * SQLite Handler for Browser-Side Emulation
  * Uses sql.js (WebAssembly) to provide a local SQL database.
@@ -7,6 +6,8 @@
  * IMPORTANT: If you modify the local schema (tables array) or CRUD methods here, 
  * you MUST update the DBRouter (src/logic/db/dbRouter.ts) to keep Online/Offline parity.
  */
+
+import { logger } from './utils/logger';
 
 
 interface SQLiteStatement {
@@ -78,7 +79,7 @@ async function setToIDB(key: string, value: Uint8Array): Promise<void> {
       request.onsuccess = () => resolve();
       request.onerror = () => reject(request.error);
     });
-  } catch (e) { console.error('[SQLite] IDB Save Error:', e); }
+  } catch (e) { logger.error('SQLite', `IDB Save Error: ${(e as Error).message}`); }
 }
 
 export async function initSQLite(): Promise<SQLiteDatabase> {
@@ -99,7 +100,7 @@ export async function initSQLite(): Promise<SQLiteDatabase> {
       if (!binaryData) {
         const legacyData = localStorage.getItem('pokevicio_sqlite');
         if (legacyData) {
-            console.log('[SQLite] Migrating data from localStorage to IndexedDB...');
+            logger.info('SQLite', 'Migrating data from localStorage to IndexedDB...');
             isMigrating = true;
             try {
                 if (legacyData.startsWith('[')) {
@@ -113,18 +114,18 @@ export async function initSQLite(): Promise<SQLiteDatabase> {
                 }
                 // Guardar inmediatamente en IDB
                 if (binaryData) await setToIDB('pokevicio_sqlite_v2', binaryData);
-            } catch (e) { console.error('[SQLite] Migration failed:', e); }
+            } catch (e) { logger.error('SQLite', `Migration failed: ${(e as Error).message}`); }
         }
       }
 
       if (binaryData) {
         db = new SQL.Database(binaryData);
         isNewDatabase = false;
-        console.log('[SQLite] Database loaded from IndexedDB');
+        logger.info('SQLite', 'Database loaded from IndexedDB');
       } else {
         db = new SQL.Database();
         isNewDatabase = true;
-        console.log('[SQLite] New database created');
+        logger.success('SQLite', 'New database created');
       }
 
       if (!db) throw new Error('Failed to create database');
@@ -164,7 +165,7 @@ export async function initSQLite(): Promise<SQLiteDatabase> {
         try {
           db!.run(`CREATE TABLE IF NOT EXISTS ${tableDef};`);
         } catch (e) {
-          console.error(`[SQLite] Error creating table: ${tableDef.split(' ')[0]}`, e);
+          logger.error('SQLite', `Error creating table: ${tableDef.split(' ')[0]} - ${(e as Error).message}`);
         }
       });
 
@@ -188,7 +189,7 @@ export async function initSQLite(): Promise<SQLiteDatabase> {
         }
       ];
 
-      console.log('[SQLite] Running migrations...');
+      logger.info('SQLite', 'Running migrations...');
       runMigrations(db, DATABASE_MIGRATIONS);
       
       // Force Version Sync: Ensure local DB matches the latest client-defined migration
@@ -196,9 +197,9 @@ export async function initSQLite(): Promise<SQLiteDatabase> {
         const latestMig = DATABASE_MIGRATIONS.length > 0 ? DATABASE_MIGRATIONS[DATABASE_MIGRATIONS.length - 1] : { id: '0' };
         const latestVer = (latestMig?.id || '0').split('_')[0];
         db.run(`INSERT OR REPLACE INTO config (key, value) VALUES ('db_version', '${latestVer}')`);
-        console.log(`[SQLite] Local DB Version synchronized to: ${latestVer}`);
+        logger.info('SQLite', `Local DB Version synchronized to: ${latestVer}`);
       } catch (e) {
-        console.error('[SQLite] Failed to sync db_version:', e);
+        logger.error('SQLite', `Failed to sync db_version: ${(e as Error).message}`);
       }
 
       seedSQLite();
@@ -206,13 +207,13 @@ export async function initSQLite(): Promise<SQLiteDatabase> {
 
       // Limpieza Post-Migración
       if (isMigrating) {
-        console.log('[SQLite] Migration complete. Cleaning up localStorage...');
+        logger.success('SQLite', 'Migration complete. Cleaning up localStorage...');
         localStorage.removeItem('pokevicio_sqlite');
       }
 
       return db;
     } catch (err) {
-      console.error('[SQLite] Initialization failed:', err);
+      logger.error('SQLite', `Initialization failed: ${(err as Error).message}`);
       initPromise = null;
       throw err;
     }
@@ -242,7 +243,7 @@ function runMigrations(database: SQLiteDatabase, migrations: Migration[]): void 
       }
 
       // 3. Apply migration
-      console.log(`[SQLite Migration] Applying: ${m.id}`);
+      logger.debug('SQLite Migration', `Applying: ${m.id}`);
       // Split by semicolon and execute individually to avoid multiple statement issues in some environments
       m.sql.split(';').filter(s => s.trim()).forEach(stmt => {
         database.run(stmt);
@@ -257,7 +258,7 @@ function runMigrations(database: SQLiteDatabase, migrations: Migration[]): void 
         database.run(`INSERT OR REPLACE INTO config (key, value) VALUES ('db_version', '${version}')`);
       }
     } catch (e) {
-      console.warn(`[SQLite Migration] Failed to apply ${m.id}:`, e);
+      logger.warn('SQLite Migration', `Failed to apply ${m.id}: ${(e as Error).message}`);
     }
   });
 }
@@ -266,7 +267,7 @@ function seedSQLite(): void {
   if (!db) return;
   const check = db.exec("SELECT COUNT(*) FROM events_config");
   if (check[0] && check[0].values[0] && (check[0].values[0] as unknown[])[0] === 0) {
-    console.log('[SQLite] Seeding initial data...');
+    logger.info('SQLite', 'Seeding initial data...');
     db.run("INSERT INTO events_config (name, icon, type, is_active, config) VALUES (?, ?, ?, ?, ?)", [
       'Hora Magikarp', '🐟', 'fishing', 1, JSON.stringify({ target: 'Magikarp', weight: 'giant' })
     ]);
@@ -289,13 +290,13 @@ function seedSQLite(): void {
     kantoMaps.forEach((mapId, index) => {
       const winner = (index % 5 === 0) ? 'union' : (index % 5 === 1 ? 'poder' : null);
       db!.run("INSERT OR IGNORE INTO war_dominance (week_id, map_id, winner_faction, resolved_at) VALUES (?, ?, ?, ?)", [
-        weekId, mapId, winner, new Date().toISOString()
+        weekId, mapId, winner, Temporal.Now.instant().toString()
       ]);
       db!.run("INSERT OR IGNORE INTO war_points (map_id, week_id, faction, points, updated_at) VALUES (?, ?, ?, ?, ?)", [
-        mapId, weekId, 'union', index * 10, new Date().toISOString()
+        mapId, weekId, 'union', index * 10, Temporal.Now.instant().toString()
       ]);
       db!.run("INSERT OR IGNORE INTO war_points (map_id, week_id, faction, points, updated_at) VALUES (?, ?, ?, ?, ?)", [
-        mapId, weekId, 'poder', index * 5, new Date().toISOString()
+        mapId, weekId, 'poder', index * 5, Temporal.Now.instant().toString()
       ]);
     });
   }
@@ -314,7 +315,7 @@ export async function queryLocal<T = Record<string, unknown>>(sql: string, param
     stmt.free();
     return results;
   } catch (e) {
-    console.error(`[SQLite Error] Query: ${sql}`, e);
+    logger.error('SQLite', `Query Error: ${sql} - ${(e as Error).message}`);
     // If it's a version mismatch or table missing, we might need to handle it
     return [];
   }
@@ -357,9 +358,9 @@ async function persistSQLite(): Promise<void> {
     if (!binary || binary.length === 0) return;
     
     await setToIDB('pokevicio_sqlite_v2', binary);
-    console.log(`[SQLite] Database persisted successfully (${binary.length} bytes into IndexedDB)`);
+    logger.info('SQLite', `Database persisted successfully (${binary.length} bytes into IndexedDB)`);
   } catch (e) {
-    console.error('[SQLite] CRITICAL: Failed to persist database to IndexedDB!', e);
+    logger.error('SQLite', `CRITICAL: Failed to persist database to IndexedDB! - ${(e as Error).message}`);
   }
 }
 

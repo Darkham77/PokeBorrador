@@ -1,4 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
+import { Temporal } from '@js-temporal/polyfill'
+import { logger } from '../src/logic/utils/logger'
 
 const supabase = createClient(
   process.env.VITE_SUPABASE_URL,
@@ -41,8 +43,8 @@ export default async function handler(req, res) {
     })
 
     res.status(200).json({ events: activeEvents })
-  } catch (error) {
-    console.error(error)
+  } catch (error: any) {
+    logger.error('API_EVENTS', `Error fetching events: ${error.message}`, error)
     res.status(500).json({ error: 'Internal server error' })
   }
 }

@@ -4,6 +4,7 @@ import { ProxyQuery } from './proxyQuery';
 import { initSQLite, persistSQLite, queryLocal } from './sqliteEngine';
 import { DATABASE_MIGRATIONS } from './migrations_data';
 import { useLoadingStore } from '@/stores/loading';
+import { logger } from '../utils/logger';
 import type { DBConfig, DBMode, DBRouterOptions, DBCompatibilityResponse, DBResponse } from '@/types/database';
 
 export type { DBCompatibilityResponse };
@@ -33,7 +34,7 @@ export class DBRouter {
     this.userSubscription = null;
     this._timeOffset = 0; // ms
     
-    console.log(`[DBRouter] Initialized in STRICT ${mode.toUpperCase()} mode.`);
+    logger.info('DBRouter', `Initialized in STRICT ${mode.toUpperCase()} mode.`);
   }
 
   /**
@@ -44,16 +45,16 @@ export class DBRouter {
     
     const { url, key } = this.config;
     if (!url || !key) {
-      console.warn('[DBRouter] Missing Supabase config. Online operations will fail.');
+      logger.warn('DBRouter', 'Missing Supabase config. Online operations will fail.');
       return null;
     }
 
     try {
-      console.log('[DBRouter] Lazily initializing Supabase client...');
+      logger.info('DBRouter', 'Lazily initializing Supabase client...');
       this._realClient = createClient(url, key);
       return this._realClient;
     } catch (err) {
-      console.error('[DBRouter] Failed to initialize Supabase client:', err);
+      logger.error('DBRouter', 'Failed to initialize Supabase client:', (err as Error).message);
       return null;
     }
   }
@@ -81,7 +82,7 @@ export class DBRouter {
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent('time-sync-update', { detail: { offset: ms } }));
     }
-    console.log(`[DBRouter] Time offset set to: ${ms}ms`);
+    logger.info('DBRouter', `Time offset set to: ${ms}ms`);
   }
 
   setMockTime(dateStr: string): void {
@@ -103,7 +104,7 @@ export class DBRouter {
    * Initializes session monitoring for Last-In-Wins logic.
    */
   async initSession(userId: string, sessionId: string): Promise<void> {
-    console.log(`[DBRouter] Setting session to ${sessionId} for user ${userId}`);
+    logger.info('DBRouter', `Setting session to ${sessionId} for user ${userId}`);
     this.currentSessionId = sessionId;
     
     const client = this.realClient;
@@ -114,9 +115,9 @@ export class DBRouter {
         .from('profiles')
         .update({ current_session_id: sessionId })
         .eq('id', userId);
-      console.log('[DBRouter] Session ID updated in DB.');
+      logger.success('DBRouter', 'Session ID updated in DB.');
     } catch (err) {
-      console.error('[DBRouter] Failed to set session ID:', err);
+      logger.error('DBRouter', 'Failed to set session ID:', (err as Error).message);
     }
 
     if (this.userSubscription) this.userSubscription.unsubscribe();
@@ -131,10 +132,10 @@ export class DBRouter {
       }, (payload: any) => {
         const newSessionId = payload?.new?.current_session_id;
         const oldSessionId = payload?.old?.current_session_id;
-        console.log(`[DBRouter] RT Update: New=${newSessionId}, Old=${oldSessionId}, CurrentLocal=${this.currentSessionId}`);
+        logger.debug('DBRouter', `RT Update: New=${newSessionId}, Old=${oldSessionId}, CurrentLocal=${this.currentSessionId}`);
         
         if (newSessionId && this.currentSessionId && newSessionId !== this.currentSessionId) {
-          console.warn(`[DBRouter] SESSION CONFLICT DETECTED! DB:${newSessionId} !== Local:${this.currentSessionId}`);
+          logger.warn('DBRouter', `SESSION CONFLICT DETECTED! DB:${newSessionId} !== Local:${this.currentSessionId}`);
           this.handleSessionConflict();
         }
       })
@@ -142,7 +143,7 @@ export class DBRouter {
   }
 
   handleSessionConflict(): void {
-    console.warn('[DBRouter] SESSION CONFLICT DETECTED!');
+    logger.error('DBRouter', 'SESSION CONFLICT DETECTED!');
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent('session-conflict'));
     }
@@ -154,7 +155,7 @@ export class DBRouter {
    */
   setMode(mode: DBMode): void {
     if (this.mode === mode) return;
-    console.log(`[DBRouter] Switching mode from ${this.mode} to ${mode.toUpperCase()}`);
+    logger.info('DBRouter', `Switching mode from ${this.mode} to ${mode.toUpperCase()}`);
     this.mode = mode;
     
     if (mode === 'offline') {
@@ -198,7 +199,7 @@ export class DBRouter {
       // Fallback: use a fast select if RPC fails
       return Date.now(); 
     } catch (e) {
-      console.warn('[DBRouter] getServerTime error, falling back to local.', e);
+      logger.warn('DBRouter', 'getServerTime error, falling back to local.', (e as Error).message);
       return Date.now();
     }
   }
@@ -208,7 +209,7 @@ export class DBRouter {
    */
   async rpc(name: string, params: Record<string, unknown> = {}): Promise<DBResponse> {
     if (this.mode === 'offline') {
-      console.log(`[DBRouter] Local RPC: ${name}`, params);
+      logger.debug('DBRouter', `Local RPC: ${name}`, params);
       const sqliteDb = await initSQLite();
 
       // Implement specific local logic for critical RPCs
@@ -280,7 +281,7 @@ export class DBRouter {
     if (this.mode === 'offline') {
       const mockChannel = {
         on: (type: string, _filter: any, _callback: any) => {
-          console.log(`[DBRouter] Mock Channel '${name}' subscribed to:`, type);
+          logger.info('DBRouter', `Mock Channel '${name}' subscribed to: ${type}`);
           return mockChannel; 
         },
         subscribe: (cb?: (status: string) => void) => {
@@ -297,7 +298,7 @@ export class DBRouter {
 
     const client = this.realClient;
     if (!client) {
-      console.warn(`[DBRouter] Channel '${name}' requested but online client not ready. Returning mock.`);
+      logger.warn('DBRouter', `Channel '${name}' requested but online client not ready. Returning mock.`);
       // Return a basic mock that doesn't do anything to avoid crashes
       const basicMock = {
         on: () => basicMock,
@@ -360,7 +361,7 @@ export async function checkDBCompatibility(router: DBRouter): Promise<DBCompatib
         : parseInt((rawValue as string | number) + '' || '0');
     }
 
-    console.log(`[DBRouter] Compatibility Check: Client v${CLIENT_DB_VERSION} | DB v${dbVersion}`);
+    logger.info('DBRouter', `Compatibility Check: Client v${CLIENT_DB_VERSION} | DB v${dbVersion}`);
 
     const response: DBCompatibilityResponse = {
       compatible: true,
@@ -377,7 +378,7 @@ export async function checkDBCompatibility(router: DBRouter): Promise<DBCompatib
     return response;
   } catch (e: unknown) {
     loadingStore.finish('db_compat')
-    console.warn('[DBRouter] Compatibility check failed, assuming compatible.', e);
+    logger.warn('DBRouter', 'Compatibility check failed, assuming compatible.', (e as Error).message);
     return { compatible: true, client: CLIENT_DB_VERSION, db: 0 };
   }
 }

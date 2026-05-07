@@ -6,6 +6,7 @@ import { getFromIDB, setToIDB } from './idbHelper'
 import { TABLES_SCHEMA } from './schema'
 import { DATABASE_MIGRATIONS } from './migrations_data'
 import { useLoadingStore } from '@/stores/loading'
+import { logger } from '../utils/logger'
 
 export interface SQLiteResult {
   columns: string[];
@@ -45,8 +46,8 @@ export async function persistSQLite(): Promise<void> {
     await setToIDB(_sqliteKey, binary)
     // Shadow Backup for DB
     await setToIDB(_sqliteKey + '_backup', binary)
-    console.log(`[SQLite] Persistence successful (Main + Backup)`)
-  } catch (e: unknown) { console.error('[SQLite] Persistence failed', e) }
+    logger.success('SQLite', `Persistence successful (Main + Backup)`)
+  } catch (e: unknown) { logger.error('SQLite', `Persistence failed: ${(e as Error).message}`) }
 }
 
 export async function initSQLite(options: { sqliteKey?: string, inMemory?: boolean } = {}): Promise<SQLiteDatabase | null> {
@@ -59,30 +60,30 @@ export async function initSQLite(options: { sqliteKey?: string, inMemory?: boole
     let savedBinary = await getFromIDB(_sqliteKey)
 
     if (!savedBinary) {
-      console.warn('[SQLite] Primary database missing, checking Shadow Backup...')
+      logger.warn('SQLite', 'Primary database missing, checking Shadow Backup...')
       savedBinary = await getFromIDB(_sqliteKey + '_backup')
       if (savedBinary) {
-        console.log('[SQLite] Restored from Shadow Backup!')
+        logger.info('SQLite', 'Restored from Shadow Backup!')
       }
     }
 
     if (savedBinary) {
       try {
         _sqliteDb = new SQL.Database(new Uint8Array(savedBinary)) as unknown as SQLiteDatabase
-        console.log('[SQLite] Loaded from IndexedDB')
+        logger.info('SQLite', 'Loaded from IndexedDB')
       } catch (dbErr) {
-        console.error('[SQLite] Database corruption detected! Attempting Backup Rescue...', dbErr)
+        logger.error('SQLite', 'Database corruption detected! Attempting Backup Rescue...')
         const backupBinary = await getFromIDB(_sqliteKey + '_backup')
         if (backupBinary) {
           _sqliteDb = new SQL.Database(new Uint8Array(backupBinary)) as unknown as SQLiteDatabase
-          console.log('[SQLite] Rescue successful from Backup.')
+          logger.success('SQLite', 'Rescue successful from Backup.')
         } else {
           throw dbErr
         }
       }
     } else {
       _sqliteDb = new SQL.Database() as unknown as SQLiteDatabase
-      console.log('[SQLite] Created new in-memory database')
+      logger.info('SQLite', 'Created new in-memory database')
       TABLES_SCHEMA.forEach(schema => { if (_sqliteDb) _sqliteDb.run(`CREATE TABLE IF NOT EXISTS ${schema}`) })
       await persistSQLite()
     }
@@ -96,7 +97,7 @@ export async function initSQLite(options: { sqliteKey?: string, inMemory?: boole
 
 async function ensureSchemaIntegrity(): Promise<void> {
   if (!_sqliteDb) return
-  console.log('[SQLite] Verifying schema integrity...')
+  logger.info('SQLite', 'Verifying schema integrity...')
   
   for (const schemaStr of TABLES_SCHEMA) {
     try {
@@ -106,7 +107,7 @@ async function ensureSchemaIntegrity(): Promise<void> {
       const info = _sqliteDb!.exec(`PRAGMA table_info(${tableName})`)
       
       if (!info.length) {
-        console.warn(`[SQLite] Table "${tableName}" missing from DB, creating...`)
+        logger.warn('SQLite', `Table "${tableName}" missing from DB, creating...`)
         _sqliteDb!.run(`CREATE TABLE IF NOT EXISTS ${schemaStr}`)
         continue
       }
@@ -138,20 +139,20 @@ async function ensureSchemaIntegrity(): Promise<void> {
 
         const colName = def.split(/\s+/)[0]!.toLowerCase()
         if (!existingCols.includes(colName)) {
-          console.log(`[SQLite] Auto-repair: Adding missing column "${colName}" to "${tableName}"`)
+          logger.info('SQLite', `Auto-repair: Adding missing column "${colName}" to "${tableName}"`)
           try {
             const cleanDef = def.replace(/\s+PRIMARY\s+KEY/gi, '').replace(/\s+AUTOINCREMENT/gi, '')
             _sqliteDb!.run(`ALTER TABLE ${tableName} ADD COLUMN ${cleanDef}`)
           } catch (e: unknown) {
-            console.warn(`[SQLite] Auto-repair failed for ${tableName}.${colName}:`, (e as Error).message)
+            logger.warn('SQLite', `Auto-repair failed for ${tableName}.${colName}: ${(e as Error).message}`)
           }
         }
       }
     } catch (e: unknown) {
-      console.error(`[SQLite] Error during integrity check for: ${schemaStr}`, e)
+      logger.error('SQLite', `Error during integrity check for: ${schemaStr} - ${(e as Error).message}`)
     }
   }
-  console.log('[SQLite] Schema integrity check complete.')
+  logger.success('SQLite', 'Schema integrity check complete.')
   await persistSQLite()
 }
 
@@ -166,7 +167,7 @@ async function runMigrations(): Promise<void> {
   
   for (const m of DATABASE_MIGRATIONS as { id: string, sql: string }[]) {
     if (!applied.includes(m.id)) {
-      console.log(`[SQLite] Applying migration: ${m.id}`)
+      logger.info('SQLite', `Applying migration: ${m.id}`)
       loadingStore.start('db_migration', 'Actualizando Base de Datos...', `Aplicando: ${m.id}`, false)
       try {
         const statements = splitSQLStatements(m.sql)
@@ -181,21 +182,21 @@ async function runMigrations(): Promise<void> {
               const isMissing = msg.includes('no such column')
               
               if (isDuplicate || isMissing) {
-                console.warn(`[SQLite] Statement skipped (idempotent/safe): ${stmt}`)
+                logger.warn('SQLite', `Statement skipped (idempotent/safe): ${stmt}`)
               } else {
-                console.error(`[SQLite] Statement failed: ${stmt}`)
+                logger.error('SQLite', `Statement failed: ${stmt} - ${msg}`)
                 throw stmtErr
               }
             }
           }
         })
         _sqliteDb.run("INSERT OR IGNORE INTO _migrations (id) VALUES (?)", [m.id])
-        console.log(`[SQLite] Migration applied successfully: ${m.id}`)
+        logger.success('SQLite', `Migration applied successfully: ${m.id}`)
         await persistSQLite()
         loadingStore.finish('db_migration')
       } catch (e: unknown) { 
         loadingStore.finish('db_migration')
-        console.error(`[SQLite] Migration ${m.id} failed:`, (e as Error).message) 
+        logger.error('SQLite', `Migration ${m.id} failed: ${(e as Error).message}`) 
       }
     }
   }
@@ -203,166 +204,15 @@ async function runMigrations(): Promise<void> {
   if (DATABASE_MIGRATIONS.length > 0) {
     const latestId = DATABASE_MIGRATIONS[DATABASE_MIGRATIONS.length - 1]!.id
     const version = parseInt(latestId.split('_')[0] || '0')
-    console.log(`[SQLite] Updating system_config.db_version to ${version}`)
+    logger.info('SQLite', `Updating system_config.db_version to ${version}`)
     _sqliteDb.run("INSERT OR REPLACE INTO system_config (key, value, updated_at) VALUES ('db_version', ?, datetime('now'))", [version])
   }
 
   _sqliteDb.run("PRAGMA foreign_keys = ON")
 }
 
-/**
- * Splits SQL by semicolon, respecting $$ blocks and strings.
- */
-export function splitSQLStatements(sql: string): string[] {
-  const statements: string[] = [];
-  let current = '';
-  let inDollarQuote = false;
-  let inString = false;
-  let inBlockComment = false;
-  let inLineComment = false;
-  
-  for (let i = 0; i < sql.length; i++) {
-    const char = sql[i];
-    const nextChar = sql[i + 1];
-    
-    // 1. Handle Line Comments (--)
-    if (inLineComment) {
-      if (char === '\n') inLineComment = false;
-      // If we reached the end of the string without a newline, close the comment
-      if (i === sql.length - 1) inLineComment = false; 
-      continue;
-    }
-    
-    // 2. Handle Block Comments (/* */)
-    if (inBlockComment) {
-      if (char === '*' && nextChar === '/') {
-        inBlockComment = false;
-        i++;
-      }
-      continue;
-    }
+import { splitSQLStatements, translatePostgresToSqlite } from './sqlTranslator'
 
-    if (!inDollarQuote && !inString) {
-      // Detect start of Line Comment
-      if (char === '-' && nextChar === '-') {
-        inLineComment = true;
-        i++;
-        continue;
-      }
-      // Detect start of Block Comment
-      if (char === '/' && nextChar === '*') {
-        inBlockComment = true;
-        i++;
-        continue;
-      }
-      
-      if (char === '$' && nextChar === '$') {
-        inDollarQuote = true;
-        current += '$$';
-        i++;
-        continue;
-      }
-      if (char === "'") {
-        inString = true;
-        current += "'";
-        continue;
-      }
-      if (char === ';') {
-        if (current.trim()) statements.push(current.trim());
-        current = '';
-        continue;
-      }
-    } else if (inDollarQuote) {
-      if (char === '$' && nextChar === '$') {
-        inDollarQuote = false;
-        current += '$$';
-        i++;
-        continue;
-      }
-    } else if (inString) {
-      if (char === "'" && sql[i-1] !== '\\') {
-        inString = false;
-        current += "'";
-        continue;
-      }
-    }
-    current += char;
-  }
-  
-  if (current.trim()) statements.push(current.trim());
-  return statements.filter(s => s.length > 0);
-}
-
-/**
- * Translates common Postgres syntax to SQLite.
- */
-export function translatePostgresToSqlite(sql: string): string {
-  if (!sql) return '';
-  const cleanSql = sql.trim();
-  const upperSql = cleanSql.toUpperCase();
-  
-  // Logic Skipping for PostgreSQL-only constructs
-  const skipPatterns = [
-    'CREATE FUNCTION',
-    'CREATE OR REPLACE FUNCTION',
-    'DO $$',
-    'CREATE POLICY',
-    'DROP POLICY',
-    'ALTER PUBLICATION',
-    'COMMENT ON',
-    'CREATE TRIGGER',
-    'DROP TRIGGER',
-    'CREATE EXTENSION',
-    'ALTER TABLE PROFILES ENABLE ROW LEVEL SECURITY'
-  ];
-  
-  if (skipPatterns.some(pattern => upperSql.startsWith(pattern))) {
-    console.warn(`[SQLite] Skipping Postgres-only statement: ${cleanSql.substring(0, 50)}...`);
-    return '';
-  }
-
-  return cleanSql
-    .replace(/public\./gi, '')
-    // 1. Types & Casts
-    .replace(/\bJSONB\b/gi, 'TEXT')
-    .replace(/\bUUID\b/gi, 'TEXT')
-    .replace(/\bTIMESTAMPTZ\b/gi, 'TEXT')
-    .replace(/\bTIMESTAMP\b/gi, 'TEXT')
-    .replace(/\bBIGINT\b/gi, 'INTEGER')
-    .replace(/\b(BIGSERIAL|SERIAL)\s+PRIMARY\s+KEY\b/gi, 'INTEGER PRIMARY KEY AUTOINCREMENT')
-    .replace(/\b(BIGSERIAL|SERIAL)\b/gi, 'INTEGER')
-    .replace(/::[a-z0-9]+/gi, '')
-    // 2. Functions
-    .replace(/\bNOW\(\)/gi, "datetime('now')")
-    .replace(/\bgen_random_uuid\(\)/gi, "hex(randomblob(16))")
-    .replace(/\bEXTRACT\(epoch\s+FROM\s+([^)]+)\)/gi, "unixepoch($1)")
-    .replace(/\bARRAY_AGG\b/gi, "json_group_array")
-    .replace(/\bstring_agg\b/gi, "group_concat")
-    .replace(/\bjsonb_build_object\b/gi, "json_object")
-    .replace(/\bjsonb_set\b/gi, "json_set")
-    .replace(/\bjsonb_agg\b/gi, "json_group_array")
-    .replace(/\bjsonb_object_agg\b/gi, "json_group_object")
-    .replace(/\bjsonb_build_array\b/gi, "json_array")
-    .replace(/\bjsonb_array_elements\b/gi, "json_each")
-    .replace(/\bjsonb_array_length\b/gi, "json_array_length")
-    .replace(/\bto_jsonb\b/gi, "json")
-    .replace(/\bjsonb_(\w+)\b/gi, "json_$1")
-    .replace(/\bSUBSTRING\b/gi, "SUBSTR")
-    // 3. Operators & Constants
-    .replace(/\bTRUE\b/gi, '1')
-    .replace(/\bFALSE\b/gi, '0')
-    .replace(/->>/g, '->>')
-    .replace(/->/g, '->')
-    // 4. SQL Patterns
-    .replace(/FOR\s+UPDATE/gi, '')
-    .replace(/DEFAULT\s+datetime\('now'\)/gi, "DEFAULT (datetime('now'))")
-    .replace(/DEFAULT\s+hex\(randomblob\(16\)\)/gi, "DEFAULT (hex(randomblob(16)))")
-    .replace(/RAISE\s+EXCEPTION\s+'[^']*'/gi, 'SELECT 1')
-    .replace(/\bADD\s+COLUMN\s+IF\s+NOT\s+EXISTS\b/gi, 'ADD COLUMN')
-    // 5. References & Schemas
-    .replace(/REFERENCES\s+auth\.users/gi, 'REFERENCES profiles')
-    .trim();
-}
 
 export function resetSQLite(): void {
   _sqliteDb = null;

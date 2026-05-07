@@ -35,8 +35,8 @@ export function registerAudioTools({ register }: DebugRegisterOptions, _context:
     command: 'stopAllAudio',
     description: 'Detener todos los sonidos y música.',
     action: () => {
-      audio.stopAll()
-      return 'Todos los audios detenidos'
+      // audio.stopAll()
+      return 'Comando stopAll no disponible en este store'
     }
   })
 
@@ -46,8 +46,8 @@ export function registerAudioTools({ register }: DebugRegisterOptions, _context:
     command: 'setVolume',
     description: 'Ajustar el volumen maestro.',
     action: (val: number) => {
-      audio.setVolume(val)
-      return `Volumen ajustado a ${val}`
+      // audio.setVolume(val)
+      return `Comando setVolume(${val}) no disponible en este store`
     }
   })
 
@@ -86,7 +86,7 @@ export function registerAudioTools({ register }: DebugRegisterOptions, _context:
     action: (side: string, status: string) => {
       import('@/stores/battle').then(({ useBattleStore }) => {
         const battle = useBattleStore()
-        const poke = side === 'player' ? battle.activeBattle?.player : (battle.upcomingPokemon || battle.activeBattle?.enemy)
+        const poke = side === 'player' ? battle.state?.player : (battle.upcomingPokemon || battle.state?.enemy)
         if (poke) {
           if (status === 'null') {
             poke.status = null
@@ -108,7 +108,7 @@ export function registerAudioTools({ register }: DebugRegisterOptions, _context:
     action: (side: string, type: string) => {
       import('@/stores/battle').then(({ useBattleStore }) => {
         const battle = useBattleStore()
-        const poke = (side === 'player' ? battle.activeBattle?.player : (battle.upcomingPokemon || battle.activeBattle?.enemy)) as (Pokemon & Record<string, unknown>) | undefined
+        const poke = (side === 'player' ? battle.state?.player : (battle.upcomingPokemon || battle.state?.enemy)) as (Pokemon & Record<string, unknown>) | undefined
         if (poke) {
           if (type === 'confused') poke.confused = (poke.confused || 0) > 0 ? 0 : 4
           if (type === 'attracted') poke.attracted = !poke.attracted
@@ -177,7 +177,7 @@ export function registerAudioTools({ register }: DebugRegisterOptions, _context:
         // Weather (Context based)
         const ALL_WEATHER = ['sun', 'rain', 'hail', 'sandstorm', 'snow', 'fog', 'clear', 'storm', 'blizzard', 'heatwave']
         if (ALL_WEATHER.includes(effect)) {
-          if (battle.activeBattle) {
+          if (battle.state) {
             const current = battle.state?.weather?.type
             // Lógica FLIP: si el clima actual es el mismo que tocamos, lo limpiamos.
             if (current === effect && effect !== 'clear') {

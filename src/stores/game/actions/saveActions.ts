@@ -5,6 +5,7 @@ import { useUIStore } from '@/stores/ui'
 import type { GameState, ClaimItem } from '@/types/game'
 import type { AuthUser } from '@/types/auth'
 import type { Ref } from 'vue'
+import { logger } from '@/logic/utils/logger'
 
 export function useSaveActions(
   state: GameState, 
@@ -50,7 +51,7 @@ export function useSaveActions(
       } catch (error) {
         attempts++
         lastError = error;
-        console.warn(`[LOAD] Intento ${attempts} de carga fallido:`, error);
+        logger.warn('LOAD', `Intento ${attempts} de carga fallido: ${(error as Error).message}`);
         
         if (attempts < maxAttempts) {
           loadingStore.setProgress('game_data', 'Conexión lenta...', `Reintentando (${attempts}/${maxAttempts})...`);
@@ -60,7 +61,7 @@ export function useSaveActions(
     }
     
     if (!data && lastError) {
-      console.error('[LOAD] Todos los intentos de carga fallaron.', lastError);
+      logger.error('LOAD', `Todos los intentos de carga fallaron: ${(lastError as Error).message}`);
       
       const isTimeout = lastError.message === 'LOAD_TIMEOUT';
       const isNetworkError = lastError.message && (
@@ -97,7 +98,7 @@ export function useSaveActions(
       authStore.user.last_save_id = lastSaveId || undefined
       
       if (issues && issues.length > 0) {
-        console.warn('[LOAD] Saneamiento realizado:', issues)
+        logger.warn('LOAD', 'Saneamiento realizado:', issues)
         uiStore.notify('Partida saneada y cargada', '🛡️')
       } else {
         uiStore.notify(`¡Bienvenido, ${state.trainer || authStore.user.user_metadata?.username}!`, '👋')
@@ -123,7 +124,7 @@ export function useSaveActions(
     const locked = isSaveLocked()
     
     if (locked) {
-      console.warn('[SAVE] Sesión bloqueada. Solo se realizará guardado LOCAL.')
+      logger.warn('SAVE', 'Sesión bloqueada. Solo se realizará guardado LOCAL.')
     }
     const notifyFn = uiStore.notify
     const result = await performSave(state, authStore.user, { 
@@ -165,7 +166,7 @@ export function useSaveActions(
         return true
       }
     } catch (e) {
-      console.error('[CLAIM ERROR]', e)
+      logger.error('CLAIM', `Error al reclamar activo: ${(e as Error).message}`)
       uiStore.notify('Error al reclamar activo', '❌')
       return false
     }

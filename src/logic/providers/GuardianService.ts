@@ -3,6 +3,8 @@
  * GuardianService.ts
  * Lógica centralizada para los Guardianes de Mapa y Zonas de Conflicto.
  */
+import { logger } from '../utils/logger';
+import { Temporal } from '@js-temporal/polyfill';
 
 export interface Guardian {
   id: string;
@@ -97,7 +99,7 @@ export const GuardianService = {
    */
   async recordGuardianResult(mapId: string, userId: string, faction: string, pts: number, outcome: 'capture' | 'defeat' = 'capture', db: any = null): Promise<any> {
     if (!db) {
-      console.warn('[GuardianService] No se proporcionó instancia de DBRouter.');
+      logger.warn('Guardian', 'No se proporcionó instancia de DBRouter.');
       return { success: false, error: 'No DB instance' };
     }
 
@@ -119,7 +121,7 @@ export const GuardianService = {
 
   // Helpers
   getArgentinaDateString(): string {
-    return new Date().toLocaleDateString('sv-SE', { timeZone: 'America/Argentina/Buenos_Aires' });
+    return Temporal.Now.zonedDateTimeISO('America/Argentina/Buenos_Aires').toPlainDate().toString();
   },
 
   hashString(str: string): number {

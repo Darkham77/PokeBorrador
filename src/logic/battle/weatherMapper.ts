@@ -4,6 +4,7 @@
  * Centralizes the mapping between environmental weather tokens (from Map/Atmosphere)
  * and technical battle mechanical keys.
  */
+import { logger } from '../utils/logger';
 
 export const WEATHER_MECHANICAL = {
   SUN: 'sun',
@@ -60,7 +61,7 @@ export function getMechanicalWeather(type: string | null | undefined): WeatherMe
   const result = MAP_TO_MECHANICAL[lower];
 
   if (!result) {
-    console.warn(`[WeatherIntegrity] Token de clima no registrado detectado: "${type}". Por favor regístralo en weatherMapper.ts para evitar inconsistencias mecánicas.`);
+    logger.warn('WeatherIntegrity', `Token de clima no registrado detectado: "${type}". Por favor regístralo en weatherMapper.ts para evitar inconsistencias mecánicas.`);
     return WEATHER_MECHANICAL.UNKNOWN;
   }
 

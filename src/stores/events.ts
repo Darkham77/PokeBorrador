@@ -1,13 +1,14 @@
 
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import { logger } from '@/logic/utils/logger'
 import { useAuthStore } from './auth'
 import { useUIStore } from './ui'
 import { useGameStore } from './game'
 import { isEventActiveNow, getGlobalMultipliers, getSpeciesBoosts, type Event as GameEvent } from '@/logic/events/eventEngine'
 import { getServerTime } from '@/logic/timeUtils'
 import type { Pokemon } from '@/types/pokemon'
-import type { PendingAward } from '@/types/stores'
+import type { PendingAward, CompetitionResult } from '@/types/stores'
 
 export const useEventStore = defineStore('events', () => {
   const gameStore = useGameStore()
@@ -47,7 +48,7 @@ export const useEventStore = defineStore('events', () => {
       activeEvents.value = (events || []).filter((ev: GameEvent) => isEventActiveNow(ev, synchronizedDate))
 
       // 3. Load finished competition results (Last 24h)
-      const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+      const twentyFourHoursAgo = Temporal.Now.instant().subtract({ hours: 24 }).toString()
       const { data: results } = await db.from('competition_results')
         .select('*')
         .gt('ended_at', twentyFourHoursAgo)
@@ -58,7 +59,7 @@ export const useEventStore = defineStore('events', () => {
       // 4. Check for unclaimed prizes
       await checkPendingAwards()
     } catch (e) {
-      console.error('[Events] Error fetching events:', e)
+      logger.error('Events', `Error fetching events: ${(e as Error).message}`)
     } finally {
       isLoading.value = false
     }
@@ -99,7 +100,7 @@ export const useEventStore = defineStore('events', () => {
           level: pokemon.level,
           isShiny: pokemon.isShiny || false
         },
-        submitted_at: new Date().toISOString()
+        submitted_at: Temporal.Now.instant().toString()
       }
 
       const db = gameStore.db
@@ -114,7 +115,7 @@ export const useEventStore = defineStore('events', () => {
       if (error) throw error
       uiStore.notify(`¡Registro exitoso en ${event.name}!`, event.icon || '🏆')
     } catch (e) {
-      console.error('[Events] Error submitting entry:', e)
+      logger.error('Events', `Error submitting entry: ${(e as Error).message}`)
       uiStore.notify('Error al inscribir en el concurso.', '❌')
     }
   }
@@ -165,7 +166,7 @@ export const useEventStore = defineStore('events', () => {
   // Listen for time-sync updates from DBRouter (Debug mode)
   if (typeof window !== 'undefined') {
     window.addEventListener('time-sync-update', () => {
-      console.log('[Events] Time sync update received, refreshing events...');
+      logger.info('Events', 'Time sync update received, refreshing events...');
       fetchEvents();
     });
   }

@@ -4,6 +4,7 @@ import { useAuthStore } from './auth'
 import { useGameStore } from './game'
 import { useUIStore } from './ui'
 import { useAudioStore } from './audio'
+import { logger } from '@/logic/utils/logger'
 import { applyMarketFilters, markMarketSoldSeen, isMarketSoldSeen } from '@/logic/market'
 import type { MarketFilters } from '@/logic/market'
 import { SHOP_ITEMS } from '@/data/items'
@@ -159,7 +160,7 @@ export const useGTSStore = defineStore('gts', () => {
       }
       return false
     } catch (e) {
-      console.error('[GTS BUY ERROR]', e)
+      logger.error('GTS', `Error en la compra: ${(e as Error).message}`)
       ui.notify((e as any).message || 'Error en la compra', '❌')
       return false
     } finally {
@@ -197,7 +198,7 @@ export const useGTSStore = defineStore('gts', () => {
       fetchUserData()
       return true
     } catch (e) {
-      console.error('[GTS PUB ERROR]', e)
+      logger.error('GTS', `Error al publicar: ${(e as Error).message}`)
       ui.notify((e as any).message || 'Error al publicar', '❌')
       return false
     } finally {
@@ -219,7 +220,7 @@ export const useGTSStore = defineStore('gts', () => {
       fetchUserData()
       return true
     } catch (e) {
-      console.error('[GTS CANCEL ERROR]', e)
+      logger.error('GTS', `Error al retirar: ${(e as Error).message}`)
       ui.notify((e as any).message || 'Error al retirar', '❌')
       return false
     }

@@ -8,6 +8,7 @@ import type { GameState } from '@/types/game';
 import type { AuthUser } from '@/types/auth';
 import { compress } from '@/logic/utils/compression';
 import { writeOpfsFile } from '@/logic/utils/opfsStorage';
+import { logger } from '@/logic/utils/logger';
 
 export interface SaveData {
   trainer: string;
@@ -149,7 +150,7 @@ export function serializeState(state: GameState): SaveData {
         timestamp: Date.now(),
       };
     } catch(e) {
-      console.warn('[SAVE] Error serializando batalla activa:', e);
+      logger.warn('SAVE', `Error serializando batalla activa: ${(e as Error).message}`);
       activeBattle = null;
     }
   } else if ((state as any).activeBattle && (state as any).activeBattle.isPvP) {
@@ -333,14 +334,14 @@ export async function saveGame(state: GameState, user: AuthUser, options: SaveOp
   // IF Duplicates found AND we are ONLINE AND NOT LEGACY -> Protocol ROLLBACK
   // Legacy accounts (v1) get a "graceful cleanup" on their first save
   if (hadDuplicates && db && db.mode === 'online' && !isLegacy) {
-    console.error('[SAVE] Duplicados críticos detectados en v2+. Iniciando ROLLBACK.', issues);
+    logger.error('SAVE', 'Duplicados críticos detectados en v2+. Iniciando ROLLBACK.', issues);
     try {
       const { data: serverSave } = await db.from('game_saves').select('save_data').eq('user_id', user.id).single();
       if (serverSave?.save_data) {
         return { rollback: true, serverData: serverSave.save_data };
       }
     } catch(e) {
-      console.error('[SAVE] Error durante rollback:', e);
+      logger.error('SAVE', `Error durante rollback: ${(e as Error).message}`);
     }
     return { rollback: true, error: 'Inconsistencia detectada. Recarga la página.' };
   }
@@ -356,15 +357,15 @@ export async function saveGame(state: GameState, user: AuthUser, options: SaveOp
     const compressed = await compress(json);
     await writeOpfsFile(`save_${user.id}.gz`, compressed);
   } catch (e) {
-    console.warn('[SAVE] Error en persistencia local (LS/OPFS):', e);
+    logger.warn('SAVE', `Error en persistencia local (LS/OPFS): ${(e as Error).message}`);
   }
 
   // 2. Database
   if (!db || options.skipRemote) {
     if (options.skipRemote) {
-      console.log('[SAVE] Database save skipped (Session Locked). Local storage only.');
+      logger.info('SAVE', 'Database save skipped (Session Locked). Local storage only.');
     } else {
-      console.warn('[SAVE] No DBRouter instance provided. Skipping DB save.');
+      logger.warn('SAVE', 'No DBRouter instance provided. Skipping DB save.');
     }
     
     if (showNotif && notifyFn && options.skipRemote) {
@@ -384,7 +385,7 @@ export async function saveGame(state: GameState, user: AuthUser, options: SaveOp
     if (error) throw error;
     
     if (res && res.success === false && res.error === 'OUT_OF_SYNC') {
-      console.warn('[SAVE] Concurrencia detectada. El servidor tiene una versión más nueva.');
+      logger.warn('SAVE', 'Concurrencia detectada. El servidor tiene una versión más nueva.');
       return { rollback: true, outOfSync: true };
     }
 
@@ -394,9 +395,9 @@ export async function saveGame(state: GameState, user: AuthUser, options: SaveOp
       try {
         await db.from('profiles').update({ db_version: 2 }).eq('id', user.id);
         migrated = true;
-        console.log('[SAVE] Account migrated to db_version v2');
+        logger.success('SAVE', 'Account migrated to db_version v2');
       } catch(e) {
-        console.warn('[SAVE] Migration update failed:', e);
+        logger.warn('SAVE', `Migration update failed: ${(e as Error).message}`);
       }
     }
 
@@ -413,7 +414,7 @@ export async function saveGame(state: GameState, user: AuthUser, options: SaveOp
       lastSaveId: res.last_save_id 
     };
   } catch (e: any) {
-    console.warn('[SAVE] Error en DB Persistente:', e);
+    logger.warn('SAVE', `Error en DB Persistente: ${(e as Error).message}`);
     return { success: false, error: e.message };
   } finally {
     _isSaving = false;

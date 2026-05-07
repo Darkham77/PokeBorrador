@@ -1,9 +1,11 @@
 
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import { Temporal } from '@js-temporal/polyfill'
 import { useAuthStore } from './auth'
 import { useGameStore } from './game'
 import { useUIStore } from './ui'
+import { logger } from '@/logic/utils/logger'
 import { RANKED_REWARD_MILESTONES } from '@/data/rankedData'
 export { RANKED_REWARD_MILESTONES }
 import { getEloTier } from '@/logic/pvp/rankedEngine'
@@ -131,7 +133,7 @@ export const usePvPStore = defineStore('pvp', () => {
       lastSyncAt.value = Date.now()
     } catch (e) {
       error.value = 'No se pudo cargar el ranking global.'
-      console.error('[PvPStore] Leaderboard error:', e)
+      logger.error('PvP', `Leaderboard error: ${(e as Error).message}`)
     } finally {
       isLoading.value = false
     }
@@ -164,7 +166,7 @@ export const usePvPStore = defineStore('pvp', () => {
         user_id: authStore.user.id,
         team_data: JSON.stringify(snapshot),
         is_active: true,
-        updated_at: new Date().toISOString()
+        updated_at: Temporal.Now.instant().toString()
       })
 
       if (!error) {
@@ -204,14 +206,24 @@ export const usePvPStore = defineStore('pvp', () => {
 
   const seasonRange = computed(() => {
     const rules = currentSeasonRules.value || { name: 'Default' }
-    const start = rules.startDate ? new Date(rules.startDate) : new Date('2026-04-01T00:00:00-03:00')
-    const end = rules.endDate ? new Date(rules.endDate) : new Date(start)
-    if (!rules.endDate) end.setMonth(end.getMonth() + 3)
+    const tz = 'America/Argentina/Buenos_Aires'
+    
+    const start = rules.startDate 
+      ? Temporal.ZonedDateTime.from(rules.startDate).withTimeZone(tz) 
+      : Temporal.ZonedDateTime.from('2026-04-01T00:00:00-03:00').withTimeZone(tz)
+      
+    const end = rules.endDate 
+      ? Temporal.ZonedDateTime.from(rules.endDate).withTimeZone(tz)
+      : start.add({ months: 3 })
+    
+    const now = Temporal.Now.zonedDateTimeISO(tz)
+    const diff = end.since(now, { largestUnit: 'day' })
+    const daysLeft = Math.max(0, Math.ceil(diff.days))
     
     return {
-      start,
-      end,
-      daysLeft: Math.max(0, Math.ceil((end.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)))
+      start: new Date(start.epochMilliseconds), // Mantener Date para compatibilidad con UI si es necesario
+      end: new Date(end.epochMilliseconds),
+      daysLeft
     }
   })
 

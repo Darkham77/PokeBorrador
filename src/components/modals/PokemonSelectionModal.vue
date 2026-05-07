@@ -9,6 +9,7 @@ import BaseModal from '@/components/common/BaseModal.vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { POKEMON_TAGS, POKEMON_BADGES, hasPokemonTag } from '@/logic/constants/tags'
+import { logger } from '@/logic/utils/logger'
 import PokemonSelectionItem from './PokemonSelectionItem.vue'
 
 const uiStore = useUIStore() as any
@@ -67,7 +68,7 @@ let savedFilters: SavedFilters = {}
 try {
   savedFilters = JSON.parse(safeStorage.getItem('pv_selection_filters') || '{}')
 } catch (e) {
-  console.warn('[PokemonSelectionModal] Error loading filters:', e)
+  logger.warn('PokemonSelectionModal', 'Error loading filters', e)
 }
 
 const searchQuery = ref(savedFilters.searchQuery || '')

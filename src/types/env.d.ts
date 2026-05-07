@@ -50,7 +50,6 @@ declare global {
   }
 
   interface Window {
-    __VITE_DEBUG__: boolean;
     VITE_SUPABASE_URL: string;
     VITE_SUPABASE_KEY: string;
   }

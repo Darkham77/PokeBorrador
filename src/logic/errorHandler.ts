@@ -4,6 +4,7 @@
  * Captures unexpected failures and sends them to the Pinia error store.
  */
 import { useErrorStore } from '@/stores/errorStore'
+import { logger } from './utils/logger'
 
 export function initGlobalErrorHandlers(): void {
   const errorStore = useErrorStore()
@@ -31,5 +32,5 @@ export function initGlobalErrorHandlers(): void {
     errorStore.setError(error, context)
   }
 
-  console.log('[ERROR_HANDLER] Global listeners initialized (Vue Bridge active).')
+  logger.info('ERROR_HANDLER', 'Global listeners initialized (Vue Bridge active).')
 }

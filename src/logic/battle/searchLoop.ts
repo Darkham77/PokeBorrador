@@ -5,6 +5,7 @@ import { useMapStore } from '@/stores/map'
 import { useEventStore } from '@/stores/events'
 import type { BattleContext } from '@/types/battleContext'
 import type { UIStore, MapStore, EventStore } from '@/types/stores'
+import { logger } from '../utils/logger'
 
 /**
  * Handles the completion of a battle flow (either going to map or search loop).
@@ -84,7 +85,7 @@ export async function triggerNextEncounter(ctx: BattleContext) {
   ctx.isProcessing.value = false
   const locId = ctx.activeBattle.value?.locationId
   if (!ctx.upcomingPokemon.value || !locId) {
-    console.warn('[Battle] triggerNextEncounter: sin upcomingPokemon o locationId.')
+    logger.warn('Battle', 'triggerNextEncounter: sin upcomingPokemon o locationId.')
     return
   }
   

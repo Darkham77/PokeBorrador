@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, watch } from 'vue'
+import { logger } from '@/logic/utils/logger'
 import { supabase } from '@/logic/supabase'
 import { syncServerTime } from '@/logic/timeUtils'
 import { useLoadingStore } from './loading'
@@ -29,14 +30,14 @@ export const useAuthStore = defineStore('auth', () => {
     window.addEventListener('offline', () => {
       isOnline.value = false
       if (sessionMode.value === 'online') {
-        console.warn('[Auth] Conexión perdida en modo Online. Activando advertencia.')
+        logger.warn('Auth', 'Conexión perdida en modo Online. Activando advertencia.')
         connectionLost.value = true
       }
     })
 
     // Escuchar conflictos de sesión única
     window.addEventListener('session-conflict', () => {
-      console.warn('[AuthStore] Conflicto de sesión detectado. Bloqueando acceso.')
+      logger.error('AuthStore', 'Conflicto de sesión detectado. Bloqueando acceso.')
       sessionConflict.value = true
       
       // Auto-open modal via ModalStore
@@ -46,13 +47,13 @@ export const useAuthStore = defineStore('auth', () => {
           modalStore.open('SessionConflict')
         }
       }).catch(e => {
-        console.error('[AuthStore] Failed to open SessionConflict modal:', e)
+        logger.error('AuthStore', `Failed to open SessionConflict modal: ${(e as Error).message}`)
       })
     })
     // Escuchar errores de conexión a la base de datos (Supabase unreachability)
     window.addEventListener('db-connection-error', () => {
       if (sessionMode.value === 'online') {
-        console.warn('[AuthStore] Error de conexión a DB detectado.')
+        logger.warn('AuthStore', 'Error de conexión a DB detectado.')
         connectionLost.value = true
       }
     })
@@ -102,7 +103,7 @@ export const useAuthStore = defineStore('auth', () => {
             const updatePromise = supabase.from('profiles').update({ current_session_id: sessionId.value }).eq('id', user.value?.id)
             await Promise.race([updatePromise, new Promise((_, reject) => setTimeout(() => reject(new Error('UPDATE_TIMEOUT')), 3000))])
           } catch (e) {
-            console.warn('[Auth] Session ID update failed or timed out:', e)
+            logger.warn('Auth', `Session ID update failed or timed out: ${(e as Error).message}`)
           }
 
           startSessionMonitoring()
@@ -122,7 +123,7 @@ export const useAuthStore = defineStore('auth', () => {
               }
             }
           } catch (e) {
-            console.warn('[Auth] Profile fetch failed or timed out:', e)
+            logger.warn('Auth', `Profile fetch failed or timed out: ${(e as Error).message}`)
             if (user.value && !user.value.db_version) user.value.db_version = 1
           }
 
@@ -144,7 +145,7 @@ export const useAuthStore = defineStore('auth', () => {
         if (user.value && !user.value.db_version) user.value.db_version = 1
       }
     } catch (e) {
-      console.warn('[Auth] CheckSession failed or timed out:', e)
+      logger.warn('Auth', `CheckSession failed or timed out: ${(e as Error).message}`)
       // En caso de error/timeout, si hay usuario local, lo mantenemos como fallback
       const localUser = safeStorage.getItem('pokevicio_local_user')
       if (localUser && !user.value) {
@@ -154,7 +155,7 @@ export const useAuthStore = defineStore('auth', () => {
     } finally {
       loading.value = false
       useLoadingStore().finish('auth_init')
-      console.log('[Auth] CheckSession finished. Loading:', loading.value)
+      logger.debug('Auth', `CheckSession finished. Loading: ${loading.value}`)
     }
   }
 
@@ -211,7 +212,7 @@ export const useAuthStore = defineStore('auth', () => {
       id: data.user.id, 
       username, 
       email, 
-      created_at: new Date().toISOString() 
+      created_at: Temporal.Now.instant().toString() 
     })
     
     return data
@@ -230,7 +231,7 @@ export const useAuthStore = defineStore('auth', () => {
       }, (payload: { new: { current_session_id: string } }) => {
         const newSessionId = payload.new.current_session_id
         if (newSessionId && newSessionId !== sessionId.value) {
-          console.warn('[SESSION] Nueva sesión detectada en otro lugar. Bloqueando esta pestaña.')
+          logger.warn('SESSION', 'Nueva sesión detectada en otro lugar. Bloqueando esta pestaña.')
           sessionConflict.value = true
           // Disparar evento global para componentes que no usen el store
           window.dispatchEvent(new CustomEvent('session-conflict'))
@@ -242,7 +243,7 @@ export const useAuthStore = defineStore('auth', () => {
         }
         if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
           if (sessionMode.value === 'online') {
-            console.warn('[SESSION] Conexión con el servidor perdida (Realtime).')
+            logger.warn('SESSION', 'Conexión con el servidor perdida (Realtime).')
             connectionLost.value = true
           }
         }
@@ -280,13 +281,13 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   async function logout() {
-    console.log('[AuthStore] Iniciando cierre de sesión profundo...')
+    logger.info('AuthStore', 'Iniciando cierre de sesión profundo...')
     try {
       if (sessionMode.value === 'online') {
         await supabase.auth.signOut()
       }
     } catch (e) {
-      console.warn('SignOut error:', e)
+      logger.warn('Auth', `SignOut error: ${(e as Error).message}`)
     }
 
     safeStorage.removeItem('pokevicio_local_user')
@@ -319,7 +320,7 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   function clearSessionLocal() {
-    console.log('[AuthStore] Limpiando estado local sin recarga...')
+    logger.info('AuthStore', 'Limpiando estado local sin recarga...')
     safeStorage.removeItem('pokevicio_local_user')
     safeStorage.removeItem('pokevicio_session_mode')
     user.value = null

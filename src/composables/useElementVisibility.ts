@@ -1,4 +1,5 @@
 import { ref, onMounted, onUnmounted } from 'vue'
+import { logger } from '@/logic/utils/logger'
 
 /**
  * Composable to track element visibility using IntersectionObserver.
@@ -12,7 +13,7 @@ export function useElementVisibility(elementRef: { value: Element | null }, opti
     if (!elementRef.value) return
 
     if (typeof IntersectionObserver === 'undefined') {
-      console.warn('[useElementVisibility] IntersectionObserver is not supported in this environment.');
+      logger.warn('UI', 'IntersectionObserver is not supported in this environment.');
       return;
     }
 

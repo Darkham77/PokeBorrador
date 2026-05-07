@@ -1,5 +1,6 @@
 
 import { ref } from 'vue';
+import { logger } from '../utils/logger';
 
 export const BATTLE_STATES = {
   CONTEXT_SETUP: 'CONTEXT_SETUP',
@@ -163,7 +164,7 @@ export function createBattleStateMachine() {
           const isSameState = currentState.value === newState;
           const allowedTransitions = validTransitions[currentState.value];
           if (!isSameState && allowedTransitions && !allowedTransitions.includes(newState) && newState !== BATTLE_STATES.EXIT_BATTLE) {
-            console.warn(`[FSM] Unexpected transition: ${currentState.value} -> ${newState}`);
+            logger.warn('FSM', `Unexpected transition: ${currentState.value} -> ${newState}`);
           }
           currentState.value = newState as BattleStateName;
         } else if (newState && Object.values(BATTLE_SUBSTATES).includes(newState as any)) {
@@ -177,7 +178,7 @@ export function createBattleStateMachine() {
           currentSubState.value = null; // Solo limpiamos substate si estamos cambiando de fase principal
         }
 
-        console.log(`[Battle FSM] Transitioned to ${currentState.value}${currentSubState.value ? ' (' + currentSubState.value + ')' : ''}`);
+        logger.debug('Battle FSM', `Transitioned to ${currentState.value}${currentSubState.value ? ' (' + currentSubState.value + ')' : ''}`);
         resolve(undefined);
       };
 

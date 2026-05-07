@@ -1,4 +1,6 @@
 
+import { logger } from './logger';
+
 /**
  * OPFS Storage Utility - Origin Private File System.
  * High-performance binary storage for save games.
@@ -23,7 +25,7 @@ export async function readOpfsFile(fileName: string): Promise<Uint8Array | null>
     const buffer = await file.arrayBuffer()
     return new Uint8Array(buffer)
   } catch (e) {
-    console.warn(`[OPFS] Error reading ${fileName}:`, e)
+    logger.warn('OPFS', `Error reading ${fileName}: ${(e as Error).message}`)
     return null
   }
 }
@@ -33,7 +35,7 @@ export async function deleteOpfsFile(fileName: string) {
     const root = await navigator.storage.getDirectory()
     await root.removeEntry(fileName)
   } catch (e) {
-    console.warn(`[OPFS] Error deleting ${fileName}:`, e)
+    logger.warn('OPFS', `Error deleting ${fileName}: ${(e as Error).message}`)
   }
 }
 

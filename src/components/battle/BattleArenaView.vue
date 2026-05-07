@@ -10,6 +10,7 @@ import { useCombatCamera } from '@/composables/useCombatCamera'
 import { getCombatantPosition, WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator'
 import { getRouteWeather } from '@/logic/weatherUtils'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
+import { logger } from '@/logic/utils/logger'
 
 // Composables
 import { useBattleShadows } from '@/composables/useBattleShadows'
@@ -234,19 +235,19 @@ watch(
     return [(fsm as any).currentState, (fsm as any).currentSubState]
   },
   async ([newState, newSubState]) => {
-    console.log('[BattleArenaView] FSM:', newState, newSubState || '')
+    logger.debug('BattleArenaView', `FSM: ${newState} ${newSubState || ''}`)
     if (!newState) return
 
     // FIRST_INTRO: Gestión de visibilidad de componentes durante la entrada
     if (newState === 'FIRST_INTRO') {
-      console.log('[BattleArenaView] Phase: FIRST_INTRO')
+      logger.info('BattleArenaView', 'Phase: FIRST_INTRO')
       // Ya no llamamos a battleStore.fsm.transition('ACTIVE_BATTLE') aquí.
       // La orquestación lógica ahora reside en el store para mayor precisión.
     }
 
     // REWARDS_PHASE + EMPTY_WAIT: Limpieza completa de rastros del Pokémon
     if (newState === 'REWARDS_PHASE' && newSubState === 'EMPTY_WAIT') {
-      console.log('[BattleArenaView] -> EMPTY_WAIT (REWARDS_PHASE)')
+      logger.info('BattleArenaView', '-> EMPTY_WAIT (REWARDS_PHASE)')
       isWildEntryAnimation.value = false
       isEmerging.value = false
       isWildSilhouette.value = false
@@ -274,12 +275,12 @@ watch(
 )
 
 const handleFishingSuccess = async () => {
-  console.log('[BattleArenaView] Fishing SUCCESS')
+  logger.success('BattleArenaView', 'Fishing SUCCESS')
   await triggerSearchEncounter()
 }
 
 const handleFishingFail = async () => {
-  console.log('[BattleArenaView] Fishing FAIL')
+  logger.warn('BattleArenaView', 'Fishing FAIL')
 }
 
 

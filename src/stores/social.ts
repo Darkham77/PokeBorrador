@@ -1,9 +1,11 @@
 import { defineStore } from 'pinia'
 import { ref, reactive } from 'vue'
+import { Temporal } from '@js-temporal/polyfill'
 import { useAuthStore } from './auth'
 import { useGameStore } from './game'
 import { useUIStore } from './ui'
 import { useAudioStore } from './audio'
+import { logger } from '@/logic/utils/logger'
 
 export interface Friend {
   id: string;
@@ -13,7 +15,7 @@ export interface Friend {
   playerClass?: string;
   nick_style?: string;
   isOnline: boolean;
-  lastSeen: Date | null;
+  lastSeen: Temporal.Instant | null;
 }
 
 export interface PendingRequest {
@@ -132,8 +134,8 @@ export const useSocialStore = defineStore('social', () => {
         friends.value = (profRes.data as ProfileRow[] || []).map((p: ProfileRow) => {
           const saveRow = (saveRes.data as GameSaveRow[] | null)?.find(s => s.user_id === p.id)
           const save = (saveRow?.save_data as Record<string, any>) || {}
-          const lastSeen = saveRow?.updated_at ? new Date(saveRow.updated_at) : null
-          const isOnline = !!(lastSeen && (Date.now() - lastSeen.getTime()) < 5 * 60 * 1000)
+          const lastSeen = saveRow?.updated_at ? Temporal.Instant.from(saveRow.updated_at) : null
+          const isOnline = !!(lastSeen && (Temporal.Now.instant().epochMilliseconds - lastSeen.epochMilliseconds) < 5 * 60 * 1000)
 
           return {
             id: p.id,
@@ -161,7 +163,7 @@ export const useSocialStore = defineStore('social', () => {
       
       await refreshNotificationCount()
     } catch (err) {
-      console.error('[SocialStore] Error loading data:', err)
+      logger.error('Social', `Error loading data: ${(err as Error).message}`)
     } finally {
       loading.value = false
     }
@@ -276,7 +278,7 @@ export const useSocialStore = defineStore('social', () => {
       db.from('friendships').select('id', { count: 'exact', head: true }).eq('addressee_id', authStore.user?.id).eq('status', 'pending'),
       db.from('trade_offers').select('id', { count: 'exact', head: true }).eq('receiver_id', authStore.user?.id).eq('status', 'pending'),
       db.from('trade_offers').select('id', { count: 'exact', head: true }).eq('sender_id', authStore.user?.id).eq('status', 'accepted'),
-      db.from('battle_invites').select('id', { count: 'exact', head: true }).eq('opponent_id', authStore.user?.id).eq('status', 'pending').gte('created_at', new Date(Date.now() - 60000).toISOString())
+      db.from('battle_invites').select('id', { count: 'exact', head: true }).eq('opponent_id', authStore.user?.id).eq('status', 'pending').gte('created_at', Temporal.Now.instant().subtract({ seconds: 60 }).toString())
     ])
 
     notifications.friends = res1.count || 0
@@ -292,7 +294,7 @@ export const useSocialStore = defineStore('social', () => {
     const ping = async () => {
       if (!authStore.user || !gameStore.db) return
       await gameStore.db.from('game_saves').update({ 
-        updated_at: new Date().toISOString() 
+        updated_at: Temporal.Now.instant().toString() 
       }).eq('user_id', authStore.user?.id)
     }
     
@@ -343,8 +345,8 @@ export const useSocialStore = defineStore('social', () => {
 
         leaderboard.value = (data as ProfileRow[]).map((p: ProfileRow) => {
           const saveRow = (saves as GameSaveRow[] | null)?.find(s => s.user_id === p.id)
-          const lastSeen = saveRow?.updated_at ? new Date(saveRow.updated_at) : null
-          const isOnline = lastSeen && (Date.now() - lastSeen.getTime()) < 5 * 60 * 1000
+          const lastSeen = saveRow?.updated_at ? Temporal.Instant.from(saveRow.updated_at) : null
+          const isOnline = lastSeen && (Temporal.Now.instant().epochMilliseconds - lastSeen.epochMilliseconds) < 5 * 60 * 1000
 
           return {
             id: p.id,
@@ -360,7 +362,7 @@ export const useSocialStore = defineStore('social', () => {
         })
       }
     } catch (err) {
-      console.error('[SocialStore] Leaderboard error:', err)
+      logger.error('Social', `Leaderboard error: ${(err as Error).message}`)
     } finally {
       leaderboardLoading.value = false
     }

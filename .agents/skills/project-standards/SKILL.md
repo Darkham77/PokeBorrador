@@ -22,6 +22,7 @@ Consult these manuals for detailed implementation specifications:
 | **UI/UX Standards** | [ui_ux_standards.md](./references/core/ui_ux_standards.md) |
 | **Formulas & Ratios** | [game_formulas_manual.md](./references/core/game_formulas_manual.md) |
 | **Time & Seasons** | [time_system_manual.md](./references/core/time_system_manual.md) |
+| **Node 26+ Standards** | [dependency_management_manual.md](./references/technical/dependency_management_manual.md) |
 | **Breeding (Daycare)** | [breeding_manual.md](./references/systems/breeding_manual.md) |
 | **Evolution System** | [evolution_manual.md](./references/systems/evolution_manual.md) |
 | **Encounter Systems** | [encounter_manual.md](./references/systems/encounter_manual.md) |
@@ -82,6 +83,8 @@ Consult these manuals for detailed implementation specifications:
 - **Reactive State Propagation**: When passing state subsets to external logic functions via `reactive({...})`, it is MANDATORY to include all control flags (e.g., `isFinishing`) to prevent the logic engine from making decisions based on incomplete or undefined states.
 - **Grid-to-Card Sync**: In grid components (e.g., `MapGrid`), environment-dependent state (weather, cycle) must be calculated once and propagated to children via props (`forced-weather`). This avoids visual desynchronization between the data pool and the interface.
 - **Robustness (Deterministic Environment)**: Treat `null` or undefined environmental states as triggers for deterministic calculation, ensuring that atmospheric content (visitors) injection is never skipped.
+- **DBRouter Context Isolation**: Maintain absolute separation between Online (Supabase) and Offline (SQLite) contexts. Persistence logic migrations must strictly respect the `DBRouter` routing rules to prevent data pollution.
+- **Atomic Batching**: Large migrations or refactors MUST be performed in atomic batches (single files or small logical groups) to manage context limits and ensure precision. Avoid directory-wide mass processing in a single step.
 
 ### 4. SASS and Build Integrity
 
@@ -92,15 +95,22 @@ Consult these manuals for detailed implementation specifications:
 - **Zero-Warning**: Always maintain 0 errors and 0 warnings in `lint` and `vue-tsc`. It is MANDATORY to run `npm run type-check` before `npm run lint`.
 - **Template Event Casting**: When using strict TypeScript in `.vue` files, it is mandatory to cast event targets in the template (e.g., `(e.target as HTMLImageElement)`) to satisfy `vue-tsc` checks on specific DOM properties.
 - **Dependency Shield**: Scripts using external libraries must handle `ImportError` and provide installation instructions.
+- **Node.js 26+ & Modern JS**:
+  - **Temporal API**: The legacy `Date` object is DEPRECATED for engine logic, synchronization, and timestamps. Use the native `Temporal` API for all durations, time zone conversions, and precise timing to avoid drift and legacy parsing issues.
+  - **Map Upsert**: Use `Map.prototype.getOrInsertComputed` (or similar native patterns) for cache lookups to minimize `.has()`/`.get()` redundancy.
+  - **Native TS**: Prefer `node --experimental-strip-types` for running utility scripts instead of `tsx`/`ts-node` when possible.
+  - **Module Prefix**: Use the `node:` prefix for all built-in module imports (e.g., `import fs from 'node:fs'`).
 
 ### 9. TypeScript Integrity & Zero-Ignore Policy
 
 - **Zero-Ignore Policy**: The use of `@ts-ignore`, `@ts-nocheck`, or any variant that bypasses TypeScript compiler checks is STRICTLY FORBIDDEN.
 - **Verification Workflow**: Always run `npm run type-check` BEFORE `npm run lint` or any commit operation. Type safety is non-negotiable.
+- **JSDoc Integrity**: When editing code (especially via `multi_replace_file_content`), ALWAYS verify the preservation of the `/**` opening tags. Deleting these tags breaks JSDoc transformation in esbuild/vite and leads to documentation/type generation failures.
 
 ### 5. CLI-First Debugging
 
 - **Efficiency Over GUI**: Use `window.__VITE_DEBUG__` commands to simulate states. It is MANDATORY to verify new content via CLI before committing.
+- **Standardized Logging (HybridLogger)**: Consolidation of `HybridLogger` with context tags (e.g., `[Battle]`, `[GTS]`, `[Chat]`) is MANDATORY. This ensures "Zero-Log" production standards while maintaining CSS styling in browsers and ANSI in terminals. Direct `console.log` is FORBIDDEN in production-bound logic.
 
 ### 7. Symbolic Documentation & Source of Truth (Zero-Hardcoding)
 
@@ -142,6 +152,7 @@ Use these scripts to verify project standards:
 - `verify_fsm_diagrams.ts`: `npx tsx .agents/skills/project-standards/scripts/verify_fsm_diagrams.ts`. Scans `battle_mechanics_manual.md` Mermaid diagrams and verifies 1:1 mapping against `battleStateMachine.ts` FSM.
 - `audit_fsm_implementation.ts`: `npx tsx .agents/skills/project-standards/scripts/audit_fsm_implementation.ts`. Deep audit of the battle engine. Detects race conditions, unimplemented sub-states, and persistence gate integrity.
 - `audit_fsm_flow_parity.ts`: `npx tsx .agents/skills/project-standards/scripts/audit_fsm_flow_parity.ts`. Sequential flow auditor. Compares Mermaid diagrams against execution order.
+- `validate_sql_migrations.ts`: `node --experimental-strip-types scripts/validate_sql_migrations.ts`. Validates SQL migrations against a local SQLite engine to catch syntax errors before deployment.
 - `validate_items.ts`: `npx tsx .agents/skills/project-standards/scripts/validate_items.ts`. Ensures that changes in items data do not break inventory or combat integrity.
 - `detect_gpu_gaps.py`: Scans for missing layer promotion or expensive filters.
 - `detect_outline_traps.py`: Detects expensive Quad Drop-Shadow outlines that should be migrated to SVG.

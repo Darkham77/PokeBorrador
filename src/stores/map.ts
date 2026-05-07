@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import { logger } from '@/logic/utils/logger'
 import { FIRE_RED_MAPS } from '@/data/maps'
 import { generateEncounter } from '@/logic/encounters'
 import { getDayCycle, getSeason, syncServerTime, getServerTime } from '@/logic/timeUtils'
@@ -18,6 +19,7 @@ export const useMapStore = defineStore('map', () => {
     set: (val) => { if (gs.state.map) gs.state.map.currentMap = val }
   })
   const region = computed(() => gs.state.map?.region || 'kanto')
+  const currentMapData = computed(() => maps.value.find(m => m.id === currentMap.value))
 
   const globalWeather = ref(null) // Si está forzado anula el determinístico
   const forcedCycle = ref(null) // null, morning, day, dusk, night
@@ -46,10 +48,9 @@ export const useMapStore = defineStore('map', () => {
     return getRouteWeather(currentMap.value, currentSeason.value.id, currentEpochHour.value)
   })
   
-  // React to debug time changes immediately
   if (typeof window !== 'undefined') {
     window.addEventListener('time-sync-update', () => {
-      console.log('[MapStore] Time sync detected');
+      logger.info('MapStore', 'Time sync detected');
       currentEpochHour.value = Math.floor(getServerTime() / 3600000);
     });
   }
@@ -69,11 +70,11 @@ export const useMapStore = defineStore('map', () => {
   const navigate = async (locId: string) => {
     const now = Date.now()
     if (now - lastNavigateTime.value < 400) {
-      console.warn('[MapStore] Navigate throttled');
+      logger.warn('MapStore', 'Navigate throttled');
       return
     }
     lastNavigateTime.value = now
-    console.log(`[MapStore] Navigating to ${locId}...`);
+    logger.info('MapStore', `Navigating to ${locId}...`);
 
     const gs = useGameStore() as unknown as GameStore
     const battleStore = useBattleStore() as unknown as BattleStore
@@ -105,7 +106,7 @@ export const useMapStore = defineStore('map', () => {
           nextPoke.status = null
           nextPoke.confused = 0
           nextPoke.flinched = false
-          console.log('[DEBUG] Navegación: Usando bucle infinito de', nextPoke.name)
+          logger.debug('DEBUG', `Navegación: Usando bucle infinito de ${nextPoke.name}`)
           return { type: 'wild', pokemon: nextPoke }
         })()
       : await generateEncounter(locId, gs.state, {
@@ -117,10 +118,10 @@ export const useMapStore = defineStore('map', () => {
 
 
     if (!encounter) {
-      console.log('[MapStore] No encounter generated for', locId);
+      logger.info('MapStore', `No encounter generated for ${locId}`);
       return
     }
-    console.log('[MapStore] Encounter generated:', encounter.type);
+    logger.success('MapStore', `Encounter generated: ${encounter.type}`);
 
     // 4. Procesar Tipo de Encuentro
     const wildEnc = encounter as { type: string; pokemon: Pokemon; pts?: number; faction?: string };
@@ -147,6 +148,7 @@ export const useMapStore = defineStore('map', () => {
 
   return {
     currentMap,
+    currentMapData,
     region,
     currentEpochHour,
     currentCycle,

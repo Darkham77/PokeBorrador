@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
+import { logger } from '@/logic/utils/logger';
 import { gameBus } from '@/logic/gameBus';
 import * as engine from '@/logic/audioEngine';
 
@@ -27,7 +28,7 @@ export const useAudioStore = defineStore('audio', () => {
       isInitialized.value = true;
       initListeners();
     } catch (e) {
-      console.error('[Audio] Web Audio API not supported', e);
+      logger.error('Audio', `Web Audio API not supported: ${(e as Error).message}`);
     }
   };
 

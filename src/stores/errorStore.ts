@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
+import { logger } from '@/logic/utils/logger'
 
 export const useErrorStore = defineStore('error', () => {
   interface ErrorData {
@@ -22,7 +23,7 @@ export const useErrorStore = defineStore('error', () => {
   }
 
   function setError(error: unknown, context: ErrorContext = {}) {
-    console.error('Critical Game Error:', error, context)
+    logger.error('CRITICAL', `Critical Game Error: ${error instanceof Error ? error.message : String(error)}`, context)
     
     // Prevent duplicated overlays
     if (activeError.value) return

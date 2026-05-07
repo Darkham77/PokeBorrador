@@ -1,6 +1,7 @@
 import { Temporal } from '@js-temporal/polyfill';
 import { supabase } from './supabase';
 import { safeStorage } from './utils/storage';
+import { logger } from './utils/logger';
 
 /**
  * Time Synchronization Utility (Temporal API version)
@@ -27,10 +28,10 @@ export async function syncServerTime(): Promise<void> {
     _serverTimeOffsetNanoseconds = serverInstant.epochNanoseconds - localInstant.epochNanoseconds;
     _timeSynced = true;
     
-    console.log(`[TIME] Server Sync Completed. Offset: ${_serverTimeOffsetNanoseconds / BigInt(1000000)}ms`);
+    logger.info('TIME', `Server Sync Completed. Offset: ${_serverTimeOffsetNanoseconds / BigInt(1000000)}ms`);
   } catch (_err) {
     if (typeof window !== 'undefined' && safeStorage.getItem('pokevicio_session_mode') !== 'offline') {
-      console.warn('[TIME] Failed to sync with server, using local time.');
+      logger.warn('TIME', 'Failed to sync with server, using local time.');
     }
     _timeSynced = true;
   }

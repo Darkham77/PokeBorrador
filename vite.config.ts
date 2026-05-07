@@ -67,8 +67,14 @@ export default defineConfig({
     })
   ],
   define: {
-    __BUILD_TIME__: JSON.stringify(new Date().getFullYear().toString()),
-    __APP_VERSION__: JSON.stringify('v' + new Date().getFullYear().toString() + '.' + (new Date().getMonth()+1).toString().padStart(2, '0') + '.' + new Date().getDate().toString().padStart(2, '0') + '.' + new Date().getHours().toString().padStart(2, '0') + new Date().getMinutes().toString().padStart(2, '0'))
+    __BUILD_TIME__: JSON.stringify(Temporal.Now.instant().toZonedDateTimeISO('UTC').year.toString()),
+    __APP_VERSION__: JSON.stringify(
+      'v' + Temporal.Now.instant().toZonedDateTimeISO('UTC').toString().replace(/[:T-]/g, '.').split('.')[0] + 
+      '.' + Temporal.Now.instant().toZonedDateTimeISO('UTC').month.toString().padStart(2, '0') +
+      '.' + Temporal.Now.instant().toZonedDateTimeISO('UTC').day.toString().padStart(2, '0') +
+      '.' + Temporal.Now.instant().toZonedDateTimeISO('UTC').hour.toString().padStart(2, '0') + 
+      Temporal.Now.instant().toZonedDateTimeISO('UTC').minute.toString().padStart(2, '0')
+    )
   },
   resolve: {
     alias: {
@@ -113,5 +119,10 @@ export default defineConfig({
         }
       }
     }
+  },
+  esbuild: {
+    // Only drop non-critical logs in production
+    drop: process.env.NODE_ENV === 'production' ? ['debugger'] : [],
+    pure: process.env.NODE_ENV === 'production' ? ['console.log', 'console.info', 'console.debug'] : [],
   }
 })

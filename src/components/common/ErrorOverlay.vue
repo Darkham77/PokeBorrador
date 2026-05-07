@@ -5,6 +5,7 @@ import { useErrorStore } from '@/stores/errorStore'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 import { useAuthStore } from '@/stores/auth'
+import { logger } from '@/logic/utils/logger'
 
 const errorStore = useErrorStore()
 const gameStore = useGameStore()
@@ -41,7 +42,7 @@ const copyError = async () => {
       copied.value = false
     }, 2000)
   } catch (err) {
-    console.error('Failed to copy error report:', err)
+    logger.error('ErrorOverlay', 'Failed to copy error report', err)
   }
 }
 

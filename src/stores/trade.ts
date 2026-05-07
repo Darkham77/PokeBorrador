@@ -6,6 +6,7 @@ import { useUIStore } from './ui'
 import { useSocialStore } from './social'
 import { useAudioStore } from './audio'
 import { useLoadingStore } from './loading'
+import { logger } from '@/logic/utils/logger'
 
 export const useTradeStore = defineStore('trade', () => {
   const authStore = useAuthStore() as any
@@ -161,7 +162,7 @@ export const useTradeStore = defineStore('trade', () => {
       return true
     } catch (err) {
       loadingStore.finish('accept_trade')
-      console.error('[TRADE ERROR]', err)
+      logger.error('TRADE', `Error en el intercambio: ${(err as Error).message}`)
       uiStore.notify('Error en el intercambio: ' + (err as any).message, '❌')
       return false
     }

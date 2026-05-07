@@ -34,7 +34,7 @@ export function useTeamActions(state: GameState, scheduleSave: () => Promise<voi
   function swapPvpSlot(slotIndex: number, newPokemonUid: string) {
     if (slotIndex < 0 || slotIndex >= 3) return
     const allPokes = [...state.team, ...(state.box || [])]
-    const exists = allPokes.some(p => p.uid === newPokemonUid)
+    const exists = allPokes.some(p => p?.uid === newPokemonUid)
     const pvpTeam = state.pvpTeam || []
     const alreadyIn = pvpTeam.includes(newPokemonUid)
 
@@ -57,7 +57,7 @@ export function useTeamActions(state: GameState, scheduleSave: () => Promise<voi
   }
 
   function unequipFromTeam(uid: string) {
-    const p = state.team.find(x => x.uid === uid)
+    const p = state.team.find(x => x?.uid === uid)
     if (!p || !p.heldItem) return
     const item = p.heldItem as string
     state.inventory[item] = (state.inventory[item] || 0) + 1
@@ -66,7 +66,7 @@ export function useTeamActions(state: GameState, scheduleSave: () => Promise<voi
   }
 
   function unequipFromBox(uid: string) {
-    const p = state.box.find(x => x.uid === uid)
+    const p = state.box.find(x => x?.uid === uid)
     if (!p || !p.heldItem) return
     const item = p.heldItem as string
     state.inventory[item] = (state.inventory[item] || 0) + 1
@@ -104,7 +104,7 @@ export function useTeamActions(state: GameState, scheduleSave: () => Promise<voi
     if (slotIndex < 0 || slotIndex >= maxSlots) return
     
     const allPokes = [...state.team, ...(state.box || [])]
-    const exists = allPokes.some(p => p.uid === newPokemonUid)
+    const exists = allPokes.some(p => p?.uid === newPokemonUid)
     const warTeam = state.warTeam || []
     const alreadyIn = warTeam.includes(newPokemonUid)
 

@@ -18,6 +18,8 @@ export interface MapLocation {
   icon?: string;
   badges?: number;
   desc?: string;
+  isCave?: boolean;
+  isIndoors?: boolean;
   wild?: {
     morning?: string[];
     day?: string[];

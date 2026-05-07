@@ -3,6 +3,7 @@ import { validateAndSanitize } from './saveService';
 import type { Pokemon } from '@/types/pokemon';
 import { decompress, isGzip } from '@/logic/utils/compression';
 import { readOpfsFile, writeOpfsFile } from '@/logic/utils/opfsStorage';
+import { logger } from '@/logic/utils/logger';
 
 /**
  * Modernized Load Service.
@@ -38,7 +39,7 @@ export async function loadBestSave(user: AuthUser | null, db: any): Promise<Load
         finalSaveData = saves.save_data;
       }
     } catch (e) {
-      console.error('[LOAD] Cloud fetch failed:', e);
+      logger.error('LOAD', `Cloud fetch failed: ${(e as Error).message}`);
     }
   }
 
@@ -55,7 +56,7 @@ export async function loadBestSave(user: AuthUser | null, db: any): Promise<Load
       source = 'OPFS'
     }
   } catch (e) {
-    console.warn('[LOAD] Error reading OPFS save:', e)
+    logger.warn('LOAD', `Error reading OPFS save: ${(e as Error).message}`)
   }
 
   // Fallback to LocalStorage + Migration
@@ -66,7 +67,7 @@ export async function loadBestSave(user: AuthUser | null, db: any): Promise<Load
     // Legacy Fallback (v1 -> v2 migration)
     if (!lsRaw) {
       lsRaw = localStorage.getItem('pokevicio_save_v3_ash')
-      if (lsRaw) console.log('[LOAD] Legacy save found for migration.')
+      if (lsRaw) logger.info('LOAD', 'Legacy save found for migration.')
     }
 
     if (lsRaw) {
@@ -75,14 +76,14 @@ export async function loadBestSave(user: AuthUser | null, db: any): Promise<Load
         source = 'LS_MIGRATION'
         
         // AUTOMATED BACKUP & MIGRATION
-        console.log('[LOAD] Migrating localStorage to OPFS...')
-        const timestamp = Date.now()
+        logger.info('LOAD', 'Migrating localStorage to OPFS...')
+        const timestamp = Temporal.Now.instant().epochMilliseconds
         const { compress } = await import('@/logic/utils/compression')
         const compressed = await compress(lsRaw)
         await writeOpfsFile(`backup_migration_${user.id}_${timestamp}.gz`, compressed)
         await writeOpfsFile(opfsKey, compressed)
       } catch (e) {
-        console.warn('[LOAD] Error parsing localStorage save:', e)
+        logger.warn('LOAD', `Error parsing localStorage save: ${(e as Error).message}`)
       }
     }
   }
@@ -96,8 +97,8 @@ export async function loadBestSave(user: AuthUser | null, db: any): Promise<Load
   if (localData && localData.team && localData.team.length > 0) {
     localData.starterChosen = true;
   }
-
-  if (localData) console.log('[LOAD] Local save state:', { starterChosen: localData.starterChosen, teamSize: localData.team?.length });
+ 
+  if (localData) logger.debug('LOAD', 'Local save state:', { starterChosen: localData.starterChosen, teamSize: localData.team?.length });
   
   if (localData) {
     try {
@@ -111,15 +112,15 @@ export async function loadBestSave(user: AuthUser | null, db: any): Promise<Load
         
         const cloudTime = cloudSaveRow.updated_at ? new Date(cloudSaveRow.updated_at).getTime() : 0;
         const localTime = localData._last_updated || 0;
-
+ 
         // Legacy Rule: If local is at least 3s newer, prioritize it.
         if (localTime > cloudTime + 3000) {
-          console.log('[LOAD] Local save is newer. Prioritizing Local.');
+          logger.info('LOAD', 'Local save is newer. Prioritizing Local.');
           finalSaveData = localData;
         }
       }
     } catch (e) {
-      console.warn('[LOAD] Error parsing local save:', e);
+      logger.warn('LOAD', `Error parsing local save: ${(e as Error).message}`);
     }
   }
 

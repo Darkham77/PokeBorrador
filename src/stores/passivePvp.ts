@@ -4,6 +4,7 @@ import { useGameStore } from './game';
 import { useAuthStore } from './auth';
 import { useUIStore } from './ui';
 import { supabase } from '@/logic/supabase';
+import { logger } from '@/logic/utils/logger';
 
 export const usePassivePvpStore = defineStore('passivePvp', () => {
   const gameStore = useGameStore();
@@ -31,7 +32,7 @@ export const usePassivePvpStore = defineStore('passivePvp', () => {
         isPassiveActive.value = data.is_active;
       }
     } catch (e) {
-      console.error('[PassivePvP] Error loading status:', e);
+      logger.error('PassivePvP', `Error loading status: ${(e as Error).message}`);
     }
   }
 
@@ -81,7 +82,7 @@ export const usePassivePvpStore = defineStore('passivePvp', () => {
           }
         }
       } catch (e) {
-        console.warn('[PassivePvP] Watcher error:', e);
+        logger.warn('PassivePvP', `Watcher error: ${(e as Error).message}`);
       }
     }, 30000); // Cada 30 segundos
   }

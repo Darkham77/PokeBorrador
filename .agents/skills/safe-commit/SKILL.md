@@ -96,13 +96,16 @@ You MUST run these commands and fix EVERY issue until a clean pass is achieved.
 > [!IMPORTANT]
 > **Pre-existing Warnings**: If the audit (Lint, Types, SASS) reveals warnings or errors in files you did not modify, you ARE RESPONSIBLE for fixing them before committing. A "Safe Commit" means a 100% clean repository state, not just for your changes.
 
-- **Unified Project Audit**: `python3 .agents/skills/project-standards/scripts/audit_project.py` (Runs SASS, Hybrid, GPU, Length, and Redundancy checks).
-- **Unified Project Repair**: `python3 .agents/skills/project-standards/scripts/repair_project.py` (Run this to resolve automated issues if the audit fails).
-- **Linting**: `npm run lint` (Must return 0 errors and 0 warnings).
-- **Type-Safety**: `npx vue-tsc --noEmit` (Crucial for detecting broken props or reactive refs).
-- **Production Build**: `npm run build` (Ensures Vite can compile the project).
-- **Unit Tests**: `npm run test` (MANDATORY: All tests must pass).
-- **Global Compliance**: Verify absolute adherence to all rules in @/project-standards, including Hybrid identity and Navigation Hub references.
+**THE MANDATORY CHAIN (Execution Order):**
+
+1. **Unified Project Audit**: `python3 .agents/skills/project-standards/scripts/audit_project.py`
+2. **Type-Safety**: `npm run type-check`
+3. **Database Validation**: `npm run validate-sql` (CRITICAL: Verifies migration syntax against SQLite)
+4. **Linting**: `npm run lint`
+5. **Unit Tests**: `npm run test`
+6. **Production Build**: `npm run build`
+
+**Unified Project Repair**: `python3 .agents/skills/project-standards/scripts/repair_project.py` (Run this to resolve automated issues if the audit fails).
 
 ### 4. Database Triple Parity Sync
 

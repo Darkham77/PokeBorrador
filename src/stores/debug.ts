@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed, watch } from 'vue'
+import { logger } from '@/logic/utils/logger'
 import { useAuthStore } from './auth'
 import { useGameStore } from './game'
 import { useUIStore } from './ui'
@@ -63,7 +64,7 @@ export const useDebugStore = defineStore('debug', () => {
 
   function securityCheck() {
     if (auth.sessionMode === 'online' && auth.user?.role !== 'admin') {
-      console.error('[SECURITY] Unauthorized debug access detected. Banning user and force logout.')
+      logger.error('SECURITY', 'Unauthorized debug access detected. Banning user and force logout.')
       const userId = auth.user?.id
       if (userId) {
         // game.db is typed as SupabaseClient | null in game.ts, but let's assume it has from()
@@ -73,7 +74,7 @@ export const useDebugStore = defineStore('debug', () => {
             is_banned: true, 
             ban_reason: 'Intento de uso indebido de herramientas de debug' 
           }).eq('id', userId).then(() => {
-            console.log('[SECURITY] DB Ban applied.')
+            logger.success('SECURITY', 'DB Ban applied.')
           })
         }
       }
@@ -116,7 +117,7 @@ export const useDebugStore = defineStore('debug', () => {
   }
 
   async function init() {
-    console.log('[DEBUG] Initializing debug tools (Modular)...');
+    logger.debug('DEBUG', 'Initializing debug tools (Modular)...');
     
     // Pass all necessary stores to the specialized registration functions
     const context: DebugContext = { game, ui, pvp, auth, map, mapStore: map, breedingStore, modalStore, errorStore }
@@ -140,7 +141,7 @@ export const useDebugStore = defineStore('debug', () => {
       registerSystemTools({ register }, { ...context, eventStoreModule } as any)
       updateGlobalProxy()
     } catch (e) {
-      console.warn('[DEBUG] Failed to load optional eventStoreModule for SystemTools', e)
+      logger.warn('DEBUG', `Failed to load optional eventStoreModule for SystemTools: ${(e as Error).message}`)
     }
   }
 

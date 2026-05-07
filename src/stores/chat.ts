@@ -4,6 +4,8 @@ import { useAuthStore } from './auth'
 import { useGameStore } from './game'
 import { useUIStore } from './ui'
 import { useAudioStore } from './audio'
+import { logger } from '@/logic/utils/logger'
+import { Temporal } from '@js-temporal/polyfill'
 
 export const useChatStore = defineStore('chat', () => {
   const authStore = useAuthStore()
@@ -90,7 +92,7 @@ export const useChatStore = defineStore('chat', () => {
         messages: [],
         unreadCount: 0,
         isCollapsed: false,
-        lastInteraction: Date.now()
+        lastInteraction: Temporal.Now.instant().epochMilliseconds
       }
     }
 
@@ -101,7 +103,7 @@ export const useChatStore = defineStore('chat', () => {
     if (isDup) return
 
     chat.messages.push(payload)
-    chat.lastInteraction = Date.now()
+    chat.lastInteraction = Temporal.Now.instant().epochMilliseconds
     
     // Limitar historial por chat (25 mensajes)
     if (chat.messages.length > 25) chat.messages.shift()
@@ -128,16 +130,16 @@ export const useChatStore = defineStore('chat', () => {
 
     const { error } = await gameStore.db.from('global_chat_messages').insert(payload)
     if (error) {
-      console.error('[ChatStore] Global message error:', error)
+      logger.error('Chat', `Global message error: ${(error as any).message}`)
     } else {
       audioStore.sentMsg(); // Sonido al enviar satisfactoriamente
       
       // En modo Offline, no hay disparador de Postgres Realtime, así que pusheamos manualmente
       if (authStore.sessionMode === 'offline') {
         const localRow = {
-          id: Date.now(),
+          id: Temporal.Now.instant().epochMilliseconds,
           ...payload,
-          created_at: new Date().toISOString()
+          created_at: Temporal.Now.instant().toString()
         }
         globalMessages.value.push(localRow as any)
         if (globalMessages.value.length > 50) globalMessages.value.shift()
@@ -152,7 +154,7 @@ export const useChatStore = defineStore('chat', () => {
       senderId: authStore.user.id,
       senderName: gameStore.state.trainer || (authStore.user as any).user_metadata?.username || 'Entrenador',
       text: text.slice(0, 250),
-      timestamp: new Date().toISOString()
+      timestamp: Temporal.Now.instant().toString()
     }
 
     const db = gameStore.db
@@ -179,7 +181,7 @@ export const useChatStore = defineStore('chat', () => {
         messages: [],
         unreadCount: 0,
         isCollapsed: false,
-        lastInteraction: Date.now()
+        lastInteraction: Temporal.Now.instant().epochMilliseconds
       }
     }
     privateChats[friendId].unreadCount = 0

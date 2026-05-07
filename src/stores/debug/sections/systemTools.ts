@@ -187,7 +187,7 @@ export function registerSystemTools(debug: any, { game, ui, modalStore, errorSto
       const pokes = context === 'team' ? game.state.team : game.state.box
       const p = pokes[index]
       if (p) ui.openPokemonDetail(p, index, context)
-      else console.warn(`[DEBUG] No hay pokemon en ${context}[${index}]`)
+      else (window as any).PV_LOGGER?.warn('DEBUG', `No hay pokemon en ${context}[${index}]`)
     },
     description: 'Abre el detalle de un pokemon específico por índice y contexto.'
   })

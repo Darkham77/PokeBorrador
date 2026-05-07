@@ -2,6 +2,7 @@
 import { initSQLite, queryLocal, persistSQLite } from './sqliteEngine';
 import type { DBRouter } from './dbRouter';
 import type { DBResponse, ProxyQueryChainItem } from '@/types/database';
+import { logger } from '../utils/logger';
 
 /**
  * Chainable Query Builder for SQLite that mimics Supabase/PostgREST API.
@@ -109,7 +110,7 @@ export class ProxyQuery {
         this.chain.forEach(s => { (q as any)[s.type](...s.args); });
         return final ? await (q as any)[final]() : await q;
       } catch (err: unknown) {
-        console.error(`[DBRouter] Online query failed for table ${this.table}:`, err);
+        logger.error('DBRouter', `Online query failed for table ${this.table}: ${(err as Error).message}`);
         
         // Detect network errors (fetch failures)
         const errMsg = (err instanceof Error ? err.message : String(err)).toLowerCase();
@@ -221,7 +222,7 @@ export class ProxyQuery {
       if (final === 'maybeSingle') return { data: data[0] || null, error: null, count };
       return { data, error: null, count };
     } catch (e: unknown) {
-      console.error(`[ProxyQuery] executeLocal critical failure:`, e);
+      logger.error('ProxyQuery', `executeLocal critical failure: ${(e as Error).message}`);
       return { data: null, error: e };
     }
   }
@@ -240,7 +241,7 @@ export class ProxyQuery {
       await persistSQLite();
       return { data: this.actionData, error: null };
     } catch (e: unknown) {
-      console.error(`[ProxyQuery] Upsert/Insert failed for ${this.table}:`, e);
+      logger.error('ProxyQuery', `Upsert/Insert failed for ${this.table}: ${(e as Error).message}`);
       return { data: null, error: e };
     }
   }
@@ -267,7 +268,7 @@ export class ProxyQuery {
       await persistSQLite();
       return { data: this.actionData, error: null };
     } catch (e: unknown) {
-      console.error(`[ProxyQuery] Update failed for ${this.table}:`, e);
+      logger.error('ProxyQuery', `Update failed for ${this.table}: ${(e as Error).message}`);
       return { data: null, error: e };
     }
   }
@@ -286,7 +287,7 @@ export class ProxyQuery {
       await persistSQLite();
       return { data: null, error: null };
     } catch (e: unknown) {
-      console.error(`[ProxyQuery] Delete failed for ${this.table}:`, e);
+      logger.error('ProxyQuery', `Delete failed for ${this.table}: ${(e as Error).message}`);
       return { data: null, error: e };
     }
   }

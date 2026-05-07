@@ -133,11 +133,15 @@ El desarrollo de este proyecto se rige por un sistema de reglas estrictas gestio
 
 Antes de realizar una entrega o desplegar cambios, es **MANDATORIO** que el código pase los siguientes controles:
 
-1. **Linting**: El código debe estar libre de errores de sintaxis y seguir el estilo del proyecto.
-2. **Testing**: Todos los unit tests deben pasar exitosamente.
-3. **Build**: La aplicación debe compilar correctamente para producción.
+1. **Type-checking**: Verificación de integridad de tipos TypeScript (cero errores permitidos).
+2. **Linting**: El código debe estar libre de errores de sintaxis y seguir el estilo del proyecto.
+3. **Database Validation**: Es obligatorio validar las migraciones SQL contra el motor local antes de cualquier commit de base de datos.
+4. **Testing**: Todos los unit tests deben pasar exitosamente.
+5. **Build**: La aplicación debe compilar correctamente para producción.
 
 ```bash
+npm run type-check
+npm run validate-sql
 npm run lint
 npm run test
 npm run build

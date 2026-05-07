@@ -1,4 +1,3 @@
-
 /**
  * War Engine - Faction Dominance Logic
  * Handles time-cycles, point calculations, and world-state rules.
@@ -28,40 +27,33 @@ export const WEEKLY_REWARD_MILESTONES = [
 
 export const WEEKLY_WIN_BONUS_COINS = 50
 
+import { Temporal } from '@js-temporal/polyfill'
+
 /**
  * Gets a clean date string for Argentina Time (UTC-3).
- * @param {Date} date 
+ * @param {Date | Temporal.ZonedDateTime} date 
  * @returns {string} YYYY-MM-DD
  */
-export function getArgDateString(date: Date = new Date()): string {
-  const argTime = new Date(date.toLocaleString('en-US', { timeZone: 'America/Argentina/Buenos_Aires' }))
-  const y = argTime.getFullYear()
-  const m = String(argTime.getMonth() + 1).padStart(2, '0')
-  const d = String(argTime.getDate()).padStart(2, '0')
-  return `${y}-${m}-${d}`
+export function getArgDateString(date: Date | Temporal.ZonedDateTime = new Date()): string {
+  const zdt = (date instanceof Temporal.ZonedDateTime)
+    ? date
+    : (date instanceof Date ? date.toTemporalInstant() : Temporal.Now.instant()).toZonedDateTimeISO('America/Argentina/Buenos_Aires')
+  
+  return zdt.toPlainDate().toString()
 }
 
 /**
- * Calculates the current week ID based on the legacy anchor (Monday).
+ * Calculates the current week ID based on the ISO 8601 standard.
  * Format: YYYY-WXX
- * @param {Date} date 
+ * @param {Date | Temporal.ZonedDateTime} date 
  * @returns {string}
  */
-export function getWeekId(date: Date = new Date()): string {
-  const d = new Date(date)
-  d.setHours(0, 0, 0, 0)
-  const day = d.getDay() // 0 (Sun) to 6 (Sat)
+export function getWeekId(date: Date | Temporal.ZonedDateTime = new Date()): string {
+  const zdt = (date instanceof Temporal.ZonedDateTime)
+    ? date
+    : (date instanceof Date ? date.toTemporalInstant() : Temporal.Now.instant()).toZonedDateTimeISO('America/Argentina/Buenos_Aires')
   
-  // Find the Monday of this week
-  const diff = d.getDate() - day + (day === 0 ? -6 : 1)
-  const monday = new Date(d.setDate(diff))
-  
-  // Standard week calculation formula
-  const jan4 = new Date(monday.getFullYear(), 0, 4)
-  const days = Math.floor((monday.getTime() - jan4.getTime()) / 86400000)
-  const week = Math.ceil((days + jan4.getDay() + 1) / 7)
-  
-  return `${monday.getFullYear()}-W${String(week).padStart(2, '0')}`
+  return `${zdt.yearOfWeek}-W${String(zdt.weekOfYear).padStart(2, '0')}`
 }
 
 /**
@@ -80,11 +72,15 @@ export function getReconciledWeekIds(): string[] {
 /**
  * Check if we are in the Dispute Phase (Monday to Friday).
  * Saturday and Sunday are Dominance Phases (bonuses active, no points earned).
- * @param {Date} date 
+ * @param {Date | Temporal.ZonedDateTime} date 
  * @returns {boolean}
  */
-export function isDisputePhase(date: Date = new Date()): boolean {
-  const day = date.getDay()
+export function isDisputePhase(date: Date | Temporal.ZonedDateTime = new Date()): boolean {
+  const zdt = (date instanceof Temporal.ZonedDateTime)
+    ? date
+    : (date instanceof Date ? date.toTemporalInstant() : Temporal.Now.instant()).toZonedDateTimeISO('America/Argentina/Buenos_Aires')
+  
+  const day = zdt.dayOfWeek // 1 (Mon) to 7 (Sun)
   return (day >= 1 && day <= 5)
 }
 

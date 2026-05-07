@@ -1,5 +1,6 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { registerSW } from 'virtual:pwa-register'
+import { logger } from '@/logic/utils/logger'
 
 export function usePWA() {
   const installEvent = ref<any>(null)
@@ -11,16 +12,16 @@ export function usePWA() {
   const updateServiceWorker = registerSW({
     onNeedRefresh() {
       needRefresh.value = true
-      console.log('SW Update available')
+      logger.info('PWA', 'SW Update available')
     },
     onOfflineReady() {
-      console.log('PWA Offline Ready')
+      logger.info('PWA', 'PWA Offline Ready')
     },
     onRegistered(r: any) {
-      console.log('SW Registered:', r)
+      logger.debug('PWA', 'SW Registered:', r)
     },
     onRegisterError(error: any) {
-      console.error('SW registration error', error)
+      logger.error('PWA', `SW registration error: ${(error as Error).message}`)
     },
   })
 
@@ -30,7 +31,7 @@ export function usePWA() {
     // Stash the event so it can be triggered later.
     installEvent.value = e
     canInstall.value = true
-    console.log('PWA Install Prompt captured')
+    logger.info('PWA', 'PWA Install Prompt captured')
   }
 
   const checkInstallState = () => {
@@ -52,7 +53,7 @@ export function usePWA() {
       
       // Wait for the user to respond to the prompt
       const { outcome } = await event.userChoice
-      console.log(`User response to the install prompt: ${outcome}`)
+      logger.info('PWA', `User response to the install prompt: ${outcome}`)
       
       // We've used the prompt, and can't use it again, throw it away
       installEvent.value = null
@@ -69,7 +70,7 @@ export function usePWA() {
       isInstalled.value = true
       canInstall.value = false
       installEvent.value = null
-      console.log('PWA installed successfully')
+      logger.success('PWA', 'PWA installed successfully')
     })
     checkInstallState()
   })

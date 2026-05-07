@@ -18,6 +18,7 @@ import { useBattleStore } from '@/stores/battle'
 import { useLoadingStore } from '@/stores/loading'
 import { useBodyClass } from '@/composables/useBodyClass'
 import { useWindowListener } from '@/composables/useWindowListener'
+import { logger } from '@/logic/utils/logger'
 
 import { useProfileStore } from '@/stores/profile'
 import { useRoute } from 'vue-router'
@@ -114,7 +115,7 @@ onMounted(async () => {
     
     // Restaurar combate si existe uno activo en el estado guardado
     if (gameStore.state.activeBattle && !gameStore.state.activeBattle.over) {
-      console.log('[App] Detectado combate persistente. Restaurando estado...')
+      logger.info('App', 'Detectado combate persistente. Restaurando estado...')
       battleStore.restoreBattle(gameStore.state.activeBattle)
     }
     
@@ -129,7 +130,7 @@ onMounted(async () => {
 // RE-APPLY ZOOM on login/user changes to prevent PWA resolution glitches
 watch(() => authStore.user, (newUser) => {
   if (newUser) {
-    console.log('[App] Usuario detectado, re-aplicando escala visual...')
+    logger.info('App', 'Usuario detectado, re-aplicando escala visual...')
     uiStore.setZoom(uiStore.appZoom)
   }
 })

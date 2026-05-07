@@ -13,13 +13,23 @@ onMounted(() => {
   eventStore.checkPendingAwards()
 })
 
+import { Temporal } from '@js-temporal/polyfill'
+
 const formatTime = (isoTime: string) => {
   if (!isoTime) return 'Indefinido'
-  const diff = new Date(isoTime).getTime() - new Date().getTime()
-  if (diff <= 0) return 'Terminando...'
-  const min = Math.floor(diff / 60000)
-  const sec = Math.floor((diff % 60000) / 1000)
-  return `${min}m ${sec}s`
+  try {
+    const target = Temporal.Instant.from(isoTime)
+    const now = Temporal.Now.instant()
+    
+    if (Temporal.Instant.compare(target, now) <= 0) return 'Terminando...'
+    
+    const duration = target.since(now, { largestUnit: 'minute' })
+    const min = Math.floor(duration.minutes)
+    const sec = Math.floor(Math.abs(duration.seconds) % 60)
+    return `${min}m ${sec}s`
+  } catch (e) {
+    return 'Error'
+  }
 }
 
 const openParticipationModal = (event: GameEvent) => {

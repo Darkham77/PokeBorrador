@@ -1,6 +1,7 @@
 import type { Pokemon } from '@/types/pokemon';
 import type { MoveAction, BattleContext } from '@/types/battle';
 import { STATUS_ACTIONS } from './statusActions';
+import { logger } from '@/logic/utils/logger';
 
 interface BattleContextInternal extends BattleContext {
   activeBattle?: BattleContextInternal
@@ -141,7 +142,7 @@ export const SPECIAL_ACTIONS: Record<string, MoveAction> = {
       addLogFn(`¡Movimiento Espejo copió ${move.name}!`, 'log-info', src);
       // Simular ejecución: Si tiene efecto, intentar ejecutarlo
       if (move.effect) {
-        console.log(`[MirrorMove] Triggering: ${move.effect}`);
+        logger.debug('MirrorMove', `Triggering: ${move.effect}`);
       }
     } else {
       addLogFn("¡Pero falló!", 'log-info', src);

@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { reactive } from 'vue'
+import { logger } from '@/logic/utils/logger'
 
 /**
  * Combat Shadow Store
@@ -55,7 +56,7 @@ export const useCombatShadowStore = defineStore('combatShadows', () => {
             return
           }
         } catch (err) {
-          console.warn('[SHADOW] Canvas data extraction failed:', err)
+          logger.warn('Shadow', 'Canvas data extraction failed', err)
         }
         resolve({ feetY: 0.9, feetX: 0.5 })
       }

@@ -32,6 +32,8 @@ export interface BattleContext {
   attackerSide: Ref<'player' | 'enemy' | null>;
   activeMove: Ref<Move | null>;
   faintedSides: Ref<Set<string>>;
+  isCave?: boolean;
+  isIndoors?: boolean;
   
   handleFaint: (side: 'player' | 'enemy') => Promise<void>;
   addLog: (msg: string, type?: string, source?: any, sideOverride?: 'player' | 'enemy' | null) => void;

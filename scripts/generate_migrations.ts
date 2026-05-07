@@ -14,8 +14,8 @@
  * Se ejecuta automáticamente durante el proceso de build y en Hot Update mediante Vite.
  */
 
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 
 const MIGRATIONS_DIR = path.resolve(process.cwd(), 'database/migrations');
 const OUTPUT_FILE = path.resolve(process.cwd(), 'src/logic/db/migrations_data.ts');

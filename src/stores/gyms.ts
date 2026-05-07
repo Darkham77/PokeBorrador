@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { useGameStore } from './game'
 import { useBattleStore } from './battle'
 import { makePokemon } from '@/logic/pokemonFactory'
+import type { Pokemon } from '@/types/pokemon'
 
 interface GymDifficulty {
   pokemon: string[];
@@ -163,7 +164,7 @@ export const useGymsStore = defineStore('gyms', {
       if (!gym) return
 
       const diffData = gym.difficulties[difficulty] || gym.difficulties.easy
-      const enemyTeam = diffData.pokemon.map((id: string, idx: number) => makePokemon(id, diffData.levels[idx] || 1))
+      const enemyTeam = diffData.pokemon.map((id: string, idx: number) => makePokemon(id, diffData.levels[idx] || 1)).filter(Boolean) as Pokemon[]
       
       const mainEnemy = enemyTeam[enemyTeam.length - 1] as any // The ace
 

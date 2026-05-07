@@ -15,6 +15,8 @@
     "test": "vitest run",
     "lint": "npm run type-check && eslint . --fix",
     "lint:analyze": "eslint . -f json -o lint-results.json || node analyze_lint.cjs",
+    "generate-migrations": "node --experimental-strip-types scripts/generate_migrations.ts",
+    "validate-sql": "node --experimental-strip-types scripts/validate_sql_migrations.ts",
     "postinstall": "(python -m pip install -r requirements.txt --quiet --break-system-packages || python3 -m pip install -r requirements.txt --quiet --break-system-packages) || echo 'Warning: Python dependencies could not be installed automatically. Please run: python -m pip install -r requirements.txt or python3 -m pip install -r requirements.txt'"
   },
   "dependencies": {

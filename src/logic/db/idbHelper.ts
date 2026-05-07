@@ -3,6 +3,7 @@
  * idbHelper.ts
  * IndexedDB helper for SQLite WASM persistence.
  */
+import { logger } from '../utils/logger';
 
 const DB_NAME = 'pokevicio_idb'
 const STORE_NAME = 'keyval'
@@ -42,5 +43,5 @@ export async function setToIDB(key: string, val: any): Promise<void> {
       req.onsuccess = () => resolve()
       req.onerror = () => reject(req.error)
     })
-  } catch (e) { console.error('[IDB] Save Error:', e) }
+  } catch (e) { logger.error('IDB', `Save Error: ${(e as Error).message}`) }
 }

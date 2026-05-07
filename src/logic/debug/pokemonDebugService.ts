@@ -6,6 +6,7 @@ import { useUIStore } from '@/stores/ui';
 import { useModalStore } from '@/stores/modals';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import type { Pokemon } from '@/types/pokemon';
+import { logger } from '../utils/logger';
 
 interface GenerateParams {
   id?: string
@@ -105,7 +106,7 @@ export const pokemonDebugService = {
     const ui = useUIStore();
     const animationsEnabled = ui.debugAnimationsEnabled ?? true;
 
-    console.log(`[DEBUG] Executing ${protocol.toUpperCase()} protocol for ${p.name}`);
+    logger.debug('DEBUG', `Executing ${protocol.toUpperCase()} protocol for ${p.name}`);
 
     switch (protocol) {
       case 'catch':
@@ -165,7 +166,7 @@ export const pokemonDebugService = {
         break;
 
       default:
-        console.error(`[DEBUG] Unknown protocol: ${protocol}`);
+        logger.error('DEBUG', `Unknown protocol: ${protocol}`);
     }
 
     await game.save(false);
@@ -180,11 +181,11 @@ export const pokemonDebugService = {
 
     // 1. Force flee if there's an active battle
     if (battleStore.isBattleActive) {
-      console.warn('[DEBUG] Combate activo detectado. Forzando huida del anterior para iniciar el nuevo...');
+      logger.warn('DEBUG', 'Combate activo detectado. Forzando huida del anterior para iniciar el nuevo...');
       await battleStore.endBattle(false, true);
     }
 
-    console.log(`[DEBUG] Triggering encounter with ${p.name} at ${mapId}`);
+    logger.debug('DEBUG', `Triggering encounter with ${p.name} at ${mapId}`);
     
     // Register as seen
     const game = useGameStore();

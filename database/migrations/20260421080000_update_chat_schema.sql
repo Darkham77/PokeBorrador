@@ -9,5 +9,5 @@ ALTER TABLE global_chat_messages ADD COLUMN player_class TEXT;
 ALTER TABLE global_chat_messages ADD COLUMN trainer_level INTEGER;
 
 -- Record migration and update version
-UPDATE config SET value = '20260421080000' WHERE key = 'db_version';
+UPDATE system_config SET value = '20260421080000' WHERE key = 'db_version';
 INSERT OR IGNORE INTO _migrations (id) VALUES ('20260421080000_update_chat_schema');

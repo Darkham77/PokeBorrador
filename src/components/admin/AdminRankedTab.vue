@@ -2,6 +2,7 @@
 import { reactive, onMounted } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
+import { logger } from '@/logic/utils/logger'
 
 const gameStore = useGameStore() as any
 const uiStore = useUIStore() as any
@@ -35,7 +36,7 @@ const loadRankedRules = async () => {
       if (data.season_name) rankedRules.seasonName = data.season_name
     }
   } catch (e) {
-    console.warn('[Admin] Error loading ranked rules:', e)
+    logger.warn('Admin', 'Error loading ranked rules', e)
   }
 }
 

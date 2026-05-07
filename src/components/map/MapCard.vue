@@ -11,6 +11,7 @@ import { useBattleStore } from '@/stores/battle'
 import { useGameStore } from '@/stores/game'
 import { useMapStore } from '@/stores/map'
 import { getRouteWeather } from '@/logic/weatherUtils'
+import { logger } from '@/logic/utils/logger'
 
 import { checkPlayerWinner, calculateSpawnGrid } from '@/logic/map/mapCardHelper'
 
@@ -313,11 +314,11 @@ const spawnGrid = computed(() => {
       '--bg-image': `url('${imgPath}')`
     }"
     @click.stop="() => {
-      console.log('[MapCard] Click detected. isLocked:', isLocked, 'isPerformanceMode:', isPerformanceMode);
+      logger.debug('MapCard', `Click detected. isLocked: ${isLocked}, isPerformanceMode: ${isPerformanceMode}`);
       if (!isLocked && !isPerformanceMode) {
         emit('navigate', props.map);
       } else {
-        console.warn('[MapCard] Navigation blocked:', { isLocked, isPerformanceMode, isBattleActive: battleStore.isBattleActive, isAnyBlockingModalOpen: uiStore.isAnyBlockingModalOpen });
+        logger.warn('MapCard', 'Navigation blocked:', { isLocked, isPerformanceMode, isBattleActive: battleStore.isBattleActive, isAnyBlockingModalOpen: uiStore.isAnyBlockingModalOpen });
       }
     }"
   >

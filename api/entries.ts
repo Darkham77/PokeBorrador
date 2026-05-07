@@ -1,4 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
+import { Temporal } from '@js-temporal/polyfill'
+import { logger } from '../src/logic/utils/logger'
 
 const supabase = createClient(
   process.env.VITE_SUPABASE_URL,
@@ -32,7 +34,7 @@ export default async function handler(req, res) {
       player_email,
       player_name,
       data,
-      submitted_at: new Date().toISOString()
+      submitted_at: Temporal.Now.instant().toString()
     }
 
     if (existing) {
@@ -53,8 +55,8 @@ export default async function handler(req, res) {
     }
 
     res.status(200).json({ ok: true, entry })
-  } catch (error) {
-    console.error(error)
+  } catch (error: any) {
+    logger.error('API_ENTRIES', `Error submitting entry: ${error.message}`, error)
     res.status(500).json({ error: error.message })
   }
 }

@@ -28,6 +28,8 @@ export interface BattleState {
   playerTeamIndex: number;
   participants: string[];
   locationId: string;
+  isCave?: boolean;
+  isIndoors?: boolean;
   isTrainer: boolean;
   trainerName?: string;
   isGym?: boolean;

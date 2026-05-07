@@ -112,8 +112,8 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
     }
 
     // Reset de datos específicos y liberación de Pokémon en misión
-    [...(gameStore.state.team || []), ...(gameStore.state.box || [])].forEach((p: Pokemon) => {
-      if (p.onMission) p.onMission = false
+    [...(gameStore.state.team || []), ...(gameStore.state.box || [])].forEach((p: Pokemon | null) => {
+      if (p && p.onMission) p.onMission = false
     })
 
     gameStore.state.playerClass = classId

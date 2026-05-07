@@ -14,6 +14,18 @@ description: E2E test orchestrator. Delegates environment and simulation protoco
 2. **ASH Login**: Log in as the standard test user.
 3. **Simulation Commands**: Use `window.__VITE_DEBUG__` to teleport to the views you want to test.
 
+## 🏁 Final Integrity Check
+
+After verifying behavior in the browser, you **MUST** run the full verification flow to ensure no side effects or type regressions were introduced:
+
+```bash
+npm run type-check
+npm run validate-sql
+npm run lint
+npm run test
+npm run build
+```
+
 ## Diagnostics
 
 If a test fails, perform a dual diagnostic by reviewing both the browser console and the development server logs.

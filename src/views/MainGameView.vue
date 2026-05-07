@@ -12,6 +12,7 @@ import { useLivePvPStore } from '@/stores/livePvP'
 import { useBreedingStore } from '@/stores/breeding'
 import { useLoadingStore } from '@/stores/loading'
 import { useMainLayout } from '@/composables/useMainLayout'
+import { logger } from '@/logic/utils/logger'
 
 // Sub-components
 import TitleScreen from '@/components/TitleScreen.vue'
@@ -75,7 +76,7 @@ const gs = computed(() => gameStore.state)
 const activeTab = computed(() => uiStore.activeTab)
 
 onMounted(() => {
-  console.log('[MainGameView] MOUNTED. activeTab:', activeTab.value)
+  logger.info('MainGameView', 'MOUNTED. activeTab:', activeTab.value)
   
   // Initial height calculation
   updateHudHeight()
@@ -94,7 +95,7 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
-  console.log('[MainGameView] UNMOUNTED.')
+  logger.info('MainGameView', 'UNMOUNTED.')
 })
 
 // Initialize audio context on first user interaction

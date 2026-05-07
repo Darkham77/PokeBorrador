@@ -8,20 +8,21 @@ import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import { SHOP_ITEMS } from '@/data/items';
 import { PLAYER_CLASSES } from '@/data/playerClasses';
 import type { Pokemon } from '@/types/pokemon';
+import { logger } from '../utils/logger';
 
 interface LogContext {
   gs: {
     state: {
-      playerClass: string
-      avatar_style?: string
+      playerClass: string | null
+      avatar_style?: string | null
       team: Pokemon[]
     }
   }
   activeBattle?: {
-    trainerSprite?: string
-    enemy?: Pokemon
-  }
-  attackerSide?: 'player' | 'enemy'
+    trainerSprite?: string | null
+    enemy?: Pokemon | null
+  } | null
+  attackerSide?: 'player' | 'enemy' | null
 }
 
 interface FormattedLog {
@@ -46,7 +47,7 @@ export function formatBattleLog(msg: string, type: string, source: any, ctx: Log
   let iconType: string | null = null;
 
   if (!source && !msg.startsWith('DEBUG:')) {
-    console.warn(`[BattleLogger] Log sin fuente detectado: "${msg}". Se recomienda pasar un Pokémon o 'player'/'enemy_trainer'.`);
+    logger.warn('BattleLogger', `Log sin fuente detectado: "${msg}". Se recomienda pasar un Pokémon o 'player'/'enemy_trainer'.`);
   }
 
   if (msg.startsWith('DEBUG:')) {

@@ -6,6 +6,7 @@ import { FIRE_RED_MAPS } from '@/data/maps'
 import { useUIStore } from '@/stores/ui'
 import { useMapStore } from '@/stores/map'
 import { useEventStore } from '@/stores/events'
+import { logger } from '../utils/logger'
 import type { BattleContext } from '@/types/battleContext'
 import type { Pokemon } from '@/types/pokemon'
 import type { UIStore, MapStore, EventStore } from '@/types/stores'
@@ -21,7 +22,7 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
     battleOptions = {}, isFishing = false, wasSearching: wasSearchingOpt = null
   } = options
 
-  console.log('[Orchestrator] startBattleSequence starting...', { locationId, isTrainer, isGym, wasSearchingOpt })
+  logger.info('Orchestrator', 'startBattleSequence starting...', { locationId, isTrainer, isGym, wasSearchingOpt })
 
   const playerPoke = ctx.gs.state.team.find((p) => p.hp > 0 && !p.onMission && !p.onDefense)
   if (!playerPoke) {
@@ -31,7 +32,7 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
 
   // Si hay un combate activo pero NO está en fase de finalización, forzamos huida.
   if (ctx.isBattleActive.value && !ctx.isFinishing.value && !ctx.activeBattle.value?.over && !ctx.isSearching.value) {
-    console.warn('[BATTLE] Combate en curso detectado. Forzando huida del anterior.')
+    logger.warn('BATTLE', 'Combate en curso detectado. Forzando huida del anterior.')
     await ctx.endBattle(false, true)
   }
 
@@ -60,7 +61,10 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
     _initialPlayer: playerPoke,
     isGym, gymId, isTrainer, enemyTeam,
     playerTeam: ctx.gs.state.team,
-    trainerName, locationId, turn: 'player', turnCount: 1, over: false,
+    trainerName, locationId,
+    isCave: FIRE_RED_MAPS.find(m => m.id === locationId)?.isCave || false,
+    isIndoors: FIRE_RED_MAPS.find(m => m.id === locationId)?.isIndoors || false,
+    turn: 'player', turnCount: 1, over: false,
     isFishing, rarity,
     weather: { 
       type: getMechanicalWeather(mapStore.currentWeather), 
@@ -99,7 +103,7 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
   
   ctx.clearLogs()
 
-  console.log('[Orchestrator] Transitions starting...');
+  logger.debug('Orchestrator', 'Transitions starting...');
   await fsm.transition(BATTLE_STATES.CONTEXT_SETUP, BATTLE_SUBSTATES.RECEIVE_CONFIG)
   await fsm.transition(BATTLE_STATES.CONTEXT_SETUP, BATTLE_SUBSTATES.APPLY_ITEM_MODIFIERS)
   
@@ -152,7 +156,7 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
     }
   }
 
-  console.log('[Orchestrator] Calling initBattleSequence...');
+  logger.info('Orchestrator', 'Calling initBattleSequence...');
   await initBattleSequence(ctx, { 
     locationId, isTrainer, trainerName, isGym, gymId, wasSearching,
     initialEnemy: finalEnemyPoke,

@@ -11,10 +11,9 @@ ADD COLUMN IF NOT EXISTS role TEXT DEFAULT 'user';
 
 -- 2. Asegurarse de que las columnas de estadísticas de PvP existan (Paridad con SQLite)
 -- Nota: elo_rating ya existía en el baseline pero lo reafirmamos por seguridad.
-ALTER TABLE public.profiles 
-ADD COLUMN IF NOT EXISTS pvp_wins INTEGER DEFAULT 0,
-ADD COLUMN IF NOT EXISTS pvp_losses INTEGER DEFAULT 0,
-ADD COLUMN IF NOT EXISTS pvp_draws INTEGER DEFAULT 0;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS pvp_wins INTEGER DEFAULT 0;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS pvp_losses INTEGER DEFAULT 0;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS pvp_draws INTEGER DEFAULT 0;
 
 -- 3. Tabla para reglas de temporadas (Paridad con SQLite)
 CREATE TABLE IF NOT EXISTS public.ranked_rules_config (
