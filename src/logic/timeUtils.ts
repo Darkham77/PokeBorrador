@@ -37,6 +37,8 @@ export async function syncServerTime(): Promise<void> {
 }
 
 export function getServerInstant(): any {
+  if (!_timeSynced) return Temporal.Now.instant();
+
   const routerOffsetMs = (supabase && typeof supabase.getTimeOffset === 'function') 
     ? supabase.getTimeOffset() 
     : 0;
@@ -103,10 +105,4 @@ export function getSeason(now: any = getServerInstant()): Season {
   return seasons[seasonIndex] || (seasons[0] as Season);
 }
 
-if (typeof window !== 'undefined' && typeof process !== 'undefined' && process.env.NODE_ENV !== 'test') {
-  setInterval(() => {
-    if (_timeSynced && safeStorage.getItem('pokevicio_session_mode') === 'online') {
-      syncServerTime();
-    }
-  }, 300000);
-}
+// Interval logic should be managed by the store/app after init

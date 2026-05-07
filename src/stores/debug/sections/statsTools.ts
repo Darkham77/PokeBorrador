@@ -51,6 +51,18 @@ export function registerStatsTools(debug: any, { game, ui }: { game: any, ui: an
     description: 'Establece el ELO del jugador para PvP.'
   })
 
+  debug.register({
+    id: 'stats-set-badges',
+    label: 'SET BADGES',
+    command: 'setBadges',
+    category: 'stats',
+    action: (val: number) => {
+      game.state.badges = val
+      ui.notify(`Debug: Medallas ajustadas a ${val}`, '🏆')
+      game.saveGame(false)
+    },
+    description: 'Establece el número de medallas del entrenador.'
+  })
 
 
   debug.register({

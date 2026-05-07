@@ -9,11 +9,12 @@ import { gameBus } from '../gameBus'
 
 let sessionChannel: BroadcastChannel | null = null
 const SESSION_ID = crypto.randomUUID()
+let currentUserId: string | null = null
 let isLocked = false
 
 export function initSessionHub(userId: string) {
   if (typeof window === 'undefined') return
-
+  currentUserId = userId
   console.log(`[SessionHub] Initializing for user ${userId} | Session: ${SESSION_ID}`)
 
   // 1. Local Synchronization (BroadcastChannel)
@@ -59,4 +60,27 @@ export function getSessionId() {
 
 export function isSaveLocked() {
   return isLocked
+}
+
+/**
+ * Re-claims control of the session for the current tab.
+ * Updates the database and notifies other tabs.
+ */
+export async function reclaimControl() {
+  if (!currentUserId) return
+  
+  isLocked = false
+  console.log('[SessionHub] Reclaiming control of the session...');
+  
+  const { supabase } = await import('../supabase')
+  if (supabase.mode === 'online') {
+    await supabase.initSession(currentUserId, SESSION_ID)
+  }
+  
+  if (sessionChannel) {
+    sessionChannel.postMessage({ type: 'NEW_SESSION', sessionId: SESSION_ID })
+  }
+  
+  // Notify UI
+  window.dispatchEvent(new CustomEvent('pv-save-unlock'))
 }

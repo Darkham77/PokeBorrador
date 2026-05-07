@@ -61,6 +61,10 @@ export const useGameStore = defineStore('game', () => {
     const res = await rawLoad()
 
     if (res.success) {
+      // Sync time ONLY after successful load/auth
+      const { syncServerTime } = await import('@/logic/timeUtils')
+      await syncServerTime()
+      
       isDataLoaded.value = true
       isEngineReady.value = true
       
@@ -72,8 +76,18 @@ export const useGameStore = defineStore('game', () => {
         window.addEventListener('pv-save-lock', () => {
           isSaveLocked.value = true
         })
+
+        window.addEventListener('pv-save-unlock', () => {
+          isSaveLocked.value = false
+        })
       }
     }
+  }
+
+  async function reclaimControl() {
+    const { reclaimControl: rawReclaim } = await import('@/logic/auth/sessionHub')
+    await rawReclaim()
+    isSaveLocked.value = false
   }
 
   // --- WATCHERS ---
@@ -115,6 +129,7 @@ export const useGameStore = defineStore('game', () => {
     swapWarSlot,
     togglePokeTag,
     executeHatch,
+    reclaimControl,
     saveGame: save // Alias
   }
 })

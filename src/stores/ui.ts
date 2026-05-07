@@ -163,6 +163,8 @@ export const useUIStore = defineStore('ui', () => {
     }
   }
 
+  const hasDismissedSessionLock = ref(false)
+
   function toggleInventory(context: 'team' | 'box' | null = null, index: number | null = null) {
     const modalStore = useModalStore()
     if (context !== null && index !== null) {
@@ -433,6 +435,7 @@ export const useUIStore = defineStore('ui', () => {
     isRankedMenuOpen: ref(false),
     currentPvPInvite: ref(null),
     isBattleSwitchForced,
+    hasDismissedSessionLock,
 
     // Stacking
     activeModalStack,

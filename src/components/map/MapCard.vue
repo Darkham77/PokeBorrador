@@ -62,7 +62,7 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits<{
-  (e: 'navigate', mapId: string): void
+  (e: 'navigate', map: MapData): void
 }>()
 
 const uiStore = useUIStore()
@@ -95,10 +95,7 @@ const seasonName = computed(() => mapStore.currentSeason.label)
 const seasonEmoji = computed(() => mapStore.currentSeason.icon)
 
 const computedWeather = computed(() => {
-  // Sincronización absoluta: Usar el clima que generó el pool si está disponible
-  if (props.forcedWeather) return props.forcedWeather
-  if (mapStore.globalWeather) return mapStore.globalWeather
-  return getRouteWeather(props.map.id, mapStore.currentSeason.id, mapStore.currentEpochHour)
+  return props.forcedWeather || mapStore.globalWeather || getRouteWeather(props.map.id, mapStore.currentSeason.id, mapStore.currentEpochHour)
 })
 
 const weatherEmoji = computed(() => {
@@ -199,8 +196,6 @@ const processedGrid = computed<ProcessedSpawn[]>(() => {
       isSeen = true; isCaught = true
     } else if (uiStore.debugPokedexMode === 'seen') {
       isSeen = true
-    } else if (uiStore.debugPokedexMode === 'none') {
-      isSeen = false; isCaught = false
     }
     const rate = props.spawnPool?.rates?.[id] || 10
     const data = isSeen ? pokemonDataProvider.getPokemonData(id) : null
@@ -282,13 +277,21 @@ onUnmounted(() => { if (resizeObserver) resizeObserver.disconnect() })
 
 const lockReason = computed(() => {
   if (props.isSafariLocked) return 'REQUIERE TICKET SAFARI'
+  if (gameStore.isSaveLocked && !uiStore.hasDismissedSessionLock) return 'SESIÓN BLOQUEADA'
   if (!props.isLocked) return ''
   if (props.badgeCount < props.map.badges) return `REQUIERE ${props.map.badges} MEDALLAS`
   return 'BLOQUEADO'
 })
 
+const isLocked = computed(() => {
+  if (props.isLocked) return true
+  if (gameStore.isSaveLocked && !uiStore.hasDismissedSessionLock) return true
+  return false
+})
+
 const lockDescription = computed(() => {
   if (props.isSafariLocked) return 'Necesitas un Ticket Safari para entrar a esta zona.'
+  if (gameStore.isSaveLocked && !uiStore.hasDismissedSessionLock) return 'Sesión activa en otra pestaña. Toma el control para habilitar el guardado.'
   if (!props.isLocked) return ''
   return `Consigue ${props.map.badges} medallas para acceder a esta zona.`
 })
@@ -309,7 +312,14 @@ const spawnGrid = computed(() => {
       '--atmosphere-filter': atmosphere?.atmosphereStyles?.filter,
       '--bg-image': `url('${imgPath}')`
     }"
-    @click.stop="!isLocked && !isPerformanceMode && emit('navigate', map.id)"
+    @click.stop="() => {
+      console.log('[MapCard] Click detected. isLocked:', isLocked, 'isPerformanceMode:', isPerformanceMode);
+      if (!isLocked && !isPerformanceMode) {
+        emit('navigate', props.map);
+      } else {
+        console.warn('[MapCard] Navigation blocked:', { isLocked, isPerformanceMode, isBattleActive: battleStore.isBattleActive, isAnyBlockingModalOpen: uiStore.isAnyBlockingModalOpen });
+      }
+    }"
   >
     <AtmosphereLayer
       ref="atmosphere"

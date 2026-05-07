@@ -21,6 +21,8 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
     battleOptions = {}, isFishing = false, wasSearching: wasSearchingOpt = null
   } = options
 
+  console.log('[Orchestrator] startBattleSequence starting...', { locationId, isTrainer, isGym, wasSearchingOpt })
+
   const playerPoke = ctx.gs.state.team.find((p) => p.hp > 0 && !p.onMission && !p.onDefense)
   if (!playerPoke) {
     (useUIStore() as unknown as UIStore).notify('No tienes Pokémon sanos para combatir', '❌')
@@ -97,6 +99,7 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
   
   ctx.clearLogs()
 
+  console.log('[Orchestrator] Transitions starting...');
   await fsm.transition(BATTLE_STATES.CONTEXT_SETUP, BATTLE_SUBSTATES.RECEIVE_CONFIG)
   await fsm.transition(BATTLE_STATES.CONTEXT_SETUP, BATTLE_SUBSTATES.APPLY_ITEM_MODIFIERS)
   
@@ -149,6 +152,7 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
     }
   }
 
+  console.log('[Orchestrator] Calling initBattleSequence...');
   await initBattleSequence(ctx, { 
     locationId, isTrainer, trainerName, isGym, gymId, wasSearching,
     initialEnemy: finalEnemyPoke,

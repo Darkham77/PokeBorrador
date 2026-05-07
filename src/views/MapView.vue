@@ -87,7 +87,7 @@ const activeEventData = computed(() => {
       :maps="mapStore.maps"
       :badge-count="gameStore.state.badges || 0"
       :cycle="mapStore.currentCycle"
-      :weather="mapStore.globalWeather || undefined"
+      :weather="mapStore.globalWeather"
       :player-class="gameStore.state.playerClass || undefined"
       :class-data="gameStore.state.classData"
       :safari-ticket-secs="gameStore.state.safariTicketSecs || 0"

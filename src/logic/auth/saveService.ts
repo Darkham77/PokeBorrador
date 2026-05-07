@@ -316,6 +316,7 @@ interface SaveOptions {
   db?: any // DBRouter is complex, keeping as any for now but could be typed if needed
   userVersion?: number
   lastSaveId?: string
+  skipRemote?: boolean
 }
 
 export async function saveGame(state: GameState, user: AuthUser, options: SaveOptions = {}): Promise<any> {
@@ -359,9 +360,18 @@ export async function saveGame(state: GameState, user: AuthUser, options: SaveOp
   }
 
   // 2. Database
-  if (!db) {
-    console.warn('[SAVE] No se proporcionó instancia de DBRouter. Omitiendo guardado en base de datos.');
-    return null;
+  if (!db || options.skipRemote) {
+    if (options.skipRemote) {
+      console.log('[SAVE] Database save skipped (Session Locked). Local storage only.');
+    } else {
+      console.warn('[SAVE] No DBRouter instance provided. Skipping DB save.');
+    }
+    
+    if (showNotif && notifyFn && options.skipRemote) {
+      notifyFn('Progreso guardado localmente (Sesión Bloqueada)', '🟠');
+    }
+    
+    return { success: true, remote: false };
   }
 
   _isSaving = true;

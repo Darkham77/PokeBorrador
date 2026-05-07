@@ -22,7 +22,7 @@ export const useMapStore = defineStore('map', () => {
   const globalWeather = ref(null) // Si está forzado anula el determinístico
   const forcedCycle = ref(null) // null, morning, day, dusk, night
   const forcedSeason = ref(null) // null, spring, summer, autumn, winter
-  const currentEpochHour = ref(Math.floor(getServerTime() / 3600000))
+  const currentEpochHour = ref(Math.floor(Date.now() / 3600000))
 
   // Sync epoch hour every minute
   if (typeof window !== 'undefined' && typeof process !== 'undefined' && process.env.NODE_ENV !== 'test') {
@@ -55,7 +55,7 @@ export const useMapStore = defineStore('map', () => {
   }
 
   // Sync time on store init (safer than onMounted in a store)
-  syncServerTime()
+  // syncServerTime() -- DEFERRED to game initialization
   const maps = ref(FIRE_RED_MAPS)
   const activeEvents = ref<any[]>([])
   const lastNavigateTime = ref(0)
@@ -68,8 +68,12 @@ export const useMapStore = defineStore('map', () => {
 
   const navigate = async (locId: string) => {
     const now = Date.now()
-    if (now - lastNavigateTime.value < 400) return // Throttling
+    if (now - lastNavigateTime.value < 400) {
+      console.warn('[MapStore] Navigate throttled');
+      return
+    }
     lastNavigateTime.value = now
+    console.log(`[MapStore] Navigating to ${locId}...`);
 
     const gs = useGameStore() as unknown as GameStore
     const battleStore = useBattleStore() as unknown as BattleStore
@@ -113,9 +117,10 @@ export const useMapStore = defineStore('map', () => {
 
 
     if (!encounter) {
-      // No pasó nada, solo nos movemos (efecto visual en el componente)
+      console.log('[MapStore] No encounter generated for', locId);
       return
     }
+    console.log('[MapStore] Encounter generated:', encounter.type);
 
     // 4. Procesar Tipo de Encuentro
     const wildEnc = encounter as { type: string; pokemon: Pokemon; pts?: number; faction?: string };

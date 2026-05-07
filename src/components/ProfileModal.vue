@@ -7,6 +7,13 @@ import { useProfileStore } from '@/stores/profile'
 import { usePlayerClassStore } from '@/stores/playerClass'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
+// Components
+import BaseModal from '@/components/common/BaseModal.vue'
+import TrainerAvatar from '@/components/TrainerAvatar.vue'
+import ProfileStatsGrid from '@/components/profile/ProfileStatsGrid.vue'
+import ProfileNotifications from '@/components/profile/ProfileNotifications.vue'
+import ProfileTradeNotifs from '@/components/profile/ProfileTradeNotifs.vue'
+
 interface Props {
   show?: boolean
 }

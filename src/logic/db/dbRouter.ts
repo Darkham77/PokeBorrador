@@ -103,6 +103,7 @@ export class DBRouter {
    * Initializes session monitoring for Last-In-Wins logic.
    */
   async initSession(userId: string, sessionId: string): Promise<void> {
+    console.log(`[DBRouter] Setting session to ${sessionId} for user ${userId}`);
     this.currentSessionId = sessionId;
     
     const client = this.realClient;
@@ -113,6 +114,7 @@ export class DBRouter {
         .from('profiles')
         .update({ current_session_id: sessionId })
         .eq('id', userId);
+      console.log('[DBRouter] Session ID updated in DB.');
     } catch (err) {
       console.error('[DBRouter] Failed to set session ID:', err);
     }
@@ -126,9 +128,13 @@ export class DBRouter {
         schema: 'public',
         table: 'profiles',
         filter: `id=eq.${userId}`
-      }, (payload: { new: { current_session_id?: string } }) => {
+      }, (payload: any) => {
         const newSessionId = payload?.new?.current_session_id;
-        if (newSessionId && newSessionId !== this.currentSessionId) {
+        const oldSessionId = payload?.old?.current_session_id;
+        console.log(`[DBRouter] RT Update: New=${newSessionId}, Old=${oldSessionId}, CurrentLocal=${this.currentSessionId}`);
+        
+        if (newSessionId && this.currentSessionId && newSessionId !== this.currentSessionId) {
+          console.warn(`[DBRouter] SESSION CONFLICT DETECTED! DB:${newSessionId} !== Local:${this.currentSessionId}`);
           this.handleSessionConflict();
         }
       })

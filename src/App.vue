@@ -31,7 +31,10 @@ const loadingStore = useLoadingStore()
 const route = useRoute()
 const dbIncompatible = ref(false)
 const dbVersionInfo = ref<DBCompatibilityResponse | null>(null)
-const dismissedLock = ref(false)
+const dismissedLock = computed({
+  get: () => uiStore.hasDismissedSessionLock,
+  set: (val) => { uiStore.hasDismissedSessionLock = val }
+})
 
 const isLoginPage = computed(() => {
   if (typeof window === 'undefined') return false
@@ -178,6 +181,11 @@ useBodyClass('modal-open', () => uiStore.isAnyBlockingModalOpen)
 const handleRetry = () => {
   window.location.reload()
 }
+
+const handleReclaim = async () => {
+  await gameStore.reclaimControl()
+  dismissedLock.value = true
+}
 </script>
 
 <template>
@@ -253,7 +261,14 @@ const handleRetry = () => {
 
           <div class="lock-actions">
             <div
-              class="retry-btn primary"
+              class="retry-btn primary reclaim-btn"
+              @click.stop="handleReclaim"
+            >
+              TOMAR CONTROL DE ESTA SESIÓN
+            </div>
+            
+            <div
+              class="retry-btn secondary"
               @click.stop="handleRetry"
             >
               REFRESCAR PARA RECUPERAR CONTROL
@@ -559,11 +574,24 @@ const handleRetry = () => {
   .retry-btn {
     margin: 0;
     padding: 15px;
-    background: var(--blue);
+    background: Rgba(255, 255, 255, 0.1);
     font-size: 10px;
     font-weight: bold;
     border-radius: 4px;
     box-shadow: 0 4px 0 Rgba(0, 0, 0, 0.3);
+    border: 1px solid Rgba(255, 255, 255, 0.2);
+    
+    &.primary {
+      background: var(--blue);
+      border-color: $white;
+      color: $white;
+    }
+
+    &.reclaim-btn {
+      background: var(--green);
+      color: $dark;
+      font-weight: 900;
+    }
     
     &:hover {
       background: $white;

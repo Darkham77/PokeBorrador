@@ -31,9 +31,9 @@ export function registerMapTools(debug: any, { map, ui }: { map: any, ui: any })
     action: (faction: string) => {
       const winnerMap: any = {}
       if (faction && faction !== 'none') {
-        map.maps.forEach((m: any) => { winnerMap[m.id] = { winner_faction: faction } })
+        map.maps.forEach((m: any) => { winnerMap[m.id] = { winner: faction } })
       }
-      map.maps_dominance = winnerMap
+      map.mapWinners = winnerMap
       ui.notify(`Debug: Dominio global asignado a ${faction}`, '🚩')
     },
     description: 'Establece el bando dominante en todos los mapas.'
@@ -45,7 +45,7 @@ export function registerMapTools(debug: any, { map, ui }: { map: any, ui: any })
     command: 'setWeather',
     category: 'map',
     action: (w: string) => {
-      map.forcedWeather = w
+      map.globalWeather = w
       ui.notify(`Debug: Clima forzado a ${w}`, '⛅')
     },
     description: 'Fuerza un clima específico en el mapa actual.'

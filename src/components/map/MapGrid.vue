@@ -45,7 +45,7 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   badgeCount: 0,
   cycle: 'day',
-  weather: 'clear',
+  weather: null,
   playerClass: 'trainer',
   classData: () => ({}),
   safariTicketSecs: 0,
@@ -66,8 +66,8 @@ const getMapData = (loc: MapLocation): SpawnPool => {
 
   const activeEvents = eventStore.activeEvents || []
   
-  // Determinar clima para esta ruta específica si no hay uno global
-  const activeWeather = (props.weather && props.weather !== 'clear') ? props.weather : getRouteWeather(loc.id, mapStore.currentSeason.id, mapStore.currentEpochHour)
+  // Determinar clima: El clima forzado (props.weather) tiene prioridad absoluta si no es null
+  const activeWeather = (props.weather !== null) ? props.weather : getRouteWeather(loc.id, mapStore.currentSeason.id, mapStore.currentEpochHour)
   
   const { pool, rates } = getEncounterPool(loc as any, props.cycle || 'day', activeWeather, activeEvents)
 

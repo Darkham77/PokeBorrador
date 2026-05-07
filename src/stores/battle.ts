@@ -145,7 +145,10 @@ export const useBattleStore = defineStore('battle', () => {
     locationId?: string,
     wasSearching?: boolean,
     battleOptions?: any
-  }) => startBattleSequence(getContext(), enemyPoke, options)
+  }) => {
+    console.log('[BattleStore] startBattle called for', enemyPoke.name, options)
+    return startBattleSequence(getContext(), enemyPoke, options)
+  }
     
   const initBattle = async (locId: string, isTr: boolean, trName: string, isGym: boolean, gymId: string, wasSearching: boolean) => 
     initBattleSequence(getContext(), { 
@@ -352,7 +355,10 @@ export const useBattleStore = defineStore('battle', () => {
     isProcessing.value = false
   }
 
-  const endBattle = async (win: boolean, fled: boolean) => await terminateBattle(getContext(), win, fled)
+  const endBattle = async (win: boolean, fled: boolean) => {
+    console.log('[BattleStore] endBattle called. Win:', win, 'Fled:', fled)
+    return terminateBattle(getContext(), win, fled)
+  }
 
   const syncTeamHP = () => {
     // Sincronización manual de HP

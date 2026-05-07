@@ -120,10 +120,10 @@ export function useSaveActions(
     
     // Check session lock (Last-In-Wins)
     const { isSaveLocked } = await import('@/logic/auth/sessionHub')
-    if (isSaveLocked()) {
-      if (showNotif) useUIStore().notify('GUARDADO DESHABILITADO: Sesión activa en otra pestaña', '🚫')
-      console.warn('[SAVE] Guardado cancelado. La sesión está bloqueada.')
-      return
+    const locked = isSaveLocked()
+    
+    if (locked) {
+      console.warn('[SAVE] Sesión bloqueada. Solo se realizará guardado LOCAL.')
     }
     const notifyFn = uiStore.notify
     const result = await performSave(state, authStore.user, { 
@@ -131,8 +131,9 @@ export function useSaveActions(
       notifyFn, 
       db: db.value,
       userVersion: authStore.user.db_version,
-      lastSaveId: authStore.user.last_save_id
-    }) as { success: boolean, migrated?: boolean, lastSaveId?: string, rollback?: boolean, outOfSync?: boolean, error?: string }
+      lastSaveId: authStore.user.last_save_id,
+      skipRemote: locked
+    }) as { success: boolean, migrated?: boolean, lastSaveId?: string, rollback?: boolean, outOfSync?: boolean, error?: string, remote?: boolean }
 
     if (result) {
       if (result.migrated) authStore.user.db_version = 2
@@ -165,7 +166,7 @@ export function useSaveActions(
       }
     } catch (e) {
       console.error('[CLAIM ERROR]', e)
-      useUIStore().notify('Error al reclamar activo', '❌')
+      uiStore.notify('Error al reclamar activo', '❌')
       return false
     }
     return false
