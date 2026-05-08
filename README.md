@@ -118,17 +118,30 @@ Antes de realizar una entrega o desplegar cambios, es **MANDATORIO** que el cód
 4. **Testing**: Todos los unit tests deben pasar exitosamente.
 5. **Build**: La aplicación debe compilar correctamente para producción.
 
+### 🛡️ Auditoría e Integridad (Node.js 26+)
+
+El proyecto utiliza un motor de auditoría inteligente y validadores semánticos para garantizar un estado de **Zero-Warning**. Es obligatorio ejecutar estos controles antes de cualquier entrega.
+
+| Comando | Descripción |
+| :--- | :--- |
+| `npm run audit` | **Auditoría Inteligente**: Analiza patrones legacy (Date), colisiones SASS y optimización GPU. |
+| `npm run audit:fix` | **Auto-corrección**: Aplica correcciones automáticas de estándares (Timers, Imports, SASS). |
+| `npm run audit:full` | **Pipeline Completo**: Ejecuta TODAS las validaciones (Lints, SQL, FSM, Items, Moves, Abilities). |
+| `npm run test:node` | **Native Test Runner**: Ejecuta pruebas de lógica pura usando el runner nativo de Node.js 26+. |
+| `npm run validate:sql` | **SQL Integrity**: Valida compatibilidad de migraciones con SQLite nativo (`node:sqlite`). |
+| `npm run validate:items` | **Item Database**: Verifica IDs, tipos e iconos en la base de datos de objetos. |
+| `npm run validate:moves` | **Move Sync**: Sincroniza semánticamente los movimientos con la PokeAPI. |
+| `npm run validate:abilities`| **Ability Sync**: Valida habilidades contra la base de datos oficial. |
+| `npm run fsm:audit` | **Battle State Audit**: Verifica que la FSM de combate cumpla con la documentación oficial. |
+
+### Otros Comandos de Desarrollo
+
 ```bash
-npm run type-check         # Verificación de tipos
-npm run validate:sql       # Validación de migraciones SQL
-npm run validate:items     # Auditoría de integridad de ítems
-npm run validate:abilities # Auditoría de integridad de habilidades
-npm run validate:moves     # Auditoría de integridad de movimientos
-npm run fsm:audit          # Auditoría de estados de batalla
-npm run audit:full         # Ejecución completa de todas las auditorías
-npm run audit:fix          # Corrección automática de estándares
-npm run test               # Unit tests
-npm run build              # Build para producción
+npm run dev               # Inicia el entorno de desarrollo (Vite)
+npm run type-check         # Verificación estricta de tipos TypeScript
+npm run test               # Unit tests de UI y componentes (Vitest)
+npm run build              # Compilación para producción
+npm run assets:download    # Descarga sprites y recursos externos
 ```
 
 ### Reglas de Oro

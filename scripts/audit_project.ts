@@ -24,76 +24,100 @@ const SASS_TRAPS = [
   'rgba', 'rgb'
 ];
 
+interface AuditRule {
+  regex: RegExp;
+  message: string | ((match: string) => string);
+  fix?: (match: string) => string;
+  check?: (context: string, match: any) => boolean;
+  severity?: 'error' | 'warning';
+  fixable?: boolean;
+  addImport?: string;
+  maxLines?: number;
+  ignorePattern?: RegExp;
+}
+
 interface Violation {
   file: string; line: number; message: string; context: string; severity: 'error' | 'warning'; fixable: boolean;
 }
 
-const config = {
-  viewport: {
-    regex: /\b\d+(?:\.\d+)?(vw|vh)\b/gi,
-    message: (match: string) => `Unidad legacy detectada: '${match}'. Usa 'd${match.slice(-2)}' para soporte mobile dinámico.`,
-    fix: (match: string) => `d${match.toLowerCase().slice(-2)}`
-  },
-  sassTraps: {
-    regex: /([\.\$])?\b([a-zA-Z0-9-]+)\(/g,
-    message: (match: string) => `Función SASS/CSS detectada en minúsculas: '${match}'. Debe capitalizarse para evitar colisiones en Dart Sass 2.0.`,
-    fix: (match: string) => {
-      if (match.startsWith('.') || match.startsWith('$')) return match;
-      const func = match.slice(0, -1).toLowerCase();
-      if (SASS_TRAPS.includes(func)) {
-        if (func.includes('-')) {
-          return func.split('-').map((p: string) => p.charAt(0).toUpperCase() + p.slice(1)).join('-') + '(';
-        }
-        return func.charAt(0).toUpperCase() + func.slice(1) + '(';
+const viewport: AuditRule = {
+  regex: /\b\d+(?:\.\d+)?(vw|vh)\b/gi,
+  message: (match: string) => `Unidad legacy detectada: '${match}'. Usa 'd${match.slice(-2)}' para soporte mobile dinámico.`,
+  fix: (match: string) => `d${match.toLowerCase().slice(-2)}`
+};
+
+const sassTraps: AuditRule = {
+  regex: /([\.\$])?\b([a-zA-Z0-9-]+)\(/g,
+  message: (match: string) => `Función SASS/CSS detectada en minúsculas: '${match}'. Debe capitalizarse para evitar colisiones en Dart Sass 2.0.`,
+  fix: (match: string) => {
+    if (match.startsWith('.') || match.startsWith('$')) return match;
+    const func = match.slice(0, -1).toLowerCase();
+    if (SASS_TRAPS.includes(func)) {
+      if (func.includes('-')) {
+        return func.split('-').map((p: string) => p.charAt(0).toUpperCase() + p.slice(1)).join('-') + '(';
       }
-      return match;
+      return func.charAt(0).toUpperCase() + func.slice(1) + '(';
     }
-  },
-  gpuGaps: {
-    regex: /(backdrop-filter|filter):/gi,
-    message: "Filtro detectado sin 'will-change'. Considera añadir promoción de capa.",
-    check: (content: string, match: any) => {
-      // Look for will-change in the surrounding block (approx 500 chars)
-      const start = Math.max(0, match.index - 500);
-      const end = Math.min(content.length, match.index + 500);
-      const context = content.substring(start, end);
-      return !/will-change/gi.test(context);
-    },
-    fixable: false 
-  },
-  legacyDates: {
-    regex: /new Date\(|Date\.now\(\)/g,
-    message: "Uso de 'Date' detectado. Usa 'Temporal'.",
-    fixable: false
-  },
-  nodePrefix: {
-    regex: /import .* from ['"](fs|path|os|crypto|util|url|events|stream|child_process)['"]/g,
-    message: "Import de Node sin prefijo 'node:'.",
-    fix: (match: string) => match.replace(/['"](fs|path|os|crypto|util|url|events|stream|child_process)['"]/, (m) => m.slice(0, 1) + 'node:' + m.slice(1))
-  },
-  tsIgnore: {
-    regex: /\/\/\s*@ts-(ignore|nocheck|expect-error)/g,
-    message: "Uso de supresión de TypeScript detectado. Prohibido por la política 'Zero-Ignore'.",
-    severity: 'error' as const,
-    fix: () => '',
-    fixable: true
-  },
-  timersPromises: {
-    regex: /new Promise\(r => setTimeout\(r, (\d+)\)\)/g,
-    message: "Uso de setTimeout manual. Usa 'import { setTimeout } from \"node:timers/promises\"'.",
-    fix: (match: string) => match.replace(/new Promise\(r => setTimeout\(r, (\d+)\)\)/, 'await setTimeout($1)'),
-    check: (filePath: string) => !filePath.endsWith('.vue') // Solo para scripts Node, no browser
-  },
-  explicitResource: {
-    regex: /const (\w+) = (new DatabaseSync|fs\.openSync)/g,
-    message: "Recurso detectado sin 'using'. Usa Explicit Resource Management (Node 26+).",
-    fix: (match: string) => match.replace('const', 'using'),
-    check: (filePath: string) => !filePath.endsWith('.vue')
-  },
-  fileLength: {
-    maxLines: 500,
-    ignorePattern: /\[PureVue-Ignore-Length\]/
+    return match;
   }
+};
+
+const gpuGaps: AuditRule = {
+  regex: /(backdrop-filter|filter):/gi,
+  message: "Filtro detectado sin 'will-change'. Considera añadir promoción de capa.",
+  check: (content: string, match: any) => {
+    const start = Math.max(0, match.index - 500);
+    const end = Math.min(content.length, match.index + 500);
+    const context = content.substring(start, end);
+    return !/will-change/gi.test(context);
+  },
+  fixable: false 
+};
+
+const legacyDates: AuditRule = {
+  regex: /new Date\(|Date\.now\(\)/g,
+  message: "Uso de 'Date' detectado. Usa 'Temporal'.",
+  fixable: false
+};
+
+const nodePrefix: AuditRule = {
+  regex: /import .* from ['"](fs|path|os|crypto|util|url|events|stream|child_process)['"]/g,
+  message: "Import de Node sin prefijo 'node:'.",
+  fix: (match: string) => match.replace(/['"](fs|path|os|crypto|util|url|events|stream|child_process)['"]/, (m) => m.slice(0, 1) + 'node:' + m.slice(1))
+};
+
+const tsIgnore: AuditRule = {
+  regex: /\/\/\s*@ts-(ignore|nocheck|expect-error)/g,
+  message: "Uso de supresión de TypeScript detectado. Prohibido por la política 'Zero-Ignore'.",
+  severity: 'error',
+  fix: () => '',
+  fixable: true
+};
+
+const timersPromises: AuditRule = {
+  regex: /new Promise\(r => setTimeout\(r, (\d+)\)\)/g,
+  message: "Uso de setTimeout manual. Usa 'import { setTimeout } from \"node:timers/promises\"'.",
+  fix: (match: string) => match.replace(/new Promise\(r => setTimeout\(r, (\d+)\)\)/, 'await setTimeout($1)'),
+  check: (filePath: string) => filePath.includes('scripts' + path.sep) && !filePath.includes('node_modules'),
+  addImport: "import { setTimeout } from 'node:timers/promises';"
+};
+
+const explicitResource: AuditRule = {
+  regex: /const (\w+) = (new DatabaseSync|fs\.openSync)/g,
+  message: "Recurso detectado sin 'using'. Usa Explicit Resource Management (Node 26+).",
+  fix: (match: string) => match.replace('const', 'using'),
+  check: (filePath: string) => filePath.includes('scripts' + path.sep)
+};
+
+const fileLength: AuditRule = {
+  regex: /[\s\S]*/,
+  message: "Archivo demasiado largo.",
+  maxLines: 500,
+  ignorePattern: /\[PureVue-Ignore-Length\]/
+};
+
+const config = {
+  viewport, sassTraps, gpuGaps, legacyDates, nodePrefix, tsIgnore, timersPromises, explicitResource, fileLength
 };
 
 async function getFilesToAudit(dir: string): Promise<string[]> {
@@ -119,16 +143,24 @@ async function auditFile(filePath: string, fix: boolean): Promise<Violation[]> {
     const tag = 'script';
     let block = isVue ? extractBlock(content, tag) : content;
     if (block) {
-      // Reglas de lógica
-      let rules = [config.legacyDates, config.nodePrefix, config.tsIgnore, config.timersPromises, config.explicitResource];
+      const allRules: AuditRule[] = [legacyDates, nodePrefix, tsIgnore, timersPromises, explicitResource];
+      let rules: AuditRule[] = allRules;
       
       // EXCEPCIÓN: Ignorar 'legacyDates' en scripts de utilidad/migración
       if (filePath.includes('scripts' + path.sep) || filePath.includes('audit_project.ts')) {
         rules = rules.filter(r => r !== config.legacyDates);
       }
 
-      const newBlock = runRules(filePath, block, rules, violations, fix, isVue ? findBlockStart(content, tag) : 0);
+      let newBlock = runRules(filePath, block, rules, violations, fix, isVue ? findBlockStart(content, tag) : 0);
+      
+      // Post-fix: Añadir imports necesarios si se aplicaron correcciones
       if (fix && newBlock !== block) {
+        for (const rule of rules) {
+          const importer = rule.addImport;
+          if (importer && newBlock.includes(importer.split(' ')[1]!) && !newBlock.includes(importer)) {
+            newBlock = importer + '\n' + newBlock;
+          }
+        }
         content = isVue ? injectBlock(content, tag, newBlock) : newBlock;
         modified = true;
       }
@@ -154,7 +186,7 @@ async function auditFile(filePath: string, fix: boolean): Promise<Violation[]> {
   return violations;
 }
 
-function runRules(filePath: string, content: string, rules: any[], violations: Violation[], fix: boolean, offset: number): string {
+function runRules(filePath: string, content: string, rules: AuditRule[], violations: Violation[], fix: boolean, offset: number): string {
   let result = content;
   for (const rule of rules) {
     const regex = new RegExp(rule.regex.source, rule.regex.flags);
@@ -181,9 +213,10 @@ function runRules(filePath: string, content: string, rules: any[], violations: V
         context: match[0], severity: rule.severity || 'warning', fixable: !!rule.fix
       });
     }
-    if (fix && rule.fix) {
+    const fixer = rule.fix;
+    if (fix && fixer) {
       const gRegex = new RegExp(rule.regex.source, rule.regex.flags.includes('g') ? rule.regex.flags : rule.regex.flags + 'g');
-      result = result.replace(gRegex, (m) => rule.fix(m));
+      result = result.replace(gRegex, (m) => fixer(m));
     }
   }
   return result;

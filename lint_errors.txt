@@ -1,0 +1,1762 @@
+
+> pokemon-online@0.5.0 lint
+> npm run validate:types && eslint . --fix
+
+
+> pokemon-online@0.5.0 validate:types
+> vue-tsc --noEmit
+
+
+/home/franco/Trabajos/PokeBorrador/api/entries.ts
+  58:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/api/events.ts
+  46:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/docs/archives/_js_backup/src/components/admin/debug/DebugAudioAnimTab.vue
+  7:7  warning  'debug' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+  8:7  warning  'audio' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/home/franco/Trabajos/PokeBorrador/docs/archives/_js_backup/src/components/battle/BattleArenaView.vue
+   34:9   warning  'currentFsmState' is assigned a value but never used. Allowed unused vars must match /^_/u           unused-imports/no-unused-vars
+   34:39  warning  'upcomingPokemon' is assigned a value but never used. Allowed unused vars must match /^_/u           unused-imports/no-unused-vars
+   68:22  warning  'triggerWildEmergence' is assigned a value but never used. Allowed unused vars must match /^_/u      unused-imports/no-unused-vars
+   68:44  warning  'triggerSearchEntry' is assigned a value but never used. Allowed unused vars must match /^_/u        unused-imports/no-unused-vars
+   69:59  warning  'isPlayerSpriteSuppressed' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+   69:85  warning  'isEnemySpriteSuppressed' is assigned a value but never used. Allowed unused vars must match /^_/u   unused-imports/no-unused-vars
+   80:7   warning  'isFinishing' is assigned a value but never used. Allowed unused vars must match /^_/u               unused-imports/no-unused-vars
+  224:9   warning  'sub' is assigned a value but never used. Allowed unused vars must match /^_/u                       unused-imports/no-unused-vars
+  225:9   warning  's' is assigned a value but never used. Allowed unused vars must match /^_/u                         unused-imports/no-unused-vars
+
+/home/franco/Trabajos/PokeBorrador/docs/archives/_js_backup/src/components/battle/BattleDebugTools.vue
+  17:7  warning  'uiStore' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/home/franco/Trabajos/PokeBorrador/docs/archives/_js_backup/src/components/battle/BattleInfoCard.vue
+  27:9   warning  'playerStages' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+  27:23  warning  'enemyStages' is assigned a value but never used. Allowed unused vars must match /^_/u   unused-imports/no-unused-vars
+
+/home/franco/Trabajos/PokeBorrador/docs/archives/_js_backup/src/components/map/MapCard.vue
+  158:11  warning  'isRare' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/home/franco/Trabajos/PokeBorrador/docs/archives/_js_backup/src/composables/useBattleAnimations.js
+   58:9   warning  'isEnemySpriteSuppressed' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+   83:9   warning  'triggerSearchEntry' is assigned a value but never used. Allowed unused vars must match /^_/u       unused-imports/no-unused-vars
+  409:33  warning  'e' is defined but never used. Allowed unused args must match /^_/u                                 unused-imports/no-unused-vars
+
+/home/franco/Trabajos/PokeBorrador/docs/archives/_js_backup/src/composables/useBattleHud.js
+  10:5  warning  'playerAnimState' is assigned a value but never used. Allowed unused vars must match /^_/u     unused-imports/no-unused-vars
+  11:5  warning  'enemyAnimState' is assigned a value but never used. Allowed unused vars must match /^_/u      unused-imports/no-unused-vars
+  14:5  warning  'enemyCaptureActive' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+  17:5  warning  'isIntroInProgress' is assigned a value but never used. Allowed unused vars must match /^_/u   unused-imports/no-unused-vars
+
+/home/franco/Trabajos/PokeBorrador/docs/archives/_js_backup/src/logic/battle/actions/specialActions.js
+  121:61  warning  'battleCtx' is defined but never used. Allowed unused args must match /^_/u  unused-imports/no-unused-vars
+
+/home/franco/Trabajos/PokeBorrador/docs/archives/_js_backup/src/logic/battle/battleTurn.js
+  118:9   warning  'fsm' is assigned a value but never used. Allowed unused vars must match /^_/u               unused-imports/no-unused-vars
+  119:9   warning  'BATTLE_STATES' is assigned a value but never used. Allowed unused vars must match /^_/u     unused-imports/no-unused-vars
+  120:9   warning  'BATTLE_SUBSTATES' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+  332:9   warning  's' is assigned a value but never used. Allowed unused vars must match /^_/u                 unused-imports/no-unused-vars
+  447:11  warning  'isSunActive' is assigned a value but never used. Allowed unused vars must match /^_/u       unused-imports/no-unused-vars
+  448:11  warning  'isRainActive' is assigned a value but never used. Allowed unused vars must match /^_/u      unused-imports/no-unused-vars
+
+/home/franco/Trabajos/PokeBorrador/docs/archives/_js_backup/src/logic/battle/orchestrator.js
+  103:9   warning  'hasBinoculars' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+  176:92  warning  'gymId' is defined but never used. Allowed unused args must match /^_/u                   unused-imports/no-unused-vars
+
+/home/franco/Trabajos/PokeBorrador/docs/archives/_js_backup/src/logic/battle/resolution.js
+  127:9  warning  'enemyRef' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+  128:9  warning  'locId' is assigned a value but never used. Allowed unused vars must match /^_/u     unused-imports/no-unused-vars
+
+/home/franco/Trabajos/PokeBorrador/docs/archives/_js_backup/src/logic/battle/searchLoop.js
+   24:11  warning  'hasBinoculars' is assigned a value but never used. Allowed unused vars must match /^_/u     unused-imports/no-unused-vars
+  110:11  warning  'BATTLE_STATES' is assigned a value but never used. Allowed unused vars must match /^_/u     unused-imports/no-unused-vars
+  110:26  warning  'BATTLE_SUBSTATES' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+  111:9   warning  'fsm' is assigned a value but never used. Allowed unused vars must match /^_/u               unused-imports/no-unused-vars
+
+/home/franco/Trabajos/PokeBorrador/docs/archives/_js_backup/src/logic/encounters.js
+  11:7  warning  'VISITOR_TOTAL_WEIGHT_PERCENT' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/home/franco/Trabajos/PokeBorrador/docs/archives/_js_backup/src/stores/debug/sections/audioTools.js
+  4:50  warning  'context' is defined but never used. Allowed unused args must match /^_/u  unused-imports/no-unused-vars
+
+/home/franco/Trabajos/PokeBorrador/docs/archives/_js_backup/tests/unit/battle.spec.js
+  62:13  warning  'noWeather' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+  69:13  warning  'noWeather' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/home/franco/Trabajos/PokeBorrador/docs/archives/_js_backup/tests/unit/breeding.spec.js
+  112:13  warning  'res' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/home/franco/Trabajos/PokeBorrador/docs/archives/_js_backup/tests/unit/combat_camera.spec.js
+  35:11  warning  'vm' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/home/franco/Trabajos/PokeBorrador/docs/archives/_js_backup/tests/unit/debug_store.spec.js
+  148:13  warning  'debug' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+  158:13  warning  'debug' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+  189:13  warning  'debug' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+  203:13  warning  'debug' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+  237:13  warning  'debug' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/home/franco/Trabajos/PokeBorrador/docs/archives/_js_backup/tests/unit/itemEffects.spec.js
+  32:11  warning  'ui' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/home/franco/Trabajos/PokeBorrador/docs/archives/_js_backup/tests/unit/livePvP.spec.js
+  67:11  warning  'game' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+  91:11  warning  'game' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/home/franco/Trabajos/PokeBorrador/docs/archives/_js_backup/tests/unit/logic/battleStateMachine.spec.js
+  110:11  warning  'p1' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/home/franco/Trabajos/PokeBorrador/docs/archives/_js_backup/tests/unit/logic/resolution.spec.js
+  20:37  warning  'sub' is defined but never used. Allowed unused args must match /^_/u  unused-imports/no-unused-vars
+
+/home/franco/Trabajos/PokeBorrador/docs/archives/_js_backup/tests/unit/logic/searchLoop.spec.js
+  39:37  warning  'sub' is defined but never used. Allowed unused args must match /^_/u  unused-imports/no-unused-vars
+
+/home/franco/Trabajos/PokeBorrador/docs/archives/_js_backup/tests/unit/modal_hierarchy.spec.js
+  45:13  warning  'uiStore' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/home/franco/Trabajos/PokeBorrador/docs/archives/_js_backup/tests/unit/pokemon_factory.spec.js
+  75:13  warning  'g' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/home/franco/Trabajos/PokeBorrador/src/App.vue
+  106:61  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/ActionButtons.vue
+  3:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/BattleArena.vue
+   9:41  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  10:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  11:35  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/BoxView.vue
+  15:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  16:35  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  17:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  18:45  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  47:31  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  51:32  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/BreedingPickerModal.vue
+   31:37  error  Unexpected any. Specify a different type                                                         @typescript-eslint/no-explicit-any
+   32:45  error  Unexpected any. Specify a different type                                                         @typescript-eslint/no-explicit-any
+   40:77  error  Unexpected any. Specify a different type                                                         @typescript-eslint/no-explicit-any
+   75:27  error  Unexpected any. Specify a different type                                                         @typescript-eslint/no-explicit-any
+   85:34  error  Unexpected any. Specify a different type                                                         @typescript-eslint/no-explicit-any
+   88:57  error  Unexpected any. Specify a different type                                                         @typescript-eslint/no-explicit-any
+  130:13  error  Expected 'v-bind:key' directive to use the variables which are defined by the 'v-for' directive  vue/valid-v-for
+
+/home/franco/Trabajos/PokeBorrador/src/components/EggScannerModal.vue
+   36:7   warning  'props' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+   53:16  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+   55:20  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+   58:58  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+   60:16  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+   62:28  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+   97:15  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+   98:16  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+   99:32  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  110:15  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  127:15  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/FactionChoiceModal.vue
+  15:7   warning  'props' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+  23:45  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/HUD_Navigation.vue
+  12:7   warning  'props' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+  16:37  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  17:33  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  18:41  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  26:41  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/InventoryPills.vue
+  7:38  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  8:34  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/LibraryModal.vue
+  29:29  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/MoveDetailModal.vue
+  24:24  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  29:31  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/PassiveTeamEditorModal.vue
+   8:7   warning  'props' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+  21:25  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  22:16  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  28:14  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  30:87  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/ProfileModal.vue
+  23:7   warning  'props' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+  35:33  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  36:37  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  37:37  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  38:43  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  39:45  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  97:25  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  98:16  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/SettingsModal.vue
+  10:7   warning  'props' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+  18:33  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  28:25  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  29:16  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/TitleScreen.vue
+  7:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  8:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/TradeView.vue
+  15:7   warning  'props' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+  57:40  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  57:65  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  58:39  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  58:63  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/TrainerAvatar.vue
+  24:29  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/TrainerPanel.vue
+  12:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  13:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  14:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  15:45  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  16:39  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  35:27  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  37:27  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/admin/AdminEventTab.vue
+   6:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   7:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   8:20  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  48:24  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  55:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  58:15  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/admin/AdminRankedTab.vue
+   7:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   8:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  45:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  46:15  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  55:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  56:15  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/admin/LocalDebugPanel.vue
+  20:32  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  21:39  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/admin/debug/DebugItemsTab.vue
+   7:49  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   8:25  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  14:30  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  15:14  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/admin/debug/DebugMapTab.vue
+  4:28  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  8:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  9:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/admin/debug/DebugModalsTab.vue
+   6:39  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   7:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  14:20  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  19:14  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/admin/debug/DebugPokemonCreator.vue
+  95:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/admin/debug/DebugPokemonTab.vue
+   5:28  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   9:14  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  13:14  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  17:14  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  21:14  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  25:14  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  29:14  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/admin/debug/DebugTimeTab.vue
+  23:44  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  29:42  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  43:42  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  49:42  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/admin/debug/PokemonPreview.vue
+  12:7  warning  'props' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/home/franco/Trabajos/PokeBorrador/src/components/auth/AuthServerSelector.vue
+  6:7  warning  'props' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+  8:7  warning  'emit' is assigned a value but never used. Allowed unused vars must match /^_/u   unused-imports/no-unused-vars
+
+/home/franco/Trabajos/PokeBorrador/src/components/auth/LoginForm.vue
+   9:7   warning  'props' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+  14:25  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/auth/ServerSelector.vue
+  6:7  warning  'props' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/home/franco/Trabajos/PokeBorrador/src/components/auth/SessionConflictModal.vue
+   8:7   warning  'props' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+  12:37  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/auth/SignupForm.vue
+   8:7   warning  'props' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+  13:26  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/battle/BattleActionButtons.vue
+  38:61  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/battle/BattleArenaControls.vue
+  13:36  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  18:41  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  19:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  20:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  21:39  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  22:38  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  48:24  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  50:48  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/battle/BattleArenaView.vue
+  148:35  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  149:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  202:38  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  235:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  235:48  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/battle/BattleCombatant.vue
+   18:13  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   29:16  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   32:14  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   37:12  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   81:72  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  121:47  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  138:39  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  159:24  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/battle/BattleDebugTools.vue
+   13:41  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   14:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   15:34  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   19:78  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  104:39  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  105:40  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  106:44  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  111:56  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/battle/BattleEnvironment.vue
+  18:68  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/battle/BattleInfoCard.vue
+   16:12   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   33:57   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  100:61   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  101:82   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  112:23   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  114:41   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  146:38   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  147:39   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  206:51   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  207:51   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  217:144  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  222:178  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  227:84   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  236:142  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  258:10   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  278:21   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  284:43   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  284:76   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/battle/BattleLog.vue
+  5:41  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/battle/BattleMovesGrid.vue
+   12:10  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   14:16  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   29:41  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   75:28  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   77:28  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   99:32  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  149:31  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/battle/BattleQuickBag.vue
+  77:41  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/battle/BattleQuickTeam.vue
+   7:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   8:41  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  10:23  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/battle/CombatGrass.vue
+  41:30  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/battle/CombatShadow.vue
+  12:60  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  14:47  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/battle/CombatShadowManager.vue
+   6:60  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   8:47  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  34:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  61:31  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  62:68  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/battle/FishingMinigame.vue
+   5:10  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  38:18  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/battle/LivePvPArena.vue
+   9:38  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  10:32  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  11:28  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  13:54  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  18:29  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/battle/MoveTooltip.vue
+  11:9   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  16:41  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/battle/PvPArena.vue
+   9:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  10:38  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  12:54  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  41:24  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  43:48  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/battle/PvPBattleOverlay.vue
+  12:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  13:35  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  16:12  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/battle/VirtualSpace.vue
+   6:16  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+   9:7   warning  'props' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+  17:24  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/box/BoxFilters.vue
+   6:12  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  22:30  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  39:41  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/box/BoxGrid.vue
+   5:16  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  13:7   warning  'props' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/home/franco/Trabajos/PokeBorrador/src/components/box/BoxMoveModal.vue
+  10:12  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  16:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  17:35  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  18:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  19:39  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  32:36  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/box/BoxPokemonCard.vue
+  11:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  14:12  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/box/BoxPokemonMenu.vue
+   31:37   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   32:33   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   33:35   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   38:104  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  113:61   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/breeding/BreedingSlot.vue
+  7:14  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  8:20  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/breeding/BreedingSummary.vue
+  10:45  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  11:45  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  19:8   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  24:26  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/breeding/BreedingSummaryCard.vue
+  5:12  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  6:12  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  7:18  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/breeding/CompatibilityPanel.vue
+   5:18   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  11:57   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  11:113  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/breeding/DaycareMissionCard.vue
+  3:12  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  6:7   warning  'props' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/home/franco/Trabajos/PokeBorrador/src/components/breeding/DaycareMissions.vue
+   7:45  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  17:34  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/breeding/DaycarePicker.vue
+  12:17  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  14:13  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  24:26  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  28:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  29:45  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  33:49  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  56:27  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/breeding/DaycareSlot.vue
+  7:13  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/breeding/EggCard.vue
+   5:8   error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+   8:7   warning  'props' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+  11:23  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/breeding/EggWarehouse.vue
+  5:45  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  7:64  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  9:27  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/breeding/HatchAnimationModal.vue
+  15:13  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  16:9   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  31:27  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  33:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  71:15  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  77:17  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/common/BaseModal.vue
+  159:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  171:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  176:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  184:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  192:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  197:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/common/ModalHost.vue
+   6:39  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  13:52  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/common/PVSpriteFX.vue
+  100:18  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  108:21  error  Empty block statement                     no-empty
+
+/home/franco/Trabajos/PokeBorrador/src/components/common/PWAManager.vue
+   99:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  100:39  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  101:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  102:82  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/common/PokemonPickerModal.vue
+  31:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  36:25  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  37:17  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/events/EventBanner.vue
+  5:39  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  8:43  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/events/EventTimeline.vue
+   5:39  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  23:40  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/evolution/EvolutionScene.vue
+  7:47  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/game/EncounterSequence.vue
+  6:13  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/gyms/GymCard.vue
+   7:8   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  19:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/map/MapCard.vue
+  82:73  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/map/MapEventCarousel.vue
+   5:12  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   6:12  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  20:12  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  23:17  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  62:30  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/map/MapGrid.vue
+  47:40  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  55:51  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  73:40  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  99:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/map/MapStatusSummary.vue
+   8:20  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  10:16  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  18:7   warning  'props' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/home/franco/Trabajos/PokeBorrador/src/components/market/GlobalMarket.vue
+  11:32  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  12:32  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  13:35  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/market/MarketExplorer.vue
+   9:35  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  13:29  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  17:31  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  21:29  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  25:61  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/market/MarketFilters.vue
+   9:7   warning  'props' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+  11:35  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  29:40  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/market/MarketMyItems.vue
+  8:35  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/market/MarketPublish.vue
+   8:32  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   9:35  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  12:23  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  33:27  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/modals/AbilityPillModal.vue
+  8:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  9:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/modals/ClassMissionsModal.vue
+  21:7   warning  'props' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+  33:33  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  34:45  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  35:37  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  51:12  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/modals/ClassSelectionModal.vue
+  13:7   warning  'props' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+  26:45  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/modals/ConfirmModal.vue
+  14:7  warning  'props' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/home/franco/Trabajos/PokeBorrador/src/components/modals/CosmeticsModal.vue
+   8:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   9:47  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  10:43  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/modals/DebugStackTestModal.vue
+  19:7  warning  'props' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/home/franco/Trabajos/PokeBorrador/src/components/modals/DebugWeatherTablesModal.vue
+  57:60  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  63:58  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/modals/EventDetailModal.vue
+   7:10  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  59:26  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/modals/FishingModal.vue
+   7:12  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  37:12  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/modals/FossilRevivalModal.vue
+  8:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/modals/HealModal.vue
+   17:7    warning  'props' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+   25:37   error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+   26:37   error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+   27:33   error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+   34:23   error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+   57:26   error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+   71:26   error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+   73:58   error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+   78:48   error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+   78:103  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  125:48   error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  125:103  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  137:14   error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  139:45   error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/modals/InventoryModal.vue
+  112:24  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/modals/MoveLearningModal.vue
+   6:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  21:55  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  27:55  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  33:55  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/modals/MoveRelearnerModal.vue
+  33:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  48:51  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  64:86  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  92:36  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/modals/NaturePatchModal.vue
+   9:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  10:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/modals/PPUpModal.vue
+   8:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   9:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  13:35  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  28:74  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/modals/PokemonSelectionItem.vue
+  15:14  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  32:23  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  33:27  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  39:98  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/modals/PokemonSelectionModal.vue
+   15:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   16:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   27:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   28:27  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   90:34  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   92:60  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  100:46  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  101:46  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  102:48  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  104:30  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  178:25  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  178:80  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  198:32  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  269:14  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  269:55  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  281:27  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/modals/ShopModal.vue
+  14:7   warning  'props' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+  22:37  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  23:37  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  24:33  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  34:35  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  42:27  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  44:20  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/modals/StonePickerModal.vue
+  19:7   warning  'props' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+  27:37  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  28:33  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  29:47  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/modals/TeamManagementModal.vue
+   11:37   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   12:33   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   31:105  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   43:105  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   93:30   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   95:58   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   99:28   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  102:56   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  108:51   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  114:29   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  116:58   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  136:33   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  158:33   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  167:64   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  174:33   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  178:66   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  181:45   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  190:70   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/modals/UnifiedPokemonDetailModal.vue
+   47:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  115:40  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  116:16  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  122:25  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  124:16  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/modals/WarShopModal.vue
+   6:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  19:14  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  22:14  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/modals/class/ClassDashboard.vue
+   7:18  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  12:7   warning  'props' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/home/franco/Trabajos/PokeBorrador/src/components/modals/class/ClassMissionsList.vue
+   3:18  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+   4:19  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+   5:14  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  11:7   warning  'props' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/home/franco/Trabajos/PokeBorrador/src/components/modals/inventory/InventoryControls.vue
+  11:7   warning  'props' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+  22:47  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/modals/inventory/InventoryItemCard.vue
+   7:9  error    Unexpected any. Specify a different type                                         @typescript-eslint/no-explicit-any
+  17:7  warning  'emit' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/home/franco/Trabajos/PokeBorrador/src/components/modals/inventory/InventoryItemNode.vue
+   5:9  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  10:7  warning  'props' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+  15:7  warning  'emit' is assigned a value but never used. Allowed unused vars must match /^_/u   unused-imports/no-unused-vars
+
+/home/franco/Trabajos/PokeBorrador/src/components/modals/inventory/InventoryQuantityModal.vue
+  7:9  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/modals/inventory/InventorySidebar.vue
+  6:47  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  7:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/overlays/BuffsOverlay.vue
+  6:39  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/player/ClassInfoPanel.vue
+   9:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  10:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  13:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/player/ClassSelector.vue
+   9:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  10:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  11:45  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  13:26  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/player/PlayerAvatar.vue
+  19:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  22:69  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/pokedex/PokedexControls.vue
+   8:7  warning  'props' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+  10:7  warning  'emit' is assigned a value but never used. Allowed unused vars must match /^_/u   unused-imports/no-unused-vars
+
+/home/franco/Trabajos/PokeBorrador/src/components/pokedex/PokedexHeader.vue
+  10:7  warning  'props' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/home/franco/Trabajos/PokeBorrador/src/components/pokedex/PokedexPokemonCard.vue
+   5:6  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+   8:7  warning  'props' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+  10:7  warning  'emit' is assigned a value but never used. Allowed unused vars must match /^_/u   unused-imports/no-unused-vars
+
+/home/franco/Trabajos/PokeBorrador/src/components/pokemon-detail/PokemonActionFooter.vue
+   8:11  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  21:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/pokemon-detail/PokemonDetailHeader.vue
+   8:12  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  27:51  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/pokemon-detail/PokemonEvolutionsTab.vue
+   6:15  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  11:7   warning  'props' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/home/franco/Trabajos/PokeBorrador/src/components/pokemon-detail/PokemonMovesGrid.vue
+  5:12  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/pokemon-detail/PokemonMovesTab.vue
+   9:18  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  10:16  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  14:7   warning  'props' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/home/franco/Trabajos/PokeBorrador/src/components/pokemon-detail/PokemonStatBar.vue
+  13:7  warning  'props' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/home/franco/Trabajos/PokeBorrador/src/components/pokemon-detail/PokemonStatsGrid.vue
+  5:12  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/pokemon-detail/PokemonStatsTab.vue
+   6:17  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+   7:12  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+   9:13  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  12:7   warning  'props' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/home/franco/Trabajos/PokeBorrador/src/components/pokemon-detail/PokemonStatusSection.vue
+   8:12  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  27:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  33:34  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/pokemon-detail/PokemonTmsTab.vue
+  13:28  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  19:40  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  21:31  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/pokemon/PokemonDisplayCard.vue
+  16:12  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  39:28  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  44:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  47:35  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  66:27  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/profile/ProfileNotifications.vue
+   6:33  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  18:7   warning  'props' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/home/franco/Trabajos/PokeBorrador/src/components/profile/ProfileStatsGrid.vue
+  15:7  warning  'props' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/home/franco/Trabajos/PokeBorrador/src/components/profile/ProfileTradeNotifs.vue
+  4:39  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/ranked/InviteNotification.vue
+   6:11  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  15:35  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/ranked/Leaderboard.vue
+   8:41  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   9:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  10:38  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/ranked/RankedMenu.vue
+  11:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  12:38  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  13:49  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  14:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  28:41  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/ranked/RewardsTrack.vue
+   7:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   8:38  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   9:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  36:30  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  40:39  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/shared/PokemonTypePills.vue
+  5:12  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/shared/UnifiedBadgePill.vue
+   8:12  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  38:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  50:34  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/shop/BlackMarket.vue
+   7:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   8:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  10:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  17:25  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/social/DirectChatWindow.vue
+  12:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  13:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/social/GlobalChat.vue
+  12:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  13:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  14:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/social/GlobalRanking.vue
+  7:36  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  8:32  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/social/RankedArena.vue
+  12:30  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  13:38  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  14:32  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  15:28  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  22:85  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  40:41  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/social/SocialCenterModal.vue
+  15:7   warning  'props' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+  19:41  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  20:37  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/social/SocialFriends.vue
+  6:41  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  7:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  9:27  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/social/SocialFriendsTab.vue
+  10:41  error    Unexpected any. Specify a different type                                         @typescript-eslint/no-explicit-any
+  11:37  error    Unexpected any. Specify a different type                                         @typescript-eslint/no-explicit-any
+  12:39  error    Unexpected any. Specify a different type                                         @typescript-eslint/no-explicit-any
+  13:38  error    Unexpected any. Specify a different type                                         @typescript-eslint/no-explicit-any
+  15:63  error    Unexpected any. Specify a different type                                         @typescript-eslint/no-explicit-any
+  17:27  error    Unexpected any. Specify a different type                                         @typescript-eslint/no-explicit-any
+  21:28  error    Unexpected any. Specify a different type                                         @typescript-eslint/no-explicit-any
+  25:7   warning  'emit' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/home/franco/Trabajos/PokeBorrador/src/components/social/SocialRankings.vue
+  6:41  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/social/SocialRequests.vue
+  5:41  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/social/SocialRequestsTab.vue
+  5:41  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/social/SocialSearch.vue
+  6:41  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/social/SocialSearchTab.vue
+  6:41  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/social/TradeClaimStatus.vue
+   7:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   8:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  10:69  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  43:30  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/social/TradeFooter.vue
+  8:7  warning  'props' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/home/franco/Trabajos/PokeBorrador/src/components/social/TradePokemonSelector.vue
+   9:17  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  22:23  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  55:26  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  56:57  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  69:23  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/social/TradeSidePanel.vue
+   6:13  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+   8:34  error    Unexpected any. Specify a different type                                          @typescript-eslint/no-explicit-any
+  15:7   warning  'props' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/home/franco/Trabajos/PokeBorrador/src/components/team/TeamGrid.vue
+   9:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  10:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  11:41  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  12:35  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  15:9   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/team/TeamHeader.vue
+  6:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  7:35  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/team/UnifiedTeamSlot.vue
+  16:24  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/ui/ConnectionWarning.vue
+  4:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/ui/CriminalityBar.vue
+  7:45  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  8:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  9:41  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/ui/ToastNotification.vue
+  4:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/war/MapControlList.vue
+  6:35  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  9:49  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/war/MapDominanceOverlay.vue
+  12:35  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/war/WarDashboard.vue
+   8:35  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  16:52  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  26:39  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  32:39  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/war/WarMapCard.vue
+  10:8   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  15:35  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  36:42  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  41:14  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/components/war/WarPanel.vue
+  8:35  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  9:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/composables/useBattleAnimations.ts
+    6:50  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+    6:65  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   20:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   22:38  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   28:29  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  267:41  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  283:39  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  295:39  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  322:31  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  339:41  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  343:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  347:43  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  348:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  350:35  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  355:35  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  360:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  361:34  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  363:40  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  377:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/composables/useBattleBackground.ts
+  57:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  58:36  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/composables/useBattleHud.ts
+  13:13  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  22:24  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  60:69  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  79:36  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/composables/useBattleShadows.ts
+  49:100  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  88:86   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/composables/useBattleVisuals.ts
+  27:45  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  33:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/composables/useBodyClass.ts
+  9:60  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/composables/useBoxFilters.ts
+    6:41  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+    6:64  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   54:34  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   57:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   60:38  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  111:23  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  111:31  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/composables/useClassModifiers.ts
+  12:78  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  19:30  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  19:44  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  42:30  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  50:51  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/composables/useCombatCamera.ts
+   9:46  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  33:32  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  48:32  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  48:45  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/composables/useMainLayout.ts
+   6:39  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   6:58  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   6:76  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  20:34  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  35:28  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/composables/usePWA.ts
+   6:28  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  20:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  23:28  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  28:35  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  40:30  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/composables/usePokemonDetail.ts
+   11:60  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   13:39  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   18:45  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   79:29  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   86:29  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   87:38  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   93:41  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   98:30  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   99:97  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  116:45  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  132:43  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  133:34  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  143:17  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  143:25  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  148:46  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  149:34  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  163:43  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/composables/useRankedValidation.ts
+  13:40  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  46:40  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/composables/useVirtualPosition.ts
+  14:39  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  14:47  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  14:56  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  14:65  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/composables/useWindowListener.ts
+   8:60  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   8:74  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  22:62  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  22:76  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/data/weather-tables.ts
+  2:51  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/logic/auth/loadService.ts
+   40:33   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   41:35   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   81:16   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  114:104  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  115:41   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  172:24   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  173:24   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  177:33   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  177:59   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  177:86   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  177:111  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/logic/auth/loginGuard.ts
+  31:47  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/logic/auth/saveService.ts
+  128:34   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  153:12   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  158:24   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  158:55   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  159:35   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  319:8    error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  325:102  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  351:17   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  418:15   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/logic/battle/actions/healingActions.ts
+  26:170  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  44:13   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  53:18   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  54:15   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/logic/battle/actions/specialActions.ts
+  47:25  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  66:25  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/logic/battle/ai/battleAI.ts
+    9:40  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+    9:53  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+    9:72  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   10:45  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   22:26  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   33:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   33:48  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   33:63  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   33:79  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   82:42  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   82:55  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   82:71  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   83:42  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   96:48  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   96:61  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   96:83  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  100:25  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  100:35  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  109:52  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/logic/battle/battleAbilities.ts
+   62:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   76:23  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   77:20  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  150:35  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/logic/battle/battleFlow.ts
+   5:50   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   5:66   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   5:85   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   5:103  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   5:116  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  18:36   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  18:49   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  79:40   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  79:48   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  79:62   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  79:75   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  83:33   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  99:33   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/logic/battle/battleFormulas.ts
+  152:23  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  338:97  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/logic/battle/battleItems.ts
+  10:49  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  10:57  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  10:65  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  10:79  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  86:38  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/logic/battle/battleLogger.ts
+  45:68  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  59:38  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/logic/battle/battleMoves.ts
+  6:41   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  6:51   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  6:61   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  6:77   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  6:93   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  6:108  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  6:122  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/logic/battle/battleRewards.ts
+  12:98  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  37:65  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/logic/battle/battleStateMachine.ts
+  130:26  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  163:75  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  170:85  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/logic/battle/battleStatus.ts
+    9:39  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   11:16  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   25:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   25:52  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  130:40  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  130:55  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  130:70  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  151:43  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/logic/battle/battleTurn.ts
+  144:57  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  300:51  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  383:57  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  524:51  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/logic/battle/orchestrator.ts
+   19:92   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   85:53   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   98:40   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  170:152  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  183:60   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  263:68   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/logic/battle/resolution.ts
+  106:18  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  133:17  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  134:26  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  135:14  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/logic/battle/weatherMapper.ts
+  87:40  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/logic/breeding.ts
+  132:14  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/logic/breeding/breedingEngine.ts
+  205:90  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/logic/breeding/missionEngine.ts
+  182:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/logic/combat/spatialCoordinator.ts
+  55:80  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/logic/constants/tags.ts
+  113:56   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  113:81   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  113:116  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  135:28   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  155:35   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  178:28   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/logic/db/dbRouter.ts
+   94:14  warning  'e' is defined but never used. Allowed unused caught errors must match /^_/u  unused-imports/no-unused-vars
+  136:20  error    Unexpected any. Specify a different type                                      @typescript-eslint/no-explicit-any
+  287:37  error    Unexpected any. Specify a different type                                      @typescript-eslint/no-explicit-any
+  287:53  error    Unexpected any. Specify a different type                                      @typescript-eslint/no-explicit-any
+  295:23  error    Unexpected any. Specify a different type                                      @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/logic/db/idbHelper.ts
+  14:35  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  20:29  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  21:27  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  25:56  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  37:50  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/logic/db/proxyQuery.ts
+   92:16  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   99:43  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  105:43  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  110:41  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  111:36  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  154:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  203:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/logic/db/sqliteEngine.ts
+   35:35  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   39:15  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   62:34  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  118:52  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  167:49  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  299:46  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  301:70  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/logic/debug/pokemonDebugService.ts
+  137:30  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  142:52  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  150:34  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  154:43  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/logic/encounters.ts
+   44:108  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   91:44   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   96:51   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  136:57   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/logic/events/eventEngine.ts
+   35:23  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   39:25  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   39:31  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  124:62  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  125:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  179:48  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  179:62  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  182:24  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/logic/evolutionLogic.ts
+  87:27  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  87:54  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/logic/gameBus.ts
+   8:31  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  21:57  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/logic/gym/gymEngine.ts
+  28:104  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/logic/inventory/inventoryEngine.ts
+  14:31  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  38:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/logic/items/fossilEngine.ts
+  16:57  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/logic/market.ts
+   10:9    error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   30:50   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   39:60   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   44:62   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   65:128  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  107:41   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/logic/player/classEngine.ts
+  24:34  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  52:77  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  53:34  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  57:32  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  66:32  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  75:32  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  84:32  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/logic/pokemon/evolutionEngine.ts
+  19:36  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  19:56  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  24:20  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/logic/pokemonFactory.ts
+   88:48  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  141:44  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  142:38  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  159:30  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  207:60  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  313:23  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/logic/providers/GuardianService.ts
+   48:48   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   53:63   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   53:95   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   53:125  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   72:51   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  100:138  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  100:159  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/logic/pvp/pvpEngine.ts
+   34:98   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   34:108  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   35:22   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  135:39   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  137:22   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  158:42   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  159:42   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/logic/services/assetService.ts
+  105:18  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/logic/sprites.ts
+  28:14  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  29:14  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  30:14  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/logic/sqliteIDBHandler.ts
+  92:36  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  92:63  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/logic/supabase.ts
+  15:14  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  15:50  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  16:14  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  16:50  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/logic/timeUtils.ts
+  40:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  62:32  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  68:34  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  90:32  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/logic/utils/compression.ts
+   9:36  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  17:36  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/logic/utils/logger.ts
+  28:16  error    Unexpected any. Specify a different type                                      @typescript-eslint/no-explicit-any
+  34:12  warning  'e' is defined but never used. Allowed unused caught errors must match /^_/u  unused-imports/no-unused-vars
+  40:47  error    Unexpected any. Specify a different type                                      @typescript-eslint/no-explicit-any
+  49:50  error    Unexpected any. Specify a different type                                      @typescript-eslint/no-explicit-any
+  58:47  error    Unexpected any. Specify a different type                                      @typescript-eslint/no-explicit-any
+  66:48  error    Unexpected any. Specify a different type                                      @typescript-eslint/no-explicit-any
+  74:48  error    Unexpected any. Specify a different type                                      @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/logic/utils/opfsStorage.ts
+  10:58  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  35:60  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/logic/weatherUtils.ts
+  41:63  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/stores/audio.ts
+  23:68  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  36:34  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/stores/battle.ts
+  277:24  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  278:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  279:26  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  317:17  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  322:28  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  397:87  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  450:45  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  456:27  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  473:50  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  473:75  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/stores/breeding.ts
+   57:48  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  112:43  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  185:44  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  205:50  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  256:53  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  272:46  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  300:45  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/stores/buffs.ts
+  58:34  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/stores/chat.ts
+   42:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   43:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   44:40  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   47:82  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   63:58  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  102:91  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  109:43  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  140:25  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  148:63  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  156:63  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  167:47  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  178:65  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  185:29  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  186:26  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  187:59  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  188:30  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  192:26  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/stores/combatShadows.ts
+  10:50  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  11:46  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  68:53  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/stores/debug.ts
+   25:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   25:31  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   39:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   44:47  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   44:57  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   71:29  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  111:56  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  126:49  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  127:47  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  128:48  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  129:48  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  130:48  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  131:49  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  134:57  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  141:77  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/stores/debug/sections/audioTools.ts
+   11:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   95:54  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   95:79  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  117:44  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  117:69  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  137:34  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  138:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  153:34  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  154:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  154:72  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  168:90  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  188:35  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  189:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/stores/debug/sections/itemTools.ts
+  4:42   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  4:84   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  4:93   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  4:113  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/stores/debug/sections/mapTools.ts
+   1:41  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   1:66  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   1:75  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  32:24  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  34:30  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/stores/debug/sections/pokeTools.ts
+    1:42   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+    1:79   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+    1:88   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+    1:103  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   30:35   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   30:78   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   30:106  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   32:36   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   32:79   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   32:107  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   62:28   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   76:28   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   95:40   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   96:68   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  155:35   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  158:36   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  158:55   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/stores/debug/sections/statsTools.ts
+  1:43  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  1:70  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  1:79  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/stores/debug/sections/systemTools.ts
+    2:44   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+    2:105  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   64:31   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   65:43   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   81:27   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   82:43   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  100:49   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  153:35   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  191:23   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/stores/debug/sections/timeTools.ts
+  1:42  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  1:69  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  1:78  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  7:17  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/stores/events.ts
+   42:159  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   89:179  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   99:28   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  101:57   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  101:69   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  123:92   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  137:28   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  141:23   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/stores/evolution.ts
+   7:39  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  11:29  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  13:34  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  14:28  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  24:36  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  24:84  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  42:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  51:27  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  53:26  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  54:24  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/stores/game.ts
+  23:40  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/stores/game/actions/breedingActions.ts
+  11:68  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/stores/game/actions/saveActions.ts
+  13:11  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  32:20  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  36:60  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/stores/game/actions/trainerActions.ts
+  36:42  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  47:23  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/stores/gts.ts
+   13:34  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   14:34  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   15:30  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   16:36  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   19:24  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   20:26  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   21:28  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   45:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   64:49  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   98:24  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  117:20  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  134:38  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  147:58  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  164:23  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  171:58  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  183:61  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  192:48  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  202:23  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  212:43  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  224:23  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/stores/gyms.ts
+  169:60  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/stores/inventory.ts
+  210:23  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  217:56  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  227:54  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  228:17  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  325:54  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/stores/livePvP.ts
+   66:237  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  108:217  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  136:48   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/stores/map.ts
+  62:28   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  66:29   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  68:32   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  69:30   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  85:39   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  85:62   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  85:84   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  85:109  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/stores/modals.ts
+  31:53  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  32:42  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/stores/passivePvp.ts
+  30:73  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  62:60  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/stores/playerClass.ts
+  203:30  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  224:30  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/stores/pvp.ts
+  137:85  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/stores/shop.ts
+  193:49  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/stores/social.ts
+  127:77  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  342:60  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/stores/trade.ts
+   37:31   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   38:31   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   39:31   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   41:21   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   72:134  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   73:132  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   74:133  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   92:191  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  127:61   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  160:46   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  181:28   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  187:46   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/franco/Trabajos/PokeBorrador/src/types/stores.ts
+  199:18  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  211:20  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  212:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  213:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  216:20  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  217:20  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  218:20  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+✖ 1151 problems (1045 errors, 106 warnings)
+

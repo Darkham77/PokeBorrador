@@ -95,9 +95,24 @@ Consult these manuals for detailed implementation specifications:
 - **Zero-Warning**: Always maintain 0 errors and 0 warnings in `lint` and `vue-tsc`. It is MANDATORY to run `npm run validate:types` before `npm run lint`.
 - **Template Event Casting**: When using strict TypeScript in `.vue` files, it is mandatory to cast event targets in the template (e.g., `(e.target as HTMLImageElement)`) to satisfy `vue-tsc` checks on specific DOM properties.
 - **Dependency Shield**: Scripts using external libraries must handle `ImportError` and provide installation instructions.
-- **Node.js 26+ & Modern JS**:
-  - **Temporal API**: The legacy `Date` object is DEPRECATED for engine logic, synchronization, and timestamps. Use the native `Temporal` API for all durations, time zone conversions, and precise timing to avoid drift and legacy parsing issues.
-  - **Map Upsert**: Use `Map.prototype.getOrInsertComputed` (or similar native patterns) for cache lookups to minimize `.has()`/`.get()` redundancy.
+  - **Node.js 26+ Native Standards**:
+    - **Temporal API**: The legacy `Date` object is DEPRECATED for engine logic and timestamps. Use `Temporal` for all precise timing and durations.
+    - **Map Upsert**: Use `Map.prototype.getOrInsertComputed` (or native patterns) for efficient cache lookups.
+    - **Native Test Runner**: Use `node:test` for all pure logic unit tests (`npm run test:node`).
+    - **Timers**: Use `node:timers/promises` for all asynchronous delays in scripts.
+    - **Permissions**: All maintenance scripts MUST adhere to the Node.js Permission Model (`--permission`).
+    - **Resource Management**: Use the `using` keyword (Explicit Resource Management) for DB connections and file handles.
+
+### 5. Integrity & Quality Enforcement
+
+The project uses a sophisticated audit and validation engine to ensure stability and modern standards.
+
+- **Mandatory Audit Pipeline**: Running `npm run audit:full` is MANDATORY before any commit or delivery. This pipeline orchestrates:
+  - **Intelligent Audit (`audit:fix`)**: Automates SASS capitalization, GPU promotion, and Node 26+ syntax migration.
+  - **SQL Parity (`validate:sql`)**: Validates migrations using native SQLite engines.
+  - **Semantic Validation**: Synchronizes Moves, Abilities, and Items against PokeAPI/Official Data to prevent data drift.
+  - **FSM Integrity**: Ensures 1:1 parity between battle logic and FSM documentation.
+- **Zero-Warning Policy**: Zero errors and zero warnings are required for any core system component.
   - **Native TS**: Prefer `node --experimental-strip-types` for running utility scripts instead of `tsx`/`ts-node` when possible.
   - **Module Prefix**: Use the `node:` prefix for all built-in module imports (e.g., `import fs from 'node:fs'`).
 

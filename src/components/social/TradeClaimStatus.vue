@@ -1,4 +1,5 @@
 <script setup lang="ts">
+
 import { computed, ref, reactive } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
