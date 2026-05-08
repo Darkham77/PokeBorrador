@@ -1,4 +1,4 @@
-// @ts-nocheck
+
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { DBRouter } from '@/logic/db/dbRouter';
 import { ProxyQuery } from '@/logic/db/proxyQuery';

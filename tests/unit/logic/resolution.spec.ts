@@ -1,4 +1,4 @@
-// @ts-nocheck
+
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { terminateBattle } from '@/logic/battle/resolution'
 import { BATTLE_STATES, BATTLE_SUBSTATES } from '@/logic/battle/battleStateMachine'

@@ -1,4 +1,4 @@
-// @ts-nocheck
+
 /**
  * tests/unit/map_spawns.spec.js
  * Modernized unit test for map spawn HTML generation logic.

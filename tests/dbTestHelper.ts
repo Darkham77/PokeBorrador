@@ -1,4 +1,4 @@
-// @ts-nocheck
+
 /**
  * tests/dbTestHelper.js
  * Utility to provide isolated DBRouter instances for testing.

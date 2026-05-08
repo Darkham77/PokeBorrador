@@ -40,6 +40,8 @@ We prioritize a deliberate contrast between modern, sleek UI shells and classic,
 - **HUD Padding Synchronization**: To eliminate layout shifts ("jumps") during page load or HUD transitions, the main content area MUST use dynamic CSS variables (e.g., `--hud-top-padding`) calculated from the HUD's actual height.
   - **Implementation**: Use a `ResizeObserver` or a standardized `updateHudHeight` function in the root view (`MainGameView.vue`).
   - **CSS Usage**: `padding-top: var(--hud-top-padding, 110px);`.
+- **HUD Minimal Mandate**: Remove redundant data from the HUD if it is intrinsic to the current route (e.g., weather/cycle). HUD should focus on inventory and resources.
+- **Numeric Scaling (`fitText`)**: Values that can grow significantly (e.g., Currency) MUST use dynamic scaling logic to ensure absolute containment within HUD pills.
 - **Mobile Fullscreen Mandate**: All complex management modals (Inventory, Team, Shop, Pokedex) MUST switch to `type: 'fullscreen'` on viewports ≤ 950px.
   - **WHY**: Maximizes usable space on small screens and eliminates "floating card" artifacts that reduce visibility.
 - **Scroll Delegation (Fullscreen)**: In fullscreen mode, the main modal container MUST use `overflow: hidden`. Scroll responsibility MUST be delegated to an internal `.modal-scrollable-content` (or `.upd-core-body`) with `flex: 1`, `min-height: 0`, and `overflow-y: auto`.
@@ -217,6 +219,9 @@ All tooltips MUST use the `PVTooltip.vue` system. Native HTML `title` attributes
 - **Hybrid Engine**: Uses a "Flip-then-Nudge" algorithm. It first attempts to flip the position (e.g., from top to bottom) if there's no space, then "nudges" the coordinates to stay within a 10px safety margin of the viewport edges.
 - **Anchor-Aware Arrows**: The tooltip arrow MUST remain aligned with the trigger element's center. When the box is nudged, use the `--arrow-x` and `--arrow-y` CSS variables to offset the arrow appropriately.
 - **Visual Standard**: Tooltips must use `'Press Start 2P'` for titles, glassmorphism (`Blur(10px)`), and a `$yellow` border.
+- **Hemisphere Positioning**: Tooltips MUST detect screen hemispheres. Use `right` coordinates and `Translate(50%, ...)` for the right side to ensure expansion towards the center, preventing edge clipping and text compacting.
+- **Symmetrical Transitions**: When using mirrored positioning (e.g., right-side expansion), transition transforms MUST be inverted simetrically to prevent horizontal sliding during entrance.
+- **Structured Content**: Prefer `\n` (with `white-space: pre-wrap`) over horizontal separators (`|`) for atmospheric or complex data.
 - **Scroll Behavior**: Tooltips MUST hide automatically as soon as the user initiates a `scroll`, `wheel`, or `touchmove` event. This prevents "floating" tooltips from losing their anchor during rapid navigation.
 
 ### 6. Data-Driven Tooltips (In-Game Manuals)
@@ -225,6 +230,7 @@ To ensure technical information is accurate and consistent:
 
 - **Cumulative Tooltip Hierarchy**: La información en los tooltips de mapa (MapCard) debe ser aditiva y evitar contradicciones semánticas.
   - **REGLA**: El texto genérico `Habitante común` es un fallback absoluto. **NUNCA** debe mostrarse si el Pokémon tiene un modificador activo (Ciclo Horario o Clima).
+  - **Jerarquía Ambiental**: El orden estándar para datos de atmósfera es **Ciclo -> Estación -> Clima**.
   - **Estructura**: `Aparición: [Horario] + [Modificador Clima]`.
   - **Ejemplo**: Si es un Pokémon de Noche potenciado por Lluvia, debe mostrar: `Aparición: 🌙 (Potenciado por: 🌧️)`.
   - **Visitantes**: Si es un visitante, el texto debe indicar explícitamente su origen climático para justificar su presencia fuera de su hábitat natural.

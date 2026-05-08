@@ -1,4 +1,4 @@
-// @ts-nocheck
+
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { mount } from '@vue/test-utils'

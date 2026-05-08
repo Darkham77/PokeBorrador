@@ -1,4 +1,4 @@
-// @ts-nocheck
+
 import { describe, it, expect, vi } from 'vitest'
 import { getRouteWeather, mulberry32 } from '@/logic/weatherUtils'
 

@@ -1,4 +1,4 @@
-// @ts-nocheck
+
 /**
  * tests/unit/fossils.spec.js
  * Unit tests for Fossil Restoration logic.

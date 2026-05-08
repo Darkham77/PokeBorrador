@@ -1,4 +1,4 @@
-// @ts-nocheck
+
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { useItemOnPokemon } from '@/logic/providers/itemProvider'
 import { itemEffects } from '@/logic/items/itemEffects'

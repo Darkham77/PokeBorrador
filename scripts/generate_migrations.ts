@@ -14,30 +14,32 @@
  * Se ejecuta automáticamente durante el proceso de build y en Hot Update mediante Vite.
  */
 
-import fs from 'node:fs';
+import fs from 'node:fs/promises';
 import path from 'node:path';
-import { Temporal } from '@js-temporal/polyfill';
 
 const MIGRATIONS_DIR = path.resolve(process.cwd(), 'database/migrations');
 const OUTPUT_FILE = path.resolve(process.cwd(), 'src/logic/db/migrations_data.ts');
 
-export function generateMigrations() {
+export async function generateMigrations() {
   console.log('[Migrations Generator] Scanning directory:', MIGRATIONS_DIR);
-  
-  if (!fs.existsSync(MIGRATIONS_DIR)) {
+
+  try {
+    await fs.access(MIGRATIONS_DIR);
+  } catch {
     console.warn('[Migrations Generator] Migrations directory not found.');
     return;
   }
 
-  // 1. Get all SQL files, excluding baseline if needed, but here we include all updates
-  const files = fs.readdirSync(MIGRATIONS_DIR)
-    .filter(f => f.endsWith('.sql') && !f.includes('baseline_schema')) // Baseline is handled by TABLES_SCHEMA
+  // 1. Get all SQL files
+  const list = await fs.readdir(MIGRATIONS_DIR);
+  const files = list
+    .filter(f => f.endsWith('.sql') && !f.includes('baseline_schema'))
     .sort((a, b) => a.localeCompare(b));
 
-  const migrations = files.map(filename => {
+  const migrations = await Promise.all(files.map(async (filename) => {
     const id = filename.replace('.sql', '');
-    const content = fs.readFileSync(path.join(MIGRATIONS_DIR, filename), 'utf-8');
-    
+    const content = await fs.readFile(path.join(MIGRATIONS_DIR, filename), 'utf-8');
+
     // Parse metadata from comments
     // Example: -- check: { "table": "profiles", "column": "role" }
     let check = null;
@@ -57,7 +59,7 @@ export function generateMigrations() {
         const commentIndex = line.indexOf('--');
         if (commentIndex !== -1) {
           // Keep part before comment, but only if it's not the 'check:' metadata line
-          if (line.includes('check:')) return ''; 
+          if (line.includes('check:')) return '';
           return line.substring(0, commentIndex);
         }
         return line;
@@ -72,7 +74,7 @@ export function generateMigrations() {
       sql: sqlLines,
       check
     };
-  });
+  }));
 
   const output = `/**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
@@ -85,20 +87,18 @@ export const DATABASE_MIGRATIONS = ${JSON.stringify(migrations, null, 2)};
 
   // Create directory if it doesn't exist
   const outputDir = path.dirname(OUTPUT_FILE);
-  if (!fs.existsSync(outputDir)) {
-    fs.mkdirSync(outputDir, { recursive: true });
-  }
+  await fs.mkdir(outputDir, { recursive: true });
 
-  fs.writeFileSync(OUTPUT_FILE, output);
+  await fs.writeFile(OUTPUT_FILE, output);
   console.log(`[Migrations Generator] Generated ${migrations.length} migrations in ${OUTPUT_FILE}`);
 }
 
 // Support running directly
 const isDirectRun = process.argv[1] && (
-  process.argv[1].endsWith('generate_migrations.ts') || 
+  process.argv[1].endsWith('generate_migrations.ts') ||
   process.argv[1].includes('generate_migrations.ts')
 );
 
 if (isDirectRun) {
-  generateMigrations();
+  generateMigrations().catch(console.error);
 }

@@ -1,5 +1,5 @@
 import { Temporal } from '@js-temporal/polyfill'
-// @ts-nocheck
+
 import { describe, it, expect } from 'vitest'
 import { isEventActiveNow, getGlobalMultipliers, getSpeciesBoosts } from '@/logic/events/eventEngine'
 

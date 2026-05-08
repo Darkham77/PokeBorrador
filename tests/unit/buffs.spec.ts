@@ -1,4 +1,4 @@
-// @ts-nocheck
+
 /**
  * @vitest-environment jsdom
  * tests/unit/buffsStore.spec.js

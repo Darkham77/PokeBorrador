@@ -1,4 +1,4 @@
-// @ts-nocheck
+
 import { describe, it, expect } from 'vitest';
 import { isValidTarget } from '@/logic/items/itemEffects';
 

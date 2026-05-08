@@ -11,18 +11,12 @@ import path from 'node:path';
 
 const IGNORE_DIRS = new Set(['node_modules', '.git', 'dist', '_raw-assets']);
 
-async function walk(dir: string): Promise<string[]> {
-  let files: string[] = [];
-  const list = await fs.readdir(dir);
-  for (const file of list) {
-    if (IGNORE_DIRS.has(file)) continue;
-    const fullPath = path.join(dir, file);
-    const stat = await fs.stat(fullPath);
-    if (stat.isDirectory()) {
-      files = files.concat(await walk(fullPath));
-    } else if (/\.(ts|vue|js)$/.test(file)) {
-      files.push(fullPath);
-    }
+async function getFilesToMigrate(dir: string): Promise<string[]> {
+  const files: string[] = [];
+  const pattern = '**/*.{ts,js,vue}';
+  
+  for await (const entry of fs.glob(pattern, { cwd: dir, exclude: (p) => Array.from(IGNORE_DIRS).some(d => p.includes(d)) })) {
+    files.push(path.resolve(dir, entry));
   }
   return files;
 }
@@ -76,7 +70,7 @@ async function migrate(filePath: string) {
 async function main() {
   const targets = ['src', 'tests'];
   for (const t of targets) {
-    const files = await walk(path.join(process.cwd(), t));
+    const files = await getFilesToMigrate(path.join(process.cwd(), t));
     for (const file of files) {
       await migrate(file);
     }

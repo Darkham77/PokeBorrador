@@ -98,14 +98,14 @@ You MUST run these commands and fix EVERY issue until a clean pass is achieved.
 
 **THE MANDATORY CHAIN (Execution Order):**
 
-1. **Unified Project Audit**: `npm run audit`
-2. **Type-Safety**: `npm run type-check`
-3. **Database Validation**: `npm run validate-sql` (CRITICAL: Verifies migration syntax against SQLite)
-4. **Linting**: `npm run lint`
-5. **Unit Tests**: `npm run test`
-6. **Production Build**: `npm run build`
-
-**Unified Project Repair**: `npm run audit:fix` (Run this to resolve automated issues if the audit fails).
+1. **Type-Safety**: `npm run type-check`
+2. **Database Validation**: `npm run validate-sql` (CRITICAL: Verifies migration syntax against SQLite)
+3. **Items Integrity**: `npm run validate:items` (Auditoría de integridad de base de datos de objetos)
+4. **FSM Audit**: `npm run fsm:audit` (Auditoría de estados de batalla contra diagramas Mermaid)
+5. **Standard Repair**: `npm run audit:fix` (Corrección automática de Viewports y filtros SASS)
+6. **Linting**: `npm run lint`
+7. **Unit Tests**: `npm run test`
+8. **Production Build**: `npm run build`
 
 ### 4. Database Triple Parity Sync
 

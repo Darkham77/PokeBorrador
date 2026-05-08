@@ -1,4 +1,4 @@
-// @ts-nocheck
+
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { generateEncounter } from '@/logic/encounters'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'

@@ -1,4 +1,4 @@
-// @ts-nocheck
+
 import { describe, it, expect, beforeEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { useLoadingStore } from '@/stores/loading'

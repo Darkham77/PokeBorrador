@@ -1,4 +1,4 @@
-// @ts-nocheck
+
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeEach } from 'vitest'
 import { ref } from 'vue'

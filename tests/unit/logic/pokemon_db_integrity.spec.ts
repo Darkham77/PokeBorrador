@@ -1,4 +1,4 @@
-// @ts-nocheck
+
 import { describe, it, expect } from 'vitest';
 import { POKEMON_DB } from '@/data/pokemonDB';
 

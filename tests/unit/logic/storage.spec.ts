@@ -1,4 +1,4 @@
-// @ts-nocheck
+
 import { describe, it, expect } from 'vitest';
 import { getPokemonTier } from '@/logic/pokemon/tierEngine';
 import { getSellPrice, filterInventoryByCategory } from '@/logic/inventory/inventoryEngine';

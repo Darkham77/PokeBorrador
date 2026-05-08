@@ -1,4 +1,4 @@
-// @ts-nocheck
+
 /**
  * tests/unit/battle.spec.js
  * Consolidated unit tests for Battle Engine mechanics.

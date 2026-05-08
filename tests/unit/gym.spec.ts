@@ -1,4 +1,4 @@
-// @ts-nocheck
+
 /**
  * tests/unit/gym.spec.js
  * Unit tests for Gym TM Rewards and Progress logic.

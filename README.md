@@ -1,6 +1,6 @@
-# Manual de Desarrollo: Pokémon Online (Vue 3 + Phaser 4)
+# Manual de Desarrollo: Poké Vicio (Vue 3 + Vite + Supabase)
 
-Este manual detalla los comandos y configuraciones necesarios para trabajar en la nueva versión del juego usando **Vue 3**, **Phaser 4**, **Vite** y **Supabase**.
+Este manual detalla los comandos y configuraciones necesarios para trabajar en la versión moderna del juego usando **Vue 3**, **Vite** y **Supabase**. El motor de juego ha sido migrado íntegramente a Vue para máxima reactividad y rendimiento.
 
 ## 📋 Requisitos Previos
 
@@ -119,16 +119,18 @@ Antes de realizar una entrega o desplegar cambios, es **MANDATORIO** que el cód
 5. **Build**: La aplicación debe compilar correctamente para producción.
 
 ```bash
-npm run type-check
-npm run validate-sql
-npm run lint
-npm run test
-npm run build
+npm run type-check   # Verificación de tipos
+npm run validate-sql # Validación de migraciones SQL
+npm run validate:items # Auditoría de integridad de ítems
+npm run fsm:audit    # Auditoría de estados de batalla
+npm run audit:fix    # Corrección automática de estándares
+npm run test         # Unit tests
+npm run build        # Build para producción
 ```
 
 ### Reglas de Oro
 
-- **Eficiencia GPU**: Usa siempre Texture Atlases y Object Pooling en Phaser.
+- **Rendimiento GPU**: Prioriza el uso de transformaciones CSS3 (`translate3d`), capas GPU y evita filtros costosos en bucles de animación.
 - **Assets WebP**: Prohibido usar PNG/JPG raw; usa el script de conversión a WebP. (Excepción: Assets de PokeAPI deben ser PNG).
 - **Ley de 500 Líneas**: Ningún archivo de lógica o componente debe exceder las 500 líneas.
 - **Aislamiento de Servidores**: No mezcles datos de instancias Global (Supabase) con Local (SQLite).
@@ -153,6 +155,9 @@ npm run download-assets -- --items      # Solo ítems
 npm run download-assets -- --trainers   # Solo entrenadores
 ```
 
+> [!NOTE]
+> Los recursos se descargan en la carpeta `external_assets/`. Estos archivos están fuera del pipeline automático de `_raw-assets` por defecto para evitar duplicación masiva, pero podés moverlos manualmente si necesitás procesarlos.
+
 ### 🖼️ Pipeline de Assets
 
 Procesa todas las imágenes de `_raw-assets`, las convierte a WebP y las espeja en la estructura del proyecto:
@@ -160,6 +165,9 @@ Procesa todas las imágenes de `_raw-assets`, las convierte a WebP y las espeja 
 ```bash
 npm run convert-assets
 ```
+
+> [!TIP]
+> El script detecta automáticamente si un asset es Pixel Art (basado en carpetas como `sprites/` o `icons/`) para aplicar compresión **Lossless**. Para el resto, aplica una calidad adaptativa basada en la resolución.
 
 ### 🔎 Auditoría de Estándares
 
@@ -213,16 +221,14 @@ Para mantener la calidad y el orden del código, es una excelente práctica real
 
 ### 3. 🖼️ Gestión de Imágenes (`_raw-assets`)
 
-El proyecto usa un sistema de espejado para optimizar imágenes automáticamente a WebP y generar diferentes niveles de detalle (LOD).
+El proyecto usa un sistema de espejado (mirroring) para optimizar imágenes automáticamente a WebP sin intervención manual pesada.
 
-- **Ubicación**:
-  - `_raw-assets/lod/`: Imágenes que requieren múltiples tamaños (ej. mapas). Genera `@1x`, `@0.5x`, `@0.25x`.
-  - `_raw-assets/original/`: Imágenes que solo necesitan conversión a WebP 1:1 (ej. sprites).
-- **Mirroring**: La estructura dentro de `_raw-assets` debe ser idéntica a la del proyecto (ej: `_raw-assets/lod/public/assets/maps/` se volcará en `public/assets/maps/`).
-- **Compilación**: Para procesar nuevas imágenes, pedile a la IA: *"recompila las imágenes"*. El script aplicará **Smart Scaling**:
-  - **< 500px**: Mantiene 100% de calidad en todos los niveles (LODs) para evitar que avatares o iconos se vean borrosos.
-  - **> 1000px**: Genera versiones reducidas al 50% y 25% para optimizar carga en móviles.
-- **Atlas de Phaser**: Si creas una carpeta que termine en `.atlas` (ej: `vfx.atlas/`), el script la compilará automáticamente en un Texture Atlas (JSON + WebP) para el motor de juego.
+- **Ubicación**: Coloca tus assets originales en `_raw-assets/`. La estructura debe ser idéntica a la del proyecto (ej: `_raw-assets/public/assets/maps/`).
+- **Compilación**: Ejecutá `npm run convert-assets`. El script procesará todo:
+  - **Conversión**: Todo se transforma a `.webp`.
+  - **Pixel Art Safety**: Si el archivo está en carpetas de `sprites`, `icons`, `badges` o `items`, se usa **Lossless** para mantener la nitidez.
+  - **Smart Quality**: Para imágenes grandes (> 250px), aplica una ligera compresión lossy para optimizar la carga inicial.
+- **Mirroring**: El resultado se volcará directamente en la carpeta correspondiente del proyecto (ej: de `_raw-assets/public/...` a `public/...`).
 
 ### 4. ✨ Renderizado: Pixelated vs Smooth
 
@@ -241,13 +247,19 @@ Cuando la IA actualiza una Skill (archivos `.md` en `.agents/skills/`):
 - **SIEMPRE LEELA**: A veces la IA tiene la mala costumbre de borrar secciones antiguas o útiles por error al reescribir.
 - **Revisión**: Mirá los cambios (los bloques rojos del diff) antes de confirmar que el cambio es correcto.
 
-### 6. 🔍 Debugging de Texturas (Phaser)
+### 6. 🔍 Debugging y Comandos de Consola
 
-Para verificar qué imágenes están cargadas en el motor de juego:
+Para verificar estados o forzar situaciones de prueba, el proyecto expone un proxy de debug seguro.
 
-- **Inspección**: Abrí la consola (`F12`) y escribí `phaserBridge.game.textures.list`.
-- **Atlas**: Para ver qué hay dentro de un atlas: `Object.keys(phaserBridge.game.textures.get('vfx').frames)`.
-- **LOD Check**: Para ver si cargó la versión optimizada: `phaserBridge.game.textures.get('vfx').source[0].image.src`.
+- **Acceso**: Abrí la consola (`F12`) y usá el objeto `window.__VITE_DEBUG__`.
+- **Ejemplos**:
+  - `__VITE_DEBUG__.addMoney(9999)`: Sumar dinero.
+  - `__VITE_DEBUG__.setWeather('rain')`: Cambiar clima actual.
+  - `__VITE_DEBUG__.spawnPokemon(25)`: Aparecer un Pikachu.
+- **Auditoría de Batalla**: Si estás debugeando el flujo de combate (FSM), usá:
+  - `npm run fsm:audit`: Verifica que el código actual coincida con los diagramas de estados.
+  - `npm run fsm:flow`: Busca condiciones de carrera en las transiciones de estados.
+- **Seguridad**: Estos comandos están deshabilitados en producción para usuarios normales (ver sección 7).
 
 ### 7. 🛡️ Sistema de Seguridad y Moderación (Baneos)
 

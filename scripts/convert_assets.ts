@@ -18,17 +18,12 @@ enableCompileCache();
 
 const SOURCE_DIR = path.resolve(process.cwd(), '_raw-assets');
 
-async function walk(dir: string): Promise<string[]> {
-  let files: string[] = [];
-  const list = await fs.readdir(dir);
-  for (const file of list) {
-    const fullPath = path.join(dir, file);
-    const stat = await fs.stat(fullPath);
-    if (stat && stat.isDirectory()) {
-      files = files.concat(await walk(fullPath));
-    } else {
-      files.push(fullPath);
-    }
+async function getFilesToConvert(dir: string): Promise<string[]> {
+  const files: string[] = [];
+  const pattern = '**/*.{png,jpg,jpeg,webp}';
+  
+  for await (const entry of fs.glob(pattern, { cwd: dir })) {
+    files.push(path.resolve(dir, entry));
   }
   return files;
 }
@@ -82,7 +77,7 @@ async function main() {
     process.exit(1);
   }
 
-  const files = await walk(SOURCE_DIR);
+  const files = await getFilesToConvert(SOURCE_DIR);
   console.log(styleText('yellow', `   Encontrados ${files.length} archivos en _raw-assets.\n`));
 
   for (const file of files) {

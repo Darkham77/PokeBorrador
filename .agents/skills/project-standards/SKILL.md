@@ -88,9 +88,8 @@ Consult these manuals for detailed implementation specifications:
 
 ### 4. SASS and Build Integrity
 
-- **Capitalization Duality (SASS 2.0 Integrity)**:
-  - **SASS Traps**: ALL CSS functions that collide with SASS built-ins (e.g., `Scale()`, `Blur()`, `Invert()`, `Rotate()`, `Translate()`) **MUST** be capitalized in every CSS property (including `transform` and `filter`). Lowercase versions (e.g., `scale()`) are intercepted by Dart Sass 2.0 and cause compilation failures.
-  - **Module Protection**: Automated refactoring tools MUST exclude functions preceded by a dot `.` or dollar `$` (e.g., `color.scale`, `$var.blur`) to preserve SASS module integrity.
+- **Unified SASS Trap Engine**: ALL CSS/SASS functions (e.g., `Scale()`, `Blur()`, `Rotate()`) MUST be capitalized globally to prevent Dart Sass 2.0 collisions. The audit engine uses a unified `sassTraps` rule that automatically excludes functions preceded by `.` or `$`.
+- **Audit Exemptions**: Utility, maintenance, and migration scripts (located in `scripts/`) are EXEMPT from legacy code audits (e.g., `legacyDates`) to allow technical support tasks without false positives.
 - **@use Standard**: Forbidden use of `@import`. Use `@use` and `@forward`.
 - **Zero-Warning**: Always maintain 0 errors and 0 warnings in `lint` and `vue-tsc`. It is MANDATORY to run `npm run type-check` before `npm run lint`.
 - **Template Event Casting**: When using strict TypeScript in `.vue` files, it is mandatory to cast event targets in the template (e.g., `(e.target as HTMLImageElement)`) to satisfy `vue-tsc` checks on specific DOM properties.
@@ -148,14 +147,25 @@ To ensure rigor and traceability, every complex task MUST follow the artifact li
 
 ## 📊 Diagnostic Tools
 
-Use these scripts to verify project standards:
+Use these scripts to verify project standards and ensure stability:
 
-- `audit_project.ts`: `npm run audit`. Motor unificado de estándares.
-- `audit_project.ts --fix`: `npm run audit:fix`. Reparación automática de estándares.
-- `audit:full`: `npm run audit:full`. Auditoría total (Código + FSM + Ítems + SQL).
-- `convert_assets.ts`: `npm run convert-assets`. Pipeline unificado de assets.
-- `verify_fsm_diagrams.ts`: `npm run fsm:verify`. Verificador de paridad código-diagrama.
-- `audit_fsm_implementation.ts`: `npm run fsm:audit`. Auditoría profunda de lógica FSM.
-- `audit_fsm_flow_parity.ts`: `npm run fsm:flow`. Verificador de secuencia de estados.
-- `validate_sql_migrations.ts`: `npm run validate-sql`. Validador de esquemas SQL.
-- `validate_items.ts`: `npm run validate:items`. Integridad de base de datos de ítems.
+### 🛡️ Core Validation
+
+- `npm run type-check`: Verificación de integridad de tipos TypeScript (Cero Errores).
+- `npm run validate-sql`: Validador de esquemas y migraciones SQL contra motor local.
+- `npm run validate:items`: Auditoría de integridad de base de datos de ítems y objetos.
+- `npm run audit`: Escaneo unificado de estándares (Viewports, GPU, SASS filters).
+- `npm run audit:fix`: Reparación automática de estándares y filtros SASS.
+- `npm run audit:full`: Auditoría total (Código + FSM + Ítems + SQL).
+- `npm run lint`: Verificación de estilo y sintaxis (incluye type-check).
+
+### ⚔️ Battle Engine (FSM)
+
+- `npm run fsm:verify`: Verificador de paridad 1:1 entre código y diagramas Mermaid.
+- `npm run fsm:audit`: Auditoría profunda de lógica y transiciones FSM.
+- `npm run fsm:flow`: Verificador de secuencia de estados y detección de race conditions.
+
+### 🖼️ Assets
+
+- `npm run convert-assets`: Pipeline unificado para conversión a WebP y mirroring.
+- `npm run download-assets`: Descargador de sprites externos (PokeAPI/Showdown).

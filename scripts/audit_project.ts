@@ -71,23 +71,37 @@ const config = {
     message: "Import de Node sin prefijo 'node:'.",
     fix: (match: string) => match.replace(/['"](fs|path|os|crypto|util|url|events|stream|child_process)['"]/, (m) => m.slice(0, 1) + 'node:' + m.slice(1))
   },
+  tsIgnore: {
+    regex: /\/\/\s*@ts-(ignore|nocheck|expect-error)/g,
+    message: "Uso de supresión de TypeScript detectado. Prohibido por la política 'Zero-Ignore'.",
+    severity: 'error' as const,
+    fix: () => '',
+    fixable: true
+  },
+  timersPromises: {
+    regex: /new Promise\(r => setTimeout\(r, (\d+)\)\)/g,
+    message: "Uso de setTimeout manual. Usa 'import { setTimeout } from \"node:timers/promises\"'.",
+    fix: (match: string) => match.replace(/new Promise\(r => setTimeout\(r, (\d+)\)\)/, 'await setTimeout($1)'),
+    check: (filePath: string) => !filePath.endsWith('.vue') // Solo para scripts Node, no browser
+  },
+  explicitResource: {
+    regex: /const (\w+) = (new DatabaseSync|fs\.openSync)/g,
+    message: "Recurso detectado sin 'using'. Usa Explicit Resource Management (Node 26+).",
+    fix: (match: string) => match.replace('const', 'using'),
+    check: (filePath: string) => !filePath.endsWith('.vue')
+  },
   fileLength: {
     maxLines: 500,
     ignorePattern: /\[PureVue-Ignore-Length\]/
   }
 };
 
-async function walk(dir: string): Promise<string[]> {
-  let files: string[] = [];
-  const list = await fs.readdir(dir);
-  for (const file of list) {
-    if (IGNORE_DIRS.has(file)) continue;
-    const fullPath = path.join(dir, file);
-    if ((await fs.stat(fullPath)).isDirectory()) {
-      files = files.concat(await walk(fullPath));
-    } else if (AUDIT_EXTENSIONS.has(path.extname(file))) {
-      files.push(fullPath);
-    }
+async function getFilesToAudit(dir: string): Promise<string[]> {
+  const files: string[] = [];
+  const pattern = `**/*{${Array.from(AUDIT_EXTENSIONS).join(',')}}`;
+  
+  for await (const entry of fs.glob(pattern, { cwd: dir, exclude: (p) => Array.from(IGNORE_DIRS).some(d => p.includes(d)) })) {
+    files.push(path.resolve(dir, entry));
   }
   return files;
 }
@@ -105,7 +119,15 @@ async function auditFile(filePath: string, fix: boolean): Promise<Violation[]> {
     const tag = 'script';
     let block = isVue ? extractBlock(content, tag) : content;
     if (block) {
-      const newBlock = runRules(filePath, block, [config.legacyDates, config.nodePrefix], violations, fix, isVue ? findBlockStart(content, tag) : 0);
+      // Reglas de lógica
+      let rules = [config.legacyDates, config.nodePrefix, config.tsIgnore, config.timersPromises, config.explicitResource];
+      
+      // EXCEPCIÓN: Ignorar 'legacyDates' en scripts de utilidad/migración
+      if (filePath.includes('scripts' + path.sep) || filePath.includes('audit_project.ts')) {
+        rules = rules.filter(r => r !== config.legacyDates);
+      }
+
+      const newBlock = runRules(filePath, block, rules, violations, fix, isVue ? findBlockStart(content, tag) : 0);
       if (fix && newBlock !== block) {
         content = isVue ? injectBlock(content, tag, newBlock) : newBlock;
         modified = true;
@@ -145,8 +167,12 @@ function runRules(filePath: string, content: string, rules: any[], violations: V
         if (match[2].charAt(0) === match[2].charAt(0).toUpperCase()) continue; 
       }
       
-      if (rule === config.gpuGaps) {
-        if (!rule.check(content, match)) continue; 
+      if (rule.check) {
+        if (rule === config.gpuGaps) {
+          if (!rule.check(content, match)) continue;
+        } else {
+          if (!rule.check(filePath, match)) continue;
+        }
       }
       
       const lineNo = content.substring(0, match.index).split('\n').length + offset;
@@ -180,8 +206,8 @@ function injectBlock(content: string, tag: string, block: string): string {
 async function main() {
   const { values } = parseArgs({ options: { fix: { type: 'boolean', short: 'f' }, path: { type: 'string', short: 'p', default: '.' } } });
   console.log(styleText('bold', '\n--- 🔎 POKE VICIO - INTELLIGENT AUDIT ---'));
-  const files = await walk(path.resolve(process.cwd(), values.path as string));
-  let all = [];
+  const files = await getFilesToAudit(path.resolve(process.cwd(), values.path as string));
+  let all: Violation[] = [];
   for (const f of files) all = all.concat(await auditFile(f, !!values.fix));
   all.forEach(v => console.log(styleText(v.severity === 'error' ? 'red' : 'yellow', `[${v.severity.toUpperCase()}] ${path.relative(process.cwd(), v.file)}:${v.line} -> ${v.message} ("${v.context}")`)));
   console.log(`\n❌ Errores: ${all.filter(v=>v.severity==='error').length} | ⚠️ Advertencias: ${all.filter(v=>v.severity==='warning').length}`);

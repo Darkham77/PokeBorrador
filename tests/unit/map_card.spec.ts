@@ -1,4 +1,4 @@
-// @ts-nocheck
+
 /**
  * tests/unit/map_card.spec.js
  */

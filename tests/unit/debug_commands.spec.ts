@@ -1,5 +1,5 @@
 import { Temporal } from '@js-temporal/polyfill'
-// @ts-nocheck
+
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'

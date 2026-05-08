@@ -40,6 +40,17 @@ describe('Database Translation Engine (Native)', () => {
       assert.strictEqual(translatePostgresToSqlite("jsonb_array_elements(data)"), "json_each(data)");
       assert.strictEqual(translatePostgresToSqlite("jsonb_array_length(data)"), "json_array_length(data)");
       assert.strictEqual(translatePostgresToSqlite("to_jsonb(val)"), "json(val)");
+      assert.strictEqual(translatePostgresToSqlite("jsonb_insert(a, b, c)"), "json_insert(a, b, c)");
+    });
+
+    it('should translate string functions', () => {
+      assert.strictEqual(translatePostgresToSqlite("SUBSTRING(name FROM 1 FOR 3)"), "SUBSTR(name FROM 1 FOR 3)");
+    });
+
+    it('should translate complex epoch and array functions', () => {
+      assert.strictEqual(translatePostgresToSqlite("EXTRACT(epoch FROM created_at)"), "unixepoch(created_at)");
+      assert.strictEqual(translatePostgresToSqlite("ARRAY_AGG(id)"), "json_group_array(id)");
+      assert.strictEqual(translatePostgresToSqlite("string_agg(name, ',')"), "group_concat(name, ',')");
     });
 
     it('should translate Boolean constants', () => {
@@ -47,8 +58,22 @@ describe('Database Translation Engine (Native)', () => {
       assert.strictEqual(translatePostgresToSqlite("UPDATE t SET active = FALSE"), "UPDATE t SET active = 0");
     });
 
+    it('should translate NOW() and UUID generation', () => {
+      assert.ok(translatePostgresToSqlite("DEFAULT NOW()").includes("(datetime('now'))"));
+      assert.ok(translatePostgresToSqlite("gen_random_uuid()").includes("hex(randomblob(16))"));
+    });
+
+    it('should remove FOR UPDATE locking', () => {
+      assert.strictEqual(translatePostgresToSqlite("SELECT * FROM users FOR UPDATE"), "SELECT * FROM users");
+    });
+
     it('should suppress RAISE EXCEPTION', () => {
       assert.strictEqual(translatePostgresToSqlite("RAISE EXCEPTION 'Error message'"), "SELECT 1");
+    });
+
+    it('should translate ADD COLUMN IF NOT EXISTS', () => {
+      const sql = "ALTER TABLE users ADD COLUMN IF NOT EXISTS email TEXT";
+      assert.strictEqual(translatePostgresToSqlite(sql), "ALTER TABLE users ADD COLUMN email TEXT");
     });
   });
 

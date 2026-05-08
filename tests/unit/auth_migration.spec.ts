@@ -1,5 +1,5 @@
 import { Temporal } from '@js-temporal/polyfill'
-// @ts-nocheck
+
 /**
  * tests/unit/auth_migration.spec.js
  * Verifies the migration logic between Local and Cloud saves using isolated DBRouter.

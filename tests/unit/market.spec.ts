@@ -1,4 +1,4 @@
-// @ts-nocheck
+
 /**
  * tests/unit/market.spec.js
  * Modernized legacy test for Market UI logic.

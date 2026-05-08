@@ -1,4 +1,4 @@
-// @ts-nocheck
+
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { runPlayerAction } from '@/logic/battle/battleTurn'
 import { gameBus } from '@/logic/gameBus'

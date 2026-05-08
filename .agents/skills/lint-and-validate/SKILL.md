@@ -14,10 +14,13 @@ description: "Automatic quality control, linting, and static analysis procedures
 It is MANDATORY to run the full verification chain before reporting a task as completed:
 
 1. **Type Check**: `npm run type-check`
-2. **SQL Validation**: `npm run validate-sql` (Mandatory if migrations/SQL files were modified)
-3. **Lint/Fix**: `npm run lint`
-4. **Unit Tests**: `npm run test`
-5. **Production Build**: `npm run build`
+2. **SQL Validation**: `npm run validate-sql`
+3. **Items Integrity**: `npm run validate:items`
+4. **FSM Audit**: `npm run fsm:audit`
+5. **Standard Audit**: `npm run audit` (o `audit:fix` para reparación automática)
+6. **Lint/Fix**: `npm run lint`
+7. **Unit Tests**: `npm run test`
+8. **Production Build**: `npm run build`
 
 > **Note**: Do not skip steps. High-fidelity web games require absolute build integrity.
 

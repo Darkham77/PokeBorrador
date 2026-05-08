@@ -1,4 +1,4 @@
-// @ts-nocheck
+
 /**
  * tests/unit/ranked.spec.js
  * Unit tests for Ranked PvP logic.

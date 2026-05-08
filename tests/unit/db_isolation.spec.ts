@@ -1,4 +1,4 @@
-// @ts-nocheck
+
 /**
  * tests/unit/db_isolation.spec.js
  * Verifies that the DB isolation mandate is technically enforced.
