@@ -196,7 +196,7 @@ const consumeItem = (name: string) => {
   &:hover {
     background: Rgba(155, 77, 255, 0.15);
     border-color: var(--purple-light);
-    transform: translateX(4px);
+    transform: Translatex(4px);
     
     .move-name { color: var(--purple-light); }
   }

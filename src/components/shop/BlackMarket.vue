@@ -134,12 +134,14 @@ onMounted(() => {
   
   &:hover:not(.sold-out) {
     border-color: Rgba(239, 68, 68, 0.4);
-    transform: translateY(-5px);
+    transform: Translatey(-5px);
   }
   
   &.sold-out {
     opacity: 0.6;
-    filter: GrayScale(0.8);
+    will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Grayscale(0.8);
   }
 }
 
@@ -179,7 +181,9 @@ onMounted(() => {
     height: 48px;
     image-rendering: pixelated;
     z-index: var(--z-base);
-    filter: Drop-Shadow(0 4px 8px Rgba(0, 0, 0, 0.5));
+    will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Drop-Shadow(0 4px 8px Rgba(0, 0, 0, 0.5));
   }
   
   .glow {

@@ -370,7 +370,7 @@ const isEffectActive = (type: string, category: string) => {
   &:hover {
     background: Rgba(255, 255, 255, 0.08);
     border-color: Rgba(255, 255, 255, 0.15);
-    transform: translateY(-2px);
+    transform: Translatey(-2px);
   }
 
   &.active {
@@ -378,7 +378,10 @@ const isEffectActive = (type: string, category: string) => {
     border-color: white;
     box-shadow: 0 4px 12px Rgba(124, 58, 237, 0.4);
     
-    .icon { filter: Drop-Shadow(0 0 5px white); }
+    .icon { will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Drop-Shadow(0 0 5px white); }
   }
 
   .icon { font-size: 16px; }
@@ -400,7 +403,7 @@ const isEffectActive = (type: string, category: string) => {
 
   &:hover {
     background: Rgba(255, 255, 255, 0.08);
-    transform: translateX(4px);
+    transform: Translatex(4px);
   }
 
   .btn-content {

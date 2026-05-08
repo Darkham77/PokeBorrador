@@ -155,7 +155,7 @@ const confirmRelease = () => {
 .legacy-btn:hover {
   background: Rgba(51, 51, 51, 1);
   border-color: Rgba(102, 102, 102, 1);
-  transform: translateY(-2px);
+  transform: Translatey(-2px);
 }
 
 .rocket-btn { color: Rgba(239, 68, 68, 1); border-color: Rgba(239, 68, 68, 0.4); }
@@ -189,6 +189,6 @@ const confirmRelease = () => {
 }
 .pixel-slide-enter-from, .pixel-slide-leave-to {
   opacity: 0;
-  transform: translateY(-10px);
+  transform: Translatey(-10px);
 }
 </style>

@@ -64,7 +64,7 @@ $poder-color: var(--red);
   &:hover {
     background: Rgba(255, 255, 255, 0.06);
     border-color: Rgba(255, 255, 255, 0.15);
-    transform: translateX(5px);
+    transform: Translatex(5px);
   }
 
   .war-stat-label { font-size: 9px; color: var(--gray); margin-bottom: 2px; display: block; }
@@ -89,7 +89,7 @@ $poder-color: var(--red);
   transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 
   &:hover {
-    transform: translateY(-8px) scale3d(1.02, 1.02, 1);
+    transform: Translatey(-8px) scale3d(1.02, 1.02, 1);
     border-color: Rgba(255, 255, 255, 0.4);
     box-shadow: 0 25px 50px Rgba(0, 0, 0, 0.6);
     z-index: var(--z-base);

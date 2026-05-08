@@ -109,7 +109,7 @@ const getUnreadCount = (friendId: string | number) => {
 
   &:hover {
     background: Rgba(255, 255, 255, 0.05);
-    transform: translateX(5px);
+    transform: Translatex(5px);
   }
 }
 

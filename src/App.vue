@@ -458,7 +458,12 @@ const handleReclaim = async () => {
 
 .loading-overlay.global-overlay {
   background: Rgba(0, 0, 0, 0.95);
-  -webkit-backdrop-filter: Blur(8px);
+  -webkit-will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  backdrop-filter: Blur(8px);
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
   backdrop-filter: Blur(8px);
   @include gpu-layer;
 }
@@ -516,7 +521,12 @@ const handleReclaim = async () => {
 
 .session-lock-overlay {
   background: Rgba(0, 0, 0, 0.85);
-  -webkit-backdrop-filter: Blur(20px);
+  -webkit-will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  backdrop-filter: Blur(20px);
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
   backdrop-filter: Blur(20px);
   border: 2px solid var(--blue);
   box-shadow: inset 0 0 50px Rgba(0, 150, 255, 0.2), 0 0 100px Rgba(0, 100, 255, 0.3);
@@ -524,7 +534,9 @@ const handleReclaim = async () => {
   
   .lock-icon-wrapper {
     margin-bottom: 30px;
-    filter: Drop-Shadow(0 0 20px Rgba(0, 150, 255, 0.6));
+    will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Drop-Shadow(0 0 20px Rgba(0, 150, 255, 0.6));
     animation: lock-pulse 2s ease-in-out infinite;
   }
 
@@ -597,7 +609,7 @@ const handleReclaim = async () => {
     &:hover {
       background: $white;
       color: var(--blue);
-      transform: translateY(-2px);
+      transform: Translatey(-2px);
       box-shadow: 0 6px 0 Rgba(0, 0, 0, 0.2);
     }
   }

@@ -58,13 +58,18 @@ const activeDisplayEvents = computed(() => {
   gap: 10px;
   z-index: var(--z-hud);
   pointer-events: none;
-  transform: TranslateZ(0);
+  transform: Translatez(0);
 }
 
 .event-banner {
   position: relative;
   background: Rgba(0, 0, 0, 0.7);
-  -webkit-backdrop-filter: Blur(10px);
+  -webkit-will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  backdrop-filter: Blur(10px);
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
   backdrop-filter: Blur(10px);
   @include gpu-layer;
   border-left: 4px solid var(--event-color);
@@ -103,7 +108,9 @@ const activeDisplayEvents = computed(() => {
       
       .icon {
         font-size: 1.2rem;
-        filter: Drop-Shadow(0 0 5px var(--event-color));
+        will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Drop-Shadow(0 0 5px var(--event-color));
         animation: pulse 2s infinite;
         animation-delay: calc(var(--event-seed, 0) * -2s);
         flex-shrink: 0;
@@ -144,12 +151,12 @@ const activeDisplayEvents = computed(() => {
 }
 
 .banner-slide-enter-from {
-  transform: TranslateX(-100%);
+  transform: Translatex(-100%);
   opacity: 0;
 }
 
 .banner-slide-leave-to {
-  transform: TranslateX(-20px);
+  transform: Translatex(-20px);
   opacity: 0;
 }
 </style>

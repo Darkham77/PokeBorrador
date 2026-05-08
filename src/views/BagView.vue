@@ -296,7 +296,7 @@ const onUseItem = (name: string) => {
 
 .item-card:hover {
   background: Rgba(255, 255, 255, 0.06);
-  transform: TranslateY(-2px);
+  transform: Translatey(-2px);
 }
 
 .item-card.selected {

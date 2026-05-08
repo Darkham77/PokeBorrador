@@ -169,7 +169,7 @@ const selectAvatar = (id: string) => {
 
   &:hover {
     background: Rgba(255, 255, 255, 0.06);
-    transform: TranslateY(-4px);
+    transform: Translatey(-4px);
     border-color: Rgba(255, 255, 255, 0.1);
   }
 
@@ -243,7 +243,10 @@ const selectAvatar = (id: string) => {
 .nt-spark { color: Rgba(250, 204, 21, 1); animation: anim-spark 0.5s infinite; }
 .nt-dark { color: Rgba(109, 40, 217, 1); text-shadow: 0 0 10px Rgba(76, 29, 149, 1); }
 .nt-royal { color: Rgba(236, 72, 153, 1); text-shadow: 0 0 10px Rgba(219, 39, 119, 1); font-style: italic; }
-.nt-ghost { color: Rgba(148, 163, 184, 1); opacity: 0.7; filter: Blur(0.5px); }
+.nt-ghost { color: Rgba(148, 163, 184, 1); opacity: 0.7; will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Blur(0.5px); }
 
 /* --- AVATAR FRAME CLASSES --- */
 .av-water { border-color: Rgba(14, 165, 233, 1); box-shadow: 0 0 15px Rgba(14, 165, 233, 1); }
@@ -261,9 +264,9 @@ const selectAvatar = (id: string) => {
 }
 
 @keyframes anim-water {
-  0% { transform: TranslateY(0); }
-  50% { transform: TranslateY(-2px); }
-  100% { transform: TranslateY(0); }
+  0% { transform: Translatey(0); }
+  50% { transform: Translatey(-2px); }
+  100% { transform: Translatey(0); }
 }
 
 @keyframes anim-spark {

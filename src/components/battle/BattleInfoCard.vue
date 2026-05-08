@@ -475,7 +475,12 @@ const formatMult = (m: number) => {
 
 .glass-card {
   background: Rgba(15, 23, 42, 0.7);
-  -webkit-backdrop-filter: Blur(12px);
+  -webkit-will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  backdrop-filter: Blur(12px);
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
   backdrop-filter: Blur(12px);
   @include gpu-layer;
   border: 1px solid Rgba(255, 255, 255, 0.15);
@@ -567,9 +572,18 @@ const formatMult = (m: number) => {
 }
 
 @keyframes level-up-flash {
-  0% { filter: Brightness(1) contrast(1); transform: Scale(1); }
-  20% { filter: Brightness(2) contrast(1.2); transform: Scale(1.05); border-color: Rgba(255,255,255,0.8); }
-  100% { filter: Brightness(1) contrast(1); transform: Scale(1); }
+  0% { will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Brightness(1) contrast(1); transform: Scale(1); }
+  20% { will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Brightness(2) contrast(1.2); transform: Scale(1.05); border-color: Rgba(255,255,255,0.8); }
+  100% { will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Brightness(1) contrast(1); transform: Scale(1); }
 }
 
 .hp-high { background: Linear-Gradient(90deg, Rgba(16, 185, 129, 1), Rgba(52, 211, 153, 1)); }
@@ -608,6 +622,8 @@ const formatMult = (m: number) => {
   @include pixelated;
   font-size: 16px;
   line-height: 1;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 2px 4px Rgba(0,0,0,0.5));
   position: relative;
 
@@ -644,7 +660,9 @@ const formatMult = (m: number) => {
     
     &.is-boosted {
       color: $coin-gold;
-      filter: Drop-Shadow(0 0 5px Rgba(255, 215, 0, 0.8));
+      will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Drop-Shadow(0 0 5px Rgba(255, 215, 0, 0.8));
       animation: ab-glow 2s infinite alternate;
     }
   }
@@ -667,8 +685,14 @@ const formatMult = (m: number) => {
 .gender-female { color: Rgba(255, 110, 255, 1); }
 
 @keyframes ab-glow {
-  from { transform: Scale(1); filter: Drop-Shadow(0 0 2px $coin-gold); }
-  to { transform: Scale(1.1); filter: Drop-Shadow(0 0 8px $coin-gold); }
+  from { transform: Scale(1); will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Drop-Shadow(0 0 2px $coin-gold); }
+  to { transform: Scale(1.1); will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Drop-Shadow(0 0 8px $coin-gold); }
 }
 
 .admin-info-trigger {
@@ -679,6 +703,8 @@ const formatMult = (m: number) => {
 .admin-icon-btn {
   font-size: 18px;
   cursor: help;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 0 5px Rgba(255, 255, 0, 0.5));
   animation: admin-icon-pulse 2s infinite alternate;
   display: inline-flex;
@@ -692,7 +718,9 @@ const formatMult = (m: number) => {
   margin-left: 10px;
   
   &:hover {
-    filter: Drop-Shadow(0 0 10px Rgba(255, 255, 0, 0.8)) Brightness(1.3);
+    will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Drop-Shadow(0 0 10px Rgba(255, 255, 0, 0.8)) Brightness(1.3);
     background: Rgba(255, 255, 0, 0.1);
   }
 }

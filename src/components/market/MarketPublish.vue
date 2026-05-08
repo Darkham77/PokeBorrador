@@ -368,7 +368,7 @@ const net = computed(() => price.value - fee.value)
   box-shadow: 0 4px 20px Rgba(124, 58, 237, 0.3);
   transition: all 0.2s;
 
-  &:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 25px Rgba(124, 58, 237, 0.5); }
+  &:hover:not(:disabled) { transform: Translatey(-2px); box-shadow: 0 6px 25px Rgba(124, 58, 237, 0.5); }
   &:disabled { background: Rgba(51, 65, 85, 1); color: $muted; box-shadow: none; cursor: not-allowed; }
 }
 

@@ -74,7 +74,12 @@ const formatNum = (num: number) => (num || 0).toLocaleString().replace(/,/g, '.'
   flex-direction: column;
   gap: 10px;
   transition: all 0.2s ease;
-  -webkit-backdrop-filter: Blur(8px);
+  -webkit-will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  backdrop-filter: Blur(8px);
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
   backdrop-filter: Blur(8px);
   @include gpu-layer;
 
@@ -82,7 +87,7 @@ const formatNum = (num: number) => (num || 0).toLocaleString().replace(/,/g, '.'
     background: Rgba(30, 41, 59, 0.5);
     border-color: Rgba(255, 214, 10, 0.2);
     box-shadow: 0 0 0 1px Rgba(255, 214, 10, 0.2);
-    transform: translateY(-2px);
+    transform: Translatey(-2px);
   }
 
   &.highlight {

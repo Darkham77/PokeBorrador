@@ -57,7 +57,7 @@ const isMax = computed(() => criminality.value >= 100)
   position: fixed;
   right: 20px;
   top: 50%;
-  transform: translateY(-50%);
+  transform: Translatey(-50%);
   width: 14px;
   display: flex;
   flex-direction: column;
@@ -71,9 +71,11 @@ const isMax = computed(() => criminality.value >= 100)
 .criminality-container::before {
   content: '';
   position: absolute;
-  inset: -5px;
-  background: Rgba(0, 0, 0, 0.8);
-  filter: Blur(15px);
+  inset: -10px; // Aumentado para mayor cobertura
+  background: Rgba(0, 0, 0, 0.85);
+  will-change: filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Blur(20px); // Aumentado para un aura más suave y expansiva
   border-radius: 40px;
   z-index: -1;
 }
@@ -131,6 +133,6 @@ const isMax = computed(() => criminality.value >= 100)
 }
 .slide-right-enter-from, .slide-right-leave-to {
   opacity: 0;
-  transform: translateY(-50%) translateX(30px);
+  transform: Translatey(-50%) Translatex(30px);
 }
 </style>

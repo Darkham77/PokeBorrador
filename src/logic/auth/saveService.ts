@@ -1,3 +1,4 @@
+import { Temporal } from '@js-temporal/polyfill'
 
 /**
  * Serializes the current state into a format suitable for database storage.
@@ -147,7 +148,7 @@ export function serializeState(state: GameState): SaveData {
               _gymBadge: (p as Pokemon & { _gymBadge?: string })._gymBadge || null,
             }))
           : null,
-        timestamp: Date.now(),
+        timestamp: Temporal.Now.instant().epochMilliseconds,
       };
     } catch(e) {
       logger.warn('SAVE', `Error serializando batalla activa: ${(e as Error).message}`);
@@ -346,7 +347,7 @@ export async function saveGame(state: GameState, user: AuthUser, options: SaveOp
     return { rollback: true, error: 'Inconsistencia detectada. Recarga la página.' };
   }
 
-  (save_data as any)._last_updated = Date.now();
+  (save_data as any)._last_updated = Temporal.Now.instant().epochMilliseconds;
 
   // 1. Local Persistence (Legacy LocalStorage + Modern OPFS GZIP)
   try {

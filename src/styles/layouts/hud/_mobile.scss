@@ -10,7 +10,7 @@
   @include glass-solid(Rgba(10, 12, 20, 0.98));
   border-top: 1px solid Rgba(255, 255, 255, 0.1);
   z-index: var(--z-navigation);
-  transform: translateZ(0);
+  transform: Translatez(0);
   padding: 0 2px;
   box-sizing: border-box;
   justify-content: space-around;
@@ -80,7 +80,9 @@
     
     & .nav-icon {
         transform: scale3d(1.1, 1.1, 1);
-        filter: Drop-Shadow(0 0 5px Rgba(255, 214, 10, 0.4));
+        will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Drop-Shadow(0 0 5px Rgba(255, 214, 10, 0.4));
     }
 
     & .nav-label {

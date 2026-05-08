@@ -142,10 +142,15 @@ const close = () => {
   align-items: center;
   justify-content: center;
   @include pixelated;
-  -webkit-backdrop-filter: Blur(10px);
+  -webkit-will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  backdrop-filter: Blur(10px);
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
   backdrop-filter: Blur(10px);
   @include gpu-layer;
-  transform: translateZ(0);
+  transform: Translatez(0);
 }
 
 .evolution-container {
@@ -169,6 +174,8 @@ const close = () => {
   height: 150px;
   border-radius: 50%;
   background: var(--blue, Rgba(59, 130, 246, 1));
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
   filter: Blur(40px);
   opacity: 0.2;
   transition: all 1s ease;
@@ -195,11 +202,15 @@ const close = () => {
   z-index: var(--z-base);
   
   &.from {
-    filter: Brightness(1);
+    will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Brightness(1);
     transition: filter 0.1s;
     
     &.flash-on {
-      filter: Brightness(10) Contrast(10) Grayscale(100%);
+      will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Brightness(10) Contrast(10) Grayscale(100%);
     }
   }
   
@@ -248,7 +259,7 @@ const close = () => {
   transition: transform 0.1s;
   
   &:active {
-    transform: translateY(2px);
+    transform: Translatey(2px);
     box-shadow: 0 2px 0 Rgba(37, 99, 235, 1);
   }
 }
@@ -284,8 +295,8 @@ const close = () => {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: Translatey(10px); }
+  to { opacity: 1; transform: Translatey(0); }
 }
 
 @keyframes float {

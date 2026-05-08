@@ -241,11 +241,16 @@ const rankTitle = computed(() => {
   align-items: center;
   justify-content: center;
   padding: 16px;
-  -webkit-backdrop-filter: Blur(4px);
+  -webkit-will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  backdrop-filter: Blur(4px);
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
   backdrop-filter: Blur(4px);
   @include gpu-layer;
   animation: fadeIn 0.2s ease;
-  transform: translateZ(0);
+  transform: Translatez(0);
 }
 
 .info-modal {
@@ -308,7 +313,9 @@ const rankTitle = computed(() => {
     width: 220px;
     height: auto;
     image-rendering: pixelated;
-    filter: Drop-Shadow(0 10px 20px Rgba(0, 0, 0, 0.5));
+    will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Drop-Shadow(0 10px 20px Rgba(0, 0, 0, 0.5));
   }
 
   .avatar-floating {
@@ -427,13 +434,13 @@ const rankTitle = computed(() => {
     background: Linear-Gradient(135deg, var(--class-color), var(--class-color-dark));
     box-shadow: 0 4px 0 var(--class-color-dark);
     .shine { position: absolute; top: 0; left: 0; right: 0; height: 40%; background: Linear-Gradient(to bottom, Rgba(255, 255, 255, 0.2), transparent); }
-    &:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--class-color-dark); }
+    &:active { transform: Translatey(2px); box-shadow: 0 2px 0 var(--class-color-dark); }
   }
 
   &.rep {
     background: Linear-Gradient(135deg, Rgba(34, 197, 94, 1), Rgba(22, 163, 74, 1));
     box-shadow: 0 4px 0 Rgba(20, 83, 45, 1);
-    &:active { transform: translateY(2px); box-shadow: 0 2px 0 #14532d; }
+    &:active { transform: Translatey(2px); box-shadow: 0 2px 0 #14532d; }
   }
 
   &.secondary {
@@ -450,7 +457,7 @@ const rankTitle = computed(() => {
     background: Linear-Gradient(135deg, var(--class-color), var(--class-color-dark));
     box-shadow: 0 4px 0 var(--class-color-dark);
     font-size: 10px;
-    &:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--class-color-dark); }
+    &:active { transform: Translatey(2px); box-shadow: 0 2px 0 var(--class-color-dark); }
   }
 }
 

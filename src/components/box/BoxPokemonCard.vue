@@ -219,7 +219,7 @@ const isPremiumTier = computed(() => props.pokemon && (tierInfo.value.tier === '
 
 .box-pokemon-card {
   @include pokemon-card-standard(20px);
-  transform: translateZ(0); // Hardware acceleration
+  transform: Translatez(0); // Hardware acceleration
   will-change: transform; // Layer promotion
   
   &.is-premium-tier {
@@ -229,11 +229,15 @@ const isPremiumTier = computed(() => props.pokemon && (tierInfo.value.tier === '
 
   &.is-on-mission {
     .box-card-sprite {
-      filter: Grayscale(1);
+      will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Grayscale(1);
       opacity: 0.6;
     }
     .card-info {
-      filter: Grayscale(0.5);
+      will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Grayscale(0.5);
       opacity: 0.8;
     }
   }
@@ -245,7 +249,9 @@ const isPremiumTier = computed(() => props.pokemon && (tierInfo.value.tier === '
     
     &:hover {
       transform: none !important;
-      filter: none !important;
+      will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: none !important;
       background: Rgba(255, 255, 255, 0.1) !important;
       border-color: Rgba(255, 255, 255, 0.4) !important;
       box-shadow: inset 0 0 10px Rgba(255, 255, 255, 0.1) !important;
@@ -254,7 +260,9 @@ const isPremiumTier = computed(() => props.pokemon && (tierInfo.value.tier === '
       
       :deep(.box-card-sprite) {
         transform: none !important;
-        filter: none !important;
+        will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: none !important;
       }
     }
 

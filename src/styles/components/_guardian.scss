@@ -26,7 +26,12 @@
   border-radius: 8px !important;
   padding: 4px !important;
   border: 1.5px solid Rgba(255, 255, 255, 0.3) !important;
-  -webkit-backdrop-filter: Blur(20px);
+  -webkit-will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  backdrop-filter: Blur(20px);
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
   backdrop-filter: Blur(20px);
   @include gpu-layer;
   width: auto !important;
@@ -48,10 +53,14 @@
   @include gpu-layer;
 
   &:not(.spawn-silhouette) {
-    filter: Drop-Shadow(0 0 5px Rgba(255,255,255,0.4)) !important;
+    will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Drop-Shadow(0 0 5px Rgba(255,255,255,0.4)) !important;
     
     &.captured {
-      filter: Grayscale(100%) !important;
+      will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Grayscale(100%) !important;
       opacity: 0.8 !important;
     }
   }

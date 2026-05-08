@@ -222,7 +222,7 @@ function handleForfeit() {
   display: flex;
   align-items: center;
   justify-content: center;
-  transform: translateZ(0);
+  transform: Translatez(0);
 }
 
 .pvp-layout {
@@ -269,6 +269,8 @@ function handleForfeit() {
 .trainer-img {
   max-height: 250px;
   transform: Scale(1.5);
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 10px 20px Rgba(0,0,0,0.5));
 }
 

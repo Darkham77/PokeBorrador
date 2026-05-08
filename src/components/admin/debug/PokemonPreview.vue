@@ -93,7 +93,9 @@ const emit = defineEmits<{
   .preview-sprite {
     height: 120px;
     image-rendering: pixelated;
-    filter: Drop-Shadow(0 0 10px Rgba(0, 0, 0, 0.5));
+    will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Drop-Shadow(0 0 10px Rgba(0, 0, 0, 0.5));
   }
 
   .preview-flags {

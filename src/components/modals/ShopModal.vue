@@ -298,12 +298,14 @@ const handleQuantityChange = (itemId: string, e: Event) => {
   &:hover:not(.locked) {
     background: Rgba(255, 255, 255, 0.04);
     border-color: Rgba(250, 204, 21, 0.3);
-    transform: translateY(-2px);
+    transform: Translatey(-2px);
   }
 
   &.locked {
     opacity: 0.5;
-    filter: Grayscale(1);
+    will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Grayscale(1);
   }
 }
 

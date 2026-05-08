@@ -49,7 +49,9 @@
     image-rendering: pixelated;
     position: relative;
     z-index: var(--z-base);
-    filter: Drop-shadow(0 4px 8px Rgba(0,0,0,0.5));
+    will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Drop-Shadow(0 4px 8px Rgba(0,0,0,0.5));
     transition: transform 0.3s ease;
   }
 }
@@ -58,7 +60,7 @@
   position: absolute;
   bottom: -4px;
   left: 50%;
-  transform: TranslateX(-50%);
+  transform: Translatex(-50%);
   display: flex;
   align-items: center;
   gap: 3px;
@@ -67,7 +69,12 @@
   min-height: 14px;
   border-radius: 8px;
   border: 1px solid Rgba(255, 255, 255, 0.1);
-  -webkit-backdrop-filter: Blur(4px);
+  -webkit-will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  backdrop-filter: Blur(4px);
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
   backdrop-filter: Blur(4px);
   @include gpu-layer;
   z-index: var(--z-base);

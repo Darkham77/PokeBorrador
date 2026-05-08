@@ -44,7 +44,7 @@ export async function executeTurn(store: BattleContext, moveIndex: number) {
     return
   }
 
-  fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.BUILD_QUEUE)
+  await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.BUILD_QUEUE)
 
   // Determine Turn Order (Consider Priority)
   const isWild = !store.activeBattle.value?.isTrainer && !store.activeBattle.value?.isGym
@@ -70,26 +70,26 @@ export async function executeTurn(store: BattleContext, moveIndex: number) {
     queue.push({ source: 'player', action: () => runPlayerAction(store, moveIndex) })
   }
 
-  fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.BUILD_QUEUE)
+  await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.BUILD_QUEUE)
   
   while (queue.length > 0) {
-    fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.POP_ACTION)
+    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.POP_ACTION)
     const currentAction = queue.shift()
     if (!currentAction) break
 
-    fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.APPLY_MOVE)
+    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.APPLY_MOVE)
     await currentAction.action()
 
-    fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.EVAL_HP)
+    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.EVAL_HP)
 
     if (store.activeBattle.value?.player && store.activeBattle.value.player.hp <= 0) {
-      fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.RESOLVE_PLAYER_FAINT)
+      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.RESOLVE_PLAYER_FAINT)
       await store.handleFaint('player')
       break;
     }
 
     if (store.activeBattle.value?.enemy && store.activeBattle.value.enemy.hp <= 0) {
-      fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.RESOLVE_ENEMY_FAINT)
+      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.RESOLVE_ENEMY_FAINT)
       await store.handleFaint('enemy')
       break;
     }
@@ -97,7 +97,7 @@ export async function executeTurn(store: BattleContext, moveIndex: number) {
     if (store.activeBattle.value?.over) break;
 
     if (queue.length > 0) {
-      fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.EVAL_CONTINUE)
+      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.EVAL_CONTINUE)
       await new Promise(r => setTimeout(r, 400))
     }
   }

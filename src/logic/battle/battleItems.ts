@@ -20,7 +20,7 @@ export async function handleItemUsage(itemName: any, p: any, e: any, options: an
 
   if (isBall) {
     if (options.fsm) {
-      options.fsm.transition('ACTIVE_BATTLE', 'CATCH_PROCESS')
+      await options.fsm.transition('ACTIVE_BATTLE', 'CATCH_PROCESS')
     }
     addLog(`Usaste ${itemName}`, 'log-info', 'player')
     addLog(`¡Has lanzado una ${itemName}!`, 'log-catch', itemName, 'player')
@@ -41,7 +41,7 @@ export async function handleItemUsage(itemName: any, p: any, e: any, options: an
     // 2. Ejecutar los intentos de agitación (shakes)
     for (let i = 0; i < shakes; i++) {
       if (options.fsm) {
-        options.fsm.transition('ACTIVE_BATTLE', 'CATCH_SHAKE')
+        await options.fsm.transition('ACTIVE_BATTLE', 'CATCH_SHAKE')
       }
       audio.wobble()
       gameBus.emit('CATCH_SHAKE', { side: 'enemy' })
@@ -54,7 +54,7 @@ export async function handleItemUsage(itemName: any, p: any, e: any, options: an
       // Pequeña pausa dramática antes del click de éxito
       await new Promise(r => setTimeout(r, 500))
       if (options.fsm) {
-        options.fsm.transition('ACTIVE_BATTLE', 'CATCH_SUCCESS')
+        await options.fsm.transition('ACTIVE_BATTLE', 'CATCH_SUCCESS')
       }
       audio.caught()
       gameBus.emit('CATCH_SUCCESS', { side: 'enemy' })
@@ -69,7 +69,7 @@ export async function handleItemUsage(itemName: any, p: any, e: any, options: an
       // Esperar un instante tras el último shake fallido
       await new Promise(r => setTimeout(r, 300))
       if (options.fsm) {
-        options.fsm.transition('ACTIVE_BATTLE', 'CATCH_BREAK')
+        await options.fsm.transition('ACTIVE_BATTLE', 'CATCH_BREAK')
       }
       gameBus.emit('CATCH_BREAK', { side: 'enemy' })
       addLog(`¡Oh, no! ¡El Pokémon se ha escapado!`, 'log-info', e)

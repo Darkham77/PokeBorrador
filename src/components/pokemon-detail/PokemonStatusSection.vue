@@ -212,7 +212,7 @@ const abilityStyle = computed(() => ({
 
   &:hover {
     background: Rgba(255, 255, 255, 0.05);
-    transform: TranslateY(-2px);
+    transform: Translatey(-2px);
   }
 }
 

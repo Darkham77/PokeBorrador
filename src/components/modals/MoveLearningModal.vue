@@ -123,7 +123,12 @@ const handleForget = () => {
   position: fixed;
   inset: 0;
   background: Rgba(0, 0, 0, 0.92);
-  -webkit-backdrop-filter: Blur(10px);
+  -webkit-will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  backdrop-filter: Blur(10px);
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
   backdrop-filter: Blur(10px);
   @include gpu-layer;
   z-index: var(--z-modal);
@@ -131,7 +136,7 @@ const handleForget = () => {
   align-items: center;
   justify-content: center;
   padding: 20px;
-  transform: TranslateZ(0);
+  transform: Translatez(0);
 }
 
 .learning-card {
@@ -207,9 +212,9 @@ const handleForget = () => {
   &:hover {
     background: Rgba(255,255,255,0.06);
     border-color: var(--move-color);
-    transform: TranslateX(4px);
+    transform: Translatex(4px);
     
-    .replace-label { opacity: 1; transform: TranslateX(0); }
+    .replace-label { opacity: 1; transform: Translatex(0); }
   }
 
   &.is-new {
@@ -245,7 +250,7 @@ const handleForget = () => {
     font-size: 7px;
     color: Rgba(239, 68, 68, 1);
     opacity: 0;
-    transform: TranslateX(10px);
+    transform: Translatex(10px);
     transition: all 0.2s;
   }
 }

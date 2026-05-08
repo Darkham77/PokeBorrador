@@ -162,7 +162,12 @@ const closeError = () => {
   align-items: center;
   justify-content: center;
   padding: 20px;
-  -webkit-backdrop-filter: Blur(10px);
+  -webkit-will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  backdrop-filter: Blur(10px);
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
   backdrop-filter: Blur(10px);
   @include gpu-layer;
   animation: fadeIn 0.3s ease;
@@ -313,7 +318,7 @@ const closeError = () => {
 
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: TranslateY(10px); }
-  to { opacity: 1; transform: TranslateY(0); }
+  from { opacity: 0; transform: Translatey(10px); }
+  to { opacity: 1; transform: Translatey(0); }
 }
 </style>

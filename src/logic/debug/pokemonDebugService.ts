@@ -1,3 +1,4 @@
+import { Temporal } from '@js-temporal/polyfill'
 
 import { makePokemon, recalcPokemonStats, getExpNeeded } from '@/logic/pokemonFactory';
 import { useGameStore } from '@/stores/game';
@@ -123,7 +124,7 @@ export const pokemonDebugService = {
       case 'egg_silent': {
         // Protocol: Add UNHATCHED egg to inventory
         const eggForInventory: Partial<EggData> = {
-          uid: `egg_${Date.now()}`,
+          uid: `egg_${Temporal.Now.instant().epochMilliseconds}`,
           id: p.id,
           name: 'Huevo Pokémon',
           isEgg: true,
@@ -145,7 +146,7 @@ export const pokemonDebugService = {
         if (!game.state.eggs) game.state.eggs = [];
         const eggToPush: EggData = {
           ...(eggForInventory as any),
-          uid: `${eggForInventory.id}-${Date.now()}`,
+          uid: `${eggForInventory.id}-${Temporal.Now.instant().epochMilliseconds}`,
           ready: false
         };
         game.state.eggs.push(eggToPush as any);

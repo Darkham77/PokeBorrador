@@ -1,3 +1,4 @@
+import { Temporal } from '@js-temporal/polyfill'
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import { useGameStore } from './game';
@@ -58,8 +59,8 @@ export const useBreedingStore = defineStore('breeding', () => {
     
     if (!slots.value[0]?.deposited_at || !slots.value[1]?.deposited_at) return null;
 
-    const depA = new Date(slots.value[0].deposited_at).getTime();
-    const depB = new Date(slots.value[1].deposited_at).getTime();
+    const depA = Temporal.Instant.fromEpochMilliseconds(slots.value[0].deposited_at).epochMilliseconds;
+    const depB = Temporal.Instant.fromEpochMilliseconds(slots.value[1].deposited_at).epochMilliseconds;
     const earliest = Math.max(depA, depB);
     
     return earliest + interval;
@@ -84,7 +85,7 @@ export const useBreedingStore = defineStore('breeding', () => {
 
     pokemon.inDaycare = true;
     
-    const now = new Date().toISOString();
+    const now = Temporal.Now.instant().toString();
     const existing = slots.value.findIndex((s) => s.slotIndex === slotIndex);
     if (existing !== -1) {
       slots.value[existing] = { pokemon, slotIndex, deposited_at: now };
@@ -103,7 +104,7 @@ export const useBreedingStore = defineStore('breeding', () => {
     if (!isBreeding.value || compatibility.value.level === 0) return;
     if (!slots.value[0]?.pokemon || !slots.value[1]?.pokemon) return;
     
-    const now = Date.now();
+    const now = Temporal.Now.instant().epochMilliseconds;
     if (nextEggTime.value && now < nextEggTime.value) return;
 
     const pA = slots.value[0].pokemon as Pokemon;
@@ -131,7 +132,7 @@ export const useBreedingStore = defineStore('breeding', () => {
       isEgg: true,
       steps: 2500,
       mother_id: compat.motherId,
-      deposited_at: new Date().toISOString(),
+      deposited_at: Temporal.Now.instant().toString(),
       ivs: calculateInheritance(pA, pB, itemA, itemB, playerClass),
       nature: inheritNature(pA, pB, itemA, itemB) || 'Serio',
       movesAtBirth: inheritMoves(pA, pB, eggSpecies),
@@ -142,7 +143,7 @@ export const useBreedingStore = defineStore('breeding', () => {
 
     warehouseEggs.value.push(egg);
     
-    const isoNow = new Date().toISOString();
+    const isoNow = Temporal.Now.instant().toString();
     if (slots.value[0]) slots.value[0].deposited_at = isoNow;
     if (slots.value[1]) slots.value[1].deposited_at = isoNow;
 
@@ -178,7 +179,7 @@ export const useBreedingStore = defineStore('breeding', () => {
     
     const eggToPush = {
       ...eggForInventory,
-      uid: `${eggForInventory.id}-${Date.now()}`,
+      uid: `${eggForInventory.id}-${Temporal.Now.instant().epochMilliseconds}`,
       ready: false
     };
     gameStore.state.eggs.push(eggToPush as any);
@@ -207,7 +208,7 @@ export const useBreedingStore = defineStore('breeding', () => {
   }
 
   function checkDailyReset() {
-    const today = new Date().toISOString().split('T')[0] as string;
+    const today = Temporal.Now.instant().toString().split('T')[0] as string;
     const missions = dailyMissions.value;
     const lastDate = missions.length > 0 && missions[0] ? missions[0].date : '';
 
@@ -237,7 +238,7 @@ export const useBreedingStore = defineStore('breeding', () => {
     }
 
     missionRefreshes.value--;
-    const today = new Date().toISOString().split('T')[0] as string;
+    const today = Temporal.Now.instant().toString().split('T')[0] as string;
     regenerateMissions(today);
     uiStore.notify('Misiones actualizadas.', '🔄');
   }

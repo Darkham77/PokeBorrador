@@ -294,7 +294,7 @@ onMounted(() => {
     transition: all 0.2s;
     
     &:hover {
-      transform: translateY(-2px);
+      transform: Translatey(-2px);
       box-shadow: 0 5px 0 #b39200;
     }
   }

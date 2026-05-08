@@ -9,6 +9,8 @@
   -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; background-clip: text;;;;;;;;;;;;;;;;;;
   -webkit-text-fill-color: transparent;
   margin-bottom: 8px;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 0 20px Rgba($yellow, 0.4));
   text-align: center;
 }
@@ -48,7 +50,12 @@
 
 .starter-card {
   background: Rgba(255, 255, 255, 0.04);
-  -webkit-backdrop-filter: Blur(10px);
+  -webkit-will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  backdrop-filter: Blur(10px);
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
   backdrop-filter: Blur(10px);
   @include gpu-layer;
   border: 1.5px solid Rgba(255, 255, 255, 0.1);

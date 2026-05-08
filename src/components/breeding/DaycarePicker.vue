@@ -134,14 +134,19 @@ const selectPokemon = (p: any) => {
   inset: 0;
   z-index: var(--z-modal);
   background: Rgba(0, 0, 0, 0.8);
-  -webkit-backdrop-filter: Blur(4px);
+  -webkit-will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  backdrop-filter: Blur(4px);
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
   backdrop-filter: Blur(4px);
   @include gpu-layer;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 20px;
-  transform: translateZ(0);
+  transform: Translatez(0);
 }
 
 .daycare-picker {

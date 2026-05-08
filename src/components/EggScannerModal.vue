@@ -266,7 +266,12 @@ const handleSell = async () => {
   position: fixed;
   inset: 0;
   background: Rgba(0, 0, 0, 0.85);
-  -webkit-backdrop-filter: Blur(8px);
+  -webkit-will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  backdrop-filter: Blur(8px);
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
   backdrop-filter: Blur(8px);
   @include gpu-layer;
   z-index: var(--z-modal);
@@ -274,7 +279,7 @@ const handleSell = async () => {
   align-items: center;
   justify-content: center;
   padding: 20px;
-  transform: translateZ(0);
+  transform: Translatez(0);
 }
 
 .scanner-container {
@@ -386,7 +391,7 @@ const handleSell = async () => {
 }
 
 @keyframes spin { 100% { transform: Rotate(360deg); } }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes fadeIn { from { opacity: 0; transform: Translatey(10px); } to { opacity: 1; transform: Translatey(0); } }
 
 .empty-state { text-align: center; padding: 40px; color: var(--gray); font-size: 12px; }
 </style>

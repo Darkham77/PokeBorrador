@@ -77,7 +77,9 @@
       
       &.incompatible {
         opacity: 0.4;
-        filter: Grayscale(0.8);
+        will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Grayscale(0.8);
       }
       
       .tm-id {
@@ -114,7 +116,7 @@
       
       &:hover:not(.incompatible) {
         background: Rgba(255,255,255,0.08);
-        transform: TranslateY(-2px);
+        transform: Translatey(-2px);
       }
     }
   }

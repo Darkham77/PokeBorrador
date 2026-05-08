@@ -101,7 +101,10 @@ const emit = defineEmits<{
     padding: 14px; background: Linear-Gradient(135deg, #a855f7, #7e22ce); color: $white; border: none; border-radius: 12px;
     @include pixelated; font-size: 7px; cursor: pointer;
     box-shadow: 0 4px 0 #6d28d9;
-    &:hover { filter: Brightness(1.1); }
+    &:hover { will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Brightness(1.1); }
   }
   .completed-banner { text-align: center; color: Rgba(34, 197, 94, 1); @include pixelated; font-size: 7px; padding: 14px; }
 }

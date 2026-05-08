@@ -75,7 +75,12 @@ const handleImgError = (e: Event) => {
   border-radius: 12px;
   padding: 6px 10px;
   pointer-events: auto; /* Tooltip needs pointer */
-  -webkit-backdrop-filter: Blur(4px);
+  -webkit-will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  backdrop-filter: Blur(4px);
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
   backdrop-filter: Blur(4px);
   @include gpu-layer;
   box-shadow: 0 4px 6px Rgba(0,0,0,0.3);
@@ -87,7 +92,7 @@ const handleImgError = (e: Event) => {
     background: Rgba(0, 0, 0, 0.8);
     border-color: var(--yellow, #ffd93d);
     box-shadow: 0 0 0 1px var(--yellow, #ffd93d);
-    transform: TranslateX(4px);
+    transform: Translatex(4px);
   }
 }
 
@@ -96,6 +101,8 @@ const handleImgError = (e: Event) => {
   height: 24px;
   @include sprite-render;
   margin-right: 8px;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 2px 2px Rgba(0,0,0,0.5));
 }
 
@@ -129,6 +136,6 @@ const handleImgError = (e: Event) => {
 .list-enter-from,
 .list-leave-to {
   opacity: 0;
-  transform: TranslateX(-30px);
+  transform: Translatex(-30px);
 }
 </style>

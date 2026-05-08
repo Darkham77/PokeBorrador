@@ -1,3 +1,4 @@
+import { Temporal } from '@js-temporal/polyfill'
 
 /**
  * Módulo de Registro de Combate (Battle Logger)
@@ -89,7 +90,7 @@ export function formatBattleLog(msg: string, type: string, source: any, ctx: Log
   }
 
   return {
-    id: Date.now() + Math.random(),
+    id: Temporal.Now.instant().epochMilliseconds + Math.random(),
     msg,
     type,
     side,

@@ -190,7 +190,7 @@ const handleUseItem = (item: BattleItem) => {
     box-shadow: 
       0 0 15px Rgba(255, 214, 10, 0.2),
       inset 0 0 10px Rgba(255, 214, 10, 0.1) !important;
-    transform: TranslateY(-2px) !important;
+    transform: Translatey(-2px) !important;
     z-index: calc(var(--z-base) + 2);
   }
 
@@ -223,7 +223,9 @@ const handleUseItem = (item: BattleItem) => {
     min-width: 60px; // 1.5x del tamaño base para un oversize equilibrado
     min-height: 60px;
     image-rendering: pixelated;
-    filter: 
+    will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: 
       Drop-Shadow(0 4px 8px Rgba(0,0,0,0.5))
       Brightness(1.1); // Un poco de brillo extra para resaltar el detalle
     transition: transform 0.3s ease;
@@ -241,7 +243,7 @@ const handleUseItem = (item: BattleItem) => {
   position: absolute;
   bottom: 2px; // Más abajo
   left: 50%;
-  transform: TranslateX(-50%); // Centrado horizontalmente
+  transform: Translatex(-50%); // Centrado horizontalmente
   background: Rgba(0, 0, 0, 0.85);
   border: 1px solid var(--yellow);
   color: white;

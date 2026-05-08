@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { Temporal } from '@js-temporal/polyfill'
+
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useWindowListener } from '@/composables/useWindowListener'
 import { useUIStore } from '@/stores/ui'
@@ -45,11 +47,11 @@ const trainerRank = computed(() => gameStore.state.rank || 'NOVATO')
 
 // View State
 const viewMode = ref('dashboard') // 'dashboard' or 'missions'
-const now = ref(Date.now())
+const now = ref(Temporal.Now.instant().epochMilliseconds)
 let timer: any = null
 
 onMounted(() => {
-  timer = setInterval(() => { now.value = Date.now() }, 1000)
+  timer = setInterval(() => { now.value = Temporal.Now.instant().epochMilliseconds }, 1000)
 })
 
 onUnmounted(() => {

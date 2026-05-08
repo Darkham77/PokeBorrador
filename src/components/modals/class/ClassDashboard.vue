@@ -245,7 +245,9 @@ const handleImageError = (e: Event) => {
       .trainer-big-img {
         height: 220px;
         image-rendering: pixelated;
-        filter: Drop-Shadow(0 20px 40px Rgba(0,0,0,0.8));
+        will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Drop-Shadow(0 20px 40px Rgba(0,0,0,0.8));
         z-index: var(--z-base);
         transition: transform 0.3s ease;
         &:hover { transform: Scale(1.05); }
@@ -318,7 +320,7 @@ const handleImageError = (e: Event) => {
     text-align: left;
     transition: all 0.2s;
 
-    &:hover { background: Rgba(15, 23, 42, 0.6); transform: TranslateX(5px); }
+    &:hover { background: Rgba(15, 23, 42, 0.6); transform: Translatex(5px); }
 
     .card-icon { 
       width: 48px; height: 48px;
@@ -413,7 +415,10 @@ const handleImageError = (e: Event) => {
 
     &.locked { 
       opacity: 0.7;
-      .ability-checkbox { filter: #{"Grayscale(1)"}; opacity: 0.5; }
+      .ability-checkbox { will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: #{"Grayscale(1)"}; opacity: 0.5; }
       .ability-content p { color: $muted; }
     }
 

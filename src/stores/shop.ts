@@ -1,3 +1,4 @@
+import { Temporal } from '@js-temporal/polyfill'
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { useGameStore } from './game'
@@ -182,7 +183,7 @@ export const useShopStore = defineStore('shop', () => {
       gameStore.state.classData.blackMarketDaily = { date: '', items: [], purchased: [] }
     }
 
-    const today = new Date().toISOString().split('T')[0]
+    const today = Temporal.Now.instant().toString().split('T')[0]
     const daily = gameStore.state.classData.blackMarketDaily
 
     if (daily.date !== today) {

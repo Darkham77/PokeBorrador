@@ -66,7 +66,9 @@
   
   .faction-emoji {
     font-size: 16px;
-    filter: Drop-Shadow(0 2px 4px Rgba(0, 0, 0, 0.5));
+    will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Drop-Shadow(0 2px 4px Rgba(0, 0, 0, 0.5));
     display: flex;
     align-items: center;
     justify-content: center;
@@ -86,7 +88,9 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    filter: Drop-Shadow(0 2px 4px Rgba(0, 0, 0, 0.5));
+    will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Drop-Shadow(0 2px 4px Rgba(0, 0, 0, 0.5));
   }
 }
 
@@ -104,7 +108,9 @@
   
   .pill-icon {
     font-size: 18px;
-    filter: Drop-Shadow(0 2px 4px Rgba(0, 0, 0, 0.5));
+    will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Drop-Shadow(0 2px 4px Rgba(0, 0, 0, 0.5));
   }
 
   &.fishing-pill {

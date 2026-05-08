@@ -28,7 +28,7 @@
     transition: transform 0.2s;
     
     // Fine-tune vertical alignment for pixel fonts/emojis
-    transform: translateY(-1px); 
+    transform: Translatey(-1px); 
   }
 
   // Handle multi-line stacks (e.g. Price + Label)
@@ -41,7 +41,9 @@
   }
 
   &:disabled {
-    filter: GrayScale(1);
+    will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Grayscale(1);
     opacity: 0.6;
     cursor: not-allowed;
     box-shadow: none;
@@ -115,13 +117,15 @@
   box-shadow: 0 $depth 0 $shadow;
 
   &:hover:not(:disabled) {
-    filter: Brightness(1.1);
-    transform: TranslateY(-1px);
+    will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Brightness(1.1);
+    transform: Translatey(-1px);
     box-shadow: 0 ($depth + 1px) 0 $shadow;
   }
 
   &:active:not(:disabled) {
-    transform: TranslateY(2px);
+    transform: Translatey(2px);
     box-shadow: 0 (max(0px, $depth - 2px)) 0 $shadow;
   }
 
@@ -135,7 +139,7 @@
     
     &:hover:not(:disabled) {
       background: color.scale($base-color, $lightness: 20%);
-      transform: TranslateY(-1px) !important;
+      transform: Translatey(-1px) !important;
       box-shadow: 0 ($depth + 1px) 0 $shadow, 0 0 20px Rgba($base-color, 0.6);
     }
   }

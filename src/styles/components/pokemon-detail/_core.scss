@@ -23,12 +23,14 @@
       image-rendering: pixelated; 
       position: relative; 
       z-index: var(--z-base);
-      filter: Drop-shadow(0 20px 40px Rgba(0,0,0,0.7));
+      will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Drop-Shadow(0 20px 40px Rgba(0,0,0,0.7));
       transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      transform: TranslateY($sprite-translate); 
+      transform: Translatey($sprite-translate); 
       
       &:hover {
-        transform: Scale(1.05) TranslateY(calc($sprite-translate - 5%));
+        transform: Scale(1.05) Translatey(calc($sprite-translate - 5%));
         image-rendering: pixelated;
       }
     }
@@ -40,7 +42,9 @@
       width: calc($sprite-size * 0.66);
       height: calc($sprite-size * 0.66);
       border-radius: 50%;
-      filter: Blur(50px);
+      will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Blur(50px);
       opacity: 0.25;
       z-index: var(--z-base);
     }
@@ -56,7 +60,12 @@
 .pdex-detail-tabs {
   display: flex;
   background: Rgba(15, 23, 42, 0.6);
-  -webkit-backdrop-filter: Blur(10px);
+  -webkit-will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  backdrop-filter: Blur(10px);
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
   backdrop-filter: Blur(10px);
   @include gpu-layer;
   padding: 0 16px;
@@ -85,13 +94,13 @@
     &:hover:not(.active) { 
       color: Rgba(255,255,255,0.7);
       background: Radial-Gradient(circle at bottom, Rgba(255,255,255,0.06) 0%, transparent 80%);
-      i.tab-icon { transform: TranslateY(-3px); }
+      i.tab-icon { transform: Translatey(-3px); }
     }
     
     &.active {
       color: var(--yellow);
       background: Radial-Gradient(circle at bottom, Rgba(var(--type-color-rgb), 0.15) 0%, transparent 70%);
-      transform: TranslateY(-2px);
+      transform: Translatey(-2px);
       
       &::after {
         content: '';

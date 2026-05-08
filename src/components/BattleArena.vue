@@ -213,7 +213,8 @@ const handleClose = () => {
     max-height: 100%;
     object-fit: contain;
     image-rendering: pixelated;
-    filter: Drop-Shadow(0 4px 8px Rgba(0,0,0,0.4));
+    will-change: transform, filter, opacity;
+  filter: Drop-Shadow(0 4px 8px Rgba(0,0,0,0.4));
   }
 }
 
@@ -239,7 +240,8 @@ const handleClose = () => {
   
   .env-icon {
     font-size: 16px;
-    filter: Drop-Shadow(0 2px 4px Rgba(0, 0, 0, 0.5));
+    will-change: transform, filter, opacity;
+  filter: Drop-Shadow(0 2px 4px Rgba(0, 0, 0, 0.5));
     cursor: pointer;
     transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     

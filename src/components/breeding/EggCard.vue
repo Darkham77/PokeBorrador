@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { Temporal } from '@js-temporal/polyfill'
+
 interface Props {
   egg: any
 }
@@ -10,7 +12,7 @@ const emit = defineEmits<{
 }>()
 
 const formatDate = (dateStr: string) => {
-  const date = new Date(dateStr)
+  const date = Temporal.Instant.fromEpochMilliseconds(dateStr)
   return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
 }
 </script>
@@ -82,7 +84,7 @@ const formatDate = (dateStr: string) => {
     cursor: pointer;
     box-shadow: 0 4px 0 #7e22ce;
     
-    &:active { transform: translateY(2px); box-shadow: 0 2px 0 #7e22ce; }
+    &:active { transform: Translatey(2px); box-shadow: 0 2px 0 #7e22ce; }
   }
   
   .scan-tag { 

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { Temporal } from '@js-temporal/polyfill'
+
 import { computed } from 'vue'
 import { useUIStore } from '@/stores/ui'
 
@@ -53,7 +55,7 @@ const isHistoryOpen = computed({
             {{ n.msg }}
           </div>
           <div class="notif-time">
-            {{ new Date(n.ts).toLocaleTimeString() }}
+            {{ Temporal.Instant.fromEpochMilliseconds(n.ts).toLocaleTimeString() }}
           </div>
         </div>
       </div>

@@ -96,7 +96,7 @@ async function handleSearch() {
     position: absolute;
     right: 12px;
     top: 50%;
-    transform: translateY(-50%);
+    transform: Translatey(-50%);
     width: 16px;
     height: 16px;
     border: 2px solid Rgba(255, 255, 255, 0.1);
@@ -152,5 +152,5 @@ async function handleSearch() {
   &.friend { background: Rgba(34, 197, 94, 0.1); color: Rgba(74, 222, 128, 1); }
 }
 
-@keyframes spin { to { transform: translateY(-50%) Rotate(360deg); } }
+@keyframes spin { to { transform: Translatey(-50%) Rotate(360deg); } }
 </style>

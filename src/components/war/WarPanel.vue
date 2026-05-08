@@ -123,14 +123,19 @@ const getFactionIcon = (faction: string) => {
   inset: 0;
   z-index: var(--z-modal);
   background: Rgba(0, 0, 0, 0.9);
-  -webkit-backdrop-filter: Blur(10px);
+  -webkit-will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  backdrop-filter: Blur(10px);
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
   backdrop-filter: Blur(10px);
   @include gpu-layer;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 20px;
-  transform: translateZ(0);
+  transform: Translatez(0);
 }
 
 .war-panel-premium {
@@ -281,5 +286,5 @@ const getFactionIcon = (faction: string) => {
 }
 
 .slide-up-enter-active, .slide-up-leave-active { transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
-.slide-up-enter-from, .slide-up-leave-to { transform: translateY(100%); opacity: 0; }
+.slide-up-enter-from, .slide-up-leave-to { transform: Translatey(100%); opacity: 0; }
 </style>

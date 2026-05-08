@@ -59,13 +59,13 @@
 
   &:hover { 
     background: Rgba(255,255,255,0.04); 
-    border-color: RGBA(var(--m-type-rgb), 0.4);
-    transform: TranslateY(-4px) TranslateX(2px); 
+    border-color: Rgba(var(--m-type-rgb), 0.4);
+    transform: Translatey(-4px) Translatex(2px); 
     box-shadow: -10px 10px 30px Rgba(0,0,0,0.5), 
-                0 0 20px RGBA(var(--m-type-rgb), 0.1);
+                0 0 20px Rgba(var(--m-type-rgb), 0.1);
 
     @media (max-width: 480px) {
-      transform: translateY(-2px);
+      transform: Translatey(-2px);
     }
 
     &::before { opacity: 1; }
@@ -212,8 +212,13 @@
     position: absolute;
     inset: 0;
     background: Rgba(0, 0, 0, 0.6);
-    -webkit-backdrop-filter: Blur(6px);
-    backdrop-filter: Blur(6px);
+    -webkit-will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  backdrop-filter: Blur(6px);
+    will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  backdrop-filter: Blur(6px);
     @include gpu-layer;
     display: flex;
     align-items: center;

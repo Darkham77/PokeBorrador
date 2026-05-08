@@ -173,7 +173,9 @@ const itemIcon = computed(() => {
       width: 60%;
       height: 60%;
       background: Radial-Gradient(circle, Rgba(255, 255, 255, 0.1) 0%, transparent 70%);
-      filter: Blur(5px);
+      will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Blur(5px);
       z-index: var(--z-base);
     }
 
@@ -183,7 +185,9 @@ const itemIcon = computed(() => {
       object-fit: contain;
       image-rendering: pixelated;
       z-index: calc(var(--z-base) + 1);
-      filter: Drop-Shadow(0 4px 8px Rgba(0, 0, 0, 0.3));
+      will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Drop-Shadow(0 4px 8px Rgba(0, 0, 0, 0.3));
       transition: transform 0.3s ease;
     }
 

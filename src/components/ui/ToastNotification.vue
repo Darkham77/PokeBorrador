@@ -47,7 +47,12 @@ const uiStore = useUIStore() as any
 .toast-item {
   pointer-events: all;
   background: Rgba(10, 12, 18, 0.9);
-  -webkit-backdrop-filter: Blur(12px);
+  -webkit-will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  backdrop-filter: Blur(12px);
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
   backdrop-filter: Blur(12px);
   @include gpu-layer;
   border: 1px solid Rgba(255, 255, 255, 0.15);
@@ -82,7 +87,7 @@ const uiStore = useUIStore() as any
 
 .toast-enter-from {
   opacity: 0;
-  transform: translateX(50px);
+  transform: Translatex(50px);
 }
 
 .toast-leave-to {

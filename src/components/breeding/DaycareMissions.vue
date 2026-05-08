@@ -250,6 +250,6 @@ const handleImgError = (e: Event) => {
   box-shadow: 0 4px 0 #4f46e5;
   transition: all 0.1s;
   
-  &:active { transform: translateY(2px); box-shadow: 0 2px 0 #4f46e5; }
+  &:active { transform: Translatey(2px); box-shadow: 0 2px 0 #4f46e5; }
 }
 </style>

@@ -277,7 +277,7 @@ const bannerStyle = computed(() => ({
   }
 
   &:hover {
-    transform: translateY(-6px);
+    transform: Translatey(-6px);
     border-color: var(--yellow) !important;
     box-shadow: 
       0 20px 50px Rgba(0, 0, 0, 0.7), 
@@ -357,7 +357,7 @@ const bannerStyle = computed(() => ({
     inset 0 1px 1px Rgba(255, 255, 255, 0.12),
     inset 0 -1px 2px Rgba(0, 0, 0, 0.3);
   
-  transform: TranslateZ(0);
+  transform: Translatez(0);
   backface-visibility: hidden;
   will-change: transform, background;
 
@@ -368,7 +368,7 @@ const bannerStyle = computed(() => ({
       0 0 0 1px var(--yellow), 
       0 12px 30px Rgba(0, 0, 0, 0.6), 
       0 0 20px Rgba(255, 214, 10, 0.4);
-    transform: translateY(-4px);
+    transform: Translatey(-4px);
     z-index: calc(var(--z-base) + 5);
   }
 
@@ -467,7 +467,9 @@ const bannerStyle = computed(() => ({
     display: flex;
     align-items: center;
     justify-content: center;
-    filter: Drop-Shadow(0 4px 6px Rgba(0,0,0,0.4));
+    will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Drop-Shadow(0 4px 6px Rgba(0,0,0,0.4));
   }
 
   img {
@@ -476,7 +478,7 @@ const bannerStyle = computed(() => ({
     object-fit: contain;
     @include sprite-render;
     transition: none !important;
-    transform: TranslateZ(0);
+    transform: Translatez(0);
   }
 
   .sprite-fallback {

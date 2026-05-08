@@ -1,3 +1,4 @@
+import { Temporal } from '@js-temporal/polyfill'
 export function registerSystemTools(debug: any, { game, ui, modalStore, errorStore, eventStoreModule }: any) {
   // MODALS
   debug.register({
@@ -82,7 +83,7 @@ export function registerSystemTools(debug: any, { game, ui, modalStore, errorSto
         id: 'current',
         season_name: rules.seasonName,
         config: { ...rules },
-        updated_at: new Date().toISOString()
+        updated_at: Temporal.Now.instant().toString()
       })
       if (error) throw error
       ui.notify('Reglas Ranked guardadas (CLI)', '🏆')

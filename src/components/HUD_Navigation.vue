@@ -322,7 +322,7 @@ const toggleGroupMenu = (name: string) => {
       0 0 0 2px var(--yellow),
       0 0 15px Rgba(255, 214, 10, 0.4);
     z-index: var(--z-base);
-    transform: TranslateY(-2px);
+    transform: Translatey(-2px);
   }
   
   &.active {
@@ -384,22 +384,22 @@ const toggleGroupMenu = (name: string) => {
     top: calc(100% + 10px); 
     bottom: auto !important;
     left: 50%; 
-    transform: TranslateX(-50%) TranslateY(-10px); 
+    transform: Translatex(-50%) Translatey(-10px); 
   }
   
   .hud-group.is-open.pos-top & {
-    transform: TranslateX(-50%) TranslateY(0);
+    transform: Translatex(-50%) Translatey(0);
   }
   
   .pos-bottom & { 
     bottom: calc(100% + 15px); 
     top: auto !important;
     left: 50%; 
-    transform: TranslateX(-50%) TranslateY(10px); 
+    transform: Translatex(-50%) Translatey(10px); 
   }
 
   .hud-group.is-open.pos-bottom & {
-    transform: TranslateX(-50%) TranslateY(0);
+    transform: Translatex(-50%) Translatey(0);
   }
 
   .hud-nav-btn {
@@ -421,7 +421,7 @@ const toggleGroupMenu = (name: string) => {
       box-shadow: 
         0 0 0 2px var(--yellow), 
         0 0 15px Rgba(255, 214, 10, 0.3);
-      transform: TranslateX(6px);
+      transform: Translatex(6px);
       z-index: var(--z-base);
     }
     
@@ -447,13 +447,13 @@ const toggleGroupMenu = (name: string) => {
 }
 
 @keyframes slideDown {
-  from { transform: TranslateX(-50%) TranslateY(-10px); opacity: 0; }
-  to { transform: TranslateX(-50%) TranslateY(0); opacity: 1; }
+  from { transform: Translatex(-50%) Translatey(-10px); opacity: 0; }
+  to { transform: Translatex(-50%) Translatey(0); opacity: 1; }
 }
 
 @keyframes slideUp {
-  from { transform: TranslateX(-50%) TranslateY(10px); opacity: 0; }
-  to { transform: TranslateX(-50%) TranslateY(0); opacity: 1; }
+  from { transform: Translatex(-50%) Translatey(10px); opacity: 0; }
+  to { transform: Translatex(-50%) Translatey(0); opacity: 1; }
 }
 
 .badge-pill {

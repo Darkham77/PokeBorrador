@@ -96,7 +96,7 @@ const allMaps = computed(() => {
 
   &:hover {
     background: Rgba(255, 255, 255, 0.06);
-    transform: translateX(4px);
+    transform: Translatex(4px);
   }
 
   &.union { border-left: 4px solid Rgba(59, 130, 246, 1); }

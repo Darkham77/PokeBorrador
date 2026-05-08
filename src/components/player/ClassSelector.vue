@@ -138,11 +138,16 @@ const select = (id: string) => {
   padding: 40px 16px;
   overflow-y: auto;
   min-height: 0;
-  -webkit-backdrop-filter: Blur(8px);
+  -webkit-will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  backdrop-filter: Blur(8px);
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
   backdrop-filter: Blur(8px);
   @include gpu-layer;
   animation: fadeIn 0.3s ease;
-  transform: translateZ(0);
+  transform: Translatez(0);
 }
 
 .modal-content {
@@ -177,7 +182,7 @@ const select = (id: string) => {
 
   &:hover {
     border-color: var(--class-color);
-    transform: translateY(-8px);
+    transform: Translatey(-8px);
     box-shadow: 0 12px 30px var(--class-glow);
   }
 

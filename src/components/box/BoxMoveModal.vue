@@ -185,7 +185,7 @@ const handleMove = (targetBoxIndex: number) => {
   }
 
   &:hover:not(:disabled) {
-    transform: TranslateY(-4px);
+    transform: Translatey(-4px);
     border-color: var(--yellow) !important;
     box-shadow: 0 10px 25px Rgba(0, 0, 0, 0.3), 0 0 15px Rgba(251, 191, 36, 0.2);
     
@@ -195,7 +195,9 @@ const handleMove = (targetBoxIndex: number) => {
 
   &:disabled {
     cursor: not-allowed;
-    filter: Grayscale(1);
+    will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Grayscale(1);
     opacity: 0.4;
   }
 

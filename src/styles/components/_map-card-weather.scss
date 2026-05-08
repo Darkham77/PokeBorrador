@@ -72,7 +72,9 @@
       background-repeat: no-repeat;
       background-size: 80px 180px;
       opacity: 0;
-      filter: Drop-shadow(0 0 10px Rgba(255, 255, 255, 0.9)) Brightness(2);
+      will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Drop-Shadow(0 0 10px Rgba(255, 255, 255, 0.9)) Brightness(2);
       animation: lightning-strike 7s steps(1) infinite;
       animation-delay: calc(var(--card-seed, 0) * -7s);
     }
@@ -159,7 +161,9 @@
       animation-delay: calc(var(--card-seed, 0) * -10s);
       background-size: 64px 64px;
       opacity: 0.8;
-      filter: Contrast(1.6) Brightness(0.9) Drop-shadow(0 0 2px Rgba(0,0,0,0.6));
+      will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Contrast(1.6) Brightness(0.9) Drop-Shadow(0 0 2px Rgba(0,0,0,0.6));
     }
 
     & .layer-2 {
@@ -167,7 +171,9 @@
       animation-delay: calc(var(--card-seed, 0) * -14.2s);
       background-size: 128px 128px;
       opacity: 0.9;
-      filter: Contrast(1.8) Brightness(0.95) Drop-shadow(0 0 3px Rgba(0,0,0,0.7));
+      will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Contrast(1.8) Brightness(0.95) Drop-Shadow(0 0 3px Rgba(0,0,0,0.7));
     }
   }
 
@@ -211,8 +217,14 @@
 }
 
 @keyframes storm-lightning-main {
-  0%, 89%, 91%, 93%, 100% { background: Rgba(0, 10, 25, 0.3); filter: Brightness(1); }
-  90%, 92% { background: Rgba(255, 255, 255, 0.4); filter: Brightness(2); }
+  0%, 89%, 91%, 93%, 100% { background: Rgba(0, 10, 25, 0.3); will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Brightness(1); }
+  90%, 92% { background: Rgba(255, 255, 255, 0.4); will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Brightness(2); }
 }
 
 @keyframes lightning-strike {
@@ -257,8 +269,8 @@
 }
 
 @keyframes heat-haze {
-  0%, 100% { transform: Scale(1) SkewX(0deg); opacity: 0.4; }
-  50% { transform: Scale(1.03) SkewX(3deg); opacity: 0.7; }
+  0%, 100% { transform: Scale(1) Skewx(0deg); opacity: 0.4; }
+  50% { transform: Scale(1.03) Skewx(3deg); opacity: 0.7; }
 }
 
 // Halo Cian para Spawns Atmosféricos
@@ -275,7 +287,9 @@
       Transparent 70%
     ); // Idéntico gradiente que la roja
     border-radius: 50%;
-    filter: Blur(2px); // Idéntico a la roja
+    will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Blur(2px); // Idéntico a la roja
     z-index: -2;
     opacity: 0.6; // Opacidad base igual a la roja
     animation: atmospheric-halo-pulse 2s ease-in-out infinite;

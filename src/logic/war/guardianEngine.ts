@@ -1,3 +1,4 @@
+import { Temporal } from '@js-temporal/polyfill'
 
 /**
  * Guardian Engine - Conflict Zone Logic
@@ -65,12 +66,12 @@ export function hashString(str: string): number {
  * @param {Date} date 
  * @returns {string} YYYY-MM-DD
  */
-function getArgDateString(date: Date = new Date()): string {
-  const argTime = new Date(date.toLocaleString('en-US', { timeZone: 'America/Argentina/Buenos_Aires' }))
-  const y = argTime.getFullYear()
-  const m = String(argTime.getMonth() + 1).padStart(2, '0')
-  const d = String(argTime.getDate()).padStart(2, '0')
-  return `${y}-${m}-${d}`
+function getArgDateString(date: any = Temporal.Now.instant()): string {
+  const zdt = (date instanceof Temporal.Instant || date.epochMilliseconds)
+    ? (date.epochMilliseconds ? Temporal.Instant.fromEpochMilliseconds(date.epochMilliseconds) : date).toZonedDateTimeISO('America/Argentina/Buenos_Aires')
+    : Temporal.Now.zonedDateTimeISO('America/Argentina/Buenos_Aires');
+    
+  return zdt.toString().split('T')[0];
 }
 
 /**
@@ -79,7 +80,7 @@ function getArgDateString(date: Date = new Date()): string {
  * @param {Date} date 
  * @returns {string[]} List of map IDs
  */
-export function getConflictZones(allMapIds: string[], date: Date = new Date()): string[] {
+export function getConflictZones(allMapIds: string[], date: Date = Temporal.Now.instant()): string[] {
   if (!allMapIds || allMapIds.length === 0) return []
   
   const dateStr = getArgDateString(date)
@@ -102,7 +103,7 @@ export function getConflictZones(allMapIds: string[], date: Date = new Date()): 
  * @param {Date} date 
  * @returns {GuardianData|null}
  */
-export function getGuardianData(mapId: string, allMapIds: string[], date: Date = new Date()): GuardianData | null {
+export function getGuardianData(mapId: string, allMapIds: string[], date: Date = Temporal.Now.instant()): GuardianData | null {
   const zones = getConflictZones(allMapIds, date)
   if (!zones.includes(mapId)) return null
 

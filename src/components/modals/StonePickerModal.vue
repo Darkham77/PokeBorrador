@@ -179,13 +179,15 @@ const getPokemonName = (id: string) => {
 
   &.disabled {
     opacity: 0.3;
-    filter: Grayscale(1);
+    will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Grayscale(1);
   }
 
   &:not(.disabled):hover {
     background: Rgba(251, 191, 36, 0.1);
     border-color: var(--yellow);
-    transform: translateX(4px);
+    transform: Translatex(4px);
     
     .stone-name { color: var(--yellow); }
   }

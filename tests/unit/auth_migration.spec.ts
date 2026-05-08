@@ -1,3 +1,4 @@
+import { Temporal } from '@js-temporal/polyfill'
 // @ts-nocheck
 /**
  * tests/unit/auth_migration.spec.js
@@ -36,14 +37,14 @@ describe('Auth Load Service (Migration v2)', () => {
   it('should prefer local save if significantly newer than cloud', async () => {
     const cloudSave = {
       save_data: { trainer: 'CloudHero', money: 100 },
-      updated_at: new Date(Date.now() - 10000).toISOString(),
+      updated_at: Temporal.Instant.fromEpochMilliseconds(Temporal.Now.instant().epochMilliseconds - 10000).toString(),
       last_save_id: 'cloud_v1'
     };
     
     const localSave = {
       trainer: 'LocalHero',
       money: 500,
-      _last_updated: Date.now()
+      _last_updated: Temporal.Now.instant().epochMilliseconds
     };
     localStorageMock.setItem('pokemon_local_save_test_user', JSON.stringify(localSave));
 
@@ -68,7 +69,7 @@ describe('Auth Load Service (Migration v2)', () => {
       team: [
         { id: 'pikachu', level: 5 } // Missing gender and UID
       ],
-      _last_updated: Date.now()
+      _last_updated: Temporal.Now.instant().epochMilliseconds
     };
     
     db.mode = 'offline';
@@ -86,7 +87,7 @@ describe('Auth Load Service (Migration v2)', () => {
         { id: 'bulbasaur', name: 'Bulbasaur', uid: 'same_id' },
         { id: 'squirtle', name: 'Squirtle', uid: 'same_id' }
       ],
-      _last_updated: Date.now()
+      _last_updated: Temporal.Now.instant().epochMilliseconds
     };
     
     db.mode = 'offline';

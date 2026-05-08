@@ -107,19 +107,21 @@
   }
 
   &:hover:not([disabled]) {
-    transform: translateY(-2px);
+    transform: Translatey(-2px);
     box-shadow: 0 8px 25px Rgba(0, 0, 0, 0.8), inset 0 0 10px var(--move-color, Rgba(255, 255, 255, 0.1));
     &::before { opacity: 0.15; }
   }
 
   &:active:not([disabled]) {
-    transform: translateY(1px);
+    transform: Translatey(1px);
   }
 
   &[disabled] {
     opacity: 0.3;
     cursor: not-allowed;
-    filter: Grayscale(1);
+    will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Grayscale(1);
     box-shadow: none;
   }
 }

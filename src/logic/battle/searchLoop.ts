@@ -50,7 +50,7 @@ export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'm
       ctx.activeBattle.value._initialEnemy = { ...ctx.upcomingPokemon.value }
     }
 
-    fsm.transition(BATTLE_STATES.INITIALIZING, BATTLE_SUBSTATES.GEN_NEW_S2)
+    await fsm.transition(BATTLE_STATES.INITIALIZING, BATTLE_SUBSTATES.GEN_NEW_S2)
 
     await fsm.transition(BATTLE_STATES.INITIALIZING, BATTLE_SUBSTATES.PRELOAD_COORDS, 100)
 

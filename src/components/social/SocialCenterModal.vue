@@ -166,7 +166,7 @@ onMounted(() => {
       position: absolute;
       top: 50%;
       right: 10px;
-      transform: TranslateY(-50%);
+      transform: Translatey(-50%);
       background: Rgba(239, 68, 68, 1);
       color: var(--white);
       font-size: 9px;

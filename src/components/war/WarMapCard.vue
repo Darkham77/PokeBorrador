@@ -249,6 +249,6 @@ const openDefenseModal = (mapId: string) => {
   cursor: pointer;
   box-shadow: 0 0 10px Rgba(74, 222, 128, 0.4);
 
-  &:hover { background: Rgba(74, 222, 128, 1); transform: translateY(-2px); }
+  &:hover { background: Rgba(74, 222, 128, 1); transform: Translatey(-2px); }
 }
 </style>

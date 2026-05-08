@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { Temporal } from '@js-temporal/polyfill'
+
 import { ref, onMounted, nextTick, computed, watch } from 'vue';
 import { useDocumentListener } from '@/composables/useWindowListener';
 import { useChatStore } from '@/stores/chat';
@@ -53,7 +55,7 @@ function scrollToBottom() {
 
 function formatTime(iso: string | Date) {
   if (!iso) return '';
-  const d = new Date(iso);
+  const d = Temporal.Instant.fromEpochMilliseconds(iso);
   return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }
 
@@ -209,7 +211,7 @@ useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
   box-shadow: 0 4px 15px Rgba(0, 0, 0, 0.4);
 
   &:hover {
-    transform: TranslateY(-2px);
+    transform: Translatey(-2px);
     border-color: var(--purple-light);
     background: Rgba(13, 17, 23, 0.95);
   }

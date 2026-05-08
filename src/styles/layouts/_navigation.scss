@@ -11,15 +11,22 @@ body .nav {
   bottom: 0;
   left: 0;
   right: 0;
-  background: Rgba(10, 10, 10, 0.85);
-  -webkit-backdrop-filter: Blur(20px);
-  backdrop-filter: Blur(20px);
+  background: Rgba(0, 0, 0, 0.8);
+  will-change: transform, filter, opacity;
+  backdrop-filter: Blur(10px);
   @include gpu-layer;
   margin-bottom: 0;
   padding: 8px 12px;
   padding-bottom: calc(8px + env(safe-area-inset-bottom));
   z-index: var(--z-navigation);
-  transform: translateZ(0);
+  
+  @keyframes pulse {
+    0% { transform: Scale(1.0); filter: Drop-Shadow(0 0 0 Rgba(239, 68, 68, 0)); }
+    50% { transform: Scale(1.2); filter: Drop-Shadow(0 0 15px Rgba(239, 68, 68, 0.6)); }
+    100% { transform: Scale(1.0); filter: Drop-Shadow(0 0 0 Rgba(239, 68, 68, 0)); }
+  }
+  
+  transform: Translatez(0);
   border-top: 1px solid Rgba(255, 255, 255, 0.08);
   justify-content: space-around;
   box-shadow: 0 -10px 40px Rgba(0, 0, 0, 0.5);
@@ -85,7 +92,7 @@ body .nav {
   flex-direction: column;
   gap: spacing(1);
   z-index: var(--z-modal);
-  transform: translateZ(0);
+  transform: Translatez(0);
   box-shadow: 0 10px 30px Rgba(0, 0, 0, 0.8);
   min-width: 160px;
   
@@ -99,7 +106,7 @@ body .nav {
 // Notch support
 @supports (padding-bottom: env(safe-area-inset-bottom)) {
   @media (max-width: 1024px) {
-body .nav {
+    body .nav {
       padding-bottom: calc(8px + env(safe-area-inset-bottom));
     }
   }

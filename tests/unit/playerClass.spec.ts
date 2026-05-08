@@ -1,3 +1,4 @@
+import { Temporal } from '@js-temporal/polyfill'
 // @ts-nocheck
 /**
  * @vitest-environment jsdom
@@ -17,7 +18,7 @@ vi.mock('@/logic/supabase', () => ({
         }))
       }))
     })),
-    getServerTime: vi.fn(() => Promise.resolve(Date.now()))
+    getServerTime: vi.fn(() => Promise.resolve(Temporal.Now.instant().epochMilliseconds))
   }
 }))
 
@@ -104,7 +105,7 @@ describe('Player Class Logic (V3)', () => {
     
     gameStore.state.classData.activeMission = {
       id: 'rocket_patrol',
-      endsAt: Date.now() - 1000,
+      endsAt: Temporal.Now.instant().epochMilliseconds - 1000,
       targetPokemonIdx: 0,
       projectedReward: 500
     }

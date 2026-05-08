@@ -134,7 +134,9 @@ onMounted(() => {
         top: auto !important;
         left: auto !important;
         position: relative !important;
-        filter: none !important;
+        will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: none !important;
         border-radius: 4px;
         border: 1px solid Rgba(255,255,255,0.1);
         background: Rgba(0,0,0,0.2) !important;
@@ -165,7 +167,9 @@ onMounted(() => {
     max-height: none !important;
     object-fit: contain;
     image-rendering: pixelated;
-    filter: Drop-Shadow(0 4px 8px Rgba(0,0,0,0.4));
+    will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Drop-Shadow(0 4px 8px Rgba(0,0,0,0.4));
     position: absolute;
     top: 50%;
     left: 50%;
@@ -174,7 +178,9 @@ onMounted(() => {
 
   .log-emoji {
     font-size: 24px;
-    filter: Drop-Shadow(0 2px 4px Rgba(0, 0, 0, 0.4));
+    will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Drop-Shadow(0 2px 4px Rgba(0, 0, 0, 0.4));
     position: absolute;
     top: 50%;
     left: 50%;
@@ -219,8 +225,8 @@ onMounted(() => {
 }
 
 @keyframes slideIn {
-  from { opacity: 0; transform: TranslateX(-10px); }
-  to { opacity: 1; transform: TranslateX(0); }
+  from { opacity: 0; transform: Translatex(-10px); }
+  to { opacity: 1; transform: Translatex(0); }
 }
 
 /* Side-based backgrounds (Only 2 bands) */

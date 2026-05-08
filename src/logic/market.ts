@@ -70,7 +70,7 @@ export function applyMarketFilters(list: MarketListing[], filters: MarketFilters
     const listingType = item.listing_type || (filters.mode || 'pokemon');
     const price = item.price || 0;
 
-    // Base filter: Mode (Pokemon vs Items)
+    // filter: Mode (Pokemon vs Items)
     if (context === 'explore' && listingType !== filters.mode) return false;
 
     // Price

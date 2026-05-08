@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { Temporal } from '@js-temporal/polyfill'
+
 import { ref } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useMapStore } from '@/stores/map'
@@ -17,7 +19,7 @@ const game = useGameStore()
 const mapStore = useMapStore()
 const modalStore = useModalStore()
 
-const debugDate = ref(new Date().toISOString().slice(0, 16))
+const debugDate = ref(Temporal.Now.instant().toString().slice(0, 16))
 const timeOffsetLabel = ref(`${game.db.getTimeOffset()}ms`)
 
 const getDebugBridge = () => (window as unknown as { __VITE_DEBUG__: ViteDebugBridge }).__VITE_DEBUG__
@@ -31,7 +33,7 @@ function updateMockTime() {
 function resetTime() {
   getDebugBridge().resetTime()
   timeOffsetLabel.value = '0ms'
-  debugDate.value = new Date().toISOString().slice(0, 16)
+  debugDate.value = Temporal.Now.instant().toString().slice(0, 16)
   window.dispatchEvent(new CustomEvent('time-sync-update'))
   mapStore.setGlobalCycle(null)
 }

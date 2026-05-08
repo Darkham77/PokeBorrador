@@ -70,7 +70,9 @@ const emit = defineEmits<{
   .empty-icon {
     font-size: 40px;
     margin-bottom: 20px;
-    filter: Grayscale(1);
+    will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Grayscale(1);
     opacity: 0.3;
   }
 

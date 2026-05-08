@@ -334,8 +334,11 @@ onMounted(() => {
   flex-direction: column;
   transition: all 0.2s;
 
-  &:hover:not(.locked) { border-color: Rgba(255, 215, 0, 0.5); transform: TranslateY(-3px); }
-  &.locked { opacity: 0.3; filter: Grayscale(1.0); }
+  &:hover:not(.locked) { border-color: Rgba(255, 215, 0, 0.5); transform: Translatey(-3px); }
+  &.locked { opacity: 0.3; will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Grayscale(1.0); }
 
   .tier-tag {
     position: absolute;
@@ -358,7 +361,10 @@ onMounted(() => {
     align-items: center;
     justify-content: center;
     margin-bottom: 15px;
-    .pixel-sprite { width: 42px; height: 42px; @include sprite-render; filter: Drop-Shadow(0 2px 5px Rgba(0, 0, 0, 0.5)); }
+    .pixel-sprite { width: 42px; height: 42px; @include sprite-render; will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Drop-Shadow(0 2px 5px Rgba(0, 0, 0, 0.5)); }
     .item-emoji { font-size: 36px; }
   }
 

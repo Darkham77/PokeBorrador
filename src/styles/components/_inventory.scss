@@ -21,7 +21,9 @@
 
     .title-icon {
       font-size: 28px;
-      filter: Drop-Shadow(0 0 10px Rgba(255, 214, 10, 0.3));
+      will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Drop-Shadow(0 0 10px Rgba(255, 214, 10, 0.3));
     }
 
     .title-text-wrap {
@@ -182,7 +184,7 @@
 
 .list-complete-enter-from {
   opacity: 0;
-  transform: Scale(0.9) TranslateY(10px);
+  transform: Scale(0.9) Translatey(10px);
 }
 
 .list-complete-leave-to {

@@ -256,10 +256,15 @@ const select = (poke: any) => {
   align-items: center;
   justify-content: center;
   padding: 16px;
-  -webkit-backdrop-filter: Blur(8px);
+  -webkit-will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  backdrop-filter: Blur(8px);
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
   backdrop-filter: Blur(8px);
   @include gpu-layer;
-  transform: translateZ(0);
+  transform: Translatez(0);
 }
 
 .selector-card {
@@ -377,7 +382,9 @@ const select = (poke: any) => {
   &.locked {
     opacity: 0.5;
     cursor: not-allowed;
-    filter: GrayScale(1);
+    will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Grayscale(1);
     &:hover { transform: none; background: inherit; border-color: inherit; }
   }
 }
@@ -396,7 +403,10 @@ const select = (poke: any) => {
       width: 100%;
       height: 100%;
       @include pokemon-sprite-base-standard;
-      &.shiny { filter: Drop-Shadow(0 0 5px Rgba(255, 255, 0, 0.5)); }
+      &.shiny { will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Drop-Shadow(0 0 5px Rgba(255, 255, 0, 0.5)); }
     }
 
     .shiny-star {
@@ -479,8 +489,8 @@ const select = (poke: any) => {
 .fade-enter-from, .fade-leave-to { opacity: 0; }
 
 @keyframes slideUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: Translatey(20px); }
+  to { opacity: 1; transform: Translatey(0); }
 }
 .animate-slide-up { animation: slideUp 0.3s ease-out; }
 

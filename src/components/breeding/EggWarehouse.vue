@@ -142,10 +142,10 @@ const handleClaim = (egg: any) => {
   &:hover {
     background: Rgba(255, 255, 255, 0.06);
     border-color: Rgba(168, 85, 247, 0.4);
-    transform: translateY(-4px);
+    transform: Translatey(-4px);
     
     .egg-hover-action {
-      transform: translateY(0);
+      transform: Translatey(0);
     }
   }
 }
@@ -195,7 +195,7 @@ const handleClaim = (egg: any) => {
   font-size: 8px;
   padding: 8px 0;
   text-align: center;
-  transform: translateY(100%);
+  transform: Translatey(100%);
   transition: transform 0.2s;
 }
 </style>

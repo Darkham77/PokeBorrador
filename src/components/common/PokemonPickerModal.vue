@@ -142,7 +142,12 @@ const handleConfirm = () => {
   position: fixed;
   inset: 0;
   background: Rgba(0, 0, 0, 0.8);
-  -webkit-backdrop-filter: Blur(8px);
+  -webkit-will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  backdrop-filter: Blur(8px);
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
   backdrop-filter: Blur(8px);
   @include gpu-layer;
   z-index: var(--z-modal);
@@ -150,7 +155,7 @@ const handleConfirm = () => {
   align-items: center;
   justify-content: center;
   padding: 20px;
-  transform: TranslateZ(0);
+  transform: Translatez(0);
 }
 
 .picker-modal {
@@ -252,7 +257,10 @@ const handleConfirm = () => {
     font-weight: 700;
     cursor: pointer;
     &:disabled { opacity: 0.5; cursor: not-allowed; }
-    &:hover:not(:disabled) { filter: Brightness(1.1); }
+    &:hover:not(:disabled) { will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Brightness(1.1); }
   }
 }
 

@@ -101,7 +101,7 @@
 .hud-pill:hover,
 .hud-sq-btn:hover {
   background: Rgba(30, 41, 59, 0.8);
-  transform: TranslateY(-2px);
+  transform: Translatey(-2px);
 }
 
 .hud-container .hud-pill {
@@ -131,7 +131,7 @@
 
   &:hover {
     background: Rgba(30, 41, 59, 0.9);
-    transform: TranslateY(-3px);
+    transform: Translatey(-3px);
   }
 
   &.badge-pill {
@@ -188,7 +188,7 @@
 
   &:hover {
     background: Rgba(30, 41, 59, 0.8);
-    transform: TranslateY(-2px);
+    transform: Translatey(-2px);
     border-color: Rgba(255, 255, 255, 0.2);
     box-shadow: 0 4px 12px Rgba(0, 0, 0, 0.3);
     

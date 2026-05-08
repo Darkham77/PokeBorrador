@@ -152,7 +152,7 @@ const handleLocalLogin = () => {
 }
 
 .auth-btn:hover:not(:disabled) {
-  transform: translateY(-2px);
+  transform: Translatey(-2px);
   background: Rgba(255, 224, 77, 1);
 }
 </style>

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { Temporal } from '@js-temporal/polyfill'
+
 import { computed } from 'vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { useGTSStore } from '@/stores/gts'
@@ -93,7 +95,7 @@ async function handleCancel(id: string | number) {
           class="history-row"
         >
           <div class="sale-info">
-            <span class="date">{{ new Date(sale.created_at).toLocaleDateString() }}</span>
+            <span class="date">{{ Temporal.Instant.fromEpochMilliseconds(sale.created_at).toLocaleDateString() }}</span>
             <span class="item-name">Vendido: <strong>{{ sale.data.name }}</strong></span>
           </div>
           <div class="sale-value">

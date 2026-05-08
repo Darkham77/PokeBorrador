@@ -1,3 +1,4 @@
+import { Temporal } from '@js-temporal/polyfill'
 
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
@@ -44,7 +45,7 @@ export const useEventStore = defineStore('events', () => {
       allEvents.value = events || []
       
       // 2. Filter using Engine logic with synchronized time
-      const synchronizedDate = new Date(getServerTime())
+      const synchronizedDate = Temporal.Instant.fromEpochMilliseconds(getServerTime())
       activeEvents.value = (events || []).filter((ev: GameEvent) => isEventActiveNow(ev, synchronizedDate))
 
       // 3. Load finished competition results (Last 24h)

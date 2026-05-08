@@ -98,14 +98,14 @@ You MUST run these commands and fix EVERY issue until a clean pass is achieved.
 
 **THE MANDATORY CHAIN (Execution Order):**
 
-1. **Unified Project Audit**: `python3 .agents/skills/project-standards/scripts/audit_project.py`
+1. **Unified Project Audit**: `npm run audit`
 2. **Type-Safety**: `npm run type-check`
 3. **Database Validation**: `npm run validate-sql` (CRITICAL: Verifies migration syntax against SQLite)
 4. **Linting**: `npm run lint`
 5. **Unit Tests**: `npm run test`
 6. **Production Build**: `npm run build`
 
-**Unified Project Repair**: `python3 .agents/skills/project-standards/scripts/repair_project.py` (Run this to resolve automated issues if the audit fails).
+**Unified Project Repair**: `npm run audit:fix` (Run this to resolve automated issues if the audit fails).
 
 ### 4. Database Triple Parity Sync
 

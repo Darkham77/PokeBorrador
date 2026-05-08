@@ -1,3 +1,4 @@
+import { Temporal } from '@js-temporal/polyfill'
 /**
  * SQLite Handler for Browser-Side Emulation
  * Uses sql.js (WebAssembly) to provide a local SQL database.

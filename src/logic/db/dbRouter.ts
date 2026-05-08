@@ -1,3 +1,4 @@
+import { Temporal } from '@js-temporal/polyfill'
 
 import { createClient, type SupabaseClient, type RealtimeChannel, type User, type Session } from '@supabase/supabase-js';
 import { ProxyQuery } from './proxyQuery';
@@ -86,9 +87,9 @@ export class DBRouter {
   }
 
   setMockTime(dateStr: string): void {
-    const targetDate = new Date(dateStr);
-    if (isNaN(targetDate.getTime())) return;
-    const offset = targetDate.getTime() - Date.now();
+    const targetDate = Temporal.Instant.fromEpochMilliseconds(dateStr);
+    if (isNaN(targetDate.epochMilliseconds)) return;
+    const offset = targetDate.epochMilliseconds - Temporal.Now.instant().epochMilliseconds;
     this.setTimeOffset(offset);
   }
 
@@ -172,7 +173,7 @@ export class DBRouter {
 
   /**
    * Returns a reliable timestamp.
-   * If offline, uses local Date.now().
+   * If offline, uses local Temporal.Now.instant().epochMilliseconds.
    * If online, fetches server time from Supabase.
    */
   async getServerTime(): Promise<number> {
@@ -185,22 +186,22 @@ export class DBRouter {
   /** @private */
   async _getRawServerTime(): Promise<number> {
     if (this.mode === 'offline') {
-      return Date.now();
+      return Temporal.Now.instant().epochMilliseconds;
     }
     
     const client = this.realClient;
-    if (!client) return Date.now();
+    if (!client) return Temporal.Now.instant().epochMilliseconds;
 
     try {
       // Prioritize a dedicated RPC for server time to avoid local clock manipulation
       const { data, error } = await client.rpc('fn_get_server_time');
-      if (!error && data) return new Date(data as string).getTime();
+      if (!error && data) return Temporal.Instant.fromEpochMilliseconds(data as string).epochMilliseconds;
       
       // Fallback: use a fast select if RPC fails
-      return Date.now(); 
+      return Temporal.Now.instant().epochMilliseconds; 
     } catch (e) {
       logger.warn('DBRouter', 'getServerTime error, falling back to local.', (e as Error).message);
-      return Date.now();
+      return Temporal.Now.instant().epochMilliseconds;
     }
   }
 

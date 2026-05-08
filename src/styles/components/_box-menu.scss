@@ -95,7 +95,7 @@
 
   &:hover {
     background: Rgba(255, 255, 255, 0.06);
-    transform: TranslateY(-2px);
+    transform: Translatey(-2px);
     box-shadow: 0 10px 30px Rgba(0, 0, 0, 0.4);
   }
 
@@ -110,7 +110,9 @@
       width: 130px;
       height: 130px;
       @include sprite-render;
-      filter: Drop-Shadow(0 15px 25px Rgba(0,0,0,0.5));
+      will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Drop-Shadow(0 15px 25px Rgba(0,0,0,0.5));
     }
   }
 
@@ -226,7 +228,7 @@
   &:hover {
     border-color: var(--purple);
     background: Rgba(124, 58, 237, 0.1);
-    transform: scale3d(1.05, 1.05, 1) translateY(-4px);
+    transform: scale3d(1.05, 1.05, 1) Translatey(-4px);
     box-shadow: 0 12px 30px Rgba(0, 0, 0, 0.5);
     z-index: var(--z-low);
   }
@@ -263,13 +265,15 @@
     height: 48px;
     @include flex-center;
     position: relative;
-    transform: TranslateY(10px);
+    transform: Translatey(10px);
 
     .ts-sprite {
       width: 100%;
       height: 100%;
       @include sprite-render;
-      filter: Drop-Shadow(0 4px 8px Rgba(0,0,0,0.4));
+      will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Drop-Shadow(0 4px 8px Rgba(0,0,0,0.4));
     }
   }
 

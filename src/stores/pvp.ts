@@ -112,7 +112,7 @@ export const usePvPStore = defineStore('pvp', () => {
   }
 
   async function fetchLeaderboard(force = false) {
-    if (!force && lastSyncAt.value && (Date.now() - lastSyncAt.value < 1800000)) {
+    if (!force && lastSyncAt.value && (Temporal.Now.instant().epochMilliseconds - lastSyncAt.value < 1800000)) {
       return // 30 min cache
     }
 
@@ -130,7 +130,7 @@ export const usePvPStore = defineStore('pvp', () => {
 
       if (err) throw err
       leaderboard.value = (data || []) as LeaderboardEntry[]
-      lastSyncAt.value = Date.now()
+      lastSyncAt.value = Temporal.Now.instant().epochMilliseconds
     } catch (e) {
       error.value = 'No se pudo cargar el ranking global.'
       logger.error('PvP', `Leaderboard error: ${(e as Error).message}`)
@@ -221,8 +221,8 @@ export const usePvPStore = defineStore('pvp', () => {
     const daysLeft = Math.max(0, Math.ceil(diff.days))
     
     return {
-      start: new Date(start.epochMilliseconds), // Mantener Date para compatibilidad con UI si es necesario
-      end: new Date(end.epochMilliseconds),
+      start: Temporal.Instant.fromEpochMilliseconds(start.epochMilliseconds), // Mantener Date para compatibilidad con UI si es necesario
+      end: Temporal.Instant.fromEpochMilliseconds(end.epochMilliseconds),
       daysLeft
     }
   })

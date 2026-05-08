@@ -49,13 +49,13 @@
   
   // Estado inicial Desktop: oculto
   @media (min-width: 1411px) {
-    transform: TranslateY(110%);
+    transform: Translatey(110%);
     opacity: 0;
   }
 
   // Estado inicial Móvil: siempre visible
   @include responsive(hud-mobile) {
-    transform: TranslateY(0) !important;
+    transform: Translatey(0) !important;
     opacity: 1 !important;
     pointer-events: auto !important;
   }
@@ -101,7 +101,7 @@
   align-items: center;
   justify-content: center;
   padding: 0;
-  transform: TranslateZ(0);
+  transform: Translatez(0);
 }
 
 .private-chats-container {
@@ -147,12 +147,12 @@
 /* --- HUD Visibility States --- */
 .hud-hidden {
   &.main-hud-desktop { 
-    transform: TranslateY(-110%);
+    transform: Translatey(-110%);
     opacity: 0;
   }
   
   &.hud-sidebar-tools {
-    transform: TranslateX(-150%);
+    transform: Translatex(-150%);
     opacity: 0;
   }
 }

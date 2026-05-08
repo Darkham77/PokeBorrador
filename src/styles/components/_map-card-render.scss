@@ -37,11 +37,13 @@
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    filter: var(--atmosphere-filter, Brightness(0.8) Contrast(1.1));
+    will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: var(--atmosphere-filter, Brightness(0.8) Contrast(1.1));
     // transition: transform 0.6s ease, filter 0.5s ease;
     z-index: -3;
     will-change: filter, transform;
-    transform: TranslateZ(0); 
+    transform: Translatez(0); 
     
     // Pixelated rendering (MANDATORY for pixel art maps)
     @include pixelated;
@@ -70,7 +72,7 @@
   }
 
   &:hover {
-    transform: translateY(-8px);
+    transform: Translatey(-8px);
     box-shadow: 
       0 0 0 2px var(--yellow), 
       0 15px 35px Rgba(0,0,0,0.6), 
@@ -79,7 +81,9 @@
 
     &::before { 
       transform: Scale(1.08); 
-      filter: var(--atmosphere-filter-hover, Brightness(1.0) Contrast(1.2)); 
+      will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: var(--atmosphere-filter-hover, Brightness(1.0) Contrast(1.2)); 
     }
 
     &::after {
@@ -93,15 +97,21 @@
   }
 
   &.locked, &.safari-locked {
-    filter: none !important;
+    will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: none !important;
     opacity: 1 !important;
 
     &::before { 
-      filter: Grayscale(1) Brightness(0.4) !important; 
+      will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Grayscale(1) Brightness(0.4) !important; 
     }
     
     .location-header, .location-spawns, .guardian-status-badge, .faction-dominance {
-      filter: Grayscale(1) Brightness(0.6);
+      will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Grayscale(1) Brightness(0.6);
       opacity: 0.4;
     }
   }
@@ -169,7 +179,9 @@
         position: absolute;
         inset: -2%;
         background: Radial-Gradient(circle, Rgba(255, 0, 0, 0.7) 0%, transparent 70%);
-        filter: Blur(2px);
+        will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Blur(2px);
         z-index: -1;
         opacity: 0.6;
         animation: pulse-aura-modern 2s infinite ease-in-out;
@@ -213,7 +225,7 @@
         right: 0;
         height: 1.5px;
         background: var(--black);
-        transform: translateY(-50%);
+        transform: Translatey(-50%);
       }
     }
   }
@@ -228,26 +240,32 @@
     image-rendering: crisp-edges !important;
     &:not(.spawn-silhouette) {
       &.pixelated, & {
-        filter: pokemon-outline-optimized();
+        will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: pokemon-outline-optimized();
       }
     }
 
     &.spawn-silhouette {
-      filter: pokemon-silhouette-optimized() !important;
+      will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: pokemon-silhouette-optimized() !important;
       opacity: 1 !important;
     }
 
     // Performance mode toggle
     .performance-mode & {
-      filter: none !important;
+      will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: none !important;
     }
     
     transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     will-change: transform;
-    transform: translateZ(0); 
+    transform: Translatez(0); 
 
     &:hover {
-      transform: Scale(1.1) TranslateY(-2px);
+      transform: Scale(1.1) Translatey(-2px);
       z-index: 11 !important;
     }
   }
@@ -301,5 +319,8 @@
   left: 12px;
 }
 
-.faction-logo { width: 32px; height: 32px; filter: Drop-Shadow(0 2px 4px Rgba(0,0,0,0.8)); }
+.faction-logo { width: 32px; height: 32px; will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Drop-Shadow(0 2px 4px Rgba(0,0,0,0.8)); }
 .pulse { animation: pulse 2s infinite; }

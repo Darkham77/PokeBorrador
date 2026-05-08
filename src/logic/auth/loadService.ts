@@ -1,3 +1,4 @@
+import { Temporal } from '@js-temporal/polyfill'
 
 import { validateAndSanitize } from './saveService';
 import type { Pokemon } from '@/types/pokemon';
@@ -110,7 +111,7 @@ export async function loadBestSave(user: AuthUser | null, db: any): Promise<Load
           cloudData.starterChosen = true;
         }
         
-        const cloudTime = cloudSaveRow.updated_at ? new Date(cloudSaveRow.updated_at).getTime() : 0;
+        const cloudTime = cloudSaveRow.updated_at ? Temporal.Instant.fromEpochMilliseconds(cloudSaveRow.updated_at).epochMilliseconds : 0;
         const localTime = localData._last_updated || 0;
  
         // Legacy Rule: If local is at least 3s newer, prioritize it.
@@ -155,7 +156,7 @@ function normalizeData(state: any): GameState {
   // Data fix: ensure UID and Gender for all Pokemon
   const fixPoke = (p: Pokemon): Pokemon | null => {
     if (!p) return null;
-    if (!p.uid) p.uid = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
+    if (!p.uid) p.uid = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substr(2, 9) + Temporal.Now.instant().epochMilliseconds.toString(36);
     
     // Legacy gender backfill
     if (!p.gender) {
@@ -174,7 +175,7 @@ function normalizeData(state: any): GameState {
 
     // Backfill capture date if missing
     if (!p.obtainedAt && !(p as any).created_at && !(p as any).captureDate && !(p as any).timestamp && !(p as any).date) {
-      p.obtainedAt = Date.now();
+      p.obtainedAt = Temporal.Now.instant().epochMilliseconds;
     }
 
     return p;

@@ -123,7 +123,12 @@ const startMode = (mode: string) => {
   padding: 12px 20px;
   background: Rgba(255, 255, 255, 0.03);
   border-bottom: 1px solid Rgba(255, 255, 255, 0.08);
-  -webkit-backdrop-filter: Blur(10px);
+  -webkit-will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  backdrop-filter: Blur(10px);
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
   backdrop-filter: Blur(10px);
   @include gpu-layer;
 }

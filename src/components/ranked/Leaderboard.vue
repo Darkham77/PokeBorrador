@@ -215,7 +215,7 @@ const formatRank = (index: number) => `#${index + 1}`;
   }
 
   &:hover {
-    transform: translateX(4px);
+    transform: Translatex(4px);
     background: Rgba(255, 255, 255, 0.05);
   }
 }

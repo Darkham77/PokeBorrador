@@ -427,8 +427,8 @@ function selectAdventure(_slotIndex: number) {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: Translatey(4px); }
+  to { opacity: 1; transform: Translatey(0); }
 }
 
 :deep(.modal-header-premium) {
@@ -438,7 +438,12 @@ function selectAdventure(_slotIndex: number) {
 
 :deep(.modal-content-premium) {
   background: Rgba(15, 23, 42, 0.95) !important;
-  -webkit-backdrop-filter: Blur(25px);
+  -webkit-will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  backdrop-filter: Blur(25px);
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
   backdrop-filter: Blur(25px);
   @include gpu-layer;
 }

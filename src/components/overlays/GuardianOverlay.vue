@@ -59,7 +59,7 @@ const name = computed(() => props.guardian.id.toUpperCase());
   justify-content: center;
   padding: 24px;
   animation: fadeIn 0.3s ease-out;
-  transform: translateZ(0);
+  transform: Translatez(0);
 }
 
 .press-start {
@@ -140,8 +140,8 @@ h3 {
 }
 
 @keyframes slideUp {
-  from { transform: translateY(30px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+  from { transform: Translatey(30px); opacity: 0; }
+  to { transform: Translatey(0); opacity: 1; }
 }
 
 @keyframes pulse {

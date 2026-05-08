@@ -222,12 +222,14 @@ onUnmounted(() => {
   overflow: hidden;
   padding: 0;
   z-index: var(--z-base);
-  transform: TranslateZ(0); 
+  transform: Translatez(0); 
   transform-origin: center center;
   backface-visibility: hidden;
 
   &:disabled {
-    filter: Grayscale(0.8);
+    will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Grayscale(0.8);
     opacity: 0.7;
     cursor: not-allowed;
   }
@@ -265,12 +267,12 @@ onUnmounted(() => {
 }
 
 .btn-catch-ball:not(:disabled):hover {
-  transform: Scale(1.1) TranslateY(-8px) Rotate(10deg); 
+  transform: Scale(1.1) Translatey(-8px) Rotate(10deg); 
   box-shadow: 0 12px 30px Rgba(0,0,0,0.5);
   z-index: var(--z-low);
 
   @media (max-width: 600px) {
-    transform: Scale(1.05) TranslateY(-4px) Rotate(5deg);
+    transform: Scale(1.05) Translatey(-4px) Rotate(5deg);
   }
 }
 
@@ -281,7 +283,7 @@ onUnmounted(() => {
   position: absolute;
   bottom: calc(100% + 12px);
   left: 50%;
-  transform: TranslateX(-50%);
+  transform: Translatex(-50%);
   // Sólido y oscuro para evitar cualquier transparencia
   background: var(--darker); 
   border: 2px solid var(--glass-border);
@@ -317,7 +319,7 @@ onUnmounted(() => {
 
   &:hover {
     background: var(--card2);
-    transform: TranslateX(4px);
+    transform: Translatex(4px);
     border-color: var(--glass-edge);
     box-shadow: 0 4px 15px Rgba(0,0,0,0.8);
   }
@@ -330,7 +332,9 @@ onUnmounted(() => {
     width: 32px;
     height: 32px;
     image-rendering: pixelated;
-    filter: Drop-Shadow(0 2px 4px Rgba(0,0,0,0.8));
+    will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Drop-Shadow(0 2px 4px Rgba(0,0,0,0.8));
   }
 
   .ball-info {

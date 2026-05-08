@@ -577,6 +577,8 @@ watch(() => battleStore.isBattleActive, (active) => {
 
 .trainer-image {
   height: 90%; width: auto; object-fit: contain;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 4px 8px Rgba(0,0,0,0.5));
   image-rendering: pixelated;
 }

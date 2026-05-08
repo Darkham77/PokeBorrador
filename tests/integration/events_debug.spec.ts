@@ -1,3 +1,4 @@
+import { Temporal } from '@js-temporal/polyfill'
 // @ts-nocheck
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach, vi } from 'vitest'
@@ -74,7 +75,7 @@ describe('Events Integration with Debug API', () => {
     debugApi.setMockTime('2026-04-21T12:00:00')
     
     // Simulate events refresh logic for integration test verification
-    const mockDate = new Date('2026-04-21T12:00:00')
+    const mockDate = Temporal.Instant.fromEpochMilliseconds('2026-04-21T12:00:00')
     events.activeEvents = events.events.filter(e => {
        // Manual check for Tuesday (day 2) in weekly schedule
        return e.schedule && e.schedule.days && e.schedule.days.includes(mockDate.getDay())

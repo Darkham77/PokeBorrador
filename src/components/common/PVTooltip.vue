@@ -238,7 +238,12 @@ onUnmounted(() => {
   min-width: 120px;
   max-width: 300px;
   box-shadow: 0 10px 30px Rgba(0, 0, 0, 0.8);
-  -webkit-backdrop-filter: Blur(10px);
+  -webkit-will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  backdrop-filter: Blur(10px);
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
   backdrop-filter: Blur(10px);
   @include gpu-layer;
   
@@ -284,7 +289,7 @@ onUnmounted(() => {
     .tooltip-arrow {
       top: 100%;
       left: calc(50% + var(--arrow-x));
-      transform: translateX(-50%);
+      transform: Translatex(-50%);
       border-top-color: $yellow;
     }
   }
@@ -294,7 +299,7 @@ onUnmounted(() => {
     .tooltip-arrow {
       bottom: 100%;
       left: calc(50% + var(--arrow-x));
-      transform: translateX(-50%);
+      transform: Translatex(-50%);
       border-bottom-color: $yellow;
     }
   }
@@ -304,7 +309,7 @@ onUnmounted(() => {
     .tooltip-arrow {
       left: 100%;
       top: calc(50% + var(--arrow-y));
-      transform: translateY(-50%);
+      transform: Translatey(-50%);
       border-left-color: $yellow;
     }
   }
@@ -314,7 +319,7 @@ onUnmounted(() => {
     .tooltip-arrow {
       right: 100%;
       top: calc(50% + var(--arrow-y));
-      transform: translateY(-50%);
+      transform: Translatey(-50%);
       border-right-color: $yellow;
     }
   }

@@ -134,7 +134,6 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
   await fsm.transition(BATTLE_STATES.INITIALIZING, BATTLE_SUBSTATES.MARK_EVENT)
   await fsm.transition(BATTLE_STATES.INITIALIZING, BATTLE_SUBSTATES.PRELOAD_FINAL_COORDS, 50)
   await fsm.transition(BATTLE_STATES.INITIALIZING, BATTLE_SUBSTATES.SET_SEARCH_FLAG)
-  ctx.isSearching.value = wasSearching
 
   if (wasSearching) {
     await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.PARALLEL_PREP)
@@ -144,12 +143,12 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
     if (ctx.activeBattle.value) ctx.activeBattle.value.enemy = finalEnemyPoke
     return 
   } else {
-    fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.ENTRY_ANIM)
+    await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.ENTRY_ANIM)
     await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.ENCOUNTER_TYPE_CHECK)
     
     if (isTrainer || isGym) {
       await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.TRAINER_ENTRY)
-      fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.T_VISUAL)
+      await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.T_VISUAL)
     } else {
       await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.WILD_ENTRY)
       if (ctx.activeBattle.value) ctx.activeBattle.value.enemy = finalEnemyPoke
@@ -178,7 +177,7 @@ export async function initBattleSequence(ctx: BattleContext, { locationId, isTra
     await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.ENCOUNTER_TYPE_CHECK)
     await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.WILD_ENCOUNTER)
     await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.CHECK_BINOCULARS)
-    fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.PARALLEL_JUMP)
+    await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.PARALLEL_JUMP)
     
     const inventoryBinoculars = (ctx.gs.state.inventory as any)?.['binoculars'] || 0
     const hasBinoculars = ctx.debugBinoculars.value || (inventoryBinoculars > 0)
@@ -244,7 +243,7 @@ export async function initBattleSequence(ctx: BattleContext, { locationId, isTra
     generateEncounter(locationId, ctx.gs.state, encounterOptions).then((encounter) => {
       if (encounter && encounter.type === 'wild' && encounter.pokemon) {
         if (fsm.currentState.value !== BATTLE_STATES.EXIT_BATTLE) {
-          fsm.transition(BATTLE_STATES.INITIALIZING, BATTLE_SUBSTATES.GEN_NEW_S2)
+          // background update only, NO FSM transition here to avoid hijacking
           ctx.upcomingPokemon.value = encounter.pokemon
         }
       }
@@ -253,7 +252,6 @@ export async function initBattleSequence(ctx: BattleContext, { locationId, isTra
 
   ctx.isIntroAnimating.value = false
   await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT, 300)
-  ctx.upcomingPokemon.value = null 
   ctx.isIntroAnimating.value = false
 }
 

@@ -36,7 +36,7 @@
       }
 
       &:hover {
-        transform: TranslateY(-2px);
+        transform: Translatey(-2px);
         background: Rgba(255, 255, 255, 0.06);
         &::after { opacity: 0.6; }
       }

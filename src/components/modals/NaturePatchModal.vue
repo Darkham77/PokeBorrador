@@ -101,7 +101,7 @@ const close = () => {
 
     &:hover { 
       background: Rgba(255,255,255,0.06); 
-      transform: translateY(-2px);
+      transform: Translatey(-2px);
       border-color: Rgba(255, 255, 255, 0.2);
     }
     

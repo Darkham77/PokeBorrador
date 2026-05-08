@@ -71,12 +71,17 @@ const decline = async () => {
   position: fixed;
   top: 20px;
   left: 50%;
-  transform: TranslateX(-50%) TranslateZ(0);
+  transform: Translatex(-50%) Translatez(0);
   z-index: var(--z-toast);
   width: 90%;
   max-width: 360px;
   background: Rgba(15, 23, 42, 0.95);
-  -webkit-backdrop-filter: Blur(12px);
+  -webkit-will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  backdrop-filter: Blur(12px);
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
   backdrop-filter: Blur(12px);
   @include gpu-layer;
   border: 1px solid Rgba(139, 92, 246, 0.4);
@@ -131,7 +136,7 @@ button {
   border: 1px solid;
 
   &:hover {
-    transform: TranslateY(-2px);
+    transform: Translatey(-2px);
   }
 }
 

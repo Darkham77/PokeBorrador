@@ -1,3 +1,4 @@
+import { Temporal } from '@js-temporal/polyfill'
 // @ts-nocheck
 import { describe, it, expect } from 'vitest'
 import { isEventActiveNow, getGlobalMultipliers, getSpeciesBoosts } from '@/logic/events/eventEngine'
@@ -19,8 +20,8 @@ describe('Event Engine Logic', () => {
       start_at: '2026-04-10T00:00:00Z', 
       end_at: '2026-04-20T00:00:00Z' 
     }
-    const internalDate = new Date('2026-04-15T12:00:00Z')
-    const outsideDate = new Date('2026-04-25T12:00:00Z')
+    const internalDate = Temporal.Instant.fromEpochMilliseconds('2026-04-15T12:00:00Z')
+    const outsideDate = Temporal.Instant.fromEpochMilliseconds('2026-04-25T12:00:00Z')
 
     expect(isEventActiveNow(event, internalDate)).toBe(true)
     expect(isEventActiveNow(event, outsideDate)).toBe(false)
@@ -67,7 +68,7 @@ describe('Event Engine Logic', () => {
     expect(mults.exp).toBe(5)
 
     // Check schedule parsing (using a Monday as test date)
-    const monday = new Date('2026-04-20T12:00:00') // Monday
+    const monday = Temporal.Instant.fromEpochMilliseconds('2026-04-20T12:00:00') // Monday
     expect(isEventActiveNow(event, monday)).toBe(true)
   })
 
@@ -83,11 +84,11 @@ describe('Event Engine Logic', () => {
     }
 
     // Monday 23:00 (Should be active)
-    const mondayNight = new Date('2026-04-20T23:00:00')
+    const mondayNight = Temporal.Instant.fromEpochMilliseconds('2026-04-20T23:00:00')
     // Tuesday 01:00 (Should be active)
-    const tuesdayMorning = new Date('2026-04-21T01:00:00')
+    const tuesdayMorning = Temporal.Instant.fromEpochMilliseconds('2026-04-21T01:00:00')
     // Monday 21:00 (Should be inactive)
-    const mondayEvening = new Date('2026-04-20T21:00:00')
+    const mondayEvening = Temporal.Instant.fromEpochMilliseconds('2026-04-20T21:00:00')
 
     // Note: isEventActiveNow uses Argentina Time. 
     // For unit tests, we mock the time or ensure the test date is interpreted correctly.

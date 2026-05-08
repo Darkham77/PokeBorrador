@@ -83,9 +83,9 @@ onMounted(() => {
   display: flex;
   border-bottom: 2px solid Rgba(255, 255, 255, 0.1);
   background: Rgba(0, 0, 0, 0.4);
-  -webkit-backdrop-filter: Blur(5px);
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
   backdrop-filter: Blur(5px);
-  @include gpu-layer;
   position: sticky;
   top: 0;
   z-index: var(--z-base);

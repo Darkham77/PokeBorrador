@@ -106,7 +106,7 @@ if (typeof window !== 'undefined') {
     &:hover {
       background: Rgba(255, 255, 255, 0.06);
       border-color: Rgba(255, 255, 255, 0.1);
-      transform: translateY(-2px);
+      transform: Translatey(-2px);
     }
 
     .item-icon-box {
@@ -157,9 +157,11 @@ if (typeof window !== 'undefined') {
       transition: all 0.2s;
 
       &:hover:not(:disabled) {
-        transform: translateY(-2px);
+        transform: Translatey(-2px);
         box-shadow: 0 6px 15px Rgba(245, 158, 11, 0.4);
-        filter: Brightness(1.1);
+        will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Brightness(1.1);
       }
 
       &:disabled {

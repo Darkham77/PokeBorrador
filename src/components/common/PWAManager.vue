@@ -86,6 +86,8 @@
 </template>
 
 <script setup lang="ts">
+import { Temporal } from '@js-temporal/polyfill'
+
 import { ref, onMounted, watch } from 'vue'
 import { usePWA } from '@/composables/usePWA'
 import { useAuthStore } from '@/stores/auth'
@@ -115,7 +117,7 @@ watch(canInstall, (val) => {
 
 const closeInstallModal = () => {
   showInstallModal.value = false
-  localStorage.setItem('pwa_install_dismissed', Date.now().toString())
+  localStorage.setItem('pwa_install_dismissed', Temporal.Now.instant().epochMilliseconds.toString())
 }
 
 const handleInstall = async () => {
@@ -267,12 +269,12 @@ onMounted(() => {
   box-shadow: 0 4px 0 #b39200;
   
   &:hover {
-    transform: translateY(-2px);
+    transform: Translatey(-2px);
     box-shadow: 0 6px 0 #b39200;
   }
   
   &:active {
-    transform: translateY(2px);
+    transform: Translatey(2px);
     box-shadow: 0 0 0 #b39200;
   }
 }

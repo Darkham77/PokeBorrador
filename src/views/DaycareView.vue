@@ -189,7 +189,9 @@ const getGenderClass = (gender: string | null | undefined) => {
     -webkit-background-clip: text;
     -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; background-clip: text;;;;;
     -webkit-text-fill-color: transparent;
-    filter: Drop-Shadow(0 2px 10px Rgba(139, 92, 246, 0.3));
+    will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Drop-Shadow(0 2px 10px Rgba(139, 92, 246, 0.3));
   }
   
   .subtitle {
@@ -270,7 +272,7 @@ const getGenderClass = (gender: string | null | undefined) => {
   @include will-animate(transform, background, border-color);
   
   &:not(.empty):hover {
-    transform: TranslateY(-4px);
+    transform: Translatey(-4px);
     border-color: var(--purple-light);
     background: Rgba(255, 255, 255, 0.06);
   }
@@ -349,21 +351,34 @@ const getGenderClass = (gender: string | null | undefined) => {
 .heart-fx {
   font-size: 32px;
   opacity: 0.1;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
   filter: Grayscale(100%);
   transition: all 0.5s;
-  @include will-animate(transform);
+  @include will-animate(transform, filter);
   
   &.active {
     opacity: 1;
-    filter: Grayscale(100%);
+    will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Grayscale(100%);
     animation: pulse 2s infinite;
   }
 }
 
 @keyframes pulse {
-  0% { transform: Scale(1.0); filter: Drop-Shadow(0 0 0 Rgba(239, 68, 68, 0)); }
-  50% { transform: Scale(1.2); filter: Drop-Shadow(0 0 15px Rgba(239, 68, 68, 0.6)); }
-  100% { transform: Scale(1.0); filter: Drop-Shadow(0 0 0 Rgba(239, 68, 68, 0)); }
+  0% { transform: Scale(1.0); will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Drop-Shadow(0 0 0 Rgba(239, 68, 68, 0)); }
+  50% { transform: Scale(1.2); will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Drop-Shadow(0 0 15px Rgba(239, 68, 68, 0.6)); }
+  100% { transform: Scale(1.0); will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Drop-Shadow(0 0 0 Rgba(239, 68, 68, 0)); }
 }
 
 .breeding-forecast {

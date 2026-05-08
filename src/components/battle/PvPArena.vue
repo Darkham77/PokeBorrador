@@ -138,7 +138,7 @@ const handleSwitch = () => {
   z-index: var(--z-overlay);
   display: flex;
   flex-direction: column;
-  transform: translateZ(0);
+  transform: Translatez(0);
 }
 
 .battle-arena {
@@ -228,7 +228,7 @@ const handleSwitch = () => {
   }
   
   &:hover {
-    transform: translateY(-2px);
+    transform: Translatey(-2px);
   }
 }
 </style>

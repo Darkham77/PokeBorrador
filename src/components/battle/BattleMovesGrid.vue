@@ -340,7 +340,9 @@ const isMoveDisabled = (move: any) => {
     z-index: var(--z-low);
     transform: Scale(1.08);
     box-shadow: 0 8px 24px Rgba(0, 0, 0, 0.5);
-    filter: Brightness(1.1);
+    will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Brightness(1.1);
 
     @media (max-width: 420px) {
       transform: Scale(1.02);
@@ -353,7 +355,9 @@ const isMoveDisabled = (move: any) => {
   }
 
   &.is-disabled {
-    filter: Grayscale(1);
+    will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Grayscale(1);
     opacity: 0.6;
     cursor: not-allowed;
     
@@ -434,7 +438,9 @@ const isMoveDisabled = (move: any) => {
     &:hover {
       transform: none;
       box-shadow: none;
-      filter: none;
+      will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: none;
     }
   }
 }

@@ -184,7 +184,12 @@ const handleImageError = (e: Event) => {
 .class-card-premium {
   position: relative;
   background: Rgba(30, 41, 59, 0.4);
-  -webkit-backdrop-filter: Blur(10px);
+  -webkit-will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  backdrop-filter: Blur(10px);
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
   backdrop-filter: Blur(10px);
   @include gpu-layer;
   border: 1px solid Rgba(255, 255, 255, 0.1);
@@ -200,7 +205,7 @@ const handleImageError = (e: Event) => {
   @include hover-neon-yellow(1px);
 
   &:hover {
-    transform: TranslateY(-10px) RotateX(2deg);
+    transform: Translatey(-10px) rotatex(2deg);
     border-color: var(--yellow) !important;
     
     .card-glow { opacity: 0.2; }

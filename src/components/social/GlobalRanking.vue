@@ -183,7 +183,7 @@ h2 {
 
 .rank-row:hover {
   background: Rgba(255,255,255,0.04);
-  transform: translateX(5px);
+  transform: Translatex(5px);
 }
 
 .rank-row.is-me {

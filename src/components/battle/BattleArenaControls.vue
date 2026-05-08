@@ -209,7 +209,9 @@ watch(() => uiStore.isBattleSwitchForced, (val) => {
   margin: 0;
 
   &.is-ui-locked {
-    filter: Grayscale(1);
+    will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Grayscale(1);
     opacity: 0.6;
     pointer-events: none;
   }
@@ -265,7 +267,12 @@ watch(() => uiStore.isBattleSwitchForced, (val) => {
   z-index: var(--z-overlay);
   pointer-events: all;
   cursor: pointer;
-  -webkit-backdrop-filter: Blur(4px);
+  -webkit-will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  backdrop-filter: Blur(4px);
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
   backdrop-filter: Blur(4px);
   @include gpu-layer;
 
@@ -299,7 +306,9 @@ watch(() => uiStore.isBattleSwitchForced, (val) => {
     display: flex;
     align-items: center;
     justify-content: center;
-    filter: Drop-Shadow(0 2px 4px Rgba(0,0,0,0.3));
+    will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Drop-Shadow(0 2px 4px Rgba(0,0,0,0.3));
     position: relative;
     top: -1px;
     flex-shrink: 0;
@@ -316,8 +325,8 @@ watch(() => uiStore.isBattleSwitchForced, (val) => {
 }
 
 @keyframes slideInUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: Translatey(20px); }
+  to { opacity: 1; transform: Translatey(0); }
 }
 /* Transición de entrada Sincronizada para todo el panel de control */
 .controls-slide-enter-active {

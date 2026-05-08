@@ -1,3 +1,4 @@
+import { Temporal } from '@js-temporal/polyfill'
 // @ts-nocheck
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeEach, vi } from 'vitest'
@@ -10,27 +11,27 @@ import { getWeekId, isDisputePhase, getPointReward } from '@/logic/war/warEngine
 describe('War Engine Logic', () => {
   it('calculates week ID correctly for Monday', () => {
     // 2026-04-13 is Monday
-    const date = new Date('2026-04-13T12:00:00')
+    const date = Temporal.Instant.fromEpochMilliseconds('2026-04-13T12:00:00')
     expect(getWeekId(date)).toBe('2026-W15')
   })
 
   it('calculates same week ID for Tuesday as previous Monday', () => {
-    const monday = new Date('2026-04-13T12:00:00')
-    const tuesday = new Date('2026-04-14T12:00:00')
+    const monday = Temporal.Instant.fromEpochMilliseconds('2026-04-13T12:00:00')
+    const tuesday = Temporal.Instant.fromEpochMilliseconds('2026-04-14T12:00:00')
     expect(getWeekId(tuesday)).toBe(getWeekId(monday))
   })
 
   it('calculates same week ID for Sunday as previous Monday', () => {
-    const monday = new Date('2026-04-13T12:00:00')
-    const sunday = new Date('2026-04-19T12:00:00')
+    const monday = Temporal.Instant.fromEpochMilliseconds('2026-04-13T12:00:00')
+    const sunday = Temporal.Instant.fromEpochMilliseconds('2026-04-19T12:00:00')
     expect(getWeekId(sunday)).toBe(getWeekId(monday))
   })
 
   it('identifies dispute phase (Mon-Fri) correctly', () => {
-    const monday = new Date('2026-04-13T12:00:00')
-    const friday = new Date('2026-04-17T12:00:00')
-    const saturday = new Date('2026-04-18T12:00:00')
-    const sunday = new Date('2026-04-19T12:00:00')
+    const monday = Temporal.Instant.fromEpochMilliseconds('2026-04-13T12:00:00')
+    const friday = Temporal.Instant.fromEpochMilliseconds('2026-04-17T12:00:00')
+    const saturday = Temporal.Instant.fromEpochMilliseconds('2026-04-18T12:00:00')
+    const sunday = Temporal.Instant.fromEpochMilliseconds('2026-04-19T12:00:00')
 
     expect(isDisputePhase(monday)).toBe(true)
     expect(isDisputePhase(friday)).toBe(true)
@@ -50,7 +51,7 @@ describe('War Store Logic', () => {
   beforeEach(async () => {
     setActivePinia(createPinia())
     vi.useFakeTimers()
-    vi.setSystemTime(new Date('2026-04-15')) // Wednesday
+    vi.setSystemTime(Temporal.Instant.fromEpochMilliseconds('2026-04-15')) // Wednesday
     
     const gs = useGameStore()
     gs.state = {
@@ -129,6 +130,6 @@ describe('War Store Logic', () => {
     
     await war.addPoints('route1', 'SHINY_CAPTURE', true) // 40 PT = 4 coins
     expect(war.warCoins).toBe(4)
-    expect(useGameStore().state.warDailyCoins[new Date().toDateString()]).toBe(4)
+    expect(useGameStore().state.warDailyCoins[Temporal.Now.instant().toString().split('T')[0]]).toBe(4)
   })
 })

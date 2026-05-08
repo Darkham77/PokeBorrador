@@ -1,3 +1,4 @@
+import { Temporal } from '@js-temporal/polyfill'
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { useModalStore } from './modals'
@@ -178,7 +179,7 @@ export const useUIStore = defineStore('ui', () => {
   }
 
   function notify(msg: string, icon: string = '🔔') {
-    const id = Date.now() + Math.random().toString(36).substr(2, 9)
+    const id = Temporal.Now.instant().epochMilliseconds + Math.random().toString(36).substr(2, 9)
     notifications.value.push({ id, msg, icon })
     setTimeout(() => {
       notifications.value = notifications.value.filter(n => n.id !== id)

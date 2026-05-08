@@ -1,3 +1,4 @@
+import { Temporal } from '@js-temporal/polyfill'
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { logger } from '@/logic/utils/logger'
@@ -24,7 +25,7 @@ export const useMapStore = defineStore('map', () => {
   const globalWeather = ref(null) // Si está forzado anula el determinístico
   const forcedCycle = ref(null) // null, morning, day, dusk, night
   const forcedSeason = ref(null) // null, spring, summer, autumn, winter
-  const currentEpochHour = ref(Math.floor(Date.now() / 3600000))
+  const currentEpochHour = ref(Math.floor(Temporal.Now.instant().epochMilliseconds / 3600000))
 
   // Sync epoch hour every second for real-time feeling
   if (typeof window !== 'undefined' && typeof process !== 'undefined' && process.env.NODE_ENV !== 'test') {
@@ -68,7 +69,7 @@ export const useMapStore = defineStore('map', () => {
   const setGlobalCycle = (c: any) => { forcedCycle.value = c }
 
   const navigate = async (locId: string) => {
-    const now = Date.now()
+    const now = Temporal.Now.instant().epochMilliseconds
     if (now - lastNavigateTime.value < 400) {
       logger.warn('MapStore', 'Navigate throttled');
       return

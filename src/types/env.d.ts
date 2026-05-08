@@ -1,3 +1,4 @@
+import { Temporal } from '@js-temporal/polyfill'
 
 /**
  * Global Type Declarations for Poke Vicio

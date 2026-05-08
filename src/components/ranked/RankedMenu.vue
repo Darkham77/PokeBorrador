@@ -187,7 +187,12 @@ const cancelSearch = () => {
 
 .card-glass {
   background: Rgba(255, 255, 255, 0.03);
-  -webkit-backdrop-filter: Blur(10px);
+  -webkit-will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  backdrop-filter: Blur(10px);
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
   backdrop-filter: Blur(10px);
   @include gpu-layer;
   border: 1px solid Rgba(255, 255, 255, 0.05);
@@ -272,9 +277,11 @@ const cancelSearch = () => {
   font-size: 10px;
 
   &:hover {
-    transform: TranslateY(-2px);
+    transform: Translatey(-2px);
     box-shadow: 0 6px 20px Rgba(59, 130, 246, 0.4);
-    filter: Brightness(1.1);
+    will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Brightness(1.1);
   }
 }
 

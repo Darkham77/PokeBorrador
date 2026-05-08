@@ -147,13 +147,15 @@ const leaderSpriteUrl = computed(() => {
   }
 
   &.locked {
-    filter: Grayscale(100%);
+    will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Grayscale(100%);
     opacity: 0.6;
   }
 
   &:hover:not(.locked) {
     border-color: var(--gym-color);
-    transform: translateY(-3px);
+    transform: Translatey(-3px);
   }
 }
 
@@ -224,7 +226,9 @@ const leaderSpriteUrl = computed(() => {
     height: 90px;
     width: auto;
     image-rendering: pixelated;
-    filter: Drop-Shadow(0 2px 8px Rgba(0,0,0,0.5));
+    will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Drop-Shadow(0 2px 8px Rgba(0,0,0,0.5));
   }
 }
 

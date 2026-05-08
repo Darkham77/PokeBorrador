@@ -183,7 +183,7 @@ body.is-battle-active {
 .pv-shadow {
   position: absolute;
   left: 50%;
-  transform: TranslateX(-50%) TranslateY(-50%);
+  transform: Translatex(-50%) Translatey(-50%);
   // Escalado dinámico basado en la constante del sistema de cámara
   width: 70%; 
   height: calc(var(--obj-scale, 1) * 15px); 
@@ -193,6 +193,8 @@ body.is-battle-active {
   background-repeat: no-repeat; 
   background-position: center;
   image-rendering: pixelated;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
   filter: none;
 }
 
@@ -204,7 +206,7 @@ body.is-battle-active {
   .bush-container-ground {
     position: absolute;
     left: 50%;
-    transform: TranslateX(-50%) TranslateY(-50%);
+    transform: Translatex(-50%) Translatey(-50%);
     width: calc(var(--obj-scale, 1) * 100px);
     height: 0;
     pointer-events: none;
@@ -285,6 +287,8 @@ body.is-battle-active {
   height: clamp(60px, 35cqi, 160px);
   width: auto;
   image-rendering: pixelated;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 2cqi 2cqi Rgba(0,0,0,0.5));
   animation: idle 3s infinite ease-in-out;
   
@@ -292,6 +296,6 @@ body.is-battle-active {
 }
 
 @keyframes idle {
-  0%, 100% { transform: TranslateY(0); }
-  50% { transform: TranslateY(-1.5cqi); }
+  0%, 100% { transform: Translatey(0); }
+  50% { transform: Translatey(-1.5cqi); }
 }

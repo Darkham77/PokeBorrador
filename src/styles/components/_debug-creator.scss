@@ -167,7 +167,7 @@
         .anim-toggle.active & {
           background: Rgba(124, 58, 237, 0.4);
           &::after {
-            transform: translateX(16px);
+            transform: Translatex(16px);
             background: var(--vicio-primary);
           }
         }

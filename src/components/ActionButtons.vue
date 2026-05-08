@@ -65,7 +65,7 @@ const uiStore = useUIStore() as any
   }
 
   &:hover {
-    transform: Scale(1.08) translateY(-2px);
+    transform: Scale(1.08) Translatey(-2px);
     border-color: var(--yellow);
     background: Rgba(255, 255, 255, 0.1);
     

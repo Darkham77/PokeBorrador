@@ -1,3 +1,4 @@
+import { Temporal } from '@js-temporal/polyfill'
 import { computed, toValue } from 'vue'
 import { useUIStore } from '@/stores/ui'
 import { useGameStore } from '@/stores/game'
@@ -181,7 +182,7 @@ export function usePokemonDetail(propsRefs: Record<string, any>) {
     if (!dateVal) return isInstance.value ? 'SIN FECHA' : null
     
     try {
-      const date = new Date(dateVal)
+      const date = Temporal.Instant.fromEpochMilliseconds(dateVal)
       return date.toLocaleDateString('es-ES', { 
         year: 'numeric', month: 'long', day: 'numeric',
         hour: '2-digit', minute: '2-digit'

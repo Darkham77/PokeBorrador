@@ -1,5 +1,7 @@
 // [PureVue-Ignore-Length]
 <script setup lang="ts">
+import { Temporal } from '@js-temporal/polyfill'
+
 import { ref, computed, watch } from 'vue'
 
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
@@ -170,7 +172,7 @@ watch(() => props.stages, (newS, oldS) => {
 }, { deep: true })
 
 const triggerStatArrow = (stat: string, dir: 'up' | 'down') => {
-  const id = Date.now() + Math.random()
+  const id = Temporal.Now.instant().epochMilliseconds + Math.random()
   statArrows.value.push({ id, dir, stat })
   setTimeout(() => {
     statArrows.value = statArrows.value.filter(a => a.id !== id)
@@ -393,13 +395,13 @@ const triggerStatArrow = (stat: string, dir: 'up' | 'down') => {
   }
 
   @keyframes combatant-idle {
-    0%, 100% { transform: translateY(0) Rotate(0deg); }
-    50% { transform: translateY(-3px) Rotate(1deg); }
+    0%, 100% { transform: Translatey(0) Rotate(0deg); }
+    50% { transform: Translatey(-3px) Rotate(1deg); }
   }
 
   @keyframes combatant-idle-float {
-    0%, 100% { transform: translateY(0) Rotate(0deg); }
-    50% { transform: translateY(-22px) Rotate(-2deg); }
+    0%, 100% { transform: Translatey(0) Rotate(0deg); }
+    50% { transform: Translatey(-22px) Rotate(-2deg); }
   }
 
     .pokemon-combat-image {
@@ -514,7 +516,7 @@ const triggerStatArrow = (stat: string, dir: 'up' | 'down') => {
 .trapped-pokeball {
   position: absolute;
   left: 50%;
-  transform: translateX(-50%) translateY(-85%);
+  transform: Translatex(-50%) Translatey(-85%);
   width: calc(var(--obj-scale, 1) * 40px);
   height: calc(var(--obj-scale, 1) * 40px);
   display: flex;
@@ -538,14 +540,26 @@ const triggerStatArrow = (stat: string, dir: 'up' | 'down') => {
   &.is-success img { animation: pokeball-success-blink 0.5s ease-in-out infinite; }
 }
 
-@keyframes pokeball-shake-blink { 0%, 100% { filter: Brightness(1); } 50% { filter: Brightness(2) Hue-Rotate(10deg); } }
-@keyframes pokeball-success-blink { 0%, 100% { filter: Brightness(1); } 50% { filter: Brightness(1.8) Sepia(0.5) Hue-Rotate(-10deg); } }
+@keyframes pokeball-shake-blink { 0%, 100% { will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Brightness(1); } 50% { will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Brightness(2) Hue-Rotate(10deg); } }
+@keyframes pokeball-success-blink { 0%, 100% { will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Brightness(1); } 50% { will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Brightness(1.8) Sepia(0.5) Hue-Rotate(-10deg); } }
 
 .pokeball-shadow {
   position: absolute;
   top: 85%;
   left: 50%;
-  transform: TranslateX(-50%) TranslateY(-50%);
+  transform: Translatex(-50%) Translatey(-50%);
   width: 70%;
   height: 15%;
   background-size: 100% 100%;
@@ -573,7 +587,9 @@ const triggerStatArrow = (stat: string, dir: 'up' | 'down') => {
     animation: catch-sparkle-out 0.8s ease-out forwards;
     @include pixelated;
     text-shadow: 0 0 5px Rgba(255, 215, 0, 0.8);
-    filter: Drop-Shadow(0 0 2px white);
+    will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Drop-Shadow(0 0 2px white);
   }
 }
 
@@ -586,7 +602,7 @@ const triggerStatArrow = (stat: string, dir: 'up' | 'down') => {
 .ground-effects-container {
   position: absolute;
   left: 50%;
-  transform: translateX(-50%) translateY(-50%);
+  transform: Translatex(-50%) Translatey(-50%);
   width: 100%;
   height: 20px;
   pointer-events: none;
@@ -608,7 +624,9 @@ const triggerStatArrow = (stat: string, dir: 'up' | 'down') => {
       animation: 
         ground-pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards,
         ground-item-jump 2s infinite ease-in-out 0.4s;
-      filter: Drop-Shadow(0 2px 2px Rgba(0,0,0,0.3));
+      will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Drop-Shadow(0 2px 2px Rgba(0,0,0,0.3));
       
       &:nth-child(2) { animation-delay: 0.1s, 0.7s; }
       &:nth-child(3) { animation-delay: 0.2s, 1s; }
@@ -619,7 +637,7 @@ const triggerStatArrow = (stat: string, dir: 'up' | 'down') => {
     .root-item {
       font-size: 42px;
       display: inline-block;
-      transform: translateY(5px);
+      transform: Translatey(5px);
       animation: 
         ground-grow 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards,
         ground-item-pulse 3s infinite ease-in-out 0.6s;
@@ -646,47 +664,59 @@ const triggerStatArrow = (stat: string, dir: 'up' | 'down') => {
 }
 
 @keyframes pokemon-faint {
-  0% { opacity: 1; transform: translateY(0); }
+  0% { opacity: 1; transform: Translatey(0); }
   10%, 30%, 50%, 70%, 90% { opacity: 0; }
   20%, 40%, 60%, 80% { opacity: 1; }
-  100% { opacity: 0; transform: translateY(60px); }
+  100% { opacity: 0; transform: Translatey(60px); }
 }
 
 @keyframes attack-dash-player {
-  0% { transform: translateX(0); }
-  20% { transform: translateX(-15px); }
+  0% { transform: Translatex(0); }
+  20% { transform: Translatex(-15px); }
   50% { transform: Translatex(60px) Scale(1.1); }
-  100% { transform: translateX(0); }
+  100% { transform: Translatex(0); }
 }
 
 @keyframes attack-dash-enemy {
-  0% { transform: translateX(0); }
-  20% { transform: translateX(15px); }
+  0% { transform: Translatex(0); }
+  20% { transform: Translatex(15px); }
   50% { transform: Translatex(-60px) Scale(1.1); }
-  100% { transform: translateX(0); }
+  100% { transform: Translatex(0); }
 }
 
 @keyframes attack-pulse-player {
   0% { transform: Scale(1); }
-  50% { transform: Scale(1.15) translateX(15px); filter: Brightness(1.4); }
+  50% { transform: Scale(1.15) Translatex(15px); will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Brightness(1.4); }
   100% { transform: Scale(1); }
 }
 
 @keyframes attack-pulse-enemy {
   0% { transform: Scale(1); }
-  50% { transform: Scale(1.15) translateX(-15px); filter: Brightness(1.4); }
+  50% { transform: Scale(1.15) Translatex(-15px); will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Brightness(1.4); }
   100% { transform: Scale(1); }
 }
 
 @keyframes attack-status-player {
   0% { transform: Rotate(0deg); }
-  30% { transform: Rotate(12deg) Scale(1.1); filter: Brightness(1.2); }
+  30% { transform: Rotate(12deg) Scale(1.1); will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Brightness(1.2); }
   100% { transform: Rotate(0deg); }
 }
 
 @keyframes attack-status-enemy {
   0% { transform: Rotate(0deg); }
-  30% { transform: Rotate(-12deg) Scale(1.1); filter: Brightness(1.2); }
+  30% { transform: Rotate(-12deg) Scale(1.1); will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Brightness(1.2); }
   100% { transform: Rotate(0deg); }
 }
 
@@ -696,20 +726,38 @@ const triggerStatArrow = (stat: string, dir: 'up' | 'down') => {
 }
 
 @keyframes ground-pop { 0% { transform: Scale(0); opacity: 0; } 100% { transform: Scale(1); opacity: 1; } }
-@keyframes ground-grow { 0% { transform: ScaleY(0) translateY(20px); opacity: 0; } 100% { transform: ScaleY(1) translateY(5px); opacity: 1; } }
-@keyframes ground-item-jump { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+@keyframes ground-grow { 0% { transform: scaley(0) Translatey(20px); opacity: 0; } 100% { transform: scaley(1) Translatey(5px); opacity: 1; } }
+@keyframes ground-item-jump { 0%, 100% { transform: Translatey(0); } 50% { transform: Translatey(-5px); } }
 @keyframes ground-item-pulse { 0%, 100% { transform: Scale(1); } 50% { transform: Scale(1.05); } }
 
 @keyframes energy-catch {
-  0% { filter: none; transform: Scale(1); opacity: 1; }
-  25% { filter: Brightness(0) Invert(1) Drop-Shadow(0 0 10px #00ccff); transform: Scale(1.05); }
-  100% { filter: Brightness(0) Invert(1) Drop-Shadow(0 0 20px #00ccff); transform: Scale(0); opacity: 1; }
+  0% { will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: none; transform: Scale(1); opacity: 1; }
+  25% { will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Brightness(0) Invert(1) Drop-Shadow(0 0 10px #00ccff); transform: Scale(1.05); }
+  100% { will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Brightness(0) Invert(1) Drop-Shadow(0 0 20px #00ccff); transform: Scale(0); opacity: 1; }
 }
 
 @keyframes energy-release {
-  0% { filter: Brightness(0) Invert(1) Drop-Shadow(0 0 20px #00ccff); transform: Scale(0); opacity: 1; }
-  75% { filter: Brightness(0) Invert(1) Drop-Shadow(0 0 10px #00ccff); transform: Scale(1.1); }
-  100% { filter: none; transform: Scale(1); opacity: 1; }
+  0% { will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Brightness(0) Invert(1) Drop-Shadow(0 0 20px #00ccff); transform: Scale(0); opacity: 1; }
+  75% { will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Brightness(0) Invert(1) Drop-Shadow(0 0 10px #00ccff); transform: Scale(1.1); }
+  100% { will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: none; transform: Scale(1); opacity: 1; }
 }
 
 .stat-arrows-container {
@@ -737,8 +785,8 @@ const triggerStatArrow = (stat: string, dir: 'up' | 'down') => {
 }
 
 @keyframes stat-arrow-anim {
-  0% { transform: translateY(20px); opacity: 0; scale: 0.5; }
-  20% { transform: translateY(0); opacity: 1; scale: 1.2; }
-  100% { transform: translateY(-60px); opacity: 0; scale: 1; }
+  0% { transform: Translatey(20px); opacity: 0; scale: 0.5; }
+  20% { transform: Translatey(0); opacity: 1; scale: 1.2; }
+  100% { transform: Translatey(-60px); opacity: 0; scale: 1; }
 }
 </style>

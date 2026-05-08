@@ -56,14 +56,19 @@ const authStore = useAuthStore() as any
   inset: 0;
   z-index: var(--z-critical);
   background: Rgba(0, 0, 0, 0.85);
-  -webkit-backdrop-filter: Blur(15px);
+  -webkit-will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  backdrop-filter: Blur(15px);
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
   backdrop-filter: Blur(15px);
   @include gpu-layer;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 20px;
-  transform: translateZ(0);
+  transform: Translatez(0);
 }
 
 .lost-card {
@@ -89,7 +94,9 @@ const authStore = useAuthStore() as any
   .wifi-icon {
     display: inline-block;
     font-size: 48px;
-    filter: Drop-Shadow(0 0 15px Rgba(239, 68, 68, 0.5));
+    will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Drop-Shadow(0 0 15px Rgba(239, 68, 68, 0.5));
   }
 }
 

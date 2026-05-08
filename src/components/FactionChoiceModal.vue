@@ -171,7 +171,9 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
   &:disabled {
     opacity: 0.5;
     cursor: not-allowed;
-    filter: Grayscale(0.8);
+    will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Grayscale(0.8);
   }
 }
 

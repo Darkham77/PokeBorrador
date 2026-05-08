@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { Temporal } from '@js-temporal/polyfill'
+
 import { computed } from 'vue'
 import { useBreedingStore } from '@/stores/breeding'
 import { usePlayerClassStore } from '@/stores/playerClass'
@@ -24,7 +26,7 @@ const compatStyle = computed(() => {
 
 const formatTime = (ms: number | null) => {
   if (!ms) return '--:--'
-  const left = Math.max(0, Math.floor((ms - Date.now()) / 1000))
+  const left = Math.max(0, Math.floor((ms - Temporal.Now.instant().epochMilliseconds) / 1000))
   const m = String(Math.floor(left / 60)).padStart(2, '0')
   const s = String(left % 60).padStart(2, '0')
   return `${m}:${s}`
@@ -141,20 +143,33 @@ const formatTime = (ms: number | null) => {
 .heart-fx {
   font-size: 32px;
   opacity: 0.1;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
   filter: Grayscale(100%);
   transition: all 0.5s;
   
   &.active {
     opacity: 1;
-    filter: Grayscale(0%);
+    will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Grayscale(0%);
     animation: pulse 2s infinite;
   }
 }
 
 @keyframes pulse {
-  0% { transform: Scale(1.0); filter: Drop-Shadow(0 0 0 Rgba(239, 68, 68, 0)); }
-  50% { transform: Scale(1.2); filter: Drop-Shadow(0 0 15px Rgba(239, 68, 68, 0.6)); }
-  100% { transform: Scale(1.0); filter: Drop-Shadow(0 0 0 Rgba(239, 68, 68, 0)); }
+  0% { transform: Scale(1.0); will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Drop-Shadow(0 0 0 Rgba(239, 68, 68, 0)); }
+  50% { transform: Scale(1.2); will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Drop-Shadow(0 0 15px Rgba(239, 68, 68, 0.6)); }
+  100% { transform: Scale(1.0); will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Drop-Shadow(0 0 0 Rgba(239, 68, 68, 0)); }
 }
 
 .forecast-card {

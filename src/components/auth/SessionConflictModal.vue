@@ -79,7 +79,12 @@ async function handleLogout() {
   inset: 0;
   z-index: var(--z-critical);
   background: Rgba(0, 0, 0, 0.9);
-  -webkit-backdrop-filter: Blur(20px);
+  -webkit-will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  backdrop-filter: Blur(20px);
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
   backdrop-filter: Blur(20px);
   @include gpu-layer;
   display: flex;
@@ -106,7 +111,9 @@ async function handleLogout() {
   margin-bottom: 32px;
   .warning-icon {
     font-size: 56px;
-    filter: Drop-Shadow(0 0 20px Rgba(255, 214, 10, 0.6));
+    will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Drop-Shadow(0 0 20px Rgba(255, 214, 10, 0.6));
   }
 }
 

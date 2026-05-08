@@ -117,9 +117,11 @@ const handleGiftChange = (e: Event) => {
   transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 
   &:hover:not(:disabled) {
-    transform: translateY(-2px);
+    transform: Translatey(-2px);
     box-shadow: 0 6px 20px Rgba(168, 85, 247, 0.5);
-    filter: Brightness(1.1);
+    will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Brightness(1.1);
   }
 
   &:disabled {

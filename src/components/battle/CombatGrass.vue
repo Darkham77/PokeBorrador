@@ -110,7 +110,7 @@ const activeBushes = computed(() => bushes[props.layer])
 .bush-ground-anchor {
   position: absolute;
   left: 50%;
-  transform: TranslateX(-50%) TranslateY(-85%);
+  transform: Translatex(-50%) Translatey(-85%);
   width: 100%;
   height: 0;
   display: flex;

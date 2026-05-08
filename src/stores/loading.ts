@@ -1,3 +1,4 @@
+import { Temporal } from '@js-temporal/polyfill'
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { logger } from '@/logic/utils/logger'
@@ -26,7 +27,7 @@ export const useLoadingStore = defineStore('loading', () => {
   function start(id: string, message = 'Procesando...', subMessage = 'Por favor, no cierres la ventana', isGlobal = true) {
     // If ID already exists, update it instead of pushing
     const index = stack.value.findIndex(item => item.id === id)
-    const payload: LoadingItem = { id, message, subMessage, isGlobal, timestamp: Date.now() }
+    const payload: LoadingItem = { id, message, subMessage, isGlobal, timestamp: Temporal.Now.instant().epochMilliseconds }
     
     if (index !== -1) {
       stack.value[index] = payload

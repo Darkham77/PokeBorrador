@@ -261,7 +261,10 @@ defineEmits<{
     &:hover { background: Rgba(255, 255, 255, 0.05); border-color: var(--yellow); }
   }
 
-  &.inactive { opacity: 0.6; filter: Grayscale(1); }
+  &.inactive { opacity: 0.6; will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Grayscale(1); }
 }
 
 .event-form {

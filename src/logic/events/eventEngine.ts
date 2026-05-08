@@ -49,13 +49,13 @@ import { logger } from '../utils/logger'
 /**
  * Checks if an event is active based on current time (America/Argentina/Buenos_Aires).
  */
-export function isEventActiveNow(event: Event, date: Date | Temporal.ZonedDateTime = new Date()): boolean {
+export function isEventActiveNow(event: Event, date: Date | Temporal.ZonedDateTime = Temporal.Now.instant()): boolean {
   if (!event.active) return false
   if (event.manual) return true
 
   const zdt = (date instanceof Temporal.ZonedDateTime)
     ? date
-    : date.toTemporalInstant().toZonedDateTimeISO('America/Argentina/Buenos_Aires')
+    : Temporal.Instant.fromEpochMilliseconds(date.epochMilliseconds || (date as Date).getTime()).toZonedDateTimeISO('America/Argentina/Buenos_Aires')
 
   // 1. Absolute date check
   if (event.start_at && event.ends_at) {

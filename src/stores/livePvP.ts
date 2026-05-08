@@ -1,3 +1,4 @@
+import { Temporal } from '@js-temporal/polyfill'
 import { defineStore } from 'pinia'
 import { ref, reactive, onUnmounted } from 'vue'
 import { useAuthStore } from './auth'
@@ -71,7 +72,7 @@ export const useLivePvPStore = defineStore('livePvP', () => {
       const { data } = await gameStore.db.from('battle_invites').select('*').eq('opponent_id', authStore.user.id).in('status', ['pending', 'ranked_match']).order('created_at', { ascending: false }).limit(1)
       if (data?.length && gameStore.db) {
         const inv = data[0]
-        if (Date.now() - new Date(inv.created_at).getTime() > 60000) return
+        if (Temporal.Now.instant().epochMilliseconds - Temporal.Instant.fromEpochMilliseconds(inv.created_at).epochMilliseconds > 60000) return
         if (inv.status === 'ranked_match') { if (isSearching.value) acceptInvite(inv.id, true); else await gameStore.db.from('battle_invites').update({ status: 'declined' }).eq('id', inv.id) }
         else activeInvite.value = inv
       }
@@ -81,7 +82,7 @@ export const useLivePvPStore = defineStore('livePvP', () => {
   async function startSearch() {
     if (!authStore.user || !gameStore.db) return
     isSearching.value = true
-    await gameStore.db.from('ranked_queue').upsert({ user_id: authStore.user.id, elo: gameStore.state.eloRating || 1000, looking_since: new Date().toISOString() })
+    await gameStore.db.from('ranked_queue').upsert({ user_id: authStore.user.id, elo: gameStore.state.eloRating || 1000, looking_since: Temporal.Now.instant().toString() })
     uiStore.notify('Buscando oponente...', '🔍')
     if (matchmakingPoller) clearInterval(matchmakingPoller)
     matchmakingPoller = setInterval(_pollMatchmaking, 3000) as any

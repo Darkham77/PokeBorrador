@@ -6,14 +6,24 @@
   
   // High-performance optimization: Disable blur in performance mode
   .performance-mode & {
-    -webkit-backdrop-filter: none !important;
-    backdrop-filter: none !important;
+    -webkit-will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  backdrop-filter: none !important;
+    will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  backdrop-filter: none !important;
     background: Rgba($bg, 0.95); // Slightly more opaque to compensate for missing blur
   }
 
   @media (prefers-reduced-motion: no-preference) {
-    -webkit-backdrop-filter: Blur($blur);
-    backdrop-filter: Blur($blur);
+    -webkit-will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  backdrop-filter: Blur($blur);
+    will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  backdrop-filter: Blur($blur);
     @include gpu-layer;
   }
   

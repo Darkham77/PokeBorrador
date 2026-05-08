@@ -168,7 +168,7 @@ const hexToRgba = (hex: string, alpha: number) => {
   &:hover {
     background: Rgba(255, 255, 255, 0.04);
     border-color: var(--move-accent);
-    transform: TranslateY(-2px);
+    transform: Translatey(-2px);
   }
 
   .label {
@@ -234,7 +234,12 @@ const hexToRgba = (hex: string, alpha: number) => {
   padding: 24px;
   border-radius: 20px;
   border: 1px solid Rgba(255, 255, 255, 0.05);
-  -webkit-backdrop-filter: Blur(5px);
+  -webkit-will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  backdrop-filter: Blur(5px);
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
   backdrop-filter: Blur(5px);
   @include gpu-layer;
 }
@@ -271,7 +276,7 @@ const hexToRgba = (hex: string, alpha: number) => {
     background: var(--move-accent);
     color: $white;
     border-color: transparent;
-    transform: TranslateY(-3px);
+    transform: Translatey(-3px);
     box-shadow: 0 10px 20px Rgba(0, 0, 0, 0.4), 0 0 15px var(--move-accent-alpha);
   }
 }
@@ -284,7 +289,7 @@ const hexToRgba = (hex: string, alpha: number) => {
     position: absolute;
     top: 0;
     left: 50%;
-    transform: TranslateX(-50%);
+    transform: Translatex(-50%);
     width: 60px;
     height: 3px;
     background: var(--move-accent);

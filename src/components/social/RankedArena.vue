@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { Temporal } from '@js-temporal/polyfill'
+
 import { onMounted, computed } from 'vue'
 import { usePvPStore } from '@/stores/pvp'
 import { useLivePvPStore } from '@/stores/livePvP'
@@ -24,7 +26,7 @@ const getRankIcon = (tierId: string) => {
 }
 
 const seasonActive = computed(() => {
-  const now = new Date()
+  const now = Temporal.Now.instant()
   const range = pvp.seasonRange || {}
   if (!range.start || !range.end) return false
   return now >= range.start && now <= range.end
@@ -235,7 +237,12 @@ function startSearch() {
   inset: 0;
   z-index: var(--z-base);
   background: Rgba(0,0,0,0.8);
-  -webkit-backdrop-filter: Blur(8px);
+  -webkit-will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  backdrop-filter: Blur(8px);
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
   backdrop-filter: Blur(8px);
   @include gpu-layer;
   display: flex;
@@ -284,6 +291,8 @@ function startSearch() {
   align-items: center;
   justify-content: center;
   position: relative;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 0 15px Rgba(255, 215, 0, 0.2));
   animation: float 4s ease-in-out infinite;
 }
@@ -295,8 +304,8 @@ function startSearch() {
 }
 
 @keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-8px); }
+  0%, 100% { transform: Translatey(0); }
+  50% { transform: Translatey(-8px); }
 }
 
 .tier-info h2 {
@@ -491,7 +500,7 @@ function startSearch() {
 }
 
 .search-btn:hover:not(:disabled) {
-  transform: translateY(-2px);
+  transform: Translatey(-2px);
   box-shadow: 0 6px 20px Rgba(10, 132, 255, 0.4);
 }
 

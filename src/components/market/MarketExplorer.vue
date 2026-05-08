@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { Temporal } from '@js-temporal/polyfill'
+
 import { computed } from 'vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { useGTSStore } from '@/stores/gts'
@@ -56,7 +58,7 @@ const getTypeColor = (type: string) => (PDEX_TYPE_COLORS as any)[type?.toLowerCa
       >
         <div class="seller-header">
           <span class="seller-name">👤 {{ item.seller_name }}</span>
-          <span class="time">{{ new Date(item.created_at).toLocaleDateString() }}</span>
+          <span class="time">{{ Temporal.Instant.fromEpochMilliseconds(item.created_at).toLocaleDateString() }}</span>
         </div>
 
         <div class="card-body">
@@ -153,7 +155,7 @@ const getTypeColor = (type: string) => (PDEX_TYPE_COLORS as any)[type?.toLowerCa
   transition: transform 0.2s, border-color 0.2s;
 
   &:hover {
-    transform: translateY(-3px);
+    transform: Translatey(-3px);
     border-color: #a855f755;
     background: Rgba(255, 255, 255, 0.05);
   }

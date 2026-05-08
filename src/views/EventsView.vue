@@ -195,7 +195,10 @@ const openParticipationModal = (event: GameEvent) => {
     gap: 15px;
   }
 
-  .icon { font-size: 32px; filter: Drop-Shadow(0 0 10px Rgba(255, 215, 0, 0.4)); }
+  .icon { font-size: 32px; will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Drop-Shadow(0 0 10px Rgba(255, 215, 0, 0.4)); }
 
   h1 {
     @include pixelated;
@@ -220,7 +223,7 @@ const openParticipationModal = (event: GameEvent) => {
 
   &:hover:not(:disabled) {
     background: Rgba(255, 255, 255, 0.12);
-    transform: TranslateY(-2px);
+    transform: Translatey(-2px);
     border-color: Rgba(255, 255, 255, 0.2);
   }
 
@@ -281,7 +284,7 @@ const openParticipationModal = (event: GameEvent) => {
   display: flex;
   flex-direction: column;
 
-  &:hover { border-color: Rgba(255, 215, 0, 0.5); transform: TranslateY(-3px); }
+  &:hover { border-color: Rgba(255, 215, 0, 0.5); transform: Translatey(-3px); }
 
   .banner-box {
     height: 150px;

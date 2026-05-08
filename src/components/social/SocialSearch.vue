@@ -120,7 +120,7 @@ const handleSearch = () => {
   position: absolute;
   right: 15px;
   top: 50%;
-  transform: translateY(-50%);
+  transform: Translatey(-50%);
   font-size: 14px;
   opacity: 0.6;
 }

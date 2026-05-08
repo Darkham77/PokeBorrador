@@ -161,6 +161,8 @@ const handleImgError = (e: Event) => {
   top: -8px;
   right: -8px;
   font-size: 20px;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 0 5px gold);
 }
 
@@ -200,7 +202,9 @@ const handleImgError = (e: Event) => {
   background: Rgba(255, 215, 0, 0.2);
   border-color: gold;
   color: var(--white);
-  filter: GrayScale(100%);
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Grayscale(100%);
 }
 
 .close-btn {

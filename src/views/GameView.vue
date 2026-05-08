@@ -50,7 +50,9 @@
   </div>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
+
 .game-view {
   min-height: 100dvh;
   background: var(--darker);
@@ -82,10 +84,16 @@
   position: fixed;
   bottom: 20px;
   left: 50%;
-  transform: translateX(-50%);
+  transform: Translatex(-50%);
   background: Rgba(0, 0, 0, 0.95);
-  -webkit-backdrop-filter: Blur(10px);
+  -webkit-will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
   backdrop-filter: Blur(10px);
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  backdrop-filter: Blur(10px);
+  will-change: backdrop-filter;
   @include gpu-layer;
   border: 1px solid Rgba(255, 255, 255, 0.1);
   border-radius: 20px;
@@ -94,7 +102,7 @@
   gap: 12px;
   box-shadow: 0 10px 30px Rgba(0, 0, 0, 0.5);
   z-index: var(--z-navigation);
-  transform: translateX(-50%) translateZ(0);
+  transform: Translatex(-50%) Translatez(0);
 }
 
 .nav-item {
@@ -134,7 +142,7 @@
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
-  transform: translateY(10px);
+  transform: Translatey(10px);
 }
 
 @media (max-width: 768px) {

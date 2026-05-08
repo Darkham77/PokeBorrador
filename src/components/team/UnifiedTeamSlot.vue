@@ -197,11 +197,13 @@ function handleTouchEnd(e: TouchEvent) {
   &:hover {
     background: Rgba(255, 255, 255, 0.05);
     border-color: var(--blue);
-    transform: TranslateY(-4px);
+    transform: Translatey(-4px);
     
     .plus-icon {
       transform: Scale(1.2) Rotate(90deg);
-      filter: Drop-shadow(0 0 15px var(--blue));
+      will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Drop-Shadow(0 0 15px var(--blue));
       color: var(--white);
     }
     
@@ -230,7 +232,10 @@ function handleTouchEnd(e: TouchEvent) {
     
     &:hover {
       border-color: var(--purple-light);
-      .plus-icon { filter: Drop-shadow(0 0 10px var(--purple-light)); }
+      .plus-icon { will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Drop-Shadow(0 0 10px var(--purple-light)); }
       .label { color: var(--purple-light); }
     }
   }
@@ -243,7 +248,12 @@ function handleTouchEnd(e: TouchEvent) {
   align-items: center;
   justify-content: center;
   background: Rgba(0, 0, 0, 0.4);
-  -webkit-backdrop-filter: Blur(4px);
+  -webkit-will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  backdrop-filter: Blur(4px);
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
   backdrop-filter: Blur(4px);
   @include gpu-layer;
   border-radius: 20px;
@@ -257,7 +267,9 @@ function handleTouchEnd(e: TouchEvent) {
     color: var(--blue);
     @include pixelated;
     opacity: 0.8;
-    filter: Drop-shadow(0 0 10px Rgba(10, 132, 255, 0.5));
+    will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Drop-Shadow(0 0 10px Rgba(10, 132, 255, 0.5));
     transition: all 0.2s;
   }
 }

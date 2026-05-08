@@ -116,7 +116,9 @@ body .selection-container {
       gap: 3px;
       cursor: pointer;
       transition: all 0.2s;
-      filter: Grayscale(1);
+      will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Grayscale(1);
       opacity: 0.6;
 
       .icon { font-size: 8px; }
@@ -139,7 +141,9 @@ body .selection-container {
       &.active {
         background: Rgba(255, 255, 255, 0.1);
         border-color: var(--yellow);
-        filter: Grayscale(0);
+        will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Grayscale(0);
         opacity: 1;
       }
     }
@@ -164,7 +168,9 @@ body .selection-container {
     gap: 4px;
     cursor: pointer;
     transition: all 0.2s;
-    filter: Grayscale(1);
+    will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Grayscale(1);
     opacity: 0.6;
 
     & .icon {
@@ -185,14 +191,16 @@ body .selection-container {
 
     &:hover {
       background: Rgba(255, 255, 255, 0.08);
-      transform: TranslateY(-1px);
+      transform: Translatey(-1px);
       opacity: 1;
     }
 
     &.active {
       background: Rgba(255, 255, 255, 0.1);
       border-color: var(--yellow);
-      filter: Grayscale(0);
+      will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Grayscale(0);
       opacity: 1;
       box-shadow: 0 0 8px Rgba(255, 214, 10, 0.15);
     }
@@ -218,7 +226,9 @@ body .selection-container {
     @include btn-vicio-primary('sm');
 
     &:disabled {
-      filter: Grayscale(1);
+      will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Grayscale(1);
       opacity: 0.5;
       cursor: not-allowed;
       box-shadow: none;

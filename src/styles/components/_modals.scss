@@ -28,12 +28,16 @@
   color: Rgba(34, 197, 94, 1);
   font-weight: 900;
   margin-right: 4px;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 0 5px Rgba(34, 197, 94, 0.3));
 }
 
 .currency-icon-bc {
   color: var(--purple);
   font-size: 0.9em;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 0 5px Rgba(191, 90, 242, 0.3));
 }
 

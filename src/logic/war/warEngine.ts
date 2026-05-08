@@ -34,10 +34,10 @@ import { Temporal } from '@js-temporal/polyfill'
  * @param {Date | Temporal.ZonedDateTime} date 
  * @returns {string} YYYY-MM-DD
  */
-export function getArgDateString(date: Date | Temporal.ZonedDateTime = new Date()): string {
+export function getArgDateString(date: Date | Temporal.ZonedDateTime = Temporal.Now.instant()): string {
   const zdt = (date instanceof Temporal.ZonedDateTime)
     ? date
-    : (date instanceof Date ? date.toTemporalInstant() : Temporal.Now.instant()).toZonedDateTimeISO('America/Argentina/Buenos_Aires')
+    : (date instanceof Date ? Temporal.Instant.fromEpochMilliseconds(date.epochMilliseconds || date.epochMilliseconds) : Temporal.Now.instant()).toZonedDateTimeISO('America/Argentina/Buenos_Aires')
   
   return zdt.toPlainDate().toString()
 }
@@ -48,10 +48,10 @@ export function getArgDateString(date: Date | Temporal.ZonedDateTime = new Date(
  * @param {Date | Temporal.ZonedDateTime} date 
  * @returns {string}
  */
-export function getWeekId(date: Date | Temporal.ZonedDateTime = new Date()): string {
+export function getWeekId(date: Date | Temporal.ZonedDateTime = Temporal.Now.instant()): string {
   const zdt = (date instanceof Temporal.ZonedDateTime)
     ? date
-    : (date instanceof Date ? date.toTemporalInstant() : Temporal.Now.instant()).toZonedDateTimeISO('America/Argentina/Buenos_Aires')
+    : (date instanceof Date ? Temporal.Instant.fromEpochMilliseconds(date.epochMilliseconds || date.epochMilliseconds) : Temporal.Now.instant()).toZonedDateTimeISO('America/Argentina/Buenos_Aires')
   
   return `${zdt.yearOfWeek}-W${String(zdt.weekOfYear).padStart(2, '0')}`
 }
@@ -75,10 +75,10 @@ export function getReconciledWeekIds(): string[] {
  * @param {Date | Temporal.ZonedDateTime} date 
  * @returns {boolean}
  */
-export function isDisputePhase(date: Date | Temporal.ZonedDateTime = new Date()): boolean {
+export function isDisputePhase(date: Date | Temporal.ZonedDateTime = Temporal.Now.instant()): boolean {
   const zdt = (date instanceof Temporal.ZonedDateTime)
     ? date
-    : (date instanceof Date ? date.toTemporalInstant() : Temporal.Now.instant()).toZonedDateTimeISO('America/Argentina/Buenos_Aires')
+    : (date instanceof Date ? Temporal.Instant.fromEpochMilliseconds(date.epochMilliseconds || date.epochMilliseconds) : Temporal.Now.instant()).toZonedDateTimeISO('America/Argentina/Buenos_Aires')
   
   const day = zdt.dayOfWeek // 1 (Mon) to 7 (Sun)
   return (day >= 1 && day <= 5)

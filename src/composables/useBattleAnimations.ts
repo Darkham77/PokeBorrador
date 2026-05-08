@@ -1,3 +1,4 @@
+import { Temporal } from '@js-temporal/polyfill'
 import { ref, computed, nextTick, watch, toValue } from 'vue'
 import { gameBus } from '@/logic/gameBus'
 import { logger } from '@/logic/utils/logger'
@@ -249,7 +250,7 @@ export function useBattleAnimations(battleStore: any, enemyRef: any) {
       const scale = 0.5 + Math.random() * 0.8 // Variación de tamaño
       
       catchSparkles.value.push({
-        id: `sparkle-${side}-${Date.now()}-${i}-${Math.random()}`,
+        id: `sparkle-${side}-${Temporal.Now.instant().epochMilliseconds}-${i}-${Math.random()}`,
         side,
         tx: tx, // Pasar solo número
         ty: ty, 

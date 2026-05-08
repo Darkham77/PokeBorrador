@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { Temporal } from '@js-temporal/polyfill'
+
 import { ref, onMounted, onUnmounted } from 'vue'
 
 interface Props {
@@ -54,7 +56,7 @@ const spawnNext = () => {
     id,
     x,
     y,
-    startTime: Date.now(),
+    startTime: Temporal.Now.instant().epochMilliseconds,
     isHit: false,
     timeout: null
   }
@@ -77,7 +79,7 @@ const spawnNext = () => {
 const handleNoteClick = (note: FishingNote) => {
   if (!gameActive.value || note.isHit) return
 
-  const elapsed = Date.now() - note.startTime
+  const elapsed = Temporal.Now.instant().epochMilliseconds - note.startTime
   const diff = Math.abs(elapsed - speedBase)
 
   if (diff <= hitWindow) {
@@ -172,7 +174,12 @@ onUnmounted(() => {
   inset: 0;
   z-index: var(--z-modal);
   background: Rgba(0, 0, 0, 0.9);
-  -webkit-backdrop-filter: Blur(10px);
+  -webkit-will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  backdrop-filter: Blur(10px);
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
   backdrop-filter: Blur(10px);
   @include gpu-layer;
   display: flex;
@@ -200,7 +207,7 @@ onUnmounted(() => {
   position: absolute;
   top: 40px;
   left: 50%;
-  transform: TranslateX(-50%);
+  transform: Translatex(-50%);
   text-align: center;
   pointer-events: none;
   
@@ -230,7 +237,7 @@ onUnmounted(() => {
   position: absolute;
   bottom: 40px;
   left: 50%;
-  transform: TranslateX(-50%);
+  transform: Translatex(-50%);
   @include pixelated;
   font-size: 14px;
   color: var(--white);

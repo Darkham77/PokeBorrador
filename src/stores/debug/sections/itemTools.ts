@@ -1,3 +1,4 @@
+import { Temporal } from '@js-temporal/polyfill'
 import { SHOP_ITEMS } from '@/data/items'
 
 export function registerItemTools(debug: any, { game, ui, breedingStore }: { game: any, ui: any, breedingStore: any }) {
@@ -36,7 +37,7 @@ export function registerItemTools(debug: any, { game, ui, breedingStore }: { gam
     command: 'regenerateMissions',
     category: 'missions',
     action: () => {
-      const today = new Date().toISOString().split('T')[0]
+      const today = Temporal.Now.instant().toString().split('T')[0]
       breedingStore.regenerateMissions(today)
       ui.notify('Misiones de Guardería regeneradas', '📜')
     },

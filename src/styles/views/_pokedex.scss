@@ -93,7 +93,7 @@
 
     &:hover {
       background: Rgba(255, 255, 255, 0.08);
-      transform: TranslateY(-2px);
+      transform: Translatey(-2px);
       border-color: Rgba(255, 255, 255, 0.1);
     }
 
@@ -312,7 +312,9 @@
   &.is-unseen {
     opacity: 0.7;
     cursor: default;
-    filter: Grayscale(100%);
+    will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Grayscale(100%);
   }
 
   &.is-caught {
@@ -345,7 +347,9 @@
       @include pokemon-sprite-base-standard;
       
       &:not(.silhouette) {
-        filter: pokemon-outline-optimized();
+        will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: pokemon-outline-optimized();
       }
       
       &.silhouette {

@@ -231,6 +231,8 @@ const weatherOverlayStyles = computed(() => ({
   pointer-events: none;
   z-index: var(--z-low);
   animation: leaf-fall linear infinite;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 1px 1px Rgba(0,0,0,0.3));
 }
 
@@ -253,6 +255,6 @@ const weatherOverlayStyles = computed(() => ({
 // Override shared z-index for combat context
 :deep(.weather-overlay) {
   z-index: var(--atmo-z, 0) !important;
-  transform: ScaleX(var(--atmo-dir, 1));
+  transform: scalex(var(--atmo-dir, 1));
 }
 </style>

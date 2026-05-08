@@ -1,3 +1,4 @@
+import { Temporal } from '@js-temporal/polyfill'
 // @ts-nocheck
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach, vi } from 'vitest'
@@ -88,7 +89,7 @@ describe('Shop & Healing Logic', () => {
       const items = shopStore.getBlackMarketItems()
       
       expect(items.length).toBe(3)
-      expect(gameStore.state.classData.blackMarketDaily.date).toBe(new Date().toISOString().split('T')[0])
+      expect(gameStore.state.classData.blackMarketDaily.date).toBe(Temporal.Now.instant().toString().split('T')[0])
     })
 
     it('allows purchasing with money (₽) and applies discount', () => {

@@ -209,7 +209,9 @@ onMounted(async () => {
   .egg-sprite {
     width: 140px;
     @include sprite-render;
-    filter: Drop-Shadow(0 0 20px Rgba(255,255,255,0.2));
+    will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Drop-Shadow(0 0 20px Rgba(255,255,255,0.2));
     animation: bounce 2s infinite ease-in-out;
   }
   .egg-sprite.shake {
@@ -243,7 +245,9 @@ onMounted(async () => {
   .pokemon-sprite {
     width: 180px;
     @include sprite-render;
-    filter: Drop-Shadow(0 0 30px var(--yellow));
+    will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  filter: Drop-Shadow(0 0 30px var(--yellow));
     animation: pop-in 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   }
 
@@ -280,14 +284,14 @@ onMounted(async () => {
 
 /* Animations */
 @keyframes bounce {
-  0%, 100% { transform: TranslateY(0); }
-  50% { transform: TranslateY(-15px); }
+  0%, 100% { transform: Translatey(0); }
+  50% { transform: Translatey(-15px); }
 }
 
 @keyframes shake {
-  0% { transform: TranslateX(0); }
-  25% { transform: TranslateX(-5px); }
-  75% { transform: TranslateX(5px); }
+  0% { transform: Translatex(0); }
+  25% { transform: Translatex(-5px); }
+  75% { transform: Translatex(5px); }
 }
 
 @keyframes pulse-ring {
@@ -344,7 +348,7 @@ onMounted(async () => {
   position: absolute;
   bottom: -60px;
   left: 50%;
-  transform: TranslateX(-50%);
+  transform: Translatex(-50%);
   @include pixelated;
   font-size: 10px;
   color: Rgba(255,255,255,0.6);
@@ -372,7 +376,12 @@ onMounted(async () => {
 }
 
 :deep(.base-modal-overlay) {
-  -webkit-backdrop-filter: Blur(10px);
+  -webkit-will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  backdrop-filter: Blur(10px);
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
   backdrop-filter: Blur(10px);
   @include gpu-layer;
 }

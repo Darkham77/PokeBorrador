@@ -114,7 +114,7 @@ watch(() => categories.value, (newCats) => {
   &:hover:not(.active) {
     background: Rgba(255, 255, 255, 0.05);
     color: Rgba(255, 255, 255, 0.8);
-    transform: TranslateX(4px);
+    transform: Translatex(4px);
     
     .cat-icon-frame {
       background: Rgba(255, 255, 255, 0.08);

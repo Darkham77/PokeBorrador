@@ -79,7 +79,7 @@ const emit = defineEmits<{
   &:hover {
     background: Rgba(255, 255, 255, 0.05);
     border-color: Rgba(255, 255, 255, 0.1);
-    transform: TranslateX(4px);
+    transform: Translatex(4px);
   }
 
   &.selected {

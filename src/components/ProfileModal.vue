@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { Temporal } from '@js-temporal/polyfill'
+
 import { computed } from 'vue'
 import { useUIStore } from '@/stores/ui'
 import { useGameStore } from '@/stores/game'
@@ -69,7 +71,7 @@ const displayUsername = computed(() => {
 
 const lastSaveFormatted = computed(() => {
   if (!gs.value._last_updated) return 'Sin datos'
-  const date = new Date(gs.value._last_updated)
+  const date = Temporal.Instant.fromEpochMilliseconds(gs.value._last_updated)
   return date.toLocaleString('es-ES', { 
     day: '2-digit', month: '2-digit', year: 'numeric',
     hour: '2-digit', minute: '2-digit'
@@ -247,7 +249,12 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
   display: flex;
   flex-direction: column;
   background: transparent;
-  -webkit-backdrop-filter: Blur(12px);
+  -webkit-will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  backdrop-filter: Blur(12px);
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
   backdrop-filter: Blur(12px);
   @include gpu-layer;
   

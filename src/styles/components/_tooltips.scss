@@ -27,7 +27,7 @@
   pointer-events: none;
   box-shadow: 0 10px 30px Rgba(0, 0, 0, 0.8);
   transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1), transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  transform: translateY(10px) translateX(-50%) translateZ(0);
+  transform: Translatey(10px) Translatex(-50%) Translatez(0);
   left: 50%;
   bottom: 125%;
   
@@ -36,7 +36,7 @@
     position: absolute;
     top: 100%;
     left: 50%;
-    transform: translateX(-50%);
+    transform: Translatex(-50%);
     border: 6px solid transparent;
     border-top-color: $yellow;
   }
@@ -45,7 +45,7 @@
 .pv-tooltip-container:hover .pv-tooltip {
   visibility: visible;
   opacity: 1;
-  transform: translateY(0) translateX(-50%);
+  transform: Translatey(0) Translatex(-50%);
 }
 
 .pv-tooltip-title {
@@ -73,12 +73,12 @@
   left: calc(100% + 10px);
   bottom: auto;
   top: 50%;
-  transform: translateY(-50%) translateX(-10px);
+  transform: Translatey(-50%) Translatex(-10px);
   
   &::after {
     top: 50%;
     left: -12px;
-    transform: translateY(-50%);
+    transform: Translatey(-50%);
     border: 6px solid transparent;
     border-right-color: $yellow;
     border-top-color: transparent;
@@ -86,7 +86,7 @@
 }
 
 .pv-to-right:hover .pv-tooltip {
-  transform: translateY(-50%) translateX(0);
+  transform: Translatey(-50%) Translatex(0);
 }
 
 .pv-to-left .pv-tooltip {
@@ -94,12 +94,12 @@
   left: auto;
   bottom: auto;
   top: 50%;
-  transform: translateY(-50%) translateX(10px);
+  transform: Translatey(-50%) Translatex(10px);
   
   &::after {
     top: 50%;
     right: -12px;
-    transform: translateY(-50%);
+    transform: Translatey(-50%);
     border: 6px solid transparent;
     border-left-color: $yellow;
     border-top-color: transparent;
@@ -107,13 +107,13 @@
 }
 
 .pv-to-left:hover .pv-tooltip {
-  transform: translateY(-50%) translateX(0);
+  transform: Translatey(-50%) Translatex(0);
 }
 
 .pv-to-bottom .pv-tooltip {
   top: 125%;
   bottom: auto;
-  transform: translateY(-10px) translateX(-50%);
+  transform: Translatey(-10px) Translatex(-50%);
   
   &::after {
     bottom: 100%;
@@ -125,14 +125,14 @@
 }
 
 .pv-to-bottom:hover .pv-tooltip {
-  transform: translateY(0) translateX(-50%);
+  transform: Translatey(0) Translatex(-50%);
 }
 
 /* FIXED MOVE TOOLTIP (Literal 1250) */
 .move-tooltip {
   position: fixed;
   z-index: var(--z-tooltip);
-  transform: translateZ(0);
+  transform: Translatez(0);
   background: Rgba(10, 10, 15, 0.98);
   border: 1px solid Rgba(255, 217, 61, 0.4);
   color: $white;
@@ -155,7 +155,7 @@
   position: absolute;
   bottom: calc(100% + 12px);
   left: 50%;
-  transform: translateX(-50%) translateY(10px) translateZ(0);
+  transform: Translatex(-50%) Translatey(10px) Translatez(0);
   background: Rgba(10, 10, 20, 0.98);
   border: 1px solid Rgba(255, 214, 10, 0.4);
   border-radius: 12px;
@@ -170,7 +170,12 @@
   text-align: left;
   white-space: normal;
   line-height: 1.5;
-  -webkit-backdrop-filter: Blur(12px);
+  -webkit-will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  backdrop-filter: Blur(12px);
+  will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
   backdrop-filter: Blur(12px);
   @include gpu-layer;
 
@@ -178,7 +183,7 @@
     display: block;
     opacity: 1;
     visibility: visible;
-    transform: translateX(-50%) translateY(0);
+    transform: Translatex(-50%) Translatey(0);
   }
 
   .tooltip-title {
@@ -222,7 +227,7 @@
 
   &:hover {
     background: Rgba(255, 255, 255, 0.12);
-    transform: scale3d(1.1, 1.1, 1) translateY(-1px);
+    transform: scale3d(1.1, 1.1, 1) Translatey(-1px);
     border-color: Rgba(255, 255, 255, 0.2);
   }
 
