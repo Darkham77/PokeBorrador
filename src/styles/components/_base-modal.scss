@@ -318,7 +318,7 @@
 
 .modal-zoom-enter-from, .modal-zoom-leave-to {
   opacity: 0;
-  transform: Translate3d(0, 0, 0) Scale(0.95);
+  transform: translate3d(0, 0, 0) Scale(0.95);
 }
 
 .slide-right-enter-from, .slide-right-leave-to {

@@ -549,8 +549,8 @@ watch(() => battleStore.isBattleActive, (active) => {
   @include gpu-layer;
 }
 
-.hud-fade-enemy-enter-from, .hud-fade-enemy-leave-to { opacity: 0; transform: TranslateX(-20px) Scale(0.98); }
-.hud-fade-player-enter-from, .hud-fade-player-leave-to { opacity: 0; transform: TranslateX(20px) Scale(0.98); }
+.hud-fade-enemy-enter-from, .hud-fade-enemy-leave-to { opacity: 0; transform: Translatex(-20px) Scale(0.98); }
+.hud-fade-player-enter-from, .hud-fade-player-leave-to { opacity: 0; transform: Translatex(20px) Scale(0.98); }
 
 /* --- ANIMACIONES DE ENTRENADOR Y TRANSICIONES --- */
 .global-transition-overlay {
@@ -582,12 +582,12 @@ watch(() => battleStore.isBattleActive, (active) => {
 }
 
 @keyframes trainer-slide-in {
-  0% { transform: TranslateX(150%) Scale(0.8); opacity: 0; }
-  100% { transform: TranslateX(0) Scale(1); opacity: 1; }
+  0% { transform: Translatex(150%) Scale(0.8); opacity: 0; }
+  100% { transform: Translatex(0) Scale(1); opacity: 1; }
 }
 
 @keyframes trainer-slide-out {
-  0% { transform: TranslateX(0) Scale(1); opacity: 1; }
-  100% { transform: TranslateX(150%) Scale(0.8); opacity: 0; }
+  0% { transform: Translatex(0) Scale(1); opacity: 1; }
+  100% { transform: Translatex(150%) Scale(0.8); opacity: 0; }
 }
 </style>

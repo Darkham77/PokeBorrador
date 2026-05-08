@@ -78,7 +78,7 @@
   & > * { position: relative; z-index: var(--z-base); }
 
   &:hover {
-    transform: translateY(-12px) Scale(1.03);
+    transform: Translatey(-12px) Scale(1.03);
     border-color: Rgba(255, 255, 255, 0.4);
     &::before { opacity: 1; }
   }

@@ -315,9 +315,9 @@ const handleMoveSelection = (moveIdx: number) => {
 }
 
 @keyframes pulse {
-  0% { transform: TranslateX(-50%) Scale(1); }
-  50% { transform: TranslateX(-50%) Scale(1.1); }
-  100% { transform: TranslateX(-50%) Scale(1); }
+  0% { transform: Translatex(-50%) Scale(1); }
+  50% { transform: Translatex(-50%) Scale(1.1); }
+  100% { transform: Translatex(-50%) Scale(1); }
 }
 
 @keyframes spin {

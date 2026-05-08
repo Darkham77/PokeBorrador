@@ -149,12 +149,12 @@ To ensure rigor and traceability, every complex task MUST follow the artifact li
 
 Use these scripts to verify project standards:
 
-- `verify_fsm_diagrams.ts`: `npx tsx .agents/skills/project-standards/scripts/verify_fsm_diagrams.ts`. Scans `battle_mechanics_manual.md` Mermaid diagrams and verifies 1:1 mapping against `battleStateMachine.ts` FSM.
-- `audit_fsm_implementation.ts`: `npx tsx .agents/skills/project-standards/scripts/audit_fsm_implementation.ts`. Deep audit of the battle engine. Detects race conditions, unimplemented sub-states, and persistence gate integrity.
-- `audit_fsm_flow_parity.ts`: `npx tsx .agents/skills/project-standards/scripts/audit_fsm_flow_parity.ts`. Sequential flow auditor. Compares Mermaid diagrams against execution order.
-- `validate_sql_migrations.ts`: `node --experimental-strip-types scripts/validate_sql_migrations.ts`. Validates SQL migrations against a local SQLite engine to catch syntax errors before deployment.
-- `validate_items.ts`: `npx tsx .agents/skills/project-standards/scripts/validate_items.ts`. Ensures that changes in items data do not break inventory or combat integrity.
-- `detect_gpu_gaps.py`: Scans for missing layer promotion or expensive filters.
-- `detect_outline_traps.py`: Detects expensive Quad Drop-Shadow outlines that should be migrated to SVG.
-- `detect_viewport_units.py`: Detects legacy `vw`/`vh` units that should be migrated to `dvw`/`dvh`.
-- `detect_hybrid_patterns.py`: Scans for UI/Logic identity mismatches.
+- `audit_project.ts`: `npm run audit`. Motor unificado de estándares.
+- `audit_project.ts --fix`: `npm run audit:fix`. Reparación automática de estándares.
+- `audit:full`: `npm run audit:full`. Auditoría total (Código + FSM + Ítems + SQL).
+- `convert_assets.ts`: `npm run convert-assets`. Pipeline unificado de assets.
+- `verify_fsm_diagrams.ts`: `npm run fsm:verify`. Verificador de paridad código-diagrama.
+- `audit_fsm_implementation.ts`: `npm run fsm:audit`. Auditoría profunda de lógica FSM.
+- `audit_fsm_flow_parity.ts`: `npm run fsm:flow`. Verificador de secuencia de estados.
+- `validate_sql_migrations.ts`: `npm run validate-sql`. Validador de esquemas SQL.
+- `validate_items.ts`: `npm run validate:items`. Integridad de base de datos de ítems.

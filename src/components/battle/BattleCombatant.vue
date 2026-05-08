@@ -638,11 +638,11 @@ const triggerStatArrow = (stat: string, dir: 'up' | 'down') => {
 }
 
 @keyframes pokemon-jump {
-  0% { transform: translateY(0) Scale(1, 1); }
-  15% { transform: translateY(8px) Scale(1.2, 0.75); } // Aplastamiento inicial más fuerte
-  45% { transform: translateY(-60px) Scale(0.85, 1.2); } // Salto más alto y estirado
-  75% { transform: translateY(0) Scale(1.1, 0.9); } // Impacto de aterrizaje
-  100% { transform: translateY(0) Scale(1, 1); }
+  0% { transform: Translatey(0) Scale(1, 1); }
+  15% { transform: Translatey(8px) Scale(1.2, 0.75); } // Aplastamiento inicial más fuerte
+  45% { transform: Translatey(-60px) Scale(0.85, 1.2); } // Salto más alto y estirado
+  75% { transform: Translatey(0) Scale(1.1, 0.9); } // Impacto de aterrizaje
+  100% { transform: Translatey(0) Scale(1, 1); }
 }
 
 @keyframes pokemon-faint {
@@ -655,14 +655,14 @@ const triggerStatArrow = (stat: string, dir: 'up' | 'down') => {
 @keyframes attack-dash-player {
   0% { transform: translateX(0); }
   20% { transform: translateX(-15px); }
-  50% { transform: translateX(60px) Scale(1.1); }
+  50% { transform: Translatex(60px) Scale(1.1); }
   100% { transform: translateX(0); }
 }
 
 @keyframes attack-dash-enemy {
   0% { transform: translateX(0); }
   20% { transform: translateX(15px); }
-  50% { transform: translateX(-60px) Scale(1.1); }
+  50% { transform: Translatex(-60px) Scale(1.1); }
   100% { transform: translateX(0); }
 }
 

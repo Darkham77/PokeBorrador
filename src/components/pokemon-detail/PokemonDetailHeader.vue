@@ -200,7 +200,7 @@ const handleImgError = (e: Event) => {
   background: Rgba(255, 215, 0, 0.2);
   border-color: gold;
   color: var(--white);
-  filter: grayScale(100%);
+  filter: GrayScale(100%);
 }
 
 .close-btn {

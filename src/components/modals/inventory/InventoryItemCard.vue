@@ -286,7 +286,7 @@ const itemIcon = computed(() => {
 
   &:hover {
     .item-sprite {
-      transform: TranslateY(-4px) Scale(1.1);
+      transform: Translatey(-4px) Scale(1.1);
     }
   }
 }

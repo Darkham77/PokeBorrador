@@ -24,15 +24,25 @@ const COLORS = {
   debug: '#a8a8a8'    // Gray
 };
 
+// Pre-import node:util if in Node.js
+let styleText: any = (text: string, color: string) => text; // Fallback
+if (!isBrowser) {
+  try {
+    // Dynamic import to avoid bundling issues in browser
+    const util = await import('node:util');
+    styleText = util.styleText;
+  } catch (e) {
+    // Fallback if not available
+  }
+}
+
 export const logger = {
   info(tag: string, message: string, ...args: any[]) {
     if (isProduction) return;
     if (isBrowser) {
       console.log(`%c[${tag}]%c ${message}`, `color: ${COLORS.info}; font-weight: bold;`, 'color: inherit;', ...args);
     } else {
-      // In Node, we use a simple fallback if styleText isn't ready, 
-      // but scripts should ideally import styleText directly for sync execution.
-      console.log(`[\x1b[34m${tag}\x1b[0m] ${message}`, ...args);
+      console.log(`[${styleText('blue', tag)}] ${message}`, ...args);
     }
   },
 
@@ -41,7 +51,7 @@ export const logger = {
     if (isBrowser) {
       console.log(`%c[${tag}]%c ${message}`, `color: ${COLORS.success}; font-weight: bold;`, `color: ${COLORS.success};`, ...args);
     } else {
-      console.log(`[\x1b[32m${tag}\x1b[0m] ${message}`, ...args);
+      console.log(`[${styleText('green', tag)}] ${message}`, ...args);
     }
   },
 
@@ -49,7 +59,7 @@ export const logger = {
     if (isBrowser) {
       console.warn(`%c[${tag}]%c ${message}`, `color: ${COLORS.warn}; font-weight: bold;`, 'color: inherit;', ...args);
     } else {
-      console.warn(`[\x1b[33m${tag}\x1b[0m] ${message}`, ...args);
+      console.warn(`[${styleText('yellow', tag)}] ${message}`, ...args);
     }
   },
 
@@ -57,7 +67,7 @@ export const logger = {
     if (isBrowser) {
       console.error(`%c[${tag}]%c ${message}`, `color: ${COLORS.error}; font-weight: bold;`, 'color: inherit;', ...args);
     } else {
-      console.error(`[\x1b[31m${tag}\x1b[0m] ${message}`, ...args);
+      console.error(`[${styleText('red', tag)}] ${message}`, ...args);
     }
   },
 
@@ -66,7 +76,7 @@ export const logger = {
     if (isBrowser) {
       console.log(`%c[${tag}]%c ${message}`, `color: ${COLORS.debug}; font-style: italic;`, 'color: #888;', ...args);
     } else {
-      console.log(`[\x1b[90m${tag}\x1b[0m] ${message}`, ...args);
+      console.log(`[${styleText('gray', tag)}] ${message}`, ...args);
     }
   }
 };

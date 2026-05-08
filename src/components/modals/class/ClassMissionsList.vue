@@ -169,7 +169,7 @@ function getMissionDesc(_mId: string, clsId: string | undefined) {
     padding: 14px 24px; background: Rgba(34, 197, 94, 1); color: var(--white); border: none; border-radius: 12px;
     @include pixelated; font-size: 10px; cursor: pointer;
     box-shadow: 0 0 20px Rgba(34, 197, 94, 0.4);
-    &:hover { transform: translateY(-2px); filter: Brightness(1.1); }
+    &:hover { transform: Translatey(-2px); filter: Brightness(1.1); }
   }
 }
 

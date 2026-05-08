@@ -325,6 +325,6 @@ watch(() => uiStore.isBattleSwitchForced, (val) => {
 }
 .controls-slide-enter-from {
   opacity: 0;
-  transform: translateY(30px) Scale(0.95);
+  transform: Translatey(30px) Scale(0.95);
 }
 </style>

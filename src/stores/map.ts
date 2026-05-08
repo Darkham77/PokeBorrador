@@ -26,11 +26,11 @@ export const useMapStore = defineStore('map', () => {
   const forcedSeason = ref(null) // null, spring, summer, autumn, winter
   const currentEpochHour = ref(Math.floor(Date.now() / 3600000))
 
-  // Sync epoch hour every minute
+  // Sync epoch hour every second for real-time feeling
   if (typeof window !== 'undefined' && typeof process !== 'undefined' && process.env.NODE_ENV !== 'test') {
     setInterval(() => {
       currentEpochHour.value = Math.floor(getServerTime() / 3600000)
-    }, 60000)
+    }, 1000)
   }
 
   const currentCycle = computed(() => {

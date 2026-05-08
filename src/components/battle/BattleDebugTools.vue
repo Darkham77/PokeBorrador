@@ -626,6 +626,6 @@ const toggleStatus = (side: string, type: string) => {
 }
 .slide-up-enter-from, .slide-up-leave-to { 
   opacity: 0; 
-  transform: translateY(20px) Scale(0.9); 
+  transform: Translatey(20px) Scale(0.9); 
 }
 </style>

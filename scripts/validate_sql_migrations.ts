@@ -43,6 +43,8 @@ async function validateMigrations() {
     .filter(f => f.endsWith('.sql'))
     .sort((a, b) => a.localeCompare(b));
 
+  const translationCache = new Map<string, string>();
+
   console.log(styleText('cyan', `📦 Procesando ${files.length} archivos de migración...\n`));
 
   let errorCount = 0;
@@ -57,7 +59,9 @@ async function validateMigrations() {
       const statements = splitSQLStatements(content);
       
       for (const stmt of statements) {
-        const translated = translatePostgresToSqlite(stmt);
+        // Optimización Node.js 26+: Usar el nuevo método Stage 3 getOrInsertComputed para caché de traducción
+        const translated = (translationCache as any).getOrInsertComputed(stmt, (s: string) => translatePostgresToSqlite(s));
+        
         if (translated) {
           try {
             db.exec(translated);

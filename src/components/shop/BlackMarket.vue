@@ -139,7 +139,7 @@ onMounted(() => {
   
   &.sold-out {
     opacity: 0.6;
-    filter: grayScale(0.8);
+    filter: GrayScale(0.8);
   }
 }
 

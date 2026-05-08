@@ -377,7 +377,7 @@ const select = (poke: any) => {
   &.locked {
     opacity: 0.5;
     cursor: not-allowed;
-    filter: grayScale(1);
+    filter: GrayScale(1);
     &:hover { transform: none; background: inherit; border-color: inherit; }
   }
 }

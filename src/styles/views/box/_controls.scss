@@ -179,7 +179,7 @@
     }
 
     &:hover {
-      transform: TranslateY(-2px) Scale(1.02);
+      transform: Translatey(-2px) Scale(1.02);
       box-shadow: 0 4px 15px Rgba(255, 184, 0, 0.2);
     }
   }

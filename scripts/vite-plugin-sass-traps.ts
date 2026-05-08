@@ -17,7 +17,7 @@
  * original en el disco para mantener el código fuente siempre normalizado.
  */
 
-import fs from 'fs';
+import fs from 'node:fs';
 
 const SASS_TRAPS = [
   'scale', 'grayscale', 'invert', 'opacity', 'brightness', 

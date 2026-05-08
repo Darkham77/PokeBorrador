@@ -41,7 +41,7 @@
   }
 
   &:disabled {
-    filter: Grayscale(1);
+    filter: GrayScale(1);
     opacity: 0.6;
     cursor: not-allowed;
     box-shadow: none;

@@ -4,7 +4,7 @@ Este manual detalla los comandos y configuraciones necesarios para trabajar en l
 
 ## 📋 Requisitos Previos
 
-Antes de comenzar, asegúrate de tener instalado **Node.js (v26.0.0 o superior)** y **Python (v3.12 o superior)** en tu sistema.
+Antes de comenzar, asegúrate de tener instalado **Node.js (v26.0.0 o superior)** en tu sistema.
 
 > [!IMPORTANT]
 > El proyecto utiliza características modernas del motor V8 y requiere explícitamente Node 26+. Si tu versión es inferior, el comando `npm install` lanzará una advertencia sugiriendo la actualización.
@@ -32,20 +32,6 @@ Antes de comenzar, asegúrate de tener instalado **Node.js (v26.0.0 o superior)*
     npm install -g npm@latest
     ```
 
-### 🐍 Instalación de Python y Pip
-
-- **Windows (Terminal/PowerShell)**:
-
-    ```bash
-    winget install Python.Python.3.12
-    ```
-
-- **Linux (Ubuntu/Debian)**:
-
-    ```bash
-    sudo apt update && sudo apt install python3 python3-pip
-    ```
-
 ## 🛠️ Entorno de Desarrollo
 
 Para iniciar el servidor de desarrollo local:
@@ -69,14 +55,7 @@ Para iniciar el servidor de desarrollo local:
     cp .env.example .env
     ```
 
-4. **Configurar Entorno Python (Optimizador)**:
-    Instala las dependencias necesarias para los scripts de optimización (conversión a WebP, etc.):
-
-    ```bash
-    python3 -m pip install -r requirements.txt
-    ```
-
-5. **Iniciar Vite**:
+4. **Iniciar Vite**:
 
     ```bash
     npm run dev
@@ -153,6 +132,54 @@ npm run build
 - **Assets WebP**: Prohibido usar PNG/JPG raw; usa el script de conversión a WebP. (Excepción: Assets de PokeAPI deben ser PNG).
 - **Ley de 500 Líneas**: Ningún archivo de lógica o componente debe exceder las 500 líneas.
 - **Aislamiento de Servidores**: No mezcles datos de instancias Global (Supabase) con Local (SQLite).
+
+---
+
+## 📦 Gestión de Assets y Utilidades
+
+El proyecto utiliza herramientas nativas para procesar recursos de forma segura y eficiente.
+
+### 📥 Descarga de Sprites y Recursos
+
+Usa el script unificado para obtener assets externos:
+
+```bash
+# Descarga completa (Pokemon Gen 1-2, Items, Trainers)
+npm run download-assets
+
+# Descarga selectiva (recomendado para ahorrar tiempo)
+npm run download-assets -- --pokemon    # Solo Pokémon (Front/Back/Shiny)
+npm run download-assets -- --items      # Solo ítems
+npm run download-assets -- --trainers   # Solo entrenadores
+```
+
+### 🖼️ Pipeline de Assets
+
+Procesa todas las imágenes de `_raw-assets`, las convierte a WebP y las espeja en la estructura del proyecto:
+
+```bash
+npm run convert-assets
+```
+
+### 🔎 Auditoría de Estándares
+
+Motor unificado para verificar Viewports dinámicos, filtros SASS, rendimiento GPU y reglas de código:
+
+```bash
+# Solo escaneo
+npm run audit
+
+# Escaneo y corrección automática (Viewport, SASS filters, imports)
+npm run audit:fix
+```
+
+### 🔒 Ejecución Segura
+
+Los scripts de utilidad requieren permisos explícitos. Si creas nuevos scripts, asegúrate de invocar Node con el modelo de permisos:
+
+```bash
+node --permission --allow-fs-read=. --allow-fs-write=. scripts/tu_script.ts
+```
 
 ---
 

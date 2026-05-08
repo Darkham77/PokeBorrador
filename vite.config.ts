@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
-import path from 'path'
+import path from 'node:path'
+import { Temporal } from '@js-temporal/polyfill'
 
 import { generateMigrations } from './scripts/generate_migrations.ts'
 import { sassTrapsFixer } from './scripts/vite-plugin-sass-traps.ts'
@@ -85,6 +86,7 @@ export default defineConfig({
     devSourcemap: true,
     preprocessorOptions: {
       scss: {
+        charset: true,
         additionalData: `
           @use "@/styles/core/tools" as *;
         `
@@ -121,6 +123,8 @@ export default defineConfig({
     }
   },
   esbuild: {
+    // Force UTF-8 encoding to preserve non-ASCII characters
+    charset: 'utf8',
     // Only drop non-critical logs in production
     drop: process.env.NODE_ENV === 'production' ? ['debugger'] : [],
     pure: process.env.NODE_ENV === 'production' ? ['console.log', 'console.info', 'console.debug'] : [],

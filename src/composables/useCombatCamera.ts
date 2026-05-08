@@ -36,7 +36,7 @@ export function useCombatCamera(viewportRef: any) {
     left: '0',
     width: `${WORLD_CONSTANTS.MAP_WIDTH}px`,
     height: `${WORLD_CONSTANTS.MAP_HEIGHT}px`,
-    transform: `Translate(${tx.value}px, ${ty.value}px) Scale(${scale.value})`,
+    transform: `translate(${tx.value}px, ${ty.value}px) scale(${scale.value})`,
     transformOrigin: '0 0',
     willChange: 'transform',
     // Inyectamos escalas estandarizadas para uso en CSS

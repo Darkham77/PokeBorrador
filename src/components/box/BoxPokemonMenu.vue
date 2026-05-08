@@ -319,14 +319,14 @@ const getTypeColor = (type: string) => (PDEX_TYPE_COLORS as any)[type?.toLowerCa
           <span class="icon">📦</span> MOVER CAJA
         </button>
         <button
-          class="menu-action-btn secondary-btn"
+          class="menu-action-btn secondary-btn full-width"
           @click.stop="handleRelease"
         >
           <span class="icon">🌿</span> LIBERAR
         </button>
         <button
           v-if="isRocketMode"
-          class="menu-action-btn danger-btn"
+          class="menu-action-btn danger-btn full-width"
           @click.stop="handleSellRocket"
         >
           <span class="icon">💀</span> VENDER MERCADO NEGRO

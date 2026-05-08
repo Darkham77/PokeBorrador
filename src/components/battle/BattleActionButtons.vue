@@ -365,7 +365,7 @@ onUnmounted(() => {
 .slide-up-enter-from,
 .slide-up-leave-to {
   opacity: 0;
-  transform: TranslateX(-50%) TranslateY(20px) Scale(0.8);
+  transform: Translatex(-50%) Translatey(20px) Scale(0.8);
 }
 
 </style>

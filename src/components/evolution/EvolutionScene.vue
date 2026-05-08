@@ -289,8 +289,8 @@ const close = () => {
 }
 
 @keyframes float {
-  0% { transform: translateY(0) Scale(1.0); opacity: 0; }
+  0% { transform: Translatey(0) Scale(1.0); opacity: 0; }
   50% { opacity: 0.8; }
-  100% { transform: translateY(-40px) Scale(0); opacity: 0; }
+  100% { transform: Translatey(-40px) Scale(0); opacity: 0; }
 }
 </style>

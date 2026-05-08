@@ -159,7 +159,7 @@ const selectedCategory = ref('stats')
   gap: 12px;
 
   &:hover {
-    transform: TranslateY(-2px) Scale(1.05);
+    transform: Translatey(-2px) Scale(1.05);
     box-shadow: 0 12px 30px Rgba(124, 58, 237, 0.5);
   }
 }

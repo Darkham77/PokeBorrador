@@ -324,8 +324,8 @@
 }
 
 @keyframes float-fx {
-  from { transform: translateY(0px) Scale(1); }
-  to { transform: translateY(-5px) Scale(1.05); }
+  from { transform: Translatey(0px) Scale(1); }
+  to { transform: Translatey(-5px) Scale(1.05); }
 }
 
 @keyframes pulse-tier {
@@ -417,13 +417,13 @@
 }
 
 @keyframes ground-item-jump {
-  0%, 100% { transform: translateY(0) Scale(1); }
-  45% { transform: translateY(-16px) Scale(1.1, 0.9); }
-  50% { transform: translateY(-20px) Scale(0.9, 1.1); }
-  55% { transform: translateY(-16px) Scale(1.1, 0.9); }
+  0%, 100% { transform: Translatey(0) Scale(1); }
+  45% { transform: Translatey(-16px) Scale(1.1, 0.9); }
+  50% { transform: Translatey(-20px) Scale(0.9, 1.1); }
+  55% { transform: Translatey(-16px) Scale(1.1, 0.9); }
 }
 
 @keyframes ground-item-pulse {
-  0%, 100% { transform: translateY(5px) Scale(1); filter: Brightness(1); }
-  50% { transform: translateY(5px) Scale(1.03); filter: Brightness(1.2); }
+  0%, 100% { transform: Translatey(5px) Scale(1); filter: Brightness(1); }
+  50% { transform: Translatey(5px) Scale(1.03); filter: Brightness(1.2); }
 }
