@@ -2,18 +2,15 @@
 import type { Pokemon } from '@/types/pokemon';
 import type { BattleStages, LogFn } from '@/types/battle';
 
+import type { BattleContext } from '@/types/battleContext';
+
 export type MoveAction = (
   src: Pokemon, 
   tgt: Pokemon, 
   srcStages: BattleStages, 
   tgtStages: BattleStages, 
   addLogFn: LogFn, 
-  battleCtx?: { 
-    player: Pokemon, 
-    enemy: Pokemon, 
-    playerTeam?: Pokemon[], 
-    enemyTeam?: Pokemon[] 
-  }
+  battleCtx?: BattleContext
 ) => void;
 
 export const STATUS_ACTIONS: Record<string, MoveAction> = {
@@ -33,7 +30,7 @@ export const STATUS_ACTIONS: Record<string, MoveAction> = {
       addLogFn(`¡La Flexibilidad de ${tgt.name} evitó la parálisis!`, 'log-info', tgt);
       return;
     }
-    tgt.status = 'paralyze';
+    tgt.status = 'paralysis';
     addLogFn(`¡${tgt.name} fue paralizado!`, 'log-info', tgt);
   },
   
@@ -129,10 +126,10 @@ export const STATUS_ACTIONS: Record<string, MoveAction> = {
   
   'heal_status_party': (src, _tgt, _srcStages, _tgtStages, addLogFn, battleCtx) => {
     if (!battleCtx) return;
-    const isPlayer = (src === battleCtx.player);
-    const team = isPlayer ? (battleCtx.playerTeam || []) : (battleCtx.enemyTeam || []);
+    const isPlayer = (src === battleCtx.player.value);
+    const team = isPlayer ? (battleCtx.activeBattle.value?.playerTeam || []) : (battleCtx.activeBattle.value?.enemyTeam || []);
     
-    team.forEach((p) => {
+    team.forEach((p: Pokemon) => {
       p.status = null;
       p.sleepTurns = 0;
     });

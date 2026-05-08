@@ -3,6 +3,7 @@ import { useInventoryStore } from '@/stores/inventory'
 import { useGameStore } from '@/stores/game'
 import { getItemSpriteUrl } from '@/logic/inventory/inventoryEngine'
 import { ITEM_CATEGORIES, CATEGORY_LABELS } from '@/data/items'
+import { formatCurrency } from '@/logic/utils/formatters'
 
 const inventoryStore = useInventoryStore()
 const gameStore = useGameStore()
@@ -27,7 +28,7 @@ const onUseItem = (name: string) => {
           <h1>Mochila</h1>
         </div>
         <div class="money-badge">
-          ₽{{ gameStore.state.money.toLocaleString() }}
+          ₽{{ formatCurrency(gameStore.state.money) }}
         </div>
       </div>
 
@@ -59,7 +60,7 @@ const onUseItem = (name: string) => {
         class="sell-actions"
       >
         <div class="sell-info">
-          MODO VENTA: <span class="text-green">Ganancia +₽{{ inventoryStore.getBagSellTotalGain().toLocaleString() }}</span>
+          MODO VENTA: <span class="text-green">Ganancia +₽{{ formatCurrency(inventoryStore.getBagSellTotalGain()) }}</span>
         </div>
         <div class="sell-buttons">
           <button 

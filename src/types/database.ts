@@ -92,9 +92,9 @@ export interface DBCompatibilityResponse {
   error?: string;
 }
 
-export interface DBResponse<T = any> {
+export interface DBResponse<T = unknown> {
   data: T | null;
-  error: any;
+  error: Error | string | null | unknown;
   count?: number;
 }
 

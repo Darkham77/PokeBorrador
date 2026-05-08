@@ -1,5 +1,8 @@
 import { Temporal } from '@js-temporal/polyfill'
-export function registerSystemTools(debug: any, { game, ui, modalStore, errorStore, eventStoreModule }: any) {
+import { logger } from '@/logic/utils/logger'
+import type { DebugSystem, DebugContext } from '@/stores/debug'
+
+export function registerSystemTools(debug: DebugSystem, { game, ui, modalStore, errorStore, eventStoreModule }: DebugContext) {
   // MODALS
   debug.register({
     id: 'modal-test-stack',
@@ -61,8 +64,8 @@ export function registerSystemTools(debug: any, { game, ui, modalStore, errorSto
     label: 'SAVE EVENT',
     command: 'saveEvent',
     category: 'admin',
-    action: async (eventData: any) => {
-      const { error } = await (game.db as any).from('events_config').upsert(eventData)
+    action: async (eventData: Record<string, unknown>) => {
+      const { error } = await game.db.from('events_config').upsert(eventData)
       if (error) throw error
       ui.notify('Evento guardado (CLI)', '✅')
       if (eventStoreModule && eventStoreModule.useEventStore) {
@@ -78,8 +81,8 @@ export function registerSystemTools(debug: any, { game, ui, modalStore, errorSto
     label: 'SAVE RANKED RULES',
     command: 'saveRankedRules',
     category: 'admin',
-    action: async (rules: any) => {
-      const { error } = await (game.db as any).from('ranked_rules_config').upsert({
+    action: async (rules: Record<string, unknown>) => {
+      const { error } = await game.db.from('ranked_rules_config').upsert({
         id: 'current',
         season_name: rules.seasonName,
         config: { ...rules },
@@ -97,11 +100,12 @@ export function registerSystemTools(debug: any, { game, ui, modalStore, errorSto
     command: 'closeRankedSeason',
     category: 'admin',
     action: async (seasonName: string) => {
-      const { data, error } = await (game.db as any).rpc('fn_award_ranked_season_automated', {
+      const { data, error } = await game.db.rpc('fn_award_ranked_season_automated', {
         target_season_name: seasonName
       })
       if (error) throw error
-      ui.notify(`Temporada cerrada: ${data.players_count} premiados`, '🏆')
+      const result = data as { players_count: number }
+      ui.notify(`Temporada cerrada: ${result.players_count} premiados`, '🏆')
     },
     description: 'Cierra la temporada Ranked actual y entrega premios automáticamente.'
   })
@@ -150,7 +154,7 @@ export function registerSystemTools(debug: any, { game, ui, modalStore, errorSto
     label: 'ABRIR MODAL',
     command: 'openModal',
     category: 'navigation',
-    action: (name: string, props: any = {}) => {
+    action: (name: string, props: Record<string, unknown> = {}) => {
       ui.open(name, props)
     },
     description: 'Abre cualquier ventana modal por su nombre.'
@@ -188,7 +192,7 @@ export function registerSystemTools(debug: any, { game, ui, modalStore, errorSto
       const pokes = context === 'team' ? game.state.team : game.state.box
       const p = pokes[index]
       if (p) ui.openPokemonDetail(p, index, context)
-      else (window as any).PV_LOGGER?.warn('DEBUG', `No hay pokemon en ${context}[${index}]`)
+      else logger.warn('DEBUG', `No hay pokemon en ${context}[${index}]`)
     },
     description: 'Abre el detalle de un pokemon específico por índice y contexto.'
   })

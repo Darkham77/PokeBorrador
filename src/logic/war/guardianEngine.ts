@@ -66,12 +66,15 @@ export function hashString(str: string): number {
  * @param {Date} date 
  * @returns {string} YYYY-MM-DD
  */
-function getArgDateString(date: any = Temporal.Now.instant()): string {
-  const zdt = (date instanceof Temporal.Instant || date.epochMilliseconds)
-    ? (date.epochMilliseconds ? Temporal.Instant.fromEpochMilliseconds(date.epochMilliseconds) : date).toZonedDateTimeISO('America/Argentina/Buenos_Aires')
-    : Temporal.Now.zonedDateTimeISO('America/Argentina/Buenos_Aires');
+function getArgDateString(date: Date | Temporal.ZonedDateTime | Temporal.Instant = Temporal.Now.instant()): string {
+  const zdt = (date instanceof Temporal.ZonedDateTime)
+    ? date
+    : (date instanceof Date 
+        ? Temporal.Instant.fromEpochMilliseconds(date.getTime()) 
+        : (date instanceof Temporal.Instant ? date : Temporal.Now.instant())
+      ).toZonedDateTimeISO('America/Argentina/Buenos_Aires')
     
-  return zdt.toString().split('T')[0];
+  return zdt.toPlainDate().toString();
 }
 
 /**
@@ -80,7 +83,7 @@ function getArgDateString(date: any = Temporal.Now.instant()): string {
  * @param {Date} date 
  * @returns {string[]} List of map IDs
  */
-export function getConflictZones(allMapIds: string[], date: Date = Temporal.Now.instant()): string[] {
+export function getConflictZones(allMapIds: string[], date: Date | Temporal.ZonedDateTime | Temporal.Instant = Temporal.Now.instant()): string[] {
   if (!allMapIds || allMapIds.length === 0) return []
   
   const dateStr = getArgDateString(date)
@@ -103,7 +106,7 @@ export function getConflictZones(allMapIds: string[], date: Date = Temporal.Now.
  * @param {Date} date 
  * @returns {GuardianData|null}
  */
-export function getGuardianData(mapId: string, allMapIds: string[], date: Date = Temporal.Now.instant()): GuardianData | null {
+export function getGuardianData(mapId: string, allMapIds: string[], date: Date | Temporal.ZonedDateTime | Temporal.Instant = Temporal.Now.instant()): GuardianData | null {
   const zones = getConflictZones(allMapIds, date)
   if (!zones.includes(mapId)) return null
 

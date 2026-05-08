@@ -8,7 +8,7 @@ import { logger } from './logger';
 
 export async function getOpfsFile(fileName: string) {
   const root = await navigator.storage.getDirectory()
-  return await root.getFileHandle(fileName, { create: true })
+  return await (root as FileSystemDirectoryHandle).getFileHandle(fileName, { create: true })
 }
 
 export async function writeOpfsFile(fileName: string, data: Uint8Array | string) {
@@ -33,7 +33,7 @@ export async function readOpfsFile(fileName: string): Promise<Uint8Array | null>
 export async function deleteOpfsFile(fileName: string) {
   try {
     const root = await navigator.storage.getDirectory()
-    await root.removeEntry(fileName)
+    await (root as FileSystemDirectoryHandle).removeEntry(fileName)
   } catch (e) {
     logger.warn('OPFS', `Error deleting ${fileName}: ${(e as Error).message}`)
   }

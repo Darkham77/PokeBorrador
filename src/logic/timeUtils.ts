@@ -37,7 +37,7 @@ export async function syncServerTime(): Promise<void> {
   }
 }
 
-export function getServerInstant(): any {
+export function getServerInstant(): Temporal.Instant {
   if (!_timeSynced) return Temporal.Now.instant();
 
   const routerOffsetMs = (supabase && typeof supabase.getTimeOffset === 'function') 
@@ -59,20 +59,20 @@ export function getServerTime(): number {
 /**
  * Returns a ZonedDateTime adjusted to GMT-3.
  */
-export function getGMT3Date(): any {
+export function getGMT3Date(): Temporal.ZonedDateTime {
   return getServerInstant().toZonedDateTimeISO('America/Argentina/Buenos_Aires');
 }
 
 export type DayPhase = 'morning' | 'day' | 'dusk' | 'night';
 
-export function getDayCycle(now: any = getServerInstant()): DayPhase {
+export function getDayCycle(now: Temporal.Instant | number = getServerInstant()): DayPhase {
   // Compatibility: Handle numeric timestamps (ms)
   const instant = typeof now === 'number' 
     ? Temporal.Instant.fromEpochMilliseconds(now) 
     : now;
 
   const zdt = instant.toZonedDateTimeISO('UTC');
-  const totalHours = Math.floor(Number(zdt.epochSeconds) / 3600);
+  const totalHours = Math.floor(Number(zdt.epochNanoseconds / BigInt(1e9)) / 3600);
   const phase = totalHours % 8;
   
   if (phase < 2) return 'morning';
@@ -87,13 +87,13 @@ export interface Season {
   icon: string;
 }
 
-export function getSeason(now: any = getServerInstant()): Season {
+export function getSeason(now: Temporal.Instant | number = getServerInstant()): Season {
   // Compatibility: Handle numeric timestamps (ms)
   const instant = typeof now === 'number' 
     ? Temporal.Instant.fromEpochMilliseconds(now) 
     : now;
 
-  const totalWeeks = Math.floor(Number(instant.epochSeconds) / (7 * 24 * 3600));
+  const totalWeeks = Math.floor(Number(instant.epochNanoseconds / BigInt(1e9)) / (7 * 24 * 3600));
   const seasonIndex = totalWeeks % 4;
   
   const seasons: Season[] = [

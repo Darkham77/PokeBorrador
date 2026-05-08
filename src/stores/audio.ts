@@ -99,6 +99,9 @@ export const useAudioStore = defineStore('audio', () => {
     faint: () => play('faint'),
     wobble: () => play('wobble'),
     ballHit: () => play('ballHit'),
-    statusDamage: () => play('statusDamage')
+    statusDamage: () => play('statusDamage'),
+    notif: () => play('item'),
+    menuOpen: () => play('item'),
+    menuClose: () => play('item')
   };
 });

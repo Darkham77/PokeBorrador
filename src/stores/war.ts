@@ -62,7 +62,7 @@ export const useWarStore = defineStore('war', () => {
         weeklyPoints.value = (pts as { points: number }[] | null)?.reduce((acc, r) => acc + (r.points || 0), 0) || 0
 
         // 3. Load Guardian Captures for today (isolated world)
-        const today = Temporal.Now.instant().toString().split('T')[0]
+        const today = Temporal.Now.plainDateISO().toString()
         const { data: guardians } = await gameStore.db.from('guardian_captures')
           .select('map_id')
           .eq('user_id', authStore.user.id)
@@ -90,7 +90,7 @@ export const useWarStore = defineStore('war', () => {
     if (pts <= 0) return 0
 
     // 2. Daily PT Cap Check (Isolated by World)
-    const today = Temporal.Now.instant().toString().split('T')[0]
+    const today = Temporal.Now.plainDateISO().toString()
     if (!gameStore.state.warDailyCap) gameStore.state.warDailyCap = {}
     
     const dailyCap = gameStore.state.warDailyCap as Record<string, Record<string, number>>
@@ -130,7 +130,7 @@ export const useWarStore = defineStore('war', () => {
    * Cap: 50 coins per day (Legacy Parity).
    */
   function handleWarCoins(pts: number) {
-    const today = Temporal.Now.instant().toString().split('T')[0]
+    const today = Temporal.Now.plainDateISO().toString()
     if (!gameStore.state.warDailyCoins) gameStore.state.warDailyCoins = {}
     
     const dailyCoins = gameStore.state.warDailyCoins as Record<string, number>
@@ -197,7 +197,7 @@ export const useWarStore = defineStore('war', () => {
   async function claimGuardian(mapId: string, isDefeat = false) {
     if (!authStore.user || !faction.value || !gameStore.db) return
     
-    const today = Temporal.Now.instant().toString().split('T')[0]
+    const today = Temporal.Now.plainDateISO().toString()
     const guardian = getGuardianData(mapId, []) // In real use we pass map list
     if (!guardian) return
 

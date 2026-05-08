@@ -1,10 +1,12 @@
-export function registerTimeTools(debug: any, { game, ui }: { game: any, ui: any }) {
+import type { DebugSystem, DebugContext } from '@/stores/debug'
+
+export function registerTimeTools(debug: DebugSystem, { game, ui }: DebugContext) {
   debug.register({
     id: 'core-set-mock-time',
     label: 'SET MOCK TIME',
     command: 'setMockTime',
     category: 'time',
-    action: (d: any) => game.db.setMockTime(d),
+    action: (d: string) => game.db.setMockTime(d),
     description: 'Simula una fecha/hora específica.'
   })
 

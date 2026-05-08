@@ -14,7 +14,7 @@ export const useShopStore = defineStore('shop', () => {
   
   const marketCategory = ref('todos')
   const searchQuery = ref('')
-  const quantities = ref({})
+  const quantities = ref<Record<string, number>>({})
 
   const getTrainerRank = computed(() => {
     const lv = gameStore.state.trainerLevel || 1
@@ -23,24 +23,24 @@ export const useShopStore = defineStore('shop', () => {
   })
 
   function getQuantity(itemId: string) {
-    return (quantities.value as any)[itemId] || 1
+    return quantities.value[itemId] || 1
   }
 
-  function setQuantity(itemId: string, val: any) {
-    let q = parseInt(val)
+  function setQuantity(itemId: string, val: string | number) {
+    let q = parseInt(String(val))
     if (isNaN(q) || q < 1) q = 1
     if (q > 999) q = 999
-    ;(quantities.value as any)[itemId] = q
+    quantities.value[itemId] = q
   }
 
   /**
    * Calculates the price modifier based on player class.
    */
   function getPriceModifier() {
-    const playerClass = gameStore.state.playerClass as keyof typeof PLAYER_CLASSES | null
+    const playerClass = gameStore.state.playerClass
     if (!playerClass) return 1.0
     
-    const classDef = PLAYER_CLASSES[playerClass]
+    const classDef = (PLAYER_CLASSES as Record<string, { modifiers?: Record<string, number> }>)[playerClass || '']
     if (!classDef || !classDef.modifiers) return 1.0
     
     // For regular shop, we use the recargo penalty if member of Rocket
@@ -183,16 +183,16 @@ export const useShopStore = defineStore('shop', () => {
       gameStore.state.classData.blackMarketDaily = { date: '', items: [], purchased: [] }
     }
 
-    const today = Temporal.Now.instant().toString().split('T')[0]
+    const today = Temporal.Now.instant().toString().split('T')[0] || ''
     const daily = gameStore.state.classData.blackMarketDaily
 
     if (daily.date !== today) {
       const possibleItems = SHOP_ITEMS.filter(i => i.trainerShop === true && (i.bcPrice || 0) > 0)
       const shuffled = [...possibleItems].sort(() => 0.5 - Math.random())
-      const bmd = (gameStore.state.classData as any).blackMarketDaily
+      const bmd = gameStore.state.classData?.blackMarketDaily
       if (bmd) {
         bmd.items = shuffled.slice(0, 3).map(i => (i.id || '') as string)
-        bmd.date = today
+        if (bmd) bmd.date = today
         bmd.purchased = [] as string[]
       }
       gameStore.scheduleSave()

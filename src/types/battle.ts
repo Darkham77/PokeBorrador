@@ -1,5 +1,6 @@
 import { Pokemon } from './pokemon';
 
+
 export interface BattleStages {
   atk: number;
   def: number;
@@ -44,7 +45,7 @@ export interface BattleState {
   futureSightTarget?: Pokemon | null;
   playerTeam?: Pokemon[];
   enemyTeam?: Pokemon[];
-  _initialEnemy?: Pokemon;
+  _initialEnemy?: Pokemon | null;
   isFishing?: boolean;
   lastDamage?: number;
   enemyUsedItem?: boolean;
@@ -52,19 +53,24 @@ export interface BattleState {
   playerStages?: BattleStages;
   enemyStages?: BattleStages;
   battleLogs?: BattleLog[];
+  persistenceMode?: 'local' | 'remote';
 }
+
+export type BattleSource = Pokemon | 'player' | 'enemy_trainer' | 'enemy' | string;
 
 export interface BattleLog {
   id: number;
   msg: string;
   type: string;
-  source?: string | Pokemon;
-  side?: 'player' | 'enemy' | null;
+  side: 'player' | 'enemy' | string | null;
+  icon?: string | null;
+  iconType?: string | null;
+  source?: BattleSource;
 }
 
 import type { BattleContext } from './battleContext';
 
-export type LogFn = (msg: string, type?: string, actor?: any) => void;
+export type LogFn = (msg: string, type?: string, actor?: Pokemon | string | null, side?: 'player' | 'enemy' | null) => void;
 
 export type MoveAction = (
   src: Pokemon, 

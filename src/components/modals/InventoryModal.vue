@@ -7,6 +7,7 @@ import { useUIStore } from '@/stores/ui'
 import { useBattleStore } from '@/stores/battle'
 import { useModalStore } from '@/stores/modals'
 import BaseModal from '@/components/common/BaseModal.vue'
+import { formatCurrency } from '@/logic/utils/formatters'
 import { SHOP_ITEMS } from '@/data/items'
 import { isValidTarget } from '@/logic/items/itemEffects'
 import type { Pokemon } from '@/types/pokemon'
@@ -281,7 +282,7 @@ const close = () => {
             class="stat-node money"
           >
             <span class="inv-stat-label">MIS CRÉDITOS</span>
-            <span class="value">₱{{ gameStore.state.money.toLocaleString() }}</span>
+            <span class="value">₱{{ formatCurrency(gameStore.state.money) }}</span>
           </div>
         </div>
       </div>

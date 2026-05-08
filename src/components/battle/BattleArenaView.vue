@@ -218,11 +218,11 @@ const atmosphereSeed = computed(() => {
 watch([enemy, p2Pos, () => enemyAnimState.value], ([data, pos, anim]) => {
   // El Pokémon es visible si el asiento está ocupado
   const visible = !!data
-  syncEnemyShadow(visible, data, pos, anim)
+  syncEnemyShadow(visible, data || null, pos, anim)
 }, { immediate: true, deep: true })
 
 watch([player, p1Pos, () => playerAnimState.value], ([p, pos, anim]) => {
-  syncPlayerShadow(p, pos, anim)
+  syncPlayerShadow(p || null, pos, anim)
 }, { immediate: true, deep: true })
 
 // --- COORDINACIÓN DE PRESENTACIÓN (FSM) ---
@@ -289,8 +289,8 @@ watch(isIntroInProgress, (val) => { battleStore.isIntroAnimating = val }, { imme
 onMounted(async () => {
   initListeners()
   await preloadCombatCoords(
-    battle.value?.player, 
-    battle.value?.enemy, 
+    (battle.value?.player || null), 
+    (battle.value?.enemy || null), 
     p1Pos.value, 
     p2Pos.value,
     battle.value?.playerTeam || [],
@@ -303,8 +303,8 @@ onMounted(async () => {
 watch(() => battleStore.currentSubState, async (sub) => {
   if (sub === 'PRELOAD_FINAL_COORDS') {
     await preloadCombatCoords(
-      battle.value?.player, 
-      battle.value?.enemy, 
+      (battle.value?.player || null), 
+      (battle.value?.enemy || null), 
       p1Pos.value, 
       p2Pos.value,
       battle.value?.playerTeam || [],

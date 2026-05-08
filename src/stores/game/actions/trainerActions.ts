@@ -1,6 +1,6 @@
 import { TRAINER_RANKS, MARKET_UNLOCKS } from '@/data/trainer'
 import { levelUpPokemon } from '@/logic/pokemonFactory'
-import { useUIStore } from '@/stores/ui'
+import { useUIStore, type LearnItem } from '@/stores/ui'
 import { useEventStore } from '@/stores/events'
 import type { GameState } from '@/types/game'
 import type { Pokemon } from '@/types/pokemon'
@@ -33,7 +33,7 @@ export function useTrainerActions(state: GameState, scheduleSave: () => Promise<
         uiStore.notify(`¡Subiste al rango ${currentRank.title}! Nivel ${state.trainerLevel}`, '⭐')
       }
       
-      const unlocks = (MARKET_UNLOCKS as any)[state.trainerLevel]
+      const unlocks = (MARKET_UNLOCKS as Record<number, string[]>)[state.trainerLevel]
       if (unlocks) {
         setTimeout(() => uiStore.notify(`¡Nuevos items en el Poké Market!`, '🛒'), 1500)
       }
@@ -44,7 +44,7 @@ export function useTrainerActions(state: GameState, scheduleSave: () => Promise<
 
   function checkLevelUp(pokemon: Pokemon) {
     const uiStore = useUIStore()
-    const learnQueue: any[] = []
+    const learnQueue: LearnItem[] = []
 
     while (pokemon.exp >= pokemon.expNeeded && pokemon.level < 100) {
       pokemon.exp -= pokemon.expNeeded

@@ -6,10 +6,11 @@ import { FIRE_RED_MAPS } from '@/data/maps'
 import { useUIStore } from '@/stores/ui'
 import { useMapStore } from '@/stores/map'
 import { useEventStore } from '@/stores/events'
+import { useWarStore } from '@/stores/war'
 import { logger } from '../utils/logger'
 import type { BattleContext } from '@/types/battleContext'
 import type { Pokemon } from '@/types/pokemon'
-import type { UIStore, MapStore, EventStore } from '@/types/stores'
+import type { UIStore, MapStore, EventStore, WarStore } from '@/types/stores'
 
 /**
  * Orchestrates the start of a battle.
@@ -233,9 +234,10 @@ export async function initBattleSequence(ctx: BattleContext, { locationId, isTra
   if (!isTrainer && !isGym) {
     const mapStore = useMapStore() as unknown as MapStore
     const eventStore = useEventStore() as unknown as EventStore
+    const warStore = useWarStore() as unknown as WarStore
     const encounterOptions = {
       activeEvents: mapStore.activeEvents,
-      dominanceData: mapStore.mapWinners,
+      dominanceData: warStore.mapDominance,
       shinyMultiplier: eventStore.globalMultipliers?.shiny || 1,
       forceEncounter: true 
     }

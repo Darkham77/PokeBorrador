@@ -53,7 +53,7 @@ const getShadowStyle = (shadow: any) => {
     height: `${heightPx}px`,
     // Note: We use !important on opacity for transitions to override this base opacity if needed
     opacity: isFlying ? 0.6 : 1,
-    transform: `Translate(-50%, -50%) ${isflying ? 'Scale(0.8)' : 'Scale(1)'}`
+    transform: `Translate(-50%, -50%) ${isFlying ? 'Scale(0.8)' : 'Scale(1)'}`
   }
 }
 

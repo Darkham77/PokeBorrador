@@ -8,7 +8,8 @@ import { SHOP_ITEMS } from '@/data/items'
 import { itemEffects as ITEM_EFFECTS, getDynamicItemEffect } from '@/logic/items/itemEffects'
 import { isGlobalItem } from '../logic/providers/itemProvider'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
-import type { Pokemon } from '@/types/pokemon'
+import type { Pokemon, Move } from '@/types/pokemon'
+import type { ItemEffectResult } from '@/types/items'
 
 export interface Item {
   name: string;
@@ -207,14 +208,14 @@ export const useInventoryStore = defineStore('inventory', () => {
     // al battleStore para mantener la sincronía del turno.
     const battleStore = useBattleStore()
     if (battleStore.isBattleActive && !battleStore.isProcessing) {
-      (battleStore as any).useItemInBattle(itemName, context === 'team' ? index : null)
+      battleStore.useItemInBattle(itemName, context === 'team' ? index : null)
       return { success: true, msg: 'Usando objeto en combate...' }
     }
 
     // --- LÓGICA FUERA DE COMBATE ---
     // Global items (Repels, etc.)
     if (isGlobalItem(itemName)) {
-      const effectFn = (ITEM_EFFECTS as Record<string, any>)[itemName]
+      const effectFn = ITEM_EFFECTS[itemName]
       if (!effectFn) return { success: false, msg: 'Efecto global no implementado.' }
       
       const result = effectFn(gameStore.state)
@@ -224,8 +225,8 @@ export const useInventoryStore = defineStore('inventory', () => {
 
     if (!pokemon) return { success: false, msg: 'Seleccioná un Pokémon.' }
 
-    const effectFn = (ITEM_EFFECTS as Record<string, any>)[itemName]
-    let result: any;
+    const effectFn = ITEM_EFFECTS[itemName]
+    let result: ItemEffectResult | null;
 
     if (effectFn) {
       result = effectFn(pokemon)
@@ -244,7 +245,7 @@ export const useInventoryStore = defineStore('inventory', () => {
     }
 
     if (result.resultType === 'evolution') {
-      uiStore.startEvolution(pokemon, result.targetId, itemName)
+      uiStore.startEvolution(pokemon, result.targetId || '', itemName)
       return { success: true, msg: result.message }
     }
 
@@ -255,18 +256,19 @@ export const useInventoryStore = defineStore('inventory', () => {
     }
 
     if (result.resultType === 'learn_move') {
-      const moveData = pokemonDataProvider.getMoveData(result.moveName)
+      const moveName = result.moveName || ''
+      const moveData = pokemonDataProvider.getMoveData(moveName)
       const moveObj = { 
-        name: result.moveName, 
+        name: moveName, 
         pp: moveData?.pp || 35, 
         maxPP: moveData?.pp || 35 
       }
 
       if (pokemon.moves.length < 4) {
-        pokemon.moves.push(moveObj)
-        uiStore.notify(`¡${pokemon.name} aprendió ${result.moveName}!`, '📖')
+        pokemon.moves.push(moveObj as Move)
+        uiStore.notify(`¡${pokemon.name} aprendió ${moveName}!`, '📖')
       } else {
-        uiStore.addToLearnQueue({ pokemon, move: moveObj })
+        uiStore.addToLearnQueue({ pokemon, move: moveObj as Move })
       }
       consumeItem(itemName)
       return { success: true, msg: result.message }
@@ -322,7 +324,7 @@ export const useInventoryStore = defineStore('inventory', () => {
     const p = JSON.parse(JSON.stringify(pokemon))
 
     // Check main effects
-    const effectFn = (ITEM_EFFECTS as Record<string, any>)[itemName]
+    const effectFn = ITEM_EFFECTS[itemName]
     if (effectFn) {
       const res = effectFn(p)
       return res && res.success

@@ -30,13 +30,13 @@ const emit = defineEmits<{
 }>()
 
 const gameStore = useGameStore()
-const uiStore = useUIStore()
+const uiStore = useUIStore() as any
 
 const forgottenMoves = computed(() => {
   const p = props.pokemon
   if (!p) return []
   
-  const learnedMoves = p.moves.map((m: Move) => m.name)
+  const learnedMoves = p.moves.filter(m => !!m).map((m) => (m as Move).name)
   const possibleMoves: LearnsetEntry[] = []
   const processedIds = new Set<string>()
   
@@ -60,7 +60,7 @@ const forgottenMoves = computed(() => {
     }
     
     // Find previous stage
-    const currentIdRef = currentId
+    const currentIdRef = currentId as string
     const prevEntry = Object.entries(EVOLUTION_TABLE).find(([_id, data]) => (data as any).to === currentIdRef)
     currentId = prevEntry ? prevEntry[0] : null
   }
@@ -89,7 +89,7 @@ const handleRelearn = (move: LearnsetEntry) => {
     emit('close')
   } else {
     // If moves == 4, we need to forget one
-    uiStore.openLearnMoveMenu(p, { name: move.name, pp: move.pp, maxPP: move.pp }, (success: boolean) => {
+    uiStore.openLearnMoveMenu(p as any, { name: move.name, pp: move.pp, maxPP: move.pp }, (success: boolean) => {
       if (success) {
         consumeItem(itemName)
         props.onLearned(success)
@@ -101,8 +101,8 @@ const handleRelearn = (move: LearnsetEntry) => {
 
 const consumeItem = (name: string) => {
   const inventory = gameStore.state.inventory as Record<string, number>
-  inventory[name]--
-  if (inventory[name] <= 0) delete inventory[name]
+  if (inventory[name]) inventory[name]--
+  if (inventory[name] !== undefined && inventory[name] <= 0) delete inventory[name]
   gameStore.save()
 }
 </script>

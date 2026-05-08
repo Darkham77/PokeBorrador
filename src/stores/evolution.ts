@@ -1,17 +1,19 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import { evolvePokemonData } from '@/logic/evolutionLogic';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { useGameStore } from '@/stores/game';
+import type { Pokemon, PokemonMove } from '@/types/pokemon';
 
 export const useEvolutionStore = defineStore('evolution', () => {
-  const gameStore = useGameStore() as any;
+  const gameStore = useGameStore();
 
   // --- STATE ---
   const isEvolving = ref(false);
-  const sourcePokemon = ref<any>(null);
+  const sourcePokemon = ref<Pokemon | null>(null);
   const targetId = ref<string | null>(null);
-  const onComplete = ref<((data: any) => void) | null>(null);
-  const pendingMoves = ref<any[]>([]);
+  const onComplete = ref<((data: { pokemon: Pokemon, pendingMoves: PokemonMove[] }) => void) | null>(null);
+  const pendingMoves = ref<PokemonMove[]>([]);
 
   // --- ACTIONS ---
 
@@ -21,7 +23,7 @@ export const useEvolutionStore = defineStore('evolution', () => {
    * @param {String} targetSpeciesId - The ID of the target species.
    * @param {Function} callback - Callback after the animation finishes.
    */
-  function startEvolution(pokemon: any, targetSpeciesId: string, callback: ((data: any) => void) | null = null) {
+  function startEvolution(pokemon: Pokemon, targetSpeciesId: string, callback: ((data: { pokemon: Pokemon, pendingMoves: PokemonMove[] }) => void) | null = null) {
     sourcePokemon.value = pokemon;
     targetId.value = targetSpeciesId;
     isEvolving.value = true;
@@ -39,7 +41,7 @@ export const useEvolutionStore = defineStore('evolution', () => {
     const result = evolvePokemonData(sourcePokemon.value, targetId.value);
     if (!result) return;
 
-    pendingMoves.value = (result as any).pendingMoves;
+    pendingMoves.value = result.pendingMoves;
 
     // Pokédex registration
     gameStore.registerPokedex(targetId.value, true); // true = caught
@@ -48,10 +50,10 @@ export const useEvolutionStore = defineStore('evolution', () => {
     gameStore.scheduleSave();
     
     return { 
-      oldName: (result as any).oldName, 
+      oldName: pokemonDataProvider.getPokemonData(result.fromId)?.name || 'Pokémon', 
       newName: sourcePokemon.value.name,
-      fromId: (result as any).fromId,
-      toId: (result as any).toId
+      fromId: result.fromId,
+      toId: result.toId
     };
   }
 
@@ -61,10 +63,12 @@ export const useEvolutionStore = defineStore('evolution', () => {
   function finishEvolution() {
     isEvolving.value = false;
     if (onComplete.value) {
-      onComplete.value({
-        pokemon: sourcePokemon.value,
-        pendingMoves: pendingMoves.value
-      });
+      if (sourcePokemon.value) {
+        onComplete.value({
+          pokemon: sourcePokemon.value,
+          pendingMoves: pendingMoves.value
+        });
+      }
     }
     sourcePokemon.value = null;
     targetId.value = null;

@@ -1,4 +1,6 @@
-export function registerMapTools(debug: any, { map, ui }: { map: any, ui: any }) {
+import type { DebugSystem, DebugContext } from '@/stores/debug'
+
+export function registerMapTools(debug: DebugSystem, { map, ui }: DebugContext) {
   debug.register({
     id: 'map-toggle-grid',
     label: 'MOSTRAR BORDES',
@@ -29,9 +31,9 @@ export function registerMapTools(debug: any, { map, ui }: { map: any, ui: any })
     command: 'setDominance',
     category: 'map',
     action: (faction: string) => {
-      const winnerMap: any = {}
+      const winnerMap: Record<string, any> = {}
       if (faction && faction !== 'none') {
-        map.maps.forEach((m: any) => { winnerMap[m.id] = { winner: faction } })
+        map.maps.forEach((m: { id: string }) => { winnerMap[m.id] = { winner: faction, union: faction, poder: 100 } })
       }
       map.mapWinners = winnerMap
       ui.notify(`Debug: Dominio global asignado a ${faction}`, '🚩')
@@ -56,7 +58,7 @@ export function registerMapTools(debug: any, { map, ui }: { map: any, ui: any })
     label: 'SET CYCLE',
     command: 'setCycle',
     category: 'map',
-    action: (c: string) => {
+    action: (c: 'morning' | 'day' | 'dusk' | 'night' | null) => {
       map.forcedCycle = c
       ui.notify(`Debug: Ciclo forzado a ${c}`, '☀️')
     },

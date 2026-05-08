@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { POKEMON_DB } from '@/data/pokemonDB'
 import { useGameStore } from '@/stores/game'
 import { useBreedingStore } from '@/stores/breeding'
 import type { PokemonEgg } from '@/types/pokemon'
@@ -51,13 +52,13 @@ const allEggs = computed<EggItem[]>(() => {
     type: 'inventory' as const, 
     data: e as any, 
     id: idx,
-    species: e.pokemonId || e.id
+    species: (e as any).pokemonId || e.id
   }))
   
-  const daycareEggs = (breedingStore.eggs || []).map(e => ({ 
+  const daycareEggs = (breedingStore.eggs || []).map((e: any) => ({ 
     type: 'daycare' as const, 
     data: e as any, 
-    id: e.uid || (e as any).egg_id,
+    id: e.id || e.uid,
     species: e.id || (e as any).species
   }))
   
@@ -95,7 +96,7 @@ const handleKeep = async () => {
     if (egg) {
       (egg as any).scanned = true
       ;(egg as any).predictedInfo = { 
-          name: (gameStore as any).POKEMON_DB?.[res.species]?.name || res.species, 
+          name: (POKEMON_DB as any)[res.species]?.name || res.species, 
           ivTotal: res.totalIV 
       }
     }
@@ -167,7 +168,7 @@ const handleSell = async () => {
                     class="badge"
                     :class="egg.type"
                   >{{ egg.type === 'inventory' ? '🎒 MOCHILA' : '🏠 GUARDERÍA' }}</span>
-                  {{ gameStore.POKEMON_DB?.[egg.species]?.name || 'Huevo' }}
+                  {{ (POKEMON_DB as any)[egg.species]?.name || 'Huevo' }}
                 </div>
                 <div class="egg-status">
                   Tocar para escanear
@@ -193,7 +194,7 @@ const handleSell = async () => {
                 🥚
               </div>
               <div class="result-title">
-                {{ gameStore.POKEMON_DB?.[scanningResult.species]?.name }} 
+                {{ (POKEMON_DB as any)[scanningResult.species]?.name }} 
                 <span v-if="scanningResult.isShiny">✨</span>
               </div>
             </div>

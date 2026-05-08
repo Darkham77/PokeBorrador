@@ -180,7 +180,12 @@ export const useAuthStore = defineStore('auth', () => {
     // Registrar sesión
     await supabase.from('profiles').update({ current_session_id: sessionId.value }).eq('id', data.user.id)
     
-    const { data: profile } = await supabase.from('profiles').select('db_version, is_banned, ban_reason').eq('id', data.user.id).single()
+    interface ProfileData {
+      db_version: number;
+      is_banned: boolean;
+      ban_reason: string | null;
+    }
+    const { data: profile } = await supabase.from('profiles').select('db_version, is_banned, ban_reason').eq('id', data.user.id).single() as { data: ProfileData | null }
     
     if (profile?.is_banned) {
       isBanned.value = true

@@ -42,6 +42,9 @@ We prioritize a deliberate contrast between modern, sleek UI shells and classic,
   - **CSS Usage**: `padding-top: var(--hud-top-padding, 110px);`.
 - **HUD Minimal Mandate**: Remove redundant data from the HUD if it is intrinsic to the current route (e.g., weather/cycle). HUD should focus on inventory and resources.
 - **Numeric Scaling (`fitText`)**: Values that can grow significantly (e.g., Currency) MUST use dynamic scaling logic to ensure absolute containment within HUD pills.
+  - **Robust Measurement**: Always use `parent.clientWidth` (or `parent.offsetWidth - padding`) for `maxW` calculations instead of hardcoded constants. This ensures the text fits regardless of the user's viewport or zoom level.
+  - **Large Value Simplification**: If a numeric value exceeds **9,999,999**, simplify it using a suffix (e.g., `10M`, `15M`).
+  - **Full Precision Mandate**: When a simplified value is displayed in the UI, the corresponding `PVTooltip` MUST show the full, non-simplified value (e.g., `Saldo: ₱10.500.200`) to ensure transparency.
 - **Mobile Fullscreen Mandate**: All complex management modals (Inventory, Team, Shop, Pokedex) MUST switch to `type: 'fullscreen'` on viewports ≤ 950px.
   - **WHY**: Maximizes usable space on small screens and eliminates "floating card" artifacts that reduce visibility.
 - **Scroll Delegation (Fullscreen)**: In fullscreen mode, the main modal container MUST use `overflow: hidden`. Scroll responsibility MUST be delegated to an internal `.modal-scrollable-content` (or `.upd-core-body`) with `flex: 1`, `min-height: 0`, and `overflow-y: auto`.
@@ -120,6 +123,9 @@ We prioritize a deliberate contrast between modern, sleek UI shells and classic,
 ### 4. Interactive Pills & Badges
 
 - **High-Density Layouts**: When horizontal space is limited (e.g., within Grid cards), use **Vertical Pills**.
+- **HUD Pill Normalization**: All resource indicators in the HUD MUST follow the `money-pill` standard: dynamic font scaling (`fitText`), themed colors (e.g., Green for money, Purple for BC, Red for Balls), and glowing effects for premium visual feedback.
+- **Icon Alignment & Scaling**: Img/SVG icons in HUD pills (like Poké Balls) MUST be normalized to a height of **20px** (vs. 16-18px for font icons) and use optical offsets (e.g., `margin-top: -2px`) to ensure the value text baseline is consistent across all pills.
+- **Resource Breakdown Tooltips**: For pills that display an aggregated total (e.g., Poké Balls), the `PVTooltip` MUST provide a detailed breakdown (e.g., `• Poké Ball: 10 \n • Ultra Ball: 5`) to maintain data transparency without cluttering the main HUD.
 - **Vertical Pill Standard**: Use `writing-mode: vertical-rl` and `text-orientation: upright` for the text, combined with a large icon (16-18px) positioned at the top.
 - **Glassmorphism**: Always apply `@include glass-solid` with a thin themed border (`rgba(79, 172, 254, 0.4)` for Fishing).
 - **Abbreviated Labels (shortLabel)**: In compact UI (list buttons, small cards), use the `shortLabel` property from `tags.ts` to prevent text overflow. Maintain the full `label` in tooltips.

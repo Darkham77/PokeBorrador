@@ -8,6 +8,7 @@ import { WEATHER_ACTIONS } from './weatherActions';
 import { FIELD_ACTIONS } from './fieldActions';
 import { SPECIAL_ACTIONS } from './specialActions';
 import { logger } from '@/logic/utils/logger';
+import type { BattleContext } from '@/types/battleContext';
 
 /**
  * Registro Central de Acciones y Efectos
@@ -20,7 +21,7 @@ type BattleAction = (
   srcStages: BattleStages, 
   tgtStages: BattleStages, 
   addLogFn: LogFn, 
-  battleCtx: any
+  battleCtx: BattleContext
 ) => void;
 
 const ALL_ACTIONS: Record<string, BattleAction> = {
@@ -43,7 +44,7 @@ export function dispatchMoveEffect(
   srcStages: BattleStages, 
   tgtStages: BattleStages, 
   addLogFn: LogFn, 
-  battleCtx: any
+  battleCtx: BattleContext
 ) {
   if (!effect) return;
 
@@ -54,7 +55,7 @@ export function dispatchMoveEffect(
   if (/_(\d+)$/.test(effect) && !effect.startsWith('heal_') && !effect.includes('self_atk_2')) {
     const match = effect.match(/_(\d+)$/);
     if (match) {
-      const val = parseInt(match[1]);
+      const val = parseInt(match[1] as string);
       // Evitar parshear niveles de stat (_2) como probabilidad
       if (val > 2) {
         chance = val;
@@ -86,10 +87,9 @@ export function dispatchMoveEffect(
       const snatchablePrefixes = ['stat_up_self', 'heal_50', 'heal_weather', 'rest', 'reflect', 'light_screen', 'safeguard', 'focus_energy'];
       const isSnatchable = snatchablePrefixes.some((p) => effect.startsWith(p));
       
-      const tgtInternal = tgt as any; // Dynamic battle property
-      if (isSnatchable && tgtInternal.snatching) {
+      if (isSnatchable && tgt.snatching) {
         addLogFn(`¡${tgt.name} robó el efecto con Robo!`, 'log-info', tgt);
-        tgtInternal.snatching = false;
+        tgt.snatching = false;
         // Execute action with swapped src/tgt
         actionFn(tgt, src, tgtStages, srcStages, addLogFn, battleCtx);
         return;

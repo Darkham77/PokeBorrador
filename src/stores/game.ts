@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { reactive, ref, computed, watch } from 'vue'
+import { reactive, ref, computed, watch, type Ref } from 'vue'
 import { logger } from '@/logic/utils/logger'
 import { useAuthStore } from './auth'
 import { supabase } from '@/logic/supabase'
@@ -14,13 +14,13 @@ import { useTrainerActions } from './game/actions/trainerActions'
 import { useBreedingActions } from './game/actions/breedingActions'
 import { useTeamActions } from './game/actions/teamActions'
 
-import type { SupabaseClient } from '@supabase/supabase-js'
+import { DBRouter } from '@/logic/db/dbRouter'
 
 export const useGameStore = defineStore('game', () => {
   const authStore = useAuthStore()
   const state = reactive<GameState>(JSON.parse(JSON.stringify(INITIAL_STATE)))
   
-  const db = ref<SupabaseClient | null>(supabase as any)
+  const db = ref<DBRouter>(supabase)
   const isDataLoaded = ref(false)
   const isEngineReady = ref(false)
   const isSaveLocked = ref(false)
@@ -44,7 +44,7 @@ export const useGameStore = defineStore('game', () => {
   // --- ACTIONS INITIALIZATION ---
   
   // 1. Save Actions (Basics needed for others)
-  const { loadGame: rawLoad, save, scheduleSave, claimAsset, fetchClaimQueue } = useSaveActions(state, authStore, db, updateState)
+  const { loadGame: rawLoad, save, scheduleSave, claimAsset, fetchClaimQueue } = useSaveActions(state, authStore, db as Ref<DBRouter>, updateState)
 
   // 2. Team Actions (Special teams management)
   const { autoFillPvpTeam, swapPvpSlot, reorderPvpTeam, autoFillWarTeam, swapWarSlot, reorderWarTeam } = useTeamActions(state, scheduleSave)

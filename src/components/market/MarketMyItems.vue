@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { Temporal } from '@js-temporal/polyfill'
 
 import { computed } from 'vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { useGTSStore } from '@/stores/gts'
+import { Temporal } from '@js-temporal/polyfill'
 import { getPokemonTier } from '@/logic/pokemon/tierEngine'
 
 const gtsStore = useGTSStore() as any
@@ -11,9 +11,18 @@ const gtsStore = useGTSStore() as any
 const activeListings = computed(() => gtsStore.activeMyListings)
 const history = computed(() => gtsStore.salesHistory)
 
-async function handleCancel(id: string | number) {
+async function handleCancel(listingId: any) {
   if (confirm('¿Estás seguro de que deseas cancelar esta publicación? El objeto/Pokémon volverá a tu inventario.')) {
-    await gtsStore.cancelListing(id)
+    gtsStore.cancelListing(listingId)
+  }
+}
+
+const formatTime = (ts: string | number) => {
+  try {
+    const instant = typeof ts === 'string' ? Temporal.Instant.from(ts) : Temporal.Instant.fromEpochMilliseconds(Number(ts));
+    return instant.toZonedDateTimeISO('UTC').toLocaleString();
+  } catch {
+    return '---';
   }
 }
 </script>
@@ -95,7 +104,7 @@ async function handleCancel(id: string | number) {
           class="history-row"
         >
           <div class="sale-info">
-            <span class="date">{{ Temporal.Instant.fromEpochMilliseconds(sale.created_at).toLocaleDateString() }}</span>
+            <span class="date">{{ formatTime(sale.created_at) }}</span>
             <span class="item-name">Vendido: <strong>{{ sale.data.name }}</strong></span>
           </div>
           <div class="sale-value">

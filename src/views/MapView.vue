@@ -11,6 +11,7 @@ import { GYMS } from '@/data/gyms'
 import { useModalStore } from '@/stores/modals'
 import type { DaycareMission } from '@/types/breeding'
 import type { Event as GameEvent } from '@/logic/events/eventEngine'
+import type { MapLocation } from '@/types/encounters'
 
 const gameStore = useGameStore()
 const mapStore = useMapStore()
@@ -18,7 +19,10 @@ const uiStore = useUIStore()
 const eventStore = useEventStore()
 const modalStore = useModalStore()
 
-const navigateToMap = (loc: any) => mapStore.navigate(loc.id)
+const navigateToMap = (loc: MapLocation | string | number) => {
+  const id = typeof loc === 'object' ? loc.id : String(loc)
+  mapStore.navigate(id)
+}
 
 const openTab = (tab: string) => {
   uiStore.activeTab = tab
@@ -42,7 +46,7 @@ const gymSprites = computed(() => {
 })
 
 const activeEventData = computed(() => {
-  const active = eventStore.activeEvents?.[0] as GameEvent | undefined
+  const active = (eventStore.activeEvents as GameEvent[])?.[0]
   if (!active) return { active: false, text: 'No hay eventos activos en este momento', icon: '⚡' }
   return {
     active: true,

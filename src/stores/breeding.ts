@@ -43,24 +43,24 @@ export const useBreedingStore = defineStore('breeding', () => {
   
   const compatibility = computed(() => {
     if (!isBreeding.value) {
-      return { level: 0, reason: 'Deposita 2 Pokémon', sharedGroups: [] };
+      return { level: 0, reason: 'Deposita 2 Pokémon', sharedGroups: [], eggSpecies: '' };
     }
     const p1 = slots.value[0]?.pokemon;
     const p2 = slots.value[1]?.pokemon;
-    if (!p1 || !p2) return { level: 0, reason: 'Deposita 2 Pokémon', sharedGroups: [] };
+    if (!p1 || !p2) return { level: 0, reason: 'Deposita 2 Pokémon', sharedGroups: [], eggSpecies: '' };
     return checkCompatibility(p1, p2);
   });
   
   const nextEggTime = computed(() => {
     const level = compatibility.value.level;
     if (level === 0) return null;
-    const interval = (EGG_SPAWN_INTERVAL_MS as any)[level];
+    const interval = (EGG_SPAWN_INTERVAL_MS as Record<number, number>)[level];
     if (!interval) return null;
     
     if (!slots.value[0]?.deposited_at || !slots.value[1]?.deposited_at) return null;
 
-    const depA = Temporal.Instant.fromEpochMilliseconds(slots.value[0].deposited_at).epochMilliseconds;
-    const depB = Temporal.Instant.fromEpochMilliseconds(slots.value[1].deposited_at).epochMilliseconds;
+    const depA = Temporal.Instant.from(slots.value[0].deposited_at).epochMilliseconds;
+    const depB = Temporal.Instant.from(slots.value[1].deposited_at).epochMilliseconds;
     const earliest = Math.max(depA, depB);
     
     return earliest + interval;
@@ -109,20 +109,20 @@ export const useBreedingStore = defineStore('breeding', () => {
 
     const pA = slots.value[0].pokemon as Pokemon;
     const pB = slots.value[1].pokemon as Pokemon;
-    const compat = compatibility.value as any; // breedingEngine might need better typing too
+    const compat = compatibility.value;
 
     if ((pA.vigor || 0) <= 0 || (pB.vigor || 0) <= 0) {
       uiStore.notify('Uno de los padres no tiene vigor suficiente.', '💤');
       return;
     }
 
-    const eggSpecies = compat.eggSpecies;
+    const eggSpecies = compat.eggSpecies || '';
     const itemA = pA.heldItem || '';
     const itemB = pB.heldItem || '';
     const playerClass = classStore.playerClass as string;
 
     const abilityName = inheritAbility(pA, pB);
-    const abilityIndex = abilityName ? 1 : 0; // Simplified conversion for now
+    const abilityIndex = abilityName ? 1 : 0;
 
     const egg: DaycareEgg = {
       id: `egg_${now}_${Math.random().toString(36).substring(2, 7)}`,
@@ -131,7 +131,7 @@ export const useBreedingStore = defineStore('breeding', () => {
       level: 1,
       isEgg: true,
       steps: 2500,
-      mother_id: compat.motherId,
+      mother_id: compat.motherId || '',
       deposited_at: Temporal.Now.instant().toString(),
       ivs: calculateInheritance(pA, pB, itemA, itemB, playerClass),
       nature: inheritNature(pA, pB, itemA, itemB) || 'Serio',
@@ -182,7 +182,7 @@ export const useBreedingStore = defineStore('breeding', () => {
       uid: `${eggForInventory.id}-${Temporal.Now.instant().epochMilliseconds}`,
       ready: false
     };
-    gameStore.state.eggs.push(eggToPush as any);
+    gameStore.state.eggs.push(eggToPush);
     gameStore.state.money -= egg.cost;
     warehouseEggs.value.splice(eggIndex, 1);
     
@@ -202,13 +202,13 @@ export const useBreedingStore = defineStore('breeding', () => {
     if (egg.ivs) {
       if (!egg.inherited_ivs) egg.inherited_ivs = { };
       egg.inherited_ivs._scanned = true;
-      uiStore.notify(`¡Huevo de ${(POKEMON_DB as any)[egg.species]?.name} escaneado!`, '🔍');
+      uiStore.notify(`¡Huevo de ${POKEMON_DB[egg.species as keyof typeof POKEMON_DB]?.name} escaneado!`, '🔍');
       gameStore.scheduleSave();
     }
   }
 
   function checkDailyReset() {
-    const today = Temporal.Now.instant().toString().split('T')[0] as string;
+    const today = Temporal.Now.plainDateISO().toString();
     const missions = dailyMissions.value;
     const lastDate = missions.length > 0 && missions[0] ? missions[0].date : '';
 
@@ -253,7 +253,7 @@ export const useBreedingStore = defineStore('breeding', () => {
     const pokemon = all.find(p => p.uid === pokemonUid);
 
     if (!pokemon) return;
-    if (!validateMissionPokemon(pokemon, mission as any)) {
+    if (!validateMissionPokemon(pokemon, mission)) {
       uiStore.notify('Este Pokémon no cumple los requisitos.', '❌');
       return;
     }
@@ -269,7 +269,7 @@ export const useBreedingStore = defineStore('breeding', () => {
     }
 
     mission.completed = true;
-    const inv = gameStore.state.inventory as any;
+    const inv = gameStore.state.inventory as Record<string, number>;
     inv[mission.reward.name] = (inv[mission.reward.name] || 0) + mission.reward.qty;
     
     uiStore.notify(`¡Misión completada! Recibiste ${mission.reward.name} x${mission.reward.qty}`, mission.reward.icon);
@@ -297,6 +297,22 @@ export const useBreedingStore = defineStore('breeding', () => {
     }
   }
 
+  function updateEggIvs(eggId: string, ivs: any) {
+    const egg = warehouseEggs.value.find(e => e.id === eggId);
+    if (egg) {
+      egg.ivs = { ...egg.ivs, ...ivs };
+      gameStore.scheduleSave();
+    }
+  }
+
+  function deleteEgg(eggId: string) {
+    const idx = warehouseEggs.value.findIndex(e => e.id === eggId);
+    if (idx !== -1) {
+      warehouseEggs.value.splice(idx, 1);
+      gameStore.scheduleSave();
+    }
+  }
+
   return {
     slots,
     warehouseEggs,
@@ -315,6 +331,9 @@ export const useBreedingStore = defineStore('breeding', () => {
     completeMission,
     reduceHatchTimers,
     scanEgg,
-    checkAndGenerateEgg
+    checkAndGenerateEgg,
+    updateEggIvs,
+    deleteEgg,
+    eggs: computed(() => warehouseEggs.value)
   };
 });

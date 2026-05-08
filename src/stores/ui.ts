@@ -54,7 +54,8 @@ export const useUIStore = defineStore('ui', () => {
   const isDebugPerformanceMode = ref(false)
   const isSimplifiedModalsMode = ref(false) // Forzado vía debug
   const isDebugGridMode = ref(false)
-  const debugPokedexMode = ref<'none' | 'seen' | 'caught' | null>(null) // 'none' | 'seen' | 'caught' | null (real)
+  const debugAnimationsEnabled = ref(true)
+  const debugPokedexMode = ref<'none' | 'seen' | 'caught' | null>(null)
   
   // Team Management Debug Flags
   const pvpAutoFillDisabled = ref(false)
@@ -333,6 +334,7 @@ export const useUIStore = defineStore('ui', () => {
     isDebugPerformanceMode,
     isSimplifiedModalsMode,
     isDebugGridMode,
+    debugAnimationsEnabled,
     debugPokedexMode,
     isProfileOpen,
     isSettingsOpen,

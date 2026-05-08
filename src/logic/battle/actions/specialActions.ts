@@ -1,21 +1,14 @@
-import type { Pokemon } from '@/types/pokemon';
-import type { MoveAction, BattleContext } from '@/types/battle';
+import type { MoveAction } from '@/types/battle';
 import { STATUS_ACTIONS } from './statusActions';
 import { logger } from '@/logic/utils/logger';
 
-interface BattleContextInternal extends BattleContext {
-  activeBattle?: BattleContextInternal
-  isTrainer?: boolean
-  isGym?: boolean
-  over?: boolean
-  player?: Pokemon
-  enemy?: Pokemon
-  playerTeam?: Pokemon[]
-  enemyTeam?: Pokemon[]
-}
+/**
+ * Special Actions Dictionary.
+ * Handles moves with unique logic that doesn't fit into standard stat/status/healing categories.
+ */
 
 export const SPECIAL_ACTIONS: Record<string, MoveAction> = {
-  'leech_seed': (_src, tgt, _srcStages, _tgtStages, addLogFn, _battleCtx) => {
+  'leech_seed': (_src, tgt, _srcStages, _tgtStages, addLogFn) => {
     if (tgt.type === 'grass' || tgt.type2 === 'grass') {
       addLogFn(`¡No afecta a ${tgt.name}!`, 'log-info', tgt);
     } else if (!tgt.seeded) {
@@ -26,15 +19,15 @@ export const SPECIAL_ACTIONS: Record<string, MoveAction> = {
     }
   },
   'roar': (src, tgt, _srcStages, tgtStages, addLogFn, battleCtx) => {
-    if (!battleCtx) return;
-    const b = (battleCtx as BattleContextInternal).activeBattle || (battleCtx as BattleContextInternal);
+    const b = battleCtx?.activeBattle.value;
+    if (!b) return;
     
     if (tgt.ability === 'Succión' || tgt.ability === 'Ventosa') {
       addLogFn(`¡La ${tgt.ability} de ${tgt.name} impidió ser arrastrado!`, 'log-info', tgt);
       return;
     }
 
-    const isPlayerAttacking = (src === b.player);
+    const isPlayerAttacking = (src.uid === b.player?.uid);
     
     if (isPlayerAttacking) {
       if (!b.isTrainer && !b.isGym) {
@@ -47,13 +40,13 @@ export const SPECIAL_ACTIONS: Record<string, MoveAction> = {
           addLogFn('¡Pero no hay nadie para sustituirle!', 'log-info', tgt);
           return;
         }
-        const randomPick = aliveOthers[Math.floor(Math.random() * aliveOthers.length)];
+        const randomPick = aliveOthers[Math.floor(Math.random() * aliveOthers.length)] || null;
         addLogFn(`¡${tgt.name} fue expulsado del campo!`, 'log-player', 'player');
         b.enemy = randomPick;
         Object.keys(tgtStages).forEach(k => {
-          (tgtStages as Record<string, number>)[k] = 0;
+          tgtStages[k] = 0;
         });
-        addLogFn(`¡${randomPick.name} entra al combate!`, 'log-info', 'enemy_trainer');
+        if (randomPick) addLogFn(`¡${randomPick.name} entra al combate!`, 'log-info', 'enemy_trainer');
       }
     } else {
       if (!b.isTrainer && !b.isGym) {
@@ -66,19 +59,18 @@ export const SPECIAL_ACTIONS: Record<string, MoveAction> = {
           addLogFn('¡Pero no surtió efecto!', 'log-enemy', src);
           return;
         }
-        const randomPick = aliveOthers[Math.floor(Math.random() * aliveOthers.length)];
+        const randomPick = aliveOthers[Math.floor(Math.random() * aliveOthers.length)] || null;
         addLogFn(`¡${tgt.name} fue expulsado del campo!`, 'log-enemy', 'enemy_trainer');
         b.player = randomPick;
         Object.keys(tgtStages).forEach(k => {
-          (tgtStages as Record<string, number>)[k] = 0;
+          tgtStages[k] = 0;
         });
-        addLogFn(`¡Envía a ${randomPick.name}!`, 'log-info', 'player');
+        if (randomPick) addLogFn(`¡Envía a ${randomPick.name}!`, 'log-info', 'player');
       }
     }
   },
-  'curse': (src, tgt, srcStages, _tgtStages, addLogFn, _battleCtx) => {
-    const isGhost = src.type === 'ghost' || src.type2 === 'ghost';
-    if (isGhost) {
+  'curse': (src, tgt, srcStages, _tgtStages, addLogFn) => {
+    if (src.type === 'ghost' || src.type2 === 'ghost') {
       const cost = Math.floor(src.maxHp / 2);
       src.hp = Math.max(0, src.hp - cost);
       tgt.cursed = true;
@@ -90,21 +82,17 @@ export const SPECIAL_ACTIONS: Record<string, MoveAction> = {
       addLogFn(`¡${src.name} redujo su Velocidad pero subió su Ataque y Defensa!`, 'log-info', src);
     }
   },
-  'destiny_bond': (src, _tgt, _srcStages, _tgtStages, addLogFn, _battleCtx) => {
+  'destiny_bond': (src, _tgt, _srcStages, _tgtStages, addLogFn) => {
     src.destinyBond = true;
     addLogFn(`¡${src.name} intenta llevarse a su rival al destino común!`, 'log-info', src);
   },
-  'perish_song': (src, tgt, _srcStages, _tgtStages, addLogFn, _battleCtx) => {
+  'perish_song': (src, tgt, _srcStages, _tgtStages, addLogFn) => {
     if (src.perishSongCount === undefined) src.perishSongCount = 3;
     if (tgt.perishSongCount === undefined) tgt.perishSongCount = 3;
     addLogFn('¡Todos los que escucharon el canto morirán en 3 turnos!', 'log-info', src);
   },
-  'transform': (src, tgt, _srcStages, _tgtStages, addLogFn, _battleCtx) => {
+  'transform': (src, tgt, _srcStages, _tgtStages, addLogFn) => {
     const originalName = src.name;
-    if (!src.isTransformed) {
-      src.originalForm = JSON.parse(JSON.stringify(src));
-      src.isTransformed = true;
-    }
     src.id = tgt.id;
     src.name = tgt.name;
     src.type = tgt.type;
@@ -114,19 +102,22 @@ export const SPECIAL_ACTIONS: Record<string, MoveAction> = {
     src.spa = tgt.spa;
     src.spd = tgt.spd;
     src.spe = tgt.spe;
-    // Copy moves with 5 PP
-    src.moves = JSON.parse(JSON.stringify(tgt.moves)).map((m: any) => {
-      m.pp = 5;
-      m.maxPP = 5;
-      return m;
+    src.isTransformed = true;
+    // Copy moves but with 5 PP
+    src.moves = tgt.moves.map(m => {
+      if (!m) return null;
+      const newM = { ...m };
+      newM.pp = 5;
+      newM.maxPP = 5;
+      return newM;
     });
     addLogFn(`¡${originalName} se transformó en ${tgt.name}!`, 'log-info', src);
   },
   'tri_attack': (src, tgt, srcStages, tgtStages, addLogFn) => {
     const roll = Math.random();
-    if (roll < 0.066) STATUS_ACTIONS.burn(src, tgt, srcStages, tgtStages, addLogFn);
-    else if (roll < 0.132) STATUS_ACTIONS.paralyze(src, tgt, srcStages, tgtStages, addLogFn);
-    else if (roll < 0.20) STATUS_ACTIONS.freeze(src, tgt, srcStages, tgtStages, addLogFn);
+    if (roll < 0.066) STATUS_ACTIONS.burn?.(src, tgt, srcStages, tgtStages, addLogFn);
+    else if (roll < 0.132) STATUS_ACTIONS.paralyze?.(src, tgt, srcStages, tgtStages, addLogFn);
+    else if (roll < 0.20) STATUS_ACTIONS.freeze?.(src, tgt, srcStages, tgtStages, addLogFn);
   },
   'focus_energy': (src, _tgt, _srcStages, _tgtStages, addLogFn) => {
     src.focusEnergy = true;
@@ -136,11 +127,10 @@ export const SPECIAL_ACTIONS: Record<string, MoveAction> = {
     src.lockOn = true;
     addLogFn(`¡${src.name} fijó el blanco en ${tgt.name}!`, 'log-info', src);
   },
-  'mirror_move': (src, tgt, _srcStages, _tgtStages, addLogFn, _battleCtx) => {
+  'mirror_move': (src, tgt, _srcStages, _tgtStages, addLogFn) => {
     if (tgt.lastMove && tgt.lastMove.name !== 'Movimiento Espejo') {
       const move = tgt.lastMove;
       addLogFn(`¡Movimiento Espejo copió ${move.name}!`, 'log-info', src);
-      // Simular ejecución: Si tiene efecto, intentar ejecutarlo
       if (move.effect) {
         logger.debug('MirrorMove', `Triggering: ${move.effect}`);
       }
@@ -184,15 +174,15 @@ export const SPECIAL_ACTIONS: Record<string, MoveAction> = {
     }
   },
   'teleport': (src, _tgt, _srcStages, _tgtStages, addLogFn, battleCtx) => {
-    if (!battleCtx) return;
-    const b = (battleCtx as BattleContextInternal).activeBattle || (battleCtx as BattleContextInternal);
+    const b = battleCtx?.activeBattle.value;
+    if (!b) return;
     const isWild = !b.isTrainer && !b.isGym;
     
     if (isWild) {
       addLogFn(`¡${src.name} se teletransportó fuera del combate!`, 'log-info', src);
       b.over = true;
     } else {
-      const isPlayer = (src === b.player);
+      const isPlayer = (src.uid === b.player?.uid);
       const team = isPlayer ? b.playerTeam : b.enemyTeam;
       const aliveOthers = (team || []).filter((p) => p.uid !== src.uid && p.hp > 0);
       
@@ -202,11 +192,10 @@ export const SPECIAL_ACTIONS: Record<string, MoveAction> = {
       } else {
         addLogFn(`¡${src.name} se teletransportó!`, 'log-info', src);
         if (!isPlayer) {
-          const randomPick = aliveOthers[Math.floor(Math.random() * aliveOthers.length)];
+          const randomPick = aliveOthers[Math.floor(Math.random() * aliveOthers.length)] || null;
           b.enemy = randomPick;
-          addLogFn(`¡${randomPick.name} entra al combate!`, 'log-info', randomPick);
+          if (randomPick) addLogFn(`¡${randomPick.name} entra al combate!`, 'log-info', randomPick);
         } else {
-          // Para el jugador, por simplicidad en este punto, fallamos si no es el último
           addLogFn("¡Pero no hay nadie para sustituirle!", 'log-info', src);
         }
       }
@@ -227,9 +216,9 @@ export const SPECIAL_ACTIONS: Record<string, MoveAction> = {
     addLogFn(`¡${src.name} identificó a ${tgt.name}!`, 'log-info', src);
   },
   'swagger': (src, tgt, srcStages, tgtStages, addLogFn) => {
-    (tgtStages as Record<string, number>).atk = Math.min(6, (tgtStages.atk || 0) + 2);
+    tgtStages.atk = Math.min(6, (tgtStages.atk || 0) + 2);
     addLogFn(`¡Subió mucho el Ataque de ${tgt.name}!`, 'log-info', tgt);
-    STATUS_ACTIONS.confuse(src, tgt, srcStages, tgtStages, addLogFn);
+    STATUS_ACTIONS.confuse?.(src, tgt, srcStages, tgtStages, addLogFn);
   },
   'recharge': (src, _tgt, _srcStages, _tgtStages, _addLogFn) => {
     src.mustRecharge = true;
@@ -252,35 +241,39 @@ export const SPECIAL_ACTIONS: Record<string, MoveAction> = {
     }
   },
   'dream_eater': (src, _tgt, _srcStages, _tgtStages, addLogFn, battleCtx) => {
-    if (battleCtx && battleCtx.lastDamage) {
-      const heal = Math.floor(battleCtx.lastDamage / 2);
+    const b = battleCtx?.activeBattle.value;
+    if (b && b.lastDamage) {
+      const heal = Math.floor(b.lastDamage / 2);
       src.hp = Math.min(src.maxHp, src.hp + heal);
       addLogFn(`¡${src.name} absorbió los sueños de su rival! (+${heal} HP)`, 'log-info', src);
     }
   },
   'drain_50': (src, _tgt, _srcStages, _tgtStages, addLogFn, battleCtx) => {
-    if (battleCtx && battleCtx.lastDamage) {
-      const heal = Math.max(1, Math.floor(battleCtx.lastDamage / 2));
+    const b = battleCtx?.activeBattle.value;
+    if (b && b.lastDamage) {
+      const heal = Math.max(1, Math.floor(b.lastDamage / 2));
       src.hp = Math.min(src.maxHp, src.hp + heal);
       addLogFn(`¡${src.name} recuperó salud absorbiendo energía! (+${heal} HP)`, 'log-info', src);
     }
   },
   'recoil_25': (src, _tgt, _srcStages, _tgtStages, addLogFn, battleCtx) => {
-    if (battleCtx && battleCtx.lastDamage) {
-      const recoil = Math.max(1, Math.floor(battleCtx.lastDamage / 4));
+    const b = battleCtx?.activeBattle.value;
+    if (b && b.lastDamage) {
+      const recoil = Math.max(1, Math.floor(b.lastDamage / 4));
       src.hp = Math.max(0, src.hp - recoil);
       addLogFn(`¡${src.name} recibió daño por el retroceso! (-${recoil} HP)`, 'log-info', src);
     }
   },
   'recoil_33': (src, _tgt, _srcStages, _tgtStages, addLogFn, battleCtx) => {
-    if (battleCtx && battleCtx.lastDamage) {
-      const recoil = Math.max(1, Math.floor(battleCtx.lastDamage / 3));
+    const b = battleCtx?.activeBattle.value;
+    if (b && b.lastDamage) {
+      const recoil = Math.max(1, Math.floor(b.lastDamage / 3));
       src.hp = Math.max(0, src.hp - recoil);
       addLogFn(`¡${src.name} recibió mucho daño por el retroceso! (-${recoil} HP)`, 'log-info', src);
     }
   },
-  'metronome': (_src, _tgt, _srcStages, _tgtStages, _addLogFn, _battleCtx) => {
-    // La lógica de selección de movimiento se maneja en battleTurn.js
+  'metronome': (_src, _tgt, _srcStages, _tgtStages, _addLogFn) => {
+    // Logic handled in battleTurn.ts
   },
   'encore': (src, tgt, _srcStages, _tgtStages, addLogFn) => {
     if (tgt.lastMove && !tgt.encoreMove) {
@@ -307,9 +300,10 @@ export const SPECIAL_ACTIONS: Record<string, MoveAction> = {
     addLogFn(`¡${src.name} está furioso!`, 'log-info', src);
   },
   'future_sight_simple': (src, tgt, _srcStages, _tgtStages, addLogFn, battleCtx) => {
-    if (!battleCtx) return;
-    battleCtx.futureSightTurns = 3;
-    battleCtx.futureSightTarget = tgt;
+    const b = battleCtx?.activeBattle.value;
+    if (!b) return;
+    b.futureSightTurns = 3;
+    b.futureSightTarget = tgt;
     addLogFn(`¡${src.name} lanzó una premonición!`, 'log-info', src);
   },
   'trick': (src, tgt, _srcStages, _tgtStages, addLogFn) => {

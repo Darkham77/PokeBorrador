@@ -55,7 +55,7 @@ export const useBuffsStore = defineStore('buffs', () => {
   }
 
   const activeBuffs = computed(() => {
-    const s = gameStore.state as any
+    const s = gameStore.state
     const list = []
     if (s.repelSecs > 0) list.push({ id: 'repel', secs: s.repelSecs, name: 'Repelente', desc: 'Aleja Pokémon salvajes de nivel inferior al tuyo.', icon: getAssetUrl(ASSET_TYPES.ITEM, 'repel') })
     if (s.shinyBoostSecs > 0) list.push({ id: 'shiny', secs: s.shinyBoostSecs, name: '✨ Ticket Shiny', desc: 'Aumenta la probabilidad de encontrar Pokémon shiny.', icon: getAssetUrl(ASSET_TYPES.ITEM, 'eon-ticket') })
@@ -70,8 +70,8 @@ export const useBuffsStore = defineStore('buffs', () => {
     if (s.incenseSecs > 0) {
       const types: Record<string, string> = { fire: 'Fuego', water: 'Agua', grass: 'Planta', normal: 'Normal', ghost: 'Fantasma', psychic: 'Psíquico' }
       const sprites: Record<string, string> = { fire: 'incense', water: 'sea-incense', grass: 'rose-incense', normal: 'luck-incense', ghost: 'pure-incense', psychic: 'odd-incense' }
-      const tName = types[s.incenseType] || 'Desconocido'
-      const tSprite = sprites[s.incenseType] || 'incense'
+      const tName = types[s.incenseType || ''] || 'Desconocido'
+      const tSprite = sprites[s.incenseType || ''] || 'incense'
       list.push({ 
         id: 'incense', 
         secs: s.incenseSecs, 

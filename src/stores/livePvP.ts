@@ -9,12 +9,19 @@ import { resolvePvPTurn, applyPvPTurnResult, type PvPBattleState, type PvPTurnRe
 import type { RealtimeChannel } from '@supabase/supabase-js'
 import type { Pokemon } from '@/types/pokemon'
 
+
 export interface BattleInvite {
   id: string;
   challenger_id: string;
   opponent_id: string;
   status: 'pending' | 'accepted' | 'declined' | 'ranked_match' | 'ranked_accepted';
   created_at: string;
+}
+
+export interface RankedQueueEntry {
+  user_id: string;
+  elo: number;
+  looking_since: string;
 }
 
 export const useLivePvPStore = defineStore('livePvP', () => {
@@ -52,10 +59,12 @@ export const useLivePvPStore = defineStore('livePvP', () => {
 
   function _pollMatchmaking() {
     if (!isSearching.value || !gameStore.db || !authStore.user) return
-    gameStore.db.from('ranked_queue').select('*').neq('user_id', authStore.user.id).order('looking_since', { ascending: true }).limit(1).then(async ({ data }: { data: any[] | null }) => {
-      if (data?.length && authStore.user && gameStore.db) {
+    gameStore.db.from('ranked_queue').select('*').neq('user_id', authStore.user.id).order('looking_since', { ascending: true }).limit(1).then(async (res) => {
+      const { data } = res as unknown as { data: RankedQueueEntry[] | null, error: { message: string } | null }
+      if (data && data.length > 0 && authStore.user && gameStore.db) {
         const match = data[0]
-        const { data: invite, error } = await gameStore.db.from('battle_invites').insert({ challenger_id: authStore.user.id, opponent_id: match.user_id, status: 'ranked_match' }).select().single()
+        if (!match) return
+        const { data: invite, error } = await gameStore.db.from('battle_invites').insert({ challenger_id: authStore.user.id, opponent_id: match.user_id, status: 'ranked_match' }).select().single() as unknown as { data: BattleInvite | null, error: { message: string } | null }
         if (!error && invite) {
           await gameStore.db.from('ranked_queue').delete().in('user_id', [authStore.user.id, match.user_id])
           isSearching.value = false; startBattle(invite, true, true)
@@ -69,14 +78,15 @@ export const useLivePvPStore = defineStore('livePvP', () => {
     if (authStore.sessionMode === 'offline') return
     invitePoller = setInterval(async () => {
       if (!authStore.user || !gameStore.db) return
-      const { data } = await gameStore.db.from('battle_invites').select('*').eq('opponent_id', authStore.user.id).in('status', ['pending', 'ranked_match']).order('created_at', { ascending: false }).limit(1)
-      if (data?.length && gameStore.db) {
+      const { data } = await gameStore.db.from('battle_invites').select('*').eq('opponent_id', authStore.user.id).in('status', ['pending', 'ranked_match']).order('created_at', { ascending: false }).limit(1) as { data: BattleInvite[] | null }
+      if (data && data.length > 0 && gameStore.db) {
         const inv = data[0]
-        if (Temporal.Now.instant().epochMilliseconds - Temporal.Instant.fromEpochMilliseconds(inv.created_at).epochMilliseconds > 60000) return
+        if (!inv) return
+        if (Temporal.Now.instant().epochMilliseconds - Temporal.Instant.from(inv.created_at).epochMilliseconds > 60000) return
         if (inv.status === 'ranked_match') { if (isSearching.value) acceptInvite(inv.id, true); else await gameStore.db.from('battle_invites').update({ status: 'declined' }).eq('id', inv.id) }
         else activeInvite.value = inv
       }
-    }, 4000) as any
+    }, 4000)
   }
 
   async function startSearch() {
@@ -85,7 +95,7 @@ export const useLivePvPStore = defineStore('livePvP', () => {
     await gameStore.db.from('ranked_queue').upsert({ user_id: authStore.user.id, elo: gameStore.state.eloRating || 1000, looking_since: Temporal.Now.instant().toString() })
     uiStore.notify('Buscando oponente...', '🔍')
     if (matchmakingPoller) clearInterval(matchmakingPoller)
-    matchmakingPoller = setInterval(_pollMatchmaking, 3000) as any
+    matchmakingPoller = setInterval(_pollMatchmaking, 3000)
   }
 
   async function cancelSearch() {
@@ -96,8 +106,8 @@ export const useLivePvPStore = defineStore('livePvP', () => {
 
   async function sendInvite(opponentId: string, opponentName: string) {
     if (!authStore.user || !gameStore.db) return
-    const { data, error } = await gameStore.db.from('battle_invites').insert({ challenger_id: authStore.user.id, opponent_id: opponentId, status: 'pending' }).select().single()
-    if (error) { uiStore.notify('Error al enviar invitación', '❌'); return }
+    const { data, error } = await gameStore.db.from('battle_invites').insert({ challenger_id: authStore.user.id, opponent_id: opponentId, status: 'pending' }).select().single() as unknown as { data: BattleInvite | null, error: { message: string } | null }
+    if (error || !data) { uiStore.notify('Error al enviar invitación', '❌'); return }
     uiStore.notify(`Invitación enviada a ${opponentName}`, '✉️'); startBattle(data, true, false)
   }
 
@@ -105,7 +115,7 @@ export const useLivePvPStore = defineStore('livePvP', () => {
     if (!gameStore.db) return
     const status = isRanked ? 'ranked_accepted' : 'accepted'
     await gameStore.db.from('battle_invites').update({ status }).eq('id', inviteId)
-    const { data: invite } = await gameStore.db.from('battle_invites').select('*').eq('id', inviteId).single()
+    const { data: invite } = await gameStore.db.from('battle_invites').select('*').eq('id', inviteId).single() as { data: BattleInvite | null }
     if (invite) startBattle(invite, false, isRanked)
     activeInvite.value = null
   }
@@ -124,7 +134,7 @@ export const useLivePvPStore = defineStore('livePvP', () => {
     battleState.active = false; battleState.phase = 'over'; if (battleState.ch) battleState.ch.unsubscribe()
     let eloDelta = 0; if (battleState.isRanked) eloDelta = await _pvpStore.updateElo(won)
     uiStore.notify(`${reason || (won ? '¡Has ganado!' : 'Has perdido.')}${eloDelta !== 0 ? ` (${eloDelta > 0 ? '+' : ''}${eloDelta} ELO)` : ''}`, won ? '🏆' : '💀')
-    if (gameStore.state) { (gameStore.state as any).activeBattle = null; gameStore.save(false) }
+    if (gameStore.state) { gameStore.state.activeBattle = null; gameStore.save(false) }
   }
 
   function resolveTurn() { const res = resolvePvPTurn(battleState); if (res) applyTurnResult(res) }
@@ -145,10 +155,10 @@ export const useLivePvPStore = defineStore('livePvP', () => {
     if (!gameStore.db) return
     const ch = gameStore.db.channel(`pvp-${inviteId}`)
     battleState.ch = ch
-    ch.on('broadcast' as any, { event: 'pvp_team' }, handleOpponentTeam)
-      .on('broadcast' as any, { event: 'pvp_pick' }, handleOpponentPick)
-      .on('broadcast' as any, { event: 'pvp_turn_result' }, handleTurnResult)
-      .on('broadcast' as any, { event: 'pvp_forfeit' }, handleOpponentForfeit)
+    ch.on('broadcast' as const, { event: 'pvp_team' }, handleOpponentTeam)
+      .on('broadcast' as const, { event: 'pvp_pick' }, handleOpponentPick)
+      .on('broadcast' as const, { event: 'pvp_turn_result' }, handleTurnResult)
+      .on('broadcast' as const, { event: 'pvp_forfeit' }, handleOpponentForfeit)
       .subscribe((status: string) => { if (status === 'SUBSCRIBED') ch.send({ type: 'broadcast', event: 'pvp_team', payload: { team: battleState.myTeam } }) })
   }
 

@@ -251,7 +251,9 @@ const handleReclaim = async () => {
             <span class="lock-emoji">🔒</span>
           </div>
           
-          <h2 class="lock-title">SESIÓN BLOQUEADA</h2>
+          <h2 class="lock-title">
+            SESIÓN BLOQUEADA
+          </h2>
           
           <div class="lock-content">
             <p>Se ha detectado una sesión más reciente en otra pestaña o dispositivo.</p>

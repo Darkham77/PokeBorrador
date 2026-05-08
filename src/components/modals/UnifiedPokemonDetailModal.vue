@@ -44,7 +44,7 @@ const emit = defineEmits<{
 }>()
 
 const uiStore = useUIStore()
-const gameStore = useGameStore()
+const gameStore = useGameStore() as any
 
 // --- COMPOSABLE LOGIC ---
 const {
@@ -311,7 +311,7 @@ const handleReorderMoves = (from: number, to: number) => {
               class="info-item"
             >
               <span class="upd-info-label pixelated">ALTURA</span>
-              <span class="ps-info-value pixelated">{{ isInstance && instancePhysicalData ? instancePhysicalData.height + 'm' : formatRange(species.height, 'm') }}</span>
+              <span class="ps-info-value pixelated">{{ isInstance && instancePhysicalData ? instancePhysicalData.height + 'm' : formatRange(species.height || undefined, 'm') }}</span>
             </PVTooltip>
 
             <PVTooltip
@@ -322,7 +322,7 @@ const handleReorderMoves = (from: number, to: number) => {
               class="info-item"
             >
               <span class="upd-info-label pixelated">PESO</span>
-              <span class="ps-info-value pixelated">{{ isInstance && instancePhysicalData ? instancePhysicalData.weight + 'kg' : formatRange(species.weight, 'kg') }}</span>
+              <span class="ps-info-value pixelated">{{ isInstance && instancePhysicalData ? instancePhysicalData.weight + 'kg' : formatRange(species.weight || undefined, 'kg') }}</span>
             </PVTooltip>
           </div>
           <div

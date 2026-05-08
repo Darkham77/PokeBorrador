@@ -1,4 +1,5 @@
 import { usePvPStore } from '@/stores/pvp';
+import type { Pokemon } from '@/types/pokemon';
 
 export function useRankedValidation() {
   const rankedStore = usePvPStore();
@@ -6,10 +7,10 @@ export function useRankedValidation() {
   /**
    * Valida un único Pokémon contra las reglas actuales.
    */
-  const validatePokemon = (pokemon: any) => {
+  const validatePokemon = (pokemon: Pokemon) => {
     if (!pokemon) return { ok: false, reason: 'Pokémon inválido.' };
 
-    const rules = rankedStore.rules;
+    const rules = rankedStore.rules as any;
     const pokeId = String(pokemon.id || '').toLowerCase();
 
     // 1. Ban List
@@ -25,7 +26,7 @@ export function useRankedValidation() {
     // 3. Type Restrictions
     if (rules.allowedTypes?.length > 0) {
       const types = Array.isArray(pokemon.type) ? pokemon.type : [pokemon.type];
-      const hasAllowedType = types.some((t: any) => rules.allowedTypes.includes(t.toLowerCase()));
+      const hasAllowedType = types.some((t: string) => rules.allowedTypes.includes(t.toLowerCase()));
       if (!hasAllowedType) {
         return { ok: false, reason: `${pokemon.name} no cumple con los tipos permitidos.` };
       }
@@ -37,12 +38,12 @@ export function useRankedValidation() {
   /**
    * Valida un equipo completo.
    */
-  const validateTeam = (team: any[]) => {
+  const validateTeam = (team: Pokemon[]) => {
     if (!team || team.length === 0) {
       return { ok: false, reason: 'El equipo está vacío.' };
     }
 
-    const rules = rankedStore.rules;
+    const rules = rankedStore.rules as any;
     if (team.length > rules.maxPokemon) {
       return { ok: false, reason: `Máximo ${rules.maxPokemon} Pokémon permitidos.` };
     }

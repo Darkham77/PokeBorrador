@@ -6,11 +6,12 @@ import type { GameState, ClaimItem } from '@/types/game'
 import type { AuthUser } from '@/types/auth'
 import type { Ref } from 'vue'
 import { logger } from '@/logic/utils/logger'
+import type { DBRouter } from '@/logic/db/dbRouter'
 
 export function useSaveActions(
   state: GameState, 
   authStore: { user: AuthUser | null }, 
-  db: Ref<any>, 
+  db: Ref<DBRouter>, 
   updateState: (data: GameState) => void
 ) {
   const uiStore = useUIStore()
@@ -29,11 +30,11 @@ export function useSaveActions(
     let isNewerThanCloud: boolean | undefined;
     let attempts = 0;
     const maxAttempts = 2;
-    let lastError: any = null;
+    let lastError: unknown = null;
 
     while (attempts < maxAttempts) {
       try {
-        const loadPromise = loadBestSave(authStore.user as any, db.value)
+        const loadPromise = loadBestSave(authStore.user as AuthUser, db.value)
         const timeoutPromise = new Promise((_, reject) => 
           setTimeout(() => reject(new Error('LOAD_TIMEOUT')), 8000)
         );
@@ -63,10 +64,11 @@ export function useSaveActions(
     if (!data && lastError) {
       logger.error('LOAD', `Todos los intentos de carga fallaron: ${(lastError as Error).message}`);
       
-      const isTimeout = lastError.message === 'LOAD_TIMEOUT';
-      const isNetworkError = lastError.message && (
-        lastError.message.toLowerCase().includes('fetch') ||
-        lastError.message.toLowerCase().includes('network')
+      const err = lastError as Error;
+      const isTimeout = err.message === 'LOAD_TIMEOUT';
+      const isNetworkError = err.message && (
+        err.message.toLowerCase().includes('fetch') ||
+        err.message.toLowerCase().includes('network')
       );
       
       if (isTimeout || isNetworkError || !navigator.onLine) {
@@ -104,7 +106,9 @@ export function useSaveActions(
         uiStore.notify(`¡Bienvenido, ${state.trainer || authStore.user.user_metadata?.username}!`, '👋')
       }
 
-      if (authStore.user.db_version < 2) authStore.user.db_version = 2
+      if (authStore.user && (authStore.user.db_version || 0) < 2) {
+        authStore.user.db_version = 2
+      }
 
       if (isNewerThanCloud) {
         uiStore.notify('Sincronizando progreso local más reciente...', '🔄')
@@ -142,7 +146,7 @@ export function useSaveActions(
       
       if (result.rollback && db.value) {
         if (result.outOfSync) notifyFn('Desincronización detectada. Restaurando...', '🔄')
-        const { data: freshSave } = await db.value.from('game_saves').select('save_data, last_save_id').eq('user_id', authStore.user.id).single()
+        const { data: freshSave } = await db.value.from('game_saves').select('save_data, last_save_id').eq('user_id', authStore.user.id).single() as unknown as { data: { save_data: GameState, last_save_id: string } | null }
         if (freshSave) {
           updateState(freshSave.save_data)
           authStore.user.last_save_id = freshSave.last_save_id
@@ -178,7 +182,7 @@ export function useSaveActions(
     const { data, error } = await db.value.from('claim_queue')
       .select('*')
       .eq('user_id', authStore.user.id)
-      .order('created_at', { ascending: true })
+      .order('created_at', { ascending: true }) as unknown as { data: ClaimItem[] | null, error: { message: string } | null }
     if (!error) state.claimQueue = data || []
   }
 

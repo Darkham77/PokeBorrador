@@ -24,7 +24,7 @@ interface TMData {
  */
 export const isValidTarget = (itemName: string, pokemon: Pokemon): boolean => {
   if (!pokemon) return false;
-  const effect = (itemEffects as Record<string, (p: Pokemon) => ItemEffectResult>)[itemName] || ((p: Pokemon) => getDynamicItemEffect(itemName, p));
+  const effect = (itemEffects as Record<string, Function>)[itemName] || ((p: Pokemon) => getDynamicItemEffect(itemName, p));
   if (typeof effect !== 'function') return false;
 
   // Clone to avoid mutation during check
@@ -33,7 +33,7 @@ export const isValidTarget = (itemName: string, pokemon: Pokemon): boolean => {
   return !!(result && result.success);
 };
 
-export const itemEffects: Record<string, (p: Pokemon) => ItemEffectResult> = {
+export const itemEffects: Record<string, (t: any) => any> = {
   // --- Healing & Status ---
   'Poción': (p) => healHp(p, 20),
   'Súper Poción': (p) => healHp(p, 50),

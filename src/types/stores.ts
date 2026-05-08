@@ -1,14 +1,31 @@
-
 import { Ref } from 'vue';
-import type { SupabaseClient } from '@supabase/supabase-js';
 import { GameState } from './game';
 import { Pokemon } from './pokemon';
 import { BattleState, BattleStages, BattleLog } from './battle';
 import { BattleStateName, BattleSubStateName } from '@/logic/battle/battleStateMachine';
+import { Event } from '@/logic/events/eventEngine';
+import { AuthUser } from './auth';
+import { DBRouter } from '@/logic/db/dbRouter';
+
+export interface BattleOptions {
+  isTrainer?: boolean;
+  trainerName?: string;
+  isGym?: boolean;
+  gymId?: string;
+  locationId?: string;
+  wasSearching?: boolean;
+  enemyTeam?: Pokemon[];
+  isFishing?: boolean;
+  isGuardian?: boolean;
+  pts?: number;
+  isDebug?: boolean;
+  difficulty?: string;
+  rewardTM?: string;
+}
 
 export interface GameStore {
   state: GameState;
-  db: SupabaseClient;
+  db: DBRouter;
   isDataLoaded: boolean;
   isEngineReady: boolean;
   isReady: boolean;
@@ -27,6 +44,10 @@ export interface GameStore {
   chooseStarter: (pokeId: string) => void;
   togglePokeTag: (context: 'team' | 'box' | 'market', index: number, tagId: string) => void;
   reorderMoves: (pokemon: Pokemon, from: number, to: number) => void;
+  fetchClaimQueue: () => Promise<void>;
+  saveGame: (showNotif?: boolean) => Promise<void>;
+  chats: Record<string, unknown>;
+  eloRating: number;
 }
 
 export interface BattleStore {
@@ -42,34 +63,17 @@ export interface BattleStore {
   fsm: {
     currentState: Ref<BattleStateName>;
     currentSubState: Ref<BattleSubStateName | null>;
-    transition: (newState: BattleStateName | BattleSubStateName, newSubState?: BattleSubStateName | null, delayMs?: number) => Promise<any>;
+    transition: (newState: BattleStateName | BattleSubStateName, newSubState?: BattleSubStateName | null, delayMs?: number) => Promise<void>;
   };
   addLog: (msg: string, type?: string, source?: Pokemon | string | null, sideOverride?: 'player' | 'enemy' | null) => void;
-  startBattle: (enemy: Pokemon, options?: { 
-    isTrainer?: boolean; 
-    trainerName?: string; 
-    isGym?: boolean; 
-    gymId?: string;
-    locationId?: string;
-    wasSearching?: boolean;
-    enemyTeam?: Pokemon[];
-    battleOptions?: any;
-  }) => Promise<void>;
-  _startBattle: (enemy: Pokemon, options?: { 
-    isTrainer?: boolean; 
-    trainerName?: string; 
-    isGym?: boolean; 
-    gymId?: string;
-    locationId?: string;
-    wasSearching?: boolean;
-    enemyTeam?: Pokemon[];
-    battleOptions?: any;
-  }) => Promise<void>;
+  startBattle: (enemy: Pokemon, options?: BattleOptions) => Promise<void>;
+  _startBattle: (enemy: Pokemon, options?: BattleOptions) => Promise<void>;
   executeMove: (moveIndex: number) => Promise<void>;
   endBattle: (win: boolean, fled: boolean) => Promise<void>;
   handleFaint: (side: 'player' | 'enemy') => Promise<void>;
   persistBattle: () => void;
   triggerSearchEncounter: () => Promise<void>;
+  useItemInBattle: (itemName: string, targetIndex: number | null) => Promise<void>;
 }
 
 export interface ConfirmOptions {
@@ -94,8 +98,8 @@ export interface UIStore {
   activeTab: string;
   isBattleSwitchForced: boolean;
   notify: (msg: string, icon?: string) => void;
-  openConfirm: (options: any) => void;
-  openPrompt: (options: any) => void;
+  openConfirm: (options: ConfirmOptions) => void;
+  openPrompt: (options: PromptOptions) => void;
   open: (name: string, props?: Record<string, unknown>) => void;
   close: (name: string) => void;
   closeAll: () => void;
@@ -107,7 +111,7 @@ export interface MapStore {
   currentWeather: string;
   globalWeather: string | null;
   mapWinners: Record<string, string>;
-  activeEvents: Array<{ id: string; name: string; type: string }>;
+  activeEvents: Event[];
   currentSeason: { id: string; name: string };
   currentEpochHour: number;
 }
@@ -122,20 +126,21 @@ export interface PendingAward {
 }
 
 export interface EventStore {
-  activeEvents: any[];
+  activeEvents: Event[];
   pendingAwards: PendingAward[];
   isLoading: boolean;
   globalMultipliers: {
     shiny: number;
     exp: number;
     money: number;
+    catch: number;
   };
   fetchEvents: () => Promise<void>;
   checkPendingAwards: () => Promise<void>;
   submitCompetitionEntry: (pokemon: Pokemon, eventId: string) => Promise<void>;
-  claimAward: (awardId: string) => Promise<any>;
+  claimAward: (awardId: string) => Promise<string | null>;
   getEventMultiplier: (pokemon: Pokemon, eventId: string) => number;
-  getCaptureEvent: (speciesId: string) => any;
+  getCaptureEvent: (speciesId: string) => Event | null | undefined;
 }
 
 export interface DominanceInfo {
@@ -172,4 +177,79 @@ export interface AudioStore {
   money: () => void;
   faint: () => void;
   heal: () => void;
+  notif: () => void;
+  sentMsg: () => void;
+  receivedMsg: () => void;
+  flee: () => void;
+  ballHit: () => void;
+  wobble: () => void;
+  caught: () => void;
+  evolution: () => void;
+  menuOpen: () => void;
+  menuClose: () => void;
+}
+
+export interface AuthStore {
+  user: AuthUser | null;
+  sessionMode: 'online' | 'offline';
+  sessionId: string;
+  isOnline: boolean;
+  connectionLost: boolean;
+  sessionConflict: boolean;
+  logout: () => Promise<void>;
+}
+
+export interface LoadingStore {
+  start: (id: string, message?: string, subMessage?: string, isGlobal?: boolean) => void;
+  finish: (id: string) => void;
+  clearAll: () => void;
+}
+
+export interface SocialStore {
+  notifications: { friends: number; trades: number; battles: number; total: number };
+  refreshNotificationCount: () => Promise<void>;
+}
+
+export interface ShopStore {
+  buyItem: (itemId: string, qty: number) => Promise<void>;
+  sellItem: (itemId: string, qty: number) => Promise<void>;
+}
+
+export interface TradeOffer {
+  id: string;
+  sender_id: string;
+  receiver_id: string;
+  offer_pokemon: Pokemon | null;
+  offer_items: Record<string, number>;
+  offer_money: number;
+  request_pokemon: Pokemon | null;
+  request_items: Record<string, number>;
+  request_money: number;
+  message: string;
+  status: 'pending' | 'accepted' | 'rejected' | 'claimed';
+  created_at: string;
+}
+
+export interface TradeStore {
+  tradeTarget: { id: string; username: string } | null;
+  tradeFriendSave: GameState | null;
+  tradeOfferPoke: Pokemon | null;
+  tradeRequestPoke: Pokemon | null;
+  tradeOfferItems: Record<string, number>;
+  tradeRequestItems: Record<string, number>;
+  pendingIncoming: TradeOffer[];
+  pendingOutgoing: TradeOffer[];
+  pendingAccepted: TradeOffer[];
+  lockedUids: Set<string>;
+  subscribeTradeNotifs: () => Promise<void>;
+  refreshPendingTrades: () => Promise<void>;
+  openTradeModal: (friendId: string, friendUsername: string) => Promise<void>;
+  sendTradeOffer: (options: { isGift: boolean; offerMoney: number; requestMoney: number; message: string }) => Promise<boolean>;
+  acceptTrade: (tradeId: string | number) => Promise<boolean>;
+  rejectTrade: (tradeId: string | number) => Promise<void>;
+  claimTrade: (tradeId: string | number) => Promise<void>;
+}
+
+export interface PvPStore {
+  updateElo: (won: boolean) => Promise<number>;
 }

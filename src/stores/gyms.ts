@@ -166,7 +166,7 @@ export const useGymsStore = defineStore('gyms', {
       const diffData = gym.difficulties[difficulty] || gym.difficulties.easy
       const enemyTeam = diffData.pokemon.map((id: string, idx: number) => makePokemon(id, diffData.levels[idx] || 1)).filter(Boolean) as Pokemon[]
       
-      const mainEnemy = enemyTeam[enemyTeam.length - 1] as any // The ace
+      const mainEnemy = enemyTeam[enemyTeam.length - 1] as Pokemon // The ace
 
       await battleStore.startBattle(mainEnemy, {
         isGym: true,
@@ -174,10 +174,8 @@ export const useGymsStore = defineStore('gyms', {
         trainerName: `Líder ${gym.leader}`,
         enemyTeam: enemyTeam,
         locationId: 'gym',
-        battleOptions: {
-          difficulty,
-          rewardTM: gym.rewardTM
-        }
+        difficulty,
+        rewardTM: gym.rewardTM
       })
     }
   }

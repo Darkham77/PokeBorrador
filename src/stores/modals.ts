@@ -28,8 +28,8 @@ export const useModalStore = defineStore('modals', () => {
    * @param {string} name - Key in MODAL_REGISTRY
    * @param {Object} props - Props to pass to the component
    */
-  const open = (name: string, props: Record<string, any> = {}) => {
-    const component = (MODAL_REGISTRY as any)[name]
+  const open = (name: string, props: Record<string, unknown> = {}) => {
+    const component = (MODAL_REGISTRY as Record<string, Component>)[name]
     if (!component) {
       logger.warn('Modals', `Modal "${name}" not found in registry.`)
       return null

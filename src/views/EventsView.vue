@@ -5,6 +5,8 @@ import { storeToRefs } from 'pinia'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import type { Event as GameEvent } from '@/logic/events/eventEngine'
 
+import type { Pokemon } from '@/types/pokemon'
+
 const eventStore = useEventStore()
 const { activeEvents, pendingAwards, isLoading } = storeToRefs(eventStore)
 
@@ -27,13 +29,13 @@ const formatTime = (isoTime: string) => {
     const min = Math.floor(duration.minutes)
     const sec = Math.floor(Math.abs(duration.seconds) % 60)
     return `${min}m ${sec}s`
-  } catch (e) {
+  } catch (_e) {
     return 'Error'
   }
 }
 
 const openParticipationModal = (event: GameEvent) => {
-  const win = window as unknown as { _openPokemonSelectionModal: (config: any) => void };
+  const win = window as unknown as { _openPokemonSelectionModal: (config: Record<string, unknown>) => void };
   win._openPokemonSelectionModal({
     title: 'SELECCIONAR POKÉMON',
     subtitle: `Elige un Pokémon para inscribir en: ${event.name}`,
@@ -41,7 +43,7 @@ const openParticipationModal = (event: GameEvent) => {
     minSelect: 1,
     includeTeam: true,
     context: 'event',
-    onConfirm: async (selectedObjects: any[]) => {
+    onConfirm: async (selectedObjects: Pokemon[]) => {
       const pokemon = selectedObjects[0];
       if (pokemon) {
         await eventStore.submitCompetitionEntry(pokemon, event.id);
@@ -122,7 +124,7 @@ const openParticipationModal = (event: GameEvent) => {
           <img
             v-if="typeof event.config === 'object' && event.config?.banner"
             :src="getAssetUrl(ASSET_TYPES.BANNER, event.config.banner)"
-            @error="(e: Event) => (e.target as HTMLImageElement).style.display='none'"
+            @error="(e: any) => (e.target as HTMLImageElement).style.display='none'"
           >
         </div>
         

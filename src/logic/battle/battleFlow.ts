@@ -1,8 +1,9 @@
-
-import { gameBus } from '@/logic/gameBus'
 import { getMechanicalWeather, WEATHER_MECHANICAL } from './weatherMapper'
+import { gameBus } from '@/logic/gameBus'
+import type { Pokemon } from '@/types/pokemon'
+import type { BattleStages, LogFn, BattleWeather } from '@/types/battle'
 
-export function handleEntryAbilities(playerPoke: any, enemyPoke: any, playerStages: any, enemyStages: any, addLog: any) {
+export function handleEntryAbilities(playerPoke: Pokemon, enemyPoke: Pokemon, playerStages: BattleStages, enemyStages: BattleStages, addLog: LogFn) {
   if (!playerPoke || !enemyPoke) return // GUARDIA CRÍTICA
 
   if (playerPoke.ability === 'Intimidación') {
@@ -15,7 +16,7 @@ export function handleEntryAbilities(playerPoke: any, enemyPoke: any, playerStag
   }
 }
 
-export function canAttack(pokemon: any, addLog: any) {
+export function canAttack(pokemon: Pokemon, addLog: LogFn) {
   if (pokemon.mustRecharge) {
     addLog(`¡${pokemon.name} tiene que recargar!`, 'log-info', pokemon)
     pokemon.mustRecharge = false
@@ -27,8 +28,8 @@ export function canAttack(pokemon: any, addLog: any) {
     return false
   }
   if (pokemon.status === 'sleep') {
-    if (pokemon.sleepTurns > 0) {
-      pokemon.sleepTurns--
+    if ((pokemon.sleepTurns || 0) > 0) {
+      pokemon.sleepTurns = (pokemon.sleepTurns || 0) - 1
       addLog(`¡${pokemon.name} está profundamente dormido!`, 'log-info', pokemon)
       return false
     } else {
@@ -45,15 +46,15 @@ export function canAttack(pokemon: any, addLog: any) {
       addLog(`¡${pokemon.name} se descongeló!`, 'log-info', pokemon)
     }
   }
-  if (pokemon.status === 'paralyze') {
+  if (pokemon.status === 'paralysis') {
     if (Math.random() < 0.25) {
       addLog(`¡${pokemon.name} está paralizado! ¡No puede moverse!`, 'log-info', pokemon)
       return false
     }
   }
-  if (pokemon.confused > 0) {
-    pokemon.confused--
-    if (pokemon.confused <= 0) {
+  if ((pokemon.confused || 0) > 0) {
+    pokemon.confused = (pokemon.confused || 0) - 1
+    if ((pokemon.confused || 0) <= 0) {
       addLog(`¡${pokemon.name} ya no está confundido!`, 'log-info', pokemon)
     } else {
       addLog(`¡${pokemon.name} está confundido!`, 'log-info', pokemon)
@@ -76,11 +77,11 @@ export function canAttack(pokemon: any, addLog: any) {
   return true
 }
 
-export function applyEndTurnWeather(p: any, e: any, weather: any, addLog: any) {
+export function applyEndTurnWeather(p: Pokemon, e: Pokemon, weather: BattleWeather | null, addLog: LogFn) {
   const mechWeather = getMechanicalWeather(weather?.type);
 
   if (mechWeather === WEATHER_MECHANICAL.SANDSTORM) {
-    const isSandImmune = (poke: any) => ['rock', 'ground', 'steel'].includes(poke.type) || ['rock', 'ground', 'steel'].includes(poke.type2)
+    const isSandImmune = (poke: Pokemon) => ['rock', 'ground', 'steel'].includes(poke.type) || ['rock', 'ground', 'steel'].includes(poke.type2 || '')
     if (!isSandImmune(p)) {
       const dmg = Math.floor(p.maxHp / 16)
       p.hp = Math.max(0, p.hp - dmg)
@@ -96,7 +97,7 @@ export function applyEndTurnWeather(p: any, e: any, weather: any, addLog: any) {
   }
 
   if (mechWeather === WEATHER_MECHANICAL.HAIL) {
-    const isHailImmune = (poke: any) => poke.type === 'ice' || poke.type2 === 'ice'
+    const isHailImmune = (poke: Pokemon) => poke.type === 'ice' || poke.type2 === 'ice'
     if (!isHailImmune(p)) {
       const dmg = Math.floor(p.maxHp / 16)
       p.hp = Math.max(0, p.hp - dmg)

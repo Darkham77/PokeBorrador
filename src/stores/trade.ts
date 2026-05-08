@@ -7,34 +7,41 @@ import { useSocialStore } from './social'
 import { useAudioStore } from './audio'
 import { useLoadingStore } from './loading'
 import { logger } from '@/logic/utils/logger'
+import type { 
+  TradeOffer
+} from '@/types/stores'
+import type { Pokemon } from '@/types/pokemon'
+import type { GameState } from '@/types/game'
+import type { RealtimeChannel } from '@supabase/supabase-js'
 
 export const useTradeStore = defineStore('trade', () => {
-  const authStore = useAuthStore() as any
-  const gameStore = useGameStore() as any
-  const uiStore = useUIStore() as any
-  const socialStore = useSocialStore() as any
-  const audioStore = useAudioStore() as any
-  const loadingStore = useLoadingStore() as any
+  const authStore = useAuthStore()
+  const gameStore = useGameStore()
+  const uiStore = useUIStore()
+  const socialStore = useSocialStore()
+  const audioStore = useAudioStore()
+  const loadingStore = useLoadingStore()
 
   const tradeTarget = ref<{ id: string; username: string } | null>(null)
-  const tradeFriendSave = ref<any>(null)
+  const tradeFriendSave = ref<GameState | null>(null)
   
-  const tradeOfferPoke = ref<any>(null)
-  const tradeRequestPoke = ref<any>(null)
+  const tradeOfferPoke = ref<Pokemon | null>(null)
+  const tradeRequestPoke = ref<Pokemon | null>(null)
   const tradeOfferItems = reactive<Record<string, number>>({})
   const tradeRequestItems = reactive<Record<string, number>>({})
   
-  const pendingIncoming = ref<any[]>([])
-  const pendingOutgoing = ref<any[]>([])
-  const pendingAccepted = ref<any[]>([])
+  const pendingIncoming = ref<TradeOffer[]>([])
+  const pendingOutgoing = ref<TradeOffer[]>([])
+  const pendingAccepted = ref<TradeOffer[]>([])
 
-  let tradeChannel: any = null
+  let tradeChannel: RealtimeChannel | null = null
 
   async function subscribeTradeNotifs() {
     if (!authStore.user || authStore.sessionMode === 'offline') return
     if (tradeChannel) tradeChannel.unsubscribe()
 
     const db = gameStore.db
+    if (!db) return
     tradeChannel = db.channel('trade-notifs-' + authStore.user.id)
       .on('postgres_changes', {
         event: 'INSERT', schema: 'public', table: 'claim_queue',
@@ -59,9 +66,9 @@ export const useTradeStore = defineStore('trade', () => {
 
     const db = gameStore.db
     const [incomingRes, outgoingRes, acceptedRes] = await Promise.all([
-      db.from('trade_offers').select('*').eq('receiver_id', authStore.user.id).eq('status', 'pending'),
-      db.from('trade_offers').select('*').eq('sender_id', authStore.user.id).eq('status', 'pending'),
-      db.from('trade_offers').select('*').eq('sender_id', authStore.user.id).eq('status', 'accepted')
+      db.from('trade_offers').select('*').eq('receiver_id', authStore.user.id).eq('status', 'pending') as unknown as Promise<{ data: TradeOffer[] | null }>,
+      db.from('trade_offers').select('*').eq('sender_id', authStore.user.id).eq('status', 'pending') as unknown as Promise<{ data: TradeOffer[] | null }>,
+      db.from('trade_offers').select('*').eq('sender_id', authStore.user.id).eq('status', 'accepted') as unknown as Promise<{ data: TradeOffer[] | null }>
     ])
 
     pendingIncoming.value = incomingRes.data || []
@@ -79,14 +86,13 @@ export const useTradeStore = defineStore('trade', () => {
     Object.keys(tradeOfferItems).forEach(k => delete tradeOfferItems[k])
     Object.keys(tradeRequestItems).forEach(k => delete tradeRequestItems[k])
 
-    const db = gameStore.db
-    const { data, error } = await (db as any).from('game_saves').select('save_data').eq('user_id', friendId).single()
+    const { data, error } = await gameStore.db.from('game_saves').select('save_data').eq('user_id', friendId).single() as unknown as { data: { save_data: GameState } | null, error: { message: string } | null }
     
     if (error || !data) {
-      tradeFriendSave.value = { team: [], inventory: {}, money: 0 }
+      tradeFriendSave.value = { team: [], box: [], inventory: {}, money: 0 } as unknown as GameState
       uiStore.notify('No se pudo cargar el inventario del amigo.', '⚠️')
     } else {
-      tradeFriendSave.value = data.save_data
+      tradeFriendSave.value = data.save_data as unknown as GameState
     }
   }
 
@@ -115,7 +121,7 @@ export const useTradeStore = defineStore('trade', () => {
     uiStore.notify('Sincronizando inventario...', '🔄')
     await gameStore.save(false)
 
-    const { data: tradeId, error } = await (gameStore.db as any).rpc('send_trade_offer_v2', {
+    const { data: tradeId, error } = await gameStore.db.rpc('send_trade_offer_v2', {
       p_receiver_id: tradeTarget.value.id,
       p_offer_pokemon: tradeOfferPoke.value,
       p_offer_items: { ...tradeOfferItems },
@@ -133,7 +139,7 @@ export const useTradeStore = defineStore('trade', () => {
       return true
     }
     
-    uiStore.notify('Error al enviar: ' + (error?.message || 'Error desconocido'), '❌')
+    uiStore.notify('Error al enviar: ' + ((error as { message: string })?.message || 'Error desconocido'), '❌')
     return false
   }
 
@@ -148,11 +154,11 @@ export const useTradeStore = defineStore('trade', () => {
       await gameStore.save(false)
 
       const db = gameStore.db
-      const { error: rpcErr } = await (db as any).rpc('accept_trade_v2', {
+      const { error: rpcErr } = await db.rpc('accept_trade_v2', {
         p_trade_id: tradeId
       })
     
-      if (rpcErr) throw new Error((rpcErr as any).message)
+      if (rpcErr) throw new Error((rpcErr as { message: string }).message)
 
       uiStore.notify('¡Intercambio aceptado! Los activos están en tu cola de reclamo.', '🎉')
       await gameStore.fetchClaimQueue()
@@ -163,28 +169,28 @@ export const useTradeStore = defineStore('trade', () => {
     } catch (err) {
       loadingStore.finish('accept_trade')
       logger.error('TRADE', `Error en el intercambio: ${(err as Error).message}`)
-      uiStore.notify('Error en el intercambio: ' + (err as any).message, '❌')
+      uiStore.notify('Error en el intercambio: ' + (err as { message: string }).message, '❌')
       return false
     }
   }
 
   async function rejectTrade(tradeId: string | number) {
-    await (gameStore.db as any).from('trade_offers').update({ status: 'rejected' }).eq('id', tradeId)
+    await gameStore.db.from('trade_offers').update({ status: 'rejected' }).eq('id', tradeId)
     uiStore.notify('Oferta rechazada.', '👋')
     await refreshPendingTrades()
   }
 
   async function claimTrade(tradeId: string | number) {
-    const { error } = await (gameStore.db as any).from('trade_offers').update({ status: 'claimed' }).eq('id', tradeId)
+    const { error } = await gameStore.db.from('trade_offers').update({ status: 'claimed' }).eq('id', tradeId)
     if (!error) await refreshPendingTrades()
   }
 
   const lockedUids = computed(() => {
     const locked = new Set<string>()
-    pendingIncoming.value.forEach(t => {
+    pendingIncoming.value.forEach((t: TradeOffer) => {
       if (t.request_pokemon?.uid) locked.add(t.request_pokemon.uid)
     })
-    pendingOutgoing.value.forEach(t => {
+    pendingOutgoing.value.forEach((t: TradeOffer) => {
       if (t.offer_pokemon?.uid) locked.add(t.offer_pokemon.uid)
     })
     return locked

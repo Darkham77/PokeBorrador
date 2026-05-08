@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { Temporal } from '@js-temporal/polyfill'
 
 import { computed } from 'vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { useGTSStore } from '@/stores/gts'
+import { Temporal } from '@js-temporal/polyfill'
 import { getPokemonTier } from '@/logic/pokemon/tierEngine'
 import { PDEX_TYPE_COLORS } from '@/logic/pokedexConstants'
 
@@ -13,6 +13,15 @@ const listings = computed(() => gtsStore.filteredListings)
 
 function handleBuy(listing: any) {
   gtsStore.buyListing(listing)
+}
+
+const formatTime = (ts: string | number) => {
+  try {
+    const instant = typeof ts === 'string' ? Temporal.Instant.from(ts) : Temporal.Instant.fromEpochMilliseconds(Number(ts));
+    return instant.toZonedDateTimeISO('UTC').toLocaleString();
+  } catch {
+    return '---';
+  }
 }
 
 function getTierData(pokemon: any) {
@@ -58,7 +67,7 @@ const getTypeColor = (type: string) => (PDEX_TYPE_COLORS as any)[type?.toLowerCa
       >
         <div class="seller-header">
           <span class="seller-name">👤 {{ item.seller_name }}</span>
-          <span class="time">{{ Temporal.Instant.fromEpochMilliseconds(item.created_at).toLocaleDateString() }}</span>
+          <span class="time">{{ formatTime(item.created_at) }}</span>
         </div>
 
         <div class="card-body">

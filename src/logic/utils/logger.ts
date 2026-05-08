@@ -25,7 +25,7 @@ const COLORS = {
 };
 
 // Pre-import node:util if in Node.js
-let styleText: any = (text: string, color: string) => text; // Fallback
+let styleText: any = (text: string, _color: string) => text; // Fallback
 if (!isBrowser) {
   try {
     // Dynamic import to avoid bundling issues in browser

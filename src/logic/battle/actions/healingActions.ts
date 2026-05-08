@@ -17,7 +17,7 @@ export const HEALING_ACTIONS: Record<string, MoveAction> = {
     if (src.hp >= src.maxHp) return;
     
     let healPct = 0.5;
-    const weather = battleCtx?.weather?.type;
+    const weather = battleCtx?.activeBattle.value?.weather?.type;
     const mechWeather = getMechanicalWeather(weather);
 
     // Prioridad 1: Clima (Mecánicas oficiales)

@@ -23,7 +23,14 @@ export interface DebugTool {
   id: string
   command: string
   action: (...args: any[]) => any
+  label?: string
+  category?: string
   description?: string
+}
+
+export interface DebugSystem {
+  register: (config: DebugTool) => void
+  unregister?: (id: string) => void
 }
 
 export interface DebugContext {
@@ -67,8 +74,7 @@ export const useDebugStore = defineStore('debug', () => {
       logger.error('SECURITY', 'Unauthorized debug access detected. Banning user and force logout.')
       const userId = auth.user?.id
       if (userId) {
-        // game.db is typed as SupabaseClient | null in game.ts, but let's assume it has from()
-        const db = (game as any).db
+        const db = game.db
         if (db) {
           db.from('profiles').update({ 
             is_banned: true, 
@@ -123,15 +129,15 @@ export const useDebugStore = defineStore('debug', () => {
     const context: DebugContext = { game, ui, pvp, auth, map, mapStore: map, breedingStore, modalStore, errorStore }
 
     // Synchronous registrations (fastest availability)
-    registerStatsTools({ register }, context as any)
-    registerMapTools({ register }, context as any)
-    registerPokeTools({ register }, context as any)
-    registerTimeTools({ register }, context as any)
-    registerItemTools({ register }, context as any)
-    registerAudioTools({ register }, context as any)
+    registerStatsTools({ register }, context)
+    registerMapTools({ register }, context)
+    registerPokeTools({ register }, context)
+    registerTimeTools({ register }, context)
+    registerItemTools({ register }, context)
+    registerAudioTools({ register }, context)
     
     // SystemTools registration (now synchronous registration, async module resolution)
-    registerSystemTools({ register }, { ...context } as any)
+    registerSystemTools({ register }, { ...context })
 
     updateGlobalProxy()
     

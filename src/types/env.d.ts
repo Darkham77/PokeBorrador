@@ -1,4 +1,3 @@
-import { Temporal } from '@js-temporal/polyfill'
 
 /**
  * Global Type Declarations for Poke Vicio
@@ -16,11 +15,11 @@ declare global {
     getFile(): Promise<File>;
   }
   interface FileSystemWritableFileStream extends WritableStream {
-    write(data: any): Promise<void>;
+    write(data: BufferSource | Blob | string | unknown): Promise<void>;
     close(): Promise<void>;
   }
   interface StorageManager {
-    getDirectory(): Promise<any>;
+    getDirectory(): Promise<FileSystemDirectoryHandle | unknown>;
   }
 
   // Compression API
@@ -40,13 +39,13 @@ declare global {
       epochMilliseconds: bigint;
       epochSeconds: bigint;
       add(duration: Duration): Instant;
-      toZonedDateTimeISO(tz: string): any;
+      toZonedDateTimeISO(tz: string): unknown;
     }
     class Now {
       static instant(): Instant;
     }
     class Duration {
-      static from(item: any): Duration;
+      static from(item: string | Record<string, unknown> | unknown): Duration;
     }
   }
 

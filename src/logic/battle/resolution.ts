@@ -101,8 +101,10 @@ export async function processFaint(ctx: BattleContext, side: 'player' | 'enemy')
       }
     }
     
-    active.over = true 
-    active.enemy = null
+    if (active) {
+      active.over = true;
+      active.enemy = null;
+    }
     ctx.faintedSides.value.add('enemy')
     await terminateBattle(ctx, true)
   }
@@ -128,9 +130,9 @@ export async function terminateBattle(ctx: BattleContext, win: boolean, fled = f
   
   syncAndPersist(ctx)
 
-  await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.VACATE_SEAT)
-  active.enemy = null
-  active._initialEnemy = null
+  await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.VACATE_SEAT);
+  if (active) active.enemy = null;
+  if (active) active._initialEnemy = null;
 
   await fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.CHECK_OUTCOME)
 

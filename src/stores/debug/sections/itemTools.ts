@@ -1,14 +1,16 @@
 import { Temporal } from '@js-temporal/polyfill'
 import { SHOP_ITEMS } from '@/data/items'
 
-export function registerItemTools(debug: any, { game, ui, breedingStore }: { game: any, ui: any, breedingStore: any }) {
+import type { DebugSystem, DebugContext } from '@/stores/debug'
+
+export function registerItemTools(debug: DebugSystem, { game, ui, breedingStore }: DebugContext) {
   debug.register({
     id: 'item-add',
     label: 'AÑADIR ITEM',
     command: 'addItem',
     category: 'items',
     action: (name: string, qty = 10) => {
-      game.state.inventory[name] = (game.state.inventory[name] || 0) + qty
+      game.state.inventory[name] = ((game.state.inventory[name] as number) || 0) + qty
       ui.notify(`Debug: +${qty} ${name}`, '🎒')
       game.saveGame(false)
     },
@@ -22,7 +24,7 @@ export function registerItemTools(debug: any, { game, ui, breedingStore }: { gam
     category: 'items',
     action: (qty = 50) => {
       SHOP_ITEMS.forEach(item => {
-        game.state.inventory[item.name] = qty
+        game.state.inventory[item.name as keyof typeof game.state.inventory] = qty
       })
       ui.notify(`Debug: Mochila llena (${SHOP_ITEMS.length} tipos de objetos)`, '🎒')
       game.saveGame(false)
@@ -38,7 +40,7 @@ export function registerItemTools(debug: any, { game, ui, breedingStore }: { gam
     category: 'missions',
     action: () => {
       const today = Temporal.Now.instant().toString().split('T')[0]
-      breedingStore.regenerateMissions(today)
+      breedingStore.regenerateMissions(today as string)
       ui.notify('Misiones de Guardería regeneradas', '📜')
     },
     description: 'Fuerza la regeneración de las misiones diarias de la guardería.'

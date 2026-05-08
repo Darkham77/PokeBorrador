@@ -127,7 +127,7 @@ export type BattleSubStateName = typeof BATTLE_SUBSTATES[keyof typeof BATTLE_SUB
 export function createBattleStateMachine() {
   const currentState = ref<BattleStateName>(BATTLE_STATES.EXIT_BATTLE);
   const currentSubState = ref<BattleSubStateName | null>(null);
-  let transitionTimeout: any = null;
+  let transitionTimeout: ReturnType<typeof setTimeout> | null = null;
 
   // Simple strict transitions check based on the Mermaid diagram.
   const validTransitions: Record<string, string[]> = {
@@ -151,8 +151,8 @@ export function createBattleStateMachine() {
    * Translates to a specific state or substate.
    * If a delay is provided, returns a Promise that resolves when the transition happens.
    */
-  const transition = (newState: BattleStateName | BattleSubStateName, newSubState: BattleSubStateName | null = null, delayMs: number = 0) => {
-    return new Promise((resolve) => {
+  const transition = (newState: BattleStateName | BattleSubStateName, newSubState: BattleSubStateName | null = null, delayMs: number = 0): Promise<void> => {
+    return new Promise<void>((resolve) => {
       if (transitionTimeout) {
         clearTimeout(transitionTimeout);
         transitionTimeout = null;

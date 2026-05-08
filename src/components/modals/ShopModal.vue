@@ -6,6 +6,7 @@ import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import BaseModal from '@/components/common/BaseModal.vue'
+import { formatCurrency } from '@/logic/utils/formatters'
 
 interface Props {
   show?: boolean
@@ -89,7 +90,7 @@ const handleQuantityChange = (itemId: string, e: Event) => {
 
         <div class="player-stats">
           <div class="money">
-            ₽{{ gameStore.state.money }}
+            ₽{{ formatCurrency(gameStore.state.money) }}
           </div>
           <div class="level">
             Nv. Entrenador: {{ gameStore.state.trainerLevel }}

@@ -52,7 +52,7 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
   const playerClass = computed(() => gameStore.state.playerClass)
   const classLevel = computed(() => gameStore.state.classLevel || 1)
   const classXP = computed(() => gameStore.state.classXP || 0)
-  const classData = computed<ClassData>(() => (gameStore.state.classData as ClassData) || {})
+  const classData = computed<ClassData>(() => (gameStore.state.classData as unknown as ClassData) || {})
   
   const currentClassDef = computed<ClassDefinition | null>(() => {
     if (!playerClass.value) return null
@@ -200,8 +200,8 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
       if (p) p.onMission = true
     }
 
-    const now = await (db as any).getServerTime()
-    const currentData = gameStore.state.classData as ClassData
+    const now = await db.getServerTime()
+    const currentData = gameStore.state.classData as unknown as ClassData
 
     currentData.activeMission = {
       id: missionId,
@@ -221,7 +221,7 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
     const mission = activeMission.value
     if (!mission) return
 
-    const now = await (db as any).getServerTime()
+    const now = await db.getServerTime()
     if ((now as number) < mission.endsAt) {
       uiStore.notify('La misión aún no ha terminado.', '⏳')
       return;

@@ -20,13 +20,13 @@ const mapStore = useMapStore()
 const modalStore = useModalStore()
 
 const debugDate = ref(Temporal.Now.instant().toString().slice(0, 16))
-const timeOffsetLabel = ref(`${game.db.getTimeOffset()}ms`)
+const timeOffsetLabel = ref(`${(game.db as any)?.getTimeOffset?.() || 0}ms`)
 
 const getDebugBridge = () => (window as unknown as { __VITE_DEBUG__: ViteDebugBridge }).__VITE_DEBUG__
 
 function updateMockTime() {
   getDebugBridge().setMockTime(debugDate.value)
-  timeOffsetLabel.value = `${game.db.getTimeOffset()}ms`
+  timeOffsetLabel.value = `${(game.db as any)?.getTimeOffset?.() || 0}ms`
   window.dispatchEvent(new CustomEvent('time-sync-update'))
 }
 
@@ -40,13 +40,13 @@ function resetTime() {
 
 function addHours(h: number) {
   getDebugBridge().addHours(h)
-  timeOffsetLabel.value = `${game.db.getTimeOffset()}ms`
+  timeOffsetLabel.value = `${(game.db as any)?.getTimeOffset?.() || 0}ms`
   window.dispatchEvent(new CustomEvent('time-sync-update'))
 }
 
 function addWeeks(w: number) {
   getDebugBridge().addWeeks(w)
-  timeOffsetLabel.value = `${game.db.getTimeOffset()}ms`
+  timeOffsetLabel.value = `${(game.db as any)?.getTimeOffset?.() || 0}ms`
   window.dispatchEvent(new CustomEvent('time-sync-update'))
 }
 

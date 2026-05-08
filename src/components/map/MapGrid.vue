@@ -8,26 +8,9 @@ import { getRouteWeather } from '@/logic/weatherUtils'
 import { useMapStore } from '@/stores/map'
 
 
-interface MapLocation {
-  id: string
-  name: string
-  badges: number
-  wild?: {
-    day?: string[]
-    night?: string[]
-  }
-  fishing?: {
-    pool: string[]
-    rates: number[]
-  }
-}
+import type { MapLocation } from '@/types/encounters'
 
-interface SpawnPool {
-  generic: string[]
-  specific: string[]
-  rates: Record<string, number>
-  weather: string
-}
+
 
 interface Props {
   maps: MapLocation[]
@@ -45,7 +28,7 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   badgeCount: 0,
   cycle: 'day',
-  weather: null,
+  weather: undefined,
   playerClass: 'trainer',
   classData: () => ({}),
   safariTicketSecs: 0,
@@ -61,15 +44,15 @@ const emit = defineEmits<{
 const eventStore = useEventStore()
 const mapStore = useMapStore()
 
-const getMapData = (loc: MapLocation): SpawnPool => {
+const getMapData = (loc: MapLocation): any => {
   if (!loc.wild) return { generic: [], specific: [], rates: {}, weather: 'clear' }
 
   const activeEvents = eventStore.activeEvents || []
   
-  // Determinar clima: El clima forzado (props.weather) tiene prioridad absoluta si no es null
-  const activeWeather = (props.weather !== null) ? props.weather : getRouteWeather(loc.id, mapStore.currentSeason.id, mapStore.currentEpochHour)
+  // Determinar clima: El clima forzado (props.weather) tiene prioridad absoluta si no es undefined
+  const activeWeather = (props.weather !== undefined) ? props.weather : getRouteWeather(loc.id, mapStore.currentSeason.id, mapStore.currentEpochHour)
   
-  const { pool, rates } = getEncounterPool(loc as any, props.cycle || 'day', activeWeather, activeEvents)
+  const { pool, rates } = getEncounterPool(loc as any, props.cycle || 'day', activeWeather || 'clear', activeEvents)
 
   const baseWild = loc.wild?.day || []
   const generic: string[] = []
@@ -87,7 +70,7 @@ const getMapData = (loc: MapLocation): SpawnPool => {
     loc.fishing.pool.forEach((id: string, index: number) => {
       if (!generic.includes(id) && !specific.includes(id)) {
         generic.push(id)
-        ratesMap[id] = loc.fishing.rates[index] || 10
+        ratesMap[id] = (loc.fishing as any).rates[index] || 10
       }
     })
   }
@@ -97,7 +80,7 @@ const getMapData = (loc: MapLocation): SpawnPool => {
 
 const isMapLocked = (loc: MapLocation) => {
   if (loc.id === 'safari_zone') return props.safariTicketSecs <= 0
-  return (props.badgeCount || 0) < loc.badges
+  return (props.badgeCount || 0) < (loc.badges || 0)
 }
 
 const getDominanceForMap = (mapId: string) => {
@@ -113,7 +96,7 @@ const getDominanceForMap = (mapId: string) => {
   }
 
   return {
-    winner: data.winner || null,
+    winner: (data as any).winner || null,
     guardian
   }
 }
@@ -122,9 +105,9 @@ const getDominanceForMap = (mapId: string) => {
 <template>
   <div class="map-grid">
     <MapCard
-      v-for="loc in maps"
+      v-for="loc in (maps as MapLocation[])"
       :key="loc.id"
-      :map="loc"
+      :map="(loc as any)"
       :is-locked="isMapLocked(loc)"
       :is-safari-locked="loc.id === 'safari_zone' && safariTicketSecs <= 0"
       :cycle="cycle"
@@ -134,7 +117,7 @@ const getDominanceForMap = (mapId: string) => {
       :dominance="getDominanceForMap(loc.id)"
       :is-rocket-extorted="playerClass === 'rocket' && classData?.extortedRouteId === loc.id"
       :spawn-pool="getMapData(loc)"
-      @navigate="emit('navigate', $event)"
+      @navigate="emit('navigate', $event as any)"
     />
   </div>
 </template>

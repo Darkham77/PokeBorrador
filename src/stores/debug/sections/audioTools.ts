@@ -3,22 +3,12 @@ import { gameBus } from '@/logic/gameBus'
 import { useAudioStore } from '@/stores/audio'
 import type { Pokemon } from '@/types/pokemon'
 
-interface DebugAction {
-  id: string;
-  label?: string;
-  command: string;
-  description: string;
-  action: (...args: any[]) => string | void;
-}
+import type { DebugSystem, DebugContext } from '@/stores/debug'
 
-interface DebugRegisterOptions {
-  register: (action: DebugAction) => void;
-}
-
-export function registerAudioTools({ register }: DebugRegisterOptions, _context: unknown) {
+export function registerAudioTools(debug: DebugSystem, _context: DebugContext) {
   const audio = useAudioStore()
 
-  register({
+  debug.register({
     id: 'audio-play-sound',
     label: 'REPRODUCIR SONIDO',
     command: 'playSound',
@@ -29,7 +19,7 @@ export function registerAudioTools({ register }: DebugRegisterOptions, _context:
     }
   })
 
-  register({
+  debug.register({
     id: 'audio-stop-all',
     label: 'DETENER AUDIO',
     command: 'stopAllAudio',
@@ -40,7 +30,7 @@ export function registerAudioTools({ register }: DebugRegisterOptions, _context:
     }
   })
 
-  register({
+  debug.register({
     id: 'audio-set-volume',
     label: 'FIJAR VOLUMEN',
     command: 'setVolume',
@@ -51,7 +41,7 @@ export function registerAudioTools({ register }: DebugRegisterOptions, _context:
     }
   })
 
-  register({
+  debug.register({
     id: 'trigger_anim',
     command: 'triggerAnim',
     description: 'Disparar una animación de combate via Bus.',
@@ -79,7 +69,7 @@ export function registerAudioTools({ register }: DebugRegisterOptions, _context:
     }
   })
 
-  register({
+  debug.register({
     id: 'set_status',
     command: 'setStatus',
     description: 'Cambiar estado de un pokemon (burn, poison, paralyze, freeze, sleep, null). Toggle si ya lo tiene.',
@@ -92,7 +82,7 @@ export function registerAudioTools({ register }: DebugRegisterOptions, _context:
             poke.status = null
           } else {
             // Toggle logic
-            poke.status = poke.status === (status as any) ? null : (status as any)
+            poke.status = poke.status === (status as Pokemon['status']) ? null : (status as Pokemon['status'])
             if (poke.status === 'sleep') poke.sleepTurns = 3
           }
         }
@@ -101,7 +91,7 @@ export function registerAudioTools({ register }: DebugRegisterOptions, _context:
     }
   })
 
-  register({
+  debug.register({
     id: 'set_secondary_status',
     command: 'setSecondaryStatus',
     description: 'Cambiar estados secundarios (confused, attracted, cursed, seeded). Toggle automático.',
@@ -114,7 +104,7 @@ export function registerAudioTools({ register }: DebugRegisterOptions, _context:
           if (type === 'attracted') poke.attracted = !poke.attracted
           if (type === 'cursed') poke.cursed = !poke.cursed
           if (type === 'seeded') poke.seeded = !poke.seeded
-          if (type === 'trapped') (poke as any).trapped = !(poke as any).trapped
+          if (type === 'trapped') (poke as Pokemon & { trapped: boolean }).trapped = !(poke as Pokemon & { trapped: boolean }).trapped
           if (type === 'ingrain') poke.ingrain = !poke.ingrain
           if (type === 'protect') poke.protect = !poke.protect
           if (type === 'endure') poke.endure = !poke.endure
@@ -126,7 +116,7 @@ export function registerAudioTools({ register }: DebugRegisterOptions, _context:
     }
   })
 
-  register({
+  debug.register({
     id: 'set_stat_stage',
     command: 'setStatStage',
     description: 'Cambiar nivel de estadística (-6 a +6).',
@@ -134,15 +124,16 @@ export function registerAudioTools({ register }: DebugRegisterOptions, _context:
       import('@/stores/battle').then(({ useBattleStore }) => {
         const battle = useBattleStore()
         const stages = side === 'player' ? battle.playerStages : battle.enemyStages
-        if (stages && (stages as any)[stat] !== undefined) {
-          (stages as any)[stat] = Math.max(-6, Math.min(6, parseInt(val)))
+        const sKey = stat as keyof typeof stages
+        if (stages && stages[sKey] !== undefined) {
+          (stages as Record<string, number>)[sKey] = Math.max(-6, Math.min(6, parseInt(val)))
         }
       })
       return `setStatStage(${side}, ${stat}, ${val})`
     }
   })
 
-  register({
+  debug.register({
     id: 'modify_stat_stage',
     command: 'modifyStatStage',
     description: 'Modificar nivel de estadística relativo (ej: +1, -1).',
@@ -150,28 +141,29 @@ export function registerAudioTools({ register }: DebugRegisterOptions, _context:
       import('@/stores/battle').then(({ useBattleStore }) => {
         const battle = useBattleStore()
         const stages = side === 'player' ? battle.playerStages : battle.enemyStages
-        if (stages && (stages as any)[stat] !== undefined) {
-          (stages as any)[stat] = Math.max(-6, Math.min(6, ((stages as any)[stat] || 0) + parseInt(delta)))
+        const sKey = stat as keyof typeof stages
+        if (stages && stages[sKey] !== undefined) {
+          (stages as Record<string, number>)[sKey] = Math.max(-6, Math.min(6, ((stages[sKey] as number) || 0) + parseInt(delta)))
         }
       })
       return `modifyStatStage(${side}, ${stat}, ${delta})`
     }
   })
 
-  register({
+  debug.register({
     id: 'set_field_effect',
     command: 'setFieldEffect',
     description: 'Activar efecto de campo (screens, weather). Toggle automático.',
     action: (side: string, effect: string, val: string) => {
       import('@/stores/battle').then(({ useBattleStore }) => {
         const battle = useBattleStore()
-        const stages = (side === 'player' ? battle.playerStages : battle.enemyStages) as any
+        const stages = (side === 'player' ? battle.playerStages : battle.enemyStages) as Record<string, number>
         
         // Screens & Hazards (Stage based)
         const isStageEffect = ['reflect', 'lightScreen', 'safeguard', 'mist', 'spikes'].includes(effect)
         if (isStageEffect && stages) {
           // Lógica FLIP: si ya tiene el efecto (>0), lo quitamos (0). Si no, lo ponemos (val o 5).
-          stages[effect] = stages[effect] > 0 ? 0 : (parseInt(val) || 5)
+          stages[effect] = (stages[effect] || 0) > 0 ? 0 : (parseInt(val) || 5)
         }
         
         // Weather (Context based)
@@ -185,8 +177,8 @@ export function registerAudioTools({ register }: DebugRegisterOptions, _context:
             } else {
               if (battle.state) {
                 battle.state.weather = { 
-                  type: effect as any, 
-                  visual: effect as any,
+                  type: effect, 
+                  visual: effect,
                   turns: effect === 'clear' ? -1 : (parseInt(val) || 5) 
                 }
               }

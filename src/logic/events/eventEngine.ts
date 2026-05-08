@@ -32,11 +32,24 @@ export interface Event {
   manual?: boolean;
   start_at?: string;
   ends_at?: string;
-  schedule?: string | any;
+  schedule?: string | Record<string, unknown>;
   config?: string | EventConfig;
 }
 
-const safeParse = (val: any): any => {
+export interface GlobalMultipliers {
+  exp: number;
+  money: number;
+  bc: number;
+  shiny: number;
+  eggShiny: number;
+  hatch: number;
+  rival: number;
+  trainer: number;
+  fishing: number;
+  catch: number;
+}
+
+const safeParse = (val: string | object | null | undefined): any => {
   if (typeof val === 'string') {
     try { return JSON.parse(val); } catch (_e) { return {}; }
   }
@@ -46,16 +59,30 @@ const safeParse = (val: any): any => {
 import { Temporal } from '@js-temporal/polyfill'
 import { logger } from '../utils/logger'
 
+export function getArgDateString(date: Date | Temporal.ZonedDateTime | Temporal.Instant = Temporal.Now.instant()): string {
+  const zdt = (date instanceof Temporal.ZonedDateTime)
+    ? date
+    : (date instanceof Date 
+        ? Temporal.Instant.fromEpochMilliseconds(date.getTime()) 
+        : (date instanceof Temporal.Instant ? date : Temporal.Now.instant())
+      ).toZonedDateTimeISO('America/Argentina/Buenos_Aires')
+    
+  return zdt.toPlainDate().toString();
+}
+
 /**
  * Checks if an event is active based on current time (America/Argentina/Buenos_Aires).
  */
-export function isEventActiveNow(event: Event, date: Date | Temporal.ZonedDateTime = Temporal.Now.instant()): boolean {
+export function isEventActiveNow(event: Event, date: Date | Temporal.ZonedDateTime | Temporal.Instant = Temporal.Now.instant()): boolean {
   if (!event.active) return false
   if (event.manual) return true
 
   const zdt = (date instanceof Temporal.ZonedDateTime)
     ? date
-    : Temporal.Instant.fromEpochMilliseconds(date.epochMilliseconds || (date as Date).getTime()).toZonedDateTimeISO('America/Argentina/Buenos_Aires')
+    : (date instanceof Date 
+        ? Temporal.Instant.fromEpochMilliseconds(date.getTime()) 
+        : (date instanceof Temporal.Instant ? date : Temporal.Now.instant())
+      ).toZonedDateTimeISO('America/Argentina/Buenos_Aires')
 
   // 1. Absolute date check
   if (event.start_at && event.ends_at) {
@@ -107,8 +134,8 @@ export function isEventActiveNow(event: Event, date: Date | Temporal.ZonedDateTi
 /**
  * Calculates global multipliers from a list of active events.
  */
-export function getGlobalMultipliers(activeEvents: Event[]): any {
-  const multipliers: any = {
+export function getGlobalMultipliers(activeEvents: Event[]): GlobalMultipliers {
+  const multipliers: GlobalMultipliers = {
     exp: 1,
     money: 1,
     bc: 1,
@@ -117,7 +144,8 @@ export function getGlobalMultipliers(activeEvents: Event[]): any {
     hatch: 1,
     rival: 1,
     trainer: 1,
-    fishing: 1
+    fishing: 1,
+    catch: 1
   }
 
   for (const ev of activeEvents) {
@@ -162,7 +190,7 @@ export function getSpeciesBoosts(activeEvents: Event[], speciesId: string): { ra
  * Validates if the new entry is better for a competition.
  * @param {string} sortBy (e.g., 'data.total_ivs', 'data.level')
  */
-export function isNewEntryBetter(existingData: any, newData: any, sortBy: string = 'data.total_ivs'): boolean {
+export function isNewEntryBetter(existingData: unknown, newData: unknown, sortBy: string = 'data.total_ivs'): boolean {
   if (!existingData) return true
   
   const getVal = (obj: any, path: string): number => {

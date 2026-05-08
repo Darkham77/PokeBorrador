@@ -39,9 +39,7 @@ export const useEventStore = defineStore('events', () => {
       }
     try {
       // 1. Fetch from config (DBRouter handles source)
-      const { data: events, error } = await db.from('events_config').select('*').eq('active', true)
-      if (error) throw error
-
+      const { data: events } = await db.from('events_config').select('*') as unknown as { data: GameEvent[] | null }
       allEvents.value = events || []
       
       // 2. Filter using Engine logic with synchronized time
@@ -73,48 +71,38 @@ export const useEventStore = defineStore('events', () => {
   function getEventMultiplier(_pokemon: Pokemon, eventId: string) {
     if (!isEventActive(eventId)) return 1
     const ev = activeEvents.value.find(e => e.id === eventId)
-    return (ev as any)?.multiplier || 1
+    return (ev as unknown as { multiplier: number }).multiplier || 1
   }
 
   /**
    * Submits a competitive entry to an active event.
    */
   async function submitCompetitionEntry(pokemon: Pokemon, eventId: string) {
-    if (!authStore.user) return
-
-    const event = activeEvents.value.find(e => e.id === eventId)
-    if (!event) return
-
-    // Calculate generic total IVs for legacy compatibility
-    const totalIvs = Object.values(pokemon.ivs || {}).reduce((a: number, b: number) => a + b, 0)
-
+    if (!authStore.user || authStore.sessionMode === 'offline') return
+    
     try {
-      const entryData = {
-        event_id: eventId,
-        player_id: authStore.user.id,
-        player_name: gameStore.state.trainer || 'Trainer',
-        player_email: authStore.user.email,
-        data: {
-          pokemon_name: pokemon.name,
-          ivs: pokemon.ivs,
-          total_ivs: totalIvs,
-          level: pokemon.level,
-          isShiny: pokemon.isShiny || false
-        },
-        submitted_at: Temporal.Now.instant().toString()
-      }
-
       const db = gameStore.db
       if (!db) return
 
-      // Check if current entry is better before upserting (Utility check)
-      // This is often handled by DB constraint but useful for UI feedback
-      const { error } = await db.from('competition_entries').upsert(entryData, {
-        onConflict: 'event_id, player_id'
-      })
-
-      if (error) throw error
-      uiStore.notify(`¡Registro exitoso en ${event.name}!`, event.icon || '🏆')
+      const { data: profile, error: pErr } = await db.from('profiles').select('elo_rating').eq('id', authStore.user.id).single() as unknown as { data: { elo_rating: number } | null, error: { message: string } | null }
+      if (pErr || !profile) {
+        uiStore.notify('Error al verificar rango', '❌')
+        return
+      }
+      
+      const { data: entry, error } = await db.from('competition_entries').insert({
+        event_id: eventId,
+        player_id: authStore.user.id,
+        pokemon_uid: pokemon.uid,
+        score: pokemon.pts || 0,
+        elo: profile.elo_rating || 1000
+      }).select().single() as unknown as { data: { ok: boolean } | null, error: { message: string } | null }
+      
+      if (error || !entry) {
+        uiStore.notify('Error al registrar Pokémon: ' + (error?.message || 'Error desconocido'), '❌')
+      } else {
+        uiStore.notify('¡Pokémon registrado exitosamente!', '✅')
+      }
     } catch (e) {
       logger.error('Events', `Error submitting entry: ${(e as Error).message}`)
       uiStore.notify('Error al inscribir en el concurso.', '❌')
@@ -144,11 +132,11 @@ export const useEventStore = defineStore('events', () => {
     if (!gameStore.db) return null
     const { data, error } = await gameStore.db.rpc('claim_award', { p_award_id: awardId })
     
-    if (!error && data?.ok) {
+    if (!error && (data as unknown as { ok: boolean })?.ok) {
       pendingAwards.value = pendingAwards.value.filter(a => a.id !== awardId)
       uiStore.notify('¡Recompensa reclamada!', '🎁')
       // Return details for local state updates (e.g., adding to inventory)
-      return data.prize as string
+      return (data as unknown as { prize: string })?.prize as string
     }
     return null
   }
@@ -161,7 +149,7 @@ export const useEventStore = defineStore('events', () => {
   }
 
   function getCaptureEvent(speciesId: string) {
-    return activeEvents.value.find(e => (e as any).type === 'capture' && (e as any).targetId === speciesId)
+    return activeEvents.value.find(e => (e as unknown as { type: string }).type === 'capture' && (e as unknown as { targetId: string }).targetId === speciesId)
   }
 
   // Listen for time-sync updates from DBRouter (Debug mode)

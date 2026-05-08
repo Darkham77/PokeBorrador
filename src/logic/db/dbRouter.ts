@@ -87,10 +87,13 @@ export class DBRouter {
   }
 
   setMockTime(dateStr: string): void {
-    const targetDate = Temporal.Instant.fromEpochMilliseconds(dateStr);
-    if (isNaN(targetDate.epochMilliseconds)) return;
-    const offset = targetDate.epochMilliseconds - Temporal.Now.instant().epochMilliseconds;
-    this.setTimeOffset(offset);
+    try {
+      const targetDate = Temporal.Instant.from(dateStr);
+      const offset = targetDate.epochMilliseconds - Temporal.Now.instant().epochMilliseconds;
+      this.setTimeOffset(offset);
+    } catch (e) {
+      logger.error('DBRouter', `Invalid mock time format: ${dateStr}`);
+    }
   }
 
   resetTime(): void {
@@ -195,7 +198,7 @@ export class DBRouter {
     try {
       // Prioritize a dedicated RPC for server time to avoid local clock manipulation
       const { data, error } = await client.rpc('fn_get_server_time');
-      if (!error && data) return Temporal.Instant.fromEpochMilliseconds(data as string).epochMilliseconds;
+      if (!error && data) return Temporal.Instant.fromEpochMilliseconds(Number(data)).epochMilliseconds;
       
       // Fallback: use a fast select if RPC fails
       return Temporal.Now.instant().epochMilliseconds; 

@@ -12,7 +12,7 @@ import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { MOVE_DATA } from '@/data/moves'
 import type { BattleContext } from '@/types/battleContext'
 import { logger } from '../utils/logger'
-// import type { Pokemon, Move } from '@/types/pokemon'
+import type { Move } from '@/types/pokemon'
 
 /**
  * Handles the turn logic for a single move execution.
@@ -137,11 +137,11 @@ export async function runPlayerAction(store: BattleContext, moveIndex: number) {
   move.pp--
   store.addLog(`¡${p.name} usó ${move.name}!`, 'log-player', p)
 
-  let executableMove: any = { ...move };
+  let executableMove: Move = { ...move };
   if (move.effect === 'metronome') {
     const moveNames = Object.keys(MOVE_DATA).filter(n => n !== 'Metrónomo');
     const randomName = moveNames[Math.floor(Math.random() * moveNames.length)] || 'Combate';
-    executableMove = { ...((MOVE_DATA as any)[randomName] || {}), name: randomName, id: randomName.toLowerCase().replace(/\s/g, '_') };
+    executableMove = { ...((MOVE_DATA as any)[randomName] || {}), name: randomName, id: randomName.toLowerCase().replace(/\s/g, '_'), pp: 5, maxPP: 5 } as Move;
     store.addLog(`¡El Metrónomo escogió ${randomName}!`, 'log-info', p);
   } else if (move.effect === 'mirror_move') {
     if (e.lastMove) {
@@ -153,7 +153,7 @@ export async function runPlayerAction(store: BattleContext, moveIndex: number) {
     }
   }
 
-  const normalizeCat = (c: any): 'status' | 'special' | 'physical' => {
+  const normalizeCat = (c: string | number | undefined): 'status' | 'special' | 'physical' => {
     if (c === 'Estado' || c === 'status' || c === 3) return 'status'
     if (c === 'Especial' || c === 'special' || c === 2) return 'special'
     return 'physical'
@@ -297,7 +297,7 @@ export async function runPlayerAction(store: BattleContext, moveIndex: number) {
     store.attackerSide.value = null
 
     if (executableMove.effect && hitsDealt > 0 && store.activeBattle.value) {
-      dispatchMoveEffect(executableMove.effect, p, e, store.playerStages.value, store.enemyStages.value, store.addLog, store.activeBattle.value)
+      dispatchMoveEffect(executableMove.effect as string, p, e, store.playerStages.value, store.enemyStages.value, store.addLog, store)
     }
  
   } catch (err) {
@@ -376,11 +376,11 @@ export async function runEnemyAction(store: BattleContext) {
   store.attackerSide.value = 'enemy'
   store.addLog(`¡${e.name} usó ${enemyMove.name}!`, 'log-enemy', e)
 
-  let executableMove: any = { ...enemyMove };
+  let executableMove: Move = { ...enemyMove };
   if (enemyMove.effect === 'metronome') {
     const moveNames = Object.keys(MOVE_DATA).filter(n => n !== 'Metrónomo');
     const randomName = moveNames[Math.floor(Math.random() * moveNames.length)] || 'Combate';
-    executableMove = { ...((MOVE_DATA as any)[randomName] || {}), name: randomName, id: randomName.toLowerCase().replace(/\s/g, '_') };
+    executableMove = { ...((MOVE_DATA as any)[randomName] || {}), name: randomName, id: randomName.toLowerCase().replace(/\s/g, '_'), pp: 5, maxPP: 5 } as Move;
     store.addLog(`¡El Metrónomo escogió ${randomName}!`, 'log-info', e);
   } else if (enemyMove.effect === 'mirror_move') {
     if (p.lastMove) {
@@ -392,7 +392,7 @@ export async function runEnemyAction(store: BattleContext) {
     }
   }
 
-  const normalizeCat = (c: any): 'status' | 'special' | 'physical' => {
+  const normalizeCat = (c: string | number | undefined): 'status' | 'special' | 'physical' => {
     if (c === 'Estado' || c === 'status' || c === 3) return 'status'
     if (c === 'Especial' || c === 'special' || c === 2) return 'special'
     return 'physical'
@@ -521,7 +521,7 @@ export async function runEnemyAction(store: BattleContext) {
     store.attackerSide.value = null
 
     if (executableMove.effect && hitsDealt > 0 && store.activeBattle.value) {
-      dispatchMoveEffect(executableMove.effect, e, p, store.enemyStages.value, store.playerStages.value, store.addLog, store.activeBattle.value)
+      dispatchMoveEffect(executableMove.effect as string, e, p, store.enemyStages.value, store.playerStages.value, store.addLog, store)
     }
   } catch (err) {
     logger.error('Battle', `Error in runEnemyAction: ${(err as Error).message}`)

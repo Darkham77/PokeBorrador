@@ -1,5 +1,4 @@
-
-import type { Pokemon } from '@/types/pokemon';
+import type { Pokemon, PokemonStatus } from '@/types/pokemon';
 import type { BattleStages, LogFn } from '@/types/battle';
 
 interface BattleMove {
@@ -45,7 +44,7 @@ export function applyAbilityEffects(attacker: Pokemon, defender: Pokemon, move: 
   // Contact abilities (Physical moves)
   if (md.cat === 'physical' && Math.random() < 0.3) {
     if (ab === 'Electricidad estática' && !attacker.status && attacker.type !== 'electric') {
-      attacker.status = 'paralyze';
+      attacker.status = 'paralysis';
       addLogFn(`¡La Electricidad estática de ${defender.name} paralizó a ${attacker.name}!`, 'log-info', defender);
     }
     if (ab === 'Punto tóxico' && !attacker.status && attacker.type !== 'poison' && attacker.type !== 'steel') {
@@ -60,10 +59,10 @@ export function applyAbilityEffects(attacker: Pokemon, defender: Pokemon, move: 
       const roll = Math.random();
       if (roll < 0.33) {
         attacker.status = 'sleep'; 
-        (attacker as any).sleepTurns = 1 + Math.floor(Math.random() * 3);
+        attacker.sleepTurns = 1 + Math.floor(Math.random() * 3);
         addLogFn(`¡El Efecto Espora de ${defender.name} durmió a ${attacker.name}!`, 'log-info', defender);
       } else if (roll < 0.66) {
-        attacker.status = 'paralyze';
+        attacker.status = 'paralysis';
         addLogFn(`¡El Efecto Espora de ${defender.name} paralizó a ${attacker.name}!`, 'log-info', defender);
       } else {
         attacker.status = 'poison';
@@ -74,8 +73,8 @@ export function applyAbilityEffects(attacker: Pokemon, defender: Pokemon, move: 
 
   // Stench (Hedor)
   if (attacker.ability === 'Hedor' && Math.random() < 0.1) {
-    if (!(defender as any).flinched) {
-      (defender as any).flinched = true;
+    if (!defender.flinched) {
+      defender.flinched = true;
       addLogFn(`¡El Hedor de ${attacker.name} hizo retroceder a ${defender.name}!`, 'log-info', attacker);
     }
   }
@@ -148,7 +147,7 @@ export function handleOnSwitchOut(pokemon: Pokemon, addLogFn: LogFn) {
 export function handleStatusSync(attacker: Pokemon, defender: Pokemon, status: string | null, addLogFn: LogFn) {
   if (defender.ability === 'Sincronía' && status) {
     if (!attacker.status) {
-      attacker.status = status;
+      attacker.status = status as PokemonStatus;
       addLogFn(`¡La Sincronía de ${defender.name} pasó el estado a ${attacker.name}!`, 'log-info', defender);
     }
   }

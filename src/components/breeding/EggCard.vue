@@ -12,8 +12,8 @@ const emit = defineEmits<{
 }>()
 
 const formatDate = (dateStr: string) => {
-  const date = Temporal.Instant.fromEpochMilliseconds(dateStr)
-  return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  const date = Temporal.Instant.from(dateStr)
+  return date.toZonedDateTimeISO('UTC').toLocaleString()
 }
 </script>
 

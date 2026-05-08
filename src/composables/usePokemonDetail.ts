@@ -10,7 +10,7 @@ import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
 export function usePokemonDetail(propsRefs: Record<string, any>) {
   const uiStore = useUIStore()
-  const gameStore = useGameStore()
+  const gameStore = useGameStore() as any
 
   // Normalize inputs (props are passed as a reactive object or refs)
   const getProp = (key: string) => toValue(propsRefs[key])
@@ -182,8 +182,7 @@ export function usePokemonDetail(propsRefs: Record<string, any>) {
     if (!dateVal) return isInstance.value ? 'SIN FECHA' : null
     
     try {
-      const date = Temporal.Instant.fromEpochMilliseconds(dateVal)
-      return date.toLocaleDateString('es-ES', { 
+      return (typeof dateVal === 'string' ? Temporal.Instant.from(dateVal) : Temporal.Instant.fromEpochMilliseconds(Number(dateVal))).toZonedDateTimeISO('UTC').toLocaleString('es-ES', { 
         year: 'numeric', month: 'long', day: 'numeric',
         hour: '2-digit', minute: '2-digit'
       })

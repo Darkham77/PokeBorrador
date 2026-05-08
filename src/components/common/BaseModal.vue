@@ -134,7 +134,7 @@
 
 <script setup lang="ts">
 
-import { ref, watch, computed, inject, onMounted, onUnmounted } from 'vue'
+import { ref, watch, computed, inject, onUnmounted } from 'vue'
 import { useBodyClass } from '@/composables/useBodyClass'
 import { useUIStore } from '@/stores/ui'
 import { Z_LAYERS } from '@/logic/constants/visuals'

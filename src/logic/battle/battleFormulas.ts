@@ -9,9 +9,29 @@ import { getCombinedEffectiveness } from '../pokemon/typeEngine';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { getMechanicalWeather, WEATHER_MECHANICAL } from './weatherMapper';
 import { getDayCycle } from '../timeUtils';
-import type { Pokemon, Move } from '../../types/pokemon';
-import type { BattleStages, BattleWeather, BattleContext } from '../../types/battle';
+import type { Pokemon, Move } from '@/types/pokemon';
+import type { BattleStages, BattleWeather } from '@/types/battle';
 import { logger } from '../utils/logger';
+
+export interface DamageOptions {
+  atkStages?: number;
+  defStages?: number;
+  weather?: BattleWeather | null;
+  magnitudeSet?: boolean;
+}
+
+export interface CatchOptions {
+  weather?: BattleWeather | null;
+  turnCount?: number;
+  cycle?: string;
+  isCave?: boolean;
+}
+
+export interface EscapeOptions {
+  playerStages?: Partial<BattleStages>;
+  enemyStages?: Partial<BattleStages>;
+  weather?: BattleWeather | null;
+}
 
 export const CURRENT_GENERATION = 2;
 export const ACTIVE_RULE_SET = 2;
@@ -129,7 +149,7 @@ export function getMoveCategory(move: Partial<Move>): 'status' | 'physical' | 's
     if (move.type && specialTypes.includes(move.type)) return 'special';
   }
   // Gen 4+ uses direct category
-  return (move.cat as any) || 'physical';
+  return move.cat || 'physical';
 }
 
 /**
@@ -166,7 +186,7 @@ export function getAbilityMultiplier(attacker: Pokemon, _defender: Pokemon, move
 /**
  * Central Damage Formula.
  */
-export function calculateDamage(attacker: Pokemon, defender: Pokemon, move: Partial<Move>, ctx: BattleContext = {}) {
+export function calculateDamage(attacker: Pokemon, defender: Pokemon, move: Partial<Move>, ctx: DamageOptions = {}) {
   const { atkStages = 0, defStages = 0, weather = null } = ctx;
   
   let power = move.power;
@@ -221,7 +241,7 @@ export function calculateDamage(attacker: Pokemon, defender: Pokemon, move: Part
 
   const eff = getCombinedEffectiveness(moveType, defender, attacker);
 
-  if ((moveCat as string) === 'status' || (power === 0 && (moveCat as string) !== 'status')) {
+  if (power === 0) {
     return { dmg: 0, eff, isNoEffect: eff === 0 };
   }
 
@@ -312,7 +332,7 @@ export function calculateDamage(attacker: Pokemon, defender: Pokemon, move: Part
 /**
  * Capture Math
  */
-export function calculateCatchRate(pokemon: Pokemon, rawBallType = 'poke-ball', eventCatchMult = 1, ctx: BattleContext = {}) {
+export function calculateCatchRate(pokemon: Pokemon, rawBallType = 'poke-ball', eventCatchMult = 1, ctx: CatchOptions = {}) {
   const ballName = String(rawBallType || '').toLowerCase();
   
   const BALL_BEHAVIORS: Record<string, { guaranteed?: boolean, mult?: number | ((p: Pokemon, c: any) => number) }> = {
@@ -413,7 +433,7 @@ export function calculateCatchRate(pokemon: Pokemon, rawBallType = 'poke-ball', 
  * @param {Object} ctx 
  * @returns {boolean} Whether escape is successful.
  */
-export function calculateEscapeChance(playerPoke: Pokemon, wildPoke: Pokemon, attempts: number, ctx: BattleContext = {}) {
+export function calculateEscapeChance(playerPoke: Pokemon, wildPoke: Pokemon, attempts: number, ctx: EscapeOptions = {}) {
   const pSpe = getEffectiveStat(playerPoke, 'spe', ctx.playerStages || {}, ctx.weather || null);
   const eSpe = getEffectiveStat(wildPoke, 'spe', ctx.enemyStages || {}, ctx.weather || null);
   

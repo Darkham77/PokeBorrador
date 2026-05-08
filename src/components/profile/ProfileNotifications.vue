@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { Temporal } from '@js-temporal/polyfill'
 
 import { computed } from 'vue'
 import { useUIStore } from '@/stores/ui'
+import { Temporal } from '@js-temporal/polyfill'
 
 const uiStore = useUIStore() as any
 
@@ -19,6 +19,15 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   history: () => []
 })
+
+const formatTime = (ts: any) => {
+  try {
+    const instant = typeof ts === 'string' ? Temporal.Instant.from(ts) : (typeof ts === 'number' ? Temporal.Instant.fromEpochMilliseconds(ts) : Temporal.Instant.fromEpochMilliseconds(ts.getTime()));
+    return instant.toZonedDateTimeISO('UTC').toLocaleString();
+  } catch {
+    return '---';
+  }
+}
 
 const isHistoryOpen = computed({
   get: () => uiStore.isHistoryOpen,
@@ -55,7 +64,7 @@ const isHistoryOpen = computed({
             {{ n.msg }}
           </div>
           <div class="notif-time">
-            {{ Temporal.Instant.fromEpochMilliseconds(n.ts).toLocaleTimeString() }}
+            {{ formatTime(n.ts) }}
           </div>
         </div>
       </div>

@@ -1,14 +1,15 @@
+import type { Pokemon } from '@/types/pokemon';
 
 /**
  * battleRewards.js
  * Logic for calculating EXP and Money rewards.
  */
 
-export function calculateBaseExp(enemyPoke: any) {
+export function calculateBaseExp(enemyPoke: Pokemon) {
   return Math.floor(enemyPoke.level * 4)
 }
 
-export function processExpGain(p: any, baseExp: any, _participants: any, options: any = {}) {
+export function processExpGain(p: Pokemon, baseExp: number, _participants: Set<string>, options: any = {}) {
   const { 
     isActive = false, 
     classMult = 1, 
@@ -33,7 +34,7 @@ export function processExpGain(p: any, baseExp: any, _participants: any, options
   return { gained, levelUp }
 }
 
-export function calculateMoneyGain(enemyPoke: any, options: any = {}) {
+export function calculateMoneyGain(enemyPoke: Pokemon, options: any = {}) {
   const { bcMult = 1, totalMoneyMult = 1 } = options
   const baseMoney = enemyPoke.level * 10 * bcMult
   return Math.floor(baseMoney * totalMoneyMult)

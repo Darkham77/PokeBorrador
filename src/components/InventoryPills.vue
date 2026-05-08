@@ -1,40 +1,128 @@
 <script setup lang="ts">
-import { computed, ref, onMounted, nextTick, watch } from 'vue'
+import { computed, ref, onMounted, nextTick, watch, onUnmounted } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 import PVTooltip from '@/components/common/PVTooltip.vue'
+import { formatCurrency } from '@/logic/utils/formatters'
+import { SHOP_ITEMS } from '@/data/items'
 
 const _gameStore = useGameStore() as any
 const _uiStore = useUIStore() as any
-const gs = computed(() => _gameStore.state)
 const money = computed(() => _gameStore.state.money)
+const battleCoins = computed(() => _gameStore.state.battleCoins || _gameStore.state.gs?.battleCoins || 0)
 
-// Refs para el ajuste dinámico
 const moneyRef = ref<HTMLElement | null>(null)
+const bcRef = ref<HTMLElement | null>(null)
+const badgeRef = ref<HTMLElement | null>(null)
+const ballRef = ref<HTMLElement | null>(null)
+const eggRef = ref<HTMLElement | null>(null)
+
+const medals = computed(() => _gameStore.state.badges || 0)
+const eggCount = computed(() => (_gameStore.state.eggs || []).length)
+
+/**
+ * Lista de pokébolas detectadas en el inventario
+ */
+const ballsList = computed(() => {
+  const inventory = _gameStore.state.inventory || {}
+  return Object.entries(inventory)
+    .map(([name, qty]) => {
+      const found = SHOP_ITEMS.find(i => i.name === name)
+      if (found?.cat === 'pokeballs' || name.toLowerCase().includes('ball')) {
+        return { name, qty: qty as number }
+      }
+      return null
+    })
+    .filter(Boolean) as { name: string, qty: number }[]
+})
+
+/**
+ * Total de pokébolas (suma de todos los tipos)
+ */
+const balls = computed(() => ballsList.value.reduce((acc, i) => acc + i.qty, 0))
+
+/**
+ * Breakdown de pokébolas por tipo para el tooltip
+ */
+const ballsBreakdown = computed(() => {
+  if (ballsList.value.length === 0) return 'No tienes Poké Balls.'
+  
+  return ballsList.value
+    .map(i => `• ${i.name}: ${i.qty}`)
+    .join('\n')
+})
 
 /**
  * Ajusta el tamaño de fuente de un elemento para que quepa en su contenedor
  */
-const fitText = async (el: HTMLElement | null, maxW: number, baseSize: number) => {
+const fitText = async (el: HTMLElement | null, baseSize: number) => {
   if (!el) return
   await nextTick()
+  
+  const parent = el.parentElement
+  if (!parent) return
+  
+  // Margen de seguridad para el icono y padding (pills tienen ~65px total)
+  // En pantallas chicas el pill puede ser más angosto por flex/zoom
+  const maxW = parent.clientWidth - 8 
+  
   let size = baseSize
   el.style.fontSize = `${size}px`
-  while (el.scrollWidth > maxW && size > 5) {
+  
+  // Aseguramos que el elemento pueda medir su scrollWidth sin restricciones temporales
+  const prevMaxWidth = el.style.maxWidth
+  el.style.maxWidth = 'none'
+  
+  // Iteramos hasta que quepa o lleguemos al mínimo legible
+  let attempts = 0
+  while (el.scrollWidth > maxW && size > 4 && attempts < 20) {
     size -= 0.5
     el.style.fontSize = `${size}px`
+    attempts++
   }
+  
+  el.style.maxWidth = prevMaxWidth
 }
 
+// Observador para cambios de tamaño (mobile resize / orientation)
+let resizeObserver: ResizeObserver | null = null
+
 // Observadores para disparar el ajuste cuando cambien los datos
-watch([money], async () => {
-  await nextTick()
-  fitText(moneyRef.value, 60, 14)
+watch([money, battleCoins, medals, balls, eggCount], () => {
+  fitText(moneyRef.value, 14)
+  fitText(bcRef.value, 14)
+  fitText(badgeRef.value, 14)
+  fitText(ballRef.value, 14)
+  fitText(eggRef.value, 14)
 }, { deep: true })
 
 onMounted(async () => {
   await nextTick()
-  fitText(moneyRef.value, 60, 14)
+  
+  // Ejecución inicial
+  fitText(moneyRef.value, 14)
+  fitText(bcRef.value, 14)
+  fitText(badgeRef.value, 14)
+  fitText(ballRef.value, 14)
+  fitText(eggRef.value, 14)
+
+  // Configurar observer en el contenedor HUD
+  if (moneyRef.value?.closest('.hud-items')) {
+    resizeObserver = new ResizeObserver(() => {
+      fitText(moneyRef.value, 14)
+      fitText(bcRef.value, 14)
+      fitText(badgeRef.value, 14)
+      fitText(ballRef.value, 14)
+      fitText(eggRef.value, 14)
+    })
+    resizeObserver.observe(moneyRef.value.closest('.hud-items')!)
+  }
+})
+
+onUnmounted(() => {
+  if (resizeObserver) {
+    resizeObserver.disconnect()
+  }
 })
 </script>
 
@@ -43,7 +131,7 @@ onMounted(async () => {
     <!-- DINERO -->
     <PVTooltip
       title="POKÉ-PESOS (₱)"
-      description="Moneda principal obtenida en combates y venta de objetos."
+      :description="`Saldo: ₱${(money || 0).toLocaleString()}. Moneda principal obtenida en combates y venta de objetos.`"
       position="bottom"
     >
       <div class="hud-pill money-pill">
@@ -52,22 +140,23 @@ onMounted(async () => {
           id="hud-money"
           ref="moneyRef"
           class="pill-value"
-        >{{ (money || 0).toLocaleString() }}</span>
+        >{{ formatCurrency(money) }}</span>
       </div>
     </PVTooltip>
 
     <!-- BC -->
     <PVTooltip
       title="BATTLE COINS (BC)"
-      description="Moneda de élite obtenida en eventos y misiones especiales."
+      :description="`Saldo: ${(battleCoins || 0).toLocaleString()} BC. Moneda de élite obtenida en eventos y misiones especiales.`"
       position="bottom"
     >
       <div class="hud-pill bc-pill">
         <i class="fas fa-coins currency-icon-bc" />
         <span
           id="hud-bc"
+          ref="bcRef"
           class="pill-value"
-        >{{ (gs.battleCoins || 0).toLocaleString() }}</span>
+        >{{ formatCurrency(battleCoins) }}</span>
       </div>
     </PVTooltip>
 
@@ -81,15 +170,16 @@ onMounted(async () => {
         <i class="fas fa-medal" />
         <span
           id="badge-count"
+          ref="badgeRef"
           class="pill-value"
-        >{{ gs.badges }}</span>
+        >{{ formatCurrency(medals) }}</span>
       </div>
     </PVTooltip>
 
     <!-- BALLS -->
     <PVTooltip
       title="POKÉ BALLS"
-      description="Cantidad total de Poké Balls disponibles en tu mochila."
+      :description="`Total: ${balls}\n\n${ballsBreakdown}`"
       position="bottom"
     >
       <div class="hud-pill ball-pill">
@@ -104,8 +194,9 @@ onMounted(async () => {
         </div>
         <span
           id="ball-count"
+          ref="ballRef"
           class="pill-value"
-        >{{ gs.balls }}</span>
+        >{{ formatCurrency(balls) }}</span>
       </div>
     </PVTooltip>
 
@@ -123,8 +214,9 @@ onMounted(async () => {
         <span>🥚</span>
         <span
           id="egg-count"
+          ref="eggRef"
           class="pill-value"
-        >{{ (gs.eggs || []).length }}</span>
+        >{{ formatCurrency(eggCount) }}</span>
       </div>
     </PVTooltip>
   </div>
@@ -161,23 +253,67 @@ onMounted(async () => {
   }
 
   &.money-pill {
-    .pill-value {
+    border-color: Rgba($green, 0.3);
+    .pill-value, .currency-icon-money {
       color: var(--green);
-      margin-top: 2px;
-      letter-spacing: -0.2px;
+      text-shadow: 0 0 8px Rgba($green, 0.4);
+    }
+  }
+
+  &.bc-pill {
+    border-color: Rgba($purple, 0.3);
+    .pill-value, .currency-icon-bc {
+      color: var(--purple);
+      text-shadow: 0 0 8px Rgba($purple, 0.4);
+    }
+  }
+
+  &.badge-pill {
+    border-color: Rgba($yellow, 0.3);
+    .pill-value, .fa-medal {
+      color: var(--yellow);
+      text-shadow: 0 0 8px Rgba($yellow, 0.4);
+    }
+  }
+
+  &.ball-pill {
+    border-color: Rgba($red, 0.3);
+    .pill-value {
+      color: var(--red);
+      text-shadow: 0 0 8px Rgba($red, 0.4);
+    }
+  }
+
+  &.egg-pill {
+    border-color: Rgba($coin-gold, 0.3);
+    cursor: pointer;
+    &:hover { background: Rgba($white, 0.05); }
+    .pill-value {
+      color: var(--coin-gold);
+      text-shadow: 0 0 8px Rgba($coin-gold, 0.4);
     }
   }
 }
 
 .currency-icon-money {
   font-size: 18px;
-  color: var(--green);
   margin-bottom: 0px;
 }
 
+.currency-icon-bc {
+  font-size: 16px;
+}
+
 .ball-icon-wrap {
-  height: 28px;
+  height: 20px;
   display: flex;
   align-items: center;
+  justify-content: center;
+  margin-bottom: 2px;
+  filter: Drop-Shadow(0 0 4px Rgba($red, 0.4));
+  
+  img {
+    margin-top: -2px; // Ajuste óptico para centrar la bola
+  }
 }
 </style>

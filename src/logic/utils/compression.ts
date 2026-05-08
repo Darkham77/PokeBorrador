@@ -6,7 +6,7 @@
 
 export async function compress(data: string | object): Promise<Uint8Array> {
   const json = typeof data === 'string' ? data : JSON.stringify(data)
-  const stream = new Blob([json]).stream()
+  const stream = new Blob([json as any]).stream()
   const compressedStream = stream.pipeThrough(new CompressionStream('gzip'))
   const response = new Response(compressedStream)
   const buffer = await response.arrayBuffer()
@@ -14,7 +14,7 @@ export async function compress(data: string | object): Promise<Uint8Array> {
 }
 
 export async function decompress(data: Uint8Array): Promise<string> {
-  const stream = new Blob([data]).stream()
+  const stream = new Blob([data as any]).stream()
   const decompressedStream = stream.pipeThrough(new DecompressionStream('gzip'))
   const response = new Response(decompressedStream)
   return await response.text()

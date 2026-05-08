@@ -26,31 +26,32 @@ export const FIELD_ACTIONS: Record<string, MoveAction> = {
     }
   },
   'hail': (src, _tgt, _srcStages, _tgtStages, addLogFn, battleCtx) => {
-    if (battleCtx) {
-      battleCtx.weather = { type: 'hail', turns: 5 };
+    if (battleCtx?.activeBattle.value) {
+      battleCtx.activeBattle.value.weather = { type: 'hail', turns: 5 };
       addLogFn("¡Empezó a granizar!", 'log-info', src);
     }
   },
   'rain': (src, _tgt, _srcStages, _tgtStages, addLogFn, battleCtx) => {
-    if (battleCtx) {
-      battleCtx.weather = { type: 'rain', turns: 5 };
+    if (battleCtx?.activeBattle.value) {
+      battleCtx.activeBattle.value.weather = { type: 'rain', turns: 5 };
       addLogFn("¡Empezó a llover!", 'log-info', src);
     }
   },
   'sun': (src, _tgt, _srcStages, _tgtStages, addLogFn, battleCtx) => {
-    if (battleCtx) {
-      battleCtx.weather = { type: 'sun', turns: 5 };
+    if (battleCtx?.activeBattle.value) {
+      battleCtx.activeBattle.value.weather = { type: 'sun', turns: 5 };
       addLogFn("¡El sol se volvió muy intenso!", 'log-info', src);
     }
   },
   'sandstorm': (src, _tgt, _srcStages, _tgtStages, addLogFn, battleCtx) => {
-    if (battleCtx) {
-      battleCtx.weather = { type: 'sandstorm', turns: 5 };
+    if (battleCtx?.activeBattle.value) {
+      battleCtx.activeBattle.value.weather = { type: 'sandstorm', turns: 5 };
       addLogFn("¡Se desató una tormenta de arena!", 'log-info', src);
     }
   },
   'weather_sandstorm': (src, tgt, srcStages, tgtStages, addLogFn, battleCtx) => {
-    FIELD_ACTIONS.sandstorm(src, tgt, srcStages, tgtStages, addLogFn, battleCtx);
+    const action = FIELD_ACTIONS['sandstorm'];
+    if (action) action(src, tgt, srcStages, tgtStages, addLogFn, battleCtx);
   },
   'break_screens': (src, _tgt, _srcStages, tgtStages, addLogFn) => {
     if (tgtStages.reflect || tgtStages.lightScreen) {

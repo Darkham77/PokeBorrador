@@ -3,8 +3,9 @@ import { generateEncounter } from '@/logic/encounters'
 import { useUIStore } from '@/stores/ui'
 import { useMapStore } from '@/stores/map'
 import { useEventStore } from '@/stores/events'
+import { useWarStore } from '@/stores/war'
 import type { BattleContext } from '@/types/battleContext'
-import type { UIStore, MapStore, EventStore } from '@/types/stores'
+import type { UIStore, MapStore, EventStore, WarStore } from '@/types/stores'
 import { logger } from '../utils/logger'
 
 /**
@@ -34,9 +35,10 @@ export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'm
     if (!ctx.upcomingPokemon.value) {
       const mapStore = useMapStore() as unknown as MapStore
       const eventStore = useEventStore() as unknown as EventStore
+      const warStore = useWarStore() as unknown as WarStore
       const encounterOptions = {
         activeEvents: mapStore.activeEvents,
-        dominanceData: mapStore.mapWinners,
+        dominanceData: warStore.mapDominance,
         shinyMultiplier: eventStore.globalMultipliers?.shiny || 1,
         forceEncounter: true
       }
@@ -100,7 +102,7 @@ export async function triggerNextEncounter(ctx: BattleContext) {
   await ctx._startBattle(nextPoke, {
     locationId: locId,
     wasSearching: true,
-    battleOptions: { isDebug: !!ctx.debugLoopPokemon.value }
+    isDebug: !!ctx.debugLoopPokemon.value
   })
 }
 

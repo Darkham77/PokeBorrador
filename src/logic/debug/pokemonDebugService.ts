@@ -64,7 +64,9 @@ export const pokemonDebugService = {
     } = params;
 
     // 1. Create base instance
-    const p = makePokemon(id, level, { isShiny, nature, ability, gender, heldItem }) as Pokemon;
+    const genderMap: Record<string, 'M' | 'F' | 'N'> = { 'male': 'M', 'female': 'F', 'genderless': 'N' };
+    const mappedGender = (gender && genderMap[gender]) ? genderMap[gender] : undefined;
+    const p = makePokemon(id, level, { isShiny, nature: nature || undefined, ability: ability || undefined, gender: mappedGender, heldItem: heldItem || undefined }) as Pokemon;
 
     // 2. Apply Overrides
     if (ivs) {
@@ -195,7 +197,7 @@ export const pokemonDebugService = {
     // Start battle
     await battleStore._startBattle(p, { 
       locationId: mapId,
-      battleOptions: { isDebug: true }
+      isDebug: true
     });
 
     const modalStore = useModalStore();

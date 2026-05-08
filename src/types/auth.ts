@@ -7,7 +7,7 @@ export interface AuthUser {
     role?: string;
   };
   last_save_id?: string;
-  db_version: number;
+  db_version?: number;
   role?: string;
 }
 

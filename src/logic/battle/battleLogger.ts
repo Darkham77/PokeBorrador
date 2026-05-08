@@ -8,8 +8,9 @@ import { Temporal } from '@js-temporal/polyfill'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import { SHOP_ITEMS } from '@/data/items';
 import { PLAYER_CLASSES } from '@/data/playerClasses';
-import type { Pokemon } from '@/types/pokemon';
 import { logger } from '../utils/logger';
+import type { Pokemon } from '@/types/pokemon';
+import type { BattleLog, BattleSource } from '@/types/battle';
 
 interface LogContext {
   gs: {
@@ -26,14 +27,7 @@ interface LogContext {
   attackerSide?: 'player' | 'enemy' | null
 }
 
-interface FormattedLog {
-  id: number
-  msg: string
-  type: string
-  side: string
-  icon: string | null
-  iconType: string | null
-}
+// Re-use exported types
 
 /**
  * Procesa un mensaje de log y devuelve el objeto listo para la cola del store.
@@ -42,7 +36,7 @@ interface FormattedLog {
  * @param {Object|string} source Fuente del sprite (Pokemon, 'player', 'enemy_trainer', o nombre de ítem)
  * @param {Object} ctx Contexto necesario (gs, activeBattle, attackerSide)
  */
-export function formatBattleLog(msg: string, type: string, source: any, ctx: LogContext): FormattedLog {
+export function formatBattleLog(msg: string, type: string, source: BattleSource, ctx: LogContext): BattleLog {
   const { gs, activeBattle, attackerSide } = ctx;
   let icon: string | null = null;
   let iconType: string | null = null;
@@ -56,7 +50,7 @@ export function formatBattleLog(msg: string, type: string, source: any, ctx: Log
     iconType = 'emoji';
   } else if (source) {
     if (source === 'player') {
-      const cls = (PLAYER_CLASSES as any)[gs.state.playerClass];
+      const cls = (PLAYER_CLASSES as Record<string, { avatarSpriteId: string }>)[gs.state.playerClass || ''];
       const spriteId = cls?.avatarSpriteId || gs.state.avatar_style || 'entrenador';
       icon = getAssetUrl(ASSET_TYPES.TRAINER, spriteId);
       iconType = 'trainer';
@@ -66,7 +60,7 @@ export function formatBattleLog(msg: string, type: string, source: any, ctx: Log
       iconType = 'trainer';
     } else if (typeof source === 'object' && source) {
       const poke = source as Partial<Pokemon>;
-      const pokeId = poke.id || poke.id_pokemon;
+      const pokeId = poke.id;
       if (pokeId) {
         icon = getAssetUrl(ASSET_TYPES.POKEMON, pokeId, { isShiny: poke.isShiny });
         iconType = 'pokemon';

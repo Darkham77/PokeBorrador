@@ -1,4 +1,5 @@
 import { Temporal } from '@js-temporal/polyfill'
+import type { DBRouter } from '@/logic/db/dbRouter';
 
 import { validateAndSanitize } from './saveService';
 import type { Pokemon } from '@/types/pokemon';
@@ -21,11 +22,11 @@ export interface LoadResult {
   isNewerThanCloud: boolean;
 }
 
-export async function loadBestSave(user: AuthUser | null, db: any): Promise<LoadResult> {
+export async function loadBestSave(user: AuthUser | null, db: DBRouter): Promise<LoadResult> {
   if (!user) return { data: null, issues: [], lastSaveId: null, isNewerThanCloud: false };
 
-  let cloudSaveRow: any = null;
-  let finalSaveData: any = null;
+  let cloudSaveRow: { save_data: GameState; updated_at: string; last_save_id: string } | null = null;
+  let finalSaveData: GameState | null = null;
 
   // 1. Fetch Cloud Save if online
   if (db.mode === 'online') {
@@ -36,8 +37,8 @@ export async function loadBestSave(user: AuthUser | null, db: any): Promise<Load
         .single();
       
       if (!error && saves) {
-        cloudSaveRow = saves;
-        finalSaveData = saves.save_data;
+        cloudSaveRow = saves as any;
+        finalSaveData = (saves as any).save_data as GameState;
       }
     } catch (e) {
       logger.error('LOAD', `Cloud fetch failed: ${(e as Error).message}`);
@@ -46,15 +47,13 @@ export async function loadBestSave(user: AuthUser | null, db: any): Promise<Load
 
   // 2. Fetch Local Save (Prioritize OPFS Binary over LocalStorage)
   const opfsKey = `save_${user.id}.gz`
-  let localData: any = null
-  let source = 'NONE'
+  let localData: GameState | null = null;
 
   try {
     const binary = await readOpfsFile(opfsKey)
     if (binary) {
       const json = isGzip(binary) ? await decompress(binary) : new TextDecoder().decode(binary)
       localData = JSON.parse(json)
-      source = 'OPFS'
     }
   } catch (e) {
     logger.warn('LOAD', `Error reading OPFS save: ${(e as Error).message}`)
@@ -74,11 +73,12 @@ export async function loadBestSave(user: AuthUser | null, db: any): Promise<Load
     if (lsRaw) {
       try {
         localData = JSON.parse(lsRaw)
-        source = 'LS_MIGRATION'
         
         // AUTOMATED BACKUP & MIGRATION
         logger.info('LOAD', 'Migrating localStorage to OPFS...')
         const timestamp = Temporal.Now.instant().epochMilliseconds
+        const serverTime = Temporal.Now.instant().toString();
+        (db as any).setMockTime(serverTime);
         const { compress } = await import('@/logic/utils/compression')
         const compressed = await compress(lsRaw)
         await writeOpfsFile(`backup_migration_${user.id}_${timestamp}.gz`, compressed)
@@ -111,8 +111,8 @@ export async function loadBestSave(user: AuthUser | null, db: any): Promise<Load
           cloudData.starterChosen = true;
         }
         
-        const cloudTime = cloudSaveRow.updated_at ? Temporal.Instant.fromEpochMilliseconds(cloudSaveRow.updated_at).epochMilliseconds : 0;
-        const localTime = localData._last_updated || 0;
+        const cloudTime = cloudSaveRow.updated_at ? (Temporal.Instant.from(cloudSaveRow.updated_at) as any).epochMilliseconds : 0;
+        const localTime = (localData as any)._last_updated || 0;
  
         // Legacy Rule: If local is at least 3s newer, prioritize it.
         if (localTime > cloudTime + 3000) {
@@ -131,7 +131,7 @@ export async function loadBestSave(user: AuthUser | null, db: any): Promise<Load
   const { data: sanitized, issues } = validateAndSanitize(finalSaveData);
   
   // 4. Backfill and Deep Normalization (Legacy Parity)
-  const normalized = normalizeData(sanitized as any);
+  const normalized = normalizeData(sanitized as unknown as GameState);
 
   return {
     data: normalized,
@@ -144,7 +144,7 @@ export async function loadBestSave(user: AuthUser | null, db: any): Promise<Load
 /**
  * Deep normalization for legacy data compatibility.
  */
-function normalizeData(state: any): GameState {
+function normalizeData(state: GameState): GameState {
   if (!state) return state;
 
   // Ensure arrays exist
@@ -181,8 +181,8 @@ function normalizeData(state: any): GameState {
     return p;
   };
 
-  state.team = state.team.map((p: any) => fixPoke(p)).filter((p: any): p is Pokemon => p !== null);
-  state.box = state.box.map((p: any) => fixPoke(p)).filter((p: any): p is Pokemon => p !== null);
+  state.team = state.team.map((p: Pokemon) => fixPoke(p)).filter((p: Pokemon | null): p is Pokemon => p !== null);
+  state.box = state.box.map((p: Pokemon) => fixPoke(p)).filter((p: Pokemon | null): p is Pokemon => p !== null);
 
   // Normalize legacy badges (array to count)
   if (Array.isArray(state.badges)) {

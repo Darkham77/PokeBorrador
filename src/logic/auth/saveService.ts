@@ -123,19 +123,20 @@ interface ActiveBattleSerialized {
   timestamp: number
   isPvP?: boolean
 }
-
 export function serializeState(state: GameState): SaveData {
   let activeBattle: ActiveBattleSerialized | null = null;
-  if (state.battle && !state.battle.over && (state.battle.isTrainer || state.battle.isGym)) {
+  const battle = state.battle as any;
+
+  if (battle && !battle.over && (battle.isTrainer || battle.isGym)) {
     try {
       activeBattle = {
-        isGym: state.battle.isGym || false,
-        gymId: state.battle.gymId || null,
-        isTrainer: state.battle.isTrainer || false,
-        trainerName: state.battle.trainerName || null,
-        locationId: state.battle.locationId || null,
-        enemyTeam: state.battle.enemyTeam
-          ? (state.battle.enemyTeam as Pokemon[]).map(p => ({
+        isGym: battle.isGym || false,
+        gymId: battle.gymId || null,
+        isTrainer: battle.isTrainer || false,
+        trainerName: battle.trainerName || null,
+        locationId: battle.locationId || null,
+        enemyTeam: battle.enemyTeam
+          ? (battle.enemyTeam as Pokemon[]).map(p => ({
               uid: p.uid, id: p.id, name: p.name, emoji: p.emoji, type: p.type,
               level: p.level, hp: p.hp, maxHp: p.maxHp, atk: p.atk, def: p.def,
               spa: p.spa, spd: p.spd, spe: p.spe, moves: p.moves,
@@ -149,7 +150,7 @@ export function serializeState(state: GameState): SaveData {
             }))
           : null,
         timestamp: Temporal.Now.instant().epochMilliseconds,
-      };
+      } as any;
     } catch(e) {
       logger.warn('SAVE', `Error serializando batalla activa: ${(e as Error).message}`);
       activeBattle = null;

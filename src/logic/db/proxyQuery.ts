@@ -200,7 +200,7 @@ export class ProxyQuery {
         let countSql = `SELECT COUNT(*) as total FROM ${this.table}`;
         if (where.length > 0) countSql += ` WHERE ${where.join(' AND ')}`;
         const countRes = await queryLocal(countSql, params);
-        count = countRes[0]?.total || 0;
+        count = (countRes[0] as any)?.total || 0;
       }
 
       if (selectOpts.head) {

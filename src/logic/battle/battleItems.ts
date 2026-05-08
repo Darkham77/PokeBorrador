@@ -6,8 +6,21 @@
 import { calculateCatchRate } from './battleEngine'
 import { useItemOnPokemon } from '../providers/itemProvider'
 import { gameBus } from '@/logic/gameBus'
+import type { Pokemon } from '@/types/pokemon'
+import type { EventStore, AudioStore } from '@/types/stores'
+import type { LogFn } from '@/types/battle'
+import type { BattleContext } from '@/types/battleContext'
 
-export async function handleItemUsage(itemName: any, p: any, e: any, options: any = {}) {
+interface ItemUsageOptions {
+  eventStore: EventStore;
+  addLog: LogFn;
+  audio: AudioStore;
+  consumeItem: (itemName: string) => void;
+  fsm?: any;
+  ctx?: BattleContext;
+}
+
+export async function handleItemUsage(itemName: string, p: Pokemon, e: Pokemon, options: ItemUsageOptions) {
   const { 
     eventStore, 
     addLog, 
@@ -83,7 +96,7 @@ export async function handleItemUsage(itemName: any, p: any, e: any, options: an
     // Entrada de entrenador (siempre, para feedback inmediato)
     addLog(`Usaste ${itemName}`, 'log-info', 'player')
     
-    const res = (useItemOnPokemon as any)(itemName, p)
+    const res = useItemOnPokemon(itemName, p) as { success: boolean, message: string, pokemon: Pokemon } | null
     if (res) {
       audio.heal()
       addLog(`¡${p.name} ${res.message}!`, 'log-info', itemName, 'player')

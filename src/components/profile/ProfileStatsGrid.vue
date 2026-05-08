@@ -12,12 +12,14 @@ interface Props {
   battleCoins?: number
 }
 
+import { formatCurrency } from '@/logic/utils/formatters'
+
 const props = withDefaults(defineProps<Props>(), {
   money: 0,
   battleCoins: 0
 })
 
-const formatNum = (num: number) => (num || 0).toLocaleString().replace(/,/g, '.')
+const formatNum = (num: number) => formatCurrency(num)
 </script>
 
 <template>

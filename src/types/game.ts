@@ -9,7 +9,7 @@ export interface NotificationItem {
   message: string;
   timestamp: number;
   read: boolean;
-  meta?: Record<string, any>;
+  meta?: Record<string, unknown>;
 }
 
 export interface PokedexItem {
@@ -84,7 +84,7 @@ export interface GameState {
   incenseSecs: number;
   daycare_berry_egg_time: number;
   boxCount: number;
-  chats: Record<string, any>;
+  chats: Record<string, unknown>;
   playerClass: string | null;
   classLevel: number;
   classXP: number;
@@ -94,8 +94,8 @@ export interface GameState {
     reputation: number;
     blackMarketSales: number;
     criminality: number;
-    blackMarketDaily: { date: string; items: any[]; purchased: any[] };
-    activeMission?: any;
+    blackMarketDaily: { date: string; items: unknown[]; purchased: unknown[] };
+    activeMission?: unknown;
     extortedRouteId?: string | null;
     officialRouteId?: string | null;
     kitCaptures?: number;

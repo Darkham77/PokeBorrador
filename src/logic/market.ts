@@ -7,7 +7,14 @@ export interface MarketListing {
   id: string;
   listing_type: 'pokemon' | 'item';
   price: number;
-  data: any;
+  data: {
+    name?: string;
+    nickname?: string;
+    level?: number;
+    qty?: number;
+    [key: string]: any;
+  };
+  status: 'active' | 'sold' | 'cancelled' | 'expired';
   seller_id: string;
   created_at: string;
 }
@@ -54,7 +61,7 @@ export function buildMarketSaleLabel(listing: MarketListing): string {
   if (listing.listing_type === 'pokemon') {
     return `tu Pokémon ${listing.data?.name || ''}`.trim();
   }
-  const qty = Math.max(1, parseInt(listing.data?.qty, 10) || 1);
+  const qty = Math.max(1, parseInt(String(listing.data?.qty || 1), 10));
   const itemName = listing.data?.name || 'objeto';
   return `tu objeto ${itemName} x${qty}`;
 }

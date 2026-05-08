@@ -32,10 +32,13 @@ export async function queryLocal(sql: string, params: unknown[] = []): Promise<R
   if (!_sqliteDb) return []
   const res = _sqliteDb.exec(sql, params)
   if (!res.length) return []
-  return res[0].values.map((row: unknown[]) => {
-    const obj: Record<string, unknown> = {}
-    res[0].columns.forEach((col: string, i: number) => obj[col] = row[i])
-    return obj
+  return res[0]!.values.map((row: any[]) => {
+    const obj: { [key: string]: unknown } = {}
+    const result = res[0]!;
+    result.columns.forEach((col: string, i: number) => {
+      (obj as any)[col] = row[i];
+    });
+    return obj;
   })
 }
 
@@ -112,7 +115,7 @@ async function ensureSchemaIntegrity(): Promise<void> {
         continue
       }
 
-      const existingCols = info[0]!.values.map((v: unknown[]) => (v[1] as string).toLowerCase())
+      const existingCols = info[0]!.values.map((v: any[]) => (v[1] as string).toLowerCase())
       const colPart = schemaStr.substring(schemaStr.indexOf('(') + 1, schemaStr.lastIndexOf(')'))
       
       const colDefs: string[] = []
@@ -161,7 +164,7 @@ async function runMigrations(): Promise<void> {
   _sqliteDb.run("PRAGMA foreign_keys = OFF") // Disable FKs during structural changes
   _sqliteDb.run("CREATE TABLE IF NOT EXISTS _migrations (id TEXT PRIMARY KEY, applied_at TEXT DEFAULT (datetime('now')))")
   const appliedRes = _sqliteDb.exec("SELECT id FROM _migrations")
-  const applied = appliedRes[0]?.values.map((v: unknown[]) => v[0] as string) || []
+  const applied = appliedRes[0]?.values.map((v: any[]) => v[0] as string) || []
 
   const loadingStore = useLoadingStore()
   
@@ -292,16 +295,17 @@ export const db: {
         if (builder._limit) sql += ` LIMIT ${builder._limit}`
         
         const res = _sqliteDb.exec(sql, params)
-        const data = res[0] ? res[0].values.map((row: unknown[]) => {
+        const result = res[0]!;
+        const data = result.values.map((row: any[]) => {
           const obj: Record<string, unknown> = {}
-          res[0].columns.forEach((col: string, i: number) => obj[col] = row[i])
+          result.columns.forEach((col: string, i: number) => (obj as any)[col] = row[i])
           return obj
-        }) : []
+        });
         if (resolve) resolve(data)
         return data
       },
       insert: async (payload: unknown) => {
-        if (!_sqliteDb) return { data: null, error: 'DB not ready' }
+        if (!_sqliteDb) return { data: payload, error: 'DB not ready' }
         const items = Array.isArray(payload) ? payload : [payload]
         for (const item of items) {
           if (typeof item !== 'object' || item === null) continue;
@@ -315,7 +319,7 @@ export const db: {
         return { data: payload, error: null }
       },
       update: async (payload: Record<string, unknown>) => {
-        if (!_sqliteDb) return { data: null, error: 'DB not ready' }
+        if (!_sqliteDb) return { data: payload, error: 'DB not ready' }
         const cols = Object.keys(payload)
         const vals = Object.values(payload)
         let sql = `UPDATE ${builder._table} SET ` + cols.map(c => `${c} = ?`).join(',')
@@ -328,7 +332,7 @@ export const db: {
         return { data: payload, error: null }
       },
       delete: async () => {
-        if (!_sqliteDb) return { data: null, error: 'DB not ready' }
+        if (!_sqliteDb) return { data: false, error: 'DB not ready' }
         let sql = `DELETE FROM ${builder._table}`
         const params: unknown[] = []
         if (builder._filters.length) {

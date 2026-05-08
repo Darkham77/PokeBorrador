@@ -1,6 +1,7 @@
 
 import { Pokemon } from './pokemon';
 import type { DominanceInfo } from './stores';
+import type { Event } from '@/logic/events/eventEngine';
 
 export type EncounterType = 'wild' | 'trainer' | 'fishing' | 'guardian' | 'defender';
 
@@ -40,15 +41,17 @@ export interface MapLocation {
     rates: number[];
     lv: number[];
   };
-  weather?: Record<string, {
-    exclusive?: string[] | Record<string, number>;
-    visitors?: string[] | Record<string, number>;
-  }>;
+  weather?: {
+    [key: string]: {
+      exclusive?: string[] | Record<string, number | undefined>;
+      visitors?: string[] | Record<string, number | undefined>;
+    } | undefined;
+  };
 }
 
 export interface EncounterOptions {
   forceEncounter?: boolean;
-  activeEvents?: any[];
+  activeEvents?: Event[];
   shinyMultiplier?: number;
   weather?: string;
   dominanceData?: Record<string, DominanceInfo> | null;

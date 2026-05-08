@@ -51,7 +51,7 @@ const handleLogin = async () => {
     await gameStore.loadGame()
     window.location.href = '/'
   } catch (err: unknown) {
-    error.value = (err as any).message || 'Error al iniciar sesión'
+    error.value = (err as Error).message || 'Error al iniciar sesión'
   } finally {
     loading.value = false
   }
@@ -69,7 +69,7 @@ const handleSignup = async () => {
     success.value = '¡Cuenta creada! Revisa tu email para confirmar.'
     authTab.value = 'login'
   } catch (err: unknown) {
-    error.value = (err as any).message || 'Error al registrarse'
+    error.value = (err as Error).message || 'Error al registrarse'
   } finally {
     loading.value = false
   }

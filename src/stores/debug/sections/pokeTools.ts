@@ -1,4 +1,7 @@
-export function registerPokeTools(debug: any, { game, ui, mapStore }: { game: any, ui: any, mapStore: any }) {
+import type { DebugSystem, DebugContext } from '@/stores/debug'
+import type { Pokemon } from '@/types/pokemon'
+
+export function registerPokeTools(debug: DebugSystem, { game, ui, mapStore }: DebugContext) {
   debug.register({
     id: 'poke-set-pokedex-mode',
     label: 'MODO POKEDEX',
@@ -10,7 +13,7 @@ export function registerPokeTools(debug: any, { game, ui, mapStore }: { game: an
         await game.loadGame()
         ui.notify('Pokedex REAL RESTAURADA', '✅')
       } else {
-        ui.debugPokedexMode = mode // 'none', 'seen', or 'caught'
+        ui.debugPokedexMode = mode as 'caught' | 'seen' | 'none' | null
         ui.notify(`Pokedex modo: ${mode.toUpperCase()}`, '👁️')
       }
     },
@@ -25,11 +28,11 @@ export function registerPokeTools(debug: any, { game, ui, mapStore }: { game: an
     action: async (force = false) => {
       if (!force && !confirm('¿Sincronizar pokedex con colección actual?')) return
       
-      const caughtIds = new Set()
-      const seenIds = new Set()
-      game.state.team.forEach((p: any) => { if (p?.id) { caughtIds.add((p as any).id); seenIds.add((p as any).id) } })
+      const caughtIds = new Set<string>()
+      const seenIds = new Set<string>()
+      game.state.team.forEach((p: Pokemon) => { if (p?.id) { caughtIds.add(p.id); seenIds.add(p.id) } })
       if (game.state.box) {
-        game.state.box.forEach((p: any) => { if (p?.id) { caughtIds.add((p as any).id); seenIds.add((p as any).id) } })
+        game.state.box.forEach((p: Pokemon) => { if (p?.id) { caughtIds.add(p.id); seenIds.add(p.id) } })
       }
       game.state.pokedex = Array.from(caughtIds)
       game.state.seenPokedex = Array.from(seenIds)
@@ -59,10 +62,10 @@ export function registerPokeTools(debug: any, { game, ui, mapStore }: { game: an
     label: 'CREAR POKEMON (CLI)',
     command: 'createPokemon',
     category: 'pokes',
-    action: async (params: any = {}) => {
+    action: async (params: Record<string, unknown> = {}) => {
       const { pokemonDebugService } = await import('@/logic/debug/pokemonDebugService')
       const p = pokemonDebugService.generate(params)
-      await pokemonDebugService.executeProtocol(p, params.protocol || 'catch')
+      await pokemonDebugService.executeProtocol(p, (params.protocol as string) || 'catch')
       return p
     },
     description: 'Construye e inyecta un pokemon personalizado (protocolos: catch, hatch, hatch_anim).'
@@ -73,10 +76,10 @@ export function registerPokeTools(debug: any, { game, ui, mapStore }: { game: an
     label: 'FORZAR ENCUENTRO (CLI)',
     command: 'spawnEncounter',
     category: 'pokes',
-    action: async (params: any = {}) => {
+    action: async (params: Record<string, unknown> = {}) => {
       const { pokemonDebugService } = await import('@/logic/debug/pokemonDebugService')
       const p = pokemonDebugService.generate(params)
-      await pokemonDebugService.triggerEncounter(p, params.mapId || 'plains')
+      await pokemonDebugService.triggerEncounter(p, (params.mapId as string) || 'plains')
     },
     description: 'Inicia un combate contra un pokemon personalizado en la ruta especificada.'
   })
@@ -91,9 +94,9 @@ export function registerPokeTools(debug: any, { game, ui, mapStore }: { game: an
       
       if (id === 'wild') {
         const { generateEncounter } = await import('@/logic/encounters')
-        const encounter = await generateEncounter(mapStore.currentLocationId || 'plains', game.state)
-        if (encounter && (encounter as any).pokemon) {
-          await pokemonDebugService.triggerEncounter((encounter as any).pokemon)
+        const encounter = await generateEncounter(mapStore.currentMap || 'plains', game.state)
+        if (encounter && (encounter as { pokemon: Pokemon }).pokemon) {
+          await pokemonDebugService.triggerEncounter((encounter as { pokemon: Pokemon }).pokemon)
         }
         return
       }
@@ -152,10 +155,10 @@ export function registerPokeTools(debug: any, { game, ui, mapStore }: { game: an
     command: 'healAll',
     category: 'pokes',
     action: () => {
-      game.state.team.forEach((p: any) => {
+      game.state.team.forEach((p: Pokemon) => {
         if (p) {
           p.hp = p.maxHp
-          if (p.moves) (p.moves as any[]).forEach((m: any) => { if (m) m.pp = m.maxPP })
+          if (p.moves) p.moves.forEach((m) => { if (m) m.pp = m.maxPP })
           p.status = null
         }
       })

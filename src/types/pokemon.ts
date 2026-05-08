@@ -46,9 +46,13 @@ export interface Move {
   fixedDmg?: number;
   levelDmg?: boolean;
   halfHP?: boolean;
+  hits?: number | string;
+  recoil?: number | boolean;
+  selfKO?: boolean;
+  side?: 'player' | 'enemy';
 }
 
-export interface PokemonMove extends Move {}
+export type PokemonMove = Move;
 
 export interface Pokemon {
   uid: string;
@@ -123,8 +127,11 @@ export interface Pokemon {
   thrashTurns?: number;
   encoreMove?: Move | null;
   disabledMove?: Move | null;
-  pendingMoves?: string[];
-  originalForm?: any;
+  pendingMoves?: PokemonMove[];
+  trapped?: boolean;
+  identified?: boolean;
+  originalForm?: Pokemon | null;
+  pts?: number;
 }
 
 export interface PokemonEgg {

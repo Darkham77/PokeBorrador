@@ -10,6 +10,7 @@ import { RANKED_REWARD_MILESTONES } from '@/data/rankedData'
 export { RANKED_REWARD_MILESTONES }
 import { getEloTier } from '@/logic/pvp/rankedEngine'
 import type { Pokemon } from '@/types/pokemon'
+import type { AuthStore, GameStore, UIStore } from '@/types/stores'
 
 export const RANKED_REWARD_TIER_MARKS = [
   { name: 'Plata', elo: 1200, color: '#9E9E9E' },
@@ -29,7 +30,7 @@ interface SeasonRules {
   name: string
   startDate?: string
   endDate?: string
-  [key: string]: any
+  [key: string]: unknown
 }
 
 interface LeaderboardEntry {
@@ -47,9 +48,9 @@ interface LeaderboardEntry {
  * Centraliza el ELO, las temporadas y el registro de equipos competitivos.
  */
 export const usePvPStore = defineStore('pvp', () => {
-  const authStore = useAuthStore()
-  const gameStore = useGameStore()
-  const uiStore = useUIStore()
+  const authStore = useAuthStore() as unknown as AuthStore
+  const gameStore = useGameStore() as unknown as GameStore
+  const uiStore = useUIStore() as unknown as UIStore
 
   const elo = ref(1000)
   const stats = ref<PvPStats>({ wins: 0, losses: 0, draws: 0 })
@@ -67,10 +68,17 @@ export const usePvPStore = defineStore('pvp', () => {
   async function loadPvPData() {
     if (!authStore.user || !gameStore.db) return
 
+    interface ProfileRow {
+      elo_rating: number;
+      pvp_wins: number;
+      pvp_losses: number;
+      pvp_draws: number;
+      role: string;
+    }
     const { data: profile } = await gameStore.db.from('profiles')
       .select('elo_rating, pvp_wins, pvp_losses, pvp_draws, role')
       .eq('id', authStore.user.id)
-      .single()
+      .single() as { data: ProfileRow | null }
 
     if (profile) {
       elo.value = profile.elo_rating || 1000
@@ -82,7 +90,7 @@ export const usePvPStore = defineStore('pvp', () => {
       
       // Admin Check (requested by user)
       if (profile.role === 'admin' && authStore.user) {
-        (authStore.user as any).role = 'admin'
+        authStore.user.role = 'admin'
       }
     }
 
@@ -93,7 +101,7 @@ export const usePvPStore = defineStore('pvp', () => {
     const { data: passive } = await gameStore.db.from('passive_teams')
       .select('is_active')
       .eq('user_id', authStore.user.id)
-      .maybeSingle()
+      .maybeSingle() as { data: { is_active: boolean } | null }
     
     passiveTeamActive.value = passive?.is_active || false
 
@@ -102,7 +110,7 @@ export const usePvPStore = defineStore('pvp', () => {
 
   async function fetchSeasonRules() {
     if (!gameStore.db) return
-    const { data } = await gameStore.db.from('ranked_rules_config').select('*').eq('id', 'current').maybeSingle()
+    const { data } = await gameStore.db.from('ranked_rules_config').select('*').eq('id', 'current').maybeSingle() as { data: { season_name: string, config: string } | null }
     if (data) {
       currentSeasonRules.value = {
         name: data.season_name,
@@ -121,12 +129,12 @@ export const usePvPStore = defineStore('pvp', () => {
 
     try {
       if (!gameStore.db) return
-      const { data, error: err } = await gameStore.db
+      const { data, error: err } = await (gameStore.db
         .from('profiles')
         .select('id, username, elo_rating, trainer_level, player_class, nick_style, avatar_style')
         .not('username', 'is', null)
         .order('elo_rating', { ascending: false })
-        .limit(100)
+        .limit(100) as unknown as Promise<{ data: LeaderboardEntry[] | null, error: { message: string } | null }>)
 
       if (err) throw err
       leaderboard.value = (data || []) as LeaderboardEntry[]

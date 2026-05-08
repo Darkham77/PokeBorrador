@@ -1,4 +1,6 @@
-export function registerStatsTools(debug: any, { game, ui }: { game: any, ui: any }) {
+import type { DebugSystem, DebugContext } from '@/stores/debug'
+
+export function registerStatsTools(debug: DebugSystem, { game, ui }: DebugContext) {
   debug.register({
     id: 'stats-set-money',
     label: 'SET MONEY',

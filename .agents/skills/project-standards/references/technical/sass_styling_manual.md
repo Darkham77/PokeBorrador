@@ -34,7 +34,8 @@ When applying filters to sprites (especially in global components like `MapCard`
 
 - **Reasoning**: Using `!important` on base filters blocks the application of silhouette classes (`.spawn-silhouette`, `.unknown-pokemon`) used to hide uncaptured species.
 - **Requirement**: Use CSS specificity (nesting or multiple classes) to allow conditional overrides.
-- **FORBIDDEN !important**: Never use `!important` on base width/height or alignment classes in SASS. This blocks the ability for Vue `:style` bindings to calculate and inject precise virtual-world coordinates at runtime.
+- **Specificity vs. !important**: Never use `!important` on base width/height or alignment classes in SASS. This blocks the ability for Vue `:style` bindings to calculate and inject precise virtual-world coordinates at runtime.
+- **Global vs. Scoped Specificity**: Be aware that global SCSS selectors (e.g., `.hud-pill`) have higher specificity than Vue `scoped` styles (which use data-attributes). If a component needs to override a global layout property based on JS calculations (like font-size), use **CSS Variables** defined in the component or **Inline Styles** on the element to ensure the calculation wins.
 - **Fullscreen Stability**: Overriding `BaseModal` fullscreen defaults requires ultra-specific selectors (e.g., `.base-modal-root .type-fullscreen.custom-class .base-modal-card`) to win against core `!important` rules. Use `contain: content` for maximum layout stability in these high-density game modals.
 
 ### 3. Combat Performance Override (High Fidelity)
@@ -206,6 +207,8 @@ When refactoring legacy or generic components:
   - **MANDATORY**: Never use hardcoded numbers for `z-index` (e.g., `z-index: 10;`). Use CSS variables (`var(--z-low)`, `var(--z-base)`, `var(--z-modal)`, `var(--z-critical)`) for consistent layering and to pass aesthetics audits.
 - **Modern Control Flow**: The legacy ternary `if()` function is deprecated in SASS 1.8+. Always use standard `@if / @else` blocks for conditional styling logic to ensure build-log cleanliness.
 - **Positioning & Micro-offsets**: Avoid using negative margins (`margin-top: -1px`) to correct alignment of symbols or small icons. This causes layout instability and triggers redundancy alerts. Use **TranslateY()** or **TranslateX()** (Capitalized) for hardware-accelerated positioning that doesn't affect the box model.
+  - **HUD Icon Normalization**: When mixing image-based icons (SVG/PNG) with font-based icons (FontAwesome), you MUST normalize their heights to ensure a consistent text baseline.
+    - **Standard**: SVG/Img icons should have a wrapper height of **20px** (vs. 16-18px for font icons) and use a small vertical offset (e.g., `TranslateY(-2px)`) to achieve optical balance with pixelated text.
 - **CSS Animation Composition**: When applying multiple classes that define an `animation` to the same element, you MUST ensure they do not override each other.
   - **Standard**: If an element needs to Shake AND Flash, use a combined rule: `animation: wobble 0.6s, flash 0.3s;`.
   - **WHY**: CSS properties follow a "last-one-wins" rule. Declaring `animation` in two separate classes applied to the same element will result in only the last class's animation being executed.

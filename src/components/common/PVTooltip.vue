@@ -16,7 +16,7 @@ const isSimplified = inject('isModalPerformanceMode', ref(false))
 const isVisible = ref(false)
 const trigger = ref<HTMLElement | null>(null)
 const tooltip = ref<HTMLElement | null>(null)
-const coords = ref({ top: 0, left: 0, right: 'auto' as number | 'auto' })
+const coords = ref({ top: 0, left: 0 as number | 'auto', right: 'auto' as number | 'auto' })
 const activePosition = ref(props.position)
 const arrowOffset = ref({ x: 0, y: 0 })
 

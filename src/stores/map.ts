@@ -10,11 +10,18 @@ import { useGameStore } from './game'
 import { useBattleStore } from './battle'
 import { useUIStore } from './ui'
 import { useEventStore } from './events'
-import type { GameStore, BattleStore, UIStore, EventStore } from '@/types/stores'
 import type { Pokemon } from '@/types/pokemon'
+import type { Event } from '@/logic/events/eventEngine'
+import type { DayPhase, Season } from '@/logic/timeUtils'
+
+interface PendingAward {
+  id: string;
+  type: string;
+  data: Record<string, unknown>;
+}
 
 export const useMapStore = defineStore('map', () => {
-  const gs = useGameStore() as unknown as GameStore
+  const gs = useGameStore()
   const currentMap = computed({
     get: () => gs.state.map?.currentMap || 'route1',
     set: (val) => { if (gs.state.map) gs.state.map.currentMap = val }
@@ -22,9 +29,9 @@ export const useMapStore = defineStore('map', () => {
   const region = computed(() => gs.state.map?.region || 'kanto')
   const currentMapData = computed(() => maps.value.find(m => m.id === currentMap.value))
 
-  const globalWeather = ref(null) // Si está forzado anula el determinístico
-  const forcedCycle = ref(null) // null, morning, day, dusk, night
-  const forcedSeason = ref(null) // null, spring, summer, autumn, winter
+  const globalWeather = ref<string | null>(null) // Si está forzado anula el determinístico
+  const forcedCycle = ref<DayPhase | null>(null)
+  const forcedSeason = ref<Season | null>(null)
   const currentEpochHour = ref(Math.floor(Temporal.Now.instant().epochMilliseconds / 3600000))
 
   // Sync epoch hour every second for real-time feeling
@@ -59,14 +66,14 @@ export const useMapStore = defineStore('map', () => {
   // Sync time on store init (safer than onMounted in a store)
   // syncServerTime() -- DEFERRED to game initialization
   const maps = ref(FIRE_RED_MAPS)
-  const activeEvents = ref<any[]>([])
+  const activeEvents = ref<Event[]>([])
   const lastNavigateTime = ref(0)
   const dailyGuardianCaptures = ref<string[]>([])
   const mapWinners = ref<Record<string, import('@/types/stores').DominanceInfo>>({}) // locId -> winner
-  const pendingAwards = ref<any[]>([])
+  const pendingAwards = ref<PendingAward[]>([])
   
-  const setGlobalWeather = (w: any) => { globalWeather.value = w }
-  const setGlobalCycle = (c: any) => { forcedCycle.value = c }
+  const setGlobalWeather = (w: string | null) => { globalWeather.value = w }
+  const setGlobalCycle = (c: DayPhase | null) => { forcedCycle.value = c }
 
   const navigate = async (locId: string) => {
     const now = Temporal.Now.instant().epochMilliseconds
@@ -77,12 +84,12 @@ export const useMapStore = defineStore('map', () => {
     lastNavigateTime.value = now
     logger.info('MapStore', `Navigating to ${locId}...`);
 
-    const gs = useGameStore() as unknown as GameStore
-    const battleStore = useBattleStore() as unknown as BattleStore
-    const uiStore = useUIStore() as unknown as UIStore
+    const gs = useGameStore()
+    const battleStore = useBattleStore()
+    const uiStore = useUIStore()
 
     // 1. Verificar salud del equipo
-    const healthy = (gs.state.team as any[]).find(p => (p as any).hp > 0 && !(p as any).onMission && !(p as any).onDefense)
+    const healthy = (gs.state.team as Pokemon[]).find(p => p.hp > 0 && !p.onMission && !p.onDefense)
     if (!healthy) {
       uiStore.notify('Todos tus Pokémon están debilitados. ¡Ve al Centro Pokémon!', '🏥')
       return
@@ -97,7 +104,7 @@ export const useMapStore = defineStore('map', () => {
     gs.hatchEggs()
 
     // 3. Generar Encuentro
-    const eventStore = useEventStore() as unknown as EventStore
+    const eventStore = useEventStore()
     
     // MODO DEBUG: Si hay un bucle infinito activo, lo usamos
     const encounter = battleStore.debugLoopPokemon 
@@ -138,7 +145,8 @@ export const useMapStore = defineStore('map', () => {
       battleStore._startBattle(wildEnc.pokemon, { 
         locationId: locId,
         wasSearching: true,
-        battleOptions: { isGuardian: true, pts: wildEnc.pts }
+        isGuardian: true,
+        pts: wildEnc.pts
       })
     } else if (wildEnc.type === 'defender') {
       // TODO: Implementar búsqueda de defensores reales desde Supabase

@@ -55,8 +55,8 @@ function scrollToBottom() {
 
 function formatTime(iso: string | Date) {
   if (!iso) return '';
-  const d = Temporal.Instant.fromEpochMilliseconds(iso);
-  return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const d = typeof iso === 'string' ? Temporal.Instant.from(iso) : (typeof iso === 'number' ? Temporal.Instant.fromEpochMilliseconds(iso) : Temporal.Instant.fromEpochMilliseconds(iso.getTime()));
+  return d.toZonedDateTimeISO('UTC').toLocaleString();
 }
 
 // Auto-scroll when new messages arrive if panel is open

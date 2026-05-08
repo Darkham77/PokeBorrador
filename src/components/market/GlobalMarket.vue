@@ -3,6 +3,7 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useGameStore } from '@/stores/game'
 import { useGTSStore } from '@/stores/gts'
+import { formatCurrency } from '@/logic/utils/formatters'
 import MarketExplorer from './MarketExplorer.vue'
 import MarketFilters from './MarketFilters.vue'
 import MarketPublish from './MarketPublish.vue'
@@ -58,7 +59,7 @@ async function refresh() {
         <div class="header-stats">
           <div class="stat money">
             <span class="label">SALDO:</span>
-            <span class="val">₽ {{ game.state.money.toLocaleString() }}</span>
+            <span class="val">₽ {{ formatCurrency(game.state.money) }}</span>
           </div>
           <button
             class="refresh-btn"

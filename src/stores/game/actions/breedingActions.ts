@@ -8,7 +8,7 @@ import type { Pokemon, PokemonEgg } from '@/types/pokemon'
 export function useBreedingActions(
   state: GameState, 
   scheduleSave: () => Promise<void>, 
-  addPokemon: (pokemon: Pokemon, options?: { notify: boolean }) => any
+  addPokemon: (pokemon: Pokemon, options?: { notify: boolean }) => { success: boolean, target: 'team' | 'box' | null }
 ) {
   function hatchEggs() {
     if (!state.eggs || state.eggs.length === 0) return false

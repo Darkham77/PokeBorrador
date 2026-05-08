@@ -1,7 +1,7 @@
 import { Ref } from 'vue';
 import { BattleState, BattleStages, BattleLog } from './battle';
 import { Pokemon, Move } from './pokemon';
-import { GameStore, BattleStore, UIStore, WarStore, EventStore, PlayerClassStore, AudioStore } from './stores';
+import { GameStore, BattleStore, UIStore, WarStore, EventStore, PlayerClassStore, AudioStore, BattleOptions } from './stores';
 import { BATTLE_STATES, BATTLE_SUBSTATES } from '@/logic/battle/battleStateMachine';
 
 export interface BattleContext {
@@ -36,14 +36,14 @@ export interface BattleContext {
   isIndoors?: boolean;
   
   handleFaint: (side: 'player' | 'enemy') => Promise<void>;
-  addLog: (msg: string, type?: string, source?: any, sideOverride?: 'player' | 'enemy' | null) => void;
+  addLog: (msg: string, type?: string, source?: Pokemon | string | null, sideOverride?: 'player' | 'enemy' | null) => void;
   endBattle: (win: boolean, fled: boolean) => Promise<void>;
-  completeBattleFlow: (option: any) => Promise<void>;
+  completeBattleFlow: (option?: string) => Promise<void>;
   persistBattle: () => void;
   waitForLogs: () => Promise<void>;
   clearLogs: () => void;
   clearVolatileStatus: (p: Pokemon) => void;
-  startBattle: (enemyPoke: Pokemon, options: any) => Promise<void>;
-  _startBattle: (enemyPoke: Pokemon, options: any) => Promise<void>;
+  startBattle: (enemyPoke: Pokemon, options?: BattleOptions) => Promise<void>;
+  _startBattle: (enemyPoke: Pokemon, options?: BattleOptions) => Promise<void>;
   initBattle: (locId: string, isTr: boolean, trName: string, isGym: boolean, gymId: string, wasSearching: boolean) => Promise<void>;
 }

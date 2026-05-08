@@ -23,7 +23,7 @@ export interface DaycareEgg {
   cost: number;
   inherited_ivs?: {
     _scanned?: boolean;
-    [key: string]: any;
+    [key: string]: number | boolean | undefined;
   };
 }
 

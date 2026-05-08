@@ -1,30 +1,32 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import type { RealtimeChannel } from '@supabase/supabase-js'
 import { useAuthStore } from './auth'
 import { useGameStore } from './game'
 import { useUIStore } from './ui'
 import { useAudioStore } from './audio'
 import { logger } from '@/logic/utils/logger'
 import { applyMarketFilters, markMarketSoldSeen, isMarketSoldSeen } from '@/logic/market'
-import type { MarketFilters } from '@/logic/market'
+import type { MarketFilters, MarketListing } from '@/logic/market'
 import { SHOP_ITEMS } from '@/data/items'
+import type { GameState } from '@/types/game'
+import type { Pokemon } from '@/types/pokemon'
 
 export const useGTSStore = defineStore('gts', () => {
-  const auth = useAuthStore() as any
-  const game = useGameStore() as any
-  const ui = useUIStore() as any
-  const audio = useAudioStore() as any
+  const auth = useAuthStore()
+  const game = useGameStore()
+  const ui = useUIStore()
+  const audio = useAudioStore()
 
   // State
-  const listings = ref<any[]>([])
-  const myListings = ref<any[]>([])
-  const salesHistory = ref<any[]>([])
+  const listings = ref<MarketListing[]>([])
+  const myListings = ref<MarketListing[]>([])
+  const salesHistory = ref<MarketListing[]>([])
   const loading = ref(false)
   const publishing = ref(false)
 
-  // Filters state
   const filters = ref<MarketFilters>({
-    mode: 'pokemon', // 'pokemon' | 'item'
+    mode: 'pokemon',
     search: '',
     priceMin: 0,
     priceMax: 1000000,
@@ -42,7 +44,7 @@ export const useGTSStore = defineStore('gts', () => {
   const MARKET_FEE = 0.05
   const MAX_LISTINGS = 10
 
-  let salesChannel: any = null
+  let salesChannel: RealtimeChannel | null = null
 
   // Getters
   const filteredListings = computed(() => {
@@ -61,11 +63,11 @@ export const useGTSStore = defineStore('gts', () => {
     
     loading.value = true
     try {
-      const { data, error } = await (game.db as any).from('market_listings')
+      const { data, error } = await game.db.from('market_listings')
         .select('*')
         .eq('status', 'active')
         .order('created_at', { ascending: false })
-        .limit(100)
+        .limit(100) as unknown as { data: MarketListing[] | null, error: { message: string } | null }
       
       if (!error) listings.value = data || []
     } finally {
@@ -81,13 +83,13 @@ export const useGTSStore = defineStore('gts', () => {
         .select('*')
         .eq('seller_id', auth.user.id)
         .neq('status', 'sold')
-        .order('created_at', { ascending: false }),
+        .order('created_at', { ascending: false }) as unknown as Promise<{ data: MarketListing[] | null }>,
       game.db.from('market_listings')
         .select('*')
         .eq('seller_id', auth.user.id)
         .eq('status', 'sold')
         .order('created_at', { ascending: false })
-        .limit(20)
+        .limit(20) as unknown as Promise<{ data: MarketListing[] | null }>
     ])
 
     myListings.value = mine.data || []
@@ -95,7 +97,7 @@ export const useGTSStore = defineStore('gts', () => {
 
     // Check for new sales
     if (history.data && history.data.length > 0) {
-      (history.data as any[]).forEach(sale => {
+      history.data.forEach(sale => {
         if (!isMarketSoldSeen(sale.id, game.state)) {
           ui.notify(`¡Tu ${sale.data.name} se vendió por ₽${sale.price.toLocaleString()}!`, '💰')
           markMarketSoldSeen(sale.id, game.state)
@@ -108,14 +110,14 @@ export const useGTSStore = defineStore('gts', () => {
     if (auth.sessionMode === 'offline' || !auth.user) return
     if (salesChannel) return
     
-    salesChannel = game.db.channel(`market-sales-${auth.user.id}`)
+    salesChannel = (game.db.channel(`market-sales-${auth.user.id}`) as any)
       .on('postgres_changes', {
         event: 'UPDATE',
         schema: 'public',
         table: 'market_listings',
         filter: `seller_id=eq.${auth.user.id}`
-      }, (payload: any) => {
-        if (payload.new.status === 'sold' && payload.old.status !== 'sold') {
+      }, (payload: { new: MarketListing | null, old: MarketListing | null }) => {
+        if (payload.new?.status === 'sold' && payload.old?.status !== 'sold') {
           ui.notify('¡ Venta realizada en el GTS !', '💰')
           audio.money()
           fetchUserData()
@@ -131,7 +133,7 @@ export const useGTSStore = defineStore('gts', () => {
     }
   }
 
-  async function buyListing(listing: any) {
+  async function buyListing(listing: MarketListing) {
     if (game.state.money < listing.price) {
       ui.notify('Saldo insuficiente', '💸')
       return false
@@ -144,9 +146,9 @@ export const useGTSStore = defineStore('gts', () => {
       ui.notify('Sincronizando fondos...', '🔄')
       await game.save(false)
 
-      const { data: newSave, error } = await (game.db as any).rpc('buy_listing_v2', {
+      const { data: newSave, error } = await game.db.rpc('buy_listing_v2', {
         p_listing_id: listing.id
-      })
+      }) as unknown as { data: GameState | null, error: { message: string } | null }
 
       if (error) throw error
 
@@ -160,15 +162,16 @@ export const useGTSStore = defineStore('gts', () => {
       }
       return false
     } catch (e) {
-      logger.error('GTS', `Error en la compra: ${(e as Error).message}`)
-      ui.notify((e as any).message || 'Error en la compra', '❌')
+      const err = e as Error
+      logger.error('GTS', `Error en la compra: ${err.message}`)
+      ui.notify(err.message || 'Error en la compra', '❌')
       return false
     } finally {
       ui.setLoading(false)
     }
   }
 
-  async function publishListing(type: string, selection: any, price: number) {
+  async function publishListing(type: 'pokemon' | 'item', selection: Pokemon | { name: string; qty: number }, price: number) {
     if (activeMyListings.value.length >= MAX_LISTINGS) {
       ui.notify(`Límite de publicaciones alcanzado (${MAX_LISTINGS})`, '⚠️')
       return false
@@ -180,69 +183,60 @@ export const useGTSStore = defineStore('gts', () => {
       ui.notify('Sincronizando inventario...', '🔄')
       await game.save(false)
 
-      const { data: _listingId, error } = await (game.db as any).rpc('publish_listing_v2', {
+      const { data: _listingId, error } = await game.db.rpc('publish_listing_v2', {
         p_listing_type: type,
-        p_asset_data: type === 'pokemon' ? selection : { name: selection.name, qty: 1 },
+        p_asset_data: type === 'pokemon' ? selection : { name: (selection as { name: string }).name, qty: 1 },
         p_price: Math.floor(price)
       })
 
       if (error) throw error
 
       // Refresh state to confirm removal
-      const { data: save } = await (game.db as any).from('game_saves').select('save_data').eq('user_id', auth.user.id).single()
+      if (!auth.user) return false
+      const { data: save } = await game.db.from('game_saves').select('save_data').eq('user_id', auth.user.id).single() as unknown as { data: { save_data: GameState } | null }
       if (save?.save_data) {
         game.updateState(save.save_data)
       }
 
-      ui.notify('¡ Publicación exitosa ! Objeto en custodia.', '🚀')
+      ui.notify('¡ Publicación exitosa !', '🚀')
       fetchUserData()
       return true
     } catch (e) {
-      logger.error('GTS', `Error al publicar: ${(e as Error).message}`)
-      ui.notify((e as any).message || 'Error al publicar', '❌')
+      const err = e as Error
+      logger.error('GTS', `Error al publicar: ${err.message}`)
+      ui.notify(err.message || 'Error al publicar', '❌')
       return false
     } finally {
       publishing.value = false
     }
   }
 
-  async function cancelListing(listingId: string | number) {
+  async function cancelListing(listingId: string) {
     try {
       ui.notify('Retirando publicación...', '🔄')
-      const { error } = await (game.db as any).rpc('cancel_listing_v2', {
+      const { error } = await game.db.rpc('cancel_listing_v2', {
         p_listing_id: listingId
       })
 
       if (error) throw error
 
-      ui.notify('Publicación retirada. Reclámala en tus Reclamos.', '↩️')
+      ui.notify('Publicación cancelada. El objeto se envió a tus Reclamos.', '✅')
       await game.fetchClaimQueue()
       fetchUserData()
       return true
     } catch (e) {
-      logger.error('GTS', `Error al retirar: ${(e as Error).message}`)
-      ui.notify((e as any).message || 'Error al retirar', '❌')
+      const err = e as Error
+      logger.error('GTS', `Error al cancelar: ${err.message}`)
+      ui.notify(err.message || 'Error al cancelar', '❌')
       return false
     }
   }
 
   return {
-    listings,
-    myListings,
-    salesHistory,
-    loading,
-    publishing,
-    filters,
-    MARKET_FEE,
-    MAX_LISTINGS,
-    filteredListings,
-    activeMyListings,
-    fetchListings,
-    fetchUserData,
-    initRealtime,
-    stopRealtime,
-    buyListing,
-    publishListing,
-    cancelListing
+    listings, myListings, salesHistory, loading, publishing, filters,
+    MARKET_FEE, MAX_LISTINGS,
+    filteredListings, activeMyListings,
+    fetchListings, fetchUserData, initRealtime, stopRealtime,
+    buyListing, publishListing, cancelListing
   }
 })

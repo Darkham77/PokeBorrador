@@ -92,7 +92,7 @@ const filteredAbilities = computed(() => {
 
 const allMaps = computed<MapOption[]>(() => {
   const maps = pokemonDataProvider.getMaps()
-  return Object.keys(maps).map(id => ({ id, name: maps[id]?.name || id }))
+  return (maps as any[]).map(m => ({ id: m.id, name: m.name || m.id }))
 })
 
 const filteredMaps = computed(() => {
@@ -171,10 +171,10 @@ function autoFillMoves() {
   const uniqueMoves = [...new Set(learnedMoves)].slice(0, 4)
   
   // Ensure we keep 4 slots
-  const finalMoves = [...uniqueMoves]
+  const finalMoves: (string | null)[] = [...uniqueMoves]
   while (finalMoves.length < 4) finalMoves.push(null)
   
-  config.value.moves = finalMoves
+  config.value.moves = finalMoves as (string | null)[]
 }
 
 function randomFillMoves() {

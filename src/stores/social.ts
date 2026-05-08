@@ -6,6 +6,7 @@ import { useGameStore } from './game'
 import { useUIStore } from './ui'
 import { useAudioStore } from './audio'
 import { logger } from '@/logic/utils/logger'
+import { GameState } from '@/types/game'
 
 export interface Friend {
   id: string;
@@ -72,9 +73,9 @@ interface GameSaveRow {
   updated_at: string
 }
 
-interface PendingRequestRow extends FriendshipRow {
-  profiles?: { username: string }
-}
+// interface PendingRequestRow extends FriendshipRow {
+//   profiles?: { username: string }
+// }
 
 export const useSocialStore = defineStore('social', () => {
   const authStore = useAuthStore()
@@ -117,7 +118,7 @@ export const useSocialStore = defineStore('social', () => {
         .from('friendships')
         .select('*')
         .or(`requester_id.eq.${authStore.user.id},addressee_id.eq.${authStore.user.id}`)
-        .eq('status', 'accepted')
+        .eq('status', 'accepted') as unknown as { data: FriendshipRow[] | null, error: { message: string } | null }
 
       if (fErr) throw fErr
       
@@ -127,13 +128,13 @@ export const useSocialStore = defineStore('social', () => {
         )
 
         const [profRes, saveRes] = await Promise.all([
-          db.from('profiles').select('*').in('id', friendIds),
-          db.from('game_saves').select('user_id,save_data,updated_at').in('user_id', friendIds)
+          db.from('profiles').select('*').in('id', friendIds) as unknown as Promise<{ data: ProfileRow[] | null }>,
+          db.from('game_saves').select('user_id,save_data,updated_at').in('user_id', friendIds) as unknown as Promise<{ data: GameSaveRow[] | null }>
         ])
 
         friends.value = (profRes.data as ProfileRow[] || []).map((p: ProfileRow) => {
-          const saveRow = (saveRes.data as GameSaveRow[] | null)?.find(s => s.user_id === p.id)
-          const save = (saveRow?.save_data as Record<string, any>) || {}
+          const saveRow = saveRes.data?.find(s => s.user_id === p.id)
+          const save = (saveRow?.save_data as unknown as GameState) || {}
           const lastSeen = saveRow?.updated_at ? Temporal.Instant.from(saveRow.updated_at) : null
           const isOnline = !!(lastSeen && (Temporal.Now.instant().epochMilliseconds - lastSeen.epochMilliseconds) < 5 * 60 * 1000)
 
@@ -157,9 +158,9 @@ export const useSocialStore = defineStore('social', () => {
         .from('friendships')
         .select('*, profiles:requester_id(username)')
         .eq('addressee_id', authStore.user?.id)
-        .eq('status', 'pending')
+        .eq('status', 'pending') as unknown as { data: PendingRequest[] | null }
 
-      pendingRequests.value = (pending as PendingRequestRow[] || []) as any
+      pendingRequests.value = (pending || []) as PendingRequest[]
       
       await refreshNotificationCount()
     } catch (err) {
@@ -185,20 +186,20 @@ export const useSocialStore = defineStore('social', () => {
         .select('*')
         .ilike('username', `%${query}%`)
         .neq('id', authStore.user?.id)
-        .limit(10)
+        .limit(10) as { data: ProfileRow[] | null }
 
       if (profiles && profiles.length > 0) {
         const ids = profiles.map((p: ProfileRow) => p.id)
         const [saveRes, relRes] = await Promise.all([
-          db.from('game_saves').select('user_id,save_data').in('user_id', ids),
+          db.from('game_saves').select('user_id,save_data').in('user_id', ids) as unknown as Promise<{ data: GameSaveRow[] | null }>,
           db.from('friendships')
             .select('*')
-            .or(`requester_id.eq.${authStore.user?.id},addressee_id.eq.${authStore.user?.id}`)
+            .or(`requester_id.eq.${authStore.user?.id},addressee_id.eq.${authStore.user?.id}`) as unknown as Promise<{ data: FriendshipRow[] | null }>
         ])
 
         searchResults.value = (profiles as ProfileRow[]).map((p: ProfileRow) => {
-          const save = (saveRes.data as GameSaveRow[] | null)?.find(s => s.user_id === p.id)?.save_data || {}
-          const rel = (relRes.data as FriendshipRow[] | null)?.find(f => 
+          const save = (saveRes.data?.find(s => s.user_id === p.id)?.save_data as unknown as GameState) || {}
+          const rel = relRes.data?.find(f => 
             (f.requester_id === authStore.user?.id && f.addressee_id === p.id) ||
             (f.requester_id === p.id && f.addressee_id === authStore.user?.id)
           )
@@ -299,7 +300,7 @@ export const useSocialStore = defineStore('social', () => {
     }
     
     ping()
-    presenceInterval = setInterval(ping, 120000) as any
+    presenceInterval = setInterval(ping, 120000)
   }
 
   function stopPresence() {
@@ -332,7 +333,7 @@ export const useSocialStore = defineStore('social', () => {
         .from('profiles')
         .select('*')
         .order(sortBy, { ascending: false })
-        .limit(100)
+        .limit(100) as unknown as { data: ProfileRow[] | null, error: { message: string } | null }
 
       if (error) throw error
 
@@ -341,10 +342,10 @@ export const useSocialStore = defineStore('social', () => {
         const { data: saves } = await db
           .from('game_saves')
           .select('user_id, updated_at')
-          .in('user_id', ids)
+          .in('user_id', ids) as unknown as { data: GameSaveRow[] | null }
 
         leaderboard.value = (data as ProfileRow[]).map((p: ProfileRow) => {
-          const saveRow = (saves as GameSaveRow[] | null)?.find(s => s.user_id === p.id)
+          const saveRow = saves?.find(s => s.user_id === p.id)
           const lastSeen = saveRow?.updated_at ? Temporal.Instant.from(saveRow.updated_at) : null
           const isOnline = lastSeen && (Temporal.Now.instant().epochMilliseconds - lastSeen.epochMilliseconds) < 5 * 60 * 1000
 

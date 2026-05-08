@@ -7,21 +7,45 @@ import { useAudioStore } from './audio'
 import { logger } from '@/logic/utils/logger'
 import { Temporal } from '@js-temporal/polyfill'
 
+import type { RealtimeChannel } from '@supabase/supabase-js'
+
+interface ChatMessage {
+  id?: string | number;
+  user_id?: string;
+  senderId?: string;
+  senderName?: string;
+  username?: string;
+  message?: string;
+  text?: string;
+  timestamp?: string | number;
+  created_at?: string;
+  player_class?: string;
+  trainer_level?: number;
+}
+
+interface PrivateChat {
+  username: string;
+  messages: ChatMessage[];
+  unreadCount: number;
+  isCollapsed: boolean;
+  lastInteraction: number;
+}
+
 export const useChatStore = defineStore('chat', () => {
   const authStore = useAuthStore()
   const gameStore = useGameStore()
   const uiStore = useUIStore()
   const audioStore = useAudioStore()
 
-  const globalMessages = ref<any[]>([])
+  const globalMessages = ref<ChatMessage[]>([])
   const activeChatId = ref('global') // 'global' or userId
   
-  let globalChannel: any = null
-  let inboxChannel: any = null
-  const outboxChannels: any = {}
+  let globalChannel: RealtimeChannel | null = null
+  let inboxChannel: RealtimeChannel | null = null
+  const outboxChannels: Record<string, RealtimeChannel> = {}
 
   // Computed proxy to private chats in game state for persistence
-  const privateChats = reactive(gameStore.state.chats || {})
+  const privateChats = reactive<Record<string, PrivateChat>>((gameStore.state.chats as Record<string, PrivateChat>) || {})
 
   // Watch for game state changes (e.g. after a load) to sync privateChats
   watch(() => gameStore.state.chats, (newChats) => {
@@ -37,10 +61,10 @@ export const useChatStore = defineStore('chat', () => {
       .from('global_chat_messages')
       .select('*')
       .order('created_at', { ascending: false })
-      .limit(50)
+      .limit(50) as { data: ChatMessage[] | null, error: any }
 
     if (!error && data) {
-      globalMessages.value = data.reverse()
+      globalMessages.value = [...data].reverse()
     }
   }
 
@@ -56,7 +80,7 @@ export const useChatStore = defineStore('chat', () => {
         event: 'INSERT',
         schema: 'public',
         table: 'global_chat_messages'
-      }, ({ new: row }: { new: any }) => {
+      }, ({ new: row }: { new: Record<string, unknown> }) => {
         if (!globalMessages.value.some(m => m.id === row.id)) {
           globalMessages.value.push(row)
           if (globalMessages.value.length > 50) globalMessages.value.shift()
@@ -76,15 +100,15 @@ export const useChatStore = defineStore('chat', () => {
     const db = gameStore.db
     if (!db) return
     inboxChannel = db.channel(`chat-inbox-${authStore.user.id}`)
-      inboxChannel.on('broadcast', { event: 'private_message' }, ({ payload }: { payload: any }) => {
+      inboxChannel.on('broadcast', { event: 'private_message' }, ({ payload }: { payload: ChatMessage }) => {
         handleIncomingPrivate(payload)
         audioStore.receivedMsg(); // Sonido al recibir mensaje privado
       })
       .subscribe()
   }
 
-  function handleIncomingPrivate(payload: any) {
-    const friendId = payload.senderId
+  function handleIncomingPrivate(payload: ChatMessage) {
+    const friendId = payload.senderId as string
     
     if (!privateChats[friendId]) {
       privateChats[friendId] = {
@@ -99,10 +123,10 @@ export const useChatStore = defineStore('chat', () => {
     const chat = privateChats[friendId]
     
     // Evitar duplicados sutiles (broadcast propio)
-    const isDup = chat.messages.some((m: any) => m.timestamp === payload.timestamp && m.text === payload.text)
+    const isDup = chat.messages.some((m: ChatMessage) => m.timestamp === payload.timestamp && m.text === payload.text)
     if (isDup) return
 
-    chat.messages.push(payload)
+    chat.messages.push(payload as ChatMessage)
     chat.lastInteraction = Temporal.Now.instant().epochMilliseconds
     
     // Limitar historial por chat (25 mensajes)
@@ -122,7 +146,7 @@ export const useChatStore = defineStore('chat', () => {
 
     const payload = {
       user_id: authStore.user.id,
-      username: gameStore.state.trainer || (authStore.user as any).user_metadata?.username || 'Entrenador',
+      username: gameStore.state.trainer || authStore.user.user_metadata?.username || 'Entrenador',
       message: text.slice(0, 180),
       player_class: gameStore.state.playerClass,
       trainer_level: gameStore.state.trainerLevel || 1
@@ -130,7 +154,7 @@ export const useChatStore = defineStore('chat', () => {
 
     const { error } = await gameStore.db.from('global_chat_messages').insert(payload)
     if (error) {
-      logger.error('Chat', `Global message error: ${(error as any).message}`)
+      logger.error('Chat', `Global message error: ${(error as Error).message}`)
     } else {
       audioStore.sentMsg(); // Sonido al enviar satisfactoriamente
       
@@ -141,7 +165,7 @@ export const useChatStore = defineStore('chat', () => {
           ...payload,
           created_at: Temporal.Now.instant().toString()
         }
-        globalMessages.value.push(localRow as any)
+        globalMessages.value.push(localRow as unknown as ChatMessage)
         if (globalMessages.value.length > 50) globalMessages.value.shift()
       }
     }
@@ -152,21 +176,21 @@ export const useChatStore = defineStore('chat', () => {
 
     const payload = {
       senderId: authStore.user.id,
-      senderName: gameStore.state.trainer || (authStore.user as any).user_metadata?.username || 'Entrenador',
+      senderName: gameStore.state.trainer || authStore.user.user_metadata?.username || 'Entrenador',
       text: text.slice(0, 250),
       timestamp: Temporal.Now.instant().toString()
     }
 
     const db = gameStore.db
     // 1. Enviar vía broadcast
-    if (!(outboxChannels as any)[friendId]) {
-      (outboxChannels as any)[friendId] = db.channel(`chat-inbox-${friendId}`).subscribe((status: string) => {
-        if (status === 'SUBSCRIBED' && (outboxChannels as any)[friendId]) {
-          (outboxChannels as any)[friendId].send({ type: 'broadcast', event: 'private_message', payload })
+    if (!outboxChannels[friendId]) {
+      outboxChannels[friendId] = db.channel(`chat-inbox-${friendId}`).subscribe((status: string) => {
+        if (status === 'SUBSCRIBED' && outboxChannels[friendId]) {
+          outboxChannels[friendId].send({ type: 'broadcast', event: 'private_message', payload })
         }
       })
     } else {
-      (outboxChannels as any)[friendId].send({ type: 'broadcast', event: 'private_message', payload })
+      outboxChannels[friendId].send({ type: 'broadcast', event: 'private_message', payload })
     }
 
     // 2. Agregar a historial propio y persistir
