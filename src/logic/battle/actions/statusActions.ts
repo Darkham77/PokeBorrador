@@ -59,7 +59,7 @@ export const STATUS_ACTIONS: Record<string, MoveAction> = {
       return;
     }
     tgt.status = 'poison';
-    tgt.badPoison = true;
+    tgt.badPoison = 1;
     addLogFn(`¡${tgt.name} fue gravemente envenenado!`, 'log-info', tgt);
   },
   

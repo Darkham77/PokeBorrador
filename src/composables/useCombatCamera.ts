@@ -1,4 +1,4 @@
-import { ref, onMounted, onUnmounted, computed, CSSProperties } from 'vue'
+import { ref, onMounted, onUnmounted, computed, type CSSProperties, type Ref } from 'vue'
 import { gameBus } from '@/logic/gameBus'
 import { WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator'
 
@@ -6,7 +6,7 @@ import { WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator'
  * useCombatCamera
  * Implements a dynamic 2D camera system based on docs/architecture/combat_camera.md
  */
-export function useCombatCamera(viewportRef: any) {
+export function useCombatCamera(viewportRef: Ref<HTMLElement | null>) {
   // Reactive State
   const vpWidth = ref(0)
   const vpHeight = ref(0)
@@ -30,7 +30,7 @@ export function useCombatCamera(viewportRef: any) {
     justifyContent: 'center' as const
   }))
 
-  const worldStyles = computed<any>(() => ({
+  const worldStyles = computed<CSSProperties & Record<string, string | number>>(() => ({
     position: 'absolute' as const,
     top: '0',
     left: '0',
@@ -45,7 +45,7 @@ export function useCombatCamera(viewportRef: any) {
     '--preview-size': WORLD_CONSTANTS.PREVIEW_SIZE
   }))
 
-  const updateCamera = (width: any, height: any) => {
+  const updateCamera = (width: number, height: number) => {
     // Filtro de Estabilidad: Ignoramos dimensiones nulas o valores de inicialización del navegador (0 o window.innerWidth exacto si no es fullscreen)
     if (!width || !height || width < 100 || height < 100) return
 

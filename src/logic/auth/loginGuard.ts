@@ -28,10 +28,12 @@ export function shouldAbortSaveLoad(saveError: SupabaseError | null): boolean {
  * @param {any} err - Error capturado.
  * @returns {string} Mensaje amigable.
  */
-export function sanitizeLoadErrorMessage(err: any): string {
+export function sanitizeLoadErrorMessage(err: unknown): string {
   if (!err) return 'No se pudo cargar tu progreso. Reintentá en unos minutos.';
   if (typeof err === 'string') return err;
-  if (err.message) return err.message;
+  if (typeof err === 'object' && err !== null && 'message' in err) {
+    return (err as { message: string }).message;
+  }
   return 'No se pudo cargar tu progreso. Reintentá en unos minutos.';
 }
 

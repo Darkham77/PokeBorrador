@@ -5,7 +5,11 @@ import { onMounted, onUnmounted } from 'vue'
  * Specialized composable to manage global listeners with strict lifecycle cleanup.
  * Prevents hybrid pattern leaks and centralizes window interactions.
  */
-export function useWindowListener(event: string, callback: any, options: any = {}) {
+export function useWindowListener(
+  event: string, 
+  callback: EventListenerOrEventListenerObject, 
+  options: boolean | AddEventListenerOptions = {}
+) {
   onMounted(() => {
     window.addEventListener(event, callback, options)
   })
@@ -19,7 +23,11 @@ export function useWindowListener(event: string, callback: any, options: any = {
  * useDocumentListener
  * Same but for document.
  */
-export function useDocumentListener(event: string, callback: any, options: any = {}) {
+export function useDocumentListener(
+  event: string, 
+  callback: EventListenerOrEventListenerObject, 
+  options: boolean | AddEventListenerOptions = {}
+) {
   onMounted(() => {
     document.addEventListener(event, callback, options)
   })

@@ -129,7 +129,9 @@ export function calculateBreedingCost(pA: Pokemon, pB: Pokemon): number {
  */
 export function calculateInheritance(pA: Pokemon, pB: Pokemon, itemA: string = '', itemB: string = '', playerClass: string = ''): PokemonIVs {
   const STATS = ['hp', 'atk', 'def', 'spa', 'spd', 'spe'] as const;
-  const ivs: any = {}; 
+  const ivs: PokemonIVs = {
+    hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0
+  };
   STATS.forEach(s => ivs[s] = Math.floor(Math.random() * 32));
   
   const powerMap: Record<string, typeof STATS[number]> = {

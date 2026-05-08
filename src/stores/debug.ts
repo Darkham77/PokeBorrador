@@ -22,6 +22,7 @@ import { registerAudioTools } from './debug/sections/audioTools'
 export interface DebugTool {
   id: string
   command: string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   action: (...args: any[]) => any
   label?: string
   category?: string
@@ -43,11 +44,12 @@ export interface DebugContext {
   breedingStore: ReturnType<typeof useBreedingStore>
   modalStore: ReturnType<typeof useModalStore>
   errorStore: ReturnType<typeof useErrorStore>
-  eventStoreModule?: any
+  eventStoreModule?: unknown
 }
 
 declare global {
   interface Window {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     __VITE_DEBUG__?: Record<string, (...args: any[]) => any>
   }
 }
@@ -114,6 +116,7 @@ export const useDebugStore = defineStore('debug', () => {
     if (!window.__VITE_DEBUG__) window.__VITE_DEBUG__ = {}
 
     tools.value.forEach(tool => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       window.__VITE_DEBUG__![tool.command] = (...args: any[]) => {
         if (securityCheck()) {
           return tool.action(...args)
@@ -144,7 +147,7 @@ export const useDebugStore = defineStore('debug', () => {
     // Delayed dependency resolution for Admin tools
     try {
       const eventStoreModule = await import('./events')
-      registerSystemTools({ register }, { ...context, eventStoreModule } as any)
+      registerSystemTools({ register }, { ...context, eventStoreModule })
       updateGlobalProxy()
     } catch (e) {
       logger.warn('DEBUG', `Failed to load optional eventStoreModule for SystemTools: ${(e as Error).message}`)

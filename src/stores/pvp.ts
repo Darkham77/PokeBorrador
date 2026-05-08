@@ -30,6 +30,10 @@ interface SeasonRules {
   name: string
   startDate?: string
   endDate?: string
+  bannedPokemonIds?: string[]
+  levelCap: number
+  allowedTypes?: string[]
+  maxPokemon: number
   [key: string]: unknown
 }
 
@@ -213,7 +217,7 @@ export const usePvPStore = defineStore('pvp', () => {
   }
 
   const seasonRange = computed(() => {
-    const rules = currentSeasonRules.value || { name: 'Default' }
+    const rules = currentSeasonRules.value || { name: 'Default', levelCap: 100, maxPokemon: 6 } as SeasonRules
     const tz = 'America/Argentina/Buenos_Aires'
     
     const start = rules.startDate 

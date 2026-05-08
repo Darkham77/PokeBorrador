@@ -81,7 +81,7 @@ export interface Pokemon {
   attracted?: boolean;
   cursed?: boolean;
   seeded?: boolean;
-  badPoison?: boolean;
+  badPoison?: number;
   ingrain?: boolean;
   protect?: boolean;
   detect?: boolean;
@@ -108,6 +108,7 @@ export interface Pokemon {
   ivs: PokemonIVs;
   nature: string;
   heldItem?: string | null;
+  item?: string | null; // @deprecated use heldItem
   emoji?: string;
   friendship?: number;
   vigor?: number;
@@ -132,6 +133,8 @@ export interface Pokemon {
   identified?: boolean;
   originalForm?: Pokemon | null;
   pts?: number;
+  futureSightTurns?: number;
+  futureSightDmg?: number;
 }
 
 export interface PokemonEgg {

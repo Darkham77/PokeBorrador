@@ -49,10 +49,12 @@ export const WORLD_CONSTANTS = {
   get PREVIEW_SIZE(): number { return this.BASE_PREVIEW_SIZE * this.OBJECT_SCALE }
 }
 
+import type { CSSProperties } from 'vue';
+
 /**
  * Normalizes coordinates into the 3000x3000px virtual space.
  */
-export function toVirtualStyles(x: number, y: number, w?: number, h?: number): any {
+export function toVirtualStyles(x: number, y: number, w?: number, h?: number): CSSProperties {
   const scale = WORLD_CONSTANTS.OBJECT_SCALE
   return {
     position: 'absolute',

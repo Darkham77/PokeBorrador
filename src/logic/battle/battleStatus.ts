@@ -6,9 +6,11 @@
 
 import { gameBus } from '@/logic/gameBus'
 
-export function getStatusIcon(status: any) {
+import type { Pokemon, PokemonStatus } from '@/types/pokemon'
+
+export function getStatusIcon(status: PokemonStatus): string {
   if (!status) return '';
-  const icons: any = {
+  const icons: Record<string, string> = {
     burn: '🔥',
     poison: '☠️',
     paralyze: '⚡',
@@ -22,34 +24,34 @@ export function getStatusIcon(status: any) {
  * Procesa los efectos permanentes y temporales al final del turno.
  * @returns {boolean} True si el Pokémon sigue en combate, False si se debilitó (aunque las funciones de daño usualmente no despachan muerte aquí)
  */
-export function tickStatus(pokemon: any, addLogFn: any, role = 'info') {
+export function tickStatus(pokemon: Pokemon, addLogFn: (msg: string, cls: string, target?: Pokemon) => void, role = 'info') {
   if (!pokemon) return false;
   // 1. Efectos de control temporal
-  if (pokemon.disabledTurns > 0) {
-    pokemon.disabledTurns--;
+  if ((pokemon.disabledTurns ?? 0) > 0) {
+    pokemon.disabledTurns = (pokemon.disabledTurns ?? 0) - 1;
     if (pokemon.disabledTurns <= 0) {
       addLogFn(`¡${pokemon.name} ya puede usar ${pokemon.disabledMove || 'su movimiento'} de nuevo!`, 'log-info', pokemon);
       pokemon.disabledMove = null;
     }
   }
 
-  if (pokemon.encoreTurns > 0) {
-    pokemon.encoreTurns--;
+  if ((pokemon.encoreTurns ?? 0) > 0) {
+    pokemon.encoreTurns = (pokemon.encoreTurns ?? 0) - 1;
     if (pokemon.encoreTurns <= 0) {
       addLogFn(`¡${pokemon.name} ya no está bajo el efecto de Otra Vez!`, 'log-info', pokemon);
       pokemon.encoreMove = null;
     }
   }
 
-  if (pokemon.tauntTurns > 0) {
-    pokemon.tauntTurns--;
+  if ((pokemon.tauntTurns ?? 0) > 0) {
+    pokemon.tauntTurns = (pokemon.tauntTurns ?? 0) - 1;
     if (pokemon.tauntTurns <= 0) {
       addLogFn(`¡La mofa sobre ${pokemon.name} ha terminado!`, 'log-info', pokemon);
     }
   }
 
-  if (pokemon.thrashTurns > 0) {
-    pokemon.thrashTurns--;
+  if ((pokemon.thrashTurns ?? 0) > 0) {
+    pokemon.thrashTurns = (pokemon.thrashTurns ?? 0) - 1;
     if (pokemon.thrashTurns <= 0) {
       addLogFn(`¡${pokemon.name} se calmó, pero terminó confundido!`, 'log-info', pokemon);
       pokemon.confused = 2 + Math.floor(Math.random() * 3);
@@ -83,8 +85,8 @@ export function tickStatus(pokemon: any, addLogFn: any, role = 'info') {
   }
 
   // 3. Daño por atadura
-  if (pokemon.bound > 0) {
-    pokemon.bound--;
+  if ((pokemon.bound ?? 0) > 0) {
+    pokemon.bound = (pokemon.bound ?? 0) - 1;
     if (pokemon.bound <= 0) {
       addLogFn(`¡${pokemon.name} se libró de la atadura!`, 'log-info', pokemon);
     } else {
@@ -104,8 +106,8 @@ export function tickStatus(pokemon: any, addLogFn: any, role = 'info') {
   }
 
   // 5. Canto Mortal (Perish Song)
-  if (pokemon.perishSongCount > 0) {
-    pokemon.perishSongCount--;
+  if ((pokemon.perishSongCount ?? 0) > 0) {
+    pokemon.perishSongCount = (pokemon.perishSongCount ?? 0) - 1;
     addLogFn(`¡La cuenta de Canto Mortal de ${pokemon.name} bajó a ${pokemon.perishSongCount}!`, 'log-info', pokemon);
     if (pokemon.perishSongCount === 0) {
       pokemon.hp = 0;
@@ -127,7 +129,7 @@ export function tickStatus(pokemon: any, addLogFn: any, role = 'info') {
 /**
  * Procesa efectos de campo como Drenadoras.
  */
-export function tickLeechSeed(pokemon: any, opponent: any, addLogFn: any) {
+export function tickLeechSeed(pokemon: Pokemon, opponent: Pokemon, addLogFn: (msg: string, cls: string, target?: Pokemon) => void) {
   if (!pokemon || !pokemon.seeded || pokemon.hp <= 0) return false;
 
   const dmg = Math.max(1, Math.floor(pokemon.maxHp / 8));
@@ -148,7 +150,7 @@ export function tickLeechSeed(pokemon: any, opponent: any, addLogFn: any) {
 /**
  * Limpia todos los estados temporales/volátiles de un Pokémon al salir o entrar en combate.
  */
-export function clearVolatileStatus(poke: any) {
+export function clearVolatileStatus(poke: Pokemon) {
   if (!poke) return;
   poke.confused = 0
   poke.flinched = false

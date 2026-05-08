@@ -7,7 +7,7 @@ import { calculateCatchRate } from './battleEngine'
 import { useItemOnPokemon } from '../providers/itemProvider'
 import { gameBus } from '@/logic/gameBus'
 import type { Pokemon } from '@/types/pokemon'
-import type { EventStore, AudioStore } from '@/types/stores'
+import type { EventStore, AudioStore, BattleStore } from '@/types/stores'
 import type { LogFn } from '@/types/battle'
 import type { BattleContext } from '@/types/battleContext'
 
@@ -16,7 +16,7 @@ interface ItemUsageOptions {
   addLog: LogFn;
   audio: AudioStore;
   consumeItem: (itemName: string) => void;
-  fsm?: any;
+  fsm?: BattleStore['fsm'];
   ctx?: BattleContext;
 }
 

@@ -20,6 +20,12 @@ export interface SQLiteDatabase {
   prepare: (sql: string) => unknown;
 }
 
+declare global {
+  interface Window {
+    initSqlJs: (o: unknown) => Promise<{ Database: new (data?: Uint8Array) => SQLiteDatabase }>;
+  }
+}
+
 let _sqliteDb: SQLiteDatabase | null = null
 let _initPromise: Promise<SQLiteDatabase | null> | null = null
 let _sqliteKey = 'pokevicio_sqlite_v2'
@@ -32,11 +38,11 @@ export async function queryLocal(sql: string, params: unknown[] = []): Promise<R
   if (!_sqliteDb) return []
   const res = _sqliteDb.exec(sql, params)
   if (!res.length) return []
-  return res[0]!.values.map((row: any[]) => {
-    const obj: { [key: string]: unknown } = {}
+  return res[0]!.values.map((row: unknown[]) => {
+    const obj: Record<string, unknown> = {}
     const result = res[0]!;
     result.columns.forEach((col: string, i: number) => {
-      (obj as any)[col] = row[i];
+      obj[col] = row[i];
     });
     return obj;
   })
@@ -59,7 +65,7 @@ export async function initSQLite(options: { sqliteKey?: string, inMemory?: boole
     if (options.sqliteKey) _sqliteKey = options.sqliteKey
     if (options.inMemory !== undefined) _isInMemory = options.inMemory
 
-    const SQL = await (window as any).initSqlJs({ locateFile: (file: string) => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.12.0/${file}` })
+    const SQL = await window.initSqlJs({ locateFile: (file: string) => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.12.0/${file}` })
     let savedBinary = await getFromIDB(_sqliteKey)
 
     if (!savedBinary) {
@@ -115,7 +121,7 @@ async function ensureSchemaIntegrity(): Promise<void> {
         continue
       }
 
-      const existingCols = info[0]!.values.map((v: any[]) => (v[1] as string).toLowerCase())
+      const existingCols = info[0]!.values.map((v: unknown[]) => (v[1] as string).toLowerCase())
       const colPart = schemaStr.substring(schemaStr.indexOf('(') + 1, schemaStr.lastIndexOf(')'))
       
       const colDefs: string[] = []
@@ -164,7 +170,7 @@ async function runMigrations(): Promise<void> {
   _sqliteDb.run("PRAGMA foreign_keys = OFF") // Disable FKs during structural changes
   _sqliteDb.run("CREATE TABLE IF NOT EXISTS _migrations (id TEXT PRIMARY KEY, applied_at TEXT DEFAULT (datetime('now')))")
   const appliedRes = _sqliteDb.exec("SELECT id FROM _migrations")
-  const applied = appliedRes[0]?.values.map((v: any[]) => v[0] as string) || []
+  const applied = appliedRes[0]?.values.map((v: unknown[]) => v[0] as string) || []
 
   const loadingStore = useLoadingStore()
   
@@ -296,9 +302,9 @@ export const db: {
         
         const res = _sqliteDb.exec(sql, params)
         const result = res[0]!;
-        const data = result.values.map((row: any[]) => {
+        const data = result.values.map((row: unknown[]) => {
           const obj: Record<string, unknown> = {}
-          result.columns.forEach((col: string, i: number) => (obj as any)[col] = row[i])
+          result.columns.forEach((col: string, i: number) => (obj as Record<string, unknown>)[col] = row[i])
           return obj
         });
         if (resolve) resolve(data)

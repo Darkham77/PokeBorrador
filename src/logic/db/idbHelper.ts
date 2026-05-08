@@ -11,18 +11,18 @@ const STORE_NAME = 'keyval'
 async function openIDB(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
     const request = indexedDB.open(DB_NAME, 1)
-    request.onupgradeneeded = (e: any) => {
-      const db = e.target.result
+    request.onupgradeneeded = (e: IDBVersionChangeEvent) => {
+      const db = (e.target as IDBOpenDBRequest).result;
       if (!db.objectStoreNames.contains(STORE_NAME)) {
         db.createObjectStore(STORE_NAME)
       }
     }
-    request.onsuccess = (e: any) => resolve(e.target.result)
-    request.onerror = (e: any) => reject(e.target.error)
+    request.onsuccess = (e: Event) => resolve((e.target as IDBOpenDBRequest).result)
+    request.onerror = (e: Event) => reject((e.target as IDBOpenDBRequest).error)
   })
 }
 
-export async function getFromIDB(key: string): Promise<any> {
+export async function getFromIDB(key: string): Promise<Uint8Array | null> {
   try {
     const db = await openIDB()
     return new Promise((resolve, reject) => {
@@ -34,7 +34,7 @@ export async function getFromIDB(key: string): Promise<any> {
   } catch (_e) { return null }
 }
 
-export async function setToIDB(key: string, val: any): Promise<void> {
+export async function setToIDB(key: string, val: Uint8Array): Promise<void> {
   try {
     const db = await openIDB()
     return new Promise((resolve, reject) => {

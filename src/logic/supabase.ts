@@ -12,8 +12,9 @@ const supabaseKey = import.meta.env.VITE_SUPABASE_KEY
 
 // Expose to global scope for legacy scripts if needed
 if (typeof window !== 'undefined') {
-  (window as any).VITE_SUPABASE_URL = (window as any).VITE_SUPABASE_URL || supabaseUrl;
-  (window as any).VITE_SUPABASE_KEY = (window as any).VITE_SUPABASE_KEY || supabaseKey;
+  const win = window as unknown as { VITE_SUPABASE_URL?: string; VITE_SUPABASE_KEY?: string };
+  win.VITE_SUPABASE_URL = win.VITE_SUPABASE_URL || supabaseUrl;
+  win.VITE_SUPABASE_KEY = win.VITE_SUPABASE_KEY || supabaseKey;
 }
 
 // Determine initial mode explicitly from session context

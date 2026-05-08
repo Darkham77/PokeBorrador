@@ -49,11 +49,11 @@ export interface GlobalMultipliers {
   catch: number;
 }
 
-const safeParse = (val: string | object | null | undefined): any => {
+const safeParse = (val: string | object | null | undefined): Record<string, unknown> => {
   if (typeof val === 'string') {
-    try { return JSON.parse(val); } catch (_e) { return {}; }
+    try { return JSON.parse(val) as Record<string, unknown>; } catch (_e) { return {}; }
   }
-  return val || {};
+  return (val as Record<string, unknown>) || {};
 };
 
 import { Temporal } from '@js-temporal/polyfill'
@@ -114,8 +114,8 @@ export function isEventActiveNow(event: Event, date: Date | Temporal.ZonedDateTi
   const yesterday = (day + 6) % 7
   const isScheduledYesterday = (sched.days as number[]).includes(yesterday)
 
-  const start = sched.startHour ?? 0
-  const end = sched.endHour ?? 24
+  const start = (sched.startHour as number) ?? 0
+  const end = (sched.endHour as number) ?? 24
 
   if (start < end) {
     // Normal range (e.g., 10 to 18)
@@ -193,8 +193,8 @@ export function getSpeciesBoosts(activeEvents: Event[], speciesId: string): { ra
 export function isNewEntryBetter(existingData: unknown, newData: unknown, sortBy: string = 'data.total_ivs'): boolean {
   if (!existingData) return true
   
-  const getVal = (obj: any, path: string): number => {
-    return path.split('.').reduce((acc, part) => acc && acc[part], obj) || 0
+  const getVal = (obj: unknown, path: string): number => {
+    return path.split('.').reduce((acc, part) => (acc as Record<string, unknown>)?.[part], obj) as number || 0
   }
 
   const oldScore = getVal(existingData, sortBy)

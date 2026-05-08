@@ -141,7 +141,8 @@ export async function runPlayerAction(store: BattleContext, moveIndex: number) {
   if (move.effect === 'metronome') {
     const moveNames = Object.keys(MOVE_DATA).filter(n => n !== 'Metrónomo');
     const randomName = moveNames[Math.floor(Math.random() * moveNames.length)] || 'Combate';
-    executableMove = { ...((MOVE_DATA as any)[randomName] || {}), name: randomName, id: randomName.toLowerCase().replace(/\s/g, '_'), pp: 5, maxPP: 5 } as Move;
+    const rawMoveData = (MOVE_DATA as Record<string, Partial<Move>>)[randomName] || {};
+    executableMove = { ...rawMoveData, name: randomName, id: randomName.toLowerCase().replace(/\s/g, '_'), pp: 5, maxPP: 5 } as Move;
     store.addLog(`¡El Metrónomo escogió ${randomName}!`, 'log-info', p);
   } else if (move.effect === 'mirror_move') {
     if (e.lastMove) {
@@ -318,7 +319,7 @@ export async function runEnemyAction(store: BattleContext) {
   const isWild = !store.activeBattle.value?.isTrainer && !store.activeBattle.value?.isGym
   
   if (!isWild && store.activeBattle.value && shouldEnemySwitch(e, p, store.activeBattle.value.enemyTeam)) {
-    const bestIdx = findBestSwitchIndex(store.activeBattle.value.enemyTeam, p, e.uid)
+    const bestIdx = findBestSwitchIndex(store.activeBattle.value.enemyTeam || [], p, e.uid)
     if (store.activeBattle.value.enemyTeam && bestIdx !== -1) {
       const newPoke = store.activeBattle.value.enemyTeam[bestIdx]
       if (!newPoke) return
@@ -380,7 +381,8 @@ export async function runEnemyAction(store: BattleContext) {
   if (enemyMove.effect === 'metronome') {
     const moveNames = Object.keys(MOVE_DATA).filter(n => n !== 'Metrónomo');
     const randomName = moveNames[Math.floor(Math.random() * moveNames.length)] || 'Combate';
-    executableMove = { ...((MOVE_DATA as any)[randomName] || {}), name: randomName, id: randomName.toLowerCase().replace(/\s/g, '_'), pp: 5, maxPP: 5 } as Move;
+    const rawMoveData = (MOVE_DATA as Record<string, Partial<Move>>)[randomName] || {};
+    executableMove = { ...rawMoveData, name: randomName, id: randomName.toLowerCase().replace(/\s/g, '_'), pp: 5, maxPP: 5 } as Move;
     store.addLog(`¡El Metrónomo escogió ${randomName}!`, 'log-info', e);
   } else if (enemyMove.effect === 'mirror_move') {
     if (p.lastMove) {

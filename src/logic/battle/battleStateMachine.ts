@@ -160,14 +160,14 @@ export function createBattleStateMachine() {
 
       const executeTransition = () => {
         // Validation check (can be expanded for strict enforcement)
-        if (newState && Object.values(BATTLE_STATES).includes(newState as any)) {
+        if (newState && (Object.values(BATTLE_STATES) as readonly string[]).includes(newState)) {
           const isSameState = currentState.value === newState;
           const allowedTransitions = validTransitions[currentState.value];
           if (!isSameState && allowedTransitions && !allowedTransitions.includes(newState) && newState !== BATTLE_STATES.EXIT_BATTLE) {
             logger.warn('FSM', `Unexpected transition: ${currentState.value} -> ${newState}`);
           }
           currentState.value = newState as BattleStateName;
-        } else if (newState && Object.values(BATTLE_SUBSTATES).includes(newState as any)) {
+        } else if (newState && (Object.values(BATTLE_SUBSTATES) as readonly string[]).includes(newState)) {
           // Si recibimos un sub-estado como primer argumento, mantenemos el estado actual 
           newSubState = newState as BattleSubStateName;
         }

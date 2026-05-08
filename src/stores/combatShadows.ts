@@ -6,15 +6,35 @@ import { logger } from '@/logic/utils/logger'
  * Combat Shadow Store
  * Centralized management for shadows in the virtual battle arena.
  */
-export const useCombatShadowStore = defineStore('combatShadows', () => {
-  const activeShadows = reactive(new Map<string, any>())
-  const feetCache = reactive(new Map<string, any>()) // Caché persistente de puntos de anclaje por spriteUrl
+interface FeetPoints {
+  feetY: number;
+  feetX: number;
+}
 
-  async function detectFeetPoints(url: string): Promise<{ feetY: number, feetX: number }> {
+interface CombatShadow {
+  id: string;
+  side: string;
+  entityX: number;
+  entityY: number;
+  entitySize: number;
+  width: string;
+  isFlying: boolean;
+  feetY: number;
+  feetX: number;
+  spriteUrl: string;
+  visible: boolean;
+  force?: boolean;
+}
+
+export const useCombatShadowStore = defineStore('combatShadows', () => {
+  const activeShadows = reactive(new Map<string, CombatShadow>())
+  const feetCache = reactive(new Map<string, FeetPoints>()) // Caché persistente de puntos de anclaje por spriteUrl
+
+  async function detectFeetPoints(url: string): Promise<FeetPoints> {
     if (!url) return { feetY: 0.9, feetX: 0.5 }
     
     // Si ya está en caché, lo devolvemos inmediatamente
-    if (feetCache.has(url)) return feetCache.get(url)
+    if (feetCache.has(url)) return feetCache.get(url)!
     
     return new Promise((resolve) => {
       const img = new Image()
@@ -65,9 +85,8 @@ export const useCombatShadowStore = defineStore('combatShadows', () => {
     })
   }
 
-  async function requestShadow(id: string, options: any = {}) {
-    if (!id) return
-    const existing = activeShadows.get(id)
+  async function requestShadow(id: string, options: Partial<CombatShadow> = {}) {
+  const existing = activeShadows.get(id);
     
     // Bloqueo de propiedad: Si ya tiene una sombra activa para este sprite, no le damos otra (Evitar parpadeos)
     if (existing && options.spriteUrl === existing.spriteUrl && !options.force) {
@@ -99,9 +118,9 @@ export const useCombatShadowStore = defineStore('combatShadows', () => {
       isFlying: options.isFlying || false,
       feetY,
       feetX,
-      spriteUrl: options.spriteUrl || existing?.spriteUrl,
+      spriteUrl: options.spriteUrl || existing?.spriteUrl || '',
       visible
-    }
+    } as CombatShadow
     
     activeShadows.set(id, newShadow)
 

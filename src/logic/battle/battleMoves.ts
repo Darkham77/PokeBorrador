@@ -1,9 +1,7 @@
+import type { Pokemon } from '@/types/pokemon';
+import type { BattleStages, LogFn, BattleState } from '@/types/battle';
 
-/**
- * Move Effects logic (Buffs, Debuffs, Weather, Field).
- */
-
-export function applyMoveEffect(effect: any, src: any, tgt: any, srcStages: any, tgtStages: any, addLogFn: any, options: any = {}) {
+export function applyMoveEffect(effect: string | null | undefined, src: Pokemon, tgt: Pokemon, srcStages: BattleStages, tgtStages: BattleStages, addLogFn: LogFn, options: { b?: BattleState | null } = {}) {
   const { b } = options;
   
   switch (effect) {
@@ -46,7 +44,7 @@ export function applyMoveEffect(effect: any, src: any, tgt: any, srcStages: any,
       else if (tgt.type === 'electric' || tgt.type2 === 'electric') {
         addLogFn(`¡No afecta a ${tgt.name}!`, 'log-info', tgt);
       } else {
-        tgt.status = 'paralyze'; addLogFn(`¡${tgt.name} fue paralizado!`, 'log-info', tgt);
+        tgt.status = 'paralysis'; addLogFn(`¡${tgt.name} fue paralizado!`, 'log-info', tgt);
       }
       break;
     case 'burn':

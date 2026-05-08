@@ -110,7 +110,8 @@ export const useGTSStore = defineStore('gts', () => {
     if (auth.sessionMode === 'offline' || !auth.user) return
     if (salesChannel) return
     
-    salesChannel = (game.db.channel(`market-sales-${auth.user.id}`) as any)
+    const channelName = `market-sales-${auth.user.id}`
+    salesChannel = (game.db.channel(channelName) as any)
       .on('postgres_changes', {
         event: 'UPDATE',
         schema: 'public',

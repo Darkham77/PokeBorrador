@@ -38,6 +38,7 @@ export interface BattleState {
   weather: BattleWeather;
   turnCount: number;
   over: boolean;
+  turn?: 'player' | 'enemy' | null;
   isCapture?: boolean;
   escapeAttempts: number;
   rarity?: number;
@@ -46,6 +47,7 @@ export interface BattleState {
   playerTeam?: Pokemon[];
   enemyTeam?: Pokemon[];
   _initialEnemy?: Pokemon | null;
+  _initialPlayer?: Pokemon | null;
   isFishing?: boolean;
   lastDamage?: number;
   enemyUsedItem?: boolean;
@@ -54,6 +56,8 @@ export interface BattleState {
   enemyStages?: BattleStages;
   battleLogs?: BattleLog[];
   persistenceMode?: 'local' | 'remote';
+  learnQueue?: unknown[];
+  isPvP?: boolean;
 }
 
 export type BattleSource = Pokemon | 'player' | 'enemy_trainer' | 'enemy' | string;

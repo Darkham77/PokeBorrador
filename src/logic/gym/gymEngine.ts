@@ -18,14 +18,21 @@ export const GYM_RATIOS = {
 
 import type { GameState } from '@/types/game';
 
+export interface GymVictoryResult {
+  tmDropped: boolean;
+  extraCoins: number;
+  newProgress: number;
+  isFirstTime: boolean;
+}
+
 /**
  * Calculates the rewards for a gym battle.
  * @param {Gym} gym - Gym definition (id, leader, rewardTM, etc.)
  * @param {string} difficulty - 'easy' | 'normal' | 'hard'
  * @param {GameState} state - Current player state
- * @returns {any} { newInventory, extraCoins, tmDropped, newProgress }
+ * @returns {GymVictoryResult} { tmDropped, extraCoins, newProgress, isFirstTime }
  */
-export function processGymVictory(gym: Gym, difficulty: 'easy' | 'normal' | 'hard', state: GameState): any {
+export function processGymVictory(gym: Gym, difficulty: 'easy' | 'normal' | 'hard', state: GameState): GymVictoryResult {
   const diffMap: Record<string, number> = { easy: 1, normal: 2, hard: 3 };
   const diffValue = diffMap[difficulty] || 1;
   const isFirstTime = !state.defeatedGyms.includes(gym.id);

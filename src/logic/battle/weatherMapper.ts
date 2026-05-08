@@ -84,7 +84,7 @@ export function getVisualWeather(type: string | null | undefined): string {
 
   // Si no es un visual directo, usamos el mapeo mecánico para obtener el fallback visual
   const mech = getMechanicalWeather(lower);
-  return (WEATHER_UI_METADATA[mech] as any)?.visual || 'clear';
+  return WEATHER_UI_METADATA[mech]?.visual || 'clear';
 }
 
 /**

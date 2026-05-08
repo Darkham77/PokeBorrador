@@ -93,6 +93,8 @@ export const useBattleStore = defineStore('battle', () => {
     }
   })
 
+  const isPvP = computed(() => !!activeBattle.value?.isPvP)
+
   const getContext = (): BattleContext => ({
     gs: gs as unknown as GameStore, 
     warStore, 
@@ -111,6 +113,7 @@ export const useBattleStore = defineStore('battle', () => {
     isSearching, 
     isReadyToExit, 
     isIntroAnimating,
+    isPvP,
     isProcessing, 
     debugBinoculars, 
     upcomingPokemon, 
@@ -146,8 +149,8 @@ export const useBattleStore = defineStore('battle', () => {
   const initBattle = async (locId: string, isTr: boolean, trName: string, isGym: boolean, gymId: string, wasSearching: boolean) => 
     initBattleSequence(getContext(), { 
       locationId: locId, isTrainer: isTr, trainerName: trName, isGym, gymId, wasSearching,
-      initialEnemy: activeBattle.value?.enemy,
-      initialPlayer: gs.state.team[0]
+      initialEnemy: activeBattle.value?.enemy || null,
+      initialPlayer: gs.state.team[0] || null
     })
 
   const addLog = (msg: string, type = 'log-info', source: BattleSource | null = null, sideOverride: 'player' | 'enemy' | null = null) => {
@@ -449,7 +452,7 @@ export const useBattleStore = defineStore('battle', () => {
 
 
   if (typeof window !== 'undefined') {
-    const win = window as unknown as { __VITE_DEBUG__: any }
+    const win = window as unknown as { __VITE_DEBUG__: Record<string, unknown> }
     win.__VITE_DEBUG__ = win.__VITE_DEBUG__ || {};
     win.__VITE_DEBUG__.forceFlee = async () => {
       logger.warn('DEBUG', 'Forzando huida del combate...')
@@ -479,18 +482,25 @@ export const useBattleStore = defineStore('battle', () => {
 
   return {
     state: activeBattle,
-    battleLogs,
     isBattleActive,
     isFinishing,
     isProcessing,
+    isSearching,
     player,
     enemy,
+    isIntroAnimating,
+    isPvP,
     playerStages,
     enemyStages,
+    battleLogs,
+    debugLoopPokemon,
+    debugBinoculars,
     attackerSide,
     activeMove,
     upcomingPokemon,
-    debugLoopPokemon,
+    fsm,
+    currentFsmState,
+    currentSubState,
     restoreBattle,
     addLog,
     clearLogs,
@@ -509,8 +519,6 @@ export const useBattleStore = defineStore('battle', () => {
         message: '¿Estás seguro que deseas huir de este encuentro?',
         confirmText: 'SÍ, HUIR',
         cancelText: 'VOLVER',
-        type: 'primary',
-        variant: 'retro',
         onConfirm: async () => {
           isProcessing.value = true;
           if (!activeBattle.value) { isProcessing.value = false; return }
@@ -562,12 +570,6 @@ export const useBattleStore = defineStore('battle', () => {
     startBattle,
     _startBattle: startBattle,
     startEncounter: async () => await startEncounter(getContext()),
-    executeSwitch: _executeSwitch,
-    isSearching,
-    isIntroAnimating,
-    debugBinoculars,
-    fsm,
-    currentFsmState,
-    currentSubState
+    executeSwitch: _executeSwitch
   }
 })

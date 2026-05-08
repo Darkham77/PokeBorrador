@@ -15,13 +15,12 @@ export function getSpeciesHistory(id: string): string[] {
   
   const findPreEvo = (speciesId: string): string | null => {
     // 1. Level Evolutions
-    for (const [from, data] of Object.entries(EVOLUTION_TABLE)) {
-      const evolutionTo = (data as any).to || (data as any).species;
-      if (evolutionTo === speciesId) return from;
+    for (const [from, data] of Object.entries(EVOLUTION_TABLE as Record<string, { to: string }>)) {
+      if (data.to === speciesId) return from;
     }
     // 2. Stone Evolutions
-    for (const [from, data] of Object.entries(STONE_EVOLUTIONS)) {
-      if ((data as any).to === speciesId) return from;
+    for (const [from, data] of Object.entries(STONE_EVOLUTIONS as Record<string, { to: string }>)) {
+      if (data.to === speciesId) return from;
     }
     // 3. Trade Evolutions
     for (const [from, to] of Object.entries(TRADE_EVOLUTIONS)) {

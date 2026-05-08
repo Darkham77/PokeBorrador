@@ -6,10 +6,18 @@
 import { logger } from '../utils/logger';
 import { Temporal } from '@js-temporal/polyfill';
 
+import { DBRouter } from '../db/dbRouter';
+
 export interface Guardian {
   id: string;
   lv: number;
   pts: number;
+}
+
+export interface DynamicEvent {
+  type: string;
+  mapIds?: string[];
+  [key: string]: unknown;
 }
 
 const GUARDIAN_POOL: Record<string, Guardian[]> = {
@@ -45,12 +53,13 @@ export const GuardianService = {
   /**
    * Determina si un mapa está en zona de conflicto hoy.
    */
-  isConflictZone(mapId: string, dynamicEvents: any[] = []): boolean {
+  isConflictZone(mapId: string, dynamicEvents: DynamicEvent[] = []): boolean {
     const forcedByEvent = dynamicEvents.find(ev => ev.type === 'WORLD_CONFLICT' && ev.mapIds?.includes(mapId));
     if (forcedByEvent) return true;
 
     const dateStr = this.getArgentinaDateString();
-    const maps = ((typeof window !== 'undefined' ? (window as any).FIRE_RED_MAPS : (global as any).FIRE_RED_MAPS) || []) as any[];
+    const win = (typeof window !== 'undefined' ? window : global) as unknown as { FIRE_RED_MAPS?: { id: string }[] };
+    const maps = win.FIRE_RED_MAPS || [];
     if (maps.length === 0) return false;
 
     const allMapIds = maps.map(m => m.id);
@@ -60,7 +69,7 @@ export const GuardianService = {
     while (zones.length < 5 && zones.length < allMapIds.length) {
       const idx = Math.abs(tempSeed) % allMapIds.length;
       const mId = allMapIds[idx];
-      if (!zones.includes(mId)) zones.push(mId);
+      if (mId && !zones.includes(mId)) zones.push(mId);
       tempSeed = this.hashString(tempSeed.toString());
     }
     return zones.includes(mapId);
@@ -69,7 +78,7 @@ export const GuardianService = {
   /**
    * Obtiene el guardián correspondiente para un mapa.
    */
-  getGuardianForMap(mapId: string, dynamicEvents: any[] = []): Guardian | null {
+  getGuardianForMap(mapId: string, dynamicEvents: DynamicEvent[] = []): Guardian | null {
     if (!this.isConflictZone(mapId, dynamicEvents)) return null;
 
     const dateStr = this.getArgentinaDateString();
@@ -97,10 +106,10 @@ export const GuardianService = {
   /**
    * Registra la captura o derrota del guardián en el servidor.
    */
-  async recordGuardianResult(mapId: string, userId: string, faction: string, pts: number, outcome: 'capture' | 'defeat' = 'capture', db: any = null): Promise<any> {
+   async recordGuardianResult(mapId: string, userId: string, faction: string, pts: number, outcome: 'capture' | 'defeat' = 'capture', db: DBRouter | null = null): Promise<{ success: boolean; ptsAwarded: number; error: unknown }> {
     if (!db) {
       logger.warn('Guardian', 'No se proporcionó instancia de DBRouter.');
-      return { success: false, error: 'No DB instance' };
+      return { success: false, ptsAwarded: 0, error: 'No DB instance' };
     }
 
     const today = this.getArgentinaDateString();

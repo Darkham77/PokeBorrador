@@ -17,10 +17,10 @@ interface Props {
 const props = defineProps<Props>()
 
 const { styles } = useVirtualPosition(
-  () => props.x,
-  () => props.y,
-  () => props.w,
-  () => props.h
+  () => Number(props.x),
+  () => Number(props.y),
+  () => props.w !== undefined ? Number(props.w) : undefined,
+  () => props.h !== undefined ? Number(props.h) : undefined
 )
 </script>
 

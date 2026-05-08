@@ -80,9 +80,9 @@ const handleUseItem = (item: BattleItem) => {
         if (index !== -1) {
           const res = inventoryStore.useItem(dbItem.name, 'team', index)
           if (res.success) {
-            uiStore.notify(res.msg, '✨')
+            uiStore.notify(res.message, '✨')
           } else {
-            uiStore.notify(res.msg, '⚠️')
+            uiStore.notify(res.message, '⚠️')
           }
         }
       }

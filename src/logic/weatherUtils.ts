@@ -38,7 +38,7 @@ export function mulberry32(a: number): () => number {
  */
 export function getRouteWeather(mapId: string, seasonId: string, epochHour: number): string {
   // 1. Get Probability Table
-  const routeTables = (ROUTE_WEATHER_TABLES as Record<string, any>)[mapId];
+  const routeTables = (ROUTE_WEATHER_TABLES as Record<string, Record<string, Record<string, number> | Record<string, Record<string, number>>>>)[mapId];
   if (!routeTables || !routeTables[seasonId]) {
     return 'clear'; // Fallback for missing tables
   }

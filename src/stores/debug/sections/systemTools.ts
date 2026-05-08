@@ -68,8 +68,9 @@ export function registerSystemTools(debug: DebugSystem, { game, ui, modalStore, 
       const { error } = await game.db.from('events_config').upsert(eventData)
       if (error) throw error
       ui.notify('Evento guardado (CLI)', '✅')
-      if (eventStoreModule && eventStoreModule.useEventStore) {
-        const eventStore = eventStoreModule.useEventStore()
+      const mod = eventStoreModule as { useEventStore?: () => { fetchEvents: () => Promise<void> } } | undefined;
+      if (mod?.useEventStore) {
+        const eventStore = mod.useEventStore()
         await eventStore.fetchEvents()
       }
     },

@@ -61,7 +61,7 @@ export const useChatStore = defineStore('chat', () => {
       .from('global_chat_messages')
       .select('*')
       .order('created_at', { ascending: false })
-      .limit(50) as { data: ChatMessage[] | null, error: any }
+      .limit(50) as { data: ChatMessage[] | null, error: unknown }
 
     if (!error && data) {
       globalMessages.value = [...data].reverse()

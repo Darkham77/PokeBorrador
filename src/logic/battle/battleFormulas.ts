@@ -335,7 +335,7 @@ export function calculateDamage(attacker: Pokemon, defender: Pokemon, move: Part
 export function calculateCatchRate(pokemon: Pokemon, rawBallType = 'poke-ball', eventCatchMult = 1, ctx: CatchOptions = {}) {
   const ballName = String(rawBallType || '').toLowerCase();
   
-  const BALL_BEHAVIORS: Record<string, { guaranteed?: boolean, mult?: number | ((p: Pokemon, c: any) => number) }> = {
+  const BALL_BEHAVIORS: Record<string, { guaranteed?: boolean, mult?: number | ((p: Pokemon, c: CatchOptions) => number) }> = {
     'master': { guaranteed: true },
     '100': { guaranteed: true },
     'ultra': { mult: 2.0 },

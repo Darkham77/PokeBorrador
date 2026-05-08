@@ -102,7 +102,7 @@ export interface AssetOptions {
   isBack?: boolean;
   back?: boolean; // Legacy fallback
   cycle?: 'morning' | 'day' | 'dusk' | 'night';
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 /**

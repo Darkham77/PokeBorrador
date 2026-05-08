@@ -135,7 +135,7 @@ const enemyIsFloating = computed(() => {
   const isLevitating = p.ability === 'Levitación'
   if (isFlying || isLevitating) return true
 
-  const data = pokemonDataProvider.getPokemonData(p.id)
+  const data = p.id ? pokemonDataProvider.getPokemonData(p.id) : null
   return data?.isFloating || false
 })
 

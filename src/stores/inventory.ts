@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed, watch } from 'vue'
 import { useGameStore } from './game'
+import type { GameState } from '@/types/game'
 import { useBattleStore } from './battle'
 import { useUIStore } from './ui'
 import { safeStorage } from '@/logic/utils/storage'
@@ -199,63 +200,55 @@ export const useInventoryStore = defineStore('inventory', () => {
   }
 
   // --- ITEM ACTIONS ---
-  function useItem(itemName: string, context: 'team' | 'box' | null = null, index: number | null = null) {
+  function useItem(itemName: string, context: 'team' | 'box' | null = null, index: number | null = null): ItemEffectResult {
     const list = context === 'team' ? gameStore.state.team : gameStore.state.box
-    const pokemon = index !== null ? list[index] : null
+    const pokemon = index !== null ? (list as Pokemon[])[index] : null
     
     // --- INTEGRACIÓN CON COMBATE (Prioridad Absoluta) ---
-    // Si estamos en combate, delegamos toda la lógica (aplicación, consumo y logs) 
-    // al battleStore para mantener la sincronía del turno.
     const battleStore = useBattleStore()
     if (battleStore.isBattleActive && !battleStore.isProcessing) {
       battleStore.useItemInBattle(itemName, context === 'team' ? index : null)
-      return { success: true, msg: 'Usando objeto en combate...' }
+      return { success: true, message: 'Usando objeto en combate...' }
     }
 
     // --- LÓGICA FUERA DE COMBATE ---
     // Global items (Repels, etc.)
     if (isGlobalItem(itemName)) {
-      const effectFn = ITEM_EFFECTS[itemName]
-      if (!effectFn) return { success: false, msg: 'Efecto global no implementado.' }
+      const effectFn = (ITEM_EFFECTS as Record<string, (p: GameState) => ItemEffectResult>)[itemName]
+      if (!effectFn) return { success: false, message: 'Efecto global no implementado.' }
       
       const result = effectFn(gameStore.state)
-      consumeItem(itemName)
-      return { success: true, msg: result }
+      if (result.success) {
+        consumeItem(itemName)
+        gameStore.save(false)
+      }
+      return result
     }
 
-    if (!pokemon) return { success: false, msg: 'Seleccioná un Pokémon.' }
+    if (!pokemon) return { success: false, message: 'Seleccioná un Pokémon.' }
 
-    const effectFn = ITEM_EFFECTS[itemName]
+    const effectFn = (ITEM_EFFECTS as Record<string, (p: Pokemon) => ItemEffectResult>)[itemName]
     let result: ItemEffectResult | null;
 
     if (effectFn) {
       result = effectFn(pokemon)
     } else {
-      // Check dynamic effects (TMs, etc)
       result = getDynamicItemEffect(itemName, pokemon)
     }
 
-    if (!result || !result.success) return { success: false, msg: result?.message || 'Efecto no implementado.' }
+    if (!result || !result.success) {
+      return result || { success: false, message: 'Este objeto no tiene efecto.' }
+    }
 
-    // --- DEFERRED LOGIC (Modals) ---
+    // --- DEFERRED LOGIC & SPECIAL EFFECTS ---
     if (result.resultType === 'relearner') {
       uiStore.activePokemonForRelearner = pokemon
       uiStore.isMoveRelearnerOpen = true
-      return { success: true, msg: result.message }
-    }
-
-    if (result.resultType === 'evolution') {
+    } else if (result.resultType === 'evolution') {
       uiStore.startEvolution(pokemon, result.targetId || '', itemName)
-      return { success: true, msg: result.message }
-    }
-
-    if (result.resultType === 'levelup') {
+    } else if (result.resultType === 'levelup') {
       gameStore.checkLevelUp(pokemon)
-      consumeItem(itemName)
-      return { success: true, msg: result.message }
-    }
-
-    if (result.resultType === 'learn_move') {
+    } else if (result.resultType === 'learn_move') {
       const moveName = result.moveName || ''
       const moveData = pokemonDataProvider.getMoveData(moveName)
       const moveObj = { 
@@ -270,36 +263,26 @@ export const useInventoryStore = defineStore('inventory', () => {
       } else {
         uiStore.addToLearnQueue({ pokemon, move: moveObj as Move })
       }
-      consumeItem(itemName)
-      return { success: true, msg: result.message }
-    }
-
-    if (result.resultType === 'nature_patch') {
+    } else if (result.resultType === 'nature_patch') {
       uiStore.activePokemonForNature = pokemon
       uiStore.isNaturePatchOpen = true
-      consumeItem(itemName)
-      return { success: true, msg: result.message }
-    }
-
-    if (result.resultType === 'pp_up') {
+    } else if (result.resultType === 'pp_up') {
       uiStore.activePokemonForPPUp = pokemon
       uiStore.isPPUpOpen = true
-      consumeItem(itemName)
-      return { success: true, msg: result.message }
-    }
-
-    if (result.resultType === 'ability_pill') {
+    } else if (result.resultType === 'ability_pill') {
       uiStore.activePokemonForAbility = pokemon
       uiStore.isAbilityPillOpen = true
-      consumeItem(itemName)
-      return { success: true, msg: result.message }
     }
 
-    // --- LÓGICA DE PERSISTENCIA (Fuera de Combate) ---
+    // --- FINAL PERSISTENCE ---
+    // Consumption logic: if levelup we consume here. 
+    // If other deferred (evolution, relearner) they consume in their own flow if needed, 
+    // but usually they consume ONCE started.
+    // In this codebase, for consistency with legacy, we consume here if successful.
     consumeItem(itemName)
-    gameStore.save()
+    gameStore.save(false)
 
-    return { success: true, msg: result.message }
+    return result
   }
 
   function consumeItem(itemName: string) {

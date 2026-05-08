@@ -25,19 +25,20 @@ const COLORS = {
 };
 
 // Pre-import node:util if in Node.js
-let styleText: any = (text: string, _color: string) => text; // Fallback
+type StyleTextFn = (style: string, text: string) => string;
+let styleText: StyleTextFn = (_style: string, text: string) => text; // Fallback
 if (!isBrowser) {
   try {
     // Dynamic import to avoid bundling issues in browser
     const util = await import('node:util');
-    styleText = util.styleText;
-  } catch (e) {
+    styleText = util.styleText as StyleTextFn;
+  } catch (_e) {
     // Fallback if not available
   }
 }
 
 export const logger = {
-  info(tag: string, message: string, ...args: any[]) {
+  info(tag: string, message: string, ...args: unknown[]) {
     if (isProduction) return;
     if (isBrowser) {
       console.log(`%c[${tag}]%c ${message}`, `color: ${COLORS.info}; font-weight: bold;`, 'color: inherit;', ...args);
@@ -46,7 +47,7 @@ export const logger = {
     }
   },
 
-  success(tag: string, message: string, ...args: any[]) {
+  success(tag: string, message: string, ...args: unknown[]) {
     if (isProduction) return;
     if (isBrowser) {
       console.log(`%c[${tag}]%c ${message}`, `color: ${COLORS.success}; font-weight: bold;`, `color: ${COLORS.success};`, ...args);
@@ -55,7 +56,7 @@ export const logger = {
     }
   },
 
-  warn(tag: string, message: string, ...args: any[]) {
+  warn(tag: string, message: string, ...args: unknown[]) {
     if (isBrowser) {
       console.warn(`%c[${tag}]%c ${message}`, `color: ${COLORS.warn}; font-weight: bold;`, 'color: inherit;', ...args);
     } else {
@@ -63,7 +64,7 @@ export const logger = {
     }
   },
 
-  error(tag: string, message: string, ...args: any[]) {
+  error(tag: string, message: string, ...args: unknown[]) {
     if (isBrowser) {
       console.error(`%c[${tag}]%c ${message}`, `color: ${COLORS.error}; font-weight: bold;`, 'color: inherit;', ...args);
     } else {
@@ -71,7 +72,7 @@ export const logger = {
     }
   },
 
-  debug(tag: string, message: string, ...args: any[]) {
+  debug(tag: string, message: string, ...args: unknown[]) {
     if (isProduction) return;
     if (isBrowser) {
       console.log(`%c[${tag}]%c ${message}`, `color: ${COLORS.debug}; font-style: italic;`, 'color: #888;', ...args);

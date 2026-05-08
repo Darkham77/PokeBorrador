@@ -1,9 +1,10 @@
-import { computed, ref } from 'vue';
+import { computed, ref, type Ref } from 'vue';
 import { getPokemonTier } from '@/logic/pokemon/tierEngine';
 import { PDEX_ORDER } from '@/data/pokedex';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+import type { Pokemon } from '@/types/pokemon';
 
-export function useBoxFilters(boxArray: any, _currentBoxIndex: any) {
+export function useBoxFilters(boxArray: Ref<(Pokemon | null)[]>, _currentBoxIndex: Ref<number>) {
   const filters = ref({
     tier: 'all',
     type: 'all',
@@ -51,13 +52,14 @@ export function useBoxFilters(boxArray: any, _currentBoxIndex: any) {
     const isSorted = sortMode.value !== 'none';
     
     const rawList = boxArray.value || [];
-    let result = rawList.map((p: any, index: number) => ({ p, index }));
+    const mappedList = rawList.map((p, index) => ({ p, index }));
+    let result: { p: Pokemon, index: number }[] = []
 
     if (isFiltered || isSorted) {
-      result = result.filter((item: any) => item.p != null);
+      result = mappedList.filter((item): item is { p: Pokemon, index: number } => item.p != null);
       
       if (isFiltered) {
-      result = result.filter(({ p }: any) => {
+      result = result.filter(({ p }) => {
         const f = filters.value;
         const tierInfo = getPokemonTier(p);
         const ivs = p.ivs || {};
@@ -108,7 +110,7 @@ export function useBoxFilters(boxArray: any, _currentBoxIndex: any) {
 
     if (isSorted) {
       const isAsc = sortDirection.value === 'asc';
-      result.sort((a: any, b: any) => {
+      result.sort((a, b) => {
         let cmp = 0;
         const pA = a.p;
         const pB = b.p;
@@ -135,9 +137,11 @@ export function useBoxFilters(boxArray: any, _currentBoxIndex: any) {
           cmp = (bstB + totalIvsB) - (bstA + totalIvsA);
         }
         else if (sortMode.value === 'recent') {
-          const dateA = pA.captureDate || pA.timestamp || pA.date || pA.created_at || pA.obtainedAt || 0;
-          const dateB = pB.captureDate || pB.timestamp || pB.date || pB.created_at || pB.obtainedAt || 0;
-          cmp = dateB - dateA;
+          const getDate = (p: Pokemon) => {
+            const extra = p as unknown as Record<string, number | undefined>;
+            return extra.captureDate || extra.timestamp || extra.date || extra.created_at || p.obtainedAt || 0;
+          };
+          cmp = (getDate(pB) || 0) - (getDate(pA) || 0);
         }
 
         if (cmp === 0) {
@@ -146,10 +150,11 @@ export function useBoxFilters(boxArray: any, _currentBoxIndex: any) {
         return isAsc ? -cmp : cmp;
       });
     }
-  }
-
     return result;
-  });
+  } else {
+    return mappedList as { p: Pokemon, index: number }[];
+  }
+});
 
   function resetFilters() {
     filters.value = {

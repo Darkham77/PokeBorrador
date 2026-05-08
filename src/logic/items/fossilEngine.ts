@@ -1,6 +1,6 @@
-
 import { makePokemon } from '@/logic/pokemonFactory';
 import type { Pokemon } from '@/types/pokemon';
+import type { GameState } from '@/types/game';
 
 /**
  * fossilEngine.ts
@@ -10,10 +10,10 @@ import type { Pokemon } from '@/types/pokemon';
 /**
  * Restores a fossil and adds the resulting Pokemon to the player's collection.
  * @param {string} pokemonId - The ID of the species to restore.
- * @param {any} state - The player's game state.
+ * @param {GameState} state - The player's game state.
  * @returns {any} { pokemon, sentTo }
  */
-export function restoreFossil(pokemonId: string, state: any): { pokemon: Pokemon; sentTo: 'team' | 'box' } {
+export function restoreFossil(pokemonId: string, state: GameState): { pokemon: Pokemon; sentTo: 'team' | 'box' } {
   // 1. Generate the Pokemon at Level 1
   const pokemon = makePokemon(pokemonId, 1) as Pokemon;
   

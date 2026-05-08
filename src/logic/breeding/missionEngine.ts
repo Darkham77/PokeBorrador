@@ -179,7 +179,7 @@ export function generateMission(trainerLevel: number, dateStr: string): DaycareM
   const tKey = tKeys[Math.floor(Math.random() * tKeys.length)] || 'caza_bichos';
   const trainer = TRAINER_TYPES[tKey] || TRAINER_TYPES['caza_bichos'] as { name: string; sprite: string };
 
-  const targetName = (POKEMON_DB as any)[targetId]?.name || targetId;
+  const targetName = (POKEMON_DB as Record<string, { name: string } | undefined>)[targetId]?.name || targetId;
   const templates = MISSION_DIALOGUES_BASE[tKey] || MISSION_DIALOGUES_BASE['default'] || [];
   const template = templates[Math.floor(Math.random() * templates.length)] || '...';
   const dialogue = template.replace('${pokemon}', targetName).replace('${req}', reqText);

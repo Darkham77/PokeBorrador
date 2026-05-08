@@ -31,8 +31,8 @@ export interface PvPActionResult {
 }
 
 export interface PvPChannel {
-  send: (payload: { type: 'presence' | 'postgres_changes' | 'broadcast', event: string, payload: any }) => any;
-  unsubscribe: () => any;
+  send: (payload: { type: 'presence' | 'postgres_changes' | 'broadcast', event: string, payload: unknown }) => void;
+  unsubscribe: () => void;
 }
 
 export interface PvPBattleState {
@@ -132,9 +132,9 @@ export function resolvePvPTurn(battleState: PvPBattleState): PvPTurnResult | und
     } as MoveBaseData
 
     if (attacker.status === 'sleep') {
-      const sleepTurns = (attacker as any).sleepTurns ?? 0
+      const sleepTurns = (attacker as unknown as { sleepTurns?: number }).sleepTurns ?? 0
       if (sleepTurns > 0) {
-        (attacker as any).sleepTurns = sleepTurns - 1
+        (attacker as unknown as { sleepTurns: number }).sleepTurns = sleepTurns - 1
         return { type: 'move', moveName, actorIsHost, statusBlocked: 'sleep', effectLog }
       }
       attacker.status = null
@@ -155,8 +155,8 @@ export function resolvePvPTurn(battleState: PvPBattleState): PvPTurnResult | und
     }
 
     const { dmg, eff } = calculateDamage(attacker, defender, md, { 
-      atkStages: (atkS as Record<string, any>)[md.cat === 'physical' ? 'atk' : 'spa'], 
-      defStages: (defS as Record<string, any>)[md.cat === 'physical' ? 'def' : 'spd'] 
+      atkStages: (atkS as unknown as Record<string, number>)[md.cat === 'physical' ? 'atk' : 'spa'], 
+      defStages: (defS as unknown as Record<string, number>)[md.cat === 'physical' ? 'def' : 'spd'] 
     })
     const targetHpArr = actorIsHost ? battleState.enemyHp : battleState.myHp
     const targetIdx = actorIsHost ? battleState.enemyActiveIdx : battleState.myActiveIdx

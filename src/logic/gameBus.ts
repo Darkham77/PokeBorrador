@@ -5,7 +5,7 @@
  * Replaces the old PhaserBridge to remove all engine dependencies.
  */
 class GameBus extends EventTarget {
-  emit(event: string, detail: any = {}): void {
+  emit(event: string, detail: unknown = {}): void {
     this.dispatchEvent(new CustomEvent(event, { detail }))
   }
 
@@ -18,7 +18,7 @@ class GameBus extends EventTarget {
   }
 
   // Compatibility method for the old bridge
-  sendCommand(_scene: string, command: string, payload: any): void {
+  sendCommand(_scene: string, command: string, payload: unknown): void {
     // For now, we just emit the command as a global event
     this.emit(command, payload)
   }

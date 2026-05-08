@@ -24,13 +24,13 @@ export function useBattleVisuals() {
   }
 
   const redrawBackground = (isBattleActive: boolean, locationId: string, cycle: string) => {
-    if (isBattleActive && typeof (window as any).drawBattleBackground === 'function') {
+    if (isBattleActive && typeof window.drawBattleBackground === 'function') {
       const arena = containerRef.value
       const canvas = canvasRef.value
       if (arena && canvas) {
         canvas.width = arena.offsetWidth
         canvas.height = arena.offsetHeight
-        ;(window as any).drawBattleBackground(locationId || 'wild', cycle)
+        window.drawBattleBackground(locationId || 'wild', cycle)
       }
     }
   }

@@ -21,11 +21,14 @@ export function getBackSpriteUrl(id: string, isShiny: boolean = false): string {
   return getAssetUrl(ASSET_TYPES.POKEMON, id, { isShiny, isBack: true });
 }
 
-/**
- * Global bridge for legacy code
- */
+// Global bridge for legacy code
 if (typeof window !== 'undefined') {
-  (window as any).POKEMON_SPRITE_IDS = POKEMON_SPRITE_IDS;
-  (window as any).getSpriteUrl = getSpriteUrl;
-  (window as any).getBackSpriteUrl = getBackSpriteUrl;
+  const win = window as unknown as { 
+    POKEMON_SPRITE_IDS: typeof POKEMON_SPRITE_IDS;
+    getSpriteUrl: typeof getSpriteUrl;
+    getBackSpriteUrl: typeof getBackSpriteUrl;
+  };
+  win.POKEMON_SPRITE_IDS = POKEMON_SPRITE_IDS;
+  win.getSpriteUrl = getSpriteUrl;
+  win.getBackSpriteUrl = getBackSpriteUrl;
 }

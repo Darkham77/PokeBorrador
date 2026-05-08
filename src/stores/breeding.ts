@@ -17,7 +17,7 @@ import { POKEMON_DB } from '@/data/pokemonDB';
 import { usePlayerClassStore } from './playerClass';
 import { useEventStore } from './events';
 import type { DaycareSlot, DaycareEgg, DaycareMission } from '@/types/breeding';
-import type { Pokemon, PokemonEgg } from '@/types/pokemon';
+import type { Pokemon, PokemonEgg, PokemonIVs } from '@/types/pokemon';
 
 export const useBreedingStore = defineStore('breeding', () => {
   const gameStore = useGameStore();
@@ -297,10 +297,10 @@ export const useBreedingStore = defineStore('breeding', () => {
     }
   }
 
-  function updateEggIvs(eggId: string, ivs: any) {
+  function updateEggIvs(eggId: string, ivs: Partial<PokemonIVs>) {
     const egg = warehouseEggs.value.find(e => e.id === eggId);
     if (egg) {
-      egg.ivs = { ...egg.ivs, ...ivs };
+      egg.ivs = { ...egg.ivs, ...ivs } as PokemonIVs;
       gameStore.scheduleSave();
     }
   }

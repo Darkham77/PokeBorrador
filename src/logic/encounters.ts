@@ -9,6 +9,7 @@ import { applyEncounterBonuses } from '@/logic/war/bonusEngine';
 import { useEventStore } from '@/stores/events';
 import type { Pokemon } from '@/types/pokemon';
 import type { MapLocation, Encounter, EncounterOptions, EncounterState } from '@/types/encounters';
+import type { Event as GameEvent, EventConfig } from '@/logic/events/eventEngine';
 
 const WEATHER_BUFF_MULTIPLIER = 1.5;
 
@@ -41,7 +42,7 @@ function isSpeciesBoosted(id: string, weather: string): boolean {
  * Gets the valid pool of Pokémon for a location and time cycle.
  * Incorporates active events.
  */
-export function getEncounterPool(loc: MapLocation, cycle: string, weather: string = 'clear', activeEvents: any[] = []) {
+export function getEncounterPool(loc: MapLocation, cycle: string, weather: string = 'clear', activeEvents: GameEvent[] = []) {
   if (!loc || !loc.wild) return { pool: [] as string[], rates: [] as number[] };
   
   const pool = [...(loc.wild[cycle] || loc.wild.day || [])];
@@ -49,7 +50,7 @@ export function getEncounterPool(loc: MapLocation, cycle: string, weather: strin
   
   // Ensure rates match pool length before transformations
   while (rates.length < pool.length) rates.push(10);
-
+ 
   // 1. Inyección por Clima (Visitantes y Exclusivos)
   if (weather && weather !== 'clear' && loc.weather?.[weather]) {
     const wConfig = loc.weather[weather];
@@ -61,7 +62,7 @@ export function getEncounterPool(loc: MapLocation, cycle: string, weather: strin
         if (!pool.includes(id)) {
           pool.push(id);
           const weight = Array.isArray(wConfig.exclusive) ? 5 : ((wConfig.exclusive as Record<string, number>)[id] || 5);
-          rates.push(weight); 
+          rates.push(weight || 5); 
         }
       });
     }
@@ -73,7 +74,7 @@ export function getEncounterPool(loc: MapLocation, cycle: string, weather: strin
         if (!pool.includes(id)) {
           pool.push(id);
           const weight = Array.isArray(wConfig.visitors) ? -10 : -((wConfig.visitors as Record<string, number>)[id] || 10);
-          rates.push(weight); 
+          rates.push(weight || -10); 
         }
       });
     }
@@ -82,18 +83,20 @@ export function getEncounterPool(loc: MapLocation, cycle: string, weather: strin
 
   // 2. Apply Event Injections
   activeEvents.forEach(ev => {
-    if (ev.active && ev.config?.ignoreTimeRestrictions && ev.config.species) {
-      const eventSpecies = ev.config.species.split(',').map((s: string) => s.trim().toLowerCase());
+    const cfg = (typeof ev.config === 'string' ? JSON.parse(ev.config) : ev.config) as EventConfig | undefined;
+    if (ev.active && cfg?.ignoreTimeRestrictions && cfg.species) {
+      const eventSpecies = cfg.species.split(',').map((s: string) => s.trim().toLowerCase());
       eventSpecies.forEach((spId: string) => {
         if (!pool.includes(spId)) {
           // Check if species exists in other cycles for this map
-          for (const c in loc.wild) {
-            const cyclePool = (loc.wild as any)[c];
+          const wild = loc.wild || {};
+          for (const c in wild) {
+            const cyclePool = wild[c];
             if (!cyclePool) continue;
             const idx = cyclePool.indexOf(spId);
             if (idx !== -1) {
               pool.push(spId);
-              const originalRates = (loc.rates as any)?.[c] || [];
+              const originalRates = loc.rates?.[c] || [];
               rates.push(originalRates[idx] || 10);
               break;
             }
@@ -133,7 +136,7 @@ export async function generateEncounter(locId: string, state: EncounterState, op
   if (!loc) return null;
 
   const cycle = getDayCycle();
-  const eventStore = useEventStore() as { activeEvents: any[] };
+  const eventStore = useEventStore() as { activeEvents: GameEvent[] };
   const activeEvents = options.activeEvents || (eventStore.activeEvents || []) || [];
   const allMapIds = maps.map(m => m.id);
   

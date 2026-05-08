@@ -89,26 +89,27 @@ export class ProxyQuery {
       if (!client) throw new Error('[DBRouter] Online client not available.');
 
       try {
-        let q: any = client.from(this.table);
+        const q = client.from(this.table) as unknown as Record<string, (...args: unknown[]) => Promise<DBResponse>>;
         
-        if (this.action === 'upsert') return await q.upsert(this.actionData, this.actionOpts);
-        if (this.action === 'insert') return await q.insert(this.actionData);
+        if (this.action === 'upsert') return await q.upsert!(this.actionData, this.actionOpts);
+        if (this.action === 'insert') return await q.insert!(this.actionData);
         
         if (this.action === 'update') {
-          q = q.update(this.actionData);
-          this.chain.forEach(s => { (q as any)[s.type](...s.args); });
-          return await q;
+          const updQ = (q as unknown as Record<string, (d: unknown) => unknown>).update!(this.actionData) as Record<string, (...args: unknown[]) => unknown>;
+          this.chain.forEach(s => { updQ[s.type]!(...s.args); });
+          return await (updQ as unknown as Promise<DBResponse>);
         }
         
         if (this.action === 'delete') {
-          q = q.delete();
-          this.chain.forEach(s => { (q as any)[s.type](...s.args); });
-          return await q;
+          const delQ = (q as unknown as Record<string, () => unknown>).delete!() as Record<string, (...args: unknown[]) => unknown>;
+          this.chain.forEach(s => { delQ[s.type]!(...s.args); });
+          return await (delQ as unknown as Promise<DBResponse>);
         }
 
         // Default: select
-        this.chain.forEach(s => { (q as any)[s.type](...s.args); });
-        return final ? await (q as any)[final]() : await q;
+        const selQ = q as Record<string, (...args: unknown[]) => unknown>;
+        this.chain.forEach(s => { selQ[s.type]!(...s.args); });
+        return final ? await (selQ as unknown as Record<string, () => Promise<DBResponse>>)[final]!() : await (selQ as unknown as Promise<DBResponse>);
       } catch (err: unknown) {
         logger.error('DBRouter', `Online query failed for table ${this.table}: ${(err as Error).message}`);
         
@@ -151,7 +152,7 @@ export class ProxyQuery {
         if (s.type === 'gte') { where.push(`${s.args[0]} >= ?`); params.push(s.args[1]); }
         if (s.type === 'lte') { where.push(`${s.args[0]} <= ?`); params.push(s.args[1]); }
         if (s.type === 'in') {
-          const arr = (s.args[1] as any[]) || [];
+          const arr = (s.args[1] as unknown[]) || [];
           const marks = arr.map(() => '?').join(',');
           where.push(`${s.args[0]} IN (${marks})`);
           params.push(...arr);
@@ -200,7 +201,7 @@ export class ProxyQuery {
         let countSql = `SELECT COUNT(*) as total FROM ${this.table}`;
         if (where.length > 0) countSql += ` WHERE ${where.join(' AND ')}`;
         const countRes = await queryLocal(countSql, params);
-        count = (countRes[0] as any)?.total || 0;
+        count = (countRes[0] as { total: number })?.total || 0;
       }
 
       if (selectOpts.head) {

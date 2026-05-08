@@ -1,25 +1,26 @@
-
 import { getCombinedEffectiveness } from '../battleEngine'
+import type { Pokemon, Move } from '@/types/pokemon'
+import type { BattleStages } from '@/types/battle'
 
 /**
  * Motor de Inteligencia Artificial para el Combate
  * Portado y modernizado desde public/js/07_battle.js
  */
 
-export const decideEnemyMove = (enemy: any, player: any, playerStages: any, isWild = false) => {
-  const validMoves = enemy.moves.filter((m: any) => m.pp > 0)
+export const decideEnemyMove = (enemy: Pokemon, player: Pokemon, playerStages: BattleStages, isWild = false): Move | null => {
+  const validMoves = enemy.moves.filter((m): m is Move => !!m && m.pp > 0)
   if (validMoves.length === 0) return null
 
   // Si es salvaje, elige al azar (Gen 3 wild behavior)
   if (isWild) {
-    return validMoves[Math.floor(Math.random() * validMoves.length)]
+    return validMoves[Math.floor(Math.random() * validMoves.length)] || null
   }
 
   // Si es Entrenador o Gimnasio, usa lógica de puntuación
   let bestMove = validMoves[0]
   let maxScore = -1
 
-  validMoves.forEach((m: any) => {
+  validMoves.forEach((m) => {
     const s = scoreMove(m, enemy, player, playerStages)
     if (s > maxScore) {
       maxScore = s
@@ -27,15 +28,15 @@ export const decideEnemyMove = (enemy: any, player: any, playerStages: any, isWi
     }
   })
 
-  return bestMove
+  return bestMove || null
 }
 
-export const scoreMove = (move: any, attacker: any, defender: any, defStages: any) => {
+export const scoreMove = (move: Move, attacker: Pokemon, defender: Pokemon, defStages: BattleStages) => {
   // md = move data (placeholder or from global data)
   let score = move.power || 40
   if (move.cat === 'status') score = 30
 
-  const totalEff = getCombinedEffectiveness(move.type, defender, attacker)
+  const totalEff = getCombinedEffectiveness(move.type || 'normal', defender, attacker)
   
   if (totalEff === 0 && move.cat !== 'status') return 0
   score *= totalEff
@@ -49,7 +50,8 @@ export const scoreMove = (move: any, attacker: any, defender: any, defStages: an
   if (move.cat === 'status') {
     // Don't repeat status
     const statusEffects = ['sleep', 'paralyze', 'poison', 'toxic', 'burn', 'freeze']
-    if (statusEffects.includes(move.effect) && defender.status) score = 0
+    const moveEffect = typeof move.effect === 'string' ? move.effect : ''
+    if (statusEffects.includes(moveEffect) && defender.status) score = 0
     
     // Stage modifiers penalization if already lowered
     const effect = move.effect || ''
@@ -79,8 +81,8 @@ export const scoreMove = (move: any, attacker: any, defender: any, defStages: an
 /**
  * Evalúa si el oponente debería cambiar de Pokémon
  */
-export const shouldEnemySwitch = (enemy: any, player: any, enemyTeam: any) => {
-  if (!enemyTeam || enemyTeam.filter((p: any) => p.hp > 0).length <= 1) return false
+export const shouldEnemySwitch = (enemy: Pokemon, player: Pokemon, enemyTeam: Pokemon[] | undefined) => {
+  if (!enemyTeam || enemyTeam.filter((p) => p.hp > 0).length <= 1) return false
 
   const playerEff = getCombinedEffectiveness(player.type, enemy)
   const isBadMatch = playerEff >= 2
@@ -93,11 +95,11 @@ export const shouldEnemySwitch = (enemy: any, player: any, enemyTeam: any) => {
   return false
 }
 
-export const findBestSwitchIndex = (enemyTeam: any, player: any, currentEnemyUid: any) => {
+export const findBestSwitchIndex = (enemyTeam: Pokemon[], player: Pokemon, currentEnemyUid: string): number => {
   let bestIdx = -1
   let bestScore = -1
-
-  enemyTeam.forEach((p: any, idx: any) => {
+  
+  enemyTeam.forEach((p, idx) => {
     if (p.hp <= 0 || p.uid === currentEnemyUid) return
 
     let score = 0
@@ -106,8 +108,9 @@ export const findBestSwitchIndex = (enemyTeam: any, player: any, currentEnemyUid
     score += (2 - playerEff) * 50
 
     // Offense: how well we hit the player
-    const maxOffense = Math.max(...p.moves.map((m: any) => {
-      const eff = getCombinedEffectiveness(m.type, player, p)
+    const maxOffense = Math.max(...p.moves.map((m) => {
+      if (!m) return 0
+      const eff = getCombinedEffectiveness(m.type || 'normal', player, p)
       return eff * (m.power || 40)
     }))
     score += maxOffense

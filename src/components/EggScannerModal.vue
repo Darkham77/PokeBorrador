@@ -48,18 +48,18 @@ const scanningResult = ref<ScanningResult | null>(null)
 const isScanning = ref(false)
 
 const allEggs = computed<EggItem[]>(() => {
-  const inventoryEggs = (gameStore.state.eggs || []).map((e, idx) => ({ 
+  const inventoryEggs = (gameStore.state.eggs || []).map((e: any, idx) => ({ 
     type: 'inventory' as const, 
     data: e as any, 
     id: idx,
-    species: (e as any).pokemonId || e.id
+    species: e.pokemonId || e.id
   }))
   
   const daycareEggs = (breedingStore.eggs || []).map((e: any) => ({ 
     type: 'daycare' as const, 
     data: e as any, 
     id: e.id || e.uid,
-    species: e.id || (e as any).species
+    species: e.id || e.species
   }))
   
   return [...inventoryEggs, ...daycareEggs]
@@ -94,9 +94,10 @@ const handleKeep = async () => {
     const eggs = gameStore.state.eggs
     const egg = eggs[res.id as number]
     if (egg) {
-      (egg as any).scanned = true
-      ;(egg as any).predictedInfo = { 
-          name: (POKEMON_DB as any)[res.species]?.name || res.species, 
+      const e = egg as any
+      e.scanned = true
+      e.predictedInfo = { 
+          name: (POKEMON_DB as Record<string, { name: string }>)[res.species]?.name || res.species, 
           ivTotal: res.totalIV 
       }
     }
@@ -107,7 +108,7 @@ const handleKeep = async () => {
     await breedingStore.updateEggIvs(res.id as string, newIvs)
   }
   
-  ;(window as any).notify?.('Datos registrados.', '📋')
+  (window as unknown as { notify?: (msg: string, icon: string) => void }).notify?.('Datos registrados.', '📋')
   scanningResult.value = null
 }
 

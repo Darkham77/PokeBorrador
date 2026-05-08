@@ -1,29 +1,43 @@
 import { Temporal } from '@js-temporal/polyfill'
 import { computed, toValue } from 'vue'
-import { useUIStore } from '@/stores/ui'
+import type { MaybeRefOrGetter } from 'vue'
 import { useGameStore } from '@/stores/game'
+import { useModalStore } from '@/stores/modals'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { POKEMON_SPRITE_IDS } from '@/logic/pokedexConstants'
 import { MOVE_DATA } from '@/data/moves'
 import { EVOLUTION_TABLE, STONE_EVOLUTIONS, TRADE_EVOLUTIONS } from '@/data/evolutionData'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
+import type { Pokemon } from '@/types/pokemon'
+import type { MoveBaseData } from '@/types/database'
 
-export function usePokemonDetail(propsRefs: Record<string, any>) {
-  const uiStore = useUIStore()
-  const gameStore = useGameStore() as any
+interface EvolutionEntry {
+  type: 'level' | 'stone' | 'trade';
+  requirement: string;
+  to: string;
+  isSeen?: boolean;
+  isCaught?: boolean;
+}
+
+export function usePokemonDetail(propsRefs: Record<string, MaybeRefOrGetter<unknown>>) {
+  const gameStore = useGameStore()
+  const modalStore = useModalStore()
 
   // Normalize inputs (props are passed as a reactive object or refs)
-  const getProp = (key: string) => toValue(propsRefs[key])
+  const getProp = <T,>(key: string): T | undefined => toValue(propsRefs[key]) as T | undefined
 
-  const uiData = computed(() => (uiStore as any).modals?.PokemonDetail?.data || {})
+  const uiData = computed(() => {
+    const modal = modalStore.stack.find(m => m.name === 'PokemonDetail')
+    return (modal?.props || {}) as { pokemon?: Pokemon, index?: number, context?: string }
+  })
   
   const finalIndex = computed(() => {
-    const pIdx = getProp('index')
+    const pIdx = getProp<number>('index') ?? -1
     return pIdx !== -1 ? pIdx : (uiData.value.index ?? -1)
   })
 
   const finalContext = computed(() => {
-    const pCtx = getProp('context')
+    const pCtx = getProp<string>('context')
     return (pCtx && pCtx !== 'pokedex') ? pCtx : (uiData.value.context || 'pokedex')
   })
 
@@ -32,14 +46,14 @@ export function usePokemonDetail(propsRefs: Record<string, any>) {
       if (finalContext.value === 'team') return gameStore.state.team[finalIndex.value]
       if (finalContext.value === 'box') return gameStore.state.box[finalIndex.value]
     }
-    return getProp('pokemon') || uiData.value.pokemon
+    return getProp<Pokemon>('pokemon') || uiData.value.pokemon
   })
 
   const isInstance = computed(() => !!targetPokemon.value)
 
   const targetSpeciesId = computed(() => {
-    const id = isInstance.value ? targetPokemon.value.id : getProp('speciesId')
-    return String(id).toLowerCase()
+    const id = isInstance.value ? targetPokemon.value?.id : getProp<string>('speciesId')
+    return String(id || '').toLowerCase()
   })
 
   const speciesRaw = computed(() => pokemonDataProvider.getPokemonData(targetSpeciesId.value))
@@ -76,27 +90,30 @@ export function usePokemonDetail(propsRefs: Record<string, any>) {
     const caught = gameStore.state.pokedex || []
     const seen = gameStore.state.seenPokedex || []
 
-    const enrichEvo = (evo: any) => {
+    const enrichEvo = (evo: { type: 'level' | 'stone' | 'trade', requirement: string, to: string }): EvolutionEntry => {
       const toId = evo.to.toLowerCase()
       const isCaught = caught.includes(toId)
       const isSeen = isCaught || seen.includes(toId)
       return { ...evo, isSeen, isCaught }
     }
 
-    if ((EVOLUTION_TABLE as any)[id]) {
-      const ev = (EVOLUTION_TABLE as any)[id]
+    const evoTable = EVOLUTION_TABLE as Record<string, { level: number, to: string } | undefined>
+    if (evoTable[id]) {
+      const ev = evoTable[id]!
       list.push(enrichEvo({ type: 'level', requirement: `Nv. ${ev.level}`, to: ev.to }))
     }
     
-    Object.keys(STONE_EVOLUTIONS).forEach(key => {
+    const stoneTable = STONE_EVOLUTIONS as Record<string, { stone: string, to: string } | undefined>
+    Object.keys(stoneTable).forEach(key => {
       if (key === id || key.startsWith(`${id}_`)) {
-        const ev = (STONE_EVOLUTIONS as any)[key]
+        const ev = stoneTable[key]!
         list.push(enrichEvo({ type: 'stone', requirement: ev.stone, to: ev.to }))
       }
     })
 
-    if ((TRADE_EVOLUTIONS as any)[id]) {
-      list.push(enrichEvo({ type: 'trade', requirement: 'Intercambio', to: (TRADE_EVOLUTIONS as any)[id] }))
+    const tradeTable = TRADE_EVOLUTIONS as Record<string, string | undefined>
+    if (tradeTable[id]) {
+      list.push(enrichEvo({ type: 'trade', requirement: 'Intercambio', to: tradeTable[id]! }))
     }
     return list
   })
@@ -113,8 +130,8 @@ export function usePokemonDetail(propsRefs: Record<string, any>) {
       spe: 'Rgba(250, 146, 178, 1)' 
     }
     return Object.keys(species.value.stats).map(key => {
-      const base = (species.value?.stats as any)[key]
-      const current = isInstance.value ? (targetPokemon.value[key] || base) : base
+      const base = (species.value?.stats as Record<string, number>)[key] || 0
+      const current = isInstance.value ? (((targetPokemon.value as unknown as Record<string, number>)[key]) || base) : base
       return {
         id: key,
         label: labels[key],
@@ -122,33 +139,34 @@ export function usePokemonDetail(propsRefs: Record<string, any>) {
         baseValue: base,
         max: 255,
         color: colors[key],
-        iv: isInstance.value ? targetPokemon.value.ivs?.[key] : null
+        iv: isInstance.value ? (targetPokemon.value?.ivs as Record<string, number> | undefined)?.[key] : null
       }
     })
   })
 
   const moveDetails = computed(() => {
     if (!species.value || !species.value.learnset) return []
-    return species.value.learnset.map((m: any) => {
-      const data = (MOVE_DATA as any)[m.name] || {}
+    return species.value.learnset.map(m => {
+      const data = (MOVE_DATA as Record<string, MoveBaseData | undefined>)[m.name]
       return {
         level: m.lv,
         name: m.name,
-        type: data.type || 'normal',
-        cat: data.cat || 'physical',
-        power: data.power || '-',
-        acc: data.acc || '-',
-        pp: data.pp || '-'
+        type: data?.type || 'normal',
+        cat: data?.cat || 'physical',
+        power: data?.power || '-',
+        acc: data?.acc || '-',
+        pp: data?.pp || '-'
       }
-    }).sort((a: any, b: any) => a.level - b.level)
+    }).sort((a, b) => a.level - b.level)
   })
 
   const currentMoves = computed(() => {
-    if (!isInstance.value || !targetPokemon.value.moves) return []
-    return targetPokemon.value.moves.map((m: any) => {
-      const data = (MOVE_DATA as any)[m.name] || {}
-      return { ...m, ...data }
-    })
+    if (!isInstance.value || !targetPokemon.value?.moves) return []
+    return targetPokemon.value.moves.map((m: Pokemon['moves'][number]) => {
+      if (!m) return null
+      const data = (MOVE_DATA as Record<string, MoveBaseData | undefined>)[m.name]
+      return { ...m, ...(data || {}) }
+    }).filter((m: unknown): m is (Pokemon['moves'][number] & Partial<MoveBaseData>) => m !== null)
   })
 
   const canStoneEvolve = computed(() => {
@@ -157,10 +175,10 @@ export function usePokemonDetail(propsRefs: Record<string, any>) {
   })
 
   const instancePhysicalData = computed(() => {
-    if (!isInstance.value || !species.value) return null
-    const p = targetPokemon.value
+    const p = targetPokemon.value as (Pokemon & { height?: number, weight?: number }) | undefined
+    if (!isInstance.value || !p || !species.value) return null
     const uid = p.uid || 'def'
-    const getRand = (seed: string, range: any) => {
+    const getRand = (seed: string, range: number | [number, number] | null) => {
       if (!range) return '0.0'
       const min = Array.isArray(range) ? range[0] : range * 0.85
       const max = Array.isArray(range) ? range[1] : range * 1.15
@@ -176,7 +194,7 @@ export function usePokemonDetail(propsRefs: Record<string, any>) {
   })
 
   const captureDateFormatted = computed(() => {
-    const p = targetPokemon.value
+    const p = targetPokemon.value as (Pokemon & { captureDate?: string, timestamp?: number, date?: string, created_at?: string }) | undefined
     if (!p) return null
     const dateVal = p.captureDate || p.timestamp || p.date || p.created_at || p.obtainedAt
     if (!dateVal) return isInstance.value ? 'SIN FECHA' : null

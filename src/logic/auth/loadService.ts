@@ -37,8 +37,8 @@ export async function loadBestSave(user: AuthUser | null, db: DBRouter): Promise
         .single();
       
       if (!error && saves) {
-        cloudSaveRow = saves as any;
-        finalSaveData = (saves as any).save_data as GameState;
+        cloudSaveRow = saves as { save_data: GameState; updated_at: string; last_save_id: string };
+        finalSaveData = (saves as { save_data: GameState }).save_data;
       }
     } catch (e) {
       logger.error('LOAD', `Cloud fetch failed: ${(e as Error).message}`);
@@ -78,7 +78,7 @@ export async function loadBestSave(user: AuthUser | null, db: DBRouter): Promise
         logger.info('LOAD', 'Migrating localStorage to OPFS...')
         const timestamp = Temporal.Now.instant().epochMilliseconds
         const serverTime = Temporal.Now.instant().toString();
-        (db as any).setMockTime(serverTime);
+        db.setMockTime(serverTime);
         const { compress } = await import('@/logic/utils/compression')
         const compressed = await compress(lsRaw)
         await writeOpfsFile(`backup_migration_${user.id}_${timestamp}.gz`, compressed)
@@ -111,8 +111,8 @@ export async function loadBestSave(user: AuthUser | null, db: DBRouter): Promise
           cloudData.starterChosen = true;
         }
         
-        const cloudTime = cloudSaveRow.updated_at ? (Temporal.Instant.from(cloudSaveRow.updated_at) as any).epochMilliseconds : 0;
-        const localTime = (localData as any)._last_updated || 0;
+        const cloudTime = cloudSaveRow.updated_at ? (Temporal.Instant.from(cloudSaveRow.updated_at) as unknown as { epochMilliseconds: number }).epochMilliseconds : 0;
+        const localTime = (localData as unknown as { _last_updated?: number })._last_updated || 0;
  
         // Legacy Rule: If local is at least 3s newer, prioritize it.
         if (localTime > cloudTime + 3000) {
@@ -169,12 +169,14 @@ function normalizeData(state: GameState): GameState {
 
     // Clean legacy iv fields if corrupted
     if (p.ivs) {
-      delete (p.ivs as any)._cost;
-      delete (p.ivs as any)._nature;
+      const ivs = p.ivs as unknown as Record<string, unknown>
+      delete ivs._cost;
+      delete ivs._nature;
     }
 
     // Backfill capture date if missing
-    if (!p.obtainedAt && !(p as any).created_at && !(p as any).captureDate && !(p as any).timestamp && !(p as any).date) {
+    const pRaw = p as unknown as Record<string, unknown>
+    if (!p.obtainedAt && !pRaw.created_at && !pRaw.captureDate && !pRaw.timestamp && !pRaw.date) {
       p.obtainedAt = Temporal.Now.instant().epochMilliseconds;
     }
 

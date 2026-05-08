@@ -91,7 +91,7 @@ export class DBRouter {
       const targetDate = Temporal.Instant.from(dateStr);
       const offset = targetDate.epochMilliseconds - Temporal.Now.instant().epochMilliseconds;
       this.setTimeOffset(offset);
-    } catch (e) {
+    } catch (_e) {
       logger.error('DBRouter', `Invalid mock time format: ${dateStr}`);
     }
   }
@@ -133,7 +133,7 @@ export class DBRouter {
         schema: 'public',
         table: 'profiles',
         filter: `id=eq.${userId}`
-      }, (payload: any) => {
+      }, (payload: { new?: { current_session_id?: string }, old?: { current_session_id?: string } }) => {
         const newSessionId = payload?.new?.current_session_id;
         const oldSessionId = payload?.old?.current_session_id;
         logger.debug('DBRouter', `RT Update: New=${newSessionId}, Old=${oldSessionId}, CurrentLocal=${this.currentSessionId}`);
@@ -284,7 +284,7 @@ export class DBRouter {
   channel(name: string): RealtimeChannel {
     if (this.mode === 'offline') {
       const mockChannel = {
-        on: (type: string, _filter: any, _callback: any) => {
+        on: (type: string, _filter: unknown, _callback: (payload: unknown) => void) => {
           logger.info('DBRouter', `Mock Channel '${name}' subscribed to: ${type}`);
           return mockChannel; 
         },
@@ -292,7 +292,7 @@ export class DBRouter {
           if (cb) setTimeout(() => cb('SUBSCRIBED'), 10);
           return { unsubscribe: () => {} };
         },
-        send: (_args: any) => {
+        send: (_args: unknown) => {
           return Promise.resolve('ok');
         },
         unsubscribe: () => {}

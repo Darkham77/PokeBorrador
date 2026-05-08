@@ -198,11 +198,20 @@ export function inheritNature(pA: Pokemon, pB: Pokemon, itemA: string, itemB: st
   return null
 }
 
+export interface GeneticsForecast {
+  natureGuaranteed: boolean;
+  ivsInherited: number;
+  masudaActive: boolean;
+  eggMovesCount: number;
+  shinyMultiplier: number;
+  hiddenAbilityChance: number;
+}
+
 /**
  * Retorna un resumen de probabilidades para la UI.
  * No revela el resultado final, solo las reglas actuales aplicadas.
  */
-export function getGeneticsForecast(pA: Pokemon, pB: Pokemon, playerClass: string = ''): any {
+export function getGeneticsForecast(pA: Pokemon, pB: Pokemon, playerClass: string = ''): GeneticsForecast {
   const itemA = pA.heldItem || ''
   const itemB = pB.heldItem || ''
   

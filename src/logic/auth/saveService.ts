@@ -10,6 +10,19 @@ import type { AuthUser } from '@/types/auth';
 import { compress } from '@/logic/utils/compression';
 import { writeOpfsFile } from '@/logic/utils/opfsStorage';
 import { logger } from '@/logic/utils/logger';
+import type { DBRouter } from '@/logic/db/dbRouter';
+
+export interface SaveResult {
+  success?: boolean;
+  remote?: boolean;
+  rollback?: boolean;
+  serverData?: unknown;
+  error?: string;
+  outOfSync?: boolean;
+  sanitized?: boolean;
+  migrated?: boolean;
+  lastSaveId?: string;
+}
 
 export interface SaveData {
   trainer: string;
@@ -125,7 +138,7 @@ interface ActiveBattleSerialized {
 }
 export function serializeState(state: GameState): SaveData {
   let activeBattle: ActiveBattleSerialized | null = null;
-  const battle = state.battle as any;
+  const battle = state.battle;
 
   if (battle && !battle.over && (battle.isTrainer || battle.isGym)) {
     try {
@@ -150,13 +163,13 @@ export function serializeState(state: GameState): SaveData {
             }))
           : null,
         timestamp: Temporal.Now.instant().epochMilliseconds,
-      } as any;
+      } as ActiveBattleSerialized;
     } catch(e) {
       logger.warn('SAVE', `Error serializando batalla activa: ${(e as Error).message}`);
       activeBattle = null;
     }
-  } else if ((state as any).activeBattle && (state as any).activeBattle.isPvP) {
-    activeBattle = { ...(state as any).activeBattle } as ActiveBattleSerialized;
+  } else if (state.activeBattle && (state.activeBattle as unknown as Record<string, unknown>).isPvP) {
+    activeBattle = { ...(state.activeBattle as unknown as Record<string, unknown>) } as unknown as ActiveBattleSerialized;
   }
 
   return {
@@ -316,13 +329,13 @@ let _isSaving = false;
 interface SaveOptions {
   showNotif?: boolean
   notifyFn?: (msg: string, icon?: string) => void
-  db?: any // DBRouter is complex, keeping as any for now but could be typed if needed
+  db?: DBRouter
   userVersion?: number
   lastSaveId?: string
   skipRemote?: boolean
 }
 
-export async function saveGame(state: GameState, user: AuthUser, options: SaveOptions = {}): Promise<any> {
+export async function saveGame(state: GameState, user: AuthUser, options: SaveOptions = {}): Promise<SaveResult | null> {
   const { showNotif = true, notifyFn, db } = options;
   if (!user || _isSaving) return null;
 
@@ -338,7 +351,8 @@ export async function saveGame(state: GameState, user: AuthUser, options: SaveOp
   if (hadDuplicates && db && db.mode === 'online' && !isLegacy) {
     logger.error('SAVE', 'Duplicados críticos detectados en v2+. Iniciando ROLLBACK.', issues);
     try {
-      const { data: serverSave } = await db.from('game_saves').select('save_data').eq('user_id', user.id).single();
+      const { data } = await db.from('game_saves').select('save_data').eq('user_id', user.id).single();
+      const serverSave = data as { save_data: GameState } | null;
       if (serverSave?.save_data) {
         return { rollback: true, serverData: serverSave.save_data };
       }
@@ -348,7 +362,7 @@ export async function saveGame(state: GameState, user: AuthUser, options: SaveOp
     return { rollback: true, error: 'Inconsistencia detectada. Recarga la página.' };
   }
 
-  (save_data as any)._last_updated = Temporal.Now.instant().epochMilliseconds;
+  (save_data as { _last_updated?: number })._last_updated = Temporal.Now.instant().epochMilliseconds;
 
   // 1. Local Persistence (Legacy LocalStorage + Modern OPFS GZIP)
   try {
@@ -386,7 +400,8 @@ export async function saveGame(state: GameState, user: AuthUser, options: SaveOp
 
     if (error) throw error;
     
-    if (res && res.success === false && res.error === 'OUT_OF_SYNC') {
+    const resData = res as { success: boolean; error: string; last_save_id: string } | null;
+    if (resData && resData.success === false && resData.error === 'OUT_OF_SYNC') {
       logger.warn('SAVE', 'Concurrencia detectada. El servidor tiene una versión más nueva.');
       return { rollback: true, outOfSync: true };
     }
@@ -413,11 +428,12 @@ export async function saveGame(state: GameState, user: AuthUser, options: SaveOp
       success: true, 
       sanitized: hadDuplicates, 
       migrated,
-      lastSaveId: res.last_save_id 
+      lastSaveId: resData?.last_save_id 
     };
-  } catch (e: any) {
-    logger.warn('SAVE', `Error en DB Persistente: ${(e as Error).message}`);
-    return { success: false, error: e.message };
+  } catch (e: unknown) {
+    const errMsg = e instanceof Error ? e.message : 'Unknown error';
+    logger.warn('SAVE', `Error en DB Persistente: ${errMsg}`);
+    return { success: false, error: errMsg };
   } finally {
     _isSaving = false;
   }

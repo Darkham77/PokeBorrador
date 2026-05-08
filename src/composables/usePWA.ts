@@ -2,8 +2,17 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import { registerSW } from 'virtual:pwa-register'
 import { logger } from '@/logic/utils/logger'
 
+interface BeforeInstallPromptEvent extends Event {
+  readonly platforms: string[];
+  readonly userChoice: Promise<{
+    outcome: 'accepted' | 'dismissed';
+    platform: string;
+  }>;
+  prompt(): Promise<void>;
+}
+
 export function usePWA() {
-  const installEvent = ref<any>(null)
+  const installEvent = ref<BeforeInstallPromptEvent | null>(null)
   const canInstall = ref(false)
   const isInstalled = ref(false)
 
@@ -17,19 +26,20 @@ export function usePWA() {
     onOfflineReady() {
       logger.info('PWA', 'PWA Offline Ready')
     },
-    onRegistered(r: any) {
+    onRegistered(r: ServiceWorkerRegistration | undefined) {
       logger.debug('PWA', 'SW Registered:', r)
     },
-    onRegisterError(error: any) {
+    onRegisterError(error: unknown) {
       logger.error('PWA', `SW registration error: ${(error as Error).message}`)
     },
   })
 
-  const handleInstallPrompt = (e: any) => {
+  const handleInstallPrompt = (e: Event) => {
+    const installEv = e as BeforeInstallPromptEvent
     // Prevent the mini-infobar from appearing on mobile
-    e.preventDefault()
+    installEv.preventDefault()
     // Stash the event so it can be triggered later.
-    installEvent.value = e
+    installEvent.value = installEv
     canInstall.value = true
     logger.info('PWA', 'PWA Install Prompt captured')
   }
@@ -37,7 +47,7 @@ export function usePWA() {
   const checkInstallState = () => {
     if (window.matchMedia('(display-mode: standalone)').matches || 
         window.matchMedia('(display-mode: fullscreen)').matches ||
-        (window.navigator as any).standalone) {
+        (window.navigator as Navigator & { standalone?: boolean }).standalone) {
       isInstalled.value = true
       canInstall.value = false
     }

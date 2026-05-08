@@ -85,7 +85,9 @@ export function recalcPokemonStats(p: Pokemon): void {
   const stats: (keyof Pokemon)[] = ['maxHp', 'atk', 'def', 'spa', 'spd', 'spe'];
   stats.forEach(s => {
     const val = p[s] as number;
-    if (isNaN(val) || val === undefined) (p as any)[s] = 10;
+    if (isNaN(val) || val === undefined) {
+      (p as unknown as Record<string, unknown>)[s as string] = 10;
+    }
   });
 
   sanitizePokemon(p);
@@ -138,8 +140,8 @@ export function sanitizePokemon(p: Pokemon): void {
       m.power = moveData.power || 0;
       m.type = moveData.type || 'normal';
       m.acc = moveData.acc || 100;
-      m.cat = moveData.cat || (moveData as any).category || 'physical';
-      m.effect = (moveData.effect as any) || undefined;
+      m.cat = moveData.cat || 'physical';
+      m.effect = moveData.effect;
       m.maxPP = moveData.pp || 35;
       if (m.pp === undefined) m.pp = m.maxPP;
       if (m.pp > m.maxPP) m.pp = m.maxPP;
@@ -156,7 +158,7 @@ export function sanitizePokemon(p: Pokemon): void {
         power: fallback.power,
         type: fallback.type,
         acc: fallback.acc,
-        cat: fallback.cat as any,
+        cat: fallback.cat as 'physical' | 'special' | 'status',
         pp: fallback.pp,
         maxPP: fallback.pp
       });
@@ -204,7 +206,8 @@ export function makePokemon(id: string, level: number, options: PokemonCreationO
   const classStore = usePlayerClassStore();
   let _ivFloor = options.ivFloor || 0;
   if (classStore.playerClass === 'cazabichos') {
-    _ivFloor = Math.max(_ivFloor, (classStore.classData as any).captureStreak || 0);
+    const classData = classStore.classData as { captureStreak?: number };
+    _ivFloor = Math.max(_ivFloor, classData.captureStreak || 0);
   }
 
   const _randIv = (forceReRoll = false, isGuardian = false) => {
@@ -310,7 +313,7 @@ export function levelUpPokemon(p: Pokemon): PokemonMove[] | null {
   const base = pokemonDataProvider.getPokemonData(p.id);
   const pendingMoves: PokemonMove[] = [];
   if (base && base.learnset) {
-    (base.learnset as any[]).filter(m => m.lv === p.level).forEach(m => {
+    (base.learnset).filter(m => m.lv === p.level).forEach(m => {
       // Check if already knows the move
       if (!p.moves.find(em => em && em.name === m.name)) {
         const moveData = pokemonDataProvider.getMoveData(m.name);

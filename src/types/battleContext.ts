@@ -22,6 +22,7 @@ export interface BattleContext {
   isSearching: Ref<boolean>;
   isReadyToExit: Ref<boolean>;
   isIntroAnimating: Ref<boolean>;
+  isPvP: Ref<boolean>;
   isProcessing: Ref<boolean>;
   debugBinoculars: Ref<boolean>;
   upcomingPokemon: Ref<Pokemon | null>;

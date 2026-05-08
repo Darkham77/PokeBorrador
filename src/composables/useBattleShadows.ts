@@ -46,7 +46,7 @@ export function useBattleShadows() {
   }
 
   // Sincronizar visibilidad y posición de la sombra enemiga
-  const syncEnemyShadow = async (visible: boolean, data: Pokemon | null, pos: Position, animState: any) => {
+  const syncEnemyShadow = async (visible: boolean, data: Pokemon | null, pos: Position, animState: unknown) => {
     const shadowId = getStableShadowId(data, 'enemy')
     
     // Limpieza de sombras huérfanas si el ID cambia (evita duplicados al capturar/cambiar)
@@ -78,14 +78,13 @@ export function useBattleShadows() {
         entitySize: ENTITY_SIZE_ENEMY,
         isFlying: isFlying(data),
         spriteUrl: getAssetUrl(ASSET_TYPES.POKEMON, data.id, { isShiny: data.isShiny, isBack: false }),
-        precalculate: true,
         visible: true
       })
     }
   }
 
   // Sincronizar visibilidad y posición de la sombra del jugador
-  const syncPlayerShadow = async (pokemon: Pokemon | null, pos: Position, animState: any) => {
+  const syncPlayerShadow = async (pokemon: Pokemon | null, pos: Position, animState: unknown) => {
     const shadowId = getStableShadowId(pokemon, 'player')
 
     // Limpieza de sombras huérfanas
@@ -116,7 +115,6 @@ export function useBattleShadows() {
         entitySize: ENTITY_SIZE_PLAYER,
         isFlying: isFlying(pokemon),
         spriteUrl: getAssetUrl(ASSET_TYPES.POKEMON, pokemon.id, { isShiny: pokemon.isShiny, isBack: true }),
-        precalculate: true,
         visible: true
       })
     }

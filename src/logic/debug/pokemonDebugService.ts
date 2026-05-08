@@ -134,24 +134,24 @@ export const pokemonDebugService = {
           ivs: p.ivs,
           nature: p.nature,
           movesAtBirth: p.moves.map(m => m?.name || '???'),
-          abilitySlot: (p as any).abilityIndex || 0,
+          abilitySlot: (p as unknown as { abilityIndex?: number }).abilityIndex || 0,
           isShiny: p.isShiny,
           isGuardian: p.isGuardian
         };
         
-        const state = game.state as Record<string, any>;
+        const state = game.state as Record<string, unknown>;
         const key = `${p.id}TicketSecs`;
         if (state[key] !== undefined) {
-          state[key] = (state[key] || 0) + 12 * 3600;
+          state[key] = (Number(state[key]) || 0) + 12 * 3600;
         }
 
         if (!game.state.eggs) game.state.eggs = [];
         const eggToPush: EggData = {
-          ...(eggForInventory as any),
+          ...(eggForInventory as EggData),
           uid: `${eggForInventory.id}-${Temporal.Now.instant().epochMilliseconds}`,
           ready: false
         };
-        game.state.eggs.push(eggToPush as any);
+        game.state.eggs.push(eggToPush as unknown as any);
         ui.notify(`[DEBUG] Huevo de ${p.name} añadido a la mochila`, '🥚');
         break;
       }

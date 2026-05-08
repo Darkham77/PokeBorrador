@@ -31,9 +31,13 @@ export function registerMapTools(debug: DebugSystem, { map, ui }: DebugContext) 
     command: 'setDominance',
     category: 'map',
     action: (faction: string) => {
-      const winnerMap: Record<string, any> = {}
+      const winnerMap: Record<string, { winner: string, union: number, poder: number }> = {}
       if (faction && faction !== 'none') {
-        map.maps.forEach((m: { id: string }) => { winnerMap[m.id] = { winner: faction, union: faction, poder: 100 } })
+        const unionPoints = faction === 'union' ? 100 : 0
+        const poderPoints = faction === 'poder' ? 100 : 0
+        map.maps.forEach((m: { id: string }) => { 
+          winnerMap[m.id] = { winner: faction, union: unionPoints, poder: poderPoints } 
+        })
       }
       map.mapWinners = winnerMap
       ui.notify(`Debug: Dominio global asignado a ${faction}`, '🚩')

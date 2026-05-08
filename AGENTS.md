@@ -42,6 +42,7 @@ This file defines the immutable DNA of the Poké Vicio project. Every AI agent i
 ## 7. TypeScript Integrity & Zero-Ignore Policy
 
 - **Zero-Ignore Policy**: The use of `@ts-ignore`, `@ts-nocheck`, or any variant that bypasses TypeScript compiler checks is STRICTLY FORBIDDEN.
+- **Zero-Any Policy**: The use of `any` is STRICTLY FORBIDDEN. Before resorting to it, you MUST analyze if new interfaces or data types should be defined to maintain strict type safety.
 - **Verification Workflow**: Always run `npm run type-check` BEFORE `npm run lint` or any commit operation. Type safety is non-negotiable.
 - **Node.js 26+ Modernization**: Use `Temporal` instead of `Date` for engine logic. Mandatory use of `node:` prefix for built-in imports. Mandatory use of the **Node.js 26 Permission Model** (`--permission`) for utility scripts with restricted FS access. Mandatory use of **Explicit Resource Management** (`using`) for file handles and database connections in Node scripts. Prefer **`node:test`** for pure logic unit tests (non-browser). Prefer **`node:timers/promises`** for delays in scripts. Run `npm run validate:sql` before database commits.
 

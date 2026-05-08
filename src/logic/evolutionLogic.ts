@@ -84,10 +84,11 @@ export function getEvolvedForm(id: string, level: number): string {
     PRE_EVO[data.to] = from;
   }
   for (const [from, data] of Object.entries(STONE_EVOLUTIONS)) {
-    if (!PRE_EVO[(data as any).to]) PRE_EVO[(data as any).to] = from;
+    const to = (data as { to: string }).to;
+    if (!PRE_EVO[to]) PRE_EVO[to] = from;
   }
   for (const [from, to] of Object.entries(TRADE_EVOLUTIONS)) {
-     if (!PRE_EVO[to]) PRE_EVO[to] = from;
+     if (!PRE_EVO[to as string]) PRE_EVO[to as string] = from;
   }
 
   // 2. Backtrack to the very first base form

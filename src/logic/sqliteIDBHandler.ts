@@ -89,8 +89,8 @@ export async function initSQLite(): Promise<SQLiteDatabase> {
 
   initPromise = (async () => {
     try {
-      const initSqlJs = (window as any).initSqlJs as (config: any) => Promise<SQLInstance>;
-      const SQL = await initSqlJs({
+      const win = window as unknown as { initSqlJs: (config: { locateFile: (file: string) => string }) => Promise<SQLInstance> };
+      const SQL = await win.initSqlJs({
         locateFile: (file: string) => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.12.0/${file}`
       });
 

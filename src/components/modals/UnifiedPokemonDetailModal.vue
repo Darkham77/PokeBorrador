@@ -44,7 +44,7 @@ const emit = defineEmits<{
 }>()
 
 const uiStore = useUIStore()
-const gameStore = useGameStore() as any
+const gameStore = useGameStore()
 
 // --- COMPOSABLE LOGIC ---
 const {
@@ -136,7 +136,10 @@ const hexToRgb = (hex: string) => {
 const handleToggleTag = (tagOrId: string | { id?: string, dbId?: string }) => {
   const tagId = typeof tagOrId === 'string' ? tagOrId : (tagOrId.id || tagOrId.dbId)
   if (tagId && isInstance.value && finalIndex.value > -1) {
-    gameStore.togglePokeTag(finalContext.value as 'team' | 'box' | 'market', finalIndex.value, tagId)
+    const ctx = finalContext.value
+    if (ctx === 'team' || ctx === 'box') {
+      gameStore.togglePokeTag(ctx, finalIndex.value, tagId)
+    }
   }
 }
 
@@ -180,8 +183,8 @@ const handleReorderMoves = (from: number, to: number) => {
       class="upd-core-container"
       :class="{ 'instance-mode': isInstance }"
       :style="{ 
-        '--type-color': (PDEX_TYPE_COLORS as any)[species.type[0].toLowerCase()] || '#888',
-        '--type-color-rgb': hexToRgb((PDEX_TYPE_COLORS as any)[species.type[0].toLowerCase()] || '#888')
+        '--type-color': PDEX_TYPE_COLORS[species.type[0].toLowerCase()] || '#888',
+        '--type-color-rgb': hexToRgb(PDEX_TYPE_COLORS[species.type[0].toLowerCase()] || '#888')
       }"
     >
       <!-- Custom Content Header -->
@@ -346,7 +349,7 @@ const handleReorderMoves = (from: number, to: number) => {
           >
             <div class="uid-display">
               <span class="upd-info-label pixelated">ID ÚNICO DB:</span>
-              <span class="uid-value pixelated">{{ targetPokemon.uid }}</span>
+              <span class="uid-value pixelated">{{ targetPokemon?.uid || 'N/A' }}</span>
             </div>
             <div
               v-if="captureDateFormatted"

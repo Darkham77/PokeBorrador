@@ -56,10 +56,13 @@ export interface BattleStore {
   isFinishing: boolean;
   isProcessing: boolean;
   isSearching: boolean;
+  player: Pokemon | null | undefined;
+  enemy: Pokemon | null | undefined;
   playerStages: BattleStages;
   enemyStages: BattleStages;
   battleLogs: BattleLog[];
   debugLoopPokemon: Pokemon | null;
+  isPvP: boolean;
   fsm: {
     currentState: Ref<BattleStateName>;
     currentSubState: Ref<BattleSubStateName | null>;
@@ -94,16 +97,29 @@ export interface PromptOptions {
   onConfirm: (value: string) => void;
 }
 
+export interface UINotification {
+  id: string | number;
+  msg: string;
+  icon: string;
+}
+
 export interface UIStore {
   activeTab: string;
+  notifications: UINotification[];
   isBattleSwitchForced: boolean;
+  isDebugPerformanceMode: boolean;
+  isAnyBlockingModalOpen: boolean;
+  isAnyModalOpen: boolean;
+  isAnyFullscreenModalOpen: boolean;
+  openHudGroup: string | null;
   notify: (msg: string, icon?: string) => void;
-  openConfirm: (options: ConfirmOptions) => void;
-  openPrompt: (options: PromptOptions) => void;
+  openConfirm: (options: any) => void;
+  openPrompt: (options: any) => void;
   open: (name: string, props?: Record<string, unknown>) => void;
   close: (name: string) => void;
   closeAll: () => void;
   setLoading: (val: boolean, msg?: string, sub?: string) => void;
+  toggleHudGroup: (name: string | null) => void;
 }
 
 export interface MapStore {

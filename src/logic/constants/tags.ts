@@ -110,7 +110,7 @@ export function getPokemonVisualBadges(pokemon: Partial<Pokemon> | null): TagDef
   }
 
   // 3. Automatic: Held Item
-  const heldItemRaw = pokemon.heldItem || ((pokemon as any).item && (pokemon as any).item !== 'none' ? (pokemon as any).item : null)
+  const heldItemRaw = pokemon.heldItem || (pokemon.item && pokemon.item !== 'none' ? pokemon.item : null)
   const itemBadge = POKEMON_BADGES['item'];
   if (heldItemRaw && itemBadge) {
     // Normalizar para búsqueda: "Rare Candy" -> "rare_candy" o "Caramelo Raro" -> "Caramelo Raro"
@@ -132,7 +132,7 @@ export function getPokemonVisualBadges(pokemon: Partial<Pokemon> | null): TagDef
   }
 
   // 4. Manual Tags (From pokemon.tags array)
-  const tags = (pokemon as any).tags
+  const tags = pokemon.tags
   if (tags && Array.isArray(tags)) {
     tags.forEach((tagId: string) => {
       // Avoid duplicating iv31 if already added automatically
@@ -152,7 +152,7 @@ export function getPokemonVisualBadges(pokemon: Partial<Pokemon> | null): TagDef
  * Used for the tag editor/detail view.
  */
 export function getPokemonEditorBadges(pokemon: Partial<Pokemon> | null): TagDefinition[] {
-  const pokemonTags = (pokemon as any)?.tags || []
+  const pokemonTags = pokemon?.tags || []
   const badges: TagDefinition[] = []
 
   // ONLY add manual definitions for the editor
@@ -175,7 +175,7 @@ export function getPokemonEditorBadges(pokemon: Partial<Pokemon> | null): TagDef
  */
 export const hasPokemonTag = (pokemon: Partial<Pokemon> | null, tagId: string): boolean => {
   if (!pokemon) return false
-  const tags = (pokemon as any).tags || []
+  const tags = pokemon.tags || []
   
   switch (tagId) {
     case 'comp':

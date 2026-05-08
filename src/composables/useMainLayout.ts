@@ -1,9 +1,13 @@
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, type Ref, type ComponentPublicInstance } from 'vue'
 import { useUIStore } from '@/stores/ui'
 import { useGameStore } from '@/stores/game'
 import { useWindowListener, useDocumentListener } from '@/composables/useWindowListener'
 
-export function useMainLayout(hudRef: any, hudBottomRef: any, innerHudRef: any) {
+export function useMainLayout(
+  hudRef: Ref<HTMLElement | null>, 
+  hudBottomRef: Ref<HTMLElement | ComponentPublicInstance | null>, 
+  innerHudRef: Ref<HTMLElement | null>
+) {
   const uiStore = useUIStore()
   const gameStore = useGameStore()
 
@@ -17,12 +21,13 @@ export function useMainLayout(hudRef: any, hudBottomRef: any, innerHudRef: any) 
   })
 
   // 1. Outside Click logic
-  function handleOutsideClick(e: any) {
+  function handleOutsideClick(e: MouseEvent) {
     if (!uiStore.openHudGroup) return
 
-    const isInsideTopHud = hudRef.value?.contains(e.target)
-    const bottomEl = hudBottomRef.value?.$el || hudBottomRef.value
-    const isInsideBottomHud = bottomEl ? bottomEl.contains(e.target) : false
+    const isInsideTopHud = hudRef.value?.contains(e.target as Node)
+    const bottomValue = hudBottomRef.value
+    const bottomEl = (bottomValue && '$el' in bottomValue) ? (bottomValue.$el as HTMLElement) : (bottomValue as HTMLElement | null)
+    const isInsideBottomHud = bottomEl ? bottomEl.contains(e.target as Node) : false
     
     if (!isInsideTopHud && !isInsideBottomHud) {
       uiStore.openHudGroup = null
@@ -32,15 +37,15 @@ export function useMainLayout(hudRef: any, hudBottomRef: any, innerHudRef: any) 
   // 2. Scroll logic
   let lastScrollY = 0
   let scrollTicking = false
-  function handleScroll(e: any) {
+  function handleScroll(e: Event) {
     if (scrollTicking) return
     scrollTicking = true
     
     requestAnimationFrame(() => {
-      let target = e.target
-      if (target === document || target === window) target = document.documentElement
+      let target = e.target as HTMLElement | null
+      if (e.target === document || e.target === window) target = document.documentElement
       
-      if (target.tagName !== 'HTML' && (!target.classList || !target.classList.contains('tab-content'))) {
+      if (!target || (target.tagName !== 'HTML' && (!target.classList || !target.classList.contains('tab-content')))) {
         scrollTicking = false
         return
       }
@@ -92,7 +97,8 @@ export function useMainLayout(hudRef: any, hudBottomRef: any, innerHudRef: any) 
         hudHeight.value = newHeight
       }
       
-      const bottomEl = hudBottomRef.value?.$el || hudBottomRef.value
+      const bottomValue = hudBottomRef.value
+      const bottomEl = (bottomValue && '$el' in bottomValue) ? (bottomValue.$el as HTMLElement) : (bottomValue as HTMLElement | null)
       const newBottomHeight = bottomEl ? bottomEl.offsetHeight : 0
       if (Math.abs(hudBottomHeight.value - newBottomHeight) > 2) {
         hudBottomHeight.value = newBottomHeight
@@ -108,7 +114,7 @@ export function useMainLayout(hudRef: any, hudBottomRef: any, innerHudRef: any) 
   }, { passive: true })
 
   useWindowListener('scroll', handleScroll, { passive: true, capture: true })
-  useDocumentListener('click', handleOutsideClick)
+  useDocumentListener('click', handleOutsideClick as EventListener)
 
   return {
     hudHeight,

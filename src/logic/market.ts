@@ -1,7 +1,4 @@
-
-/**
- * Core business logic for the Online Market (GTS).
- */
+import type { GameState } from '@/types/game';
 
 export interface MarketListing {
   id: string;
@@ -12,7 +9,7 @@ export interface MarketListing {
     nickname?: string;
     level?: number;
     qty?: number;
-    [key: string]: any;
+    [key: string]: unknown;
   };
   status: 'active' | 'sold' | 'cancelled' | 'expired';
   seller_id: string;
@@ -34,21 +31,21 @@ export interface MarketFilters {
   itemCat: string;
 }
 
-export function ensureMarketSoldSeenState(state: any): string[] {
+export function ensureMarketSoldSeenState(state: GameState): string[] {
   if (!Array.isArray(state.marketSoldSeenIds)) state.marketSoldSeenIds = [];
   state.marketSoldSeenIds = [...new Set(
-    (state.marketSoldSeenIds as string[])
+    (state.marketSoldSeenIds)
       .filter((id) => typeof id === 'string' && id.trim().length > 0)
   )].slice(-250);
   return state.marketSoldSeenIds;
 }
 
-export function isMarketSoldSeen(listingId: string, state: any): boolean {
+export function isMarketSoldSeen(listingId: string, state: GameState): boolean {
   if (!listingId) return true;
   return ensureMarketSoldSeenState(state).includes(listingId);
 }
 
-export function markMarketSoldSeen(listingId: string, state: any): void {
+export function markMarketSoldSeen(listingId: string, state: GameState): void {
   if (!listingId) return;
   const seen = ensureMarketSoldSeenState(state);
   if (seen.includes(listingId)) return;
@@ -69,7 +66,12 @@ export function buildMarketSaleLabel(listing: MarketListing): string {
 /**
  * Filter market listings based on search, tier, type, etc.
  */
-export function applyMarketFilters(list: MarketListing[], filters: MarketFilters, context: 'explore' | 'my-listings', options: any = {}): MarketListing[] {
+export function applyMarketFilters(
+  list: MarketListing[], 
+  filters: MarketFilters, 
+  context: 'explore' | 'my-listings', 
+  options: { getPokemonTier?: (offer: unknown) => { tier: string }, SHOP_ITEMS?: unknown[] } = {}
+): MarketListing[] {
   const { getPokemonTier, SHOP_ITEMS } = options;
   
   return list.filter(item => {
@@ -104,14 +106,14 @@ export function applyMarketFilters(list: MarketListing[], filters: MarketFilters
       // Level
       if ((offer.level||1) < filters.levelMin || (offer.level||1) > filters.levelMax) return false;
       // IVs
-      const ivs = offer.ivs || {};
+      const ivs = (offer as Record<string, unknown>).ivs as Record<string, number> || {};
       const total = (Number(ivs.hp)||0)+(Number(ivs.atk)||0)+(Number(ivs.def)||0)+(Number(ivs.spa)||0)+(Number(ivs.spd)||0)+(Number(ivs.spe)||0);
       if (total < filters.ivTotalMin || total > filters.ivTotalMax) return false;
       if (filters.ivAny31 && !Object.values(ivs).some(v => v === 31)) return false;
     } else {
       // Item Category
       if (filters.itemCat !== 'all') {
-        const shopItem = (SHOP_ITEMS as any[])?.find(x => x.name === offer.name);
+        const shopItem = (SHOP_ITEMS as { name: string, cat: string }[])?.find(x => x.name === offer.name);
         if (shopItem?.cat !== filters.itemCat) return false;
       }
     }

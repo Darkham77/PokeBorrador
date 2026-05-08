@@ -20,7 +20,8 @@ export const useAudioStore = defineStore('audio', () => {
     if (isInitialized.value) return;
 
     try {
-      const AudioContextClass = (window.AudioContext || (window as any).webkitAudioContext) as typeof AudioContext;
+      const win = window as unknown as { AudioContext: typeof AudioContext; webkitAudioContext: typeof AudioContext };
+      const AudioContextClass = win.AudioContext || win.webkitAudioContext;
       context.value = new AudioContextClass();
       masterGain.value = context.value.createGain();
       masterGain.value.gain.value = 0.15; // Global volume
@@ -33,9 +34,9 @@ export const useAudioStore = defineStore('audio', () => {
   };
 
   const initListeners = () => {
-    gameBus.on('PLAY_SOUND', (e: any) => {
-      const type = e.detail || e
-      play(type)
+    gameBus.on('PLAY_SOUND', (e: Event) => {
+      const type = (e as CustomEvent).detail as string;
+      if (type) play(type);
     })
   }
 

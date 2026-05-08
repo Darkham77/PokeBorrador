@@ -124,8 +124,8 @@ const handleActionSelect = (type: string) => {
         else uiStore.notify(`No se pudo equipar`, '⚠️')
       } else {
         const res = inventoryStore.useItem(dbItem.name, uiStore.inventoryTarget.context, uiStore.inventoryTarget.index)
-        if (res.success) uiStore.notify(res.msg, '✨')
-        else uiStore.notify(res.msg, '⚠️')
+        if (res.success) uiStore.notify(res.message, '✨')
+        else uiStore.notify(res.message, '⚠️')
       }
       
       itemActionMenu.value = null
@@ -155,10 +155,10 @@ const handleActionSelect = (type: string) => {
           if (index !== -1) {
             const res = inventoryStore.useItem(dbItem.name, 'team', index)
             if (res.success) {
-              uiStore.notify(res.msg, '✨')
+              uiStore.notify(res.message, '✨')
               if (props.battleMode) close() // Close inventory ONLY on success in battle
             } else {
-              uiStore.notify(res.msg, '⚠️')
+              uiStore.notify(res.message, '⚠️')
               // Keep inventory open on failure
             }
           }

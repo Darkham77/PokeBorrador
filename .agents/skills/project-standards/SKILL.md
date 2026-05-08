@@ -14,33 +14,33 @@ This skill governs the DNA of the project. Technical implementation details are 
 
 Consult these manuals for detailed implementation specifications:
 
-| Domain | Reference Manual |
-| :--- | :--- |
-| **Content Creation** | [content_creation_manual.md](./references/content/content_creation_manual.md) |
-| **Battle Mechanics** | [battle_mechanics_manual.md](./references/battle/battle_mechanics_manual.md) |
-| **Mechanics & UX** | [game_mechanics_manual.md](./references/core/game_mechanics_manual.md) |
-| **UI/UX Standards** | [ui_ux_standards.md](./references/core/ui_ux_standards.md) |
-| **Formulas & Ratios** | [game_formulas_manual.md](./references/core/game_formulas_manual.md) |
-| **Time & Seasons** | [time_system_manual.md](./references/core/time_system_manual.md) |
-| **Node 26+ Standards** | [dependency_management_manual.md](./references/technical/dependency_management_manual.md) |
-| **Breeding (Daycare)** | [breeding_manual.md](./references/systems/breeding_manual.md) |
-| **Evolution System** | [evolution_manual.md](./references/systems/evolution_manual.md) |
-| **Encounter Systems** | [encounter_manual.md](./references/systems/encounter_manual.md) |
-| **Item System** | [item_system_manual.md](./references/systems/item_system_manual.md) |
-| **War & Factions** | [war_system_manual.md](./references/systems/war_system_manual.md) |
-| **Gyms & Rematch** | [gym_system_manual.md](./references/systems/gym_system_manual.md) |
-| **Social & Trade** | [trade_social_manual.md](./references/systems/trade_social_manual.md) |
-| **DB Architecture** | [dbrouter_manual.md](./references/technical/dbrouter_manual.md) |
-| **Validation & Quality** | [validation_manual.md](./references/qa/validation_manual.md) |
-| **Save & Persistence** | [save_system_manual.md](./references/technical/save_system_manual.md) |
-| **Testing & Simulation** | [browser_testing_manual.md](./references/qa/browser_testing_manual.md) |
-| **Animations & FX** | [animation_standards.md](./references/battle/animation_standards.md) |
-| **GPU & Performance** | [gpu_optimization_manual.md](./references/technical/gpu_optimization_manual.md) |
-| **SASS & Styling** | [sass_styling_manual.md](./references/technical/sass_styling_manual.md) |
-| **Asset Pipeline** | [asset_service_manual.md](./references/technical/asset_service_manual.md) |
-| **Map & Spawns** | [spawn_grid_manual.md](./references/systems/spawn_grid_manual.md) |
-| **Combat Camera** | [combat_camera_manual.md](./references/battle/combat_camera_manual.md) |
-| **Dependencies** | [dependency_management_manual.md](./references/technical/dependency_management_manual.md) |
+| Domain                   | Reference Manual                                                                          |
+| :----------------------- | :---------------------------------------------------------------------------------------- |
+| **Content Creation**     | [content_creation_manual.md](./references/content/content_creation_manual.md)             |
+| **Battle Mechanics**     | [battle_mechanics_manual.md](./references/battle/battle_mechanics_manual.md)              |
+| **Mechanics & UX**       | [game_mechanics_manual.md](./references/core/game_mechanics_manual.md)                    |
+| **UI/UX Standards**      | [ui_ux_standards.md](./references/core/ui_ux_standards.md)                                |
+| **Formulas & Ratios**    | [game_formulas_manual.md](./references/core/game_formulas_manual.md)                      |
+| **Time & Seasons**       | [time_system_manual.md](./references/core/time_system_manual.md)                          |
+| **Node 26+ Standards**   | [dependency_management_manual.md](./references/technical/dependency_management_manual.md) |
+| **Breeding (Daycare)**   | [breeding_manual.md](./references/systems/breeding_manual.md)                             |
+| **Evolution System**     | [evolution_manual.md](./references/systems/evolution_manual.md)                           |
+| **Encounter Systems**    | [encounter_manual.md](./references/systems/encounter_manual.md)                           |
+| **Item System**          | [item_system_manual.md](./references/systems/item_system_manual.md)                       |
+| **War & Factions**       | [war_system_manual.md](./references/systems/war_system_manual.md)                         |
+| **Gyms & Rematch**       | [gym_system_manual.md](./references/systems/gym_system_manual.md)                         |
+| **Social & Trade**       | [trade_social_manual.md](./references/systems/trade_social_manual.md)                     |
+| **DB Architecture**      | [dbrouter_manual.md](./references/technical/dbrouter_manual.md)                           |
+| **Validation & Quality** | [validation_manual.md](./references/qa/validation_manual.md)                              |
+| **Save & Persistence**   | [save_system_manual.md](./references/technical/save_system_manual.md)                     |
+| **Testing & Simulation** | [browser_testing_manual.md](./references/qa/browser_testing_manual.md)                    |
+| **Animations & FX**      | [animation_standards.md](./references/battle/animation_standards.md)                      |
+| **GPU & Performance**    | [gpu_optimization_manual.md](./references/technical/gpu_optimization_manual.md)           |
+| **SASS & Styling**       | [sass_styling_manual.md](./references/technical/sass_styling_manual.md)                   |
+| **Asset Pipeline**       | [asset_service_manual.md](./references/technical/asset_service_manual.md)                 |
+| **Map & Spawns**         | [spawn_grid_manual.md](./references/systems/spawn_grid_manual.md)                         |
+| **Combat Camera**        | [combat_camera_manual.md](./references/battle/combat_camera_manual.md)                    |
+| **Dependencies**         | [dependency_management_manual.md](./references/technical/dependency_management_manual.md) |
 
 ### 🛠️ Migration & Technical Support
 

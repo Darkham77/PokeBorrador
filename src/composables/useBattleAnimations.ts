@@ -1,9 +1,23 @@
-import { Temporal } from '@js-temporal/polyfill'
-import { ref, computed, nextTick, watch, toValue } from 'vue'
+import { ref, computed, nextTick, watch, toValue, type MaybeRefOrGetter } from 'vue'
 import { gameBus } from '@/logic/gameBus'
 import { logger } from '@/logic/utils/logger'
+import type { useBattleStore } from '@/stores/battle'
+import type { Pokemon, Move } from '@/types/pokemon'
 
-export function useBattleAnimations(battleStore: any, enemyRef: any) {
+export interface CatchSparkle {
+  id: string;
+  side: string;
+  tx: number;
+  ty: number;
+  tf: number;
+  scale: number;
+  delay: string;
+}
+
+export function useBattleAnimations(
+  battleStore: ReturnType<typeof useBattleStore>, 
+  enemyRef: MaybeRefOrGetter<Pokemon | null | undefined>
+) {
   // Estados de Entrada Salvaje
   const isWildEntryAnimation = ref(false)
   const isEmerging = ref(false)
@@ -17,15 +31,15 @@ export function useBattleAnimations(battleStore: any, enemyRef: any) {
   const playerCaptureActive = ref(false)
   const enemyCaptureActive = ref(false)
   const isCaptureSequenceActive = computed(() => playerCaptureActive.value || enemyCaptureActive.value)
-  const caughtPokemonSnapshot = ref<any | null>(null) 
+  const caughtPokemonSnapshot = ref<Pokemon | null>(null) 
   const isFaintInProgress = ref(false)
-  const faintedPokemonSnapshot = ref<any | null>(null)
+  const faintedPokemonSnapshot = ref<(Partial<Pokemon> & { side: string }) | null>(null)
 
   // Estados de Energía y Poké Ball
   const playerAnimState = ref<string | null>(null) 
   const enemyAnimState = ref<string | null>(null)
   const activePokeballId = ref('pokeball')
-  const catchSparkles = ref<any[]>([])
+  const catchSparkles = ref<CatchSparkle[]>([])
 
   const playerIsShaking = ref(false)
   const playerIsBlinking = ref(false)
@@ -84,12 +98,13 @@ export function useBattleAnimations(battleStore: any, enemyRef: any) {
       if (!state) return
 
       // CASOS DE LIMPIEZA GLOBAL (Garantiza estado puro al iniciar o volver a búsqueda)
+      const subState = sub || ''
       const isCleanupState = [
         'INITIALIZING', 
         'SEARCH_PHASE', 
         'CONTEXT_SETUP', 
         'EXIT_BATTLE'
-      ].includes(state) || sub === 'WAIT_INPUT'
+      ].includes(state) || subState === 'WAIT_INPUT'
 
       if (isCleanupState) {
         isGlobalFadeActive.value = (state === 'EXIT_BATTLE')
@@ -250,7 +265,7 @@ export function useBattleAnimations(battleStore: any, enemyRef: any) {
       const scale = 0.5 + Math.random() * 0.8 // Variación de tamaño
       
       catchSparkles.value.push({
-        id: `sparkle-${side}-${Temporal.Now.instant().epochMilliseconds}-${i}-${Math.random()}`,
+        id: `sparkle-${side}-${Date.now()}-${i}-${Math.random()}`,
         side,
         tx: tx, // Pasar solo número
         ty: ty, 
@@ -264,8 +279,8 @@ export function useBattleAnimations(battleStore: any, enemyRef: any) {
     }, 1200)
   }
 
-  const handleReleaseRequest = (detail: any) => {
-    const side = detail?.side || detail
+  const handleReleaseRequest = (detail: string | { side?: string }) => {
+    const side = typeof detail === 'string' ? detail : detail?.side
     
     // Limpiar estados de captura inmediatamente al liberar
     if (side === 'player') playerCaptureActive.value = false
@@ -280,9 +295,9 @@ export function useBattleAnimations(battleStore: any, enemyRef: any) {
     }, 800)
   }
 
-  const handleCatchRequest = (detail: any) => {
-    const side = detail?.side || detail
-    if (detail?.ballId) activePokeballId.value = detail.ballId
+  const handleCatchRequest = (detail: string | { side?: string, ballId?: string }) => {
+    const side = typeof detail === 'string' ? detail : detail?.side
+    if (typeof detail === 'object' && detail?.ballId) activePokeballId.value = detail.ballId
     
     if (side === 'player') playerAnimState.value = 'catching'
     else enemyAnimState.value = 'catching'
@@ -292,8 +307,8 @@ export function useBattleAnimations(battleStore: any, enemyRef: any) {
     }, 800)
   }
 
-  const handleShakeRequest = (detail: any) => {
-    const side = detail?.side || detail
+  const handleShakeRequest = (detail: string | { side?: string }) => {
+    const side = typeof detail === 'string' ? detail : detail?.side
     if (side === 'player') {
       playerIsShaking.value = false
       playerIsBlinking.value = false
@@ -319,13 +334,14 @@ export function useBattleAnimations(battleStore: any, enemyRef: any) {
     }
   }
 
-  const handleFaintAnim = (e: any) => {
+  const handleFaintAnim = (e: { detail?: string | { side: string } } | string) => {
     if (isFaintInProgress.value) return // Idempotente
     
-    const data = e?.detail || e
-    const side = typeof data === 'string' ? data : (data?.side || 'enemy')
+    const data = typeof e === 'object' ? (e?.detail || e) : e
+    const side = typeof data === 'string' ? data : ((data as { side: string })?.side || 'enemy')
     if (side === 'enemy') {
-      faintedPokemonSnapshot.value = enemyRef.value ? { ...enemyRef.value, side: 'enemy' } : { side: 'enemy' }
+      const enemy = toValue(enemyRef)
+      faintedPokemonSnapshot.value = enemy ? { ...enemy, side: 'enemy' } : { side: 'enemy' }
       isFaintInProgress.value = true
       setTimeout(() => { isFaintInProgress.value = false; faintedPokemonSnapshot.value = null }, 1300)
     } else {
@@ -336,37 +352,30 @@ export function useBattleAnimations(battleStore: any, enemyRef: any) {
   }
 
   const initListeners = () => {
-    gameBus.on('PLAY_CATCH_ENERGY', (e: any) => {
-      const data = e?.detail || e
-      handleCatchRequest(data)
-    })
-    gameBus.on('PLAY_WITHDRAW', (e: any) => {
-      const data = e?.detail || e
-      handleCatchRequest(data)
-    })
-    gameBus.on('PLAY_RELEASE_ENERGY', (e: any) => handleReleaseRequest(e.detail || e))
-    gameBus.on('PLAY_SEND_OUT', (e: any) => handleReleaseRequest(e.detail || e))
+    gameBus.on('PLAY_CATCH_ENERGY', (e: Event) => handleCatchRequest((e as CustomEvent).detail))
+    gameBus.on('PLAY_WITHDRAW', (e: Event) => handleCatchRequest((e as CustomEvent).detail))
+    gameBus.on('PLAY_RELEASE_ENERGY', (e: Event) => handleReleaseRequest((e as CustomEvent).detail))
+    gameBus.on('PLAY_SEND_OUT', (e: Event) => handleReleaseRequest((e as CustomEvent).detail))
     
-    gameBus.on('CATCH_SHAKE', (e: any) => {
-      const data = e?.detail || e
-      handleShakeRequest(data)
-    })
+    gameBus.on('CATCH_SHAKE', (e: Event) => handleShakeRequest((e as CustomEvent).detail))
 
-    gameBus.on('PLAY_DAMAGE', (e: any) => {
-      const data = e?.detail || e
-      handleShakeRequest(data)
-    })
+    gameBus.on('PLAY_DAMAGE', (e: Event) => handleShakeRequest((e as CustomEvent).detail))
+    gameBus.on('POKEMON_FAINT', (e: Event) => handleFaintAnim((e as CustomEvent).detail))
+    gameBus.on('PLAY_FAINT', (e: Event) => handleFaintAnim((e as CustomEvent).detail))
 
-    gameBus.on('POKEMON_FAINT', (e: any) => handleFaintAnim(e))
-    gameBus.on('PLAY_FAINT', (e: any) => handleFaintAnim(e))
-
-    gameBus.on('PLAY_ATTACK_ANIM', (e: any) => {
-      const data = e?.detail || e
-      const side = typeof data === 'string' ? data : (data?.side || 'player')
-      const cat = data?.cat || 'physical'
+    gameBus.on('PLAY_ATTACK_ANIM', (e: Event) => {
+      const data = (e as CustomEvent).detail
+      const side = (typeof data === 'string' ? data : (data?.side || 'player')) as 'player' | 'enemy'
+      const cat = (data?.cat || 'physical')
       
       battleStore.attackerSide = side
-      battleStore.activeMove = { cat, side } 
+      battleStore.activeMove = { 
+        name: 'VisualMove', 
+        pp: 1, 
+        maxPP: 1, 
+        cat: (cat || 'physical') as 'physical' | 'special' | 'status',
+        side: side as 'player' | 'enemy'
+      } as Move
       
       setTimeout(() => {
         battleStore.attackerSide = null
@@ -374,15 +383,15 @@ export function useBattleAnimations(battleStore: any, enemyRef: any) {
       }, 500)
     })
 
-    gameBus.on('CATCH_SUCCESS', (e: any) => {
-      const data = e?.detail || e
+    gameBus.on('CATCH_SUCCESS', (e: Event) => {
+      const data = (e as CustomEvent).detail
       const side = typeof data === 'string' ? data : (data?.side || 'enemy')
       
       if (side === 'player') playerCaptureActive.value = true
       else enemyCaptureActive.value = true
       
-      const targetRef = side === 'player' ? battleStore.player : enemyRef.value
-      caughtPokemonSnapshot.value = targetRef ? { ...targetRef } : null
+      const targetRef = side === 'player' ? battleStore.player : toValue(enemyRef)
+      caughtPokemonSnapshot.value = targetRef ? { ...targetRef } as Pokemon : null
       triggerCatchSparkles(side)
       
       setTimeout(() => {

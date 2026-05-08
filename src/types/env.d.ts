@@ -52,6 +52,8 @@ declare global {
   interface Window {
     VITE_SUPABASE_URL: string;
     VITE_SUPABASE_KEY: string;
+    __VITE_DEBUG__?: boolean;
+    drawBattleBackground?: (locationId: string, cycle: string) => void;
   }
 }
 

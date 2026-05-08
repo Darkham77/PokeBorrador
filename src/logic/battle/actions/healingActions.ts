@@ -21,9 +21,10 @@ export const HEALING_ACTIONS: Record<string, MoveAction> = {
     const mechWeather = getMechanicalWeather(weather);
 
     // Prioridad 1: Clima (Mecánicas oficiales)
+    const badWeathers: string[] = [WEATHER_MECHANICAL.RAIN, WEATHER_MECHANICAL.HAIL, WEATHER_MECHANICAL.SNOW, WEATHER_MECHANICAL.SANDSTORM, WEATHER_MECHANICAL.FOG];
     if (mechWeather === WEATHER_MECHANICAL.SUN) {
       healPct = 0.66;
-    } else if ([WEATHER_MECHANICAL.RAIN, WEATHER_MECHANICAL.HAIL, WEATHER_MECHANICAL.SNOW, WEATHER_MECHANICAL.SANDSTORM, WEATHER_MECHANICAL.FOG].includes(mechWeather as any)) {
+    } else if (badWeathers.includes(mechWeather)) {
       healPct = 0.25;
     } else {
       // Prioridad 2: Ciclo horario (Mecánica RPG extendida)
@@ -41,7 +42,7 @@ export const HEALING_ACTIONS: Record<string, MoveAction> = {
   'rest': (src, _tgt, _srcStages, _tgtStages, addLogFn) => {
     src.hp = src.maxHp;
     src.status = 'sleep';
-    (src as any).sleepTurns = 2;
+    src.sleepTurns = 2;
     addLogFn(`¡${src.name} se recuperó completamente y se quedó dormido!`, 'log-info', src);
   },
 
@@ -50,8 +51,8 @@ export const HEALING_ACTIONS: Record<string, MoveAction> = {
       addLogFn(`¡No afecta a ${tgt.name}!`, 'log-info', tgt);
       return;
     }
-    if (!(tgt as any).seeded) {
-      (tgt as any).seeded = true;
+    if (!tgt.seeded) {
+      tgt.seeded = true;
       addLogFn(`¡${tgt.name} fue infectado por drenadoras!`, 'log-info', tgt);
     } else {
       addLogFn(`¡${tgt.name} ya está infectado!`, 'log-info', tgt);

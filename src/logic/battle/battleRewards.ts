@@ -9,7 +9,16 @@ export function calculateBaseExp(enemyPoke: Pokemon) {
   return Math.floor(enemyPoke.level * 4)
 }
 
-export function processExpGain(p: Pokemon, baseExp: number, _participants: Set<string>, options: any = {}) {
+export interface RewardOptions {
+  isActive?: boolean;
+  classMult?: number;
+  totalExpMult?: number;
+  participantsSet?: Set<string> | null;
+  bcMult?: number;
+  totalMoneyMult?: number;
+}
+
+export function processExpGain(p: Pokemon, baseExp: number, _participants: Set<string>, options: RewardOptions = {}) {
   const { 
     isActive = false, 
     classMult = 1, 
@@ -34,7 +43,7 @@ export function processExpGain(p: Pokemon, baseExp: number, _participants: Set<s
   return { gained, levelUp }
 }
 
-export function calculateMoneyGain(enemyPoke: Pokemon, options: any = {}) {
+export function calculateMoneyGain(enemyPoke: Pokemon, options: RewardOptions = {}) {
   const { bcMult = 1, totalMoneyMult = 1 } = options
   const baseMoney = enemyPoke.level * 10 * bcMult
   return Math.floor(baseMoney * totalMoneyMult)
