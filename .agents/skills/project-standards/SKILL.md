@@ -59,7 +59,7 @@ Consult these manuals for detailed implementation specifications:
 
 ### 2. GPU & Rendering
 
-- **GPU First**: Prioritize hardware-accelerated rendering. See [gpu_optimization_manual.md](./references/technical/gpu_optimization_manual.md).
+- **GPU First**: Prioritize hardware-accelerated rendering. See [gpu_optimization_manual.md](./references/technical/gpu_optimization_manual.md). GPU promotion (`will-change`) MUST be context-aware; only add it if a `filter` or `transform` is present and no other `will-change` exists within the same block (500-character window) to avoid redundancy and memory overhead.
 - **Sprite Standard**: Use `@include sprite-render` for all game assets.
 - **Organic Feel**: Desynchronize animations using seeds and vary speeds.
 - **VFX Integrity**: Apply complex auras (e.g. Guardian/Shiny) to the `.pv-fx-wrapper` instead of the child sprite. This prevents status effect filters (poison/burn) from overriding the aura. Persistent effects MUST decouple their visibility from status flags.
@@ -88,9 +88,9 @@ Consult these manuals for detailed implementation specifications:
 
 ### 4. SASS and Build Integrity
 
-- **Capitalization Duality**:
-  - **SASS Filters**: Use capitalized filters (`Scale()`, `Blur()`, `Brightness()`) to avoid collisions with Dart Sass 2.0 native functions.
-  - **Browser Transforms**: Use standard LOWERCASE for CSS transformations (`translate`, `scale`, `rotate`). Capitalizing these may cause browser interpretation failures and break layout positioning.
+- **Capitalization Duality (SASS 2.0 Integrity)**:
+  - **SASS Traps**: ALL CSS functions that collide with SASS built-ins (e.g., `Scale()`, `Blur()`, `Invert()`, `Rotate()`, `Translate()`) **MUST** be capitalized in every CSS property (including `transform` and `filter`). Lowercase versions (e.g., `scale()`) are intercepted by Dart Sass 2.0 and cause compilation failures.
+  - **Module Protection**: Automated refactoring tools MUST exclude functions preceded by a dot `.` or dollar `$` (e.g., `color.scale`, `$var.blur`) to preserve SASS module integrity.
 - **@use Standard**: Forbidden use of `@import`. Use `@use` and `@forward`.
 - **Zero-Warning**: Always maintain 0 errors and 0 warnings in `lint` and `vue-tsc`. It is MANDATORY to run `npm run type-check` before `npm run lint`.
 - **Template Event Casting**: When using strict TypeScript in `.vue` files, it is mandatory to cast event targets in the template (e.g., `(e.target as HTMLImageElement)`) to satisfy `vue-tsc` checks on specific DOM properties.
@@ -110,6 +110,7 @@ Consult these manuals for detailed implementation specifications:
 ### 5. CLI-First Debugging
 
 - **Efficiency Over GUI**: Use `window.__VITE_DEBUG__` commands to simulate states. It is MANDATORY to verify new content via CLI before committing.
+- **Windows CLI Compatibility**: When chaining commands in PowerShell (default Windows CLI), avoid the `&&` operator; use `;` or run commands sequentially to ensure cross-platform stability.
 - **Standardized Logging (HybridLogger)**: Consolidation of `HybridLogger` with context tags (e.g., `[Battle]`, `[GTS]`, `[Chat]`) is MANDATORY. This ensures "Zero-Log" production standards while maintaining CSS styling in browsers and ANSI in terminals. Direct `console.log` is FORBIDDEN in production-bound logic.
 
 ### 7. Symbolic Documentation & Source of Truth (Zero-Hardcoding)
@@ -122,7 +123,7 @@ Consult these manuals for detailed implementation specifications:
 ### 8. Battle Engine Integrity (FSM)
 
 - **Documentation Parity**: The code MUST remain a 1:1 implementation of the Mermaid diagrams in `battle_mechanics_manual.md`.
-- **Deterministic Flow**: Avoid naked `setTimeout` calls in combat logic. Use `await new Promise(r => setTimeout(r, ms))` to maintain atomic control.
+- **Deterministic Flow**: Avoid naked `setTimeout` calls in combat logic. Use `await new Promise(r => setTimeout(r, ms))` to maintain atomic control. Initialization sequences and FSM state transitions MUST be strictly synchronized with `await` to prevent engine deadlocks and race conditions during "Search -> Combat" phases.
 - **Mandatory Audit**: Run `verify_fsm_diagrams.ts`, `audit_fsm_implementation.ts`, and `audit_fsm_flow_parity.ts` before every commit that touches battle logic. Zero critical errors are allowed.
 
 ---

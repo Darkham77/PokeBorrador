@@ -148,6 +148,7 @@ These can coexist with primary status and other secondary effects:
 - **Immediate Faint Handling**: During multi-hit moves or standard damage, the engine MUST invoke `store.handleFaint(side)` immediately if the HP is <= 0.
 - **Persistence Mandate (isFinishing)**: Throughout the fainting and replacement sequence, the `isFinishing` flag of the battle store MUST remain `true`. This prevents premature closing of the battle modal and ensures the player transitions correctly to `SEARCH_PHASE`.
 - **One-Turn Volatile Cleanup**: Short-duration volatile states like `destiny_bond` and `snatch` must expire at the start of the user's next action to ensure they last exactly one turn cycle.
+- **FSM Atomic Synchronization**: Every state transition in the FSM (especially during `INITIALIZING` and `SEARCH_PHASE`) **MUST** be strictly synchronized using `await`. Avoid synchronous state jumps that can bypass initialization logic, as this leads to engine deadlocks and visual freezes.
 
 ---
 

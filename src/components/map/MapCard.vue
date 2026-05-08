@@ -365,7 +365,7 @@ const spawnGrid = computed(() => {
     <PVTooltip
       :class="['location-tag', (isLocked || isSafariLocked) ? 'tag-locked' : 'tag-wild', atmosphere?.animClass]"
       :title="(isLocked || isSafariLocked) ? 'ZONA BLOQUEADA' : 'ESTADO AMBIENTAL'"
-      :description="(isLocked || isSafariLocked) ? lockDescription : `Clima: ${weatherName} | Ciclo: ${cycleName} | Estación: ${seasonName}`"
+      :description="(isLocked || isSafariLocked) ? lockDescription : `Ciclo: ${cycleName}\nEstación: ${seasonName}\nClima: ${weatherName}`"
       position="top"
     >
       <span class="pill-content">

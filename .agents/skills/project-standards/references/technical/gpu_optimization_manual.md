@@ -11,6 +11,7 @@ All heavy components or those that animate frequently must be promoted to a GPU 
 - **Golden Rule**: If an element uses `backdrop-filter: Blur()`, it **MUST** have layer promotion to avoid stuttering.
 - **Visibility Trap**: NEVER use `visibility: hidden` to hide an element that has `backdrop-filter` or heavy glassmorphism. This causes the browser to discard the GPU layer; when it becomes `visible` again, the re-paint happens sequentially across frames (glitch). Use `opacity: 0` and `pointer-events: none` instead to keep the layer "warm" in the compositor.
 - **Layer Consolidation**: Avoid redundant layer promotion. If a parent (e.g., `BoxPokemonCard`) is already accelerated, do NOT apply `@include gpu-layer` or `will-change` to its children (e.g., Auras). Managing 100+ overlapping layers causes "Scroll-Stop Freezes" during compositor cleanup.
+- **Context-Aware will-change**: Automated tools and manual implementations MUST check the surrounding block (approx. 500 characters). Only add `will-change` if a `filter` or `transform` exists and NO other `will-change` is present in that context. Duplicate declarations lead to bloated CSS and memory waste.
 
 ## 2. Low-Cost Animations
 

@@ -2,33 +2,15 @@
 import { computed, ref, onMounted, nextTick, watch } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
-import { useMapStore } from '@/stores/map'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 
 const _gameStore = useGameStore() as any
 const _uiStore = useUIStore() as any
-const mapStore = useMapStore() as any
 const gs = computed(() => _gameStore.state)
 const money = computed(() => _gameStore.state.money)
 
 // Refs para el ajuste dinámico
 const moneyRef = ref<HTMLElement | null>(null)
-const seasonRef = ref<HTMLElement | null>(null)
-const cycleRef = ref<HTMLElement | null>(null)
-
-// Time cycle logic
-const dayCycle = computed(() => {
-  const cycle = mapStore.currentCycle
-  const info: Record<string, { icon: string, label: string, color: string }> = {
-    morning: { icon: '🌅', label: 'Amanecer', color: '#FFD93D' },
-    day: { icon: '☀️', label: 'Día', color: '#FFEEAD' },
-    dusk: { icon: '🌇', label: 'Atardecer', color: '#FF6B35' },
-    night: { icon: '🌙', label: 'Noche', color: '#B088FF' }
-  }
-  return info[cycle] || { icon: '☀️', label: 'Día', color: '#FFEEAD' }
-})
-
-const currentSeason = computed(() => mapStore.currentSeason)
 
 /**
  * Ajusta el tamaño de fuente de un elemento para que quepa en su contenedor
@@ -38,7 +20,6 @@ const fitText = async (el: HTMLElement | null, maxW: number, baseSize: number) =
   await nextTick()
   let size = baseSize
   el.style.fontSize = `${size}px`
-  // Reducir tamaño hasta que quepa (mínimo 5px para casos extremos)
   while (el.scrollWidth > maxW && size > 5) {
     size -= 0.5
     el.style.fontSize = `${size}px`
@@ -46,46 +27,19 @@ const fitText = async (el: HTMLElement | null, maxW: number, baseSize: number) =
 }
 
 // Observadores para disparar el ajuste cuando cambien los datos
-watch([money, dayCycle, currentSeason], async () => {
+watch([money], async () => {
   await nextTick()
-  fitText(moneyRef.value, 58, 12)
-  fitText(cycleRef.value, 58, 12) // Subido a 12px para que NOCHE se vea bien
-  fitText(seasonRef.value, 58, 10) // Ajustado base de Primavera
+  fitText(moneyRef.value, 60, 14)
 }, { deep: true })
 
 onMounted(async () => {
   await nextTick()
-  fitText(moneyRef.value, 58, 12)
-  fitText(cycleRef.value, 58, 12)
-  fitText(seasonRef.value, 58, 10)
+  fitText(moneyRef.value, 60, 14)
 })
 </script>
 
 <template>
   <div class="hud-items">
-    <!-- CICLO HORARIO REACTIVO -->
-    <PVTooltip
-      :title="`${dayCycle.label.toUpperCase()} - ${currentSeason.label.toUpperCase()}`"
-      description="El mundo cambia cada 8 horas. ¡Las estaciones cambian cada semana!"
-      position="bottom"
-    >
-      <div
-        id="time-cycle-display"
-        class="hud-pill time-pill"
-      >
-        <span id="time-icon">{{ dayCycle.icon }}</span>
-        <span
-          ref="cycleRef"
-          class="pill-value cycle-label"
-          :style="{ color: dayCycle.color }"
-        >{{ dayCycle.label }}</span>
-        <span
-          ref="seasonRef"
-          class="pill-value season-label"
-        >{{ currentSeason.label }}</span>
-      </div>
-    </PVTooltip>
-
     <!-- DINERO -->
     <PVTooltip
       title="POKÉ-PESOS (₱)"
@@ -190,41 +144,29 @@ onMounted(async () => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 4px;
+  padding: 4px 2px;
   overflow: hidden;
-  gap: 0;
+  gap: 2px;
 
   .pill-value {
     @include pixelated;
     text-transform: uppercase;
     text-align: center;
     white-space: nowrap;
-    display: inline-block; // Cambiado de block para permitir medición real
-    width: auto; // Cambiado de 100%
+    display: inline-block;
+    width: auto;
     max-width: 100%;
-    line-height: 1.1;
+    line-height: 1;
     margin: 0;
-  }
-
-  &.time-pill {
-    .season-label {
-      color: #A0C4FF;
-      margin-top: -1px;
-    }
   }
 
   &.money-pill {
     .pill-value {
       color: var(--green);
-      margin-top: 1px;
+      margin-top: 2px;
+      letter-spacing: -0.2px;
     }
   }
-}
-
-#time-icon {
-  font-size: 18px;
-  line-height: 1;
-  margin-bottom: 2px;
 }
 
 .currency-icon-money {

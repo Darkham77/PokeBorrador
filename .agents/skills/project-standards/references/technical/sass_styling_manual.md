@@ -26,7 +26,7 @@ Apply interpolation to the following CSS functions to prevent "X is not a color"
 - `background: Radial-Gradient(...) / Linear-Gradient(...);` (Essential for weather overlays)
 
 > [!WARNING]
-> **SASS Filter Collision**: You MUST use **Capitalization** for `Brightness()`, `Scale()`, `Blur()`, `Rotate()`, `TranslateY()`, and `Grayscale()` in `.vue` and `.scss` files. Using lowercase (e.g., `scale(1.1)`) causes Sass to intercept them as internal color functions, leading to critical build errors.
+> **SASS 2.0 Collision Protocol**: You **MUST** use **Capitalization** for ALL CSS functions that collide with SASS built-ins (`Scale()`, `Blur()`, `Rotate()`, `Invert()`, `Brightness()`, etc.). This applies to ALL properties, including `transform` and `filter`. SASS 2.0 intercepts lowercase versions even inside complex property strings, causing critical build failures.
 
 ### 2. Specificity vs. !important
 
@@ -194,6 +194,7 @@ When refactoring legacy or generic components:
   - **MANDATORY Capitalization**: You **MUST** use **Rgba()**, **Rgb()**, **Linear-Gradient()**, and **Radial-Gradient()** (Capitalized) instead of lowercase. This prevents SASS from intercepting them as internal color functions and ensures literal CSS output.
   - ✅ `background: Rgba(255, 255, 255, 0.5);`
   - ❌ `background: rgba(255, 255, 255, 0.5);` (Collision)
+  - **Module & Variable Protection**: Automated refactoring tools (auditors, Vite plugins) **MUST** ignore functions preceded by a dot `.` or dollar `$` (e.g., `color.scale`, `$my-var.blur`). Converting these to uppercase breaks SASS module logic and variable lookups.
   - **Filter Capitalization**: This rule applies to all CSS filters (`Blur()`, `Scale()`, `Brightness()`, `Grayscale()`, etc.).
   - **SVG Filter Quoting**: When referencing filters by ID in SASS functions or mixins, ALWAYS quote the ID inside the URL: `url("#id")`.
     - **WHY**: Prevents Dart Sass from misinterpreting the `#` as a color hex or causing compilation errors when the ID contains certain characters.

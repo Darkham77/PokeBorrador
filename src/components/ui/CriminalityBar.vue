@@ -58,26 +58,16 @@ const isMax = computed(() => criminality.value >= 100)
   right: 20px;
   top: 50%;
   transform: Translatey(-50%);
-  width: 14px;
+  width: 24px; // Aumentado para dar aire lateral
   display: flex;
   flex-direction: column;
   align-items: center;
   z-index: var(--z-base);
   pointer-events: none;
-  padding: 15px 10px;
-}
-
-/* Premium 'Black Neon' shadow */
-.criminality-container::before {
-  content: '';
-  position: absolute;
-  inset: -10px; // Aumentado para mayor cobertura
-  background: Rgba(0, 0, 0, 0.85);
-  will-change: filter, opacity;
-  will-change: transform, filter, opacity;
-  filter: Blur(20px); // Aumentado para un aura más suave y expansiva
-  border-radius: 40px;
-  z-index: -1;
+  padding: 20px 10px;
+  background: Rgba(0, 0, 0, 0.8); // Solidez al 80% para contraste puro
+  border-radius: 20px;
+  box-shadow: 0 0 30px Rgba(0, 0, 0, 0.9); // Aura oscura eficiente
 }
 
 .label {
