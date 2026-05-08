@@ -186,8 +186,8 @@ tests/
 
 Before finalizing any testing task or reported progress, you **MUST** run the full verification chain:
 
-1. **Type Check**: `npm run type-check`
-2. **SQL Validation**: `npm run validate-sql`
+1. **Type Check**: `npm run validate:types`
+2. **SQL Validation**: `npm run validate:sql`
 3. **Lint/Fix**: `npm run lint`
 4. **Unit Tests**: `npm run test`
 5. **Production Build**: `npm run build`

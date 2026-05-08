@@ -98,8 +98,8 @@ You MUST run these commands and fix EVERY issue until a clean pass is achieved.
 
 **THE MANDATORY CHAIN (Execution Order):**
 
-1. **Type-Safety**: `npm run type-check`
-2. **Database Validation**: `npm run validate-sql` (CRITICAL: Verifies migration syntax against SQLite)
+1. `npm run validate:types`
+2. `npm run validate:sql` (CRITICAL: Verifies migration syntax against SQLite)
 3. **Items Integrity**: `npm run validate:items` (Auditoría de integridad de base de datos de objetos)
 4. **FSM Audit**: `npm run fsm:audit` (Auditoría de estados de batalla contra diagramas Mermaid)
 5. **Standard Repair**: `npm run audit:fix` (Corrección automática de Viewports y filtros SASS)

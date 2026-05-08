@@ -119,13 +119,16 @@ Antes de realizar una entrega o desplegar cambios, es **MANDATORIO** que el cód
 5. **Build**: La aplicación debe compilar correctamente para producción.
 
 ```bash
-npm run type-check   # Verificación de tipos
-npm run validate-sql # Validación de migraciones SQL
-npm run validate:items # Auditoría de integridad de ítems
-npm run fsm:audit    # Auditoría de estados de batalla
-npm run audit:fix    # Corrección automática de estándares
-npm run test         # Unit tests
-npm run build        # Build para producción
+npm run type-check         # Verificación de tipos
+npm run validate:sql       # Validación de migraciones SQL
+npm run validate:items     # Auditoría de integridad de ítems
+npm run validate:abilities # Auditoría de integridad de habilidades
+npm run validate:moves     # Auditoría de integridad de movimientos
+npm run fsm:audit          # Auditoría de estados de batalla
+npm run audit:full         # Ejecución completa de todas las auditorías
+npm run audit:fix          # Corrección automática de estándares
+npm run test               # Unit tests
+npm run build              # Build para producción
 ```
 
 ### Reglas de Oro
@@ -174,8 +177,11 @@ npm run convert-assets
 Motor unificado para verificar Viewports dinámicos, filtros SASS, rendimiento GPU y reglas de código:
 
 ```bash
-# Solo escaneo
+# Solo escaneo de Viewports/SASS
 npm run audit
+
+# Auditoría completa (FSM, ítems, habilidades, movimientos, SQL)
+npm run audit:full
 
 # Escaneo y corrección automática (Viewport, SASS filters, imports)
 npm run audit:fix

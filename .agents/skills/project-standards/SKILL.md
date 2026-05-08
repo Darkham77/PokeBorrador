@@ -91,7 +91,7 @@ Consult these manuals for detailed implementation specifications:
 - **Unified SASS Trap Engine**: ALL CSS/SASS functions (e.g., `Scale()`, `Blur()`, `Rotate()`) MUST be capitalized globally to prevent Dart Sass 2.0 collisions. The audit engine uses a unified `sassTraps` rule that automatically excludes functions preceded by `.` or `$`.
 - **Audit Exemptions**: Utility, maintenance, and migration scripts (located in `scripts/`) are EXEMPT from legacy code audits (e.g., `legacyDates`) to allow technical support tasks without false positives.
 - **@use Standard**: Forbidden use of `@import`. Use `@use` and `@forward`.
-- **Zero-Warning**: Always maintain 0 errors and 0 warnings in `lint` and `vue-tsc`. It is MANDATORY to run `npm run type-check` before `npm run lint`.
+- **Zero-Warning**: Always maintain 0 errors and 0 warnings in `lint` and `vue-tsc`. It is MANDATORY to run `npm run validate:types` before `npm run lint`.
 - **Template Event Casting**: When using strict TypeScript in `.vue` files, it is mandatory to cast event targets in the template (e.g., `(e.target as HTMLImageElement)`) to satisfy `vue-tsc` checks on specific DOM properties.
 - **Dependency Shield**: Scripts using external libraries must handle `ImportError` and provide installation instructions.
 - **Node.js 26+ & Modern JS**:
@@ -103,7 +103,7 @@ Consult these manuals for detailed implementation specifications:
 ### 9. TypeScript Integrity & Zero-Ignore Policy
 
 - **Zero-Ignore Policy**: The use of `@ts-ignore`, `@ts-nocheck`, or any variant that bypasses TypeScript compiler checks is STRICTLY FORBIDDEN.
-- **Verification Workflow**: Always run `npm run type-check` BEFORE `npm run lint` or any commit operation. Type safety is non-negotiable.
+- **Verification Workflow**: Always run `npm run validate:types` BEFORE `npm run lint` or any commit operation. Type safety is non-negotiable.
 - **JSDoc Integrity**: When editing code (especially via `multi_replace_file_content`), ALWAYS verify the preservation of the `/**` opening tags. Deleting these tags breaks JSDoc transformation in esbuild/vite and leads to documentation/type generation failures.
 
 ### 5. CLI-First Debugging
@@ -151,8 +151,8 @@ Use these scripts to verify project standards and ensure stability:
 
 ### 🛡️ Core Validation
 
-- `npm run type-check`: Verificación de integridad de tipos TypeScript (Cero Errores).
-- `npm run validate-sql`: Validador de esquemas y migraciones SQL contra motor local.
+- `npm run validate:types`: Verificación de integridad de tipos TypeScript (Cero Errores).
+- `npm run validate:sql`: Validador de esquemas y migraciones SQL contra motor local.
 - `npm run validate:items`: Auditoría de integridad de base de datos de ítems y objetos.
 - `npm run audit`: Escaneo unificado de estándares (Viewports, GPU, SASS filters).
 - `npm run audit:fix`: Reparación automática de estándares y filtros SASS.
@@ -167,5 +167,5 @@ Use these scripts to verify project standards and ensure stability:
 
 ### 🖼️ Assets
 
-- `npm run convert-assets`: Pipeline unificado para conversión a WebP y mirroring.
-- `npm run download-assets`: Descargador de sprites externos (PokeAPI/Showdown).
+- `npm run assets:convert`: Pipeline unificado para conversión a WebP y mirroring.
+- `npm run assets:download`: Descargador de sprites externos (PokeAPI/Showdown).

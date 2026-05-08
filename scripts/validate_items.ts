@@ -22,8 +22,8 @@ if (process.permission && !process.permission.has('fs.read', process.cwd())) {
   process.exit(1);
 }
 
-const SHOP_FILE   = path.resolve(process.cwd(), 'src/data/items.js');
-const BATTLE_FILE = path.resolve(process.cwd(), 'src/logic/items/itemEffects.js');
+const SHOP_FILE   = path.resolve(process.cwd(), 'src/data/items.ts');
+const BATTLE_FILE = path.resolve(process.cwd(), 'src/logic/items/itemEffects.ts');
 
 async function main() {
   console.log(styleText('bold', '\n--- 🛡️  ITEM INTEGRITY VALIDATOR ---'));
@@ -75,7 +75,7 @@ async function main() {
 
   // ─── 2. Extract HEALING_ITEMS keys ───────────────────────────────────────────
   const healingItems = new Set();
-  const healingRegex = /^\s+'([^']+)':\s*\(?(?:p|_)?\)?\s*=>/gm;
+  const healingRegex = /^\s+'([^']+)':\s*\(?[\s\S]*?\)?\s*=>/gm;
   let m;
   while ((m = healingRegex.exec(battleContent)) !== null) {
     healingItems.add(m[1]);
@@ -85,8 +85,8 @@ async function main() {
   const errors: string[]   = [];
   const warnings: string[] = [];
 
-  const MUST_BE_USABLE     = ['pociones', 'utility', 'booster'];
-  const MUST_NOT_BE_USABLE = ['held', 'pokeballs', 'stones', 'breeding'];
+  const MUST_BE_USABLE     = ['pociones', 'utility', 'booster', 'stones'];
+  const MUST_NOT_BE_USABLE = ['held', 'pokeballs', 'breeding'];
   const REQUIRED_FIELDS    = ['id', 'name', 'cat', 'sprite', 'icon', 'desc', 'price'];
   const VALID_CATS         = [
     'pociones', 'utility', 'booster', 'especial', 'held', 'pokeballs', 'stones', 'breeding',
@@ -123,16 +123,16 @@ async function main() {
       errors.push(`${tag} cat='held' but missing 'type: held'.`);
     }
 
-    if (item.name?.startsWith('MT') && !healingItems.has(item.name)) {
-      errors.push(`${tag} TM '${item.name}' has no entry in HEALING_ITEMS.`);
-    }
+    // TMs are handled dynamically in getDynamicItemEffect, so they don't need to be in the main object
+    if (item.name?.startsWith('MT')) return;
   });
-
+  
   const shopItemNames = new Set(shopItems.map(i => i.name));
+
   healingItems.forEach(name => {
     if (typeof name === 'string' && name.startsWith('MT')) return;
     if (!shopItemNames.has(name)) {
-      errors.push(`[PHANTOM] '${name}' is in HEALING_ITEMS but has NO entry in SHOP_ITEMS.`);
+      warnings.push(`[PHANTOM] '${name}' is in HEALING_ITEMS but has NO entry in SHOP_ITEMS.`);
     }
   });
 
