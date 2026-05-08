@@ -38,10 +38,7 @@
   background: Rgba(18, 18, 20, 0.75);
   -webkit-will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: Blur(20px);
-  will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: Blur(20px);
   @include gpu-layer;
   animation: fadeIn 0.4s ease;

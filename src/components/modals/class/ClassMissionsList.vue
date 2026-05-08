@@ -171,7 +171,6 @@ function getMissionDesc(_mId: string, clsId: string | undefined) {
     box-shadow: 0 0 20px Rgba(34, 197, 94, 0.4);
     &:hover { transform: Translatey(-2px); will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Brightness(1.1); }
   }
 }

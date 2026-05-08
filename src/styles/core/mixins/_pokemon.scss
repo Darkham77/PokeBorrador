@@ -91,19 +91,16 @@
   @include sprite-render;
   transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), filter 0.4s ease;
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 8px 12px Rgba(0, 0, 0, 0.3));
 }
 
 @mixin pokemon-sprite-hover-standard {
   transform: Translatey(-6px);
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Brightness(1.1) Drop-Shadow(0 15px 25px Rgba(0, 0, 0, 0.5));
 }
 
 @mixin pokemon-silhouette($outline-color: Rgba(255, 255, 255, 0.6)) {
-  will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
   filter: pokemon-silhouette-optimized() !important;
   opacity: 1 !important;
@@ -176,7 +173,6 @@
       opacity: 1;
       animation: none; // Static on hover
       will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Brightness(1.2);
     }
   }

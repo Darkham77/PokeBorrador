@@ -210,7 +210,6 @@ onMounted(async () => {
     width: 140px;
     @include sprite-render;
     will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 0 20px Rgba(255,255,255,0.2));
     animation: bounce 2s infinite ease-in-out;
   }
@@ -246,7 +245,6 @@ onMounted(async () => {
     width: 180px;
     @include sprite-render;
     will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 0 30px var(--yellow));
     animation: pop-in 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   }
@@ -378,10 +376,7 @@ onMounted(async () => {
 :deep(.base-modal-overlay) {
   -webkit-will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: Blur(10px);
-  will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: Blur(10px);
   @include gpu-layer;
 }

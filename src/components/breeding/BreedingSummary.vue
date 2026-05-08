@@ -144,14 +144,11 @@ const formatTime = (ms: number | null) => {
   font-size: 32px;
   opacity: 0.1;
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Grayscale(100%);
   transition: all 0.5s;
   
   &.active {
     opacity: 1;
-    will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Grayscale(0%);
     animation: pulse 2s infinite;
   }
@@ -160,15 +157,10 @@ const formatTime = (ms: number | null) => {
 @keyframes pulse {
   0% { transform: Scale(1.0); will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 0 0 Rgba(239, 68, 68, 0)); }
   50% { transform: Scale(1.2); will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 0 15px Rgba(239, 68, 68, 0.6)); }
   100% { transform: Scale(1.0); will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 0 0 Rgba(239, 68, 68, 0)); }
 }
 

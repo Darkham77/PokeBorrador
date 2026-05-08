@@ -36,7 +36,6 @@ body .evolve-pane {
         height: 64px;
         image-rendering: pixelated;
         will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 5px 15px Rgba(0,0,0,0.4));
         transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         
@@ -75,7 +74,6 @@ body .evolve-pane {
 
         .silhouette {
           will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Brightness(0) !important;
           opacity: 1; // Solid black as requested
         }

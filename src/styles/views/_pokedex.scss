@@ -313,7 +313,6 @@
     opacity: 0.7;
     cursor: default;
     will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Grayscale(100%);
   }
 
@@ -348,7 +347,6 @@
       
       &:not(.silhouette) {
         will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: pokemon-outline-optimized();
       }
       

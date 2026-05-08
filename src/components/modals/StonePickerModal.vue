@@ -180,7 +180,6 @@ const getPokemonName = (id: string) => {
   &.disabled {
     opacity: 0.3;
     will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Grayscale(1);
   }
 

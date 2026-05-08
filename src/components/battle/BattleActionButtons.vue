@@ -228,7 +228,6 @@ onUnmounted(() => {
 
   &:disabled {
     will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Grayscale(0.8);
     opacity: 0.7;
     cursor: not-allowed;
@@ -333,7 +332,6 @@ onUnmounted(() => {
     height: 32px;
     image-rendering: pixelated;
     will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 2px 4px Rgba(0,0,0,0.8));
   }
 

@@ -27,10 +27,7 @@
     transition: none !important;
     -webkit-will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: none !important; will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: none !important;
     background: Rgba(30, 41, 59, 0.8) !important;
     box-shadow: none !important;
@@ -47,7 +44,6 @@
     & .box-card-sprite {
       transition: none !important;
       will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: none !important;
       transform: none !important;
     }
@@ -83,10 +79,7 @@
       border: 1px solid Rgba(255, 255, 255, 0.1);
       -webkit-will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: Blur(10px);
-      will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: Blur(10px);
       @include gpu-layer;
       box-shadow: 0 4px 15px Rgba(0,0,0,0.5);
@@ -107,7 +100,6 @@
       &:hover {
         transform: Scale(1.2);
         will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Brightness(1.2);
       }
     }
@@ -204,10 +196,7 @@
       transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
       -webkit-will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: Blur(4px);
-      will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: Blur(4px);
       @include gpu-layer;
 

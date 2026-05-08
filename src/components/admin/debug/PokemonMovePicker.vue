@@ -247,10 +247,7 @@ function removeMove(slotIndex: number) {
     background: Rgba(10, 12, 16, 0.98);
     -webkit-will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: Blur(20px);
-    will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: Blur(20px);
     @include gpu-layer;
     border-radius: 16px;

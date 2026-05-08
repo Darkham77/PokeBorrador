@@ -78,10 +78,7 @@ const decline = async () => {
   background: Rgba(15, 23, 42, 0.95);
   -webkit-will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: Blur(12px);
-  will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: Blur(12px);
   @include gpu-layer;
   border: 1px solid Rgba(139, 92, 246, 0.4);

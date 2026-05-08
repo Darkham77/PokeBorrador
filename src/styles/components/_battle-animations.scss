@@ -86,15 +86,10 @@
 @keyframes pokeballOpen {
   0% { transform: scale3d(1, 1, 1); will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Brightness(1); }
   30% { transform: scale3d(1.3, 1.3, 1); will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Brightness(3); }
   60% { transform: scale3d(0.8, 0.8, 1) Translatey(20px); will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Brightness(0.5); opacity: 0.5; }
   100% { transform: scale3d(0, 0, 1) Translatey(40px); opacity: 0; }
 }
@@ -103,14 +98,11 @@
   0% { transform: scale3d(1, 1, 1); }
   20% { transform: scale3d(1.15, 1.15, 1); will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 0 20px gold); }
   40% { transform: scale3d(0.95, 0.95, 1); }
   60% { transform: scale3d(1.08, 1.08, 1); }
   80% { transform: scale3d(0.98, 0.98, 1); }
   100% { transform: scale3d(1, 1, 1); will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 0 8px gold); }
 }
 
@@ -132,27 +124,16 @@
 @keyframes takeDamage {
   0%   { will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Brightness(1) Drop-Shadow(0 0 0px red); }
   20%  { will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Brightness(3) Drop-Shadow(0 0 12px red); }
   40%  { will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Brightness(0.3) Drop-Shadow(0 0 8px red); }
   60%  { will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Brightness(2) Drop-Shadow(0 0 6px red); }
   80%  { will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Brightness(1) Drop-Shadow(0 0 0px red); }
   100% { will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Brightness(1) Drop-Shadow(0 4px 12px Rgba(0, 0, 0, 0.7)); }
 }
 
@@ -190,10 +171,7 @@
   background: Rgba(10, 15, 25, 0.95);
   -webkit-will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: Blur(12px);
-  will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: Blur(12px);
   @include gpu-layer;
   transform: Translatez(0);

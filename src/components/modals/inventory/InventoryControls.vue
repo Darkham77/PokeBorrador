@@ -125,10 +125,7 @@ const startMode = (mode: string) => {
   border-bottom: 1px solid Rgba(255, 255, 255, 0.08);
   -webkit-will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: Blur(10px);
-  will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: Blur(10px);
   @include gpu-layer;
 }

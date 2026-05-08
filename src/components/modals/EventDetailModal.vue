@@ -226,7 +226,6 @@ const scheduleText = computed(() => {
   text-align: center;
   margin-bottom: 10px;
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 0 15px Rgba(255, 214, 10, 0.4));
 }
 

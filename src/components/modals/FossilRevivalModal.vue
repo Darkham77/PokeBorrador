@@ -188,10 +188,7 @@ function handleClose() {
   background: Rgba(0, 0, 0, 0.96);
   -webkit-will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: Blur(15px);
-  will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: Blur(15px);
   @include gpu-layer;
   display: flex;
@@ -241,7 +238,6 @@ function handleClose() {
   opacity: 0;
   border-radius: 50%;
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Blur(15px);
   transition: all 2s ease-in-out;
   @include will-animate(transform);
@@ -268,7 +264,6 @@ function handleClose() {
   position: relative;
   z-index: var(--z-base);
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 0 15px Rgba(0,0,0,0.8));
   transition: all 1s;
   @include will-animate(transform);
@@ -285,7 +280,6 @@ function handleClose() {
   @include sprite-render;
   position: relative;
   z-index: var(--z-base);
-  will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 0 30px Rgba(255,255,255,0.6));
   animation: bounce 2s infinite;
@@ -326,10 +320,7 @@ function handleClose() {
   animation: slideUp 0.6s cubic-bezier(0.18, 0.89, 0.32, 1.28) backwards;
   -webkit-will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: Blur(5px);
-  will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: Blur(5px);
   @include gpu-layer;
 }
@@ -402,10 +393,7 @@ function handleClose() {
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes itemPulse { from { transform: Scale(1); will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 0 15px Rgba(255,217,61,0.5)); } to { transform: Scale(1.1); will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 0 25px Rgba(255,217,61,0.9)); } }
 @keyframes bounce { 0%, 100% { transform: Translatey(0); } 50% { transform: Translatey(-10px); } }
 @keyframes flash { 0% { opacity: 0; } 50% { opacity: 1; } 100% { opacity: 0; } }

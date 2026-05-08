@@ -128,10 +128,7 @@ const getSpriteUrl = (id: string | number) => {
   margin-top: 15px;
   -webkit-will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: Blur(10px);
-  will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: Blur(10px);
   @include gpu-layer;
 }

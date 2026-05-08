@@ -210,7 +210,6 @@ watch(() => uiStore.isBattleSwitchForced, (val) => {
 
   &.is-ui-locked {
     will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Grayscale(1);
     opacity: 0.6;
     pointer-events: none;
@@ -269,10 +268,7 @@ watch(() => uiStore.isBattleSwitchForced, (val) => {
   cursor: pointer;
   -webkit-will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: Blur(4px);
-  will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: Blur(4px);
   @include gpu-layer;
 
@@ -307,7 +303,6 @@ watch(() => uiStore.isBattleSwitchForced, (val) => {
     align-items: center;
     justify-content: center;
     will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 2px 4px Rgba(0,0,0,0.3));
     position: relative;
     top: -1px;

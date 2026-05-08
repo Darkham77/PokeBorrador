@@ -214,10 +214,7 @@
     background: Rgba(0, 0, 0, 0.6);
     -webkit-will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: Blur(6px);
-    will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: Blur(6px);
     @include gpu-layer;
     display: flex;

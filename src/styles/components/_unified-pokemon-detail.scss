@@ -131,10 +131,7 @@
   border-bottom: 1px solid Rgba(255,255,255,0.05) !important;
   -webkit-will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: Blur(10px);
-  will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: Blur(10px);
   @include gpu-layer;
   padding: 0 !important;
@@ -274,7 +271,6 @@
     pointer-events: auto !important;
     @include sprite-render;
     will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 10px 20px Rgba(0,0,0,0.4));
     transition: transform 0.3s ease-out;
 

@@ -84,7 +84,6 @@ onMounted(() => {
   border-bottom: 2px solid Rgba(255, 255, 255, 0.1);
   background: Rgba(0, 0, 0, 0.4);
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: Blur(5px);
   position: sticky;
   top: 0;

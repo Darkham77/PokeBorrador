@@ -7,7 +7,6 @@
 
 @mixin aura-guardian($color: Rgba(255, 255, 255, 0.8)) {
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 0 calc(var(--obj-scale, 1) * 8px) $color); // Scaled
   animation: pulse-aura-vibrant-simple 2s infinite ease-in-out;
   animation-delay: calc(var(--fx-seed, 0) * -2s);
@@ -80,7 +79,6 @@
 
       &.is-vibrant {
         will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: 
           Drop-Shadow(0 0 calc(var(--obj-scale, 1) * 15px) Rgba(255, 255, 255, 1)) 
           Drop-Shadow(0 0 calc(var(--obj-scale, 1) * 8px) Rgba(255, 255, 255, 0.8))
@@ -93,11 +91,8 @@
   &.is-simplified {
     img, .sprite-layer, .pokemon-sprite {
       will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: none !important;
       -webkit-will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: none !important;
       animation: none !important;
       transform: none !important;
@@ -115,15 +110,10 @@
   }
   &.status-poison img { will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 0 10px Rgba(148, 0, 211, 0.6)) Hue-Rotate(60deg) Brightness(0.9) Saturate(1.2); }
   &.status-paralyze img { will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 0 10px Rgba(255, 215, 0, 0.8)) Brightness(1.3) Contrast(1.2); animation: fx-paralyze-jitter 0.2s infinite alternate; }
   &.status-freeze img { 
-    will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: 
       Drop-Shadow(0 0 20px Rgba(0, 255, 255, 0.8)) 
       Drop-Shadow(0 0 10px Rgba(255, 255, 255, 0.5))
@@ -133,13 +123,10 @@
   }
   &.status-sleep img { will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Brightness(0.7) Contrast(0.9); }
   
   // Secondary Status (Volatile)
   &.is-cursed img {
-    will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: 
       Drop-Shadow(0 0 15px Rgba(75, 0, 130, 0.8))
       Brightness(0.6)
@@ -151,20 +138,17 @@
   &.is-confused img {
     animation: fx-confusion-wobble 0.3s infinite ease-in-out;
     will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Hue-Rotate(180deg) Saturate(0.5);
   }
 
   &.is-focus-energy img {
     animation: fx-focus-pulse 1.5s infinite ease-in-out;
     will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 0 10px Rgba(255, 0, 0, 0.7)) Brightness(1.1);
   }
 
   &.is-ingrain img {
     will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 4px 10px Rgba(34, 139, 34, 0.8));
     animation: fx-ingrain-float 3s infinite ease-in-out;
   }
@@ -185,22 +169,16 @@
 @keyframes pulse-aura-curse {
   0%, 100% { will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 0 5px Rgba(0, 0, 0, 0.9)) Brightness(0.5); }
   50% { will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 0 20px Rgba(75, 0, 130, 0.9)) Brightness(0.8); }
 }
 
 @keyframes fx-focus-pulse {
   0%, 100% { will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 0 5px Rgba(255, 0, 0, 0.5)) Brightness(1); }
   50% { will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 0 15px Rgba(255, 0, 0, 0.9)) Brightness(1.3); }
 }
 
@@ -238,7 +216,6 @@
       clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
       animation: freeze-sparkle-shine 1.5s infinite ease-in-out;
       will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 0 5px cyan);
     }
   }
@@ -265,7 +242,6 @@
 @keyframes pulse-aura-burn {
   0%, 100% { 
     will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: 
       Drop-Shadow(0 0 calc(var(--obj-scale, 1) * 6px) Rgba(255, 69, 0, 0.6)) 
       Hue-Rotate(-20deg) 
@@ -274,7 +250,6 @@
   }
   50% { 
     will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: 
       Drop-Shadow(0 0 calc(var(--obj-scale, 1) * 12px) Rgba(255, 0, 0, 0.9)) 
       Hue-Rotate(-10deg) 
@@ -292,11 +267,8 @@
 @keyframes fx-pulse-in {
   0%, 100% { transform: Scale(1); opacity: 0.8; will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 0 5px #0a84ff); }
   50% { transform: Scale(1.2); opacity: 1; will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 0 15px #0a84ff); }
 }
 
@@ -309,15 +281,10 @@
 @keyframes fx-target-spin {
   0% { transform: Rotate(0deg) Scale(1); will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: hue-Rotate(0deg); }
   50% { transform: Rotate(180deg) Scale(1.2); will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: hue-Rotate(90deg); }
   100% { transform: Rotate(360deg) Scale(1); will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: hue-Rotate(0deg); }
 }
 
@@ -330,13 +297,11 @@
   font-size: calc(var(--obj-scale, 1) * 24px) !important;
   z-index: calc(var(--z-map-spawns, 10) + 5) !important;
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 0 8px Rgba(255,255,255,0.4));
 }
 @keyframes pulse-aura-battle {
   0%, 100% { 
     will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: 
       Drop-Shadow(0 0 calc(var(--obj-scale, 1) * 1px) white)
       Drop-Shadow(0 0 calc(var(--obj-scale, 1) * 2px) white)
@@ -346,7 +311,6 @@
   }
   50% { 
     will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: 
       Drop-Shadow(0 0 calc(var(--obj-scale, 1) * 2px) white)
       Drop-Shadow(0 0 calc(var(--obj-scale, 1) * 4px) white)
@@ -358,12 +322,10 @@
 @keyframes pulse-aura-vibrant-simple {
   0%, 100% { 
     will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 0 calc(var(--obj-scale, 1) * 5px) Rgba(255, 255, 255, 0.4));
   }
   50% { 
     will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 0 calc(var(--obj-scale, 1) * 12px) Rgba(255, 255, 255, 0.8));
   }
 }
@@ -378,14 +340,12 @@
     transform: Translate(-50%, calc(var(--obj-scale, 1) * -10px)) Scale(1.2) Rotate(180deg); 
     // Optimized: Only 2 drop-shadows instead of 5
     will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 0 calc(var(--obj-scale, 1) * 2px) Rgba(0,0,0,1)) Drop-Shadow(0 0 calc(var(--obj-scale, 1) * 4px) gold);
   }
   50% { 
     opacity: 0; 
     transform: Translate(-50%, calc(var(--obj-scale, 1) * -20px)) Scale(0) Rotate(360deg); 
     will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: none;
   }
   100% {
@@ -428,7 +388,6 @@
   0% { transform: Scale(1); } 
   30% { transform: Scale(1.15) Translate(10px, -10px); will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Brightness(1.3); } 
   100% { transform: Scale(1); } 
 }
@@ -436,7 +395,6 @@
 @keyframes attack-pulse-enemy { 
   0% { transform: Scale(1); } 
   30% { transform: Scale(1.15) Translate(-10px, 10px); will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
   filter: Brightness(1.3); } 
   100% { transform: Scale(1); } 
@@ -469,22 +427,16 @@
 @keyframes pokeball-shake-blink { 
   0%, 100% { will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Brightness(1); } 
   50% { will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Brightness(2) Hue-Rotate(10deg); } 
 }
 
 @keyframes pokeball-success-blink { 
   0%, 100% { will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Brightness(1); } 
   50% { will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Brightness(1.8) Sepia(0.5) Hue-Rotate(-10deg); } 
 }
 
@@ -507,11 +459,8 @@
 @keyframes ground-grow {
   0% { transform: Scale(0) Translatey(20px); opacity: 0; will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Brightness(0); }
   100% { transform: Scale(1) Translatey(5px); opacity: 1; will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Brightness(1); }
 }
 
@@ -525,10 +474,7 @@
 @keyframes ground-item-pulse {
   0%, 100% { transform: Translatey(5px) Scale(1); will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Brightness(1); }
   50% { transform: Translatey(5px) Scale(1.03); will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Brightness(1.2); }
 }

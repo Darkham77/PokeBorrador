@@ -77,10 +77,7 @@ const handleImgError = (e: Event) => {
   pointer-events: auto; /* Tooltip needs pointer */
   -webkit-will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: Blur(4px);
-  will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: Blur(4px);
   @include gpu-layer;
   box-shadow: 0 4px 6px Rgba(0,0,0,0.3);
@@ -101,7 +98,6 @@ const handleImgError = (e: Event) => {
   height: 24px;
   @include sprite-render;
   margin-right: 8px;
-  will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 2px 2px Rgba(0,0,0,0.5));
 }

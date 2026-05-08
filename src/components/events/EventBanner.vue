@@ -66,10 +66,7 @@ const activeDisplayEvents = computed(() => {
   background: Rgba(0, 0, 0, 0.7);
   -webkit-will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: Blur(10px);
-  will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: Blur(10px);
   @include gpu-layer;
   border-left: 4px solid var(--event-color);
@@ -109,7 +106,6 @@ const activeDisplayEvents = computed(() => {
       .icon {
         font-size: 1.2rem;
         will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 0 5px var(--event-color));
         animation: pulse 2s infinite;
         animation-delay: calc(var(--event-seed, 0) * -2s);

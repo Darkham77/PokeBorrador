@@ -135,7 +135,6 @@ onMounted(() => {
         left: auto !important;
         position: relative !important;
         will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: none !important;
         border-radius: 4px;
         border: 1px solid Rgba(255,255,255,0.1);
@@ -168,7 +167,6 @@ onMounted(() => {
     object-fit: contain;
     image-rendering: pixelated;
     will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 4px 8px Rgba(0,0,0,0.4));
     position: absolute;
     top: 50%;
@@ -179,7 +177,6 @@ onMounted(() => {
   .log-emoji {
     font-size: 24px;
     will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 2px 4px Rgba(0, 0, 0, 0.4));
     position: absolute;
     top: 50%;

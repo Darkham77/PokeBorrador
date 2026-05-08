@@ -120,7 +120,6 @@ const handleGiftChange = (e: Event) => {
     transform: Translatey(-2px);
     box-shadow: 0 6px 20px Rgba(168, 85, 247, 0.5);
     will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Brightness(1.1);
   }
 

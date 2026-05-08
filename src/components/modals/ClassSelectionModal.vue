@@ -186,10 +186,7 @@ const handleImageError = (e: Event) => {
   background: Rgba(30, 41, 59, 0.4);
   -webkit-will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: Blur(10px);
-  will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: Blur(10px);
   @include gpu-layer;
   border: 1px solid Rgba(255, 255, 255, 0.1);

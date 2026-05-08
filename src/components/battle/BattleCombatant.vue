@@ -542,17 +542,10 @@ const triggerStatArrow = (stat: string, dir: 'up' | 'down') => {
 
 @keyframes pokeball-shake-blink { 0%, 100% { will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Brightness(1); } 50% { will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Brightness(2) Hue-Rotate(10deg); } }
 @keyframes pokeball-success-blink { 0%, 100% { will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Brightness(1); } 50% { will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Brightness(1.8) Sepia(0.5) Hue-Rotate(-10deg); } }
 
 .pokeball-shadow {
@@ -588,7 +581,6 @@ const triggerStatArrow = (stat: string, dir: 'up' | 'down') => {
     @include pixelated;
     text-shadow: 0 0 5px Rgba(255, 215, 0, 0.8);
     will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 0 2px white);
   }
 }
@@ -625,7 +617,6 @@ const triggerStatArrow = (stat: string, dir: 'up' | 'down') => {
         ground-pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards,
         ground-item-jump 2s infinite ease-in-out 0.4s;
       will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 2px 2px Rgba(0,0,0,0.3));
       
       &:nth-child(2) { animation-delay: 0.1s, 0.7s; }
@@ -688,7 +679,6 @@ const triggerStatArrow = (stat: string, dir: 'up' | 'down') => {
   0% { transform: Scale(1); }
   50% { transform: Scale(1.15) Translatex(15px); will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Brightness(1.4); }
   100% { transform: Scale(1); }
 }
@@ -696,7 +686,6 @@ const triggerStatArrow = (stat: string, dir: 'up' | 'down') => {
 @keyframes attack-pulse-enemy {
   0% { transform: Scale(1); }
   50% { transform: Scale(1.15) Translatex(-15px); will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
   filter: Brightness(1.4); }
   100% { transform: Scale(1); }
@@ -706,7 +695,6 @@ const triggerStatArrow = (stat: string, dir: 'up' | 'down') => {
   0% { transform: Rotate(0deg); }
   30% { transform: Rotate(12deg) Scale(1.1); will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Brightness(1.2); }
   100% { transform: Rotate(0deg); }
 }
@@ -714,7 +702,6 @@ const triggerStatArrow = (stat: string, dir: 'up' | 'down') => {
 @keyframes attack-status-enemy {
   0% { transform: Rotate(0deg); }
   30% { transform: Rotate(-12deg) Scale(1.1); will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
   filter: Brightness(1.2); }
   100% { transform: Rotate(0deg); }
@@ -733,30 +720,20 @@ const triggerStatArrow = (stat: string, dir: 'up' | 'down') => {
 @keyframes energy-catch {
   0% { will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: none; transform: Scale(1); opacity: 1; }
   25% { will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Brightness(0) Invert(1) Drop-Shadow(0 0 10px #00ccff); transform: Scale(1.05); }
   100% { will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Brightness(0) Invert(1) Drop-Shadow(0 0 20px #00ccff); transform: Scale(0); opacity: 1; }
 }
 
 @keyframes energy-release {
   0% { will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Brightness(0) Invert(1) Drop-Shadow(0 0 20px #00ccff); transform: Scale(0); opacity: 1; }
   75% { will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Brightness(0) Invert(1) Drop-Shadow(0 0 10px #00ccff); transform: Scale(1.1); }
   100% { will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: none; transform: Scale(1); opacity: 1; }
 }
 

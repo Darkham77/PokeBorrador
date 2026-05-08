@@ -468,7 +468,6 @@ const bannerStyle = computed(() => ({
     align-items: center;
     justify-content: center;
     will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 4px 6px Rgba(0,0,0,0.4));
   }
 

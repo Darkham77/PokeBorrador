@@ -178,7 +178,6 @@ const handleFishingStart = () => {
   &:hover {
     transform: Translatey(-2px);
     will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Brightness(1.1);
   }
 }

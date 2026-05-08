@@ -84,10 +84,7 @@ const handleSwitch = (index: number) => {
   background: Rgba(15, 23, 42, 0.6) !important; // Fondo Premium Unificado
   -webkit-will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: Blur(12px);
-  will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: Blur(12px);
   @include gpu-layer;
   border: 1px solid Rgba(255, 255, 255, 0.1) !important;
@@ -111,7 +108,6 @@ const handleSwitch = (index: number) => {
   &.is-fainted {
     opacity: 0.5;
     will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Grayscale(1);
     pointer-events: none;
   }

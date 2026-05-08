@@ -8,10 +8,7 @@
   .performance-mode & {
     -webkit-will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: none !important;
-    will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: none !important;
     background: Rgba($bg, 0.95); // Slightly more opaque to compensate for missing blur
   }
@@ -19,10 +16,7 @@
   @media (prefers-reduced-motion: no-preference) {
     -webkit-will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: Blur($blur);
-    will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: Blur($blur);
     @include gpu-layer;
   }

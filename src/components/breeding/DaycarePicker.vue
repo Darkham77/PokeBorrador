@@ -136,10 +136,7 @@ const selectPokemon = (p: any) => {
   background: Rgba(0, 0, 0, 0.8);
   -webkit-will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: Blur(4px);
-  will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: Blur(4px);
   @include gpu-layer;
   display: flex;

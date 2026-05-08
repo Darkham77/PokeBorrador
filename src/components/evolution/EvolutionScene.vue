@@ -144,10 +144,7 @@ const close = () => {
   @include pixelated;
   -webkit-will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: Blur(10px);
-  will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: Blur(10px);
   @include gpu-layer;
   transform: Translatez(0);
@@ -174,7 +171,6 @@ const close = () => {
   height: 150px;
   border-radius: 50%;
   background: var(--blue, Rgba(59, 130, 246, 1));
-  will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
   filter: Blur(40px);
   opacity: 0.2;
@@ -203,13 +199,10 @@ const close = () => {
   
   &.from {
     will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Brightness(1);
     transition: filter 0.1s;
     
     &.flash-on {
-      will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Brightness(10) Contrast(10) Grayscale(100%);
     }
   }

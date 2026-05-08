@@ -14,10 +14,7 @@
   background: Rgba(0, 0, 0, 0.5);
   -webkit-will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: Blur(6px);
-  will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: Blur(6px);
   @include gpu-layer;
   z-index: var(--z-base);
@@ -32,10 +29,7 @@
     background: transparent !important;
     -webkit-will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: none !important; will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: none !important;
     pointer-events: none !important;
   }
@@ -43,10 +37,7 @@
   &.no-blur {
     -webkit-will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: none !important; will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: none !important;
   }
 }
@@ -217,7 +208,6 @@
 
   &.is-performance-mode {
     will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Brightness(0.6) Blur(1px); // Slightly darker and blurred
     pointer-events: none !important;
     

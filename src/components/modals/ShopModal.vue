@@ -304,7 +304,6 @@ const handleQuantityChange = (itemId: string, e: Event) => {
   &.locked {
     opacity: 0.5;
     will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Grayscale(1);
   }
 }

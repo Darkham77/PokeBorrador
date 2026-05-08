@@ -232,7 +232,6 @@ const weatherOverlayStyles = computed(() => ({
   z-index: var(--z-low);
   animation: leaf-fall linear infinite;
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 1px 1px Rgba(0,0,0,0.3));
 }
 

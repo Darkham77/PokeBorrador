@@ -94,7 +94,6 @@ const emit = defineEmits<{
     height: 120px;
     image-rendering: pixelated;
     will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 0 10px Rgba(0, 0, 0, 0.5));
   }
 

@@ -76,10 +76,7 @@ const formatNum = (num: number) => (num || 0).toLocaleString().replace(/,/g, '.'
   transition: all 0.2s ease;
   -webkit-will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: Blur(8px);
-  will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: Blur(8px);
   @include gpu-layer;
 

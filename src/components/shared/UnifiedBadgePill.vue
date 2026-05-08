@@ -126,13 +126,8 @@ const handleItemImageError = (e: Event) => {
     gap: 4px;
     background: Rgba(0, 0, 0, 0.7);
     border: 1px solid Rgba(255, 255, 255, 0.1);
-    -webkit-will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  backdrop-filter: Blur(10px);
     will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  backdrop-filter: Blur(10px);
+    backdrop-filter: Blur(10px);
     @include gpu-layer;
     box-shadow: 0 4px 15px Rgba(0,0,0,0.5);
     line-height: 0;
@@ -149,10 +144,9 @@ const handleItemImageError = (e: Event) => {
         cursor: pointer; // Unified pointer for all interactive badges
         
         .badge-icon {
+          will-change: transform, filter;
           transform: Scale(1.3) !important;
-          will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  filter: Brightness(1.2);
+          filter: Brightness(1.2);
         }
       }
     }
@@ -259,7 +253,6 @@ const handleItemImageError = (e: Event) => {
       @include sprite-render;
       transform: Scale(1.6); // "Zoom sufficient" as requested
       will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 2px 4px Rgba(0,0,0,0.4));
     }
 
@@ -271,7 +264,6 @@ const handleItemImageError = (e: Event) => {
     &.is-inactive {
       opacity: 0.4;
       will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Grayscale(1) Brightness(0.6);
       transform: none;
       background: transparent !important;
@@ -290,7 +282,6 @@ const handleItemImageError = (e: Event) => {
     &:hover {
       transform: Scale(1.3) !important;
       will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Brightness(1.2);
       z-index: calc(var(--z-low) + 1);
     }

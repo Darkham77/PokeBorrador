@@ -236,10 +236,7 @@ const hexToRgba = (hex: string, alpha: number) => {
   border: 1px solid Rgba(255, 255, 255, 0.05);
   -webkit-will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: Blur(5px);
-  will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: Blur(5px);
   @include gpu-layer;
 }

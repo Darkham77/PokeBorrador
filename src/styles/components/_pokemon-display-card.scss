@@ -35,11 +35,8 @@
 
     & .pokemon-sprite {
       will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: none !important;
       -webkit-will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: none !important;
       transform: none !important;
     }
@@ -47,7 +44,6 @@
     & .card-tier-badge {
       box-shadow: none !important;
       will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: none !important;
     }
   }
@@ -103,10 +99,7 @@
       border: 1px solid Rgba(255, 255, 255, 0.1);
       -webkit-will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: Blur(10px);
-      will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: Blur(10px);
       box-shadow: 0 4px 15px Rgba(0,0,0,0.5);
       @include gpu-layer;
@@ -289,6 +282,5 @@
 }
 
 .on-mission { opacity: 0.6; will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
   filter: Grayscale(0.5); }

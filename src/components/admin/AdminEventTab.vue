@@ -263,7 +263,6 @@ defineEmits<{
 
   &.inactive { opacity: 0.6; will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Grayscale(1); }
 }
 

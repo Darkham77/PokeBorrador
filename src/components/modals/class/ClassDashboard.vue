@@ -246,7 +246,6 @@ const handleImageError = (e: Event) => {
         height: 220px;
         image-rendering: pixelated;
         will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 20px 40px Rgba(0,0,0,0.8));
         z-index: var(--z-base);
         transition: transform 0.3s ease;
@@ -416,7 +415,6 @@ const handleImageError = (e: Event) => {
     &.locked { 
       opacity: 0.7;
       .ability-checkbox { will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
   filter: #{"Grayscale(1)"}; opacity: 0.5; }
       .ability-content p { color: $muted; }

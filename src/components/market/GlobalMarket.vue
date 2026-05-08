@@ -276,7 +276,6 @@ async function refresh() {
 
     .icon { font-size: 64px; margin-bottom: 20px; display: block; will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Grayscale(100%); opacity: 0.3; }
     h2 { @include pixelated; font-size: 14px; color: $white; margin-bottom: 20px; }
     p { font-size: 13px; color: $muted; line-height: 1.6; margin-bottom: 30px; }

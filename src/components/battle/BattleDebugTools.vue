@@ -457,10 +457,7 @@ const toggleStatus = (side: string, type: string) => {
   box-shadow: 0 15px 50px Rgba(0,0,0,0.9);
   -webkit-will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: Blur(15px);
-  will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: Blur(15px);
   @include gpu-layer;
   margin-bottom: 12px;
@@ -504,10 +501,7 @@ const toggleStatus = (side: string, type: string) => {
   box-shadow: 0 10px 40px Rgba(0,0,0,0.9);
   -webkit-will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: Blur(12px);
-  will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: Blur(12px);
   @include gpu-layer;
   margin-bottom: 8px;

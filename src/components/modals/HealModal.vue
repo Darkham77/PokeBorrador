@@ -344,7 +344,6 @@ onMounted(() => {
   height: 72px;
   @include sprite-render;
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Grayscale(0.8) Brightness(0.5);
   transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   position: relative;
@@ -368,7 +367,6 @@ onMounted(() => {
   font-size: 14px;
   z-index: var(--z-low);
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 0 5px Rgba(239, 68, 68, 0.5));
   animation: bounce-in 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
@@ -382,7 +380,6 @@ onMounted(() => {
 .slot.active {
   .type-aura { opacity: 0.3; }
   .poke-sprite { will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
   filter: Grayscale(0) Brightness(1); }
 }
@@ -398,7 +395,6 @@ onMounted(() => {
   
   .poke-sprite {
     will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Brightness(1.2) Drop-Shadow(0 0 10px Rgba(255, 255, 255, 0.6));
     animation: pulse-sprite 0.6s infinite alternate;
   }

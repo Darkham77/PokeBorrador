@@ -148,7 +148,6 @@ const leaderSpriteUrl = computed(() => {
 
   &.locked {
     will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Grayscale(100%);
     opacity: 0.6;
   }
@@ -227,7 +226,6 @@ const leaderSpriteUrl = computed(() => {
     width: auto;
     image-rendering: pixelated;
     will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 2px 8px Rgba(0,0,0,0.5));
   }
 }

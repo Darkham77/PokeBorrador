@@ -258,10 +258,7 @@ const select = (poke: any) => {
   padding: 16px;
   -webkit-will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: Blur(8px);
-  will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: Blur(8px);
   @include gpu-layer;
   transform: Translatez(0);
@@ -383,7 +380,6 @@ const select = (poke: any) => {
     opacity: 0.5;
     cursor: not-allowed;
     will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Grayscale(1);
     &:hover { transform: none; background: inherit; border-color: inherit; }
   }
@@ -404,7 +400,6 @@ const select = (poke: any) => {
       height: 100%;
       @include pokemon-sprite-base-standard;
       &.shiny { will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 0 5px Rgba(255, 255, 0, 0.5)); }
     }

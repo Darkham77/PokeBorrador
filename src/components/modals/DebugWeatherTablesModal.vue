@@ -215,7 +215,6 @@ function formatRouteName(id: string) {
     opacity: 0.4;
     cursor: not-allowed;
     will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Grayscale(1);
   }
 }

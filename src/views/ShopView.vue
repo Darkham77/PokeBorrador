@@ -337,7 +337,6 @@ onMounted(() => {
   &:hover:not(.locked) { border-color: Rgba(255, 215, 0, 0.5); transform: Translatey(-3px); }
   &.locked { opacity: 0.3; will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Grayscale(1.0); }
 
   .tier-tag {
@@ -362,7 +361,6 @@ onMounted(() => {
     justify-content: center;
     margin-bottom: 15px;
     .pixel-sprite { width: 42px; height: 42px; @include sprite-render; will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 2px 5px Rgba(0, 0, 0, 0.5)); }
     .item-emoji { font-size: 36px; }

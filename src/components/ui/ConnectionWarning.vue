@@ -58,10 +58,7 @@ const authStore = useAuthStore() as any
   background: Rgba(0, 0, 0, 0.85);
   -webkit-will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: Blur(15px);
-  will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: Blur(15px);
   @include gpu-layer;
   display: flex;
@@ -95,7 +92,6 @@ const authStore = useAuthStore() as any
     display: inline-block;
     font-size: 48px;
     will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 0 15px Rgba(239, 68, 68, 0.5));
   }
 }

@@ -42,7 +42,6 @@
 
   &:disabled {
     will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Grayscale(1);
     opacity: 0.6;
     cursor: not-allowed;
@@ -118,7 +117,6 @@
 
   &:hover:not(:disabled) {
     will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Brightness(1.1);
     transform: Translatey(-1px);
     box-shadow: 0 ($depth + 1px) 0 $shadow;

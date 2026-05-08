@@ -239,10 +239,7 @@ function startSearch() {
   background: Rgba(0,0,0,0.8);
   -webkit-will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: Blur(8px);
-  will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: Blur(8px);
   @include gpu-layer;
   display: flex;
@@ -291,7 +288,6 @@ function startSearch() {
   align-items: center;
   justify-content: center;
   position: relative;
-  will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 0 15px Rgba(255, 215, 0, 0.2));
   animation: float 4s ease-in-out infinite;

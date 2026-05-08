@@ -49,10 +49,7 @@ const uiStore = useUIStore() as any
   background: Rgba(10, 12, 18, 0.9);
   -webkit-will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: Blur(12px);
-  will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: Blur(12px);
   @include gpu-layer;
   border: 1px solid Rgba(255, 255, 255, 0.15);

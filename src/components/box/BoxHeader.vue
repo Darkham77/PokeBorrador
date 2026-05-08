@@ -138,7 +138,6 @@ defineProps<{
     
     .hint-icon { font-size: 10px; will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 0 4px var(--yellow)); }
     .hint-text { @include pixelated; font-size: 6px; color: var(--gray); max-width: 250px; }
   }

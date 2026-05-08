@@ -197,7 +197,6 @@ const openParticipationModal = (event: GameEvent) => {
 
   .icon { font-size: 32px; will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 0 10px Rgba(255, 215, 0, 0.4)); }
 
   h1 {

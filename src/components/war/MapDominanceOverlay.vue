@@ -62,10 +62,7 @@ const factionLabel = computed(() => {
   background: Rgba(0, 0, 0, 0.8);
   -webkit-will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: Blur(8px);
-  will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: Blur(8px);
   @include gpu-layer;
   border-radius: 8px;

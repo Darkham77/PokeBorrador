@@ -161,7 +161,6 @@ const genderSymbol = (g: string) => {
       height: 80px;
       image-rendering: pixelated;
       will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 4px 8px Rgba(0,0,0,0.5));
     }
   }
@@ -261,7 +260,6 @@ const genderSymbol = (g: string) => {
     .empty-icon {
       font-size: 40px;
       will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Grayscale(100%);
   opacity: 0.2;
       margin-bottom: 12px;

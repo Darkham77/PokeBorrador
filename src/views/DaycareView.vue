@@ -190,7 +190,6 @@ const getGenderClass = (gender: string | null | undefined) => {
     -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; background-clip: text;;;;;
     -webkit-text-fill-color: transparent;
     will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 2px 10px Rgba(139, 92, 246, 0.3));
   }
   
@@ -352,15 +351,12 @@ const getGenderClass = (gender: string | null | undefined) => {
   font-size: 32px;
   opacity: 0.1;
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Grayscale(100%);
   transition: all 0.5s;
   @include will-animate(transform, filter);
   
   &.active {
     opacity: 1;
-    will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Grayscale(100%);
     animation: pulse 2s infinite;
   }
@@ -369,15 +365,10 @@ const getGenderClass = (gender: string | null | undefined) => {
 @keyframes pulse {
   0% { transform: Scale(1.0); will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 0 0 Rgba(239, 68, 68, 0)); }
   50% { transform: Scale(1.2); will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 0 15px Rgba(239, 68, 68, 0.6)); }
   100% { transform: Scale(1.0); will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 0 0 Rgba(239, 68, 68, 0)); }
 }
 

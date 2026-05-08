@@ -38,7 +38,6 @@
     background-position: center;
     background-repeat: no-repeat;
     will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: var(--atmosphere-filter, Brightness(0.8) Contrast(1.1));
     // transition: transform 0.6s ease, filter 0.5s ease;
     z-index: -3;
@@ -82,7 +81,6 @@
     &::before { 
       transform: Scale(1.08); 
       will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: var(--atmosphere-filter-hover, Brightness(1.0) Contrast(1.2)); 
     }
 
@@ -98,19 +96,15 @@
 
   &.locked, &.safari-locked {
     will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: none !important;
     opacity: 1 !important;
 
     &::before { 
-      will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Grayscale(1) Brightness(0.4) !important; 
     }
     
     .location-header, .location-spawns, .guardian-status-badge, .faction-dominance {
       will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Grayscale(1) Brightness(0.6);
       opacity: 0.4;
     }
@@ -180,7 +174,6 @@
         inset: -2%;
         background: Radial-Gradient(circle, Rgba(255, 0, 0, 0.7) 0%, transparent 70%);
         will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Blur(2px);
         z-index: -1;
         opacity: 0.6;
@@ -241,14 +234,12 @@
     &:not(.spawn-silhouette) {
       &.pixelated, & {
         will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: pokemon-outline-optimized();
       }
     }
 
     &.spawn-silhouette {
       will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: pokemon-silhouette-optimized() !important;
       opacity: 1 !important;
     }
@@ -256,7 +247,6 @@
     // Performance mode toggle
     .performance-mode & {
       will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: none !important;
     }
     
@@ -320,7 +310,6 @@
 }
 
 .faction-logo { width: 32px; height: 32px; will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 2px 4px Rgba(0,0,0,0.8)); }
 .pulse { animation: pulse 2s infinite; }

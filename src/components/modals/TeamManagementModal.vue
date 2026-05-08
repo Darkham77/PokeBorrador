@@ -440,10 +440,7 @@ function selectAdventure(_slotIndex: number) {
   background: Rgba(15, 23, 42, 0.95) !important;
   -webkit-will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: Blur(25px);
-  will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: Blur(25px);
   @include gpu-layer;
 }

@@ -202,7 +202,6 @@ function handleTouchEnd(e: TouchEvent) {
     .plus-icon {
       transform: Scale(1.2) Rotate(90deg);
       will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 0 15px var(--blue));
       color: var(--white);
     }
@@ -234,7 +233,6 @@ function handleTouchEnd(e: TouchEvent) {
       border-color: var(--purple-light);
       .plus-icon { will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 0 10px var(--purple-light)); }
       .label { color: var(--purple-light); }
     }
@@ -250,10 +248,7 @@ function handleTouchEnd(e: TouchEvent) {
   background: Rgba(0, 0, 0, 0.4);
   -webkit-will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: Blur(4px);
-  will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: Blur(4px);
   @include gpu-layer;
   border-radius: 20px;
@@ -267,8 +262,6 @@ function handleTouchEnd(e: TouchEvent) {
     color: var(--blue);
     @include pixelated;
     opacity: 0.8;
-    will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 0 10px Rgba(10, 132, 255, 0.5));
     transition: all 0.2s;
   }

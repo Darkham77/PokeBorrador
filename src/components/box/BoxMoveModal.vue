@@ -196,7 +196,6 @@ const handleMove = (targetBoxIndex: number) => {
   &:disabled {
     cursor: not-allowed;
     will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Grayscale(1);
     opacity: 0.4;
   }

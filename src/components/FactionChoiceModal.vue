@@ -172,7 +172,6 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
     opacity: 0.5;
     cursor: not-allowed;
     will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Grayscale(0.8);
   }
 }

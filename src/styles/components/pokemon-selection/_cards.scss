@@ -50,7 +50,6 @@
     position: relative;
     z-index: var(--z-base);
     will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 4px 8px Rgba(0,0,0,0.5));
     transition: transform 0.3s ease;
   }
@@ -71,10 +70,7 @@
   border: 1px solid Rgba(255, 255, 255, 0.1);
   -webkit-will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: Blur(4px);
-  will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: Blur(4px);
   @include gpu-layer;
   z-index: var(--z-base);

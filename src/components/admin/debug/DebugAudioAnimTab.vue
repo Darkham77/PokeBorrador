@@ -380,7 +380,6 @@ const isEffectActive = (type: string, category: string) => {
     
     .icon { will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 0 5px white); }
   }
 

@@ -243,10 +243,7 @@ const rankTitle = computed(() => {
   padding: 16px;
   -webkit-will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: Blur(4px);
-  will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: Blur(4px);
   @include gpu-layer;
   animation: fadeIn 0.2s ease;
@@ -314,7 +311,6 @@ const rankTitle = computed(() => {
     height: auto;
     image-rendering: pixelated;
     will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 10px 20px Rgba(0, 0, 0, 0.5));
   }
 

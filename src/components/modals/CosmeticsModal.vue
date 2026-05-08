@@ -245,7 +245,6 @@ const selectAvatar = (id: string) => {
 .nt-royal { color: Rgba(236, 72, 153, 1); text-shadow: 0 0 10px Rgba(219, 39, 119, 1); font-style: italic; }
 .nt-ghost { color: Rgba(148, 163, 184, 1); opacity: 0.7; will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Blur(0.5px); }
 
 /* --- AVATAR FRAME CLASSES --- */

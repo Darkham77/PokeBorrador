@@ -160,7 +160,6 @@ if (typeof window !== 'undefined') {
         transform: Translatey(-2px);
         box-shadow: 0 6px 15px Rgba(245, 158, 11, 0.4);
         will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Brightness(1.1);
       }
 

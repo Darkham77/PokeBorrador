@@ -111,7 +111,6 @@
       height: 130px;
       @include sprite-render;
       will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 15px 25px Rgba(0,0,0,0.5));
     }
   }
@@ -272,7 +271,6 @@
       height: 100%;
       @include sprite-render;
       will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 4px 8px Rgba(0,0,0,0.4));
     }
   }

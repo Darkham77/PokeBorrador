@@ -117,7 +117,6 @@ body .selection-container {
       cursor: pointer;
       transition: all 0.2s;
       will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Grayscale(1);
       opacity: 0.6;
 
@@ -142,7 +141,6 @@ body .selection-container {
         background: Rgba(255, 255, 255, 0.1);
         border-color: var(--yellow);
         will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Grayscale(0);
         opacity: 1;
       }
@@ -169,7 +167,6 @@ body .selection-container {
     cursor: pointer;
     transition: all 0.2s;
     will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Grayscale(1);
     opacity: 0.6;
 
@@ -199,7 +196,6 @@ body .selection-container {
       background: Rgba(255, 255, 255, 0.1);
       border-color: var(--yellow);
       will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Grayscale(0);
       opacity: 1;
       box-shadow: 0 0 8px Rgba(255, 214, 10, 0.15);
@@ -227,7 +223,6 @@ body .selection-container {
 
     &:disabled {
       will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Grayscale(1);
       opacity: 0.5;
       cursor: not-allowed;

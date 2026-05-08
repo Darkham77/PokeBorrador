@@ -3,7 +3,7 @@
  * 
  * STABLE PROJECT AUDIT ENGINE (Node.js 26+)
  * 
- * Final Safe Version: Uses prefix matching to ignore SASS module calls (.color) and variables ($var).
+ * Final Safe Version: Context-aware GPU checking.
  */
 
 import fs from 'node:fs/promises';
@@ -35,12 +35,10 @@ const config = {
     fix: (match: string) => `d${match.toLowerCase().slice(-2)}`
   },
   sassTraps: {
-    // Broad match, then filter in fix logic
     regex: /([\.\$])?\b([a-zA-Z0-9-]+)\(/g,
     message: (match: string) => `Función SASS/CSS detectada en minúsculas: '${match}'. Debe capitalizarse para evitar colisiones en Dart Sass 2.0.`,
     fix: (match: string) => {
       if (match.startsWith('.') || match.startsWith('$')) return match;
-      
       const func = match.slice(0, -1).toLowerCase();
       if (SASS_TRAPS.includes(func)) {
         if (func.includes('-')) {
@@ -53,8 +51,14 @@ const config = {
   },
   gpuGaps: {
     regex: /(backdrop-filter|filter):/gi,
-    exclude: /will-change/gi,
     message: "Filtro detectado sin 'will-change'. Considera añadir promoción de capa.",
+    check: (content: string, match: any) => {
+      // Look for will-change in the surrounding block (approx 500 chars)
+      const start = Math.max(0, match.index - 500);
+      const end = Math.min(content.length, match.index + 500);
+      const context = content.substring(start, end);
+      return !/will-change/gi.test(context);
+    },
     fixable: false 
   },
   legacyDates: {
@@ -134,11 +138,15 @@ function runRules(filePath: string, content: string, rules: any[], violations: V
     const regex = new RegExp(rule.regex.source, rule.regex.flags);
     let match;
     while ((match = regex.exec(content)) !== null) {
-      // Filter out non-violations for sassTraps
+      // 1. Specialized checks
       if (rule === config.sassTraps) {
-        if (match[1]) continue; // Has prefix (. or $)
-        if (!SASS_TRAPS.includes(match[2].toLowerCase())) continue; // Not a trap
-        if (match[2].charAt(0) === match[2].charAt(0).toUpperCase()) continue; // Already capitalized
+        if (match[1]) continue; 
+        if (!SASS_TRAPS.includes(match[2].toLowerCase())) continue; 
+        if (match[2].charAt(0) === match[2].charAt(0).toUpperCase()) continue; 
+      }
+      
+      if (rule === config.gpuGaps) {
+        if (!rule.check(content, match)) continue; 
       }
       
       const lineNo = content.substring(0, match.index).split('\n').length + offset;
@@ -171,7 +179,7 @@ function injectBlock(content: string, tag: string, block: string): string {
 
 async function main() {
   const { values } = parseArgs({ options: { fix: { type: 'boolean', short: 'f' }, path: { type: 'string', short: 'p', default: '.' } } });
-  console.log(styleText('bold', '\n--- 🔎 POKE VICIO - FINAL SAFE AUDIT ---'));
+  console.log(styleText('bold', '\n--- 🔎 POKE VICIO - INTELLIGENT AUDIT ---'));
   const files = await walk(path.resolve(process.cwd(), values.path as string));
   let all = [];
   for (const f of files) all = all.concat(await auditFile(f, !!values.fix));

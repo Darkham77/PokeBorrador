@@ -81,10 +81,7 @@ async function handleLogout() {
   background: Rgba(0, 0, 0, 0.9);
   -webkit-will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: Blur(20px);
-  will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: Blur(20px);
   @include gpu-layer;
   display: flex;
@@ -112,7 +109,6 @@ async function handleLogout() {
   .warning-icon {
     font-size: 56px;
     will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 0 20px Rgba(255, 214, 10, 0.6));
   }
 }

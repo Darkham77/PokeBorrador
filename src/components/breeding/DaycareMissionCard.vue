@@ -103,7 +103,6 @@ const emit = defineEmits<{
     box-shadow: 0 4px 0 #6d28d9;
     &:hover { will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Brightness(1.1); }
   }
   .completed-banner { text-align: center; color: Rgba(34, 197, 94, 1); @include pixelated; font-size: 7px; padding: 14px; }

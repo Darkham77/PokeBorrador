@@ -270,7 +270,6 @@ function handleForfeit() {
   max-height: 250px;
   transform: Scale(1.5);
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 10px 20px Rgba(0,0,0,0.5));
 }
 

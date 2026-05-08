@@ -240,10 +240,7 @@ onUnmounted(() => {
   box-shadow: 0 10px 30px Rgba(0, 0, 0, 0.8);
   -webkit-will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: Blur(10px);
-  will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: Blur(10px);
   @include gpu-layer;
   

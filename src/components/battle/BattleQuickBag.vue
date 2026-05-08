@@ -224,7 +224,6 @@ const handleUseItem = (item: BattleItem) => {
     min-height: 60px;
     image-rendering: pixelated;
     will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: 
       Drop-Shadow(0 4px 8px Rgba(0,0,0,0.5))
       Brightness(1.1); // Un poco de brillo extra para resaltar el detalle

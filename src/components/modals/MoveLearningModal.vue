@@ -125,10 +125,7 @@ const handleForget = () => {
   background: Rgba(0, 0, 0, 0.92);
   -webkit-will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: Blur(10px);
-  will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: Blur(10px);
   @include gpu-layer;
   z-index: var(--z-modal);

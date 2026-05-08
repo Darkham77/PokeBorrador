@@ -341,7 +341,6 @@ const isMoveDisabled = (move: any) => {
     transform: Scale(1.08);
     box-shadow: 0 8px 24px Rgba(0, 0, 0, 0.5);
     will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Brightness(1.1);
 
     @media (max-width: 420px) {
@@ -356,7 +355,6 @@ const isMoveDisabled = (move: any) => {
 
   &.is-disabled {
     will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Grayscale(1);
     opacity: 0.6;
     cursor: not-allowed;
@@ -439,7 +437,6 @@ const isMoveDisabled = (move: any) => {
       transform: none;
       box-shadow: none;
       will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: none;
     }
   }

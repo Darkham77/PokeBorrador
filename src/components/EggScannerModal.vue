@@ -268,10 +268,7 @@ const handleSell = async () => {
   background: Rgba(0, 0, 0, 0.85);
   -webkit-will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: Blur(8px);
-  will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: Blur(8px);
   @include gpu-layer;
   z-index: var(--z-modal);

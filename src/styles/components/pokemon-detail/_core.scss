@@ -24,7 +24,6 @@
       position: relative; 
       z-index: var(--z-base);
       will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 20px 40px Rgba(0,0,0,0.7));
       transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
       transform: Translatey($sprite-translate); 
@@ -43,7 +42,6 @@
       height: calc($sprite-size * 0.66);
       border-radius: 50%;
       will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Blur(50px);
       opacity: 0.25;
       z-index: var(--z-base);
@@ -62,10 +60,7 @@
   background: Rgba(15, 23, 42, 0.6);
   -webkit-will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: Blur(10px);
-  will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: Blur(10px);
   @include gpu-layer;
   padding: 0 16px;
