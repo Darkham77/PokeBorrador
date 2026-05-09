@@ -7,6 +7,7 @@ import type { MarketListing } from '@/logic/market'
 import { Temporal } from '@js-temporal/polyfill'
 import { getPokemonTier } from '@/logic/pokemon/tierEngine'
 import { PDEX_TYPE_COLORS } from '@/logic/pokedexConstants'
+import type { Pokemon } from '@/types/pokemon'
 
 const gtsStore = useGTSStore()
 
@@ -25,12 +26,12 @@ const formatTime = (ts: string | number) => {
   }
 }
 
-function getTierData(pokemon: any) {
-  return getPokemonTier(pokemon)
+function getTierData(pokemon: unknown) {
+  return getPokemonTier(pokemon as Partial<Pokemon>)
 }
 
-function getSprite(pokemon: any) {
-  return getAssetUrl(ASSET_TYPES.POKEMON, pokemon.id || 'missing')
+function getSprite(pokemon: unknown) {
+  return getAssetUrl(ASSET_TYPES.POKEMON, (pokemon as Pokemon).id || 'missing')
 }
 
 const getTypeColor = (type: string) => (PDEX_TYPE_COLORS as Record<string, string>)[type?.toLowerCase()] || 'Rgba(170, 170, 170, 1)'

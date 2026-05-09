@@ -26,8 +26,9 @@ function getPrice(item: BlackMarketItem) {
 }
 
 function isPurchased(itemId: string) {
-  const classData = gameStore.state.classData as { blackMarketDaily?: { purchased: string[] } }
-  return classData?.blackMarketDaily?.purchased?.includes(itemId) || false
+  const classData = gameStore.state.classData
+  const purchased = classData?.blackMarketDaily?.purchased as string[] | undefined
+  return purchased?.includes(itemId) || false
 }
 
 onMounted(() => {

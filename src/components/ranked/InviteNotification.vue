@@ -2,8 +2,15 @@
 import { onMounted, onUnmounted } from 'vue';
 import { usePvPStore } from '@/stores/pvp';
 
+export interface PvPInvite {
+  id: string
+  challenger_name: string
+  challenger_id: string
+  rules?: string
+}
+
 interface Props {
-  invite: any
+  invite: PvPInvite
 }
 
 const props = defineProps<Props>();
@@ -12,7 +19,7 @@ const emit = defineEmits<{
   (e: 'close'): void
 }>();
 
-const pvpStore = usePvPStore() as any;
+const pvpStore = usePvPStore();
 
 let timer: ReturnType<typeof setTimeout> | null = null;
 

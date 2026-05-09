@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useTradeStore } from '@/stores/trade'
 
-const tradeStore = useTradeStore() as any
+const tradeStore = useTradeStore()
 </script>
 
 <template>

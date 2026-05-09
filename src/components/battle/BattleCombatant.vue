@@ -1,7 +1,6 @@
 // [PureVue-Ignore-Length]
 <script setup lang="ts">
 import { Temporal } from '@js-temporal/polyfill'
-
 import { ref, computed, watch } from 'vue'
 
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
@@ -14,15 +13,25 @@ import { gameBus } from '@/logic/gameBus'
 import { WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator'
 
 import type { Pokemon } from '@/types/pokemon'
+import type { BattleStages } from '@/types/battle'
+
+interface SparkleData {
+  id: string | number
+  tx: number
+  ty: number
+  tf: number
+  scale: number
+  delay: string
+}
 
 interface Props {
-  side: string // 'player' | 'enemy'
+  side: 'player' | 'enemy'
   pokemon?: Pokemon | null
   position: { x: number; y: number }
   baseSize: number
   groundY?: string
   shadowKey?: string | null
-  animState?: string | null // 'catching' | 'trapped' | 'releasing'
+  animState?: 'catching' | 'trapped' | 'releasing' | null
   ballId?: string
   isShaking?: boolean
   isBlinking?: boolean
@@ -31,12 +40,12 @@ interface Props {
   activeMove?: { side: string; cat: 'physical' | 'special' | 'status'; name: string } | null
   showGuides?: boolean
   isCaptureSuccess?: boolean
-  sparkles?: { id: string | number; tx: number; ty: number; tf: number; scale: number; delay: string }[]
+  sparkles?: SparkleData[]
   isFainting?: boolean
   isEmerging?: boolean
   suppressFX?: boolean
   hidden?: boolean
-  stages?: Record<string, number | undefined>
+  stages?: Partial<BattleStages>
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -72,7 +81,7 @@ const isPlayer = computed(() => props.side === 'player')
 const imageUrl = computed(() => {
   if (!props.pokemon) return ''
   return getAssetUrl(ASSET_TYPES.POKEMON, props.pokemon.id, { 
-    isShiny: props.pokemon.isShiny, 
+    isShiny: !!props.pokemon.isShiny, 
     isBack: isPlayer.value 
   })
 })
@@ -82,7 +91,7 @@ const isFloating = computed(() => {
   if (props.pokemon.isFloating !== undefined) return props.pokemon.isFloating
   const data = pokemonDataProvider.getPokemonData(props.pokemon.id)
   if (data?.isFloating) return true
-  const types = []
+  const types: string[] = []
   if (props.pokemon.type) types.push(props.pokemon.type.toLowerCase())
   if (props.pokemon.type2) types.push(props.pokemon.type2.toLowerCase())
   return types.includes('flying')
@@ -162,11 +171,11 @@ const statArrows = ref<{ id: number; dir: 'up' | 'down'; stat: string }[]>([])
 watch(() => props.stages, (newS, oldS) => {
   if (!oldS) return
   
-  const stats = ['atk', 'def', 'spa', 'spd', 'spe', 'acc', 'eva']
+  const stats: (keyof BattleStages)[] = ['atk', 'def', 'spa', 'spd', 'spe', 'acc', 'eva']
   stats.forEach(s => {
     const diff = (newS[s] || 0) - (oldS[s] || 0)
     if (diff !== 0) {
-      triggerStatArrow(s, diff > 0 ? 'up' : 'down')
+      triggerStatArrow(String(s), diff > 0 ? 'up' : 'down')
       // Emitir sonido directamente desde la vista reactiva
       gameBus.emit('PLAY_SOUND', diff > 0 ? 'statRaise' : 'statLower')
     }
@@ -247,8 +256,8 @@ const triggerStatArrow = (stat: string, dir: 'up' | 'down') => {
         <div
           class="sprite-idle-wrapper"
           :class="[{ 
-            'combatant-idle-subtle': pokemon.status !== 'freeze' && animState !== 'trapped' && animState !== 'catching' && !isFloating, 
-            'combatant-idle-floating': pokemon.status !== 'freeze' && animState !== 'trapped' && animState !== 'catching' && isFloating, 
+            'combatant-idle-subtle': pokemon.status !== 'freeze' && (animState as string) !== 'trapped' && animState !== 'catching' && !isFloating, 
+            'combatant-idle-floating': pokemon.status !== 'freeze' && (animState as string) !== 'trapped' && animState !== 'catching' && isFloating, 
             'is-floating-species': isFloating, 
             'energy-catching': animState === 'catching', 
             'energy-releasing': animState === 'releasing'

@@ -14,7 +14,7 @@ interface Props {
 
 import { formatCurrency } from '@/logic/utils/formatters'
 
-const props = withDefaults(defineProps<Props>(), {
+withDefaults(defineProps<Props>(), {
   money: 0,
   battleCoins: 0
 })

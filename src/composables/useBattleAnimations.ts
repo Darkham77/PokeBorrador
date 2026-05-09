@@ -34,10 +34,9 @@ export function useBattleAnimations(
   const caughtPokemonSnapshot = ref<Pokemon | null>(null) 
   const isFaintInProgress = ref(false)
   const faintedPokemonSnapshot = ref<(Partial<Pokemon> & { side: string }) | null>(null)
-
   // Estados de Energía y Poké Ball
-  const playerAnimState = ref<string | null>(null) 
-  const enemyAnimState = ref<string | null>(null)
+  const playerAnimState = ref<'catching' | 'trapped' | 'releasing' | null>(null)
+  const enemyAnimState = ref<'catching' | 'trapped' | 'releasing' | null>(null)
   const activePokeballId = ref('pokeball')
   const catchSparkles = ref<CatchSparkle[]>([])
 

@@ -12,11 +12,9 @@ interface Props {
   history?: NotificationItem[]
 }
 
-const props = withDefaults(defineProps<Props>(), {
-  history: () => []
-})
+defineProps<Props>()
 
-const formatTime = (ts: any) => {
+const formatTime = (ts: string | number) => {
   try {
     const val = Number(ts)
     if (isNaN(val)) return '---'
