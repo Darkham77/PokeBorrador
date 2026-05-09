@@ -1,3 +1,4 @@
+import { sleep } from '@/logic/timeUtils'
 
 import { generateEncounter } from '@/logic/encounters'
 import { handleEntryAbilities } from './battleFlow'
@@ -202,11 +203,11 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
     const inventoryBinoculars = ctx.gs.state.inventory['binoculars'] || 0
     const hasBinoculars = ctx.debugBinoculars.value || (inventoryBinoculars > 0)
     if (!hasBinoculars) {
-      await new Promise(r => setTimeout(r, 150))
+      await sleep(150)
       await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.BUSH_FADE, 100)
       await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.REVEAL_COLORS, 500)
     } else {
-      await new Promise(r => setTimeout(r, 600))
+      await sleep(600)
     }
   } else {
     await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.ENCOUNTER_TYPE_CHECK)

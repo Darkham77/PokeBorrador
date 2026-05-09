@@ -1,3 +1,4 @@
+import { sleep } from '@/logic/timeUtils'
 
 // [PureVue-Ignore-Length]
 import { calculateDamage, getEffectiveSpeed } from './battleEngine'
@@ -98,7 +99,7 @@ export async function executeTurn(store: BattleContext, moveIndex: number) {
 
     if (queue.length > 0) {
       await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.EVAL_CONTINUE)
-      await new Promise(r => setTimeout(r, 400))
+      await sleep(400)
     }
   }
   
@@ -263,7 +264,7 @@ export async function runPlayerAction(store: BattleContext, moveIndex: number) {
         }
 
         if (executableMove.cat !== 'status') {
-          await new Promise(r => setTimeout(r, 200))
+          await sleep(200)
         }
       }
     }
@@ -328,7 +329,7 @@ export async function runEnemyAction(store: BattleContext) {
       await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.TRAINER_RETREAT)
       await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.POKEMON_RECALL)
       gameBus.emit('PLAY_WITHDRAW', { side: 'enemy' })
-      await new Promise(r => setTimeout(r, 800))
+      await sleep(800)
       await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.VACATE_SEAT)
       
       store.activeBattle.value.enemy = newPoke
@@ -339,7 +340,7 @@ export async function runEnemyAction(store: BattleContext) {
       await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.OCCUPY_SEAT)
       store.addLog(`¡Envía a ${newPoke.name}!`, 'log-enemy', newPoke)
       gameBus.emit('PLAY_SEND_OUT', { side: 'enemy', pokemon: newPoke })
-      await new Promise(r => setTimeout(r, 800))
+      await sleep(800)
 
       if (store.enemyStages.value.spikes && store.enemyStages.value.spikes > 0 && newPoke.type !== 'flying' && newPoke.type2 !== 'flying' && newPoke.ability !== 'Levitación') {
         const dmg = Math.floor(newPoke.maxHp * (store.enemyStages.value.spikes / 8))
@@ -488,7 +489,7 @@ export async function runEnemyAction(store: BattleContext) {
         }
         
         if (enemyMove.cat !== 'status') {
-          await new Promise(r => setTimeout(r, 200))
+          await sleep(200)
         }
       }
     }

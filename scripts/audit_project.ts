@@ -208,7 +208,19 @@ function runRules(filePath: string, content: string, rules: AuditRule[], violati
     const fixer = rule.fix;
     if (fix && fixer) {
       const gRegex = new RegExp(rule.regex.source, rule.regex.flags.includes('g') ? rule.regex.flags : rule.regex.flags + 'g');
-      result = result.replace(gRegex, (m) => fixer(m));
+      
+      // Aplicar fix solo si pasa el check (contexto-aware)
+      result = result.replace(gRegex, (match, ...args) => {
+        // Necesitamos recrear el match array para el check
+        const execMatch = rule.regex.exec(content);
+        if (rule.check) {
+          const pass = (rule === config.gpuGaps) 
+            ? rule.check(content, execMatch!) 
+            : rule.check(filePath, execMatch!);
+          if (!pass) return match;
+        }
+        return fixer(match);
+      });
     }
   }
   return result;

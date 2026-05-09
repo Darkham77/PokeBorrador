@@ -29,8 +29,9 @@ type StyleTextFn = (style: string, text: string) => string;
 let styleText: StyleTextFn = (_style: string, text: string) => text; // Fallback
 if (!isBrowser) {
   try {
-    // Dynamic import to avoid bundling issues in browser
-    const util = await import('node:util');
+    // Hidden from Vite's static analysis to avoid browser bundling warnings
+    const nodeUtil = 'node:util';
+    const util = await import(nodeUtil);
     styleText = util.styleText as StyleTextFn;
   } catch (_e) {
     // Fallback if not available

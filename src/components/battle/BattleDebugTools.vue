@@ -1,6 +1,6 @@
 <script setup lang="ts">
-
 import { ref, computed } from 'vue'
+import { sleep } from '@/logic/timeUtils'
 import { useBattleStore } from '@/stores/battle'
 import { useGameStore } from '@/stores/game'
 import { useAudioStore } from '@/stores/audio'
@@ -64,17 +64,17 @@ const debugCapture = async () => {
   // 1. Animación de entrada
   audio.ballHit()
   gameBus.emit('PLAY_CATCH_ENERGY', { side: 'enemy', ballId: itemName })
-  await new Promise(r => setTimeout(r, 1000))
+  await sleep(1000)
 
   // 2. Suspenso: 3 Shakes
   for (let i = 0; i < 3; i++) {
     audio.wobble()
     gameBus.emit('CATCH_SHAKE', { side: 'enemy' })
-    await new Promise(r => setTimeout(r, 1000))
+    await sleep(1000)
   }
 
   // 3. Éxito visual y sonoro
-  await new Promise(r => setTimeout(r, 500))
+  await sleep(500)
   audio.caught()
   gameBus.emit('CATCH_SUCCESS', { side: 'enemy' })
   battleStore.addLog(`¡Ya está! ¡${e.name} atrapado!`, 'log-catch', e)
@@ -83,7 +83,7 @@ const debugCapture = async () => {
   gameStore.addPokemon(e, { notify: true })
   
   // Sincronizar con el tiempo de animación: 1s bola llena + 1s de vacío
-  setTimeout(async () => {
+  window.setTimeout(async () => {
     await battleStore.endBattle(true, false)
     battleStore.isProcessing = false
   }, 2000)

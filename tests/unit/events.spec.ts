@@ -1,7 +1,7 @@
 import { Temporal } from '@js-temporal/polyfill'
 
 import { describe, it, expect } from 'vitest'
-import { isEventActiveNow, getGlobalMultipliers, getSpeciesBoosts } from '@/logic/events/eventEngine'
+import { isEventActiveNow, getGlobalMultipliers, getSpeciesBoosts, getArgDateString } from '@/logic/events/eventEngine'
 
 describe('Event Engine Logic', () => {
   it('correctly identifies manual events as active', () => {
@@ -97,6 +97,15 @@ describe('Event Engine Logic', () => {
     expect(isEventActiveNow(event as unknown as Parameters<typeof isEventActiveNow>[0], mondayNight)).toBe(true)
     expect(isEventActiveNow(event as unknown as Parameters<typeof isEventActiveNow>[0], tuesdayMorning)).toBe(true)
     expect(isEventActiveNow(event as unknown as Parameters<typeof isEventActiveNow>[0], mondayEvening)).toBe(false)
+  })
+
+  it('formats argument date strings correctly', () => {
+    const date = new Date('2026-05-09T12:00:00Z')
+    const zdt = Temporal.ZonedDateTime.from('2026-05-10T12:00:00[America/Argentina/Buenos_Aires]')
+    
+    expect(getArgDateString(date)).toBe('2026-05-09')
+    expect(getArgDateString(zdt)).toBe('2026-05-10')
+    expect(getArgDateString()).toMatch(/^\d{4}-\d{2}-\d{2}$/)
   })
 })
 

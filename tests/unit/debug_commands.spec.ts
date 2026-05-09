@@ -1,3 +1,4 @@
+import { setTimeout } from 'node:timers/promises';
 import { Temporal } from '@js-temporal/polyfill'
 
 // @vitest-environment jsdom
@@ -104,7 +105,7 @@ describe('Debug System (Commands & Tools)', () => {
       auth.user = { id: 'test_user', user_metadata: { username: 'test_user' } } as unknown as AuthUser
       callDebug('setElo', 2000)
       // Watchers are async in Vue 3
-      await new Promise(r => setTimeout(r, 0))
+      await await setTimeout(0)
       expect(pvp.elo).toBe(2000)
     })
 

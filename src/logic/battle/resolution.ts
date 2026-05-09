@@ -1,3 +1,4 @@
+import { sleep } from '@/logic/timeUtils'
 import { gameBus } from '@/logic/gameBus'
 import { calculateBaseExp, processExpGain, calculateMoneyGain } from './battleRewards'
 import { getBattleRewardModifiers } from '@/logic/war/bonusEngine'
@@ -27,7 +28,7 @@ export async function processFaint(ctx: BattleContext, side: 'player' | 'enemy')
   if (pokemon?.destinyBond && opponent && opponent.hp > 0) {
     ctx.addLog(`¡${pokemon.name} se llevó a ${opponent.name} con él!`, 'log-info', pokemon)
     opponent.hp = 0
-    await new Promise(r => setTimeout(r, 500))
+    await sleep(500)
     await processFaint(ctx, isPlayer ? 'enemy' : 'player')
   }
 
@@ -38,7 +39,7 @@ export async function processFaint(ctx: BattleContext, side: 'player' | 'enemy')
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.RECALL_FLOW)
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.POKEMON_RECALL)
     gameBus.emit('PLAY_WITHDRAW', { side: 'player', isFaint: true })
-    await new Promise(r => setTimeout(r, 800))
+    await sleep(800)
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.VACATE_SEAT)
     active.player = null 
     
@@ -49,7 +50,7 @@ export async function processFaint(ctx: BattleContext, side: 'player' | 'enemy')
       await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ALL_FAINTED)
       active.over = true
       ctx.addLog('¡No te quedan Pokémon sanos!', 'log-error', 'player')
-      await new Promise(r => setTimeout(r, 1500))
+      await sleep(1500)
       await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.DEFEAT_SCREEN)
       await terminateBattle(ctx, false)
     } else {
@@ -70,7 +71,7 @@ export async function processFaint(ctx: BattleContext, side: 'player' | 'enemy')
     gameBus.emit('PLAY_FAINT', { side: 'enemy' })
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.PLAY_ENEMY_FAINT)
     
-    await new Promise(r => setTimeout(r, 1000))
+    await sleep(1000)
     
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.VACATE_SEAT)
     active.enemy = null
@@ -96,7 +97,7 @@ export async function processFaint(ctx: BattleContext, side: 'player' | 'enemy')
         active.enemy = nextEnemy
         ctx.addLog(`¡Entrenador envía a ${nextEnemy.name}!`, 'log-enemy', 'enemy_trainer')
         gameBus.emit('PLAY_SEND_OUT', { side: 'enemy', pokemon: nextEnemy })
-        await new Promise(r => setTimeout(r, 800))
+        await sleep(800)
         return
       }
     }
@@ -138,7 +139,7 @@ export async function terminateBattle(ctx: BattleContext, win: boolean, fled = f
 
   if (!win && !fled) {
     await fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.EMPTY_WAIT)
-    await new Promise(r => setTimeout(r, 1000))
+    await sleep(1000)
     await ctx.gs.save(false)
     
     await fsm.transition(BATTLE_STATES.EXIT_BATTLE)
@@ -166,7 +167,7 @@ export async function terminateBattle(ctx: BattleContext, win: boolean, fled = f
   syncTeamHP(ctx)
 
   await fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.EMPTY_WAIT)
-  await new Promise(r => setTimeout(r, 1000))
+  await sleep(1000)
 
   const firstHealthy = ctx.gs.state.team.find((p: Pokemon) => p.hp > 0)
   const currentActive = active.player
@@ -179,7 +180,7 @@ export async function terminateBattle(ctx: BattleContext, win: boolean, fled = f
       await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.RENDER_BALL)
       gameBus.emit('PLAY_WITHDRAW', { side: 'player' })
       await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.ENERGY_RECALL)
-      await new Promise(r => setTimeout(r, 800))
+      await sleep(800)
       await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.VACATE_SEAT)
       active.player = null
     }
@@ -193,10 +194,10 @@ export async function terminateBattle(ctx: BattleContext, win: boolean, fled = f
 
     gameBus.emit('PLAY_SEND_OUT', { side: 'player', pokemon: firstHealthy })
     await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.ENERGY_RELEASE)
-    await new Promise(r => setTimeout(r, 800))
+    await sleep(800)
     
     await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.POKEMON_APPEAR)
-    await new Promise(r => setTimeout(r, 400))
+    await sleep(400)
   }
   
   const persistenceMode = active.persistenceMode as string || 'PERSISTENT'

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-
 import { computed, ref, reactive } from 'vue'
+import { sleep } from '@/logic/timeUtils'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
@@ -35,7 +35,7 @@ const claimAsset = async (claimId: string | number) => {
     uiStore.notify('¡Objeto recibido!', '🎁')
     // Cooldown logic
     cooldowns.add(claimId)
-    setTimeout(() => cooldowns.delete(claimId), 5000)
+    window.setTimeout(() => cooldowns.delete(claimId), 5000)
   }
   
   processingId.value = null
@@ -45,7 +45,7 @@ const receiveAll = async () => {
   for (const claim of claims.value) {
     await claimAsset(claim.id)
     // Small delay between batch claims
-    await new Promise(r => setTimeout(r, 1000))
+    await sleep(1000)
   }
 }
  

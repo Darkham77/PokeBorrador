@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { sleep } from '@/logic/timeUtils'
+
 import { ref, computed } from 'vue'
 import { POKEMON_DB } from '@/data/pokemonDB'
 import { useGameStore } from '@/stores/game'
@@ -79,7 +81,7 @@ const allEggs = computed<EggItem[]>(() => {
 const scanEgg = async (egg: EggItem) => {
   isScanning.value = true
   // Simulate scanning delay
-  await new Promise(r => setTimeout(r, 800))
+  await sleep(800)
   
   const ivs = (egg.data.ivs || {}) as IVs
   const totalIV = (ivs.hp || 0) + (ivs.atk || 0) + (ivs.def || 0) + (ivs.spa || 0) + (ivs.spd || 0) + (ivs.spe || 0)

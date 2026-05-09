@@ -1,3 +1,4 @@
+import { sleep } from '@/logic/timeUtils'
 
 import { calculateDamage } from '@/logic/battle/battleEngine'
 import { getStatMultiplier, getAccuracyMultiplier } from '@/logic/pokemon/statEngine'
@@ -213,7 +214,7 @@ export async function applyPvPTurnResult(battleState: PvPBattleState, result: Pv
       if (targetPoke) {
         battleState.logs.push(`¡${isMyAction ? 'Vas a cambiar a' : 'El rival cambió a'} ${targetPoke.name}!`)
       }
-      await new Promise(r => setTimeout(r, 600))
+      await sleep(600)
       if (isMyAction) battleState.myActiveIdx = action.newIdx ?? 0
       else battleState.enemyActiveIdx = action.newIdx ?? 0
     } else {
@@ -231,7 +232,7 @@ export async function applyPvPTurnResult(battleState: PvPBattleState, result: Pv
       }
       action.effectLog?.forEach((m: string) => battleState.logs.push(m))
     }
-    await new Promise(r => setTimeout(r, 800))
+    await sleep(800)
   }
   
   // Post-turn checks

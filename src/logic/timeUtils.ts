@@ -107,3 +107,6 @@ export function getSeason(now: Temporal.Instant | number = getServerInstant()): 
 }
 
 // Interval logic should be managed by the store/app after init
+export function sleep(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
