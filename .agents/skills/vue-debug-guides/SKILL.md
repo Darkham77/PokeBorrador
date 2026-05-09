@@ -98,6 +98,8 @@ For development best practices and common gotchas, use `vue-best-practices`.
 - DOM reads return stale values after state changes → See [dom-update-timing-nexttick](references/dom-update-timing-nexttick.md)
 - SSR rendering differs from client hydration → See [lifecycle-ssr-awareness](references/lifecycle-ssr-awareness.md)
 - Lifecycle hooks registered asynchronously never run → See [lifecycle-hooks-synchronous-registration](references/lifecycle-hooks-synchronous-registration.md)
+- **Vitest State Leakage (setTimeout)**: Using naked `setTimeout` in components can trigger `Unknown action` errors during test teardown if the component unmounts before the timer fires. Always use `vi.useFakeTimers()` or ensure timers are cleared in `onUnmounted`.
+
 
 ### Slots
 

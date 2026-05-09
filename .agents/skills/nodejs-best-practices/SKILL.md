@@ -68,10 +68,12 @@ What are you building?
 ### Native TypeScript
 
 ```text
-Node.ts 22+: --experimental-strip-types
-├── Run .ts files directly
-├── No build step needed for simple projects
-└── Consider for: scripts, simple APIs
+Node.js 26+: --experimental-strip-types
+├── Run .ts files directly (no build step needed)
+├── MANDATORY: Use `.ts` extension in all internal imports
+├── MANDATORY: Use `node:` prefix for built-in modules
+├── Best for: high-performance business logic testing with `node:test`
+└── Ideal for: utility scripts and low-overhead APIs
 ```
 
 ### Module System Decision
