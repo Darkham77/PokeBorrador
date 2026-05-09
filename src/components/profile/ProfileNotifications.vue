@@ -12,7 +12,9 @@ interface Props {
   history?: NotificationItem[]
 }
 
-defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  history: () => []
+})
 
 const formatTime = (ts: string | number) => {
   try {
@@ -41,7 +43,7 @@ const isHistoryOpen = computed({
         class="history-btn-legacy"
         @click.stop="isHistoryOpen = !isHistoryOpen"
       >
-        Ver ultimas 10 ({{ history.length }})
+        Ver ultimas 10 ({{ props.history.length }})
       </button>
     </div>
     
@@ -50,7 +52,7 @@ const isHistoryOpen = computed({
       class="history-container-legacy custom-scrollbar"
     >
       <div
-        v-for="n in history.slice().reverse()"
+        v-for="n in props.history.slice().reverse()"
         :key="n.id"
         class="notification-entry-legacy"
       >
@@ -65,7 +67,7 @@ const isHistoryOpen = computed({
         </div>
       </div>
       <div
-        v-if="!history.length"
+        v-if="!props.history.length"
         class="empty-notif-legacy"
       >
         Sin notificaciones recientes.

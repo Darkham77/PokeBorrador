@@ -16,10 +16,17 @@ const props = withDefaults(defineProps<Props>(), {
   customBorder: null
 })
 
-const gameStore = useGameStore() as any;
+interface PlayerClass {
+  id: string
+  name: string
+  color: string
+  avatarSpriteId?: string
+}
+
+const gameStore = useGameStore();
 
 const activeClassId = computed(() => props.classId || gameStore.state.playerClass);
-const cls = computed(() => activeClassId.value ? (PLAYER_CLASSES as any)[activeClassId.value] : null);
+const cls = computed(() => activeClassId.value ? (PLAYER_CLASSES as Record<string, PlayerClass>)[activeClassId.value] : null);
 
 const trainerLevel = computed(() => gameStore.state.trainerLevel || 1);
 

@@ -9,9 +9,9 @@ import MarketFilters from './MarketFilters.vue'
 import MarketPublish from './MarketPublish.vue'
 import MarketMyItems from './MarketMyItems.vue'
 
-const auth = useAuthStore() as any
-const game = useGameStore() as any
-const gtsStore = useGTSStore() as any
+const auth = useAuthStore()
+const game = useGameStore()
+const gtsStore = useGTSStore()
 
 const activeTab = ref('explore') // 'explore' | 'publish' | 'my_items'
 

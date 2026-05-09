@@ -15,8 +15,8 @@ interface EvolutionEntry {
   type: 'level' | 'stone' | 'trade';
   requirement: string;
   to: string;
-  isSeen?: boolean;
-  isCaught?: boolean;
+  isSeen: boolean;
+  isCaught: boolean;
 }
 
 export function usePokemonDetail(propsRefs: Record<string, MaybeRefOrGetter<unknown>>) {
@@ -134,12 +134,12 @@ export function usePokemonDetail(propsRefs: Record<string, MaybeRefOrGetter<unkn
       const current = isInstance.value ? (((targetPokemon.value as unknown as Record<string, number>)[key]) || base) : base
       return {
         id: key,
-        label: labels[key],
+        label: labels[key] || key.toUpperCase(),
         value: current,
         baseValue: base,
         max: 255,
-        color: colors[key],
-        iv: isInstance.value ? (targetPokemon.value?.ivs as Record<string, number> | undefined)?.[key] : null
+        color: colors[key] || '#888',
+        iv: isInstance.value ? (targetPokemon.value?.ivs as Record<string, number> | undefined)?.[key] || 0 : 0
       }
     })
   })
@@ -148,14 +148,16 @@ export function usePokemonDetail(propsRefs: Record<string, MaybeRefOrGetter<unkn
     if (!species.value || !species.value.learnset) return []
     return species.value.learnset.map(m => {
       const data = (MOVE_DATA as Record<string, MoveBaseData | undefined>)[m.name]
+      const basePP = data?.pp || 35
       return {
         level: m.lv,
         name: m.name,
         type: data?.type || 'normal',
         cat: data?.cat || 'physical',
-        power: data?.power || '-',
-        acc: data?.acc || '-',
-        pp: data?.pp || '-'
+        power: data?.power ?? 0,
+        acc: data?.acc ?? 100,
+        pp: basePP,
+        maxPP: basePP
       }
     }).sort((a, b) => a.level - b.level)
   })

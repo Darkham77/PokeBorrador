@@ -30,7 +30,7 @@ const emit = defineEmits<{
 }>()
 
 const gameStore = useGameStore()
-const uiStore = useUIStore() as any
+const uiStore = useUIStore()
 
 const forgottenMoves = computed(() => {
   const p = props.pokemon
@@ -45,10 +45,10 @@ const forgottenMoves = computed(() => {
   // Trace back evolution chain to gather all potential moves
   while (currentId && !processedIds.has(currentId)) {
     processedIds.add(currentId)
-    const dbEntry = (POKEMON_DB as Record<string, any>)[currentId]
+    const dbEntry = (POKEMON_DB as Record<string, { learnset?: LearnsetEntry[] }>)[currentId]
     
     if (dbEntry && dbEntry.learnset) {
-      (dbEntry.learnset as LearnsetEntry[]).forEach(m => {
+      dbEntry.learnset.forEach(m => {
         // Only moves at or below current level
         if (m.lv <= p.level && !learnedMoves.includes(m.name)) {
           // Avoid duplicates if multiple stages learn the same move
@@ -61,7 +61,7 @@ const forgottenMoves = computed(() => {
     
     // Find previous stage
     const currentIdRef = currentId as string
-    const prevEntry = Object.entries(EVOLUTION_TABLE).find(([_id, data]) => (data as any).to === currentIdRef)
+    const prevEntry = Object.entries(EVOLUTION_TABLE).find(([, data]) => (data as { to: string }).to === currentIdRef)
     currentId = prevEntry ? prevEntry[0] : null
   }
   
@@ -89,13 +89,13 @@ const handleRelearn = (move: LearnsetEntry) => {
     emit('close')
   } else {
     // If moves == 4, we need to forget one
-    uiStore.openLearnMoveMenu(p as any, { name: move.name, pp: move.pp, maxPP: move.pp }, (success: boolean) => {
-      if (success) {
-        consumeItem(itemName)
-        props.onLearned(success)
-        emit('close')
-      }
+    uiStore.addToLearnQueue({ 
+      pokemon: p, 
+      move: { name: move.name, pp: move.pp, maxPP: move.pp } as Move 
     })
+    consumeItem(itemName)
+    props.onLearned(true)
+    emit('close')
   }
 }
 

@@ -3,11 +3,12 @@ import { computed } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useBattleStore } from '@/stores/battle'
 import BoxPokemonCard from '@/components/box/BoxPokemonCard.vue'
+import type { Pokemon } from '@/types/pokemon'
 
-const gameStore = useGameStore() as any
-const battleStore = useBattleStore() as any
+const gameStore = useGameStore()
+const battleStore = useBattleStore()
 
-const team = computed<any[]>(() => gameStore.state.team || [])
+const team = computed<Pokemon[]>(() => gameStore.state.team || [])
 const activePokemonUid = computed(() => battleStore.state?.player?.uid)
 
 const handleSwitch = (index: number) => {

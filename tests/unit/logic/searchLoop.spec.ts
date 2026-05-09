@@ -2,6 +2,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { handleBattleFlowCompletion } from '@/logic/battle/searchLoop'
 import { BATTLE_STATES, BATTLE_SUBSTATES } from '@/logic/battle/battleStateMachine'
+import type { BattleContext } from '@/types/battleContext'
 
 vi.mock('@/logic/encounters', () => ({
   generateEncounter: vi.fn(async () => ({ type: 'wild', pokemon: { id: 16, name: 'Pidgey' } }))
@@ -16,11 +17,20 @@ vi.mock('@/stores/map', () => ({
 }))
 
 vi.mock('@/stores/events', () => ({
-  useEventStore: vi.fn(() => ({ globalMultipliers: { shiny: 1 } }))
+  useEventStore: vi.fn(() => ({ 
+    globalMultipliers: { shiny: 1 },
+    getSpeciesBonuses: vi.fn()
+  }))
+}))
+
+vi.mock('@/stores/war', () => ({
+  useWarStore: vi.fn(() => ({ 
+    mapDominance: {} 
+  }))
 }))
 
 describe('searchLoop.js - handleBattleFlowCompletion', () => {
-  let mockCtx
+  let mockCtx: BattleContext
 
   beforeEach(() => {
     mockCtx = {
@@ -44,7 +54,7 @@ describe('searchLoop.js - handleBattleFlowCompletion', () => {
       BATTLE_STATES,
       BATTLE_SUBSTATES,
       clearLogs: vi.fn()
-    }
+    } as unknown as BattleContext
   })
 
   it('should promote upcomingPokemon to _initialEnemy during search loop', async () => {

@@ -16,8 +16,8 @@ export const useCosmeticsStore = defineStore('cosmetics', () => {
   const allAvatarStyles = computed(() => AVATAR_STYLES)
 
   // Current equipped styles (from profile)
-  const equippedNickStyle = computed(() => gameStore.state.nick_style || null)
-  const equippedAvatarStyle = computed(() => gameStore.state.avatar_style || null)
+  const equippedNickStyle = computed(() => gameStore.state.nick_style || '')
+  const equippedAvatarStyle = computed(() => gameStore.state.avatar_style || '')
 
   // --- ACTIONS ---
   async function equipNickStyle(styleId: string) {

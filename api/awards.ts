@@ -1,11 +1,13 @@
 import { createClient } from '@supabase/supabase-js'
+import { Temporal } from '@js-temporal/polyfill'
+import type { ApiRequest, ApiResponse } from './_types'
 
 const supabase = createClient(
-  process.env.VITE_SUPABASE_URL,
-  process.env.VITE_SUPABASE_KEY
+  process.env.VITE_SUPABASE_URL!,
+  process.env.VITE_SUPABASE_KEY!
 )
 
-export default async function handler(req, res) {
+export default async function handler(req: ApiRequest, res: ApiResponse) {
   const { method } = req
 
   // Basic auth check placeholder (in a real app, use Supabase Auth to verify JWT)

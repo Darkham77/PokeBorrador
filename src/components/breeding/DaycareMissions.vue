@@ -3,8 +3,10 @@ import { useBreedingStore } from '@/stores/breeding';
 import { ref } from 'vue';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import DaycarePicker from './DaycarePicker.vue';
+import type { Pokemon } from '@/types/pokemon';
+import type { DaycareMission } from '@/types/breeding';
 
-const breedingStore = useBreedingStore() as any;
+const breedingStore = useBreedingStore();
 
 const isDeliveryPickerOpen = ref(false);
 const activeMissionIndex = ref(-1);
@@ -14,7 +16,7 @@ const openDelivery = (idx: number) => {
   isDeliveryPickerOpen.value = true;
 };
 
-const handleDelivery = (pokemon: any) => {
+const handleDelivery = (pokemon: Pokemon) => {
   if (confirm(`¿Seguro que quieres entregar a ${pokemon.name}? Se irá para siempre.`)) {
     breedingStore.completeMission(activeMissionIndex.value, pokemon.uid);
     isDeliveryPickerOpen.value = false;
@@ -47,7 +49,7 @@ const handleImgError = (e: Event) => {
 
     <div class="missions-grid">
       <div 
-        v-for="(mission, index) in (breedingStore.dailyMissions as any[])" 
+        v-for="(mission, index) in (breedingStore.dailyMissions as DaycareMission[])" 
         :key="index"
         class="mission-card"
         :class="{ completed: mission.completed }"

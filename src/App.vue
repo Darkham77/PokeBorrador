@@ -3,7 +3,7 @@ import { onMounted, ref, computed, watch } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useGameStore } from '@/stores/game'
 import { initGlobalErrorHandlers } from '@/logic/errorHandler'
-import { checkDBCompatibility, type DBCompatibilityResponse } from '@/logic/db/dbRouter'
+import { checkDBCompatibility, DBRouter, type DBCompatibilityResponse } from '@/logic/db/dbRouter'
 
 import MainGameView from '@/views/MainGameView.vue'
 import ErrorOverlay from '@/components/common/ErrorOverlay.vue'
@@ -103,7 +103,7 @@ onMounted(async () => {
 
   // 3. Check DB Compatibility & Load Game (Omitir si estamos en login para evitar bloqueos)
   if (authStore.user && !isLoginPage.value) {
-    const comp = await checkDBCompatibility(gameStore.db as any)
+    const comp = await checkDBCompatibility(gameStore.db as unknown as DBRouter)
     if (!comp.compatible) {
       dbIncompatible.value = true
       dbVersionInfo.value = comp

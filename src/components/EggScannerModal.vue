@@ -4,25 +4,29 @@ import { POKEMON_DB } from '@/data/pokemonDB'
 import { useGameStore } from '@/stores/game'
 import { useBreedingStore } from '@/stores/breeding'
 import type { DaycareEgg } from '@/types/breeding'
+import type { PokemonEgg, PokemonIVs } from '@/types/pokemon'
 
-interface IVs {
-  hp: number
-  atk: number
-  def: number
-  spa: number
-  spd: number
-  spe: number
+interface IVs extends PokemonIVs {
   [key: string]: number | boolean | undefined
+}
+
+// Extensión de PokemonEgg para soportar campos de escaneo del inventario
+interface ScannedPokemonEgg extends PokemonEgg {
+  scanned?: boolean
+  predictedInfo?: {
+    name: string
+    ivTotal: number
+  }
 }
 
 type EggItem = {
   type: 'inventory'
-  data: any 
+  data: ScannedPokemonEgg 
   id: number
   species: string
 } | {
   type: 'daycare'
-  data: any
+  data: DaycareEgg
   id: string
   species: string
 }
@@ -55,9 +59,9 @@ const isScanning = ref(false)
 const allEggs = computed<EggItem[]>(() => {
   const inventoryEggs = (gameStore.state.eggs || []).map((e, idx) => ({ 
     type: 'inventory' as const, 
-    data: e as any, 
+    data: e as ScannedPokemonEgg, 
     id: idx,
-    species: (e as any).pokemonId || (e as any).id || ''
+    species: e.id || ''
   }))
   
   const daycareEggs = (breedingStore.warehouseEggs || []).map((e: DaycareEgg) => {
@@ -97,7 +101,7 @@ const handleKeep = async () => {
   const res = scanningResult.value
   
   if (res.type === 'inventory') {
-    const eggs = (gameStore.state.eggs || []) as any[]
+    const eggs = (gameStore.state.eggs || []) as ScannedPokemonEgg[]
     const egg = eggs[res.id as number]
     if (egg) {
       egg.scanned = true
@@ -112,7 +116,7 @@ const handleKeep = async () => {
     await breedingStore.updateEggIvs(String(res.id), newIvs)
   }
   
-  const win = window as any
+  const win = window as unknown as { __VITE_DEBUG__?: boolean }
   if (win.__VITE_DEBUG__) console.log('Egg scanned and saved', res)
   
   scanningResult.value = null

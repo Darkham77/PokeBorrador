@@ -499,9 +499,8 @@ watch(() => battleStore.isBattleActive, (active) => {
       </Transition>
     </div>
 
-    <!-- Minijuego de Pesca -->
     <FishingMinigame
-      v-if="battleStore.fsm?.currentSubState === 'MINIGAME_CHECK'"
+      v-if="battleStore.fsm?.currentSubState === 'MINIGAME_CHECK' && enemy"
       :enemy="enemy"
       :rarity="battle?.rarity || 50"
       @success="handleFishingSuccess"

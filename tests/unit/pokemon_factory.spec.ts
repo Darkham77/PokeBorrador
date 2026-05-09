@@ -24,6 +24,7 @@ vi.mock('@/logic/providers/pokemonDataProvider', () => ({
 vi.mock('@/stores/events', () => ({
   useEventStore: vi.fn(() => ({
     getEventSpeciesShinyMultiplier: vi.fn(() => 1),
+    getSpeciesBonuses: vi.fn(),
     globalMultipliers: { shiny: 1 }
   }))
 }));

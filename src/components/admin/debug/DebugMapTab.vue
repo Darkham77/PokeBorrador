@@ -1,12 +1,17 @@
 <script setup lang="ts">
 import { useUIStore } from '@/stores/ui'
 
-const ui = useUIStore() as any
+const ui = useUIStore()
 
-// These tools are already registered in debugStore init()
-// But we can retrieve them to use in the template or just call them directly
-const toggleGrid = () => (window as any).__VITE_DEBUG__.toggleGrid()
-const togglePerf = () => (window as any).__VITE_DEBUG__.togglePerf()
+interface ViteDebug {
+  toggleGrid: () => void
+  togglePerf: () => void
+}
+
+const getDebug = () => (window as unknown as { __VITE_DEBUG__: ViteDebug }).__VITE_DEBUG__
+
+const toggleGrid = () => getDebug().toggleGrid()
+const togglePerf = () => getDebug().togglePerf()
 </script>
 
 <template>

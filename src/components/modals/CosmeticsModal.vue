@@ -5,9 +5,9 @@ import { useCosmeticsStore } from '@/stores/cosmetics'
 import { useProfileStore } from '@/stores/profile'
 import BaseModal from '@/components/common/BaseModal.vue'
 
-const uiStore = useUIStore() as any
-const cosmeticsStore = useCosmeticsStore() as any
-const profileStore = useProfileStore() as any
+const uiStore = useUIStore()
+const cosmeticsStore = useCosmeticsStore()
+const profileStore = useProfileStore()
 
 const isOpen = computed(() => uiStore.isCosmeticsModalOpen)
 

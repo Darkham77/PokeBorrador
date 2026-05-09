@@ -24,9 +24,9 @@ const emit = defineEmits<{
   (e: 'close'): void
 }>()
 
-const gameStore = useGameStore() as any;
-const uiStore = useUIStore() as any;
-const evolutionStore = useEvolutionStore() as any;
+const gameStore = useGameStore();
+const uiStore = useUIStore();
+const evolutionStore = useEvolutionStore();
 
 const pokemon = computed(() => uiStore.selectedPokemon);
 
@@ -42,7 +42,8 @@ const options = computed(() => {
     ];
   }
   
-  const evo = STONE_EVOLUTIONS[p.id as keyof typeof STONE_EVOLUTIONS];
+  const id = p.id as keyof typeof STONE_EVOLUTIONS;
+  const evo = STONE_EVOLUTIONS[id];
   return evo ? [evo] : [];
 });
 
@@ -51,11 +52,12 @@ const close = () => {
 };
 
 const useStone = (stoneName: string, toId: string) => {
-  const qty = gameStore.state.inventory[stoneName] || 0;
-  if (qty <= 0) return;
+  if (!pokemon.value) return;
+  const currentQty = gameStore.state.inventory[stoneName];
+  if (!currentQty || currentQty <= 0) return;
 
   // Consume item
-  gameStore.state.inventory[stoneName]--;
+  gameStore.state.inventory[stoneName] = currentQty - 1;
   if (gameStore.state.inventory[stoneName] <= 0) {
     delete gameStore.state.inventory[stoneName];
   }

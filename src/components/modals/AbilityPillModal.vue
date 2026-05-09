@@ -5,8 +5,8 @@ import { useGameStore } from '@/stores/game'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import BaseModal from '@/components/common/BaseModal.vue'
 
-const uiStore = useUIStore() as any
-const gameStore = useGameStore() as any
+const uiStore = useUIStore()
+const gameStore = useGameStore()
 
 const abilityPokemon = computed(() => uiStore.activePokemonForAbility)
 const availableAbilities = computed<string[]>(() => {

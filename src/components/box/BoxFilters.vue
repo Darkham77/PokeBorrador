@@ -58,7 +58,7 @@ const toggleSortDirection = () => {
   emit('update:sortDirection', props.sortDirection === 'desc' ? 'asc' : 'desc')
 }
 
-const updateFilter = (key: string, val: any) => {
+const updateFilter = <K extends keyof BoxFilters>(key: K, val: BoxFilters[K]) => {
   emit('update:filters', { ...props.filters, [key]: val })
 }
 
@@ -75,9 +75,9 @@ const onSearchInput = (e: Event) => {
   updateFilter('search', val)
 }
 
-const onRangeInput = (key: string, e: Event) => {
+const onRangeInput = (key: keyof BoxFilters, e: Event) => {
   const val = Number((e.target as HTMLInputElement).value)
-  updateFilter(key, val)
+  updateFilter(key, val as unknown as BoxFilters[keyof BoxFilters])
 }
 
 // Colores de estadísticas estandarizados (Corregidos con Hexadecimales)
@@ -414,7 +414,7 @@ const AVAILABLE_TAGS = [
                     min="0"
                     max="31"
                     :style="[getSliderStyle(filters[('iv' + stat) as keyof BoxFilters] as number, 31, STAT_COLORS[stat] as string), { '--stat-color': STAT_COLORS[stat] }]"
-                    @input="onRangeInput('iv' + stat, $event)"
+                    @input="onRangeInput(('iv' + stat) as keyof BoxFilters, $event)"
                   >
                   <span
                     class="stat-val"

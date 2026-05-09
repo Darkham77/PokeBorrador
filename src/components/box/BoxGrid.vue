@@ -1,8 +1,14 @@
 <script setup lang="ts">
+import type { Pokemon } from '@/types/pokemon'
 import BoxPokemonCard from './BoxPokemonCard.vue'
 
+interface BoxItem {
+  p: Pokemon
+  index: number
+}
+
 interface Props {
-  displayList: any[]
+  displayList: BoxItem[]
   selection?: number[]
   selectionType?: string | null
   isBoxEmpty?: boolean

@@ -1,6 +1,8 @@
 <script setup lang="ts">
+import type { DaycareMission } from '@/logic/breeding/missionEngine'
+
 interface Props {
-  mission: any
+  mission: DaycareMission
 }
 
 const props = defineProps<Props>()

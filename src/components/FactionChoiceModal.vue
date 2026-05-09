@@ -20,7 +20,7 @@ const emit = defineEmits<{
   (e: 'close'): void
 }>()
 
-const classStore = usePlayerClassStore() as any
+const classStore = usePlayerClassStore()
 
 const isProcessing = ref(false)
 

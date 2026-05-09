@@ -1,8 +1,19 @@
 <script setup lang="ts">
 import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
 
+interface PokedexPokemon {
+  dexNum: number | string
+  name: string
+  spriteUrl: string
+  isSeen: boolean
+  isCaught: boolean
+  isShiny?: boolean
+  isGuardian?: boolean
+  aura?: string
+}
+
 interface Props {
-  p: any
+  p: PokedexPokemon
 }
 
 const props = defineProps<Props>()

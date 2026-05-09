@@ -3,14 +3,16 @@
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import TrainerAvatar from '@/components/TrainerAvatar.vue'
 
+import { type ClassDefinition } from '@/stores/playerClass'
+
 interface Props {
-  currentClass?: any
+  currentClass?: ClassDefinition | null
   trainerLevel?: number
   trainerRank?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  currentClass: () => ({}),
+  currentClass: null,
   trainerLevel: 1,
   trainerRank: 'Novato'
 })

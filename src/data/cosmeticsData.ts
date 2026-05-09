@@ -3,7 +3,7 @@
  */
 
 export const NICK_STYLES = [
-    { id: null, name: 'Normal', class: '' },
+    { id: '', name: 'Normal', class: '' },
     { id: 'nt-gold', name: 'Oro Radiante', class: 'nt-gold' },
     { id: 'nt-silver', name: 'Plata Pulida', class: 'nt-silver' },
     { id: 'nt-bronze', name: 'Bronce Antiguo', class: 'nt-bronze' },
@@ -16,7 +16,7 @@ export const NICK_STYLES = [
 ];
 
 export const AVATAR_STYLES = [
-    { id: null, name: 'Sin Borde', class: '' },
+    { id: '', name: 'Sin Borde', class: '' },
     { id: 'av-water', name: 'Aura Celeste', class: 'av-water' },
     { id: 'av-fire', name: 'Fuego Infernal', class: 'av-fire' },
     { id: 'av-ice', name: 'Hielo Ártico', class: 'av-ice' },

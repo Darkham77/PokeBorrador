@@ -9,13 +9,26 @@ import { getClassModifier } from '@/logic/player/classEngine'
 import type { Pokemon } from '@/types/pokemon'
 
 
-interface ActiveMission {
+export interface ActiveMission {
   id: string
   startedAt: number
   endsAt: number
   targetPokemonIdx?: number
   projectedReward?: number
   [key: string]: unknown
+}
+
+export interface ClassDefinition {
+  id: string
+  name: string
+  icon: string
+  color: string
+  colorDark: string
+  description: string
+  bonuses?: string[]
+  bonusLevels?: number[]
+  penalties?: string[]
+  showdownSpriteId?: string
 }
 
 interface ClassData {
@@ -29,15 +42,6 @@ interface ClassData {
   extortedRouteId?: string | null
   officialRouteId?: string | null
   kitCaptures?: number
-}
-
-interface ClassDefinition {
-  id: string
-  name: string
-  icon: string
-  color: string
-  colorDark: string
-  description: string
 }
 
 

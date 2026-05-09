@@ -37,8 +37,18 @@ const handleImageError = (e: Event) => {
   }
 }
 
+interface BushConfig {
+  id: number
+  cls: string
+  scale: number
+  tx: number
+  ty: number
+  ad: string
+  ay: string
+}
+
 // Configuraciones de los arbustos para mantener consistencia visual absoluta
-const bushes: Record<string, any[]> = {
+const bushes: Record<'front' | 'back', BushConfig[]> = {
   front: [
     { id: 1, cls: 'bush-front-1', scale: 1.3, tx: -60, ty: 10, ad: '1.2s', ay: '0s' },
     { id: 2, cls: 'bush-front-2', scale: 1.1, tx: 60, ty: 10, ad: '1.5s', ay: '-0.4s' },

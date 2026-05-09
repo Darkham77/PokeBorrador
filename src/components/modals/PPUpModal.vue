@@ -4,13 +4,14 @@ import { useUIStore } from '@/stores/ui'
 import { useGameStore } from '@/stores/game'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import BaseModal from '@/components/common/BaseModal.vue'
+import type { Move } from '@/types/pokemon'
 
-const uiStore = useUIStore() as any
-const gameStore = useGameStore() as any
+const uiStore = useUIStore()
+const gameStore = useGameStore()
 
 const ppPokemon = computed(() => uiStore.activePokemonForPPUp)
 
-const getPPProgressWidth = (move: any) => {
+const getPPProgressWidth = (move: Move | null) => {
   if (!move) return '0%'
   const moveData = pokemonDataProvider.getMoveData(move.name)
   const basePP = moveData?.pp || 35
@@ -25,7 +26,7 @@ const handleApplyPPUp = (moveIndex: string | number) => {
   const move = ppPokemon.value.moves[moveIdx]
   if (!move) return
   
-  const moveData = (pokemonDataProvider.getMoveData(move.name) || {}) as any
+  const moveData = pokemonDataProvider.getMoveData(move.name) || { pp: 35 }
   const basePP = moveData.pp || 35
   const maxPossible = Math.floor(basePP * 1.6)
   
@@ -70,7 +71,10 @@ const close = () => {
           class="move-btn"
           @click.stop="handleApplyPPUp(i)"
         >
-          <div class="mv-main">
+          <div
+            v-if="m"
+            class="mv-main"
+          >
             <span class="mv-name">{{ m.name }}</span>
             <span class="mv-pp">{{ m.pp }}/{{ m.maxPP }} PP</span>
           </div>

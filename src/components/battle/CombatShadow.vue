@@ -9,9 +9,8 @@ interface Props {
 
 const props = defineProps<Props>()
 
-const { SHADOW_WIDTH, SHADOW_HEIGHT } = WORLD_CONSTANTS as any
-
-const shadowStore = useCombatShadowStore() as any
+const { SHADOW_WIDTH, SHADOW_HEIGHT } = WORLD_CONSTANTS
+const shadowStore = useCombatShadowStore()
 const shadow = computed(() => shadowStore.activeShadows.get(props.shadowId))
 
 /**

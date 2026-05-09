@@ -3,7 +3,7 @@ import { onMounted } from 'vue'
 import { useBuffsStore } from '@/stores/buffs'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 
-const buffsStore = useBuffsStore() as any
+const buffsStore = useBuffsStore()
 
 onMounted(() => {
   buffsStore.initTick()

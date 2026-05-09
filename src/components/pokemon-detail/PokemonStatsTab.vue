@@ -1,12 +1,32 @@
 <script setup lang="ts">
 import PokemonStatBar from '@/components/pokemon-detail/PokemonStatBar.vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
+import type { Pokemon } from '@/types/pokemon'
+
+interface StatDisplay {
+  id: string
+  label: string
+  value: number
+  max: number
+  color: string
+  iv: number
+}
+
+interface SpeciesData {
+  name: string
+  hp: number
+  atk: number
+  def: number
+  spa: number
+  spd: number
+  spe: number
+}
 
 interface Props {
-  displayStats: any[]
-  species: any
+  displayStats: StatDisplay[]
+  species: SpeciesData
   isInstance?: boolean
-  pokemon?: any | null
+  pokemon?: Pokemon | null
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -59,8 +79,8 @@ const props = withDefaults(defineProps<Props>(), {
       </PVTooltip>
       <span class="vp-stat-value pixelated">
         {{ 
-          (species.stats.hp + species.stats.atk + species.stats.def + species.stats.spa + species.stats.spd + species.stats.spe) +
-            (isInstance && pokemon?.ivs ? (Object.values(pokemon.ivs) as any[]).reduce((s: number, v: any) => s + (Number(v) || 0), 0) : 0)
+          (props.species.hp + props.species.atk + props.species.def + props.species.spa + props.species.spd + props.species.spe) +
+            (isInstance && pokemon?.ivs ? Object.values(pokemon.ivs).reduce((s: number, v) => s + (Number(v) || 0), 0) : 0)
         }}
       </span>
     </div>

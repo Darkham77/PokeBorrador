@@ -23,7 +23,7 @@ const emit = defineEmits<{
 
 defineOptions({ inheritAttrs: false });
 
-const classStore = usePlayerClassStore() as any;
+const classStore = usePlayerClassStore();
 const isSmallScreen = ref(window.innerWidth <= 950);
 const handleResize = () => { isSmallScreen.value = window.innerWidth <= 950 };
 useWindowListener('resize', handleResize);

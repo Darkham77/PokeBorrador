@@ -54,13 +54,13 @@ const filteredRoutes = computed(() => {
   if (!region) return []
   
   // Only return routes that are in the region AND have weather tables
-  return region.maps.filter(id => (ROUTE_WEATHER_TABLES as any)[id])
+  return region.maps.filter(id => ROUTE_WEATHER_TABLES[id])
 })
 
 const hasWeatherTables = (regionId: string) => {
   const region = REGIONS.find(r => r.id === regionId)
   if (!region) return false
-  return region.maps.some(id => (ROUTE_WEATHER_TABLES as any)[id])
+  return region.maps.some(id => ROUTE_WEATHER_TABLES[id])
 }
 
 function formatRouteName(id: string) {
@@ -116,12 +116,12 @@ function formatRouteName(id: string) {
           
           <div class="seasons-grid">
             <div
-              v-for="(cycles, seasonId) in (ROUTE_WEATHER_TABLES as any)[routeId]"
+              v-for="(cycles, seasonId) in ROUTE_WEATHER_TABLES[routeId]"
               :key="seasonId"
               class="season-card"
             >
               <h3 class="season-title">
-                {{ (seasonLabels as any)[seasonId] || seasonId }}
+                {{ seasonLabels[seasonId as string] || seasonId }}
               </h3>
               
               <div class="cycles-list">
@@ -131,16 +131,16 @@ function formatRouteName(id: string) {
                   class="cycle-row"
                 >
                   <div class="cycle-name">
-                    {{ (cycleLabels as any)[cycleId] || cycleId }}
+                    {{ cycleLabels[cycleId as string] || cycleId }}
                   </div>
                   <div class="probs-tags">
                     <div 
-                      v-for="(chance, weather) in (probs as any)" 
+                      v-for="(chance, weather) in (probs as Record<string, number>)" 
                       :key="String(weather)" 
                       class="prob-tag"
                       :class="String(weather)"
                     >
-                      <span class="icon">{{ (weatherIcons as any)[weather] || '❓' }}</span>
+                      <span class="icon">{{ weatherIcons[weather as string] || '❓' }}</span>
                       <span class="label">{{ String(weather).toUpperCase() }}</span>
                       <span class="chance">{{ chance }}%</span>
                     </div>

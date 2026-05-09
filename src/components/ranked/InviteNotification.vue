@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted } from 'vue';
-import { usePvPStore } from '@/stores/pvp';
+import { useLivePvPStore } from '@/stores/livePvP';
 
 export interface PvPInvite {
   id: string
@@ -19,7 +19,7 @@ const emit = defineEmits<{
   (e: 'close'): void
 }>();
 
-const pvpStore = usePvPStore();
+const livePvP = useLivePvPStore();
 
 let timer: ReturnType<typeof setTimeout> | null = null;
 
@@ -34,8 +34,8 @@ onUnmounted(() => {
 });
 
 const accept = async () => {
-  // Lógica para aceptar vía RPC de Supabase
-  pvpStore.connect(props.invite.id, false);
+  // Lógica para aceptar e iniciar batalla
+  await livePvP.acceptInvite(props.invite.id, false);
   emit('close');
 };
 

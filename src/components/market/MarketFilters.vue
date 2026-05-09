@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useGTSStore } from '@/stores/gts'
+import type { MarketFilters } from '@/logic/market'
 
 interface Props {
   context: string // 'explore' or 'my-inventory'
@@ -8,7 +9,7 @@ interface Props {
 
 const props = defineProps<Props>()
 
-const gtsStore = useGTSStore() as any
+const gtsStore = useGTSStore()
 
 const isExpanded = ref(false)
 
@@ -26,7 +27,7 @@ const categories = [
 
 const tiers = ['all', 'S+', 'S', 'A', 'B', 'C', 'D', 'F']
 
-const setFilter = (key: string, value: any) => {
+const setFilter = <K extends keyof MarketFilters>(key: K, value: MarketFilters[K]) => {
   gtsStore.filters[key] = value
 }
 

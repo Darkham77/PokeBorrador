@@ -6,12 +6,23 @@ import { usePlayerClassStore } from '@/stores/playerClass';
 import { PLAYER_CLASSES } from '@/data/playerClasses';
 import PlayerAvatar from './PlayerAvatar.vue';
 
-const gameStore = useGameStore() as any;
-const uiStore = useUIStore() as any;
-const classStore = usePlayerClassStore() as any;
+interface PlayerClass {
+  id: string;
+  name: string;
+  icon: string;
+  color: string;
+  colorDark: string;
+  description: string;
+  bonuses: string[];
+  penalties: string[];
+}
 
-const classes = computed<any[]>(() => Object.values(PLAYER_CLASSES));
-const currentClassId = computed(() => gameStore.state.playerClass);
+const gameStore = useGameStore();
+const uiStore = useUIStore();
+const classStore = usePlayerClassStore();
+
+const classes = computed<PlayerClass[]>(() => Object.values(PLAYER_CLASSES) as PlayerClass[]);
+const currentClassId = computed(() => gameStore.state.playerClass as string | null);
 const isChange = computed(() => !!currentClassId.value);
 const COST = 10000;
 

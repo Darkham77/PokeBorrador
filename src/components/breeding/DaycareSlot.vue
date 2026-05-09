@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
+import type { Pokemon } from '@/types/pokemon'
 
 interface Props {
   slotId: string
-  pokemon?: any | null
+  pokemon?: Pokemon | null
   item?: string | null
 }
 
@@ -59,7 +60,7 @@ const getSprite = (id: string | number, isShiny: boolean) => {
       <div class="poke-header">
         <div class="sprite-box">
           <img
-            :src="getSprite(pokemon.id, pokemon.isShiny)"
+            :src="getSprite(pokemon.id, !!pokemon.isShiny)"
             class="pixel-sprite"
             @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
           >
@@ -89,7 +90,7 @@ const getSprite = (id: string | number, isShiny: boolean) => {
         <div class="vigor-bar-bg">
           <div
             class="vigor-fill"
-            :style="{ width: ((pokemon.vigor || 0) * 10) + '%', background: (pokemon.vigor <= 2 ? 'Rgba(239, 68, 68, 1)' : 'Rgba(34, 197, 94, 1)') }"
+            :style="{ width: ((pokemon.vigor || 0) * 10) + '%', background: ((pokemon.vigor || 0) <= 2 ? 'Rgba(239, 68, 68, 1)' : 'Rgba(34, 197, 94, 1)') }"
           />
         </div>
       </div>

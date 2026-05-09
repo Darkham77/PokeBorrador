@@ -3,8 +3,16 @@ import { ref, computed } from 'vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import BaseModal from '@/components/common/BaseModal.vue'
 
+interface InventoryItem {
+  id: string
+  name: string
+  sprite?: string
+  qty: number
+  price?: number
+}
+
 interface Props {
-  item: any
+  item: InventoryItem
   mode?: string // 'sell' | 'release' | 'use'
   show?: boolean
 }
@@ -49,6 +57,7 @@ const handleConfirm = () => {
     <template #header>
       <div class="quantity-modal-header">
         <img 
+          v-if="item.sprite"
           :src="getAssetUrl(ASSET_TYPES.ITEM, item.sprite)" 
           class="item-mini-sprite"
           @error="e => { (e.target as HTMLImageElement).style.display = 'none' }"
@@ -108,7 +117,7 @@ const handleConfirm = () => {
       >
         <div class="summary-line">
           <span class="label">PRECIO UNITARIO:</span>
-          <span class="value">₱{{ Math.floor(item.price * 0.5).toLocaleString() }}</span>
+          <span class="value">₱{{ Math.floor((item.price || 0) * 0.5).toLocaleString() }}</span>
         </div>
         <div class="summary-line total">
           <span class="label">GANANCIA TOTAL:</span>

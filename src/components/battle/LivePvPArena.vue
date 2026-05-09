@@ -6,34 +6,25 @@ import { useAuthStore } from '@/stores/auth'
 import { useUIStore } from '@/stores/ui'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { PLAYER_CLASSES } from '@/data/playerClasses'
+import type { PvPBattleState } from '@/logic/pvp/pvpEngine'
 
 const livePvP = useLivePvPStore()
 const auth = useAuthStore()
 const gameStore = useGameStore()
 const ui = useUIStore()
 
-interface PvPBattleState {
-  active: boolean
-  isRanked: boolean
-  phase: 'choosing' | 'animating' | 'waiting' | 'sync' | 'over' | 'faint_switch'
-  opponentAvatar?: string
-  opponentName: string
-  opponentElo: number
-  enemyTeam: any[]
-  enemyHp: number[]
-  enemyActiveIdx: number
-  myTeam: any[]
-  myHp: number[]
-  myActiveIdx: number
-  logs: string[]
-}
-
-const battle = computed(() => livePvP.battleState as unknown as PvPBattleState)
+const battle = computed(() => livePvP.battleState as unknown as PvPBattleState & { 
+  active: boolean, 
+  opponentAvatar?: string, 
+  opponentName: string, 
+  opponentElo: number,
+  deadline: number | null
+})
 
 // Local animations/visual state
 const playerAvatarId = computed(() => {
   const pClass = (gameStore.state.playerClass || 'novato') as string
-  return (PLAYER_CLASSES as Record<string, any>)[pClass]?.avatarSpriteId || 'red-lgpe'
+  return (PLAYER_CLASSES as Record<string, { avatarSpriteId: string }>)[pClass]?.avatarSpriteId || 'red-lgpe'
 })
 
 const opponentAvatarId = computed(() => {
@@ -177,10 +168,16 @@ function handleForfeit() {
               v-for="(move, i) in (battle.myTeam[battle.myActiveIdx]?.moves || [])" 
               :key="i"
               class="move-btn"
-              @click.stop="handleMove(Number(i))"
+              @click.stop="move && handleMove(Number(i))"
             >
-              <span class="move-name">{{ move.name }}</span>
-              <span class="move-pp">{{ move.pp }}/{{ move.maxPP }}</span>
+              <template v-if="move">
+                <span class="move-name">{{ move.name }}</span>
+                <span class="move-pp">{{ move.pp }}/{{ move.maxPP }}</span>
+              </template>
+              <span
+                v-else
+                class="move-name empty"
+              >- VACÍO -</span>
             </button>
           </div>
           <div

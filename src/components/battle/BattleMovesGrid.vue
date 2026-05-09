@@ -222,7 +222,10 @@ const getMoveColor = (move: Move | null) => {
           :disabled="isDragging"
         >
           <template #content>
-            <MoveTooltip :move="getMoveData(move)" />
+            <MoveTooltip 
+              v-if="getMoveData(move)"
+              :move="getMoveData(move) as any" 
+            />
           </template>
           
           <div 

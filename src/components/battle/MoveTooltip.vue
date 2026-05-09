@@ -6,14 +6,15 @@ import { getMoveDescription } from '@/logic/pokemonUtils'
 import { getMechanicalWeather, WEATHER_MECHANICAL } from '@/logic/battle/weatherMapper'
 import { getDayCycle } from '@/logic/timeUtils'
 import { useBattleStore } from '@/stores/battle'
+import type { Move } from '@/types/pokemon'
 
 interface Props {
-  move: any
+  move: Move
 }
 
 const props = defineProps<Props>()
 
-const battleStore = useBattleStore() as any
+const battleStore = useBattleStore()
 
 const modifierInfo = computed(() => {
   if (!battleStore.isBattleActive) return null

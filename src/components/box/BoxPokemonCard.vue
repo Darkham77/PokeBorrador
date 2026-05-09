@@ -8,10 +8,12 @@ import { getPokemonVisualBadges } from '@/logic/constants/tags'
 import { useUIStore } from '@/stores/ui'
 import PokemonTypePills from '@/components/shared/PokemonTypePills.vue'
 
-const uiStore = useUIStore() as any
+import type { Pokemon } from '@/types/pokemon'
+
+const uiStore = useUIStore()
 
 const props = withDefaults(defineProps<{
-  pokemon: any
+  pokemon: Pokemon
   index: number
   isSelected?: boolean
   selectionType?: string | null
@@ -51,8 +53,8 @@ const spriteUrl = computed(() => props.pokemon ? getAssetUrl(ASSET_TYPES.POKEMON
 const hpRatio = computed(() => {
   const p = props.pokemon
   if (!p) return 0
-  const hp = p.hp !== undefined ? p.hp : (p.stats?.hp || p.maxHp || 100)
-  const maxHp = p.maxHp || p.stats?.hp || 100
+  const hp = p.hp !== undefined ? p.hp : (p.maxHp || 100)
+  const maxHp = p.maxHp || 100
   if (maxHp === 0) return 0
   return Math.max(0, Math.min(1, hp / maxHp))
 })

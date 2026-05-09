@@ -5,23 +5,13 @@ import { useLivePvPStore } from '@/stores/livePvP'
 import BattleInfoCard from './BattleInfoCard.vue'
 import BattleMovesGrid from './BattleMovesGrid.vue'
 import { useModalStore } from '@/stores/modals'
+import type { PvPBattleState } from '@/logic/pvp/pvpEngine'
+import type { Pokemon } from '@/types/pokemon'
 
 const gameStore = useGameStore()
 const livePvP = useLivePvPStore()
 
-interface PvPBattleState {
-  active: boolean
-  phase: 'choosing' | 'waiting' | 'resolving' | 'animating'
-  opponentName: string
-  opponentElo: number
-  enemyTeam: any[]
-  enemyActiveIdx: number
-  myTeam: any[]
-  myActiveIdx: number
-  logs: string[]
-}
-
-const battle = computed(() => livePvP.battleState as unknown as PvPBattleState)
+const battle = computed(() => livePvP.battleState as unknown as PvPBattleState & { active: boolean, opponentName: string, opponentElo: number })
 
 // PvP Sync (Pure Vue)
 const syncToGameBus = () => {
@@ -34,28 +24,31 @@ onMounted(() => {
 
 // Actions
 const handleMove = (idx: number) => {
-  (livePvP as any)._commitPick({ type: 'move', moveIndex: idx })
+  livePvP._commitPick({ type: 'move', moveIndex: idx })
 }
 
 const handleForfeit = () => {
   if (confirm('¿Seguro que quieres rendirte?')) {
-    (livePvP as any)._forfeit()
+    livePvP._forfeit()
   }
 }
 
 const handleSwitch = () => {
+  const activePoke = battle.value.myTeam[battle.value.myActiveIdx]
+  if (!activePoke) return
+
   useModalStore().open('BattleSwitch', {
     title: 'CAMBIAR POKÉMON',
     isBattleSwitch: true,
     battleMode: 'pvp',
     includeTeam: true,
-    activePokemonUid: battle.value.myTeam[battle.value.myActiveIdx].uid,
-    onConfirm: (pokes: any[]) => {
+    activePokemonUid: activePoke.uid,
+    onConfirm: (pokes: Pokemon[]) => {
       if (pokes.length > 0) {
-        const team = (gameStore.state.team || []) as any[]
-        const index = team.findIndex(p => p.uid === pokes[0].uid)
+        const team = (gameStore.state.team || [])
+        const index = team.findIndex(p => p.uid === pokes[0]?.uid)
         if (index !== -1) {
-          (livePvP as any)._commitPick({ type: 'switch', switchIndex: index })
+          livePvP._commitPick({ type: 'switch', switchIndex: index })
         }
       }
     }
@@ -74,7 +67,10 @@ const handleSwitch = () => {
       <div class="battle-arena">
         <div class="battle-combatants">
           <!-- Enemy Side -->
-          <div class="combatant-info-wrap enemy-side">
+          <div
+            v-if="battle.enemyTeam && battle.enemyTeam[battle.enemyActiveIdx]"
+            class="combatant-info-wrap enemy-side"
+          >
             <div class="trainer-header">
               <span class="trainer-name">{{ battle.opponentName }}</span>
               <span class="trainer-elo">{{ battle.opponentElo }} ELO</span>
@@ -83,7 +79,10 @@ const handleSwitch = () => {
           </div>
 
           <!-- Player Side -->
-          <div class="combatant-info-wrap player-side">
+          <div
+            v-if="battle.myTeam && battle.myTeam[battle.myActiveIdx]"
+            class="combatant-info-wrap player-side"
+          >
             <BattleInfoCard
               :pokemon="battle.myTeam[battle.myActiveIdx]"
               :is-player="true"
@@ -95,11 +94,11 @@ const handleSwitch = () => {
       <!-- Battle Log -->
       <div class="pvp-log-container">
         <div class="pvp-status-bar">
-          <span :class="battle.phase">{{ 
-            battle.phase === 'choosing' ? '⚔️ TU TURNO' : 
-            battle.phase === 'waiting' ? '⏳ ESPERANDO RIVAL' :
-            battle.phase === 'resolving' ? '⚡ CALCULANDO' :
-            battle.phase === 'animating' ? '🎬 REPRODUCIENDO' : 'Sincronizando...'
+          <span :class="battle?.phase">{{ 
+            battle?.phase === 'choosing' ? '⚔️ TU TURNO' : 
+            battle?.phase === 'waiting' ? '⏳ ESPERANDO RIVAL' :
+            battle?.phase === 'resolving' ? '⚡ CALCULANDO' :
+            battle?.phase === 'animating' ? '🎬 REPRODUCIENDO' : 'Sincronizando...'
           }}</span>
         </div>
         <div class="logs-area scrollbar">
@@ -116,11 +115,12 @@ const handleSwitch = () => {
       <!-- Controls -->
       <div
         id="move-panel"
-        :class="{ disabled: battle.phase !== 'choosing' }"
+        :class="{ disabled: battle?.phase !== 'choosing' }"
       >
         <BattleMovesGrid 
-          :moves="battle.myTeam[battle.myActiveIdx].moves" 
-          :is-processing="battle.phase !== 'choosing'"
+          v-if="battle.myTeam && battle.myTeam[battle.myActiveIdx]"
+          :moves="battle.myTeam[battle.myActiveIdx]!.moves" 
+          :is-processing="battle?.phase !== 'choosing'"
           @use-move="handleMove"
         />
 

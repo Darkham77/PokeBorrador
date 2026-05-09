@@ -15,7 +15,7 @@ import type { ItemEffectResult } from '@/types/items'
 export interface Item {
   name: string;
   qty: number;
-  id?: string;
+  id: string;
   cat?: string;
   type?: string;
   sprite?: string;

@@ -1,14 +1,15 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import type { BreedingCompatibility } from '@/types/pokemon'
 
 interface Props {
-  compatibility: any
+  compatibility: BreedingCompatibility
   compatText: Record<number, { label: string, color: string }>
 }
 
 const props = defineProps<Props>()
 
-const compatStyle = computed(() => (props.compatText as any)[props.compatibility.level] || (props.compatText as any)[0] || { label: 'Desconocido', color: 'gray' })
+const compatStyle = computed(() => props.compatText[props.compatibility.level] || props.compatText[0] || { label: 'Desconocido', color: 'gray' })
 </script>
 
 <template>

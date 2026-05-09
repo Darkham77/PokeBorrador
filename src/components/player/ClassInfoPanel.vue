@@ -3,18 +3,38 @@ import { computed } from 'vue';
 import { useGameStore } from '@/stores/game';
 import { useUIStore } from '@/stores/ui';
 import { PLAYER_CLASSES } from '@/data/playerClasses';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import PlayerAvatar from './PlayerAvatar.vue';
 import PVTooltip from '@/components/common/PVTooltip.vue';
 
-const gameStore = useGameStore() as any;
-const uiStore = useUIStore() as any;
+interface PlayerClass {
+  id: string
+  name: string
+  icon: string
+  color: string
+  colorDark: string
+  description: string
+  avatarSpriteId: string
+  bonuses: string[]
+  bonusLevels: number[]
+  penalties: string[]
+  technicalBonuses?: string[]
+  technicalPenalties?: string[]
+}
+
+const gameStore = useGameStore();
+const uiStore = useUIStore();
 
 const classId = computed(() => gameStore.state.playerClass);
-const cls = computed<any>(() => classId.value ? PLAYER_CLASSES[classId.value as keyof typeof PLAYER_CLASSES] : null);
+const cls = computed<PlayerClass | null>(() => {
+  if (!classId.value) return null
+  return (PLAYER_CLASSES as Record<string, PlayerClass>)[classId.value] || null
+});
+const safeBonusLevels = computed(() => cls.value?.bonusLevels || []);
 const trainerLevel = computed(() => gameStore.state.trainerLevel || 1);
 
 const close = () => {
-  uiStore.isClassInfoOpen = false;
+  uiStore.isProfileOpen = false;
 };
 
 const openMissions = () => {
@@ -43,7 +63,7 @@ const rankTitle = computed(() => {
 <template>
   <Teleport to="body">
     <div 
-      v-if="uiStore.isClassInfoOpen && cls"
+      v-if="uiStore.isProfileOpen && cls"
       class="class-info-overlay"
       @click.self="close"
     >
@@ -63,7 +83,7 @@ const rankTitle = computed(() => {
           <aside class="left-col">
             <div class="sprite-preview">
               <img
-                :src="cls.sprite"
+                :src="getAssetUrl(ASSET_TYPES.TRAINER, cls.avatarSpriteId)"
                 :alt="cls.name"
                 class="class-sprite"
                 @error="e => { (e.target as HTMLImageElement).style.display = 'none' }"
@@ -122,17 +142,17 @@ const rankTitle = computed(() => {
                   v-for="(bonus, i) in cls.bonuses" 
                   :key="i"
                   class="ability-item"
-                  :class="{ locked: trainerLevel < (cls.bonusLevels?.[i] || 1) }"
-                  :style="{ borderLeftColor: trainerLevel >= (cls.bonusLevels?.[i] || 1) ? cls.color : '#374151' }"
+                  :class="{ locked: trainerLevel < (safeBonusLevels[i] || 1) }"
+                  :style="{ borderLeftColor: trainerLevel >= (safeBonusLevels[i] || 1) ? cls.color : '#374151' }"
                 >
-                  <span class="status-icon">{{ trainerLevel >= (cls.bonusLevels?.[i] || 1) ? '✅' : '🔒' }}</span>
+                  <span class="status-icon">{{ trainerLevel >= (safeBonusLevels[i] || 1) ? '✅' : '🔒' }}</span>
                   <div class="ability-content">
                     <div class="ability-top">
                       <span class="bonus-text">{{ bonus }}</span>
                       <span
-                        v-if="cls.bonusLevels?.[i] > 1"
+                        v-if="(safeBonusLevels[i] || 1) > 1"
                         class="lv-req press-start"
-                      >Nv.{{ cls.bonusLevels[i] }}</span>
+                      >Nv.{{ safeBonusLevels[i] }}</span>
                       
                       <PVTooltip
                         title="MECÁNICA"
@@ -145,10 +165,10 @@ const rankTitle = computed(() => {
                       </PVTooltip>
                     </div>
                     <p
-                      v-if="trainerLevel < (cls.bonusLevels?.[i] || 1)"
+                      v-if="trainerLevel < (safeBonusLevels[i] || 1)"
                       class="req-text"
                     >
-                      Requiere Nivel de Entrenador {{ cls.bonusLevels[i] }}
+                      Requiere Nivel de Entrenador {{ safeBonusLevels[i] || 1 }}
                     </p>
                   </div>
                 </div>

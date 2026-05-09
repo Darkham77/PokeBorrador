@@ -32,7 +32,10 @@ vi.mock('@/logic/war/bonusEngine', () => ({
 }))
 
 vi.mock('@/stores/events', () => ({
-  useEventStore: vi.fn(() => ({ activeEvents: [] }))
+  useEventStore: vi.fn(() => ({ 
+    activeEvents: [],
+    getSpeciesBonuses: vi.fn()
+  }))
 }))
 
 vi.mock('@/logic/timeUtils', () => ({

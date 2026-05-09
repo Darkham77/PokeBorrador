@@ -1,9 +1,10 @@
 <script setup lang="ts">
+import type { CSSProperties } from 'vue'
 import { getCombatantPosition, WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator'
 
 interface Props {
   showGuides?: boolean
-  worldStyles: any
+  worldStyles: CSSProperties
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -14,7 +15,7 @@ const {
   ENTITY_SIZE_PLAYER, ENTITY_SIZE_ENEMY, 
   SAFE_ZONE_WIDTH, SAFE_ZONE_HEIGHT, 
   SAFE_ZONE_X, SAFE_ZONE_Y 
-} = WORLD_CONSTANTS as any
+} = WORLD_CONSTANTS
 
 const p1Anchor = getCombatantPosition('player')
 const p2Anchor = getCombatantPosition('enemy')

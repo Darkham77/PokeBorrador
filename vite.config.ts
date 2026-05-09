@@ -1,3 +1,4 @@
+/// <reference types="vitest" />
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import path from 'node:path'
@@ -128,5 +129,11 @@ export default defineConfig({
     // Only drop non-critical logs in production
     drop: process.env.NODE_ENV === 'production' ? ['debugger'] : [],
     pure: process.env.NODE_ENV === 'production' ? ['console.log', 'console.info', 'console.debug'] : [],
+  },
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: ['./tests/vitest.setup.ts'],
+    include: ['tests/unit/**/*.{test,spec}.ts', 'src/**/*.{test,spec}.ts'],
   }
 })

@@ -29,7 +29,7 @@ if (typeof window !== 'undefined') {
   const win = window as unknown as { openPassiveTeamEditor?: () => void }
   win.openPassiveTeamEditor = () => {
     // This is now managed by the store/host, but we keep the shim for event-based calls
-    import('@/stores/modals').then(m => m.useModalStore().open('PassiveTeamEditor' as any))
+    import('@/stores/modals').then(m => m.useModalStore().open('PassiveTeamEditor'))
   }
 }
 </script>

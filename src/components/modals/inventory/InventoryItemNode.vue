@@ -1,8 +1,17 @@
 <script setup lang="ts">
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
+interface InventoryItem {
+  id: string
+  name: string
+  desc: string
+  sprite: string
+  icon?: string
+  qty: number
+}
+
 interface Props {
-  item: any
+  item: InventoryItem
   isSelected?: boolean
   multiSelectMode?: boolean
 }

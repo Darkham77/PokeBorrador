@@ -1,13 +1,14 @@
 import { createClient } from '@supabase/supabase-js'
 import { Temporal } from '@js-temporal/polyfill'
 import { logger } from '../src/logic/utils/logger'
+import type { ApiRequest, ApiResponse } from './_types'
 
 const supabase = createClient(
-  process.env.VITE_SUPABASE_URL,
-  process.env.VITE_SUPABASE_KEY
+  process.env.VITE_SUPABASE_URL!,
+  process.env.VITE_SUPABASE_KEY!
 )
 
-export default async function handler(req, res) {
+export default async function handler(req: ApiRequest, res: ApiResponse) {
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' })
   }
@@ -43,8 +44,9 @@ export default async function handler(req, res) {
     })
 
     res.status(200).json({ events: activeEvents })
-  } catch (error: any) {
-    logger.error('API_EVENTS', `Error fetching events: ${error.message}`, error)
+  } catch (error: unknown) {
+    const err = error as { message: string }
+    logger.error('API_EVENTS', `Error fetching events: ${err.message}`, error)
     res.status(500).json({ error: 'Internal server error' })
   }
 }

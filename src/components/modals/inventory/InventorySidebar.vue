@@ -3,8 +3,8 @@ import { computed, watch } from 'vue'
 import { useInventoryStore } from '@/stores/inventory'
 import { useUIStore } from '@/stores/ui'
 
-const inventoryStore = useInventoryStore() as any
-const uiStore = useUIStore() as any
+const inventoryStore = useInventoryStore()
+const uiStore = useUIStore()
 
 const activeCategory = computed(() => inventoryStore.activeCategory)
 

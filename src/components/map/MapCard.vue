@@ -33,7 +33,7 @@ interface Props {
   map: MapLocation
   isLocked?: boolean
   isSafariLocked?: boolean
-  cycle?: string
+  cycle?: 'morning' | 'day' | 'dusk' | 'night'
   weather?: string
   badgeCount?: number
   dominance?: DominanceInfo | null
@@ -71,7 +71,7 @@ const isPerformanceMode = computed(() => {
 
 const imgPath = computed(() => {
   const fileName = (MAP_ROUTE_MAPPING as Record<string, string>)[props.map.id] || 'default'
-  return getAssetUrl(ASSET_TYPES.MAP, fileName, { cycle: props.cycle as any })
+  return getAssetUrl(ASSET_TYPES.MAP, fileName, { cycle: props.cycle })
 })
 
 const cycleEmoji = computed(() => {

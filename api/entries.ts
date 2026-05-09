@@ -1,18 +1,19 @@
 import { createClient } from '@supabase/supabase-js'
 import { Temporal } from '@js-temporal/polyfill'
 import { logger } from '../src/logic/utils/logger'
+import type { ApiRequest, ApiResponse, CompetitionEntryBody } from './_types'
 
 const supabase = createClient(
-  process.env.VITE_SUPABASE_URL,
-  process.env.VITE_SUPABASE_KEY
+  process.env.VITE_SUPABASE_URL!,
+  process.env.VITE_SUPABASE_KEY!
 )
 
-export default async function handler(req, res) {
+export default async function handler(req: ApiRequest, res: ApiResponse) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  const { event_id, player_name, player_email, data } = req.body
+  const { event_id, player_name, player_email, data } = req.body as CompetitionEntryBody
 
   if (!event_id || !player_email || !data) {
     return res.status(400).json({ error: 'Datos incompletos' })
@@ -55,8 +56,9 @@ export default async function handler(req, res) {
     }
 
     res.status(200).json({ ok: true, entry })
-  } catch (error: any) {
-    logger.error('API_ENTRIES', `Error submitting entry: ${error.message}`, error)
-    res.status(500).json({ error: error.message })
+  } catch (error: unknown) {
+    const err = error as { message: string }
+    logger.error('API_ENTRIES', `Error submitting entry: ${err.message}`, error)
+    res.status(500).json({ error: err.message })
   }
 }

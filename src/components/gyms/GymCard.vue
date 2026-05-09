@@ -3,8 +3,20 @@ import { computed } from 'vue'
 import { useGymsStore } from '@/stores/gyms'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
+interface Gym {
+  id: string;
+  name: string;
+  city: string;
+  leader: string;
+  type: string;
+  typeColor: string;
+  badge: string;
+  badgeName: string;
+  badgesRequired: number;
+}
+
 interface Props {
-  gym: any
+  gym: Gym
   isDefeated?: boolean
   isLocked?: boolean
   isReaffirming?: boolean
@@ -16,12 +28,12 @@ const props = withDefaults(defineProps<Props>(), {
   isReaffirming: false
 })
 
-const gymsStore = useGymsStore() as any
-const selectedDifficulty = defineModel('difficulty', { type: String, default: 'easy' })
+const gymsStore = useGymsStore()
+const selectedDifficulty = defineModel<string>('difficulty', { default: 'easy' })
 
 const handleChallenge = () => {
   if (props.isLocked) return
-  gymsStore.challengeGym(props.gym.id, selectedDifficulty.value)
+  gymsStore.challengeGym(props.gym.id, selectedDifficulty.value as 'easy' | 'normal' | 'hard')
 }
 
 const typeIcon = computed(() => {

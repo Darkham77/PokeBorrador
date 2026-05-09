@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import BaseModal from '@/components/common/BaseModal.vue'
+import type { Event as GameEvent, EventConfig } from '@/logic/events/eventEngine'
 
 interface Props {
   show?: boolean
-  event: any
+  event: GameEvent
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -15,18 +16,35 @@ const emit = defineEmits<{
   (e: 'close'): void
 }>()
 
-const cfg = computed(() => {
-  if (typeof props.event.config === 'string') {
-    try { return JSON.parse(props.event.config) } catch (_e) { return {} }
+interface Schedule {
+  type?: string
+  days?: number[]
+  startHour?: number
+  endHour?: number
+}
+
+interface ExtendedEventConfig extends EventConfig {
+  hasCompetition?: boolean
+  prizes?: {
+    first?: Prize
+    second?: Prize
+    third?: Prize
   }
-  return props.event.config || {}
+  sortBy?: string
+}
+
+const cfg = computed<ExtendedEventConfig>(() => {
+  if (typeof props.event.config === 'string') {
+    try { return JSON.parse(props.event.config) as ExtendedEventConfig } catch (_e) { return {} }
+  }
+  return (props.event.config as ExtendedEventConfig) || {}
 })
 
-const sched = computed(() => {
+const sched = computed<Schedule>(() => {
   if (typeof props.event.schedule === 'string') {
-    try { return JSON.parse(props.event.schedule) } catch (_e) { return {} }
+    try { return JSON.parse(props.event.schedule) as Schedule } catch (_e) { return {} }
   }
-  return props.event.schedule || {}
+  return (props.event.schedule as Schedule) || {}
 })
 
 const bonusMap: Record<string, { label: string, color: string }> = {
@@ -41,22 +59,42 @@ const bonusMap: Record<string, { label: string, color: string }> = {
   fishingMult:  { label: '🎣 Eventos de Pesca', color: 'Rgba(14, 165, 233, 1)' },
 }
 
-const activeBonuses = computed(() => {
+interface ActiveBonus {
+  label: string
+  color: string
+  value: string
+}
+
+const activeBonuses = computed<ActiveBonus[]>(() => {
   return Object.entries(bonusMap)
-    .filter(([key]) => cfg.value[key] && cfg.value[key] > 1)
+    .filter(([key]) => {
+      const val = cfg.value[key as keyof ExtendedEventConfig]
+      return typeof val === 'number' && val > 1
+    })
     .map(([key, meta]) => ({
       label: meta.label,
       color: meta.color,
-      value: `x${cfg.value[key]}`
+      value: `x${cfg.value[key as keyof ExtendedEventConfig]}`
     }))
 })
 
-const prizes = computed(() => {
-  if (cfg.value.hasCompetition === false || !cfg.value.prizes) return null
-  return cfg.value.prizes
+interface Prize {
+  type: 'money' | 'bc' | 'item' | 'pokemon'
+  amount?: number
+  qty?: number
+  item?: string
+  species?: string
+  shiny?: boolean
+  level?: number
+}
+
+const prizes = computed<{ first?: Prize, second?: Prize, third?: Prize } | null>(() => {
+  const c = cfg.value
+  if (c.hasCompetition === false || !c.prizes) return null
+  return c.prizes
 })
 
-const getPrizeDesc = (p: any) => {
+const getPrizeDesc = (p: Prize) => {
   if (!p) return null
   if (p.type === 'money') return `₽${(p.amount || 0).toLocaleString()}`
   if (p.type === 'bc') return `${(p.amount || 0).toLocaleString()} BC`

@@ -182,8 +182,8 @@ const availablePokemon = computed<{ pokemon: Pokemon, _source: 'team' | 'box', i
       valA = pA.level || 0
       valB = pB.level || 0
     } else if (sortBy.value === 'ivs') {
-      const sum = (ivs: any) => {
-        const obj = ivs || {}
+      const sum = (ivs: Pokemon['ivs']) => {
+        const obj = ivs || { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 }
         return (obj.hp || 0) + (obj.atk || 0) + (obj.def || 0) + (obj.spa || 0) + (obj.spd || 0) + (obj.spe || 0)
       }
       valA = sum(pA.ivs)

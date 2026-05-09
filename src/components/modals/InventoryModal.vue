@@ -66,7 +66,7 @@ const filteredItems = computed<Item[]>(() => (inventoryStore.bagItems as Item[])
 const totalObjectsCount = computed(() => {
   const source = props.battleMode 
     ? (filteredItems.value || [])
-    : Object.entries(gameStore.state.inventory || {}).map(([name, qty]) => ({ name, qty: qty as number }))
+    : Object.entries(gameStore.state.inventory || {}).map(([name, qty]) => ({ name, id: name, qty: qty as number }))
   return source.reduce((s, v) => s + (v.qty || 0), 0)
 })
 const selectedObjectsTotal = computed(() => Array.from(selectedItems.values()).reduce((s, v) => s + v, 0))

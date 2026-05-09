@@ -1,14 +1,15 @@
 <script setup lang="ts">
 import { Temporal } from '@js-temporal/polyfill'
+import type { DaycareEgg } from '@/types/breeding'
 
 interface Props {
-  egg: any
+  egg: DaycareEgg
 }
 
 const props = defineProps<Props>()
 
 const emit = defineEmits<{
-  (e: 'collect', egg: any): void
+  (e: 'collect', egg: DaycareEgg): void
 }>()
 
 const formatDate = (dateStr: string) => {
@@ -27,7 +28,7 @@ const formatDate = (dateStr: string) => {
         HUEVO DE {{ egg.species.toUpperCase() }}
       </div>
       <div class="egg-time">
-        GENERADO: {{ formatDate(egg.created_at) }}
+        GENERADO: {{ formatDate(egg.deposited_at) }}
       </div>
       <button
         class="collect-btn-retro"

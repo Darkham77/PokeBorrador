@@ -4,6 +4,7 @@ import BaseModal from '@/components/common/BaseModal.vue'
 import { MOVE_DATA } from '@/data/moves'
 import { PDEX_TYPE_COLORS } from '@/logic/pokedexConstants'
 import { getMoveDescription } from '@/logic/pokemonUtils'
+import type { MoveBaseData } from '@/types/database'
 
 interface Props {
   show?: boolean
@@ -21,12 +22,14 @@ const emit = defineEmits<{
 
 const md = computed(() => {
   if (!props.moveName) return null
-  return (MOVE_DATA as any)[props.moveName] || null
+  const data = MOVE_DATA as Record<string, MoveBaseData>
+  return data[props.moveName] || null
 })
 
 const typeColor = computed(() => {
   if (!md.value) return '#aaa'
-  return (PDEX_TYPE_COLORS as any)[md.value.type.toLowerCase()] || '#aaa'
+  const colors = PDEX_TYPE_COLORS as Record<string, string>
+  return colors[md.value.type.toLowerCase()] || '#aaa'
 })
 
 const catInfo = computed(() => {

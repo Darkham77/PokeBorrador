@@ -9,7 +9,7 @@ const props = withDefaults(defineProps<Props>(), {
   show: false
 })
 
-const authStore = useAuthStore() as any
+const authStore = useAuthStore()
 
 function handleReconnect() {
   window.location.reload()

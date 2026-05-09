@@ -6,6 +6,7 @@ export interface MarketListing {
   seller_name?: string;
   price: number;
   data: {
+    id?: string | number;
     name?: string;
     nickname?: string;
     level?: number;

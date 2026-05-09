@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import type { Pokemon, BreedingCompatibility } from '@/types/pokemon'
 
 interface Props {
-  parentA: any
-  parentB: any
-  compatibility: any
+  parentA: Pokemon
+  parentB: Pokemon
+  compatibility: BreedingCompatibility
   itemA?: string
   itemB?: string
   cost?: number

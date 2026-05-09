@@ -15,7 +15,7 @@ import type { MapLocation } from '@/types/encounters'
 interface Props {
   maps: MapLocation[]
   badgeCount?: number
-  cycle?: string
+  cycle?: 'morning' | 'day' | 'dusk' | 'night'
   weather?: string
   playerClass?: string
   classData?: { extortedRouteId?: string | null }

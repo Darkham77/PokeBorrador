@@ -15,7 +15,7 @@ const emit = defineEmits<{
   (e: 'close'): void
 }>()
 
-const uiStore = useUIStore() as any
+const uiStore = useUIStore()
 
 const currentZoom = computed(() => {
   return Math.round(uiStore.appZoom * 100)
@@ -25,8 +25,9 @@ const updateZoom = (val: number) => {
   const zoomVal = val / 100
   uiStore.setZoom(zoomVal)
   
-  if (typeof (window as any).updateZoom === 'function') {
-    (window as any).updateZoom(val)
+  const win = window as unknown as { updateZoom?: (v: number) => void }
+  if (typeof win.updateZoom === 'function') {
+    win.updateZoom(val)
   }
 }
 

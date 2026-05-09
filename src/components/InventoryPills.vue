@@ -6,10 +6,10 @@ import PVTooltip from '@/components/common/PVTooltip.vue'
 import { formatCurrency } from '@/logic/utils/formatters'
 import { SHOP_ITEMS } from '@/data/items'
 
-const _gameStore = useGameStore() as any
-const _uiStore = useUIStore() as any
+const _gameStore = useGameStore()
+const _uiStore = useUIStore()
 const money = computed(() => _gameStore.state.money)
-const battleCoins = computed(() => _gameStore.state.battleCoins || _gameStore.state.gs?.battleCoins || 0)
+const battleCoins = computed(() => _gameStore.state.battleCoins || 0)
 
 const moneyRef = ref<HTMLElement | null>(null)
 const bcRef = ref<HTMLElement | null>(null)

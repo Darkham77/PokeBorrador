@@ -132,7 +132,7 @@ const getSprite = (id: string, isShiny: boolean) => {
         >
           <template
             v-for="compatibility in [getListCompatibility(p)]"
-            :key="p.uid + '-compat'"
+            :key="compatibility ? p.uid + compatibility.level : p.uid + 'none'"
           >
             <div class="sprite-box">
               <img

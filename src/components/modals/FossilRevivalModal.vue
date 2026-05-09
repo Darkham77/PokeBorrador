@@ -5,7 +5,7 @@ import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { SHOP_ITEMS } from '@/data/items'
 import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
 
-const uiStore = useUIStore() as any
+const uiStore = useUIStore()
 
 const step = ref(0) // 0: initial, 1: glowing, 2: flash, 3: revealed
 
@@ -45,7 +45,10 @@ function handleClose() {
 
 <template>
   <div class="fossil-overlay">
-    <div class="fossil-stage">
+    <div
+      v-if="fossilData"
+      class="fossil-stage"
+    >
       <div class="header-text">
         RESTAURACIÓN DE ADN
       </div>

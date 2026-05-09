@@ -17,8 +17,8 @@ import PVTooltip from '@/components/common/PVTooltip.vue'
 
 import { useDebugStore } from '@/stores/debug'
 
-const auth = useAuthStore() as any
-const debugStore = useDebugStore() as any
+const auth = useAuthStore()
+const debugStore = useDebugStore()
 const canAccess = computed(() => debugStore.canAccess)
 
 const isOpen = ref(false)

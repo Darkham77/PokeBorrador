@@ -2,8 +2,15 @@
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
+interface Evolution {
+  to: string
+  requirement: string
+  isSeen: boolean
+  isCaught: boolean
+}
+
 interface Props {
-  evolutions: any[]
+  evolutions: Evolution[]
   speciesName: string
   speciesId: string
 }

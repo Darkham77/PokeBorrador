@@ -19,9 +19,18 @@ const props = withDefaults(defineProps<Props>(), {
   borderOverride: null
 });
 
+interface PlayerClass {
+  id: string
+  name: string
+  color: string
+  avatarSpriteId?: string
+  faceScale?: string
+  facePos?: string
+}
+
 const cls = computed(() => {
   if (!props.playerClass) return null;
-  return (PLAYER_CLASSES as any)[props.playerClass] || null;
+  return (PLAYER_CLASSES as Record<string, PlayerClass>)[props.playerClass] || null;
 });
 
 const borderColor = computed(() => {

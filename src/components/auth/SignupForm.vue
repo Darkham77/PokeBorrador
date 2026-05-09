@@ -10,7 +10,7 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits<{
-  (e: 'signup', payload: any): void
+  (e: 'signup', payload: { email: string; password: string; username: string }): void
 }>()
 
 const email = ref('')

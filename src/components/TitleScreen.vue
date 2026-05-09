@@ -4,8 +4,8 @@ import { useAuthStore } from '@/stores/auth'
 import { computed } from 'vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
-const gameStore = useGameStore() as any
-const authStore = useAuthStore() as any
+const gameStore = useGameStore()
+const authStore = useAuthStore()
 const gs = computed(() => gameStore.state)
 
 const handleChooseStarter = async (id: string) => {

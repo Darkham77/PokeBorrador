@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
+import type { Pokemon } from '@/types/pokemon'
 
 interface Props {
   type: string // 'rival' or 'fishing'
-  pokemon?: any
+  pokemon?: Pokemon | null
   rarity?: string
   onStart?: (() => void) | null
   onComplete?: (() => void) | null

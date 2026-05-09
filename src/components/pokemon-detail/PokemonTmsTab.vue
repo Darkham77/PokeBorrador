@@ -10,15 +10,23 @@ interface Props {
 
 const props = defineProps<Props>()
 
-const ui = useUIStore() as any
+const ui = useUIStore()
+
+interface TM {
+  id: string
+  name: string
+  type: string
+}
 
 const tmSearchQuery = ref('')
 const tmSortBy = ref('id')
 
 const tms = computed(() => {
-  const compatibleList = (TM_COMPAT as any)[props.speciesId] || []
+  const compatData = TM_COMPAT as Record<string, string[]>
+  const compatibleList = compatData[props.speciesId] || []
 
-  const allTms = (GAME_TMS as any[]).map(tm => ({
+  const gameTms = GAME_TMS as TM[]
+  const allTms = gameTms.map(tm => ({
     ...tm,
     isCompatible: compatibleList.includes(tm.id)
   }))

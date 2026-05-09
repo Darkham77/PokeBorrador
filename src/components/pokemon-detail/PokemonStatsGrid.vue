@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
+import type { Pokemon } from '@/types/pokemon'
+
 interface Props {
-  pokemon: any
+  pokemon: Pokemon
 }
 
 const props = defineProps<Props>()
@@ -61,7 +63,7 @@ const getIvColor = (val: number) => {
       </h3>
       <div class="iv-bars">
         <div
-          v-for="(val, stat) in (p.ivs as any)"
+          v-for="(val, stat) in p.ivs"
           :key="stat"
           class="iv-row"
         >

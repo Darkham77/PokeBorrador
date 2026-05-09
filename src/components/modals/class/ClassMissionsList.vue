@@ -1,15 +1,25 @@
 <script setup lang="ts">
+import { type ClassDefinition, type ActiveMission } from '@/stores/playerClass'
+
+interface ClassMission {
+  id: string
+  durationHs: number
+  reqLv: number
+  name: string
+  color: string
+}
+
 interface Props {
-  currentClass?: any
-  activeMission?: any
-  missions?: any[]
+  currentClass?: ClassDefinition | null
+  activeMission?: ActiveMission | null
+  missions?: ClassMission[]
   trainerLevel?: number
   missionProgress?: number
   isMissionDone?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  currentClass: () => ({}),
+  currentClass: null,
   activeMission: null,
   missions: () => [],
   trainerLevel: 1,
@@ -53,7 +63,7 @@ function getMissionDesc(_mId: string, clsId: string | undefined) {
         <div class="banner-info">
           <h3>{{ isMissionDone ? 'OPERACIÓN COMPLETADA' : 'OPERACIÓN EN CURSO' }}</h3>
           <p class="m-name">
-            {{ missions.find(m => m.id === activeMission.id)?.name }}
+            {{ missions.find(m => m.id === (activeMission?.id))?.name }}
           </p>
           <div class="mission-progress-bar">
             <div

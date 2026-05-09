@@ -2,12 +2,13 @@
 import { computed } from 'vue'
 import { useUIStore } from '@/stores/ui'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
+import type { Pokemon, Move } from '@/types/pokemon'
 
-const uiStore = useUIStore() as any
+const uiStore = useUIStore()
 
 const currentData = computed(() => uiStore.currentMoveToLearn)
-const pokemon = computed(() => currentData.value?.pokemon)
-const newMove = computed(() => currentData.value?.move)
+const pokemon = computed(() => currentData.value?.pokemon as Pokemon)
+const newMove = computed(() => currentData.value?.move as Move)
 
 const typeColors: Record<string, string> = {
   normal:'#A8A878', fire:'#F08030', water:'#6890F0', grass:'#78C850', electric:'#F8D030',
@@ -18,26 +19,27 @@ const typeColors: Record<string, string> = {
 
 const getMoveColor = (name: string | undefined) => {
   if (!name) return '#6b7280'
-  const md = pokemonDataProvider.getMoveData(name) as any || {}
+  const md = pokemonDataProvider.getMoveData(name) as Move || {}
   return typeColors[md.type as keyof typeof typeColors] || '#6b7280'
 }
 
 const getMoveType = (name: string | undefined) => {
   if (!name) return '?'
-  const md = pokemonDataProvider.getMoveData(name) as any || {}
+  const md = pokemonDataProvider.getMoveData(name) as Move || {}
   return md.type ? md.type.toUpperCase() : '?'
 }
 
 const getMovePower = (name: string | undefined) => {
   if (!name) return '—'
-  const md = pokemonDataProvider.getMoveData(name) as any || {}
+  const md = pokemonDataProvider.getMoveData(name) as Move || {}
   return md.power || '—'
 }
 
 const handleReplace = (slotIndex: number) => {
   if (!pokemon.value || !newMove.value) return
   
-  const oldMoveName = pokemon.value.moves[slotIndex].name
+  const oldMove = pokemon.value.moves[slotIndex]
+  const oldMoveName = oldMove ? oldMove.name : '???'
   pokemon.value.moves[slotIndex] = { ...newMove.value }
   
   uiStore.notify(`¡${pokemon.value.name} olvidó ${oldMoveName} y aprendió ${newMove.value.name}!`, '📖')
@@ -90,16 +92,21 @@ const handleForget = () => {
           v-for="(m, index) in pokemon?.moves" 
           :key="index"
           class="move-card"
-          :style="{ '--move-color': getMoveColor(m.name) }"
+          :style="{ '--move-color': getMoveColor(m?.name) }"
           @click.stop="handleReplace(Number(index))"
         >
-          <div class="move-main">
-            <span class="move-name">{{ m.name }}</span>
-            <span class="m-type-tag pixelated">{{ getMoveType(m.name) }}</span>
-          </div>
-          <div class="move-stats">
-            <span>POT: {{ getMovePower(m.name) }}</span>
-            <span>PP: {{ m.pp }} / {{ m.maxPP }}</span>
+          <div
+            v-if="m"
+            class="move-content"
+          >
+            <div class="move-main">
+              <span class="move-name">{{ m.name }}</span>
+              <span class="m-type-tag pixelated">{{ getMoveType(m.name) }}</span>
+            </div>
+            <div class="move-stats">
+              <span>POT: {{ getMovePower(m.name) }}</span>
+              <span>PP: {{ m.pp }} / {{ m.maxPP }}</span>
+            </div>
           </div>
           <div class="replace-label">
             REEMPLAZAR

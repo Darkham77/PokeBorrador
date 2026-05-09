@@ -3,9 +3,10 @@ import { computed } from 'vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import { calculateTotalPower } from '@/logic/pokemonUtils'
+import type { Pokemon } from '@/types/pokemon'
 
 interface Props {
-  pokemon: any
+  pokemon: Pokemon
 }
 
 const props = defineProps<Props>()
@@ -24,7 +25,7 @@ const getSprite = (id: string | number, isShiny: boolean) => {
 const totalPower = computed(() => calculateTotalPower(p.value))
 const totalIvs = computed(() => {
   const ivs = p.value.ivs || {}
-  return Object.values(ivs).reduce((s: number, v: any) => s + (Number(v) || 0), 0)
+  return Object.values(ivs).reduce((s: number, v: number | boolean | undefined) => s + (Number(v) || 0), 0)
 })
 const hasIvs = computed(() => Object.keys(p.value.ivs || {}).length > 0)
 
@@ -41,7 +42,7 @@ const handleImgError = (e: Event) => {
         :class="p.aura ? 'aura-' + p.aura : ''"
       >
         <img
-          :src="getSprite(p.id, p.isShiny)"
+          :src="getSprite(p.id, !!p.isShiny)"
           :alt="p.name"
           class="main-sprite"
           @error="handleImgError"

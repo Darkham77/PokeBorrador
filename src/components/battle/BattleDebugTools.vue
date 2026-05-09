@@ -111,9 +111,9 @@ const toggleSearchMode = async () => {
     const eventStore = eventStoreModule.useEventStore()
 
     const encounter = await generateEncounter(battleStore.state.locationId, gameStore.state, {
-      activeEvents: (mapStore as any).activeEvents || [],
-      dominanceData: (mapStore as any).mapWinners || {},
-      shinyMultiplier: (eventStore as any).globalMultipliers?.shiny || 1,
+      activeEvents: mapStore.activeEvents || [],
+      dominanceData: mapStore.mapWinners || {},
+      shinyMultiplier: eventStore.globalMultipliers?.shiny || 1,
       forceEncounter: true
     })
     

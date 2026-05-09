@@ -1,17 +1,28 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useEventStore } from '@/stores/events'
+import type { Event as GameEvent, EventConfig } from '@/logic/events/eventEngine'
 
-const eventStore = useEventStore() as any
+const eventStore = useEventStore()
 
 const activeDisplayEvents = computed(() => {
-  return eventStore.activeEvents.map((ev: any) => ({
-    id: ev.id,
-    name: ev.name,
-    icon: ev.icon || '🌟',
-    description: ev.description,
-    color: ev.config?.bannerColor || 'var(--purple)'
-  }))
+  return eventStore.activeEvents.map((ev: GameEvent) => {
+    let bannerColor = 'var(--purple)'
+    if (ev.config) {
+      try {
+        const cfg = (typeof ev.config === 'string' ? JSON.parse(ev.config) : ev.config) as EventConfig
+        if (cfg.banner) bannerColor = cfg.banner
+      } catch (e) { /* ignore */ }
+    }
+    
+    return {
+      id: ev.id,
+      name: ev.name,
+      icon: ev.icon || '🌟',
+      description: ev.description,
+      color: bannerColor
+    }
+  })
 })
 </script>
 

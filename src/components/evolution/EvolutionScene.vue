@@ -4,7 +4,7 @@ import { useEvolutionStore } from '@/stores/evolution';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 
-const evolutionStore = useEvolutionStore() as any;
+const evolutionStore = useEvolutionStore();
 const step = ref('intro'); // intro | flashing | transformed | final
 const oldName = ref('');
 const newName = ref('');

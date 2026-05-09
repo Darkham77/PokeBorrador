@@ -3,11 +3,16 @@ import PVTooltip from '@/components/common/PVTooltip.vue'
 import MoveTooltip from '@/components/battle/MoveTooltip.vue'
 import BattleMovesGrid from '@/components/battle/BattleMovesGrid.vue'
 import { PDEX_TYPE_COLORS } from '@/logic/pokedexConstants'
+import type { Move } from '@/types/pokemon'
+
+interface MoveDetail extends Move {
+  level?: number
+}
 
 interface Props {
   isInstance?: boolean
-  currentMoves?: any[]
-  moveDetails: any[]
+  currentMoves?: (Move | null)[]
+  moveDetails: MoveDetail[]
   canReorder?: boolean
 }
 
@@ -96,13 +101,13 @@ function handleReorder(fromIndex: number, toIndex: number) {
             <div class="grid-cell move-type">
               <span
                 class="mv-type-tag pixelated"
-                :style="{ background: (PDEX_TYPE_COLORS as any)[m.type.toLowerCase()] }"
+                :style="{ background: (PDEX_TYPE_COLORS as Record<string, string>)[m.type?.toLowerCase() || 'normal'] }"
               >
-                {{ m.type.toUpperCase() }}
+                {{ m.type?.toUpperCase() }}
               </span>
             </div>
             <div class="grid-cell move-cat pixelated">
-              {{ ({ physical: '⚔️ FÍSICO', special: '✨ ESPECIAL', status: '🔮 ESTADO' } as any)[m.cat] || '🔮 ESTADO' }}
+              {{ (m.cat === 'physical' ? '⚔️ FÍSICO' : m.cat === 'special' ? '✨ ESPECIAL' : '🔮 ESTADO') }}
             </div>
             <div class="grid-cell move-power pixelated">
               {{ m.power }}

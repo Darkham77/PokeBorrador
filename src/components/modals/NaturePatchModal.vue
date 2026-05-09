@@ -6,8 +6,8 @@ import { NATURES } from '@/data/natures'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import BaseModal from '@/components/common/BaseModal.vue'
 
-const uiStore = useUIStore() as any
-const gameStore = useGameStore() as any
+const uiStore = useUIStore()
+const gameStore = useGameStore()
 
 const naturePokemon = computed(() => uiStore.activePokemonForNature)
 const sortedNatures = [...NATURES].sort()
@@ -18,8 +18,10 @@ const handleApplyNature = (nature: string) => {
   
   // Recalc stats
   import('@/logic/pokemonFactory').then(({ recalcPokemonStats }) => {
-    recalcPokemonStats(naturePokemon.value)
-    uiStore.notify(`¡La naturaleza de ${naturePokemon.value.name} cambió a ${nature}!`, '✨')
+    if (naturePokemon.value) {
+      recalcPokemonStats(naturePokemon.value)
+      uiStore.notify(`¡La naturaleza de ${naturePokemon.value.name} cambió a ${nature}!`, '✨')
+    }
     uiStore.isNaturePatchOpen = false
     uiStore.activePokemonForNature = null
     gameStore.save()

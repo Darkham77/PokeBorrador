@@ -6,9 +6,9 @@ import { useWindowListener } from '@/composables/useWindowListener'
 import { useMapStore } from '@/stores/map'
 import { getRouteWeather } from '@/logic/weatherUtils'
 
-const battleStore = useBattleStore() as any
-const uiStore = useUIStore() as any
-const mapStore = useMapStore() as any
+const battleStore = useBattleStore()
+const uiStore = useUIStore()
+const mapStore = useMapStore()
 
 // Responsive logic
 const isSmallScreen = ref(window.innerWidth <= 1080)

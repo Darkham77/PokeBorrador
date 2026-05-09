@@ -2,6 +2,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { useItemOnPokemon } from '@/logic/providers/itemProvider'
 import { itemEffects } from '@/logic/items/itemEffects'
+import type { Pokemon } from '@/types/pokemon'
 
 // Mock de Pinia stores para evitar errores de inicialización
 vi.mock('@/stores/game', () => ({
@@ -41,12 +42,13 @@ vi.mock('@/stores/map', () => ({
 
 vi.mock('@/stores/events', () => ({
   useEventStore: () => ({
-    globalMultipliers: {}
+    globalMultipliers: {},
+    getSpeciesBonuses: vi.fn()
   })
 }))
 
 describe('Item Reactivity & Integrity', () => {
-  let mockPokemon
+  let mockPokemon: Pokemon
 
   beforeEach(() => {
     mockPokemon = {
@@ -58,7 +60,7 @@ describe('Item Reactivity & Integrity', () => {
       moves: [
         { name: 'Thunderbolt', pp: 5, maxPP: 15 }
       ]
-    }
+    } as unknown as Pokemon
   })
 
   it('should heal HP and return the modified pokemon object', () => {

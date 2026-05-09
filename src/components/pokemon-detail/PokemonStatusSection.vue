@@ -3,9 +3,10 @@ import { computed } from 'vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import { NATURE_DATA } from '@/data/natures'
 import { ABILITY_DATA } from '@/data/abilities'
+import type { Pokemon } from '@/types/pokemon'
 
 interface Props {
-  pokemon: any
+  pokemon: Pokemon
   context?: string
 }
 
@@ -24,13 +25,15 @@ const getHpClass = (pct: number) => {
 
 const getNatureInfo = (nature: string) => {
   if (!nature) return { up: null, down: null, desc: 'Sin datos de naturaleza.' }
-  const entry = (NATURE_DATA as any)[nature] || Object.entries(NATURE_DATA).find(([k]) => k.toLowerCase() === nature.toLowerCase())?.[1]
+  const data = NATURE_DATA as Record<string, { up: string | null; down: string | null; desc: string }>
+  const entry = data[nature] || Object.entries(data).find(([k]) => k.toLowerCase() === nature.toLowerCase())?.[1]
   return entry || { up: null, down: null, desc: 'Naturaleza desconocida.' }
 }
 
 const getAbilityDesc = (ability: string) => {
   if (!ability) return 'Habilidad especial de este Pokémon.'
-  const entry = (ABILITY_DATA as any)[ability] || Object.entries(ABILITY_DATA).find(([k]) => k.toLowerCase() === ability.toLowerCase())?.[1]
+  const data = ABILITY_DATA as Record<string, string | { desc: string }>
+  const entry = data[ability] || Object.entries(data).find(([k]) => k.toLowerCase() === ability.toLowerCase())?.[1]
   if (!entry) return 'Habilidad especial de este Pokémon.'
   return typeof entry === 'string' ? entry : (entry.desc || 'Habilidad especial de este Pokémon.')
 }
@@ -75,7 +78,7 @@ const abilityStyle = computed(() => ({
 
       <PVTooltip
         title="HABILIDAD"
-        :description="getAbilityDesc(p.ability)"
+        :description="getAbilityDesc(p.ability || '')"
         position="top"
         class="info-card ability-card"
       >

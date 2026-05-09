@@ -15,7 +15,7 @@ const props = withDefaults(defineProps<Props>(), {
 const { getBackgroundUrl } = useBattleBackground()
 
 const bgData = computed(() => {
-  return getBackgroundUrl(props.locationId, props.currentCycle) as any
+  return getBackgroundUrl(props.locationId, props.currentCycle)
 })
 
 const handleBackgroundError = (e: Event) => {

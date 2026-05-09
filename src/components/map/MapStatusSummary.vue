@@ -5,9 +5,9 @@ import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
 interface Props {
   missionsRemaining?: number
-  missionSprites?: any[]
+  missionSprites?: string[]
   gymRematches?: number
-  gymSprites?: any[]
+  gymSprites?: string[]
   eggCount?: number
   rivalEventActive?: boolean
   rivalEventText?: string

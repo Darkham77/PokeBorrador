@@ -1,11 +1,22 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
+import type { Pokemon } from '@/types/pokemon'
+
+interface BreedingSlotData {
+  pokemon?: Pokemon | null
+}
+
+interface InventoryItem {
+  id: string
+  label: string
+  qty: number
+}
 
 interface Props {
   slotIndex: number
-  slotData?: any
-  availableItems?: any[]
+  slotData?: BreedingSlotData
+  availableItems?: InventoryItem[]
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -26,7 +37,7 @@ const getSpriteUrl = (id: string | number, isShiny: boolean) => {
   return getAssetUrl(ASSET_TYPES.POKEMON, id, { isShiny })
 }
 
-const genderSymbol = (g: string) => {
+const genderSymbol = (g: string | null | undefined) => {
   if (g === 'M') return '♂'
   if (g === 'F') return '♀'
   return ''
@@ -44,7 +55,7 @@ const genderSymbol = (g: string) => {
     >
       <div class="sprite-container">
         <img
-          :src="getSpriteUrl(pokemon.id, pokemon.isShiny)"
+          :src="getSpriteUrl(pokemon.id, !!pokemon.isShiny)"
           :alt="pokemon.name"
           @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
         >

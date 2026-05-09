@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
+import type { Pokemon, Move } from '@/types/pokemon'
+
 interface Props {
-  pokemon: any
+  pokemon: Pokemon
 }
 
 const props = defineProps<Props>()
@@ -11,7 +13,7 @@ const emit = defineEmits<{
   (e: 'show-move', name: string): void
 }>()
 
-const p = computed(() => props.pokemon)
+const pMoves = computed(() => (props.pokemon.moves || []).filter((m): m is Move => m !== null))
 </script>
 
 <template>
@@ -21,7 +23,7 @@ const p = computed(() => props.pokemon)
     </h3>
     <div class="moves-grid">
       <button 
-        v-for="(m, i) in p.moves" 
+        v-for="(m, i) in pMoves" 
         :key="i" 
         class="move-slot"
         @click.stop="emit('show-move', m.name)"

@@ -2,7 +2,7 @@
 import { onMounted } from 'vue';
 import { useEventStore } from '@/stores/events';
 
-const eventStore = useEventStore() as any;
+const eventStore = useEventStore();
 
 onMounted(() => {
   eventStore.fetchEvents();
@@ -20,7 +20,7 @@ const getBonusColor = (key: string) => {
   return map[key] || 'Rgba(148, 163, 184, 1)';
 };
 
-const formatBonus = (key: string, val: any) => {
+const formatBonus = (key: string, val: number | string | boolean | undefined) => {
   const map: Record<string, string> = {
     expMult: 'EXP',
     moneyMult: 'DINERO',
@@ -75,21 +75,20 @@ const formatBonus = (key: string, val: any) => {
             <p>{{ ev.description }}</p>
           </div>
           <div
-            v-if="ev.config?.hasCompetition"
+            v-if="(ev.config as any)?.hasCompetition"
             class="competition-tag"
           >
             <span class="press-start">CONCURSO</span>
           </div>
         </div>
-
         <!-- Bonuses Section -->
         <div class="bonuses-grid">
           <template
-            v-for="(val, key) in ev.config"
+            v-for="(val, key) in (ev.config as any)"
             :key="key"
           >
             <div
-              v-if="val > 1 && getBonusColor(String(key)) !== 'Rgba(148, 163, 184, 1)'" 
+              v-if="Number(val) > 1 && getBonusColor(String(key)) !== 'Rgba(148, 163, 184, 1)'" 
               class="bonus-pill" 
               :style="{ backgroundColor: getBonusColor(String(key)) + '15', borderColor: getBonusColor(String(key)) + '40', color: getBonusColor(String(key)) }"
             >

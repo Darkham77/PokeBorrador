@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
+import type { Pokemon } from '@/types/pokemon'
 
 interface Props {
-  enemy: any
+  enemy: Pokemon
   rarity?: number // 1-100 (lower is rarer/harder)
 }
 
@@ -35,7 +36,7 @@ const spawnedNotesCount = ref(0)
 const gameActive = ref(true)
 const feedback = ref('')
 
-let gameTimeout: any = null
+let gameTimeout: ReturnType<typeof setTimeout> | null = null
 
 const spawnNext = () => {
   if (!gameActive.value || spawnedNotesCount.value >= totalNotes) return

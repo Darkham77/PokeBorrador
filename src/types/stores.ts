@@ -168,7 +168,11 @@ export interface DominanceInfo {
 export interface CompetitionResult {
   id: string;
   event_id: string;
-  winners: string; // JSON string in DB
+  winners: {
+    first?: { player_name: string; score: number };
+    second?: { player_name: string; score: number };
+    third?: { player_name: string; score: number };
+  };
   ended_at: string;
 }
 

@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import { useBreedingStore } from '@/stores/breeding';
 import { POKEMON_DB } from '@/data/pokemonDB';
+import type { DaycareEgg } from '@/types/breeding';
 
-const breedingStore = useBreedingStore() as any;
+const breedingStore = useBreedingStore();
 
-const getPokemonName = (id: string | number) => (POKEMON_DB as any)[id]?.name || 'Huevo';
+const getPokemonName = (id: string) => (POKEMON_DB as Record<string, { name: string }>)[id]?.name || 'Huevo';
 
-const handleClaim = (egg: any) => {
-  const cost = egg.inherited_ivs?._cost || 0;
+const handleClaim = (egg: DaycareEgg) => {
+  const cost = egg.inherited_ivs?._cost as number || 0;
   if (confirm(`¿Quieres recoger este huevo de ${getPokemonName(egg.species)}? Costo: ₽${cost.toLocaleString()}`)) {
     breedingStore.claimEgg(egg.id);
   }

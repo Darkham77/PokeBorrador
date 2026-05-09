@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from 'vue';
 import { useGameStore } from '@/stores/game';
-import { usePvPStore } from '@/stores/pvp';
+import { useLivePvPStore } from '@/stores/livePvP';
 
 // Sub-components
 import BattleLog from './BattleLog.vue';
@@ -9,11 +9,12 @@ import BattleInfoCard from './BattleInfoCard.vue';
 import BattleMovesGrid from './BattleMovesGrid.vue';
 import PlayerAvatar from '@/components/player/PlayerAvatar.vue';
 
-const gameStore = useGameStore() as any;
-const pvpStore = usePvPStore() as any;
+const gameStore = useGameStore();
+const livePvPStore = useLivePvPStore();
+const battle = computed(() => livePvPStore.battleState);
 
 const timeRemaining = ref(40);
-let timer: any = null;
+let timer: ReturnType<typeof setInterval> | null = null;
 
 onMounted(() => {
   startTurnTimer();
@@ -27,7 +28,7 @@ const startTurnTimer = () => {
   timeRemaining.value = 40;
   if (timer) clearInterval(timer);
   timer = setInterval(() => {
-    if (pvpStore.phase === 'choosing' && !pvpStore.myPick) {
+    if (battle.value.phase === 'choosing' && !battle.value.myPick) {
       timeRemaining.value--;
       if (timeRemaining.value <= 0) {
         // Auto-forfeit or random move logic here
@@ -42,19 +43,19 @@ const stopTurnTimer = () => {
 };
 
 // Computeds for convenience
-const playerPoke = computed(() => (pvpStore.myTeam && pvpStore.myTeam[pvpStore.myActiveIndex]) || {});
-const enemyPoke = computed(() => (pvpStore.enemyTeam && pvpStore.enemyTeam[pvpStore.enemyActiveIndex]) || {});
-const isRanked = computed(() => pvpStore.activeBattle?.isRanked);
+const playerPoke = computed(() => (battle.value.myTeam && battle.value.myTeam[battle.value.myActiveIdx]) || null);
+const enemyPoke = computed(() => (battle.value.enemyTeam && battle.value.enemyTeam[battle.value.enemyActiveIdx]) || null);
+const isRanked = computed(() => battle.value.isRanked);
 
 const handleMoveSelection = (moveIdx: number) => {
-  pvpStore.makePick({ type: 'move', index: moveIdx });
+  livePvPStore._commitPick({ type: 'move', moveIndex: moveIdx });
   stopTurnTimer();
 };
 </script>
 
 <template>
   <div
-    v-if="pvpStore.activeBattle"
+    v-if="battle.active"
     class="pvp-screen-wrapper"
     :class="{ 'is-ranked': isRanked }"
   >
@@ -87,7 +88,7 @@ const handleMoveSelection = (moveIdx: number) => {
       <div class="arena-container card-glass">
         <!-- Timer Overlay -->
         <div
-          v-if="pvpStore.phase === 'choosing'"
+          v-if="battle.phase === 'choosing'"
           class="turn-timer"
           :class="{ 'low-time': timeRemaining < 10 }"
         >
@@ -110,7 +111,7 @@ const handleMoveSelection = (moveIdx: number) => {
 
         <!-- Waiting for opponent overlay -->
         <div
-          v-if="pvpStore.myPick && !pvpStore.enemyPick && pvpStore.phase === 'choosing'"
+          v-if="battle.myPick && !battle.enemyPick && battle.phase === 'choosing'"
           class="waiting-overlay"
         >
           <div class="pulse-loader" />
@@ -123,14 +124,14 @@ const handleMoveSelection = (moveIdx: number) => {
       <!-- Controls -->
       <div class="controls-panel card-glass">
         <BattleMovesGrid 
-          :moves="playerPoke.moves"
-          :is-processing="pvpStore.phase !== 'choosing' || !!pvpStore.myPick"
+          :moves="playerPoke?.moves || []"
+          :is-processing="battle.phase !== 'choosing' || !!battle.myPick"
           @use-move="handleMoveSelection"
         />
         
         <div class="status-msg press-start">
-          {{ pvpStore.phase === 'sync' ? 'Sincronizando...' : 
-            pvpStore.phase === 'choosing' ? (pvpStore.myPick ? '¡Movimiento elegido!' : 'Elige tu jugada') : 
+          {{ battle.phase === 'sync' ? 'Sincronizando...' : 
+            battle.phase === 'choosing' ? (battle.myPick ? '¡Movimiento elegido!' : 'Elige tu jugada') : 
             'Resolviendo turno...' }}
         </div>
       </div>
@@ -151,10 +152,10 @@ const handleMoveSelection = (moveIdx: number) => {
         />
         <div class="trainer-stats">
           <div class="name">
-            {{ pvpStore.activeBattle.enemyUsername }}
+            {{ battle.opponentName }}
           </div>
           <div class="elo press-start">
-            {{ pvpStore.activeBattle.enemyElo }} LP
+            {{ battle.opponentElo }} LP
           </div>
         </div>
       </div>

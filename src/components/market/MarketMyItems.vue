@@ -6,12 +6,12 @@ import { useGTSStore } from '@/stores/gts'
 import { Temporal } from '@js-temporal/polyfill'
 import { getPokemonTier } from '@/logic/pokemon/tierEngine'
 
-const gtsStore = useGTSStore() as any
+const gtsStore = useGTSStore()
 
 const activeListings = computed(() => gtsStore.activeMyListings)
 const history = computed(() => gtsStore.salesHistory)
 
-async function handleCancel(listingId: any) {
+async function handleCancel(listingId: string) {
   if (confirm('¿Estás seguro de que deseas cancelar esta publicación? El objeto/Pokémon volverá a tu inventario.')) {
     gtsStore.cancelListing(listingId)
   }
@@ -54,10 +54,10 @@ const formatTime = (ts: string | number) => {
             <template v-if="item.listing_type === 'pokemon'">
               <div
                 class="tier-mark"
-                :style="{ background: getPokemonTier(item.data).bg }"
+                :style="{ background: getPokemonTier(item.data as any).bg }"
               />
               <img
-                :src="getAssetUrl(ASSET_TYPES.POKEMON, item.data.id)"
+                :src="getAssetUrl(ASSET_TYPES.POKEMON, String(item.data.id || ''))"
                 class="p-sprite pixelated"
                 @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
               >

@@ -19,7 +19,7 @@ const emit = defineEmits<{
   (e: 'cancel'): void
 }>()
 
-const inventoryStore = useInventoryStore() as any
+const inventoryStore = useInventoryStore()
 
 const searchQuery = computed({
   get: () => inventoryStore.searchQuery,

@@ -5,7 +5,7 @@ import { useGameStore } from '@/stores/game'
 interface Props {
   context: string
   canEvolveStone?: boolean
-  extra?: any | null
+  extra?: { offerId?: string; price?: number; type?: string } | null
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -18,10 +18,10 @@ const emit = defineEmits<{
   (e: 'evolve'): void
 }>()
 
-const gameStore = useGameStore() as any
+const gameStore = useGameStore()
 
 const canBuy = computed(() => {
-  if (!props.extra) return false
+  if (!props.extra || props.extra.price === undefined) return false
   return gameStore.state.money >= props.extra.price
 })
 

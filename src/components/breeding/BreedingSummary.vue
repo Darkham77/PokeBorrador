@@ -4,24 +4,24 @@ import { Temporal } from '@js-temporal/polyfill'
 import { computed } from 'vue'
 import { useBreedingStore } from '@/stores/breeding'
 import { usePlayerClassStore } from '@/stores/playerClass'
-import { getGeneticsForecast } from '@/logic/breeding/breedingEngine'
+import { getGeneticsForecast, type GeneticsForecast } from '@/logic/breeding/breedingEngine'
 import { COMPAT_TEXT } from '@/data/breeding/breedingConstants'
 
-const breedingStore = useBreedingStore() as any
-const classStore = usePlayerClassStore() as any
+const breedingStore = useBreedingStore()
+const classStore = usePlayerClassStore()
 
-const forecast = computed(() => {
-  if (!breedingStore.isBreeding) return null
+const forecast = computed<GeneticsForecast | null>(() => {
+  if (!breedingStore.isBreeding || !breedingStore.slots[0]?.pokemon || !breedingStore.slots[1]?.pokemon) return null
   return getGeneticsForecast(
     breedingStore.slots[0].pokemon,
     breedingStore.slots[1].pokemon,
-    classStore.activeClass
-  ) as any
+    classStore.playerClass || ''
+  )
 })
 
 const compatStyle = computed(() => {
-  const level = breedingStore.compatibility?.level ?? 0
-  return (COMPAT_TEXT as any)[level] || { label: 'Desconocido', color: 'gray' }
+  const level = (breedingStore.compatibility?.level ?? 0) as number
+  return (COMPAT_TEXT as Record<number, { label: string; color: string }>)[level] || { label: 'Desconocido', color: 'gray' }
 })
 
 const formatTime = (ms: number | null) => {
@@ -41,7 +41,7 @@ const formatTime = (ms: number | null) => {
         :style="{ color: compatStyle.color }"
       >
         <div class="compat-label">
-          {{ breedingStore.compatibility.label || compatStyle.label }}
+          {{ compatStyle.label }}
         </div>
         <div
           v-if="breedingStore.isBreeding"

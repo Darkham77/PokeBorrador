@@ -7,13 +7,14 @@ import { getPokemonTier } from '@/logic/pokemonUtils';
 import { checkCompatibility } from '@/logic/breeding/breedingEngine';
 import { validateMissionPokemon } from '@/logic/breeding/missionEngine';
 
+import type { DaycareMission } from '@/types/breeding';
 import type { Pokemon } from '@/types/pokemon';
 
 interface Props {
   slotIndex: number;
   otherParent?: Pokemon | null;
   mode?: 'deposit' | 'delivery';
-  mission?: any | null; // Mission type could be more specific if available
+  mission?: DaycareMission | null;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -49,7 +50,7 @@ const availablePokemon = computed<Pokemon[]>(() => {
 
   // Mode: Delivery (matching mission requirements)
   if (props.mode === 'delivery' && props.mission) {
-    filtered = filtered.filter(p => validateMissionPokemon(p, props.mission));
+    filtered = filtered.filter(p => validateMissionPokemon(p, props.mission!));
   }
 
   return filtered;
@@ -95,7 +96,7 @@ const selectPokemon = (p: Pokemon) => {
           >
             <div class="sprite-wrap">
               <img
-                :src="getAssetUrl(ASSET_TYPES.POKEMON, p.id, { isShiny: p.isShiny })"
+                :src="getAssetUrl(ASSET_TYPES.POKEMON, p.id, { isShiny: !!p.isShiny })"
                 :alt="p.name"
                 @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
               >
@@ -131,14 +132,14 @@ const selectPokemon = (p: Pokemon) => {
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
+
 .daycare-picker-overlay {
   position: fixed;
   inset: 0;
   z-index: var(--z-modal);
   background: Rgba(0, 0, 0, 0.8);
-  -webkit-will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
-  backdrop-filter: Blur(4px);
   backdrop-filter: Blur(4px);
   @include gpu-layer;
   display: flex;

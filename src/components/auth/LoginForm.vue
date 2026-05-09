@@ -11,7 +11,7 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits<{
-  (e: 'login', payload: any): void
+  (e: 'login', payload: { email: string; password: string }): void
   (e: 'localLogin', username: string): void
 }>()
 

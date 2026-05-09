@@ -260,11 +260,11 @@ const handleReorderMoves = (from: number, to: number) => {
 
         <!-- Píldora de Insignias Global (Fuera de tabs) -->
         <div
-          v-if="isInstance"
+          v-if="isInstance && targetPokemon"
           class="upd-floating-tags"
         >
           <UnifiedBadgePill
-            :pokemon="targetPokemon!"
+            :pokemon="targetPokemon"
             :vertical="false"
             size="xl"
             editable
@@ -339,6 +339,7 @@ const handleReorderMoves = (from: number, to: number) => {
             class="instance-status-section"
           >
             <PokemonStatusSection
+              v-if="targetPokemon"
               :pokemon="targetPokemon"
               :context="context"
             />

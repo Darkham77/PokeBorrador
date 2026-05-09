@@ -15,7 +15,7 @@ import { getStatBreakdown, getStatMultiplier } from '@/logic/battle/battleEngine
 import type { Pokemon } from '@/types/pokemon'
 
 interface Props {
-  pokemon: Pokemon
+  pokemon?: Pokemon | null
   isPlayer?: boolean
   nickStyle?: string
   isScrambled?: boolean
@@ -27,7 +27,7 @@ const props = withDefaults(defineProps<Props>(), {
   isScrambled: false
 })
 
-const p = computed(() => props.pokemon)
+const p = computed(() => props.pokemon as Pokemon)
 const battleStore = useBattleStore()
 const profileStore = useProfileStore()
 

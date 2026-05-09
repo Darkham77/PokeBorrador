@@ -3,8 +3,18 @@ import { computed } from 'vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 
+interface InventoryItem {
+  id: string
+  name: string
+  desc?: string
+  sprite?: string
+  icon?: string
+  qty: number
+  tier?: 'common' | 'rare' | 'epic' | 'legend'
+}
+
 interface Props {
-  item: any
+  item: InventoryItem
   isSelected?: boolean
   multiSelectMode?: boolean
 }

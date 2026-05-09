@@ -120,9 +120,9 @@ function reviveFossilTrigger(pokemonId: string, itemName: string): string {
   
   const p = makePokemon(pokemonId, 1);
   if (!p) return 'error';
-  gameStore.addPokemon(p, { notify: false });
+  const { target } = gameStore.addPokemon(p, { notify: false });
   
-  uiStore.activeFossil = { pokemonId: p.id, itemName };
+  uiStore.activeFossil = { pokemon: p, itemName, sentTo: target as 'team' | 'box' };
   uiStore.isFossilRevivalOpen = true;
   return 'iniciando restauración...';
 }

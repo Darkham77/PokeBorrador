@@ -2,7 +2,7 @@
 import { computed, watch, ref, nextTick, onMounted } from 'vue'
 import { useBattleStore } from '@/stores/battle'
 
-const battleStore = useBattleStore() as any
+const battleStore = useBattleStore()
 const logContainer = ref<HTMLDivElement | null>(null)
 
 const logs = computed(() => battleStore.battleLogs)

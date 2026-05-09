@@ -61,6 +61,8 @@ export const useUIStore = defineStore('ui', () => {
   const pvpAutoFillDisabled = ref(false)
   const warAutoFillDisabled = ref(false)
 
+  const isPerformanceMode = computed(() => isDebugPerformanceMode.value || isAnyBlockingModalOpen.value)
+
   const isBattleSwitchForced = ref(false) // Para cuando un poke es debilitado
   const isWarPanelOpen = ref(false)
   
@@ -72,7 +74,7 @@ export const useUIStore = defineStore('ui', () => {
   const activePokemonForNature = ref<Pokemon | null>(null)
   const activePokemonForPPUp = ref<Pokemon | null>(null)
   const activePokemonForAbility = ref<Pokemon | null>(null)
-  const activeFossil = ref<{ pokemonId: string; itemName: string } | null>(null)
+  const activeFossil = ref<{ pokemon: Pokemon; itemName: string; sentTo: 'team' | 'box' } | null>(null)
   
   // Detalle data
   const selectedPokemon = ref<Pokemon | null>(null)
@@ -332,6 +334,7 @@ export const useUIStore = defineStore('ui', () => {
     isAnyModalOpen,
     isAnyBlockingModalOpen,
     isAnyFullscreenModalOpen,
+    isPerformanceMode,
     isDebugPerformanceMode,
     isSimplifiedModalsMode,
     isDebugGridMode,
