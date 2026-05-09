@@ -1,6 +1,6 @@
 
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { Temporal } from '@js-temporal/polyfill'
 import { useAuthStore } from './auth'
 import { useGameStore } from './game'
@@ -62,9 +62,14 @@ export const usePvPStore = defineStore('pvp', () => {
   const passiveTeamActive = ref(false)
   const currentSeasonRules = ref<SeasonRules | null>(null)
   const leaderboard = ref<LeaderboardEntry[]>([])
-  const lastSyncAt = ref(0)
+  const lastSyncAt = ref<number | null>(null)
   const isLoading = ref(false)
   const error = ref('')
+
+  // Sync ELO with game state
+  watch(() => gameStore.state.eloRating, (newElo) => {
+    if (newElo !== undefined) elo.value = newElo
+  }, { immediate: true })
 
   const eloTier = computed(() => getEloTier(elo.value))
 
@@ -232,7 +237,7 @@ export const usePvPStore = defineStore('pvp', () => {
     const daysLeft = Math.max(0, Math.ceil(diff.days))
     
     return {
-      start: Temporal.Instant.fromEpochMilliseconds(start.epochMilliseconds), // Mantener Date para compatibilidad con UI si es necesario
+      start: Temporal.Instant.fromEpochMilliseconds(start.epochMilliseconds),
       end: Temporal.Instant.fromEpochMilliseconds(end.epochMilliseconds),
       daysLeft
     }

@@ -26,7 +26,8 @@ Apply interpolation to the following CSS functions to prevent "X is not a color"
 - `background: Radial-Gradient(...) / Linear-Gradient(...);` (Essential for weather overlays)
 
 > [!WARNING]
-> **SASS 2.0 Collision Protocol**: You **MUST** use **Capitalization** for ALL CSS functions that collide with SASS built-ins (`Scale()`, `Blur()`, `Rotate()`, `Invert()`, `Brightness()`, etc.). This applies to ALL properties, including `transform` and `filter`. SASS 2.0 intercepts lowercase versions even inside complex property strings, causing critical build failures.
+> [!NOTE]
+> **SASS 2.0 Collision Protocol**: To prevent Dart Sass 2.0 collisions, standard CSS functions (`scale`, `blur`, `rotate`, `invert`, `brightness`, etc.) must be capitalized. However, this process is **100% automated** by the Vite plugin (`vite-plugin-sass-traps.ts`) during HMR (Hot Module Replacement) and build. Developers and agents can write standard lowercase CSS properties, and Vite will automatically capitalize them.
 
 ### 2. Specificity vs. !important
 
@@ -49,10 +50,9 @@ In scenarios where pixel-perfect alignment is critical (Combat Arena), component
 
 To bypass SASS color function collisions, we strictly follow a hierarchy of methods.
 
-- **PRIMARY (Mandatory)**: **Capitalization**. Case-insensitive in CSS, but case-sensitive in SASS. This is the cleanest method.
-  - ✅ `filter: Grayscale(1);`
-  - ❌ `filter: grayscale(1);` (Collision)
-  - ❌ `filter: string.unquote("grayscale(1)");` (Bloated)
+- **PRIMARY (Automated)**: **Capitalization**. This is handled automatically by the Vite plugin (`vite-plugin-sass-traps.ts`). Developers and agents can write standard lowercase functions, and Vite will convert them to capitalized form.
+  - Standard written: `filter: grayscale(1);`
+  - Output after Vite save: `filter: Grayscale(1);`
 - **SECONDARY**: **Interpolation** `#{}`. Use ONLY for complex dynamic values.
   - ✅ `transform: Scale(#{$factor});`
 - **FORBIDDEN**: **string.unquote()** for standard filters. It violates the "Zero-Warning" architecture and makes the code harder to read.

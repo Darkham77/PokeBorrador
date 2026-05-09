@@ -14,15 +14,15 @@ const allMaps = computed(() => {
   const maps = pokemonDataProvider.getMaps() as MapData[]
   return maps.map(m => {
     const data = warStore.mapDominance[m.id] || { union: 0, poder: 0, winner: null }
-    const total = (Number(data.union) || 0) + (Number(data.poder) || 0)
-    const unionPct = total > 0 ? (data.union / total) * 100 : 50
-    const winner = data.winner || (data.union > data.poder ? 'union' : data.poder > data.union ? 'poder' : null) as 'union' | 'poder' | null
+    const total = (Number(data.union ?? 0)) + (Number(data.poder ?? 0))
+    const unionPct = total > 0 ? ((data.union ?? 0) / total) * 100 : 50
+    const winner = data.winner || ((data.union ?? 0) > (data.poder ?? 0) ? 'union' : (data.poder ?? 0) > (data.union ?? 0) ? 'poder' : null) as 'union' | 'poder' | null
     
     return {
       id: m.id,
       name: m.name,
-      union: data.union,
-      poder: data.poder,
+      union: data.union ?? 0,
+      poder: data.poder ?? 0,
       unionPct,
       winner
     }

@@ -16,11 +16,11 @@ vi.mock('@/logic/supabase', () => ({
 }))
 
 describe('Game Store - loadGame with Timeout & Retries', () => {
-  let useGameStore
-  let useAuthStore
-  let useLoadingStore
-  let loadBestSaveMock
-  let originalReload
+  let useGameStore: () => ReturnType<typeof import('@/stores/game').useGameStore>
+  let useAuthStore: () => ReturnType<typeof import('@/stores/auth').useAuthStore>
+  let useLoadingStore: () => ReturnType<typeof import('@/stores/loading').useLoadingStore>
+  let loadBestSaveMock: import('vitest').Mock
+  let originalReload: () => void
 
   beforeEach(async () => {
     setActivePinia(createPinia())
@@ -35,7 +35,7 @@ describe('Game Store - loadGame with Timeout & Retries', () => {
       clear: vi.fn()
     })
 
-    const sessionStoreMock = {}
+    const sessionStoreMock: Record<string, string> = {}
     vi.stubGlobal('sessionStorage', {
       getItem: vi.fn((key) => sessionStoreMock[key] || null),
       setItem: vi.fn((key, val) => { sessionStoreMock[key] = val.toString() }),
@@ -65,7 +65,7 @@ describe('Game Store - loadGame with Timeout & Retries', () => {
     useGameStore = gameModule.useGameStore
     useAuthStore = authModule.useAuthStore
     useLoadingStore = loadingModule.useLoadingStore
-    loadBestSaveMock = loadServiceModule.loadBestSave
+    loadBestSaveMock = loadServiceModule.loadBestSave as unknown as import('vitest').Mock
   })
 
   afterEach(() => {
@@ -82,7 +82,7 @@ describe('Game Store - loadGame with Timeout & Retries', () => {
     const authStore = useAuthStore()
     const loadingStore = useLoadingStore()
 
-    authStore.user = { id: 'user123' }
+    authStore.user = { id: 'user123', user_metadata: { username: 'User123' } } as unknown as NonNullable<typeof authStore.user>
     loadBestSaveMock.mockResolvedValue({
       data: { trainer: 'Ash' },
       issues: [],
@@ -105,7 +105,7 @@ describe('Game Store - loadGame with Timeout & Retries', () => {
     const authStore = useAuthStore()
     const loadingStore = useLoadingStore()
 
-    authStore.user = { id: 'user123' }
+    authStore.user = { id: 'user123', user_metadata: { username: 'User123' } } as unknown as NonNullable<typeof authStore.user>
     loadBestSaveMock.mockReturnValue(new Promise(() => {}))
 
     const loadPromise = gameStore.loadGame()
@@ -114,7 +114,7 @@ describe('Game Store - loadGame with Timeout & Retries', () => {
     await vi.advanceTimersByTimeAsync(20000)
     await loadPromise
 
-    expect(loadingStore.current.message).toBe('Red inestable...')
+    expect(loadingStore.current!.message).toBe('Red inestable...')
     expect(window.location.reload).toHaveBeenCalledTimes(1)
   })
 
@@ -123,7 +123,7 @@ describe('Game Store - loadGame with Timeout & Retries', () => {
     const authStore = useAuthStore()
     const loadingStore = useLoadingStore()
 
-    authStore.user = { id: 'user123' }
+    authStore.user = { id: 'user123', user_metadata: { username: 'User123' } } as unknown as NonNullable<typeof authStore.user>
     
     Object.defineProperty(navigator, 'onLine', {
       configurable: true,
@@ -138,7 +138,7 @@ describe('Game Store - loadGame with Timeout & Retries', () => {
     await vi.advanceTimersByTimeAsync(20000)
     await loadPromise
 
-    expect(loadingStore.current.message).toBe('Sin conexión a Internet')
+    expect(loadingStore.current!.message).toBe('Sin conexión a Internet')
     expect(window.location.reload).not.toHaveBeenCalled()
     expect(addEventSpy).toHaveBeenCalledWith('online', expect.any(Function), { once: true })
   })
@@ -148,7 +148,7 @@ describe('Game Store - loadGame with Timeout & Retries', () => {
     const authStore = useAuthStore()
     const loadingStore = useLoadingStore()
 
-    authStore.user = { id: 'user123' }
+    authStore.user = { id: 'user123', user_metadata: { username: 'User123' } } as unknown as NonNullable<typeof authStore.user>
     
     // Simular que ya se recargó una vez
     sessionStorage.setItem('load_retry_count', '1')
@@ -159,7 +159,7 @@ describe('Game Store - loadGame with Timeout & Retries', () => {
     await vi.advanceTimersByTimeAsync(20000)
     await loadPromise
 
-    expect(loadingStore.current.message).toBe('Error de conexión')
+    expect(loadingStore.current!.message).toBe('Error de conexión')
     expect(window.location.reload).not.toHaveBeenCalled()
   })
 })

@@ -108,7 +108,7 @@ describe('battleStateMachine', () => {
     const fsm = createBattleStateMachine();
     
     // Request a delayed transition
-    const p1 = fsm.transition(BATTLE_STATES.INITIALIZING, null, 1000);
+    fsm.transition(BATTLE_STATES.INITIALIZING, null, 1000);
     
     // Request a different transition immediately (overriding the timeout)
     const p2 = fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, null, 500);
@@ -135,7 +135,9 @@ describe('battleStateMachine', () => {
     await p2;
 
     expect(consoleSpy).toHaveBeenCalledWith(
-      expect.stringContaining('[FSM] Unexpected transition')
+      expect.stringMatching(/\[FSM\].*Unexpected transition/),
+      expect.any(String),
+      expect.any(String)
     );
 
     consoleSpy.mockRestore();

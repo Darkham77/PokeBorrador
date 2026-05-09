@@ -1,4 +1,3 @@
-
 /**
  * @vitest-environment jsdom
  */
@@ -6,6 +5,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { useBattleStore } from '@/stores/battle'
 import { useGameStore } from '@/stores/game'
+import type { Pokemon } from '@/types/pokemon'
 
 // Mock dependencies
 vi.mock('@/logic/services/assetService', () => ({
@@ -17,38 +17,38 @@ describe('Battle Store - Turn Count Logic', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
     const gs = useGameStore()
-    gs.state.trainerName = 'Tester'
-    gs.state.team = [{ id: 'pikachu', uid: 'p1', hp: 100, maxHp: 100, status: null, moves: [] }]
+    gs.state.trainer = 'Tester'
+    gs.state.team = [{ id: 'pikachu', uid: 'p1', hp: 100, maxHp: 100, status: null, moves: [] } as unknown as Pokemon]
   })
 
   it('should initialize turnCount at 1', async () => {
     const battle = useBattleStore()
-    await battle._startBattle({ id: 'rattata', hp: 50, maxHp: 50, catchRate: 100 }, { locationId: 'test', wasSearching: false })
-    expect(battle.state.turnCount).toBe(1)
+    await battle._startBattle({ id: 'rattata', hp: 50, maxHp: 50, catchRate: 100 } as unknown as Pokemon, { locationId: 'test', wasSearching: false })
+    expect(battle.state!.turnCount).toBe(1)
   })
 
   it('should increment turnCount after applyEndTurnEffects', async () => {
     const battle = useBattleStore()
-    await battle._startBattle({ id: 'rattata', hp: 50, maxHp: 50 }, { locationId: 'test', wasSearching: false })
+    await battle._startBattle({ id: 'rattata', hp: 50, maxHp: 50 } as unknown as Pokemon, { locationId: 'test', wasSearching: false })
     
-    expect(battle.state.turnCount).toBe(1)
+    expect(battle.state!.turnCount).toBe(1)
     
     // Simular el fin de un turno
     await battle.applyEndTurnEffects()
     
-    expect(battle.state.turnCount).toBe(2)
+    expect(battle.state!.turnCount).toBe(2)
     
     await battle.applyEndTurnEffects()
-    expect(battle.state.turnCount).toBe(3)
+    expect(battle.state!.turnCount).toBe(3)
   })
 
   it('should not increment turnCount if the battle is over', async () => {
     const battle = useBattleStore()
-    await battle._startBattle({ id: 'rattata', hp: 50, maxHp: 50 }, { locationId: 'test', wasSearching: false })
+    await battle._startBattle({ id: 'rattata', hp: 50, maxHp: 50 } as unknown as Pokemon, { locationId: 'test', wasSearching: false })
     
-    battle.state.over = true
+    battle.state!.over = true
     await battle.applyEndTurnEffects()
     
-    expect(battle.state.turnCount).toBe(1)
+    expect(battle.state!.turnCount).toBe(1)
   })
 })

@@ -4,6 +4,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { useInventoryStore } from '@/stores/inventory'
 import { useGameStore } from '@/stores/game'
+import type { Pokemon } from '@/types/pokemon'
 
 // Mock components and external logic
 vi.mock('@/logic/services/assetService', () => ({
@@ -14,7 +15,7 @@ vi.mock('@/logic/services/assetService', () => ({
 describe('Inventory Store', () => {
   beforeEach(() => {
     // Mock localStorage
-    const storage = {}
+    const storage: Record<string, string> = {}
     vi.stubGlobal('localStorage', {
       getItem: vi.fn(key => storage[key] || null),
       setItem: vi.fn((key, val) => storage[key] = val),
@@ -30,7 +31,7 @@ describe('Inventory Store', () => {
       },
       money: 1000,
       eggs: []
-    }
+    } as unknown as typeof gameStore.state
   })
 
   it('calculates bagItems correctly', () => {
@@ -38,7 +39,7 @@ describe('Inventory Store', () => {
     expect(store.bagItems.length).toBeGreaterThan(0)
     const pokeball = store.bagItems.find(i => i.name === 'Pokéball')
     expect(pokeball).toBeDefined()
-    expect(pokeball.qty).toBe(10)
+    expect(pokeball!.qty).toBe(10)
   })
 
   it('filters items by category', () => {
@@ -100,7 +101,7 @@ describe('Inventory Store', () => {
     const gameStore = useGameStore()
     
     // Setup a mock pokemon
-    gameStore.state.team = [{ name: 'Pikachu', hp: 50, maxHp: 100 }]
+    gameStore.state.team = [{ name: 'Pikachu', hp: 50, maxHp: 100 } as unknown as Pokemon]
     
     // Pokéball usually fails if not in battle context, but let's check consumption
     // Actually useItem logic handles many cases.

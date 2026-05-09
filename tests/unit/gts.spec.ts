@@ -1,11 +1,13 @@
 
 /** @vitest-environment jsdom */
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, vi, type Mock } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { useGTSStore } from '@/stores/gts'
 import { useGameStore } from '@/stores/game'
 import { useAuthStore } from '@/stores/auth'
 import { useUIStore } from '@/stores/ui'
+import type { MarketListing } from '@/logic/market'
+import type { DBRouter } from '@/logic/db/dbRouter'
 
 describe('GTS Store', () => {
   beforeEach(() => {
@@ -44,7 +46,7 @@ describe('GTS Store', () => {
         subscribe: vi.fn().mockReturnThis(),
         unsubscribe: vi.fn()
       })
-    }
+    } as unknown as DBRouter // Cast here initially to allow mocks, but we will type accesses cleanly
     gs.save = vi.fn().mockResolvedValue({ success: true })
     
     const ui = useUIStore()
@@ -52,7 +54,7 @@ describe('GTS Store', () => {
     ui.setLoading = vi.fn()
     
     const auth = useAuthStore()
-    auth.user = { id: 'test_user' }
+    auth.user = { id: 'test_user', user_metadata: { username: 'test_user' } } as unknown as NonNullable<typeof auth.user>
     auth.sessionMode = 'online'
   })
 
@@ -60,14 +62,25 @@ describe('GTS Store', () => {
     const gts = useGTSStore()
     const gs = useGameStore()
     
-    gs.db.from().select().eq().order().limit.mockResolvedValue({
-      data: [{ id: 1, price: 1000, listing_type: 'item', data: { name: 'Poción' } }],
+    const mockDb = gs.db as unknown as { from: Mock };
+    const limitMock = (mockDb.from() as unknown as {
+      select: () => {
+        eq: () => {
+          order: () => {
+            limit: Mock;
+          };
+        };
+      };
+    }).select().eq().order().limit;
+
+    limitMock.mockResolvedValue({
+      data: [{ id: '1', price: 1000, listing_type: 'item', data: { name: 'Poción' }, status: 'active', seller_id: 'user1', created_at: '' } as MarketListing],
       error: null
     })
     
     await gts.fetchListings()
     expect(gts.listings.length).toBe(1)
-    expect(gts.listings[0].price).toBe(1000)
+    expect(gts.listings[0]!.price).toBe(1000)
   })
 
   it('should prevent buying if money is insufficient', async () => {
@@ -75,7 +88,7 @@ describe('GTS Store', () => {
     const gs = useGameStore()
     gs.state.money = 100
     
-    const listing = { id: 1, price: 1000 }
+    const listing = { id: '1', price: 1000, listing_type: 'item', data: { name: 'Poción' }, status: 'active', seller_id: 'user1', created_at: '' } as MarketListing
     const result = await gts.buyListing(listing)
     
     expect(result).toBe(false)
@@ -86,11 +99,12 @@ describe('GTS Store', () => {
     const gs = useGameStore()
     gs.state.money = 5000
     
-    gs.db.rpc.mockResolvedValue({ data: { money: 4000 }, error: null })
+    const rpcMock = gs.db.rpc as Mock;
+    rpcMock.mockResolvedValue({ data: { money: 4000 }, error: null })
     
     const updateSpy = vi.spyOn(gs, 'updateState')
     
-    const listing = { id: 'listing_123', price: 1000 }
+    const listing = { id: 'listing_123', price: 1000, listing_type: 'item', data: { name: 'Poción' }, status: 'active', seller_id: 'user1', created_at: '' } as MarketListing
     await gts.buyListing(listing)
     
     expect(gs.db.rpc).toHaveBeenCalledWith('buy_listing_v2', { p_listing_id: 'listing_123' })
@@ -101,16 +115,16 @@ describe('GTS Store', () => {
   it('should filter listings based on mode', () => {
     const gts = useGTSStore()
     gts.listings = [
-      { listing_type: 'pokemon', data: { name: 'Pikachu', type: 'electric' }, price: 500 },
-      { listing_type: 'item', data: { name: 'Poción' }, price: 200 }
-    ]
+      { id: '1', listing_type: 'pokemon', data: { name: 'Pikachu', type: 'electric' }, price: 500, status: 'active', seller_id: 'user1', created_at: '' },
+      { id: '2', listing_type: 'item', data: { name: 'Poción' }, price: 200, status: 'active', seller_id: 'user2', created_at: '' }
+    ] as MarketListing[]
     
     gts.filters.mode = 'pokemon'
     expect(gts.filteredListings.length).toBe(1)
-    expect(gts.filteredListings[0].data.name).toBe('Pikachu')
+    expect(gts.filteredListings[0]!.data.name).toBe('Pikachu')
     
     gts.filters.mode = 'item'
     expect(gts.filteredListings.length).toBe(1)
-    expect(gts.filteredListings[0].data.name).toBe('Poción')
+    expect(gts.filteredListings[0]!.data.name).toBe('Poción')
   })
 })

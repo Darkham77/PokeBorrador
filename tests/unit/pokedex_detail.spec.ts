@@ -1,4 +1,3 @@
-
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
@@ -6,15 +5,22 @@ import { setActivePinia, createPinia } from 'pinia'
 import PokemonStatBar from '@/components/pokemon-detail/PokemonStatBar.vue'
 import PokemonStatusSection from '@/components/pokemon-detail/PokemonStatusSection.vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
+import type { Pokemon } from '@/types/pokemon'
+
+interface CustomWindow extends Window {
+  NATURE_DATA?: Record<string, { up: string | null; down: string | null; desc: string }>;
+  ABILITY_DATA?: Record<string, { desc: string }>;
+}
 
 describe('Pokedex Detail UI Components', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
     // Mock global bridge functions and data
-    window.NATURE_DATA = {
+    const cw = window as unknown as CustomWindow
+    cw.NATURE_DATA = {
       'Serio': { up: null, down: null, desc: 'Naturaleza equilibrada.' }
     }
-    window.ABILITY_DATA = {
+    cw.ABILITY_DATA = {
       'Presión': { desc: 'Aumenta el consumo de PP del rival.' }
     }
     // Mock SASS tools to avoid build errors in tests if any
@@ -84,7 +90,7 @@ describe('Pokedex Detail UI Components', () => {
 
     it('displays HP and EXP bars', () => {
       const wrapper = mount(PokemonStatusSection, {
-        props: { pokemon: mockPokemon, context: 'team' }
+        props: { pokemon: mockPokemon as unknown as Pokemon, context: 'team' }
       })
       
       expect(wrapper.text()).toContain('10 / 20')
@@ -93,7 +99,7 @@ describe('Pokedex Detail UI Components', () => {
 
     it('contains Vigor description for breeding', () => {
       const wrapper = mount(PokemonStatusSection, {
-        props: { pokemon: mockPokemon },
+        props: { pokemon: mockPokemon as unknown as Pokemon },
         global: { stubs: { PVTooltip: false } }
       })
       
@@ -104,7 +110,7 @@ describe('Pokedex Detail UI Components', () => {
 
     it('renders nature and ability tooltips', () => {
       const wrapper = mount(PokemonStatusSection, {
-        props: { pokemon: mockPokemon },
+        props: { pokemon: mockPokemon as unknown as Pokemon },
         global: { stubs: { PVTooltip: false } }
       })
       

@@ -16,7 +16,7 @@ This file defines the immutable DNA of the Poké Vicio project. Every AI agent i
 
 - **Modern UI Shell**: Glassmorphism, premium gradients, fluid transitions.
 - **Pixel Art Heart**: All game content, sprites, and typography MUST be pixelated.
-- **SASS Integrity**: MANDATORY use of **Capitalized Filters** (e.g., `Blur()`, `Scale()`) to prevent Dart Sass 2.0 collisions.
+- **SASS Integrity**: SASS function capitalization is handled **automatically** by the Vite plugin (`vite-plugin-sass-traps.ts`) during HMR and build. Therefore, developers and agents can write standard lowercase CSS filters/transforms, and Vite will automatically format and capitalize them. No manual capitalization is required.
 - **GPU Efficiency**: Strict use of Texture Atlases and Object Pooling (Phaser).
 - **Game Performance First**: This is a high-fidelity web video game. All UI and logic implementations MUST prioritize GPU-accelerated rendering and FPS stability. Optimize workflows and filter chains (e.g., `pokemon-outline-performance`) to ensure maximum fluidity without compromising visual quality.
 

@@ -86,7 +86,7 @@ export function validatePokemonForRanked(pokemon: Pokemon | null, rules: RankedR
   }
 
   if (rules.allowedTypes.length > 0) {
-    const types = [pokemon.type, pokemon.type2].filter(Boolean).map(t => t!.toLowerCase());
+    const types = [pokemon.type, pokemon.type2].filter(Boolean).map(t => typeof t === 'string' ? t.toLowerCase() : String(t).toLowerCase());
     const hasAllowedType = types.some((t: string) => rules.allowedTypes.includes(t));
     if (!hasAllowedType) {
       return { ok: false, reason: `${pokemon.name || id} no tiene un tipo permitido.` };

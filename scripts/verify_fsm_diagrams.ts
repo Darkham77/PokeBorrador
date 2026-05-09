@@ -21,9 +21,9 @@ const FSM_PATH    = path.join(__dirname, '../../../../src/logic/battle/battleSta
 // ─── Utilidades ──────────────────────────────────────────────────────────────
 const sep = (c = '─', n = 60) => c.repeat(n);
 
-function parseMermaid(manualCode) {
-  const states      = new Set();
-  const transitions = []; // { from, to, label }
+function parseMermaid(manualCode: string) {
+  const states      = new Set<string>();
+  const transitions: { from: string; to: string; label: string }[] = []; // { from, to, label }
 
   const blockRx = /```mermaid\n([\s\S]*?)```/g;
   let blockMatch;
@@ -45,7 +45,7 @@ function parseMermaid(manualCode) {
       if (stateM) { states.add(stateM[1]); }
 
       // A --> B  o  A --> B : Label
-      const transM = line.match(/^([A-Za-z0-9_\[\]*]+)\s+-->\s+([A-Za-z0-9_\[\]*]+)(?:\s*:\s*(.+))?/);
+      const transM = line.match(/^([A-Za-z0-9_[\]*]+)\s+-->\s+([A-Za-z0-9_[\]*]+)(?:\s*:\s*(.+))?/);
       if (transM) {
         const from  = transM[1] === '[*]' ? '__START__' : transM[1];
         const to    = transM[2] === '[*]' ? '__END__'   : transM[2];
@@ -63,8 +63,8 @@ function parseMermaid(manualCode) {
   return { states, transitions };
 }
 
-function parseJsFsm(fsmCode) {
-  const allKeys = new Set();
+function parseJsFsm(fsmCode: string) {
+  const allKeys = new Set<string>();
 
   // Capturar tanto BATTLE_STATES como BATTLE_SUBSTATES
   const objRx = /export const BATTLE_(?:SUB)?STATES\s*=\s*\{([\s\S]*?)\};/g;
@@ -77,14 +77,13 @@ function parseJsFsm(fsmCode) {
 
   // Extraer validTransitions { [BATTLE_STATES.X]: [...] }
   const vtBlock = fsmCode.match(/const validTransitions\s*=\s*\{([\s\S]*?)\};/);
-  const validTransitions = []; // { from, to }
+  const validTransitions: { from: string; to: string }[] = []; // { from, to }
   if (vtBlock) {
-    const lineRx = /BATTLE_STATES\.([A-Z0-9_]+)/g;
     const rowRx  = /\[BATTLE_STATES\.([A-Z0-9_]+)\]\s*:\s*\[([^\]]+)\]/g;
     let row;
     while ((row = rowRx.exec(vtBlock[1])) !== null) {
-      const from  = row[1];
-      const toAll = [...row[2].matchAll(/BATTLE_STATES\.([A-Z0-9_]+)/g)].map(x => x[1]);
+      const from  = row[1]!;
+      const toAll = Array.from(row[2]!.matchAll(/BATTLE_STATES\.([A-Z0-9_]+)/g)).map(x => x[1]!);
       toAll.forEach(to => validTransitions.push({ from, to }));
     }
   }
@@ -111,7 +110,7 @@ function runAudit() {
 
   // ── CHECK 1: Estados del Mermaid que no están declarados en JS ────────────
   console.log(`\n[CHECK 1] Nodos Mermaid → Constantes JS  (${mermaidStates.size} estados extraídos)`);
-  const missing = [...mermaidStates].filter(s => !jsKeys.has(s));
+  const missing = Array.from(mermaidStates).filter(s => !jsKeys.has(s));
 
   // Filtrar nodos genéricos de Mermaid que no son constantes (choice, etc.)
   const MERMAID_META = new Set(['choice']);
@@ -125,7 +124,7 @@ function runAudit() {
 
   // ── CHECK 2: Constantes JS que no aparecen en ningún diagrama Mermaid ─────
   console.log(`\n[CHECK 2] Constantes JS → Cobertura Mermaid  (${jsKeys.size} constantes)`);
-  const orphanJs = [...jsKeys].filter(k => !mermaidStates.has(k));
+  const orphanJs = Array.from(jsKeys).filter(k => !mermaidStates.has(k));
   if (orphanJs.length === 0) {
     console.log('  ✅ Todas las constantes JS tienen cobertura en el manual.');
   } else {
@@ -138,7 +137,7 @@ function runAudit() {
   // Extraer top-level states del JS (solo BATTLE_STATES, no SUBSTATES)
   const topLevelRx = /export const BATTLE_STATES\s*=\s*\{([\s\S]*?)\};/;
   const tlm = fsmCode.match(topLevelRx);
-  const topLevelJs = new Set(tlm ? [...tlm[1].matchAll(/([A-Z][A-Z0-9_]+)\s*:/g)].map(x => x[1]) : []);
+  const topLevelJs = new Set(tlm ? Array.from(tlm[1]!.matchAll(/([A-Z][A-Z0-9_]+)\s*:/g)).map(x => x[1]!) : []);
 
   console.log(`\n[CHECK 3] Transiciones top-level Mermaid → validTransitions JS`);
   const topTransitions = mermaidTransitions.filter(t => topLevelJs.has(t.from) && topLevelJs.has(t.to));

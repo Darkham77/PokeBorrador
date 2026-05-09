@@ -1,4 +1,3 @@
-
 /**
  * @vitest-environment jsdom
  */
@@ -6,7 +5,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { setActivePinia, createPinia } from 'pinia'
 import BattleInfoCard from '@/components/battle/BattleInfoCard.vue'
-import { useBattleStore } from '@/stores/battle'
+import type { Pokemon } from '@/types/pokemon'
 
 vi.mock('@/stores/battle', () => ({
   useBattleStore: vi.fn(() => ({
@@ -47,13 +46,19 @@ vi.mock('@/logic/battle/weatherMapper', () => ({
 
 // Mock localStorage for environments where it's missing
 if (typeof localStorage === 'undefined') {
-  const store = {}
+  const store: Record<string, string> = {}
   global.localStorage = {
-    getItem: (key) => store[key] || null,
-    setItem: (key, value) => { store[key] = value.toString() },
-    clear: () => { for (const key in store) delete store[key] },
-    removeItem: (key) => { delete store[key] }
+    getItem: (key: string): string | null => store[key] || null,
+    setItem: (key: string, value: string): void => { store[key] = value.toString() },
+    clear: (): void => { for (const key in store) delete store[key] },
+    removeItem: (key: string): void => { delete store[key] },
+    length: 0,
+    key: (_index: number): string | null => null
   }
+}
+
+interface BattleInfoCardInstance {
+  volatileStatuses: { icon: string; text: string }[];
 }
 
 describe('BattleInfoCard - Ability Tooltips', () => {
@@ -74,7 +79,7 @@ describe('BattleInfoCard - Ability Tooltips', () => {
   it('should display the ability description in the tooltip', async () => {
     const wrapper = mount(BattleInfoCard, {
       props: {
-        pokemon: mockPokemon,
+        pokemon: mockPokemon as unknown as Pokemon,
         isPlayer: false
       }
     })
@@ -91,39 +96,45 @@ describe('BattleInfoCard - Ability Tooltips', () => {
     // we check the computed property or the prop passed to the tooltip.
     
     // In our component, volatileStatuses[0].text should contain the description
-    const vs = wrapper.vm.volatileStatuses
+    const vm = wrapper.vm as unknown as BattleInfoCardInstance
+    const vs = vm.volatileStatuses
     const abilityStatus = vs.find(s => s.icon === '🧠')
     
-    expect(abilityStatus.text).toContain('HABILIDAD: PUNTO TÓXICO')
-    expect(abilityStatus.text).toContain('Puede envenenar al objetivo al mínimo contacto')
+    expect(abilityStatus).toBeDefined()
+    expect(abilityStatus!.text).toContain('HABILIDAD: PUNTO TÓXICO')
+    expect(abilityStatus!.text).toContain('Puede envenenar al objetivo al mínimo contacto')
   })
 
   it('should handle case-insensitive ability names', async () => {
     const wrapper = mount(BattleInfoCard, {
       props: {
-        pokemon: { ...mockPokemon, ability: 'punto tóxico' }, // Lowercase
+        pokemon: { ...mockPokemon, ability: 'punto tóxico' } as unknown as Pokemon, // Lowercase
         isPlayer: false
       }
     })
 
-    const vs = wrapper.vm.volatileStatuses
+    const vm = wrapper.vm as unknown as BattleInfoCardInstance
+    const vs = vm.volatileStatuses
     const abilityStatus = vs.find(s => s.icon === '🧠')
     
-    expect(abilityStatus.text).toContain('HABILIDAD: PUNTO TÓXICO')
-    expect(abilityStatus.text).toContain('Puede envenenar al objetivo al mínimo contacto')
+    expect(abilityStatus).toBeDefined()
+    expect(abilityStatus!.text).toContain('HABILIDAD: PUNTO TÓXICO')
+    expect(abilityStatus!.text).toContain('Puede envenenar al objetivo al mínimo contacto')
   })
 
   it('should show "Sin descripción disponible" for unknown abilities', async () => {
     const wrapper = mount(BattleInfoCard, {
       props: {
-        pokemon: { ...mockPokemon, ability: 'Habilidad Inventada' },
+        pokemon: { ...mockPokemon, ability: 'Habilidad Inventada' } as unknown as Pokemon,
         isPlayer: false
       }
     })
 
-    const vs = wrapper.vm.volatileStatuses
+    const vm = wrapper.vm as unknown as BattleInfoCardInstance
+    const vs = vm.volatileStatuses
     const abilityStatus = vs.find(s => s.icon === '🧠')
     
-    expect(abilityStatus.text).toContain('Sin descripción disponible')
+    expect(abilityStatus).toBeDefined()
+    expect(abilityStatus!.text).toContain('Sin descripción disponible')
   })
 })

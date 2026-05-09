@@ -6,6 +6,30 @@ import { BattleStateName, BattleSubStateName } from '@/logic/battle/battleStateM
 import { Event } from '@/logic/events/eventEngine';
 import { AuthUser } from './auth';
 import { DBRouter } from '@/logic/db/dbRouter';
+import { DayPhase, Season } from '@/logic/timeUtils';
+
+export interface WorldMap {
+  id: string;
+  name: string;
+  icon: string;
+  badges: number;
+  desc: string;
+  wild: { morning: string[]; day: string[]; dusk: string[]; night: string[] };
+  rates: { morning: number[]; day: number[]; dusk: number[]; night: number[] };
+  lv: [number, number];
+  isCave?: boolean;
+  isIndoors?: boolean;
+  fishing?: { pool: string[]; rates: number[]; lv: [number, number] };
+  weather?: Record<string, { visitors: Record<string, number>; exclusive?: Record<string, number> }>;
+}
+
+export interface DominanceInfo {
+  winner: string | null;
+  since?: number;
+  union?: number;
+  poder?: number;
+  guardian?: { id: string, captured: boolean } | null;
+}
 
 export interface BattleOptions {
   isTrainer?: boolean;
@@ -124,12 +148,19 @@ export interface UIStore {
 
 export interface MapStore {
   currentMap: string;
+  currentMapData: WorldMap | undefined;
+  region: string;
   currentWeather: string;
   globalWeather: string | null;
-  mapWinners: Record<string, string>;
+  mapWinners: Record<string, DominanceInfo>;
   activeEvents: Event[];
-  currentSeason: { id: string; name: string };
+  currentSeason: Season;
   currentEpochHour: number;
+  currentCycle: DayPhase;
+  maps: WorldMap[];
+  setGlobalWeather: (w: string | null) => void;
+  setGlobalCycle: (c: DayPhase | null) => void;
+  navigate: (locId: string) => Promise<void>;
 }
 
 export interface PendingAward {
@@ -159,11 +190,7 @@ export interface EventStore {
   getCaptureEvent: (speciesId: string) => Event | null | undefined;
 }
 
-export interface DominanceInfo {
-  union: number;
-  poder: number;
-  winner: string | null;
-}
+// DominanceInfo merged at the top
 
 export interface CompetitionResult {
   id: string;
@@ -181,7 +208,10 @@ export interface WarStore {
   warCoins: number;
   weeklyPoints: number;
   mapDominance: Record<string, DominanceInfo>;
+  isLoading: boolean;
+  dailyGuardianCaptures: string[];
   addPoints: (mapId: string, eventType: string, success: boolean) => Promise<number>;
+  resolveWeeklySeason: () => Promise<void>;
 }
 
 export interface PlayerClassStore {

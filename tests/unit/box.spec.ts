@@ -1,10 +1,9 @@
-
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { useBoxStore } from '@/stores/box'
 import { useGameStore } from '@/stores/game'
-import { useUIStore } from '@/stores/ui'
+import type { Pokemon } from '@/types/pokemon'
 
 describe('BoxStore Modernization', () => {
   beforeEach(() => {
@@ -31,10 +30,12 @@ describe('BoxStore Modernization', () => {
     const gs = useGameStore()
     
     box.togglePokeTag(0, 'fav')
-    expect(gs.state.box[0].tags).toContain('fav')
+    const poke1 = gs.state.box[0] as Pokemon
+    expect(poke1.tags).toContain('fav')
     
     box.togglePokeTag(0, 'fav')
-    expect(gs.state.box[0].tags).not.toContain('fav')
+    const poke2 = gs.state.box[0] as Pokemon
+    expect(poke2.tags).not.toContain('fav')
   })
 
   it('should calculate Rocket Sell value with legacy formula', () => {
@@ -52,13 +53,13 @@ describe('BoxStore Modernization', () => {
 
   it('should heal pokemon when sent to box', () => {
     const gs = useGameStore()
-    const bulbasaur = gs.state.team[0]
+    const bulbasaur = gs.state.team[0] as Pokemon
     
     // Bulbasaur has 5/20 HP and 0 PP
     gs.sendToBox(0)
     
     expect(bulbasaur.hp).toBe(bulbasaur.maxHp)
-    expect(bulbasaur.moves[0].pp).toBe(35)
+    expect(bulbasaur.moves![0]!.pp).toBe(35)
     expect(gs.state.box).toContain(bulbasaur)
   })
 
@@ -68,12 +69,13 @@ describe('BoxStore Modernization', () => {
     
     // Reset box
     gs.state.box = [
-      { id: 'pidgey', name: 'Pidgey', level: 10, ivs: { hp: 10, atk: 10, def: 10, spa: 10, spd: 10, spe: 10 }, moves: [{ name: 'Tackle', pp: 35, maxPP: 35 }] }
+      { id: 'pidgey', name: 'Pidgey', level: 10, ivs: { hp: 10, atk: 10, def: 10, spa: 10, spd: 10, spe: 10 }, moves: [{ name: 'Tackle', pp: 35, maxPP: 35 }] } as unknown as Pokemon
     ]
     
     box.movePokemonToBox(0, 1) // Move Pidgey to Box 2 (start index 50)
     
-    expect(gs.state.box[50].name).toBe('Pidgey')
+    const pidgeyBox = gs.state.box[50] as Pokemon
+    expect(pidgeyBox.name).toBe('Pidgey')
     expect(gs.state.box[0]).toBeNull()
   })
 })

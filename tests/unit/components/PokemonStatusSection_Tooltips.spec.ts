@@ -6,6 +6,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { setActivePinia, createPinia } from 'pinia'
 import PokemonStatusSection from '@/components/pokemon-detail/PokemonStatusSection.vue'
+import type { Pokemon } from '@/types/pokemon'
 
 // Mock PVTooltip to inspect props
 vi.mock('@/components/common/PVTooltip.vue', () => ({
@@ -32,7 +33,7 @@ describe('PokemonStatusSection - Tooltips', () => {
 
   it('should pass the correct nature description to the tooltip', () => {
     const wrapper = mount(PokemonStatusSection, {
-      props: { pokemon: mockPokemon }
+      props: { pokemon: mockPokemon as unknown as Pokemon }
     })
 
     // Find the nature card tooltip
@@ -40,40 +41,42 @@ describe('PokemonStatusSection - Tooltips', () => {
     const natureTooltip = tooltips.find(t => t.props('title') === 'NATURALEZA')
     
     expect(natureTooltip).toBeDefined()
-    expect(natureTooltip.props('description')).toContain('⬆ +10% Defensa / ⬇ -10% Ataque')
+    expect(natureTooltip!.props('description')).toContain('⬆ +10% Defensa / ⬇ -10% Ataque')
   })
 
   it('should pass the correct ability description to the tooltip', () => {
     const wrapper = mount(PokemonStatusSection, {
-      props: { pokemon: mockPokemon }
+      props: { pokemon: mockPokemon as unknown as Pokemon }
     })
 
     const tooltips = wrapper.findAllComponents({ name: 'PVTooltip' })
     const abilityTooltip = tooltips.find(t => t.props('title') === 'HABILIDAD')
     
     expect(abilityTooltip).toBeDefined()
-    expect(abilityTooltip.props('description')).toContain('Puede envenenar al objetivo al mínimo contacto')
+    expect(abilityTooltip!.props('description')).toContain('Puede envenenar al objetivo al mínimo contacto')
   })
 
   it('should handle case-insensitive nature lookups', () => {
     const wrapper = mount(PokemonStatusSection, {
-      props: { pokemon: { ...mockPokemon, nature: 'osado' } }
+      props: { pokemon: { ...mockPokemon, nature: 'osado' } as unknown as Pokemon }
     })
 
     const tooltips = wrapper.findAllComponents({ name: 'PVTooltip' })
     const natureTooltip = tooltips.find(t => t.props('title') === 'NATURALEZA')
     
-    expect(natureTooltip.props('description')).toContain('⬆ +10% Defensa / ⬇ -10% Ataque')
+    expect(natureTooltip).toBeDefined()
+    expect(natureTooltip!.props('description')).toContain('⬆ +10% Defensa / ⬇ -10% Ataque')
   })
 
   it('should provide fallback description for unknown nature', () => {
     const wrapper = mount(PokemonStatusSection, {
-      props: { pokemon: { ...mockPokemon, nature: 'Unknown' } }
+      props: { pokemon: { ...mockPokemon, nature: 'Unknown' } as unknown as Pokemon }
     })
 
     const tooltips = wrapper.findAllComponents({ name: 'PVTooltip' })
     const natureTooltip = tooltips.find(t => t.props('title') === 'NATURALEZA')
     
-    expect(natureTooltip.props('description')).toBe('Naturaleza desconocida.')
+    expect(natureTooltip).toBeDefined()
+    expect(natureTooltip!.props('description')).toBe('Naturaleza desconocida.')
   })
 })

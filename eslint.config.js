@@ -54,7 +54,6 @@ export default tseslint.config(
       'node_modules/**',
       'backup_legacy_code/**',
       'scratch/**',
-      'tests/**',
       'public/js/**',
       '.agents/**',
       'tmp/**',

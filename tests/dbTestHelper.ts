@@ -6,6 +6,7 @@
 import { vi } from 'vitest';
 import { DBRouter } from '@/logic/db/dbRouter';
 import { resetSQLite } from '@/logic/db/sqliteEngine';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
 /**
  * Creates a DBRouter instance in In-Memory test mode.
@@ -19,8 +20,8 @@ export async function createTestDBRouter() {
   if (typeof window !== 'undefined') {
     window.initSqlJs = vi.fn().mockResolvedValue({
       Database: class {
-        constructor() { this.tables = []; }
-        run(sql) { if (this.tables && this.tables.push) this.tables.push(sql); }
+        tables: string[] = [];
+        run(sql: string) { if (this.tables && this.tables.push) this.tables.push(sql); }
         prepare() { return { bind: () => {}, step: () => false, free: () => {} }; }
         export() { return new Uint8Array(); }
       }
@@ -35,12 +36,11 @@ export async function createTestDBRouter() {
   };
 
   const router = new DBRouter({ url: 'http://localhost', key: 'mock' }, 'offline', {
-    inMemory: true,
-    dbName: 'pokevicio_unit_test_db'
+    inMemory: true
   });
 
   // Inject the mock into the internal private client to avoid lazy initialization failures in tests
-  router._realClient = mockSupabase;
+  router._realClient = mockSupabase as unknown as SupabaseClient;
 
   return router;
 }

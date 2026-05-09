@@ -21,10 +21,11 @@ describe('Pokemon Database Integrity', () => {
   it('every species must have core combat stats', () => {
     const stats = ['hp', 'atk', 'def', 'spa', 'spd', 'spe'];
     species.forEach(([id, data]) => {
+      const record = data as unknown as Record<string, unknown>;
       stats.forEach(stat => {
-        expect(data[stat], `Pokemon "${id}" is missing stat: ${stat}`).toBeDefined();
-        expect(typeof data[stat], `Pokemon "${id}" stat ${stat} must be a number`).toBe('number');
-        expect(data[stat], `Pokemon "${id}" stat ${stat} must be positive`).toBeGreaterThan(0);
+        expect(record[stat], `Pokemon "${id}" is missing stat: ${stat}`).toBeDefined();
+        expect(typeof record[stat], `Pokemon "${id}" stat ${stat} must be a number`).toBe('number');
+        expect(record[stat] as number, `Pokemon "${id}" stat ${stat} must be positive`).toBeGreaterThan(0);
       });
     });
   });

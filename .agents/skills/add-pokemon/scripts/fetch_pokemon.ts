@@ -1,9 +1,41 @@
-const https = require('https');
-const fs = require('fs');
-const path = require('path');
+import https from 'node:https';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// ── Interfaces PokeAPI ────────────────────────────────────────────────────────
+interface PokeAPIName { language: { name: string }; name: string; }
+interface PokeAPIStat { base_stat: number; stat: { name: string }; }
+interface PokeAPIType { type: { name: string }; }
+interface PokeAPIAbility { ability: { name: string; url: string }; is_hidden: boolean; }
+interface PokeAPIMove {
+  move: { name: string; url: string };
+  version_group_details: Array<{
+    level_learned_at: number;
+    move_learn_method: { name: string };
+    version_group: { name: string };
+  }>;
+}
+interface PokeAPIFlavorText { flavor_text: string; language: { name: string }; version: { name: string }; }
+interface PokeAPISpecies {
+  flavor_text_entries: PokeAPIFlavorText[];
+  names: PokeAPIName[];
+  evolution_chain: { url: string };
+}
+interface PokeAPIPokemon {
+  id: number;
+  name: string;
+  stats: PokeAPIStat[];
+  types: PokeAPIType[];
+  abilities: PokeAPIAbility[];
+  moves: PokeAPIMove[];
+}
 
 // ── Caché de nombres para evitar redundancia ─────────────────────────────────
-const NAME_CACHE = {
+const NAME_CACHE: Record<string, Record<string, string>> = {
   moves: {},
   abilities: {},
   species: {}
@@ -12,46 +44,47 @@ const NAME_CACHE = {
 // ── Versión target para learnset ──────────────────────────────────────────────
 const TARGET_VERSIONS = ['firered-leafgreen', 'ruby-sapphire', 'emerald', 'heartgold-soulsilver'];
 
-const httpsGet = (url) => new Promise((resolve, reject) => {
-  https.get(url, { headers: { 'User-Agent': 'PokeBorrador-AddPokemon/1.0' } }, (res) => {
+const httpsGet = <T>(url: string): Promise<T> => new Promise((resolve, reject) => {
+  https.get(url, { headers: { 'User-Agent': 'PokeBorrador-AddPokemon/1.0' } }, (res: import('node:http').IncomingMessage) => {
     if (res.statusCode !== 200) return reject(new Error(`HTTP ${res.statusCode} for ${url}`));
     let data = '';
-    res.on('data', c => data += c);
-    res.on('end', () => { try { resolve(JSON.parse(data)); } catch(e) { reject(e); } });
+    res.on('data', (c: Buffer | string) => data += c);
+    res.on('end', () => { try { resolve(JSON.parse(data) as T); } catch(e) { reject(e); } });
   }).on('error', reject);
 });
 
-async function getSpanishName(url, type) {
-  if (NAME_CACHE[type][url]) return NAME_CACHE[type][url];
+async function getSpanishName(url: string, type: 'moves' | 'abilities' | 'species'): Promise<string | null> {
+  const cache = NAME_CACHE[type];
+  if (cache && cache[url]) return cache[url];
   
   try {
-    const data = await httpsGet(url);
+    const data = await httpsGet<{ names: PokeAPIName[] }>(url);
     const esEntry = data.names.find(n => n.language.name === 'es');
     const name = esEntry ? esEntry.name : null;
-    if (name) NAME_CACHE[type][url] = name;
+    if (name && cache) cache[url] = name;
     return name;
   } catch (e) {
     return null;
   }
 }
 
-async function fetchPokemon(pokemonName) {
+async function fetchPokemon(pokemonName: string) {
   const name = pokemonName.toLowerCase().trim();
   console.log(`\nFetching data for "${name}" from PokeAPI...`);
 
   // 1. Fetch basic pokemon data
-  const pokemon = await httpsGet(`https://pokeapi.co/api/v2/pokemon/${name}`);
+  const pokemon = await httpsGet<PokeAPIPokemon>(`https://pokeapi.co/api/v2/pokemon/${name}`);
   
   const nationalId = pokemon.id;
   const officialName = pokemon.name;
 
   // Stats
-  const statMap = {};
+  const statMap: Record<string, number> = {};
   pokemon.stats.forEach(s => { statMap[s.stat.name] = s.base_stat; });
 
   // Types
   const types = pokemon.types.map(t => t.type.name);
-  const type1 = types[0];
+  const type1 = types[0]!;
   const type2 = types[1] || null;
 
   // Abilities
@@ -95,10 +128,11 @@ async function fetchPokemon(pokemonName) {
   }
 
   // Remove duplicates keeping lowest level, then sort
-  const uniqueMovesMap = {};
+  const uniqueMovesMap: Record<string, { lv: number; en: string; es: string; pp: number }> = {};
   levelMoves.forEach(m => {
     const key = m.en;
-    if (!uniqueMovesMap[key] || m.lv < uniqueMovesMap[key].lv) {
+    const existing = uniqueMovesMap[key];
+    if (!existing || m.lv < existing.lv) {
       uniqueMovesMap[key] = m;
     }
   });
@@ -106,14 +140,14 @@ async function fetchPokemon(pokemonName) {
 
   // 3. Species data (flavor text)
   console.log('Fetching species data...');
-  const species = await httpsGet(`https://pokeapi.co/api/v2/pokemon-species/${nationalId}`);
+  const species = await httpsGet<PokeAPISpecies>(`https://pokeapi.co/api/v2/pokemon-species/${nationalId}`);
   const flavorEs = species.flavor_text_entries.find(e => e.language.name === 'es' && ['ruby', 'sapphire', 'firered', 'leafgreen', 'emerald'].includes(e.version.name));
   const flavorEn = species.flavor_text_entries.find(e => e.language.name === 'en' && ['ruby', 'sapphire', 'firered', 'leafgreen', 'emerald'].includes(e.version.name));
   const nameEs = species.names.find(n => n.language.name === 'es')?.name || officialName;
   
   // Evolution chain
   const evoChainUrl = species.evolution_chain.url;
-  const evoChain = await httpsGet(evoChainUrl);
+  const evoChain = await httpsGet<{ chain: unknown }>(evoChainUrl);
 
   // ── Build output ─────────────────────────────────────────────────────────────
   const result = {
@@ -126,12 +160,12 @@ async function fetchPokemon(pokemonName) {
       sprite_url: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${nationalId}.png`,
     },
     stats: {
-      hp: statMap['hp'],
-      atk: statMap['attack'],
-      def: statMap['defense'],
-      spa: statMap['special-attack'],
-      spd: statMap['special-defense'],
-      spe: statMap['speed'],
+      hp: statMap['hp'] || 0,
+      atk: statMap['attack'] || 0,
+      def: statMap['defense'] || 0,
+      spa: statMap['special-attack'] || 0,
+      spd: statMap['special-defense'] || 0,
+      spe: statMap['speed'] || 0,
     },
     abilities: abilities,
     flavor_text: {

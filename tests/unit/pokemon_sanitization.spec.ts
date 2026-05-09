@@ -1,7 +1,6 @@
-
 import { describe, it, expect, vi } from 'vitest';
 import { sanitizePokemon, recalcPokemonStats } from '@/logic/pokemonFactory';
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+import type { Pokemon } from '@/types/pokemon';
 
 // Mock dependencies
 vi.mock('@/logic/providers/pokemonDataProvider', () => ({
@@ -35,21 +34,21 @@ describe('Pokemon Sanitization (Self-Healing) - Deep Fixes', () => {
         { name: 'undefined' },
         { name: '???' }
       ]
-    };
+    } as unknown as Pokemon;
 
     sanitizePokemon(p);
 
-    expect(p.moves[0].name).toBe('Placaje');
-    expect(p.moves[1].name).toBe('Placaje');
-    expect(p.moves[2].name).toBe('Placaje');
-    expect(p.moves[0].power).toBe(40);
+    expect(p.moves[0]!.name).toBe('Placaje');
+    expect(p.moves[1]!.name).toBe('Placaje');
+    expect(p.moves[2]!.name).toBe('Placaje');
+    expect(p.moves[0]!.power).toBe(40);
   });
 
   it('should repair invalid abilities', () => {
     const p = {
       id: 'charizard',
       ability: 'Habilidad Inventada'
-    };
+    } as unknown as Pokemon;
 
     sanitizePokemon(p);
 
@@ -61,12 +60,12 @@ describe('Pokemon Sanitization (Self-Healing) - Deep Fixes', () => {
     const p = {
       id: 'zubat',
       moves: []
-    };
+    } as unknown as Pokemon;
 
     sanitizePokemon(p);
 
     expect(p.moves.length).toBe(1);
-    expect(p.moves[0].name).toBe('Placaje');
+    expect(p.moves[0]!.name).toBe('Placaje');
   });
 
   it('should fix missing properties in recalcPokemonStats', () => {
@@ -75,12 +74,12 @@ describe('Pokemon Sanitization (Self-Healing) - Deep Fixes', () => {
       level: 50,
       ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
       moves: [{ name: 'Arañazo' }] // Missing properties
-    };
+    } as unknown as Pokemon;
 
     recalcPokemonStats(p);
 
-    expect(p.moves[0].power).toBe(40);
-    expect(p.moves[0].type).toBe('normal');
+    expect(p.moves[0]!.power).toBe(40);
+    expect(p.moves[0]!.type).toBe('normal');
     expect(p.maxHp).toBeGreaterThan(0);
   });
 
@@ -91,7 +90,7 @@ describe('Pokemon Sanitization (Self-Healing) - Deep Fixes', () => {
       ivs: { hp: 10, atk: 10, def: 10, spa: 10, spd: 10, spe: 10 },
       atk: NaN,
       maxHp: undefined
-    };
+    } as unknown as Pokemon;
 
     recalcPokemonStats(p);
 

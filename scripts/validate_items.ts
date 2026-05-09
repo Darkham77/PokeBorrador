@@ -25,6 +25,20 @@ if (process.permission && !process.permission.has('fs.read', process.cwd())) {
 const SHOP_FILE   = path.resolve(process.cwd(), 'src/data/items.ts');
 const BATTLE_FILE = path.resolve(process.cwd(), 'src/logic/items/itemEffects.ts');
 
+interface ShopItem {
+  id: string;
+  _line: number;
+  name?: string | null;
+  cat?: string | null;
+  sprite?: string | null;
+  icon?: string | null;
+  desc?: string | null;
+  type?: string | null;
+  price?: number | null;
+  market?: boolean | null;
+  [key: string]: unknown;
+}
+
 async function main() {
   console.log(styleText('bold', '\n--- 🛡️  ITEM INTEGRITY VALIDATOR ---'));
 
@@ -41,18 +55,18 @@ async function main() {
 
   // ─── 1. Extract SHOP_ITEMS entries (line-based parser) ───────────────────────
   const shopLines = shopContent.split('\n');
-  const shopItems: any[] = [];
+  const shopItems: ShopItem[] = [];
   const shopStart = shopLines.findIndex(l => l.includes('SHOP_ITEMS') && l.includes('['));
   const shopEnd   = shopLines.length;
 
-  let current: any = null;
+  let current: ShopItem | null = null;
 
   for (let i = shopStart; i < shopEnd; i++) {
     const line = shopLines[i]!;
     const idMatch = line.match(/\bid:\s*'([^']+)'/);
     if (idMatch) {
       if (current && current.name && current.cat) shopItems.push(current);
-      current = { id: idMatch[1], _line: i + 1 };
+      current = { id: idMatch[1]!, _line: i + 1 };
     }
 
     if (!current) continue;
@@ -74,7 +88,7 @@ async function main() {
   if (current && current.name && current.cat) shopItems.push(current);
 
   // ─── 2. Extract HEALING_ITEMS keys ───────────────────────────────────────────
-  const healingItems = new Set();
+  const healingItems = new Set<string>();
   const healingRegex = /^\s+'([^']+)':\s*\(?[\s\S]*?\)?\s*=>/gm;
   let m;
   while ((m = healingRegex.exec(battleContent)) !== null) {
@@ -100,7 +114,8 @@ async function main() {
     const tag = `[${item.name || item.id} (line ~${item._line})]`;
 
     REQUIRED_FIELDS.forEach(f => {
-      if (item[f] == null || item[f] === '') {
+      const val = item[f];
+      if (val == null || val === '') {
         errors.push(`${tag} Missing required field: '${f}'`);
       }
     });
@@ -109,13 +124,13 @@ async function main() {
       errors.push(`${tag} Unknown category: '${item.cat}'`);
     }
 
-    if (MUST_BE_USABLE.includes(item.cat) && !healingItems.has(item.name)) {
-      if (!item.name?.startsWith('MT')) {
+    if (item.cat && MUST_BE_USABLE.includes(item.cat) && item.name && !healingItems.has(item.name)) {
+      if (!item.name.startsWith('MT')) {
         errors.push(`${tag} cat='${item.cat}' but '${item.name}' has no entry in HEALING_ITEMS.`);
       }
     }
 
-    if (MUST_NOT_BE_USABLE.includes(item.cat) && healingItems.has(item.name)) {
+    if (item.cat && MUST_NOT_BE_USABLE.includes(item.cat) && item.name && healingItems.has(item.name)) {
       errors.push(`${tag} cat='${item.cat}' should NOT be in HEALING_ITEMS.`);
     }
 
@@ -130,7 +145,7 @@ async function main() {
   const shopItemNames = new Set(shopItems.map(i => i.name));
 
   healingItems.forEach(name => {
-    if (typeof name === 'string' && name.startsWith('MT')) return;
+    if (name.startsWith('MT')) return;
     if (!shopItemNames.has(name)) {
       warnings.push(`[PHANTOM] '${name}' is in HEALING_ITEMS but has NO entry in SHOP_ITEMS.`);
     }

@@ -2,6 +2,7 @@
 import { describe, it, expect } from 'vitest';
 import { getPokemonTier } from '@/logic/pokemon/tierEngine';
 import { getSellPrice, filterInventoryByCategory } from '@/logic/inventory/inventoryEngine';
+import type { Pokemon } from '@/types/pokemon';
 
 describe('Tier Engine', () => {
   it('should calculate specific tiers correctly', () => {
@@ -14,8 +15,8 @@ describe('Tier Engine', () => {
     const badPoke = { ivs: { hp: 1, atk: 1, def: 1, spa: 1, spd: 1, spe: 1 } }; // 6
     expect(getPokemonTier(badPoke).tier).toBe('F');
     
-    const nulledPoke = { ivs: {} };
-    expect(getPokemonTier(nulledPoke).tier).toBe('F');
+    const nulledPoke = { ivs: {} } as unknown as Partial<Pokemon>;
+    expect(getPokemonTier(nulledPoke as unknown as Pokemon).tier).toBe('F');
   });
 });
 
@@ -39,10 +40,10 @@ describe('Inventory Engine', () => {
 
     const balls = filterInventoryByCategory(inv, 'pokeballs');
     expect(balls.length).toBe(1);
-    expect(balls[0][0]).toBe('Pokéball');
+    expect(balls[0]![0]).toBe('Pokéball');
 
     const potions = filterInventoryByCategory(inv, 'pociones');
     expect(potions.length).toBe(1);
-    expect(potions[0][0]).toBe('Poción');
+    expect(potions[0]![0]).toBe('Poción');
   });
 });

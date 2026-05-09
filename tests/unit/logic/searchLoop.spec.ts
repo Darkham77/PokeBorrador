@@ -1,8 +1,8 @@
-
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { handleBattleFlowCompletion } from '@/logic/battle/searchLoop'
 import { BATTLE_STATES, BATTLE_SUBSTATES } from '@/logic/battle/battleStateMachine'
 import type { BattleContext } from '@/types/battleContext'
+import type { Pokemon } from '@/types/pokemon'
 
 vi.mock('@/logic/encounters', () => ({
   generateEncounter: vi.fn(async () => ({ type: 'wild', pokemon: { id: 16, name: 'Pidgey' } }))
@@ -47,7 +47,7 @@ describe('searchLoop.js - handleBattleFlowCompletion', () => {
       gs: { state: {} },
       fsm: {
         currentState: { value: BATTLE_STATES.ACTIVE_BATTLE },
-        transition: vi.fn(async (s, sub) => {
+        transition: vi.fn(async (s, _sub) => {
           mockCtx.fsm.currentState.value = s
         })
       },
@@ -58,11 +58,11 @@ describe('searchLoop.js - handleBattleFlowCompletion', () => {
   })
 
   it('should promote upcomingPokemon to _initialEnemy during search loop', async () => {
-    mockCtx.upcomingPokemon.value = { id: 19, name: 'Rattata' }
+    mockCtx.upcomingPokemon.value = { id: '19', name: 'Rattata' } as unknown as Pokemon
     
     await handleBattleFlowCompletion(mockCtx, 'search')
     
-    expect(mockCtx.activeBattle.value._initialEnemy).toEqual(expect.objectContaining({ name: 'Rattata' }))
+    expect(mockCtx.activeBattle.value!._initialEnemy).toEqual(expect.objectContaining({ name: 'Rattata' }))
     expect(mockCtx.fsm.transition).toHaveBeenCalledWith(BATTLE_STATES.INITIALIZING)
   })
 
@@ -72,6 +72,6 @@ describe('searchLoop.js - handleBattleFlowCompletion', () => {
     await handleBattleFlowCompletion(mockCtx, 'search')
     expect(mockCtx.upcomingPokemon.value).toEqual(expect.objectContaining({ name: 'Pidgey' }))
     // Note: handleBattleFlowCompletion with 'search' does NOT set activeBattle to null
-    expect(mockCtx.activeBattle.value._initialEnemy).toEqual(expect.objectContaining({ name: 'Pidgey' }))
+    expect(mockCtx.activeBattle.value!._initialEnemy).toEqual(expect.objectContaining({ name: 'Pidgey' }))
   })
 })

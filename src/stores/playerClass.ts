@@ -248,6 +248,7 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
             const invStore = useInventoryStore()
             invStore.addItem(p.heldItem, 1)
           }
+          p.onMission = false
           gameStore.removePokemon(p.uid)
         }
       }

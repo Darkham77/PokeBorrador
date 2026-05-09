@@ -9,7 +9,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
-const IGNORE_DIRS = new Set(['node_modules', '.git', 'dist', '_raw-assets']);
+const IGNORE_DIRS = new Set(['node_modules', '.git', 'dist', '_raw-assets', 'scripts']);
 
 async function getFilesToMigrate(dir: string): Promise<string[]> {
   const files: string[] = [];
@@ -22,6 +22,9 @@ async function getFilesToMigrate(dir: string): Promise<string[]> {
 }
 
 async function migrate(filePath: string) {
+  if (filePath.includes('migrate_temporal.ts')) {
+    return;
+  }
   let content = await fs.readFile(filePath, 'utf-8');
   const original = content;
 

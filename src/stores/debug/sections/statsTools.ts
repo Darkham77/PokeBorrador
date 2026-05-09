@@ -73,7 +73,7 @@ export function registerStatsTools(debug: DebugSystem, { game, ui }: DebugContex
     command: 'setFaction',
     category: 'stats',
     action: (f: string) => {
-      game.state.faction = f
+      game.state.faction = (f === 'none' || f === 'null') ? null : f
       ui.notify(`Debug: Facción cambiada a ${f}`, '🛡️')
       game.saveGame(false)
     },

@@ -12,8 +12,8 @@ describe('Loading Store', () => {
     const store = useLoadingStore()
     store.start('test', 'Loading...')
     expect(store.isActive).toBe(true)
-    expect(store.current.id).toBe('test')
-    expect(store.current.message).toBe('Loading...')
+    expect(store.current!.id).toBe('test')
+    expect(store.current!.message).toBe('Loading...')
   })
 
   it('should finish a loading operation', () => {
@@ -28,10 +28,10 @@ describe('Loading Store', () => {
     const store = useLoadingStore()
     store.start('op1', 'First')
     store.start('op2', 'Second')
-    expect(store.current.id).toBe('op2')
+    expect(store.current!.id).toBe('op2')
     
     store.finish('op2')
-    expect(store.current.id).toBe('op1')
+    expect(store.current!.id).toBe('op1')
   })
 
   it('should prioritize global overlays', () => {
@@ -41,14 +41,14 @@ describe('Loading Store', () => {
     store.start('op3', 'Most Recent Non-Global', 'Sub', false)
     
     // op2 is global, so it should be prioritized over op3 even if op3 is more recent
-    expect(store.current.id).toBe('op2')
+    expect(store.current!.id).toBe('op2')
   })
 
   it('should update progress', () => {
     const store = useLoadingStore()
     store.start('test', 'Initial')
     store.setProgress('test', 'Updated', 'Sub')
-    expect(store.current.message).toBe('Updated')
-    expect(store.current.subMessage).toBe('Sub')
+    expect(store.current!.message).toBe('Updated')
+    expect(store.current!.subMessage).toBe('Sub')
   })
 })

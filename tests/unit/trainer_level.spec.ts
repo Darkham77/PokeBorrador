@@ -1,10 +1,10 @@
-
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 import { TRAINER_RANKS } from '@/data/trainer'
+import type { Pokemon } from '@/types/pokemon'
 
 vi.mock('@/logic/pokemonFactory', () => ({
   makePokemon: vi.fn(),
@@ -45,7 +45,7 @@ describe('Leveling System (Trainer & Pokémon)', () => {
       const gameStore = useGameStore()
       const uiStore = useUIStore()
       
-      const expToLevel2 = TRAINER_RANKS[0].expNeeded
+      const expToLevel2 = TRAINER_RANKS[0]!.expNeeded
       gameStore.addTrainerExp(expToLevel2)
       
       expect(gameStore.state.trainerLevel).toBe(2)
@@ -64,7 +64,7 @@ describe('Leveling System (Trainer & Pokémon)', () => {
         level: 5,
         exp: 1000,
         expNeeded: 500
-      }
+      } as unknown as Pokemon
 
       gameStore.checkLevelUp(pokemon)
 
@@ -82,7 +82,7 @@ describe('Leveling System (Trainer & Pokémon)', () => {
         level: 8,
         exp: 3000,
         expNeeded: 800
-      }
+      } as unknown as Pokemon
 
       // Nivel 8 -> 9 (800 exp) -> Nivel 9 -> 10 (900 exp) -> Nivel 10 -> 11 (1000 exp)
       gameStore.checkLevelUp(pokemon)

@@ -1,12 +1,25 @@
-
-/**
- * tests/unit/map_spawns.spec.js
- * Modernized unit test for map spawn HTML generation logic.
- */
 import { describe, it, expect } from 'vitest';
 
+interface MockLoc {
+  id: string;
+  wild: {
+    day?: string[];
+    night?: string[];
+    [key: string]: string[] | undefined;
+  };
+  fishing?: {
+    pool: string[];
+    rates?: number[];
+  };
+  rates: {
+    day?: number[];
+    night?: number[];
+    [key: string]: number[] | undefined;
+  };
+}
+
 // Lógica aislada extraída para el test (o importar si estuviera en un helper)
-function getPokemonSpriteHtml(id, isRare = false) {
+function getPokemonSpriteHtml(id: string, isRare = false) {
     const num = 1; // Simplified mock
     const name = id;
     return `<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${num}.png"
@@ -15,47 +28,47 @@ function getPokemonSpriteHtml(id, isRare = false) {
           class="${isRare ? 'rare-spawn' : ''}">`;
 }
 
-function processActiveRates(pool, rates, minRatesObj) {
+function processActiveRates(pool: string[] | undefined, rates: number[] | undefined, minRatesObj: Record<string, number>) {
     if (!pool || !rates) return;
-    pool.forEach((id, index) => {
+    pool.forEach((id: string, index: number) => {
         const rate = rates[index] || 0;
-        if (minRatesObj[id] === undefined || rate < minRatesObj[id]) {
+        if (minRatesObj[id] === undefined || rate < (minRatesObj[id] ?? Infinity)) {
             minRatesObj[id] = rate;
         }
     });
 }
 
-function generateLocationSpanwHTML(loc, cycle) {
+function generateLocationSpanwHTML(loc: MockLoc, cycle: string) {
     const currentCycleWild = loc.wild[cycle] || [];
     const baseWild = loc.wild.day || [];
     
-    let genericSpawns = [];
-    let specificSpawns = [];
+    const genericSpawns: string[] = [];
+    const specificSpawns: string[] = [];
     
-    currentCycleWild.forEach(id => {
+    currentCycleWild.forEach((id: string) => {
         if (baseWild.includes(id)) genericSpawns.push(id);
         else specificSpawns.push(id);
     });
     
     const fishingPool = loc.fishing ? loc.fishing.pool : [];
-    fishingPool.forEach(id => {
+    fishingPool.forEach((id: string) => {
         if (!genericSpawns.includes(id) && !specificSpawns.includes(id)) {
             genericSpawns.push(id);
         }
     });
 
-    const minActiveRate = {};
+    const minActiveRate: Record<string, number> = {};
     processActiveRates(currentCycleWild, loc.rates[cycle], minActiveRate);
     if (loc.fishing) processActiveRates(loc.fishing.pool, loc.fishing.rates || [], minActiveRate);
 
-    const anyRare = [...genericSpawns, ...specificSpawns].some(id => minActiveRate[id] < 10);
+    const anyRare = [...genericSpawns, ...specificSpawns].some((id: string) => (minActiveRate[id] ?? 0) < 10);
     
-    const renderSpritesHTML = (ids) => ids.map(id => {
-        const isRare = anyRare && (minActiveRate[id] < 10);
+    const renderSpritesHTML = (ids: string[]) => ids.map((id: string) => {
+        const isRare = anyRare && ((minActiveRate[id] ?? 0) < 10);
         return getPokemonSpriteHtml(id, isRare);
     }).join('');
 
-    let html = `<div class="location-spawns">
+    const html = `<div class="location-spawns">
                   <div class="spawn-row">
                     ${renderSpritesHTML(genericSpawns)}
                   </div>
@@ -76,7 +89,7 @@ function generateLocationSpanwHTML(loc, cycle) {
 }
 
 describe('Map Spawns UI Logic', () => {
-    const mockLoc = {
+    const mockLoc: MockLoc = {
         id: 'route12',
         wild: {
             day: ['pidgey', 'venonat'],
@@ -100,7 +113,7 @@ describe('Map Spawns UI Logic', () => {
     });
 
     it('should identify rare spawns (rate < 10)', () => {
-        const rareLoc = {
+        const rareLoc: MockLoc = {
             ...mockLoc,
             rates: { day: [5, 20] } // pidgey is rare
         };

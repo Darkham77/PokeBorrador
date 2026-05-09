@@ -5,6 +5,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { useAuthStore } from '@/stores/auth'
 import { useDebugStore } from '@/stores/debug'
+import type { AuthUser } from '@/types/auth'
 
 // Stable mock object for chain calls
 const mockChain = {
@@ -39,12 +40,14 @@ vi.mock('@/logic/supabase', () => ({
 
 // Mock localStorage for environments where it's missing
 if (typeof localStorage === 'undefined') {
-  const store = {}
+  const store: Record<string, string> = {}
   global.localStorage = {
-    getItem: (key) => store[key] || null,
-    setItem: (key, value) => { store[key] = value.toString() },
-    clear: () => { for (const key in store) delete store[key] },
-    removeItem: (key) => { delete store[key] }
+    getItem: (key: string): string | null => store[key] || null,
+    setItem: (key: string, value: string): void => { store[key] = value.toString() },
+    clear: (): void => { for (const key in store) delete store[key] },
+    removeItem: (key: string): void => { delete store[key] },
+    length: 0,
+    key: (_index: number): string | null => null
   }
 }
 
@@ -53,7 +56,7 @@ describe('Debug System (Security & Auth)', () => {
     setActivePinia(createPinia())
     vi.clearAllMocks()
     localStorage.clear()
-    delete window.__VITE_DEBUG__
+    delete (window as unknown as Record<string, unknown>).__VITE_DEBUG__
   })
 
   describe('Security & Access', () => {
@@ -64,35 +67,35 @@ describe('Debug System (Security & Auth)', () => {
       const debug = useDebugStore()
       debug.updateGlobalProxy()
       
-      expect(window.__VITE_DEBUG__).toBeDefined()
+      expect((window as unknown as Record<string, unknown>).__VITE_DEBUG__).toBeDefined()
     })
 
     it('initializes window.__VITE_DEBUG__ only for authorized users (online admin)', () => {
       const auth = useAuthStore()
       auth.sessionMode = 'online'
-      auth.user = { id: 'admin_id', role: 'admin' }
+      auth.user = { id: 'admin_id', role: 'admin', user_metadata: { username: 'admin_id' } } as unknown as AuthUser
       
       const debug = useDebugStore()
       debug.updateGlobalProxy()
       
-      expect(window.__VITE_DEBUG__).toBeDefined()
+      expect((window as unknown as Record<string, unknown>).__VITE_DEBUG__).toBeDefined()
     })
 
     it('removes window.__VITE_DEBUG__ for unauthorized users (online regular user)', () => {
       const auth = useAuthStore()
       auth.sessionMode = 'online'
-      auth.user = { id: 'user_id', role: 'user' }
+      auth.user = { id: 'user_id', role: 'user', user_metadata: { username: 'user_id' } } as unknown as AuthUser
       
       const debug = useDebugStore()
       debug.updateGlobalProxy()
       
-      expect(window.__VITE_DEBUG__).toBeUndefined()
+      expect((window as unknown as Record<string, unknown>).__VITE_DEBUG__).toBeUndefined()
     })
 
     it('triggers ban and logout if unauthorized execution is attempted', async () => {
       const auth = useAuthStore()
       auth.sessionMode = 'online'
-      auth.user = { id: 'cheater_id', role: 'user' }
+      auth.user = { id: 'cheater_id', role: 'user', user_metadata: { username: 'cheater_id' } } as unknown as AuthUser
       const logoutSpy = vi.spyOn(auth, 'logout')
       
       const debug = useDebugStore()
@@ -118,7 +121,7 @@ describe('Debug System (Security & Auth)', () => {
       const debug = useDebugStore()
       debug.updateGlobalProxy()
       
-      expect(window.__VITE_DEBUG__).toBeUndefined()
+      expect((window as unknown as Record<string, unknown>).__VITE_DEBUG__).toBeUndefined()
     })
 
     it('ensures login/auth commands are NEVER registered in debug store', () => {

@@ -1,9 +1,8 @@
-
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { mount } from '@vue/test-utils'
-import { defineComponent, h, ref } from 'vue'
+import { defineComponent, ref } from 'vue'
 import { useModalStore } from '@/stores/modals'
 import { useUIStore } from '@/stores/ui'
 import ModalHost from '@/components/common/ModalHost.vue'
@@ -30,20 +29,19 @@ describe('Modal Hierarchy & Performance Logic', () => {
       const store = useModalStore()
       store.open('TestModal')
       
-      expect(store.stack[0].opening).toBe(true)
+      expect(store.stack[0]!.opening).toBe(true)
       
       vi.advanceTimersByTime(449)
-      expect(store.stack[0].opening).toBe(true)
+      expect(store.stack[0]!.opening).toBe(true)
       
       vi.advanceTimersByTime(1)
-      expect(store.stack[0].opening).toBe(false)
+      expect(store.stack[0]!.opening).toBe(false)
     })
   })
 
   describe('ModalHost Hierarchical Logic', () => {
     it('should calculate isSimplified correctly during transitions', async () => {
       const modalStore = useModalStore()
-      const uiStore = useUIStore()
       
       const wrapper = mount(ModalHost, {
         global: {
@@ -63,8 +61,8 @@ describe('Modal Hierarchy & Performance Logic', () => {
       
       let providers = wrapper.findAll('.hierarchy-provider')
       expect(providers.length).toBe(1)
-      expect(providers[0].attributes('data-top')).toBe('true')
-      expect(providers[0].attributes('data-simplified')).toBe('false')
+      expect(providers[0]!.attributes('data-top')).toBe('true')
+      expect(providers[0]!.attributes('data-simplified')).toBe('false')
 
       // 2. Open Modal B (A should be simplified IMMEDIATELY to avoid FX during animation)
       modalStore.open('TestModal')
@@ -72,25 +70,25 @@ describe('Modal Hierarchy & Performance Logic', () => {
       
       providers = wrapper.findAll('.hierarchy-provider')
       expect(providers.length).toBe(2)
-      expect(providers[0].attributes('data-simplified')).toBe('true')
-      expect(providers[1].attributes('data-top')).toBe('true')
+      expect(providers[0]!.attributes('data-simplified')).toBe('true')
+      expect(providers[1]!.attributes('data-top')).toBe('true')
 
       // 3. Finish B's opening animation
       vi.advanceTimersByTime(500)
-      modalStore.stack[1].opening = false // Force state update for reliability in test
+      modalStore.stack[1]!.opening = false // Force state update for reliability in test
       await wrapper.vm.$nextTick()
       
       providers = wrapper.findAll('.hierarchy-provider')
-      expect(providers[0].attributes('data-simplified')).toBe('true')
+      expect(providers[0]!.attributes('data-simplified')).toBe('true')
 
       // 4. Start closing B (A should restore effects immediately)
-      const modalB = modalStore.stack[1]
+      const modalB = modalStore.stack[1]!
       modalStore.close(modalB.id)
       modalB.closing = true // Force state update for reliability in test
       await wrapper.vm.$nextTick()
       
       providers = wrapper.findAll('.hierarchy-provider')
-      expect(providers[0].attributes('data-simplified')).toBe('false') // B is closing, A restores
+      expect(providers[0]!.attributes('data-simplified')).toBe('false') // B is closing, A restores
     })
   })
 

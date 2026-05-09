@@ -1,6 +1,6 @@
-
 import { describe, it, expect } from 'vitest';
 import { isValidTarget } from '@/logic/items/itemEffects';
+import type { Pokemon } from '@/types/pokemon';
 
 describe('Item Target Validation (isValidTarget)', () => {
   const mockPokemon = {
@@ -10,19 +10,19 @@ describe('Item Target Validation (isValidTarget)', () => {
     maxHp: 40,
     status: null,
     moves: [{ name: 'Placaje', pp: 10, maxPP: 35 }]
-  };
+  } as unknown as Pokemon;
 
   it('should return true for Potions if HP is low', () => {
     expect(isValidTarget('Poción', mockPokemon)).toBe(true);
   });
 
   it('should return false for Potions if HP is full', () => {
-    const fullHpPokemon = { ...mockPokemon, hp: 40 };
+    const fullHpPokemon = { ...mockPokemon, hp: 40 } as unknown as Pokemon;
     expect(isValidTarget('Poción', fullHpPokemon)).toBe(false);
   });
 
   it('should return true for Antidote if poisoned', () => {
-    const poisonedPokemon = { ...mockPokemon, status: 'poison' };
+    const poisonedPokemon = { ...mockPokemon, status: 'poison' } as unknown as Pokemon;
     expect(isValidTarget('Antídoto', poisonedPokemon)).toBe(true);
   });
 

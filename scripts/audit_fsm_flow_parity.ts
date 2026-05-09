@@ -9,17 +9,22 @@ import { styleText } from 'node:util';
 const MANUAL_PATH = path.resolve(process.cwd(), '.agents/project-standards/references/battle/battle_mechanics_manual.md');
 const ORCHESTRATOR_PATH = path.resolve(process.cwd(), 'src/logic/battle/orchestrator.js');
 
+interface TransitionStep {
+  from: string;
+  to: string;
+}
+
 function parseMermaidSequences(content: string) {
-  const sequences: any[] = [];
+  const sequences: TransitionStep[][] = [];
   const blockRx = /```mermaid\n([\s\S]*?)```/g;
   let m;
   while ((m = blockRx.exec(content)) !== null) {
     const lines = m[1]!.split('\n').map(l => l.trim());
-    const seq: any[] = [];
+    const seq: TransitionStep[] = [];
     lines.forEach(line => {
       const trans = line.match(/([A-Z][A-Z0-9_]+)\s*-->\s*([A-Z][A-Z0-9_]+)/);
       if (trans) {
-        seq.push({ from: trans[1], to: trans[2] });
+        seq.push({ from: trans[1]!, to: trans[2]! });
       }
     });
     if (seq.length > 0) sequences.push(seq);
@@ -61,7 +66,7 @@ async function runAudit() {
   let errors = 0;
   mermaidSeqs.forEach((seq, idx) => {
     console.log(`\nSecuencia Mermaid #${idx + 1}:`);
-    seq.forEach((step: any) => {
+    seq.forEach((step: TransitionStep) => {
       const fromIdx = orchTrans.indexOf(step.from);
       const toIdx = orchTrans.indexOf(step.to);
 

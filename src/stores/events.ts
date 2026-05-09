@@ -161,6 +161,7 @@ export const useEventStore = defineStore('events', () => {
   }
 
   return {
+    allEvents,
     activeEvents,
     finishedEvents,
     pendingAwards,

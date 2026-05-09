@@ -178,7 +178,7 @@ We prioritize a deliberate contrast between modern, sleek UI shells and classic,
 
 - **CONTEXT**: Use for maritime, fishing, or water-based UI elements.
 - **Implementation**: Combine subtle `TranslateY` (4px offset) with a slight `Rotate` (1-2 degrees).
-- **MANDATORY**: Use **Capitalized** `TranslateY()` and `Rotate()` for SASS compliance.
+- **MANDATORY**: Use `TranslateY()` and `Rotate()` for SASS compliance (Note: the Vite plugin `vite-plugin-sass-traps.ts` handles this capitalization automatically, so writing standard lowercase properties is fully supported).
 - **Cycle**: A slow 4-second `infinite ease-in-out` loop is recommended for an organic feel.
 - **Pixel Art Sharpness**: NEVER use non-integer `Scale()` transformations on pixel art elements (sprites, icons) as it causes interpolation blur. Prefer subtle `TranslateY()` for hover feedback.
 - **Night Cycle Lighting**: Atmospheric and weather effects must adapt to the night cycle.

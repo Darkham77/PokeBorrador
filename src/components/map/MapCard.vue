@@ -18,10 +18,7 @@ import { checkPlayerWinner, calculateSpawnGrid } from '@/logic/map/mapCardHelper
 
 import type { MapLocation } from '@/types/encounters'
 
-interface DominanceInfo {
-  winner?: string | null
-  guardian?: { id: string, captured: boolean } | null
-}
+import type { DominanceInfo } from '@/types/stores'
 
 interface SpawnPool {
   generic: string[]

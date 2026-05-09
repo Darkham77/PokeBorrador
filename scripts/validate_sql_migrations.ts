@@ -59,14 +59,17 @@ async function validateMigrations() {
       const statements = splitSQLStatements(content);
       
       for (const stmt of statements) {
-        // Optimización Node.js 26+: Usar el nuevo método Stage 3 getOrInsertComputed para caché de traducción
-        const translated = (translationCache as any).getOrInsertComputed(stmt, (s: string) => translatePostgresToSqlite(s));
+        let translated = translationCache.get(stmt);
+        if (!translated) {
+          translated = translatePostgresToSqlite(stmt);
+          translationCache.set(stmt, translated);
+        }
         
         if (translated) {
           try {
             db.exec(translated);
-          } catch (sqlErr: any) {
-            const msg = sqlErr.message.toLowerCase();
+          } catch (sqlErr: unknown) {
+            const msg = (sqlErr as Error).message.toLowerCase();
             const isDuplicate = msg.includes('already exists') || msg.includes('duplicate column');
             
             if (!isDuplicate) {
@@ -76,11 +79,11 @@ async function validateMigrations() {
         }
       }
       console.log(styleText('green', 'OK'));
-    } catch (e: any) {
+    } catch (e: unknown) {
       errorCount++;
       console.log(styleText('red', 'FALLÓ'));
       console.error(`\n   ${styleText(['bgRed', 'white'], ` [ERROR en ${filename}]: `)}`);
-      console.error(`   > ${styleText('yellow', e.message)}`);
+      console.error(`   > ${styleText('yellow', (e as Error).message)}`);
       console.error('   --------------------------------------------------\n');
     }
   }

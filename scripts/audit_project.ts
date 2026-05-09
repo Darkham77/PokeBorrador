@@ -22,7 +22,7 @@ interface AuditRule {
   regex: RegExp;
   message: string | ((match: string) => string);
   fix?: (match: string) => string;
-  check?: (context: string, match: any) => boolean;
+  check?: (context: string, match: RegExpExecArray) => boolean;
   severity?: 'error' | 'warning';
   fixable?: boolean;
   addImport?: string;
@@ -44,7 +44,7 @@ const viewport: AuditRule = {
 const gpuGaps: AuditRule = {
   regex: /(backdrop-filter|filter):/gi,
   message: "Filtro detectado sin 'will-change'. Considera añadir promoción de capa.",
-  check: (content: string, match: any) => {
+  check: (content: string, match: RegExpExecArray) => {
     const start = Math.max(0, match.index - 500);
     const end = Math.min(content.length, match.index + 500);
     const context = content.substring(start, end);
@@ -95,15 +95,28 @@ const fileLength: AuditRule = {
   ignorePattern: /\[PureVue-Ignore-Length\]/
 };
 
+const SASS_TRAPS = [
+  'scale', 'grayscale', 'invert', 'opacity', 'brightness', 
+  'blur', 'rotate', 'translate', 'saturate', 'drop-shadow',
+  'translatex', 'translatey', 'translatez', 'skewx', 'skewy', 'matrix',
+  'rgba', 'rgb'
+];
+
+const sassTraps: AuditRule = {
+  regex: /([.$])?\b([a-zA-Z0-9-]+)\(/g,
+  message: (match: string) => `Función SASS/CSS detectada sin capitalización: '${match}'. El plugin de Vite la capitalizará, pero se recomienda escribirla correctamente.`,
+  fixable: false
+};
+
 const config = {
-  viewport, gpuGaps, legacyDates, nodePrefix, tsIgnore, timersPromises, explicitResource, fileLength
+  viewport, gpuGaps, legacyDates, nodePrefix, tsIgnore, timersPromises, explicitResource, fileLength, sassTraps
 };
 
 async function getFilesToAudit(dir: string): Promise<string[]> {
   const files: string[] = [];
   const pattern = `**/*{${Array.from(AUDIT_EXTENSIONS).join(',')}}`;
   
-  for await (const entry of fs.glob(pattern, { cwd: dir, exclude: (p) => Array.from(IGNORE_DIRS).some(d => p.includes(d)) })) {
+  for await (const entry of fs.glob(pattern, { cwd: dir, exclude: (p: string) => Array.from(IGNORE_DIRS).some(d => p.includes(d)) })) {
     files.push(path.resolve(dir, entry));
   }
   return files;
@@ -120,7 +133,7 @@ async function auditFile(filePath: string, fix: boolean): Promise<Violation[]> {
 
   if (isLogic || isVue) {
     const tag = 'script';
-    let block = isVue ? extractBlock(content, tag) : content;
+    const block = isVue ? extractBlock(content, tag) : content;
     if (block) {
       const allRules: AuditRule[] = [legacyDates, nodePrefix, tsIgnore, timersPromises, explicitResource];
       let rules: AuditRule[] = allRules;
@@ -148,7 +161,7 @@ async function auditFile(filePath: string, fix: boolean): Promise<Violation[]> {
 
   if (isStyle || isVue) {
     const tag = 'style';
-    let block = isVue ? extractBlock(content, tag) : content;
+    const block = isVue ? extractBlock(content, tag) : content;
     if (block) {
       const newBlock = runRules(filePath, block, [config.viewport, config.gpuGaps], violations, fix, isVue ? findBlockStart(content, tag) : 0);
       if (fix && newBlock !== block) {

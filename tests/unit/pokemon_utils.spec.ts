@@ -4,6 +4,8 @@
 import { describe, it, expect, vi } from 'vitest'
 import { getTypeEffectivenessMsg, getMoveDescription } from '@/logic/pokemonUtils'
 
+import type { MoveBaseData } from '@/types/database'
+
 // Mock de pokemonDataProvider
 vi.mock('@/logic/providers/pokemonDataProvider', () => ({
   pokemonDataProvider: {
@@ -35,7 +37,7 @@ describe('Pokemon Utils Logic', () => {
     })
     
     it('should return default message for normal status move', () => {
-      const mockStatusMove: any = { cat: 'status' }
+      const mockStatusMove = { cat: 'status' } as unknown as MoveBaseData
       expect(getMoveDescription('growl', mockStatusMove)).toBe('Un movimiento que causa un efecto de estado o alteración.')
     })
   })

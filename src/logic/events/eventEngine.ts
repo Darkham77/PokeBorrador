@@ -59,7 +59,7 @@ const safeParse = (val: string | object | null | undefined): Record<string, unkn
 import { Temporal } from '@js-temporal/polyfill'
 import { logger } from '../utils/logger'
 
-export function getArgDateString(date: Date | Temporal.ZonedDateTime | Temporal.Instant = Temporal.Now.instant()): string {
+export function getArgDateString(date: Date | InstanceType<typeof Temporal.ZonedDateTime> | InstanceType<typeof Temporal.Instant> = Temporal.Now.instant()): string {
   const zdt = (date instanceof Temporal.ZonedDateTime)
     ? date
     : (date instanceof Date 
@@ -73,7 +73,7 @@ export function getArgDateString(date: Date | Temporal.ZonedDateTime | Temporal.
 /**
  * Checks if an event is active based on current time (America/Argentina/Buenos_Aires).
  */
-export function isEventActiveNow(event: Event, date: Date | Temporal.ZonedDateTime | Temporal.Instant = Temporal.Now.instant()): boolean {
+export function isEventActiveNow(event: Event, date: Date | InstanceType<typeof Temporal.ZonedDateTime> | InstanceType<typeof Temporal.Instant> = Temporal.Now.instant()): boolean {
   if (!event.active) return false
   if (event.manual) return true
 

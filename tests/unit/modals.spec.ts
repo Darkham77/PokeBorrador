@@ -25,8 +25,8 @@ describe('ModalStore Stacking (LIFO)', () => {
     store.open('TestB', { val: 2 })
     
     expect(store.stack.length).toBe(2)
-    expect(store.stack[0].name).toBe('TestA')
-    expect(store.stack[1].name).toBe('TestB')
+    expect(store.stack[0]!.name).toBe('TestA')
+    expect(store.stack[1]!.name).toBe('TestB')
   })
 
   it('should close the top-most modal (LIFO)', () => {
@@ -40,7 +40,7 @@ describe('ModalStore Stacking (LIFO)', () => {
     vi.advanceTimersByTime(600)
     
     expect(store.stack.length).toBe(1)
-    expect(store.stack[0].name).toBe('TestA')
+    expect(store.stack[0]!.name).toBe('TestA')
     vi.useRealTimers()
   })
 
@@ -51,11 +51,11 @@ describe('ModalStore Stacking (LIFO)', () => {
     const idA = store.open('TestA')
     store.open('TestB')
     
-    store.close(idA)
+    store.close(idA!)
     vi.advanceTimersByTime(600)
     
     expect(store.stack.length).toBe(1)
-    expect(store.stack[0].name).toBe('TestB')
+    expect(store.stack[0]!.name).toBe('TestB')
     vi.useRealTimers()
   })
 

@@ -10,11 +10,11 @@ import { restoreFossil } from '@/logic/items/fossilEngine';
 describe('Fossil Engine', () => {
   beforeEach(() => {
     // Mock localStorage
-    const storage = {};
+    const storage: Record<string, string> = {};
     vi.stubGlobal('localStorage', {
       getItem: vi.fn(key => storage[key] || null),
       setItem: vi.fn((key, val) => { storage[key] = val.toString(); }),
-      clear: vi.fn(() => { for (let k in storage) delete storage[k]; })
+      clear: vi.fn(() => { for (const k in storage) delete storage[k]; })
     });
     
     setActivePinia(createPinia());
@@ -27,7 +27,7 @@ describe('Fossil Engine', () => {
       seenPokedex: []
     };
 
-    const result = restoreFossil('omanyte', state);
+    const result = restoreFossil('omanyte', state as unknown as Parameters<typeof restoreFossil>[1]);
     
     expect(result.pokemon.id).toBe('omanyte');
     expect(result.pokemon.level).toBe(1);
@@ -44,7 +44,7 @@ describe('Fossil Engine', () => {
       seenPokedex: []
     };
 
-    const result = restoreFossil('aerodactyl', state);
+    const result = restoreFossil('aerodactyl', state as unknown as Parameters<typeof restoreFossil>[1]);
     
     expect(result.sentTo).toBe('box');
     expect(state.box.length).toBe(1);

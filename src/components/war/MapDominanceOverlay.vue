@@ -14,15 +14,15 @@ const warStore = useWarStore()
 const mapData = computed(() => warStore.mapDominance[props.mapId] || { union: 0, poder: 0, winner: null })
 
 const dominancePercent = computed(() => {
-  const total = mapData.value.union + mapData.value.poder
+  const total = (mapData.value.union ?? 0) + (mapData.value.poder ?? 0)
   if (total === 0) return 50
-  return (mapData.value.union / total) * 100
+  return ((mapData.value.union ?? 0) / total) * 100
 })
 
 const leadingFaction = computed(() => {
   if (mapData.value.winner) return mapData.value.winner
-  if (mapData.value.union > mapData.value.poder) return 'union'
-  if (mapData.value.poder > mapData.value.union) return 'poder'
+  if ((mapData.value.union ?? 0) > (mapData.value.poder ?? 0)) return 'union'
+  if ((mapData.value.poder ?? 0) > (mapData.value.union ?? 0)) return 'poder'
   return null
 })
 

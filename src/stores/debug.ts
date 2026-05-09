@@ -93,12 +93,8 @@ export const useDebugStore = defineStore('debug', () => {
   }
 
   function register(config: DebugTool) {
-    const existingIdx = tools.value.findIndex(t => t.id === config.id)
-    if (existingIdx !== -1) {
-      tools.value[existingIdx] = config 
-    } else {
-      tools.value.push(config)
-    }
+    if (tools.value.some(t => t.id === config.id)) return
+    tools.value.push(config)
     updateGlobalProxy()
   }
 

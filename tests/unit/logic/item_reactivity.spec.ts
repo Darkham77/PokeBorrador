@@ -67,25 +67,25 @@ describe('Item Reactivity & Integrity', () => {
     const result = useItemOnPokemon('Hiper Poción', mockPokemon)
     
     expect(result).toBeDefined()
-    expect(result.success).toBeUndefined() // El proveedor devuelve { message, pokemon }
-    expect(result.message).toContain('restauró')
-    expect(result.pokemon.hp).toBe(100) // 10 + 200 clamped to 100
+    expect('success' in result!).toBe(false) // El proveedor devuelve { message, pokemon }
+    expect(result!.message).toContain('restauró')
+    expect(result!.pokemon.hp).toBe(100) // 10 + 200 clamped to 100
   })
 
   it('should clear status and return the modified pokemon object', () => {
     const result = useItemOnPokemon('Antídoto', mockPokemon)
     
     expect(result).toBeDefined()
-    expect(result.pokemon.status).toBeNull()
-    expect(result.message).toContain('se curó')
+    expect(result!.pokemon.status).toBeNull()
+    expect(result!.message).toContain('se curó')
   })
 
   it('should restore PP and return the modified pokemon object', () => {
     const result = useItemOnPokemon('Éter', mockPokemon)
     
     expect(result).toBeDefined()
-    expect(result.pokemon.moves[0].pp).toBe(15)
-    expect(result.message).toContain('recuperó PP')
+    expect(result!.pokemon.moves[0]!.pp).toBe(15)
+    expect(result!.message).toContain('recuperó PP')
   })
 
   it('all registered items should return the standard object format, never a string', () => {
@@ -93,12 +93,15 @@ describe('Item Reactivity & Integrity', () => {
     
     itemsToTest.forEach(itemName => {
       // Usamos el pokemon mock o un estado genérico
-      const result = itemEffects[itemName](mockPokemon)
-      
-      expect(typeof result).toBe('object')
-      expect(result).toHaveProperty('success')
-      expect(result).toHaveProperty('message')
-      expect(typeof result.message).toBe('string')
+      const effect = itemEffects[itemName];
+      if (effect) {
+        const result = effect(mockPokemon)
+        
+        expect(typeof result).toBe('object')
+        expect(result).toHaveProperty('success')
+        expect(result).toHaveProperty('message')
+        expect(typeof result.message).toBe('string')
+      }
     })
   })
 

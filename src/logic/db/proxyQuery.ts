@@ -95,20 +95,22 @@ export class ProxyQuery {
         if (this.action === 'insert') return await q.insert!(this.actionData);
         
         if (this.action === 'update') {
-          const updQ = (q as unknown as Record<string, (d: unknown) => unknown>).update!(this.actionData) as Record<string, (...args: unknown[]) => unknown>;
-          this.chain.forEach(s => { updQ[s.type]!(...s.args); });
+          let updQ = (q as unknown as Record<string, (d: unknown) => unknown>).update!(this.actionData) as Record<string, (...args: unknown[]) => unknown>;
+          this.chain.forEach(s => { updQ = updQ[s.type]!(...s.args) as Record<string, (...args: unknown[]) => unknown>; });
           return await (updQ as unknown as Promise<DBResponse>);
         }
         
         if (this.action === 'delete') {
-          const delQ = (q as unknown as Record<string, () => unknown>).delete!() as Record<string, (...args: unknown[]) => unknown>;
-          this.chain.forEach(s => { delQ[s.type]!(...s.args); });
+          let delQ = (q as unknown as Record<string, () => unknown>).delete!() as Record<string, (...args: unknown[]) => unknown>;
+          this.chain.forEach(s => { delQ = delQ[s.type]!(...s.args) as Record<string, (...args: unknown[]) => unknown>; });
           return await (delQ as unknown as Promise<DBResponse>);
         }
 
         // Default: select
-        const selQ = q as Record<string, (...args: unknown[]) => unknown>;
-        this.chain.forEach(s => { selQ[s.type]!(...s.args); });
+        let selQ = q as Record<string, (...args: unknown[]) => unknown>;
+        this.chain.forEach(s => { 
+          selQ = selQ[s.type]!(...s.args) as Record<string, (...args: unknown[]) => unknown>; 
+        });
         return final ? await (selQ as unknown as Record<string, () => Promise<DBResponse>>)[final]!() : await (selQ as unknown as Promise<DBResponse>);
       } catch (err: unknown) {
         logger.error('DBRouter', `Online query failed for table ${this.table}: ${(err as Error).message}`);

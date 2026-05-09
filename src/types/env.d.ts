@@ -30,29 +30,12 @@ declare global {
     constructor(format: 'gzip' | 'deflate' | 'deflate-raw');
   }
 
-  // Temporal API (Stage 3 Proposal)
-  namespace Temporal {
-    class Instant {
-      static from(item: string | number | Instant): Instant;
-      static fromEpochMilliseconds(ms: number): Instant;
-      epochNanoseconds: bigint;
-      epochMilliseconds: bigint;
-      epochSeconds: bigint;
-      add(duration: Duration): Instant;
-      toZonedDateTimeISO(tz: string): unknown;
-    }
-    class Now {
-      static instant(): Instant;
-    }
-    class Duration {
-      static from(item: string | Record<string, unknown> | unknown): Duration;
-    }
-  }
+  // Temporal API (Stage 3 Proposal) is handled by @js-temporal/polyfill
 
   interface Window {
     VITE_SUPABASE_URL: string;
     VITE_SUPABASE_KEY: string;
-    __VITE_DEBUG__?: boolean;
+    __VITE_DEBUG__?: Record<string, (...args: unknown[]) => unknown>;
     drawBattleBackground?: (locationId: string, cycle: string) => void;
   }
 }

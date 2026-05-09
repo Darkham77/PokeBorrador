@@ -1,19 +1,19 @@
-
 /**
- * tests/unit/battle.spec.js
+ * tests/unit/battle.spec.ts
  * Consolidated unit tests for Battle Engine mechanics.
  */
 import { describe, it, expect, vi } from 'vitest';
-import { calculateDamage, getEffectiveSpeed, getStatMultiplier } from '@/logic/battle/battleEngine';
+import { calculateDamage, getEffectiveSpeed } from '@/logic/battle/battleEngine';
+import type { Pokemon } from '@/types/pokemon';
 
 describe('Battle Engine', () => {
   // Mock Math.random to return 1.0 for deterministic results (max damage roll)
   vi.spyOn(Math, 'random').mockReturnValue(1.0);
 
   describe('Damage Formula & Stat Stages', () => {
-    const attacker = { level: 100, atk: 200, spa: 200, type: 'electric' };
-    const defender = { level: 100, def: 100, spd: 100, type: 'normal' };
-    const move = { name: 'Rayo', type: 'electric', power: 90, cat: 'special' };
+    const attacker = { level: 100, atk: 200, spa: 200, type: 'electric' } as unknown as Pokemon;
+    const defender = { level: 100, def: 100, spd: 100, type: 'normal' } as unknown as Pokemon;
+    const move = { name: 'Rayo', type: 'electric', power: 90, cat: 'special' } as const;
 
     it('should calculate base special damage correctly', () => {
       const result = calculateDamage(attacker, defender, move, { atkStages: 0, defStages: 0 });
@@ -33,9 +33,9 @@ describe('Battle Engine', () => {
 
   describe('Abilities', () => {
     it('Intrépido should hit Ghost types with Normal moves', () => {
-      const attacker = { id: 'miltank', type: 'normal', atk: 100, level: 50, ability: 'Intrépido' };
-      const defender = { id: 'gastly', type: 'ghost', def: 50, level: 50 };
-      const move = { name: 'Pisotón', type: 'normal', power: 65, cat: 'physical' };
+      const attacker = { id: 'miltank', type: 'normal', atk: 100, level: 50, ability: 'Intrépido' } as unknown as Pokemon;
+      const defender = { id: 'gastly', type: 'ghost', def: 50, level: 50 } as unknown as Pokemon;
+      const move = { name: 'Pisotón', type: 'normal', power: 65, cat: 'physical' } as const;
       
       const result = calculateDamage(attacker, defender, move);
       expect(result.dmg).toBeGreaterThan(0);
@@ -43,11 +43,11 @@ describe('Battle Engine', () => {
     });
 
     it('Sebo should reduce Fire/Ice damage by 50%', () => {
-      const attacker = { id: 'charmander', type: 'fire', spa: 100, level: 50 };
-      const defender = { id: 'snarlax', type: 'normal', spd: 100, level: 50, ability: 'Sebo' };
-      const move = { name: 'Lanzallamas', type: 'fire', power: 90, cat: 'special' };
+      const attacker = { id: 'charmander', type: 'fire', spa: 100, level: 50 } as unknown as Pokemon;
+      const defender = { id: 'snarlax', type: 'normal', spd: 100, level: 50, ability: 'Sebo' } as unknown as Pokemon;
+      const move = { name: 'Lanzallamas', type: 'fire', power: 90, cat: 'special' } as const;
       
-      const noSeboResult = calculateDamage(attacker, { ...defender, ability: null }, move);
+      const noSeboResult = calculateDamage(attacker, { ...defender, ability: null } as unknown as Pokemon, move);
       const seboResult = calculateDamage(attacker, defender, move);
       
       expect(seboResult.dmg).toBe(Math.floor(noSeboResult.dmg * 0.5));
@@ -55,19 +55,19 @@ describe('Battle Engine', () => {
   });
 
   describe('Weather', () => {
-    const attacker = { level: 50, spa: 100, type: 'fire' };
-    const defender = { level: 50, spd: 100, type: 'normal' };
-    const move = { name: 'Lanzallamas', type: 'fire', power: 90, cat: 'special' };
+    const attacker = { level: 50, spa: 100, type: 'fire' } as unknown as Pokemon;
+    const defender = { level: 50, spd: 100, type: 'normal' } as unknown as Pokemon;
+    const move = { name: 'Lanzallamas', type: 'fire', power: 90, cat: 'special' } as const;
 
     it('should boost Fire damage in Sun', () => {
-      const noWeather = calculateDamage(attacker, defender, move, { weather: null });
+      calculateDamage(attacker, defender, move, { weather: null });
       const sun = calculateDamage(attacker, defender, move, { weather: { type: 'sun', turns: 5 } });
       
       expect(sun.dmg).toBe(92);
     });
 
     it('should reduce Fire damage in Rain', () => {
-      const noWeather = calculateDamage(attacker, defender, move, { weather: null });
+      calculateDamage(attacker, defender, move, { weather: null });
       const rain = calculateDamage(attacker, defender, move, { weather: { type: 'rain', turns: 5 } });
       
       expect(rain.dmg).toBe(30);
@@ -76,15 +76,13 @@ describe('Battle Engine', () => {
 
   describe('Speed Calculation', () => {
     it('Clorofila should double speed in Day/Morning', () => {
-      const p = { spe: 50, ability: 'Clorofila' };
-      const options = { getStatMultiplier, getDayCycle: () => 'day' };
-      expect(getEffectiveSpeed(p, { spe: 0 }, options)).toBe(100);
+      const p = { spe: 50, ability: 'Clorofila' } as unknown as Pokemon;
+      expect(getEffectiveSpeed(p, { spe: 0 }, { weather: null })).toBe(100);
     });
 
     it('Paralysis should reduce speed by 50%', () => {
-      const p = { spe: 100, status: 'paralyze' };
-      const options = { getStatMultiplier };
-      expect(getEffectiveSpeed(p, { spe: 0 }, options)).toBe(50);
+      const p = { spe: 100, status: 'paralysis' } as unknown as Pokemon;
+      expect(getEffectiveSpeed(p, { spe: 0 }, { weather: null })).toBe(50);
     });
   });
 });

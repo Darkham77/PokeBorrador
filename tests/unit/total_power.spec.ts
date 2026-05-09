@@ -1,9 +1,8 @@
-
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { ref } from 'vue'
+import { ref, type Ref } from 'vue'
 import { useBoxFilters } from '@/composables/useBoxFilters'
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
+import type { Pokemon } from '@/types/pokemon'
 
 // Mock the data provider
 vi.mock('@/logic/providers/pokemonDataProvider', () => ({
@@ -30,9 +29,9 @@ describe('useBoxFilters - Total Power (BST + IVs)', () => {
       level: 5, 
       ivs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 } // Total IVs: 0, TOTAL: 318 + 0 = 318
     }
-  ])
+  ]) as Ref<Pokemon[]>
 
-  let filtersObj
+  let filtersObj: ReturnType<typeof useBoxFilters>
 
   beforeEach(() => {
     filtersObj = useBoxFilters(mockBox, ref(0))
@@ -44,21 +43,21 @@ describe('useBoxFilters - Total Power (BST + IVs)', () => {
     filtersObj.filters.value.bstMin = 500
     let results = filtersObj.processedBoxList.value
     expect(results).toHaveLength(1)
-    expect(results[0].p.id).toBe('pikachu')
+    expect(results[0]!.p!.id).toBe('pikachu')
 
     // Filter for < 400
     filtersObj.filters.value.bstMin = 0
     filtersObj.filters.value.bstMax = 400
     results = filtersObj.processedBoxList.value
     expect(results).toHaveLength(1)
-    expect(results[0].p.id).toBe('bulbasaur')
+    expect(results[0]!.p!.id).toBe('bulbasaur')
   })
 
   it('should sort by TOTAL power (BST + IVs)', () => {
     filtersObj.sortMode.value = 'bst'
     filtersObj.sortDirection.value = 'desc'
     const results = filtersObj.processedBoxList.value
-    expect(results[0].p.id).toBe('pikachu') // 506
-    expect(results[1].p.id).toBe('bulbasaur') // 318
+    expect(results[0]!.p!.id).toBe('pikachu') // 506
+    expect(results[1]!.p!.id).toBe('bulbasaur') // 318
   })
 })

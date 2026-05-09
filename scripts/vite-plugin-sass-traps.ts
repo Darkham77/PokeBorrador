@@ -17,7 +17,7 @@ const SASS_TRAPS = [
 export function sassTrapsFixer() {
   const fixContent = (code: string) => {
     // Regex that captures optional prefix (. or $)
-    return code.replace(/([\.\$])?\b([a-zA-Z0-9-]+)\(/g, (match, prefix, func) => {
+    return code.replace(/([.$])?\b([a-zA-Z0-9-]+)\(/g, (match, prefix, func) => {
       // 1. If preceded by . or $, it's a SASS module or variable call. IGNORE.
       if (prefix) return match;
 

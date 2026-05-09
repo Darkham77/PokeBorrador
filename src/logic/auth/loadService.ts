@@ -101,6 +101,7 @@ export async function loadBestSave(user: AuthUser | null, db: DBRouter): Promise
  
   if (localData) logger.debug('LOAD', 'Local save state:', { starterChosen: localData.starterChosen, teamSize: localData.team?.length });
   
+  let isNewerThanCloud = false;
   if (localData) {
     try {
       if (cloudSaveRow) {
@@ -118,6 +119,7 @@ export async function loadBestSave(user: AuthUser | null, db: DBRouter): Promise
         if (localTime > cloudTime + 3000) {
           logger.info('LOAD', 'Local save is newer. Prioritizing Local.');
           finalSaveData = localData;
+          isNewerThanCloud = true;
         }
       }
     } catch (e) {
@@ -137,7 +139,7 @@ export async function loadBestSave(user: AuthUser | null, db: DBRouter): Promise
     data: normalized,
     issues,
     lastSaveId: cloudSaveRow?.last_save_id || null,
-    isNewerThanCloud: !!(localData && finalSaveData === localData && cloudSaveRow)
+    isNewerThanCloud
   };
 }
 

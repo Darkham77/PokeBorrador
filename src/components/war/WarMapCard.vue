@@ -4,7 +4,6 @@ import { computed } from 'vue'
 import { useWarStore } from '@/stores/war'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { MAP_ROUTE_MAPPING } from '@/data/map-assets'
-import type { DominanceInfo } from '@/types/stores'
 
 interface Props {
   map: { id: string; name: string }
@@ -15,14 +14,14 @@ const props = defineProps<Props>()
 const warStore = useWarStore()
 
 const mapData = computed(() => {
-  const data: DominanceInfo = warStore.mapDominance[props.map.id] || { union: 0, poder: 0, winner: null }
-  const total = (Number(data.union) || 0) + (Number(data.poder) || 0)
+  const data = warStore.mapDominance[props.map.id] || { union: 0, poder: 0, winner: null }
+  const total = (Number(data.union ?? 0)) + (Number(data.poder ?? 0))
   return {
     ...data,
     total,
-    pctU: total > 0 ? (data.union / total) * 100 : 50,
-    pctP: total > 0 ? (data.poder / total) * 100 : 50,
-    leading: data.union > data.poder ? 'union' : (data.poder > data.union ? 'poder' : 'none')
+    pctU: total > 0 ? ((data.union ?? 0) / total) * 100 : 50,
+    pctP: total > 0 ? ((data.poder ?? 0) / total) * 100 : 50,
+    leading: (data.union ?? 0) > (data.poder ?? 0) ? 'union' : ((data.poder ?? 0) > (data.union ?? 0) ? 'poder' : 'none')
   }
 })
 
@@ -80,13 +79,13 @@ const openDefenseModal = (mapId: string) => {
           />
         </div>
         <div class="labels pts">
-          <span>{{ mapData.union }} PT</span>
-          <span>{{ mapData.poder }} PT</span>
+          <span>{{ mapData.union ?? 0 }} PT</span>
+          <span>{{ mapData.poder ?? 0 }} PT</span>
         </div>
       </div>
 
       <div class="card-footer">
-        {{ mapData.total > 0 ? (mapData.union > mapData.poder ? 'Lidera Unión' : (mapData.poder > mapData.union ? 'Lidera Poder' : 'En disputa')) : 'Sin actividad' }}
+        {{ mapData.total > 0 ? ((mapData.union ?? 0) > (mapData.poder ?? 0) ? 'Lidera Unión' : ((mapData.poder ?? 0) > (mapData.union ?? 0) ? 'Lidera Poder' : 'En disputa')) : 'Sin actividad' }}
       </div>
     </div>
 

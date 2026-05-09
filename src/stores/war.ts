@@ -8,11 +8,7 @@ import { useUIStore } from './ui'
 import { getWeekId, isDisputePhase, getPointReward, FACTION_CHANGE_COST, DAILY_MAP_CAP, WEEKLY_REWARD_MILESTONES, WEEKLY_WIN_BONUS_COINS } from '@/logic/war/warEngine'
 import { getGuardianData, GUARDIAN_CHANCE } from '@/logic/war/guardianEngine'
 
-interface DominanceInfo {
-  union: number
-  poder: number
-  winner: string | null
-}
+import type { DominanceInfo } from '@/types/stores'
 
 interface WarPointsRecord {
   map_id: string
@@ -96,7 +92,7 @@ export const useWarStore = defineStore('war', () => {
     const dailyCap = gameStore.state.warDailyCap as Record<string, Record<string, number>>
     if (!dailyCap[today]) dailyCap[today] = {}
     
-    const currentMapPts = dailyCap[today][mapId] || 0
+    const currentMapPts = dailyCap[today]?.[mapId] || 0
     if (currentMapPts >= DAILY_MAP_CAP) {
       // Only notify once per map session
       return 0
@@ -114,7 +110,7 @@ export const useWarStore = defineStore('war', () => {
 
     if (!error) {
        weeklyPoints.value += allowedPts
-       dailyCap[today][mapId] = currentMapPts + allowedPts
+       dailyCap[today]![mapId] = currentMapPts + allowedPts
        
        // Handle War Coins (1 coin per 10 PT)
        handleWarCoins(allowedPts)
@@ -138,17 +134,17 @@ export const useWarStore = defineStore('war', () => {
     if (!gameStore.state.warPointsAccumulator) gameStore.state.warPointsAccumulator = 0
 
     const DAILY_COIN_CAP = 50 
-    if (dailyCoins[today] >= DAILY_COIN_CAP) return
+    if ((dailyCoins[today] ?? 0) >= DAILY_COIN_CAP) return
 
     gameStore.state.warPointsAccumulator += pts
     if (gameStore.state.warPointsAccumulator >= 10) {
       const newCoins = Math.floor(gameStore.state.warPointsAccumulator / 10)
-      const allowedCoins = Math.min(newCoins, DAILY_COIN_CAP - dailyCoins[today])
+      const allowedCoins = Math.min(newCoins, DAILY_COIN_CAP - (dailyCoins[today] ?? 0))
       
       if (allowedCoins > 0) {
         warCoins.value += allowedCoins
         gameStore.state.warCoins = (gameStore.state.warCoins || 0) + allowedCoins
-        dailyCoins[today] += allowedCoins
+        dailyCoins[today] = (dailyCoins[today] ?? 0) + allowedCoins
         uiStore.notify(`¡Ganaste ${allowedCoins} Moneda${allowedCoins > 1 ? 's' : ''} de Guerra!`, '⚡')
       }
       gameStore.state.warPointsAccumulator %= 10

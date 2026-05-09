@@ -17,8 +17,8 @@ onMounted(() => {
 const dominance = computed(() => {
   const total = { union: 0, poder: 0, contested: 0 }
   Object.values(warStore.mapDominance).forEach(d => {
-    total.union += d.union
-    total.poder += d.poder
+    total.union += (d.union ?? 0)
+    total.poder += (d.poder ?? 0)
     if (!d.winner) total.contested++
   })
   return total

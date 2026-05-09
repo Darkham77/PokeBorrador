@@ -2,10 +2,11 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { useAuthStore } from '@/stores/auth'
 import { supabase } from '@/logic/supabase'
+import type { User } from '@supabase/supabase-js'
 
 // Mock de Supabase
 vi.mock('@/logic/supabase', () => ({
@@ -34,11 +35,11 @@ vi.mock('@/logic/supabase', () => ({
 
 // Mock de localStorage
 const localStorageMock = (() => {
-  let store = {}
+  let store: Record<string, string> = {}
   return {
-    getItem: vi.fn((key) => store[key] || null),
-    setItem: vi.fn((key, value) => { store[key] = value.toString() }),
-    removeItem: vi.fn((key) => { delete store[key] }),
+    getItem: vi.fn((key: string) => store[key] || null),
+    setItem: vi.fn((key: string, value: string) => { store[key] = value.toString() }),
+    removeItem: vi.fn((key: string) => { delete store[key] }),
     clear: vi.fn(() => { store = {} })
   }
 })()
@@ -55,15 +56,15 @@ describe('Auth Store', () => {
     const auth = useAuthStore()
     await auth.localLogin('ASH')
     
-    expect(auth.user.user_metadata.username).toBe('ASH')
+    expect(auth.user?.user_metadata?.username).toBe('ASH')
     expect(auth.sessionMode).toBe('offline')
     expect(localStorage.getItem('pokevicio_local_user')).toContain('ASH')
   })
 
   it('debe registrar usuarios nuevos en Supabase', async () => {
     const auth = useAuthStore()
-    supabase.auth.signUp.mockResolvedValue({ 
-      data: { user: { id: 'new_uuid', email: 'test@pkv.io' } }, 
+    ;(supabase.auth.signUp as Mock).mockResolvedValue({ 
+      data: { user: { id: 'new_uuid', email: 'test@pkv.io', user_metadata: { username: 'TrainerTest' } } as unknown as User }, 
       error: null 
     })
 
@@ -79,8 +80,8 @@ describe('Auth Store', () => {
 
   it('debe activar el monitoreo de sesión al iniciar sesión online', async () => {
     const auth = useAuthStore()
-    supabase.auth.signInWithPassword.mockResolvedValue({
-      data: { user: { id: 'user123' }, session: { access_token: 'tok' } },
+    ;(supabase.auth.signInWithPassword as Mock).mockResolvedValue({
+      data: { user: { id: 'user123', user_metadata: { username: 'TrainerTest' } } as unknown as User, session: { access_token: 'tok' } },
       error: null
     })
 
@@ -92,7 +93,7 @@ describe('Auth Store', () => {
 
   it('debe resetear el estado al cerrar sesión', async () => {
     const auth = useAuthStore()
-    auth.user = { id: 'user123' }
+    auth.user = { id: 'user123', user_metadata: { username: 'TrainerTest' } } as unknown as NonNullable<typeof auth.user>
     auth.sessionConflict = true
     
     await auth.logout()

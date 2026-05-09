@@ -11,7 +11,7 @@ describe('Database Isolation Policy', () => {
   beforeEach(() => {
     // Ensure indexedDB exists for spying
     if (!window.indexedDB) {
-      window.indexedDB = { open: vi.fn() };
+      window.indexedDB = { open: vi.fn() } as unknown as IDBFactory;
     }
     vi.spyOn(window.indexedDB, 'open');
   });

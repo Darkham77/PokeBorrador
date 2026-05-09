@@ -1,10 +1,10 @@
-
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { useBoxStore } from '@/stores/box'
 import { useGameStore } from '@/stores/game'
 import { calculateRocketSellPrice } from '@/logic/pokemonUtils'
+import type { Pokemon } from '@/types/pokemon'
 
 describe('Black Market (Team Rocket) Sales Logic', () => {
   beforeEach(() => {
@@ -32,21 +32,21 @@ describe('Black Market (Team Rocket) Sales Logic', () => {
 
   describe('calculateRocketSellPrice Utility', () => {
     it('should calculate correct price for average pokemon', () => {
-      const p = { level: 10, ivs: { hp: 10, atk: 10, def: 10, spa: 10, spd: 10, spe: 10 } }
+      const p = { level: 10, ivs: { hp: 10, atk: 10, def: 10, spa: 10, spd: 10, spe: 10 } } as unknown as Pokemon
       // Formula: floor((10 * 50 + (60 / 186) * 500) * 0.8)
       // (500 + 161.29) * 0.8 = 661.29 * 0.8 = 529.03 -> 529
       expect(calculateRocketSellPrice(p)).toBe(529)
     })
 
     it('should calculate correct price for perfect level 5 pokemon', () => {
-      const p = { level: 5, ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 } }
+      const p = { level: 5, ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 } } as unknown as Pokemon
       // Formula: floor((5 * 50 + (186 / 186) * 500) * 0.8)
       // (250 + 500) * 0.8 = 750 * 0.8 = 600
       expect(calculateRocketSellPrice(p)).toBe(600)
     })
 
     it('should calculate correct price for max level perfect pokemon', () => {
-      const p = { level: 100, ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 } }
+      const p = { level: 100, ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 } } as unknown as Pokemon
       // Formula: floor((100 * 50 + (186 / 186) * 500) * 0.8)
       // (5000 + 500) * 0.8 = 5500 * 0.8 = 4400
       expect(calculateRocketSellPrice(p)).toBe(4400)
@@ -75,7 +75,8 @@ describe('Black Market (Team Rocket) Sales Logic', () => {
       expect(gs.state.money).toBe(initialMoney + totalValue)
       expect(gs.state.classData.blackMarketSales).toBe(2)
       expect(gs.state.box.length).toBe(1) // Only Mewtwo remains
-      expect(gs.state.box[0].name).toBe('Mewtwo')
+      const mewtwo = gs.state.box[0] as Pokemon
+      expect(mewtwo.name).toBe('Mewtwo')
     })
   })
 
@@ -89,7 +90,7 @@ describe('Black Market (Team Rocket) Sales Logic', () => {
       
       let totalGain = 0
       box.teamRocketSelected.forEach(i => {
-        totalGain += calculateRocketSellPrice(gs.state.team[i])
+        totalGain += calculateRocketSellPrice(gs.state.team[i] as Pokemon)
       })
       expect(totalGain).toBe(2000)
     })

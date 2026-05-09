@@ -48,10 +48,10 @@ async function processFile(filePath: string) {
     const image = sharp(filePath);
     const metadata = await image.metadata();
 
-    let sharpChain = image;
+    const sharpChain = image;
 
     // Configuración de WebP
-    const webpOptions: any = { effort: 6 };
+    const webpOptions: sharp.WebpOptions = { effort: 6 };
     if (isLossless) {
       webpOptions.lossless = true;
     } else {
@@ -62,8 +62,8 @@ async function processFile(filePath: string) {
     await sharpChain.webp(webpOptions).toFile(destFile);
     console.log(styleText('green', `   [OK] ${path.relative(process.cwd(), destFile)} (${isLossless ? 'Lossless' : 'Lossy'})`));
 
-  } catch (err: any) {
-    console.error(styleText('red', `   [ERROR] No se pudo procesar ${filePath}: ${err.message}`));
+  } catch (err: unknown) {
+    console.error(styleText('red', `   [ERROR] No se pudo procesar ${filePath}: ${(err as Error).message}`));
   }
 }
 

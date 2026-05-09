@@ -10,6 +10,7 @@ import {
   normalizeRankedRules, 
   validatePokemonForRanked 
 } from '@/logic/pvp/rankedEngine';
+import type { Pokemon } from '@/types/pokemon';
 
 describe('Ranked Engine', () => {
   it('should return correct tiers for ELO', () => {
@@ -45,15 +46,17 @@ describe('Ranked Engine', () => {
 
   it('should validate pokemon against rules', () => {
     const rules = {
+      seasonName: 'Test',
+      maxPokemon: 3,
       levelCap: 50,
       allowedTypes: ['fire'],
       bannedPokemonIds: ['charizard']
     };
 
-    const okPonyta = { id: 'ponyta', name: 'Ponyta', level: 20, type: ['fire'] };
-    const overLeveled = { id: 'ponyta', level: 51, type: ['fire'] };
-    const wrongType = { id: 'staryu', level: 20, type: ['water'] };
-    const banned = { id: 'charizard', name: 'Charizard', level: 40, type: ['fire'] };
+    const okPonyta = { id: 'ponyta', name: 'Ponyta', level: 20, type: ['fire'] } as unknown as Pokemon;
+    const overLeveled = { id: 'ponyta', level: 51, type: ['fire'] } as unknown as Pokemon;
+    const wrongType = { id: 'staryu', level: 20, type: ['water'] } as unknown as Pokemon;
+    const banned = { id: 'charizard', name: 'Charizard', level: 40, type: ['fire'] } as unknown as Pokemon;
 
     expect(validatePokemonForRanked(okPonyta, rules).ok).toBe(true);
     expect(validatePokemonForRanked(overLeveled, rules).ok).toBe(false);

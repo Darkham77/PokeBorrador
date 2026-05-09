@@ -20,10 +20,10 @@ vi.mock('@/logic/db/sqliteEngine', () => ({
 }));
 
 describe('ProxyQuery Insert', () => {
-  let router;
+  let router: DBRouter;
 
   beforeEach(() => {
-    router = new DBRouter(null, 'offline', { inMemory: true });
+    router = new DBRouter(undefined, 'offline', { inMemory: true });
     vi.clearAllMocks();
   });
 

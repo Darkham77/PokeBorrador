@@ -21,8 +21,8 @@ const globalScore = computed(() => {
   Object.values(warStore.mapDominance).forEach((m) => {
     if (m.winner === 'union') union++
     else if (m.winner === 'poder') poder++
-    else if (m.union > m.poder) union++
-    else if (m.poder > m.union) poder++
+    else if ((m.union ?? 0) > (m.poder ?? 0)) union++
+    else if ((m.poder ?? 0) > (m.union ?? 0)) poder++
   })
   return { union, poder }
 })

@@ -87,10 +87,8 @@ def detect_project_type(project_path: Path) -> dict:
             if "typescript" in deps or (project_path / "tsconfig.json").exists():
                 result["linters"].append({"name": "tsc", "cmd": ["npx", "tsc", "--noEmit"]})
                 
-            # Check for Project Standards & Paths
-            sass_checker = project_path / ".agents" / "skills" / "project-standards" / "scripts" / "check_sass_traps.py"
-            if sass_checker.exists():
-                result["linters"].append({"name": "sass-traps", "cmd": ["python", str(sass_checker)]})
+            # Note: SASS traps are handled automatically by the Vite plugin (vite-plugin-sass-traps.ts)
+            # upon save/compilation, so no standalone linter check is needed.
             
             path_checker = project_path / ".agents" / "skills" / "lint-and-validate" / "scripts" / "check_import_paths.py"
             if path_checker.exists():

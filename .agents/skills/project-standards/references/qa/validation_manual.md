@@ -51,7 +51,7 @@ The project uses a unified audit system located in `scripts/audit_project.ts`:
 ## 🚨 Non-Negotiable Quality Rules
 
 1. **Zero-Warning**: `npm run lint` and `npm run validate:types` MUST return 0 errors and 0 warnings before any commit.
-2. **SASS Capitalization**: All CSS filters (`Blur()`, `Scale()`) must be capitalized to avoid collisions with Dart Sass 2.0.
+2. **SASS Capitalization (Automated)**: SASS capitalization for CSS filters/transforms (`Blur()`, `Scale()`, etc.) is handled automatically by the Vite plugin (`vite-plugin-sass-traps.ts`) during HMR and build, meaning no manual capitalization or separate linting checks are required.
 3. **Dependency Shield**: Any script using external libraries must handle `ImportError` and provide clear installation instructions.
 4. **Audit Bypass**: If a violation is intentional by design, use the `// [PureVue-Ignore]` comment. The audit engine checks the **current line and the line immediately above** to support Vue/HTML attributes that span multiple lines.
 5. **Large Data Integrity**: Massive data files (e.g., spawn grids) must carry `// [PureVue-Ignore-Length]` at the beginning to avoid fragmentation by agents.
@@ -62,3 +62,4 @@ The project uses a unified audit system located in `scripts/audit_project.ts`:
 10. **Store-Level Event Listeners**: Window listeners used in Pinia stores (outside of the Vue component lifecycle) MUST be marked with `// [PureVue-Ignore]` if they cannot be easily replaced by standardized composables.
 11. **Computed Atomicity**: NEVER perform state mutations (e.g., `ref.value = ...`) inside a `computed` property. This causes `vue/no-side-effects-in-computed-properties` errors.
 12. **Data Structure Refactoring Safety**: Al migrar una estructura de datos crítica (ej: de `Array` a `Object`), es **OBLIGATORIO** realizar un barrido completo del codebase buscando métodos incompatibles como `.includes()`, `.forEach()`, `.map()`, o `.filter()`.
+13. **Strict Return paths (TS7030)**: When writing functions in configurations or codebases with strict TypeScript enabled, if any execution path returns a value, all paths must explicitly return a value. For example, in rollup configurations like `manualChunks(id)`, ensure unmatched branches end with a fallback `return;` or `return undefined;` to satisfy the `noImplicitReturns` rule.

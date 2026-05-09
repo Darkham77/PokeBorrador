@@ -51,7 +51,7 @@ export function registerMapTools(debug: DebugSystem, { map, ui }: DebugContext) 
     command: 'setWeather',
     category: 'map',
     action: (w: string) => {
-      map.globalWeather = w
+      map.setGlobalWeather(w === 'none' ? null : w)
       ui.notify(`Debug: Clima forzado a ${w}`, '⛅')
     },
     description: 'Fuerza un clima específico en el mapa actual.'

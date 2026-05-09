@@ -23,6 +23,8 @@ function migrationsPlugin() {
   }
 }
 
+const buildInstant = Temporal.Now.instant().toZonedDateTimeISO('UTC');
+
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
@@ -69,13 +71,13 @@ export default defineConfig({
     })
   ],
   define: {
-    __BUILD_TIME__: JSON.stringify(Temporal.Now.instant().toZonedDateTimeISO('UTC').year.toString()),
+    __BUILD_TIME__: JSON.stringify(buildInstant.year.toString()),
     __APP_VERSION__: JSON.stringify(
-      'v' + Temporal.Now.instant().toZonedDateTimeISO('UTC').toString().replace(/[:T-]/g, '.').split('.')[0] + 
-      '.' + Temporal.Now.instant().toZonedDateTimeISO('UTC').month.toString().padStart(2, '0') +
-      '.' + Temporal.Now.instant().toZonedDateTimeISO('UTC').day.toString().padStart(2, '0') +
-      '.' + Temporal.Now.instant().toZonedDateTimeISO('UTC').hour.toString().padStart(2, '0') + 
-      Temporal.Now.instant().toZonedDateTimeISO('UTC').minute.toString().padStart(2, '0')
+      'v' + buildInstant.toString().replace(/[:T-]/g, '.').split('.')[0] + 
+      '.' + buildInstant.month.toString().padStart(2, '0') +
+      '.' + buildInstant.day.toString().padStart(2, '0') +
+      '.' + buildInstant.hour.toString().padStart(2, '0') + 
+      buildInstant.minute.toString().padStart(2, '0')
     )
   },
   resolve: {
@@ -119,6 +121,7 @@ export default defineConfig({
           if (id.includes('node_modules/@supabase')) {
             return 'vendor-db';
           }
+          return;
         }
       }
     }

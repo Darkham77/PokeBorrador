@@ -6,6 +6,7 @@ import { setActivePinia, createPinia } from 'pinia'
 import { useGameStore } from '@/stores/game'
 import { useShopStore } from '@/stores/shop'
 import { useUIStore } from '@/stores/ui'
+import type { Pokemon } from '@/types/pokemon'
 
 describe('Shop & Healing Logic', () => {
   beforeEach(() => {
@@ -55,15 +56,15 @@ describe('Shop & Healing Logic', () => {
         hp: 10,
         maxHp: 50,
         status: 'paralysis',
-        moves: [{ id: 'thunderbolt', pp: 0, maxPP: 15 }]
-      }]
+        moves: [{ id: 'thunderbolt', name: 'Thunderbolt', pp: 0, maxPP: 15 }]
+      }] as unknown as Pokemon[]
       
       shopStore.healAllPokemon()
       
-      const p = gameStore.state.team[0]
+      const p = gameStore.state.team[0]!
       expect(p.hp).toBe(50)
       expect(p.status).toBeNull()
-      expect(p.moves[0].pp).toBe(15)
+      expect(p.moves[0]!.pp).toBe(15)
     })
 
     it('calculates 2x cost for Team Rocket', () => {
@@ -71,7 +72,7 @@ describe('Shop & Healing Logic', () => {
       const shopStore = useShopStore()
       
       gameStore.state.playerClass = 'rocket'
-      gameStore.state.team = [{ hp: 10, maxHp: 50, moves: [] }]
+      gameStore.state.team = [{ hp: 10, maxHp: 50, moves: [] }] as unknown as Pokemon[]
       
       // Damaged count = 1. Base is 50 * 1 * (2.0 - 1.0) = 50.
       // Wait, let's check formula: Math.floor(50 * damagedCount * (mult - 1.0))
@@ -100,10 +101,10 @@ describe('Shop & Healing Logic', () => {
       gameStore.state.money = 1000000
       
       const items = shopStore.getBlackMarketItems()
-      const item = items[0]
+      const item = items[0]!
       
       // Formula: (bcPrice * 50) * (1 - 0.20)
-      const expectedPrice = Math.floor((item.bcPrice * 50) * (1 - 0.20))
+      const expectedPrice = Math.floor(((item.bcPrice || 0) * 50) * (1 - 0.20))
       const expectedMoney = 1000000 - expectedPrice
       
       shopStore.buyBlackMarketItem(item.id)

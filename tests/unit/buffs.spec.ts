@@ -10,8 +10,8 @@ import { useBuffsStore } from '@/stores/buffs';
 import { useGameStore } from '@/stores/game';
 
 describe('Buffs Store', () => {
-  let buffsStore;
-  let gameStore;
+  let buffsStore: ReturnType<typeof useBuffsStore>;
+  let gameStore: ReturnType<typeof useGameStore>;
 
   beforeEach(() => {
     setActivePinia(createPinia());
@@ -39,8 +39,8 @@ describe('Buffs Store', () => {
     expect(gameStore.state.repelSecs).toBe(600);
     expect(gameStore.save).toHaveBeenCalled();
     expect(buffsStore.activeBuffs).toHaveLength(1);
-    expect(buffsStore.activeBuffs[0].id).toBe('repel');
-    expect(buffsStore.activeBuffs[0].secs).toBe(600);
+    expect(buffsStore.activeBuffs[0]!.id).toBe('repel');
+    expect(buffsStore.activeBuffs[0]!.secs).toBe(600);
   });
 
   it('should stack buff durations if the same buff is added twice', () => {
@@ -53,7 +53,7 @@ describe('Buffs Store', () => {
     buffsStore.addBuff('incense', 1800, 'fire');
     expect(gameStore.state.incenseSecs).toBe(1800);
     expect(gameStore.state.incenseType).toBe('fire');
-    expect(buffsStore.activeBuffs[0].name).toBe('💨 Incienso Fuego');
+    expect(buffsStore.activeBuffs[0]!.name).toBe('💨 Incienso Fuego');
   });
 
   it('should tick down active buffs over time', () => {
@@ -75,7 +75,7 @@ describe('Buffs Store', () => {
     buffsStore.addBuff('repel', 10);
     
     // Mock active battle
-    gameStore.state.battle = { over: false };
+    gameStore.state.battle = { over: false } as unknown as typeof gameStore.state.battle;
     
     buffsStore.initTick();
     
@@ -86,7 +86,7 @@ describe('Buffs Store', () => {
     expect(gameStore.state.repelSecs).toBe(10);
     
     // Mock battle ending
-    gameStore.state.battle.over = true;
+    gameStore.state.battle!.over = true;
     
     // Advance another 5 seconds
     vi.advanceTimersByTime(5000);

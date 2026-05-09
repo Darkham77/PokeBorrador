@@ -1,17 +1,12 @@
-
-/**
- * tests/unit/gym.spec.js
- * Unit tests for Gym TM Rewards and Progress logic.
- */
 import { describe, it, expect } from 'vitest';
-import { processGymVictory, GYM_RATIOS } from '@/logic/gym/gymEngine';
+import { processGymVictory } from '@/logic/gym/gymEngine';
 
 describe('Gym Engine', () => {
   const mockGym = { id: 'pewter', leader: 'Brock', rewardTM: 'MT39 Tumba Rocas' };
 
   it('should give TM on first victory (Easy)', () => {
     const state = { defeatedGyms: [], gymProgress: {} };
-    const result = processGymVictory(mockGym, 'easy', state);
+    const result = processGymVictory(mockGym, 'easy', state as unknown as Parameters<typeof processGymVictory>[2]);
     
     expect(result.tmDropped).toBe(true);
     expect(result.isFirstTime).toBe(true);
@@ -20,7 +15,7 @@ describe('Gym Engine', () => {
 
   it('should not give TM on Easy rematch', () => {
     const state = { defeatedGyms: ['pewter'], gymProgress: { pewter: 1 } };
-    const result = processGymVictory(mockGym, 'easy', state);
+    const result = processGymVictory(mockGym, 'easy', state as unknown as Parameters<typeof processGymVictory>[2]);
     
     expect(result.tmDropped).toBe(false);
     expect(result.isFirstTime).toBe(false);
@@ -33,7 +28,7 @@ describe('Gym Engine', () => {
     const SAMPLES = 10000; // Reduced for speed in tests, but enough for statistical check
     
     for (let i = 0; i < SAMPLES; i++) {
-      if (processGymVictory(mockGym, 'normal', state).tmDropped) drops++;
+      if (processGymVictory(mockGym, 'normal', state as unknown as Parameters<typeof processGymVictory>[2]).tmDropped) drops++;
     }
     
     const rate = drops / SAMPLES;
@@ -48,7 +43,7 @@ describe('Gym Engine', () => {
     const SAMPLES = 10000;
     
     for (let i = 0; i < SAMPLES; i++) {
-      if (processGymVictory(mockGym, 'hard', state).tmDropped) drops++;
+      if (processGymVictory(mockGym, 'hard', state as unknown as Parameters<typeof processGymVictory>[2]).tmDropped) drops++;
     }
     
     const rate = drops / SAMPLES;

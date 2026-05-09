@@ -1,14 +1,22 @@
-
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { setActivePinia, createPinia } from 'pinia'
 import PokemonSelectionModal from '@/components/modals/PokemonSelectionModal.vue'
+import type { Pokemon } from '@/types/pokemon'
+
+interface SelectionModalInstance {
+  sortBy: string;
+  sortOrder: string;
+  activeTags: string[];
+  searchQuery: string;
+  availablePokemon: Array<{ pokemon: { name: string; nickname: string } }>;
+}
 
 // Mock dependencies
 // Dynamic mock for gameStore
 const mockGameStore = {
-  state: { team: [], box: [], pokedex: [] }
+  state: { team: [] as Pokemon[], box: [] as Pokemon[], pokedex: [] as string[] }
 }
 vi.mock('@/stores/game', () => ({
   useGameStore: () => mockGameStore
@@ -16,12 +24,14 @@ vi.mock('@/stores/game', () => ({
 
 // Mock localStorage for environments where it's missing
 if (typeof localStorage === 'undefined') {
-  const store = {}
+  const store = {} as Record<string, string>
   global.localStorage = {
-    getItem: (key) => store[key] || null,
-    setItem: (key, value) => { store[key] = value.toString() },
+    length: 0,
+    key: (index: number) => Object.keys(store)[index] || null,
+    getItem: (key: string) => store[key] || null,
+    setItem: (key: string, value: string) => { store[key] = value.toString() },
     clear: () => { for (const key in store) delete store[key] },
-    removeItem: (key) => { delete store[key] }
+    removeItem: (key: string) => { delete store[key] }
   }
 }
 
@@ -41,16 +51,18 @@ describe('PokemonSelectionModal Persistence', () => {
       }
     })
 
+    const vm = wrapper.vm as unknown as SelectionModalInstance
+
     // Simulate changes
-    wrapper.vm.sortBy = 'level'
-    wrapper.vm.sortOrder = 'desc'
-    wrapper.vm.activeTags = ['team']
-    wrapper.vm.searchQuery = 'pikachu'
+    vm.sortBy = 'level'
+    vm.sortOrder = 'desc'
+    vm.activeTags = ['team']
+    vm.searchQuery = 'pikachu'
 
     // Watchers are async, wait for the next tick/timeout
     await new Promise(resolve => setTimeout(resolve, 50))
 
-    const saved = JSON.parse(localStorage.getItem('pv_selection_filters'))
+    const saved = JSON.parse(localStorage.getItem('pv_selection_filters') || '{}')
     expect(saved).not.toBeNull()
     expect(saved.sortBy).toBe('level')
     expect(saved.sortOrder).toBe('desc')
@@ -75,10 +87,12 @@ describe('PokemonSelectionModal Persistence', () => {
       }
     })
 
-    expect(wrapper.vm.sortBy).toBe('name')
-    expect(wrapper.vm.sortOrder).toBe('asc')
-    expect(wrapper.vm.activeTags).toContain('box')
-    expect(wrapper.vm.searchQuery).toBe('char')
+    const vm = wrapper.vm as unknown as SelectionModalInstance
+
+    expect(vm.sortBy).toBe('name')
+    expect(vm.sortOrder).toBe('asc')
+    expect(vm.activeTags).toContain('box')
+    expect(vm.searchQuery).toBe('char')
   })
 
   it('handles corrupted localStorage data gracefully', () => {
@@ -92,10 +106,12 @@ describe('PokemonSelectionModal Persistence', () => {
       }
     })
 
+    const vm = wrapper.vm as unknown as SelectionModalInstance
+
     // Should use defaults
-    expect(wrapper.vm.sortBy).toBe('recent')
-    expect(wrapper.vm.sortOrder).toBe('desc')
-    expect(wrapper.vm.activeTags).toEqual([])
+    expect(vm.sortBy).toBe('recent')
+    expect(vm.sortOrder).toBe('desc')
+    expect(vm.activeTags).toEqual([])
   })
 
   it('filters available pokemon by nickname', async () => {
@@ -104,8 +120,9 @@ describe('PokemonSelectionModal Persistence', () => {
       team: [
         { uid: 'u1', id: 'pikachu', name: 'Pikachu', nickname: 'Sparky', level: 10 },
         { uid: 'u2', id: 'bulbasaur', name: 'Bulbasaur', nickname: 'Leafy 🌿', level: 5 }
-      ],
-      box: []
+      ] as unknown as Pokemon[],
+      box: [] as Pokemon[],
+      pokedex: [] as string[]
     }
 
     const wrapper = mount(PokemonSelectionModal, {
@@ -117,19 +134,21 @@ describe('PokemonSelectionModal Persistence', () => {
       }
     })
 
+    const vm = wrapper.vm as unknown as SelectionModalInstance
+
     // Filter by nickname
-    wrapper.vm.searchQuery = 'spark'
-    expect(wrapper.vm.availablePokemon).toHaveLength(1)
-    expect(wrapper.vm.availablePokemon[0].pokemon.nickname).toBe('Sparky')
+    vm.searchQuery = 'spark'
+    expect(vm.availablePokemon).toHaveLength(1)
+    expect(vm.availablePokemon[0]!.pokemon.nickname).toBe('Sparky')
 
     // Filter by emoji
-    wrapper.vm.searchQuery = '🌿'
-    expect(wrapper.vm.availablePokemon).toHaveLength(1)
-    expect(wrapper.vm.availablePokemon[0].pokemon.nickname).toBe('Leafy 🌿')
+    vm.searchQuery = '🌿'
+    expect(vm.availablePokemon).toHaveLength(1)
+    expect(vm.availablePokemon[0]!.pokemon.nickname).toBe('Leafy 🌿')
 
     // Filter by species name
-    wrapper.vm.searchQuery = 'bulba'
-    expect(wrapper.vm.availablePokemon).toHaveLength(1)
-    expect(wrapper.vm.availablePokemon[0].pokemon.name).toBe('Bulbasaur')
+    vm.searchQuery = 'bulba'
+    expect(vm.availablePokemon).toHaveLength(1)
+    expect(vm.availablePokemon[0]!.pokemon.name).toBe('Bulbasaur')
   })
 })

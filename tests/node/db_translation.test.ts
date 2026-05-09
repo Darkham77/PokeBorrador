@@ -90,8 +90,8 @@ describe('Database Translation Engine (Native)', () => {
       `;
       const statements = splitSQLStatements(sql);
       assert.strictEqual(statements.length, 2);
-      assert.ok(statements[0].includes('CREATE FUNCTION'));
-      assert.ok(statements[0].includes('END;'));
+      assert.ok(statements[0]!.includes('CREATE FUNCTION'));
+      assert.ok(statements[0]!.includes('END;'));
       assert.strictEqual(statements[1], 'SELECT 1');
     });
 

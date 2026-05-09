@@ -14,6 +14,23 @@ import { enableCompileCache } from 'node:module';
 
 enableCompileCache();
 
+interface PokeApiMoveListResponse {
+  results: Array<{ name: string; url: string }>;
+}
+
+interface PokeApiMove {
+  name: string;
+  names: Array<{ name: string; language: { name: string } }>;
+  meta?: {
+    category?: { name: string };
+  };
+  effect_chance?: number;
+  effect_entries: Array<{
+    short_effect: string;
+    language: { name: string };
+  }>;
+}
+
 const DB_FILE = path.resolve(process.cwd(), 'src/data/pokemonDB.ts');
 const MOVES_FILE = path.resolve(process.cwd(), 'src/data/moves.ts');
 const UTILS_FILE = path.resolve(process.cwd(), 'src/logic/pokemonUtils.ts');
@@ -26,45 +43,47 @@ function normalizeName(name: string) {
     .replace(/[^a-z0-9]/g, '');
 }
 
-async function getPokeApiMoves() {
+async function getPokeApiMoves(): Promise<PokeApiMove[]> {
   try {
     await fs.mkdir(CACHE_DIR, { recursive: true });
     const cacheExists = await fs.access(CACHE_FILE).then(() => true).catch(() => false);
     
     if (cacheExists) {
       console.log(styleText('blue', "ℹ️ Cargando movimientos de PokeAPI desde la caché..."));
-      return JSON.parse(await fs.readFile(CACHE_FILE, 'utf8'));
+      return JSON.parse(await fs.readFile(CACHE_FILE, 'utf8')) as PokeApiMove[];
     }
-  } catch (e) {}
+  } catch {
+    console.log(styleText('yellow', "⚠️ No se pudo acceder a la caché de PokeAPI."));
+  }
 
   console.log(styleText('cyan', "🌐 Obteniendo movimientos de PokeAPI (esto puede tardar unos segundos)..."));
   
   try {
     const response = await fetch('https://pokeapi.co/api/v2/move?limit=354');
     if (!response.ok) throw new Error(`Status: ${response.status}`);
-    const listResp: any = await response.json();
+    const listResp = await response.json() as PokeApiMoveListResponse;
     
-    const results: any[] = [];
+    const results: PokeApiMove[] = [];
     const chunkSize = 20;
     
     for (let i = 0; i < listResp.results.length; i += chunkSize) {
       const chunk = listResp.results.slice(i, i + chunkSize);
-      const promises = chunk.map(async (entry: any) => {
+      const promises = chunk.map(async (entry: { url: string }) => {
         const res = await fetch(entry.url);
         if (!res.ok) return null;
-        return res.json();
+        return res.json() as Promise<PokeApiMove>;
       });
       
       const chunkResults = await Promise.all(promises);
-      results.push(...chunkResults.filter(Boolean));
+      results.push(...chunkResults.filter((item): item is PokeApiMove => !!item));
       process.stdout.write(`Obtenidos ${Math.min(i + chunkSize, listResp.results.length)} / ${listResp.results.length}\r`);
     }
     
     console.log(styleText('green', "\n✅ Descarga de movimientos completada."));
     await fs.writeFile(CACHE_FILE, JSON.stringify(results, null, 2));
     return results;
-  } catch (error: any) {
-    console.error(styleText('red', `\n❌ Error al conectar con PokeAPI: ${error.message}`));
+  } catch (error: unknown) {
+    console.error(styleText('red', `\n❌ Error al conectar con PokeAPI: ${(error as Error).message}`));
     return [];
   }
 }
@@ -162,12 +181,12 @@ async function main() {
     // PokeAPI Semantic Sync
     if (apiMoves.length > 0) {
       const norm = normalizeName(name);
-      const apiMove = apiMoves.find((m: any) => m.names.some((n: any) => n.language.name === 'es' && normalizeName(n.name) === norm));
+      const apiMove = apiMoves.find((m: PokeApiMove) => m.names.some((n: { name: string; language: { name: string } }) => n.language.name === 'es' && normalizeName(n.name) === norm));
       
       if (apiMove) {
         const apiCat = apiMove.meta?.category?.name || '';
         const apiChance = apiMove.effect_chance;
-        const apiEffectEntries = apiMove.effect_entries.find((e: any) => e.language.name === 'en')?.short_effect || '';
+        const apiEffectEntries = apiMove.effect_entries.find((e: { language: { name: string } }) => e.language.name === 'en')?.short_effect || '';
         
         // Check for missing effects based on category
         if (apiCat && apiCat !== 'damage' && !content.includes('effect:') && !content.match(/(ohko|drain|recoil|endeavor|halfHP|fixedDmg):/)) {

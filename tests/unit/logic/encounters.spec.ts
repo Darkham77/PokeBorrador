@@ -1,9 +1,5 @@
-
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { generateEncounter } from '@/logic/encounters'
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
-import { makePokemon } from '@/logic/pokemonFactory'
-import { isDisputePhase } from '@/logic/war/warEngine'
 
 vi.mock('@/logic/providers/pokemonDataProvider', () => ({
   pokemonDataProvider: {
@@ -12,35 +8,35 @@ vi.mock('@/logic/providers/pokemonDataProvider', () => ({
     ]),
     getPokemonData: vi.fn(() => ({ type: 'normal' }))
   }
-}))
+}));
 
 vi.mock('@/logic/pokemonFactory', () => ({
   makePokemon: vi.fn((id, lv) => ({ id, lv, name: id }))
-}))
+}));
 
 vi.mock('@/logic/war/warEngine', () => ({
   isDisputePhase: vi.fn(() => false)
-}))
+}));
 
 vi.mock('@/logic/war/guardianEngine', () => ({
   getGuardianData: vi.fn(() => null),
   GUARDIAN_CHANCE: 0.1
-}))
+}));
 
 vi.mock('@/logic/war/bonusEngine', () => ({
   applyEncounterBonuses: vi.fn(p => p)
-}))
+}));
 
 vi.mock('@/stores/events', () => ({
   useEventStore: vi.fn(() => ({ 
     activeEvents: [],
     getSpeciesBonuses: vi.fn()
   }))
-}))
+}));
 
 vi.mock('@/logic/timeUtils', () => ({
   getDayCycle: vi.fn(() => 'day')
-}))
+}));
 
 describe('encounters.js', () => {
   const mockState = {
@@ -61,10 +57,10 @@ describe('encounters.js', () => {
     // But with forceEncounter, we skip the repellent block
     const options = { forceEncounter: true }
     
-    const result = await generateEncounter('route1', stateWithRepel, options)
+    const result = await generateEncounter('route1', stateWithRepel as unknown as Parameters<typeof generateEncounter>[1], options)
     
-    expect(result.type).toBe('wild')
-    expect(result.pokemon.id).toBe('pidgey')
+    expect(result!.type).toBe('wild')
+    expect(result!.pokemon!.id).toBe('pidgey')
   })
 
   it('should respect forceEncounter and bypass trainer chance', async () => {
@@ -72,8 +68,8 @@ describe('encounters.js', () => {
     const stateWithTrainer = { ...mockState, trainerChance: 5 }
     const options = { forceEncounter: true }
     
-    const result = await generateEncounter('route1', stateWithTrainer, options)
+    const result = await generateEncounter('route1', stateWithTrainer as unknown as Parameters<typeof generateEncounter>[1], options)
     
-    expect(result.type).toBe('wild') // Should be wild because forceEncounter skips trainer check
+    expect(result!.type).toBe('wild') // Should be wild because forceEncounter skips trainer check
   })
 })

@@ -7,6 +7,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { usePlayerClassStore } from '@/stores/playerClass'
 import { useGameStore } from '@/stores/game'
+import type { Pokemon } from '@/types/pokemon'
 
 vi.mock('@/logic/supabase', () => ({
   supabase: {
@@ -100,7 +101,7 @@ describe('Player Class Logic (V3)', () => {
 
     gameStore.state.playerClass = 'rocket'
     gameStore.state.box = [
-      { id: 'pidgey', name: 'Pidgey', level: 10, heldItem: 'Piedra Fuego', onMission: true }
+      { id: 'pidgey', name: 'Pidgey', level: 10, heldItem: 'Piedra Fuego', onMission: true } as unknown as Pokemon
     ]
     
     gameStore.state.classData.activeMission = {
@@ -125,7 +126,7 @@ describe('Player Class Logic (V3)', () => {
     expect(classStore.getModifier('expMult')).toBe(1.1)
 
     // Activar PvP
-    gameStore.state.activeBattle = { isPvP: true }
+    gameStore.state.activeBattle = { isPvP: true } as unknown as typeof gameStore.state.activeBattle
     expect(classStore.getModifier('expMult')).toBe(1.0)
   })
 })

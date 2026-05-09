@@ -6,6 +6,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { useEvolutionStore } from '@/stores/evolution'
 import { useGameStore } from '@/stores/game'
+import type { Pokemon } from '@/types/pokemon'
 
 vi.mock('@/logic/supabase', () => ({
   supabase: {
@@ -42,10 +43,10 @@ vi.mock('@/stores/auth', () => ({
 // Mock de la lógica base para no depender de la DB completa de pokémon
 vi.mock('@/logic/evolutionLogic', () => ({
   evolvePokemonData: vi.fn((pokemon, targetId) => {
-    const oldName = pokemon.name;
+    const fromId = pokemon.id;
     pokemon.id = targetId;
     pokemon.name = targetId.toUpperCase();
-    return { oldName, pendingMoves: [] };
+    return { pendingMoves: [], fromId, toId: targetId };
   }),
   checkLevelUpEvolution: vi.fn(),
   checkStoneEvolution: vi.fn()
@@ -65,7 +66,7 @@ describe('Evolution System', () => {
 
   it('debe iniciar la secuencia de evolución correctamente', () => {
     const evoStore = useEvolutionStore()
-    const p = { id: 'bulbasaur', name: 'Bulba' }
+    const p = { id: 'bulbasaur', name: 'Bulba' } as unknown as Pokemon
     
     evoStore.startEvolution(p, 'ivysaur')
     
@@ -77,7 +78,7 @@ describe('Evolution System', () => {
   it('debe transformar al pokémon y registrarlo en la Pokedex', () => {
     const evoStore = useEvolutionStore()
     const gameStore = useGameStore()
-    const p = { id: 'bulbasaur', name: 'Bulba' }
+    const p = { id: 'bulbasaur', name: 'Bulba' } as unknown as Pokemon
     
     evoStore.startEvolution(p, 'ivysaur')
     evoStore.evolve()
@@ -89,7 +90,7 @@ describe('Evolution System', () => {
 
   it('debe limpiar el estado al finalizar', () => {
     const evoStore = useEvolutionStore()
-    const p = { id: 'bulbasaur', name: 'Bulba' }
+    const p = { id: 'bulbasaur', name: 'Bulba' } as unknown as Pokemon
     
     evoStore.startEvolution(p, 'ivysaur')
     evoStore.finishEvolution()

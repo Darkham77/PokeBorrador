@@ -9,7 +9,6 @@ import InventoryPills from '@/components/InventoryPills.vue'
 import { useUIStore } from '@/stores/ui'
 import { useGameStore } from '@/stores/game'
 import { useModalStore } from '@/stores/modals'
-import { useMapStore } from '@/stores/map'
 
 // Mock router
 vi.mock('vue-router', () => ({
@@ -54,13 +53,13 @@ describe('HUD Components', () => {
       // Click Mochila
       const buttons = wrapper.findAll('.hud-nav-btn')
       const bagBtn = buttons.find(b => b.text().includes('MOCHILA'))
-      await bagBtn.trigger('click')
+      await bagBtn!.trigger('click')
       expect(spy).toHaveBeenCalledWith('Inventory')
 
       // Click Market Submenu Item
       // Market is a group, we need to find the local market button
       const marketSubmenuBtn = buttons.find(b => b.text().includes('LOCAL'))
-      await marketSubmenuBtn.trigger('click')
+      await marketSubmenuBtn!.trigger('click')
       expect(spy).toHaveBeenCalledWith('Shop')
     })
   })

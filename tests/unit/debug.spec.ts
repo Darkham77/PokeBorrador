@@ -1,9 +1,9 @@
-
 // @vitest-environment jsdom
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, vi, type Mock } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { useAuthStore } from '@/stores/auth'
 import { useGameStore } from '@/stores/game'
+import type { AuthUser } from '@/types/auth'
 
 // Stable mock object for chain calls
 const mockChain = {
@@ -31,12 +31,14 @@ vi.mock('@/logic/supabase', () => ({
 
 // Mock localStorage for environments where it's missing
 if (typeof localStorage === 'undefined') {
-  const store = {}
+  const store: Record<string, string> = {}
   global.localStorage = {
-    getItem: (key) => store[key] || null,
-    setItem: (key, value) => { store[key] = value.toString() },
-    clear: () => { for (const key in store) delete store[key] },
-    removeItem: (key) => { delete store[key] }
+    getItem: (key: string): string | null => store[key] || null,
+    setItem: (key: string, value: string): void => { store[key] = value.toString() },
+    clear: (): void => { for (const key in store) delete store[key] },
+    removeItem: (key: string): void => { delete store[key] },
+    length: 0,
+    key: (_index: number): string | null => null
   }
 }
 
@@ -54,10 +56,10 @@ describe('Debug & Security System', () => {
     
     // Simulate offline session
     auth.sessionMode = 'offline'
-    auth.user = { id: 'local_tester', role: 'user' }
+    auth.user = { id: 'local_tester', role: 'user', user_metadata: { username: 'local_tester' } } as unknown as AuthUser
     
     // Use the debug API (manually since we are in node/vitest, but simulating the logic)
-    const setMoney = (val) => {
+    const setMoney = (val: number) => {
        if (auth.sessionMode === 'offline' || auth.user?.role === 'admin') {
          game.state.money = val
          return true
@@ -75,12 +77,12 @@ describe('Debug & Security System', () => {
     
     // Simulate online session as regular user
     auth.sessionMode = 'online'
-    auth.user = { id: 'cheater_id', role: 'user' }
+    auth.user = { id: 'cheater_id', role: 'user', user_metadata: { username: 'cheater_id' } } as unknown as AuthUser
     
     const securityCheck = () => {
       if (auth.sessionMode === 'online' && auth.user?.role !== 'admin') {
         // Trigger async ban
-        supabase.from('profiles').update({ is_banned: true }).eq('id', auth.user.id)
+        supabase.from('profiles').update({ is_banned: true }).eq('id', auth.user!.id)
         auth.logout()
         return false
       }
@@ -101,9 +103,9 @@ describe('Debug & Security System', () => {
     // Mock banned profile using stable mockChain
     mockChain.single.mockResolvedValue({ 
       data: { is_banned: true, ban_reason: 'Exploit detected' } 
-    })
+    });
     
-    supabase.auth.signInWithPassword.mockResolvedValue({ 
+    (supabase.auth.signInWithPassword as Mock).mockResolvedValue({ 
       data: { user: { id: 'banned_user' }, session: {} } 
     })
 

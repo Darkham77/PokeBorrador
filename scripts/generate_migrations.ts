@@ -16,6 +16,7 @@
 
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { Temporal } from '@js-temporal/polyfill';
 
 const MIGRATIONS_DIR = path.resolve(process.cwd(), 'database/migrations');
 const OUTPUT_FILE = path.resolve(process.cwd(), 'src/logic/db/migrations_data.ts');
@@ -44,7 +45,7 @@ export async function generateMigrations() {
     // Example: -- check: { "table": "profiles", "column": "role" }
     let check = null;
     const checkMatch = content.match(/--\s*check:\s*({.+})/);
-    if (checkMatch) {
+    if (checkMatch && checkMatch[1]) {
       try {
         check = JSON.parse(checkMatch[1]);
       } catch (e) {

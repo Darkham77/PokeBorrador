@@ -1,8 +1,7 @@
-
 /** @vitest-environment jsdom */
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
-import { defineComponent, ref, nextTick } from 'vue'
+import { defineComponent, ref } from 'vue'
 import { useCombatCamera } from '@/composables/useCombatCamera'
 
 // Mock gameBus
@@ -32,8 +31,7 @@ const TestComponent = defineComponent({
 
 describe('useCombatCamera', () => {
   it('calculates scale correctly for square viewport', async () => {
-    const wrapper = mount(TestComponent)
-    const vm = wrapper.vm
+    mount(TestComponent)
 
     // Simulating a 1200x1200x viewport to test scale against VISIBLE_UNITS_Y (1100)
     // Actually the logic uses cw/VISIBLE_UNITS_X and ch/VISIBLE_UNITS_Y

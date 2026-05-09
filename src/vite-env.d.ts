@@ -11,3 +11,8 @@ declare module '*.scss' {
   const content: Record<string, string>
   export default content
 }
+
+declare module '@js-temporal/polyfill' {
+  export const Temporal: typeof globalThis.Temporal;
+}
+

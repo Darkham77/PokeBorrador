@@ -1,6 +1,6 @@
-
 import { describe, it, expect, vi } from 'vitest'
 import { calculateCatchRate } from '@/logic/battle/battleEngine'
+import type { Pokemon } from '@/types/pokemon'
 
 // Mock getDayCycle to control time in tests
 vi.mock('@/logic/timeUtils', async () => {
@@ -24,7 +24,7 @@ describe('Capture Formula (battleEngine.js)', () => {
   }
 
   it('should guarantee capture with Master Ball', () => {
-    const result = calculateCatchRate(mockPokemon, 'Master Ball')
+    const result = calculateCatchRate(mockPokemon as unknown as Pokemon, 'Master Ball')
     expect(result.caught).toBe(true)
   })
 
@@ -36,8 +36,8 @@ describe('Capture Formula (battleEngine.js)', () => {
     
     vi.spyOn(Math, 'random').mockReturnValue(0.1) // Force success if rate > 0
     
-    const pokeResult = calculateCatchRate({ ...mockPokemon, hp: 10 }, 'Poke Ball')
-    const greatResult = calculateCatchRate({ ...mockPokemon, hp: 10 }, 'Great Ball')
+    const pokeResult = calculateCatchRate({ ...mockPokemon, hp: 10 } as unknown as Pokemon, 'Poke Ball')
+    const greatResult = calculateCatchRate({ ...mockPokemon, hp: 10 } as unknown as Pokemon, 'Great Ball')
     
     // Both should catch with fixed random 0.1, but let's check shakes
     expect(pokeResult.shakes).toBeGreaterThanOrEqual(0)
@@ -55,14 +55,14 @@ describe('Capture Formula (battleEngine.js)', () => {
       // but we can verify it respects the context
       const ctxRain = { weather: { type: 'rain' } }
       // We check that it at least runs without error and uses the logic
-      const result = calculateCatchRate(waterPoke, 'Red Ball', 1, ctxRain)
+      const result = calculateCatchRate(waterPoke as unknown as Pokemon, 'Red Ball', 1, ctxRain as unknown as Parameters<typeof calculateCatchRate>[3])
       expect(result).toBeDefined()
     })
 
     it('should have higher success against Bug than Normal types', () => {
       vi.spyOn(Math, 'random').mockReturnValue(0.5) 
-      const normalResult = calculateCatchRate(mockPokemon, 'Red Ball')
-      const bugResult = calculateCatchRate(bugPoke, 'Red Ball')
+      const normalResult = calculateCatchRate(mockPokemon as unknown as Pokemon, 'Red Ball')
+      const bugResult = calculateCatchRate(bugPoke as unknown as Pokemon, 'Red Ball')
       
       // Bug should have more shakes or catch success than Normal with same random
       expect(bugResult.shakes).toBeGreaterThanOrEqual(normalResult.shakes)
@@ -75,8 +75,8 @@ describe('Capture Formula (battleEngine.js)', () => {
       vi.mocked(getDayCycle).mockReturnValue('night')
       vi.spyOn(Math, 'random').mockReturnValue(0.4)
       
-      const dayResult = calculateCatchRate(mockPokemon, 'Ocaso Ball', 1, { cycle: 'day' })
-      const nightResult = calculateCatchRate(mockPokemon, 'Ocaso Ball', 1, { cycle: 'night' })
+      const dayResult = calculateCatchRate(mockPokemon as unknown as Pokemon, 'Ocaso Ball', 1, { cycle: 'day' } as unknown as Parameters<typeof calculateCatchRate>[3])
+      const nightResult = calculateCatchRate(mockPokemon as unknown as Pokemon, 'Ocaso Ball', 1, { cycle: 'night' } as unknown as Parameters<typeof calculateCatchRate>[3])
       
       expect(nightResult.shakes).toBeGreaterThanOrEqual(dayResult.shakes)
       vi.restoreAllMocks()
@@ -86,8 +86,8 @@ describe('Capture Formula (battleEngine.js)', () => {
       vi.mocked(getDayCycle).mockReturnValue('day')
       vi.spyOn(Math, 'random').mockReturnValue(0.4)
       
-      const fieldResult = calculateCatchRate(mockPokemon, 'Ocaso Ball', 1, { locationId: 'route1' })
-      const caveResult = calculateCatchRate(mockPokemon, 'Ocaso Ball', 1, { locationId: 'mt_moon' })
+      const fieldResult = calculateCatchRate(mockPokemon as unknown as Pokemon, 'Ocaso Ball', 1, { locationId: 'route1' } as unknown as Parameters<typeof calculateCatchRate>[3])
+      const caveResult = calculateCatchRate(mockPokemon as unknown as Pokemon, 'Ocaso Ball', 1, { locationId: 'mt_moon' } as unknown as Parameters<typeof calculateCatchRate>[3])
       
       expect(caveResult.shakes).toBeGreaterThanOrEqual(fieldResult.shakes)
       vi.restoreAllMocks()
@@ -95,8 +95,8 @@ describe('Capture Formula (battleEngine.js)', () => {
     
     it('should be more effective in Fog', () => {
       vi.spyOn(Math, 'random').mockReturnValue(0.4)
-      const clearResult = calculateCatchRate(mockPokemon, 'Ocaso Ball', 1, { weather: { type: 'clear' } })
-      const fogResult = calculateCatchRate(mockPokemon, 'Ocaso Ball', 1, { weather: { type: 'fog' } })
+      const clearResult = calculateCatchRate(mockPokemon as unknown as Pokemon, 'Ocaso Ball', 1, { weather: { type: 'clear' } } as unknown as Parameters<typeof calculateCatchRate>[3])
+      const fogResult = calculateCatchRate(mockPokemon as unknown as Pokemon, 'Ocaso Ball', 1, { weather: { type: 'fog' } } as unknown as Parameters<typeof calculateCatchRate>[3])
       
       expect(fogResult.shakes).toBeGreaterThanOrEqual(clearResult.shakes)
       vi.restoreAllMocks()
@@ -107,9 +107,9 @@ describe('Capture Formula (battleEngine.js)', () => {
     it('should increase success rate with turn count', () => {
       vi.spyOn(Math, 'random').mockReturnValue(0.6)
       
-      const turn1 = calculateCatchRate(mockPokemon, 'Turno Ball', 1, { turnCount: 1 })
-      const turn10 = calculateCatchRate(mockPokemon, 'Turno Ball', 1, { turnCount: 10 })
-      const turn30 = calculateCatchRate(mockPokemon, 'Turno Ball', 1, { turnCount: 30 })
+      const turn1 = calculateCatchRate(mockPokemon as unknown as Pokemon, 'Turno Ball', 1, { turnCount: 1 } as unknown as Parameters<typeof calculateCatchRate>[3])
+      const turn10 = calculateCatchRate(mockPokemon as unknown as Pokemon, 'Turno Ball', 1, { turnCount: 10 } as unknown as Parameters<typeof calculateCatchRate>[3])
+      const turn30 = calculateCatchRate(mockPokemon as unknown as Pokemon, 'Turno Ball', 1, { turnCount: 30 } as unknown as Parameters<typeof calculateCatchRate>[3])
       
       expect(turn30.shakes).toBeGreaterThanOrEqual(turn10.shakes)
       expect(turn10.shakes).toBeGreaterThanOrEqual(turn1.shakes)
