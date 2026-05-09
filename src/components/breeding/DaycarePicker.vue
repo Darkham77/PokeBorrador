@@ -7,11 +7,13 @@ import { getPokemonTier } from '@/logic/pokemonUtils';
 import { checkCompatibility } from '@/logic/breeding/breedingEngine';
 import { validateMissionPokemon } from '@/logic/breeding/missionEngine';
 
+import type { Pokemon } from '@/types/pokemon';
+
 interface Props {
   slotIndex: number;
-  otherParent?: any | null;
+  otherParent?: Pokemon | null;
   mode?: 'deposit' | 'delivery';
-  mission?: any | null;
+  mission?: any | null; // Mission type could be more specific if available
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -21,26 +23,26 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const emit = defineEmits<{
-  (e: 'select', pokemon: any): void;
+  (e: 'select', pokemon: Pokemon): void;
   (e: 'close'): void;
-}>();
+}>()
 
-const gameStore = useGameStore() as any;
-const breedingStore = useBreedingStore() as any;
+const gameStore = useGameStore()
+const breedingStore = useBreedingStore()
 
-const availablePokemon = computed(() => {
+const availablePokemon = computed<Pokemon[]>(() => {
   // Filter out pokemon already in daycare
-  const inDaycareUids = (breedingStore.slots as any[]).map(s => s.pokemon?.uid);
+  const inDaycareUids = breedingStore.slots.map(s => s.pokemon?.uid);
   
   const all = [...(gameStore.state.team || []), ...(gameStore.state.box || [])];
   
-  let filtered = all.filter(p => !inDaycareUids.includes(p.uid) && !p.onMission && !p.onDefense);
+  let filtered = all.filter(p => p && !inDaycareUids.includes(p.uid) && !p.onMission && !p.onDefense);
 
   // Mode: Deposit (pairing with another parent)
   if (props.mode === 'deposit' && props.otherParent) {
     filtered = [...filtered].sort((a, b) => {
-      const cpA = checkCompatibility(props.otherParent, a).level;
-      const cpB = checkCompatibility(props.otherParent, b).level;
+      const cpA = checkCompatibility(props.otherParent!, a).level;
+      const cpB = checkCompatibility(props.otherParent!, b).level;
       return cpB - cpA;
     });
   }
@@ -53,7 +55,7 @@ const availablePokemon = computed(() => {
   return filtered;
 });
 
-const selectPokemon = (p: any) => {
+const selectPokemon = (p: Pokemon) => {
   emit('select', p);
 };
 </script>

@@ -63,7 +63,7 @@ const {
   getSprite,
   finalIndex,
   finalContext
-} = usePokemonDetail(props as { pokemon?: Pokemon | null, speciesId?: string })
+} = usePokemonDetail(props as { pokemon: Pokemon | null, speciesId: string })
 
 // --- LOCAL UI STATE ---
 const isSmallScreen = ref(window.innerWidth <= 950)
@@ -112,16 +112,22 @@ const getCategoryDescription = (cat: string) => {
 
 // --- HANDLERS ---
 const handleBuy = () => {
-  if (props.extra && typeof (window as any).buyFromMarket === 'function') {
-    (window as any).buyFromMarket(props.extra.offerId, props.extra.price, props.extra.type)
+  const win = window as unknown as { 
+    buyFromMarket?: (offerId: string, price: number, type: string) => void 
+  }
+  if (props.extra && typeof win.buyFromMarket === 'function') {
+    win.buyFromMarket(props.extra.offerId || '', props.extra.price || 0, props.extra.type || '')
     emit('close')
   }
 }
 
 const handleEvolve = () => {
-  if (typeof (window as any).showStonePicker === 'function') {
+  const win = window as unknown as { 
+    showStonePicker?: (index: number) => void 
+  }
+  if (typeof win.showStonePicker === 'function') {
     emit('close');
-    (window as any).showStonePicker(props.index)
+    win.showStonePicker(props.index)
   }
 }
 
@@ -183,8 +189,8 @@ const handleReorderMoves = (from: number, to: number) => {
       class="upd-core-container"
       :class="{ 'instance-mode': isInstance }"
       :style="{ 
-        '--type-color': PDEX_TYPE_COLORS[species.type[0].toLowerCase()] || '#888',
-        '--type-color-rgb': hexToRgb(PDEX_TYPE_COLORS[species.type[0].toLowerCase()] || '#888')
+        '--type-color': (PDEX_TYPE_COLORS as Record<string, string>)[species.type[0].toLowerCase()] || '#888',
+        '--type-color-rgb': hexToRgb((PDEX_TYPE_COLORS as Record<string, string>)[species.type[0].toLowerCase()] || '#888')
       }"
     >
       <!-- Custom Content Header -->
@@ -229,7 +235,7 @@ const handleReorderMoves = (from: number, to: number) => {
               v-for="t in species.type"
               :key="t"
               class="m-type-tag pixelated"
-              :style="{ background: PDEX_TYPE_COLORS[t.toLowerCase()] }"
+              :style="{ background: (PDEX_TYPE_COLORS as Record<string, string>)[t.toLowerCase()] }"
             >
               {{ t.toUpperCase() }}
             </span>

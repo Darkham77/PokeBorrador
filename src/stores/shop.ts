@@ -133,7 +133,7 @@ export const useShopStore = defineStore('shop', () => {
     return 0
   }
 
-  function healAllPokemon(manualCost = null) {
+  function healAllPokemon(manualCost: number | null = null) {
     const costToCharge = manualCost !== null ? manualCost : getHealCost()
     
     if (gameStore.state.money < costToCharge) {

@@ -8,16 +8,17 @@ import PVTooltip from '@/components/common/PVTooltip.vue'
 import { PDEX_ORDER, GEN2_PDEX_ORDER } from '@/data/pokedex'
 import { gameBus } from '@/logic/gameBus'
 import DebugAudioAnimTab from '@/components/admin/debug/DebugAudioAnimTab.vue'
+import type { Pokemon } from '@/types/pokemon'
 
 const ALL_PDEX = [...PDEX_ORDER, ...GEN2_PDEX_ORDER]
 
-const battleStore = useBattleStore() as any
-const gameStore = useGameStore() as any
-const audio = useAudioStore() as any
+const battleStore = useBattleStore()
+const gameStore = useGameStore()
+const audio = useAudioStore()
 const isOpen = ref(false)
 const isEffectsOpen = ref(false)
 
-const isDebug = computed(() => typeof window !== 'undefined' && !!(window as any).__VITE_DEBUG__)
+const isDebug = computed(() => typeof window !== 'undefined' && !!(window as unknown as { __VITE_DEBUG__?: unknown }).__VITE_DEBUG__)
 
 const defeatEnemy = async () => {
   const e = battleStore.enemy
@@ -93,23 +94,31 @@ const toggleBinoculars = () => {
 }
 
 const toggleSearchMode = async () => {
-  battleStore.isSearching = !battleStore.isSearching
+  const { BATTLE_STATES } = await import('@/logic/battle/battleStateMachine')
+  if (battleStore.isSearching) {
+     battleStore.fsm.transition(BATTLE_STATES.INITIALIZING)
+  } else {
+     battleStore.fsm.transition(BATTLE_STATES.SEARCH_PHASE)
+  }
   
   // Si activamos la búsqueda y no hay un pokemon preparado, forzamos uno inmediatamente
   if (battleStore.isSearching && !battleStore.upcomingPokemon && battleStore.state?.locationId) {
     const { generateEncounter } = await import('@/logic/encounters')
-    const { useMapStore } = await import('@/stores/map')
-    const { useEventStore } = await import('@/stores/events')
+    const mapStoreModule = await import('@/stores/map')
+    const eventStoreModule = await import('@/stores/events')
     
+    const mapStore = mapStoreModule.useMapStore()
+    const eventStore = eventStoreModule.useEventStore()
+
     const encounter = await generateEncounter(battleStore.state.locationId, gameStore.state, {
-      activeEvents: (useMapStore() as any).activeEvents,
-      dominanceData: (useMapStore() as any).mapWinners,
-      shinyMultiplier: (useEventStore() as any).globalMultipliers?.shiny || 1,
+      activeEvents: (mapStore as any).activeEvents || [],
+      dominanceData: (mapStore as any).mapWinners || {},
+      shinyMultiplier: (eventStore as any).globalMultipliers?.shiny || 1,
       forceEncounter: true
     })
     
-    if (encounter && encounter.type === 'wild') {
-      battleStore.upcomingPokemon = { ...(encounter as any).pokemon }
+    if (encounter && encounter.type === 'wild' && 'pokemon' in encounter) {
+      battleStore.upcomingPokemon = { ...(encounter.pokemon as Pokemon) }
     }
   }
 }
@@ -120,7 +129,7 @@ const visualPlayerId = ref(1)
 
 const updateVisualSwap = (side = 'enemy') => {
   const num = side === 'player' ? visualPlayerId.value : visualEnemyId.value
-  const targetId = ALL_PDEX[Math.max(0, num - 1)] || ALL_PDEX[0]
+  const targetId = (ALL_PDEX[Math.max(0, num - 1)] || ALL_PDEX[0]) as string
   if (side === 'player' && battleStore.state?.player) {
     battleStore.state.player.id = targetId
   } else if (battleStore.state?.enemy) {
@@ -146,7 +155,9 @@ const toggleStatus = (side: string, type: string) => {
     if (!p) return
     if (type === 'shiny') p.isShiny = !p.isShiny
     if (type === 'guardian') p.isGuardian = !p.isGuardian
-    battleStore.state.player = { ...p }
+    if (battleStore.state) {
+      battleStore.state.player = { ...p }
+    }
   } else {
     const poke = battleStore.upcomingPokemon || battleStore.state?.enemy
     if (!poke) return

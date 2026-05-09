@@ -196,6 +196,8 @@ export const useTradeStore = defineStore('trade', () => {
     return locked
   })
 
+  const pendingCount = computed(() => pendingIncoming.value.length)
+  
   return {
     tradeTarget,
     tradeFriendSave,
@@ -206,6 +208,7 @@ export const useTradeStore = defineStore('trade', () => {
     pendingIncoming,
     pendingOutgoing,
     pendingAccepted,
+    pendingCount,
     lockedUids,
     subscribeTradeNotifs,
     refreshPendingTrades,

@@ -54,15 +54,20 @@ const activeEventData = computed(() => {
     icon: active.icon || '⚡'
   }
 })
+
+const mappedAwards = computed(() => mapStore.pendingAwards.map(a => ({
+  event_id: a.id,
+  event_name: (a.data.event_name as string) || 'Evento Especial'
+})))
 </script>
 
 <template>
   <div class="map-view-container legacy-ui">
     <!-- Header de Eventos -->
     <MapEventCarousel
-      v-if="mapStore.activeEvents.length > 0 || mapStore.pendingAwards.length > 0"
+      v-if="mapStore.activeEvents.length > 0 || mappedAwards.length > 0"
       :events="mapStore.activeEvents"
-      :awards="mapStore.pendingAwards"
+      :awards="mappedAwards"
       @open-event="navigateToMap"
       @open-award="navigateToMap"
     />

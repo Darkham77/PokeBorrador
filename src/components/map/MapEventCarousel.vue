@@ -1,9 +1,21 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed } from 'vue'
 
+interface MapEvent {
+  id: string | number
+  name: string
+  description?: string
+  icon?: string
+}
+
+interface MapAward {
+  event_id: string | number
+  event_name: string
+}
+
 interface Props {
-  events?: any[]
-  awards?: any[]
+  events?: MapEvent[]
+  awards?: MapAward[]
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -17,10 +29,19 @@ const emit = defineEmits<{
 }>()
 
 const currentIndex = ref(0)
-let timer: any = null
+let timer: ReturnType<typeof setInterval> | null = null
+
+interface Slide {
+  id: string | number
+  type: 'event' | 'award'
+  icon: string
+  title: string
+  content: string
+  color: string
+}
 
 const slides = computed(() => {
-  const result: any[] = []
+  const result: Slide[] = []
   
   // Eventos activos
   props.events.forEach(ev => {
@@ -57,9 +78,11 @@ const startTimer = () => {
 }
 
 onMounted(startTimer)
-onUnmounted(() => clearInterval(timer))
+onUnmounted(() => {
+  if (timer) clearInterval(timer)
+})
 
-const handleAction = (slide: any) => {
+const handleAction = (slide: Slide) => {
   if (slide.type === 'event') emit('openEvent', slide.id)
   else emit('openAward', slide.id)
 }

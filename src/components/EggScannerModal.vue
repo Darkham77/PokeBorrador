@@ -3,7 +3,7 @@ import { ref, computed } from 'vue'
 import { POKEMON_DB } from '@/data/pokemonDB'
 import { useGameStore } from '@/stores/game'
 import { useBreedingStore } from '@/stores/breeding'
-import type { PokemonEgg } from '@/types/pokemon'
+import type { DaycareEgg } from '@/types/breeding'
 
 interface IVs {
   hp: number
@@ -15,14 +15,19 @@ interface IVs {
   [key: string]: number | boolean | undefined
 }
 
-interface EggItem {
-  type: 'inventory' | 'daycare'
-  data: PokemonEgg & { inherited_ivs?: IVs, pokemonId?: string, species?: string, scanned?: boolean, predictedInfo?: { name: string, ivTotal: number } }
-  id: string | number
+type EggItem = {
+  type: 'inventory'
+  data: any 
+  id: number
+  species: string
+} | {
+  type: 'daycare'
+  data: any
+  id: string
   species: string
 }
 
-interface ScanningResult extends EggItem {
+type ScanningResult = EggItem & {
   totalIV: number
   sellPrice: number
   ivs: IVs
@@ -48,32 +53,33 @@ const scanningResult = ref<ScanningResult | null>(null)
 const isScanning = ref(false)
 
 const allEggs = computed<EggItem[]>(() => {
-  const inventoryEggs = (gameStore.state.eggs || []).map((e: any, idx) => ({ 
+  const inventoryEggs = (gameStore.state.eggs || []).map((e, idx) => ({ 
     type: 'inventory' as const, 
     data: e as any, 
     id: idx,
-    species: e.pokemonId || e.id
+    species: (e as any).pokemonId || (e as any).id || ''
   }))
   
-  const daycareEggs = (breedingStore.eggs || []).map((e: any) => ({ 
-    type: 'daycare' as const, 
-    data: e as any, 
-    id: e.id || e.uid,
-    species: e.id || e.species
-  }))
+  const daycareEggs = (breedingStore.warehouseEggs || []).map((e: DaycareEgg) => {
+    return { 
+      type: 'daycare' as const, 
+      data: e, 
+      id: e.id,
+      species: e.species
+    }
+  })
   
   return [...inventoryEggs, ...daycareEggs]
 })
 
 const scanEgg = async (egg: EggItem) => {
   isScanning.value = true
-  // Simulate scanning delay for "wow" effect
+  // Simulate scanning delay
   await new Promise(r => setTimeout(r, 800))
   
-  const ivs = (egg.data.inherited_ivs || {}) as IVs
+  const ivs = (egg.data.ivs || {}) as IVs
   const totalIV = (ivs.hp || 0) + (ivs.atk || 0) + (ivs.def || 0) + (ivs.spa || 0) + (ivs.spd || 0) + (ivs.spe || 0)
   
-  // Basic calculation for selling price (parity with legacy)
   const sellPrice = 1000 + Math.floor((totalIV / 186) * 4000)
   
   scanningResult.value = {
@@ -91,24 +97,24 @@ const handleKeep = async () => {
   const res = scanningResult.value
   
   if (res.type === 'inventory') {
-    const eggs = gameStore.state.eggs
+    const eggs = (gameStore.state.eggs || []) as any[]
     const egg = eggs[res.id as number]
     if (egg) {
-      const e = egg as any
-      e.scanned = true
-      e.predictedInfo = { 
+      egg.scanned = true
+      egg.predictedInfo = { 
           name: (POKEMON_DB as Record<string, { name: string }>)[res.species]?.name || res.species, 
           ivTotal: res.totalIV 
       }
     }
-    await gameStore.saveGame(true)
+    await gameStore.scheduleSave()
   } else {
-    // daycare egg update
     const newIvs = { ...res.ivs, _scanned: true, _predictedTotalIV: res.totalIV }
-    await breedingStore.updateEggIvs(res.id as string, newIvs)
+    await breedingStore.updateEggIvs(String(res.id), newIvs)
   }
   
-  (window as unknown as { notify?: (msg: string, icon: string) => void }).notify?.('Datos registrados.', '📋')
+  const win = window as any
+  if (win.__VITE_DEBUG__) console.log('Egg scanned and saved', res)
+  
   scanningResult.value = null
 }
 
@@ -118,15 +124,14 @@ const handleSell = async () => {
   
   const res = scanningResult.value
   if (res.type === 'inventory') {
-    const eggs = gameStore.state.eggs
+    const eggs = (gameStore.state.eggs || [])
     eggs.splice(res.id as number, 1)
   } else {
-    await breedingStore.deleteEgg(res.id as string)
+    await breedingStore.deleteEgg(String(res.id))
   }
   
   gameStore.state.money += res.sellPrice
-  ;(window as any).notify?.('Huevo vendido.', '💰')
-  await gameStore.saveGame(true)
+  await gameStore.scheduleSave()
   scanningResult.value = null
 }
 </script>
@@ -153,7 +158,7 @@ const handleSell = async () => {
           <p class="guide-text">
             Elegí un huevo para revelar su potencial:
           </p>
-          <div class="egg-list">
+          <div class="egg-list custom-scrollbar">
             <div 
               v-for="egg in allEggs" 
               :key="egg.type + egg.id" 
@@ -169,7 +174,7 @@ const handleSell = async () => {
                     class="badge"
                     :class="egg.type"
                   >{{ egg.type === 'inventory' ? '🎒 MOCHILA' : '🏠 GUARDERÍA' }}</span>
-                  {{ (POKEMON_DB as any)[egg.species]?.name || 'Huevo' }}
+                  {{ (POKEMON_DB as Record<string, { name: string }>)[egg.species]?.name || 'Huevo' }}
                 </div>
                 <div class="egg-status">
                   Tocar para escanear
@@ -184,7 +189,7 @@ const handleSell = async () => {
             </div>
           </div>
         </template>
-
+ 
         <template v-else>
           <div
             class="result-view"
@@ -195,7 +200,7 @@ const handleSell = async () => {
                 🥚
               </div>
               <div class="result-title">
-                {{ (POKEMON_DB as any)[scanningResult.species]?.name }} 
+                {{ (POKEMON_DB as Record<string, { name: string }>)[scanningResult.species]?.name }} 
                 <span v-if="scanningResult.isShiny">✨</span>
               </div>
             </div>
@@ -262,23 +267,19 @@ const handleSell = async () => {
   </div>
 </template>
 
-<style scoped>
-@use "@/styles/core/_mixins" as *;
+<style scoped lang="scss">
+@use "@/styles/core/tools" as *;
+
 .scanner-overlay {
   position: fixed;
   inset: 0;
   background: Rgba(0, 0, 0, 0.85);
-  -webkit-will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   backdrop-filter: Blur(8px);
-  backdrop-filter: Blur(8px);
-  @include gpu-layer;
   z-index: var(--z-modal);
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 20px;
-  transform: Translatez(0);
 }
 
 .scanner-container {
@@ -295,18 +296,17 @@ const handleSell = async () => {
   padding: 24px;
   display: flex; justify-content: space-between; align-items: center;
   border-bottom: 1px solid Rgba(168, 85, 247, 0.1);
+  h3 {
+    @include pixelated;
+    font-size: 11px; color: #a855f7; margin: 0;
+  }
 }
 
-.scanner-header h3 {
-  @include pixelated;
-  font-size: 11px; color: #a855f7; margin: 0;
-}
-
-.close-btn { background: none; border: none; color: var(--gray); font-size: 20px; cursor: pointer; }
+.close-btn { background: none; border: none; color: Rgba(255, 255, 255, 0.4); font-size: 20px; cursor: pointer; }
 
 .scanner-body { padding: 24px; position: relative; }
 
-.guide-text { font-size: 11px; color: var(--gray); margin-bottom: 20px; text-align: center; }
+.guide-text { font-size: 11px; color: Rgba(255, 255, 255, 0.4); margin-bottom: 20px; text-align: center; }
 
 .egg-list {
   display: flex;
@@ -324,16 +324,15 @@ const handleSell = async () => {
   padding: 12px 16px;
   display: flex; align-items: center; gap: 15px;
   cursor: pointer; transition: 0.2s;
+  &:hover { background: Rgba(168, 85, 247, 0.1); border-color: Rgba(168, 85, 247, 0.3); }
 }
-
-.egg-item:hover { background: Rgba(168, 85, 247, 0.1); border-color: Rgba(168, 85, 247, 0.3); }
 
 .egg-icon { font-size: 24px; }
 .egg-info { flex: 1; }
-.egg-name { font-size: 12px; font-weight: 800; color: $white; display: flex; align-items: center; gap: 8px; }
-.egg-status { font-size: 9px; color: var(--gray); margin-top: 4px; }
+.egg-name { font-size: 12px; font-weight: 800; color: white; display: flex; align-items: center; gap: 8px; }
+.egg-status { font-size: 9px; color: Rgba(255, 255, 255, 0.4); margin-top: 4px; }
 
-.badge { font-size: 8px; padding: 2px 6px; border-radius: 4px; color: $white; }
+.badge { font-size: 8px; padding: 2px 6px; border-radius: 4px; color: white; }
 .badge.inventory { background: var(--blue); }
 .badge.daycare { background: var(--purple); }
 
@@ -341,7 +340,7 @@ const handleSell = async () => {
 
 .result-header { text-align: center; }
 .big-egg { font-size: 48px; margin-bottom: 12px; }
-.result-title { font-size: 18px; font-weight: 900; color: $white; }
+.result-title { font-size: 18px; font-weight: 900; color: white; }
 
 .stats-card {
   background: Rgba(0,0,0,0.3);
@@ -350,38 +349,35 @@ const handleSell = async () => {
 }
 
 .iv-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
-.iv-item { font-size: 10px; color: $white; font-family: monospace; }
-.iv-item span { color: var(--gray); }
+.iv-item { font-size: 10px; color: white; font-family: monospace; span { color: Rgba(255, 255, 255, 0.4); } }
 
 .total-bar {
   border-top: 1px solid Rgba(255,255,255,0.1);
   padding-top: 12px;
   display: flex; justify-content: space-between; align-items: center;
+  .label { font-size: 9px; color: Rgba(255, 255, 255, 0.4); font-weight: 700; }
+  .value { font-size: 14px; font-weight: 900; color: #22c55e; }
 }
-.total-bar .label { font-size: 9px; color: var(--gray); font-weight: 700; }
-.total-bar .value { font-size: 14px; font-weight: 900; color: #22c55e; }
 
 .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
 .keep-btn {
-  padding: 14px; background: #22c55e; color: $black; border: none; border-radius: 12px;
-  @include pixelated; font-size: 8px; cursor: pointer;
+  @include btn-vicio('success', 'md');
 }
 
 .sell-btn {
-  padding: 14px; background: Rgba(234, 179, 8, 0.1); color: #eab308; 
-  border: 1px solid Rgba(234, 179, 8, 0.3); border-radius: 12px;
-  @include pixelated; font-size: 8px; cursor: pointer;
+  @include btn-vicio('warning', 'md');
 }
 
 .back-link {
-  background: none; border: none; color: var(--gray); 
+  background: none; border: none; color: Rgba(255, 255, 255, 0.4); 
   font-size: 10px; cursor: pointer; text-decoration: underline; margin-top: 10px;
 }
 
 .loading-overlay {
   position: absolute; inset: 0; background: Rgba(26, 26, 46, 0.95);
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 15px;
+  span { font-size: 10px; @include pixelated; color: #a855f7; }
 }
 
 .loader {
@@ -392,5 +388,5 @@ const handleSell = async () => {
 @keyframes spin { 100% { transform: Rotate(360deg); } }
 @keyframes fadeIn { from { opacity: 0; transform: Translatey(10px); } to { opacity: 1; transform: Translatey(0); } }
 
-.empty-state { text-align: center; padding: 40px; color: var(--gray); font-size: 12px; }
+.empty-state { text-align: center; padding: 40px; color: Rgba(255, 255, 255, 0.4); font-size: 12px; }
 </style>

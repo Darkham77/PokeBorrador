@@ -8,6 +8,7 @@ import { usePlayerClassStore } from '@/stores/playerClass'
 import { useGameStore } from '@/stores/game'
 import { CLASS_MISSIONS } from '@/data/playerClasses'
 import PokemonPickerModal from '../common/PokemonPickerModal.vue'
+import { getEloTier } from '@/logic/pvp/rankedEngine'
 import BaseModal from '@/components/common/BaseModal.vue'
 
 // Sub-components
@@ -30,9 +31,9 @@ const emit = defineEmits<{
   (e: 'submit'): void
 }>()
 
-const uiStore = useUIStore() as any
-const classStore = usePlayerClassStore() as any
-const gameStore = useGameStore() as any
+const uiStore = useUIStore()
+const classStore = usePlayerClassStore()
+const gameStore = useGameStore()
 
 const isSmallScreen = ref(window.innerWidth <= 950)
 const handleResize = () => { isSmallScreen.value = window.innerWidth <= 950 }
@@ -43,12 +44,12 @@ useWindowListener('resize', handleResize)
 const currentClass = computed(() => classStore.currentClassDef)
 const activeMission = computed(() => classStore.activeMission)
 const trainerLevel = computed(() => gameStore.state.trainerLevel || 1)
-const trainerRank = computed(() => gameStore.state.rank || 'NOVATO')
+const trainerRank = computed(() => getEloTier(gameStore.state.eloRating).name)
 
 // View State
 const viewMode = ref('dashboard') // 'dashboard' or 'missions'
 const now = ref(Temporal.Now.instant().epochMilliseconds)
-let timer: any = null
+let timer: ReturnType<typeof setInterval> | null = null
 
 onMounted(() => {
   timer = setInterval(() => { now.value = Temporal.Now.instant().epochMilliseconds }, 1000)

@@ -152,7 +152,7 @@ export function useBoxFilters(boxArray: Ref<(Pokemon | null)[]>, _currentBoxInde
     }
     return result;
   } else {
-    return mappedList as { p: Pokemon, index: number }[];
+    return mappedList as { p: Pokemon | null, index: number }[];
   }
 });
 

@@ -3,6 +3,7 @@ import type { GameState } from '@/types/game';
 export interface MarketListing {
   id: string;
   listing_type: 'pokemon' | 'item';
+  seller_name?: string;
   price: number;
   data: {
     name?: string;

@@ -16,15 +16,7 @@ import { logger } from '@/logic/utils/logger'
 import { checkPlayerWinner, calculateSpawnGrid } from '@/logic/map/mapCardHelper'
 
 
-interface MapData {
-  id: string
-  name: string
-  desc: string
-  badges: number
-  wild?: Record<string, string[]>
-  fishing?: { pool: string[], rates: number[] }
-  weather?: Record<string, { visitors?: Record<string, unknown>, exclusive?: Record<string, unknown> }>
-}
+import type { MapLocation } from '@/types/encounters'
 
 interface DominanceInfo {
   winner?: string | null
@@ -38,7 +30,7 @@ interface SpawnPool {
 }
 
 interface Props {
-  map: MapData
+  map: MapLocation
   isLocked?: boolean
   isSafariLocked?: boolean
   cycle?: string
@@ -63,7 +55,7 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits<{
-  (e: 'navigate', map: MapData): void
+  (e: 'navigate', map: MapLocation): void
 }>()
 
 const uiStore = useUIStore()
@@ -280,7 +272,8 @@ const lockReason = computed(() => {
   if (props.isSafariLocked) return 'REQUIERE TICKET SAFARI'
   if (gameStore.isSaveLocked && !uiStore.hasDismissedSessionLock) return 'SESIÓN BLOQUEADA'
   if (!props.isLocked) return ''
-  if (props.badgeCount < props.map.badges) return `REQUIERE ${props.map.badges} MEDALLAS`
+  const requiredBadges = props.map.badges || 0
+  if (props.badgeCount < requiredBadges) return `REQUIERE ${requiredBadges} MEDALLAS`
   return 'BLOQUEADO'
 })
 

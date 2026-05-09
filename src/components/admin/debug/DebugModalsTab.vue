@@ -3,20 +3,22 @@ import { ref } from 'vue'
 import { useModalStore } from '@/stores/modals'
 import { useUIStore } from '@/stores/ui'
 
-const modalStore = useModalStore() as any
-const uiStore = useUIStore() as any
+const modalStore = useModalStore()
+const uiStore = useUIStore()
 const modalCount = ref(5)
 const isTesting = ref(false)
 
 async function startTest() {
   if (isTesting.value) return
   isTesting.value = true
-  await (window as any).__VITE_DEBUG__.testModalStack(modalCount.value)
+  const win = window as unknown as { __VITE_DEBUG__: { testModalStack: (count: number) => Promise<void> } }
+  await win.__VITE_DEBUG__.testModalStack(modalCount.value)
   isTesting.value = false
 }
 
 function triggerSampleError() {
-  (window as any).__VITE_DEBUG__.triggerTestError()
+  const win = window as unknown as { __VITE_DEBUG__: { triggerTestError: () => void } }
+  win.__VITE_DEBUG__.triggerTestError()
 }
 </script>
 

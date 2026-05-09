@@ -8,12 +8,14 @@ import UnifiedBadgePill from '@/components/shared/UnifiedBadgePill.vue'
 import { getPokemonTier } from '@/logic/pokemon/tierEngine'
 import { useBattleVisuals } from '@/composables/useBattleVisuals'
 
+import type { Pokemon } from '@/types/pokemon'
+
 const { getHpColor } = useBattleVisuals()
 
 interface Props {
   item: {
-    pokemon: any
-    _source: string
+    pokemon: Pokemon
+    _source: 'team' | 'box'
     index: number
   }
   isSelected?: boolean
@@ -29,14 +31,17 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits<{
-  (e: 'select', item: any): void
-  (e: 'openDetail', item: any): void
+  (e: 'select', item: { pokemon: Pokemon, _source: 'team' | 'box', index: number }): void
+  (e: 'openDetail', item: { pokemon: Pokemon, _source: 'team' | 'box', index: number }): void
 }>()
 
 const getTypeColor = (type: string) => PDEX_TYPE_COLORS[type?.toLowerCase()] || 'Rgba(170, 170, 170, 1)'
 
 const tierData = computed(() => getPokemonTier(props.item.pokemon))
-const ivTotal = computed(() => Object.values(props.item.pokemon.ivs || {}).reduce((s: number, v: any) => s + (v || 0), 0))
+const ivTotal = computed(() => {
+  const ivs = props.item.pokemon.ivs || { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 }
+  return (ivs.hp || 0) + (ivs.atk || 0) + (ivs.def || 0) + (ivs.spa || 0) + (ivs.spd || 0) + (ivs.spe || 0)
+})
 const isPremiumTier = computed(() => tierData.value.tier === 'S' || tierData.value.tier === 'S+')
 </script>
 
@@ -110,13 +115,13 @@ const isPremiumTier = computed(() => tierData.value.tier === 'S' || tierData.val
       <div class="bottom-line">
         <div class="sel-types-row">
           <span 
-            v-for="t in item.pokemon.types || [item.pokemon.type]" 
-            :key="t"
+            v-for="t in [item.pokemon.type, item.pokemon.type2].filter(Boolean)" 
+            :key="String(t)"
             class="ps-type-pill sm"
-            :class="`type-${t?.toLowerCase()}`"
-            :style="{ background: getTypeColor(t) }"
+            :class="`type-${String(t).toLowerCase()}`"
+            :style="{ background: getTypeColor(String(t)) }"
           >
-            {{ t?.toUpperCase() }}
+            {{ String(t).toUpperCase() }}
           </span>
         </div>
         <span class="m-badge-level">Nv. {{ item.pokemon.level ?? 1 }}</span>

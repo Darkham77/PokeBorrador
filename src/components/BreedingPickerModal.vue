@@ -9,6 +9,7 @@ import { useBreedingStore } from '@/stores/breeding'
 import { COMPAT_TEXT } from '@/logic/breeding/breedingData'
 import { checkCompatibility } from '@/logic/breeding/breedingEngine'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
+import type { Pokemon } from '@/types/pokemon'
 
 interface Props {
   show?: boolean
@@ -28,8 +29,8 @@ const emit = defineEmits<{
   (e: 'close'): void
 }>()
 
-const gameStore = useGameStore() as any
-const breedingStore = useBreedingStore() as any
+const gameStore = useGameStore()
+const breedingStore = useBreedingStore()
 
 const searchQuery = ref('')
 
@@ -37,7 +38,7 @@ const allPokemon = computed(() => {
   const team = gameStore.state.team || []
   const box = gameStore.state.box || []
   // Filter out pokemon already in daycare
-  return [...team, ...box].filter(p => !breedingStore.daycareSlots.some((s: any) => s.pokemon_id === p.uid))
+  return [...team, ...box].filter(p => p && !breedingStore.slots.some((s) => s.pokemon?.uid === p.uid))
 })
 
 const filteredPokemon = computed(() => {
@@ -45,47 +46,51 @@ const filteredPokemon = computed(() => {
   
   if (searchQuery.value) {
     const q = searchQuery.value.toLowerCase()
-    list = list.filter(p => p.name.toLowerCase().includes(q) || p.id.toLowerCase().includes(q))
+    list = list.filter(p => p && (p.name.toLowerCase().includes(q) || String(p.id).toLowerCase().includes(q)))
   }
 
   // If in mission mode, filter by mission requirement
   if (props.mode === 'mission' && props.missionIdx !== -1) {
     const m = gameStore.state.daycare_missions[props.missionIdx]
-    const targetId = m.targetId
-    list = list.filter(p => {
-      // Basic evolution check (breedingBaseId logic would be better if available globally)
-      const baseId = p.id // simplified for now
-      if (baseId !== targetId) return false
-      
-      const req = m.requirement || { type: 'level', minLevel: m.minLevel }
-      if (req.type === 'level') return p.level >= req.minLevel
-      if (req.type === 'iv_total') {
-        const total = (p.ivs.hp || 0) + (p.ivs.atk || 0) + (p.ivs.def || 0) + (p.ivs.spa || 0) + (p.ivs.spd || 0) + (p.ivs.spe || 0)
-        return total >= req.minIvTotal
-      }
-      if (req.type === 'nature') return p.nature === req.nature
-      if (req.type === 'iv_31') return p.ivs[req.stat31] === 31
-      return true
-    })
+    if (m) {
+      const targetId = m.targetId
+      list = list.filter(p => {
+        if (!p) return false
+        // Basic evolution check (breedingBaseId logic would be better if available globally)
+        const baseId = p.id // simplified for now
+        if (baseId !== targetId) return false
+        
+        const mission = m as { targetId: string, requirement?: { type: string, minLevel?: number, minIvTotal?: number, nature?: string, stat31?: string }, minLevel?: number }
+        const req = mission.requirement || { type: 'level', minLevel: mission.minLevel }
+        if (req.type === 'level') return p.level >= (req.minLevel || 0)
+        if (req.type === 'iv_total') {
+          const total = (p.ivs?.hp || 0) + (p.ivs?.atk || 0) + (p.ivs?.def || 0) + (p.ivs?.spa || 0) + (p.ivs?.spd || 0) + (p.ivs?.spe || 0)
+          return total >= (req.minIvTotal || 0)
+        }
+        if (req.type === 'nature') return p.nature === req.nature
+        if (req.type === 'iv_31') return p.ivs?.[req.stat31 as keyof Pokemon['ivs']] === 31
+        return true
+      })
+    }
   }
 
   return list
 })
 
-const selectPokemon = (p: any) => {
+const selectPokemon = (p: Pokemon) => {
   if (props.mode === 'daycare') {
-    breedingStore.depositPokemon(p, props.slotIdx)
+    breedingStore.deposit(p, props.slotIdx)
   } else {
     // Mission delivery logic handled in store eventually
-    breedingStore.deliverMission(props.missionIdx, p.uid)
+    breedingStore.completeMission(props.missionIdx, p.uid)
   }
   emit('close')
 }
 
-const getListCompatibility = (p: any) => {
+const getListCompatibility = (p: Pokemon) => {
   if (props.mode !== 'daycare') return null
   const otherSlotIdx = props.slotIdx === 1 ? 2 : 1
-  const otherSlot = breedingStore.daycareSlots.find((s: any) => s.slot_index === otherSlotIdx)
+  const otherSlot = breedingStore.slots.find((s) => s.slotIndex === otherSlotIdx)
   const otherPoke = otherSlot?.pokemon
   if (!otherPoke) return null
   return checkCompatibility(p, otherPoke)
@@ -131,9 +136,9 @@ const getSprite = (id: string, isShiny: boolean) => {
           >
             <div class="sprite-box">
               <img
-                :src="getSprite(p.id, p.isShiny)"
+                :src="getSprite(p.id, !!p.isShiny)"
                 class="poke-sprite"
-                @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
+                @error="(e: Event) => { if (e.target) (e.target as HTMLImageElement).style.display = 'none' }"
               >
             </div>
             <div class="poke-info">
@@ -141,7 +146,10 @@ const getSprite = (id: string, isShiny: boolean) => {
                 <span class="name">{{ p.name }}</span>
                 <span class="lv">Nv.{{ p.level }}</span>
               </div>
-              <div class="genetics">
+              <div
+                v-if="p.ivs"
+                class="genetics"
+              >
                 IVs: {{ p.ivs.hp }}/{{ p.ivs.atk }}/{{ p.ivs.def }}/{{ p.ivs.spa }}/{{ p.ivs.spd }}/{{ p.ivs.spe }}
               </div>
               
@@ -150,8 +158,8 @@ const getSprite = (id: string, isShiny: boolean) => {
                 class="compat-status"
               >
                 <template v-if="compatibility">
-                  <span :style="{ color: (COMPAT_TEXT as any)[compatibility.level].color }">
-                    {{ (COMPAT_TEXT as any)[compatibility.level].label }}
+                  <span :style="{ color: (COMPAT_TEXT as Record<number, { color: string, label: string }>)[compatibility.level]?.color || 'white' }">
+                    {{ (COMPAT_TEXT as Record<number, { color: string, label: string }>)[compatibility.level]?.label || 'Desconocido' }}
                   </span>
                   <span
                     v-if="compatibility.eggSpecies"

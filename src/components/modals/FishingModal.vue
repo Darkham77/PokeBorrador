@@ -3,8 +3,10 @@ import { Temporal } from '@js-temporal/polyfill'
 
 import { ref, onMounted, onUnmounted } from 'vue'
 
+import type { Pokemon } from '@/types/pokemon'
+
 interface Props {
-  pokemon: any
+  pokemon: Pokemon
   rarity?: number
   onWin?: (() => void) | null
   onFail?: (() => void) | null
@@ -34,7 +36,7 @@ interface FishingNote {
   y: number
   startTime: number
   isHit: boolean
-  timeout: any
+  timeout: ReturnType<typeof setTimeout> | null
 }
 
 // State

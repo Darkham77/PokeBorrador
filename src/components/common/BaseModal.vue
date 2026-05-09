@@ -156,7 +156,7 @@ const props = defineProps({
   type: {
     type: String,
     default: 'center',
-    validator: (val: any) => ['center', 'side-left', 'side-right', 'side', 'top', 'down', 'left', 'right', 'fullscreen'].includes(val)
+    validator: (val: string) => ['center', 'side-left', 'side-right', 'side', 'top', 'down', 'left', 'right', 'fullscreen'].includes(val)
   },
   height: { type: String, default: 'auto' },
   zIndex: { type: Number, default: null }, // If null, use dynamic stacking
@@ -168,12 +168,12 @@ const props = defineProps({
   overlay: {
     type: String,
     default: 'dark',
-    validator: (val: any) => ['dark', 'none'].includes(val)
+    validator: (val: string) => ['dark', 'none'].includes(val)
   },
   variant: {
     type: String,
     default: 'modern',
-    validator: (val: any) => ['modern', 'retro'].includes(val)
+    validator: (val: string) => ['modern', 'retro'].includes(val)
   },
   titleColor: { type: String, default: null },
   headerBackground: { type: String, default: null },
@@ -181,7 +181,7 @@ const props = defineProps({
   corners: {
     type: String,
     default: null,
-    validator: (val: any) => ['all', 'none', 'top', 'bottom', 'left', 'right'].includes(val)
+    validator: (val: string) => ['all', 'none', 'top', 'bottom', 'left', 'right'].includes(val)
   },
   showBorder: { type: Boolean, default: true },
   blurOverlay: { type: Boolean, default: true },
@@ -189,12 +189,12 @@ const props = defineProps({
   positionMode: {
     type: String,
     default: null, // If null, auto-calculate
-    validator: (val: any) => ['stuck', 'floating'].includes(val)
+    validator: (val: string) => ['stuck', 'floating'].includes(val)
   },
   closeButtonVariant: {
     type: String,
     default: 'transparent',
-    validator: (val: any) => ['transparent', 'solid', 'yellow-solid'].includes(val)
+    validator: (val: string) => ['transparent', 'solid', 'yellow-solid'].includes(val)
   }
 })
 

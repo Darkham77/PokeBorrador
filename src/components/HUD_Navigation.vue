@@ -2,7 +2,7 @@
 import { computed } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
-import { useSocialStore } from '@/stores/social.js'
+import { useSocialStore } from '@/stores/social'
 import { useModalStore } from '@/stores/modals'
 
 interface Props {
@@ -13,9 +13,9 @@ const props = withDefaults(defineProps<Props>(), {
   position: 'top'
 })
 
-const gameStore = useGameStore() as any
-const uiStore = useUIStore() as any
-const socialStore = useSocialStore() as any
+const gameStore = useGameStore()
+const uiStore = useUIStore()
+const socialStore = useSocialStore()
 
 const activeTab = computed({
   get: () => uiStore.activeTab,
@@ -23,7 +23,7 @@ const activeTab = computed({
 })
 
 const handleTabChange = (tab: string, _event?: Event) => {
-  const modalStore = useModalStore() as any
+  const modalStore = useModalStore()
   
   if (tab === 'bag') {
     modalStore.open('Inventory')

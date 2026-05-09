@@ -6,30 +6,32 @@ import { useUIStore } from '@/stores/ui'
 import { useModalStore } from '@/stores/modals'
 import BaseModal from '@/components/common/BaseModal.vue'
 
+import type { Pokemon } from '@/types/pokemon'
+
 interface Props {
-  pokemon: any
+  pokemon: Pokemon
   boxIndex: number
 }
 
 const props = defineProps<Props>()
 
-const gameStore = useGameStore() as any
-const boxStore = useBoxStore() as any
-const uiStore = useUIStore() as any
-const modalStore = useModalStore() as any
+const gameStore = useGameStore()
+const boxStore = useBoxStore()
+const uiStore = useUIStore()
+const modalStore = useModalStore()
 
 const currentBox = computed(() => Math.floor(props.boxIndex / 50))
 
 const boxesOccupation = computed(() => {
   const result = []
-  const boxArray = gameStore.state.box || []
+  const boxArray = (gameStore.state.box || []) as (Pokemon | null)[]
   const totalBoxes = gameStore.state.boxCount || 4
   
   for (let i = 0; i < totalBoxes; i++) {
     const start = i * 50
     const end = start + 50
     const slice = boxArray.slice(start, end)
-    const count = slice.filter((p: any) => p != null).length
+    const count = slice.filter((p) => p != null).length
     result.push({ 
       index: i, 
       number: i + 1, 

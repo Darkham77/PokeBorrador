@@ -1,21 +1,39 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue'
 import { useLivePvPStore } from '@/stores/livePvP'
+import { useGameStore } from '@/stores/game'
 import { useAuthStore } from '@/stores/auth'
 import { useUIStore } from '@/stores/ui'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { PLAYER_CLASSES } from '@/data/playerClasses'
 
-const livePvP = useLivePvPStore() as any
-const auth = useAuthStore() as any
-const ui = useUIStore() as any
+const livePvP = useLivePvPStore()
+const auth = useAuthStore()
+const gameStore = useGameStore()
+const ui = useUIStore()
 
-const battle = computed(() => livePvP.battleState as any)
+interface PvPBattleState {
+  active: boolean
+  isRanked: boolean
+  phase: 'choosing' | 'animating' | 'waiting' | 'sync' | 'over' | 'faint_switch'
+  opponentAvatar?: string
+  opponentName: string
+  opponentElo: number
+  enemyTeam: any[]
+  enemyHp: number[]
+  enemyActiveIdx: number
+  myTeam: any[]
+  myHp: number[]
+  myActiveIdx: number
+  logs: string[]
+}
+
+const battle = computed(() => livePvP.battleState as unknown as PvPBattleState)
 
 // Local animations/visual state
 const playerAvatarId = computed(() => {
-  const pClass = auth.user?.user_metadata?.playerClass
-  return (PLAYER_CLASSES as any)[pClass]?.avatarSpriteId || 'red-lgpe'
+  const pClass = (gameStore.state.playerClass || 'novato') as string
+  return (PLAYER_CLASSES as Record<string, any>)[pClass]?.avatarSpriteId || 'red-lgpe'
 })
 
 const opponentAvatarId = computed(() => {
@@ -29,7 +47,7 @@ onMounted(() => {
 
 function handleMove(moveIdx: number) {
   if (battle.value.phase !== 'choosing') return
-  livePvP.commitPick({ type: 'move', moveIndex: moveIdx })
+  livePvP._commitPick({ type: 'move', moveIndex: moveIdx })
 }
 
 function handleSwitch() {
@@ -37,9 +55,13 @@ function handleSwitch() {
 }
 
 function handleForfeit() {
-  if (confirm('¿Estás seguro de que quieres rendirte?')) {
-    livePvP.forfeit()
-  }
+  ui.openConfirm({
+    title: 'RENDIRSE',
+    message: '¿Estás seguro de que quieres rendirte?',
+    onConfirm: () => {
+      livePvP._forfeit()
+    }
+  })
 }
 </script>
 
@@ -72,8 +94,8 @@ function handleForfeit() {
           <div class="trainer-meta">
             <span class="name">{{ auth.user?.user_metadata?.username }}</span>
             <div class="stats">
-              <span>Nv. {{ auth.user?.user_metadata?.level || 1 }}</span>
-              <span class="elo">{{ auth.user?.user_metadata?.elo || 1000 }} ELO</span>
+              <span>Nv. {{ gameStore.state.trainerLevel || 1 }}</span>
+              <span class="elo">{{ gameStore.state.eloRating || 1000 }} ELO</span>
             </div>
           </div>
         </div>
@@ -102,7 +124,7 @@ function handleForfeit() {
                 <div class="hp-track">
                   <div
                     class="hp-fill"
-                    :style="{ width: (battle.enemyHp[battle.enemyActiveIdx] / (battle.enemyTeam[battle.enemyActiveIdx]?.maxHp || 100) * 100) + '%' }"
+                    :style="{ width: ((battle.enemyHp[battle.enemyActiveIdx] ?? 0) / (battle.enemyTeam[battle.enemyActiveIdx]?.maxHp || 100) * 100) + '%' }"
                   />
                 </div>
               </div>
@@ -123,7 +145,7 @@ function handleForfeit() {
                 <div class="hp-track">
                   <div
                     class="hp-fill"
-                    :style="{ width: (battle.myHp[battle.myActiveIdx] / (battle.myTeam[battle.myActiveIdx]?.maxHp || 100) * 100) + '%' }"
+                    :style="{ width: ((battle.myHp[battle.myActiveIdx] ?? 0) / (battle.myTeam[battle.myActiveIdx]?.maxHp || 100) * 100) + '%' }"
                   />
                 </div>
                 <div class="hp-text">
@@ -152,10 +174,10 @@ function handleForfeit() {
             class="moves-grid"
           >
             <button 
-              v-for="(move, i) in (battle.myTeam[battle.myActiveIdx]?.moves as any[])" 
+              v-for="(move, i) in (battle.myTeam[battle.myActiveIdx]?.moves || [])" 
               :key="i"
               class="move-btn"
-              @click.stop="handleMove(i)"
+              @click.stop="handleMove(Number(i))"
             >
               <span class="move-name">{{ move.name }}</span>
               <span class="move-pp">{{ move.pp }}/{{ move.maxPP }}</span>

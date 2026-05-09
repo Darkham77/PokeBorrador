@@ -3,12 +3,39 @@ import { ref, reactive, onMounted } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 
-const gameStore = useGameStore() as any
-const uiStore = useUIStore() as any
-const events = ref<any[]>([])
+const gameStore = useGameStore()
+const uiStore = useUIStore()
+
+interface EventConfig {
+  id: string
+  name: string
+  description: string
+  icon: string
+  active: boolean
+  manual: boolean
+  start_at: string | null
+  end_at: string | null
+  config: {
+    expMult: number
+    moneyMult: number
+    shinyMult: number
+    species: string
+    speciesRateMult: number
+    hasCompetition: boolean
+    sortBy: string
+  }
+  schedule: {
+    type: string
+    days: number[]
+    startHour: number
+    endHour: number
+  }
+}
+
+const events = ref<EventConfig[]>([])
 const isEditing = ref(false)
 
-const DEFAULT_EVENT = {
+const createDefaultEvent = (): EventConfig => ({
   id: '',
   name: '',
   description: '',
@@ -32,9 +59,9 @@ const DEFAULT_EVENT = {
     startHour: 10,
     endHour: 18
   }
-}
+})
 
-const currentEvent = reactive({ ...DEFAULT_EVENT })
+const currentEvent = reactive<EventConfig>(createDefaultEvent())
 
 onMounted(async () => {
   await loadEvents()
@@ -42,21 +69,22 @@ onMounted(async () => {
 
 const loadEvents = async () => {
   const { data } = await gameStore.db.from('events_config').select('*')
-  events.value = data || []
+  events.value = (data as unknown as EventConfig[]) || []
 }
 
-const editEvent = (ev: any) => {
+const editEvent = (ev: EventConfig) => {
   Object.assign(currentEvent, JSON.parse(JSON.stringify(ev)))
   isEditing.value = true
 }
 
 const saveEvent = async () => {
   try {
-    await (window as any).__VITE_DEBUG__.saveEvent(currentEvent)
+    const win = window as unknown as { __VITE_DEBUG__: { saveEvent: (ev: EventConfig) => Promise<void> } }
+    await win.__VITE_DEBUG__.saveEvent(currentEvent as EventConfig)
     isEditing.value = false
     await loadEvents()
-  } catch (e: any) {
-    uiStore.notify('Error al guardar: ' + e.message, '❌')
+  } catch (e: unknown) {
+    uiStore.notify('Error al guardar: ' + (e instanceof Error ? e.message : 'Error desconocido'), '❌')
   }
 }
 
@@ -71,7 +99,7 @@ defineEmits<{
       <button
         v-if="!isEditing"
         class="add-btn"
-        @click.stop="isEditing = true; Object.assign(currentEvent, DEFAULT_EVENT)"
+        @click.stop="isEditing = true; Object.assign(currentEvent, createDefaultEvent())"
       >
         + NUEVO EVENTO
       </button>

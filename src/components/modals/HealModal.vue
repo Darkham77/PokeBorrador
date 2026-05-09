@@ -9,29 +9,28 @@ import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { getPokemonTier } from '@/logic/pokemon/tierEngine'
 import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
 import BaseModal from '@/components/common/BaseModal.vue'
+import type { Pokemon } from '@/types/pokemon'
 
 interface Props {
   show?: boolean
 }
 
-const props = withDefaults(defineProps<Props>(), {
-  show: false
-})
+defineProps<Props>()
 
 const emit = defineEmits<{
   (e: 'close'): void
 }>()
 
-const shopStore = useShopStore() as any
-const gameStore = useGameStore() as any
-const uiStore = useUIStore() as any
+const shopStore = useShopStore()
+const gameStore = useGameStore()
+const uiStore = useUIStore()
 
 const isHealing = ref(false)
 const progress = ref(0)
 const healedCount = ref(0)
 
 const cost = computed(() => shopStore.getHealCost())
-const team = computed<any[]>(() => gameStore.state.team || [])
+const team = computed<(Pokemon | null)[]>(() => gameStore.state.team || [])
 
 const TYPE_COLORS = {
   normal: '#A8A878',
@@ -54,8 +53,8 @@ const TYPE_COLORS = {
   fairy: '#EE99AC'
 }
 
-function getPokemonFX(p: any) {
-  if (!p) return {}
+function getPokemonFX(p: Pokemon | null) {
+  if (!p) return { typeColor: '#A8A878', isShiny: false, isLegendary: false, tierColor: '#A8A878' }
   const data = pokemonDataProvider.getPokemonData(p.id || p.name)
   const tier = getPokemonTier(p)
   const primaryType = data?.type || 'normal'
@@ -68,14 +67,14 @@ function getPokemonFX(p: any) {
   }
 }
 
-function needsHealing(p: any) {
+function needsHealing(p: Pokemon | null) {
   if (!p) return false
-  return p.hp < p.maxHp || p.status || p.moves?.some((m: any) => m.pp < (m.maxPP || 0))
+  return p.hp < p.maxHp || p.status || p.moves?.some((m) => m && m.pp < (m.maxPP || 0))
 }
 
 async function handleHeal() {
   if (cost.value === 0) {
-    const damagedCount = team.value.filter((p: any) => p.hp < p.maxHp || p.status || p.moves.some((m: any) => m.pp < (m.maxPP || 0))).length
+    const damagedCount = team.value.filter((p) => p && needsHealing(p)).length
     if (damagedCount === 0) {
       uiStore.notify('Tu equipo ya está en perfectas condiciones.', '💖')
       emit('close')
@@ -122,7 +121,7 @@ function handleClose() {
 onMounted(() => {
   // If no cost, check if healing is needed
   if (cost.value === 0 && team.value.length > 0) {
-    const damagedCount = team.value.filter((p: any) => p.hp < p.maxHp || p.status || p.moves.some((m: any) => m.pp < (m.maxPP || 0))).length
+    const damagedCount = team.value.filter((p) => p && needsHealing(p)).length
     if (damagedCount === 0) {
       uiStore.notify('Tu equipo ya se encuentra recuperado.', '🏥')
       emit('close')
@@ -134,9 +133,10 @@ onMounted(() => {
     }, 600)
   }
 
-  (window as any).showHealEffect = (active: boolean) => {
+  const win = window as unknown as { showHealEffect?: (active: boolean) => void }
+  win.showHealEffect = (active: boolean) => {
     if (active) {
-      const modalStore = useModalStore() as any
+      const modalStore = useModalStore()
       modalStore.open('HealOverlay')
       setTimeout(() => handleHeal(), 100)
     }
@@ -167,12 +167,12 @@ onMounted(() => {
         <div class="team-slots">
           <div 
             v-for="(p, i) in team" 
-            :key="p.uid || i" 
+            :key="p?.uid || i" 
             class="slot"
             :class="{ 
-              'active': true, 
+              'active': !!p, 
               'healing': isHealing && i < healedCount,
-              'is-guardian': p.isGuardian,
+              'is-guardian': p?.isGuardian,
               'is-premium-tier': getPokemonFX(p).isLegendary
             }"
             :style="{ 
@@ -182,6 +182,7 @@ onMounted(() => {
           >
             <!-- Standardized FX Module -->
             <PVSpriteFX
+              v-if="p"
               :is-shiny="p.isShiny"
               :is-guardian="p.isGuardian"
               :sparkle-count="8"

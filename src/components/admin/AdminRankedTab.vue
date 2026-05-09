@@ -4,10 +4,20 @@ import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 import { logger } from '@/logic/utils/logger'
 
-const gameStore = useGameStore() as any
-const uiStore = useUIStore() as any
+const gameStore = useGameStore()
+const uiStore = useUIStore()
 
-const DEFAULT_RANKED_RULES = {
+interface RankedRules {
+  seasonName: string
+  seasonStartDate: string
+  seasonEndDate: string
+  maxPokemon: number
+  levelCap: number
+  allowedTypes: string[]
+  bannedPokemonIds: string[]
+}
+
+const DEFAULT_RANKED_RULES: RankedRules = {
   seasonName: 'TEMPORADA ACTUAL',
   seasonStartDate: '',
   seasonEndDate: '',
@@ -17,19 +27,27 @@ const DEFAULT_RANKED_RULES = {
   bannedPokemonIds: []
 }
 
-const rankedRules = reactive({ ...DEFAULT_RANKED_RULES })
+const rankedRules = reactive<RankedRules>({ ...DEFAULT_RANKED_RULES })
 
 onMounted(async () => {
   await loadRankedRules()
 })
 
+interface RankedRulesConfig {
+  id: string
+  season_name?: string
+  config: Partial<RankedRules>
+}
+
 const loadRankedRules = async () => {
   try {
-    const { data } = await gameStore.db
+    const res = await gameStore.db
       .from('ranked_rules_config')
       .select('*')
       .eq('id', 'current')
       .maybeSingle()
+    
+    const data = res.data as RankedRulesConfig | null
     
     if (data?.config) {
       Object.assign(rankedRules, data.config)
@@ -42,9 +60,10 @@ const loadRankedRules = async () => {
 
 const saveRankedRules = async () => {
   try {
-    await (window as any).__VITE_DEBUG__.saveRankedRules(rankedRules)
-  } catch (e: any) {
-    uiStore.notify('Error: ' + e.message, '❌')
+    const win = window as unknown as { __VITE_DEBUG__: { saveRankedRules: (rules: RankedRules) => Promise<void> } }
+    await win.__VITE_DEBUG__.saveRankedRules(rankedRules as RankedRules)
+  } catch (e: unknown) {
+    uiStore.notify('Error: ' + (e instanceof Error ? e.message : 'Error desconocido'), '❌')
   }
 }
 
@@ -52,9 +71,10 @@ const closeRankedSeason = async () => {
   if (!confirm(`¿Estás seguro de cerrar la temporada "${rankedRules.seasonName}"?\nSe entregarán premios al Top 50 automáticamente.`)) return
   
   try {
-    await (window as any).__VITE_DEBUG__.closeRankedSeason(rankedRules.seasonName)
-  } catch (e: any) {
-    uiStore.notify('Error RPC: ' + e.message, '❌')
+    const win = window as unknown as { __VITE_DEBUG__: { closeRankedSeason: (name: string) => Promise<void> } }
+    await win.__VITE_DEBUG__.closeRankedSeason(rankedRules.seasonName)
+  } catch (e: unknown) {
+    uiStore.notify('Error RPC: ' + (e instanceof Error ? e.message : 'Error desconocido'), '❌')
   }
 }
 </script>

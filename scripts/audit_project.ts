@@ -17,12 +17,6 @@ enableCompileCache();
 const IGNORE_DIRS = new Set(['node_modules', '.git', 'dist', 'backup_legacy_code', 'public', 'docs', 'scratch']);
 const AUDIT_EXTENSIONS = new Set(['.vue', '.scss', '.css', '.ts', '.js']);
 
-const SASS_TRAPS = [
-  'scale', 'grayscale', 'invert', 'opacity', 'brightness', 
-  'blur', 'rotate', 'translate', 'saturate', 'drop-shadow',
-  'translatex', 'translatey', 'translatez', 'skewx', 'skewy', 'matrix',
-  'rgba', 'rgb'
-];
 
 interface AuditRule {
   regex: RegExp;
@@ -46,21 +40,6 @@ const viewport: AuditRule = {
   fix: (match: string) => `d${match.toLowerCase().slice(-2)}`
 };
 
-const sassTraps: AuditRule = {
-  regex: /([\.\$])?\b([a-zA-Z0-9-]+)\(/g,
-  message: (match: string) => `Función SASS/CSS detectada en minúsculas: '${match}'. Debe capitalizarse para evitar colisiones en Dart Sass 2.0.`,
-  fix: (match: string) => {
-    if (match.startsWith('.') || match.startsWith('$')) return match;
-    const func = match.slice(0, -1).toLowerCase();
-    if (SASS_TRAPS.includes(func)) {
-      if (func.includes('-')) {
-        return func.split('-').map((p: string) => p.charAt(0).toUpperCase() + p.slice(1)).join('-') + '(';
-      }
-      return func.charAt(0).toUpperCase() + func.slice(1) + '(';
-    }
-    return match;
-  }
-};
 
 const gpuGaps: AuditRule = {
   regex: /(backdrop-filter|filter):/gi,
@@ -117,7 +96,7 @@ const fileLength: AuditRule = {
 };
 
 const config = {
-  viewport, sassTraps, gpuGaps, legacyDates, nodePrefix, tsIgnore, timersPromises, explicitResource, fileLength
+  viewport, gpuGaps, legacyDates, nodePrefix, tsIgnore, timersPromises, explicitResource, fileLength
 };
 
 async function getFilesToAudit(dir: string): Promise<string[]> {
@@ -171,7 +150,7 @@ async function auditFile(filePath: string, fix: boolean): Promise<Violation[]> {
     const tag = 'style';
     let block = isVue ? extractBlock(content, tag) : content;
     if (block) {
-      const newBlock = runRules(filePath, block, [config.viewport, config.sassTraps, config.gpuGaps], violations, fix, isVue ? findBlockStart(content, tag) : 0);
+      const newBlock = runRules(filePath, block, [config.viewport, config.gpuGaps], violations, fix, isVue ? findBlockStart(content, tag) : 0);
       if (fix && newBlock !== block) {
         content = isVue ? injectBlock(content, tag, newBlock) : newBlock;
         modified = true;

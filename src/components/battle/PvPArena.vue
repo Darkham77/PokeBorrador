@@ -6,10 +6,22 @@ import BattleInfoCard from './BattleInfoCard.vue'
 import BattleMovesGrid from './BattleMovesGrid.vue'
 import { useModalStore } from '@/stores/modals'
 
-const gameStore = useGameStore() as any
-const livePvP = useLivePvPStore() as any
+const gameStore = useGameStore()
+const livePvP = useLivePvPStore()
 
-const battle = computed(() => livePvP.battleState as any)
+interface PvPBattleState {
+  active: boolean
+  phase: 'choosing' | 'waiting' | 'resolving' | 'animating'
+  opponentName: string
+  opponentElo: number
+  enemyTeam: any[]
+  enemyActiveIdx: number
+  myTeam: any[]
+  myActiveIdx: number
+  logs: string[]
+}
+
+const battle = computed(() => livePvP.battleState as unknown as PvPBattleState)
 
 // PvP Sync (Pure Vue)
 const syncToGameBus = () => {
@@ -22,12 +34,12 @@ onMounted(() => {
 
 // Actions
 const handleMove = (idx: number) => {
-  livePvP._commitPick({ type: 'move', moveIndex: idx })
+  (livePvP as any)._commitPick({ type: 'move', moveIndex: idx })
 }
 
 const handleForfeit = () => {
   if (confirm('¿Seguro que quieres rendirte?')) {
-    livePvP._forfeit()
+    (livePvP as any)._forfeit()
   }
 }
 
@@ -40,9 +52,10 @@ const handleSwitch = () => {
     activePokemonUid: battle.value.myTeam[battle.value.myActiveIdx].uid,
     onConfirm: (pokes: any[]) => {
       if (pokes.length > 0) {
-        const index = (gameStore.state.team as any[]).findIndex(p => p.uid === pokes[0].uid)
+        const team = (gameStore.state.team || []) as any[]
+        const index = team.findIndex(p => p.uid === pokes[0].uid)
         if (index !== -1) {
-          livePvP._commitPick({ type: 'switch', switchIndex: index })
+          (livePvP as any)._commitPick({ type: 'switch', switchIndex: index })
         }
       }
     }

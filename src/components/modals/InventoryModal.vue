@@ -109,8 +109,7 @@ const handleActionSelect = (type: string) => {
     // Battle Mode: Handle Pokeballs directly
     if (props.battleMode && dbItem.cat === 'pokeballs') {
       const battleStore = useBattleStore()
-      // battleStore.useItemInBattle might still be as any if not fully typed in store
-      ;(battleStore as any).useItemInBattle(dbItem.name)
+      battleStore.useItemInBattle(dbItem.name)
       itemActionMenu.value = null
       close()
       return

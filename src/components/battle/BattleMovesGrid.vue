@@ -156,8 +156,11 @@ const isMoveDisabled = (move: Move | null) => {
   
   // Choice Item Logic
   const p = props.playerInfo
-  if (p && p.heldItem === 'Cinta Elegida' && (p as any).choiceMove && (p as any).choiceMove !== move.name) {
-    return true
+  if (p && p.heldItem === 'Cinta Elegida') {
+    const pk = p as Pokemon & { choiceMove?: string }
+    if (pk.choiceMove && pk.choiceMove !== move.name) {
+      return true
+    }
   }
   return false
 }

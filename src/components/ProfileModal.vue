@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { Temporal } from '@js-temporal/polyfill'
-
 import { computed } from 'vue'
 import { useUIStore } from '@/stores/ui'
 import { useGameStore } from '@/stores/game'
@@ -32,11 +30,11 @@ const emit = defineEmits<{
   (e: 'submit'): void
 }>()
 
-const uiStore = useUIStore() as any
-const gameStore = useGameStore() as any
-const authStore = useAuthStore() as any
-const profileStore = useProfileStore() as any
-const classStore = usePlayerClassStore() as any
+const uiStore = useUIStore()
+const gameStore = useGameStore()
+const authStore = useAuthStore()
+const profileStore = useProfileStore()
+const classStore = usePlayerClassStore()
 
 const gs = computed(() => gameStore.state)
 const profileData = computed(() => profileStore.profileData)
@@ -70,12 +68,7 @@ const displayUsername = computed(() => {
 })
 
 const lastSaveFormatted = computed(() => {
-  if (!gs.value._last_updated) return 'Sin datos'
-  const date = Temporal.Instant.fromEpochMilliseconds(gs.value._last_updated)
-  return date.toLocaleString('es-ES', { 
-    day: '2-digit', month: '2-digit', year: 'numeric',
-    hour: '2-digit', minute: '2-digit'
-  })
+  return profileData.value.lastSave || 'Sin datos'
 })
 
 const close = () => { emit('close') }
@@ -94,8 +87,9 @@ const handleFactionChoice = () => {
 
 const handleResetEncounter = () => {
   // Legacy logic: window.resetEncounters?.()
-  if (typeof (window as any).resetEncounters === 'function') {
-    (window as any).resetEncounters()
+  const win = window as unknown as { resetEncounters?: () => void }
+  if (typeof win.resetEncounters === 'function') {
+    win.resetEncounters()
     uiStore.notify('Encuentros reseteados', '⚠️')
   }
 }
@@ -128,7 +122,7 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
             <TrainerAvatar
               :player-class="gs.playerClass"
               :level="gs.trainerLevel"
-              :avatar-style="gs.avatar_style"
+              :avatar-style="gs.avatar_style || undefined"
               :size="120"
             />
           </div>
@@ -168,7 +162,7 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
                 v-if="gs.faction"
                 :src="getAssetUrlLocal(ASSET_TYPES_LOCAL.FACTION, gs.faction)"
                 class="faction-img"
-                @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
+                @error="(e: Event) => { if (e.target) (e.target as HTMLImageElement).style.display = 'none' }"
               >
               {{ factionLabel }}
             </div>

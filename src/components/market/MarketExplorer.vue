@@ -3,15 +3,16 @@
 import { computed } from 'vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { useGTSStore } from '@/stores/gts'
+import type { MarketListing } from '@/logic/market'
 import { Temporal } from '@js-temporal/polyfill'
 import { getPokemonTier } from '@/logic/pokemon/tierEngine'
 import { PDEX_TYPE_COLORS } from '@/logic/pokedexConstants'
 
-const gtsStore = useGTSStore() as any
+const gtsStore = useGTSStore()
 
 const listings = computed(() => gtsStore.filteredListings)
 
-function handleBuy(listing: any) {
+function handleBuy(listing: MarketListing) {
   gtsStore.buyListing(listing)
 }
 
@@ -29,10 +30,10 @@ function getTierData(pokemon: any) {
 }
 
 function getSprite(pokemon: any) {
-  return getAssetUrl(ASSET_TYPES.POKEMON, pokemon.id)
+  return getAssetUrl(ASSET_TYPES.POKEMON, pokemon.id || 'missing')
 }
 
-const getTypeColor = (type: string) => (PDEX_TYPE_COLORS as any)[type?.toLowerCase()] || 'Rgba(170, 170, 170, 1)'
+const getTypeColor = (type: string) => (PDEX_TYPE_COLORS as Record<string, string>)[type?.toLowerCase()] || 'Rgba(170, 170, 170, 1)'
 </script>
 
 <template>
@@ -102,15 +103,15 @@ const getTypeColor = (type: string) => (PDEX_TYPE_COLORS as any)[type?.toLowerCa
               <span class="types">
                 <span
                   class="type-tag"
-                  :class="item.data.type"
-                  :style="{ background: getTypeColor(item.data.type) }"
-                >{{ item.data.type }}</span>
+                  :class="String(item.data.type || 'normal')"
+                  :style="{ background: getTypeColor(String(item.data.type || 'normal')) }"
+                >{{ String(item.data.type || 'NORMAL').toUpperCase() }}</span>
                 <span
                   v-if="item.data.type2"
                   class="type-tag"
-                  :class="item.data.type2"
-                  :style="{ background: getTypeColor(item.data.type2) }"
-                >{{ item.data.type2 }}</span>
+                  :class="String(item.data.type2)"
+                  :style="{ background: getTypeColor(String(item.data.type2)) }"
+                >{{ String(item.data.type2).toUpperCase() }}</span>
               </span>
             </div>
             <div

@@ -3,9 +3,21 @@ import { computed } from 'vue'
 import { useCombatShadowStore } from '@/stores/combatShadows'
 import { WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator'
 
-const { SHADOW_WIDTH, SHADOW_HEIGHT } = WORLD_CONSTANTS as any
+const { SHADOW_WIDTH, SHADOW_HEIGHT } = WORLD_CONSTANTS
 
-const shadowStore = useCombatShadowStore() as any
+const shadowStore = useCombatShadowStore()
+
+interface CombatShadow {
+  id: string
+  entityX: number
+  entityY: number
+  entitySize: number
+  feetX: number
+  feetY: number
+  width: string | number
+  isFlying: boolean
+  visible: boolean
+}
 
 /**
  * Generates the standard low-resolution pixel shadow.
@@ -31,7 +43,7 @@ const shadowUrl = generatePixelShadow()
  * Calculates absolute coordinates and styles for a shadow.
  * All calculations are based on the 3000x3000px virtual world.
  */
-const getShadowStyle = (shadow: any) => {
+const getShadowStyle = (shadow: CombatShadow) => {
   const { entityX, entityY, entitySize, feetX, feetY, width, isFlying } = shadow
   
   // Horizontal Position: Center of the entity adjusted by feet offset
@@ -41,7 +53,7 @@ const getShadowStyle = (shadow: any) => {
   const top = entityY + (feetY * entitySize)
   
   // Dimensions: Relative to entity size
-  const widthPercent = parseFloat(width) || 70
+  const widthPercent = typeof width === 'string' ? parseFloat(width) : width || 70
   const widthPx = (widthPercent / 100) * entitySize
   const heightPx = entitySize * 0.08 // Mantener una proporción chata (8% del tamaño de la entidad)
   
@@ -58,8 +70,8 @@ const getShadowStyle = (shadow: any) => {
 }
 
 // Filtramos solo las sombras visibles para que TransitionGroup maneje las salidas
-const shadowsArray = computed<any[]>(() => {
-  return Array.from(shadowStore.activeShadows.values()).filter((s: any) => s.visible)
+const shadowsArray = computed<CombatShadow[]>(() => {
+  return Array.from(shadowStore.activeShadows.values()).filter((s) => s.visible)
 })
 </script>
 

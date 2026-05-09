@@ -5,6 +5,7 @@ import { useBoxStore } from '@/stores/box'
 import { useUIStore } from '@/stores/ui'
 import { usePlayerClassStore } from '@/stores/playerClass'
 import { useBoxFilters } from '@/composables/useBoxFilters'
+import type { Pokemon } from '@/types/pokemon'
 
 // Sub-componentes
 import BoxHeader from './box/BoxHeader.vue'
@@ -12,10 +13,10 @@ import BoxTabs from './box/BoxTabs.vue'
 import BoxFilters from './box/BoxFilters.vue'
 import BoxGrid from './box/BoxGrid.vue'
 
-const gameStore = useGameStore() as any
-const boxStore = useBoxStore() as any
-const uiStore = useUIStore() as any
-const classStore = usePlayerClassStore() as any
+const gameStore = useGameStore()
+const boxStore = useBoxStore()
+const uiStore = useUIStore()
+const classStore = usePlayerClassStore()
 const gs = computed(() => gameStore.state)
 
 // Clase Rocket: fuente canónica reactiva
@@ -44,11 +45,12 @@ const displayList = computed(() => {
   const isSorted = sortMode.value !== 'none'
   
   if (hasActiveFilters.value || isSorted) {
-    return list.filter((item: any) => item.p != null) // Show all matches without nulls
+    // Already filtered or sorted list (no nulls if filtered, but let's be safe)
+    return list.filter((item): item is { p: Pokemon, index: number } => item.p != null)
   } else {
     const start = currentBoxIndex.value * 50
     const slice = list.slice(start, start + 50)
-    return slice.filter((item: any) => item.p != null) // Remove empty slots from the grid
+    return slice.filter((item): item is { p: Pokemon, index: number } => item.p != null)
   }
 })
 
@@ -80,7 +82,7 @@ const buyNewBox = () => {
       if (res.success) {
         uiStore.notify(`¡Compraste la Caja ${res.boxNum}!`, '💰')
       } else {
-        uiStore.notify(res.msg, '❌')
+        uiStore.notify(res.msg || 'No se pudo comprar la caja.', '❌')
       }
     }
   })

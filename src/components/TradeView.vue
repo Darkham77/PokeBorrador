@@ -25,7 +25,15 @@ const tradeStore = useTradeStore()
 
 const gs = computed(() => gameStore.state)
 const target = computed(() => tradeStore.tradeTarget)
-const friendSave = computed(() => tradeStore.tradeFriendSave || { team: [], box: [], inventory: {}, money: 0 })
+
+interface FriendSave {
+  team: Pokemon[]
+  box: (Pokemon | null)[]
+  inventory: Record<string, number>
+  money: number
+}
+
+const friendSave = computed<FriendSave>(() => (tradeStore.tradeFriendSave as FriendSave) || { team: [], box: [], inventory: {}, money: 0 })
 
 // Local state for the form
 const isSending = ref(false)
@@ -50,12 +58,12 @@ const openSelector = (side: string) => {
   if (side === 'offer') {
     selectorState.title = 'SELECCIONA TU POKÉMON'
     const team = gs.value.team.map((p) => ({ ...p, _source: 'team' as const }))
-    const box = gs.value.box.map((p) => ({ ...p, _source: 'box' as const }))
+    const box = (gs.value.box as (Pokemon | null)[]).filter((p): p is Pokemon => p !== null).map((p) => ({ ...p, _source: 'box' as const }))
     selectorState.list = [...team, ...box]
   } else {
     selectorState.title = `POKÉMON DE ${target.value?.username}`
-    const team = ((friendSave.value as any).team || []).map((p: any) => ({ ...p, _source: 'team' as const }))
-    const box = ((friendSave.value as any).box || []).map((p: any) => ({ ...p, _source: 'box' as const }))
+    const team = (friendSave.value.team || []).map((p) => ({ ...p, _source: 'team' as const }))
+    const box = (friendSave.value.box || []).filter((p): p is Pokemon => p !== null).map((p) => ({ ...p, _source: 'box' as const }))
     selectorState.list = [...team, ...box]
   }
 }

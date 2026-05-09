@@ -4,13 +4,9 @@ import { computed } from 'vue'
 import { useUIStore } from '@/stores/ui'
 import { Temporal } from '@js-temporal/polyfill'
 
-const uiStore = useUIStore() as any
+const uiStore = useUIStore()
 
-interface NotificationItem {
-  icon?: string
-  msg?: string
-  ts: number | string | Date
-}
+import type { NotificationItem } from '@/types/game'
 
 interface Props {
   history?: NotificationItem[]
@@ -22,10 +18,12 @@ const props = withDefaults(defineProps<Props>(), {
 
 const formatTime = (ts: any) => {
   try {
-    const instant = typeof ts === 'string' ? Temporal.Instant.from(ts) : (typeof ts === 'number' ? Temporal.Instant.fromEpochMilliseconds(ts) : Temporal.Instant.fromEpochMilliseconds(ts.getTime()));
-    return instant.toZonedDateTimeISO('UTC').toLocaleString();
+    const val = Number(ts)
+    if (isNaN(val)) return '---'
+    const instant = Temporal.Instant.fromEpochMilliseconds(val)
+    return instant.toZonedDateTimeISO('UTC').toLocaleString()
   } catch {
-    return '---';
+    return '---'
   }
 }
 
@@ -54,17 +52,17 @@ const isHistoryOpen = computed({
       class="history-container-legacy custom-scrollbar"
     >
       <div
-        v-for="(n, i) in history.slice().reverse()"
-        :key="i"
+        v-for="n in history.slice().reverse()"
+        :key="n.id"
         class="notification-entry-legacy"
       >
-        <span class="notif-icon">{{ n.icon || '🔔' }}</span>
+        <span class="notif-icon">{{ (n.meta?.icon as string) || '🔔' }}</span>
         <div class="notif-body">
           <div class="notif-text">
-            {{ n.msg }}
+            <strong>{{ n.title }}</strong>: {{ n.message }}
           </div>
           <div class="notif-time">
-            {{ formatTime(n.ts) }}
+            {{ formatTime(n.timestamp) }}
           </div>
         </div>
       </div>

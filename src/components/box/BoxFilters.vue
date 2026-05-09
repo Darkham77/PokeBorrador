@@ -2,8 +2,30 @@
 import { BOX_TIER_CONFIG } from '@/logic/pokemon/tierEngine'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 
+interface BoxFilters {
+  tier: string
+  type: string
+  levelMin: number
+  levelMax: number
+  ivHP: number
+  ivATK: number
+  ivDEF: number
+  ivSPA: number
+  ivSPD: number
+  ivSPE: number
+  ivAny31: boolean
+  ivMin: number
+  ivMax: number
+  ivTotalMin: number
+  ivTotalMax: number
+  bstMin: number
+  bstMax: number
+  search: string
+  tags: string[]
+}
+
 interface Props {
-  filters: any
+  filters: BoxFilters
   isFiltersOpen: boolean
   sortMode: string
   sortDirection?: string
@@ -19,7 +41,7 @@ const emit = defineEmits<{
   (e: 'update:isFiltersOpen', val: boolean): void
   (e: 'update:sortMode', val: string): void
   (e: 'update:sortDirection', val: string): void
-  (e: 'update:filters', val: any): void
+  (e: 'update:filters', val: BoxFilters): void
   (e: 'reset'): void
 }>()
 
@@ -289,10 +311,10 @@ const AVAILABLE_TAGS = [
               :key="tier"
               :class="['filter-pill tier-pill', { active: filters.tier === tier }]"
               :style="{ 
-                '--tier-color': (cfg as any).color,
-                '--tier-bg': (cfg as any).bg
+                '--tier-color': (cfg as { color: string, bg: string }).color,
+                '--tier-bg': (cfg as { color: string, bg: string }).bg
               }"
-              @click.stop="updateFilter('tier', tier)"
+              @click.stop="updateFilter('tier', tier as string)"
             >
               {{ tier }}
             </button>
@@ -315,7 +337,7 @@ const AVAILABLE_TAGS = [
                     type="range"
                     min="1"
                     max="100"
-                    :style="[getSliderStyle(filters.levelMin, 100, (STAT_COLORS as any).LEVEL), { '--stat-color': (STAT_COLORS as any).LEVEL }]"
+                    :style="[getSliderStyle(filters.levelMin, 100, STAT_COLORS.LEVEL as string), { '--stat-color': STAT_COLORS.LEVEL }]"
                     @input="onRangeInput('levelMin', $event)"
                   >
                   <span class="val">{{ filters.levelMin }}</span>
@@ -327,7 +349,7 @@ const AVAILABLE_TAGS = [
                     type="range"
                     min="1"
                     max="100"
-                    :style="[getSliderStyle(filters.levelMax, 100, (STAT_COLORS as any).LEVEL), { '--stat-color': (STAT_COLORS as any).LEVEL }]"
+                    :style="[getSliderStyle(filters.levelMax, 100, STAT_COLORS.LEVEL as string), { '--stat-color': STAT_COLORS.LEVEL }]"
                     @input="onRangeInput('levelMax', $event)"
                   >
                   <span class="val">{{ filters.levelMax }}</span>
@@ -387,17 +409,17 @@ const AVAILABLE_TAGS = [
                 >
                   <span class="stat-name">{{ stat }}</span>
                   <input
-                    :value="filters['iv' + stat]"
+                    :value="filters[('iv' + stat) as keyof BoxFilters]"
                     type="range"
                     min="0"
                     max="31"
-                    :style="[getSliderStyle(filters['iv' + stat], 31, (STAT_COLORS as any)[stat]), { '--stat-color': (STAT_COLORS as any)[stat] }]"
+                    :style="[getSliderStyle(filters[('iv' + stat) as keyof BoxFilters] as number, 31, STAT_COLORS[stat] as string), { '--stat-color': STAT_COLORS[stat] }]"
                     @input="onRangeInput('iv' + stat, $event)"
                   >
                   <span
                     class="stat-val"
-                    :style="{ color: (STAT_COLORS as any)[stat] }"
-                  >{{ filters['iv' + stat] }}</span>
+                    :style="{ color: STAT_COLORS[stat] }"
+                  >{{ filters[('iv' + stat) as keyof BoxFilters] }}</span>
                 </div>
               </div>
             </div>

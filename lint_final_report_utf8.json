@@ -1,0 +1,129 @@
+﻿
+> pokemon-online@0.5.0 lint
+> npm run validate:types && eslint . --fix --format json
+
+
+> pokemon-online@0.5.0 validate:types
+> vue-tsc --noEmit
+
+src/components/admin/AdminEventTab.vue(72,3): error TS2322: Type '{}' is not assignable to type 'EventConfig[] | { id: string; name: string; description: string; icon: string; active: boolean; manual: boolean; start_at: string | null; end_at: string | null; config: { expMult: number; ... 5 more ...; sortBy: string; }; schedule: { ...; }; }[]'.
+src/components/admin/AdminRankedTab.vue(44,15): error TS2339: Property 'config' does not exist on type '{}'.
+src/components/admin/AdminRankedTab.vue(45,39): error TS2339: Property 'config' does not exist on type '{}'.
+src/components/admin/AdminRankedTab.vue(46,16): error TS2339: Property 'season_name' does not exist on type '{}'.
+src/components/admin/AdminRankedTab.vue(46,59): error TS2339: Property 'season_name' does not exist on type '{}'.
+src/components/battle/BattleArenaControls.vue(30,42): error TS2551: Property 'value' does not exist on type 'BattleStateName'. Did you mean 'valueOf'?
+  Property 'value' does not exist on type '"CONTEXT_SETUP"'.
+src/components/battle/BattleArenaControls.vue(51,74): error TS2532: Object is possibly 'undefined'.
+src/components/battle/BattleArenaControls.vue(127,14): error TS2322: Type '{ uid: string; id: string; name: string; nickname?: string | null | undefined; level: number; exp: number; expNeeded: number; hp: number; maxHp: number; atk: number; def: number; spa: number; spd: number; ... 67 more ...; aura?: string | undefined; } | {}' is not assignable to type 'Pokemon | null | undefined'.
+  Type '{}' is missing the following properties from type 'Pokemon': uid, id, name, level, and 13 more.
+src/components/battle/BattleArenaControls.vue(150,144): error TS2345: Argument of type 'string | null' is not assignable to parameter of type 'string'.
+  Type 'null' is not assignable to type 'string'.
+src/components/battle/BattleArenaControls.vue(150,193): error TS2339: Property 'isReadyToExit' does not exist on type 'Store<"battle", Pick<{ state: Ref<{ player: { uid: string; id: string; name: string; nickname?: string | null | undefined; level: number; exp: number; expNeeded: number; hp: number; maxHp: number; atk: number; ... 70 more ...; aura?: string | undefined; } | null; ... 32 more ...; isPvP?: boolean | undefined; } | nul...'.
+src/components/battle/BattleDebugTools.vue(97,15): error TS2540: Cannot assign to 'isSearching' because it is a read-only property.
+src/components/battle/BattleDebugTools.vue(109,7): error TS2322: Type 'string[]' is not assignable to type 'Event[]'.
+  Type 'string' is not assignable to type 'Event'.
+src/components/battle/BattleDebugTools.vue(109,22): error TS2352: Conversion of type 'Store<"map", Pick<{ currentMap: WritableComputedRef<string, string>; currentMapData: ComputedRef<{ id: string; name: string; icon: string; badges: number; desc: string; wild: { morning: string[]; day: string[]; dusk: string[]; night: string[]; }; ... 5 more ...; isIndoors?: undefined; } | ... 26 more ... | undefined...' to type '{ activeEvents: string[]; }' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Types of property 'activeEvents' are incompatible.
+    Type '{ id: string; name: string; description: string; type?: string | undefined; icon?: string | undefined; active: boolean; manual?: boolean | undefined; start_at?: string | undefined; ends_at?: string | undefined; schedule?: string | ... 1 more ... | undefined; config?: string | ... 1 more ... | undefined; }[]' is not comparable to type 'string[]'.
+      Type '{ id: string; name: string; description: string; type?: string | undefined; icon?: string | undefined; active: boolean; manual?: boolean | undefined; start_at?: string | undefined; ends_at?: string | undefined; schedule?: string | ... 1 more ... | undefined; config?: string | ... 1 more ... | undefined; }' is not comparable to type 'string'.
+src/components/battle/BattleDebugTools.vue(110,7): error TS2322: Type 'Record<string, string>' is not assignable to type 'Record<string, DominanceInfo>'.
+  'string' index signatures are incompatible.
+    Type 'string' is not assignable to type 'DominanceInfo'.
+src/components/battle/BattleDebugTools.vue(110,23): error TS2352: Conversion of type 'Store<"map", Pick<{ currentMap: WritableComputedRef<string, string>; currentMapData: ComputedRef<{ id: string; name: string; icon: string; badges: number; desc: string; wild: { morning: string[]; day: string[]; dusk: string[]; night: string[]; }; ... 5 more ...; isIndoors?: undefined; } | ... 26 more ... | undefined...' to type '{ mapWinners: Record<string, string>; }' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Types of property 'mapWinners' are incompatible.
+    Type 'Record<string, DominanceInfo>' is not comparable to type 'Record<string, string>'.
+      'string' index signatures are incompatible.
+        Type 'DominanceInfo' is not comparable to type 'string'.
+src/components/battle/BattleDebugTools.vue(129,5): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/components/battle/BattleDebugTools.vue(131,5): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/components/battle/BattleDebugTools.vue(153,5): error TS18047: 'battleStore.state' is possibly 'null'.
+src/components/battle/LivePvPArena.vue(33,45): error TS2339: Property 'playerClass' does not exist on type '{ username: string; full_name?: string | undefined; role?: string | undefined; }'.
+src/components/battle/LivePvPArena.vue(48,11): error TS2551: Property 'commitPick' does not exist on type 'Store<"livePvP", Pick<{ activeInvite: Ref<{ id: string; challenger_id: string; opponent_id: string; status: "pending" | "accepted" | "declined" | "ranked_match" | "ranked_accepted"; created_at: string; } | null, BattleInvite | ... 1 more ... | null>; ... 12 more ...; _checkPostTurn: () => void; }, "isSearching" | .....'. Did you mean '_commitPick'?
+src/components/battle/LivePvPArena.vue(57,13): error TS2551: Property 'forfeit' does not exist on type 'Store<"livePvP", Pick<{ activeInvite: Ref<{ id: string; challenger_id: string; opponent_id: string; status: "pending" | "accepted" | "declined" | "ranked_match" | "ranked_accepted"; created_at: string; } | null, BattleInvite | ... 1 more ... | null>; ... 12 more ...; _checkPostTurn: () => void; }, "isSearching" | .....'. Did you mean '_forfeit'?
+src/components/battle/LivePvPArena.vue(91,54): error TS2339: Property 'level' does not exist on type '{ username: string; full_name?: string | undefined; role?: string | undefined; }'.
+src/components/battle/LivePvPArena.vue(92,62): error TS2339: Property 'elo' does not exist on type '{ username: string; full_name?: string | undefined; role?: string | undefined; }'.
+src/components/battle/LivePvPArena.vue(121,39): error TS2532: Object is possibly 'undefined'.
+src/components/battle/LivePvPArena.vue(142,39): error TS2532: Object is possibly 'undefined'.
+src/components/battle/LivePvPArena.vue(173,39): error TS2345: Argument of type 'string | number' is not assignable to parameter of type 'number'.
+  Type 'string' is not assignable to type 'number'.
+src/components/box/BoxFilters.vue(340,68): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/components/box/BoxFilters.vue(352,68): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/components/box/BoxFilters.vue(416,103): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/components/box/BoxPokemonMenu.vue(62,29): error TS2345: Argument of type '{ uid: string; id: string; name: string; nickname?: string | null | undefined; level: number; exp: number; expNeeded: number; hp: number; maxHp: number; atk: number; def: number; spa: number; spd: number; ... 67 more ...; aura?: string | undefined; } | null' is not assignable to parameter of type 'Pokemon'.
+  Type 'null' is not assignable to type 'Pokemon'.
+src/components/box/BoxPokemonMenu.vue(80,7): error TS18047: 'pokemon.value' is possibly 'null'.
+src/components/box/BoxPokemonMenu.vue(87,55): error TS18047: 'pokemon.value' is possibly 'null'.
+src/components/box/BoxPokemonMenu.vue(195,36): error TS2551: Property 'types' does not exist on type '{ uid: string; id: string; name: string; nickname?: string | null | undefined; level: number; exp: number; expNeeded: number; hp: number; maxHp: number; atk: number; def: number; spa: number; spd: number; ... 67 more ...; aura?: string | undefined; }'. Did you mean 'type'?
+src/components/BoxView.vue(48,45): error TS2304: Cannot find name 'Pokemon'.
+src/components/BoxView.vue(52,46): error TS2304: Cannot find name 'Pokemon'.
+src/components/BoxView.vue(84,24): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/components/breeding/DaycarePicker.vue(35,39): error TS2339: Property 'daycareSlots' does not exist on type 'Store<"breeding", Pick<{ slots: Ref<{ pokemon: { uid: string; id: string; name: string; nickname?: string | null | undefined; level: number; exp: number; expNeeded: number; hp: number; maxHp: number; atk: number; ... 70 more ...; aura?: string | undefined; } | null; slotIndex: number; deposited_at: string | null; }[...'.
+src/components/breeding/DaycarePicker.vue(35,56): error TS7006: Parameter 's' implicitly has an 'any' type.
+src/components/breeding/HatchAnimationModal.vue(33,19): error TS2304: Cannot find name 'useGameStore'.
+src/components/breeding/HatchAnimationModal.vue(140,49): error TS2345: Argument of type 'boolean | undefined' is not assignable to parameter of type 'boolean'.
+  Type 'undefined' is not assignable to type 'boolean'.
+src/components/BreedingPickerModal.vue(41,60): error TS2339: Property 'daycareSlots' does not exist on type 'Store<"breeding", Pick<{ slots: Ref<{ pokemon: { uid: string; id: string; name: string; nickname?: string | null | undefined; level: number; exp: number; expNeeded: number; hp: number; maxHp: number; atk: number; ... 70 more ...; aura?: string | undefined; } | null; slotIndex: number; deposited_at: string | null; }[...'.
+src/components/BreedingPickerModal.vue(41,79): error TS7006: Parameter 's' implicitly has an 'any' type.
+src/components/BreedingPickerModal.vue(82,19): error TS2339: Property 'depositPokemon' does not exist on type 'Store<"breeding", Pick<{ slots: Ref<{ pokemon: { uid: string; id: string; name: string; nickname?: string | null | undefined; level: number; exp: number; expNeeded: number; hp: number; maxHp: number; atk: number; ... 70 more ...; aura?: string | undefined; } | null; slotIndex: number; deposited_at: string | null; }[...'.
+src/components/BreedingPickerModal.vue(85,19): error TS2339: Property 'deliverMission' does not exist on type 'Store<"breeding", Pick<{ slots: Ref<{ pokemon: { uid: string; id: string; name: string; nickname?: string | null | undefined; level: number; exp: number; expNeeded: number; hp: number; maxHp: number; atk: number; ... 70 more ...; aura?: string | undefined; } | null; slotIndex: number; deposited_at: string | null; }[...'.
+src/components/BreedingPickerModal.vue(93,35): error TS2339: Property 'daycareSlots' does not exist on type 'Store<"breeding", Pick<{ slots: Ref<{ pokemon: { uid: string; id: string; name: string; nickname?: string | null | undefined; level: number; exp: number; expNeeded: number; hp: number; maxHp: number; atk: number; ... 70 more ...; aura?: string | undefined; } | null; slotIndex: number; deposited_at: string | null; }[...'.
+src/components/BreedingPickerModal.vue(93,54): error TS7006: Parameter 's' implicitly has an 'any' type.
+src/components/BreedingPickerModal.vue(139,39): error TS2345: Argument of type 'boolean | undefined' is not assignable to parameter of type 'boolean'.
+  Type 'undefined' is not assignable to type 'boolean'.
+src/components/BreedingPickerModal.vue(158,42): error TS2532: Object is possibly 'undefined'.
+src/components/BreedingPickerModal.vue(159,24): error TS2532: Object is possibly 'undefined'.
+src/components/EggScannerModal.vue(50,37): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(getter: ComputedGetter<EggItem[]>, debugOptions?: DebuggerOptions | undefined): ComputedRef<EggItem[]>', gave the following error.
+    Argument of type '() => ({ type: "inventory"; data: { uid: string; id: string; steps: number; ready: boolean; isShiny?: boolean | undefined; isGuardian?: boolean | undefined; nature?: string | undefined; abilitySlot?: number | undefined; gender?: "M" | "F" | "N" | null | undefined; ivs?: { ...; } | undefined; movesAtBirth?: string[] ...' is not assignable to parameter of type 'ComputedGetter<EggItem[]>'.
+      Type '({ type: "inventory"; data: { uid: string; id: string; steps: number; ready: boolean; isShiny?: boolean | undefined; isGuardian?: boolean | undefined; nature?: string | undefined; abilitySlot?: number | undefined; gender?: "F" | ... 3 more ... | undefined; ivs?: { ...; } | undefined; movesAtBirth?: string[] | undefi...' is not assignable to type 'EggItem[]'.
+        Type '{ type: "inventory"; data: { uid: string; id: string; steps: number; ready: boolean; isShiny?: boolean | undefined; isGuardian?: boolean | undefined; nature?: string | undefined; abilitySlot?: number | undefined; gender?: "F" | ... 3 more ... | undefined; ivs?: { ...; } | undefined; movesAtBirth?: string[] | undefin...' is not assignable to type 'EggItem'.
+          Type '{ type: "daycare"; data: { id: string; species: string; name: string; level: number; isEgg: boolean; steps: number; mother_id: string; deposited_at: string; ivs: { [x: string]: number | boolean | undefined; ... 5 more ...; spe: number; }; ... 5 more ...; inherited_ivs?: { ...; } | undefined; }; id: string; species: ...' is not assignable to type 'EggItem'.
+            Types of property 'data' are incompatible.
+              Type '{ id: string; species: string; name: string; level: number; isEgg: boolean; steps: number; mother_id: string; deposited_at: string; ivs: { [x: string]: number | boolean | undefined; hp: number; atk: number; def: number; spa: number; spd: number; spe: number; }; ... 5 more ...; inherited_ivs?: { ...; } | undefined; }' is not assignable to type 'PokemonEgg & { inherited_ivs?: IVs | undefined; pokemonId?: string | undefined; species?: string | undefined; scanned?: boolean | undefined; predictedInfo?: { ...; } | undefined; }'.
+                Type '{ id: string; species: string; name: string; level: number; isEgg: boolean; steps: number; mother_id: string; deposited_at: string; ivs: { [x: string]: number | boolean | undefined; hp: number; atk: number; def: number; spa: number; spd: number; spe: number; }; ... 5 more ...; inherited_ivs?: { ...; } | undefined; }' is missing the following properties from type 'PokemonEgg': uid, ready
+  Overload 2 of 2, '(options: WritableComputedOptions<EggItem[], EggItem[]>, debugOptions?: DebuggerOptions | undefined): WritableComputedRef<EggItem[], EggItem[]>', gave the following error.
+    Argument of type '() => ({ type: "inventory"; data: { uid: string; id: string; steps: number; ready: boolean; isShiny?: boolean | undefined; isGuardian?: boolean | undefined; nature?: string | undefined; abilitySlot?: number | undefined; gender?: "M" | "F" | "N" | null | undefined; ivs?: { ...; } | undefined; movesAtBirth?: string[] ...' is not assignable to parameter of type 'WritableComputedOptions<EggItem[], EggItem[]>'.
+src/components/EggScannerModal.vue(55,16): error TS2339: Property 'pokemonId' does not exist on type '{ uid: string; id: string; steps: number; ready: boolean; isShiny?: boolean | undefined; isGuardian?: boolean | undefined; nature?: string | undefined; abilitySlot?: number | undefined; gender?: "F" | ... 3 more ... | undefined; ivs?: { ...; } | undefined; movesAtBirth?: string[] | undefined; obtainedAt?: number | u...'.
+src/components/EggScannerModal.vue(100,11): error TS2339: Property 'scanned' does not exist on type '{ uid: string; id: string; steps: number; ready: boolean; isShiny?: boolean | undefined; isGuardian?: boolean | undefined; nature?: string | undefined; abilitySlot?: number | undefined; gender?: "F" | ... 3 more ... | undefined; ivs?: { ...; } | undefined; movesAtBirth?: string[] | undefined; obtainedAt?: number | u...'.
+src/components/EggScannerModal.vue(101,11): error TS2339: Property 'predictedInfo' does not exist on type '{ uid: string; id: string; steps: number; ready: boolean; isShiny?: boolean | undefined; isGuardian?: boolean | undefined; nature?: string | undefined; abilitySlot?: number | undefined; gender?: "F" | ... 3 more ... | undefined; ivs?: { ...; } | undefined; movesAtBirth?: string[] | undefined; obtainedAt?: number | u...'.
+src/components/map/MapGrid.vue(117,8): error TS2322: Type 'MapLocation' is not assignable to type 'MapData'.
+  Types of property 'desc' are incompatible.
+    Type 'string | undefined' is not assignable to type 'string'.
+      Type 'undefined' is not assignable to type 'string'.
+src/components/map/MapGrid.vue(127,35): error TS2345: Argument of type 'MapData' is not assignable to parameter of type 'MapLocation'.
+  Property 'lv' is missing in type 'MapData' but required in type 'MapLocation'.
+src/components/market/MarketExplorer.vue(21,33): error TS2352: Conversion of type 'import("C:/Users/franc/Trabajo/Juegos/Pokemon-Online/src/logic/market").MarketListing[]' to type 'MarketListing[]' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Property 'seller_name' is missing in type 'import("C:/Users/franc/Trabajo/Juegos/Pokemon-Online/src/logic/market").MarketListing' but required in type 'MarketListing'.
+src/components/market/MarketExplorer.vue(24,23): error TS2345: Argument of type 'MarketListing' is not assignable to parameter of type 'import("C:/Users/franc/Trabajo/Juegos/Pokemon-Online/src/logic/market").MarketListing'.
+  Type 'MarketListing' is missing the following properties from type 'MarketListing': status, seller_id
+src/components/modals/ClassMissionsModal.vue(46,52): error TS2339: Property 'rank' does not exist on type '{ trainer: string; badges: number; balls: number; money: number; battleCoins: number; eggs: { uid: string; id: string; steps: number; ready: boolean; isShiny?: boolean | undefined; isGuardian?: boolean | undefined; ... 5 more ...; obtainedAt?: number | undefined; }[]; ... 62 more ...; overlayMessage?: string | undef...'.
+src/components/modals/HealModal.vue(102,48): error TS2345: Argument of type 'number' is not assignable to parameter of type 'null | undefined'.
+src/components/modals/PokemonSelectionItem.vue(118,38): error TS2551: Property 'types' does not exist on type 'Pokemon'. Did you mean 'type'?
+src/components/modals/PokemonSelectionModal.vue(94,19): error TS2339: Property 'stats' does not exist on type 'PokemonData'.
+src/components/modals/PokemonSelectionModal.vue(187,18): error TS2345: Argument of type 'PokemonIVs' is not assignable to parameter of type 'Record<string, number>'.
+  'string' index signatures are incompatible.
+    Type 'number | boolean | undefined' is not assignable to type 'number'.
+      Type 'undefined' is not assignable to type 'number'.
+src/components/modals/PokemonSelectionModal.vue(188,18): error TS2345: Argument of type 'PokemonIVs' is not assignable to parameter of type 'Record<string, number>'.
+  'string' index signatures are incompatible.
+    Type 'number | boolean | undefined' is not assignable to type 'number'.
+      Type 'undefined' is not assignable to type 'number'.
+src/components/ProfileModal.vue(73,17): error TS2339: Property '_last_updated' does not exist on type '{ trainer: string; badges: number; balls: number; money: number; battleCoins: number; eggs: { uid: string; id: string; steps: number; ready: boolean; isShiny?: boolean | undefined; isGuardian?: boolean | undefined; ... 5 more ...; obtainedAt?: number | undefined; }[]; ... 62 more ...; overlayMessage?: string | undef...'.
+src/components/ProfileModal.vue(74,64): error TS2339: Property '_last_updated' does not exist on type '{ trainer: string; badges: number; balls: number; money: number; battleCoins: number; eggs: { uid: string; id: string; steps: number; ready: boolean; isShiny?: boolean | undefined; isGuardian?: boolean | undefined; ... 5 more ...; obtainedAt?: number | undefined; }[]; ... 62 more ...; overlayMessage?: string | undef...'.
+src/components/ProfileModal.vue(132,16): error TS2322: Type 'string | null' is not assignable to type 'string | undefined'.
+  Type 'null' is not assignable to type 'string | undefined'.
+src/components/ProfileModal.vue(207,32): error TS2322: Type '{ id: string; type: string; title: string; message: string; timestamp: number; read: boolean; meta?: Record<string, unknown> | undefined; }[]' is not assignable to type 'NotificationItem[]'.
+  Property 'ts' is missing in type '{ id: string; type: string; title: string; message: string; timestamp: number; read: boolean; meta?: Record<string, unknown> | undefined; }' but required in type 'NotificationItem'.
+src/components/TrainerPanel.vue(27,17): error TS2339: Property 'expNeeded' does not exist on type '{ trainer: string; badges: number; balls: number; money: number; battleCoins: number; eggs: { uid: string; id: string; steps: number; ready: boolean; isShiny?: boolean | undefined; isGuardian?: boolean | undefined; ... 5 more ...; obtainedAt?: number | undefined; }[]; ... 62 more ...; overlayMessage?: string | undef...'.
+src/components/TrainerPanel.vue(27,39): error TS2339: Property 'expNeeded' does not exist on type '{ trainer: string; badges: number; balls: number; money: number; battleCoins: number; eggs: { uid: string; id: string; steps: number; ready: boolean; isShiny?: boolean | undefined; isGuardian?: boolean | undefined; ... 5 more ...; obtainedAt?: number | undefined; }[]; ... 62 more ...; overlayMessage?: string | undef...'.
+src/components/TrainerPanel.vue(28,34): error TS2339: Property 'exp' does not exist on type '{ trainer: string; badges: number; balls: number; money: number; battleCoins: number; eggs: { uid: string; id: string; steps: number; ready: boolean; isShiny?: boolean | undefined; isGuardian?: boolean | undefined; ... 5 more ...; obtainedAt?: number | undefined; }[]; ... 62 more ...; overlayMessage?: string | undef...'.
+src/components/TrainerPanel.vue(28,49): error TS2339: Property 'expNeeded' does not exist on type '{ trainer: string; badges: number; balls: number; money: number; battleCoins: number; eggs: { uid: string; id: string; steps: number; ready: boolean; isShiny?: boolean | undefined; isGuardian?: boolean | undefined; ... 5 more ...; obtainedAt?: number | undefined; }[]; ... 62 more ...; overlayMessage?: string | undef...'.
+src/components/TrainerPanel.vue(62,28): error TS2339: Property 'pendingCount' does not exist on type 'Store<"trade", Pick<{ tradeTarget: Ref<{ id: string; username: string; } | null, { id: string; username: string; } | { id: string; username: string; } | null>; tradeFriendSave: Ref<{ trainer: string; ... 67 more ...; overlayMessage?: string | undefined; } | null, GameState | ... 1 more ... | null>; ... 14 more ...; ...'.
+src/views/MapView.vue(65,8): error TS2322: Type '{ id: string; type: string; data: Record<string, unknown>; }[]' is not assignable to type 'MapAward[]'.
+  Type '{ id: string; type: string; data: Record<string, unknown>; }' is missing the following properties from type 'MapAward': event_id, event_name

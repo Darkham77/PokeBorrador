@@ -91,8 +91,8 @@ const filteredAbilities = computed(() => {
 })
 
 const allMaps = computed<MapOption[]>(() => {
-  const maps = pokemonDataProvider.getMaps()
-  return (maps as any[]).map(m => ({ id: m.id, name: m.name || m.id }))
+  const maps = pokemonDataProvider.getMaps() as { id: string, name?: string }[]
+  return maps.map(m => ({ id: m.id, name: m.name || m.id }))
 })
 
 const filteredMaps = computed(() => {

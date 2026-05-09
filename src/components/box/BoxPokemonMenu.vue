@@ -28,14 +28,14 @@ const emit = defineEmits<{
   (e: 'close'): void
 }>()
 
-const gameStore = useGameStore() as any
-const uiStore = useUIStore() as any
-const boxStore = useBoxStore() as any
+const gameStore = useGameStore()
+const uiStore = useUIStore()
+const boxStore = useBoxStore()
 
-const pokemon = computed(() => gameStore.state.box[props.boxIndex])
-const team = computed(() => gameStore.state.team)
+const pokemon = computed(() => (gameStore.state.box[props.boxIndex] || null))
+const team = computed(() => (gameStore.state.team || []))
 const totalPower = computed(() => pokemon.value ? calculateTotalPower(pokemon.value) : 0)
-const tierInfo = computed(() => pokemon.value ? getPokemonTier(pokemon.value) : getPokemonTier(null as any))
+const tierInfo = computed(() => pokemon.value ? getPokemonTier(pokemon.value) : null)
 const isRocketMode = computed(() => gameStore.state.playerClass === 'rocket')
 
 const handleMoveToTeam = () => {
@@ -59,7 +59,9 @@ const handleSwap = (teamIndex: number) => {
 }
 
 const handleDetail = () => {
-  uiStore.openPokemonDetail(pokemon.value, props.boxIndex, 'box')
+  if (pokemon.value) {
+    uiStore.openPokemonDetail(pokemon.value, props.boxIndex, 'box')
+  }
 }
 
 const handleUseItem = () => {
@@ -77,6 +79,7 @@ const handleMoveToBox = () => {
 }
 
 const handleRelease = () => {
+  if (!pokemon.value) return
   if (pokemon.value.inDaycare) {
     uiStore.notify('No se puede liberar un Pokémon en la Guardería.', '⚠️')
     return
@@ -110,7 +113,7 @@ const handleSellRocket = () => {
   })
 }
 
-const getTypeColor = (type: string) => (PDEX_TYPE_COLORS as any)[type?.toLowerCase()] || 'Rgba(170, 170, 170, 1)'
+const getTypeColor = (type: string) => (PDEX_TYPE_COLORS as Record<string, string>)[type?.toLowerCase()] || 'Rgba(170, 170, 170, 1)'
 
 </script>
 
@@ -192,12 +195,12 @@ const getTypeColor = (type: string) => (PDEX_TYPE_COLORS as any)[type?.toLowerCa
         <div class="summary-meta">
           <div class="box-types-row">
             <span 
-              v-for="t in pokemon?.types || [pokemon?.type]" 
-              :key="t"
+              v-for="t in [pokemon?.type, pokemon?.type2].filter(Boolean)" 
+              :key="String(t)"
               class="type-pill-mini"
-              :style="{ background: getTypeColor(t) }"
+              :style="{ background: getTypeColor(String(t)) }"
             >
-              {{ t?.toUpperCase() }}
+              {{ String(t).toUpperCase() }}
             </span>
           </div>
 
@@ -205,7 +208,7 @@ const getTypeColor = (type: string) => (PDEX_TYPE_COLORS as any)[type?.toLowerCa
             <PVTooltip
               v-if="pokemon?.nature"
               :title="pokemon?.nature"
-              :description="(NATURE_DATA as any)[pokemon?.nature]?.desc"
+              :description="(NATURE_DATA as Record<string, any>)[pokemon?.nature]?.desc"
               position="top"
             >
               <span class="interactive-text">{{ pokemon?.nature }}</span>
@@ -217,7 +220,7 @@ const getTypeColor = (type: string) => (PDEX_TYPE_COLORS as any)[type?.toLowerCa
             <PVTooltip
               v-if="pokemon?.ability"
               :title="pokemon?.ability"
-              :description="(ABILITY_DATA as any)[pokemon?.ability]?.desc"
+              :description="(ABILITY_DATA as Record<string, any>)[pokemon?.ability]?.desc"
               position="top"
             >
               <span class="interactive-text">{{ pokemon?.ability }}</span>

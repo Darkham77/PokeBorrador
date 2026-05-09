@@ -7,9 +7,10 @@ import { useBoxStore } from '@/stores/box'
 import BaseModal from '@/components/common/BaseModal.vue'
 import UnifiedTeamSlot from '@/components/team/UnifiedTeamSlot.vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
+import type { Pokemon } from '@/types/pokemon'
 
-const gameStore = useGameStore() as any
-const uiStore = useUIStore() as any
+const gameStore = useGameStore()
+const uiStore = useUIStore()
 
 const isSmallScreen = ref(window.innerWidth <= 950)
 const handleResize = () => { isSmallScreen.value = window.innerWidth <= 950 }
@@ -19,7 +20,7 @@ const activeTab = ref('adventure') // 'adventure', 'pvp', 'war'
 
 const adventureTeam = computed(() => {
   const team = gameStore.state.team || []
-  const slots = []
+  const slots: (Pokemon | null)[] = []
   for (let i = 0; i < 6; i++) {
     slots.push(team[i] || null)
   }
@@ -27,9 +28,9 @@ const adventureTeam = computed(() => {
 })
 
 const pvpTeam = computed(() => {
-  const pvpUids = gameStore.state.pvpTeam || []
-  const allPokes = [...(gameStore.state.team || []), ...(gameStore.state.box || [])].filter(Boolean) as any[]
-  const slots = []
+  const pvpUids = (gameStore.state.pvpTeam || []) as string[]
+  const allPokes = [...((gameStore.state.team || []) as (Pokemon | null)[]), ...((gameStore.state.box || []) as (Pokemon | null)[])].filter((p): p is Pokemon => p !== null)
+  const slots: (Pokemon | null)[] = []
   for (let i = 0; i < 3; i++) {
     const uid = pvpUids[i]
     slots.push(allPokes.find(p => p.uid === uid) || null)
@@ -38,10 +39,10 @@ const pvpTeam = computed(() => {
 })
 
 const warTeam = computed(() => {
-  const warUids = gameStore.state.warTeam || []
+  const warUids = (gameStore.state.warTeam || []) as string[]
   const maxSlots = gameStore.state.warSlots || 6
-  const allPokes = [...(gameStore.state.team || []), ...(gameStore.state.box || [])].filter(Boolean) as any[]
-  const slots = []
+  const allPokes = [...((gameStore.state.team || []) as (Pokemon | null)[]), ...((gameStore.state.box || []) as (Pokemon | null)[])].filter((p): p is Pokemon => p !== null)
+  const slots: (Pokemon | null)[] = []
   for (let i = 0; i < maxSlots; i++) {
     const uid = warUids[i]
     slots.push(allPokes.find(p => p.uid === uid) || null)
@@ -90,39 +91,41 @@ function handleDrop(targetIndex: number) {
   handleDragEnd()
 }
 
-function openDetail(pokemon: any) {
+function openDetail(pokemon: Pokemon | null) {
   if (!pokemon) return
-  const idx = (gameStore.state.team || []).findIndex((p: any) => p && p.uid === pokemon.uid)
+  const team = (gameStore.state.team || []) as (Pokemon | null)[]
+  const idx = team.findIndex((p) => p && p.uid === pokemon.uid)
   uiStore.openPokemonDetail(pokemon, idx, idx > -1 ? 'team' : 'box')
 }
 
-function openItem(pokemon: any) {
+function openItem(pokemon: Pokemon | null) {
   if (!pokemon) return
-  // Try to find in team first
-  let idx = (gameStore.state.team || []).findIndex((p: any) => p && p.uid === pokemon.uid)
+  const team = (gameStore.state.team || []) as (Pokemon | null)[]
+  let idx = team.findIndex((p) => p && p.uid === pokemon.uid)
   if (idx > -1) {
     uiStore.toggleInventory('team', idx)
     return
   }
-  // Fallback to box (for PVP/WAR slots that might be in box)
-  idx = (gameStore.state.box || []).findIndex((p: any) => p && p.uid === pokemon.uid)
+  const box = (gameStore.state.box || []) as (Pokemon | null)[]
+  idx = box.findIndex((p) => p && p.uid === pokemon.uid)
   if (idx > -1) {
     uiStore.toggleInventory('box', idx)
   }
 }
 
-function sendToBox(pokemon: any) {
+function sendToBox(pokemon: Pokemon | null) {
   if (!pokemon) return
-  const idx = (gameStore.state.team || []).findIndex((p: any) => p && p.uid === pokemon.uid)
+  const team = (gameStore.state.team || []) as (Pokemon | null)[]
+  const idx = team.findIndex((p) => p && p.uid === pokemon.uid)
   if (idx > -1) {
     gameStore.sendToBox(idx)
   }
 }
 
 function selectPvp(slotIndex: number) {
-  const pvpTeam = gameStore.state.pvpTeam || []
-  const allPokes = [...(gameStore.state.team || []), ...(gameStore.state.box || [])]
-  const available = allPokes.filter(p => p && !pvpTeam.includes(p.uid))
+  const pvpTeam = (gameStore.state.pvpTeam || []) as string[]
+  const allPokes = [...((gameStore.state.team || []) as (Pokemon | null)[]), ...((gameStore.state.box || []) as (Pokemon | null)[])]
+  const available = allPokes.filter((p): p is Pokemon => p !== null && !pvpTeam.includes(p.uid))
   
   if (available.length === 0) {
     uiStore.notify('No tienes más Pokémon disponibles para asignar al equipo PVP.', '⚠️')
@@ -133,8 +136,8 @@ function selectPvp(slotIndex: number) {
     title: 'SELECCIONAR POKÉMON',
     subtitle: 'Elige un Pokémon para tu equipo de combate.',
     excludeUids: pvpTeam,
-    callbackConfirm: (selected: any) => {
-      if (selected && selected.length > 0) {
+    callbackConfirm: (selected: Pokemon[]) => {
+      if (selected && selected.length > 0 && selected[0]) {
         gameStore.swapPvpSlot(slotIndex, selected[0].uid)
       }
     }
@@ -142,9 +145,9 @@ function selectPvp(slotIndex: number) {
 }
 
 function selectWar(slotIndex: number) {
-  const warTeam = gameStore.state.warTeam || []
-  const allPokes = [...(gameStore.state.team || []), ...(gameStore.state.box || [])]
-  const available = allPokes.filter(p => p && !warTeam.includes(p.uid))
+  const warTeam = (gameStore.state.warTeam || []) as string[]
+  const allPokes = [...((gameStore.state.team || []) as (Pokemon | null)[]), ...((gameStore.state.box || []) as (Pokemon | null)[])]
+  const available = allPokes.filter((p): p is Pokemon => p !== null && !warTeam.includes(p.uid))
   
   if (available.length === 0) {
     uiStore.notify('No tienes más Pokémon disponibles para asignar al equipo de Guerra.', '⚠️')
@@ -155,8 +158,8 @@ function selectWar(slotIndex: number) {
     title: 'SELECCIONAR POKÉMON',
     subtitle: 'Elige un Pokémon para tu equipo de guerra.',
     excludeUids: warTeam,
-    callbackConfirm: (selected: any) => {
-      if (selected && selected.length > 0) {
+    callbackConfirm: (selected: Pokemon[]) => {
+      if (selected && selected.length > 0 && selected[0]) {
         gameStore.swapWarSlot(slotIndex, selected[0].uid)
       }
     }
@@ -164,22 +167,25 @@ function selectWar(slotIndex: number) {
 }
 
 function selectAdventure(_slotIndex: number) {
-  const currentTeamUids = (gameStore.state.team || []).map((p: any) => p?.uid).filter(Boolean)
+  const currentTeamUids = (gameStore.state.team || []).map((p: Pokemon | null) => p?.uid).filter(Boolean) as string[]
   
   uiStore.open('PokemonSelection', {
     title: 'SELECCIONAR POKÉMON',
     subtitle: 'Selecciona un Pokémon de tu caja para añadir al equipo.',
     excludeUids: currentTeamUids,
     includeTeam: false,
-    callbackConfirm: (selected: any) => {
+    callbackConfirm: (selected: Pokemon[]) => {
       if (selected && selected.length > 0) {
         const selectedPoke = selected[0]
+        if (!selectedPoke) return
         
-        const boxIdx = (gameStore.state.box || []).findIndex((p: any) => p && p.uid === selectedPoke.uid)
+        const box = (gameStore.state.box || []) as (Pokemon | null)[]
+        const boxIdx = box.findIndex((p) => p && p.uid === selectedPoke.uid)
         
         if (boxIdx > -1) {
-          const boxStore = useBoxStore() as any
-          const currentTeamPoke = gameStore.state.team[_slotIndex]
+          const boxStore = useBoxStore()
+          const team = (gameStore.state.team || []) as (Pokemon | null)[]
+          const currentTeamPoke = team[_slotIndex]
           
           if (currentTeamPoke) {
             boxStore.swapBoxWithTeam(boxIdx, _slotIndex)
@@ -187,7 +193,8 @@ function selectAdventure(_slotIndex: number) {
             boxStore.moveBoxToTeam(boxIdx)
           }
         } else {
-          const teamIdx = (gameStore.state.team || []).findIndex((p: any) => p && p.uid === selectedPoke.uid)
+          const team = (gameStore.state.team || []) as (Pokemon | null)[]
+          const teamIdx = team.findIndex((p) => p && p.uid === selectedPoke.uid)
           if (teamIdx > -1) {
             uiStore.notify('Este Pokémon ya está en tu equipo.', '⚠️')
           }

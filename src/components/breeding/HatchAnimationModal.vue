@@ -8,13 +8,15 @@ import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import BaseModal from '@/components/common/BaseModal.vue'
 import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
 
-import { useGameStore } from '@/stores/game'
+import type { Pokemon, PokemonEgg } from '@/types/pokemon'
 
 interface Props {
   show?: boolean
-  pokemon?: any | null
-  egg?: any | null
+  pokemon?: Pokemon | null
+  egg?: PokemonEgg | null
 }
+
+import { useGameStore } from '@/stores/game'
 
 const props = withDefaults(defineProps<Props>(), {
   show: false,
@@ -26,11 +28,10 @@ const emit = defineEmits<{
   (e: 'close'): void
 }>()
 
-const stage = ref('egg') // 'egg', 'crack', 'reveal'
+const gameStore = useGameStore()
+const stage = ref<'egg' | 'crack' | 'reveal'>('egg')
 const showParticles = ref(false)
-const resultPokemon = ref<any>(null)
-
-const gameStore = useGameStore() as any
+const resultPokemon = ref<Pokemon | null>(null)
 
 const prepareResult = async () => {
   if (props.pokemon) {
@@ -40,13 +41,15 @@ const prepareResult = async () => {
   
   if (props.egg) {
     const { makePokemon, recalcPokemonStats } = await import('@/logic/pokemonFactory')
-    const p = makePokemon(props.egg.id, 1, {
-      isShiny: props.egg.isShiny,
-      isGuardian: props.egg.isGuardian,
+    const p = makePokemon(props.egg.id || '', 1, {
+      isShiny: !!props.egg.isShiny,
+      isGuardian: !!props.egg.isGuardian,
       nature: props.egg.nature
     })
     if (p) {
-      p.ivs = { ...p.ivs, ...props.egg.ivs }
+      if (props.egg.ivs) {
+        p.ivs = { ...p.ivs, ...props.egg.ivs }
+      }
       recalcPokemonStats(p)
       resultPokemon.value = p
     }
@@ -68,13 +71,14 @@ const handleEggClick = () => {
   if (stage.value !== 'egg') return
   
   stage.value = 'crack'
-  ;(window as any).playSound?.('egg_crack')
+  const win = window as unknown as { playSound?: (s: string) => void }
+  win.playSound?.('egg_crack')
   
   // Final reveal after a short delay of cracking
   setTimeout(() => {
     stage.value = 'reveal'
     showParticles.value = true
-    ;(window as any).playSound?.('evolution_complete')
+    win.playSound?.('evolution_complete')
   }, 1200)
 }
 
@@ -136,7 +140,7 @@ onMounted(async () => {
           >
             <img
               v-if="resultPokemon"
-              :src="getSprite(resultPokemon.id, resultPokemon.isShiny)"
+              :src="getSprite(resultPokemon.id, !!resultPokemon.isShiny)"
               class="pokemon-sprite"
               @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
             >
@@ -157,7 +161,7 @@ onMounted(async () => {
           </div>
           <div class="stat-row">
             <span class="label">IVs:</span>
-            <span class="val">{{ resultPokemon.ivs.hp }}/{{ resultPokemon.ivs.atk }}/{{ resultPokemon.ivs.def }}/{{ resultPokemon.ivs.spa }}/{{ resultPokemon.ivs.spd }}/{{ resultPokemon.ivs.spe }}</span>
+            <span class="val">{{ resultPokemon.ivs?.hp }}/{{ resultPokemon.ivs?.atk }}/{{ resultPokemon.ivs?.def }}/{{ resultPokemon.ivs?.spa }}/{{ resultPokemon.ivs?.spd }}/{{ resultPokemon.ivs?.spe }}</span>
           </div>
         </div>
 

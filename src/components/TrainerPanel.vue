@@ -9,21 +9,23 @@ import { useTradeStore } from '@/stores/trade'
 import TrainerAvatar from '@/components/TrainerAvatar.vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 
-const gameStore = useGameStore() as any
-const uiStore = useUIStore() as any
-const authStore = useAuthStore() as any
-const classStore = usePlayerClassStore() as any
-const tradeStore = useTradeStore() as any
+const gameStore = useGameStore()
+const uiStore = useUIStore()
+const authStore = useAuthStore()
+const classStore = usePlayerClassStore()
+const tradeStore = useTradeStore()
+const modalStore = useModalStore()
 const gs = computed(() => gameStore.state)
 
 const displayName = computed(() => {
-  return gs.value.trainer || authStore.user?.user_metadata?.username || 'Entrenador'
+  const user = authStore.user as { user_metadata?: { username?: string } } | null
+  return gs.value.trainer || user?.user_metadata?.username || 'Entrenador'
 })
 
 // Experience bar logic
 const trainerExpPct = computed(() => {
-  if (!gs.value.expNeeded || gs.value.expNeeded === 0) return 0
-  return Math.min(100, (gs.value.exp / gs.value.expNeeded) * 100)
+  if (!gs.value.trainerExpNeeded || gs.value.trainerExpNeeded === 0) return 0
+  return Math.min(100, (gs.value.trainerExp / gs.value.trainerExpNeeded) * 100)
 })
 
 const handlePanelClick = (event: Event) => {
@@ -32,9 +34,9 @@ const handlePanelClick = (event: Event) => {
   
   if (isAvatar) {
     if (!gameStore.state.playerClass) {
-      (useModalStore() as any).open('ClassSelection')
+      modalStore.open('ClassSelection')
     } else {
-      (useModalStore() as any).open('ClassMissions')
+      modalStore.open('ClassMissions')
     }
     return
   }

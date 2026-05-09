@@ -5,9 +5,9 @@ import { usePvPStore } from '@/stores/pvp';
 import PlayerAvatar from '@/components/player/PlayerAvatar.vue';
 import { ref, onMounted, watch } from 'vue';
 
-const socialStore = useSocialStore() as any;
-const authStore = useAuthStore() as any;
-const rankedStore = usePvPStore() as any;
+const socialStore = useSocialStore();
+const authStore = useAuthStore();
+const rankedStore = usePvPStore();
 
 const activeSort = ref('elo_rating');
 

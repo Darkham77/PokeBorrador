@@ -60,6 +60,7 @@ export default tseslint.config(
       'scripts/**',
       '.agents/**',
       'tmp/**',
+      'docs/archives/_js_backup/**',
     ],
   },
 );

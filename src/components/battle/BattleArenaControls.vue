@@ -9,24 +9,25 @@ import BattleMovesGrid from './BattleMovesGrid.vue'
 import BattleActionButtons from './BattleActionButtons.vue'
 import BattleQuickTeam from './BattleQuickTeam.vue'
 import BattleQuickBag from './BattleQuickBag.vue'
+import type { Pokemon } from '@/types/pokemon'
 
-const isDebugActive = !!(window as any).__VITE_DEBUG__
+const isDebugActive = typeof window !== 'undefined' && !!(window as unknown as { __VITE_DEBUG__?: unknown }).__VITE_DEBUG__
 const BattleDebugTools = isDebugActive 
   ? defineAsyncComponent(() => import('./BattleDebugTools.vue')) as Component
   : null
 
-const battleStore = useBattleStore() as any
-const uiStore = useUIStore() as any
-const gameStore = useGameStore() as any
-const modalStore = useModalStore() as any
-const livePvP = useLivePvPStore() as any
+const battleStore = useBattleStore()
+const uiStore = useUIStore()
+const gameStore = useGameStore()
+const modalStore = useModalStore()
+const livePvP = useLivePvPStore()
 
 const battle = computed(() => battleStore.state)
 const player = computed(() => battle.value?.player)
 const gs = computed(() => gameStore.state)
 
 const isControlsDisabled = computed(() => {
-  const s = battleStore.fsm.currentState
+  const s = battleStore.currentFsmState
   return battleStore.isProcessing || 
          battleStore.isIntroAnimating || 
          battleStore.isFinishing ||
@@ -45,9 +46,10 @@ const execShowBattleSwitch = () => {
     includeTeam: true,
     preventClose: isForced, 
     activePokemonUid: player.value?.uid,
-    onConfirm: (pokes: any[]) => {
-      if (pokes.length > 0) {
-        const index = (gameStore.state.team as any[]).findIndex(p => p.uid === pokes[0].uid)
+    onConfirm: (pokes: Pokemon[]) => {
+      if (pokes.length > 0 && pokes[0]) {
+        const team = (gameStore.state.team || []) as (Pokemon | null)[]
+        const index = team.findIndex(p => p && p.uid === pokes[0]?.uid)
         if (index !== -1) {
           if (livePvP.battleState.active) {
             livePvP._commitPick({ type: 'switch', switchIndex: index })
@@ -120,10 +122,11 @@ watch(() => uiStore.isBattleSwitchForced, (val) => {
             v-if="BattleDebugTools"
           />
           <BattleMovesGrid 
+            v-if="player"
             class="is-compact"
-            :moves="player?.moves || []" 
+            :moves="player.moves || []" 
             :is-processing="isControlsDisabled"
-            :player-info="player || {}"
+            :player-info="player"
             @use-move="(idx) => battleStore.executeMove(idx)"
           />
 
@@ -146,7 +149,7 @@ watch(() => uiStore.isBattleSwitchForced, (val) => {
 
     <!-- Overlay de Finalización / Búsqueda (Cubre TODO el move-panel) -->
     <div
-      v-if="(battleStore.isSearching && ['WAIT_INPUT', 'BUSH_IDLE', 'PARALLEL_PREP', 'BUSH_VISIBLE', 'SILHOUETTE_MODE', 'GEN_NEW_S2'].includes(battleStore.fsm.currentSubState)) || battleStore.isReadyToExit"
+      v-if="(battleStore.isSearching && ['WAIT_INPUT', 'BUSH_IDLE', 'PARALLEL_PREP', 'BUSH_VISIBLE', 'SILHOUETTE_MODE', 'GEN_NEW_S2'].includes(String(battleStore.currentSubState))) || battleStore.isReadyToExit"
       class="battle-finish-overlay"
       :class="{ 'is-search-mode': battleStore.isSearching }"
     >

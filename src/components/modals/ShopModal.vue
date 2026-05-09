@@ -20,9 +20,9 @@ const emit = defineEmits<{
   (e: 'close'): void
 }>()
 
-const shopStore = useShopStore() as any
-const gameStore = useGameStore() as any
-const uiStore = useUIStore() as any
+const shopStore = useShopStore()
+const gameStore = useGameStore()
+const uiStore = useUIStore()
 
 const isSmallScreen = ref(window.innerWidth <= 950)
 const handleResize = () => { isSmallScreen.value = window.innerWidth <= 950 }
@@ -31,8 +31,19 @@ useWindowListener('resize', handleResize)
 const activeTab = ref('todos')
 const search = ref('')
 
+interface ShopItem {
+  id: string
+  name: string
+  cat: string
+  price: number
+  desc: string
+  icon: string
+  unlockLv?: number
+  market?: boolean
+}
+
 const filteredItems = computed(() => {
-  return (shopStore.SHOP_ITEMS as any[]).filter(item => {
+  return (shopStore.SHOP_ITEMS as ShopItem[]).filter(item => {
     if (item.market === false) return false
     if (activeTab.value !== 'todos' && item.cat !== activeTab.value) return false
     if (search.value && !item.name.toLowerCase().includes(search.value.toLowerCase())) return false
@@ -40,9 +51,9 @@ const filteredItems = computed(() => {
   })
 })
 
-const isUnlocked = (item: any) => gameStore.state.trainerLevel >= (item.unlockLv || 1)
+const isUnlocked = (item: ShopItem) => gameStore.state.trainerLevel >= (item.unlockLv || 1)
 
-const buy = (item: any) => {
+const buy = (item: ShopItem) => {
   if (!isUnlocked(item)) {
     uiStore.notify('¡Item bloqueado! Sube tu nivel de entrenador.', '🔒')
     return
@@ -79,7 +90,7 @@ const handleQuantityChange = (itemId: string, e: Event) => {
       <aside class="sidebar">
         <nav class="categories">
           <button 
-            v-for="(label, cat) in shopStore.CATEGORY_LABELS" 
+            v-for="(label, cat) in (shopStore.CATEGORY_LABELS as Record<string, string>)" 
             :key="cat"
             :class="{ active: activeTab === cat }"
             @click.stop="activeTab = String(cat)"
@@ -117,7 +128,7 @@ const handleQuantityChange = (itemId: string, e: Event) => {
           >
             <div class="item-visual">
               <img
-                :src="getAssetUrl(ASSET_TYPES.ITEM, item.sprite)"
+                :src="getAssetUrl(ASSET_TYPES.ITEM, item.icon)"
                 :alt="item.name"
                 @error="handleImageError"
               >

@@ -44,7 +44,14 @@ const emit = defineEmits<{
 const eventStore = useEventStore()
 const mapStore = useMapStore()
 
-const getMapData = (loc: MapLocation): any => {
+interface SpawnPoolData {
+  generic: string[]
+  specific: string[]
+  rates: Record<string, number>
+  weather: string | null | undefined
+}
+
+const getMapData = (loc: MapLocation): SpawnPoolData => {
   if (!loc.wild) return { generic: [], specific: [], rates: {}, weather: 'clear' }
 
   const activeEvents = eventStore.activeEvents || []
@@ -52,7 +59,7 @@ const getMapData = (loc: MapLocation): any => {
   // Determinar clima: El clima forzado (props.weather) tiene prioridad absoluta si no es undefined
   const activeWeather = (props.weather !== undefined) ? props.weather : getRouteWeather(loc.id, mapStore.currentSeason.id, mapStore.currentEpochHour)
   
-  const { pool, rates } = getEncounterPool(loc as any, props.cycle || 'day', activeWeather || 'clear', activeEvents)
+  const { pool, rates } = getEncounterPool(loc, props.cycle || 'day', activeWeather || 'clear', activeEvents)
 
   const baseWild = loc.wild?.day || []
   const generic: string[] = []
@@ -70,7 +77,7 @@ const getMapData = (loc: MapLocation): any => {
     loc.fishing.pool.forEach((id: string, index: number) => {
       if (!generic.includes(id) && !specific.includes(id)) {
         generic.push(id)
-        ratesMap[id] = (loc.fishing as any).rates[index] || 10
+        ratesMap[id] = loc.fishing!.rates[index] || 10
       }
     })
   }
@@ -96,8 +103,8 @@ const getDominanceForMap = (mapId: string) => {
   }
 
   return {
-    winner: (data as any).winner || null,
-    guardian
+    winner: (data as { winner?: string | null }).winner || null,
+    guardian: guardian as { id: string, captured: boolean } | null
   }
 }
 </script>
@@ -105,9 +112,9 @@ const getDominanceForMap = (mapId: string) => {
 <template>
   <div class="map-grid">
     <MapCard
-      v-for="loc in (maps as MapLocation[])"
+      v-for="loc in maps"
       :key="loc.id"
-      :map="(loc as any)"
+      :map="loc"
       :is-locked="isMapLocked(loc)"
       :is-safari-locked="loc.id === 'safari_zone' && safariTicketSecs <= 0"
       :cycle="cycle"
@@ -117,7 +124,7 @@ const getDominanceForMap = (mapId: string) => {
       :dominance="getDominanceForMap(loc.id)"
       :is-rocket-extorted="playerClass === 'rocket' && classData?.extortedRouteId === loc.id"
       :spawn-pool="getMapData(loc)"
-      @navigate="emit('navigate', $event as any)"
+      @navigate="emit('navigate', $event)"
     />
   </div>
 </template>

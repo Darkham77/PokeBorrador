@@ -2,17 +2,25 @@
 import { ref, computed } from 'vue'
 import { SHOP_ITEMS } from '@/data/items'
 
+interface ShopItem {
+  id: string
+  name: string
+  icon?: string
+}
+
 const searchQuery = ref('')
 const filteredItems = computed(() => {
-  if (!searchQuery.value) return (SHOP_ITEMS as any[]).slice(0, 10)
-  return (SHOP_ITEMS as any[]).filter(i => 
+  const items = SHOP_ITEMS as ShopItem[]
+  if (!searchQuery.value) return items.slice(0, 10)
+  return items.filter(i => 
     i.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
     i.id.toLowerCase().includes(searchQuery.value.toLowerCase())
   ).slice(0, 15)
 })
 
-async function addItem(item: any, qty = 10) {
-  (window as any).__VITE_DEBUG__.addItem(item.name, qty)
+async function addItem(item: ShopItem, qty = 10) {
+  const win = window as unknown as { __VITE_DEBUG__: { addItem: (name: string, qty: number) => void } }
+  win.__VITE_DEBUG__.addItem(item.name, qty)
 }
 </script>
 

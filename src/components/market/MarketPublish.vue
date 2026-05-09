@@ -4,16 +4,22 @@ import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { useGameStore } from '@/stores/game'
 import { useGTSStore } from '@/stores/gts'
 import { getPokemonTier } from '@/logic/pokemon/tierEngine'
+import type { Pokemon } from '@/types/pokemon'
 
-const game = useGameStore() as any
-const gtsStore = useGTSStore() as any
+const game = useGameStore()
+const gtsStore = useGTSStore()
+
+interface InventoryItem {
+  name: string
+  qty: number
+}
 
 const activeMode = ref<'pokemon' | 'item'>('pokemon')
-const selection = ref<any>(null)
+const selection = ref<Pokemon | InventoryItem | null>(null)
 const price = ref(1000)
 
-const box = computed(() => game.state.box)
-const inventory = computed(() => {
+const box = computed<Pokemon[]>(() => game.state.box || [])
+const inventory = computed<InventoryItem[]>(() => {
   return Object.entries(game.state.inventory as Record<string, number>)
     .filter(([_name, qty]) => qty > 0)
     .map(([name, qty]) => ({ name, qty }))
@@ -30,7 +36,7 @@ async function handlePublish() {
   }
 }
 
-function selectItem(item: any) {
+function selectItem(item: Pokemon | InventoryItem) {
   selection.value = item
   // Suggest a default price?
 }
@@ -69,7 +75,7 @@ const net = computed(() => price.value - fee.value)
             v-for="p in box"
             :key="p.uid"
             class="selectable-card pokemon"
-            :class="{ selected: selection?.uid === p.uid }"
+            :class="{ selected: selection && 'uid' in selection && selection.uid === p.uid }"
             @click.stop="selectItem(p)"
           >
             <div
@@ -99,7 +105,7 @@ const net = computed(() => price.value - fee.value)
             v-for="i in inventory"
             :key="i.name"
             class="selectable-card item"
-            :class="{ selected: selection?.name === i.name }"
+            :class="{ selected: selection && 'name' in selection && selection.name === i.name }"
             @click.stop="selectItem(i)"
           >
             <span class="i-icon">📦</span>

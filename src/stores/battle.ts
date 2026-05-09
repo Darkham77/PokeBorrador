@@ -501,6 +501,7 @@ export const useBattleStore = defineStore('battle', () => {
     fsm,
     currentFsmState,
     currentSubState,
+    isReadyToExit,
     restoreBattle,
     addLog,
     clearLogs,

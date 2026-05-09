@@ -11,9 +11,10 @@ import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { POKEMON_TAGS, POKEMON_BADGES, hasPokemonTag } from '@/logic/constants/tags'
 import { logger } from '@/logic/utils/logger'
 import PokemonSelectionItem from './PokemonSelectionItem.vue'
+import type { Pokemon } from '@/types/pokemon'
 
-const uiStore = useUIStore() as any
-const gameStore = useGameStore() as any
+const uiStore = useUIStore()
+const gameStore = useGameStore()
 
 interface Props {
   title?: string
@@ -24,8 +25,8 @@ interface Props {
   maxSelect?: number
   minSelect?: number
   autoConfirm?: boolean
-  callbackConfirm?: ((selected: any[]) => void) | null
-  onConfirm?: ((selected: any[]) => void) | null
+  callbackConfirm?: ((selected: Pokemon[]) => void) | null
+  onConfirm?: ((selected: Pokemon[]) => void) | null
   isBattleSwitch?: boolean
   battleMode?: string | null
   activePokemonUid?: string | null
@@ -87,51 +88,57 @@ watch([sortBy, sortOrder, activeTags, searchQuery], () => {
   }))
 }, { deep: true })
 
-const getPokemonTotalPower = (p: any) => {
+const getPokemonTotalPower = (p: Pokemon) => {
   if (!p) return 0
-  const base = pokemonDataProvider.getPokemonData(p.id) as any
-  const s = base?.stats || base || {}
-  const TOT = (s.hp || 0) + (s.atk || 0) + (s.def || 0) + (s.spa || 0) + (s.spd || 0) + (s.spe || 0)
-  const ivs = p.ivs || {}
+  const base = pokemonDataProvider.getPokemonData(p.id)
+  const TOT = base ? (base.hp + base.atk + base.def + base.spa + base.spd + base.spe) : 0
+  
+  const ivs = p.ivs || { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 }
   const totalIvs = (ivs.hp || 0) + (ivs.atk || 0) + (ivs.def || 0) + (ivs.spa || 0) + (ivs.spd || 0) + (ivs.spe || 0)
   return TOT + totalIvs
 }
 
-const availablePokemon = computed<{ pokemon: any, _source: string, index: number }[]>(() => {
-  const box = (gameStore.state.box || []) as any[]
-  const team = (gameStore.state.team || []) as any[]
+const availablePokemon = computed<{ pokemon: Pokemon, _source: 'team' | 'box', index: number }[]>(() => {
+  const box = (gameStore.state.box || []) as (Pokemon | null)[]
+  const team = (gameStore.state.team || []) as (Pokemon | null)[]
   
-  let sourceList: { pokemon: any, _source: string, index: number }[] = []
+  let sourceList: { pokemon: Pokemon, _source: 'team' | 'box', index: number }[] = []
   
   if (props.battleMode === 'pvp') {
     const pvpUids = (gameStore.state.pvpTeam || []) as string[]
-    const allPokes = [...team, ...box]
+    const allPokes = [...team, ...box].filter((p): p is Pokemon => p !== null)
     sourceList = allPokes
       .filter(p => pvpUids.includes(p.uid))
       .map(p => ({ 
         pokemon: p, 
-        _source: team.some(tp => tp.uid === p.uid) ? 'team' : 'box',
+        _source: team.some(tp => tp && tp.uid === p.uid) ? 'team' as const : 'box' as const,
         index: pvpUids.indexOf(p.uid) 
       }))
   } else if (props.battleMode === 'war') {
     const warUids = (gameStore.state.warTeam || []) as string[]
-    const allPokes = [...team, ...box]
+    const allPokes = [...team, ...box].filter((p): p is Pokemon => p !== null)
     sourceList = allPokes
       .filter(p => warUids.includes(p.uid))
       .map(p => ({ 
         pokemon: p, 
-        _source: team.some(tp => tp.uid === p.uid) ? 'team' : 'box',
+        _source: team.some(tp => tp && tp.uid === p.uid) ? 'team' as const : 'box' as const,
         index: warUids.indexOf(p.uid)
       }))
   } else if (props.battleMode === 'wild' || props.isBattleSwitch) {
-    sourceList = team.map((p, i) => ({ pokemon: p, _source: 'team', index: i }))
+    sourceList = team
+      .filter((p): p is Pokemon => p !== null)
+      .map((p, i) => ({ pokemon: p, _source: 'team' as const, index: i }))
   } else {
+    const teamItems = team
+      .filter((p): p is Pokemon => p !== null)
+      .map((p, i) => ({ pokemon: p, _source: 'team' as const, index: i }))
+    const boxItems = box
+      .filter((p): p is Pokemon => p !== null)
+      .map((p, i) => ({ pokemon: p, _source: 'box' as const, index: i }))
+    
     sourceList = props.includeTeam !== false
-      ? [
-          ...team.map((p, i) => ({ pokemon: p, _source: 'team', index: i })),
-          ...box.map((p, i) => ({ pokemon: p, _source: 'box', index: i }))
-        ]
-      : box.map((p, i) => ({ pokemon: p, _source: 'box', index: i }))
+      ? [...teamItems, ...boxItems]
+      : boxItems
   }
 
   const filtered = sourceList.filter(item => {
@@ -175,7 +182,10 @@ const availablePokemon = computed<{ pokemon: any, _source: string, index: number
       valA = pA.level || 0
       valB = pB.level || 0
     } else if (sortBy.value === 'ivs') {
-      const sum = (ivs: any) => Object.values(ivs || {}).reduce((s: number, v: any) => s + (v || 0), 0)
+      const sum = (ivs: any) => {
+        const obj = ivs || {}
+        return (obj.hp || 0) + (obj.atk || 0) + (obj.def || 0) + (obj.spa || 0) + (obj.spd || 0) + (obj.spe || 0)
+      }
       valA = sum(pA.ivs)
       valB = sum(pB.ivs)
     } else if (sortBy.value === 'TOT') {
@@ -195,7 +205,7 @@ const availablePokemon = computed<{ pokemon: any, _source: string, index: number
   })
 })
 
-function toggleSelection(item: any) {
+function toggleSelection(item: { pokemon: Pokemon, _source: 'team' | 'box', index: number }) {
   const uid = item.pokemon.uid
   const sIdx = selectedUids.value.indexOf(uid)
   if (sIdx > -1) {
@@ -221,7 +231,7 @@ function confirm() {
   const selectedObjects = selectedUids.value.map(uid => {
     const item = availablePokemon.value.find(it => it.pokemon.uid === uid)
     return item ? item.pokemon : null
-  }).filter(Boolean)
+  }).filter((p): p is Pokemon => p !== null)
   
   const cb = props.callbackConfirm || props.onConfirm
   if (typeof cb === 'function') {
@@ -266,7 +276,8 @@ function clearFilters() {
 }
 
 if (typeof window !== 'undefined') {
-  (window as any)._openPokemonSelectionModal = (opts: any) => {
+  const win = window as unknown as { _openPokemonSelectionModal?: (opts: Record<string, unknown>) => void }
+  win._openPokemonSelectionModal = (opts: Record<string, unknown>) => {
     uiStore.open('PokemonSelection', { 
       title: 'SELECCIONAR POKÉMON',
       subtitle: 'Elige un Pokémon para la tarea.',
@@ -278,13 +289,8 @@ if (typeof window !== 'undefined') {
   }
 }
 
-function openDetail(item: any) {
-  uiStore.open('PokemonDetail', {
-    pokemon: item.pokemon,
-    index: item.index,
-    context: item._source,
-    extra: { source: 'selection' }
-  })
+function openDetail(item: { pokemon: Pokemon, _source: 'team' | 'box', index: number }) {
+  uiStore.openPokemonDetail(item.pokemon, item.index, item._source, { source: 'selection' })
 }
 </script>
 
