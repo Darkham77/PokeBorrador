@@ -4,6 +4,7 @@ import vue from '@vitejs/plugin-vue'
 import path from 'node:path'
 import { Temporal } from '@js-temporal/polyfill'
 
+
 import { generateMigrations } from './scripts/generate_migrations.ts'
 import { sassTrapsFixer } from './scripts/vite-plugin-sass-traps.ts'
 

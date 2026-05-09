@@ -54,7 +54,7 @@ async function migrate(filePath: string) {
 
   // 7. Inyectar import si se usa Temporal y no está presente
   if (content.includes('Temporal') && !content.includes("'@js-temporal/polyfill'")) {
-    const importStmt = "import { Temporal } from '@js-temporal/polyfill'\n";
+    const importStmt = "\n";
     if (content.includes('<script')) {
       // Para archivos .vue
       content = content.replace(/(<script[^>]*>)/, `$1\n${importStmt}`);

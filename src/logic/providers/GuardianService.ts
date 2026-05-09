@@ -4,7 +4,7 @@
  * Lógica centralizada para los Guardianes de Mapa y Zonas de Conflicto.
  */
 import { logger } from '../utils/logger.ts';
-import { Temporal } from '@js-temporal/polyfill';
+
 
 import { DBRouter } from '../db/dbRouter.ts';
 

@@ -12,7 +12,4 @@ declare module '*.scss' {
   export default content
 }
 
-declare module '@js-temporal/polyfill' {
-  export const Temporal: typeof globalThis.Temporal;
-}
 

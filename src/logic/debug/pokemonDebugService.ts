@@ -1,4 +1,4 @@
-import { Temporal } from '@js-temporal/polyfill'
+
 
 import { makePokemon, recalcPokemonStats, getExpNeeded } from '@/logic/pokemonFactory';
 import { useGameStore } from '@/stores/game';

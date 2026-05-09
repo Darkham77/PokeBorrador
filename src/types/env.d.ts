@@ -31,6 +31,14 @@ declare global {
   }
 
   // Temporal API (Stage 3 Proposal) is handled by @js-temporal/polyfill
+  const Temporal: typeof import('@js-temporal/polyfill').Temporal;
+  namespace Temporal {
+    export type Instant = import('@js-temporal/polyfill').Temporal.Instant;
+    export type ZonedDateTime = import('@js-temporal/polyfill').Temporal.ZonedDateTime;
+    export type Duration = import('@js-temporal/polyfill').Temporal.Duration;
+    export type PlainDate = import('@js-temporal/polyfill').Temporal.PlainDate;
+    export type PlainTime = import('@js-temporal/polyfill').Temporal.PlainTime;
+  }
 
   interface Window {
     VITE_SUPABASE_URL: string;

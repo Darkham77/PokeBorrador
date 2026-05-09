@@ -100,7 +100,6 @@ For development best practices and common gotchas, use `vue-best-practices`.
 - Lifecycle hooks registered asynchronously never run → See [lifecycle-hooks-synchronous-registration](references/lifecycle-hooks-synchronous-registration.md)
 - **Vitest State Leakage (setTimeout)**: Using naked `setTimeout` in components can trigger `Unknown action` errors during test teardown if the component unmounts before the timer fires. Always use `vi.useFakeTimers()` or ensure timers are cleared in `onUnmounted`.
 
-
 ### Slots
 
 - Accessing child component data in slot content returns undefined values → See [slot-render-scope-parent-only](references/slot-render-scope-parent-only.md)

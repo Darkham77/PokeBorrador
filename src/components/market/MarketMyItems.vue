@@ -3,7 +3,7 @@
 import { computed } from 'vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { useGTSStore } from '@/stores/gts'
-import { Temporal } from '@js-temporal/polyfill'
+
 import { getPokemonTier } from '@/logic/pokemon/tierEngine'
 
 const gtsStore = useGTSStore()

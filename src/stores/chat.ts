@@ -5,7 +5,7 @@ import { useGameStore } from './game.ts'
 import { useUIStore } from './ui.ts'
 import { useAudioStore } from './audio.ts'
 import { logger } from '@/logic/utils/logger'
-import { Temporal } from '@js-temporal/polyfill'
+
 
 import type { RealtimeChannel } from '@supabase/supabase-js'
 

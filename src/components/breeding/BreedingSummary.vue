@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Temporal } from '@js-temporal/polyfill'
+
 
 import { computed } from 'vue'
 import { useBreedingStore } from '@/stores/breeding'

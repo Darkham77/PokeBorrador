@@ -1,4 +1,4 @@
-import { Temporal } from '@js-temporal/polyfill'
+
 import { logger } from '@/logic/utils/logger'
 import type { DebugSystem, DebugContext } from '@/stores/debug'
 

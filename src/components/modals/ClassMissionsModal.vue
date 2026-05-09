@@ -1,6 +1,6 @@
 <script setup lang="ts">
 
-import { Temporal } from '@js-temporal/polyfill'
+
 
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useWindowListener } from '@/composables/useWindowListener'

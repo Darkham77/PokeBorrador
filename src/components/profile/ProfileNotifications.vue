@@ -2,7 +2,7 @@
 
 import { computed } from 'vue'
 import { useUIStore } from '@/stores/ui'
-import { Temporal } from '@js-temporal/polyfill'
+
 
 const uiStore = useUIStore()
 

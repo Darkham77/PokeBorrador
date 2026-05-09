@@ -1,4 +1,3 @@
-import { Temporal } from '@js-temporal/polyfill';
 import { supabase } from './supabase.ts';
 import { safeStorage } from './utils/storage.ts';
 import { logger } from './utils/logger.ts';
@@ -25,7 +24,7 @@ export async function syncServerTime(): Promise<void> {
     const serverInstant = Temporal.Instant.from(serverTime as string);
     const localInstant = Temporal.Now.instant();
     
-    _serverTimeOffsetNanoseconds = serverInstant.epochNanoseconds - localInstant.epochNanoseconds;
+    _serverTimeOffsetNanoseconds = BigInt(serverInstant.epochNanoseconds) - BigInt(localInstant.epochNanoseconds);
     _timeSynced = true;
     
     logger.info('TIME', `Server Sync Completed. Offset: ${_serverTimeOffsetNanoseconds / BigInt(1000000)}ms`);

@@ -27,7 +27,7 @@ export const WEEKLY_REWARD_MILESTONES = [
 
 export const WEEKLY_WIN_BONUS_COINS = 50
 
-import { Temporal } from '@js-temporal/polyfill'
+
 
 /**
  * Gets a clean date string for Argentina Time (UTC-3).

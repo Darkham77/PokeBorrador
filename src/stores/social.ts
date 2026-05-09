@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, reactive } from 'vue'
-import { Temporal } from '@js-temporal/polyfill'
+
 import { useAuthStore } from './auth.ts'
 import { useGameStore } from './game.ts'
 import { useUIStore } from './ui.ts'

@@ -87,7 +87,7 @@
 
 <script setup lang="ts">
 
-import { Temporal } from '@js-temporal/polyfill'
+
 
 import { ref, onMounted, watch, type Ref } from 'vue'
 import { usePWA } from '@/composables/usePWA'

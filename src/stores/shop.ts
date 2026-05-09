@@ -1,4 +1,4 @@
-import { Temporal } from '@js-temporal/polyfill'
+
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { useGameStore } from './game.ts'

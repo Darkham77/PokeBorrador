@@ -16,7 +16,7 @@
 
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { Temporal } from '@js-temporal/polyfill';
+
 
 const MIGRATIONS_DIR = path.resolve(process.cwd(), 'database/migrations');
 const OUTPUT_FILE = path.resolve(process.cwd(), 'src/logic/db/migrations_data.ts');

@@ -10,7 +10,6 @@
  * @module weatherMath
  */
 
-import { Temporal } from '@js-temporal/polyfill';
 
 // ── Day Cycle ────────────────────────────────────────────────────────────────
 

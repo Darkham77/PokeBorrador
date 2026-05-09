@@ -9,7 +9,7 @@ import { useWarStore } from '@/stores/war';
 import type { Pokemon, PokemonMove, PokemonIVs } from '@/types/pokemon';
 import { getExpNeededPure, calcStatsPure } from './pokemon/statsMath.ts';
 import { logger } from './utils/logger.ts';
-import { Temporal } from '@js-temporal/polyfill';
+
 
 /**
  * Probabilidades de items equipados en estado salvaje

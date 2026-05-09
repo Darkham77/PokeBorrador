@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Temporal } from '@js-temporal/polyfill'
+
 
 import { ref } from 'vue'
 import { useGameStore } from '@/stores/game'

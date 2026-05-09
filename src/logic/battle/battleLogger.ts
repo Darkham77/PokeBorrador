@@ -1,4 +1,4 @@
-import { Temporal } from '@js-temporal/polyfill'
+
 
 /**
  * Módulo de Registro de Combate (Battle Logger)

@@ -1,4 +1,4 @@
-import { Temporal } from '@js-temporal/polyfill'
+
 import { computed, toValue } from 'vue'
 import type { MaybeRefOrGetter } from 'vue'
 import { useGameStore } from '@/stores/game'

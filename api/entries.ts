@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
-import { Temporal } from '@js-temporal/polyfill'
+
 import { logger } from '../src/logic/utils/logger.ts'
 import type { ApiRequest, ApiResponse, CompetitionEntryBody } from './_types.ts'
 

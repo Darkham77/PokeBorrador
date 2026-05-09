@@ -1,4 +1,4 @@
-import { Temporal } from '@js-temporal/polyfill'
+
 import { SHOP_ITEMS } from '@/data/items'
 
 import type { DebugSystem, DebugContext } from '@/stores/debug'

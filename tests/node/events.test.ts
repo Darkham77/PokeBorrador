@@ -8,7 +8,7 @@
 
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { Temporal } from '@js-temporal/polyfill';
+
 
 // Use relative path since Node native doesn't resolve aliases by default without loaders
 import { 

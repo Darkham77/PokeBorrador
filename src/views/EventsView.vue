@@ -15,7 +15,7 @@ onMounted(() => {
   eventStore.checkPendingAwards()
 })
 
-import { Temporal } from '@js-temporal/polyfill'
+
 
 const formatTime = (isoTime: string) => {
   if (!isoTime) return 'Indefinido'

@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
-import { Temporal } from '@js-temporal/polyfill'
+
 import type { ApiRequest, ApiResponse } from './_types.ts'
 
 const supabase = createClient(

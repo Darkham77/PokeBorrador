@@ -1,4 +1,4 @@
-import { Temporal } from '@js-temporal/polyfill'
+
 
 import { createClient, type SupabaseClient, type RealtimeChannel, type User, type Session } from '@supabase/supabase-js';
 import { ProxyQuery } from './proxyQuery.ts';
