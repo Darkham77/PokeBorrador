@@ -100,6 +100,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash
 | External APIs | The code under test |
 | Database (unit) | Simple dependencies |
 | Time/random | Pure functions |
+| Temporal (Node 26+) | Force Polyfill in `setup.ts` |
 | Network | In-memory stores |
 
 ### Mock Isolation (CRITICAL)

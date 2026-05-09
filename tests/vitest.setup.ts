@@ -1,5 +1,14 @@
 import { vi, beforeEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
+import { Temporal } from '@js-temporal/polyfill'
+
+// Force Temporal polyfill in tests to allow Vitest's vi.useFakeTimers() to work
+// (Native Temporal in Node 26+ is not currently mocked by Vitest)
+Object.defineProperty(globalThis, 'Temporal', {
+  value: Temporal,
+  writable: true,
+  configurable: true
+});
 
 /**
  * tests/vitest.setup.ts
