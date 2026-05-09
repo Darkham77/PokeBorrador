@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { computed } from 'vue'
-import { useGameStore } from './game'
-import { useUIStore } from './ui'
+import { useGameStore } from './game.ts'
+import { useUIStore } from './ui.ts'
 import { MARKET_UNLOCKS } from '@/data/items'
 
 export const TRAINER_RANKS = [

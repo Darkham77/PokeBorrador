@@ -2,11 +2,11 @@
  * src/logic/db/sqliteEngine.ts
  * Unified SQL.js (SQLite WASM) Engine with IndexedDB Persistence.
  */
-import { getFromIDB, setToIDB } from './idbHelper'
-import { TABLES_SCHEMA } from './schema'
-import { DATABASE_MIGRATIONS } from './migrations_data'
+import { getFromIDB, setToIDB } from './idbHelper.ts'
+import { TABLES_SCHEMA } from './schema.ts'
+import { DATABASE_MIGRATIONS } from './migrations_data.ts'
 import { useLoadingStore } from '@/stores/loading'
-import { logger } from '../utils/logger'
+import { logger } from '../utils/logger.ts'
 
 export interface SQLiteResult {
   columns: string[];
@@ -220,7 +220,7 @@ async function runMigrations(): Promise<void> {
   _sqliteDb.run("PRAGMA foreign_keys = ON")
 }
 
-import { splitSQLStatements, translatePostgresToSqlite } from './sqlTranslator'
+import { splitSQLStatements, translatePostgresToSqlite } from './sqlTranslator.ts'
 
 
 export function resetSQLite(): void {

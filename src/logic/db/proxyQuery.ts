@@ -1,8 +1,8 @@
 
-import { initSQLite, queryLocal, persistSQLite } from './sqliteEngine';
-import type { DBRouter } from './dbRouter';
+import { initSQLite, queryLocal, persistSQLite } from './sqliteEngine.ts';
+import type { DBRouter } from './dbRouter.ts';
 import type { DBResponse, ProxyQueryChainItem } from '@/types/database';
-import { logger } from '../utils/logger';
+import { logger } from '../utils/logger.ts';
 
 /**
  * Chainable Query Builder for SQLite that mimics Supabase/PostgREST API.

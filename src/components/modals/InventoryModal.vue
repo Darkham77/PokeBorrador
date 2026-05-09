@@ -1,4 +1,5 @@
 <script setup lang="ts">
+
 import { ref, computed, reactive, watch } from 'vue'
 import { useWindowListener } from '@/composables/useWindowListener'
 import { useGameStore } from '@/stores/game'

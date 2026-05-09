@@ -47,8 +47,9 @@ graph TD
     Cleanup --> Walkthrough[7. Walkthrough Update]
     Walkthrough --> Lessons[8. Lessons Extraction]
     Lessons --> LessonApproval[8.1 Lesson Approval]
+    LessonApproval --> SkillVerification[8.2 Skill Implementation Verification]
     
-    LessonApproval --> Commit[9. Final Optimization Commit]
+    SkillVerification --> Commit[9. Final Optimization Commit]
     Commit --> Notify[10. Final Status & Instructions]
     Notify --> End((END))
     
@@ -145,12 +146,20 @@ Before extracting lessons, you MUST create or update the `walkthrough.md` artifa
 Run **@/extract-lessons** to capture patterns (e.g., a new SASS trick or a CSS/GSAP optimization). This is a **local documentation task** and MUST NOT involve a browser subagent.
 
 - **Lesson Approval Mandatory & Hard Stop**: After **@/extract-lessons** presents the lesson mapping table, you MUST **STOP** immediately. This approval step is exclusively for validating the new knowledge/lessons to be persisted. You are FORBIDDEN from calling any other tool (especially `git` or `write_to_file`) until the user provides explicit approval of these lessons.
-- **NEVER COMMIT BLINDLY**: It is strictly forbidden to proceed to Step 9 without explicit user confirmation of the extracted lessons.
+- **NEVER COMMIT BLINDLY**: It is strictly forbidden to proceed to Step 8.2 without explicit user confirmation of the extracted lessons plan.
 - **Mental State Check**: Before requesting approval, read the **task** one last time to ensure every single sub-item is marked as `[x]`.
+
+### 8.2. Skill Implementation Verification (HARD STOP)
+
+After the lessons are distributed and the skill files are updated by `@/extract-lessons` (via Phase 3), you MUST perform a second verification.
+
+1. **Self-Review**: Read the modified `SKILL.md` files to ensure the content matches the approved plan.
+2. **User Approval Mandatory**: You MUST explicitly ask the user: "Are the changes applied to the skills correct?".
+3. **Hard Stop**: You are FORBIDDEN from proceeding to Step 9 until the user provides an explicit "Yes" or approval of the final file content.
 
 ### 9. Final Optimization Commit
 
-After the user approves the lessons, you MUST perform a second and final commit capturing the optimizations and fixes from the audit cycle.
+After the user approves the final skill implementation in Step 8.2, you MUST perform a second and final commit capturing the optimizations and fixes from the audit cycle.
 
 1. `git status` to verify staged changes (only audit-related diffs should remain).
 2. `git add .`
@@ -208,7 +217,8 @@ feat(battle): optimize silhouette rendering and sync wild encounter timing
 3. [ ] Workspace Cleanup (Step 6).
 4. [ ] Extract lessons (Step 7).
 5. [ ] **Wait for Lesson Approval** (Step 8.1).
-6. [ ] Final Optimization Commit (Step 9).
+6. [ ] **Wait for Skill Implementation Verification** (Step 8.2).
+7. [ ] Final Optimization Commit (Step 9).
 "
 
 ### 11. Rigor Enforcement (Anti-Shortcut Rule)

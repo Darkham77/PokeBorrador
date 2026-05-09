@@ -1,4 +1,5 @@
 <script setup lang="ts">
+
 import { useUIStore } from '@/stores/ui'
 import DebugPokemonCreator from './DebugPokemonCreator.vue'
 

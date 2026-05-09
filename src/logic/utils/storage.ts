@@ -3,7 +3,7 @@
  * src/logic/utils/storage.ts
  * Safe localStorage wrapper to prevent SecurityErrors in restrictive environments.
  */
-import { logger } from './logger';
+import { logger } from './logger.ts';
 
 export const safeStorage = {
   getItem(key: string): string | null {

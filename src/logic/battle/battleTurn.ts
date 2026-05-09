@@ -1,18 +1,18 @@
 import { sleep } from '@/logic/timeUtils'
 
 // [PureVue-Ignore-Length]
-import { calculateDamage, getEffectiveSpeed } from './battleEngine'
-import { canAttack } from './battleFlow'
-import { dispatchMoveEffect } from './actions/actionRegistry'
-import { decideEnemyMove, shouldEnemySwitch, findBestSwitchIndex } from './ai/battleAI'
+import { calculateDamage, getEffectiveSpeed } from './battleEngine.ts'
+import { canAttack } from './battleFlow.ts'
+import { dispatchMoveEffect } from './actions/actionRegistry.ts'
+import { decideEnemyMove, shouldEnemySwitch, findBestSwitchIndex } from './ai/battleAI.ts'
 import { gameBus } from '@/logic/gameBus'
 import { recalcPokemonStats } from '@/logic/pokemonFactory'
-import { getMechanicalWeather, WEATHER_MECHANICAL } from './weatherMapper'
+import { getMechanicalWeather, WEATHER_MECHANICAL } from './weatherMapper.ts'
 import { getDayCycle } from '@/logic/timeUtils'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { MOVE_DATA } from '@/data/moves'
 import type { BattleContext } from '@/types/battleContext'
-import { logger } from '../utils/logger'
+import { logger } from '../utils/logger.ts'
 import type { Move } from '@/types/pokemon'
 
 /**

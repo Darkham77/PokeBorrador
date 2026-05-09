@@ -1,11 +1,11 @@
 import { Temporal } from '@js-temporal/polyfill'
 
 import { createClient, type SupabaseClient, type RealtimeChannel, type User, type Session } from '@supabase/supabase-js';
-import { ProxyQuery } from './proxyQuery';
-import { initSQLite, persistSQLite, queryLocal } from './sqliteEngine';
-import { DATABASE_MIGRATIONS } from './migrations_data';
-import { useLoadingStore } from '@/stores/loading';
-import { logger } from '../utils/logger';
+import { ProxyQuery } from './proxyQuery.ts';
+import { initSQLite, persistSQLite, queryLocal } from './sqliteEngine.ts';
+import { DATABASE_MIGRATIONS } from './migrations_data.ts';
+import { useLoadingStore } from '../../stores/loading.ts';
+import { logger } from '../utils/logger.ts';
 import type { DBConfig, DBMode, DBRouterOptions, DBCompatibilityResponse, DBResponse } from '@/types/database';
 
 export type { DBCompatibilityResponse };

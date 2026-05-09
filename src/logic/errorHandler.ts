@@ -4,7 +4,7 @@
  * Captures unexpected failures and sends them to the Pinia error store.
  */
 import { useErrorStore } from '@/stores/errorStore'
-import { logger } from './utils/logger'
+import { logger } from './utils/logger.ts'
 
 export function initGlobalErrorHandlers(): void {
   const errorStore = useErrorStore()

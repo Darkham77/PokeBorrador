@@ -8,7 +8,7 @@ import { Temporal } from '@js-temporal/polyfill'
  * you MUST update the DBRouter (src/logic/db/dbRouter.ts) to keep Online/Offline parity.
  */
 
-import { logger } from './utils/logger';
+import { logger } from './utils/logger.ts';
 
 
 interface SQLiteStatement {

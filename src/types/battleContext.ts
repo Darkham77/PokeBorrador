@@ -1,7 +1,7 @@
 import { Ref } from 'vue';
-import { BattleState, BattleStages, BattleLog } from './battle';
-import { Pokemon, Move } from './pokemon';
-import { GameStore, BattleStore, UIStore, WarStore, EventStore, PlayerClassStore, AudioStore, BattleOptions } from './stores';
+import { BattleState, BattleStages, BattleLog } from './battle.ts';
+import { Pokemon, Move } from './pokemon.ts';
+import { GameStore, BattleStore, UIStore, WarStore, EventStore, PlayerClassStore, AudioStore, BattleOptions } from './stores.ts';
 import { BATTLE_STATES, BATTLE_SUBSTATES } from '@/logic/battle/battleStateMachine';
 
 export interface BattleContext {

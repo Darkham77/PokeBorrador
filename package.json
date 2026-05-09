@@ -15,6 +15,7 @@
     "validate:types": "vue-tsc --noEmit",
     "test": "vitest run",
     "test:node": "node --experimental-strip-types --test \"tests/node/**/*.test.ts\"",
+    "test:all": "npm run test:node && npm run test",
     "lint": "npm run validate:types && eslint . --fix",
     "lint:analyze": "eslint . -f json -o lint-results.json || node analyze_lint.cjs",
     "migrations:generate": "node --permission --experimental-strip-types --allow-fs-read=. --allow-fs-write=. scripts/generate_migrations.ts",

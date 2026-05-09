@@ -6,7 +6,7 @@ import { useEventStore } from '@/stores/events'
 import { useWarStore } from '@/stores/war'
 import type { BattleContext } from '@/types/battleContext'
 import type { UIStore, MapStore, EventStore, WarStore } from '@/types/stores'
-import { logger } from '../utils/logger'
+import { logger } from '../utils/logger.ts'
 
 /**
  * Handles the completion of a battle flow (either going to map or search loop).

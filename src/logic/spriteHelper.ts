@@ -2,7 +2,7 @@
 /**
  * POKEMON SPRITES UTILITIES
  */
-import { getAssetUrl, ASSET_TYPES } from './services/assetService';
+import { getAssetUrl, ASSET_TYPES } from './services/assetService.ts';
 import { POKEMON_SPRITE_IDS } from '@/logic/pokedexConstants';
 
 export { POKEMON_SPRITE_IDS };

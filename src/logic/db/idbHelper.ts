@@ -3,7 +3,7 @@
  * idbHelper.ts
  * IndexedDB helper for SQLite WASM persistence.
  */
-import { logger } from '../utils/logger';
+import { logger } from '../utils/logger.ts';
 
 const DB_NAME = 'pokevicio_idb'
 const STORE_NAME = 'keyval'

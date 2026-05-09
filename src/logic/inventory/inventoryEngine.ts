@@ -1,6 +1,6 @@
 
 import { SHOP_ITEMS } from '@/data/items';
-import { getAssetUrl, ASSET_TYPES } from '../services/assetService';
+import { getAssetUrl, ASSET_TYPES } from '../services/assetService.ts';
 import type { Inventory } from '@/types/items';
 
 /**

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 
+
 import { ref } from 'vue';
 import AdminEventTab from './AdminEventTab.vue';
 import AdminRankedTab from './AdminRankedTab.vue';

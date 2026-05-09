@@ -1,4 +1,5 @@
 <script setup lang="ts">
+
 import { computed, watch, onMounted, provide, ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useBattleStore } from '@/stores/battle'
@@ -297,7 +298,7 @@ onMounted(async () => {
     battle.value?.playerTeam || [],
     battle.value?.enemyTeam || []
   )
-  setTimeout(() => { isInitialLoad.value = false }, 500)
+  window.setTimeout(() => { isInitialLoad.value = false }, 500)
 })
 
 // Ejecutar PRELOAD_COORDS para combates consecutivos
@@ -317,7 +318,7 @@ watch(() => battleStore.currentSubState, async (sub) => {
 // Forzar actualización de cámara cuando el combate se activa para evitar el glitch de "pantalla negra"
 watch(() => battleStore.isBattleActive, (active) => {
   if (active) {
-    setTimeout(() => {
+    window.setTimeout(() => {
       if (arenaRef.value) {
         window.dispatchEvent(new Event('resize'))
       }

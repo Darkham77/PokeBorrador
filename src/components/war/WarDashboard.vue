@@ -1,4 +1,5 @@
 <script setup lang="ts">
+
 import { useWarStore } from '@/stores/war'
 import { computed, onMounted } from 'vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'

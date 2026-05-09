@@ -1,6 +1,6 @@
 
 import { ref } from 'vue';
-import { logger } from '../utils/logger';
+import { logger } from '../utils/logger.ts';
 
 export const BATTLE_STATES = {
   CONTEXT_SETUP: 'CONTEXT_SETUP',

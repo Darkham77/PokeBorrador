@@ -1,7 +1,7 @@
 import { Temporal } from '@js-temporal/polyfill';
-import { supabase } from './supabase';
-import { safeStorage } from './utils/storage';
-import { logger } from './utils/logger';
+import { supabase } from './supabase.ts';
+import { safeStorage } from './utils/storage.ts';
+import { logger } from './utils/logger.ts';
 
 /**
  * Time Synchronization Utility (Temporal API version)

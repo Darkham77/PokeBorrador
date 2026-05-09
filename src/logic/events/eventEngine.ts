@@ -57,7 +57,7 @@ const safeParse = (val: string | object | null | undefined): Record<string, unkn
 };
 
 import { Temporal } from '@js-temporal/polyfill'
-import { logger } from '../utils/logger'
+import { logger } from '../utils/logger.ts'
 
 export function getArgDateString(date: Date | InstanceType<typeof Temporal.ZonedDateTime> | InstanceType<typeof Temporal.Instant> = Temporal.Now.instant()): string {
   const zdt = (date instanceof Temporal.ZonedDateTime)

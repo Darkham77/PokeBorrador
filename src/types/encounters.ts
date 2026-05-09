@@ -1,6 +1,6 @@
 
-import { Pokemon } from './pokemon';
-import type { DominanceInfo } from './stores';
+import { Pokemon } from './pokemon.ts';
+import type { DominanceInfo } from './stores.ts';
 import type { Event } from '@/logic/events/eventEngine';
 
 export type EncounterType = 'wild' | 'trainer' | 'fishing' | 'guardian' | 'defender';

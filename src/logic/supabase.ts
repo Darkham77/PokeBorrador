@@ -3,12 +3,18 @@
  * SUPABASE CONFIG - REMOTE PERSISTENCE LAYER
  * Now managed by DBRouter for autonomous lazy initialization.
  */
-import { DBRouter } from './db/dbRouter'
-import { safeStorage } from './utils/storage'
+import { DBRouter } from './db/dbRouter.ts'
+import { safeStorage } from './utils/storage.ts'
 import type { DBMode } from '@/types/database'
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-const supabaseKey = import.meta.env.VITE_SUPABASE_KEY
+const getEnv = (key: string) => {
+  if (typeof import.meta !== 'undefined' && import.meta.env) return import.meta.env[key];
+  if (typeof process !== 'undefined' && process.env) return process.env[key];
+  return undefined;
+};
+
+const supabaseUrl = getEnv('VITE_SUPABASE_URL')
+const supabaseKey = getEnv('VITE_SUPABASE_KEY')
 
 // Expose to global scope for legacy scripts if needed
 if (typeof window !== 'undefined') {

@@ -65,6 +65,16 @@ const nodePrefix: AuditRule = {
   fix: (match: string) => match.replace(/['"](fs|path|os|crypto|util|url|events|stream|child_process)['"]/, (m) => m.slice(0, 1) + 'node:' + m.slice(1))
 };
 
+const esmExtensions: AuditRule = {
+  // Match relative imports WITHOUT an extension (not .ts, .js, or .vue at the end)
+  regex: /import .* from ['"](\.\.[^'"]*(?<!\.[jt]s)(?<!\.vue))['"]|import .* from ['"](\.[^/][^'"]*(?<!\.[jt]s)(?<!\.vue))['"]/g,
+  message: (match: string) => `Import relativo sin extensión: '${match}'. En Node.js 26+ nativo las extensiones son obligatorias.`,
+  // Fix: only add .ts when the path doesn't already end with .vue, .js, or .ts
+  fix: (match: string) => match.replace(/(['"])(\.\.?\/[^'"]+)(?<!\.[jt]s)(?<!\.vue)(['"])/g, '$1$2.ts$3'),
+  // Only applies to pure .ts files in src/logic, scripts — NOT .vue files (handled by Vite resolver)
+  check: (filePath: string) => !filePath.endsWith('.vue')
+};
+
 const tsIgnore: AuditRule = {
   regex: /\/\/\s*@ts-(ignore|nocheck|expect-error)/g,
   message: "Uso de supresión de TypeScript detectado. Prohibido por la política 'Zero-Ignore'.",
@@ -75,10 +85,11 @@ const tsIgnore: AuditRule = {
 
 const timersPromises: AuditRule = {
   regex: /new Promise\(r => setTimeout\(r, (\d+)\)\)/g,
-  message: "Uso de setTimeout manual. Usa 'import { setTimeout } from \"node:timers/promises\"'.",
-  fix: (match: string) => match.replace(/new Promise\(r => setTimeout\(r, (\d+)\)\)/, 'await setTimeout($1)'),
+  message: "Uso de setTimeout manual en script Node. Considera 'import { setTimeout } from \"node:timers/promises\"'.",
+  // Only report in scripts/ — NEVER auto-fix via addImport (caused mass injection)
   check: (filePath: string) => filePath.includes('scripts' + path.sep) && !filePath.includes('node_modules'),
-  addImport: "import { setTimeout } from 'node:timers/promises';"
+  fixable: false
+  // NOTE: addImport removed intentionally — it caused spurious injection in src/ frontend files.
 };
 
 const explicitResource: AuditRule = {
@@ -109,7 +120,7 @@ const sassTraps: AuditRule = {
 };
 
 const config = {
-  viewport, gpuGaps, legacyDates, nodePrefix, tsIgnore, timersPromises, explicitResource, fileLength, sassTraps
+  viewport, gpuGaps, legacyDates, nodePrefix, esmExtensions, tsIgnore, timersPromises, explicitResource, fileLength, sassTraps
 };
 
 async function getFilesToAudit(dir: string): Promise<string[]> {
@@ -135,7 +146,7 @@ async function auditFile(filePath: string, fix: boolean): Promise<Violation[]> {
     const tag = 'script';
     const block = isVue ? extractBlock(content, tag) : content;
     if (block) {
-      const allRules: AuditRule[] = [legacyDates, nodePrefix, tsIgnore, timersPromises, explicitResource];
+      const allRules: AuditRule[] = [legacyDates, nodePrefix, esmExtensions, tsIgnore, timersPromises, explicitResource];
       let rules: AuditRule[] = allRules;
       
       // EXCEPCIÓN: Ignorar 'legacyDates' en scripts de utilidad/migración

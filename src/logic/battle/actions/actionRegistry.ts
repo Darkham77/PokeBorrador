@@ -1,12 +1,12 @@
 
 import type { Pokemon } from '@/types/pokemon';
 import type { BattleStages, LogFn } from '@/types/battle';
-import { STAT_ACTIONS } from './statActions';
-import { STATUS_ACTIONS } from './statusActions';
-import { HEALING_ACTIONS } from './healingActions';
-import { WEATHER_ACTIONS } from './weatherActions';
-import { FIELD_ACTIONS } from './fieldActions';
-import { SPECIAL_ACTIONS } from './specialActions';
+import { STAT_ACTIONS } from './statActions.ts';
+import { STATUS_ACTIONS } from './statusActions.ts';
+import { HEALING_ACTIONS } from './healingActions.ts';
+import { WEATHER_ACTIONS } from './weatherActions.ts';
+import { FIELD_ACTIONS } from './fieldActions.ts';
+import { SPECIAL_ACTIONS } from './specialActions.ts';
 import { logger } from '@/logic/utils/logger';
 import type { BattleContext } from '@/types/battleContext';
 

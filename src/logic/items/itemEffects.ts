@@ -1,10 +1,10 @@
 
-import { checkStoneEvolution } from '../evolutionLogic';
-import { TM_COMPAT, GAME_TMS } from '../../data/pokedex';
+import { checkStoneEvolution } from '../evolutionLogic.ts';
+import { TM_COMPAT, GAME_TMS } from '../../data/pokedex.ts';
 import { useUIStore } from '@/stores/ui';
 import { useGameStore } from '@/stores/game';
 import { useBuffsStore } from '@/stores/buffs';
-import { makePokemon } from '../pokemonFactory';
+import { makePokemon } from '../pokemonFactory.ts';
 import type { Pokemon } from '@/types/pokemon';
 import type { ItemEffectResult } from '@/types/items';
 import type { GameState } from '@/types/game';

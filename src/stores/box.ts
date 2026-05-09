@@ -1,8 +1,8 @@
 // [PureVue-Ignore-Length]
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { useGameStore } from './game'
-import { useUIStore } from './ui'
+import { useGameStore } from './game.ts'
+import { useUIStore } from './ui.ts'
 import { getPokemonTier } from '@/logic/pokemon/tierEngine'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { calculateRocketSellPrice as calculatePrice } from '@/logic/pokemonUtils'

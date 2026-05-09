@@ -1,11 +1,11 @@
 import { defineStore } from 'pinia'
 import { ref, reactive, computed } from 'vue'
-import { useAuthStore } from './auth'
-import { useGameStore } from './game'
-import { useUIStore } from './ui'
-import { useSocialStore } from './social'
-import { useAudioStore } from './audio'
-import { useLoadingStore } from './loading'
+import { useAuthStore } from './auth.ts'
+import { useGameStore } from './game.ts'
+import { useUIStore } from './ui.ts'
+import { useSocialStore } from './social.ts'
+import { useAudioStore } from './audio.ts'
+import { useLoadingStore } from './loading.ts'
 import { logger } from '@/logic/utils/logger'
 import type { 
   TradeOffer

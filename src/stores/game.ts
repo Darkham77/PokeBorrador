@@ -1,18 +1,18 @@
 import { defineStore } from 'pinia'
 import { reactive, ref, computed, watch, type Ref } from 'vue'
 import { logger } from '@/logic/utils/logger'
-import { useAuthStore } from './auth'
+import { useAuthStore } from './auth.ts'
 import { supabase } from '@/logic/supabase'
-import { INITIAL_STATE } from './gameInitialState'
+import { INITIAL_STATE } from './gameInitialState.ts'
 import type { GameState } from '@/types/game'
 
 
 // Actions Modules
-import { useSaveActions } from './game/actions/saveActions'
-import { usePokemonActions } from './game/actions/pokemonActions'
-import { useTrainerActions } from './game/actions/trainerActions'
-import { useBreedingActions } from './game/actions/breedingActions'
-import { useTeamActions } from './game/actions/teamActions'
+import { useSaveActions } from './game/actions/saveActions.ts'
+import { usePokemonActions } from './game/actions/pokemonActions.ts'
+import { useTrainerActions } from './game/actions/trainerActions.ts'
+import { useBreedingActions } from './game/actions/breedingActions.ts'
+import { useTeamActions } from './game/actions/teamActions.ts'
 
 import { DBRouter } from '@/logic/db/dbRouter'
 

@@ -8,7 +8,7 @@ import { Temporal } from '@js-temporal/polyfill'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import { SHOP_ITEMS } from '@/data/items';
 import { PLAYER_CLASSES } from '@/data/playerClasses';
-import { logger } from '../utils/logger';
+import { logger } from '../utils/logger.ts';
 import type { Pokemon } from '@/types/pokemon';
 import type { BattleLog, BattleSource } from '@/types/battle';
 

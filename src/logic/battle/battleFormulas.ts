@@ -5,13 +5,13 @@
  * Refer to `@/project-standards/references/core/game_formulas_manual.md` for logic details.
  */
 
-import { getCombinedEffectiveness } from '../pokemon/typeEngine';
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
-import { getMechanicalWeather, WEATHER_MECHANICAL } from './weatherMapper';
-import { getDayCycle } from '../timeUtils';
+import { getCombinedEffectiveness } from '../pokemon/typeEngine.ts';
+import { pokemonDataProvider } from '../providers/pokemonDataProvider.ts';
+import { getMechanicalWeather, WEATHER_MECHANICAL } from './weatherMapper.ts';
+import { getDayCycle } from '../timeUtils.ts';
 import type { Pokemon, Move } from '@/types/pokemon';
 import type { BattleStages, BattleWeather } from '@/types/battle';
-import { logger } from '../utils/logger';
+import { logger } from '../utils/logger.ts';
 
 export interface DamageOptions {
   atkStages?: number;

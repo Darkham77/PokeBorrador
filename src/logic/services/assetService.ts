@@ -1,7 +1,7 @@
 
 import { POKEMON_SPRITE_IDS } from '@/logic/pokedexConstants';
 export { POKEMON_SPRITE_IDS };
-import { resolveAsset } from '../utils/assetResolver';
+import { resolveAsset } from '../utils/assetResolver.ts';
 import { MAPS_WITH_CYCLES } from '@/data/map-assets';
 
 /**

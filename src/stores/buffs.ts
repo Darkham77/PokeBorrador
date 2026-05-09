@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { computed } from 'vue'
-import { useGameStore } from './game'
+import { useGameStore } from './game.ts'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
 export const useBuffsStore = defineStore('buffs', () => {

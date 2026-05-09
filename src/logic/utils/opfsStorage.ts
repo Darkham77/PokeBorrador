@@ -1,5 +1,5 @@
 
-import { logger } from './logger';
+import { logger } from './logger.ts';
 
 /**
  * OPFS Storage Utility - Origin Private File System.

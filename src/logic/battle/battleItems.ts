@@ -4,8 +4,8 @@ import { sleep } from '@/logic/timeUtils'
  * battleItems.js
  * Logic for using items (balls and healing) in battle.
  */
-import { calculateCatchRate } from './battleEngine'
-import { useItemOnPokemon } from '../providers/itemProvider'
+import { calculateCatchRate } from './battleEngine.ts'
+import { useItemOnPokemon } from '../providers/itemProvider.ts'
 import { gameBus } from '@/logic/gameBus'
 import type { Pokemon } from '@/types/pokemon'
 import type { EventStore, AudioStore, BattleStore } from '@/types/stores'

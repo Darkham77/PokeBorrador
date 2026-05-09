@@ -2,9 +2,9 @@
 import { defineStore } from 'pinia'
 import { ref, computed, watch } from 'vue'
 import { Temporal } from '@js-temporal/polyfill'
-import { useAuthStore } from './auth'
-import { useGameStore } from './game'
-import { useUIStore } from './ui'
+import { useAuthStore } from './auth.ts'
+import { useGameStore } from './game.ts'
+import { useUIStore } from './ui.ts'
 import { logger } from '@/logic/utils/logger'
 import { RANKED_REWARD_MILESTONES } from '@/data/rankedData'
 export { RANKED_REWARD_MILESTONES }

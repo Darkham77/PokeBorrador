@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { Temporal } from '@js-temporal/polyfill'
-import type { ApiRequest, ApiResponse } from './_types'
+import type { ApiRequest, ApiResponse } from './_types.ts'
 
 const supabase = createClient(
   process.env.VITE_SUPABASE_URL!,

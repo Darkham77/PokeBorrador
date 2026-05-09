@@ -1,5 +1,5 @@
 
-import { itemEffects } from '../items/itemEffects';
+import { itemEffects } from '../items/itemEffects.ts';
 import type { Pokemon } from '@/types/pokemon';
 
 /**

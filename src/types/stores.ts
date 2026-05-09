@@ -1,10 +1,10 @@
 import { Ref } from 'vue';
-import { GameState } from './game';
-import { Pokemon } from './pokemon';
-import { BattleState, BattleStages, BattleLog } from './battle';
+import { GameState } from './game.ts';
+import { Pokemon } from './pokemon.ts';
+import { BattleState, BattleStages, BattleLog } from './battle.ts';
 import { BattleStateName, BattleSubStateName } from '@/logic/battle/battleStateMachine';
 import { Event } from '@/logic/events/eventEngine';
-import { AuthUser } from './auth';
+import { AuthUser } from './auth.ts';
 import { DBRouter } from '@/logic/db/dbRouter';
 import { DayPhase, Season } from '@/logic/timeUtils';
 

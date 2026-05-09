@@ -7,7 +7,7 @@ import { Temporal } from '@js-temporal/polyfill'
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { loadBestSave } from '@/logic/auth/loadService'
-import { createTestDBRouter, cleanupTestDB } from '../dbTestHelper'
+import { createTestDBRouter, cleanupTestDB } from '../dbTestHelper.ts'
 import type { DBRouter } from '@/logic/db/dbRouter'
 import type { AuthUser } from '@/types/auth'
 

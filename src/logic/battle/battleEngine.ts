@@ -5,8 +5,8 @@
  * in accordance with the Zero-Hardcoding and Single Source of Truth mandates.
  */
 
-export { getTypeEffectiveness, getCombinedEffectiveness } from '../pokemon/typeEngine';
-export { getStatMultiplier } from '../pokemon/statEngine';
+export { getTypeEffectiveness, getCombinedEffectiveness } from '../pokemon/typeEngine.ts';
+export { getStatMultiplier } from '../pokemon/statEngine.ts';
 
 import { 
   getEffectiveStat, 
@@ -15,7 +15,7 @@ import {
   getAbilityMultiplier, 
   calculateCatchRate,
   calculateEscapeChance
-} from './battleFormulas';
+} from './battleFormulas.ts';
 
 import type { Pokemon } from '@/types/pokemon';
 import type { BattleStages, BattleWeather } from '@/types/battle';

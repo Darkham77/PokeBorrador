@@ -1,5 +1,6 @@
 // [PureVue-Ignore-Length]
 <script setup lang="ts">
+
 import { Temporal } from '@js-temporal/polyfill'
 import { ref, computed, watch } from 'vue'
 
@@ -185,7 +186,7 @@ watch(() => props.stages, (newS, oldS) => {
 const triggerStatArrow = (stat: string, dir: 'up' | 'down') => {
   const id = Temporal.Now.instant().epochMilliseconds + Math.random()
   statArrows.value.push({ id, dir, stat })
-  setTimeout(() => {
+  window.setTimeout(() => {
     statArrows.value = statArrows.value.filter(a => a.id !== id)
   }, 1200)
 }

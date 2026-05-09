@@ -1,4 +1,5 @@
 <script setup lang="ts">
+
 import MapCard from './MapCard.vue'
 import { getEncounterPool } from '@/logic/encounters'
 import { useEventStore } from '@/stores/events'

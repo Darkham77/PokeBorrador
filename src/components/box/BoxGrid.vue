@@ -1,4 +1,5 @@
 <script setup lang="ts">
+
 import type { Pokemon } from '@/types/pokemon'
 import BoxPokemonCard from './BoxPokemonCard.vue'
 

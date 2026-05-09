@@ -55,6 +55,7 @@ For each lesson in the mapping table:
 7. **Never duplicate** information already in the skill or other skills. Use references: `see @/other-skill`.
 8. If the lesson fits better as a reference file or if `SKILL.md` is approaching 500 lines, add it to a `references/` directory.
 9. **Synchronized Updates**: ALWAYS verify and update any associated `references/`, `scripts/`, or diagnostic tools (e.g., Python check scripts) linked to the skill. Ensure all technical documentation and automated rules remain in parity with the new knowledge to avoid architectural contradictions.
+10. **Final Verification (HARD STOP)**: After all skill updates are applied, you MUST explicitly ask the user to review the changes in the modified `SKILL.md` or reference files. You are FORBIDDEN from proceeding to any further tasks or notifying success until the user confirms the final implementation is correct.
 
 #### CREATE new skill
 

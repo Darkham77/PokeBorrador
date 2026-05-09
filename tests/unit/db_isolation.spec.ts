@@ -5,7 +5,7 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { createTestDBRouter, cleanupTestDB } from '../dbTestHelper';
+import { createTestDBRouter, cleanupTestDB } from '../dbTestHelper.ts';
 
 describe('Database Isolation Policy', () => {
   beforeEach(() => {

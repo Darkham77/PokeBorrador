@@ -1,7 +1,7 @@
 import { Temporal } from '@js-temporal/polyfill'
 import type { DBRouter } from '@/logic/db/dbRouter';
 
-import { validateAndSanitize } from './saveService';
+import { validateAndSanitize } from './saveService.ts';
 import type { Pokemon } from '@/types/pokemon';
 import { decompress, isGzip } from '@/logic/utils/compression';
 import { readOpfsFile, writeOpfsFile } from '@/logic/utils/opfsStorage';

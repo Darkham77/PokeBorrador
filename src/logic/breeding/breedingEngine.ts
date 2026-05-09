@@ -1,5 +1,5 @@
 
-import { EGG_GROUPS, BABY_MAP, EGG_MOVES_DB, BREEDING_CONSTANTS } from './breedingData'
+import { EGG_GROUPS, BABY_MAP, EGG_MOVES_DB, BREEDING_CONSTANTS } from './breedingData.ts'
 import { getFirstEvolution } from '@/logic/pokemon/evolutionEngine'
 import type { Pokemon, PokemonIVs, BreedingCompatibility } from '@/types/pokemon'
 

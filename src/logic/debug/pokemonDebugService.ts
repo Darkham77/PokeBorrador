@@ -7,7 +7,7 @@ import { useUIStore } from '@/stores/ui';
 import { useModalStore } from '@/stores/modals';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import type { Pokemon } from '@/types/pokemon';
-import { logger } from '../utils/logger';
+import { logger } from '../utils/logger.ts';
 
 interface GenerateParams {
   id?: string

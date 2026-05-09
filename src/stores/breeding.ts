@@ -1,8 +1,8 @@
 import { Temporal } from '@js-temporal/polyfill'
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import { useGameStore } from './game';
-import { useUIStore } from './ui';
+import { useGameStore } from './game.ts';
+import { useUIStore } from './ui.ts';
 import { 
   checkCompatibility, 
   calculateInheritance, 
@@ -14,8 +14,8 @@ import {
 import { generateMission, validateMissionPokemon } from '@/logic/breeding/missionEngine';
 import { EGG_SPAWN_INTERVAL_MS } from '@/logic/breeding/breedingData';
 import { POKEMON_DB } from '@/data/pokemonDB';
-import { usePlayerClassStore } from './playerClass';
-import { useEventStore } from './events';
+import { usePlayerClassStore } from './playerClass.ts';
+import { useEventStore } from './events.ts';
 import type { DaycareSlot, DaycareEgg, DaycareMission } from '@/types/breeding';
 import type { Pokemon, PokemonEgg, PokemonIVs } from '@/types/pokemon';
 

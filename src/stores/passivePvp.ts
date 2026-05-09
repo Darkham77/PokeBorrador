@@ -1,8 +1,8 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
-import { useGameStore } from './game';
-import { useAuthStore } from './auth';
-import { useUIStore } from './ui';
+import { useGameStore } from './game.ts';
+import { useAuthStore } from './auth.ts';
+import { useUIStore } from './ui.ts';
 import { supabase } from '@/logic/supabase';
 import { logger } from '@/logic/utils/logger';
 import type { GameStore, AuthStore, UIStore } from '@/types/stores';

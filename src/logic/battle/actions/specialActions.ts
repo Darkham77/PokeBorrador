@@ -1,5 +1,5 @@
 import type { MoveAction } from '@/types/battle';
-import { STATUS_ACTIONS } from './statusActions';
+import { STATUS_ACTIONS } from './statusActions.ts';
 import { logger } from '@/logic/utils/logger';
 
 /**

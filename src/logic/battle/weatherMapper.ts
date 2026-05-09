@@ -4,7 +4,7 @@
  * Centralizes the mapping between environmental weather tokens (from Map/Atmosphere)
  * and technical battle mechanical keys.
  */
-import { logger } from '../utils/logger';
+import { logger } from '../utils/logger.ts';
 
 export const WEATHER_MECHANICAL = {
   SUN: 'sun',

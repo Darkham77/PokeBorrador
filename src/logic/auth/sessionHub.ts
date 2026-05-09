@@ -1,7 +1,7 @@
 
-import { supabase } from '../supabase'
-import { gameBus } from '../gameBus'
-import { logger } from '../utils/logger'
+import { supabase } from '../supabase.ts'
+import { gameBus } from '../gameBus.ts'
+import { logger } from '../utils/logger.ts'
 
 /**
  * Session Hub - Multi-tab and Multi-device synchronization.

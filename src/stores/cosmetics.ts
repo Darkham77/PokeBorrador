@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { useGameStore } from './game'
-import { useAuthStore } from './auth'
+import { useGameStore } from './game.ts'
+import { useAuthStore } from './auth.ts'
 import { NICK_STYLES, AVATAR_STYLES } from '@/data/cosmeticsData'
 
 export const useCosmeticsStore = defineStore('cosmetics', () => {

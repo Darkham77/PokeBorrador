@@ -1,4 +1,5 @@
 <script setup lang="ts">
+
 import { ref, onMounted } from 'vue';
 import { useSocialStore } from '@/stores/social';
 import TradeClaimStatus from '@/components/social/TradeClaimStatus.vue';

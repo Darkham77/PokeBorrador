@@ -1,4 +1,4 @@
-import { Pokemon } from './pokemon';
+import { Pokemon } from './pokemon.ts';
 
 
 export interface BattleStages {
@@ -72,7 +72,7 @@ export interface BattleLog {
   source?: BattleSource;
 }
 
-import type { BattleContext } from './battleContext';
+import type { BattleContext } from './battleContext.ts';
 
 export type LogFn = (msg: string, type?: string, actor?: Pokemon | string | null, side?: 'player' | 'enemy' | null) => void;
 

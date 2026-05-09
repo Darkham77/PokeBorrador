@@ -7,7 +7,8 @@ import { useEventStore } from '@/stores/events';
 import { usePlayerClassStore } from '@/stores/playerClass';
 import { useWarStore } from '@/stores/war';
 import type { Pokemon, PokemonMove, PokemonIVs } from '@/types/pokemon';
-import { logger } from './utils/logger';
+import { getExpNeededPure, calcStatsPure } from './pokemon/statsMath.ts';
+import { logger } from './utils/logger.ts';
 import { Temporal } from '@js-temporal/polyfill';
 
 /**
@@ -54,9 +55,7 @@ export function ensurePokemonGender(p: Pokemon): boolean {
 }
 
 export function getExpNeeded(level: number): number {
-  if (level >= 100) return Infinity;
-  // Medium Fast curve scaled for web game: (Lv+1)^3 - Lv^3
-  return Math.floor(Math.pow(level + 1, 3) - Math.pow(level, 3));
+  return getExpNeededPure(level);
 }
 
 export function recalcPokemonStats(p: Pokemon): void {
@@ -64,22 +63,38 @@ export function recalcPokemonStats(p: Pokemon): void {
   
   const base = pokemonDataProvider.getPokemonData(p.id);
   if (!base) return;
+  
   const natureData = pokemonDataProvider.getNatureData(p.nature) || { up: null, down: null };
+  const isDittoMetalPowder = p.heldItem === 'Polvo Metálico' && p.id === 'ditto';
 
-  const getStat = (baseVal: number, iv: number, level: number, statName: string) => {
-    let val = Math.floor((baseVal * 2 + iv) * level / 100 + 5);
-    if (natureData.up === statName) val = Math.floor(val * 1.1);
-    if (natureData.down === statName) val = Math.floor(val * 0.9);
-    return val;
-  };
+  const calculated = calcStatsPure(
+    p.level,
+    {
+      hp: p.ivs.hp,
+      atk: p.ivs.atk,
+      def: p.ivs.def,
+      spa: p.ivs.spa,
+      spd: p.ivs.spd,
+      spe: p.ivs.spe
+    },
+    {
+      hp: base.hp || 10,
+      atk: base.atk || 10,
+      def: base.def || 10,
+      spa: base.spa,
+      spd: base.spd,
+      spe: base.spe
+    },
+    natureData,
+    isDittoMetalPowder
+  );
 
-  p.maxHp = Math.floor((base.hp * 2 + p.ivs.hp) * p.level / 100 + p.level + 10);
-  p.atk = getStat(base.atk, p.ivs.atk, p.level, 'Ataque');
-  p.def = getStat(base.def, p.ivs.def, p.level, 'Defensa');
-  if (p.heldItem === 'Polvo Metálico' && p.id === 'ditto') p.def = Math.floor(p.def * 1.5);
-  p.spa = getStat(base.spa || base.atk, p.ivs.spa, p.level, 'At. Esp');
-  p.spd = getStat(base.spd || base.def, p.ivs.spd, p.level, 'Def. Esp');
-  p.spe = getStat(base.spe || 45, p.ivs.spe, p.level, 'Velocidad');
+  p.maxHp = calculated.maxHp;
+  p.atk = calculated.atk;
+  p.def = calculated.def;
+  p.spa = calculated.spa;
+  p.spd = calculated.spd;
+  p.spe = calculated.spe;
 
   // Asegurar que todos los stats base sean números válidos
   const stats: (keyof Pokemon)[] = ['maxHp', 'atk', 'def', 'spa', 'spd', 'spe'];

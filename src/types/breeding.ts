@@ -1,4 +1,4 @@
-import type { Pokemon, PokemonIVs } from './pokemon'
+import type { Pokemon, PokemonIVs } from './pokemon.ts'
 
 export interface DaycareSlot {
   pokemon: Pokemon | null;

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+
 import { computed, onMounted } from 'vue'
 import { useMapStore } from '@/stores/map'
 import { useUIStore } from '@/stores/ui'

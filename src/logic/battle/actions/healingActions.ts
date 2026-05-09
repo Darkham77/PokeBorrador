@@ -1,6 +1,6 @@
 import type { MoveAction } from '@/types/battle';
 import { getDayCycle } from '@/logic/timeUtils';
-import { getMechanicalWeather, WEATHER_MECHANICAL } from '../weatherMapper';
+import { getMechanicalWeather, WEATHER_MECHANICAL } from '../weatherMapper.ts';
 
 export const HEALING_ACTIONS: Record<string, MoveAction> = {
   'heal_50': (src, _tgt, _srcStages, _tgtStages, addLogFn) => {

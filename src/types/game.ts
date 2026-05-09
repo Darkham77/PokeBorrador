@@ -1,6 +1,6 @@
-import { Pokemon, PokemonEgg } from './pokemon';
-import type { DaycareMission } from './breeding';
-import type { BattleState } from './battle';
+import { Pokemon, PokemonEgg } from './pokemon.ts';
+import type { DaycareMission } from './breeding.ts';
+import type { BattleState } from './battle.ts';
 
 export interface NotificationItem {
   id: string;

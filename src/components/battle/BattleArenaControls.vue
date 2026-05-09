@@ -1,4 +1,5 @@
 <script setup lang="ts">
+
 import { computed, watch, defineAsyncComponent, type Component } from 'vue'
 import { useBattleStore } from '@/stores/battle'
 import { useUIStore } from '@/stores/ui'

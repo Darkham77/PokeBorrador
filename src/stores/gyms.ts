@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
-import { useGameStore } from './game'
-import { useBattleStore } from './battle'
+import { useGameStore } from './game.ts'
+import { useBattleStore } from './battle.ts'
 import { makePokemon } from '@/logic/pokemonFactory'
 import type { Pokemon } from '@/types/pokemon'
 

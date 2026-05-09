@@ -1,4 +1,4 @@
-import { getCombinedEffectiveness } from '../battleEngine'
+import { getCombinedEffectiveness } from '../battleEngine.ts'
 import type { Pokemon, Move } from '@/types/pokemon'
 import type { BattleStages } from '@/types/battle'
 

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+
 import { useBreedingStore } from '@/stores/breeding';
 import { ref } from 'vue';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';

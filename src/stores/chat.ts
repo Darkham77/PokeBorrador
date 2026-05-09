@@ -1,9 +1,9 @@
 import { defineStore } from 'pinia'
 import { ref, reactive, watch } from 'vue'
-import { useAuthStore } from './auth'
-import { useGameStore } from './game'
-import { useUIStore } from './ui'
-import { useAudioStore } from './audio'
+import { useAuthStore } from './auth.ts'
+import { useGameStore } from './game.ts'
+import { useUIStore } from './ui.ts'
+import { useAudioStore } from './audio.ts'
 import { logger } from '@/logic/utils/logger'
 import { Temporal } from '@js-temporal/polyfill'
 
