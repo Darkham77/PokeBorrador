@@ -166,7 +166,7 @@ onUnmounted(() => {
 .fishing-minigame-overlay {
   position: absolute;
   inset: 0;
-  z-index: var(--z-hud);
+  z-index: Var(--z-hud);
   background: Rgba(0, 0, 0, 0.7);
   -webkit-backdrop-filter: Blur(8px);
   backdrop-filter: Blur(8px);
@@ -288,7 +288,7 @@ onUnmounted(() => {
   position: absolute;
   top: 60%;
   left: 50%;
-  transform: translateX(-50%);
+  transform: TranslateX(-50%);
   font-size: 18px;
   color: #ff4d4d;
   text-shadow: 0 0 10px Rgba(255, 77, 77, 0.5);
@@ -305,8 +305,8 @@ onUnmounted(() => {
 }
 
 @keyframes bounce {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
+  0%, 100% { transform: TranslateY(0); }
+  50% { transform: TranslateY(-10px); }
 }
 
 .fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease; }

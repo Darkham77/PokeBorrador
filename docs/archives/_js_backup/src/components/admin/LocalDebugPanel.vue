@@ -138,8 +138,8 @@ const selectedCategory = ref('stats')
 
 .debug-trigger {
   position: relative;
-  z-index: var(--z-max);
-  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  z-index: Var(--z-max);
+  transition: all 0.4s cubic-Bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .trigger-btn {

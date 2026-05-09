@@ -1,10 +1,9 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { ref, inject, computed, type ComputedRef } from 'vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
 import { useUIStore } from '@/stores/ui'
 import { useElementVisibility } from '@/composables/useElementVisibility'
-import { ref, inject } from 'vue'
 
 import UnifiedBadgePill from '@/components/shared/UnifiedBadgePill.vue'
 import { getPokemonTier } from '@/logic/constants/tiers'
@@ -12,8 +11,10 @@ import { getPokemonVisualBadges } from '@/logic/constants/tags'
 import PokemonTypePills from '@/components/shared/PokemonTypePills.vue'
 import { calculateTotalPower } from '@/logic/pokemonUtils'
 
+import type { Pokemon } from '@/types/pokemon'
+
 interface Props {
-  pokemon: any
+  pokemon: Pokemon
   index?: number
   isPvp?: boolean
   maxObeyLv?: number
@@ -36,15 +37,15 @@ const emit = defineEmits<{
   (e: 'openItem', index: number): void
   (e: 'sendToBox', index: number): void
   (e: 'select', index: number): void
-  (e: 'toggle-tag', tagId: any): void
+  (e: 'toggle-tag', tagId: string): void
 }>()
 
 const cardRef = ref(null)
 const { isVisible } = useElementVisibility(cardRef)
-const uiStore = useUIStore() as any
+const uiStore = useUIStore()
 
 // Hierarchy & Performance Injections
-const isModalPerformance = inject<any>('isModalPerformanceMode', null)
+const isModalPerformance = inject<ComputedRef<boolean> | null>('isModalPerformanceMode', null)
 const isPerformanceActive = computed(() => {
   if (uiStore.isSimplifiedModalsMode) return true
   
@@ -63,7 +64,7 @@ const getHpClass = (pct: number) => {
   return 'hp-low'
 }
 
-const tierInfo = computed<any>(() => getPokemonTier(props.pokemon))
+const tierInfo = computed(() => getPokemonTier(props.pokemon))
 
 const badgesCount = computed(() => getPokemonVisualBadges(props.pokemon).length)
 const hasBadges = computed(() => badgesCount.value > 0)

@@ -106,10 +106,10 @@ const handlePanelClick = (event) => {
 .trainer-lv {
   @include pixelated;
   font-size: 8px;
-  color: var(--gray);
+  color: Var(--gray);
   margin-top: 2px;
   
-  span { color: var(--yellow); }
+  span { color: Var(--yellow); }
 }
 .exp-bar-container {
   margin-top: 5px;
@@ -150,10 +150,10 @@ const handlePanelClick = (event) => {
   @include pixelated;
   font-size: 8px;
   font-weight: bold;
-  border: 2px solid var(--white);
+  border: 2px solid Var(--white);
   box-shadow: 0 0 10px Rgba(239, 68, 68, 0.5);
   animation: pulse-red 2s infinite;
-  z-index: var(--z-base);
+  z-index: Var(--z-base);
 }
 
 @keyframes pulse-red {

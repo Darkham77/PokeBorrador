@@ -30,18 +30,18 @@ const availableBalls = computed(() => {
   const inventory = gameStore.state.inventory || {}
   return Object.entries(inventory)
     .filter(([name, qty]) => {
-      if ((qty as number) <= 0) return false
+      if (typeof qty !== 'number' || qty <= 0) return false
       const item = SHOP_ITEMS.find(i => i.name === name)
       return item && item.cat === 'pokeballs'
     })
     .map(([name, qty]) => {
-      const item = SHOP_ITEMS.find(i => i.name === name) as any
+      const item = SHOP_ITEMS.find(i => i.name === name)
       return {
         name,
-        qty,
-        price: item.price || 0,
-        sprite: item.sprite,
-        id: item.id
+        qty: qty as number,
+        price: (item as { price?: number })?.price || 0,
+        sprite: (item as { sprite: string }).sprite,
+        id: (item as { id: string }).id
       }
     })
     .sort((a, b) => b.price - a.price)

@@ -6,13 +6,15 @@ import { useUIStore } from '@/stores/ui'
 import { useInventoryStore } from '@/stores/inventory'
 import UnifiedTeamSlot from './UnifiedTeamSlot.vue'
 
-const gameStore = useGameStore() as any
-const uiStore = useUIStore() as any
-const invStore = useInventoryStore() as any
-const boxStore = useBoxStore() as any
+import type { Pokemon } from '@/types/pokemon'
+
+const gameStore = useGameStore()
+const uiStore = useUIStore()
+const invStore = useInventoryStore()
+const boxStore = useBoxStore()
 
 defineProps<{
-  team: any[]
+  team: Pokemon[]
 }>()
 
 const maxObeyLv = computed(() => gameStore.getMaxObeyLevel())
@@ -44,7 +46,8 @@ const handleCardClick = (index: number) => {
   } else if (selectType.value === 'rocket') {
     boxStore.toggleTeamRocketSelect(index)
   } else {
-    uiStore.openPokemonDetail(gameStore.state.team[index], index, 'team')
+    const p = gameStore.state.team[index]
+    if (p) uiStore.openPokemonDetail(p, index, 'team')
   }
 }
 

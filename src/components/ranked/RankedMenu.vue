@@ -8,24 +8,24 @@ import { useUIStore } from '@/stores/ui';
 import Leaderboard from './Leaderboard.vue';
 import RewardsTrack from './RewardsTrack.vue';
 
-const gameStore = useGameStore() as any;
-const rankedStore = usePvPStore() as any;
-const passivePvpStore = usePassivePvpStore() as any;
-const uiStore = useUIStore() as any;
+const gameStore = useGameStore();
+const rankedStore = usePvPStore();
+const passivePvpStore = usePassivePvpStore();
+const uiStore = useUIStore();
 const { validateTeam } = useRankedValidation();
-
+ 
 const isSearching = ref(false);
 const activeTab = ref('overview');
-
+ 
 onMounted(() => {
-  rankedStore.fetchRules();
+  rankedStore.loadPvPData();
   passivePvpStore.loadStatus();
 });
-
+ 
 const currentTier = computed(() => rankedStore.currentTier(gameStore.state.eloRating));
 
 const startSearch = async () => {
-  const team = (gameStore.state.team as any[]).filter(p => p.hp > 0 && !p.onMission);
+  const team = gameStore.state.team.filter(p => p.hp > 0 && !p.onMission);
   const validation = validateTeam(team) as { ok: boolean, reason: string };
   
   if (!validation.ok) {
@@ -53,30 +53,30 @@ const cancelSearch = () => {
       <div class="season-info">
         <span class="season-tag press-start">TEMPORADA</span>
         <h2 class="season-name">
-          {{ rankedStore.rules.seasonName }}
+          {{ rankedStore.rules?.name || 'Temporada Actual' }}
         </h2>
         <div class="dates">
-          {{ rankedStore.rules.seasonStartDate }} - {{ rankedStore.rules.seasonEndDate }}
+          {{ rankedStore.rules?.startDate || '...' }} - {{ rankedStore.rules?.endDate || '...' }}
         </div>
       </div>
       
       <div class="player-stat card-glass">
         <div
           class="ranked-tier-badge"
-          :style="{ backgroundColor: currentTier.color + '22', borderColor: currentTier.color }"
+          :style="{ backgroundColor: (currentTier?.color || '#fff') + '22', borderColor: currentTier?.color }"
         >
-          <span class="tier-icon">{{ currentTier.icon }}</span>
+          <span class="tier-icon">{{ currentTier?.icon }}</span>
           <div class="tier-details">
             <span
               class="tier-name"
-              :style="{ color: currentTier.color }"
-            >{{ currentTier.name }}</span>
+              :style="{ color: currentTier?.color }"
+            >{{ currentTier?.name }}</span>
             <span class="elo-val press-start">{{ gameStore.state.eloRating || 1000 }} LP</span>
           </div>
         </div>
       </div>
     </div>
-
+ 
     <!-- Matchmaking Button -->
     <div class="search-section">
       <button 
@@ -100,7 +100,7 @@ const cancelSearch = () => {
         </button>
       </div>
     </div>
-
+ 
     <!-- Tabs Navigation -->
     <div class="tabs-nav">
       <button 
@@ -118,7 +118,7 @@ const cancelSearch = () => {
         RANKING GLOBAL
       </button>
     </div>
-
+ 
     <!-- Tab Content -->
     <div class="tab-content custom-scrollbar">
       <div
@@ -135,14 +135,14 @@ const cancelSearch = () => {
           <div class="rules-grid">
             <div class="rule-item">
               <span class="label">Máximo Pokémon</span>
-              <span class="val">{{ rankedStore.rules.maxPokemon }}</span>
+              <span class="val">{{ rankedStore.rules?.maxPokemon || 6 }}</span>
             </div>
             <div class="rule-item">
               <span class="label">Límite Nivel</span>
-              <span class="val">{{ rankedStore.rules.levelCap }}</span>
+              <span class="val">{{ rankedStore.rules?.levelCap || 100 }}</span>
             </div>
             <div
-              v-if="rankedStore.rules.allowedTypes.length"
+              v-if="rankedStore.rules?.allowedTypes?.length"
               class="rule-item"
             >
               <span class="label">Tipos Permitidos</span>

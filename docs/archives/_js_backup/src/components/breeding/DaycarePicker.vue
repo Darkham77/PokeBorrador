@@ -123,7 +123,7 @@ const selectPokemon = (p) => {
 .daycare-picker-overlay {
   position: fixed;
   inset: 0;
-  z-index: var(--z-modal);
+  z-index: Var(--z-modal);
   background: Rgba(0, 0, 0, 0.8);
   -webkit-backdrop-filter: Blur(4px);
   backdrop-filter: Blur(4px);
@@ -132,7 +132,7 @@ const selectPokemon = (p) => {
   align-items: center;
   justify-content: center;
   padding: 20px;
-  transform: translateZ(0);
+  transform: TranslateZ(0);
 }
 
 .daycare-picker {
@@ -187,7 +187,7 @@ const selectPokemon = (p) => {
 }
 
 .pokemon-card {
-  @include pokemon-list-item-standard(12px);
+  @include pokemon-list-item-Standard(12px);
   padding: 10px;
   display: flex;
   align-items: center;

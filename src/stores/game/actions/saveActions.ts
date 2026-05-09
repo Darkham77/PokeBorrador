@@ -159,7 +159,7 @@ export function useSaveActions(
     await save(false)
   }
 
-  async function claimAsset(claimId: string) {
+  async function claimAsset(claimId: string | number) {
     if (!authStore.user || !db.value) return false
     try {
       const { data, error } = await db.value.rpc('claim_asset_v2', { p_claim_id: claimId })

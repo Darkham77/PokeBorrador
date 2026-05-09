@@ -125,7 +125,7 @@ async function handleCancel(id) {
 
 .my-listings-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: Repeat(auto-fill, Minmax(280px, 1fr));
   gap: 12px;
 }
 
@@ -158,7 +158,7 @@ async function handleCancel(id) {
     flex: 1;
     display: flex;
     flex-direction: column;
-    .name { font-size: 13px; font-weight: bold; color: var(--white); }
+    .name { font-size: 13px; font-weight: bold; color: Var(--white); }
     .price { @include pixelated; font-size: 8px; color: $coin-gold; margin-top: 4px;}
   }
 
@@ -172,7 +172,7 @@ async function handleCancel(id) {
     font-weight: bold;
     cursor: pointer;
     transition: all 0.2s;
-    &:hover { background: Rgba(248, 113, 113, 1); color: var(--white); }
+    &:hover { background: Rgba(248, 113, 113, 1); color: Var(--white); }
   }
 }
 
@@ -197,7 +197,7 @@ async function handleCancel(id) {
     flex-direction: column;
     gap: 4px;
     .date { font-size: 10px; color: $muted; }
-    .item-name { font-size: 13px; color: var(--white); strong { color: Rgba(168, 85, 247, 1); } }
+    .item-name { font-size: 13px; color: Var(--white); strong { color: Rgba(168, 85, 247, 1); } }
   }
 
   .sale-value {

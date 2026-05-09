@@ -176,7 +176,7 @@ const getGenderClass = (gender) => {
 @use "@/styles/core/tools" as *;
 
 .daycare-view {
-  color: var(--white);
+  color: Var(--white);
   font-family: 'Inter', system-ui, sans-serif;
 }
 
@@ -188,7 +188,7 @@ const getGenderClass = (gender) => {
     @include pixelated;
     font-size: 24px;
     margin-bottom: 8px;
-    background: Linear-Gradient(to right, var(--purple-light), var(--blue-light));
+    background: Linear-Gradient(to right, Var(--purple-light), Var(--blue-light));
     -webkit-background-clip: text;
     -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; background-clip: text;;;;;
     -webkit-text-fill-color: transparent;
@@ -196,8 +196,8 @@ const getGenderClass = (gender) => {
   }
   
   .subtitle {
-    @include pixel-perfect(8px);
-    color: var(--gray);
+    @include pixel-Perfect(8px);
+    color: Var(--gray);
     margin-bottom: 32px;
     opacity: 0.7;
     letter-spacing: 1px;
@@ -214,7 +214,7 @@ const getGenderClass = (gender) => {
     background: none;
     border: none;
     padding: 12px 24px;
-    color: var(--gray);
+    color: Var(--gray);
     font-weight: 600;
     font-size: 14px;
     cursor: pointer;
@@ -222,7 +222,7 @@ const getGenderClass = (gender) => {
     transition: color 0.2s;
     
     &.active {
-      color: var(--white);
+      color: Var(--white);
       &::after {
         content: '';
         position: absolute;
@@ -238,8 +238,8 @@ const getGenderClass = (gender) => {
       position: absolute;
       top: 4px;
       right: 4px;
-      background: var(--red);
-      color: var(--white);
+      background: Var(--red);
+      color: Var(--white);
       font-size: 10px;
       padding: 2px 6px;
       border-radius: 99px;
@@ -248,7 +248,7 @@ const getGenderClass = (gender) => {
 }
 
 .daycare-main {
-  padding: var(--ui-v-gap) var(--ui-h-padding);
+  padding: Var(--ui-v-gap) Var(--ui-h-padding);
   max-width: 800px;
   margin: 0 auto;
 }
@@ -262,19 +262,19 @@ const getGenderClass = (gender) => {
 
 .daycare-slot {
   flex: 1;
-  @include glass-solid(Rgba(255, 255, 255, 0.03));
+  @include glass-Solid(Rgba(255, 255, 255, 0.03));
   border-radius: 20px;
   aspect-ratio: 1/1;
   display: flex;
   align-items: center;
   justify-content: center;
   border: 1px solid Rgba(255, 255, 255, 0.05);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  @include will-animate(transform, background, border-color);
+  transition: all 0.3s cubic-Bezier(0.4, 0, 0.2, 1);
+  @include will-Animate(transform, background, border-color);
   
-  &:not(.empty):hover {
+  &:Not(.empty):hover {
     transform: TranslateY(-4px);
-    border-color: var(--purple-light);
+    border-color: Var(--purple-light);
     background: Rgba(255, 255, 255, 0.06);
   }
   
@@ -308,7 +308,7 @@ const getGenderClass = (gender) => {
 .btn-deposit {
   background: none;
   border: none;
-  color: var(--gray);
+  color: Var(--gray);
   @include pixelated;
   font-size: 8px;
   display: flex;
@@ -323,7 +323,7 @@ const getGenderClass = (gender) => {
   }
   
   &:hover {
-    color: var(--gray);
+    color: Var(--gray);
   }
 }
 
@@ -345,7 +345,7 @@ const getGenderClass = (gender) => {
   .timer {
     @include pixelated;
     font-size: 10px;
-    color: var(--white);
+    color: Var(--white);
   }
 }
 
@@ -354,7 +354,7 @@ const getGenderClass = (gender) => {
   opacity: 0.1;
   filter: Grayscale(100%);
   transition: all 0.5s;
-  @include will-animate(transform);
+  @include will-Animate(transform);
   
   &.active {
     opacity: 1;
@@ -388,7 +388,7 @@ const getGenderClass = (gender) => {
     h4 {
       font-size: 14px;
       font-weight: 800;
-      color: var(--white);
+      color: Var(--white);
       text-transform: uppercase;
       letter-spacing: 1px;
     }
@@ -414,13 +414,13 @@ const getGenderClass = (gender) => {
   
   .label {
     font-size: 10px;
-    color: var(--gray);
+    color: Var(--gray);
     font-weight: 600;
   }
   
   .value {
     font-size: 12px;
-    color: var(--white);
+    color: Var(--white);
     font-weight: 700;
   }
   
@@ -442,7 +442,7 @@ const getGenderClass = (gender) => {
   border-top: 1px dashed Rgba(51, 65, 85, 1);
   p {
     font-size: 11px;
-    color: var(--gray);
+    color: Var(--gray);
     line-height: 1.5;
   }
 }
@@ -450,7 +450,7 @@ const getGenderClass = (gender) => {
 .empty-state {
   text-align: center;
   padding: 60px 0;
-  color: var(--gray);
+  color: Var(--gray);
   .icon {
     font-size: 48px;
     margin-bottom: 16px;

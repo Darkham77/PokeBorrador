@@ -176,7 +176,7 @@ watch(() => uiStore.isBattleSwitchForced, (val) => {
   --move-card-max-width: 200px;
   --move-panel-gap: 12px;
   --info-zone-width: 16px; 
-  --move-panel-max-width: calc(((var(--move-card-max-width) + var(--info-zone-width)) * 2) + var(--move-panel-gap));
+  --move-panel-max-width: Calc(((Var(--move-card-max-width) + Var(--info-zone-width)) * 2) + Var(--move-panel-gap));
   --shortcut-zone-width: 160px;
   
   padding: 0 !important; 
@@ -185,7 +185,7 @@ watch(() => uiStore.isBattleSwitchForced, (val) => {
   gap: 0;
   position: relative;
   overflow: visible !important; 
-  z-index: var(--z-low);
+  z-index: Var(--z-low);
   
   @media (max-width: 959px) {
     padding: 0;
@@ -241,7 +241,7 @@ watch(() => uiStore.isBattleSwitchForced, (val) => {
 
 .controls-content {
   width: 100%;
-  max-width: var(--move-panel-max-width);
+  max-width: Var(--move-panel-max-width);
   display: flex;
   flex-direction: column;
   gap: 8px; // Gap reducido entre movimientos y botones
@@ -251,7 +251,7 @@ watch(() => uiStore.isBattleSwitchForced, (val) => {
   min-height: 230px; // Reserva de espacio determinista para evitar saltos de cámara
 }
 
-:deep(.moves-grid-vicio) {
+:Deep(.moves-grid-vicio) {
   margin-bottom: 0 !important;
 }
 
@@ -262,7 +262,7 @@ watch(() => uiStore.isBattleSwitchForced, (val) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: var(--z-overlay);
+  z-index: Var(--z-overlay);
   pointer-events: all;
   cursor: pointer;
   -webkit-backdrop-filter: Blur(4px);
@@ -276,11 +276,11 @@ watch(() => uiStore.isBattleSwitchForced, (val) => {
 }
 
 .continue-btn-final {
-  @include btn-vicio('info', 'md', true);
+  @include btn-Vicio('info', 'md', true);
   max-width: 300px;
   display: flex;
   align-items: center;
-  z-index: calc(var(--z-overlay) + 1);
+  z-index: Calc(Var(--z-overlay) + 1);
   pointer-events: all;
   cursor: pointer;
   justify-content: flex-start;
@@ -289,7 +289,7 @@ watch(() => uiStore.isBattleSwitchForced, (val) => {
   text-align: left;
   
   &.map-btn {
-    @include btn-vicio('success', 'md', true);
+    @include btn-Vicio('success', 'md', true);
   }
 
   .btn-emoji {
@@ -316,15 +316,15 @@ watch(() => uiStore.isBattleSwitchForced, (val) => {
 }
 
 @keyframes slideInUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: TranslateY(20px); }
+  to { opacity: 1; transform: TranslateY(0); }
 }
 /* Transición de entrada Sincronizada para todo el panel de control */
 .controls-slide-enter-active {
-  transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transition: all 0.5s cubic-Bezier(0.175, 0.885, 0.32, 1.275);
 }
 .controls-slide-enter-from {
   opacity: 0;
-  transform: translateY(30px) Scale(0.95);
+  transform: TranslateY(30px) Scale(0.95);
 }
 </style>

@@ -192,7 +192,7 @@ useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
 
 .global-chat-root {
   position: relative;
-  z-index: var(--z-max);
+  z-index: Var(--z-max);
 }
 
 .chat-toggle-btn {
@@ -205,12 +205,12 @@ useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
   align-items: center;
   gap: 10px;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s cubic-Bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 4px 15px Rgba(0, 0, 0, 0.4);
 
   &:hover {
     transform: TranslateY(-2px);
-    border-color: var(--purple-light);
+    border-color: Var(--purple-light);
     background: Rgba(13, 17, 23, 0.95);
   }
 
@@ -251,7 +251,7 @@ useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
   .title {
     @include pixelated;
     font-size: 10px;
-    color: var(--purple-light);
+    color: Var(--purple-light);
     text-shadow: 2px 2px 0px Rgba(0, 0, 0, 0.5); // Sharp shadow for pixel font
   }
 
@@ -353,12 +353,12 @@ useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
     outline: none;
     transition: border-color 0.2s;
 
-    &:focus { border-color: var(--purple-light); }
+    &:focus { border-color: Var(--purple-light); }
     &:disabled { opacity: 0.5; cursor: not-allowed; }
   }
 
   .send-btn {
-    background: var(--purple);
+    background: Var(--purple);
     border: none;
     border-radius: 8px;
     width: 38px;
@@ -367,7 +367,7 @@ useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
     cursor: pointer;
     transition: all 0.2s;
 
-    &:hover:not(:disabled) { background: Rgba(157, 78, 221, 1); transform: Scale(1.05); }
+    &:hover:Not(:disabled) { background: Rgba(157, 78, 221, 1); transform: Scale(1.05); }
     &:disabled { opacity: 0.3; }
   }
 
@@ -384,7 +384,7 @@ useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
 // Animations removed as BaseModal handles them
 
 .animate-pop {
-  animation: pop 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  animation: pop 0.25s cubic-Bezier(0.175, 0.885, 0.32, 1.275) forwards;
 }
 
 @keyframes pop {

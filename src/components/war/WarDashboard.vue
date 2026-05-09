@@ -5,7 +5,12 @@ import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { WEEKLY_REWARD_MILESTONES } from '@/logic/war/warEngine'
 import MapControlList from './MapControlList.vue'
 
-const warStore = useWarStore() as any
+const warStore = useWarStore()
+
+interface Milestone {
+  pt: number
+  coins: number
+}
 
 const dispute = computed(() => warStore.isDisputeActive)
 
@@ -13,7 +18,7 @@ const dispute = computed(() => warStore.isDisputeActive)
 const globalScore = computed(() => {
   let union = 0
   let poder = 0
-  Object.values(warStore.mapDominance).forEach((m: any) => {
+  Object.values(warStore.mapDominance).forEach((m) => {
     if (m.winner === 'union') union++
     else if (m.winner === 'poder') poder++
     else if (m.union > m.poder) union++
@@ -23,13 +28,14 @@ const globalScore = computed(() => {
 })
 
 const nextReward = computed(() => {
-  return (WEEKLY_REWARD_MILESTONES as any[]).find(m => warStore.weeklyPoints < m.pt) || 
-         WEEKLY_REWARD_MILESTONES[WEEKLY_REWARD_MILESTONES.length - 1]
+  const milestones = WEEKLY_REWARD_MILESTONES as Milestone[]
+  return milestones.find(m => warStore.weeklyPoints < m.pt) || 
+         milestones[milestones.length - 1]
 })
 
 const progressPercent = computed(() => {
   const current = warStore.weeklyPoints
-  const target = (nextReward.value as any).pt
+  const target = nextReward.value?.pt || 100
   return Math.min(100, (current / target) * 100)
 })
 
@@ -114,7 +120,7 @@ onMounted(async () => {
       </div>
 
       <div class="reward-preview">
-        Próximo premio: <span class="highlight">🪙{{ nextReward.coins }} Monedas</span> al llegar a {{ nextReward.pt }} PT
+        Próximo premio: <span class="highlight">🪙{{ nextReward?.coins || 0 }} Monedas</span> al llegar a {{ nextReward?.pt || 0 }} PT
       </div>
     </div>
 

@@ -219,14 +219,14 @@ defineEmits(['toggle-editing'])
 }
 
 .press-start { @include pixelated; font-size: 10px; letter-spacing: 1px; }
-.sub-title { margin: 30px 0 15px; color: var(--yellow); font-size: 8px; }
+.sub-title { margin: 30px 0 15px; color: Var(--yellow); font-size: 8px; }
 
-.add-btn { background: var(--green); color: $white; border: none; padding: 10px 20px; border-radius: 12px; font-weight: bold; cursor: pointer; }
-.back-btn { background: transparent; border: 1px solid var(--red); color: var(--red); padding: 8px 16px; border-radius: 12px; cursor: pointer; }
+.add-btn { background: Var(--green); color: $white; border: none; padding: 10px 20px; border-radius: 12px; font-weight: bold; cursor: pointer; }
+.back-btn { background: transparent; border: 1px solid Var(--red); color: Var(--red); padding: 8px 16px; border-radius: 12px; cursor: pointer; }
 
 .event-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  grid-template-columns: Repeat(auto-fill, Minmax(250px, 1fr));
   gap: 16px;
 }
 
@@ -256,7 +256,7 @@ defineEmits(['toggle-editing'])
     border-radius: 8px;
     font-size: 11px;
     cursor: pointer;
-    &:hover { background: Rgba(255, 255, 255, 0.05); border-color: var(--yellow); }
+    &:hover { background: Rgba(255, 255, 255, 0.05); border-color: Var(--yellow); }
   }
 
   &.inactive { opacity: 0.6; filter: Grayscale(1); }
@@ -273,7 +273,7 @@ defineEmits(['toggle-editing'])
     display: flex;
     flex-direction: column;
     gap: 8px;
-    label { font-size: 11px; color: var(--muted); font-weight: 700; }
+    label { font-size: 11px; color: Var(--muted); font-weight: 700; }
     input, textarea, select {
       background: Rgba(0, 0, 0, 0.3);
       border: 1px solid Rgba(255, 255, 255, 0.1);
@@ -289,7 +289,7 @@ defineEmits(['toggle-editing'])
 
   .bonus-form-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: Repeat(3, 1fr);
     gap: 16px;
     .bonus-input {
       display: flex;
@@ -303,7 +303,7 @@ defineEmits(['toggle-editing'])
   .save-btn {
     margin-top: 20px;
     padding: 16px;
-    background: Linear-Gradient(135deg, var(--yellow), var(--orange));
+    background: Linear-Gradient(135deg, Var(--yellow), Var(--orange));
     border: none;
     border-radius: 16px;
     color: $black;
@@ -318,8 +318,8 @@ defineEmits(['toggle-editing'])
   display: flex;
   align-items: center;
   gap: 10px;
-  color: var(--muted);
+  color: Var(--muted);
   font-size: 13px;
-  input { accent-color: var(--yellow); }
+  input { accent-color: Var(--yellow); }
 }
 </style>

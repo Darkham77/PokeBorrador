@@ -235,7 +235,7 @@ const rankTitle = computed(() => {
 .class-info-overlay {
   position: fixed;
   inset: 0;
-  z-index: var(--z-modal);
+  z-index: Var(--z-modal);
   background: Rgba(0, 0, 0, 0.9);
   display: flex;
   align-items: center;
@@ -245,7 +245,7 @@ const rankTitle = computed(() => {
   backdrop-filter: Blur(4px);
   @include gpu-layer;
   animation: fadeIn 0.2s ease;
-  transform: translateZ(0);
+  transform: TranslateZ(0);
 }
 
 .info-modal {
@@ -259,7 +259,7 @@ const rankTitle = computed(() => {
   max-height: 90dvh;
   overflow-y: auto;
   min-height: 0;
-  border-color: Rgba(var(--class-color), 0.2);
+  border-color: Rgba(Var(--class-color), 0.2);
 }
 
 .close-modal-btn {
@@ -273,7 +273,7 @@ const rankTitle = computed(() => {
   height: 32px;
   border-radius: 50%;
   cursor: pointer;
-  z-index: var(--z-base);
+  z-index: Var(--z-base);
   &:hover { background: Rgba(255, 255, 255, 0.1); color: $white; }
 }
 
@@ -296,13 +296,13 @@ const rankTitle = computed(() => {
   position: relative;
   width: 100%;
   max-width: 300px;
-  background: Radial-Gradient(circle, Rgba(var(--class-color), 0.15) 0%, transparent 70%);
+  background: Radial-Gradient(circle, Rgba(Var(--class-color), 0.15) 0%, transparent 70%);
   border-radius: 30px;
   padding: 20px;
   display: flex;
   justify-content: center;
   margin-bottom: 24px;
-  border: 1px solid Rgba(var(--class-color), 0.1);
+  border: 1px solid Rgba(Var(--class-color), 0.1);
 
   .class-sprite {
     width: 220px;
@@ -320,7 +320,7 @@ const rankTitle = computed(() => {
 
 .class-title-block {
   text-align: center;
-  h2 { font-size: 18px; color: var(--class-color); margin-bottom: 12px; letter-spacing: 1px; }
+  h2 { font-size: 18px; color: Var(--class-color); margin-bottom: 12px; letter-spacing: 1px; }
   .quote { color: Rgba(148, 163, 184, 1); font-size: 14px; font-style: italic; line-height: 1.6; }
 }
 
@@ -424,16 +424,16 @@ const rankTitle = computed(() => {
   overflow: hidden;
 
   &.main {
-    background: Linear-Gradient(135deg, var(--class-color), var(--class-color-dark));
-    box-shadow: 0 4px 0 var(--class-color-dark);
+    background: Linear-Gradient(135deg, Var(--class-color), Var(--class-color-dark));
+    box-shadow: 0 4px 0 Var(--class-color-dark);
     .shine { position: absolute; top: 0; left: 0; right: 0; height: 40%; background: Linear-Gradient(to bottom, Rgba(255, 255, 255, 0.2), transparent); }
-    &:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--class-color-dark); }
+    &:active { transform: TranslateY(2px); box-shadow: 0 2px 0 Var(--class-color-dark); }
   }
 
   &.rep {
     background: Linear-Gradient(135deg, Rgba(34, 197, 94, 1), Rgba(22, 163, 74, 1));
     box-shadow: 0 4px 0 Rgba(20, 83, 45, 1);
-    &:active { transform: translateY(2px); box-shadow: 0 2px 0 #14532d; }
+    &:active { transform: TranslateY(2px); box-shadow: 0 2px 0 #14532d; }
   }
 
   &.secondary {
@@ -447,10 +447,10 @@ const rankTitle = computed(() => {
   }
 
   &.primary {
-    background: Linear-Gradient(135deg, var(--class-color), var(--class-color-dark));
-    box-shadow: 0 4px 0 var(--class-color-dark);
+    background: Linear-Gradient(135deg, Var(--class-color), Var(--class-color-dark));
+    box-shadow: 0 4px 0 Var(--class-color-dark);
     font-size: 10px;
-    &:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--class-color-dark); }
+    &:active { transform: TranslateY(2px); box-shadow: 0 2px 0 Var(--class-color-dark); }
   }
 }
 

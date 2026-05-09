@@ -85,13 +85,13 @@ const updateZoom = (val) => {
 .zoom-label {
   display: block;
   font-size: 14px;
-  color: var(--white);
+  color: Var(--white);
   margin-bottom: 20px;
   font-weight: 700;
 }
 
 .zoom-value {
-  color: var(--yellow);
+  color: Var(--yellow);
   font-weight: 800;
 }
 
@@ -99,7 +99,7 @@ const updateZoom = (val) => {
   width: 100%;
   height: 12px;
   cursor: pointer;
-  accent-color: var(--yellow);
+  accent-color: Var(--yellow);
   margin: 10px 0;
 }
 

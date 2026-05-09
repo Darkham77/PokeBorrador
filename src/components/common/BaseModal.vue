@@ -134,13 +134,13 @@
 
 <script setup lang="ts">
 
-import { ref, watch, computed, inject, onUnmounted } from 'vue'
+import { ref, watch, computed, inject, onUnmounted, type Ref } from 'vue'
 import { useBodyClass } from '@/composables/useBodyClass'
 import { useUIStore } from '@/stores/ui'
 import { Z_LAYERS } from '@/logic/constants/visuals'
 
 const uiStore = useUIStore()
-const isSimplified = inject('isModalPerformanceMode', ref(false))
+const isSimplified = inject<Ref<boolean>>('isModalPerformanceMode', ref(false))
 
 defineOptions({
   inheritAttrs: false

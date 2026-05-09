@@ -6,14 +6,16 @@ import PVTooltip from '@/components/common/PVTooltip.vue'
 import { STATUS_EMOJI_MAP, STATUS_TOOLTIP_MAP, STAT_EMOJI_MAP } from '@/logic/battle/battleUiUtils'
 import { useBattleStore } from '@/stores/battle'
 import { useProfileStore } from '@/stores/profile'
-import { getMechanicalWeather, WEATHER_MECHANICAL, WEATHER_UI_METADATA, WEATHER_VISUAL_METADATA } from '@/logic/battle/weatherMapper'
+import { getMechanicalWeather, WEATHER_MECHANICAL, WEATHER_UI_METADATA, WEATHER_VISUAL_METADATA, type WeatherMechanical } from '@/logic/battle/weatherMapper'
 import { getDayCycle } from '@/logic/timeUtils'
 import { ABILITY_DATA } from '@/data/abilities'
 import { supabase } from '@/logic/supabase'
 import { getStatBreakdown, getStatMultiplier } from '@/logic/battle/battleEngine'
 
+import type { Pokemon } from '@/types/pokemon'
+
 interface Props {
-  pokemon: any
+  pokemon: Pokemon
   isPlayer?: boolean
   nickStyle?: string
   isScrambled?: boolean
@@ -30,7 +32,8 @@ const battleStore = useBattleStore()
 const profileStore = useProfileStore()
 
 const isAdmin = computed(() => {
-  return profileStore.profileData.isAdmin || (window as any).__ADMIN_DEBUG__ || supabase.isLocal
+  const win = window as unknown as { __ADMIN_DEBUG__: boolean }
+  return profileStore.profileData.isAdmin || (typeof window !== 'undefined' && win.__ADMIN_DEBUG__) || supabase.isLocal
 })
 
 // displayHp permite animar la barra desde 0 cuando el componente aparece (Fase 3)
@@ -97,8 +100,8 @@ const getHpClass = (pct: number) => {
   return 'hp-low'
 }
 
-const getGenderText = (g: string) => ({ M: '♂', F: '♀' } as any)[g] || ''
-const getGenderCls = (g: string) => ({ M: 'gender-male', F: 'gender-female' } as any)[g] || 'gender-none'
+const getGenderText = (g: string) => (({ M: '♂', F: '♀' } as Record<string, string>)[g] || '')
+const getGenderCls = (g: string) => (({ M: 'gender-male', F: 'gender-female' } as Record<string, string>)[g] || 'gender-none')
 
 const activeStages = computed(() => {
   const s = props.isPlayer ? battleStore.playerStages : battleStore.enemyStages
@@ -109,10 +112,10 @@ const activeStages = computed(() => {
   const keys = ['atk', 'def', 'spa', 'spd', 'spe', 'acc', 'eva']
   
   for (const key of keys) {
-    const val = (s as any)[key]
+    const val = (s as Record<string, number | undefined>)[key] || 0
     if (val !== 0) {
-      const config = (STAT_EMOJI_MAP as any)[key] || { icon: '❓', name: key }
-      const mult = getStatMultiplier(val)
+      const config = (STAT_EMOJI_MAP as Record<string, { icon: string; name: string }>)[key] || { icon: '❓', name: key }
+      const mult = getStatMultiplier(val || 0)
       const pct = Math.round((mult - 1) * 100)
       const pctText = pct > 0 ? `+${pct}%` : `${pct}%`
       
@@ -143,8 +146,8 @@ const volatileStatuses = computed(() => {
     const cycle = getDayCycle()
     
     let isAbBoosted = false
-    const abEntry = (ABILITY_DATA as any)[ab] || Object.entries(ABILITY_DATA).find(([k]) => k.toLowerCase() === ab.toLowerCase())?.[1]
-    const abDescription = (abEntry as any)?.desc || 'Sin descripción disponible.'
+    const abEntry = (ABILITY_DATA as Record<string, { desc: string }>)[ab] || Object.entries(ABILITY_DATA).find(([k]) => k.toLowerCase() === ab.toLowerCase())?.[1]
+    const abDescription = abEntry?.desc || 'Sin descripción disponible.'
     let abText = `HABILIDAD: ${ab.toUpperCase()}. ${abDescription}`
 
     const isSunActive = mechWeather === WEATHER_MECHANICAL.SUN || (mechWeather === WEATHER_MECHANICAL.CLEAR && (cycle === 'day' || cycle === 'morning'))
@@ -170,14 +173,14 @@ const volatileStatuses = computed(() => {
   if (target.badPoison) list.push({ icon: '☣️', text: 'TÓXICO: El daño del veneno aumenta cada turno.' })
   if (target.endure) list.push({ icon: '🛡️', text: 'AGUANTE: Sobrevivirá el próximo golpe fatal.' })
   if (target.trapped) list.push({ icon: '🪤', text: 'ATRAPADO: No puede escapar del combate.' })
-  if (target.disabledTurns > 0) list.push({ icon: '🚫', text: `ANULADO: Un movimiento está bloqueado (${target.disabledTurns}t).` })
-  if (target.encoreTurns > 0) list.push({ icon: '🔁', text: `OTRA VEZ: Repite el mismo movimiento (${target.encoreTurns}t).` })
-  if (target.tauntTurns > 0) list.push({ icon: '🤐', text: `MOFA: No puede usar movimientos de estado (${target.tauntTurns}t).` })
+  if (target.disabledTurns && target.disabledTurns > 0) list.push({ icon: '🚫', text: `ANULADO: Un movimiento está bloqueado (${target.disabledTurns}t).` })
+  if (target.encoreTurns && target.encoreTurns > 0) list.push({ icon: '🔁', text: `OTRA VEZ: Repite el mismo movimiento (${target.encoreTurns}t).` })
+  if (target.tauntTurns && target.tauntTurns > 0) list.push({ icon: '🤐', text: `MOFA: No puede usar movimientos de estado (${target.tauntTurns}t).` })
   if (target.flinched) list.push({ icon: '💫', text: 'RETROCEDER: No puede atacar este turno.' })
   if (target.protect || target.detect) list.push({ icon: '🛡️', text: 'PROTECCIÓN: Evita el daño este turno.' })
-  if (target.substitute > 0) list.push({ icon: '🎭', text: `SUSTITUTO: Un señuelo de ${target.substitute} HP recibe el daño.` })
+  if (target.substitute && target.substitute > 0) list.push({ icon: '🎭', text: `SUSTITUTO: Un señuelo de ${target.substitute} HP recibe el daño.` })
   if (target.destinyBond) list.push({ icon: '🔗', text: 'MISMODESTINO: Si el usuario cae, el rival también.' })
-  if (target.perishSongCount > 0) list.push({ icon: '⏳', text: `CANTO MORTAL: El Pokémon caerá en ${target.perishSongCount} turnos.` })
+  if (target.perishSongCount !== undefined && target.perishSongCount > 0) list.push({ icon: '⏳', text: `CANTO MORTAL: El Pokémon caerá en ${target.perishSongCount} turnos.` })
   if (target.ingrain) list.push({ icon: '🌳', text: 'ARRAIGO: Recupera HP cada turno pero no puede ser retirado.' })
   if (target.focusEnergy) list.push({ icon: '🎯', text: 'FOCO ENERGÍA: Aumenta la probabilidad de golpes críticos.' })
   if (target.lockOn) list.push({ icon: '👁️', text: 'FIJAR BLANCO: El próximo ataque no fallará.' })
@@ -186,7 +189,7 @@ const volatileStatuses = computed(() => {
   if (target.snatching) list.push({ icon: '🧤', text: 'ROBO: Robará el próximo movimiento de estado beneficioso.' })
   if (target.tormentActive) list.push({ icon: '😒', text: 'TORMENTO: No puede usar el mismo movimiento dos veces.' })
   if (target.mustRecharge) list.push({ icon: '🔋', text: 'RECARGA: Debe descansar el próximo turno.' })
-  if (target.bound > 0) list.push({ icon: '⛓️', text: `ATADURA: Sufre daño por atrapamiento (${target.bound}t).` })
+  if (target.bound && target.bound > 0) list.push({ icon: '⛓️', text: `ATADURA: Sufre daño por atrapamiento (${target.bound}t).` })
 
   // 2. Efectos de Campo (Side-based)
   const stages = props.isPlayer ? battleStore.playerStages : battleStore.enemyStages
@@ -200,11 +203,11 @@ const volatileStatuses = computed(() => {
 
   // 3. Clima y Ciclo (Lógica Inline para evitar computed anidados)
   const weather = battleStore.state?.weather
-  const types = []
+  const types: string[] = []
   if (p.value.type) types.push(p.value.type.toLowerCase())
   if (p.value.type2) types.push(p.value.type2.toLowerCase())
-  const moveTypes = (p.value.moves || []).map((m: any) => (m?.type || '').toLowerCase())
-  const moveNames = (p.value.moves || []).map((m: any) => (m?.name || '').toLowerCase())
+  const moveTypes = (p.value.moves || []).map((m) => (m?.type || '').toLowerCase())
+  const moveNames = (p.value.moves || []).map((m) => (m?.name || '').toLowerCase())
   const cycle = getDayCycle()
 
   let weatherAffects = false
@@ -214,17 +217,17 @@ const volatileStatuses = computed(() => {
       weatherAffects = true
     } else if (mechWeather === 'sun') {
       const sunMoves = ['synthesis', 'síntesis', 'morning sun', 'sol beam', 'rayo solar', 'solar beam', 'solar blade', 'cuchilla solar']
-      if (types.includes('fire') || types.includes('water') || moveTypes.includes('fire') || moveTypes.includes('water') || moveNames.some((n: any) => sunMoves.includes(n))) {
+      if (types.includes('fire') || types.includes('water') || moveTypes.includes('fire') || moveTypes.includes('water') || moveNames.some((n) => sunMoves.includes(n))) {
         weatherAffects = true
       }
     } else if (mechWeather === 'rain') {
       const rainMoves = ['thunder', 'trueno', 'hurricane', 'vendaval', 'weather ball']
-      if (types.includes('fire') || types.includes('water') || moveTypes.includes('fire') || moveTypes.includes('water') || moveTypes.includes('electric') || moveNames.some((n: any) => rainMoves.includes(n))) {
+      if (types.includes('fire') || types.includes('water') || moveTypes.includes('fire') || moveTypes.includes('water') || moveTypes.includes('electric') || moveNames.some((n) => rainMoves.includes(n))) {
         weatherAffects = true
       }
     } else if (mechWeather === 'snow') {
       const snowMoves = ['blizzard', 'ventisca', 'aurora veil', 'velo aurora']
-      if (types.includes('ice') || moveTypes.includes('ice') || moveNames.some((n: any) => snowMoves.includes(n))) {
+      if (types.includes('ice') || moveTypes.includes('ice') || moveNames.some((n) => snowMoves.includes(n))) {
         weatherAffects = true
       }
     }
@@ -233,7 +236,7 @@ const volatileStatuses = computed(() => {
   let cycleAffects = false
   if (cycle === 'morning' || cycle === 'day') {
     const sunMoves = ['synthesis', 'síntesis', 'morning sun', 'sol beam', 'rayo solar', 'solar beam', 'solar blade', 'cuchilla solar']
-    if (types.includes('fire') || types.includes('water') || moveTypes.includes('fire') || moveTypes.includes('water') || moveNames.some((n: any) => sunMoves.includes(n))) {
+    if (types.includes('fire') || types.includes('water') || moveTypes.includes('fire') || moveTypes.includes('water') || moveNames.some((n) => sunMoves.includes(n))) {
       cycleAffects = true
     }
   } else if (cycle === 'dusk' || cycle === 'night') {
@@ -245,7 +248,7 @@ const volatileStatuses = computed(() => {
   if (weather && weather.type !== 'clear' && weatherAffects) {
     const visualType = weather.visual || weather.type
     const mechType = getMechanicalWeather(weather.type)
-    const config = WEATHER_VISUAL_METADATA[visualType] || WEATHER_UI_METADATA[mechType]
+    const config = WEATHER_VISUAL_METADATA[visualType] || WEATHER_UI_METADATA[mechType as WeatherMechanical]
     if (config) {
       list.push({ icon: config.icon, text: `${config.label}: ${config.description}` })
     }
@@ -255,7 +258,7 @@ const volatileStatuses = computed(() => {
       day: { icon: '☀️', label: 'DÍA', desc: 'Bonifica movimientos FUEGO (1.2x) y habilidades solares.' },
       dusk: { icon: '🌆', label: 'OCASO', desc: 'Bonifica movimientos AGUA (1.2x) y habilidades nocturnas.' },
       night: { icon: '🌙', label: 'NOCHE', desc: 'Bonifica movimientos AGUA (1.2x) y habilidades nocturnas.' }
-    } as any)[cycle]
+    } as Record<string, { icon: string; label: string; desc: string }>)[cycle]
     if (cycleData) {
       list.push({ icon: cycleData.icon, text: `HORARIO (${cycleData.label}): ${cycleData.desc}` })
     }
@@ -275,13 +278,13 @@ const adminStatConfig = [
 const getStatModifier = (key: string) => {
   const stages = props.isPlayer ? battleStore.playerStages : battleStore.enemyStages
   if (!stages) return 0
-  return (stages as any)[key] || 0
+  return (stages as Record<string, number>)[key] || 0
 }
 
 const getBreakdown = (key: string) => {
   const stages = props.isPlayer ? battleStore.playerStages : battleStore.enemyStages
   const weather = battleStore.state?.weather
-  return getStatBreakdown(p.value, key as any, stages, weather || null) as any
+  return getStatBreakdown(p.value, key as 'atk' | 'def' | 'spa' | 'spd' | 'spe', stages, weather || null)
 }
 
 const formatMult = (m: number) => {
@@ -321,7 +324,7 @@ const formatMult = (m: number) => {
           v-if="!isPlayer && p.caught"
           :src="getAssetUrl(ASSET_TYPES.ITEM, 'poke-ball')"
           class="caught-icon"
-          @error="e => (e.target as any).style.display = 'none'"
+          @error="e => (e.target as HTMLImageElement).style.display = 'none'"
         >
 
         <!-- Admin Info Icon -->
@@ -460,7 +463,7 @@ const formatMult = (m: number) => {
         >
           <div 
             class="status-badge stage"
-            :class="s.val > 0 ? 'is-up' : 'is-down'"
+            :class="(s.val || 0) > 0 ? 'is-up' : 'is-down'"
           >
             {{ s.icon }}
           </div>

@@ -229,7 +229,7 @@ const scheduleText = computed(() => {
   .event-title {
     @include pixelated;
     font-size: 14px;
-    color: var(--yellow);
+    color: Var(--yellow);
     margin-bottom: 15px;
     line-height: 1.6;
     @include pixelated;

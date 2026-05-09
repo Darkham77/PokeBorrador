@@ -2,17 +2,27 @@
 import { computed, onMounted } from 'vue'
 import { useMapStore } from '@/stores/map'
 import { useUIStore } from '@/stores/ui'
+import { useWarStore } from '@/stores/war'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import WarMapCard from './WarMapCard.vue'
 
-const mapStore = useMapStore() as any
-const uiStore = useUIStore() as any
+const mapStore = useMapStore()
+const uiStore = useUIStore()
+const warStore = useWarStore()
 
 onMounted(() => {
-  mapStore.fetchWarStatus()
+  warStore.fetchMapDominance()
 })
 
-const dominance = computed(() => mapStore.warStatus || { union: 0, poder: 0, contested: 0 })
+const dominance = computed(() => {
+  const total = { union: 0, poder: 0, contested: 0 }
+  Object.values(warStore.mapDominance).forEach(d => {
+    total.union += d.union
+    total.poder += d.poder
+    if (!d.winner) total.contested++
+  })
+  return total
+})
 const totalPoints = computed(() => {
   const d = dominance.value
   return (Number(d.union) || 0) + (Number(d.poder) || 0) + (Number(d.contested) || 0) || 1
@@ -98,7 +108,7 @@ const getFactionIcon = (faction: string) => {
           </div>
           <div class="map-grid">
             <WarMapCard
-              v-for="m in (mapStore.maps as any[]).filter((x: any) => x.war)"
+              v-for="m in (mapStore.maps || []).filter((x: any) => x.war)"
               :key="m.id"
               :map="m"
             />

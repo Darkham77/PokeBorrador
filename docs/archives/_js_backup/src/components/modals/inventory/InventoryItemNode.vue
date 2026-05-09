@@ -77,7 +77,7 @@ defineEmits(['click'])
   }
 
   &.selected {
-    border-color: var(--yellow);
+    border-color: Var(--yellow);
     background: Rgba(255, 214, 10, 0.05);
   }
 
@@ -98,7 +98,7 @@ defineEmits(['click'])
       position: absolute;
       bottom: -4px;
       right: -4px;
-      background: var(--yellow);
+      background: Var(--yellow);
       color: Rgba(0, 0, 0, 1);
       font-size: 9px;
       @include pixelated;
@@ -126,8 +126,8 @@ defineEmits(['click'])
       transition: all 0.2s;
       
       &.checked {
-        background: var(--yellow);
-        border-color: var(--yellow);
+        background: Var(--yellow);
+        border-color: Var(--yellow);
         span { color: Rgba(0, 0, 0, 1); font-weight: 900; }
       }
     }

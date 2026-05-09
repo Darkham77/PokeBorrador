@@ -49,7 +49,7 @@ const formatNum = (num) => (num || 0).toLocaleString().replace(/,/g, '.')
 @use "@/styles/core/_mixins" as *;
 .profile-stat-grid-legacy {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: Repeat(2, 1fr);
   gap: 12px;
   margin-bottom: 24px;
 }
@@ -72,7 +72,7 @@ const formatNum = (num) => (num || 0).toLocaleString().replace(/,/g, '.')
     background: Rgba(30, 41, 59, 0.5);
     border-color: Rgba(255, 214, 10, 0.2);
     box-shadow: 0 0 0 1px Rgba(255, 214, 10, 0.2);
-    transform: translateY(-2px);
+    transform: TranslateY(-2px);
   }
 
   &.highlight {

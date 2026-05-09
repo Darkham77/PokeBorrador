@@ -144,9 +144,9 @@ const leaderSpriteUrl = computed(() => {
     opacity: 0.6;
   }
 
-  &:hover:not(.locked) {
-    border-color: var(--gym-color);
-    transform: translateY(-3px);
+  &:hover:Not(.locked) {
+    border-color: Var(--gym-color);
+    transform: TranslateY(-3px);
   }
 }
 
@@ -195,8 +195,8 @@ const leaderSpriteUrl = computed(() => {
   margin-bottom: 10px;
 
   .type-badge {
-    background: var(--gym-color);
-    color: var(--white);
+    background: Var(--gym-color);
+    color: Var(--white);
     font-size: 9px;
     padding: 3px 10px;
     border-radius: 10px;
@@ -282,9 +282,9 @@ const leaderSpriteUrl = computed(() => {
   cursor: pointer;
 
   &.active {
-    border-color: var(--gym-color);
-    background: Rgba(var(--gym-color), 0.2);
-    color: var(--white);
+    border-color: Var(--gym-color);
+    background: Rgba(Var(--gym-color), 0.2);
+    color: Var(--white);
     
     &.easy { color: Rgba(34, 197, 94, 1); }
     &.normal { color: $coin-gold; }
@@ -298,7 +298,7 @@ const leaderSpriteUrl = computed(() => {
   border-radius: 20px;
   @include pixelated;
   font-size: 8px;
-  color: var(--white);
+  color: Var(--white);
   font-weight: 900;
   cursor: pointer;
   transition: all 0.2s;

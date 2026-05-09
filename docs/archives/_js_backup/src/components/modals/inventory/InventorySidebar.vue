@@ -88,7 +88,7 @@ watch(() => categories.value, (newCats) => {
   border-radius: 12px;
   color: Rgba(255, 255, 255, 0.5);
   cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.25s cubic-Bezier(0.4, 0, 0.2, 1);
   text-align: left;
   outline: none;
 
@@ -112,7 +112,7 @@ watch(() => categories.value, (newCats) => {
     transition: inherit;
   }
 
-  &:hover:not(.active) {
+  &:hover:Not(.active) {
     background: Rgba(255, 255, 255, 0.05);
     color: Rgba(255, 255, 255, 0.8);
     transform: TranslateX(4px);
@@ -126,7 +126,7 @@ watch(() => categories.value, (newCats) => {
   &.active {
     background: Rgba(255, 214, 10, 0.08);
     border-color: Rgba(255, 214, 10, 0.15);
-    color: var(--yellow);
+    color: Var(--yellow);
     
     .cat-icon-frame {
       box-shadow: 0 0 15px Rgba(255, 214, 10, 0.1);
@@ -138,9 +138,9 @@ watch(() => categories.value, (newCats) => {
       top: 20%;
       bottom: 20%;
       width: 3px;
-      background: var(--yellow);
+      background: Var(--yellow);
       border-radius: 0 4px 4px 0;
-      box-shadow: 0 0 10px var(--yellow);
+      box-shadow: 0 0 10px Var(--yellow);
     }
   }
 }

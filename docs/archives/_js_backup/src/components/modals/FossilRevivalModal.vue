@@ -185,7 +185,7 @@ function handleClose() {
 .fossil-overlay {
   position: fixed;
   inset: 0;
-  z-index: var(--z-modal);
+  z-index: Var(--z-modal);
   background: Rgba(0, 0, 0, 0.96);
   -webkit-backdrop-filter: Blur(15px);
   backdrop-filter: Blur(15px);
@@ -213,7 +213,7 @@ function handleClose() {
 .header-text {
   @include pixelated;
   font-size: 12px;
-  color: var(--yellow);
+  color: Var(--yellow);
   margin-bottom: 30px;
   letter-spacing: 2px;
   text-shadow: 0 0 15px Rgba(255, 217, 61, 0.5);
@@ -233,12 +233,12 @@ function handleClose() {
   position: absolute;
   width: 100px;
   height: 100px;
-  background: Radial-Gradient(circle, var(--yellow) 0%, transparent 70%);
+  background: Radial-Gradient(circle, Var(--yellow) 0%, transparent 70%);
   opacity: 0;
   border-radius: 50%;
   filter: Blur(15px);
   transition: all 2s ease-in-out;
-  @include will-animate(transform);
+  @include will-Animate(transform);
   
   &.step-1 {
     opacity: 1;
@@ -246,7 +246,7 @@ function handleClose() {
   }
   
   &.revealed {
-    background: Radial-Gradient(circle, var(--white) 0%, transparent 70%);
+    background: Radial-Gradient(circle, Var(--white) 0%, transparent 70%);
   }
   
   &.is-shiny {
@@ -260,10 +260,10 @@ function handleClose() {
   object-fit: contain;
   @include sprite-render;
   position: relative;
-  z-index: var(--z-base);
+  z-index: Var(--z-base);
   filter: Drop-Shadow(0 0 15px Rgba(0,0,0,0.8));
   transition: all 1s;
-  @include will-animate(transform);
+  @include will-Animate(transform);
   
   &.step-1 {
     animation: itemPulse 1s infinite alternate;
@@ -276,15 +276,15 @@ function handleClose() {
   object-fit: contain;
   @include sprite-render;
   position: relative;
-  z-index: var(--z-base);
+  z-index: Var(--z-base);
   filter: Drop-Shadow(0 0 30px Rgba(255,255,255,0.6));
   animation: bounce 2s infinite;
-  @include will-animate(transform);
+  @include will-Animate(transform);
 }
 
 
 .fossil-text {
-  color: var(--white);
+  color: Var(--white);
   font-size: 15px;
   font-weight: 700;
   height: 60px;
@@ -293,14 +293,14 @@ function handleClose() {
 
 .success-label {
   font-size: 11px;
-  color: var(--gray);
+  color: Var(--gray);
   text-transform: uppercase;
   letter-spacing: 1px;
 }
 
 .pokemon-name {
   font-size: 26px;
-  color: var(--yellow);
+  color: Var(--yellow);
   text-shadow: 0 0 20px Rgba(255, 217, 61, 0.7);
   font-weight: 900;
 }
@@ -313,7 +313,7 @@ function handleClose() {
   border-radius: 20px;
   padding: 20px;
   width: 100%;
-  animation: slideUp 0.6s cubic-bezier(0.18, 0.89, 0.32, 1.28) backwards;
+  animation: slideUp 0.6s cubic-Bezier(0.18, 0.89, 0.32, 1.28) backwards;
   -webkit-backdrop-filter: Blur(5px);
   backdrop-filter: Blur(5px);
   @include gpu-layer;
@@ -326,13 +326,13 @@ function handleClose() {
   border-bottom: 1px solid Rgba(255,255,255,0.1);
   padding-bottom: 10px;
   
-  .label { color: var(--gray); font-size: 10px; @include pixelated; }
-  .value { color: var(--white); font-weight: 800; font-size: 14px; }
+  .label { color: Var(--gray); font-size: 10px; @include pixelated; }
+  .value { color: Var(--white); font-weight: 800; font-size: 14px; }
 }
 
 .ivs-grid {
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
+  grid-template-columns: Repeat(6, 1fr);
   gap: 4px;
   background: Rgba(0,0,0,0.4);
   border-radius: 12px;
@@ -345,23 +345,23 @@ function handleClose() {
   flex-direction: column;
   align-items: center;
   
-  .iv-lbl { font-size: 9px; color: var(--gray); @include pixelated; margin-bottom: 4px; }
-  .iv-val { font-size: 14px; font-weight: 800; color: var(--white); }
+  .iv-lbl { font-size: 9px; color: Var(--gray); @include pixelated; margin-bottom: 4px; }
+  .iv-val { font-size: 14px; font-weight: 800; color: Var(--white); }
   .perfect { color: Rgba(251, 191, 36, 1); }
   .good { color: Rgba(96, 165, 250, 1); }
 }
 
 .destination-text {
   font-size: 12px;
-  color: var(--gray);
+  color: Var(--gray);
   margin-bottom: 15px;
   font-style: italic;
 }
 
 .continue-btn {
   width: 100%;
-  background: var(--blue);
-  color: var(--white);
+  background: Var(--blue);
+  color: Var(--white);
   border: none;
   padding: 14px;
   border-radius: 12px;
@@ -379,8 +379,8 @@ function handleClose() {
 .flash-layer {
   position: absolute;
   inset: 0;
-  background: var(--white);
-  z-index: var(--z-base);
+  background: Var(--white);
+  z-index: Var(--z-base);
   animation: flash 0.4s ease-out forwards;
 }
 

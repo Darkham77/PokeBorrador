@@ -128,7 +128,7 @@ const formatRank = (index) => `#${index + 1}`;
   
   h2 {
     font-size: 10px;
-    color: var(--yellow);
+    color: Var(--yellow);
     margin: 0;
   }
 }
@@ -154,12 +154,12 @@ const formatRank = (index) => `#${index + 1}`;
   transition: all 0.2s;
 
   &:hover {
-    color: var(--white);
+    color: Var(--white);
     background: Rgba(255, 255, 255, 0.05);
   }
 
   &.active {
-    background: var(--yellow);
+    background: Var(--yellow);
     color: Rgba(0, 0, 0, 1);
     box-shadow: 0 0 10px Rgba(255, 184, 0, 0.3);
   }
@@ -169,7 +169,7 @@ const formatRank = (index) => `#${index + 1}`;
   background: Rgba(255, 255, 255, 0.05);
   border: 1px solid Rgba(255, 255, 255, 0.1);
   border-radius: 8px;
-  color: var(--white);
+  color: Var(--white);
   width: 32px;
   height: 32px;
   cursor: pointer;
@@ -178,7 +178,7 @@ const formatRank = (index) => `#${index + 1}`;
   justify-content: center;
   transition: all 0.2s;
 
-  &:hover:not(:disabled) {
+  &:hover:Not(:disabled) {
     background: Rgba(255, 255, 255, 0.1);
     border-color: Rgba(255, 255, 255, 0.2);
   }
@@ -215,7 +215,7 @@ const formatRank = (index) => `#${index + 1}`;
   }
 
   &:hover {
-    transform: translateX(4px);
+    transform: TranslateX(4px);
     background: Rgba(255, 255, 255, 0.05);
   }
 }
@@ -223,7 +223,7 @@ const formatRank = (index) => `#${index + 1}`;
 .rank {
   @include pixelated;
   font-size: 8px;
-  color: var(--yellow);
+  color: Var(--yellow);
 }
 
 .trainer-info {
@@ -240,11 +240,11 @@ const formatRank = (index) => `#${index + 1}`;
 .trainer-name {
   font-size: 12px;
   font-weight: bold;
-  color: var(--white);
+  color: Var(--white);
 }
 .trainer-level {
   font-size: 9px;
-  color: var(--gray);
+  color: Var(--gray);
 }
 
 .tier-info {
@@ -261,7 +261,7 @@ const formatRank = (index) => `#${index + 1}`;
 
 .val-display {
   font-size: 9px;
-  color: var(--white);
+  color: Var(--white);
   text-align: right;
   white-space: nowrap;
 }
@@ -270,11 +270,11 @@ const formatRank = (index) => `#${index + 1}`;
   padding: 20px;
   text-align: center;
   font-size: 11px;
-  color: var(--gray);
+  color: Var(--gray);
 }
 
 .error-msg {
-  color: var(--red);
+  color: Var(--red);
   background: Rgba(255, 59, 59, 0.05);
   border-radius: 8px;
 }

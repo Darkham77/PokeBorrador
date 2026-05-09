@@ -364,7 +364,7 @@ function selectAdventure(_slotIndex) {
   background: Rgba(255, 255, 255, 0.03);
   border: 1px solid Rgba(255, 255, 255, 0.08);
   border-radius: 10px;
-  color: var(--gray);
+  color: Var(--gray);
   cursor: pointer;
   @include pixelated;
   font-size: 8px;
@@ -387,20 +387,20 @@ function selectAdventure(_slotIndex) {
 
   &.active {
     background: Rgba(255, 255, 255, 0.08);
-    border-color: var(--blue);
-    color: var(--blue);
+    border-color: Var(--blue);
+    color: Var(--blue);
     box-shadow: 0 0 15px Rgba(10, 132, 255, 0.15);
 
     .tab-count {
       opacity: 1;
-      color: var(--white);
+      color: Var(--white);
       background: Rgba(10, 132, 255, 0.1);
     }
   }
 
-  &:hover:not(.active) {
+  &:hover:Not(.active) {
     background: Rgba(255, 255, 255, 0.1);
-    color: var(--white);
+    color: Var(--white);
   }
 }
 
@@ -416,10 +416,10 @@ function selectAdventure(_slotIndex) {
 .slots-grid {
   display: grid;
   gap: 12px;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: Repeat(3, 1fr);
   
   @media (max-width: 850px) {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: Repeat(2, 1fr);
   }
   @media (max-width: 580px) {
     grid-template-columns: 1fr;
@@ -427,23 +427,23 @@ function selectAdventure(_slotIndex) {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: TranslateY(4px); }
+  to { opacity: 1; transform: TranslateY(0); }
 }
 
-:deep(.modal-header-premium) {
+:Deep(.modal-header-premium) {
   border-bottom: none !important;
   padding: 12px 16px !important;
 }
 
-:deep(.modal-content-premium) {
+:Deep(.modal-content-premium) {
   background: Rgba(15, 23, 42, 0.95) !important;
   -webkit-backdrop-filter: Blur(25px);
   backdrop-filter: Blur(25px);
   @include gpu-layer;
 }
 
-:deep(.modal-scrollable-content) {
+:Deep(.modal-scrollable-content) {
   padding: 15px !important;
 }
 </style>

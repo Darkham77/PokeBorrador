@@ -284,7 +284,8 @@ export class DBRouter {
   channel(name: string): RealtimeChannel {
     if (this.mode === 'offline') {
       const mockChannel = {
-        on: (type: string, _filter: unknown, _callback: (payload: unknown) => void) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        on: (type: any, _filter: any, _callback: any) => {
           logger.info('DBRouter', `Mock Channel '${name}' subscribed to: ${type}`);
           return mockChannel; 
         },

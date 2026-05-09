@@ -49,7 +49,7 @@ const props = defineProps({
 
 const uiStore = useUIStore()
 const isModalPerformance = inject<Ref<boolean> | null>('isModalPerformanceMode', null)
-const forceHighFidelity = inject('forceHighFidelity', false)
+const forceHighFidelity = inject<boolean>('forceHighFidelity', false)
 
 const isSimplified = computed(() => {
   // 0. Silhouette forces simplified mode (Hides FX)
@@ -97,7 +97,7 @@ const statusEmoji = computed(() => {
     paralyze: '⚡',
     freeze: '🧊'
   }
-  return (map as any)[props.status as string] || null
+  return (props.status ? (map as Record<string, string>)[props.status] : null) || null
 })
 
 // Generar partículas con posiciones y órbitas aleatorias para que no salgan todas del centro
@@ -105,7 +105,7 @@ const particles = computed(() => {
   if (!statusEmoji.value) return []
   
   // Incluimos pokeId para re-randomizar si cambia el bicho aunque mantenga el estado
-  if (props.pokeId) {}
+  // props.pokeId (usado para reactividad)
   
   return Array.from({ length: 3 }).map((_, i) => ({
     id: i,

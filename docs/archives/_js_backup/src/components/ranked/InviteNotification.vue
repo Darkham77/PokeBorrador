@@ -72,7 +72,7 @@ const decline = async () => {
   top: 20px;
   left: 50%;
   transform: TranslateX(-50%) TranslateZ(0);
-  z-index: var(--z-toast);
+  z-index: Var(--z-toast);
   width: 90%;
   max-width: 360px;
   background: Rgba(15, 23, 42, 0.95);
@@ -84,7 +84,7 @@ const decline = async () => {
   border-radius: 20px;
   padding: 20px;
   text-align: center;
-  animation: slideDown 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  animation: slideDown 0.4s cubic-Bezier(0.175, 0.885, 0.32, 1.275);
   @include gpu-layer;
 }
 
@@ -94,7 +94,7 @@ const decline = async () => {
 }
 
 .header {
-  color: var(--purple);
+  color: Var(--purple);
   margin-bottom: 12px;
   letter-spacing: 1px;
 }
@@ -105,14 +105,14 @@ const decline = async () => {
   .challenger {
     font-size: 14px;
     font-weight: bold;
-    color: var(--white);
+    color: Var(--white);
     display: block;
     margin-bottom: 4px;
   }
 
   p {
     font-size: 12px;
-    color: var(--gray);
+    color: Var(--gray);
     margin: 0;
   }
 }
@@ -137,7 +137,7 @@ button {
 
 .accept-btn {
   background: Rgba(107, 203, 119, 0.15);
-  color: var(--green);
+  color: Var(--green);
   border-color: Rgba(107, 203, 119, 0.3);
 
   &:hover {
@@ -147,7 +147,7 @@ button {
 
 .decline-btn {
   background: Rgba(255, 59, 59, 0.1);
-  color: var(--red);
+  color: Var(--red);
   border-color: Rgba(255, 59, 59, 0.2);
 
   &:hover {

@@ -372,7 +372,7 @@ const handleRetry = () => {
 }
 
 .zoom-target {
-  zoom: var(--app-zoom, 1);
+  zoom: Var(--app-zoom, 1);
   @include gpu-layer;
   will-change: zoom, transform;
 }
@@ -387,8 +387,8 @@ const handleRetry = () => {
   justify-content: center;
   align-items: center;
   background: $black;
-  z-index: var(--z-max);
-  color: var(--yellow);
+  z-index: Var(--z-max);
+  color: Var(--yellow);
   @include pixelated;
   font-size: 12px;
   text-align: center;
@@ -417,7 +417,7 @@ const handleRetry = () => {
   width: 50px;
   height: 50px;
   border: 5px solid Rgba(255, 255, 255, 0.1);
-  border-top-color: var(--yellow);
+  border-top-color: Var(--yellow);
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -442,7 +442,7 @@ const handleRetry = () => {
 }
 
 .version-lock .admin-note {
-  color: var(--yellow);
+  color: Var(--yellow);
   opacity: 0.8;
   font-size: 10px;
 }

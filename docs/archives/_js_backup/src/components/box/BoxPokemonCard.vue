@@ -214,12 +214,12 @@ const isPremiumTier = computed(() => props.pokemon && (tierInfo.value.tier === '
 @use "@/styles/core/tools" as *;
 
 .box-pokemon-card {
-  @include pokemon-card-standard(20px);
-  transform: translateZ(0); // Hardware acceleration
+  @include pokemon-card-Standard(20px);
+  transform: TranslateZ(0); // Hardware acceleration
   will-change: transform; // Layer promotion
   
   &.is-premium-tier {
-    --tier-color: v-bind('tierInfo.color');
+    --tier-color: v-Bind('tierInfo.color');
     @include pokemon-card-premium-tier;
   }
 
@@ -248,7 +248,7 @@ const isPremiumTier = computed(() => props.pokemon && (tierInfo.value.tier === '
       
       &::before { opacity: 0 !important; }
       
-      :deep(.box-card-sprite) {
+      :Deep(.box-card-sprite) {
         transform: none !important;
         filter: none !important;
       }

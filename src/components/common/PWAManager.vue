@@ -88,7 +88,7 @@
 <script setup lang="ts">
 import { Temporal } from '@js-temporal/polyfill'
 
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, type Ref } from 'vue'
 import { usePWA } from '@/composables/usePWA'
 import { useAuthStore } from '@/stores/auth'
 import { useAudioStore } from '@/stores/audio'
@@ -96,10 +96,15 @@ import { useGameStore } from '@/stores/game'
 import { logger } from '@/logic/utils/logger'
 import BaseModal from './BaseModal.vue'
 
-const authStore = useAuthStore() as any
-const audioStore = useAudioStore() as any
-const gameStore = useGameStore() as any
-const { canInstall, installApp, needRefresh, updateServiceWorker } = usePWA() as any
+const authStore = useAuthStore()
+const audioStore = useAudioStore()
+const gameStore = useGameStore()
+const { canInstall, installApp, needRefresh, updateServiceWorker } = usePWA() as { 
+  canInstall: Ref<boolean>; 
+  installApp: () => Promise<boolean>; 
+  needRefresh: Ref<boolean>; 
+  updateServiceWorker: (reload?: boolean) => Promise<void> 
+}
 
 const showInstallModal = ref(false)
 const showPermissionsModal = ref(false)

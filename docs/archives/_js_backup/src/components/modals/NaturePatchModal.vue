@@ -76,7 +76,7 @@ const close = () => {
 
 .target-info {
   font-size: 13px;
-  color: var(--gray);
+  color: Var(--gray);
   text-align: center;
   margin-bottom: 24px;
 }
@@ -101,18 +101,18 @@ const close = () => {
 
     &:hover { 
       background: Rgba(255,255,255,0.06); 
-      transform: translateY(-2px);
+      transform: TranslateY(-2px);
       border-color: Rgba(255, 255, 255, 0.2);
     }
     
     &.active { 
-      border-color: var(--yellow); 
+      border-color: Var(--yellow); 
       background: Rgba(255, 214, 10, 0.05);
-      .n-name { color: var(--yellow); }
+      .n-name { color: Var(--yellow); }
     }
 
-    .n-name { display: block; font-weight: 800; color: var(--white); font-size: 14px; }
-    .n-info { display: block; font-size: 10px; color: var(--gray); margin-top: 4px; }
+    .n-name { display: block; font-weight: 800; color: Var(--white); font-size: 14px; }
+    .n-info { display: block; font-size: 10px; color: Var(--gray); margin-top: 4px; }
   }
 }
 

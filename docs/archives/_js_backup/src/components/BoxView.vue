@@ -266,11 +266,11 @@ const handlePokemonClick = (index) => {
 }
 
 .rocket-trigger-btn {
-  @include btn-vicio('danger', 'sm');
+  @include btn-Vicio('danger', 'sm');
 }
 
 .release-trigger-btn {
-  @include btn-vicio('secondary', 'sm');
+  @include btn-Vicio('secondary', 'sm');
 }
 
 .mode-actions-bar {
@@ -291,7 +291,7 @@ const handlePokemonClick = (index) => {
 
     .count {
       font-size: 16px;
-      color: var(--yellow);
+      color: Var(--yellow);
       @include pixelated;
     }
 
@@ -309,8 +309,8 @@ const handlePokemonClick = (index) => {
       padding-left: 12px;
       border-left: 1px solid Rgba(255, 255, 255, 0.1);
 
-      .currency { font-family: sans-serif; color: var(--green); }
-      .value { color: var(--white); @include pixelated; font-size: 10px; }
+      .currency { font-family: sans-serif; color: Var(--green); }
+      .value { color: Var(--white); @include pixelated; font-size: 10px; }
     }
   }
 
@@ -318,9 +318,9 @@ const handlePokemonClick = (index) => {
     display: flex;
     gap: 12px;
 
-    .btn-cancel { @include btn-vicio('neutral', 'sm'); }
-    .btn-confirm-rocket { @include btn-vicio('danger', 'sm'); }
-    .btn-confirm-release { @include btn-vicio('success', 'sm'); }
+    .btn-cancel { @include btn-Vicio('neutral', 'sm'); }
+    .btn-confirm-rocket { @include btn-Vicio('danger', 'sm'); }
+    .btn-confirm-release { @include btn-Vicio('success', 'sm'); }
   }
 }
 

@@ -56,7 +56,7 @@ const activeDisplayEvents = computed(() => {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  z-index: var(--z-hud);
+  z-index: Var(--z-hud);
   pointer-events: none;
   transform: TranslateZ(0);
 }
@@ -67,7 +67,7 @@ const activeDisplayEvents = computed(() => {
   -webkit-backdrop-filter: Blur(10px);
   backdrop-filter: Blur(10px);
   @include gpu-layer;
-  border-left: 4px solid var(--event-color);
+  border-left: 4px solid Var(--event-color);
   padding: 12px 20px;
   border-radius: 0 12px 12px 0;
   display: flex;
@@ -83,7 +83,7 @@ const activeDisplayEvents = computed(() => {
     left: 0;
     width: 60px;
     height: 100%;
-    background: Linear-Gradient(90deg, var(--event-color) -100%, transparent 100%);
+    background: Linear-Gradient(90deg, Var(--event-color) -100%, transparent 100%);
     opacity: 0.2;
     pointer-events: none;
   }
@@ -93,7 +93,7 @@ const activeDisplayEvents = computed(() => {
     flex-direction: column;
     gap: 8px;
     position: relative;
-    z-index: var(--z-base);
+    z-index: Var(--z-base);
     width: 100%;
     
     .event-banner-header {
@@ -103,9 +103,9 @@ const activeDisplayEvents = computed(() => {
       
       .icon {
         font-size: 1.2rem;
-        filter: Drop-Shadow(0 0 5px var(--event-color));
+        filter: Drop-Shadow(0 0 5px Var(--event-color));
         animation: pulse 2s infinite;
-        animation-delay: calc(var(--event-seed, 0) * -2s);
+        animation-delay: Calc(Var(--event-seed, 0) * -2s);
         flex-shrink: 0;
       }
       
@@ -140,7 +140,7 @@ const activeDisplayEvents = computed(() => {
 
 .banner-slide-enter-active,
 .banner-slide-leave-active {
-  transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+  transition: all 0.5s cubic-Bezier(0.19, 1, 0.22, 1);
 }
 
 .banner-slide-enter-from {

@@ -9,8 +9,8 @@ interface Props {
 
 const props = defineProps<Props>();
 
-const chatStore = useChatStore() as any;
-const authStore = useAuthStore() as any;
+const chatStore = useChatStore();
+const authStore = useAuthStore();
 
 const newMessage = ref('');
 const messagesContainer = ref<HTMLDivElement | null>(null);
@@ -111,7 +111,7 @@ onMounted(() => {
           v-for="(msg, idx) in chat.messages" 
           :key="idx" 
           class="message-wrap"
-          :class="{ 'is-me': msg.senderId === authStore.user.id }"
+          :class="{ 'is-me': msg.senderId === authStore.user?.id }"
         >
           <div class="bubble animate-pop">
             {{ msg.text }}

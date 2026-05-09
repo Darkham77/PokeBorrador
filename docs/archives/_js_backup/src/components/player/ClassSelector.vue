@@ -130,7 +130,7 @@ const select = (id) => {
 .class-selector-overlay {
   position: fixed;
   inset: 0;
-  z-index: var(--z-modal);
+  z-index: Var(--z-modal);
   background: Rgba(0, 0, 0, 0.92);
   display: flex;
   align-items: flex-start;
@@ -142,7 +142,7 @@ const select = (id) => {
   backdrop-filter: Blur(8px);
   @include gpu-layer;
   animation: fadeIn 0.3s ease;
-  transform: translateZ(0);
+  transform: TranslateZ(0);
 }
 
 .modal-content {
@@ -159,7 +159,7 @@ const select = (id) => {
 
 .class-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: Repeat(auto-fill, Minmax(320px, 1fr));
   gap: 24px;
   margin-bottom: 40px;
 }
@@ -170,20 +170,20 @@ const select = (id) => {
   border: 2px solid Rgba(255, 255, 255, 0.08);
   padding: 32px 24px;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s cubic-Bezier(0.4, 0, 0.2, 1);
   position: relative;
   display: flex;
   flex-direction: column;
 
   &:hover {
-    border-color: var(--class-color);
-    transform: translateY(-8px);
-    box-shadow: 0 12px 30px var(--class-glow);
+    border-color: Var(--class-color);
+    transform: TranslateY(-8px);
+    box-shadow: 0 12px 30px Var(--class-glow);
   }
 
   &.active {
-    border-color: var(--class-color);
-    box-shadow: 0 0 25px var(--class-glow);
+    border-color: Var(--class-color);
+    box-shadow: 0 0 25px Var(--class-glow);
     order: -1;
   }
 }
@@ -192,7 +192,7 @@ const select = (id) => {
   position: absolute;
   top: 16px;
   right: 16px;
-  background: var(--class-color);
+  background: Var(--class-color);
   color: $white;
   font-size: 10px;
   padding: 4px 10px;

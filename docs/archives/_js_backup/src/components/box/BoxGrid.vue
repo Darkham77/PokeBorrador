@@ -67,7 +67,7 @@ const emit = defineEmits(['pokemonClick'])
   p {
     @include pixelated;
     font-size: 8px;
-    color: var(--gray);
+    color: Var(--gray);
     letter-spacing: 2px;
   }
 }

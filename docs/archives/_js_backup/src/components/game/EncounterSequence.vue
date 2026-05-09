@@ -67,7 +67,7 @@ const handleFishingStart = () => {
 .encounter-sequence-container {
   position: fixed;
   inset: 0;
-  z-index: var(--z-max);
+  z-index: Var(--z-max);
   pointer-events: none;
   display: flex;
   align-items: center;
@@ -77,10 +77,10 @@ const handleFishingStart = () => {
 .rival-flicker {
   position: fixed;
   inset: 0;
-  background: var(--white);
+  background: Var(--white);
   animation: rivalFlash 0.15s ease infinite;
   pointer-events: none;
-  z-index: calc(var(--z-max) + 1);
+  z-index: Calc(Var(--z-max) + 1);
 }
 
 .rival-exclamation {
@@ -89,8 +89,8 @@ const handleFishingStart = () => {
   font-size: 80px;
   color: Rgba(255, 59, 48, 1);
   text-shadow: 0 0 20px Rgba(255, 59, 48, 0.6);
-  z-index: calc(var(--z-max) + 2);
-  animation: bounceExcl 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28) infinite;
+  z-index: Calc(Var(--z-max) + 2);
+  animation: bounceExcl 0.4s cubic-Bezier(0.18, 0.89, 0.32, 1.28) infinite;
 }
 
 @keyframes rivalFlash {
@@ -107,7 +107,7 @@ const handleFishingStart = () => {
 .fishing-intro-overlay {
   position: fixed;
   inset: 0;
-  z-index: var(--z-max);
+  z-index: Var(--z-max);
   background: Rgba(0, 0, 0, 0.85);
   display: flex;
   align-items: center;
@@ -119,12 +119,12 @@ const handleFishingStart = () => {
 
 .fishing-card {
   @include card-premium;
-  background: var(--card);
+  background: Var(--card);
   border-radius: 24px;
   padding: 32px;
   max-width: 380px;
   width: 100%;
-  border: 2px solid var(--blue);
+  border: 2px solid Var(--blue);
   text-align: center;
   position: relative;
   box-shadow: 0 0 30px Rgba(10, 132, 255, 0.4);
@@ -139,7 +139,7 @@ const handleFishingStart = () => {
 .fishing-title {
   @include pixelated;
   font-size: 12px;
-  color: var(--blue);
+  color: Var(--blue);
   margin-bottom: 16px;
   @include pixelated;
 }
@@ -158,8 +158,8 @@ const handleFishingStart = () => {
   border: none;
   border-radius: 14px;
   cursor: pointer;
-  background: Linear-Gradient(135deg, var(--blue), Rgba(37, 99, 235, 1));
-  color: var(--white);
+  background: Linear-Gradient(135deg, Var(--blue), Rgba(37, 99, 235, 1));
+  color: Var(--white);
   box-shadow: 0 4px 16px Rgba(59, 130, 246, 0.5);
   margin-top: 12px;
   width: 100%;
@@ -167,7 +167,7 @@ const handleFishingStart = () => {
   @include pixelated;
 
   &:hover {
-    transform: translateY(-2px);
+    transform: TranslateY(-2px);
     filter: Brightness(1.1);
   }
 }

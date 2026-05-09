@@ -11,6 +11,7 @@ import { getCombatantPosition, WORLD_CONSTANTS } from '@/logic/combat/spatialCoo
 import { getRouteWeather } from '@/logic/weatherUtils'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { logger } from '@/logic/utils/logger'
+import type { Pokemon } from '@/types/pokemon'
 
 // Composables
 import { useBattleShadows } from '@/composables/useBattleShadows'
@@ -145,8 +146,8 @@ const isWildEncounter = computed(() => {
 })
 
 const isEnemyTechnicalHidden = computed(() => {
-  const sub = (battleStore.fsm as any)?.currentSubState
-  const state = (battleStore.fsm as any)?.currentState
+  const sub = battleStore.fsm?.currentSubState
+  const state = battleStore.fsm?.currentState
   const isTrainer = !isWildEncounter.value
   
   // 1. Forzar ocultación en estados de promoción técnica (Slot 2 -> Slot 1)
@@ -158,12 +159,12 @@ const isEnemyTechnicalHidden = computed(() => {
       'RECEIVE_CONFIG', 'WEIGHT_CALCULATION', 'INJECT_FILTERS', 
       'READY_FOR_GEN'
     ]
-    if (technicalSubstates.includes(sub)) return true
+    if (technicalSubstates.includes(sub || '')) return true
   }
 
   // 3. Ocultar mientras el entrenador es visible (Mood Visual)
   const trainerVisibleStates = ['TRAINER_ENTRY', 'T_VISUAL', 'TRAINER_RETREAT', 'POKEMON_CALL', 'RENDER_BALL']
-  if (isTrainer && trainerVisibleStates.includes(sub)) return true
+  if (isTrainer && trainerVisibleStates.includes(sub || '')) return true
   
   return false
 })
@@ -199,7 +200,7 @@ const shouldShowEncounterLayers = computed(() => {
   // Si el Pokémon vuela, no mostramos capas ambientales (arbustos)
   if (enemyIsFloating.value) return false
 
-  const fsmSub = (battleStore.fsm as any)?.currentSubState
+  const fsmSub = battleStore.fsm?.currentSubState
   // Mostrar capas (arbustos) en todos los estados de búsqueda y entrada salvaje plana
   if (fsmSub && ['PARALLEL_ENTRY', 'PARALLEL_JUMP', 'ENTRY_ANIM', 'ENCOUNTER_ANIM', 'BUSH_IDLE', 'WILD_ENTRY', 'BUSH_FADE', 'REVEAL_COLORS'].includes(fsmSub)) {
     return isWildEncounter.value
@@ -232,7 +233,7 @@ watch(
   () => {
     const fsm = battleStore.fsm
     if (!fsm) return [null, null]
-    return [(fsm as any).currentState, (fsm as any).currentSubState]
+    return [fsm.currentState, fsm.currentSubState]
   },
   async ([newState, newSubState]) => {
     logger.debug('BattleArenaView', `FSM: ${newState} ${newSubState || ''}`)
@@ -381,7 +382,7 @@ watch(() => battleStore.isBattleActive, (active) => {
           >
             <div class="trainer-sprite-wrapper">
               <img 
-                :src="getAssetUrl(ASSET_TYPES.TRAINER, battle.trainerName || 'entrenador')" 
+                :src="getAssetUrl(ASSET_TYPES.TRAINER, battle?.trainerName || 'entrenador')" 
                 class="trainer-image"
                 @error="(e: Event) => (e.target as HTMLImageElement).src = getAssetUrl(ASSET_TYPES.TRAINER, 'entrenador')"
               >
@@ -393,7 +394,7 @@ watch(() => battleStore.isBattleActive, (active) => {
             v-if="activeEnemyData"
             :key="`enemy-${activeEnemyData?.uid || activeEnemyData?.id || 'empty'}`"
             side="enemy"
-            :pokemon="activeEnemyData"
+            :pokemon="activeEnemyData as Pokemon"
             :position="p2Pos"
             :base-size="BASE_ENTITY_SIZE_ENEMY"
             :ground-y="enemyGroundY"
@@ -404,7 +405,7 @@ watch(() => battleStore.isBattleActive, (active) => {
             :is-blinking="enemyIsBlinking"
             :is-silhouette="activeEnemyIsSilhouette"
             :is-attacking="battleStore.attackerSide === 'enemy'"
-            :active-move="battleStore.activeMove"
+            :active-move="battleStore.activeMove ? { side: battleStore.activeMove.side || 'enemy', cat: battleStore.activeMove.cat || 'physical', name: battleStore.activeMove.name } : null"
             :show-guides="showGuides"
             :is-capture-success="enemyCaptureActive"
             :sparkles="catchSparkles.filter(s => s.side === 'enemy')"
@@ -449,7 +450,7 @@ watch(() => battleStore.isBattleActive, (active) => {
             :is-shaking="playerIsShaking"
             :is-blinking="playerIsBlinking"
             :is-attacking="battleStore.attackerSide === 'player'"
-            :active-move="battleStore.activeMove"
+            :active-move="battleStore.activeMove ? { side: battleStore.activeMove.side || 'player', cat: battleStore.activeMove.cat || 'physical', name: battleStore.activeMove.name } : null"
             :show-guides="showGuides"
             :is-capture-success="playerCaptureActive"
             :sparkles="catchSparkles.filter(s => s.side === 'player')"
@@ -479,7 +480,7 @@ watch(() => battleStore.isBattleActive, (active) => {
           class="combatant-info-wrap enemy-side"
         >
           <BattleInfoCard 
-            :pokemon="activeEnemyData" 
+            :pokemon="activeEnemyData as Pokemon" 
             :is-scrambled="shouldScrambleEnemyData"
           />
         </div>
@@ -500,7 +501,7 @@ watch(() => battleStore.isBattleActive, (active) => {
 
     <!-- Minijuego de Pesca -->
     <FishingMinigame
-      v-if="(battleStore.fsm as any)?.currentSubState === 'MINIGAME_CHECK'"
+      v-if="battleStore.fsm?.currentSubState === 'MINIGAME_CHECK'"
       :enemy="enemy"
       :rarity="battle?.rarity || 50"
       @success="handleFishingSuccess"

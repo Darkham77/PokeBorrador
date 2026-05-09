@@ -1,18 +1,20 @@
 <script setup lang="ts">
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
+import type { Pokemon } from '@/types/pokemon'
+ 
 interface Props {
   title: string
-  pokemon?: any
+  pokemon?: Pokemon | null
   inventory?: Record<string, number>
-  selectedItems?: Record<string, any>
+  selectedItems?: Record<string, number>
   money?: number
   maxMoney?: number
   isGift?: boolean
   isFriendSide?: boolean
 }
-
-const props = withDefaults(defineProps<Props>(), {
+ 
+withDefaults(defineProps<Props>(), {
   pokemon: null,
   inventory: () => ({}),
   selectedItems: () => ({}),

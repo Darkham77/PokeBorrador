@@ -45,12 +45,12 @@ const compatStyle = computed(() => props.compatText[props.compatibility.level] |
     .compat-icon { font-size: 20px; }
     .compat-label { 
       @include pixelated; font-size: 9px; 
-      color: var(--compat-color); text-shadow: 0 0 8px var(--compat-color);
+      color: Var(--compat-color); text-shadow: 0 0 8px Var(--compat-color);
     }
     .compat-reason { font-size: 10px; color: Rgba(71, 85, 105, 1); }
   }
 
   .compat-bar-bg { height: 6px; background: Rgba(0,0,0,0.4); border-radius: 3px; overflow: hidden; }
-  .compat-fill { height: 100%; background: var(--compat-color); box-shadow: 0 0 15px var(--compat-color); transition: width 0.8s; }
+  .compat-fill { height: 100%; background: Var(--compat-color); box-shadow: 0 0 15px Var(--compat-color); transition: width 0.8s; }
 }
 </style>

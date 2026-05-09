@@ -127,7 +127,7 @@ const getRankIcon = (tierId) => {
 <style scoped lang="scss">
 @use "@/styles/core/tools" as *;
 .ranking-container {
-  background: var(--card, Rgba(28, 28, 30, 1));
+  background: Var(--card, Rgba(28, 28, 30, 1));
   border-radius: 24px;
   overflow: hidden;
   height: 600px;
@@ -145,7 +145,7 @@ const getRankIcon = (tierId) => {
 .subtitle {
   @include pixelated;
   font-size: 8px;
-  color: var(--blue, Rgba(59, 130, 246, 1));
+  color: Var(--blue, Rgba(59, 130, 246, 1));
   display: block;
   margin-bottom: 8px;
 }
@@ -183,7 +183,7 @@ h2 {
 
 .rank-row:hover {
   background: Rgba(255,255,255,0.04);
-  transform: translateX(5px);
+  transform: TranslateX(5px);
 }
 
 .rank-row.is-me {
@@ -244,7 +244,7 @@ h2 {
 
 .me-badge {
   font-size: 7px;
-  background: var(--blue, Rgba(59, 130, 246, 1));
+  background: Var(--blue, Rgba(59, 130, 246, 1));
   color: white;
   padding: 2px 4px;
   border-radius: 4px;
@@ -270,7 +270,7 @@ h2 {
   display: block;
   @include pixelated;
   font-size: 12px;
-  color: var(--white);
+  color: Var(--white);
   margin-bottom: 6px;
 }
 

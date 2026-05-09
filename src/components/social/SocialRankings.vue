@@ -3,7 +3,7 @@ import { onMounted } from 'vue'
 import { useSocialStore } from '@/stores/social.js'
 import TrainerAvatar from '@/components/TrainerAvatar.vue'
 
-const socialStore = useSocialStore() as any
+const socialStore = useSocialStore()
 
 onMounted(() => {
   socialStore.fetchLeaderboard()
@@ -62,7 +62,7 @@ const getFactionColor = (faction: string) => {
 
       <template v-else>
         <div
-          v-for="(player, index) in (socialStore.leaderboard as any[])"
+          v-for="(player, index) in socialStore.leaderboard"
           :key="player.id"
           class="rank-card"
           :class="`rank-${Number(index) + 1}`"

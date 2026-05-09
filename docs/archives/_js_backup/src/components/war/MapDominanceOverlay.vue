@@ -67,7 +67,7 @@ const factionLabel = computed(() => {
   padding: 8px 12px;
   border: 1px solid Rgba(255, 255, 255, 0.1);
   min-width: 120px;
-  z-index: var(--z-base);
+  z-index: Var(--z-base);
   pointer-events: none;
 
   .header {
@@ -80,26 +80,26 @@ const factionLabel = computed(() => {
       width: 6px;
       height: 6px;
       border-radius: 50%;
-      background: var(--gray);
+      background: Var(--gray);
     }
     
     .label {
       font-size: 0.65rem;
       font-weight: 800;
       letter-spacing: 1px;
-      color: var(--gray);
+      color: Var(--gray);
     }
   }
 
   .progress-track {
     height: 4px;
-    background: var(--red);
+    background: Var(--red);
     border-radius: 2px;
     overflow: hidden;
     
     .fill {
       height: 100%;
-      background: var(--blue);
+      background: Var(--blue);
       transition: width 0.3s ease;
     }
   }
@@ -107,14 +107,14 @@ const factionLabel = computed(() => {
   // State modifiers
   &.union {
     border-color: Rgba(10, 132, 255, 0.4);
-    .status-dot { background: var(--blue); box-shadow: 0 0 5px var(--blue); }
-    .label { color: var(--blue); }
+    .status-dot { background: Var(--blue); box-shadow: 0 0 5px Var(--blue); }
+    .label { color: Var(--blue); }
   }
   
   &.poder {
     border-color: Rgba(255, 69, 58, 0.4);
-    .status-dot { background: var(--red); box-shadow: 0 0 5px var(--red); }
-    .label { color: var(--red); }
+    .status-dot { background: Var(--red); box-shadow: 0 0 5px Var(--red); }
+    .label { color: Var(--red); }
   }
 }
 </style>

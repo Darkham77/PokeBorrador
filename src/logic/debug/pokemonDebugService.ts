@@ -66,11 +66,12 @@ export const pokemonDebugService = {
     // 1. Create base instance
     const genderMap: Record<string, 'M' | 'F' | 'N'> = { 'male': 'M', 'female': 'F', 'genderless': 'N' };
     const mappedGender = (gender && genderMap[gender]) ? genderMap[gender] : undefined;
-    const p = makePokemon(id, level, { isShiny, nature: nature || undefined, ability: ability || undefined, gender: mappedGender, heldItem: heldItem || undefined }) as Pokemon;
+    const p = makePokemon(id, level, { isShiny, nature: nature || undefined, ability: ability || undefined, gender: mappedGender, heldItem: heldItem || undefined })
+    if (!p) return {} as Pokemon
 
     // 2. Apply Overrides
     if (ivs) {
-      p.ivs = { ...p.ivs, ...ivs };
+      p.ivs = { ...p.ivs, ...ivs }
     }
     
     if (isGuardian) p.isGuardian = true;
@@ -134,7 +135,7 @@ export const pokemonDebugService = {
           ivs: p.ivs,
           nature: p.nature,
           movesAtBirth: p.moves.map(m => m?.name || '???'),
-          abilitySlot: (p as unknown as { abilityIndex?: number }).abilityIndex || 0,
+          abilitySlot: (p as Pokemon & { abilityIndex?: number }).abilityIndex || 0,
           isShiny: p.isShiny,
           isGuardian: p.isGuardian
         };
@@ -151,7 +152,7 @@ export const pokemonDebugService = {
           uid: `${eggForInventory.id}-${Temporal.Now.instant().epochMilliseconds}`,
           ready: false
         };
-        game.state.eggs.push(eggToPush as unknown as any);
+        game.state.eggs.push(eggToPush);
         ui.notify(`[DEBUG] Huevo de ${p.name} añadido a la mochila`, '🥚');
         break;
       }

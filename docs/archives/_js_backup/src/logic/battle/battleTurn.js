@@ -99,7 +99,7 @@ export async function executeTurn(store, moveIndex) {
 
     if (queue.length > 0) {
       fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.EVAL_CONTINUE)
-      await new Promise(r => setTimeout(r, 400)) // Reducido de 600
+      await await setTimeout(400) // Reducido de 600
     }
   }
   
@@ -274,7 +274,7 @@ export async function runPlayerAction(store, moveIndex) {
         }
 
         if (move.cat !== 'status') {
-          await new Promise(r => setTimeout(r, 200))
+          await await setTimeout(200)
         }
       }
     }
@@ -351,7 +351,7 @@ export async function runEnemyAction(store) {
       await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.TRAINER_RETREAT)
       await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.POKEMON_RECALL)
       gameBus.emit('PLAY_WITHDRAW', { side: 'enemy' })
-      await new Promise(r => setTimeout(r, 800))
+      await await setTimeout(800)
       await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.VACATE_SEAT)
       
       const _oldEnemy = e
@@ -365,7 +365,7 @@ export async function runEnemyAction(store) {
       await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.OCCUPY_SEAT)
       store.addLog(`¡Envía a ${newPoke.name}!`, 'log-enemy', newPoke)
       gameBus.emit('PLAY_SEND_OUT', { side: 'enemy', pokemon: newPoke })
-      await new Promise(r => setTimeout(r, 800))
+      await await setTimeout(800)
 
       // Daño por Púas
       if (s.spikes > 0 && newPoke.type !== 'flying' && newPoke.type2 !== 'flying' && newPoke.ability !== 'Levitación') {
@@ -524,7 +524,7 @@ export async function runEnemyAction(store) {
         }
         
         if (enemyMove.cat !== 'status') {
-          await new Promise(r => setTimeout(r, 200))
+          await await setTimeout(200)
         }
       }
     }

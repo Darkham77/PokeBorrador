@@ -1,4 +1,0 @@
-
-> pokemon-online@0.5.0 validate:types
-> vue-tsc --noEmit
-

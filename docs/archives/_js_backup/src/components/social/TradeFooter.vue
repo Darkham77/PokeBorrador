@@ -61,7 +61,7 @@ defineEmits(['update:message', 'update:isGift', 'send'])
   font-size: 12px;
   resize: none;
   outline: none;
-  &:focus { border-color: var(--purple); }
+  &:focus { border-color: Var(--purple); }
 }
 
 .action-section {
@@ -81,13 +81,13 @@ defineEmits(['update:message', 'update:isGift', 'send'])
   align-items: center; 
   gap: 12px; 
   cursor: pointer;
-  input { width: 20px; height: 20px; cursor: pointer; accent-color: var(--purple); }
+  input { width: 20px; height: 20px; cursor: pointer; accent-color: Var(--purple); }
   .toggle-label { font-size: 10px; @include pixelated; color: $white; }
 }
 
 .send-offer-btn {
   padding: 16px 32px;
-  background: Linear-Gradient(135deg, var(--purple), Rgba(142, 36, 170, 1));
+  background: Linear-Gradient(135deg, Var(--purple), Rgba(142, 36, 170, 1));
   border: none;
   border-radius: 14px;
   color: $white;
@@ -96,10 +96,10 @@ defineEmits(['update:message', 'update:isGift', 'send'])
   font-weight: 900;
   cursor: pointer;
   box-shadow: 0 4px 15px Rgba(168, 85, 247, 0.3);
-  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transition: all 0.2s cubic-Bezier(0.175, 0.885, 0.32, 1.275);
 
-  &:hover:not(:disabled) {
-    transform: translateY(-2px);
+  &:hover:Not(:disabled) {
+    transform: TranslateY(-2px);
     box-shadow: 0 6px 20px Rgba(168, 85, 247, 0.5);
     filter: Brightness(1.1);
   }

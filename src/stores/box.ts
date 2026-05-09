@@ -136,9 +136,9 @@ export const useBoxStore = defineStore('box', () => {
           const bstB = specB ? ((specB.hp || 0) + (specB.atk || 0) + (specB.def || 0) + (specB.spa || 0) + (specB.spd || 0) + (specB.spe || 0)) : 0;
           
           const ivsA = pA.ivs;
-          const totalIvsA = Object.values(ivsA).reduce((s: number, v: number) => s + (v || 0), 0);
+          const totalIvsA = Object.values(ivsA).reduce((s: number, v) => s + (Number(v) || 0), 0);
           const ivsB = pB.ivs;
-          const totalIvsB = Object.values(ivsB).reduce((s: number, v: number) => s + (v || 0), 0);
+          const totalIvsB = Object.values(ivsB).reduce((s: number, v) => s + (Number(v) || 0), 0);
           
           return (bstB + totalIvsB) - (bstA + totalIvsA);
         }

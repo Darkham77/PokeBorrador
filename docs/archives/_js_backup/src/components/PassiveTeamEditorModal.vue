@@ -84,13 +84,13 @@ if (typeof window !== 'undefined') {
 .loading-placeholder {
   text-align: center;
   padding: 40px;
-  color: var(--gray);
+  color: Var(--gray);
   @include pixelated;
   font-size: 10px;
 }
 
 // Global injections styles (Legacy)
-:deep(.passive-poke-slot) {
+:Deep(.passive-poke-slot) {
   background: Rgba(0, 0, 0, 0.3);
   border: 1px solid Rgba(255, 255, 255, 0.05);
   border-radius: 12px;

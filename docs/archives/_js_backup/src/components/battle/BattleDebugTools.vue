@@ -65,17 +65,17 @@ const debugCapture = async () => {
   // 1. Animación de entrada
   audio.ballHit()
   gameBus.emit('PLAY_CATCH_ENERGY', { side: 'enemy', ballId: itemName })
-  await new Promise(r => setTimeout(r, 1000))
+  await await setTimeout(1000)
 
   // 2. Suspenso: 3 Shakes
   for (let i = 0; i < 3; i++) {
     audio.wobble()
     gameBus.emit('CATCH_SHAKE', { side: 'enemy' })
-    await new Promise(r => setTimeout(r, 1000))
+    await await setTimeout(1000)
   }
 
   // 3. Éxito visual y sonoro
-  await new Promise(r => setTimeout(r, 500))
+  await await setTimeout(500)
   audio.caught()
   gameBus.emit('CATCH_SUCCESS', { side: 'enemy' })
   battleStore.addLog(`¡Ya está! ¡${e.name} atrapado!`, 'log-catch', e)
@@ -407,7 +407,7 @@ const toggleStatus = (side, type) => {
   position: fixed;
   bottom: 12px; 
   left: 12px;
-  z-index: var(--z-navigation);
+  z-index: Var(--z-navigation);
   display: flex;
   flex-direction: column-reverse;
   align-items: flex-start;
@@ -425,10 +425,10 @@ const toggleStatus = (side, type) => {
 }
 
 .debug-trigger, .effects-trigger {
-  @include btn-vicio('info', 'xs', true);
+  @include btn-Vicio('info', 'xs', true);
   background: Rgba(20, 20, 30, 0.95);
-  border: 2px solid var(--yellow);
-  color: var(--yellow);
+  border: 2px solid Var(--yellow);
+  color: Var(--yellow);
   font-size: 7px;
   height: 24px;
   padding: 0 14px;
@@ -440,18 +440,18 @@ const toggleStatus = (side, type) => {
   box-shadow: 0 4px 15px Rgba(0, 0, 0, 0.6);
   @include pixelated;
   
-  &:hover, &.active { background: var(--yellow); color: $black; text-shadow: none; }
+  &:hover, &.active { background: Var(--yellow); color: $black; text-shadow: none; }
 }
 
 .effects-trigger {
-  border-color: var(--purple);
-  color: var(--purple);
-  &:hover, &.active { background: var(--purple); color: white; }
+  border-color: Var(--purple);
+  color: Var(--purple);
+  &:hover, &.active { background: Var(--purple); color: white; }
 }
 
 .effects-menu {
   background: Rgba(15, 15, 25, 0.99);
-  border: 2px solid var(--purple);
+  border: 2px solid Var(--purple);
   border-radius: 8px;
   width: 320px;
   max-height: 500px;
@@ -474,7 +474,7 @@ const toggleStatus = (side, type) => {
     gap: 10px;
     border-bottom: 1px solid Rgba(255, 255, 255, 0.1);
 
-    .title { @include pixelated; font-size: 8px; color: var(--purple); flex: 1; }
+    .title { @include pixelated; font-size: 8px; color: Var(--purple); flex: 1; }
     .close-mini { background: none; border: none; color: white; cursor: pointer; opacity: 0.5; &:hover { opacity: 1; } }
   }
 
@@ -489,7 +489,7 @@ const toggleStatus = (side, type) => {
 
 .debug-menu {
   background: Rgba(15, 15, 25, 0.98);
-  border: 2px solid var(--yellow);
+  border: 2px solid Var(--yellow);
   border-radius: 6px;
   padding: 10px;
   display: flex;
@@ -530,7 +530,7 @@ const toggleStatus = (side, type) => {
 
   .section-label {
     font-size: 6px;
-    color: var(--yellow);
+    color: Var(--yellow);
     text-transform: uppercase;
     margin-bottom: 2px;
     opacity: 0.9;
@@ -539,19 +539,19 @@ const toggleStatus = (side, type) => {
 }
 
 .debug-btn {
-  @include btn-vicio('default', 'xs', true);
+  @include btn-Vicio('default', 'xs', true);
   font-size: 7px !important;
   height: 24px !important;
   text-align: center;
   padding: 0 4px !important;
   
-  &.kill-btn { @include btn-vicio('danger', 'xs', true); }
-  &.heal-btn { @include btn-vicio('success', 'xs', true); }
-  &.search-btn { @include btn-vicio('info', 'xs', true); border-color: var(--yellow); }
+  &.kill-btn { @include btn-Vicio('danger', 'xs', true); }
+  &.heal-btn { @include btn-Vicio('success', 'xs', true); }
+  &.search-btn { @include btn-Vicio('info', 'xs', true); border-color: Var(--yellow); }
   &.catch-btn { 
-    @include btn-vicio('primary', 'xs', true); 
-    background: Linear-Gradient(135deg, var(--purple-light) 0%, var(--red) 100%);
-    border-color: var(--white);
+    @include btn-Vicio('primary', 'xs', true); 
+    background: Linear-Gradient(135deg, Var(--purple-light) 0%, Var(--red) 100%);
+    border-color: Var(--white);
     margin-top: 2px;
   }
 }
@@ -565,13 +565,13 @@ const toggleStatus = (side, type) => {
 }
 
 .mini-btn {
-  @include btn-vicio('default', 'xs', true);
+  @include btn-Vicio('default', 'xs', true);
   height: 20px !important;
   font-size: 6px !important;
   padding: 0 !important;
   
   &.active {
-    background: var(--yellow);
+    background: Var(--yellow);
     color: $black;
     border-color: $white;
   }
@@ -586,7 +586,7 @@ const toggleStatus = (side, type) => {
   &.mt-1 { margin-top: 2px; }
   
   .swap-btn { 
-    @include btn-vicio('default', 'xs', true); 
+    @include btn-Vicio('default', 'xs', true); 
     width: 24px !important; 
     height: 24px !important; 
     font-size: 10px;
@@ -625,10 +625,10 @@ const toggleStatus = (side, type) => {
 }
 
 .slide-up-enter-active, .slide-up-leave-active { 
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1.2);
+  transition: all 0.3s cubic-Bezier(0.4, 0, 0.2, 1.2);
 }
 .slide-up-enter-from, .slide-up-leave-to { 
   opacity: 0; 
-  transform: translateY(20px) Scale(0.9); 
+  transform: TranslateY(20px) Scale(0.9); 
 }
 </style>

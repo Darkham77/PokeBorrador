@@ -188,7 +188,7 @@ const getTrainerSprite = (id) => {
     content: '';
     position: absolute;
     inset: 0;
-    background: Radial-Gradient(circle at 70% 30%, var(--cls-color) 0%, transparent 50%);
+    background: Radial-Gradient(circle at 70% 30%, Var(--cls-color) 0%, transparent 50%);
     opacity: 0.08;
     pointer-events: none;
   }
@@ -204,7 +204,7 @@ const getTrainerSprite = (id) => {
   align-items: center;
   text-align: center;
   position: relative;
-  z-index: var(--z-base);
+  z-index: Var(--z-base);
 
     .avatar-box {
       position: relative;
@@ -222,7 +222,7 @@ const getTrainerSprite = (id) => {
       .avatar-glow {
         position: absolute;
         inset: 0;
-        background: Radial-Gradient(circle at center, var(--cls-color) 0%, transparent 80%);
+        background: Radial-Gradient(circle at center, Var(--cls-color) 0%, transparent 80%);
         opacity: 0.1;
       }
       
@@ -230,7 +230,7 @@ const getTrainerSprite = (id) => {
         height: 220px;
         image-rendering: pixelated;
         filter: Drop-Shadow(0 20px 40px Rgba(0,0,0,0.8));
-        z-index: var(--z-base);
+        z-index: Var(--z-base);
         transition: transform 0.3s ease;
         &:hover { transform: Scale(1.05); }
       }
@@ -242,14 +242,14 @@ const getTrainerSprite = (id) => {
         width: 60px;
         height: 60px;
         background: Rgba(30, 41, 59, 1);
-        border: 3px solid var(--cls-color);
+        border: 3px solid Var(--cls-color);
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
         overflow: hidden;
-        z-index: var(--z-base);
-        box-shadow: 0 8px 25px Rgba(0,0,0,0.6), 0 0 15px var(--cls-color)44;
+        z-index: Var(--z-base);
+        box-shadow: 0 8px 25px Rgba(0,0,0,0.6), 0 0 15px Var(--cls-color)44;
 
         .avatar-pixel {
           width: 100%;
@@ -268,9 +268,9 @@ const getTrainerSprite = (id) => {
   .class-main-title {
     @include pixelated;
     font-size: 20px;
-    color: var(--cls-color);
+    color: Var(--cls-color);
     margin-bottom: 16px;
-    text-shadow: 0 0 20px var(--cls-color)66;
+    text-shadow: 0 0 20px Var(--cls-color)66;
     @include pixelated;
   }
 
@@ -315,8 +315,8 @@ const getTrainerSprite = (id) => {
       display: flex;
       flex-direction: column;
       .label { font-size: 8px; @include pixelated; color: Rgba(255,255,255,0.4); margin-bottom: 8px; }
-      .value { @include pixelated; font-size: 14px; color: var(--white); }
-      .highlight { color: var(--yellow); }
+      .value { @include pixelated; font-size: 14px; color: Var(--white); }
+      .highlight { color: Var(--yellow); }
     }
   }
 }
@@ -350,7 +350,7 @@ const getTrainerSprite = (id) => {
     h2 {
       @include pixelated;
       font-size: 11px;
-      color: var(--white);
+      color: Var(--white);
       letter-spacing: 1px;
       @include pixelated;
     }
@@ -428,7 +428,7 @@ const getTrainerSprite = (id) => {
   gap: 20px;
 
   .missions-btn-wide {
-    @include btn-vicio('danger', 'md', true);
+    @include btn-Vicio('danger', 'md', true);
   }
 
   .action-footer {
@@ -436,15 +436,15 @@ const getTrainerSprite = (id) => {
     gap: 16px;
     
     .btn-secondary {
-      @include btn-vicio('secondary', 'md', true);
+      @include btn-Vicio('secondary', 'md', true);
       
       .btn-label { font-size: 8px; color: Rgba(255, 255, 255, 0.7); }
-      .price { color: var(--yellow); font-size: 9px; }
+      .price { color: Var(--yellow); font-size: 9px; }
       .icon { opacity: 0.8; }
     }
 
     .btn-primary {
-      @include btn-vicio('success', 'md', true);
+      @include btn-Vicio('success', 'md', true);
     }
   }
 }

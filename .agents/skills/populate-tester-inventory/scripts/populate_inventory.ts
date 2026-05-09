@@ -14,21 +14,18 @@ function populateInventory() {
     
     // In a real scenario, this would interact with the DBRouter or the gameStore
     // But as a skill script, it can generate a snippet for the browser console.
-    
     const items = {
         'Poción': 99,
-        'Superpoción': 99,
-        'Hiperpoción': 99,
-        'Restaurar Todo': 99,
+        'Súper Poción': 99,
+        'Hiper Poción': 99,
+        'Poción Máxima': 99,
         'Revivir': 99,
+        'Revivir Máximo': 99,
         'Antídoto': 99,
+        'Cura Quemadura': 99,
         'Despertar': 99,
-        ' antiquemar': 99,
-        'Antihielo': 99,
         'Cura Total': 99,
         'Éter': 99,
-        'Éter Máximo': 99,
-        'Elixir': 99,
         'Elixir Máximo': 99,
         'Piedra Fuego': 10,
         'Piedra Agua': 10,
@@ -43,6 +40,7 @@ function populateInventory() {
         'Superrepelente': 20,
         'Máximo Repelente': 20
     };
+
 
     const snippet = `
 Object.entries(${JSON.stringify(items)}).forEach(([name, qty]) => {

@@ -143,7 +143,7 @@ const handleUseItem = (item) => {
 .quick-bag-grid {
   display: grid;
   // Tamaño fijo para evitar que las tarjetas se estiren demasiado en pantallas anchas
-  grid-template-columns: repeat(auto-fill, 76px); 
+  grid-template-columns: Repeat(auto-fill, 76px); 
   gap: 8px;
   width: 100%;
   padding: 4px;
@@ -160,7 +160,7 @@ const handleUseItem = (item) => {
   border-radius: 12px !important; // Menos redondeado, más premium
   padding: 0 !important;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  transition: all 0.2s cubic-Bezier(0.4, 0, 0.2, 1) !important;
   aspect-ratio: 1;
   display: flex;
   justify-content: center;
@@ -177,12 +177,12 @@ const handleUseItem = (item) => {
 
   &:hover {
     background: Rgba(45, 55, 72, 0.9) !important;
-    border-color: var(--yellow) !important;
+    border-color: Var(--yellow) !important;
     box-shadow: 
       0 0 15px Rgba(255, 214, 10, 0.2),
       inset 0 0 10px Rgba(255, 214, 10, 0.1) !important;
     transform: TranslateY(-2px) !important;
-    z-index: calc(var(--z-base) + 2);
+    z-index: Calc(Var(--z-base) + 2);
   }
 
   &:active {
@@ -234,14 +234,14 @@ const handleUseItem = (item) => {
   left: 50%;
   transform: TranslateX(-50%); // Centrado horizontalmente
   background: Rgba(0, 0, 0, 0.85);
-  border: 1px solid var(--yellow);
+  border: 1px solid Var(--yellow);
   color: white;
   font-size: 8px; // Un poco más pequeño para no tapar tanto
   padding: 1px 6px;
   border-radius: 4px;
   @include pixelated;
   text-shadow: 1px 1px 0px black;
-  z-index: var(--z-low);
+  z-index: Var(--z-low);
   white-space: nowrap;
 }
 

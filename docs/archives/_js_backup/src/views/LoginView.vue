@@ -273,7 +273,7 @@ onMounted(() => {
 @use "@/styles/views/login";
 
 #auth-screen {
-  background-image: v-bind(wallpaperUrl);
+  background-image: v-Bind(wallpaperUrl);
 }
 
 .auth-pwa-install {
@@ -281,7 +281,7 @@ onMounted(() => {
   
   .pwa-install-btn {
     @include pixelated;
-    background: var(--yellow);
+    background: Var(--yellow);
     color: black;
     border: none;
     padding: 8px 16px;
@@ -292,7 +292,7 @@ onMounted(() => {
     transition: all 0.2s;
     
     &:hover {
-      transform: translateY(-2px);
+      transform: TranslateY(-2px);
       box-shadow: 0 5px 0 #b39200;
     }
   }

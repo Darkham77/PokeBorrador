@@ -4,22 +4,30 @@ import { useShopStore } from '@/stores/shop'
 import { useGameStore } from '@/stores/game'
 import { PLAYER_CLASSES } from '@/data/playerClasses'
 
-const shopStore = useShopStore() as any
-const gameStore = useGameStore() as any
+const shopStore = useShopStore()
+const gameStore = useGameStore()
 
-const items = ref<any[]>([])
-const discount = PLAYER_CLASSES.rocket.modifiers.shopDiscount || 0.20
-
-function refresh() {
-  items.value = shopStore.getBlackMarketItems()
+interface BlackMarketItem {
+  id: string
+  name: string
+  sprite: string
+  bcPrice: number
 }
 
-function getPrice(item: any) {
+const items = ref<BlackMarketItem[]>([])
+const discount = PLAYER_CLASSES.rocket.modifiers?.shopDiscount || 0.20
+
+function refresh() {
+  items.value = shopStore.getBlackMarketItems() as BlackMarketItem[]
+}
+
+function getPrice(item: BlackMarketItem) {
   return Math.floor((item.bcPrice * 50) * (1 - discount))
 }
 
 function isPurchased(itemId: string) {
-  return gameStore.state.classData?.blackMarketDaily?.purchased?.includes(itemId)
+  const classData = gameStore.state.classData as { blackMarketDaily?: { purchased: string[] } }
+  return classData?.blackMarketDaily?.purchased?.includes(itemId) || false
 }
 
 onMounted(() => {

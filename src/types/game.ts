@@ -23,11 +23,14 @@ export interface PokedexItem {
 }
 
 export interface ClaimItem {
-  id: string;
+  id: string | number;
   type: 'pokemon' | 'item' | 'currency';
-  target: string;
-  qty: number;
-  source: string;
+  asset_data: {
+    type: 'pokemon' | 'item' | 'money';
+    data: Record<string, unknown>;
+  };
+  source_type: string;
+  source_id: string;
   created_at: string;
 }
 

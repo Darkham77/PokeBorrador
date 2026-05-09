@@ -78,7 +78,7 @@ const shadowsArray = computed(() => {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  z-index: calc(var(--z-map-spawns) - 7); 
+  z-index: Calc(Var(--z-map-spawns) - 7); 
   overflow: visible;
 }
 

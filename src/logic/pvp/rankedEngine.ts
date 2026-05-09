@@ -1,10 +1,12 @@
 import type { Pokemon } from '@/types/pokemon';
 
 export interface EloTier {
+  id: string;
   name: string;
   minElo: number;
   color: string;
   icon: string;
+  allowedTypes?: string[];
 }
 
 export interface RankedRules {
@@ -19,12 +21,12 @@ export const RANKED_TIER_ORDER = ['Bronce', 'Plata', 'Oro', 'Platino', 'Diamante
 export const RANKED_MAX_TIER_GAP = 1;
 
 export const RANKED_TIERS: Record<string, EloTier> = {
-  BRONCE:   { name: 'Bronce',   minElo: 0,    color: '#c8a060', icon: '🥉' },
-  PLATA:    { name: 'Plata',    minElo: 1200, color: '#9E9E9E', icon: '🥈' },
-  ORO:      { name: 'Oro',      minElo: 1600, color: '#FFB800', icon: '🥇' },
-  PLATINO:  { name: 'Platino',  minElo: 2100, color: '#E5C100', icon: '🔶' },
-  DIAMANTE: { name: 'Diamante', minElo: 2700, color: '#89CFF0', icon: '💎' },
-  MAESTRO:  { name: 'Maestro',  minElo: 3400, color: '#FFD700', icon: '👑' }
+  BRONCE:   { id: 'bronce',   name: 'Bronce',   minElo: 0,    color: '#c8a060', icon: '🥉' },
+  PLATA:    { id: 'plata',    name: 'Plata',    minElo: 1200, color: '#9E9E9E', icon: '🥈' },
+  ORO:      { id: 'oro',      name: 'Oro',      minElo: 1600, color: '#FFB800', icon: '🥇' },
+  PLATINO:  { id: 'platino',  name: 'Platino',  minElo: 2100, color: '#E5C100', icon: '🔶' },
+  DIAMANTE: { id: 'diamante', name: 'Diamante', minElo: 2700, color: '#89CFF0', icon: '💎' },
+  MAESTRO:  { id: 'maestro',  name: 'Maestro',  minElo: 3400, color: '#FFD700', icon: '👑' }
 };
 
 /**
@@ -32,12 +34,12 @@ export const RANKED_TIERS: Record<string, EloTier> = {
  */
 export function getEloTier(elo: number | string): EloTier {
   const e = Number(elo) || 0;
-  if (e >= (RANKED_TIERS.MAESTRO?.minElo || 3400)) return RANKED_TIERS.MAESTRO || { name: 'Maestro', minElo: 3400, color: '', icon: '' };
-  if (e >= (RANKED_TIERS.DIAMANTE?.minElo || 2700)) return RANKED_TIERS.DIAMANTE || { name: 'Diamante', minElo: 2700, color: '', icon: '' };
-  if (e >= (RANKED_TIERS.PLATINO?.minElo || 2100)) return RANKED_TIERS.PLATINO || { name: 'Platino', minElo: 2100, color: '', icon: '' };
-  if (e >= (RANKED_TIERS.ORO?.minElo || 1600)) return RANKED_TIERS.ORO || { name: 'Oro', minElo: 1600, color: '', icon: '' };
-  if (e >= (RANKED_TIERS.PLATA?.minElo || 1200)) return RANKED_TIERS.PLATA || { name: 'Plata', minElo: 1200, color: '', icon: '' };
-  return RANKED_TIERS.BRONCE || { name: 'Bronce', minElo: 0, color: '', icon: '' };
+  if (e >= (RANKED_TIERS.MAESTRO?.minElo || 3400)) return RANKED_TIERS.MAESTRO || { id: 'maestro', name: 'Maestro', minElo: 3400, color: '', icon: '' };
+  if (e >= (RANKED_TIERS.DIAMANTE?.minElo || 2700)) return RANKED_TIERS.DIAMANTE || { id: 'diamante', name: 'Diamante', minElo: 2700, color: '', icon: '' };
+  if (e >= (RANKED_TIERS.PLATINO?.minElo || 2100)) return RANKED_TIERS.PLATINO || { id: 'platino', name: 'Platino', minElo: 2100, color: '', icon: '' };
+  if (e >= (RANKED_TIERS.ORO?.minElo || 1600)) return RANKED_TIERS.ORO || { id: 'oro', name: 'Oro', minElo: 1600, color: '', icon: '' };
+  if (e >= (RANKED_TIERS.PLATA?.minElo || 1200)) return RANKED_TIERS.PLATA || { id: 'plata', name: 'Plata', minElo: 1200, color: '', icon: '' };
+  return RANKED_TIERS.BRONCE || { id: 'bronce', name: 'Bronce', minElo: 0, color: '', icon: '' };
 }
 
 /**

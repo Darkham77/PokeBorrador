@@ -1,12 +1,17 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
+import type { Pokemon, PokemonIVs } from '@/types/pokemon'
+
+interface TradePokemon extends Pokemon {
+  _source: 'team' | 'box'
+}
 
 interface Props {
   show: boolean
   side?: string
   title?: string
-  pokemonList?: any[]
+  pokemonList?: TradePokemon[]
   lockedUids?: Set<string>
 }
 
@@ -19,7 +24,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<{
   (e: 'close'): void
-  (e: 'select', poke: any): void
+  (e: 'select', poke: TradePokemon): void
 }>()
 
 const filters = ref({
@@ -52,8 +57,8 @@ const filteredList = computed(() => {
   })
 })
 
-const getIVTotal = (ivs: any) => {
-  return Object.values(ivs || {}).reduce((s: number, v: any) => s + (Number(v) || 0), 0)
+const getIVTotal = (ivs: PokemonIVs) => {
+  return Object.values(ivs || {}).reduce((s: number, v) => s + (Number(v) || 0), 0)
 }
 
 const getIVColor = (val: number) => {
@@ -66,7 +71,7 @@ const handleImgError = (e: Event) => {
   (e.target as HTMLImageElement).style.display = 'none'
 }
 
-const select = (poke: any) => {
+const select = (poke: TradePokemon) => {
   if (props.lockedUids?.has(poke.uid)) return
   emit('select', poke)
 }
@@ -216,7 +221,7 @@ const select = (poke: any) => {
                 >
                   <div
                     class="iv-fill"
-                    :style="{ width: (val/31*100) + '%', background: getIVColor(val) }"
+                    :style="{ width: ((Number(val) || 0)/31*100) + '%', background: getIVColor(Number(val) || 0) }"
                   />
                 </div>
               </div>

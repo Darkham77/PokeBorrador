@@ -152,7 +152,7 @@ const handleLogout = () => {
 @use "@/styles/core/tools" as *;
 
 .title-description {
-  color: var(--gray);
+  color: Var(--gray);
   font-size: 14px;
   margin-bottom: 30px;
   text-align: center;
@@ -179,7 +179,7 @@ const handleLogout = () => {
 }
 
 .logout-btn-trigger {
-  @include btn-vicio('danger', 'md');
+  @include btn-Vicio('danger', 'md');
   padding: 14px 28px;
   font-size: 9px;
   min-width: 220px;
@@ -187,7 +187,7 @@ const handleLogout = () => {
 
 .logout-hint {
   font-size: 10px;
-  color: var(--gray);
+  color: Var(--gray);
   font-style: italic;
   opacity: 0.8;
   text-align: center;

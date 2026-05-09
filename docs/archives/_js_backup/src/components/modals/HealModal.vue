@@ -313,7 +313,7 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   position: relative;
-  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.5s cubic-Bezier(0.16, 1, 0.3, 1);
   overflow: visible; // Critical for PVSpriteFX particles
   
   &.empty {
@@ -339,19 +339,19 @@ onMounted(() => {
   height: 72px;
   @include sprite-render;
   filter: Grayscale(0.8) Brightness(0.5);
-  transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transition: all 0.6s cubic-Bezier(0.175, 0.885, 0.32, 1.275);
   position: relative;
-  z-index: calc(var(--z-base) + 2);
+  z-index: Calc(Var(--z-base) + 2);
 }
 
 .type-aura {
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  background: Radial-Gradient(circle, var(--type-color) 0%, transparent 70%);
+  background: Radial-Gradient(circle, Var(--type-color) 0%, transparent 70%);
   opacity: 0.15;
   transition: opacity 0.3s;
-  z-index: calc(var(--z-base) + 1);
+  z-index: Calc(Var(--z-base) + 1);
 }
 
 .needs-heal-badge {
@@ -359,9 +359,9 @@ onMounted(() => {
   top: 4px;
   right: 0px;
   font-size: 14px;
-  z-index: var(--z-low);
+  z-index: Var(--z-low);
   filter: Drop-Shadow(0 0 5px Rgba(239, 68, 68, 0.5));
-  animation: bounce-in 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  animation: bounce-in 0.4s cubic-Bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 @keyframes bounce-in {
@@ -453,7 +453,7 @@ onMounted(() => {
   
   .price-tag {
     font-size: 20px;
-    color: var(--white);
+    color: Var(--white);
     text-shadow: 0 0 15px Rgba(255, 255, 255, 0.2);
     @include pixelated;
   }
@@ -490,9 +490,9 @@ onMounted(() => {
   transition: all 0.2s;
   @include pixelated;
   
-  &:hover:not(:disabled) {
+  &:hover:Not(:disabled) {
     background: Rgba(255, 255, 255, 0.08);
-    color: var(--white);
+    color: Var(--white);
     border-color: Rgba(255, 255, 255, 0.2);
   }
 

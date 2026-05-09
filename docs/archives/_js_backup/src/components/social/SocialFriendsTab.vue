@@ -212,7 +212,7 @@ defineEmits(['search-tab'])
     justify-content: center;
     transition: all 0.2s;
     background: Rgba(255, 255, 255, 0.05);
-    color: var(--white);
+    color: Var(--white);
 
     &:hover { transform: Scale(1.1); }
     &.chat:hover { background: Rgba(59, 130, 246, 0.2); color: Rgba(96, 165, 250, 1); }

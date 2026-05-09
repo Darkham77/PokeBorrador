@@ -64,7 +64,7 @@ defineProps({
     align-items: center;
     gap: 20px;
 
-    @include responsive(hud-mobile) {
+    @include Responsive(hud-mobile) {
       flex-direction: column;
       align-items: flex-start;
     }
@@ -79,7 +79,7 @@ defineProps({
   .header-main-title {
     @include pixelated;
     font-size: 10px;
-    color: var(--white);
+    color: Var(--white);
     letter-spacing: 2px;
     margin: 0;
   }
@@ -87,7 +87,7 @@ defineProps({
   .header-sub-title {
     @include pixelated;
     font-size: 7px;
-    color: var(--gray);
+    color: Var(--gray);
     opacity: 0.6;
     margin: 0;
   }
@@ -117,14 +117,14 @@ defineProps({
     .pulse-dot {
       width: 6px;
       height: 6px;
-      background: var(--green);
+      background: Var(--green);
       border-radius: 50%;
-      box-shadow: 0 0 8px var(--green);
+      box-shadow: 0 0 8px Var(--green);
       animation: pulse 2s infinite;
     }
 
-    .badge-label { @include pixelated; font-size: 6px; color: var(--gray); }
-    .badge-value { @include pixelated; font-size: 7px; color: var(--white); }
+    .badge-label { @include pixelated; font-size: 6px; color: Var(--gray); }
+    .badge-value { @include pixelated; font-size: 7px; color: Var(--white); }
   }
 
   .badge-divider {
@@ -138,13 +138,13 @@ defineProps({
     align-items: center;
     gap: 8px;
     
-    .hint-icon { font-size: 10px; filter: Drop-Shadow(0 0 4px var(--yellow)); }
-    .hint-text { @include pixelated; font-size: 6px; color: var(--gray); max-width: 250px; }
+    .hint-icon { font-size: 10px; filter: Drop-Shadow(0 0 4px Var(--yellow)); }
+    .hint-text { @include pixelated; font-size: 6px; color: Var(--gray); max-width: 250px; }
   }
 }
 
 .rocket-action-btn {
-  @include btn-vicio('danger', 'sm');
+  @include btn-Vicio('danger', 'sm');
 }
 
 .rocket-confirm-group {
@@ -152,11 +152,11 @@ defineProps({
   gap: 8px;
 
   .confirm-btn {
-    @include btn-vicio('danger', 'sm');
+    @include btn-Vicio('danger', 'sm');
   }
 
   .cancel-btn {
-    @include btn-vicio('danger', 'sm');
+    @include btn-Vicio('danger', 'sm');
   }
 }
 

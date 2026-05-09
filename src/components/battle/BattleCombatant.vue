@@ -13,9 +13,11 @@ import { useCombatShadowStore } from '@/stores/combatShadows'
 import { gameBus } from '@/logic/gameBus'
 import { WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator'
 
+import type { Pokemon } from '@/types/pokemon'
+
 interface Props {
   side: string // 'player' | 'enemy'
-  pokemon?: any
+  pokemon?: Pokemon | null
   position: { x: number; y: number }
   baseSize: number
   groundY?: string
@@ -26,15 +28,15 @@ interface Props {
   isBlinking?: boolean
   isSilhouette?: boolean
   isAttacking?: boolean
-  activeMove?: any
+  activeMove?: { side: string; cat: 'physical' | 'special' | 'status'; name: string } | null
   showGuides?: boolean
   isCaptureSuccess?: boolean
-  sparkles?: any[]
+  sparkles?: { id: string | number; tx: number; ty: number; tf: number; scale: number; delay: string }[]
   isFainting?: boolean
   isEmerging?: boolean
   suppressFX?: boolean
   hidden?: boolean
-  stages?: any
+  stages?: Record<string, number | undefined>
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -78,7 +80,7 @@ const imageUrl = computed(() => {
 const isFloating = computed(() => {
   if (!props.pokemon) return false
   if (props.pokemon.isFloating !== undefined) return props.pokemon.isFloating
-  const data = pokemonDataProvider.getPokemonData(props.pokemon.id) as any
+  const data = pokemonDataProvider.getPokemonData(props.pokemon.id)
   if (data?.isFloating) return true
   const types = []
   if (props.pokemon.type) types.push(props.pokemon.type.toLowerCase())
@@ -118,7 +120,7 @@ const pokeballShadowUrl = computed(() => {
   return `url(${canvas.toDataURL('image/png')})`
 })
 
-const shadowStore = useCombatShadowStore() as any
+const shadowStore = useCombatShadowStore()
 const currentShadow = computed(() => props.shadowKey ? shadowStore.activeShadows.get(props.shadowKey) : null)
 
 const localGroundY = computed(() => {
@@ -135,7 +137,7 @@ const stickyCoords = computed(() => {
   let top = localGroundY.value
   
   if (shadow) {
-    const scale = (WORLD_CONSTANTS as any).OBJECT_SCALE || 2
+    const scale = (WORLD_CONSTANTS as { OBJECT_SCALE: number }).OBJECT_SCALE || 2
     const entitySize = props.baseSize * scale
 
     if (shadow.feetX !== undefined) {
@@ -156,7 +158,7 @@ const handleBallError = (e: Event) => {
 }
 
 // --- ANIMACIONES DE STATS ---
-const statArrows = ref<any[]>([])
+const statArrows = ref<{ id: number; dir: 'up' | 'down'; stat: string }[]>([])
 watch(() => props.stages, (newS, oldS) => {
   if (!oldS) return
   
@@ -214,8 +216,8 @@ const triggerStatArrow = (stat: string, dir: 'up' | 'down') => {
         <!-- Púas -->
         <Transition name="ground-fx-pop">
           <div
-            v-if="stages.spikes > 0"
-            :key="`spikes-${side}-${stages.spikes}`"
+            v-if="(stages.spikes || 0) > 0"
+            :key="`spikes-${side}-${stages.spikes || 0}`"
             class="ground-fx spikes"
           >
             <span
@@ -262,20 +264,20 @@ const triggerStatArrow = (stat: string, dir: 'up' | 'down') => {
             :is-shiny="pokemon.isShiny"
             :is-guardian="pokemon.isGuardian"
             :is-silhouette="isSilhouette"
-            :status="!isSilhouette && !suppressFX ? pokemon.status : null"
-            :is-confused="!isSilhouette && !suppressFX && pokemon.confused > 0"
+            :status="(!isSilhouette && !suppressFX ? pokemon.status : null) as any"
+            :is-confused="!isSilhouette && !suppressFX && (pokemon.confused || 0) > 0"
             :is-cursed="!isSilhouette && !suppressFX && pokemon.cursed"
             :is-seeded="!isSilhouette && !suppressFX && pokemon.seeded"
-            :is-trapped="!isSilhouette && !suppressFX && (pokemon.trapped || (pokemon.bound > 0))"
+            :is-trapped="!!(!isSilhouette && !suppressFX && (pokemon.trapped || (pokemon.bound && pokemon.bound > 0)))"
             :attracted="!isSilhouette && !suppressFX && pokemon.attracted"
             :is-focus-energy="!isSilhouette && !suppressFX && pokemon.focusEnergy"
             :is-protected="!isSilhouette && !suppressFX && (pokemon.protect || pokemon.detect)"
             :is-enduring="!isSilhouette && !suppressFX && pokemon.endure"
             :is-lock-on="!isSilhouette && !suppressFX && pokemon.lockOn"
-            :has-reflect="!isSilhouette && !suppressFX && stages.reflect > 0"
-            :has-light-screen="!isSilhouette && !suppressFX && stages.lightScreen > 0"
-            :has-safeguard="!isSilhouette && !suppressFX && stages.safeguard > 0"
-            :has-mist="!isSilhouette && !suppressFX && stages.mist > 0"
+            :has-reflect="!isSilhouette && !suppressFX && (stages.reflect || 0) > 0"
+            :has-light-screen="!isSilhouette && !suppressFX && (stages.lightScreen || 0) > 0"
+            :has-safeguard="!isSilhouette && !suppressFX && (stages.safeguard || 0) > 0"
+            :has-mist="!isSilhouette && !suppressFX && (stages.mist || 0) > 0"
             :vibrant="true"
             :sparkle-count="8"
             :style="virtualStyle"

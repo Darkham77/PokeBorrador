@@ -250,7 +250,7 @@ const toggleGroupMenu = (name) => {
     padding: 0 10px;
     
     // GLASSMORPHISM ENHANCED
-    @include glass-solid(Linear-Gradient(180deg, #161a2e 0%, #0a0c14 100%));
+    @include glass-Solid(Linear-Gradient(180deg, #161a2e 0%, #0a0c14 100%));
     
     // MULTI-LAYER REFLECTIONS & CONTRAST
     border-top: 1px solid Rgba(255, 255, 255, 0.18);
@@ -307,7 +307,7 @@ const toggleGroupMenu = (name) => {
   .nav-item-label {
     @include pixelated;
     font-weight: 400;
-    font-size: clamp(6px, 12cqw, 8px);
+    font-size: Clamp(6px, 12cqw, 8px);
     color: Rgba(255, 255, 255, 0.75);
     @include pixelated;
     white-space: nowrap;
@@ -315,24 +315,24 @@ const toggleGroupMenu = (name) => {
 
   &:hover {
     background: Rgba(255, 255, 255, 0.12);
-    border-color: var(--yellow);
+    border-color: Var(--yellow);
     box-shadow: 
-      0 0 0 2px var(--yellow),
+      0 0 0 2px Var(--yellow),
       0 0 15px Rgba(255, 214, 10, 0.4);
-    z-index: var(--z-base);
+    z-index: Var(--z-base);
     transform: TranslateY(-2px);
   }
   
   &.active {
     background: Rgba(255, 204, 0, 0.15);
-    border-color: var(--yellow);
+    border-color: Var(--yellow);
     box-shadow: 
-      0 0 0 2px var(--yellow),
+      0 0 0 2px Var(--yellow),
       0 0 30px Rgba(255, 214, 10, 0.45),
       inset 0 0 12px Rgba(255, 214, 10, 0.1);
-    z-index: var(--z-base);
+    z-index: Var(--z-base);
     .nav-item-label { 
-      color: var(--yellow); 
+      color: Var(--yellow); 
       opacity: 1; 
       text-shadow: 0 0 8px Rgba(255, 214, 10, 0.5); 
     }
@@ -359,17 +359,17 @@ const toggleGroupMenu = (name) => {
   position: absolute;
   flex-direction: column;
   gap: 6px;
-  @include glass-solid(Linear-Gradient(180deg, #161a2e 0%, #0a0c14 100%));
+  @include glass-Solid(Linear-Gradient(180deg, #161a2e 0%, #0a0c14 100%));
   border: 1px solid Rgba(255, 255, 255, 0.15);
   border-radius: 14px;
   padding: 8px;
-  z-index: var(--z-modal); // Use modal-level z-index
+  z-index: Var(--z-modal); // Use modal-level z-index
   width: max-content !important;
   min-width: 0 !important;
   align-items: stretch !important;
   box-shadow: 0 20px 50px Rgba(0, 0, 0, 0.7);
   overflow: visible;
-  transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.2s, transform 0.2s;
+  transition: opacity 0.2s cubic-Bezier(0.4, 0, 0.2, 1), visibility 0.2s, transform 0.2s;
 
   .hud-group.is-open & { 
     visibility: visible !important;
@@ -379,7 +379,7 @@ const toggleGroupMenu = (name) => {
   }
 
   .pos-top & { 
-    top: calc(100% + 10px); 
+    top: Calc(100% + 10px); 
     bottom: auto !important;
     left: 50%; 
     transform: TranslateX(-50%) TranslateY(-10px); 
@@ -390,7 +390,7 @@ const toggleGroupMenu = (name) => {
   }
   
   .pos-bottom & { 
-    bottom: calc(100% + 15px); 
+    bottom: Calc(100% + 15px); 
     top: auto !important;
     left: 50%; 
     transform: TranslateX(-50%) TranslateY(10px); 
@@ -415,19 +415,19 @@ const toggleGroupMenu = (name) => {
     
     &:hover { 
       background: Rgba(255, 255, 255, 0.1); 
-      border-color: var(--yellow);
+      border-color: Var(--yellow);
       box-shadow: 
-        0 0 0 2px var(--yellow), 
+        0 0 0 2px Var(--yellow), 
         0 0 15px Rgba(255, 214, 10, 0.3);
       transform: TranslateX(6px);
-      z-index: var(--z-base);
+      z-index: Var(--z-base);
     }
     
     &.active {
       background: Rgba(255, 204, 0, 0.12);
-      border-color: var(--yellow);
+      border-color: Var(--yellow);
       box-shadow: 
-        0 0 0 2px var(--yellow), 
+        0 0 0 2px Var(--yellow), 
         0 0 25px Rgba(255, 214, 10, 0.4),
         inset 0 0 10px Rgba(255, 214, 10, 0.1);
     }
@@ -440,7 +440,7 @@ const toggleGroupMenu = (name) => {
       @include pixelated;
     }
     
-    &.active .nav-item-label { color: var(--yellow); }
+    &.active .nav-item-label { color: Var(--yellow); }
   }
 }
 

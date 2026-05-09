@@ -294,7 +294,7 @@ const isMoveDisabled = (move) => {
   display: grid;
   grid-template-columns: 1fr 1fr;
   grid-auto-rows: 1fr;
-  gap: var(--move-panel-gap, 12px);
+  gap: Var(--move-panel-gap, 12px);
 }
 
 // Estos estilos ya viven en _vicio-panes.scss pero mantenemos la modularidad
@@ -303,9 +303,9 @@ const isMoveDisabled = (move) => {
   width: 100%;
   display: flex;
   align-items: stretch;
-  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease, border-color 0.3s ease, opacity 0.3s ease;
-  z-index: var(--z-base);
-  border: 1px solid var(--m-type-color); 
+  transition: transform 0.3s cubic-Bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease, border-color 0.3s ease, opacity 0.3s ease;
+  z-index: Var(--z-base);
+  border: 1px solid Var(--m-type-color); 
   border-radius: 12px;
   overflow: hidden;
   box-sizing: border-box;
@@ -319,13 +319,13 @@ const isMoveDisabled = (move) => {
   }
 
   &.is-drag-over {
-    border-color: var(--yellow) !important;
+    border-color: Var(--yellow) !important;
     background: Rgba(255, 214, 10, 0.1) !important;
     box-shadow: 0 0 20px Rgba(255, 214, 10, 0.2);
   }
 
-  &:hover:not(.is-dragging):not(.is-disabled) {
-    z-index: var(--z-low);
+  &:hover:Not(.is-dragging):Not(.is-disabled) {
+    z-index: Var(--z-low);
     transform: Scale(1.08);
     box-shadow: 0 8px 24px Rgba(0, 0, 0, 0.5);
     filter: Brightness(1.1);
@@ -336,7 +336,7 @@ const isMoveDisabled = (move) => {
 
     .move-info-zone {
       color: $white;
-      text-shadow: 0 0 5px var(--m-type-color);
+      text-shadow: 0 0 5px Var(--m-type-color);
     }
   }
 
@@ -378,8 +378,8 @@ const isMoveDisabled = (move) => {
     bottom: 0;
     width: 16px;
     display: flex;
-    z-index: var(--z-base);
-    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: Var(--z-base);
+    transition: all 0.3s cubic-Bezier(0.16, 1, 0.3, 1);
 
     @media (max-width: 420px) {
       width: 12px;
@@ -392,7 +392,7 @@ const isMoveDisabled = (move) => {
     width: 100% !important;
     max-width: none !important;
     min-height: 0 !important;
-    z-index: calc(var(--z-base) + 2);
+    z-index: Calc(Var(--z-base) + 2);
     height: 100%;
     margin: 0;
     background: none !important;
@@ -437,7 +437,7 @@ const isMoveDisabled = (move) => {
   align-items: center;
   justify-content: center;
   cursor: help;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.3s cubic-Bezier(0.16, 1, 0.3, 1);
   user-select: none;
   @include pixelated;
 
@@ -453,7 +453,7 @@ const isMoveDisabled = (move) => {
   margin: 0;
   user-select: none;
 
-  &:disabled:not(.is-draggable) {
+  &:disabled:Not(.is-draggable) {
     cursor: not-allowed;
     
     &:hover {
@@ -476,7 +476,7 @@ const isMoveDisabled = (move) => {
   width: 100%;
   height: 100%;
   
-  :deep(.pv-tooltip-wrapper) {
+  :Deep(.pv-tooltip-wrapper) {
     width: 100%;
     height: 100%;
     display: flex;

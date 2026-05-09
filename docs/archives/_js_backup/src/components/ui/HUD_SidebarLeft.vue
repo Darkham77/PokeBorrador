@@ -19,20 +19,20 @@
   position: fixed;
   bottom: 20px;
   left: 20px;
-  z-index: var(--z-hud);
+  z-index: Var(--z-hud);
   display: flex;
   flex-direction: column-reverse;
   gap: 12px;
   pointer-events: none;
-  transform: translateZ(0);
-  transition: bottom 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: TranslateZ(0);
+  transition: bottom 0.3s cubic-Bezier(0.4, 0, 0.2, 1);
 
   /* Ensure items are clickable even if the container is passthrough */
-  :deep(> *) {
+  :Deep(> *) {
     pointer-events: auto;
   }
 
-  @include responsive(hud-mobile) {
+  @include Responsive(hud-mobile) {
     bottom: 100px;
   }
 }

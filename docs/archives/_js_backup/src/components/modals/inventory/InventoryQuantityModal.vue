@@ -148,7 +148,7 @@ const handleConfirm = () => {
     .main-title {
       @include pixelated;
       font-size: 11px;
-      color: var(--yellow);
+      color: Var(--yellow);
     }
     .sub-title {
       font-size: 11px;
@@ -188,9 +188,9 @@ const handleConfirm = () => {
       cursor: pointer;
       transition: all 0.2s;
 
-      &:hover:not(:disabled) {
+      &:hover:Not(:disabled) {
         background: Rgba(255, 255, 255, 0.1);
-        border-color: var(--yellow);
+        border-color: Var(--yellow);
       }
       &:disabled { opacity: 0.3; }
     }
@@ -209,14 +209,14 @@ const handleConfirm = () => {
         @include pixelated;
         font-size: 20px;
         outline: none;
-        &:focus { border-color: var(--yellow); }
+        &:focus { border-color: Var(--yellow); }
       }
 
       .max-badge {
         position: absolute;
         top: -8px;
         right: -8px;
-        background: var(--yellow);
+        background: Var(--yellow);
         color: black;
         border: none;
         padding: 2px 6px;
@@ -262,9 +262,9 @@ const handleConfirm = () => {
 
   .vicio-btn {
     flex: 1;
-    &.primary { @include btn-vicio-primary('md'); }
-    &.danger { @include btn-vicio-danger('md'); }
-    &.neutral { @include btn-vicio('neutral', 'md'); }
+    &.primary { @include btn-vicio-Primary('md'); }
+    &.danger { @include btn-vicio-Danger('md'); }
+    &.neutral { @include btn-Vicio('neutral', 'md'); }
   }
 }
 </style>

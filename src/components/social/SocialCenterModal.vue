@@ -12,12 +12,12 @@ interface Props {
   show?: boolean;
 }
 
-const props = withDefaults(defineProps<Props>(), {
+withDefaults(defineProps<Props>(), {
   show: false
 });
 
-const socialStore = useSocialStore() as any;
-const gameStore = useGameStore() as any;
+const socialStore = useSocialStore();
+const gameStore = useGameStore();
 
 const activeTab = ref('friends'); // 'friends', 'requests', 'search', 'claims'
 

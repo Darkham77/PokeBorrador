@@ -158,7 +158,7 @@ const hasIvs = computed(() => Object.keys(p.value.ivs || {}).length > 0)
 .poke-name {
   @include pixelated;
   font-size: 13px;
-  color: var(--yellow);
+  color: Var(--yellow);
   margin-bottom: 10px;
 }
 
@@ -190,8 +190,8 @@ const hasIvs = computed(() => Object.keys(p.value.ivs || {}).length > 0)
 .tag-btn.active {
   background: Rgba(255, 215, 0, 0.2);
   border-color: gold;
-  color: var(--white);
-  filter: grayScale(100%);
+  color: Var(--white);
+  filter: GrayScale(100%);
 }
 
 .close-btn {
@@ -200,13 +200,13 @@ const hasIvs = computed(() => Object.keys(p.value.ivs || {}).length > 0)
   width: 40px;
   height: 40px;
   border-radius: 12px;
-  color: var(--white);
+  color: Var(--white);
   cursor: pointer;
   font-size: 20px;
   transition: all 0.2s;
 }
 
-.close-btn:hover { background: var(--red); }
+.close-btn:hover { background: Var(--red); }
 
 /* Gender Colors handled by m-badge-gender */
 </style>

@@ -169,7 +169,7 @@ async function forceStarterScreen() {
 .debug-section-title {
   @include pixelated;
   font-size: 8px;
-  color: var(--yellow);
+  color: Var(--yellow);
   margin-bottom: 10px;
   @include pixelated;
 }

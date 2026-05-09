@@ -199,7 +199,7 @@ const onUseItem = (name) => {
 .title-section h1 {
   @include pixelated;
   font-size: 16px;
-  color: var(--white);
+  color: Var(--white);
   margin: 0;
 }
 
@@ -210,7 +210,7 @@ const onUseItem = (name) => {
   border: 1px solid Rgba(34, 197, 94, 0.3);
   padding: 8px 16px;
   border-radius: 20px;
-  color: var(--green-bright);
+  color: Var(--green-bright);
   @include pixelated;
   font-size: 10px;
 }
@@ -227,7 +227,7 @@ const onUseItem = (name) => {
   background: Rgba(255, 255, 255, 0.05);
   border: 1px solid Rgba(255, 255, 255, 0.1);
   border-radius: 12px;
-  color: var(--white);
+  color: Var(--white);
   outline: none;
 }
 
@@ -244,16 +244,16 @@ const onUseItem = (name) => {
   border-radius: 10px;
   border: 1px solid Rgba(255, 255, 255, 0.1);
   background: Rgba(255, 255, 255, 0.05);
-  color: var(--gray);
+  color: Var(--gray);
   font-size: 11px;
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .tab-btn.active {
-  background: var(--purple);
-  color: var(--white);
-  border-color: var(--purple-light);
+  background: Var(--purple);
+  color: Var(--white);
+  border-color: Var(--purple-light);
 }
 
 .items-wrapper {
@@ -262,7 +262,7 @@ const onUseItem = (name) => {
 
 .items-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  grid-template-columns: Repeat(auto-fill, Minmax(140px, 1fr));
   gap: 16px;
 }
 
@@ -286,7 +286,7 @@ const onUseItem = (name) => {
 }
 
 .item-card.selected {
-  border-color: var(--green-bright);
+  border-color: Var(--green-bright);
   background: Rgba(16, 185, 129, 0.05);
 }
 
@@ -307,8 +307,8 @@ const onUseItem = (name) => {
   position: absolute;
   bottom: -4px;
   right: -4px;
-  background: var(--purple);
-  color: var(--white);
+  background: Var(--purple);
+  color: Var(--white);
   font-size: 9px;
   padding: 2px 6px;
   border-radius: 6px;
@@ -319,15 +319,15 @@ const onUseItem = (name) => {
   font-size: 12px;
   font-weight: bold;
   text-align: center;
-  color: var(--white);
+  color: Var(--white);
 }
 
 .use-btn {
   padding: 6px 16px;
   border-radius: 8px;
   border: none;
-  background: var(--purple);
-  color: var(--white);
+  background: Var(--purple);
+  color: Var(--white);
   font-size: 10px;
   font-weight: bold;
   cursor: pointer;
@@ -354,8 +354,8 @@ const onUseItem = (name) => {
   cursor: pointer;
 }
 
-.btn-green { background: var(--green-bright); color: var(--white); }
-.btn-gray { background: Rgba(255, 255, 255, 0.1); color: var(--white); }
+.btn-green { background: Var(--green-bright); color: Var(--white); }
+.btn-gray { background: Rgba(255, 255, 255, 0.1); color: Var(--white); }
 
 .btn-sell-mode {
   width: 100%;
@@ -363,7 +363,7 @@ const onUseItem = (name) => {
   border-radius: 12px;
   border: 1px solid Rgba(255, 255, 255, 0.1);
   background: Rgba(255, 255, 255, 0.05);
-  color: var(--white);
+  color: Var(--white);
   @include pixelated;
   font-size: 10px;
   cursor: pointer;
@@ -380,7 +380,7 @@ const onUseItem = (name) => {
   width: 40px;
   background: Rgba(0, 0, 0, 0.3);
   border: 1px solid Rgba(255, 255, 255, 0.1);
-  color: var(--white);
+  color: Var(--white);
   text-align: center;
   border-radius: 4px;
 }
@@ -388,7 +388,7 @@ const onUseItem = (name) => {
 .sell-qty-selector button {
   background: Rgba(255, 255, 255, 0.1);
   border: none;
-  color: var(--white);
+  color: Var(--white);
   width: 24px;
   height: 24px;
   border-radius: 4px;

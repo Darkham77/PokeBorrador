@@ -144,7 +144,7 @@ function triggerSampleError() {
     outline: none;
     line-height: 1;
 
-    &:focus { border-color: var(--purple); }
+    &:focus { border-color: Var(--purple); }
   }
 }
 

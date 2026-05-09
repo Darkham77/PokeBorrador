@@ -7,22 +7,24 @@ import { useLivePvPStore } from '@/stores/livePvP'
 import TrainerAvatar from '@/components/TrainerAvatar.vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 
-const socialStore = useSocialStore() as any
-const chatStore = useChatStore() as any
-const tradeStore = useTradeStore() as any
-const livePvP = useLivePvPStore() as any
+import type { Friend } from '@/stores/social'
 
-const filteredFriends = computed(() => socialStore.friends as any[])
+const socialStore = useSocialStore()
+const chatStore = useChatStore()
+const tradeStore = useTradeStore()
+const livePvP = useLivePvPStore()
 
-function openChat(friend: any) {
+const filteredFriends = computed(() => socialStore.friends)
+
+function openChat(friend: Friend) {
   chatStore.openChat(friend.id, friend.username)
 }
 
-function openTrade(friend: any) {
+function openTrade(friend: Friend) {
   tradeStore.openTradeModal(friend.id, friend.username)
 }
 
-const emit = defineEmits<{
+defineEmits<{
   (e: 'search-tab'): void
 }>()
 </script>

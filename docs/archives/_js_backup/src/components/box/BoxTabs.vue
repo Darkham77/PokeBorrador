@@ -78,7 +78,7 @@ const emit = defineEmits(['switch', 'buy'])
 }
 
 .box-buy-new-btn {
-  @include btn-vicio('warning', 'sm', false);
+  @include btn-Vicio('warning', 'sm', false);
   margin-left: 8px;
   height: 32px;
   font-size: 7px;

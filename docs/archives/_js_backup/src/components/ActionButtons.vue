@@ -49,10 +49,10 @@ const uiStore = useUIStore()
   padding: 8px;
   color: $white;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transition: all 0.2s cubic-Bezier(0.175, 0.885, 0.32, 1.275);
   min-width: 48px;
 
-  span:not(:first-child) {
+  span:Not(:first-child) {
     font-size: 6px !important; // Aggressive reduction
     font-weight: normal !important;
     @include pixelated;
@@ -65,8 +65,8 @@ const uiStore = useUIStore()
   }
 
   &:hover {
-    transform: Scale(1.08) translateY(-2px);
-    border-color: var(--yellow);
+    transform: Scale(1.08) TranslateY(-2px);
+    border-color: Var(--yellow);
     background: Rgba(255, 255, 255, 0.1);
     
     span:last-child { color: $white; }

@@ -113,8 +113,8 @@ export interface UIStore {
   isAnyFullscreenModalOpen: boolean;
   openHudGroup: string | null;
   notify: (msg: string, icon?: string) => void;
-  openConfirm: (options: any) => void;
-  openPrompt: (options: any) => void;
+  openConfirm: (options: ConfirmOptions) => void;
+  openPrompt: (options: PromptOptions) => void;
   open: (name: string, props?: Record<string, unknown>) => void;
   close: (name: string) => void;
   closeAll: () => void;

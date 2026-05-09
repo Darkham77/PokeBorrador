@@ -9,6 +9,7 @@ export interface BreedingCompatibility {
 }
 
 export interface PokemonIVs {
+  [key: string]: number | boolean | undefined;
   hp: number;
   atk: number;
   def: number;
@@ -135,6 +136,7 @@ export interface Pokemon {
   pts?: number;
   futureSightTurns?: number;
   futureSightDmg?: number;
+  aura?: string;
 }
 
 export interface PokemonEgg {

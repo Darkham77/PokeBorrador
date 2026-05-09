@@ -171,7 +171,7 @@ function formatRouteName(id) {
   @include pixelated;
   background: Rgba(255, 255, 255, 0.05);
   border: 1px solid Rgba(255, 255, 255, 0.1);
-  color: var(--muted);
+  color: Var(--muted);
   padding: 8px 16px;
   border-radius: 6px;
   font-size: 8px;
@@ -189,15 +189,15 @@ function formatRouteName(id) {
     opacity: 0.3;
   }
 
-  &:hover:not(.empty) {
+  &:hover:Not(.empty) {
     background: Rgba(255, 255, 255, 0.1);
-    color: var(--white);
+    color: Var(--white);
   }
 
   &.active {
-    background: var(--purple-gradient);
-    border-color: var(--purple-light);
-    color: var(--white);
+    background: Var(--purple-gradient);
+    border-color: Var(--purple-light);
+    color: Var(--white);
     box-shadow: 0 4px 12px Rgba(123, 63, 228, 0.3);
 
     .region-dot { opacity: 1; background: $white; box-shadow: 0 0 5px $white; }
@@ -242,7 +242,7 @@ function formatRouteName(id) {
 .route-title {
   @include pixelated;
   font-size: 14px;
-  color: var(--yellow);
+  color: Var(--yellow);
   margin-bottom: 20px;
   display: flex;
   align-items: center;
@@ -250,7 +250,7 @@ function formatRouteName(id) {
 
   .id-tag {
     font-size: 8px;
-    color: var(--muted);
+    color: Var(--muted);
     background: Rgba(0, 0, 0, 0.3);
     padding: 2px 6px;
     border-radius: 4px;
@@ -259,7 +259,7 @@ function formatRouteName(id) {
 
 .seasons-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: Repeat(auto-fit, Minmax(280px, 1fr));
   gap: 20px;
 }
 
@@ -282,7 +282,7 @@ function formatRouteName(id) {
 .season-title {
   @include pixelated;
   font-size: 10px;
-  color: var(--white);
+  color: Var(--white);
   margin-bottom: 15px;
   letter-spacing: 1px;
 }
@@ -302,7 +302,7 @@ function formatRouteName(id) {
 .cycle-name {
   @include pixelated;
   font-size: 7px;
-  color: var(--muted);
+  color: Var(--muted);
   text-transform: uppercase;
 }
 
@@ -325,7 +325,7 @@ function formatRouteName(id) {
 
   .icon { font-size: 14px; }
   .label { opacity: 0.5; font-size: 7px; margin-right: 4px; }
-  .chance { color: var(--white); font-weight: bold; }
+  .chance { color: Var(--white); font-weight: bold; }
 
   &.clear { border-left: 3px solid $yellow; }
   &.rain { border-left: 3px solid $blue; }

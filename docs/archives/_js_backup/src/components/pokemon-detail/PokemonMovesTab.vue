@@ -123,7 +123,7 @@ function handleReorder(fromIndex, toIndex) {
 <style scoped lang="scss">
 @use "@/styles/components/pokemon-detail/_vicio-panes.scss";
 
-:deep(.pv-tooltip-wrapper) {
+:Deep(.pv-tooltip-wrapper) {
   width: 100%;
   display: block;
 }

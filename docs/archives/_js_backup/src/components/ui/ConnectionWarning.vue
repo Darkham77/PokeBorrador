@@ -54,7 +54,7 @@ const authStore = useAuthStore()
 .connection-lost-overlay {
   position: fixed;
   inset: 0;
-  z-index: var(--z-critical);
+  z-index: Var(--z-critical);
   background: Rgba(0, 0, 0, 0.85);
   -webkit-backdrop-filter: Blur(15px);
   backdrop-filter: Blur(15px);
@@ -63,7 +63,7 @@ const authStore = useAuthStore()
   align-items: center;
   justify-content: center;
   padding: 20px;
-  transform: translateZ(0);
+  transform: TranslateZ(0);
 }
 
 .lost-card {
@@ -149,7 +149,7 @@ h2 {
   color: Rgba(255, 255, 255, 0.3);
   @include pixelated;
   code { 
-    color: var(--yellow); 
+    color: Var(--yellow); 
     &.offline { color: Rgba(239, 68, 68, 1); }
   }
 }

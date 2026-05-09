@@ -343,14 +343,14 @@ const triggerStatArrow = (stat, dir) => {
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.3s cubic-Bezier(0.4, 0, 0.2, 1);
   image-rendering: pixelated;
   overflow: visible;
 
   .sprite-animator, 
   .sprite-rotation-layer, 
   .sprite-idle-wrapper,
-  :deep(.pv-fx-wrapper) {
+  :Deep(.pv-fx-wrapper) {
     width: 100% !important;
     height: 100% !important;
     display: flex;
@@ -360,22 +360,22 @@ const triggerStatArrow = (stat, dir) => {
 
   .combatant-idle-subtle {
     animation: combatant-idle 3s infinite ease-in-out;
-    transform-origin: 50% var(--shadow-y, 90%);
+    transform-origin: 50% Var(--shadow-y, 90%);
   }
 
   .combatant-idle-floating {
     animation: combatant-idle-float 3.5s infinite ease-in-out;
-    transform-origin: 50% var(--shadow-y, 90%);
+    transform-origin: 50% Var(--shadow-y, 90%);
   }
 
   @keyframes combatant-idle {
-    0%, 100% { transform: translateY(0) Rotate(0deg); }
-    50% { transform: translateY(-3px) Rotate(1deg); }
+    0%, 100% { transform: TranslateY(0) Rotate(0deg); }
+    50% { transform: TranslateY(-3px) Rotate(1deg); }
   }
 
   @keyframes combatant-idle-float {
-    0%, 100% { transform: translateY(0) Rotate(0deg); }
-    50% { transform: translateY(-22px) Rotate(-2deg); }
+    0%, 100% { transform: TranslateY(0) Rotate(0deg); }
+    50% { transform: TranslateY(-22px) Rotate(-2deg); }
   }
 
     .pokemon-combat-image {
@@ -398,7 +398,7 @@ const triggerStatArrow = (stat, dir) => {
   left: 0;
   border: 1px dashed Rgba(255, 100, 0, 0.7);
   pointer-events: none;
-  z-index: var(--z-navigation);
+  z-index: Var(--z-navigation);
 
   span {
     position: absolute;
@@ -418,12 +418,12 @@ const triggerStatArrow = (stat, dir) => {
   transition: opacity 0.8s ease-in-out, transform 0s; 
   
   &.is-jumping { 
-    animation: pokemon-jump 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; 
+    animation: pokemon-jump 0.6s cubic-Bezier(0.175, 0.885, 0.32, 1.275) forwards; 
     transition: none !important; 
-    z-index: calc(var(--z-map-spawns) + 10); 
+    z-index: Calc(Var(--z-map-spawns) + 10); 
   }
   position: relative;
-  z-index: var(--z-map-spawns);
+  z-index: Var(--z-map-spawns);
   width: 100%;
   height: 100%;
   display: flex;
@@ -460,7 +460,7 @@ const triggerStatArrow = (stat, dir) => {
   align-items: flex-end;
   justify-content: center;
   overflow: visible;
-  z-index: var(--z-map-spawns);
+  z-index: Var(--z-map-spawns);
 
   &.is-floating-species { 
     margin-bottom: 40px; 
@@ -474,14 +474,14 @@ const triggerStatArrow = (stat, dir) => {
 }
 
 .energy-catching {
-  animation: energy-catch 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
-  transform-origin: 50% var(--shadow-y, 90%);
+  animation: energy-catch 0.8s cubic-Bezier(0.4, 0, 0.2, 1) forwards !important;
+  transform-origin: 50% Var(--shadow-y, 90%);
   pointer-events: none;
 }
 
 .energy-releasing {
-  animation: energy-release 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards !important;
-  transform-origin: 50% var(--shadow-y, 90%);
+  animation: energy-release 0.8s cubic-Bezier(0.175, 0.885, 0.32, 1.275) forwards !important;
+  transform-origin: 50% Var(--shadow-y, 90%);
 }
 
 .ball-fade-enter-active, .ball-fade-leave-active { transition: opacity 0.2s ease-in-out; }
@@ -490,13 +490,13 @@ const triggerStatArrow = (stat, dir) => {
 .trapped-pokeball {
   position: absolute;
   left: 50%;
-  transform: translateX(-50%) translateY(-85%);
-  width: calc(var(--obj-scale, 1) * 40px);
-  height: calc(var(--obj-scale, 1) * 40px);
+  transform: TranslateX(-50%) TranslateY(-85%);
+  width: Calc(Var(--obj-scale, 1) * 40px);
+  height: Calc(Var(--obj-scale, 1) * 40px);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: var(--z-map-ui);
+  z-index: Var(--z-map-ui);
   pointer-events: none;
   image-rendering: pixelated;
   overflow: visible;
@@ -537,14 +537,14 @@ const triggerStatArrow = (stat, dir) => {
   top: 50%;
   left: 50%;
   pointer-events: none;
-  z-index: var(--z-low);
+  z-index: Var(--z-low);
   overflow: visible;
 
   .sparkle {
     position: absolute;
     top: 50%;
     left: 50%;
-    font-size: calc(var(--obj-scale, 1) * 12px);
+    font-size: Calc(Var(--obj-scale, 1) * 12px);
     transform: Translate(-50%, -50%);
     animation: catch-sparkle-out 0.8s ease-out forwards;
     @include pixelated;
@@ -562,11 +562,11 @@ const triggerStatArrow = (stat, dir) => {
 .ground-effects-container {
   position: absolute;
   left: 50%;
-  transform: translateX(-50%) translateY(-50%);
+  transform: TranslateX(-50%) TranslateY(-50%);
   width: 100%;
   height: 20px;
   pointer-events: none;
-  z-index: calc(var(--z-map-spawns) + 5); 
+  z-index: Calc(Var(--z-map-spawns) + 5); 
   display: flex;
   justify-content: center;
   align-items: center;
@@ -582,12 +582,12 @@ const triggerStatArrow = (stat, dir) => {
       font-size: 28px;
       display: inline-block;
       animation: 
-        ground-pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards,
+        ground-pop 0.4s cubic-Bezier(0.175, 0.885, 0.32, 1.275) forwards,
         ground-item-jump 2s infinite ease-in-out 0.4s;
       filter: Drop-Shadow(0 2px 2px Rgba(0,0,0,0.3));
       
-      &:nth-child(2) { animation-delay: 0.1s, 0.7s; }
-      &:nth-child(3) { animation-delay: 0.2s, 1s; }
+      &:nth-Child(2) { animation-delay: 0.1s, 0.7s; }
+      &:nth-Child(3) { animation-delay: 0.2s, 1s; }
     }
   }
   
@@ -595,16 +595,16 @@ const triggerStatArrow = (stat, dir) => {
     .root-item {
       font-size: 42px;
       display: inline-block;
-      transform: translateY(5px);
+      transform: TranslateY(5px);
       animation: 
-        ground-grow 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards,
+        ground-grow 0.6s cubic-Bezier(0.175, 0.885, 0.32, 1.275) forwards,
         ground-item-pulse 3s infinite ease-in-out 0.6s;
     }
   }
 }
 
 .ground-fx-pop-enter-active {
-  animation: ground-pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  animation: ground-pop 0.4s cubic-Bezier(0.175, 0.885, 0.32, 1.275) forwards;
 }
 
 .ground-fx-pop-leave-active {
@@ -614,43 +614,43 @@ const triggerStatArrow = (stat, dir) => {
 }
 
 @keyframes pokemon-jump {
-  0% { transform: translateY(0) Scale(1, 1); }
-  15% { transform: translateY(8px) Scale(1.2, 0.75); } // Aplastamiento inicial más fuerte
-  45% { transform: translateY(-60px) Scale(0.85, 1.2); } // Salto más alto y estirado
-  75% { transform: translateY(0) Scale(1.1, 0.9); } // Impacto de aterrizaje
-  100% { transform: translateY(0) Scale(1, 1); }
+  0% { transform: TranslateY(0) Scale(1, 1); }
+  15% { transform: TranslateY(8px) Scale(1.2, 0.75); } // Aplastamiento inicial más fuerte
+  45% { transform: TranslateY(-60px) Scale(0.85, 1.2); } // Salto más alto y estirado
+  75% { transform: TranslateY(0) Scale(1.1, 0.9); } // Impacto de aterrizaje
+  100% { transform: TranslateY(0) Scale(1, 1); }
 }
 
 @keyframes pokemon-faint {
-  0% { opacity: 1; transform: translateY(0); }
+  0% { opacity: 1; transform: TranslateY(0); }
   10%, 30%, 50%, 70%, 90% { opacity: 0; }
   20%, 40%, 60%, 80% { opacity: 1; }
-  100% { opacity: 0; transform: translateY(60px); }
+  100% { opacity: 0; transform: TranslateY(60px); }
 }
 
 @keyframes attack-dash-player {
-  0% { transform: translateX(0); }
-  20% { transform: translateX(-15px); }
-  50% { transform: translateX(60px) Scale(1.1); }
-  100% { transform: translateX(0); }
+  0% { transform: TranslateX(0); }
+  20% { transform: TranslateX(-15px); }
+  50% { transform: TranslateX(60px) Scale(1.1); }
+  100% { transform: TranslateX(0); }
 }
 
 @keyframes attack-dash-enemy {
-  0% { transform: translateX(0); }
-  20% { transform: translateX(15px); }
-  50% { transform: translateX(-60px) Scale(1.1); }
-  100% { transform: translateX(0); }
+  0% { transform: TranslateX(0); }
+  20% { transform: TranslateX(15px); }
+  50% { transform: TranslateX(-60px) Scale(1.1); }
+  100% { transform: TranslateX(0); }
 }
 
 @keyframes attack-pulse-player {
   0% { transform: Scale(1); }
-  50% { transform: Scale(1.15) translateX(15px); filter: Brightness(1.4); }
+  50% { transform: Scale(1.15) TranslateX(15px); filter: Brightness(1.4); }
   100% { transform: Scale(1); }
 }
 
 @keyframes attack-pulse-enemy {
   0% { transform: Scale(1); }
-  50% { transform: Scale(1.15) translateX(-15px); filter: Brightness(1.4); }
+  50% { transform: Scale(1.15) TranslateX(-15px); filter: Brightness(1.4); }
   100% { transform: Scale(1); }
 }
 
@@ -668,12 +668,12 @@ const triggerStatArrow = (stat, dir) => {
 
 @keyframes catch-sparkle-out {
   0% { transform: Translate(-50%, -50%) Scale(0) Rotate(0deg); opacity: 1; }
-  100% { transform: Translate(calc(-50% + var(--tx) * 1px), calc(-50% + var(--tf) * 1px)) Scale(0) Rotate(720deg); opacity: 0; }
+  100% { transform: Translate(Calc(-50% + Var(--tx) * 1px), Calc(-50% + Var(--tf) * 1px)) Scale(0) Rotate(720deg); opacity: 0; }
 }
 
 @keyframes ground-pop { 0% { transform: Scale(0); opacity: 0; } 100% { transform: Scale(1); opacity: 1; } }
-@keyframes ground-grow { 0% { transform: ScaleY(0) translateY(20px); opacity: 0; } 100% { transform: ScaleY(1) translateY(5px); opacity: 1; } }
-@keyframes ground-item-jump { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+@keyframes ground-grow { 0% { transform: ScaleY(0) TranslateY(20px); opacity: 0; } 100% { transform: ScaleY(1) TranslateY(5px); opacity: 1; } }
+@keyframes ground-item-jump { 0%, 100% { transform: TranslateY(0); } 50% { transform: TranslateY(-5px); } }
 @keyframes ground-item-pulse { 0%, 100% { transform: Scale(1); } 50% { transform: Scale(1.05); } }
 
 @keyframes energy-catch {
@@ -695,7 +695,7 @@ const triggerStatArrow = (stat, dir) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: var(--z-low);
+  z-index: Var(--z-low);
 }
 
 .stat-arrow {
@@ -713,8 +713,8 @@ const triggerStatArrow = (stat, dir) => {
 }
 
 @keyframes stat-arrow-anim {
-  0% { transform: translateY(20px); opacity: 0; scale: 0.5; }
-  20% { transform: translateY(0); opacity: 1; scale: 1.2; }
-  100% { transform: translateY(-60px); opacity: 0; scale: 1; }
+  0% { transform: TranslateY(20px); opacity: 0; scale: 0.5; }
+  20% { transform: TranslateY(0); opacity: 1; scale: 1.2; }
+  100% { transform: TranslateY(-60px); opacity: 0; scale: 1; }
 }
 </style>

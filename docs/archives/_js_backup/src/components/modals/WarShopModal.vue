@@ -70,7 +70,7 @@ if (typeof window !== 'undefined') {
 .loading-placeholder {
   text-align: center;
   padding: 40px;
-  color: var(--gray);
+  color: Var(--gray);
   @include pixelated;
   font-size: 10px;
 }
@@ -79,16 +79,16 @@ if (typeof window !== 'undefined') {
   text-align: center;
   @include pixelated;
   font-size: 9px;
-  color: var(--white);
+  color: Var(--white);
 
   .coins-count {
-    color: var(--yellow);
+    color: Var(--yellow);
     margin: 0 4px;
   }
 }
 
 // Ensure legacy styles injected into #war-shop-items look premium
-:deep(#war-shop-items) {
+:Deep(#war-shop-items) {
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -106,7 +106,7 @@ if (typeof window !== 'undefined') {
     &:hover {
       background: Rgba(255, 255, 255, 0.06);
       border-color: Rgba(255, 255, 255, 0.1);
-      transform: translateY(-2px);
+      transform: TranslateY(-2px);
     }
 
     .item-icon-box {
@@ -132,7 +132,7 @@ if (typeof window !== 'undefined') {
       .item-name {
         font-weight: 800;
         font-size: 14px;
-        color: var(--white);
+        color: Var(--white);
         margin-bottom: 4px;
       }
 
@@ -144,7 +144,7 @@ if (typeof window !== 'undefined') {
     }
 
     .buy-btn {
-      background: Linear-Gradient(135deg, var(--yellow), Rgba(245, 158, 11, 1));
+      background: Linear-Gradient(135deg, Var(--yellow), Rgba(245, 158, 11, 1));
       color: Rgba(0, 0, 0, 1);
       border: none;
       border-radius: 10px;
@@ -156,8 +156,8 @@ if (typeof window !== 'undefined') {
       box-shadow: 0 4px 12px Rgba(245, 158, 11, 0.2);
       transition: all 0.2s;
 
-      &:hover:not(:disabled) {
-        transform: translateY(-2px);
+      &:hover:Not(:disabled) {
+        transform: TranslateY(-2px);
         box-shadow: 0 6px 15px Rgba(245, 158, 11, 0.4);
         filter: Brightness(1.1);
       }

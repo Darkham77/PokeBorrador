@@ -1,12 +1,18 @@
 <script setup lang="ts">
-import { useSocialStore } from '@/stores/social.js'
-import { useChatStore } from '@/stores/chat.js'
+import { useSocialStore } from '@/stores/social'
+import { useChatStore } from '@/stores/chat'
+import { useTradeStore } from '@/stores/trade'
+import { useLivePvPStore } from '@/stores/livePvP'
 import TrainerAvatar from '@/components/TrainerAvatar.vue'
 
-const socialStore = useSocialStore() as any
-const chatStore = useChatStore() as any
+import type { Friend } from '@/stores/social'
 
-const openChat = (friend: any) => {
+const socialStore = useSocialStore()
+const chatStore = useChatStore()
+const tradeStore = useTradeStore()
+const livePvP = useLivePvPStore()
+
+const openChat = (friend: Friend) => {
   chatStore.openChat(friend.id, friend.username)
 }
 
@@ -69,13 +75,13 @@ const getUnreadCount = (friendId: string | number) => {
         </button>
         <button
           class="friend-btn trade"
-          @click.stop="socialStore.openTradeModal(friend.id, friend.username)"
+          @click.stop="tradeStore.openTradeModal(friend.id, friend.username)"
         >
           🔄 Intercambiar
         </button>
         <button
           class="friend-btn battle"
-          @click.stop="socialStore.sendBattleInvite(friend.id, friend.username)"
+          @click.stop="livePvP.sendInvite(friend.id, friend.username)"
         >
           ⚔️ Batallar
         </button>

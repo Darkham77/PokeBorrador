@@ -140,7 +140,7 @@ const formatBonus = (key, val) => {
   padding: 24px;
   border-radius: 20px;
   border: 1px solid Rgba(255, 255, 255, 0.1);
-  color: var(--white);
+  color: Var(--white);
 }
 
 .press-start {
@@ -198,7 +198,7 @@ const formatBonus = (key, val) => {
     .ev-icon { font-size: 32px; }
     .ev-title-group {
       flex: 1;
-      h4 { margin-bottom: 6px; color: var(--white); }
+      h4 { margin-bottom: 6px; color: Var(--white); }
       p { font-size: 11px; color: Rgba(148, 163, 184, 1); line-height: 1.4; }
     }
 

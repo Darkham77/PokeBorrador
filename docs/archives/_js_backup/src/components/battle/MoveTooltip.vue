@@ -82,7 +82,7 @@ const modifierInfo = computed(() => {
 @use "@/styles/core/tools" as *;
 
 .move-tooltip-rich {
-  font-family: var(--font-ui);
+  font-family: Var(--font-ui);
   font-size: 11px;
   line-height: 1.5;
   color: Rgba(255, 255, 255, 0.95);

@@ -308,7 +308,7 @@ const isEffectActive = (type, category) => {
     transition: all 0.2s;
 
     &.active {
-      background: var(--purple);
+      background: Var(--purple);
       color: white;
       box-shadow: 0 4px 15px Rgba(124, 58, 237, 0.3);
     }
@@ -319,7 +319,7 @@ const isEffectActive = (type, category) => {
   .section-title {
     @include pixelated;
     font-size: 8px;
-    color: var(--yellow);
+    color: Var(--yellow);
     margin-bottom: 12px;
     letter-spacing: 1px;
     opacity: 0.8;
@@ -328,13 +328,13 @@ const isEffectActive = (type, category) => {
 
 .button-grid-small {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: Repeat(3, 1fr);
   gap: 8px;
 }
 
 .button-grid-3 {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: Repeat(3, 1fr);
   gap: 12px;
 }
 
@@ -356,11 +356,11 @@ const isEffectActive = (type, category) => {
   &:hover {
     background: Rgba(255, 255, 255, 0.08);
     border-color: Rgba(255, 255, 255, 0.15);
-    transform: translateY(-2px);
+    transform: TranslateY(-2px);
   }
 
   &.active {
-    background: var(--purple);
+    background: Var(--purple);
     border-color: white;
     box-shadow: 0 4px 12px Rgba(124, 58, 237, 0.4);
     
@@ -386,7 +386,7 @@ const isEffectActive = (type, category) => {
 
   &:hover {
     background: Rgba(255, 255, 255, 0.08);
-    transform: translateX(4px);
+    transform: TranslateX(4px);
   }
 
   .btn-content {
@@ -454,7 +454,7 @@ const isEffectActive = (type, category) => {
   transition: all 0.2s;
   
   &:hover {
-    background: var(--purple);
+    background: Var(--purple);
     border-color: white;
   }
   

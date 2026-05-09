@@ -73,7 +73,7 @@ const clear = () => {
   font-size: 8px;
   color: $muted;
   margin: 10px 0;
-  span { color: var(--yellow); font-weight: bold; }
+  span { color: Var(--yellow); font-weight: bold; }
 }
 
 .debug-json {

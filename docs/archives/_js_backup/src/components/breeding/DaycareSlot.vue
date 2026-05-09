@@ -133,7 +133,7 @@ const getSprite = (id, shiny) => {
     &:hover { border-color: $coin-gold; .plus-icon { color: $coin-gold; transform: #{'Scale(1.1)'}; } }
   }
 
-  &:not(.empty):hover { border-color: Rgba(255,255,255,0.15); }
+  &:Not(.empty):hover { border-color: Rgba(255,255,255,0.15); }
 }
 
 .slot-marker {

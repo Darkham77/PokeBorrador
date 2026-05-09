@@ -33,14 +33,14 @@ const uiStore = useUIStore()
   display: flex;
   flex-direction: column;
   gap: 10px;
-  z-index: var(--z-toast);
+  z-index: Var(--z-toast);
   pointer-events: none;
   max-width: 300px;
   @include gpu-layer;
 
   &.is-fullscreen-toast {
     top: 20px;
-    z-index: var(--z-max-value);
+    z-index: Var(--z-max-value);
   }
 }
 
@@ -51,7 +51,7 @@ const uiStore = useUIStore()
   backdrop-filter: Blur(12px);
   @include gpu-layer;
   border: 1px solid Rgba(255, 255, 255, 0.15);
-  border-left: 3px solid var(--yellow, Rgba(241, 196, 15, 1));
+  border-left: 3px solid Var(--yellow, Rgba(241, 196, 15, 1));
   padding: 10px 14px;
   border-radius: 14px;
   box-shadow: 0 8px 30px Rgba(0, 0, 0, 0.6);
@@ -77,17 +77,17 @@ const uiStore = useUIStore()
 /* Animations */
 .toast-enter-active,
 .toast-leave-active {
-  transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  transition: all 0.3s cubic-Bezier(0.68, -0.55, 0.265, 1.55);
 }
 
 .toast-enter-from {
   opacity: 0;
-  transform: translateX(50px);
+  transform: TranslateX(50px);
 }
 
 .toast-leave-to {
   opacity: 0;
-  transform: translateX(30px) Scale(0.9);
+  transform: TranslateX(30px) Scale(0.9);
 }
 
 /* Responsive */
@@ -97,9 +97,9 @@ const uiStore = useUIStore()
     bottom: auto;
     left: auto;
     right: 20px;
-    max-width: calc(100dvw - 40px);
+    max-width: Calc(100dvw - 40px);
     align-items: flex-end;
-    z-index: var(--z-max-value); // Ensure it's above EVERYTHING
+    z-index: Var(--z-max-value); // Ensure it's above EVERYTHING
   }
 }
 </style>

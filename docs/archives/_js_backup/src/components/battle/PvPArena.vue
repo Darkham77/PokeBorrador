@@ -139,11 +139,11 @@ const handleSwitch = () => {
 .battle-screen-grid {
   position: fixed;
   inset: 0;
-  background: var(--darker);
-  z-index: var(--z-overlay);
+  background: Var(--darker);
+  z-index: Var(--z-overlay);
   display: flex;
   flex-direction: column;
-  transform: translateZ(0);
+  transform: TranslateZ(0);
 }
 
 .battle-arena {
@@ -233,7 +233,7 @@ const handleSwitch = () => {
   }
   
   &:hover {
-    transform: translateY(-2px);
+    transform: TranslateY(-2px);
   }
 }
 </style>

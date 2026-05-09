@@ -120,7 +120,7 @@ onMounted(() => {
 
 .items-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-template-columns: Repeat(auto-fill, Minmax(200px, 1fr));
   gap: 20px;
 }
 
@@ -132,14 +132,14 @@ onMounted(() => {
   overflow: hidden;
   transition: all 0.3s ease;
   
-  &:hover:not(.sold-out) {
+  &:hover:Not(.sold-out) {
     border-color: Rgba(239, 68, 68, 0.4);
-    transform: translateY(-5px);
+    transform: TranslateY(-5px);
   }
   
   &.sold-out {
     opacity: 0.6;
-    filter: grayScale(0.8);
+    filter: GrayScale(0.8);
   }
 }
 
@@ -150,7 +150,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: var(--z-base);
+  z-index: Var(--z-base);
   @include pixelated;
   font-size: 12px;
   color: Rgba(239, 68, 68, 1);
@@ -178,7 +178,7 @@ onMounted(() => {
     width: 48px;
     height: 48px;
     image-rendering: pixelated;
-    z-index: var(--z-base);
+    z-index: Var(--z-base);
     filter: Drop-Shadow(0 4px 8px Rgba(0, 0, 0, 0.5));
   }
   
@@ -200,7 +200,7 @@ onMounted(() => {
   .item-name {
     @include pixelated;
     font-size: 8px;
-    color: var(--white);
+    color: Var(--white);
   }
   
   .item-price {
@@ -216,13 +216,13 @@ onMounted(() => {
   border: none;
   border-radius: 10px;
   background: Rgba(239, 68, 68, 1);
-  color: var(--white);
+  color: Var(--white);
   @include pixelated;
   font-size: 8px;
   cursor: pointer;
   transition: all 0.2s;
   
-  &:hover:not(:disabled) {
+  &:hover:Not(:disabled) {
     background: Rgba(220, 38, 38, 1);
     box-shadow: 0 0 15px Rgba(239, 68, 68, 0.4);
   }

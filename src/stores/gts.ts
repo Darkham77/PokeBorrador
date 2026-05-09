@@ -67,7 +67,7 @@ export const useGTSStore = defineStore('gts', () => {
         .select('*')
         .eq('status', 'active')
         .order('created_at', { ascending: false })
-        .limit(100) as unknown as { data: MarketListing[] | null, error: { message: string } | null }
+        .limit(100) as { data: MarketListing[] | null, error: { message: string } | null }
       
       if (!error) listings.value = data || []
     } finally {
@@ -111,13 +111,15 @@ export const useGTSStore = defineStore('gts', () => {
     if (salesChannel) return
     
     const channelName = `market-sales-${auth.user.id}`
-    salesChannel = (game.db.channel(channelName) as any)
-      .on('postgres_changes', {
+    const db = game.db
+    if (!db) return
+    salesChannel = db.channel(channelName)
+      .on<MarketListing>('postgres_changes', {
         event: 'UPDATE',
         schema: 'public',
         table: 'market_listings',
         filter: `seller_id=eq.${auth.user.id}`
-      }, (payload: { new: MarketListing | null, old: MarketListing | null }) => {
+      }, (payload) => {
         if (payload.new?.status === 'sold' && payload.old?.status !== 'sold') {
           ui.notify('¡ Venta realizada en el GTS !', '💰')
           audio.money()
@@ -149,7 +151,7 @@ export const useGTSStore = defineStore('gts', () => {
 
       const { data: newSave, error } = await game.db.rpc('buy_listing_v2', {
         p_listing_id: listing.id
-      }) as unknown as { data: GameState | null, error: { message: string } | null }
+      }) as { data: GameState | null, error: { message: string } | null }
 
       if (error) throw error
 
@@ -194,7 +196,7 @@ export const useGTSStore = defineStore('gts', () => {
 
       // Refresh state to confirm removal
       if (!auth.user) return false
-      const { data: save } = await game.db.from('game_saves').select('save_data').eq('user_id', auth.user.id).single() as unknown as { data: { save_data: GameState } | null }
+      const { data: save } = await game.db.from('game_saves').select('save_data').eq('user_id', auth.user.id).single() as { data: { save_data: GameState } | null }
       if (save?.save_data) {
         game.updateState(save.save_data)
       }

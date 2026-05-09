@@ -155,7 +155,7 @@ const closeError = () => {
   position: fixed;
   inset: 0;
   background: Rgba(0, 0, 0, 0.9);
-  z-index: var(--z-critical);
+  z-index: Var(--z-critical);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -170,7 +170,7 @@ const closeError = () => {
 
 .error-card {
   background: Rgba(26, 26, 46, 1);
-  border: 3px solid var(--red);
+  border: 3px solid Var(--red);
   border-radius: 24px;
   width: 100%;
   max-width: 600px;
@@ -182,7 +182,7 @@ const closeError = () => {
 }
 
 .error-header {
-  background: Linear-Gradient(135deg, var(--red), #c0392b);
+  background: Linear-Gradient(135deg, Var(--red), #c0392b);
   padding: 24px 20px;
   display: flex;
   align-items: center;
@@ -220,7 +220,7 @@ const closeError = () => {
 
 .error-message-box {
   background: Rgba(255, 59, 59, 0.1);
-  border-left: 4px solid var(--red);
+  border-left: 4px solid Var(--red);
   padding: 15px;
   border-radius: 8px;
   margin-bottom: 25px;
@@ -232,7 +232,7 @@ const closeError = () => {
 .error-sub-title {
   @include pixelated;
   font-size: 9px;
-  color: var(--yellow);
+  color: Var(--yellow);
   margin-bottom: 10px;
 }
 
@@ -255,7 +255,7 @@ const closeError = () => {
 
     &:focus {
       outline: none;
-      border-color: var(--yellow);
+      border-color: Var(--yellow);
     }
   }
 
@@ -293,7 +293,7 @@ const closeError = () => {
   color: Rgba(204, 204, 204, 1);
 
   strong {
-    color: var(--purple);
+    color: Var(--purple);
   }
 }
 

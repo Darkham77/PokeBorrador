@@ -150,7 +150,7 @@ const getPokemonName = (id) => {
   margin-bottom: 24px;
   
   .accent-text {
-    color: var(--yellow);
+    color: Var(--yellow);
     font-weight: bold;
   }
 }
@@ -176,12 +176,12 @@ const getPokemonName = (id) => {
     filter: Grayscale(1);
   }
 
-  &:not(.disabled):hover {
+  &:Not(.disabled):hover {
     background: Rgba(251, 191, 36, 0.1);
-    border-color: var(--yellow);
-    transform: translateX(4px);
+    border-color: Var(--yellow);
+    transform: TranslateX(4px);
     
-    .stone-name { color: var(--yellow); }
+    .stone-name { color: Var(--yellow); }
   }
 }
 
@@ -221,7 +221,7 @@ const getPokemonName = (id) => {
 .use-btn-vicio {
   background: Rgba(251, 191, 36, 0.15);
   border: 1px solid Rgba(251, 191, 36, 0.3);
-  color: var(--yellow);
+  color: Var(--yellow);
   @include pixelated;
   font-size: 8px;
   padding: 10px 14px;
@@ -230,8 +230,8 @@ const getPokemonName = (id) => {
   transition: all 0.2s;
   @include pixelated;
 
-  &:hover:not(:disabled) {
-    background: var(--yellow);
+  &:hover:Not(:disabled) {
+    background: Var(--yellow);
     color: black;
     transform: Scale(1.05);
   }

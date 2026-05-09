@@ -124,7 +124,7 @@ export async function applyPvPTurnResult(battleState, result, endBattleCallback)
     if (action.type === 'switch') {
       const team = isMyAction ? battleState.myTeam : battleState.enemyTeam
       battleState.logs.push(`¡${isMyAction ? 'Vas a cambiar a' : 'El rival cambió a'} ${team[action.newIdx].name}!`)
-      await new Promise(r => setTimeout(r, 600))
+      await await setTimeout(600)
       if (isMyAction) battleState.myActiveIdx = action.newIdx
       else battleState.enemyActiveIdx = action.newIdx
     } else {
@@ -138,7 +138,7 @@ export async function applyPvPTurnResult(battleState, result, endBattleCallback)
       }
       action.effectLog?.forEach(m => battleState.logs.push(m))
     }
-    await new Promise(r => setTimeout(r, 800))
+    await await setTimeout(800)
   }
   
   // Post-turn checks

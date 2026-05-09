@@ -47,14 +47,14 @@ const name = computed(() => props.guardian.id.toUpperCase());
 .guardian-overlay {
   position: fixed;
   inset: 0;
-  z-index: var(--z-overlay);
+  z-index: Var(--z-overlay);
   background: Rgba(0, 0, 0, 0.9);
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 24px;
   animation: fadeIn 0.3s ease-out;
-  transform: translateZ(0);
+  transform: TranslateZ(0);
 }
 
 .press-start {
@@ -72,7 +72,7 @@ const name = computed(() => props.guardian.id.toUpperCase());
   width: 100%;
   text-align: center;
   box-shadow: 0 0 50px Rgba(245, 158, 11, 0.2);
-  animation: slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  animation: slideUp 0.4s cubic-Bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .warning-icon {
@@ -135,8 +135,8 @@ h3 {
 }
 
 @keyframes slideUp {
-  from { transform: translateY(30px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+  from { transform: TranslateY(30px); opacity: 0; }
+  to { transform: TranslateY(0); opacity: 1; }
 }
 
 @keyframes pulse {

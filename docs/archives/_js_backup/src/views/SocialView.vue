@@ -88,7 +88,7 @@ onMounted(() => {
   @include gpu-layer;
   position: sticky;
   top: 0;
-  z-index: var(--z-base);
+  z-index: Var(--z-base);
   @include gpu-layer;
 }
 
@@ -97,7 +97,7 @@ onMounted(() => {
   background: none;
   border: none;
   padding: 20px 10px;
-  color: var(--gray);
+  color: Var(--gray);
   @include pixelated;
   font-size: 8px;
   cursor: pointer;
@@ -109,11 +109,11 @@ onMounted(() => {
 
   .tab-label {
     position: relative;
-    z-index: var(--z-base);
+    z-index: Var(--z-base);
   }
 
   &.active {
-    color: var(--white);
+    color: Var(--white);
     &:after {
       content: '';
       position: absolute;
@@ -121,17 +121,17 @@ onMounted(() => {
       left: 10%;
       width: 80%;
       height: 2px;
-      background: var(--white);
-      box-shadow: 0 0 10px var(--white);
+      background: Var(--white);
+      box-shadow: 0 0 10px Var(--white);
     }
   }
 
   &.rankings {
-    color: var(--yellow);
+    color: Var(--yellow);
     &.active {
       &:after {
-        background: var(--yellow);
-        box-shadow: 0 0 10px var(--yellow);
+        background: Var(--yellow);
+        box-shadow: 0 0 10px Var(--yellow);
       }
     }
 
@@ -153,8 +153,8 @@ onMounted(() => {
     position: absolute;
     top: 8px;
     right: 4px;
-    background: var(--red);
-    color: var(--white);
+    background: Var(--red);
+    color: Var(--white);
     border-radius: 50%;
     width: 16px;
     height: 16px;
@@ -168,7 +168,7 @@ onMounted(() => {
 }
 
 .social-view-content {
-  padding: 15px var(--ui-h-padding);
+  padding: 15px Var(--ui-h-padding);
   background: Rgba(0,0,0,0.1);
   @include gpu-layer;
 }

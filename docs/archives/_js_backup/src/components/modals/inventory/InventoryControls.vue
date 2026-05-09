@@ -147,7 +147,7 @@ const startMode = (mode) => {
 
       &:focus {
         background: Rgba(0, 0, 0, 0.4);
-        border-color: var(--yellow);
+        border-color: Var(--yellow);
         box-shadow: 0 0 15px Rgba(255, 214, 10, 0.1);
         outline: none;
       }
@@ -183,7 +183,7 @@ const startMode = (mode) => {
   .count {
     @include pixelated;
     font-size: 12px;
-    color: var(--yellow);
+    color: Var(--yellow);
   }
 
   .label {
@@ -199,10 +199,10 @@ const startMode = (mode) => {
 }
 
 .vicio-btn {
-  &.primary { @include btn-vicio-primary('sm'); }
-  &.secondary { @include btn-vicio-secondary('sm'); }
-  &.danger { @include btn-vicio-danger('sm'); }
-  &.neutral { @include btn-vicio('neutral', 'sm'); }
+  &.primary { @include btn-vicio-Primary('sm'); }
+  &.secondary { @include btn-vicio-Secondary('sm'); }
+  &.danger { @include btn-vicio-Danger('sm'); }
+  &.neutral { @include btn-Vicio('neutral', 'sm'); }
 }
 
 @media (max-width: 1024px) {

@@ -8,16 +8,18 @@ import { getMechanicalWeather, WEATHER_MECHANICAL } from '@/logic/battle/weather
 import { getDayCycle } from '@/logic/timeUtils'
 import { useBattleStore } from '@/stores/battle'
 
+import type { Pokemon, Move } from '@/types/pokemon'
+
 interface Props {
-  moves: any[]
+  moves: ( Move | null )[]
   isProcessing?: boolean
-  playerInfo?: any
+  playerInfo?: Pokemon | null
   canReorder?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
   isProcessing: false,
-  playerInfo: () => ({}),
+  playerInfo: null,
   canReorder: false
 })
 
@@ -26,7 +28,7 @@ const emit = defineEmits<{
   (e: 'reorder-moves', fromIndex: number, toIndex: number): void
 }>()
 
-const battleStore = useBattleStore() as any
+const battleStore = useBattleStore()
 
 // Grid Stability: Always 4 slots
 const fullMoves = computed(() => {
@@ -72,9 +74,9 @@ const onDragEnd = () => {
   dragOverIndex.value = null
 }
 
-const getMoveData = (move: any) => {
+const getMoveData = (move: Move | null) => {
   if (!move) return null
-  const md = (MOVE_DATA as any)[move.name] || {}
+  const md = (MOVE_DATA as Record<string, { type?: string; power?: number; acc?: number; cat?: string }>)[move.name] || {}
   return {
     ...move,
     type: move.type || md.type || 'normal',
@@ -96,9 +98,11 @@ const hexToRgb = (hex: string) => {
   return `${r}, ${g}, ${b}`
 }
 
-const getMoveModifier = (move: any) => {
+const getMoveModifier = (move: Move | null) => {
   if (!move || !battleStore.isBattleActive) return null
   const md = getMoveData(move)
+  if (!md) return null
+  
   const weather = battleStore.state?.weather?.type
   const mechWeather = getMechanicalWeather(weather)
   const cycle = getDayCycle()
@@ -146,16 +150,23 @@ const getMoveModifier = (move: any) => {
   return null
 }
 
-const isMoveDisabled = (move: any) => {
+const isMoveDisabled = (move: Move | null) => {
   if (props.isProcessing) return true
   if (!move || move.pp <= 0) return true
   
   // Choice Item Logic
   const p = props.playerInfo
-  if (p && p.heldItem === 'Cinta Elegida' && p.choiceMove && p.choiceMove !== move.name) {
+  if (p && p.heldItem === 'Cinta Elegida' && (p as any).choiceMove && (p as any).choiceMove !== move.name) {
     return true
   }
   return false
+}
+
+const getMoveColor = (move: Move | null) => {
+  if (!move) return '#444'
+  const md = getMoveData(move)
+  const type = md ? md.type.toLowerCase() : 'normal'
+  return (PDEX_TYPE_COLORS as Record<string, string>)[type] || '#444'
 }
 </script>
 
@@ -181,14 +192,14 @@ const isMoveDisabled = (move: any) => {
         }
       ]"
       :style="{ 
-        '--m-type-color': move ? ((PDEX_TYPE_COLORS as any)[getMoveData(move).type.toLowerCase()] || '#444') : '#444',
-        '--m-type-rgb': hexToRgb(move ? ((PDEX_TYPE_COLORS as any)[getMoveData(move).type.toLowerCase()] || '#444') : '#444'),
+        '--m-type-color': getMoveColor(move),
+        '--m-type-rgb': hexToRgb(getMoveColor(move)),
         background: move 
-          ? `Linear-Gradient(${i % 2 === 0 ? '90deg' : '270deg'}, Rgba(${hexToRgb((PDEX_TYPE_COLORS as any)[getMoveData(move).type.toLowerCase()] || '#444')}, 0.25) 0%, Rgba(255, 255, 255, 0.05) 100%)`
+          ? `Linear-Gradient(${i % 2 === 0 ? '90deg' : '270deg'}, Rgba(${hexToRgb(getMoveColor(move))}, 0.25) 0%, Rgba(255, 255, 255, 0.05) 100%)`
           : `Linear-Gradient(${i % 2 === 0 ? '90deg' : '270deg'}, Rgba(50, 50, 50, 0.2) 0%, Rgba(0, 0, 0, 0.1) 100%)`,
         borderColor: move && getMoveModifier(move) === 'boosted' ? '$coin-gold' : 
           move && getMoveModifier(move) === 'penalized' ? '#ff4444' :
-          move ? `Rgba(${hexToRgb((PDEX_TYPE_COLORS as any)[getMoveData(move).type.toLowerCase()] || '#444')}, 0.7)` : 
+          move ? `Rgba(${hexToRgb(getMoveColor(move))}, 0.7)` : 
           'Rgba(255, 255, 255, 0.1)'
       }"
       :draggable="canReorder && !!move"
@@ -239,32 +250,32 @@ const isMoveDisabled = (move: any) => {
             <span class="mv-name pixelated">{{ (move && move.name) ? move.name.toUpperCase() : '???' }}</span>
             <span
               class="mv-type-tag pixelated"
-              :style="{ background: PDEX_TYPE_COLORS[getMoveData(move).type.toLowerCase() || 'normal'] }"
+              :style="{ background: PDEX_TYPE_COLORS[getMoveData(move)!.type.toLowerCase() || 'normal'] }"
             >
-              {{ (getMoveData(move).type || 'normal').toUpperCase() }}
+              {{ (getMoveData(move)!.type || 'normal').toUpperCase() }}
             </span>
           </div>
           
           <div class="move-details-row">
             <div class="detail-item">
               <span class="d-label pixelated">POT:</span>
-              <span class="d-val pixelated">{{ getMoveData(move).power || '-' }}</span>
+              <span class="d-val pixelated">{{ getMoveData(move)!.power || '-' }}</span>
             </div>
             <div class="detail-item">
               <span class="d-label pixelated">PREC:</span>
               <span class="d-val pixelated">
                 <span
-                  v-if="getMoveData(move).acc === 1000"
+                  v-if="getMoveData(move)!.acc === 1000"
                   class="infinity-emoji"
                 >♾️</span>
-                <template v-else>{{ getMoveData(move).acc || '-' }}</template>
+                <template v-else>{{ getMoveData(move)!.acc || '-' }}</template>
               </span>
             </div>
             <div class="detail-item">
               <span class="d-label pixelated">CAT:</span>
               <span class="d-val pixelated">
-                <span class="cat-full">{{ ({ physical: '⚔️ Físico', special: '✨ Especial', status: '🔮 Estado' } as any)[getMoveData(move).cat] || '🔮 Estado' }}</span>
-                <span class="cat-short">{{ ({ physical: '⚔️ FIS', special: '✨ ESP', status: '🔮 EST' } as any)[getMoveData(move).cat] || '🔮 EST' }}</span>
+                <span class="cat-full">{{ ({ physical: '⚔️ Físico', special: '✨ Especial', status: '🔮 Estado' } as Record<string, string>)[getMoveData(move)!.cat] || '🔮 Estado' }}</span>
+                <span class="cat-short">{{ ({ physical: '⚔️ FIS', special: '✨ ESP', status: '🔮 EST' } as Record<string, string>)[getMoveData(move)!.cat] || '🔮 EST' }}</span>
               </span>
             </div>
             <div class="mv-pp-wrap">

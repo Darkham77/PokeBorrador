@@ -85,7 +85,7 @@ const close = () => {
 
 .target-info {
   font-size: 13px;
-  color: var(--gray);
+  color: Var(--gray);
   text-align: center;
   margin-bottom: 24px;
 }
@@ -106,23 +106,23 @@ const close = () => {
   align-items: center;
   cursor: pointer;
   transition: all 0.2s;
-  color: var(--white);
+  color: Var(--white);
 
   &:hover { 
     background: Rgba(255,255,255,0.08); 
-    transform: translateX(4px);
+    transform: TranslateX(4px);
     border-color: Rgba(255, 255, 255, 0.2);
   }
   
   &.active { 
-    border-color: var(--yellow);
+    border-color: Var(--yellow);
     background: Rgba(255, 214, 10, 0.05);
   }
 
   .a-name { font-weight: 800; font-size: 15px; }
   .a-current { 
     font-size: 8px; 
-    color: var(--yellow); 
+    color: Var(--yellow); 
     @include pixelated;
   }
 }

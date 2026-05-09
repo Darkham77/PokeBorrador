@@ -177,7 +177,7 @@ const currentSeason = computed(() => mapStore.currentSeason)
 }
 
 .hud-sq-btn {
-  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transition: all 0.2s cubic-Bezier(0.175, 0.885, 0.32, 1.275);
 
   &:hover {
     transform: Scale(1.08) TranslateY(-2px);

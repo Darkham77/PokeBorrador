@@ -2,7 +2,7 @@
 import { useSocialStore } from '@/stores/social'
 import TrainerAvatar from '@/components/TrainerAvatar.vue'
 
-const socialStore = useSocialStore() as any
+const socialStore = useSocialStore()
 </script>
 
 <template>

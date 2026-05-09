@@ -76,7 +76,7 @@ const handleCancel = () => {
 }
 
 // Retro Yellow Variant Styles
-:deep(.variant-retro) {
+:Deep(.variant-retro) {
   .confirm-body p {
     color: $coin-gold; // Gold/Yellow text for retro
     @include pixelated;
@@ -86,9 +86,9 @@ const handleCancel = () => {
 
   .confirm-footer {
     .btn-cancel {
-      border: 2px solid var(--gray);
-      background: var(--card-dark);
-      color: var(--muted);
+      border: 2px solid Var(--gray);
+      background: Var(--card-dark);
+      color: Var(--muted);
     }
     .btn-confirm {
       background: Linear-Gradient(135deg, $coin-gold, #b8860b);
@@ -130,7 +130,7 @@ const handleCancel = () => {
     color: Rgba(255, 255, 255, 0.5);
     &:hover {
       background: Rgba(255, 255, 255, 0.1);
-      color: var(--white);
+      color: Var(--white);
     }
   }
   
@@ -139,7 +139,7 @@ const handleCancel = () => {
     padding: 14px; 
 
     &.is-danger {
-      background: Linear-Gradient(135deg, var(--red), #dc2626);
+      background: Linear-Gradient(135deg, Var(--red), #dc2626);
       box-shadow: 0 4px 15px Rgba(220, 38, 38, 0.4);
       &:hover {
         background: Linear-Gradient(135deg, #ef4444, #b91c1c);

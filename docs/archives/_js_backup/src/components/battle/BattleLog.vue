@@ -117,7 +117,7 @@ onMounted(() => {
     align-items: center;
     justify-content: center;
     position: relative;
-    z-index: var(--z-low);
+    z-index: Var(--z-low);
 
     // Estilos específicos para AVATAR (Entrenador)
     &.trainer {
@@ -182,7 +182,7 @@ onMounted(() => {
   .log-text {
     flex: 1;
     position: relative;
-    z-index: var(--z-base);
+    z-index: Var(--z-base);
   }
 
   @media (max-width: 560px) {
@@ -199,7 +199,7 @@ onMounted(() => {
       height: 28px !important;
     }
     
-    .log-icon:not(.trainer .log-icon):not(.item .log-icon) {
+    .log-icon:Not(.trainer .log-icon):Not(.item .log-icon) {
       width: 38px !important;
       height: 38px !important;
     }
@@ -231,15 +231,15 @@ onMounted(() => {
 }
 
 /* Compatibility with new types (Text only overrides) */
-:deep(.log-info) { color: var(--yellow); font-weight: 500; }
-:deep(.log-player) { color: Rgba(0, 255, 127, 1); }
-:deep(.log-enemy) { color: Rgba(255, 65, 54, 1); }
-:deep(.log-catch) { color: Rgba(177, 13, 201, 1); }
+:Deep(.log-info) { color: Var(--yellow); font-weight: 500; }
+:Deep(.log-player) { color: Rgba(0, 255, 127, 1); }
+:Deep(.log-enemy) { color: Rgba(255, 65, 54, 1); }
+:Deep(.log-catch) { color: Rgba(177, 13, 201, 1); }
 
 /* Semantic types */
-:deep(.log-damage) { color: Rgba(255, 65, 54, 1); }
-:deep(.log-heal) { color: Rgba(0, 255, 127, 1); }
-:deep(.log-status) { color: Rgba(177, 13, 201, 1); }
+:Deep(.log-damage) { color: Rgba(255, 65, 54, 1); }
+:Deep(.log-heal) { color: Rgba(0, 255, 127, 1); }
+:Deep(.log-status) { color: Rgba(177, 13, 201, 1); }
 
 .log-entry {
   padding-left: 6px;

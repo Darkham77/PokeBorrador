@@ -123,7 +123,7 @@ const handleForget = () => {
   -webkit-backdrop-filter: Blur(10px);
   backdrop-filter: Blur(10px);
   @include gpu-layer;
-  z-index: var(--z-modal);
+  z-index: Var(--z-modal);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -148,8 +148,8 @@ const handleForget = () => {
   .header-badge {
     display: inline-block;
     padding: 4px 12px;
-    background: var(--yellow);
-    color: var(--black);
+    background: Var(--yellow);
+    color: Var(--black);
     @include pixelated;
     font-size: 8px;
     border-radius: 8px;
@@ -159,15 +159,15 @@ const handleForget = () => {
   h2 {
     @include pixelated;
     font-size: 14px;
-    color: var(--white);
+    color: Var(--white);
     margin: 0 0 12px 0;
   }
 
   p {
     font-size: 13px;
-    color: var(--gray);
+    color: Var(--gray);
     margin: 0;
-    .highlight { color: var(--yellow); font-weight: 800; }
+    .highlight { color: Var(--yellow); font-weight: 800; }
   }
 }
 
@@ -178,7 +178,7 @@ const handleForget = () => {
 .instruction {
   @include pixelated;
   font-size: 8px;
-  color: var(--gray);
+  color: Var(--gray);
   margin-bottom: 16px;
   text-transform: uppercase;
   letter-spacing: 1px;
@@ -203,7 +203,7 @@ const handleForget = () => {
 
   &:hover {
     background: Rgba(255,255,255,0.06);
-    border-color: var(--move-color);
+    border-color: Var(--move-color);
     transform: TranslateX(4px);
     
     .replace-label { opacity: 1; transform: TranslateX(0); }
@@ -211,7 +211,7 @@ const handleForget = () => {
 
   &.is-new {
     background: Rgba(255, 217, 61, 0.05);
-    border: 2px solid var(--move-color);
+    border: 2px solid Var(--move-color);
     box-shadow: 0 0 20px Rgba(255, 217, 61, 0.1);
     cursor: default;
     &:hover { transform: none; }
@@ -223,14 +223,14 @@ const handleForget = () => {
     align-items: center;
     margin-bottom: 6px;
 
-    .move-name { font-size: 15px; font-weight: 800; color: var(--white); }
+    .move-name { font-size: 15px; font-weight: 800; color: Var(--white); }
   }
 
   .move-stats {
     display: flex;
     gap: 15px;
     font-size: 11px;
-    color: var(--gray);
+    color: Var(--gray);
     font-weight: 600;
   }
 
@@ -253,7 +253,7 @@ const handleForget = () => {
   background: Rgba(255,255,255,0.03);
   border: 1px solid Rgba(255,255,255,0.06);
   border-radius: 14px;
-  color: var(--gray);
+  color: Var(--gray);
   @include pixelated;
   font-size: 9px;
   cursor: pointer;
@@ -266,6 +266,6 @@ const handleForget = () => {
   }
 }
 
-.animate-pop { animation: pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.animate-pop { animation: pop 0.3s cubic-Bezier(0.34, 1.56, 0.64, 1); }
 @keyframes pop { from { transform: Scale(0.9); opacity: 0; } to { transform: Scale(1); opacity: 1; } }
 </style>

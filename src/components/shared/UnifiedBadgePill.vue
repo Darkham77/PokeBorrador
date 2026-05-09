@@ -4,8 +4,11 @@ import { getPokemonVisualBadges, getPokemonEditorBadges } from '@/logic/constant
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
+import type { Pokemon } from '@/types/pokemon'
+import type { TagDefinition } from '@/logic/constants/tags'
+
 interface Props {
-  pokemon: any
+  pokemon: Pokemon | Partial<Pokemon>
   size?: string // 'sm' (Box), 'md' (Default), 'lg' (Team)
   vertical?: boolean
   editable?: boolean
@@ -35,19 +38,19 @@ const badges = computed(() => {
     : getPokemonVisualBadges(props.pokemon)
 })
 
-const containerStyle = computed<any>(() => {
-  if (props.inline) return { position: 'relative', top: 'auto', left: 'auto', zIndex: 'var(--z-low)' }
+const containerStyle = computed(() => {
+  if (props.inline) return { position: 'relative', top: 'auto', left: 'auto', zIndex: 'var(--z-low)' } as const
   return {
     position: 'absolute',
     top: props.top,
     left: props.left,
     zIndex: 'var(--z-low)'
-  }
+  } as const
 })
 
 const itemImageError = ref(false)
 
-const handleBadgeClick = (badge: any) => {
+const handleBadgeClick = (badge: TagDefinition) => {
   if (!props.editable || badge.isAutomatic || badge.isLocked) return
   emit('toggle-tag', badge.id)
 }
@@ -70,8 +73,8 @@ const handleItemImageError = (e: Event) => {
       <PVTooltip
         v-for="badge in badges"
         :key="badge.id"
-        :description="(badge as any).desc || (badge as any).description"
-        :title="(badge as any).label || (badge as any).title"
+        :description="badge.desc"
+        :title="badge.label"
         :position="vertical ? 'right' : 'top'"
         @click.stop="handleBadgeClick(badge)"
       >

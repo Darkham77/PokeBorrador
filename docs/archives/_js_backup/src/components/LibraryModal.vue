@@ -152,7 +152,7 @@ const selectTab = (tabId) => {
     font-size: 12px;
     line-height: 1.2;
     font-weight: 400;
-    color: var(--gray, #94a3b8);
+    color: Var(--gray, #94a3b8);
     @include pixelated;
     display: flex;
     align-items: center;
@@ -173,7 +173,7 @@ const selectTab = (tabId) => {
     &.active {
       background: Rgba(250, 204, 21, 0.1);
       border-color: Rgba(250, 204, 21, 0.3);
-      color: var(--yellow);
+      color: Var(--yellow);
       box-shadow: 0 4px 15px Rgba(0, 0, 0, 0.2);
     }
 
@@ -201,17 +201,17 @@ const selectTab = (tabId) => {
   line-height: 1.6;
   color: #ddd;
 
-  :deep(h1) {
+  :Deep(h1) {
     @include pixelated;
     font-size: 20px;
-    color: var(--yellow);
+    color: Var(--yellow);
     margin-bottom: 24px;
     text-shadow: 3px 3px 0px Rgba(0,0,0,0.8);
     @include pixelated;
   }
 
-  :deep(h3) {
-    color: var(--purple, $purple);
+  :Deep(h3) {
+    color: Var(--purple, $purple);
     margin: 32px 0 16px;
     font-size: 18px;
     font-weight: 800;
@@ -219,13 +219,13 @@ const selectTab = (tabId) => {
     @include pixelated;
   }
 
-  :deep(p) {
+  :Deep(p) {
     margin-bottom: 20px;
     font-size: 15px;
     color: Rgba(255, 255, 255, 0.85);
   }
 
-  :deep(ul) {
+  :Deep(ul) {
     margin-bottom: 20px;
     padding-left: 20px;
     li { 
@@ -234,12 +234,12 @@ const selectTab = (tabId) => {
     }
   }
 
-  :deep(strong) {
+  :Deep(strong) {
     color: $white;
     font-weight: 700;
   }
 
-  :deep(table) {
+  :Deep(table) {
     width: 100%;
     border-collapse: separate;
     border-spacing: 0;
@@ -257,7 +257,7 @@ const selectTab = (tabId) => {
     
     th { 
       background: Rgba(255, 255, 255, 0.05);
-      color: var(--yellow);
+      color: Var(--yellow);
       font-size: 10px;
       @include pixelated;
       text-transform: uppercase;
@@ -273,7 +273,7 @@ const selectTab = (tabId) => {
     }
   }
 
-  :deep(.class-info-box) {
+  :Deep(.class-info-box) {
     background: Rgba(255, 255, 255, 0.03);
     border-radius: 12px;
     padding: 24px;

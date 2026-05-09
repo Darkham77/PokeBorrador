@@ -123,7 +123,7 @@ const activeEventData = computed(() => {
 .divider-text {
   @include pixelated;
   font-size: 10px;
-  color: var(--gray);
+  color: Var(--gray);
   letter-spacing: 2px;
 }
 

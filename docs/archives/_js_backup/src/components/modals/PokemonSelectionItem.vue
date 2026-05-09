@@ -172,7 +172,7 @@ const isPremiumTier = computed(() => tierData.value.tier === 'S' || tierData.val
 }
 
 .m-badge-tier {
-  @include badge-tier(24px);
+  @include badge-Tier(24px);
   flex-shrink: 0;
 }
 
@@ -187,7 +187,7 @@ const isPremiumTier = computed(() => tierData.value.tier === 'S' || tierData.val
   .hp-label {
     font-size: 10px;
     font-weight: 800;
-    color: var(--yellow);
+    color: Var(--yellow);
     @include pixelated;
     flex-shrink: 0;
   }
@@ -204,7 +204,7 @@ const isPremiumTier = computed(() => tierData.value.tier === 'S' || tierData.val
 
   .hp-bar-fill {
     height: 100%;
-    transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: width 0.5s cubic-Bezier(0.4, 0, 0.2, 1);
     box-shadow: 0 0 10px Rgba(255,255,255,0.2);
   }
 

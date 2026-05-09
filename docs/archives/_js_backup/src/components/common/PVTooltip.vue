@@ -228,7 +228,7 @@ onUnmounted(() => {
 
 .pv-tooltip-teleported {
   position: absolute;
-  z-index: var(--z-critical); // Above everything (even Debug Panel at 100,000)
+  z-index: Var(--z-critical); // Above everything (even Debug Panel at 100,000)
   pointer-events: none;
   background: Rgba(10, 10, 20, 0.98);
   border: 1px solid $yellow;
@@ -282,8 +282,8 @@ onUnmounted(() => {
     transform: Translate(-50%, -100%);
     .tooltip-arrow {
       top: 100%;
-      left: calc(50% + var(--arrow-x));
-      transform: translateX(-50%);
+      left: Calc(50% + Var(--arrow-x));
+      transform: TranslateX(-50%);
       border-top-color: $yellow;
     }
   }
@@ -292,8 +292,8 @@ onUnmounted(() => {
     transform: Translate(-50%, 0);
     .tooltip-arrow {
       bottom: 100%;
-      left: calc(50% + var(--arrow-x));
-      transform: translateX(-50%);
+      left: Calc(50% + Var(--arrow-x));
+      transform: TranslateX(-50%);
       border-bottom-color: $yellow;
     }
   }
@@ -302,8 +302,8 @@ onUnmounted(() => {
     transform: Translate(-100%, -50%);
     .tooltip-arrow {
       left: 100%;
-      top: calc(50% + var(--arrow-y));
-      transform: translateY(-50%);
+      top: Calc(50% + Var(--arrow-y));
+      transform: TranslateY(-50%);
       border-left-color: $yellow;
     }
   }
@@ -312,8 +312,8 @@ onUnmounted(() => {
     transform: Translate(0, -50%);
     .tooltip-arrow {
       right: 100%;
-      top: calc(50% + var(--arrow-y));
-      transform: translateY(-50%);
+      top: Calc(50% + Var(--arrow-y));
+      transform: TranslateY(-50%);
       border-right-color: $yellow;
     }
   }

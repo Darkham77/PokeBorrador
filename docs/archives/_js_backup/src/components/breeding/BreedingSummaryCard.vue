@@ -126,7 +126,7 @@ const geneticsSummary = computed(() => {
     right: -20px;
     font-size: 100px;
     opacity: 0.05;
-    z-index: var(--z-base);
+    z-index: Var(--z-base);
     pointer-events: none;
   }
 
@@ -138,12 +138,12 @@ const geneticsSummary = computed(() => {
     margin-bottom: 20px;
     text-shadow: 0 0 10px Rgba(139, 92, 246, 0.5);
     position: relative;
-    z-index: var(--z-base);
+    z-index: Var(--z-base);
   }
 
   .stats-grid {
     position: relative;
-    z-index: var(--z-base);
+    z-index: Var(--z-base);
     display: flex;
     flex-direction: column;
     gap: 12px;
@@ -192,7 +192,7 @@ const geneticsSummary = computed(() => {
 
   .footer {
     position: relative;
-    z-index: var(--z-base);
+    z-index: Var(--z-base);
     margin-top: 20px;
     padding-top: 15px;
     border-top: 1px dashed Rgba(255, 255, 255, 0.1);

@@ -162,8 +162,8 @@ const openParticipationModal = (event) => {
 
 .events-view {
   padding: 0 0 40px;
-  background: var(--bg-dark);
-  color: var(--white);
+  background: Var(--bg-dark);
+  color: Var(--white);
 }
 
 /* 1:1 LEGACY COMPONENT STYLES */
@@ -187,11 +187,11 @@ const openParticipationModal = (event) => {
   h1 {
     @include pixelated;
     font-size: 14px;
-    color: var(--yellow);
+    color: Var(--yellow);
     margin: 0 0 8px 0;
-    text-shadow: 0 2px 0 var(--black);
+    text-shadow: 0 2px 0 Var(--black);
   }
-  p { font-size: 10px; color: var(--gray); margin: 0; }
+  p { font-size: 10px; color: Var(--gray); margin: 0; }
 }
 
 .retro-btn {
@@ -201,18 +201,18 @@ const openParticipationModal = (event) => {
   border-radius: 8px;
   border: 2px solid Rgba(255, 255, 255, 0.1);
   background: Rgba(255, 255, 255, 0.05);
-  color: var(--white);
+  color: Var(--white);
   cursor: pointer;
   transition: all 0.2s;
 
-  &:hover:not(:disabled) {
+  &:hover:Not(:disabled) {
     background: Rgba(255, 255, 255, 0.12);
     transform: TranslateY(-2px);
     border-color: Rgba(255, 255, 255, 0.2);
   }
 
-  &.claim { background: var(--green); border-color: var(--green-bright); color: var(--white); }
-  &.action { background: var(--yellow); border-color: var(--white); color: var(--black); text-shadow: none; }
+  &.claim { background: Var(--green); border-color: Var(--green-bright); color: Var(--white); }
+  &.action { background: Var(--yellow); border-color: Var(--white); color: Var(--black); text-shadow: none; }
 }
 
 /* REWARD BOX */
@@ -233,7 +233,7 @@ const openParticipationModal = (event) => {
   h3 {
     @include pixelated;
     font-size: 9px;
-    color: var(--green-bright);
+    color: Var(--green-bright);
     margin-bottom: 15px;
   }
 
@@ -248,7 +248,7 @@ const openParticipationModal = (event) => {
     margin-bottom: 10px;
 
     .award-name { display: block; font-weight: bold; font-size: 13px; margin-bottom: 4px; }
-    .award-prize { font-size: 11px; color: var(--gray); }
+    .award-prize { font-size: 11px; color: Var(--gray); }
   }
 }
 
@@ -256,7 +256,7 @@ const openParticipationModal = (event) => {
 
 .events-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: Repeat(auto-fill, Minmax(320px, 1fr));
   gap: 20px;
 }
 
@@ -272,7 +272,7 @@ const openParticipationModal = (event) => {
 
   .banner-box {
     height: 150px;
-    background: var(--black);
+    background: Var(--black);
     img { width: 100%; height: 100%; object-fit: cover; }
   }
 
@@ -300,12 +300,12 @@ const openParticipationModal = (event) => {
       padding: 3px 8px;
       border-radius: 6px;
       background: Rgba(59, 130, 246, 0.1);
-      color: var(--blue-bright);
+      color: Var(--blue-bright);
       font-weight: bold;
     }
   }
 
-  .description { font-size: 12px; color: var(--gray); line-height: 1.5; margin-bottom: 20px; flex: 1; }
+  .description { font-size: 12px; color: Var(--gray); line-height: 1.5; margin-bottom: 20px; flex: 1; }
 
   .card-footer {
     display: flex;
@@ -313,8 +313,8 @@ const openParticipationModal = (event) => {
     align-items: flex-end;
 
     .timer-box {
-      .label { display: block; font-size: 8px; color: var(--gray); margin-bottom: 5px; }
-      .value { @include pixelated; font-size: 9px; color: var(--red); }
+      .label { display: block; font-size: 8px; color: Var(--gray); margin-bottom: 5px; }
+      .value { @include pixelated; font-size: 9px; color: Var(--red); }
     }
     
     .active-badge {
@@ -323,8 +323,8 @@ const openParticipationModal = (event) => {
       padding: 10px 16px;
       border-radius: 8px;
       background: Rgba(74, 222, 128, 0.1);
-      border: 1px solid var(--green-bright);
-      color: var(--green-bright);
+      border: 1px solid Var(--green-bright);
+      color: Var(--green-bright);
       text-shadow: 0 0 10px Rgba(74, 222, 128, 0.3);
       animation: pulseActive 2s infinite;
     }
@@ -344,7 +344,7 @@ const openParticipationModal = (event) => {
   background: Rgba(255, 255, 255, 0.02);
   border-radius: 20px;
   border: 1px dashed Rgba(255, 255, 255, 0.1);
-  color: var(--gray);
+  color: Var(--gray);
   font-style: italic;
 }
 </style>

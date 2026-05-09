@@ -233,8 +233,8 @@ onMounted(async () => {
   .pokemon-sprite {
     width: 180px;
     @include sprite-render;
-    filter: Drop-Shadow(0 0 30px var(--yellow));
-    animation: pop-in 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    filter: Drop-Shadow(0 0 30px Var(--yellow));
+    animation: pop-in 0.5s cubic-Bezier(0.175, 0.885, 0.32, 1.275);
   }
 
 
@@ -263,8 +263,8 @@ onMounted(async () => {
   .stat-row {
     display: flex; justify-content: space-between; margin-bottom: 8px;
     &:last-child { margin-bottom: 0; }
-    .label { color: var(--gray); font-size: 11px; }
-    .val { color: var(--yellow); font-size: 11px; font-weight: bold; }
+    .label { color: Var(--gray); font-size: 11px; }
+    .val { color: Var(--yellow); font-size: 11px; font-weight: bold; }
   }
 }
 
@@ -305,16 +305,16 @@ onMounted(async () => {
 .particle {
   position: absolute;
   width: 6px; height: 6px;
-  background: var(--yellow);
+  background: Var(--yellow);
   border-radius: 50%;
   animation: explode 1.5s ease-out forwards;
-  animation-delay: var(--delay);
+  animation-delay: Var(--delay);
   @include gpu-layer;
 }
 
 @keyframes explode {
   0% { transform: Translate(0, 0); opacity: 1; }
-  100% { transform: Translate(var(--x), var(--y)); opacity: 0; }
+  100% { transform: Translate(Var(--x), Var(--y)); opacity: 0; }
 }
 
 .shimmer-bg {
@@ -348,7 +348,7 @@ onMounted(async () => {
   50% { opacity: 0.8; }
 }
 
-:deep(.base-modal-card) {
+:Deep(.base-modal-card) {
   background: transparent !important;
   border: none !important;
   box-shadow: none !important;
@@ -356,12 +356,12 @@ onMounted(async () => {
   max-height: none !important;
 }
 
-:deep(.base-modal-content) {
+:Deep(.base-modal-content) {
   overflow: visible !important;
   padding: 0 !important;
 }
 
-:deep(.base-modal-overlay) {
+:Deep(.base-modal-overlay) {
   -webkit-backdrop-filter: Blur(10px);
   backdrop-filter: Blur(10px);
   @include gpu-layer;

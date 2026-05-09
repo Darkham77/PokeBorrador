@@ -4,8 +4,8 @@ import { useSocialStore } from '@/stores/social'
 import { useAuthStore } from '@/stores/auth'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
-const social = useSocialStore() as any
-const auth = useAuthStore() as any
+const social = useSocialStore()
+const auth = useAuthStore()
 
 onMounted(() => {
   social.fetchLeaderboard()
@@ -60,7 +60,7 @@ const getRankIcon = (tierId: string) => {
         class="leaderboard-list scrollbar"
       >
         <div
-          v-for="(p, index) in (social.leaderboard as any[])"
+          v-for="(p, index) in social.leaderboard"
           :key="p.id" 
           class="rank-row"
           :class="{ 'is-me': p.id === auth.user?.id }"

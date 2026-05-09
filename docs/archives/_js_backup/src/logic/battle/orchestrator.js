@@ -193,11 +193,11 @@ export async function initBattleSequence(ctx, { locationId, isTrainer, trainerNa
     
     const hasBinoculars = ctx.debugBinoculars.value || (ctx.gs.state.inventory?.['binoculars'] > 0)
     if (!hasBinoculars) {
-      await new Promise(r => setTimeout(r, 150))
+      await await setTimeout(150)
       await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.BUSH_FADE, 100)
       await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.REVEAL_COLORS, 500)
     } else {
-      await new Promise(r => setTimeout(r, 600))
+      await await setTimeout(600)
     }
   } else {
     // --- FLUJO DIRECTO (Manual 5. FIRST_INTRO / 7. ENCOUNTER_ANIM) ---

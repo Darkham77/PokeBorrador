@@ -3,7 +3,7 @@ import { ref } from 'vue'
 import { useSocialStore } from '@/stores/social'
 import TrainerAvatar from '@/components/TrainerAvatar.vue'
 
-const socialStore = useSocialStore() as any
+const socialStore = useSocialStore()
 const searchQuery = ref('')
 
 async function handleSearch() {

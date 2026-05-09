@@ -233,7 +233,7 @@ const bannerStyle = computed(() => ({
   border-radius: 20px;
   position: relative;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s cubic-Bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 10px 40px Rgba(0,0,0,0.6), inset 0 0 15px Rgba(0,0,0,0.5);
   border: 4px solid Rgba(255, 0, 127, 1) !important;
   overflow: hidden; // Crucial para que la imagen siga la curva
@@ -243,7 +243,7 @@ const bannerStyle = computed(() => ({
     inset: -5px; // Sangrado profundo para asegurar que cubra debajo del marco
     background-size: cover;
     background-position: center center;
-    z-index: calc(var(--z-base) + 1);
+    z-index: Calc(Var(--z-base) + 1);
     border-radius: 16px; // Ajustado para curva interna (20px - 4px)
     @include pixelated;
     image-rendering: pixelated;
@@ -255,14 +255,14 @@ const bannerStyle = computed(() => ({
     position: absolute;
     inset: -5px; // Sangrado profundo
     background: Linear-Gradient(to top, $black 0%, Rgba(0,0,0,0.6) 30%, transparent 55%);
-    z-index: calc(var(--z-base) + 2);
+    z-index: Calc(Var(--z-base) + 2);
     pointer-events: none;
     border-radius: 16px;
   }
 
   &:hover {
-    transform: translateY(-6px);
-    border-color: var(--yellow) !important;
+    transform: TranslateY(-6px);
+    border-color: Var(--yellow) !important;
     box-shadow: 
       0 20px 50px Rgba(0, 0, 0, 0.7), 
       0 0 30px Rgba(255, 214, 10, 0.5);
@@ -276,7 +276,7 @@ const bannerStyle = computed(() => ({
   right: -2px;
   padding: 24px;
   text-align: left;
-  z-index: calc(var(--z-base) + 3);
+  z-index: Calc(Var(--z-base) + 3);
   border-radius: 0 0 16px 16px;
   background: Linear-Gradient(to top, Rgba(0,0,0,0.4), transparent);
 }
@@ -303,18 +303,18 @@ const bannerStyle = computed(() => ({
   top: 15px;
   right: 15px;
   background: Rgba(255, 51, 51, 1);
-  color: var(--white);
+  color: Var(--white);
   padding: 6px 12px;
   border-radius: 10px;
   @include pixelated;
   font-size: 8px;
   box-shadow: 0 4px 10px Rgba(255,51,51,0.3);
-  z-index: calc(var(--z-base) + 4);
+  z-index: Calc(Var(--z-base) + 4);
 }
 
 .pc-banner-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: Repeat(2, 1fr);
   gap: 12px;
   height: 100%;
 
@@ -324,7 +324,7 @@ const bannerStyle = computed(() => ({
 }
 
 .pc-banner {
-  @include glass-solid(Rgba(15, 23, 42, 0.95));
+  @include glass-Solid(Rgba(15, 23, 42, 0.95));
   border-radius: 16px;
   padding: 12px 16px; // Reduced vertical padding
   display: flex;
@@ -332,7 +332,7 @@ const bannerStyle = computed(() => ({
   gap: 16px;
   position: relative;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s cubic-Bezier(0.4, 0, 0.2, 1);
   min-height: 85px;
   
   border: 1px solid Rgba(255, 255, 255, 0.1);
@@ -347,13 +347,13 @@ const bannerStyle = computed(() => ({
 
   &:hover {
     background: Rgba(255, 255, 255, 0.12);
-    border-color: var(--yellow);
+    border-color: Var(--yellow);
     box-shadow: 
-      0 0 0 1px var(--yellow), 
+      0 0 0 1px Var(--yellow), 
       0 12px 30px Rgba(0, 0, 0, 0.6), 
       0 0 20px Rgba(255, 214, 10, 0.4);
-    transform: translateY(-4px);
-    z-index: calc(var(--z-base) + 5);
+    transform: TranslateY(-4px);
+    z-index: Calc(Var(--z-base) + 5);
   }
 
   &::after {
@@ -363,8 +363,8 @@ const bannerStyle = computed(() => ({
     border-radius: inherit;
     padding: 1px;
     background: Linear-Gradient(180deg, Rgba(255,255,255,0.08), Rgba(255,255,255,0.01));
-    -webkit-mask: Linear-Gradient(var(--white) 0 0) content-box, Linear-Gradient(var(--white) 0 0);
-    mask: Linear-Gradient(var(--white) 0 0) content-box, Linear-Gradient(var(--white) 0 0);
+    -webkit-mask: Linear-Gradient(Var(--white) 0 0) content-box, Linear-Gradient(Var(--white) 0 0);
+    mask: Linear-Gradient(Var(--white) 0 0) content-box, Linear-Gradient(Var(--white) 0 0);
     -webkit-mask-composite: xor;
     mask-composite: exclude;
     pointer-events: none;
@@ -394,7 +394,7 @@ const bannerStyle = computed(() => ({
   @include pixelated;
   font-size: 8px;
   font-weight: 700; // Keep titles bold
-  color: var(--gray);
+  color: Var(--gray);
   text-transform: uppercase;
   @include pixelated;
   letter-spacing: 1px;
@@ -414,19 +414,19 @@ const bannerStyle = computed(() => ({
   font-size: 8px;
   font-weight: 400 !important; // Remove bold
   line-height: 1.4;
-  color: var(--white);
+  color: Var(--white);
   flex: 1 1 180px; 
   min-width: 0;
   white-space: normal; // Ensure wrapping
   word-break: break-word;
   
   span { 
-    color: var(--yellow);
+    color: Var(--yellow);
     font-weight: normal !important;
   }
   
   .text-highlight { 
-    color: var(--yellow); 
+    color: Var(--yellow); 
     @include pixelated;
     font-size: 8px !important; // Match base text size
     font-weight: normal !important;
@@ -479,7 +479,7 @@ const bannerStyle = computed(() => ({
     margin-left: 4px;
     @include pixelated;
     font-size: 8px;
-    color: var(--yellow);
+    color: Var(--yellow);
     background: Rgba(0, 0, 0, 0.4);
     padding: 4px 6px;
     border-radius: 6px;
@@ -503,10 +503,10 @@ const bannerStyle = computed(() => ({
       0 10px 30px Rgba(0, 0, 0, 0.6),
       0 0 20px Rgba(255, 214, 10, 0.25);
     
-    .pc-banner-title { color: var(--yellow); opacity: 1; }
+    .pc-banner-title { color: Var(--yellow); opacity: 1; }
     .pc-banner-icon { 
       background: Rgba(255, 214, 10, 0.3);
-      color: var(--yellow); 
+      color: Var(--yellow); 
       box-shadow: 0 0 15px Rgba(255, 214, 10, 0.4);
     }
 
@@ -519,9 +519,9 @@ const bannerStyle = computed(() => ({
         Rgba(255, 214, 10, 0.3) 0%, 
         Rgba(30, 41, 59, 0.95) 100%
       ) !important;
-      border-color: var(--yellow) !important;
+      border-color: Var(--yellow) !important;
       box-shadow: 
-        0 0 0 2px var(--yellow), 
+        0 0 0 2px Var(--yellow), 
         0 15px 40px Rgba(0, 0, 0, 0.7), 
         0 0 35px Rgba(255, 214, 10, 0.6);
     }

@@ -2,18 +2,28 @@
 import { computed, ref } from 'vue'
 import PokemonDisplayCard from '@/components/pokemon/PokemonDisplayCard.vue'
 
-const props = defineProps({
-  pokemon: { type: Object, default: null },
-  index: { type: Number, required: true },
-  isPvp: { type: Boolean, default: false },
-  maxObeyLv: { type: Number, default: 100 },
-  isDraggingAny: { type: Boolean, default: false },
-  isTouchOver: { type: Boolean, default: false }
+import type { Pokemon } from '@/types/pokemon'
+
+interface Props {
+  pokemon?: Pokemon | null
+  index: number
+  isPvp?: boolean
+  maxObeyLv?: number
+  isDraggingAny?: boolean
+  isTouchOver?: boolean
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  pokemon: null,
+  isPvp: false,
+  maxObeyLv: 100,
+  isDraggingAny: false,
+  isTouchOver: false
 })
 
 const emit = defineEmits(['select', 'open-detail', 'open-item', 'send-to-box', 'drag-start', 'drag-over', 'drop-pokemon', 'drag-end'])
 
-const touchTimer = ref<any>(null)
+const touchTimer = ref<ReturnType<typeof setTimeout> | null>(null)
 const isTouchDragging = ref(false)
 const touchStartX = ref(0)
 const touchStartY = ref(0)
@@ -147,7 +157,7 @@ function handleTouchEnd(e: TouchEvent) {
     </div>
     
     <PokemonDisplayCard
-      v-else
+      v-else-if="pokemon"
       :pokemon="pokemon"
       :index="index"
       :is-pvp="isPvp"

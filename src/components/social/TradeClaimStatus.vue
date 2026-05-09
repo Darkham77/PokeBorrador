@@ -5,21 +5,29 @@ import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
-const gameStore = useGameStore() as any
-const uiStore = useUIStore() as any
+import type { ClaimItem } from '@/types/game'
 
-const claims = computed(() => (gameStore.state.claimQueue || []) as any[])
+interface PokemonAssetData {
+  id: number;
+  name: string;
+  level: number;
+}
+ 
+const gameStore = useGameStore()
+const uiStore = useUIStore()
+ 
+const claims = computed(() => (gameStore.state.claimQueue || []))
 const hasClaims = computed(() => claims.value.length > 0)
-
+ 
 const processingId = ref<string | number | null>(null)
 const cooldowns = reactive(new Set<string | number>())
-
+ 
 const claimAsset = async (claimId: string | number) => {
   if (cooldowns.has(claimId)) {
     uiStore.notify('Debes esperar 5 segundos entre reclamos', '⏳')
     return
   }
-
+ 
   processingId.value = claimId
   const success = await gameStore.claimAsset(claimId)
   
@@ -32,7 +40,7 @@ const claimAsset = async (claimId: string | number) => {
   
   processingId.value = null
 }
-
+ 
 const receiveAll = async () => {
   for (const claim of claims.value) {
     await claimAsset(claim.id)
@@ -40,12 +48,12 @@ const receiveAll = async () => {
     await new Promise(r => setTimeout(r, 1000))
   }
 }
-
-const getAssetIcon = (asset: any) => {
+ 
+const getAssetIcon = (asset: ClaimItem['asset_data']) => {
   if (asset.type === 'money') return getAssetUrl(ASSET_TYPES.ITEM, 'nugget')
   return getAssetUrl(ASSET_TYPES.ITEM, 'pokeball')
 }
-
+ 
 const getSpriteUrl = (id: string | number) => {
   return getAssetUrl(ASSET_TYPES.POKEMON, id)
 }
@@ -78,7 +86,7 @@ const getSpriteUrl = (id: string | number) => {
         <div class="asset-preview">
           <img 
             v-if="claim.asset_data.type === 'pokemon'"
-            :src="getSpriteUrl(claim.asset_data.data.id)" 
+            :src="getSpriteUrl((claim.asset_data.data as unknown as PokemonAssetData).id)" 
             class="pixel-art pokemon-sprite" 
             @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
           >
@@ -94,13 +102,13 @@ const getSpriteUrl = (id: string | number) => {
               v-if="claim.asset_data.type === 'pokemon'"
               class="asset-name"
             >
-              {{ claim.asset_data.data.name }} (Lv.{{ claim.asset_data.data.level }})
+              {{ (claim.asset_data.data as unknown as PokemonAssetData).name }} (Lv.{{ (claim.asset_data.data as unknown as PokemonAssetData).level }})
             </div>
             <div
               v-else-if="claim.asset_data.type === 'money'"
               class="asset-name"
             >
-              ₽{{ claim.asset_data.data.toLocaleString() }}
+              ₽{{ (claim.asset_data.data as unknown as number).toLocaleString() }}
             </div>
             <div class="source">
               Origen: {{ claim.source_type }}
@@ -110,7 +118,7 @@ const getSpriteUrl = (id: string | number) => {
         <button 
           class="claim-btn" 
           :disabled="processingId === claim.id" 
-          @click.stop="claimAsset(claim.id)"
+          @click.stop="claimAsset(claim.id as string | number)"
         >
           {{ processingId === claim.id ? '...SINC' : 'RECIBIR' }}
         </button>

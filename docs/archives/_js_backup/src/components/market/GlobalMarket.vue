@@ -200,7 +200,7 @@ async function refresh() {
   align-items: center;
   justify-content: center;
   transition: all 0.2s;
-  &:hover:not(:disabled) { background: Rgba(255, 255, 255, 0.1); transform: Rotate(45deg); }
+  &:hover:Not(:disabled) { background: Rgba(255, 255, 255, 0.1); transform: Rotate(45deg); }
   &:disabled { opacity: 0.5; cursor: wait; }
 }
 

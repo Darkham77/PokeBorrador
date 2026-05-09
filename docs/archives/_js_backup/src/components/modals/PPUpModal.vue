@@ -86,7 +86,7 @@ const close = () => {
 
 .target-info {
   font-size: 13px;
-  color: var(--gray);
+  color: Var(--gray);
   text-align: center;
   margin-bottom: 24px;
 }
@@ -105,11 +105,11 @@ const close = () => {
   text-align: left;
   cursor: pointer;
   transition: all 0.2s;
-  color: var(--white);
+  color: Var(--white);
 
   &:hover { 
     background: Rgba(255,255,255,0.08); 
-    transform: translateX(4px);
+    transform: TranslateX(4px);
     border-color: Rgba(255, 255, 255, 0.2);
   }
 
@@ -118,13 +118,13 @@ const close = () => {
   .mv-pp { 
     @include pixelated;
     font-size: 8px;
-    color: var(--yellow);
+    color: Var(--yellow);
   }
   
   .mv-bar { height: 6px; background: Rgba(0,0,0,0.3); border-radius: 3px; overflow: hidden; }
   .mv-fill { 
     height: 100%; 
-    background: Linear-Gradient(90deg, var(--blue), Rgba(96, 165, 250, 1)); 
+    background: Linear-Gradient(90deg, Var(--blue), Rgba(96, 165, 250, 1)); 
     transition: width 0.3s;
     box-shadow: 0 0 10px Rgba(59, 130, 246, 0.3);
   }

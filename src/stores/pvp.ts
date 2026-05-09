@@ -10,7 +10,6 @@ import { RANKED_REWARD_MILESTONES } from '@/data/rankedData'
 export { RANKED_REWARD_MILESTONES }
 import { getEloTier } from '@/logic/pvp/rankedEngine'
 import type { Pokemon } from '@/types/pokemon'
-import type { AuthStore, GameStore, UIStore } from '@/types/stores'
 
 export const RANKED_REWARD_TIER_MARKS = [
   { name: 'Plata', elo: 1200, color: '#9E9E9E' },
@@ -52,9 +51,9 @@ interface LeaderboardEntry {
  * Centraliza el ELO, las temporadas y el registro de equipos competitivos.
  */
 export const usePvPStore = defineStore('pvp', () => {
-  const authStore = useAuthStore() as unknown as AuthStore
-  const gameStore = useGameStore() as unknown as GameStore
-  const uiStore = useUIStore() as unknown as UIStore
+  const authStore = useAuthStore()
+  const gameStore = useGameStore()
+  const uiStore = useUIStore()
 
   const elo = ref(1000)
   const stats = ref<PvPStats>({ wins: 0, losses: 0, draws: 0 })

@@ -93,8 +93,8 @@ const handleSignup = () => {
   white-space: nowrap;
 }
 
-.auth-btn:hover:not(:disabled) {
-  transform: translateY(-2px);
+.auth-btn:hover:Not(:disabled) {
+  transform: TranslateY(-2px);
   background: Rgba(255, 224, 77, 1);
 }
 </style>

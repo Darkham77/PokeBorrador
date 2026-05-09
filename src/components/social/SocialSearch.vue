@@ -3,7 +3,7 @@ import { ref } from 'vue'
 import { useSocialStore } from '@/stores/social.js'
 import TrainerAvatar from '@/components/TrainerAvatar.vue'
 
-const socialStore = useSocialStore() as any
+const socialStore = useSocialStore()
 const searchInput = ref('')
 
 const handleSearch = () => {
@@ -68,7 +68,7 @@ const handleSearch = () => {
           <button 
             v-else-if="result.status === 'pending' && !result.isRequester"
             class="friend-btn accept" 
-            @click.stop="socialStore.respondRequest(result.relId, 'accepted')"
+            @click.stop="result.relId && socialStore.respondRequest(result.relId, 'accepted')"
           >
             ✓ ACEPTAR
           </button>

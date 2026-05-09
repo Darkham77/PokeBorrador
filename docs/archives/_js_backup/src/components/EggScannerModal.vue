@@ -37,7 +37,7 @@ const allEggs = computed(() => {
 const scanEgg = async (egg) => {
   isScanning.value = true
   // Simulate scanning delay for "wow" effect
-  await new Promise(r => setTimeout(r, 800))
+  await await setTimeout(800)
   
   const ivs = egg.data.inherited_ivs || {}
   const totalIV = (ivs.hp || 0) + (ivs.atk || 0) + (ivs.def || 0) + (ivs.spa || 0) + (ivs.spd || 0) + (ivs.spe || 0)
@@ -241,12 +241,12 @@ const _getSprite = (id, shiny) => {
   -webkit-backdrop-filter: Blur(8px);
   backdrop-filter: Blur(8px);
   @include gpu-layer;
-  z-index: var(--z-modal);
+  z-index: Var(--z-modal);
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 20px;
-  transform: translateZ(0);
+  transform: TranslateZ(0);
 }
 
 .scanner-container {
@@ -270,11 +270,11 @@ const _getSprite = (id, shiny) => {
   font-size: 11px; color: #a855f7; margin: 0;
 }
 
-.close-btn { background: none; border: none; color: var(--gray); font-size: 20px; cursor: pointer; }
+.close-btn { background: none; border: none; color: Var(--gray); font-size: 20px; cursor: pointer; }
 
 .scanner-body { padding: 24px; position: relative; }
 
-.guide-text { font-size: 11px; color: var(--gray); margin-bottom: 20px; text-align: center; }
+.guide-text { font-size: 11px; color: Var(--gray); margin-bottom: 20px; text-align: center; }
 
 .egg-list {
   display: flex;
@@ -299,11 +299,11 @@ const _getSprite = (id, shiny) => {
 .egg-icon { font-size: 24px; }
 .egg-info { flex: 1; }
 .egg-name { font-size: 12px; font-weight: 800; color: $white; display: flex; align-items: center; gap: 8px; }
-.egg-status { font-size: 9px; color: var(--gray); margin-top: 4px; }
+.egg-status { font-size: 9px; color: Var(--gray); margin-top: 4px; }
 
 .badge { font-size: 8px; padding: 2px 6px; border-radius: 4px; color: $white; }
-.badge.inventory { background: var(--blue); }
-.badge.daycare { background: var(--purple); }
+.badge.inventory { background: Var(--blue); }
+.badge.daycare { background: Var(--purple); }
 
 .result-view { animation: fadeIn 0.3s ease; display: flex; flex-direction: column; gap: 20px; }
 
@@ -319,14 +319,14 @@ const _getSprite = (id, shiny) => {
 
 .iv-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
 .iv-item { font-size: 10px; color: $white; font-family: monospace; }
-.iv-item span { color: var(--gray); }
+.iv-item span { color: Var(--gray); }
 
 .total-bar {
   border-top: 1px solid Rgba(255,255,255,0.1);
   padding-top: 12px;
   display: flex; justify-content: space-between; align-items: center;
 }
-.total-bar .label { font-size: 9px; color: var(--gray); font-weight: 700; }
+.total-bar .label { font-size: 9px; color: Var(--gray); font-weight: 700; }
 .total-bar .value { font-size: 14px; font-weight: 900; color: #22c55e; }
 
 .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -343,7 +343,7 @@ const _getSprite = (id, shiny) => {
 }
 
 .back-link {
-  background: none; border: none; color: var(--gray); 
+  background: none; border: none; color: Var(--gray); 
   font-size: 10px; cursor: pointer; text-decoration: underline; margin-top: 10px;
 }
 
@@ -358,7 +358,7 @@ const _getSprite = (id, shiny) => {
 }
 
 @keyframes spin { 100% { transform: Rotate(360deg); } }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes fadeIn { from { opacity: 0; transform: TranslateY(10px); } to { opacity: 1; transform: TranslateY(0); } }
 
-.empty-state { text-align: center; padding: 40px; color: var(--gray); font-size: 12px; }
+.empty-state { text-align: center; padding: 40px; color: Var(--gray); font-size: 12px; }
 </style>

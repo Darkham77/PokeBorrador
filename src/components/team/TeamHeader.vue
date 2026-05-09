@@ -3,8 +3,8 @@ import { computed } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useBoxStore } from '@/stores/box'
 
-const gameStore = useGameStore() as any
-const boxStore = useBoxStore() as any
+const gameStore = useGameStore()
+const boxStore = useBoxStore()
 
 const playerClass = computed(() => gameStore.state.playerClass)
 
@@ -110,7 +110,7 @@ const confirmRelease = () => {
   </div>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 @use "@/styles/core/_mixins" as *;
 .team-header-container {
   margin-bottom: 25px;

@@ -102,7 +102,7 @@ defineEmits(['toggleShiny', 'toggleGuardian', 'toggleGender'])
       transition: all 0.2s;
 
       &:hover { background: Rgba(255, 255, 255, 0.1); }
-      &.active { border-color: var(--vicio-primary); background: Rgba(124, 58, 237, 0.1); }
+      &.active { border-color: Var(--vicio-primary); background: Rgba(124, 58, 237, 0.1); }
       
       &.male { color: $gender-male; }
       &.female { color: $gender-female; }

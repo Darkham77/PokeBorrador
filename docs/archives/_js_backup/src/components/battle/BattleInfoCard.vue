@@ -548,17 +548,17 @@ const formatMult = (m) => {
 .hp-bar-inner { 
   height: 100%; 
   transition: width 0.4s ease; 
-  @include will-animate(width);
+  @include will-Animate(width);
 }
 .exp-bar-inner { 
   height: 100%; 
-  background: var(--blue); 
+  background: Var(--blue); 
   width: 0;
   transition: none;
   &.is-animating {
-    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: width 0.6s cubic-Bezier(0.4, 0, 0.2, 1);
   }
-  @include will-animate(width);
+  @include will-Animate(width);
 }
 
 .is-leveling-up {
@@ -566,9 +566,9 @@ const formatMult = (m) => {
 }
 
 @keyframes level-up-flash {
-  0% { filter: Brightness(1) contrast(1); transform: Scale(1); }
-  20% { filter: Brightness(2) contrast(1.2); transform: Scale(1.05); border-color: Rgba(255,255,255,0.8); }
-  100% { filter: Brightness(1) contrast(1); transform: Scale(1); }
+  0% { filter: Brightness(1) Contrast(1); transform: Scale(1); }
+  20% { filter: Brightness(2) Contrast(1.2); transform: Scale(1.05); border-color: Rgba(255,255,255,0.8); }
+  100% { filter: Brightness(1) Contrast(1); transform: Scale(1); }
 }
 
 .hp-high { background: Linear-Gradient(90deg, Rgba(16, 185, 129, 1), Rgba(52, 211, 153, 1)); }
@@ -592,7 +592,7 @@ const formatMult = (m) => {
   gap: 6px;
   margin-top: 8px;
   position: relative;
-  z-index: var(--z-map-spawns);
+  z-index: Var(--z-map-spawns);
 
   @media (max-width: 600px) {
     gap: 3px;
@@ -755,7 +755,7 @@ const formatMult = (m) => {
   }
 
   .d-icon { width: 18px; font-size: 12px; }
-  .d-label { width: 40px; color: var(--gray); opacity: 0.8; }
+  .d-label { width: 40px; color: Var(--gray); opacity: 0.8; }
   .d-val { font-weight: bold; margin-left: auto; color: white; font-size: 11px; }
   .d-mod { 
     margin-left: 8px;

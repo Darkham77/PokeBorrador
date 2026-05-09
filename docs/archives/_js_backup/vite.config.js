@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
-import path from 'path'
+import path from 'node:path'
 
 import { generateMigrations } from './scripts/generate_migrations.js'
 import { sassTrapsFixer } from './scripts/vite-plugin-sass-traps.js'

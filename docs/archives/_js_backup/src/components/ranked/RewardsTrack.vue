@@ -174,17 +174,17 @@ const claimReward = async (milestone) => {
 }
 
 h3 {
-  color: var(--yellow);
+  color: Var(--yellow);
   margin: 0 0 8px 0;
 }
 
 .subtitle {
   font-size: 11px;
-  color: var(--gray);
+  color: Var(--gray);
   margin: 0;
 
   span {
-    color: var(--white);
+    color: Var(--white);
     font-weight: bold;
   }
 }
@@ -212,14 +212,14 @@ h3 {
   height: 100%;
   background: Linear-Gradient(90deg, #c8a060, #9E9E9E, #FFB800, #E5C100, #89CFF0, $coin-gold);
   border-radius: 999px;
-  transition: width 1s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: width 1s cubic-Bezier(0.34, 1.56, 0.64, 1);
 }
 
 .tier-marker {
   position: absolute;
   top: 50%;
   transform: Translate(-50%, -50%);
-  z-index: var(--z-base);
+  z-index: Var(--z-base);
 }
 
 .marker-dot {
@@ -275,7 +275,7 @@ h3 {
 }
 
 .elo-req {
-  color: var(--yellow);
+  color: Var(--yellow);
   font-size: 7px;
 }
 
@@ -287,7 +287,7 @@ h3 {
 
 .reward-item {
   font-size: 11px;
-  color: var(--white);
+  color: Var(--white);
 }
 
 .claim-btn {
@@ -297,18 +297,18 @@ h3 {
   border-radius: 8px;
   cursor: pointer;
   background: Rgba(107, 203, 119, 0.2);
-  color: var(--green);
+  color: Var(--green);
   border: 1px solid Rgba(107, 203, 119, 0.3);
   transition: all 0.2s;
 
-  &:hover:not(:disabled) {
+  &:hover:Not(:disabled) {
     background: Rgba(107, 203, 119, 0.3);
     transform: Scale(1.02);
   }
 
   &:disabled {
     background: Rgba(255, 255, 255, 0.05);
-    color: var(--gray);
+    color: Var(--gray);
     border-color: Rgba(255, 255, 255, 0.1);
     cursor: not-allowed;
   }
@@ -316,7 +316,7 @@ h3 {
 
 .claimed-status {
   text-align: center;
-  color: var(--green);
+  color: Var(--green);
   font-size: 8px;
   padding: 8px;
 }

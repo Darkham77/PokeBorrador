@@ -53,7 +53,7 @@ const formatTime = (secs) => {
   position: absolute;
   top: 80px; /* Below user bar */
   left: 10px;
-  z-index: var(--z-base);
+  z-index: Var(--z-base);
   pointer-events: none; /* Let clicks pass through */
 }
 
@@ -81,8 +81,8 @@ const formatTime = (secs) => {
 
   &:hover {
     background: Rgba(0, 0, 0, 0.8);
-    border-color: var(--yellow, #ffd93d);
-    box-shadow: 0 0 0 1px var(--yellow, #ffd93d);
+    border-color: Var(--yellow, #ffd93d);
+    box-shadow: 0 0 0 1px Var(--yellow, #ffd93d);
     transform: TranslateX(4px);
   }
 }
@@ -111,7 +111,7 @@ const formatTime = (secs) => {
 }
 
 .buff-time {
-  color: var(--yellow, #ffd93d);
+  color: Var(--yellow, #ffd93d);
   font-size: 12px;
   font-weight: 700;
   margin-top: 2px;

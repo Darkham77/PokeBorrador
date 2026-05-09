@@ -9,6 +9,7 @@ import { SHOP_ITEMS } from '@/data/items'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { isValidTarget } from '@/logic/items/itemEffects'
 import PVTooltip from '@/components/common/PVTooltip.vue'
+import type { Pokemon } from '@/types/pokemon'
 
 const gameStore = useGameStore()
 const battleStore = useBattleStore()
@@ -74,9 +75,9 @@ const handleUseItem = (item: BattleItem) => {
     allowedIds: validTargets.map(p => p.uid),
     activePokemonUid: battleStore.isBattleActive ? battleStore.player?.uid : null,
     onConfirm: (selected: unknown) => {
-      const selectedPokes = selected as any[]
+      const selectedPokes = selected as Pokemon[]
       if (selectedPokes && selectedPokes.length > 0) {
-        const index = (gameStore.state.team || []).findIndex(p => p.uid === selectedPokes[0].uid)
+        const index = (gameStore.state.team || []).findIndex(p => p.uid === selectedPokes[0]!.uid)
         if (index !== -1) {
           const res = inventoryStore.useItem(dbItem.name, 'team', index)
           if (res.success) {

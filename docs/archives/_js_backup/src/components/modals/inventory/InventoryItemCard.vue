@@ -97,19 +97,19 @@ const itemIcon = computed(() => {
 @use "@/styles/core/_mixins" as *;
 
 .inventory-item-card {
-  @include card-premium(16px);
+  @include card-Premium(16px);
   width: 100%;
   min-width: 0; // Fix grid cell overflow
   aspect-ratio: 1 / 1.1;
   align-self: start; // Prevent vertical stretch
   position: relative;
   overflow: hidden;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s cubic-Bezier(0.4, 0, 0.2, 1);
   background: Rgba(255, 255, 255, 0.02);
   border: 1px solid Rgba(255, 255, 255, 0.05);
   cursor: pointer;
 
-  :deep(.card-tooltip-trigger) {
+  :Deep(.card-tooltip-trigger) {
     display: flex !important;
     flex-direction: column;
     align-items: center;
@@ -120,10 +120,10 @@ const itemIcon = computed(() => {
     box-sizing: border-box;
   }
 
-  @include hover-neon-yellow(1px);
+  @include hover-neon-Yellow(1px);
 
   &.selected {
-    border-color: var(--yellow) !important;
+    border-color: Var(--yellow) !important;
     background: Rgba(255, 214, 10, 0.08);
     transform: Scale(0.98);
     
@@ -131,7 +131,7 @@ const itemIcon = computed(() => {
       content: '';
       position: absolute;
       inset: 0;
-      border: 2px solid var(--yellow);
+      border: 2px solid Var(--yellow);
       border-radius: inherit;
       pointer-events: none;
       animation: borderPulse 2s infinite;
@@ -149,7 +149,7 @@ const itemIcon = computed(() => {
     @include pixelated;
     font-size: 6px;
     color: Rgba(255, 255, 255, 0.6);
-    z-index: var(--z-low);
+    z-index: Var(--z-low);
   }
 
   .item-visual-wrap {
@@ -167,7 +167,7 @@ const itemIcon = computed(() => {
       height: 60%;
       background: Radial-Gradient(circle, Rgba(255, 255, 255, 0.1) 0%, transparent 70%);
       filter: Blur(5px);
-      z-index: var(--z-base);
+      z-index: Var(--z-base);
     }
 
     .item-sprite {
@@ -175,14 +175,14 @@ const itemIcon = computed(() => {
       height: 48px;
       object-fit: contain;
       image-rendering: pixelated;
-      z-index: calc(var(--z-base) + 1);
+      z-index: Calc(Var(--z-base) + 1);
       filter: Drop-Shadow(0 4px 8px Rgba(0, 0, 0, 0.3));
       transition: transform 0.3s ease;
     }
 
     .fallback-icon {
       font-size: 32px;
-      z-index: calc(var(--z-base) + 1);
+      z-index: Calc(Var(--z-base) + 1);
     }
 
     .quantity-pill {
@@ -197,11 +197,11 @@ const itemIcon = computed(() => {
       padding: 2px 6px;
       border-radius: 8px;
       box-shadow: 0 4px 10px Rgba(0, 0, 0, 0.4);
-      z-index: var(--z-low);
+      z-index: Var(--z-low);
 
       .label {
         font-size: 8px;
-        color: var(--yellow);
+        color: Var(--yellow);
         @include pixelated;
       }
 
@@ -234,7 +234,7 @@ const itemIcon = computed(() => {
     position: absolute;
     top: 6px;
     right: 6px;
-    z-index: calc(var(--z-low) + 1);
+    z-index: Calc(Var(--z-low) + 1);
 
     .check-box {
       width: 18px;
@@ -248,8 +248,8 @@ const itemIcon = computed(() => {
       transition: all 0.2s;
 
       &.checked {
-        background: var(--yellow);
-        border-color: var(--yellow);
+        background: Var(--yellow);
+        border-color: Var(--yellow);
         color: black;
         font-weight: 900;
         font-size: 10px;
@@ -273,7 +273,7 @@ const itemIcon = computed(() => {
 
   &.tier-legend {
     border-color: Rgba(245, 158, 11, 0.2);
-    .item-tier-badge { color: var(--yellow); }
+    .item-tier-badge { color: Var(--yellow); }
     .item-bg-glow { background: Radial-Gradient(circle, Rgba(245, 158, 11, 0.15) 0%, transparent 70%); }
   }
 

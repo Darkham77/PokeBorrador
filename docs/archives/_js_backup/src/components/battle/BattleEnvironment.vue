@@ -40,7 +40,7 @@ const handleBackgroundError = (e) => {
   position: absolute;
   top: 0; left: 0; width: 100%; height: 100%;
   object-fit: cover;
-  z-index: calc(var(--z-base) + 1);
+  z-index: Calc(Var(--z-base) + 1);
   image-rendering: pixelated !important;
 }
 

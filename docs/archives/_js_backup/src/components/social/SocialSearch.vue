@@ -105,7 +105,7 @@ const handleSearch = () => {
   background: Rgba(0, 0, 0, 0.3);
   border: 1px solid Rgba(255, 255, 255, 0.1);
   border-radius: 10px;
-  color: var(--white);
+  color: Var(--white);
   outline: none;
   font-size: 13px;
   font-family: inherit;
@@ -120,7 +120,7 @@ const handleSearch = () => {
   position: absolute;
   right: 15px;
   top: 50%;
-  transform: translateY(-50%);
+  transform: TranslateY(-50%);
   font-size: 14px;
   opacity: 0.6;
 }
@@ -145,7 +145,7 @@ const handleSearch = () => {
   .friend-name {
     font-size: 14px;
     font-weight: 900;
-    color: var(--white);
+    color: Var(--white);
     margin-bottom: 4px;
   }
   .friend-meta {
@@ -167,7 +167,7 @@ const handleSearch = () => {
   cursor: pointer;
   border: 1px solid Rgba(255, 255, 255, 0.2);
   background: Rgba(255, 255, 255, 0.05);
-  color: var(--white);
+  color: Var(--white);
   transition: all 0.2s;
 
   &:hover {

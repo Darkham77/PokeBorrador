@@ -57,12 +57,12 @@ const isMax = computed(() => criminality.value >= 100)
   position: fixed;
   right: 20px;
   top: 50%;
-  transform: translateY(-50%);
+  transform: TranslateY(-50%);
   width: 14px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  z-index: var(--z-base);
+  z-index: Var(--z-base);
   pointer-events: none;
   padding: 15px 10px;
 }
@@ -84,14 +84,14 @@ const isMax = computed(() => criminality.value >= 100)
   font-size: 8px;
   color: Rgba(239, 68, 68, 1);
   margin-bottom: 8px;
-  text-shadow: 1px 1px var(--black), 0 0 5px Rgba(239, 68, 68, 0.4);
+  text-shadow: 1px 1px Var(--black), 0 0 5px Rgba(239, 68, 68, 0.4);
   @include pixelated;
 }
 
 .bar-bg {
   width: 12px;
   height: 200px;
-  background: var(--black);
+  background: Var(--black);
   border: 2px solid Rgba(51, 51, 51, 1);
   border-radius: 10px;
   display: flex;
@@ -113,7 +113,7 @@ const isMax = computed(() => criminality.value >= 100)
   font-size: 10px;
   font-weight: 800;
   color: Rgba(239, 68, 68, 1);
-  text-shadow: 1px 1px var(--black), 0 0 5px Rgba(239, 68, 68, 0.4);
+  text-shadow: 1px 1px Var(--black), 0 0 5px Rgba(239, 68, 68, 0.4);
 }
 
 .blinking {
@@ -127,10 +127,10 @@ const isMax = computed(() => criminality.value >= 100)
 }
 
 .slide-right-enter-active, .slide-right-leave-active {
-  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transition: all 0.4s cubic-Bezier(0.175, 0.885, 0.32, 1.275);
 }
 .slide-right-enter-from, .slide-right-leave-to {
   opacity: 0;
-  transform: translateY(-50%) translateX(30px);
+  transform: TranslateY(-50%) TranslateX(30px);
 }
 </style>

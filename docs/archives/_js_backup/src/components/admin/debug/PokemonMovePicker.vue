@@ -160,7 +160,7 @@ function removeMove(slotIndex) {
     .btn-magic-fill {
       background: Rgba(124, 58, 237, 0.1);
       border: 1px solid Rgba(124, 58, 237, 0.2);
-      color: var(--vicio-primary);
+      color: Var(--vicio-primary);
       width: 24px;
       height: 24px;
       border-radius: 6px;
@@ -173,13 +173,13 @@ function removeMove(slotIndex) {
       &.btn-random-fill {
         background: Rgba(255, 170, 0, 0.1);
         border-color: Rgba(255, 170, 0, 0.2);
-        color: var(--yellow);
+        color: Var(--yellow);
         
-        &:hover { background: var(--yellow); color: $black; }
+        &:hover { background: Var(--yellow); color: $black; }
       }
       
       &:hover {
-        background: var(--vicio-primary);
+        background: Var(--vicio-primary);
         color: white;
         transform: Scale(1.1);
       }
@@ -234,7 +234,7 @@ function removeMove(slotIndex) {
       font-size: 8px;
       justify-content: center;
       
-      &:hover { color: white; border-color: var(--vicio-primary); }
+      &:hover { color: white; border-color: Var(--vicio-primary); }
     }
   }
 
@@ -245,7 +245,7 @@ function removeMove(slotIndex) {
     width: 220px;
     max-height: 300px;
     margin-bottom: 12px;
-    z-index: var(--z-critical);
+    z-index: Var(--z-critical);
     background: Rgba(10, 12, 16, 0.98);
     -webkit-backdrop-filter: Blur(20px);
     backdrop-filter: Blur(20px);
@@ -266,7 +266,7 @@ function removeMove(slotIndex) {
       margin-bottom: 12px;
       outline: none;
       
-      &:focus { border-color: var(--vicio-primary); }
+      &:focus { border-color: Var(--vicio-primary); }
     }
 
     .move-list {
@@ -292,7 +292,7 @@ function removeMove(slotIndex) {
         cursor: pointer;
         transition: all 0.2s;
         
-        &:hover { background: Rgba(124, 58, 237, 0.1); color: var(--vicio-primary); }
+        &:hover { background: Rgba(124, 58, 237, 0.1); color: Var(--vicio-primary); }
       }
     }
 

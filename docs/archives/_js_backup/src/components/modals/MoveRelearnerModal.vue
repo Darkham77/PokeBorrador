@@ -172,17 +172,17 @@ const consumeItem = (name) => {
   border: 1px solid Rgba(155, 77, 255, 0.1);
   border-radius: 12px;
   padding: 14px 18px;
-  color: var(--white);
+  color: Var(--white);
   cursor: pointer;
   transition: all 0.2s;
   text-align: left;
 
   &:hover {
     background: Rgba(155, 77, 255, 0.15);
-    border-color: var(--purple-light);
-    transform: translateX(4px);
+    border-color: Var(--purple-light);
+    transform: TranslateX(4px);
     
-    .move-name { color: var(--purple-light); }
+    .move-name { color: Var(--purple-light); }
   }
 
   .move-info {
@@ -203,7 +203,7 @@ const consumeItem = (name) => {
   .move-pp {
     @include pixelated;
     font-size: 8px;
-    color: var(--purple-light);
+    color: Var(--purple-light);
     @include pixelated;
   }
 }

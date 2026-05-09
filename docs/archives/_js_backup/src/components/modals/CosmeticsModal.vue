@@ -131,7 +131,7 @@ const selectAvatar = (id) => {
     align-items: center;
     gap: 12px;
     margin-bottom: 8px;
-    h3 { font-size: 18px; color: var(--white); font-weight: 700; }
+    h3 { font-size: 18px; color: Var(--white); font-weight: 700; }
     .badge {
       font-size: 9px;
       background: Rgba(255, 255, 255, 0.05);
@@ -150,7 +150,7 @@ const selectAvatar = (id) => {
 
 .styles-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  grid-template-columns: Repeat(auto-fill, Minmax(160px, 1fr));
   gap: 16px;
 }
 
@@ -164,7 +164,7 @@ const selectAvatar = (id) => {
   align-items: center;
   gap: 16px;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s cubic-Bezier(0.4, 0, 0.2, 1);
   position: relative;
 
   &:hover {

@@ -132,12 +132,12 @@ const handleMove = (targetBoxIndex) => {
     font-size: 11px;
     text-align: center;
     margin-bottom: 25px;
-    color: var(--white);
+    color: Var(--white);
     line-height: 1.5;
     text-transform: uppercase;
 
     .p-name {
-      color: var(--yellow);
+      color: Var(--yellow);
       font-weight: 900;
     }
   }
@@ -145,13 +145,13 @@ const handleMove = (targetBoxIndex) => {
 
 .boxes-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: Repeat(2, 1fr);
   gap: 15px;
   margin-bottom: 30px;
 }
 
 .box-select-btn {
-  @include glass(Rgba(30, 41, 59, 0.4), 12px); 
+  @include Glass(Rgba(30, 41, 59, 0.4), 12px); 
   padding: 1px;
   position: relative;
   cursor: pointer;
@@ -168,7 +168,7 @@ const handleMove = (targetBoxIndex) => {
     align-items: center;
     gap: 8px;
     background: transparent;
-    z-index: var(--z-base);
+    z-index: Var(--z-base);
     position: relative;
     width: 100%;
   }
@@ -179,16 +179,16 @@ const handleMove = (targetBoxIndex) => {
     background: Radial-Gradient(circle at center, Rgba(255,255,255,0.05) 0%, transparent 70%);
     opacity: 0;
     transition: opacity 0.3s ease;
-    z-index: calc(var(--z-base) - 1);
+    z-index: Calc(Var(--z-base) - 1);
   }
 
-  &:hover:not(:disabled) {
+  &:hover:Not(:disabled) {
     transform: TranslateY(-4px);
-    border-color: var(--yellow) !important;
+    border-color: Var(--yellow) !important;
     box-shadow: 0 10px 25px Rgba(0, 0, 0, 0.3), 0 0 15px Rgba(251, 191, 36, 0.2);
     
     .border-glow { opacity: 1; }
-    .box-number { color: var(--yellow); }
+    .box-number { color: Var(--yellow); }
   }
 
   &:disabled {
@@ -198,19 +198,19 @@ const handleMove = (targetBoxIndex) => {
   }
 
   &.is-current {
-    border-color: var(--blue) !important;
-    .box-number { color: var(--blue); }
+    border-color: Var(--blue) !important;
+    .box-number { color: Var(--blue); }
   }
 
   &.is-full {
-    border-color: var(--red) !important;
-    .box-number { color: var(--red); }
+    border-color: Var(--red) !important;
+    .box-number { color: Var(--red); }
   }
 
   .box-number {
     @include pixelated;
     font-size: 10px;
-    color: var(--white);
+    color: Var(--white);
     transition: color 0.3s ease;
   }
 
@@ -222,12 +222,12 @@ const handleMove = (targetBoxIndex) => {
     .count {
       @include pixelated;
       font-size: 14px;
-      color: var(--white);
+      color: Var(--white);
       font-weight: 900;
     }
     .max {
       font-size: 8px;
-      color: var(--gray);
+      color: Var(--gray);
     }
   }
 
@@ -241,9 +241,9 @@ const handleMove = (targetBoxIndex) => {
       border-radius: 4px;
       text-transform: uppercase;
 
-      &.current { background: var(--blue); color: white; }
-      &.full { background: var(--red); color: white; }
-      &.available { background: Rgba(255, 255, 255, 0.05); color: var(--gray); }
+      &.current { background: Var(--blue); color: white; }
+      &.full { background: Var(--red); color: white; }
+      &.available { background: Rgba(255, 255, 255, 0.05); color: Var(--gray); }
     }
   }
 }
@@ -252,7 +252,7 @@ const handleMove = (targetBoxIndex) => {
   margin-top: 10px;
   
   .btn-cancel {
-    @include btn-vicio('neutral', 'lg', true);
+    @include btn-Vicio('neutral', 'lg', true);
     @include pixelated;
     font-size: 10px;
   }

@@ -538,10 +538,10 @@ watch(() => battleStore.isBattleActive, (active) => {
 }
 
 .battle-arena-content { position: absolute; inset: 0; overflow: hidden; }
-.battle-sprites { position: absolute; inset: 0; pointer-events: none; z-index: calc(var(--z-base) + 10); }
+.battle-sprites { position: absolute; inset: 0; pointer-events: none; z-index: Calc(Var(--z-base) + 10); }
 
 .battle-info-container {
-  position: absolute; inset: 0; z-index: calc(var(--z-base) + 30);
+  position: absolute; inset: 0; z-index: Calc(Var(--z-base) + 30);
   padding: 4cqw; display: flex; flex-direction: column; pointer-events: none;
   @media (max-width: 600px) { padding: 2cqw; }
 }
@@ -553,7 +553,7 @@ watch(() => battleStore.isBattleActive, (active) => {
 /* Animaciones laterales diferenciadas */
 .hud-fade-enemy-enter-active, .hud-fade-enemy-leave-active,
 .hud-fade-player-enter-active, .hud-fade-player-leave-active { 
-  transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1), transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); 
+  transition: opacity 0.4s cubic-Bezier(0.4, 0, 0.2, 1), transform 0.4s cubic-Bezier(0.4, 0, 0.2, 1); 
   @include gpu-layer;
 }
 
@@ -562,7 +562,7 @@ watch(() => battleStore.isBattleActive, (active) => {
 
 /* --- ANIMACIONES DE ENTRENADOR Y TRANSICIONES --- */
 .global-transition-overlay {
-  position: absolute; inset: 0; background: black; z-index: var(--z-max);
+  position: absolute; inset: 0; background: black; z-index: Var(--z-max);
   pointer-events: none;
 }
 
@@ -570,11 +570,11 @@ watch(() => battleStore.isBattleActive, (active) => {
 .fade-overlay-enter-from, .fade-overlay-leave-to { opacity: 0; }
 
 .trainer-entity {
-  z-index: var(--z-map-spawns);
+  z-index: Var(--z-map-spawns);
   display: flex; align-items: flex-end; justify-content: center;
-  transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.5s ease;
+  transition: transform 0.8s cubic-Bezier(0.4, 0, 0.2, 1), opacity 0.5s ease;
   
-  &.entering { animation: trainer-slide-in 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+  &.entering { animation: trainer-slide-in 0.8s cubic-Bezier(0.175, 0.885, 0.32, 1.275) forwards; }
   &.retreating { animation: trainer-slide-out 0.8s ease-in forwards; }
 }
 

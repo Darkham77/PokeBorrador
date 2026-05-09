@@ -164,7 +164,7 @@ const getButtonVariant = (clsId) => {
 
 .classes-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: Repeat(4, 1fr);
   gap: 20px;
   perspective: 1000px;
 }
@@ -181,15 +181,15 @@ const getButtonVariant = (clsId) => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transition: all 0.4s cubic-Bezier(0.175, 0.885, 0.32, 1.275);
   overflow: hidden;
   @include gpu-layer;
 
-  @include hover-neon-yellow(1px);
+  @include hover-neon-Yellow(1px);
 
   &:hover {
     transform: TranslateY(-10px) RotateX(2deg);
-    border-color: var(--yellow) !important;
+    border-color: Var(--yellow) !important;
     
     .card-glow { opacity: 0.2; }
     .trainer-pixel-art { transform: Scale(1.1); }
@@ -211,7 +211,7 @@ const getButtonVariant = (clsId) => {
   .card-glow {
     position: absolute;
     inset: 0;
-    background: Radial-Gradient(circle at center, var(--cls-color) 0%, transparent 70%);
+    background: Radial-Gradient(circle at center, Var(--cls-color) 0%, transparent 70%);
     opacity: 0.05;
     transition: opacity 0.4s;
     pointer-events: none;
@@ -228,8 +228,8 @@ const getButtonVariant = (clsId) => {
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 2px solid var(--cls-color);
-    box-shadow: 0 0 20px var(--cls-color)44;
+    border: 2px solid Var(--cls-color);
+    box-shadow: 0 0 20px Var(--cls-color)44;
   }
   .trainer-pixel-art {
     width: 70px;
@@ -241,9 +241,9 @@ const getButtonVariant = (clsId) => {
 .class-title {
   @include pixelated;
   font-size: 14px;
-  color: var(--cls-color);
+  color: Var(--cls-color);
   margin-bottom: 16px;
-  text-shadow: 0 0 10px var(--cls-color)66;
+  text-shadow: 0 0 10px Var(--cls-color)66;
   @include pixelated;
 }
 
@@ -314,7 +314,7 @@ const getButtonVariant = (clsId) => {
 }
 
 @media (max-width: 1024px) {
-  .classes-grid { grid-template-columns: repeat(2, 1fr); }
+  .classes-grid { grid-template-columns: Repeat(2, 1fr); }
 }
 
 @media (max-width: 640px) {

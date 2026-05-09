@@ -4,55 +4,61 @@ import { useGameStore } from '@/stores/game';
 import { usePvPStore, RANKED_REWARD_MILESTONES, RANKED_REWARD_TIER_MARKS } from '@/stores/pvp';
 import { useUIStore } from '@/stores/ui';
 
-const gameStore = useGameStore() as any;
-const rankedStore = usePvPStore() as any;
-const uiStore = useUIStore() as any;
-
+const gameStore = useGameStore();
+const rankedStore = usePvPStore();
+const uiStore = useUIStore();
+ 
+interface Milestone {
+  id: string;
+  tier: string;
+  elo: number;
+  rewards: Record<string, number>;
+  icon: string;
+}
+ 
 const MIN_ELO = 1000;
 const MAX_ELO = 3400;
-
+ 
+const milestones = RANKED_REWARD_MILESTONES as unknown as Milestone[];
+ 
 const maxElo = computed(() => {
-  // Aseguramos que el valor sea numérico y tenga un mínimo
   const val = Number(gameStore.state.rankedMaxElo);
   return isNaN(val) ? MIN_ELO : Math.max(MIN_ELO, val);
 });
-
+ 
 const currentElo = computed(() => Number(gameStore.state.eloRating || MIN_ELO));
-
+ 
 const progressPct = computed(() => {
   const span = MAX_ELO - MIN_ELO;
   return ((maxElo.value - MIN_ELO) / span) * 100;
 });
-
+ 
 const getProgressPos = (elo: number) => {
   const span = MAX_ELO - MIN_ELO;
   return ((elo - MIN_ELO) / span) * 100;
 };
-
-const isClaimed = (id: string | number) => {
-  return gameStore.state.rankedRewardsClaimed?.includes(id);
+ 
+const isClaimed = (id: string) => {
+  return gameStore.state.rankedRewardsClaimed?.includes(id) || false;
 };
-
-const canClaim = (milestone: any) => {
+ 
+const canClaim = (milestone: Milestone) => {
   return maxElo.value >= milestone.elo && !isClaimed(milestone.id);
 };
-
-const claimReward = async (milestone: any) => {
+ 
+const claimReward = async (milestone: Milestone) => {
   if (!canClaim(milestone)) return;
   
-  // En un sistema real, esto llamaría a un RPC de Supabase
-  // Aquí simulamos la persistencia local por ahora
   if (!gameStore.state.rankedRewardsClaimed) {
     gameStore.state.rankedRewardsClaimed = [];
   }
   
   gameStore.state.rankedRewardsClaimed.push(milestone.id);
   
-  // Dar ítems
-  Object.entries(milestone.rewards as Record<string, number>).forEach(([item, qty]) => {
+  Object.entries(milestone.rewards).forEach(([item, qty]) => {
     gameStore.state.inventory[item] = (gameStore.state.inventory[item] || 0) + qty;
   });
-
+ 
   uiStore.notify(`¡Recompensas de ELO ${milestone.elo} reclamadas!`, '🎁');
   gameStore.save();
 };
@@ -100,7 +106,7 @@ const claimReward = async (milestone: any) => {
     <!-- Milestone Cards -->
     <div class="milestones-scroll custom-scrollbar">
       <div 
-        v-for="m in RANKED_REWARD_MILESTONES" 
+        v-for="m in milestones" 
         :key="m.id"
         class="milestone-card"
         :class="{ 

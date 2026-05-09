@@ -3,6 +3,8 @@ import { ref, computed } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
+import type { Pokemon } from '@/types/pokemon'
+
 interface Props {
   title?: string
   subtitle?: string
@@ -28,13 +30,13 @@ const emit = defineEmits<{
   (e: 'close'): void
 }>()
 
-const gameStore = useGameStore() as any
+const gameStore = useGameStore()
 const selectedIndices = ref<number[]>([])
 
 const pokemonList = computed(() => {
   const source = props.context === 'team' ? (gameStore.state.team || []) : (gameStore.state.box || [])
-  return source.map((p: any, i: number) => ({ ...p, originalIndex: i }))
-    .filter((p: any) => {
+  return source.map((p: Pokemon, i: number) => ({ ...p, originalIndex: i }))
+    .filter((p: Pokemon & { originalIndex: number }) => {
       if (props.typeFilter && p.type !== props.typeFilter) return false
       if (props.excludeOnMission && p.onMission) return false
       if (props.excludeInDaycare && p.inDaycare) return false

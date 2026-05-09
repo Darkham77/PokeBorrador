@@ -136,7 +136,7 @@ const close = () => {
 .evolution-overlay {
   position: fixed;
   inset: 0;
-  z-index: var(--z-overlay);
+  z-index: Var(--z-overlay);
   background: Radial-Gradient(circle at center, Rgba(26, 26, 46, 1) 0%, $dark 100%);
   display: flex;
   align-items: center;
@@ -145,7 +145,7 @@ const close = () => {
   -webkit-backdrop-filter: Blur(10px);
   backdrop-filter: Blur(10px);
   @include gpu-layer;
-  transform: translateZ(0);
+  transform: TranslateZ(0);
 }
 
 .evolution-container {
@@ -168,19 +168,19 @@ const close = () => {
   width: 150px;
   height: 150px;
   border-radius: 50%;
-  background: var(--blue, Rgba(59, 130, 246, 1));
+  background: Var(--blue, Rgba(59, 130, 246, 1));
   filter: Blur(40px);
   opacity: 0.2;
   transition: all 1s ease;
   
   &.flashing {
-    background: var(--white);
+    background: Var(--white);
     opacity: 0.5;
     transform: Scale(1.5);
   }
   
   &.transformed, &.final {
-    background: var(--yellow, Rgba(251, 191, 36, 1));
+    background: Var(--yellow, Rgba(251, 191, 36, 1));
     opacity: 0.6;
     transform: Scale(1.5);
     box-shadow: 0 0 60px Rgba(251, 191, 36, 0.4);
@@ -192,7 +192,7 @@ const close = () => {
   height: 160px;
   image-rendering: pixelated;
   position: relative;
-  z-index: var(--z-base);
+  z-index: Var(--z-base);
   
   &.from {
     filter: Brightness(1);
@@ -204,7 +204,7 @@ const close = () => {
   }
   
   &.scale-in {
-    animation: bounceIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    animation: bounceIn 0.6s cubic-Bezier(0.175, 0.885, 0.32, 1.275);
   }
 }
 
@@ -215,7 +215,7 @@ const close = () => {
 }
 
 .status-text {
-  color: var(--white);
+  color: Var(--white);
   font-size: 12px;
   line-height: 1.6;
   text-shadow: 0 2px 4px Rgba(0,0,0,0.5);
@@ -224,20 +224,20 @@ const close = () => {
 .result-text {
   animation: fadeIn 0.5s ease;
   p {
-    color: var(--white);
+    color: Var(--white);
     font-size: 13px;
     margin-bottom: 24px;
     line-height: 1.8;
   }
   .highlight {
-    color: var(--yellow, Rgba(251, 191, 36, 1));
+    color: Var(--yellow, Rgba(251, 191, 36, 1));
     font-weight: bold;
   }
 }
 
 .btn-confirm {
-  background: var(--blue, Rgba(59, 130, 246, 1));
-  color: var(--white);
+  background: Var(--blue, Rgba(59, 130, 246, 1));
+  color: Var(--white);
   border: none;
   padding: 12px 24px;
   font-family: inherit;
@@ -248,7 +248,7 @@ const close = () => {
   transition: transform 0.1s;
   
   &:active {
-    transform: translateY(2px);
+    transform: TranslateY(2px);
     box-shadow: 0 2px 0 Rgba(37, 99, 235, 1);
   }
 }
@@ -264,16 +264,16 @@ const close = () => {
   position: absolute;
   width: 4px;
   height: 4px;
-  background: var(--white);
+  background: Var(--white);
   border-radius: 2px;
   opacity: 0;
   
   @for $i from 1 through 20 {
-    &:nth-child(#{$i}) {
-      left: math.random(100) * 1%;
-      top: math.random(100) * 1%;
-      animation: float #{math.random(3000) + 2000}ms infinite ease-in-out;
-      animation-delay: #{math.random(2000)}ms;
+    &:nth-Child(#{$i}) {
+      left: math.Random(100) * 1%;
+      top: math.Random(100) * 1%;
+      animation: float #{math.Random(3000) + 2000}ms infinite ease-in-out;
+      animation-delay: #{math.Random(2000)}ms;
     }
   }
 }
@@ -284,13 +284,13 @@ const close = () => {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: TranslateY(10px); }
+  to { opacity: 1; transform: TranslateY(0); }
 }
 
 @keyframes float {
-  0% { transform: translateY(0) Scale(1.0); opacity: 0; }
+  0% { transform: TranslateY(0) Scale(1.0); opacity: 0; }
   50% { opacity: 0.8; }
-  100% { transform: translateY(-40px) Scale(0); opacity: 0; }
+  100% { transform: TranslateY(-40px) Scale(0); opacity: 0; }
 }
 </style>

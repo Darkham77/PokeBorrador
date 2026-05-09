@@ -381,7 +381,7 @@ const close = () => {
 .action-menu-header {
   @include pixelated;
   font-size: 10px;
-  color: var(--yellow);
+  color: Var(--yellow);
   text-align: center;
   width: 100%;
 }
@@ -396,9 +396,9 @@ const close = () => {
     width: 100%;
     margin-bottom: 8px;
     
-    &.vicio-primary { @include btn-vicio('primary', 'md', true); }
-    &.vicio-warning { @include btn-vicio('primary', 'md', true); }
-    &.vicio-danger  { @include btn-vicio('danger', 'md', true); }
+    &.vicio-primary { @include btn-Vicio('primary', 'md', true); }
+    &.vicio-warning { @include btn-Vicio('primary', 'md', true); }
+    &.vicio-danger  { @include btn-Vicio('danger', 'md', true); }
     
     .icon { font-size: 16px; }
   }
@@ -411,8 +411,8 @@ const close = () => {
     border-radius: 0 0 24px 24px;
   }
 
-  :deep(.item-premium-grid) {
-    grid-template-columns: repeat(4, 1fr) !important;
+  :Deep(.item-premium-grid) {
+    grid-template-columns: Repeat(4, 1fr) !important;
   }
 }
 </style>

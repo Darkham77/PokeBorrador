@@ -42,7 +42,7 @@ const p = computed(() => props.pokemon)
 .vp-section-title {
   @include pixelated;
   font-size: 8px;
-  color: var(--purple-light);
+  color: Var(--purple-light);
   margin-bottom: 16px;
   letter-spacing: 1px;
 }
@@ -69,7 +69,7 @@ const p = computed(() => props.pokemon)
 
 .move-slot:hover { 
   background: Rgba(255,255,255,0.1); 
-  border-color: var(--blue-light);
+  border-color: Var(--blue-light);
 }
 
 .mg-move-name { display: block; font-size: 11px; font-weight: bold; margin-bottom: 6px; }
@@ -86,8 +86,8 @@ const p = computed(() => props.pokemon)
 .move-pp { display: block; margin-top: 10px; font-size: 10px; color: Rgba(136, 136, 136, 1); font-weight: bold; }
 
 /* Type Colors Utility (Normally in generic file, but scoped for safety here) */
-.type-grass { background: Rgba(107, 203, 119, 1); color: var(--white); }
-.type-fire { background: Rgba(255, 59, 59, 1); color: var(--white); }
-.type-water { background: Rgba(59, 139, 255, 1); color: var(--white); }
+.type-grass { background: Rgba(107, 203, 119, 1); color: Var(--white); }
+.type-fire { background: Rgba(255, 59, 59, 1); color: Var(--white); }
+.type-water { background: Rgba(59, 139, 255, 1); color: Var(--white); }
 /* ... (Add other types as needed or rely on global classes if available) */
 </style>

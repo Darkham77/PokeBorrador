@@ -258,7 +258,7 @@ const handleReorderMoves = (from: number, to: number) => {
           class="upd-floating-tags"
         >
           <UnifiedBadgePill
-            :pokemon="targetPokemon"
+            :pokemon="targetPokemon!"
             :vertical="false"
             size="xl"
             editable

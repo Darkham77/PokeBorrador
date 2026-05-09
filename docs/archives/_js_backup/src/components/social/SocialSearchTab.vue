@@ -85,22 +85,22 @@ async function handleSearch() {
     border: 1px solid Rgba(199, 125, 255, 0.2);
     border-radius: 12px;
     padding: 12px 16px;
-    color: var(--white);
+    color: Var(--white);
     font-size: 14px;
     outline: none;
 
-    &:focus { border-color: var(--purple-light); box-shadow: 0 0 15px Rgba(157, 78, 221, 0.1); }
+    &:focus { border-color: Var(--purple-light); box-shadow: 0 0 15px Rgba(157, 78, 221, 0.1); }
   }
   
   .loader-mini {
     position: absolute;
     right: 12px;
     top: 50%;
-    transform: translateY(-50%);
+    transform: TranslateY(-50%);
     width: 16px;
     height: 16px;
     border: 2px solid Rgba(255, 255, 255, 0.1);
-    border-top-color: var(--purple-light);
+    border-top-color: Var(--purple-light);
     border-radius: 50%;
     animation: spin 0.8s linear infinite;
   }
@@ -123,7 +123,7 @@ async function handleSearch() {
 
   .player-info {
     flex: 1;
-    .name { font-weight: 700; color: var(--white); }
+    .name { font-weight: 700; color: Var(--white); }
     .meta { font-size: 11px; color: Rgba(255, 255, 255, 0.5); }
   }
 }
@@ -131,7 +131,7 @@ async function handleSearch() {
 .btn-add {
   background: Rgba(157, 78, 221, 0.15);
   border: 1px solid Rgba(157, 78, 221, 0.3);
-  color: var(--purple-light);
+  color: Var(--purple-light);
   padding: 8px 12px;
   border-radius: 8px;
   @include pixelated;
@@ -139,7 +139,7 @@ async function handleSearch() {
   cursor: pointer;
   transition: all 0.2s;
 
-  &:hover { background: var(--purple); color: var(--white); }
+  &:hover { background: Var(--purple); color: Var(--white); }
 }
 
 .status-badge {
@@ -152,5 +152,5 @@ async function handleSearch() {
   &.friend { background: Rgba(34, 197, 94, 0.1); color: Rgba(74, 222, 128, 1); }
 }
 
-@keyframes spin { to { transform: translateY(-50%) Rotate(360deg); } }
+@keyframes spin { to { transform: TranslateY(-50%) Rotate(360deg); } }
 </style>

@@ -225,7 +225,7 @@ onMounted(async () => {
   .vs {
     @include pixelated;
     font-size: 12px;
-    color: var(--gray, #666);
+    color: Var(--gray, #666);
   }
 }
 
@@ -243,7 +243,7 @@ onMounted(async () => {
     .title {
       @include pixelated;
       font-size: 10px;
-      color: var(--yellow, #facc15);
+      color: Var(--yellow, #facc15);
     }
     
     .pts {
@@ -290,7 +290,7 @@ onMounted(async () => {
         width: 20px;
         height: 20px;
         background: Rgba(51, 51, 51, 1);
-        border: 2px solid var(--black);
+        border: 2px solid Var(--black);
         border-radius: 50%;
         margin-bottom: 4px;
         transition: all 0.3s;
@@ -305,7 +305,7 @@ onMounted(async () => {
       &.achieved {
         .dot {
           background: Rgba(59, 130, 246, 1);
-          border-color: var(--white);
+          border-color: Var(--white);
           box-shadow: 0 0 8px Rgba(59, 130, 246, 1);
         }
         .pt-label { color: white; }
@@ -323,7 +323,7 @@ onMounted(async () => {
   border-radius: 8px;
   
   .highlight {
-    color: var(--yellow, #facc15);
+    color: Var(--yellow, #facc15);
     font-weight: bold;
   }
 }

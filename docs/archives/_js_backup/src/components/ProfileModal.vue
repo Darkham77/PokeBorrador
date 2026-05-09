@@ -277,8 +277,8 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
     position: relative;
     
     // Legacy Elemental Aura Restorations
-    :deep(.trainer-avatar-container) {
-      border: 2px solid var(--yellow) !important;
+    :Deep(.trainer-avatar-container) {
+      border: 2px solid Var(--yellow) !important;
       box-shadow: 0 0 10px Rgba(0,0,0,0.5) !important;
 
       &.av-fire {
@@ -286,7 +286,7 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
         box-shadow: 0 0 0 3px Rgba(255, 68, 0, 1), 0 0 0 5px Rgba(255, 136, 0, 0.4), 0 0 16px Rgba(255, 68, 0, 0.5) !important;
         &::before {
           content: ''; position: absolute; inset: -8px; border-radius: 50%;
-          background: conic-gradient(Rgba(255, 0, 0, 1),Rgba(255, 136, 0, 1),Rgba(255, 204, 0, 1),Rgba(255, 68, 0, 1),Rgba(255, 0, 0, 1));
+          background: conic-Gradient(Rgba(255, 0, 0, 1),Rgba(255, 136, 0, 1),Rgba(255, 204, 0, 1),Rgba(255, 68, 0, 1),Rgba(255, 0, 0, 1));
           z-index: -1; animation: spin-slow 2s linear infinite;
         }
       }
@@ -296,7 +296,7 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
         box-shadow: 0 0 0 3px Rgba(0, 136, 255, 1), 0 0 0 5px Rgba(0, 170, 255, 0.3), 0 0 14px Rgba(0, 102, 255, 0.4) !important;
         &::before {
           content: ''; position: absolute; inset: -9px; border-radius: 50%;
-          background: conic-gradient(Rgba(0, 51, 204, 1),Rgba(0, 170, 255, 1),Rgba(68, 238, 255, 1),Rgba(0, 102, 255, 1),Rgba(0, 51, 204, 1));
+          background: conic-Gradient(Rgba(0, 51, 204, 1),Rgba(0, 170, 255, 1),Rgba(68, 238, 255, 1),Rgba(0, 102, 255, 1),Rgba(0, 51, 204, 1));
           z-index: -1; animation: spin-slow 4s linear infinite;
         }
       }
@@ -306,7 +306,7 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
         box-shadow: 0 0 0 3px Rgba(255, 221, 0, 1), 0 0 18px Rgba(255, 170, 0, 0.5) !important;
         &::before {
           content: ''; position: absolute; inset: -10px; border-radius: 50%;
-          background: conic-gradient(Rgba(255, 0, 0, 1),Rgba(255, 136, 0, 1),Rgba(255, 255, 0, 1),Rgba(0, 255, 136, 1),Rgba(0, 255, 255, 1),Rgba(0, 136, 255, 1),Rgba(255, 0, 255, 1),Rgba(255, 0, 0, 1));
+          background: conic-Gradient(Rgba(255, 0, 0, 1),Rgba(255, 136, 0, 1),Rgba(255, 255, 0, 1),Rgba(0, 255, 136, 1),Rgba(0, 255, 255, 1),Rgba(0, 136, 255, 1),Rgba(255, 0, 255, 1),Rgba(255, 0, 0, 1));
           z-index: -1; animation: spin-slow 2s linear infinite;
         }
       }
@@ -318,7 +318,7 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
   .profile-username {
     @include pixelated;
     font-size: 16px;
-    color: var(--yellow);
+    color: Var(--yellow);
     margin-bottom: 12px;
     @include pixelated;
   }
@@ -375,7 +375,7 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
   .change-link {
     @include pixelated;
     font-size: 8px;
-    color: var(--yellow);
+    color: Var(--yellow);
     text-decoration: none;
     @include pixelated;
     
@@ -387,7 +387,7 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
   .save-status {
     @include pixelated;
     font-size: 12px;
-    color: var(--white);
+    color: Var(--white);
     @include pixelated;
   }
 }
@@ -418,9 +418,9 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
 
   .edit-btn-legacy {
     background: Rgba(255, 255, 255, 0.05);
-    color: var(--white);
+    color: Var(--white);
     border: 1px solid Rgba(255, 255, 255, 0.1);
-    @include hover-neon-yellow(1px);
+    @include hover-neon-Yellow(1px);
     &:hover { background: Rgba(255, 255, 255, 0.1); }
   }
 
@@ -444,7 +444,7 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
 .profile-modal-legacy {
   border-left: 2px solid Rgba(255, 255, 255, 0.05) !important;
   
-  :deep(.modal-scrollable-content) {
+  :Deep(.modal-scrollable-content) {
     background: transparent !important;
   }
 }

@@ -70,7 +70,7 @@ async function addItem(item, qty = 10) {
   border-radius: 12px;
   font-size: 16px;
   
-  &:focus { outline: none; border-color: var(--purple); }
+  &:focus { outline: none; border-color: Var(--purple); }
 }
 
 .items-grid {
@@ -96,7 +96,7 @@ async function addItem(item, qty = 10) {
   &:hover {
     background: Rgba(255, 255, 255, 0.07);
     border-color: Rgba(255, 255, 255, 0.1);
-    transform: translateX(4px);
+    transform: TranslateX(4px);
   }
 
   .name { font-size: 16px; flex: 1; font-weight: 600; color: $text; }

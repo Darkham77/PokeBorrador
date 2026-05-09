@@ -5,7 +5,7 @@ interface Props {
   isSending?: boolean
 }
 
-const props = withDefaults(defineProps<Props>(), {
+withDefaults(defineProps<Props>(), {
   message: '',
   isGift: false,
   isSending: false

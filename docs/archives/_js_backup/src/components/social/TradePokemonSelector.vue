@@ -243,7 +243,7 @@ const select = (poke) => {
   position: fixed;
   inset: 0;
   background: Rgba(0, 0, 0, 0.9);
-  z-index: var(--z-modal);
+  z-index: Var(--z-modal);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -251,11 +251,11 @@ const select = (poke) => {
   -webkit-backdrop-filter: Blur(8px);
   backdrop-filter: Blur(8px);
   @include gpu-layer;
-  transform: translateZ(0);
+  transform: TranslateZ(0);
 }
 
 .selector-card {
-  width: min(500px, 100%);
+  width: Min(500px, 100%);
   background: Rgba(15, 23, 42, 1);
   border-radius: 24px;
   display: flex;
@@ -279,12 +279,12 @@ const select = (poke) => {
   .title {
     @include pixelated;
     font-size: 10px;
-    color: var(--yellow, #facc15);
+    color: Var(--yellow, #facc15);
   }
 
   .close-btn {
     background: none; border: none; color: Rgba(102, 102, 102, 1); font-size: 20px; cursor: pointer;
-    &:hover { color: var(--white); }
+    &:hover { color: Var(--white); }
   }
 }
 
@@ -305,7 +305,7 @@ const select = (poke) => {
     color: white;
     font-size: 14px;
     outline: none;
-    &:focus { border-color: var(--yellow); }
+    &:focus { border-color: Var(--yellow); }
   }
 
   .tag-filters {
@@ -359,7 +359,7 @@ const select = (poke) => {
 }
 
 .poke-row {
-  @include pokemon-list-item-standard(16px);
+  @include pokemon-list-item-Standard(16px);
   padding: 12px;
   cursor: pointer;
   display: flex;
@@ -369,7 +369,7 @@ const select = (poke) => {
   &.locked {
     opacity: 0.5;
     cursor: not-allowed;
-    filter: grayScale(1);
+    filter: GrayScale(1);
     &:hover { transform: none; background: inherit; border-color: inherit; }
   }
 }
@@ -445,7 +445,7 @@ const select = (poke) => {
   padding: 10px;
   border-radius: 12px;
   border: none;
-  background: var(--yellow, #facc15);
+  background: Var(--yellow, #facc15);
   color: $black;
   @include pixelated;
   font-size: 8px;
@@ -471,8 +471,8 @@ const select = (poke) => {
 .fade-enter-from, .fade-leave-to { opacity: 0; }
 
 @keyframes slideUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: TranslateY(20px); }
+  to { opacity: 1; transform: TranslateY(0); }
 }
 .animate-slide-up { animation: slideUp 0.3s ease-out; }
 

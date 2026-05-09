@@ -150,7 +150,7 @@ const getFactionColor = (faction) => {
 
   .season-rules {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    grid-template-columns: Repeat(auto-fit, Minmax(120px, 1fr));
     gap: 10px;
 
     .rule-item {
@@ -165,7 +165,7 @@ const getFactionColor = (faction) => {
       }
       .rule-val {
         font-size: 11px;
-        color: var(--white);
+        color: Var(--white);
         font-weight: bold;
 
         &.shiny {
@@ -233,7 +233,7 @@ const getFactionColor = (faction) => {
   .player-name {
     font-size: 13px;
     font-weight: bold;
-    color: var(--white);
+    color: Var(--white);
     margin-bottom: 3px;
     display: flex;
     align-items: center;

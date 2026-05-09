@@ -218,11 +218,11 @@ function handleForfeit() {
   position: fixed;
   inset: 0;
   background: Rgba(13, 17, 23, 1);
-  z-index: var(--z-overlay);
+  z-index: Var(--z-overlay);
   display: flex;
   align-items: center;
   justify-content: center;
-  transform: translateZ(0);
+  transform: TranslateZ(0);
 }
 
 .pvp-layout {

@@ -171,7 +171,7 @@ export const useBattleStore = defineStore('battle', () => {
 
   const waitForLogs = async () => {
     while (isProcessingLogs.value || logQueue.value.length > 0) {
-      await new Promise(r => setTimeout(r, 100))
+      await await setTimeout(100)
     }
   }
 
@@ -301,7 +301,7 @@ export const useBattleStore = defineStore('battle', () => {
       await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.VACATE_SEAT)
       activeBattle.value.enemy = null
       // Retraso sincronizado: 1.0s de bola llena + 1.0s de pausa dramática (vacío) antes de la Fase 2
-      await new Promise(r => setTimeout(r, 2000))
+      await await setTimeout(2000)
       
       isProcessing.value = false
       await fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.EMPTY_WAIT)
@@ -317,7 +317,7 @@ export const useBattleStore = defineStore('battle', () => {
       }
       
       persistBattle()
-      await new Promise(r => setTimeout(r, 800))
+      await await setTimeout(800)
       
       const thisStore = reactive({ 
         activeBattle, playerStages, enemyStages, addLog, endBattle, gs, completeBattleFlow,
@@ -385,7 +385,7 @@ export const useBattleStore = defineStore('battle', () => {
       await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.RENDER_BALL)
       gameBus.emit('PLAY_WITHDRAW', { side: 'player' })
       await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.ENERGY_RECALL)
-      await new Promise(r => setTimeout(r, 800))
+      await await setTimeout(800)
       await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.VACATE_SEAT)
       activeBattle.value.player = null
     }
@@ -400,7 +400,7 @@ export const useBattleStore = defineStore('battle', () => {
     
     gameBus.emit('PLAY_SEND_OUT', { side: 'player', pokemon: newPoke })
     await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.ENERGY_RELEASE)
-    await new Promise(r => setTimeout(r, 800))
+    await await setTimeout(800)
     
     await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.POKEMON_APPEAR)
     
@@ -414,7 +414,7 @@ export const useBattleStore = defineStore('battle', () => {
       reflect: s.reflect || 0, lightScreen: s.lightScreen || 0, safeguard: s.safeguard || 0, mist: s.mist || 0, spikes: s.spikes || 0 }
     
     addLog(`¡Adelante, ${newPoke.name}!`, 'log-player', newPoke)
-    await new Promise(r => setTimeout(r, 400))
+    await await setTimeout(400)
 
     // Daño por Púas
     if (playerStages.value.spikes > 0 && newPoke.type !== 'flying' && newPoke.type2 !== 'flying' && newPoke.ability !== 'Levitación') {
@@ -567,7 +567,7 @@ export const useBattleStore = defineStore('battle', () => {
             fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.PLAY_ESCAPE_ANIM);
             gameBus.emit('PLAY_ESCAPE_ANIM', { side: 'player' });
             
-            await new Promise(r => setTimeout(r, 1000));
+            await await setTimeout(1000);
             await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.VACATE_SEAT);
             activeBattle.value.enemy = null;
             await endBattle(false, true);

@@ -270,7 +270,7 @@ const net = computed(() => price.value - fee.value)
   .p-info, .i-info {
     display: flex;
     flex-direction: column;
-    .p-name, .i-name { font-size: 13px; font-weight: bold; color: var(--white); }
+    .p-name, .i-name { font-size: 13px; font-weight: bold; color: Var(--white); }
     .i-qty { font-size: 10px; color: $muted; }
   }
   
@@ -304,7 +304,7 @@ const net = computed(() => price.value - fee.value)
 .selected-summary {
   text-align: center;
   .label { display: block; font-size: 9px; color: $muted; margin-bottom: 5px; }
-  .val { font-size: 18px; font-weight: 900; color: var(--white); text-transform: uppercase; }
+  .val { font-size: 18px; font-weight: 900; color: Var(--white); text-transform: uppercase; }
 }
 
 .input-group {
@@ -318,7 +318,7 @@ const net = computed(() => price.value - fee.value)
   }
   .price-input {
     width: 100%;
-    background: var(--black);
+    background: Var(--black);
     border: 2px solid Rgba(255, 255, 255, 0.1);
     border-radius: 16px;
     padding: 16px;
@@ -350,7 +350,7 @@ const net = computed(() => price.value - fee.value)
        margin-top: 5px;
        font-weight: bold;
        font-size: 13px;
-       color: var(--white);
+       color: Var(--white);
     }
     .neg { color: Rgba(248, 113, 113, 1); }
     .pos { color: Rgba(34, 197, 94, 1); }
@@ -361,7 +361,7 @@ const net = computed(() => price.value - fee.value)
   width: 100%;
   padding: 18px;
   background: Linear-Gradient(135deg, Rgba(168, 85, 247, 1), Rgba(124, 58, 237, 1));
-  color: var(--white);
+  color: Var(--white);
   border: none;
   border-radius: 16px;
   @include pixelated;
@@ -370,7 +370,7 @@ const net = computed(() => price.value - fee.value)
   box-shadow: 0 4px 20px Rgba(124, 58, 237, 0.3);
   transition: all 0.2s;
 
-  &:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 25px Rgba(124, 58, 237, 0.5); }
+  &:hover:Not(:disabled) { transform: TranslateY(-2px); box-shadow: 0 6px 25px Rgba(124, 58, 237, 0.5); }
   &:disabled { background: Rgba(51, 65, 85, 1); color: $muted; box-shadow: none; cursor: not-allowed; }
 }
 

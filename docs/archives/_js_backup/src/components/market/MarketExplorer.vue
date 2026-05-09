@@ -133,7 +133,7 @@ function getSprite(pokemon) {
 
 .listings-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-template-columns: Repeat(auto-fill, Minmax(200px, 1fr));
   gap: 16px;
   overflow-y: auto;
   min-height: 0;
@@ -150,7 +150,7 @@ function getSprite(pokemon) {
   transition: transform 0.2s, border-color 0.2s;
 
   &:hover {
-    transform: translateY(-3px);
+    transform: TranslateY(-3px);
     border-color: #a855f755;
     background: Rgba(255, 255, 255, 0.05);
   }
@@ -195,7 +195,7 @@ function getSprite(pokemon) {
     position: absolute;
     top: -6px;
     right: -6px;
-    z-index: var(--z-low);
+    z-index: Var(--z-low);
   }
 }
 

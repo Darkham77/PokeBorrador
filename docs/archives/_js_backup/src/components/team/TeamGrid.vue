@@ -118,7 +118,7 @@ const onDrop = (e, targetIndex) => {
 @use "@/styles/core/_mixins" as *;
 .team-grid-container {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  grid-template-columns: Repeat(auto-fill, Minmax(220px, 1fr));
   gap: 25px;
   padding: 10px;
 }
@@ -131,7 +131,7 @@ const onDrop = (e, targetIndex) => {
   padding: 60px 20px;
   background: Rgba(17, 17, 17, 1);
   border: 4px solid Rgba(51, 51, 51, 1);
-  box-shadow: 0 0 0 4px var(--black);
+  box-shadow: 0 0 0 4px Var(--black);
   color: Rgba(136, 136, 136, 1);
   @include pixelated;
   font-size: 10px;

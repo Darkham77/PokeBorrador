@@ -4,18 +4,18 @@ import { computed } from 'vue'
 import { useWarStore } from '@/stores/war'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { MAP_ROUTE_MAPPING } from '@/data/map-assets'
-
+import type { DominanceInfo } from '@/types/stores'
 
 interface Props {
-  map: any
+  map: { id: string; name: string }
 }
 
 const props = defineProps<Props>()
 
-const warStore = useWarStore() as any
+const warStore = useWarStore()
 
 const mapData = computed(() => {
-  const data = warStore.mapDominance[props.map.id] || { union: 0, poder: 0, winner: null }
+  const data: DominanceInfo = warStore.mapDominance[props.map.id] || { union: 0, poder: 0, winner: null }
   const total = (Number(data.union) || 0) + (Number(data.poder) || 0)
   return {
     ...data,
@@ -33,12 +33,12 @@ const getWinnerLabel = (winner: string | null) => {
 }
 
 const mapImageUrl = computed(() => {
-  const fileName = (MAP_ROUTE_MAPPING as any)[props.map.id] || 'default'
+  const fileName = (MAP_ROUTE_MAPPING as Record<string, string>)[props.map.id] || 'default'
   // En WarMapCard usamos la versión de día por defecto si el mapa soporta ciclos
   return getAssetUrl(ASSET_TYPES.MAP, fileName, { cycle: 'day' })
 })
 const openDefenseModal = (mapId: string) => {
-  (window as any).openSelectDefensePokeModal?.(mapId)
+  (window as unknown as { openSelectDefensePokeModal?: (id: string) => void }).openSelectDefensePokeModal?.(mapId)
 }
 </script>
 
@@ -47,13 +47,13 @@ const openDefenseModal = (mapId: string) => {
     class="war-map-card"
     :style="{ backgroundImage: `url('${mapImageUrl}')` }"
     :class="[
-      !warStore.isDisputePhase ? (mapData.winner === 'union' ? 'dom-union' : mapData.winner === 'poder' ? 'dom-poder' : '') : '',
-      warStore.isDisputePhase ? (mapData.leading === 'union' ? 'glow-union' : mapData.leading === 'poder' ? 'glow-poder' : '') : ''
+      !warStore.isDisputeActive ? (mapData.winner === 'union' ? 'dom-union' : mapData.winner === 'poder' ? 'dom-poder' : '') : '',
+      warStore.isDisputeActive ? (mapData.leading === 'union' ? 'glow-union' : mapData.leading === 'poder' ? 'glow-poder' : '') : ''
     ]"
   >
     <!-- DISPUTE PHASE OVERLAY -->
     <div
-      v-if="warStore.isDisputePhase"
+      v-if="warStore.isDisputeActive"
       class="war-card-overlay dispute"
     >
       <div class="card-header">

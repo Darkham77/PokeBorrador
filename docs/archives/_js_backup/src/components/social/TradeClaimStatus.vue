@@ -36,7 +36,7 @@ const receiveAll = async () => {
   for (const claim of claims.value) {
     await claimAsset(claim.id)
     // Small delay between batch claims
-    await new Promise(r => setTimeout(r, 1000))
+    await await setTimeout(1000)
   }
 }
 
@@ -141,12 +141,12 @@ const getSpriteUrl = (id) => {
 .claim-title {
   @include pixelated;
   font-size: 8px;
-  color: var(--purple);
+  color: Var(--purple);
 }
 
 .receive-all-btn {
-  background: var(--purple);
-  color: var(--white);
+  background: Var(--purple);
+  color: Var(--white);
   border: none;
   padding: 6px 12px;
   border-radius: 8px;
@@ -195,24 +195,24 @@ const getSpriteUrl = (id) => {
 .asset-name {
   font-size: 11px;
   font-weight: 700;
-  color: var(--white);
+  color: Var(--white);
 }
 
 .source {
   font-size: 9px;
-  color: var(--gray);
+  color: Var(--gray);
   text-transform: capitalize;
 }
 
 .claim-btn {
   background: Rgba(255, 255, 255, 0.05);
   border: 1px solid Rgba(255, 255, 255, 0.1);
-  color: var(--white);
+  color: Var(--white);
   padding: 6px 10px;
   border-radius: 8px;
   font-size: 9px;
   cursor: pointer;
   transition: all 0.2s;
-  &:hover { background: Rgba(168, 85, 247, 0.2); border-color: var(--purple); }
+  &:hover { background: Rgba(168, 85, 247, 0.2); border-color: Var(--purple); }
 }
 </style>

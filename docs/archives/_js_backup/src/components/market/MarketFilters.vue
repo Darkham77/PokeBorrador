@@ -229,11 +229,11 @@ const getTypeEmoji = (type) => {
 .label {
   @include pixelated;
   font-size: 8px;
-  color: var(--purple-light);
+  color: Var(--purple-light);
 }
 
 .arrow {
-  color: var(--gray);
+  color: Var(--gray);
   font-size: 12px;
 }
 
@@ -252,18 +252,18 @@ const getTypeEmoji = (type) => {
   border: none;
   cursor: pointer;
   background: transparent;
-  color: var(--gray);
+  color: Var(--gray);
   transition: all 0.2s;
 }
 
 .mode-switch button.active {
-  background: var(--purple);
+  background: Var(--purple);
   color: $white;
 }
 
 .context-label {
   font-size: 9px;
-  color: var(--gray);
+  color: Var(--gray);
   opacity: 0.6;
 }
 
@@ -293,7 +293,7 @@ const getTypeEmoji = (type) => {
 
 .group-header {
   font-size: 10px;
-  color: var(--yellow);
+  color: Var(--yellow);
   margin-bottom: 8px;
   display: flex;
   justify-content: space-between;
@@ -301,13 +301,13 @@ const getTypeEmoji = (type) => {
 
 .range-input {
   width: 100%;
-  accent-color: var(--yellow);
+  accent-color: Var(--yellow);
   margin-bottom: 6px;
 }
 
 .group-label {
   font-size: 10px;
-  color: var(--gray);
+  color: Var(--gray);
   margin-bottom: 8px;
 }
 
@@ -322,14 +322,14 @@ const getTypeEmoji = (type) => {
   border-radius: 12px;
   border: 1px solid Rgba(255, 255, 255, 0.1);
   background: Rgba(255, 255, 255, 0.04);
-  color: var(--gray);
+  color: Var(--gray);
   font-size: 8px;
   cursor: pointer;
   text-transform: capitalize;
 }
 
 .tag-btn.active {
-  border-color: var(--purple);
+  border-color: Var(--purple);
   background: Rgba(191, 90, 242, 0.2);
   color: $white;
 }
@@ -354,7 +354,7 @@ const getTypeEmoji = (type) => {
 }
 
 .type-btn.active {
-  border-color: var(--blue);
+  border-color: Var(--blue);
   background: Rgba(0, 122, 255, 0.2);
 }
 
@@ -363,7 +363,7 @@ const getTypeEmoji = (type) => {
   margin-top: 15px;
   padding: 10px;
   border: none;
-  color: var(--gray);
+  color: Var(--gray);
   background: Rgba(255, 255, 255, 0.03);
   border-radius: 12px;
   font-size: 11px;

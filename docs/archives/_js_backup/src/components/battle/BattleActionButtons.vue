@@ -149,7 +149,7 @@ onUnmounted(() => {
   gap: 0;
   overflow: visible;
   position: relative;
-  z-index: var(--z-low);
+  z-index: Var(--z-low);
 
   &.intro-fade {
     opacity: 0.1;
@@ -160,7 +160,7 @@ onUnmounted(() => {
 .action-row-complex {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
-  gap: var(--move-panel-gap, 12px);
+  gap: Var(--move-panel-gap, 12px);
   align-items: center;
   overflow: visible;
 
@@ -186,12 +186,12 @@ onUnmounted(() => {
   width: 64px; 
   height: 64px;
   position: relative;
-  z-index: var(--z-low);
+  z-index: Var(--z-low);
   flex-shrink: 0; 
   overflow: visible;
 
   &.menu-open {
-    z-index: var(--z-max); // Máxima prioridad visual para evitar solapamientos
+    z-index: Var(--z-max); // Máxima prioridad visual para evitar solapamientos
   }
 }
 
@@ -204,13 +204,13 @@ onUnmounted(() => {
   position: absolute; 
   inset: 0;
   margin: auto;
-  border: 3px solid var(--dark) !important;
+  border: 3px solid Var(--dark) !important;
   box-shadow: 0 6px 15px Rgba(0,0,0,0.4), inset 0 -3px 0 Rgba(0,0,0,0.1) !important;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transition: all 0.3s cubic-Bezier(0.175, 0.885, 0.32, 1.275);
   overflow: hidden;
   padding: 0;
-  z-index: var(--z-base);
+  z-index: Var(--z-base);
   transform: TranslateZ(0); 
   transform-origin: center center;
   backface-visibility: hidden;
@@ -223,7 +223,7 @@ onUnmounted(() => {
 
   &.is-active {
     transform: Scale(0.9);
-    border-color: var(--red) !important;
+    border-color: Var(--red) !important;
   }
 }
 
@@ -235,7 +235,7 @@ onUnmounted(() => {
   width: 100%;
   height: 50%;
   background: Rgba(239, 83, 80, 1);
-  border-bottom: 3px solid var(--dark);
+  border-bottom: 3px solid Var(--dark);
 }
 
 .btn-catch-ball::after {
@@ -247,16 +247,16 @@ onUnmounted(() => {
   width: 18px;
   height: 18px;
   background: $white;
-  border: 3px solid var(--dark);
+  border: 3px solid Var(--dark);
   border-radius: 50%;
-  z-index: var(--z-low);
+  z-index: Var(--z-low);
   box-shadow: 0 0 0 3px $white, 0 0 10px Rgba(0,0,0,0.2);
 }
 
-.btn-catch-ball:not(:disabled):hover {
+.btn-catch-ball:Not(:disabled):hover {
   transform: Scale(1.1) TranslateY(-8px) Rotate(10deg); 
   box-shadow: 0 12px 30px Rgba(0,0,0,0.5);
-  z-index: var(--z-low);
+  z-index: Var(--z-low);
 
   @media (max-width: 600px) {
     transform: Scale(1.05) TranslateY(-4px) Rotate(5deg);
@@ -268,12 +268,12 @@ onUnmounted(() => {
 /* Dropdown Menu Styling */
 .ball-dropdown-menu {
   position: absolute;
-  bottom: calc(100% + 12px);
+  bottom: Calc(100% + 12px);
   left: 50%;
   transform: TranslateX(-50%);
   // Sólido y oscuro para evitar cualquier transparencia
-  background: var(--darker); 
-  border: 2px solid var(--glass-border);
+  background: Var(--darker); 
+  border: 2px solid Var(--glass-border);
   border-radius: 16px;
   padding: 8px;
   display: flex;
@@ -281,7 +281,7 @@ onUnmounted(() => {
   gap: 6px;
   min-width: 200px;
   box-shadow: 0 25px 70px Rgba(0, 0, 0, 1);
-  z-index: var(--z-max);
+  z-index: Var(--z-max);
   pointer-events: auto;
 
   @media (max-width: 600px) {
@@ -295,8 +295,8 @@ onUnmounted(() => {
   align-items: center;
   gap: 12px;
   padding: 12px 16px;
-  background: var(--card);
-  border: 1px solid var(--glass-border);
+  background: Var(--card);
+  border: 1px solid Var(--glass-border);
   border-radius: 12px;
   color: white;
   cursor: pointer;
@@ -305,9 +305,9 @@ onUnmounted(() => {
   text-align: left;
 
   &:hover {
-    background: var(--card2);
+    background: Var(--card2);
     transform: TranslateX(4px);
-    border-color: var(--glass-edge);
+    border-color: Var(--glass-edge);
     box-shadow: 0 4px 15px Rgba(0,0,0,0.8);
   }
 
@@ -340,7 +340,7 @@ onUnmounted(() => {
       font-size: 10px;
       opacity: 0.9;
       font-family: monospace;
-      color: var(--yellow, $coin-gold);
+      color: Var(--yellow, $coin-gold);
     }
   }
 }
@@ -348,7 +348,7 @@ onUnmounted(() => {
 /* Transitions */
 .slide-up-enter-active,
 .slide-up-leave-active {
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: all 0.3s cubic-Bezier(0.34, 1.56, 0.64, 1);
 }
 
 .slide-up-enter-from,

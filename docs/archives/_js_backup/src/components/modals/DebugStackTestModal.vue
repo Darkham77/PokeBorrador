@@ -69,7 +69,7 @@ const emit = defineEmits(['close'])
 .big-number {
   @include pixelated;
   font-size: 80px;
-  color: var(--white);
+  color: Var(--white);
   @include pixelated;
   text-shadow: 4px 4px 0px Rgba(0, 0, 0, 0.5);
   margin: 0;

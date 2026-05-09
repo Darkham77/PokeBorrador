@@ -9,9 +9,9 @@ import { useUIStore } from '@/stores/ui';
 import TrainerAvatar from '@/components/TrainerAvatar.vue';
 import BaseModal from '@/components/common/BaseModal.vue';
 
-const chatStore = useChatStore() as any;
-const gameStore = useGameStore() as any;
-const uiStore = useUIStore() as any;
+const chatStore = useChatStore();
+const gameStore = useGameStore();
+const uiStore = useUIStore();
 
 const isOpen = computed({
   get: () => uiStore.isChatOpen,
@@ -53,7 +53,7 @@ function scrollToBottom() {
   }
 }
 
-function formatTime(iso: string | Date) {
+function formatTime(iso: string | Date | undefined) {
   if (!iso) return '';
   const d = typeof iso === 'string' ? Temporal.Instant.from(iso) : (typeof iso === 'number' ? Temporal.Instant.fromEpochMilliseconds(iso) : Temporal.Instant.fromEpochMilliseconds(iso.getTime()));
   return d.toZonedDateTimeISO('UTC').toLocaleString();

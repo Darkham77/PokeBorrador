@@ -205,7 +205,7 @@ const cancelSearch = () => {
 }
 
 .season-tag {
-  color: var(--blue);
+  color: Var(--blue);
   font-size: 7px;
   margin-bottom: 8px;
   display: block;
@@ -214,12 +214,12 @@ const cancelSearch = () => {
 .season-name {
   margin: 0;
   font-size: 20px;
-  color: var(--white);
+  color: Var(--white);
 }
 
 .dates {
   font-size: 11px;
-  color: var(--gray);
+  color: Var(--gray);
   margin-top: 4px;
 }
 
@@ -261,7 +261,7 @@ const cancelSearch = () => {
   background: Linear-Gradient(90deg, Rgba(59, 130, 246, 1), Rgba(139, 92, 246, 1));
   border: none;
   border-radius: 12px;
-  color: var(--white);
+  color: Var(--white);
   cursor: pointer;
   box-shadow: 0 4px 15px Rgba(59, 130, 246, 0.3);
   transition: all 0.2s;
@@ -282,7 +282,7 @@ const cancelSearch = () => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-color: var(--blue);
+  border-color: Var(--blue);
   animation: pulse 2s infinite;
 
   .spinner {
@@ -298,7 +298,7 @@ const cancelSearch = () => {
 .cancel-btn {
   background: Rgba(255, 59, 59, 0.1);
   border: 1px solid Rgba(255, 59, 59, 0.2);
-  color: var(--red);
+  color: Var(--red);
   padding: 6px 12px;
   border-radius: 8px;
   cursor: pointer;
@@ -320,19 +320,19 @@ const cancelSearch = () => {
 .tab-btn {
   background: transparent;
   border: none;
-  color: var(--gray);
+  color: Var(--gray);
   padding: 10px 16px;
   cursor: pointer;
   transition: all 0.2s;
   font-size: 7px;
 
   &.active {
-    color: var(--yellow);
-    border-bottom: 2px solid var(--yellow);
+    color: Var(--yellow);
+    border-bottom: 2px solid Var(--yellow);
   }
 
-  &:hover:not(.active) {
-    color: var(--white);
+  &:hover:Not(.active) {
+    color: Var(--white);
   }
 }
 
@@ -352,13 +352,13 @@ const cancelSearch = () => {
   h3 {
     margin: 0 0 16px 0;
     font-size: 8px;
-    color: var(--gray);
+    color: Var(--gray);
   }
 }
 
 .rules-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  grid-template-columns: Repeat(auto-fit, Minmax(150px, 1fr));
   gap: 16px;
 }
 
@@ -369,13 +369,13 @@ const cancelSearch = () => {
 
   .label {
     font-size: 10px;
-    color: var(--gray);
+    color: Var(--gray);
   }
 
   .val {
     font-size: 14px;
     font-weight: bold;
-    color: var(--white);
+    color: Var(--white);
   }
 }
 

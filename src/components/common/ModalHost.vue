@@ -1,17 +1,17 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useModalStore } from '@/stores/modals'
+import { useModalStore, type Modal } from '@/stores/modals'
 import ModalHierarchyProvider from '@/components/common/ModalHierarchyProvider.vue'
 
-const modalStore = useModalStore() as any
+const modalStore = useModalStore()
 
 /**
  * El modal que se considera "Superior" para restaurar efectos.
  * Es el último modal que NO se está cerrando.
  */
 const topActiveModalId = computed(() => {
-  const activeModals = modalStore.stack.filter((m: any) => !m.closing)
-  return activeModals.length > 0 ? activeModals[activeModals.length - 1].id : null
+  const activeModals = modalStore.stack.filter((m: Modal) => !m.closing)
+  return activeModals.length > 0 ? activeModals.at(-1)?.id : null
 })
 
 const blockingModalIndex = computed(() => {
@@ -19,7 +19,7 @@ const blockingModalIndex = computed(() => {
   // Buscamos su índice para simplificar todo lo que esté por debajo.
   for (let i = modalStore.stack.length - 1; i >= 0; i--) {
     const m = modalStore.stack[i]
-    if (!m.closing) return i
+    if (m && !m.closing) return i
   }
   return -1
 })

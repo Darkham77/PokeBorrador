@@ -9,17 +9,17 @@ import { useUIStore } from '@/stores/ui'
 import { RANKED_REWARD_MILESTONES, RANKED_TYPE_META } from '@/data/rankedData'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
-const pvp = usePvPStore() as any
-const livePvP = useLivePvPStore() as any
-const auth = useAuthStore() as any
-const ui = useUIStore() as any
+const pvp = usePvPStore()
+const livePvP = useLivePvPStore()
+const auth = useAuthStore()
+const ui = useUIStore()
 
 onMounted(() => {
   pvp.loadPvPData()
 })
 
 const milestones = RANKED_REWARD_MILESTONES
-const allowedTypes = computed(() => (pvp.currentSeasonRules?.allowedTypes || []) as any[])
+const allowedTypes = computed<string[]>(() => pvp.currentSeasonRules?.allowedTypes || [])
 
 const getRankIcon = (tierId: string) => {
   return getAssetUrl(ASSET_TYPES.UI, `ranks/${tierId}`)
@@ -37,7 +37,7 @@ function isUnlocked(eloReq: number) {
 }
 
 function isClaimed(id: string | number) {
-  return ((pvp.rewardsClaimed || []) as any[]).includes(id)
+  return (pvp.rewardsClaimed || []).includes(id.toString())
 }
 
 function startSearch() {

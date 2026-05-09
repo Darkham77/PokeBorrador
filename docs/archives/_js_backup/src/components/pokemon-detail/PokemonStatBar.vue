@@ -142,7 +142,7 @@ const getStatLabel = (key) => {
   .stat-value {
     @include pixelated;
     font-size: 16px;
-    color: var(--white);
+    color: Var(--white);
     font-weight: bold;
     min-width: 50px;
     text-align: right;
@@ -177,7 +177,7 @@ const getStatLabel = (key) => {
 .fill {
   height: 100%;
   border-radius: inherit;
-  transition: width 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transition: width 1s cubic-Bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .main-track {
@@ -186,7 +186,7 @@ const getStatLabel = (key) => {
   @media (max-width: 480px) { height: 12px; }
 }
 .main-fill {
-  box-shadow: 0 0 15px var(--glow);
+  box-shadow: 0 0 15px Var(--glow);
 }
 .iv-track {
   height: 10px;

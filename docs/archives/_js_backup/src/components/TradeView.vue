@@ -226,7 +226,7 @@ const requestSummary = computed(() => {
     .label { 
       font-size: 8px; 
       @include pixelated;
-      color: var(--gray);
+      color: Var(--gray);
     }
     .value { 
       font-size: 8px; 

@@ -8,9 +8,9 @@ license: MIT
 
 ## When to Use This Skill
 
-Apply when writing or reviewing GSAP code in Vue (or Nuxt), Svelte (or SvelteKit), or other component frameworks that use a lifecycle (mounted/unmounted). For **React** specifically, use **gsap-react** (useGSAP hook, gsap.context()).
+Apply when writing or reviewing GSAP code in Vue (or Nuxt), Svelte (or SvelteKit), or other component frameworks that use a lifecycle (mounted/unmounted). For **React** specifically, use [gsap-react](../gsap-react/SKILL.md) (useGSAP hook, gsap.context()).
 
-**Related skills:** For tweens and timelines use **gsap-core** and **gsap-timeline**; for scroll-based animation use **gsap-scrolltrigger**; for React use **gsap-react**.
+**Related skills:** For tweens and timelines use [gsap-core](../gsap-core/SKILL.md) and [gsap-timeline](../gsap-timeline/SKILL.md); for scroll-based animation use [gsap-scrolltrigger](../gsap-scrolltrigger/SKILL.md); for React use [gsap-react](../gsap-react/SKILL.md).
 
 ## Principles (All Frameworks)
 
@@ -20,14 +20,14 @@ Apply when writing or reviewing GSAP code in Vue (or Nuxt), Svelte (or SvelteKit
 
 ## Vue 3 (Composition API)
 
-See `examples/vue/` for a runnable Vite + Vue 3 project demonstrating these patterns.
+See [Vue 3 Examples](../gsap-core/resources/vue/) for a runnable Vite + Vue 3 project demonstrating these patterns.
 
 Use **onMounted** to run GSAP after the component is in the DOM. Use **onUnmounted** to clean up.
 
 ```javascript
-import { onMounted, onUnmounted, ref } from "vue";
-import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { onMounted, onUnmounted, ref } from 'vue';
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 gsap.registerPlugin(ScrollTrigger); // once per app, e.g. in main.js
 
 export default {
@@ -38,8 +38,8 @@ export default {
     onMounted(() => {
       if (!container.value) return;
       ctx = gsap.context(() => {
-        gsap.to(".box", { x: 100, duration: 0.6 });
-        gsap.from(".item", { autoAlpha: 0, y: 20, stagger: 0.1 });
+        gsap.to('.box', { x: 100, duration: 0.6 });
+        gsap.from('.item', { autoAlpha: 0, y: 20, stagger: 0.1 });
       }, container.value);
     });
 
@@ -91,70 +91,70 @@ onUnmounted(() => {
 
 ## Nuxt 4
 
-> See `examples/nuxt/` for a runnable Nuxt 4 project with plugin registration, lazy loading, and SSR-safe patterns.
+> See [Nuxt 4 Examples](../gsap-core/resources/nuxt/) for a runnable Nuxt 4 project with plugin registration, lazy loading, and SSR-safe patterns.
 
 Use a **reusable composable** to register GSAP Plugins and also to lazy load Plugins that are not extensively used in your application:
 
 ```typescript
 // composables/useGSAP.ts
-import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 const PLUGINS = [
-  "CSSRulePlugin",
-  "CustomBounce",
-  "CustomEase",
-  "CustomWiggle",
-  "Draggable",
-  "DrawSVGPlugin",
-  "EaselPlugin",
-  "EasePack",
-  "Flip",
-  "GSDevTools",
-  "InertiaPlugin",
-  "MorphSVGPlugin",
-  "MotionPathHelper",
-  "MotionPathPlugin",
-  "Observer",
-  "Physics2DPlugin",
-  "PhysicsPropsPlugin",
-  "PixiPlugin",
-  "ScrambleTextPlugin",
-  "ScrollSmoother",
-  "ScrollToPlugin",
-  "ScrollTrigger",
-  "SplitText",
-  "TextPlugin",
+  'CSSRulePlugin',
+  'CustomBounce',
+  'CustomEase',
+  'CustomWiggle',
+  'Draggable',
+  'DrawSVGPlugin',
+  'EaselPlugin',
+  'EasePack',
+  'Flip',
+  'GSDevTools',
+  'InertiaPlugin',
+  'MorphSVGPlugin',
+  'MotionPathHelper',
+  'MotionPathPlugin',
+  'Observer',
+  'Physics2DPlugin',
+  'PhysicsPropsPlugin',
+  'PixiPlugin',
+  'ScrambleTextPlugin',
+  'ScrollSmoother',
+  'ScrollToPlugin',
+  'ScrollTrigger',
+  'SplitText',
+  'TextPlugin',
 ] as const;
 
 type Plugins = (typeof PLUGINS)[number];
 
 // In order to dynamically load all the GSAP plugins
 const pluginMap = {
-  CustomEase: () => import("gsap/CustomEase"),
-  Draggable: () => import("gsap/Draggable"),
-  CSSRulePlugin: () => import("gsap/CSSRulePlugin"),
-  EaselPlugin: () => import("gsap/EaselPlugin"),
-  EasePack: () => import("gsap/EasePack"),
-  Flip: () => import("gsap/Flip"),
-  MotionPathPlugin: () => import("gsap/MotionPathPlugin"),
-  Observer: () => import("gsap/Observer"),
-  PixiPlugin: () => import("gsap/PixiPlugin"),
-  ScrollToPlugin: () => import("gsap/ScrollToPlugin"),
-  ScrollTrigger: () => import("gsap/ScrollTrigger"),
-  TextPlugin: () => import("gsap/TextPlugin"),
-  DrawSVGPlugin: () => import("gsap/DrawSVGPlugin"),
-  Physics2DPlugin: () => import("gsap/Physics2DPlugin"),
-  PhysicsPropsPlugin: () => import("gsap/PhysicsPropsPlugin"),
-  ScrambleTextPlugin: () => import("gsap/ScrambleTextPlugin"),
-  CustomBounce: () => import("gsap/CustomBounce"),
-  CustomWiggle: () => import("gsap/CustomWiggle"),
-  GSDevTools: () => import("gsap/GSDevTools"),
-  InertiaPlugin: () => import("gsap/InertiaPlugin"),
-  MorphSVGPlugin: () => import("gsap/MorphSVGPlugin"),
-  MotionPathHelper: () => import("gsap/MotionPathHelper"),
-  ScrollSmoother: () => import("gsap/ScrollSmoother"),
-  SplitText: () => import("gsap/SplitText"),
+  CustomEase: () => import('gsap/CustomEase'),
+  Draggable: () => import('gsap/Draggable'),
+  CSSRulePlugin: () => import('gsap/CSSRulePlugin'),
+  EaselPlugin: () => import('gsap/EaselPlugin'),
+  EasePack: () => import('gsap/EasePack'),
+  Flip: () => import('gsap/Flip'),
+  MotionPathPlugin: () => import('gsap/MotionPathPlugin'),
+  Observer: () => import('gsap/Observer'),
+  PixiPlugin: () => import('gsap/PixiPlugin'),
+  ScrollToPlugin: () => import('gsap/ScrollToPlugin'),
+  ScrollTrigger: () => import('gsap/ScrollTrigger'),
+  TextPlugin: () => import('gsap/TextPlugin'),
+  DrawSVGPlugin: () => import('gsap/DrawSVGPlugin'),
+  Physics2DPlugin: () => import('gsap/Physics2DPlugin'),
+  PhysicsPropsPlugin: () => import('gsap/PhysicsPropsPlugin'),
+  ScrambleTextPlugin: () => import('gsap/ScrambleTextPlugin'),
+  CustomBounce: () => import('gsap/CustomBounce'),
+  CustomWiggle: () => import('gsap/CustomWiggle'),
+  GSDevTools: () => import('gsap/GSDevTools'),
+  InertiaPlugin: () => import('gsap/InertiaPlugin'),
+  MorphSVGPlugin: () => import('gsap/MorphSVGPlugin'),
+  MotionPathHelper: () => import('gsap/MotionPathHelper'),
+  ScrollSmoother: () => import('gsap/ScrollSmoother'),
+  SplitText: () => import('gsap/SplitText'),
 } as const;
 
 type PluginMap = typeof pluginMap;
@@ -247,9 +247,9 @@ ScrollTrigger instances are created when you use the `scrollTrigger` config on a
 
 ## When to Create vs Kill
 
-| Lifecycle             | Action                                                                                                            |
-| --------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| **Mounted**           | Create tweens and ScrollTriggers inside **gsap.context(scope)**.                                                  |
+| Lifecycle | Action |
+| --- | --- |
+| **Mounted** | Create tweens and ScrollTriggers inside **gsap.context(scope)**. |
 | **Unmount / Destroy** | Call **ctx.revert()** so all animations and ScrollTriggers in that context are killed and inline styles reverted. |
 
 Do not create GSAP animations in the component’s setup or in a synchronous top-level script that runs before the root element exists. Wait for **onMounted** / **onMount** (or equivalent) so the container ref is in the DOM.
@@ -263,4 +263,4 @@ Do not create GSAP animations in the component’s setup or in a synchronous top
 
 ### Learn More
 
-- **gsap-react** skill for React-specific patterns (useGSAP, contextSafe).
+- [gsap-react](../gsap-react/SKILL.md) skill for React-specific patterns (useGSAP, contextSafe).

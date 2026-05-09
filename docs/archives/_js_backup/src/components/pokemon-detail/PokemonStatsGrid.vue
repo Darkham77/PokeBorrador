@@ -87,14 +87,14 @@ const getIvColor = (val) => {
 .vp-section-title {
   @include pixelated;
   font-size: 8px;
-  color: var(--purple-light);
+  color: Var(--purple-light);
   margin-bottom: 16px;
   letter-spacing: 1px;
 }
 
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: Repeat(3, 1fr);
   gap: 10px;
   margin-bottom: 24px;
 }

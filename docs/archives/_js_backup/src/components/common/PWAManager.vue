@@ -203,7 +203,7 @@ onMounted(() => {
   border-radius: 20px;
   overflow: hidden;
   box-shadow: 0 10px 30px Rgba(0,0,0,0.5);
-  border: 2px solid var(--yellow);
+  border: 2px solid Var(--yellow);
   
   img {
     width: 100%;
@@ -247,14 +247,14 @@ onMounted(() => {
 
 .update-warning {
   font-size: 11px;
-  color: var(--yellow);
+  color: Var(--yellow);
   font-style: italic;
   opacity: 0.8;
 }
 
 .pv-button-retro {
   @include pixelated;
-  background: var(--yellow);
+  background: Var(--yellow);
   color: black;
   border: none;
   padding: 12px 24px;
@@ -266,12 +266,12 @@ onMounted(() => {
   box-shadow: 0 4px 0 #b39200;
   
   &:hover {
-    transform: translateY(-2px);
+    transform: TranslateY(-2px);
     box-shadow: 0 6px 0 #b39200;
   }
   
   &:active {
-    transform: translateY(2px);
+    transform: TranslateY(2px);
     box-shadow: 0 0 0 #b39200;
   }
 }

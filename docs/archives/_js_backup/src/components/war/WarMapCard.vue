@@ -132,7 +132,7 @@ const mapImageUrl = computed(() => {
 
 
 
-  &:hover { transform: #{'Scale(1.03)'}; z-index: var(--z-base); }
+  &:hover { transform: #{'Scale(1.03)'}; z-index: Var(--z-base); }
   
   &.glow-union { box-shadow: 0 0 15px Rgba(59, 130, 246, 0.4); border-color: Rgba(59, 130, 246, 1); }
   &.glow-poder { box-shadow: 0 0 15px Rgba(239, 68, 68, 0.4); border-color: Rgba(239, 68, 68, 1); }
@@ -197,17 +197,17 @@ const mapImageUrl = computed(() => {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  z-index: var(--z-base);
+  z-index: Var(--z-base);
 
   &.union { background: Linear-Gradient(0deg, Rgba(59, 130, 246, 0.6) 0%, Rgba(255, 255, 255, 0.2) 100%); }
   &.poder { background: Linear-Gradient(0deg, Rgba(0, 0, 0, 0.8) 0%, Rgba(80, 0, 0, 0.6) 100%); }
-  &:not(.union):not(.poder) { background: Rgba(0,0,0,0.6); }
+  &:Not(.union):Not(.poder) { background: Rgba(0,0,0,0.6); }
 }
 
 .dom-content {
   position: absolute;
   inset: 0;
-  z-index: var(--z-base);
+  z-index: Var(--z-base);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -222,9 +222,9 @@ const mapImageUrl = computed(() => {
   letter-spacing: 2px;
   margin-bottom: 6px;
 
-  &.union { color: Rgba(59, 130, 246, 1); text-shadow: 0 0 10px Rgba(59, 130, 246, 1), 0 2px 4px var(--black); }
-  &.poder { color: Rgba(239, 68, 68, 1); text-shadow: 0 0 10px Rgba(239, 68, 68, 1), 0 2px 4px var(--black); }
-  &:not(.union):not(.poder) { color: Rgba(85, 85, 85, 1); font-size: 8px; }
+  &.union { color: Rgba(59, 130, 246, 1); text-shadow: 0 0 10px Rgba(59, 130, 246, 1), 0 2px 4px Var(--black); }
+  &.poder { color: Rgba(239, 68, 68, 1); text-shadow: 0 0 10px Rgba(239, 68, 68, 1), 0 2px 4px Var(--black); }
+  &:Not(.union):Not(.poder) { color: Rgba(85, 85, 85, 1); font-size: 8px; }
 }
 
 .map-subname {
@@ -246,6 +246,6 @@ const mapImageUrl = computed(() => {
   cursor: pointer;
   box-shadow: 0 0 10px Rgba(74, 222, 128, 0.4);
 
-  &:hover { background: Rgba(74, 222, 128, 1); transform: translateY(-2px); }
+  &:hover { background: Rgba(74, 222, 128, 1); transform: TranslateY(-2px); }
 }
 </style>

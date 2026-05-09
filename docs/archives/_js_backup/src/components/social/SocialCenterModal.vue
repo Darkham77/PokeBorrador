@@ -145,7 +145,7 @@ onMounted(() => {
 
     &.active {
       background: Rgba(157, 78, 221, 0.15);
-      color: var(--purple-light);
+      color: Var(--purple-light);
       box-shadow: inset 0 0 10px Rgba(157, 78, 221, 0.1);
     }
 
@@ -163,7 +163,7 @@ onMounted(() => {
       right: 10px;
       transform: TranslateY(-50%);
       background: Rgba(239, 68, 68, 1);
-      color: var(--white);
+      color: Var(--white);
       font-size: 9px;
       min-width: 16px;
       height: 16px;

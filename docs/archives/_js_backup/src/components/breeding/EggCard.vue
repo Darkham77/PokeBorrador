@@ -78,7 +78,7 @@ const formatDate = (dateStr) => {
     cursor: pointer;
     box-shadow: 0 4px 0 #7e22ce;
     
-    &:active { transform: translateY(2px); box-shadow: 0 2px 0 #7e22ce; }
+    &:active { transform: TranslateY(2px); box-shadow: 0 2px 0 #7e22ce; }
   }
   
   .scan-tag { 

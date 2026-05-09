@@ -149,7 +149,7 @@ onUnmounted(() => {
 .fishing-game-overlay {
   position: fixed;
   inset: 0;
-  z-index: var(--z-modal);
+  z-index: Var(--z-modal);
   background: Rgba(0, 0, 0, 0.9);
   -webkit-backdrop-filter: Blur(10px);
   backdrop-filter: Blur(10px);
@@ -212,7 +212,7 @@ onUnmounted(() => {
   transform: TranslateX(-50%);
   @include pixelated;
   font-size: 14px;
-  color: var(--white);
+  color: Var(--white);
   background: Rgba(255, 255, 255, 0.05);
   padding: 12px 24px;
   border-radius: 99px;
@@ -232,8 +232,8 @@ onUnmounted(() => {
   .note-number {
     @include pixelated;
     font-size: 20px;
-    color: var(--white);
-    z-index: var(--z-base);
+    color: Var(--white);
+    z-index: Var(--z-base);
     text-shadow: 0 2px 4px Rgba(0,0,0,0.5);
   }
 
@@ -250,7 +250,7 @@ onUnmounted(() => {
 @keyframes shrink {
   from { transform: Scale(1.8); opacity: 0; }
   20% { opacity: 1; }
-  to { transform: Scale(1); opacity: 1; border-color: var(--white); }
+  to { transform: Scale(1); opacity: 1; border-color: Var(--white); }
 }
 
 .note-leave-active {

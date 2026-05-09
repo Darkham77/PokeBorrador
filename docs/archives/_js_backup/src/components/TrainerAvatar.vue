@@ -110,12 +110,12 @@ const avatarStyles = computed(() => {
 
   &.blink-red {
     animation: blinkRed 1.5s infinite;
-    animation-delay: Calc(var(--avatar-seed, 0) * -1.5s);
+    animation-delay: Calc(Var(--avatar-seed, 0) * -1.5s);
   }
 }
 
 @keyframes blinkRed {
-  0%, 100% { box-shadow: 0 0 5px var(--red); border-color: var(--red); }
-  50% { box-shadow: 0 0 15px var(--red); border-color: var(--red-light); }
+  0%, 100% { box-shadow: 0 0 5px Var(--red); border-color: Var(--red); }
+  50% { box-shadow: 0 0 15px Var(--red); border-color: Var(--red-light); }
 }
 </style>

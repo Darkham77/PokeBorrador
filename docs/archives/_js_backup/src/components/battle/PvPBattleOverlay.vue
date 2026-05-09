@@ -171,7 +171,7 @@ const handleMoveSelection = (moveIdx) => {
 .pvp-screen-wrapper {
   position: fixed;
   inset: 0;
-  z-index: var(--z-base);
+  z-index: Var(--z-base);
   background: $black;
   display: flex;
   padding: 20px;
@@ -236,7 +236,7 @@ const handleMoveSelection = (moveIdx) => {
 
   .header {
     font-size: 8px;
-    color: var(--gray);
+    color: Var(--gray);
   }
 
   .trainer-sprite {
@@ -253,7 +253,7 @@ const handleMoveSelection = (moveIdx) => {
 
   .elo {
     font-size: 9px;
-    color: var(--yellow);
+    color: Var(--yellow);
     margin-top: 8px;
   }
 }
@@ -263,19 +263,19 @@ const handleMoveSelection = (moveIdx) => {
   top: 20px;
   left: 50%;
   transform: TranslateX(-50%);
-  z-index: var(--z-base);
+  z-index: Var(--z-base);
   background: Rgba(0, 0, 0, 0.6);
   padding: 10px 20px;
   border-radius: 20px;
-  border: 1px solid var(--blue);
+  border: 1px solid Var(--blue);
   color: $white;
   display: flex;
   align-items: center;
   gap: 10px;
 
   &.low-time {
-    border-color: var(--red);
-    color: var(--red);
+    border-color: Var(--red);
+    color: Var(--red);
     animation: pulse 1s infinite;
   }
 }
@@ -293,7 +293,7 @@ const handleMoveSelection = (moveIdx) => {
   justify-content: center;
   gap: 20px;
   color: $white;
-  z-index: var(--z-base);
+  z-index: Var(--z-base);
   @include gpu-layer;
 
   span { font-size: 10px; }
@@ -309,7 +309,7 @@ const handleMoveSelection = (moveIdx) => {
 .status-msg {
   text-align: center;
   font-size: 8px;
-  color: var(--gray);
+  color: Var(--gray);
 }
 
 .press-start {
@@ -329,7 +329,7 @@ const handleMoveSelection = (moveIdx) => {
 .pulse-loader {
   width: 40px;
   height: 40px;
-  border: 4px solid var(--blue);
+  border: 4px solid Var(--blue);
   border-top-color: transparent;
   border-radius: 50%;
   animation: spin 1s linear infinite;

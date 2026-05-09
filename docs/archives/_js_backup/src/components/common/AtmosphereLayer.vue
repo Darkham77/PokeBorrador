@@ -228,30 +228,30 @@ const weatherOverlayStyles = computed(() => ({
   border-radius: 50% 0 50% 0;
   opacity: 0.8;
   pointer-events: none;
-  z-index: var(--z-low);
+  z-index: Var(--z-low);
   animation: leaf-fall linear infinite;
   filter: Drop-Shadow(0 1px 1px Rgba(0,0,0,0.3));
 }
 
 @keyframes leaf-fall {
-  0% { transform: Translate(0, 0) Rotate(var(--leaf-rotation, 0deg)); opacity: 0; }
+  0% { transform: Translate(0, 0) Rotate(Var(--leaf-rotation, 0deg)); opacity: 0; }
   10% { opacity: 0.8; }
   90% { opacity: 0.8; }
-  100% { transform: Translate(-130cqw, 70cqh) Rotate(calc(var(--leaf-rotation, 0deg) + 1080deg)); opacity: 0; }
+  100% { transform: Translate(-130cqw, 70cqh) Rotate(Calc(Var(--leaf-rotation, 0deg) + 1080deg)); opacity: 0; }
 }
 
 .atmosphere-container {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  z-index: var(--atmo-z, 0); 
+  z-index: Var(--atmo-z, 0); 
   overflow: hidden;
   container-type: size; // Permite usar cqw/cqh para las hojas
 }
 
 // Override shared z-index for combat context
-:deep(.weather-overlay) {
-  z-index: var(--atmo-z, 0) !important;
-  transform: ScaleX(var(--atmo-dir, 1));
+:Deep(.weather-overlay) {
+  z-index: Var(--atmo-z, 0) !important;
+  transform: ScaleX(Var(--atmo-dir, 1));
 }
 </style>

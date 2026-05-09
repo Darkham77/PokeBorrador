@@ -227,7 +227,7 @@ const getSprite = (id, shiny) => {
       @include pixelated;
       
       &:focus {
-        border-color: var(--yellow);
+        border-color: Var(--yellow);
         background: Rgba(255, 255, 255, 0.05);
       }
     }
@@ -244,7 +244,7 @@ const getSprite = (id, shiny) => {
 }
 
 .poke-card-vicio {
-  @include pokemon-list-item-standard(12px);
+  @include pokemon-list-item-Standard(12px);
   padding: 12px;
   display: flex;
   align-items: center;
@@ -252,7 +252,7 @@ const getSprite = (id, shiny) => {
   cursor: pointer;
 
   &:hover {
-    .name { color: var(--yellow); }
+    .name { color: Var(--yellow); }
   }
 }
 
@@ -294,7 +294,7 @@ const getSprite = (id, shiny) => {
   
   .lv {
     font-size: 9px;
-    color: var(--gray);
+    color: Var(--gray);
     @include pixelated;
     @include pixelated;
   }
@@ -316,7 +316,7 @@ const getSprite = (id, shiny) => {
 }
 
 .waiting-status { color: Rgba(255, 255, 255, 0.2); }
-.egg-hint { color: var(--purple-light); }
+.egg-hint { color: Var(--purple-light); }
 
 .vigor-badge {
   position: absolute;

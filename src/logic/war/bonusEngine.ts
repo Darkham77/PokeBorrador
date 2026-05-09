@@ -30,7 +30,7 @@ export function applyEncounterBonuses(pokemon: Pokemon, mapId: string, faction: 
   if (isDominant && bonuses.ivBoost > 0) {
     const ivKeys: (keyof PokemonIVs)[] = ['hp', 'atk', 'def', 'spa', 'spd', 'spe'];
     ivKeys.forEach(stat => {
-      pokemon.ivs[stat] = Math.max(pokemon.ivs[stat], 15) // Boost to at least 15
+      pokemon.ivs[stat] = Math.max(Number(pokemon.ivs[stat]) || 0, 15) // Boost to at least 15
     })
     
     // CRITICAL: Recalculate stats after IV changes

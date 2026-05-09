@@ -441,7 +441,7 @@ const AVAILABLE_TAGS = [
   .box-section-label {
     @include pixelated;
     font-size: 7px;
-    color: var(--gray);
+    color: Var(--gray);
     margin-bottom: 16px;
     opacity: 0.6;
     letter-spacing: 1px;
@@ -473,7 +473,7 @@ const AVAILABLE_TAGS = [
   .label, .stat-name {
     @include pixelated;
     font-size: 7px;
-    color: var(--gray);
+    color: Var(--gray);
     width: 70px;
     white-space: nowrap;
     opacity: 0.8;
@@ -490,10 +490,10 @@ const AVAILABLE_TAGS = [
       -webkit-appearance: none;
       width: 12px;
       height: 12px;
-      background: var(--stat-color, var(--yellow));
+      background: Var(--stat-color, Var(--yellow));
       border-radius: 50%;
       cursor: pointer;
-      box-shadow: 0 0 10px var(--stat-color);
+      box-shadow: 0 0 10px Var(--stat-color);
       border: 1px solid Rgba(0, 0, 0, 0.4);
     }
   }
@@ -518,7 +518,7 @@ const AVAILABLE_TAGS = [
 .results-badge-mini {
   @include pixelated;
   font-size: 8px;
-  color: var(--yellow);
+  color: Var(--yellow);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -529,7 +529,7 @@ const AVAILABLE_TAGS = [
 }
 
 .rocket-filter-trigger {
-  @include btn-vicio('danger', 'sm');
+  @include btn-Vicio('danger', 'sm');
   margin-left: auto;
   font-size: 7px;
   height: 28px;

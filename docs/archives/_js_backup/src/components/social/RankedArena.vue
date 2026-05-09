@@ -223,7 +223,7 @@ function startSearch() {
 .arena-container {
   height: 600px;
   position: relative;
-  background: var(--card, Rgba(28, 28, 30, 1));
+  background: Var(--card, Rgba(28, 28, 30, 1));
   border-radius: 24px;
   overflow: hidden;
   border: 1px solid Rgba(255,255,255,0.08);
@@ -232,7 +232,7 @@ function startSearch() {
 .offline-mask {
   position: absolute;
   inset: 0;
-  z-index: var(--z-base);
+  z-index: Var(--z-base);
   background: Rgba(0,0,0,0.8);
   -webkit-backdrop-filter: Blur(8px);
   backdrop-filter: Blur(8px);
@@ -249,7 +249,7 @@ function startSearch() {
 }
 
 .lock-card .icon { font-size: 48px; display: block; margin-bottom: 20px; }
-.lock-card h3 { @include pixelated; font-size: 12px; color: var(--white); margin-bottom: 15px; }
+.lock-card h3 { @include pixelated; font-size: 12px; color: Var(--white); margin-bottom: 15px; }
 .lock-card p { font-size: 12px; color: Rgba(136, 136, 136, 1); line-height: 1.5; }
 
 .arena-main {
@@ -294,8 +294,8 @@ function startSearch() {
 }
 
 @keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-8px); }
+  0%, 100% { transform: TranslateY(0); }
+  50% { transform: TranslateY(-8px); }
 }
 
 .tier-info h2 {
@@ -380,7 +380,7 @@ function startSearch() {
 .season-timer {
   @include pixelated;
   font-size: 7px;
-  color: var(--yellow, Rgba(255, 193, 7, 1));
+  color: Var(--yellow, Rgba(255, 193, 7, 1));
   background: Rgba(255, 214, 10, 0.1);
   padding: 4px 8px;
   border-radius: 6px;
@@ -414,7 +414,7 @@ function startSearch() {
 .m-prize { font-weight: 600; font-size: 13px; }
 
 .claim-btn {
-  background: var(--blue, Rgba(59, 130, 246, 1));
+  background: Var(--blue, Rgba(59, 130, 246, 1));
   color: white;
   border: none;
   padding: 8px 16px;
@@ -489,8 +489,8 @@ function startSearch() {
   box-shadow: 0 4px 15px Rgba(10, 132, 255, 0.3);
 }
 
-.search-btn:hover:not(:disabled) {
-  transform: translateY(-2px);
+.search-btn:hover:Not(:disabled) {
+  transform: TranslateY(-2px);
   box-shadow: 0 6px 20px Rgba(10, 132, 255, 0.4);
 }
 

@@ -81,7 +81,7 @@ const socialStore = useSocialStore()
     .text {
       font-size: 12px;
       color: Rgba(148, 163, 184, 1);
-      .username { color: var(--white); font-weight: 700; margin-right: 4px; }
+      .username { color: Var(--white); font-weight: 700; margin-right: 4px; }
     }
   }
 
@@ -92,7 +92,7 @@ const socialStore = useSocialStore()
     .btn-accept {
       background: Rgba(34, 197, 94, 1);
       border: none;
-      color: var(--white);
+      color: Var(--white);
       padding: 8px 12px;
       border-radius: 8px;
       @include pixelated;

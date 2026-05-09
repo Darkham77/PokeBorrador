@@ -160,7 +160,7 @@ const hexToRgba = (hex, alpha) => {
 
   &:hover {
     background: Rgba(255, 255, 255, 0.04);
-    border-color: var(--move-accent);
+    border-color: Var(--move-accent);
     transform: TranslateY(-2px);
   }
 
@@ -187,7 +187,7 @@ const hexToRgba = (hex, alpha) => {
 }
 
 .pp-info {
-  background: var(--move-accent-alpha);
+  background: Var(--move-accent-alpha);
   padding: 18px 24px;
   border-radius: 18px;
   display: flex;
@@ -204,7 +204,7 @@ const hexToRgba = (hex, alpha) => {
     top: 0;
     bottom: 0;
     width: 4px;
-    background: var(--move-accent);
+    background: Var(--move-accent);
   }
 
   .label { 
@@ -217,8 +217,8 @@ const hexToRgba = (hex, alpha) => {
   .val { 
     font-size: 20px; 
     font-weight: 900; 
-    color: var(--move-accent);
-    text-shadow: 0 0 10px var(--move-accent-alpha);
+    color: Var(--move-accent);
+    text-shadow: 0 0 10px Var(--move-accent-alpha);
   }
 }
 
@@ -234,7 +234,7 @@ const hexToRgba = (hex, alpha) => {
 
 .desc-title {
   font-size: 8px;
-  color: var(--move-accent);
+  color: Var(--move-accent);
   margin-bottom: 14px;
   letter-spacing: 1.5px;
   opacity: 0.9;
@@ -258,19 +258,19 @@ const hexToRgba = (hex, alpha) => {
   border-radius: 16px;
   font-size: 10px;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.3s cubic-Bezier(0.16, 1, 0.3, 1);
 
   &:hover {
-    background: var(--move-accent);
+    background: Var(--move-accent);
     color: $white;
     border-color: transparent;
     transform: TranslateY(-3px);
-    box-shadow: 0 10px 20px Rgba(0, 0, 0, 0.4), 0 0 15px var(--move-accent-alpha);
+    box-shadow: 0 10px 20px Rgba(0, 0, 0, 0.4), 0 0 15px Var(--move-accent-alpha);
   }
 }
 
-:deep(.base-modal-card) {
-  border-top: 1px solid var(--move-accent) !important;
+:Deep(.base-modal-card) {
+  border-top: 1px solid Var(--move-accent) !important;
   
   &::after {
     content: '';
@@ -280,9 +280,9 @@ const hexToRgba = (hex, alpha) => {
     transform: TranslateX(-50%);
     width: 60px;
     height: 3px;
-    background: var(--move-accent);
+    background: Var(--move-accent);
     border-radius: 0 0 4px 4px;
-    box-shadow: 0 0 15px var(--move-accent);
+    box-shadow: 0 0 15px Var(--move-accent);
   }
 }
 

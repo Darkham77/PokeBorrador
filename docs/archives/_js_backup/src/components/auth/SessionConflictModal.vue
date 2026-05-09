@@ -73,7 +73,7 @@ async function handleLogout() {
 .session-blocked-overlay {
   position: fixed;
   inset: 0;
-  z-index: var(--z-critical);
+  z-index: Var(--z-critical);
   background: Rgba(0, 0, 0, 0.9);
   -webkit-backdrop-filter: Blur(20px);
   backdrop-filter: Blur(20px);

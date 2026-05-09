@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
+import type { Pokemon } from '@/types/pokemon'
+
 interface Props {
-  pokemon: any
+  pokemon: Partial<Pokemon>
   size?: string // 'sm', 'md', 'lg'
 }
 

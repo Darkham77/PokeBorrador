@@ -172,7 +172,7 @@ function handleTouchEnd(e) {
   width: 100%;
   min-height: 260px;
   display: flex;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s cubic-Bezier(0.4, 0, 0.2, 1);
   position: relative;
 }
 
@@ -191,30 +191,30 @@ function handleTouchEnd(e) {
 
   &:hover {
     background: Rgba(255, 255, 255, 0.05);
-    border-color: var(--blue);
+    border-color: Var(--blue);
     transform: TranslateY(-4px);
     
     .plus-icon {
       transform: Scale(1.2) Rotate(90deg);
-      filter: Drop-shadow(0 0 15px var(--blue));
-      color: var(--white);
+      filter: Drop-Shadow(0 0 15px Var(--blue));
+      color: Var(--white);
     }
     
     .label {
-      color: var(--blue);
+      color: Var(--blue);
     }
   }
 
   .plus-icon {
     font-size: 32px;
     color: Rgba(255, 255, 255, 0.3);
-    transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transition: all 0.5s cubic-Bezier(0.175, 0.885, 0.32, 1.275);
   }
 
   .label {
     @include pixelated;
     font-size: 8px;
-    color: var(--gray);
+    color: Var(--gray);
     transition: all 0.3s;
   }
 }
@@ -224,9 +224,9 @@ function handleTouchEnd(e) {
     border-color: Rgba(199, 125, 255, 0.3);
     
     &:hover {
-      border-color: var(--purple-light);
-      .plus-icon { filter: Drop-shadow(0 0 10px var(--purple-light)); }
-      .label { color: var(--purple-light); }
+      border-color: Var(--purple-light);
+      .plus-icon { filter: Drop-Shadow(0 0 10px Var(--purple-light)); }
+      .label { color: Var(--purple-light); }
     }
   }
 }
@@ -242,17 +242,17 @@ function handleTouchEnd(e) {
   backdrop-filter: Blur(4px);
   @include gpu-layer;
   border-radius: 20px;
-  z-index: var(--z-low);
+  z-index: Var(--z-low);
   pointer-events: none; 
-  border: 2px dashed var(--blue);
+  border: 2px dashed Var(--blue);
   transition: all 0.2s;
 
   .pos-number {
     font-size: 80px;
-    color: var(--blue);
+    color: Var(--blue);
     @include pixelated;
     opacity: 0.8;
-    filter: Drop-shadow(0 0 10px Rgba(10, 132, 255, 0.5));
+    filter: Drop-Shadow(0 0 10px Rgba(10, 132, 255, 0.5));
     transition: all 0.2s;
   }
 }

@@ -231,7 +231,7 @@ onMounted(() => {
 
 .shop-view-legacy {
   padding: 0 0 40px;
-  background: var(--bg-dark);
+  background: Var(--bg-dark);
 }
 
 /* RANK BAR */
@@ -244,8 +244,8 @@ onMounted(() => {
   margin-bottom: 25px;
 
   .rank-txt { font-size: 11px; color: Rgba(168, 85, 247, 1); margin-right: 15px; }
-  .rank-name { color: var(--white); text-shadow: 0 0 10px Rgba(168, 85, 247, 0.4); }
-  .rank-hint { font-size: 10px; color: var(--gray); }
+  .rank-name { color: Var(--white); text-shadow: 0 0 10px Rgba(168, 85, 247, 0.4); }
+  .rank-hint { font-size: 10px; color: Var(--gray); }
 }
 
 /* MONEY COUNTERS */
@@ -261,13 +261,13 @@ onMounted(() => {
     align-items: center;
     gap: 8px;
 
-    .label { font-size: 9px; color: var(--gray); font-weight: bold; }
+    .label { font-size: 9px; color: Var(--gray); font-weight: bold; }
     .value { 
       @include pixelated; 
       font-size: 12px; 
     }
 
-    &.money .value { color: var(--yellow); text-shadow: 0 0 15px Rgba(255, 215, 0, 0.3); }
+    &.money .value { color: Var(--yellow); text-shadow: 0 0 15px Rgba(255, 215, 0, 0.3); }
     &.coins .value { color: Rgba(168, 85, 247, 1); text-shadow: 0 0 15px Rgba(168, 85, 247, 0.3); }
   }
 }
@@ -289,15 +289,15 @@ onMounted(() => {
   padding: 12px;
   border: none;
   background: transparent;
-  color: var(--gray);
+  color: Var(--gray);
   @include pixelated;
   font-size: 7px;
   cursor: pointer;
   transition: all 0.2s;
   border-radius: 8px;
 
-  &:hover { background: Rgba(255, 255, 255, 0.05); color: var(--white); }
-  &.active { background: Rgba(168, 85, 247, 1); color: var(--white); box-shadow: 0 4px 15px Rgba(168, 85, 247, 0.4); }
+  &:hover { background: Rgba(255, 255, 255, 0.05); color: Var(--white); }
+  &.active { background: Rgba(168, 85, 247, 1); color: Var(--white); box-shadow: 0 4px 15px Rgba(168, 85, 247, 0.4); }
 }
 
 /* SEARCH */
@@ -308,7 +308,7 @@ onMounted(() => {
   border: 2px solid Rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   padding: 14px 20px;
-  color: var(--white);
+  color: Var(--white);
   @include pixelated;
   font-size: 8px;
   outline: none;
@@ -318,7 +318,7 @@ onMounted(() => {
 /* GRID */
 .shop-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  grid-template-columns: Repeat(auto-fill, Minmax(220px, 1fr));
   gap: 20px;
   padding-bottom: 60px;
 }
@@ -333,7 +333,7 @@ onMounted(() => {
   flex-direction: column;
   transition: all 0.2s;
 
-  &:hover:not(.locked) { border-color: Rgba(255, 215, 0, 0.5); transform: TranslateY(-3px); }
+  &:hover:Not(.locked) { border-color: Rgba(255, 215, 0, 0.5); transform: TranslateY(-3px); }
   &.locked { opacity: 0.3; filter: Grayscale(1.0); }
 
   .tier-tag {
@@ -345,10 +345,10 @@ onMounted(() => {
     padding: 3px 8px;
     border-radius: 10px;
     
-    &.tier-common { background: Rgba(148, 163, 184, 0.1); color: var(--gray); }
+    &.tier-common { background: Rgba(148, 163, 184, 0.1); color: Var(--gray); }
     &.tier-rare { background: Rgba(59, 131, 246, 0.1); color: Rgba(96, 165, 250, 1); }
     &.tier-epic { background: Rgba(168, 85, 247, 0.1); color: Rgba(192, 132, 252, 1); }
-    &.tier-legend { background: Rgba(234, 179, 8, 0.1); color: var(--yellow); }
+    &.tier-legend { background: Rgba(234, 179, 8, 0.1); color: Var(--yellow); }
   }
 
   .item-visual {
@@ -366,13 +366,13 @@ onMounted(() => {
     font-size: 8px;
     text-align: center;
     margin-bottom: 10px;
-    color: var(--white);
+    color: Var(--white);
     line-height: 1.4;
   }
 
   .item-desc {
     font-size: 11px;
-    color: var(--gray);
+    color: Var(--gray);
     text-align: center;
     margin-bottom: 15px;
     line-height: 1.5;
@@ -382,10 +382,10 @@ onMounted(() => {
   .item-price {
     @include pixelated;
     font-size: 10px;
-    color: var(--yellow);
+    color: Var(--yellow);
     text-align: center;
     margin-bottom: 15px;
-    &.rocket-tax { color: var(--red); }
+    &.rocket-tax { color: Var(--red); }
     small { font-size: 7px; opacity: 0.7; }
   }
 
@@ -396,14 +396,14 @@ onMounted(() => {
     gap: 10px;
     margin-bottom: 12px;
     font-size: 10px;
-    label { font-weight: bold; color: var(--gray); }
+    label { font-weight: bold; color: Var(--gray); }
     .qty-input {
       width: 60px;
       background: Rgba(0, 0, 0, 0.3);
       border: 1px solid Rgba(255, 255, 255, 0.1);
       border-radius: 8px;
       padding: 5px;
-      color: var(--white);
+      color: Var(--white);
       text-align: center;
       outline: none;
     }
@@ -412,7 +412,7 @@ onMounted(() => {
   .item-total {
     text-align: center;
     font-size: 10px;
-    color: var(--green-bright);
+    color: Var(--green-bright);
     font-weight: bold;
     margin-bottom: 15px;
   }
@@ -422,16 +422,16 @@ onMounted(() => {
     padding: 12px;
     border: none;
     border-radius: 12px;
-    background: Linear-Gradient(135deg, var(--yellow), #f59e0b);
-    color: var(--black);
+    background: Linear-Gradient(135deg, Var(--yellow), #f59e0b);
+    color: Var(--black);
     @include pixelated;
     font-size: 8px;
     font-weight: bold;
     cursor: pointer;
     transition: all 0.2s;
 
-    &:hover:not(:disabled) { transform: Scale(1.03); box-shadow: 0 4px 15px Rgba(255, 215, 0, 0.4); }
-    &:disabled { background: Rgba(51, 65, 85, 1); color: var(--gray); cursor: not-allowed; }
+    &:hover:Not(:disabled) { transform: Scale(1.03); box-shadow: 0 4px 15px Rgba(255, 215, 0, 0.4); }
+    &:disabled { background: Rgba(51, 65, 85, 1); color: Var(--gray); cursor: not-allowed; }
   }
 }
 </style>

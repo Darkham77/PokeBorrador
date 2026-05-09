@@ -67,7 +67,7 @@ const handleSwitch = (index) => {
 
 .quick-team-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(100px, 160px));
+  grid-template-columns: Repeat(auto-fill, Minmax(100px, 160px));
   justify-content: center;
   gap: 8px; // Gap consistente
   width: 100%;
@@ -75,7 +75,7 @@ const handleSwitch = (index) => {
 }
 
 /* Overrides para integrar la tarjeta de la caja en el grid compacto de combate */
-:deep(.quick-card-override) {
+:Deep(.quick-card-override) {
   width: 100% !important;
   height: 100% !important;
   min-height: 0 !important;
@@ -98,7 +98,7 @@ const handleSwitch = (index) => {
   }
 
   &.is-active {
-    border-color: var(--blue) !important;
+    border-color: Var(--blue) !important;
     background: Rgba(59, 130, 246, 0.1) !important;
     box-shadow: inset 0 0 10px Rgba(59, 130, 246, 0.2) !important;
   }

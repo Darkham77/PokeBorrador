@@ -39,7 +39,7 @@ defineEmits(['update:iv'])
 <style lang="scss" scoped>
 .iv-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: Repeat(3, 1fr);
   gap: 6px;
   background: Rgba(255, 255, 255, 0.03);
   padding: 8px;
@@ -62,7 +62,7 @@ defineEmits(['update:iv'])
       padding: 6px 2px;
       background: Rgba(0, 0, 0, 0.4);
       border: 1px solid Rgba(255, 255, 255, 0.1);
-      color: var(--yellow);
+      color: Var(--yellow);
       text-align: center;
       font-size: 11px;
       border-radius: 6px;
@@ -76,7 +76,7 @@ defineEmits(['update:iv'])
       }
       
       &:focus {
-        border-color: var(--vicio-primary);
+        border-color: Var(--vicio-primary);
       }
     }
   }

@@ -123,7 +123,7 @@ const confirmRelease = () => {
   padding: 15px 20px;
   background: $card2;
   border: 4px solid Rgba(51, 51, 51, 1);
-  box-shadow: 0 0 0 4px var(--black);
+  box-shadow: 0 0 0 4px Var(--black);
   flex-wrap: wrap;
   gap: 15px;
 }
@@ -131,9 +131,9 @@ const confirmRelease = () => {
 .th-section-title {
   @include pixelated;
   font-size: 14px;
-  color: var(--white);
+  color: Var(--white);
   margin: 0;
-  text-shadow: 2px 2px var(--black);
+  text-shadow: 2px 2px Var(--black);
 }
 
 .header-actions {
@@ -148,14 +148,14 @@ const confirmRelease = () => {
   cursor: pointer;
   background: Rgba(34, 34, 34, 1);
   border: 3px solid Rgba(68, 68, 68, 1);
-  color: var(--white);
+  color: Var(--white);
   transition: all 0.1s;
 }
 
 .legacy-btn:hover {
   background: Rgba(51, 51, 51, 1);
   border-color: Rgba(102, 102, 102, 1);
-  transform: translateY(-2px);
+  transform: TranslateY(-2px);
 }
 
 .rocket-btn { color: Rgba(239, 68, 68, 1); border-color: Rgba(239, 68, 68, 0.4); }
@@ -175,7 +175,7 @@ const confirmRelease = () => {
   line-height: 1.6;
   background: Rgba(17, 17, 17, 1);
   border: 4px solid Rgba(51, 51, 51, 1);
-  box-shadow: 0 0 0 4px var(--black);
+  box-shadow: 0 0 0 4px Var(--black);
 }
 
 .hint-icon { font-size: 16px; }
@@ -185,10 +185,10 @@ const confirmRelease = () => {
 
 /* Transitions */
 .pixel-slide-enter-active, .pixel-slide-leave-active {
-  transition: all 0.2s steps(4);
+  transition: all 0.2s Steps(4);
 }
 .pixel-slide-enter-from, .pixel-slide-leave-to {
   opacity: 0;
-  transform: translateY(-10px);
+  transform: TranslateY(-10px);
 }
 </style>

@@ -96,7 +96,7 @@ const allMaps = computed(() => {
 
   &:hover {
     background: Rgba(255, 255, 255, 0.06);
-    transform: translateX(4px);
+    transform: TranslateX(4px);
   }
 
   &.union { border-left: 4px solid Rgba(59, 130, 246, 1); }
@@ -121,8 +121,8 @@ const allMaps = computed(() => {
     padding: 2px 6px;
     border-radius: 4px;
     
-    .union & { background: Rgba(59, 130, 246, 1); color: var(--white); }
-    .poder & { background: Rgba(239, 68, 68, 1); color: var(--white); }
+    .union & { background: Rgba(59, 130, 246, 1); color: Var(--white); }
+    .poder & { background: Rgba(239, 68, 68, 1); color: Var(--white); }
   }
 }
 

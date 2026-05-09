@@ -64,7 +64,7 @@ const tradeStore = useTradeStore()
 .info-label {
   @include pixelated;
   font-size: 9px;
-  color: var(--white);
+  color: Var(--white);
   text-shadow: 1px 1px 0 Rgba(0, 0, 0, 1), -1px -1px 0 Rgba(0, 0, 0, 1), 1px -1px 0 Rgba(0, 0, 0, 1), -1px 1px 0 Rgba(0, 0, 0, 1);
   margin-bottom: 12px;
 }
@@ -83,7 +83,7 @@ const tradeStore = useTradeStore()
 .notif-header {
   @include pixelated;
   font-size: 8px;
-  color: var(--white);
+  color: Var(--white);
   margin-bottom: 12px;
 }
 
@@ -101,8 +101,8 @@ const tradeStore = useTradeStore()
   font-size: 6px;
   cursor: pointer;
   
-  &.accept { background: Rgba(34, 197, 94, 1); color: var(--white); }
-  &.reject { background: Rgba(239, 68, 68, 1); color: var(--white); }
+  &.accept { background: Rgba(34, 197, 94, 1); color: Var(--white); }
+  &.reject { background: Rgba(239, 68, 68, 1); color: Var(--white); }
 }
 
 .notif-action-btn {
@@ -111,7 +111,7 @@ const tradeStore = useTradeStore()
   border: none;
   border-radius: 8px;
   padding: 10px;
-  color: var(--white);
+  color: Var(--white);
   @include pixelated;
   font-size: 8px;
   cursor: pointer;

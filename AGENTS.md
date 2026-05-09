@@ -46,5 +46,11 @@ This file defines the immutable DNA of the Poké Vicio project. Every AI agent i
 - **Verification Workflow**: Always run `npm run type-check` BEFORE `npm run lint` or any commit operation. Type safety is non-negotiable.
 - **Node.js 26+ Modernization**: Use `Temporal` instead of `Date` for engine logic. Mandatory use of `node:` prefix for built-in imports. Mandatory use of the **Node.js 26 Permission Model** (`--permission`) for utility scripts with restricted FS access. Mandatory use of **Explicit Resource Management** (`using`) for file handles and database connections in Node scripts. Prefer **`node:test`** for pure logic unit tests (non-browser). Prefer **`node:timers/promises`** for delays in scripts. Run `npm run validate:sql` before database commits.
 
+## 8. Git Safety & Rollback Protocol
+
+- **Mandatory Confirmation**: Before executing any git operation that involves a rollback, reset, or destructive change (e.g., `git reset --hard`, `git checkout .`, `git clean`), the agent MUST explicitly ask the user for confirmation.
+- **Explicit Command Disclosure**: The confirmation request MUST include the exact command(s) that are about to be executed so the user can review them.
+- **Safety First**: Rollbacks are high-risk operations. Never assume the user wants a destructive revert without a clear, final "Yes" from their side.
+
 ---
 *Note: If you are an AI agent and haven't loaded `@/project-standards` yet, do it now.*

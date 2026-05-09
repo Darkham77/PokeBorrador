@@ -82,7 +82,7 @@ const socialStore = useSocialStore()
   .friend-name {
     font-size: 14px;
     font-weight: 900;
-    color: var(--white);
+    color: Var(--white);
     margin-bottom: 4px;
   }
   .friend-meta {
@@ -104,7 +104,7 @@ const socialStore = useSocialStore()
   cursor: pointer;
   border: 1px solid Rgba(255, 255, 255, 0.2);
   background: Rgba(255, 255, 255, 0.05);
-  color: var(--white);
+  color: Var(--white);
   transition: all 0.2s;
 
   &:hover {

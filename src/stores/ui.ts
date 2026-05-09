@@ -62,6 +62,7 @@ export const useUIStore = defineStore('ui', () => {
   const warAutoFillDisabled = ref(false)
 
   const isBattleSwitchForced = ref(false) // Para cuando un poke es debilitado
+  const isWarPanelOpen = ref(false)
   
   // Data for modals (still needed in the store if shared)
   const activePokemonForRelearner = ref<Pokemon | null>(null)
@@ -438,6 +439,7 @@ export const useUIStore = defineStore('ui', () => {
     isRankedMenuOpen: ref(false),
     currentPvPInvite: ref(null),
     isBattleSwitchForced,
+    isWarPanelOpen,
     hasDismissedSessionLock,
 
     // Stacking

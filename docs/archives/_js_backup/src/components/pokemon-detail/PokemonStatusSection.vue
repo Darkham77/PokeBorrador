@@ -155,7 +155,7 @@ const abilityStyle = computed(() => ({
   @include pixelated;
   font-size: 10px;
   margin-bottom: 14px;
-  color: var(--white);
+  color: Var(--white);
   opacity: 0.9;
   @include pixelated;
 }
@@ -171,9 +171,9 @@ const abilityStyle = computed(() => ({
 
 .progress-inner { 
   height: 100%; 
-  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: width 0.6s cubic-Bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 0 10px currentColor;
-  @include will-animate(width);
+  @include will-Animate(width);
 }
 .hp-high { background: Linear-Gradient(90deg, Rgba(16, 185, 129, 1), Rgba(52, 211, 153, 1)); color: Rgba(16, 185, 129, 1); }
 .hp-mid { background: Linear-Gradient(90deg, Rgba(245, 158, 11, 1), Rgba(251, 191, 36, 1)); color: Rgba(245, 158, 11, 1); }
@@ -182,12 +182,12 @@ const abilityStyle = computed(() => ({
 .exp-fill { 
   background: Linear-Gradient(90deg, Rgba(139, 92, 246, 1), Rgba(168, 85, 247, 1)); 
   color: Rgba(139, 92, 246, 1);
-  @include will-animate(width);
+  @include will-Animate(width);
 }
 
 .info-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: Repeat(3, 1fr);
   gap: 12px;
   margin-bottom: 24px;
 }
@@ -216,7 +216,7 @@ const abilityStyle = computed(() => ({
   display: block;
   @include pixelated;
   font-size: 8px; // Slightly smaller to prevent overlap
-  color: var(--gray);
+  color: Var(--gray);
   text-transform: uppercase;
   margin-bottom: 8px; // Good separation
   opacity: 0.8;
@@ -227,7 +227,7 @@ const abilityStyle = computed(() => ({
   display: block;
   @include pixelated;
   font-size: 10px; // Standardized size for all values
-  color: var(--white);
+  color: Var(--white);
   @include pixelated;
   
   &.interactive-val {
@@ -242,13 +242,13 @@ const abilityStyle = computed(() => ({
 }
 
 .vigor-val { 
-  color: var(--yellow) !important; 
+  color: Var(--yellow) !important; 
   text-shadow: 0 0 10px Rgba(255, 214, 10, 0.3) !important;
 }
 
 .mt-12 { margin-top: 12px; }
-.max-text { color: var(--yellow); font-size: 8px; }
-.exp-text { color: var(--purple-light); font-size: 8px; }
+.max-text { color: Var(--yellow); font-size: 8px; }
+.exp-text { color: Var(--purple-light); font-size: 8px; }
 
 @media (max-width: 480px) {
   .glass-inset { margin-bottom: 24px; }

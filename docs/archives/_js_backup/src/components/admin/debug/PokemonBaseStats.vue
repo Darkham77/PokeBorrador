@@ -25,7 +25,7 @@ defineProps({
 <style lang="scss" scoped>
 .base-stats-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: Repeat(3, 1fr);
   gap: 6px;
 
   .stat-item {
@@ -46,7 +46,7 @@ defineProps({
     .stat-value {
       font-size: 11px;
       font-weight: bold;
-      color: var(--yellow);
+      color: Var(--yellow);
     }
   }
 }

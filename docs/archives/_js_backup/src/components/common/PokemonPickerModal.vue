@@ -132,7 +132,7 @@ const handleConfirm = () => {
   -webkit-backdrop-filter: Blur(8px);
   backdrop-filter: Blur(8px);
   @include gpu-layer;
-  z-index: var(--z-modal);
+  z-index: Var(--z-modal);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -159,7 +159,7 @@ const handleConfirm = () => {
   text-align: center;
 
   h3 { margin: 0; font-size: 16px; color: $white; }
-  .subtitle { font-size: 12px; color: var(--gray); margin: 4px 0 0; }
+  .subtitle { font-size: 12px; color: Var(--gray); margin: 4px 0 0; }
   .close-btn { 
     position: absolute; top: 15px; right: 15px; 
     background: none; border: none; color: Rgba(102, 102, 102, 1); font-size: 18px; cursor: pointer;
@@ -181,7 +181,7 @@ const handleConfirm = () => {
 }
 
 .pokemon-item {
-  @include pokemon-list-item-standard(12px);
+  @include pokemon-list-item-Standard(12px);
   display: flex;
   align-items: center;
   gap: 12px;
@@ -198,11 +198,11 @@ const handleConfirm = () => {
     justify-content: center;
     font-size: 12px;
     font-weight: bold;
-    color: var(--purple);
+    color: Var(--purple);
     
     .selected & {
-      background: var(--purple);
-      border-color: var(--purple);
+      background: Var(--purple);
+      border-color: Var(--purple);
       color: $white;
     }
   }
@@ -211,14 +211,14 @@ const handleConfirm = () => {
   .p-info {
     flex: 1;
     .p-name { font-size: 14px; font-weight: 700; color: $white; }
-    .p-lv { font-size: 11px; color: var(--gray); }
+    .p-lv { font-size: 11px; color: Var(--gray); }
   }
 }
 
 .empty-state {
   padding: 40px 20px;
   text-align: center;
-  color: var(--gray);
+  color: Var(--gray);
   font-size: 13px;
 }
 
@@ -229,17 +229,17 @@ const handleConfirm = () => {
   align-items: center;
   justify-content: space-between;
 
-  .selection-count { font-size: 12px; color: var(--gray); }
+  .selection-count { font-size: 12px; color: Var(--gray); }
   .confirm-btn {
     padding: 10px 24px;
-    background: var(--purple);
+    background: Var(--purple);
     color: $white;
     border: none;
     border-radius: 10px;
     font-weight: 700;
     cursor: pointer;
     &:disabled { opacity: 0.5; cursor: not-allowed; }
-    &:hover:not(:disabled) { filter: Brightness(1.1); }
+    &:hover:Not(:disabled) { filter: Brightness(1.1); }
   }
 }
 

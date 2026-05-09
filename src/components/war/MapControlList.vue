@@ -3,15 +3,20 @@ import { useWarStore } from '@/stores/war'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { computed } from 'vue'
 
-const warStore = useWarStore() as any
+const warStore = useWarStore()
+
+interface MapData {
+  id: string
+  name: string
+}
 
 const allMaps = computed(() => {
-  const maps = pokemonDataProvider.getMaps() as any[]
+  const maps = pokemonDataProvider.getMaps() as MapData[]
   return maps.map(m => {
     const data = warStore.mapDominance[m.id] || { union: 0, poder: 0, winner: null }
     const total = (Number(data.union) || 0) + (Number(data.poder) || 0)
     const unionPct = total > 0 ? (data.union / total) * 100 : 50
-    const winner = data.winner || (data.union > data.poder ? 'union' : data.poder > data.union ? 'poder' : null)
+    const winner = data.winner || (data.union > data.poder ? 'union' : data.poder > data.union ? 'poder' : null) as 'union' | 'poder' | null
     
     return {
       id: m.id,

@@ -118,7 +118,7 @@ const getFactionIcon = (faction) => {
 .war-overlay {
   position: fixed;
   inset: 0;
-  z-index: var(--z-modal);
+  z-index: Var(--z-modal);
   background: Rgba(0, 0, 0, 0.9);
   -webkit-backdrop-filter: Blur(10px);
   backdrop-filter: Blur(10px);
@@ -127,7 +127,7 @@ const getFactionIcon = (faction) => {
   align-items: center;
   justify-content: center;
   padding: 20px;
-  transform: translateZ(0);
+  transform: TranslateZ(0);
 }
 
 .war-panel-premium {
@@ -156,7 +156,7 @@ const getFactionIcon = (faction) => {
   right: 30px;
   background: none;
   border: none;
-  color: var(--gray);
+  color: Var(--gray);
   font-size: 24px;
   cursor: pointer;
   transition: color 0.2s;
@@ -167,12 +167,12 @@ const getFactionIcon = (faction) => {
   .glitch-text {
     @include pixelated;
     font-size: 24px;
-    color: var(--yellow);
+    color: Var(--yellow);
     display: block;
     margin-bottom: 10px;
   }
   p {
-    color: var(--gray);
+    color: Var(--gray);
     font-size: 12px;
     letter-spacing: 4px;
     font-weight: 800;
@@ -222,7 +222,7 @@ const getFactionIcon = (faction) => {
 
   .segment {
     height: 100%;
-    transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: width 1s cubic-Bezier(0.4, 0, 0.2, 1);
     &.union { background: Rgba(59, 130, 246, 1); box-shadow: 0 0 20px Rgba(59, 130, 246, 0.4); }
     &.contested { background: Rgba(68, 68, 68, 1); }
     &.poder { background: Rgba(239, 68, 68, 1); box-shadow: 0 0 20px Rgba(239, 68, 68, 0.4); }
@@ -247,7 +247,7 @@ const getFactionIcon = (faction) => {
 .section-label {
   @include pixelated;
   font-size: 8px;
-  color: var(--gray);
+  color: Var(--gray);
   margin-bottom: 20px;
   display: flex;
   align-items: center;
@@ -257,7 +257,7 @@ const getFactionIcon = (faction) => {
 
 .map-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  grid-template-columns: Repeat(auto-fill, Minmax(250px, 1fr));
   gap: 20px;
   padding-bottom: 40px;
 }
@@ -272,11 +272,11 @@ const getFactionIcon = (faction) => {
   display: flex;
   align-items: center;
   gap: 15px;
-  color: var(--gray);
+  color: Var(--gray);
   font-size: 13px;
   .icon { font-size: 20px; }
 }
 
-.slide-up-enter-active, .slide-up-leave-active { transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
-.slide-up-enter-from, .slide-up-leave-to { transform: translateY(100%); opacity: 0; }
+.slide-up-enter-active, .slide-up-leave-active { transition: all 0.4s cubic-Bezier(0.16, 1, 0.3, 1); }
+.slide-up-enter-from, .slide-up-leave-to { transform: TranslateY(100%); opacity: 0; }
 </style>

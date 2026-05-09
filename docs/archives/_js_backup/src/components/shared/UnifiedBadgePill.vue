@@ -102,7 +102,7 @@ const handleItemImageError = (e) => {
 
 .unified-badge-pill {
   @include flex-center;
-  z-index: var(--z-low);
+  z-index: Var(--z-low);
 
   .pill-container {
     display: flex !important;
@@ -118,7 +118,7 @@ const handleItemImageError = (e) => {
     box-shadow: 0 4px 15px Rgba(0,0,0,0.5);
     line-height: 0;
 
-    :deep(.pv-tooltip-wrapper) {
+    :Deep(.pv-tooltip-wrapper) {
       display: flex !important;
       align-items: center !important;
       justify-content: center !important;
@@ -156,14 +156,14 @@ const handleItemImageError = (e) => {
       }
     }
 
-    :deep(.pv-tooltip-wrapper) {
+    :Deep(.pv-tooltip-wrapper) {
       width: 14px !important;
       height: 14px !important;
       display: inline-flex !important;
       align-items: center;
       justify-content: center;
 
-      &:has(.is-item) {
+      &:Has(.is-item) {
         width: 16px !important;
         height: 16px !important;
       }
@@ -213,8 +213,8 @@ const handleItemImageError = (e) => {
     justify-content: center !important;
     @include flex-center;
     @include pixelated;
-    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    color: var(--badge-color, #ccc);
+    transition: all 0.2s cubic-Bezier(0.175, 0.885, 0.32, 1.275);
+    color: Var(--badge-color, #ccc);
     font-weight: 900;
     line-height: 1;
     text-align: center;
@@ -265,7 +265,7 @@ const handleItemImageError = (e) => {
     &:hover {
       transform: Scale(1.3) !important;
       filter: Brightness(1.2);
-      z-index: calc(var(--z-low) + 1);
+      z-index: Calc(Var(--z-low) + 1);
     }
 
     &.can-edit {

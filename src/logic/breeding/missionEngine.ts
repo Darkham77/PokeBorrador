@@ -211,12 +211,12 @@ export function validateMissionPokemon(pokemon: Pokemon, mission: DaycareMission
   if (req.type === 'level') {
     return pokemon.level >= (req.minLevel || 0);
   } else if (req.type === 'iv_total') {
-    const total = Object.values(pokemon.ivs || {}).reduce((acc, val) => acc + (val || 0), 0);
+    const total = Object.values(pokemon.ivs || {}).reduce((acc: number, val) => acc + (Number(val) || 0), 0);
     return total >= (req.minIvTotal || 0);
   } else if (req.type === 'nature') {
     return pokemon.nature === req.nature;
   } else if (req.type === 'iv_31') {
-    return pokemon.ivs[req.stat31!] === 31;
+    return (Number(pokemon.ivs[req.stat31!]) || 0) === 31;
   }
   
   return false;

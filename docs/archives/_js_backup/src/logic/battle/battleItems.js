@@ -35,7 +35,7 @@ export async function handleItemUsage(itemName, p, e, options = {}) {
     gameBus.emit('PLAY_CATCH_ENERGY', { side: 'enemy', ballId: itemName })
     
     // Esperar a que el Pokémon termine de entrar en la bola (800ms aprox)
-    await new Promise(r => setTimeout(r, 1000))
+    await await setTimeout(1000)
 
     // 2. Ejecutar los intentos de agitación (shakes)
     for (let i = 0; i < shakes; i++) {
@@ -45,13 +45,13 @@ export async function handleItemUsage(itemName, p, e, options = {}) {
       audio.wobble()
       gameBus.emit('CATCH_SHAKE', { side: 'enemy' })
       // Duración de un shake + pequeña pausa
-      await new Promise(r => setTimeout(r, 1000))
+      await await setTimeout(1000)
     }
 
     // 3. Resultado final
     if (caught) {
       // Pequeña pausa dramática antes del click de éxito
-      await new Promise(r => setTimeout(r, 500))
+      await await setTimeout(500)
       if (options.fsm) {
         options.fsm.transition('ACTIVE_BATTLE', 'CATCH_SUCCESS')
       }
@@ -66,7 +66,7 @@ export async function handleItemUsage(itemName, p, e, options = {}) {
       return { action: 'capture', pokemon: e }
     } else {
       // Esperar un instante tras el último shake fallido
-      await new Promise(r => setTimeout(r, 300))
+      await await setTimeout(300)
       if (options.fsm) {
         options.fsm.transition('ACTIVE_BATTLE', 'CATCH_BREAK')
       }
@@ -76,7 +76,7 @@ export async function handleItemUsage(itemName, p, e, options = {}) {
       gameBus.emit('PLAY_RELEASE_ENERGY', { side: 'enemy' })
       
       // Wait for release animation to finish before showing HUD again
-      await new Promise(r => setTimeout(r, 800))
+      await await setTimeout(800)
     }
   } else {
     // Entrada de entrenador (siempre, para feedback inmediato)

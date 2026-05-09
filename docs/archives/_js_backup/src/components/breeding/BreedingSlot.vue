@@ -168,7 +168,7 @@ const genderSymbol = (g) => {
       }
       .level {
         font-size: 10px;
-        color: var(--gray, #94a3b8);
+        color: Var(--gray, #94a3b8);
       }
     }
 
@@ -182,7 +182,7 @@ const genderSymbol = (g) => {
         &.M { color: Rgba(52, 152, 219, 1); }
         &.F { color: Rgba(232, 67, 147, 1); }
       }
-      .nature { color: var(--yellow, #fbbf24); }
+      .nature { color: Var(--yellow, #fbbf24); }
       .vigor { color: Rgba(16, 185, 129, 1); }
     }
 

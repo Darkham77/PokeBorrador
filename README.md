@@ -6,31 +6,30 @@ Este manual detalla los comandos y configuraciones necesarios para trabajar en l
 
 Antes de comenzar, asegúrate de tener instalado **Node.js (v26.0.0 o superior)** en tu sistema.
 
-> [!IMPORTANT]
-> El proyecto utiliza características modernas del motor V8 y requiere explícitamente Node 26+. Si tu versión es inferior, el comando `npm install` lanzará una advertencia sugiriendo la actualización.
+> [!IMPORTANT] El proyecto utiliza características modernas del motor V8 y requiere explícitamente Node 26+. Si tu versión es inferior, el comando `npm install` lanzará una advertencia sugiriendo la actualización.
 
 ### 🌐 Instalación de Node.js y NPM
 
 - **Windows (Terminal/PowerShell)**:
 
-    ```bash
-    winget install OpenJS.NodeJS
-    ```
+```bash
+winget install OpenJS.NodeJS
+```
 
 - **Linux (Ubuntu/Debian)**:
 
-     Para asegurar que instalas la versión 26+ (los repositorios de apt suelen estar desactualizados), usa NodeSource:
+Para asegurar que instalas la versión 26+ (los repositorios de apt suelen estar desactualizados), usa NodeSource:
 
-     ```bash
-     curl -fsSL https://deb.nodesource.com/setup_26.x | sudo -E bash -
-     sudo apt install -y nodejs
-     ```
+```bash
+curl -fsSL https://deb.nodesource.com/setup_26.x | sudo -E bash -
+sudo apt install -y nodejs
+```
 
 - **Actualizar NPM** (Opcional):
 
-    ```bash
-    npm install -g npm@latest
-    ```
+```bash
+npm install -g npm@latest
+```
 
 ## 🛠️ Entorno de Desarrollo
 
@@ -38,28 +37,27 @@ Para iniciar el servidor de desarrollo local:
 
 1. **Instalar dependencias**:
 
-    ```bash
-    npm install
-    ```
+   ```bash
+   npm install
+   ```
 
 2. **Actualizar dependencias** (Si hay nuevas versiones o warnings de seguridad):
 
-    ```bash
-    npm update
-    ```
+   ```bash
+   npm update
+   ```
 
-3. **Configurar Variables de Entorno**:
-    Copia el archivo `.env.example` y renómbralo a `.env`, luego completa los valores de Supabase:
+3. **Configurar Variables de Entorno**: Copia el archivo `.env.example` y renómbralo a `.env`, luego completa los valores de Supabase:
 
-    ```bash
-    cp .env.example .env
-    ```
+   ```bash
+   cp .env.example .env
+   ```
 
 4. **Iniciar Vite**:
 
-    ```bash
-    npm run dev
-    ```
+   ```bash
+   npm run dev
+   ```
 
 El servidor estará disponible en `http://localhost:5173`.
 
@@ -123,7 +121,7 @@ Antes de realizar una entrega o desplegar cambios, es **MANDATORIO** que el cód
 El proyecto utiliza un motor de auditoría inteligente y validadores semánticos para garantizar un estado de **Zero-Warning**. Es obligatorio ejecutar estos controles antes de cualquier entrega.
 
 | Comando | Descripción |
-| :--- | :--- |
+| :-- | :-- |
 | `npm run audit` | **Auditoría Inteligente**: Analiza patrones legacy (Date), colisiones SASS y optimización GPU. |
 | `npm run audit:fix` | **Auto-corrección**: Aplica correcciones automáticas de estándares (Timers, Imports, SASS). |
 | `npm run audit:full` | **Pipeline Completo**: Ejecuta TODAS las validaciones (Lints, SQL, FSM, Items, Moves, Abilities). |
@@ -131,7 +129,7 @@ El proyecto utiliza un motor de auditoría inteligente y validadores semánticos
 | `npm run validate:sql` | **SQL Integrity**: Valida compatibilidad de migraciones con SQLite nativo (`node:sqlite`). |
 | `npm run validate:items` | **Item Database**: Verifica IDs, tipos e iconos en la base de datos de objetos. |
 | `npm run validate:moves` | **Move Sync**: Sincroniza semánticamente los movimientos con la PokeAPI. |
-| `npm run validate:abilities`| **Ability Sync**: Valida habilidades contra la base de datos oficial. |
+| `npm run validate:abilities` | **Ability Sync**: Valida habilidades contra la base de datos oficial. |
 | `npm run fsm:audit` | **Battle State Audit**: Verifica que la FSM de combate cumpla con la documentación oficial. |
 
 ### Otros Comandos de Desarrollo
@@ -171,8 +169,7 @@ npm run download-assets -- --items      # Solo ítems
 npm run download-assets -- --trainers   # Solo entrenadores
 ```
 
-> [!NOTE]
-> Los recursos se descargan en la carpeta `external_assets/`. Estos archivos están fuera del pipeline automático de `_raw-assets` por defecto para evitar duplicación masiva, pero podés moverlos manualmente si necesitás procesarlos.
+> [!NOTE] Los recursos se descargan en la carpeta `external_assets/`. Estos archivos están fuera del pipeline automático de `_raw-assets` por defecto para evitar duplicación masiva, pero podés moverlos manualmente si necesitás procesarlos.
 
 ### 🖼️ Pipeline de Assets
 
@@ -182,8 +179,7 @@ Procesa todas las imágenes de `_raw-assets`, las convierte a WebP y las espeja 
 npm run convert-assets
 ```
 
-> [!TIP]
-> El script detecta automáticamente si un asset es Pixel Art (basado en carpetas como `sprites/` o `icons/`) para aplicar compresión **Lossless**. Para el resto, aplica una calidad adaptativa basada en la resolución.
+> [!TIP] El script detecta automáticamente si un asset es Pixel Art (basado en carpetas como `sprites/` o `icons/`) para aplicar compresión **Lossless**. Para el resto, aplica una calidad adaptativa basada en la resolución.
 
 ### 🔎 Auditoría de Estándares
 
@@ -234,9 +230,9 @@ Si bajas cambios del repositorio (git pull) y el comando `npm run dev` falla o t
 
 Para mantener la calidad y el orden del código, es una excelente práctica realizar una auditoría periódica (cada 2 o 3 días de trabajo).
 
-- **Instrucción**: Pedile a la IA: *"Hace una auditoría a todo el proyecto y revisá que cumpla con /project-standards"*.
+- **Instrucción**: Pedile a la IA: _"Hace una auditoría a todo el proyecto y revisá que cumpla con /project-standards"_.
 - **Resultado**: La IA detectará archivos que exceden las 500 líneas, errores de estilo o violaciones a la arquitectura.
-- **Acción**: Después del reporte, pedile que genere el *"plan de corrección"* para normalizar el código.
+- **Acción**: Después del reporte, pedile que genere el _"plan de corrección"_ para normalizar el código.
 
 ### 3. 🖼️ Gestión de Imágenes (`_raw-assets`)
 
@@ -285,9 +281,9 @@ Para verificar estados o forzar situaciones de prueba, el proyecto expone un pro
 El proyecto incluye un sistema de protección automática (**"Ban Trap"**) para prevenir el uso indebido de herramientas de desarrollo en entornos de producción.
 
 - **Detección Automática**: Si un usuario con rol de `user` intenta invocar métodos de la API de depuración (`window.__VITE_DEBUG__`) o interactuar con el panel de desarrollo en modo **ONLINE**, el sistema:
-    1. Marca la cuenta como baneada (`is_banned: true`) en la base de datos.
-    2. Registra el motivo del baneo.
-    3. Fuerza el cierre inmediato de la sesión.
+  1. Marca la cuenta como baneada (`is_banned: true`) en la base de datos.
+  2. Registra el motivo del baneo.
+  3. Fuerza el cierre inmediato de la sesión.
 - **Efecto Visual**: El usuario afectado verá una pantalla de **ACCESO DENEGADO** con estética retro-moderna al intentar iniciar sesión, indicando el motivo de la sanción.
 - **Restauración de Cuentas**: El baneo es permanente hasta que un administrador lo revierta manualmente desde el panel de control de Supabase.
   - **Pasos para desbanear**:
@@ -295,8 +291,8 @@ El proyecto incluye un sistema de protección automática (**"Ban Trap"**) para 
     2. Ejecutá la siguiente consulta:
 
     ```sql
-    UPDATE profiles 
-    SET is_banned = false, ban_reason = NULL 
+    UPDATE profiles
+    SET is_banned = false, ban_reason = NULL
     WHERE email = 'usuario@ejemplo.com';
     ```
 
@@ -311,8 +307,8 @@ Comandos frecuentes para realizar mantenimiento manual sobre la base de datos de
 Para resetear la contraseña manualmente desde el SQL Editor:
 
 ```sql
-UPDATE auth.users 
-SET encrypted_password = crypt('NUEVA_CONTRASEÑA', gen_salt('bf')) 
+UPDATE auth.users
+SET encrypted_password = crypt('NUEVA_CONTRASEÑA', gen_salt('bf'))
 WHERE email = 'usuario@ejemplo.com';
 ```
 
@@ -322,22 +318,22 @@ Se debe actualizar tanto en la tabla de autenticación como en el perfil públic
 
 ```sql
 -- 1. Actualizar Auth (Requerido para login)
-UPDATE auth.users 
-SET email = 'nuevo@email.com', 
-    email_confirmed_at = NOW() 
+UPDATE auth.users
+SET email = 'nuevo@email.com',
+    email_confirmed_at = NOW()
 WHERE email = 'viejo@email.com';
 
 -- 2. Actualizar Perfil (Requerido para lógica de juego)
-UPDATE public.profiles 
-SET email = 'nuevo@email.com' 
+UPDATE public.profiles
+SET email = 'nuevo@email.com'
 WHERE email = 'viejo@email.com';
 ```
 
 #### Cambiar Nombre de Entrenador (Username)
 
 ```sql
-UPDATE public.profiles 
-SET username = 'NuevoNombre' 
+UPDATE public.profiles
+SET username = 'NuevoNombre'
 WHERE email = 'usuario@ejemplo.com';
 ```
 
@@ -346,10 +342,9 @@ WHERE email = 'usuario@ejemplo.com';
 Para otorgar permisos de administrador a un usuario (acceso a paneles de debug en producción, bypass de ban-traps, etc.):
 
 ```sql
-UPDATE public.profiles 
-SET role = 'admin' 
+UPDATE public.profiles
+SET role = 'admin'
 WHERE email = 'usuario@ejemplo.com';
 ```
 
-> [!IMPORTANT]
-> Los nombres de usuario deben ser únicos. Si el nombre ya existe, la consulta fallará debido a la restricción `UNIQUE`.
+> [!IMPORTANT] Los nombres de usuario deben ser únicos. Si el nombre ya existe, la consulta fallará debido a la restricción `UNIQUE`.

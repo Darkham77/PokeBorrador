@@ -81,7 +81,7 @@ onMounted(async () => {
 
   .subtitle {
     font-size: 12px;
-    color: var(--gray);
+    color: Var(--gray);
     @include pixelated;
   }
 }
@@ -95,7 +95,7 @@ onMounted(async () => {
   button {
     background: none;
     border: none;
-    color: var(--gray);
+    color: Var(--gray);
     text-decoration: underline;
     cursor: pointer;
     @include pixelated;
@@ -110,7 +110,7 @@ onMounted(async () => {
 .glitch {
   position: relative;
   &::before, &::after {
-    content: attr(data-text);
+    content: Attr(data-text);
     position: absolute;
     top: 0; left: 0; width: 100%; height: 100%;
     opacity: 0.8;
@@ -118,7 +118,7 @@ onMounted(async () => {
   &::before {
     left: 2px;
     text-shadow: -2px 0 #ff00c1;
-    clip: rect(44px, 450px, 56px, 0);
+    clip: Rect(44px, 450px, 56px, 0);
     animation: glitch-anim 5s infinite linear alternate-reverse;
   }
   &::after {
@@ -129,12 +129,12 @@ onMounted(async () => {
 }
 
 @keyframes glitch-anim {
-  0% { clip: rect(31px, 9999px, 94px, 0); transform: skew(0.85deg); }
-  100% { clip: rect(70px, 9999px, 71px, 0); transform: skew(0.1deg); }
+  0% { clip: Rect(31px, 9999px, 94px, 0); transform: Skew(0.85deg); }
+  100% { clip: Rect(70px, 9999px, 71px, 0); transform: Skew(0.1deg); }
 }
 
 @keyframes glitch-anim2 {
-  0% { clip: rect(65px, 9999px, 100px, 0); transform: skew(0.3deg); }
-  100% { clip: rect(10px, 9999px, 20px, 0); transform: skew(0.3deg); }
+  0% { clip: Rect(65px, 9999px, 100px, 0); transform: Skew(0.3deg); }
+  100% { clip: Rect(10px, 9999px, 20px, 0); transform: Skew(0.3deg); }
 }
 </style>

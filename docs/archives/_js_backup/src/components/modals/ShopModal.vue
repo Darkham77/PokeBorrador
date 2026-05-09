@@ -198,13 +198,13 @@ const buy = (item) => {
       
       &:hover {
         background: Rgba(255, 255, 255, 0.03);
-        color: var(--white);
+        color: Var(--white);
       }
       
       &.active {
         background: Rgba(250, 204, 21, 0.1);
         border-color: Rgba(250, 204, 21, 0.3);
-        color: var(--yellow);
+        color: Var(--yellow);
       }
     }
   }
@@ -216,7 +216,7 @@ const buy = (item) => {
     .money {
       font-size: 18px;
       font-weight: 800;
-      color: var(--white);
+      color: Var(--white);
       margin-bottom: 4px;
     }
     
@@ -251,7 +251,7 @@ const buy = (item) => {
     transition: all 0.2s;
     
     &:focus {
-      border-color: var(--yellow);
+      border-color: Var(--yellow);
       box-shadow: 0 0 12px Rgba(250, 204, 21, 0.15);
     }
   }
@@ -263,7 +263,7 @@ const buy = (item) => {
   min-height: 0;
   padding: 20px;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: Repeat(auto-fill, Minmax(280px, 1fr));
   gap: 16px;
 }
 
@@ -277,10 +277,10 @@ const buy = (item) => {
   gap: 12px;
   transition: all 0.2s;
 
-  &:hover:not(.locked) {
+  &:hover:Not(.locked) {
     background: Rgba(255, 255, 255, 0.04);
     border-color: Rgba(250, 204, 21, 0.3);
-    transform: translateY(-2px);
+    transform: TranslateY(-2px);
   }
 
   &.locked {
@@ -320,7 +320,7 @@ const buy = (item) => {
     
     small {
       font-size: 9px;
-      color: var(--white);
+      color: Var(--white);
       margin-top: 4px;
     }
   }
@@ -331,11 +331,11 @@ const buy = (item) => {
   .name {
     font-weight: 700;
     font-size: 15px;
-    color: var(--white);
+    color: Var(--white);
     margin-bottom: 2px;
   }
   .price {
-    color: var(--yellow);
+    color: Var(--yellow);
     font-weight: 700;
     font-size: 13px;
     margin-bottom: 8px;

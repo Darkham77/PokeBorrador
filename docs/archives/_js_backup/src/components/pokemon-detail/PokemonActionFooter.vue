@@ -80,7 +80,7 @@ const hasActions = computed(() => {
     @include pixelated;
     font-size: 14px;
     font-weight: 900;
-    color: var(--yellow);
+    color: Var(--yellow);
     text-align: center;
     text-shadow: 0 0 10px Rgba(255, 214, 10, 0.3);
   }

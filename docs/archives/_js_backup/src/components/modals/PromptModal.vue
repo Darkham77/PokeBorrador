@@ -93,14 +93,14 @@ const handleCancel = () => {
     border: 1px solid Rgba(255, 255, 255, 0.1);
     border-radius: 12px;
     padding: 12px 16px;
-    color: var(--white);
+    color: Var(--white);
     font-family: 'Inter', sans-serif;
     font-size: 16px;
     outline: none;
     transition: all 0.2s;
     
     &:focus {
-      border-color: var(--yellow);
+      border-color: Var(--yellow);
       box-shadow: 0 0 12px Rgba(255, 214, 10, 0.2);
     }
   }
@@ -132,12 +132,12 @@ const handleCancel = () => {
     color: Rgba(255, 255, 255, 0.5);
     &:hover {
       background: Rgba(255, 255, 255, 0.1);
-      color: var(--white);
+      color: Var(--white);
     }
   }
   
   .btn-confirm {
-    background: var(--yellow);
+    background: Var(--yellow);
     color: Rgba(0, 0, 0, 1);
     box-shadow: 0 4px 15px Rgba(255, 214, 10, 0.3);
     &:hover {

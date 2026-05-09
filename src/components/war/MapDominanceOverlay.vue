@@ -9,7 +9,7 @@ interface Props {
 
 const props = defineProps<Props>()
 
-const warStore = useWarStore() as any
+const warStore = useWarStore()
 
 const mapData = computed(() => warStore.mapDominance[props.mapId] || { union: 0, poder: 0, winner: null })
 

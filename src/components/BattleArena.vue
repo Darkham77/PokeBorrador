@@ -246,7 +246,7 @@ const handleClose = () => {
     transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     
     &.hover-bounce:hover {
-      transform: Scale(1.3) translateY(-2px);
+      transform: Scale(1.3) Translatey(-2px);
     }
   }
 }

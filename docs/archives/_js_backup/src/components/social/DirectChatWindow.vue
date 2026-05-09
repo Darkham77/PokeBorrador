@@ -154,7 +154,7 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   box-shadow: 0 10px 30px Rgba(0, 0, 0, 0.5);
-  transition: height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: height 0.3s cubic-Bezier(0.4, 0, 0.2, 1);
   overflow: hidden;
 
   &.collapsed {
@@ -165,7 +165,7 @@ onMounted(() => {
 .chat-header {
   height: 40px;
   padding: 0 12px;
-  background: Linear-Gradient(90deg, var(--purple), Rgba(157, 78, 221, 1));
+  background: Linear-Gradient(90deg, Var(--purple), Rgba(157, 78, 221, 1));
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -181,16 +181,16 @@ onMounted(() => {
   .unread-dot {
     width: 8px;
     height: 8px;
-    background: var(--white);
+    background: Var(--white);
     border-radius: 50%;
-    box-shadow: 0 0 10px var(--white);
+    box-shadow: 0 0 10px Var(--white);
     animation: pulse 1.5s infinite;
   }
 
   .title {
     @include pixelated;
     font-size: 7px;
-    color: var(--white);
+    color: Var(--white);
     text-shadow: 0 1px 2px Rgba(0, 0, 0, 0.3);
   }
 
@@ -202,7 +202,7 @@ onMounted(() => {
   .header-btn {
     background: Rgba(0, 0, 0, 0.1);
     border: none;
-    color: var(--white);
+    color: Var(--white);
     width: 24px;
     height: 24px;
     border-radius: 6px;
@@ -251,7 +251,7 @@ onMounted(() => {
     }
   }
 
-  &:not(.is-me) {
+  &:Not(.is-me) {
     align-items: flex-start;
     .bubble {
       background: Rgba(255, 255, 255, 0.05);
@@ -284,20 +284,20 @@ onMounted(() => {
     border: 1px solid Rgba(255, 255, 255, 0.1);
     border-radius: 8px;
     padding: 8px 10px;
-    color: var(--white);
+    color: Var(--white);
     font-size: 12px;
     outline: none;
 
-    &:focus { border-color: var(--purple-light); }
+    &:focus { border-color: Var(--purple-light); }
   }
 
   .send-btn {
-    background: var(--purple);
+    background: Var(--purple);
     border: none;
     border-radius: 8px;
     width: 32px;
     height: 32px;
-    color: var(--white);
+    color: Var(--white);
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -309,7 +309,7 @@ onMounted(() => {
 }
 
 .animate-pop {
-  animation: pop 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  animation: pop 0.25s cubic-Bezier(0.175, 0.885, 0.32, 1.275) forwards;
 }
 
 @keyframes pulse {

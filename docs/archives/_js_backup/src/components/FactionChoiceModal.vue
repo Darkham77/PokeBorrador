@@ -122,7 +122,7 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
     font-size: 9px;
     color: $white;
     
-    .coin { color: var(--yellow, $coin-gold); }
+    .coin { color: Var(--yellow, $coin-gold); }
   }
 }
 
@@ -142,19 +142,19 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
   flex-direction: column;
   align-items: center;
   gap: 16px;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s cubic-Bezier(0.4, 0, 0.2, 1);
   text-align: center;
 
   &.union-btn {
     border: 2px solid #3b82f6;
     box-shadow: inset 0 0 20px Rgba(59, 130, 246, 0.1);
-    &:hover:not(:disabled) { background: Rgba(59, 130, 246, 0.1); transform: Scale(1.02); }
+    &:hover:Not(:disabled) { background: Rgba(59, 130, 246, 0.1); transform: Scale(1.02); }
   }
 
   &.poder-btn {
     border: 2px solid #ef4444;
     box-shadow: inset 0 0 20px Rgba(239, 68, 68, 0.1);
-    &:hover:not(:disabled) { background: Rgba(239, 68, 68, 0.1); transform: Scale(1.02); }
+    &:hover:Not(:disabled) { background: Rgba(239, 68, 68, 0.1); transform: Scale(1.02); }
   }
 
   &:disabled {

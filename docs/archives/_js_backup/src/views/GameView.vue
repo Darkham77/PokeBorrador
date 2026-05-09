@@ -53,8 +53,8 @@
 <style scoped>
 .game-view {
   min-height: 100dvh;
-  background: var(--darker);
-  color: var(--white);
+  background: Var(--darker);
+  color: Var(--white);
   padding: 20px;
 }
 
@@ -63,7 +63,7 @@
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  min-height: calc(100dvh - 40px);
+  min-height: Calc(100dvh - 40px);
 }
 
 .content-area {
@@ -82,7 +82,7 @@
   position: fixed;
   bottom: 20px;
   left: 50%;
-  transform: translateX(-50%);
+  transform: TranslateX(-50%);
   background: Rgba(0, 0, 0, 0.95);
   -webkit-backdrop-filter: Blur(10px);
   backdrop-filter: Blur(10px);
@@ -93,8 +93,8 @@
   display: flex;
   gap: 12px;
   box-shadow: 0 10px 30px Rgba(0, 0, 0, 0.5);
-  z-index: var(--z-navigation);
-  transform: translateX(-50%) translateZ(0);
+  z-index: Var(--z-navigation);
+  transform: TranslateX(-50%) TranslateZ(0);
 }
 
 .nav-item {
@@ -105,7 +105,7 @@
   padding: 8px 16px;
   border-radius: 12px;
   text-decoration: none;
-  color: var(--gray);
+  color: Var(--gray);
   font-size: 11px;
   font-weight: bold;
   transition: all 0.2s;
@@ -117,12 +117,12 @@
 
 .nav-item:hover {
   background: Rgba(255, 255, 255, 0.05);
-  color: var(--white);
+  color: Var(--white);
 }
 
 .nav-item.active {
   background: Rgba(255, 184, 0, 0.1);
-  color: var(--yellow);
+  color: Var(--yellow);
 }
 
 /* Transitions */
@@ -134,7 +134,7 @@
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
-  transform: translateY(10px);
+  transform: TranslateY(10px);
 }
 
 @media (max-width: 768px) {

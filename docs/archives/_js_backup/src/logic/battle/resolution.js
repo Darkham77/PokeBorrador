@@ -23,7 +23,7 @@ export async function processFaint(ctx, side) {
   if (pokemon.destinyBond && opponent && opponent.hp > 0) {
     ctx.addLog(`¡${pokemon.name} se llevó a ${opponent.name} con él!`, 'log-info', pokemon)
     opponent.hp = 0
-    await new Promise(r => setTimeout(r, 500))
+    await await setTimeout(500)
     await processFaint(ctx, isPlayer ? 'enemy' : 'player')
   }
 
@@ -37,7 +37,7 @@ export async function processFaint(ctx, side) {
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.RECALL_FLOW)
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.POKEMON_RECALL)
     gameBus.emit('PLAY_WITHDRAW', { side: 'player', isFaint: true })
-    await new Promise(r => setTimeout(r, 800))
+    await await setTimeout(800)
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.VACATE_SEAT)
     ctx.activeBattle.value.player = null // Liberar asiento tras retiro
     
@@ -50,7 +50,7 @@ export async function processFaint(ctx, side) {
       ctx.activeBattle.value.over = true
       ctx.addLog('¡No te quedan Pokémon sanos!', 'log-error', 'player')
       // Esperar a que la animación de faint/retiro termine antes del fade out
-      await new Promise(r => setTimeout(r, 1500))
+      await await setTimeout(1500)
       await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.DEFEAT_SCREEN)
       await terminateBattle(ctx, false)
     } else {
@@ -73,7 +73,7 @@ export async function processFaint(ctx, side) {
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.PLAY_ENEMY_FAINT)
     
     // Espera proporcional a la animación (1.0s según manual)
-    await new Promise(r => setTimeout(r, 1000))
+    await await setTimeout(1000)
     
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.VACATE_SEAT)
     ctx.activeBattle.value.enemy = null
@@ -99,7 +99,7 @@ export async function processFaint(ctx, side) {
         ctx.activeBattle.value.enemy = nextEnemy
         ctx.addLog(`¡Entrenador envía a ${nextEnemy.name}!`, 'log-enemy', 'enemy_trainer')
         gameBus.emit('PLAY_SEND_OUT', { side: 'enemy', pokemon: nextEnemy })
-        await new Promise(r => setTimeout(r, 800))
+        await await setTimeout(800)
         return
       }
     }
@@ -144,7 +144,7 @@ export async function terminateBattle(ctx, win, fled = false) {
 
   if (!win && !fled) {
     await fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.EMPTY_WAIT)
-    await new Promise(r => setTimeout(r, 1000))
+    await await setTimeout(1000)
     await ctx.gs.save(false)
     
     fsm.transition(BATTLE_STATES.EXIT_BATTLE)
@@ -177,7 +177,7 @@ export async function terminateBattle(ctx, win, fled = false) {
 
   // Asegurar 1 segundo de "escenario vacío" tras el faint
   await fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.EMPTY_WAIT)
-  await new Promise(r => setTimeout(r, 1000))
+  await await setTimeout(1000)
 
   // REORDER_TEAM (Manual 7. Reorder Team / Switch)
   // Siempre intentamos sincronizar al primer miembro sano al final del combate
@@ -193,7 +193,7 @@ export async function terminateBattle(ctx, win, fled = false) {
       await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.RENDER_BALL)
       gameBus.emit('PLAY_WITHDRAW', { side: 'player' })
       await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.ENERGY_RECALL)
-      await new Promise(r => setTimeout(r, 800))
+      await await setTimeout(800)
       await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.VACATE_SEAT)
       ctx.activeBattle.value.player = null
     }
@@ -209,10 +209,10 @@ export async function terminateBattle(ctx, win, fled = false) {
 
       gameBus.emit('PLAY_SEND_OUT', { side: 'player', pokemon: firstHealthy })
       await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.ENERGY_RELEASE)
-      await new Promise(r => setTimeout(r, 800))
+      await await setTimeout(800)
       
       await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.POKEMON_APPEAR)
-      await new Promise(r => setTimeout(r, 400))
+      await await setTimeout(400)
     }
   }
   

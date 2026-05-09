@@ -113,7 +113,7 @@ defineEmits(['open-selector', 'toggle-item', 'update:money'])
   .side-title {
     font-size: 10px;
     @include pixelated;
-    color: var(--gray);
+    color: Var(--gray);
     letter-spacing: 1px;
   }
 }
@@ -132,7 +132,7 @@ defineEmits(['open-selector', 'toggle-item', 'update:money'])
 
   &:hover {
     background: Rgba(255, 255, 255, 0.06);
-    border-color: var(--purple);
+    border-color: Var(--purple);
     color: $white;
   }
 }
@@ -142,7 +142,7 @@ defineEmits(['open-selector', 'toggle-item', 'update:money'])
   align-items: center;
   gap: 15px;
   background: Rgba(168, 85, 247, 0.1);
-  border: 1px solid var(--purple);
+  border: 1px solid Var(--purple);
   padding: 12px;
   border-radius: 16px;
   cursor: pointer;
@@ -155,8 +155,8 @@ defineEmits(['open-selector', 'toggle-item', 'update:money'])
   }
 
   .preview-sprite { width: 48px; height: 48px; image-rendering: pixelated; }
-  .preview-info { flex: 1; .name { font-weight: 800; font-size: 14px; color: var(--white); } .meta { font-size: 11px; color: Rgba(136, 136, 136, 1); } }
-  .change-hint { position: absolute; right: 15px; font-size: 8px; @include pixelated; color: var(--purple); opacity: 0.6; transition: opacity 0.2s; }
+  .preview-info { flex: 1; .name { font-weight: 800; font-size: 14px; color: Var(--white); } .meta { font-size: 11px; color: Rgba(136, 136, 136, 1); } }
+  .change-hint { position: absolute; right: 15px; font-size: 8px; @include pixelated; color: Var(--purple); opacity: 0.6; transition: opacity 0.2s; }
 }
 
 .item-selection-grid {
@@ -176,28 +176,28 @@ defineEmits(['open-selector', 'toggle-item', 'update:money'])
   border: 1px solid Rgba(255,255,255,0.06);
   border-radius: 10px;
   cursor: pointer;
-  color: var(--gray);
+  color: Var(--gray);
   transition: all 0.2s;
 
   &:hover { background: Rgba(255,255,255,0.08); }
-  &.selected { background: var(--purple); color: $white; border-color: var(--purple); box-shadow: 0 0 10px Rgba(168, 85, 247, 0.3); }
+  &.selected { background: Var(--purple); color: $white; border-color: Var(--purple); box-shadow: 0 0 10px Rgba(168, 85, 247, 0.3); }
 }
 
 .money-input-group {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  label { font-size: 9px; @include pixelated; color: var(--gray); }
+  label { font-size: 9px; @include pixelated; color: Var(--gray); }
   input {
     background: Rgba(0,0,0,0.3);
     border: 1px solid Rgba(255,255,255,0.1);
     padding: 12px;
     border-radius: 12px;
-    color: var(--yellow);
+    color: Var(--yellow);
     font-weight: 900;
     font-size: 14px;
     outline: none;
-    &:focus { border-color: var(--yellow); }
+    &:focus { border-color: Var(--yellow); }
   }
 }
 
@@ -212,7 +212,7 @@ defineEmits(['open-selector', 'toggle-item', 'update:money'])
   padding: 30px;
   text-align: center;
   .gift-icon { font-size: 40px; display: block; margin-bottom: 12px; }
-  .gift-title { font-weight: 900; font-size: 14px; color: var(--green); display: block; margin-bottom: 8px; }
+  .gift-title { font-weight: 900; font-size: 14px; color: Var(--green); display: block; margin-bottom: 8px; }
   .gift-text { font-size: 11px; color: Rgba(255, 255, 255, 0.5); margin: 0; }
 }
 

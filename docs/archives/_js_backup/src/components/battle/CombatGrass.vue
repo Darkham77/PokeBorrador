@@ -93,10 +93,10 @@ const activeBushes = computed(() => bushes[props.layer])
   pointer-events: none;
   overflow: visible;
 
-  &.layer-back { z-index: calc(var(--z-map-spawns) - 5); }
+  &.layer-back { z-index: Calc(Var(--z-map-spawns) - 5); }
   // ENCOUNTER_ANIM BUSHES_BACK: cuando forceBehind, la capa front se mueve detrás del sprite
-  &.layer-front { z-index: calc(var(--z-map-spawns) + 5); }
-  &.layer-front.is-behind { z-index: calc(var(--z-map-spawns) - 4); }
+  &.layer-front { z-index: Calc(Var(--z-map-spawns) + 5); }
+  &.layer-front.is-behind { z-index: Calc(Var(--z-map-spawns) - 4); }
 }
 
 .bush-ground-anchor {
@@ -112,8 +112,8 @@ const activeBushes = computed(() => bushes[props.layer])
 
 .bush-wrapper {
   position: absolute; 
-  width: calc(var(--bush-size, 60px) * 1px);
-  height: calc(var(--bush-size, 60px) * 1px);
+  width: Calc(Var(--bush-size, 60px) * 1px);
+  height: Calc(Var(--bush-size, 60px) * 1px);
   image-rendering: pixelated;
   will-change: transform;
 }
@@ -123,7 +123,7 @@ const activeBushes = computed(() => bushes[props.layer])
   height: 100%; 
   object-fit: contain; 
   backface-visibility: hidden;
-  animation: bush-wiggle var(--ad, 1.5s) infinite ease-in-out var(--ay, 0s);
+  animation: bush-wiggle Var(--ad, 1.5s) infinite ease-in-out Var(--ay, 0s);
   transform-origin: bottom center;
 }
 
@@ -133,7 +133,7 @@ const activeBushes = computed(() => bushes[props.layer])
 }
 
 .grass-fade-enter-active {
-  transition: opacity 0.4s ease-out, transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transition: opacity 0.4s ease-out, transform 0.4s cubic-Bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .grass-fade-leave-active, .grass-instant-leave-active {

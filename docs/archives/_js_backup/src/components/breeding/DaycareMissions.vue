@@ -132,7 +132,7 @@ const handleDelivery = (pokemon) => {
   cursor: pointer;
   transition: all 0.2s;
   
-  &:hover:not(:disabled) { background: Rgba(59, 130, 246, 0.2); transform: Scale(1.05); }
+  &:hover:Not(:disabled) { background: Rgba(59, 130, 246, 0.2); transform: Scale(1.05); }
   &:disabled { opacity: 0.5; cursor: not-allowed; }
 }
 
@@ -245,6 +245,6 @@ const handleDelivery = (pokemon) => {
   box-shadow: 0 4px 0 #4f46e5;
   transition: all 0.1s;
   
-  &:active { transform: translateY(2px); box-shadow: 0 2px 0 #4f46e5; }
+  &:active { transform: TranslateY(2px); box-shadow: 0 2px 0 #4f46e5; }
 }
 </style>

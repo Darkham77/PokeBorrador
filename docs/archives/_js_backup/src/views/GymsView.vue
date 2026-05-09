@@ -71,7 +71,7 @@ onMounted(async () => {
 
 .gyms-view-legacy {
   padding: 0 0 40px;
-  background: var(--bg-dark);
+  background: Var(--bg-dark);
 }
 
 .gyms-header-legacy {
@@ -91,14 +91,14 @@ onMounted(async () => {
 .view-title {
   @include pixelated;
   font-size: 14px;
-  color: var(--yellow);
+  color: Var(--yellow);
   margin: 0 0 10px 0;
-  text-shadow: 0 2px 0 var(--black);
+  text-shadow: 0 2px 0 Var(--black);
 }
 
 .view-desc {
   font-size: 10px;
-  color: var(--gray);
+  color: Var(--gray);
   line-height: 1.6;
   max-width: 500px;
 }
@@ -114,7 +114,7 @@ onMounted(async () => {
 .badge-title {
   @include pixelated;
   font-size: 8px;
-  color: var(--yellow);
+  color: Var(--yellow);
   margin-bottom: 20px;
   text-align: center;
 }
@@ -142,7 +142,7 @@ onMounted(async () => {
   &.active {
     opacity: 1;
     background: Rgba(255, 215, 0, 0.1);
-    border-color: var(--yellow);
+    border-color: Var(--yellow);
     box-shadow: 0 0 15px Rgba(255, 215, 0, 0.3);
     transform: Scale(1.1);
   }
@@ -150,7 +150,7 @@ onMounted(async () => {
 
 .gyms-grid-legacy {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: Repeat(auto-fill, Minmax(320px, 1fr));
   gap: 25px;
   padding-bottom: 60px;
 }

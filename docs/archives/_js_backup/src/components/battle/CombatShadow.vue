@@ -67,7 +67,7 @@ const shadowStyle = computed(() => {
 <style scoped lang="scss">
 .pv-combat-shadow {
   position: absolute;
-  top: var(--shadow-y, 90%);
+  top: Var(--shadow-y, 90%);
   background-size: 100% 100%;
   background-repeat: no-repeat;
   image-rendering: pixelated;

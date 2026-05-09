@@ -113,7 +113,7 @@ function getMissionDesc(mId, clsId) {
   h1 { 
     @include pixelated; 
     font-size: 16px; 
-    color: var(--cls-color); 
+    color: Var(--cls-color); 
     margin: 0;
     @include pixelated;
   }
@@ -121,7 +121,7 @@ function getMissionDesc(mId, clsId) {
     background: none; border: none; color: Rgba(255,255,255,0.4);
     @include pixelated; font-size: 9px; cursor: pointer;
     @include pixelated;
-    &:hover { color: var(--white); }
+    &:hover { color: Var(--white); }
   }
 }
 
@@ -145,7 +145,7 @@ function getMissionDesc(mId, clsId) {
   .banner-info {
     flex: 1;
     h3 { @include pixelated; font-size: 10px; color: Rgba(34, 197, 94, 1); margin-bottom: 8px; }
-    .m-name { font-size: 14px; color: var(--white); font-weight: 700; margin-bottom: 12px; }
+    .m-name { font-size: 14px; color: Var(--white); font-weight: 700; margin-bottom: 12px; }
   }
 
   .mission-progress-bar {
@@ -154,16 +154,16 @@ function getMissionDesc(mId, clsId) {
   }
 
   .collect-btn {
-    padding: 14px 24px; background: Rgba(34, 197, 94, 1); color: var(--white); border: none; border-radius: 12px;
+    padding: 14px 24px; background: Rgba(34, 197, 94, 1); color: Var(--white); border: none; border-radius: 12px;
     @include pixelated; font-size: 10px; cursor: pointer;
     box-shadow: 0 0 20px Rgba(34, 197, 94, 0.4);
-    &:hover { transform: translateY(-2px); filter: Brightness(1.1); }
+    &:hover { transform: TranslateY(-2px); filter: Brightness(1.1); }
   }
 }
 
 .missions-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: Repeat(2, 1fr);
   gap: 20px;
 }
 
@@ -177,14 +177,14 @@ function getMissionDesc(mId, clsId) {
   gap: 12px;
   transition: all 0.2s;
 
-  &:hover:not(.locked) { border-color: var(--cls-color); background: Rgba(255,255,255,0.05); }
+  &:hover:Not(.locked) { border-color: Var(--cls-color); background: Rgba(255,255,255,0.05); }
   
   .m-header { 
     display: flex; justify-content: space-between; 
     @include pixelated; font-size: 8px; color: Rgba(255,255,255,0.3); 
   }
   
-  .m-title { margin: 0; font-size: 16px; color: var(--white); font-weight: 800; }
+  .m-title { margin: 0; font-size: 16px; color: Var(--white); font-weight: 800; }
   .m-desc { font-size: 12px; color: Rgba(255,255,255,0.4); line-height: 1.5; margin-bottom: 8px; }
   
   .start-btn {
@@ -193,11 +193,11 @@ function getMissionDesc(mId, clsId) {
     background: Rgba(255,255,255,0.05);
     color: Rgba(203, 213, 225, 1); @include pixelated; font-size: 8px; cursor: pointer;
     transition: all 0.2s;
-    &:hover:not(:disabled) { background: var(--cls-color); color: var(--white); }
+    &:hover:Not(:disabled) { background: Var(--cls-color); color: Var(--white); }
     &:disabled { opacity: 0.3; cursor: not-allowed; }
   }
 
-  &.active { border-color: var(--cls-color); }
+  &.active { border-color: Var(--cls-color); }
   &.locked { opacity: 0.5; }
 }
 
