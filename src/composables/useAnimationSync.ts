@@ -13,10 +13,10 @@ export function useAnimationSync() {
    * Generic runner for registered animations.
    * In the future, this will look up sequences in a registry.
    */
-  const play = async (animationId: string, target: any) => {
+  const play = async (animationId: string, target: object) => {
     // Example implementation for common animations
     switch (animationId) {
-      case 'SHAKE':
+      case 'SHAKE': {
         const tlShake = createTimeline()
         tlShake.to(target, { 
           x: -10, 
@@ -34,8 +34,9 @@ export function useAnimationSync() {
           ease: ANIM_EASES.LINEAR 
         })
         return awaitAnimation(tlShake)
+      }
 
-      case 'BLINK':
+      case 'BLINK': {
         const tlBlink = createTimeline()
         tlBlink.to(target, { 
           opacity: 0, 
@@ -44,6 +45,7 @@ export function useAnimationSync() {
           yoyo: true 
         })
         return awaitAnimation(tlBlink)
+      }
 
       default:
         console.warn(`Animation ${animationId} not implemented in useAnimationSync`)

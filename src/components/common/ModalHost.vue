@@ -15,11 +15,11 @@ const topActiveModalId = computed(() => {
 })
 
 const blockingModalIndex = computed(() => {
-  // El "principal" es el último modal que ha TERMINADO de abrir y NO se está cerrando.
-  // Solo cuando un modal está totalmente visible activamos el modo simplificado debajo.
+  // El "principal" es el último modal que NO se está cerrando.
+  // Simplificamos todo lo que esté debajo del modal más alto activo para ahorrar recursos durante las animaciones.
   for (let i = modalStore.stack.length - 1; i >= 0; i--) {
     const m = modalStore.stack[i]
-    if (m && !m.opening && !m.closing) return i
+    if (m && !m.closing) return i
   }
   return -1
 })

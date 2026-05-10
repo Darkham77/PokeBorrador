@@ -43,7 +43,7 @@ export const useModalStore = defineStore('modals', () => {
 
     // GSAP fallback to ensure the "opening" state doesn't hang 
     // This also allows unit tests to pass by simulating visual completion
-    gsap.delayedCall(0.5, () => finishOpening(id))
+    gsap.delayedCall(0.45, () => finishOpening(id))
 
     return id
   }
@@ -67,6 +67,10 @@ export const useModalStore = defineStore('modals', () => {
       const modal = stack.value[index]
       if (!modal || modal.closing) return 
       modal.closing = true
+
+      // GSAP fallback to ensure the modal is eventually removed from the stack
+      // even if the component fails to call finalizeClose
+      gsap.delayedCall(0.5, () => finalizeClose(modal.id))
     }
   }
 

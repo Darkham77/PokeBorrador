@@ -19,14 +19,17 @@ export async function syncServerTime(): Promise<void> {
   }
 
   try {
-    const { data: serverTime, error } = await Promise.race([
-        supabase.rpc('fn_get_server_time'),
-        new Promise((_, reject) => gsap.delayedCall(3, () => reject(new Error('FETCH_TIMEOUT'))))
-    ]) as any;
+    const result = await Promise.race([
+      supabase.rpc('fn_get_server_time'),
+      new Promise((_, reject) => gsap.delayedCall(3, () => reject(new Error('FETCH_TIMEOUT'))))
+    ]);
     
-    if (error) throw error;
+    const { data: serverTime, error } = result as { data: string | null; error: { message: string } | null };
+    
+    if (error) throw new Error(error.message);
+    if (!serverTime) throw new Error('NO_SERVER_TIME_RETURNED');
 
-    const serverInstant = Temporal.Instant.from(serverTime as string);
+    const serverInstant = Temporal.Instant.from(serverTime);
     const localInstant = Temporal.Now.instant();
     
     _serverTimeOffsetNanoseconds = BigInt(serverInstant.epochNanoseconds) - BigInt(localInstant.epochNanoseconds);
@@ -44,8 +47,8 @@ export async function syncServerTime(): Promise<void> {
 export function getServerInstant(): Temporal.Instant {
   if (!_timeSynced) return Temporal.Now.instant();
 
-  const routerOffsetMs = (supabase && typeof supabase.getTimeOffset === 'function') 
-    ? supabase.getTimeOffset() 
+  const routerOffsetMs = (supabase && typeof (supabase as unknown as { getTimeOffset: () => number }).getTimeOffset === 'function') 
+    ? (supabase as unknown as { getTimeOffset: () => number }).getTimeOffset() 
     : 0;
     
   const now = Temporal.Now.instant();

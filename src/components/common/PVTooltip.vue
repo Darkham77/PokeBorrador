@@ -146,8 +146,8 @@ const handleTriggerClick = (event: MouseEvent) => {
 
 const formattedDescription = computed(() => {
   if (!props.description) return ''
-  // Wrap common symbols/emojis for alignment (including Nature triangles)
-  return props.description.replace(/([▲▼↑↓⬆⬇🔼🔽🔺🔻🔴🟢ℹ️⚡✨⚠️])/g, '<span class="symbol-align">$1</span>')
+  // Wrap common symbols/emojis for alignment (including Nature triangles, seasons, and time cycles)
+  return props.description.replace(/(▲|▼|↑|↓|⬆|⬇|🔼|🔽|🔺|🔻|🔴|🟢|ℹ️|⚡|✨|⚠️|⭐|🛡️|♂️|♀️|🌸|☀️|🍂|❄️|🌅|🌇|🌙|🏙️|🌉)/gu, '<span class="symbol-align">$1</span>')
 })
 
 const handleMouseEnter = () => {

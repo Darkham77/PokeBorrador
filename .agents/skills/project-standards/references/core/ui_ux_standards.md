@@ -69,6 +69,7 @@ We prioritize a deliberate contrast between modern, sleek UI shells and classic,
   - **Permission Persistence**: Persist PWA setup and notification permission states in `localStorage` to avoid re-triggering intrusive setup modals on every session.
   - **The "Deep Reset" Mandate (Resolution Sync)**: Transitions from Login/Title screens to the main game MUST be handled via physical reload (`window.location.href = '/'`) instead of SPA navigation (`router.push`).
     - **WHY**: Standalone PWA windows frequently glitch their internal viewport dimensions (`100dvh`) during internal navigation. A physical reload forces a hardware-level re-sync of the viewport and manifest state.
+- **GSAP State Fail-safe**: Every global state change triggered by a visual transition (e.g., `open`, `close` in `ModalStore`) MUST include a `gsap.delayedCall` fallback (approx. 450-500ms) to ensure state integrity even if a component-level animation fails to report back.
   - **Reactive Scale Injection (Zoom)**: Any component responsible for the primary visual scale (e.g., `App.vue`) MUST use a `watch` on the user session state to re-apply the global zoom factor (`uiStore.setZoom`).
     - **WHY**: Ensures that if the browser resets its zoom factor during a session transition, the game engine explicitly re-asserts the correct pixel-perfect scale.
   - **Virtual Module Compatibility**: In Dev mode, if `virtual:pwa-register/vue` fails to resolve, use the base `virtual:pwa-register` and implement manual reactivity (using `ref`) for `needRefresh` and `offlineReady`.
@@ -308,6 +309,7 @@ To ensure a seamless transition between full-map exploration and focused modal i
 - **Triggering Condition**: Only modals that obscure the background (those with overlays or full-screen) should trigger the "Simplified Map" mode.
 - **Entrance Timing**: Activate simplification **AFTER** the entrance animation of the first obscuring modal is complete. This avoids a visual "pop" during the fade-in.
 - **Exit Timing**: Restore the full-fidelity map **AS SOON AS** the closing animation of the last obscuring modal begins. This provides a premium feel by letting the user see the world return while the overlay disappears.
+- **GPU-First Simplification**: When a new modal is opened above others, the modals below MUST be simplified (`isSimplified = true`) IMMEDIATELY at the start of the transition (not after it ends). This maximizes GPU bandwidth for the opening animation and prevents dropped frames during high-fidelity transitions.
 
 - **Battle Modal Jitter**: Combat arenas, control panels, and individual sprite containers MUST use `overflow: hidden !important` (or `overflow: clip`) to prevent unintended scrollbars during scaling, rotation, or VFX.
 - **Selective Targeting**: Selection modals (`PokemonSelectionModal`) MUST support and use the `allowedIds` filter when a specific context (like item usage) restricts the valid targets.

@@ -35,6 +35,7 @@ Core logic modules and critical system components MUST have dedicated unit tests
 1. **Factory Integrity**: Every data factory (e.g., `pokemonFactory.ts`) must be covered by unit tests verifying generation, level-up, and sanitization.
 2. **Regression Prevention**: When modifying `src/logic/`, perform a **Test Gap Analysis**; if a module is "worthy" (core behavior), create a new `.spec.ts` file.
 3. **Execution**: Run `npm run test` or `npm run test:node` before every commit to ensure 100% pass rate.
+4. **Deterministic Environment**: All logic tests dependent on environmental variables (time cycles, seasons, weather) MUST mock `getDayCycle` or `getServerInstant` from `@/logic/timeUtils` to ensure consistent and reproducible results across all timezones and execution hours.
 
 ---
 
@@ -63,3 +64,4 @@ The project uses a unified audit system located in `scripts/audit_project.ts`:
 11. **Computed Atomicity**: NEVER perform state mutations (e.g., `ref.value = ...`) inside a `computed` property. This causes `vue/no-side-effects-in-computed-properties` errors.
 12. **Data Structure Refactoring Safety**: Al migrar una estructura de datos crítica (ej: de `Array` a `Object`), es **OBLIGATORIO** realizar un barrido completo del codebase buscando métodos incompatibles como `.includes()`, `.forEach()`, `.map()`, o `.filter()`.
 13. **Strict Return paths (TS7030)**: When writing functions in configurations or codebases with strict TypeScript enabled, if any execution path returns a value, all paths must explicitly return a value. For example, in rollup configurations like `manualChunks(id)`, ensure unmatched branches end with a fallback `return;` or `return undefined;` to satisfy the `noImplicitReturns` rule.
+14. **Unicode Regex for Emojis**: ESLint in strict mode flags character classes containing multiple combined characters (like emojis with modifiers). ALWAYS use alternation groups `(A|B|C)` instead of character classes `[ABC]` for these symbols to avoid `no-misleading-character-class` errors.

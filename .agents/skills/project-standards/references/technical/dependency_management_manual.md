@@ -45,3 +45,14 @@ Before attempting to upgrade any library in the "Core Stack", this protocol MUST
 - **Verify Vulnerabilities**: `npm audit`
 - **Clean Cache**: `npm cache clean --force`
 - **Clean Reinstall**: `rm -rf node_modules package-lock.tson && npm install`
+
+---
+
+## 🛠️ Node.js 26+ & Browser Interoperability
+
+To maintain a single codebase that runs in both Node.js (scripts/tests) and Browser (Vite), follow these standards:
+
+1. **Vite Dynamic Import Ignoring**: When importing Node.js built-ins (`node:*`) dynamically within logic used by the frontend, ALWAYS use the `/* @vite-ignore */` comment.
+   - **Example**: `const util = await import(/* @vite-ignore */ 'node:util');`
+   - **WHY**: Prevents Vite from attempting to bundle or analyze server-only modules, avoiding build-time warnings and errors.
+2. **Strict Sync Typing**: Avoid using `any` when synchronizing state with external APIs (like Supabase). Define explicit local interfaces for the expected response structure to maintain TypeScript integrity in `timeUtils.ts` and `DBRouter`.

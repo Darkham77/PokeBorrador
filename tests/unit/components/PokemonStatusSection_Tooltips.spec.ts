@@ -41,7 +41,7 @@ describe('PokemonStatusSection - Tooltips', () => {
     const natureTooltip = tooltips.find(t => t.props('title') === 'NATURALEZA')
     
     expect(natureTooltip).toBeDefined()
-    expect(natureTooltip!.props('description')).toContain('⬆ +10% Defensa / ⬇ -10% Ataque')
+    expect(natureTooltip!.props('description')).toContain('▲ +10% Defensa / ▼ -10% Ataque')
   })
 
   it('should pass the correct ability description to the tooltip', () => {
@@ -65,7 +65,7 @@ describe('PokemonStatusSection - Tooltips', () => {
     const natureTooltip = tooltips.find(t => t.props('title') === 'NATURALEZA')
     
     expect(natureTooltip).toBeDefined()
-    expect(natureTooltip!.props('description')).toContain('⬆ +10% Defensa / ⬇ -10% Ataque')
+    expect(natureTooltip!.props('description')).toContain('▲ +10% Defensa / ▼ -10% Ataque')
   })
 
   it('should provide fallback description for unknown nature', () => {
