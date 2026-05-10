@@ -30,7 +30,7 @@ De-synchronization is not enough; instances must have slightly different rhythms
 
 For effects like rain or snow, use at least two layers with different scales, speeds, and offsets to create depth.
 
-- **Layer 1 (Background)**: Slower speed, smaller scale, higher blur.
+- **Layer 1 (Background)**: Slower speed, smaller scale, lower opacity and detail.
 - **Layer 2 (Foreground)**: Faster speed, larger scale, sharper focus.
 - **Deterministic Lighting**: Flash effects (Storm) must use randomized intervals to ensure strikes don't synchronize across different views.
 

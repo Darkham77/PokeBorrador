@@ -20,14 +20,13 @@ Apply interpolation to the following CSS functions to prevent "X is not a color"
 - `filter: Grayscale(0.8);`
 - `filter: Opacity(0.5);`
 - `filter: Brightness(1.2);`
-- `filter: Blur(5px);`
 - `filter: Saturate(1.5);`
 - `filter: Drop-shadow(0 4px 8px rgba(0,0,0,0.5));`
 - `background: Radial-Gradient(...) / Linear-Gradient(...);` (Essential for weather overlays)
 
 > [!WARNING]
 > [!NOTE]
-> **SASS 2.0 Collision Protocol**: To prevent Dart Sass 2.0 collisions, standard CSS functions (`scale`, `blur`, `rotate`, `invert`, `brightness`, etc.) must be capitalized. However, this process is **100% automated** by the Vite plugin (`vite-plugin-sass-traps.ts`) during HMR (Hot Module Replacement) and build. Developers and agents can write standard lowercase CSS properties, and Vite will automatically capitalize them.
+> **SASS 2.0 Collision Protocol**: To prevent Dart Sass 2.0 collisions, standard CSS functions (`scale`, `rotate`, `invert`, `brightness`, etc.) must be capitalized. However, this process is **100% automated** by the Vite plugin (`vite-plugin-sass-traps.ts`) during HMR (Hot Module Replacement) and build. Developers and agents can write standard lowercase CSS properties, and Vite will automatically capitalize them.
 
 ### 2. Specificity vs. !important
 
@@ -131,9 +130,9 @@ The project employs a high-contrast **Hybrid Retro-Modern** aesthetic. We combin
 
 All layouts and structural containers **MUST** follow premium modern web design principles.
 
-- **Glassmorphism**: Use `-webkit-backdrop-filter: Blur(10px); backdrop-filter: Blur(10px); background: rgba(255, 255, 255, 0.05);` for cards and overlays.
-- **Premium Solid Glass**: For high-density game HUDs (like Battle Sidebars), use `Rgba(30, 41, 59, 0.8)` with `Blur(12px)`. This ensures readability against dynamic backgrounds without sacrificing the glass aesthetic.
-- **Opacity Accumulation**: Prohibit applying background colors or blurs to both a parent container and its children. This causes "Visual Mud" (excessive darkness). Background logic MUST be delegated to the deepest relevant element (e.g., the card).
+- **Premium Solidity**: Use high-contrast solid backgrounds with premium gradients for cards and overlays.
+- **HUD Density**: For high-density game HUDs (like Battle Sidebars), use `Rgba(15, 23, 42, 1)` to ensure maximum readability and consistent visual depth.
+- **Container Clarity**: Avoid applying semi-transparent backgrounds to both a parent container and its children. This causes "Visual Mud" (excessive darkness). Background logic MUST be delegated to the deepest relevant element (e.g., the card).
 - **Dynamic Depth**: Use soft, multi-layered HSL shadows and subtle linear gradients.
 - **Modern Rendering**: Do **NOT** use `image-rendering: pixelated` on the UI shell or background layouts. They must remain smooth and fluid.
 
@@ -181,7 +180,7 @@ If you detect a "smooth" modern aesthetic used for game content, you **MUST** is
 
 When refactoring legacy or generic components:
 
-1. **Frame Modernization**: Apply Glassmorphism and HSL shadows to the parent container.
+1. **Frame Solidification**: Apply high-contrast solid backgrounds and HSL shadows to the parent container.
 2. **Heart Pixelation**: Apply `image-rendering: pixelated` to all static images. Replace smooth typography with `Press Start 2P`.
 3. **Contrast Verification**: Ensure the background is sharp/smooth (Modern) while the active game elements are crisp/pixelated (Retro).
 
@@ -196,7 +195,7 @@ When refactoring legacy or generic components:
   - ✅ `background: Rgba(255, 255, 255, 0.5);`
   - ❌ `background: rgba(255, 255, 255, 0.5);` (Collision)
   - **Module & Variable Protection**: Automated refactoring tools (auditors, Vite plugins) **MUST** ignore functions preceded by a dot `.` or dollar `$` (e.g., `color.scale`, `$my-var.blur`). Converting these to uppercase breaks SASS module logic and variable lookups.
-  - **Filter Capitalization**: This rule applies to all CSS filters (`Blur()`, `Scale()`, `Brightness()`, `Grayscale()`, etc.).
+  - **Filter Capitalization**: This rule applies to all CSS filters (`Scale()`, `Brightness()`, `Grayscale()`, etc.).
   - **SVG Filter Quoting**: When referencing filters by ID in SASS functions or mixins, ALWAYS quote the ID inside the URL: `url("#id")`.
     - **WHY**: Prevents Dart Sass from misinterpreting the `#` as a color hex or causing compilation errors when the ID contains certain characters.
   - **Local/One-off Colors**: Capitalized Rgba/Rgb or Hex values ARE PERMITTED for local, non-recurring styles within a component's `<style scoped>` block, but variables are always preferred.
@@ -310,9 +309,9 @@ Vue components utilizing SASS features (variables, mixins, capitalized filters) 
 
 ---
 
-## 📱 Safari & Mobile Compatibility (Prefix Mandate)
+## 📱 Safari & Mobile Compatibility (Performance Mandate)
 
-Safari (macOS/iOS) does NOT support `backdrop-filter` without the `-webkit-` prefix. Since this project relies heavily on Glassmorphism for its premium modern shell, you **MUST** always include the prefix.
+Safari (macOS/iOS) requires strict GPU promotion for complex filter chains.
 
 ### 1. Correct Implementation Pattern
 
@@ -329,7 +328,7 @@ Safari (macOS/iOS) does NOT support `backdrop-filter` without the `-webkit-` pre
 
 ### 2. Systematic Fix
 
-If you find a raw `backdrop-filter` during an audit, you **MUST** fix it immediately. This is not optional.
+If you find a raw `filter` that causes lag on mobile during an audit, you **MUST** fix it immediately. This is not optional.
 
 ### 8. Data Table & Grid Spacing (Responsive Density)
 

@@ -52,7 +52,7 @@ The project uses a unified audit system located in `scripts/audit_project.ts`:
 ## 🚨 Non-Negotiable Quality Rules
 
 1. **Zero-Warning**: `npm run lint` and `npm run validate:types` MUST return 0 errors and 0 warnings before any commit.
-2. **SASS Capitalization (Automated)**: SASS capitalization for CSS filters/transforms (`Blur()`, `Scale()`, etc.) is handled automatically by the Vite plugin (`vite-plugin-sass-traps.ts`) during HMR and build, meaning no manual capitalization or separate linting checks are required.
+2. **SASS Capitalization (Automated)**: SASS capitalization for CSS filters/transforms (`Scale()`, `Translate()`, etc.) is handled automatically by the Vite plugin (`vite-plugin-sass-traps.ts`) during HMR and build, meaning no manual capitalization or separate linting checks are required.
 3. **Dependency Shield**: Any script using external libraries must handle `ImportError` and provide clear installation instructions.
 4. **Audit Bypass**: If a violation is intentional by design, use the `// [PureVue-Ignore]` comment. The audit engine checks the **current line and the line immediately above** to support Vue/HTML attributes that span multiple lines.
 5. **Large Data Integrity**: Massive data files (e.g., spawn grids) must carry `// [PureVue-Ignore-Length]` at the beginning to avoid fragmentation by agents.

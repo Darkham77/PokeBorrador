@@ -8,10 +8,10 @@ All heavy components or those that animate frequently must be promoted to a GPU 
 
 - **Mandatory**: Use `@include gpu-layer` on Modals, Overlays, MapCards, PC Box, and HUD.
 - **Technique**: This injects `transform: translate3d(0,0,0)` and `backface-visibility: hidden`.
-- **Golden Rule**: If an element uses `backdrop-filter: Blur()`, it **MUST** have layer promotion to avoid stuttering.
-- **Visibility Trap**: NEVER use `visibility: hidden` to hide an element that has `backdrop-filter` or heavy glassmorphism. This causes the browser to discard the GPU layer; when it becomes `visible` again, the re-paint happens sequentially across frames (glitch). Use `opacity: 0` and `pointer-events: none` instead to keep the layer "warm" in the compositor.
+- **Golden Rule**: Elements that animate frequently **MUST** have layer promotion to avoid stuttering.
+- **Visibility Trap**: NEVER use `visibility: hidden` to hide an element that has heavy visual filters. This causes the browser to discard the GPU layer; when it becomes `visible` again, the re-paint happens sequentially across frames (glitch). Use `opacity: 0` and `pointer-events: none` instead to keep the layer "warm" in the compositor.
 - **Layer Consolidation**: Avoid redundant layer promotion. If a parent (e.g., `BoxPokemonCard`) is already accelerated, do NOT apply `@include gpu-layer` or `will-change` to its children (e.g., Auras). Managing 100+ overlapping layers causes "Scroll-Stop Freezes" during compositor cleanup.
-- **Anti-Blur Aura Pattern**: Avoid `backdrop-filter: Blur()` for large atmospheric effects or auras. It causes massive GPU pressure on multi-layered UIs. Use `box-shadow` with high spread and solid backgrounds with 0.8 opacity instead.
+- **Solid Depth Pattern**: Avoid heavy filter chains for large atmospheric effects or auras. They cause massive GPU pressure on multi-layered UIs. Use `box-shadow` with high spread and solid backgrounds with high opacity instead.
 - **Context-Aware will-change**: Automated tools and manual implementations MUST check the surrounding block (approx. 500 characters). Only add `will-change` if a `filter` or `transform` exists and NO other `will-change` is present in that context. Duplicate declarations lead to bloated CSS and memory waste.
 
 ## 2. Low-Cost Animations

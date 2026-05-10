@@ -53,7 +53,7 @@ Consult these manuals for detailed implementation specifications:
 
 ### 1. Hybrid Retro-Modern Identity
 
-- **Modern Shell**: Glassmorphism, gradients, HSL shadows for containers.
+- **Modern Shell**: High-contrast solid backgrounds, premium gradients, HSL shadows for containers.
 - **Retro Heart**: Pixel Art and Sharp typography (`Press Start 2P`) for game content.
 - **Pixel-Perfect**: Pixelated elements MUST use `@include pixelated`. Typography for stats and headers must always be pixelated.
 
@@ -93,7 +93,7 @@ Consult these manuals for detailed implementation specifications:
 
 ### 4. SASS and Build Integrity
 
-- **Unified SASS Trap Engine**: Capitalization of standard CSS/SASS functions (e.g., `scale`, `blur`, `rotate` -> `Scale()`, `Blur()`, `Rotate()`) is handled **automatically** by the Vite plugin (`vite-plugin-sass-traps.ts`) during HMR (Hot Module Replacement) and build. Therefore, developers and agents can write standard lowercase CSS/SASS functions, and Vite will automatically format and capitalize them. No manual capitalization or standalone scripts are required.
+- **Unified SASS Trap Engine**: Capitalization of standard CSS/SASS functions (e.g., `scale`, `rotate`, `translate` -> `Scale()`, `Rotate()`, `Translate()`) is handled **automatically** by the Vite plugin (`vite-plugin-sass-traps.ts`) during HMR (Hot Module Replacement) and build. Therefore, developers and agents can write standard lowercase CSS/SASS functions, and Vite will automatically format and capitalize them. No manual capitalization or standalone scripts are required.
 - **Audit Exemptions**: Utility, maintenance, and migration scripts (located in `scripts/`) are EXEMPT from legacy code audits (e.g., `legacyDates`) to allow technical support tasks without false positives.
 - **@use Standard**: Forbidden use of `@import`. Use `@use` and `@forward`.
 - **Zero-Warning**: Always maintain 0 errors and 0 warnings in `lint` and `vue-tsc`. It is MANDATORY to run `npm run validate:types` before `npm run lint`.
