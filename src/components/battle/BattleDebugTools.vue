@@ -594,6 +594,7 @@ const toggleStatus = (side: string, type: string) => {
     border-color: $white !important;
     box-shadow: 0 0 10px Rgba(250, 204, 21, 0.4);
     filter: none !important;
+    will-change: filter;
   }
 }
 

@@ -363,7 +363,9 @@ To unify the environmental immersion across the Map and Battle Arena:
 - **Danger Signature (Heat/Sand)**: Climates that cause recurring damage (Heatwave, Sandstorm) MUST use a pulsing red frame (`anim-glow`) and a red-tinted radial gradient to signal environmental danger.
 - **Solid White Standard (Cold/Fog)**: Cold weather types (Fog, Mist, Snow, Blizzard) MUST use a high-opacity (**0.75**) white `box-shadow` to create a solid, frosty encasement that maintains visibility over dense backgrounds.
 - **Center Transparency Mandate**: Every atmospheric frame MUST maintain a clear central action zone. The `Radial-Gradient` MUST start being transparent at **50%** of the container to prevent "washing out" the main art while keeping a strong perimeter.
-- **WHY**: Ensures that the "action zone" (Pokemon/Map details) remains the focal point while the edges convey the atmospheric intensity.
+- **Normalization Strategy**: Use static `::after` elements for the perimeter frame. This decouples the atmospheric "fog/tint" from active particle layers, ensuring visual stability and preventing "ghosting" or UI-flicker during weather transitions.
+- **Danger Signature (Heat/Sand)**: Climates that cause recurring damage (Heatwave, Sandstorm) MUST use a pulsing red frame (`anim-glow`) and a red-tinted radial gradient to signal environmental danger.
+- **Solid White Standard (Cold/Fog)**: Cold weather types (Fog, Mist, Snow, Blizzard) MUST use a high-opacity (**0.75**) white `box-shadow` to create a solid, frosty encasement that maintains visibility over dense backgrounds.
 
 ---
 
