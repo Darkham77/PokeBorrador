@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue' // HMR Trigger
 import { useGameStore } from '@/stores/game'
-import { useMapStore } from '@/stores/map'
+import { useMapStore, type PendingAward } from '@/stores/map'
 import MapEventCarousel from '@/components/map/MapEventCarousel.vue'
 import MapStatusSummary from '@/components/map/MapStatusSummary.vue'
 import MapGrid from '@/components/map/MapGrid.vue'
@@ -12,6 +12,8 @@ import { useModalStore } from '@/stores/modals'
 import type { DaycareMission } from '@/types/breeding'
 import type { Event as GameEvent } from '@/logic/events/eventEngine'
 import type { MapLocation } from '@/types/encounters'
+import { pokemonNeedsHealing } from '@/logic/economy/economyFormulas'
+import type { Pokemon } from '@/types/pokemon'
 
 const gameStore = useGameStore()
 const mapStore = useMapStore()
@@ -29,6 +31,13 @@ const openTab = (tab: string) => {
 }
 
 const openCenter = () => {
+  const needsHeal = (gameStore.state.team as (Pokemon | null)[]).some(p => p && pokemonNeedsHealing(p))
+  
+  if (!needsHeal) {
+    uiStore.notify('Tu equipo ya está en perfectas condiciones.', '💖')
+    return
+  }
+  
   modalStore.open('PokemonCenter')
 }
 
@@ -55,7 +64,7 @@ const activeEventData = computed(() => {
   }
 })
 
-const mappedAwards = computed(() => mapStore.pendingAwards.map(a => ({
+const mappedAwards = computed(() => mapStore.pendingAwards.map((a: PendingAward) => ({
   event_id: a.id,
   event_name: (a.data.event_name as string) || 'Evento Especial'
 })))
@@ -108,7 +117,7 @@ const mappedAwards = computed(() => mapStore.pendingAwards.map(a => ({
   </div>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 @use "@/styles/core/_mixins" as *;
 .map-view-container {
   padding: 0 0 40px;

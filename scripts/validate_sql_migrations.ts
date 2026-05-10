@@ -59,11 +59,7 @@ async function validateMigrations() {
       const statements = splitSQLStatements(content);
       
       for (const stmt of statements) {
-        let translated = translationCache.get(stmt);
-        if (!translated) {
-          translated = translatePostgresToSqlite(stmt);
-          translationCache.set(stmt, translated);
-        }
+        const translated = translationCache.getOrInsertComputed(stmt, () => translatePostgresToSqlite(stmt));
         
         if (translated) {
           try {

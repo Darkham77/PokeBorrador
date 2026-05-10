@@ -21,7 +21,7 @@ export const PLAYER_CLASSES = {
     ],
     bonusLevels: [1, 1, 10, 15, 20],
     penalties: [
-      '🏥 Centro Pokémon cuesta el doble (2x)',
+      '🏥 Centro Pokémon con sobrecargo por nivel y rareza (Tier)',
       '🪙 -10% Battle Coins en todas las batallas',
       '🏪 20% de recargo en compras del Pokémart'
     ],

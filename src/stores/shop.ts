@@ -3,9 +3,11 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { useGameStore } from './game.ts'
 import { useUIStore } from './ui.ts'
+import type { Pokemon, Move } from '@/types/pokemon'
 import { SHOP_ITEMS, ITEM_CATEGORIES, CATEGORY_LABELS } from '@/data/items'
 import { PLAYER_CLASSES } from '@/data/playerClasses'
 import { TRAINER_RANKS } from '@/data/trainer'
+import { calculateTotalHealCost } from '@/logic/economy/economyFormulas'
 
 export const useShopStore = defineStore('shop', () => {
   const gameStore = useGameStore()
@@ -112,25 +114,11 @@ export const useShopStore = defineStore('shop', () => {
   // ── POKÉMON CENTER HEALING ─────────────────────────────────────────────────
 
   function getHealCost() {
-    const team = gameStore.state.team || []
-    const damagedCount = team.filter(p => {
-      const isDamaged = (p).hp < (p).maxHp
-      const hasStatus = !!(p).status
-      const needsPP = (p).moves?.some(m => m && m.pp < (m.maxPP || 0)) || false
-      return isDamaged || hasStatus || needsPP
-    }).length
-
-    if (damagedCount === 0) return 0
-
-    // Force explicit check for Rocket class
-    const pClass = String(gameStore.state.playerClass || '').toLowerCase()
-    
-    if (pClass === 'rocket') {
-      // Rocket pays 50 per damaged pokemon (base cost for penalized classes)
-      return 50 * damagedCount
-    }
-
-    return 0
+    return calculateTotalHealCost(
+      gameStore.state.team, 
+      gameStore.state.trainerLevel || 1, 
+      gameStore.state.playerClass || ''
+    )
   }
 
   function healAllPokemon(manualCost: number | null = null) {
@@ -144,15 +132,16 @@ export const useShopStore = defineStore('shop', () => {
     gameStore.state.money -= costToCharge
     
     // Restore all pokemon in team
-    gameStore.state.team.forEach(p => {
-      (p).hp = (p).maxHp;
-      (p).status = null
-      if ((p).moves) {
-        (p).moves.forEach(m => {
-          if (m) m.pp = m.maxPP || 20
-        })
+    gameStore.state.team.forEach((p: Pokemon | null) => {
+      if (!p) return;
+      p.hp = p.maxHp;
+      p.status = null;
+      if (p.moves) {
+        p.moves.forEach((m: Move | null) => {
+          if (m) m.pp = m.maxPP || 20;
+        });
       }
-    })
+    });
 
     if (costToCharge > 0) {
       uiStore.notify(`¡Sanación pagada! Gastaste ₽${costToCharge.toLocaleString()}`, '💰')
@@ -198,7 +187,7 @@ export const useShopStore = defineStore('shop', () => {
       gameStore.scheduleSave()
     }
     
-    return daily.items.map(id => SHOP_ITEMS.find(i => i.id === id)).filter(Boolean)
+    return daily.items.map((id: string) => SHOP_ITEMS.find(i => i.id === id)).filter(Boolean)
   }
 
   function buyBlackMarketItem(itemId: string) {

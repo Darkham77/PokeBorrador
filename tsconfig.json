@@ -6,5 +6,5 @@
     "forceConsistentCasingInFileNames": true,
     "types": ["node", "@js-temporal/polyfill"]
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue", "tests/**/*.ts", "tests/**/*.tsx", "vite.config.ts"]
+  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue", "scripts/**/*.ts", "tests/**/*.ts", "tests/**/*.tsx", "vite.config.ts"]
 }

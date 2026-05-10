@@ -1,4 +1,3 @@
-
 /**
  * Global Type Declarations for Poke Vicio
  * Adds missing modern APIs to TypeScript context.
@@ -39,6 +38,26 @@ declare global {
     export type PlainDate = import('@js-temporal/polyfill').Temporal.PlainDate;
     export type PlainTime = import('@js-temporal/polyfill').Temporal.PlainTime;
   }
+
+  // Node 26+ / ESNext Collection Methods (V8 14.6)
+  interface Map<K, V> {
+    getOrInsertComputed(key: K, callback: (key: K) => V): V;
+    getOrInsert(key: K, defaultValue: V): V;
+  }
+
+  // Node 26+ / Iterator Sequencing (V8 14.6)
+  interface IteratorObject<T> extends Iterator<T> {
+    [Symbol.iterator](): IteratorObject<T>;
+    drop(limit: number): IteratorObject<T>;
+    take(limit: number): IteratorObject<T>;
+    map<U>(callback: (value: T) => U): IteratorObject<U>;
+    filter(callback: (value: T) => boolean): IteratorObject<T>;
+  }
+
+  var Iterator: {
+    from<T>(iterable: Iterable<T>): IteratorObject<T>;
+    concat<T>(...iterables: Iterable<T>[]): IteratorObject<T>;
+  };
 
   interface Window {
     VITE_SUPABASE_URL: string;

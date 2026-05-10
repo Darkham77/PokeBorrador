@@ -3,7 +3,7 @@
 @use "../variables" as vars;
 
 @mixin premium-gradient {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.03) 0%, rgba(0, 0, 0, 0.15) 100%);
+  background: linear-gradient(180deg, Rgba(255, 255, 255, 0.03) 0%, Rgba(0, 0, 0, 0.15) 100%);
 }
 
 @mixin flex-center {
@@ -32,26 +32,28 @@
 }
 
 @mixin pixelated {
+  // Typography sharpening
+  -webkit-font-smoothing: none !important;
+  -moz-osx-font-smoothing: auto !important;
+  text-rendering: optimizeSpeed !important;
+
+  // Pixel Art Rendering (CRITICAL: 'pixelated' must be last to win in Chromium/Safari)
   image-rendering: -webkit-optimize-contrast !important;
-  image-rendering: -moz-crisp-edges !important;
-  image-rendering: crisp-edges !important;
+  $moz-rendering: -moz-crisp-edges;
+  image-rendering: $moz-rendering !important;
   image-rendering: pixelated !important;
   -ms-interpolation-mode: nearest-neighbor !important;
   
   font-family: var(--font-pixel, 'Press Start 2P'), 'Arial', sans-serif !important;
-  -webkit-font-smoothing: none !important;
-  -moz-osx-font-smoothing: auto !important;
-  font-smooth: never !important;
-  text-rendering: optimizeSpeed !important;
 }
 
 @mixin tooltip-premium {
   @include pixelated;
-  background: rgba(10, 12, 20, 0.98) !important;
+  background: Rgba(10, 12, 20, 0.98) !important;
   border: 2px solid var(--yellow) !important;
   border-radius: 8px;
   padding: 10px 14px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8), inset 0 1px 1px rgba(255, 255, 255, 0.05);
+  box-shadow: 0 10px 30px Rgba(0, 0, 0, 0.8), inset 0 1px 1px Rgba(255, 255, 255, 0.05);
   color: white;
   line-height: 1.5;
   z-index: var(--z-tooltip);
@@ -81,9 +83,9 @@
     border-color: var(--yellow) !important;
     box-shadow: 
       0 0 0 #{$border-width} var(--yellow),
-      0 0 20px rgba(255, 214, 10, 0.4),
-      0 0 40px rgba(255, 214, 10, 0.2),
-      inset 0 0 10px rgba(255, 214, 10, 0.1) !important;
+      0 0 20px Rgba(255, 214, 10, 0.4),
+      0 0 40px Rgba(255, 214, 10, 0.2),
+      inset 0 0 10px Rgba(255, 214, 10, 0.1) !important;
     z-index: var(--z-map-spawns);
   }
 }

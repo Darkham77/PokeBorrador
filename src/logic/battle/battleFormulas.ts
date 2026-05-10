@@ -203,7 +203,10 @@ export function calculateDamage(attacker: Pokemon, defender: Pokemon, move: Part
     }
   }
 
-  const moveCat = getMoveCategory({ ...move, type: moveType });
+  // Garantía de tipo para el linter
+  const finalMoveType = moveType || 'normal';
+
+  const moveCat = getMoveCategory({ ...move, type: finalMoveType });
 
   if (move.effect === 'dream_eater' && defender.status !== 'sleep') {
     return { dmg: 0, eff: 0, isNoEffect: true };
@@ -239,7 +242,7 @@ export function calculateDamage(attacker: Pokemon, defender: Pokemon, move: Part
     return { dmg, eff: 1, isNoEffect: false };
   }
 
-  const eff = getCombinedEffectiveness(moveType, defender, attacker);
+  const eff = getCombinedEffectiveness(finalMoveType, defender, attacker);
 
   if (power === 0) {
     return { dmg: 0, eff, isNoEffect: eff === 0 };

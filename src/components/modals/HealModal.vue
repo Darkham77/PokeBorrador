@@ -75,7 +75,7 @@ function needsHealing(p: Pokemon | null) {
 
 async function handleHeal() {
   if (cost.value === 0) {
-    const damagedCount = team.value.filter((p) => p && needsHealing(p)).length
+    const damagedCount = team.value.filter((p: Pokemon | null) => p && needsHealing(p)).length
     if (damagedCount === 0) {
       uiStore.notify('Tu equipo ya está en perfectas condiciones.', '💖')
       emit('close')
@@ -129,9 +129,8 @@ function handleClose() {
 onMounted(() => {
   // If no cost, check if healing is needed
   if (cost.value === 0 && team.value.length > 0) {
-    const damagedCount = team.value.filter((p) => p && needsHealing(p)).length
+    const damagedCount = team.value.filter((p: Pokemon | null) => p && needsHealing(p)).length
     if (damagedCount === 0) {
-      uiStore.notify('Tu equipo ya se encuentra recuperado.', '🏥')
       emit('close')
       return
     }
@@ -215,7 +214,7 @@ onUnmounted(() => {
                 :src="getAssetUrl(ASSET_TYPES.POKEMON, p.id || p.name, { isShiny: p.isShiny })" 
                 class="poke-sprite"
                 :alt="p.name"
-                @error="e => { (e.target as HTMLImageElement).style.display = 'none' }"
+                @error="(e: Event) => { (e.target as HTMLImageElement).style.display = 'none' }"
               >
             </PVSpriteFX>
           </div>

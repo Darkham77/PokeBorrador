@@ -15,7 +15,7 @@ import type { Pokemon } from '@/types/pokemon'
 import type { Event } from '@/logic/events/eventEngine'
 import type { DayPhase, Season } from '@/logic/timeUtils'
 
-interface PendingAward {
+export interface PendingAward {
   id: string;
   type: string;
   data: Record<string, unknown>;
@@ -25,10 +25,10 @@ export const useMapStore = defineStore('map', () => {
   const gs = useGameStore()
   const currentMap = computed({
     get: () => gs.state.map?.currentMap || 'route1',
-    set: (val) => { if (gs.state.map) gs.state.map.currentMap = val }
+    set: (val: string) => { if (gs.state.map) gs.state.map.currentMap = val }
   })
   const region = computed(() => gs.state.map?.region || 'kanto')
-  const currentMapData = computed(() => maps.value.find(m => m.id === currentMap.value))
+  const currentMapData = computed(() => maps.value.find((m: (typeof FIRE_RED_MAPS)[number]) => m.id === currentMap.value))
 
   const globalWeather = ref<string | null>(null) // Si está forzado anula el determinístico
   const forcedCycle = ref<DayPhase | null>(null)
