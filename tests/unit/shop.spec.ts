@@ -72,12 +72,16 @@ describe('Shop & Healing Logic', () => {
       const shopStore = useShopStore()
       
       gameStore.state.playerClass = 'rocket'
-      gameStore.state.team = [{ hp: 10, maxHp: 50, moves: [] }] as unknown as Pokemon[]
+      gameStore.state.trainerLevel = 1
+      gameStore.state.team = [{ 
+        hp: 10, 
+        maxHp: 50, 
+        moves: [],
+        ivs: { hp: 0, attack: 0, defense: 0, spAttack: 0, spDefense: 0, speed: 0 } // Tier F / 1x
+      }] as unknown as Pokemon[]
       
-      // Damaged count = 1. Base is 50 * 1 * (2.0 - 1.0) = 50.
-      // Wait, let's check formula: Math.floor(50 * damagedCount * (mult - 1.0))
-      // mult is 2.0 for Rocket. 50 * 1 * (2.0 - 1.0) = 50.
-      expect(shopStore.getHealCost()).toBe(50)
+      // New Formula: 20 + (trainerLevel * 3) = 20 + 3 = 23.
+      expect(shopStore.getHealCost()).toBe(23)
     })
   })
 

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 
-import { computed, watch, defineAsyncComponent, type Component } from 'vue'
+import { computed, watch } from 'vue'
 import { gsap } from 'gsap'
 import { useBattleStore } from '@/stores/battle'
 import { useUIStore } from '@/stores/ui'
@@ -27,11 +27,11 @@ const gs = computed(() => gameStore.state)
 
 const isControlsDisabled = computed(() => {
   const s = battleStore.currentFsmState
-  return battleStore.isProcessing || 
+  return !!(battleStore.isProcessing || 
          battleStore.isIntroAnimating || 
          battleStore.isFinishing ||
          battleStore.isSearching ||
-         ['INITIALIZING', 'FIRST_INTRO'].includes(s)
+         ['INITIALIZING', 'FIRST_INTRO'].includes(s || ''))
 })
 
 const execShowBattleSwitch = () => { 

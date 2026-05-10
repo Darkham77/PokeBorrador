@@ -100,7 +100,7 @@ async function main() {
   const abilityData: Record<string, string> = {};
   const dataBlockMatch = content.match(/export const ABILITY_DATA = {([\s\S]+?)\n};/);
   if (dataBlockMatch) {
-    const block = dataBlockMatch[1];
+    const block = dataBlockMatch[1]!;
     const entryRegex = /'([^']+)':\s*{\s*desc:\s*'([^']+)'\s*}/g;
     let m;
     while ((m = entryRegex.exec(block)) !== null) {
@@ -112,7 +112,7 @@ async function main() {
   const gameAbilities = new Set<string>();
   const assignmentBlockMatch = content.match(/export const POKEMON_ABILITIES = {([\s\S]+?)\n};/);
   if (assignmentBlockMatch) {
-    const block = assignmentBlockMatch[1];
+    const block = assignmentBlockMatch[1]!;
     const listRegex = /\[([^\]]+)\]/g;
     let m;
     while ((m = listRegex.exec(block)) !== null) {
@@ -155,7 +155,7 @@ async function main() {
     }
 
     if (apiAbilities.length > 0) {
-      let apiEntry: PokeApiAbility | undefined = translatedMap[abName];
+      let apiEntry: PokeApiAbility | undefined = translatedMap[abName]!;
       if (!apiEntry && customMapping[abName]) {
         apiEntry = apiAbilities.find((a: PokeApiAbility) => a.name === customMapping[abName]);
       }

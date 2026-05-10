@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { computed, watch, ref, nextTick, onMounted } from 'vue'
+import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import { gsap } from 'gsap'
 import { useBattleStore } from '@/stores/battle'
-import { ANIM_EASES } from '@/logic/utils/animationRegistry'
 
 const battleStore = useBattleStore()
 const logContainer = ref<HTMLDivElement | null>(null)

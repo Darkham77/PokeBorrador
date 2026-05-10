@@ -34,7 +34,7 @@ export function useWeatherVisuals(options: WeatherVisualOptions) {
     let wBrightness = 1.0
     let wSaturate = 1.0
     let wContrast = 1.0
-    let wHue = 0
+    const wHue = 0
 
     if (weather === 'storm') { 
       const darknessFactor = isNight ? 1.0 : (isDusk ? 0.75 : 0.6)

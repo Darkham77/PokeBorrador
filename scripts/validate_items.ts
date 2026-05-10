@@ -56,7 +56,7 @@ async function main() {
   // ─── 1. Extract SHOP_ITEMS entries (line-based parser) ───────────────────────
   const shopLines = shopContent.split('\n');
   const shopItems: ShopItem[] = [];
-  const shopStart = shopLines.findIndex(l => l.includes('SHOP_ITEMS') && l.includes('['));
+  const shopStart = shopLines.findIndex(l => l.includes('export const SHOP_ITEMS'));
   const shopEnd   = shopLines.length;
 
   let current: ShopItem | null = null;
@@ -92,7 +92,7 @@ async function main() {
   const healingRegex = /^\s+'([^']+)':\s*\(?[\s\S]*?\)?\s*=>/gm;
   let m;
   while ((m = healingRegex.exec(battleContent)) !== null) {
-    healingItems.add(m[1]);
+    healingItems.add(m[1]!);
   }
 
   // ─── Run validations ──────────────────────────────────────────────────────────
@@ -106,9 +106,6 @@ async function main() {
     'pociones', 'utility', 'booster', 'especial', 'held', 'pokeballs', 'stones', 'breeding',
     'healing', 'tm', 'special', 'stone'
   ];
-  const SELL_ONLY_ESPECIAL = new Set([
-    'Pepita', 'Perla', 'Perla Grande', 'Polvo Estelar', 'Trozo Estrella', 'Escama Dragón'
-  ]);
 
   shopItems.forEach(item => {
     const tag = `[${item.name || item.id} (line ~${item._line})]`;

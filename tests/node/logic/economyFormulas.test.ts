@@ -51,12 +51,12 @@ test('Economy Formulas - Total Team Heal Cost', async (t) => {
   });
 
   await t.test('includes PP depletion as damaged', () => {
-    const p3: Partial<Pokemon> = {
+    const p3 = {
       hp: 100, maxHp: 100,
-      moves: [{ name: 'Tackle', pp: 5, maxPP: 35 } as any], // Needs PP
+      moves: [{ name: 'Tackle', pp: 5, maxPP: 35 }], // Needs PP
       ivs: { hp: 10, atk: 10, def: 10, spa: 10, spd: 10, spe: 10 }
-    };
-    const team = [p3 as Pokemon];
+    } as unknown as Pokemon;
+    const team = [p3];
     const total = calculateTotalHealCost(team, 10, 'rocket');
     assert.strictEqual(total, 60);
   });

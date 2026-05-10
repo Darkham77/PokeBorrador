@@ -133,10 +133,10 @@ const zIndexAudit: AuditRule = {
   message: (match: string) => {
     const val = parseInt(match.match(/-?\d+/)![0]!);
     
-    // Exact match
-    if (Z_VALUE_MAP[val]) {
-      const key = Z_VALUE_MAP[val].toLowerCase().replace(/_/g, '-');
-      return `Z-Index hardcodeado detectado: '${match}'. Corresponde a Z_LAYERS.${Z_VALUE_MAP[val]}. Usa 'var(--z-${key})'.`;
+    const entry = Z_VALUE_MAP[val];
+    if (entry) {
+      const key = entry.toLowerCase().replace(/_/g, '-');
+      return `Z-Index hardcodeado detectado: '${match}'. Corresponde a Z_LAYERS.${entry}. Usa 'var(--z-${key})'.`;
     }
 
     // Nearest match (+/- 10)
@@ -242,8 +242,8 @@ function runRules(filePath: string, content: string, rules: AuditRule[], violati
       // 1. Specialized checks
       if (rule === config.sassTraps) {
         if (match[1]) continue; 
-        if (!SASS_TRAPS.includes(match[2].toLowerCase())) continue; 
-        if (match[2].charAt(0) === match[2].charAt(0).toUpperCase()) continue; 
+        if (!SASS_TRAPS.includes(match[2]!.toLowerCase())) continue; 
+        if (match[2]!.charAt(0) === match[2]!.charAt(0).toUpperCase()) continue; 
       }
       
       if (rule.check) {
@@ -265,7 +265,7 @@ function runRules(filePath: string, content: string, rules: AuditRule[], violati
       const gRegex = new RegExp(rule.regex.source, rule.regex.flags.includes('g') ? rule.regex.flags : rule.regex.flags + 'g');
       
       // Aplicar fix solo si pasa el check (contexto-aware)
-      result = result.replace(gRegex, (match, ...args) => {
+      result = result.replace(gRegex, (match) => {
         // Necesitamos recrear el match array para el check
         const execMatch = rule.regex.exec(content);
         if (rule.check) {
@@ -283,7 +283,7 @@ function runRules(filePath: string, content: string, rules: AuditRule[], violati
 
 function extractBlock(content: string, tag: string): string | null {
   const match = content.match(new RegExp(`<${tag}[^>]*>([\\s\\S]*?)<\\/${tag}>`, 'i'));
-  return match ? match[1] : null;
+  return match ? (match[1] ?? null) : null;
 }
 
 function findBlockStart(content: string, tag: string): number {

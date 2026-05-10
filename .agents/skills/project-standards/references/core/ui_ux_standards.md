@@ -226,7 +226,7 @@ All tooltips MUST use the `PVTooltip.vue` system. Native HTML `title` attributes
 - **Hybrid Engine**: Uses a "Flip-then-Nudge" algorithm. It first attempts to flip the position (e.g., from top to bottom) if there's no space, then "nudges" the coordinates to stay within a 10px safety margin of the viewport edges.
 - **Anchor-Aware Arrows**: The tooltip arrow MUST remain aligned with the trigger element's center. When the box is nudged, use the `--arrow-x` and `--arrow-y` CSS variables to offset the arrow appropriately.
 - **Visual Standard**: Tooltips must use `'Press Start 2P'` for titles, solid dark backgrounds for maximum contrast, and a **2px solid var(--yellow)** border for a "Vintage Premium" look.
-- **Emoji Centering & Spacing**: 
+- **Emoji Centering & Spacing**:
   - ALWAYS use `Translatey(-2px)` for optical centering of emojis when using pixelated fonts.
   - NEVER join multiple emojis with space characters (`join(' ')`) as the fixed-width pixel font space is disproportionately wide. Join them directly (`join('')`) and rely on CSS margins (`2px`).
 - **Hemisphere Positioning**: Tooltips MUST detect screen hemispheres. Use `right` coordinates and `Translate(50%, ...)` for the right side to ensure expansion towards the center, preventing edge clipping and text compacting.
@@ -358,7 +358,7 @@ To guarantee a seamless "Live" feel during multi-phase transitions (e.g., from S
 
 To unify the environmental immersion across the Map and Battle Arena:
 
-- **Static Perimetric Framing**: Atmospheric conditions (Fog, Mist, Snow, Blizzard, Sandstorm, Heatwave) MUST use a pseudo-element `::after` on the main overlay container for framing. 
+- **Static Perimetric Framing**: Atmospheric conditions (Fog, Mist, Snow, Blizzard, Sandstorm, Heatwave) MUST use a pseudo-element `::after` on the main overlay container for framing.
 - **Decoupled Opacity**: The framing logic (shadows/gradients) MUST be independent of internal particle layers. This ensures the perimeter remains static even if the weather particles (mist/snow) pulse or fade.
 - **Danger Signature (Heat/Sand)**: Climates that cause recurring damage (Heatwave, Sandstorm) MUST use a pulsing red frame (`anim-glow`) and a red-tinted radial gradient to signal environmental danger.
 - **Solid White Standard (Cold/Fog)**: Cold weather types (Fog, Mist, Snow, Blizzard) MUST use a high-opacity (**0.75**) white `box-shadow` to create a solid, frosty encasement that maintains visibility over dense backgrounds.
