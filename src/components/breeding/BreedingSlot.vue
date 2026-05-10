@@ -170,7 +170,7 @@ const genderSymbol = (g: string | null | undefined) => {
     align-items: center;
     img {
       height: 80px;
-      image-rendering: pixelated;
+      @include pixelated;
       will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 4px 8px Rgba(0,0,0,0.5));
     }

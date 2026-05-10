@@ -196,7 +196,7 @@ const getSpriteUrl = (id: string | number) => {
 .pixel-art {
   width: 24px;
   height: 24px;
-  image-rendering: pixelated;
+  @include pixelated;
   &.pokemon-sprite {
     width: 48px;
     height: 48px;

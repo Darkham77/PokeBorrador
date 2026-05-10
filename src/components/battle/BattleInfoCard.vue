@@ -426,6 +426,7 @@ const formatMult = (m: number) => {
         <!-- Estado Primario -->
         <PVTooltip
           v-if="p.status"
+          :title="p.status.toUpperCase()"
           :description="(STATUS_TOOLTIP_MAP as any)[p.status.toLowerCase()] || p.status"
           position="bottom"
         >
@@ -447,7 +448,8 @@ const formatMult = (m: number) => {
         <PVTooltip
           v-for="(vs, idx) in volatileStatuses"
           :key="'vs-'+idx"
-          :description="vs.text"
+          :title="vs.text?.split(':')[0] || ''"
+          :description="vs.text?.includes(':') ? (vs.text.split(':')[1]?.trim() || '') : (vs.text || '')"
           position="bottom"
         >
           <div 
@@ -462,7 +464,8 @@ const formatMult = (m: number) => {
         <PVTooltip
           v-for="s in activeStages"
           :key="'stage-'+s.key"
-          :description="s.text"
+          :title="s.text?.split('(')[0]?.trim() || ''"
+          :description="`Multiplicador actual: ${s.text?.match(/\(([^)]+)\)/)?.[1] || '100%'}`"
           position="bottom"
         >
           <div 
@@ -484,7 +487,6 @@ const formatMult = (m: number) => {
   background: Rgba(15, 23, 42, 0.7);
   -webkit-will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
-  backdrop-filter: Blur(12px);
   backdrop-filter: Blur(12px);
   @include gpu-layer;
   border: 1px solid Rgba(255, 255, 255, 0.15);
@@ -573,13 +575,9 @@ const formatMult = (m: number) => {
 }
 
 @keyframes level-up-flash {
-  0% { will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  filter: Brightness(1) contrast(1); transform: Scale(1); }
-  20% { will-change: transform, filter, opacity;
-  filter: Brightness(2) contrast(1.2); transform: Scale(1.05); border-color: Rgba(255,255,255,0.8); }
-  100% { will-change: transform, filter, opacity;
-  filter: Brightness(1) contrast(1); transform: Scale(1); }
+  0% { filter: Brightness(1) contrast(1); transform: Scale(1); }
+  20% { filter: Brightness(2) contrast(1.2); transform: Scale(1.05); border-color: Rgba(255,255,255,0.8); }
+  100% { filter: Brightness(1) contrast(1); transform: Scale(1); }
 }
 
 .hp-high { background: Linear-Gradient(90deg, Rgba(16, 185, 129, 1), Rgba(52, 211, 153, 1)); }
@@ -597,142 +595,110 @@ const formatMult = (m: number) => {
   }
 }
 
+.m-badge-level {
+  @include pixelated;
+  font-size: 8px;
+}
+
 .status-container {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  margin-top: 8px;
-  position: relative;
-  z-index: var(--z-map-spawns);
+  margin-top: 10px;
 
   @media (max-width: 600px) {
-    gap: 3px;
+    gap: 4px;
     margin-top: 5px;
   }
 }
 
 .status-badge {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   justify-content: center;
+  padding: 2px 6px;
+  border-radius: 4px;
   @include pixelated;
-  font-size: 16px;
-  line-height: 1;
-  will-change: transform, filter, opacity;
-  filter: Drop-Shadow(0 2px 4px Rgba(0,0,0,0.5));
-  position: relative;
+  font-size: 8px;
+  font-weight: bold;
+  color: white;
+  text-shadow: 0 1px 2px Rgba(0,0,0,0.5);
+  box-shadow: 0 2px 4px Rgba(0,0,0,0.3);
 
   @media (max-width: 600px) {
-    font-size: 12px;
+    padding: 1px 4px;
+    font-size: 7px;
+  }
+
+  &.brn { background: $red; }
+  &.par { background: $yellow; color: black; }
+  &.slp { background: $gray; }
+  &.psn { background: $purple; }
+  &.frz { background: $blue; }
+
+  &.volatile {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    font-size: 14px; // Icons slightly larger
+    padding: 0;
+    
+    &.is-boosted {
+      filter: Drop-Shadow(0 0 5px Rgba(34, 197, 94, 0.6));
+    }
   }
 
   &.stage {
-    font-size: 14px;
-    @media (max-width: 600px) { font-size: 10px; }
-
-    &::after {
-      content: '';
-      position: absolute;
-      top: -2px;
-      right: -4px;
-      font-size: 10px;
-      font-weight: bold;
-      @media (max-width: 600px) { font-size: 7px; right: -2px; }
-    }
-
-    &.is-up {
-      color: $green;
-      &::after { content: '▲'; color: $green; }
-    }
-    &.is-down {
-      color: $red;
-      &::after { content: '▼'; color: $red; }
-    }
-  }
-
-  &.volatile {
-    opacity: 0.9;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    font-size: 10px;
+    padding: 0;
     
-    &.is-boosted {
-      color: $coin-gold;
-      will-change: transform, filter, opacity;
-  filter: Drop-Shadow(0 0 5px Rgba(255, 215, 0, 0.8));
-      animation: ab-glow 2s infinite alternate;
-    }
+    &.is-up { color: #4ade80; text-shadow: 0 0 5px Rgba(74, 222, 128, 0.5); }
+    &.is-down { color: #f87171; text-shadow: 0 0 5px Rgba(248, 113, 113, 0.5); }
   }
+}
 
-  .status-counter {
-    position: absolute;
-    bottom: -4px;
-    right: -6px;
-    font-size: 8px;
-    background: Rgba(0, 0, 0, 0.8);
-    padding: 1px 3px;
-    border-radius: 4px;
-    color: white;
-    font-weight: bold;
-    border: 1px solid Rgba(255, 255, 255, 0.2);
-  }
+.status-counter {
+  margin-left: 4px;
+  opacity: 0.8;
+  font-size: 7px;
 }
 
 .gender-male { color: Rgba(59, 139, 255, 1); }
 .gender-female { color: Rgba(255, 110, 255, 1); }
 
-@keyframes ab-glow {
-  from { transform: Scale(1); will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  filter: Drop-Shadow(0 0 2px $coin-gold); }
-  to { transform: Scale(1.1); will-change: transform, filter, opacity;
-  filter: Drop-Shadow(0 0 8px $coin-gold); }
-}
-
 .admin-info-trigger {
   margin-left: auto;
-  pointer-events: auto;
+  cursor: help;
 }
 
 .admin-icon-btn {
-  font-size: 18px;
-  cursor: help;
-  will-change: transform, filter, opacity;
-  filter: Drop-Shadow(0 0 5px Rgba(255, 255, 0, 0.5));
-  animation: admin-icon-pulse 2s infinite alternate;
-  display: inline-flex;
+  display: flex;
   align-items: center;
   justify-content: center;
-  min-width: 24px;
-  min-height: 24px;
-  background: Rgba(0, 0, 0, 0.3);
+  width: 18px;
+  height: 18px;
+  background: Rgba(255, 255, 255, 0.1);
   border-radius: 50%;
-  border: 1px solid Rgba(255, 255, 0, 0.3);
-  margin-left: 10px;
-  
-  &:hover {
-  filter: Drop-Shadow(0 0 10px Rgba(255, 255, 0, 0.8)) Brightness(1.3);
-    background: Rgba(255, 255, 0, 0.1);
-  }
-}
+  font-size: 10px;
+  transition: all 0.2s;
 
-@keyframes admin-icon-pulse {
-  from { transform: Scale(1); opacity: 0.8; }
-  to { transform: Scale(1.15); opacity: 1; }
-}
-
-.is-admin-view {
-  outline: 1px dashed Rgba($yellow, 0.3);
-  transition: outline 0.3s ease;
   &:hover {
-    outline-color: $yellow;
-    outline-offset: 2px;
+    background: Rgba(255, 255, 255, 0.2);
+    transform: Scale(1.1);
   }
 }
 
 .admin-stat-debug {
+  padding: 4px 0;
   display: flex;
   flex-direction: column;
   gap: 6px;
-  min-width: 130px;
-  padding: 4px 0;
+  min-width: 180px;
+  background: none;
+  border: none;
 }
 
 .debug-stat-row {
@@ -742,11 +708,11 @@ const formatMult = (m: number) => {
   @include pixelated;
   padding: 4px 6px;
   border-radius: 8px;
-  background: Rgba(255, 255, 255, 0.05);
+  background: #000000;
   transition: all 0.2s ease;
 
   &:hover {
-    background: Rgba(255, 255, 255, 0.1);
+    background: #1a1a1a;
   }
 
   .stat-main-line {

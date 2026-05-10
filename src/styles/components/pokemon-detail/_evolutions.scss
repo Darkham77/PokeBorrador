@@ -34,7 +34,7 @@ body .evolve-pane {
       & .evo-sprite {
         width: 64px;
         height: 64px;
-        image-rendering: pixelated;
+        @include pixelated;
         will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 5px 15px Rgba(0,0,0,0.4));
         transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);

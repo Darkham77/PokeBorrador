@@ -123,7 +123,7 @@ if (typeof window !== 'undefined') {
       img {
         width: 36px;
         height: 36px;
-        image-rendering: pixelated;
+        @include pixelated;
       }
     }
 

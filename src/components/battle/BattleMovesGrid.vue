@@ -215,6 +215,7 @@ const getMoveColor = (move: Move | null) => {
       <!-- Info Zone with Tooltip -->
       <template v-if="move">
         <PVTooltip
+          :title="move.name"
           :delay="400" 
           position="top"
           hide-on-click

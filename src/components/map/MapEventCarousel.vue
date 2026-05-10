@@ -135,14 +135,15 @@ const handleAction = (slide: Slide) => {
   </div>
 </template>
 
-<style scoped>
-@use "@/styles/core/_mixins" as *;
+<style scoped lang="scss">
+@use "@/styles/core/tools" as *;
+
 .legacy-carousel {
   position: relative;
   min-height: 80px;
   background: Rgba(17, 17, 17, 1);
   border: 4px solid Rgba(51, 51, 51, 1);
-  box-shadow: 0 0 0 4px $black;
+  box-shadow: 0 0 0 4px var(--black);
   overflow: hidden;
   margin-bottom: 20px;
 }
@@ -175,7 +176,7 @@ const handleAction = (slide: Slide) => {
   @include pixelated;
   font-size: 8px;
   margin-bottom: 8px;
-  text-shadow: 2px 2px $black;
+  text-shadow: 2px 2px var(--black);
 }
 
 .slide-text {
@@ -196,7 +197,7 @@ const handleAction = (slide: Slide) => {
   width: 6px;
   height: 6px;
   background: Rgba(68, 68, 68, 1);
-  border: 1px solid $black;
+  border: 1px solid var(--black);
 }
 
 .carousel-dot.active {

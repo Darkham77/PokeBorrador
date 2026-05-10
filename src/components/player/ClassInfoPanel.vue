@@ -330,7 +330,7 @@ const rankTitle = computed(() => {
   .class-sprite {
     width: 220px;
     height: auto;
-    image-rendering: pixelated;
+    @include pixelated;
     will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 10px 20px Rgba(0, 0, 0, 0.5));
   }

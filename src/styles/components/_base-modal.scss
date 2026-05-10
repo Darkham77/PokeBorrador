@@ -12,33 +12,25 @@
   position: fixed;
   inset: 0;
   background: Rgba(0, 0, 0, 0.5);
-  -webkit-will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  backdrop-filter: Blur(6px);
+  -webkit-backdrop-filter: Blur(6px);
   backdrop-filter: Blur(6px);
   @include gpu-layer;
   z-index: var(--z-base);
   pointer-events: auto;
-  // GPU Acceleration
-  transform: Translatez(0);
   
   will-change: opacity;
   @include will-animate(opacity);
 
   &.transparent {
     background: transparent !important;
-    -webkit-will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  backdrop-filter: none !important; will-change: transform, filter, opacity;
-  backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
     pointer-events: none !important;
   }
 
   &.no-blur {
-    -webkit-will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  backdrop-filter: none !important; will-change: transform, filter, opacity;
-  backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
   }
 }
 
@@ -125,6 +117,7 @@
   transform: Translate3d(0, 0, 0);
   will-change: transform, opacity;
   @include will-animate(transform, opacity);
+  @include pixelated; // Force pixel-art fidelity globally in modals
 
   // GPU Acceleration via mixin or direct property
   @include gpu-layer;
@@ -208,7 +201,7 @@
 
   &.is-performance-mode {
     will-change: transform, filter, opacity;
-    filter: Brightness(0.6) Blur(1px); 
+    filter: Brightness(0.6); // Removed Blur(1px) as it breaks pixel-art aesthetic
     pointer-events: none !important;
     
     .sparkle, .glow, .aura {

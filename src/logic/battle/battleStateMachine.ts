@@ -1,4 +1,3 @@
-
 import { ref } from 'vue';
 import { gsap } from 'gsap';
 import { logger } from '../utils/logger.ts';
@@ -128,7 +127,7 @@ export type BattleSubStateName = typeof BATTLE_SUBSTATES[keyof typeof BATTLE_SUB
 export function createBattleStateMachine() {
   const currentState = ref<BattleStateName>(BATTLE_STATES.EXIT_BATTLE);
   const currentSubState = ref<BattleSubStateName | null>(null);
-  let transitionCall: gsap.core.Tween | null = null;
+  let transitionCall: gsap.core.Animation | null = null;
 
   // Simple strict transitions check based on the Mermaid diagram.
   const validTransitions: Record<string, string[]> = {

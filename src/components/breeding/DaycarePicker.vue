@@ -98,6 +98,7 @@ const selectPokemon = (p: Pokemon) => {
               <img
                 :src="getAssetUrl(ASSET_TYPES.POKEMON, p.id, { isShiny: !!p.isShiny })"
                 :alt="p.name"
+                class="pixelated"
                 @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
               >
             </div>
@@ -177,6 +178,7 @@ const selectPokemon = (p: Pokemon) => {
       right: 15px;
       background: none;
       border: none;
+      @include pixelated;
       color: Rgba(148, 163, 184, 1);
       font-size: 24px;
       cursor: pointer;
@@ -218,7 +220,7 @@ const selectPokemon = (p: Pokemon) => {
   align-items: center;
   justify-content: center;
   
-  img { width: 44px; height: 44px; image-rendering: pixelated; }
+  .pixelated { width: 44px; height: 44px; @include pixelated; }
 }
 
 .info {

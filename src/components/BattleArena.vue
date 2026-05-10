@@ -213,7 +213,7 @@ const handleClose = () => {
     max-width: 100%;
     max-height: 100%;
     object-fit: contain;
-    image-rendering: pixelated;
+    @include pixelated;
     will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 4px 8px Rgba(0,0,0,0.4));
   }

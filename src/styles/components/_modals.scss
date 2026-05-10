@@ -15,7 +15,7 @@
   @include pixelated;
   font-size: 10px;
   border-radius: 4px;
-  image-rendering: pixelated;
+  @include pixelated;
   
   &.secondary {
     color: var(--yellow);

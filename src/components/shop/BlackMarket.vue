@@ -187,7 +187,7 @@ onMounted(() => {
   .pixel-sprite {
     width: 48px;
     height: 48px;
-    image-rendering: pixelated;
+    @include pixelated;
     z-index: var(--z-base);
     will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 4px 8px Rgba(0, 0, 0, 0.5));

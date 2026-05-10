@@ -99,7 +99,7 @@ const shadowsArray = computed<CombatShadow[]>(() => {
   position: absolute;
   background-size: 100% 100%;
   background-repeat: no-repeat;
-  image-rendering: pixelated;
+  @include pixelated;
   transform-origin: center center;
   /* Eliminamos transiciones de posición (left/top) para evitar el "corrimiento" visual */
   /* Solo permitimos opacidad para apariciones/desapariciones suaves */

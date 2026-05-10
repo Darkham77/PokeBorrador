@@ -86,23 +86,22 @@ const modifierInfo = computed(() => {
 @use "@/styles/core/tools" as *;
 
 .move-tooltip-rich {
-  font-family: var(--font-ui);
-  font-size: 11px;
+  @include pixelated;
+  font-size: 9px;
   line-height: 1.5;
   color: Rgba(255, 255, 255, 0.95);
-  max-width: 220px;
-  padding: 4px;
-  font-weight: 500;
+  max-width: 250px;
+  padding: 2px;
 }
 
 .move-modifier {
-  margin-top: 6px;
-  padding-top: 6px;
+  @include pixelated;
+  margin-top: 8px;
+  padding-top: 8px;
   border-top: 1px solid Rgba(255, 255, 255, 0.1);
-  font-size: 10px;
-  font-weight: bold;
+  font-size: 8px;
   
-  &.boosted { color: $coin-gold; }
-  &.penalized { color: #ff4444; }
+  &.boosted { color: var(--yellow); }
+  &.penalized { color: $red; }
 }
 </style>

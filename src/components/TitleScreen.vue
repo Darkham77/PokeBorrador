@@ -165,7 +165,7 @@ const handleLogout = () => {
 .starter-sprite {
   width: 160px;
   height: 160px;
-  image-rendering: pixelated;
+  @include pixelated;
 }
 
 .title-footer {

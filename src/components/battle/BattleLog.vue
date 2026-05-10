@@ -2,7 +2,7 @@
 import { computed, watch, ref, nextTick, onMounted } from 'vue'
 import { gsap } from 'gsap'
 import { useBattleStore } from '@/stores/battle'
-import { ANIM_TIMINGS, ANIM_EASES } from '@/logic/utils/animationRegistry'
+import { ANIM_EASES } from '@/logic/utils/animationRegistry'
 
 const battleStore = useBattleStore()
 const logContainer = ref<HTMLDivElement | null>(null)
@@ -32,7 +32,7 @@ watch(() => logs.value.length, () => {
   nextTick(() => {
     const entries = logContainer.value?.querySelectorAll('.log-entry')
     if (entries && entries.length > 0) {
-      const lastEntry = entries[entries.length - 1]
+      const lastEntry = entries[entries.length - 1] as HTMLElement
       gsap.fromTo(lastEntry, 
         { opacity: 0, x: -10 }, 
         { opacity: 1, x: 0, duration: 0.3, ease: ANIM_EASES.OUT_SOFT }
@@ -48,7 +48,7 @@ const handleImgError = (e: Event) => {
 onMounted(() => {
   scrollToBottom()
   if (logContainer.value) {
-    const observer = new ResizeObserver(scrollToBottom)
+    const observer = new ResizeObserver(() => scrollToBottom())
     observer.observe(logContainer.value)
   }
 })
@@ -187,7 +187,7 @@ onMounted(() => {
     max-width: none !important;
     max-height: none !important;
     object-fit: contain;
-    image-rendering: pixelated;
+    @include pixelated;
     will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 4px 8px Rgba(0,0,0,0.4));
     position: absolute;

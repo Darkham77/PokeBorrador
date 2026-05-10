@@ -205,31 +205,29 @@ const selectTab = (tabId: string) => {
 
 .library-article {
   width: 100%;
-  padding: 24px 32px; // Reducido drásticamente el padding "terrible"
-  line-height: 1.6;
+  padding: 24px 32px;
+  line-height: 1.8;
   color: #ddd;
+  @include pixelated;
+  font-size: 8px;
 
   :deep(h1) {
-    @include pixelated;
-    font-size: 20px;
+    font-size: 12px;
     color: var(--yellow);
     margin-bottom: 24px;
     text-shadow: 3px 3px 0px Rgba(0,0,0,0.8);
-    @include pixelated;
   }
 
   :deep(h3) {
     color: var(--purple, $purple);
     margin: 32px 0 16px;
-    font-size: 18px;
+    font-size: 10px;
     font-weight: 800;
     text-shadow: 2px 2px 0px Rgba(0,0,0,0.5);
-    @include pixelated;
   }
 
   :deep(p) {
     margin-bottom: 20px;
-    font-size: 15px;
     color: Rgba(255, 255, 255, 0.85);
   }
 
@@ -267,9 +265,7 @@ const selectTab = (tabId: string) => {
       background: Rgba(255, 255, 255, 0.05);
       color: var(--yellow);
       font-size: 10px;
-      @include pixelated;
       text-transform: uppercase;
-      @include pixelated;
     }
     
     tr:last-child td {
@@ -277,7 +273,7 @@ const selectTab = (tabId: string) => {
     }
     
     td {
-      font-size: 14px;
+      font-size: 8px;
     }
   }
 

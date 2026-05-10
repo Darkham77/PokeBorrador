@@ -305,7 +305,9 @@ let intersectionObserver: IntersectionObserver | null = null
 onMounted(() => {
   if (cardRef.value) {
     resizeObserver = new ResizeObserver((entries) => {
-      const width = entries[0].contentRect.width
+      const entry = entries[0]
+      if (!entry) return
+      const width = entry.contentRect.width
       if (width > 350) currentCols.value = 4
       else if (width > 200) currentCols.value = 3
       else currentCols.value = 2
@@ -313,7 +315,8 @@ onMounted(() => {
     resizeObserver.observe(cardRef.value)
 
     intersectionObserver = new IntersectionObserver((entries) => {
-      isVisible.value = entries[0].isIntersecting
+      const entry = entries[0]
+      if (entry) isVisible.value = entry.isIntersecting
     }, { 
       rootMargin: '50px', 
       threshold: 0.01 

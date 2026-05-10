@@ -1,3 +1,5 @@
+@use "mixins/layout" as layout;
+
 // src/styles/core/_gpu.scss
 
 /// Promueve un elemento a su propia capa GPU (compositing layer)
@@ -15,7 +17,6 @@
 /// Contenedor optimizado para scroll suave (listas de Pokémon, PC Box)
 @mixin smooth-scroll {
   overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
   scroll-behavior: smooth;
   min-height: 0;
@@ -41,15 +42,17 @@
       background: var(--yellow);
     }
   }
-  
-  // Standards compliance
-  scrollbar-width: thin;
-  scrollbar-color: var(--yellow-dark, #8b6d11) Rgba(0, 0, 0, 0.2);
+
+  // Standards compliance (wrapped to avoid linter warnings on older agents)
+  @supports (scrollbar-width: thin) {
+    scrollbar-width: thin;
+    scrollbar-color: var(--yellow-dark, #8b6d11) Rgba(0, 0, 0, 0.2);
+  }
 }
 
 /// Imágenes de sprites Pokémon siempre en capa GPU para evitar flicker y mejorar render
 @mixin sprite-render {
-  image-rendering: pixelated;
+  @include layout.pixelated;
   @include gpu-layer;
   contain: layout style paint;
 }

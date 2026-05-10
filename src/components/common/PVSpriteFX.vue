@@ -386,6 +386,8 @@ const particles = computed(() => {
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/tools" as *;
+
 // Los estilos base vienen del core/fx.scss
 // Aquí solo añadimos ajustes específicos de layout si fuera necesario
 .pv-fx-wrapper {
@@ -396,6 +398,7 @@ const particles = computed(() => {
   display: flex;
   align-items: center;
   justify-content: center;
+  @include pixelated;
 }
 
 .pv-fx-screen-overlay {

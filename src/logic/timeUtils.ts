@@ -19,7 +19,11 @@ export async function syncServerTime(): Promise<void> {
   }
 
   try {
-    const { data: serverTime, error } = await supabase.rpc('fn_get_server_time');
+    const { data: serverTime, error } = await Promise.race([
+        supabase.rpc('fn_get_server_time'),
+        new Promise((_, reject) => gsap.delayedCall(3, () => reject(new Error('FETCH_TIMEOUT'))))
+    ]) as any;
+    
     if (error) throw error;
 
     const serverInstant = Temporal.Instant.from(serverTime as string);
@@ -106,7 +110,7 @@ export function getSeason(now: Temporal.Instant | number = getServerInstant()): 
   return seasons[seasonIndex] || (seasons[0] as Season);
 }
 
-// Interval logic should be managed by the store/app after init
+// Asynchronous pause tied to the GSAP clock for deterministic logic
 export function sleep(ms: number): Promise<void> {
   return new Promise(resolve => gsap.delayedCall(ms / 1000, resolve));
 }

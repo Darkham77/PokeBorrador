@@ -179,7 +179,7 @@ const handleMoneyInput = (e: Event) => {
     .change-hint { opacity: 1; }
   }
 
-  .preview-sprite { width: 48px; height: 48px; image-rendering: pixelated; }
+  .preview-sprite { width: 48px; height: 48px; @include pixelated; }
   .preview-info { flex: 1; .name { font-weight: 800; font-size: 14px; color: var(--white); } .meta { font-size: 11px; color: Rgba(136, 136, 136, 1); } }
   .change-hint { position: absolute; right: 15px; font-size: 8px; @include pixelated; color: var(--purple); opacity: 0.6; transition: opacity 0.2s; }
 }

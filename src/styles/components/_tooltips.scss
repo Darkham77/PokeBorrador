@@ -12,20 +12,11 @@
   position: absolute;
   visibility: hidden;
   opacity: 0;
-  background: Rgba(10, 10, 20, 0.98);
-  border: 1px solid $yellow; 
-  color: $white;
-  padding: 10px 14px;
-  border-radius: 12px;
-  font-size: 13px;
-  line-height: 1.5;
+  @include tooltip-premium;
   width: max-content;
   max-width: min(350px, 90dvw);
   white-space: normal;
   word-wrap: break-word;
-  z-index: var(--z-tooltip);
-  pointer-events: none;
-  box-shadow: 0 10px 30px Rgba(0, 0, 0, 0.8);
   transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1), transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   transform: Translatey(10px) Translatex(-50%) Translatez(0);
   left: 50%;
@@ -38,7 +29,7 @@
     left: 50%;
     transform: Translatex(-50%);
     border: 6px solid transparent;
-    border-top-color: $yellow;
+    border-top-color: Rgba(255, 217, 61, 0.4);
   }
 }
 
@@ -53,19 +44,29 @@
   font-family: $font-pixel;
   font-size: 8px;
   color: $yellow;
-  margin-bottom: 6px;
+  padding-bottom: 8px;
+  margin-bottom: 8px;
   display: block;
   text-transform: uppercase;
   text-shadow: 1px 1px 0px Rgba(0, 0, 0, 0.5);
+  border-bottom: 1px solid Rgba(255, 255, 255, 0.08);
 
   &:last-child {
     margin-bottom: 0;
+    border-bottom: none;
+    padding-bottom: 0;
   }
 }
 
 .pv-tooltip-desc {
+  @include pixelated;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
   color: Rgba(255, 255, 255, 0.9);
-  font-size: 13px;
+  font-size: 9px;
+  line-height: 1.5;
 }
 
 /* Position Variants (Literal 1288) */
@@ -131,21 +132,11 @@
 /* FIXED MOVE TOOLTIP (Literal 1250) */
 .move-tooltip {
   position: fixed;
-  z-index: var(--z-tooltip);
-  transform: Translatez(0);
-  background: Rgba(10, 10, 15, 0.98);
-  border: 1px solid Rgba(255, 217, 61, 0.4);
-  color: $white;
-  padding: 14px 18px;
-  border-radius: 16px;
-  font-size: 13px;
-  line-height: 1.6;
+  @include tooltip-premium;
   width: 300px;
   max-width: min(380px, 85dvw);
   white-space: normal;
   word-wrap: break-word;
-  pointer-events: none;
-  box-shadow: 0 15px 50px Rgba(0, 0, 0, 0.95), inset 0 1px 1px Rgba(255, 255, 255, 0.05);
   display: none;
 }
 
@@ -156,25 +147,14 @@
   bottom: calc(100% + 12px);
   left: 50%;
   transform: Translatex(-50%) Translatey(10px) Translatez(0);
-  background: Rgba(10, 10, 20, 0.98);
-  border: 1px solid Rgba(255, 214, 10, 0.4);
-  border-radius: 12px;
-  padding: 12px 16px;
+  @include tooltip-premium;
   width: 240px;
-  z-index: var(--z-tooltip);
   opacity: 0;
   visibility: hidden;
   transition: all 0.25s cubic-bezier(0.18, 0.89, 0.32, 1.28);
-  pointer-events: none;
-  box-shadow: 0 15px 40px Rgba(0, 0, 0, 0.9), inset 0 1px 1px Rgba(255, 255, 255, 0.05);
   text-align: left;
   white-space: normal;
-  line-height: 1.5;
-  -webkit-will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
-  backdrop-filter: Blur(12px);
-  backdrop-filter: Blur(12px);
-  @include gpu-layer;
 
   .tooltip-wrap:hover &, .tooltip-wrap.touched & {
     display: block;
@@ -186,9 +166,8 @@
   .tooltip-title {
     display: block;
     @include pixelated;
-    font-family: $font-pixel;
     font-size: 8px;
-    color: $yellow;
+    color: var(--yellow);
     margin-bottom: 8px;
     text-transform: uppercase;
     text-shadow: 1px 1px 0px Rgba(0, 0, 0, 0.8);
@@ -200,9 +179,9 @@
 .tooltip-neutral { color: $gray; font-style: italic; }
 
 /* ===== GLOBAL HP BAR COLORS ===== */
-.hp-high { background: Linear-Gradient(90deg, $green, #28a745) !important; }
-.hp-mid  { background: Linear-Gradient(90deg, $yellow, #eab308) !important; }
-.hp-low  { background: Linear-Gradient(90deg, $red, #dc2626) !important; }
+.hp-high { background: Linear-Gradient(90deg, $green, #28a745); }
+.hp-mid  { background: Linear-Gradient(90deg, $yellow, #eab308); }
+.hp-low  { background: Linear-Gradient(90deg, $red, #dc2626); }
 
 /* ===== INTERACTIVE POKEMON TAGS ===== */
 .poke-tag {

@@ -262,7 +262,6 @@ const bannerStyle = computed(() => ({
     z-index: calc(var(--z-base) + 1);
     border-radius: 16px; // Ajustado para curva interna (20px - 4px)
     @include pixelated;
-    image-rendering: pixelated;
   }
 
 
@@ -546,9 +545,7 @@ const bannerStyle = computed(() => ({
 }
 
 .pixelated { 
-  image-rendering: pixelated;
-  image-rendering: crisp-edges;
-  image-rendering: -webkit-optimize-contrast;
+  @include pixelated;
   -ms-interpolation-mode: nearest-neighbor;
 }
 

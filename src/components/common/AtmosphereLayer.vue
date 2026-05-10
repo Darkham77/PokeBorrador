@@ -17,23 +17,6 @@ const props = defineProps({
 const animSeed = ref(0.5)
 const direction = computed(() => (animSeed.value > 0.5 ? 1 : -1))
 const flashRef = ref<HTMLElement | null>(null) // Ref para el flash overlay
-const containerRef = ref<HTMLElement | null>(null)
-
-watch(() => props.seed, (val) => {
-  if (!val) {
-    animSeed.value = Math.random()
-  } else {
-    // Generador pseudo-aleatorio determinista basado en seno para máxima dispersión
-    const x = Math.sin(val) * 10000
-    animSeed.value = Math.abs(x - Math.floor(x))
-  }
-  
-  // Reiniciar animaciones con el nuevo seed si somos visibles
-  if (props.isVisible) {
-    initWeatherAnim()
-    initLeafAnim()
-  }
-}, { immediate: true })
 
 // 2. Shake/Wobble Animation Class
 const animClass = computed(() => {
@@ -372,6 +355,22 @@ watch(() => props.weather, (w) => {
   }
 }, { immediate: true })
 
+watch(() => props.seed, (val) => {
+  if (!val) {
+    animSeed.value = Math.random()
+  } else {
+    // Generador pseudo-aleatorio determinista basado en seno para máxima dispersión
+    const x = Math.sin(val) * 10000
+    animSeed.value = Math.abs(x - Math.floor(x))
+  }
+  
+  // Reiniciar animaciones con el nuevo seed si somos visibles
+  if (props.isVisible) {
+    initWeatherAnim()
+    initLeafAnim()
+  }
+}, { immediate: true })
+
 // Estilos dinámicos para el overlay de clima
 const weatherOverlayStyles = computed(() => ({
   '--card-seed': animSeed.value,
@@ -393,8 +392,14 @@ const weatherOverlayStyles = computed(() => ({
     >
       <!-- Rain & Storm -->
       <template v-if="weather === 'rain' || weather === 'storm'">
-        <div ref="layer1Ref" class="rain-layer layer-1" />
-        <div ref="layer2Ref" class="rain-layer layer-2" />
+        <div
+          ref="layer1Ref"
+          class="rain-layer layer-1"
+        />
+        <div
+          ref="layer2Ref"
+          class="rain-layer layer-2"
+        />
         <div
           v-if="weather === 'storm'"
           ref="lightningRef"
@@ -405,14 +410,26 @@ const weatherOverlayStyles = computed(() => ({
 
       <!-- Snow & Blizzard -->
       <template v-if="weather === 'snow' || weather === 'blizzard'">
-        <div ref="layer1Ref" class="snow-layer layer-1" />
-        <div ref="layer2Ref" class="snow-layer layer-2" />
+        <div
+          ref="layer1Ref"
+          class="snow-layer layer-1"
+        />
+        <div
+          ref="layer2Ref"
+          class="snow-layer layer-2"
+        />
       </template>
 
       <!-- Sandstorm -->
       <template v-if="weather === 'sandstorm'">
-        <div ref="layer1Ref" class="sandstorm-layer layer-1" />
-        <div ref="layer2Ref" class="sandstorm-layer layer-2" />
+        <div
+          ref="layer1Ref"
+          class="sandstorm-layer layer-1"
+        />
+        <div
+          ref="layer2Ref"
+          class="sandstorm-layer layer-2"
+        />
       </template>
 
       <!-- Lightning Flash Overlay (High Performance) -->
@@ -424,7 +441,10 @@ const weatherOverlayStyles = computed(() => ({
 
       <!-- Fog, Mist & Heatwave -->
       <template v-if="weather === 'fog' || weather === 'mist' || weather === 'heatwave'">
-        <div ref="layer1Ref" class="mist-layer" />
+        <div
+          ref="layer1Ref"
+          class="mist-layer"
+        />
       </template>
       
       <!-- Leaves (for Storm effects) -->

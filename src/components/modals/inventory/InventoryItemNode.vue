@@ -106,7 +106,7 @@ const emit = defineEmits<{
     justify-content: center;
     position: relative;
     
-    .item-sprite { width: 40px; height: 40px; image-rendering: pixelated; }
+    .item-sprite { width: 40px; height: 40px; @include pixelated; }
     .fallback-icon { font-size: 24px; }
     
     .quantity {

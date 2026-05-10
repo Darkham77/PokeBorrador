@@ -23,7 +23,7 @@ export const Z_LAYERS = {
   
   // Overlays & Modals
   OVERLAY: 10000,
-  MODAL_BASE: 11000,
+  MODAL: 11000,
   MODAL_STEP: 100, // Increment per stacked modal
   
   // Global Critical

@@ -224,7 +224,7 @@ const handleConfirm = () => {
     }
   }
 
-  .p-sprite { width: 48px; height: 48px; image-rendering: pixelated; }
+  .p-sprite { width: 48px; height: 48px; @include pixelated; }
   .p-info {
     flex: 1;
     .p-name { font-size: 14px; font-weight: 700; color: $white; }

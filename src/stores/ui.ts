@@ -284,8 +284,9 @@ export const useUIStore = defineStore('ui', () => {
 
     if (obscuringModals.length === 0 && !isBattleObscuring) return false
 
-    // Performance Mode triggers immediately when an obscuring modal is added.
-    return obscuringModals.some(m => !m.closing)
+    // Performance Mode triggers ONLY after opening animation finishes 
+    // and drops IMMEDIATELY when closing starts to ensure smooth transitions.
+    return obscuringModals.some(m => !m.opening && !m.closing)
   })
   
   const isAnyModalOpen = computed(() => {

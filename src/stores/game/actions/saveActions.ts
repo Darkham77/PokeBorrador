@@ -113,7 +113,7 @@ export function useSaveActions(
 
       if (isNewerThanCloud) {
         uiStore.notify('Sincronizando progreso local más reciente...', '🔄')
-        gsap.delayedCall(3, () => save(false))
+        setTimeout(() => save(false), 3000)
       }
     }
     

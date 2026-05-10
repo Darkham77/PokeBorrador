@@ -158,7 +158,7 @@ const handleConfirm = () => {
   .item-mini-sprite {
     width: 32px;
     height: 32px;
-    image-rendering: pixelated;
+    @include pixelated;
   }
 
   .title-wrap {

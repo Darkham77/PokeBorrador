@@ -20,7 +20,7 @@
   justify-content: stretch;
   min-height: 0;
   padding: 0;
-  @include smooth;
+  @include pixelated;
 }
 
 // Bloqueo de Scroll (Seguimos necesitándolo para el modo batalla)
@@ -107,7 +107,7 @@ body.is-battle-active {
   height: 3000px;
   transform-origin: 0 0;
   will-change: transform;
-  image-rendering: pixelated;
+  @include pixelated;
   @include gpu-layer;
 
   .camera-debug-guides & {
@@ -192,7 +192,7 @@ body.is-battle-active {
   background-size: 100% 100%; 
   background-repeat: no-repeat; 
   background-position: center;
-  image-rendering: pixelated;
+  @include pixelated;
   will-change: transform, filter, opacity;
   filter: none;
 }
@@ -219,7 +219,7 @@ body.is-battle-active {
   position: absolute; 
   width: calc(var(--obj-scale, 1) * 30px); 
   height: calc(var(--obj-scale, 1) * 30px); 
-  image-rendering: pixelated;
+  @include pixelated;
   
   // Offsets también escalados
   &.bush-front-1 { --bx: calc(var(--obj-scale, 1) * -12px); --by: calc(var(--obj-scale, 1) * 6px); --bs: 1.2; animation: bush-wiggle 1.2s infinite ease-in-out; }
@@ -285,7 +285,7 @@ body.is-battle-active {
 .bat-pokemon-sprite {
   height: clamp(60px, 35cqi, 160px);
   width: auto;
-  image-rendering: pixelated;
+  @include pixelated;
   will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 2cqi 2cqi Rgba(0,0,0,0.5));
   animation: idle 3s infinite ease-in-out;

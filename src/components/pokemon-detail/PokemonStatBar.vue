@@ -143,7 +143,7 @@ const getStatLabel = (key: string) => {
     font-size: 10px;
     color: Rgba(148, 163, 184, 1);
     width: 55px;
-    image-rendering: pixelated;
+    @include pixelated;
     @media (max-width: 480px) { font-size: 8px; width: 45px; }
   }
   .stat-value {
@@ -153,7 +153,7 @@ const getStatLabel = (key: string) => {
     font-weight: bold;
     min-width: 50px;
     text-align: right;
-    image-rendering: pixelated;
+    @include pixelated;
     @media (max-width: 480px) { font-size: 12px; min-width: 40px; }
   }
 }
@@ -225,19 +225,19 @@ const getStatLabel = (key: string) => {
     font-size: 12px;
     font-weight: bold;
     text-shadow: 0 0 5px currentColor;
-    image-rendering: pixelated;
+    @include pixelated;
     @media (max-width: 480px) { font-size: 10px; }
   }
   .iv-num {
     @include pixelated;
     font-size: 9px;
     opacity: 0.9;
-    image-rendering: pixelated;
+    @include pixelated;
     @media (max-width: 480px) { font-size: 8px; }
   }
 }
 
 .pixelated {
-  image-rendering: pixelated;
+  @include pixelated;
 }
 </style>

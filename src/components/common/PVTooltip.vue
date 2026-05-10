@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, nextTick, inject, watch, onUnmounted } from 'vue'
+import { ref, nextTick, inject, watch, onUnmounted, computed } from 'vue'
 import { gsap } from 'gsap'
 
 const props = defineProps({
@@ -52,19 +52,11 @@ const updatePosition = () => {
 
   // --- 2. BASE COORDINATES ---
   let top = 0
-  let left: number | 'auto' = 0
-  let right: number | 'auto' = 'auto'
+  let left = 0
   
   if (pos === 'top' || pos === 'bottom') {
     top = pos === 'top' ? rect.top + scrollY - gap : rect.bottom + scrollY + gap
-    
-    if (isRightSide.value) {
-      left = 'auto'
-      right = (viewportWidth - triggerCenter) + scrollX
-    } else {
-      left = triggerCenter + scrollX
-      right = 'auto'
-    }
+    left = triggerCenter + scrollX
   } else if (pos === 'left') {
     top = rect.top + scrollY + rect.height / 2
     left = rect.left + scrollX - gap
@@ -80,27 +72,14 @@ const updatePosition = () => {
   if (pos === 'top' || pos === 'bottom') {
     const halfWidth = tipRect.width / 2
     
-    if (isRightSide.value) {
-      // Right side nudge
-      let currentRight = (right as number)
-      if (currentRight - halfWidth < padding) {
-        currentRight = padding + halfWidth
-      } else if (currentRight + halfWidth > viewportWidth - padding) {
-        currentRight = viewportWidth - padding - halfWidth
-      }
-      right = currentRight
-      arrowOffset.value = { x: anchorX - (viewportWidth + scrollX - currentRight), y: 0 }
-    } else {
-      // Left side nudge
-      let currentLeft = (left as number)
-      if (currentLeft - halfWidth < padding) {
-        currentLeft = padding + halfWidth
-      } else if (currentLeft + halfWidth > viewportWidth - padding) {
-        currentLeft = viewportWidth - padding - halfWidth
-      }
-      left = currentLeft
-      arrowOffset.value = { x: anchorX - currentLeft, y: 0 }
+    // Horizontal Nudge (Ensures it stays within viewport)
+    if (left - halfWidth < padding + scrollX) {
+      left = padding + scrollX + halfWidth
+    } else if (left + halfWidth > viewportWidth + scrollX - padding) {
+      left = viewportWidth + scrollX - padding - halfWidth
     }
+    
+    arrowOffset.value = { x: anchorX - left, y: 0 }
   } else {
     // Left/Right Vertical Nudge
     const halfHeight = tipRect.height / 2
@@ -112,7 +91,7 @@ const updatePosition = () => {
     arrowOffset.value = { x: 0, y: anchorY - top }
   }
   
-  coords.value = { top, left, right }
+  coords.value = { top, left, right: 'auto' }
 }
 
 const show = () => {
@@ -165,6 +144,12 @@ const handleTriggerClick = (event: MouseEvent) => {
   })
 }
 
+const formattedDescription = computed(() => {
+  if (!props.description) return ''
+  // Wrap common symbols/emojis for alignment (including Nature triangles)
+  return props.description.replace(/([▲▼↑↓⬆⬇🔼🔽🔺🔻🔴🟢ℹ️⚡✨⚠️])/g, '<span class="symbol-align">$1</span>')
+})
+
 const handleMouseEnter = () => {
   show()
 }
@@ -200,13 +185,11 @@ onUnmounted(() => {
           ref="tooltip"
           :class="[
             'pv-tooltip-teleported', 
-            `pos-${activePosition}`,
-            { 'is-right-side': isRightSide }
+            `pos-${activePosition}`
           ]"
           :style="{ 
             top: coords.top + 'px', 
-            left: coords.left === 'auto' ? 'auto' : coords.left + 'px',
-            right: coords.right === 'auto' ? 'auto' : coords.right + 'px',
+            left: coords.left + 'px',
             '--arrow-x': arrowOffset.x + 'px',
             '--arrow-y': arrowOffset.y + 'px'
           }"
@@ -219,7 +202,8 @@ onUnmounted(() => {
             <span
               v-if="description"
               class="pv-tooltip-desc"
-            >{{ description }}</span>
+              v-html="formattedDescription"
+            />
             <slot name="content" />
           </div>
           <div class="tooltip-arrow" />
@@ -239,20 +223,13 @@ onUnmounted(() => {
 
 .pv-tooltip-teleported {
   position: absolute;
-  z-index: var(--z-critical); // Above everything (even Debug Panel at 100,000)
-  pointer-events: none;
-  background: Rgba(10, 10, 20, 0.98);
-  border: 1px solid $yellow;
-  border-radius: 12px;
-  padding: 10px 14px;
+  @include tooltip-premium;
+  z-index: var(--z-critical); // Above everything
   min-width: 120px;
-  max-width: 300px;
-  box-shadow: 0 10px 30px Rgba(0, 0, 0, 0.8);
+  max-width: 320px;
+  width: max-content;
   -webkit-will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
-  backdrop-filter: Blur(10px);
-  backdrop-filter: Blur(10px);
-  @include gpu-layer;
   
   .tooltip-content {
     display: flex;
@@ -262,24 +239,41 @@ onUnmounted(() => {
 
   .pv-tooltip-title {
     @include pixelated;
-    font-family: $font-pixel;
     font-size: 8px;
-    color: $yellow;
+    color: var(--yellow);
     text-shadow: 1px 1px 0px Rgba(0, 0, 0, 0.5);
-    margin-bottom: 6px;
+    padding-bottom: 8px;
+    margin-bottom: 8px;
     line-height: 1.4;
     display: block;
+    border-bottom: 1px solid Rgba(255, 255, 255, 0.08);
 
     &:last-child {
       margin-bottom: 0;
+      border-bottom: none;
+      padding-bottom: 0;
     }
   }
 
   .pv-tooltip-desc {
-    color: Rgba(255, 255, 255, 0.9);
-    font-size: 11px;
-    line-height: 1.5;
+    @include pixelated;
+    display: block;
+    color: Rgba(241, 245, 249, 0.9);
+    font-size: 9px; 
+    line-height: 1.6;
     white-space: pre-wrap;
+
+    .symbol-align {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      vertical-align: middle;
+      line-height: 1;
+      margin: 0 2px;
+      transform: Translatey(-1px);
+      font-family: Arial, sans-serif !important;
+      font-size: 11px; // Make arrows slightly larger for visibility
+    }
   }
 
 
@@ -293,25 +287,23 @@ onUnmounted(() => {
 
   &.pos-top {
     transform: Translate(-50%, -100%);
-    &.is-right-side { transform: Translate(50%, -100%); }
     
     .tooltip-arrow {
       top: 100%;
       left: calc(50% + var(--arrow-x));
       transform: Translatex(-50%);
-      border-top-color: $yellow;
+      border-top-color: Rgba(255, 217, 61, 0.4);
     }
   }
 
   &.pos-bottom {
     transform: Translate(-50%, 0);
-    &.is-right-side { transform: Translate(50%, 0); }
 
     .tooltip-arrow {
       bottom: 100%;
       left: calc(50% + var(--arrow-x));
       transform: Translatex(-50%);
-      border-bottom-color: $yellow;
+      border-bottom-color: Rgba(255, 217, 61, 0.4);
     }
   }
 
@@ -321,7 +313,7 @@ onUnmounted(() => {
       left: 100%;
       top: calc(50% + var(--arrow-y));
       transform: Translatey(-50%);
-      border-left-color: $yellow;
+      border-left-color: Rgba(255, 217, 61, 0.4);
     }
   }
 
@@ -331,7 +323,7 @@ onUnmounted(() => {
       right: 100%;
       top: calc(50% + var(--arrow-y));
       transform: Translatey(-50%);
-      border-right-color: $yellow;
+      border-right-color: Rgba(255, 217, 61, 0.4);
     }
   }
 }
@@ -346,11 +338,9 @@ onUnmounted(() => {
   opacity: 0;
   &.pos-top { 
     transform: Translate(-50%, -90%); 
-    &.is-right-side { transform: Translate(50%, -90%); }
   }
   &.pos-bottom { 
     transform: Translate(-50%, -10%); 
-    &.is-right-side { transform: Translate(50%, -10%); }
   }
   &.pos-left { transform: Translate(-90%, -50%); }
   &.pos-right { transform: Translate(-10%, -50%); }

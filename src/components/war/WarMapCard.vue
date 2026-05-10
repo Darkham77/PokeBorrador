@@ -128,8 +128,6 @@ const openDefenseModal = (mapId: string) => {
   background-size: cover;
   background-position: center;
   @include pixelated;
-  image-rendering: pixelated !important;
-  image-rendering: crisp-edges !important;
   -ms-interpolation-mode: nearest-neighbor !important;
 
 

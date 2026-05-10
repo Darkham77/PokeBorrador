@@ -24,7 +24,7 @@
   .pokeball-anim {
     width: 96px;
     height: 96px;
-    image-rendering: pixelated;
+    @include pixelated;
 
     &.throwing {
       animation: pokeballThrow 0.8s cubic-bezier(.36, .07, .19, .97) forwards;
@@ -171,8 +171,8 @@
   background: Rgba(10, 15, 25, 0.95);
   -webkit-will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
-  backdrop-filter: Blur(12px);
-  backdrop-filter: Blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
   @include gpu-layer;
   transform: Translatez(0);
   border: 1px solid Rgba(255, 255, 255, 0.15);

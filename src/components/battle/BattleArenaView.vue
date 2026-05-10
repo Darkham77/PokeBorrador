@@ -478,9 +478,10 @@ watch(() => battleStore.isBattleActive, (active) => {
       :weather="computedWeather"
       :cycle="mapStore.currentCycle"
       :season="mapStore.currentSeason.id"
-      :is-performance-mode="uiStore.isDebugPerformanceMode"
+      :is-performance-mode="uiStore.isPerformanceMode"
       :z-index="'calc(var(--z-base) + 20)'"
       :seed="atmosphereSeed"
+      :is-visible="true"
     />
 
     <!-- HUD -->
@@ -540,7 +541,7 @@ watch(() => battleStore.isBattleActive, (active) => {
   }
 }
 
-.battle-arena-content { position: absolute; inset: 0; overflow: hidden; }
+.battle-arena-content { position: absolute; inset: 0; overflow: hidden; @include pixelated; }
 .battle-sprites { position: absolute; inset: 0; pointer-events: none; z-index: calc(var(--z-base) + 10); }
 
 .battle-info-container {
@@ -590,7 +591,7 @@ watch(() => battleStore.isBattleActive, (active) => {
   height: 90%; width: auto; object-fit: contain;
   will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 4px 8px Rgba(0,0,0,0.5));
-  image-rendering: pixelated;
+  @include pixelated;
 }
 
 @keyframes trainer-slide-in {

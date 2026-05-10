@@ -236,7 +236,7 @@ const leaderSpriteUrl = computed(() => {
   .pixel-sprite {
     height: 90px;
     width: auto;
-    image-rendering: pixelated;
+    @include pixelated;
     will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 2px 8px Rgba(0,0,0,0.5));
   }

@@ -132,7 +132,7 @@ const activeBushes = computed(() => bushes[props.layer])
   position: absolute; 
   width: calc(var(--bush-size, 60px) * 1px);
   height: calc(var(--bush-size, 60px) * 1px);
-  image-rendering: pixelated;
+  @include pixelated;
   will-change: transform;
 }
 

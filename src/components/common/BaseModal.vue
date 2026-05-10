@@ -138,10 +138,12 @@ import { ref, watch, computed, inject, onUnmounted, type Ref } from 'vue'
 import { gsap } from 'gsap'
 import { useBodyClass } from '@/composables/useBodyClass'
 import { useUIStore } from '@/stores/ui'
+import { useModalStore } from '@/stores/modals'
 import { Z_LAYERS } from '@/logic/constants/visuals'
 import { ANIM_TIMINGS, ANIM_EASES } from '@/logic/utils/animationRegistry'
 
 const uiStore = useUIStore()
+const modalStore = useModalStore()
 const isSimplified = inject<Ref<boolean>>('isModalPerformanceMode', ref(false))
 
 defineOptions({
@@ -149,6 +151,7 @@ defineOptions({
 })
 
 const props = defineProps({
+  id: { type: String, default: '' },
   show: { type: Boolean, default: false },
   title: { type: String, default: '' },
   maxWidth: { type: String, default: '500px' },
@@ -217,7 +220,7 @@ const localShow = ref(props.show)
 const computedZIndex = computed(() => {
   if (props.zIndex !== null) return props.zIndex
   const depth = uiStore.getModalDepth(modalInstanceId)
-  return Z_LAYERS.MODAL_BASE + (Math.max(0, depth) * Z_LAYERS.MODAL_STEP)
+  return Z_LAYERS.MODAL + (Math.max(0, depth) * Z_LAYERS.MODAL_STEP)
 })
 
 watch(() => props.show, (val) => {
@@ -276,7 +279,13 @@ const onContentEnter = (el: Element, done: () => void) => {
     fromVars.y = 20
   }
 
-  gsap.fromTo(el, fromVars, toVars)
+  gsap.fromTo(el, fromVars, {
+    ...toVars,
+    onComplete: () => {
+      done()
+      modalStore.finishOpening(props.id)
+    }
+  })
 }
 
 const onContentLeave = (el: Element, done: () => void) => {
@@ -286,11 +295,7 @@ const onContentLeave = (el: Element, done: () => void) => {
     y: 0, 
     scale: 1,
     duration: ANIM_TIMINGS.MODAL_CLOSE, 
-    ease: 'power2.in', 
-    onComplete: () => {
-      done()
-      if (!props.show) localShow.value = false
-    }
+    ease: 'power2.in'
   }
 
   if (props.type === 'down') toVars.y = '100%'
@@ -302,7 +307,14 @@ const onContentLeave = (el: Element, done: () => void) => {
     toVars.y = 20
   }
 
-  gsap.to(el, toVars)
+  gsap.to(el, {
+    ...toVars,
+    onComplete: () => {
+      done()
+      modalStore.finalizeClose(props.id)
+      if (!props.show) localShow.value = false
+    }
+  })
 }
 
 

@@ -34,9 +34,12 @@ const { styles } = useVirtualPosition(
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/tools" as *;
+
 .virtual-entity {
   pointer-events: none; // Default to pass-through, children can enable
   user-select: none;
+  @include pixelated;
   
   & > * {
     pointer-events: auto;

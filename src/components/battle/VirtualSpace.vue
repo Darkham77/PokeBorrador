@@ -73,6 +73,8 @@ const p2Anchor = getCombatantPosition('enemy')
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/tools" as *;
+
 .map-virtual-world {
   position: absolute;
   top: 0;
@@ -80,6 +82,7 @@ const p2Anchor = getCombatantPosition('enemy')
   width: 3000px;
   height: 3000px;
   pointer-events: none;
+  @include pixelated;
 
   &.debug-mode {
     background-color: Rgba(255, 0, 0, 0.05);

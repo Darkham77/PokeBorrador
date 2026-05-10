@@ -11,6 +11,7 @@ import path from 'node:path';
 import { styleText } from 'node:util';
 import { enableCompileCache } from 'node:module';
 import { parseArgs } from 'node:util';
+import { Z_LAYERS } from '../src/logic/constants/visuals.ts';
 
 enableCompileCache();
 
@@ -33,6 +34,14 @@ interface AuditRule {
 interface Violation {
   file: string; line: number; message: string; context: string; severity: 'error' | 'warning'; fixable: boolean;
 }
+
+// Invert Z_LAYERS for lookup
+const Z_VALUE_MAP = Object.fromEntries(
+  Object.entries(Z_LAYERS).map(([key, value]) => [value, key])
+);
+
+// Sorted values for nearest search
+const Z_SORTED_ENTRIES = Object.entries(Z_LAYERS).sort((a, b) => a[1] - b[1]);
 
 const viewport: AuditRule = {
   regex: /\b\d+(?:\.\d+)?(vw|vh)\b/gi,
@@ -119,8 +128,43 @@ const sassTraps: AuditRule = {
   fixable: false
 };
 
+const zIndexAudit: AuditRule = {
+  regex: /z-index\s*:\s*(-?\d+)\b/gi,
+  message: (match: string) => {
+    const val = parseInt(match.match(/-?\d+/)![0]!);
+    
+    // Exact match
+    if (Z_VALUE_MAP[val]) {
+      const key = Z_VALUE_MAP[val].toLowerCase().replace(/_/g, '-');
+      return `Z-Index hardcodeado detectado: '${match}'. Corresponde a Z_LAYERS.${Z_VALUE_MAP[val]}. Usa 'var(--z-${key})'.`;
+    }
+
+    // Nearest match (+/- 10)
+    let nearestKey = '';
+    let minDiff = 11;
+    for (const [key, zVal] of Z_SORTED_ENTRIES) {
+      const diff = Math.abs(val - zVal);
+      if (diff < minDiff) {
+        minDiff = diff;
+        nearestKey = key;
+      }
+    }
+
+    if (nearestKey) {
+      const key = nearestKey.toLowerCase().replace(/_/g, '-');
+      const offset = val - Z_LAYERS[nearestKey as keyof typeof Z_LAYERS];
+      const sign = offset >= 0 ? '+' : '-';
+      return `Z-Index relativo detectado: '${match}'. Cerca de Z_LAYERS.${nearestKey}. Usa 'calc(var(--z-${key}) ${sign} ${Math.abs(offset)})'.`;
+    }
+
+    return `Z-Index hardcodeado fuera de estándar: '${match}'. Define una nueva capa en 'visuals.ts' o usa una existente.`;
+  },
+  severity: 'warning',
+  fixable: false
+};
+
 const config = {
-  viewport, gpuGaps, legacyDates, nodePrefix, esmExtensions, tsIgnore, timersPromises, explicitResource, fileLength, sassTraps
+  viewport, gpuGaps, legacyDates, nodePrefix, esmExtensions, tsIgnore, timersPromises, explicitResource, fileLength, sassTraps, zIndexAudit
 };
 
 async function getFilesToAudit(dir: string): Promise<string[]> {
@@ -174,7 +218,7 @@ async function auditFile(filePath: string, fix: boolean): Promise<Violation[]> {
     const tag = 'style';
     const block = isVue ? extractBlock(content, tag) : content;
     if (block) {
-      const newBlock = runRules(filePath, block, [config.viewport, config.gpuGaps], violations, fix, isVue ? findBlockStart(content, tag) : 0);
+      const newBlock = runRules(filePath, block, [config.viewport, config.gpuGaps, config.zIndexAudit], violations, fix, isVue ? findBlockStart(content, tag) : 0);
       if (fix && newBlock !== block) {
         content = isVue ? injectBlock(content, tag, newBlock) : newBlock;
         modified = true;
@@ -251,9 +295,58 @@ function injectBlock(content: string, tag: string, block: string): string {
   return content.replace(new RegExp(`(<${tag}[^>]*>)[\\s\\S]*?(<\\/${tag}>)`, 'i'), `$1${block}$2`);
 }
 
+async function checkZIndexConsistency(fix: boolean): Promise<string[]> {
+  const scssPath = path.resolve(process.cwd(), 'src/styles/core/_variables.scss');
+  try {
+    let scssContent = await fs.readFile(scssPath, 'utf-8');
+    let modified = false;
+    const errors: string[] = [];
+
+    for (const [key, value] of Object.entries(Z_LAYERS)) {
+      const dashedKey = key.toLowerCase().replace(/_/g, '-');
+      const varName = `--z-${dashedKey}`;
+      const regex = new RegExp(`${varName}\\s*:\\s*(-?\\d+)\\b`);
+      const match = scssContent.match(regex);
+
+      if (!match) {
+        errors.push(`Falta variable CSS '${varName}' (debe ser ${value})`);
+        if (fix) {
+          // Intentar insertar antes del cierre del bloque :root
+          if (scssContent.includes(':root {')) {
+             scssContent = scssContent.replace(/}\s*$/, `  ${varName}: ${value};\n}\n`);
+             modified = true;
+          }
+        }
+      } else if (parseInt(match[1]!) !== value) {
+        errors.push(`Desincronización en '${varName}': TS=${value}, SCSS=${match[1]}`);
+        if (fix) {
+          scssContent = scssContent.replace(regex, `${varName}: ${value}`);
+          modified = true;
+        }
+      }
+    }
+
+    if (fix && modified) {
+      await fs.writeFile(scssPath, scssContent, 'utf-8');
+    }
+    return errors;
+  } catch (e) {
+    return [`Error leyendo _variables.scss: ${e}`];
+  }
+}
+
 async function main() {
   const { values } = parseArgs({ options: { fix: { type: 'boolean', short: 'f' }, path: { type: 'string', short: 'p', default: '.' } } });
   console.log(styleText('bold', '\n--- 🔎 POKE VICIO - INTELLIGENT AUDIT ---'));
+  
+  // Consistency Check
+  const syncErrors = await checkZIndexConsistency(!!values.fix);
+  if (syncErrors.length > 0) {
+    console.log(styleText('magenta', `\n[SYNC] Desincronización detectada entre visuals.ts y _variables.scss:`));
+    syncErrors.forEach(e => console.log(styleText('yellow', `  -> ${e}`)));
+    if (!values.fix) console.log(styleText('cyan', '  (Usa --fix para sincronizar automáticamente)'));
+  }
+
   const files = await getFilesToAudit(path.resolve(process.cwd(), values.path as string));
   let all: Violation[] = [];
   for (const f of files) all = all.concat(await auditFile(f, !!values.fix));

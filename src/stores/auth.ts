@@ -113,7 +113,7 @@ export const useAuthStore = defineStore('auth', () => {
           // Fetch profile meta con timeout
           try {
             const profilePromise = supabase.from('profiles').select('db_version, is_banned, ban_reason').eq('id', user.value?.id).single()
-            const { data: profile } = await Promise.race([profilePromise, new Promise((_, reject) => gsap.delayedCall(3, () => reject(new Error('FETCH_TIMEOUT'))))]) as { data: { db_version: number, is_banned: boolean, ban_reason: string | null } | null }
+            const { data: profile } = await Promise.race([profilePromise, new Promise((_, reject) => setTimeout(() => reject(new Error('FETCH_TIMEOUT')), 3000))]) as { data: { db_version: number, is_banned: boolean, ban_reason: string | null } | null }
             
             if (profile && user.value) {
               user.value.db_version = profile.db_version || 1

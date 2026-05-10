@@ -329,7 +329,6 @@ const handleQuantityChange = (itemId: string, e: Event) => {
   
   img {
     height: 60px;
-    image-rendering: pixelated;
     @include pixelated;
   }
   

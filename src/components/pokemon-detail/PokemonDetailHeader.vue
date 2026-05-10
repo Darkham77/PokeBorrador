@@ -154,7 +154,7 @@ const handleImgError = (e: Event) => {
 .main-sprite {
   width: 80px;
   height: 80px;
-  image-rendering: pixelated;
+  @include pixelated;
 }
 
 .shiny-star {

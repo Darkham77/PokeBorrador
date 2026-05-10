@@ -330,7 +330,7 @@ onUnmounted(() => {
   .ball-icon-mini {
     width: 32px;
     height: 32px;
-    image-rendering: pixelated;
+    @include pixelated;
     will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 2px 4px Rgba(0,0,0,0.8));
   }

@@ -246,7 +246,7 @@ const handleImageError = (e: Event) => {
       
       .trainer-big-img {
         height: 220px;
-        image-rendering: pixelated;
+        @include pixelated;
         will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 20px 40px Rgba(0,0,0,0.8));
         z-index: var(--z-base);
@@ -274,7 +274,7 @@ const handleImageError = (e: Event) => {
           width: 100%;
           height: 100%;
           object-fit: cover;
-          image-rendering: pixelated;
+          @include pixelated;
           
           &.no-border {
             border: none !important;

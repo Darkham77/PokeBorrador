@@ -55,7 +55,7 @@ const spawnNext = () => {
     id,
     x,
     y,
-    startTime: gsap.globalTimeline.time * 1000,
+    startTime: gsap.globalTimeline.time() * 1000,
     isHit: false
   }
 
@@ -77,7 +77,7 @@ const spawnNext = () => {
 const handleNoteClick = (note: FishingNote) => {
   if (!gameActive.value || note.isHit) return
 
-  const elapsed = (gsap.globalTimeline.time * 1000) - note.startTime
+  const elapsed = (gsap.globalTimeline.time() * 1000) - note.startTime
   const diff = Math.abs(elapsed - speedBase)
 
   if (diff <= hitWindow) {

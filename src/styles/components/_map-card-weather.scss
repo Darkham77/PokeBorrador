@@ -4,7 +4,7 @@
 .weather-overlay {
   position: absolute;
   inset: 0;
-  z-index: 18 !important; // Basado en MAP_WEATHER de visuals.ts
+  z-index: var(--z-map-weather) !important; // Basado en MAP_WEATHER de visuals.ts
   pointer-events: none;
 
   // Lluvia Normal (Vertical)
@@ -214,7 +214,7 @@
     border-radius: 50%;
     will-change: transform, filter, opacity;
   filter: Blur(2px); // Idéntico a la roja
-    z-index: -2;
+    z-index: calc(var(--z-base) - 2);
     opacity: 0.6; // Opacidad base igual a la roja
     animation: atmospheric-halo-pulse 2s ease-in-out infinite;
     animation-delay: calc(var(--spawn-seed, 0) * -10s);

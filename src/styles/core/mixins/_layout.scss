@@ -32,18 +32,34 @@
 }
 
 @mixin pixelated {
-  font-family: var(--font-pixel, 'Press Start 2P', monospace) !important;
-  -webkit-font-smoothing: none;
-  -moz-osx-font-smoothing: auto;
-  font-smooth: never;
-  text-rendering: optimizeSpeed;
-  image-rendering: pixelated;
-  image-rendering: -webkit-optimize-contrast;
-  image-rendering: crisp-edges;
+  image-rendering: -webkit-optimize-contrast !important;
+  image-rendering: -moz-crisp-edges !important;
+  image-rendering: crisp-edges !important;
+  image-rendering: pixelated !important;
+  -ms-interpolation-mode: nearest-neighbor !important;
   
-  // Prevent subpixel antialiasing
-  font-variant-ligatures: none;
-  -webkit-text-stroke: 0;
+  font-family: var(--font-pixel, 'Press Start 2P'), 'Arial', sans-serif !important;
+  -webkit-font-smoothing: none !important;
+  -moz-osx-font-smoothing: auto !important;
+  font-smooth: never !important;
+  text-rendering: optimizeSpeed !important;
+}
+
+@mixin tooltip-premium {
+  @include pixelated;
+  background: Rgba(15, 23, 42, 0.9) !important;
+  border: 1px solid Rgba(255, 217, 61, 0.4) !important;
+  border-radius: 12px;
+  padding: 10px 14px;
+  box-shadow: 0 10px 30px Rgba(0, 0, 0, 0.8), inset 0 1px 1px Rgba(255, 255, 255, 0.05);
+  backdrop-filter: Blur(12px) !important;
+  color: white;
+  line-height: 1.5;
+  z-index: var(--z-tooltip);
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+  pointer-events: none;
 }
 
 @mixin pixel-perfect($size: 8px) {

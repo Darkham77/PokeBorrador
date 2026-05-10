@@ -42,10 +42,7 @@
     filter: var(--atmosphere-filter, Brightness(0.8) Contrast(1.1));
     will-change: transform; // Solo transform por defecto para ahorrar memoria
     
-    // Pixelated rendering (MANDATORY for pixel art maps)
     @include pixelated;
-    image-rendering: pixelated !important;
-    image-rendering: crisp-edges !important;
     -ms-interpolation-mode: nearest-neighbor !important;
   }
 
@@ -137,7 +134,6 @@
   margin: 0 auto;
   pointer-events: none;
   @include pixelated;
-  image-rendering: pixelated !important;
 
   &.show-debug-grid .spawn-slot {
     outline: 1px solid Rgba(255, 0, 255, 1);
@@ -227,12 +223,11 @@
     padding: 0;
     object-fit: contain;
     @include pixelated;
-    image-rendering: pixelated !important;
-    image-rendering: crisp-edges !important;
     &:not(.spawn-silhouette) {
       &.pixelated, & {
-        will-change: transform, filter, opacity;
-  filter: pokemon-outline-optimized();
+        -webkit-will-change: filter, transform, opacity;
+        will-change: filter, transform, opacity;
+        filter: pokemon-outline-optimized();
       }
     }
 

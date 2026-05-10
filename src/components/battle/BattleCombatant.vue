@@ -3,6 +3,7 @@
 
 
 import { ref, computed, watch } from 'vue'
+import { gsap } from 'gsap'
 
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import VirtualEntity from './VirtualEntity.vue'
@@ -464,7 +465,7 @@ watch(() => props.isAttacking, (val) => {
   align-items: flex-end;
   justify-content: center;
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  image-rendering: pixelated;
+  @include pixelated;
   overflow: visible;
 
   .sprite-animator, 
@@ -484,7 +485,7 @@ watch(() => props.isAttacking, (val) => {
       object-fit: contain;
       object-position: center;
       transition: filter 0.4s ease-in-out; // Permitir que el color brote del negro suavemente
-      image-rendering: pixelated;
+      @include pixelated;
       &.is-silhouette { 
         @include pokemon-silhouette;
       }
@@ -598,7 +599,7 @@ watch(() => props.isAttacking, (val) => {
   justify-content: center;
   z-index: var(--z-map-ui);
   pointer-events: none;
-  image-rendering: pixelated;
+  @include pixelated;
   overflow: visible;
 
   img {
@@ -631,7 +632,7 @@ watch(() => props.isAttacking, (val) => {
   height: 15%;
   background-size: 100% 100%;
   background-repeat: no-repeat;
-  image-rendering: pixelated;
+  @include pixelated;
   z-index: -1;
   pointer-events: none;
   opacity: 0.8;

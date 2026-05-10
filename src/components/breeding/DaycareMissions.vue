@@ -205,7 +205,7 @@ const handleImgError = (e: Event) => {
       @include pixelated;
     }
 
-    .pixelated { image-rendering: pixelated; }
+    .pixelated { @include pixelated; }
   }
   
   .dialogue-box {

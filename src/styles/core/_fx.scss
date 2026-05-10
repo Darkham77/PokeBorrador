@@ -90,10 +90,9 @@
 
   &.is-simplified {
     img, .sprite-layer, .pokemon-sprite {
-      will-change: transform, filter, opacity;
-  filter: none !important;
-      -webkit-will-change: transform, filter, opacity;
-  filter: none !important;
+      -webkit-will-change: filter, transform, opacity;
+      will-change: filter, transform, opacity;
+      filter: none !important;
       animation: none !important;
       transform: none !important;
     }
@@ -108,9 +107,11 @@
     animation: pulse-aura-burn 2s infinite ease-in-out;
     animation-delay: calc(var(--fx-seed, 0) * -2s);
   }
-  &.status-poison img { will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  filter: Drop-Shadow(0 0 10px Rgba(148, 0, 211, 0.6)) Hue-Rotate(60deg) Brightness(0.9) Saturate(1.2); }
+  &.status-poison img { 
+    -webkit-will-change: filter, transform, opacity;
+    will-change: filter, transform, opacity;
+    filter: Drop-Shadow(0 0 10px Rgba(148, 0, 211, 0.6)) Hue-Rotate(60deg) Brightness(0.9) Saturate(1.2); 
+  }
   &.status-paralyze img { will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 0 10px Rgba(255, 215, 0, 0.8)) Brightness(1.3) Contrast(1.2); animation: fx-paralyze-jitter 0.2s infinite alternate; }
   &.status-freeze img { 
@@ -121,9 +122,11 @@
       Contrast(0.7) 
       Saturate(0.4); 
   }
-  &.status-sleep img { will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  filter: Brightness(0.7) Contrast(0.9); }
+  &.status-sleep img { 
+    -webkit-will-change: filter, transform, opacity;
+    will-change: filter, transform, opacity;
+    filter: Brightness(0.7) Contrast(0.9); 
+  }
   
   // Secondary Status (Volatile)
   &.is-cursed img {

@@ -13,9 +13,6 @@ const fromSprite = ref('');
 const toSprite = ref('');
 
 const FLASH_COUNT = 6; // 3 flashes (on/off)
-const fromSpriteRef = ref<HTMLElement | null>(null);
-const toSpriteRef = ref<HTMLElement | null>(null);
-const glowRef = ref<HTMLElement | null>(null);
 const particlesRef = ref<HTMLElement[]>([]);
 const flashesDone = ref(0);
 
@@ -212,7 +209,7 @@ const close = () => {
 .pokemon-sprite {
   width: 160px;
   height: 160px;
-  image-rendering: pixelated;
+  @include pixelated;
   position: relative;
   z-index: var(--z-base);
   

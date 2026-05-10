@@ -192,7 +192,7 @@ const itemIcon = computed(() => {
       width: 48px;
       height: 48px;
       object-fit: contain;
-      image-rendering: pixelated;
+      @include pixelated;
       z-index: calc(var(--z-base) + 1);
       will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 4px 8px Rgba(0, 0, 0, 0.3));

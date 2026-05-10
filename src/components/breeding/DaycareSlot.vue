@@ -175,7 +175,7 @@ const getSprite = (id: string | number, isShiny: boolean) => {
   background: Rgba(0,0,0,0.3);
   border-radius: 12px;
   display: flex; align-items: center; justify-content: center;
-  .pixel-sprite { width: 56px; height: 56px; image-rendering: pixelated; }
+  .pixel-sprite { width: 56px; height: 56px; @include pixelated; }
 }
 
 .poke-info {

@@ -71,7 +71,7 @@ const shadowStyle = computed(() => {
   top: var(--shadow-y, 90%);
   background-size: 100% 100%;
   background-repeat: no-repeat;
-  image-rendering: pixelated;
+  @include pixelated;
   transform-origin: center center;
   transition: opacity 0.8s ease;
   will-change: opacity;
