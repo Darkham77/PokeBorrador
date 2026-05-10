@@ -24,9 +24,8 @@ We prioritize a deliberate contrast between modern, sleek UI shells and classic,
 
 ### 1. Modern UI Shell (Containers & Layouts)
 
-- **REQUIRED**: Use state-of-the-art UI techniques for layouts, cards, and backgrounds.
-- **Techniques**: Glassmorphism (`-webkit-backdrop-filter: Blur(); backdrop-filter: Blur();`), HSL gradients, smooth shadows, and fluid transitions.
-- **Goal**: The "frame" must feel premium, modern, and reactive.
+- **Techniques**: HSL gradients, sharp borders, smooth shadows, and fluid transitions.
+- **Goal**: The "frame" must feel premium, solid, and reactive.
 - **Dynamic Layout Balance**: Use `flex-wrap: wrap` with flexible bases (e.g., `flex: 1 1 650px`) to create organic responsive transitions that adapt to intermediate viewports (like 1360px) without rigid breakpoints.
 - **Hybrid Battle Log Layout (Combat)**:
   - **Desktop (Side-by-side)**: The log MUST use `flex: 1` to fill the entire vertical height of the grid.
@@ -94,10 +93,10 @@ We prioritize a deliberate contrast between modern, sleek UI shells and classic,
 
 ## 🎨 Styling Standards
 
-### 1. Premium HUD Glassmorphism
+### 1. Premium HUD Containers
 
-- **HUD Headers/Main Bars**: Use `@include glass-solid(linear-gradient(180deg, #161a2e 0%, #0a0c14 100%))`.
-- **Borders**: Always use a subtle `1px solid rgba(255, 255, 255, 0.15)`.
+- **HUD Headers/Main Bars**: Use high-contrast solid backgrounds with premium gradients.
+- **Borders**: Always use a sharp `1px solid rgba(255, 255, 255, 0.15)`.
 
 ### 2. Pixel-Perfect Typography (Sharpness Mandate)
 
@@ -128,7 +127,7 @@ We prioritize a deliberate contrast between modern, sleek UI shells and classic,
 - **Icon Alignment & Scaling**: Img/SVG icons in HUD pills (like Poké Balls) MUST be normalized to a height of **20px** (vs. 16-18px for font icons) and use optical offsets (e.g., `margin-top: -2px`) to ensure the value text baseline is consistent across all pills.
 - **Resource Breakdown Tooltips**: For pills that display an aggregated total (e.g., Poké Balls), the `PVTooltip` MUST provide a detailed breakdown (e.g., `• Poké Ball: 10 \n • Ultra Ball: 5`) to maintain data transparency without cluttering the main HUD.
 - **Vertical Pill Standard**: Use `writing-mode: vertical-rl` and `text-orientation: upright` for the text, combined with a large icon (16-18px) positioned at the top.
-- **Glassmorphism**: Always apply `@include glass-solid` with a thin themed border (`rgba(79, 172, 254, 0.4)` for Fishing).
+- **Solidity**: Always apply solid backgrounds with high contrast borders (e.g., `rgba(79, 172, 254, 0.4)` for Fishing).
 - **Abbreviated Labels (shortLabel)**: In compact UI (list buttons, small cards), use the `shortLabel` property from `tags.ts` to prevent text overflow. Maintain the full `label` in tooltips.
 - **Badge Centralization**: All Pokémon status indicators (shiny, items, tags) MUST have their icon and label metadata centralized in `src/logic/constants/tags.ts`.
 - **Gender Badge Module**: ALWAYS use the `.m-badge-gender` standard class and symbols (♂/♀) for gender rendering. For compact displays (e.g., inside level badges), use a `.mini` modifier that utilizes `@include badge-gender(Npx)` to maintain design token consistency.
@@ -153,10 +152,10 @@ We prioritize a deliberate contrast between modern, sleek UI shells and classic,
   - **Button Alignment**: Action buttons (Bag/Switch) flanking a central Poké Ball (64px) MUST use a fixed `min-height` (Standard: **40px**) instead of `100%` height to maintain visual symmetry and prevent unintended stretching.
 
 - **Sidebar HUD Standards (Team & Bag Quick-Access)**:
-  - **Aesthetic Parity**: Left (Team) and Right (Bag) sidebars MUST share identical visual traits: `Border-Radius(16px)`, `Backdrop-Filter: Blur(12px)`, and `Border(1px solid Rgba(255, 255, 255, 0.15))`.
-  - **Glassmorphism**: Use `Rgba(30, 41, 59, 0.8)` for a "Premium Solid" glass feel that ensures readability against animated battle backgrounds.
-  - **Performance Mode**: Sidebars MUST react to `is-performance-mode` by disabling `Box-Shadow`, `Filter`, and complex transitions. Hover feedback should switch to a simple background color shift (e.g., `Rgba(255, 255, 255, 0.1)`).
-  - **Container Transparency**: Sidebar containers SHOULD be transparent; background/blur logic MUST be handled by the individual item cards to prevent "opacity accumulation" (dark blocks).
+  - **Aesthetic Parity**: Left (Team) and Right (Bag) sidebars MUST share identical visual traits: `Border-Radius(16px)`, solid high-contrast backgrounds, and `Border(1px solid Rgba(255, 255, 255, 0.15))`.
+  - **Premium Contrast**: Use `Rgba(15, 23, 42, 1)` for a "Premium Solid" feel that ensures maximum readability against animated battle backgrounds.
+  - **Performance Mode**: Sidebars MUST react to `is-performance-mode` by disabling `Box-Shadow` and complex transitions.
+  - **Container Integrity**: Sidebar containers MUST be opaque to ensure data visibility.
   - **Oversized Item Sprites**: Use a scale of **1.5x** (Standard: `min-width: 60px`) for items in quick-access grids. Parent cards MUST have `overflow: hidden` to enable a premium "clipping" effect.
   - **Badge Alignment**: Numeric quantity badges in item grids MUST be centered horizontally and placed at the bottom edge (Standard: `bottom: 2px`, `left: 50%`, `TranslateX(-50%)`).
   - **Navigation Fallback Protocol**:
@@ -225,7 +224,7 @@ All tooltips MUST use the `PVTooltip.vue` system. Native HTML `title` attributes
 
 - **Hybrid Engine**: Uses a "Flip-then-Nudge" algorithm. It first attempts to flip the position (e.g., from top to bottom) if there's no space, then "nudges" the coordinates to stay within a 10px safety margin of the viewport edges.
 - **Anchor-Aware Arrows**: The tooltip arrow MUST remain aligned with the trigger element's center. When the box is nudged, use the `--arrow-x` and `--arrow-y` CSS variables to offset the arrow appropriately.
-- **Visual Standard**: Tooltips must use `'Press Start 2P'` for titles, glassmorphism (`Blur(10px)`), and a **2px solid var(--yellow)** border for a "Vintage Premium" look.
+- **Visual Standard**: Tooltips must use `'Press Start 2P'` for titles, solid dark backgrounds for maximum contrast, and a **2px solid var(--yellow)** border for a "Vintage Premium" look.
 - **Emoji Centering & Spacing**: 
   - ALWAYS use `Translatey(-2px)` for optical centering of emojis when using pixelated fonts.
   - NEVER join multiple emojis with space characters (`join(' ')`) as the fixed-width pixel font space is disproportionately wide. Join them directly (`join('')`) and rely on CSS margins (`2px`).

@@ -47,13 +47,11 @@
 
 @mixin tooltip-premium {
   @include pixelated;
-  background: Rgba(15, 23, 42, 0.85) !important;
+  background: Rgba(10, 12, 20, 0.98) !important;
   border: 2px solid var(--yellow) !important;
   border-radius: 8px;
   padding: 10px 14px;
   box-shadow: 0 10px 30px Rgba(0, 0, 0, 0.8), inset 0 1px 1px Rgba(255, 255, 255, 0.05);
-  -webkit-backdrop-filter: Blur(12px) !important;
-  backdrop-filter: Blur(12px) !important;
   color: white;
   line-height: 1.5;
   z-index: var(--z-tooltip);

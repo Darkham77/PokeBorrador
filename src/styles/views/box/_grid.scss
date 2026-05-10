@@ -77,10 +77,8 @@
       padding: 6px 3px;
       border-radius: 10px;
       border: 1px solid Rgba(255, 255, 255, 0.1);
-      -webkit-will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  backdrop-filter: Blur(10px);
-  backdrop-filter: Blur(10px);
+      -webkit-will-change: opacity;
+      will-change: opacity;
       @include gpu-layer;
       box-shadow: 0 4px 15px Rgba(0,0,0,0.5);
       min-width: 20px;
@@ -194,10 +192,8 @@
       align-items: center;
       justify-content: center;
       transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-      -webkit-will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  backdrop-filter: Blur(4px);
-  backdrop-filter: Blur(4px);
+      -webkit-will-change: opacity;
+      will-change: opacity;
       @include gpu-layer;
 
       &.checked {

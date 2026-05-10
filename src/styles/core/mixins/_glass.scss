@@ -14,10 +14,8 @@
   }
 
   @media (prefers-reduced-motion: no-preference) {
-    -webkit-will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  -webkit-backdrop-filter: blur($blur);
-  backdrop-filter: blur($blur);
+    -webkit-will-change: opacity;
+    will-change: opacity;
     @include gpu-layer;
   }
   

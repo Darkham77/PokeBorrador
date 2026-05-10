@@ -35,11 +35,9 @@
   max-width: 400px;
   border: 1px solid Rgba(255, 255, 255, 0.08);
   box-shadow: 0 20px 60px Rgba(0, 0, 0, 0.5);
-  background: Rgba(18, 18, 20, 0.75);
-  -webkit-will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  backdrop-filter: Blur(20px);
-  backdrop-filter: Blur(20px);
+  background: Rgba(18, 18, 20, 0.95);
+  -webkit-will-change: opacity;
+  will-change: opacity;
   @include gpu-layer;
   animation: fadeIn 0.4s ease;
   z-index: var(--z-base);

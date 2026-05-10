@@ -476,10 +476,8 @@ const onLoadingLeave = (el: Element, done: () => void) => {
 
 .loading-overlay.global-overlay {
   background: Rgba(0, 0, 0, 0.95);
-  -webkit-will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  backdrop-filter: Blur(8px);
-  backdrop-filter: Blur(8px);
+  -webkit-will-change: opacity;
+  will-change: opacity;
   @include gpu-layer;
 }
 
@@ -535,11 +533,9 @@ const onLoadingLeave = (el: Element, done: () => void) => {
 }
 
 .session-lock-overlay {
-  background: Rgba(0, 0, 0, 0.85);
-  -webkit-will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  backdrop-filter: Blur(20px);
-  backdrop-filter: Blur(20px);
+  background: Rgba(0, 0, 0, 0.95);
+  -webkit-will-change: opacity;
+  will-change: opacity;
   border: 2px solid var(--blue);
   box-shadow: inset 0 0 50px Rgba(0, 150, 255, 0.2), 0 0 100px Rgba(0, 100, 255, 0.3);
   padding: 40px;

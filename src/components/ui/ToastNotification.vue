@@ -46,11 +46,9 @@ const uiStore = useUIStore()
 
 .toast-item {
   pointer-events: all;
-  background: Rgba(10, 12, 18, 0.9);
-  -webkit-will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  backdrop-filter: Blur(12px);
-  backdrop-filter: Blur(12px);
+  background: Rgba(10, 12, 18, 0.98);
+  -webkit-will-change: opacity;
+  will-change: opacity;
   @include gpu-layer;
   border: 1px solid Rgba(255, 255, 255, 0.15);
   border-left: 3px solid var(--yellow, Rgba(241, 196, 15, 1));
