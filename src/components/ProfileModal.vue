@@ -243,9 +243,7 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
   display: flex;
   flex-direction: column;
   background: transparent;
-  -webkit-will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  backdrop-filter: Blur(12px);
+  will-change: transform, filter, opacity, backdrop-filter;
   backdrop-filter: Blur(12px);
   @include gpu-layer;
   
@@ -296,7 +294,7 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
         &::before {
           content: ''; position: absolute; inset: -8px; border-radius: 50%;
           background: conic-gradient(Rgba(255, 0, 0, 1),Rgba(255, 136, 0, 1),Rgba(255, 204, 0, 1),Rgba(255, 68, 0, 1),Rgba(255, 0, 0, 1));
-          z-index: -1; animation: spin-slow 2s linear infinite;
+          z-index: calc(var(--z-base) - 1); animation: spin-slow 2s linear infinite;
         }
       }
       
@@ -306,7 +304,7 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
         &::before {
           content: ''; position: absolute; inset: -9px; border-radius: 50%;
           background: conic-gradient(Rgba(0, 51, 204, 1),Rgba(0, 170, 255, 1),Rgba(68, 238, 255, 1),Rgba(0, 102, 255, 1),Rgba(0, 51, 204, 1));
-          z-index: -1; animation: spin-slow 4s linear infinite;
+          z-index: calc(var(--z-base) - 1); animation: spin-slow 4s linear infinite;
         }
       }
 
@@ -316,7 +314,7 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
         &::before {
           content: ''; position: absolute; inset: -10px; border-radius: 50%;
           background: conic-gradient(Rgba(255, 0, 0, 1),Rgba(255, 136, 0, 1),Rgba(255, 255, 0, 1),Rgba(0, 255, 136, 1),Rgba(0, 255, 255, 1),Rgba(0, 136, 255, 1),Rgba(255, 0, 255, 1),Rgba(255, 0, 0, 1));
-          z-index: -1; animation: spin-slow 2s linear infinite;
+          z-index: calc(var(--z-base) - 1); animation: spin-slow 2s linear infinite;
         }
       }
     }

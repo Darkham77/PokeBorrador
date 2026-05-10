@@ -311,6 +311,7 @@ onUnmounted(() => {
   justify-content: center;
   margin-bottom: 2px;
   filter: Drop-Shadow(0 0 4px Rgba($red, 0.4));
+  will-change: filter;
   
   img {
     margin-top: -2px; // Ajuste óptico para centrar la bola

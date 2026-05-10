@@ -474,7 +474,7 @@ const weatherOverlayStyles = computed(() => ({
   border-radius: 50% 0 50% 0;
   opacity: 0.8;
   pointer-events: none;
-  z-index: 50; // Asegurar visibilidad sobre la lluvia
+  z-index: var(--z-low); // Asegurar visibilidad sobre la lluvia
   will-change: transform, opacity;
   transform: translate3d(0,0,0); // GPU Promotion
   filter: Drop-Shadow(0 1px 1px rgba(0,0,0,0.3)); // Brillo original
@@ -487,7 +487,7 @@ const weatherOverlayStyles = computed(() => ({
   inset: 0;
   background: white;
   opacity: 0;
-  z-index: 100;
+  z-index: var(--z-modal-step);
   pointer-events: none;
   will-change: opacity;
   transform: translate3d(0,0,0);

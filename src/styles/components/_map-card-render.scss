@@ -37,7 +37,7 @@
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    z-index: -3;
+    z-index: calc(var(--z-base) - 3);
     transform: Translatez(0); 
     filter: var(--atmosphere-filter, Brightness(0.8) Contrast(1.1));
     will-change: transform; // Solo transform por defecto para ahorrar memoria
@@ -61,7 +61,7 @@
     );
     opacity: 0.35;
     transition: opacity 0.3s ease;
-    z-index: -1;
+    z-index: calc(var(--z-base) - 1);
     pointer-events: none;
   }
 
@@ -169,7 +169,7 @@
         background: Radial-Gradient(circle, Rgba(255, 0, 0, 0.7) 0%, transparent 70%);
         will-change: transform, filter, opacity;
   filter: Blur(2px);
-        z-index: -1;
+        z-index: calc(var(--z-base) - 1);
         opacity: 0.6;
         animation: pulse-aura-modern 2s infinite ease-in-out;
         animation-delay: calc(var(--spawn-seed, 0) * -10s);
@@ -225,7 +225,6 @@
     @include pixelated;
     &:not(.spawn-silhouette) {
       &.pixelated, & {
-        -webkit-will-change: filter, transform, opacity;
         will-change: filter, transform, opacity;
         filter: pokemon-outline-optimized();
       }
@@ -249,7 +248,7 @@
 
     &:hover {
       transform: Scale(1.1) Translatey(-2px);
-      z-index: 11 !important;
+      z-index: calc(var(--z-map-spawns) + 1) !important;
     }
   }
 }

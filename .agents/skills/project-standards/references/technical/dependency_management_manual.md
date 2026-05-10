@@ -56,3 +56,4 @@ To maintain a single codebase that runs in both Node.js (scripts/tests) and Brow
    - **Example**: `const util = await import(/* @vite-ignore */ 'node:util');`
    - **WHY**: Prevents Vite from attempting to bundle or analyze server-only modules, avoiding build-time warnings and errors.
 2. **Strict Sync Typing**: Avoid using `any` when synchronizing state with external APIs (like Supabase). Define explicit local interfaces for the expected response structure to maintain TypeScript integrity in `timeUtils.ts` and `DBRouter`.
+3. **Temporal Mandate**: The legacy `Date` object is DEPRECATED for engine logic and timestamps. Use the `Temporal` API for all precise timing and durations in both logic and tests to ensure Node.js 26+ compatibility and clear automated audits.

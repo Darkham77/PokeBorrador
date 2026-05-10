@@ -267,7 +267,7 @@ export function useBattleAnimations(
       const scale = 0.5 + Math.random() * 0.8 // Variación de tamaño
       
       catchSparkles.value.push({
-        id: `sparkle-${side}-${Date.now()}-${i}-${Math.random()}`,
+        id: `sparkle-${side}-${Temporal.Now.instant().epochMilliseconds}-${i}-${Math.random()}`,
         side,
         tx: tx, // Pasar solo número
         ty: ty, 

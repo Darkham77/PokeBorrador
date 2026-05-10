@@ -616,7 +616,6 @@ watch(() => props.isAttacking, (val) => {
 }
 
 @keyframes pokeball-shake-blink { 0%, 100% { will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Brightness(1); } 50% { will-change: transform, filter, opacity;
   filter: Brightness(2) Hue-Rotate(10deg); } }
 @keyframes pokeball-success-blink { 0%, 100% { will-change: transform, filter, opacity;
@@ -633,7 +632,7 @@ watch(() => props.isAttacking, (val) => {
   background-size: 100% 100%;
   background-repeat: no-repeat;
   @include pixelated;
-  z-index: -1;
+  z-index: calc(var(--z-base) - 1);
   pointer-events: none;
   opacity: 0.8;
 }

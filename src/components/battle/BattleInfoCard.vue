@@ -571,6 +571,7 @@ const formatMult = (m: number) => {
 
 .is-leveling-up {
   animation: level-up-flash 0.8s ease-out forwards;
+  will-change: filter, transform;
 }
 
 @keyframes level-up-flash {
@@ -644,6 +645,7 @@ const formatMult = (m: number) => {
     
     &.is-boosted {
       filter: Drop-Shadow(0 0 5px Rgba(34, 197, 94, 0.6));
+      will-change: filter;
     }
   }
 

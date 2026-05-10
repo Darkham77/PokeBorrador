@@ -32,7 +32,7 @@
     background: Rgba(15, 23, 42, 0.8) !important;
     border: 1px solid Rgba(255, 255, 255, 0.15) !important;
     box-shadow: 0 8px 32px Rgba(0, 0, 0, 0.6) !important;
-    z-index: 50 !important;
+    z-index: var(--z-low) !important;
     position: relative;
   }
 }
@@ -110,7 +110,6 @@
   }
   
   &.hp-high { background: Linear-Gradient(90deg, #10b981, #34d399); will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 0 8px Rgba(16, 185, 129, 0.6)); }
   &.hp-mid  { background: Linear-Gradient(90deg, #f59e0b, #fbbf24); will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 0 8px Rgba(245, 158, 11, 0.6)); }

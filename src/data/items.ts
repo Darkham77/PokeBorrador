@@ -152,6 +152,16 @@ export const SHOP_ITEMS = [
     desc: 'Restaura todo el HP de un Pokémon.'
   },
   {
+    id: 'refresco', cat: 'pociones', sprite: 'soda-pop',
+    name: 'Refresco', icon: '🥤', price: 300, unlockLv: 4, tier: 'common',
+    desc: 'Restaura 60 HP a un Pokémon.'
+  },
+  {
+    id: 'limonada', cat: 'pociones', sprite: 'lemonade',
+    name: 'Limonada', icon: '🍋', price: 350, unlockLv: 5, tier: 'common',
+    desc: 'Restaura 80 HP a un Pokémon.'
+  },
+  {
     id: 'revivir', cat: 'pociones', sprite: 'revive',
     name: 'Revivir', icon: '❤️', price: 2000, unlockLv: 8, tier: 'epic',
     desc: 'Revive a un Pokémon debilitado con la mitad del HP.'
@@ -222,6 +232,12 @@ export const SHOP_ITEMS = [
     desc: 'Hace evolucionar a Nidorina, Nidorino, Clefairy y Jigglypuff.',
     type: 'stone', stoneType: 'moon'
   },
+  {
+    id: 'piedra_solar', cat: 'stones', sprite: 'sun-stone',
+    name: 'Piedra Solar', icon: '☀️', price: 20000, unlockLv: 10, tier: 'rare',
+    desc: 'Hace evolucionar a Gloom y Sunkern.',
+    type: 'stone', stoneType: 'sun'
+  },
   // ── ÍTEMS EQUIPABLES (held items) ──────────────────────────────────────────
   {
     id: 'exp_share', cat: 'held', sprite: 'exp-share',
@@ -265,6 +281,76 @@ export const SHOP_ITEMS = [
     name: 'Caramelo Raro', icon: '🍬', price: 0, unlockLv: 22, tier: 'epic', market: false, trainerShop: true, bcPrice: 2500,
     desc: 'Sube un nivel a cualquier Pokémon del equipo al instante.',
     type: 'usable'
+  },
+  {
+    id: 'caramelo_vigor', cat: 'utility', sprite: 'rare-candy',
+    name: 'Caramelo de vigor', icon: '⚡', price: 0, unlockLv: 10, tier: 'rare', market: false, trainerShop: true, bcPrice: 1500,
+    desc: 'Restaura 1 punto de vigor a un Pokémon.'
+  },
+  {
+    id: 'move_relearner', cat: 'utility', sprite: 'heart-scale',
+    name: 'Recordador de Movimientos', icon: '🧠', price: 0, unlockLv: 10, tier: 'rare', market: false, trainerShop: true, bcPrice: 2000,
+    desc: 'Permite a un Pokémon recordar un movimiento olvidado.'
+  },
+  {
+    id: 'nature_patch', cat: 'utility', sprite: 'ability-capsule',
+    name: 'Parche de naturaleza', icon: '🌿', price: 0, unlockLv: 15, tier: 'epic', market: false, trainerShop: true, bcPrice: 3000,
+    desc: 'Permite cambiar la naturaleza de un Pokémon.'
+  },
+  {
+    id: 'ability_pill', cat: 'utility', sprite: 'ability-capsule',
+    name: 'Píldora de cambio de habilidad', icon: '💊', price: 0, unlockLv: 15, tier: 'epic', market: false, trainerShop: true, bcPrice: 3000,
+    desc: 'Permite cambiar la habilidad de un Pokémon si tiene más de una.'
+  },
+  {
+    id: 'ticket_shiny', cat: 'booster', sprite: 'eon-ticket',
+    name: 'Ticket Shiny', icon: '✨', price: 0, unlockLv: 15, tier: 'legend', market: false, trainerShop: true, bcPrice: 5000,
+    desc: 'Aumenta la probabilidad de encontrar Pokémon Variocolor durante 1 hora.'
+  },
+  {
+    id: 'amulet_coin', cat: 'booster', sprite: 'amulet-coin',
+    name: 'Moneda Amuleto', icon: '💰', price: 0, unlockLv: 10, tier: 'rare', market: false, trainerShop: true, bcPrice: 2500,
+    desc: 'Duplica el dinero ganado en batallas durante 1 hora.'
+  },
+  {
+    id: 'ticket_safari', cat: 'booster', sprite: 'eon-ticket',
+    name: 'Ticket Safari', icon: '🦁', price: 0, unlockLv: 10, tier: 'rare', market: false, trainerShop: true, bcPrice: 2000,
+    desc: 'Acceso especial o mejoras en la Zona Safari durante 30 min.'
+  },
+  {
+    id: 'ticket_cerulean', cat: 'booster', sprite: 'eon-ticket',
+    name: 'Ticket Cueva Celeste', icon: '🌌', price: 0, unlockLv: 25, tier: 'legend', market: false, trainerShop: true, bcPrice: 4000,
+    desc: 'Aumenta la probabilidad de raros en la Cueva Celeste durante 30 min.'
+  },
+  {
+    id: 'incense_fire', cat: 'booster', sprite: 'luck-incense',
+    name: 'Incienso Fuego', icon: '🔥', price: 0, unlockLv: 10, tier: 'rare', market: false, trainerShop: true, bcPrice: 1500,
+    desc: 'Aumenta la aparición de Pokémon de tipo Fuego durante 30 min.'
+  },
+  {
+    id: 'incense_water', cat: 'booster', sprite: 'luck-incense',
+    name: 'Incienso Agua', icon: '💧', price: 0, unlockLv: 10, tier: 'rare', market: false, trainerShop: true, bcPrice: 1500,
+    desc: 'Aumenta la aparición de Pokémon de tipo Agua durante 30 min.'
+  },
+  {
+    id: 'incense_grass', cat: 'booster', sprite: 'luck-incense',
+    name: 'Incienso Planta', icon: '🌿', price: 0, unlockLv: 10, tier: 'rare', market: false, trainerShop: true, bcPrice: 1500,
+    desc: 'Aumenta la aparición de Pokémon de tipo Planta durante 30 min.'
+  },
+  {
+    id: 'incense_normal', cat: 'booster', sprite: 'luck-incense',
+    name: 'Incienso Normal', icon: '⚪', price: 0, unlockLv: 10, tier: 'rare', market: false, trainerShop: true, bcPrice: 1500,
+    desc: 'Aumenta la aparición de Pokémon de tipo Normal durante 30 min.'
+  },
+  {
+    id: 'incense_ghost', cat: 'booster', sprite: 'luck-incense',
+    name: 'Incienso Fantasma', icon: '👻', price: 0, unlockLv: 10, tier: 'rare', market: false, trainerShop: true, bcPrice: 1500,
+    desc: 'Aumenta la aparición de Pokémon de tipo Fantasma durante 30 min.'
+  },
+  {
+    id: 'incense_psychic', cat: 'booster', sprite: 'luck-incense',
+    name: 'Incienso Psíquico', icon: '🔮', price: 0, unlockLv: 10, tier: 'rare', market: false, trainerShop: true, bcPrice: 1500,
+    desc: 'Aumenta la aparición de Pokémon de tipo Psíquico durante 30 min.'
   },
   {
     id: 'pp_up', cat: 'utility', sprite: 'pp-up',

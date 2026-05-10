@@ -248,7 +248,7 @@
       height: 280px;
       background: Radial-Gradient(circle, Rgba(var(--type-color-rgb), 0.35) 0%, transparent 70%);
       border-radius: 50%;
-      z-index: -1;
+      z-index: calc(var(--z-base) - 1);
       pointer-events: none;
     }
 

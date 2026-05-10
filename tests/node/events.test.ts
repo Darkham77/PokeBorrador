@@ -109,7 +109,7 @@ describe('Event Engine Logic (Native)', () => {
   });
 
   it('formats argument date strings correctly', () => {
-    const date = new Date('2026-05-09T12:00:00Z');
+    const date = Temporal.Instant.from('2026-05-09T12:00:00Z');
     const zdt = Temporal.ZonedDateTime.from('2026-05-10T12:00:00[America/Argentina/Buenos_Aires]');
     
     assert.strictEqual(getArgDateString(date), '2026-05-09');

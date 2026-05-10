@@ -227,9 +227,7 @@ onUnmounted(() => {
   inset: 0;
   z-index: var(--z-hud);
   background: Rgba(0, 0, 0, 0.7);
-  -webkit-will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  backdrop-filter: Blur(8px);
+  will-change: transform, filter, opacity, backdrop-filter;
   backdrop-filter: Blur(8px);
   @include gpu-layer;
   display: flex;
@@ -323,7 +321,7 @@ onUnmounted(() => {
     font-size: 18px;
     box-shadow: 0 0 20px Rgba(10, 132, 255, 0.4);
     transition: all 0.2s ease;
-    z-index: 2;
+    z-index: calc(var(--z-map-floor) + 1);
     position: relative;
   }
 
@@ -355,7 +353,7 @@ onUnmounted(() => {
   background: Rgba(0, 0, 0, 0.8);
   padding: 12px 24px;
   border-radius: 12px;
-  z-index: 10;
+  z-index: var(--z-map-spawns);
 }
 
 @keyframes ringShrink {

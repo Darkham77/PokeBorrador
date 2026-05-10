@@ -277,4 +277,4 @@
   }
 }
 
-.on-mission { opacity: 0.6; filter: Grayscale(0.5); }
+.on-mission { opacity: 0.6; filter: Grayscale(0.5); will-change: filter; }

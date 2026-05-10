@@ -281,6 +281,7 @@ const handleSell = async () => {
   inset: 0;
   background: Rgba(0, 0, 0, 0.85);
   backdrop-filter: Blur(8px);
+  will-change: backdrop-filter;
   z-index: var(--z-modal);
   display: flex;
   align-items: center;

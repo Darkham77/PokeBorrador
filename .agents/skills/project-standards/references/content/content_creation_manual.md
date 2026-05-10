@@ -12,6 +12,7 @@ This manual details the protocols for adding new Pokémon, moves, abilities, and
 6. **SASS Style**: If you create styles for new content, `@use` directives must be the **first lines** of the file. Note that standard CSS filter/transform capitalization is handled automatically by the Vite plugin (`vite-plugin-sass-traps.ts`), so writing standard lowercase filters is fully supported.
 7. **CLI-First Verification**: Upon finishing the implementation, you **MUST** use `window.__VITE_DEBUG__` commands to verify the content.
 8. **Prop Unification**: Always use `isShiny` (Boolean) for asset resolution and logic. The legacy `shiny` property is deprecated and must be avoided to ensure parity across the asset service and UI components.
+9. **Item Parity Mandate**: Absolute synchronization between `SHOP_ITEMS` (data/items.ts), `HEALING_ITEMS` (data/items.ts), and logic effects is mandatory. Every consumable item MUST be registered in both constants to avoid `[PHANTOM]` item warnings in the `validate:items` audit.
 
 ---
 

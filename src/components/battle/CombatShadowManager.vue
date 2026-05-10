@@ -106,6 +106,6 @@ const shadowsArray = computed<CombatShadow[]>(() => {
   transition: opacity 0.4s ease;
   will-change: opacity;
   pointer-events: none;
-  z-index: -1;
+  z-index: calc(var(--z-base) - 1);
 }
 </style>
