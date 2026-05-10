@@ -193,12 +193,14 @@ const initWeatherAnim = () => {
     const s2Y = (animSeed.value * 4800) % 128
 
     if (layer1Ref.value) {
-      // Restauramos capa frontal: (0.7s a 1.5s)
-      const speed1 = 0.7 + animSeed.value * 0.8
+      // Ángulo casi horizontal: mucho X, poco Y. 
+      // Distancia mayor requiere duración proporcional para mantener velocidad percibida.
+      const speed1 = (0.7 + animSeed.value * 0.8) * 1.5 // Un poco más lento por la gran distancia
       weatherTimeline.fromTo(layer1Ref.value,
         { backgroundPosition: `${s1X}px ${s1Y}px` },
         {
-          backgroundPosition: `${s1X - 256}px ${s1Y + 256}px`, 
+          // Movimiento de 512px (8 tiles) en X y solo 64px (1 tile) en Y
+          backgroundPosition: `${s1X - 512}px ${s1Y + 64}px`, 
           duration: speed1,
           repeat: -1,
           ease: 'none'
@@ -207,13 +209,13 @@ const initWeatherAnim = () => {
       )
 
       if (layer2Ref.value) {
-        // Aceleramos la capa de fondo: (x1.1 a x1.5 de L1) para que sea más activa
         const seed2 = (animSeed.value * 1.618) % 1
         const speed2 = speed1 * (1.1 + seed2 * 0.4)
         weatherTimeline.fromTo(layer2Ref.value,
           { backgroundPosition: `${s2X}px ${s2Y}px` },
           {
-            backgroundPosition: `${s2X - 128}px ${s2Y + 128}px`,
+            // Movimiento de 1024px (8 tiles) en X y 128px (1 tile) en Y
+            backgroundPosition: `${s2X - 1024}px ${s2Y + 128}px`,
             duration: speed2,
             repeat: -1,
             ease: 'none'
@@ -316,7 +318,7 @@ const initLeafAnim = () => {
       const s2 = Math.random()
       
       const fromTop = s1 > 0.5
-      // Ajustamos para que nazcan BIEN fuera de la pantalla (teniendo en cuenta el ScaleX(-1) del padre)
+      // Ajustamos para que nazcan BIEN fuera de la pantalla (teniendo en cuenta el scaleX(-1) del padre)
       const startX = fromTop ? (80 + s2 * 40) : 115 
       const startY = fromTop ? -20 : (s2 * 60)
       
@@ -328,7 +330,7 @@ const initLeafAnim = () => {
         y: 0,
         opacity: 0.9,
         rotation: Math.random() * 360,
-        filter: 'Drop-Shadow(0 2px 2px Rgba(0,0,0,0.4))'
+        filter: 'Drop-Shadow(0 2px 2px rgba(0,0,0,0.4))'
       })
 
       gsap.to(el,
@@ -468,14 +470,14 @@ const weatherOverlayStyles = computed(() => ({
   position: absolute;
   width: 8px;
   height: 6px;
-  background: Linear-Gradient(135deg, #4ade80, #166534);
+  background: linear-gradient(135deg, #4ade80, #166534);
   border-radius: 50% 0 50% 0;
   opacity: 0.8;
   pointer-events: none;
   z-index: 50; // Asegurar visibilidad sobre la lluvia
   will-change: transform, opacity;
   transform: translate3d(0,0,0); // GPU Promotion
-  filter: Drop-Shadow(0 1px 1px Rgba(0,0,0,0.3)); // Brillo original
+  filter: Drop-Shadow(0 1px 1px rgba(0,0,0,0.3)); // Brillo original
 }
 
 // Estilos delegados a _map-card-weather.scss
@@ -512,6 +514,6 @@ const weatherOverlayStyles = computed(() => ({
 
 :deep(.weather-overlay) {
   z-index: var(--atmo-z, 0) !important;
-  transform: ScaleX(var(--atmo-dir, 1));
+  transform: scaleX(var(--atmo-dir, 1));
 }
 </style>

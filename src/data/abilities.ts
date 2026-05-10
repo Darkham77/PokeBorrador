@@ -21,7 +21,7 @@ export const ABILITY_DATA = {
   'Nado rápido': { desc: 'Sube la Velocidad cuando llueve.' },
   'Ráfaga': { desc: 'Cuando el HP baja a 1/3 o menos, la Velocidad se triplica.' },
   'Adaptable': { desc: 'Potencia el bonus STAB (mismo tipo que el movimiento) de x1.5 a x2.' },
-  'Cura natural': { desc: 'Cura los problemas de estado al ser retirado del combate.' },
+  'Cura Natural': { desc: 'Cura los problemas de estado al ser retirado del combate.' },
   'Velo húmedo': { desc: 'Evita los problemas de estado si está lloviendo.' },
   'Sebo': { desc: 'Reduce a la mitad el daño recibido por movimientos de tipo Fuego y Hielo.' },
   'Caparazón': { desc: 'Protege al Pokémon de los golpes críticos del rival.' },

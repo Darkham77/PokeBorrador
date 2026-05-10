@@ -47,18 +47,21 @@ describe('HUD Components', () => {
 
     it('opens modals for bag and market', async () => {
       const modalStore = useModalStore()
+      const uiStore = useUIStore()
       const spy = vi.spyOn(modalStore, 'open')
       const wrapper = mount(HUD_Navigation)
       
       // Click Mochila
-      const buttons = wrapper.findAll('.hud-nav-btn')
-      const bagBtn = buttons.find(b => b.text().includes('MOCHILA'))
+      const bagBtn = wrapper.findAll('.hud-nav-btn').find(b => b.text().includes('MOCHILA'))
       await bagBtn!.trigger('click')
       expect(spy).toHaveBeenCalledWith('Inventory')
 
+      // Abrir el grupo de Market para que el v-if renderice los botones
+      uiStore.openHudGroup = 'MARKET'
+      await wrapper.vm.$nextTick()
+
       // Click Market Submenu Item
-      // Market is a group, we need to find the local market button
-      const marketSubmenuBtn = buttons.find(b => b.text().includes('LOCAL'))
+      const marketSubmenuBtn = wrapper.findAll('.hud-nav-btn').find(b => b.text().includes('LOCAL'))
       await marketSubmenuBtn!.trigger('click')
       expect(spy).toHaveBeenCalledWith('Shop')
     })

@@ -324,7 +324,7 @@ onUnmounted(() => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
+@use "@/styles/core/tools" as *;
 .hud-nav {
   display: flex;
   gap: 8px;
@@ -337,13 +337,18 @@ onUnmounted(() => {
     padding: 0 10px;
     
     // GLASSMORPHISM ENHANCED
-    @include glass-solid(Linear-Gradient(180deg, #161a2e 0%, #0a0c14 100%));
+    @include glass-solid(linear-gradient(180deg, #161a2e 0%, #0a0c14 100%));
+    border-radius: 20px;
+    padding: 10px 24px;
+    gap: 15px;
+    width: 100%;
+    box-sizing: border-box;
     
     // MULTI-LAYER REFLECTIONS & CONTRAST
-    border-top: 1px solid Rgba(255, 255, 255, 0.18);
     box-shadow: 
-      0 -10px 50px Rgba(0, 0, 0, 0.7),
-      inset 0 1px 0 Rgba(255, 255, 255, 0.1); // Reflection on the top edge
+      0 10px 40px rgba(0, 0, 0, 0.6),
+      0 -10px 50px rgba(0, 0, 0, 0.7),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1); // Reflection on the top edge
     
     // Reflection parent is handled by position: fixed in parent/mobile class
 
@@ -354,7 +359,7 @@ onUnmounted(() => {
       left: 0;
       right: 0;
       height: 1px;
-      background: Linear-Gradient(90deg, 
+      background: linear-gradient(90deg, 
         transparent, 
         Rgba(255, 255, 255, 0.3), 
         transparent
@@ -428,27 +433,25 @@ onUnmounted(() => {
 
 .hud-group {
   position: relative;
-  /* Ensure the group itself doesn't clip children */
   overflow: visible !important;
 }
 
 .hud-submenu {
   position: absolute;
+  display: flex;
   flex-direction: column;
   gap: 6px;
-  @include glass-solid(Linear-Gradient(180deg, #161a2e 0%, #0a0c14 100%));
+  background: linear-gradient(180deg, #161a2e 0%, #0a0c14 100%);
   border: 1px solid Rgba(255, 255, 255, 0.15);
   border-radius: 14px;
   padding: 8px;
-  z-index: var(--z-modal); // Use modal-level z-index
+  z-index: var(--z-modal);
   width: max-content !important;
   min-width: 0 !important;
   align-items: stretch !important;
   box-shadow: 0 20px 50px Rgba(0, 0, 0, 0.7);
   overflow: visible;
-  display: flex; // Base layout handled by GSAP/Transition
 
-  // BRIDGE to prevent mouseleave when moving between button and submenu
   &::before {
     content: '';
     position: absolute;
@@ -457,63 +460,62 @@ onUnmounted(() => {
     height: 20px;
     background: transparent;
   }
+}
 
-  .pos-top & { 
-    top: calc(100% + 5px); 
-    bottom: auto !important;
-    left: 50%; 
-    &::before { top: -15px; } // Bridge to top button
+.pos-top .hud-submenu {
+  top: calc(100% + 5px);
+  bottom: auto !important;
+  left: 50%;
+  transform: Translatex(-50%);
+  
+  &::before { top: -15px; }
+}
+
+.pos-bottom .hud-submenu {
+  bottom: calc(100% + 5px);
+  top: auto !important;
+  left: 50%;
+  transform: Translatex(-50%);
+  
+  &::before { bottom: -15px; }
+}
+
+.hud-submenu .hud-nav-btn {
+  flex-direction: row !important;
+  justify-content: flex-start !important;
+  align-items: center !important;
+  width: 100% !important;
+  min-width: unset !important;
+  padding: 10px 14px;
+  gap: 10px;
+  background: Rgba(255, 255, 255, 0.05);
+  border: 1px solid Rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  white-space: nowrap;
+  
+  &:hover { 
+    background: Rgba(255, 255, 255, 0.1); 
+    border-color: var(--yellow);
+    box-shadow: 0 0 0 2px var(--yellow), 0 0 15px Rgba(255, 214, 10, 0.3);
+    transform: Translatex(6px);
+    z-index: var(--z-base);
   }
   
-  .pos-bottom & { 
-    bottom: calc(100% + 5px); 
-    top: auto !important;
-    left: 50%; 
-    &::before { bottom: -15px; } // Bridge to bottom button
+  &.active {
+    background: Rgba(255, 204, 0, 0.12);
+    border-color: var(--yellow);
+    box-shadow: 0 0 0 2px var(--yellow), 0 0 25px Rgba(255, 214, 10, 0.4), inset 0 0 10px Rgba(255, 214, 10, 0.1);
   }
 
-  .hud-nav-btn {
-    flex-direction: row !important;
-    justify-content: flex-start !important;
-    align-items: center !important;
-    width: 100% !important;
-    min-width: unset !important;
-    padding: 10px 14px;
-    gap: 10px;
-    background: Rgba(255, 255, 255, 0.05);
-    border: 1px solid Rgba(255, 255, 255, 0.1);
-    border-radius: 10px;
+  .icon { font-size: 14px; }
+  .nav-item-label { 
+    font-size: 8px; 
+    color: $white;
     white-space: nowrap;
-    
-    &:hover { 
-      background: Rgba(255, 255, 255, 0.1); 
-      border-color: var(--yellow);
-      box-shadow: 
-        0 0 0 2px var(--yellow), 
-        0 0 15px Rgba(255, 214, 10, 0.3);
-      transform: Translatex(6px);
-      z-index: var(--z-base);
-    }
-    
-    &.active {
-      background: Rgba(255, 204, 0, 0.12);
-      border-color: var(--yellow);
-      box-shadow: 
-        0 0 0 2px var(--yellow), 
-        0 0 25px Rgba(255, 214, 10, 0.4),
-        inset 0 0 10px Rgba(255, 214, 10, 0.1);
-    }
-
-    .icon { font-size: 14px; }
-    .nav-item-label { 
-      font-size: 8px; 
-      color: $white;
-      white-space: nowrap;
-      @include pixelated;
-    }
-    
-    &.active .nav-item-label { color: var(--yellow); }
+    @include pixelated;
   }
+  
+  &.active .nav-item-label { color: var(--yellow); }
 }
 
 .badge-pill {

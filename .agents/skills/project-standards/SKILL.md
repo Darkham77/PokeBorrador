@@ -177,21 +177,21 @@ Use these scripts to verify project standards and ensure stability:
 
 ### 🛡️ Core Validation
 
-- `npm run validate:types`: Verificación de integridad de tipos TypeScript (Cero Errores).
-- `npm run validate:sql`: Validador de esquemas y migraciones SQL contra motor local.
-- `npm run validate:items`: Auditoría de integridad de base de datos de ítems y objetos.
-- `npm run audit`: Escaneo unificado de estándares (Viewports, GPU, SASS filters).
-- `npm run audit:fix`: Reparación automática de estándares y filtros SASS.
-- `npm run audit:full`: Auditoría total (Código + FSM + Ítems + SQL).
-- `npm run lint`: Verificación de estilo y sintaxis (incluye type-check).
+- `npm run validate:types`: TypeScript type integrity verification (Zero Errors).
+- `npm run validate:sql`: SQL schema and migration validator against local engine.
+- `npm run validate:items`: Integrity audit for item and object databases.
+- `npm run audit`: Unified standards scan (Viewports, GPU, SASS filters).
+- `npm run audit:fix`: Automatic standards repair (Node prefixes, Viewports).
+- `npm run audit:full`: **THE GOLD STANDARD**. Total audit (Code + FSM + Items + SQL + Abilities + Moves). MANDATORY before any commit.
+- `npm run lint`: Style and syntax verification (includes type-check).
 
 ### ⚔️ Battle Engine (FSM)
 
-- `npm run fsm:verify`: Verificador de paridad 1:1 entre código y diagramas Mermaid.
-- `npm run fsm:audit`: Auditoría profunda de lógica y transiciones FSM.
-- `npm run fsm:flow`: Verificador de secuencia de estados y detección de race conditions.
+- `npm run fsm:verify`: 1:1 parity verifier between code and Mermaid diagrams.
+- `npm run fsm:audit`: Deep audit of FSM logic and transitions.
+- `npm run fsm:flow`: State sequence verifier and race condition detection.
 
 ### 🖼️ Assets
 
-- `npm run assets:convert`: Pipeline unificado para conversión a WebP y mirroring.
-- `npm run assets:download`: Descargador de sprites externos (PokeAPI/Showdown).
+- `npm run assets:convert`: Unified pipeline for WebP conversion and mirroring.
+- `npm run assets:download`: External sprite downloader (PokeAPI/Showdown).

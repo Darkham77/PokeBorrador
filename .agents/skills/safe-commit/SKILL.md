@@ -27,9 +27,12 @@ graph TD
     GapAnalysis --> Verification
     
     subgraph "The Zero-Warning Audit"
-        Verification --> UnifiedAudit[Unified Project Audit]
-        UnifiedAudit --> UnifiedRepair[Unified Project Repair]
-        UnifiedRepair --> FinalAudit[Final Audit Pass]
+        Verification --> FullAudit[3.1 Full Project Audit]
+        FullAudit --> AutoFix[3.2 Automatic Repair Pass]
+        AutoFix --> ManualDiscovery[3.3 Manual Repair Discovery]
+        ManualDiscovery --> ManualFix[3.4 Manual Repair Phase]
+        ManualFix --> FinalAudit[3.5 Final Validation Pass]
+        
         FinalAudit --> Lint[Linting]
         Lint --> Types[Type-Safety]
         Types --> Build[Production Build]
@@ -92,21 +95,31 @@ Review all modified files in `src/logic/`.
 
 ### 3. Active Verification Cycle (The "Zero-Warning" Audit)
 
-You MUST run these commands and fix EVERY issue until a clean pass is achieved.
+You MUST run these commands and fix EVERY issue until a clean pass is achieved. 
 
 > [!IMPORTANT]
 > **Pre-existing Warnings**: If the audit (Lint, Types, SASS) reveals warnings or errors in files you did not modify, you ARE RESPONSIBLE for fixing them before committing. A "Safe Commit" means a 100% clean repository state, not just for your changes.
 
-**THE MANDATORY CHAIN (Execution Order):**
+**THE MANDATORY AUDIT PIPELINE:**
 
-1. `npm run validate:types`
-2. `npm run validate:sql` (CRITICAL: Verifies migration syntax against SQLite)
-3. **Items Integrity**: `npm run validate:items` (Auditoría de integridad de base de datos de objetos)
-4. **FSM Audit**: `npm run fsm:audit` (Auditoría de estados de batalla contra diagramas Mermaid)
-5. **Standard Repair**: `npm run audit:fix` (Corrección automática de Viewports y filtros SASS)
-6. **Linting**: `npm run lint`
-7. **Unit Tests**: `npm run test`
-8. **Production Build**: `npm run build`
+1.  **Full Audit Pass**: `npm run audit:full`
+    - This command captures EVERYTHING (SASS, GPU, FSM, SQL, Items, Moves, Abilities).
+    - **CRITICAL**: You MUST NOT skip this. It is the only way to ensure total system integrity.
+2.  **Automatic Repair**: `npm run audit:fix`
+    - Run this to handle easy fixes (Viewports, Node prefixes, ESM extensions).
+3.  **Manual Repair Discovery (THE REPORT)**:
+    - Review the output of `audit:full` again.
+    - Identify all warnings/errors that `:fix` DID NOT resolve (e.g., `gpuGaps`, `legacyDates`, `zIndexAudit`).
+    - **MANDATORY**: List these issues in your response to the user as a "Technical Debt Report" before proceeding to fix them manually.
+4.  **Manual Repair Phase**:
+    - Fix each identified issue manually in the code.
+    - If a `z-index` is hardcoded, find the correct variable in `visuals.ts`.
+    - If a `filter` is missing `will-change`, add it.
+5.  **Final Validation Pass**:
+    - `npm run validate:types`
+    - `npm run lint`
+    - `npm run test`
+    - `npm run build`
 
 ### 4. Database Triple Parity Sync
 
