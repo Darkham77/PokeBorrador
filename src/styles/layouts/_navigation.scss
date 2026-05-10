@@ -11,9 +11,7 @@ body .nav {
   bottom: 0;
   left: 0;
   right: 0;
-  background: Rgba(0, 0, 0, 0.8);
-  will-change: transform, filter, opacity;
-  backdrop-filter: Blur(10px);
+  background: Rgba(0, 0, 0, 0.95);
   @include gpu-layer;
   margin-bottom: 0;
   padding: 8px 12px;
@@ -85,7 +83,7 @@ body .nav {
 .hud-submenu,
 .nav-submenu {
   position: absolute;
-  @include glass($card, 12px);
+  @include glass($card);
   border-radius: 12px;
   padding: spacing(2);
   display: none;

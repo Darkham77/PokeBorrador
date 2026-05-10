@@ -147,7 +147,6 @@ const handleConfirm = () => {
   -webkit-will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
   backdrop-filter: Blur(8px);
-  backdrop-filter: Blur(8px);
   @include gpu-layer;
   z-index: var(--z-modal);
   display: flex;

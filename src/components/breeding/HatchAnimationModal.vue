@@ -445,7 +445,6 @@ onMounted(async () => {
   -webkit-will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
   backdrop-filter: Blur(10px);
-  backdrop-filter: Blur(10px);
   @include gpu-layer;
 }
 </style>

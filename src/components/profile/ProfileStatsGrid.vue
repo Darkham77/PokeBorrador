@@ -67,7 +67,7 @@ const formatNum = (num: number) => formatCurrency(num)
 }
 
 .legacy-stat-item {
-  background: Rgba(15, 23, 42, 0.4);
+  background: Rgba(15, 23, 42, 0.95);
   border: 1px solid Rgba(255, 255, 255, 0.05);
   border-radius: 18px;
   padding: 16px 12px;
@@ -76,10 +76,6 @@ const formatNum = (num: number) => formatCurrency(num)
   flex-direction: column;
   gap: 10px;
   transition: all 0.2s ease;
-  -webkit-will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  backdrop-filter: Blur(8px);
-  backdrop-filter: Blur(8px);
   @include gpu-layer;
 
   &:hover {

@@ -25,13 +25,10 @@
 
   &.performance-mode {
     transition: none !important;
-    -webkit-will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  backdrop-filter: none !important; will-change: transform, filter, opacity;
-  backdrop-filter: none !important;
-    background: Rgba(30, 41, 59, 0.8) !important;
+    background: Rgba(30, 41, 59, 0.95) !important;
     box-shadow: none !important;
-    border-color: Rgba(255, 255, 255, 0.05) !important;
+    border-color: Rgba(255, 255, 255, 0.1) !important;
+    will-change: opacity;
 
     &:hover {
       transform: none !important;

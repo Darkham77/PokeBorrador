@@ -70,15 +70,11 @@ const handleImgError = (e: Event) => {
 .buff-badge {
   display: flex;
   align-items: center;
-  background: Rgba(0, 0, 0, 0.6);
+  background: Rgba(0, 0, 0, 0.9);
   border: 1px solid Rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   padding: 6px 10px;
   pointer-events: auto; /* Tooltip needs pointer */
-  -webkit-will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  backdrop-filter: Blur(4px);
-  backdrop-filter: Blur(4px);
   @include gpu-layer;
   box-shadow: 0 4px 6px Rgba(0,0,0,0.3);
   transition: all 0.3s ease;

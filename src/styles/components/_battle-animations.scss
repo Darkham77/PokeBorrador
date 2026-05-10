@@ -169,10 +169,8 @@
   position: fixed;
   z-index: var(--z-tooltip);
   background: Rgba(10, 15, 25, 0.95);
-  -webkit-will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  -webkit-backdrop-filter: blur(12px);
-  backdrop-filter: blur(12px);
+  -webkit-will-change: transform, opacity;
+  will-change: transform, opacity;
   @include gpu-layer;
   transform: Translatez(0);
   border: 1px solid Rgba(255, 255, 255, 0.15);

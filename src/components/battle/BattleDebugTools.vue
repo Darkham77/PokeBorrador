@@ -468,10 +468,8 @@ const toggleStatus = (side: string, type: string) => {
   display: flex;
   flex-direction: column;
   box-shadow: 0 15px 50px Rgba(0,0,0,0.9);
-  -webkit-will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  backdrop-filter: Blur(15px);
-  backdrop-filter: Blur(15px);
+  -webkit-will-change: transform, opacity;
+  will-change: transform, opacity;
   @include gpu-layer;
   margin-bottom: 12px;
   overflow: hidden;
@@ -512,10 +510,8 @@ const toggleStatus = (side: string, type: string) => {
   min-height: 0;
   overflow-y: auto;
   box-shadow: 0 10px 40px Rgba(0,0,0,0.9);
-  -webkit-will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  backdrop-filter: Blur(12px);
-  backdrop-filter: Blur(12px);
+  -webkit-will-change: transform, opacity;
+  will-change: transform, opacity;
   @include gpu-layer;
   margin-bottom: 8px;
   position: relative;

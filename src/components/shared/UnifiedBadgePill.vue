@@ -127,10 +127,8 @@ const handleItemImageError = (e: Event) => {
     justify-content: center !important;
     flex-wrap: nowrap;
     gap: 4px;
-    background: Rgba(0, 0, 0, 0.7);
+    background: Rgba(0, 0, 0, 0.95);
     border: 1px solid Rgba(255, 255, 255, 0.1);
-    will-change: transform, filter, opacity;
-    backdrop-filter: Blur(10px);
     @include gpu-layer;
     box-shadow: 0 4px 15px Rgba(0,0,0,0.5);
     line-height: 0;

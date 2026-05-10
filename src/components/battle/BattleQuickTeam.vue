@@ -83,10 +83,8 @@ const handleSwitch = (index: number) => {
   margin: 0 !important;
   padding: 8px !important;
   background: Rgba(15, 23, 42, 0.6) !important; // Fondo Premium Unificado
-  -webkit-will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  backdrop-filter: Blur(12px);
-  backdrop-filter: Blur(12px);
+  -webkit-will-change: transform, opacity;
+  will-change: transform, opacity;
   @include gpu-layer;
   border: 1px solid Rgba(255, 255, 255, 0.1) !important;
   border-radius: 20px !important;

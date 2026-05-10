@@ -259,11 +259,9 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: Rgba(0, 0, 0, 0.4);
-  -webkit-will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  backdrop-filter: Blur(4px);
-  backdrop-filter: Blur(4px);
+  background: Rgba(0, 0, 0, 0.85);
+  -webkit-will-change: transform, opacity;
+  will-change: transform, opacity;
   @include gpu-layer;
   border-radius: 20px;
   z-index: var(--z-low);

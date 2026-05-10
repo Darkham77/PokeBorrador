@@ -74,11 +74,7 @@ const activeDisplayEvents = computed(() => {
 
 .event-banner {
   position: relative;
-  background: Rgba(0, 0, 0, 0.7);
-  -webkit-will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  backdrop-filter: Blur(10px);
-  backdrop-filter: Blur(10px);
+  background: Rgba(0, 0, 0, 0.95);
   @include gpu-layer;
   border-left: 4px solid var(--event-color);
   padding: 12px 20px;

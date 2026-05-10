@@ -11,9 +11,7 @@
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: Rgba(0, 0, 0, 0.5);
-  -webkit-backdrop-filter: Blur(6px);
-  backdrop-filter: Blur(6px);
+  background: Rgba(0, 0, 0, 0.85);
   @include gpu-layer;
   z-index: var(--z-base);
   pointer-events: auto;

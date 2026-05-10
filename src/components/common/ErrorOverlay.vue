@@ -166,7 +166,6 @@ const closeError = () => {
   -webkit-will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
   backdrop-filter: Blur(10px);
-  backdrop-filter: Blur(10px);
   @include gpu-layer;
   animation: fadeIn 0.3s ease;
   font-family: 'Nunito', sans-serif;

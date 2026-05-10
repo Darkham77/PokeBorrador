@@ -59,7 +59,6 @@ const authStore = useAuthStore()
   -webkit-will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
   backdrop-filter: Blur(15px);
-  backdrop-filter: Blur(15px);
   @include gpu-layer;
   display: flex;
   align-items: center;

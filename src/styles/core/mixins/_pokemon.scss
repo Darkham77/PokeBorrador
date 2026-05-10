@@ -4,7 +4,7 @@
 
 @mixin pokemon-card-standard($radius: 20px) {
   position: relative;
-  @include glass(Rgba(30, 41, 59, 0.3), 12px);
+  @include glass(Rgba(30, 41, 59, 0.3));
   border-radius: $radius;
   transition: 
     transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275),
@@ -56,7 +56,7 @@
 }
 
 @mixin pokemon-list-item-standard($radius: 12px) {
-  @include glass(Rgba(30, 41, 59, 0.2), 8px);
+  @include glass(Rgba(30, 41, 59, 0.2));
   border-radius: $radius;
   transition: 
     transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275),

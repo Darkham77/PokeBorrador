@@ -137,7 +137,6 @@ const getFactionIcon = (faction: string) => {
   -webkit-will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
   backdrop-filter: Blur(10px);
-  backdrop-filter: Blur(10px);
   @include gpu-layer;
   display: flex;
   align-items: center;

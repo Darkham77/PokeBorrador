@@ -239,8 +239,6 @@ function startSearch() {
   background: Rgba(0,0,0,0.8);
   -webkit-will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
-  backdrop-filter: Blur(8px);
-  backdrop-filter: Blur(8px);
   @include gpu-layer;
   display: flex;
   align-items: center;
@@ -320,6 +318,7 @@ function startSearch() {
 .elo-badge {
   display: inline-block;
   background: Rgba(255,255,255,0.1);
+  @include gpu-layer;
   padding: 4px 10px;
   border-radius: 10px;
   @include pixelated;

@@ -82,9 +82,7 @@ onMounted(() => {
 .tabs-nav {
   display: flex;
   border-bottom: 2px solid Rgba(255, 255, 255, 0.1);
-  background: Rgba(0, 0, 0, 0.4);
-  will-change: transform, filter, opacity;
-  backdrop-filter: Blur(5px);
+  background: Rgba(0, 0, 0, 0.95);
   position: sticky;
   top: 0;
   z-index: var(--z-base);

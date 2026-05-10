@@ -85,12 +85,9 @@
   bottom: 20px;
   left: 50%;
   transform: Translatex(-50%);
-  background: Rgba(0, 0, 0, 0.95);
-  -webkit-will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  backdrop-filter: Blur(10px);
-  backdrop-filter: Blur(10px);
-  will-change: backdrop-filter;
+  background: Rgba(0, 0, 0, 0.85);
+  -webkit-will-change: transform, opacity;
+  will-change: transform, opacity;
   @include gpu-layer;
   border: 1px solid Rgba(255, 255, 255, 0.1);
   border-radius: 20px;

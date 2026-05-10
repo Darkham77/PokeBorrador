@@ -73,7 +73,7 @@
       border-radius: 12px;
       border-left: 3px solid var(--type-color, var(--yellow));
       position: relative;
-      @include glass(Rgba(255, 255, 255, 0.02), 10px);
+      @include glass-solid(Rgba(255, 255, 255, 0.02));
       box-shadow: inset 10px 0 30px Rgba(var(--type-color-rgb), 0.03);
 
       &::before {
@@ -179,7 +179,7 @@
     justify-content: space-between;
     align-items: center;
     border: 1px solid Rgba(255, 255, 255, 0.05);
-    @include glass(Rgba(255, 255, 255, 0.01), 4px);
+    @include glass-solid(Rgba(255, 255, 255, 0.01));
     
     & .ps-card-label, & .upd-info-label {
       @include pixelated;

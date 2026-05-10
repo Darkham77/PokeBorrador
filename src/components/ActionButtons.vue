@@ -65,11 +65,15 @@ const uiStore = useUIStore()
   }
 
   &:hover {
-    transform: Scale(1.08) Translatey(-2px);
+    background: Rgba(255, 255, 255, 0.12);
     border-color: var(--yellow);
-    background: Rgba(255, 255, 255, 0.1);
+    box-shadow: 
+      0 0 0 2px var(--yellow),
+      0 0 15px Rgba(255, 214, 10, 0.4);
+    z-index: var(--z-base);
+    transform: Translatey(-2px);
     
-    span:last-child { color: $white; }
+    span:last-child { color: $white; opacity: 1; }
   }
 
   &:active {

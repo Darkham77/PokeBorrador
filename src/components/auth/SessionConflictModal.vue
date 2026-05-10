@@ -82,7 +82,6 @@ async function handleLogout() {
   -webkit-will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
   backdrop-filter: Blur(20px);
-  backdrop-filter: Blur(20px);
   @include gpu-layer;
   display: flex;
   align-items: center;

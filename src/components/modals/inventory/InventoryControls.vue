@@ -121,12 +121,8 @@ const startMode = (mode: string) => {
   align-items: center;
   gap: 20px;
   padding: 12px 20px;
-  background: Rgba(255, 255, 255, 0.03);
+  background: Rgba(255, 255, 255, 0.05);
   border-bottom: 1px solid Rgba(255, 255, 255, 0.08);
-  -webkit-will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  backdrop-filter: Blur(10px);
-  backdrop-filter: Blur(10px);
   @include gpu-layer;
 }
 

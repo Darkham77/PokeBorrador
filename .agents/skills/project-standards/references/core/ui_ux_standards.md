@@ -95,7 +95,7 @@ We prioritize a deliberate contrast between modern, sleek UI shells and classic,
 
 ### 1. Premium HUD Containers
 
-- **HUD Headers/Main Bars**: Use high-contrast solid backgrounds with premium gradients.
+- **Premium Solidity**: Use high-contrast solid backgrounds with premium gradients for cards and overlays.
 - **Borders**: Always use a sharp `1px solid rgba(255, 255, 255, 0.15)`.
 
 ### 2. Pixel-Perfect Typography (Sharpness Mandate)
@@ -252,7 +252,7 @@ To ensure technical information is accurate and consistent:
 
 The `BaseModal.vue` component supports parameterized aesthetics to maintain consistency:
 
-- **variant="modern" (Default)**: Sleek, glassmorphism-focused, subtle borders.
+- **variant="modern" (Default)**: Sleek, solid-first design, subtle borders.
 - **variant="retro"**: High-contrast 2px yellow border (`var(--yellow)`), 30px corner radius, and **20px** default internal padding. Use for gameplay, shops, and settings.
 - **hide-header**: Use to remove the header bar for content-focused modals. The close button (`X`) will automatically transition to a floating position (`modal-close-btn-floating`).
 - **Close Button Hierarchy**: The close button MUST be the LAST element in the modal's DOM structure. This guarantees it sits above all slotted content regardless of internal component complexity.
@@ -432,7 +432,7 @@ For a full verification, consult the centralized **[Aesthetic Audit Checklist](.
 
 1. `[ ]` **Hybrid Check**: Are modern frames combined with pixel-art content?
 2. `[ ]` **Typography**: Is `@include pixelated;` used for all pixel fonts?
-3. `[ ]` **Prefixes**: Are `-webkit-backdrop-filter` and other prefixes present?
+3. `[ ]` **Performance**: Are GPU promotions (`will-change`) properly applied?
 4. `[ ]` **Stacking**: Does the modal behavior follow LIFO rules?
 
 ### 18. Battle Log Accuracy & Attribution

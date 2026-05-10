@@ -133,7 +133,6 @@ const handleForget = () => {
   -webkit-will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
   backdrop-filter: Blur(10px);
-  backdrop-filter: Blur(10px);
   @include gpu-layer;
   z-index: var(--z-modal);
   display: flex;

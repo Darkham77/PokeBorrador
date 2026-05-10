@@ -147,8 +147,6 @@ onMounted(() => {
   background: Rgba(13, 17, 23, 0.95);
   -webkit-will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
-  backdrop-filter: Blur(10px);
-  backdrop-filter: Blur(10px);
   @include gpu-layer;
   border: 1px solid Rgba(199, 125, 255, 0.2);
   border-radius: 12px 12px 0 0;

@@ -317,12 +317,9 @@ Safari (macOS/iOS) requires strict GPU promotion for complex filter chains.
 
 ```scss
 .premium-card {
-  // CORRECT: Prefix ALWAYS comes before the standard property
-  -webkit-backdrop-filter: Blur(15px);
-  backdrop-filter: Blur(15px);
-  
-  background: rgba(var(--bg-rgb), 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: Rgba(var(--bg-rgb), 0.95);
+  border: 1px solid Rgba(255, 255, 255, 0.1);
+  box-shadow: 0 10px 30px Rgba(0, 0, 0, 0.5);
 }
 ```
 

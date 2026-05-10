@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { gsap } from 'gsap'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 import { useSocialStore } from '@/stores/social'
@@ -16,6 +17,7 @@ const props = withDefaults(defineProps<Props>(), {
 const gameStore = useGameStore()
 const uiStore = useUIStore()
 const socialStore = useSocialStore()
+const navRef = ref<HTMLElement | null>(null)
 
 const activeTab = computed({
   get: () => uiStore.activeTab,
@@ -41,6 +43,7 @@ const handleTabChange = (tab: string, _event?: Event) => {
   }
   
   activeTab.value = tab
+  uiStore.openHudGroup = null // Close any open group when switching tabs
   
   // Social Center Modal
   if (['social', 'friends'].includes(tab)) {
@@ -51,10 +54,60 @@ const handleTabChange = (tab: string, _event?: Event) => {
 const toggleGroupMenu = (name: string) => {
   uiStore.toggleHudGroup(name)
 }
+
+const handleClickOutside = (event: MouseEvent) => {
+  if (navRef.value && !navRef.value.contains(event.target as Node)) {
+    uiStore.openHudGroup = null
+  }
+}
+
+// GSAP Animations
+const beforeEnter = (el: Element) => {
+  gsap.set(el, { 
+    opacity: 0, 
+    xPercent: -50,
+    y: props.position === 'top' ? -20 : 20,
+    scale: 0.8,
+    transformOrigin: props.position === 'top' ? 'top center' : 'bottom center'
+  })
+}
+
+const enter = (el: Element, done: () => void) => {
+  gsap.to(el, { 
+    opacity: 1, 
+    xPercent: -50,
+    y: 0,
+    scale: 1,
+    duration: 0.12, 
+    ease: 'power2.out',
+    onComplete: done 
+  })
+}
+
+const leave = (el: Element, done: () => void) => {
+  gsap.to(el, { 
+    opacity: 0, 
+    xPercent: -50,
+    y: props.position === 'top' ? -10 : 10,
+    scale: 0.9,
+    duration: 0.1, 
+    ease: 'power2.in',
+    onComplete: done 
+  })
+}
+
+onMounted(() => {
+  window.addEventListener('click', handleClickOutside)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('click', handleClickOutside)
+})
 </script>
 
 <template>
   <div
+    ref="navRef"
     class="hud-nav"
     :class="[`pos-${position}`]"
   >
@@ -72,39 +125,50 @@ const toggleGroupMenu = (name: string) => {
     <!-- 2. POKÉMON (Grupo) -->
     <div 
       class="hud-group"
-      :class="{ 'is-open': uiStore.openHudGroup === 'POKEMON' }"
+      @mouseleave="uiStore.openHudGroup === 'POKEMON' && (uiStore.openHudGroup = null)"
     >
       <button
         class="hud-nav-btn group-btn"
-        :class="{ active: ['team', 'box', 'pokedex'].includes(activeTab) }"
+        :class="{ active: ['team', 'box', 'pokedex'].includes(activeTab) || uiStore.openHudGroup === 'POKEMON' }"
         @click.stop="toggleGroupMenu('POKEMON')"
       >
         <span class="icon">🔋</span>
         <span class="nav-item-label">POKÉMON</span>
       </button>
-      <div class="hud-submenu">
-        <button
-          class="hud-nav-btn"
-          :class="{ active: activeTab === 'team' }"
-          @click.stop="handleTabChange('team', $event); uiStore.openHudGroup = null"
+      
+      <Transition
+        :css="false"
+        @before-enter="beforeEnter"
+        @enter="enter"
+        @leave="leave"
+      >
+        <div 
+          v-if="uiStore.openHudGroup === 'POKEMON'"
+          class="hud-submenu"
         >
-          <span class="icon">🐛</span><span class="nav-item-label">EQUIPO</span>
-        </button>
-        <button
-          class="hud-nav-btn"
-          :class="{ active: activeTab === 'box' }"
-          @click.stop="handleTabChange('box', $event); uiStore.openHudGroup = null"
-        >
-          <span class="icon">📦</span><span class="nav-item-label">CAJA PC</span>
-        </button>
-        <button
-          class="hud-nav-btn"
-          :class="{ active: activeTab === 'pokedex' }"
-          @click.stop="handleTabChange('pokedex', $event); uiStore.openHudGroup = null"
-        >
-          <span class="icon">📖</span><span class="nav-item-label">POKÉDEX</span>
-        </button>
-      </div>
+          <button
+            class="hud-nav-btn"
+            :class="{ active: activeTab === 'team' }"
+            @click.stop="handleTabChange('team', $event); uiStore.openHudGroup = null"
+          >
+            <span class="icon">🐛</span><span class="nav-item-label">EQUIPO</span>
+          </button>
+          <button
+            class="hud-nav-btn"
+            :class="{ active: activeTab === 'box' }"
+            @click.stop="handleTabChange('box', $event); uiStore.openHudGroup = null"
+          >
+            <span class="icon">📦</span><span class="nav-item-label">CAJA PC</span>
+          </button>
+          <button
+            class="hud-nav-btn"
+            :class="{ active: activeTab === 'pokedex' }"
+            @click.stop="handleTabChange('pokedex', $event); uiStore.openHudGroup = null"
+          >
+            <span class="icon">📖</span><span class="nav-item-label">POKÉDEX</span>
+          </button>
+        </div>
+      </Transition>
     </div>
 
     <!-- 3. MOCHILA -->
@@ -144,49 +208,60 @@ const toggleGroupMenu = (name: string) => {
     <!-- 6. MARKET (Grupo) -->
     <div 
       class="hud-group"
-      :class="{ 'is-open': uiStore.openHudGroup === 'MARKET' }"
+      @mouseleave="uiStore.openHudGroup === 'MARKET' && (uiStore.openHudGroup = null)"
     >
       <button
         class="hud-nav-btn group-btn"
-        :class="{ active: ['online-market', 'market', 'trainer-shop'].includes(activeTab) }"
+        :class="{ active: ['online-market', 'market', 'trainer-shop'].includes(activeTab) || uiStore.openHudGroup === 'MARKET' }"
         @click.stop="toggleGroupMenu('MARKET')"
       >
         <span class="icon">🏪</span>
         <span class="nav-item-label">MARKET</span>
       </button>
-      <div class="hud-submenu">
-        <button
-          class="hud-nav-btn"
-          :class="{ active: activeTab === 'online-market' }"
-          @click.stop="handleTabChange('online-market'); uiStore.openHudGroup = null"
+      
+      <Transition
+        :css="false"
+        @before-enter="beforeEnter"
+        @enter="enter"
+        @leave="leave"
+      >
+        <div 
+          v-if="uiStore.openHudGroup === 'MARKET'"
+          class="hud-submenu"
         >
-          <span class="icon">🌎</span><span class="nav-item-label">GLOBAL</span>
-        </button>
-        <button
-          class="hud-nav-btn"
-          :class="{ active: activeTab === 'market' }"
-          @click.stop="handleTabChange('market'); uiStore.openHudGroup = null"
-        >
-          <span class="icon">🛒</span><span class="nav-item-label">LOCAL</span>
-        </button>
-        <button
-          class="hud-nav-btn"
-          :class="{ active: activeTab === 'trainer-shop' }"
-          @click.stop="handleTabChange('trainer-shop'); uiStore.openHudGroup = null"
-        >
-          <span class="icon">🎖️</span><span class="nav-item-label">BC SHOP</span>
-        </button>
-      </div>
+          <button
+            class="hud-nav-btn"
+            :class="{ active: activeTab === 'online-market' }"
+            @click.stop="handleTabChange('online-market'); uiStore.openHudGroup = null"
+          >
+            <span class="icon">🌎</span><span class="nav-item-label">GLOBAL</span>
+          </button>
+          <button
+            class="hud-nav-btn"
+            :class="{ active: activeTab === 'market' }"
+            @click.stop="handleTabChange('market'); uiStore.openHudGroup = null"
+          >
+            <span class="icon">🛒</span><span class="nav-item-label">LOCAL</span>
+          </button>
+          <button
+            class="hud-nav-btn"
+            :class="{ active: activeTab === 'trainer-shop' }"
+            @click.stop="handleTabChange('trainer-shop'); uiStore.openHudGroup = null"
+          >
+            <span class="icon">🎖️</span><span class="nav-item-label">BC SHOP</span>
+          </button>
+        </div>
+      </Transition>
     </div>
 
     <!-- 7. SOCIAL (Grupo) -->
     <div 
       class="hud-group relative-box"
-      :class="{ 'is-open': uiStore.openHudGroup === 'SOCIAL' }"
+      @mouseleave="uiStore.openHudGroup === 'SOCIAL' && (uiStore.openHudGroup = null)"
     >
       <button
         class="hud-nav-btn group-btn"
-        :class="{ active: ['friends', 'arena', 'ranking', 'war', 'events'].includes(activeTab) }"
+        :class="{ active: ['friends', 'arena', 'ranking', 'war', 'events'].includes(activeTab) || uiStore.openHudGroup === 'SOCIAL' }"
         @click.stop="toggleGroupMenu('SOCIAL')"
       >
         <span class="icon">👥</span>
@@ -197,43 +272,53 @@ const toggleGroupMenu = (name: string) => {
         >{{ socialStore.notifications.total }}</span>
       </button>
 
-      <div class="hud-submenu">
-        <button
-          class="hud-nav-btn"
-          :class="{ active: activeTab === 'friends' }"
-          @click.stop="handleTabChange('friends'); uiStore.openHudGroup = null"
+      <Transition
+        :css="false"
+        @before-enter="beforeEnter"
+        @enter="enter"
+        @leave="leave"
+      >
+        <div 
+          v-if="uiStore.openHudGroup === 'SOCIAL'"
+          class="hud-submenu"
         >
-          <span class="icon">🤝</span><span class="nav-item-label">AMIGOS</span>
-        </button>
-        <button
-          class="hud-nav-btn"
-          :class="{ active: activeTab === 'arena' }"
-          @click.stop="handleTabChange('arena'); uiStore.openHudGroup = null"
-        >
-          <span class="icon">🏟️</span><span class="nav-item-label">ARENA</span>
-        </button>
-        <button
-          class="hud-nav-btn"
-          :class="{ active: activeTab === 'ranking' }"
-          @click.stop="handleTabChange('ranking'); uiStore.openHudGroup = null"
-        >
-          <span class="icon">🏅</span><span class="nav-item-label">RANKING</span>
-        </button>
-        <button
-          class="hud-nav-btn"
-          :class="{ active: activeTab === 'war' }"
-          @click.stop="handleTabChange('war'); uiStore.openHudGroup = null"
-        >
-          <span class="icon">🚩</span><span class="nav-item-label">GUERRA</span>
-        </button>
-        <button
-          class="hud-nav-btn"
-          :class="{ active: activeTab === 'events' }"
-          @click.stop="handleTabChange('events'); uiStore.openHudGroup = null"
-        >
-          <span class="icon">🎁</span><span class="nav-item-label">EVENTOS</span>
-        </button>
-      </div>
+          <button
+            class="hud-nav-btn"
+            :class="{ active: activeTab === 'friends' }"
+            @click.stop="handleTabChange('friends'); uiStore.openHudGroup = null"
+          >
+            <span class="icon">🤝</span><span class="nav-item-label">AMIGOS</span>
+          </button>
+          <button
+            class="hud-nav-btn"
+            :class="{ active: activeTab === 'arena' }"
+            @click.stop="handleTabChange('arena'); uiStore.openHudGroup = null"
+          >
+            <span class="icon">🏟️</span><span class="nav-item-label">ARENA</span>
+          </button>
+          <button
+            class="hud-nav-btn"
+            :class="{ active: activeTab === 'ranking' }"
+            @click.stop="handleTabChange('ranking'); uiStore.openHudGroup = null"
+          >
+            <span class="icon">🏅</span><span class="nav-item-label">RANKING</span>
+          </button>
+          <button
+            class="hud-nav-btn"
+            :class="{ active: activeTab === 'war' }"
+            @click.stop="handleTabChange('war'); uiStore.openHudGroup = null"
+          >
+            <span class="icon">🚩</span><span class="nav-item-label">GUERRA</span>
+          </button>
+          <button
+            class="hud-nav-btn"
+            :class="{ active: activeTab === 'events' }"
+            @click.stop="handleTabChange('events'); uiStore.openHudGroup = null"
+          >
+            <span class="icon">🎁</span><span class="nav-item-label">EVENTOS</span>
+          </button>
+        </div>
+      </Transition>
     </div>
   </div>
 </template>
@@ -343,21 +428,11 @@ const toggleGroupMenu = (name: string) => {
 
 .hud-group {
   position: relative;
-  
-  &.is-open .hud-submenu {
-    display: flex;
-  }
-
   /* Ensure the group itself doesn't clip children */
   overflow: visible !important;
 }
 
 .hud-submenu {
-  /* Visibility management */
-  visibility: hidden;
-  opacity: 0;
-  pointer-events: none;
-  
   position: absolute;
   flex-direction: column;
   gap: 6px;
@@ -371,35 +446,30 @@ const toggleGroupMenu = (name: string) => {
   align-items: stretch !important;
   box-shadow: 0 20px 50px Rgba(0, 0, 0, 0.7);
   overflow: visible;
-  transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.2s, transform 0.2s;
+  display: flex; // Base layout handled by GSAP/Transition
 
-  .hud-group.is-open & { 
-    visibility: visible !important;
-    opacity: 1 !important;
-    pointer-events: auto !important;
-    display: flex; // Base layout
+  // BRIDGE to prevent mouseleave when moving between button and submenu
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 20px;
+    background: transparent;
   }
 
   .pos-top & { 
-    top: calc(100% + 10px); 
+    top: calc(100% + 5px); 
     bottom: auto !important;
     left: 50%; 
-    transform: Translatex(-50%) Translatey(-10px); 
-  }
-  
-  .hud-group.is-open.pos-top & {
-    transform: Translatex(-50%) Translatey(0);
+    &::before { top: -15px; } // Bridge to top button
   }
   
   .pos-bottom & { 
-    bottom: calc(100% + 15px); 
+    bottom: calc(100% + 5px); 
     top: auto !important;
     left: 50%; 
-    transform: Translatex(-50%) Translatey(10px); 
-  }
-
-  .hud-group.is-open.pos-bottom & {
-    transform: Translatex(-50%) Translatey(0);
+    &::before { bottom: -15px; } // Bridge to bottom button
   }
 
   .hud-nav-btn {
@@ -444,16 +514,6 @@ const toggleGroupMenu = (name: string) => {
     
     &.active .nav-item-label { color: var(--yellow); }
   }
-}
-
-@keyframes slideDown {
-  from { transform: Translatex(-50%) Translatey(-10px); opacity: 0; }
-  to { transform: Translatex(-50%) Translatey(0); opacity: 1; }
-}
-
-@keyframes slideUp {
-  from { transform: Translatex(-50%) Translatey(10px); opacity: 0; }
-  to { transform: Translatex(-50%) Translatey(0); opacity: 1; }
 }
 
 .badge-pill {

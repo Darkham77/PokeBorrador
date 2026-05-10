@@ -485,9 +485,8 @@ const formatMult = (m: number) => {
 
 .glass-card {
   background: Rgba(15, 23, 42, 0.7);
-  -webkit-will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  backdrop-filter: Blur(12px);
+  -webkit-will-change: transform, opacity;
+  will-change: transform, opacity;
   @include gpu-layer;
   border: 1px solid Rgba(255, 255, 255, 0.15);
   border-radius: 18px;

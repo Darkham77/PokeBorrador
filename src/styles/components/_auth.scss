@@ -48,11 +48,7 @@
 }
 
 .starter-card {
-  background: Rgba(255, 255, 255, 0.04);
-  -webkit-will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  backdrop-filter: Blur(10px);
-  backdrop-filter: Blur(10px);
+  background: Rgba(255, 255, 255, 0.05);
   @include gpu-layer;
   border: 1.5px solid Rgba(255, 255, 255, 0.1);
   border-radius: 24px;

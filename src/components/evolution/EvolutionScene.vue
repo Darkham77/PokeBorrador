@@ -172,10 +172,8 @@ const close = () => {
   align-items: center;
   justify-content: center;
   @include pixelated;
-  -webkit-will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  backdrop-filter: Blur(10px);
-  backdrop-filter: Blur(10px);
+  -webkit-will-change: transform, opacity;
+  will-change: transform, opacity;
   @include gpu-layer;
   transform: Translatez(0);
 }

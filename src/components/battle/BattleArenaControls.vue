@@ -273,10 +273,8 @@ watch(() => uiStore.isBattleSwitchForced, (val) => {
   z-index: var(--z-overlay);
   pointer-events: all;
   cursor: pointer;
-  -webkit-will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  backdrop-filter: Blur(4px);
-  backdrop-filter: Blur(4px);
+  -webkit-will-change: transform, opacity;
+  will-change: transform, opacity;
   @include gpu-layer;
 
   &.is-search-mode {

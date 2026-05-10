@@ -1,24 +1,11 @@
 // src/styles/core/mixins/_glass.scss
 @use "../gpu" as *;
 
-@mixin glass($bg: Rgba(5, 5, 5, 0.8), $blur: 14px) {
+@mixin glass($bg: Rgba(5, 5, 5, 0.95)) {
   background: $bg;
-  
-  // High-performance optimization: Disable blur in performance mode
-  .performance-mode & {
-    -webkit-will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  -webkit-backdrop-filter: none !important;
-  backdrop-filter: none !important;
-    background: Rgba($bg, 0.95); // Slightly more opaque to compensate for missing blur
-  }
-
-  @media (prefers-reduced-motion: no-preference) {
-    -webkit-will-change: opacity;
-    will-change: opacity;
-    @include gpu-layer;
-  }
-  
+  -webkit-will-change: transform, opacity;
+  will-change: transform, opacity;
+  @include gpu-layer;
   border: 1px solid Rgba(255, 255, 255, 0.12);
 }
 

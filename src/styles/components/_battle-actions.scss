@@ -40,7 +40,7 @@
 }
 
 .move-btn {
-  @include glass(Rgba(10, 10, 14, 0.95), 0); // Radio 0
+  @include glass(Rgba(10, 10, 14, 0.95));
   border: 1px solid Rgba(255,255,255,0.05) !important;
   border-left: 4px solid var(--move-color, Rgba(255, 255, 255, 0.1)) !important;
   border-radius: 0;

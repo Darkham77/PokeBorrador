@@ -44,7 +44,7 @@
       margin: 0 0 12px 0;
       background: Linear-Gradient(to bottom, var(--white), var(--gray));
       -webkit-background-clip: text;
-      -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; -webkit-background-clip: text; background-clip: text;;;;;;;;;;;;
+      background-clip: text;
       -webkit-text-fill-color: transparent;
       @include pixelated;
 
@@ -81,13 +81,13 @@
 
   .stat-card {
     background: Rgba(255, 255, 255, 0.03);
-    padding: 12px 20px; // Reduced from 20px 32px
+    padding: 12px 20px;
     border-radius: 16px;
     border: 1px solid Rgba(255, 255, 255, 0.05);
     display: flex;
     flex-direction: column;
     align-items: center;
-    min-width: 110px; // Reduced from 140px
+    min-width: 110px;
     @include will-animate(transform, background-color);
     transition: all 0.3s ease;
 
@@ -254,7 +254,7 @@
   .pdex-search-icon {
     position: absolute;
     left: 16px;
-    top: 14px; // Fixed top instead of 50% to avoid stretching issues
+    top: 14px;
     font-size: 16px;
     opacity: 0.3;
     transition: opacity 0.2s;
@@ -313,30 +313,26 @@
     opacity: 0.7;
     cursor: default;
     will-change: transform, filter, opacity;
-  filter: Grayscale(100%);
-  }
-
-  &.is-caught {
-    // No border here, let standard mixin handle it
+    filter: Grayscale(100%);
   }
 
   .dex-number {
     position: absolute;
-    top: 12px; // Increased to give more room from the corner
-    left: 12px; // Increased to give more room from the corner
-    font-size: 7px; // Slightly smaller
+    top: 12px;
+    left: 12px;
+    font-size: 7px;
     color: Rgba(255, 255, 255, 0.2);
     @include pixelated;
   }
 
   .pdex-sprite-container {
-    width: 75px; // Slightly smaller to fit better in tight space
+    width: 75px;
     height: 75px;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-top: 4px; // Push slightly away from top edge
-    margin-bottom: 2px; // Reduced from 8px
+    margin-top: 4px;
+    margin-bottom: 2px;
     z-index: var(--z-base);
     position: relative;
 
@@ -347,7 +343,7 @@
       
       &:not(.silhouette) {
         will-change: transform, filter, opacity;
-  filter: pokemon-outline-optimized();
+        filter: pokemon-outline-optimized();
       }
       
       &.silhouette {
@@ -355,10 +351,9 @@
       }
     }
 
-
     .unknown-placeholder {
-      font-size: 32px; // Smaller to fit
-      color: Rgba(255, 255, 255, 0.08); // Brighter than the card background
+      font-size: 32px;
+      color: Rgba(255, 255, 255, 0.08);
       @include pixelated;
       text-shadow: 0 0 15px Rgba(255, 255, 255, 0.05);
     }
@@ -369,8 +364,8 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 20px; // Reduced from 24px
-    margin-bottom: 4px; // Close to bottom but not touching
+    min-height: 20px;
+    margin-bottom: 4px;
     z-index: var(--z-base);
 
     .pdx-pokemon-name {
@@ -380,11 +375,11 @@
       text-transform: uppercase;
       text-align: center;
       transition: color 0.3s;
-      letter-spacing: 0.5px; // Tighter
+      letter-spacing: 0.5px;
     }
   }
 }
 
 .glass-morphism {
-  @include glass(Rgba(30, 41, 59, 0.5), 16px);
+  @include glass(Rgba(30, 41, 59, 0.5));
 }
