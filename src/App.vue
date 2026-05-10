@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref, computed, watch } from 'vue'
+import { gsap } from 'gsap'
 import { useAuthStore } from '@/stores/auth'
 import { useGameStore } from '@/stores/game'
 import { initGlobalErrorHandlers } from '@/logic/errorHandler'
@@ -187,6 +188,15 @@ const handleReclaim = async () => {
   await gameStore.reclaimControl()
   dismissedLock.value = true
 }
+
+// GSAP Transitions for Loading Overlay
+const onLoadingEnter = (el: Element, done: () => void) => {
+  gsap.fromTo(el, { opacity: 0 }, { opacity: 1, duration: 0.5, ease: 'none', onComplete: done })
+}
+
+const onLoadingLeave = (el: Element, done: () => void) => {
+  gsap.to(el, { opacity: 0, duration: 0.8, ease: 'power2.inOut', onComplete: done })
+}
 </script>
 
 <template>
@@ -197,21 +207,27 @@ const handleReclaim = async () => {
       class="global-background-stars" 
     />
 
-    <!-- Pantalla de carga unificada (v-if para sacar del DOM al terminar o si es login) -->
-    <div
-      v-if="!loadingStore.isGateOpen && !isLoginPage"
-      class="loading-overlay"
-      :class="{ 'global-overlay': loadingInfo.global }"
+    <!-- Pantalla de carga unificada -->
+    <Transition
+      :css="false"
+      @enter="onLoadingEnter"
+      @leave="onLoadingLeave"
     >
-      <div class="loader" />
-      <p>{{ loadingInfo.msg }}</p>
-      <span 
-        v-if="loadingInfo.sub" 
-        class="sub-text"
+      <div
+        v-if="!loadingStore.isGateOpen && !isLoginPage"
+        class="loading-overlay"
+        :class="{ 'global-overlay': loadingInfo.global }"
       >
-        {{ loadingInfo.sub }}
-      </span>
-    </div>
+        <div class="loader" />
+        <p>{{ loadingInfo.msg }}</p>
+        <span 
+          v-if="loadingInfo.sub" 
+          class="sub-text"
+        >
+          {{ loadingInfo.sub }}
+        </span>
+      </div>
+    </Transition>
 
     <!-- Vistas de Ruta (Login tiene prioridad absoluta) -->
     <template v-if="isLoginPage">

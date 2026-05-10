@@ -1,18 +1,23 @@
 import { defineStore } from 'pinia'
 import { computed } from 'vue'
+import { gsap } from 'gsap'
 import { useGameStore } from './game.ts'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
 export const useBuffsStore = defineStore('buffs', () => {
   const gameStore = useGameStore()
   
-  let tickInterval: ReturnType<typeof setInterval> | null = null
+  let tickInterval: gsap.core.Tween | null = null
 
   function initTick() {
-    if (tickInterval) clearInterval(tickInterval)
-    tickInterval = setInterval(() => {
+    if (tickInterval) tickInterval.kill()
+    
+    const tick = () => {
       // Pause timers if player is in an active battle
-      if (gameStore.state.battle && !gameStore.state.battle.over) return;
+      if (gameStore.state.battle && !gameStore.state.battle.over) {
+        tickInterval = gsap.delayedCall(1, tick)
+        return
+      }
 
       const s = gameStore.state
       let changed = false
@@ -33,7 +38,11 @@ export const useBuffsStore = defineStore('buffs', () => {
           gameStore.save(false)
         }
       }
-    }, 1000)
+      
+      tickInterval = gsap.delayedCall(1, tick)
+    }
+
+    tickInterval = gsap.delayedCall(1, tick)
   }
 
   function addBuff(buffName: string, seconds: number, extraData: string | null = null) {

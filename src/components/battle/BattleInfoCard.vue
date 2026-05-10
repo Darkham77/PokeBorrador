@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, ref, onMounted, onUnmounted, watch } from 'vue'
+import { computed, ref, onMounted, watch } from 'vue'
+import { gsap } from 'gsap'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import PokemonTypePills from '@/components/shared/PokemonTypePills.vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
@@ -39,20 +40,22 @@ const isAdmin = computed(() => {
 // displayHp permite animar la barra desde 0 cuando el componente aparece (Fase 3)
 const displayHp = ref(0)
 
-const hpTimeout = ref<ReturnType<typeof setTimeout> | null>(null)
 onMounted(() => {
   // Sincronizar con la transición de aparición del HUD
-  hpTimeout.value = setTimeout(() => {
-    displayHp.value = p.value.hp
-  }, 50)
-})
-
-onUnmounted(() => {
-  if (hpTimeout.value) clearTimeout(hpTimeout.value)
+  gsap.to(displayHp, {
+    value: p.value.hp,
+    duration: 0.8,
+    ease: 'power2.out',
+    delay: 0.4
+  })
 })
 
 watch(() => p.value.hp, (newHp) => {
-  displayHp.value = newHp
+  gsap.to(displayHp, {
+    value: newHp,
+    duration: 0.6,
+    ease: 'power2.out'
+  })
 })
 
 // --- GESTIÓN DE XP Y LEVEL UP (Phase 3) ---
@@ -62,34 +65,35 @@ const displayExpPct = ref((p.value.exp / p.value.expNeeded) * 100)
 
 watch(() => p.value.level, (newLevel, oldLevel) => {
   if (oldLevel && newLevel > oldLevel) {
-    // 1. Efecto de Destello (Flash)
+    // 1. Efecto de Destello (Flash) con GSAP
     isLevelingUp.value = true
-    setTimeout(() => { isLevelingUp.value = false }, 1000)
+    gsap.to({}, { duration: 1, onComplete: () => { isLevelingUp.value = false } })
 
-    // 2. Orquestación de barra de XP (Reset suave)
-    // Primero aseguramos que la barra esté al 100%
-    displayExpPct.value = 100
-    xpAnimationActive.value = true
-    
-    // Pequeño delay para que se vea el 100% antes de resetear
-    setTimeout(() => {
-      xpAnimationActive.value = false // Desactivar transición para reset instantáneo
-      displayExpPct.value = 0
-      
-      // Siguiente tick: volver a activar transición y poner el valor real del nuevo nivel
-      setTimeout(() => {
-        xpAnimationActive.value = true
-        displayExpPct.value = (p.value.exp / p.value.expNeeded) * 100
-      }, 50)
-    }, 600)
+    // 2. Orquestación de barra de XP
+    const tl = gsap.timeline()
+    tl.to(displayExpPct, {
+      value: 100,
+      duration: 0.4,
+      ease: 'power2.in',
+      onComplete: () => {
+        displayExpPct.value = 0
+      }
+    })
+    .to(displayExpPct, {
+      value: (p.value.exp / p.value.expNeeded) * 100,
+      duration: 0.6,
+      ease: 'power2.out'
+    })
   }
 }, { immediate: false })
 
 watch(() => p.value.exp, (newExp) => {
-  // Solo actualizar si no estamos en medio de un reset por level up
   if (!isLevelingUp.value) {
-    xpAnimationActive.value = true
-    displayExpPct.value = (newExp / p.value.expNeeded) * 100
+    gsap.to(displayExpPct, {
+      value: (newExp / p.value.expNeeded) * 100,
+      duration: 0.5,
+      ease: 'power2.out'
+    })
   }
 })
 
@@ -553,17 +557,14 @@ const formatMult = (m: number) => {
 .exp-bar-outer { height: 4px; @media (max-width: 600px) { height: 3px; } }
 .hp-bar-inner { 
   height: 100%; 
-  transition: width 0.4s ease; 
+  /* transition handled by GSAP */
   @include will-animate(width);
 }
 .exp-bar-inner { 
   height: 100%; 
   background: var(--blue); 
   width: 0;
-  transition: none;
-  &.is-animating {
-    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-  }
+  /* transition handled by GSAP */
   @include will-animate(width);
 }
 

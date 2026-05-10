@@ -1,6 +1,8 @@
-import { ref, computed, nextTick, watch, toValue, type MaybeRefOrGetter } from 'vue'
+import { ref, computed, watch, toValue, type MaybeRefOrGetter } from 'vue'
+import { gsap } from 'gsap'
 import { gameBus } from '@/logic/gameBus'
 import { logger } from '@/logic/utils/logger'
+import { awaitAnimation, createTimeline } from '@/logic/utils/gsapHelpers'
 import type { useBattleStore } from '@/stores/battle'
 import type { Pokemon, Move } from '@/types/pokemon'
 
@@ -70,7 +72,7 @@ export function useBattleAnimations(
     return !toValue(battleStore.player)
   })
 
-  const revealWildPokemon = (isInstant = false) => {
+  const revealWildPokemon = async (isInstant = false) => {
     if (isInstant) {
       isWildSilhouette.value = false
       isWildEntryAnimation.value = false
@@ -83,11 +85,11 @@ export function useBattleAnimations(
     isWildEntryAnimation.value = true
     isEmerging.value = false 
     
-    setTimeout(() => {
+    gsap.delayedCall(0.6, () => {
       isWildSilhouette.value = false
       isWildEntryAnimation.value = false
       wildRevealActive.value = false
-    }, 600)
+    })
   }
 
   // Sincroniza las banderas de animación visual con el estado lógico de la FSM.
@@ -162,9 +164,9 @@ export function useBattleAnimations(
           isWildSilhouette.value = true
           
           if (!isEmerging.value) {
-            setTimeout(() => {
+            gsap.delayedCall(0, () => {
               isEmerging.value = true
-            }, 0);
+            })
           }
           break
         
@@ -195,7 +197,7 @@ export function useBattleAnimations(
         
         case 'TRAINER_RETREAT':
           trainerAnimState.value = 'retreating'
-          setTimeout(() => { isTrainerVisible.value = false; trainerAnimState.value = null }, 800)
+          gsap.delayedCall(0.8, () => { isTrainerVisible.value = false; trainerAnimState.value = null })
           break
 
         case 'EMPTY_WAIT':
@@ -223,34 +225,35 @@ export function useBattleAnimations(
   const triggerWildEmergence = () => Promise.resolve()
 
   // SEARCH_PHASE → ENCOUNTER_ANIM: Solo el jump + reveal.
-  // Asume que triggerSearchEntry() (ENTRY_ANIM) ya corrió y los arbustos + silueta están visibles.
   const triggerSearchEncounter = () => {
-    return new Promise((resolve) => {
-      isWildEntryAnimation.value = true
-      isEmerging.value = false
+    const tl = createTimeline()
+    
+    isWildEntryAnimation.value = true
+    isEmerging.value = false
 
-      // ENCOUNTER_JUMP (600ms)
-      setTimeout(() => {
-        isEmerging.value = true
-      }, 600)
+    // 1. ENCOUNTER_JUMP & BUSH_FADE (600ms)
+    tl.to({}, { 
+      duration: 0.6, 
+      onStart: () => { isEmerging.value = true },
+      onComplete: () => { wildRevealActive.value = false }
+    })
+    
+    // 2. REVEAL_COLORS (800ms -> total 1400ms)
+    tl.to({}, {
+      duration: 0.8,
+      onComplete: () => { isWildSilhouette.value = false }
+    })
 
-      // BUSH_FADE (600ms) - Sincronizado con el salto
-      setTimeout(() => {
-        wildRevealActive.value = false
-      }, 600)
-
-      // REVEAL_COLORS (1400ms)
-      setTimeout(() => {
-        isWildSilhouette.value = false
-      }, 1400)
-
-      // CLEANUP (2000ms)
-      setTimeout(() => {
+    // 3. CLEANUP (600ms -> total 2000ms)
+    tl.to({}, {
+      duration: 0.6,
+      onComplete: () => {
         isWildEntryAnimation.value = false
         isEmerging.value = false
-        resolve(true)
-      }, 2000)
+      }
     })
+
+    return awaitAnimation(tl)
   }
 
   const triggerCatchSparkles = (side: string) => {
@@ -273,25 +276,24 @@ export function useBattleAnimations(
         delay: `${Math.random() * 0.2}s` // Ráfaga más compacta (0.2s max)
       })
     }
-    setTimeout(() => {
+    gsap.delayedCall(1.2, () => {
       catchSparkles.value = catchSparkles.value.filter(s => s.side !== side)
-    }, 1200)
+    })
   }
 
   const handleReleaseRequest = (detail: string | { side?: string }) => {
     const side = typeof detail === 'string' ? detail : detail?.side
     
-    // Limpiar estados de captura inmediatamente al liberar
     if (side === 'player') playerCaptureActive.value = false
     else enemyCaptureActive.value = false
 
     if (side === 'player') playerAnimState.value = 'releasing'
     else enemyAnimState.value = 'releasing'
     
-    setTimeout(() => {
+    return gsap.delayedCall(0.8, () => {
       if (side === 'player') playerAnimState.value = null
       else enemyAnimState.value = null
-    }, 800)
+    })
   }
 
   const handleCatchRequest = (detail: string | { side?: string, ballId?: string }) => {
@@ -300,54 +302,51 @@ export function useBattleAnimations(
     
     if (side === 'player') playerAnimState.value = 'catching'
     else enemyAnimState.value = 'catching'
-    setTimeout(() => {
+
+    return gsap.delayedCall(0.8, () => {
       if (side === 'player') playerAnimState.value = 'trapped'
       else enemyAnimState.value = 'trapped'
-    }, 800)
+    })
   }
 
   const handleShakeRequest = (detail: string | { side?: string }) => {
     const side = typeof detail === 'string' ? detail : detail?.side
     if (side === 'player') {
-      playerIsShaking.value = false
-      playerIsBlinking.value = false
-      nextTick(() => { 
-        playerIsShaking.value = true 
-        playerIsBlinking.value = true
-      })
-      setTimeout(() => { 
+      playerIsShaking.value = true 
+      playerIsBlinking.value = true
+      gsap.delayedCall(0.6, () => { 
         playerIsShaking.value = false 
         playerIsBlinking.value = false
-      }, 600)
-    } else {
-      enemyIsShaking.value = false
-      enemyIsBlinking.value = false
-      nextTick(() => { 
-        enemyIsShaking.value = true 
-        enemyIsBlinking.value = true
       })
-      setTimeout(() => { 
+    } else {
+      enemyIsShaking.value = true 
+      enemyIsBlinking.value = true
+      gsap.delayedCall(0.6, () => { 
         enemyIsShaking.value = false 
         enemyIsBlinking.value = false
-      }, 600)
+      })
     }
   }
 
-  const handleFaintAnim = (e: { detail?: string | { side: string } } | string) => {
-    if (isFaintInProgress.value) return // Idempotente
+  const handleFaintAnim = (e: string | { side?: string } | { detail?: string | { side: string } }) => {
+    if (isFaintInProgress.value) return 
     
-    const data = typeof e === 'object' ? (e?.detail || e) : e
-    const side = typeof data === 'string' ? data : ((data as { side: string })?.side || 'enemy')
-    if (side === 'enemy') {
-      const enemy = toValue(enemyRef)
-      faintedPokemonSnapshot.value = enemy ? { ...enemy, side: 'enemy' } : { side: 'enemy' }
-      isFaintInProgress.value = true
-      setTimeout(() => { isFaintInProgress.value = false; faintedPokemonSnapshot.value = null }, 1300)
-    } else {
-      faintedPokemonSnapshot.value = { side: 'player' }
-      isFaintInProgress.value = true
-      setTimeout(() => { isFaintInProgress.value = false; faintedPokemonSnapshot.value = null }, 1300)
-    }
+    const data = typeof e === 'object' 
+      ? (e && 'detail' in e ? e.detail : e) 
+      : e
+    const side = typeof data === 'string' 
+      ? data 
+      : (data && 'side' in data ? (data as { side: string }).side : 'enemy')
+    
+    faintedPokemonSnapshot.value = side === 'enemy' 
+      ? (toValue(enemyRef) ? { ...toValue(enemyRef), side: 'enemy' } : { side: 'enemy' })
+      : { side: 'player' }
+      
+    isFaintInProgress.value = true
+    gsap.delayedCall(1.3, () => { 
+      isFaintInProgress.value = false 
+      faintedPokemonSnapshot.value = null 
+    })
   }
 
   const initListeners = () => {
@@ -361,6 +360,7 @@ export function useBattleAnimations(
     gameBus.on('PLAY_DAMAGE', (e: Event) => handleShakeRequest((e as CustomEvent).detail))
     gameBus.on('POKEMON_FAINT', (e: Event) => handleFaintAnim((e as CustomEvent).detail))
     gameBus.on('PLAY_FAINT', (e: Event) => handleFaintAnim((e as CustomEvent).detail))
+    gameBus.on('ENCOUNTER_ANIM', () => triggerSearchEncounter())
 
     gameBus.on('PLAY_ATTACK_ANIM', (e: Event) => {
       const data = (e as CustomEvent).detail
@@ -376,10 +376,10 @@ export function useBattleAnimations(
         side: side as 'player' | 'enemy'
       } as Move
       
-      setTimeout(() => {
+      gsap.delayedCall(0.5, () => {
         battleStore.attackerSide = null
         battleStore.activeMove = null
-      }, 500)
+      })
     })
 
     gameBus.on('CATCH_SUCCESS', (e: Event) => {
@@ -393,16 +393,16 @@ export function useBattleAnimations(
       caughtPokemonSnapshot.value = targetRef ? { ...targetRef } as Pokemon : null
       triggerCatchSparkles(side)
       
-      setTimeout(() => {
+      gsap.delayedCall(1.0, () => {
         if (side === 'player') playerAnimState.value = null
         else enemyAnimState.value = null
-      }, 1000)
+      })
 
-      setTimeout(() => {
+      gsap.delayedCall(2.0, () => {
         playerCaptureActive.value = false
         enemyCaptureActive.value = false
         caughtPokemonSnapshot.value = null
-      }, 2000)
+      })
     })
     
     gameBus.on('START_BATTLE', (_e) => {
@@ -414,11 +414,10 @@ export function useBattleAnimations(
       caughtPokemonSnapshot.value = null
       activePokeballId.value = 'pokeball'
     })
-
     watch(() => battleStore.upcomingPokemon, (newVal) => {
       if (newVal && battleStore.isSearching) {
         upcomingIsEmerging.value = true
-        setTimeout(() => { upcomingIsEmerging.value = false }, 1200)
+        gsap.delayedCall(1.2, () => { upcomingIsEmerging.value = false })
       }
     })
   }
@@ -454,6 +453,10 @@ export function useBattleAnimations(
     triggerSearchEncounter,
     triggerCatchSparkles,
     initListeners,
-    isPlayerSpriteSuppressed
+    isPlayerSpriteSuppressed,
+    handleFaintAnim,
+    handleCatchRequest,
+    handleReleaseRequest,
+    handleShakeRequest
   }
 }

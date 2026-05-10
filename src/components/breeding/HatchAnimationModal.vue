@@ -3,7 +3,8 @@
  * HatchAnimationModal
  * Standardized full-screen animation for egg hatching.
  */
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, nextTick } from 'vue'
+import { gsap } from 'gsap'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import BaseModal from '@/components/common/BaseModal.vue'
 import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
@@ -32,6 +33,10 @@ const gameStore = useGameStore()
 const stage = ref<'egg' | 'crack' | 'reveal'>('egg')
 const showParticles = ref(false)
 const resultPokemon = ref<Pokemon | null>(null)
+const particlesRef = ref<HTMLElement[]>([])
+
+// GSAP Timelines
+let idleTimeline: gsap.core.Timeline | null = null
 
 const prepareResult = async () => {
   if (props.pokemon) {
@@ -71,21 +76,88 @@ const handleEggClick = () => {
   if (stage.value !== 'egg') return
   
   stage.value = 'crack'
+  if (idleTimeline) idleTimeline.kill()
+
   const win = window as unknown as { playSound?: (s: string) => void }
   win.playSound?.('egg_crack')
   
-  // Final reveal after a short delay of cracking
-  setTimeout(() => {
+  // 1. Shake animation
+  gsap.to('.egg-sprite', {
+    x: 'random(-5, 5)',
+    rotation: 'random(-5, 5)',
+    duration: 0.1,
+    repeat: 10,
+    yoyo: true,
+    ease: 'none'
+  })
+
+  // 2. Final reveal
+  gsap.delayedCall(1.2, () => {
     stage.value = 'reveal'
     showParticles.value = true
     win.playSound?.('evolution_complete')
-  }, 1200)
+    
+    nextTick(() => {
+      // Reveal animations
+      gsap.from('.reveal-visual', {
+        opacity: 0,
+        scale: 0.9,
+        duration: 0.8,
+        ease: 'power2.out'
+      })
+
+      gsap.to('.shimmer-bg', {
+        rotation: 360,
+        duration: 10,
+        repeat: -1,
+        ease: 'none'
+      })
+
+      // Explode particles
+      particlesRef.value.forEach((el) => {
+        if (!el) return
+        const tx = (Math.random() - 0.5) * 300
+        const ty = (Math.random() - 0.5) * 300
+        gsap.fromTo(el,
+          { x: 0, y: 0, opacity: 1, scale: 1 },
+          {
+            x: tx,
+            y: ty,
+            opacity: 0,
+            scale: 0,
+            duration: 1.5,
+            delay: Math.random() * 0.5,
+            ease: 'power2.out'
+          }
+        )
+      })
+    })
+  })
 }
 
 onMounted(async () => {
   if (props.show) {
     await prepareResult()
-    // No longer auto-starting sequence
+    
+    // Start idle animation
+    idleTimeline = gsap.timeline({ repeat: -1 })
+    
+    idleTimeline.to('.egg-sprite', {
+      y: -15,
+      duration: 1,
+      yoyo: true,
+      ease: 'sine.inOut'
+    })
+
+    gsap.fromTo('.glow-ring', 
+      { scale: 0.8, opacity: 0.8 },
+      { scale: 1.5, opacity: 0, duration: 2, repeat: -1, ease: 'none' }
+    )
+
+    gsap.fromTo('.hatch-hint',
+      { opacity: 0.3 },
+      { opacity: 0.8, duration: 0.75, repeat: -1, yoyo: true, ease: 'sine.inOut' }
+    )
   }
 })
 </script>
@@ -115,7 +187,6 @@ onMounted(async () => {
         <img
           :src="getAssetUrl(ASSET_TYPES.ITEM, 'egg')"
           class="egg-sprite"
-          :class="{ shake: stage === 'crack' }"
           @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
         >
         <div class="glow-ring" />
@@ -182,8 +253,8 @@ onMounted(async () => {
         <div
           v-for="n in 20"
           :key="n"
+          ref="particlesRef"
           class="particle"
-          :style="`--delay: ${Math.random() * 2}s; --x: ${Math.random() * 200 - 100}px; --y: ${Math.random() * 200 - 100}px` "
         />
       </div>
     </div>
@@ -353,15 +424,8 @@ onMounted(async () => {
   transform: Translatex(-50%);
   @include pixelated;
   font-size: 10px;
-  color: Rgba(255,255,255,0.6);
+  color: Rgba(255, 255, 255, 0.6);
   white-space: nowrap;
-  animation: pulse-hint 1.5s infinite;
-  @include pixelated;
-}
-
-@keyframes pulse-hint {
-  0%, 100% { opacity: 0.3; }
-  50% { opacity: 0.8; }
 }
 
 :deep(.base-modal-card) {

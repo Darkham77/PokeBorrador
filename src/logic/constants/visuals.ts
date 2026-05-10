@@ -14,6 +14,7 @@ export const Z_LAYERS = {
   MAP_SPAWNS: 10,
   MAP_GROUND_FX: 15,
   MAP_GRASS_FRONT: 15,
+  MAP_WEATHER: 18,
   MAP_UI: 20,
 
   // HUD & Navigation

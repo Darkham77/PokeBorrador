@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { gsap } from 'gsap'
 import { useShopStore } from '@/stores/shop'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
@@ -91,25 +92,32 @@ async function handleHeal() {
   progress.value = 0
   healedCount.value = 0
 
-  const interval = setInterval(() => {
-    progress.value += 4
-    if (progress.value % 16 === 0 && healedCount.value < team.value.length) {
-      healedCount.value++
-    }
-    
-    if (progress.value >= 100) {
-      clearInterval(interval)
+  const tl = gsap.timeline({
+    onUpdate: () => {
+      // Sincronizar el conteo de curados con el progreso
+      const targetCount = Math.floor((progress.value / 100) * team.value.length)
+      if (targetCount > healedCount.value) {
+        healedCount.value = targetCount
+      }
+    },
+    onComplete: () => {
       const success = shopStore.healAllPokemon(cost.value)
       if (success) {
-        setTimeout(() => {
+        gsap.delayedCall(0.8, () => {
           isHealing.value = false
           emit('close')
-        }, 800)
+        })
       } else {
         isHealing.value = false
       }
     }
-  }, 80)
+  })
+
+  tl.to(progress, {
+    value: 100,
+    duration: 2.0,
+    ease: 'none'
+  })
 }
 
 function handleClose() {
@@ -128,9 +136,9 @@ onMounted(() => {
       return
     }
     
-    setTimeout(() => {
+    gsap.delayedCall(0.6, () => {
       handleHeal()
-    }, 600)
+    })
   }
 
   const win = window as unknown as { showHealEffect?: (active: boolean) => void }
@@ -138,9 +146,13 @@ onMounted(() => {
     if (active) {
       const modalStore = useModalStore()
       modalStore.open('HealOverlay')
-      setTimeout(() => handleHeal(), 100)
+      gsap.delayedCall(0.1, handleHeal)
     }
   }
+})
+
+onUnmounted(() => {
+  gsap.killTweensOf(handleHeal)
 })
 </script>
 

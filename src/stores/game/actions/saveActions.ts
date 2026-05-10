@@ -1,4 +1,5 @@
 import { loadBestSave } from '@/logic/auth/loadService'
+import { gsap } from 'gsap'
 import { saveGame as performSave } from '@/logic/auth/saveService'
 import { useLoadingStore } from '@/stores/loading'
 import { useUIStore } from '@/stores/ui'
@@ -36,7 +37,7 @@ export function useSaveActions(
       try {
         const loadPromise = loadBestSave(authStore.user as AuthUser, db.value)
         const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('LOAD_TIMEOUT')), 8000)
+          gsap.delayedCall(8, () => reject(new Error('LOAD_TIMEOUT')))
         );
         
         const result = await Promise.race([loadPromise, timeoutPromise]) as { data: GameState, issues: string[], lastSaveId: string | null, isNewerThanCloud: boolean };
@@ -56,7 +57,7 @@ export function useSaveActions(
         
         if (attempts < maxAttempts) {
           loadingStore.setProgress('game_data', 'Conexión lenta...', `Reintentando (${attempts}/${maxAttempts})...`);
-          await new Promise(resolve => setTimeout(resolve, 1500));
+          await new Promise(resolve => gsap.delayedCall(1.5, resolve));
         }
       }
     }
@@ -112,7 +113,7 @@ export function useSaveActions(
 
       if (isNewerThanCloud) {
         uiStore.notify('Sincronizando progreso local más reciente...', '🔄')
-        setTimeout(() => save(false), 3000)
+        gsap.delayedCall(3, () => save(false))
       }
     }
     

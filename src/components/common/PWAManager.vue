@@ -90,6 +90,7 @@
 
 
 import { ref, onMounted, watch, type Ref } from 'vue'
+import { gsap } from 'gsap'
 import { usePWA } from '@/composables/usePWA'
 import { useAuthStore } from '@/stores/auth'
 import { useAudioStore } from '@/stores/audio'
@@ -188,11 +189,11 @@ const handleUpdate = async () => {
 
 onMounted(() => {
   // Pequeño delay para no abrumar al cargar
-  setTimeout(() => {
+  gsap.delayedCall(2, () => {
     if (canInstall.value && !authStore.user) {
       showInstallModal.value = true
     }
-  }, 2000)
+  })
 })
 </script>
 

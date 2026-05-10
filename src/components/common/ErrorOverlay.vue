@@ -1,6 +1,7 @@
 <script setup lang="ts">
 
 import { ref } from 'vue'
+import { gsap } from 'gsap'
 import { useErrorStore } from '@/stores/errorStore'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
@@ -38,9 +39,9 @@ const copyError = async () => {
   try {
     await navigator.clipboard.writeText(report)
     copied.value = true
-    setTimeout(() => {
+    gsap.delayedCall(2, () => {
       copied.value = false
-    }, 2000)
+    })
   } catch (err) {
     logger.error('ErrorOverlay', 'Failed to copy error report', err)
   }

@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { gsap } from 'gsap'
 import { useUIStore } from '@/stores/ui'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { SHOP_ITEMS } from '@/data/items'
@@ -23,18 +24,28 @@ const pokemonSprite = computed(() => {
   return getAssetUrl(ASSET_TYPES.POKEMON, pokemon.value.id, { isShiny: pokemon.value.isShiny })
 })
 
+let revivalTimeline: gsap.core.Timeline | null = null
+
 onMounted(() => {
-  // Sequence Timeline
-  setTimeout(() => { step.value = 1 }, 1500)
+  revivalTimeline = gsap.timeline()
+
+  // 1. Initial wait
+  revivalTimeline.to({}, { duration: 1.5 })
   
-  setTimeout(() => { 
-    step.value = 2 // Flash screen
-    
-    setTimeout(() => {
-      step.value = 3 // Reveal!
-    }, 400)
-    
-  }, 4500)
+  // 2. Start glowing
+  revivalTimeline.add(() => { step.value = 1 })
+  revivalTimeline.to({}, { duration: 3.0 })
+
+  // 3. Flash screen
+  revivalTimeline.add(() => { step.value = 2 })
+  revivalTimeline.to({}, { duration: 0.4 })
+
+  // 4. Reveal!
+  revivalTimeline.add(() => { step.value = 3 })
+})
+
+onUnmounted(() => {
+  if (revivalTimeline) revivalTimeline.kill()
 })
 
 function handleClose() {

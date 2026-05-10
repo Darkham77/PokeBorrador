@@ -1,23 +1,45 @@
 <script setup lang="ts">
 import { computed, watch, ref, nextTick, onMounted } from 'vue'
+import { gsap } from 'gsap'
 import { useBattleStore } from '@/stores/battle'
+import { ANIM_TIMINGS, ANIM_EASES } from '@/logic/utils/animationRegistry'
 
 const battleStore = useBattleStore()
 const logContainer = ref<HTMLDivElement | null>(null)
 
 const logs = computed(() => battleStore.battleLogs)
 
-const scrollToBottom = async () => {
+const scrollToBottom = async (isInstant = false) => {
   await nextTick()
-  setTimeout(() => {
-    if (logContainer.value) {
-      logContainer.value.scrollTop = logContainer.value.scrollHeight
-    }
-  }, 50)
+  if (!logContainer.value) return
+  
+  if (isInstant) {
+    logContainer.value.scrollTop = logContainer.value.scrollHeight
+  } else {
+    gsap.to(logContainer.value, {
+      scrollTop: logContainer.value.scrollHeight,
+      duration: 0.4,
+      ease: 'power2.out'
+    })
+  }
 }
 
 // Watch both length and internal content changes
-watch(logs, scrollToBottom, { deep: true })
+watch(() => logs.value.length, () => {
+  scrollToBottom()
+  
+  // Animate the last entry
+  nextTick(() => {
+    const entries = logContainer.value?.querySelectorAll('.log-entry')
+    if (entries && entries.length > 0) {
+      const lastEntry = entries[entries.length - 1]
+      gsap.fromTo(lastEntry, 
+        { opacity: 0, x: -10 }, 
+        { opacity: 1, x: 0, duration: 0.3, ease: ANIM_EASES.OUT_SOFT }
+      )
+    }
+  })
+}, { deep: false })
 
 const handleImgError = (e: Event) => {
   (e.target as HTMLImageElement).style.display = 'none'
@@ -221,10 +243,7 @@ onMounted(() => {
   border-bottom: none;
 }
 
-@keyframes slideIn {
-  from { opacity: 0; transform: Translatex(-10px); }
-  to { opacity: 1; transform: Translatex(0); }
-}
+/* Entry animations handled by GSAP */
 
 /* Side-based backgrounds (Only 2 bands) */
 .log-entry.side-player {

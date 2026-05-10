@@ -1,6 +1,7 @@
 
 import { defineStore } from 'pinia'
 import { ref, markRaw } from 'vue'
+import { gsap } from 'gsap'
 import { logger } from '@/logic/utils/logger'
 
 import { MODAL_REGISTRY } from '@/logic/modals/registry'
@@ -50,12 +51,14 @@ export const useModalStore = defineStore('modals', () => {
 
     // After the opening animation (400ms), we mark it as no longer opening
     // This allows the UI to delay "Performance Mode" until the modal is fully visible
-    setTimeout(() => {
+    // After the opening animation (400ms), we mark it as no longer opening
+    // This allows the UI to delay "Performance Mode" until the modal is fully visible
+    gsap.delayedCall(0.45, () => {
       const target = stack.value.find(m => m.id === id)
       if (target) {
         target.opening = false
       }
-    }, 450)
+    })
 
     return id
   }
@@ -74,12 +77,14 @@ export const useModalStore = defineStore('modals', () => {
       
       // We wait for the animation to finish before removing from stack
       // 550ms ensures BaseModal.vue 500ms transitions finish first
-      setTimeout(() => {
+      // We wait for the animation to finish before removing from stack
+      // 550ms ensures BaseModal.vue 500ms transitions finish first
+      gsap.delayedCall(0.55, () => {
         const finalIndex = stack.value.findIndex(m => m.id === modal.id)
         if (finalIndex !== -1) {
           stack.value.splice(finalIndex, 1)
         }
-      }, 550)
+      })
     }
   }
 

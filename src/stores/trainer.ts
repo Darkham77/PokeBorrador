@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { computed } from 'vue'
+import { gsap } from 'gsap'
 import { useGameStore } from './game.ts'
 import { useUIStore } from './ui.ts'
 import { MARKET_UNLOCKS } from '@/data/items'
@@ -74,9 +75,9 @@ export const useTrainerStore = defineStore('trainer', () => {
       
       // Check for market unlocks
       if ((MARKET_UNLOCKS as Record<number, unknown>)[currentLevel]) {
-        setTimeout(() => {
+        gsap.delayedCall(1.5, () => {
           uiStore.notify(`¡Nuevos items en el Poké Market!`, '🛒')
-        }, 1500)
+        })
       }
     }
 

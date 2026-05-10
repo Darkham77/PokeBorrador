@@ -2,6 +2,7 @@
 
 import { createClient, type SupabaseClient, type RealtimeChannel, type User, type Session } from '@supabase/supabase-js';
 import { ProxyQuery } from './proxyQuery.ts';
+import { gsap } from 'gsap';
 import { initSQLite, persistSQLite, queryLocal } from './sqliteEngine.ts';
 import { DATABASE_MIGRATIONS } from './migrations_data.ts';
 import { useLoadingStore } from '../../stores/loading.ts';
@@ -290,7 +291,7 @@ export class DBRouter {
           return mockChannel; 
         },
         subscribe: (cb?: (status: string) => void) => {
-          if (cb) setTimeout(() => cb('SUBSCRIBED'), 10);
+          if (cb) gsap.delayedCall(0.01, () => cb('SUBSCRIBED'));
           return { unsubscribe: () => {} };
         },
         send: (_args: unknown) => {
@@ -308,7 +309,7 @@ export class DBRouter {
       const basicMock = {
         on: () => basicMock,
         subscribe: (cb?: (status: string) => void) => {
-          if (cb) setTimeout(() => cb('SUBSCRIBED'), 10);
+          if (cb) gsap.delayedCall(0.01, () => cb('SUBSCRIBED'));
           return { unsubscribe: () => {} };
         },
         send: () => Promise.resolve('ok'),

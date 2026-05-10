@@ -47,4 +47,15 @@ export interface BattleContext {
   startBattle: (enemyPoke: Pokemon, options?: BattleOptions) => Promise<void>;
   _startBattle: (enemyPoke: Pokemon, options?: BattleOptions) => Promise<void>;
   initBattle: (locId: string, isTr: boolean, trName: string, isGym: boolean, gymId: string, wasSearching: boolean) => Promise<void>;
+  
+  animations?: {
+    triggerSearchEncounter: () => Promise<void>;
+    revealWildPokemon: () => Promise<void>;
+    triggerWildEmergence: () => Promise<void>;
+    triggerCatchSparkles: (side: string) => void;
+    handleCatchRequest: (detail: string | { side?: string; ballId?: string }) => void;
+    handleReleaseRequest: (detail: string | { side?: string }) => void;
+    handleShakeRequest: (detail: string | { side?: string }) => void;
+    handleFaintAnim: (detail: string | { side?: string } | { detail?: string | { side: string } }) => void;
+  };
 }

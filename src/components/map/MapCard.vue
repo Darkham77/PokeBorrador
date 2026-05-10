@@ -98,7 +98,7 @@ const weatherName = computed(() => {
   return names[computedWeather.value as string] || 'Normal'
 })
 
-const atmosphere = ref<{ atmosphereStyles?: { filter?: string }, animClass?: string } | null>(null)
+const atmosphere = ref<{ animClass?: string } | null>(null)
 
 const factionAnimClass = computed(() => {
   if (!props.dominance?.winner) return ''
@@ -247,23 +247,85 @@ const processedGrid = computed<ProcessedSpawn[]>(() => {
   })
 })
 
+const isVisible = ref(false)
+const atmosphereFilter = computed(() => {
+  const isNight = props.cycle === 'night'
+  const isDusk = props.cycle === 'dusk'
+  const isMorning = props.cycle === 'morning'
+
+  let brightness = 1.0
+  let contrast = 1.0
+  let saturate = 1.0
+  let hue = 0
+
+  if (isNight) { brightness = 0.6; contrast = 1.1; saturate = 0.8; }
+  else if (isDusk) { brightness = 0.8; contrast = 1.2; hue = -10; }
+  else if (isMorning) { brightness = 1.1; saturate = 0.9; hue = 5; }
+
+  const w = computedWeather.value
+  let wBrightness = 1.0
+  let wSaturate = 1.0
+  let wContrast = 1.0
+  let wHue = 0
+
+  if (w === 'storm') { 
+    // No oscurecer de noche porque el mapa ya es oscuro (petición usuario)
+    const darknessFactor = isNight ? 1.0 : (isDusk ? 0.75 : 0.6)
+    wBrightness = darknessFactor; 
+    wSaturate = 0.6; 
+    wContrast = 1.3; 
+  }
+  else if (w === 'snow' || w === 'blizzard') { wBrightness = 0.85; wSaturate = 0.5; wContrast = 1.2; }
+  else if (w === 'rain') { wBrightness = 0.8; wSaturate = 0.7; }
+  else if (w === 'fog' || w === 'mist') { 
+    // Reducir brillo extra en la noche para evitar lavado de color
+    wBrightness = isNight ? 0.75 : 0.9; 
+    wContrast = 0.8; 
+    wSaturate = 0.2; 
+  }
+  else if (w === 'sandstorm') { wBrightness = 0.85; wSaturate = 1.2; wContrast = 1.1; }
+  else if (w === 'heatwave') { wBrightness = 1.1; wSaturate = 1.3; wContrast = 1.1; }
+
+  // Aplicación proporcional del brillo para evitar apagones totales
+  const finalBrightness = isNight 
+    ? Math.max(0.4, brightness * wBrightness) 
+    : (brightness * wBrightness)
+  const finalSaturate = saturate * wSaturate
+  const finalContrast = contrast * wContrast
+  const finalHue = hue + wHue
+
+  return `Brightness(${finalBrightness}) Contrast(${finalContrast}) Saturate(${finalSaturate}) hue-rotate(${finalHue}deg)`
+})
+
 const allSpawns = computed(() => [...props.spawnPool.generic, ...props.spawnPool.specific])
 const currentCols = ref(3)
 let resizeObserver: ResizeObserver | null = null
+let intersectionObserver: IntersectionObserver | null = null
 
 onMounted(() => {
   if (cardRef.value) {
     resizeObserver = new ResizeObserver((entries) => {
-      const width = entries[0]?.contentRect.width || 0
-      if (width > 580) currentCols.value = 5
-      else if (width > 420) currentCols.value = 4
-      else currentCols.value = 3
+      const width = entries[0].contentRect.width
+      if (width > 350) currentCols.value = 4
+      else if (width > 200) currentCols.value = 3
+      else currentCols.value = 2
     })
     resizeObserver.observe(cardRef.value)
+
+    intersectionObserver = new IntersectionObserver((entries) => {
+      isVisible.value = entries[0].isIntersecting
+    }, { 
+      rootMargin: '50px', 
+      threshold: 0.01 
+    })
+    intersectionObserver.observe(cardRef.value)
   }
 })
 
-onUnmounted(() => { if (resizeObserver) resizeObserver.disconnect() })
+onUnmounted(() => {
+  if (resizeObserver) resizeObserver.disconnect()
+  if (intersectionObserver) intersectionObserver.disconnect()
+})
 
 const lockReason = computed(() => {
   if (props.isSafariLocked) return 'REQUIERE TICKET SAFARI'
@@ -300,7 +362,7 @@ const spawnGrid = computed(() => {
     ref="cardRef"
     :class="['location-card map-card legacy-panel', { locked: isLocked, 'safari-locked': isSafariLocked }]"
     :style="{ 
-      '--atmosphere-filter': atmosphere?.atmosphereStyles?.filter,
+      '--atmosphere-filter': atmosphereFilter,
       '--bg-image': `url('${imgPath}')`
     }"
     @click.stop="() => {
@@ -318,6 +380,7 @@ const spawnGrid = computed(() => {
       :cycle="cycle"
       :season="mapStore.currentSeason.id"
       :is-performance-mode="isPerformanceMode"
+      :is-visible="isVisible"
       :is-locked="isLocked || isSafariLocked"
       :seed="props.map.id.split('').reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0)"
     />

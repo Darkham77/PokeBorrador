@@ -1,4 +1,4 @@
-import { sleep } from '@/logic/timeUtils'
+import { gsapSleep as sleep } from '@/logic/utils/gsapHelpers'
 
 import { generateEncounter } from '@/logic/encounters'
 import { handleEntryAbilities } from './battleFlow.ts'
@@ -203,9 +203,13 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
     const inventoryBinoculars = ctx.gs.state.inventory['binoculars'] || 0
     const hasBinoculars = ctx.debugBinoculars.value || (inventoryBinoculars > 0)
     if (!hasBinoculars) {
-      await sleep(150)
-      await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.BUSH_FADE, 100)
-      await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.REVEAL_COLORS, 500)
+      if (ctx.animations?.triggerSearchEncounter) {
+        await ctx.animations.triggerSearchEncounter()
+      } else {
+        await sleep(150)
+        await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.BUSH_FADE, 100)
+        await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.REVEAL_COLORS, 500)
+      }
     } else {
       await sleep(600)
     }

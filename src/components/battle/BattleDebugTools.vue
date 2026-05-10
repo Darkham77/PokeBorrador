@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { gsap } from 'gsap'
 import { sleep } from '@/logic/timeUtils'
 import { useBattleStore } from '@/stores/battle'
 import { useGameStore } from '@/stores/game'
@@ -83,10 +84,10 @@ const debugCapture = async () => {
   gameStore.addPokemon(e, { notify: true })
   
   // Sincronizar con el tiempo de animación: 1s bola llena + 1s de vacío
-  window.setTimeout(async () => {
+  gsap.delayedCall(2, async () => {
     await battleStore.endBattle(true, false)
     battleStore.isProcessing = false
-  }, 2000)
+  })
 }
 
 const toggleBinoculars = () => {

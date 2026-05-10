@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, reactive } from 'vue'
-import { sleep } from '@/logic/timeUtils'
+import { gsap } from 'gsap'
+import { gsapSleep as sleep } from '@/logic/utils/gsapHelpers'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
@@ -35,7 +36,7 @@ const claimAsset = async (claimId: string | number) => {
     uiStore.notify('¡Objeto recibido!', '🎁')
     // Cooldown logic
     cooldowns.add(claimId)
-    window.setTimeout(() => cooldowns.delete(claimId), 5000)
+    gsap.delayedCall(5, () => cooldowns.delete(claimId))
   }
   
   processingId.value = null

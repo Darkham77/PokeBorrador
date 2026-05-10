@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, defineAsyncComponent } from 'vue'
+import { gsap } from 'gsap'
 import { useDocumentListener } from '@/composables/useWindowListener'
 import { useBodyClass } from '@/composables/useBodyClass'
 import { useGameStore } from '@/stores/game'
@@ -80,7 +81,7 @@ onMounted(() => {
   
   // Initial height calculation
   updateHudHeight()
-  setTimeout(updateHudHeight, 100) 
+  gsap.delayedCall(0.1, updateHudHeight) 
 
   // Load essential game data
   warStore.loadWarData()

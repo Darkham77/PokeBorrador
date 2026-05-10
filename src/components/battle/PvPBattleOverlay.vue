@@ -1,6 +1,7 @@
 <script setup lang="ts">
 
 import { computed, onMounted, onUnmounted, ref } from 'vue';
+import { gsap } from 'gsap';
 import { useGameStore } from '@/stores/game';
 import { useLivePvPStore } from '@/stores/livePvP';
 
@@ -15,7 +16,7 @@ const livePvPStore = useLivePvPStore();
 const battle = computed(() => livePvPStore.battleState);
 
 const timeRemaining = ref(40);
-let timer: ReturnType<typeof setInterval> | null = null;
+let timer: gsap.core.Tween | null = null;
 
 onMounted(() => {
   startTurnTimer();
@@ -27,20 +28,24 @@ onUnmounted(() => {
 
 const startTurnTimer = () => {
   timeRemaining.value = 40;
-  if (timer) clearInterval(timer);
-  timer = setInterval(() => {
+  if (timer) timer.kill();
+  
+  const tick = () => {
     if (battle.value.phase === 'choosing' && !battle.value.myPick) {
       timeRemaining.value--;
       if (timeRemaining.value <= 0) {
-        // Auto-forfeit or random move logic here
         stopTurnTimer();
+      } else {
+        timer = gsap.delayedCall(1, tick);
       }
     }
-  }, 1000);
+  }
+  
+  timer = gsap.delayedCall(1, tick);
 };
 
 const stopTurnTimer = () => {
-  if (timer) clearInterval(timer);
+  if (timer) timer.kill();
 };
 
 // Computeds for convenience

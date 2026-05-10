@@ -55,8 +55,19 @@ function scrollToBottom() {
 
 function formatTime(iso: string | Date | undefined) {
   if (!iso) return '';
-  const d = typeof iso === 'string' ? Temporal.Instant.from(iso) : (typeof iso === 'number' ? Temporal.Instant.fromEpochMilliseconds(iso) : Temporal.Instant.fromEpochMilliseconds(iso.getTime()));
-  return d.toZonedDateTimeISO('UTC').toLocaleString();
+  try {
+    let instant: Temporal.Instant;
+    if (typeof iso === 'string') {
+      const normalized = iso.includes('Z') || iso.includes('+') ? iso : iso.replace(' ', 'T') + 'Z';
+      instant = Temporal.Instant.from(normalized);
+    } else {
+      const ms = typeof iso === 'number' ? iso : (iso instanceof Date ? iso.getTime() : Number(iso));
+      instant = Temporal.Instant.fromEpochMilliseconds(ms);
+    }
+    return instant.toZonedDateTimeISO('UTC').toLocaleString(undefined, { hour: '2-digit', minute: '2-digit' });
+  } catch (e) {
+    return '';
+  }
 }
 
 // Auto-scroll when new messages arrive if panel is open

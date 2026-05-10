@@ -47,8 +47,11 @@ export const DEBUG_SYSTEM_ANIMS = [
   { id: 'catch', label: 'ENERGÍA CAPTURA', icon: '📥' },
   { id: 'release', label: 'ENERGÍA SALIDA', icon: '📤' },
   { id: 'shake', label: 'SACUDIDA BALL', icon: '🫨' },
+  { id: 'shake_damage', label: 'SACUDIDA DAÑO', icon: '💢' },
+  { id: 'blink', label: 'PARPADEO', icon: '💡' },
   { id: 'success', label: 'ÉXITO CAPTURA', icon: '🌟' },
-  { id: 'faint', label: 'DEBILITAMIENTO', icon: '💀' }
+  { id: 'faint', label: 'DEBILITAMIENTO', icon: '💀' },
+  { id: 'encounter', label: 'ENCUENTRO FULL', icon: '✨', desc: 'Secuencia completa (Salto + Reveal).' }
 ]
 
 export const DEBUG_ATTACK_FX = [

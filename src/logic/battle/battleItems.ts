@@ -1,4 +1,4 @@
-import { sleep } from '@/logic/timeUtils'
+import { gsapSleep as sleep } from '@/logic/utils/gsapHelpers'
 
 /**
  * battleItems.js

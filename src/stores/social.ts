@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, reactive } from 'vue'
+import { gsap } from 'gsap'
 
 import { useAuthStore } from './auth.ts'
 import { useGameStore } from './game.ts'
@@ -100,7 +101,7 @@ export const useSocialStore = defineStore('social', () => {
     total: 0
   })
 
-  let presenceInterval: ReturnType<typeof setInterval> | null = null
+  let presenceInterval: gsap.core.Tween | null = null
 
   /**
    * Carga datos sociales (amigos y solicitudes) usando DBRouter.
@@ -300,7 +301,7 @@ export const useSocialStore = defineStore('social', () => {
   }
 
   function startPresence() {
-    if (presenceInterval) clearInterval(presenceInterval)
+    if (presenceInterval) presenceInterval.kill()
     if (authStore.sessionMode === 'offline') return
     
     const ping = async () => {
@@ -308,14 +309,15 @@ export const useSocialStore = defineStore('social', () => {
       await gameStore.db.from('game_saves').update({ 
         updated_at: Temporal.Now.instant().toString() 
       }).eq('user_id', authStore.user?.id)
+      
+      presenceInterval = gsap.delayedCall(120, ping)
     }
     
     ping()
-    presenceInterval = setInterval(ping, 120000)
   }
 
   function stopPresence() {
-    if (presenceInterval) clearInterval(presenceInterval)
+    if (presenceInterval) presenceInterval.kill()
     presenceInterval = null
   }
 

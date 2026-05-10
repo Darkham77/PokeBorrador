@@ -63,6 +63,9 @@ Consult these manuals for detailed implementation specifications:
 - **Sprite Standard**: Use `@include sprite-render` for all game assets.
 - **Organic Feel**: Desynchronize animations using seeds and vary speeds.
 - **VFX Integrity**: Apply complex auras (e.g. Guardian/Shiny) to the `.pv-fx-wrapper` instead of the child sprite. This prevents status effect filters (poison/burn) from overriding the aura. Persistent effects MUST decouple their visibility from status flags.
+- **GSAP Mandate**: All battle-related animations (encounters, attacks, status FX, transitions) MUST be implemented using GSAP. The use of CSS `@keyframes` and `setTimeout` for combat flow is FORBIDDEN.
+- **Deterministic Orchestration**: Visual sequences MUST return a Promise (using `awaitAnimation`) so the FSM can synchronize state changes with visual completion.
+- **CLI-Ready Visuals**: Every animation MUST be triggerable via `window.__VITE_DEBUG__.battle.animations` to allow headless verification.
 
 ### 3. Modularity & Hierarchy
 
@@ -144,7 +147,8 @@ The project uses a sophisticated audit and validation engine to ensure stability
 ### 8. Battle Engine Integrity (FSM)
 
 - **Documentation Parity**: The code MUST remain a 1:1 implementation of the Mermaid diagrams in `battle_mechanics_manual.md`.
-- **Deterministic Flow**: Avoid naked `setTimeout` calls in combat logic. Use `await new Promise(r => setTimeout(r, ms))` to maintain atomic control. Initialization sequences and FSM state transitions MUST be strictly synchronized with `await` to prevent engine deadlocks and race conditions during "Search -> Combat" phases.
+- **Deterministic Flow**: Avoid naked `setTimeout` calls in combat logic. Initialization sequences and FSM state transitions MUST be strictly synchronized with `await animations.triggerX()` to prevent engine deadlocks and race conditions.
+- **Visual Completion**: FSM states representing visual actions (Damage, Faint, Catch) MUST wait for the corresponding GSAP promise resolution.
 - **Mandatory Audit**: Run `verify_fsm_diagrams.ts`, `audit_fsm_implementation.ts`, and `audit_fsm_flow_parity.ts` before every commit that touches battle logic. Zero critical errors are allowed.
 
 ---

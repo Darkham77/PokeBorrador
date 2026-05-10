@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
+import { gsap } from 'gsap';
 import { useGameStore } from './game.ts';
 import { useAuthStore } from './auth.ts';
 import { useUIStore } from './ui.ts';
@@ -14,7 +15,7 @@ export const usePassivePvpStore = defineStore('passivePvp', () => {
 
   const isPassiveActive = ref(false);
   const lastKnownElo = ref(1000);
-  const watcherInterval = ref<ReturnType<typeof setInterval> | null>(null);
+  const watcherInterval = ref<gsap.core.Tween | null>(null);
 
   /**
    * Carga el estado inicial del equipo pasivo desde la DB.
@@ -45,7 +46,7 @@ export const usePassivePvpStore = defineStore('passivePvp', () => {
 
     lastKnownElo.value = gameStore.state.eloRating || 1000;
 
-    watcherInterval.value = setInterval(async () => {
+    const poll = async () => {
       if (!authStore.user || authStore.sessionMode === 'offline') return;
 
       try {
@@ -91,12 +92,16 @@ export const usePassivePvpStore = defineStore('passivePvp', () => {
       } catch (e) {
         logger.warn('PassivePvP', `Watcher error: ${(e as Error).message}`);
       }
-    }, 30000); // Cada 30 segundos
+      
+      watcherInterval.value = gsap.delayedCall(30, poll);
+    }
+
+    watcherInterval.value = gsap.delayedCall(30, poll);
   }
 
   function stopWatcher() {
     if (watcherInterval.value) {
-      clearInterval(watcherInterval.value);
+      watcherInterval.value.kill();
       watcherInterval.value = null;
     }
   }

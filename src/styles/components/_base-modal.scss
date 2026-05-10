@@ -208,22 +208,13 @@
 
   &.is-performance-mode {
     will-change: transform, filter, opacity;
-  filter: Brightness(0.6) Blur(1px); // Slightly darker and blurred
+    filter: Brightness(0.6) Blur(1px); 
     pointer-events: none !important;
     
-    // Kill all animations and transitions for performance
-    &, * {
-      transition: none !important;
-      animation: none !important;
-      @include gpu-layer; 
-    }
-
-    // Optional: Hide non-essential decorative elements if they have a class
     .sparkle, .glow, .aura {
       display: none !important;
     }
 
-    // Hide heavy visual elements
     .modal-close-btn, .modal-close-btn-floating {
       display: none !important;
     }
@@ -308,47 +299,7 @@
 }
 
 /* Transitions */
-.fade-overlay-enter-active, .fade-overlay-leave-active {
-  transition: opacity 0.4s ease !important;
-  @include will-animate(opacity);
-}
-.fade-overlay-enter-from, .fade-overlay-leave-to {
-  opacity: 0 !important;
-}
-
-.modal-zoom-enter-active, .modal-zoom-leave-active,
-.slide-right-enter-active, .slide-right-leave-active,
-.slide-left-enter-active, .slide-left-leave-active,
-.slide-down-enter-active, .slide-down-leave-active,
-.slide-up-enter-active, .slide-up-leave-active {
-  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-  @include will-animate(transform, opacity);
-}
-
-.modal-zoom-enter-from, .modal-zoom-leave-to {
-  opacity: 0;
-  transform: translate3d(0, 0, 0) Scale(0.95);
-}
-
-.slide-right-enter-from, .slide-right-leave-to {
-  opacity: 0;
-  transform: Translate3d(100%, 0, 0);
-}
-
-.slide-left-enter-from, .slide-left-leave-to {
-  opacity: 0;
-  transform: Translate3d(-100%, 0, 0);
-}
-
-.slide-down-enter-from, .slide-down-leave-to {
-  opacity: 0;
-  transform: Translate3d(0, -100%, 0);
-}
-
-.slide-up-enter-from, .slide-up-leave-to {
-  opacity: 0;
-  transform: Translate3d(0, 100%, 0);
-}
+/* Transitions handled by GSAP */
 
 .modal-scrollable-content {
   flex: 1;

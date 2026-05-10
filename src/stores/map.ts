@@ -1,6 +1,7 @@
 
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import { gsap } from 'gsap'
 import { logger } from '@/logic/utils/logger'
 import { FIRE_RED_MAPS } from '@/data/maps'
 import { generateEncounter } from '@/logic/encounters'
@@ -36,9 +37,11 @@ export const useMapStore = defineStore('map', () => {
 
   // Sync epoch hour every second for real-time feeling
   if (typeof window !== 'undefined' && typeof process !== 'undefined' && process.env.NODE_ENV !== 'test') {
-    setInterval(() => {
+    const updateEpoch = () => {
       currentEpochHour.value = Math.floor(getServerTime() / 3600000)
-    }, 1000)
+      gsap.delayedCall(1, updateEpoch)
+    }
+    gsap.delayedCall(1, updateEpoch)
   }
 
   const currentCycle = computed(() => {

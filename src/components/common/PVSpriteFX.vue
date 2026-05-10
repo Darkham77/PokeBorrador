@@ -4,8 +4,9 @@
  * Componente centralizado para efectos visuales en sprites de Pokémon.
  * Soporta: Shiny Sparkles, Guardian Aura y es fácilmente extensible.
  */
-import { computed, inject, type Ref } from 'vue'
+import { computed, inject, type Ref, ref, watch, nextTick } from 'vue'
 import { useUIStore } from '@/stores/ui'
+import { gsap } from 'gsap'
 
 const props = defineProps({
   // Estado base
@@ -100,20 +101,135 @@ const statusEmoji = computed(() => {
   return (props.status ? (map as Record<string, string>)[props.status] : null) || null
 })
 
-// Generar partículas con posiciones y órbitas aleatorias para que no salgan todas del centro
+// GSAP Logic for particles and persistent effects
+const particlesRef = ref<HTMLElement[]>([])
+const spriteRef = ref<HTMLElement | null>(null)
+const activeTweens: gsap.core.Tween[] = []
+
+const refreshPersistentFX = () => {
+  if (!spriteRef.value || isSimplified.value) return
+  
+  // Clean previous
+  activeTweens.forEach(t => t.kill())
+  activeTweens.length = 0
+  
+  const target = spriteRef.value.querySelector('img')
+  if (!target) return
+
+  // 1. Cursed Aura (Pulse purple drop-shadow)
+  if (props.isCursed) {
+    activeTweens.push(gsap.to(target, {
+      filter: 'Drop-Shadow(0 0 15px Rgba(75, 0, 130, 0.8)) Brightness(0.6) contrast(1.2) Saturate(0.5)',
+      duration: 1.25,
+      yoyo: true,
+      repeat: -1,
+      ease: 'sine.inOut'
+    }))
+  }
+
+  // 2. Confused Wobble (Fast jitter)
+  if (props.isConfused) {
+    activeTweens.push(gsap.to(target, {
+      x: 2,
+      rotation: 1,
+      duration: 0.15,
+      yoyo: true,
+      repeat: -1,
+      ease: 'sine.inOut'
+    }))
+  }
+
+  // 3. Focus Energy Pulse (Red glow)
+  if (props.isFocusEnergy) {
+    activeTweens.push(gsap.to(target, {
+      filter: 'Drop-Shadow(0 0 10px Rgba(255, 0, 0, 0.7)) Brightness(1.3)',
+      duration: 0.75,
+      yoyo: true,
+      repeat: -1,
+      ease: 'sine.inOut'
+    }))
+  }
+
+  // 4. Ingrain / Enduring (Vertical float)
+  if (props.isEnduring || props.isSeeded) { // Reusing for seeded too
+    activeTweens.push(gsap.to(target, {
+      y: -3,
+      duration: 1.5,
+      yoyo: true,
+      repeat: -1,
+      ease: 'sine.inOut'
+    }))
+  }
+}
+
+const initParticleAnim = () => {
+  if (isSimplified.value || (!statusEmoji.value && !props.isConfused && !props.isCursed && !props.attracted && !props.isSeeded && !props.isTrapped)) return
+  
+  particlesRef.value.forEach((el, i) => {
+    if (!el) return
+    gsap.killTweensOf(el)
+    
+    const seed = animSeed + (i * 0.2)
+    const isPrimaryStatus = !!statusEmoji.value
+    
+    if (isPrimaryStatus) {
+      // Logic for primary status (Orbiting emoji)
+      const radiusX = 15 + Math.random() * 10
+      const radiusY = 5 + Math.random() * 5
+      
+      gsap.fromTo(el, 
+        { opacity: 0, x: -radiusX, y: 0 },
+        {
+          duration: 2,
+          repeat: -1,
+          ease: 'none',
+          opacity: 1,
+          modifiers: {
+            x: () => Math.cos(gsap.globalTimeline.time() * 2 + seed * 10) * radiusX,
+            y: () => Math.sin(gsap.globalTimeline.time() * 2 + seed * 10) * radiusY - 20,
+            zIndex: () => Math.sin(gsap.globalTimeline.time() * 2 + seed * 10) > 0 ? 10 : 1
+          }
+        }
+      )
+    } else {
+      // Logic for secondary status (Floating symbols)
+      gsap.fromTo(el,
+        { y: 0, opacity: 0 },
+        {
+          y: -15,
+          opacity: 1,
+          duration: 1 + Math.random(),
+          repeat: -1,
+          yoyo: true,
+          ease: 'sine.inOut',
+          delay: i * 0.3
+        }
+      )
+    }
+  })
+}
+
+watch([
+  () => props.status, 
+  () => props.pokeId, 
+  () => props.isConfused, 
+  () => props.isCursed,
+  () => props.isFocusEnergy,
+  () => props.isEnduring,
+  isSimplified
+], () => {
+  nextTick(() => {
+    initParticleAnim()
+    refreshPersistentFX()
+  })
+}, { immediate: true })
+
 const particles = computed(() => {
   if (!statusEmoji.value) return []
-  
-  // Incluimos pokeId para re-randomizar si cambia el bicho aunque mantenga el estado
-  // props.pokeId (usado para reactividad)
-  
   return Array.from({ length: 3 }).map((_, i) => ({
     id: i,
     top: `${20 + Math.random() * 60}%`,
-    left: `${20 + Math.random() * 60}%`,
-    orbitX: `${(Math.random() - 0.5) * 80}px`,
-    orbitY: `${-40 - Math.random() * 60}px`, // Forzamos movimiento hacia ARRIBA (negativo)
-    delay: `${i * 0.6}s`
+    left: `${20 + Math.random() * 60}%`
   }))
 })
 </script>
@@ -125,6 +241,7 @@ const particles = computed(() => {
   >
     <!-- Capa de Sprite con efectos persistentes (Aura Guardian) -->
     <div 
+      ref="spriteRef"
       class="pv-fx-sprite-layer"
       :class="{ 
         'is-guardian': isGuardian && !isSimplified,
@@ -155,14 +272,12 @@ const particles = computed(() => {
       <span 
         v-for="p in particles" 
         :key="p.id" 
+        ref="particlesRef"
         class="status-particle"
         :class="{ 'is-freeze': status === 'freeze' }"
         :style="{
           top: p.top,
-          left: p.left,
-          '--orbit-x': p.orbitX,
-          '--orbit-y': p.orbitY,
-          'animation-delay': p.delay
+          left: p.left
         }"
       >
         {{ status === 'freeze' ? '' : statusEmoji }}
@@ -175,13 +290,11 @@ const particles = computed(() => {
     >
       <span
         v-if="isConfused"
-        class="status-particle"
-        style="top: 10%; left: 50%; --orbit-x: 0; --orbit-y: -20px; animation-duration: 0.8s; font-size: 40px;"
+        class="status-particle secondary-status"
       >💫</span>
       <span
         v-if="isCursed"
-        class="status-particle"
-        style="top: 20%; left: 80%; --orbit-x: 10px; --orbit-y: -50px; animation-duration: 3s; font-size: 24px;"
+        class="status-particle secondary-status is-cursed"
       >👻</span>
     </div>
 
@@ -193,8 +306,8 @@ const particles = computed(() => {
       <span
         v-for="i in 2"
         :key="'attr-'+i"
-        class="status-particle"
-        :style="{ top: '40%', left: i === 1 ? '30%' : '70%', '--orbit-x': '0', '--orbit-y': '-60px', 'animation-delay': i * 0.5 + 's' }"
+        ref="particlesRef"
+        class="status-particle secondary-status"
       >❤️</span>
     </div>
 
@@ -206,23 +319,16 @@ const particles = computed(() => {
         <span
           v-for="i in 3"
           :key="'seed-'+i"
-          class="status-particle"
-          :style="{ top: '60%', left: (20 + i * 20) + '%', '--orbit-x': '0', '--orbit-y': '-40px', 'animation-delay': i * 0.3 + 's' }"
+          ref="particlesRef"
+          class="status-particle secondary-status"
         >🌱</span>
       </template>
       <template v-if="isTrapped">
         <span
           v-for="i in 2"
           :key="'trap-'+i"
-          class="status-particle"
-          :style="{ 
-            top: '70%', 
-            left: i === 1 ? '15%' : '85%', 
-            '--orbit-x': i === 1 ? '5px' : '-5px', 
-            '--orbit-y': '-15px', 
-            animation: 'status-particle-jitter 0.1s infinite',
-            opacity: 1 
-          }"
+          ref="particlesRef"
+          class="status-particle secondary-status"
         >⛓️</span>
       </template>
     </div>

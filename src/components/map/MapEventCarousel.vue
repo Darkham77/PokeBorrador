@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { gsap } from 'gsap'
 
 interface MapEvent {
   id: string | number
@@ -29,7 +30,7 @@ const emit = defineEmits<{
 }>()
 
 const currentIndex = ref(0)
-let timer: ReturnType<typeof setInterval> | null = null
+let timer: gsap.core.Tween | null = null
 
 interface Slide {
   id: string | number
@@ -72,14 +73,18 @@ const slides = computed(() => {
 
 const startTimer = () => {
   if (slides.value.length <= 1) return
-  timer = setInterval(() => {
+  
+  const autoNext = () => {
     currentIndex.value = (currentIndex.value + 1) % slides.value.length
-  }, 5000)
+    timer = gsap.delayedCall(5, autoNext)
+  }
+  
+  timer = gsap.delayedCall(5, autoNext)
 }
 
 onMounted(startTimer)
 onUnmounted(() => {
-  if (timer) clearInterval(timer)
+  if (timer) timer.kill()
 })
 
 const handleAction = (slide: Slide) => {

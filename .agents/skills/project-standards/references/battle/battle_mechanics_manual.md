@@ -99,6 +99,34 @@ The available contact abilities are:
 
 ### 4. Special Offensive
 
+---
+
+## 🎬 Deterministic Animation Orchestration (GSAP Sync)
+
+To ensure visual-logical parity, the battle engine follows a **Visual Block** protocol. The State Machine (FSM) is prohibited from advancing during critical animations.
+
+### 1. The Animation Promise Bridge
+
+All visual effects that represent a state change MUST return a Promise.
+
+- **Implementation**: `await animations.triggerX()`
+- **Supported Triggers**: `ENCOUNTER_ANIM`, `DAMAGE_SHAKE`, `FAINT_BLINK`, `CAPTURE_WOBBLE`, `REVEAL_COLORS`.
+
+### 2. State Machine Interlocking
+
+Certain FSM states are designated as "Visual-Dependent":
+
+| FSM State | Visual Action | Post-Animation Logic |
+| :--- | :--- | :--- |
+| `ENCOUNTER_ANIM` | Jump & Silhouette Reveal | Unlock Move Selection |
+| `DAMAGE_PHASE` | HP Bar Drain & Shake | Check for Faint |
+| `FAINT_PHASE` | Faint Blink & Slide Down | Vacate Seat |
+| `CAPTURE_PHASE` | PokéBall Wobble | Trigger Catch Success/Fail |
+
+### 3. CLI-First Testing
+
+All animation triggers MUST be accessible via the `window.__VITE_DEBUG__.battle.animations` object. This allows automated verification of visual flows without physical GUI interaction.
+
 - **Technician**: 1.5x power for moves with base power <= 60.
 - **Guts**: 1.5x Physical Attack if the user has a status problem.
 - **Thick Fat**: Reduces damage taken from Fire or Ice type by 50%. In Gen 2, this applies to moves of Fire/Ice types.

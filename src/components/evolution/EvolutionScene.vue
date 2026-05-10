@@ -3,6 +3,7 @@ import { ref, onMounted } from 'vue';
 import { useEvolutionStore } from '@/stores/evolution';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+import { gsap } from 'gsap';
 
 const evolutionStore = useEvolutionStore();
 const step = ref('intro'); // intro | flashing | transformed | final
@@ -12,6 +13,10 @@ const fromSprite = ref('');
 const toSprite = ref('');
 
 const FLASH_COUNT = 6; // 3 flashes (on/off)
+const fromSpriteRef = ref<HTMLElement | null>(null);
+const toSpriteRef = ref<HTMLElement | null>(null);
+const glowRef = ref<HTMLElement | null>(null);
+const particlesRef = ref<HTMLElement[]>([]);
 const flashesDone = ref(0);
 
 onMounted(() => {
@@ -28,32 +33,59 @@ onMounted(() => {
 });
 
 const startSequence = () => {
-  // Wait a bit in intro
-  setTimeout(() => {
-    step.value = 'flashing';
-    runFlashes();
-  }, 1500);
-};
-
-const runFlashes = () => {
-  const interval = setInterval(() => {
-    flashesDone.value++;
-    if (flashesDone.value >= FLASH_COUNT) {
-      clearInterval(interval);
-      completeEvolution();
+  const tl = gsap.timeline({
+    onComplete: () => {
+      step.value = 'final';
     }
-  }, 250);
-};
+  });
 
-const completeEvolution = () => {
-  // Actually mutate the data in the store
-  evolutionStore.evolve();
-  step.value = 'transformed';
+  // 1. Intro Wait
+  tl.to({}, { duration: 1.5 });
+
+  // 2. Flashing Phase
+  tl.add(() => { step.value = 'flashing'; });
   
-  // Final message delay
-  setTimeout(() => {
-    step.value = 'final';
-  }, 1000);
+  for (let i = 0; i < FLASH_COUNT; i++) {
+    tl.add(() => { flashesDone.value = i + 1; }, '+=0.25');
+  }
+
+  // 3. Transformation
+  tl.add(() => {
+    evolutionStore.evolve();
+    step.value = 'transformed';
+  }, '+=0.25');
+
+  // 4. Glow Burst & Scale
+  tl.fromTo('.glow-bg', 
+    { scale: 1, opacity: 0.2 },
+    { scale: 2, opacity: 0.8, duration: 0.5, ease: 'back.out(2)' },
+    'transformed'
+  );
+
+  // 5. Particles
+  particlesRef.value.forEach((el) => {
+    if (!el) return;
+    gsap.fromTo(el,
+      { 
+        x: 'random(-100, 100, true)', 
+        y: 'random(-100, 100, true)', 
+        opacity: 0,
+        scale: 1
+      },
+      {
+        y: '-=40',
+        scale: 0,
+        opacity: 0.8,
+        duration: 'random(2, 5)',
+        repeat: -1,
+        ease: 'sine.inOut',
+        delay: 'random(0, 2)'
+      }
+    );
+  });
+
+  // 6. Final Message Wait
+  tl.to({}, { duration: 1.0 });
 };
 
 const close = () => {
@@ -73,6 +105,7 @@ const close = () => {
           <div
             v-for="n in 20"
             :key="n"
+            ref="particlesRef"
             class="particle"
           />
         </div>
@@ -174,20 +207,6 @@ const close = () => {
   will-change: transform, filter, opacity;
   filter: Blur(40px);
   opacity: 0.2;
-  transition: all 1s ease;
-  
-  &.flashing {
-    background: var(--white);
-    opacity: 0.5;
-    transform: Scale(1.5);
-  }
-  
-  &.transformed, &.final {
-    background: var(--yellow, Rgba(251, 191, 36, 1));
-    opacity: 0.6;
-    transform: Scale(1.5);
-    box-shadow: 0 0 60px Rgba(251, 191, 36, 0.4);
-  }
 }
 
 .pokemon-sprite {
@@ -199,16 +218,11 @@ const close = () => {
   
   &.from {
     will-change: transform, filter, opacity;
-  filter: Brightness(1);
-    transition: filter 0.1s;
+    filter: Brightness(1);
     
     &.flash-on {
-  filter: Brightness(10) Contrast(10) Grayscale(100%);
+      filter: Brightness(10) contrast(10) Grayscale(100%);
     }
-  }
-  
-  &.scale-in {
-    animation: bounceIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   }
 }
 
@@ -271,30 +285,7 @@ const close = () => {
   background: var(--white);
   border-radius: 2px;
   opacity: 0;
-  
-  @for $i from 1 through 20 {
-    &:nth-child(#{$i}) {
-      left: math.random(100) * 1%;
-      top: math.random(100) * 1%;
-      animation: float #{math.random(3000) + 2000}ms infinite ease-in-out;
-      animation-delay: #{math.random(2000)}ms;
-    }
-  }
-}
-
-@keyframes bounceIn {
-  from { transform: Scale(0); opacity: 0; }
-  to { transform: Scale(1.0); opacity: 1; }
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: Translatey(10px); }
-  to { opacity: 1; transform: Translatey(0); }
-}
-
-@keyframes float {
-  0% { transform: Translatey(0) Scale(1.0); opacity: 0; }
-  50% { opacity: 0.8; }
-  100% { transform: Translatey(-40px) Scale(0); opacity: 0; }
+  left: 50%;
+  top: 50%;
 }
 </style>

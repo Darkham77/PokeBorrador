@@ -1,6 +1,7 @@
 
 import { defineStore } from 'pinia'
 import { ref, reactive, onUnmounted } from 'vue'
+import { gsap } from 'gsap'
 import { useAuthStore } from './auth.ts'
 import { useGameStore } from './game.ts'
 import { useUIStore } from './ui.ts'
@@ -54,8 +55,8 @@ export const useLivePvPStore = defineStore('livePvP', () => {
     myPick: null, enemyPick: null, logs: [], deadline: null,
   })
 
-  let invitePoller: ReturnType<typeof setInterval> | null = null
-  let matchmakingPoller: ReturnType<typeof setInterval> | null = null
+  let invitePoller: gsap.core.Tween | null = null
+  let matchmakingPoller: gsap.core.Tween | null = null
 
   function _pollMatchmaking() {
     if (!isSearching.value || !gameStore.db || !authStore.user) return
@@ -74,9 +75,10 @@ export const useLivePvPStore = defineStore('livePvP', () => {
   }
 
   function initInvitePoller() {
-    if (invitePoller) clearInterval(invitePoller)
+    if (invitePoller) invitePoller.kill()
     if (authStore.sessionMode === 'offline') return
-    invitePoller = setInterval(async () => {
+    
+    const poll = async () => {
       if (!authStore.user || !gameStore.db) return
       const { data } = await gameStore.db.from('battle_invites').select('*').eq('opponent_id', authStore.user.id).in('status', ['pending', 'ranked_match']).order('created_at', { ascending: false }).limit(1) as { data: BattleInvite[] | null }
       if (data && data.length > 0 && gameStore.db) {
@@ -86,7 +88,10 @@ export const useLivePvPStore = defineStore('livePvP', () => {
         if (inv.status === 'ranked_match') { if (isSearching.value) acceptInvite(inv.id, true); else await gameStore.db.from('battle_invites').update({ status: 'declined' }).eq('id', inv.id) }
         else activeInvite.value = inv
       }
-    }, 4000)
+      invitePoller = gsap.delayedCall(4, poll)
+    }
+    
+    invitePoller = gsap.delayedCall(4, poll)
   }
 
   async function startSearch() {
@@ -94,13 +99,21 @@ export const useLivePvPStore = defineStore('livePvP', () => {
     isSearching.value = true
     await gameStore.db.from('ranked_queue').upsert({ user_id: authStore.user.id, elo: gameStore.state.eloRating || 1000, looking_since: Temporal.Now.instant().toString() })
     uiStore.notify('Buscando oponente...', '🔍')
-    if (matchmakingPoller) clearInterval(matchmakingPoller)
-    matchmakingPoller = setInterval(_pollMatchmaking, 3000)
+    if (matchmakingPoller) matchmakingPoller.kill()
+    
+    const poll = () => {
+      _pollMatchmaking()
+      if (isSearching.value) {
+        matchmakingPoller = gsap.delayedCall(3, poll)
+      }
+    }
+    
+    matchmakingPoller = gsap.delayedCall(3, poll)
   }
 
   async function cancelSearch() {
     if (!authStore.user || !gameStore.db) return
-    isSearching.value = false; if (matchmakingPoller) clearInterval(matchmakingPoller)
+    isSearching.value = false; if (matchmakingPoller) matchmakingPoller.kill()
     await gameStore.db.from('ranked_queue').delete().eq('user_id', authStore.user.id)
   }
 
@@ -148,7 +161,8 @@ export const useLivePvPStore = defineStore('livePvP', () => {
     battleState.phase = 'sync'; battleState.logs = ['¡Comienza la batalla!']; battleState.myPick = null; battleState.enemyPick = null
     setupBattleChannel(invite.id)
     const broadcastTeam = () => { if (battleState.ch) battleState.ch.send({ type: 'broadcast', event: 'pvp_team', payload: { team: battleState.myTeam } }) }
-    setTimeout(broadcastTeam, 500); setTimeout(broadcastTeam, 2000)
+    gsap.delayedCall(0.5, broadcastTeam)
+    gsap.delayedCall(2.0, broadcastTeam)
   }
 
   function setupBattleChannel(inviteId: string) {
@@ -190,7 +204,7 @@ export const useLivePvPStore = defineStore('livePvP', () => {
     }
   }
 
-  onUnmounted(() => { if (invitePoller) clearInterval(invitePoller); if (matchmakingPoller) clearInterval(matchmakingPoller); if (battleState.ch) battleState.ch.unsubscribe() })
+  onUnmounted(() => { if (invitePoller) invitePoller.kill(); if (matchmakingPoller) matchmakingPoller.kill(); if (battleState.ch) battleState.ch.unsubscribe() })
 
   return { activeInvite, isSearching, battleState, initInvitePoller, sendInvite, acceptInvite, declineInvite, startBattle, startSearch, cancelSearch, _commitPick, _forfeit, handleOpponentPick, _checkPostTurn }
 })

@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, nextTick } from 'vue'
+import { gsap } from 'gsap'
 import type { Pokemon } from '@/types/pokemon'
 
 interface Props {
@@ -36,7 +37,8 @@ const spawnedNotesCount = ref(0)
 const gameActive = ref(true)
 const feedback = ref('')
 
-let gameTimeout: ReturnType<typeof setTimeout> | null = null
+let gameCall: gsap.core.Tween | null = null
+const activeTweens = new Map<number, gsap.core.Tween[]>()
 
 const spawnNext = () => {
   if (!gameActive.value || spawnedNotesCount.value >= totalNotes) return
@@ -44,7 +46,6 @@ const spawnNext = () => {
   spawnedNotesCount.value++
   const noteId = spawnedNotesCount.value
   
-  // Prevent overlaps (simple grid-based or random with distance)
   const padding = 20
   const x = padding + Math.random() * (100 - padding * 2)
   const y = padding + Math.random() * (100 - padding * 2)
@@ -53,20 +54,38 @@ const spawnNext = () => {
     id: noteId,
     x: `${x}%`,
     y: `${y}%`,
-    startTime: performance.now(),
+    startTime: gsap.globalTimeline.time() * 1000,
     clicked: false
   }
 
   activeNotes.value.push(note)
 
   // Fail timer if not clicked
-  setTimeout(() => {
+  const failCall = gsap.delayedCall((speedBase + 150) / 1000, () => {
     if (!note.clicked && gameActive.value) {
       failGame('¡Perdiste el ritmo!')
     }
-  }, speedBase + 150)
+  })
 
-  gameTimeout = setTimeout(spawnNext, spawnInterval)
+  // Visual Ring Animation
+  nextTick(() => {
+    const el = document.querySelector(`.rhythm-note[data-note-id="${noteId}"] .rhythm-ring`)
+    if (el) {
+      const ringAnim = gsap.fromTo(el, 
+        { scale: 2.5, opacity: 0 },
+        { 
+          scale: 0.6, 
+          opacity: 1, 
+          duration: speedBase / 1000, 
+          ease: 'none',
+          onComplete: () => { gsap.to(el, { opacity: 0, duration: 0.1 }) }
+        }
+      )
+      activeTweens.set(noteId, [failCall, ringAnim])
+    }
+  })
+
+  gameCall = gsap.delayedCall(spawnInterval / 1000, spawnNext)
 }
 
 const handleNoteClick = (note: Note) => {
@@ -77,20 +96,32 @@ const handleNoteClick = (note: Note) => {
     return
   }
 
-  const elapsed = performance.now() - note.startTime
+  const elapsed = (gsap.globalTimeline.time() * 1000) - note.startTime
   const accuracy = Math.abs(elapsed - speedBase)
 
   if (accuracy < hitWindow) {
     note.clicked = true
     clickedNotesCount.value++
     
-    // Remove note after small delay for success animation
-    setTimeout(() => {
+    // Kill the fail timer and ring animation
+    const tweens = activeTweens.get(note.id)
+    if (tweens) {
+      tweens.forEach(t => t.kill())
+      activeTweens.delete(note.id)
+    }
+
+    // Success animation
+    const noteEl = document.querySelector(`.rhythm-note[data-note-id="${note.id}"]`)
+    if (noteEl) {
+      gsap.to(noteEl, { scale: 1.2, duration: 0.1, yoyo: true, repeat: 1 })
+    }
+
+    gsap.delayedCall(0.1, () => {
       activeNotes.value = activeNotes.value.filter(n => n.id !== note.id)
       if (clickedNotesCount.value >= totalNotes) {
         finishGame(true)
       }
-    }, 100)
+    })
   } else {
     failGame(accuracy < speedBase ? '¡Muy pronto!' : '¡Muy tarde!')
   }
@@ -100,12 +131,15 @@ const failGame = (msg: string) => {
   if (!gameActive.value) return
   gameActive.value = false
   feedback.value = msg
-  setTimeout(() => finishGame(false), 1000)
+  gsap.delayedCall(1, () => finishGame(false))
 }
 
 const finishGame = (success: boolean) => {
   gameActive.value = false
-  if (gameTimeout) clearTimeout(gameTimeout)
+  if (gameCall) gameCall.kill()
+  activeTweens.forEach(tweens => tweens.forEach(t => t.kill()))
+  activeTweens.clear()
+
   if (success) {
     emit('success')
   } else {
@@ -114,11 +148,20 @@ const finishGame = (success: boolean) => {
 }
 
 onMounted(() => {
-  setTimeout(spawnNext, 800)
+  gsap.delayedCall(0.8, spawnNext)
+
+  gsap.to('.fishing-icon', {
+    y: -10,
+    duration: 1,
+    repeat: -1,
+    yoyo: true,
+    ease: 'sine.inOut'
+  })
 })
 
 onUnmounted(() => {
-  if (gameTimeout) clearTimeout(gameTimeout)
+  if (gameCall) gameCall.kill()
+  activeTweens.forEach(tweens => tweens.forEach(t => t.kill()))
 })
 </script>
 
@@ -151,6 +194,7 @@ onUnmounted(() => {
           class="rhythm-note"
           :class="{ 'success': note.clicked }"
           :style="{ left: note.x, top: note.y }"
+          :data-note-id="note.id"
           @mousedown.stop="handleNoteClick(note)"
           @touchstart.prevent.stop="handleNoteClick(note)"
         >
@@ -159,7 +203,6 @@ onUnmounted(() => {
           </div>
           <div 
             class="rhythm-ring" 
-            :style="{ animationDuration: `${speedBase}ms` }"
           />
         </div>
       </div>
@@ -223,7 +266,6 @@ onUnmounted(() => {
 
   .fishing-icon {
     font-size: 40px;
-    animation: bounce 2s infinite;
   }
 
   .fishing-text {
@@ -290,8 +332,8 @@ onUnmounted(() => {
     inset: -20px;
     border: 2px solid Rgba(10, 132, 255, 0.6);
     border-radius: 50%;
-    animation: ringShrink linear forwards;
     pointer-events: none;
+    opacity: 0;
   }
 
   &.success .rhythm-circle {

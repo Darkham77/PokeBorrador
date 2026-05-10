@@ -1,4 +1,4 @@
-import { sleep } from '@/logic/timeUtils'
+import { gsapSleep as sleep } from '@/logic/utils/gsapHelpers'
 import { gameBus } from '@/logic/gameBus'
 import { calculateBaseExp, processExpGain, calculateMoneyGain } from './battleRewards.ts'
 import { getBattleRewardModifiers } from '@/logic/war/bonusEngine'

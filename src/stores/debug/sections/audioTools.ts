@@ -50,11 +50,14 @@ export function registerAudioTools(debug: DebugSystem, _context: DebugContext) {
         'release': 'PLAY_RELEASE_ENERGY',
         'catch': 'PLAY_CATCH_ENERGY',
         'shake': 'CATCH_SHAKE',
+        'shake_damage': 'PLAY_DAMAGE',
+        'blink': 'PLAY_DAMAGE',
         'success': 'CATCH_SUCCESS',
         'faint': 'POKEMON_FAINT',
         'attack': 'PLAY_ATTACK_ANIM',
         'emergence': 'START_BATTLE',
-        'reveal': 'START_BATTLE'
+        'reveal': 'START_BATTLE',
+        'encounter': 'ENCOUNTER_ANIM'
       }
       
       const event = eventMap[type] || type

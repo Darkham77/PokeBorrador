@@ -1,6 +1,6 @@
 <script setup lang="ts">
-
 import { ref, nextTick, inject, watch, onUnmounted } from 'vue'
+import { gsap } from 'gsap'
 
 const props = defineProps({
   title: { type: String, default: '' },
@@ -20,7 +20,7 @@ const coords = ref({ top: 0, left: 0 as number | 'auto', right: 'auto' as number
 const activePosition = ref(props.position)
 const arrowOffset = ref({ x: 0, y: 0 })
 
-let timeout: ReturnType<typeof setTimeout> | null = null
+let timeout: gsap.core.Tween | null = null
 
 const isRightSide = ref(false)
 
@@ -117,8 +117,9 @@ const updatePosition = () => {
 
 const show = () => {
   if (isSimplified.value || props.disabled || isBlockedByClick.value) return 
-  if (timeout) clearTimeout(timeout)
-  timeout = setTimeout(async () => {
+  if (timeout) timeout.kill()
+  
+  timeout = gsap.delayedCall(props.delay / 1000, async () => {
     // Detect hemisphere BEFORE making it visible
     if (trigger.value) {
       const rect = trigger.value.getBoundingClientRect()
@@ -132,20 +133,17 @@ const show = () => {
     updatePosition()
     
     // Auto-hide on scroll to prevent "floating" tooltips
-    // [PureVue-Ignore]
     window.addEventListener('scroll', hide, { passive: true, capture: true })
-    // [PureVue-Ignore]
     window.addEventListener('wheel', hide, { passive: true })
-    // [PureVue-Ignore]
     window.addEventListener('touchmove', hide, { passive: true })
-  }, props.delay)
+  })
 }
 
 const isBlockedByClick = ref(false)
-let clickBlockTimeout: ReturnType<typeof setTimeout> | null = null
+let clickBlockTimeout: gsap.core.Tween | null = null
 
 const hide = () => {
-  if (timeout) clearTimeout(timeout)
+  if (timeout) timeout.kill()
   isVisible.value = false
   window.removeEventListener('scroll', hide, { capture: true })
   window.removeEventListener('wheel', hide)
@@ -161,10 +159,10 @@ const handleTriggerClick = (event: MouseEvent) => {
   hide()
   isBlockedByClick.value = true
   
-  if (clickBlockTimeout) clearTimeout(clickBlockTimeout)
-  clickBlockTimeout = setTimeout(() => {
+  if (clickBlockTimeout) clickBlockTimeout.kill()
+  clickBlockTimeout = gsap.delayedCall(5, () => {
     isBlockedByClick.value = false
-  }, 5000)
+  })
 }
 
 const handleMouseEnter = () => {

@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, onUnmounted } from 'vue'
+import { gsap } from 'gsap'
 import PokemonDisplayCard from '@/components/pokemon/PokemonDisplayCard.vue'
 
 import type { Pokemon } from '@/types/pokemon'
@@ -23,7 +24,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits(['select', 'open-detail', 'open-item', 'send-to-box', 'drag-start', 'drag-over', 'drop-pokemon', 'drag-end'])
 
-const touchTimer = ref<ReturnType<typeof setTimeout> | null>(null)
+const touchTimer = ref<gsap.core.Tween | null>(null)
 const isTouchDragging = ref(false)
 const touchStartX = ref(0)
 const touchStartY = ref(0)
@@ -64,12 +65,12 @@ function handleTouchStart(e: TouchEvent) {
   touchStartY.value = touch.clientY
   isTouchDragging.value = false
   
-  touchTimer.value = setTimeout(() => {
+  touchTimer.value = gsap.delayedCall(0.8, () => {
     isTouchDragging.value = true
     if (e.currentTarget) (e.currentTarget as HTMLElement).style.touchAction = 'none'
     emit('drag-start', props.index)
     if ('vibrate' in navigator) navigator.vibrate(50)
-  }, 800) // Long press threshold
+  }) // Long press threshold
 }
 
 function handleTouchMove(e: TouchEvent) {
@@ -101,14 +102,14 @@ function handleTouchMove(e: TouchEvent) {
       const deltaX = Math.abs(touch.clientX - touchStartX.value)
       const deltaY = Math.abs(touch.clientY - touchStartY.value)
       if (deltaX > 10 || deltaY > 10) {
-        if (touchTimer.value) clearTimeout(touchTimer.value)
+        if (touchTimer.value) touchTimer.value.kill()
       }
     }
   }
 }
 
 function handleTouchEnd(e: TouchEvent) {
-  if (touchTimer.value) clearTimeout(touchTimer.value)
+  if (touchTimer.value) touchTimer.value.kill()
   if (isTouchDragging.value) {
     if (e.currentTarget) (e.currentTarget as HTMLElement).style.touchAction = ''
     const touch = e.changedTouches?.[0]
@@ -125,6 +126,9 @@ function handleTouchEnd(e: TouchEvent) {
     isTouchDragging.value = false
   }
 }
+onUnmounted(() => {
+  if (touchTimer.value) touchTimer.value.kill()
+})
 </script>
 
 <template>

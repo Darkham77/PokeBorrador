@@ -2,6 +2,7 @@
 declare const __APP_VERSION__: string
 
 import { ref, computed, onMounted } from 'vue'
+import { gsap } from 'gsap'
 import { useAuthStore } from '@/stores/auth'
 import { useGameStore } from '@/stores/game'
 import { usePWA } from '@/composables/usePWA'
@@ -84,10 +85,10 @@ const handleLocalLogin = async () => {
   error.value = null
   try {
     await authStore.localLogin(username.value)
-    setTimeout(async () => {
+    gsap.delayedCall(0.8, async () => {
       await gameStore.loadGame()
       window.location.href = '/'
-    }, 800)
+    })
   } catch (_err) {
     error.value = 'Error al entrar en modo local'
   } finally {

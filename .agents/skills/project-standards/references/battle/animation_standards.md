@@ -1,6 +1,7 @@
-# Organic Animation Standards
-
 To guarantee a premium and "alive" visual experience, all cyclical animations must avoid perfect synchronization between multiple instances. To maintain system flexibility, **avoid hardcoding absolute durations or offsets** in documentation; refer to relative logic and symbolic constants.
+
+> [!IMPORTANT]
+> **GSAP MANDATE**: All battle-related animations (encounters, attacks, status FX, transitions) MUST be implemented using GSAP. The use of CSS `@keyframes` and `setTimeout` for combat flow is DEPRECATED. This ensures determinism and accessibility via the CLI debug bridge.
 
 ## 0. Coordinate Initialization (Flicker Prevention)
 
@@ -93,17 +94,22 @@ When swapping reactive data (like changing a Pokémon `src`), the swap MUST NOT 
   3. Swap data while the DOM is stable.
   4. Animate in the new element.
 
-## 9. Animation Timeout Collisions (Race Conditions)
+## 9. Animation Sync & FSM Interlocking (Visual Block)
 
-When manually managing CSS classes via JavaScript timeouts, previous timers MUST be meticulously cleared.
+When an animation affects the flow of combat, it MUST block the state machine until completion.
 
-- **Standard Protocol**: Always track and invoke `clearTimeout()` immediately before assigning a new animation state to prevent premature class stripping.
+- **Standard Protocol**: Use the `awaitAnimation` helper with GSAP timelines.
+- **Workflow**:
+  1. The FSM calls `await ctx.animations.triggerX()`.
+  2. The animation orchestrator returns a Promise that resolves `onComplete`.
+  3. The FSM resumes logic only after the visual is finished.
+- **CLI Bridge**: Every animation promise MUST be exposed to `window.__VITE_DEBUG__.battle.animations` to allow the IA and automated tests to wait for visual completion.
 
-## 10. Animation State Hygiene & Interaction Locks
+## 10. Animation State Hygiene
 
 Every global blocking state (e.g., `isIntroAnimating`) MUST have a guaranteed reset mechanism.
 
-- **Rule**: The cleanup (`flag = false`) MUST be called in the final `setTimeout` or event callback of the sequence, even if the logic branches.
+- **Rule**: The cleanup (`flag = false`) MUST be called in the `onComplete` callback of the GSAP timeline.
 
 ## 11. Aesthetic Reveal Delays (Shadow & Metadata)
 
@@ -218,17 +224,12 @@ Each category MUST have a distinct visual pattern to represent its mechanical na
 
 Never assume the category is already normalized in the move object. Always use a helper like `normalizeCat(move.cat)` when emitting `PLAY_ATTACK_ANIM`.
 
-## 20. Status Effect Visuals
+## 20. Status Effect Visuals (GSAP Persistence)
 
-### 4. Particle Bursts (Fountain Effects)
+Status conditions use a combination of CSS filters for base tints and GSAP for dynamic orbital particles.
 
-For high-fidelity particle explosions (e.g., capture success sparkles), the system follows a "Staggered Fountain" pattern:
-
-- **Asynchronous Launch**: Particles MUST NOT launch simultaneously. Use a random `animation-delay` between **0.1s and 0.4s** to create an organic burst texture.
-- **Parabolic Trajectory (Fountain Style)**: Trajectories for successful capture sparkles MUST follow a physical arc (upward radial explosion then gravity-induced fall).
-  - **Keyframes**: Use 5+ points (0%, 25%, 50%, 85%, 100%).
-  - **Variables**: Pass `--tx` (lateral), `--ty` (peak height), and `--tf` (final floor position) to the animation.
-- **Unit Handling**: To avoid browser calculation errors in `calc()`, pass unitless numeric variables from JS (e.g., `--tx: 100`) and apply units in CSS via `calc(var(--tx) * 1px)`.
+- **Orbital Patterns**: Use GSAP to animate particles in erratic paths, avoiding the repetition of CSS circular orbits.
+- **Jitter & Vibrancy**: Paralysis and Confusion effects must use high-frequency GSAP staggers or random jitter values updated via `gsap.ticker`.
 
 To provide immediate visual feedback without reloading sprites, the system uses a hybrid approach of CSS Filters and orbital particles.
 

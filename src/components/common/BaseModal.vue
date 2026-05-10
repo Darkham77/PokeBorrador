@@ -7,8 +7,10 @@
     >
       <!-- Background Overlay -->
       <Transition
-        name="fade-overlay"
         appear
+        :css="false"
+        @enter="onOverlayEnter"
+        @leave="onOverlayLeave"
       >
         <div 
           v-if="show" 
@@ -32,12 +34,10 @@
         ]"
       >
         <Transition 
-          :name="transitionName"
-          :css="type !== 'fullscreen'"
           appear
-          type="transition"
-          :duration="500"
-          @after-leave="onContentLeave"
+          :css="false"
+          @enter="onContentEnter"
+          @leave="onContentLeave"
         >
           <div 
             v-if="show"
@@ -135,9 +135,11 @@
 <script setup lang="ts">
 
 import { ref, watch, computed, inject, onUnmounted, type Ref } from 'vue'
+import { gsap } from 'gsap'
 import { useBodyClass } from '@/composables/useBodyClass'
 import { useUIStore } from '@/stores/ui'
 import { Z_LAYERS } from '@/logic/constants/visuals'
+import { ANIM_TIMINGS, ANIM_EASES } from '@/logic/utils/animationRegistry'
 
 const uiStore = useUIStore()
 const isSimplified = inject<Ref<boolean>>('isModalPerformanceMode', ref(false))
@@ -224,9 +226,9 @@ watch(() => props.show, (val) => {
     uiStore.registerModal(modalInstanceId)
   } else {
     // We don't unregister immediately to allow closing animations to finish at the correct depth
-    setTimeout(() => {
+    gsap.delayedCall(0.6, () => {
       if (!props.show) uiStore.unregisterModal(modalInstanceId)
-    }, 600)
+    })
   }
 }, { immediate: true })
 
@@ -237,20 +239,73 @@ onUnmounted(() => {
 // Manage scroll locking reactively
 useBodyClass('modal-open', computed(() => props.show && props.lockScroll))
 
-const onContentLeave = () => {
-  if (!props.show) {
-    localShow.value = false
-  }
+// GSAP Animation Hooks
+const onOverlayEnter = (el: Element, done: () => void) => {
+  gsap.fromTo(el, 
+    { opacity: 0 }, 
+    { opacity: 1, duration: ANIM_TIMINGS.MODAL_OPEN, ease: 'none', onComplete: done }
+  )
 }
 
-const transitionName = computed(() => {
-  if (props.type === 'fullscreen') return 'none'
-  if (props.type === 'top') return 'slide-down'
-  if (props.type === 'down') return 'slide-up'
-  if (props.type === 'side-left' || props.type === 'left') return 'slide-left'
-  if (props.type === 'side-right' || props.type === 'right' || props.type === 'side') return 'slide-right'
-  return 'modal-zoom'
-})
+const onOverlayLeave = (el: Element, done: () => void) => {
+  gsap.to(el, { opacity: 0, duration: ANIM_TIMINGS.MODAL_CLOSE, ease: 'none', onComplete: done })
+}
+
+const onContentEnter = (el: Element, done: () => void) => {
+  const duration = ANIM_TIMINGS.MODAL_OPEN || 0.4
+  const ease = ANIM_EASES.OUT_SOFT || 'power2.out'
+  
+  const fromVars: gsap.TweenVars = { opacity: 0, x: 0, y: 0, scale: 1 }
+  const toVars: gsap.TweenVars = { 
+    opacity: 1, 
+    x: 0, 
+    y: 0, 
+    scale: 1,
+    duration, 
+    ease, 
+    onComplete: done 
+  }
+
+  // Adjust starting position based on modal type
+  if (props.type === 'down') fromVars.y = '100%'
+  else if (props.type === 'top') fromVars.y = '-100%'
+  else if (props.type === 'left' || props.type === 'side-left') fromVars.x = '-100%'
+  else if (props.type === 'right' || props.type === 'side-right' || props.type === 'side') fromVars.x = '100%'
+  else {
+    fromVars.scale = 0.9
+    fromVars.y = 20
+  }
+
+  gsap.fromTo(el, fromVars, toVars)
+}
+
+const onContentLeave = (el: Element, done: () => void) => {
+  const toVars: gsap.TweenVars = { 
+    opacity: 0, 
+    x: 0, 
+    y: 0, 
+    scale: 1,
+    duration: ANIM_TIMINGS.MODAL_CLOSE, 
+    ease: 'power2.in', 
+    onComplete: () => {
+      done()
+      if (!props.show) localShow.value = false
+    }
+  }
+
+  if (props.type === 'down') toVars.y = '100%'
+  else if (props.type === 'top') toVars.y = '-100%'
+  else if (props.type === 'left' || props.type === 'side-left') toVars.x = '-100%'
+  else if (props.type === 'right' || props.type === 'side-right' || props.type === 'side') toVars.x = '100%'
+  else {
+    toVars.scale = 0.9
+    toVars.y = 20
+  }
+
+  gsap.to(el, toVars)
+}
+
+
 
 const cardStyles = computed(() => {
   if (props.type === 'fullscreen') return {}

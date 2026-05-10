@@ -3,6 +3,7 @@
 
 
 import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { gsap } from 'gsap'
 import { useWindowListener } from '@/composables/useWindowListener'
 import { useUIStore } from '@/stores/ui'
 import { usePlayerClassStore } from '@/stores/playerClass'
@@ -50,14 +51,18 @@ const trainerRank = computed(() => getEloTier(gameStore.state.eloRating).name)
 // View State
 const viewMode = ref('dashboard') // 'dashboard' or 'missions'
 const now = ref(Temporal.Now.instant().epochMilliseconds)
-let timer: ReturnType<typeof setInterval> | null = null
+let timer: gsap.core.Tween | null = null
 
 onMounted(() => {
-  timer = setInterval(() => { now.value = Temporal.Now.instant().epochMilliseconds }, 1000)
+  const updateTime = () => {
+    now.value = Temporal.Now.instant().epochMilliseconds
+    timer = gsap.delayedCall(1, updateTime)
+  }
+  timer = gsap.delayedCall(1, updateTime)
 })
 
 onUnmounted(() => {
-  if (timer) clearInterval(timer)
+  if (timer) timer.kill()
 })
 
 const close = () => { emit('close') }

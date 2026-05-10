@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
+import { gsap } from 'gsap'
 import { libraryContent, libraryCategories } from '@/data/libraryData'
 import BaseModal from '@/components/common/BaseModal.vue'
 
@@ -33,10 +34,10 @@ const selectTab = (tabId: string) => {
   if (selectedTab.value === tabId) return
   
   contentFade.value = false
-  setTimeout(() => {
+  gsap.delayedCall(0.15, () => {
     selectedTab.value = tabId
     contentFade.value = true
-  }, 150)
+  })
 }
 </script>
 

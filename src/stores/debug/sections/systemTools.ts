@@ -1,5 +1,6 @@
 
 import { logger } from '@/logic/utils/logger'
+import { gsap } from 'gsap'
 import type { DebugSystem, DebugContext } from '@/stores/debug'
 
 export function registerSystemTools(debug: DebugSystem, { game, ui, modalStore, errorStore, eventStoreModule }: DebugContext) {
@@ -12,7 +13,7 @@ export function registerSystemTools(debug: DebugSystem, { game, ui, modalStore, 
     action: async (count: number = 5) => {
       for (let i = 1; i <= count; i++) {
         modalStore.open('DebugStackTest', { number: i })
-        if (i < count) await new Promise(resolve => setTimeout(resolve, 500))
+        if (i < count) await new Promise(resolve => gsap.delayedCall(0.5, resolve))
       }
     },
     description: 'Abre múltiples ventanas modales secuencialmente para probar el sistema de capas.'

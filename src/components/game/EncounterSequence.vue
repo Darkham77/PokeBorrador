@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
+import { gsap } from 'gsap'
 import type { Pokemon } from '@/types/pokemon'
 
 interface Props {
@@ -23,10 +24,49 @@ const emit = defineEmits<{
 
 onMounted(() => {
   if (props.type === 'rival') {
-    setTimeout(() => {
+    // 1. Flicker animation
+    gsap.to('.rival-flicker', {
+      opacity: 0.3,
+      duration: 0.07,
+      repeat: -1,
+      yoyo: true,
+      ease: 'none'
+    });
+
+    // 2. Exclamation bounce
+    gsap.fromTo('.rival-exclamation', 
+      { scale: 0.8 },
+      { scale: 1.2, duration: 0.2, repeat: -1, yoyo: true, ease: 'back.out(2)' }
+    );
+
+    // 3. Auto-close
+    gsap.delayedCall(1.2, () => {
       if (props.onComplete) props.onComplete()
       emit('close')
-    }, 1200)
+    });
+  }
+
+  if (props.type === 'fishing') {
+    gsap.from('.fishing-intro-overlay', {
+      opacity: 0,
+      duration: 0.3,
+      ease: 'power2.out'
+    });
+    
+    gsap.from('.fishing-card', {
+      scale: 0.8,
+      y: 20,
+      duration: 0.5,
+      ease: 'back.out(1.7)'
+    });
+
+    gsap.to('.fishing-icon', {
+      y: -20,
+      duration: 0.75,
+      repeat: -1,
+      yoyo: true,
+      ease: 'sine.inOut'
+    });
   }
 })
 
@@ -88,7 +128,7 @@ const handleFishingStart = () => {
   position: fixed;
   inset: 0;
   background: var(--white);
-  animation: rivalFlash 0.15s ease infinite;
+  opacity: 0.1;
   pointer-events: none;
   z-index: calc(var(--z-max) + 1);
 }
@@ -100,17 +140,6 @@ const handleFishingStart = () => {
   color: Rgba(255, 59, 48, 1);
   text-shadow: 0 0 20px Rgba(255, 59, 48, 0.6);
   z-index: calc(var(--z-max) + 2);
-  animation: bounceExcl 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28) infinite;
-}
-
-@keyframes rivalFlash {
-  0%, 100% { opacity: 0.1; }
-  50% { opacity: 0.3; }
-}
-
-@keyframes bounceExcl {
-  0%, 100% { transform: Scale(1); }
-  50% { transform: Scale(1.2); }
 }
 
 /* Fishing Styles */
@@ -143,7 +172,6 @@ const handleFishingStart = () => {
 .fishing-icon {
   font-size: 80px;
   margin-bottom: 20px;
-  animation: bounce 1.5s infinite;
 }
 
 .fishing-title {

@@ -1,3 +1,4 @@
+import { gsap } from 'gsap';
 import { supabase } from './supabase.ts';
 import { safeStorage } from './utils/storage.ts';
 import { logger } from './utils/logger.ts';
@@ -107,5 +108,5 @@ export function getSeason(now: Temporal.Instant | number = getServerInstant()): 
 
 // Interval logic should be managed by the store/app after init
 export function sleep(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise(resolve => gsap.delayedCall(ms / 1000, resolve));
 }

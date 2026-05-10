@@ -1,5 +1,6 @@
 
 import { ref } from 'vue';
+import { gsap } from 'gsap';
 import { logger } from '../utils/logger.ts';
 
 export const BATTLE_STATES = {
@@ -127,7 +128,7 @@ export type BattleSubStateName = typeof BATTLE_SUBSTATES[keyof typeof BATTLE_SUB
 export function createBattleStateMachine() {
   const currentState = ref<BattleStateName>(BATTLE_STATES.EXIT_BATTLE);
   const currentSubState = ref<BattleSubStateName | null>(null);
-  let transitionTimeout: ReturnType<typeof setTimeout> | null = null;
+  let transitionCall: gsap.core.Tween | null = null;
 
   // Simple strict transitions check based on the Mermaid diagram.
   const validTransitions: Record<string, string[]> = {
@@ -153,9 +154,9 @@ export function createBattleStateMachine() {
    */
   const transition = (newState: BattleStateName | BattleSubStateName, newSubState: BattleSubStateName | null = null, delayMs: number = 0): Promise<void> => {
     return new Promise<void>((resolve) => {
-      if (transitionTimeout) {
-        clearTimeout(transitionTimeout);
-        transitionTimeout = null;
+      if (transitionCall) {
+        transitionCall.kill();
+        transitionCall = null;
       }
 
       const executeTransition = () => {
@@ -183,7 +184,7 @@ export function createBattleStateMachine() {
       };
 
       if (delayMs > 0) {
-        transitionTimeout = setTimeout(executeTransition, delayMs);
+        transitionCall = gsap.delayedCall(delayMs / 1000, executeTransition);
       } else {
         executeTransition();
       }

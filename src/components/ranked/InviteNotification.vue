@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted } from 'vue';
+import { gsap } from 'gsap';
 import { useLivePvPStore } from '@/stores/livePvP';
 
 export interface PvPInvite {
@@ -21,16 +22,16 @@ const emit = defineEmits<{
 
 const livePvP = useLivePvPStore();
 
-let timer: ReturnType<typeof setTimeout> | null = null;
+let timer: gsap.core.Tween | null = null;
 
 onMounted(() => {
-  timer = setTimeout(() => {
+  timer = gsap.delayedCall(30, () => {
     emit('close');
-  }, 30000); // 30s auto-dismiss
+  }); // 30s auto-dismiss
 });
 
 onUnmounted(() => {
-  if (timer) clearTimeout(timer);
+  if (timer) timer.kill();
 });
 
 const accept = async () => {

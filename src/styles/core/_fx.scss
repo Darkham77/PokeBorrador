@@ -127,30 +127,22 @@
   
   // Secondary Status (Volatile)
   &.is-cursed img {
-  filter: 
-      Drop-Shadow(0 0 15px Rgba(75, 0, 130, 0.8))
-      Brightness(0.6)
-      Contrast(1.2)
-      Saturate(0.5);
-    animation: pulse-aura-curse 2.5s infinite ease-in-out;
+    filter: Drop-Shadow(0 0 15px Rgba(75, 0, 130, 0.8)) Brightness(0.6) contrast(1.2) Saturate(0.5);
   }
 
   &.is-confused img {
-    animation: fx-confusion-wobble 0.3s infinite ease-in-out;
     will-change: transform, filter, opacity;
-  filter: Hue-Rotate(180deg) Saturate(0.5);
+    filter: hue-rotate(180deg) Saturate(0.5);
   }
 
   &.is-focus-energy img {
-    animation: fx-focus-pulse 1.5s infinite ease-in-out;
     will-change: transform, filter, opacity;
-  filter: Drop-Shadow(0 0 10px Rgba(255, 0, 0, 0.7)) Brightness(1.1);
+    filter: Drop-Shadow(0 0 10px Rgba(255, 0, 0, 0.7)) Brightness(1.1);
   }
 
   &.is-ingrain img {
     will-change: transform, filter, opacity;
-  filter: Drop-Shadow(0 4px 10px Rgba(34, 139, 34, 0.8));
-    animation: fx-ingrain-float 3s infinite ease-in-out;
+    filter: Drop-Shadow(0 4px 10px Rgba(34, 139, 34, 0.8));
   }
 }
 
@@ -163,33 +155,6 @@
   height: 100%;
   pointer-events: none;
   z-index: calc(var(--z-map-spawns, 10) + 2);
-}
-
-// Keyframes used in status effects
-@keyframes pulse-aura-curse {
-  0%, 100% { will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  filter: Drop-Shadow(0 0 5px Rgba(0, 0, 0, 0.9)) Brightness(0.5); }
-  50% { will-change: transform, filter, opacity;
-  filter: Drop-Shadow(0 0 20px Rgba(75, 0, 130, 0.9)) Brightness(0.8); }
-}
-
-@keyframes fx-focus-pulse {
-  0%, 100% { will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  filter: Drop-Shadow(0 0 5px Rgba(255, 0, 0, 0.5)) Brightness(1); }
-  50% { will-change: transform, filter, opacity;
-  filter: Drop-Shadow(0 0 15px Rgba(255, 0, 0, 0.9)) Brightness(1.3); }
-}
-
-@keyframes fx-ingrain-float {
-  0%, 100% { transform: Scale(1); }
-  50% { transform: Scale(1.02); }
-}
-
-@keyframes fx-confusion-wobble {
-  0% { transform: Rotate(-3deg) Translatex(-2px); }
-  100% { transform: Rotate(3deg) Translatex(2px); }
 }
 
 // Contenedor de Partículas de Estado

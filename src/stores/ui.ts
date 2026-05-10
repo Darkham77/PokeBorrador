@@ -1,6 +1,7 @@
 
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import { gsap } from 'gsap'
 import { useModalStore } from './modals.ts'
 import { useBattleStore } from './battle.ts'
 import { useLoadingStore } from '@/stores/loading'
@@ -185,9 +186,9 @@ export const useUIStore = defineStore('ui', () => {
   function notify(msg: string, icon: string = '🔔') {
     const id = Temporal.Now.instant().epochMilliseconds + Math.random().toString(36).substr(2, 9)
     notifications.value.push({ id, msg, icon })
-    setTimeout(() => {
+    gsap.delayedCall(4.0, () => {
       notifications.value = notifications.value.filter(n => n.id !== id)
-    }, 4000)
+    })
   }
 
   const isAnyFullscreenModalOpen = computed(() => {

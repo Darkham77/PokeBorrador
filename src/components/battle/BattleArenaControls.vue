@@ -1,6 +1,7 @@
 <script setup lang="ts">
 
 import { computed, watch, defineAsyncComponent, type Component } from 'vue'
+import { gsap } from 'gsap'
 import { useBattleStore } from '@/stores/battle'
 import { useUIStore } from '@/stores/ui'
 import { useGameStore } from '@/stores/game'
@@ -87,12 +88,14 @@ const execShowBattleBag = () => {
 watch(() => uiStore.isBattleSwitchForced, (val) => {
   if (val) {
     if (battleStore.isProcessing) {
-      const checkReady = setInterval(() => {
+      const checkReady = () => {
         if (!battleStore.isProcessing) {
-          clearInterval(checkReady)
           execShowBattleSwitch()
+        } else {
+          gsap.delayedCall(0.1, checkReady)
         }
-      }, 100)
+      }
+      gsap.delayedCall(0.1, checkReady)
     } else {
       execShowBattleSwitch()
     }

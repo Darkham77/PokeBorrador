@@ -1,6 +1,6 @@
 <script setup lang="ts">
-
 import { computed, watch, onMounted, provide, ref } from 'vue'
+import { gsap } from 'gsap'
 import { storeToRefs } from 'pinia'
 import { useBattleStore } from '@/stores/battle'
 import { useGameStore } from '@/stores/game'
@@ -60,6 +60,16 @@ const {
 } = useBattleShadows()
 
 const animations = useBattleAnimations(battleStore, enemy)
+battleStore.animations = {
+  triggerSearchEncounter: animations.triggerSearchEncounter,
+  revealWildPokemon: animations.revealWildPokemon,
+  triggerWildEmergence: animations.triggerWildEmergence,
+  triggerCatchSparkles: animations.triggerCatchSparkles,
+  handleCatchRequest: animations.handleCatchRequest,
+  handleReleaseRequest: animations.handleReleaseRequest,
+  handleShakeRequest: animations.handleShakeRequest,
+  handleFaintAnim: animations.handleFaintAnim
+}
 const {
   isWildEntryAnimation, isWildSilhouette, wildRevealActive, upcomingIsEmerging, isEmerging,
   isInitialLoad, isCaptureSequenceActive, caughtPokemonSnapshot,
@@ -298,7 +308,7 @@ onMounted(async () => {
     battle.value?.playerTeam || [],
     battle.value?.enemyTeam || []
   )
-  window.setTimeout(() => { isInitialLoad.value = false }, 500)
+  gsap.delayedCall(0.5, () => { isInitialLoad.value = false })
 })
 
 // Ejecutar PRELOAD_COORDS para combates consecutivos
@@ -318,11 +328,11 @@ watch(() => battleStore.currentSubState, async (sub) => {
 // Forzar actualización de cámara cuando el combate se activa para evitar el glitch de "pantalla negra"
 watch(() => battleStore.isBattleActive, (active) => {
   if (active) {
-    window.setTimeout(() => {
+    gsap.delayedCall(0.1, () => {
       if (arenaRef.value) {
         window.dispatchEvent(new Event('resize'))
       }
-    }, 100) // Pequeño delay para dejar que el modal se asiente
+    }) // Pequeño delay para dejar que el modal se asiente
   }
 })
 </script>

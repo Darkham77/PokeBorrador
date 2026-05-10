@@ -37,12 +37,10 @@
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    will-change: transform, filter, opacity;
-  filter: var(--atmosphere-filter, Brightness(0.8) Contrast(1.1));
-    // transition: transform 0.6s ease, filter 0.5s ease;
     z-index: -3;
-    will-change: filter, transform;
     transform: Translatez(0); 
+    filter: var(--atmosphere-filter, Brightness(0.8) Contrast(1.1));
+    will-change: transform; // Solo transform por defecto para ahorrar memoria
     
     // Pixelated rendering (MANDATORY for pixel art maps)
     @include pixelated;

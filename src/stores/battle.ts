@@ -84,6 +84,7 @@ export const useBattleStore = defineStore('battle', () => {
   const enemyStages = ref<BattleStages>({ ...INITIAL_STAGES })
   const upcomingPokemon = ref<Pokemon | null>(null)
   const debugLoopPokemon = ref<Pokemon | null>(null)
+  const animations = ref<BattleContext['animations']>()
 
   const player = computed(() => activeBattle.value?.player)
   const enemy = computed(() => activeBattle.value?.enemy)
@@ -125,6 +126,7 @@ export const useBattleStore = defineStore('battle', () => {
     attackerSide, 
     activeMove,
     faintedSides,
+    animations: animations.value,
     addLog, 
     endBattle, 
     completeBattleFlow, 
@@ -477,6 +479,7 @@ export const useBattleStore = defineStore('battle', () => {
         }
       },
       killEnemy: () => { if (activeBattle.value?.enemy) activeBattle.value.enemy.hp = 0 },
+      animations: () => animations.value,
       store: () => useBattleStore()
     }
   }
@@ -499,6 +502,7 @@ export const useBattleStore = defineStore('battle', () => {
     attackerSide,
     activeMove,
     upcomingPokemon,
+    animations,
     fsm,
     currentFsmState,
     currentSubState,

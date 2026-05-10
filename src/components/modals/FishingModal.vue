@@ -1,8 +1,6 @@
 <script setup lang="ts">
-
-
 import { ref, onMounted, onUnmounted } from 'vue'
-
+import { gsap } from 'gsap'
 import type { Pokemon } from '@/types/pokemon'
 
 interface Props {
@@ -36,7 +34,6 @@ interface FishingNote {
   y: number
   startTime: number
   isHit: boolean
-  timeout: ReturnType<typeof setTimeout> | null
 }
 
 // State
@@ -58,30 +55,29 @@ const spawnNext = () => {
     id,
     x,
     y,
-    startTime: Temporal.Now.instant().epochMilliseconds,
-    isHit: false,
-    timeout: null
+    startTime: gsap.globalTimeline.time * 1000,
+    isHit: false
   }
 
   notes.value.push(note)
 
   // Fail if not clicked in time
-  note.timeout = setTimeout(() => {
+  gsap.delayedCall((speedBase + hitWindow) / 1000, () => {
     if (gameActive.value && !note.isHit) {
       fail()
     }
-  }, speedBase + hitWindow)
+  })
 
   // Schedule next spawn
   if (spawnedNotesCount.value < totalNotes) {
-    setTimeout(spawnNext, spawnInterval)
+    gsap.delayedCall(spawnInterval / 1000, spawnNext)
   }
 }
 
 const handleNoteClick = (note: FishingNote) => {
   if (!gameActive.value || note.isHit) return
 
-  const elapsed = Temporal.Now.instant().epochMilliseconds - note.startTime
+  const elapsed = (gsap.globalTimeline.time * 1000) - note.startTime
   const diff = Math.abs(elapsed - speedBase)
 
   if (diff <= hitWindow) {
@@ -98,33 +94,31 @@ const handleNoteClick = (note: FishingNote) => {
 
 const win = () => {
   gameActive.value = false
-  setTimeout(() => {
+  gsap.delayedCall(0.5, () => {
     if (props.onWin) props.onWin()
     emit('win')
     emit('close')
-  }, 500)
+  })
 }
 
 const fail = () => {
   if (!gameActive.value) return
   gameActive.value = false
   isFailed.value = true
-  setTimeout(() => {
+  gsap.delayedCall(1, () => {
     if (props.onFail) props.onFail()
     emit('fail')
     emit('close')
-  }, 1000)
+  })
 }
 
 onMounted(() => {
-  setTimeout(spawnNext, 1000)
+  gsap.delayedCall(1, spawnNext)
 })
 
 onUnmounted(() => {
   gameActive.value = false
-  notes.value.forEach(n => {
-    if (n.timeout) clearTimeout(n.timeout)
-  })
+  gsap.killTweensOf(spawnNext)
 })
 </script>
 

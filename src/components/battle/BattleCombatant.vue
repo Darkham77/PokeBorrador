@@ -186,10 +186,93 @@ watch(() => props.stages, (newS, oldS) => {
 const triggerStatArrow = (stat: string, dir: 'up' | 'down') => {
   const id = Temporal.Now.instant().epochMilliseconds + Math.random()
   statArrows.value.push({ id, dir, stat })
-  window.setTimeout(() => {
+  gsap.delayedCall(1.2, () => {
     statArrows.value = statArrows.value.filter(a => a.id !== id)
-  }, 1200)
+  })
 }
+
+// GSAP Animations
+const spriteRef = ref<HTMLElement | null>(null)
+
+watch(() => props.isEmerging, (val) => {
+  if (val && spriteRef.value) {
+    const tl = gsap.timeline()
+    tl.to(spriteRef.value, { y: 8, scaleX: 1.2, scaleY: 0.75, duration: 0.1, ease: "power1.in" })
+      .to(spriteRef.value, { y: -60, scaleX: 0.85, scaleY: 1.2, duration: 0.3, ease: "power2.out" })
+      .to(spriteRef.value, { y: 0, scaleX: 1.1, scaleY: 0.9, duration: 0.2, ease: "bounce.out" })
+      .to(spriteRef.value, { scaleX: 1, scaleY: 1, duration: 0.1 })
+  }
+})
+
+watch(() => props.isFainting, (val) => {
+  if (val && spriteRef.value) {
+    gsap.to(spriteRef.value, {
+      opacity: 0,
+      y: 60,
+      duration: 0.8,
+      ease: "power2.in",
+      onStart: () => {
+        gsap.to(spriteRef.value, { opacity: 0, duration: 0.05, repeat: 10, yoyo: true })
+      }
+    })
+  }
+})
+
+watch(() => props.animState, (val) => {
+  if (!spriteRef.value) return
+  if (val === 'catching') {
+    gsap.to(spriteRef.value, {
+      scale: 0,
+      opacity: 0,
+      filter: "Brightness(0) Invert(1) Drop-Shadow(0 0 20px #00ccff)",
+      duration: 0.8,
+      ease: "power2.inOut"
+    })
+  } else if (val === 'releasing') {
+    gsap.fromTo(spriteRef.value, 
+      { scale: 0, opacity: 1, filter: "Brightness(0) Invert(1) Drop-Shadow(0 0 20px #00ccff)" },
+      { scale: 1, opacity: 1, filter: "none", duration: 0.8, ease: "back.out(1.7)" }
+    )
+  }
+})
+
+watch(() => props.isAttacking, (val) => {
+  if (val && spriteRef.value && props.activeMove) {
+    const isPlayerSide = props.side === 'player'
+    const cat = props.activeMove.cat
+    const tl = gsap.timeline()
+    
+    if (cat === 'physical' || !cat) {
+      const dashDist = isPlayerSide ? 60 : -60
+      const prepDist = isPlayerSide ? -15 : 15
+      tl.to(spriteRef.value, { x: prepDist, duration: 0.1 })
+        .to(spriteRef.value, { x: dashDist, scale: 1.1, duration: 0.15, ease: "power2.out" })
+        .to(spriteRef.value, { x: 0, scale: 1, duration: 0.15, ease: "power1.inOut" })
+    } else if (cat === 'special') {
+      const pulseDist = isPlayerSide ? 15 : -15
+      tl.to(spriteRef.value, { 
+        x: pulseDist, 
+        scale: 1.15, 
+        filter: "Brightness(1.4)", 
+        duration: 0.2, 
+        yoyo: true, 
+        repeat: 1,
+        ease: "power2.out"
+      })
+    } else if (cat === 'status') {
+      const rot = isPlayerSide ? 12 : -12
+      tl.to(spriteRef.value, { 
+        rotation: rot, 
+        scale: 1.1, 
+        filter: "Brightness(1.2)", 
+        duration: 0.2, 
+        yoyo: true, 
+        repeat: 1,
+        ease: "power2.out"
+      })
+    }
+  }
+})
 </script>
 
 <template>
@@ -203,11 +286,10 @@ const triggerStatArrow = (stat: string, dir: 'up' | 'down') => {
   >
     <div
       v-if="animState !== 'trapped' && !isCaptureSuccess"
+      ref="spriteRef"
       class="sprite-animator"
       :class="[{ 
-        'fainted': isFainting,
         'is-attacking': isAttacking,
-        'is-jumping': isEmerging,
         'is-technical-hidden': hidden
       }, getAttackAnimClass]"
     >
@@ -394,26 +476,6 @@ const triggerStatArrow = (stat: string, dir: 'up' | 'down') => {
     display: flex;
     align-items: center;
     justify-content: center;
-  }
-
-  .combatant-idle-subtle {
-    animation: combatant-idle 3s infinite ease-in-out;
-    transform-origin: 50% var(--shadow-y, 90%);
-  }
-
-  .combatant-idle-floating {
-    animation: combatant-idle-float 3.5s infinite ease-in-out;
-    transform-origin: 50% var(--shadow-y, 90%);
-  }
-
-  @keyframes combatant-idle {
-    0%, 100% { transform: Translatey(0) Rotate(0deg); }
-    50% { transform: Translatey(-3px) Rotate(1deg); }
-  }
-
-  @keyframes combatant-idle-float {
-    0%, 100% { transform: Translatey(0) Rotate(0deg); }
-    50% { transform: Translatey(-22px) Rotate(-2deg); }
   }
 
     .pokemon-combat-image {
@@ -658,95 +720,9 @@ const triggerStatArrow = (stat: string, dir: 'up' | 'down') => {
   transform: Scale(0);
 }
 
-@keyframes pokemon-jump {
-  0% { transform: Translatey(0) Scale(1, 1); }
-  15% { transform: Translatey(8px) Scale(1.2, 0.75); } // Aplastamiento inicial más fuerte
-  45% { transform: Translatey(-60px) Scale(0.85, 1.2); } // Salto más alto y estirado
-  75% { transform: Translatey(0) Scale(1.1, 0.9); } // Impacto de aterrizaje
-  100% { transform: Translatey(0) Scale(1, 1); }
-}
-
-@keyframes pokemon-faint {
-  0% { opacity: 1; transform: Translatey(0); }
-  10%, 30%, 50%, 70%, 90% { opacity: 0; }
-  20%, 40%, 60%, 80% { opacity: 1; }
-  100% { opacity: 0; transform: Translatey(60px); }
-}
-
-@keyframes attack-dash-player {
-  0% { transform: Translatex(0); }
-  20% { transform: Translatex(-15px); }
-  50% { transform: Translatex(60px) Scale(1.1); }
-  100% { transform: Translatex(0); }
-}
-
-@keyframes attack-dash-enemy {
-  0% { transform: Translatex(0); }
-  20% { transform: Translatex(15px); }
-  50% { transform: Translatex(-60px) Scale(1.1); }
-  100% { transform: Translatex(0); }
-}
-
-@keyframes attack-pulse-player {
-  0% { transform: Scale(1); }
-  50% { transform: Scale(1.15) Translatex(15px); will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  filter: Brightness(1.4); }
-  100% { transform: Scale(1); }
-}
-
-@keyframes attack-pulse-enemy {
-  0% { transform: Scale(1); }
-  50% { transform: Scale(1.15) Translatex(-15px); will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  filter: Brightness(1.4); }
-  100% { transform: Scale(1); }
-}
-
-@keyframes attack-status-player {
-  0% { transform: Rotate(0deg); }
-  30% { transform: Rotate(12deg) Scale(1.1); will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  filter: Brightness(1.2); }
-  100% { transform: Rotate(0deg); }
-}
-
-@keyframes attack-status-enemy {
-  0% { transform: Rotate(0deg); }
-  30% { transform: Rotate(-12deg) Scale(1.1); will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  filter: Brightness(1.2); }
-  100% { transform: Rotate(0deg); }
-}
-
 @keyframes catch-sparkle-out {
   0% { transform: Translate(-50%, -50%) Scale(0) Rotate(0deg); opacity: 1; }
   100% { transform: Translate(calc(-50% + var(--tx) * 1px), calc(-50% + var(--tf) * 1px)) Scale(0) Rotate(720deg); opacity: 0; }
-}
-
-@keyframes ground-pop { 0% { transform: Scale(0); opacity: 0; } 100% { transform: Scale(1); opacity: 1; } }
-@keyframes ground-grow { 0% { transform: scaley(0) Translatey(20px); opacity: 0; } 100% { transform: scaley(1) Translatey(5px); opacity: 1; } }
-@keyframes ground-item-jump { 0%, 100% { transform: Translatey(0); } 50% { transform: Translatey(-5px); } }
-@keyframes ground-item-pulse { 0%, 100% { transform: Scale(1); } 50% { transform: Scale(1.05); } }
-
-@keyframes energy-catch {
-  0% { will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  filter: none; transform: Scale(1); opacity: 1; }
-  25% { will-change: transform, filter, opacity;
-  filter: Brightness(0) Invert(1) Drop-Shadow(0 0 10px #00ccff); transform: Scale(1.05); }
-  100% { will-change: transform, filter, opacity;
-  filter: Brightness(0) Invert(1) Drop-Shadow(0 0 20px #00ccff); transform: Scale(0); opacity: 1; }
-}
-
-@keyframes energy-release {
-  0% { will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  filter: Brightness(0) Invert(1) Drop-Shadow(0 0 20px #00ccff); transform: Scale(0); opacity: 1; }
-  75% { will-change: transform, filter, opacity;
-  filter: Brightness(0) Invert(1) Drop-Shadow(0 0 10px #00ccff); transform: Scale(1.1); }
-  100% { will-change: transform, filter, opacity;
-  filter: none; transform: Scale(1); opacity: 1; }
 }
 
 .stat-arrows-container {

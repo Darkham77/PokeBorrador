@@ -1,4 +1,5 @@
 import { TRAINER_RANKS, MARKET_UNLOCKS } from '@/data/trainer'
+import { gsap } from 'gsap'
 import { levelUpPokemon } from '@/logic/pokemonFactory'
 import { useUIStore, type LearnItem } from '@/stores/ui'
 import { useEventStore } from '@/stores/events'
@@ -35,7 +36,7 @@ export function useTrainerActions(state: GameState, scheduleSave: () => Promise<
       
       const unlocks = (MARKET_UNLOCKS as Record<number, string[]>)[state.trainerLevel]
       if (unlocks) {
-        setTimeout(() => uiStore.notify(`¡Nuevos items en el Poké Market!`, '🛒'), 1500)
+        gsap.delayedCall(1.5, () => uiStore.notify(`¡Nuevos items en el Poké Market!`, '🛒'))
       }
     }
 
