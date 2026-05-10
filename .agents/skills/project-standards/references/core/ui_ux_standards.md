@@ -225,7 +225,10 @@ All tooltips MUST use the `PVTooltip.vue` system. Native HTML `title` attributes
 
 - **Hybrid Engine**: Uses a "Flip-then-Nudge" algorithm. It first attempts to flip the position (e.g., from top to bottom) if there's no space, then "nudges" the coordinates to stay within a 10px safety margin of the viewport edges.
 - **Anchor-Aware Arrows**: The tooltip arrow MUST remain aligned with the trigger element's center. When the box is nudged, use the `--arrow-x` and `--arrow-y` CSS variables to offset the arrow appropriately.
-- **Visual Standard**: Tooltips must use `'Press Start 2P'` for titles, glassmorphism (`Blur(10px)`), and a `$yellow` border.
+- **Visual Standard**: Tooltips must use `'Press Start 2P'` for titles, glassmorphism (`Blur(10px)`), and a **2px solid var(--yellow)** border for a "Vintage Premium" look.
+- **Emoji Centering & Spacing**: 
+  - ALWAYS use `Translatey(-2px)` for optical centering of emojis when using pixelated fonts.
+  - NEVER join multiple emojis with space characters (`join(' ')`) as the fixed-width pixel font space is disproportionately wide. Join them directly (`join('')`) and rely on CSS margins (`2px`).
 - **Hemisphere Positioning**: Tooltips MUST detect screen hemispheres. Use `right` coordinates and `Translate(50%, ...)` for the right side to ensure expansion towards the center, preventing edge clipping and text compacting.
 - **Symmetrical Transitions**: When using mirrored positioning (e.g., right-side expansion), transition transforms MUST be inverted simetrically to prevent horizontal sliding during entrance.
 - **Structured Content**: Prefer `\n` (with `white-space: pre-wrap`) over horizontal separators (`|`) for atmospheric or complex data.

@@ -210,7 +210,7 @@ const processedGrid = computed<ProcessedSpawn[]>(() => {
     
     // 1. Información de Ciclo (Si es limitado y lo hemos visto)
     if (isLimited && isSeen) {
-      const emojis = appearingCycles.map(c => emojiMap[c] || c).join(' ')
+      const emojis = appearingCycles.map(c => emojiMap[c] || c).join('')
       timeText = `Aparición: ${emojis}`
     }
 

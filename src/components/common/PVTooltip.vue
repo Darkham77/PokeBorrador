@@ -147,7 +147,7 @@ const handleTriggerClick = (event: MouseEvent) => {
 const formattedDescription = computed(() => {
   if (!props.description) return ''
   // Wrap common symbols/emojis for alignment (including Nature triangles, seasons, and time cycles)
-  return props.description.replace(/(▲|▼|↑|↓|⬆|⬇|🔼|🔽|🔺|🔻|🔴|🟢|ℹ️|⚡|✨|⚠️|⭐|🛡️|♂️|♀️|🌸|☀️|🍂|❄️|🌅|🌇|🌙|🏙️|🌉)/gu, '<span class="symbol-align">$1</span>')
+  return props.description.replace(/(▲|▼|↑|↓|⬆|⬇|🔼|🔽|🔺|🔻|🔴|🟢|ℹ️|⚡|✨|⚠️|⭐|🛡️|♂️|♀️|🌸|☀️|🍂|❄️|🌅|🌇|🌙|🏙️|🌉|🌧️|🌫️|🌨️|🏜️|🔥|💨|🍃)/gu, '<span class="symbol-align">$1</span>')
 })
 
 const handleMouseEnter = () => {
@@ -246,7 +246,7 @@ onUnmounted(() => {
     margin-bottom: 8px;
     line-height: 1.4;
     display: block;
-    border-bottom: 1px solid Rgba(255, 255, 255, 0.08);
+    border-bottom: 1px solid Rgba(255, 255, 255, 0.2);
 
     &:last-child {
       margin-bottom: 0;
@@ -270,7 +270,7 @@ onUnmounted(() => {
       vertical-align: middle;
       line-height: 1;
       margin: 0 2px;
-      transform: Translatey(-1px);
+      transform: Translatey(-2px);
       font-family: Arial, sans-serif !important;
       font-size: 11px; // Make arrows slightly larger for visibility
     }
