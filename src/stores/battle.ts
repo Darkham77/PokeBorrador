@@ -73,6 +73,8 @@ export const useBattleStore = defineStore('battle', () => {
   
   const isProcessing = ref(false)
   const debugBinoculars = ref(false)
+  const debugShowGuides = ref(false)
+  const debugZoom = ref(1)
   const battleLogs = ref<BattleLog[]>([])
   const logQueue = ref<BattleLog[]>([])
   const isProcessingLogs = ref(false)
@@ -499,6 +501,8 @@ export const useBattleStore = defineStore('battle', () => {
     battleLogs,
     debugLoopPokemon,
     debugBinoculars,
+    debugShowGuides,
+    debugZoom,
     attackerSide,
     activeMove,
     upcomingPokemon,

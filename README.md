@@ -130,7 +130,7 @@ El proyecto utiliza un motor de auditoría inteligente y validadores semánticos
 | `npm run validate:items` | **Item Database**: Verifica IDs, tipos e iconos en la base de datos de objetos. |
 | `npm run validate:moves` | **Move Sync**: Sincroniza semánticamente los movimientos con la PokeAPI. |
 | `npm run validate:abilities` | **Ability Sync**: Valida habilidades contra la base de datos oficial. |
-| `npm run fsm:audit` | **Battle State Audit**: Verifica que la FSM de combate cumpla con la documentación oficial. |
+| `npm run validate:fsm` | **FSM Mastery Audit**: Verifica diagramas, implementación dinámica y paridad de flujo. |
 
 ### Otros Comandos de Desarrollo
 
@@ -272,8 +272,8 @@ Para verificar estados o forzar situaciones de prueba, el proyecto expone un pro
   - `__VITE_DEBUG__.setWeather('rain')`: Cambiar clima actual.
   - `__VITE_DEBUG__.spawnPokemon(25)`: Aparecer un Pikachu.
 - **Auditoría de Batalla**: Si estás debugeando el flujo de combate (FSM), usá:
-  - `npm run fsm:audit`: Verifica que el código actual coincida con los diagramas de estados.
-  - `npm run fsm:flow`: Busca condiciones de carrera en las transiciones de estados.
+  - `npm run validate:fsm`: Suite completa de validación (diagramas, implementación y flujo).
+  - `npm run validate:fsm:flow`: Busca condiciones de carrera en las transiciones de estados.
 - **Seguridad**: Estos comandos están deshabilitados en producción para usuarios normales (ver sección 7).
 
 ### 7. 🛡️ Sistema de Seguridad y Moderación (Baneos)

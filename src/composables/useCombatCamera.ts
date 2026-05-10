@@ -1,12 +1,14 @@
 import { ref, onMounted, onUnmounted, computed, type CSSProperties, type Ref } from 'vue'
 import { gameBus } from '@/logic/gameBus'
 import { WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator'
+import { useBattleStore } from '@/stores/battle'
 
 /**
  * useCombatCamera
  * Implements a dynamic 2D camera system based on docs/architecture/combat_camera.md
  */
 export function useCombatCamera(viewportRef: Ref<HTMLElement | null>) {
+  const battleStore = useBattleStore()
   // Reactive State
   const vpWidth = ref(0)
   const vpHeight = ref(0)
@@ -15,8 +17,9 @@ export function useCombatCamera(viewportRef: Ref<HTMLElement | null>) {
   const tx = ref(0)
   const ty = ref(0)
   const scale = ref(1)
-  const showGuides = ref(false)
-  const debugZoom = ref(1)
+
+  const showGuides = computed(() => battleStore.debugShowGuides)
+  const debugZoom = computed(() => battleStore.debugZoom)
 
   // Computed Styles
   const cameraStyles = computed<CSSProperties>(() => ({
@@ -97,11 +100,11 @@ export function useCombatCamera(viewportRef: Ref<HTMLElement | null>) {
     }
 
     gameBus.on('TOGGLE_CAMERA_GUIDES', () => {
-      showGuides.value = !showGuides.value
+      battleStore.debugShowGuides = !battleStore.debugShowGuides
     })
 
     gameBus.on('TOGGLE_DEBUG_ZOOM', () => {
-      debugZoom.value = debugZoom.value === 1 ? 0.4 : 1
+      battleStore.debugZoom = battleStore.debugZoom === 1 ? 0.4 : 1
       if (viewportRef.value) {
         const rect = viewportRef.value.getBoundingClientRect()
         updateCamera(rect.width, rect.height)

@@ -18,6 +18,7 @@ import type { Pokemon } from '@/types/pokemon'
 import { useBattleShadows } from '@/composables/useBattleShadows'
 import { useBattleAnimations } from '@/composables/useBattleAnimations'
 import { useBattleHud } from '@/composables/useBattleHud'
+import { useWeatherVisuals } from '@/composables/useWeatherVisuals'
 
 // Componentes
 import VirtualSpace from './VirtualSpace.vue'
@@ -225,6 +226,11 @@ const atmosphereSeed = computed(() => {
   return (battle.value?.locationId || 'route1').split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
 })
 
+const { atmosphereFilter } = useWeatherVisuals({
+  weather: computedWeather,
+  cycle: computed(() => mapStore.currentCycle)
+})
+
 // Watchers de Sincronización
 // Watcher para sincronizar sombras (Jugador y Enemigo)
 watch([enemy, p2Pos, () => enemyAnimState.value], ([data, pos, anim]) => {
@@ -352,7 +358,7 @@ watch(() => battleStore.isBattleActive, (active) => {
     </Transition>
     <div
       class="battle-arena-content"
-      :style="cameraStyles"
+      :style="{ ...cameraStyles, filter: atmosphereFilter }"
     >
       <VirtualSpace
         :show-guides="showGuides"

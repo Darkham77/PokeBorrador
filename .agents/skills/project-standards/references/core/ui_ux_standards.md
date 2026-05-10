@@ -34,6 +34,7 @@ We prioritize a deliberate contrast between modern, sleek UI shells and classic,
   - **Compact Density**: Use minimal `gap` (**2px**) between log entries and reduced `padding` (**4px**) for the main container to maximize information density.
   - **Side-Based Tinting**: Every log entry MUST be visually associated with its side (Player vs Enemy) using a subtle background gradient (`Linear-Gradient` at **0.06 - 0.08** opacity) and a colored `border-left` (2px).
   - **WHY**: Balances deep history readability on large screens with gameplay space protection on small screens while providing instant side-recognition.
+- **Log Area & Control Separation**: The combat log area MUST have an independent scrollbar for entry history. Admin/Debug controls (e.g. Shiny/Guardian toggles) MUST be positioned outside the log's scrolling container to ensure they don't block messages or collide with entry animations.
 - **Fullscreen 100vh Integrity**: Fullscreen combat modals MUST force `height: 100vh` across all parent containers (including `modal-scrollable-content`) to prevent background "bleed" or purple gaps at the bottom.
 - **Bottom Anchor Precision**: In fullscreen mode, action buttons MUST be positioned with a maximum of `2px` from the bottom edge (or `0px` with a slight negative margin) to ensure they feel physically anchored to the device frame.
 - **HUD Padding Synchronization**: To eliminate layout shifts ("jumps") during page load or HUD transitions, the main content area MUST use dynamic CSS variables (e.g., `--hud-top-padding`) calculated from the HUD's actual height.
@@ -292,6 +293,7 @@ To facilitate real-time mechanical verification without cluttering the productio
 - **Interaction Pattern**: Use `hover` states to reveal detailed technical data (e.g., base stats, stage multipliers, internal IDs).
 - **Visual Distinction**: Admin-only tooltips should be titled with an emoji like 😈 or 🛠️ to clearly distinguish them from standard game feedback.
 - **Color Coding**: Use standard project colors (`$green` for buffs, `$red` for debuffs) within these panels to ensure data is scannable at a glance.
+- **Reactive Engine Sync**: Debug/Admin controls (Shiny, Guardian, Camera guides) MUST be directly bound to the global `BattleStore` state. Toggling these buttons MUST reflect the engine's internal configuration in real-time to avoid "UI-Ghosting" where a button looks active but the feature is disabled.
 
 For complex developer tools or admin panels with high-density forms:
 
@@ -351,6 +353,17 @@ To guarantee a seamless "Live" feel during multi-phase transitions (e.g., from S
 - **Bottom-Anchor Grounding**: For entity positioning in the virtual world, always prioritize `bottom`-relative coordinates over `top` percentages. This ensures that sprites with different amounts of empty space in their PNG source remain perfectly anchored to the ground line.
 - **Continuity via UID**: When transitioning between encounter phases (e.g., Search Preview to Battle), components MUST use the instance `uid` as the `:key`.
   - **WHY**: Ensures Vue reuses the exact same DOM node instead of re-mounting, preventing flickering and maintaining visual state (like animation frames) across phase boundaries.
+
+### 18. Atmospheric & Environmental Framing
+
+To unify the environmental immersion across the Map and Battle Arena:
+
+- **Static Perimetric Framing**: Atmospheric conditions (Fog, Mist, Snow, Blizzard, Sandstorm, Heatwave) MUST use a pseudo-element `::after` on the main overlay container for framing. 
+- **Decoupled Opacity**: The framing logic (shadows/gradients) MUST be independent of internal particle layers. This ensures the perimeter remains static even if the weather particles (mist/snow) pulse or fade.
+- **Danger Signature (Heat/Sand)**: Climates that cause recurring damage (Heatwave, Sandstorm) MUST use a pulsing red frame (`anim-glow`) and a red-tinted radial gradient to signal environmental danger.
+- **Solid White Standard (Cold/Fog)**: Cold weather types (Fog, Mist, Snow, Blizzard) MUST use a high-opacity (**0.75**) white `box-shadow` to create a solid, frosty encasement that maintains visibility over dense backgrounds.
+- **Center Transparency Mandate**: Every atmospheric frame MUST maintain a clear central action zone. The `Radial-Gradient` MUST start being transparent at **50%** of the container to prevent "washing out" the main art while keeping a strong perimeter.
+- **WHY**: Ensures that the "action zone" (Pokemon/Map details) remains the focal point while the edges convey the atmospheric intensity.
 
 ---
 

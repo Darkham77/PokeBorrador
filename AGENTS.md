@@ -18,7 +18,7 @@ This file defines the immutable DNA of the Poké Vicio project. Every AI agent i
 - **Pixel Art Heart**: All game content, sprites, and typography MUST be pixelated.
 - **SASS Integrity**: SASS function capitalization is handled **automatically** by the Vite plugin (`vite-plugin-sass-traps.ts`) during HMR and build. Therefore, developers and agents can write standard lowercase CSS filters/transforms, and Vite will automatically format and capitalize them. No manual capitalization is required.
 - **GPU Efficiency**: Strict use of Texture Atlases and Object Pooling (Phaser).
-- **Game Performance First**: This is a high-fidelity web video game. All UI and logic implementations MUST prioritize GPU-accelerated rendering and FPS stability. Optimize workflows and filter chains (e.g., `pokemon-outline-performance`) to ensure maximum fluidity without compromising visual quality.
+- **Game Performance First**: This is a high-fidelity web video game. All UI and logic implementations MUST prioritize GPU-accelerated rendering and FPS stability. Optimize workflows and filter chains (e.g., `pokemon-outline-performance`) to ensure maximum fluidity without compromising visual quality. For ANY task involving the battle engine or FSM transitions, you MUST use `validate_fsm_diagrams.ts`, `validate_fsm_implementation.ts`, and `validate_fsm_flow_parity.ts` to ensure 1:1 parity with documentation and zero race conditions.
 
 ## 3. Database Isolation
 

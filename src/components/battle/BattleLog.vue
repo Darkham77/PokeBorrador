@@ -25,20 +25,23 @@ const scrollToBottom = async (isInstant = false) => {
 }
 
 // Watch both length and internal content changes
-watch(() => logs.value.length, () => {
+watch(() => logs.value.length, (newLen, oldLen) => {
   scrollToBottom()
   
-  // Animate the last entry
-  nextTick(() => {
-    const entries = logContainer.value?.querySelectorAll('.log-entry')
-    if (entries && entries.length > 0) {
-      const lastEntry = entries[entries.length - 1] as HTMLElement
-      gsap.fromTo(lastEntry, 
-        { opacity: 0, x: -10 }, 
-        { opacity: 1, x: 0, duration: 0.3, ease: ANIM_EASES.OUT_SOFT }
-      )
-    }
-  })
+  // Animate the last entry if it's a new one
+  if (newLen > oldLen) {
+    nextTick(() => {
+      const entries = logContainer.value?.querySelectorAll('.log-entry')
+      if (entries && entries.length > 0) {
+        const lastEntry = entries[entries.length - 1] as HTMLElement
+        gsap.killTweensOf(lastEntry)
+        gsap.fromTo(lastEntry, 
+          { opacity: 0, x: -20, filter: 'Blur(4px)' }, 
+          { opacity: 1, x: 0, filter: 'Blur(0px)', duration: 0.5, ease: 'back.out(1.2)' }
+        )
+      }
+    })
+  }
 }, { deep: false })
 
 const handleImgError = (e: Event) => {
@@ -106,6 +109,24 @@ onMounted(() => {
   @include smooth-scroll;
   @include gpu-layer;
 
+  /* Estilos de Scrollbar */
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  &::-webkit-scrollbar-track {
+    background: Rgba(0, 0, 0, 0.2);
+    border-radius: 3px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: Rgba(255, 255, 255, 0.15);
+    border-radius: 3px;
+    border: 1px solid Rgba(0, 0, 0, 0.2);
+    
+    &:hover {
+      background: Rgba(255, 255, 255, 0.25);
+    }
+  }
+
   .log-scroll-inner {
     display: flex;
     flex-direction: column;
@@ -126,13 +147,13 @@ onMounted(() => {
   font-size: 13px;
   line-height: 1.6;
   color: Rgba(255,255,255,0.9);
-  animation: slideIn 0.3s ease-out;
   padding-bottom: 4px;
   border-bottom: 1px solid Rgba(255,255,255,0.05);
   display: flex;
   align-items: center;
   gap: 8px; 
   min-height: 32px;
+  will-change: transform, opacity;
 
   .log-icon-wrapper {
     flex-shrink: 0;

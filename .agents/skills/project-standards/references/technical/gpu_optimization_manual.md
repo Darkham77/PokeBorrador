@@ -63,3 +63,14 @@ For cinematic events (Evolution, Hatching), the modal must allow visual effects 
 
 - **Configuration**: Use `overflow: visible !important` and transparent backgrounds in `BaseModal`.
 - **Z-Index**: Particle effects must be above the modal content but below the close button.
+
+---
+
+## 6. Verification & Automated Audits
+
+To ensure performance standards are maintained, the project uses automated static analysis:
+
+- **GPU Gap Audit (`audit:full`)**: Running `npm run audit:full` triggers a context-aware scan for GPU best practices.
+- **Promotion Check**: The engine detects any usage of `filter` or `backdrop-filter` (especially in atmospheric overlays or Glassmorphism) that lacks a corresponding `will-change` promotion within a 500-character window.
+- **Why**: Static verification prevents "GPU Stutter" in production by ensuring layers are promoted to the compositor BEFORE they are needed for transitions.
+- **Manual Verification**: Use the "Layer Borders" and "Paint Flashing" tools in Chrome DevTools to verify that atmospheric overlays (`::after` frames) maintain a single, stable compositor layer.

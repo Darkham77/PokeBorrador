@@ -204,6 +204,10 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
     const hasBinoculars = ctx.debugBinoculars.value || (inventoryBinoculars > 0)
     if (!hasBinoculars) {
       if (ctx.animations?.triggerSearchEncounter) {
+        // Sincronizamos FSM con las fases internas de la animación
+        fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.JUMP_SHADOW)
+        await sleep(300)
+        fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.JUMP_COLOR)
         await ctx.animations.triggerSearchEncounter()
       } else {
         await sleep(150)

@@ -1,6 +1,6 @@
 ---
 name: project-standards
-description: Core governance for the Poké Vicio project. Enforces Hybrid Retro-Modern identity, 500-line modularity, Zero-Warning SASS/Vue standards, and Zero-Ignore TypeScript policy. Includes diagnostic scripts for automated auditing (viewport, GPU, items). For ANY task involving the battle engine or FSM transitions, you MUST use verify_fsm_diagrams.ts, audit_fsm_implementation.ts, and audit_fsm_flow_parity.ts to ensure 1:1 parity with documentation and zero race conditions. Acts as a Navigation Hub to access technical manuals.
+description: Core governance for the Poké Vicio project. Enforces Hybrid Retro-Modern identity, 500-line modularity, Zero-Warning SASS/Vue standards, and Zero-Ignore TypeScript policy. Includes diagnostic scripts for automated auditing (viewport, GPU, items). For ANY task involving the battle engine or FSM transitions, you MUST use validate_fsm_diagrams.ts, validate_fsm_implementation.ts, and validate_fsm_flow_parity.ts to ensure 1:1 parity with documentation and zero race conditions. Acts as a Navigation Hub to access technical manuals.
 ---
 
 # Project Standards (Lean Core)
@@ -118,7 +118,7 @@ The project uses a sophisticated audit and validation engine to ensure stability
   - **Intelligent Audit (`audit:fix`)**: Automates SASS capitalization, GPU promotion, and Node 26+ syntax migration.
   - **SQL Parity (`validate:sql`)**: Validates migrations using native SQLite engines.
   - **Semantic Validation**: Synchronizes Moves, Abilities, and Items against PokeAPI/Official Data to prevent data drift.
-  - **FSM Integrity**: Ensures 1:1 parity between battle logic and FSM documentation.
+  - **FSM Mastery (`validate:fsm`)**: Ensura 1:1 parity between battle logic and FSM documentation (diagrams, implementation, flow).
 - **Zero-Warning Policy**: Zero errors and zero warnings are required for any core system component.
   - **Native TS**: Prefer `node --experimental-strip-types` for running utility scripts instead of `tsx`/`ts-node` when possible.
   - **Module Prefix**: Use the `node:` prefix for all built-in module imports (e.g., `import fs from 'node:fs'`).
@@ -149,7 +149,7 @@ The project uses a sophisticated audit and validation engine to ensure stability
 - **Documentation Parity**: The code MUST remain a 1:1 implementation of the Mermaid diagrams in `battle_mechanics_manual.md`.
 - **Deterministic Flow**: Avoid naked `setTimeout` calls in combat logic. Initialization sequences and FSM state transitions MUST be strictly synchronized with `await animations.triggerX()` to prevent engine deadlocks and race conditions.
 - **Visual Completion**: FSM states representing visual actions (Damage, Faint, Catch) MUST wait for the corresponding GSAP promise resolution.
-- **Mandatory Audit**: Run `verify_fsm_diagrams.ts`, `audit_fsm_implementation.ts`, and `audit_fsm_flow_parity.ts` before every commit that touches battle logic. Zero critical errors are allowed.
+- **Mandatory Audit**: Run `validate_fsm_diagrams.ts`, `validate_fsm_implementation.ts`, and `validate_fsm_flow_parity.ts` (or `npm run validate:fsm`) before every commit that touches battle logic. Zero critical errors are allowed.
 - **Substate Parity**: All sub-states defined in `battleStateMachine.ts` MUST be actively used in logic or UI. Obsolete or orphaned states (e.g., `REORDER_TEAM`) must be removed to maintain a clean FSM audit and prevent architectural drift.
 
 ---
@@ -186,11 +186,12 @@ Use these scripts to verify project standards and ensure stability:
 - `npm run audit:full`: **THE GOLD STANDARD**. Total audit (Code + FSM + Items + SQL + Abilities + Moves). MANDATORY before any commit.
 - `npm run lint`: Style and syntax verification (includes type-check).
 
-### ⚔️ Battle Engine (FSM)
+### ⚔️ Battle Engine (FSM Mastery)
 
-- `npm run fsm:verify`: 1:1 parity verifier between code and Mermaid diagrams.
-- `npm run fsm:audit`: Deep audit of FSM logic and transitions.
-- `npm run fsm:flow`: State sequence verifier and race condition detection.
+- `npm run validate:fsm:diagrams`: 1:1 parity verifier between code and Mermaid diagrams.
+- `npm run validate:fsm:implementation`: Deep audit of FSM architectural layers.
+- `npm run validate:fsm:flow`: State sequence verifier and race condition detection.
+- `npm run validate:fsm`: Unified FSM Mastery Audit (Diagrams + Implementation + Flow).
 
 ### 🖼️ Assets
 

@@ -2,7 +2,7 @@
 import test from 'node:test';
 import assert from 'node:assert';
 import { calculateIndividualHealCost, calculateTotalHealCost } from '../../../src/logic/economy/economyFormulas.ts';
-import type { Pokemon } from '../../../src/types/pokemon';
+import type { Pokemon } from '../../../src/types/pokemon.ts';
 
 test('Economy Formulas - Individual Heal Cost (Rocket)', async (t) => {
   const dummyPokemon: Partial<Pokemon> = {

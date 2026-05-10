@@ -13,10 +13,7 @@ import BattleQuickTeam from './BattleQuickTeam.vue'
 import BattleQuickBag from './BattleQuickBag.vue'
 import type { Pokemon } from '@/types/pokemon'
 
-const isDebugActive = typeof window !== 'undefined' && !!(window as unknown as { __VITE_DEBUG__?: unknown }).__VITE_DEBUG__
-const BattleDebugTools = isDebugActive 
-  ? defineAsyncComponent(() => import('./BattleDebugTools.vue')) as Component
-  : null
+// Debug tools are now handled by BattleArena sidebar
 
 const battleStore = useBattleStore()
 const uiStore = useUIStore()
@@ -121,10 +118,7 @@ watch(() => uiStore.isBattleSwitchForced, (val) => {
         </aside>
 
         <div class="controls-content">
-          <component
-            :is="BattleDebugTools"
-            v-if="BattleDebugTools"
-          />
+          <!-- Tools moved to sidebar -->
           <BattleMovesGrid 
             v-if="player"
             class="is-compact"

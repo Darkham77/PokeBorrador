@@ -248,53 +248,11 @@ const processedGrid = computed<ProcessedSpawn[]>(() => {
 })
 
 const isVisible = ref(false)
-const atmosphereFilter = computed(() => {
-  const isNight = props.cycle === 'night'
-  const isDusk = props.cycle === 'dusk'
-  const isMorning = props.cycle === 'morning'
+import { useWeatherVisuals } from '@/composables/useWeatherVisuals'
 
-  let brightness = 1.0
-  let contrast = 1.0
-  let saturate = 1.0
-  let hue = 0
-
-  if (isNight) { brightness = 0.6; contrast = 1.1; saturate = 0.8; }
-  else if (isDusk) { brightness = 0.8; contrast = 1.2; hue = -10; }
-  else if (isMorning) { brightness = 1.1; saturate = 0.9; hue = 5; }
-
-  const w = computedWeather.value
-  let wBrightness = 1.0
-  let wSaturate = 1.0
-  let wContrast = 1.0
-  let wHue = 0
-
-  if (w === 'storm') { 
-    // No oscurecer de noche porque el mapa ya es oscuro (petición usuario)
-    const darknessFactor = isNight ? 1.0 : (isDusk ? 0.75 : 0.6)
-    wBrightness = darknessFactor; 
-    wSaturate = 0.6; 
-    wContrast = 1.3; 
-  }
-  else if (w === 'snow' || w === 'blizzard') { wBrightness = 0.85; wSaturate = 0.5; wContrast = 1.2; }
-  else if (w === 'rain') { wBrightness = 0.8; wSaturate = 0.7; }
-  else if (w === 'fog' || w === 'mist') { 
-    // Reducir brillo extra en la noche para evitar lavado de color
-    wBrightness = isNight ? 0.75 : 0.9; 
-    wContrast = 0.8; 
-    wSaturate = 0.2; 
-  }
-  else if (w === 'sandstorm') { wBrightness = 0.85; wSaturate = 1.2; wContrast = 1.1; }
-  else if (w === 'heatwave') { wBrightness = 1.1; wSaturate = 1.3; wContrast = 1.1; }
-
-  // Aplicación proporcional del brillo para evitar apagones totales
-  const finalBrightness = isNight 
-    ? Math.max(0.4, brightness * wBrightness) 
-    : (brightness * wBrightness)
-  const finalSaturate = saturate * wSaturate
-  const finalContrast = contrast * wContrast
-  const finalHue = hue + wHue
-
-  return `Brightness(${finalBrightness}) Contrast(${finalContrast}) Saturate(${finalSaturate}) hue-rotate(${finalHue}deg)`
+const { atmosphereFilter } = useWeatherVisuals({
+  weather: computedWeather,
+  cycle: computed(() => props.cycle)
 })
 
 const allSpawns = computed(() => [...props.spawnPool.generic, ...props.spawnPool.specific])

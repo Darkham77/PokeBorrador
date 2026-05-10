@@ -160,15 +160,20 @@ const toggleStatus = (side: string, type: string) => {
       battleStore.state.player = { ...p }
     }
   } else {
-    const poke = battleStore.upcomingPokemon || battleStore.state?.enemy
+    // Priority: If battle is active and not searching, use active enemy. Otherwise upcoming.
+    const poke = (battleStore.isBattleActive && !battleStore.isSearching && battleStore.state?.enemy)
+      ? battleStore.state.enemy
+      : (battleStore.upcomingPokemon || battleStore.state?.enemy)
+
     if (!poke) return
     if (type === 'shiny') poke.isShiny = !poke.isShiny
     if (type === 'guardian') poke.isGuardian = !poke.isGuardian
     
-    if (battleStore.upcomingPokemon) {
-      battleStore.upcomingPokemon = { ...battleStore.upcomingPokemon }
-    } else if (battleStore.state?.enemy) {
+    // Force reactivity by re-assigning references
+    if (battleStore.state?.enemy && poke === battleStore.state.enemy) {
       battleStore.state.enemy = { ...battleStore.state.enemy }
+    } else if (battleStore.upcomingPokemon && poke === battleStore.upcomingPokemon) {
+      battleStore.upcomingPokemon = { ...battleStore.upcomingPokemon }
     }
   }
 }
@@ -220,7 +225,7 @@ const toggleStatus = (side: string, type: string) => {
             <PVTooltip description="Binocs: Ver el Pokémon en COLOR (Binoculares) o en SILUETA (Normal)">
               <button
                 class="debug-btn search-btn"
-                :class="{ 'btn-active': battleStore.debugBinoculars }"
+                :class="{ active: battleStore.debugBinoculars }"
                 @click.stop="toggleBinoculars"
               >
                 {{ battleStore.debugBinoculars ? '👁️ BINOCS: COLOR' : '🕶️ BINOCS: SILH' }}
@@ -230,7 +235,7 @@ const toggleStatus = (side: string, type: string) => {
             <PVTooltip description="Chain: El siguiente Pokémon aparece automáticamente al ganar">
               <button
                 class="debug-btn search-btn"
-                :class="{ 'btn-active': battleStore.isSearching }"
+                :class="{ active: battleStore.isSearching }"
                 @click.stop="toggleSearchMode"
               >
                 {{ battleStore.isSearching ? '🔗 CHAIN: ON' : '🔗 CHAIN: OFF' }}
@@ -291,14 +296,14 @@ const toggleStatus = (side: string, type: string) => {
           <div class="btn-grid">
             <button
               class="mini-btn"
-              :class="{ active: (battleStore.upcomingPokemon || battleStore.state?.enemy)?.isShiny }"
+              :class="{ active: (battleStore.isBattleActive && !battleStore.isSearching && battleStore.state?.enemy ? battleStore.state.enemy.isShiny : (battleStore.upcomingPokemon?.isShiny || battleStore.state?.enemy?.isShiny)) }"
               @click.stop="toggleStatus('enemy', 'shiny')"
             >
               SHINY
             </button>
             <button
               class="mini-btn"
-              :class="{ active: (battleStore.upcomingPokemon || battleStore.state?.enemy)?.isGuardian }"
+              :class="{ active: (battleStore.isBattleActive && !battleStore.isSearching && battleStore.state?.enemy ? battleStore.state.enemy.isGuardian : (battleStore.upcomingPokemon?.isGuardian || battleStore.state?.enemy?.isGuardian)) }"
               @click.stop="toggleStatus('enemy', 'guardian')"
             >
               GUARD
@@ -342,12 +347,14 @@ const toggleStatus = (side: string, type: string) => {
           <div class="btn-grid">
             <button
               class="mini-btn"
+              :class="{ active: battleStore.debugShowGuides }"
               @click.stop="gameBus.emit('TOGGLE_CAMERA_GUIDES')"
             >
               GUIDES
             </button>
             <button
               class="mini-btn"
+              :class="{ active: battleStore.debugZoom !== 1 }"
               @click.stop="gameBus.emit('TOGGLE_DEBUG_ZOOM')"
             >
               ZOOM
@@ -414,15 +421,14 @@ const toggleStatus = (side: string, type: string) => {
 @use "@/styles/core/tools" as *;
 
 .battle-debug-tools {
-  position: fixed;
-  bottom: 12px; 
-  left: 12px;
-  z-index: var(--z-navigation);
+  position: relative;
+  width: 100%;
   display: flex;
   flex-direction: column-reverse;
-  align-items: flex-start;
+  align-items: center;
   pointer-events: none;
-  min-height: 0; // Fix flex scroll collapse for debug-menu
+  min-height: 0; 
+  padding: 8px;
   @include pixelated;
   
   &.is-open { pointer-events: all; }
@@ -463,18 +469,18 @@ const toggleStatus = (side: string, type: string) => {
   background: Rgba(15, 15, 25, 0.99);
   border: 2px solid var(--purple);
   border-radius: 8px;
-  width: 320px;
+  width: 100%;
   max-height: 500px;
   display: flex;
   flex-direction: column;
+  overflow-x: hidden;
+  overflow-y: auto;
+  pointer-events: all;
   box-shadow: 0 15px 50px Rgba(0,0,0,0.9);
   -webkit-will-change: transform, opacity;
   will-change: transform, opacity;
   @include gpu-layer;
   margin-bottom: 12px;
-  overflow: hidden;
-  min-height: 0; // Fix flex scroll collapse for effects-scroll-area
-  @include gpu-layer;
 
   .effects-header {
     background: Rgba(124, 58, 237, 0.15);
@@ -501,13 +507,14 @@ const toggleStatus = (side: string, type: string) => {
   background: Rgba(15, 15, 25, 0.98);
   border: 2px solid var(--yellow);
   border-radius: 6px;
-  padding: 10px;
+  padding: 8px;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  width: 260px;
+  width: 100%;
   max-height: 400px;
   min-height: 0;
+  overflow-x: hidden;
   overflow-y: auto;
   box-shadow: 0 10px 40px Rgba(0,0,0,0.9);
   -webkit-will-change: transform, opacity;
@@ -575,15 +582,18 @@ const toggleStatus = (side: string, type: string) => {
 }
 
 .mini-btn {
-  @include btn-vicio('default', 'xs', true);
+  @include btn-vicio('neutral', 'xs', true);
   height: 20px !important;
   font-size: 6px !important;
   padding: 0 !important;
+  border-color: Rgba(255, 255, 255, 0.2);
   
   &.active {
-    background: var(--yellow);
-    color: $black;
-    border-color: $white;
+    background: var(--yellow) !important;
+    color: $black !important;
+    border-color: $white !important;
+    box-shadow: 0 0 10px Rgba(250, 204, 21, 0.4);
+    filter: none !important;
   }
 }
 

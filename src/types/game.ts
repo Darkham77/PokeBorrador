@@ -97,7 +97,7 @@ export interface GameState {
     reputation: number;
     blackMarketSales: number;
     criminality: number;
-    blackMarketDaily: { date: string; items: unknown[]; purchased: unknown[] };
+    blackMarketDaily: { date: string; items: string[]; purchased: string[] };
     activeMission?: unknown;
     extortedRouteId?: string | null;
     officialRouteId?: string | null;

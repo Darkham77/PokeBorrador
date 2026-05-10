@@ -24,6 +24,7 @@ const animClass = computed(() => {
   const anims: Record<string, string> = {
     clear: 'anim-glow',
     heatwave: 'anim-glow',
+    sandstorm: 'anim-glow',
     mist: 'anim-drift',
     fog: 'anim-drift',
     rain: 'anim-shake',
@@ -330,7 +331,7 @@ const initLeafAnim = () => {
         y: 0,
         opacity: 0.9,
         rotation: Math.random() * 360,
-        filter: 'Drop-Shadow(0 2px 2px rgba(0,0,0,0.4))'
+        filter: 'Drop-Shadow(0 2px 2px Rgba(0,0,0,0.4))'
       })
 
       gsap.to(el,
@@ -477,7 +478,7 @@ const weatherOverlayStyles = computed(() => ({
   z-index: var(--z-low); // Asegurar visibilidad sobre la lluvia
   will-change: transform, opacity;
   transform: translate3d(0,0,0); // GPU Promotion
-  filter: Drop-Shadow(0 1px 1px rgba(0,0,0,0.3)); // Brillo original
+  filter: Drop-Shadow(0 1px 1px Rgba(0,0,0,0.3)); // Brillo original
 }
 
 // Estilos delegados a _map-card-weather.scss

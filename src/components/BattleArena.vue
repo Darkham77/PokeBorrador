@@ -1,11 +1,16 @@
 <script setup lang="ts">
 
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, defineAsyncComponent, type Component } from 'vue'
 import { useBattleStore } from '@/stores/battle'
 import { useUIStore } from '@/stores/ui'
 import { useWindowListener } from '@/composables/useWindowListener'
 import { useMapStore } from '@/stores/map'
 import { getRouteWeather } from '@/logic/weatherUtils'
+
+const isDebugActive = typeof window !== 'undefined' && !!(window as unknown as { __VITE_DEBUG__?: unknown }).__VITE_DEBUG__
+const BattleDebugTools = isDebugActive 
+  ? defineAsyncComponent(() => import('./battle/BattleDebugTools.vue')) as Component
+  : null
 
 const battleStore = useBattleStore()
 const uiStore = useUIStore()
@@ -133,6 +138,15 @@ const handleClose = () => {
         <!-- Log: Sidebar or Bottom -->
         <div class="battle-log-wrapper">
           <BattleLog class="battle-log" />
+          <div
+            v-if="isDebugActive"
+            class="sidebar-footer"
+          >
+            <component
+              :is="BattleDebugTools"
+              v-if="BattleDebugTools"
+            />
+          </div>
         </div>
 
         <!-- Controls: Moves & Actions -->
@@ -173,51 +187,6 @@ const handleClose = () => {
 
 <style scoped lang="scss">
 @use "@/styles/core/tools" as *;
-
-.log-entry {
-  font-family: 'Inter', sans-serif;
-  font-size: 13px;
-  line-height: 1.6;
-  color: Rgba(255,255,255,0.9);
-  animation: slideIn 0.3s ease-out;
-  padding-bottom: 8px;
-  border-bottom: 1px solid Rgba(255,255,255,0.05);
-  display: flex;
-  align-items: center;
-  gap: 8px; // Texto más cerca del icono
-
-  .log-icon-wrapper {
-    flex-shrink: 0;
-    width: 56px !important;
-    height: 56px !important;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: transparent !important;
-    border-radius: 0 !important;
-    overflow: visible !important;
-    padding: 0 !important;
-    border: none !important;
-    box-shadow: none !important;
-
-    &::before, &::after { display: none !important; }
-
-    &.item, &.pokemon {
-      background: transparent !important;
-    }
-  }
-
-  .log-icon {
-    width: 100% !important;
-    height: 100% !important;
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
-    @include pixelated;
-    will-change: transform, filter, opacity;
-  filter: Drop-Shadow(0 4px 8px Rgba(0,0,0,0.4));
-  }
-}
 
 .battle-header-actions {
   position: absolute;
@@ -285,7 +254,7 @@ const handleClose = () => {
 
   @media (min-width: 1081px) {
     display: grid;
-    grid-template-columns: 280px 1fr;
+    grid-template-columns: 320px 1fr;
     grid-template-rows: 1fr minmax(230px, auto);
     grid-template-areas: 
       "log arena"
@@ -323,7 +292,29 @@ const handleClose = () => {
     border-radius: 0; 
     flex: 1;
     height: 100%;
-    :deep(.battle-log) { position: absolute; inset: 0; padding: 4px; }
+    
+    .battle-log {
+      flex: 1;
+      min-height: 0;
+    }
+
+    .sidebar-footer {
+      flex-shrink: 0;
+      border-top: 2px solid Rgba(255, 255, 255, 0.1);
+      background: Linear-Gradient(180deg, Rgba(0, 0, 0, 0.2) 0%, Rgba(0, 0, 0, 0.4) 100%);
+      padding: 4px 0;
+      @include pixelated;
+      
+      &::before {
+        content: "CONSOLE_TOOLS";
+        display: block;
+        font-size: 5px;
+        text-align: center;
+        color: Rgba(255,255,255,0.3);
+        margin-bottom: 2px;
+        letter-spacing: 2px;
+      }
+    }
   }
 }
 

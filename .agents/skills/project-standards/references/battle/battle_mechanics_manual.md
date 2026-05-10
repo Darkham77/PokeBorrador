@@ -119,9 +119,9 @@ Certain FSM states are designated as "Visual-Dependent":
 | FSM State | Visual Action | Post-Animation Logic |
 | :--- | :--- | :--- |
 | `ENCOUNTER_ANIM` | Jump & Silhouette Reveal | Unlock Move Selection |
-| `DAMAGE_PHASE` | HP Bar Drain & Shake | Check for Faint |
-| `FAINT_PHASE` | Faint Blink & Slide Down | Vacate Seat |
-| `CAPTURE_PHASE` | PokéBall Wobble | Trigger Catch Success/Fail |
+| `EVAL_HP` | HP Bar Drain & Shake | Check for Faint |
+| `RESOLVE_ENEMY_FAINT` | Faint Blink & Slide Down | Vacate Seat |
+| `CATCH_PROCESS` | PokéBall Wobble | Trigger Catch Success/Fail |
 
 ### 3. CLI-First Testing
 
@@ -463,13 +463,13 @@ stateDiagram-v2
             [*] --> [*] : "Unlock Control Panel"
         }
         
-        WAIT_INPUT --> TURN_ENGINE : "Action Selected / Block Control Panel"
-        TURN_ENGINE --> WAIT_INPUT : "Turn Finished / Unlock Control Panel"
+        WAIT_INPUT --> TURN_ENGINE : "↺ Action Selected / Block Control Panel"
+        TURN_ENGINE --> WAIT_INPUT : "↺ Turn Finished / Unlock Control Panel"
         
-        TURN_ENGINE --> ENEMY_REPLACEMENT_SEQ : "Enemy KO / Caught / Escaped"
-        TURN_ENGINE --> EXIT_BATTLE : "Player Escapes"
+        note right of TURN_ENGINE: Sub-machine handling turn queue and resolutions
+        note right of APPLY_MOVE: await
+        note right of EVAL_HP: await
     }
-    note right of TURN_ENGINE: Sub-machine handling turn queue and resolutions
 ```
 
 #### Turn Engine (Queue & Arbiter)
@@ -492,7 +492,7 @@ stateDiagram-v2
         CATCH_PROCESS --> EVAL_HP: "Catch Failed"
         CATCH_PROCESS --> [*]: "Target Caught (Exit Engine)"
         
-        FLEE_ATTEMPT --> EVAL_HP: "Flee Failed"
+        FLEE_ATTEMPT --> EVAL_HP: "↺ Flee Failed"
         FLEE_ATTEMPT --> [*]: "Flee Success (Exit Engine)"
         
         state EVAL_HP <<choice>>
@@ -501,13 +501,14 @@ stateDiagram-v2
         EVAL_HP --> EVAL_CONTINUE: "Both alive"
         
         RESOLVE_PLAYER_FAINT --> PLAYER_FAINT_SEQ: "Trigger Recall"
-        PLAYER_FAINT_SEQ --> EVAL_CONTINUE
+        PLAYER_FAINT_SEQ --> EVAL_CONTINUE : "↺ Loop"
         
         RESOLVE_ENEMY_FAINT --> ENEMY_DEFEAT: "Trigger Animation"
+        note right of RESOLVE_ENEMY_FAINT: await
         ENEMY_DEFEAT --> [*]: "Enemy KO (Exit Engine)"
         
         state EVAL_CONTINUE <<choice>>
-        EVAL_CONTINUE --> POP_ACTION: "More actions queued"
+        EVAL_CONTINUE --> POP_ACTION: "↺ More actions queued"
         EVAL_CONTINUE --> [*]: "Queue empty"
     }
 ```
@@ -524,6 +525,7 @@ stateDiagram-v2
         ADD_TO_STORAGE --> VACATE_SEAT : "Free Seat"
         CATCH_BREAK --> [*]
         VACATE_SEAT --> [*]
+        note right of CATCH_SHAKE: await
     }
     note left of CATCH_PROCESS: UI blocks Pokeball selection if target is TRAINER
 ```
@@ -611,8 +613,8 @@ stateDiagram-v2
         state LEVEL_UP_MODAL {
             [*] --> CHECK_PENDING: "Check Moves"
             CHECK_PENDING --> SHOW_CHOICE: "New Move"
-            SHOW_CHOICE --> APPLY_MOVE: "Learned"
-            APPLY_MOVE --> CHECK_PENDING: "Loop"
+            SHOW_CHOICE --> APPLY_MOVE: "↺ Learned"
+            APPLY_MOVE --> CHECK_PENDING: "↺ Loop"
             CHECK_PENDING --> [*]
         }
         
@@ -641,12 +643,17 @@ stateDiagram-v2
         
         PARALLEL_PREP --> BUSH_IDLE : "Control Panel Blocked"
         
+        state MINIGAME_CHECK <<choice>>
         BUSH_IDLE --> MINIGAME_CHECK : "Click BATTLE / Clear Logs"
         BUSH_IDLE --> EXIT_BATTLE : "Click RETURN TO MAP"
         
-        state MINIGAME_CHECK <<choice>>
         MINIGAME_CHECK --> ENCOUNTER_ANIM : "Success (All Enemy Seats)"
         MINIGAME_CHECK --> [*] : "Fail (Vanish) / Set isSearching = false"
+        
+        state ENCOUNTER_ANIM {
+            [*] --> [*]
+        }
+        note right of ENCOUNTER_ANIM: await
         ENCOUNTER_ANIM --> [*] : "Set isSearching = false"
     }
 ```
@@ -1052,3 +1059,28 @@ El sistema de combate utiliza el componente centralizado `PVSpriteFX` para gesti
 - **Context Unpacking**: In special action handlers like `teleport` or `roar`, always destructure or check the `battleCtx` safely. Use fallbacks such as `battleCtx.activeBattle || battleCtx` to avoid accessing properties on undefined objects.
 
 - **Weather-Aware Moves**: Move modifiers (boosted or penalized) for complex conditions (like Thunder or Hurricane under Rain/Sun) MUST be perfectly aligned across the battle moves grid and the hovering tooltips to maintain clear informational transparency.
+
+---
+
+## 🛠️ Debug & Simulation Protocol
+
+To facilitate mechanical verification without causing visual desynchronization:
+
+### 1. Reactive Debug Synchronization
+
+All administrative and debug controls (e.g., Shiny/Guardian toggles, Camera Zoom, Guides) MUST be synchronized directly with the global `BattleStore` state.
+
+- **FORBIDDEN**: Using local `ref()` or `reactive()` for buttons that control global engine features.
+- **MANDATORY**: Any UI interaction that modifies the debug environment MUST update the corresponding flag in the store. This ensures that the UI always represents the actual state of the engine.
+
+### 2. Camera & Viewport Management
+
+Camera settings (zoom levels, visual guides) are considered persistent battle states.
+
+- **State Persistence**: The `BattleStore` acts as the source of truth for the camera's zoom factor and guide visibility. This prevents the camera from resetting to default values when switching between UI panels or re-mounting the arena.
+
+### 3. Log Area & UI Separation
+
+The combat log container MUST remain isolated from administrative controls.
+
+- **Overflow Integrity**: Debug buttons MUST be positioned outside the log's scrolling viewport. This prevents the "log-animation-clash" where incoming messages cause the entire control panel to scroll or shift unexpectedly.

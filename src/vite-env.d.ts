@@ -1,6 +1,10 @@
 /// <reference types="vite/client" />
 /// <reference types="vite-plugin-pwa/client" />
 /// <reference types="vue" />
+ 
+ interface IteratorConstructor {
+   concat<T>(...iterators: (Iterator<T> | IterableIterator<T>)[]): IterableIterator<T>;
+ }
 
 declare module '*.vue' {
   import type { DefineComponent } from 'vue'
