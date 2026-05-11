@@ -120,9 +120,8 @@ watch(() => uiStore.isBattleSwitchForced, (val) => {
         <div class="controls-content">
           <!-- Tools moved to sidebar -->
           <BattleMovesGrid 
-            v-if="player"
             class="is-compact"
-            :moves="player.moves || []" 
+            :moves="player?.moves || []" 
             :is-processing="isControlsDisabled"
             :player-info="player"
             @use-move="(idx) => battleStore.executeMove(idx)"

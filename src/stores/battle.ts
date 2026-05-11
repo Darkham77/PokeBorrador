@@ -155,7 +155,7 @@ export const useBattleStore = defineStore('battle', () => {
     initBattleSequence(getContext(), { 
       locationId: locId, isTrainer: isTr, trainerName: trName, isGym, gymId, wasSearching,
       initialEnemy: activeBattle.value?.enemy || null,
-      initialPlayer: gs.state.team[0] || null
+      initialPlayer: (gs.state.team as Pokemon[]).find(p => p && p.hp > 0) || null
     })
 
   const addLog = (msg: string, type = 'log-info', source: BattleSource | null = null, sideOverride: 'player' | 'enemy' | null = null) => {

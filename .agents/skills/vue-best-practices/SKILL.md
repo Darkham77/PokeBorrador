@@ -4,7 +4,7 @@ description: MUST be used for Vue.ts tasks. Strongly recommends Composition API 
 license: MIT
 metadata:
   author: github.com/vuejs-ai
-  version: "18.0.0"
+  version: '18.0.0'
 ---
 
 # Vue Best Practices Workflow
@@ -62,7 +62,8 @@ These are essential, must-know foundations. Apply all of them in every Vue task 
 
 - Must-read reference from `1.1`: [sfc](references/sfc.md)
 - Keep SFC sections in this order: `<script>` → `<template>` → `<style>`.
-- **500-Line Threshold Compliance**: If a file exceeds 500 lines, extract independent UI sections (e.g., Tabs, complex Stat Bars) into child components and move large data definitions (e.g., `INITIAL_STATE`, `MAP_DATA`) into dedicated `.ts` files.
+- **300/500-Line Threshold Compliance**: If a file exceeds **300 lines**, it is RECOMMENDED to extract independent logic into Composables. If it exceeds **500 lines**, it is MANDATORY to extract UI sections into child components.
+  - _Note_: Data-only files (e.g., in `src/data/`) are exempt to keep large datasets unified.
 - Keep SFC responsibilities focused; split large components.
 - Keep templates declarative; move branching/derivation to script.
 - Apply Vue template safety rules (`v-html`, list rendering, conditional rendering choices).
@@ -161,8 +162,7 @@ Performance work is a post-functionality pass. Do not optimize before core behav
 - **Global Window Listeners (Safe Lifecycle)**: Global window listeners (added via `useWindowListener` or native `addEventListener`) MUST be managed carefully to avoid memory leaks.
   - **MANDATORY**: Use the project's standardized `useWindowListener` composable (`@/composables/useWindowListener`) for all `resize` or `scroll` listeners. It centralizes lifecycle hooks and ensures zero-leak cleanup.
 - **Modal Click Propagation**: In deep-stacked modal architectures, click handlers on trigger elements (like Tooltips) MUST use the `.stop` modifier.
-  - **WHY**: Prevents event bubbling from accidentally triggering background modal interactions or closing parent layers.
-+- **Selection Component Props (Centralized Modal Pattern)**: Components used within a dynamic modal stack (like `PokemonSelectionModal`) MUST receive their configuration (title, callbackConfirm, etc.) via `defineProps` to ensure reactivity and consistency with the `ModalHost` system.
+  - **WHY**: Prevents event bubbling from accidentally triggering background modal interactions or closing parent layers. +- **Selection Component Props (Centralized Modal Pattern)**: Components used within a dynamic modal stack (like `PokemonSelectionModal`) MUST receive their configuration (title, callbackConfirm, etc.) via `defineProps` to ensure reactivity and consistency with the `ModalHost` system.
   - **WHY**: Using legacy global store refs (e.g., `uiStore.pokemonSelectionConfig`) for modal configuration causes synchronization issues if the ref is not manually cleared or if multiple modals are opened in sequence. Props ensure each modal instance has its own unique, immutable configuration.
 - **Tooltip Teleportation Mandate**: Always use `<Teleport to="body">` for tooltips (e.g., `PVTooltip`) to avoid `z-index` collisions and `overflow: hidden` clipping from parent containers.
 - **Mandatory Mixin Environment**: When using project-standard mixins (e.g., `btn-vicio-primary`, `pixelated`), the `<style>` block **MUST** use `lang="scss"` and explicitly import tools: `@use "@/styles/core/tools" as *;`.
@@ -179,6 +179,7 @@ Performance work is a post-functionality pass. Do not optimize before core behav
   - **Why**: This prevents the global `body.modal-open` class from locking scroll and interaction when only a HUD-integrated panel is visible.
 
   - **PATTERN**: Use a unified loading state (e.g. `authStore.loading || !gameStore.isReady`) to prevent the template from switching to intermediate views (like Login or Black Screen) during the process. This ensures a professional, flicker-free startup experience. (Ref: `src/App.vue`).
+
 - **Pinia Initialization Guard**: If a component accesses a store during `setup` (e.g., in a `computed` property), ensure that all required Vue utilities (like `computed`, `ref`) are correctly imported in the root component.
   - **Why**: A missing import in a high-level component can cause a silent failure that prevents Pinia from being correctly associated with the application instance, leading to the "getActivePinia() was called but there was no active Pinia" error in child components.
 - **Mandatory defineEmits in `<script setup>`**: When using `<script setup>`, any custom events MUST be explicitly declared via `const emit = defineEmits([...])`.

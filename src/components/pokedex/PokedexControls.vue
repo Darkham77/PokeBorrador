@@ -76,10 +76,11 @@ const emit = defineEmits<{
   margin-bottom: 24px;
   @include gpu-layer;
 
-  @include responsive(hud-mobile) {
+  @include responsive(950px) {
     flex-direction: column;
     align-items: stretch;
     padding: 16px;
+    gap: 12px;
   }
 }
 
@@ -118,9 +119,10 @@ const emit = defineEmits<{
   flex: 1;
   justify-content: flex-end;
 
-  @include responsive(hud-mobile) {
+  @include responsive(950px) {
     flex-direction: column;
     align-items: stretch;
+    gap: 12px;
   }
 }
 
@@ -171,6 +173,8 @@ const emit = defineEmits<{
   .pdex-search-icon {
     position: absolute;
     left: 12px;
+    top: 50%;
+    transform: Translatey(-50%);
     font-size: 12px;
     opacity: 0.4;
     pointer-events: none;

@@ -57,7 +57,7 @@ const gpuGaps: AuditRule = {
     const start = Math.max(0, match.index - 500);
     const end = Math.min(content.length, match.index + 500);
     const context = content.substring(start, end);
-    return !/will-change/gi.test(context);
+    return !/(will-change|will-animate)/gi.test(context);
   },
   fixable: false 
 };
@@ -138,7 +138,7 @@ const manualTimersFrontend: AuditRule = {
 
 const fileLength: AuditRule = {
   regex: /[\s\S]*/,
-  message: "Archivo demasiado largo.",
+  message: () => `Archivo demasiado largo.`, // Placeholder, handled in logic
   maxLines: 500,
   ignorePattern: /\[PureVue-Ignore-Length\]/
 };
@@ -259,6 +259,35 @@ async function auditFile(filePath: string, fix: boolean): Promise<Violation[]> {
     const block = extractBlock(content, tag);
     if (block) {
       runRules(filePath, block, [config.manualTimersFrontend], violations, fix, findBlockStart(content, tag));
+    }
+  }
+
+  // MODULARITY AUDIT: 300/500 Rule
+  const isDataFile = filePath.includes('src' + path.sep + 'data' + path.sep) || 
+                     filePath.endsWith('DB.ts') || 
+                     filePath.endsWith('Metadata.ts') ||
+                     config.fileLength.ignorePattern?.test(content);
+
+  if (!isDataFile) {
+    const lineCount = content.split('\n').length;
+    if (lineCount > 500) {
+      violations.push({
+        file: filePath,
+        line: lineCount,
+        message: `Mantenibilidad CRÍTICA: El archivo tiene ${lineCount} líneas. MÁXIMO PERMITIDO: 500. Es OBLIGATORIO fragmentar este componente (SRP) o extraer lógica a Composables.`,
+        context: `SLOC: ${lineCount}`,
+        severity: 'error',
+        fixable: false
+      });
+    } else if (lineCount > 300) {
+      violations.push({
+        file: filePath,
+        line: lineCount,
+        message: `Advertencia de Modularización: El archivo tiene ${lineCount} líneas. Se RECOMIENDA iniciar la fragmentación a partir de las 300 líneas para mantener la agilidad del código.`,
+        context: `SLOC: ${lineCount}`,
+        severity: 'warning',
+        fixable: false
+      });
     }
   }
 

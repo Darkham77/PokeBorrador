@@ -114,8 +114,8 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
     
     const currentP = ctx.activeBattle.value.player
     const team = (ctx.gs.state.team as Pokemon[]) || []
-    const leaderP = team[0]
-    if (!currentP || !leaderP || currentP.uid !== (leaderP?.uid)) {
+    const firstAlive = team.find(p => p && p.hp > 0)
+    if (!currentP || !firstAlive || currentP.uid !== (firstAlive?.uid)) {
       ctx.activeBattle.value.player = null
     }
   }

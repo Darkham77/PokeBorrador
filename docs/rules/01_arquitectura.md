@@ -112,7 +112,8 @@ El combate se rige por una **Máquina de Estados Finita (FSM)** que garantiza un
 
 Para mantener la salud del repositorio, se aplican las siguientes reglas inamovibles:
 
-1. **Ley de las 500 Líneas**: Ningún archivo de lógica o componente Vue puede exceder las 500 líneas (excepto bases de datos masivas).
+1. **Ley de las 300/500 Líneas**: La modularización debe ser proactiva. A partir de las **300 líneas**, se recomienda la extracción de lógica a Composables. Ningún archivo de lógica o componente Vue puede exceder las **500 líneas**.
+   - _Excepción_: Bases de datos masivas (ej. `pokemonDB.ts`), archivos de metadatos y módulos en `src/data/` están exentos para mantener la cohesión de los datos.
 2. **Zero-Warning Policy**: Prohibido el uso de `@ts-ignore` o `any`. Todo debe estar tipado y pasar `npm run lint` sin advertencias.
 3. **Temporal First**: Prohibido el uso de `Date` para lógica de juego. Usar siempre `Temporal` para timestamps y duraciones.
 4. **GPU First**: Priorizar transformaciones CSS3 y `will-change` contextual para asegurar 60 FPS constantes.

@@ -4,7 +4,7 @@ This checklist is used to verify the visual and functional integrity of the Pok√
 
 ## 1. Governance & Modularity
 
-- [ ] **File Length**: No violator files (excluding databases/backups). Files MUST stay under 500 lines.
+- [ ] **File Length**: Verified that no files exceed **500 lines** (Error). Files over **300 lines** have been reviewed for early modularization (Warning).
 - [ ] **Architectural Reuse**: Verified that no new "islands" were created. Existing systems (`BaseModal`, `UnifiedCard`, `DBRouter`) are reused or extended.
 - [ ] **Redundancy Audit**: `detect_css_redundancy.py` shows 0 critical overlaps for core components.
 - [ ] **Validation Script Integrity**: Regex patterns in audit scripts (e.g. `detect_hybrid_patterns.py`) MUST use capturing groups for OR branches to prevent false positives.

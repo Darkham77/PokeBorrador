@@ -40,11 +40,16 @@ export async function processFaint(ctx: BattleContext, side: 'player' | 'enemy')
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.POKEMON_RECALL)
     gameBus.emit('PLAY_WITHDRAW', { side: 'player', isFaint: true })
     await sleep(800)
+    
+    // Sincronizamos antes de vaciar el asiento para no perder la referencia
+    syncTeamHP(ctx)
+    if (active) active._lastActivePlayer = pokemon; // Guardamos referencia por si acaso
+    
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.VACATE_SEAT)
     active.player = null 
     
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.CHECK_TEAM)
-    const nextPoke = ctx.gs.state.team.find((p: Pokemon) => p.hp > 0)
+    const nextPoke = ctx.gs.state.team.find((p: Pokemon) => p && p.hp > 0)
     
     if (!nextPoke) {
       await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ALL_FAINTED)
@@ -169,7 +174,7 @@ export async function terminateBattle(ctx: BattleContext, win: boolean, fled = f
   await fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.EMPTY_WAIT)
   await sleep(1000)
 
-  const firstHealthy = ctx.gs.state.team.find((p: Pokemon) => p.hp > 0)
+  const firstHealthy = ctx.gs.state.team.find((p: Pokemon) => p && p.hp > 0)
   const currentActive = active.player
   const needsReorder = firstHealthy && (!currentActive || firstHealthy.uid !== currentActive.uid)
   
@@ -312,13 +317,25 @@ export function syncTeamHP(ctx: BattleContext) {
   const active = ctx.activeBattle.value;
   if (!active) return;
   
+  // Si tenemos un pokemon activo, lo sincronizamos.
   if (active.player) {
-    const currentIdx = active.playerTeamIndex ?? ctx.gs.state.team.findIndex((p: Pokemon) => p.uid === active.player?.uid);
+    const currentIdx = active.playerTeamIndex ?? ctx.gs.state.team.findIndex((p: Pokemon) => p && p.uid === active.player?.uid);
     if (currentIdx !== -1) {
       const teamPoke = ctx.gs.state.team[currentIdx];
       if (teamPoke) {
         teamPoke.hp = active.player.hp;
         teamPoke.status = active.player.status;
+      }
+    }
+  } else if (active._lastActivePlayer) {
+    // Si el asiento está vacío, intentamos sincronizar el último que estuvo (fainted)
+    const last = active._lastActivePlayer as Pokemon;
+    const currentIdx = ctx.gs.state.team.findIndex((p: Pokemon) => p && p.uid === last.uid);
+    if (currentIdx !== -1) {
+      const teamPoke = ctx.gs.state.team[currentIdx];
+      if (teamPoke) {
+        teamPoke.hp = last.hp;
+        teamPoke.status = last.status;
       }
     }
   }

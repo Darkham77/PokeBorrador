@@ -1,6 +1,6 @@
 ---
 name: project-standards
-description: Core governance for the Poké Vicio project. Enforces Hybrid Retro-Modern identity, 500-line modularity, Zero-Warning SASS/Vue standards, and Zero-Ignore TypeScript policy. Includes diagnostic scripts for automated auditing (viewport, GPU, items). For ANY task involving the battle engine or FSM transitions, you MUST use validate_fsm_diagrams.ts, validate_fsm_implementation.ts, and validate_fsm_flow_parity.ts to ensure 1:1 parity with documentation and zero race conditions. Acts as a Navigation Hub to access technical manuals.
+description: Core governance for the Poké Vicio project. Enforces Hybrid Retro-Modern identity, 300/500-line modularity (SRP focus), Zero-Warning SASS/Vue standards, and Zero-Ignore TypeScript policy. Includes diagnostic scripts for automated auditing (viewport, GPU, items). For ANY task involving the battle engine or FSM transitions, you MUST use validate_fsm_diagrams.ts, validate_fsm_implementation.ts, and validate_fsm_flow_parity.ts to ensure 1:1 parity with documentation and zero race conditions. Acts as a Navigation Hub to access technical manuals.
 ---
 
 # Project Standards (Lean Core)
@@ -69,7 +69,9 @@ Consult these manuals for detailed implementation specifications:
 
 ### 3. Modularity & Hierarchy
 
-- **500-Line Rule**: No logic or style file may exceed 500 lines (except for massive databases).
+- **300/500-Line Rule**: Modularization MUST be proactive. Files exceeding **300 lines** should be reviewed for logic extraction into Composables (SRP focus). No logic or style file may exceed **500 lines**.
+  - _Exemption_: Massive databases, metadata files (`*Metadata.ts`, `*DB.ts`), and modules in `src/data/` are exempt to maintain data cohesion.
+
 - **Zero-Invention**: Reuse `BaseModal`, `UnifiedCard`, and global mixins before creating ad-hoc styles.
 - **Centralized Formatters**: All numeric formatting logic (currency, large numbers, suffixes) MUST be centralized in `src/logic/utils/formatters.ts`. Direct use of `toLocaleString()` in components for currency is deprecated in favor of `formatCurrency()`.
 - **Modal Lifecycle**: Synchronize performance mode with modal transitions.

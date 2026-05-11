@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { translateType } from '@/data/types'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import MoveTooltip from '@/components/battle/MoveTooltip.vue'
 import { PDEX_TYPE_COLORS } from '@/logic/pokedexConstants'
@@ -255,11 +256,8 @@ const getMoveColor = (move: Move | null) => {
         <template v-if="move">
           <div class="move-top">
             <span class="mv-name pixelated">{{ (move && move.name) ? move.name.toUpperCase() : '???' }}</span>
-            <span
-              class="mv-type-tag pixelated"
-              :style="{ background: PDEX_TYPE_COLORS[getMoveData(move)!.type.toLowerCase() || 'normal'] }"
-            >
-              {{ (getMoveData(move)!.type || 'normal').toUpperCase() }}
+            <span :class="['m-type-tag', 'sm', `type-${getMoveData(move)!.type.toLowerCase()}`]">
+              {{ translateType(getMoveData(move)!.type || 'normal').toUpperCase() }}
             </span>
           </div>
           
