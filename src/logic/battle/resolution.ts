@@ -237,6 +237,9 @@ export async function calculateBattleRewards(ctx: BattleContext) {
   
   if (active.isGym && active.gymId) {
     const gid = active.gymId
+    const diff = active.difficulty || 'easy'
+    
+    // Registrar victoria global (Medalla)
     if (!ctx.gs.state.defeatedGyms.includes(gid)) {
       ctx.gs.state.defeatedGyms.push(gid); ctx.gs.state.badges++
       if (active.rewardTM) { 
@@ -245,8 +248,20 @@ export async function calculateBattleRewards(ctx: BattleContext) {
         ctx.addLog(`¡Recibiste la ${tm}!`, 'log-info', tm) 
       }
       ctx.uiStore.notify(`¡Ganaste la medalla del Gimnasio ${gid}!`, '🏆')
-      await ctx.gs.save(false)
     }
+
+    // Registrar progreso específico por dificultad
+    if (!ctx.gs.state.gymProgress[gid]) {
+      ctx.gs.state.gymProgress[gid] = { easy: false, normal: false, hard: false, attempts: 0 }
+    }
+    const prog = ctx.gs.state.gymProgress[gid] as any
+    if (!prog[diff]) {
+      prog[diff] = true
+      ctx.addLog(`¡Superaste el gimnasio en dificultad ${diff.toUpperCase()}!`, 'log-success')
+    }
+    prog.attempts++
+    
+    await ctx.gs.save(false)
   }
 
   const baseExp = calculateBaseExp(e)

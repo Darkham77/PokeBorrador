@@ -155,7 +155,7 @@ const handleMove = (targetBoxIndex: number) => {
 }
 
 .box-select-btn {
-  @include glass(rgba(30, 41, 59, 0.4)); 
+  @include shell(Rgba(30, 41, 59, 0.4)); 
   padding: 1px;
   position: relative;
   cursor: pointer;

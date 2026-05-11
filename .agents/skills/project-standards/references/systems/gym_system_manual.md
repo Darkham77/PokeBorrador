@@ -37,4 +37,6 @@ Each gym can be faced in three difficulties:
 
 1. **The Ace**: The last Pokémon of the team is always the leader's "Ace" and usually carries an equipped item.
 2. **AI Priority**: Leaders have an improved AI that prioritizes super-effective moves and status changes.
-3. **Rewards**: The `rewardTM` is granted only on the first victory. In rematches, scaled money is granted according to the difficulty.
+3. **Rewards**: The `rewardTM` is granted only on the first victory. In rematches, scaled money and XP are granted according to the difficulty using the internal `gymProgress` scaling factors.
+4. **Progress Persistence**: Wins are tracked independently per difficulty in `game.state.gymProgress[gymId]`. A "Completed" status requires defeating the leader in all 3 modes.
+5. **Dynamic UI Feedback**: Gym cards MUST show the estimated XP/Money rewards for the selected difficulty to set player expectations before the challenge.

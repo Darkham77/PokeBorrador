@@ -13,7 +13,7 @@
 }
 
 .pokedex-header {
-  @include glass-solid(Rgba(15, 23, 42, 0.95));
+  @include shell-premium(Rgba(15, 23, 42, 0.95));
   padding: 20px 30px;
   border-radius: 24px;
   
@@ -125,7 +125,7 @@
 }
 
 .pokedex-controls {
-  @include glass-solid(Rgba(15, 23, 42, 0.95));
+  @include shell-premium(Rgba(15, 23, 42, 0.95));
   padding: 10px 20px;
   border-radius: 16px;
   display: flex;
@@ -381,5 +381,5 @@
 }
 
 .glass-morphism {
-  @include glass(Rgba(30, 41, 59, 0.5));
+  @include shell(Rgba(30, 41, 59, 0.5));
 }

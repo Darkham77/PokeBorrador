@@ -5,6 +5,7 @@
  * 
  * Escanea _raw-assets, convierte a WebP y espeja la estructura en el proyecto.
  * Soporta modo Lossless para Pixel Art y Lossy para el resto.
+ * Limpia la carpeta de destino antes de iniciar para evitar basura de archivos movidos.
  */
 
 import fs from 'node:fs/promises';
@@ -17,6 +18,7 @@ import { enableCompileCache } from 'node:module';
 enableCompileCache();
 
 const SOURCE_DIR = path.resolve(process.cwd(), '_raw-assets');
+const PUBLIC_ASSETS_DIR = path.resolve(process.cwd(), 'public', 'assets');
 
 async function getFilesToConvert(dir: string): Promise<string[]> {
   const files: string[] = [];
@@ -48,8 +50,6 @@ async function processFile(filePath: string) {
     const image = sharp(filePath);
     const metadata = await image.metadata();
 
-    const sharpChain = image;
-
     // Configuración de WebP
     const webpOptions: sharp.WebpOptions = { effort: 6 };
     if (isLossless) {
@@ -59,7 +59,7 @@ async function processFile(filePath: string) {
       webpOptions.quality = (metadata.width! < 250 || metadata.height! < 250) ? 98 : 80;
     }
 
-    await sharpChain.webp(webpOptions).toFile(destFile);
+    await image.webp(webpOptions).toFile(destFile);
     console.log(styleText('green', `   [OK] ${path.relative(process.cwd(), destFile)} (${isLossless ? 'Lossless' : 'Lossy'})`));
 
   } catch (err: unknown) {
@@ -76,6 +76,11 @@ async function main() {
     console.error(styleText('red', `Error: Directorio fuente '${SOURCE_DIR}' no encontrado.`));
     process.exit(1);
   }
+
+  // Limpieza determinista: borrar public/assets antes de reconstruir
+  console.log(styleText('yellow', `   🧹 Limpiando ${path.relative(process.cwd(), PUBLIC_ASSETS_DIR)}...`));
+  await fs.rm(PUBLIC_ASSETS_DIR, { recursive: true, force: true });
+  await fs.mkdir(PUBLIC_ASSETS_DIR, { recursive: true });
 
   const files = await getFilesToConvert(SOURCE_DIR);
   console.log(styleText('yellow', `   Encontrados ${files.length} archivos en _raw-assets.\n`));

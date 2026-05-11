@@ -8,7 +8,7 @@ import { MAPS_WITH_CYCLES } from '@/data/map-assets';
  * POKEAPI_BASE: Now local paths for downloaded sprites.
  */
 const POKEAPI_BASE = '/assets/sprites/pokemon/';
-const POKEAPI_ITEM_BASE = '/assets/items/';
+const POKEAPI_ITEM_BASE = '/assets/sprites/items/';
 
 /**
  * ITEM_MAPPING: Maps internal item names to PokeAPI names.
@@ -91,7 +91,8 @@ export const ASSET_TYPES = {
   RANK: 'rank',
   ICON: 'icon',
   ENVIRONMENT: 'environment',
-  DATA: 'data'
+  DATA: 'data',
+  BADGE: 'badge'
 } as const;
 
 export type AssetType = typeof ASSET_TYPES[keyof typeof ASSET_TYPES];
@@ -102,6 +103,7 @@ export interface AssetOptions {
   isBack?: boolean;
   back?: boolean; // Legacy fallback
   cycle?: 'morning' | 'day' | 'dusk' | 'night';
+  trainerSuffix?: 'avatar' | 'front' | 'back';
   [key: string]: unknown;
 }
 
@@ -176,7 +178,7 @@ export const getAssetUrl = (type: AssetType, rawId: string | number, options: As
         'medium': 'entrenador',
         'motorista': 'teamrocket',
         'montanero': 'tamer',
-        'rocket': 'teamrocket',
+        'rocket': 'rocket',
         'cazador': 'cazabichos'
       };
 
@@ -188,8 +190,11 @@ export const getAssetUrl = (type: AssetType, rawId: string | number, options: As
       // Other remote URLs fallback
       if (idStr.startsWith('http')) return idStr;
       
+      // Determine trainer suffix: default to 'front'
+      const suffix = options.trainerSuffix || (isBack ? 'back' : 'front');
+
       // Local assets (prioritized)
-      return resolveAsset(`/assets/sprites/trainers/${finalId}${extension}`);
+      return resolveAsset(`/assets/sprites/trainers/${finalId}_${suffix}${extension}`);
     }
 
     case ASSET_TYPES.ENVIRONMENT:
@@ -240,6 +245,9 @@ export const getAssetUrl = (type: AssetType, rawId: string | number, options: As
       // Local fallback
       return resolveAsset(`/assets/items/${idStr}${extension}`);
     }
+
+    case ASSET_TYPES.BADGE:
+      return resolveAsset(`/assets/sprites/badges/${id}${extension}`);
 
     default:
       return String(id);

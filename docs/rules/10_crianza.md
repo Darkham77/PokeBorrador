@@ -2,7 +2,7 @@
 
 ## Resumen del flujo
 
-```
+```text
 Jugador elige 2 Pokémon → verificar compatibilidad
     ↓
 checkCompatibility(pA, pB) → { level: 0|1|2|3, eggSpecies, reason }
@@ -32,18 +32,18 @@ function checkCompatibility(pA, pB) → { level, eggSpecies, reason }
 
 ### Niveles de compatibilidad
 
-| Nivel | Texto | Color | Intervalo de huevo |
-|---|---|---|---|
-| 0 | ❌ Incompatibles | Rojo | Sin huevo |
-| 1 | 😐 Poco interés | Naranja | (no usado actualmente) |
-| 2 | 🙂 Compatibles | Verde | 9 horas |
-| 3 | ❤️ Muy compatibles | Rosa | 6 horas |
+| Nivel | Texto              | Color   | Intervalo de huevo     |
+| ----- | ------------------ | ------- | ---------------------- |
+| 0     | ❌ Incompatibles   | Rojo    | Sin huevo              |
+| 1     | 😐 Poco interés    | Naranja | (no usado actualmente) |
+| 2     | 🙂 Compatibles     | Verde   | 9 horas                |
+| 3     | ❤️ Muy compatibles | Rosa    | 6 horas                |
 
 ```javascript
 const EGG_SPAWN_INTERVAL_MS = {
-  1: 12 * 60 * 60 * 1000,  // 12 horas (nivel 1, no activo)
-  2:  9 * 60 * 60 * 1000,  // 9 horas
-  3:  6 * 60 * 60 * 1000,  // 6 horas
+  1: 12 * 60 * 60 * 1000, // 12 horas (nivel 1, no activo)
+  2: 9 * 60 * 60 * 1000, // 9 horas
+  3: 6 * 60 * 60 * 1000, // 6 horas
 };
 ```
 
@@ -80,10 +80,12 @@ La función `getBaseEvolution` garantiza que el huevo sea siempre la forma base 
 
 ```javascript
 const evolutionBase = {
-  ivysaur: 'bulbasaur', venusaur: 'bulbasaur',
-  charmeleon: 'charmander', charizard: 'charmander',
+  ivysaur: 'bulbasaur',
+  venusaur: 'bulbasaur',
+  charmeleon: 'charmander',
+  charizard: 'charmander',
   // ... etc.
-}
+};
 ```
 
 ---
@@ -92,23 +94,23 @@ const evolutionBase = {
 
 Los grupos huevo definen qué Pokémon pueden criar entre sí. Un Pokémon puede tener hasta 2 grupos.
 
-| Grupo | Ejemplos |
-|---|---|
-| monster | Bulbasaur, Squirtle, Charmander, Lapras, Snorlax |
-| water1 | Squirtle, Poliwag, Psyduck, Horsea, Magikarp |
-| water2 | Goldeen, Magikarp, Gyarados |
-| water3 | Shellder, Staryu, Krabby, Omanyte |
-| bug | Caterpie, Weedle, Paras, Venonat, Scyther |
-| flying | Pidgey, Spearow, Doduo, Aerodactyl, Zubat |
-| ground | Rattata, Meowth, Eevee, Mankey, Vulpix, Growlithe |
-| fairy | Pikachu, Jigglypuff, Clefairy, Chansey |
-| plant | Bulbasaur, Oddish, Exeggcute, Tangela |
-| humanshape | Abra, Machop, Drowzee, Electabuzz, Jynx, Hitmonchan |
-| mineral | Geodude, Magnemite, Graveler, Electrode, Onix |
-| indeterminate | Gastly, Grimer, Koffing |
-| dragon | Ekans, Horsea, Dratini, Gyarados, Charizard |
-| ditto | Solo Ditto (se puede cruzar con cualquier grupo excepto no-eggs) |
-| no-eggs | No puede criar (legendarios, bebés) |
+| Grupo         | Ejemplos                                                         |
+| ------------- | ---------------------------------------------------------------- |
+| monster       | Bulbasaur, Squirtle, Charmander, Lapras, Snorlax                 |
+| water1        | Squirtle, Poliwag, Psyduck, Horsea, Magikarp                     |
+| water2        | Goldeen, Magikarp, Gyarados                                      |
+| water3        | Shellder, Staryu, Krabby, Omanyte                                |
+| bug           | Caterpie, Weedle, Paras, Venonat, Scyther                        |
+| flying        | Pidgey, Spearow, Doduo, Aerodactyl, Zubat                        |
+| ground        | Rattata, Meowth, Eevee, Mankey, Vulpix, Growlithe                |
+| fairy         | Pikachu, Jigglypuff, Clefairy, Chansey                           |
+| plant         | Bulbasaur, Oddish, Exeggcute, Tangela                            |
+| humanshape    | Abra, Machop, Drowzee, Electabuzz, Jynx, Hitmonchan              |
+| mineral       | Geodude, Magnemite, Graveler, Electrode, Onix                    |
+| indeterminate | Gastly, Grimer, Koffing                                          |
+| dragon        | Ekans, Horsea, Dratini, Gyarados, Charizard                      |
+| ditto         | Solo Ditto (se puede cruzar con cualquier grupo excepto no-eggs) |
+| no-eggs       | No puede criar (legendarios, bebés)                              |
 
 ---
 
@@ -119,14 +121,17 @@ function calculateInheritance(pA, pB, heldItemA, heldItemB) {
   const STATS = ['hp', 'atk', 'def', 'spa', 'spd', 'spe'];
 
   // 1. Determinar cuántos IVs se heredan
-  const hasDestinyKnot = (heldItemA === 'Lazo Destino' || heldItemB === 'Lazo Destino');
-  const count = hasDestinyKnot ? 5 : 3;  // Sin Lazo: 3 IVs; Con Lazo: 5 IVs
+  const hasDestinyKnot = heldItemA === 'Lazo Destino' || heldItemB === 'Lazo Destino';
+  const count = hasDestinyKnot ? 5 : 3; // Sin Lazo: 3 IVs; Con Lazo: 5 IVs
 
   // 2. Stat forzado por ítem de potencia
   const powerItems = {
-    'Pesa Recia': 'hp',       'Brazal Potencia': 'atk',
-    'Fajín Potencia': 'def',  'Lente Potencia': 'spa',
-    'Banda Potencia': 'spd',  'Tobillera Potencia': 'spe'
+    'Pesa Recia': 'hp',
+    'Brazal Potencia': 'atk',
+    'Fajín Potencia': 'def',
+    'Lente Potencia': 'spa',
+    'Banda Potencia': 'spd',
+    'Tobillera Potencia': 'spe',
   };
   // Si uno de los padres lleva ítem de potencia, ese stat es garantizado
 
@@ -173,7 +178,7 @@ Para cada uno de los 6 stats:
 
 ```javascript
 function performHatchRevelation(eggIdx) {
-  const p = makePokemon(egg.pokemonId, 5);  // Nivel 5
+  const p = makePokemon(egg.pokemonId, 5); // Nivel 5
 
   // Si es huevo de crianza: sobreescribir IVs con los heredados
   if (egg.origin === 'breeding') {
@@ -198,12 +203,12 @@ Están definidos en `EGG_MOVES_DB` pero **actualmente no se implementan** al nac
 
 ```javascript
 const EGG_MOVES_DB = {
-  bulbasaur:  ['leaf_storm', 'power_whip', 'ingrain'],
+  bulbasaur: ['leaf_storm', 'power_whip', 'ingrain'],
   charmander: ['dragon_rage', 'flare_blitz', 'dragon_dance'],
-  squirtle:   ['aqua_jet', 'mirror_coat', 'water_spout'],
-  pikachu:    ['volt_tackle', 'fake_out', 'encore'],
-  eevee:      ['wish', 'synchronoise', 'detect'],
-  meowth:     ['payday', 'hypnosis'],
+  squirtle: ['aqua_jet', 'mirror_coat', 'water_spout'],
+  pikachu: ['volt_tackle', 'fake_out', 'encore'],
+  eevee: ['wish', 'synchronoise', 'detect'],
+  meowth: ['payday', 'hypnosis'],
   // ...
 };
 ```

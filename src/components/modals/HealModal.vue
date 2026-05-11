@@ -463,7 +463,7 @@ onUnmounted(() => {
   padding: 16px;
   border-radius: 16px;
   border: 1px solid Rgba(239, 68, 68, 0.2);
-  @include glass;
+  @include shell;
   
   .cost-label {
     font-size: 7px;

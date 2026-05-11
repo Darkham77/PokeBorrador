@@ -1,0 +1,27 @@
+// src/styles/core/mixins/_shell.scss
+@use "../gpu" as *;
+
+@mixin shell($bg: Rgba(5, 5, 5, 1), $radius: 20px) {
+  background: $bg;
+  -webkit-will-change: transform, opacity;
+  will-change: transform, opacity;
+  @include gpu-layer;
+  border: 1px solid Rgba(255, 255, 255, 0.15);
+  border-radius: $radius;
+}
+
+@mixin shell-premium($bg: Rgba(13, 17, 23, 1), $radius: 24px) {
+  background: linear-gradient(180deg, Rgba(255, 255, 255, 0.05) 0%, Rgba(255, 255, 255, 0) 100%), $bg;
+  border: 1px solid Rgba(255, 255, 255, 0.2);
+  border-radius: $radius;
+  box-shadow: 0 10px 40px Rgba(0, 0, 0, 0.8);
+}
+
+@mixin card-premium($radius: 24px) {
+  background: linear-gradient(180deg, Rgba(255, 255, 255, 0.08) 0%, Rgba(0, 0, 0, 0.3) 100%);
+  border: 1px solid Rgba(255, 255, 255, 0.12);
+  border-radius: $radius;
+  box-shadow: 
+    0 20px 50px Rgba(0, 0, 0, 0.7),
+    inset 0 1px 1px Rgba(255, 255, 255, 0.05);
+}

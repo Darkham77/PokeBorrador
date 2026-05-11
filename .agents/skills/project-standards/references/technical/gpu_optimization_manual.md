@@ -13,7 +13,7 @@ All heavy components or those that animate frequently must be promoted to a GPU 
 - **Layer Consolidation**: Avoid redundant layer promotion. If a parent (e.g., `BoxPokemonCard`) is already accelerated, do NOT apply `@include gpu-layer` or `will-change` to its children (e.g., Auras). Managing 100+ overlapping layers causes "Scroll-Stop Freezes" during compositor cleanup.
 - **Solid Depth Pattern**: Avoid heavy filter chains for large atmospheric effects or auras. They cause massive GPU pressure on multi-layered UIs. Use `box-shadow` with high spread and solid backgrounds with high opacity instead.
 - **Context-Aware will-change**: Automated tools and manual implementations MUST check the surrounding block (approx. 500 characters). Only add `will-change` if a `filter` or `transform` exists and NO other `will-change` is present in that context. Duplicate declarations lead to bloated CSS and memory waste.
-- **Filter & Backdrop-Filter Promotion**: Elements utilizing `filter` or `backdrop-filter` (especially in Glassmorphism effects or conditional states) **MUST** include `will-change: filter` or `will-change: backdrop-filter` respectively.
+- **Filter Promotion**: Elements utilizing `filter` (especially in Premium Shell effects or conditional states) **MUST** include `will-change: filter`.
 - **Audit Safeguard**: This promotion is required even if the current state is `filter: none !important`, ensuring the compositor layer is pre-allocated and ready for dynamic transitions without triggering "GPU Gap" warnings.
 - **Z-Index Single Source of Truth**: Never use hardcoded integers for `z-index` (e.g., `10`, `-1`). All layering MUST be relative to centralized variables using `calc(var(--z-base) +/- X)` or named constants (e.g., `var(--z-map-spawns)`). Refer to `src/logic/constants/visuals.ts` for the authoritative values.
 
@@ -72,6 +72,6 @@ For cinematic events (Evolution, Hatching), the modal must allow visual effects 
 To ensure performance standards are maintained, the project uses automated static analysis:
 
 - **GPU Gap Audit (`audit:full`)**: Running `npm run audit:full` triggers a context-aware scan for GPU best practices.
-- **Promotion Check**: The engine detects any usage of `filter` or `backdrop-filter` (especially in atmospheric overlays or Glassmorphism) that lacks a corresponding `will-change` promotion within a 500-character window.
+- **Promotion Check**: The engine detects any usage of `filter` (especially in atmospheric overlays or Premium Shells) that lacks a corresponding `will-change` promotion within a 500-character window.
 - **Why**: Static verification prevents "GPU Stutter" in production by ensuring layers are promoted to the compositor BEFORE they are needed for transitions.
 - **Manual Verification**: Use the "Layer Borders" and "Paint Flashing" tools in Chrome DevTools to verify that atmospheric overlays (`::after` frames) maintain a single, stable compositor layer.

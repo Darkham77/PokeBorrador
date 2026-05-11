@@ -2,7 +2,7 @@
 @use "../../core/tools" as *;
 
 .box-header {
-  @include glass-solid(Rgba(15, 23, 42, 0.95));
+  @include shell-premium(Rgba(15, 23, 42, 0.95));
   padding: 20px 30px;
   border-radius: 24px;
   

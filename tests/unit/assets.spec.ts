@@ -36,14 +36,14 @@ describe('AssetService & Resolver', () => {
 
     it('debe manejar huevos como ítems especiales (localizado)', () => {
       expect(getAssetUrl(ASSET_TYPES.POKEMON, 'egg_water'))
-        .toBe('/assets/items/egg.webp')
+        .toBe('/assets/sprites/items/egg.webp')
     })
   })
 
   describe('AssetService: Item Routing', () => {
     it('debe mapear nombres internos a IDs de PokeAPI (localizado)', () => {
       expect(getAssetUrl(ASSET_TYPES.ITEM, 'super_pocion'))
-        .toBe('/assets/items/super-potion.webp')
+        .toBe('/assets/sprites/items/super-potion.webp')
     })
 
     it('debe usar fallback local para ítems no mapeados o custom', () => {
@@ -55,13 +55,13 @@ describe('AssetService & Resolver', () => {
   describe('AssetService: Trainer Routing', () => {
     it('debe usar activos locales para líderes de gimnasio (anteriormente externos)', () => {
       expect(getAssetUrl(ASSET_TYPES.TRAINER, 'brock'))
-        .toBe('/assets/sprites/trainers/brock.webp')
+        .toBe('/assets/sprites/trainers/brock_front.webp')
     })
 
     it('debe usar activos locales para otros entrenadores (sin LOD)', () => {
       vi.stubGlobal('innerWidth', 400)
       expect(getAssetUrl(ASSET_TYPES.TRAINER, 'hero'))
-        .toBe('/assets/sprites/trainers/hero.webp')
+        .toBe('/assets/sprites/trainers/hero_front.webp')
     })
   })
 

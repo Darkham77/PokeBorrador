@@ -2,15 +2,15 @@
 
 ## Categorías
 
-| Categoría | Dónde se compra | Moneda |
-|---|---|---|
-| `pokeballs` | Poké Market | ₽ |
-| `pociones` | Poké Market | ₽ |
-| `stones` | Poké Market | ₽ |
-| `especial` | Poké Market o Trainer Shop | ₽ o BC |
-| `held` | Trainer Shop | BC |
-| `breeding` | Trainer Shop | BC |
-| `utility` | Trainer Shop | BC |
+| Categoría   | Dónde se compra            | Moneda |
+| ----------- | -------------------------- | ------ |
+| `pokeballs` | Poké Market                | ₽      |
+| `pociones`  | Poké Market                | ₽      |
+| `stones`    | Poké Market                | ₽      |
+| `especial`  | Poké Market o Trainer Shop | ₽ o BC |
+| `held`      | Trainer Shop               | BC     |
+| `breeding`  | Trainer Shop               | BC     |
+| `utility`   | Trainer Shop               | BC     |
 
 ---
 
@@ -19,7 +19,7 @@
 Usables desde la mochila fuera de batalla y desde el menú de mochila en batalla.
 
 | Ítem | Efecto |
-|---|---|
+| --- | --- |
 | Poción | +20 HP (no cura si HP está lleno) |
 | Super Poción | +50 HP |
 | Hiper Poción | +200 HP |
@@ -39,24 +39,24 @@ Usables desde la mochila fuera de batalla y desde el menú de mochila en batalla
 
 ### MTs (Máquinas Técnicas)
 
-| Ítem | Movimiento enseñado |
-|---|---|
+| Ítem           | Movimiento enseñado            |
+| -------------- | ------------------------------ |
 | MT Retribución | Retribución (Normal, 85 poder) |
-| MT Terremoto | Terremoto (Tierra, 100 poder) |
-| MT Ventisca | Ventisca (Hielo, 110 poder) |
+| MT Terremoto   | Terremoto (Tierra, 100 poder)  |
+| MT Ventisca    | Ventisca (Hielo, 110 poder)    |
 
 ---
 
 ## Ítems Globales (no requieren elegir Pokémon)
 
-| Ítem | Efecto | Duración |
-|---|---|---|
-| Repelente | Bloquea Pokémon de nivel inferior al tuyo | 10 minutos |
-| Superrepelente | Bloquea Pokémon de nivel inferior al tuyo | 20 minutos |
-| Máximo Repelente | Bloquea Pokémon de nivel inferior al tuyo | 30 minutos |
-| Ticket Shiny | Divide SHINY_RATE por 2 (1/1000 en vez de 1/2000) | 30 minutos |
-| Moneda Amuleto | Duplica el dinero ganado en batallas | 30 minutos |
-| Huevo Suerte Pequeño | Aumenta la EXP ganada en un 50% | 30 minutos |
+| Ítem                 | Efecto                                            | Duración   |
+| -------------------- | ------------------------------------------------- | ---------- |
+| Repelente            | Bloquea Pokémon de nivel inferior al tuyo         | 10 minutos |
+| Superrepelente       | Bloquea Pokémon de nivel inferior al tuyo         | 20 minutos |
+| Máximo Repelente     | Bloquea Pokémon de nivel inferior al tuyo         | 30 minutos |
+| Ticket Shiny         | Divide SHINY_RATE por 2 (1/1000 en vez de 1/2000) | 30 minutos |
+| Moneda Amuleto       | Duplica el dinero ganado en batallas              | 30 minutos |
+| Huevo Suerte Pequeño | Aumenta la EXP ganada en un 50%                   | 30 minutos |
 
 ---
 
@@ -66,56 +66,56 @@ Equipados en un Pokémon específico. Se activan automáticamente en batalla.
 
 ### Ofensivos
 
-| Ítem | Efecto en batalla |
-|---|---|
-| Cinta Elegida | ×1.5 Ataque físico; solo puede usar el primer movimiento elegido ese combate |
-| Lente Zoom | Críticos al 12% (vs. 6% base) |
-| Carbón | ×1.2 a movimientos Fuego |
-| Imán | ×1.2 a movimientos Eléctrico |
-| Agua Mística | ×1.2 a movimientos Agua |
-| Semilla Milagro | ×1.2 a movimientos Planta |
-| Cinturón Negro | ×1.2 a movimientos Lucha |
+| Ítem            | Efecto en batalla                                                            |
+| --------------- | ---------------------------------------------------------------------------- |
+| Cinta Elegida   | ×1.5 Ataque físico; solo puede usar el primer movimiento elegido ese combate |
+| Lente Zoom      | Críticos al 12% (vs. 6% base)                                                |
+| Carbón          | ×1.2 a movimientos Fuego                                                     |
+| Imán            | ×1.2 a movimientos Eléctrico                                                 |
+| Agua Mística    | ×1.2 a movimientos Agua                                                      |
+| Semilla Milagro | ×1.2 a movimientos Planta                                                    |
+| Cinturón Negro  | ×1.2 a movimientos Lucha                                                     |
 
 ### Defensivos / Sustain
 
-| Ítem | Efecto en batalla |
-|---|---|
-| Restos | Recupera `floor(maxHp / 16)` al final de cada turno |
-| Cascabel Concha | Recupera `floor(daño_infligido / 8)` al atacar |
-| Banda Focus | Si HP lleno, sobrevive con 1 HP ante un golpe que lo noqueaba |
+| Ítem            | Efecto en batalla                                             |
+| --------------- | ------------------------------------------------------------- |
+| Restos          | Recupera `floor(maxHp / 16)` al final de cada turno           |
+| Cascabel Concha | Recupera `floor(daño_infligido / 8)` al atacar                |
+| Banda Focus     | Si HP lleno, sobrevive con 1 HP ante un golpe que lo noqueaba |
 
 ### Soporte
 
-| Ítem | Efecto |
-|---|---|
+| Ítem          | Efecto                                                  |
+| ------------- | ------------------------------------------------------- |
 | Compartir EXP | El portador gana `floor(baseExp × 0.5)` aunque no luche |
 
 ### De Crianza
 
-| Ítem | Stat garantizado | BC |
-|---|---|---|
-| Pesa Recia | HP | 120 |
-| Brazal Potencia | Ataque | 120 |
-| Fajín Potencia | Defensa | 120 |
-| Lente Potencia | At. Especial | 120 |
-| Banda Potencia | Def. Especial | 120 |
-| Tobillera Potencia | Velocidad | 120 |
-| Lazo Destino | 5 IVs (en vez de 3) | 200 |
+| Ítem               | Stat garantizado    | BC  |
+| ------------------ | ------------------- | --- |
+| Pesa Recia         | HP                  | 120 |
+| Brazal Potencia    | Ataque              | 120 |
+| Fajín Potencia     | Defensa             | 120 |
+| Lente Potencia     | At. Especial        | 120 |
+| Banda Potencia     | Def. Especial       | 120 |
+| Tobillera Potencia | Velocidad           | 120 |
+| Lazo Destino       | 5 IVs (en vez de 3) | 200 |
 
 ---
 
 ## Piedras de evolución
 
-| Piedra | Pokémon → Evolución |
-|---|---|
-| Piedra Trueno ⚡ | Pikachu → Raichu, Eevee → Jolteon |
-| Piedra Luna 🌙 | Clefairy → Clefable, Jigglypuff → Wigglytuff, Nidorina → Nidoqueen*, Nidorino → Nidoking* |
-| Piedra Hoja 🌿 | Gloom → Vileplume, Weepinbell → Victreebel, Exeggcute → Exeggutor |
-| Piedra Agua 💧 | Poliwhirl → Poliwrath, Shellder → Cloyster, Staryu → Starmie, Eevee → Vaporeon |
-| Piedra Fuego 🔥 | Growlithe → Arcanine, Vulpix → Ninetales*, Eevee → Flareon |
-| Piedra Solar ☀️ | Gloom → Bellossom* |
-| Piedra Hielo 🧊 | Eevee → Glaceon* |
-| Piedra Brillo ✨ | Togetic → Togekiss* |
+| Piedra           | Pokémon → Evolución                                                                       |
+| ---------------- | ----------------------------------------------------------------------------------------- |
+| Piedra Trueno ⚡ | Pikachu → Raichu, Eevee → Jolteon                                                         |
+| Piedra Luna 🌙   | Clefairy → Clefable, Jigglypuff → Wigglytuff, Nidorina → Nidoqueen*, Nidorino → Nidoking* |
+| Piedra Hoja 🌿   | Gloom → Vileplume, Weepinbell → Victreebel, Exeggcute → Exeggutor                         |
+| Piedra Agua 💧   | Poliwhirl → Poliwrath, Shellder → Cloyster, Staryu → Starmie, Eevee → Vaporeon            |
+| Piedra Fuego 🔥  | Growlithe → Arcanine, Vulpix → Ninetales\*, Eevee → Flareon                               |
+| Piedra Solar ☀️  | Gloom → Bellossom\*                                                                       |
+| Piedra Hielo 🧊  | Eevee → Glaceon\*                                                                         |
+| Piedra Brillo ✨ | Togetic → Togekiss\*                                                                      |
 
 > `*` = Solo definidos en `STONE_EVOLUTIONS` pero pueden requerir que el Pokémon esté en el DB.
 

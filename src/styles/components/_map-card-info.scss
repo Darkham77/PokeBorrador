@@ -42,7 +42,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  @include glass-solid(Rgba(0, 0, 0, 0.85));
+  @include shell-premium(Rgba(0, 0, 0, 0.85));
   border: 1px solid Rgba(255, 255, 255, 0.2);
   border-radius: 8px;
   box-shadow: 0 4px 12px Rgba(0, 0, 0, 0.4);
@@ -52,7 +52,7 @@
 
   &:hover {
     transform: Scale(1.05);
-    @include glass-solid(Rgba(0, 0, 0, 0.95));
+    @include shell-premium(Rgba(0, 0, 0, 0.95));
     border-color: Rgba(255, 255, 255, 0.4);
     z-index: var(--z-map-ui) !important;
   }

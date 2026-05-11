@@ -29,14 +29,14 @@
   }
   
   &::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.2);
+    background: Rgba(0, 0, 0, 0.2);
     border-radius: 2px;
   }
   
   &::-webkit-scrollbar-thumb {
     background: var(--yellow-dark, #8b6d11);
     border-radius: 2px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid Rgba(255, 255, 255, 0.1);
     
     &:hover {
       background: var(--yellow);
@@ -46,7 +46,7 @@
   // Standards compliance (wrapped to avoid linter warnings on older agents)
   @supports (scrollbar-width: thin) {
     scrollbar-width: thin;
-    scrollbar-color: var(--yellow-dark, #8b6d11) rgba(0, 0, 0, 0.2);
+    scrollbar-color: var(--yellow-dark, #8b6d11) Rgba(0, 0, 0, 0.2);
   }
 }
 

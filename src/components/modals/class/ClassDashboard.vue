@@ -24,7 +24,7 @@ const emit = defineEmits<{
 }>()
 
 const getTrainerSprite = (id: string | number | undefined) => {
-  return getAssetUrl(ASSET_TYPES.TRAINER, id as string);
+  return getAssetUrl(ASSET_TYPES.TRAINER, id as string, { trainerSuffix: 'front' });
 }
 
 const handleImageError = (e: Event) => {

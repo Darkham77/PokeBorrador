@@ -2,16 +2,16 @@
 
 ## Tipos de huevos
 
-| Tipo | Origen | Límite | Pasos |
-|---|---|---|---|
-| Huevo de Encuentro | 5% al derrotar entrenador NPC | 1 a la vez | 150–300 |
-| Huevo de Crianza | Guardería con pareja compatible | 1 a la vez | 150–300 |
+| Tipo               | Origen                          | Límite     | Pasos   |
+| ------------------ | ------------------------------- | ---------- | ------- |
+| Huevo de Encuentro | 5% al derrotar entrenador NPC   | 1 a la vez | 150–300 |
+| Huevo de Crianza   | Guardería con pareja compatible | 1 a la vez | 150–300 |
 
 ---
 
 ## Ciclo de vida de un huevo
 
-```
+```text
 Creación (addEgg)
     │
     ├── steps: random entre 150 y 300
@@ -44,7 +44,7 @@ Creación (addEgg)
 Los huevos de encuentro se obtienen al derrotar entrenadores NPC con 5% de probabilidad. La especie es aleatoria del siguiente pool:
 
 ```javascript
-['pichu', 'magby', 'elekid', 'cleffa', 'igglybuff', 'togepi', 'eevee']
+['pichu', 'magby', 'elekid', 'cleffa', 'igglybuff', 'togepi', 'eevee'];
 ```
 
 Son todos **Pokémon bebé** o difíciles de conseguir de otra forma.
@@ -83,7 +83,7 @@ Al iniciar sesión online, la función `processOfflineBreeding(userId)` verifica
 // Lógica aproximada:
 const elapsed = Date.now() - lastSaveTimestamp;
 const interval = EGG_SPAWN_INTERVAL_MS[compat.level];
-if (elapsed >= interval && state.eggs.filter(e => e.origin === 'breeding').length < 1) {
+if (elapsed >= interval && state.eggs.filter((e) => e.origin === 'breeding').length < 1) {
   addEgg(eggSpecies, 'breeding', inheritanceData);
 }
 ```

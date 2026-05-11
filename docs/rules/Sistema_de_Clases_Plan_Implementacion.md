@@ -1,5 +1,5 @@
 # 🎭 Sistema de Clases — Plan de Implementación
->
+
 > PokeBorrador · Diseño final balanceado + hoja de ruta técnica paso a paso
 
 ---
@@ -30,7 +30,7 @@ La clase se elige al alcanzar **Nivel de Entrenador 5** (primer hito real del ju
 #### ✅ Ventajas
 
 | Mecánica | Descripción | Valor Numérico |
-|---|---|---|
+| --- | --- | --- |
 | **Mercado Negro** | Puede vender Pokémon de la caja directamente por dinero | `₽ = nivel * 50 + (IV_total / 186) * 500` |
 | **Robo Rápido** | Al inicio de batalla contra NPC entrenador, chance de robar 1 ítem | `prob = 0.15 + (classLevel * 0.01)`, máx `0.30` |
 | **Precio Preferencial** | Descuento del 20% en ítems del mercado negro exclusivo | Multiplicador `0.80` en black market |
@@ -38,11 +38,11 @@ La clase se elige al alcanzar **Nivel de Entrenador 5** (primer hito real del ju
 
 #### ❌ Penalizaciones
 
-| Penalización | Valor |
-|---|---|
-| Centro Pokémon cuesta el doble | Multiplicador `2.0x` fijo (no escalante, más predecible) |
-| -10% Battle Coins en todas las batallas | Multiplicador `0.90` a `battleCoins` ganadas |
-| No puede participar en torneos oficiales | Acceso bloqueado a `gymBattle` (si aplica en el futuro) |
+| Penalización                             | Valor                                                    |
+| ---------------------------------------- | -------------------------------------------------------- |
+| Centro Pokémon cuesta el doble           | Multiplicador `2.0x` fijo (no escalante, más predecible) |
+| -10% Battle Coins en todas las batallas  | Multiplicador `0.90` a `battleCoins` ganadas             |
+| No puede participar en torneos oficiales | Acceso bloqueado a `gymBattle` (si aplica en el futuro)  |
 
 #### 🧮 Balance racional
 
@@ -57,7 +57,7 @@ El Rocket gana mucho dinero pero lo gasta igual de rápido (curación cara). Pue
 #### ✅ Ventajas
 
 | Mecánica | Descripción | Valor Numérico |
-|---|---|---|
+| --- | --- | --- |
 | **Racha de Capturas** | Capturas consecutivas sin fallar ni huir acumulan multiplicador | `mult = 1.0 + (0.15 * racha)`, máx `3.0x`. Aplica a shinyRate (divide) y a IVs mínimos (`floor(IV_min + racha * 2)`, máx 20) |
 | **Sinergia Bicho** | Por cada Pokémon tipo Bicho en el equipo activo | `+5% catchRate`, `-10% fleeRate`. Máx `+20%` y `-40%` respectivamente |
 | **Zonas Privilegiadas** | En zonas marcadas, tasa de encuentros aumentada y pool expandido | `1.5x encounterRate`, acceso a Pokémon raros del pool exclusivo |
@@ -65,11 +65,11 @@ El Rocket gana mucho dinero pero lo gasta igual de rápido (curación cara). Pue
 
 #### ❌ Penalizaciones
 
-| Penalización | Valor |
-|---|---|
+| Penalización                                 | Valor                                     |
+| -------------------------------------------- | ----------------------------------------- |
 | -20% EXP en batallas contra entrenadores NPC | Multiplicador `0.80` a `pExp` vs trainers |
-| -15% Battle Coins en todas las batallas | Multiplicador `0.85` a `battleCoins` |
-| Guardería cuesta 1.5x más | Multiplicador `1.5x` en costos de daycare |
+| -15% Battle Coins en todas las batallas      | Multiplicador `0.85` a `battleCoins`      |
+| Guardería cuesta 1.5x más                    | Multiplicador `1.5x` en costos de daycare |
 
 #### 🧮 Balance racional
 
@@ -84,7 +84,7 @@ La racha de capturas es muy poderosa (Shiny potencialmente 3x más probable), pe
 #### ✅ Ventajas
 
 | Mecánica | Descripción | Valor Numérico |
-|---|---|---|
+| --- | --- | --- |
 | **Bonificación de EXP** | Todos los Pokémon ganan más EXP en combate | `+10%` a `pExp` en toda batalla → multiplicador `1.10` |
 | **Maestría en Gimnasios** | Más Battle Coins y un ítem exclusivo al ganar contra líderes de gimnasio | `+30%` BC en batallas de gimnasio + drop de ítem especial |
 | **Entrenamiento de EVs** | El Centro Pokémon ofrece entrenamiento de EVs a mitad de precio | Costo `0.5x`, eficiencia `1.2x` (requiere UI nueva) |
@@ -94,7 +94,7 @@ La racha de capturas es muy poderosa (Shiny potencialmente 3x más probable), pe
 #### ❌ Penalizaciones
 
 | Penalización | Valor |
-|---|---|
+| --- | --- |
 | -10% catchRate en Pokémon con IV total > 120 (aprox. 20+ por stat) | Reduce `a` en la fórmula de captura |
 | Guardería cuesta 1.5x más | Multiplicador `1.5x` en costos de daycare |
 | Mercado Negro deshabilitado | No puede vender Pokémon ni acceder a la tienda del Rocket |
@@ -112,7 +112,7 @@ El Entrenador es la clase más fuerte en PvP y progresión de historia. Sus pena
 #### ✅ Ventajas
 
 | Mecánica | Descripción | Valor Numérico |
-|---|---|---|
+| --- | --- | --- |
 | **Herencia Élite** | Lazo Destino transmite 4 IVs (vs 3 normal). Habilidad Oculta: 75% (vs 60%) | Modifica `calculateInheritance()` en `15_breeding.js` |
 | **Incubación Acelerada** | -25% en tiempo de eclosión de huevos | Ajustar `hatch_ready_time` con multiplicador `0.75` |
 | **Everstone Garantizada** | La Piedra Eterna funciona con 100% de garantía (vs probabilidad base) | Condicional en `calculateInheritance()` |
@@ -122,11 +122,11 @@ El Entrenador es la clase más fuerte en PvP y progresión de historia. Sus pena
 
 #### ❌ Penalizaciones
 
-| Penalización | Valor |
-|---|---|
-| -10% EXP en todos los combates | Multiplicador `0.90` a `pExp` |
-| Centro Pokémon cuesta 1.5x para Pokémon que no nacieron con él | Verifica `originalTrainer` del Pokémon |
-| No puede usar el Mercado Negro | Sin acceso a venta rápida por dinero del Rocket |
+| Penalización                                                   | Valor                                           |
+| -------------------------------------------------------------- | ----------------------------------------------- |
+| -10% EXP en todos los combates                                 | Multiplicador `0.90` a `pExp`                   |
+| Centro Pokémon cuesta 1.5x para Pokémon que no nacieron con él | Verifica `originalTrainer` del Pokémon          |
+| No puede usar el Mercado Negro                                 | Sin acceso a venta rápida por dinero del Rocket |
 
 #### 🧮 Balance racional
 
@@ -201,14 +201,14 @@ function getClassModifier(type) {
 **Paso 3.1** — En la función de reparto de EXP (`awardBattleExperience` o equivalente):
 
 ```javascript
-const expMult = getClassModifier('expMult');  // Entrenador 1.10 | Criador 0.90 | resto 1.0
+const expMult = getClassModifier('expMult'); // Entrenador 1.10 | Criador 0.90 | resto 1.0
 pExp = Math.floor(pExp * expMult);
 ```
 
 **Paso 3.2** — En el reparto de Battle Coins:
 
 ```javascript
-const bcMult = getClassModifier('bcMult');  // Entrenador gym 1.30 | Rocket 0.90 | Cazabichos 0.85
+const bcMult = getClassModifier('bcMult'); // Entrenador gym 1.30 | Rocket 0.90 | Cazabichos 0.85
 battleCoinsEarned = Math.floor(battleCoinsEarned * bcMult);
 ```
 
@@ -271,7 +271,9 @@ if (state.playerClass === 'cazabichos' && state.classData.captureStreak > 0) {
 const healCostMult = getClassModifier('healCost');
 // Rocket: 2.0 | Criador: 1.5 si originalTrainer !== state.uid | resto: 1.0
 const totalCost = baseCost * healCostMult;
-if (state.money < totalCost) { /* mostrar error */ return; }
+if (state.money < totalCost) {
+  /* mostrar error */ return;
+}
 state.money -= totalCost;
 ```
 
@@ -386,16 +388,16 @@ const daycareCostMult = getClassModifier('daycareCost');
 
 ## 📁 Archivos a Crear / Modificar
 
-| Archivo | Acción | Descripción |
-|---|---|---|
-| `src/legacy/js/04_state.js` | Modificar | Añadir campos de clase al INITIAL_STATE |
-| `src/legacy/js/07_battle.js` | Modificar | EXP/BC multipliers, Robo Rápido, catchRate ajustes |
-| `src/legacy/js/06_encounters.js` | Modificar | Racha de capturas, Zonas Privilegiadas |
-| `src/legacy/js/08_shop.js` | Modificar | Costos de curación, Mercado Negro, tienda Reputación |
-| `src/legacy/js/15_breeding.js` | Modificar | Herencia Élite, Everstone 100%, tiempo eclosión |
-| `src/legacy/js/12_box_bag.js` | Modificar | Análisis Genético del Criador |
-| `src/legacy/js/20_classes.js` | **Crear** | Motor principal del sistema de clases |
-| `index.html` | Modificar | Modal de selección, HUD badge, paneles de clase |
+| Archivo                          | Acción    | Descripción                                          |
+| -------------------------------- | --------- | ---------------------------------------------------- |
+| `src/legacy/js/04_state.js`      | Modificar | Añadir campos de clase al INITIAL_STATE              |
+| `src/legacy/js/07_battle.js`     | Modificar | EXP/BC multipliers, Robo Rápido, catchRate ajustes   |
+| `src/legacy/js/06_encounters.js` | Modificar | Racha de capturas, Zonas Privilegiadas               |
+| `src/legacy/js/08_shop.js`       | Modificar | Costos de curación, Mercado Negro, tienda Reputación |
+| `src/legacy/js/15_breeding.js`   | Modificar | Herencia Élite, Everstone 100%, tiempo eclosión      |
+| `src/legacy/js/12_box_bag.js`    | Modificar | Análisis Genético del Criador                        |
+| `src/legacy/js/20_classes.js`    | **Crear** | Motor principal del sistema de clases                |
+| `index.html`                     | Modificar | Modal de selección, HUD badge, paneles de clase      |
 
 ---
 

@@ -37,21 +37,21 @@ To maximize player agency and world dynamism, the system uses an **OR (Additive)
 
 - A Pokémon appears if the current **Time Phase** matches its schedule.
 - **OR** if the current **Weather** favors its elemental type, even if it is outside its normal hours.
-- *Example*: A Staryu (Night) can appear during the *Day* if it is *Raining*.
+- _Example_: A Staryu (Night) can appear during the _Day_ if it is _Raining_.
 
 ### 5.2 Weather Buffs (Native Spawns)
 
 Weather conditions provide a **Boost (x1.5)** to the base encounter probability of native Pokémon that share a related elemental type.
 
-| Weather | Boosted Types |
-| :--- | :--- |
-| **Sun (☀️)** | Fire, Grass |
-| **Heatwave (🔥)** | Fire |
-| **Rain (🌧️)** | Water, Bug, Grass |
-| **Storm (⛈️)** | Electric, Dragon |
-| **Snow (❄️)** | Ice, Steel |
-| **Sandstorm (🏜️)** | Rock, Ground, Steel |
-| **Fog (🌫️)** | Ghost, Psychic, Dark |
+| Weather            | Boosted Types        |
+| :----------------- | :------------------- |
+| **Sun (☀️)**       | Fire, Grass          |
+| **Heatwave (🔥)**  | Fire                 |
+| **Rain (🌧️)**      | Water, Bug, Grass    |
+| **Storm (⛈️)**     | Electric, Dragon     |
+| **Snow (❄️)**      | Ice, Steel           |
+| **Sandstorm (🏜️)** | Rock, Ground, Steel  |
+| **Fog (🌫️)**       | Ghost, Psychic, Dark |
 
 ### 5.3 Weather Invasions (Visitors & Relative Weights)
 
@@ -82,3 +82,31 @@ Map tooltips use the following iconography to inform the player:
   - `🌧️ Visitante/Exclusivo/Potenciado por el clima` (Weather info)
 - **Fallback**: If no cycle or weather info is applicable, display `Habitante común`.
 - **Unknown Pokémon**: Silhouette with hint: `Atmospheric anomaly detected`.
+
+---
+
+## 6. Calidad de los Encuentros (IVs y Potencial)
+
+La generación de IVs no es puramente aleatoria; está fuertemente influenciada por el contexto del encuentro.
+
+### 6.1 Lógica de Suelos (ivFloor)
+
+El sistema aplica un `ivFloor` dinámico antes de la creación. El IV final de cada estadística es `Math.max(ivFloor, randomValue)`.
+
+- **Cazabichos (Racha)**: El suelo es igual a la racha de capturas actual del jugador.
+- **Misiones de Clase**:
+  - 6h: Suelo 5.
+  - 12h: Suelo 10.
+  - 24h: Suelo 15.
+
+### 6.2 El Método del Guardián (Doble Tirada)
+
+Los Pokémon Guardianes utilizan un algoritmo de **Doble Tirada de Dados**. Se generan dos valores aleatorios y se selecciona el mayor, lo que desplaza la curva de probabilidad hacia valores altos.
+
+- **Suelo Fijo**: Los Guardianes tienen un `ivFloor` inmutable de **12** en todas las estadísticas.
+
+### 6.3 Bonos de Guerra (Dominancia)
+
+Si un mapa está bajo el control total de la facción del jugador, se activa el **Bono de Dominancia**:
+
+- **Efecto**: Todos los Pokémon salvajes capturados en ese mapa tienen un suelo garantizado de **15 IVs** en todas sus estadísticas.

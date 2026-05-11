@@ -21,7 +21,7 @@ $poder-color: var(--red);
 }
 
 .war-sidebar {
-  @include glass-solid(Rgba(15, 15, 23, 0.7));
+  @include shell-premium(Rgba(15, 15, 23, 0.7));
   position: sticky;
   top: 20px;
   display: flex;

@@ -157,6 +157,12 @@ export const useGymsStore = defineStore('gyms', {
     isGymDefeated(gymId: string) {
       return this.defeatedGyms.includes(gymId)
     },
+    isDifficultyDefeated(gymId: string, difficulty: string) {
+      const gameStore = useGameStore()
+      const prog = gameStore.state.gymProgress[gymId]
+      if (!prog) return false
+      return (prog as any)[difficulty] === true
+    },
     async challengeGym(gymId: string, difficulty: 'easy' | 'normal' | 'hard' = 'easy') {
       const battleStore = useBattleStore()
       

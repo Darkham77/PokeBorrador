@@ -150,9 +150,9 @@ Performance work is a post-functionality pass. Do not optimize before core behav
 - **ResizeObserver on Fixed Containers**: `ResizeObserver` can report inaccurate heights (`0px`) when observing `position: fixed` elements, especially those using `container-type` or containing only absolute/percentage-based children. Always observe the true inner relative/static content wrapper to guarantee accurate dynamic height calculations.
 - **ResizeObserver for Responsive Components**: Use `ResizeObserver` instead of media queries or window resize events for components that need to adapt their layout (e.g., column count or font-size) based on their own container width rather than the viewport.
   - **MANDATORY Cleanup**: Always call `observer.disconnect()` in the `onUnmounted` hook to prevent memory leaks and unexpected behavior after the component is destroyed.
-- **Defensive Computed Properties**: When deriving state from potentially uninitialized or asynchronous stores (e.g., a search filter or a dynamic inventory list), ALWAYS handle `null` or `undefined` values.
-  - **Pattern**: `const filteredItems = computed(() => (search.value || '').toLowerCase())`.
-  - **Why**: Prevents critical runtime `TypeError` crashes during the component mount/initialization cycle before the store data is ready.
+- **Defensive Computed Properties**: When deriving state from potentially uninitialized or asynchronous stores (e.g., a search filter or a dynamic inventory list) or accessing deeply nested game data (e.g., `gym.difficulties[selected].levels`), ALWAYS handle `null` or `undefined` values.
+  - **Pattern**: `const levels = computed(() => props.gym?.difficulties?.[selected.value]?.levels || [])`.
+  - **Why**: Prevents critical runtime `TypeError` crashes during the component mount/initialization cycle or after state resets before the store data is ready.
 - **Explicit lockReason Pattern**: For complex UI states (like routes or buttons locked by multiple conditions), use a computed property `lockReason` to centralize the logic.
   - **Pattern**: `const lockReason = computed(() => { if (isLockedByTicket) return 'Needs Ticket'; if (isLockedByMedals) return 'Needs 8 Medals'; return null; })`.
   - **Why**: Keeps templates clean, ensures consistency between tooltips and overlays, and makes the logic easier to test and maintain compared to inline ternary operators.

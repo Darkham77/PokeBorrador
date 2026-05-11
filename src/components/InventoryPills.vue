@@ -2,12 +2,15 @@
 import { computed, ref, onMounted, nextTick, watch, onUnmounted } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
+import { useGymsStore } from '@/stores/gyms'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import { formatCurrency } from '@/logic/utils/formatters'
 import { SHOP_ITEMS } from '@/data/items'
 
 const _gameStore = useGameStore()
 const _uiStore = useUIStore()
+const gymsStore = useGymsStore()
+
 const money = computed(() => _gameStore.state.money)
 const battleCoins = computed(() => _gameStore.state.battleCoins || 0)
 
@@ -19,6 +22,22 @@ const eggRef = ref<HTMLElement | null>(null)
 
 const medals = computed(() => _gameStore.state.badges || 0)
 const eggCount = computed(() => (_gameStore.state.eggs || []).length)
+
+/**
+ * Detalle dinámico de medallas obtenidas para el tooltip del HUD
+ */
+const medalsBreakdown = computed(() => {
+  const defeated = _gameStore.state.defeatedGyms || []
+  if (defeated.length === 0) {
+    return 'No has ganado ninguna medalla todavía.\n¡Desafía a los Líderes de Gimnasio para obtenerlas!'
+  }
+  
+  const earnedList = gymsStore.gyms
+    .filter(g => defeated.includes(g.id))
+    .map(g => `${g.badge} ${g.badgeName} (${g.leader})`)
+    
+  return `Medallas obtenidas (${defeated.length}/8):\n${earnedList.map(item => `• ${item}`).join('\n')}\n\nDesbloquean nuevas zonas y Pokémon.`
+})
 
 /**
  * Lista de pokébolas detectadas en el inventario
@@ -163,7 +182,7 @@ onUnmounted(() => {
     <!-- MEDALLAS -->
     <PVTooltip
       title="MEDALLAS"
-      description="Progreso de tu aventura. Desbloquean nuevas zonas y Pokémon."
+      :description="medalsBreakdown"
       position="bottom"
     >
       <div class="hud-pill badge-pill">

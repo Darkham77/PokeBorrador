@@ -84,7 +84,7 @@ body .nav {
 .hud-submenu,
 .nav-submenu {
   position: absolute;
-  @include glass($card);
+  @include shell($card);
   border-radius: 12px;
   padding: spacing(2);
   display: none;

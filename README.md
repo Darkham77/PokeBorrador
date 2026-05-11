@@ -10,26 +10,53 @@ Antes de comenzar, asegúrate de tener instalado **Node.js (v26.0.0 o superior)*
 
 ### 🌐 Instalación de Node.js y NPM
 
+#### Opción A: Usando NVM (Recomendado)
+
+[NVM (Node Version Manager)](https://github.com/nvm-sh/nvm) permite gestionar múltiples versiones de Node.js y es la forma más limpia de mantener el entorno actualizado sin conflictos de permisos.
+
+1. **Instalar NVM**:
+   - **Linux/macOS**:
+
+     ```bash
+     curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
+     ```
+
+   - **Windows**: Descarga e instala [nvm-windows](https://github.com/coreybutler/nvm-windows/releases).
+
+2. **Instalar y usar Node 26**:
+
+   ```bash
+   nvm install 26
+   nvm use 26
+   nvm alias default 26
+   ```
+
+3. **Actualizar Node.js**: Para actualizar a la última versión de la rama 26 y migrar tus paquetes globales:
+
+   ```bash
+   nvm install 26 --reinstall-packages-from=current
+   ```
+
+#### Opción B: Instalación Directa
+
 - **Windows (Terminal/PowerShell)**:
 
-```bash
-winget install OpenJS.NodeJS
-```
+  ```bash
+  winget install OpenJS.NodeJS
+  ```
 
-- **Linux (Ubuntu/Debian)**:
+- **Linux (Ubuntu/Debian)**: Para asegurar que instalas la versión 26+ (los repositorios de apt suelen estar desactualizados), usa NodeSource:
 
-Para asegurar que instalas la versión 26+ (los repositorios de apt suelen estar desactualizados), usa NodeSource:
-
-```bash
-curl -fsSL https://deb.nodesource.com/setup_26.x | sudo -E bash -
-sudo apt install -y nodejs
-```
+  ```bash
+  curl -fsSL https://deb.nodesource.com/setup_26.x | sudo -E bash -
+  sudo apt install -y nodejs
+  ```
 
 - **Actualizar NPM** (Opcional):
 
-```bash
-npm install -g npm@latest
-```
+  ```bash
+  npm install -g npm@latest
+  ```
 
 ## 🛠️ Entorno de Desarrollo
 
@@ -139,7 +166,7 @@ npm run dev               # Inicia el entorno de desarrollo (Vite)
 npm run type-check         # Verificación estricta de tipos TypeScript
 npm run test               # Unit tests de UI y componentes (Vitest)
 npm run build              # Compilación para producción
-npm run assets:download    # Descarga sprites y recursos externos
+npm run assets:download    # Descarga sprites y recursos externos (Gen 1-9, Items, Trainers)
 ```
 
 ### Reglas de Oro
@@ -160,13 +187,14 @@ El proyecto utiliza herramientas nativas para procesar recursos de forma segura 
 Usa el script unificado para obtener assets externos:
 
 ```bash
-# Descarga completa (Pokemon Gen 1-2, Items, Trainers)
-npm run download-assets
+# Descarga completa (Pokemon Gen 1-9, Items, Trainers)
+npm run assets:download
 
-# Descarga selectiva (recomendado para ahorrar tiempo)
-npm run download-assets -- --pokemon    # Solo Pokémon (Front/Back/Shiny)
-npm run download-assets -- --items      # Solo ítems
-npm run download-assets -- --trainers   # Solo entrenadores
+# Descarga selectiva o limitada (Usar -- para pasar flags)
+npm run assets:download -- --limit=151  # Solo primera generación
+npm run assets:download -- --pokemon    # Solo Pokémon (Front/Back/Shiny)
+npm run assets:download -- --items      # Solo ítems
+npm run assets:download -- --trainers   # Solo entrenadores
 ```
 
 > [!NOTE] Los recursos se descargan en la carpeta `external_assets/`. Estos archivos están fuera del pipeline automático de `_raw-assets` por defecto para evitar duplicación masiva, pero podés moverlos manualmente si necesitás procesarlos.

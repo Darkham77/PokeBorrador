@@ -55,7 +55,7 @@ Consult these manuals for detailed implementation specifications:
 
 - **Modern Shell**: High-contrast solid backgrounds, premium gradients, HSL shadows for containers.
 - **Retro Heart**: Pixel Art and Sharp typography (`Press Start 2P`) for game content.
-- **Pixel-Perfect**: Pixelated elements MUST use `@include pixelated`. Typography for stats and headers must always be pixelated.
+- **Pixel-Perfect**: Pixelated elements (sprites, items, badges) MUST use `@include pixelated`. This mixin handles browser fallbacks and typography sharpening. Typography for stats and headers must always be pixelated.
 
 ### 2. GPU & Rendering
 
@@ -63,9 +63,9 @@ Consult these manuals for detailed implementation specifications:
 - **Sprite Standard**: Use `@include sprite-render` for all game assets.
 - **Organic Feel**: Desynchronize animations using seeds and vary speeds.
 - **VFX Integrity**: Apply complex auras (e.g. Guardian/Shiny) to the `.pv-fx-wrapper` instead of the child sprite. This prevents status effect filters (poison/burn) from overriding the aura. Persistent effects MUST decouple their visibility from status flags.
-- **GSAP Mandate**: All battle-related animations (encounters, attacks, status FX, transitions) MUST be implemented using GSAP. The use of CSS `@keyframes` and `setTimeout` for combat flow is FORBIDDEN.
-- **Deterministic Orchestration**: Visual sequences MUST return a Promise (using `awaitAnimation`) so the FSM can synchronize state changes with visual completion.
-- **CLI-Ready Visuals**: Every animation MUST be triggerable via `window.__VITE_DEBUG__.battle.animations` to allow headless verification.
+- **GSAP Exclusive Mandate**: All animations in the project (UI transitions, battle effects, map movements, atmospheric FX) MUST be implemented using GSAP. The use of CSS `@keyframes`, transitions, or `setTimeout`/`setInterval` for animation flow is STRICTLY FORBIDDEN.
+- **Deterministic Orchestration**: Visual sequences MUST return a Promise (using `awaitAnimation` or GSAP timelines) so the state machine can synchronize state changes with visual completion.
+- **CLI-Ready Visuals**: Every animation MUST be triggerable via `window.__VITE_DEBUG__.battle.animations` (or the corresponding debug bridge) to allow headless verification.
 
 ### 3. Modularity & Hierarchy
 
@@ -107,7 +107,7 @@ Consult these manuals for detailed implementation specifications:
     - **Map Upsert**: Use `Map.prototype.getOrInsertComputed` (or native patterns) for efficient cache lookups.
     - **Native Test Runner**: Use `node:test` for all pure logic unit tests (`npm run test:node`). This avoids the overhead of JSDOM/Vitest for non-UI logic.
     - **Extension-First Imports**: When running tests or scripts via `node --experimental-strip-types`, all internal imports MUST include the `.ts` extension (e.g., `import { foo } from './bar.ts'`) to ensure resolution by the native loader.
-    - **Permissions**: All maintenance scripts MUST adhere to the Node.js Permission Model (`--permission`).
+    - **Permissions**: All maintenance scripts MUST adhere to the Node.js Permission Model (`--permission`). Utility scripts performing fetch/read/write must be restricted to their necessary scopes (e.g., `--allow-net`, `--allow-fs`).
     - **Resource Management**: Use the `using` keyword (Explicit Resource Management) for DB connections and file handles.
 
 ### 5. Integrity & Quality Enforcement

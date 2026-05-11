@@ -2,12 +2,12 @@
 
 ## Tipos de batalla
 
-| Tipo | Descripción | ¿Se puede capturar? | ¿Se puede huir? |
-|---|---|---|---|
-| Salvaje | Pokémon aleatorio de la zona | ✅ | ✅ |
-| Entrenador | NPC aleatorio de la zona | ❌ | ❌ |
-| Gimnasio | Líder con equipo fijo | ❌ | ❌ |
-| PvP | Jugador vs Jugador online | ❌ | (rendirse) |
+| Tipo       | Descripción                  | ¿Se puede capturar? | ¿Se puede huir? |
+| ---------- | ---------------------------- | ------------------- | --------------- |
+| Salvaje    | Pokémon aleatorio de la zona | ✅                  | ✅              |
+| Entrenador | NPC aleatorio de la zona     | ❌                  | ❌              |
+| Gimnasio   | Líder con equipo fijo        | ❌                  | ❌              |
+| PvP        | Jugador vs Jugador online    | ❌                  | (rendirse)      |
 
 ---
 
@@ -15,29 +15,29 @@
 
 ```javascript
 state.battle = {
-  enemy,            // Pokémon enemigo activo
-  player,           // Pokémon del jugador activo (referencia a state.team[i])
-  isGym,            // boolean
-  gymId,            // string o null
-  isTrainer,        // boolean
-  enemyTeam,        // array completo del equipo enemigo (trainer/gym)
-  trainerName,      // nombre del entrenador NPC
-  playerTeamIndex,  // índice en state.team del Pokémon activo
-  locationId,       // zona donde ocurre la batalla
-  turn: 'player',   // siempre empieza el jugador
+  enemy, // Pokémon enemigo activo
+  player, // Pokémon del jugador activo (referencia a state.team[i])
+  isGym, // boolean
+  gymId, // string o null
+  isTrainer, // boolean
+  enemyTeam, // array completo del equipo enemigo (trainer/gym)
+  trainerName, // nombre del entrenador NPC
+  playerTeamIndex, // índice en state.team del Pokémon activo
+  locationId, // zona donde ocurre la batalla
+  turn: 'player', // siempre empieza el jugador
   over: false,
 
   // Turnos
-  recharging: false,     // jugador debe recargar (Hiperrayo)
+  recharging: false, // jugador debe recargar (Hiperrayo)
   enemyRecharging: false,
 
   // Modificadores de stage (se resetean al cambiar de Pokémon)
-  playerStages: { atk:0, def:0, spa:0, spd:0, spe:0, acc:0, eva:0 },
-  enemyStages:  { atk:0, def:0, spa:0, spd:0, spe:0, acc:0, eva:0 },
+  playerStages: { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0 },
+  enemyStages: { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0 },
 
   // Velocidad — se calcula una vez por turno
-  turnFirst: null,    // true si el jugador actúa primero este turno
-}
+  turnFirst: null, // true si el jugador actúa primero este turno
+};
 ```
 
 ---
@@ -61,28 +61,28 @@ finalDmg = max(1, floor(base × STAB × eff × rand × item × crit))
 
 ### Multiplicadores de held items en daño
 
-| Ítem | Condición | Multiplicador |
-|---|---|---|
-| Carbón | Movimiento fuego | ×1.2 |
-| Imán | Movimiento eléctrico | ×1.2 |
-| Agua Mística | Movimiento agua | ×1.2 |
-| Semilla Milagro | Movimiento planta | ×1.2 |
-| Cinturón Negro | Movimiento lucha | ×1.2 |
-| Cinta Elegida | Movimiento físico | ×1.5 |
+| Ítem            | Condición            | Multiplicador |
+| --------------- | -------------------- | ------------- |
+| Carbón          | Movimiento fuego     | ×1.2          |
+| Imán            | Movimiento eléctrico | ×1.2          |
+| Agua Mística    | Movimiento agua      | ×1.2          |
+| Semilla Milagro | Movimiento planta    | ×1.2          |
+| Cinturón Negro  | Movimiento lucha     | ×1.2          |
+| Cinta Elegida   | Movimiento físico    | ×1.5          |
 
 ### Mecánicas especiales de daño
 
-| Mecánica | Condición | Efecto |
-|---|---|---|
-| Multi-golpe | `md.hits = '2-5'` | 2/3 hits (33% c/u) o 4/5 (17% c/u) |
-| Multi-golpe fijo | `md.hits = 2` | Siempre 2 hits |
-| Mov. Sísmico | `md.levelDmg = true` | Daño = nivel del atacante |
-| Contraataque | `md.counter = true` | 2× último daño físico recibido |
-| Drenado | `md.drain = true` | Recupera 50% del daño causado |
-| Cascabel Concha | held item | Recupera 12.5% del daño causado |
-| Retroceso | `md.recoil = N` | Atacante recibe `floor(daño / N)` de daño |
-| AutoKO | `md.selfKO = true` | Atacante queda con 0 HP |
-| Banda Focus | held item, HP lleno | Sobrevive con 1 HP si el golpe lo noqueaba |
+| Mecánica         | Condición            | Efecto                                     |
+| ---------------- | -------------------- | ------------------------------------------ |
+| Multi-golpe      | `md.hits = '2-5'`    | 2/3 hits (33% c/u) o 4/5 (17% c/u)         |
+| Multi-golpe fijo | `md.hits = 2`        | Siempre 2 hits                             |
+| Mov. Sísmico     | `md.levelDmg = true` | Daño = nivel del atacante                  |
+| Contraataque     | `md.counter = true`  | 2× último daño físico recibido             |
+| Drenado          | `md.drain = true`    | Recupera 50% del daño causado              |
+| Cascabel Concha  | held item            | Recupera 12.5% del daño causado            |
+| Retroceso        | `md.recoil = N`      | Atacante recibe `floor(daño / N)` de daño  |
+| AutoKO           | `md.selfKO = true`   | Atacante queda con 0 HP                    |
+| Banda Focus      | held item, HP lleno  | Sobrevive con 1 HP si el golpe lo noqueaba |
 
 ---
 
@@ -97,6 +97,7 @@ function playerActsFirstBySpeed(b) {
 ```
 
 La parálisis reduce la velocidad efectiva a 50%:
+
 ```javascript
 if (pokemon.status === 'paralyze') spe = max(1, floor(spe × 0.5));
 ```
@@ -122,34 +123,35 @@ El orden se calcula **una vez al inicio del turno** y se guarda en `b.turnFirst`
 
 Cada efecto tiene un nombre interno con un sufijo numérico opcional que indica la probabilidad:
 
-| Efecto interno | Probabilidad | Descripción |
-|---|---|---|
-| `burn` | 100% | Quema |
-| `burn_10` | 10% | Quema |
-| `paralyze` | 100% | Parálisis |
-| `paralyze_10` | 10% | Parálisis |
-| `paralyze_30` | 30% | Parálisis |
-| `poison` | 100% | Envenena |
-| `poison_20` | 20% | Envenena |
-| `freeze` | 100% | Congela |
-| `freeze_10` | 10% | Congela |
-| `sleep` | 100% | Duerme |
-| `confuse` | 100% | Confunde (2–5 turnos) |
-| `flinch_30` | 30% | Asusta (pierde turno si va segundo) |
-| `rest` | 100% | Restaura HP y duerme 2 turnos |
-| `teleport` | 100% | Huye de batalla salvaje |
-| `leech_seed` | 100% | Planta drenadoras |
-| `stat_up_self_atk` | 100% | +1 stage Ataque propio |
-| `stat_up_self_def` | 100% | +1 stage Defensa propia |
-| `stat_up_self_def_2` | 100% | +2 stages Defensa |
-| `stat_up_self_spa_2` | 100% | +2 stages At. Esp. |
-| `stat_up_self_spe_2` | 100% | +2 stages Velocidad |
-| `stat_down_enemy_atk` | 100% | -1 stage Ataque rival |
-| `stat_down_enemy_def` | 100% | -1 stage Defensa rival |
-| `stat_down_enemy_spe` | 100% | -1 stage Velocidad rival |
-| `stat_down_enemy_acc` | 100% | -1 stage Precisión rival |
+| Efecto interno        | Probabilidad | Descripción                         |
+| --------------------- | ------------ | ----------------------------------- |
+| `burn`                | 100%         | Quema                               |
+| `burn_10`             | 10%          | Quema                               |
+| `paralyze`            | 100%         | Parálisis                           |
+| `paralyze_10`         | 10%          | Parálisis                           |
+| `paralyze_30`         | 30%          | Parálisis                           |
+| `poison`              | 100%         | Envenena                            |
+| `poison_20`           | 20%          | Envenena                            |
+| `freeze`              | 100%         | Congela                             |
+| `freeze_10`           | 10%          | Congela                             |
+| `sleep`               | 100%         | Duerme                              |
+| `confuse`             | 100%         | Confunde (2–5 turnos)               |
+| `flinch_30`           | 30%          | Asusta (pierde turno si va segundo) |
+| `rest`                | 100%         | Restaura HP y duerme 2 turnos       |
+| `teleport`            | 100%         | Huye de batalla salvaje             |
+| `leech_seed`          | 100%         | Planta drenadoras                   |
+| `stat_up_self_atk`    | 100%         | +1 stage Ataque propio              |
+| `stat_up_self_def`    | 100%         | +1 stage Defensa propia             |
+| `stat_up_self_def_2`  | 100%         | +2 stages Defensa                   |
+| `stat_up_self_spa_2`  | 100%         | +2 stages At. Esp.                  |
+| `stat_up_self_spe_2`  | 100%         | +2 stages Velocidad                 |
+| `stat_down_enemy_atk` | 100%         | -1 stage Ataque rival               |
+| `stat_down_enemy_def` | 100%         | -1 stage Defensa rival              |
+| `stat_down_enemy_spe` | 100%         | -1 stage Velocidad rival            |
+| `stat_down_enemy_acc` | 100%         | -1 stage Precisión rival            |
 
 **Inmunidades a estado:**
+
 - Fuego → inmune a quemadura
 - Eléctrico → inmune a parálisis
 - Veneno / Acero → inmune a veneno
@@ -173,10 +175,12 @@ El orden se aplica primero al que actuó primero ese turno.
 ### Victoria (won = true)
 
 **Pokémon entrenador/gimnasio con equipo:**
+
 - Si quedan Pokémon vivos en el `enemyTeam`, el siguiente salta a combatir
 - Solo cuando todos caen se ejecuta la recompensa
 
 **Recompensas:**
+
 ```javascript
 // Dinero
 moneyWon = isGym     ? enemy.level × 80
@@ -195,6 +199,7 @@ trainerExp = isGym  ? enemy.level × 5
 ```
 
 **Huevo por derrota de entrenador (5% de probabilidad):**
+
 ```javascript
 if (isTrainer && Math.random() < 0.05) {
   // Pool: pichu, magby, elekid, cleffa, igglybuff, togepi, eevee
@@ -213,12 +218,14 @@ if (isTrainer && Math.random() < 0.05) {
 ## IA del enemigo
 
 El enemigo elige movimientos **completamente al azar** entre sus movimientos con PP > 0:
+
 ```javascript
-const validMoves = b.enemy.moves.filter(m => m.pp > 0);
+const validMoves = b.enemy.moves.filter((m) => m.pp > 0);
 const move = validMoves[Math.floor(Math.random() * validMoves.length)];
 ```
 
 No hay ninguna IA estratégica. Si el enemigo queda sin PP, usa **Forcejeo**:
+
 - Daño: `floor(enemy.atk × 0.5)` al jugador
 - Auto-daño: `floor(enemy.maxHp / 4)`
 

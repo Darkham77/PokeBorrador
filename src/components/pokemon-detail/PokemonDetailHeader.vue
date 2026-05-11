@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import { calculateTotalPower } from '@/logic/pokemonUtils'
+import { translateType } from '@/data/types'
 import type { Pokemon } from '@/types/pokemon'
 
 interface Props {
@@ -62,7 +63,7 @@ const handleImgError = (e: Event) => {
           <span
             class="type-badge"
             :class="'type-' + p.type.toLowerCase()"
-          >{{ p.type }}</span>
+          >{{ translateType(p.type).toUpperCase() }}</span>
           <span class="m-badge-level">Nv. {{ p.level }}</span>
           <span
             v-if="hasIvs"

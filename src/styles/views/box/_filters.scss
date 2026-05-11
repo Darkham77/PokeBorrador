@@ -272,7 +272,7 @@
 }
 
 .filters-expanded-premium {
-  @include glass-solid(Rgba(15, 23, 42, 0.98));
+  @include shell-premium(Rgba(15, 23, 42, 0.98));
   margin-top: 12px;
   border-radius: 20px;
   padding: 20px;

@@ -57,3 +57,31 @@ export const SECONDARY_TYPES: Record<string, PokemonType> = {
   gyarados:'flying',
   scyther:'flying',
 };
+
+export const TYPE_TRANSLATIONS: Record<string, string> = {
+  normal: 'Normal',
+  fire: 'Fuego',
+  water: 'Agua',
+  grass: 'Planta',
+  electric: 'Eléctrico',
+  ice: 'Hielo',
+  fighting: 'Lucha',
+  poison: 'Veneno',
+  ground: 'Tierra',
+  flying: 'Volador',
+  psychic: 'Psíquico',
+  bug: 'Bicho',
+  rock: 'Roca',
+  ghost: 'Fantasma',
+  dragon: 'Dragón',
+  dark: 'Siniestro',
+  steel: 'Acero',
+  fairy: 'Hada'
+} as const;
+
+export function translateType(type: string): string {
+  if (!type) return '';
+  const key = type.toLowerCase();
+  return TYPE_TRANSLATIONS[key] || type;
+}
+

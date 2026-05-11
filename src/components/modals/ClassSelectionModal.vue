@@ -38,7 +38,7 @@ const handleSelect = async (id: string) => {
 };
 
 const getTrainerSprite = (id: string) => {
-  return getAssetUrl(ASSET_TYPES.TRAINER, id);
+  return getAssetUrl(ASSET_TYPES.TRAINER, id, { trainerSuffix: 'avatar' });
 };
 
 const getButtonVariant = (clsId: string) => {

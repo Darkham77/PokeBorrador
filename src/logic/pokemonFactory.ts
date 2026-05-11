@@ -8,6 +8,7 @@ import { usePlayerClassStore } from '@/stores/playerClass';
 import { useWarStore } from '@/stores/war';
 import type { Pokemon, PokemonMove, PokemonIVs } from '@/types/pokemon';
 import { getExpNeededPure, calcStatsPure } from './pokemon/statsMath.ts';
+import { generateIvPure } from './pokemon/generationMath.ts';
 import { logger } from './utils/logger.ts';
 
 
@@ -225,27 +226,21 @@ export function makePokemon(id: string, level: number, options: PokemonCreationO
     _ivFloor = Math.max(_ivFloor, classData.captureStreak || 0);
   }
 
-  const _randIv = (forceReRoll = false, isGuardian = false) => {
-    let val = Math.floor(Math.random() * 32);
-    if (isGuardian || forceReRoll) {
-      val = Math.max(val, Math.floor(Math.random() * 32));
-      if (isGuardian) val = Math.max(12, val);
-    }
-    return Math.max(_ivFloor, val);
-  };
+  function _randIv(floor: number = 0, forceReRoll: boolean = false, isGuardian: boolean = false): number {
+    return generateIvPure(Math.random, floor, forceReRoll, isGuardian);
+  }
   
   const warStore = useWarStore();
   const currentMapId = options.mapId;
   const isGuardianPotential = (currentMapId && warStore.checkGuardian && warStore.checkGuardian(currentMapId, []) !== null);
-  const appliedIvBonus = false; // Simplified for now as hasDominanceIvBonus is not in warStore
 
   const ivs: PokemonIVs = { 
-    hp: _randIv(!!appliedIvBonus, !!isGuardianPotential), 
-    atk: _randIv(!!appliedIvBonus, !!isGuardianPotential), 
-    def: _randIv(!!appliedIvBonus, !!isGuardianPotential), 
-    spa: _randIv(!!appliedIvBonus, !!isGuardianPotential), 
-    spd: _randIv(!!appliedIvBonus, !!isGuardianPotential), 
-    spe: _randIv(!!appliedIvBonus, !!isGuardianPotential) 
+    hp: _randIv(_ivFloor, false, !!isGuardianPotential), 
+    atk: _randIv(_ivFloor, false, !!isGuardianPotential), 
+    def: _randIv(_ivFloor, false, !!isGuardianPotential), 
+    spa: _randIv(_ivFloor, false, !!isGuardianPotential), 
+    spd: _randIv(_ivFloor, false, !!isGuardianPotential), 
+    spe: _randIv(_ivFloor, false, !!isGuardianPotential) 
   };
   
   const nature = options.nature || NATURES[Math.floor(Math.random() * NATURES.length)] || 'Fuerte';

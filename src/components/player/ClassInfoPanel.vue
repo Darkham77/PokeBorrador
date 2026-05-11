@@ -84,7 +84,7 @@ const rankTitle = computed(() => {
           <aside class="left-col">
             <div class="sprite-preview">
               <img
-                :src="getAssetUrl(ASSET_TYPES.TRAINER, cls.avatarSpriteId)"
+                :src="getAssetUrl(ASSET_TYPES.TRAINER, cls.avatarSpriteId, { trainerSuffix: 'front' })"
                 :alt="cls.name"
                 class="class-sprite"
                 @error="e => { (e.target as HTMLImageElement).style.display = 'none' }"

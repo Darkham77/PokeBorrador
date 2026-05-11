@@ -1,7 +1,8 @@
 To guarantee a premium and "alive" visual experience, all cyclical animations must avoid perfect synchronization between multiple instances. To maintain system flexibility, **avoid hardcoding absolute durations or offsets** in documentation; refer to relative logic and symbolic constants.
 
-> [!IMPORTANT]
-> **GSAP MANDATE**: All battle-related animations (encounters, attacks, status FX, transitions) MUST be implemented using GSAP. The use of CSS `@keyframes` and `setTimeout` for combat flow is DEPRECATED. This ensures determinism and accessibility via the CLI debug bridge.
+> [!IMPORTANT] **GSAP MANDATE**: All animations (UI, battle, transitions) MUST use GSAP. Manual CSS `@keyframes` or transitions on `transform/opacity` are FORBIDDEN as they conflict with GSAP's engine and cause layout jank.
+
+> [!TIP] **Organic Entrance**: Use small random delays (`delay: Math.random() * 0.4`) when animating elements in a grid to avoid a rigid, "robotic" simultaneous appearance.
 
 ## 0. Coordinate Initialization (Flicker Prevention)
 
@@ -167,19 +168,19 @@ The Poké Ball interaction follows a 3-state cycle: `catching` (energy beam) ➡
 
 To maintain a coherent sense of depth in the 2D-perspective virtual world, all components MUST use relative z-indices based on the `--z-map-spawns` (Default: 10) anchor:
 
-| Layer | Formula | Logical Order |
-| :--- | :--- | :--- |
-| **Environment (Floor)** | `calc(var(--z-base) + 1)` | 1 (Bottom) |
-| **Shadows** | `calc(var(--z-map-spawns) - 7)` | 3 |
-| **Grass (Back)** | `calc(var(--z-map-spawns) - 5)` | 5 |
-| **Pokemon/Spawns** | `var(--z-map-spawns)` | 10 (Base) |
-| **Sprite Layer** | `calc(var(--z-map-spawns) + 1)` | 11 |
-| **Shiny Sparkles** | `calc(var(--z-map-spawns) + 2)` | 12 |
-| **Status Icons (Emojis)** | `calc(var(--z-map-spawns) + 3)` | 13 |
-| **Auras/Screens** | `calc(var(--z-map-spawns) + 4)` | 14 |
-| **Ground Effects** | `calc(var(--z-map-spawns) + 5)` | 15 (Over feet) |
-| **Grass (Front)** | `calc(var(--z-map-spawns) + 5)` | 15 (Top) |
-| **Tactical FX (🛡️, 🎯)** | `calc(var(--z-map-spawns) + 5)` | 15 (Global Critical) |
+| Layer                     | Formula                         | Logical Order        |
+| :------------------------ | :------------------------------ | :------------------- |
+| **Environment (Floor)**   | `calc(var(--z-base) + 1)`       | 1 (Bottom)           |
+| **Shadows**               | `calc(var(--z-map-spawns) - 7)` | 3                    |
+| **Grass (Back)**          | `calc(var(--z-map-spawns) - 5)` | 5                    |
+| **Pokemon/Spawns**        | `var(--z-map-spawns)`           | 10 (Base)            |
+| **Sprite Layer**          | `calc(var(--z-map-spawns) + 1)` | 11                   |
+| **Shiny Sparkles**        | `calc(var(--z-map-spawns) + 2)` | 12                   |
+| **Status Icons (Emojis)** | `calc(var(--z-map-spawns) + 3)` | 13                   |
+| **Auras/Screens**         | `calc(var(--z-map-spawns) + 4)` | 14                   |
+| **Ground Effects**        | `calc(var(--z-map-spawns) + 5)` | 15 (Over feet)       |
+| **Grass (Front)**         | `calc(var(--z-map-spawns) + 5)` | 15 (Top)             |
+| **Tactical FX (🛡️, 🎯)**  | `calc(var(--z-map-spawns) + 5)` | 15 (Global Critical) |
 
 - **Rule**: This hierarchy ensures that shadows project onto the floor but are correctly occluded by grass blades and the Pokémon's feet. Visual effects (FX) are layered sequentially over the sprite to prevent occlusion and maintain mechanical clarity.
 

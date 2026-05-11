@@ -23,7 +23,7 @@ Inspired by Gen 4 with modifications for web game balance. Regardless of generat
 Damage = Math.floor(((2 * Level / 5 + 2) * Power * (A / D)) / 50) + 2
 ```
 
-*Where:*
+_Where:_
 
 - **A (Attack)**: Includes burn (x0.5) and Nature/Ability multipliers.
 - **D (Defense)**: Includes Nature/Ability multipliers.
@@ -90,9 +90,9 @@ The category of a move is determined exclusively by the move's individual metada
 
 ### 4. Stage Multipliers (-6 to +6)
 
-| Stage | -6 | -5 | -4 | -3 | -2 | -1 | 0 | +1 | +2 | +3 | +4 | +5 | +6 |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Stat** | 0.25 | 0.28 | 0.33 | 0.40 | 0.50 | 0.66 | 1.0 | 1.5 | 2.0 | 2.5 | 3.0 | 3.5 | 4.0 |
+| Stage       | -6   | -5   | -4   | -3   | -2   | -1   | 0   | +1   | +2   | +3  | +4   | +5   | +6  |
+| :---------- | :--- | :--- | :--- | :--- | :--- | :--- | :-- | :--- | :--- | :-- | :--- | :--- | :-- |
+| **Stat**    | 0.25 | 0.28 | 0.33 | 0.40 | 0.50 | 0.66 | 1.0 | 1.5  | 2.0  | 2.5 | 3.0  | 3.5  | 4.0 |
 | **Acc/Eva** | 0.33 | 0.37 | 0.43 | 0.50 | 0.60 | 0.75 | 1.0 | 1.33 | 1.66 | 2.0 | 2.33 | 2.66 | 3.0 |
 
 ---
@@ -134,7 +134,7 @@ b = Math.floor(65535 * (a / 255)^0.25)
 Capture = 4 consecutive checks where Random(0-65535) < b
 ```
 
-*Multipliers:*
+_Multipliers:_
 
 - **Base_Ratio**: Species-specific `catchRate` from `pokemonDB.ts` (e.g., 255 for Rattata, 3 for Mewtwo).
 - **Ball Multipliers**:
@@ -150,7 +150,7 @@ Capture = 4 consecutive checks where Random(0-65535) < b
 ## 🌪️ Weather Effects Table (Gen 9 Standard)
 
 | Weather | Damage Boost | Damage Reduction | Defensive Boost | Residual Damage | Special Effects |
-| :--- | :--- | :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- | :-- | :-- |
 | **Sun** | Fire (1.5x) | Water (0.5x) | - | - | Solar Beam (No charge), Synthesis (66%), Thunder/Hurricane (50% Acc) |
 | **Rain** | Water (1.5x) | Fire (0.5x) | - | - | Thunder/Hurricane (100% Acc), Synthesis (25%) |
 | **Sandstorm** | - | - | Rock (1.5x SpD) | 1/16 HP (Non-Rock/Ground/Steel) | Solar Beam (50% Pow), Synthesis (25%) |
@@ -192,11 +192,36 @@ Exp = floor(BaseExp * Distribution * ClassMult * GlobalMult)
 
 ## 🧬 Statistics (Stats)
 
-- **Health Points (HP)**:
-  `HP = floor((Base * 2 + IV) * Level / 100 + Level + 10)`
-- **Combat Stats (Atk, Def, etc)**:
-  `Stat = floor(floor((Base * 2 + IV) * Level / 100 + 5) * Nature)`
-  *Nature*: Favorable (1.1), Unfavorable (0.9), Neutral (1.0).
+- **Health Points (HP)**: `HP = floor((Base * 2 + IV) * Level / 100 + Level + 10)`
+- **Combat Stats (Atk, Def, etc)**: `Stat = floor(floor((Base * 2 + IV) * Level / 100 + 5) * Nature)` _Nature_: Favorable (1.1), Unfavorable (0.9), Neutral (1.0).
+
+---
+
+## 🧬 Generación de Valores Individuales (IVs)
+
+### 1. Fórmula Estándar
+
+```text
+IV = floor(Random(0, 31))
+```
+
+### 2. Algoritmo de Re-roll (Guardianes/Alfas)
+
+Para entidades de alto nivel, el motor utiliza una tirada competitiva:
+
+```text
+IV_Final = max(ivFloor, max(Random(0, 31), Random(0, 31)))
+```
+
+_Donde `ivFloor` es 12 para Guardianes._
+
+### 3. Aplicación de Suelos de Clase/Guerra
+
+```text
+IV_Efectivo = Math.max(Bono_Contextual, IV_Generado)
+```
+
+- **Bono_Contextual**: `15` (Dominancia), `Racha` (Cazabichos), o `N` (Misiones).
 
 ---
 
@@ -208,7 +233,7 @@ Valuation formula for selling Pokémon on the illegal market:
 Price = floor((Level * 50 + (TotalIVs / 186) * 500) * 0.8)
 ```
 
-*Where*: `TotalIVs` is the sum of the 6 stats (max 186).
+_Where_: `TotalIVs` is the sum of the 6 stats (max 186).
 
 ---
 

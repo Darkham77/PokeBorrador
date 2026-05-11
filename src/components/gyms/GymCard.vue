@@ -1,7 +1,14 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted, ref } from 'vue'
+import { gsap } from 'gsap'
 import { useGymsStore } from '@/stores/gyms'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
+import { translateType } from '@/data/types'
+
+interface GymDifficulty {
+  pokemon: string[];
+  levels: number[];
+}
 
 interface Gym {
   id: string;
@@ -12,7 +19,13 @@ interface Gym {
   typeColor: string;
   badge: string;
   badgeName: string;
+  rewardTM: string;
   badgesRequired: number;
+  difficulties: {
+    easy: GymDifficulty;
+    normal: GymDifficulty;
+    hard: GymDifficulty;
+  };
 }
 
 interface Props {
@@ -30,6 +43,36 @@ const props = withDefaults(defineProps<Props>(), {
 
 const gymsStore = useGymsStore()
 const selectedDifficulty = defineModel<string>('difficulty', { default: 'easy' })
+const cardRef = ref<HTMLElement | null>(null)
+
+const estimatedRewards = computed(() => {
+  if (!props.gym?.difficulties) return { money: 0, exp: 0 }
+  
+  const diff = props.gym.difficulties[selectedDifficulty.value as keyof typeof props.gym.difficulties] || props.gym.difficulties.easy
+  if (!diff?.levels) return { money: 0, exp: 0 }
+
+  const avgLevel = diff.levels.reduce((a, b) => a + b, 0) / diff.levels.length
+  
+  // Fórmulas de recompensa escaladas
+  const mults: Record<string, number> = { easy: 1, normal: 2.2, hard: 4.5 }
+  const mult = mults[selectedDifficulty.value] || 1
+  
+  return {
+    money: Math.floor(avgLevel * 30 * mult),
+    exp: Math.floor(avgLevel * 180 * mult)
+  }
+})
+
+onMounted(() => {
+  if (cardRef.value) {
+    gsap.from(cardRef.value, {
+      y: 20,
+      duration: 0.8,
+      ease: 'back.out(1.2)',
+      delay: Math.random() * 0.4
+    })
+  }
+})
 
 const handleChallenge = () => {
   if (props.isLocked) return
@@ -51,14 +94,14 @@ const leaderSpriteUrl = computed(() => {
 
 <template>
   <div
-    class="gym-card-legacy"
+    ref="cardRef"
+    class="pv-gym-card"
     :class="{ defeated: isDefeated, locked: isLocked }"
     :style="{ '--gym-color': gym.typeColor }"
   >
-    <!-- LEGACY HEADER: Gradient + Info -->
     <div
-      class="card-header-legacy"
-      :style="{ background: `Linear-Gradient(135deg, ${gym.typeColor}22, ${gym.typeColor}08)` }"
+      class="pv-card-header"
+      :style="{ background: `Linear-Gradient(180deg, ${gym.typeColor}15 0%, transparent 100%)` }"
     >
       <div class="header-main">
         <div class="leader-info">
@@ -76,28 +119,49 @@ const leaderSpriteUrl = computed(() => {
             Líder: <span>{{ gym.leader }}</span>
           </div>
           <div class="badges-row">
-            <span class="type-badge">{{ gym.type.toUpperCase() }}</span>
-            <span class="medal-name">{{ gym.badge }} {{ gym.badgeName }}</span>
+            <span 
+              class="type-badge"
+              :class="'type-' + gym.type.toLowerCase()"
+            >{{ translateType(gym.type).toUpperCase() }}</span>
           </div>
         </div>
         <div class="leader-sprite-box">
           <img
             :src="leaderSpriteUrl"
             :alt="gym.name"
-            class="pixel-sprite"
+            class="leader-sprite"
             @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
           >
         </div>
       </div>
+      
+      <!-- Panel de Recompensa de Medalla Destacada -->
+      <div class="medal-reward-box">
+        <img 
+          :src="getAssetUrl(ASSET_TYPES.BADGE, gym.id)" 
+          :alt="gym.badgeName"
+          class="reward-badge-img"
+        >
+        <div class="medal-detail">
+          <span class="reward-title">RECOMPENSA DE VICTORIA</span>
+          <span class="medal-name">{{ gym.badgeName }}</span>
+          
+          <div class="reward-grid">
+            <span class="tm-reward">+ {{ gym.rewardTM }}</span>
+            <div class="reward-extras">
+              <span class="reward-pill exp">✨ {{ estimatedRewards.exp }} XP</span>
+              <span class="reward-pill money">₱ {{ estimatedRewards.money }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <!-- LEGACY FOOTER: Preview + Action -->
-    <div class="card-footer-legacy">
+    <div class="pv-card-footer">
       <div class="preview-box">
         <div class="progress-txt">
-          PROGRESOS: {{ gymsStore.isGymDefeated(gym.id) ? '1/1' : '0/1' }}
+          ESTADO: <span :class="{ 'text-won': isDefeated }">{{ isDefeated ? 'COMPLETADO' : 'PENDIENTE' }}</span>
         </div>
-        <!-- Team preview logic could go here if we had it, but following legacy 21_events.js style -->
       </div>
 
       <div class="action-box">
@@ -105,36 +169,43 @@ const leaderSpriteUrl = computed(() => {
           v-if="isLocked"
           class="locked-tag"
         >
-          🔒 Requiere {{ gym.badgesRequired }} medallas
-        </div>
-        <div
-          v-else-if="isDefeated && !isReaffirming"
-          class="won-tag"
-        >
-          ✅ GANADO HOY
+          🔒 BLOQUEADO ({{ gym.badgesRequired }} Medallas)
         </div>
         <div
           v-else
           class="challenge-group"
         >
-          <!-- Difficulty Tiny Buttons -->
+          <!-- Selector de dificultad siempre disponible para permitir rematches en otros niveles -->
           <div class="diff-selector">
             <button 
               v-for="d in ['easy', 'normal', 'hard']" 
               :key="d"
-              class="diff-btn-retro"
-              :class="{ active: selectedDifficulty === d, [d]: true }"
+              class="diff-btn"
+              :class="{ 
+                active: selectedDifficulty === d, 
+                [d]: true,
+                'is-won': gymsStore.isDifficultyDefeated(gym.id, d)
+              }"
               @click.stop="selectedDifficulty = d"
             >
               {{ d === 'easy' ? 'FÁCIL' : d === 'normal' ? 'NORMAL' : 'DIFÍCIL' }}
+              <span v-if="gymsStore.isDifficultyDefeated(gym.id, d)" class="won-dot">✓</span>
             </button>
           </div>
+
+          <div v-if="isDefeated" class="won-tag">
+            ✅ VICTORIA OBTENIDA en {{ selectedDifficulty.toUpperCase() }}
+          </div>
+
           <button
-            class="retro-challenge-btn"
-            :style="{ background: `Linear-Gradient(135deg, ${gym.typeColor}, ${gym.typeColor}cc)`, boxShadow: `0 4px 14px ${gym.typeColor}66` }"
+            class="pv-challenge-btn"
+            :style="{ 
+              background: `Linear-Gradient(135deg, ${gym.typeColor} 0%, ${gym.typeColor}dd 100%)`,
+              boxShadow: `0 8px 25px ${gym.typeColor}44`
+            }"
             @click.stop="handleChallenge"
           >
-            ⚔️ {{ isDefeated ? 'REAFIRMAR' : 'DESAFIAR' }}
+            ⚔️ {{ isDefeated ? 'REAFIRMAR' : 'DESAFIAR LÍDER' }}
           </button>
         </div>
       </div>
@@ -143,131 +214,263 @@ const leaderSpriteUrl = computed(() => {
 </template>
 
 <style scoped lang="scss">
-@use "sass:string";
+@use "@/styles/core/tools" as *;
 
-.gym-card-legacy {
-  background: $card-dark;
-  border-radius: 20px;
+.pv-gym-card {
+  @include shell-premium($radius: 24px);
+  padding: 0;
   overflow: hidden;
-  border: 2px solid Rgba(255, 255, 255, 0.05);
-  transition: all 0.3s;
+  transition: border-color 0.4s, box-shadow 0.4s, opacity 0.4s, filter 0.4s;
   display: flex;
   flex-direction: column;
+  height: 100%;
 
   &.defeated {
-    border-color: Rgba(107, 203, 119, 0.5);
+    border-color: Rgba(107, 203, 119, 0.4);
+    box-shadow: 0 10px 40px Rgba(34, 197, 94, 0.15);
   }
 
   &.locked {
-    will-change: transform, filter, opacity;
-  filter: Grayscale(100%);
-    opacity: 0.6;
+    filter: Grayscale(1);
+    will-change: filter;
+    opacity: 0.5;
+    pointer-events: none;
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: Rgba(0, 0, 0, 0.2);
+    }
   }
 
   &:hover:not(.locked) {
+    transform: Translatey(-6px);
     border-color: var(--gym-color);
-    transform: Translatey(-3px);
+    box-shadow: 0 20px 60px Rgba(0, 0, 0, 0.8), 0 0 15px Rgba(var(--gym-color), 0.2);
+    
+    .leader-sprite {
+      transform: Scale(1.1) Translatey(-5px);
+      filter: Drop-Shadow(0 15px 15px Rgba(0,0,0,0.6));
+    }
   }
 }
 
-.card-header-legacy {
-  padding: 16px 20px 0;
-  border-bottom: 1px solid Rgba(255, 255, 255, 0.05);
+.pv-card-header {
+  padding: 24px;
+  border-bottom: 1px solid Rgba(255, 255, 255, 0.08);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: Linear-Gradient(90deg, transparent, Rgba(255, 255, 255, 0.1), transparent);
+  }
 }
 
 .header-main {
   display: flex;
-  gap: 16px;
-  align-items: flex-start;
+  gap: 20px;
+  align-items: center;
 }
 
 .leader-info {
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .type-row {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 4px;
+  gap: 10px;
 
-  .type-icon { font-size: 18px; }
+  .type-icon { font-size: 20px; }
   .gym-tag {
     @include pixelated;
     font-size: 9px;
+    letter-spacing: 0.5px;
+    line-height: 1.4;
   }
 }
 
-.location { font-size: 11px; color: Rgba(136, 136, 136, 1); margin-bottom: 2px; }
+.location { 
+  font-size: 11px; 
+  color: var(--gray); 
+  opacity: 0.8;
+  line-height: 1.4;
+}
+
 .leader-title {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
-  margin-bottom: 4px;
-  span { color: Rgba(238, 238, 238, 1); }
+  color: var(--gray);
+  line-height: 1.4;
+  span { 
+    color: var(--white);
+    @include pixelated;
+    font-size: 9px;
+    margin-left: 5px;
+    line-height: 1.4;
+  }
 }
 
 .badges-row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
   flex-wrap: wrap;
-  margin-bottom: 10px;
-
-  .type-badge {
-    background: var(--gym-color);
-    color: var(--white);
-    font-size: 9px;
-    padding: 3px 10px;
-    border-radius: 10px;
-    font-weight: 700;
-  }
-  .medal-name {
-    font-size: 11px;
-    color: $coin-gold;
-  }
+  margin-top: 4px;
 }
 
 .leader-sprite-box {
   flex-shrink: 0;
   width: 90px;
-  text-align: center;
+  height: 90px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: Rgba(0, 0, 0, 0.2);
+  border-radius: 50%;
+  border: 1px solid Rgba(255, 255, 255, 0.05);
+  box-shadow: inset 0 2px 10px Rgba(0, 0, 0, 0.5);
 
-  .pixel-sprite {
-    height: 90px;
+  .leader-sprite {
+    height: 100px;
     width: auto;
     @include pixelated;
-    will-change: transform, filter, opacity;
-  filter: Drop-Shadow(0 2px 8px Rgba(0,0,0,0.5));
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    filter: Drop-Shadow(0 5px 10px Rgba(0,0,0,0.5));
+    will-change: filter, transform;
   }
 }
 
-.card-footer-legacy {
-  padding: 12px 20px 16px;
+/* Placa de Recompensa Destacada */
+.medal-reward-box {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 12px;
-  flex-wrap: wrap;
+  background: Rgba(0, 0, 0, 0.35);
+  border: 1px solid Rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 10px 14px;
+  box-shadow: inset 0 2px 8px Rgba(0, 0, 0, 0.4);
+}
+
+.reward-badge-img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  image-rendering: pixelated;
+  filter: Drop-Shadow(0 0 4px Rgba(255, 215, 0, 0.4));
+}
+
+.medal-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.reward-title {
+  @include pixelated;
+  font-size: 6px;
+  color: var(--gray);
+  opacity: 0.6;
+  letter-spacing: 0.5px;
+}
+
+.medal-name {
+  @include pixelated;
+  font-size: 8px;
+  color: $coin-gold;
+  text-shadow: 0 0 8px Rgba(255, 214, 10, 0.3);
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.reward-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.tm-reward {
+  @include pixelated;
+  font-size: 6px;
+  color: #fff;
+  background: Rgba(255, 255, 255, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+  align-self: flex-start;
+  border: 1px solid Rgba(255, 255, 255, 0.05);
+}
+
+.reward-extras {
+  display: flex;
+  gap: 6px;
+}
+
+.reward-pill {
+  font-size: 6px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  @include pixelated;
+  border: 1px solid transparent;
+
+  &.exp {
+    color: #4cc9f0;
+    background: Rgba(76, 201, 240, 0.1);
+    border-color: Rgba(76, 201, 240, 0.2);
+  }
+
+  &.money {
+    color: #ffd700;
+    background: Rgba(255, 215, 0, 0.1);
+    border-color: Rgba(255, 215, 0, 0.2);
+  }
+}
+
+.pv-card-footer {
+  padding: 20px 24px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-top: auto;
 }
 
 .progress-txt {
-  font-size: 9px;
-  color: Rgba(136, 136, 136, 1);
-  font-weight: 700;
-}
-
-.action-box {
-  margin-left: auto;
+  font-size: 10px;
+  color: var(--gray);
+  @include pixelated;
+  opacity: 0.7;
+  
+  .text-won {
+    color: Rgba(34, 197, 94, 1);
+    text-shadow: 0 0 8px Rgba(34, 197, 94, 0.3);
+  }
 }
 
 .locked-tag {
   color: Rgba(239, 68, 68, 1);
   font-size: 10px;
   background: Rgba(239, 68, 68, 0.1);
-  padding: 5px 12px;
-  border-radius: 20px;
+  padding: 8px 16px;
+  border-radius: 12px;
   border: 1px solid Rgba(239, 68, 68, 0.2);
+  text-align: center;
+  @include pixelated;
 }
 
 .won-tag {
@@ -275,55 +478,85 @@ const leaderSpriteUrl = computed(() => {
   font-size: 10px;
   font-weight: 700;
   background: Rgba(34, 197, 94, 0.1);
-  padding: 5px 12px;
-  border-radius: 20px;
+  padding: 8px 16px;
+  border-radius: 12px;
   border: 1px solid Rgba(34, 197, 94, 0.3);
+  text-align: center;
+  @include pixelated;
+  margin-bottom: 12px;
 }
 
 .challenge-group {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  align-items: flex-end;
+  gap: 15px;
 }
 
 .diff-selector {
   display: flex;
-  gap: 4px;
+  gap: 6px;
+  background: Rgba(0, 0, 0, 0.3);
+  padding: 4px;
+  border-radius: 10px;
+  border: 1px solid Rgba(255, 255, 255, 0.05);
 }
 
-.diff-btn-retro {
+.diff-btn {
+  flex: 1;
   @include pixelated;
-  font-size: 6px;
-  padding: 6px 8px;
+  font-size: 7px;
+  padding: 8px 4px;
   border-radius: 6px;
-  border: 1px solid Rgba(255, 255, 255, 0.1);
+  border: 1px solid transparent;
   background: transparent;
-  color: Rgba(136, 136, 136, 1);
+  color: var(--gray);
   cursor: pointer;
+  transition: all 0.3s;
 
-  &.active {
-    border-color: var(--gym-color);
-    background: Rgba(var(--gym-color), 0.2);
+    &.active {
+    background: Rgba(255, 255, 255, 0.05);
+    border-color: Rgba(255, 255, 255, 0.1);
     color: var(--white);
+    box-shadow: 0 2px 10px Rgba(0, 0, 0, 0.3);
     
-    &.easy { color: Rgba(34, 197, 94, 1); }
-    &.normal { color: $coin-gold; }
-    &.hard { color: Rgba(239, 68, 68, 1); }
+    &.easy { color: Rgba(34, 197, 94, 1); border-color: Rgba(34, 197, 94, 0.3); }
+    &.normal { color: $coin-gold; border-color: Rgba(255, 215, 0, 0.3); }
+    &.hard { color: Rgba(239, 68, 68, 1); border-color: Rgba(239, 68, 68, 0.3); }
+  }
+  
+  .won-dot {
+    margin-left: 4px;
+    font-size: 8px;
+    color: Rgba(34, 197, 94, 1);
+  }
+  
+  &:hover:not(.active) {
+    background: Rgba(255, 255, 255, 0.03);
+    color: var(--white);
   }
 }
 
-.retro-challenge-btn {
-  padding: 10px 24px;
-  border: none;
-  border-radius: 20px;
+.pv-challenge-btn {
+  padding: 14px;
+  border: 1px solid Rgba(255, 255, 255, 0.2);
+  border-radius: 14px;
   @include pixelated;
-  font-size: 8px;
+  font-size: 10px;
   color: var(--white);
   font-weight: 900;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  text-shadow: 0 2px 0 Rgba(0, 0, 0, 0.5);
 
-  &:hover { transform: Scale(1.05); }
+  &:hover { 
+    transform: Scale(1.02) Translatey(-2px);
+    filter: Brightness(1.1);
+    will-change: filter, transform;
+    border-color: Rgba(255, 255, 255, 0.4);
+  }
+  
+  &:active {
+    transform: Scale(0.98) Translatey(1px);
+  }
 }
 </style>

@@ -58,12 +58,85 @@ export function registerStatsTools(debug: DebugSystem, { game, ui }: DebugContex
     label: 'SET BADGES',
     command: 'setBadges',
     category: 'stats',
-    action: (val: number) => {
-      game.state.badges = val
-      ui.notify(`Debug: Medallas ajustadas a ${val}`, '🏆')
+    action: (val: any) => {
+      const allGymIds = ['pewter', 'cerulean', 'vermilion', 'celadon', 'fuchsia', 'saffron', 'cinnabar', 'viridian']
+      if (typeof val === 'number') {
+        const count = Math.max(0, Math.min(8, val))
+        game.state.defeatedGyms = allGymIds.slice(0, count)
+        game.state.badges = count
+      } else if (Array.isArray(val)) {
+        game.state.defeatedGyms = val.filter(id => allGymIds.includes(id))
+        game.state.badges = game.state.defeatedGyms.length
+      } else if (typeof val === 'string' && val) {
+        const list = val.split(',').map(s => s.trim().toLowerCase()).filter(id => allGymIds.includes(id))
+        game.state.defeatedGyms = list
+        game.state.badges = list.length
+      }
+      ui.notify(`Debug: Medallas ajustadas a ${game.state.badges} (${game.state.defeatedGyms.join(', ') || 'ninguna'})`, '🏆')
       game.saveGame(false)
     },
     description: 'Establece el número de medallas del entrenador.'
+  })
+
+  debug.register({
+    id: 'stats-win-gym',
+    label: 'WIN GYM (SIMULATE)',
+    command: 'winGym',
+    category: 'stats',
+    action: async (gymId: string, difficulty: 'easy' | 'normal' | 'hard' = 'easy') => {
+      const gymsStore = (await import('@/stores/gyms')).useGymsStore()
+      const gym = gymsStore.gyms.find(g => g.id === gymId)
+      if (!gym) return
+      
+      const isFirstWin = !game.state.defeatedGyms.includes(gymId)
+      
+      if (isFirstWin) {
+        game.state.defeatedGyms.push(gymId)
+        game.state.badges = game.state.defeatedGyms.length
+        
+        const tm = gym.rewardTM
+        if (tm) {
+          game.state.inventory[tm] = (game.state.inventory[tm] || 0) + 1
+        }
+      }
+
+      // Guardar progreso específico por dificultad
+      if (!game.state.gymProgress[gymId]) {
+        game.state.gymProgress[gymId] = { easy: false, normal: false, hard: false, attempts: 0 }
+      }
+      const progress = game.state.gymProgress[gymId] as any
+      progress[difficulty] = true
+      progress.attempts++
+
+      // Simular recompensas adicionales basadas en dificultad (EXP y Dinero aproximado)
+      const diffLevels: Record<string, number> = { easy: 15, normal: 35, hard: 75 }
+      const level = diffLevels[difficulty] || 15
+      const moneyGained = level * 10 * (difficulty === 'hard' ? 3 : difficulty === 'normal' ? 2 : 1)
+      game.state.money += moneyGained
+      
+      const msg = isFirstWin 
+        ? `¡Victoria Simulada (${difficulty.toUpperCase()})! Recibiste la ${gym.badgeName}${gym.rewardTM ? ` y la ${gym.rewardTM}` : ''}. +₱${moneyGained}`
+        : `¡Reafirmación Simulada (${difficulty.toUpperCase()})! Ganaste ₱${moneyGained} y experiencia para tu equipo.`;
+
+      ui.notify(msg, '🏆')
+      game.saveGame(false)
+    },
+    description: 'Simula la victoria de un gimnasio y otorga sus recompensas.'
+  })
+
+  debug.register({
+    id: 'stats-reset-badges',
+    label: 'RESET ALL BADGES',
+    command: 'resetBadges',
+    category: 'stats',
+    action: () => {
+      game.state.defeatedGyms = []
+      game.state.gymProgress = {}
+      game.state.badges = 0
+      ui.notify('Progreso de gimnasios reseteado.', '🔄')
+      game.saveGame(false)
+    },
+    description: 'Elimina todas las medallas y reinicia el progreso de gimnasios.'
   })
 
 

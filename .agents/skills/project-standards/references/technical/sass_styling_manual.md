@@ -140,7 +140,7 @@ All layouts and structural containers **MUST** follow premium modern web design 
 
 All game-specific content **MUST** be strictly Pixel Art to preserve the game's core identity.
 
-- **Rendering**: For all sprites and pixelated assets, always use `image-rendering: pixelated;`.
+- **Rendering (Mandatory)**: For all sprites and pixelated assets (Pokémon, items, badges), you **MUST** use `@include pixelated;`. This mixin ensures sharp edges, consistent typography rendering across browsers, and disables smoothing. Avoid raw `image-rendering: pixelated;` as it lacks browser-specific fallbacks.
 - **Icons**: Only use pixel-art icons. **FORBIDDEN**: Modern SVG icons, FontAwesome, or high-res Material icons.
 - **Scaling Standards**:
   - **Grid Oversize**: Use **1.5x** scaling (e.g., `min-width: 60px` for a 40px slot) for item sprites in combat grids. Combined with `overflow: hidden` on parent cards, this creates a high-fidelity "clipping" effect.
@@ -246,6 +246,7 @@ Avoid spreading definitions for the same component across multiple files. This i
   - **Avoid Redundant Darkening**: Do NOT apply black semi-transparent backgrounds (`rgba(0,0,0,X)`) to weather or atmospheric overlays if a global `AtmosphereLayer` filter is active. This prevents "double-darkening" (clipping visual range) during the night cycle.
   - **Cycle-Specific Styles**: Use cycle-specific classes (e.g., `.night`, `.day`) passed from `AtmosphereLayer` to children for fine-grained CSS overrides instead of relying on JS logic for minor style shifts.
 - **Goal**: Maintain 0 redefinitions for critical game components.
+- **Grid Stabilization**: When designing grids with variable content (like GymCards), prefer fixed widths or controlled `minmax` (e.g., `340px`) over `1fr`. This prevents layout expansion and horizontal scroll issues when the number of elements is odd or changes dynamically.
 - **Math-Based Layout Scaling (Robust Grid Pattern)**:
   - **MANDATORY**: For complex UI panels with multiple interdependent parts (e.g., Combat Move Panels), define dimensions using CSS variables and `calc()` in the parent container.
   - **Example**:

@@ -108,6 +108,21 @@ const explicitResource: AuditRule = {
   check: (filePath: string) => filePath.includes('scripts' + path.sep)
 };
 
+const manualAnimations: AuditRule = {
+  regex: /@keyframes\b|\btransition\s*:/g,
+  message: (match: string) => `Animación manual detectada: '${match}'. Prohibido por el mandato GSAP exclusivo. Refactoriza a GSAP.`,
+  severity: 'error',
+  fixable: false
+};
+
+const manualTimersFrontend: AuditRule = {
+  regex: /\b(set|clear)(Timeout|Interval)\b/g,
+  message: (match: string) => `Timer manual detectado: '${match}'. Prohibido en componentes UI por el mandato GSAP. Usa promesas de GSAP o Temporal.`,
+  severity: 'warning', // Warning initially to avoid blocking critical builds until migration is further along
+  check: (filePath: string) => filePath.endsWith('.vue'),
+  fixable: false
+};
+
 const fileLength: AuditRule = {
   regex: /[\s\S]*/,
   message: "Archivo demasiado largo.",
@@ -164,7 +179,7 @@ const zIndexAudit: AuditRule = {
 };
 
 const config = {
-  viewport, gpuGaps, legacyDates, nodePrefix, esmExtensions, tsIgnore, timersPromises, explicitResource, fileLength, sassTraps, zIndexAudit
+  viewport, gpuGaps, legacyDates, nodePrefix, esmExtensions, tsIgnore, timersPromises, explicitResource, fileLength, sassTraps, zIndexAudit, manualAnimations, manualTimersFrontend
 };
 
 async function getFilesToAudit(dir: string): Promise<string[]> {
@@ -218,11 +233,19 @@ async function auditFile(filePath: string, fix: boolean): Promise<Violation[]> {
     const tag = 'style';
     const block = isVue ? extractBlock(content, tag) : content;
     if (block) {
-      const newBlock = runRules(filePath, block, [config.viewport, config.gpuGaps, config.zIndexAudit], violations, fix, isVue ? findBlockStart(content, tag) : 0);
+      const newBlock = runRules(filePath, block, [config.viewport, config.gpuGaps, config.zIndexAudit, config.manualAnimations], violations, fix, isVue ? findBlockStart(content, tag) : 0);
       if (fix && newBlock !== block) {
         content = isVue ? injectBlock(content, tag, newBlock) : newBlock;
         modified = true;
       }
+    }
+  }
+
+  if (isVue) {
+    const tag = 'script';
+    const block = extractBlock(content, tag);
+    if (block) {
+      runRules(filePath, block, [config.manualTimersFrontend], violations, fix, findBlockStart(content, tag));
     }
   }
 
@@ -233,12 +256,31 @@ async function auditFile(filePath: string, fix: boolean): Promise<Violation[]> {
   return violations;
 }
 
+function isInsideComment(content: string, index: number): boolean {
+  const before = content.substring(0, index);
+  
+  // Check for Block Comment /* ... */
+  const lastStartBlock = before.lastIndexOf('/*');
+  const lastEndBlock = before.lastIndexOf('*/');
+  if (lastStartBlock > lastEndBlock) return true;
+
+  // Check for Line Comment // ...
+  const lastNewLine = before.lastIndexOf('\n');
+  const lastLineComment = before.lastIndexOf('//');
+  if (lastLineComment > lastNewLine) return true;
+
+  return false;
+}
+
 function runRules(filePath: string, content: string, rules: AuditRule[], violations: Violation[], fix: boolean, offset: number): string {
   let result = content;
   for (const rule of rules) {
     const regex = new RegExp(rule.regex.source, rule.regex.flags);
     let match;
     while ((match = regex.exec(content)) !== null) {
+      // 0. Skip comments to avoid false positives
+      if (isInsideComment(content, match.index)) continue;
+
       // 1. Specialized checks
       if (rule === config.sassTraps) {
         if (match[1]) continue; 

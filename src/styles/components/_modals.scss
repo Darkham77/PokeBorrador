@@ -73,7 +73,7 @@
 .move-detail-overlay {
   position: fixed;
   inset: 0;
-  @include glass-solid(Rgba(0, 0, 0, 0.85));
+  @include shell-premium(Rgba(0, 0, 0, 0.85));
   z-index: var(--z-max);
   display: none;
   align-items: center;

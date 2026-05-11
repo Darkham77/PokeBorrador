@@ -58,6 +58,7 @@ export interface BattleState {
   persistenceMode?: 'local' | 'remote';
   learnQueue?: unknown[];
   isPvP?: boolean;
+  difficulty?: 'easy' | 'normal' | 'hard';
 }
 
 export type BattleSource = Pokemon | 'player' | 'enemy_trainer' | 'enemy' | string;

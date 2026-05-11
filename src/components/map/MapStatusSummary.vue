@@ -124,7 +124,7 @@ const bannerStyle = computed(() => ({
                   class="sprite-container"
                 >
                   <img
-                    :src="getAssetUrl(ASSET_TYPES.TRAINER, spriteId)"
+                    :src="getAssetUrl(ASSET_TYPES.TRAINER, spriteId, { trainerSuffix: 'avatar' })"
                     class="pixelated"
                     @error="(e: Event) => { (e.target as HTMLImageElement).style.display = 'none'; ((e.target as HTMLImageElement).nextSibling as HTMLElement).style.display = 'flex' }"
                   >
@@ -170,7 +170,7 @@ const bannerStyle = computed(() => ({
                 <img
                   v-for="(spriteId, i) in gymSprites.slice(0, 4)"
                   :key="i"
-                  :src="getAssetUrl(ASSET_TYPES.TRAINER, spriteId)"
+                  :src="getAssetUrl(ASSET_TYPES.TRAINER, spriteId, { trainerSuffix: 'avatar' })"
                   class="pixelated"
                   @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
                 >
@@ -339,7 +339,7 @@ const bannerStyle = computed(() => ({
 }
 
 .pc-banner {
-  @include glass-solid(Rgba(15, 23, 42, 0.95));
+  @include shell-premium(Rgba(15, 23, 42, 0.95));
   border-radius: 16px;
   padding: 12px 16px; // Reduced vertical padding
   display: flex;

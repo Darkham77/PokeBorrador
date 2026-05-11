@@ -4,13 +4,13 @@
 
 ### HP
 
-```
+```text
 maxHp = floor((base.hp × 2 + iv.hp) × level / 100 + level + 10)
 ```
 
 ### Resto de stats (Atk, Def, SpA, SpD, Spe)
 
-```
+```text
 stat_base = floor((base.stat × 2 + iv.stat) × level / 100 + 5)
 stat_final = floor(stat_base × nature_mult)
 ```
@@ -47,29 +47,28 @@ A nivel 100, la diferencia máxima entre IV0 e IV31 es **31 puntos** en cualquie
 
 ## Naturalezas
 
-Hay **20 naturalezas**. 5 son neutras (Hardy, Serio, Dócil, + 2 internas).
-Las 15 activas tienen un stat +10% y otro -10%.
+Hay **20 naturalezas**. 5 son neutras (Hardy, Serio, Dócil, + 2 internas). Las 15 activas tienen un stat +10% y otro -10%.
 
-| Naturaleza | +10% | -10% |
-|---|---|---|
-| Audaz | Ataque | Def. Esp |
-| Firme | Ataque | Velocidad |
-| Pícaro | Ataque | Defensa |
-| Manso | Ataque | At. Esp |
-| Osado | Defensa | Ataque |
-| Plácido | Defensa | At. Esp |
-| Agitado | Defensa | Velocidad |
-| Jovial | Defensa | Def. Esp |
-| Modesto | At. Esp | Ataque |
-| Moderado | At. Esp | Defensa |
-| Ingenuo | At. Esp | Def. Esp |
-| Raro | At. Esp | Velocidad |
-| Tímido | Velocidad | Ataque |
-| Activo | Velocidad | Defensa |
-| Alocado | Velocidad | At. Esp |
-| Tranquilo | Def. Esp | Velocidad |
-| Grosero | Def. Esp | At. Esp |
-| Cauto | Def. Esp | Ataque |
+| Naturaleza | +10%      | -10%      |
+| ---------- | --------- | --------- |
+| Audaz      | Ataque    | Def. Esp  |
+| Firme      | Ataque    | Velocidad |
+| Pícaro     | Ataque    | Defensa   |
+| Manso      | Ataque    | At. Esp   |
+| Osado      | Defensa   | Ataque    |
+| Plácido    | Defensa   | At. Esp   |
+| Agitado    | Defensa   | Velocidad |
+| Jovial     | Defensa   | Def. Esp  |
+| Modesto    | At. Esp   | Ataque    |
+| Moderado   | At. Esp   | Defensa   |
+| Ingenuo    | At. Esp   | Def. Esp  |
+| Raro       | At. Esp   | Velocidad |
+| Tímido     | Velocidad | Ataque    |
+| Activo     | Velocidad | Defensa   |
+| Alocado    | Velocidad | At. Esp   |
+| Tranquilo  | Def. Esp  | Velocidad |
+| Grosero    | Def. Esp  | At. Esp   |
+| Cauto      | Def. Esp  | Ataque    |
 
 > Las naturalezas se asignan al azar (1/20 cada una). Actualmente **no son heredables** en crianza — es una oportunidad de mejora.
 
@@ -90,13 +89,13 @@ Esta es la **derivada discreta** de la curva Medium Fast (level³), lo que signi
 Ejemplos:
 
 | Nivel | EXP para subir |
-|---|---|
-| 1 | 7 |
-| 5 | 91 |
-| 10 | 331 |
-| 20 | 1261 |
-| 50 | 7651 |
-| 100 | ∞ |
+| ----- | -------------- |
+| 1     | 7              |
+| 5     | 91             |
+| 10    | 331            |
+| 20    | 1261           |
+| 50    | 7651           |
+| 100   | ∞              |
 
 ### EXP ganada en batalla
 
@@ -126,25 +125,25 @@ El Pokémon portador recibe `floor(baseExp × 0.5)` aunque no haya participado e
 ## Shiny Rate
 
 ```javascript
-const SHINY_RATE = 2000;  // 1/2000 por Pokémon creado
+const SHINY_RATE = 2000; // 1/2000 por Pokémon creado
 
 // Con Ticket Shiny activo (30 minutos):
-const activeRate = Math.floor(SHINY_RATE / 2);  // = 1000 → 1/1000
+const activeRate = Math.floor(SHINY_RATE / 2); // = 1000 → 1/1000
 ```
 
 La probabilidad se evalúa en `makePokemon()` con:
 
 ```javascript
-const isShiny = Math.random() < (1 / activeRate);
+const isShiny = Math.random() < 1 / activeRate;
 ```
 
 ### Probabilidades comparadas
 
-| Condición | Tasa | Probabilidad |
-|---|---|---|
-| Normal | 1/2000 | 0.05% |
-| Ticket Shiny activo | 1/1000 | 0.1% |
-| Huevo de crianza (fijo) | 1/512 | 0.195% |
+| Condición               | Tasa   | Probabilidad |
+| ----------------------- | ------ | ------------ |
+| Normal                  | 1/2000 | 0.05%        |
+| Ticket Shiny activo     | 1/1000 | 0.1%         |
+| Huevo de crianza (fijo) | 1/512  | 0.195%       |
 
 ---
 
@@ -155,7 +154,7 @@ function assignGender(id) {
   if (GENDERLESS.includes(id)) return null;
   if (id.endsWith('_m')) return 'M';
   if (id.endsWith('_f')) return 'F';
-  return Math.random() < 0.5 ? 'M' : 'F';  // 50/50
+  return Math.random() < 0.5 ? 'M' : 'F'; // 50/50
 }
 ```
 
@@ -178,7 +177,7 @@ Ver tabla completa en `09_evoluciones.md`. El proceso es:
 ## Multiplicadores de stage en batalla
 
 ```javascript
-const STAGE_MULT = [0.25, 0.28, 0.33, 0.40, 0.50, 0.66, 1, 1.5, 2, 2.5, 3, 3.5, 4];
+const STAGE_MULT = [0.25, 0.28, 0.33, 0.4, 0.5, 0.66, 1, 1.5, 2, 2.5, 3, 3.5, 4];
 //                   -6    -5    -4    -3    -2    -1    0   +1   +2  +3   +4   +5   +6
 ```
 

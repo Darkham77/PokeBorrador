@@ -260,7 +260,7 @@ const getGenderClass = (gender: string | null | undefined) => {
 
 .daycare-slot {
   flex: 1;
-  @include glass-solid(Rgba(255, 255, 255, 0.03));
+  @include shell-premium(Rgba(255, 255, 255, 0.03));
   border-radius: 20px;
   aspect-ratio: 1/1;
   display: flex;

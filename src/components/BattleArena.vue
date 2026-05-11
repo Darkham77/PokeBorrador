@@ -200,7 +200,7 @@ const handleClose = () => {
 }
 
 .environment-pill {
-  @include glass-solid(Rgba(0, 0, 0, 0.6));
+  @include shell-premium(Rgba(0, 0, 0, 0.6));
   padding: 6px 12px;
   border-radius: 20px;
   display: flex;

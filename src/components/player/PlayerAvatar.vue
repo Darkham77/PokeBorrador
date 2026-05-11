@@ -40,7 +40,7 @@ const borderColor = computed(() => {
 const avatarUrl = computed(() => {
   if (!cls.value) return null;
   const spriteId = cls.value.avatarSpriteId || cls.value.id;
-  return getAssetUrl(ASSET_TYPES.TRAINER, spriteId);
+  return getAssetUrl(ASSET_TYPES.TRAINER, spriteId, { trainerSuffix: 'avatar' });
 });
 
 const containerStyle = computed(() => ({

@@ -7,7 +7,7 @@
 }
 
 .box-controls-compact {
-  @include glass-solid(Rgba(15, 23, 42, 0.95));
+  @include shell-premium(Rgba(15, 23, 42, 0.95));
   padding: 12px 20px;
   border-radius: 20px;
   display: flex;

@@ -193,5 +193,23 @@ function normalizeData(state: GameState): GameState {
     state.badges = state.badges.length;
   }
 
+  // AUTO-HEAL & MIGRATION FOR LEGACY GYM SAVES
+  if (!Array.isArray(state.defeatedGyms)) {
+    state.defeatedGyms = [];
+  }
+
+  if (state.defeatedGyms.length > 0) {
+    // Sincronizar el contador con la lista real de derrotados si hay inconsistencia
+    if (state.badges !== state.defeatedGyms.length) {
+      state.badges = state.defeatedGyms.length;
+    }
+  } else if (state.badges > 0) {
+    // Si tiene un contador de medallas heredado pero defeatedGyms está vacío,
+    // reconstruimos la lista secuencialmente según el orden de progresión de Kanto
+    const allGymIds = ['pewter', 'cerulean', 'vermilion', 'celadon', 'fuchsia', 'saffron', 'cinnabar', 'viridian'];
+    const count = Math.min(8, Math.max(0, state.badges));
+    state.defeatedGyms = allGymIds.slice(0, count);
+  }
+
   return state;
 }

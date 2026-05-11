@@ -56,7 +56,7 @@ export interface GameState {
   pokedex: string[];
   seenPokedex: string[];
   defeatedGyms: string[];
-  gymProgress: Record<string, { completed: boolean; attempts: number; lastWin?: number }>;
+  gymProgress: Record<string, { easy: boolean; normal: boolean; hard: boolean; attempts: number; lastWin?: number }>;
   lastGymWins: Record<string, number>;
   lastGymAttempts: Record<string, number>;
   battle: BattleState | null;

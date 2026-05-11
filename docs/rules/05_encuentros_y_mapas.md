@@ -2,15 +2,14 @@
 
 ## Ciclo Día/Noche
 
-El ciclo se basa en el **tiempo del servidor sincronizado**, con la siguiente progresión:
-1 Día Real = 3 Días de Juego. Cada ciclo dura 2 horas reales.
+El ciclo se basa en el **tiempo del servidor sincronizado**, con la siguiente progresión: 1 Día Real = 3 Días de Juego. Cada ciclo dura 2 horas reales.
 
 ```javascript
 // Phases: morning (2hs), day (2hs), dusk (2hs), night (2hs).
 function getDayCycle(now = getServerTime()) {
   const totalHours = Math.floor(now / (1000 * 60 * 60));
   const phase = totalHours % 8;
-  
+
   if (phase < 2) return 'morning';
   if (phase < 4) return 'day';
   if (phase < 6) return 'dusk';
@@ -55,8 +54,7 @@ Según el ciclo del día, el generador de clima ajusta las probabilidades de la 
 
 ### Implementación Técnica
 
-El motor de clima (`weatherUtils.js`) utiliza una tabla de probabilidades anidada:
-`ROUTE_WEATHER_TABLES[mapId][seasonId][cycleId]`
+El motor de clima (`weatherUtils.js`) utiliza una tabla de probabilidades anidada: `ROUTE_WEATHER_TABLES[mapId][seasonId][cycleId]`
 
 El clima es **persistente para todos los jugadores** en la misma zona durante la misma hora del servidor, garantizando una experiencia compartida sincronizada.
 
@@ -97,10 +95,10 @@ let rand = Math.random() × totalRate;
 
 ```javascript
 // Estado inicial / tras login:
-state.trainerChance = 5;  // 5%
+state.trainerChance = 5; // 5%
 
 // Al encontrar un entrenador:
-state.trainerChance = 5;  // reset a 5%
+state.trainerChance = 5; // reset a 5%
 
 // Cada 2 minutos SIN encontrar entrenadores:
 if (trainerChance < 20) trainerChance += 5;
@@ -114,7 +112,7 @@ Esto crea un sistema de **pity suave**: si el jugador no ve entrenadores, la pro
 ## Tabla de mapas completa
 
 | ID | Nombre | Medallas req. | Niveles | Pokémon día |
-| :--- | :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- | :-- |
 | `route1` | Ruta 1 | 0 | 2–5 | Pidgey, Rattata |
 | `route2` | Ruta 2 | 0 | 3–5 | Pidgey, Rattata, Caterpie, Weedle |
 | `forest` | Bosque Viridian | 0 | 3–6 | Caterpie, Metapod, Weedle, Kakuna, Pikachu (10%), Nidoran♀/♂ (5% c/u) |
@@ -155,7 +153,7 @@ Esto crea un sistema de **pity suave**: si el jugador no ve entrenadores, la pro
 ## Gimnasios
 
 | # | ID | Líder | Tipo | Pokémon (niveles) | Medallas req. |
-| :--- | :--- | :--- | :--- | :--- | :--- |
+| :-- | :-- | :-- | :-- | :-- | :-- |
 | 1 | `pewter` | Brock | Roca | Geodude (12), Onix (14) | 0 |
 | 2 | `cerulean` | Misty | Agua | Staryu (18), Starmie (21) | 1 |
 | 3 | `vermilion` | Lt. Surge | Eléctrico | Voltorb (21), Pikachu (24), Raichu (28) | 2 |
@@ -171,15 +169,15 @@ Esto crea un sistema de **pity suave**: si el jugador no ve entrenadores, la pro
 
 Hay 10 tipos de entrenadores con pools fijos de Pokémon. La recompensa al derrotarlos es `nivel × 40` PokePesetas y `nivel × 2` Battle Coins (aprox).
 
-| Tipo | Pool de Pokémon |
-| :--- | :--- |
+| Tipo        | Pool de Pokémon                                   |
+| :---------- | :------------------------------------------------ |
 | Caza Bichos | Caterpie, Metapod, Weedle, Kakuna, Paras, Venonat |
-| Ornitólogo | Pidgey, Spearow, Doduo |
-| Científico | Magnemite, Voltorb, Ditto, Grimer |
-| Luchador | Mankey, Machop |
-| Pescador | Magikarp, Goldeen, Poliwag |
-| Nadador | Psyduck, Tentacool, Staryu, Horsea |
-| Domador | Growlithe, Vulpix, Ponyta, Ekans |
-| Médium | Abra, Drowzee |
-| Motorista | Koffing, Grimer, Rattata |
-| Montañero | Geodude, Sandshrew, Rhyhorn |
+| Ornitólogo  | Pidgey, Spearow, Doduo                            |
+| Científico  | Magnemite, Voltorb, Ditto, Grimer                 |
+| Luchador    | Mankey, Machop                                    |
+| Pescador    | Magikarp, Goldeen, Poliwag                        |
+| Nadador     | Psyduck, Tentacool, Staryu, Horsea                |
+| Domador     | Growlithe, Vulpix, Ponyta, Ekans                  |
+| Médium      | Abra, Drowzee                                     |
+| Motorista   | Koffing, Grimer, Rattata                          |
+| Montañero   | Geodude, Sandshrew, Rhyhorn                       |

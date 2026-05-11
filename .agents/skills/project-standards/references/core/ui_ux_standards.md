@@ -437,7 +437,9 @@ To ensure consistent interaction feedback, the UI/Control layer of an interactiv
 
 ### 4. Audit-Safe Z-Index
 
-Hardcoded numeric values for `z-index` (e.g., `10`, `20`) are strictly FORBIDDEN in SCSS. Using them triggers audit failures and aggressive auto-repair scripts. Always use standardized CSS variables (e.g., `var(--z-map-spawns)`) defined in `_variables.scss`.
+Hardcoded numeric values for `z-index` (e.g., `10`, `20`) are strictly FORBIDDEN in SCSS. Always use standardized CSS variables (e.g., `var(--z-map-spawns)`) defined in `src/logic/constants/visuals.ts`.
+
+- **Visibility Guard**: If an entire view appears "dark and disabled", verify that the `LoadingGate` (z-index: `MAX`) or a blocking modal hasn't been left open due to an unhandled JS error in the mounting lifecycle.
 
 ---
 

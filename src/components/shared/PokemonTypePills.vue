@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-
+import { translateType } from '@/data/types'
 import type { Pokemon } from '@/types/pokemon'
 
 interface Props {
@@ -30,7 +30,7 @@ const types = computed<string[]>(() => {
       :key="type"
       :class="['m-type-tag', `type-${type.toLowerCase()}`, size]"
     >
-      {{ type.toUpperCase() }}
+      {{ translateType(type).toUpperCase() }}
     </span>
   </div>
 </template>

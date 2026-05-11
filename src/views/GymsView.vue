@@ -5,6 +5,7 @@ import { useGameStore } from '@/stores/game'
 import GymCard from '@/components/gyms/GymCard.vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import type { Gym } from '@/types/gym'
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
 const gymsStore = useGymsStore()
 const gameStore = useGameStore()
@@ -21,8 +22,8 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="gyms-view-legacy">
-    <div class="gyms-header-legacy">
+  <div class="pv-gyms-view">
+    <div class="pv-gyms-header">
       <div class="header-left">
         <h1 class="view-title">
           🏆 LÍDERES DE GIMNASIO
@@ -32,7 +33,7 @@ onMounted(async () => {
         </p>
       </div>
       
-      <div class="badge-summary-legacy">
+      <div class="badge-summary">
         <div class="badge-title">
           TUS MEDALLAS
         </div>
@@ -43,24 +44,28 @@ onMounted(async () => {
             :title="gym.badgeName"
           >
             <button 
-              class="badge-item-retro"
+              class="badge-item"
               :class="{ active: gymsStore.isGymDefeated(gym.id) }"
               @click.stop
             >
-              {{ gymsStore.isGymDefeated(gym.id) ? gym.badge : '?' }}
+              <img 
+                :src="getAssetUrl(ASSET_TYPES.BADGE, gym.id)" 
+                :alt="gym.badgeName"
+                class="badge-img"
+              >
             </button>
           </PVTooltip>
         </div>
       </div>
     </div>
 
-    <div class="gyms-grid-legacy">
+    <div class="pv-gyms-grid">
       <GymCard
         v-for="gym in gymsStore.gyms"
         :key="gym.id"
         v-model:difficulty="cardDifficulties[gym.id]"
         :gym="gym"
-        :is-defeated="gymsStore.isGymDefeated(gym.id)"
+        :is-defeated="gymsStore.isDifficultyDefeated(gym.id, cardDifficulties[gym.id] || 'easy')"
         :is-locked="gameStore.state.badges < gym.badgesRequired"
       />
     </div>
@@ -70,89 +75,114 @@ onMounted(async () => {
 <style scoped lang="scss">
 @use "@/styles/core/tools" as *;
 
-.gyms-view-legacy {
+.pv-gyms-view {
   padding: 0 0 40px;
   background: var(--bg-dark);
 }
 
-.gyms-header-legacy {
+.pv-gyms-header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
   margin-bottom: 40px;
   gap: 30px;
-  border-bottom: 1px solid Rgba(255, 255, 255, 0.05);
-  padding-bottom: 20px;
+  padding: 30px;
+  @include shell;
+  border-radius: 24px;
   
   @media (max-width: 1024px) {
     flex-direction: column;
+    align-items: flex-start;
   }
 }
 
 .view-title {
   @include pixelated;
-  font-size: 14px;
+  font-size: 16px;
   color: var(--yellow);
-  margin: 0 0 10px 0;
+  margin: 0 0 12px 0;
   text-shadow: 0 2px 0 var(--black);
 }
 
 .view-desc {
-  font-size: 10px;
+  font-size: 11px;
   color: var(--gray);
   line-height: 1.6;
-  max-width: 500px;
+  max-width: 600px;
 }
 
-.badge-summary-legacy {
-  background: Rgba(0, 0, 0, 0.3);
-  border: 2px solid Rgba(255, 255, 255, 0.1);
-  padding: 20px;
+.badge-summary {
+  @include shell-premium;
+  padding: 24px;
   border-radius: 20px;
-  min-width: 300px;
+  min-width: 320px;
+  position: relative;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: Linear-Gradient(90deg, transparent, Rgba(255, 255, 255, 0.2), transparent);
+  }
 }
 
 .badge-title {
   @include pixelated;
-  font-size: 8px;
+  font-size: 9px;
   color: var(--yellow);
-  margin-bottom: 20px;
+  margin-bottom: 24px;
   text-align: center;
+  letter-spacing: 1px;
 }
 
 .badge-list {
   display: flex;
   justify-content: center;
-  gap: 10px;
+  gap: 12px;
   flex-wrap: wrap;
 }
 
-.badge-item-retro {
-  width: 35px;
-  height: 35px;
-  background: Rgba(255, 255, 255, 0.03);
-  border: 1px solid Rgba(255, 255, 255, 0.05);
-  border-radius: 10px;
+.badge-item {
+  width: 40px;
+  height: 40px;
+  background: Rgba(255, 255, 255, 0.05);
+  border: 1px solid Rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 20px;
-  transition: all 0.3s;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   cursor: default;
+  filter: Grayscale(1) Opacity(0.3);
+  will-change: filter, transform;
+
+  .badge-img {
+    width: 26px;
+    height: 26px;
+    object-fit: contain;
+    image-rendering: pixelated;
+  }
 
   &.active {
+    filter: none;
     opacity: 1;
-    background: Rgba(255, 215, 0, 0.1);
+    background: Linear-Gradient(135deg, Rgba(255, 215, 0, 0.2) 0%, Rgba(255, 215, 0, 0.05) 100%);
     border-color: var(--yellow);
-    box-shadow: 0 0 15px Rgba(255, 215, 0, 0.3);
-    transform: Scale(1.1);
+    box-shadow: 
+      0 0 20px Rgba(255, 215, 0, 0.2),
+      inset 0 0 10px Rgba(255, 215, 0, 0.1);
+    transform: Scale(1.1) Translatey(-2px);
   }
 }
 
-.gyms-grid-legacy {
+.pv-gyms-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 25px;
-  padding-bottom: 60px;
+  grid-template-columns: repeat(auto-fill, 340px);
+  justify-content: center;
+  gap: 40px;
+  padding: 0 30px 80px;
 }
 </style>

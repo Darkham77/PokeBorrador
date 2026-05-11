@@ -74,7 +74,7 @@ const avatarStyles = computed((): CSSProperties => {
 
   const bgSize = cls.value.faceScale || 'cover';
   const bgPos = cls.value.facePos || 'center';
-  const displayUrl = getAssetUrl(ASSET_TYPES.TRAINER, cls.value.avatarSpriteId || cls.value.id);
+  const displayUrl = getAssetUrl(ASSET_TYPES.TRAINER, cls.value.avatarSpriteId || cls.value.id, { trainerSuffix: 'avatar' });
 
   return {
     ...baseStyles,

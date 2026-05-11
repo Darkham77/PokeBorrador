@@ -336,8 +336,8 @@ onUnmounted(() => {
     height: 70px;
     padding: 0 10px;
     
-    // GLASSMORPHISM ENHANCED
-    @include glass-solid(linear-gradient(180deg, #161a2e 0%, #0a0c14 100%));
+    // PREMIUM SHELL ENHANCED
+    @include shell-premium(linear-gradient(180deg, #161a2e 0%, #0a0c14 100%));
     border-radius: 20px;
     padding: 10px 24px;
     gap: 15px;
@@ -346,9 +346,9 @@ onUnmounted(() => {
     
     // MULTI-LAYER REFLECTIONS & CONTRAST
     box-shadow: 
-      0 10px 40px rgba(0, 0, 0, 0.6),
-      0 -10px 50px rgba(0, 0, 0, 0.7),
-      inset 0 1px 0 rgba(255, 255, 255, 0.1); // Reflection on the top edge
+      0 10px 40px Rgba(0, 0, 0, 0.6),
+      0 -10px 50px Rgba(0, 0, 0, 0.7),
+      inset 0 1px 0 Rgba(255, 255, 255, 0.1); // Reflection on the top edge
     
     // Reflection parent is handled by position: fixed in parent/mobile class
 

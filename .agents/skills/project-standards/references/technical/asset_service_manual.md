@@ -17,13 +17,14 @@ const url = getAssetUrl(ASSET_TYPES.POKEMON, 'pikachu', { isShiny: false });
 | Type | Source | Description |
 | :--- | :--- | :--- |
 | `POKEMON` | Local (WebP) | (Formerly PokeAPI) Resolves to local sprites in `/assets/sprites/pokemon/`. Supports `isShiny` and `isBack`. |
-| `ITEM` | Local (WebP) | (Formerly PokeAPI) Maps item names to internal IDs in `/assets/items/`. |
+| `ITEM` | Local (WebP) | (Formerly PokeAPI) Maps item names to internal IDs in `/assets/sprites/items/`. |
 | `MAP` | Local (WebP) | Resolves map IDs to `/assets/maps/`. |
 | `TRAINER` | Local (WebP) | (Formerly Showdown) Resolves all trainer IDs (Leaders & Generic) to `/assets/sprites/trainers/`. |
 | `BANNER` | Local (WebP) | Route banners in `/assets/ui/banners/`. |
 | `BATTLE_BG` | Local (WebP) | Battle backgrounds in `/assets/sprites/battle/`. |
 | `UI` | Local (WebP) | General UI assets in `/assets/ui/`. |
 | `FACTION` | Local (WebP) | Faction icons in `/assets/factions/`. |
+| `BADGE` | Local (WebP) | Kanto gym badges in `/assets/sprites/badges/`. |
 
 ## Implementation Guidelines
 
@@ -63,6 +64,14 @@ To ensure minimal data transfer and optimal load times, all visual assets must b
 
 - **MANDATORY**: All final images used in the project (`public/assets/`) **MUST** be in **WebP** format.
 - **FORBIDDEN**: Storing raw `.png`, `.jpg`, or `.jpeg` files in the final destination directories.
+- **PIXEL ART OPTIMIZATION**: All game sprites (Pokémon, items, badges) MUST be converted using **Lossless WebP** (`lossless: true` in Sharp). This preserves the sharp edges and color precision required for the Retro aesthetic. Generic UI banners or backgrounds may use lossy compression (quality 80-98) to save space.
+
+#### Asset Registry Mandate
+
+Every new asset category MUST be explicitly registered in:
+1. `ASSET_TYPES` constant in `src/logic/services/assetService.ts`.
+2. The `getAssetUrl` switch-case logic to handle path resolution.
+3. The `AssetPipeline` (`convert_assets.ts`) to ensure it's mirrored from `_raw-assets`.
 
 #### Folder Architecture
 

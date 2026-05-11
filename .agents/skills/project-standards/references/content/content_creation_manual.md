@@ -13,6 +13,7 @@ This manual details the protocols for adding new Pokémon, moves, abilities, and
 7. **CLI-First Verification**: Upon finishing the implementation, you **MUST** use `window.__VITE_DEBUG__` commands to verify the content.
 8. **Prop Unification**: Always use `isShiny` (Boolean) for asset resolution and logic. The legacy `shiny` property is deprecated and must be avoided to ensure parity across the asset service and UI components.
 9. **Item Parity Mandate**: Absolute synchronization between `SHOP_ITEMS` (data/items.ts), `HEALING_ITEMS` (data/items.ts), and logic effects is mandatory. Every consumable item MUST be registered in both constants to avoid `[PHANTOM]` item warnings in the `validate:items` audit.
+10. **External Asset Download (Bulbapedia)**: Requests to `archives.bulbagarden.net` require a `Referer: https://bulbapedia.bulbagarden.net/` header and a realistic `User-Agent`. Direct downloads without these headers will return `403 Forbidden`.
 
 ---
 

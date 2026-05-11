@@ -1,56 +1,51 @@
 # Visual Effects Reference
 
-> Modern CSS effect principles and techniques - learn the concepts, create variations.
-> **No fixed values to copy - understand the patterns.**
+> Modern CSS effect principles and techniques - learn the concepts, create variations. **No fixed values to copy - understand the patterns.**
 
 ---
 
-## 1. Glassmorphism Principles
+## 1. Premium Shell Principles
 
-### What Makes Glassmorphism Work
+### What Makes Premium Shell Work
 
 ```text
 Key Properties:
-├── Semi-transparent background (not solid)
-├── Backdrop blur (frosted glass effect)
-├── Subtle border (for definition)
-└── Often: light shadow for depth
+├── Solid high-contrast background (opaque)
+├── Premium gradients (depth & volume)
+├── Sharp, shining borders (1px-2px solid)
+└── Deep shadows & relief (box-shadow)
 ```
 
 ### The Pattern (Customize Values)
 
 ```css
-.glass {
-  /* Transparency: adjust opacity based on content readability */
-  background: rgba(R, G, B, OPACITY);
-  /* OPACITY: 0.1-0.3 for dark bg, 0.5-0.8 for light bg */
-  
-  /* Blur: higher = more frosted */
-  backdrop-filter: blur(AMOUNT);
-  /* AMOUNT: 8-12px subtle, 16-24px strong */
-  
-  /* Border: defines edges */
-  border: 1px solid rgba(255, 255, 255, OPACITY);
-  /* OPACITY: 0.1-0.3 typically */
-  
-  /* Radius: match your design system */
+.shell-premium {
+  /* Solid background: premium deep colors */
+  background: Linear-Gradient(180deg, Rgba(255, 255, 255, 0.05) 0%, Rgba(255, 255, 255, 0) 100%), var(--bg-dark);
+
+  /* Relief: double border pattern */
+  border: 1px solid Rgba(255, 255, 255, 0.15);
+  box-shadow:
+    0 10px 40px Rgba(0, 0, 0, 0.6),
+    inset 0 1px 1px Rgba(255, 255, 255, 0.05);
+
+  /* Radius: sharp or rounded but solid */
   border-radius: YOUR_RADIUS;
 }
 ```
 
-### When to Use Glassmorphism
+### When to Use Premium Shell
 
-- ✅ Over colorful/image backgrounds
-- ✅ Modals, overlays, cards
-- ✅ Navigation bars with scrolling content behind
-- ❌ Text-heavy content (readability issues)
-- ❌ Simple solid backgrounds (pointless)
+- ✅ High-fidelity management screens (Inventory, Shop)
+- ✅ Floating combat arenas
+- ✅ Premium character cards
+- ❌ Simple flat content (unnecessary volume)
 
 ### When NOT to Use
 
-- Low contrast situations
-- Accessibility-critical content
-- Performance-constrained devices
+- Low-performance budget views
+- Minimalist text logs
+- Flat retro-only content
 
 ---
 
@@ -71,19 +66,19 @@ Key Concept: Soft, extruded elements using DUAL shadows
 .neo-raised {
   /* Background MUST match parent */
   background: SAME_AS_PARENT;
-  
+
   /* Two shadows: light direction + dark direction */
-  box-shadow: 
+  box-shadow:
     OFFSET OFFSET BLUR rgba(light-color),
     -OFFSET -OFFSET BLUR rgba(dark-color);
-  
+
   /* OFFSET: typically 6-12px */
   /* BLUR: typically 12-20px */
 }
 
 .neo-pressed {
   /* Inset creates "pushed in" effect */
-  box-shadow: 
+  box-shadow:
     inset OFFSET OFFSET BLUR rgba(dark-color),
     inset -OFFSET -OFFSET BLUR rgba(light-color);
 }
@@ -144,11 +139,11 @@ box-shadow: OFFSET-X OFFSET-Y BLUR SPREAD COLOR;
 
 ### Types and When to Use
 
-| Type | Pattern | Use Case |
-| :--- | :--- | :--- |
+| Type       | Pattern                      | Use Case                      |
+| :--------- | :--------------------------- | :---------------------------- |
 | **Linear** | Color A → Color B along line | Backgrounds, buttons, headers |
-| **Radial** | Center → outward | Spotlights, focal points |
-| **Conic** | Around center | Pie charts, creative effects |
+| **Radial** | Center → outward             | Spotlights, focal points      |
+| **Conic**  | Around center                | Pie charts, creative effects  |
 
 ### Creating Harmonious Gradients
 
@@ -165,10 +160,9 @@ Good Gradient Rules:
 ```css
 .gradient {
   background: linear-gradient(
-    DIRECTION,           /* angle or to-keyword */
-    COLOR-STOP-1,        /* color + optional position */
-    COLOR-STOP-2,
-    /* ... more stops */
+    DIRECTION,
+    /* angle or to-keyword */ COLOR-STOP-1,
+    /* color + optional position */ COLOR-STOP-2 /* ... more stops */
   );
 }
 
@@ -235,7 +229,7 @@ When animating or styling active states (`.active`) for 3D elements:
 ### Text Glow
 
 ```css
-text-shadow: 
+text-shadow:
   0 0 BLUR-1 COLOR,
   0 0 BLUR-2 COLOR,
   0 0 BLUR-3 COLOR;
@@ -259,8 +253,13 @@ box-shadow:
 
 ```css
 @keyframes glow-pulse {
-  0%, 100% { box-shadow: 0 0 SMALL-BLUR COLOR; }
-  50% { box-shadow: 0 0 LARGE-BLUR COLOR; }
+  0%,
+  100% {
+    box-shadow: 0 0 SMALL-BLUR COLOR;
+  }
+  50% {
+    box-shadow: 0 0 LARGE-BLUR COLOR;
+  }
 }
 ```
 
@@ -297,11 +296,7 @@ Position: Where text will appear
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    DIRECTION,
-    transparent PERCENTAGE,
-    rgba(0,0,0,OPACITY) 100%
-  );
+  background: linear-gradient(DIRECTION, transparent PERCENTAGE, rgba(0, 0, 0, OPACITY) 100%);
 }
 ```
 
@@ -309,9 +304,7 @@ Position: Where text will appear
 
 ```css
 /* Blend mode or layered gradient */
-background: 
-  linear-gradient(YOUR-COLOR-WITH-OPACITY),
-  url('image.jpg');
+background: linear-gradient(YOUR-COLOR-WITH-OPACITY), url('image.jpg');
 ```
 
 ---
@@ -423,8 +416,8 @@ Before applying any effect:
 
 ### Anti-Patterns
 
-- ❌ Glassmorphism on every element (kitsch)
-- ❌ Dark + neon as default (lazy AI look)
+- ❌ Flat designs with zero volume (too basic)
+- ❌ Transparent/Glassy backgrounds (unprofessional for this project)
 - ❌ **Static/Flat designs with no depth (FAILED)**
 - ❌ Effects that hurt readability
 - ❌ Animations without purpose
@@ -442,12 +435,12 @@ Instead of using `blur`, use 4 directional offsets to create a solid 1px "border
 ```css
 .pixel-outline {
   /* 4-directional 1px offsets with 0 blur */
-  text-shadow: 
-    1px 1px 0 rgba(0,0,0,0.8), 
-    -1px -1px 0 rgba(0,0,0,0.8), 
-    1px -1px 0 rgba(0,0,0,0.8), 
-    -1px 1px 0 rgba(0,0,0,0.8);
-    
+  text-shadow:
+    1px 1px 0 rgba(0, 0, 0, 0.8),
+    -1px -1px 0 rgba(0, 0, 0, 0.8),
+    1px -1px 0 rgba(0, 0, 0, 0.8),
+    -1px 1px 0 rgba(0, 0, 0, 0.8);
+
   /* For dark backgrounds, use a light shadow or semi-transparent gray */
 }
 ```

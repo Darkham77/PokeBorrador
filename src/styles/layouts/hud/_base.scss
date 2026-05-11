@@ -33,7 +33,7 @@
     align-items: center;
     container-type: inline-size; 
     
-    @include glass-solid(linear-gradient(180deg, #161a2e 0%, #0a0c14 100%));
+    @include shell-premium(linear-gradient(180deg, #161a2e 0%, #0a0c14 100%));
     border-radius: 20px;
     padding: 10px 24px;
     gap: 15px;
