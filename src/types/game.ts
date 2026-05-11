@@ -34,6 +34,14 @@ export interface ClaimItem {
   created_at: string;
 }
 
+export interface GymProgressEntry {
+  easy: boolean;
+  normal: boolean;
+  hard: boolean;
+  attempts: number;
+  lastWin?: number;
+}
+
 export interface GameState {
   trainer: string;
   badges: number;
@@ -56,7 +64,7 @@ export interface GameState {
   pokedex: string[];
   seenPokedex: string[];
   defeatedGyms: string[];
-  gymProgress: Record<string, { easy: boolean; normal: boolean; hard: boolean; attempts: number; lastWin?: number }>;
+  gymProgress: Record<string, GymProgressEntry>;
   lastGymWins: Record<string, number>;
   lastGymAttempts: Record<string, number>;
   battle: BattleState | null;

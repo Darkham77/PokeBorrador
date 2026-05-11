@@ -110,16 +110,29 @@ const explicitResource: AuditRule = {
 
 const manualAnimations: AuditRule = {
   regex: /@keyframes\b|\btransition\s*:/g,
-  message: (match: string) => `Animación manual detectada: '${match}'. Prohibido por el mandato GSAP exclusivo. Refactoriza a GSAP.`,
+  message: (match: string) => `Animación manual detectada: '${match}'. MIGRACIÓN OBLIGATORIA A GSAP: Está estrictamente PROHIBIDO borrar esta animación sin haberla migrado antes a GSAP para preservar la experiencia visual.`,
   severity: 'error',
   fixable: false
 };
 
 const manualTimersFrontend: AuditRule = {
   regex: /\b(set|clear)(Timeout|Interval)\b/g,
-  message: (match: string) => `Timer manual detectado: '${match}'. Prohibido en componentes UI por el mandato GSAP. Usa promesas de GSAP o Temporal.`,
-  severity: 'warning', // Warning initially to avoid blocking critical builds until migration is further along
-  check: (filePath: string) => filePath.endsWith('.vue'),
+  message: (match: string) => `Timer de ANIMACIÓN detectado: '${match}'. MIGRACIÓN OBLIGATORIA A GSAP: Prohibido en componentes UI para gestionar flujo visual. Está estrictamente PROHIBIDO borrar este timer sin migrar su lógica a GSAP (ej: gsap.delayedCall) para evitar desincronización de flujo.`,
+  severity: 'warning', 
+  check: (content: string, match: RegExpExecArray) => {
+    // Only context-aware check for animation keywords in Vue files
+    const contextStart = Math.max(0, match.index - 150);
+    const contextEnd = Math.min(content.length, match.index + 150);
+    const context = content.substring(contextStart, contextEnd).toLowerCase();
+    
+    const animKeywords = [
+      'anim', 'fade', 'show', 'hide', 'visible', 'active', 'opacity', 
+      'transform', 'duration', 'delay', 'isloading', 'isvisible', 'isactive',
+      'transition', 'oncomplete', 'flash', 'bounce', 'pulse'
+    ];
+    
+    return animKeywords.some(key => context.includes(key));
+  },
   fixable: false
 };
 
@@ -289,7 +302,7 @@ function runRules(filePath: string, content: string, rules: AuditRule[], violati
       }
       
       if (rule.check) {
-        if (rule === config.gpuGaps) {
+        if (rule === config.gpuGaps || rule === config.manualTimersFrontend) {
           if (!rule.check(content, match)) continue;
         } else {
           if (!rule.check(filePath, match)) continue;

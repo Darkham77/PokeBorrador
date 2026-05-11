@@ -254,9 +254,10 @@ export async function calculateBattleRewards(ctx: BattleContext) {
     if (!ctx.gs.state.gymProgress[gid]) {
       ctx.gs.state.gymProgress[gid] = { easy: false, normal: false, hard: false, attempts: 0 }
     }
-    const prog = ctx.gs.state.gymProgress[gid] as any
-    if (!prog[diff]) {
-      prog[diff] = true
+    const prog = ctx.gs.state.gymProgress[gid]
+    const key = diff as 'easy' | 'normal' | 'hard'
+    if (!prog[key]) {
+      prog[key] = true
       ctx.addLog(`¡Superaste el gimnasio en dificultad ${diff.toUpperCase()}!`, 'log-success')
     }
     prog.attempts++

@@ -58,7 +58,7 @@ export function registerStatsTools(debug: DebugSystem, { game, ui }: DebugContex
     label: 'SET BADGES',
     command: 'setBadges',
     category: 'stats',
-    action: (val: any) => {
+    action: (val: number | string | string[]) => {
       const allGymIds = ['pewter', 'cerulean', 'vermilion', 'celadon', 'fuchsia', 'saffron', 'cinnabar', 'viridian']
       if (typeof val === 'number') {
         const count = Math.max(0, Math.min(8, val))
@@ -104,8 +104,8 @@ export function registerStatsTools(debug: DebugSystem, { game, ui }: DebugContex
       if (!game.state.gymProgress[gymId]) {
         game.state.gymProgress[gymId] = { easy: false, normal: false, hard: false, attempts: 0 }
       }
-      const progress = game.state.gymProgress[gymId] as any
-      progress[difficulty] = true
+      const progress = game.state.gymProgress[gymId]
+      progress[difficulty as keyof typeof progress] = true as never
       progress.attempts++
 
       // Simular recompensas adicionales basadas en dificultad (EXP y Dinero aproximado)

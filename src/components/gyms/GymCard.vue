@@ -90,6 +90,68 @@ const typeIcon = computed(() => {
 const leaderSpriteUrl = computed(() => {
   return getAssetUrl(ASSET_TYPES.TRAINER, props.gym.leader.toLowerCase())
 })
+
+const handleMouseEnter = () => {
+  if (props.isLocked || !cardRef.value) return
+  gsap.to(cardRef.value, {
+    scale: 1.02,
+    y: -4,
+    duration: 0.4,
+    ease: 'back.out(1.7)',
+    borderColor: 'Rgba(255, 255, 255, 0.4)'
+  })
+  
+  const sprite = cardRef.value.querySelector('.leader-sprite')
+  if (sprite) {
+    gsap.to(sprite, {
+      scale: 1.1,
+      y: -5,
+      filter: 'Drop-Shadow(0 8px 15px Rgba(0,0,0,0.6))',
+      duration: 0.4,
+      ease: 'back.out(1.7)'
+    })
+  }
+}
+
+const handleMouseLeave = () => {
+  if (props.isLocked || !cardRef.value) return
+  gsap.to(cardRef.value, {
+    scale: 1,
+    y: 0,
+    duration: 0.4,
+    ease: 'power2.out',
+    borderColor: 'Rgba(255, 255, 255, 0.15)'
+  })
+  
+  const sprite = cardRef.value.querySelector('.leader-sprite')
+  if (sprite) {
+    gsap.to(sprite, {
+      scale: 1,
+      y: 0,
+      filter: 'Drop-Shadow(0 5px 10px Rgba(0,0,0,0.5))',
+      duration: 0.4,
+      ease: 'power2.out'
+    })
+  }
+}
+
+const handleBtnEnter = (e: MouseEvent) => {
+  gsap.to(e.currentTarget, {
+    scale: 1.05,
+    backgroundColor: 'Rgba(255, 255, 255, 0.15)',
+    duration: 0.3,
+    ease: 'power2.out'
+  })
+}
+
+const handleBtnLeave = (e: MouseEvent) => {
+  gsap.to(e.currentTarget, {
+    scale: 1,
+    backgroundColor: 'Rgba(255, 255, 255, 0.05)',
+    duration: 0.3,
+    ease: 'power2.out'
+  })
+}
 </script>
 
 <template>
@@ -98,6 +160,8 @@ const leaderSpriteUrl = computed(() => {
     class="pv-gym-card"
     :class="{ defeated: isDefeated, locked: isLocked }"
     :style="{ '--gym-color': gym.typeColor }"
+    @mouseenter="handleMouseEnter"
+    @mouseleave="handleMouseLeave"
   >
     <div
       class="pv-card-header"
@@ -187,13 +251,21 @@ const leaderSpriteUrl = computed(() => {
                 'is-won': gymsStore.isDifficultyDefeated(gym.id, d)
               }"
               @click.stop="selectedDifficulty = d"
+              @mouseenter="handleBtnEnter"
+              @mouseleave="handleBtnLeave"
             >
               {{ d === 'easy' ? 'FÁCIL' : d === 'normal' ? 'NORMAL' : 'DIFÍCIL' }}
-              <span v-if="gymsStore.isDifficultyDefeated(gym.id, d)" class="won-dot">✓</span>
+              <span
+                v-if="gymsStore.isDifficultyDefeated(gym.id, d)"
+                class="won-dot"
+              >✓</span>
             </button>
           </div>
 
-          <div v-if="isDefeated" class="won-tag">
+          <div
+            v-if="isDefeated"
+            class="won-tag"
+          >
             ✅ VICTORIA OBTENIDA en {{ selectedDifficulty.toUpperCase() }}
           </div>
 
@@ -220,7 +292,6 @@ const leaderSpriteUrl = computed(() => {
   @include shell-premium($radius: 24px);
   padding: 0;
   overflow: hidden;
-  transition: border-color 0.4s, box-shadow 0.4s, opacity 0.4s, filter 0.4s;
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -347,7 +418,6 @@ const leaderSpriteUrl = computed(() => {
     height: 100px;
     width: auto;
     @include pixelated;
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     filter: Drop-Shadow(0 5px 10px Rgba(0,0,0,0.5));
     will-change: filter, transform;
   }
@@ -511,7 +581,6 @@ const leaderSpriteUrl = computed(() => {
   background: transparent;
   color: var(--gray);
   cursor: pointer;
-  transition: all 0.3s;
 
     &.active {
     background: Rgba(255, 255, 255, 0.05);
@@ -545,7 +614,6 @@ const leaderSpriteUrl = computed(() => {
   color: var(--white);
   font-weight: 900;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   text-shadow: 0 2px 0 Rgba(0, 0, 0, 0.5);
 
   &:hover { 

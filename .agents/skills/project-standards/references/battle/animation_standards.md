@@ -291,3 +291,21 @@ To ensure tactical transparency, the HUD displays all active effects in a dedica
 To distinguish flying or hovering species from terrestrial ones, an exaggerated levitation idle animation is applied to any Pokémon with the `flying` type or that has the `isFloating` property.
 
 - **Effect**: The `combatant-idle-float` animation MUST use a duration of `3.5s` and a vertical translation of `-22px` with a rotation of `-2deg` to make the levitation clearly discernible.
+
+## 23. Deterministic Migration (No Deletion)
+
+To reach "Zero-Warning" status during audits, NEVER delete a legacy CSS/JS animation without first implementing its functional equivalent in GSAP. 
+
+- **The Deletion Trap**: Removing `transition:` or `setTimeout` without a GSAP replacement causes "visual jolts" and breaks the premium feel.
+- **Protocol**: 
+  1. Identify the trigger (hover, mount, state change).
+  2. Implement the GSAP tween/timeline.
+  3. Verify the visual parity.
+  4. ONLY THEN remove the legacy code.
+
+## 24. Capitalization Sensitivity (Vite Plugin Traps)
+
+The project uses a Vite plugin (`vite-plugin-sass-traps.ts`) that automatically capitalizes certain CSS values (e.g., `rgba` -> `Rgba`, `linear-gradient` -> `Linear-Gradient`).
+
+- **GSAP Constraint**: When animating colors or gradients via JS, you MUST use the capitalized versions (e.g., `backgroundColor: 'Rgba(...)'`) if you are targeting elements that rely on those auto-formatted styles.
+- **Why**: Mismatched capitalization can cause GSAP to fail to "see" the current state of a property, leading to broken transitions or "flash" effects where the property jumps to the new value instead of tweening.

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, reactive } from 'vue'
+import { gsap } from 'gsap'
 import { useGymsStore } from '@/stores/gyms'
 import { useGameStore } from '@/stores/game'
 import GymCard from '@/components/gyms/GymCard.vue'
@@ -19,6 +20,30 @@ onMounted(async () => {
     cardDifficulties[gym.id] = 'easy'
   })
 })
+
+const handleBadgeEnter = (e: MouseEvent) => {
+  gsap.to(e.currentTarget, {
+    scale: 1.1,
+    y: -2,
+    duration: 0.4,
+    ease: 'back.out(1.7)',
+    filter: 'none',
+    opacity: 1
+  })
+}
+
+const handleBadgeLeave = (e: MouseEvent) => {
+  const el = e.currentTarget as HTMLElement
+  const isActive = el.classList.contains('active')
+  gsap.to(el, {
+    scale: isActive ? 1.1 : 1,
+    y: isActive ? -2 : 0,
+    duration: 0.4,
+    ease: 'power2.out',
+    filter: isActive ? 'none' : 'Grayscale(1) Opacity(0.3)',
+    opacity: isActive ? 1 : 0.3
+  })
+}
 </script>
 
 <template>
@@ -46,6 +71,8 @@ onMounted(async () => {
             <button 
               class="badge-item"
               :class="{ active: gymsStore.isGymDefeated(gym.id) }"
+              @mouseenter="handleBadgeEnter"
+              @mouseleave="handleBadgeLeave"
               @click.stop
             >
               <img 
@@ -112,21 +139,12 @@ onMounted(async () => {
 }
 
 .badge-summary {
-  @include shell-premium;
-  padding: 24px;
+  background: Rgba(0, 0, 0, 0.3);
+  padding: 20px;
   border-radius: 20px;
+  border: 1px solid Rgba(255, 255, 255, 0.1);
   min-width: 320px;
   position: relative;
-  
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background: Linear-Gradient(90deg, transparent, Rgba(255, 255, 255, 0.2), transparent);
-  }
 }
 
 .badge-title {
@@ -148,13 +166,13 @@ onMounted(async () => {
 .badge-item {
   width: 40px;
   height: 40px;
+  flex: none;
   background: Rgba(255, 255, 255, 0.05);
   border: 1px solid Rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   cursor: default;
   filter: Grayscale(1) Opacity(0.3);
   will-change: filter, transform;
