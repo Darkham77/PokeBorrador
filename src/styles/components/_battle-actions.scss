@@ -85,15 +85,6 @@
     color: Rgba(255, 255, 255, 0.6);
     font-weight: 600;
 
-    .type-badge {
-      border: 1px solid var(--move-color, $white);
-      color: var(--move-color, $white);
-      background: transparent;
-      padding: 3px 6px;
-      border-radius: 6px;
-      font-size: 8px;
-      text-transform: capitalize;
-    }
   }
 
   &::before {
@@ -148,12 +139,13 @@
   }
 }
 
-.action-btn {
-  background: Rgba(255, 255, 255, 0.1) !important;
-  border: 1px solid Rgba(255, 255, 255, 0.1) !important;
+.battle-actions .action-btn,
+.action-row .action-btn {
+  background: Rgba(255, 255, 255, 0.1);
+  border: 1px solid Rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   padding: 14px;
-  color: $white !important;
+  color: $white;
   font-family: inherit;
   font-size: clamp(7px, 1.8dvw, 8px);
   cursor: pointer;
@@ -173,8 +165,8 @@
 
   &:hover:not([disabled]) {
     transform: scale3d(1.05, 1.05, 1);
-    background: Rgba(255, 255, 255, 0.15) !important;
-    border-color: Rgba(255, 255, 255, 0.2) !important;
+    background: Rgba(255, 255, 255, 0.15);
+    border-color: Rgba(255, 255, 255, 0.2);
   }
   
   &:active:not([disabled]) {
@@ -187,9 +179,9 @@
   }
 }
 
-#btn-switch { background: Rgba(30, 20, 45, 0.95) !important; border-color: Rgba(199, 125, 255, 0.3) !important; }
-#btn-bag    { background: Rgba(15, 30, 18, 0.95) !important; border-color: Rgba(107, 203, 119, 0.3) !important; }
-#btn-run    { background: Rgba(20, 20, 20, 0.95) !important; border-color: Rgba(255, 255, 255, 0.1) !important; }
+#btn-switch { background: Rgba(30, 20, 45, 0.95); border-color: Rgba(199, 125, 255, 0.3); }
+#btn-bag    { background: Rgba(15, 30, 18, 0.95); border-color: Rgba(107, 203, 119, 0.3); }
+#btn-run    { background: Rgba(20, 20, 20, 0.95); border-color: Rgba(255, 255, 255, 0.1); }
 
 #btn-catch {
   width: 70px;

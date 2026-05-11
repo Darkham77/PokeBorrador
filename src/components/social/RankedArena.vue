@@ -6,8 +6,9 @@ import { usePvPStore } from '@/stores/pvp'
 import { useLivePvPStore } from '@/stores/livePvP'
 import { useAuthStore } from '@/stores/auth'
 import { useUIStore } from '@/stores/ui'
-import { RANKED_REWARD_MILESTONES, RANKED_TYPE_META } from '@/data/rankedData'
+import { RANKED_REWARD_MILESTONES } from '@/data/rankedData'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
+import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue'
 
 const pvp = usePvPStore()
 const livePvP = useLivePvPStore()
@@ -191,14 +192,12 @@ function startSearch() {
             v-if="allowedTypes.length"
             class="types-list"
           >
-            <span
+            <PokemonTypeTag
               v-for="t in allowedTypes"
               :key="t"
-              class="type-badge"
-              :class="t"
-            >
-              {{ (RANKED_TYPE_META as any)[t]?.icon }} {{ (RANKED_TYPE_META as any)[t]?.label }}
-            </span>
+              :type="t"
+              size="sm"
+            />
           </div>
           <div
             v-else
@@ -462,13 +461,6 @@ function startSearch() {
   gap: 6px;
 }
 
-.type-badge {
-  font-size: 9px;
-  padding: 4px 10px;
-  border-radius: 999px;
-  background: Rgba(255,255,255,0.05);
-  border: 1px solid Rgba(255,255,255,0.1);
-}
 
 .all-types-allowed {
   font-size: 11px;

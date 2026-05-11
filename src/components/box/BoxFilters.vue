@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { BOX_TIER_CONFIG } from '@/logic/pokemon/tierEngine'
 import PVTooltip from '@/components/common/PVTooltip.vue'
+import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue'
 
 interface BoxFilters {
   tier: string
@@ -283,14 +284,15 @@ const AVAILABLE_TAGS = [
             >
               TODOS
             </button>
-            <button
+            <PokemonTypeTag
               v-for="type in POKEMON_TYPES"
               :key="type"
-              :class="['filter-pill type-pill-btn', type, { active: filters.type === type }]"
+              tag="button"
+              :type="type"
+              size="sm"
+              :active="filters.type === type"
               @click.stop="updateFilter('type', type)"
-            >
-              {{ type }}
-            </button>
+            />
           </div>
         </div>
         

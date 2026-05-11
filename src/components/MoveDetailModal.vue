@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import BaseModal from '@/components/common/BaseModal.vue'
+import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue'
 import { MOVE_DATA } from '@/data/moves'
 import { PDEX_TYPE_COLORS } from '@/logic/pokedexConstants'
 import { getMoveDescription } from '@/logic/pokemonUtils'
@@ -72,10 +73,11 @@ const hexToRgba = (hex: string, alpha: number) => {
       }"
     >
       <div class="type-cat-row">
-        <span
-          class="m-type-tag pixelated"
-          :style="{ background: typeColor }"
-        >{{ md.type.toUpperCase() }}</span>
+        <PokemonTypeTag
+          :type="md.type"
+          size="md"
+          class="pixelated"
+        />
         <span class="cat-badge">
           <span class="icon">{{ catInfo.icon }}</span>
           <span class="text pixelated">{{ catInfo.text.toUpperCase() }}</span>

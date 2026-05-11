@@ -267,12 +267,12 @@ onMounted(() => {
 
 /* Side-based backgrounds (Only 2 bands) */
 .log-entry.side-player {
-  background: Linear-Gradient(90deg, Rgba(0, 255, 127, 0.06) 0%, Transparent 80%);
-  border-left: 2px solid Rgba(0, 255, 127, 0.2);
+  background: Linear-Gradient(90deg, Rgba(0, 255, 127, 0.15) 0%, Transparent 80%);
+  border-left: 2px solid Rgba(0, 255, 127, 0.4);
 }
 .log-entry.side-enemy {
-  background: Linear-Gradient(90deg, Rgba(255, 65, 54, 0.06) 0%, Transparent 80%);
-  border-left: 2px solid Rgba(255, 65, 54, 0.2);
+  background: Linear-Gradient(90deg, Rgba(255, 65, 54, 0.15) 0%, Transparent 80%);
+  border-left: 2px solid Rgba(255, 65, 54, 0.4);
 }
 
 /* Compatibility with new types (Text only overrides) */

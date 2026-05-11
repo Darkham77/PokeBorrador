@@ -34,15 +34,16 @@ $ui-colors: (
   "gold":   $coin-gold
 );
 
-// Auto-generate type classes
+// Auto-generate type classes (Legacy/Flat labels)
 @each $name, $color in $type-colors {
-  .type-#{$name} {
+  .type-label-flat.#{$name} {
     background: color.scale($color, $lightness: -60%, $alpha: -80%);
     color: $color;
-    &.badge {
-      padding: 4px 12px;
-      border-radius: 20px;
-      font-weight: 700;
-    }
+    @include pixelated;
+    font-size: 8px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
   }
 }

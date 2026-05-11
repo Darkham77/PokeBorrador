@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useUIStore } from '@/stores/ui'
+import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import type { Pokemon, Move } from '@/types/pokemon'
 
@@ -74,7 +75,11 @@ const handleForget = () => {
         >
           <div class="move-main">
             <span class="move-name">{{ newMove?.name }}</span>
-            <span class="m-type-tag pixelated">{{ getMoveType(newMove?.name) }}</span>
+            <PokemonTypeTag
+              :type="getMoveType(newMove?.name)"
+              size="md"
+              class="pixelated"
+            />
           </div>
           <div class="move-stats">
             <span>POT: {{ getMovePower(newMove?.name) }}</span>
@@ -101,7 +106,11 @@ const handleForget = () => {
           >
             <div class="move-main">
               <span class="move-name">{{ m.name }}</span>
-              <span class="m-type-tag pixelated">{{ getMoveType(m.name) }}</span>
+              <PokemonTypeTag
+                :type="getMoveType(m.name)"
+                size="sm"
+                class="pixelated"
+              />
             </div>
             <div class="move-stats">
               <span>POT: {{ getMovePower(m.name) }}</span>

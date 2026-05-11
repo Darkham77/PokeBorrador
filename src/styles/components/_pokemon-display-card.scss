@@ -65,7 +65,7 @@
     display: flex;
     justify-content: flex-end;
     align-items: flex-start;
-    min-height: 36px;
+    min-height: 24px;
     position: relative;
     z-index: calc(var(--z-base) + 5);
   }
@@ -119,7 +119,7 @@
     display: flex;
     align-items: flex-end;
     justify-content: center;
-    margin: 20px 0 10px 0;
+    margin: 4px 0 4px 0;
     position: relative;
     z-index: var(--z-base);
     pointer-events: none;
@@ -134,8 +134,8 @@
 
   & .pokemon-info {
     text-align: center;
-    margin-bottom: 12px;
-    margin-top: 5px; 
+    margin-bottom: 6px;
+    margin-top: 0px; 
     position: relative;
     z-index: var(--z-base);
     width: 85%;
@@ -196,7 +196,7 @@
   }
 
   & .hp-container {
-    margin-top: 14px;
+    margin-top: 6px;
 
     .hp-bar-outer {
       height: 8px;

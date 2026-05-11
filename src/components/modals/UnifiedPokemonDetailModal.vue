@@ -11,6 +11,7 @@ import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 
 import UnifiedBadgePill from '@/components/shared/UnifiedBadgePill.vue'
+import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue'
 
 import PokemonTmsTab from '@/components/pokemon-detail/PokemonTmsTab.vue'
 import PokemonEvolutionsTab from '@/components/pokemon-detail/PokemonEvolutionsTab.vue'
@@ -231,14 +232,12 @@ const handleReorderMoves = (from: number, to: number) => {
 
         <div class="header-right">
           <div class="p-types">
-            <span
+            <PokemonTypeTag
               v-for="t in species.type"
               :key="t"
-              class="m-type-tag pixelated"
-              :style="{ background: (PDEX_TYPE_COLORS as Record<string, string>)[t.toLowerCase()] }"
-            >
-              {{ t.toUpperCase() }}
-            </span>
+              :type="t"
+              size="md"
+            />
           </div>
         </div>
       </header>

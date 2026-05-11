@@ -308,8 +308,7 @@ const handleQuantityChange = (itemId: string, e: Event) => {
   transition: all 0.2s;
 
   &:hover:not(.locked) {
-    background: Rgba(255, 255, 255, 0.04);
-    border-color: Rgba(250, 204, 21, 0.3);
+    @include shell-hover-blue;
     transform: Translatey(-2px);
   }
 

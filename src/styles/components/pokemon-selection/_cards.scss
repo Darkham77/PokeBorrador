@@ -130,11 +130,10 @@
       gap: 5px;
 
       // Master type tag overrides for this specific context
-      .ps-type-pill {
-        @include type-pill(7px);
-        color: white !important; 
-        padding: 2px 8px;
+      .m-type-tag {
+        // Master pill design already included globally
         min-width: 45px;
+        text-align: center;
       }
     }
 

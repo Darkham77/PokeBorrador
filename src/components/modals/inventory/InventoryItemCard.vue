@@ -137,22 +137,50 @@ const itemIcon = computed(() => {
     box-sizing: border-box;
   }
 
-  @include hover-neon-yellow(1px);
+  @include gpu-layer;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: Radial-Gradient(circle at top right, Rgba(255, 255, 255, 0.1), transparent 70%);
+    opacity: 0.4; // Consistent base sheen
+    transition: opacity 0.3s;
+    pointer-events: none;
+    z-index: 1;
+  }
+  
+  // TIER VARIANTS
+  &.tier-rare {
+    border-color: Rgba(59, 130, 246, 0.2);
+    .item-tier-badge { color: #3b82f6; }
+    .item-bg-glow { background: Radial-Gradient(circle, Rgba(59, 130, 246, 0.15) 0%, transparent 70%); }
+  }
+
+  &.tier-epic {
+    border-color: Rgba(168, 85, 247, 0.2);
+    .item-tier-badge { color: #a855f7; }
+    .item-bg-glow { background: Radial-Gradient(circle, Rgba(168, 85, 247, 0.15) 0%, transparent 70%); }
+  }
+
+  &.tier-legend {
+    border-color: Rgba(245, 158, 11, 0.2);
+    .item-tier-badge { color: var(--yellow); }
+    .item-bg-glow { background: Radial-Gradient(circle, Rgba(245, 158, 11, 0.15) 0%, transparent 70%); }
+  }
+
+  &:hover {
+    @include shell-hover-blue;
+    transform: none !important;
+    
+    .item-sprite {
+      transform: Scale(1.1);
+    }
+  }
 
   &.selected {
-    border-color: var(--yellow) !important;
-    background: Rgba(255, 214, 10, 0.08);
+    @include shell-selected-blue;
     transform: Scale(0.98);
-    
-    &::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      border: 2px solid var(--yellow);
-      border-radius: inherit;
-      pointer-events: none;
-      animation: borderPulse 2s infinite;
-    }
   }
 
   .item-tier-badge {
@@ -277,30 +305,9 @@ const itemIcon = computed(() => {
     }
   }
 
-  // TIER VARIANTS
-  &.tier-rare {
-    border-color: Rgba(59, 130, 246, 0.2);
-    .item-tier-badge { color: $blue; }
-    .item-bg-glow { background: Radial-Gradient(circle, Rgba(59, 130, 246, 0.15) 0%, transparent 70%); }
-  }
 
-  &.tier-epic {
-    border-color: Rgba(168, 85, 247, 0.2);
-    .item-tier-badge { color: $purple; }
-    .item-bg-glow { background: Radial-Gradient(circle, Rgba(168, 85, 247, 0.15) 0%, transparent 70%); }
-  }
 
-  &.tier-legend {
-    border-color: Rgba(245, 158, 11, 0.2);
-    .item-tier-badge { color: var(--yellow); }
-    .item-bg-glow { background: Radial-Gradient(circle, Rgba(245, 158, 11, 0.15) 0%, transparent 70%); }
-  }
 
-  &:hover {
-    .item-sprite {
-      transform: Translatey(-4px) Scale(1.1);
-    }
-  }
 }
 
 @keyframes borderPulse {

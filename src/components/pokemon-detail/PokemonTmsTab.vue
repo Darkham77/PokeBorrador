@@ -3,6 +3,7 @@ import { ref, computed } from 'vue'
 import { PDEX_TYPE_COLORS } from '@/logic/pokedexConstants'
 import { GAME_TMS, TM_COMPAT } from '@/data/pokedex'
 import { useUIStore } from '@/stores/ui'
+import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue'
 
 interface Props {
   speciesId: string
@@ -93,7 +94,10 @@ const tms = computed(() => {
         </div>
         <div class="tm-info">
           <span class="tm-name">{{ tm.name }}</span>
-          <span class="tm-type">{{ tm.type.toUpperCase() }}</span>
+          <PokemonTypeTag
+            :type="tm.type"
+            size="sm"
+          />
         </div>
         <div class="tm-check">
           {{ tm.isCompatible ? '✓' : '✕' }}

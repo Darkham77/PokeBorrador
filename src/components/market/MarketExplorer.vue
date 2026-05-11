@@ -6,8 +6,9 @@ import { useGTSStore } from '@/stores/gts'
 import type { MarketListing } from '@/logic/market'
 
 import { getPokemonTier } from '@/logic/pokemon/tierEngine'
-import { PDEX_TYPE_COLORS } from '@/logic/pokedexConstants'
+
 import type { Pokemon } from '@/types/pokemon'
+import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue'
 
 const gtsStore = useGTSStore()
 
@@ -34,7 +35,6 @@ function getSprite(pokemon: unknown) {
   return getAssetUrl(ASSET_TYPES.POKEMON, (pokemon as Pokemon).id || 'missing')
 }
 
-const getTypeColor = (type: string) => (PDEX_TYPE_COLORS as Record<string, string>)[type?.toLowerCase()] || 'Rgba(170, 170, 170, 1)'
 </script>
 
 <template>
@@ -102,17 +102,15 @@ const getTypeColor = (type: string) => (PDEX_TYPE_COLORS as Record<string, strin
             >
               <span class="lvl m-badge-level">Nv. {{ item.data.level }}</span>
               <span class="types">
-                <span
-                  class="type-tag"
-                  :class="String(item.data.type || 'normal')"
-                  :style="{ background: getTypeColor(String(item.data.type || 'normal')) }"
-                >{{ String(item.data.type || 'NORMAL').toUpperCase() }}</span>
-                <span
+                <PokemonTypeTag
+                  :type="String(item.data.type || 'normal')"
+                  size="ssm"
+                />
+                <PokemonTypeTag
                   v-if="item.data.type2"
-                  class="type-tag"
-                  :class="String(item.data.type2)"
-                  :style="{ background: getTypeColor(String(item.data.type2)) }"
-                >{{ String(item.data.type2).toUpperCase() }}</span>
+                  :type="String(item.data.type2)"
+                  size="ssm"
+                />
               </span>
             </div>
             <div
@@ -157,18 +155,15 @@ const getTypeColor = (type: string) => (PDEX_TYPE_COLORS as Record<string, strin
 }
 
 .listing-card {
-  background: Rgba(255, 255, 255, 0.03);
-  border: 1px solid Rgba(255, 255, 255, 0.08);
-  border-radius: 16px;
+  @include pokemon-card-standard(16px);
   padding: 12px;
   display: flex;
   flex-direction: column;
-  transition: transform 0.2s, border-color 0.2s;
 
   &:hover {
-    transform: Translatey(-3px);
-    border-color: #a855f755;
-    background: Rgba(255, 255, 255, 0.05);
+    @include shell-hover-blue;
+    transform: none !important;
+    border-color: #a855f755 !important;
   }
 }
 
@@ -245,9 +240,6 @@ const getTypeColor = (type: string) => (PDEX_TYPE_COLORS as Record<string, strin
   }
 }
 
-.type-tag {
-  @include type-pill-mini;
-}
 
 .buy-btn {
   width: 100%;

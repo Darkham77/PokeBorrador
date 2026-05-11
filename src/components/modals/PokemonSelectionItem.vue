@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { PDEX_TYPE_COLORS } from '@/logic/pokedexConstants'
+
 import PVTooltip from '@/components/common/PVTooltip.vue'
+import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue'
 import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
 import { ASSET_TYPES, getAssetUrl } from '@/logic/services/assetService'
 import UnifiedBadgePill from '@/components/shared/UnifiedBadgePill.vue'
@@ -34,8 +35,6 @@ const emit = defineEmits<{
   (e: 'select', item: { pokemon: Pokemon, _source: 'team' | 'box', index: number }): void
   (e: 'openDetail', item: { pokemon: Pokemon, _source: 'team' | 'box', index: number }): void
 }>()
-
-const getTypeColor = (type: string) => PDEX_TYPE_COLORS[type?.toLowerCase()] || 'Rgba(170, 170, 170, 1)'
 
 const tierData = computed(() => getPokemonTier(props.item.pokemon))
 const ivTotal = computed(() => {
@@ -114,15 +113,12 @@ const isPremiumTier = computed(() => tierData.value.tier === 'S' || tierData.val
       </div>
       <div class="bottom-line">
         <div class="sel-types-row">
-          <span 
+          <PokemonTypeTag
             v-for="t in [item.pokemon.type, item.pokemon.type2].filter(Boolean)" 
             :key="String(t)"
-            class="ps-type-pill sm"
-            :class="`type-${String(t).toLowerCase()}`"
-            :style="{ background: getTypeColor(String(t)) }"
-          >
-            {{ String(t).toUpperCase() }}
-          </span>
+            :type="String(t)"
+            size="sm"
+          />
         </div>
         <span class="m-badge-level">Nv. {{ item.pokemon.level ?? 1 }}</span>
         <span

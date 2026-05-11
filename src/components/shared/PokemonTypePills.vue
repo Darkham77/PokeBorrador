@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { translateType } from '@/data/types'
+import PokemonTypeTag from './PokemonTypeTag.vue'
 import type { Pokemon } from '@/types/pokemon'
 
 interface Props {
   pokemon: Partial<Pokemon>
-  size?: string // 'sm', 'md', 'lg'
+  size?: 'ssm' | 'sm' | 'md' | 'lg'
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -25,13 +25,12 @@ const types = computed<string[]>(() => {
     v-if="types.length > 0"
     :class="['pokemon-type-pills', size]"
   >
-    <span
+    <PokemonTypeTag
       v-for="type in types"
       :key="type"
-      :class="['m-type-tag', `type-${type.toLowerCase()}`, size]"
-    >
-      {{ translateType(type).toUpperCase() }}
-    </span>
+      :type="type"
+      :size="size"
+    />
   </div>
 </template>
 
@@ -42,6 +41,10 @@ const types = computed<string[]>(() => {
   gap: 4px;
   align-items: center;
   flex-wrap: wrap;
+
+  &.ssm {
+    gap: 1.5px;
+  }
 
   &.sm {
     gap: 2px;

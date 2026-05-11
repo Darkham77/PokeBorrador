@@ -12,8 +12,8 @@ import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
 import UnifiedBadgePill from '@/components/shared/UnifiedBadgePill.vue'
 import { useModalStore } from '@/stores/modals'
 import { calculateTotalPower, getPokemonTier, calculateRocketSellPrice as calculatePrice } from '@/logic/pokemonUtils'
-import { PDEX_TYPE_COLORS } from '@/logic/pokedexConstants'
 import PokemonTypePills from '@/components/shared/PokemonTypePills.vue'
+import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue'
 
 interface Props {
   show?: boolean
@@ -113,7 +113,7 @@ const handleSellRocket = () => {
   })
 }
 
-const getTypeColor = (type: string) => (PDEX_TYPE_COLORS as Record<string, string>)[type?.toLowerCase()] || 'Rgba(170, 170, 170, 1)'
+
 
 </script>
 
@@ -194,14 +194,12 @@ const getTypeColor = (type: string) => (PDEX_TYPE_COLORS as Record<string, strin
 
         <div class="summary-meta">
           <div class="box-types-row">
-            <span 
+            <PokemonTypeTag
               v-for="t in [pokemon?.type, pokemon?.type2].filter(Boolean)" 
               :key="String(t)"
-              class="type-pill-mini"
-              :style="{ background: getTypeColor(String(t)) }"
-            >
-              {{ String(t).toUpperCase() }}
-            </span>
+              :type="String(t)"
+              size="sm"
+            />
           </div>
 
           <div class="nature-ability">
@@ -259,6 +257,7 @@ const getTypeColor = (type: string) => (PDEX_TYPE_COLORS as Record<string, strin
               v-for="(t, i) in team"
               :key="t.uid"
               class="team-swap-card"
+              :class="{ 'is-premium-tier': getPokemonTier(t).tier === 'S' || getPokemonTier(t).tier === 'S+' }"
               @click.stop="handleSwap(i as number)"
             >
               <!-- Tier Badge (Top Left) -->
@@ -273,7 +272,7 @@ const getTypeColor = (type: string) => (PDEX_TYPE_COLORS as Record<string, strin
               
               <PokemonTypePills 
                 :pokemon="t" 
-                size="xs"
+                size="ssm"
                 class="ts-types"
               />
 

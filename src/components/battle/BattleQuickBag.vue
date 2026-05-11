@@ -186,12 +186,8 @@ const handleUseItem = (item: BattleItem) => {
   }
 
   &:hover {
-    background: Rgba(45, 55, 72, 0.9) !important;
-    border-color: var(--yellow) !important;
-    box-shadow: 
-      0 0 15px Rgba(255, 214, 10, 0.2),
-      inset 0 0 10px Rgba(255, 214, 10, 0.1) !important;
-    transform: Translatey(-2px) !important;
+    @include shell-hover-blue;
+    transform: none !important; // Absolute stability
     z-index: calc(var(--z-base) + 2);
   }
 

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { translateType } from '@/data/types'
+import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import MoveTooltip from '@/components/battle/MoveTooltip.vue'
 import { PDEX_TYPE_COLORS } from '@/logic/pokedexConstants'
@@ -199,11 +199,11 @@ const getMoveColor = (move: Move | null) => {
         '--m-type-color': getMoveColor(move),
         '--m-type-rgb': hexToRgb(getMoveColor(move)),
         background: move 
-          ? `Linear-Gradient(${i % 2 === 0 ? '90deg' : '270deg'}, Rgba(${hexToRgb(getMoveColor(move))}, 0.25) 0%, Rgba(255, 255, 255, 0.05) 100%)`
-          : `Linear-Gradient(${i % 2 === 0 ? '90deg' : '270deg'}, Rgba(50, 50, 50, 0.2) 0%, Rgba(0, 0, 0, 0.1) 100%)`,
+          ? `#12141c Linear-Gradient(${i % 2 === 0 ? '90deg' : '270deg'}, Rgba(${hexToRgb(getMoveColor(move))}, 0.15) 0%, Transparent 100%)`
+          : `#0a0c10`,
         borderColor: move && getMoveModifier(move) === 'boosted' ? '$coin-gold' : 
           move && getMoveModifier(move) === 'penalized' ? '#ff4444' :
-          move ? `Rgba(${hexToRgb(getMoveColor(move))}, 0.7)` : 
+          move ? `Rgba(${hexToRgb(getMoveColor(move))}, 0.6)` : 
           'Rgba(255, 255, 255, 0.1)'
       }"
       :draggable="canReorder && !!move"
@@ -256,9 +256,10 @@ const getMoveColor = (move: Move | null) => {
         <template v-if="move">
           <div class="move-top">
             <span class="mv-name pixelated">{{ (move && move.name) ? move.name.toUpperCase() : '???' }}</span>
-            <span :class="['m-type-tag', 'sm', `type-${getMoveData(move)!.type.toLowerCase()}`]">
-              {{ translateType(getMoveData(move)!.type || 'normal').toUpperCase() }}
-            </span>
+            <PokemonTypeTag
+              :type="getMoveData(move)!.type || 'normal'"
+              size="ssm"
+            />
           </div>
           
           <div class="move-details-row">
@@ -337,7 +338,7 @@ const getMoveColor = (move: Move | null) => {
   border-radius: 12px;
   overflow: hidden;
   box-sizing: border-box;
-  min-height: 56px;
+  min-height: 72px;
   user-select: none;
 
   &.is-dragging {

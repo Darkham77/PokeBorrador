@@ -33,6 +33,7 @@ const handleSwitch = (index: number) => {
         :is-selected="pokemon.uid === activePokemonUid"
         :hide-stats="true"
         is-performance-mode
+        type-pill-size="ssm"
         class="quick-card-override"
         :class="{ 
           'is-active': pokemon.uid === activePokemonUid,
@@ -90,18 +91,15 @@ const handleSwitch = (index: number) => {
   border-radius: 20px !important;
   transition: all 0.2s ease !important;
   
-  // Hover unificado: Aclarar fondo
+  // Hover unificado BLUE PREMIUM
   &:hover {
-    background: Rgba(255, 255, 255, 0.1) !important;
-    border-color: Rgba(255, 255, 255, 0.4) !important;
-    box-shadow: inset 0 0 10px Rgba(255, 255, 255, 0.1) !important;
-    transform: none !important;
+    @include shell-hover-blue;
+    transform: none !important; // Absolute stability
   }
 
   &.is-active {
-    border-color: var(--blue) !important;
-    background: Rgba(59, 130, 246, 0.1) !important;
-    box-shadow: inset 0 0 10px Rgba(59, 130, 246, 0.2) !important;
+    @include shell-selected-blue;
+    transform: Scale(0.98);
   }
 
   &.is-fainted {

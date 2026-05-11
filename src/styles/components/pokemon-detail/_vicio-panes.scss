@@ -86,29 +86,27 @@
   .move-top {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 4px;
     width: 100%;
 
     .mv-name { 
       flex: 1; 
-      font-size: 8px; 
+      font-size: 7.5px; 
       font-weight: 900; 
       color: $white;
       letter-spacing: 0px;
-      line-height: 1.5;
+      line-height: 1;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
       @include pixelated;
 
-      @media (max-width: 420px) { font-size: 7px; line-height: 1.2; }
+      @media (max-width: 420px) { font-size: 7px; }
     }
 
-    .mv-type-tag {
-      @include type-pill-mini(6px);
-      padding: 1px 6px;
-
-      @media (max-width: 420px) { font-size: 5px; padding: 1px 6px; min-width: 32px; text-align: center; }
+    .m-type-tag {
+      // Inherits properties from global premium pill
+      @media (max-width: 420px) { min-width: 32px; text-align: center; }
     }
 
     @media (max-width: 420px) {
@@ -324,16 +322,13 @@
     font-weight: 900;
   }
 
-      & .vp-move-name { 
+
+  & .vp-move-name { 
     color: $white; 
     transition: all 0.3s ease;
     font-weight: 900;
     letter-spacing: 0.5px;
     @include pixelated;
-  }
-  
-    & .mv-type-tag {
-    @include type-pill(7px);
   }
 
   .move-cat, .move-power, .move-acc, .move-pp {
@@ -366,6 +361,7 @@
   overflow-x: auto;
   overflow-y: hidden;
   scrollbar-width: none;
+  -ms-overflow-style: none;
   margin-bottom: 24px;
   padding-bottom: 8px; // Space for scrollbar
   
@@ -385,7 +381,7 @@
 
   .grid-header {
     display: grid;
-    grid-template-columns: 35px 1.2fr 65px 110px 38px 38px 38px;
+    grid-template-columns: 35px 1fr 85px 110px 38px 38px 38px;
     padding: 10px 8px;
     border-bottom: 1px solid Rgba(255, 255, 255, 0.05);
     font-size: 7px;
@@ -404,7 +400,7 @@
 
   .grid-row {
     display: grid !important; 
-    grid-template-columns: 35px 1.2fr 65px 110px 38px 38px 38px;
+    grid-template-columns: 35px 1fr 85px 110px 38px 38px 38px;
     padding: 0;
     transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     border-bottom: 1px solid Rgba(255, 255, 255, 0.03);
@@ -437,13 +433,6 @@
         color: var(--yellow);
         text-shadow: 0 0 10px Rgba(255, 214, 10, 0.4);
       }
-    }
-
-    .move-type .mv-type-tag {
-      @include type-pill-mini(6.5px);
-      min-width: 48px;
-      width: auto;
-      padding: 2px 4px;
     }
 
     .move-cat, .move-power, .move-acc, .move-pp {

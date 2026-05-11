@@ -13,7 +13,7 @@
     box-shadow 0.4s ease,
     border-color 0.4s ease;
   overflow: hidden;
-  border: 1px solid Rgba(255, 255, 255, 0.1);
+  border: 1px solid Rgba(255, 255, 255, 0.15); // Increased for better definition
   // removed will-change and contain to avoid layer explosion
   
   &::before {
@@ -21,29 +21,18 @@
     position: absolute;
     inset: 0;
     background: Radial-Gradient(circle at top right, Rgba(255, 255, 255, 0.1), transparent 70%);
-    opacity: 0;
+    opacity: 0.4; // Consistent base sheen
     transition: opacity 0.3s;
     pointer-events: none;
   }
 
   &:hover {
-    transform: Translatey(-6px);
-    background: Rgba(30, 41, 59, 0.5);
-    border-color: transparent !important; 
-    box-shadow: 
-      Inset 0 0 0 4px var(--blue), // Double thickness (4px)
-      0 15px 30px Rgba(0, 0, 0, 0.4), 
-      0 0 20px Rgba(10, 132, 255, 0.2);
+    @include shell-hover-blue;
     &::before { opacity: 1; }
   }
 
   &.selected {
-    outline: none;
-    border-color: transparent !important;
-    box-shadow: 
-      Inset 0 0 0 4px var(--blue), // Inset: perfect overlap
-      0 0 40px Rgba(10, 132, 255, 0.45) !important;
-    background: Rgba(10, 132, 255, 0.12) !important;
+    @include shell-selected-blue;
     &::before { opacity: 0 !important; }
     
     &:hover {
@@ -56,7 +45,8 @@
 }
 
 @mixin pokemon-list-item-standard($radius: 12px) {
-  @include shell(Rgba(30, 41, 59, 0.4));
+  @include shell(transparent); 
+  background: Linear-Gradient(135deg, Rgba(30, 41, 59, 0.8), Rgba(15, 23, 42, 0.95)) !important;
   border-radius: $radius;
   transition: 
     transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275),
@@ -65,16 +55,24 @@
     border-color 0.3s ease;
   position: relative;
   overflow: hidden;
-  border: 1px solid Rgba(255, 255, 255, 0.05);
+  border: 1px solid Rgba(255, 255, 255, 0.18) !important; // More defined border
+  box-shadow: 0 4px 15px Rgba(0, 0, 0, 0.4), 0 0 10px Rgba(255, 255, 255, 0.02);
 
-  &:hover:not(.locked):not(.disabled) {
-    background: Rgba(30, 41, 59, 0.4);
-    border-color: transparent !important;
-    transform: Translatex(6px);
-    box-shadow: 
-      Inset 0 0 0 4px var(--blue),
-      0 5px 15px Rgba(0, 0, 0, 0.3), 
-      0 0 15px Rgba(10, 132, 255, 0.25);
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: Radial-Gradient(circle at top right, Rgba(255, 255, 255, 0.18), transparent 70%);
+    opacity: 0.5; // More present in base state
+    transition: opacity 0.3s;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  &:hover:not(.locked) {
+    @include shell-hover-blue;
+    transform: none !important; // Absolute stability
+    &::before { opacity: 1; }
   }
 
   &.selected {
@@ -119,9 +117,9 @@
   letter-spacing: 0.5px;
   box-shadow: 0 4px 10px Rgba(0, 0, 0, 0.3), inset 0 1px 0 Rgba(255, 255, 255, 0.25);
   border: 1px solid Rgba(0, 0, 0, 0.25);
-  background-image: linear-gradient(135deg, Rgba(255, 255, 255, 0.22) 0%, Rgba(255, 255, 255, 0) 50%, Rgba(0, 0, 0, 0.3) 100%);
+  background-image: Linear-Gradient(135deg, Rgba(255, 255, 255, 0.22) 0%, Rgba(255, 255, 255, 0) 50%, Rgba(0, 0, 0, 0.3) 100%);
   background-clip: padding-box;
-  text-shadow: 1px 1px 0 Rgba(0,0,0,0.8), -1px -1px 0 Rgba(0,0,0,0.8), 1px -1px 0 Rgba(0,0,0,0.8), -1px 1px 0 Rgba(0,0,0,0.8);
+  text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
   font-family: var(--font-pixel, 'Press Start 2P', monospace);
   transition: transform 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
   white-space: nowrap;
@@ -138,47 +136,38 @@
   color: white;
   text-transform: uppercase;
   border: 1px solid Rgba(0, 0, 0, 0.2);
-  background-image: linear-gradient(135deg, Rgba(255, 255, 255, 0.18) 0%, Rgba(255, 255, 255, 0) 50%, Rgba(0, 0, 0, 0.25) 100%);
+  background-image: Linear-Gradient(135deg, Rgba(255, 255, 255, 0.18) 0%, Rgba(255, 255, 255, 0) 50%, Rgba(0, 0, 0, 0.25) 100%);
   background-clip: padding-box;
-  text-shadow: 1px 1px 0 Rgba(0,0,0,0.8), -1px -1px 0 Rgba(0,0,0,0.8), 1px -1px 0 Rgba(0,0,0,0.8), -1px 1px 0 Rgba(0,0,0,0.8);
+  text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
   box-shadow: 0 1px 3px Rgba(0, 0, 0, 0.2);
   white-space: nowrap;
 }
 
 @mixin pokemon-card-premium-tier($tier-color: var(--tier-color)) {
-  border-color: transparent !important; // Let ::after handle the gold frame
-  box-shadow: 0 0 20px Rgba($tier-color, 0.1) !important;
+  // Restore elegant global standard - NO dirt, NO thick borders
+  border-color: var(--tier-color, #ffd60a) !important;
+  background: color-mix(in srgb, var(--tier-color, #ffd60a), transparent 92%) !important;
+  box-shadow: 0 0 15px color-mix(in srgb, var(--tier-color, #ffd60a), transparent 80%) !important;
   
   &::after {
     content: '';
     position: absolute;
-    inset: 0; // Perfectly aligned inside the card
+    inset: 0;
     border-radius: inherit;
-    border: 2px solid $tier-color; // Elegant base
+    border: 1px solid var(--tier-color, #ffd60a);
     opacity: 0.6;
-    animation: pulse-tier 3s ease-in-out infinite;
     pointer-events: none;
-    z-index: var(--z-map-spawns);
+    z-index: 5;
+    box-sizing: border-box;
     @include gpu-layer;
-    box-shadow: Inset 0 0 10px Rgba($tier-color, 0.2);
-
-    // High performance optimization
-    .performance-mode & {
-      animation: none !important;
-      opacity: 0.8 !important;
-      box-shadow: none !important;
-    }
+    box-shadow: Inset 0 0 10px color-mix(in srgb, var(--tier-color, #ffd60a), transparent 70%);
   }
 
-  // Simplified hover for premium cards: DOUBLE THICKNESS
   &:hover {
-    box-shadow: 0 12px 30px Rgba(0, 0, 0, 0.5), 0 0 20px Rgba(10, 132, 255, 0.2) !important;
+    @include shell-hover-blue; // Use global hover, don't redefine locally
     &::after {
-      border: 4px solid var(--blue) !important; // Double thickness (4px)
       opacity: 1;
-      animation: none; // Static on hover
-      will-change: transform, filter, opacity;
-  filter: Brightness(1.2);
+      border-color: var(--blue);
     }
   }
 }

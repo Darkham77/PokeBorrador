@@ -52,11 +52,11 @@ export function formatBattleLog(msg: string, type: string, source: BattleSource,
     if (source === 'player') {
       const cls = (PLAYER_CLASSES as Record<string, { avatarSpriteId: string }>)[gs.state.playerClass || ''];
       const spriteId = cls?.avatarSpriteId || gs.state.avatar_style || 'entrenador';
-      icon = getAssetUrl(ASSET_TYPES.TRAINER, spriteId);
+      icon = getAssetUrl(ASSET_TYPES.TRAINER, spriteId, { trainerSuffix: 'avatar' });
       iconType = 'trainer';
     } else if (source === 'enemy_trainer') {
       const spriteId = activeBattle?.trainerSprite || 'entrenador';
-      icon = getAssetUrl(ASSET_TYPES.TRAINER, spriteId);
+      icon = getAssetUrl(ASSET_TYPES.TRAINER, spriteId, { trainerSuffix: 'avatar' });
       iconType = 'trainer';
     } else if (typeof source === 'object' && source) {
       const poke = source as Partial<Pokemon>;

@@ -14,13 +14,18 @@
   justify-content: center;
   font-size: 8px;
   color: $color;
-  background: Rgba($color, 0.12);
+  background: Rgba($color, 0.15);
   padding: 0 6px; // Horizontal only
   border-radius: 4px;
-  border: 1px solid Rgba($color, 0.4);
-  font-weight: bold;
+  border: 1px solid Rgba($color, 0.6);
+  font-weight: 900;
   height: 14px;
   box-sizing: border-box;
+  
+  // High-contrast solid black outline for maximum legibility
+  background-clip: padding-box;
+  text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
+  font-family: var(--font-pixel, 'Press Start 2P', monospace);
   
   // Per-size vertical centering
   line-height: 14px;
@@ -29,7 +34,7 @@
 
 // 1. LEVEL BADGE (NV.)
 @mixin badge-level {
-  @include badge-base-pill($purple);
+  @include badge-base-pill($purple); // Reverted to original purple
 }
 
 .m-badge-level {

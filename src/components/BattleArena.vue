@@ -138,21 +138,25 @@ const handleClose = () => {
         <!-- Log: Sidebar or Bottom -->
         <div class="battle-log-wrapper">
           <BattleLog class="battle-log" />
-          <div
-            v-if="isDebugActive"
-            class="sidebar-footer"
-          >
-            <component
-              :is="BattleDebugTools"
-              v-if="BattleDebugTools"
-            />
-          </div>
         </div>
 
         <!-- Controls: Moves & Actions -->
         <BattleArenaControls />
       </div>
     </div>
+
+    <!-- GLOBAL BATTLE DEBUG HUD -->
+    <Teleport to="body">
+      <div 
+        v-if="battleStore.isBattleActive && isDebugActive" 
+        class="battle-debug-hud-container"
+      >
+        <component
+          :is="BattleDebugTools"
+          v-if="BattleDebugTools"
+        />
+      </div>
+    </Teleport>
   </BaseModal>
 </template>
 
@@ -163,6 +167,10 @@ const handleClose = () => {
 .base-modal-root .type-center.battle-arena-modal {
   .base-modal-card {
     overflow: hidden !important;
+    background: #1c2135 !important; 
+    background-image: Radial-Gradient(circle at 0% 0%, Rgba(255, 255, 255, 0.12) 0%, Transparent 70%) !important;
+    border: 1px solid Rgba(255, 255, 255, 0.15) !important;
+    box-shadow: 0 50px 100px Rgba(0, 0, 0, 0.9), inset 0 0 40px Rgba(0, 0, 0, 0.4) !important;
     
     .modal-scrollable-content.padding-raw {
       padding: 0 !important;
@@ -251,14 +259,18 @@ const handleClose = () => {
   max-width: none !important;
   margin: 0 !important;
   overflow: hidden; 
+  background: Linear-Gradient(180deg, Rgba(255, 255, 255, 0.03) 0%, Transparent 100%);
 
   @media (min-width: 1081px) {
     display: grid;
     grid-template-columns: 320px 1fr;
-    grid-template-rows: 1fr minmax(230px, auto);
+    grid-template-rows: 1fr auto;
     grid-template-areas: 
       "log arena"
       "log moves";
+    row-gap: 0;
+    column-gap: 0;
+    align-items: stretch;
     height: 100%; // Llenado total
     max-height: 100%;
     width: 100%;
@@ -270,51 +282,49 @@ const handleClose = () => {
   grid-area: log;
   display: flex;
   flex-direction: column;
-  background: Rgba(0, 0, 0, 0.2);
-  border-right: 1px solid Rgba(255, 255, 255, 0.1);
+  position: relative;
   overflow: hidden;
   min-height: 120px; 
   flex: 1;
-  position: relative;
+
+  :deep(.battle-log) {
+    @include shell-premium(#141824, 0);
+    border-radius: 0 !important;
+    border: none;
+    border-right: 1px solid Rgba(255, 255, 255, 0.15);
+    box-shadow: inset -10px 0 20px Rgba(0, 0, 0, 0.3);
+  }
   
   @media (max-width: 1080px) {
-    display: flex;
-    flex-direction: column;
     flex: none;
     height: 90px;
     min-height: 72px;
-    border-right: none;
-    border-top: 1px solid Rgba(255, 255, 255, 0.1);
-    border-bottom: 1px solid Rgba(255, 255, 255, 0.1);
+    :deep(.battle-log) {
+      border-right: none;
+      border-top: 1px solid Rgba(255, 255, 255, 0.1);
+      border-bottom: 1px solid Rgba(255, 255, 255, 0.1);
+    }
   }
 
   @media (min-width: 1081px) {
-    border-radius: 0; 
-    flex: 1;
     height: 100%;
-    
     .battle-log {
-      flex: 1;
-      min-height: 0;
+      height: 100%;
     }
+  }
+}
 
-    .sidebar-footer {
-      flex-shrink: 0;
-      border-top: 2px solid Rgba(255, 255, 255, 0.1);
-      background: Linear-Gradient(180deg, Rgba(0, 0, 0, 0.2) 0%, Rgba(0, 0, 0, 0.4) 100%);
-      padding: 4px 0;
-      @include pixelated;
-      
-      &::before {
-        content: "CONSOLE_TOOLS";
-        display: block;
-        font-size: 5px;
-        text-align: center;
-        color: Rgba(255,255,255,0.3);
-        margin-bottom: 2px;
-        letter-spacing: 2px;
-      }
-    }
+.battle-debug-hud-container {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  z-index: var(--z-critical);
+  pointer-events: none;
+  width: auto;
+  max-width: 400px;
+
+  & > * {
+    pointer-events: auto;
   }
 }
 
@@ -334,7 +344,11 @@ const handleClose = () => {
 }
 :deep(#move-panel) { 
   grid-area: moves; 
-  z-index: var(--z-low); // Asegurar que todo el panel de control esté sobre el fondo
+  z-index: var(--z-low); 
+  border-top: 1px solid Rgba(255, 255, 255, 0.2);
+  box-shadow: inset 0 10px 20px Rgba(0, 0, 0, 0.4);
+  margin-top: -1px; // Solapamiento para evitar fugas de luz
+  min-height: 210px;
 }
 
 </style>

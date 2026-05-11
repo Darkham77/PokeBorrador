@@ -3,7 +3,7 @@ import { computed, onMounted, ref } from 'vue'
 import { gsap } from 'gsap'
 import { useGymsStore } from '@/stores/gyms'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import { translateType } from '@/data/types'
+import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue'
 
 interface GymDifficulty {
   pokemon: string[];
@@ -183,10 +183,10 @@ const handleBtnLeave = (e: MouseEvent) => {
             Líder: <span>{{ gym.leader }}</span>
           </div>
           <div class="badges-row">
-            <span 
-              class="type-badge"
-              :class="'type-' + gym.type.toLowerCase()"
-            >{{ translateType(gym.type).toUpperCase() }}</span>
+            <PokemonTypeTag
+              :type="gym.type"
+              size="md"
+            />
           </div>
         </div>
         <div class="leader-sprite-box">

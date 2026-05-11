@@ -484,15 +484,17 @@ const formatMult = (m: number) => {
 @use "@/styles/core/tools" as *;
 
 .glass-card {
-  background: Rgba(15, 23, 42, 0.7);
-  -webkit-will-change: transform, opacity;
-  will-change: transform, opacity;
+  background: Rgba(15, 23, 42, 0.4);
+  backdrop-filter: Blur(12px);
+  -webkit-backdrop-filter: Blur(12px);
+  -webkit-will-change: transform, opacity, backdrop-filter;
+  will-change: transform, opacity, backdrop-filter;
   @include gpu-layer;
   border: 1px solid Rgba(255, 255, 255, 0.15);
   border-radius: 18px;
   padding: 15px;
   min-width: 200px;
-  box-shadow: 0 10px 30px Rgba(0,0,0,0.5);
+  box-shadow: 0 10px 30px Rgba(0,0,0,0.5), inset 0 0 10px Rgba(255,255,255,0.05);
   color: $white;
 
   @media (max-width: 600px) {
@@ -518,6 +520,7 @@ const formatMult = (m: number) => {
   @include pixelated;
   font-size: 10px;
   letter-spacing: 0.5px;
+  text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
 
   @media (max-width: 600px) {
     font-size: 8px;
@@ -588,7 +591,8 @@ const formatMult = (m: number) => {
   @include pixelated;
   font-size: 8px;
   text-align: right;
-  opacity: 0.8;
+  opacity: 1; // Increased for better outline visibility
+  text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
 
   @media (max-width: 600px) {
     font-size: 7px;
@@ -604,11 +608,11 @@ const formatMult = (m: number) => {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  margin-top: 10px;
+  margin-top: 4px;
 
   @media (max-width: 600px) {
     gap: 4px;
-    margin-top: 5px;
+    margin-top: 4px;
   }
 }
 
@@ -681,14 +685,19 @@ const formatMult = (m: number) => {
   justify-content: center;
   width: 18px;
   height: 18px;
-  background: Rgba(255, 255, 255, 0.1);
+  background: Rgba(255, 214, 10, 0.2);
+  border: 1px solid Rgba(255, 214, 10, 0.4);
   border-radius: 50%;
   font-size: 10px;
-  transition: all 0.2s;
+  color: #ffd60a;
+  text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
+  box-shadow: 0 0 10px Rgba(255, 214, 10, 0.2);
+  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 
   &:hover {
-    background: Rgba(255, 255, 255, 0.2);
-    transform: Scale(1.1);
+    background: Rgba(255, 214, 10, 0.4);
+    transform: Scale(1.2);
+    box-shadow: 0 0 15px Rgba(255, 214, 10, 0.4);
   }
 }
 

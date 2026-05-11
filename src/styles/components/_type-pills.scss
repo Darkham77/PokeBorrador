@@ -7,40 +7,82 @@
  * Use class: .m-type-tag
  */
 .m-type-tag {
-  @include type-pill(7px); // [PureVue-Ignore]
+  @include type-pill(7.5px);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  text-align: center;
   
+  // SIZES (Premium 4-level Scale)
+  &.ssm {
+    @include type-pill(5.5px);
+    padding: 3px 5px; 
+    letter-spacing: -0.2px;
+    border-radius: 40px; // Standardized rounding
+  }
+
   &.sm {
-    font-size: 6px; // [PureVue-Ignore]
-    padding: 3px 10px;
+    @include type-pill(7px);
+    padding: 4px 8px;
+    letter-spacing: 0px;
+    border-radius: 60px;
+  }
+  
+  &.md {
+    @include type-pill(9px);
+    padding: 6px 12px;
   }
   
   &.lg {
-    font-size: 9px; // [PureVue-Ignore]
-    padding: 7px 16px;
+    @include type-pill(11px);
+    padding: 8px 18px;
   }
 
   // ELEMENTAL COLORS (Standardized Pokémon Palette)
-  &.type-normal { background-color: #A8A878; } // [PureVue-Ignore]
-  &.type-fire { background-color: #F08030; } // [PureVue-Ignore]
-  &.type-water { background-color: #6890F0; } // [PureVue-Ignore]
-  &.type-grass { background-color: #78C850; } // [PureVue-Ignore]
-  &.type-electric { background-color: #F8D030; } // [PureVue-Ignore]
-  &.type-ice { background-color: #98D8D8; } // [PureVue-Ignore]
-  &.type-fighting { background-color: #C03028; } // [PureVue-Ignore]
-  &.type-poison { background-color: #A040A0; } // [PureVue-Ignore]
-  &.type-ground { background-color: #E0C068; } // [PureVue-Ignore]
-  &.type-flying { background-color: #A890F0; } // [PureVue-Ignore]
-  &.type-psychic { background-color: #F85888; } // [PureVue-Ignore]
-  &.type-bug { background-color: #A8B820; } // [PureVue-Ignore]
-  &.type-rock { background-color: #B8A038; } // [PureVue-Ignore]
-  &.type-ghost { background-color: #705898; } // [PureVue-Ignore]
-  &.type-dragon { background-color: #7038F8; } // [PureVue-Ignore]
-  &.type-dark { background-color: #705848; } // [PureVue-Ignore]
-  &.type-steel { background-color: #B8B8D0; } // [PureVue-Ignore]
-  &.type-fairy { background-color: #EE99AC; } // [PureVue-Ignore]
+  // We use background-color so the mixin's gradient overlay works perfectly.
+  &.type-normal   { background-color: #A8A878; }
+  &.type-fire     { background-color: #F08030; }
+  &.type-water    { background-color: #6890F0; }
+  &.type-grass    { background-color: #78C850; }
+  &.type-electric { background-color: #F8D030; }
+  &.type-ice      { background-color: #98D8D8; }
+  &.type-fighting { background-color: #C03028; }
+  &.type-poison   { background-color: #A040A0; }
+  &.type-ground   { background-color: #E0C068; }
+  &.type-flying   { background-color: #A890F0; }
+  &.type-psychic  { background-color: #F85888; }
+  &.type-bug      { background-color: #A8B820; }
+  &.type-rock     { background-color: #B8A038; }
+  &.type-ghost    { background-color: #705898; }
+  &.type-dragon   { background-color: #7038F8; }
+  &.type-dark     { background-color: #705848; }
+  &.type-steel    { background-color: #B8B8D0; }
+  &.type-fairy    { background-color: #EE99AC; }
+  
+  // INTERACTIVE / FILTER STATES
+  &[tag="button"], &[is="button"], &.is-button {
+    cursor: pointer;
+    border: none;
+    transition: transform 0.2s, filter 0.2s, box-shadow 0.2s;
+    
+    &:hover {
+      transform: Translatey(-1px);
+      filter: Brightness(1.1);
+    }
+    
+    &:active {
+      transform: Translatey(0);
+    }
+  }
+
+  &.active {
+    box-shadow: 0 0 12px currentColor, inset 0 0 0 1px Rgba(255, 255, 255, 0.4);
+    filter: Brightness(1.2);
+    font-weight: bold;
+    color: #fff;
+    text-shadow: 0 1px 2px Rgba(0, 0, 0, 0.5);
+  }
 }
 
-// LEGACY SUPPORT: Mapping old classes to the new standard
-.type-badge, .type-tag {
-  @extend .m-type-tag;
-}
+// No legacy aliases allowed. Use .m-type-tag for everything.

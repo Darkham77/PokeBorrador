@@ -19,11 +19,13 @@ const props = withDefaults(defineProps<{
   selectionType?: string | null
   isPerformanceMode?: boolean
   hideStats?: boolean
+  typePillSize?: 'ssm' | 'sm' | 'md' | 'lg'
 }>(), {
   isSelected: false,
   selectionType: null,
   isPerformanceMode: false,
-  hideStats: false
+  hideStats: false,
+  typePillSize: 'sm'
 })
 
 const isModalPerformance = inject<Ref<boolean> | null>('isModalPerformanceMode', null)
@@ -37,7 +39,7 @@ const isPerformanceActive = computed(() => {
   }
 })
 
-const emit = defineEmits<{
+const cardEmit = defineEmits<{
   (e: 'click', event: MouseEvent, index: number): void
 }>()
 
@@ -91,16 +93,16 @@ const isPremiumTier = computed(() => props.pokemon && (tierInfo.value.tier === '
     :class="[
       'box-pokemon-card', 
       { 
-        selected: isSelected, 
-        [`mode-${selectionType}`]: !!selectionType,
+        selected: props.isSelected, 
+        [`mode-${props.selectionType}`]: !!props.selectionType,
         'with-badges': hasBadges, 
         'many-badges': hasManyBadges,
         'performance-mode': isPerformanceActive,
         'is-premium-tier': isPremiumTier,
-        'is-on-mission': pokemon?.onMission
+        'is-on-mission': props.pokemon?.onMission
       }
     ]"
-    @click.stop="emit('click', $event, index)"
+    @click.stop="cardEmit('click', $event, props.index)"
   >
     <div
       class="tier-badge m-badge-tier"
@@ -111,41 +113,41 @@ const isPremiumTier = computed(() => props.pokemon && (tierInfo.value.tier === '
 
     <!-- Píldora de Insignias Centralizada -->
     <UnifiedBadgePill 
-      :pokemon="pokemon" 
+      :pokemon="props.pokemon" 
       size="sm"
     />
 
     <!-- Sprite Section -->
     <div class="box-sprite-wrapper">
       <div
-        v-if="pokemon.onMission"
+        v-if="props.pokemon.onMission"
         class="status-indicator mission"
       >
         M
       </div>
       <div
-        v-if="pokemon.inDaycare"
+        v-if="props.pokemon.inDaycare"
         class="status-indicator daycare"
       >
         G
       </div>
       <div
-        v-if="pokemon.onDefense"
+        v-if="props.pokemon.onDefense"
         class="status-indicator defense"
       >
         D
       </div>
       
       <PVSpriteFX
-        :is-shiny="pokemon.isShiny"
-        :is-guardian="pokemon.isGuardian"
+        :is-shiny="props.pokemon.isShiny"
+        :is-guardian="props.pokemon.isGuardian"
         :sparkle-count="5"
         :enabled="!isPerformanceActive"
       >
         <img
           :src="spriteUrl"
           class="box-card-sprite"
-          :class="[(pokemon.aura && !isPerformanceActive) ? `aura-${pokemon.aura}-mini` : '']"
+          :class="[(props.pokemon.aura && !isPerformanceActive) ? `aura-${props.pokemon.aura}-mini` : '']"
           alt="pokemon"
           @error="e => { (e.target as HTMLImageElement).style.display = 'none' }"
         >
@@ -159,8 +161,8 @@ const isPremiumTier = computed(() => props.pokemon && (tierInfo.value.tier === '
         <span class="box-pokemon-name">{{ props.pokemon.nickname || props.pokemon.name }}</span>
       </div>
       <PokemonTypePills 
-        :pokemon="pokemon" 
-        size="sm"
+        :pokemon="props.pokemon" 
+        :size="props.typePillSize"
         class="box-types"
       />
       <div class="stats-column">
@@ -169,20 +171,20 @@ const isPremiumTier = computed(() => props.pokemon && (tierInfo.value.tier === '
             Nv. {{ props.pokemon.level }}
           </div>
           <div 
-            v-if="pokemon.gender"
-            :class="['m-badge-gender', 'mini', pokemon.gender === 'M' ? 'male' : 'female']"
+            v-if="props.pokemon.gender"
+            :class="['m-badge-gender', 'mini', props.pokemon.gender === 'M' ? 'male' : 'female']"
           >
-            {{ pokemon.gender === 'M' ? '♂' : '♀' }}
+            {{ props.pokemon.gender === 'M' ? '♂' : '♀' }}
           </div>
         </div>
         <div
-          v-if="!hideStats"
+          v-if="!props.hideStats"
           class="m-badge-iv"
         >
           IV {{ totalIvs }}
         </div>
         <div
-          v-if="!hideStats"
+          v-if="!props.hideStats"
           class="m-badge-tot"
         >
           TOT {{ bst + totalIvs }}
@@ -203,14 +205,14 @@ const isPremiumTier = computed(() => props.pokemon && (tierInfo.value.tier === '
 
     <!-- Selection Indicator (Inventory Style) -->
     <div
-      v-if="selectionType"
+      v-if="props.selectionType"
       class="selection-check"
     >
       <div
         class="check-box"
-        :class="{ checked: isSelected }"
+        :class="{ checked: props.isSelected }"
       >
-        <span v-if="isSelected">✓</span>
+        <span v-if="props.isSelected">✓</span>
       </div>
     </div>
   </div>
@@ -248,18 +250,15 @@ const isPremiumTier = computed(() => props.pokemon && (tierInfo.value.tier === '
     will-change: auto; // Liberar memoria GPU si no es necesario
     
     &:hover {
+      @include shell-hover-blue;
       transform: none !important;
       will-change: transform, filter, opacity;
-  filter: none !important;
-      background: Rgba(255, 255, 255, 0.1) !important;
-      border-color: Rgba(255, 255, 255, 0.4) !important;
-      box-shadow: inset 0 0 10px Rgba(255, 255, 255, 0.1) !important;
+      filter: Brightness(1.1);
       
       &::before { opacity: 0 !important; }
       
       :deep(.box-card-sprite) {
-        transform: none !important;
-  filter: none !important;
+        transform: Scale(1.05) !important;
       }
     }
 

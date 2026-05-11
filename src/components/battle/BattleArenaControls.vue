@@ -207,6 +207,10 @@ watch(() => uiStore.isBattleSwitchForced, (val) => {
   width: 100%;
   max-width: 100%;
   margin: 0;
+  @include shell-premium(#141824, 0);
+  border-radius: 0 !important;
+  border: none;
+  border-top: 1px solid Rgba(255, 255, 255, 0.2);
 
   &.is-ui-locked {
     will-change: transform, filter, opacity;
@@ -227,12 +231,11 @@ watch(() => uiStore.isBattleSwitchForced, (val) => {
   flex: 1;
   display: flex;
   flex-direction: column;
-  
-  // Trick: height 0 + min-height 100% para que hereden la altura del padre 
-  // (definida por el centro) sin expandir el contenedor ellos mismos.
   height: 0;
   min-height: 100%;
   overflow: hidden;
+  border-left: 1px solid Rgba(255, 255, 255, 0.05);
+  border-right: 1px solid Rgba(255, 255, 255, 0.05);
   
   &.zone-team { 
     min-width: 110px; 
@@ -245,15 +248,17 @@ watch(() => uiStore.isBattleSwitchForced, (val) => {
   max-width: var(--move-panel-max-width);
   display: flex;
   flex-direction: column;
-  gap: 8px; // Gap reducido entre movimientos y botones
+  gap: 0;
   flex-shrink: 0;
-  padding-top: 8px;
+  padding: 0 !important;
+  margin: 0 !important;
   position: relative;
-  min-height: 230px; // Reserva de espacio determinista para evitar saltos de cámara
+  justify-content: flex-start;
 }
 
 :deep(.moves-grid-vicio) {
-  margin-bottom: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
 }
 
 .battle-finish-overlay {

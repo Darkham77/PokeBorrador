@@ -8,6 +8,7 @@ import { useRankedValidation } from '@/composables/useRankedValidation';
 import { useUIStore } from '@/stores/ui';
 import Leaderboard from './Leaderboard.vue';
 import RewardsTrack from './RewardsTrack.vue';
+import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue';
 
 const gameStore = useGameStore();
 const rankedStore = usePvPStore();
@@ -148,12 +149,12 @@ const cancelSearch = () => {
             >
               <span class="label">Tipos Permitidos</span>
               <div class="types-list">
-                <span
+                <PokemonTypeTag
                   v-for="t in rankedStore.rules.allowedTypes"
                   :key="t"
-                  class="type-pill"
-                  :class="t"
-                >{{ t }}</span>
+                  :type="t"
+                  size="sm"
+                />
               </div>
             </div>
           </div>
@@ -383,14 +384,6 @@ const cancelSearch = () => {
   }
 }
 
-.type-pill {
-  font-size: 9px;
-  padding: 4px 10px;
-  border-radius: 8px;
-  text-transform: uppercase;
-  font-weight: bold;
-  background: Rgba(255, 255, 255, 0.1);
-}
 
 @keyframes spin {
   to { transform: Rotate(360deg); }

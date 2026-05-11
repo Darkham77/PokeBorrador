@@ -246,20 +246,7 @@
       letter-spacing: 0.5px;
     }
     
-    .move-type {
-      .type-tag {
-        font-size: 9px;
-        padding: 2px 8px;
-        border-radius: 4px;
-        color: $black;
-        font-weight: 900;
 
-        @media (max-width: 480px) {
-          font-size: 7px;
-          padding: 2px 4px;
-        }
-      }
-    }
     
     .move-power, .move-pp {
       color: Rgba(255,255,255,0.5);

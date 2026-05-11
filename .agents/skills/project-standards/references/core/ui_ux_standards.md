@@ -8,6 +8,9 @@ To prevent initialization race conditions (TDZ) and ensure reactive stability:
   1. **Refs & Constants**: Base reactive state and static data.
   2. **Computed Properties**: Derived logic and data filtering.
   3. **Watchers & Lifecycle Hooks**: Side effects and event listeners.
+- **Emit Shadowing Prevention**: When defining emits in `<script setup>`, avoid naming the returned object `emit` if the component logic or its internal Vue properties might collide. Use context-specific names like `cardEmit` or `modalEmit`.
+  - **WHY**: Prevents "not callable" runtime errors and ensures clarity in complex logic blocks.
+- **Prop-Driven Component Sizing**: Generic cards and items (e.g., `BoxPokemonCard`) MUST accept sizing props (e.g., `typePillSize`) rather than hardcoding CSS logic. This allows parent orchestrators (like `BattleQuickTeam`) to enforce density without breaking the child's encapsulation.
 - **WHY**: Ensures that watchers and hooks never attempt to read computed data before its dependencies are fully initialized.
 - **Modularity**: Adhere to the **500-line rule** for all UI components. If a view exceeds this, logic must be extracted to composables or sub-components.
 - **Explicit Scoping Patterns**: To force styles on child components (e.g., "always small" mode), avoid relying on parent IDs (`#parent .child`) which can be blocked by Vue `scoped` CSS.
@@ -35,8 +38,10 @@ We prioritize a deliberate contrast between modern, sleek UI shells and classic,
   - **Side-Based Tinting**: Every log entry MUST be visually associated with its side (Player vs Enemy) using a subtle background gradient (`Linear-Gradient` at **0.06 - 0.08** opacity) and a colored `border-left` (2px).
   - **WHY**: Balances deep history readability on large screens with gameplay space protection on small screens while providing instant side-recognition.
 - **Log Area & Control Separation**: The combat log area MUST have an independent scrollbar for entry history. Admin/Debug controls (e.g. Shiny/Guardian toggles) MUST be positioned outside the log's scrolling container to ensure they don't block messages or collide with entry animations.
-- **Fullscreen 100vh Integrity**: Fullscreen combat modals MUST force `height: 100vh` across all parent containers (including `modal-scrollable-content`) to prevent background "bleed" or purple gaps at the bottom.
 - **Bottom Anchor Precision**: In fullscreen mode, action buttons MUST be positioned with a maximum of `2px` from the bottom edge (or `0px` with a slight negative margin) to ensure they feel physically anchored to the device frame.
+- **Zero-Gap Combat HUD**: In high-fidelity combat grids, eliminate vertical gaps between the arena and controls by using `row-gap: 0` and `auto` grid rows.
+- **Overlap Technique (-1px)**: Use a `margin-top: -1px` on control panels with dark/gradient backgrounds to prevent "light leaks" (black bars) between sections.
+- **Consolidated Premium Shells**: Apply `shell-premium` to the parent layout container (`.battle-controls-layout`) instead of individual sub-zones to ensure a seamless "single block" appearance.
 - **HUD Padding Synchronization**: To eliminate layout shifts ("jumps") during page load or HUD transitions, the main content area MUST use dynamic CSS variables (e.g., `--hud-top-padding`) calculated from the HUD's actual height.
   - **Implementation**: Use a `ResizeObserver` or a standardized `updateHudHeight` function in the root view (`MainGameView.vue`).
   - **CSS Usage**: `padding-top: var(--hud-top-padding, 110px);`.
@@ -131,6 +136,12 @@ We prioritize a deliberate contrast between modern, sleek UI shells and classic,
 - **Solidity**: Always apply solid backgrounds with high contrast borders (e.g., `rgba(79, 172, 254, 0.4)` for Fishing).
 - **Abbreviated Labels (shortLabel)**: In compact UI (list buttons, small cards), use the `shortLabel` property from `tags.ts` to prevent text overflow. Maintain the full `label` in tooltips.
 - **Badge Centralization**: All Pokémon status indicators (shiny, items, tags) MUST have their icon and label metadata centralized in `src/logic/constants/tags.ts`.
+- **Standardized Type Tag Hierarchy**:
+  - **ssm (5.5px)**: High-density layouts (Quick Team sidebar).
+  - **sm (7px)**: Standard gameplay (Battle HUD, Moves grid).
+  - **md (9px)**: Information headers (Detail modal).
+  - **lg (11px)**: Hero/High-impact UI.
+- **Visual Parity for ID Tags**: Tags representing static IDs (e.g., Pokedex #001) MUST follow the type pill aesthetic: White text with a perimetral black outline (`text-shadow`) to ensure legibility on any colored background.
 - **Gender Badge Module**: ALWAYS use the `.m-badge-gender` standard class and symbols (♂/♀) for gender rendering. For compact displays (e.g., inside level badges), use a `.mini` modifier that utilizes `@include badge-gender(Npx)` to maintain design token consistency.
 - **Pokemon Identity Stack**: Standardize name display on cards using the "Name Stack": The current nickname (or name) as the primary pixel title, with the species name as a small, uppercase, low-opacity subtitle.
 - **Dynamic Abbreviation Toggle**: In responsive grids (like combat moves), use a dual-label system (`cat-full` and `cat-short`) controlled by CSS media queries.
@@ -151,6 +162,8 @@ We prioritize a deliberate contrast between modern, sleek UI shells and classic,
   - **Text Clipping Prevention**: Use `white-space: normal` and `word-break: break-word` for move names. For detail items (CAT, PP), use `white-space: nowrap` to ensure icons and labels remain on the same line.
   - **Category Display Logic**: In compact mode, show the full category label (e.g., "Físico") if screen width > 420px. Abbreviate to "FIS/ESP" only on viewports ≤ 420px.
   - **Button Alignment**: Action buttons (Bag/Switch) flanking a central Poké Ball (64px) MUST use a fixed `min-height` (Standard: **40px**) instead of `100%` height to maintain visual symmetry and prevent unintended stretching.
+  - **Premium Battle Actions**: Buttons like "Cambiar" or "Mochila" MUST use the `btn-vicio('sm')` mixin. Manual GSAP or generic button classes are forbidden to preserve the project's 3D pixel-art identity.
+  - **Move Button Solidity**: Combat moves MUST have solid dark backgrounds (`#12141c`) instead of high transparency. This ensures legibility of stats (PP, POT) while keeping type-colored borders for quick recognition.
 
 - **Sidebar HUD Standards (Team & Bag Quick-Access)**:
   - **Aesthetic Parity**: Left (Team) and Right (Bag) sidebars MUST share identical visual traits: `Border-Radius(16px)`, solid high-contrast backgrounds, and `Border(1px solid Rgba(255, 255, 255, 0.15))`.
@@ -459,7 +472,8 @@ The combat log is the primary source of truth for the user. It MUST maintain abs
 - **Faint Attribution**: Log messages for fainted Pokémon MUST strictly use the identity of the current defender.
   - **Incorrect**: `¡${e.name} enemigo se debilitó!` (Hardcoded 'enemigo' while checking player HP).
   - **Correct**: `¡${p.name} se debilitó!` or `¡${e.name} salvaje fue derrotado!`.
-- **Action Logs**: Use standardized CSS classes (`log-info`, `log-player`, `log-enemy`, `log-danger`) to color-code entries, ensuring the user can distinguish between their actions and the opponent's at a glance.
+- **Action Logs**: Use standardized CSS classes (`log-info`, `log-player`, `log-enemy`, `log-danger`) to color-code entries.
+- **Log Visibility Mandate**: Side indicators (red/green) MUST have a minimum opacity of `0.15` and a `border-left` intensity of `0.4` to ensure they are distinguishable on dark premium backgrounds.
 - **HUD Weather Parity**: Every active weather condition MUST display a dedicated icon in the `BattleInfoCard` status container.
   - **Sun (☀️)**: Red tint, Fire boost.
   - **Rain (🌧️)**: Blue tint, Water boost.

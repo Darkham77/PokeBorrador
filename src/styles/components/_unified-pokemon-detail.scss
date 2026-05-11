@@ -33,9 +33,10 @@
     
     & .p-id {
       background: Linear-Gradient(to bottom, var(--type-color) 0%, Rgba(var(--type-color-rgb), 0.8) 100%);
-      color: var(--black);
+      color: var(--white);
+      text-shadow: 1px 1px 0px #000, -1px -1px 0px #000, 1px -1px 0px #000, -1px 1px 0px #000;
       @include pixelated;
-      font-size: 7px;
+      font-size: 8px;
       padding: 6px 12px;
       border-radius: 6px;
       font-weight: 900;
@@ -63,9 +64,6 @@
       display: flex;
       gap: 8px;
 
-      & .m-type-tag {
-        @include type-pill(7px);
-      }
     }
   }
 }

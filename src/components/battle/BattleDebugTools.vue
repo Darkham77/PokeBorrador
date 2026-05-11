@@ -425,10 +425,10 @@ const toggleStatus = (side: string, type: string) => {
   width: 100%;
   display: flex;
   flex-direction: column-reverse;
-  align-items: center;
+  align-items: flex-start;
   pointer-events: none;
   min-height: 0; 
-  padding: 8px;
+  padding: 0;
   @include pixelated;
   
   &.is-open { pointer-events: all; }
@@ -438,6 +438,8 @@ const toggleStatus = (side: string, type: string) => {
   display: flex;
   gap: 8px;
   pointer-events: all;
+  justify-content: flex-start;
+  width: 100%;
 }
 
 .debug-trigger, .effects-trigger {
@@ -469,7 +471,8 @@ const toggleStatus = (side: string, type: string) => {
   background: Rgba(15, 15, 25, 0.99);
   border: 2px solid var(--purple);
   border-radius: 8px;
-  width: 100%;
+  width: 340px;
+  max-width: 90vw;
   max-height: 500px;
   display: flex;
   flex-direction: column;
@@ -511,7 +514,8 @@ const toggleStatus = (side: string, type: string) => {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  width: 100%;
+  width: 340px;
+  max-width: 90vw;
   max-height: 400px;
   min-height: 0;
   overflow-x: hidden;
@@ -633,6 +637,7 @@ const toggleStatus = (side: string, type: string) => {
     }
     &[type=number] {
       -moz-appearance: textfield;
+      appearance: textfield;
     }
   }
 }

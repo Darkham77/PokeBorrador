@@ -15,7 +15,7 @@ Scan the full conversation history, artifacts, tasks, scratchpads, implementatio
 | :------------------------- | :------------------------------------------------------------------ |
 | **User corrections**       | "Ese borde no es pixel-art" → `@/project-standards` (Aesthetics)    |
 | **Bugs fixed**             | `p.moves.some` is undefined → `@/project-standards` (Validation)    |
-| **Workarounds discovered** | SASS capitalization collision → `@/project-standards` (Styling)      |
+| **Workarounds discovered** | SASS capitalization collision → `@/project-standards` (Styling)     |
 | **Infrastructure issues**  | Vite proxy mismatch, port busy → Generic Dev Ops rules              |
 | **Repeated patterns**      | Vue `computed` vs `ref` optimization → Generic Vue.ts patterns      |
 | **Aesthetic feedback**     | "Use Glassmorphism for panels" → `@/project-standards` (UI/UX)      |
@@ -40,6 +40,8 @@ Produce a **mapping table**:
 | 2 | ... | `new-skill-name` | CREATE |
 ```
 
+**MANDATORY VERIFICATION (HARD STOP)**: You MUST present the Lessons List and Mapping Table to the user and wait for their explicit "ok" or feedback before proceeding to Phase 3. You are FORBIDDEN from modifying any skill files until this approval is received.
+
 ### Phase 3: Distribute
 
 For each lesson in the mapping table:
@@ -55,7 +57,6 @@ For each lesson in the mapping table:
 7. **Never duplicate** information already in the skill or other skills. Use references: `see @/other-skill`.
 8. If the lesson fits better as a reference file or if `SKILL.md` is approaching 500 lines, add it to a `references/` directory.
 9. **Synchronized Updates**: ALWAYS verify and update any associated `references/`, `scripts/`, or diagnostic tools (e.g., Python check scripts) linked to the skill. Ensure all technical documentation and automated rules remain in parity with the new knowledge to avoid architectural contradictions.
-10. **Final Verification (HARD STOP)**: After all skill updates are applied, you MUST explicitly ask the user to review the changes in the modified `SKILL.md` or reference files. You are FORBIDDEN from proceeding to any further tasks or notifying success until the user confirms the final implementation is correct.
 
 #### CREATE new skill
 
@@ -75,5 +76,4 @@ For each lesson in the mapping table:
 - **Concise additions**: Each lesson = max 2-3 lines added to a skill. Use code blocks only if the pattern is non-obvious.
 - **Cross-references**: Use `@/skill-name` to reference related skills instead of repeating their content.
 - **Preserve structure**: Follow the existing formatting conventions of each target skill (numbered lists, tables, code blocks).
-- **Present the plan**: Show the user the Lessons List and mapping table before executing Phase 3. Get approval first.
 - **Parity Mandate**: Every skill update MUST be reflected in its entire ecosystem. If a rule changes, the corresponding documentation in `references/` and validation logic in `scripts/` MUST be updated in the same turn.

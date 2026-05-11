@@ -131,6 +131,7 @@ The project employs a high-contrast **Hybrid Retro-Modern** aesthetic. We combin
 All layouts and structural containers **MUST** follow premium modern web design principles.
 
 - **Premium Solidity**: Use high-contrast solid backgrounds with premium gradients for cards and overlays.
+- **Premium Shell Base**: For `shell-premium` containers on black backgrounds, avoid pure black (`Rgba(0,0,0,x)`). Use a deep pizarra/navy tone like `#141824` to ensure the gradient texture and depth remain visible.
 - **HUD Density**: For high-density game HUDs (like Battle Sidebars), use `Rgba(15, 23, 42, 1)` to ensure maximum readability and consistent visual depth.
 - **Container Clarity**: Avoid applying semi-transparent backgrounds to both a parent container and its children. This causes "Visual Mud" (excessive darkness). Background logic MUST be delegated to the deepest relevant element (e.g., the card).
 - **Dynamic Depth**: Use soft, multi-layered HSL shadows and subtle linear gradients.
@@ -225,6 +226,21 @@ When refactoring legacy or generic components:
   - **WHY**: Standard `vh`/`vw` units do not account for dynamic toolbars (URL bar, navigation) in mobile browsers like Safari. This leads to layout clipping or unwanted scrollbars.
   - **FORBIDDEN**: Legacy `vh` and `vw` units accompanied by numeric values (e.g., `100vh`).
   - **Audit**: `detect_viewport_units.py` enforces this rule and supports `--fix` for automatic migration.
+- **Interaction Stability (Zero-Translatey)**:
+  - **Rule**: Avoid vertical displacements (`TranslateY`) in the `:hover` or `:active` states of cards and interactive list elements (e.g., in inventory, battle Pokemon selectors, or boxes). The use of `TranslateY` causes visual artifacts ("ghosting") and layout shifts in dense layouts.
+  - **Standard**: Use border-color transitions (`border-color`), brightness filters (`Brightness`), or uniform scale transformations (`Scale`) that do not alter the rendering flow. To neutralize unwanted inherited hover effects, apply `transform: none !important;`.
+- **Hidden Scrollbars Compatibility**:
+  - **Rule**: To hide scrollbars robustly without triggering IDE compatibility warnings, declare full compatibility across engines:
+
+    ```scss
+    scrollbar-width: none; // Modern standard (Firefox)
+    -ms-overflow-style: none; // Legacy (IE/Edge)
+    &::-webkit-scrollbar { display: none; } // Webkit (Chrome/Safari)
+    ```
+
+- **Tier-Aware Styling**:
+  - **Rule**: Any list or grid representing Pokémon (e.g., swap menu, market, battle team) must dynamically reflect the premium hierarchy of the PC Box.
+  - **Standard**: Apply the `.is-premium-tier` class if the Pokémon belongs to Tier S or S+. This class must inherit the premium combination (`@include pokemon-card-premium-tier`) with consistent radial highlights (`Radial-Gradient` in `::before`).
 - **Global Pollution**: Do not define variables or mixins directly in component styles; always centralize them in tokens/partials and `@use` them.
 
 ### 4. CSS Redundancy & "Single Source of Truth"
@@ -269,6 +285,7 @@ To ensure visual consistency and prevent technical debt, all interactive buttons
 
 - **Confirm / Primary Action**: `@include btn-vicio-primary;`
 - **Cancel / Danger Action**: `@include btn-vicio-danger;`
+- **Battle Controls (Switch/Bag)**: `@include btn-vicio('sm');` (Ensures 3D parity in combat).
 
 ### 6. Granular Responsive Breakpoints
 
@@ -338,3 +355,5 @@ To ensure complex data (moves, stats, lists) remains readable and professional a
 - **Pill Scaling**: In high-density tables, always use the "mini" version of type/category pills (e.g., `@include type-pill-mini`) to prevent row height from expanding unnecessarily.
 - **Label Integrity**: Prefer full labels (e.g., "FÍSICO") over abbreviations. If using full labels, explicitly increase the column width (Standard: **110px**) to ensure the text and its icon fit without clipping.
 - **Sober Space Reduction**: Periodically audit column widths to identify and reduce "dead space" in static columns (like NV or PP), redistributing that space to the primary identifying column (Name).
+- **Grid & Tag Layout Integrity**: Any refactor that ensanches or scales a standardized tag system (like Type Pills) MUST be accompanied by an audit of all grid layouts that contain them.
+  - **MANDATORY**: If a pill size increase causes text clipping (e.g., in `_vicio-panes.scss`), the corresponding grid column (e.g., `grid-template-columns`) MUST be widened (Standard: 85px for Type tags) to maintain legibility.
