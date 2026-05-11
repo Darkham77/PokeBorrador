@@ -1,9 +1,27 @@
 <script setup lang="ts">
+import { onMounted, ref } from 'vue'
+import { gsap } from 'gsap'
+
 defineProps<{
   count: number
   max: number
   hint?: string
 }>()
+
+const pulseDot = ref<HTMLElement | null>(null)
+
+onMounted(() => {
+  if (pulseDot.value) {
+    gsap.to(pulseDot.value, {
+      opacity: 0.4,
+      scale: 1.2,
+      duration: 1,
+      repeat: -1,
+      yoyo: true,
+      ease: 'power1.inOut'
+    })
+  }
+})
 </script>
 
 <template>
@@ -23,7 +41,10 @@ defineProps<{
       <div class="header-right">
         <div class="integrated-badge">
           <div class="status-group">
-            <span class="pulse-dot" />
+            <span 
+              ref="pulseDot"
+              class="pulse-dot" 
+            />
             <span class="badge-label">ESTADO RED:</span>
             <span class="badge-value">{{ count }} / {{ max }}</span>
           </div>
@@ -55,6 +76,7 @@ defineProps<{
   border: 1px solid Rgba(255, 255, 255, 0.05);
   margin-bottom: 0;
   @include gpu-layer;
+  @include shell-premium;
 
   .header-layout {
     display: flex;
@@ -103,8 +125,8 @@ defineProps<{
   background: Rgba(0, 0, 0, 0.3);
   border: 1px solid Rgba(255, 255, 255, 0.05);
   border-radius: 12px;
-  padding: 6px 12px;
-  gap: 12px;
+  padding: 6px 16px;
+  gap: 16px;
 
   .status-group {
     display: flex;
@@ -118,7 +140,6 @@ defineProps<{
       background: var(--green);
       border-radius: 50%;
       box-shadow: 0 0 8px var(--green);
-      animation: pulse 2s infinite;
     }
 
     .badge-label { @include pixelated; font-size: 6px; color: var(--gray); }
@@ -137,7 +158,6 @@ defineProps<{
     gap: 8px;
     
     .hint-icon { font-size: 10px; will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 0 4px var(--yellow)); }
     .hint-text { @include pixelated; font-size: 6px; color: var(--gray); max-width: 250px; }
   }
@@ -160,9 +180,10 @@ defineProps<{
   }
 }
 
-@keyframes pulse {
-  0% { opacity: 0.6; transform: Scale(1); }
-  50% { opacity: 1; transform: Scale(1.2); }
-  100% { opacity: 0.6; transform: Scale(1); }
+@include responsive(hud-mobile) {
+  .header-left {
+    .header-main-title { font-size: 8px; }
+    .header-sub-title { font-size: 6px; }
+  }
 }
 </style>
