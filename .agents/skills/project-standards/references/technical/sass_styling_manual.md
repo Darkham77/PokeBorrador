@@ -206,7 +206,8 @@ When refactoring legacy or generic components:
 - **Z-Index Standardization**:
   - **MANDATORY**: Never use hardcoded numbers for `z-index` (e.g., `z-index: 10;`). Use CSS variables (`var(--z-low)`, `var(--z-base)`, `var(--z-modal)`, `var(--z-critical)`) or relative calculations `calc(var(--z-base) +/- X)` for consistent layering.
   - **Single Source of Truth**: All layering constants MUST be defined in `src/logic/constants/visuals.ts`. The use of hardcoded integers is strictly forbidden.
-  - **GPU Promotion**: Any element applying a `filter` or `backdrop-filter` MUST include an explicit `will-change: filter` or `will-change: backdrop-filter` to prevent rendering jank.
+- **Unified Tag Components (Type Tags)**: Avoid replicating CSS declarations or ad-hoc templates for elemental types. Always use the centralized `PokemonTypeTag.vue` component, which enforces sharp `@include pixelated` styling, proper color variables, and respects layout standardizations without SASS duplication.
+- **GPU Promotion**: Any element applying a `filter` or `backdrop-filter` MUST include an explicit `will-change: filter` or `will-change: backdrop-filter` to prevent rendering jank.
 - **Modern Control Flow**: The legacy ternary `if()` function is deprecated in SASS 1.8+. Always use standard `@if / @else` blocks for conditional styling logic to ensure build-log cleanliness.
 - **Positioning & Micro-offsets**: Avoid using negative margins (`margin-top: -1px`) to correct alignment of symbols or small icons. This causes layout instability and triggers redundancy alerts. Use **TranslateY()** or **TranslateX()** (Capitalized) for hardware-accelerated positioning that doesn't affect the box model.
   - **HUD Icon Normalization**: When mixing image-based icons (SVG/PNG) with font-based icons (FontAwesome), you MUST normalize their heights to ensure a consistent text baseline.

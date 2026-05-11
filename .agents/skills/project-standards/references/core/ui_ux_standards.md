@@ -10,6 +10,7 @@ To prevent initialization race conditions (TDZ) and ensure reactive stability:
   3. **Watchers & Lifecycle Hooks**: Side effects and event listeners.
 - **Emit Shadowing Prevention**: When defining emits in `<script setup>`, avoid naming the returned object `emit` if the component logic or its internal Vue properties might collide. Use context-specific names like `cardEmit` or `modalEmit`.
   - **WHY**: Prevents "not callable" runtime errors and ensures clarity in complex logic blocks.
+- **Complex Sub-Component Isolation (SRP)**: Highly interactive sub-elements or dropdowns nested inside complex panels (e.g., the catch ball selection dropdown in combat panels) MUST be isolated into their own dedicated, single-purpose components (e.g., `BattleBallPicker.vue`). This keeps parent layout orchestrators light, maintainable, and prevents violating the 300/500-line rule.
 - **Prop-Driven Component Sizing**: Generic cards and items (e.g., `BoxPokemonCard`) MUST accept sizing props (e.g., `typePillSize`) rather than hardcoding CSS logic. This allows parent orchestrators (like `BattleQuickTeam`) to enforce density without breaking the child's encapsulation.
 - **WHY**: Ensures that watchers and hooks never attempt to read computed data before its dependencies are fully initialized.
 - **Modularity**: Adhere to the **500-line rule** for all UI components. If a view exceeds this, logic must be extracted to composables or sub-components.
