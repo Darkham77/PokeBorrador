@@ -7,6 +7,7 @@
 import { computed, inject, type Ref, ref, watch, nextTick } from 'vue'
 import { useUIStore } from '@/stores/ui'
 import { gsap } from 'gsap'
+import { useParticleEngine } from '@/composables/useParticleEngine'
 
 const props = defineProps({
   // Estado base
@@ -45,7 +46,10 @@ const props = defineProps({
   metadata: { type: Object, default: () => ({}) },
   
   // Fuerza modo simplificado para siluetas
-  isSilhouette: { type: Boolean, default: false }
+  isSilhouette: { type: Boolean, default: false },
+
+  // Radio de dispersión relativo al centro (en %)
+  radius: { type: Number, default: 40 }
 })
 
 const uiStore = useUIStore()
@@ -102,12 +106,34 @@ const statusEmoji = computed(() => {
 })
 
 // GSAP Logic for particles and persistent effects
-const particlesRef = ref<HTMLElement[]>([])
+const statusParticlesRef = ref<HTMLElement[]>([])
+const secondaryParticlesRef = ref<HTMLElement[]>([])
 const spriteRef = ref<HTMLElement | null>(null)
 const shinyRef = ref<HTMLElement | null>(null)
 const tacticalRefs = ref<HTMLElement[]>([])
 const screenRefs = ref<HTMLElement[]>([])
 const auraRefs = ref<HTMLElement[]>([])
+
+const baseScale = computed(() => (props.radius / 40) * 1.2)
+
+const statusScaleRange = computed<[number, number]>(() => {
+  const b = baseScale.value
+  if (props.status === 'burn') return [b * 2.5, b * 4.5]
+  if (props.status === 'paralysis') return [b * 2.0, b * 2.5]
+  if (props.status === 'sleep') return [b * 1.8, b * 2.8]
+  if (props.status === 'freeze') return [b * 1.5, b * 3.5]
+  return [b * 0.9, b * 1.1]
+})
+
+const statusAreaRadius = computed(() => {
+  if (props.status === 'sleep') return props.radius * 2
+  return props.radius
+})
+
+const { initSystem: initShinySystem, killAll: killShinyFX } = useParticleEngine()
+const { initSystem: initStatusSystem, killAll: killStatusFX } = useParticleEngine()
+const { initSystem: initSecondarySystem, killAll: killSecondaryFX } = useParticleEngine()
+const { initSystem: initTacticalSystem, killAll: killTacticalFX } = useParticleEngine()
 
 let retryCount = 0
 const activeTweens: gsap.core.Tween[] = []
@@ -117,6 +143,10 @@ const killAllTimelines = () => {
   Object.values(persistentTimelines).forEach(tl => tl.kill())
   activeTweens.forEach(t => t.kill())
   activeTweens.length = 0
+  killShinyFX()
+  killStatusFX()
+  killSecondaryFX()
+  killTacticalFX()
 }
 
 const refreshPersistentFX = () => {
@@ -283,19 +313,27 @@ const refreshPersistentFX = () => {
 }
 
 const initTacticalFX = () => {
-  tacticalRefs.value.forEach(el => {
-    if (!el) return
-    gsap.killTweensOf(el)
-    const type = el.getAttribute('data-fx-tact')
-    
-    if (type === 'protected') {
-      gsap.to(el, { scale: 1.2, opacity: 1, duration: 0.5, yoyo: true, repeat: -1, ease: 'sine.inOut' })
-    } else if (type === 'enduring') {
-      gsap.fromTo(el, { scale: 0, rotation: -45, opacity: 0 }, { scale: 1, rotation: 0, opacity: 1, duration: 0.5, ease: 'back.out(1.7)' })
-    } else if (type === 'focus') {
-      gsap.to(el, { rotation: 360, duration: 2, repeat: -1, ease: 'none' })
-    } else if (type === 'lockon') {
-      gsap.fromTo(el, { scaleY: 1, opacity: 1 }, { scaleY: 0.1, opacity: 0.3, duration: 0.2, yoyo: true, repeat: -1, repeatDelay: 1.8, ease: 'sine.inOut' })
+  if (isSimplified.value) return
+
+  initTacticalSystem(tacticalRefs.value, {
+    seed: animSeed,
+    disableInitialRandomize: true,
+    disableRandomizeOnRepeat: true,
+    createTweens: (el) => {
+      const type = el.getAttribute('data-fx-tact')
+      const tweens: gsap.core.Tween[] = []
+      
+      if (type === 'protected') {
+        tweens.push(gsap.to(el, { scale: 1.2, opacity: 1, duration: 0.5, yoyo: true, repeat: -1, ease: 'sine.inOut' }))
+      } else if (type === 'enduring') {
+        tweens.push(gsap.fromTo(el, { scale: 0, rotation: -45, opacity: 0 }, { scale: 1, rotation: 0, opacity: 1, duration: 0.5, ease: 'back.out(1.7)' }))
+      } else if (type === 'focus') {
+        tweens.push(gsap.to(el, { rotation: 360, duration: 2, repeat: -1, ease: 'none' }))
+      } else if (type === 'lockon') {
+        tweens.push(gsap.fromTo(el, { scaleY: 1, opacity: 1 }, { scaleY: 0.1, opacity: 0.3, duration: 0.2, yoyo: true, repeat: -1, repeatDelay: 1.8, ease: 'sine.inOut' }))
+      }
+      
+      return tweens
     }
   })
 }
@@ -321,98 +359,173 @@ const initScreenAuraFX = () => {
 
 const initShinyFX = () => {
   if (!shinyRef.value) return
-  const sparkles = shinyRef.value.querySelectorAll('.sparkle')
-  sparkles.forEach((s, i) => {
-    gsap.killTweensOf(s)
-    const delay = (i * 0.4) + (animSeed * -2.5)
-
-    const randomizePos = () => {
-      const randomLeft = 10 + (Math.random() * 80) // 10% to 90%
-      const randomTop = 10 + (Math.random() * 80)  // 10% to 90%
-      gsap.set(s, { left: `${randomLeft}%`, top: `${randomTop}%` })
+  const sparkles = Array.from(shinyRef.value.querySelectorAll('.sparkle')) as HTMLElement[]
+  
+  initShinySystem(sparkles, {
+    seed: animSeed,
+    area: { x: [10, 90], y: [10, 90] },
+    scaleRange: [baseScale.value * 0.7, baseScale.value * 1.3],
+    onRepeat: (el) => {
+      gsap.set(el, { filter: `Drop-Shadow(0 0 2px black) Drop-Shadow(0 0 4px gold)` })
+    },
+    createTweens: (el, _i, delay) => {
+      return [
+        gsap.fromTo(el, 
+          { opacity: 0, y: 0, scale: 0, rotation: 0, xPercent: -50, yPercent: -50 },
+          {
+            autoAlpha: 1,
+            opacity: 1,
+            y: '-12%',
+            scale: 1.2,
+            rotation: 180,
+            duration: 1.2,
+            repeat: -1,
+            repeatDelay: 1.3,
+            delay,
+            ease: 'power1.out'
+          }
+        ),
+        gsap.to(el, {
+          opacity: 0,
+          y: '-25%',
+          scale: 0,
+          rotation: 360,
+          duration: 1.3,
+          repeat: -1,
+          repeatDelay: 1.2,
+          delay: delay + 1.2,
+          ease: 'power1.in'
+        })
+      ]
     }
-
-    // Initial position
-    randomizePos()
-
-    gsap.fromTo(s, 
-      { opacity: 0, y: 0, scale: 0, rotation: 0, xPercent: -50, yPercent: -50 },
-      {
-        opacity: 1,
-        y: '-12%',
-        scale: 1.2,
-        rotation: 180,
-        duration: 1.2,
-        repeat: -1,
-        repeatDelay: 1.3,
-        delay,
-        ease: 'power1.out',
-        onRepeat: () => {
-          randomizePos()
-          gsap.set(s, { filter: `Drop-Shadow(0 0 2px black) Drop-Shadow(0 0 4px gold)` })
-        }
-      }
-    )
-    
-    gsap.to(s, {
-      opacity: 0,
-      y: '-25%',
-      scale: 0,
-      rotation: 360,
-      duration: 1.3,
-      repeat: -1,
-      repeatDelay: 1.2,
-      delay: delay + 1.2,
-      ease: 'power1.in'
-    })
   })
 }
 
 const initParticleAnim = () => {
-  if (isSimplified.value || (!statusEmoji.value && !props.isConfused && !props.isCursed && !props.attracted && !props.isSeeded && !props.isTrapped)) return
-  
-  particlesRef.value.forEach((el, i) => {
-    if (!el) return
-    gsap.killTweensOf(el)
+  if (isSimplified.value) return
+
+  // 1. Primary Status Particles (Circular Orbit + Specific Motion)
+  if (statusEmoji.value) {
+    const rX = props.radius * 0.85
+    const rY = props.radius * 0.35
+    const statusType = props.status
+    const ar = statusAreaRadius.value
     
-    const seed = animSeed + (i * 0.2)
-    const isPrimaryStatus = !!statusEmoji.value
-    
-    if (isPrimaryStatus) {
-      // Logic for primary status (Orbiting emoji)
-      const radiusX = 35 // Representará 35% del contenedor
-      const radiusY = 12 // Representará 12% del contenedor
-      
-      gsap.fromTo(el, 
-        { opacity: 0, x: `-${radiusX}%`, y: 0 },
-        {
-          duration: 2,
+    initStatusSystem(statusParticlesRef.value, {
+      seed: animSeed,
+      area: { x: [50 - ar, 50 + ar], y: [50 - ar, 50 + ar] },
+      scaleRange: statusScaleRange.value,
+      activeRange: props.status === 'burn' ? [3, 6] : (props.status === 'sleep' ? [1, 2] : [2, 4]),
+      onInit: (el) => {
+        gsap.set(el, { opacity: 0 })
+      },
+      createTweens: (_el, _i, seedOffset) => {
+        const tweens: gsap.core.Tween[] = []
+        const personalityProps = { repeat: -1, yoyo: true, delay: seedOffset }
+        
+        // 1.A Specific Status "Personality" (Master of Lifecycle)
+        // Definimos la duración base (ciclo completo con yoyo)
+        let cycleDuration = 2.5
+        
+        if (statusType === 'burn') {
+          cycleDuration = 0.6
+          tweens.push(gsap.to(_el, { ...personalityProps, y: '-=5', opacity: 1, duration: 0.3, ease: 'sine.inOut' }))
+        } else if (statusType === 'paralysis') {
+          cycleDuration = 0.1
+          tweens.push(gsap.to(_el, { ...personalityProps, x: '+=2', y: '+=2', opacity: 1, duration: 0.05, ease: 'none' }))
+        } else if (statusType === 'poison') {
+          cycleDuration = 2.4
+          tweens.push(gsap.to(_el, { ...personalityProps, scale: 1.2, opacity: 1, duration: 1.2, ease: 'power1.inOut' }))
+        } else if (statusType === 'sleep') {
+          cycleDuration = 4
+          tweens.push(gsap.to(_el, { ...personalityProps, opacity: 0.6, duration: 2 }))
+        } else if (statusType === 'freeze') {
+          cycleDuration = 3
+          tweens.push(gsap.fromTo(_el, 
+            { scale: 0, opacity: 1 },
+            { 
+              ...personalityProps,
+              scale: 1.2, 
+              duration: 1.5, 
+              opacity: 1,
+              immediateRender: true,
+              ease: 'sine.inOut' 
+            }
+          ))
+        }
+
+        // 1.B Base Orbit (Synchronized with cycleDuration)
+        tweens.push(gsap.to(_el, {
+          duration: cycleDuration,
           repeat: -1,
           ease: 'none',
-          opacity: 1,
+          delay: seedOffset,
           modifiers: {
-            x: () => `${Math.cos(gsap.globalTimeline.time() * 2 + seed * 10) * radiusX}%`,
-            y: () => `${Math.sin(gsap.globalTimeline.time() * 2 + seed * 10) * radiusY - 15}%`,
-            zIndex: () => Math.sin(gsap.globalTimeline.time() * 2 + seed * 10) > 0 ? 10 : 1
+            x: () => `${Math.cos(((gsap.globalTimeline.time() + seedOffset) * (Math.PI * 2)) / cycleDuration) * rX}%`,
+            y: () => `${Math.sin(((gsap.globalTimeline.time() + seedOffset) * (Math.PI * 2)) / cycleDuration) * rY - 15}%`,
+            zIndex: () => Math.sin(((gsap.globalTimeline.time() + seedOffset) * (Math.PI * 2)) / cycleDuration) > 0 ? 10 : 1
           }
-        }
-      )
-    } else {
-      // Logic for secondary status (Floating symbols)
-      gsap.fromTo(el,
-        { y: 0, opacity: 0 },
-        {
-          y: '-18%',
-          opacity: 1,
-          duration: 1 + Math.random(),
+        }))
+
+        return tweens
+      }
+    })
+
+    // 1.1 Special Shine for Freeze particles
+    if (props.status === 'freeze') {
+      const { randomizePosition } = useParticleEngine()
+      statusParticlesRef.value.forEach((el, i) => {
+        activeTweens.push(gsap.to(el, {
+          filter: 'Drop-Shadow(0 0 8px cyan) Brightness(2)',
+          scale: 1.2,
+          duration: 0.75,
           repeat: -1,
           yoyo: true,
           ease: 'sine.inOut',
-          delay: i * 0.3
-        }
-      )
+          delay: i * 0.2,
+          onRepeat: () => {
+            randomizePosition(el, { x: [10, 90], y: [10, 90] })
+          }
+        }))
+      })
     }
-  })
+  }
+
+  // 2. Secondary Status Particles (Floating)
+  const hasSecondary = props.isConfused || props.isCursed || props.attracted || props.isSeeded || props.isTrapped
+  if (hasSecondary) {
+    const r = props.radius
+    initSecondarySystem(secondaryParticlesRef.value, {
+      seed: animSeed,
+      area: { x: [50 - r, 50 + r], y: [50 - r, 50 + r] },
+      scaleRange: [baseScale.value * 0.8, baseScale.value * 1.2],
+      activeRange: [1, 3],
+      createTweens: (el, _i, delay) => {
+        const tweens: gsap.core.Tween[] = []
+        
+        // Base Float
+        tweens.push(gsap.fromTo(el,
+          { y: 0, opacity: 0 },
+          {
+            y: '-18%',
+            opacity: 1,
+            duration: 1 + Math.random(),
+            repeat: -1,
+            yoyo: true,
+            ease: 'sine.inOut',
+            delay: delay
+          }
+        ))
+
+        // Confused / Cursed Wobble
+        if (props.isConfused || props.isCursed) {
+          tweens.push(gsap.to(el, { x: '+=3', duration: 0.1, repeat: -1, yoyo: true, delay }))
+        }
+
+        return tweens
+      }
+    })
+  }
 }
 
 watch([
@@ -430,6 +543,7 @@ watch([
   () => props.hasLightScreen,
   () => props.hasSafeguard,
   () => props.hasMist,
+  () => props.radius,
   isSimplified
 ], () => {
   nextTick(() => {
@@ -444,11 +558,15 @@ watch([
 
 const particles = computed(() => {
   if (!statusEmoji.value) return []
-  return Array.from({ length: 3 }).map((_, i) => ({
-    id: i,
-    top: `${20 + Math.random() * 60}%`,
-    left: `${20 + Math.random() * 60}%`
-  }))
+  const result = []
+  for (let i = 0; i < 8; i++) {
+    result.push({
+      id: i,
+      top: `${20 + Math.random() * 60}%`,
+      left: `${20 + Math.random() * 60}%`
+    })
+  }
+  return result
 })
 </script>
 
@@ -491,13 +609,9 @@ const particles = computed(() => {
       <span 
         v-for="p in particles" 
         :key="p.id" 
-        ref="particlesRef"
+        ref="statusParticlesRef"
         class="status-particle"
         :class="{ 'is-freeze': status === 'freeze' }"
-        :style="{
-          top: p.top,
-          left: p.left
-        }"
       >
         {{ status === 'freeze' ? '' : statusEmoji }}
       </span>
@@ -509,10 +623,12 @@ const particles = computed(() => {
     >
       <span
         v-if="isConfused"
+        ref="secondaryParticlesRef"
         class="status-particle secondary-status"
       >💫</span>
       <span
         v-if="isCursed"
+        ref="secondaryParticlesRef"
         class="status-particle secondary-status is-cursed"
       >👻</span>
     </div>
@@ -525,7 +641,7 @@ const particles = computed(() => {
       <span
         v-for="i in 2"
         :key="'attr-'+i"
-        ref="particlesRef"
+        ref="secondaryParticlesRef"
         class="status-particle secondary-status"
       >❤️</span>
     </div>
@@ -538,7 +654,7 @@ const particles = computed(() => {
         <span
           v-for="i in 3"
           :key="'seed-'+i"
-          ref="particlesRef"
+          ref="secondaryParticlesRef"
           class="status-particle secondary-status"
         >🌱</span>
       </template>
@@ -546,7 +662,7 @@ const particles = computed(() => {
         <span
           v-for="i in 2"
           :key="'trap-'+i"
-          ref="particlesRef"
+          ref="secondaryParticlesRef"
           class="status-particle secondary-status"
         >⛓️</span>
       </template>
@@ -562,28 +678,28 @@ const particles = computed(() => {
         ref="tacticalRefs"
         data-fx-tact="protected"
         class="status-particle tact-fx"
-        style="top: 40%; left: 50%; opacity: 1;"
+        style="top: 40%; left: 50%;"
       >🛡️</span>
       <span
         v-if="isEnduring"
         ref="tacticalRefs"
         data-fx-tact="enduring"
         class="status-particle tact-fx"
-        style="top: 30%; left: 20%; opacity: 1;"
+        style="top: 30%; left: 20%;"
       >👊</span>
       <span
         v-if="isFocusEnergy"
         ref="tacticalRefs"
         data-fx-tact="focus"
         class="status-particle tact-fx"
-        style="top: 20%; left: 50%; opacity: 1;"
+        style="top: 20%; left: 50%;"
       >🎯</span>
       <span
         v-if="isLockOn"
         ref="tacticalRefs"
         data-fx-tact="lockon"
         class="status-particle tact-fx"
-        style="top: 50%; left: 50%; opacity: 1;"
+        style="top: 50%; left: 50%;"
       >👁️</span>
     </div>
 
@@ -667,5 +783,12 @@ const particles = computed(() => {
     background: Radial-Gradient(circle, #e0f7fa 20%, Transparent 80%);
     opacity: 0.8;
   }
+}
+
+.status-particle {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: Scale(0);
 }
 </style>

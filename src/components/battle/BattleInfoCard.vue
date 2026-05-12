@@ -4,7 +4,7 @@ import { gsap } from 'gsap'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import PokemonTypePills from '@/components/shared/PokemonTypePills.vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
-import { STATUS_EMOJI_MAP, STATUS_TOOLTIP_MAP, STAT_EMOJI_MAP } from '@/logic/battle/battleUiUtils'
+import { STATUS_TOOLTIP_MAP, STAT_EMOJI_MAP, STATUS_EMOJI_MAP } from '@/logic/battle/battleUiUtils'
 import { useBattleStore } from '@/stores/battle'
 import { useProfileStore } from '@/stores/profile'
 import { getMechanicalWeather, WEATHER_MECHANICAL, WEATHER_UI_METADATA, WEATHER_VISUAL_METADATA, type WeatherMechanical } from '@/logic/battle/weatherMapper'
@@ -312,6 +312,60 @@ const formatMult = (m: number) => {
   return ` x${m.toFixed(1)}`
 }
 
+interface StatusIndicator {
+  id: string
+  emoji: string
+  title: string
+  description: string
+  count?: number | string
+  class: string
+  isBoosted?: boolean
+}
+
+const unifiedStatuses = computed<StatusIndicator[]>(() => {
+  const list: StatusIndicator[] = []
+  if (!p.value) return []
+
+  // 1. Estado Primario
+  if (p.value.status) {
+    const s = p.value.status.toLowerCase()
+    list.push({
+      id: `primary-${s}`,
+      emoji: (STATUS_EMOJI_MAP as any)[s] || '❓',
+      title: s.toUpperCase(),
+      description: (STATUS_TOOLTIP_MAP as any)[s] || s,
+      count: s === 'sleep' ? p.value.sleepTurns : undefined,
+      class: s
+    })
+  }
+
+  // 2. Estados Volátiles
+  volatileStatuses.value.forEach((vs, idx) => {
+    const parts = vs.text?.split(':') || []
+    list.push({
+      id: `volatile-${idx}`,
+      emoji: vs.icon,
+      title: parts[0]?.trim() || '',
+      description: parts[1]?.trim() || vs.text || '',
+      class: 'volatile',
+      isBoosted: vs.isBoosted
+    })
+  })
+
+  // 3. Stages
+  activeStages.value.forEach((s) => {
+    list.push({
+      id: `stage-${s.key}`,
+      emoji: s.icon,
+      title: s.text?.split('(')[0]?.trim() || '',
+      description: `Multiplicador actual: ${s.text?.match(/\(([^)]+)\)/)?.[1] || '100%'}`,
+      class: `stage ${(s.val || 0) > 0 ? 'is-up' : 'is-down'}`
+    })
+  })
+
+  return list
+})
+
 </script>
 
 <template>
@@ -435,61 +489,29 @@ const formatMult = (m: number) => {
         </div>
       </div>
 
-      <!-- Contenedor de Estados (Primarios + Volátiles + Stages) -->
+      <!-- Contenedor de Estados Unificado -->
       <div 
-        v-if="!isScrambled && (p.status || volatileStatuses.length > 0 || activeStages.length > 0)"
+        v-if="!isScrambled && unifiedStatuses.length > 0"
         class="status-container"
       >
-        <!-- Estado Primario -->
         <PVTooltip
-          v-if="p.status"
-          :title="p.status.toUpperCase()"
-          :description="(STATUS_TOOLTIP_MAP as any)[p.status.toLowerCase()] || p.status"
+          v-for="status in unifiedStatuses"
+          :key="status.id"
+          :title="status.title"
+          :description="status.description"
           position="bottom"
         >
           <div
-            class="status-badge"
-            :class="p.status.toLowerCase()"
+            class="m-status-tag"
+            :class="[status.class, { 'is-boosted': status.isBoosted }]"
           >
-            {{ (STATUS_EMOJI_MAP as any)[p.status.toLowerCase()] || p.status.toUpperCase() }}
+            {{ status.emoji }}
             <span
-              v-if="p.status.toLowerCase() === 'sleep' && p.sleepTurns"
+              v-if="status.count"
               class="status-counter"
             >
-              {{ p.sleepTurns }}t
+              {{ status.count }}t
             </span>
-          </div>
-        </PVTooltip>
-
-        <!-- Estados Volátiles -->
-        <PVTooltip
-          v-for="(vs, idx) in volatileStatuses"
-          :key="'vs-'+idx"
-          :title="vs.text?.split(':')[0] || ''"
-          :description="vs.text?.includes(':') ? (vs.text.split(':')[1]?.trim() || '') : (vs.text || '')"
-          position="bottom"
-        >
-          <div 
-            class="status-badge volatile"
-            :class="{ 'is-boosted': vs.isBoosted }"
-          >
-            {{ vs.icon }}
-          </div>
-        </PVTooltip>
-
-        <!-- Stages -->
-        <PVTooltip
-          v-for="s in activeStages"
-          :key="'stage-'+s.key"
-          :title="s.text?.split('(')[0]?.trim() || ''"
-          :description="`Multiplicador actual: ${s.text?.match(/\(([^)]+)\)/)?.[1] || '100%'}`"
-          position="bottom"
-        >
-          <div 
-            class="status-badge stage"
-            :class="(s.val || 0) > 0 ? 'is-up' : 'is-down'"
-          >
-            {{ s.icon }}
           </div>
         </PVTooltip>
       </div>
@@ -676,9 +698,10 @@ const formatMult = (m: number) => {
 }
 
 .status-counter {
-  margin-left: 4px;
-  opacity: 0.8;
-  font-size: 7px;
+  margin-left: 3px;
+  opacity: 0.9;
+  font-size: 6px;
+  font-weight: 400;
 }
 
 .gender-male { color: Rgba(59, 139, 255, 1); }

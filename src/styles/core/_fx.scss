@@ -149,14 +149,12 @@
     font-size: calc(var(--obj-scale, 1) * 16px);
     @include pixelated;
     opacity: 0;
-    animation: status-particle-orbit 2s infinite ease-in-out;
 
     &.is-freeze {
       background: white;
       width: calc(var(--obj-scale, 1) * 12px);
       height: calc(var(--obj-scale, 1) * 12px);
       clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
-      animation: freeze-sparkle-shine 1.5s infinite ease-in-out;
       will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 0 5px cyan);
     }

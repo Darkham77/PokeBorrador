@@ -124,45 +124,67 @@
 }
 
 // 5. GENDER BADGES
-@mixin badge-gender($size: 16px) {
-  width: $size;
-  height: $size;
+@mixin badge-gender($size: 14px) {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 5px; 
   @include pixelated;
-  font-size: calc($size * 0.7); // Slightly larger
+  font-size: 16px; // Much larger as requested
   font-weight: 900;
-  box-sizing: border-box;
   transition: all 0.2s ease;
+  will-change: transform, filter;
   
-  // High contrast base
-  background: Rgba(0, 0, 0, 0.3);
-  border: 1px solid Rgba(255, 255, 255, 0.1);
+  // Style: White color with solid black outline (like name font)
+  color: white !important;
+  text-shadow: 
+    1px 1px 0 #000, 
+    -1px -1px 0 #000, 
+    1px -1px 0 #000, 
+    -1px 1px 0 #000;
   
   &.male, &.gender-male, &.gender-m, &.m { 
-    color: $gender-male;
-    background: Rgba($gender-male, 0.15);
-    border-color: Rgba($gender-male, 0.8);
-    will-change: transform, filter, opacity;
-  filter: Drop-Shadow(0 0 4px Rgba($gender-male, 0.4));
+    filter: Drop-Shadow(0 0 5px Rgba(0, 204, 255, 0.8));
   }
   &.female, &.gender-female, &.gender-f, &.f { 
-    color: $gender-female;
-    background: Rgba($gender-female, 0.15);
-    border-color: Rgba($gender-female, 0.8);
-    will-change: transform, filter, opacity;
-  filter: Drop-Shadow(0 0 4px Rgba($gender-female, 0.4));
+    filter: Drop-Shadow(0 0 5px Rgba(255, 102, 255, 0.8));
   }
   
   &:hover {
-    transform: Scale(1.1);
-    will-change: transform, filter, opacity;
-  filter: Brightness(1.3) Drop-Shadow(0 0 6px currentColor);
+    transform: Scale(1.2);
+    filter: Brightness(1.3) Drop-Shadow(0 0 8px currentColor);
+  }
+
+  @media (max-width: 600px) {
+    font-size: 12px;
   }
 }
 
 .m-badge-gender {
   @include badge-gender;
+}
+
+// 6. STATUS TAGS (HUD Standard - Icons Only)
+.m-status-tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  @include pixelated;
+  transition: all 0.2s ease;
+  will-change: transform, filter;
+
+  &.burn, &.brn { filter: Drop-Shadow(0 0 5px $red); }
+  &.paralysis, &.paralyze, &.par { filter: Drop-Shadow(0 0 5px $yellow); }
+  &.poison, &.psn { filter: Drop-Shadow(0 0 5px $purple); }
+  &.sleep, &.slp { filter: Drop-Shadow(0 0 5px $gray); }
+  &.freeze, &.frz { filter: Drop-Shadow(0 0 5px $blue); }
+  
+  &:hover {
+    transform: Scale(1.2);
+    filter: Brightness(1.2);
+  }
+
+  @media (max-width: 600px) {
+    font-size: 12px;
+  }
 }

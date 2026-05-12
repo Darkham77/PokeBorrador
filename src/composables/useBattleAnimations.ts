@@ -342,7 +342,7 @@ export function useBattleAnimations(
     const side = typeof detail === 'string' ? detail : (detail?.side || 'enemy')
     if (typeof detail === 'object' && detail?.ballId) {
       // Normalizar ballId (ej: "Súper Bola" -> "superball")
-      let id = detail.ballId.toLowerCase()
+      const id = detail.ballId.toLowerCase()
         .replace(/ /g, '')
         .replace(/[áàäâ]/g, 'a')
         .replace(/[éèëê]/g, 'e')

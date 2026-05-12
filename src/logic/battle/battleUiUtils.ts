@@ -8,8 +8,18 @@ export const STATUS_EMOJI_MAP = {
   burn: '🔥',
   poison: '🟣',
   sleep: '💤',
+  paralysis: '⚡',
   paralyze: '⚡',
   freeze: '🧊'
+}
+
+export const STATUS_SHORT_LABEL_MAP = {
+  burn: 'BRN',
+  poison: 'PSN',
+  sleep: 'SLP',
+  paralysis: 'PAR',
+  paralyze: 'PAR',
+  freeze: 'FRZ'
 }
 
 export const STATUS_TOOLTIP_MAP = {

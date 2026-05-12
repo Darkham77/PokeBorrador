@@ -201,6 +201,16 @@ const localGroundY = computed(() => {
 
 const fxScale = computed(() => props.baseSize / 100)
 
+const fxRadius = computed(() => {
+  const shadow = currentShadow.value
+  if (shadow && shadow.feetY !== undefined) {
+    // Distancia del centro (0.5) a los pies (feetY) convertido a %
+    const dist = Math.abs(shadow.feetY - 0.5)
+    return Math.max(15, Math.min(80, dist * 100))
+  }
+  return 40
+})
+
 const stickyCoords = computed(() => {
   const shadow = currentShadow.value
   let left = '50%'
@@ -682,7 +692,10 @@ const onBallLeave = (el: Element, done: () => void) => {
       }, getAttackAnimClass]"
     >
       <!-- Sombra integrada (Sigue el dash pero no el flotado) -->
-      <div ref="shadowWrapperRef" class="combat-shadow-wrapper">
+      <div
+        ref="shadowWrapperRef"
+        class="combat-shadow-wrapper"
+      >
         <CombatShadow 
           v-if="shadowKey" 
           :shadow-id="shadowKey" 
@@ -696,7 +709,11 @@ const onBallLeave = (el: Element, done: () => void) => {
         :style="{ top: localGroundY }"
       >
         <!-- Púas -->
-        <Transition @enter="onGroundPopEnter" @leave="onGroundPopLeave" :css="false">
+        <Transition
+          :css="false"
+          @enter="onGroundPopEnter"
+          @leave="onGroundPopLeave"
+        >
           <div
             v-if="(stages.spikes || 0) > 0"
             :key="`spikes-${side}-${stages.spikes || 0}`"
@@ -711,7 +728,11 @@ const onBallLeave = (el: Element, done: () => void) => {
         </Transition>
         
         <!-- Arraigo -->
-        <Transition @enter="onGroundPopEnter" @leave="onGroundPopLeave" :css="false">
+        <Transition
+          :css="false"
+          @enter="onGroundPopEnter"
+          @leave="onGroundPopLeave"
+        >
           <div
             v-if="pokemon.ingrain"
             :key="`ingrain-${side}`"
@@ -761,6 +782,7 @@ const onBallLeave = (el: Element, done: () => void) => {
             :has-mist="(stages.mist || 0) > 0"
             :vibrant="true"
             :sparkle-count="8"
+            :radius="fxRadius"
             :style="virtualStyle"
           >
             <img
@@ -784,7 +806,10 @@ const onBallLeave = (el: Element, done: () => void) => {
           
           <!-- Flechas de Stats -->
           <div class="stat-arrows-container">
-            <TransitionGroup @enter="onStatArrowEnter" :css="false">
+            <TransitionGroup
+              :css="false"
+              @enter="onStatArrowEnter"
+            >
               <div 
                 v-for="a in statArrows" 
                 :key="a.id"

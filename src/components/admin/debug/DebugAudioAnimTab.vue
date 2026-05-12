@@ -308,7 +308,10 @@ const isEffectActive = (type: string, category: string) => {
     
     <!-- CATCH ANIMS SECTION -->
     <div class="debug-section">
-      <h3 class="section-title" style="color: #ffd700; border-bottom-color: Rgba(255, 215, 0, 0.3);">
+      <h3
+        class="section-title"
+        style="color: #ffd700; border-bottom-color: Rgba(255, 215, 0, 0.3);"
+      >
         FASES DE CAPTURA
       </h3>
       <div class="button-list">
@@ -322,10 +325,16 @@ const isEffectActive = (type: string, category: string) => {
           <div class="btn-content">
             <span class="icon">{{ a.icon }}</span>
             <div class="text">
-              <span class="label" style="color: #fef3c7;">{{ a.label }}</span>
+              <span
+                class="label"
+                style="color: #fef3c7;"
+              >{{ a.label }}</span>
             </div>
           </div>
-          <span class="arrow" style="color: #f59e0b;">▶</span>
+          <span
+            class="arrow"
+            style="color: #f59e0b;"
+          >▶</span>
         </button>
       </div>
     </div>
@@ -350,7 +359,10 @@ const isEffectActive = (type: string, category: string) => {
 
     <!-- UI ANIMS SECTION -->
     <div class="debug-section">
-      <h3 class="section-title" style="color: #60a5fa; border-bottom-color: Rgba(96, 165, 250, 0.3);">
+      <h3
+        class="section-title"
+        style="color: #60a5fa; border-bottom-color: Rgba(96, 165, 250, 0.3);"
+      >
         ANIMACIONES DE INTERFAZ (GSAP)
       </h3>
       <div class="button-list">
@@ -364,18 +376,30 @@ const isEffectActive = (type: string, category: string) => {
           <div class="btn-content">
             <span class="icon">{{ a.icon }}</span>
             <div class="text">
-              <span class="label" style="color: #dbeafe;">{{ a.label }}</span>
-              <span class="desc" style="color: #93c5fd;">{{ a.desc }}</span>
+              <span
+                class="label"
+                style="color: #dbeafe;"
+              >{{ a.label }}</span>
+              <span
+                class="desc"
+                style="color: #93c5fd;"
+              >{{ a.desc }}</span>
             </div>
           </div>
-          <span class="arrow" style="color: #60a5fa;">▶</span>
+          <span
+            class="arrow"
+            style="color: #60a5fa;"
+          >▶</span>
         </button>
       </div>
     </div>
 
     <!-- SPECIAL MODES SECTION -->
     <div class="debug-section">
-      <h3 class="section-title" style="color: #f472b6; border-bottom-color: Rgba(244, 114, 182, 0.3);">
+      <h3
+        class="section-title"
+        style="color: #f472b6; border-bottom-color: Rgba(244, 114, 182, 0.3);"
+      >
         MODOS ESPECIALES
       </h3>
       <div class="button-list">
@@ -389,11 +413,20 @@ const isEffectActive = (type: string, category: string) => {
           <div class="btn-content">
             <span class="icon">{{ m.icon }}</span>
             <div class="text">
-              <span class="label" style="color: #fce7f3;">{{ m.label }}</span>
-              <span class="desc" style="color: #f9a8d4;">{{ m.desc }}</span>
+              <span
+                class="label"
+                style="color: #fce7f3;"
+              >{{ m.label }}</span>
+              <span
+                class="desc"
+                style="color: #f9a8d4;"
+              >{{ m.desc }}</span>
             </div>
           </div>
-          <span class="arrow" style="color: #f472b6;">▶</span>
+          <span
+            class="arrow"
+            style="color: #f472b6;"
+          >▶</span>
         </button>
       </div>
     </div>
