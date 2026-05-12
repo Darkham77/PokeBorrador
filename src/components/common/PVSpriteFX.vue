@@ -6,8 +6,11 @@
  */
 import { computed, inject, type Ref, ref, watch, nextTick } from 'vue'
 import { useUIStore } from '@/stores/ui'
+import { useBattleStore } from '@/stores/battle'
 import { gsap } from 'gsap'
 import { useParticleEngine } from '@/composables/useParticleEngine'
+
+const battleStore = useBattleStore()
 
 const props = defineProps({
   // Estado base
@@ -29,6 +32,8 @@ const props = defineProps({
   hasLightScreen: { type: Boolean, default: false },
   hasSafeguard: { type: Boolean, default: false },
   hasMist: { type: Boolean, default: false },
+  hasSpikes: { type: Boolean, default: false },
+  isIngrained: { type: Boolean, default: false },
   
   // Identidad (para re-randomizar efectos al cambiar de bicho)
   pokeId: { type: [String, Number], default: null },
@@ -97,6 +102,30 @@ const wrapperClasses = computed(() => ({
   'is-lock-on': props.isLockOn && !isSimplified.value
 }))
 
+const secondaryEffects = computed(() => [
+  { active: props.isConfused, emoji: '💫', type: 'confused' },
+  { active: props.isCursed, emoji: '👻', type: 'cursed' },
+  { active: props.attracted, emoji: '💖', type: 'attracted' },
+  { active: props.isSeeded, emoji: '🌱', type: 'seeded' },
+  { active: props.isTrapped, emoji: '🕸️', type: 'trapped' },
+  { active: props.isIngrained, emoji: '🌳', type: 'ingrained' }
+].filter(e => e.active))
+
+const tacticalEffects = computed(() => [
+  { active: props.isProtected, emoji: '🛡️', type: 'protected' },
+  { active: props.isEnduring, emoji: '✊', type: 'enduring' },
+  { active: props.isFocusEnergy, emoji: '🎯', type: 'focus' },
+  { active: props.isLockOn, emoji: '👁️', type: 'lockon' }
+].filter(e => e.active))
+
+const fieldEffects = computed(() => [
+  { active: props.hasReflect, emoji: '🧱', type: 'reflect' },
+  { active: props.hasLightScreen, emoji: '🕯️', type: 'lightscreen' },
+  { active: props.hasSafeguard, emoji: '🛡️', type: 'safeguard' },
+  { active: props.hasMist, emoji: '☁️', type: 'mist' },
+  { active: props.hasSpikes, emoji: '🌵', type: 'spikes' }
+].filter(e => e.active))
+
 const statusEmoji = computed(() => {
   const map: Record<string, string> = {
     burn: '🔥',
@@ -111,30 +140,14 @@ const statusEmoji = computed(() => {
 // GSAP Logic for particles and persistent effects
 const spriteRef = ref<HTMLElement | null>(null)
 const shinyRef = ref<HTMLElement | null>(null)
-const tacticalRefs = ref<HTMLElement[]>([])
-const screenRefs = ref<HTMLElement[]>([])
-const auraRefs = ref<HTMLElement[]>([])
 
 const baseScale = computed(() => props.spriteScale * 1.2)
 
-const statusScaleRange = computed<[number, number]>(() => {
-  const b = baseScale.value
-  if (props.status === 'burn') return [b * 2.5, b * 4.5]
-  if (props.status === 'paralysis') return [b * 2.0, b * 2.5]
-  if (props.status === 'sleep') return [b * 1.8, b * 2.8]
-  if (props.status === 'freeze') return [b * 1.5, b * 3.5]
-  return [b * 0.9, b * 1.1]
-})
 
-const statusAreaRadius = computed(() => {
-  if (props.status === 'sleep') return props.radius * 2
-  return props.radius
-})
-
+const statusAreaRadius = computed(() => props.radius)
 const { initSystem: initShinySystem, killAll: killShinyFX } = useParticleEngine()
 const { initSystem: initStatusSystem, killAll: killStatusFX } = useParticleEngine()
-const { initSystem: initSecondarySystem, killAll: killSecondaryFX } = useParticleEngine()
-const { initSystem: initTacticalSystem, killAll: killTacticalFX } = useParticleEngine()
+const { initSystem: initUnifiedSystem, killAll: killUnifiedFX } = useParticleEngine()
 
 let retryCount = 0
 const activeTweens: gsap.core.Tween[] = []
@@ -146,8 +159,7 @@ const killAllTimelines = () => {
   activeTweens.length = 0
   killShinyFX()
   killStatusFX()
-  killSecondaryFX()
-  killTacticalFX()
+  killUnifiedFX()
 }
 
 const refreshPersistentFX = () => {
@@ -321,48 +333,98 @@ const refreshPersistentFX = () => {
   }
 }
 
-const initTacticalFX = () => {
+/**
+ * Motor Unificado para Efectos Secundarios, Tácticos y de Campo
+ */
+const initUnifiedSystems = () => {
   if (isSimplified.value) return
 
-  initTacticalSystem(tacticalRefs.value, {
-    seed: animSeed,
-    disableInitialRandomize: true,
-    disableRandomizeOnRepeat: true,
-    createTweens: (el) => {
-      const type = el.getAttribute('data-fx-tact')
-      const tweens: gsap.core.Tween[] = []
-      
-      if (type === 'protected') {
-        tweens.push(gsap.to(el, { scale: 1.2, opacity: 1, duration: 0.5, yoyo: true, repeat: -1, ease: 'sine.inOut' }))
-      } else if (type === 'enduring') {
-        tweens.push(gsap.fromTo(el, { scale: 0, rotation: -45, opacity: 0 }, { scale: 1, rotation: 0, opacity: 1, duration: 0.5, ease: 'back.out(1.7)' }))
-      } else if (type === 'focus') {
-        tweens.push(gsap.to(el, { rotation: 360, duration: 2, repeat: -1, ease: 'none' }))
-      } else if (type === 'lockon') {
-        tweens.push(gsap.fromTo(el, { scaleY: 1, opacity: 1 }, { scaleY: 0.1, opacity: 0.3, duration: 0.2, yoyo: true, repeat: -1, repeatDelay: 1.8, ease: 'sine.inOut' }))
+  const container = spriteRef.value?.closest('.pv-fx-wrapper')
+  if (!container) return
+
+  // 1. Encontrar todos los contenedores de partículas especiales
+  const containers = container.querySelectorAll('.secondary-container, .tactical-container, .field-container')
+  
+  containers.forEach(group => {
+    const type = group.getAttribute('data-fx-type')
+    const particles = Array.from(group.querySelectorAll('.status-particle')) as HTMLElement[]
+    if (particles.length === 0) return
+
+    const isTactical = group.classList.contains('tactical-container')
+    const isField = group.classList.contains('field-container')
+    const isConfused = type === 'confusion'
+    
+    initUnifiedSystem(particles, {
+      seed: animSeed + (type?.length || 0),
+      // Elevamos el centro un poco más para que la órbita esté CLARAMENTE sobre la cabeza
+      offset: isConfused ? { x: 0, y: -props.radius * 1.1 } : undefined,
+      area: { 
+        // Para confusión, la dispersión es el 75% del radio del Pokémon
+        x: isField ? [10, 90] : (isConfused ? [50 - props.radius * 0.75, 50 + props.radius * 0.75] : [50 - props.radius, 50 + props.radius]), 
+        y: isField ? [10, 90] : (isConfused ? [50 - props.radius * 0.75, 50 + props.radius * 0.75] : [50 - props.radius, 50 + props.radius]) 
+      },
+      activeRange: isField ? [3, 6] : (isTactical || isConfused ? [1, 2] : [2, 4]),
+      createTweens: (el, index, delay) => {
+        // Configuraciones de ritmo según el tipo de efecto
+        const duration = isTactical ? 0.8 : (isField ? 4.0 : 2.0)
+        const targetScale = baseScale.value * (isTactical ? 0.4 : (isField ? 0.3 : 0.25))
+        
+        // Desincronización agresiva para confusión
+        const staggerDelay = isConfused ? (index * 1.5) : 0
+        const finalDelay = delay + staggerDelay
+        // Variación de repetición para que no se sincronicen nunca
+        const finalRepeatDelay = duration + (isConfused ? Math.random() * 2 : 0)
+
+        return [
+          // 1. Nacimiento y Ascenso
+          gsap.fromTo(el,
+            { opacity: 0, y: '5%', scale: 0, xPercent: -50, yPercent: -50 },
+            {
+              opacity: 1,
+              y: isTactical ? '-5%' : '-15%',
+              scale: targetScale,
+              duration: duration,
+              repeat: -1,
+              repeatDelay: finalRepeatDelay,
+              delay: finalDelay,
+              ease: isTactical ? 'back.out(1.7)' : 'sine.inOut',
+              onStart: () => {
+                // Calidad Premium: Super-sampling para nitidez absoluta
+                gsap.set(el, { imageRendering: 'auto', webkitFontSmoothing: 'none' })
+              }
+            }
+          ),
+          // 2. Muerte y Desvanecimiento
+          gsap.to(el, {
+            opacity: 0,
+            y: isTactical ? '-10%' : '-30%',
+            scale: targetScale * 0.5,
+            duration: duration,
+            repeat: -1,
+            repeatDelay: finalRepeatDelay,
+            delay: finalDelay + duration,
+            ease: 'sine.in'
+          })
+        ]
       }
-      
-      return tweens
-    }
+    })
   })
 }
 
+/**
+ * Animaciones persistentes para elementos de pantalla (Reflejo / Pantalla Luz)
+ */
 const initScreenAuraFX = () => {
-  screenRefs.value.forEach(el => {
-    if (!el) return
-    gsap.killTweensOf(el)
-    gsap.fromTo(el, { scale: 1, opacity: 0.3 }, { scale: 1.1, opacity: 0.7, duration: 2, yoyo: true, repeat: -1, ease: 'sine.inOut' })
-  })
+  const container = spriteRef.value?.closest('.pv-fx-wrapper')
+  if (!container) return
 
-  auraRefs.value.forEach(el => {
-    if (!el) return
+  const screens = container.querySelectorAll('.pv-fx-screen-overlay')
+  screens.forEach(el => {
     gsap.killTweensOf(el)
-    const isMist = el.classList.contains('mist')
-    if (isMist) {
-      gsap.fromTo(el, { x: -10, opacity: 0.4 }, { x: 10, y: -5, opacity: 0.8, duration: 4, yoyo: true, repeat: -1, ease: 'none' })
-    } else {
-      gsap.fromTo(el, { x: 0, y: 0, scale: 1 }, { x: 2, y: -2, scale: 1.05, duration: 4, yoyo: true, repeat: -1, ease: 'sine.inOut' })
-    }
+    gsap.fromTo(el, 
+      { scale: 0.95, opacity: 0.4 }, 
+      { scale: 1.05, opacity: 0.7, duration: 2, yoyo: true, repeat: -1, ease: 'sine.inOut' }
+    )
   })
 }
 
@@ -414,7 +476,12 @@ const initParticleAnim = () => {
   
   const container = spriteRef.value.closest('.pv-fx-wrapper')
   if (!container) return
-  const particleEls = Array.from(container.querySelectorAll('.status-particle')) as HTMLElement[]
+  
+  // Selector robusto: Solo partículas de estado que NO sean secundarias
+  const particleEls = Array.from(
+    container.querySelectorAll('.status-particle:not(.secondary-status)')
+  ) as HTMLElement[]
+  
   if (particleEls.length === 0) return
 
   const ar = statusAreaRadius.value
@@ -422,21 +489,27 @@ const initParticleAnim = () => {
   
   initStatusSystem(particleEls, {
     seed: animSeed,
-    area: { x: [50 - ar, 50 + ar], y: [50 - ar, 50 + ar] },
+    // Elevamos el centro para estados de 'cabeza' (sueño o confusión)
+    offset: (statusType === 'sleep' || statusType === 'confusion') ? { x: 0, y: -props.radius } : undefined,
+    // Área proporcional (75% del radio) para que el halo escale con el Pokémon
+    area: { 
+      x: (statusType === 'sleep' || statusType === 'confusion') ? [50 - ar * 0.75, 50 + ar * 0.75] : [50 - ar, 50 + ar], 
+      y: (statusType === 'sleep' || statusType === 'confusion') ? [50 - ar * 0.75, 50 + ar * 0.75] : [50 - ar, 50 + ar] 
+    },
     activeRange: statusType === 'burn' ? [8, 12] : 
-                 statusType === 'sleep' ? [3, 5] : 
+                 statusType === 'sleep' ? [1, 2] : 
                  statusType === 'poison' ? [1, 2] : [2, 4],
     createTweens: (el, _i, delay) => {
       const isPara = statusType === 'paralysis'
-      // Tiempos de vida duplicados: Parálisis 0.3s, Fuego 1.2s, Otros 3.0s
-      const duration = isPara ? 0.3 : (statusType === 'burn' ? 1.2 : 3.0)
+      // Restauración de ritmos originales: Parálisis 0.15s, Fuego 0.6s, Otros 1.5s
+      const duration = isPara ? 0.15 : (statusType === 'burn' ? 0.6 : 1.5)
       
       // Variación orgánica: factor de 0.3 a 1.0 para el fuego
       const randomFactor = statusType === 'burn' ? (0.3 + Math.random() * 0.7) : 1.0
       const targetScale = baseScale.value * (statusType === 'burn' ? 0.6 : 0.3) * randomFactor
       
       return [
-        // 1. Nacimiento y Ascenso inicial (Más rápido para parálisis)
+        // 1. Nacimiento y Ascenso inicial (Rápido)
         gsap.fromTo(el,
           { opacity: 0, y: '10%', scale: 0, xPercent: -50, yPercent: -50, x: 0 },
           {
@@ -444,13 +517,12 @@ const initParticleAnim = () => {
             y: isPara ? '0%' : '-10%',
             x: isPara ? () => (Math.random() - 0.5) * 10 : 0, // Jitter eléctrico
             scale: targetScale,
-            duration: isPara ? 0.1 : duration,
+            duration: isPara ? 0.05 : duration,
             repeat: -1,
-            repeatDelay: isPara ? 0.2 : duration,
+            repeatDelay: isPara ? 0.1 : duration,
             delay,
             ease: isPara ? 'none' : 'power1.out',
             onStart: () => {
-               // Calidad Premium
                gsap.set(el, { 
                  imageRendering: 'auto',
                  webkitFontSmoothing: 'none',
@@ -464,10 +536,13 @@ const initParticleAnim = () => {
           opacity: 0,
           y: isPara ? '0%' : '-30%',
           scale: isPara ? targetScale : targetScale * 0.5,
-          duration: isPara ? 0.1 : duration,
+          // Aura sólida para congelado en la segunda fase
+          filter: statusType === 'freeze' ? 'Drop-Shadow(0 0 15px #00ffff) Drop-Shadow(0 0 5px white) Brightness(2.5)' : undefined,
+          backgroundColor: statusType === 'freeze' ? 'rgba(0, 255, 255, 0.8)' : undefined,
+          duration: isPara ? 0.05 : duration,
           repeat: -1,
-          repeatDelay: isPara ? 0.2 : duration,
-          delay: delay + (isPara ? 0.2 : duration),
+          repeatDelay: isPara ? 0.1 : duration,
+          delay: delay + (isPara ? 0.1 : duration),
           ease: isPara ? 'none' : 'power1.in'
         })
       ]
@@ -475,56 +550,6 @@ const initParticleAnim = () => {
   })
 }
 
-const initSecondaryFX = () => {
-  if (isSimplified.value || !spriteRef.value) return
-  
-  const container = spriteRef.value.closest('.pv-fx-wrapper')
-  if (!container) return
-  const secondaryEls = Array.from(container.querySelectorAll('.secondary-status')) as HTMLElement[]
-  if (secondaryEls.length === 0) return
-
-  const hasSecondary = props.isConfused || props.isCursed || props.attracted || props.isSeeded || props.isTrapped
-  if (hasSecondary) {
-    const r = props.radius
-    initSecondarySystem(secondaryEls, {
-      seed: animSeed,
-      area: { x: [50 - r, 50 + r], y: [50 - r, 50 + r] },
-      createTweens: (el, _i, delay) => {
-        const duration = 1.2
-        const targetScale = baseScale.value * 0.24
-
-        return [
-          gsap.fromTo(el,
-            { opacity: 0, y: '5%', scale: 0, xPercent: -50, yPercent: -50 },
-            {
-              opacity: 1,
-              y: '-5%',
-              scale: targetScale,
-              duration: duration,
-              repeat: -1,
-              repeatDelay: duration,
-              delay,
-              ease: 'sine.inOut',
-              onStart: () => {
-                gsap.set(el, { imageRendering: 'auto', webkitFontSmoothing: 'none' })
-              }
-            }
-          ),
-          gsap.to(el, {
-            opacity: 0,
-            y: '-15%',
-            scale: 0,
-            duration: duration,
-            repeat: -1,
-            repeatDelay: duration,
-            delay: delay + duration,
-            ease: 'sine.in'
-          })
-        ]
-      }
-    })
-  }
-}
 
 
 
@@ -550,9 +575,8 @@ watch([
   nextTick(() => {
     killAllTimelines()
     initParticleAnim()
-    initSecondaryFX()
+    initUnifiedSystems()
     refreshPersistentFX()
-    initTacticalFX()
     initScreenAuraFX()
     initShinyFX()
   })
@@ -572,13 +596,31 @@ watch([
       class="pv-fx-sprite-layer"
       :class="{ 
         'is-guardian': isGuardian && !isSimplified,
-        'is-vibrant': vibrant && !isSimplified 
+        'is-vibrant': vibrant && !isSimplified,
+        'is-freeze': status === 'freeze' && !isSimplified
       }"
     >
       <slot />
     </div>
 
-    <!-- Capa de Brillos (Shiny) -->
+    <!-- GUIAS DE DEBUG (Solo visibles con VITE_DEBUG_ACTIVE) -->
+    <div v-if="battleStore.debugShowPokeRadius" class="debug-guide debug-poke-radius" :style="{ width: (props.radius * 2) + '%', height: (props.radius * 2) + '%' }">
+      <span class="label">POKE (Radio: {{ props.radius.toFixed(1) }}% | Diám: {{ (props.radius * 2).toFixed(1) }}%)</span>
+    </div>
+
+    <div 
+      v-if="battleStore.debugShowFxRadius && (status || isConfused)" 
+      class="debug-guide debug-fx-radius" 
+      :style="{ 
+        width: (props.radius * 1.5) + '%', 
+        height: (props.radius * 1.5) + '%',
+        transform: `translate(-50%, -50%) translateY(${status === 'sleep' || isConfused ? -props.radius * 1.1 : 0}%)`
+      }"
+    >
+      <span class="label">FX AREA (Orbit Width: {{ (props.radius * 1.5).toFixed(1) }}%)</span>
+    </div>
+
+    <!-- BRILLOS SHINY (SIEMPRE DISPONIBLES) -->
     <div
       v-if="isShiny && !isSimplified"
       ref="shinyRef"
@@ -607,116 +649,61 @@ watch([
       </span>
     </div>
 
+    <!-- 2. Capas de Partículas Secundarias (Confusión, Atracción, etc) -->
     <div
-      v-if="(isConfused || isCursed) && !isSimplified"
-      class="pv-fx-status-overlay"
+      v-for="fx in secondaryEffects"
+      :key="'sec-'+fx.type"
+      class="pv-fx-status-overlay secondary-container"
+      :data-fx-type="fx.type"
+      :style="{ display: !isSimplified ? 'block' : 'none' }"
     >
       <span
-        v-if="isConfused"
-        ref="secondaryParticlesRef"
+        v-for="i in (fx.type === 'confusion' ? 2 : 4)"
+        :key="i"
         class="status-particle secondary-status"
-      >💫</span>
-      <span
-        v-if="isCursed"
-        ref="secondaryParticlesRef"
-        class="status-particle secondary-status is-cursed"
-      >👻</span>
+      >{{ fx.emoji }}</span>
     </div>
 
-    <!-- Capa de Atracción -->
+    <!-- 3. Capas de Partículas Tácticas (Protección, Aguante, etc) -->
     <div
-      v-if="props.attracted && !isSimplified"
-      class="pv-fx-status-overlay"
+      v-for="fx in tacticalEffects"
+      :key="'tact-'+fx.type"
+      class="pv-fx-status-overlay tactical-container"
+      :data-fx-type="fx.type"
+      :style="{ display: !isSimplified ? 'block' : 'none' }"
     >
       <span
-        v-for="i in 2"
-        :key="'attr-'+i"
-        ref="secondaryParticlesRef"
-        class="status-particle secondary-status"
-      >❤️</span>
+        v-for="i in 3"
+        :key="i"
+        class="status-particle tactical-status"
+      >{{ fx.emoji }}</span>
     </div>
 
+    <!-- 4. Capas de Partículas de Campo (Reflejo, Neblina, etc) -->
     <div
-      v-if="(isSeeded || isTrapped) && !isSimplified"
-      class="pv-fx-status-overlay"
-    >
-      <template v-if="isSeeded">
-        <span
-          v-for="i in 3"
-          :key="'seed-'+i"
-          ref="secondaryParticlesRef"
-          class="status-particle secondary-status"
-        >🌱</span>
-      </template>
-      <template v-if="isTrapped">
-        <span
-          v-for="i in 2"
-          :key="'trap-'+i"
-          ref="secondaryParticlesRef"
-          class="status-particle secondary-status"
-        >⛓️</span>
-      </template>
-    </div>
-
-    <!-- Capa de Combate Táctico (Protección, Aguante, Foco, Lock-On) -->
-    <div
-      v-if="(isProtected || isEnduring || isFocusEnergy || isLockOn) && !isSimplified"
-      class="pv-fx-status-overlay"
+      v-for="fx in fieldEffects"
+      :key="'field-'+fx.type"
+      class="pv-fx-status-overlay field-container"
+      :data-fx-type="fx.type"
+      :style="{ display: !isSimplified ? 'block' : 'none' }"
     >
       <span
-        v-if="isProtected"
-        ref="tacticalRefs"
-        data-fx-tact="protected"
-        class="status-particle tact-fx"
-        style="top: 40%; left: 50%;"
-      >🛡️</span>
-      <span
-        v-if="isEnduring"
-        ref="tacticalRefs"
-        data-fx-tact="enduring"
-        class="status-particle tact-fx"
-        style="top: 30%; left: 20%;"
-      >👊</span>
-      <span
-        v-if="isFocusEnergy"
-        ref="tacticalRefs"
-        data-fx-tact="focus"
-        class="status-particle tact-fx"
-        style="top: 20%; left: 50%;"
-      >🎯</span>
-      <span
-        v-if="isLockOn"
-        ref="tacticalRefs"
-        data-fx-tact="lockon"
-        class="status-particle tact-fx"
-        style="top: 50%; left: 50%;"
-      >👁️</span>
+        v-for="i in 6"
+        :key="i"
+        class="status-particle field-status"
+      >{{ fx.emoji }}</span>
     </div>
 
-    <!-- Capas de Pantallas (Screens) -->
+    <!-- Capas de Caparazones Tácticos (Grandes envolventes) -->
     <div
       v-if="hasReflect && !isSimplified"
-      ref="screenRefs"
       class="pv-fx-screen-overlay reflect"
     />
     <div
       v-if="hasLightScreen && !isSimplified"
-      ref="screenRefs"
       class="pv-fx-screen-overlay light-screen"
     />
-    <!-- Capas de Aura (Safeguard / Mist) -->
-    <div
-      v-if="hasSafeguard && !isSimplified"
-      ref="auraRefs"
-      class="pv-fx-aura-overlay safeguard"
-    />
-    <div
-      v-if="hasMist && !isSimplified"
-      ref="auraRefs"
-      class="pv-fx-aura-overlay mist"
-    />
 
-    <!-- Espacio para futuras capas de efectos (ej. Veneno, Quemadura, etc) -->
     <slot name="overlay" />
   </div>
 </template>
@@ -780,5 +767,46 @@ watch([
   visibility: hidden;
   pointer-events: none;
   transform: Scale(0);
+}
+
+/* --- DEBUG GUIDES --- */
+.debug-guide {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: Translate(-50%, -50%);
+  border: 1px dashed;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  @include pixelated;
+
+  .label {
+    position: absolute;
+    top: -12px;
+    background: Rgba(0, 0, 0, 0.8);
+    color: white;
+    font-size: 6px;
+    padding: 1px 4px;
+    border-radius: 2px;
+    white-space: nowrap;
+  }
+
+  &.debug-poke-radius {
+    border-color: #00ffff;
+    background: Rgba(0, 255, 255, 0.15);
+    border: 2px solid #00ffff;
+    .label { border: 1px solid #00ffff; background: Rgba(0, 50, 50, 0.9); }
+  }
+
+  &.debug-fx-radius {
+    border-color: #ff9900;
+    background: Rgba(255, 153, 0, 0.15);
+    border: 2px solid #ff9900;
+    .label { border: 1px solid #ff9900; background: Rgba(50, 30, 0, 0.9); }
+  }
 }
 </style>

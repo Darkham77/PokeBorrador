@@ -354,6 +354,20 @@ const toggleStatus = (side: string, type: string) => {
             </button>
             <button
               class="mini-btn"
+              :class="{ active: battleStore.debugShowFxRadius }"
+              @click.stop="battleStore.debugShowFxRadius = !battleStore.debugShowFxRadius"
+            >
+              FX RAD
+            </button>
+            <button
+              class="mini-btn"
+              :class="{ active: battleStore.debugShowPokeRadius }"
+              @click.stop="battleStore.debugShowPokeRadius = !battleStore.debugShowPokeRadius"
+            >
+              POKE RAD
+            </button>
+            <button
+              class="mini-btn"
               :class="{ active: battleStore.debugZoom !== 1 }"
               @click.stop="gameBus.emit('TOGGLE_DEBUG_ZOOM')"
             >

@@ -22,6 +22,8 @@ export interface ParticleSystemOptions {
   seed?: number
   /** Rango de aparición en el contenedor (en %) */
   area?: { x: [number, number]; y: [number, number] }
+  /** Offset del centro de aparición (en %, ej: { x: 0, y: -50 }) */
+  offset?: { x: number; y: number }
   /** Duración base de la vida de una partícula */
   duration?: number
   /** Delay entre repeticiones */
@@ -42,10 +44,16 @@ export function useParticleEngine() {
     activeTweens.length = 0
   }
 
-  const randomizePosition = (el: HTMLElement, area: { x: [number, number]; y: [number, number] }) => {
-    const randomLeft = area.x[0] + (Math.random() * (area.x[1] - area.x[0]))
-    const randomTop = area.y[0] + (Math.random() * (area.y[1] - area.y[0]))
-    gsap.set(el, { left: `${randomLeft}%`, top: `${randomTop}%` })
+  const randomizePosition = (el: HTMLElement, area: { x: [number, number]; y: [number, number] }, offset?: { x: number; y: number }) => {
+    // Calculamos la posición base dentro del área
+    const baseLeft = area.x[0] + (Math.random() * (area.x[1] - area.x[0]))
+    const baseTop = area.y[0] + (Math.random() * (area.y[1] - area.y[0]))
+    
+    // Aplicamos el offset de forma absoluta
+    const finalLeft = baseLeft + (offset?.x || 0)
+    const finalTop = baseTop + (offset?.y || 0)
+    
+    gsap.set(el, { left: `${finalLeft}%`, top: `${finalTop}%` })
   }
 
   const randomizeSize = (el: HTMLElement, range: [number, number]) => {
@@ -54,12 +62,21 @@ export function useParticleEngine() {
   }
 
   const initSystem = (elements: HTMLElement[], options: ParticleSystemOptions) => {
-    killAll()
+    // Solo matamos los tweens de los elementos específicos que vamos a inicializar
+    elements.forEach(el => gsap.killTweensOf(el))
+    
+    // Limpiamos del array global los tweens que acabamos de matar para mantenerlo sano
+    for (let i = activeTweens.length - 1; i >= 0; i--) {
+      const tween = activeTweens[i]
+      if (tween && !tween.isActive()) {
+        activeTweens.splice(i, 1)
+      }
+    }
     
     if (!elements.length) return
 
     const {
-      area = { x: [10, 90], y: [10, 90] },
+      area = { x: [10, 90] as [number, number], y: [10, 90] as [number, number] },
       onInit,
       onRepeat,
       createTweens
@@ -74,7 +91,7 @@ export function useParticleEngine() {
 
       // 1. Posicionamiento y tamaño inicial azaroso (opcional)
       if (!options.disableInitialRandomize) {
-        randomizePosition(el, area)
+        randomizePosition(el, area, options.offset)
         // Solo aleatorizamos tamaño si NO se van a crear tweens inmediatamente 
         // o si no estamos usando un sistema de escala animada.
         if (options.scaleRange && !options.createTweens) {
@@ -104,7 +121,6 @@ export function useParticleEngine() {
       // 3. Delay azaroso para desincronizar el "nacimiento"
       const randomDelay = Math.random() * 2
 
-      // 4. Inyectar lógica de re-posicionamiento en el loop si el usuario lo desea
       // 4. Inyectar lógica de re-posicionamiento en el loop si el usuario lo desea
       const wrappedOnRepeat = () => {
         // 1. Re-calcular visibilidad INDIVIDUAL para evitar cortes bruscos en el grupo
@@ -148,7 +164,7 @@ export function useParticleEngine() {
 
         // 2. Re-posicionar si no está desactivado
         if (!options.disableRandomizeOnRepeat) {
-          randomizePosition(el, area)
+          randomizePosition(el, area, options.offset)
           if (options.scaleRange) {
             randomizeSize(el, options.scaleRange)
           }

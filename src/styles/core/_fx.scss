@@ -76,6 +76,13 @@
         will-change: transform, filter, opacity;
       }
     }
+
+    &.is-freeze {
+      // Aura sólida cian/blanca para estado congelado
+      filter: Drop-Shadow(0 0 12px Rgba(0, 255, 255, 0.8)) 
+              Drop-Shadow(0 0 6px Rgba(255, 255, 255, 0.9)) 
+              Brightness(1.1);
+    }
   }
 
   &.is-simplified {
@@ -220,13 +227,19 @@
     font-size: 20cqi; // High resolution base
 
     &.is-freeze {
+      border-radius: 50%;
+      // Aura base azulada
+      background: Radial-Gradient(circle, Rgba(0, 255, 255, 0.3) 0%, Transparent 70%);
+      
       &::after {
         content: '';
         position: absolute;
-        inset: 0;
+        inset: 15%;
         background: white;
+        // Forma de cristal/estrella
         clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
-        filter: Drop-Shadow(0 0 5px cyan);
+        filter: Drop-Shadow(0 0 2px cyan);
+        opacity: 0.9;
       }
     }
   }
