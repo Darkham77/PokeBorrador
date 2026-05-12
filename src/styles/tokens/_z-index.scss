@@ -1,13 +1,32 @@
 // src/styles/tokens/_z-index.scss
 
 $z-layers: (
-  background:   0,
-  content:      1,
-  hud:          8000,
-  navigation:   5000,
-  modal:        11000,
-  tooltip:      12000,
-  rival-effect: 13000,
-  buff-panel:   10000,
-  loading:      99999,
+  // SSoT Keys (from visuals.ts)
+  BASE:         var(--z-base),
+  LOW:          var(--z-low),
+  MAP_FLOOR:    var(--z-map-floor),
+  MAP_SHADOWS:  var(--z-map-shadows),
+  MAP_GRASS_BACK: var(--z-map-grass-back),
+  MAP_SPAWNS:   var(--z-map-spawns),
+  MAP_GROUND_FX: var(--z-map-ground-fx),
+  MAP_GRASS_FRONT: var(--z-map-grass-front),
+  MAP_WEATHER:  var(--z-map-weather),
+  MAP_UI:       var(--z-map-ui),
+  HUD:          var(--z-hud),
+  NAVIGATION:   var(--z-navigation),
+  OVERLAY:      var(--z-overlay),
+  MODAL:        var(--z-modal),
+  MODAL_STEP:   var(--z-modal-step),
+  TOOLTIP:      var(--z-tooltip),
+  TOAST:        var(--z-toast),
+  MAX:          var(--z-max),
+  CRITICAL:     var(--z-critical),
+
+  // Compatibility Keys (Lowercase variants used in CSS)
+  background:   var(--z-base),
+  base:         var(--z-base),
+  low:          var(--z-low),
+  content:      var(--z-map-floor),
+  loading:      var(--z-critical),
+  max:          var(--z-max)
 );
