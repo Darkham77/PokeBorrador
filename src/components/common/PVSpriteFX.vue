@@ -352,7 +352,7 @@ const resolveEffectSettings = (type: string, ar: number, options: { isField?: bo
   
   // 3. Rango de partículas activas según la intensidad del estado
   let activeRange: [number, number] = [2, 4]
-  if (isField) activeRange = [3, 6]
+  if (isField) activeRange = [6, 12]
   else if (type === 'burn') activeRange = [8, 12]
   else if (type === 'poison') activeRange = [4, 8]
   else if (isHeadEffect) activeRange = [1, 2]
@@ -394,46 +394,47 @@ const initUnifiedSystems = () => {
       ...settings,
       createTweens: (el, index, delay) => {
         // Configuraciones de ritmo según el tipo de efecto
+        const isTrapped = type === 'trapped'
+        const isMist = type === 'mist'
         const duration = isTactical ? 0.8 : (isField ? 4.0 : 2.0)
-        const targetScale = baseScale.value * (isTactical ? 0.4 : (isField ? 0.3 : 0.25))
         
-        // Desincronización agresiva para confusión
-        const staggerDelay = isConfused ? (index * 1.5) : 0
+        // Neblina crece x3 (de 0.3 a 0.9)
+        const baseMultiplier = isTactical ? 0.4 : (isField ? 0.3 : 0.25)
+        const scaleMultiplier = isTrapped ? 0.6 : (isMist ? 0.9 : baseMultiplier)
+        const targetScale = baseScale.value * scaleMultiplier
+        const startScale = isMist ? (baseScale.value * 0.3) : 0
+        
+        // Desincronización: Confusión lenta (1.5s), Campo constante (0.4s)
+        const staggerDelay = isConfused ? (index * 1.5) : (isField ? (index * 0.4) : 0)
         const finalDelay = delay + staggerDelay
-        // Variación de repetición para que no se sincronicen nunca
         const finalRepeatDelay = duration + (isConfused ? Math.random() * 2 : 0)
 
-        return [
-          // 1. Nacimiento y Ascenso
-          gsap.fromTo(el,
-            { opacity: 0, y: '5%', scale: 0, xPercent: -50, yPercent: -50 },
-            {
-              opacity: 1,
-              y: isTactical ? '-5%' : '-15%',
-              scale: targetScale,
-              duration: duration,
-              repeat: -1,
-              repeatDelay: finalRepeatDelay,
-              delay: finalDelay,
-              ease: isTactical ? 'back.out(1.7)' : 'sine.inOut',
-              onStart: () => {
-                // Calidad Premium: Super-sampling para nitidez absoluta
-                gsap.set(el, { imageRendering: 'auto', webkitFontSmoothing: 'none' })
-              }
-            }
-          ),
-          // 2. Muerte y Desvanecimiento
-          gsap.to(el, {
-            opacity: 0,
-            y: isTactical ? '-10%' : '-30%',
-            scale: targetScale * 0.5,
-            duration: duration,
-            repeat: -1,
-            repeatDelay: finalRepeatDelay,
-            delay: finalDelay + duration,
-            ease: 'sine.in'
-          })
-        ]
+        // CREACIÓN DE TIMELINE DETERMINISTA (Estilo Shiny)
+        const tl = gsap.timeline({
+          repeat: -1,
+          repeatDelay: finalRepeatDelay,
+          delay: finalDelay
+        })
+
+        tl.fromTo(el,
+          { opacity: 0, y: '5%', scale: startScale, xPercent: -50, yPercent: -50 },
+          {
+            opacity: 1,
+            y: isTactical ? '-5%' : '-15%',
+            scale: targetScale,
+            duration: duration * 0.4,
+            ease: isMist ? 'sine.out' : 'back.out(1.7)'
+          }
+        )
+        .to(el, {
+          y: isTactical ? '-15%' : '-30%',
+          opacity: 0,
+          scale: 0, // Desaparece encogiéndose
+          duration: duration * 0.6,
+          ease: 'power2.in'
+        })
+
+        return [tl]
       }
     })
   })
@@ -573,23 +574,21 @@ const initParticleAnim = () => {
 
 
 
+// --- VIGILANCIA AUTOMATIZADA DE ESTADOS ---
+/**
+ * En lugar de vigilar cada prop a mano, vigilamos los computados que ya filtran los estados activos.
+ * Si se añade un nuevo estado a las listas de arriba, este watch lo detectará automáticamente.
+ */
 watch([
-  () => props.status, 
-  () => props.pokeId, 
-  () => props.isConfused, 
-  () => props.isCursed,
-  () => props.isFocusEnergy,
-  () => props.isEnduring,
+  () => props.status,
+  () => props.radius,
   () => props.isShiny,
   () => props.isGuardian,
-  () => props.isProtected,
-  () => props.isLockOn,
-  () => props.hasReflect,
-  () => props.hasLightScreen,
-  () => props.hasSafeguard,
-  () => props.hasMist,
-  () => props.radius,
-  isSimplified
+  () => props.pokeId,
+  isSimplified,
+  secondaryEffects, // Vigilancia automática de estados secundarios
+  tacticalEffects,  // Vigilancia automática de estados tácticos
+  fieldEffects      // Vigilancia automática de efectos de campo
 ], () => {
   nextTick(() => {
     killAllTimelines()
@@ -599,7 +598,7 @@ watch([
     initScreenAuraFX()
     initShinyFX()
   })
-}, { immediate: true })
+}, { deep: true, immediate: true })
 
 
 </script>
@@ -710,7 +709,7 @@ watch([
       :style="{ display: !isSimplified ? 'block' : 'none' }"
     >
       <span
-        v-for="i in 6"
+        v-for="i in 12"
         :key="i"
         class="status-particle field-status"
       >{{ fx.emoji }}</span>
