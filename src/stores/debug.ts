@@ -17,7 +17,7 @@ import { registerPokeTools } from './debug/sections/pokeTools.ts'
 import { registerTimeTools } from './debug/sections/timeTools.ts'
 import { registerItemTools } from './debug/sections/itemTools.ts'
 import { registerSystemTools } from './debug/sections/systemTools.ts'
-import { registerAudioTools } from './debug/sections/audioTools.ts'
+import { registerBattleTools } from './debug/sections/battleTools.ts'
 
 export interface DebugTool {
   id: string
@@ -133,7 +133,7 @@ export const useDebugStore = defineStore('debug', () => {
     registerPokeTools({ register }, context)
     registerTimeTools({ register }, context)
     registerItemTools({ register }, context)
-    registerAudioTools({ register }, context)
+    registerBattleTools({ register }, context)
     
     // SystemTools registration (now synchronous registration, async module resolution)
     registerSystemTools({ register }, { ...context })

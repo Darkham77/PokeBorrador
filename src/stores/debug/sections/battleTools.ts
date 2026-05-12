@@ -5,7 +5,7 @@ import type { Pokemon } from '@/types/pokemon'
 
 import type { DebugSystem, DebugContext } from '@/stores/debug'
 
-export function registerAudioTools(debug: DebugSystem, _context: DebugContext) {
+export function registerBattleTools(debug: DebugSystem, _context: DebugContext) {
   const audio = useAudioStore()
 
   debug.register({
@@ -79,7 +79,12 @@ export function registerAudioTools(debug: DebugSystem, _context: DebugContext) {
     action: (side: string, status: string) => {
       import('@/stores/battle').then(({ useBattleStore }) => {
         const battle = useBattleStore()
-        const poke = side === 'player' ? battle.state?.player : (battle.upcomingPokemon || battle.state?.enemy)
+        const poke = side === 'player' 
+          ? battle.state?.player 
+          : (battle.isBattleActive && !battle.isSearching && battle.state?.enemy 
+              ? battle.state.enemy 
+              : (battle.upcomingPokemon || battle.state?.enemy))
+
         if (poke) {
           if (status === 'null') {
             poke.status = null
@@ -87,6 +92,15 @@ export function registerAudioTools(debug: DebugSystem, _context: DebugContext) {
             // Toggle logic
             poke.status = poke.status === (status as Pokemon['status']) ? null : (status as Pokemon['status'])
             if (poke.status === 'sleep') poke.sleepTurns = 3
+          }
+
+          // Force Reactivity
+          if (side === 'player' && battle.state) {
+            battle.state.player = { ...poke }
+          } else if (battle.state?.enemy && poke === battle.state.enemy) {
+            battle.state.enemy = { ...battle.state.enemy }
+          } else if (battle.upcomingPokemon && poke === battle.upcomingPokemon) {
+            battle.upcomingPokemon = { ...battle.upcomingPokemon }
           }
         }
       })
@@ -101,7 +115,12 @@ export function registerAudioTools(debug: DebugSystem, _context: DebugContext) {
     action: (side: string, type: string) => {
       import('@/stores/battle').then(({ useBattleStore }) => {
         const battle = useBattleStore()
-        const poke = (side === 'player' ? battle.state?.player : (battle.upcomingPokemon || battle.state?.enemy)) as (Pokemon & Record<string, unknown>) | undefined
+        const poke = (side === 'player' 
+          ? battle.state?.player 
+          : (battle.isBattleActive && !battle.isSearching && battle.state?.enemy 
+              ? battle.state.enemy 
+              : (battle.upcomingPokemon || battle.state?.enemy))) as (Pokemon & Record<string, unknown>) | undefined
+
         if (poke) {
           if (type === 'confused') poke.confused = (poke.confused || 0) > 0 ? 0 : 4
           if (type === 'attracted') poke.attracted = !poke.attracted
@@ -113,6 +132,15 @@ export function registerAudioTools(debug: DebugSystem, _context: DebugContext) {
           if (type === 'endure') poke.endure = !poke.endure
           if (type === 'focus_energy') poke.focusEnergy = !poke.focusEnergy
           if (type === 'lock_on') poke.lockOn = !poke.lockOn
+
+          // Force Reactivity
+          if (side === 'player' && battle.state) {
+            battle.state.player = { ...poke }
+          } else if (battle.state?.enemy && poke === battle.state.enemy) {
+            battle.state.enemy = { ...battle.state.enemy }
+          } else if (battle.upcomingPokemon && poke === battle.upcomingPokemon) {
+            battle.upcomingPokemon = { ...battle.upcomingPokemon }
+          }
         }
       })
       return `Comando setSecondaryStatus(${side}, ${type}) enviado.`
@@ -126,10 +154,13 @@ export function registerAudioTools(debug: DebugSystem, _context: DebugContext) {
     action: (side: string, stat: string, val: string) => {
       import('@/stores/battle').then(({ useBattleStore }) => {
         const battle = useBattleStore()
-        const stages = side === 'player' ? battle.playerStages : battle.enemyStages
-        const sKey = stat as keyof typeof stages
+        const stages = (side === 'player' ? battle.playerStages : battle.enemyStages) as Record<string, number>
+        const sKey = stat
         if (stages && stages[sKey] !== undefined) {
-          (stages as Record<string, number>)[sKey] = Math.max(-6, Math.min(6, parseInt(val)))
+          stages[sKey] = Math.max(-6, Math.min(6, parseInt(val)))
+          // Force reactivity for ref objects
+          if (side === 'player') battle.playerStages = { ...battle.playerStages }
+          else battle.enemyStages = { ...battle.enemyStages }
         }
       })
       return `setStatStage(${side}, ${stat}, ${val})`
@@ -143,10 +174,13 @@ export function registerAudioTools(debug: DebugSystem, _context: DebugContext) {
     action: (side: string, stat: string, delta: string) => {
       import('@/stores/battle').then(({ useBattleStore }) => {
         const battle = useBattleStore()
-        const stages = side === 'player' ? battle.playerStages : battle.enemyStages
-        const sKey = stat as keyof typeof stages
+        const stages = (side === 'player' ? battle.playerStages : battle.enemyStages) as Record<string, number>
+        const sKey = stat
         if (stages && stages[sKey] !== undefined) {
-          (stages as Record<string, number>)[sKey] = Math.max(-6, Math.min(6, ((stages[sKey] as number) || 0) + parseInt(delta)))
+          stages[sKey] = Math.max(-6, Math.min(6, (stages[sKey] || 0) + parseInt(delta)))
+          // Force reactivity for ref objects
+          if (side === 'player') battle.playerStages = { ...battle.playerStages }
+          else battle.enemyStages = { ...battle.enemyStages }
         }
       })
       return `modifyStatStage(${side}, ${stat}, ${delta})`

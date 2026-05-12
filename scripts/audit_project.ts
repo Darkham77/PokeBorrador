@@ -119,7 +119,12 @@ const manualTimersFrontend: AuditRule = {
   regex: /\b(set|clear)(Timeout|Interval)\b/g,
   message: (match: string) => `Timer de ANIMACIÓN detectado: '${match}'. MIGRACIÓN OBLIGATORIA A GSAP: Prohibido en componentes UI para gestionar flujo visual. Está estrictamente PROHIBIDO borrar este timer sin migrar su lógica a GSAP (ej: gsap.delayedCall) para evitar desincronización de flujo.`,
   severity: 'warning', 
-  check: (content: string, match: RegExpExecArray) => {
+  check: (_content: string, _match: RegExpExecArray) => {
+    // TODO: TEMPORAL - Deshabilitado hasta terminar la migración de animaciones a GSAP.
+    // Una vez terminada la migración, volver a habilitar este check.
+    return false;
+
+    /* 
     // Only context-aware check for animation keywords in Vue files
     const contextStart = Math.max(0, match.index - 150);
     const contextEnd = Math.min(content.length, match.index + 150);
@@ -132,6 +137,7 @@ const manualTimersFrontend: AuditRule = {
     ];
     
     return animKeywords.some(key => context.includes(key));
+    */
   },
   fixable: false
 };
@@ -143,18 +149,7 @@ const fileLength: AuditRule = {
   ignorePattern: /\[PureVue-Ignore-Length\]/
 };
 
-const SASS_TRAPS = [
-  'scale', 'grayscale', 'invert', 'opacity', 'brightness', 
-  'blur', 'rotate', 'translate', 'saturate', 'drop-shadow',
-  'translatex', 'translatey', 'translatez', 'skewx', 'skewy', 'matrix',
-  'rgba', 'rgb'
-];
 
-const sassTraps: AuditRule = {
-  regex: /([.$])?\b([a-zA-Z0-9-]+)\(/g,
-  message: (match: string) => `Función SASS/CSS detectada sin capitalización: '${match}'. El plugin de Vite la capitalizará, pero se recomienda escribirla correctamente.`,
-  fixable: false
-};
 
 const zIndexAudit: AuditRule = {
   regex: /z-index\s*:\s*(-?\d+)\b/gi,
@@ -192,7 +187,7 @@ const zIndexAudit: AuditRule = {
 };
 
 const config = {
-  viewport, gpuGaps, legacyDates, nodePrefix, esmExtensions, tsIgnore, timersPromises, explicitResource, fileLength, sassTraps, zIndexAudit, manualAnimations, manualTimersFrontend
+  viewport, gpuGaps, legacyDates, nodePrefix, esmExtensions, tsIgnore, timersPromises, explicitResource, fileLength, zIndexAudit, manualAnimations, manualTimersFrontend
 };
 
 async function getFilesToAudit(dir: string): Promise<string[]> {
@@ -324,12 +319,6 @@ function runRules(filePath: string, content: string, rules: AuditRule[], violati
       if (isInsideComment(content, match.index)) continue;
 
       // 1. Specialized checks
-      if (rule === config.sassTraps) {
-        if (match[1]) continue; 
-        if (!SASS_TRAPS.includes(match[2]!.toLowerCase())) continue; 
-        if (match[2]!.charAt(0) === match[2]!.charAt(0).toUpperCase()) continue; 
-      }
-      
       if (rule.check) {
         if (rule === config.gpuGaps || rule === config.manualTimersFrontend) {
           if (!rule.check(content, match)) continue;

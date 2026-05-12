@@ -45,7 +45,8 @@ const triggerAnim = (id: string, options = {}) => {
   getDebugBridge().triggerAnim(id, activeSide.value, options)
 }
 
-const triggerAttack = (cat: string) => {
+const triggerAttack = (cat?: string) => {
+  if (!cat) return
   getDebugBridge().triggerAnim('attack', activeSide.value, { cat })
 }
 
@@ -67,7 +68,11 @@ const setField = (effect: string, val: number) => {
 
 const isEffectActive = (type: string, category: string) => {
   const side = activeSide.value
-  const poke = side === 'player' ? battleStore.state?.player : (battleStore.upcomingPokemon || battleStore.state?.enemy)
+  const poke = side === 'player' 
+    ? battleStore.state?.player 
+    : (battleStore.isBattleActive && !battleStore.isSearching && battleStore.state?.enemy 
+        ? battleStore.state.enemy 
+        : (battleStore.upcomingPokemon || battleStore.state?.enemy))
   const stages = side === 'player' ? battleStore.playerStages : battleStore.enemyStages
 
   if (category === 'status') return (poke as Pokemon | undefined)?.status === type

@@ -1,22 +1,9 @@
-@use 'sass:map';
-@use '../tokens/z-index' as *;
-
 @function spacing($n) {
   @return $n * 4px;
 }
 
 @function cl-alpha($color, $opacity) {
   @return Rgba($color, $opacity);
-}
-
-// Z-index helper using the standardized CSS variables map
-@function z($layer) {
-  @if map.has-key($z-layers, $layer) {
-    @return map.get($z-layers, $layer);
-  } @else {
-    @warn "Unknown z-index layer #{$layer}. Please check src/logic/constants/visuals.ts";
-    @return var(--z-base); // Fallback to base
-  }
 }
 
 // Helper para outlines de sprites (Sharp 4-Way)
