@@ -333,6 +333,37 @@ const refreshPersistentFX = () => {
   }
 }
 
+// --- LÓGICA DE CONFIGURACIÓN MODULARIZADA ---
+/**
+ * Centraliza las reglas visuales para todos los efectos de partículas.
+ * Esto evita repetir la lógica de offset y área en múltiples motores.
+ */
+const resolveEffectSettings = (type: string, ar: number, options: { isField?: boolean } = {}) => {
+  const isHeadEffect = type === 'sleep' || type === 'confusion' || type === 'confused'
+  const isField = options.isField || false
+  
+  // 1. Cálculo de Offset (Desplazamiento a la cabeza: 75% del radio hacia arriba)
+  const offset = isHeadEffect ? { x: 0, y: -ar * 0.75 } : undefined
+  
+  // 2. Cálculo de Área (Dispersión proporcional)
+  // Factor 0.4 para efectos de cabeza (órbita expansiva), 1.0 para el resto
+  const factor = isHeadEffect ? 0.4 : 1.0
+  const areaRange: [number, number] = isField ? [10, 90] : [50 - ar * factor, 50 + ar * factor]
+  
+  // 3. Rango de partículas activas según la intensidad del estado
+  let activeRange: [number, number] = [2, 4]
+  if (isField) activeRange = [3, 6]
+  else if (type === 'burn') activeRange = [8, 12]
+  else if (type === 'poison') activeRange = [4, 8]
+  else if (isHeadEffect) activeRange = [1, 2]
+  
+  return {
+    offset,
+    area: { x: areaRange, y: areaRange },
+    activeRange
+  }
+}
+
 /**
  * Motor Unificado para Efectos Secundarios, Tácticos y de Campo
  */
@@ -342,28 +373,25 @@ const initUnifiedSystems = () => {
   const container = spriteRef.value?.closest('.pv-fx-wrapper')
   if (!container) return
 
-  // 1. Encontrar todos los contenedores de partículas especiales
   const containers = container.querySelectorAll('.secondary-container, .tactical-container, .field-container')
-  
   containers.forEach(group => {
     const type = group.getAttribute('data-fx-type')
+    if (!type) return
+
     const particles = Array.from(group.querySelectorAll('.status-particle')) as HTMLElement[]
     if (particles.length === 0) return
 
     const isTactical = group.classList.contains('tactical-container')
     const isField = group.classList.contains('field-container')
     const isConfused = type === 'confusion'
+
+    const settings = resolveEffectSettings(type, props.radius, { 
+      isField: isField 
+    })
     
     initUnifiedSystem(particles, {
       seed: animSeed + (type?.length || 0),
-      // Elevamos el centro un poco más para que la órbita esté CLARAMENTE sobre la cabeza
-      offset: isConfused ? { x: 0, y: -props.radius * 1.1 } : undefined,
-      area: { 
-        // Para confusión, la dispersión es el 75% del radio del Pokémon
-        x: isField ? [10, 90] : (isConfused ? [50 - props.radius * 0.75, 50 + props.radius * 0.75] : [50 - props.radius, 50 + props.radius]), 
-        y: isField ? [10, 90] : (isConfused ? [50 - props.radius * 0.75, 50 + props.radius * 0.75] : [50 - props.radius, 50 + props.radius]) 
-      },
-      activeRange: isField ? [3, 6] : (isTactical || isConfused ? [1, 2] : [2, 4]),
+      ...settings,
       createTweens: (el, index, delay) => {
         // Configuraciones de ritmo según el tipo de efecto
         const duration = isTactical ? 0.8 : (isField ? 4.0 : 2.0)
@@ -477,28 +505,19 @@ const initParticleAnim = () => {
   const container = spriteRef.value.closest('.pv-fx-wrapper')
   if (!container) return
   
-  // Selector robusto: Solo partículas de estado que NO sean secundarias
-  const particleEls = Array.from(
+  const isConfusedState = props.status === 'confusion' || props.status === 'confused'
+  const particleEls = (isConfusedState) ? [] : Array.from(
     container.querySelectorAll('.status-particle:not(.secondary-status)')
   ) as HTMLElement[]
   
   if (particleEls.length === 0) return
 
   const ar = statusAreaRadius.value
-  const statusType = props.status
+  const statusType = props.status || ''
   
   initStatusSystem(particleEls, {
     seed: animSeed,
-    // Elevamos el centro para estados de 'cabeza' (sueño o confusión)
-    offset: (statusType === 'sleep' || statusType === 'confusion') ? { x: 0, y: -props.radius } : undefined,
-    // Área proporcional (75% del radio) para que el halo escale con el Pokémon
-    area: { 
-      x: (statusType === 'sleep' || statusType === 'confusion') ? [50 - ar * 0.75, 50 + ar * 0.75] : [50 - ar, 50 + ar], 
-      y: (statusType === 'sleep' || statusType === 'confusion') ? [50 - ar * 0.75, 50 + ar * 0.75] : [50 - ar, 50 + ar] 
-    },
-    activeRange: statusType === 'burn' ? [8, 12] : 
-                 statusType === 'sleep' ? [1, 2] : 
-                 statusType === 'poison' ? [1, 2] : [2, 4],
+    ...resolveEffectSettings(statusType, ar),
     createTweens: (el, _i, delay) => {
       const isPara = statusType === 'paralysis'
       // Restauración de ritmos originales: Parálisis 0.15s, Fuego 0.6s, Otros 1.5s
@@ -612,12 +631,15 @@ watch([
       v-if="battleStore.debugShowFxRadius && (status || isConfused)" 
       class="debug-guide debug-fx-radius" 
       :style="{ 
-        width: (props.radius * 1.5) + '%', 
-        height: (props.radius * 1.5) + '%',
-        transform: `translate(-50%, -50%) translateY(${status === 'sleep' || isConfused ? -props.radius * 1.1 : 0}%)`
+        width: (props.radius * ((status === 'sleep' || status === 'confused' || status === 'confusion' || isConfused) ? 0.8 : 2)) + '%', 
+        height: (props.radius * ((status === 'sleep' || status === 'confused' || status === 'confusion' || isConfused) ? 0.8 : 2)) + '%',
+        top: ((status === 'sleep' || status === 'confused' || status === 'confusion' || isConfused) ? (50 - props.radius * 0.75) : 50) + '%'
       }"
     >
-      <span class="label">FX AREA (Orbit Width: {{ (props.radius * 1.5).toFixed(1) }}%)</span>
+      <span class="label">
+        FX AREA (Orbit Width: {{ (props.radius * ((status === 'sleep' || status === 'confused' || status === 'confusion' || isConfused) ? 0.8 : 2)).toFixed(1) }}% 
+        | Offset: {{ (status === 'sleep' || status === 'confused' || status === 'confusion' || isConfused) ? '-75%' : '0%' }})
+      </span>
     </div>
 
     <!-- BRILLOS SHINY (SIEMPRE DISPONIBLES) -->
