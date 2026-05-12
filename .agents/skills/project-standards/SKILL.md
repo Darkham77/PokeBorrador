@@ -62,9 +62,12 @@ Consult these manuals for detailed implementation specifications:
 - **GPU First**: Prioritize hardware-accelerated rendering. See [gpu_optimization_manual.md](./references/technical/gpu_optimization_manual.md). GPU promotion (`will-change`) MUST be context-aware; only add it if a `filter` or `transform` is present and no other `will-change` exists within the same block (500-character window) to avoid redundancy and memory overhead.
 - **Sprite Standard**: Use `@include sprite-render` for all game assets.
 - **Organic Feel**: Desynchronize animations using seeds and vary speeds.
-- **VFX Integrity**: Apply complex auras (e.g. Guardian/Shiny) to the `.pv-fx-wrapper` instead of the child sprite. This prevents status effect filters (poison/burn) from overriding the aura. Persistent effects MUST decouple their visibility from status flags.
+- **VFX Integrity**: To avoid visual contamination, status effects (Burn, Poison, etc.) MUST override persistent auras (Guardian, Shiny) instead of being superimposed. Use mutually exclusive `if/else if` chains in FX logic.
+- **Filter Cleanup Mandate**: Temporary visual effects (flashes, pulses) MUST use GSAP's `onComplete` with `clearProps: "filter"` to ensure no residual 0px filters remain as base layers.
+- **Nuclear Reset Pattern**: When resetting complex CSS filter stacks, always include the `filter` property itself in `clearProps` alongside custom variables (e.g., `--fx-main-glow`) to ensure a clean browser state. Avoid applying `filter` or `Drop-Shadow` to parent containers of sprites that have their own internal FX system (`PVSpriteFX`) to prevent cumulative color pollution.
 - **GSAP Exclusive Mandate**: All animations in the project (UI transitions, battle effects, map movements, atmospheric FX) MUST be implemented using GSAP. The use of CSS `@keyframes`, transitions, or `setTimeout`/`setInterval` for animation flow is STRICTLY FORBIDDEN.
 - **Zero-Timer & Zero-Variable Policy**: It is STRICTLY FORBIDDEN to use `setTimeout` or numeric timers to wait for visual completion. Sequential animation coordination MUST NOT be handled via reactive state variables (e.g., boolean flags or counters). You MUST use GSAP's native deterministic orchestration: timelines, promises (`await tween`), or `onComplete` callbacks.
+
 - **Deterministic Orchestration**: Visual sequences MUST return a Promise (using `awaitAnimation` or GSAP timelines) so the state machine can synchronize state changes with visual completion.
 - **CLI-Ready Visuals**: Every animation MUST be triggerable via `window.__VITE_DEBUG__.battle.animations` (or the corresponding debug bridge) to allow headless verification.
 

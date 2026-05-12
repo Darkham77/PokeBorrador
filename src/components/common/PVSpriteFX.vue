@@ -49,7 +49,10 @@ const props = defineProps({
   isSilhouette: { type: Boolean, default: false },
 
   // Radio de dispersión relativo al centro (en %)
-  radius: { type: Number, default: 40 }
+  radius: { type: Number, default: 40 },
+
+  // Escala absoluta del sprite para el tamaño de las partículas
+  spriteScale: { type: Number, default: 1 }
 })
 
 const uiStore = useUIStore()
@@ -106,15 +109,13 @@ const statusEmoji = computed(() => {
 })
 
 // GSAP Logic for particles and persistent effects
-const statusParticlesRef = ref<HTMLElement[]>([])
-const secondaryParticlesRef = ref<HTMLElement[]>([])
 const spriteRef = ref<HTMLElement | null>(null)
 const shinyRef = ref<HTMLElement | null>(null)
 const tacticalRefs = ref<HTMLElement[]>([])
 const screenRefs = ref<HTMLElement[]>([])
 const auraRefs = ref<HTMLElement[]>([])
 
-const baseScale = computed(() => (props.radius / 40) * 1.2)
+const baseScale = computed(() => props.spriteScale * 1.2)
 
 const statusScaleRange = computed<[number, number]>(() => {
   const b = baseScale.value
@@ -168,7 +169,15 @@ const refreshPersistentFX = () => {
   retryCount = 0
   
   // Clean previous
-  if (target) gsap.killTweensOf(target)
+  if (target) {
+    gsap.killTweensOf(target)
+    gsap.set(target, { clearProps: 'filter,x,y,rotation' })
+  }
+  if (spriteRef.value) {
+    gsap.killTweensOf(spriteRef.value)
+    gsap.set(spriteRef.value, { clearProps: 'filter' })
+  }
+  
   activeTweens.forEach(t => t.kill())
   activeTweens.length = 0
   
@@ -288,7 +297,7 @@ const refreshPersistentFX = () => {
     ))
   }
 
-  // 10. Aura Guardian (Replaces CSS pulse-aura)
+  // 10. Aura Guardian (Aplicado al CONTENEDOR para permitir apilamiento de filtros)
   if (props.isGuardian) {
     const isVibrant = props.vibrant
     const baseFilter = isVibrant 
@@ -298,7 +307,7 @@ const refreshPersistentFX = () => {
       ? 'Drop-Shadow(0 0 40px white) Drop-Shadow(0 0 15px Rgba(255, 255, 255, 0.9))'
       : 'Drop-Shadow(0 0 12px Rgba(255, 255, 255, 0.8))'
 
-    activeTweens.push(gsap.fromTo(target,
+    activeTweens.push(gsap.fromTo(spriteRef.value,
       { filter: baseFilter },
       {
         filter: pulseFilter,
@@ -394,7 +403,6 @@ const initShinyFX = () => {
           repeat: -1,
           repeatDelay: 1.2,
           delay: delay + 1.2,
-          ease: 'power1.in'
         })
       ]
     }
@@ -402,131 +410,124 @@ const initShinyFX = () => {
 }
 
 const initParticleAnim = () => {
-  if (isSimplified.value) return
+  if (isSimplified.value || !statusEmoji.value || !spriteRef.value) return
+  
+  const container = spriteRef.value.closest('.pv-fx-wrapper')
+  if (!container) return
+  const particleEls = Array.from(container.querySelectorAll('.status-particle')) as HTMLElement[]
+  if (particleEls.length === 0) return
 
-  // 1. Primary Status Particles (Circular Orbit + Specific Motion)
-  if (statusEmoji.value) {
-    const rX = props.radius * 0.85
-    const rY = props.radius * 0.35
-    const statusType = props.status
-    const ar = statusAreaRadius.value
-    
-    initStatusSystem(statusParticlesRef.value, {
-      seed: animSeed,
-      area: { x: [50 - ar, 50 + ar], y: [50 - ar, 50 + ar] },
-      scaleRange: statusScaleRange.value,
-      activeRange: props.status === 'burn' ? [3, 6] : (props.status === 'sleep' ? [1, 2] : [2, 4]),
-      onInit: (el) => {
-        gsap.set(el, { opacity: 0 })
-      },
-      createTweens: (_el, _i, seedOffset) => {
-        const tweens: gsap.core.Tween[] = []
-        const personalityProps = { repeat: -1, yoyo: true, delay: seedOffset }
-        
-        // 1.A Specific Status "Personality" (Master of Lifecycle)
-        // Definimos la duración base (ciclo completo con yoyo)
-        let cycleDuration = 2.5
-        
-        if (statusType === 'burn') {
-          cycleDuration = 0.6
-          tweens.push(gsap.to(_el, { ...personalityProps, y: '-=5', opacity: 1, duration: 0.3, ease: 'sine.inOut' }))
-        } else if (statusType === 'paralysis') {
-          cycleDuration = 0.1
-          tweens.push(gsap.to(_el, { ...personalityProps, x: '+=2', y: '+=2', opacity: 1, duration: 0.05, ease: 'none' }))
-        } else if (statusType === 'poison') {
-          cycleDuration = 2.4
-          tweens.push(gsap.to(_el, { ...personalityProps, scale: 1.2, opacity: 1, duration: 1.2, ease: 'power1.inOut' }))
-        } else if (statusType === 'sleep') {
-          cycleDuration = 4
-          tweens.push(gsap.to(_el, { ...personalityProps, opacity: 0.6, duration: 2 }))
-        } else if (statusType === 'freeze') {
-          cycleDuration = 3
-          tweens.push(gsap.fromTo(_el, 
-            { scale: 0, opacity: 1 },
-            { 
-              ...personalityProps,
-              scale: 1.2, 
-              duration: 1.5, 
-              opacity: 1,
-              immediateRender: true,
-              ease: 'sine.inOut' 
+  const ar = statusAreaRadius.value
+  const statusType = props.status
+  
+  initStatusSystem(particleEls, {
+    seed: animSeed,
+    area: { x: [50 - ar, 50 + ar], y: [50 - ar, 50 + ar] },
+    activeRange: statusType === 'burn' ? [8, 12] : 
+                 statusType === 'sleep' ? [3, 5] : 
+                 statusType === 'poison' ? [1, 2] : [2, 4],
+    createTweens: (el, _i, delay) => {
+      const isPara = statusType === 'paralysis'
+      // Tiempos de vida duplicados: Parálisis 0.3s, Fuego 1.2s, Otros 3.0s
+      const duration = isPara ? 0.3 : (statusType === 'burn' ? 1.2 : 3.0)
+      
+      // Variación orgánica: factor de 0.3 a 1.0 para el fuego
+      const randomFactor = statusType === 'burn' ? (0.3 + Math.random() * 0.7) : 1.0
+      const targetScale = baseScale.value * (statusType === 'burn' ? 0.6 : 0.3) * randomFactor
+      
+      return [
+        // 1. Nacimiento y Ascenso inicial (Más rápido para parálisis)
+        gsap.fromTo(el,
+          { opacity: 0, y: '10%', scale: 0, xPercent: -50, yPercent: -50, x: 0 },
+          {
+            opacity: 1,
+            y: isPara ? '0%' : '-10%',
+            x: isPara ? () => (Math.random() - 0.5) * 10 : 0, // Jitter eléctrico
+            scale: targetScale,
+            duration: isPara ? 0.1 : duration,
+            repeat: -1,
+            repeatDelay: isPara ? 0.2 : duration,
+            delay,
+            ease: isPara ? 'none' : 'power1.out',
+            onStart: () => {
+               // Calidad Premium
+               gsap.set(el, { 
+                 imageRendering: 'auto',
+                 webkitFontSmoothing: 'none',
+                 filter: statusType === 'burn' ? 'none' : (statusType === 'freeze' ? 'Drop-Shadow(0 0 8px cyan) Brightness(2)' : 'none')
+               })
             }
-          ))
-        }
-
-        // 1.B Base Orbit (Synchronized with cycleDuration)
-        tweens.push(gsap.to(_el, {
-          duration: cycleDuration,
-          repeat: -1,
-          ease: 'none',
-          delay: seedOffset,
-          modifiers: {
-            x: () => `${Math.cos(((gsap.globalTimeline.time() + seedOffset) * (Math.PI * 2)) / cycleDuration) * rX}%`,
-            y: () => `${Math.sin(((gsap.globalTimeline.time() + seedOffset) * (Math.PI * 2)) / cycleDuration) * rY - 15}%`,
-            zIndex: () => Math.sin(((gsap.globalTimeline.time() + seedOffset) * (Math.PI * 2)) / cycleDuration) > 0 ? 10 : 1
           }
-        }))
-
-        return tweens
-      }
-    })
-
-    // 1.1 Special Shine for Freeze particles
-    if (props.status === 'freeze') {
-      const { randomizePosition } = useParticleEngine()
-      statusParticlesRef.value.forEach((el, i) => {
-        activeTweens.push(gsap.to(el, {
-          filter: 'Drop-Shadow(0 0 8px cyan) Brightness(2)',
-          scale: 1.2,
-          duration: 0.75,
+        ),
+        // 2. Muerte y Desvanecimiento
+        gsap.to(el, {
+          opacity: 0,
+          y: isPara ? '0%' : '-30%',
+          scale: isPara ? targetScale : targetScale * 0.5,
+          duration: isPara ? 0.1 : duration,
           repeat: -1,
-          yoyo: true,
-          ease: 'sine.inOut',
-          delay: i * 0.2,
-          onRepeat: () => {
-            randomizePosition(el, { x: [10, 90], y: [10, 90] })
-          }
-        }))
-      })
+          repeatDelay: isPara ? 0.2 : duration,
+          delay: delay + (isPara ? 0.2 : duration),
+          ease: isPara ? 'none' : 'power1.in'
+        })
+      ]
     }
-  }
+  })
+}
 
-  // 2. Secondary Status Particles (Floating)
+const initSecondaryFX = () => {
+  if (isSimplified.value || !spriteRef.value) return
+  
+  const container = spriteRef.value.closest('.pv-fx-wrapper')
+  if (!container) return
+  const secondaryEls = Array.from(container.querySelectorAll('.secondary-status')) as HTMLElement[]
+  if (secondaryEls.length === 0) return
+
   const hasSecondary = props.isConfused || props.isCursed || props.attracted || props.isSeeded || props.isTrapped
   if (hasSecondary) {
     const r = props.radius
-    initSecondarySystem(secondaryParticlesRef.value, {
+    initSecondarySystem(secondaryEls, {
       seed: animSeed,
       area: { x: [50 - r, 50 + r], y: [50 - r, 50 + r] },
-      scaleRange: [baseScale.value * 0.8, baseScale.value * 1.2],
-      activeRange: [1, 3],
       createTweens: (el, _i, delay) => {
-        const tweens: gsap.core.Tween[] = []
-        
-        // Base Float
-        tweens.push(gsap.fromTo(el,
-          { y: 0, opacity: 0 },
-          {
-            y: '-18%',
-            opacity: 1,
-            duration: 1 + Math.random(),
+        const duration = 1.2
+        const targetScale = baseScale.value * 0.24
+
+        return [
+          gsap.fromTo(el,
+            { opacity: 0, y: '5%', scale: 0, xPercent: -50, yPercent: -50 },
+            {
+              opacity: 1,
+              y: '-5%',
+              scale: targetScale,
+              duration: duration,
+              repeat: -1,
+              repeatDelay: duration,
+              delay,
+              ease: 'sine.inOut',
+              onStart: () => {
+                gsap.set(el, { imageRendering: 'auto', webkitFontSmoothing: 'none' })
+              }
+            }
+          ),
+          gsap.to(el, {
+            opacity: 0,
+            y: '-15%',
+            scale: 0,
+            duration: duration,
             repeat: -1,
-            yoyo: true,
-            ease: 'sine.inOut',
-            delay: delay
-          }
-        ))
-
-        // Confused / Cursed Wobble
-        if (props.isConfused || props.isCursed) {
-          tweens.push(gsap.to(el, { x: '+=3', duration: 0.1, repeat: -1, yoyo: true, delay }))
-        }
-
-        return tweens
+            repeatDelay: duration,
+            delay: delay + duration,
+            ease: 'sine.in'
+          })
+        ]
       }
     })
   }
 }
+
+
+
 
 watch([
   () => props.status, 
@@ -549,6 +550,7 @@ watch([
   nextTick(() => {
     killAllTimelines()
     initParticleAnim()
+    initSecondaryFX()
     refreshPersistentFX()
     initTacticalFX()
     initScreenAuraFX()
@@ -556,18 +558,7 @@ watch([
   })
 }, { immediate: true })
 
-const particles = computed(() => {
-  if (!statusEmoji.value) return []
-  const result = []
-  for (let i = 0; i < 8; i++) {
-    result.push({
-      id: i,
-      top: `${20 + Math.random() * 60}%`,
-      left: `${20 + Math.random() * 60}%`
-    })
-  }
-  return result
-})
+
 </script>
 
 <template>
@@ -603,13 +594,12 @@ const particles = computed(() => {
 
     <!-- Capa de Partículas de Estado -->
     <div 
-      v-if="statusEmoji && !isSimplified"
       class="pv-fx-status-overlay"
+      :style="{ display: (statusEmoji && !isSimplified) ? 'block' : 'none' }"
     >
       <span 
-        v-for="p in particles" 
-        :key="p.id" 
-        ref="statusParticlesRef"
+        v-for="i in 12" 
+        :key="'status-'+i" 
         class="status-particle"
         :class="{ 'is-freeze': status === 'freeze' }"
       >

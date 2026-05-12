@@ -430,7 +430,9 @@ watch(() => props.isAttacking, (val) => {
 
 // --- ANIMACIONES DE ESTADO (FLASH) ---
 watch(() => props.pokemon?.status, (newS, oldS) => {
-  if (newS && newS !== oldS && spriteRotationRef.value) {
+  if (!spriteRotationRef.value) return
+
+  if (newS && newS !== oldS) {
     const statusColors: Record<string, string> = {
       burn: '#ff4500',
       poison: '#9400d3',
@@ -439,6 +441,10 @@ watch(() => props.pokemon?.status, (newS, oldS) => {
       sleep: '#ffffff'
     }
     const color = statusColors[newS] || '#ffffff'
+    
+    // Matamos cualquier flash previo antes de iniciar uno nuevo
+    gsap.killTweensOf(spriteRotationRef.value, "filter")
+    
     gsap.fromTo(spriteRotationRef.value,
       { filter: `Drop-Shadow(0 0 0px ${color}) Brightness(1)` },
       { 
@@ -446,11 +452,19 @@ watch(() => props.pokemon?.status, (newS, oldS) => {
         duration: 0.25, 
         yoyo: true, 
         repeat: 3, 
-        ease: "power1.inOut" 
+        ease: "power1.inOut",
+        onComplete: () => {
+          gsap.set(spriteRotationRef.value, { clearProps: "filter" })
+        }
       }
     )
+  } else if (!newS && oldS) {
+    // Si se quita el estado, limpiamos el filtro inmediatamente para evitar contaminación
+    gsap.killTweensOf(spriteRotationRef.value, "filter")
+    gsap.set(spriteRotationRef.value, { clearProps: "filter" })
   }
 })
+
 
 // Pokéball & Captures GSAP
 const pokeballImgRef = ref<HTMLImageElement | null>(null)
@@ -783,6 +797,7 @@ const onBallLeave = (el: Element, done: () => void) => {
             :vibrant="true"
             :sparkle-count="8"
             :radius="fxRadius"
+            :sprite-scale="fxScale"
             :style="virtualStyle"
           >
             <img

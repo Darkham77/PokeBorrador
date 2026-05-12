@@ -107,8 +107,6 @@ export function useParticleEngine() {
       // 4. Inyectar lógica de re-posicionamiento en el loop si el usuario lo desea
       // 4. Inyectar lógica de re-posicionamiento en el loop si el usuario lo desea
       const wrappedOnRepeat = () => {
-        const isHidden = gsap.getProperty(el, 'autoAlpha') === 0
-        
         // 1. Re-calcular visibilidad INDIVIDUAL para evitar cortes bruscos en el grupo
         let shouldBeVisible = true
         if (options.activeRange) {
@@ -148,8 +146,8 @@ export function useParticleEngine() {
           }
         }
 
-        // 2. Re-posicionar SOLO si es invisible (oculta por sistema o por lógica)
-        if (!options.disableRandomizeOnRepeat && (isHidden || !shouldBeVisible)) {
+        // 2. Re-posicionar si no está desactivado
+        if (!options.disableRandomizeOnRepeat) {
           randomizePosition(el, area)
           if (options.scaleRange) {
             randomizeSize(el, options.scaleRange)

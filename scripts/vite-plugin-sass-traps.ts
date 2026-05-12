@@ -40,6 +40,17 @@ export function sassTrapsFixer() {
     
     transform(code: string, id: string) {
       if (!id.endsWith('.scss') && !id.endsWith('.vue')) return null;
+
+      // If it's a .vue file, we only want to fix the <style> blocks
+      if (id.endsWith('.vue')) {
+        const styleRegex = /<style[^>]*>([\s\S]*?)<\/style>/gi;
+        const newCode = code.replace(styleRegex, (match, styleContent) => {
+          return match.replace(styleContent, fixContent(styleContent));
+        });
+        if (newCode !== code) return { code: newCode, map: null };
+        return null;
+      }
+
       const newCode = fixContent(code);
       if (newCode !== code) return { code: newCode, map: null };
       return null;
@@ -49,11 +60,21 @@ export function sassTrapsFixer() {
       if (!file.endsWith('.scss') && !file.endsWith('.vue')) return;
       
       Promise.resolve(read()).then((content: string) => {
-        const fixed = fixContent(content);
+        let fixed = content;
+        if (file.endsWith('.vue')) {
+          const styleRegex = /<style[^>]*>([\s\S]*?)<\/style>/gi;
+          fixed = content.replace(styleRegex, (match, styleContent) => {
+            return match.replace(styleContent, fixContent(styleContent));
+          });
+        } else {
+          fixed = fixContent(content);
+        }
+
         if (fixed !== content) {
           fs.writeFileSync(file, fixed, 'utf-8');
         }
       });
     }
+
   };
 }
