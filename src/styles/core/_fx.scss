@@ -216,9 +216,9 @@
   
   .status-particle {
     position: absolute;
-    // Proportional to the actual Pokemon body radius (Virtual World Query)
-    width: calc(var(--fx-radius, 40) * 0.25 * 1%); 
-    height: calc(var(--fx-radius, 40) * 0.25 * 1%);
+    // El tamaño depende exclusivamente del tamaño del sprite (cqi), NO del radio de órbita
+    width: 5cqi; 
+    height: 5cqi;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -228,13 +228,12 @@
 
     &.is-freeze {
       border-radius: 50%;
-      // Aura base azulada
-      background: Radial-Gradient(circle, Rgba(0, 255, 255, 0.3) 0%, Transparent 70%);
+      // Fondo eliminado para evitar el efecto de "círculo sólido"
       
       &::after {
         content: '';
         position: absolute;
-        inset: 15%;
+        inset: 5%;
         background: white;
         // Forma de cristal/estrella
         clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);

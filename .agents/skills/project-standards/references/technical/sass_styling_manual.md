@@ -159,6 +159,11 @@ All game-specific content **MUST** be strictly Pixel Art to preserve the game's 
 
 - **Restriction**: Smooth fonts like `Outfit` or `Inter` are reserved ONLY for administrative headers or meta-UI that is secondary to the game experience. Any text that represents a "Game Object" or "Trainer HUD Action" **MUST** be pixelated.
 
+- **Emoji FX Architecture (Double-Layer)**: To rotate or scale text-based emojis (💫, ❤️, etc.) without losing the orbital path, use a nested DOM structure:
+  - **Outer Container**: Handles positioning, orbit, and `Translate`.
+  - **Inner Element**: Must be `display: inline-block`. This element handles the `Rotate` and `Scale`.
+  - **Why**: Standard `inline` text elements ignore many 2D/3D transforms in modern rendering engines.
+
 ---
 
 ## 🚫 Non-Compliance Warning Protocol
@@ -309,6 +314,8 @@ To maintain "Zero-Warning" compliance, use the centralized GPU mixins defined in
 
 - The component MUST use `lang="scss"`.
 - You MUST import core tools: `@use "@/styles/core/tools" as *;`.
+- **GSAP Sync Mandate**: When animating properties like `Filter` or `Transform` via GSAP (JavaScript), you MUST use the **Capitalized** versions of the values (e.g., `filter: "Brightness(1.5)"`).
+  - **Why**: The Vite SASS plugin capitalizes these values in the CSS. If GSAP uses lowercase, it will fail to read the current state of the property from the DOM, causing "visual jumps" or broken tweens.
 
 ---
 

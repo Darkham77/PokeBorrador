@@ -1,7 +1,9 @@
+# Battle Animation Standards
+
 To guarantee a premium and "alive" visual experience, all cyclical animations must avoid perfect synchronization between multiple instances. To maintain system flexibility, **avoid hardcoding absolute durations or offsets** in documentation; refer to relative logic and symbolic constants.
 
 > [!IMPORTANT] **GSAP MANDATE**: All animations (UI, battle, transitions) MUST use GSAP. Manual CSS `@keyframes` or transitions on `transform/opacity` are FORBIDDEN as they conflict with GSAP's engine and cause layout jank.
-
+>
 > [!TIP] **Organic Entrance**: Use small random delays (`delay: Math.random() * 0.4`) when animating elements in a grid to avoid a rigid, "robotic" simultaneous appearance.
 
 ## 0. Coordinate Initialization (Flicker Prevention)
@@ -231,6 +233,9 @@ Status conditions use a combination of CSS filters for base tints and GSAP for d
 
 - **Orbital Patterns**: Use GSAP to animate particles in erratic paths, avoiding the repetition of CSS circular orbits.
 - **Jitter & Vibrancy**: Paralysis and Confusion effects must use high-frequency GSAP staggers or random jitter values updated via `gsap.ticker`.
+- **Decoupled Tweens (The Shake Pattern)**: For effects requiring a high-frequency vibration (wobble) on top of a slow trajectory (e.g. rising stars), you MUST decouple the animations into independent tweens.
+  - **Constraint**: Use `overwrite: false` or `overwrite: "none"` in the high-frequency tween to prevent GSAP from killing the orbital/trajectory tween.
+  - **Logic**: Trajectory handles `y`, Wobble handles `xPercent` and `rotation`.
 
 To provide immediate visual feedback without reloading sprites, the system uses a hybrid approach of CSS Filters and orbital particles.
 
@@ -273,6 +278,8 @@ Affected Pokémon are surrounded by 3 orbital particles with randomized origins 
 - **Reactivity**: The `pokeId` prop MUST be used as a dependency to force re-randomization whenever the Pokémon instance or species changes, even if the status remains the same.
 - **Scaling**: Origin points are relative (%) to ensure that particles surround the entire sprite area, which is critical for large Pokémon (e.g., Blastoise, Snorlax).
 - **Kinematics**: Particles MUST follow an **Upward Floating** pattern (negative `orbitY`). This simulates natural behaviors like rising heat, smoke, or bubbles, ensuring the effect doesn't collapse into the Pokémon's center.
+- **Emoji Rotation (Double-Layer)**: To rotate text-based emojis, use a nested structure: an outer `span` for the orbit and an inner `span` with `display: inline-block` for the rotation. Most browsers ignore transforms on inline elements.
+- **Fade vs Scale**: For persistent status particles (Confusion, Sleep), prefer `opacity` fades over `scale` animations for entry/exit. Constant scaling is visually distracting; a solid presence with alpha-blending is the premium standard.
 - **Animation**: Particles use the `status-particle-orbit` keyframe. Orbital trajectories are randomized to avoid repetitive circular patterns.
 
 ### 3. Multi-Status Container (HUD)
