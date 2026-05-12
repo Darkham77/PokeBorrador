@@ -389,7 +389,7 @@ const unifiedStatuses = computed<StatusIndicator[]>(() => {
           {{ isScrambled ? '???' : p.name }}
         </span>
         <div
-          v-if="p.gender && !isScrambled"
+          v-if="p.gender && !isScrambled && !p.name.includes(getGenderText(p.gender))"
           class="m-badge-gender"
           :class="getGenderCls(p.gender)"
         >

@@ -140,23 +140,30 @@
   inset: 0;
   pointer-events: none;
   z-index: calc(var(--z-map-spawns, 10) + 3);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
+  // Use Container Queries to ensure particles scale WITH the sprite size
+  container-type: size;
+  
   .status-particle {
     position: absolute;
-    font-size: calc(var(--obj-scale, 1) * 16px);
+    // Proportional to the actual Pokemon body radius (Virtual World Query)
+    width: calc(var(--fx-radius, 40) * 0.25 * 1%); 
+    height: calc(var(--fx-radius, 40) * 0.25 * 1%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
     @include pixelated;
     opacity: 0;
+    font-size: 8cqi; // Proportional font size
 
     &.is-freeze {
-      background: white;
-      width: calc(var(--obj-scale, 1) * 12px);
-      height: calc(var(--obj-scale, 1) * 12px);
-      clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
-      will-change: transform, filter, opacity;
-  filter: Drop-Shadow(0 0 5px cyan);
+      &::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: white;
+        clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+        filter: Drop-Shadow(0 0 5px cyan);
+      }
     }
   }
 }

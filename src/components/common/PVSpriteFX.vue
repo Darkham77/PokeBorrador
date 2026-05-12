@@ -573,7 +573,7 @@ const particles = computed(() => {
 <template>
   <div 
     :class="wrapperClasses"
-    :style="{ '--fx-seed': animSeed }"
+    :style="{ '--fx-seed': animSeed, '--fx-radius': radius }"
   >
     <!-- Capa de Sprite con efectos persistentes (Aura Guardian) -->
     <div 
