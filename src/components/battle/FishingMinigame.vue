@@ -17,7 +17,11 @@ const emit = defineEmits<{
   (e: 'fail'): void
 }>()
 
-// Game Config (Adapted from Legacy)
+const gameActive = ref(true)
+const feedback = ref('')
+const overlayRef = ref<HTMLElement | null>(null)
+
+let gameCall: gsap.core.Tween | null = null
 const totalNotes = Math.min(22, 5 + Math.floor(props.rarity / 7))
 const speedBase = Math.max(380, 1100 - (props.rarity * 7.5))
 const hitWindow = Math.max(100, 190 - (props.rarity / 1.3))
@@ -34,10 +38,6 @@ interface Note {
 const activeNotes = ref<Note[]>([])
 const clickedNotesCount = ref(0)
 const spawnedNotesCount = ref(0)
-const gameActive = ref(true)
-const feedback = ref('')
-
-let gameCall: gsap.core.Tween | null = null
 const activeTweens = new Map<number, gsap.core.Tween[]>()
 
 const spawnNext = () => {
@@ -150,6 +150,14 @@ const finishGame = (success: boolean) => {
 onMounted(() => {
   gsap.delayedCall(0.8, spawnNext)
 
+  if (overlayRef.value) {
+    gsap.from(overlayRef.value, { 
+      opacity: 0, 
+      duration: 0.3, 
+      ease: 'power2.out' 
+    })
+  }
+
   gsap.to('.fishing-icon', {
     y: -10,
     duration: 1,
@@ -166,7 +174,10 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="fishing-minigame-overlay">
+  <div 
+    ref="overlayRef"
+    class="fishing-minigame-overlay"
+  >
     <div class="rhythm-container">
       <!-- Background / Hint -->
       <div class="fishing-hint">
@@ -234,7 +245,6 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  animation: fadeIn 0.3s ease;
 }
 
 .rhythm-container {
@@ -356,17 +366,4 @@ onUnmounted(() => {
   z-index: var(--z-map-spawns);
 }
 
-@keyframes ringShrink {
-  from { transform: Scale(2.5); opacity: 0; }
-  20% { opacity: 1; }
-  to { transform: Scale(0.6); opacity: 0; }
-}
-
-@keyframes bounce {
-  0%, 100% { transform: Translatey(0); }
-  50% { transform: Translatey(-10px); }
-}
-
-.fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease; }
-.fade-enter-from, .fade-leave-to { opacity: 0; }
 </style>

@@ -98,6 +98,21 @@ watch(() => uiStore.isBattleSwitchForced, (val) => {
     }
   }
 })
+
+// GSAP Transition Hooks
+const onEnter = (el: Element, done: () => void) => {
+  gsap.fromTo(el, 
+    { opacity: 0, y: 30, scale: 0.95 },
+    { 
+      opacity: 1, 
+      y: 0, 
+      scale: 1, 
+      duration: 0.5, 
+      ease: 'back.out(1.7)',
+      onComplete: done
+    }
+  )
+}
 </script>
 
 <template>
@@ -105,8 +120,9 @@ watch(() => uiStore.isBattleSwitchForced, (val) => {
     id="move-panel"
   >
     <Transition
-      name="controls-slide"
+      :css="false"
       appear
+      @enter="onEnter"
     >
       <div 
         class="battle-controls-layout"
@@ -124,7 +140,7 @@ watch(() => uiStore.isBattleSwitchForced, (val) => {
             :moves="player?.moves || []" 
             :is-processing="isControlsDisabled"
             :player-info="player"
-            @use-move="(idx) => battleStore.executeMove(idx)"
+            @use-move="(idx: number) => battleStore.executeMove(idx)"
           />
 
           <BattleActionButtons 
@@ -322,16 +338,4 @@ watch(() => uiStore.isBattleSwitchForced, (val) => {
   padding: 20px;
 }
 
-@keyframes slideInUp {
-  from { opacity: 0; transform: Translatey(20px); }
-  to { opacity: 1; transform: Translatey(0); }
-}
-/* Transición de entrada Sincronizada para todo el panel de control */
-.controls-slide-enter-active {
-  transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-.controls-slide-enter-from {
-  opacity: 0;
-  transform: Translatey(30px) Scale(0.95);
-}
 </style>

@@ -1,6 +1,6 @@
-
 import { gameBus } from '@/logic/gameBus'
 import { useAudioStore } from '@/stores/audio'
+import { useBattleStore } from '@/stores/battle'
 import type { Pokemon } from '@/types/pokemon'
 
 import type { DebugSystem, DebugContext } from '@/stores/debug'
@@ -57,7 +57,8 @@ export function registerBattleTools(debug: DebugSystem, _context: DebugContext) 
         'attack': 'PLAY_ATTACK_ANIM',
         'emergence': 'START_BATTLE',
         'reveal': 'START_BATTLE',
-        'encounter': 'ENCOUNTER_ANIM'
+        'encounter': 'ENCOUNTER_ANIM',
+        'bush_wiggle': 'WIGGLE_BUSH'
       }
       
       const event = eventMap[type] || type
@@ -67,8 +68,31 @@ export function registerBattleTools(debug: DebugSystem, _context: DebugContext) 
       if (type === 'emergence') payload.animationPhase = 1
       if (type === 'reveal') payload.animationPhase = 3
 
+      // Manejo especial para animaciones de UI / Store
+      if (['trainer_in', 'trainer_out', 'levelUp'].includes(type)) {
+        const battle = useBattleStore()
+        if (type === 'trainer_in') battle.trainerAnimState = 'in'
+        if (type === 'trainer_out') battle.trainerAnimState = 'out'
+        if (type === 'levelUp') {
+          const p = side === 'player' ? battle.state?.player : (battle.state?.enemy || battle.upcomingPokemon)
+          if (p) p.level++
+        }
+        return `Animación de UI ${type} disparada.`
+      }
+
       gameBus.emit(event, payload)
       return `Evento emitido: ${event} para ${side}`
+    }
+  })
+
+  debug.register({
+    id: 'toggle_silhouette',
+    command: 'toggleSilhouette',
+    description: 'Alternar modo silueta del Pokémon enemigo.',
+    action: () => {
+      const battle = useBattleStore()
+      battle.isSilhouetteMode = !battle.isSilhouetteMode
+      return 'Modo silueta alternado.'
     }
   })
 

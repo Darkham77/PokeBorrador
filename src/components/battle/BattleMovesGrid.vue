@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, watch, onUnmounted } from 'vue'
+import { gsap } from 'gsap'
 import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import MoveTooltip from '@/components/battle/MoveTooltip.vue'
@@ -172,6 +173,78 @@ const getMoveColor = (move: Move | null) => {
   const type = md ? md.type.toLowerCase() : 'normal'
   return (PDEX_TYPE_COLORS as Record<string, string>)[type] || '#444'
 }
+
+// GSAP: Gestión de Brillos y Efectos
+const moveRefs = ref<HTMLElement[]>([])
+const glowTweens: gsap.core.Tween[] = []
+
+const updateGlows = () => {
+  glowTweens.forEach(t => t.kill())
+  glowTweens.length = 0
+
+  moveRefs.value.forEach((el, i) => {
+    if (!el) return
+    const move = fullMoves.value[i]
+    if (!move) return
+
+    const mod = getMoveModifier(move)
+    if (mod === 'boosted') {
+      glowTweens.push(gsap.to(el, {
+        boxShadow: '0 0 22px Rgba(255, 215, 0, 0.9), inset 0 0 15px Rgba(255, 215, 0, 0.5)',
+        duration: 1,
+        repeat: -1,
+        yoyo: true,
+        ease: 'sine.inOut'
+      }))
+    } else if (mod === 'penalized') {
+      glowTweens.push(gsap.to(el, {
+        boxShadow: '0 0 22px Rgba(255, 0, 0, 0.9), inset 0 0 15px Rgba(255, 0, 0, 0.5)',
+        duration: 1,
+        repeat: -1,
+        yoyo: true,
+        ease: 'sine.inOut'
+      }))
+    }
+  })
+}
+
+const onHover = (i: number, isEntering: boolean) => {
+  const el = moveRefs.value[i]
+  if (!el || isMoveDisabled(fullMoves.value[i] ?? null)) return
+
+  if (isEntering) {
+    gsap.to(el, { 
+      scale: 1.08, 
+      filter: 'Brightness(1.1)',
+      zIndex: 10,
+      duration: 0.3, 
+      ease: 'power2.out' 
+    })
+  } else {
+    gsap.to(el, { 
+      scale: 1, 
+      filter: 'Brightness(1)',
+      zIndex: 1,
+      duration: 0.3, 
+      ease: 'power2.out',
+      onComplete: () => {
+        if (el) gsap.set(el, { clearProps: 'zIndex' })
+      }
+    })
+  }
+}
+
+watch(() => props.moves, () => {
+  gsap.delayedCall(0.1, updateGlows)
+}, { deep: true })
+
+onMounted(() => {
+  updateGlows()
+})
+
+onUnmounted(() => {
+  glowTweens.forEach(t => t.kill())
+})
 </script>
 
 <template>
@@ -182,6 +255,7 @@ const getMoveColor = (move: Move | null) => {
     <div
       v-for="(move, i) in fullMoves" 
       :key="i"
+      ref="moveRefs"
       class="move-slot-wrapper"
       :class="[
         i % 2 === 0 ? 'is-left' : 'is-right',
@@ -212,6 +286,8 @@ const getMoveColor = (move: Move | null) => {
       @dragleave="dragOverIndex = null"
       @drop="onDrop(i, $event)"
       @dragend="onDragEnd"
+      @mouseenter="onHover(i, true)"
+      @mouseleave="onHover(i, false)"
     >
       <!-- Info Zone with Tooltip -->
       <template v-if="move">
@@ -332,7 +408,6 @@ const getMoveColor = (move: Move | null) => {
   width: 100%;
   display: flex;
   align-items: stretch;
-  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease, border-color 0.3s ease, opacity 0.3s ease;
   z-index: var(--z-base);
   border: 1px solid var(--m-type-color); 
   border-radius: 12px;
@@ -354,16 +429,6 @@ const getMoveColor = (move: Move | null) => {
   }
 
   &:hover:not(.is-dragging):not(.is-disabled) {
-    z-index: var(--z-low);
-    transform: Scale(1.08);
-    box-shadow: 0 8px 24px Rgba(0, 0, 0, 0.5);
-    will-change: transform, filter, opacity;
-  filter: Brightness(1.1);
-
-    @media (max-width: 420px) {
-      transform: Scale(1.02);
-    }
-
     .move-info-zone {
       color: $white;
       text-shadow: 0 0 5px var(--m-type-color);
@@ -435,14 +500,10 @@ const getMoveColor = (move: Move | null) => {
 
   &.is-boosted {
     border-color: $coin-gold !important;
-    box-shadow: 0 0 15px Rgba(255, 215, 0, 0.4);
-    animation: move-glow 2s infinite alternate;
   }
 
   &.is-penalized {
     border-color: #ff0000 !important;
-    box-shadow: 0 0 12px Rgba(255, 0, 0, 0.5);
-    animation: penalty-glow 2s infinite alternate;
   }
 
   &.is-empty {
@@ -537,7 +598,5 @@ const getMoveColor = (move: Move | null) => {
     font-weight: 900;
   }
 }
-@keyframes move-glow { from { box-shadow: 0 0 8px Rgba(255, 215, 0, 0.4), inset 0 0 5px Rgba(255, 215, 0, 0.2); } to { box-shadow: 0 0 22px Rgba(255, 215, 0, 0.9), inset 0 0 15px Rgba(255, 215, 0, 0.5); } }
-@keyframes penalty-glow { from { box-shadow: 0 0 8px Rgba(255, 0, 0, 0.4), inset 0 0 5px Rgba(255, 0, 0, 0.2); } to { box-shadow: 0 0 22px Rgba(255, 0, 0, 0.9), inset 0 0 15px Rgba(255, 0, 0, 0.5); } }
 
 </style>

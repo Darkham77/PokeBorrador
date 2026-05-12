@@ -44,6 +44,7 @@ provide('forceHighFidelity', true)
 provide('isModalPerformanceMode', computed(() => false))
 
 const arenaRef = ref<HTMLElement | null>(null)
+const trainerRef = ref<HTMLElement | null>(null)
 const { cameraStyles, worldStyles, showGuides } = useCombatCamera(arenaRef)
 
 const gs = computed(() => gameStore.state)
@@ -117,6 +118,7 @@ const activeEnemyData = computed(() => {
 })
 
 const activeEnemyIsSilhouette = computed(() => {
+  if (battleStore.isSilhouetteMode) return true
   const sub = battleStore.fsm?.currentSubState
   if (!sub) return false
   return [
@@ -310,6 +312,25 @@ onMounted(async () => {
   gsap.delayedCall(0.5, () => { isInitialLoad.value = false })
 })
 
+// GSAP: Animación de Entrenador
+watch(trainerAnimState, (newState) => {
+  if (!trainerRef.value) return
+  gsap.killTweensOf(trainerRef.value)
+
+  if (newState === 'entering') {
+    gsap.fromTo(trainerRef.value, 
+      { x: '150%', scale: 0.8, opacity: 0 },
+      { x: '0%', scale: 1, opacity: 1, duration: 0.8, ease: 'back.out(1.2)' }
+    )
+  } else if (newState === 'retreating') {
+    gsap.to(trainerRef.value, {
+      x: '150%', scale: 0.8, opacity: 0, 
+      duration: 0.8, 
+      ease: 'power2.in'
+    })
+  }
+})
+
 // Ejecutar PRELOAD_COORDS para combates consecutivos
 watch(() => battleStore.currentSubState, async (sub) => {
   if (sub === 'PRELOAD_FINAL_COORDS') {
@@ -383,12 +404,12 @@ watch(() => battleStore.isBattleActive, (active) => {
           <!-- Entrenador Rival (Solo en modo Trainer/Gym) -->
           <VirtualEntity
             v-if="isTrainerVisible && (battle?.isTrainer || battle?.isGym)"
+            ref="trainerRef"
             :x="p2Pos.x"
             :y="p2Pos.y"
             :w="BASE_ENTITY_SIZE_ENEMY"
             :h="BASE_ENTITY_SIZE_ENEMY"
             class="trainer-entity"
-            :class="trainerAnimState"
           >
             <div class="trainer-sprite-wrapper">
               <img 
@@ -580,10 +601,7 @@ watch(() => battleStore.isBattleActive, (active) => {
 .trainer-entity {
   z-index: var(--z-map-spawns);
   display: flex; align-items: flex-end; justify-content: center;
-  transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.5s ease;
-  
-  &.entering { animation: trainer-slide-in 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
-  &.retreating { animation: trainer-slide-out 0.8s ease-in forwards; }
+  will-change: transform, opacity;
 }
 
 .trainer-sprite-wrapper {
@@ -598,13 +616,4 @@ watch(() => battleStore.isBattleActive, (active) => {
   @include pixelated;
 }
 
-@keyframes trainer-slide-in {
-  0% { transform: Translatex(150%) Scale(0.8); opacity: 0; }
-  100% { transform: Translatex(0) Scale(1); opacity: 1; }
-}
-
-@keyframes trainer-slide-out {
-  0% { transform: Translatex(0) Scale(1); opacity: 1; }
-  100% { transform: Translatex(150%) Scale(0.8); opacity: 0; }
-}
 </style>

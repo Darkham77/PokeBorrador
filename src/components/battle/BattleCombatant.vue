@@ -80,10 +80,12 @@ const emit = defineEmits<{
 }>()
 
 const naturalSize = ref({ w: 0, h: 0 })
-const animSeed = Math.random()
+const idleWrapperRef = ref<HTMLElement | null>(null)
+let idleTween: gsap.core.Tween | null = null
 
 
 const isPlayer = computed(() => props.side === 'player')
+const isEnemy = computed(() => props.side === 'enemy')
 
 const imageUrl = computed(() => {
   if (!props.pokemon) return ''
@@ -102,6 +104,56 @@ const isFloating = computed(() => {
   if (props.pokemon.type) types.push(props.pokemon.type.toLowerCase())
   if (props.pokemon.type2) types.push(props.pokemon.type2.toLowerCase())
   return types.includes('flying')
+})
+
+const initIdleAnim = () => {
+  if (!idleWrapperRef.value || !props.pokemon) return
+  if (idleTween) {
+    idleTween.kill()
+    idleTween = null
+  }
+
+  const isFrozen = props.pokemon.status === 'freeze'
+  const isTrapped = (props.animState as string) === 'trapped'
+  const isCatching = props.animState === 'catching'
+  
+  if (isFrozen || isTrapped || isCatching) {
+    gsap.set(idleWrapperRef.value, { clearProps: 'transform' })
+    return
+  }
+
+  if (isFloating.value) {
+    // Floating Animation with Random Values per cycle using repeatRefresh
+    idleTween = gsap.to(idleWrapperRef.value, {
+      y: () => `-${10 + Math.random() * 6}%`,
+      rotation: () => (Math.random() > 0.5 ? 1 : -1) * (1 + Math.random() * 4),
+      duration: () => 2 + Math.random() * 1,
+      repeat: -1,
+      yoyo: true,
+      repeatRefresh: true,
+      ease: 'sine.inOut'
+    })
+  } else {
+    // Subtle Ground Animation
+    idleTween = gsap.to(idleWrapperRef.value, {
+      scaleX: () => 1.01 + Math.random() * 0.02,
+      scaleY: () => 0.97 + Math.random() * 0.02,
+      rotation: () => (Math.random() > 0.5 ? 1 : -1) * (0.5 + Math.random() * 1),
+      duration: () => 1.5 + Math.random() * 0.5,
+      repeat: -1,
+      yoyo: true,
+      repeatRefresh: true,
+      ease: 'sine.inOut'
+    })
+  }
+}
+
+watch([() => props.pokemon?.status, () => props.animState, isFloating], () => {
+  initIdleAnim()
+}, { immediate: true })
+
+watch(idleWrapperRef, (el) => {
+  if (el) initIdleAnim()
 })
 
 const handleLoad = (e: Event) => {
@@ -676,18 +728,16 @@ const onBallLeave = (el: Element, done: () => void) => {
         :class="[getAttackAnimClass, { 'is-floating-species': isFloating }]"
       >
         <div
+          ref="idleWrapperRef"
           class="sprite-idle-wrapper"
           :class="[{ 
-            'combatant-idle-subtle': pokemon.status !== 'freeze' && (animState as string) !== 'trapped' && animState !== 'catching' && !isFloating, 
-            'combatant-idle-floating': pokemon.status !== 'freeze' && (animState as string) !== 'trapped' && animState !== 'catching' && isFloating, 
             'is-floating-species': isFloating, 
             'energy-catching': animState === 'catching', 
             'energy-releasing': animState === 'releasing'
           }]"
           :style="{ 
-            animationDelay: `calc(${animSeed} * -3s)`, 
-            '--idle-dist': isFloating ? '-12px' : '-3px', 
-            '--shadow-y': localGroundY 
+            '--shadow-y': localGroundY,
+            '--side-dir': isEnemy ? '-1' : '1'
           }"
         >
           <PVSpriteFX
@@ -815,6 +865,7 @@ const onBallLeave = (el: Element, done: () => void) => {
     display: flex;
     align-items: center;
     justify-content: center;
+    transform-origin: bottom center;
   }
 
     .pokemon-combat-image {
@@ -1043,4 +1094,6 @@ const onBallLeave = (el: Element, done: () => void) => {
   &.up { color: #4ade80; }
   &.down { color: #f87171; }
 }
+
 </style>
+

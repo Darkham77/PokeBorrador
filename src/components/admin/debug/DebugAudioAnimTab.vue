@@ -14,7 +14,9 @@ import {
   DEBUG_ATTACK_FX, 
   DEBUG_STATS, 
   DEBUG_FIELD_EFFECTS, 
-  DEBUG_WEATHER_EFFECTS 
+  DEBUG_WEATHER_EFFECTS,
+  DEBUG_UI_ANIMS,
+  DEBUG_SPECIAL_MODES
 } from './debugConstants'
 
 interface ViteDebugBridge {
@@ -25,6 +27,7 @@ interface ViteDebugBridge {
   setSecondaryStatus: (side: string, type: string) => void;
   modifyStatStage: (side: string, stat: string, delta: number) => void;
   setFieldEffect: (side: string, effect: string, val: number) => void;
+  toggleSilhouette: () => void;
 }
 
 const battleStore = useBattleStore()
@@ -64,6 +67,10 @@ const modifyStat = (stat: string, delta: number) => {
 
 const setField = (effect: string, val: number) => {
   getDebugBridge().setFieldEffect(activeSide.value, effect, val)
+}
+
+const toggleSilhouette = () => {
+  getDebugBridge().toggleSilhouette()
 }
 
 const isEffectActive = (type: string, category: string) => {
@@ -337,6 +344,56 @@ const isEffectActive = (type: string, category: string) => {
         >
           <span class="icon">{{ fx.icon }}</span>
           {{ fx.label }}
+        </button>
+      </div>
+    </div>
+
+    <!-- UI ANIMS SECTION -->
+    <div class="debug-section">
+      <h3 class="section-title" style="color: #60a5fa; border-bottom-color: Rgba(96, 165, 250, 0.3);">
+        ANIMACIONES DE INTERFAZ (GSAP)
+      </h3>
+      <div class="button-list">
+        <button
+          v-for="a in DEBUG_UI_ANIMS"
+          :key="a.id"
+          class="debug-btn-long"
+          style="background: Rgba(30, 58, 138, 0.2); border-color: Rgba(96, 165, 250, 0.2);"
+          @click.stop="triggerAnim(a.id)"
+        >
+          <div class="btn-content">
+            <span class="icon">{{ a.icon }}</span>
+            <div class="text">
+              <span class="label" style="color: #dbeafe;">{{ a.label }}</span>
+              <span class="desc" style="color: #93c5fd;">{{ a.desc }}</span>
+            </div>
+          </div>
+          <span class="arrow" style="color: #60a5fa;">▶</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- SPECIAL MODES SECTION -->
+    <div class="debug-section">
+      <h3 class="section-title" style="color: #f472b6; border-bottom-color: Rgba(244, 114, 182, 0.3);">
+        MODOS ESPECIALES
+      </h3>
+      <div class="button-list">
+        <button
+          v-for="m in DEBUG_SPECIAL_MODES"
+          :key="m.id"
+          class="debug-btn-long"
+          style="background: Rgba(131, 24, 67, 0.2); border-color: Rgba(244, 114, 182, 0.2);"
+          @click.stop="m.id === 'silhouette' ? toggleSilhouette() : null"
+        >
+          <div class="btn-content">
+            <span class="icon">{{ m.icon }}</span>
+            <div class="text">
+              <span class="label" style="color: #fce7f3;">{{ m.label }}</span>
+              <span class="desc" style="color: #f9a8d4;">{{ m.desc }}</span>
+            </div>
+          </div>
+          <span class="arrow" style="color: #f472b6;">▶</span>
         </button>
       </div>
     </div>

@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, onUnmounted } from 'vue'
+import { gsap } from 'gsap'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
 interface Props {
@@ -19,7 +20,6 @@ const props = withDefaults(defineProps<Props>(), {
   forceBehind: false
 })
 
-const transitionName = computed(() => props.instant ? 'grass-instant' : 'grass-fade')
 
 const grassUrl = computed(() => {
   // Intentar cargar pasto específico de la ruta, si no, usar el genérico tall-grass
@@ -64,10 +64,81 @@ const bushes: Record<'front' | 'back', BushConfig[]> = {
 }
 
 const activeBushes = computed(() => bushes[props.layer])
+const bushRefs = ref<HTMLElement[]>([])
+const wiggleTweens: gsap.core.Tween[] = []
+
+const onEnter = (el: Element, done: () => void) => {
+  if (props.instant) {
+    gsap.set(el, { opacity: 1, scale: 1 })
+    done()
+    startWiggles()
+    return
+  }
+
+  gsap.fromTo(el, 
+    { opacity: 0, scale: 0.3 },
+    { 
+      opacity: 1, 
+      scale: 1, 
+      duration: 0.4, 
+      ease: 'back.out(1.7)',
+      onComplete: () => {
+        done()
+        startWiggles()
+      }
+    }
+  )
+}
+
+const onLeave = (el: Element, done: () => void) => {
+  gsap.to(el, { 
+    opacity: 0, 
+    duration: 0.6, 
+    ease: 'power2.inOut',
+    onComplete: done
+  })
+}
+
+const startWiggles = () => {
+  stopWiggles()
+  bushRefs.value.forEach((el, i) => {
+    if (!el) return
+    const img = el.querySelector('img')
+    if (!img) return
+    
+    const config = activeBushes.value[i]
+    if (!config) return
+
+    const duration = parseFloat(config.ad)
+    const delay = parseFloat(config.ay)
+
+    wiggleTweens.push(gsap.to(img, {
+      rotation: 5,
+      duration: duration / 2,
+      delay: Math.abs(delay),
+      yoyo: true,
+      repeat: -1,
+      ease: 'sine.inOut'
+    }))
+  })
+}
+
+const stopWiggles = () => {
+  wiggleTweens.forEach(t => t.kill())
+  wiggleTweens.length = 0
+}
+
+onUnmounted(() => {
+  stopWiggles()
+})
 </script>
 
 <template>
-  <Transition :name="transitionName">
+  <Transition 
+    :css="false"
+    @enter="onEnter"
+    @leave="onLeave"
+  >
     <div 
       v-if="visible" 
       class="combat-grass-container" 
@@ -80,11 +151,10 @@ const activeBushes = computed(() => bushes[props.layer])
         <div 
           v-for="b in activeBushes" 
           :key="b.id"
+          ref="bushRefs"
           class="bush-wrapper"
           :class="b.cls"
           :style="{
-            '--ad': b.ad,
-            '--ay': b.ay,
             transform: `Translate(calc(${b.tx} * var(--obj-scale) * 1px), calc(${b.ty} * var(--obj-scale) * 1px)) Scale(${b.scale})`
           }"
         >
@@ -141,29 +211,7 @@ const activeBushes = computed(() => bushes[props.layer])
   height: 100%; 
   object-fit: contain; 
   backface-visibility: hidden;
-  animation: bush-wiggle var(--ad, 1.5s) infinite ease-in-out var(--ay, 0s);
   transform-origin: bottom center;
-}
-
-@keyframes bush-wiggle { 
-  0%, 100% { transform: Rotate(0deg); } 
-  50% { transform: Rotate(5deg); } 
-}
-
-.grass-fade-enter-active {
-  transition: opacity 0.4s ease-out, transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-.grass-fade-leave-active, .grass-instant-leave-active {
-  transition: opacity 0.6s ease-in-out; // Sincronizado con el salto (0.6s)
-}
-
-.grass-fade-enter-from {
-  opacity: 0;
-  transform: Scale(0.3); // Comienza pequeño para el efecto de crecimiento
-}
-
-.grass-fade-leave-to, .grass-instant-leave-to {
-  opacity: 0;
+  will-change: transform;
 }
 </style>

@@ -37,8 +37,8 @@ const isAdmin = computed(() => {
   return profileStore.profileData.isAdmin || (typeof window !== 'undefined' && win.__ADMIN_DEBUG__) || supabase.isLocal
 })
 
-// displayHp permite animar la barra desde 0 cuando el componente aparece (Fase 3)
 const displayHp = ref(0)
+const cardRef = ref<HTMLElement | null>(null)
 
 onMounted(() => {
   // Sincronizar con la transición de aparición del HUD
@@ -66,8 +66,24 @@ const displayExpPct = ref((p.value.exp / p.value.expNeeded) * 100)
 watch(() => p.value.level, (newLevel, oldLevel) => {
   if (oldLevel && newLevel > oldLevel) {
     // 1. Efecto de Destello (Flash) con GSAP
+    if (cardRef.value) {
+      gsap.fromTo(cardRef.value, 
+        { filter: 'Brightness(1) contrast(1)', scale: 1 },
+        { 
+          filter: 'Brightness(2) contrast(1.2)', 
+          scale: 1.05, 
+          duration: 0.15, 
+          yoyo: true, 
+          repeat: 3, 
+          ease: 'power2.inOut',
+          onComplete: () => {
+            gsap.set(cardRef.value, { clearProps: 'filter,scale' })
+            isLevelingUp.value = false
+          }
+        }
+      )
+    }
     isLevelingUp.value = true
-    gsap.to({}, { duration: 1, onComplete: () => { isLevelingUp.value = false } })
 
     // 2. Orquestación de barra de XP
     const tl = gsap.timeline()
@@ -300,6 +316,7 @@ const formatMult = (m: number) => {
 
 <template>
   <div 
+    ref="cardRef"
     class="glass-card battle-info-card" 
     :class="[
       isPlayer ? 'player-card' : 'enemy-card', 
@@ -573,14 +590,7 @@ const formatMult = (m: number) => {
 }
 
 .is-leveling-up {
-  animation: level-up-flash 0.8s ease-out forwards;
   will-change: filter, transform;
-}
-
-@keyframes level-up-flash {
-  0% { filter: Brightness(1) contrast(1); transform: Scale(1); }
-  20% { filter: Brightness(2) contrast(1.2); transform: Scale(1.05); border-color: Rgba(255,255,255,0.8); }
-  100% { filter: Brightness(1) contrast(1); transform: Scale(1); }
 }
 
 .hp-high { background: Linear-Gradient(90deg, Rgba(16, 185, 129, 1), Rgba(52, 211, 153, 1)); }

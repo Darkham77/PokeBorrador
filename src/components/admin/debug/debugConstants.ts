@@ -104,3 +104,14 @@ export const DEBUG_WEATHER_EFFECTS: DebugItem[] = [
   { id: 'fog', label: 'NIEBLA', icon: '🌫️' },
   { id: 'clear', label: 'DESPEJADO', icon: '🌈' }
 ]
+
+export const DEBUG_UI_ANIMS: DebugItem[] = [
+  { id: 'levelUp', label: 'SUBIDA NIVEL', icon: '📈', desc: 'Destello de subida de nivel en la tarjeta.' },
+  { id: 'trainer_in', label: 'ENTRADA ENTRENADOR', icon: '🚶', desc: 'Slide-in desde el lateral.' },
+  { id: 'trainer_out', label: 'SALIDA ENTRENADOR', icon: '🏃', desc: 'Slide-out hacia el lateral.' },
+  { id: 'bush_wiggle', label: 'WIGGLE HIERBA', icon: '🌿', desc: 'Efecto de balanceo en la hierba de combate.' }
+]
+
+export const DEBUG_SPECIAL_MODES: DebugItem[] = [
+  { id: 'silhouette', label: 'MODO SILUETA', icon: '👤', desc: 'Alternar visibilidad del Pokémon enemigo.' }
+]

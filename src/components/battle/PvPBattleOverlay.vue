@@ -1,6 +1,6 @@
 <script setup lang="ts">
 
-import { computed, onMounted, onUnmounted, ref } from 'vue';
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { gsap } from 'gsap';
 import { useGameStore } from '@/stores/game';
 import { useLivePvPStore } from '@/stores/livePvP';
@@ -16,7 +16,12 @@ const livePvPStore = useLivePvPStore();
 const battle = computed(() => livePvPStore.battleState);
 
 const timeRemaining = ref(40);
+const timerRef = ref<HTMLElement | null>(null);
+const loaderRef = ref<HTMLElement | null>(null);
+
 let timer: gsap.core.Tween | null = null;
+let pulseTween: gsap.core.Tween | null = null;
+let spinTween: gsap.core.Tween | null = null;
 
 onMounted(() => {
   startTurnTimer();
@@ -57,6 +62,45 @@ const handleMoveSelection = (moveIdx: number) => {
   livePvPStore._commitPick({ type: 'move', moveIndex: moveIdx });
   stopTurnTimer();
 };
+
+// GSAP: Animaciones de UI
+watch(() => timeRemaining.value, (val) => {
+  if (val < 10 && val > 0 && !pulseTween) {
+    if (timerRef.value) {
+      pulseTween = gsap.to(timerRef.value, {
+        scale: 1.1,
+        duration: 0.5,
+        repeat: -1,
+        yoyo: true,
+        ease: 'sine.inOut'
+      });
+    }
+  } else if ((val >= 10 || val <= 0) && pulseTween) {
+    pulseTween.kill();
+    pulseTween = null;
+    if (timerRef.value) gsap.to(timerRef.value, { scale: 1, duration: 0.2 });
+  }
+});
+
+watch(() => [livePvPStore.battleState.myPick, livePvPStore.battleState.enemyPick, livePvPStore.battleState.phase], ([myPick, enemyPick, phase]) => {
+  const showLoader = myPick && !enemyPick && phase === 'choosing';
+  if (showLoader && !spinTween) {
+    // Esperar al siguiente tick para que el ref esté disponible
+    gsap.delayedCall(0, () => {
+      if (loaderRef.value) {
+        spinTween = gsap.to(loaderRef.value, {
+          rotation: 360,
+          duration: 1,
+          repeat: -1,
+          ease: 'none'
+        });
+      }
+    });
+  } else if (!showLoader && spinTween) {
+    spinTween.kill();
+    spinTween = null;
+  }
+}, { immediate: true });
 </script>
 
 <template>
@@ -95,6 +139,7 @@ const handleMoveSelection = (moveIdx: number) => {
         <!-- Timer Overlay -->
         <div
           v-if="battle.phase === 'choosing'"
+          ref="timerRef"
           class="turn-timer"
           :class="{ 'low-time': timeRemaining < 10 }"
         >
@@ -120,7 +165,10 @@ const handleMoveSelection = (moveIdx: number) => {
           v-if="battle.myPick && !battle.enemyPick && battle.phase === 'choosing'"
           class="waiting-overlay"
         >
-          <div class="pulse-loader" />
+          <div 
+            ref="loaderRef"
+            class="pulse-loader" 
+          />
           <span class="press-start">ESPERANDO AL RIVAL...</span>
         </div>
       </div>
@@ -283,7 +331,6 @@ const handleMoveSelection = (moveIdx: number) => {
   &.low-time {
     border-color: var(--red);
     color: var(--red);
-    animation: pulse 1s infinite;
   }
 }
 
@@ -325,22 +372,11 @@ const handleMoveSelection = (moveIdx: number) => {
   @include pixelated;
 }
 
-@keyframes pulse {
-  0% { transform: Translatex(-50%) Scale(1); }
-  50% { transform: Translatex(-50%) Scale(1.1); }
-  100% { transform: Translatex(-50%) Scale(1); }
-}
-
-@keyframes spin {
-  to { transform: Rotate(360deg); }
-}
-
 .pulse-loader {
   width: 40px;
   height: 40px;
   border: 4px solid var(--blue);
   border-top-color: transparent;
   border-radius: 50%;
-  animation: spin 1s linear infinite;
 }
 </style>

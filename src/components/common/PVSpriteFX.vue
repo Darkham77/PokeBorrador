@@ -104,8 +104,20 @@ const statusEmoji = computed(() => {
 // GSAP Logic for particles and persistent effects
 const particlesRef = ref<HTMLElement[]>([])
 const spriteRef = ref<HTMLElement | null>(null)
+const shinyRef = ref<HTMLElement | null>(null)
+const tacticalRefs = ref<HTMLElement[]>([])
+const screenRefs = ref<HTMLElement[]>([])
+const auraRefs = ref<HTMLElement[]>([])
+
 let retryCount = 0
 const activeTweens: gsap.core.Tween[] = []
+const persistentTimelines: Record<string, gsap.core.Timeline> = {}
+
+const killAllTimelines = () => {
+  Object.values(persistentTimelines).forEach(tl => tl.kill())
+  activeTweens.forEach(t => t.kill())
+  activeTweens.length = 0
+}
 
 const refreshPersistentFX = () => {
   if (!spriteRef.value) return
@@ -245,6 +257,115 @@ const refreshPersistentFX = () => {
       }
     ))
   }
+
+  // 10. Aura Guardian (Replaces CSS pulse-aura)
+  if (props.isGuardian) {
+    const isVibrant = props.vibrant
+    const baseFilter = isVibrant 
+      ? 'Drop-Shadow(0 0 15px white) Drop-Shadow(0 0 8px Rgba(255, 255, 255, 0.8))'
+      : 'Drop-Shadow(0 0 8px Rgba(255, 255, 255, 0.8))'
+    const pulseFilter = isVibrant
+      ? 'Drop-Shadow(0 0 40px white) Drop-Shadow(0 0 15px Rgba(255, 255, 255, 0.9))'
+      : 'Drop-Shadow(0 0 12px Rgba(255, 255, 255, 0.8))'
+
+    activeTweens.push(gsap.fromTo(target,
+      { filter: baseFilter },
+      {
+        filter: pulseFilter,
+        duration: 2.0,
+        yoyo: true,
+        repeat: -1,
+        ease: 'sine.inOut',
+        delay: animSeed * -2
+      }
+    ))
+  }
+}
+
+const initTacticalFX = () => {
+  tacticalRefs.value.forEach(el => {
+    if (!el) return
+    gsap.killTweensOf(el)
+    const type = el.getAttribute('data-fx-tact')
+    
+    if (type === 'protected') {
+      gsap.to(el, { scale: 1.2, opacity: 1, duration: 0.5, yoyo: true, repeat: -1, ease: 'sine.inOut' })
+    } else if (type === 'enduring') {
+      gsap.fromTo(el, { scale: 0, rotation: -45, opacity: 0 }, { scale: 1, rotation: 0, opacity: 1, duration: 0.5, ease: 'back.out(1.7)' })
+    } else if (type === 'focus') {
+      gsap.to(el, { rotation: 360, duration: 2, repeat: -1, ease: 'none' })
+    } else if (type === 'lockon') {
+      gsap.fromTo(el, { scaleY: 1, opacity: 1 }, { scaleY: 0.1, opacity: 0.3, duration: 0.2, yoyo: true, repeat: -1, repeatDelay: 1.8, ease: 'sine.inOut' })
+    }
+  })
+}
+
+const initScreenAuraFX = () => {
+  screenRefs.value.forEach(el => {
+    if (!el) return
+    gsap.killTweensOf(el)
+    gsap.fromTo(el, { scale: 1, opacity: 0.3 }, { scale: 1.1, opacity: 0.7, duration: 2, yoyo: true, repeat: -1, ease: 'sine.inOut' })
+  })
+
+  auraRefs.value.forEach(el => {
+    if (!el) return
+    gsap.killTweensOf(el)
+    const isMist = el.classList.contains('mist')
+    if (isMist) {
+      gsap.fromTo(el, { x: -10, opacity: 0.4 }, { x: 10, y: -5, opacity: 0.8, duration: 4, yoyo: true, repeat: -1, ease: 'none' })
+    } else {
+      gsap.fromTo(el, { x: 0, y: 0, scale: 1 }, { x: 2, y: -2, scale: 1.05, duration: 4, yoyo: true, repeat: -1, ease: 'sine.inOut' })
+    }
+  })
+}
+
+const initShinyFX = () => {
+  if (!shinyRef.value) return
+  const sparkles = shinyRef.value.querySelectorAll('.sparkle')
+  sparkles.forEach((s, i) => {
+    gsap.killTweensOf(s)
+    const delay = (i * 0.4) + (animSeed * -2.5)
+
+    const randomizePos = () => {
+      const randomLeft = 10 + (Math.random() * 80) // 10% to 90%
+      const randomTop = 10 + (Math.random() * 80)  // 10% to 90%
+      gsap.set(s, { left: `${randomLeft}%`, top: `${randomTop}%` })
+    }
+
+    // Initial position
+    randomizePos()
+
+    gsap.fromTo(s, 
+      { opacity: 0, y: 0, scale: 0, rotation: 0, xPercent: -50, yPercent: -50 },
+      {
+        opacity: 1,
+        y: '-12%',
+        scale: 1.2,
+        rotation: 180,
+        duration: 1.2,
+        repeat: -1,
+        repeatDelay: 1.3,
+        delay,
+        ease: 'power1.out',
+        onRepeat: () => {
+          randomizePos()
+          gsap.set(s, { filter: `Drop-Shadow(0 0 2px black) Drop-Shadow(0 0 4px gold)` })
+        }
+      }
+    )
+    
+    gsap.to(s, {
+      opacity: 0,
+      y: '-25%',
+      scale: 0,
+      rotation: 360,
+      duration: 1.3,
+      repeat: -1,
+      repeatDelay: 1.2,
+      delay: delay + 1.2,
+      ease: 'power1.in'
+    })
+  })
 }
 
 const initParticleAnim = () => {
@@ -259,19 +380,19 @@ const initParticleAnim = () => {
     
     if (isPrimaryStatus) {
       // Logic for primary status (Orbiting emoji)
-      const radiusX = 15 + Math.random() * 10
-      const radiusY = 5 + Math.random() * 5
+      const radiusX = 35 // Representará 35% del contenedor
+      const radiusY = 12 // Representará 12% del contenedor
       
       gsap.fromTo(el, 
-        { opacity: 0, x: -radiusX, y: 0 },
+        { opacity: 0, x: `-${radiusX}%`, y: 0 },
         {
           duration: 2,
           repeat: -1,
           ease: 'none',
           opacity: 1,
           modifiers: {
-            x: () => Math.cos(gsap.globalTimeline.time() * 2 + seed * 10) * radiusX,
-            y: () => Math.sin(gsap.globalTimeline.time() * 2 + seed * 10) * radiusY - 20,
+            x: () => `${Math.cos(gsap.globalTimeline.time() * 2 + seed * 10) * radiusX}%`,
+            y: () => `${Math.sin(gsap.globalTimeline.time() * 2 + seed * 10) * radiusY - 15}%`,
             zIndex: () => Math.sin(gsap.globalTimeline.time() * 2 + seed * 10) > 0 ? 10 : 1
           }
         }
@@ -281,7 +402,7 @@ const initParticleAnim = () => {
       gsap.fromTo(el,
         { y: 0, opacity: 0 },
         {
-          y: -15,
+          y: '-18%',
           opacity: 1,
           duration: 1 + Math.random(),
           repeat: -1,
@@ -301,11 +422,23 @@ watch([
   () => props.isCursed,
   () => props.isFocusEnergy,
   () => props.isEnduring,
+  () => props.isShiny,
+  () => props.isGuardian,
+  () => props.isProtected,
+  () => props.isLockOn,
+  () => props.hasReflect,
+  () => props.hasLightScreen,
+  () => props.hasSafeguard,
+  () => props.hasMist,
   isSimplified
 ], () => {
   nextTick(() => {
+    killAllTimelines()
     initParticleAnim()
     refreshPersistentFX()
+    initTacticalFX()
+    initScreenAuraFX()
+    initShinyFX()
   })
 }, { immediate: true })
 
@@ -339,6 +472,7 @@ const particles = computed(() => {
     <!-- Capa de Brillos (Shiny) -->
     <div
       v-if="isShiny && !isSimplified"
+      ref="shinyRef"
       class="pv-fx-shiny-overlay"
       data-fx-type="shiny"
     >
@@ -425,43 +559,54 @@ const particles = computed(() => {
     >
       <span
         v-if="isProtected"
+        ref="tacticalRefs"
+        data-fx-tact="protected"
         class="status-particle tact-fx"
-        style="top: 40%; left: 50%; animation: fx-pulse-in 1s infinite; opacity: 1;"
+        style="top: 40%; left: 50%; opacity: 1;"
       >🛡️</span>
       <span
         v-if="isEnduring"
+        ref="tacticalRefs"
+        data-fx-tact="enduring"
         class="status-particle tact-fx"
-        style="top: 30%; left: 20%; animation: fx-pop-in 0.5s forwards; opacity: 1;"
+        style="top: 30%; left: 20%; opacity: 1;"
       >👊</span>
       <span
         v-if="isFocusEnergy"
+        ref="tacticalRefs"
+        data-fx-tact="focus"
         class="status-particle tact-fx"
-        style="top: 20%; left: 50%; animation: fx-target-spin 2s infinite linear; opacity: 1;"
+        style="top: 20%; left: 50%; opacity: 1;"
       >🎯</span>
       <span
         v-if="isLockOn"
+        ref="tacticalRefs"
+        data-fx-tact="lockon"
         class="status-particle tact-fx"
-        style="top: 50%; left: 50%; animation: fx-eye-blink 2s infinite; opacity: 1;"
+        style="top: 50%; left: 50%; opacity: 1;"
       >👁️</span>
     </div>
 
     <!-- Capas de Pantallas (Screens) -->
     <div
       v-if="hasReflect && !isSimplified"
+      ref="screenRefs"
       class="pv-fx-screen-overlay reflect"
     />
     <div
       v-if="hasLightScreen && !isSimplified"
+      ref="screenRefs"
       class="pv-fx-screen-overlay light-screen"
     />
-
     <!-- Capas de Aura (Safeguard / Mist) -->
     <div
       v-if="hasSafeguard && !isSimplified"
+      ref="auraRefs"
       class="pv-fx-aura-overlay safeguard"
     />
     <div
       v-if="hasMist && !isSimplified"
+      ref="auraRefs"
       class="pv-fx-aura-overlay mist"
     />
 
@@ -476,7 +621,6 @@ const particles = computed(() => {
 // Los estilos base vienen del core/fx.scss
 // Aquí solo añadimos ajustes específicos de layout si fuera necesario
 .pv-fx-wrapper {
-  // Aseguramos que el contenedor no rompa el layout del padre
   width: fit-content;
   height: fit-content;
   position: relative;
@@ -493,7 +637,6 @@ const particles = computed(() => {
   z-index: calc(var(--z-map-spawns, 10) + 4);
   border-radius: 50%;
   opacity: 0.6;
-  animation: screen-pulse 2s infinite ease-in-out;
   mix-blend-mode: color-dodge;
   
   &.reflect {
@@ -514,7 +657,6 @@ const particles = computed(() => {
   z-index: calc(var(--z-map-spawns, 10) + 4);
   border-radius: 40%;
   opacity: 0.4;
-  animation: aura-drift 4s infinite ease-in-out;
   
   &.safeguard {
     background: Radial-Gradient(circle, #50fa7b 0%, Transparent 70%);
@@ -524,23 +666,6 @@ const particles = computed(() => {
   &.mist {
     background: Radial-Gradient(circle, #e0f7fa 20%, Transparent 80%);
     opacity: 0.8;
-    animation: mist-drift 4s infinite linear;
   }
-}
-
-@keyframes screen-pulse {
-  0%, 100% { transform: Scale(1); opacity: 0.3; }
-  50% { transform: Scale(1.1); opacity: 0.7; }
-}
-
-@keyframes aura-drift {
-  0%, 100% { transform: Translate(0, 0) Scale(1); }
-  50% { transform: Translate(2px, -2px) Scale(1.05); }
-}
-
-@keyframes mist-drift {
-  0% { transform: Translate(-10px, 0); opacity: 0.4; }
-  50% { transform: Translate(10px, -5px); opacity: 0.8; }
-  100% { transform: Translate(-10px, 0); opacity: 0.4; }
 }
 </style>

@@ -82,6 +82,9 @@ export const useBattleStore = defineStore('battle', () => {
   const attackerSide = ref<'player' | 'enemy' | null>(null)
   const activeMove = ref<Move | null>(null)
 
+  const trainerAnimState = ref<'idle' | 'in' | 'out'>('idle')
+  const isSilhouetteMode = ref(false)
+
   const playerStages = ref<BattleStages>({ ...INITIAL_STAGES })
   const enemyStages = ref<BattleStages>({ ...INITIAL_STAGES })
   const upcomingPokemon = ref<Pokemon | null>(null)
@@ -523,6 +526,8 @@ export const useBattleStore = defineStore('battle', () => {
     activeMove,
     upcomingPokemon,
     animations,
+    trainerAnimState,
+    isSilhouetteMode,
     fsm,
     currentFsmState,
     currentSubState,
