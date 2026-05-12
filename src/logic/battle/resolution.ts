@@ -38,14 +38,22 @@ export async function processFaint(ctx: BattleContext, side: 'player' | 'enemy')
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.PLAYER_FAINT_SEQ)
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.RECALL_FLOW)
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.POKEMON_RECALL)
-    gameBus.emit('PLAY_WITHDRAW', { side: 'player', isFaint: true })
-    await sleep(800)
+    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.RENDER_BALL)
+    if (ctx.animations?.handleFaintAnim) {
+      await ctx.animations.handleFaintAnim({ side: 'player', isFaint: true })
+    } else {
+      await sleep(1300)
+    }
     
     // Sincronizamos antes de vaciar el asiento para no perder la referencia
     syncTeamHP(ctx)
     if (active) active._lastActivePlayer = pokemon; // Guardamos referencia por si acaso
     
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.VACATE_SEAT)
+    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.FADEOUT_BALL)
+    if (ctx.animations?.playBallFadeOut) {
+      await ctx.animations.playBallFadeOut('player')
+    }
     active.player = null 
     
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.CHECK_TEAM)
@@ -73,10 +81,12 @@ export async function processFaint(ctx: BattleContext, side: 'player' | 'enemy')
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ENEMY_DEFEAT)
     
     gameBus.emit('PLAY_SOUND', 'faint')
-    gameBus.emit('PLAY_FAINT', { side: 'enemy' })
+    if (ctx.animations?.handleFaintAnim) {
+      await ctx.animations.handleFaintAnim({ side: 'enemy' })
+    } else {
+      await sleep(1300)
+    }
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.PLAY_ENEMY_FAINT)
-    
-    await sleep(1000)
     
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.VACATE_SEAT)
     active.enemy = null
@@ -139,6 +149,9 @@ export async function terminateBattle(ctx: BattleContext, win: boolean, fled = f
   await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.VACATE_SEAT);
   if (active) active.enemy = null;
   if (active) active._initialEnemy = null;
+  
+  await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.FADEOUT_BALL);
+  await sleep(300); // Duración exacta de la animación de fadeout de la pokebola
 
   await fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.CHECK_OUTCOME)
 
@@ -187,6 +200,10 @@ export async function terminateBattle(ctx: BattleContext, win: boolean, fled = f
       await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.ENERGY_RECALL)
       await sleep(800)
       await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.VACATE_SEAT)
+      await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.FADEOUT_BALL)
+      if (ctx.animations?.playBallFadeOut) {
+        await ctx.animations.playBallFadeOut('player')
+      }
       active.player = null
     }
 
@@ -202,7 +219,10 @@ export async function terminateBattle(ctx: BattleContext, win: boolean, fled = f
     await sleep(800)
     
     await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.POKEMON_APPEAR)
-    await sleep(400)
+    await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.FADEOUT_BALL)
+    if (ctx.animations?.playBallFadeOut) {
+      await ctx.animations.playBallFadeOut('player')
+    }
   }
   
   const persistenceMode = active.persistenceMode as string || 'PERSISTENT'
@@ -260,12 +280,14 @@ export async function calculateBattleRewards(ctx: BattleContext) {
       ctx.gs.state.gymProgress[gid] = { easy: false, normal: false, hard: false, attempts: 0 }
     }
     const prog = ctx.gs.state.gymProgress[gid]
-    const key = diff as 'easy' | 'normal' | 'hard'
-    if (!prog[key]) {
-      prog[key] = true
-      ctx.addLog(`¡Superaste el gimnasio en dificultad ${diff.toUpperCase()}!`, 'log-success')
+    if (prog) {
+      const key = diff as 'easy' | 'normal' | 'hard'
+      if (!prog[key]) {
+        prog[key] = true
+        ctx.addLog(`¡Superaste el gimnasio en dificultad ${diff.toUpperCase()}!`, 'log-success')
+      }
+      prog.attempts++
     }
-    prog.attempts++
     
     await ctx.gs.save(false)
   }

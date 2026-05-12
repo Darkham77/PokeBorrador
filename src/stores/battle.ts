@@ -305,7 +305,7 @@ export const useBattleStore = defineStore('battle', () => {
 
   const handleFaint = async (side: 'player' | 'enemy') => await processFaint(getContext(), side)
 
-  const useItemInBattle = async (itemName: string, targetIndex: number | null = null) => {
+  const useItemInBattle = async (itemName: string, targetIndex: number | null = null, itemId?: string) => {
     if (isProcessing.value || !isBattleActive.value || !activeBattle.value) return
     isProcessing.value = true
     
@@ -316,7 +316,7 @@ export const useBattleStore = defineStore('battle', () => {
     if (!activeBattle.value || !activeBattle.value.enemy) { isProcessing.value = false; return }
     
     const res = await handleItemUsage(itemName, targetPoke, activeBattle.value.enemy, { 
-      eventStore, addLog, audio, consumeItem, ctx: getContext(), fsm 
+      eventStore, addLog, audio, consumeItem, ctx: getContext(), fsm, itemId
     })
     attackerSide.value = null
     activeMove.value = null
@@ -326,9 +326,20 @@ export const useBattleStore = defineStore('battle', () => {
       activeBattle.value.isCapture = true
       activeBattle.value.over = true 
       gs.addPokemon(castRes.pokemon || null, { notify: true })
+      
+      // Fase de Festejo (Phase 3 de la captura)
+      if (animations.value) {
+        await animations.value.playCatchCelebration('enemy')
+      }
+      
       await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.VACATE_SEAT)
       activeBattle.value.enemy = null
-      await sleep(2000)
+      
+      // Fase de Desvanecimiento (Phase 4 de la captura)
+      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.FADEOUT_BALL)
+      if (animations.value) {
+        await animations.value.playBallFadeOut('enemy')
+      }
       
       isProcessing.value = false
       await fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.EMPTY_WAIT)
@@ -396,8 +407,11 @@ export const useBattleStore = defineStore('battle', () => {
       addLog(`¡Bien hecho, ${oldPoke.name}! ¡Regresa!`, 'log-info', 'player')
       gameBus.emit('PLAY_WITHDRAW', { side: 'player' })
       
-      await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.WAIT_TIMER, 500)
+      await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.ENERGY_RECALL)
+      await sleep(500)
       await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.VACATE_SEAT)
+      await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.FADEOUT_BALL)
+      await sleep(300)
       activeBattle.value.player = null
       clearVolatileStatus(oldPoke)
     }
@@ -414,6 +428,8 @@ export const useBattleStore = defineStore('battle', () => {
     await sleep(800)
     
     await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.POKEMON_APPEAR)
+    await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.FADEOUT_BALL)
+    await sleep(300)
     
     if (!activeBattle.value.participants.includes(newPoke.uid)) {
       activeBattle.value.participants.push(newPoke.uid)
@@ -438,16 +454,16 @@ export const useBattleStore = defineStore('battle', () => {
     }
     persistBattle()
     
-    if (!isForced) await runEnemyAction(getContext())
+    if (typeof isForced !== 'undefined' && !isForced) await runEnemyAction(getContext())
     
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT)
     isProcessing.value = false
   }
 
   const consumeItem = (itemName: string) => {
-    if (gs.state.inventory[itemName]) {
+    if (gs.state && gs.state.inventory[itemName]) {
       gs.state.inventory[itemName]--
-      if (gs.state.inventory[itemName] <= 0) delete gs.state.inventory[itemName]
+      if (gs.state && gs.state.inventory[itemName] <= 0) delete gs.state.inventory[itemName]
     }
   }
 

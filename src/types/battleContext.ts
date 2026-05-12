@@ -50,12 +50,14 @@ export interface BattleContext {
   
   animations?: {
     triggerSearchEncounter: () => Promise<void>;
-    revealWildPokemon: () => Promise<void>;
+    revealWildPokemon: (isInstant?: boolean) => Promise<void>;
     triggerWildEmergence: () => Promise<void>;
-    triggerCatchSparkles: (side: string) => void;
-    handleCatchRequest: (detail: string | { side?: string; ballId?: string }) => void;
-    handleReleaseRequest: (detail: string | { side?: string }) => void;
+    triggerCatchSparkles: (side: string) => Promise<void>;
+    handleCatchRequest: (detail: string | { side?: string; ballId?: string }) => Promise<void>;
+    handleReleaseRequest: (detail: string | { side?: string }) => Promise<void>;
     handleShakeRequest: (detail: string | { side?: string }) => void;
-    handleFaintAnim: (detail: string | { side?: string } | { detail?: string | { side: string } }) => void;
+    handleFaintAnim: (detail: string | { side?: string; isFaint?: boolean } | { detail?: string | { side: string; isFaint?: boolean } }) => Promise<void>;
+    playCatchCelebration: (side: string) => Promise<void>;
+    playBallFadeOut: (side: string) => Promise<void>;
   };
 }

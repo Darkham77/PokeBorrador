@@ -51,7 +51,7 @@ export function registerAudioTools(debug: DebugSystem, _context: DebugContext) {
         'catch': 'PLAY_CATCH_ENERGY',
         'shake': 'CATCH_SHAKE',
         'shake_damage': 'PLAY_DAMAGE',
-        'blink': 'PLAY_DAMAGE',
+        'blink': 'PLAY_BLINK',
         'success': 'CATCH_SUCCESS',
         'faint': 'POKEMON_FAINT',
         'attack': 'PLAY_ATTACK_ANIM',
@@ -75,7 +75,7 @@ export function registerAudioTools(debug: DebugSystem, _context: DebugContext) {
   debug.register({
     id: 'set_status',
     command: 'setStatus',
-    description: 'Cambiar estado de un pokemon (burn, poison, paralyze, freeze, sleep, null). Toggle si ya lo tiene.',
+    description: 'Cambiar estado de un pokemon (burn, poison, paralysis, freeze, sleep, null). Toggle si ya lo tiene.',
     action: (side: string, status: string) => {
       import('@/stores/battle').then(({ useBattleStore }) => {
         const battle = useBattleStore()

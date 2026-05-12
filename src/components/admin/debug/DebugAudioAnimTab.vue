@@ -8,7 +8,9 @@ import {
   DEBUG_SOUNDS, 
   DEBUG_STATUS_CONDITIONS, 
   DEBUG_SECONDARY_EFFECTS, 
-  DEBUG_SYSTEM_ANIMS, 
+  DEBUG_ENCOUNTER_ANIMS,
+  DEBUG_COMBAT_ANIMS,
+  DEBUG_CATCH_ANIMS, 
   DEBUG_ATTACK_FX, 
   DEBUG_STATS, 
   DEBUG_FIELD_EFFECTS, 
@@ -238,14 +240,14 @@ const isEffectActive = (type: string, category: string) => {
       </div>
     </div>
 
-    <!-- SYSTEM ANIMS SECTION -->
+    <!-- ENCOUNTER ANIMS SECTION -->
     <div class="debug-section">
       <h3 class="section-title">
-        ANIMACIONES DE SISTEMA
+        ENCUENTRO SALVAJE
       </h3>
       <div class="button-list">
         <button
-          v-for="a in DEBUG_SYSTEM_ANIMS"
+          v-for="a in DEBUG_ENCOUNTER_ANIMS"
           :key="a.id"
           class="debug-btn-long"
           @click.stop="triggerAnim(a.id)"
@@ -261,6 +263,57 @@ const isEffectActive = (type: string, category: string) => {
             </div>
           </div>
           <span class="arrow">▶</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- COMBAT ANIMS SECTION -->
+    <div class="debug-section">
+      <h3 class="section-title">
+        COMBATE Y ESTADO
+      </h3>
+      <div class="button-list">
+        <button
+          v-for="a in DEBUG_COMBAT_ANIMS"
+          :key="a.id"
+          class="debug-btn-long"
+          @click.stop="triggerAnim(a.id)"
+        >
+          <div class="btn-content">
+            <span class="icon">{{ a.icon }}</span>
+            <div class="text">
+              <span class="label">{{ a.label }}</span>
+              <span
+                v-if="a.desc"
+                class="desc"
+              >{{ a.desc }}</span>
+            </div>
+          </div>
+          <span class="arrow">▶</span>
+        </button>
+      </div>
+    </div>
+    
+    <!-- CATCH ANIMS SECTION -->
+    <div class="debug-section">
+      <h3 class="section-title" style="color: #ffd700; border-bottom-color: Rgba(255, 215, 0, 0.3);">
+        FASES DE CAPTURA
+      </h3>
+      <div class="button-list">
+        <button
+          v-for="a in DEBUG_CATCH_ANIMS"
+          :key="a.id"
+          class="debug-btn-long"
+          style="background: Rgba(40, 30, 0, 0.4); border-color: Rgba(255, 215, 0, 0.2);"
+          @click.stop="triggerAnim(a.id)"
+        >
+          <div class="btn-content">
+            <span class="icon">{{ a.icon }}</span>
+            <div class="text">
+              <span class="label" style="color: #fef3c7;">{{ a.label }}</span>
+            </div>
+          </div>
+          <span class="arrow" style="color: #f59e0b;">▶</span>
         </button>
       </div>
     </div>

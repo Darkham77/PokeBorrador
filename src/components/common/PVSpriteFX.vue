@@ -95,7 +95,7 @@ const statusEmoji = computed(() => {
     burn: '🔥',
     poison: '☠️',
     sleep: '💤',
-    paralyze: '⚡',
+    paralysis: '⚡',
     freeze: '🧊'
   }
   return (props.status ? (map as Record<string, string>)[props.status] : null) || null
@@ -104,17 +104,36 @@ const statusEmoji = computed(() => {
 // GSAP Logic for particles and persistent effects
 const particlesRef = ref<HTMLElement[]>([])
 const spriteRef = ref<HTMLElement | null>(null)
+let retryCount = 0
 const activeTweens: gsap.core.Tween[] = []
 
 const refreshPersistentFX = () => {
-  if (!spriteRef.value || isSimplified.value) return
+  if (!spriteRef.value) return
+  
+  // Usar nextTick para asegurar que el slot esté renderizado
+  const target = spriteRef.value.querySelector('img')
+  
+  if (props.status) {
+    console.log(`[PVSpriteFX] Persistent FX: status=${props.status}, target=${!!target}`)
+  }
+  
+  if (!target && retryCount < 3) {
+    retryCount++
+    setTimeout(refreshPersistentFX, 100)
+    return
+  }
+
+  retryCount = 0
   
   // Clean previous
+  if (target) gsap.killTweensOf(target)
   activeTweens.forEach(t => t.kill())
   activeTweens.length = 0
   
-  const target = spriteRef.value.querySelector('img')
   if (!target) return
+
+  // 0. Reset previous state
+  gsap.set(target, { clearProps: 'filter,x,y,rotation' })
 
   // 1. Cursed Aura (Pulse purple drop-shadow)
   if (props.isCursed) {
@@ -159,6 +178,72 @@ const refreshPersistentFX = () => {
       repeat: -1,
       ease: 'sine.inOut'
     }))
+  }
+
+  // --- MIGRATED STATUS EFFECTS ---
+  
+  // 5. Burn (Red/Orange Pulse)
+  if (props.status === 'burn') {
+    activeTweens.push(gsap.fromTo(target, 
+      { filter: 'Drop-Shadow(0 0 5px #ff4500) Brightness(1) Saturate(1.2)' },
+      {
+        filter: 'Drop-Shadow(0 0 15px #ff8c00) Brightness(1.3) Saturate(1.8)',
+        duration: 1.0,
+        yoyo: true,
+        repeat: -1,
+        ease: 'sine.inOut'
+      }
+    ))
+  }
+
+  // 6. Poison (Purple Glow)
+  if (props.status === 'poison') {
+    activeTweens.push(gsap.fromTo(target, 
+      { filter: 'Drop-Shadow(0 0 2px #9400d3) Brightness(1) Saturate(1)' },
+      {
+        filter: 'Drop-Shadow(0 0 12px #9400d3) Brightness(0.8) Saturate(1.4) hue-rotate(10deg)',
+        duration: 2.0,
+        yoyo: true,
+        repeat: -1,
+        ease: 'sine.inOut'
+      }
+    ))
+  }
+
+  // 7. Paralyze (Yellow Jitter)
+  if (props.status === 'paralysis') {
+    activeTweens.push(gsap.fromTo(target,
+      { filter: 'Drop-Shadow(0 0 2px #ffd700) Brightness(1.2)' },
+      {
+        filter: 'Drop-Shadow(0 0 8px #ffd700) Brightness(1.4) contrast(1.2)',
+        duration: 0.05,
+        x: 1,
+        yoyo: true,
+        repeat: -1,
+        ease: 'none'
+      }
+    ))
+  }
+
+  // 8. Freeze (Ice Blue / Cyan)
+  if (props.status === 'freeze') {
+    activeTweens.push(gsap.set(target, {
+      filter: 'Drop-Shadow(0 0 20px #00ffff) Brightness(1.6) contrast(0.7) Saturate(0.3)'
+    }))
+  }
+
+  // 9. Sleep (Dark/Dim)
+  if (props.status === 'sleep') {
+    activeTweens.push(gsap.fromTo(target,
+      { filter: 'Brightness(1) Saturate(1)' },
+      {
+        filter: 'Brightness(0.5) contrast(0.8) Saturate(0.5)',
+        duration: 2.0,
+        yoyo: true,
+        repeat: -1,
+        ease: 'sine.inOut'
+      }
+    ))
   }
 }
 

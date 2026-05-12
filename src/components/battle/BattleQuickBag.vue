@@ -54,7 +54,7 @@ const handleUseItem = (item: BattleItem) => {
 
   // 1. Pokéballs: Uso directo
   if (dbItem.cat === 'pokeballs') {
-    battleStore.useItemInBattle(dbItem.name)
+    battleStore.useItemInBattle(dbItem.name, null, dbItem.id)
     return
   }
 
@@ -175,7 +175,7 @@ const handleUseItem = (item: BattleItem) => {
   display: flex;
   justify-content: center;
   align-items: center;
-  overflow: hidden;
+  overflow: visible !important; // Permitir que el badge se asome un poco abajo
 
   &::after {
     content: '';
@@ -212,6 +212,7 @@ const handleUseItem = (item: BattleItem) => {
   display: flex;
   align-items: center;
   justify-content: center;
+  transform: Translatey(-4px); // Subir un poco el item para dejar aire al badge
   // Permitir que el sprite sea más grande que el contenedor
   position: relative;
   
@@ -237,7 +238,7 @@ const handleUseItem = (item: BattleItem) => {
 
 .item-qty-badge {
   position: absolute;
-  bottom: 2px; // Más abajo
+  bottom: -8px; // Pegado al borde inferior del contenedor
   left: 50%;
   transform: Translatex(-50%); // Centrado horizontalmente
   background: Rgba(0, 0, 0, 0.85);

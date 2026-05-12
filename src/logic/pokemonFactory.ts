@@ -296,6 +296,7 @@ export function makePokemon(id: string, level: number, options: PokemonCreationO
     status: null, sleepTurns: 0, friendship: 70, vigor,
     heldItem,
     nickname: null,
+    tags: ['ball:pokeball'],
     obtainedAt: Temporal.Now.instant().epochMilliseconds,
     hp: 0, maxHp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0
   };

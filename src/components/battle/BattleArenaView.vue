@@ -69,17 +69,24 @@ battleStore.animations = {
   handleCatchRequest: animations.handleCatchRequest,
   handleReleaseRequest: animations.handleReleaseRequest,
   handleShakeRequest: animations.handleShakeRequest,
-  handleFaintAnim: animations.handleFaintAnim
+  handleFaintAnim: animations.handleFaintAnim,
+  playCatchCelebration: animations.playCatchCelebration,
+  playBallFadeOut: animations.playBallFadeOut
 }
 const {
-  isWildEntryAnimation, isWildSilhouette, wildRevealActive, upcomingIsEmerging, isEmerging,
-  isInitialLoad, isCaptureSequenceActive, caughtPokemonSnapshot,
+  wildRevealActive, isEmerging,
+  isInitialLoad, isCaptureSequenceActive,
   isFaintInProgress, faintedPokemonSnapshot,
-  playerAnimState, enemyAnimState, activePokeballId, catchSparkles,
+    playerAnimState,
+    enemyAnimState,
+    playerActivePokeballId,
+    enemyActivePokeballId,
+    catchSparkles,
   playerCaptureActive, enemyCaptureActive,
   playerIsShaking, playerIsBlinking, enemyIsShaking, enemyIsBlinking,
   isIntroInProgress, triggerSearchEncounter, initListeners,
-  trainerAnimState, isTrainerVisible, isGlobalFadeActive
+  trainerAnimState, isTrainerVisible, isGlobalFadeActive,
+  resetAll
 } = animations
 
 
@@ -266,23 +273,9 @@ watch(
     // REWARDS_PHASE + EMPTY_WAIT: Limpieza completa de rastros del Pokémon
     if (newState === 'REWARDS_PHASE' && newSubState === 'EMPTY_WAIT') {
       logger.info('BattleArenaView', '-> EMPTY_WAIT (REWARDS_PHASE)')
-      isWildEntryAnimation.value = false
-      isEmerging.value = false
-      isWildSilhouette.value = false
-      wildRevealActive.value = false
-      upcomingIsEmerging.value = false
-      isFaintInProgress.value = false
-      faintedPokemonSnapshot.value = null
-      enemyAnimState.value = null
-      playerAnimState.value = null
-      caughtPokemonSnapshot.value = null
-      catchSparkles.value = []
-      playerCaptureActive.value = false
-      enemyCaptureActive.value = false
-      enemyIsShaking.value = false
-      enemyIsBlinking.value = false
-      playerIsShaking.value = false
-      playerIsBlinking.value = false
+      resetAll()
+
+      battleStore.attackerSide = null
 
       battleStore.attackerSide = null
       battleStore.activeMove = null
@@ -413,11 +406,12 @@ watch(() => battleStore.isBattleActive, (active) => {
             side="enemy"
             :pokemon="activeEnemyData as Pokemon"
             :position="p2Pos"
+            :target-position="p1Pos"
             :base-size="BASE_ENTITY_SIZE_ENEMY"
             :ground-y="enemyGroundY"
             :shadow-key="currentEnemyShadowKey"
             :anim-state="enemyAnimState"
-            :ball-id="activePokeballId"
+            :ball-id="enemyActivePokeballId"
             :is-shaking="enemyIsShaking"
             :is-blinking="enemyIsBlinking"
             :is-silhouette="activeEnemyIsSilhouette"
@@ -431,6 +425,7 @@ watch(() => battleStore.isBattleActive, (active) => {
             :suppress-fx="isSearching || isIntroInProgress"
             :stages="battleStore.enemyStages"
             :hidden="isEnemyTechnicalHidden"
+            :has-seat="!!battleStore.state?.enemy"
           />
 
           <!-- Arbustos Adelante --
@@ -460,10 +455,12 @@ watch(() => battleStore.isBattleActive, (active) => {
             side="player"
             :pokemon="player"
             :position="p1Pos"
+            :target-position="p2Pos"
             :base-size="BASE_ENTITY_SIZE_PLAYER"
             :ground-y="playerGroundY"
             :shadow-key="currentPlayerShadowKey"
             :anim-state="playerAnimState"
+            :ball-id="playerActivePokeballId"
             :is-shaking="playerIsShaking"
             :is-blinking="playerIsBlinking"
             :is-attacking="battleStore.attackerSide === 'player'"
@@ -474,6 +471,7 @@ watch(() => battleStore.isBattleActive, (active) => {
             :stages="battleStore.playerStages"
             :is-fainting="isFaintInProgress && faintedPokemonSnapshot?.side === 'player'"
             :hidden="isPlayerTechnicalHidden"
+            :has-seat="!!battleStore.state?.player"
           />
         </div>
       </VirtualSpace>

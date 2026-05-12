@@ -19,6 +19,7 @@ interface ItemUsageOptions {
   consumeItem: (itemName: string) => void;
   fsm?: BattleStore['fsm'];
   ctx?: BattleContext;
+  itemId?: string;
 }
 
 export async function handleItemUsage(itemName: string, p: Pokemon, e: Pokemon, options: ItemUsageOptions) {
@@ -47,7 +48,7 @@ export async function handleItemUsage(itemName: string, p: Pokemon, e: Pokemon, 
     
     // 1. Iniciar animación de entrada (energía azul)
     audio.ballHit()
-    gameBus.emit('PLAY_CATCH_ENERGY', { side: 'enemy', ballId: itemName })
+    gameBus.emit('PLAY_CATCH_ENERGY', { side: 'enemy', ballId: options.itemId || itemName })
     
     // Esperar a que el Pokémon termine de entrar en la bola (800ms aprox)
     await sleep(1000)
@@ -63,7 +64,6 @@ export async function handleItemUsage(itemName: string, p: Pokemon, e: Pokemon, 
       await sleep(1000)
     }
 
-    // 3. Resultado final
     if (caught) {
       // Pequeña pausa dramática antes del click de éxito
       await sleep(500)
@@ -74,6 +74,22 @@ export async function handleItemUsage(itemName: string, p: Pokemon, e: Pokemon, 
       gameBus.emit('CATCH_SUCCESS', { side: 'enemy' })
       addLog(`¡Ya está! ¡${e.name} atrapado!`, 'log-catch', e)
       
+      // Guardar el tipo de bola en los tags para persistencia visual
+      e.tags = e.tags || []
+      const normalizedBallId = (options.itemId || itemName).toLowerCase()
+        .replace(/ /g, '')
+        .replace(/[áàäâ]/g, 'a')
+        .replace(/[éèëê]/g, 'e')
+        .replace(/[íìïî]/g, 'i')
+        .replace(/[óòöô]/g, 'o')
+        .replace(/[úùüû]/g, 'u')
+        .replace(/bola/g, 'ball')
+        .replace(/_/g, '') // Eliminar guiones bajos de IDs técnicos si vienen de itemId
+      
+      if (!e.tags.some(t => t.startsWith('ball:'))) {
+        e.tags.push(`ball:${normalizedBallId}`)
+      }
+
       // Captured!
       if (options.fsm) {
         options.fsm.transition('ACTIVE_BATTLE', 'ADD_TO_STORAGE')
@@ -87,11 +103,22 @@ export async function handleItemUsage(itemName: string, p: Pokemon, e: Pokemon, 
       }
       gameBus.emit('CATCH_BREAK', { side: 'enemy' })
       addLog(`¡Oh, no! ¡El Pokémon se ha escapado!`, 'log-info', e)
-      // Trigger energy release animation because it broke free
-      gameBus.emit('PLAY_RELEASE_ENERGY', { side: 'enemy' })
       
-      // Wait for release animation to finish before showing HUD again
-      await sleep(800)
+      if (options.ctx?.animations?.handleReleaseRequest) {
+        await options.ctx.animations.handleReleaseRequest({ side: 'enemy' })
+      } else {
+        // Trigger energy release animation because it broke free
+        gameBus.emit('PLAY_RELEASE_ENERGY', { side: 'enemy' })
+        // Wait for release animation to finish before showing HUD again
+        await sleep(800)
+      }
+      
+      if (options.fsm) {
+        await options.fsm.transition('ACTIVE_BATTLE', 'FADEOUT_BALL')
+        if (options.ctx?.animations?.playBallFadeOut) {
+          await options.ctx.animations.playBallFadeOut('enemy')
+        }
+      }
     }
   } else {
     // Entrada de entrenador (siempre, para feedback inmediato)

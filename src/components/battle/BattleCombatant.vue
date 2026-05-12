@@ -30,6 +30,7 @@ interface Props {
   side: 'player' | 'enemy'
   pokemon?: Pokemon | null
   position: { x: number; y: number }
+  targetPosition?: { x: number; y: number } | null
   baseSize: number
   groundY?: string
   shadowKey?: string | null
@@ -47,6 +48,7 @@ interface Props {
   isEmerging?: boolean
   suppressFX?: boolean
   hidden?: boolean
+  hasSeat?: boolean
   stages?: Partial<BattleStages>
 }
 
@@ -68,15 +70,18 @@ const props = withDefaults(defineProps<Props>(), {
   isEmerging: false,
   suppressFX: false,
   hidden: false,
-  stages: () => ({})
+  stages: () => ({}),
+  targetPosition: null
 })
 
 const emit = defineEmits<{
   (e: 'load', size: { w: number; h: number }): void
+  (e: 'animationEnd', type: 'attack' | 'faint' | 'damage'): void
 }>()
 
 const naturalSize = ref({ w: 0, h: 0 })
 const animSeed = Math.random()
+
 
 const isPlayer = computed(() => props.side === 'player')
 
@@ -142,6 +147,8 @@ const localGroundY = computed(() => {
   return props.groundY
 })
 
+const fxScale = computed(() => props.baseSize / 100)
+
 const stickyCoords = computed(() => {
   const shadow = currentShadow.value
   let left = '50%'
@@ -159,6 +166,23 @@ const stickyCoords = computed(() => {
   
   return { top, left }
 })
+
+const isBallVisible = computed(() => {
+  return props.animState === 'trapped' || 
+         props.animState === 'catching' || 
+         props.animState === 'releasing' || 
+         props.isCaptureSuccess
+})
+
+const internalBallId = ref('pokeball')
+const memorizedBallCoords = ref({ top: '90%', left: '50%' })
+
+watch(isBallVisible, (visible) => {
+  if (visible) {
+    internalBallId.value = props.ballId || 'pokeball'
+    memorizedBallCoords.value = { ...stickyCoords.value }
+  }
+}, { immediate: true })
 
 const handleImageError = (e: Event) => {
   (e.target as HTMLImageElement).src = getAssetUrl(ASSET_TYPES.ENVIRONMENT, 'tall-grass')
@@ -192,8 +216,9 @@ const triggerStatArrow = (stat: string, dir: 'up' | 'down') => {
   })
 }
 
-// GSAP Animations
 const spriteRef = ref<HTMLElement | null>(null)
+const spriteRotationRef = ref<HTMLElement | null>(null)
+const shadowWrapperRef = ref<HTMLElement | null>(null)
 
 watch(() => props.isEmerging, (val) => {
   if (val && spriteRef.value) {
@@ -207,15 +232,46 @@ watch(() => props.isEmerging, (val) => {
 
 watch(() => props.isFainting, (val) => {
   if (val && spriteRef.value) {
-    gsap.to(spriteRef.value, {
-      opacity: 0,
-      y: 60,
-      duration: 0.8,
-      ease: "power2.in",
-      onStart: () => {
-        gsap.to(spriteRef.value, { opacity: 0, duration: 0.05, repeat: 10, yoyo: true })
-      }
+    const tl = gsap.timeline()
+    
+    // Desactivamos la transition CSS nativa de .sprite-animator (que era de 0.8s y causaba el fade en vez del parpadeo)
+    gsap.set(spriteRef.value, { transition: "none" })
+    
+    // 1. Ocultar la sombra instantáneamente
+    if (shadowWrapperRef.value) {
+      gsap.set(shadowWrapperRef.value, { display: "none" })
+    }
+
+    // Marca de inicio de caída
+    tl.addLabel("fallStart")
+
+    // 2. Caer
+    tl.to(spriteRef.value, { 
+      y: 60, 
+      duration: 1.0, 
+      ease: "power2.in" 
+    }, "fallStart") 
+    
+    // 3. Patrón de parpadeos de frecuencia constante
+    const blinkPattern = [
+      { t: 0.05, op: 0 }, { t: 0.13, op: 1 },
+      { t: 0.21, op: 0 }, { t: 0.29, op: 1 },
+      { t: 0.37, op: 0 }, { t: 0.45, op: 1 },
+      { t: 0.53, op: 0 }, { t: 0.61, op: 1 },
+      { t: 0.69, op: 0 }, { t: 0.77, op: 1 },
+      { t: 0.85, op: 0 }, { t: 0.93, op: 1 },
+      { t: 0.98, op: 0 } // Queda totalmente invisible al terminar la caída
+    ]
+
+    blinkPattern.forEach(b => {
+      tl.set(spriteRef.value, { opacity: b.op }, `fallStart+=${b.t}`)
     })
+  } else if (!val && spriteRef.value) {
+    // Al finalizar el estado de debilitamiento, limpiamos todo (incluyendo la anulación de transition)
+    gsap.set(spriteRef.value, { clearProps: "opacity,y,transition" })
+    if (shadowWrapperRef.value) {
+      gsap.set(shadowWrapperRef.value, { clearProps: "display" })
+    }
   }
 })
 
@@ -243,37 +299,315 @@ watch(() => props.isAttacking, (val) => {
     const cat = props.activeMove.cat
     const tl = gsap.timeline()
     
+    // Calcular vector hacia el objetivo (si no hay objetivo, usar dirección lateral por defecto)
+    let nx = isPlayerSide ? 1 : -1
+    let ny = isPlayerSide ? -0.5 : 0.5
+    
+    if (props.targetPosition) {
+      const scale = (WORLD_CONSTANTS as any).OBJECT_SCALE || 2
+      const mySize = props.baseSize * scale
+      // Deducimos el tamaño base del objetivo usando las constantes
+      const targetBase = isPlayerSide ? WORLD_CONSTANTS.BASE_ENTITY_SIZE_ENEMY : WORLD_CONSTANTS.BASE_ENTITY_SIZE_PLAYER
+      const targetSize = targetBase * scale
+      
+      const myCenterX = props.position.x + (mySize / 2)
+      const myCenterY = props.position.y + (mySize / 2)
+      
+      const targetCenterX = props.targetPosition.x + (targetSize / 2)
+      const targetCenterY = props.targetPosition.y + (targetSize / 2)
+
+      const dx = targetCenterX - myCenterX
+      const dy = targetCenterY - myCenterY
+      const length = Math.sqrt(dx * dx + dy * dy)
+      if (length > 0) {
+        nx = dx / length
+        ny = dy / length
+      }
+    }
+    
     if (cat === 'physical' || !cat) {
-      const dashDist = isPlayerSide ? 60 : -60
-      const prepDist = isPlayerSide ? -15 : 15
-      tl.to(spriteRef.value, { x: prepDist, duration: 0.1 })
-        .to(spriteRef.value, { x: dashDist, scale: 1.1, duration: 0.15, ease: "power2.out" })
-        .to(spriteRef.value, { x: 0, scale: 1, duration: 0.15, ease: "power1.inOut" })
+      const dashDist = 60
+      const prepDist = -15
+      
+      tl.to(spriteRef.value, { x: nx * prepDist, y: ny * prepDist, duration: 0.1 })
+        .to(spriteRef.value, { x: nx * dashDist, y: ny * dashDist, scale: 1.1, duration: 0.15, ease: "power2.out" })
+        .to(spriteRef.value, { x: 0, y: 0, scale: 1, duration: 0.15, ease: "power1.inOut" })
     } else if (cat === 'special') {
-      const pulseDist = isPlayerSide ? 15 : -15
-      tl.to(spriteRef.value, { 
-        x: pulseDist, 
-        scale: 1.15, 
-        filter: "Brightness(1.4)", 
-        duration: 0.2, 
-        yoyo: true, 
-        repeat: 1,
-        ease: "power2.out"
-      })
+      const pulseDist = 15
+      tl.fromTo(spriteRef.value, 
+        { filter: "Brightness(1)", x: 0, y: 0, scale: 1 },
+        { 
+          x: nx * pulseDist, 
+          y: ny * pulseDist, 
+          scale: 1.15, 
+          filter: "Brightness(1.4)", 
+          duration: 0.2, 
+          yoyo: true, 
+          repeat: 1,
+          ease: "power2.out"
+        }
+      )
     } else if (cat === 'status') {
+      // Calculamos la rotación según la inclinación del vector para que parezca apuntar al objetivo
       const rot = isPlayerSide ? 12 : -12
-      tl.to(spriteRef.value, { 
-        rotation: rot, 
-        scale: 1.1, 
-        filter: "Brightness(1.2)", 
-        duration: 0.2, 
-        yoyo: true, 
-        repeat: 1,
-        ease: "power2.out"
-      })
+      tl.fromTo(spriteRotationRef.value, 
+        { filter: "Brightness(1)", rotation: 0, scale: 1 },
+        { 
+          rotation: rot, 
+          scale: 1.1, 
+          filter: "Brightness(1.2)", 
+          duration: 0.2, 
+          yoyo: true, 
+          repeat: 1,
+          ease: "power2.out"
+        }
+      )
     }
   }
 })
+
+// --- ANIMACIONES DE ESTADO (FLASH) ---
+watch(() => props.pokemon?.status, (newS, oldS) => {
+  if (newS && newS !== oldS && spriteRotationRef.value) {
+    const statusColors: Record<string, string> = {
+      burn: '#ff4500',
+      poison: '#9400d3',
+      paralysis: '#ffd700',
+      freeze: '#00ffff',
+      sleep: '#ffffff'
+    }
+    const color = statusColors[newS] || '#ffffff'
+    gsap.fromTo(spriteRotationRef.value,
+      { filter: `Drop-Shadow(0 0 0px ${color}) Brightness(1)` },
+      { 
+        filter: `Drop-Shadow(0 0 20px ${color}) Brightness(2)`, 
+        duration: 0.25, 
+        yoyo: true, 
+        repeat: 3, 
+        ease: "power1.inOut" 
+      }
+    )
+  }
+})
+
+// Pokéball & Captures GSAP
+const pokeballImgRef = ref<HTMLImageElement | null>(null)
+let successBlinkTween: gsap.core.Tween | null = null
+
+watch(() => [props.isShaking, props.isBlinking], ([shaking, blinking]) => {
+  // Si hay una Pokebola visible, la animamos a ella
+  if (pokeballImgRef.value) {
+    if (shaking) {
+      gsap.to(pokeballImgRef.value, {
+        keyframes: [
+          { rotation: 18, duration: 0.08, ease: 'power1.out' },
+          { rotation: -18, duration: 0.16, ease: 'power1.inOut' },
+          { rotation: 12, duration: 0.14, ease: 'power1.inOut' },
+          { rotation: -12, duration: 0.14, ease: 'power1.inOut' },
+          { rotation: 0, duration: 0.08, ease: 'power1.in' }
+        ]
+      })
+    }
+    if (blinking) {
+      gsap.fromTo(pokeballImgRef.value,
+        { filter: 'Brightness(1)' },
+        { filter: 'Brightness(2) Hue-Rotate(10deg)', duration: 0.2, yoyo: true, repeat: 1, ease: 'power1.inOut' }
+      )
+    }
+  } 
+  // Si NO hay Pokebola, animamos al Sprite del Pokémon (Daño en combate)
+  else if (!props.isCaptureSuccess) {
+    if (shaking && spriteRotationRef.value) {
+      const shakeDist = props.side === 'player' ? -10 : 10
+      // Usamos spriteRotationRef para que la sombra (que está fuera) NO parpadee ni se mueva
+      gsap.set(spriteRotationRef.value, { transition: "none" })
+      
+      // Movimiento físico
+      gsap.fromTo(spriteRotationRef.value,
+        { x: 0 },
+        { 
+          x: shakeDist, 
+          duration: 0.08, 
+          yoyo: true, 
+          repeat: 5, 
+          ease: 'power1.inOut',
+          onComplete: () => gsap.set(spriteRotationRef.value, { clearProps: "x,opacity,transition" })
+        }
+      )
+
+      // Flicker de daño (como debilitamiento pero más corto)
+      const tl = gsap.timeline()
+      const blinkPattern = [
+        { t: 0.00, op: 0 }, { t: 0.08, op: 1 },
+        { t: 0.16, op: 0 }, { t: 0.24, op: 1 },
+        { t: 0.32, op: 0 }, { t: 0.40, op: 1 },
+        { t: 0.48, op: 1 }
+      ]
+      blinkPattern.forEach(b => {
+        tl.set(spriteRotationRef.value, { opacity: b.op }, b.t)
+      })
+    }
+    if (blinking && spriteRotationRef.value) {
+      const shakeDist = props.side === 'player' ? -10 : 10
+      gsap.set(spriteRotationRef.value, { transition: "none" })
+      gsap.fromTo(spriteRotationRef.value,
+        { x: 0, filter: 'Brightness(1)' },
+        { 
+          x: shakeDist,
+          filter: 'Brightness(2)', 
+          duration: 0.08, 
+          yoyo: true, 
+          repeat: 5, 
+          ease: 'power1.inOut',
+          onComplete: () => gsap.set(spriteRotationRef.value, { clearProps: "x,filter,transition" })
+        }
+      )
+    }
+  }
+})
+
+watch(() => props.isCaptureSuccess, (success) => {
+  if (!pokeballImgRef.value) return
+  if (success) {
+    successBlinkTween = gsap.fromTo(pokeballImgRef.value,
+      { filter: 'Brightness(1)' },
+      { filter: 'Brightness(1.8) Sepia(0.5) Hue-Rotate(-10deg)', duration: 0.25, yoyo: true, repeat: -1, ease: 'power1.inOut' }
+    )
+  } else {
+    if (successBlinkTween) {
+      successBlinkTween.kill()
+      successBlinkTween = null
+    }
+    gsap.to(pokeballImgRef.value, { filter: 'Brightness(1)', duration: 0.1 })
+  }
+})
+
+const onSparkleEnter = (el: Element, done: () => void) => {
+  const htmlEl = el as HTMLElement
+  const tx = parseFloat(htmlEl.dataset.tx || '0')
+  const ty = parseFloat(htmlEl.dataset.ty || '0')
+  const tf = parseFloat(htmlEl.dataset.tf || '0')
+  const delay = parseFloat((htmlEl.dataset.delay || '0s').replace('s', ''))
+  const scale = parseFloat(htmlEl.dataset.scale || '1')
+
+  // Reset inicial forzado para evitar flashes o estados quietos
+  gsap.set(htmlEl, { 
+    x: 0, 
+    y: 0, 
+    xPercent: -50, 
+    yPercent: -50, 
+    scale: 0, 
+    opacity: 1,
+    rotation: 0
+  })
+
+  // Animación Horizontal y Rotación (Toda la duración)
+  gsap.to(htmlEl, {
+    x: tx,
+    rotation: 720,
+    duration: 0.8,
+    delay: delay,
+    ease: 'power1.out'
+  })
+
+  // Fase 1: Salto hacia arriba (Fountain Up)
+  gsap.to(htmlEl, {
+    y: ty,
+    scale: scale,
+    duration: 0.3,
+    delay: delay,
+    ease: 'power2.out',
+    onComplete: () => {
+      // Fase 2: Caída y desvanecimiento (Fountain Down)
+      gsap.to(htmlEl, {
+        y: tf,
+        opacity: 0,
+        duration: 0.5,
+        ease: 'power2.in',
+        onComplete: done
+      })
+    }
+  })
+}
+
+const onStatArrowEnter = (el: Element, done: () => void) => {
+  gsap.fromTo(el, 
+    { y: 20, opacity: 0, scale: 0.5 },
+    {
+      y: -60,
+      opacity: 0,
+      scale: 1,
+      duration: 1,
+      ease: "power1.out",
+      onStart: () => {
+        gsap.to(el, { opacity: 1, duration: 0.2 })
+        gsap.to(el, { scale: 1.2, duration: 0.2 })
+      },
+      onComplete: done
+    }
+  )
+}
+
+const onGroundPopEnter = (el: Element, done: () => void) => {
+  const isSpikes = el.classList.contains('spikes')
+  gsap.fromTo(el,
+    { scale: 0, y: isSpikes ? 10 : 20, rotation: isSpikes ? -10 : 0, opacity: 0 },
+    { 
+      scale: 1, 
+      y: isSpikes ? 0 : 5, 
+      rotation: 0, 
+      opacity: 1, 
+      duration: isSpikes ? 0.4 : 0.6, 
+      ease: 'back.out(1.7)', 
+      onComplete: () => {
+        done()
+        if (isSpikes) {
+           gsap.to(el.querySelectorAll('.spike-item'), {
+             y: -10,
+             scaleY: 1.1,
+             scaleX: 0.9,
+             duration: 0.8,
+             yoyo: true,
+             repeat: -1,
+             ease: 'power1.inOut',
+             stagger: 0.1
+           })
+        } else {
+           gsap.to(el.querySelectorAll('.root-item'), {
+             y: 2,
+             scale: 1.03,
+             filter: 'Brightness(1.2)',
+             duration: 1.5,
+             yoyo: true,
+             repeat: -1,
+             ease: 'power1.inOut'
+           })
+        }
+      }
+    }
+  )
+}
+
+const onGroundPopLeave = (el: Element, done: () => void) => {
+  gsap.to(el, { scale: 0, opacity: 0, duration: 0.3, onComplete: done })
+}
+
+const onBallEnter = (el: Element, done: () => void) => {
+  gsap.fromTo(el, 
+    { opacity: 0, scale: 0.5 }, 
+    { opacity: 1, scale: 1, duration: 0.4, ease: 'back.out(1.7)', onComplete: done }
+  )
+}
+
+const onBallLeave = (el: Element, done: () => void) => {
+  gsap.to(el, { 
+    opacity: 0, 
+    scale: 0.8, 
+    duration: 0.3,
+    ease: 'power2.in', 
+    onComplete: done 
+  })
+}
 </script>
 
 <template>
@@ -286,20 +620,23 @@ watch(() => props.isAttacking, (val) => {
     :h="baseSize"
   >
     <div
-      v-if="animState !== 'trapped' && !isCaptureSuccess"
+      v-if="hasSeat && animState !== 'trapped' && !isCaptureSuccess"
       ref="spriteRef"
       class="sprite-animator"
+      :style="{ '--fx-scale': fxScale }"
       :class="[{ 
         'is-attacking': isAttacking,
         'is-technical-hidden': hidden
       }, getAttackAnimClass]"
     >
       <!-- Sombra integrada (Sigue el dash pero no el flotado) -->
-      <CombatShadow 
-        v-if="shadowKey" 
-        :shadow-id="shadowKey" 
-        :style="{ '--shadow-y': localGroundY }"
-      />
+      <div ref="shadowWrapperRef" class="combat-shadow-wrapper">
+        <CombatShadow 
+          v-if="shadowKey" 
+          :shadow-id="shadowKey" 
+          :style="{ '--shadow-y': localGroundY }"
+        />
+      </div>
 
       <!-- Capa de Efectos de Suelo (Sigue la sombra, ignora el float) -->
       <div 
@@ -307,7 +644,7 @@ watch(() => props.isAttacking, (val) => {
         :style="{ top: localGroundY }"
       >
         <!-- Púas -->
-        <Transition name="ground-fx-pop">
+        <Transition @enter="onGroundPopEnter" @leave="onGroundPopLeave" :css="false">
           <div
             v-if="(stages.spikes || 0) > 0"
             :key="`spikes-${side}-${stages.spikes || 0}`"
@@ -322,7 +659,7 @@ watch(() => props.isAttacking, (val) => {
         </Transition>
         
         <!-- Arraigo -->
-        <Transition name="ground-fx-pop">
+        <Transition @enter="onGroundPopEnter" @leave="onGroundPopLeave" :css="false">
           <div
             v-if="pokemon.ingrain"
             :key="`ingrain-${side}`"
@@ -334,6 +671,7 @@ watch(() => props.isAttacking, (val) => {
       </div>
 
       <div
+        ref="spriteRotationRef"
         class="sprite-rotation-layer"
         :class="[getAttackAnimClass, { 'is-floating-species': isFloating }]"
       >
@@ -357,20 +695,20 @@ watch(() => props.isAttacking, (val) => {
             :is-shiny="pokemon.isShiny"
             :is-guardian="pokemon.isGuardian"
             :is-silhouette="isSilhouette"
-            :status="(!isSilhouette && !suppressFX ? pokemon.status : null) as any"
-            :is-confused="!isSilhouette && !suppressFX && (pokemon.confused || 0) > 0"
-            :is-cursed="!isSilhouette && !suppressFX && pokemon.cursed"
-            :is-seeded="!isSilhouette && !suppressFX && pokemon.seeded"
-            :is-trapped="!!(!isSilhouette && !suppressFX && (pokemon.trapped || (pokemon.bound && pokemon.bound > 0)))"
-            :attracted="!isSilhouette && !suppressFX && pokemon.attracted"
-            :is-focus-energy="!isSilhouette && !suppressFX && pokemon.focusEnergy"
-            :is-protected="!isSilhouette && !suppressFX && (pokemon.protect || pokemon.detect)"
-            :is-enduring="!isSilhouette && !suppressFX && pokemon.endure"
-            :is-lock-on="!isSilhouette && !suppressFX && pokemon.lockOn"
-            :has-reflect="!isSilhouette && !suppressFX && (stages.reflect || 0) > 0"
-            :has-light-screen="!isSilhouette && !suppressFX && (stages.lightScreen || 0) > 0"
-            :has-safeguard="!isSilhouette && !suppressFX && (stages.safeguard || 0) > 0"
-            :has-mist="!isSilhouette && !suppressFX && (stages.mist || 0) > 0"
+            :status="(pokemon.status) as any"
+            :is-confused="(pokemon.confused || 0) > 0"
+            :is-cursed="pokemon.cursed"
+            :is-seeded="pokemon.seeded"
+            :is-trapped="!!(pokemon.trapped || (pokemon.bound && pokemon.bound > 0))"
+            :attracted="pokemon.attracted"
+            :is-focus-energy="pokemon.focusEnergy"
+            :is-protected="(pokemon.protect || pokemon.detect)"
+            :is-enduring="pokemon.endure"
+            :is-lock-on="pokemon.lockOn"
+            :has-reflect="(stages.reflect || 0) > 0"
+            :has-light-screen="(stages.lightScreen || 0) > 0"
+            :has-safeguard="(stages.safeguard || 0) > 0"
+            :has-mist="(stages.mist || 0) > 0"
             :vibrant="true"
             :sparkle-count="8"
             :style="virtualStyle"
@@ -396,7 +734,7 @@ watch(() => props.isAttacking, (val) => {
           
           <!-- Flechas de Stats -->
           <div class="stat-arrows-container">
-            <TransitionGroup name="stat-arrow">
+            <TransitionGroup @enter="onStatArrowEnter" :css="false">
               <div 
                 v-for="a in statArrows" 
                 :key="a.id"
@@ -411,20 +749,20 @@ watch(() => props.isAttacking, (val) => {
     </div>
 
     <!-- Poké Ball visual -->
-    <Transition name="ball-fade">
+    <Transition 
+      :css="false"
+      @enter="onBallEnter" 
+      @leave="onBallLeave"
+    >
       <div
-        v-if="animState === 'trapped' || animState === 'catching' || animState === 'releasing' || isCaptureSuccess"
+        v-if="isBallVisible"
         :key="`ball-${side}-${pokemon.uid || pokemon.id}`"
         class="trapped-pokeball"
-        :class="{ 
-          'is-shaking': isShaking,
-          'is-blinking': isBlinking,
-          'is-success': isCaptureSuccess
-        }"
-        :style="stickyCoords"
+        :style="memorizedBallCoords"
       >
         <img
-          :src="getAssetUrl(ASSET_TYPES.ITEM, ballId)"
+          ref="pokeballImgRef"
+          :src="getAssetUrl(ASSET_TYPES.ITEM, internalBallId)"
           alt="Pokeball"
           @error="handleBallError"
         >
@@ -435,23 +773,23 @@ watch(() => props.isAttacking, (val) => {
         />
 
         <!-- Success Sparkles (Centradas en la bola) -->
-        <div
-          v-if="sparkles.length > 0"
+        <TransitionGroup 
+          tag="div"
           class="catch-success-sparkles"
+          :css="false"
+          @enter="onSparkleEnter"
         >
           <span
             v-for="s in sparkles"
             :key="s.id"
             class="sparkle"
-            :style="{ 
-              '--tx': s.tx, 
-              '--ty': s.ty, 
-              '--tf': s.tf,
-              '--scale': s.scale,
-              'animation-delay': s.delay 
-            }"
+            :data-tx="s.tx"
+            :data-ty="s.ty"
+            :data-tf="s.tf"
+            :data-scale="s.scale"
+            :data-delay="s.delay"
           >✨</span>
-        </div>
+        </TransitionGroup>
       </div>
     </Transition>
   </VirtualEntity>
@@ -484,7 +822,6 @@ watch(() => props.isAttacking, (val) => {
       height: 100%;
       object-fit: contain;
       object-position: center;
-      transition: filter 0.4s ease-in-out; // Permitir que el color brote del negro suavemente
       @include pixelated;
       &.is-silhouette { 
         @include pokemon-silhouette;
@@ -532,17 +869,8 @@ watch(() => props.isAttacking, (val) => {
   justify-content: center;
   overflow: visible;
 
-  &.atk-default.is-attacking, &.atk-physical.is-attacking { animation: attack-dash-enemy 0.4s ease-out; }
-  &.atk-special.is-attacking { animation: attack-pulse-enemy 0.4s ease-out; }
-
-  .player-side-sprite & {
-    &.atk-default.is-attacking, &.atk-physical.is-attacking { animation: attack-dash-player 0.4s ease-out; }
-    &.atk-special.is-attacking { animation: attack-pulse-player 0.4s ease-out; }
-  }
-
   &.fainted {
     .sprite-idle-wrapper {
-      animation: pokemon-faint 0.8s ease-in forwards !important;
       pointer-events: none;
     }
   }
@@ -567,11 +895,6 @@ watch(() => props.isAttacking, (val) => {
     margin-bottom: 40px; 
     @media (max-width: 690px) { margin-bottom: 18px; } 
   }
-
-  &.atk-status { 
-    animation: attack-status-enemy 0.4s ease-out; 
-    .player-side-sprite & { animation: attack-status-player 0.4s ease-out; }
-  }
 }
 
 .energy-catching {
@@ -585,8 +908,8 @@ watch(() => props.isAttacking, (val) => {
   transform-origin: 50% var(--shadow-y, 90%);
 }
 
-.ball-fade-enter-active, .ball-fade-leave-active { transition: opacity 0.2s ease-in-out; }
-.ball-fade-enter-from, .ball-fade-leave-to { opacity: 0; }
+.ball-fade-enter-active, .ball-fade-leave-active { transition: opacity 0.3s ease-in-out !important; }
+.ball-fade-enter-from, .ball-fade-leave-to { opacity: 0 !important; }
 
 .trapped-pokeball {
   position: absolute;
@@ -608,19 +931,7 @@ watch(() => props.isAttacking, (val) => {
     object-fit: contain;
     transform-origin: 50% 70%;
   }
-
-  &.is-shaking img { animation: pokeball-wobble 0.6s ease-in-out; }
-  &.is-blinking img { animation: pokeball-shake-blink 0.4s ease-in-out; }
-  &.is-shaking.is-blinking img { animation: pokeball-wobble 0.6s ease-in-out, pokeball-shake-blink 0.4s ease-in-out; }
-  &.is-success img { animation: pokeball-success-blink 0.5s ease-in-out infinite; }
 }
-
-@keyframes pokeball-shake-blink { 0%, 100% { will-change: transform, filter, opacity;
-  filter: Brightness(1); } 50% { will-change: transform, filter, opacity;
-  filter: Brightness(2) Hue-Rotate(10deg); } }
-@keyframes pokeball-success-blink { 0%, 100% { will-change: transform, filter, opacity;
-  filter: Brightness(1); } 50% { will-change: transform, filter, opacity;
-  filter: Brightness(1.8) Sepia(0.5) Hue-Rotate(-10deg); } }
 
 .pokeball-shadow {
   position: absolute;
@@ -649,20 +960,13 @@ watch(() => props.isAttacking, (val) => {
     position: absolute;
     top: 50%;
     left: 50%;
+    display: block;
     font-size: calc(var(--obj-scale, 1) * 12px);
-    transform: Translate(-50%, -50%);
-    animation: catch-sparkle-out 0.8s ease-out forwards;
     @include pixelated;
     text-shadow: 0 0 5px Rgba(255, 215, 0, 0.8);
     will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 0 2px white);
   }
-}
-
-@keyframes pokeball-wobble {
-  0%, 100% { transform: Rotate(0deg); }
-  25% { transform: Rotate(-20deg); }
-  75% { transform: Rotate(20deg); }
 }
 
 .ground-effects-container {
@@ -685,7 +989,7 @@ watch(() => props.isAttacking, (val) => {
   
   &.spikes {
     .spike-item {
-      font-size: 28px;
+      font-size: calc(var(--fx-scale, 1) * 28px);
       display: inline-block;
       animation: 
         ground-pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards,
@@ -700,7 +1004,7 @@ watch(() => props.isAttacking, (val) => {
   
   &.ingrain {
     .root-item {
-      font-size: 42px;
+      font-size: calc(var(--fx-scale, 1) * 42px);
       display: inline-block;
       transform: Translatey(5px);
       animation: 
@@ -720,11 +1024,6 @@ watch(() => props.isAttacking, (val) => {
   transform: Scale(0);
 }
 
-@keyframes catch-sparkle-out {
-  0% { transform: Translate(-50%, -50%) Scale(0) Rotate(0deg); opacity: 1; }
-  100% { transform: Translate(calc(-50% + var(--tx) * 1px), calc(-50% + var(--tf) * 1px)) Scale(0) Rotate(720deg); opacity: 0; }
-}
-
 .stat-arrows-container {
   position: absolute;
   inset: 0;
@@ -737,21 +1036,11 @@ watch(() => props.isAttacking, (val) => {
 
 .stat-arrow {
   position: absolute;
-  font-size: 40px;
+  font-size: calc(var(--fx-scale, 1) * 40px);
   font-weight: bold;
   text-shadow: 0 0 10px Rgba(0,0,0,0.5);
   
   &.up { color: #4ade80; }
   &.down { color: #f87171; }
-}
-
-.stat-arrow-enter-active {
-  animation: stat-arrow-anim 1s ease-out forwards;
-}
-
-@keyframes stat-arrow-anim {
-  0% { transform: Translatey(20px); opacity: 0; scale: 0.5; }
-  20% { transform: Translatey(0); opacity: 1; scale: 1.2; }
-  100% { transform: Translatey(-60px); opacity: 0; scale: 1; }
 }
 </style>

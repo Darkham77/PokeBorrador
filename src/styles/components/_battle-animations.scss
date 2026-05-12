@@ -106,41 +106,7 @@
   filter: Drop-Shadow(0 0 8px gold); }
 }
 
-/* --- Sprite Animations --- */
-@keyframes attackRight {
-  0%   { transform: translate3d(0, 0, 0); }
-  30%  { transform: translate3d(28px, 0, 0); }
-  60%  { transform: translate3d(-6px, 0, 0); }
-  100% { transform: translate3d(0, 0, 0); }
-}
 
-@keyframes attackLeft {
-  0%   { transform: translate3d(0, 0, 0); }
-  30%  { transform: translate3d(-28px, 0, 0); }
-  60%  { transform: translate3d(6px, 0, 0); }
-  100% { transform: translate3d(0, 0, 0); }
-}
-
-@keyframes takeDamage {
-  0%   { will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  filter: Brightness(1) Drop-Shadow(0 0 0px red); }
-  20%  { will-change: transform, filter, opacity;
-  filter: Brightness(3) Drop-Shadow(0 0 12px red); }
-  40%  { will-change: transform, filter, opacity;
-  filter: Brightness(0.3) Drop-Shadow(0 0 8px red); }
-  60%  { will-change: transform, filter, opacity;
-  filter: Brightness(2) Drop-Shadow(0 0 6px red); }
-  80%  { will-change: transform, filter, opacity;
-  filter: Brightness(1) Drop-Shadow(0 0 0px red); }
-  100% { will-change: transform, filter, opacity;
-  filter: Brightness(1) Drop-Shadow(0 4px 12px Rgba(0, 0, 0, 0.7)); }
-}
-
-@keyframes faintAnim {
-  0%   { transform: translate3d(0, 0, 0); opacity: 1; }
-  100% { transform: translate3d(0, 40px, 0); opacity: 0; }
-}
 
 // ENCOUNTER_ANIM: El Pokémon salta hacia arriba al salir de los arbustos (JUMP_SHADOW)
 @keyframes pokemon-jump {
@@ -159,10 +125,7 @@
   100% { transform: Translate(calc(var(--tx, 0) * 1px), calc(var(--tf, 0) * 1px)) Scale(calc(var(--scale, 1) * 0.3)); opacity: 0; }
 }
 
-.anim-attack-right { animation: attackRight 0.4s ease !important; }
-.anim-attack-left  { animation: attackLeft 0.4s ease !important; }
-.anim-damage       { animation: takeDamage 0.5s ease !important; }
-.anim-faint        { animation: faintAnim 0.6s ease forwards !important; }
+
 
 /* Move Tooltip Premium Style */
 .bat-move-tooltip {

@@ -22,10 +22,11 @@ A **Seat** is a fixed position on the battlefield where a Pokémon is rendered a
 
 - **Current Support**: Currently, the game only supports 1v1 (Seat 1 vs Seat 2). Seats 3 and 4 are reserved for future 2vs2 development.
 - **Empty State**: A seat is **Empty** if there is no active Pokémon from its associated Team Slot.
-- **Mandatory Suppression**: If a seat is empty, **NO Pokémon MUST be rendered** under any circumstances.
-- **Master Signal for HUDs**: Seat occupancy is the **atomic trigger** for Combat HUD visibility.
-  - `Seat != Null` ➔ HUD is Visible (Entry animation triggered).
-  - `Seat == Null` ➔ HUD is Hidden (Exit animation triggered).
+- **Selective Suppression (Pokémon & FX Only)**: If a seat is empty, only the **Pokémon sprite, its shadow, and associated visual effects** (Status particles, specific auras, or temporary filters) MUST be hidden.
+- **Object Persistence**: Non-Pokémon elements (e.g., Poké Balls, energy beams, projectiles, field items) are **NOT** affected by seat-based invisibility. They must follow their own animation lifecycle regardless of seat occupancy.
+- **Master Signal for HUDs**: Seat occupancy acts as the **trigger** for Combat HUD entry/exit animations, but the HUDs manage their own visibility independently of the Pokémon's suppression flag.
+  - `Seat != Null` ➔ HUD triggers Entry animation.
+  - `Seat == Null` ➔ HUD triggers Exit animation.
 
 ### 2. Team Slots (Data Participants)
 
@@ -224,10 +225,10 @@ The **General HUD** (Move list, Chat, Player Shortcuts, Inventory access) MUST N
 
 #### Animated Combat HUDs
 
-The **Combat HUDs** (HP bars, Exp bars, Level, Name, Status icons for both sides) follow a **Strict Seat-Based Visibility** rule. Entry and exit animations are triggered automatically based on the occupancy of the respective Seat.
+The **Combat HUDs** (HP bars, Exp bars, Level, Name, Status icons for both sides) synchronize their state with the occupancy of the respective Seat. They handle their own visibility through GSAP animations (Entry/Exit) and are **never** hidden by the global Pokémon invisibility flag.
 
-- **Seat Occupied**: HUD triggers its entry animation and remains visible.
-- **Seat Empty (Null)**: HUD triggers its exit animation and remains hidden.
+- **Seat Occupied**: HUD triggers its entry animation (Slide/Fade In) and remains interactive.
+- **Seat Empty (Null)**: HUD triggers its exit animation (Slide/Fade Out).
 
 #### Transition Discipline (The "Seat" Rule)
 
@@ -271,6 +272,14 @@ To ensure absolute continuity during proactive pre-generation and transitions, t
 - **Ground Recalculation**: Every new encounter (even with the same species) must trigger a fresh "Feet Detection" scan to prevent inheriting miscalculated ground-offsets from previous battles.
 - **Orphan Shadow Cleanup**: When a combatant is replaced (switch) or captured, the system MUST explicitly hide the previous `shadowId`. Relying on component unmounting is insufficient for the centralized store; active tracking of the `lastShadowId` is mandatory to prevent "orphan shadows" on the battlefield.
 - **Flying Species Exclusion**: Pokémon with "Flying Aesthetics" (`isFloating`) MUST NOT render environmental layers (bushes). The system must conditionally suppress the `visible` prop of `CombatGrass` based on the species' flight status to maintain visual logic.
+
+### 5. Poké Ball Rendering (RENDER BALL) & Persistent Anchors
+
+To prevent the Poké Ball from "jumping" during withdrawal and sending sequences:
+
+- **Persistent Coordinate Storage**: The component or orchestrator in charge of the Poké Ball animation MUST store the Pokémon's **shadow coordinates** in a persistent internal state.
+- **Vacuum Transition**: When a Pokémon leaves its seat (Vacate Seat), the Poké Ball MUST NOT reset its position to 0 or a default value. It MUST "remember" the last detected shadow coordinates of that seat to ensure the energy beam and the ball itself remain anchored to the physical point of departure.
+- **State Integrity**: This coordinate snapshot MUST persist until the animation sequence (Recall/Call) is fully finalized, even if the `activePokemon` reference in the seat changes or becomes `null`.
 
 ## 🏗️ Rendering Pipeline Stabilization
   
@@ -518,13 +527,16 @@ stateDiagram-v2
 ```mermaid
 stateDiagram-v2
     state CATCH_PROCESS {
-        [*] --> CATCH_SHAKE : Shake Logic
+        [*] --> RENDER_BALL : "Throw Ball"
+        RENDER_BALL --> CATCH_SHAKE : Shake Logic
         CATCH_SHAKE --> CATCH_BREAK : Escaped
         CATCH_SHAKE --> CATCH_SUCCESS : Capture Success
         CATCH_SUCCESS --> ADD_TO_STORAGE : addPokemon(tgt)
         ADD_TO_STORAGE --> VACATE_SEAT : "Free Seat"
-        CATCH_BREAK --> [*]
-        VACATE_SEAT --> [*]
+        VACATE_SEAT --> FADEOUT_BALL : "Finalize (0.3s)"
+        CATCH_BREAK --> FADEOUT_BALL : "Ball Breaks (0.3s)"
+        FADEOUT_BALL --> [*]
+        note right of RENDER_BALL: MUST capture and store the target's shadow coordinates PERSISTENTLY.
         note right of CATCH_SHAKE: await
     }
     note left of CATCH_PROCESS: UI blocks Pokeball selection if target is TRAINER
@@ -691,6 +703,7 @@ To maintain a cinematic feel, the post-capture sequence follows a strictly timed
 To maintain the "Search Phase" premium feel, certain animations MUST NOT be simplified or removed:
 
 - **Poké Ball Wobble**: The physical balanceo of the ball during capture attempts is a core mechanical feedback and MUST be preserved in `BattleCombatant.vue` keyframes.
+- **Persistent Anchor Storage**: During the catch sequence, the Poké Ball MUST capture and store the target's shadow coordinates PERSISTENTLY. This ensures that if the capture fails or succeeds, the ball remains anchored to the exact spot where the Pokémon was, preventing visual jumps during the "burst" or "success" FX.
 - **Energy Shake/Blink**: The pulsing light effect inside the ball during the "shaking" phase must remain active to signify the capture struggle.
 - **Sparkle Coordination**: Success particles MUST be synchronized with the exact frame the ball clicks shut to reinforce the success signal.
 
@@ -760,9 +773,10 @@ stateDiagram-v2
         [*] --> RENDER_BALL: Pokeball_appears
         RENDER_BALL --> ENERGY_RECALL: PLAY_ENERGY_RECALL
         ENERGY_RECALL --> VACATE_SEAT: Free Seat
-        VACATE_SEAT --> [*]
+        VACATE_SEAT --> FADEOUT_BALL: "Disappear (0.3s)"
+        FADEOUT_BALL --> [*]
         
-        note right of RENDER_BALL: MUST use the cached SHADOW coordinates of the LEAVING member.
+        note right of RENDER_BALL: MUST store the shadow coordinates PERSISTENTLY in the orchestrator. Uses the cached coordinates of the LEAVING member.
         note right of ENERGY_RECALL: Shrinking Blue Energy FX (Sprite -> Ball)
     }
 ```
@@ -776,9 +790,10 @@ stateDiagram-v2
         RENDER_BALL --> OCCUPY_SEAT: Assign Seat
         OCCUPY_SEAT --> ENERGY_RELEASE: PLAY_ENERGY_RELEASE
         ENERGY_RELEASE --> POKEMON_APPEAR: Show_Sprite
-        POKEMON_APPEAR --> [*]
+        POKEMON_APPEAR --> FADEOUT_BALL: "Disappear (0.3s)"
+        FADEOUT_BALL --> [*]
         
-        note right of RENDER_BALL: MUST use the cached SHADOW coordinates of the ENTERING member.
+        note right of RENDER_BALL: MUST capture and store the shadow coordinates PERSISTENTLY. Uses the cached coordinates of the ENTERING member.
         note right of ENERGY_RELEASE: Expanding Blue Energy FX (Ball -> Sprite)
     }
 ```

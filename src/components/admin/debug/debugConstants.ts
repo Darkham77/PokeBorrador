@@ -22,7 +22,7 @@ export const DEBUG_SOUNDS = [
 export const DEBUG_STATUS_CONDITIONS = [
   { id: 'burn', label: 'QUEMADO', icon: '🔥' },
   { id: 'poison', label: 'ENVENENADO', icon: '☠️' },
-  { id: 'paralyze', label: 'PARALIZADO', icon: '⚡' },
+  { id: 'paralysis', label: 'PARALIZADO', icon: '⚡' },
   { id: 'sleep', label: 'DORMIDO', icon: '💤' },
   { id: 'freeze', label: 'CONGELADO', icon: '🧊' },
   { id: 'null', label: 'LIMPIAR', icon: '✨' }
@@ -41,17 +41,23 @@ export const DEBUG_SECONDARY_EFFECTS = [
   { id: 'lock_on', label: 'F. BLANCO', icon: '👁️' }
 ]
 
-export const DEBUG_SYSTEM_ANIMS = [
-  { id: 'emergence', label: 'INTRO FASE 1', icon: '🌄', desc: 'Entrada saltando desde arbustos.' },
-  { id: 'reveal', label: 'INTRO FASE 3', icon: '👁️', desc: 'Revelar desde silueta.' },
-  { id: 'catch', label: 'ENERGÍA CAPTURA', icon: '📥' },
-  { id: 'release', label: 'ENERGÍA SALIDA', icon: '📤' },
-  { id: 'shake', label: 'SACUDIDA BALL', icon: '🫨' },
+export const DEBUG_ENCOUNTER_ANIMS = [
+  { id: 'emergence', label: '1. SALTO ARBUSTO', icon: '🌄', desc: 'Entrada saltando desde arbustos.' },
+  { id: 'reveal', label: '2. REVELAR SILUETA', icon: '👁️', desc: 'Revelar desde silueta.' },
+  { id: 'encounter', label: 'SECUENCIA COMPLETA', icon: '✨', desc: 'Secuencia completa (Salto + Reveal).' }
+]
+
+export const DEBUG_COMBAT_ANIMS = [
   { id: 'shake_damage', label: 'SACUDIDA DAÑO', icon: '💢' },
-  { id: 'blink', label: 'PARPADEO', icon: '💡' },
-  { id: 'success', label: 'ÉXITO CAPTURA', icon: '🌟' },
-  { id: 'faint', label: 'DEBILITAMIENTO', icon: '💀' },
-  { id: 'encounter', label: 'ENCUENTRO FULL', icon: '✨', desc: 'Secuencia completa (Salto + Reveal).' }
+  { id: 'blink', label: 'PARPADEO BRILLOSO', icon: '💡' },
+  { id: 'faint', label: 'DEBILITAMIENTO', icon: '💀' }
+]
+
+export const DEBUG_CATCH_ANIMS = [
+  { id: 'catch', label: 'FASE 1: RAYO ATRAPAR', icon: '📥' },
+  { id: 'shake', label: 'FASE 2: SACUDIDA', icon: '🫨' },
+  { id: 'success', label: 'FASE 3: ÉXITO (CLIC)', icon: '🌟' },
+  { id: 'release', label: 'FALLA: ESCAPAR', icon: '📤' }
 ]
 
 export const DEBUG_ATTACK_FX = [
