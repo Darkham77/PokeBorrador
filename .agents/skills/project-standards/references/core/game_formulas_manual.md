@@ -40,18 +40,18 @@ The category of a move (Physical or Special) is determined strictly by its **Typ
 - **Physical Types**: `normal`, `fighting`, `flying`, `poison`, `ground`, `rock`, `bug`, `ghost`, `steel`.
 - **Special Types**: `fire`, `water`, `grass`, `electric`, `psychic`, `ice`, `dragon`, `dark`.
 
-#### B. Stat Modifiers (A & D)
+#### B. Gen 2 Stat Modifiers (A & D)
 
 - **A**: Attacker's Attack or Sp. Attack (reduced to 50% if the attacker is burned and the move is physical).
 - **D**: Defender's Defense or Sp. Defense.
 
-#### C. Critical Hits
+#### C. Gen 2 Critical Hits
 
 - **Multiplier**: `2.0x`.
 - **Stat Reset Rule**: If a critical hit is triggered, any stat drops on the attacker (`A`) are ignored, and any stat boosts on the defender (`D`) are ignored.
 - **Base Probability**: 6.25% (`1/16`).
 
-#### D. Final Multipliers
+#### D. Gen 2 Final Multipliers
 
 `Final Damage = floor(Damage * STAB * Effectiveness * Random)`
 
@@ -67,12 +67,12 @@ Used when `ACTIVE_RULE_SET === 4` or higher. Applies the following rules:
 
 The category of a move is determined exclusively by the move's individual metadata: `physical`, `special`, or `status`.
 
-#### B. Stat Modifiers (A & D)
+#### B. Gen 4+ Stat Modifiers (A & D)
 
 - **A**: Attacker's Attack or Sp. Attack (reduced to 50% if the attacker is burned and the move is physical).
 - **D**: Defender's Defense or Sp. Defense.
 
-#### C. Critical Hits
+#### C. Gen 4+ Critical Hits
 
 - **Multiplier**:
   - Gen 4-5: `2.0x`.
@@ -80,7 +80,7 @@ The category of a move is determined exclusively by the move's individual metada
 - **Rule**: Ignores any stat drops on the attacker and any stat boosts on the defender unconditionally.
 - **Immunity**: Attacks against Pokémon with the `Shell Armor` or `Battle Armor` abilities cannot trigger a critical hit.
 
-#### D. Final Multipliers
+#### D. Gen 4+ Final Multipliers
 
 `Final Damage = floor(Damage * STAB * Ability * Effectiveness * Random * Critical * Weather * Item)`
 

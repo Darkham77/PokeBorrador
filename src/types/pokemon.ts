@@ -137,6 +137,7 @@ export interface Pokemon {
   pts?: number;
   futureSightTurns?: number;
   futureSightDmg?: number;
+  chargingMove?: Move | null;
   aura?: string;
 }
 

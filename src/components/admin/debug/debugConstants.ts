@@ -103,7 +103,7 @@ export const DEBUG_WEATHER_EFFECTS: DebugItem[] = [
   { id: 'snow', label: 'NIEVE', icon: '❄️', desc: 'Nieve suave. Sube la Defensa de tipos Hielo.' },
   { id: 'blizzard', label: 'VENTISCA', icon: '🌬️', desc: 'Tormenta de nieve. Daño por turno a no-Hielo.' },
   { id: 'fog', label: 'NIEBLA', icon: '🌫️', desc: 'Niebla densa. Reduce la precisión de todos los Pokémon.' },
-  { id: 'mist', label: 'BRUMA', icon: '🌫️', desc: 'Neblina ligera. Efecto puramente atmosférico.' },
+  { id: 'mist', label: 'BRUMA', icon: '🌫️', desc: 'Humedad ambiental ligera que reduce suavemente la precisión.' },
   { id: 'sandstorm', label: 'T. ARENA', icon: '🏜️', desc: 'Tormenta de arena. Daño por turno a no-Tierra/Roca/Acero.' },
   { id: 'wind', label: 'VIENTO', icon: '🍃', desc: 'Viento suave. Facilita el vuelo.' },
   { id: 'strong_winds', label: 'V. FUERTES', icon: '🌀', desc: 'Vientos huracanados. Debilita ataques tipo Volador.' }

@@ -148,10 +148,19 @@ const handleTriggerClick = (event: MouseEvent) => {
   })
 }
 
-const formattedDescription = computed(() => {
-  if (!props.description) return ''
-  // Wrap common symbols/emojis for alignment (including Nature triangles, seasons, and time cycles)
-  return props.description.replace(/(▲|▼|↑|↓|⬆|⬇|🔼|🔽|🔺|🔻|🔴|🟢|ℹ️|⚡|✨|⚠️|⭐|🛡️|♂️|♀️|🌸|☀️|🍂|❄️|🌅|🌇|🌙|🏙️|🌉|🌧️|🌫️|🌨️|🏜️|🔥|💨|🍃)/gu, '<span class="symbol-align">$1</span>')
+const descriptionSegments = computed(() => {
+  if (!props.description) return []
+  // Regex with capturing group: split will include the symbols in the array
+  const symbolsRegex = /(▲|▼|↑|↓|⬆|⬇|🔼|🔽|🔺|🔻|🔴|🟢|ℹ️|⚡|✨|⚠️|⭐|🛡️|♂️|♀️|🌸|☀️|🍂|❄️|🌅|🌇|🌙|🏙️|🌉|🌧️|🌫️|🌨️|🏜️|🔥|💨|🍃)/gu
+  const parts = props.description.split(symbolsRegex)
+  
+  return parts.filter(p => p !== undefined && p !== '').map(p => {
+    const isSymbol = symbolsRegex.test(p)
+    return {
+      text: p,
+      isSymbol
+    }
+  })
 })
 
 const handleMouseEnter = () => {
@@ -203,12 +212,25 @@ onUnmounted(() => {
               v-if="title"
               class="pv-tooltip-title"
             >{{ title }}</span>
-            <!-- eslint-disable-next-line vue/no-v-html -->
             <span
               v-if="description"
               class="pv-tooltip-desc"
-              v-html="formattedDescription"
-            />
+            >
+              <template
+                v-for="(seg, idx) in descriptionSegments"
+                :key="idx"
+              >
+                <span
+                  v-if="seg.isSymbol"
+                  class="symbol-align"
+                  :class="{ 
+                    'is-boost': seg.text === '▲' || seg.text === '↑' || seg.text === '⬆' || seg.text === '🔼' || seg.text === '🔺',
+                    'is-debuff': seg.text === '▼' || seg.text === '↓' || seg.text === '⬇' || seg.text === '🔽' || seg.text === '🔻'
+                  }"
+                >{{ seg.text }}</span>
+                <template v-else>{{ seg.text }}</template>
+              </template>
+            </span>
             <slot name="content" />
           </div>
           <div class="tooltip-arrow" />
@@ -277,6 +299,15 @@ onUnmounted(() => {
       margin: 0 2px;
       transform: Translatey(-1px);
       font-size: 1.2em; 
+
+      &.is-boost {
+        color: #4ade80; // Green
+        filter: Drop-Shadow(0 0 2px Rgba(74, 222, 128, 0.4));
+      }
+      &.is-debuff {
+        color: #f87171; // Red
+        filter: Drop-Shadow(0 0 2px Rgba(248, 113, 113, 0.4));
+      }
     }
   }
 

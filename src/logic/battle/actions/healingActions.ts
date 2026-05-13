@@ -1,5 +1,4 @@
 import type { MoveAction } from '@/types/battle';
-import { getDayCycle } from '@/logic/timeUtils';
 import { getMechanicalWeather, WEATHER_MECHANICAL } from '../weatherMapper.ts';
 
 export const HEALING_ACTIONS: Record<string, MoveAction> = {
@@ -27,11 +26,8 @@ export const HEALING_ACTIONS: Record<string, MoveAction> = {
     } else if (badWeathers.includes(mechWeather)) {
       healPct = 0.25;
     } else {
-      // Prioridad 2: Ciclo horario (Mecánica RPG extendida)
-      const cycle = getDayCycle();
-      if (cycle === 'day' || cycle === 'morning') healPct = 0.66;
-      else if (cycle === 'dusk') healPct = 0.33;
-      else if (cycle === 'night') healPct = 0.25;
+      // Clear weather (Default)
+      healPct = 0.5;
     }
     
     const hwAmt = Math.floor(src.maxHp * healPct);

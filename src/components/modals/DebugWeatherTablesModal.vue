@@ -543,8 +543,8 @@ function formatRouteName(id: string) {
         line-height: 1;
       }
       
-      &.boost .mod-icon { color: var(--green); }
-      &.debuff .mod-icon { color: var(--orange); }
+      &.boost .mod-icon { color: #4ade80; }
+      &.debuff .mod-icon { color: #f87171; }
       &.block .mod-icon { color: var(--red); }
     }
   }

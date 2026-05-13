@@ -186,8 +186,8 @@ export const WEATHER_VISUAL_METADATA: Record<string, { icon: string; label: stri
   },
   'mist': {
     icon: '🌫️',
-    label: 'NEBLINA',
-    description: 'Humedad ambiental ligera que reduce suavemente la visibilidad.'
+    label: 'BRUMA',
+    description: 'Humedad ambiental ligera que reduce suavemente la precisión.'
   },
   'strong_winds': {
     icon: '🌀',

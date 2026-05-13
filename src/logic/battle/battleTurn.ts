@@ -139,6 +139,21 @@ export async function runPlayerAction(store: BattleContext, moveIndex: number) {
   store.addLog(`¡${p.name} usó ${move.name}!`, 'log-player', p)
 
   let executableMove: Move = { ...move };
+  
+  // Charging moves logic (Solar Beam)
+  const weather = store.activeBattle.value?.weather?.type;
+  const mechWeather = getMechanicalWeather(weather);
+  const isSunny = mechWeather === WEATHER_MECHANICAL.SUN;
+
+  if (p.chargingMove) {
+    executableMove = { ...p.chargingMove };
+    p.chargingMove = null;
+    store.addLog(`¡${p.name} lanzó el ataque cargado!`, 'log-info', p);
+  } else if (executableMove.id === 'solar_beam' && !isSunny) {
+    p.chargingMove = { ...executableMove };
+    store.addLog(`¡${p.name} está reuniendo luz solar!`, 'log-info', p);
+    return;
+  }
   if (move.effect === 'metronome') {
     const moveNames = Object.keys(MOVE_DATA).filter(n => n !== 'Metrónomo');
     const randomName = moveNames[Math.floor(Math.random() * moveNames.length)] || 'Combate';
@@ -379,6 +394,21 @@ export async function runEnemyAction(store: BattleContext) {
   store.addLog(`¡${e.name} usó ${enemyMove.name}!`, 'log-enemy', e)
 
   let executableMove: Move = { ...enemyMove };
+
+  // Charging moves logic (Solar Beam)
+  const weather = store.activeBattle.value?.weather?.type;
+  const mechWeather = getMechanicalWeather(weather);
+  const isSunny = mechWeather === WEATHER_MECHANICAL.SUN;
+
+  if (e.chargingMove) {
+    executableMove = { ...e.chargingMove };
+    e.chargingMove = null;
+    store.addLog(`¡${e.name} lanzó el ataque cargado!`, 'log-info', e);
+  } else if (executableMove.id === 'solar_beam' && !isSunny) {
+    e.chargingMove = { ...executableMove };
+    store.addLog(`¡${e.name} está reuniendo luz solar!`, 'log-info', e);
+    return;
+  }
   if (enemyMove.effect === 'metronome') {
     const moveNames = Object.keys(MOVE_DATA).filter(n => n !== 'Metrónomo');
     const randomName = moveNames[Math.floor(Math.random() * moveNames.length)] || 'Combate';

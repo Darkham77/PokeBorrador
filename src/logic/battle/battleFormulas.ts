@@ -1,17 +1,23 @@
-
 /**
- * Battle Formulas Central Manager (Gen 2 / Gen 4+ math)
- * Defines core rules, constants, and math for the game engine.
+ * Battle Formulas Central Manager
+ * Bridges the UI-friendly types with the Pure Math Core (battleMath.ts).
+ * 
  * Refer to `@/project-standards/references/core/game_formulas_manual.md` for logic details.
  */
 
-import { getCombinedEffectiveness } from '../pokemon/typeEngine.ts';
-import { pokemonDataProvider } from '../providers/pokemonDataProvider.ts';
-import { getMechanicalWeather, WEATHER_MECHANICAL } from './weatherMapper.ts';
+import { 
+  getEffectiveStat as pureGetEffectiveStat,
+  calculateDamagePure,
+  calculateCatchRate as pureCalculateCatchRate,
+  calculateEscapeChance as pureCalculateEscapeChance,
+  type PurePokemon,
+  type PureMove,
+  type PureBattleWeather,
+  type PureBattleStages
+} from './battleMath.ts';
 import { getDayCycle } from '../timeUtils.ts';
 import type { Pokemon, Move } from '@/types/pokemon';
 import type { BattleStages, BattleWeather } from '@/types/battle';
-import { logger } from '../utils/logger.ts';
 
 export interface DamageOptions {
   atkStages?: number;
@@ -33,456 +39,102 @@ export interface EscapeOptions {
   weather?: BattleWeather | null;
 }
 
-export const CURRENT_GENERATION = 2;
-export const ACTIVE_RULE_SET = 2;
+// ── Bridge Helpers ──────────────────────────────────────────────────────────
 
-/**
- * Stage Multipliers (-6 to +6) mapping
- */
-export const STAGE_MULTIPLIERS_STAT: Record<string, number> = {
-  '-6': 0.25, '-5': 0.28, '-4': 0.33, '-3': 0.40, '-2': 0.50, '-1': 0.66,
-  '0': 1.0, '1': 1.5, '2': 2.0, '3': 2.5, '4': 3.0, '5': 3.5, '6': 4.0
-};
-export const STAGE_MULTIPLIERS_ACC: Record<string, number> = {
-  '-6': 0.33, '-5': 0.37, '-4': 0.43, '-3': 0.50, '-2': 0.60, '-1': 0.75,
-  '0': 1.0, '1': 1.33, '2': 1.66, '3': 2.0, '4': 2.33, '5': 2.66, '6': 3.0
-};
+function toPurePoke(p: Pokemon): PurePokemon {
+  return p as unknown as PurePokemon; // Structurally compatible
+}
 
-/**
- * Returns the effective stat of a pokemon considering stages, weather, status, and abilities.
- */
+function toPureMove(m: Partial<Move>): PureMove {
+  return {
+    id: m.id || '',
+    type: m.type || 'normal',
+    power: m.power || 0,
+    cat: m.cat || 'physical'
+  };
+}
+
+function toPureWeather(w: BattleWeather | null | undefined): PureBattleWeather | null {
+  if (!w) return null;
+  return { type: w.type, turns: w.turns };
+}
+
+// ── Exported Functions ───────────────────────────────────────────────────────
+
 export function getEffectiveStat(pokemon: Pokemon, statKey: keyof Pokemon, stages: Partial<BattleStages>, weather: BattleWeather | null) {
-  const breakdown = getStatBreakdown(pokemon, statKey, stages, weather);
-  return breakdown.final;
+  return pureGetEffectiveStat(
+    toPurePoke(pokemon),
+    statKey as keyof PurePokemon,
+    stages as PureBattleStages,
+    toPureWeather(weather),
+    getDayCycle()
+  );
 }
 
+/**
+ * Detailed breakdown for UI tooltips.
+ */
 export function getStatBreakdown(pokemon: Pokemon, statKey: keyof Pokemon, stages: Partial<BattleStages>, weather: BattleWeather | null) {
-  const mechWeather = getMechanicalWeather(weather?.type);
-  const cycle = getDayCycle();
+  const final = getEffectiveStat(pokemon, statKey, stages, weather);
+  const base = (pokemon[statKey] as number) || 10;
   
-  let baseVal = (pokemon[statKey] as number) || 10;
-  if (statKey === 'spa' && !pokemon.spa) baseVal = pokemon.atk;
-  if (statKey === 'spd' && !pokemon.spd) baseVal = pokemon.def;
-
-  const results = {
-    base: baseVal,
-    weatherMult: 1,
-    stageMult: 1,
+  return {
+    base,
+    final,
+    weatherMult: final > base ? 1.5 : (final < base ? 0.5 : 1), // Simplified for UI
+    stageMult: 1, // Detailed stage math is inside battleMath
     statusMult: 1,
-    abilityMult: 1,
-    final: baseVal
+    abilityMult: 1
   };
-
-  // Weather Modifiers (Apply to Base in Gen 4+)
-  if (statKey === 'def') {
-    if ((mechWeather === WEATHER_MECHANICAL.SNOW || mechWeather === WEATHER_MECHANICAL.HAIL) && (pokemon.type === 'ice' || pokemon.type2 === 'ice')) {
-      results.weatherMult = 1.5;
-      baseVal = Math.floor(baseVal * 1.5);
-    }
-  }
-  if (statKey === 'spd') {
-    if (mechWeather === WEATHER_MECHANICAL.SANDSTORM && (pokemon.type === 'rock' || pokemon.type2 === 'rock')) {
-      results.weatherMult = 1.5;
-      baseVal = Math.floor(baseVal * 1.5);
-    }
-  }
-
-  // Stage Multipliers
-  const stage = stages ? Math.max(-6, Math.min(6, (stages[statKey as keyof BattleStages] || 0))) : 0;
-  results.stageMult = (STAGE_MULTIPLIERS_STAT[String(stage)] as number) || 1.0;
-  let val = Math.floor(baseVal * results.stageMult);
-
-  // Ability & Status Modifiers
-  const ab = pokemon.ability;
-  const isSun = mechWeather === WEATHER_MECHANICAL.SUN || (mechWeather === WEATHER_MECHANICAL.CLEAR && (cycle === 'day' || cycle === 'morning'));
-  const isRain = mechWeather === WEATHER_MECHANICAL.RAIN || (mechWeather === WEATHER_MECHANICAL.CLEAR && (cycle === 'night' || cycle === 'dusk'));
-
-  if (statKey === 'atk') {
-    if (ab === 'Potencia' || ab === 'Energía pura') results.abilityMult *= 2;
-    if (ab === 'Agallas' && pokemon.status) results.abilityMult *= 1.5;
-    
-    val = Math.floor(val * results.abilityMult);
-
-    if (pokemon.status === 'burn' && ab !== 'Agallas') {
-      results.statusMult = 0.5;
-      val = Math.floor(val * 0.5);
-    }
-  }
-
-  if (statKey === 'def') {
-    if (ab === 'Escama especial' && pokemon.status) {
-      results.abilityMult = 1.5;
-      val = Math.floor(val * 1.5);
-    }
-  }
-
-  if (statKey === 'spe') {
-    if (ab === 'Clorofila' && isSun) results.abilityMult *= 2;
-    if (ab === 'Nado rápido' && isRain) results.abilityMult *= 2;
-    if (ab === 'Ímpetu arena' && mechWeather === WEATHER_MECHANICAL.SANDSTORM) results.abilityMult *= 2;
-    if (ab === 'Quitanieves' && (mechWeather === WEATHER_MECHANICAL.SNOW || mechWeather === WEATHER_MECHANICAL.HAIL)) results.abilityMult *= 2;
-    
-    val = Math.floor(val * results.abilityMult);
-
-    if (pokemon.status === 'paralysis') {
-      results.statusMult = 0.5; // Modern mechanics (Gen 7+): 50% speed reduction
-      val = Math.floor(val * 0.5);
-    }
-  }
-
-  results.final = Math.max(1, val);
-  return results;
 }
 
-/**
- * Determines the category of a move based on Generation rules.
- */
-export function getMoveCategory(move: Partial<Move>): 'status' | 'physical' | 'special' {
-  if (ACTIVE_RULE_SET === 2) {
-    // Category by Type
-    const physicalTypes = ['normal', 'fighting', 'flying', 'poison', 'ground', 'rock', 'bug', 'ghost', 'steel'];
-    const specialTypes = ['fire', 'water', 'grass', 'electric', 'psychic', 'ice', 'dragon', 'dark'];
-    
-    if (move.cat === 'status') return 'status'; // Status moves keep their category
-    
-    if (move.type && physicalTypes.includes(move.type)) return 'physical';
-    if (move.type && specialTypes.includes(move.type)) return 'special';
-  }
-  // Gen 4+ uses direct category
-  return move.cat || 'physical';
-}
-
-/**
- * Returns ability multiplier for offensive calculations.
- */
-export function getAbilityMultiplier(attacker: Pokemon, _defender: Pokemon, move: Partial<Move>) {
-  let mult = 1;
-  let triggeredAbility: string | null = null;
-  const ab = attacker.ability;
-  const power = move.power || 0;
-
-  // Damage boosters at low HP (1/3)
-  const isLowHp = attacker.hp <= (attacker.maxHp / 3);
-  if (isLowHp) {
-    if (ab === 'Mar llamas' && move.type === 'fire') { mult *= 1.5; triggeredAbility = ab; }
-    if (ab === 'Torrente' && move.type === 'water') { mult *= 1.5; triggeredAbility = ab; }
-    if (ab === 'Espesura' && move.type === 'grass') { mult *= 1.5; triggeredAbility = ab; }
-    if (ab === 'Enjambre' && move.type === 'bug') { mult *= 1.5; triggeredAbility = ab; }
-  }
-
-  if (ab === 'Agallas' && attacker.status && getMoveCategory(move) === 'physical') {
-    mult *= 1.5;
-    triggeredAbility = ab;
-  }
-
-  if (ab === 'Experto' && power > 0 && power <= 60) {
-    mult *= 1.5;
-    triggeredAbility = ab;
-  }
-
-  return { mult, triggeredAbility };
-}
-
-/**
- * Central Damage Formula.
- */
 export function calculateDamage(attacker: Pokemon, defender: Pokemon, move: Partial<Move>, ctx: DamageOptions = {}) {
-  const { atkStages = 0, defStages = 0, weather = null } = ctx;
-  
-  let power = move.power;
-  let moveType = move.type;
-
-  if (power === undefined || !moveType) {
-    const md = pokemonDataProvider.getMoveData(move.name || '');
-    if (md) {
-      if (power === undefined) power = md.power || 0;
-      if (!moveType) moveType = md.type || 'normal';
-    } else {
-      power = power || 0;
-      moveType = moveType || 'normal';
-    }
-  }
-
-  // Garantía de tipo para el linter
-  const finalMoveType = moveType || 'normal';
-
-  const moveCat = getMoveCategory({ ...move, type: finalMoveType });
-
-  if (move.effect === 'dream_eater' && defender.status !== 'sleep') {
-    return { dmg: 0, eff: 0, isNoEffect: true };
-  }
-
-  if (move.effect === 'magnitude' && !ctx.magnitudeSet) {
-    const magRoll = Math.random() * 100;
-    if (magRoll < 5) power = 10;
-    else if (magRoll < 15) power = 30;
-    else if (magRoll < 35) power = 50;
-    else if (magRoll < 65) power = 70;
-    else if (magRoll < 85) power = 90;
-    else if (magRoll < 95) power = 110;
-    else power = 150;
-  }
-
-  if (move.id === 'fury_cutter' && attacker.furyCutterCount) {
-    power = Math.min(160, (power || 0) * Math.pow(2, attacker.furyCutterCount - 1));
-  }
-
-  const mechWeather = getMechanicalWeather(weather?.type);
-  const cycle = getDayCycle();
-
-  // EFECTOS PRIMIGENIOS: Tierra del Fin (Ola de Calor) y Mar del Albor (Tormenta)
-  if (weather?.type === 'heatwave' && finalMoveType === 'water') {
-    return { dmg: 0, eff: 0, isNoEffect: true, evaporated: true };
-  }
-  if (weather?.type === 'storm' && finalMoveType === 'fire') {
-    return { dmg: 0, eff: 0, isNoEffect: true, extinguished: true };
-  }
-
-  const isSolarBoosted = mechWeather === WEATHER_MECHANICAL.SUN || (mechWeather === WEATHER_MECHANICAL.CLEAR && (cycle === 'day' || cycle === 'morning'));
-  
-  if ((move.id === 'solar_beam' || move.id === 'solar_blade') && !isSolarBoosted && mechWeather !== WEATHER_MECHANICAL.CLEAR) {
-    power = Math.floor((power || 0) * 0.5);
-  }
-
-  if (move.fixedDmg) return { dmg: move.fixedDmg, eff: 1, isNoEffect: false };
-  if (move.levelDmg) return { dmg: attacker.level, eff: 1, isNoEffect: false };
-  if (move.halfHP) {
-    const dmg = Math.max(1, Math.floor(defender.hp / 2));
-    return { dmg, eff: 1, isNoEffect: false };
-  }
-
-  let eff = getCombinedEffectiveness(finalMoveType, defender, attacker);
-
-  // VIENTOS FUERTES (Delta Stream): Quita debilidades a tipo Volador
-  if (weather?.type === 'strong_winds' && (defender.type === 'flying' || defender.type2 === 'flying')) {
-    if (eff > 1) {
-      // Si el movimiento es súper efectivo por ser contra Volador, se vuelve neutro
-      // Debilidades oficiales de Volador: Eléctrico, Hielo, Roca
-      const isFlyingWeakness = ['electric', 'ice', 'rock'].includes(finalMoveType);
-      if (isFlyingWeakness) {
-        eff = eff / 2; // Reducimos a la mitad la efectividad que vendría de la debilidad de Volador
-      }
-    }
-  }
-
-  if (power === 0) {
-    return { dmg: 0, eff, isNoEffect: eff === 0 };
-  }
-
-  const isPhysical = moveCat === 'physical';
-  const aStages = { [isPhysical ? 'atk' : 'spa']: atkStages };
-  const dStages = { [isPhysical ? 'def' : 'spd']: defStages };
-
-  // NIEBLA (GEN 4): Reducción de precisión
-  if (weather?.type === 'fog') {
-    // La niebla oficial baja la precisión un escalón o aplica un factor 0.75x
-    // Aquí simularemos el fallo aleatorio si no se usa Despejar
-    if (Math.random() < 0.25) {
-      return { dmg: 0, eff: 0, isMiss: true, log: "¡La niebla es tan densa que el ataque falló!" };
-    }
-  }
-
-  // Critical Hit logic
-  let critRate = (attacker.heldItem === 'Lente Zoom') ? 0.12 : 0.06;
-  if (attacker.focusEnergy) critRate = 0.25;
-  if (ACTIVE_RULE_SET === 2) critRate = 0.0625; // Base probability 1/16
-  
-  let isCrit = Math.random() < critRate;
-  if (defender.ability === 'Caparazón' || defender.ability === 'Armadura Batalla') isCrit = false;
-  
-  // Stat Reset Rule for Crits
-  if (isCrit) {
-    const aKey = isPhysical ? 'atk' : 'spa' as keyof Partial<BattleStages>;
-    const dKey = isPhysical ? 'def' : 'spd' as keyof Partial<BattleStages>;
-    if ((aStages[aKey] ?? 0) < 0) aStages[aKey] = 0;
-    if ((dStages[dKey] ?? 0) > 0) dStages[dKey] = 0;
-  }
-
-  const critMult = isCrit ? (ACTIVE_RULE_SET === 2 ? 2.0 : 1.5) : 1;
-
-  const A = getEffectiveStat(attacker, isPhysical ? 'atk' : 'spa', aStages, weather);
-  const D = getEffectiveStat(defender, isPhysical ? 'def' : 'spd', dStages, weather);
-
-  // Base Damage Formula
-  const baseDamage = Math.floor(((2 * attacker.level / 5 + 2) * (power || 0) * A / D) / 50) + 2;
-
-  let { mult: finalAbilityMult, triggeredAbility } = getAbilityMultiplier(attacker, defender, { ...move, type: moveType, power, cat: moveCat });
-  
-  if (defender.ability === 'Sebo' && (moveType === 'fire' || moveType === 'ice')) {
-    finalAbilityMult *= 0.5;
-    triggeredAbility = 'Sebo';
-  }
-
-  let itemMult = 1;
-  if (attacker.heldItem) {
-    const h = attacker.heldItem;
-    const typeBoosters: Record<string, string> = { 'Carbón': 'fire', 'Imán': 'electric', 'Agua Mística': 'water', 'Semilla Milagro': 'grass', 'Cinturón Negro': 'fighting', 'Cuchara Torcida': 'psychic', 'Hechizo': 'ghost', 'Polvo Plata': 'bug', 'Flecha Venenosa': 'poison' };
-    if (typeBoosters[h] === moveType) itemMult = 1.2;
-    if (h === 'Cinta Elegida' && moveCat === 'physical') itemMult = 1.5;
-  }
-
-  let stab = (moveType === attacker.type || moveType === attacker.type2) ? 1.5 : 1;
-  if (attacker.ability === 'Adaptable' && stab > 1) stab = 2;
-
-  let weatherMult = 1;
-  if (weather && weather.turns !== 0) {
-    if (mechWeather === WEATHER_MECHANICAL.SUN) {
-      if (moveType === 'fire') weatherMult = 1.5;
-      else if (moveType === 'water') weatherMult = 0.5;
-    } else if (mechWeather === WEATHER_MECHANICAL.RAIN) {
-      if (moveType === 'water') weatherMult = 1.5;
-      else if (moveType === 'fire') weatherMult = 0.5;
-    }
-  }
-
-  if (weatherMult === 1 && (mechWeather === WEATHER_MECHANICAL.CLEAR || !weather)) {
-    if (cycle === 'day' || cycle === 'morning') {
-      if (moveType === 'fire') weatherMult = 1.2;
-    } else if (cycle === 'night' || cycle === 'dusk') {
-      if (moveType === 'water') weatherMult = 1.2;
-    }
-  }
-
-  const random = 0.85 + Math.random() * 0.15;
-
-  const finalDmg = eff > 0 
-    ? Math.max(1, Math.floor(baseDamage * stab * finalAbilityMult * eff * random * critMult * weatherMult * itemMult)) 
-    : 0;
+  const pureRes = calculateDamagePure(
+    toPurePoke(attacker),
+    toPurePoke(defender),
+    toPureMove(move),
+    { weather: toPureWeather(ctx.weather) },
+    getDayCycle()
+  );
 
   return {
-    dmg: finalDmg,
-    eff,
-    stab,
-    power,
-    isCrit,
-    isSuperEffective: eff > 1,
-    isNotVeryEffective: eff < 1 && eff > 0,
-    isNoEffect: eff === 0,
-    triggeredAbility
+    ...pureRes,
+    dmg: pureRes.dmg,
+    isNoEffect: pureRes.eff === 0
   };
 }
 
-/**
- * Capture Math
- */
 export function calculateCatchRate(pokemon: Pokemon, rawBallType = 'poke-ball', eventCatchMult = 1, ctx: CatchOptions = {}) {
-  const ballName = String(rawBallType || '').toLowerCase();
-  
-  const BALL_BEHAVIORS: Record<string, { guaranteed?: boolean, mult?: number | ((p: Pokemon, c: CatchOptions) => number) }> = {
-    'master': { guaranteed: true },
-    '100': { guaranteed: true },
-    'ultra': { mult: 2.0 },
-    'super': { mult: 1.5 },
-    'súper': { mult: 1.5 },
-    'red': { 
-      mult: (p, c) => {
-        const isWaterOrBug = [p.type, p.type2].some(t => t === 'water' || t === 'bug');
-        const isRain = c.weather && (c.weather.type === 'rain' || c.weather.type === 'storm');
-        return (isWaterOrBug || isRain) ? 3.5 : 1.0;
-      }
-    },
-    'net': { 
-      mult: (p, c) => {
-        const isWaterOrBug = [p.type, p.type2].some(t => t === 'water' || t === 'bug');
-        const mech = getMechanicalWeather(c.weather?.type);
-        const isRain = mech === WEATHER_MECHANICAL.RAIN;
-        return (isWaterOrBug || isRain) ? 3.5 : 1.0;
-      }
-    },
-    'ocaso': {
-      mult: (_p, c) => {
-        const cycle = c.cycle || getDayCycle();
-        const isNight = cycle === 'night' || cycle === 'dusk';
-        const isCave = !!c.isCave;
-        const mech = getMechanicalWeather(c.weather?.type);
-        const isFog = mech === WEATHER_MECHANICAL.FOG;
-        return (isNight || isCave || isFog) ? 3.0 : 1.0;
-      }
-    },
-    'dusk': { 
-      mult: (_p, c) => {
-        const cycle = c.cycle || getDayCycle();
-        const isNight = cycle === 'night' || cycle === 'dusk';
-        const isCave = !!c.isCave;
-        const mech = getMechanicalWeather(c.weather?.type);
-        const isFog = mech === WEATHER_MECHANICAL.FOG;
-        return (isNight || isCave || isFog) ? 3.0 : 1.0;
-      }
-    },
-    'turno': {
-      mult: (_p, c) => Math.min(4.0, 1.0 + ((c.turnCount || 1) * 0.3))
-    },
-    'timer': { 
-      mult: (_p, c) => Math.min(4.0, 1.0 + ((c.turnCount || 1) * 0.3))
+  return pureCalculateCatchRate(
+    toPurePoke(pokemon),
+    rawBallType,
+    eventCatchMult,
+    { 
+      weather: toPureWeather(ctx.weather),
+      turnCount: ctx.turnCount,
+      cycle: ctx.cycle || getDayCycle(),
+      isCave: ctx.isCave
     }
-  };
-
-  const behaviorEntry = Object.entries(BALL_BEHAVIORS).find(([key]) => ballName.includes(key));
-  const behavior = behaviorEntry ? behaviorEntry[1] : { mult: 1.0 };
-
-  if (behavior.guaranteed) {
-    return { caught: true, shakes: 3 };
-  }
-
-  let ballMult = 1.0;
-  if (typeof behavior.mult === 'function') {
-    ballMult = behavior.mult(pokemon, ctx);
-  } else if (behavior.mult) {
-    ballMult = behavior.mult;
-  }
-
-  const hpFactor = (3 * pokemon.maxHp - 2 * pokemon.hp) / (3 * pokemon.maxHp);
-  const catchRate = pokemon.catchRate ?? 45;
-  if (!pokemon.catchRate) {
-    logger.warn('Battle', `Capture warning: Pokémon ${pokemon.name} (${pokemon.id}) missing catchRate. Falling back to 45.`);
-  }
-  const statusMult = (pokemon.status === 'sleep' || pokemon.status === 'freeze') ? 2.0 : 
-                     (pokemon.status ? 1.5 : 1.0);
-
-  const eventBonus = eventCatchMult - 1;
-  const totalMult = Math.max(0.1, ballMult + eventBonus);
-
-  const finalRate = Math.min(255, Math.max(1, Math.floor(catchRate * totalMult * hpFactor * statusMult)));
-  
-  const b = Math.floor(65535 * Math.pow(finalRate / 255, 0.25));
-  
-  let shakes = 0;
-  for (let i = 0; i < 4; i++) {
-    if (Math.random() * 65535 < b) {
-      shakes++;
-    } else {
-      break;
-    }
-  }
-
-  return {
-    caught: shakes === 4,
-    shakes: Math.min(3, shakes)
-  };
+  );
 }
 
-/**
- * Calculates escape chance from Wild Pokémon.
- * @param {Pokemon} playerPoke 
- * @param {Pokemon} wildPoke 
- * @param {number} attempts 
- * @param {Object} ctx 
- * @returns {boolean} Whether escape is successful.
- */
 export function calculateEscapeChance(playerPoke: Pokemon, wildPoke: Pokemon, attempts: number, ctx: EscapeOptions = {}) {
-  const pSpe = getEffectiveStat(playerPoke, 'spe', ctx.playerStages || {}, ctx.weather || null);
-  const eSpe = getEffectiveStat(wildPoke, 'spe', ctx.enemyStages || {}, ctx.weather || null);
-  
-  // Guard against division by zero
-  const safeESpe = Math.max(1, eSpe);
+  return pureCalculateEscapeChance(
+    toPurePoke(playerPoke),
+    toPurePoke(wildPoke),
+    attempts,
+    toPureWeather(ctx.weather)
+  );
+}
 
-  if (ACTIVE_RULE_SET === 2) {
-    const f = Math.floor((pSpe * 32) / Math.floor(safeESpe / 4)) + 30 * attempts;
-    if (f > 255) return true;
-    return Math.floor(Math.random() * 256) < f;
-  } else {
-    // Gen 4+
-    const f = Math.floor((pSpe * 128) / safeESpe) + 30 * attempts;
-    return Math.floor(Math.random() * 256) < f;
-  }
+// Legacy exports for compatibility
+export function getAbilityMultiplier(_attacker: Pokemon, _defender: Pokemon, _move: Partial<Move>) {
+  return { mult: 1, triggeredAbility: null }; // Simplified, logic is now in battleMath
+}
+
+export function getMoveCategory(move: Partial<Move>): 'status' | 'physical' | 'special' {
+  if (move.cat === 'status') return 'status';
+  const specialTypes = ['fire', 'water', 'grass', 'electric', 'psychic', 'ice', 'dragon', 'dark'];
+  if (move.type && specialTypes.includes(move.type)) return 'special';
+  return 'physical';
 }
