@@ -35,7 +35,6 @@ const PokedexView = defineAsyncComponent(() => import('@/views/PokedexView.vue')
 const MapView = defineAsyncComponent(() => import('@/views/MapView.vue'))
 const GymsView = defineAsyncComponent(() => import('@/views/GymsView.vue'))
 const DaycareView = defineAsyncComponent(() => import('@/views/DaycareView.vue'))
-const ShopView = defineAsyncComponent(() => import('@/views/ShopView.vue'))
 const BagView = defineAsyncComponent(() => import('@/views/BagView.vue'))
 const EventsView = defineAsyncComponent(() => import('@/views/EventsView.vue'))
 const SocialView = defineAsyncComponent(() => import('@/views/SocialView.vue'))
@@ -206,15 +205,6 @@ useDocumentListener('keydown', initAudio, { once: true })
           class="tab-content"
         >
           <DaycareView />
-          <div class="hud-spacer-bottom" />
-        </div>
-
-        <div
-          v-else-if="activeTab === 'shop'"
-          key="shop"
-          class="tab-content"
-        >
-          <ShopView />
           <div class="hud-spacer-bottom" />
         </div>
 

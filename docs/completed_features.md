@@ -23,6 +23,7 @@ Este documento sirve como referencia de los componentes, menús y herramientas q
 | **VISOR DE DETALLES** | Finalizado | `UnifiedPokemonDetailModal.vue`, `pokemonDataProvider.ts` |
 | **MOCHILA** | Finalizado | `InventoryModal.vue`, `InventorySidebar.vue`, `InventoryItemCard.vue`, `inventory.ts` (Store), `_inventory.scss` |
 | **POKÉ MARKET** | Finalizado | `ShopModal.vue`, `ShopSidebar.vue`, `ShopItemCard.vue`, `shop.ts` (Store), `_shop.scss` |
+| **BC SHOP** | Finalizado | `BCShopModal.vue`, `BCShopSidebar.vue`, `BCShopItemCard.vue`, `shop.ts` (Store), `_shop.scss` |
 | **MOTOR DE CLIMA** | Finalizado | `weatherUtils.ts`, `weather-tables.ts`, `timeUtils.ts`, `map.ts` (Store) |
 | **GIMNASIOS** | Finalizado | `GymsView.vue`, `GymCard.vue`, `gyms.ts` (Store) |
 
@@ -38,6 +39,13 @@ Este documento sirve como referencia de los componentes, menús y herramientas q
 | **Balance** | Reconstruido | Ratios de Shiny, encuentros y objetos. |
 | **Combate** | Verificado | Motor de daño, stages y estados alterados. |
 | **Crianza/Huevos** | Verificado | Herencia genética y pasos de eclosión. |
+
+## Herramientas de Desarrollo y Calidad
+
+| Herramienta | Estado | Propósito y Uso |
+| :--- | :--- | :--- |
+| **Auditoría de Assets** | Finalizado | Verifica la existencia física en disco de los sprites de todos los ítems por tienda: `node --experimental-strip-types scripts/audit_item_assets.ts` |
+| **Descarga de Assets** | Finalizado | Automatiza la obtención de sprites faltantes desde PokeAPI: `node --experimental-strip-types scripts/download_missing_items.ts` |
 
 ## Uso como Guía de Migración
 

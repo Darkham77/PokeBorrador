@@ -46,6 +46,56 @@ describe('Shop & Healing Logic', () => {
     })
   })
 
+  describe('BC Shop Purchases', () => {
+    it('allows purchasing special items with Battle Coins', () => {
+      const gameStore = useGameStore()
+      const shopStore = useShopStore()
+      const uiStore = useUIStore()
+
+      gameStore.state.trainerLevel = 15
+      gameStore.state.battleCoins = 5000
+      
+      // Leftovers (Restos) price is 4500 BC, unlock level is 10
+      shopStore.buyItemBC('leftovers')
+
+      expect(gameStore.state.battleCoins).toBe(5000 - 4500)
+      expect(gameStore.state.inventory['Restos']).toBe(1)
+      expect(uiStore.notify).toHaveBeenCalledWith('¡Compraste Restos!', '🏅')
+    })
+
+    it('blocks BC items below required trainer level', () => {
+      const gameStore = useGameStore()
+      const shopStore = useShopStore()
+      const uiStore = useUIStore()
+
+      gameStore.state.trainerLevel = 5
+      gameStore.state.battleCoins = 5000
+      
+      // Leftovers (Restos) price is 4500 BC, unlock level is 10
+      shopStore.buyItemBC('leftovers')
+
+      expect(gameStore.state.battleCoins).toBe(5000)
+      expect(gameStore.state.inventory['Restos']).toBeUndefined()
+      expect(uiStore.notify).toHaveBeenCalledWith('¡Ítem bloqueado!', '🔒')
+    })
+
+    it('blocks BC items if player has insufficient Battle Coins', () => {
+      const gameStore = useGameStore()
+      const shopStore = useShopStore()
+      const uiStore = useUIStore()
+
+      gameStore.state.trainerLevel = 15
+      gameStore.state.battleCoins = 1000
+      
+      // Leftovers (Restos) price is 4500 BC, unlock level is 10
+      shopStore.buyItemBC('leftovers')
+
+      expect(gameStore.state.battleCoins).toBe(1000)
+      expect(gameStore.state.inventory['Restos']).toBeUndefined()
+      expect(uiStore.notify).toHaveBeenCalledWith('¡No tenés suficientes Battle Coins!', '💰')
+    })
+  })
+
   describe('Healing Logic', () => {
     it('restores HP, PP and Status', () => {
       const gameStore = useGameStore()

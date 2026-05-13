@@ -37,6 +37,11 @@ const handleTabChange = (tab: string, _event?: Event) => {
     return
   }
 
+  if (tab === 'trainer-shop') {
+    modalStore.open('BCShop')
+    return
+  }
+
   if (tab === 'team') {
     modalStore.open('TeamManagement')
     return
