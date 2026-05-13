@@ -135,7 +135,7 @@ const net = computed(() => price.value - fee.value)
           </div>
 
           <div class="input-group">
-            <label>PRECIO DE VENTA (₽)</label>
+            <label>PRECIO DE VENTA (₱)</label>
             <input 
               v-model.number="price" 
               type="number" 
@@ -147,13 +147,14 @@ const net = computed(() => price.value - fee.value)
           <div class="financials">
             <div class="row">
               <span>Comisión GTS (5%):</span>
-              <span class="neg">- ₽{{ fee.toLocaleString() }}</span>
+              <span class="neg">- ₱{{ fee.toLocaleString() }}</span>
             </div>
             <div class="row total">
               <span>Tú recibes:</span>
-              <span class="pos">₽{{ net.toLocaleString() }}</span>
+              <span class="pos">₱{{ net.toLocaleString() }}</span>
             </div>
           </div>
+
 
           <button 
             class="confirm-btn" 
@@ -331,9 +332,22 @@ const net = computed(() => price.value - fee.value)
     font-size: 16px;
     text-align: center;
     outline: none;
+    box-sizing: border-box;
+
+    /* Hide standard HTML5 up/down spin buttons */
+    &::-webkit-outer-spin-button,
+    &::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    &[type=number] {
+      -moz-appearance: textfield;
+    }
+
     &:focus { border-color: Rgba(255, 215, 0, 0.27); }
   }
 }
+
 
 .financials {
   background: Rgba(0, 0, 0, 0.2);
