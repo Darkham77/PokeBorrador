@@ -109,9 +109,10 @@ We prioritize a deliberate contrast between modern, sleek UI shells and classic,
 
 - **Grid Alignment**: Pixel fonts (especially `Press Start 2P`) SHOULD use sizes that maintain aesthetic balance. While multiples of 8px are technically perfect, intermediate sizes (10px, 11px) are allowed for readability.
 - **Anti-Alias Ban**: ALWAYS apply `@include pixelated;` to pixel fonts to force `-webkit-font-smoothing: none !important`.
+- **Anti-Blur Technique (Aggressive)**: For pixel fonts at non-standard sizes (e.g., 11px), apply `transform: translateZ(0)` and `font-smooth: never !important` to force integer pixel rendering and prevent browser smoothing.
 - **FORBIDDEN**:
   - Using `text-shadow` with any blur radius (must be 0px).
-- **Centering**: Use **Flexbox/Grid** for centering. Avoid `transform: translate(-50%, -50%)` as it causes subpixel blurring in Chrome.
+- **Centering**: Use **Flexbox/Grid** for centering. Avoid `transform: translate(-50%, -50%)` as it causes subpixel blurring in Chrome. Combine any unavoidable `Translatey/x` with `translateZ(0)` to maintain GPU layer stability during motion.
 - **BST Aesthetics**: Game-world data (Stats, IVs, Levels) MUST prioritize these sharp pixelated tokens to reinforce the "Retro Heart".
 - **Stat Color Standardization**:
   - **Level (NV)**: Purple (`#a855f7`).
@@ -336,7 +337,12 @@ To ensure a seamless transition between full-map exploration and focused modal i
 - **GPU-First Simplification**: When a new modal is opened above others, the modals below MUST be simplified (`isSimplified = true`) IMMEDIATELY at the start of the transition (not after it ends). This maximizes GPU bandwidth for the opening animation and prevents dropped frames during high-fidelity transitions.
 
 - **Battle Modal Jitter**: Combat arenas, control panels, and individual sprite containers MUST use `overflow: hidden !important` (or `overflow: clip`) to prevent unintended scrollbars during scaling, rotation, or VFX.
-- **Selective Targeting**: Selection modals (`PokemonSelectionModal`) MUST support and use the `allowedIds` filter when a specific context (like item usage) restricts the valid targets.
+- **Marketplace & Shop Standards**: To ensure a premium feel and prevent text truncation in dense item grids:
+  - **Symmetrical Grid Padding**: Shop grids (e.g., `.shop-grid-wrapper`) MUST use symmetric padding (Standard: **20px**) to ensure the scrollbar is flush with the modal border and the content feels balanced.
+  - **Multi-line Text Truncation**: Descriptions MUST never be cut off abruptly. Use `-webkit-line-clamp: 4` to allow up to 4 lines of text before showing an ellipsis. Ensure `min-height` is sufficient to prevent layout shifts.
+  - **Item Name Wrapping**: Item names MUST allow wrapping (max 2 lines) instead of using `white-space: nowrap`. This prevents names from being cut off or showing ellipsis prematurely in narrow cards.
+  - **BC Shop Branding**: Exclusive items in the Battle Club shop MUST use purple currency iconography with premium `drop-shadow` effects (e.g., `#c084fc` glow) to distinguish them from standard Poké Market items.
+  - **Action Alignment**: Primary action buttons in shop/market cards (e.g., "COMPRAR") MUST be aligned to the right (`justify-content: flex-end`) to maintain UX consistency.
 - **Interactive Tooltip Bubbling**: Tooltips attached to interactive elements (buttons, pills) MUST allow event bubbling. NEVER use `.stop` on a tooltip's click handler if it blocks the parent's interaction.
 - **Mobile Fullscreen Stability**: In `type-fullscreen` modals, use ultra-specific selectors and `contain: content` to ensure the layout remains static and jitter-free during internal animations.
 

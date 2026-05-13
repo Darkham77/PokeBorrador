@@ -80,7 +80,7 @@ const handleMoneyInput = (e: Event) => {
         class="btn-open-selector"
         @click.stop="$emit('open-selector')"
       >
-        + {{ isFriendSide ? 'PEDIR' : 'SELECCIONAR' }} POKÉMON
+        + {{ isFriendSide ? 'PEDIR' : 'SELECCIONAR' }} ⚡ POKÉMON
       </button>
     </div>
 

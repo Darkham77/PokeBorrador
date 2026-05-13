@@ -38,10 +38,19 @@ const setCategory = (id: string) => {
       </div>
       <span class="cat-label">{{ cat.label }}</span>
       
-      <div 
-        v-if="activeCategory === cat.id"
-        class="active-indicator"
-      />
+      <div class="active-indicator" />
     </button>
   </aside>
 </template>
+
+<style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
+
+.shop-sidebar {
+  @include shop-sidebar;
+}
+
+.cat-btn {
+  @include shop-sidebar-button(var(--yellow));
+}
+</style>

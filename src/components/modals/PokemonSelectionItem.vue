@@ -87,7 +87,7 @@ const isPremiumTier = computed(() => tierData.value.tier === 'S' || tierData.val
             <span class="name">{{ item.pokemon.nickname || item.pokemon.name?.replace(/[♂♀]/g, '').trim() || 'Desconocido' }}</span>
             <span
               v-if="item.pokemon.nickname"
-              class="ps-species-subtitle"
+              class="sel-species-subtitle"
             >{{ item.pokemon.name }}</span>
           </div>
           <span
@@ -111,25 +111,30 @@ const isPremiumTier = computed(() => tierData.value.tier === 'S' || tierData.val
           <span class="m-badge-tier">{{ tierData.tier }}</span>
         </div>
       </div>
-      <div class="bottom-line">
-        <div class="sel-types-row">
-          <PokemonTypeTag
-            v-for="t in [item.pokemon.type, item.pokemon.type2].filter(Boolean)" 
-            :key="String(t)"
-            :type="String(t)"
-            size="sm"
-          />
+      <div class="bottom-info">
+        <div class="info-row types-line">
+          <div class="sel-types-row">
+            <PokemonTypeTag
+              v-for="t in [item.pokemon.type, item.pokemon.type2].filter(Boolean)" 
+              :key="String(t)"
+              :type="String(t)"
+              size="sm"
+            />
+          </div>
+          <span
+            class="source-tag"
+            :class="item._source"
+          >{{ item._source === 'team' ? 'EQUIPO' : 'CAJA' }}</span>
         </div>
-        <span class="m-badge-level">Nv. {{ item.pokemon.level ?? 1 }}</span>
-        <span
-          v-if="item.pokemon.ivs"
-          class="m-badge-iv"
-        >IVs {{ ivTotal }}</span>
-        <span class="m-badge-tot">TOT {{ total }}</span>
-        <span
-          class="source-tag"
-          :class="item._source"
-        >{{ item._source === 'team' ? 'EQUIPO' : 'CAJA' }}</span>
+
+        <div class="info-row stats-line">
+          <span class="m-badge-level">Nv. {{ item.pokemon.level ?? 1 }}</span>
+          <span
+            v-if="item.pokemon.ivs"
+            class="m-badge-iv"
+          >IVs {{ ivTotal }}</span>
+          <span class="m-badge-tot">TOT {{ total }}</span>
+        </div>
       </div>
 
       <!-- Battle HP Status -->

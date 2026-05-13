@@ -113,7 +113,7 @@ const close = () => {
     <!-- Premium Header -->
     <template #header>
       <div class="bc-shop-modal-header">
-        <div class="shop-title-group">
+        <div class="bc-shop-title-group">
           <span class="title-icon">🎖️</span>
           <div class="title-text-wrap">
             <span class="main-title">BC SHOP</span>
@@ -126,11 +126,10 @@ const close = () => {
           <div class="stat-node coins">
             <span class="shop-stat-label">MIS BATTLE COINS</span>
             <span class="value">
-              <i class="fas fa-coins currency-icon" />
+              <i class="fas fa-coins currency-icon-purple" />
               {{ formatCurrency(gameStore.state.battleCoins || 0) }}
             </span>
           </div>
-
 
           <!-- Trainer Level -->
           <div class="stat-node level">

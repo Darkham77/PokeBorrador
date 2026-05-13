@@ -168,10 +168,11 @@
     overflow: hidden !important;
 
     .modal-scrollable-content.padding-raw {
-      overflow-y: auto !important;
+      overflow: hidden !important;
+      display: flex !important;
+      flex-direction: column !important;
       flex: 1 !important;
       min-height: 0 !important;
-      height: auto !important;
     }
   }
 

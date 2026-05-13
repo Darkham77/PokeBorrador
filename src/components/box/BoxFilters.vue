@@ -430,7 +430,7 @@ const AVAILABLE_TAGS = [
 
         <div class="filter-footer-compact">
           <div class="results-badge-mini">
-            <span class="box-icon-ref">🔍</span> {{ resultsCount }} POKÉMON ENCONTRADOS
+            <span class="box-icon-ref">⚡</span> {{ resultsCount }} POKÉMON ENCONTRADOS
           </div>
           <button
             class="btn-vicio-danger btn-vicio-sm"

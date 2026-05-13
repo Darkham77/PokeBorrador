@@ -227,6 +227,33 @@ export class DBRouter {
       const userId = (localUser as { id?: string } | null)?.id || 'local_user';
       const username = (localUser as { user_metadata?: { username?: string } } | null)?.user_metadata?.username || 'Invitado';
 
+      if (name === 'save_game_trusted') {
+        const { p_save_data, p_expected_id } = params as { p_save_data: Record<string, unknown>, p_expected_id: string | null };
+        const newSaveId = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 11) + Date.now().toString(36);
+        
+        // 1. Verificar concurrencia (optimistic lock)
+        if (p_expected_id) {
+          const current = await queryLocal("SELECT last_save_id FROM game_saves WHERE user_id = ?", [userId]);
+          if (current.length > 0 && current[0]!.last_save_id !== p_expected_id) {
+            return { data: { success: false, error: 'OUT_OF_SYNC', current_id: current[0]!.last_save_id }, error: null };
+          }
+        }
+
+        // 2. Upsert del save
+        sqliteDb.run(
+          `INSERT INTO game_saves (user_id, save_data, last_save_id, updated_at) 
+           VALUES (?, ?, ?, datetime('now'))
+           ON CONFLICT(user_id) DO UPDATE SET 
+            save_data = excluded.save_data, 
+            last_save_id = excluded.last_save_id, 
+            updated_at = excluded.updated_at`,
+          [userId, JSON.stringify(p_save_data), newSaveId]
+        );
+
+        await persistSQLite();
+        return { data: { success: true, last_save_id: newSaveId }, error: null };
+      }
+
       if (name === 'fn_report_passive_battle') {
         const { p_opponent_id, p_result, p_report_data } = params;
         sqliteDb.run(

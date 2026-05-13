@@ -46,3 +46,15 @@ const setCategory = (id: string) => {
     </button>
   </aside>
 </template>
+
+<style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
+
+.bc-shop-sidebar {
+  @include shop-sidebar(Rgba(168, 85, 247, 0.15));
+}
+
+.cat-btn {
+  @include shop-sidebar-button(#c084fc);
+}
+</style>

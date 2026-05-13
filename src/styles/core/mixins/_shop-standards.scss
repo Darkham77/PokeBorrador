@@ -1,0 +1,426 @@
+// src/styles/core/mixins/_shop-standards.scss
+@use "../variables" as vars;
+@use "./layout" as *;
+@use "../gpu" as *;
+
+/**
+ * Unified Shop Shell
+ * Standard translucent glassmorphism container for premium menus.
+ */
+@mixin shop-shell {
+  display: flex;
+  height: 600px;
+  max-height: 80dvh;
+  min-height: 0;
+  background: Rgba(0, 0, 0, 0.1);
+  border-radius: 0 0 24px 24px;
+  overflow: hidden;
+  position: relative;
+  box-sizing: border-box;
+
+  @include responsive(950px) {
+    flex-direction: column;
+    height: 100%;
+    flex: 1;
+    max-height: none;
+    border-radius: 0;
+  }
+}
+
+/**
+ * Unified Sidebar
+ * Standard sidebar navigation container with crystal borders.
+ */
+@mixin shop-sidebar($border-color: Rgba(255, 255, 255, 0.08)) {
+  width: 180px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px 12px;
+  background: Rgba(0, 0, 0, 0.25);
+  border-right: 1px solid $border-color;
+  height: 100%;
+  overflow-y: auto;
+  min-height: 0;
+  box-sizing: border-box;
+
+  @include responsive(950px) {
+    width: 100%;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid $border-color;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 12px 16px;
+    gap: 16px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    z-index: 50; // Ensure tabs are above content
+    flex-shrink: 0; // Prevent sidebar from being squeezed
+    -ms-overflow-style: none;
+    &::-webkit-scrollbar { display: none; }
+  }
+}
+
+/**
+ * Unified Sidebar Button
+ * Standard navigation button with active indicators and theme color support.
+ */
+@mixin shop-sidebar-button($accent-color: var(--yellow)) {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  color: Rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  text-align: left;
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+
+  @include responsive(950px) {
+    width: auto;
+    flex-direction: column;
+    padding: 8px 12px;
+    gap: 6px;
+    flex-shrink: 0;
+    min-width: 70px;
+  }
+
+  .cat-icon-frame {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: Rgba(255, 255, 255, 0.03);
+    border: 1px solid Rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    font-size: 16px;
+    transition: inherit;
+    flex-shrink: 0;
+
+    @include responsive(950px) {
+      width: 40px;
+      height: 40px;
+      font-size: 18px;
+    }
+  }
+
+  .cat-label {
+    @include pixelated;
+    font-size: 8px;
+    letter-spacing: 0.5px;
+    transition: inherit;
+    font-weight: bold;
+
+    @include responsive(950px) {
+      font-size: 7px;
+      text-transform: uppercase;
+      opacity: 0.7;
+    }
+  }
+
+  &:hover:not(.active) {
+    background: Rgba(255, 255, 255, 0.05);
+    color: Rgba(255, 255, 255, 0.9);
+    transform: Translatex(4px);
+
+    .cat-icon-frame {
+      background: Rgba(255, 255, 255, 0.08);
+      border-color: Rgba(255, 255, 255, 0.1);
+    }
+
+    @include responsive(950px) {
+      transform: none !important;
+    }
+  }
+
+    .active-indicator {
+      position: absolute;
+      left: 0;
+      top: 25%;
+      bottom: 25%;
+      width: 3px;
+      background: $accent-color;
+      border-radius: 0 4px 4px 0;
+      box-shadow: 0 0 12px $accent-color;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+
+      @include responsive(950px) {
+        left: 8%;
+        right: 8%;
+        bottom: 0;
+        top: auto;
+        width: auto;
+        height: 3px;
+        border-radius: 4px 4px 0 0;
+        box-shadow: 0 -2px 10px $accent-color;
+      }
+    }
+
+    &.active {
+      color: $accent-color;
+      border-color: transparent;
+      
+      .cat-icon-frame {
+        background: Rgba($accent-color, 0.1);
+        border-color: transparent;
+        box-shadow: 0 0 15px Rgba($accent-color, 0.05);
+      }
+
+      .cat-label {
+        opacity: 1;
+        text-shadow: 0 0 10px Rgba($accent-color, 0.3);
+      }
+
+      .active-indicator {
+        opacity: 1;
+      }
+    }
+  }
+
+/**
+ * Unified Shop Header
+ * Standard header layout for shops and complex menus.
+ */
+@mixin shop-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 0 10px;
+  box-sizing: border-box;
+
+  @include responsive(768px) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+}
+
+/**
+ * Unified Shop Header Title Group
+ */
+@mixin shop-header-title($accent-color: var(--yellow)) {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+
+  .title-icon {
+    font-size: 28px;
+    filter: Drop-Shadow(0 0 10px Rgba($accent-color, 0.3));
+  }
+
+  .title-text-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+
+    .main-title {
+      @include pixelated;
+      font-size: 16px;
+      color: $accent-color;
+      letter-spacing: 2px;
+      text-shadow: 0 0 10px Rgba($accent-color, 0.4);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .sub-title {
+      @include pixelated;
+      font-size: 7px;
+      color: Rgba(255, 255, 255, 0.4);
+      letter-spacing: 1px;
+    }
+  }
+}
+
+/**
+ * Unified Header Stat
+ * Premium stat indicator for money, levels, etc.
+ */
+@mixin shop-header-stat($color: var(--yellow)) {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+
+  .stat-label, .gts-stat-label, .shop-stat-label, .inv-stat-label {
+    @include pixelated;
+    font-size: 6px;
+    color: Rgba(255, 255, 255, 0.3);
+    text-transform: uppercase;
+  }
+
+  .value {
+    @include pixelated;
+    font-size: 16px;
+    font-weight: 900;
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    &.colored {
+      color: $color;
+      text-shadow: 0 0 15px Rgba($color, 0.25);
+    }
+  }
+}
+
+/**
+ * Standard Shop Card Hover Effect
+ * Unified elevation and glow effect.
+ */
+@mixin shop-card-hover($accent-color: var(--yellow)) {
+  border-color: Rgba($accent-color, 0.5);
+  box-shadow: 
+    0 0 0 1px Rgba($accent-color, 0.2),
+    0 12px 40px Rgba(0, 0, 0, 0.6),
+    inset 0 0 25px Rgba($accent-color, 0.15);
+  transform: Translatey(-6px);
+  z-index: 10;
+
+  &::before {
+    opacity: 1;
+  }
+}
+
+/**
+ * Standard Shop Item Card Base
+ */
+@mixin shop-item-card($accent-color: var(--yellow)) {
+  background: Rgba(255, 255, 255, 0.02);
+  border: 1px solid Rgba(255, 255, 255, 0.06);
+  border-radius: 20px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 50% 0%, Rgba($accent-color, 0.08) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+  }
+
+  &:hover:not(.locked) {
+    @include shop-card-hover($accent-color);
+  }
+
+  &.locked {
+    opacity: 0.6;
+    will-change: transform, filter, opacity;
+    filter: Grayscale(0.85);
+    cursor: not-allowed;
+  }
+}
+
+/**
+ * Compact Shop Card Standard
+ * Used for explorers and dense lists.
+ */
+@mixin shop-card-compact($accent-color: var(--yellow)) {
+  background: Rgba(255, 255, 255, 0.02);
+  border: 1px solid Rgba(255, 255, 255, 0.06);
+  border-radius: 16px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+
+  &:hover:not(.locked) {
+    @include shop-card-hover($accent-color);
+  }
+
+  &.locked {
+    opacity: 0.5;
+    filter: Grayscale(0.9);
+  }
+}
+
+/**
+ * Unified Shop Buy Button
+ * Premium outline style that becomes solid on hover.
+ */
+@mixin btn-shop-buy($accent-color: $yellow) {
+  cursor: pointer;
+  border: 1px solid Rgba($accent-color, 0.4);
+  background: linear-gradient(135deg, Rgba($accent-color, 0.15) 0%, Rgba(0, 0, 0, 0.2) 100%);
+  color: $accent-color;
+  box-shadow: 0 4px 15px Rgba($accent-color, 0.1);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  outline: none;
+  
+  &:hover:not(:disabled) {
+    background: $accent-color;
+    color: #000;
+    box-shadow: 0 4px 20px Rgba($accent-color, 0.4);
+    transform: Translatey(-2px);
+    border-color: $accent-color;
+  }
+
+  &:active:not(:disabled) {
+    transform: Translatey(1px);
+    box-shadow: 0 2px 10px Rgba($accent-color, 0.2);
+  }
+
+  &:disabled {
+    background: Rgba(255, 255, 255, 0.03) !important;
+    border-color: Rgba(255, 255, 255, 0.05) !important;
+    color: Rgba(255, 255, 255, 0.15) !important;
+    cursor: not-allowed;
+    box-shadow: none !important;
+    transform: none !important;
+  }
+}
+
+/**
+ * Unified Layout Mixins for Shops & GTS
+ * Standardizes the 20px padding system with edge scrollbars.
+ */
+@mixin shop-main-unified {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+@mixin shop-grid-wrapper-unified {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 20px;
+  @include smooth-scroll;
+  box-sizing: border-box;
+
+  // Custom scrollbar for premium look
+  &::-webkit-scrollbar { width: 8px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar-thumb { 
+    background: Rgba(255, 255, 255, 0.1); 
+    border-radius: 4px;
+    &:hover { background: Rgba(255, 255, 255, 0.2); }
+  }
+}

@@ -16,6 +16,7 @@ All heavy components or those that animate frequently must be promoted to a GPU 
 - **Filter Promotion**: Elements utilizing `filter` (especially in Premium Shell effects or conditional states) **MUST** include `will-change: filter`.
 - **Audit Safeguard**: This promotion is required even if the current state is `filter: none !important`, ensuring the compositor layer is pre-allocated and ready for dynamic transitions without triggering "GPU Gap" warnings.
 - **Z-Index Single Source of Truth**: Never use hardcoded integers for `z-index` (e.g., `10`, `-1`). All layering MUST be relative to centralized variables using `calc(var(--z-base) +/- X)` or named constants (e.g., `var(--z-map-spawns)`). Refer to `src/logic/constants/visuals.ts` for the authoritative values.
+- **Pixel Sharpening Layer**: Apply `transform: translateZ(0)` (or its sibling `translate3d(0,0,0)`) to elements with pixel fonts or small pixel-art sprites. This forces the browser to align the element to the physical pixel grid of the compositor layer, eliminating sub-pixel blurring artifacts during scaling or fractional positioning.
 
 ## 2. Low-Cost Animations
 

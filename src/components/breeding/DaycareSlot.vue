@@ -48,7 +48,7 @@ const getSprite = (id: string | number, isShiny: boolean) => {
         +
       </div>
       <div class="hint">
-        DEPOSITAR POKÉMON
+        ⚡ DEPOSITAR POKÉMON
       </div>
     </div>
 

@@ -39,7 +39,7 @@ const handleSwitch = () => {
   if (!activePoke) return
 
   useModalStore().open('BattleSwitch', {
-    title: 'CAMBIAR POKÉMON',
+    title: '⚡ CAMBIAR POKÉMON',
     isBattleSwitch: true,
     battleMode: 'pvp',
     includeTeam: true,

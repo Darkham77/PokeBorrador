@@ -1,20 +1,6 @@
 @use 'sass:string';
 @use '../core/tools' as *;
 
-#app {
-  @media (max-width: 1024px) {
-    padding-bottom: 80px !important;
-  }
-}
-
-// Safe area support for #app
-@supports (padding-bottom: env(safe-area-inset-bottom)) {
-  @media (max-width: 1024px) {
-    #app {
-      padding-bottom: calc(72px + env(safe-area-inset-bottom)) !important;
-    }
-  }
-}
 
 #auth-screen,
 #title-screen {

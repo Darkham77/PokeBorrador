@@ -38,7 +38,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  title: 'SELECCIONAR POKÉMON',
+  title: '⚡ SELECCIONAR POKÉMON',
   subtitle: '',
   excludeUids: () => [],
   includeTeam: true,
@@ -280,7 +280,7 @@ if (typeof window !== 'undefined') {
   const win = window as unknown as { _openPokemonSelectionModal?: (opts: Record<string, unknown>) => void }
   win._openPokemonSelectionModal = (opts: Record<string, unknown>) => {
     uiStore.open('PokemonSelection', { 
-      title: 'SELECCIONAR POKÉMON',
+      title: '⚡ SELECCIONAR POKÉMON',
       subtitle: 'Elige un Pokémon para la tarea.',
       maxSelect: 1,
       minSelect: 1,
@@ -299,7 +299,7 @@ function openDetail(item: { pokemon: Pokemon, _source: 'team' | 'box', index: nu
   <BaseModal
     show
     :title="props.title"
-    max-width="650px"
+    max-width="480px"
     variant="retro"
     padding="raw"
     :prevent-close="preventClose"
@@ -311,27 +311,27 @@ function openDetail(item: { pokemon: Pokemon, _source: 'team' | 'box', index: nu
         <h2 class="ps-modal-title">
           {{ props.title }}
         </h2>
-        <div class="ps-search-box-header">
-          <span class="ps-header-search-icon">🔍</span>
-          <input 
-            v-model="searchQuery" 
-            type="text" 
-            placeholder="Buscar..."
-            class="ps-search-input-header"
-          >
-          <button
-            v-if="searchQuery"
-            class="ps-header-clear-search"
-            @click.stop="searchQuery = ''"
-          >
-            ✕
-          </button>
-        </div>
       </div>
     </template>
 
     <div class="selection-container">
       <div class="filters-bar">
+        <div class="ps-search-row">
+          <span class="ps-search-icon">🔍</span>
+          <input 
+            v-model="searchQuery" 
+            type="text" 
+            placeholder="Buscar por nombre o ID..."
+            class="ps-search-input"
+          >
+          <button
+            v-if="searchQuery"
+            class="ps-clear-search"
+            @click.stop="searchQuery = ''"
+          >
+            ✕
+          </button>
+        </div>
         <div class="ps-sort-btns">
           <PVTooltip
             title="MÁS RECIENTES"
@@ -389,8 +389,6 @@ function openDetail(item: { pokemon: Pokemon, _source: 'team' | 'box', index: nu
 
         <div class="ps-tags-section">
           <div class="ps-tags-row-unified">
-            <span class="ps-section-label">ETIQUETAS:</span>
-            
             <PVTooltip
               title="LIMPIAR FILTROS"
               description="Resetear búsqueda, orden y etiquetas."

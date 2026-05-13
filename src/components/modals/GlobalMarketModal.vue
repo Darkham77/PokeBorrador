@@ -113,7 +113,7 @@ const close = () => {
   <BaseModal
     :show="show"
     :type="isSmallScreen ? 'fullscreen' : 'center'"
-    :max-width="isSmallScreen ? '100dvw' : '950px'"
+    :max-width="isSmallScreen ? '100dvw' : '1020px'"
     variant="retro"
     padding="raw"
     @close="close"
@@ -167,10 +167,7 @@ const close = () => {
           </div>
           <span class="cat-label">{{ tab.label }}</span>
           
-          <div 
-            v-if="activeTab === tab.id"
-            class="active-indicator"
-          />
+          <div class="active-indicator" />
         </button>
       </aside>
 

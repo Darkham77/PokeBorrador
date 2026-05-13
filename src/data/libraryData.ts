@@ -173,6 +173,63 @@ export const libraryContent = {
   interfaz: `
     <h1>Interfaz y Tooltips</h1>
     <p>Mantener presionado un movimiento para ver detalles técnicos en móvil.</p>
+  `,
+  clima: `
+    <h1>Clima y Ciclos</h1>
+    <p>El mundo de Poké Vicio es dinámico. Las especies y mecánicas cambian según el Ciclo Horario, las Estaciones y el Clima actual.</p>
+
+    <h3>El Ciclo Horario</h3>
+    <p>1 día real equivale a 3 días de juego. Cada fase dura 2 horas reales:</p>
+    <ul>
+      <li>🌅 <strong>Amanecer</strong>: 04:00 - 08:00</li>
+      <li>☀️ <strong>Día</strong>: 08:00 - 16:00</li>
+      <li>🌇 <strong>Atardecer</strong>: 16:00 - 20:00</li>
+      <li>🌙 <strong>Noche</strong>: 20:00 - 04:00</li>
+    </ul>
+
+    <h3>Estaciones</h3>
+    <p>Cambian cada <strong>semana real</strong> en secuencia: Primavera, Verano, Otoño e Invierno. Afectan la estética y los climas predominantes de cada ruta.</p>
+
+    <h3>Efectos en Combate</h3>
+    <table class="library-table">
+      <thead><tr><th>Clima</th><th>Bonos</th><th>Debilidades</th></tr></thead>
+      <tbody>
+        <tr><td>☀️ Sol</td><td>Fuego +50%</td><td>Agua -50%</td></tr>
+        <tr><td>☔ Lluvia</td><td>Agua +50%</td><td>Fuego -50%</td></tr>
+        <tr><td>🌪️ Arena</td><td>Def. Esp Roca +50%</td><td>Daño residual</td></tr>
+        <tr><td>❄️ Nieve</td><td>Def. Física Hielo +50%</td><td>-</td></tr>
+        <tr><td>🌫️ Niebla</td><td>Precisión: 60%</td><td>Dusk Ball 3x</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Climas Extremos</h3>
+    <ul>
+      <li>🔥 <strong>Ola de Calor</strong>: El calor es tan intenso que los ataques de tipo <strong>Agua</strong> fallan automáticamente (se evaporan).</li>
+      <li>🥶 <strong>Ola de Frío</strong>: Las temperaturas bajo cero infligen daño por turno a todos los Pokémon.</li>
+      <li>⚡ <strong>Tormenta</strong>: Las lluvias torrenciales apagan cualquier llama. Los ataques de tipo <strong>Fuego</strong> fallan automáticamente.</li>
+      <li>🌬️ <strong>Ventisca</strong>: Inflige daño por turno a los no-hielo y reduce drásticamente la visión.</li>
+      <li>🌀 <strong>Vientos Fuertes</strong>: Una barrera de aire elimina todas las debilidades del tipo Volador.</li>
+    </ul>
+
+    <h3>Influencia en Encuentros</h3>
+    <ul>
+      <li><strong>Aparición Dinámica</strong>: Un Pokémon puede aparecer si coincide su horario O si el clima favorece su tipo.</li>
+      <li><strong>Visitantes y Exclusivos</strong>: Comparten una probabilidad del 10%. Los exclusivos (como Castform) solo aparecen bajo su clima específico.</li>
+      <li><strong>Sincronización Global</strong>: El clima es idéntico para todos los jugadores en la misma zona y cambia al inicio de cada hora.</li>
+    </ul>
+
+    <h3>Clima en el Mundo vs. Combate</h3>
+    <p>El clima de la ruta es el estado natural. Si usas movimientos (como Danza Lluvia) en batalla, el clima cambiará temporalmente, pero al finalizar el combate, la ruta recuperará instantáneamente su estado original.</p>
+
+    <table class="library-table">
+      <thead><tr><th>Clima</th><th>Potencia Spawn (x1.5)</th><th>Penaliza (x0.4)</th></tr></thead>
+      <tbody>
+        <tr><td>🌧️ Lluvia</td><td>Agua, Bicho, Eléctrico</td><td>Fuego, Roca, Tierra</td></tr>
+        <tr><td>☀️ Sol</td><td>Fuego, Planta, Tierra</td><td>Agua, Hielo</td></tr>
+        <tr><td>🌪️ Arena</td><td>Roca, Tierra, Acero</td><td>Volador, Bicho, Fuego</td></tr>
+        <tr><td>🌫️ Niebla</td><td>Fantasma, Psíquico, Siniestro</td><td>Volador</td></tr>
+      </tbody>
+    </table>
   `
 }
 
@@ -186,5 +243,6 @@ export const libraryCategories = [
   { id: 'shinys', label: '✨ Shinys' },
   { id: 'combate', label: '⚔️ Combate' },
   { id: 'guerra', label: '🛡️ Guerra' },
-  { id: 'eventos', label: '📅 Eventos' }
+  { id: 'eventos', label: '📅 Eventos' },
+  { id: 'clima', label: '🌦️ Clima' }
 ]

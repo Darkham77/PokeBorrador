@@ -142,7 +142,7 @@ onUnmounted(() => {
         :class="{ active: ['team', 'box', 'pokedex'].includes(activeTab) || uiStore.openHudGroup === 'POKEMON' }"
         @click.stop="toggleGroupMenu('POKEMON')"
       >
-        <span class="icon">🔋</span>
+        <span class="icon">⚡</span>
         <span class="nav-item-label">POKÉMON</span>
       </button>
       
@@ -161,7 +161,7 @@ onUnmounted(() => {
             :class="{ active: activeTab === 'team' }"
             @click.stop="handleTabChange('team', $event); uiStore.openHudGroup = null"
           >
-            <span class="icon">🐛</span><span class="nav-item-label">EQUIPO</span>
+            <span class="icon">⚡</span><span class="nav-item-label">EQUIPO</span>
           </button>
           <button
             class="hud-nav-btn"

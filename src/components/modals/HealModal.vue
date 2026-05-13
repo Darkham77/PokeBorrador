@@ -158,7 +158,7 @@ onUnmounted(() => {
 <template>
   <BaseModal
     :show="show"
-    title="🏥 CENTRO POKÉMON"
+    title="⚡ CENTRO POKÉMON"
     title-color="Rgba(239, 68, 68, 1)"
     header-background="Rgba(26, 28, 46, 1)"
     max-width="360px"

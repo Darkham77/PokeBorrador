@@ -78,7 +78,7 @@ const getTypeEmoji = (type: string) => {
           :class="{ active: filters.mode === 'pokemon' }"
           @click.stop="setFilter('mode', 'pokemon')"
         >
-          🐾 Pokes
+          ⚡ Pokes
         </button>
         <button
           :class="{ active: filters.mode === 'item' }"
@@ -208,6 +208,7 @@ const getTypeEmoji = (type: string) => {
   border: 1px solid Rgba(255, 255, 255, 0.08);
   border-radius: 18px;
   padding: 14px;
+  margin: 20px;
   margin-bottom: 16px;
 }
 

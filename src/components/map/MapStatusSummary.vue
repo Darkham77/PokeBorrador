@@ -56,13 +56,13 @@ const bannerStyle = computed(() => ({
         />
         <div class="banner-overlay">
           <div class="banner-title">
-            CENTRO POKÉMON
+            ⚡ CENTRO POKÉMON
           </div>
           <div class="banner-desc">
             Saná a tu equipo y restaurá todos sus PP al instante.
           </div>
         </div>
-        <span class="banner-tag">🏥 CURACIÓN</span>
+        <span class="banner-tag">⚡ CURACIÓN</span>
       </div>
     </div>
 

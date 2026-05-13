@@ -86,7 +86,7 @@ const handleRelease = () => {
   }
   
   uiStore.openConfirm({
-    title: 'LIBERAR POKÉMON',
+    title: '⚡ LIBERAR POKÉMON',
     message: `¿Estás seguro de que querés liberar a ${pokemon.value.name}? Esta acción es permanente.`,
     onConfirm: () => {
       boxStore.boxReleaseSelected = [props.boxIndex]
@@ -324,7 +324,7 @@ const handleSellRocket = () => {
           class="menu-action-btn secondary-btn full-width"
           @click.stop="handleRelease"
         >
-          <span class="icon">🌿</span> LIBERAR
+          <span class="icon">⚡</span> LIBERAR
         </button>
         <button
           v-if="isRocketMode"

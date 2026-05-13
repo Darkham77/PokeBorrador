@@ -148,7 +148,7 @@ const select = (poke: TradePokemon) => {
                 type="radio"
                 value="team"
               >
-              <span>Equipo</span>
+              <span>⚡ Equipo</span>
             </label>
             <label>
               <input
@@ -189,7 +189,7 @@ const select = (poke: TradePokemon) => {
                   <span
                     class="source-badge"
                     :class="poke._source"
-                  >{{ poke._source === 'team' ? 'Equipo' : 'PC' }}</span>
+                  >{{ poke._source === 'team' ? '⚡ EQUIPO' : 'PC' }}</span>
                 </div>
                 <div class="meta">
                   <span class="m-badge-level">Nv. {{ poke.level }}</span> · {{ poke.nature }}

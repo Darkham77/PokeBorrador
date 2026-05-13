@@ -34,7 +34,7 @@
           class="nav-item"
           active-class="active"
         >
-          <span>🐾</span>
+          <span>⚡</span>
           <span>Equipo</span>
         </router-link>
         <router-link

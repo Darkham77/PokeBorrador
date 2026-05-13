@@ -1,92 +1,81 @@
-/**
- * tests/node/economy.test.ts
- *
- * NATIVE NODE.JS TEST (Node.js 26+)
- *
- * Tests pure economy/healing formulas from src/logic/economy/economyFormulas.ts.
- * Zero mocks, zero Pinia, zero Vue.
- */
-
-import { describe, it } from 'node:test';
+import test from 'node:test';
 import assert from 'node:assert/strict';
-
-import {
-  calculateIndividualHealCost,
+import { 
+  calculateIndividualHealCost, 
+  pokemonNeedsHealing, 
   calculateTotalHealCost,
-  pokemonNeedsHealing,
+  HEAL_COST_TIER_MULTIPLIERS
 } from '../../src/logic/economy/economyFormulas.ts';
+import type { Pokemon } from '../../src/types/pokemon';
 
-import type { Pokemon } from '../../src/types/pokemon.ts';
+test('Economy Formulas: pokemonNeedsHealing', () => {
+  const healthyPkmn: Partial<Pokemon> = {
+    hp: 100,
+    maxHp: 100,
+    status: null,
+    moves: [{ name: 'Tackle', pp: 20, maxPP: 20 }] as any
+  };
 
-function makeTestMon(hp: number, maxHp: number, status: string | null = null, pp: number = 10, maxPP: number = 10): Pokemon {
-  return {
-    uid: 'mon1',
-    id: 'pikachu',
-    name: 'Pikachu',
-    level: 25,
-    hp,
-    maxHp,
-    status,
-    moves: [{ name: 'Placaje', pp, maxPP }],
-    atk: 55, def: 40, spa: 50, spd: 50, spe: 90,
-    type: 'electric', nature: 'Fuerte', ability: 'Estática',
-    ivs: { hp: 10, atk: 10, def: 10, spa: 10, spd: 10, spe: 10 },
-  } as unknown as Pokemon;
-}
+  const damagedPkmn: Partial<Pokemon> = {
+    hp: 90,
+    maxHp: 100,
+    status: null,
+    moves: []
+  };
 
-describe('Economy & Healing Formulas', () => {
-  describe('pokemonNeedsHealing', () => {
-    it('returns false when pokemon is fully healthy', () => {
-      const mon = makeTestMon(50, 50, null, 10, 10);
-      assert.strictEqual(pokemonNeedsHealing(mon), false);
-    });
+  const statusPkmn: Partial<Pokemon> = {
+    hp: 100,
+    maxHp: 100,
+    status: 'poison',
+    moves: []
+  };
 
-    it('returns true when pokemon has lost HP', () => {
-      const mon = makeTestMon(30, 50, null, 10, 10);
-      assert.strictEqual(pokemonNeedsHealing(mon), true);
-    });
+  const ppPkmn: Partial<Pokemon> = {
+    hp: 100,
+    maxHp: 100,
+    status: null,
+    moves: [{ name: 'Tackle', pp: 10, maxPP: 20 }] as any
+  };
 
-    it('returns true when pokemon has status condition', () => {
-      const mon = makeTestMon(50, 50, 'paralysis', 10, 10);
-      assert.strictEqual(pokemonNeedsHealing(mon), true);
-    });
+  assert.strictEqual(pokemonNeedsHealing(healthyPkmn as Pokemon), false, 'Healthy pokemon should not need healing');
+  assert.strictEqual(pokemonNeedsHealing(damagedPkmn as Pokemon), true, 'Damaged pokemon should need healing');
+  assert.strictEqual(pokemonNeedsHealing(statusPkmn as Pokemon), true, 'Pokemon with status should need healing');
+  assert.strictEqual(pokemonNeedsHealing(ppPkmn as Pokemon), true, 'Pokemon with low PP should need healing');
+});
 
-    it('returns true when pokemon has lost move PP', () => {
-      const mon = makeTestMon(50, 50, null, 5, 10);
-      assert.strictEqual(pokemonNeedsHealing(mon), true);
-    });
-  });
+test('Economy Formulas: calculateIndividualHealCost', () => {
+  const pkmn: Partial<Pokemon> = {
+    id: 'bulbasaur',
+    ivs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 }
+  };
 
-  describe('calculateIndividualHealCost', () => {
-    it('returns 0 for classes other than rocket', () => {
-      const mon = makeTestMon(10, 50);
-      assert.strictEqual(calculateIndividualHealCost(mon, 5, 'trainer'), 0);
-    });
+  // For non-rocket, cost is always 0
+  assert.strictEqual(calculateIndividualHealCost(pkmn as Pokemon, 10, 'trainer'), 0);
+  
+  // For rocket, level 10, tier F (multiplier 1)
+  // basePrice = 20 + (10 * 3) = 50
+  assert.strictEqual(calculateIndividualHealCost(pkmn as Pokemon, 10, 'rocket'), 50);
 
-    it('calculates correct cost for rocket class at level 5 with D-tier pokemon', () => {
-      const mon = makeTestMon(10, 50); // IV sum is 15*6 = 90 (Tier D)
-      // Base Price = 20 + 5 * 3 = 35.
-      // Multiplier = 1.2 (D-tier).
-      // Expected Cost = Math.floor(35 * 1.2) = 42.
-      assert.strictEqual(calculateIndividualHealCost(mon, 5, 'rocket'), 42);
-    });
-  });
+  // For rocket, level 10, tier S+ (multiplier 10)
+  // Let's mock a high IV pokemon
+  const highTierPkmn: Partial<Pokemon> = {
+    id: 'bulbasaur',
+    ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 }
+  };
+  // basePrice 50 * 10 = 500
+  assert.strictEqual(calculateIndividualHealCost(highTierPkmn as Pokemon, 10, 'rocket'), 500);
+});
 
-  describe('calculateTotalHealCost', () => {
-    it('sums individual healing costs for all party members needing recovery', () => {
-      const mon1 = makeTestMon(10, 50); // Needs healing (D-tier: cost 42)
-      const mon2 = makeTestMon(50, 50); // Healthy (Cost 0)
-      const party = [mon1, mon2];
-
-      assert.strictEqual(calculateTotalHealCost(party, 5, 'rocket'), 42);
-    });
-
-    it('returns 0 if no party members require recovery', () => {
-      const mon1 = makeTestMon(50, 50);
-      const mon2 = makeTestMon(60, 60);
-      const party = [mon1, mon2];
-
-      assert.strictEqual(calculateTotalHealCost(party, 5, 'rocket'), 0);
-    });
-  });
+test('Economy Formulas: calculateTotalHealCost', () => {
+  const p1: Partial<Pokemon> = { hp: 100, maxHp: 100, ivs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 } }; // Healthy
+  const p2: Partial<Pokemon> = { hp: 50, maxHp: 100, ivs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 } }; // Needs healing
+  
+  const team = [p1 as Pokemon, p2 as Pokemon, null];
+  
+  // For trainer, cost 0
+  assert.strictEqual(calculateTotalHealCost(team, 10, 'trainer'), 0);
+  
+  // For rocket, only p2 counts
+  // cost = 50
+  assert.strictEqual(calculateTotalHealCost(team, 10, 'rocket'), 50);
 });

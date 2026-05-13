@@ -197,7 +197,7 @@ onUnmounted(() => {
 
     <!-- BALLS -->
     <PVTooltip
-      title="POKÉ BALLS"
+      title="⚡ POKÉ BALLS"
       :description="`Total: ${balls}\n\n${ballsBreakdown}`"
       position="bottom"
     >
@@ -221,7 +221,7 @@ onUnmounted(() => {
 
     <!-- HUEVOS -->
     <PVTooltip
-      title="HUEVOS POKÉMON"
+      title="⚡ HUEVOS POKÉMON"
       description="Huevos en proceso de incubación. Haz clic para ver detalles."
       position="bottom"
     >

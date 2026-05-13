@@ -133,7 +133,7 @@ function selectPvp(slotIndex: number) {
   }
 
   uiStore.open('PokemonSelection', {
-    title: 'SELECCIONAR POKÉMON',
+    title: '⚡ SELECCIONAR POKÉMON',
     subtitle: 'Elige un Pokémon para tu equipo de combate.',
     excludeUids: pvpTeam,
     callbackConfirm: (selected: Pokemon[]) => {
@@ -155,7 +155,7 @@ function selectWar(slotIndex: number) {
   }
 
   uiStore.open('PokemonSelection', {
-    title: 'SELECCIONAR POKÉMON',
+    title: '⚡ SELECCIONAR POKÉMON',
     subtitle: 'Elige un Pokémon para tu equipo de guerra.',
     excludeUids: warTeam,
     callbackConfirm: (selected: Pokemon[]) => {
@@ -170,7 +170,7 @@ function selectAdventure(_slotIndex: number) {
   const currentTeamUids = (gameStore.state.team || []).map((p: Pokemon | null) => p?.uid).filter(Boolean) as string[]
   
   uiStore.open('PokemonSelection', {
-    title: 'SELECCIONAR POKÉMON',
+    title: '⚡ SELECCIONAR POKÉMON',
     subtitle: 'Selecciona un Pokémon de tu caja para añadir al equipo.',
     excludeUids: currentTeamUids,
     includeTeam: false,

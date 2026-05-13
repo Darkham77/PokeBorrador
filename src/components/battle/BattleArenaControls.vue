@@ -39,7 +39,7 @@ const execShowBattleSwitch = () => {
   uiStore.isBattleSwitchForced = false
 
   modalStore.open('PokemonSelection', {
-    title: 'CAMBIAR POKÉMON',
+    title: '⚡ CAMBIAR POKÉMON',
     isBattleSwitch: true,
     battleMode: 'wild',
     includeTeam: true,

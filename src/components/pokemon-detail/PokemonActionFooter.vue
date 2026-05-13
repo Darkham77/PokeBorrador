@@ -59,7 +59,7 @@ const hasActions = computed(() => {
         :disabled="!canBuy"
         @click.stop="emit('buy')"
       >
-        {{ !canBuy ? 'SALDO INSUFICIENTE' : 'COMPRAR POKÉMON' }}
+        {{ !canBuy ? 'SALDO INSUFICIENTE' : '⚡ COMPRAR POKÉMON' }}
       </button>
     </div>
   </footer>

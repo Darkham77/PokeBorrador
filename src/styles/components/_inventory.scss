@@ -2,49 +2,10 @@
 @use "@/styles/core/tools" as *;
 
 .inventory-modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-  padding: 0 10px;
-
-  @media (max-width: 768px) {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 16px;
-  }
+  @include shop-header;
 
   .inv-title-group {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-
-    .title-icon {
-      font-size: 28px;
-      will-change: transform, filter, opacity;
-  filter: Drop-Shadow(0 0 10px Rgba(255, 214, 10, 0.3));
-    }
-
-    .title-text-wrap {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-
-      .main-title {
-        @include pixelated;
-        font-size: 16px;
-        color: var(--yellow);
-        letter-spacing: 2px;
-        text-shadow: 0 0 10px Rgba(255, 214, 10, 0.4);
-      }
-
-      .sub-title {
-        @include pixelated;
-        font-size: 7px;
-        color: Rgba(255, 255, 255, 0.4);
-        letter-spacing: 1px;
-      }
-    }
+    @include shop-header-title;
   }
 
   .header-stats {
@@ -57,60 +18,27 @@
     }
 
     .stat-node {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
-      gap: 4px;
-
-      .inv-stat-label {
-        @include pixelated;
-        font-size: 6px;
-        color: Rgba(255, 255, 255, 0.3);
-      }
-
-      .value {
-        @include pixelated;
-        font-size: 16px;
-        font-weight: 900;
-        color: white;
-      }
-
-      &.money .value {
-        color: var(--green);
-        text-shadow: 0 0 15px Rgba(74, 222, 128, 0.2);
-      }
+      @include shop-header-stat;
+      
+      &.money .value { @extend .colored; color: var(--green); text-shadow: 0 0 15px Rgba(74, 222, 128, 0.2); }
     }
   }
 }
 
 .inventory-modal-container {
-  display: flex;
-  height: 600px;
-  max-height: 80dvh;
-  min-height: 0; // Fix flex scroll collapse
-  background: Rgba(0, 0, 0, 0.1);
-  border-radius: 0 0 24px 24px;
-  overflow: hidden;
-
-  @media (max-width: 950px) {
-    height: auto;
-    flex: 1;
-    max-height: none;
-    border-radius: 0;
-  }
+  @include shop-shell;
 }
 
 .inventory-main {
   flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   background: Rgba(255, 255, 255, 0.01);
 }
 
 .inventory-grid-wrapper {
-  flex: 1;
-  padding: 20px;
-  overflow-y: scroll !important; // Force scrollbar to prevent grid jumping
+  @include shop-grid-wrapper-unified;
   @include premium-gradient;
 
   .item-premium-grid {

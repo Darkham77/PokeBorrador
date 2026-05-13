@@ -2,7 +2,7 @@
 @use "@/styles/core/tools" as *;
 
 body .selection-container {
-  padding: 20px 0 0 0; 
+  padding: 12px 0 0 0; 
   display: flex;
   flex-direction: column;
   flex: 1;
@@ -12,8 +12,8 @@ body .selection-container {
 .filters-bar {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  margin-bottom: 5px;
+  gap: 4px;
+  margin-bottom: 0;
   padding: 0 20px;
 }
 
@@ -55,27 +55,23 @@ body .selection-container {
 }
 
 .ps-tags-section {
-  margin-top: 5px;
+  margin-top: -2px; // Pull up slightly more
   padding: 0 20px;
+  display: flex;
+  justify-content: center;
+  width: 100%;
 
   .ps-tags-row-unified {
-    display: flex;
+    display: inline-flex; // Shrink to content instead of full width
     align-items: center;
-    gap: 10px;
+    flex-wrap: wrap;
+    gap: 8px 10px;
     background: Rgba(255, 255, 255, 0.03);
     border: 1px solid Rgba(255, 255, 255, 0.05);
     border-radius: 10px;
     padding: 4px 10px;
-    width: 100%;
-    overflow: hidden;
-  }
-
-  .ps-section-label {
-    @include pixelated;
-    font-size: 7px;
-    color: Rgba(255, 255, 255, 0.3);
-    letter-spacing: 0.5px;
-    flex-shrink: 0;
+    min-height: 32px;
+    max-width: 100%; // Ensure it doesn't overflow
   }
 
   .ps-clear-icon-btn {
@@ -96,13 +92,14 @@ body .selection-container {
   }
 
   .ps-tags-list-horizontal {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    overflow-x: auto;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    padding: 4px 0;
     padding-bottom: 2px; // Space for scrollbar if needed
 
-    &::-webkit-scrollbar { height: 0; } // Hide scrollbar for cleaner look
+    &::-webkit-scrollbar { display: none; height: 0; }
+    scrollbar-width: none; // Firefox
+    -ms-overflow-style: none; // IE/Edge
     
     button {
       height: 20px;
@@ -260,50 +257,29 @@ body .selection-container {
   @include pixelated;
 }
 
-// Header Integration
 .ps-header-content {
   display: flex;
   align-items: center;
-  gap: 20px;
   flex: 1;
-  margin-right: 15px;
 
   .ps-modal-title {
-    white-space: nowrap;
-    margin-bottom: 0 !important;
     @include pixelated;
     font-size: 11px !important;
     letter-spacing: 1px !important;
     color: var(--white) !important;
     text-transform: uppercase;
-  }
-
-  @media (max-width: 950px) {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-    margin-right: 0;
-    width: 100%;
-
-    & .ps-modal-title {
-      font-size: 9px !important;
-    }
+    margin-bottom: 0 !important;
   }
 }
 
-.ps-search-box-header {
+.ps-search-row {
   position: relative;
-  flex: 1;
   width: 100%;
-  max-width: 300px;
   display: flex;
   align-items: center;
+  margin-bottom: 4px;
 
-  @media (max-width: 950px) {
-    max-width: none;
-  }
-
-  .ps-header-search-icon {
+  .ps-search-icon {
     position: absolute;
     left: 12px;
     font-size: 10px;
@@ -311,14 +287,14 @@ body .selection-container {
     pointer-events: none;
   }
 
-  .ps-search-input-header {
+  .ps-search-input {
     width: 100%;
     background: Rgba(0, 0, 0, 0.2);
     border: 1px solid Rgba(255, 255, 255, 0.08);
     border-radius: 8px;
-    padding: 6px 30px 6px 28px;
+    padding: 8px 32px 8px 30px;
     color: var(--white);
-    font-size: 11px;
+    font-size: 10px;
     @include pixelated;
     transition: all 0.2s;
 
@@ -326,7 +302,6 @@ body .selection-container {
       outline: none;
       border-color: var(--yellow);
       background: Rgba(255, 214, 10, 0.05);
-      box-shadow: 0 0 10px Rgba(255, 214, 10, 0.1);
     }
     
     &::placeholder {
@@ -334,7 +309,7 @@ body .selection-container {
     }
   }
 
-  .ps-header-clear-search {
+  .ps-clear-search {
     position: absolute;
     right: 8px;
     background: none;

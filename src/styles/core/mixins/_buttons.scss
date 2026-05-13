@@ -16,6 +16,9 @@
   cursor: pointer;
   transition: transform 0.1s, filter 0.2s, box-shadow 0.2s;
   @include pixelated;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform-style: preserve-3d;
   gap: 12px;
 
   // Icon Standardization
@@ -118,12 +121,12 @@
   &:hover:not(:disabled) {
     will-change: transform, filter, opacity;
   filter: Brightness(1.1);
-    transform: Translatey(-1px);
+    transform: Translatey(-1px) Translatez(0);
     box-shadow: 0 ($depth + 1px) 0 $shadow;
   }
 
   &:active:not(:disabled) {
-    transform: Translatey(2px);
+    transform: Translatey(2px) Translatez(0);
     box-shadow: 0 (max(0px, $depth - 2px)) 0 $shadow;
   }
 

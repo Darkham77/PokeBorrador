@@ -184,7 +184,7 @@ const handlePokemonClick = (index: number) => {
               class="release-trigger-btn"
               @click.stop="toggleReleaseMode"
             >
-              🌿 LIBERAR POKÉMON
+              ⚡ LIBERAR POKÉMON
             </button>
           </PVTooltip>
         </div>
@@ -240,7 +240,7 @@ const handlePokemonClick = (index: number) => {
           :disabled="boxStore.boxReleaseSelected.length === 0"
           @click.stop="handleConfirmRelease"
         >
-          🌿 LIBERAR LOTE
+          ⚡ LIBERAR LOTE
         </button>
       </div>
     </div>

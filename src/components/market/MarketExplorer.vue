@@ -3,15 +3,25 @@
 import { computed } from 'vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { useGTSStore } from '@/stores/gts'
+import { useGameStore } from '@/stores/game'
 import type { MarketListing } from '@/logic/market'
 import { formatCurrency } from '@/logic/utils/formatters'
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 
-import { getPokemonTier } from '@/logic/pokemon/tierEngine'
-
+import PokemonSelectionItem from '@/components/modals/PokemonSelectionItem.vue'
 import type { Pokemon } from '@/types/pokemon'
-import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue'
 
+const game = useGameStore()
 const gtsStore = useGTSStore()
+
+function getPokemonTotalPower(p: Pokemon) {
+  if (!p) return 0
+  const base = pokemonDataProvider.getPokemonData(p.id)
+  const baseTot = base ? (base.hp + base.atk + base.def + base.spa + base.spd + base.spe) : 0
+  const ivs = p.ivs || { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 }
+  const totalIvs = (ivs.hp || 0) + (ivs.atk || 0) + (ivs.def || 0) + (ivs.spa || 0) + (ivs.spd || 0) + (ivs.spe || 0)
+  return baseTot + totalIvs
+}
 
 const listings = computed(() => gtsStore.filteredListings)
 
@@ -28,13 +38,6 @@ const formatTime = (ts: string | number) => {
   }
 }
 
-function getTierData(pokemon: unknown) {
-  return getPokemonTier(pokemon as Partial<Pokemon>)
-}
-
-function getSprite(pokemon: unknown) {
-  return getAssetUrl(ASSET_TYPES.POKEMON, (pokemon as Pokemon).id || 'missing')
-}
 
 </script>
 
@@ -60,79 +63,62 @@ function getSprite(pokemon: unknown) {
 
     <div
       v-else
-      class="listings-grid custom-scrollbar"
+      class="listings-grid-unified custom-scrollbar"
     >
       <div 
         v-for="item in listings" 
         :key="item.id"
-        class="listing-card"
+        class="market-item-wrapper"
         :class="[item.listing_type]"
       >
-        <div class="seller-header">
-          <span class="seller-name">👤 {{ item.seller_name }}</span>
-          <span class="time">{{ formatTime(item.created_at) }}</span>
+        <div class="seller-tag">
+          <span class="s-name">👤 {{ item.seller_name }}</span>
+          <span class="s-time">{{ formatTime(item.created_at) }}</span>
         </div>
 
-        <div class="card-body">
-          <div class="visual-area">
-            <template v-if="item.listing_type === 'pokemon'">
-              <div
-                class="market-tier-badge m-badge-tier"
-                :style="{ background: getTierData(item.data).bg }"
+        <template v-if="item.listing_type === 'pokemon'">
+          <PokemonSelectionItem
+            :item="{
+              pokemon: item.data as unknown as Pokemon,
+              _source: 'box',
+              index: 0
+            }"
+            :total="getPokemonTotalPower(item.data as unknown as Pokemon)"
+            auto-confirm
+            class="listing-card-override"
+          />
+        </template>
+        <template v-else>
+          <div class="explorer-item-card">
+            <div class="item-visual">
+              <img 
+                :src="getAssetUrl(ASSET_TYPES.ITEM, item.data.name || '')" 
+                class="i-sprite pixelated"
+                @error="(e: Event) => (e.target as HTMLImageElement).src = getAssetUrl(ASSET_TYPES.ITEM, 'Poción')"
               >
-                {{ getTierData(item.data).tier }}
+            </div>
+            <div class="item-details">
+              <span class="i-name">{{ item.data.name }}</span>
+              <div class="i-meta">
+                <span class="i-qty">CANTIDAD: x{{ item.data.qty || 1 }}</span>
               </div>
-              <img
-                :src="getSprite(item.data)"
-                class="pokemon-sprite pixelated"
-                @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
-              >
-            </template>
-            <template v-else>
-              <span class="item-icon">{{ item.data.icon || '📦' }}</span>
-            </template>
+            </div>
           </div>
+        </template>
 
-          <div class="info-area">
-            <h3 class="name">
-              {{ item.data.name }}
-            </h3>
-            <div
-              v-if="item.listing_type === 'pokemon'"
-              class="meta"
-            >
-              <span class="lvl m-badge-level">Nv. {{ item.data.level }}</span>
-              <span class="types">
-                <PokemonTypeTag
-                  :type="String(item.data.type || 'normal')"
-                  size="ssm"
-                />
-                <PokemonTypeTag
-                  v-if="item.data.type2"
-                  :type="String(item.data.type2)"
-                  size="ssm"
-                />
-              </span>
-            </div>
-            <div
-              v-else
-              class="meta"
-            >
-              <span class="qty">Cantidad: x{{ item.data.qty || 1 }}</span>
-            </div>
-            
-            <div class="price-tag">
-              ₽{{ formatCurrency(item.price) }}
-            </div>
+        <div class="listing-footer">
+          <div class="price-info">
+            <span class="price-label">PRECIO</span>
+            <span class="price-val">₽{{ formatCurrency(item.price) }}</span>
           </div>
+          <button 
+            class="btn-vicio-primary btn-vicio-sm"
+            :disabled="game.state.money < item.price"
+            @click.stop="handleBuy(item)"
+          >
+            {{ game.state.money < item.price ? 'SIN SALDO' : 'COMPRAR' }}
+          </button>
         </div>
-
-        <button 
-          class="buy-btn"
-          @click.stop="handleBuy(item)"
-        >
-          COMPRAR
-        </button>
       </div>
     </div>
   </div>
@@ -141,128 +127,87 @@ function getSprite(pokemon: unknown) {
 <style scoped lang="scss">
 @use "@/styles/core/_mixins" as *;
 .market-explorer {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-}
-
-.listings-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 16px;
-  overflow-y: auto;
-  min-height: 0;
-  padding-right: 8px;
-}
-
-.listing-card {
-  @include pokemon-card-standard(16px);
-  padding: 12px;
-  display: flex;
-  flex-direction: column;
-
-  &:hover {
-    @include shell-hover-blue;
-    transform: none !important;
-    border-color: #a855f755 !important;
-  }
-}
-
-.seller-header {
-  display: flex;
-  justify-content: space-between;
-  font-size: 9px;
-  color: $muted;
-  margin-bottom: 12px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid Rgba(255, 255, 255, 0.05);
-}
-
-.card-body {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 14px;
-}
-
-.visual-area {
-  width: 64px;
-  height: 64px;
-  background: Rgba(0, 0, 0, 0.2);
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  flex-shrink: 0;
-
-  .pokemon-sprite {
-    width: 56px;
-    height: 56px;
-    object-fit: contain;
-  }
-  
-  .item-icon { font-size: 32px; }
-
-  .market-tier-badge {
-    position: absolute;
-    top: -6px;
-    right: -6px;
-    z-index: var(--z-low);
-  }
-}
-
-.info-area {
   flex: 1;
-  min-width: 0;
-
-  .name {
-    font-size: 13px;
-    font-weight: bold;
-    color: $white;
-    margin: 0 0 4px 0;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    margin-bottom: 8px;
-    font-size: 10px;
-    color: Rgba(148, 163, 184, 1);
-  }
-
-  .price-tag {
-    @include pixelated;
-    font-size: 9px;
-    color: $coin-gold;
-  }
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 
+.listings-grid-unified {
+  @include shop-grid-wrapper-unified;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-auto-rows: min-content;
+  align-items: start;
+  gap: 20px;
+}
 
-.buy-btn {
-  width: 100%;
-  padding: 10px;
-  border: none;
-  background: Rgba(168, 85, 247, 1);
-  color: $white;
-  border-radius: 10px;
-  font-size: 10px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: all 0.2s;
-  
-  &:hover {
-    background: $purple;
-    box-shadow: 0 0 15px Rgba(168, 85, 247, 0.4);
-  }
-  
-  &:disabled {
-    background: Rgba(51, 65, 85, 1);
+.market-item-wrapper {
+  @include shop-item-card($yellow);
+  padding: 0;
+  gap: 0;
+
+  .seller-tag {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 15px;
+    background: Rgba(0, 0, 0, 0.2);
+    border-bottom: 1px solid Rgba(255, 255, 255, 0.05);
+    font-size: 8px;
+    @include pixelated;
     color: $muted;
-    cursor: not-allowed;
+
+    .s-name { color: var(--blue); }
+  }
+
+  .listing-card-override {
+    background: transparent !important;
+    padding: 15px !important;
+    pointer-events: none;
+    box-shadow: none !important;
+    width: 100%;
+  }
+
+  .explorer-item-card {
+    padding: 15px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+
+    .item-visual {
+      width: 48px;
+      height: 48px;
+      background: Rgba(0, 0, 0, 0.2);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      .i-sprite { width: 36px; height: 36px; object-fit: contain; }
+    }
+
+    .item-details {
+      flex: 1;
+      .i-name { font-size: 13px; font-weight: bold; color: var(--white); display: block; margin-bottom: 4px; }
+      .i-qty { font-size: 8px; @include pixelated; color: $muted; }
+    }
+  }
+
+  .listing-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    background: Rgba(0, 0, 0, 0.2);
+    border-top: 1px dashed Rgba(255, 255, 255, 0.08);
+
+    .price-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      .price-label { font-size: 7px; @include pixelated; color: $muted; }
+      .price-val { font-size: 14px; @include pixelated; color: $coin-gold; }
+    }
   }
 }
 

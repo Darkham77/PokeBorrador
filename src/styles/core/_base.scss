@@ -92,7 +92,10 @@ h1, h2, h3, h4, h5, h6,
 body .pixelated {
   -webkit-font-smoothing: none !important;
   -moz-osx-font-smoothing: grayscale !important;
+  font-smooth: never !important;
   text-rendering: optimizeSpeed !important;
+  -webkit-text-stroke: 0px !important;
+  image-rendering: pixelated !important;
 }
 
 .screen {

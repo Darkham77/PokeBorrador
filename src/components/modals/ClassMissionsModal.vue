@@ -100,7 +100,7 @@ async function startMission(missionId: string) {
     classStore.startMission(missionId)
   } else {
     pickerConfig.value = {
-      title: '📍 ENVIAR POKÉMON',
+      title: '⚡ ENVIAR POKÉMON',
       subtitle: 'Selecciona al Pokémon que realizará la misión.',
       maxSelect: 1,
       typeFilter: null,

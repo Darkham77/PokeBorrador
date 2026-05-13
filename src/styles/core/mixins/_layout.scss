@@ -32,19 +32,25 @@
 }
 
 @mixin pixelated {
-  // Typography sharpening
+  // Typography sharpening (Aggressive anti-blur)
   -webkit-font-smoothing: none !important;
-  -moz-osx-font-smoothing: auto !important;
+  -moz-osx-font-smoothing: grayscale !important;
+  font-smooth: never !important;
   text-rendering: optimizeSpeed !important;
-
-  // Pixel Art Rendering (CRITICAL: 'pixelated' must be last to win in Chromium/Safari)
+  font-variant-ligatures: none !important;
+  -webkit-text-stroke: 0px !important; // Prevent subtle font weight blurring
+  
+  // Pixel Art Rendering
   image-rendering: -webkit-optimize-contrast !important;
-  $moz-rendering: -moz-crisp-edges;
-  image-rendering: $moz-rendering !important;
+  image-rendering: crisp-edges !important;
   image-rendering: pixelated !important;
   -ms-interpolation-mode: nearest-neighbor !important;
   
+  // Core pixel font mapping
   font-family: var(--font-pixel, 'Press Start 2P'), 'Arial', sans-serif !important;
+  
+  // Force integer pixel rendering
+  transform: Translatez(0); 
 }
 
 @mixin tooltip-premium {
