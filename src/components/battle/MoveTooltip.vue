@@ -24,9 +24,9 @@ const modifierInfo = computed(() => {
   const mechWeather = getMechanicalWeather(weather)
   const cycle = getDayCycle()
 
-  const isRaining = mechWeather === WEATHER_MECHANICAL.RAIN || mechWeather === WEATHER_MECHANICAL.STORM
-  const isSunny = mechWeather === WEATHER_MECHANICAL.SUN || mechWeather === WEATHER_MECHANICAL.HEATWAVE
-  const isSnowing = mechWeather === WEATHER_MECHANICAL.SNOW || mechWeather === WEATHER_MECHANICAL.BLIZZARD
+  const isRaining = mechWeather === WEATHER_MECHANICAL.RAIN
+  const isSunny = mechWeather === WEATHER_MECHANICAL.SUN
+  const isSnowing = mechWeather === WEATHER_MECHANICAL.SNOW || mechWeather === WEATHER_MECHANICAL.HAIL
   const isDayTime = cycle === 'day' || cycle === 'morning'
   const isNightTime = cycle === 'night' || cycle === 'dusk'
 
@@ -56,10 +56,11 @@ const modifierInfo = computed(() => {
     if (mechWeather !== WEATHER_MECHANICAL.CLEAR) return { type: 'boosted', text: 'Tipo y potencia adaptados al clima (100 BP).' }
   }
 
-  // 4. General Accuracy Warning (Fog/Mist)
-  if (mechWeather === WEATHER_MECHANICAL.FOG || mechWeather === WEATHER_MECHANICAL.MIST) {
-    const label = mechWeather === WEATHER_MECHANICAL.FOG ? 'Niebla' : 'Bruma'
-    const penalty = mechWeather === WEATHER_MECHANICAL.FOG ? '60%' : '80%'
+  // 4. General Accuracy Warning (Fog)
+  if (mechWeather === WEATHER_MECHANICAL.FOG) {
+    const isMist = weather?.toLowerCase() === 'mist'
+    const label = isMist ? 'Bruma' : 'Niebla'
+    const penalty = isMist ? '80%' : '60%'
     return { type: 'penalized', text: `Precisión reducida al ${penalty} por ${label}.` }
   }
 
@@ -68,11 +69,13 @@ const modifierInfo = computed(() => {
 
   // 5. Elemental Multipliers
   if (m.type === 'fire') {
-    if (isRaining) return { type: 'penalized', text: 'Penalizado por Lluvia/Tormenta (0.5x)' }
+    const isExtreme = weather?.toLowerCase() === 'storm' || weather?.toLowerCase() === 'thunderstorm' || weather?.toLowerCase() === 'heavy_rain'
+    if (isRaining) return { type: 'penalized', text: `Penalizado por ${isExtreme ? 'Tormenta' : 'Lluvia'} (${isExtreme ? 'x0' : '0.5x'})` }
     if (isSunActive) return { type: 'boosted', text: `Potenciado por ${isSunny ? 'Sol' : 'Horario'} (1.5x/1.2x)` }
   }
   if (m.type === 'water') {
-    if (isSunny) return { type: 'penalized', text: 'Penalizado por Sol/Calor (0.5x)' }
+    const isExtreme = weather?.toLowerCase() === 'heatwave' || weather?.toLowerCase() === 'intense_sun'
+    if (isSunny) return { type: 'penalized', text: `Penalizado por ${isExtreme ? 'Calor Extremo' : 'Sol'} (${isExtreme ? 'x0' : '0.5x'})` }
     if (isRainActive) return { type: 'boosted', text: `Potenciado por ${isRaining ? 'Lluvia' : 'Horario'} (1.5x/1.2x)` }
   }
   return null

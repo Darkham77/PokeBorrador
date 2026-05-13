@@ -109,9 +109,9 @@ const getMoveModifier = (move: Move | null) => {
   const mechWeather = getMechanicalWeather(weather)
   const cycle = getDayCycle()
 
-  const isRaining = mechWeather === WEATHER_MECHANICAL.RAIN || mechWeather === WEATHER_MECHANICAL.STORM
-  const isSunny = mechWeather === WEATHER_MECHANICAL.SUN || mechWeather === WEATHER_MECHANICAL.HEATWAVE
-  const isSnowing = mechWeather === WEATHER_MECHANICAL.SNOW || mechWeather === WEATHER_MECHANICAL.BLIZZARD
+  const isRaining = mechWeather === WEATHER_MECHANICAL.RAIN
+  const isSunny = mechWeather === WEATHER_MECHANICAL.SUN
+  const isSnowing = mechWeather === WEATHER_MECHANICAL.SNOW || mechWeather === WEATHER_MECHANICAL.HAIL
   const isDayTime = cycle === 'day' || cycle === 'morning'
   const isNightTime = cycle === 'night' || cycle === 'dusk'
 
@@ -141,8 +141,8 @@ const getMoveModifier = (move: Move | null) => {
     if (mechWeather !== WEATHER_MECHANICAL.CLEAR) return 'boosted'
   }
 
-  // 4. Accuracy Penalties (Fog/Mist)
-  if (mechWeather === WEATHER_MECHANICAL.FOG || mechWeather === WEATHER_MECHANICAL.MIST) {
+  // 4. Accuracy Penalties (Fog)
+  if (mechWeather === WEATHER_MECHANICAL.FOG) {
     return 'penalized'
   }
 
