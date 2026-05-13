@@ -147,7 +147,7 @@ const net = computed(() => price.value - fee.value)
           <div class="financials">
             <div class="row">
               <span>Comisión GTS (5%):</span>
-              <span class="neg">- ₱{{ fee.toLocaleString() }}</span>
+              <span class="neg">-₱{{ fee.toLocaleString() }}</span>
             </div>
             <div class="row total">
               <span>Tú recibes:</span>
@@ -289,8 +289,9 @@ const net = computed(() => price.value - fee.value)
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 30px;
+  padding: 20px;
 }
+
 
 .selection-hint {
   text-align: center;
@@ -359,7 +360,7 @@ const net = computed(() => price.value - fee.value)
 .financials {
   background: Rgba(0, 0, 0, 0.2);
   border-radius: 16px;
-  padding: 15px;
+  padding: 12px 16px;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -367,8 +368,15 @@ const net = computed(() => price.value - fee.value)
   .row {
     display: flex;
     justify-content: space-between;
+    align-items: center;
     font-size: 11px;
     color: Rgba(148, 163, 184, 1);
+    gap: 12px;
+
+    span {
+      white-space: nowrap;
+    }
+
     &.total {
        border-top: 1px solid Rgba(255, 255, 255, 0.05);
        padding-top: 10px;
@@ -381,6 +389,7 @@ const net = computed(() => price.value - fee.value)
     .pos { color: Rgba(34, 197, 94, 1); }
   }
 }
+
 
 .confirm-btn {
   width: 100%;
