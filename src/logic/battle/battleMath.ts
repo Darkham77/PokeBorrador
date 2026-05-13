@@ -278,7 +278,8 @@ export function calculateDamagePure(
   move: PureMove,
   ctx: PureDamageOptions = {},
   dayCycle: 'morning' | 'day' | 'dusk' | 'night' = 'day',
-  randomFactor?: number
+  randomFactor?: number,
+  forceCrit?: boolean
 ): PureDamageResult {
   const { atkStages = 0, defStages = 0, weather = null } = ctx;
 
@@ -307,7 +308,7 @@ export function calculateDamagePure(
   // Critical hit
   let critRate = ACTIVE_RULE_SET === 2 ? 0.0625 : (attacker.heldItem === 'Lente Zoom' ? 0.12 : 0.06);
   if (attacker.focusEnergy) critRate = 0.25;
-  let isCrit = Math.random() < critRate;
+  let isCrit = forceCrit !== undefined ? forceCrit : (Math.random() < critRate);
   if (defender.ability === 'Caparazón' || defender.ability === 'Armadura Batalla') isCrit = false;
 
   if (isCrit) {
