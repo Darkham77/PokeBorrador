@@ -9,6 +9,7 @@ import PVTooltip from '@/components/common/PVTooltip.vue'
 import { PDEX_ORDER, GEN2_PDEX_ORDER } from '@/data/pokedex'
 import { gameBus } from '@/logic/gameBus'
 import DebugAudioAnimTab from '@/components/admin/debug/DebugAudioAnimTab.vue'
+import { getMechanicalWeather, WEATHER_UI_METADATA, WEATHER_VISUAL_METADATA } from '@/logic/battle/weatherMapper'
 import type { Pokemon } from '@/types/pokemon'
 
 const ALL_PDEX = [...PDEX_ORDER, ...GEN2_PDEX_ORDER]
@@ -177,6 +178,36 @@ const toggleStatus = (side: string, type: string) => {
     }
   }
 }
+
+const setBattleWeather = (type: string | null) => {
+  if (!battleStore.state) return
+  if (!type || type === 'clear') {
+    battleStore.state.weather = { type: 'clear', turns: -1 }
+  } else {
+    battleStore.state.weather = { type, turns: 99 }
+  }
+  battleStore.addLog(`DEBUG: Weather changed to ${type || 'CLEAR'}`, 'log-info')
+}
+
+const weatherOptions = computed(() => {
+  // Combinamos todos los tipos técnicos (mecánicos y visuales) de forma única
+  const mechanicals = Object.keys(WEATHER_UI_METADATA).filter(k => k !== 'unknown' && k !== 'clear')
+  const visuals = Object.keys(WEATHER_VISUAL_METADATA)
+  const all = Array.from(new Set(['clear', ...mechanicals, ...visuals]))
+  
+  return all.map(w => {
+    const mech = getMechanicalWeather(w)
+    const ui = WEATHER_UI_METADATA[mech]
+    const visual = WEATHER_VISUAL_METADATA[w]
+    
+    return {
+      id: w,
+      label: visual?.label || ui?.label || w.toUpperCase(),
+      icon: visual?.icon || ui?.icon || '❓',
+      description: visual?.description || ui?.description || ''
+    }
+  })
+})
 </script>
 
 <template>
@@ -239,6 +270,27 @@ const toggleStatus = (side: string, type: string) => {
                 @click.stop="toggleSearchMode"
               >
                 {{ battleStore.isSearching ? '🔗 CHAIN: ON' : '🔗 CHAIN: OFF' }}
+              </button>
+            </PVTooltip>
+          </div>
+          
+          <div class="section-label mt-2">
+            Weather Control
+          </div>
+          <div class="weather-debug-grid">
+            <PVTooltip
+              v-for="opt in weatherOptions"
+              :key="opt.id"
+              :title="opt.label"
+              :description="opt.description"
+            >
+              <button
+                class="weather-option-btn"
+                :class="{ active: battleStore.state?.weather?.type === opt.id || (!battleStore.state?.weather && opt.id === 'clear') }"
+                @click.stop="setBattleWeather(opt.id === 'clear' ? null : opt.id)"
+              >
+                <span class="w-icon">{{ opt.icon }}</span>
+                <span class="w-label">{{ opt.label }}</span>
               </button>
             </PVTooltip>
           </div>
@@ -664,11 +716,47 @@ const toggleStatus = (side: string, type: string) => {
   letter-spacing: 1px;
 }
 
-.slide-up-enter-active, .slide-up-leave-active { 
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1.2);
+.weather-debug-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin-top: 6px;
 }
-.slide-up-enter-from, .slide-up-leave-to { 
-  opacity: 0; 
-  transform: Translatey(20px) Scale(0.9); 
+
+.weather-option-btn {
+  @include btn-vicio('neutral', 'xs', true);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  height: 48px !important;
+  padding: 4px !important;
+  border-radius: 8px;
+  background: Rgba(255, 255, 255, 0.03);
+  border: 1px solid Rgba(255, 255, 255, 0.1);
+  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+  .w-icon { font-size: 14px; }
+  .w-label { 
+    font-size: 5px; 
+    text-transform: uppercase; 
+    letter-spacing: 0.5px;
+    opacity: 0.8;
+  }
+
+  &:hover {
+    background: Rgba(255, 255, 255, 0.08);
+    transform: Scale(1.05);
+  }
+
+  &.active {
+    background: var(--yellow) !important;
+    border-color: white !important;
+    color: black !important;
+    box-shadow: 0 0 15px Rgba(250, 204, 21, 0.4);
+    
+    .w-label { opacity: 1; font-weight: bold; }
+  }
 }
 </style>

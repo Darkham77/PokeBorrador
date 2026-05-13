@@ -6,6 +6,7 @@ import { useUIStore } from '@/stores/ui'
 import { useWindowListener } from '@/composables/useWindowListener'
 import { useMapStore } from '@/stores/map'
 import { getRouteWeather } from '@/logic/weatherUtils'
+import { getMechanicalWeather, WEATHER_UI_METADATA, WEATHER_VISUAL_METADATA } from '@/logic/battle/weatherMapper'
 
 const isDebugActive = typeof window !== 'undefined' && !!(window as unknown as { __VITE_DEBUG__?: unknown }).__VITE_DEBUG__
 const BattleDebugTools = isDebugActive 
@@ -41,8 +42,10 @@ const computedWeather = computed(() => {
   return getRouteWeather(battle.value?.locationId || 'route1', mapStore.currentSeason.id, mapStore.currentEpochHour)
 })
 const weatherEmoji = computed(() => {
-  const emojis: Record<string, string> = { clear: '', rain: '🌧️', storm: '⚡', fog: '🌫️', snow: '🌨️', blizzard: '❄️', sandstorm: '🏜️', heatwave: '🔥' }
-  return emojis[computedWeather.value] || ''
+  const visual = WEATHER_VISUAL_METADATA[computedWeather.value as string]
+  if (visual) return visual.icon
+  const mech = getMechanicalWeather(computedWeather.value as string)
+  return WEATHER_UI_METADATA[mech]?.icon || ''
 })
 
 const cycleName = computed(() => {
@@ -51,17 +54,25 @@ const cycleName = computed(() => {
 })
 const seasonName = computed(() => mapStore.currentSeason.label)
 const weatherName = computed(() => {
-  const names: Record<string, string> = { clear: 'Despejado', rain: 'Lluvia', storm: 'Tormenta', snow: 'Nieve', blizzard: 'Ventisca', sandstorm: 'Tormenta de Arena', fog: 'Niebla', heatwave: 'Ola de Calor' }
-  return names[computedWeather.value] || 'Normal'
+  const visual = WEATHER_VISUAL_METADATA[computedWeather.value as string]
+  if (visual) return visual.label
+  const mech = getMechanicalWeather(computedWeather.value as string)
+  return WEATHER_UI_METADATA[mech]?.label || 'Normal'
 })
 
 const weatherAnimClass = computed(() => {
   if (uiStore.isPerformanceMode) return ''
   const anims: Record<string, string> = {
     clear: 'anim-glow',
+    sun: 'anim-glow',
     heatwave: 'anim-glow',
+    cold: 'anim-glow',
+    coldwave: 'anim-glow',
+    sandstorm: 'anim-glow',
     mist: 'anim-drift',
     fog: 'anim-drift',
+    wind: 'anim-drift',
+    strong_winds: 'anim-drift',
     rain: 'anim-shake',
     storm: 'anim-shake'
   }

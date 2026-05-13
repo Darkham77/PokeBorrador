@@ -24,13 +24,18 @@ function isSpeciesBoosted(id: string, weather: string): boolean {
   const w = weather.toLowerCase();
   
   const weatherBoosts: Record<string, string[]> = {
-    rain: ['water', 'bug', 'grass'],
-    storm: ['electric', 'dragon'],
-    sun: ['fire', 'grass'],
+    rain: ['water', 'bug', 'electric'],
+    storm: ['water', 'electric', 'dragon'],
+    sun: ['fire', 'grass', 'ground'],
+    heatwave: ['fire', 'ground'],
+    cold: ['ice', 'steel', 'water'],
+    coldwave: ['ice'],
     snow: ['ice', 'steel'],
+    blizzard: ['ice'],
     sandstorm: ['rock', 'ground', 'steel'],
     fog: ['ghost', 'psychic', 'dark'],
-    heatwave: ['fire']
+    wind: ['flying', 'bug', 'psychic'],
+    strong_winds: ['flying', 'dragon', 'psychic']
   };
 
   const boostedTypes = weatherBoosts[w] || [];

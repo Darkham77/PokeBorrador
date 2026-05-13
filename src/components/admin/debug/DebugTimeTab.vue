@@ -5,6 +5,7 @@ import { ref } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useMapStore } from '@/stores/map'
 import { useModalStore } from '@/stores/modals'
+import { getMechanicalWeather, WEATHER_UI_METADATA, WEATHER_VISUAL_METADATA } from '@/logic/battle/weatherMapper'
 
 interface ViteDebugBridge {
   setMockTime: (date: string) => void;
@@ -177,23 +178,16 @@ function toggleCycle(c: string | null) {
       <div class="button-row weather-grid">
         <PVTooltip
           v-for="w in [
-            { id: 'clear', label: '☀️ DESP', desc: 'Cielo despejado.' },
-            { id: 'rain', label: '🌧️ LLUV', desc: 'Lluvia constante.' },
-            { id: 'storm', label: '⚡ TORM', desc: 'Tormenta eléctrica.' },
-            { id: 'fog', label: '🌫️ NIEB', desc: 'Niebla espesa.' },
-            { id: 'snow', label: '🌨️ NIEV', desc: 'Nieve suave.' },
-            { id: 'blizzard', label: '❄️ TOR-N', desc: 'Tormenta de nieve.' },
-            { id: 'sandstorm', label: '🏜️ AREN', desc: 'Tormenta de arena.' },
-            { id: 'heatwave', label: '🔥 CALO', desc: 'Ola de calor.' }
+            'clear', 'sun', 'heatwave', 'cold', 'coldwave', 'rain', 'storm', 'snow', 'blizzard', 'fog', 'sandstorm', 'wind', 'strong_winds'
           ]"
-          :key="w.id"
-          :title="w.desc"
+          :key="w"
+          :title="WEATHER_VISUAL_METADATA[w]?.description || WEATHER_UI_METADATA[getMechanicalWeather(w)]?.description"
         >
           <button
-            :class="{ active: mapStore.globalWeather === w.id }"
-            @click.stop="toggleWeather(w.id)"
+            :class="{ active: mapStore.globalWeather === w }"
+            @click.stop="toggleWeather(w)"
           >
-            {{ w.label }}
+            {{ WEATHER_VISUAL_METADATA[w]?.label || WEATHER_UI_METADATA[getMechanicalWeather(w)]?.label }}
           </button>
         </PVTooltip>
       </div>

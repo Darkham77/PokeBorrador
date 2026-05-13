@@ -20,6 +20,8 @@ export function evolvePokemonData(pokemon: Pokemon, toId: string) {
   pokemon.name = toData.name;
   if (toData.emoji) pokemon.emoji = toData.emoji;
   pokemon.type = toData.type;
+  pokemon.type2 = toData.type2;
+  pokemon.isFloating = toData.isFloating;
   
   // Actualizar habilidad si no es compatible
   const abilityList = pokemonDataProvider.getSpeciesAbilities(toId);

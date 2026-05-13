@@ -184,7 +184,7 @@ function getGenderClass(gender: string) {
       <!-- Types Pills -->
       <PokemonTypePills 
         :pokemon="pokemon" 
-        size="sm"
+        :size="pokemon.type2 ? 'ssm' : 'sm'"
         class="pdc-types"
       />
       

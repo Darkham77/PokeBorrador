@@ -233,23 +233,27 @@ const volatileStatuses = computed(() => {
   let weatherAffects = false
   if (weather && weather.type !== 'clear') {
     const mechWeather = getMechanicalWeather(weather.type)
-    if (['fog', 'sandstorm', 'hail'].includes(mechWeather)) {
-      weatherAffects = true
-    } else if (mechWeather === 'sun') {
-      const sunMoves = ['synthesis', 'síntesis', 'morning sun', 'sol beam', 'rayo solar', 'solar beam', 'solar blade', 'cuchilla solar']
-      if (types.includes('fire') || types.includes('water') || moveTypes.includes('fire') || moveTypes.includes('water') || moveNames.some((n) => sunMoves.includes(n))) {
-        weatherAffects = true
-      }
-    } else if (mechWeather === 'rain') {
-      const rainMoves = ['thunder', 'trueno', 'hurricane', 'vendaval', 'weather ball']
-      if (types.includes('fire') || types.includes('water') || moveTypes.includes('fire') || moveTypes.includes('water') || moveTypes.includes('electric') || moveNames.some((n) => rainMoves.includes(n))) {
-        weatherAffects = true
-      }
-    } else if (mechWeather === 'snow') {
-      const snowMoves = ['blizzard', 'ventisca', 'aurora veil', 'velo aurora']
-      if (types.includes('ice') || moveTypes.includes('ice') || moveNames.some((n) => snowMoves.includes(n))) {
-        weatherAffects = true
-      }
+    const visualWeather = weather.type
+    
+    // 1. Climas de Daño Ambiental o Estados Globales
+    if (['sandstorm', 'hail', 'fog'].includes(mechWeather)) weatherAffects = true
+    if (['blizzard', 'coldwave', 'fog'].includes(visualWeather)) weatherAffects = true
+
+    // 2. Afectación por Tipos Elementales
+    if (mechWeather === 'sun' && (types.includes('fire') || types.includes('water') || types.includes('grass'))) weatherAffects = true
+    if (mechWeather === 'rain' && (types.includes('fire') || types.includes('water') || types.includes('electric'))) weatherAffects = true
+    if (mechWeather === 'snow' && types.includes('ice')) weatherAffects = true
+    if ((mechWeather === 'wind' || visualWeather === 'strong_winds') && (types.includes('flying') || p.value.isFloating)) weatherAffects = true
+
+    // 3. Afectación por Movimientos en el Set
+    const sunMoves = ['synthesis', 'síntesis', 'morning sun', 'sol beam', 'rayo solar', 'solar beam', 'solar blade', 'cuchilla solar']
+    const rainMoves = ['thunder', 'trueno', 'hurricane', 'vendaval', 'weather ball']
+    const snowMoves = ['blizzard', 'ventisca', 'aurora veil', 'velo aurora', 'cold-snap']
+
+    if (!weatherAffects) {
+      if (mechWeather === 'sun' && moveNames.some(n => sunMoves.includes(n))) weatherAffects = true
+      if (mechWeather === 'rain' && moveNames.some(n => rainMoves.includes(n))) weatherAffects = true
+      if (mechWeather === 'snow' && moveNames.some(n => snowMoves.includes(n))) weatherAffects = true
     }
   }
 
@@ -331,9 +335,9 @@ const unifiedStatuses = computed<StatusIndicator[]>(() => {
     const s = p.value.status.toLowerCase()
     list.push({
       id: `primary-${s}`,
-      emoji: (STATUS_EMOJI_MAP as any)[s] || '❓',
+      emoji: (STATUS_EMOJI_MAP as Record<string, string>)[s] || '❓',
       title: s.toUpperCase(),
-      description: (STATUS_TOOLTIP_MAP as any)[s] || s,
+      description: (STATUS_TOOLTIP_MAP as Record<string, string>)[s] || s,
       count: s === 'sleep' ? p.value.sleepTurns : undefined,
       class: s
     })
@@ -458,7 +462,7 @@ const unifiedStatuses = computed<StatusIndicator[]>(() => {
         <PokemonTypePills 
           v-if="!isScrambled"
           :pokemon="p" 
-          size="sm"
+          :size="p.type2 ? 'ssm' : 'sm'"
           class="poke-types"
         />
       </div>

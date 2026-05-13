@@ -50,7 +50,7 @@ export const useGameStore = defineStore('game', () => {
   const { autoFillPvpTeam, swapPvpSlot, reorderPvpTeam, autoFillWarTeam, swapWarSlot, reorderWarTeam } = useTeamActions(state, scheduleSave)
 
   // 3. Pokemon Actions
-  const { registerPokedex, chooseStarter, addPokemon, removePokemon, reorderTeam, reorderMoves, sendToBox, togglePokeTag } = usePokemonActions(state, scheduleSave, autoFillPvpTeam, autoFillWarTeam)
+  const { registerPokedex, chooseStarter, addPokemon, removePokemon, reorderTeam, reorderMoves, sendToBox, togglePokeTag, sanitizeAll } = usePokemonActions(state, scheduleSave, autoFillPvpTeam, autoFillWarTeam)
 
   // 4. Trainer Actions
   const { getTrainerRank, addTrainerExp, checkLevelUp, getMaxObeyLevel } = useTrainerActions(state, scheduleSave)
@@ -70,6 +70,8 @@ export const useGameStore = defineStore('game', () => {
       isDataLoaded.value = true
       isEngineReady.value = true
       
+      // Sanitize all pokemon to update types/metadata from DB
+      sanitizeAll()
       // Initialize Session Hub for multi-tab/device locking
       if (authStore.user) {
         const { initSessionHub } = await import('@/logic/auth/sessionHub')

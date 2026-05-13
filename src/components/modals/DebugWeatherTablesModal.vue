@@ -3,21 +3,12 @@ import { ref, computed } from 'vue'
 import BaseModal from '@/components/common/BaseModal.vue'
 import { ROUTE_WEATHER_TABLES } from '@/data/weather-tables'
 import { FIRE_RED_MAPS } from '@/data/maps'
+import { getMechanicalWeather, WEATHER_UI_METADATA, WEATHER_VISUAL_METADATA } from '@/logic/battle/weatherMapper'
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
 const emit = defineEmits<{
   (e: 'close'): void
 }>()
-
-const weatherIcons: Record<string, string> = {
-  clear: '☀️',
-  rain: '🌧️',
-  storm: '⚡',
-  fog: '🌫️',
-  snow: '🌨️',
-  blizzard: '❄️',
-  sandstorm: '🏜️',
-  heatwave: '🔥'
-}
 
 const cycleLabels: Record<string, string> = {
   morning: '🌅 Amanecer',
@@ -31,6 +22,34 @@ const seasonLabels: Record<string, string> = {
   summer: 'Verano',
   autumn: 'Otoño',
   winter: 'Invierno'
+}
+
+const getWeatherMetadata = (weather: string) => {
+  const visual = WEATHER_VISUAL_METADATA[weather]
+  if (visual) return visual
+  const mech = getMechanicalWeather(weather)
+  return WEATHER_UI_METADATA[mech] || { icon: '❓', label: weather.toUpperCase() }
+}
+
+const getAffectedPokemon = (routeId: string, weather: string) => {
+  const map = FIRE_RED_MAPS.find(m => m.id === routeId)
+  if (!map || !map.weather) return null
+  
+  // Try direct match first (e.g. 'heatwave')
+  let weatherData = map.weather[weather as keyof typeof map.weather]
+  
+  // Fallback to mechanical match (e.g. 'heatwave' -> 'sun')
+  if (!weatherData) {
+    const mech = getMechanicalWeather(weather)
+    weatherData = map.weather[mech as keyof typeof map.weather]
+  }
+  
+  if (!weatherData) return null
+  
+  return {
+    visitors: Object.keys(weatherData.visitors || {}),
+    exclusive: Object.keys(weatherData.exclusive || {})
+  }
 }
 
 // Region definitions
@@ -140,9 +159,48 @@ function formatRouteName(id: string) {
                       class="prob-tag"
                       :class="String(weather)"
                     >
-                      <span class="icon">{{ weatherIcons[weather as string] || '❓' }}</span>
-                      <span class="label">{{ String(weather).toUpperCase() }}</span>
-                      <span class="chance">{{ chance }}%</span>
+                      <div class="prob-header">
+                        <span class="icon">{{ getWeatherMetadata(weather as string).icon }}</span>
+                        <span class="label">{{ getWeatherMetadata(weather as string).label }}</span>
+                        <span class="chance">{{ chance }}%</span>
+                      </div>
+                      
+                      <!-- Pokémon afectados por este clima -->
+                      <div 
+                        v-if="getAffectedPokemon(routeId, weather as string)"
+                        class="weather-spawns"
+                      >
+                        <div 
+                          v-if="getAffectedPokemon(routeId, weather as string)?.visitors.length" 
+                          class="spawn-group visitors"
+                        >
+                          <span class="group-label">Visitantes:</span>
+                          <div class="spawn-icons">
+                            <img 
+                              v-for="p in getAffectedPokemon(routeId, weather as string)?.visitors" 
+                              :key="p"
+                              :src="getAssetUrl(ASSET_TYPES.POKEMON, p)"
+                              class="mini-sprite"
+                              :title="p.toUpperCase()"
+                            >
+                          </div>
+                        </div>
+                        <div 
+                          v-if="getAffectedPokemon(routeId, weather as string)?.exclusive.length" 
+                          class="spawn-group exclusive"
+                        >
+                          <span class="group-label">Exclusivos:</span>
+                          <div class="spawn-icons">
+                            <img 
+                              v-for="p in getAffectedPokemon(routeId, weather as string)?.exclusive" 
+                              :key="p"
+                              :src="getAssetUrl(ASSET_TYPES.POKEMON, p)"
+                              class="mini-sprite"
+                              :title="p.toUpperCase()"
+                            >
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -305,14 +363,35 @@ function formatRouteName(id: string) {
 .cycle-row {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 10px;
+  padding: 12px;
+  background: Rgba(255, 255, 255, 0.02);
+  border-radius: 8px;
+  border: 1px solid Rgba(255, 255, 255, 0.04);
+  transition: all 0.3s ease;
+
+  &:hover {
+    background: Rgba(255, 255, 255, 0.05);
+    border-color: Rgba(255, 255, 255, 0.08);
+  }
 }
 
 .cycle-name {
   @include pixelated;
-  font-size: 7px;
-  color: var(--muted);
+  font-size: 8px;
+  color: var(--white);
+  opacity: 0.8;
   text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  
+  &::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: Linear-Gradient(90deg, Rgba(255, 255, 255, 0.1), transparent);
+  }
 }
 
 .probs-tags {
@@ -323,18 +402,61 @@ function formatRouteName(id: string) {
 
 .prob-tag {
   display: flex;
-  align-items: center;
-  gap: 6px;
-  background: Rgba(0, 0, 0, 0.2);
-  padding: 6px 10px;
-  border-radius: 6px;
+  flex-direction: column;
+  gap: 8px;
+  background: Rgba(0, 0, 0, 0.4);
+  padding: 10px 12px;
+  border-radius: 8px;
   font-size: 9px;
-  border: 1px solid Rgba(255, 255, 255, 0.03);
+  border: 1px solid Rgba(255, 255, 255, 0.05);
   @include pixelated;
+  min-width: 140px;
+
+  .prob-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
 
   .icon { font-size: 14px; }
-  .label { opacity: 0.5; font-size: 7px; margin-right: 4px; }
-  .chance { color: var(--white); font-weight: bold; }
+  .label { opacity: 0.6; font-size: 7px; flex: 1; letter-spacing: 0.5px; }
+  .chance { color: var(--yellow); font-weight: bold; font-size: 10px; }
+
+  .weather-spawns {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding-top: 6px;
+    border-top: 1px dashed Rgba(255, 255, 255, 0.1);
+  }
+
+  .spawn-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    .group-label {
+      font-size: 6px;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+
+    .spawn-icons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+
+    .mini-sprite {
+      width: 20px;
+      height: 20px;
+      object-fit: contain;
+      @include sprite-render;
+      filter: Drop-Shadow(0 2px 4px Rgba(0,0,0,0.5));
+    }
+
+    &.exclusive .group-label { color: var(--purple-light); }
+  }
 
   &.clear { border-left: 3px solid $yellow; }
   &.rain { border-left: 3px solid $blue; }
@@ -344,6 +466,9 @@ function formatRouteName(id: string) {
   &.blizzard { border-left: 3px solid #99ffff; }
   &.sandstorm { border-left: 3px solid #ff9933; }
   &.heatwave { border-left: 3px solid $red; }
+  &.sun { border-left: 3px solid #ffcc00; }
+  &.cold { border-left: 3px solid #00ffff; }
+  &.wind { border-left: 3px solid #99ff99; }
 }
 </style>
 

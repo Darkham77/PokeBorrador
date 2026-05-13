@@ -170,7 +170,19 @@ export const POKEMON_SPRITE_IDS: Record<string, number> = {
   kingdra: 230, phanpy: 231, donphan: 232, porygon2: 233, stantler: 234, smeargle: 235, 
   tyrogue: 236, hitmontop: 237, smoochum: 238, elekid: 239, magby: 240, miltank: 241, 
   blissey: 242, raikou: 243, entei: 244, suicune: 245, larvitar: 246, pupitar: 247, 
-  tyranitar: 248, lugia: 249, 'ho-oh': 250, celebi: 251
+  tyranitar: 248, lugia: 249, 'ho-oh': 250, celebi: 251,
+  // Gen 3+ (Weather related)
+  lotad: 270, lombre: 271, ludicolo: 272,
+  seedot: 273, nuzleaf: 274, shiftry: 275,
+  wingull: 278, pelipper: 279,
+  castform: 351,
+  cacnea: 331, cacturne: 332,
+  swablu: 333, altaria: 334,
+  tropius: 357,
+  absol: 359,
+  snorunt: 361, glalie: 362,
+  spheal: 363, sealeo: 364, walrein: 365,
+  kyogre: 382, groudon: 383, rayquaza: 384
 };
 
 export const PDEX_TYPE_COLORS: Record<string, string> = {

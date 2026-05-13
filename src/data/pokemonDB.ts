@@ -1,14 +1,14 @@
 export const POKEMON_DB = {
   bulbasaur: {
-    name: 'Bulbasaur', emoji: '🌿', type: 'grass', hp: 45, atk: 49, def: 49, spa: 65, spd: 65, catchRate: 45, spe: 45,
+    name: 'Bulbasaur', emoji: '🌿', type: 'grass', type2: 'poison', hp: 45, atk: 49, def: 49, spa: 65, spd: 65, catchRate: 45, spe: 45,
     learnset: [{ lv: 1, name: 'Placaje', pp: 35 }, { lv: 4, name: 'Gruñido', pp: 40 }, { lv: 7, name: 'Drenadoras', pp: 10 }, { lv: 10, name: 'Látigo Cepa', pp: 25 }, { lv: 15, name: 'Polvo Veneno', pp: 35 }, { lv: 15, name: 'Somnífera', pp: 15 }, { lv: 20, name: 'Derribo', pp: 20 }, { lv: 25, name: 'Hoja Afilada', pp: 25 }, { lv: 32, name: 'Dulce Aroma', pp: 20 }, { lv: 39, name: 'Desarrollo', pp: 40 }, { lv: 46, name: 'Rayo Solar', pp: 10 }]
   },
   ivysaur: {
-    name: 'Ivysaur', emoji: '🌿', type: 'grass', hp: 60, atk: 62, def: 63, spa: 80, spd: 80, catchRate: 45, spe: 60,
+    name: 'Ivysaur', emoji: '🌿', type: 'grass', type2: 'poison', hp: 60, atk: 62, def: 63, spa: 80, spd: 80, catchRate: 45, spe: 60,
     learnset: [{ lv: 1, name: 'Placaje', pp: 35 }, { lv: 1, name: 'Gruñido', pp: 40 }, { lv: 1, name: 'Drenadoras', pp: 10 }, { lv: 4, name: 'Gruñido', pp: 40 }, { lv: 7, name: 'Drenadoras', pp: 10 }, { lv: 10, name: 'Látigo Cepa', pp: 25 }, { lv: 15, name: 'Polvo Veneno', pp: 35 }, { lv: 15, name: 'Somnífera', pp: 15 }, { lv: 22, name: 'Derribo', pp: 20 }, { lv: 29, name: 'Hoja Afilada', pp: 25 }, { lv: 38, name: 'Dulce Aroma', pp: 20 }, { lv: 47, name: 'Desarrollo', pp: 40 }, { lv: 56, name: 'Rayo Solar', pp: 10 }]
   },
   venusaur: {
-    name: 'Venusaur', emoji: '🌿', type: 'grass', hp: 80, atk: 82, def: 83, spa: 100, spd: 100, catchRate: 45, spe: 80,
+    name: 'Venusaur', emoji: '🌿', type: 'grass', type2: 'poison', hp: 80, atk: 82, def: 83, spa: 100, spd: 100, catchRate: 45, spe: 80,
     learnset: [{ lv: 1, name: 'Placaje', pp: 35 }, { lv: 1, name: 'Gruñido', pp: 40 }, { lv: 1, name: 'Drenadoras', pp: 10 }, { lv: 1, name: 'Látigo Cepa', pp: 25 }, { lv: 4, name: 'Gruñido', pp: 40 }, { lv: 7, name: 'Drenadoras', pp: 10 }, { lv: 10, name: 'Látigo Cepa', pp: 25 }, { lv: 15, name: 'Polvo Veneno', pp: 35 }, { lv: 15, name: 'Somnífera', pp: 15 }, { lv: 22, name: 'Derribo', pp: 20 }, { lv: 29, name: 'Hoja Afilada', pp: 25 }, { lv: 41, name: 'Dulce Aroma', pp: 20 }, { lv: 53, name: 'Desarrollo', pp: 40 }, { lv: 70, name: 'Rayo Solar', pp: 10 }]
   },
   charmander: {
@@ -20,7 +20,7 @@ export const POKEMON_DB = {
     learnset: [{ lv: 1, name: 'Arañazo', pp: 35 }, { lv: 1, name: 'Gruñido', pp: 40 }, { lv: 1, name: 'Ascuas', pp: 25 }, { lv: 7, name: 'Ascuas', pp: 25 }, { lv: 13, name: 'Garra Metal', pp: 35 }, { lv: 20, name: 'Pantalla Humo', pp: 20 }, { lv: 27, name: 'Furia Dragón', pp: 10 }, { lv: 34, name: 'Cara Susto', pp: 10 }, { lv: 41, name: 'Lanzallamas', pp: 15 }, { lv: 48, name: 'Cuchillada', pp: 20 }, { lv: 55, name: 'Giro Fuego', pp: 15 }, { lv: 62, name: 'Llamarada', pp: 5 }]
   },
   charizard: {
-    name: 'Charizard', emoji: '🔥', type: 'fire', hp: 78, atk: 84, def: 78, spa: 109, spd: 85, catchRate: 45, spe: 100,
+    name: 'Charizard', emoji: '🔥', type: 'fire', type2: 'flying', hp: 78, atk: 84, def: 78, spa: 109, spd: 85, catchRate: 45, spe: 100,
     learnset: [{ lv: 1, name: 'Arañazo', pp: 35 }, { lv: 1, name: 'Gruñido', pp: 40 }, { lv: 1, name: 'Ascuas', pp: 25 }, { lv: 1, name: 'Garra Metal', pp: 35 }, { lv: 7, name: 'Ascuas', pp: 25 }, { lv: 13, name: 'Garra Metal', pp: 35 }, { lv: 20, name: 'Pantalla Humo', pp: 20 }, { lv: 27, name: 'Furia Dragón', pp: 10 }, { lv: 34, name: 'Cara Susto', pp: 10 }, { lv: 36, name: 'Ataque Ala', pp: 35 }, { lv: 44, name: 'Lanzallamas', pp: 15 }, { lv: 54, name: 'Cuchillada', pp: 20 }, { lv: 64, name: 'Giro Fuego', pp: 15 }, { lv: 74, name: 'Llamarada', pp: 5 }]
   },
   squirtle: {
@@ -44,31 +44,31 @@ export const POKEMON_DB = {
     learnset: [{ lv: 1, name: 'Fortaleza', pp: 30 }, { lv: 7, name: 'Fortaleza', pp: 30 }]
   },
   butterfree: {
-    name: 'Butterfree', emoji: '🦋', type: 'bug', hp: 60, atk: 45, def: 50, spa: 90, spd: 80, catchRate: 45, spe: 70,
+    name: 'Butterfree', emoji: '🦋', type: 'bug', type2: 'flying', hp: 60, atk: 45, def: 50, spa: 90, spd: 80, catchRate: 45, spe: 70,
     learnset: [{ lv: 1, name: 'Confusión', pp: 25 }, { lv: 10, name: 'Confusión', pp: 25 }, { lv: 13, name: 'Polvo Veneno', pp: 35 }, { lv: 14, name: 'Paralizador', pp: 30 }, { lv: 15, name: 'Somnífera', pp: 15 }, { lv: 18, name: 'Supersónico', pp: 20 }, { lv: 23, name: 'Tornado', pp: 35 }, { lv: 28, name: 'Psicorrayo', pp: 20 }, { lv: 34, name: 'Velo Sagrado', pp: 25 }, { lv: 40, name: 'Rayo Solar', pp: 10 }, { lv: 47, name: 'Gigadrenado', pp: 10 }]
   },
   weedle: {
-    name: 'Weedle', emoji: '🪲', type: 'bug', hp: 40, atk: 35, def: 30, spa: 20, spd: 20, catchRate: 255, spe: 50,
+    name: 'Weedle', emoji: '🪲', type: 'bug', type2: 'poison', hp: 40, atk: 35, def: 30, spa: 20, spd: 20, catchRate: 255, spe: 50,
     learnset: [{ lv: 1, name: 'Picotazo Veneno', pp: 35 }, { lv: 1, name: 'Disparo Demora', pp: 40 }]
   },
   kakuna: {
-    name: 'Kakuna', emoji: '🪲', type: 'bug', hp: 45, atk: 25, def: 50, spa: 25, spd: 25, catchRate: 120, spe: 35,
+    name: 'Kakuna', emoji: '🪲', type: 'bug', type2: 'poison', hp: 45, atk: 25, def: 50, spa: 25, spd: 25, catchRate: 120, spe: 35,
     learnset: [{ lv: 1, name: 'Fortaleza', pp: 30 }, { lv: 7, name: 'Fortaleza', pp: 30 }]
   },
   beedrill: {
-    name: 'Beedrill', emoji: '🐝', type: 'bug', hp: 65, atk: 80, def: 40, spa: 45, spd: 80, catchRate: 45, spe: 75,
+    name: 'Beedrill', emoji: '🐝', type: 'bug', type2: 'poison', hp: 65, atk: 80, def: 40, spa: 45, spd: 80, catchRate: 45, spe: 75,
     learnset: [{ lv: 1, name: 'Picotazo Veneno', pp: 35 }, { lv: 10, name: 'Picotazo Veneno', pp: 35 }, { lv: 15, name: 'Ataque Furia', pp: 20 }, { lv: 20, name: 'Foco Energía', pp: 30 }, { lv: 25, name: 'Doble Ataque', pp: 20 }, { lv: 30, name: 'Agilidad', pp: 30 }, { lv: 35, name: 'Pin Misil', pp: 20 }, { lv: 40, name: 'Esfuerzo', pp: 5 }]
   },
   pidgey: {
-    name: 'Pidgey', emoji: '🐦', type: 'normal', hp: 40, atk: 45, def: 40, spa: 35, spd: 35, catchRate: 255, spe: 56,
+    name: 'Pidgey', emoji: '🐦', type: 'normal', type2: 'flying', hp: 40, atk: 45, def: 40, spa: 35, spd: 35, catchRate: 255, spe: 56,
     learnset: [{ lv: 1, name: 'Placaje', pp: 35 }, { lv: 5, name: 'Ataque Arena', pp: 15 }, { lv: 9, name: 'Tornado', pp: 35 }, { lv: 13, name: 'Ataque Rápido', pp: 30 }, { lv: 19, name: 'Remolino', pp: 20 }, { lv: 25, name: 'Ataque Ala', pp: 35 }, { lv: 31, name: 'Agilidad', pp: 30 }, { lv: 39, name: 'Espejo', pp: 20 }]
   },
   pidgeotto: {
-    name: 'Pidgeotto', emoji: '🐦', type: 'normal', hp: 63, atk: 60, def: 55, spa: 50, spd: 50, catchRate: 120, spe: 71,
+    name: 'Pidgeotto', emoji: '🐦', type: 'normal', type2: 'flying', hp: 63, atk: 60, def: 55, spa: 50, spd: 50, catchRate: 120, spe: 71,
     learnset: [{ lv: 1, name: 'Placaje', pp: 35 }, { lv: 5, name: 'Ataque Arena', pp: 15 }, { lv: 9, name: 'Tornado', pp: 35 }, { lv: 13, name: 'Ataque Rápido', pp: 30 }, { lv: 20, name: 'Remolino', pp: 20 }, { lv: 27, name: 'Ataque Ala', pp: 35 }, { lv: 34, name: 'Agilidad', pp: 30 }, { lv: 43, name: 'Espejo', pp: 20 }]
   },
   pidgeot: {
-    name: 'Pidgeot', emoji: '🐦', type: 'normal', hp: 83, atk: 80, def: 75, spa: 70, spd: 70, catchRate: 45, spe: 91,
+    name: 'Pidgeot', emoji: '🐦', type: 'normal', type2: 'flying', hp: 83, atk: 80, def: 75, spa: 70, spd: 70, catchRate: 45, spe: 91,
     learnset: [{ lv: 1, name: 'Placaje', pp: 35 }, { lv: 5, name: 'Ataque Arena', pp: 15 }, { lv: 9, name: 'Tornado', pp: 35 }, { lv: 13, name: 'Ataque Rápido', pp: 30 }, { lv: 20, name: 'Remolino', pp: 20 }, { lv: 27, name: 'Ataque Ala', pp: 35 }, { lv: 34, name: 'Agilidad', pp: 30 }, { lv: 48, name: 'Espejo', pp: 20 }]
   },
   rattata: {
@@ -80,11 +80,11 @@ export const POKEMON_DB = {
     learnset: [{ lv: 1, name: 'Placaje', pp: 35 }, { lv: 1, name: 'Látigo', pp: 30 }, { lv: 7, name: 'Ataque Rápido', pp: 30 }, { lv: 10, name: 'Foco Energía', pp: 30 }, { lv: 13, name: 'Hiper Colmillo', pp: 15 }, { lv: 20, name: 'Esfuerzo', pp: 5 }, { lv: 30, name: 'Persecución', pp: 20 }, { lv: 40, name: 'Súper Colmillo', pp: 10 }]
   },
   spearow: {
-    name: 'Spearow', emoji: '🐦', type: 'normal', hp: 40, atk: 60, def: 30, spa: 31, spd: 31, catchRate: 255, spe: 70,
+    name: 'Spearow', emoji: '🐦', type: 'normal', type2: 'flying', hp: 40, atk: 60, def: 30, spa: 31, spd: 31, catchRate: 255, spe: 70,
     learnset: [{ lv: 1, name: 'Picoteo', pp: 20 }, { lv: 1, name: 'Gruñido', pp: 40 }, { lv: 9, name: 'Malicioso', pp: 30 }, { lv: 15, name: 'Furia', pp: 20 }, { lv: 22, name: 'Espejo', pp: 20 }, { lv: 29, name: 'Pico Taladro', pp: 20 }, { lv: 36, name: 'Agilidad', pp: 30 }]
   },
   fearow: {
-    name: 'Fearow', emoji: '🐦', type: 'normal', hp: 65, atk: 90, def: 65, spa: 61, spd: 61, catchRate: 90, spe: 100,
+    name: 'Fearow', emoji: '🐦', type: 'normal', type2: 'flying', hp: 65, atk: 90, def: 65, spa: 61, spd: 61, catchRate: 90, spe: 100,
     learnset: [{ lv: 1, name: 'Picoteo', pp: 20 }, { lv: 1, name: 'Gruñido', pp: 40 }, { lv: 1, name: 'Malicioso', pp: 30 }, { lv: 9, name: 'Malicioso', pp: 30 }, { lv: 15, name: 'Furia', pp: 20 }, { lv: 25, name: 'Espejo', pp: 20 }, { lv: 34, name: 'Pico Taladro', pp: 20 }, { lv: 43, name: 'Agilidad', pp: 30 }]
   },
   ekans: {
@@ -120,7 +120,7 @@ export const POKEMON_DB = {
     learnset: [{ lv: 1, name: 'Gruñido', pp: 40 }, { lv: 1, name: 'Arañazo', pp: 35 }, { lv: 8, name: 'Látigo', pp: 30 }, { lv: 12, name: 'Doble Patada', pp: 30 }, { lv: 18, name: 'Picotazo Veneno', pp: 35 }, { lv: 22, name: 'Mordisco', pp: 25 }, { lv: 26, name: 'Refuerzo', pp: 20 }, { lv: 34, name: 'Furia', pp: 20 }, { lv: 43, name: 'Colmillo Veneno', pp: 15 }]
   },
   nidoqueen: {
-    name: 'Nidoqueen', emoji: '🐭', type: 'poison', hp: 90, atk: 92, def: 87, spa: 75, spd: 85, catchRate: 45, spe: 76,
+    name: 'Nidoqueen', emoji: '🐭', type: 'poison', type2: 'ground', hp: 90, atk: 92, def: 87, spa: 75, spd: 85, catchRate: 45, spe: 76,
     learnset: [{ lv: 1, name: 'Gruñido', pp: 40 }, { lv: 1, name: 'Picotazo Veneno', pp: 35 }, { lv: 1, name: 'Doble Patada', pp: 30 }, { lv: 1, name: 'Mordisco', pp: 25 }, { lv: 22, name: 'Colmillo Veneno', pp: 15 }, { lv: 43, name: 'Golpe Cuerpo', pp: 15 }]
   },
   nidoran_m: {
@@ -132,7 +132,7 @@ export const POKEMON_DB = {
     learnset: [{ lv: 1, name: 'Malicioso', pp: 30 }, { lv: 1, name: 'Picotazo Veneno', pp: 35 }, { lv: 8, name: 'Cornada', pp: 25 }, { lv: 12, name: 'Doble Patada', pp: 30 }, { lv: 18, name: 'Picotazo Veneno', pp: 35 }, { lv: 22, name: 'Foco Energía', pp: 30 }, { lv: 26, name: 'Refuerzo', pp: 20 }, { lv: 34, name: 'Furia', pp: 20 }, { lv: 43, name: 'Perforador', pp: 5 }]
   },
   nidoking: {
-    name: 'Nidoking', emoji: '🐭', type: 'poison', hp: 81, atk: 102, def: 77, spa: 85, spd: 75, catchRate: 45, spe: 85,
+    name: 'Nidoking', emoji: '🐭', type: 'poison', type2: 'ground', hp: 81, atk: 102, def: 77, spa: 85, spd: 75, catchRate: 45, spe: 85,
     learnset: [{ lv: 1, name: 'Malicioso', pp: 30 }, { lv: 1, name: 'Picotazo Veneno', pp: 35 }, { lv: 1, name: 'Doble Patada', pp: 30 }, { lv: 1, name: 'Foco Energía', pp: 30 }, { lv: 22, name: 'Atizar', pp: 20 }, { lv: 43, name: 'Megacuerno', pp: 10 }]
   },
   clefairy: {
@@ -160,39 +160,39 @@ export const POKEMON_DB = {
     learnset: [{ lv: 1, name: 'Canto', pp: 15 }, { lv: 1, name: 'Anulación', pp: 20 }, { lv: 1, name: 'Doble Bofetón', pp: 10 }, { lv: 1, name: 'Cuerpo Pesado', pp: 15 }]
   },
   zubat: {
-    name: 'Zubat', emoji: '🦇', type: 'poison', hp: 40, atk: 45, def: 35, spa: 30, spd: 40, catchRate: 255, spe: 55,
+    name: 'Zubat', emoji: '🦇', type: 'poison', type2: 'flying', hp: 40, atk: 45, def: 35, spa: 30, spd: 40, catchRate: 255, spe: 55,
     learnset: [{ lv: 1, name: 'Chupa-vidas', pp: 15 }, { lv: 6, name: 'Supersónico', pp: 20 }, { lv: 11, name: 'Impresionar', pp: 15 }, { lv: 16, name: 'Mordisco', pp: 25 }, { lv: 21, name: 'Ataque Ala', pp: 35 }, { lv: 26, name: 'Rayo Confuso', pp: 10 }, { lv: 31, name: 'Aire Afilado', pp: 15 }, { lv: 36, name: 'Niebla', pp: 30 }]
   },
   golbat: {
-    name: 'Golbat', emoji: '🦇', type: 'poison', hp: 75, atk: 80, def: 70, spa: 65, spd: 75, catchRate: 90, spe: 90,
+    name: 'Golbat', emoji: '🦇', type: 'poison', type2: 'flying', hp: 75, atk: 80, def: 70, spa: 65, spd: 75, catchRate: 90, spe: 90,
     learnset: [{ lv: 1, name: 'Chupa-vidas', pp: 15 }, { lv: 6, name: 'Supersónico', pp: 20 }, { lv: 11, name: 'Impresionar', pp: 15 }, { lv: 16, name: 'Mordisco', pp: 25 }, { lv: 21, name: 'Ataque Ala', pp: 35 }, { lv: 28, name: 'Rayo Confuso', pp: 10 }, { lv: 35, name: 'Aire Afilado', pp: 15 }, { lv: 42, name: 'Niebla', pp: 30 }]
   },
   oddish: {
-    name: 'Oddish', emoji: '🌱', type: 'grass', hp: 45, atk: 50, def: 55, spa: 75, spd: 65, catchRate: 255, spe: 30,
+    name: 'Oddish', emoji: '🌱', type: 'grass', type2: 'poison', hp: 45, atk: 50, def: 55, spa: 75, spd: 65, catchRate: 255, spe: 30,
     learnset: [{ lv: 1, name: 'Absorber', pp: 25 }, { lv: 7, name: 'Dulce Aroma', pp: 20 }, { lv: 14, name: 'Polvo Veneno', pp: 35 }, { lv: 16, name: 'Paralizador', pp: 30 }, { lv: 18, name: 'Somnífera', pp: 15 }, { lv: 23, name: 'Megaagotar', pp: 15 }, { lv: 32, name: 'Luz Lunar', pp: 5 }, { lv: 39, name: 'Danza Pétalo', pp: 10 }, { lv: 46, name: 'Rayo Solar', pp: 10 }]
   },
   gloom: {
-    name: 'Gloom', emoji: '🌱', type: 'grass', hp: 60, atk: 65, def: 70, spa: 85, spd: 75, catchRate: 120, spe: 40,
+    name: 'Gloom', emoji: '🌱', type: 'grass', type2: 'poison', hp: 60, atk: 65, def: 70, spa: 85, spd: 75, catchRate: 120, spe: 40,
     learnset: [{ lv: 1, name: 'Absorber', pp: 25 }, { lv: 1, name: 'Dulce Aroma', pp: 20 }, { lv: 1, name: 'Polvo Veneno', pp: 35 }, { lv: 7, name: 'Dulce Aroma', pp: 20 }, { lv: 14, name: 'Polvo Veneno', pp: 35 }, { lv: 16, name: 'Paralizador', pp: 30 }, { lv: 18, name: 'Somnífera', pp: 15 }, { lv: 24, name: 'Megaagotar', pp: 15 }, { lv: 35, name: 'Luz Lunar', pp: 5 }, { lv: 44, name: 'Danza Pétalo', pp: 10 }, { lv: 52, name: 'Rayo Solar', pp: 10 }]
   },
   vileplume: {
-    name: 'Vileplume', emoji: '🌺', type: 'grass', hp: 75, atk: 80, def: 85, spa: 110, spd: 90, catchRate: 45, spe: 50,
+    name: 'Vileplume', emoji: '🌺', type: 'grass', type2: 'poison', hp: 75, atk: 80, def: 85, spa: 110, spd: 90, catchRate: 45, spe: 50,
     learnset: [{ lv: 1, name: 'Absorber', pp: 25 }, { lv: 1, name: 'Dulce Aroma', pp: 20 }, { lv: 1, name: 'Somnífera', pp: 15 }, { lv: 1, name: 'Danza Pétalo', pp: 10 }, { lv: 44, name: 'Danza Pétalo', pp: 10 }, { lv: 1, name: 'Rayo Solar', pp: 10 }]
   },
   paras: {
-    name: 'Paras', emoji: '🍄', type: 'bug', hp: 35, atk: 70, def: 55, spa: 45, spd: 55, catchRate: 190, spe: 25,
+    name: 'Paras', emoji: '🍄', type: 'bug', type2: 'grass', hp: 35, atk: 70, def: 55, spa: 45, spd: 55, catchRate: 190, spe: 25,
     learnset: [{ lv: 1, name: 'Arañazo', pp: 35 }, { lv: 7, name: 'Paralizador', pp: 30 }, { lv: 13, name: 'Polvo Veneno', pp: 35 }, { lv: 19, name: 'Somnífera', pp: 15 }, { lv: 25, name: 'Cuchillada', pp: 25 }, { lv: 31, name: 'Desarrollo', pp: 40 }, { lv: 37, name: 'Gigadrenado', pp: 10 }, { lv: 43, name: 'Aromaterapia', pp: 5 }]
   },
   parasect: {
-    name: 'Parasect', emoji: '🍄', type: 'bug', hp: 60, atk: 95, def: 80, spa: 60, spd: 80, catchRate: 75, spe: 30,
+    name: 'Parasect', emoji: '🍄', type: 'bug', type2: 'grass', hp: 60, atk: 95, def: 80, spa: 60, spd: 80, catchRate: 75, spe: 30,
     learnset: [{ lv: 1, name: 'Arañazo', pp: 35 }, { lv: 1, name: 'Paralizador', pp: 30 }, { lv: 1, name: 'Polvo Veneno', pp: 35 }, { lv: 7, name: 'Paralizador', pp: 30 }, { lv: 13, name: 'Polvo Veneno', pp: 35 }, { lv: 19, name: 'Somnífera', pp: 15 }, { lv: 27, name: 'Cuchillada', pp: 25 }, { lv: 35, name: 'Desarrollo', pp: 40 }, { lv: 43, name: 'Gigadrenado', pp: 10 }, { lv: 51, name: 'Aromaterapia', pp: 5 }]
   },
   venonat: {
-    name: 'Venonat', emoji: '🦋', type: 'bug', hp: 60, atk: 55, def: 50, spa: 40, spd: 55, catchRate: 190, spe: 45,
+    name: 'Venonat', emoji: '🦋', type: 'bug', type2: 'poison', hp: 60, atk: 55, def: 50, spa: 40, spd: 55, catchRate: 190, spe: 45,
     learnset: [{ lv: 1, name: 'Placaje', pp: 35 }, { lv: 1, name: 'Disparo Demora', pp: 40 }, { lv: 9, name: 'Picotazo Veneno', pp: 35 }, { lv: 17, name: 'Confusión', pp: 25 }, { lv: 20, name: 'Polvo Veneno', pp: 35 }, { lv: 25, name: 'Chupa-vidas', pp: 15 }, { lv: 28, name: 'Paralizador', pp: 30 }, { lv: 33, name: 'Somnífera', pp: 15 }, { lv: 36, name: 'Psicorrayo', pp: 20 }, { lv: 41, name: 'Psíquico', pp: 10 }]
   },
   venomoth: {
-    name: 'Venomoth', emoji: '🦋', type: 'bug', hp: 70, atk: 65, def: 60, spa: 90, spd: 75, catchRate: 75, spe: 90,
+    name: 'Venomoth', emoji: '🦋', type: 'bug', type2: 'poison', hp: 70, atk: 65, def: 60, spa: 90, spd: 75, catchRate: 75, spe: 90,
     learnset: [{ lv: 1, name: 'Placaje', pp: 35 }, { lv: 1, name: 'Confusión', pp: 25 }, { lv: 1, name: 'Polvo Veneno', pp: 35 }, { lv: 1, name: 'Tornado', pp: 35 }, { lv: 9, name: 'Picotazo Veneno', pp: 35 }, { lv: 17, name: 'Confusión', pp: 25 }, { lv: 20, name: 'Polvo Veneno', pp: 35 }, { lv: 25, name: 'Chupa-vidas', pp: 15 }, { lv: 28, name: 'Paralizador', pp: 30 }, { lv: 31, name: 'Ataque Ala', pp: 35 }, { lv: 36, name: 'Somnífera', pp: 15 }, { lv: 42, name: 'Psicorrayo', pp: 20 }, { lv: 52, name: 'Psíquico', pp: 10 }]
   },
   diglett: {
@@ -244,7 +244,7 @@ export const POKEMON_DB = {
     learnset: [{ lv: 1, name: 'Burbuja', pp: 30 }, { lv: 1, name: 'Hipnosis', pp: 20 }, { lv: 1, name: 'Pistola Agua', pp: 25 }, { lv: 7, name: 'Hipnosis', pp: 20 }, { lv: 13, name: 'Pistola Agua', pp: 25 }, { lv: 19, name: 'Bofetón Lodo', pp: 20 }, { lv: 27, name: 'Danza Lluvia', pp: 5 }, { lv: 35, name: 'Cuerpo Pesado', pp: 15 }, { lv: 43, name: 'Tambor', pp: 10 }, { lv: 51, name: 'Hidrobomba', pp: 5 }]
   },
   poliwrath: {
-    name: 'Poliwrath', emoji: '🌀', type: 'water', hp: 90, atk: 95, def: 95, spa: 70, spd: 90, catchRate: 45, spe: 70,
+    name: 'Poliwrath', emoji: '🌀', type: 'water', type2: 'fighting', hp: 90, atk: 95, def: 95, spa: 70, spd: 90, catchRate: 45, spe: 70,
     learnset: [{ lv: 1, name: 'Burbuja', pp: 30 }, { lv: 1, name: 'Hipnosis', pp: 20 }, { lv: 1, name: 'Sumisión', pp: 25 }, { lv: 1, name: 'Puñetazo', pp: 35 }, { lv: 35, name: 'Sumisión', pp: 25 }, { lv: 51, name: 'Puño Certero', pp: 20 }]
   },
   abra: {
@@ -272,35 +272,35 @@ export const POKEMON_DB = {
     learnset: [{ lv: 1, name: 'Patada Baja', pp: 20 }, { lv: 1, name: 'Malicioso', pp: 30 }, { lv: 1, name: 'Foco Energía', pp: 30 }, { lv: 7, name: 'Foco Energía', pp: 30 }, { lv: 13, name: 'Golpe Karatazo', pp: 25 }, { lv: 19, name: 'Mov. Sísmico', pp: 20 }, { lv: 25, name: 'Previsión', pp: 40 }, { lv: 31, name: 'Venganza', pp: 10 }, { lv: 40, name: 'Tiro Vital', pp: 10 }, { lv: 49, name: 'Sumisión', pp: 25 }, { lv: 58, name: 'Tajo Cruzado', pp: 5 }, { lv: 67, name: 'Cara Susto', pp: 10 }]
   },
   bellsprout: {
-    name: 'Bellsprout', emoji: '🌱', type: 'grass', hp: 50, atk: 75, def: 35, spa: 70, spd: 30, catchRate: 255, spe: 40,
+    name: 'Bellsprout', emoji: '🌱', type: 'grass', type2: 'poison', hp: 50, atk: 75, def: 35, spa: 70, spd: 30, catchRate: 255, spe: 40,
     learnset: [{ lv: 1, name: 'Látigo Cepa', pp: 25 }, { lv: 6, name: 'Desarrollo', pp: 40 }, { lv: 11, name: 'Envolver', pp: 20 }, { lv: 15, name: 'Somnífera', pp: 15 }, { lv: 17, name: 'Polvo Veneno', pp: 35 }, { lv: 19, name: 'Paralizador', pp: 30 }, { lv: 23, name: 'Ácido', pp: 30 }, { lv: 30, name: 'Dulce Aroma', pp: 20 }, { lv: 37, name: 'Hoja Afilada', pp: 25 }, { lv: 45, name: 'Portazo', pp: 20 }]
   },
   weepinbell: {
-    name: 'Weepinbell', emoji: '🌱', type: 'grass', hp: 65, atk: 90, def: 50, spa: 85, spd: 45, catchRate: 120, spe: 55,
+    name: 'Weepinbell', emoji: '🌱', type: 'grass', type2: 'poison', hp: 65, atk: 90, def: 50, spa: 85, spd: 45, catchRate: 120, spe: 55,
     learnset: [{ lv: 1, name: 'Látigo Cepa', pp: 25 }, { lv: 1, name: 'Desarrollo', pp: 40 }, { lv: 1, name: 'Envolver', pp: 20 }, { lv: 6, name: 'Desarrollo', pp: 40 }, { lv: 11, name: 'Envolver', pp: 20 }, { lv: 15, name: 'Somnífera', pp: 15 }, { lv: 17, name: 'Polvo Veneno', pp: 35 }, { lv: 19, name: 'Paralizador', pp: 30 }, { lv: 24, name: 'Ácido', pp: 30 }, { lv: 33, name: 'Dulce Aroma', pp: 20 }, { lv: 42, name: 'Hoja Afilada', pp: 25 }, { lv: 54, name: 'Portazo', pp: 20 }]
   },
   victreebel: {
-    name: 'Victreebel', emoji: '🌺', type: 'grass', hp: 80, atk: 105, def: 65, spa: 100, spd: 70, catchRate: 45, spe: 70,
+    name: 'Victreebel', emoji: '🌺', type: 'grass', type2: 'poison', hp: 80, atk: 105, def: 65, spa: 100, spd: 70, catchRate: 45, spe: 70,
     learnset: [{ lv: 1, name: 'Hoja Afilada', pp: 25 }, { lv: 1, name: 'Somnífera', pp: 15 }, { lv: 1, name: 'Látigo Cepa', pp: 25 }]
   },
   tentacool: {
-    name: 'Tentacool', emoji: '🌊', type: 'water', hp: 40, atk: 40, def: 35, spa: 50, spd: 100, catchRate: 190, spe: 70,
+    name: 'Tentacool', emoji: '🌊', type: 'water', type2: 'poison', hp: 40, atk: 40, def: 35, spa: 50, spd: 100, catchRate: 190, spe: 70,
     learnset: [{ lv: 1, name: 'Picotazo Veneno', pp: 35 }, { lv: 6, name: 'Supersónico', pp: 20 }, { lv: 12, name: 'Constricción', pp: 35 }, { lv: 19, name: 'Ácido', pp: 30 }, { lv: 25, name: 'Rayo Burbuja', pp: 20 }, { lv: 30, name: 'Barrera', pp: 20 }, { lv: 36, name: 'Chirrido', pp: 40 }, { lv: 43, name: 'Hidrobomba', pp: 5 }]
   },
   tentacruel: {
-    name: 'Tentacruel', emoji: '🌊', type: 'water', hp: 80, atk: 70, def: 65, spa: 80, spd: 120, catchRate: 60, spe: 100,
+    name: 'Tentacruel', emoji: '🌊', type: 'water', type2: 'poison', hp: 80, atk: 70, def: 65, spa: 80, spd: 120, catchRate: 60, spe: 100,
     learnset: [{ lv: 1, name: 'Picotazo Veneno', pp: 35 }, { lv: 1, name: 'Supersónico', pp: 20 }, { lv: 10, name: 'Envolver', pp: 20 }, { lv: 19, name: 'Ácido', pp: 30 }, { lv: 25, name: 'Rayo Burbuja', pp: 20 }, { lv: 35, name: 'Barrera', pp: 20 }, { lv: 50, name: 'Hidrobomba', pp: 5 }]
   },
   geodude: {
-    name: 'Geodude', emoji: '🪨', type: 'rock', hp: 40, atk: 80, def: 100, spa: 30, spd: 30, catchRate: 255, spe: 20,
+    name: 'Geodude', emoji: '🪨', type: 'rock', type2: 'ground', hp: 40, atk: 80, def: 100, spa: 30, spd: 30, catchRate: 255, spe: 20,
     learnset: [{ lv: 1, name: 'Placaje', pp: 35 }, { lv: 1, name: 'Rizo Defensa', pp: 40 }, { lv: 6, name: 'Bofetón Lodo', pp: 10 }, { lv: 11, name: 'Lanzarrocas', pp: 15 }, { lv: 16, name: 'Magnitud', pp: 30 }, { lv: 21, name: 'Autodestrucción', pp: 5 }, { lv: 26, name: 'Rodar', pp: 20 }, { lv: 31, name: 'Fijar Blanco', pp: 5 }, { lv: 36, name: 'Terremoto', pp: 10 }, { lv: 41, name: 'Explosión', pp: 5 }, { lv: 46, name: 'Doble Filo', pp: 15 }]
   },
   graveler: {
-    name: 'Graveler', emoji: '🪨', type: 'rock', hp: 55, atk: 95, def: 115, spa: 45, spd: 45, catchRate: 120, spe: 35,
+    name: 'Graveler', emoji: '🪨', type: 'rock', type2: 'ground', hp: 55, atk: 95, def: 115, spa: 45, spd: 45, catchRate: 120, spe: 35,
     learnset: [{ lv: 1, name: 'Placaje', pp: 35 }, { lv: 1, name: 'Rizo Defensa', pp: 40 }, { lv: 1, name: 'Lanzarrocas', pp: 15 }, { lv: 6, name: 'Rizo Defensa', pp: 40 }, { lv: 11, name: 'Lanzarrocas', pp: 15 }, { lv: 16, name: 'Magnitud', pp: 30 }, { lv: 21, name: 'Autodestrucción', pp: 5 }, { lv: 29, name: 'Rodar', pp: 20 }, { lv: 37, name: 'Fijar Blanco', pp: 5 }, { lv: 45, name: 'Terremoto', pp: 10 }, { lv: 53, name: 'Explosión', pp: 5 }, { lv: 62, name: 'Doble Filo', pp: 15 }]
   },
   golem: {
-    name: 'Golem', emoji: '🪨', type: 'rock', hp: 80, atk: 110, def: 130, spa: 55, spd: 65, catchRate: 45, spe: 45,
+    name: 'Golem', emoji: '🪨', type: 'rock', type2: 'ground', hp: 80, atk: 110, def: 130, spa: 55, spd: 65, catchRate: 45, spe: 45,
     learnset: [{ lv: 1, name: 'Placaje', pp: 35 }, { lv: 1, name: 'Rizo Defensa', pp: 40 }, { lv: 1, name: 'Lanzarrocas', pp: 15 }, { lv: 1, name: 'Autodestrucción', pp: 5 }, { lv: 6, name: 'Rizo Defensa', pp: 40 }, { lv: 11, name: 'Lanzarrocas', pp: 15 }, { lv: 16, name: 'Magnitud', pp: 30 }, { lv: 21, name: 'Autodestrucción', pp: 5 }, { lv: 29, name: 'Rodar', pp: 20 }, { lv: 37, name: 'Fijar Blanco', pp: 5 }, { lv: 45, name: 'Terremoto', pp: 10 }, { lv: 53, name: 'Explosión', pp: 5 }, { lv: 62, name: 'Doble Filo', pp: 15 }]
   },
   ponyta: {
@@ -312,31 +312,31 @@ export const POKEMON_DB = {
     learnset: [{ lv: 1, name: 'Placaje', pp: 35 }, { lv: 7, name: 'Ascuas', pp: 25 }, { lv: 13, name: 'Pisotón', pp: 20 }, { lv: 19, name: 'Giro Fuego', pp: 15 }, { lv: 25, name: 'Derribo', pp: 20 }, { lv: 31, name: 'Agilidad', pp: 30 }, { lv: 40, name: 'Llamarada', pp: 5 }]
   },
   slowpoke: {
-    name: 'Slowpoke', emoji: '🐌', type: 'water', hp: 90, atk: 65, def: 65, spa: 40, spd: 40, catchRate: 190, spe: 15,
+    name: 'Slowpoke', emoji: '🐌', type: 'water', type2: 'psychic', hp: 90, atk: 65, def: 65, spa: 40, spd: 40, catchRate: 190, spe: 15,
     learnset: [{ lv: 1, name: 'Maldición', pp: 10 }, { lv: 1, name: 'Placaje', pp: 35 }, { lv: 9, name: 'Bostezo', pp: 10 }, { lv: 14, name: 'Confusión', pp: 25 }, { lv: 19, name: 'Anulación', pp: 20 }, { lv: 24, name: 'Cabezazo', pp: 15 }, { lv: 34, name: 'Amnesia', pp: 20 }, { lv: 46, name: 'Psíquico', pp: 10 }]
   },
   slowbro: {
-    name: 'Slowbro', emoji: '🐌', type: 'water', hp: 95, atk: 75, def: 110, spa: 100, spd: 80, catchRate: 75, spe: 30,
+    name: 'Slowbro', emoji: '🐌', type: 'water', type2: 'psychic', hp: 95, atk: 75, def: 110, spa: 100, spd: 80, catchRate: 75, spe: 30,
     learnset: [{ lv: 1, name: 'Placaje', pp: 35 }, { lv: 1, name: 'Maldición', pp: 10 }, { lv: 9, name: 'Bostezo', pp: 10 }, { lv: 14, name: 'Confusión', pp: 25 }, { lv: 19, name: 'Anulación', pp: 20 }, { lv: 24, name: 'Cabezazo', pp: 15 }, { lv: 37, name: 'Amnesia', pp: 20 }, { lv: 54, name: 'Psíquico', pp: 10 }]
   },
   magnemite: {
-    name: 'Magnemite', emoji: '🔩', type: 'electric', hp: 25, atk: 35, def: 70, spa: 95, spd: 55, catchRate: 190, spe: 45,
+    name: 'Magnemite', emoji: '🔩', type: 'electric', type2: 'steel', hp: 25, atk: 35, def: 70, spa: 95, spd: 55, catchRate: 190, spe: 45,
     learnset: [{ lv: 1, name: 'Placaje', pp: 35 }, { lv: 1, name: 'Eco Metálico', pp: 10 }, { lv: 6, name: 'Impactrueno', pp: 30 }, { lv: 11, name: 'Supersónico', pp: 20 }, { lv: 16, name: 'Onda Trueno', pp: 20 }, { lv: 21, name: 'Rapidez', pp: 20 }, { lv: 26, name: 'Onda Sónica', pp: 20 }, { lv: 32, name: 'Zap Cannon', pp: 5 }, { lv: 38, name: 'Fijar Blanco', pp: 5 }, { lv: 44, name: 'Rayo', pp: 15 }, { lv: 50, name: 'Trueno', pp: 10 }]
   },
   magneton: {
-    name: 'Magneton', emoji: '🔩', type: 'electric', hp: 50, atk: 60, def: 95, spa: 120, spd: 70, catchRate: 60, spe: 70,
+    name: 'Magneton', emoji: '🔩', type: 'electric', type2: 'steel', hp: 50, atk: 60, def: 95, spa: 120, spd: 70, catchRate: 60, spe: 70,
     learnset: [{ lv: 1, name: 'Placaje', pp: 35 }, { lv: 1, name: 'Impactrueno', pp: 30 }, { lv: 11, name: 'Supersónico', pp: 20 }, { lv: 18, name: 'Onda Sónica', pp: 20 }, { lv: 21, name: 'Rayo', pp: 15 }, { lv: 25, name: 'Chirrido', pp: 40 }, { lv: 35, name: 'Triataque', pp: 10 }]
   },
   farfetchd: {
-    name: "Farfetch'd", emoji: '🦆', type: 'normal', hp: 52, atk: 65, def: 55, spa: 58, spd: 62, catchRate: 45, spe: 60,
+    name: "Farfetch'd", emoji: '🦆', type: 'normal', type2: 'flying', hp: 52, atk: 65, def: 55, spa: 58, spd: 62, catchRate: 45, spe: 60,
     learnset: [{ lv: 1, name: 'Picoteo', pp: 20 }, { lv: 1, name: 'Ataque Arena', pp: 15 }, { lv: 6, name: 'Malicioso', pp: 30 }, { lv: 11, name: 'Corte Furia', pp: 20 }, { lv: 16, name: 'Golpes Furia', pp: 15 }, { lv: 21, name: 'Danza Espada', pp: 20 }, { lv: 26, name: 'Agilidad', pp: 30 }, { lv: 31, name: 'Cuchillada', pp: 20 }, { lv: 36, name: 'Falso Tortazo', pp: 40 }]
   },
   doduo: {
-    name: 'Doduo', emoji: '🐦', type: 'normal', hp: 35, atk: 85, def: 45, spa: 35, spd: 35, catchRate: 190, spe: 75,
+    name: 'Doduo', emoji: '🐦', type: 'normal', type2: 'flying', hp: 35, atk: 85, def: 45, spa: 35, spd: 35, catchRate: 190, spe: 75,
     learnset: [{ lv: 1, name: 'Picoteo', pp: 20 }, { lv: 1, name: 'Gruñido', pp: 40 }, { lv: 9, name: 'Ataque Furia', pp: 20 }, { lv: 13, name: 'Persecución', pp: 20 }, { lv: 21, name: 'Triataque', pp: 10 }, { lv: 25, name: 'Furia', pp: 20 }, { lv: 33, name: 'Agilidad', pp: 30 }, { lv: 37, name: 'Pico Taladro', pp: 20 }, { lv: 45, name: 'Esfuerzo', pp: 5 }]
   },
   dodrio: {
-    name: 'Dodrio', emoji: '🐦', type: 'normal', hp: 60, atk: 110, def: 70, spa: 60, spd: 60, catchRate: 45, spe: 100,
+    name: 'Dodrio', emoji: '🐦', type: 'normal', type2: 'flying', hp: 60, atk: 110, def: 70, spa: 60, spd: 60, catchRate: 45, spe: 100,
     learnset: [{ lv: 1, name: 'Picoteo', pp: 20 }, { lv: 1, name: 'Gruñido', pp: 40 }, { lv: 1, name: 'Ataque Furia', pp: 20 }, { lv: 1, name: 'Persecución', pp: 20 }, { lv: 9, name: 'Ataque Furia', pp: 20 }, { lv: 13, name: 'Persecución', pp: 20 }, { lv: 21, name: 'Triataque', pp: 10 }, { lv: 25, name: 'Furia', pp: 20 }, { lv: 38, name: 'Agilidad', pp: 30 }, { lv: 47, name: 'Pico Taladro', pp: 20 }, { lv: 60, name: 'Esfuerzo', pp: 5 }]
   },
   seel: {
@@ -344,7 +344,7 @@ export const POKEMON_DB = {
     learnset: [{ lv: 1, name: 'Cabezazo', pp: 15 }, { lv: 9, name: 'Gruñido', pp: 40 }, { lv: 17, name: 'Viento Hielo', pp: 15 }, { lv: 21, name: 'Rayo Aurora', pp: 20 }, { lv: 29, name: 'Descanso', pp: 10 }, { lv: 37, name: 'Derribo', pp: 20 }, { lv: 41, name: 'Rayo Hielo', pp: 10 }, { lv: 49, name: 'Velo Sagrado', pp: 25 }]
   },
   dewgong: {
-    name: 'Dewgong', emoji: '🦭', type: 'water', hp: 90, atk: 70, def: 80, spa: 70, spd: 95, catchRate: 75, spe: 70,
+    name: 'Dewgong', emoji: '🦭', type: 'water', type2: 'ice', hp: 90, atk: 70, def: 80, spa: 70, spd: 95, catchRate: 75, spe: 70,
     learnset: [{ lv: 1, name: 'Pistola Agua', pp: 25 }, { lv: 1, name: 'Gruñido', pp: 40 }, { lv: 1, name: 'Viento Hielo', pp: 15 }, { lv: 1, name: 'Rayo Aurora', pp: 20 }, { lv: 9, name: 'Gruñido', pp: 40 }, { lv: 17, name: 'Viento Hielo', pp: 15 }, { lv: 21, name: 'Rayo Aurora', pp: 20 }, { lv: 29, name: 'Descanso', pp: 10 }, { lv: 34, name: 'Tenaza', pp: 10 }, { lv: 42, name: 'Derribo', pp: 20 }, { lv: 51, name: 'Rayo Hielo', pp: 10 }, { lv: 64, name: 'Velo Sagrado', pp: 25 }]
   },
   grimer: {
@@ -360,23 +360,23 @@ export const POKEMON_DB = {
     learnset: [{ lv: 1, name: 'Placaje', pp: 35 }, { lv: 1, name: 'Refugio', pp: 40 }, { lv: 9, name: 'Supersónico', pp: 20 }, { lv: 17, name: 'Rayo Aurora', pp: 20 }, { lv: 25, name: 'Protección', pp: 10 }, { lv: 33, name: 'Malicioso', pp: 30 }, { lv: 41, name: 'Tenaza', pp: 10 }, { lv: 49, name: 'Rayo Hielo', pp: 10 }]
   },
   cloyster: {
-    name: 'Cloyster', emoji: '🐚', type: 'water', hp: 50, atk: 95, def: 180, spa: 85, spd: 45, catchRate: 60, spe: 70,
+    name: 'Cloyster', emoji: '🐚', type: 'water', type2: 'ice', hp: 50, atk: 95, def: 180, spa: 85, spd: 45, catchRate: 60, spe: 70,
     learnset: [{ lv: 1, name: 'Triataque', pp: 10 }, { lv: 1, name: 'Supersónico', pp: 20 }, { lv: 1, name: 'Rayo Aurora', pp: 20 }, { lv: 1, name: 'Púas', pp: 20 }, { lv: 39, name: 'Clavo Cañón', pp: 15 }, { lv: 49, name: 'Hidrobomba', pp: 5 }]
   },
   gastly: {
-    name: 'Gastly', emoji: '👻', type: 'ghost', hp: 30, atk: 35, def: 30, spa: 100, spd: 35, catchRate: 190, spe: 80,
+    name: 'Gastly', emoji: '👻', type: 'ghost', type2: 'poison', hp: 30, atk: 35, def: 30, spa: 100, spd: 35, catchRate: 190, spe: 80,
     learnset: [{ lv: 1, name: 'Lengüetazo', pp: 30 }, { lv: 1, name: 'Rencor', pp: 10 }, { lv: 8, name: 'Mal de Ojo', pp: 5 }, { lv: 13, name: 'Maldición', pp: 10 }, { lv: 16, name: 'Tinieblas', pp: 15 }, { lv: 21, name: 'Rayo Confuso', pp: 10 }, { lv: 28, name: 'Comesueños', pp: 15 }, { lv: 33, name: 'Mismodestino', pp: 5 }]
   },
   haunter: {
-    name: 'Haunter', emoji: '👻', type: 'ghost', hp: 45, atk: 50, def: 45, spa: 115, spd: 55, catchRate: 90, spe: 95,
+    name: 'Haunter', emoji: '👻', type: 'ghost', type2: 'poison', hp: 45, atk: 50, def: 45, spa: 115, spd: 55, catchRate: 90, spe: 95,
     learnset: [{ lv: 1, name: 'Lengüetazo', pp: 30 }, { lv: 1, name: 'Rencor', pp: 10 }, { lv: 1, name: 'Mal de Ojo', pp: 5 }, { lv: 8, name: 'Mal de Ojo', pp: 5 }, { lv: 13, name: 'Maldición', pp: 10 }, { lv: 16, name: 'Tinieblas', pp: 15 }, { lv: 21, name: 'Rayo Confuso', pp: 10 }, { lv: 25, name: 'Puño Sombra', pp: 20 }, { lv: 31, name: 'Comesueños', pp: 15 }, { lv: 39, name: 'Mismodestino', pp: 5 }]
   },
   gengar: {
-    name: 'Gengar', emoji: '👻', type: 'ghost', hp: 60, atk: 65, def: 60, spa: 130, spd: 75, catchRate: 45, spe: 110,
+    name: 'Gengar', emoji: '👻', type: 'ghost', type2: 'poison', hp: 60, atk: 65, def: 60, spa: 130, spd: 75, catchRate: 45, spe: 110,
     learnset: [{ lv: 1, name: 'Lengüetazo', pp: 30 }, { lv: 1, name: 'Rencor', pp: 10 }, { lv: 1, name: 'Mal de Ojo', pp: 5 }, { lv: 8, name: 'Mal de Ojo', pp: 5 }, { lv: 13, name: 'Maldición', pp: 10 }, { lv: 16, name: 'Tinieblas', pp: 15 }, { lv: 21, name: 'Rayo Confuso', pp: 10 }, { lv: 25, name: 'Puño Sombra', pp: 20 }, { lv: 31, name: 'Comesueños', pp: 15 }, { lv: 39, name: 'Mismodestino', pp: 5 }]
   },
   onix: {
-    name: 'Onix', emoji: '🪨', type: 'rock', hp: 35, atk: 45, def: 160, spa: 30, spd: 45, catchRate: 45, spe: 70,
+    name: 'Onix', emoji: '🪨', type: 'rock', type2: 'ground', hp: 35, atk: 45, def: 160, spa: 30, spd: 45, catchRate: 45, spe: 70,
     learnset: [{ lv: 1, name: 'Placaje', pp: 35 }, { lv: 1, name: 'Envolver', pp: 20 }, { lv: 1, name: 'Chirrido', pp: 40 }, { lv: 9, name: 'Lanzarrocas', pp: 15 }, { lv: 13, name: 'Furia', pp: 20 }, { lv: 21, name: 'Tumba Rocas', pp: 10 }, { lv: 25, name: 'Tormenta Arena', pp: 10 }, { lv: 33, name: 'Portazo', pp: 20 }, { lv: 41, name: 'Cola Férrea', pp: 15 }, { lv: 49, name: 'Bucle Arena', pp: 15 }]
   },
   drowzee: {
@@ -404,11 +404,11 @@ export const POKEMON_DB = {
     learnset: [{ lv: 1, name: 'Carga', pp: 20 }, { lv: 1, name: 'Placaje', pp: 35 }, { lv: 1, name: 'Chirrido', pp: 40 }, { lv: 1, name: 'Onda Sónica', pp: 20 }, { lv: 8, name: 'Chirrido', pp: 40 }, { lv: 12, name: 'Onda Sónica', pp: 20 }, { lv: 15, name: 'Chispa', pp: 20 }, { lv: 21, name: 'Autodestrucción', pp: 5 }, { lv: 26, name: 'Rodar', pp: 20 }, { lv: 34, name: 'Pantalla de Luz', pp: 30 }, { lv: 41, name: 'Rapidez', pp: 20 }, { lv: 50, name: 'Explosión', pp: 5 }, { lv: 58, name: 'Manto Espejo', pp: 20 }]
   },
   exeggcute: {
-    name: 'Exeggcute', emoji: '🥚', type: 'grass', hp: 60, atk: 40, def: 80, spa: 60, spd: 45, catchRate: 190, spe: 40,
+    name: 'Exeggcute', emoji: '🥚', type: 'grass', type2: 'psychic', hp: 60, atk: 40, def: 80, spa: 60, spd: 45, catchRate: 190, spe: 40,
     learnset: [{ lv: 1, name: 'Bombardeo', pp: 20 }, { lv: 1, name: 'Hipnosis', pp: 20 }, { lv: 13, name: 'Reflejo', pp: 20 }, { lv: 19, name: 'Drenadoras', pp: 10 }, { lv: 25, name: 'Confusión', pp: 25 }, { lv: 31, name: 'Paralizador', pp: 30 }, { lv: 37, name: 'Polvo Veneno', pp: 35 }, { lv: 43, name: 'Somnífera', pp: 15 }, { lv: 50, name: 'Rayo Solar', pp: 10 }]
   },
   exeggutor: {
-    name: 'Exeggutor', emoji: '🌴', type: 'grass', hp: 95, atk: 95, def: 85, spa: 125, spd: 75, catchRate: 45, spe: 55,
+    name: 'Exeggutor', emoji: '🌴', type: 'grass', type2: 'psychic', hp: 95, atk: 95, def: 85, spa: 125, spd: 75, catchRate: 45, spe: 55,
     learnset: [{ lv: 1, name: 'Barrera', pp: 20 }, { lv: 1, name: 'Confusión', pp: 25 }, { lv: 1, name: 'Hipnosis', pp: 20 }, { lv: 19, name: 'Pisotón', pp: 20 }, { lv: 31, name: 'Huevo Bomba', pp: 10 }]
   },
   cubone: {
@@ -440,11 +440,11 @@ export const POKEMON_DB = {
     learnset: [{ lv: 1, name: 'Pozo Venenoso', pp: 40 }, { lv: 1, name: 'Placaje', pp: 35 }, { lv: 1, name: 'Polución', pp: 20 }, { lv: 1, name: 'Autodestrucción', pp: 5 }, { lv: 9, name: 'Polución', pp: 20 }, { lv: 17, name: 'Autodestrucción', pp: 5 }, { lv: 21, name: 'Residuos', pp: 20 }, { lv: 25, name: 'Pantalla Humo', pp: 20 }, { lv: 33, name: 'Niebla', pp: 30 }, { lv: 44, name: 'Explosión', pp: 5 }, { lv: 51, name: 'Mismodestino', pp: 5 }, { lv: 58, name: 'Legado', pp: 10 }]
   },
   rhyhorn: {
-    name: 'Rhyhorn', emoji: '🦏', type: 'ground', hp: 80, atk: 85, def: 95, spa: 30, spd: 30, catchRate: 120, spe: 25,
+    name: 'Rhyhorn', emoji: '🦏', type: 'ground', type2: 'rock', hp: 80, atk: 85, def: 95, spa: 30, spd: 30, catchRate: 120, spe: 25,
     learnset: [{ lv: 1, name: 'Cornada', pp: 25 }, { lv: 1, name: 'Látigo', pp: 30 }, { lv: 10, name: 'Pisotón', pp: 20 }, { lv: 15, name: 'Ataque Furia', pp: 20 }, { lv: 24, name: 'Cara Susto', pp: 10 }, { lv: 29, name: 'Pedrada', pp: 10 }, { lv: 38, name: 'Perforador', pp: 5 }, { lv: 43, name: 'Derribo', pp: 20 }, { lv: 52, name: 'Terremoto', pp: 10 }, { lv: 57, name: 'Megacuerno', pp: 10 }]
   },
   rhydon: {
-    name: 'Rhydon', emoji: '🦏', type: 'ground', hp: 105, atk: 130, def: 120, spa: 45, spd: 45, catchRate: 60, spe: 40,
+    name: 'Rhydon', emoji: '🦏', type: 'ground', type2: 'rock', hp: 105, atk: 130, def: 120, spa: 45, spd: 45, catchRate: 60, spe: 40,
     learnset: [{ lv: 1, name: 'Cornada', pp: 25 }, { lv: 1, name: 'Látigo', pp: 30 }, { lv: 1, name: 'Pisotón', pp: 20 }, { lv: 1, name: 'Ataque Furia', pp: 20 }, { lv: 10, name: 'Pisotón', pp: 20 }, { lv: 15, name: 'Ataque Furia', pp: 20 }, { lv: 24, name: 'Cara Susto', pp: 10 }, { lv: 29, name: 'Pedrada', pp: 10 }, { lv: 38, name: 'Perforador', pp: 5 }, { lv: 46, name: 'Derribo', pp: 20 }, { lv: 58, name: 'Terremoto', pp: 10 }, { lv: 66, name: 'Megacuerno', pp: 10 }]
   },
   chansey: {
@@ -480,7 +480,7 @@ export const POKEMON_DB = {
     learnset: [{ lv: 1, name: 'Placaje', pp: 35 }, { lv: 1, name: 'Fortaleza', pp: 30 }, { lv: 6, name: 'Pistola Agua', pp: 25 }, { lv: 10, name: 'Giro Rápido', pp: 40 }, { lv: 15, name: 'Recuperación', pp: 10 }, { lv: 19, name: 'Rapidez', pp: 20 }, { lv: 24, name: 'Rayo Burbuja', pp: 20 }, { lv: 28, name: 'Camuflaje', pp: 20 }, { lv: 33, name: 'Minimizar', pp: 20 }, { lv: 37, name: 'Pantalla de Luz', pp: 30 }, { lv: 42, name: 'Masa Cósmica', pp: 20 }, { lv: 46, name: 'Hidrobomba', pp: 5 }]
   },
   starmie: {
-    name: 'Starmie', emoji: '⭐', type: 'water', hp: 60, atk: 75, def: 85, spa: 100, spd: 85, catchRate: 60, spe: 115,
+    name: 'Starmie', emoji: '⭐', type: 'water', type2: 'psychic', hp: 60, atk: 75, def: 85, spa: 100, spd: 85, catchRate: 60, spe: 115,
     learnset: [{ lv: 1, name: 'Pistola Agua', pp: 25 }, { lv: 1, name: 'Rapidez', pp: 20 }, { lv: 1, name: 'Recuperación', pp: 10 }, { lv: 1, name: 'Rayo Confuso', pp: 10 }]
   },
   mr_mime: {
@@ -488,11 +488,11 @@ export const POKEMON_DB = {
     learnset: [{ lv: 1, name: 'Barrera', pp: 20 }, { lv: 1, name: 'Confusión', pp: 25 }, { lv: 5, name: 'Sustituto', pp: 10 }, { lv: 9, name: 'Meditación', pp: 40 }, { lv: 13, name: 'Doble Bofetón', pp: 30 }, { lv: 17, name: 'Pantalla de Luz', pp: 30 }, { lv: 17, name: 'Reflejo', pp: 20 }, { lv: 21, name: 'Otra Vez', pp: 5 }, { lv: 25, name: 'Psicorrayo', pp: 20 }, { lv: 29, name: 'Reciclaje', pp: 10 }, { lv: 33, name: 'Truco', pp: 10 }, { lv: 37, name: 'Intercambio', pp: 10 }, { lv: 41, name: 'Psíquico', pp: 10 }, { lv: 45, name: 'Relevo', pp: 40 }, { lv: 49, name: 'Velo Sagrado', pp: 25 }]
   },
   scyther: {
-    name: 'Scyther', emoji: '🦗', type: 'bug', hp: 70, atk: 110, def: 80, spa: 55, spd: 80, catchRate: 45, spe: 105,
+    name: 'Scyther', emoji: '🦗', type: 'bug', type2: 'flying', hp: 70, atk: 110, def: 80, spa: 55, spd: 80, catchRate: 45, spe: 105,
     learnset: [{ lv: 1, name: 'Ataque Rápido', pp: 30 }, { lv: 1, name: 'Malicioso', pp: 30 }, { lv: 6, name: 'Foco Energía', pp: 30 }, { lv: 11, name: 'Persecución', pp: 20 }, { lv: 16, name: 'Falso Tortazo', pp: 40 }, { lv: 21, name: 'Agilidad', pp: 30 }, { lv: 26, name: 'Ataque Ala', pp: 35 }, { lv: 31, name: 'Cuchillada', pp: 20 }, { lv: 36, name: 'Danza Espada', pp: 20 }, { lv: 41, name: 'Doble Equipo', pp: 15 }, { lv: 46, name: 'Corte Furia', pp: 20 }]
   },
   jynx: {
-    name: 'Jynx', emoji: '💃', type: 'ice', hp: 65, atk: 50, def: 35, spa: 115, spd: 95, catchRate: 45, spe: 95,
+    name: 'Jynx', emoji: '💃', type: 'ice', type2: 'psychic', hp: 65, atk: 50, def: 35, spa: 115, spd: 95, catchRate: 45, spe: 95,
     learnset: [{ lv: 1, name: 'Destructor', pp: 35 }, { lv: 1, name: 'Lengüetazo', pp: 30 }, { lv: 1, name: 'Beso Dulce', pp: 10 }, { lv: 1, name: 'Nieve Polvo', pp: 25 }, { lv: 9, name: 'Beso Dulce', pp: 10 }, { lv: 13, name: 'Nieve Polvo', pp: 25 }, { lv: 21, name: 'Doble Bofetón', pp: 30 }, { lv: 25, name: 'Puño Hielo', pp: 15 }, { lv: 35, name: 'Mal de Ojo', pp: 5 }, { lv: 41, name: 'Llantopanto', pp: 20 }, { lv: 51, name: 'Golpe Cuerpo', pp: 15 }, { lv: 57, name: 'Canto Mortal', pp: 5 }]
   },
   electabuzz: {
@@ -516,11 +516,11 @@ export const POKEMON_DB = {
     learnset: [{ lv: 1, name: 'Salpicadura', pp: 40 }, { lv: 15, name: 'Placaje', pp: 35 }, { lv: 30, name: 'Azote', pp: 15 }]
   },
   gyarados: {
-    name: 'Gyarados', emoji: '🐉', type: 'water', hp: 95, atk: 125, def: 79, spa: 60, spd: 100, catchRate: 45, spe: 81,
+    name: 'Gyarados', emoji: '🐉', type: 'water', type2: 'flying', hp: 95, atk: 125, def: 79, spa: 60, spd: 100, catchRate: 45, spe: 81,
     learnset: [{ lv: 1, name: 'Atizar', pp: 20 }, { lv: 1, name: 'Mordisco', pp: 25 }, { lv: 20, name: 'Mordisco', pp: 25 }, { lv: 25, name: 'Furia Dragón', pp: 10 }, { lv: 30, name: 'Malicioso', pp: 30 }, { lv: 35, name: 'Ciclón', pp: 20 }, { lv: 40, name: 'Hidrobomba', pp: 5 }, { lv: 45, name: 'Danza Lluvia', pp: 5 }, { lv: 50, name: 'Danza Dragón', pp: 20 }, { lv: 55, name: 'Hiperrayo', pp: 5 }]
   },
   lapras: {
-    name: 'Lapras', emoji: '🌊', type: 'water', hp: 130, atk: 85, def: 80, spa: 85, spd: 95, catchRate: 45, spe: 60,
+    name: 'Lapras', emoji: '🌊', type: 'water', type2: 'ice', hp: 130, atk: 85, def: 80, spa: 85, spd: 95, catchRate: 45, spe: 60,
     learnset: [{ lv: 1, name: 'Pistola Agua', pp: 25 }, { lv: 1, name: 'Gruñido', pp: 40 }, { lv: 1, name: 'Canto', pp: 15 }, { lv: 7, name: 'Neblina', pp: 30 }, { lv: 13, name: 'Golpe Cuerpo', pp: 15 }, { lv: 19, name: 'Rayo Confuso', pp: 10 }, { lv: 25, name: 'Canto Mortal', pp: 5 }, { lv: 31, name: 'Rayo Hielo', pp: 10 }, { lv: 37, name: 'Danza Lluvia', pp: 5 }, { lv: 43, name: 'Velo Sagrado', pp: 25 }, { lv: 49, name: 'Hidrobomba', pp: 5 }, { lv: 55, name: 'Frío Polar', pp: 5 }]
   },
   ditto: {
@@ -544,23 +544,23 @@ export const POKEMON_DB = {
     learnset: [{ lv: 1, name: 'Placaje', pp: 35 }, { lv: 1, name: 'Conversión 2', pp: 30 }, { lv: 1, name: 'Conversión', pp: 30 }, { lv: 9, name: 'Agilidad', pp: 30 }, { lv: 12, name: 'Psicorrayo', pp: 20 }, { lv: 20, name: 'Recuperación', pp: 10 }, { lv: 24, name: 'Electrorrayo', pp: 15 }, { lv: 32, name: 'Triataque', pp: 10 }, { lv: 36, name: 'Fijar Blanco', pp: 5 }, { lv: 44, name: 'Reciclaje', pp: 10 }, { lv: 48, name: 'Zap Cannon', pp: 5 }]
   },
   omanyte: {
-    name: 'Omanyte', emoji: '🐚', type: 'rock', hp: 35, atk: 40, def: 100, spa: 90, spd: 55, catchRate: 45, spe: 35,
+    name: 'Omanyte', emoji: '🐚', type: 'rock', type2: 'water', hp: 35, atk: 40, def: 100, spa: 90, spd: 55, catchRate: 45, spe: 35,
     learnset: [{ lv: 1, name: 'Pistola Agua', pp: 25 }, { lv: 1, name: 'Refugio', pp: 40 }, { lv: 1, name: 'Constricción', pp: 35 }, { lv: 13, name: 'Mordisco', pp: 25 }, { lv: 19, name: 'Rayo Aurora', pp: 20 }, { lv: 25, name: 'Disparo Lodo', pp: 15 }, { lv: 31, name: 'Protección', pp: 10 }, { lv: 37, name: 'Foco Energía', pp: 30 }, { lv: 43, name: 'Cosquillas', pp: 20 }, { lv: 49, name: 'Poder Pasado', pp: 5 }, { lv: 55, name: 'Hidrobomba', pp: 5 }]
   },
   omastar: {
-    name: 'Omastar', emoji: '🐚', type: 'rock', hp: 70, atk: 60, def: 125, spa: 115, spd: 70, catchRate: 45, spe: 55,
+    name: 'Omastar', emoji: '🐚', type: 'rock', type2: 'water', hp: 70, atk: 60, def: 125, spa: 115, spd: 70, catchRate: 45, spe: 55,
     learnset: [{ lv: 1, name: 'Pistola Agua', pp: 25 }, { lv: 1, name: 'Refugio', pp: 40 }, { lv: 1, name: 'Constricción', pp: 35 }, { lv: 1, name: 'Mordisco', pp: 25 }, { lv: 13, name: 'Mordisco', pp: 25 }, { lv: 19, name: 'Rayo Aurora', pp: 20 }, { lv: 25, name: 'Disparo Lodo', pp: 15 }, { lv: 31, name: 'Protección', pp: 10 }, { lv: 37, name: 'Foco Energía', pp: 30 }, { lv: 40, name: 'Clavo Cañón', pp: 15 }, { lv: 46, name: 'Cosquillas', pp: 20 }, { lv: 55, name: 'Poder Pasado', pp: 5 }, { lv: 65, name: 'Hidrobomba', pp: 5 }]
   },
   kabuto: {
-    name: 'Kabuto', emoji: '🦀', type: 'rock', hp: 30, atk: 80, def: 90, spa: 55, spd: 45, catchRate: 45, spe: 55,
+    name: 'Kabuto', emoji: '🦀', type: 'rock', type2: 'water', hp: 30, atk: 80, def: 90, spa: 55, spd: 45, catchRate: 45, spe: 55,
     learnset: [{ lv: 1, name: 'Arañazo', pp: 35 }, { lv: 1, name: 'Fortaleza', pp: 30 }, { lv: 13, name: 'Absorber', pp: 25 }, { lv: 19, name: 'Malicioso', pp: 30 }, { lv: 25, name: 'Disparo Lodo', pp: 15 }, { lv: 31, name: 'Ataque Arena', pp: 15 }, { lv: 37, name: 'Aguante', pp: 10 }, { lv: 43, name: 'Defensa Férrea', pp: 15 }, { lv: 49, name: 'Megaagotar', pp: 15 }, { lv: 55, name: 'Poder Pasado', pp: 5 }]
   },
   kabutops: {
-    name: 'Kabutops', emoji: '🦀', type: 'rock', hp: 60, atk: 115, def: 105, spa: 65, spd: 70, catchRate: 45, spe: 80,
+    name: 'Kabutops', emoji: '🦀', type: 'rock', type2: 'water', hp: 60, atk: 115, def: 105, spa: 65, spd: 70, catchRate: 45, spe: 80,
     learnset: [{ lv: 1, name: 'Arañazo', pp: 35 }, { lv: 1, name: 'Fortaleza', pp: 30 }, { lv: 1, name: 'Absorber', pp: 25 }, { lv: 1, name: 'Malicioso', pp: 30 }, { lv: 13, name: 'Absorber', pp: 25 }, { lv: 19, name: 'Malicioso', pp: 30 }, { lv: 25, name: 'Disparo Lodo', pp: 15 }, { lv: 31, name: 'Ataque Arena', pp: 15 }, { lv: 37, name: 'Aguante', pp: 10 }, { lv: 40, name: 'Cuchillada', pp: 20 }, { lv: 46, name: 'Defensa Férrea', pp: 15 }, { lv: 55, name: 'Megaagotar', pp: 15 }, { lv: 65, name: 'Poder Pasado', pp: 5 }]
   },
   aerodactyl: {
-    name: 'Aerodactyl', emoji: '🦕', type: 'rock', hp: 80, atk: 105, def: 65, spa: 60, spd: 75, catchRate: 45, spe: 130,
+    name: 'Aerodactyl', emoji: '🦕', type: 'rock', type2: 'flying', hp: 80, atk: 105, def: 65, spa: 60, spd: 75, catchRate: 45, spe: 130,
     learnset: [{ lv: 1, name: 'Ataque Ala', pp: 35 }, { lv: 8, name: 'Agilidad', pp: 30 }, { lv: 15, name: 'Mordisco', pp: 25 }, { lv: 22, name: 'Supersónico', pp: 20 }, { lv: 29, name: 'Poder Pasado', pp: 5 }, { lv: 36, name: 'Cara Susto', pp: 10 }, { lv: 43, name: 'Rugido', pp: 20 }, { lv: 50, name: 'Derribo', pp: 20 }, { lv: 57, name: 'Hiperrayo', pp: 5 }]
   },
   snorlax: {
@@ -568,15 +568,15 @@ export const POKEMON_DB = {
     learnset: [{ lv: 1, name: 'Placaje', pp: 35 }, { lv: 5, name: 'Amnesia', pp: 20 }, { lv: 9, name: 'Rizo Defensa', pp: 40 }, { lv: 13, name: 'Tambor', pp: 10 }, { lv: 17, name: 'Cabezazo', pp: 15 }, { lv: 21, name: 'Bostezo', pp: 10 }, { lv: 25, name: 'Descanso', pp: 10 }, { lv: 29, name: 'Ronquido', pp: 15 }, { lv: 33, name: 'Golpe Cuerpo', pp: 15 }, { lv: 37, name: 'Sonámbulo', pp: 10 }, { lv: 41, name: 'Bloqueo', pp: 5 }, { lv: 45, name: 'Golpe', pp: 10 }, { lv: 49, name: 'Desenrrollar', pp: 20 }, { lv: 53, name: 'Doble Filo', pp: 15 }]
   },
   articuno: {
-    name: 'Articuno', emoji: '❄️', type: 'ice', hp: 90, atk: 85, def: 100, spa: 95, spd: 125, catchRate: 3, spe: 85,
+    name: 'Articuno', emoji: '❄️', type: 'ice', type2: 'flying', hp: 90, atk: 85, def: 100, spa: 95, spd: 125, catchRate: 3, spe: 85,
     learnset: [{ lv: 1, name: 'Tornado', pp: 35 }, { lv: 1, name: 'Nieve Polvo', pp: 25 }, { lv: 13, name: 'Neblina', pp: 30 }, { lv: 25, name: 'Agilidad', pp: 30 }, { lv: 37, name: 'Telépata', pp: 5 }, { lv: 49, name: 'Rayo Hielo', pp: 10 }, { lv: 61, name: 'Reflejo', pp: 20 }, { lv: 73, name: 'Ventisca', pp: 5 }, { lv: 85, name: 'Frío Polar', pp: 5 }]
   },
   zapdos: {
-    name: 'Zapdos', emoji: '⚡', type: 'electric', hp: 90, atk: 90, def: 85, spa: 125, spd: 90, catchRate: 3, spe: 100,
+    name: 'Zapdos', emoji: '⚡', type: 'electric', type2: 'flying', hp: 90, atk: 90, def: 85, spa: 125, spd: 90, catchRate: 3, spe: 100,
     learnset: [{ lv: 1, name: 'Picoteo', pp: 35 }, { lv: 1, name: 'Impactrueno', pp: 30 }, { lv: 13, name: 'Onda Trueno', pp: 20 }, { lv: 25, name: 'Agilidad', pp: 30 }, { lv: 37, name: 'Detección', pp: 5 }, { lv: 49, name: 'Pico Taladro', pp: 20 }, { lv: 61, name: 'Carga', pp: 20 }, { lv: 73, name: 'Pantalla de Luz', pp: 30 }, { lv: 85, name: 'Trueno', pp: 10 }]
   },
   moltres: {
-    name: 'Moltres', emoji: '🔥', type: 'fire', hp: 90, atk: 100, def: 90, spa: 125, spd: 85, catchRate: 3, spe: 90,
+    name: 'Moltres', emoji: '🔥', type: 'fire', type2: 'flying', hp: 90, atk: 100, def: 90, spa: 125, spd: 85, catchRate: 3, spe: 90,
     learnset: [{ lv: 1, name: 'Ataque Ala', pp: 35 }, { lv: 1, name: 'Ascuas', pp: 25 }, { lv: 13, name: 'Giro Fuego', pp: 15 }, { lv: 25, name: 'Agilidad', pp: 30 }, { lv: 37, name: 'Aguante', pp: 10 }, { lv: 49, name: 'Lanzallamas', pp: 15 }, { lv: 61, name: 'Velo Sagrado', pp: 25 }, { lv: 73, name: 'Onda Ígnea', pp: 10 }, { lv: 85, name: 'Ataque Aéreo', pp: 5 }]
   },
   dratini: {
@@ -588,7 +588,7 @@ export const POKEMON_DB = {
     learnset: [{ lv: 1, name: 'Envolver', pp: 20 }, { lv: 1, name: 'Malicioso', pp: 30 }, { lv: 1, name: 'Onda Trueno', pp: 20 }, { lv: 1, name: 'Ciclón', pp: 20 }, { lv: 8, name: 'Onda Trueno', pp: 20 }, { lv: 15, name: 'Ciclón', pp: 20 }, { lv: 22, name: 'Furia Dragón', pp: 10 }, { lv: 29, name: 'Portazo', pp: 20 }, { lv: 38, name: 'Agilidad', pp: 30 }, { lv: 47, name: 'Velo Sagrado', pp: 25 }, { lv: 56, name: 'Enfado', pp: 15 }, { lv: 65, name: 'Hiperrayo', pp: 5 }]
   },
   dragonite: {
-    name: 'Dragonite', emoji: '🐉', type: 'dragon', hp: 91, atk: 134, def: 95, spa: 100, spd: 100, catchRate: 45, spe: 80,
+    name: 'Dragonite', emoji: '🐉', type: 'dragon', type2: 'flying', hp: 91, atk: 134, def: 95, spa: 100, spd: 100, catchRate: 45, spe: 80,
     learnset: [{ lv: 1, name: 'Envolver', pp: 20 }, { lv: 1, name: 'Malicioso', pp: 30 }, { lv: 1, name: 'Onda Trueno', pp: 20 }, { lv: 1, name: 'Ciclón', pp: 20 }, { lv: 8, name: 'Onda Trueno', pp: 20 }, { lv: 15, name: 'Ciclón', pp: 20 }, { lv: 22, name: 'Furia Dragón', pp: 10 }, { lv: 29, name: 'Portazo', pp: 20 }, { lv: 38, name: 'Agilidad', pp: 30 }, { lv: 47, name: 'Velo Sagrado', pp: 25 }, { lv: 55, name: 'Ataque Ala', pp: 35 }, { lv: 61, name: 'Enfado', pp: 15 }, { lv: 75, name: 'Hiperrayo', pp: 5 }]
   },
   mewtwo: {

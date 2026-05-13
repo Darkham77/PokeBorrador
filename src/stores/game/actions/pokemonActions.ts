@@ -1,4 +1,4 @@
-import { makePokemon } from '@/logic/pokemonFactory'
+import { makePokemon, sanitizePokemon } from '@/logic/pokemonFactory'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { useUIStore } from '@/stores/ui'
 import { useLoadingStore } from '@/stores/loading'
@@ -143,5 +143,10 @@ export function usePokemonActions(
     scheduleSave()
   }
 
-  return { registerPokedex, chooseStarter, addPokemon, removePokemon, reorderTeam, reorderMoves, sendToBox, togglePokeTag }
+  function sanitizeAll() {
+    state.team.forEach(p => p && sanitizePokemon(p))
+    if (state.box) state.box.forEach(p => p && sanitizePokemon(p))
+  }
+
+  return { registerPokedex, chooseStarter, addPokemon, removePokemon, reorderTeam, reorderMoves, sendToBox, togglePokeTag, sanitizeAll }
 }

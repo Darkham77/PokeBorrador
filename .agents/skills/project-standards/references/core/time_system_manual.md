@@ -27,3 +27,29 @@ The system uses a hierarchical approach to determine the active weather and ensu
   const now = Temporal.Now.zonedDateTimeISO('America/Argentina/Buenos_Aires');
   const isWeekend = now.dayOfWeek >= 6;
   ```
+
+## 4. Climate Hierarchy and Mechanics (Gen 6-9 Standards)
+
+Poké Vicio implements a dual hierarchy system for atmospheric conditions:
+
+### 4.1 Temperatures vs Conditions
+
+- **Temperatures**: Define the thermal state (Sun, Heatwave, Cold, Coldwave).
+- **Conditions**: Define atmospheric phenomena (Rain, Storm, Snow, Blizzard, Sandstorm, Fog, Wind).
+
+### 4.2 Official Hierarchy and Mechanics
+
+| Category | Normal | Extreme | Official Mechanic (Normal -> Extreme) |
+| :--- | :--- | :--- | :--- |
+| **Temperature** | Sun (☀️) | Heatwave (🔥) | Fire+ / Water- -> **Desolate Land** (Water fails). |
+| **Temperature** | Cold (❄️) | Coldwave (🥶) | +Ice Def -> **Hail** (Turn damage). |
+| **Water** | Rain (☔) | Storm (⚡) | Water+ / Fire- -> **Primordial Sea** (Fire fails). |
+| **Ice** | Snow (❄️) | Blizzard (🌬️) | +Ice Def -> **Extreme Snow** (Dmg + Visibility). |
+| **Air** | Mist (🌫️) | Fog (⬜) | Aesthetic -> **Gen 4 Fog** (-Accuracy). |
+| **Earth** | Wind (🍃) | Strong Winds (🌀) | Aesthetic -> **Delta Stream** (Removes Flying Weakness). |
+| **Sand** | -- | Sandstorm (🌪️) | Turn Dmg + SpD Rock (Standard Mechanics). |
+
+### 4.3 Visual Standards
+
+- **Normal States**: Subtle radial gradients and color pulses.
+- **Extreme States** (Heatwave, Coldwave, Strong Winds): Strong vignettes and pulse signatures in the `AtmosphereLayer`.

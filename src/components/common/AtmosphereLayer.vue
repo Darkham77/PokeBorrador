@@ -23,10 +23,15 @@ const animClass = computed(() => {
   if (props.isLocked || props.isPerformanceMode) return ''
   const anims: Record<string, string> = {
     clear: 'anim-glow',
+    sun: 'anim-glow',
     heatwave: 'anim-glow',
+    cold: 'anim-glow',
+    coldwave: 'anim-glow',
     sandstorm: 'anim-glow',
     mist: 'anim-drift',
     fog: 'anim-drift',
+    wind: 'anim-drift',
+    strong_winds: 'anim-drift',
     rain: 'anim-shake',
     storm: 'anim-shake'
   }
@@ -49,10 +54,12 @@ const initWeatherAnim = () => {
   // Limpiar y resetear posiciones e asegurar opacidad base
   if (layer1Ref.value) {
     gsap.killTweensOf(layer1Ref.value)
+    gsap.set(layer1Ref.value, { clearProps: 'all' })
     gsap.set(layer1Ref.value, { x: 0, y: 0, opacity: 0.8 })
   }
   if (layer2Ref.value) {
     gsap.killTweensOf(layer2Ref.value)
+    gsap.set(layer2Ref.value, { clearProps: 'all' })
     gsap.set(layer2Ref.value, { x: 0, y: 0, opacity: 0.5 })
   }
   if (lightningRef.value) {
@@ -185,8 +192,9 @@ const initWeatherAnim = () => {
     }
   }
 
-  // Sandstorm
-  if (w === 'sandstorm') {
+  // Sandstorm / Strong Winds (Dust)
+  if (w === 'sandstorm' || w === 'strong_winds') {
+    const isStrongWind = w === 'strong_winds'
     // Desplazamientos iniciales en X e Y para máxima variedad
     const s1X = (animSeed.value * 1200) % 64
     const s1Y = (animSeed.value * 3400) % 64
@@ -194,13 +202,11 @@ const initWeatherAnim = () => {
     const s2Y = (animSeed.value * 4800) % 128
 
     if (layer1Ref.value) {
-      // Ángulo casi horizontal: mucho X, poco Y. 
-      // Distancia mayor requiere duración proporcional para mantener velocidad percibida.
-      const speed1 = (0.7 + animSeed.value * 0.8) * 1.5 // Un poco más lento por la gran distancia
+      // Speed configuration: Strong winds are fast, but not too frantic
+      const speed1 = (0.7 + animSeed.value * 0.8) * (isStrongWind ? 1.2 : 1.5)
       weatherTimeline.fromTo(layer1Ref.value,
         { backgroundPosition: `${s1X}px ${s1Y}px` },
         {
-          // Movimiento de 512px (8 tiles) en X y solo 64px (1 tile) en Y
           backgroundPosition: `${s1X - 512}px ${s1Y + 64}px`, 
           duration: speed1,
           repeat: -1,
@@ -212,10 +218,16 @@ const initWeatherAnim = () => {
       if (layer2Ref.value) {
         const seed2 = (animSeed.value * 1.618) % 1
         const speed2 = speed1 * (1.1 + seed2 * 0.4)
+        
+        // Si es viento fuerte, aumentamos el tamaño de la textura para que se note más la "tierra"
+        if (isStrongWind) {
+          gsap.set(layer1Ref.value, { backgroundSize: '128px 128px' })
+          gsap.set(layer2Ref.value, { backgroundSize: '256px 256px' })
+        }
+
         weatherTimeline.fromTo(layer2Ref.value,
           { backgroundPosition: `${s2X}px ${s2Y}px` },
           {
-            // Movimiento de 1024px (8 tiles) en X y 128px (1 tile) en Y
             backgroundPosition: `${s2X - 1024}px ${s2Y + 128}px`,
             duration: speed2,
             repeat: -1,
@@ -227,26 +239,36 @@ const initWeatherAnim = () => {
     }
   }
 
-  // Fog / Mist / Heatwave
-  if (w === 'fog' || w === 'mist' || w === 'heatwave') {
+  // Fog / Mist / Wind / Heatwave / Cold / Coldwave
+  if (['fog', 'mist', 'wind', 'heatwave', 'cold', 'coldwave', 'sun'].includes(w)) {
     const target = layer1Ref.value
     if (target) {
-      // Efecto basado en gradientes y sombras (sin textura para evitar líneas)
-
-      const baseOpacity = w === 'heatwave' ? 0.5 : 0.7
-      const maxOpacity = w === 'heatwave' ? 0.85 : 0.95
+      // Heatwave / Coldwave / Strong Winds tienen pulso activo
+      const hasPulse = ['heatwave', 'coldwave', 'strong_winds'].includes(w)
+      const baseOpacity = hasPulse ? 0.5 : 0.8
+      const maxOpacity = hasPulse ? 0.9 : 0.85
       
       weatherTimeline.fromTo(target, 
         { opacity: baseOpacity },
         { 
           opacity: maxOpacity, 
-          duration: 2 + animSeed.value * 2, 
+          duration: hasPulse ? (1.5 + animSeed.value) : 5, 
           repeat: -1, 
           yoyo: true, 
-          ease: 'sine.inOut' 
+          ease: hasPulse ? 'sine.inOut' : 'none' 
         },
         0
       )
+
+      // Si es viento, añadimos un drift horizontal suave
+      if (w === 'wind' || w === 'strong_winds') {
+        weatherTimeline.to(target, {
+          backgroundPosition: `${direction.value * 512}px 0px`,
+          duration: w === 'strong_winds' ? 2 : 8,
+          repeat: -1,
+          ease: 'none'
+        }, 0)
+      }
     }
   }
 }
@@ -304,16 +326,23 @@ defineExpose({
 
 // 4. GSAP Leaf Animation
 const leavesRef = ref<HTMLElement[]>([])
+const leafTypes = ['wind', 'strong_winds', 'storm']
+
+const leafCount = computed(() => {
+  if (['storm', 'strong_winds', 'blizzard'].includes(props.weather)) return 15
+  if (['wind'].includes(props.weather)) return 8
+  return 0
+})
 
 const initLeafAnim = () => {
-  if (props.weather !== 'storm' || props.isPerformanceMode) return
+  if (!leafTypes.includes(props.weather) || props.isPerformanceMode) return
   
   leavesRef.value.forEach((el, i) => {
     if (!el) return
     gsap.killTweensOf(el)
     
     const animateLeaf = () => {
-      if (props.weather !== 'storm') return
+      if (!leafTypes.includes(props.weather)) return
       
       const s1 = Math.random()
       const s2 = Math.random()
@@ -334,12 +363,21 @@ const initLeafAnim = () => {
         filter: 'Drop-Shadow(0 2px 2px Rgba(0,0,0,0.4))'
       })
 
+      // Speed configuration: Strong winds are the fastest, common wind is slow
+      // We apply a multiplier based on the global animSeed to ensure different maps look unique
+      const seedMod = 0.8 + (animSeed.value * 0.4) // Multiplier between 0.8x and 1.2x
+      
+      const isCommonWind = props.weather === 'wind'
+      const isStrongWind = props.weather === 'strong_winds'
+      const baseDuration = (isCommonWind ? 3.5 : (isStrongWind ? 1.2 : 1.5)) * seedMod
+      const speedVariation = (isCommonWind ? 4.0 : (isStrongWind ? 1.0 : 2.0)) * seedMod
+
       gsap.to(el,
         {
-          x: '-140cqw', 
-          y: '100cqh',
+          x: '-250cqw', 
+          y: '150cqh',
           rotation: `+=1080`,
-          duration: 1.5 + (Math.random() * 2),
+          duration: baseDuration + (Math.random() * speedVariation),
           ease: 'none',
           onComplete: () => {
             gsap.delayedCall(Math.random() * 1.5, animateLeaf)
@@ -348,12 +386,17 @@ const initLeafAnim = () => {
       )
     }
     
-    gsap.delayedCall(i * 0.6, animateLeaf)
+    const isCommonWind = props.weather === 'wind'
+    const isStrongWind = props.weather === 'strong_winds'
+    const seedMod = 0.8 + (animSeed.value * 0.4)
+    const baseDelay = isCommonWind ? 0.8 : (isStrongWind ? 0.3 : 0.4)
+    
+    gsap.delayedCall(i * baseDelay * seedMod, animateLeaf)
   })
 }
 
 watch(() => props.weather, (w) => {
-  if (w === 'storm') {
+  if (leafTypes.includes(w)) {
     nextTick(initLeafAnim)
   }
 }, { immediate: true })
@@ -423,15 +466,17 @@ const weatherOverlayStyles = computed(() => ({
         />
       </template>
 
-      <!-- Sandstorm -->
-      <template v-if="weather === 'sandstorm'">
+      <!-- Sandstorm & Strong Winds (Dust Particles) -->
+      <template v-if="weather === 'sandstorm' || weather === 'strong_winds'">
         <div
           ref="layer1Ref"
           class="sandstorm-layer layer-1"
+          :class="{ 'dust-only': weather === 'strong_winds' }"
         />
         <div
           ref="layer2Ref"
           class="sandstorm-layer layer-2"
+          :class="{ 'dust-only': weather === 'strong_winds' }"
         />
       </template>
 
@@ -442,18 +487,18 @@ const weatherOverlayStyles = computed(() => ({
         class="lightning-flash-overlay" 
       />
 
-      <!-- Fog, Mist & Heatwave -->
-      <template v-if="weather === 'fog' || weather === 'mist' || weather === 'heatwave'">
+      <!-- Fog, Mist, Wind, Heatwave, Sun & Cold -->
+      <template v-if="['fog', 'mist', 'wind', 'strong_winds', 'heatwave', 'sun', 'cold', 'coldwave'].includes(weather)">
         <div
           ref="layer1Ref"
           class="mist-layer"
         />
       </template>
       
-      <!-- Leaves (for Storm effects) -->
-      <template v-if="weather === 'storm'">
+      <!-- Leaves (for Wind & Storm effects) -->
+      <template v-if="leafTypes.includes(weather)">
         <div
-          v-for="n in 4"
+          v-for="n in leafCount"
           :key="'leaf-'+n"
           ref="leavesRef"
           class="leaf-element"
@@ -466,6 +511,12 @@ const weatherOverlayStyles = computed(() => ({
 <style scoped lang="scss">
 @use "@/styles/components/map-card-weather" as *;
 @use "@/styles/components/map-card-animations" as *;
+
+.dust-only {
+  opacity: 0.4 !important;
+  filter: sepia(0.5) Brightness(1.1) contrast(1.2) Drop-Shadow(0 2px 4px Rgba(0,0,0,0.3));
+  will-change: transform, opacity;
+}
 
 .leaf-element {
   position: absolute;

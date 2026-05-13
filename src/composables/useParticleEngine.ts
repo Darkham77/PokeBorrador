@@ -214,7 +214,7 @@ export function useParticleEngine() {
         }
       }
 
-      activeTweens.push(...tweens as any[])
+      activeTweens.push(...tweens)
     })
   }
 

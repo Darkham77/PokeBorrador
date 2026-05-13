@@ -229,6 +229,15 @@ export function calculateDamage(attacker: Pokemon, defender: Pokemon, move: Part
 
   const mechWeather = getMechanicalWeather(weather?.type);
   const cycle = getDayCycle();
+
+  // EFECTOS PRIMIGENIOS: Tierra del Fin (Ola de Calor) y Mar del Albor (Tormenta)
+  if (weather?.type === 'heatwave' && finalMoveType === 'water') {
+    return { dmg: 0, eff: 0, isNoEffect: true, evaporated: true };
+  }
+  if (weather?.type === 'storm' && finalMoveType === 'fire') {
+    return { dmg: 0, eff: 0, isNoEffect: true, extinguished: true };
+  }
+
   const isSolarBoosted = mechWeather === WEATHER_MECHANICAL.SUN || (mechWeather === WEATHER_MECHANICAL.CLEAR && (cycle === 'day' || cycle === 'morning'));
   
   if ((move.id === 'solar_beam' || move.id === 'solar_blade') && !isSolarBoosted && mechWeather !== WEATHER_MECHANICAL.CLEAR) {
@@ -242,7 +251,19 @@ export function calculateDamage(attacker: Pokemon, defender: Pokemon, move: Part
     return { dmg, eff: 1, isNoEffect: false };
   }
 
-  const eff = getCombinedEffectiveness(finalMoveType, defender, attacker);
+  let eff = getCombinedEffectiveness(finalMoveType, defender, attacker);
+
+  // VIENTOS FUERTES (Delta Stream): Quita debilidades a tipo Volador
+  if (weather?.type === 'strong_winds' && (defender.type === 'flying' || defender.type2 === 'flying')) {
+    if (eff > 1) {
+      // Si el movimiento es súper efectivo por ser contra Volador, se vuelve neutro
+      // Debilidades oficiales de Volador: Eléctrico, Hielo, Roca
+      const isFlyingWeakness = ['electric', 'ice', 'rock'].includes(finalMoveType);
+      if (isFlyingWeakness) {
+        eff = eff / 2; // Reducimos a la mitad la efectividad que vendría de la debilidad de Volador
+      }
+    }
+  }
 
   if (power === 0) {
     return { dmg: 0, eff, isNoEffect: eff === 0 };
@@ -251,6 +272,15 @@ export function calculateDamage(attacker: Pokemon, defender: Pokemon, move: Part
   const isPhysical = moveCat === 'physical';
   const aStages = { [isPhysical ? 'atk' : 'spa']: atkStages };
   const dStages = { [isPhysical ? 'def' : 'spd']: defStages };
+
+  // NIEBLA (GEN 4): Reducción de precisión
+  if (weather?.type === 'fog') {
+    // La niebla oficial baja la precisión un escalón o aplica un factor 0.75x
+    // Aquí simularemos el fallo aleatorio si no se usa Despejar
+    if (Math.random() < 0.25) {
+      return { dmg: 0, eff: 0, isMiss: true, log: "¡La niebla es tan densa que el ataque falló!" };
+    }
+  }
 
   // Critical Hit logic
   let critRate = (attacker.heldItem === 'Lente Zoom') ? 0.12 : 0.06;
@@ -354,7 +384,8 @@ export function calculateCatchRate(pokemon: Pokemon, rawBallType = 'poke-ball', 
     'net': { 
       mult: (p, c) => {
         const isWaterOrBug = [p.type, p.type2].some(t => t === 'water' || t === 'bug');
-        const isRain = c.weather && (c.weather.type === 'rain' || c.weather.type === 'storm');
+        const mech = getMechanicalWeather(c.weather?.type);
+        const isRain = mech === WEATHER_MECHANICAL.RAIN;
         return (isWaterOrBug || isRain) ? 3.5 : 1.0;
       }
     },
@@ -363,7 +394,8 @@ export function calculateCatchRate(pokemon: Pokemon, rawBallType = 'poke-ball', 
         const cycle = c.cycle || getDayCycle();
         const isNight = cycle === 'night' || cycle === 'dusk';
         const isCave = !!c.isCave;
-        const isFog = c.weather && c.weather.type === 'fog';
+        const mech = getMechanicalWeather(c.weather?.type);
+        const isFog = mech === WEATHER_MECHANICAL.FOG;
         return (isNight || isCave || isFog) ? 3.0 : 1.0;
       }
     },
@@ -372,7 +404,8 @@ export function calculateCatchRate(pokemon: Pokemon, rawBallType = 'poke-ball', 
         const cycle = c.cycle || getDayCycle();
         const isNight = cycle === 'night' || cycle === 'dusk';
         const isCave = !!c.isCave;
-        const isFog = c.weather && c.weather.type === 'fog';
+        const mech = getMechanicalWeather(c.weather?.type);
+        const isFog = mech === WEATHER_MECHANICAL.FOG;
         return (isNight || isCave || isFog) ? 3.0 : 1.0;
       }
     },

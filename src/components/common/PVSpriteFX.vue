@@ -334,11 +334,25 @@ const refreshPersistentFX = () => {
 }
 
 // --- LÓGICA DE CONFIGURACIÓN MODULARIZADA ---
+interface ParticleArea {
+  x: [number, number]
+  y?: [number, number]
+}
+
+interface EffectSettings {
+  offset?: { x: number; y: number }
+  area: ParticleArea
+  activeRange: [number, number]
+  shape: 'circle' | 'rect'
+  stagger?: number
+  wobble?: { x: number; rotation: number; duration: number }
+}
+
 /**
  * Centraliza las reglas visuales para todos los efectos de partículas.
  * Esto evita repetir la lógica de offset y área en múltiples motores.
  */
-const resolveEffectSettings = (type: string, ar: number, options: { isField?: boolean } = {}) => {
+const resolveEffectSettings = (type: string, ar: number, options: { isField?: boolean } = {}): EffectSettings => {
   const typeKey = type.toLowerCase().replace('_', '-')
   const isHeadEffect = typeKey === 'sleep' || typeKey === 'confusion' || typeKey === 'confused' || typeKey === 'dizzy'
   const isFeetEffect = typeKey.includes('leech') || typeKey.includes('seed') || typeKey.includes('seeded') || typeKey === 'trapped' || typeKey === 'bound' || typeKey.includes('ingrain')
@@ -354,7 +368,7 @@ const resolveEffectSettings = (type: string, ar: number, options: { isField?: bo
   const maxRadius = isField ? 45 : ar * factor
   
   const shape = isFeetEffect ? 'rect' : 'circle'
-  const area: any = shape === 'circle' 
+  const area: ParticleArea = shape === 'circle' 
     ? { x: [0, maxRadius] } 
     : { x: [-40, 40], y: [0, 15] } // Caja plana relativa al centro del offset
   
@@ -369,7 +383,7 @@ const resolveEffectSettings = (type: string, ar: number, options: { isField?: bo
   else if (isHeadEffect) activeRange = [1, 2]
   
   // 4. Parámetros estéticos según el tipo de efecto (Wobble y Stagger)
-  let extraSettings: any = {}
+  let extraSettings: Partial<EffectSettings> = {}
   
   switch (type) {
     case 'confusion':
@@ -427,7 +441,7 @@ const initUnifiedSystems = () => {
       const isField = group.classList.contains('field-container')
       
       // Tipado dinámico para evitar errores de TS
-      const settings = resolveEffectSettings(type, props.radius, { isField }) as any
+      const settings = resolveEffectSettings(type, props.radius, { isField })
       if (battleStore.debugShowPokeRadius) {
         console.log(`[FX Debug] Type: ${type} | Shape: ${settings.shape} | Area:`, settings.area)
       }
@@ -779,7 +793,10 @@ const shinyDebug = computed(() => {
       class="debug-guide" 
       :style="shinyDebug.style"
     >
-      <span class="label" style="background: gold; color: black; border-color: gold;">{{ shinyDebug.label }}</span>
+      <span
+        class="label"
+        style="background: gold; color: black; border-color: gold;"
+      >{{ shinyDebug.label }}</span>
     </div>
 
     <!-- BRILLOS SHINY (SIEMPRE DISPONIBLES) -->
@@ -820,7 +837,10 @@ const shinyDebug = computed(() => {
       :data-fx-type="fx.type"
       :style="{ display: !isSimplified ? 'block' : 'none' }"
     >
-      <div class="fx-debug-label" v-if="battleStore.debugShowPokeRadius">
+      <div
+        v-if="battleStore.debugShowPokeRadius"
+        class="fx-debug-label"
+      >
         {{ fx.emoji }} {{ fx.type.toUpperCase() }} ({{ resolveEffectSettings(fx.type, props.radius).shape }})
       </div>
       <span

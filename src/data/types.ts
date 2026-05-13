@@ -21,42 +21,6 @@ export const TYPE_CHART: Record<PokemonType, Partial<Record<PokemonType, number>
   fairy: { fire: 0.5, fighting: 2, poison: 0.5, dragon: 2, dark: 2, steel: 0.5 }
 };
 
-export const SECONDARY_TYPES: Record<string, PokemonType> = {
-  bulbasaur:'poison',ivysaur:'poison',venusaur:'poison',
-  charizard:'flying',
-  butterfree:'flying',
-  weedle:'poison',kakuna:'poison',beedrill:'poison',
-  pidgey:'flying',pidgeotto:'flying',pidgeot:'flying',
-  spearow:'flying',fearow:'flying',
-  farfetchd:'flying',doduo:'flying',dodrio:'flying',
-  nidoqueen:'ground',nidoking:'ground',
-  zubat:'flying',golbat:'flying',
-  oddish:'poison',gloom:'poison',vileplume:'poison',
-  bellsprout:'poison',weepinbell:'poison',victreebel:'poison',
-  paras:'grass',parasect:'grass',
-  venonat:'poison',venomoth:'poison',
-  poliwrath:'fighting',
-  tentacool:'poison',tentacruel:'poison',
-  geodude:'ground',graveler:'ground',golem:'ground',
-  rhyhorn:'rock',rhydon:'rock',
-  onix:'ground',
-  slowpoke:'psychic',slowbro:'psychic',
-  starmie:'psychic',
-  magnemite:'steel',magneton:'steel',
-  dewgong:'ice',cloyster:'ice',lapras:'ice',
-  gastly:'poison',haunter:'poison',gengar:'poison',
-  exeggcute:'psychic',exeggutor:'psychic',
-  jynx:'psychic',
-  omanyte:'water',omastar:'water',
-  kabuto:'water',kabutops:'water',
-  aerodactyl:'flying',
-  articuno:'flying',
-  zapdos:'flying',
-  moltres:'flying',
-  dragonite:'flying',
-  gyarados:'flying',
-  scyther:'flying',
-};
 
 export const TYPE_TRANSLATIONS: Record<string, string> = {
   normal: 'Normal',

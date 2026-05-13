@@ -2,7 +2,7 @@
 import { computed } from 'vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import PVTooltip from '@/components/common/PVTooltip.vue'
-import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue'
+import PokemonTypePills from '@/components/shared/PokemonTypePills.vue'
 import { calculateTotalPower } from '@/logic/pokemonUtils'
 import type { Pokemon } from '@/types/pokemon'
 
@@ -60,8 +60,8 @@ const handleImgError = (e: Event) => {
           </span>
         </h2>
         <div class="type-row">
-          <PokemonTypeTag
-            :type="p.type"
+          <PokemonTypePills
+            :pokemon="p"
             size="md"
           />
           <span class="m-badge-level">Nv. {{ p.level }}</span>

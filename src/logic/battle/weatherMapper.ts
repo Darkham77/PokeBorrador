@@ -13,6 +13,7 @@ export const WEATHER_MECHANICAL = {
   SNOW: 'snow',
   HAIL: 'hail',
   FOG: 'fog',
+  WIND: 'wind',
   CLEAR: 'clear',
   UNKNOWN: 'unknown'
 } as const;
@@ -20,29 +21,36 @@ export const WEATHER_MECHANICAL = {
 export type WeatherMechanical = typeof WEATHER_MECHANICAL[keyof typeof WEATHER_MECHANICAL];
 
 const MAP_TO_MECHANICAL: Record<string, WeatherMechanical> = {
-  // Sun Group
+  // Temperature Group (Calor)
   'sun': WEATHER_MECHANICAL.SUN,
   'heatwave': WEATHER_MECHANICAL.SUN,
   'intense_sun': WEATHER_MECHANICAL.SUN,
   
-  // Rain Group
+  // Temperature Group (Frío)
+  'cold': WEATHER_MECHANICAL.SNOW,
+  'coldwave': WEATHER_MECHANICAL.HAIL,
+
+  // Water Group (Precipitación)
   'rain': WEATHER_MECHANICAL.RAIN,
   'storm': WEATHER_MECHANICAL.RAIN,
   'thunderstorm': WEATHER_MECHANICAL.RAIN,
   'heavy_rain': WEATHER_MECHANICAL.RAIN,
   
-  // Sand Group
+  // Snow/Ice Group (Precipitación)
+  'snow': WEATHER_MECHANICAL.SNOW,
+  'blizzard': WEATHER_MECHANICAL.HAIL,
+
+  // Sand Group (Tierra)
   'sandstorm': WEATHER_MECHANICAL.SANDSTORM,
   'dust_storm': WEATHER_MECHANICAL.SANDSTORM,
   
-  // Snow/Ice Group
-  'snow': WEATHER_MECHANICAL.SNOW,
-  'hail': WEATHER_MECHANICAL.HAIL,
-  'blizzard': WEATHER_MECHANICAL.HAIL,
-  
-  // Fog Group
+  // Fog Group (Humedad)
   'fog': WEATHER_MECHANICAL.FOG,
   'mist': WEATHER_MECHANICAL.FOG,
+
+  // Air Group (Viento)
+  'wind': WEATHER_MECHANICAL.WIND,
+  'strong_winds': WEATHER_MECHANICAL.WIND,
   
   // Neutral
   'clear': WEATHER_MECHANICAL.CLEAR,
@@ -51,8 +59,6 @@ const MAP_TO_MECHANICAL: Record<string, WeatherMechanical> = {
 
 /**
  * Converts any environmental weather token to its combat-mechanical equivalent.
- * @param {string} type Environmental weather token (e.g., 'heatwave')
- * @returns {WeatherMechanical} Mechanical weather key (e.g., 'sun')
  */
 export function getMechanicalWeather(type: string | null | undefined): WeatherMechanical {
   if (!type || type === 'clear' || type === 'null') return WEATHER_MECHANICAL.CLEAR;
@@ -61,7 +67,7 @@ export function getMechanicalWeather(type: string | null | undefined): WeatherMe
   const result = MAP_TO_MECHANICAL[lower];
 
   if (!result) {
-    logger.warn('WeatherIntegrity', `Token de clima no registrado detectado: "${type}". Por favor regístralo en weatherMapper.ts para evitar inconsistencias mecánicas.`);
+    logger.warn('WeatherIntegrity', `Token de clima no registrado detectado: "${type}".`);
     return WEATHER_MECHANICAL.UNKNOWN;
   }
 
@@ -70,19 +76,15 @@ export function getMechanicalWeather(type: string | null | undefined): WeatherMe
 
 /**
  * Converts any environmental weather token to its visual AtmosphereLayer equivalent.
- * This preserves visual variants (like 'storm' vs 'rain').
- * @param {string} type Environmental weather token
- * @returns {string} Visual token
  */
 export function getVisualWeather(type: string | null | undefined): string {
   if (!type) return 'clear';
   const lower = type.toLowerCase();
   
   // Lista de tokens soportados directamente por AtmosphereLayer
-  const VALID_VISUALS = ['rain', 'storm', 'heatwave', 'snow', 'blizzard', 'sandstorm', 'fog', 'mist'];
+  const VALID_VISUALS = ['rain', 'storm', 'heatwave', 'sun', 'cold', 'coldwave', 'snow', 'blizzard', 'sandstorm', 'fog', 'mist', 'wind', 'strong_winds'];
   if (VALID_VISUALS.includes(lower)) return lower;
 
-  // Si no es un visual directo, usamos el mapeo mecánico para obtener el fallback visual
   const mech = getMechanicalWeather(lower);
   return WEATHER_UI_METADATA[mech]?.visual || 'clear';
 }
@@ -93,45 +95,51 @@ export function getVisualWeather(type: string | null | undefined): string {
 export const WEATHER_UI_METADATA: Record<WeatherMechanical, { icon: string; label: string; visual: string; description: string }> = {
   [WEATHER_MECHANICAL.UNKNOWN]: {
     icon: '⚠️',
-    label: 'CLIMA DESCONOCIDO',
+    label: 'DESCONOCIDO',
     visual: 'clear',
-    description: 'Este clima no está registrado en el motor de combate. Reportar para sincronizar efectos.'
+    description: 'Clima no registrado.'
   },
   [WEATHER_MECHANICAL.SUN]: { 
     icon: '☀️', 
     label: 'SOL',
-    visual: 'heatwave',
-    description: 'Potencia movimientos Fuego y debilita Agua. Síntesis cura más.' 
+    visual: 'sun',
+    description: 'Potencia Fuego (x1.5), debilita Agua (x0.5). Rayo Solar sin carga y Síntesis cura más.' 
   },
   [WEATHER_MECHANICAL.RAIN]: { 
     icon: '☔', 
     label: 'LLUVIA',
     visual: 'rain',
-    description: 'Potencia movimientos Agua y debilita Fuego. Trueno nunca falla.' 
+    description: 'Potencia Agua (x1.5), debilita Fuego (x0.5). Trueno y Vendaval nunca fallan.' 
   },
   [WEATHER_MECHANICAL.SANDSTORM]: { 
     icon: '🏜️', 
     label: 'T. ARENA',
     visual: 'sandstorm',
-    description: 'Daña a tipos no Tierra/Roca/Acero. Sube Def. Esp. a tipo Roca.' 
+    description: 'Daña a tipos no Tierra/Roca/Acero. Sube un 50% la Def. Especial de los tipo Roca.' 
   },
   [WEATHER_MECHANICAL.SNOW]: { 
     icon: '❄️', 
     label: 'NIEVE',
     visual: 'snow',
-    description: 'Sube un 50% la Defensa de los Pokémon de tipo Hielo.' 
+    description: 'Sube un 50% la Defensa de los tipo Hielo. Ventisca nunca falla.' 
   },
   [WEATHER_MECHANICAL.HAIL]: { 
     icon: '🌨️', 
     label: 'GRANIZO',
     visual: 'blizzard',
-    description: 'Daña a tipos no Hielo cada turno.' 
+    description: 'Daña a tipos no Hielo cada turno. Ventisca nunca falla.' 
   },
   [WEATHER_MECHANICAL.FOG]: { 
     icon: '🌫️', 
-    label: 'NIEBLA',
+    label: 'BRUMA',
     visual: 'fog',
-    description: 'Reduce drásticamente la precisión de todos los Pokémon.' 
+    description: 'Humedad ambiental que reduce ligeramente la visibilidad.' 
+  },
+  [WEATHER_MECHANICAL.WIND]: {
+    icon: '🍃',
+    label: 'VIENTO',
+    visual: 'wind',
+    description: 'Brisa constante que activa habilidades de viento.'
   },
   [WEATHER_MECHANICAL.CLEAR]: {
     icon: '',
@@ -145,19 +153,39 @@ export const WEATHER_UI_METADATA: Record<WeatherMechanical, { icon: string; labe
  * Visual Variant Overrides for UI
  */
 export const WEATHER_VISUAL_METADATA: Record<string, { icon: string; label: string; description: string }> = {
+  'heatwave': {
+    icon: '🔥',
+    label: 'OLA CALOR',
+    description: 'Calor extremo (Tierra del Fin). Potencia Fuego y el Agua se evapora por completo.'
+  },
   'storm': {
     icon: '⚡',
     label: 'TORMENTA',
-    description: 'Lluvia intensa con aparato eléctrico. Potencia Agua y Trueno nunca falla.'
+    description: 'Tormenta eléctrica (Mar del Albor). Potencia Agua y el Fuego se extingue por completo.'
   },
   'blizzard': {
     icon: '🌬️',
     label: 'VENTISCA',
     description: 'Tormenta de nieve violenta. Daña a tipos no Hielo y sube su Defensa.'
   },
-  'heatwave': {
-    icon: '🔥',
-    label: 'OLA CALOR',
-    description: 'Calor extremo que potencia el Fuego y debilita el Agua. Rayo Solar carga al instante.'
+  'cold': {
+    icon: '❄️',
+    label: 'FRÍO',
+    description: 'Ambiente gélido que sube un 50% la Defensa de los tipo Hielo.'
+  },
+  'coldwave': {
+    icon: '🥶',
+    label: 'OLA FRÍO',
+    description: 'Frío extremo que daña a tipos no Hielo y sube su Defensa.'
+  },
+  'fog': {
+    icon: '🌫️',
+    label: 'NIEBLA',
+    description: 'Niebla densa (Gen 4). Reduce drásticamente la Precisión de todos los Pokémon.'
+  },
+  'strong_winds': {
+    icon: '🌀',
+    label: 'V. FUERTES',
+    description: 'Corrientes de aire (Delta Stream). Elimina las debilidades del tipo Volador.'
   }
 };

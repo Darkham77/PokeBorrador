@@ -102,7 +102,7 @@ Consult these manuals for detailed implementation specifications:
 - **Unified SASS Trap Engine**: Capitalization of standard CSS/SASS functions (e.g., `scale`, `rotate`, `translate` -> `Scale()`, `Rotate()`, `Translate()`) is handled **automatically** by the Vite plugin (`vite-plugin-sass-traps.ts`) during HMR (Hot Module Replacement) and build. Therefore, developers and agents can write standard lowercase CSS/SASS functions, and Vite will automatically format and capitalize them. No manual capitalization or standalone scripts are required.
 - **Audit Exemptions**: Utility, maintenance, and migration scripts (located in `scripts/`) are EXEMPT from legacy code audits (e.g., `legacyDates`) to allow technical support tasks without false positives.
 - **@use Standard**: Forbidden use of `@import`. Use `@use` and `@forward`.
-- **Zero-Warning**: Always maintain 0 errors and 0 warnings in `lint` and `vue-tsc`. It is MANDATORY to run `npm run validate:types` before `npm run lint`.
+- **Zero-Warning**: Always maintain 0 errors and 0 warnings in `lint` and `vue-tsc`. It is MANDATORY to run `npm run lint` before presenting final changes to the user. If it's not zero, fix it and run the audit again.
 - **Template Event Casting**: When using strict TypeScript in `.vue` files, it is mandatory to cast event targets in the template (e.g., `(e.target as HTMLImageElement)`) to satisfy `vue-tsc` checks on specific DOM properties.
 - **Dependency Shield**: Scripts using external libraries must handle `ImportError` and provide installation instructions.
   - **Node.js 26+ Native Standards**:
@@ -132,7 +132,7 @@ The project uses a sophisticated audit and validation engine to ensure stability
 ### 9. TypeScript Integrity & Zero-Ignore Policy
 
 - **Zero-Ignore Policy**: The use of `@ts-ignore`, `@ts-nocheck`, or any variant that bypasses TypeScript compiler checks is STRICTLY FORBIDDEN.
-- **Verification Workflow**: Always run `npm run validate:types` BEFORE `npm run lint` or any commit operation. Type safety is non-negotiable.
+- **Verification Workflow**: Always run `npm run lint` BEFORE any commit operation. Type safety is non-negotiable (incorporated into the lint pipeline).
 - **JSDoc Integrity**: When editing code (especially via `multi_replace_file_content`), ALWAYS verify the preservation of the `/**` opening tags. Deleting these tags breaks JSDoc transformation in esbuild/vite and leads to documentation/type generation failures.
 - **IDE & Workspace Config**: To ensure the IDE (like VS Code) applies the proper TypeScript program context and resolves development imports (e.g., `@vitejs/plugin-vue`) inside configuration files (e.g., `vite.config.ts`), these files must be explicitly declared in the root `tsconfig.json`'s `"include"` array.
 - **Temporal API Typings**: For robust type-safety without using `any`, any custom or polyfilled Temporal API properties (e.g., accessing year/month/day/hour/minute on the return value of `toZonedDateTimeISO()`) must be explicitly declared with formal types (like `ZonedDateTime` interface/class) inside the global `env.d.ts` instead of typing them as `unknown` or `any`.

@@ -76,7 +76,8 @@ export const pokemonDataProvider = {
             height: metadata?.height || null,
             weight: metadata?.weight || null,
             description: metadata?.description || 'No hay datos disponibles en la Pokédex.',
-            isFloating: aesthetics?.floating || false
+            isFloating: aesthetics?.floating || false,
+            type2: data.type2 || undefined
         };
 
         return extendedData;

@@ -366,10 +366,10 @@ watch(() => props.isAttacking, (val) => {
     let ny = isPlayerSide ? -0.5 : 0.5
     
     if (props.targetPosition) {
-      const scale = (WORLD_CONSTANTS as any).OBJECT_SCALE || 2
+      const scale = (WORLD_CONSTANTS as { OBJECT_SCALE: number }).OBJECT_SCALE || 2
       const mySize = props.baseSize * scale
       // Deducimos el tamaño base del objetivo usando las constantes
-      const targetBase = isPlayerSide ? WORLD_CONSTANTS.BASE_ENTITY_SIZE_ENEMY : WORLD_CONSTANTS.BASE_ENTITY_SIZE_PLAYER
+      const targetBase = isPlayerSide ? (WORLD_CONSTANTS as { BASE_ENTITY_SIZE_ENEMY: number }).BASE_ENTITY_SIZE_ENEMY : (WORLD_CONSTANTS as { BASE_ENTITY_SIZE_PLAYER: number }).BASE_ENTITY_SIZE_PLAYER
       const targetSize = targetBase * scale
       
       const myCenterX = props.position.x + (mySize / 2)
@@ -780,7 +780,7 @@ const onBallLeave = (el: Element, done: () => void) => {
             :is-shiny="pokemon.isShiny"
             :is-guardian="pokemon.isGuardian"
             :is-silhouette="isSilhouette"
-            :status="(pokemon.status) as any"
+            :status="pokemon.status || undefined"
             :is-confused="(pokemon.confused || 0) > 0"
             :is-cursed="pokemon.cursed"
             :is-seeded="pokemon.seeded"

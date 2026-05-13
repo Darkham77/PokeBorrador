@@ -11,6 +11,7 @@ import { useBattleStore } from '@/stores/battle'
 import { useGameStore } from '@/stores/game'
 import { useMapStore } from '@/stores/map'
 import { getRouteWeather } from '@/logic/weatherUtils'
+import { getMechanicalWeather, WEATHER_UI_METADATA, WEATHER_VISUAL_METADATA } from '@/logic/battle/weatherMapper'
 import { logger } from '@/logic/utils/logger'
 
 import { checkPlayerWinner, calculateSpawnGrid } from '@/logic/map/mapCardHelper'
@@ -89,13 +90,17 @@ const computedWeather = computed(() => {
 })
 
 const weatherEmoji = computed(() => {
-  const emojis: Record<string, string> = { clear: '', rain: '🌧️', storm: '⚡', fog: '🌫️', snow: '🌨️', blizzard: '❄️', sandstorm: '🏜️', heatwave: '🔥' }
-  return emojis[computedWeather.value as string] || ''
+  const visual = WEATHER_VISUAL_METADATA[computedWeather.value as string]
+  if (visual) return visual.icon
+  const mech = getMechanicalWeather(computedWeather.value as string)
+  return WEATHER_UI_METADATA[mech]?.icon || ''
 })
 
 const weatherName = computed(() => {
-  const names: Record<string, string> = { clear: 'Despejado', rain: 'Lluvia', storm: 'Tormenta', snow: 'Nieve', blizzard: 'Ventisca', sandstorm: 'Tormenta de Arena', fog: 'Niebla', heatwave: 'Ola de Calor' }
-  return names[computedWeather.value as string] || 'Normal'
+  const visual = WEATHER_VISUAL_METADATA[computedWeather.value as string]
+  if (visual) return visual.label
+  const mech = getMechanicalWeather(computedWeather.value as string)
+  return WEATHER_UI_METADATA[mech]?.label || 'Normal'
 })
 
 const atmosphere = ref<{ animClass?: string } | null>(null)

@@ -115,6 +115,15 @@ export function recalcPokemonStats(p: Pokemon): void {
 export function sanitizePokemon(p: Pokemon): void {
   if (!p) return;
 
+  // 0. Sincronizar Datos Base (Tipos y Levitación) desde DB para paridad Wiki
+  const base = pokemonDataProvider.getPokemonData(p.id);
+  if (base) {
+    p.type = base.type;
+    p.type2 = base.type2;
+    p.isFloating = base.isFloating;
+    p.emoji = base.emoji || p.emoji;
+  }
+
   // 1. Validar Habilidad
   const validAbilities = pokemonDataProvider.getSpeciesAbilities(p.id);
   if (!p.ability || !validAbilities.includes(p.ability)) {
@@ -288,7 +297,8 @@ export function makePokemon(id: string, level: number, options: PokemonCreationO
 
   const p: Pokemon = {
     uid: getUidStr(),
-    id, name: base.name, emoji: base.emoji, type: base.type,
+    id, name: base.name, emoji: base.emoji, type: base.type, type2: base.type2,
+    isFloating: base.isFloating,
     catchRate: base.catchRate,
     level, exp: 0, expNeeded: getExpNeeded(level),
     ivs, nature, ability, gender, isShiny,
