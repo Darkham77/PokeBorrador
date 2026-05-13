@@ -139,7 +139,7 @@ const close = () => {
           <!-- Mis Créditos -->
           <div class="stat-node money">
             <span class="gts-stat-label">MIS CRÉDITOS</span>
-            <span class="value">₽{{ formatCurrency(gameStore.state.money) }}</span>
+            <span class="value">₱{{ formatCurrency(gameStore.state.money) }}</span>
           </div>
 
           <!-- Publicaciones activas -->

@@ -83,13 +83,23 @@
 
       .value {
         @include pixelated;
-        font-size: 9px;
-        color: $coin-gold;
-        text-shadow: 0 0 5px Rgba(255, 215, 0, 0.2);
+        font-size: 11px;
+        color: white;
+      }
+
+      &.money .value {
+        color: var(--green);
+        text-shadow: 0 0 10px Rgba(74, 222, 128, 0.35);
+      }
+
+      &.listings-limit .value {
+        color: var(--yellow);
+        text-shadow: 0 0 10px Rgba(250, 204, 21, 0.25);
       }
     }
   }
 }
+
 
 .gts-modal-container {
   display: flex;
