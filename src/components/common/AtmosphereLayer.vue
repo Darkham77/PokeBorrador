@@ -39,6 +39,9 @@ const animClass = computed(() => {
 })
 
 // 3. GSAP Orchestrator for Weather Layers
+const dustLayer1Ref = ref<HTMLElement | null>(null)
+const dustLayer2Ref = ref<HTMLElement | null>(null)
+const mistLayerRef = ref<HTMLElement | null>(null)
 const layer1Ref = ref<HTMLElement | null>(null)
 const layer2Ref = ref<HTMLElement | null>(null)
 const lightningRef = ref<HTMLElement | null>(null)
@@ -52,16 +55,16 @@ const initWeatherAnim = () => {
   if (lightningTimer) lightningTimer.kill()
   
   // Limpiar y resetear posiciones e asegurar opacidad base
-  if (layer1Ref.value) {
-    gsap.killTweensOf(layer1Ref.value)
-    gsap.set(layer1Ref.value, { clearProps: 'all' })
-    gsap.set(layer1Ref.value, { x: 0, y: 0, opacity: 0.8 })
-  }
-  if (layer2Ref.value) {
-    gsap.killTweensOf(layer2Ref.value)
-    gsap.set(layer2Ref.value, { clearProps: 'all' })
-    gsap.set(layer2Ref.value, { x: 0, y: 0, opacity: 0.5 })
-  }
+  const allLayers = [layer1Ref.value, layer2Ref.value, dustLayer1Ref.value, dustLayer2Ref.value, mistLayerRef.value]
+  
+  allLayers.forEach(layer => {
+    if (layer) {
+      gsap.killTweensOf(layer)
+      gsap.set(layer, { clearProps: 'all' })
+      gsap.set(layer, { x: 0, y: 0, opacity: 0.8 })
+    }
+  })
+
   if (lightningRef.value) {
     gsap.killTweensOf(lightningRef.value)
     gsap.set(lightningRef.value, { opacity: 0 })
@@ -201,10 +204,10 @@ const initWeatherAnim = () => {
     const s2X = (animSeed.value * 2400) % 128
     const s2Y = (animSeed.value * 4800) % 128
 
-    if (layer1Ref.value) {
+    if (dustLayer1Ref.value) {
       // Speed configuration: Strong winds are fast, but not too frantic
       const speed1 = (0.7 + animSeed.value * 0.8) * (isStrongWind ? 1.2 : 1.5)
-      weatherTimeline.fromTo(layer1Ref.value,
+      weatherTimeline.fromTo(dustLayer1Ref.value,
         { backgroundPosition: `${s1X}px ${s1Y}px` },
         {
           backgroundPosition: `${s1X - 512}px ${s1Y + 64}px`, 
@@ -215,17 +218,17 @@ const initWeatherAnim = () => {
         0
       )
 
-      if (layer2Ref.value) {
+      if (dustLayer2Ref.value) {
         const seed2 = (animSeed.value * 1.618) % 1
         const speed2 = speed1 * (1.1 + seed2 * 0.4)
         
-        // Si es viento fuerte, aumentamos el tamaño de la textura para que se note más la "tierra"
+        // Si es viento fuerte, las partículas son pequeñas pero visibles
         if (isStrongWind) {
-          gsap.set(layer1Ref.value, { backgroundSize: '128px 128px' })
-          gsap.set(layer2Ref.value, { backgroundSize: '256px 256px' })
+          gsap.set(dustLayer1Ref.value, { backgroundSize: '64px 64px' })
+          gsap.set(dustLayer2Ref.value, { backgroundSize: '128px 128px' })
         }
 
-        weatherTimeline.fromTo(layer2Ref.value,
+        weatherTimeline.fromTo(dustLayer2Ref.value,
           { backgroundPosition: `${s2X}px ${s2Y}px` },
           {
             backgroundPosition: `${s2X - 1024}px ${s2Y + 128}px`,
@@ -240,8 +243,8 @@ const initWeatherAnim = () => {
   }
 
   // Fog / Mist / Wind / Heatwave / Cold / Coldwave
-  if (['fog', 'mist', 'wind', 'heatwave', 'cold', 'coldwave', 'sun'].includes(w)) {
-    const target = layer1Ref.value
+  if (['fog', 'mist', 'wind', 'strong_winds', 'heatwave', 'sun', 'cold', 'coldwave'].includes(w)) {
+    const target = mistLayerRef.value
     if (target) {
       // Heatwave / Coldwave / Strong Winds tienen pulso activo
       const hasPulse = ['heatwave', 'coldwave', 'strong_winds'].includes(w)
@@ -359,8 +362,8 @@ const initLeafAnim = () => {
         x: 0,
         y: 0,
         opacity: 0.9,
-        rotation: Math.random() * 360,
-        filter: 'Drop-Shadow(0 2px 2px Rgba(0,0,0,0.4))'
+        scale: 0.9 + Math.random() * 1.2, // Variación de tamaño entre 0.9x y 2.1x
+        rotation: Math.random() * 360
       })
 
       // Speed configuration: Strong winds are the fastest, common wind is slow
@@ -374,8 +377,8 @@ const initLeafAnim = () => {
 
       gsap.to(el,
         {
-          x: '-250cqw', 
-          y: '150cqh',
+          x: '-350cqw', 
+          y: '80cqh',
           rotation: `+=1080`,
           duration: baseDuration + (Math.random() * speedVariation),
           ease: 'none',
@@ -419,6 +422,7 @@ watch(() => props.seed, (val) => {
 
 // Estilos dinámicos para el overlay de clima
 const weatherOverlayStyles = computed(() => ({
+  '--atmo-z-final': props.zIndex ? `calc(${props.zIndex} + 1)` : '1',
   '--card-seed': animSeed.value,
   '--card-speed': 0.6 + (animSeed.value * 1.0),
   '--atmo-dir': direction.value
@@ -469,12 +473,12 @@ const weatherOverlayStyles = computed(() => ({
       <!-- Sandstorm & Strong Winds (Dust Particles) -->
       <template v-if="weather === 'sandstorm' || weather === 'strong_winds'">
         <div
-          ref="layer1Ref"
+          ref="dustLayer1Ref"
           class="sandstorm-layer layer-1"
           :class="{ 'dust-only': weather === 'strong_winds' }"
         />
         <div
-          ref="layer2Ref"
+          ref="dustLayer2Ref"
           class="sandstorm-layer layer-2"
           :class="{ 'dust-only': weather === 'strong_winds' }"
         />
@@ -490,7 +494,7 @@ const weatherOverlayStyles = computed(() => ({
       <!-- Fog, Mist, Wind, Heatwave, Sun & Cold -->
       <template v-if="['fog', 'mist', 'wind', 'strong_winds', 'heatwave', 'sun', 'cold', 'coldwave'].includes(weather)">
         <div
-          ref="layer1Ref"
+          ref="mistLayerRef"
           class="mist-layer"
         />
       </template>
@@ -513,9 +517,11 @@ const weatherOverlayStyles = computed(() => ({
 @use "@/styles/components/map-card-animations" as *;
 
 .dust-only {
-  opacity: 0.4 !important;
-  filter: sepia(0.5) Brightness(1.1) contrast(1.2) Drop-Shadow(0 2px 4px Rgba(0,0,0,0.3));
+  opacity: 0.6 !important; // Aumentado para visibilidad
+  filter: Grayscale(0.2) contrast(1.1); // Recuperado parte del color original
   will-change: transform, opacity;
+  transform: translate3d(0,0,0);
+  z-index: 10;
 }
 
 .leaf-element {
@@ -529,7 +535,7 @@ const weatherOverlayStyles = computed(() => ({
   z-index: var(--z-low); // Asegurar visibilidad sobre la lluvia
   will-change: transform, opacity;
   transform: translate3d(0,0,0); // GPU Promotion
-  filter: Drop-Shadow(0 1px 1px Rgba(0,0,0,0.3)); // Brillo original
+  // Eliminado Drop-Shadow para optimización GPU
 }
 
 // Estilos delegados a _map-card-weather.scss
@@ -545,12 +551,7 @@ const weatherOverlayStyles = computed(() => ({
   transform: translate3d(0,0,0);
 }
 
-@keyframes leaf-fall {
-  0% { transform: Translate(0, 0) Rotate(var(--leaf-rotation, 0deg)); opacity: 0; }
-  10% { opacity: 0.8; }
-  90% { opacity: 0.8; }
-  100% { transform: Translate(-130cqw, 70cqh) Rotate(calc(var(--leaf-rotation, 0deg) + 1080deg)); opacity: 0; }
-}
+// Eliminado leaf-fall antiguo para evitar conflictos con GSAP
 
 .atmosphere-container {
   position: absolute;
@@ -559,13 +560,15 @@ const weatherOverlayStyles = computed(() => ({
   z-index: var(--atmo-z, 0); 
   overflow: hidden;
   container-type: size; // Permite usar cqw/cqh para las hojas
+  contain: strict; // Optimización masiva: aisla el renderizado de la atmósfera del resto del DOM
+  backface-visibility: hidden;
 }
 
 // Override shared z-index for combat context
 // Capas de clima (Niebla, Bruma, Calor)
 
 :deep(.weather-overlay) {
-  z-index: var(--atmo-z, 0) !important;
+  z-index: var(--atmo-z-final, var(--atmo-z, 0)) !important;
   transform: scaleX(var(--atmo-dir, 1));
 }
 </style>
