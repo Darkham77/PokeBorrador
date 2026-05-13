@@ -147,7 +147,7 @@ _Multipliers:_
 
 ---
 
-## 🌪️ Weather Effects Table (Gen 9 Standard)
+## 🌪️ Weather Effects Table
 
 | Weather | Damage Boost | Damage Reduction | Defensive Boost | Residual Damage | Special Effects |
 | :-- | :-- | :-- | :-- | :-- | :-- |
@@ -157,6 +157,16 @@ _Multipliers:_
 | **Snow** | - | - | Ice (1.5x Def) | **NONE** | Blizzard (100% Acc), Synthesis (25%), Solar Beam (50% Pow) |
 | **Hail** | - | - | - | 1/16 HP (Non-Ice) | Blizzard (100% Acc), Synthesis (25%), Solar Beam (50% Pow) |
 | **Fog** | - | - | - | - | **Accuracy: 60% (All moves)**, Solar Beam (50% Pow), Synthesis (25%) |
+| **Wind** | - | - | - | - | Activates wind-based abilities (Wind Power, Wind Rider). |
+| **S. Winds** | - | - | - | - | **Delta Stream**: Removes weaknesses of Flying-type Pokémon. |
+| **Mist/Bruma** | - | - | - | - | **Accuracy: 80% (All moves)**. Visual variant of Fog. |
+
+### Extreme Weather Variants (Environment Only)
+
+These variants apply the same core mechanics but with extreme multipliers for the opposing type:
+
+- **Heatwave** (Sun variant): Water damage is reduced to **0x** (evaporated).
+- **Storm** (Rain variant): Fire damage is reduced to **0x** (extinguished).
 
 ### 2. Day Cycle (Implicit Weather)
 

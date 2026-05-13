@@ -29,6 +29,7 @@ const MAP_TO_MECHANICAL: Record<string, WeatherMechanical> = {
   // Temperature Group (Frío)
   'cold': WEATHER_MECHANICAL.SNOW,
   'coldwave': WEATHER_MECHANICAL.HAIL,
+  'hail': WEATHER_MECHANICAL.HAIL,
 
   // Water Group (Precipitación)
   'rain': WEATHER_MECHANICAL.RAIN,

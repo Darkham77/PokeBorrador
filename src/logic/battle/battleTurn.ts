@@ -192,7 +192,7 @@ export async function runPlayerAction(store: BattleContext, moveIndex: number) {
     if (isRainActive && (executableMove.id === 'thunder' || executableMove.id === 'hurricane')) finalAcc = 100;
     else if (isSunActive && (executableMove.id === 'thunder' || executableMove.id === 'hurricane')) finalAcc = 50;
     else if ((mechWeather === WEATHER_MECHANICAL.HAIL || mechWeather === WEATHER_MECHANICAL.SNOW) && executableMove.id === 'blizzard') finalAcc = 100;
-    else if (mechWeather === WEATHER_MECHANICAL.FOG) finalAcc = Math.floor(moveAcc * 0.6);
+    else if (mechWeather === WEATHER_MECHANICAL.FOG) { const isMist = weather === "mist" || weather === "mist_visual"; finalAcc = Math.floor(moveAcc * (isMist ? 0.8 : 0.6)); }
 
     finalAcc = finalAcc * (1 + (0.33 * accStage)) * (1 - (0.33 * evaStage));
     if (Math.random() * 100 > finalAcc) {
@@ -423,7 +423,7 @@ export async function runEnemyAction(store: BattleContext) {
     if (isRaining && (executableMove.id === 'thunder' || executableMove.id === 'hurricane')) finalAcc = 100;
     else if (isSunActive && (executableMove.id === 'thunder' || executableMove.id === 'hurricane')) finalAcc = 50;
     else if ((mechWeather === WEATHER_MECHANICAL.HAIL || mechWeather === WEATHER_MECHANICAL.SNOW) && executableMove.id === 'blizzard') finalAcc = 100;
-    else if (mechWeather === WEATHER_MECHANICAL.FOG) finalAcc = Math.floor(moveAcc * 0.6);
+    else if (mechWeather === WEATHER_MECHANICAL.FOG) { const isMist = weather === "mist" || weather === "mist_visual"; finalAcc = Math.floor(moveAcc * (isMist ? 0.8 : 0.6)); }
 
     finalAcc = finalAcc * (1 + (0.33 * accStage)) * (1 - (0.33 * evaStage));
     if (Math.random() * 100 > finalAcc) {

@@ -122,7 +122,7 @@ const TYPE_CHART: Record<string, Record<string, number>> = {
   fairy:    { fire: 0.5, fighting: 2, poison: 0.5, dragon: 2, dark: 2, steel: 0.5 }
 };
 
-const WEATHER_KEYS = { SUN: 'sun', RAIN: 'rain', SANDSTORM: 'sandstorm', SNOW: 'snow', HAIL: 'hail', FOG: 'fog', CLEAR: 'clear' } as const;
+const WEATHER_KEYS = { SUN: 'sun', RAIN: 'rain', SANDSTORM: 'sandstorm', SNOW: 'snow', HAIL: 'hail', FOG: 'fog', WIND: 'wind', CLEAR: 'clear' } as const;
 
 const WEATHER_MAP: Record<string, string> = {
   sun: 'sun', heatwave: 'sun', intense_sun: 'sun',
@@ -130,6 +130,7 @@ const WEATHER_MAP: Record<string, string> = {
   sandstorm: 'sandstorm', dust_storm: 'sandstorm',
   snow: 'snow', hail: 'hail', blizzard: 'hail',
   fog: 'fog', mist: 'fog',
+  wind: 'wind', strong_winds: 'wind',
   clear: 'clear'
 };
 
@@ -147,10 +148,20 @@ function getTypeEff(moveType: string | undefined, defType: string | undefined, s
   return row ? (row[defType.toLowerCase()] ?? 1) : 1;
 }
 
-function getCombinedEff(moveType: string, defender: PurePokemon, attacker: PurePokemon | null = null): number {
+function getCombinedEff(moveType: string, defender: PurePokemon, attacker: PurePokemon | null = null, weather: string | null = null): number {
   const scrapy = attacker?.ability === 'Intrépido';
   let eff = getTypeEff(moveType, defender.type, scrapy);
   if (defender.type2) eff *= getTypeEff(moveType, defender.type2, scrapy);
+
+  // Delta Stream (Strong Winds): Remove Flying-type weaknesses
+  const mechWeather = getMechWeather(weather);
+  if (mechWeather === 'wind' && (defender.type === 'flying' || defender.type2 === 'flying')) {
+    const isSuperEffectiveAgainstFlying = (t: string) => ['electric', 'ice', 'rock'].includes(t.toLowerCase());
+    if (isSuperEffectiveAgainstFlying(moveType) && eff > 1) {
+      eff = 1; // Neutralize super-effective hits against flying types
+    }
+  }
+
   return eff;
 }
 
@@ -281,7 +292,7 @@ export function calculateDamagePure(
     return { dmg, eff: 1, isNoEffect: false };
   }
 
-  const eff = getCombinedEff(moveType, defender, attacker);
+  const eff = getCombinedEff(moveType, defender, attacker, weather?.type);
 
   if (power === 0) return { dmg: 0, eff, isNoEffect: eff === 0 };
 
@@ -342,12 +353,13 @@ export function calculateDamagePure(
   // Weather multiplier
   let weatherMult = 1;
   if (weather && weather.turns !== 0) {
+    const wType = weather.type.toLowerCase();
     if (mechWeather === WEATHER_KEYS.SUN) {
       if (moveType === 'fire')  weatherMult = 1.5;
-      if (moveType === 'water') weatherMult = 0.5;
+      if (moveType === 'water') weatherMult = (wType === 'heatwave') ? 0 : 0.5; // Heatwave evaporates water
     } else if (mechWeather === WEATHER_KEYS.RAIN) {
       if (moveType === 'water') weatherMult = 1.5;
-      if (moveType === 'fire')  weatherMult = 0.5;
+      if (moveType === 'fire')  weatherMult = (wType === 'storm') ? 0 : 0.5; // Storm extinguishes fire
     }
   }
   // Day cycle bonus on clear weather
