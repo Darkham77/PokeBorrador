@@ -3,8 +3,10 @@
 import { computed } from 'vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { useGTSStore } from '@/stores/gts'
+import { formatCurrency } from '@/logic/utils/formatters'
 
 import { getPokemonTier } from '@/logic/pokemon/tierEngine'
+import type { Pokemon } from '@/types/pokemon'
 
 const gtsStore = useGTSStore()
 
@@ -54,7 +56,7 @@ const formatTime = (ts: string | number) => {
             <template v-if="item.listing_type === 'pokemon'">
               <div
                 class="tier-mark"
-                :style="{ background: getPokemonTier(item.data as any).bg }"
+                :style="{ background: getPokemonTier(item.data as Partial<Pokemon>).bg }"
               />
               <img
                 :src="getAssetUrl(ASSET_TYPES.POKEMON, String(item.data.id || ''))"
@@ -69,7 +71,7 @@ const formatTime = (ts: string | number) => {
 
           <div class="card-info">
             <span class="name">{{ item.data.name }}</span>
-            <span class="price">₽{{ item.price.toLocaleString() }}</span>
+            <span class="price">₽{{ formatCurrency(item.price) }}</span>
           </div>
 
           <button
@@ -108,8 +110,8 @@ const formatTime = (ts: string | number) => {
             <span class="item-name">Vendido: <strong>{{ sale.data.name }}</strong></span>
           </div>
           <div class="sale-value">
-            <span class="net-gain">+ ₽{{ (sale.price * (1 - gtsStore.MARKET_FEE)).toLocaleString() }}</span>
-            <span class="gross-price">PVP: ₽{{ sale.price.toLocaleString() }}</span>
+            <span class="net-gain">+ ₽{{ formatCurrency(sale.price * (1 - gtsStore.MARKET_FEE)) }}</span>
+            <span class="gross-price">PVP: ₽{{ formatCurrency(sale.price) }}</span>
           </div>
         </div>
       </div>

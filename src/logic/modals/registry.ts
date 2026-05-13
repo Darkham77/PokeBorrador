@@ -9,6 +9,7 @@ export const MODAL_REGISTRY = {
   Confirm: defineAsyncComponent(() => import('@/components/modals/ConfirmModal.vue')),
   Prompt: defineAsyncComponent(() => import('@/components/modals/PromptModal.vue')),
   Shop: defineAsyncComponent(() => import('@/components/modals/ShopModal.vue')),
+  GlobalMarket: defineAsyncComponent(() => import('@/components/modals/GlobalMarketModal.vue')),
   BCShop: defineAsyncComponent(() => import('@/components/modals/BCShopModal.vue')),
   PokemonCenter: defineAsyncComponent(() => import('@/components/modals/HealModal.vue')),
   Inventory: defineAsyncComponent(() => import('@/components/modals/InventoryModal.vue')),

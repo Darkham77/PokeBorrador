@@ -94,7 +94,7 @@ const handleImageError = (e: Event) => {
           {{ item.name }}
         </h4>
         <div class="item-price-wrapper">
-          <span class="currency-symbol">🪙</span>
+          <i class="fas fa-coins currency-symbol" />
           <span class="price-val">{{ formatCurrency(item.bcPrice || 0) }} BC</span>
         </div>
       </div>

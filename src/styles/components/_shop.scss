@@ -390,13 +390,14 @@
 
     .item-name {
       font-weight: 700;
-      font-size: 14px;
+      font-size: 11.5px;
       color: white;
       margin-bottom: 4px;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
+
 
     .item-price-wrapper {
       display: flex;
@@ -619,17 +620,27 @@
       }
 
       &.coins .value {
-        color: #eab308; // Gold
-        text-shadow: 0 0 15px Rgba(234, 179, 8, 0.25);
+        color: #c084fc; // Premium light purple for Battle Coins
+        text-shadow: 0 0 15px Rgba(168, 85, 247, 0.35);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+
+        .currency-icon {
+          font-size: 14px;
+          color: #c084fc;
+          filter: Drop-Shadow(0 0 5px Rgba(168, 85, 247, 0.5));
+        }
       }
 
       &.level .value {
-        color: #a855f7; // Purple
-        text-shadow: 0 0 15px Rgba(168, 85, 247, 0.25);
+        color: #facc15; // Gold/yellow for Trainer Level
+        text-shadow: 0 0 15px Rgba(250, 204, 21, 0.25);
       }
     }
   }
 }
+
 
 .bc-shop-modal-container {
   display: flex;
@@ -909,7 +920,7 @@
 
     .item-name {
       font-weight: 700;
-      font-size: 14px;
+      font-size: 11.5px;
       color: white;
       margin-bottom: 4px;
       white-space: nowrap;
@@ -917,16 +928,19 @@
       text-overflow: ellipsis;
     }
 
+
     .item-price-wrapper {
       display: flex;
       align-items: center;
       gap: 6px;
 
       .currency-symbol {
-        font-size: 12px;
+        font-size: 11px;
+        color: #c084fc;
         will-change: transform, filter, opacity;
         filter: Drop-Shadow(0 0 5px Rgba(168, 85, 247, 0.5));
       }
+
 
       .price-val {
         @include pixelated;

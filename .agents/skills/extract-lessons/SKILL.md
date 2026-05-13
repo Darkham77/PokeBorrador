@@ -27,17 +27,18 @@ Produce a numbered **Lessons List** with one-line summaries.
 For each lesson, determine the **target skill**:
 
 1. Read the list of existing skills from the skill descriptions. **CRITICAL: You must EXCLUDE any global skills (e.g., skills located outside the current workspace or in generic directories like Google Drive). ONLY consider skills that are local to the current project's `.agents/skills/` directory.**
-2. **Prioritize @/project-standards**: If the lesson involves game rules, game-specific styles (SASS/UI), game mechanisms, formulas, or project-specific architecture, it **MUST** be mapped to **@/project-standards** (or one of its reference manuals in `@/project-standards/references/`).
-3. Only map to other skills if the knowledge is **genuinely generic** and tool-related (e.g., Vue.ts best practices, Javascript patterns, Markdown formatting standards, or Skill Creation protocols) and a dedicated local skill already exists for it.
-4. If no existing local skill covers a *generic* lesson → mark it for **new skill creation** (which must also be saved locally in the project).
+2. **Detect Target Language**: Before drafting any modification, inspect the target skill or documentation files to detect the primary language in which they are written (e.g., English or Spanish).
+3. **Prioritize @/project-standards**: If the lesson involves game rules, game-specific styles (SASS/UI), game mechanisms, formulas, or project-specific architecture, it **MUST** be mapped to **@/project-standards** (or one of its reference manuals in `@/project-standards/references/`).
+4. Only map to other skills if the knowledge is **genuinely generic** and tool-related (e.g., Vue.ts best practices, Javascript patterns, Markdown formatting standards, or Skill Creation protocols) and a dedicated local skill already exists for it.
+5. If no existing local skill covers a *generic* lesson → mark it for **new skill creation** (which must also be saved locally in the project).
 
-Produce a **mapping table**:
+Produce a **mapping table** including the detected language of each target file:
 
 ```text
-| # | Lesson | Target Skill | Action |
-| :--- | :--- | :--- | :--- |
-| 1 | ... | `skill-name` | UPDATE |
-| 2 | ... | `new-skill-name` | CREATE |
+| # | Lesson | Target Skill | Action | Language Detected |
+| :--- | :--- | :--- | :--- | :--- |
+| 1 | ... | `skill-name` | UPDATE | English |
+| 2 | ... | `new-skill-name` | CREATE | Spanish |
 ```
 
 **MANDATORY VERIFICATION (HARD STOP)**: You MUST present the Lessons List and Mapping Table to the user and wait for their explicit "ok" or feedback before proceeding to Phase 3. You are FORBIDDEN from modifying any skill files until this approval is received.
@@ -57,6 +58,7 @@ For each lesson in the mapping table:
 7. **Never duplicate** information already in the skill or other skills. Use references: `see @/other-skill`.
 8. If the lesson fits better as a reference file or if `SKILL.md` is approaching 500 lines, add it to a `references/` directory.
 9. **Synchronized Updates**: ALWAYS verify and update any associated `references/`, `scripts/`, or diagnostic tools (e.g., Python check scripts) linked to the skill. Ensure all technical documentation and automated rules remain in parity with the new knowledge to avoid architectural contradictions.
+10. **Language Preservation**: Write the new rule, lesson, or documentation block in the exact same language as the target skill's `SKILL.md` or associated reference files. For example, if a skill's `SKILL.md` is written in English, any new additions, descriptions, or explanations MUST be written in English. Do not mix languages (e.g., do not add Spanish text into an English document). All non-code, human-readable explanatory text must adhere strictly to the target document's original language.
 
 #### CREATE new skill
 
@@ -77,3 +79,4 @@ For each lesson in the mapping table:
 - **Cross-references**: Use `@/skill-name` to reference related skills instead of repeating their content.
 - **Preserve structure**: Follow the existing formatting conventions of each target skill (numbered lists, tables, code blocks).
 - **Parity Mandate**: Every skill update MUST be reflected in its entire ecosystem. If a rule changes, the corresponding documentation in `references/` and validation logic in `scripts/` MUST be updated in the same turn.
+- **Language Preservation (Strict)**: ALWAYS respect the original language of the skill or documentation file being modified. It is strictly forbidden to mix languages (such as adding Spanish text to a skill or reference document written in English). Only technical elements like variable names, code tokens, and code blocks may be written in their natural programming language, but all explanatory, descriptive, or communicative prose must conform entirely to the document's original language.

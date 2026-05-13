@@ -4,6 +4,7 @@ import { computed } from 'vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { useGTSStore } from '@/stores/gts'
 import type { MarketListing } from '@/logic/market'
+import { formatCurrency } from '@/logic/utils/formatters'
 
 import { getPokemonTier } from '@/logic/pokemon/tierEngine'
 
@@ -121,7 +122,7 @@ function getSprite(pokemon: unknown) {
             </div>
             
             <div class="price-tag">
-              ₽{{ item.price.toLocaleString() }}
+              ₽{{ formatCurrency(item.price) }}
             </div>
           </div>
         </div>

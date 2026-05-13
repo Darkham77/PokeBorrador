@@ -125,8 +125,12 @@ const close = () => {
           <!-- Battle Coins -->
           <div class="stat-node coins">
             <span class="shop-stat-label">MIS BATTLE COINS</span>
-            <span class="value">🪙 {{ formatCurrency(gameStore.state.battleCoins || 0) }}</span>
+            <span class="value">
+              <i class="fas fa-coins currency-icon" />
+              {{ formatCurrency(gameStore.state.battleCoins || 0) }}
+            </span>
           </div>
+
 
           <!-- Trainer Level -->
           <div class="stat-node level">

@@ -59,8 +59,6 @@ export const useGTSStore = defineStore('gts', () => {
 
   // Actions
   async function fetchListings() {
-    if (auth.sessionMode === 'offline') return
-    
     loading.value = true
     try {
       const { data, error } = await game.db.from('market_listings')
@@ -76,7 +74,7 @@ export const useGTSStore = defineStore('gts', () => {
   }
 
   async function fetchUserData() {
-    if (auth.sessionMode === 'offline' || !auth.user) return
+    if (!auth.user) return
 
     const [mine, history] = await Promise.all([
       game.db.from('market_listings')

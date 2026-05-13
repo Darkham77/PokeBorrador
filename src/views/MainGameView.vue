@@ -42,7 +42,6 @@ const SocialView = defineAsyncComponent(() => import('@/views/SocialView.vue'))
 import GlobalChat from '@/components/social/GlobalChat.vue'
 import DirectChatWindow from '@/components/social/DirectChatWindow.vue'
 import { useChatStore } from '@/stores/chat'
-import GlobalMarket from '@/components/market/GlobalMarket.vue'
 import RankedArena from '@/components/social/RankedArena.vue'
 import GlobalRanking from '@/components/social/GlobalRanking.vue'
 
@@ -205,15 +204,6 @@ useDocumentListener('keydown', initAudio, { once: true })
           class="tab-content"
         >
           <DaycareView />
-          <div class="hud-spacer-bottom" />
-        </div>
-
-        <div
-          v-else-if="activeTab === 'market'"
-          key="market"
-          class="tab-content"
-        >
-          <GlobalMarket />
           <div class="hud-spacer-bottom" />
         </div>
 
