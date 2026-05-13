@@ -17,7 +17,6 @@ This manual details the protocols for adding new Pokémon, moves, abilities, and
 11. **Fail-Fast Asset Policy**: Do not mask missing item images or visual assets with fallback emojis or generic icons in development. If an asset is missing, let the component fail visibly (e.g., hiding the image or showing a standard browser broken-link box) to allow developers to immediately notice and resolve the missing file.
 12. **Segmented Shop Audits**: Item asset validation and diagnostic tools must categorize and audit database collections independently (e.g., Poké Market vs BC Shop) based on their specific runtime filters (`market !== false` and `trainerShop === true`) to ensure 100% visual asset coverage across each shopping context.
 
-
 ---
 
 ## 🐲 Adding a New Pokémon
@@ -71,7 +70,7 @@ window.__VITE_DEBUG__.createPokemon({ id: 'houndour', protocol: 'hatch_anim' });
 ```
 
 ## ⚓ Visual Anchors and Shadows
-  
+
 To maintain absolute stability in the high-fidelity combat arena, all entity rendering must follow the **Anchored Pipeline**:
 
 1. **Feet Cache Persistence**: The system uses a `feetCache` to store the ground-anchor coordinates (`feetY`) of every detected sprite. This prevents "coordinate jumping" when a Pokémon is seen for the first time or re-appears.

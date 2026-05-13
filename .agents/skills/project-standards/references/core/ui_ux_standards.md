@@ -185,6 +185,11 @@ We prioritize a deliberate contrast between modern, sleek UI shells and classic,
 - **Battle-Aware Modifiers**: All dynamic move modifiers (glows, "boosted" text, accuracy indicators) MUST verify `battleStore.isBattleActive` before applying environmental or time-based logic. This prevents combat-only states (like night-time accuracy boosts) from leaking into the team information screens outside of active battle.
 - **Z-Index Layering**: HUD Navigation wrappers MUST use `pointer-events: none` and `z-index: var(--z-navigation)` to ensure they don't block interaction with Sidebar tools (Chat/Debug) while still allowing button clicks via `pointer-events: auto` on children.
 
+### 5. Input Groups & Financial Layouts (Large Number Safety)
+
+- **Input Stacking for Large Numbers**: Input groups housing numeric fields that can expand significantly (e.g., price inputs in the millions or billions) MUST be stacked vertically (`flex-direction: column`) rather than side-by-side in a narrow row. This allows the input box to stretch to 100% width of the form container, ensuring ample horizontal space for multi-million/billion figures.
+- **Negative Value Formatting & Wrapping Prevention**: When formatting negative values, deductions, or transaction fees, avoid spaces between the minus sign and currency symbol (render as `-₱` instead of `- ₱`). Always apply `white-space: nowrap` on financial summary rows/spans to guarantee that the minus sign never wraps to a separate line in narrow layouts.
+
 ---
 
 ## 🎭 Animation & Motion Standards
@@ -273,6 +278,7 @@ The `BaseModal.vue` component supports parameterized aesthetics to maintain cons
 - **Close Button Hierarchy**: The close button MUST be the LAST element in the modal's DOM structure. This guarantees it sits above all slotted content regardless of internal component complexity.
 - **padding="raw"**: Use for full-bleed content (e.g., Shop/Inventory grids). The `retro` variant respects this to avoid double-padding.
 - **BaseModal Inheritance (X Logic)**: Respect `BaseModal`'s responsibility for rendering the close button. If `hide-header` is used, the button automatically transitions to a floating position. Never manually include an "X" or close button in custom header slots, as this leads to UI duplication.
+- **Modal Header Stats Cleanliness**: Numeric metrics displayed in modal headers (such as currency credits, trainer levels, limits, or active counts) MUST NOT use custom container frames, dark backgrounds, distinct padding, or surrounding box-shadows. They should be rendered as clean, transparent-background text labels directly on the modal header background. The values must use a standard large pixel font size (`16px`, `font-weight: 900`), applying standard green (`var(--green)`) for currency and standard gold (`var(--yellow)`) for limits, counts, or trainer levels to align with Poké Market, BC Shop, and GTS consistency.
 
 ### 8. Premium 3D Action Buttons
 

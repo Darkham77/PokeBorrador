@@ -7,9 +7,7 @@ This manual establishes the standard protocol for visual and functional verifica
 - **URL**: `http://localhost:5173` (Vite).
 - **Test User**: `ASH`.
 - **Authentication**: Password fields are not required locally; only the username identifies the session.
-- **Service Worker & Vite Watcher Sync**: Programmatically clearing and recreating public directories (such as `public/assets` inside scripts) while Vite's Dev Server is active interrupts Vite's file watchers and causes the PWA Service Worker to cache empty/404 responses. If images appear broken or missing, you must perform a **Hard Refresh** (`Ctrl+F5` / `Cmd+Shift+R`) or clear the browser's storage via the *Application -> Storage -> Clear site data* tab in DevTools to force assets re-synchronization.
-
-
+- **Service Worker & Vite Watcher Sync**: Programmatically clearing and recreating public directories (such as `public/assets` inside scripts) while Vite's Dev Server is active interrupts Vite's file watchers and causes the PWA Service Worker to cache empty/404 responses. If images appear broken or missing, you must perform a **Hard Refresh** (`Ctrl+F5` / `Cmd+Shift+R`) or clear the browser's storage via the _Application -> Storage -> Clear site data_ tab in DevTools to force assets re-synchronization.
 
 ---
 
@@ -106,7 +104,7 @@ If the test fails or the browser stays "frozen":
 3. **Priority Repair**: Fix any console or SSR errors before retrying the test.
 
 ## 🧪 Unit Testing and Regression
-  
+
 To maintain system stability, every core logic change MUST be validated against the Vitest suite:
 
 1. **Test Payload Parity**: When modifying event payloads in `gameBus` (e.g., adding `ballId` to `PLAY_CATCH_ENERGY`), you MUST update corresponding unit tests. Discrepancies between implementation and test expectations are the primary cause of CI failure.

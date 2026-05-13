@@ -1,6 +1,6 @@
 ---
 name: project-standards
-description: Core governance for the Poké Vicio project. Enforces Hybrid Retro-Modern identity, 300/500-line modularity (SRP focus), Zero-Warning SASS/Vue standards, and Zero-Ignore TypeScript policy. Strictly prohibits the use of timers (setTimeout) or reactive state variables for animation coordination in favor of GSAP timelines and promises. Includes diagnostic scripts for automated auditing (viewport, GPU, items). For ANY task involving the battle engine or FSM transitions, you MUST use validate_fsm_diagrams.ts, validate_fsm_implementation.ts, and validate_fsm_flow_parity.ts to ensure 1:1 parity with documentation and zero race conditions. Acts as a Navigation Hub to access technical manuals.
+description: Core governance for the Poké Vicio project. Enforces Hybrid Retro-Modern identity, 300/500-line modularity (SRP focus), Zero-Warning SASS/Vue standards, input standardization, financial layouts, and Zero-Ignore TypeScript policy. Strictly prohibits the use of timers (setTimeout) or reactive state variables for animation coordination in favor of GSAP timelines and promises. Includes diagnostic scripts for automated auditing (viewport, GPU, items). For ANY task involving the battle engine or FSM transitions, you MUST use validate_fsm_diagrams.ts, validate_fsm_implementation.ts, and validate_fsm_flow_parity.ts to ensure 1:1 parity with documentation and zero race conditions. Acts as a Navigation Hub to access technical manuals.
 ---
 
 # Project Standards (Lean Core)

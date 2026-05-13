@@ -244,6 +244,20 @@ When refactoring legacy or generic components:
     &::-webkit-scrollbar { display: none; } // Webkit (Chrome/Safari)
     ```
 
+- **Hiding HTML5 Number Input Spinners**:
+  - **Rule**: To prevent visual collision and layout breaks on centered numeric inputs, standard HTML5 number input up/down spin buttons MUST be hidden using browser-specific properties:
+
+    ```scss
+    input[type="number"] {
+      -moz-appearance: textfield; // Firefox
+      &::-webkit-outer-spin-button,
+      &::-webkit-inner-spin-button {
+        -webkit-appearance: none; // Chrome/Safari/Edge
+        margin: 0;
+      }
+    }
+    ```
+
 - **Tier-Aware Styling**:
   - **Rule**: Any list or grid representing Pokémon (e.g., swap menu, market, battle team) must dynamically reflect the premium hierarchy of the PC Box.
   - **Standard**: Apply the `.is-premium-tier` class if the Pokémon belongs to Tier S or S+. This class must inherit the premium combination (`@include pokemon-card-premium-tier`) with consistent radial highlights (`Radial-Gradient` in `::before`).
