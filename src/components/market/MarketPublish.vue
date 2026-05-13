@@ -313,16 +313,22 @@ const net = computed(() => price.value - fee.value)
 }
 
 .input-group {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  width: 100% !important;
+
   label {
-    display: block;
+    display: block !important;
     font-size: 9px;
     @include pixelated;
     color: Rgba(168, 85, 247, 1);
-    margin-bottom: 12px;
-    text-align: center;
+    margin-bottom: 12px !important;
+    text-align: center !important;
   }
+
   .price-input {
-    width: 100%;
+    width: 100% !important;
     background: var(--black);
     border: 2px solid Rgba(255, 255, 255, 0.1);
     border-radius: 16px;
@@ -347,6 +353,7 @@ const net = computed(() => price.value - fee.value)
     &:focus { border-color: Rgba(255, 215, 0, 0.27); }
   }
 }
+
 
 
 .financials {
