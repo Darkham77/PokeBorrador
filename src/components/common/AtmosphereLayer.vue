@@ -560,7 +560,7 @@ const weatherOverlayStyles = computed(() => ({
   z-index: var(--atmo-z, 0); 
   overflow: hidden;
   container-type: size; // Permite usar cqw/cqh para las hojas
-  contain: strict; // Optimización masiva: aisla el renderizado de la atmósfera del resto del DOM
+  contain: layout style paint; // Optimización equilibrada: aisla el renderizado sin forzar buffers rígidos
   backface-visibility: hidden;
 }
 

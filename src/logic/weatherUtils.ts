@@ -1,6 +1,25 @@
-
 import { ROUTE_WEATHER_TABLES } from '@/data/weather-tables';
 import { getServerTime, getDayCycle } from '@/logic/timeUtils';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+
+export const WEATHER_BUFF_MULTIPLIER = 1.5;
+export const WEATHER_DEBUFF_MULTIPLIER = 0.4;
+export const WEATHER_BLOCK_MULTIPLIER = 0;
+
+export const WEATHER_TYPE_MODIFIERS: Record<string, { boost?: string[], debuff?: string[], block?: string[] }> = {
+  rain: { boost: ['water', 'bug', 'electric'], debuff: ['fire', 'rock', 'ground'] },
+  storm: { boost: ['water', 'electric', 'dragon'], block: ['fire', 'flying', 'bug'], debuff: ['rock', 'ground'] },
+  sun: { boost: ['fire', 'grass', 'ground'], debuff: ['water', 'ice'] },
+  heatwave: { boost: ['fire', 'ground'], block: ['ice', 'grass'], debuff: ['water'] },
+  snow: { boost: ['ice', 'steel'], debuff: ['fire', 'bug', 'flying'] },
+  blizzard: { boost: ['ice'], block: ['fire', 'grass', 'bug', 'flying'], debuff: ['steel', 'rock'] },
+  sandstorm: { boost: ['rock', 'ground', 'steel'], debuff: ['flying', 'bug', 'fire'] },
+  fog: { boost: ['ghost', 'psychic', 'dark'], debuff: ['flying'] },
+  wind: { boost: ['flying', 'bug', 'psychic'], debuff: ['ground'] },
+  strong_winds: { boost: ['flying', 'dragon', 'psychic'], block: ['bug', 'ground'] },
+  mist: { boost: ['fairy', 'water'], debuff: ['fire'] },
+  dust_storm: { boost: ['rock', 'ground'], block: ['flying'], debuff: ['bug'] }
+};
 
 /**
  * Simple 32-bit hash function (DJB2) for string to number.
@@ -46,9 +65,10 @@ export function getRouteWeather(mapId: string, seasonId: string, epochHour: numb
   // Calculate cycle based on epochHour (continuous hours from epoch)
   const cycle = getDayCycle(epochHour * 3600000);
   const seasonTable = routeTables[seasonId];
+  if (!seasonTable) return 'clear';
   
   // Get the specific table for the cycle, or fallback to the season root if not using cycles yet
-  const table = seasonTable[cycle] || seasonTable;
+  const table = (seasonTable as any)[cycle] || seasonTable;
   
   // 2. Generate Deterministic Seed
   const mapHash = hashString(mapId);
@@ -80,4 +100,24 @@ export function getRouteWeather(mapId: string, seasonId: string, epochHour: numb
  */
 export function getCurrentEpochHour(): number {
   return Math.floor(getServerTime() / 3600000);
+}
+
+/**
+ * Determina el multiplicador de spawn de una especie basado en el clima actual.
+ */
+export function getWeatherMultiplier(id: string, weather: string): number {
+  const pData = pokemonDataProvider.getPokemonData(id);
+  if (!pData || !weather || weather === 'clear') return 1.0;
+  
+  const types = Array.isArray(pData.type) ? pData.type.map(t => t.toLowerCase()) : [pData.type.toLowerCase()];
+  const w = weather.toLowerCase();
+  
+  const mods = WEATHER_TYPE_MODIFIERS[w];
+  if (!mods) return 1.0;
+
+  if (mods.block?.some(t => types.includes(t))) return WEATHER_BLOCK_MULTIPLIER;
+  if (mods.boost?.some(t => types.includes(t))) return WEATHER_BUFF_MULTIPLIER;
+  if (mods.debuff?.some(t => types.includes(t))) return WEATHER_DEBUFF_MULTIPLIER;
+
+  return 1.0;
 }

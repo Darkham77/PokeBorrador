@@ -91,7 +91,11 @@ const updatePosition = () => {
     arrowOffset.value = { x: 0, y: anchorY - top }
   }
   
-  coords.value = { top, left, right: 'auto' }
+  coords.value = { 
+    top: Math.round(top), 
+    left: Math.round(left), 
+    right: 'auto' 
+  }
 }
 
 const show = () => {
@@ -268,11 +272,10 @@ onUnmounted(() => {
       align-items: center;
       justify-content: center;
       vertical-align: middle;
-      line-height: 1;
+      line-height: 0;
       margin: 0 2px;
-      transform: Translatey(-2px);
-      font-family: Arial, sans-serif !important;
-      font-size: 11px; // Make arrows slightly larger for visibility
+      transform: Translatey(-1px);
+      font-size: 1.2em; 
     }
   }
 

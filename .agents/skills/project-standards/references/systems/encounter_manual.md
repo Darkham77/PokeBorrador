@@ -39,19 +39,24 @@ To maximize player agency and world dynamism, the system uses an **OR (Additive)
 - **OR** if the current **Weather** favors its elemental type, even if it is outside its normal hours.
 - _Example_: A Staryu (Night) can appear during the _Day_ if it is _Raining_.
 
-### 5.2 Weather Buffs (Native Spawns)
+### 5.2 Modificadores de Spawn por Clima
 
-Weather conditions provide a **Boost (x1.5)** to the base encounter probability of native Pokémon that share a related elemental type.
+Las condiciones atmosféricas afectan dinámicamente las probabilidades de encuentro según los tipos elementales del Pokémon.
 
-| Weather            | Boosted Types        |
-| :----------------- | :------------------- |
-| **Sun (☀️)**       | Fire, Grass          |
-| **Heatwave (🔥)**  | Fire                 |
-| **Rain (🌧️)**      | Water, Bug, Grass    |
-| **Storm (⛈️)**     | Electric, Dragon     |
-| **Snow (❄️)**      | Ice, Steel           |
-| **Sandstorm (🏜️)** | Rock, Ground, Steel  |
-| **Fog (🌫️)**       | Ghost, Psychic, Dark |
+| Clima | Potencia (x1.5) | Penaliza (x0.4) | Bloquea (x0) |
+| :--- | :--- | :--- | :--- |
+| **Lluvia (🌧️)** | Agua, Bicho, Eléctrico | Fuego, Roca, Tierra | - |
+| **Tormenta (⛈️)** | Agua, Eléctrico, Dragón | Roca, Tierra | Fuego, Volador, Bicho |
+| **Sol (☀️)** | Fuego, Planta, Tierra | Agua, Hielo | - |
+| **Ola de Calor (🔥)** | Fuego, Tierra | Agua, Planta | Hielo |
+| **Nieve (❄️)** | Hielo, Acero | Fuego, Bicho | - |
+| **Ventisca (🌪️)** | Hielo | Acero, Roca | Fuego, Planta, Bicho, Volador |
+| **Tormenta Arena (🏜️)** | Roca, Tierra, Acero | Volador, Bicho, Fuego | - |
+| **Niebla (🌫️)** | Fantasma, Psíquico, Siniestro | Volador | - |
+| **Viento (🍃)** | Volador, Bicho, Psíquico | Tierra | - |
+| **Vientos Fuertes (🌀)** | Volador, Dragón, Psíquico | - | Bicho |
+| **Bruma (🌫️)** | Hada, Agua | Fuego | - |
+| **Tormenta Polvo (🌫️)** | Roca, Tierra | Volador, Bicho | - |
 
 ### 5.3 Weather Invasions (Visitors & Relative Weights)
 

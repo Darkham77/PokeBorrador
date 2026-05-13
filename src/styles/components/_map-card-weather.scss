@@ -353,3 +353,24 @@
 }
 
 
+// Halo Oscuro para Spawns Penalizados
+.debuffed-spawn {
+  img {
+    filter: Grayscale(0.6) Brightness(0.8) pokemon-outline-optimized();
+    opacity: 0.8;
+  }
+  
+  &::before {
+    content: '';
+    position: absolute;
+    inset: -2%;
+    background: Radial-Gradient(circle, 
+      Rgba(0, 0, 0, 0.4) 0%, 
+      Transparent 70%
+    );
+    border-radius: 50%;
+    z-index: calc(var(--z-base) - 2);
+    opacity: 0.5;
+    pointer-events: none;
+  }
+}

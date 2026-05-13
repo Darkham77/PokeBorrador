@@ -10,7 +10,7 @@ import { useUIStore } from '@/stores/ui'
 import { useBattleStore } from '@/stores/battle'
 import { useGameStore } from '@/stores/game'
 import { useMapStore } from '@/stores/map'
-import { getRouteWeather } from '@/logic/weatherUtils'
+import { getRouteWeather, getWeatherMultiplier, WEATHER_TYPE_MODIFIERS } from '@/logic/weatherUtils'
 import { getMechanicalWeather, WEATHER_UI_METADATA, WEATHER_VISUAL_METADATA } from '@/logic/battle/weatherMapper'
 import { logger } from '@/logic/utils/logger'
 
@@ -103,6 +103,27 @@ const weatherName = computed(() => {
   return WEATHER_UI_METADATA[mech]?.label || 'Normal'
 })
 
+const weatherModifiersDescription = computed(() => {
+  const mods = WEATHER_TYPE_MODIFIERS[computedWeather.value as string]
+  if (!mods) return ''
+  
+  const translations: Record<string, string> = {
+    water: 'Agua', bug: 'Bicho', electric: 'Eléctrico', fire: 'Fuego', rock: 'Roca', 
+    ground: 'Tierra', grass: 'Planta', ice: 'Hielo', steel: 'Acero', flying: 'Volador',
+    ghost: 'Fantasma', psychic: 'Psíquico', dark: 'Siniestro', dragon: 'Dragón', fairy: 'Hada',
+    normal: 'Normal', poison: 'Veneno', fighting: 'Lucha'
+  }
+
+  const formatList = (list?: string[]) => (list || []).map(t => translations[t] || t).join(', ')
+  
+  let lines = []
+  if (mods.boost?.length) lines.push(`▲ ${formatList(mods.boost)}`)
+  if (mods.debuff?.length) lines.push(`▼ ${formatList(mods.debuff)}`)
+  if (mods.block?.length) lines.push(`🚫 ${formatList(mods.block)}`)
+  
+  return lines.length ? `\n\n${lines.join('\n')}` : ''
+})
+
 const atmosphere = ref<{ animClass?: string } | null>(null)
 
 const factionAnimClass = computed(() => {
@@ -154,6 +175,7 @@ interface ProcessedSpawn {
   isCaught?: boolean
   isRare?: boolean
   isAtmospheric?: boolean
+  isDebuffed?: boolean
   tooltipTitle?: string
   tooltipDesc?: string
   seed?: number
@@ -165,22 +187,6 @@ const processedGrid = computed<ProcessedSpawn[]>(() => {
   const seenPokedex = gameStore.state.seenPokedex || []
   const caughtPokedex = gameStore.state.pokedex || []
   
-  const weatherBoosts: Record<string, string[]> = {
-    rain: ['water', 'bug', 'grass'],
-    storm: ['electric', 'dragon'],
-    sun: ['fire', 'grass'],
-    snow: ['ice', 'steel'],
-    sandstorm: ['rock', 'ground', 'steel'],
-    fog: ['ghost', 'psychic', 'dark'],
-    heatwave: ['fire']
-  };
-
-  const isSpeciesBoostedLocal = (id: string, weather: string) => {
-    const data = pokemonDataProvider.getPokemonData(id);
-    if (!data || !weatherBoosts[weather]) return false;
-    const types = Array.isArray(data.type) ? data.type : [data.type];
-    return types.some((t: string) => (weatherBoosts[weather] as string[]).includes(t.toLowerCase()));
-  }
 
   return slots.map((id: string | null, index: number): ProcessedSpawn => {
     if (!id) return { id: null, key: `empty-${index}` }
@@ -208,9 +214,6 @@ const processedGrid = computed<ProcessedSpawn[]>(() => {
     const isVisitor = !!(props.map.weather?.[weather]?.visitors as Record<string, unknown>)?.[id]
     const isExclusive = !!(props.map.weather?.[weather]?.exclusive as Record<string, unknown>)?.[id]
 
-    const isBoosted = !isVisitor && !isExclusive && isSpeciesBoostedLocal(id, weather)
-    const isAtmospheric = isVisitor || isExclusive || isBoosted
-
     let timeText = ''
     
     // 1. Información de Ciclo (Si es limitado y lo hemos visto)
@@ -220,9 +223,14 @@ const processedGrid = computed<ProcessedSpawn[]>(() => {
     }
 
     // 2. Información Atmosférica
+    const multiplier = getWeatherMultiplier(id, weather)
+    const isBoosted = !isVisitor && !isExclusive && multiplier > 1.0
+    const isDebuffed = !isVisitor && !isExclusive && multiplier < 1.0 && multiplier > 0
+    const isAtmospheric = isVisitor || isExclusive || isBoosted || isDebuffed
+
     if (isAtmospheric) {
       if (isSeen) {
-        const weatherTag = isVisitor ? 'Visitante' : (isExclusive ? 'Exclusivo' : 'Potenciado')
+        const weatherTag = isVisitor ? 'Visitante' : (isExclusive ? 'Exclusivo' : (isBoosted ? 'Potenciado' : 'Debilitado'))
         const weatherLine = `${weatherEmoji.value} ${weatherTag} por el clima.`
         timeText = timeText ? `${timeText}\n${weatherLine}` : weatherLine
       } else {
@@ -244,6 +252,7 @@ const processedGrid = computed<ProcessedSpawn[]>(() => {
       isCaught, 
       isRare: (rate < 10) || isVisitor || isExclusive, 
       isAtmospheric,
+      isDebuffed,
       tooltipTitle: name, 
       tooltipDesc: typeInfo ? `${typeInfo}\n${timeText}` : timeText, 
       seed: (id.split('').reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0) + index) / 100
@@ -316,9 +325,15 @@ const lockDescription = computed(() => {
 })
 
 const spawnGrid = computed(() => {
-  const { rows, cols, totalSlots } = calculateSpawnGrid(allSpawns.value.length, currentCols.value)
+  // Filtrar Pokémon bloqueados por el clima (Multiplier = 0)
+  const weather = computedWeather.value
+  const filteredSpawns = allSpawns.value.filter(id => {
+    return getWeatherMultiplier(id, weather) > 0
+  })
+
+  const { rows, cols, totalSlots } = calculateSpawnGrid(filteredSpawns.length, currentCols.value)
   const grid = new Array(totalSlots).fill(null)
-  allSpawns.value.forEach((id, index) => { grid[totalSlots - 1 - index] = id })
+  filteredSpawns.forEach((id, index) => { grid[totalSlots - 1 - index] = id })
   return { slots: grid, rows, cols }
 })
 </script>
@@ -384,7 +399,7 @@ const spawnGrid = computed(() => {
     <PVTooltip
       :class="['location-tag', (isLocked || isSafariLocked) ? 'tag-locked' : 'tag-wild', atmosphere?.animClass]"
       :title="(isLocked || isSafariLocked) ? 'ZONA BLOQUEADA' : 'ESTADO AMBIENTAL'"
-      :description="(isLocked || isSafariLocked) ? lockDescription : `Ciclo: ${cycleName}\nEstación: ${seasonName}\nClima: ${weatherName}`"
+      :description="(isLocked || isSafariLocked) ? lockDescription : `Ciclo: ${cycleName}\nEstación: ${seasonName}\nClima: ${weatherName}${weatherModifiersDescription}`"
       position="top"
     >
       <span class="pill-content">
@@ -440,7 +455,11 @@ const spawnGrid = computed(() => {
             class="spawn-content"
           >
             <div 
-              :class="['sprite-wrapper', { 'rare-spawn': item.isRare, 'atmospheric-spawn': item.isAtmospheric }]"
+              :class="['sprite-wrapper', { 
+                'rare-spawn': item.isRare, 
+                'atmospheric-spawn': item.isAtmospheric,
+                'debuffed-spawn': (item as any).isDebuffed
+              }]"
               :style="{ '--spawn-seed': item.seed }"
             >
               <PVTooltip

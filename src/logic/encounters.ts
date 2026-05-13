@@ -3,6 +3,7 @@ import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { GAME_RATIOS } from '@/data/constants';
 import { makePokemon } from '@/logic/pokemonFactory';
 import { getDayCycle } from '@/logic/timeUtils';
+import { getWeatherMultiplier } from '@/logic/weatherUtils';
 import { isDisputePhase } from '@/logic/war/warEngine';
 import { getGuardianData, GUARDIAN_CHANCE } from '@/logic/war/guardianEngine';
 import { applyEncounterBonuses } from '@/logic/war/bonusEngine';
@@ -11,36 +12,6 @@ import type { Pokemon } from '@/types/pokemon';
 import type { MapLocation, Encounter, EncounterOptions, EncounterState } from '@/types/encounters';
 import type { Event as GameEvent, EventConfig } from '@/logic/events/eventEngine';
 
-const WEATHER_BUFF_MULTIPLIER = 1.5;
-
-/**
- * Determina si una especie recibe el buff del clima actual basado en sus tipos.
- */
-function isSpeciesBoosted(id: string, weather: string): boolean {
-  const pData = pokemonDataProvider.getPokemonData(id);
-  if (!pData || !weather || weather === 'clear') return false;
-  
-  const types = Array.isArray(pData.type) ? pData.type : [pData.type];
-  const w = weather.toLowerCase();
-  
-  const weatherBoosts: Record<string, string[]> = {
-    rain: ['water', 'bug', 'electric'],
-    storm: ['water', 'electric', 'dragon'],
-    sun: ['fire', 'grass', 'ground'],
-    heatwave: ['fire', 'ground'],
-    cold: ['ice', 'steel', 'water'],
-    coldwave: ['ice'],
-    snow: ['ice', 'steel'],
-    blizzard: ['ice'],
-    sandstorm: ['rock', 'ground', 'steel'],
-    fog: ['ghost', 'psychic', 'dark'],
-    wind: ['flying', 'bug', 'psychic'],
-    strong_winds: ['flying', 'dragon', 'psychic']
-  };
-
-  const boostedTypes = weatherBoosts[w] || [];
-  return types.some((t: string) => boostedTypes.includes(t.toLowerCase()));
-}
 
 
 /**
@@ -57,8 +28,8 @@ export function getEncounterPool(loc: MapLocation, cycle: string, weather: strin
   while (rates.length < pool.length) rates.push(10);
  
   // 1. Inyección por Clima (Visitantes y Exclusivos)
-  if (weather && weather !== 'clear' && loc.weather?.[weather]) {
-    const wConfig = loc.weather[weather];
+  const wConfig = loc.weather?.[weather];
+  if (weather && weather !== 'clear' && wConfig) {
     
     // Especies Exclusivas (Pesos dinámicos o base 5)
     if (wConfig.exclusive) {
@@ -237,11 +208,11 @@ export async function generateEncounter(locId: string, state: EncounterState, op
     const visitorIndices = rates.map((r, i) => r < 0 ? i : -1).filter(i => i !== -1);
     const nativeIndices = rates.map((r, i) => r >= 0 ? i : -1).filter(i => i !== -1);
 
-    // Buff x1.5 a nativos que coinciden con el clima
+    // Aplicar multiplicadores (Buffs, Debuffs, Blocks)
     nativeIndices.forEach(idx => {
       const spId = pool[idx];
-      if (spId && isSpeciesBoosted(spId, weather)) {
-        rates[idx] = (rates[idx] || 0) * WEATHER_BUFF_MULTIPLIER;
+      if (spId) {
+        rates[idx] = (rates[idx] || 0) * getWeatherMultiplier(spId, weather);
       }
     });
 
@@ -293,11 +264,14 @@ export async function generateEncounter(locId: string, state: EncounterState, op
     (Array.isArray(weatherCfg.exclusive) && weatherCfg.exclusive.includes(selectedId))
   ));
 
-  const isBuffed = !isVisitor && !isExclusive && isSpeciesBoosted(selectedId, weather);
+  const multiplier = getWeatherMultiplier(selectedId, weather);
+  const isBuffed = !isVisitor && !isExclusive && multiplier > 1.0;
+  const isDebuffed = !isVisitor && !isExclusive && multiplier < 1.0 && multiplier > 0;
   
-  if (isVisitor || isExclusive || isBuffed) {
+  if (isVisitor || isExclusive || isBuffed || isDebuffed) {
     pokemon.isAtmospheric = true;
     pokemon.weatherOrigin = weather;
+    if (isDebuffed) (pokemon as any).isWeatherStruggling = true;
   }
 
 

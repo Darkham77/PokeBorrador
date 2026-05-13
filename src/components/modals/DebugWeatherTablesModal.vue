@@ -4,6 +4,8 @@ import BaseModal from '@/components/common/BaseModal.vue'
 import { ROUTE_WEATHER_TABLES } from '@/data/weather-tables'
 import { FIRE_RED_MAPS } from '@/data/maps'
 import { getMechanicalWeather, WEATHER_UI_METADATA, WEATHER_VISUAL_METADATA } from '@/logic/battle/weatherMapper'
+import { WEATHER_TYPE_MODIFIERS } from '@/logic/weatherUtils'
+import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
 const emit = defineEmits<{
@@ -46,9 +48,12 @@ const getAffectedPokemon = (routeId: string, weather: string) => {
   
   if (!weatherData) return null
   
+  const visitors = (weatherData as any).visitors || {}
+  const exclusive = (weatherData as any).exclusive || {}
+  
   return {
-    visitors: Object.keys(weatherData.visitors || {}),
-    exclusive: Object.keys(weatherData.exclusive || {})
+    visitors: Object.keys(visitors),
+    exclusive: Object.keys(exclusive)
   }
 }
 
@@ -163,6 +168,21 @@ function formatRouteName(id: string) {
                         <span class="icon">{{ getWeatherMetadata(weather as string).icon }}</span>
                         <span class="label">{{ getWeatherMetadata(weather as string).label }}</span>
                         <span class="chance">{{ chance }}%</span>
+                      </div>
+
+                      <div class="type-modifiers" v-if="WEATHER_TYPE_MODIFIERS[weather as string]">
+                        <div v-if="WEATHER_TYPE_MODIFIERS[weather as string]?.boost" class="mod-group boost">
+                          <span class="mod-icon">▲</span>
+                          <PokemonTypeTag v-for="t in WEATHER_TYPE_MODIFIERS[weather as string]?.boost" :key="t" :type="t" size="ssm" />
+                        </div>
+                        <div v-if="WEATHER_TYPE_MODIFIERS[weather as string]?.debuff" class="mod-group debuff">
+                          <span class="mod-icon">▼</span>
+                          <PokemonTypeTag v-for="t in WEATHER_TYPE_MODIFIERS[weather as string]?.debuff" :key="t" :type="t" size="ssm" />
+                        </div>
+                        <div v-if="WEATHER_TYPE_MODIFIERS[weather as string]?.block" class="mod-group block">
+                          <span class="mod-icon">🚫</span>
+                          <PokemonTypeTag v-for="t in WEATHER_TYPE_MODIFIERS[weather as string]?.block" :key="t" :type="t" size="ssm" />
+                        </div>
                       </div>
                       
                       <!-- Pokémon afectados por este clima -->
@@ -469,6 +489,33 @@ function formatRouteName(id: string) {
   &.sun { border-left: 3px solid #ffcc00; }
   &.cold { border-left: 3px solid #00ffff; }
   &.wind { border-left: 3px solid #99ff99; }
+
+  .type-modifiers {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 6px 0;
+    border-top: 1px solid Rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid Rgba(255, 255, 255, 0.05);
+
+    .mod-group {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 4px;
+      font-size: 6px;
+
+      .mod-icon { 
+        width: 10px; 
+        font-size: 8px;
+        line-height: 1;
+      }
+      
+      &.boost .mod-icon { color: var(--green); }
+      &.debuff .mod-icon { color: var(--orange); }
+      &.block .mod-icon { color: var(--red); }
+    }
+  }
 }
 </style>
 

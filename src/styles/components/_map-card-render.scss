@@ -24,8 +24,7 @@
   }
   flex-direction: column;
   align-items: center;
-  isolation: isolate;
-  @include smooth;
+  @include pixelated;
 
   // Layer 0: Background with Atmosphere Filters
   &::before {
