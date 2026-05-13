@@ -22,6 +22,7 @@ Este documento sirve como referencia de los componentes, menús y herramientas q
 | **BUSCADOR DE POKEMON** | Finalizado | `PokemonSelectionModal.vue`, `BoxFilters.vue`, `ui.ts` (Store) |
 | **VISOR DE DETALLES** | Finalizado | `UnifiedPokemonDetailModal.vue`, `pokemonDataProvider.ts` |
 | **MOCHILA** | Finalizado | `InventoryModal.vue`, `InventorySidebar.vue`, `InventoryItemCard.vue`, `inventory.ts` (Store), `_inventory.scss` |
+| **POKÉ MARKET** | Finalizado | `ShopModal.vue`, `ShopSidebar.vue`, `ShopItemCard.vue`, `shop.ts` (Store), `_shop.scss` |
 | **MOTOR DE CLIMA** | Finalizado | `weatherUtils.ts`, `weather-tables.ts`, `timeUtils.ts`, `map.ts` (Store) |
 | **GIMNASIOS** | Finalizado | `GymsView.vue`, `GymCard.vue`, `gyms.ts` (Store) |
 

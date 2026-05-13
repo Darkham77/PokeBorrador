@@ -100,7 +100,9 @@ const ITEM_MAPPING: Record<string, string> = {
   'baya_atake': 'liechi-berry',
   'baya_aslac': 'salac-berry',
   'mineral_evolutivo': 'eviolite',
-  'vidaesfera': 'life-orb'
+  'vidaesfera': 'life-orb',
+  'refresco': 'soda-pop',
+  'limonada': 'lemonade'
 };
 
 const showdownTrainers = [

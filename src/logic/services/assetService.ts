@@ -78,7 +78,10 @@ const ITEM_MAPPING: Record<string, string> = {
   'franja_recia': 'power-anklet',
   'lazo_destino': 'destiny-knot',
   'piedra_eterna': 'everstone',
-  'restaurador_vigor': 'rare-candy'
+  'restaurador_vigor': 'rare-candy',
+  'lemonade': 'lemonade',
+  'refresco': 'soda-pop',
+  'limonada': 'lemonade'
 };
 
 /**
