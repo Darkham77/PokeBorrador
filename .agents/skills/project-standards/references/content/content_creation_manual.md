@@ -14,6 +14,9 @@ This manual details the protocols for adding new Pokémon, moves, abilities, and
 8. **Prop Unification**: Always use `isShiny` (Boolean) for asset resolution and logic. The legacy `shiny` property is deprecated and must be avoided to ensure parity across the asset service and UI components.
 9. **Item Parity Mandate**: Absolute synchronization between `SHOP_ITEMS` (data/items.ts), `HEALING_ITEMS` (data/items.ts), and logic effects is mandatory. Every consumable item MUST be registered in both constants to avoid `[PHANTOM]` item warnings in the `validate:items` audit.
 10. **External Asset Download (Bulbapedia)**: Requests to `archives.bulbagarden.net` require a `Referer: https://bulbapedia.bulbagarden.net/` header and a realistic `User-Agent`. Direct downloads without these headers will return `403 Forbidden`.
+11. **Fail-Fast Asset Policy**: Do not mask missing item images or visual assets with fallback emojis or generic icons in development. If an asset is missing, let the component fail visibly (e.g., hiding the image or showing a standard browser broken-link box) to allow developers to immediately notice and resolve the missing file.
+12. **Segmented Shop Audits**: Item asset validation and diagnostic tools must categorize and audit database collections independently (e.g., Poké Market vs BC Shop) based on their specific runtime filters (`market !== false` and `trainerShop === true`) to ensure 100% visual asset coverage across each shopping context.
+
 
 ---
 
