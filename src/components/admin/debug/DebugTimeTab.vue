@@ -6,6 +6,7 @@ import { useGameStore } from '@/stores/game'
 import { useMapStore } from '@/stores/map'
 import { useModalStore } from '@/stores/modals'
 import { getMechanicalWeather, WEATHER_UI_METADATA, WEATHER_VISUAL_METADATA } from '@/logic/battle/weatherMapper'
+import { DEBUG_WEATHER_EFFECTS } from './debugConstants'
 
 interface ViteDebugBridge {
   setMockTime: (date: string) => void;
@@ -177,17 +178,15 @@ function toggleCycle(c: string | null) {
       </div>
       <div class="button-row weather-grid">
         <PVTooltip
-          v-for="w in [
-            'clear', 'sun', 'heatwave', 'cold', 'coldwave', 'rain', 'storm', 'snow', 'blizzard', 'fog', 'sandstorm', 'wind', 'strong_winds'
-          ]"
-          :key="w"
-          :title="WEATHER_VISUAL_METADATA[w]?.description || WEATHER_UI_METADATA[getMechanicalWeather(w)]?.description"
+          v-for="w in DEBUG_WEATHER_EFFECTS"
+          :key="w.id"
+          :title="w.desc || WEATHER_VISUAL_METADATA[w.id]?.description || WEATHER_UI_METADATA[getMechanicalWeather(w.id)]?.description"
         >
           <button
-            :class="{ active: mapStore.globalWeather === w }"
-            @click.stop="toggleWeather(w)"
+            :class="{ active: mapStore.globalWeather === w.id }"
+            @click.stop="toggleWeather(w.id)"
           >
-            {{ WEATHER_VISUAL_METADATA[w]?.label || WEATHER_UI_METADATA[getMechanicalWeather(w)]?.label }}
+            {{ w.label }}
           </button>
         </PVTooltip>
       </div>

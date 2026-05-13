@@ -226,9 +226,10 @@ const processedGrid = computed<ProcessedSpawn[]>(() => {
     const multiplier = getWeatherMultiplier(id, weather)
     const isBoosted = !isVisitor && !isExclusive && multiplier > 1.0
     const isDebuffed = !isVisitor && !isExclusive && multiplier < 1.0 && multiplier > 0
-    const isAtmospheric = isVisitor || isExclusive || isBoosted || isDebuffed
+    const isSpecialWeatherSpawn = isVisitor || isExclusive
+    const hasWeatherEffect = isSpecialWeatherSpawn || isBoosted || isDebuffed
 
-    if (isAtmospheric) {
+    if (hasWeatherEffect) {
       if (isSeen) {
         const weatherTag = isVisitor ? 'Visitante' : (isExclusive ? 'Exclusivo' : (isBoosted ? 'Potenciado' : 'Debilitado'))
         const weatherLine = `${weatherEmoji.value} ${weatherTag} por el clima.`
@@ -251,8 +252,7 @@ const processedGrid = computed<ProcessedSpawn[]>(() => {
       isSeen, 
       isCaught, 
       isRare: (rate < 10) || isVisitor || isExclusive, 
-      isAtmospheric,
-      isDebuffed,
+      isAtmospheric: isSpecialWeatherSpawn, 
       tooltipTitle: name, 
       tooltipDesc: typeInfo ? `${typeInfo}\n${timeText}` : timeText, 
       seed: (id.split('').reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0) + index) / 100
@@ -457,8 +457,7 @@ const spawnGrid = computed(() => {
             <div 
               :class="['sprite-wrapper', { 
                 'rare-spawn': item.isRare, 
-                'atmospheric-spawn': item.isAtmospheric,
-                'debuffed-spawn': (item as any).isDebuffed
+                'atmospheric-spawn': item.isAtmospheric
               }]"
               :style="{ '--spawn-seed': item.seed }"
             >

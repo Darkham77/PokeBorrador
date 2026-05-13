@@ -183,6 +183,11 @@ export const WEATHER_VISUAL_METADATA: Record<string, { icon: string; label: stri
     label: 'NIEBLA',
     description: 'Niebla densa (Gen 4). Reduce drásticamente la Precisión de todos los Pokémon.'
   },
+  'mist': {
+    icon: '🌫️',
+    label: 'NEBLINA',
+    description: 'Humedad ambiental ligera que reduce suavemente la visibilidad.'
+  },
   'strong_winds': {
     icon: '🌀',
     label: 'V. FUERTES',

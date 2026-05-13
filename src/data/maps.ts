@@ -141,17 +141,6 @@ export const FIRE_RED_MAPS = [
     }
   },
   {
-    id: 'route7', name: 'Ruta 7', icon: '🌾', badges: 4, desc: 'Conecta Azulona con Azafrán.',
-    wild: { morning: ['pidgey', 'meowth', 'oddish', 'bellsprout', 'abra'], day: ['pidgey', 'meowth', 'oddish', 'bellsprout', 'abra'], dusk: ['meowth', 'abra'], night: ['meowth', 'abra', 'murkrow'] },
-    rates: { morning: [30, 25, 15, 15, 15], day: [30, 25, 15, 15, 15], dusk: [50, 50], night: [40, 40, 20] }, lv: [18, 22],
-    weather: {
-      sun: { visitors: { growlithe: 50, vulpix: 50 } },
-      rain: { visitors: { psyduck: 100 } },
-      wind: { visitors: { pidgeotto: 100 } },
-      fog: { visitors: { houndour: 100 } }
-    }
-  },
-  {
     id: 'diglett_cave', name: 'Cueva Diglett', icon: '🕳️', badges: 2, desc: 'Atajo bajo tierra.', isCave: true,
     wild: { morning: ['diglett', 'dugtrio'], day: ['diglett', 'dugtrio'], dusk: ['diglett'], night: ['diglett', 'dugtrio'] },
     rates: { morning: [95, 5], day: [95, 5], dusk: [100], night: [98, 2] }, lv: [15, 31],
@@ -256,89 +245,6 @@ export const FIRE_RED_MAPS = [
       rain: { visitors: { farfetchd: 100 } },
       fog: { visitors: { venomoth: 100 } },
       mist: { visitors: { gloom: 50, weepinbell: 50 } }
-    }
-  },
-  {
-    id: 'route14', name: 'Ruta 14', icon: '🌾', badges: 5, desc: 'Hacia Ciudad Fucsia.',
-    wild: { morning: ['pidgeotto', 'venonat', 'oddish', 'bellsprout', 'ditto'], day: ['pidgeotto', 'venonat', 'oddish', 'bellsprout', 'ditto'], dusk: ['venonat', 'ditto'], night: ['venomoth', 'ditto'] },
-    rates: { morning: [20, 30, 20, 20, 10], day: [20, 30, 20, 20, 10], dusk: [60, 40], night: [60, 40] }, lv: [26, 30],
-    weather: {
-      wind: { visitors: { scyther: 100 } },
-      rain: { visitors: { quagsire: 100 } },
-      storm: { visitors: { pinsir: 100 } }
-    }
-  },
-  {
-    id: 'route15', name: 'Ruta 15', icon: '🌾', badges: 5, desc: 'Camino a Fucsia.',
-    wild: { morning: ['pidgeotto', 'venonat', 'oddish', 'bellsprout', 'ditto'], day: ['pidgeotto', 'venonat', 'oddish', 'bellsprout', 'ditto'], dusk: ['venonat', 'ditto'], night: ['venomoth', 'ditto'] },
-    rates: { morning: [20, 30, 20, 20, 10], day: [20, 30, 20, 20, 10], dusk: [60, 40], night: [60, 40] }, lv: [26, 30],
-    weather: {
-      wind: { visitors: { scyther: 100 } },
-      rain: { visitors: { quagsire: 100 } },
-      storm: { visitors: { pinsir: 100 } }
-    }
-  },
-  {
-    id: 'route16', name: 'Ruta 16', icon: '🚲', badges: 4, desc: 'Inicio del Camino de Bicis.',
-    wild: { morning: ['spearow', 'doduo', 'rattata', 'grimer'], day: ['spearow', 'doduo', 'rattata', 'grimer'], dusk: ['fearow', 'muk'], night: ['fearow', 'muk'] },
-    rates: { morning: [30, 30, 30, 10], day: [30, 30, 30, 10], dusk: [50, 50], night: [50, 50] }, lv: [20, 24],
-    weather: {
-      wind: { visitors: { dodrio: 100 } },
-      sun: { visitors: { ponyta: 100 } },
-      fog: { visitors: { koffing: 100 } }
-    }
-  },
-  {
-    id: 'route17', name: 'Ruta 17', icon: '🚲', badges: 5, desc: 'Camino de Bicis.',
-    wild: { morning: ['spearow', 'doduo', 'rattata', 'grimer'], day: ['spearow', 'doduo', 'rattata', 'grimer'], dusk: ['fearow', 'muk'], night: ['fearow', 'muk'] },
-    rates: { morning: [30, 30, 30, 10], day: [30, 30, 30, 10], dusk: [50, 50], night: [50, 50] }, lv: [24, 28],
-    weather: {
-      wind: { visitors: { dodrio: 100 } },
-      sun: { visitors: { rapidash: 100 } },
-      heatwave: { visitors: { slugma: 100 } }
-    }
-  },
-  {
-    id: 'route18', name: 'Ruta 18', icon: '🚲', badges: 5, desc: 'Final del Camino de Bicis.',
-    wild: { morning: ['spearow', 'doduo', 'rattata', 'grimer'], day: ['spearow', 'doduo', 'rattata', 'grimer'], dusk: ['fearow', 'muk'], night: ['fearow', 'muk'] },
-    rates: { morning: [30, 30, 30, 10], day: [30, 30, 30, 10], dusk: [50, 50], night: [50, 50] }, lv: [24, 28],
-    weather: {
-      wind: { visitors: { dodrio: 100 } },
-      sun: { visitors: { rapidash: 100 } },
-      mist: { visitors: { koffing: 100 } }
-    }
-  },
-  {
-    id: 'route19', name: 'Ruta 19', icon: '🌊', badges: 6, desc: 'Vía marítima a Islas Espuma.',
-    wild: { morning: ['tentacool', 'magikarp', 'horsea'], day: ['tentacool', 'magikarp', 'horsea'], dusk: ['tentacool'], night: ['tentacool', 'staryu'] },
-    rates: { morning: [70, 20, 10], day: [70, 20, 10], dusk: [100], night: [80, 20] }, lv: [20, 30],
-    fishing: { pool: ['tentacool', 'shellder', 'krabby'], rates: [60, 20, 20], lv: [20, 30] },
-    weather: {
-      rain: { visitors: { tentacruel: 100 } },
-      storm: { visitors: { gyarados: 100 } },
-      fog: { visitors: { slowpoke: 100 } }
-    }
-  },
-  {
-    id: 'route20', name: 'Ruta 20', icon: '🌊', badges: 6, desc: 'Mar de las Islas Espuma.',
-    wild: { morning: ['tentacool', 'magikarp', 'horsea'], day: ['tentacool', 'magikarp', 'horsea'], dusk: ['tentacool'], night: ['tentacool', 'staryu'] },
-    rates: { morning: [70, 20, 10], day: [70, 20, 10], dusk: [100], night: [80, 20] }, lv: [25, 35],
-    fishing: { pool: ['tentacruel', 'dewgong', 'kingler'], rates: [60, 20, 20], lv: [30, 40] },
-    weather: {
-      snow: { visitors: { lapras: 100 } },
-      coldwave: { visitors: { cloyster: 100 } },
-      rain: { visitors: { kingler: 100 } }
-    }
-  },
-  {
-    id: 'route21', name: 'Ruta 21', icon: '🌊', badges: 7, desc: 'Vía marítima a Isla Canela.',
-    wild: { morning: ['tentacool', 'magikarp', 'pidgey', 'pidgeotto'], day: ['tentacool', 'magikarp', 'pidgey', 'pidgeotto'], dusk: ['tentacool', 'pidgeotto'], night: ['tentacool', 'staryu'] },
-    rates: { morning: [50, 20, 20, 10], day: [50, 20, 20, 10], dusk: [70, 30], night: [80, 20] }, lv: [25, 35],
-    fishing: { pool: ['tentacruel', 'seadra', 'starmie'], rates: [60, 30, 10], lv: [30, 45] },
-    weather: {
-      sun: { visitors: { tangela: 100 } },
-      rain: { visitors: { starmie: 100 } },
-      wind: { visitors: { pidgeot: 100 } }
     }
   },
   {

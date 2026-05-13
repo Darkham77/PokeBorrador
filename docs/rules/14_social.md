@@ -8,7 +8,7 @@ Poké Vicio no es solo una aventura en solitario; incluye un robusto sistema soc
 
 El sistema de amigos permite mantener un seguimiento de tus conocidos y facilitar las interacciones directas (combates e intercambios).
 
-### Características:
+### Características
 
 - **Búsqueda de Jugadores**: Puedes buscar a cualquier entrenador por su nombre de usuario.
 - **Estado de Conexión**: Sabrás si tus amigos están online en tiempo real (indicador verde).
@@ -20,11 +20,11 @@ El sistema de amigos permite mantener un seguimiento de tus conocidos y facilita
 
 Los intercambios son la base de la colaboración. Permiten enviar Pokémon a otros jugadores, lo cual es requisito para ciertas evoluciones.
 
-### Tipos de Intercambios:
+### Tipos de Intercambios
 
-1.  **Intercambio Directo**: Realizado a través de la lista de amigos.
-2.  **Ofertas de Intercambio**: Puedes enviar una oferta a un jugador desconectado; este la recibirá al iniciar sesión.
-3.  **Historial**: Se mantiene un registro de los intercambios realizados para garantizar la seguridad de los Pokémon.
+1. **Intercambio Directo**: Realizado a través de la lista de amigos.
+2. **Ofertas de Intercambio**: Puedes enviar una oferta a un jugador desconectado; este la recibirá al iniciar sesión.
+3. **Historial**: Se mantiene un registro de los intercambios realizados para garantizar la seguridad de los Pokémon.
 
 ---
 

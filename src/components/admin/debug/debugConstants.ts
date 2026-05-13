@@ -93,16 +93,20 @@ export const DEBUG_FIELD_EFFECTS: DebugItem[] = [
 ]
 
 export const DEBUG_WEATHER_EFFECTS: DebugItem[] = [
-  { id: 'sun', label: 'SOL', icon: '☀️' },
-  { id: 'heatwave', label: 'OLA CALOR', icon: '🔥' },
-  { id: 'rain', label: 'LLUVIA', icon: '🌧️' },
-  { id: 'storm', label: 'TORMENTA', icon: '⚡' },
-  { id: 'sandstorm', label: 'ARENA', icon: '🏜️' },
-  { id: 'hail', label: 'GRANIZO', icon: '🌨️' },
-  { id: 'snow', label: 'NIEVE', icon: '❄️' },
-  { id: 'blizzard', label: 'VENTISCA', icon: '🌬️' },
-  { id: 'fog', label: 'NIEBLA', icon: '🌫️' },
-  { id: 'clear', label: 'DESPEJADO', icon: '🌈' }
+  { id: 'clear', label: 'DESPEJADO', icon: '🌈', desc: 'Cielo despejado sin efectos atmosféricos.' },
+  { id: 'sun', label: 'SOL', icon: '☀️', desc: 'Sol intenso. Potencia fuego, debilita agua.' },
+  { id: 'heatwave', label: 'OLA CALOR', icon: '🔥', desc: 'Calor extremo. Probabilidad de quemaduras ambientales.' },
+  { id: 'cold', label: 'FRÍO', icon: '❄️', desc: 'Ambiente gélido. Potencia hielo.' },
+  { id: 'coldwave', label: 'OLA FRÍO', icon: '🥶', desc: 'Frío extremo. Probabilidad de congelación ambiental.' },
+  { id: 'rain', label: 'LLUVIA', icon: '🌧️', desc: 'Lluvia constante. Potencia agua, debilita fuego.' },
+  { id: 'storm', label: 'TORMENTA', icon: '⚡', desc: 'Tormenta eléctrica. Rayos aleatorios y Trueno infalible.' },
+  { id: 'snow', label: 'NIEVE', icon: '❄️', desc: 'Nieve suave. Sube la Defensa de tipos Hielo.' },
+  { id: 'blizzard', label: 'VENTISCA', icon: '🌬️', desc: 'Tormenta de nieve. Daño por turno a no-Hielo.' },
+  { id: 'fog', label: 'NIEBLA', icon: '🌫️', desc: 'Niebla densa. Reduce la precisión de todos los Pokémon.' },
+  { id: 'mist', label: 'BRUMA', icon: '🌫️', desc: 'Neblina ligera. Efecto puramente atmosférico.' },
+  { id: 'sandstorm', label: 'T. ARENA', icon: '🏜️', desc: 'Tormenta de arena. Daño por turno a no-Tierra/Roca/Acero.' },
+  { id: 'wind', label: 'VIENTO', icon: '🍃', desc: 'Viento suave. Facilita el vuelo.' },
+  { id: 'strong_winds', label: 'V. FUERTES', icon: '🌀', desc: 'Vientos huracanados. Debilita ataques tipo Volador.' }
 ]
 
 export const DEBUG_UI_ANIMS: DebugItem[] = [

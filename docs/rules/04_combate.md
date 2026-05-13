@@ -44,7 +44,7 @@ state.battle = {
 
 ## Fórmula de daño (Gen 4+ oficial)
 
-```
+```text
 base = floor( ((2×level/5 + 2) × power × A / D) / 50 ) + 2
 
 A = atkStat × stageMult(atkStage)   [× 0.5 si burn en movimiento físico]
@@ -233,7 +233,7 @@ No hay ninguna IA estratégica. Si el enemigo queda sin PP, usa **Forcejeo**:
 
 ## Tabla de efectividad de tipos
 
-```
+```text
               Normal Fire  Water  Grass  Elec  Ice  Fight Poison Ground Flying Psych Bug  Rock  Ghost Dragon Dark  Steel
 Normal        ×1    ×1    ×1     ×1     ×1    ×1   ×1    ×1     ×1     ×1     ×1    ×1   ×0.5  ×0    ×1     ×1    ×0.5
 Fire          ×1    ×0.5  ×0.5   ×2     ×1    ×2   ×1    ×1     ×1     ×1     ×1    ×2   ×0.5  ×1    ×0.5   ×1    ×2

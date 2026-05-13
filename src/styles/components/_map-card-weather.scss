@@ -236,20 +236,20 @@
   }
 
   &.fog .mist-layer {
-    background: Rgba(255, 255, 255, 0.25);
-    background-image: url("data:image/svg+xml,%3Csvg width='512' height='512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.01' numOctaves='1'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)' opacity='.2'/%3E%3C/svg%3E");
+    background: Rgba(255, 255, 255, 0.45); // Aumentado de 0.25 para mayor densidad
+    background-image: url("data:image/svg+xml,%3Csvg width='512' height='512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.008' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)' opacity='.3'/%3E%3C/svg%3E");
     
     .night & {
-      opacity: 0.5; // Reducir lavado de color en la noche
+      opacity: 0.6; 
     }
   }
 
   &.mist .mist-layer {
-    background: Rgba(255, 255, 255, 0.15);
-    background-image: url("data:image/svg+xml,%3Csvg width='512' height='512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.015' numOctaves='1'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)' opacity='.15'/%3E%3C/svg%3E");
+    background: Rgba(255, 255, 255, 0.05); // Reducido drásticamente para un efecto muy sutil
+    background-image: url("data:image/svg+xml,%3Csvg width='512' height='512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.025' numOctaves='1'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)' opacity='.05'/%3E%3C/svg%3E");
 
     .night & {
-      opacity: 0.5; // Reducir lavado de color en la noche
+      opacity: 0.3;
     }
   }
 
