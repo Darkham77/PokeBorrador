@@ -16,7 +16,7 @@ interface Props {
   positionMode?: string | null
 }
 
-const props = withDefaults(defineProps<Props>(), {
+withDefaults(defineProps<Props>(), {
   type: 'center',
   variant: 'modern',
   hideHeader: false,

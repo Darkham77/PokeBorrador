@@ -8,7 +8,7 @@ interface Props {
   selectedCount?: number
 }
 
-const props = withDefaults(defineProps<Props>(), {
+withDefaults(defineProps<Props>(), {
   multiSelectMode: null,
   selectedCount: 0
 })

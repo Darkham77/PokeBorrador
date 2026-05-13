@@ -5,9 +5,9 @@ interface Props {
   searchQuery: string
 }
 
-const props = defineProps<Props>()
+defineProps<Props>()
 
-const emit = defineEmits<{
+defineEmits<{
   (e: 'update:currentGen', gen: number): void
   (e: 'update:sortBy', sortBy: string): void
   (e: 'update:searchQuery', query: string): void

@@ -12,7 +12,7 @@ const activeDisplayEvents = computed(() => {
       try {
         const cfg = (typeof ev.config === 'string' ? JSON.parse(ev.config) : ev.config) as EventConfig
         if (cfg.banner) bannerColor = cfg.banner
-      } catch (e) { /* ignore */ }
+      } catch (_e) { /* ignore */ }
     }
     
     return {

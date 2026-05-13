@@ -15,7 +15,7 @@ interface Props {
   isReady?: boolean
 }
 
-const props = withDefaults(defineProps<Props>(), {
+withDefaults(defineProps<Props>(), {
   missionsRemaining: 0,
   missionSprites: () => [],
   gymRematches: 0,
@@ -496,7 +496,7 @@ const bannerStyle = computed(() => ({
     @include pixelated;
     font-size: 8px;
     color: var(--yellow);
-    background: Rgba(0, 0, 0, 0.4);
+    background: $black !important;
     padding: 4px 6px;
     border-radius: 6px;
     border: 1px solid Rgba(255, 217, 61, 0.2);

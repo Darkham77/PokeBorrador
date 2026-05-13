@@ -13,7 +13,7 @@ interface Props {
   show?: boolean
 }
 
-const props = withDefaults(defineProps<Props>(), {
+withDefaults(defineProps<Props>(), {
   show: false
 })
 

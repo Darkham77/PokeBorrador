@@ -5,7 +5,7 @@ interface Props {
   mission: DaycareMission
 }
 
-const props = defineProps<Props>()
+defineProps<Props>()
 
 const emit = defineEmits<{
   (e: 'deliver'): void

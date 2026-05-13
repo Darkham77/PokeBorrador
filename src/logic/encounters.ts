@@ -271,7 +271,7 @@ export async function generateEncounter(locId: string, state: EncounterState, op
   if (isVisitor || isExclusive || isBuffed || isDebuffed) {
     pokemon.isAtmospheric = true;
     pokemon.weatherOrigin = weather;
-    if (isDebuffed) (pokemon as any).isWeatherStruggling = true;
+    if (isDebuffed) pokemon.isWeatherStruggling = true;
   }
 
 

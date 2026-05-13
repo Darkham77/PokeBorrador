@@ -2,6 +2,9 @@ import { ROUTE_WEATHER_TABLES } from '@/data/weather-tables';
 import { getServerTime, getDayCycle } from '@/logic/timeUtils';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 
+type WeatherProbabilityTable = Record<string, number>;
+type SeasonWeatherTable = Record<string, WeatherProbabilityTable>;
+
 export const WEATHER_BUFF_MULTIPLIER = 1.5;
 export const WEATHER_DEBUFF_MULTIPLIER = 0.4;
 export const WEATHER_BLOCK_MULTIPLIER = 0;
@@ -64,11 +67,11 @@ export function getRouteWeather(mapId: string, seasonId: string, epochHour: numb
   
   // Calculate cycle based on epochHour (continuous hours from epoch)
   const cycle = getDayCycle(epochHour * 3600000);
-  const seasonTable = routeTables[seasonId];
+  const seasonTable = routeTables[seasonId] as unknown as SeasonWeatherTable;
   if (!seasonTable) return 'clear';
   
   // Get the specific table for the cycle, or fallback to the season root if not using cycles yet
-  const table = (seasonTable as any)[cycle] || seasonTable;
+  const table = seasonTable[cycle as keyof SeasonWeatherTable] || (seasonTable as unknown as WeatherProbabilityTable);
   
   // 2. Generate Deterministic Seed
   const mapHash = hashString(mapId);

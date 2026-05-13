@@ -203,6 +203,7 @@ onUnmounted(() => {
               v-if="title"
               class="pv-tooltip-title"
             >{{ title }}</span>
+            <!-- eslint-disable-next-line vue/no-v-html -->
             <span
               v-if="description"
               class="pv-tooltip-desc"

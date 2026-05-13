@@ -9,7 +9,7 @@ interface Props {
   gender?: string
 }
 
-const props = withDefaults(defineProps<Props>(), {
+withDefaults(defineProps<Props>(), {
   spriteUrl: '',
   isShiny: false,
   isGuardian: false,

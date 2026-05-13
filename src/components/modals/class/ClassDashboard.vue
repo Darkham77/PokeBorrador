@@ -11,7 +11,7 @@ interface Props {
   trainerRank?: string
 }
 
-const props = withDefaults(defineProps<Props>(), {
+withDefaults(defineProps<Props>(), {
   currentClass: null,
   trainerLevel: 1,
   trainerRank: 'Novato'

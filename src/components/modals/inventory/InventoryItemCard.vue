@@ -24,7 +24,7 @@ const props = withDefaults(defineProps<Props>(), {
   multiSelectMode: false
 })
 
-const emit = defineEmits<{
+defineEmits<{
   (e: 'click', event: MouseEvent): void
 }>()
 

@@ -94,7 +94,7 @@ async function main() {
   try {
     await fs.access(DB_FILE);
     await fs.access(MOVES_FILE);
-  } catch (e) {
+  } catch (_e) {
     console.error(styleText('red', `❌ Archivos de datos no encontrados.`));
     process.exit(1);
   }
@@ -234,7 +234,7 @@ async function main() {
         }
       });
     }
-  } catch (e) {
+  } catch (_e) {
     warnings.push(`No se pudo validar pokemonUtils.ts para descripciones de efectos.`);
   }
 

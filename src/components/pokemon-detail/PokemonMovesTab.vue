@@ -17,7 +17,7 @@ interface Props {
   canReorder?: boolean
 }
 
-const props = withDefaults(defineProps<Props>(), {
+withDefaults(defineProps<Props>(), {
   isInstance: false,
   currentMoves: () => [],
   canReorder: true

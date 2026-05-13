@@ -129,7 +129,7 @@ async function downloadFile(url: string, folder: string, filename: string) {
     const arrayBuffer = await response.arrayBuffer();
     await fs.writeFile(filepath, Buffer.from(arrayBuffer));
     console.log(styleText('gray', `   ✅ Saved ${filename}`));
-  } catch (e: unknown) {
+  } catch (_e: unknown) {
     // console.error(styleText('red', `   ❌ Error ${url}: ${(e as Error).message}`));
   }
 }

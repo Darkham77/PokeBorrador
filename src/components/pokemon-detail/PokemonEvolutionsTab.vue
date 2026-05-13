@@ -15,7 +15,7 @@ interface Props {
   speciesId: string
 }
 
-const props = defineProps<Props>()
+defineProps<Props>()
 
 const getSprite = (id: string) => getAssetUrl(ASSET_TYPES.POKEMON, id)
 </script>

@@ -11,7 +11,7 @@ interface Props {
   variant?: string
 }
 
-const props = withDefaults(defineProps<Props>(), {
+withDefaults(defineProps<Props>(), {
   show: false,
   title: '¿ESTÁS SEGURO?',
   message: '',

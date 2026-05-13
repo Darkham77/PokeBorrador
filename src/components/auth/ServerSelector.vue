@@ -3,7 +3,7 @@ interface Props {
   serverType: string
 }
 
-const props = defineProps<Props>()
+defineProps<Props>()
 
 const emit = defineEmits<{
   (e: 'update:serverType', type: string): void

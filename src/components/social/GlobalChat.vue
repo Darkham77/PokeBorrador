@@ -65,7 +65,7 @@ function formatTime(iso: string | Date | undefined) {
       instant = Temporal.Instant.fromEpochMilliseconds(ms);
     }
     return instant.toZonedDateTimeISO('UTC').toLocaleString(undefined, { hour: '2-digit', minute: '2-digit' });
-  } catch (e) {
+  } catch (_e) {
     return '';
   }
 }

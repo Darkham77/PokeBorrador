@@ -17,7 +17,7 @@ interface Props {
   isPerformanceMode?: boolean
 }
 
-const props = withDefaults(defineProps<Props>(), {
+withDefaults(defineProps<Props>(), {
   selection: () => [],
   selectionType: null,
   isBoxEmpty: false,

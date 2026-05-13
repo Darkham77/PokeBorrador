@@ -6,7 +6,7 @@ interface Props {
   egg: DaycareEgg
 }
 
-const props = defineProps<Props>()
+defineProps<Props>()
 
 const emit = defineEmits<{
   (e: 'collect', egg: DaycareEgg): void

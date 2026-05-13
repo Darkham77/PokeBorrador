@@ -23,6 +23,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
+  pokemon: null,
   isPlayer: false,
   nickStyle: '',
   isScrambled: false

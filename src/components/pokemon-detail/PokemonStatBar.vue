@@ -10,7 +10,7 @@ interface Props {
   mode?: 'full' | 'stat' | 'iv'
 }
 
-const props = withDefaults(defineProps<Props>(), {
+withDefaults(defineProps<Props>(), {
   max: 255,
   color: '$white',
   iv: null,

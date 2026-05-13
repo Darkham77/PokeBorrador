@@ -16,12 +16,12 @@ interface Props {
   multiSelectMode?: boolean
 }
 
-const props = withDefaults(defineProps<Props>(), {
+withDefaults(defineProps<Props>(), {
   isSelected: false,
   multiSelectMode: false
 })
 
-const emit = defineEmits<{
+defineEmits<{
   (e: 'click'): void
 }>()
 </script>

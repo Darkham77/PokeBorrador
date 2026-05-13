@@ -7,7 +7,7 @@ interface Props {
   context: string // 'explore' or 'my-inventory'
 }
 
-const props = defineProps<Props>()
+defineProps<Props>()
 
 const gtsStore = useGTSStore()
 

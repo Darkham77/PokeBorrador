@@ -16,9 +16,9 @@ interface Props {
   p: PokedexPokemon
 }
 
-const props = defineProps<Props>()
+defineProps<Props>()
 
-const emit = defineEmits<{
+defineEmits<{
   (e: 'click', event: MouseEvent): void
 }>()
 </script>

@@ -33,27 +33,32 @@ const getWeatherMetadata = (weather: string) => {
   return WEATHER_UI_METADATA[mech] || { icon: '❓', label: weather.toUpperCase() }
 }
 
+interface MapWeatherConfig {
+  visitors?: Record<string, number> | string[]
+  exclusive?: Record<string, number> | string[]
+}
+
 const getAffectedPokemon = (routeId: string, weather: string) => {
   const map = FIRE_RED_MAPS.find(m => m.id === routeId)
   if (!map || !map.weather) return null
   
   // Try direct match first (e.g. 'heatwave')
-  let weatherData = map.weather[weather as keyof typeof map.weather]
+  let weatherData = (map.weather as Record<string, unknown>)[weather] as MapWeatherConfig | undefined
   
   // Fallback to mechanical match (e.g. 'heatwave' -> 'sun')
   if (!weatherData) {
     const mech = getMechanicalWeather(weather)
-    weatherData = map.weather[mech as keyof typeof map.weather]
+    weatherData = (map.weather as Record<string, unknown>)[mech] as MapWeatherConfig | undefined
   }
   
   if (!weatherData) return null
   
-  const visitors = (weatherData as any).visitors || {}
-  const exclusive = (weatherData as any).exclusive || {}
+  const visitors = weatherData.visitors || {}
+  const exclusive = weatherData.exclusive || {}
   
   return {
-    visitors: Object.keys(visitors),
-    exclusive: Object.keys(exclusive)
+    visitors: Array.isArray(visitors) ? visitors : Object.keys(visitors),
+    exclusive: Array.isArray(exclusive) ? exclusive : Object.keys(exclusive)
   }
 }
 
@@ -170,18 +175,45 @@ function formatRouteName(id: string) {
                         <span class="chance">{{ chance }}%</span>
                       </div>
 
-                      <div class="type-modifiers" v-if="WEATHER_TYPE_MODIFIERS[weather as string]">
-                        <div v-if="WEATHER_TYPE_MODIFIERS[weather as string]?.boost" class="mod-group boost">
+                      <div
+                        v-if="WEATHER_TYPE_MODIFIERS[weather as string]"
+                        class="type-modifiers"
+                      >
+                        <div
+                          v-if="WEATHER_TYPE_MODIFIERS[weather as string]?.boost"
+                          class="mod-group boost"
+                        >
                           <span class="mod-icon">▲</span>
-                          <PokemonTypeTag v-for="t in WEATHER_TYPE_MODIFIERS[weather as string]?.boost" :key="t" :type="t" size="ssm" />
+                          <PokemonTypeTag
+                            v-for="t in WEATHER_TYPE_MODIFIERS[weather as string]?.boost"
+                            :key="t"
+                            :type="t"
+                            size="ssm"
+                          />
                         </div>
-                        <div v-if="WEATHER_TYPE_MODIFIERS[weather as string]?.debuff" class="mod-group debuff">
+                        <div
+                          v-if="WEATHER_TYPE_MODIFIERS[weather as string]?.debuff"
+                          class="mod-group debuff"
+                        >
                           <span class="mod-icon">▼</span>
-                          <PokemonTypeTag v-for="t in WEATHER_TYPE_MODIFIERS[weather as string]?.debuff" :key="t" :type="t" size="ssm" />
+                          <PokemonTypeTag
+                            v-for="t in WEATHER_TYPE_MODIFIERS[weather as string]?.debuff"
+                            :key="t"
+                            :type="t"
+                            size="ssm"
+                          />
                         </div>
-                        <div v-if="WEATHER_TYPE_MODIFIERS[weather as string]?.block" class="mod-group block">
+                        <div
+                          v-if="WEATHER_TYPE_MODIFIERS[weather as string]?.block"
+                          class="mod-group block"
+                        >
                           <span class="mod-icon">🚫</span>
-                          <PokemonTypeTag v-for="t in WEATHER_TYPE_MODIFIERS[weather as string]?.block" :key="t" :type="t" size="ssm" />
+                          <PokemonTypeTag
+                            v-for="t in WEATHER_TYPE_MODIFIERS[weather as string]?.block"
+                            :key="t"
+                            :type="t"
+                            size="ssm"
+                          />
                         </div>
                       </div>
                       

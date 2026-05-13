@@ -18,7 +18,7 @@ interface Props {
   isMissionDone?: boolean
 }
 
-const props = withDefaults(defineProps<Props>(), {
+withDefaults(defineProps<Props>(), {
   currentClass: null,
   activeMission: null,
   missions: () => [],

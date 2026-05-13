@@ -118,6 +118,7 @@ export interface Pokemon {
   obtainedMethod?: string;
   isAtmospheric?: boolean;
   weatherOrigin?: string;
+  isWeatherStruggling?: boolean;
   region?: string;
   ot_id?: string;
   tags?: string[];
