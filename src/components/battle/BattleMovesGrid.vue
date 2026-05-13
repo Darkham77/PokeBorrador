@@ -109,8 +109,9 @@ const getMoveModifier = (move: Move | null) => {
   const mechWeather = getMechanicalWeather(weather)
   const cycle = getDayCycle()
 
-  const isRaining = mechWeather === WEATHER_MECHANICAL.RAIN
-  const isSunny = mechWeather === WEATHER_MECHANICAL.SUN
+  const isRaining = mechWeather === WEATHER_MECHANICAL.RAIN || mechWeather === WEATHER_MECHANICAL.STORM
+  const isSunny = mechWeather === WEATHER_MECHANICAL.SUN || mechWeather === WEATHER_MECHANICAL.HEATWAVE
+  const isSnowing = mechWeather === WEATHER_MECHANICAL.SNOW || mechWeather === WEATHER_MECHANICAL.BLIZZARD
   const isDayTime = cycle === 'day' || cycle === 'morning'
   const isNightTime = cycle === 'night' || cycle === 'dusk'
 
@@ -119,33 +120,41 @@ const getMoveModifier = (move: Move | null) => {
 
   const moveName = (md.name || '').toLowerCase()
 
-  // Trueno (Thunder) and Vendaval (Hurricane) are always boosted in Rain, penalized in Sun
+  // 1. Accuracy Boosted
   if (moveName === 'trueno' || moveName === 'thunder' || moveName === 'vendaval' || moveName === 'hurricane') {
     if (isSunny) return 'penalized'
     if (isRaining) return 'boosted'
-    return null
+  }
+  
+  if (moveName === 'ventisca' || moveName === 'blizzard') {
+    if (isSnowing) return 'boosted'
   }
 
-  // Rayo Solar (Solar Beam) and Cuchilla Solar (Solar Blade)
+  // 2. Solar Moves
   if (moveName === 'rayo solar' || moveName === 'solar beam' || moveName === 'cuchilla solar' || moveName === 'solar blade') {
     if (mechWeather !== WEATHER_MECHANICAL.CLEAR && !isSunActive) return 'penalized'
     if (isSunActive) return 'boosted'
   }
 
-  // Meteorobola (Weather Ball)
+  // 3. Weather Ball
   if (moveName === 'meteorobola' || moveName === 'weather ball') {
     if (mechWeather !== WEATHER_MECHANICAL.CLEAR) return 'boosted'
   }
 
-  // Status moves don't get weather/cycle damage multipliers (except explicit ones above)
+  // 4. Accuracy Penalties (Fog/Mist)
+  if (mechWeather === WEATHER_MECHANICAL.FOG || mechWeather === WEATHER_MECHANICAL.MIST) {
+    return 'penalized'
+  }
+
   if (md.cat === 'status') return null
 
+  // 5. Elemental
   if (md.type === 'fire') {
-    if (mechWeather === WEATHER_MECHANICAL.RAIN) return 'penalized'
+    if (isRaining) return 'penalized'
     if (isSunActive) return 'boosted'
   }
   if (md.type === 'water') {
-    if (mechWeather === WEATHER_MECHANICAL.SUN) return 'penalized'
+    if (isSunny) return 'penalized'
     if (isRainActive) return 'boosted'
   }
   

@@ -24,8 +24,9 @@ const modifierInfo = computed(() => {
   const mechWeather = getMechanicalWeather(weather)
   const cycle = getDayCycle()
 
-  const isRaining = mechWeather === WEATHER_MECHANICAL.RAIN
-  const isSunny = mechWeather === WEATHER_MECHANICAL.SUN
+  const isRaining = mechWeather === WEATHER_MECHANICAL.RAIN || mechWeather === WEATHER_MECHANICAL.STORM
+  const isSunny = mechWeather === WEATHER_MECHANICAL.SUN || mechWeather === WEATHER_MECHANICAL.HEATWAVE
+  const isSnowing = mechWeather === WEATHER_MECHANICAL.SNOW || mechWeather === WEATHER_MECHANICAL.BLIZZARD
   const isDayTime = cycle === 'day' || cycle === 'morning'
   const isNightTime = cycle === 'night' || cycle === 'dusk'
 
@@ -34,34 +35,45 @@ const modifierInfo = computed(() => {
 
   const moveName = (m.name || '').toLowerCase()
 
-  // Trueno (Thunder) and Vendaval (Hurricane) are always boosted in Rain, penalized in Sun
+  // 1. Accuracy Boosted Moves
   if (moveName === 'trueno' || moveName === 'thunder' || moveName === 'vendaval' || moveName === 'hurricane') {
     if (isSunny) return { type: 'penalized', text: 'Penalizado por Clima Soleado (Precisión 50%)' }
-    if (isRaining) return { type: 'boosted', text: 'Potenciado por Lluvia (¡No falla!)' }
-    return null
+    if (isRaining) return { type: 'boosted', text: 'Potenciado por Lluvia/Tormenta (¡No falla!)' }
+  }
+  
+  if (moveName === 'ventisca' || moveName === 'blizzard') {
+    if (isSnowing) return { type: 'boosted', text: 'Potenciado por Granizo/Ventisca (¡No falla!)' }
   }
 
-  // Rayo Solar (Solar Beam) and Cuchilla Solar (Solar Blade)
+  // 2. Charging Moves (Solar)
   if (moveName === 'rayo solar' || moveName === 'solar beam' || moveName === 'cuchilla solar' || moveName === 'solar blade') {
-    if (mechWeather !== WEATHER_MECHANICAL.CLEAR && !isSunActive) return { type: 'penalized', text: 'Penalizado por clima adverso (0.5x)' }
+    if (mechWeather !== WEATHER_MECHANICAL.CLEAR && !isSunActive) return { type: 'penalized', text: 'Penalizado por clima adverso (0.5x y requiere carga)' }
     if (isSunActive) return { type: 'boosted', text: 'Carga instantánea por Sol/Horario.' }
   }
 
-  // Meteorobola (Weather Ball)
+  // 3. Weather Ball
   if (moveName === 'meteorobola' || moveName === 'weather ball') {
-    if (mechWeather !== WEATHER_MECHANICAL.CLEAR) return { type: 'boosted', text: 'Potencia duplicada por clima.' }
+    if (mechWeather !== WEATHER_MECHANICAL.CLEAR) return { type: 'boosted', text: 'Tipo y potencia adaptados al clima (100 BP).' }
+  }
+
+  // 4. General Accuracy Warning (Fog/Mist)
+  if (mechWeather === WEATHER_MECHANICAL.FOG || mechWeather === WEATHER_MECHANICAL.MIST) {
+    const label = mechWeather === WEATHER_MECHANICAL.FOG ? 'Niebla' : 'Bruma'
+    const penalty = mechWeather === WEATHER_MECHANICAL.FOG ? '60%' : '80%'
+    return { type: 'penalized', text: `Precisión reducida al ${penalty} por ${label}.` }
   }
 
   // Status moves don't get weather/cycle damage multipliers (except explicit ones above)
   if (m.cat === 'status') return null
 
+  // 5. Elemental Multipliers
   if (m.type === 'fire') {
-    if (mechWeather === WEATHER_MECHANICAL.RAIN) return { type: 'penalized', text: 'Penalizado por Lluvia (0.5x)' }
-    if (isSunActive) return { type: 'boosted', text: `Potenciado por ${mechWeather === WEATHER_MECHANICAL.SUN ? 'Sol' : 'Horario'} (1.5x/1.2x)` }
+    if (isRaining) return { type: 'penalized', text: 'Penalizado por Lluvia/Tormenta (0.5x)' }
+    if (isSunActive) return { type: 'boosted', text: `Potenciado por ${isSunny ? 'Sol' : 'Horario'} (1.5x/1.2x)` }
   }
   if (m.type === 'water') {
-    if (mechWeather === WEATHER_MECHANICAL.SUN) return { type: 'penalized', text: 'Penalizado por Sol (0.5x)' }
-    if (isRainActive) return { type: 'boosted', text: `Potenciado por ${mechWeather === WEATHER_MECHANICAL.RAIN ? 'Lluvia' : 'Horario'} (1.5x/1.2x)` }
+    if (isSunny) return { type: 'penalized', text: 'Penalizado por Sol/Calor (0.5x)' }
+    if (isRainActive) return { type: 'boosted', text: `Potenciado por ${isRaining ? 'Lluvia' : 'Horario'} (1.5x/1.2x)` }
   }
   return null
 })

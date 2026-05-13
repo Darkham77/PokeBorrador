@@ -8,12 +8,18 @@ import { logger } from '../utils/logger.ts';
 
 export const WEATHER_MECHANICAL = {
   SUN: 'sun',
+  HEATWAVE: 'heatwave',
   RAIN: 'rain',
+  STORM: 'storm',
   SANDSTORM: 'sandstorm',
+  DUST_STORM: 'dust_storm',
   SNOW: 'snow',
   HAIL: 'hail',
+  BLIZZARD: 'blizzard',
   FOG: 'fog',
+  MIST: 'mist',
   WIND: 'wind',
+  STRONG_WINDS: 'strong_winds',
   CLEAR: 'clear',
   UNKNOWN: 'unknown'
 } as const;
@@ -23,8 +29,8 @@ export type WeatherMechanical = typeof WEATHER_MECHANICAL[keyof typeof WEATHER_M
 const MAP_TO_MECHANICAL: Record<string, WeatherMechanical> = {
   // Temperature Group (Calor)
   'sun': WEATHER_MECHANICAL.SUN,
-  'heatwave': WEATHER_MECHANICAL.SUN,
-  'intense_sun': WEATHER_MECHANICAL.SUN,
+  'heatwave': WEATHER_MECHANICAL.HEATWAVE,
+  'intense_sun': WEATHER_MECHANICAL.HEATWAVE,
   
   // Temperature Group (Frío)
   'cold': WEATHER_MECHANICAL.SNOW,
@@ -33,25 +39,25 @@ const MAP_TO_MECHANICAL: Record<string, WeatherMechanical> = {
 
   // Water Group (Precipitación)
   'rain': WEATHER_MECHANICAL.RAIN,
-  'storm': WEATHER_MECHANICAL.RAIN,
-  'thunderstorm': WEATHER_MECHANICAL.RAIN,
-  'heavy_rain': WEATHER_MECHANICAL.RAIN,
+  'storm': WEATHER_MECHANICAL.STORM,
+  'thunderstorm': WEATHER_MECHANICAL.STORM,
+  'heavy_rain': WEATHER_MECHANICAL.STORM,
   
   // Snow/Ice Group (Precipitación)
   'snow': WEATHER_MECHANICAL.SNOW,
-  'blizzard': WEATHER_MECHANICAL.HAIL,
+  'blizzard': WEATHER_MECHANICAL.BLIZZARD,
 
   // Sand Group (Tierra)
   'sandstorm': WEATHER_MECHANICAL.SANDSTORM,
-  'dust_storm': WEATHER_MECHANICAL.SANDSTORM,
+  'dust_storm': WEATHER_MECHANICAL.DUST_STORM,
   
   // Fog Group (Humedad)
   'fog': WEATHER_MECHANICAL.FOG,
-  'mist': WEATHER_MECHANICAL.FOG,
+  'mist': WEATHER_MECHANICAL.MIST,
 
   // Air Group (Viento)
   'wind': WEATHER_MECHANICAL.WIND,
-  'strong_winds': WEATHER_MECHANICAL.WIND,
+  'strong_winds': WEATHER_MECHANICAL.STRONG_WINDS,
   
   // Neutral
   'clear': WEATHER_MECHANICAL.CLEAR,
@@ -106,17 +112,35 @@ export const WEATHER_UI_METADATA: Record<WeatherMechanical, { icon: string; labe
     visual: 'sun',
     description: 'Potencia Fuego (x1.5), debilita Agua (x0.5). Rayo Solar sin carga y Síntesis cura más.' 
   },
+  [WEATHER_MECHANICAL.HEATWAVE]: { 
+    icon: '🔥', 
+    label: 'OLA CALOR',
+    visual: 'heatwave',
+    description: 'Calor extremo. Potencia Fuego (x1.5), el Agua se evapora (x0). Rayo Solar sin carga.' 
+  },
   [WEATHER_MECHANICAL.RAIN]: { 
     icon: '☔', 
     label: 'LLUVIA',
     visual: 'rain',
     description: 'Potencia Agua (x1.5), debilita Fuego (x0.5). Trueno y Vendaval nunca fallan.' 
   },
+  [WEATHER_MECHANICAL.STORM]: { 
+    icon: '⚡', 
+    label: 'TORMENTA',
+    visual: 'storm',
+    description: 'Tormenta eléctrica. Potencia Agua (x1.5), el Fuego se extingue (x0). Trueno nunca falla.' 
+  },
   [WEATHER_MECHANICAL.SANDSTORM]: { 
     icon: '🏜️', 
     label: 'T. ARENA',
     visual: 'sandstorm',
     description: 'Daña a tipos no Tierra/Roca/Acero. Sube un 50% la Def. Especial de los tipo Roca.' 
+  },
+  [WEATHER_MECHANICAL.DUST_STORM]: { 
+    icon: '🌫️', 
+    label: 'T. POLVO',
+    visual: 'sandstorm',
+    description: 'Visibilidad reducida. Daña a tipos no Tierra/Roca/Acero y baja la precisión.' 
   },
   [WEATHER_MECHANICAL.SNOW]: { 
     icon: '❄️', 
@@ -130,17 +154,35 @@ export const WEATHER_UI_METADATA: Record<WeatherMechanical, { icon: string; labe
     visual: 'blizzard',
     description: 'Daña a tipos no Hielo cada turno. Ventisca nunca falla.' 
   },
+  [WEATHER_MECHANICAL.BLIZZARD]: { 
+    icon: '🌬️', 
+    label: 'VENTISCA',
+    visual: 'blizzard',
+    description: 'Frío extremo. Daña a tipos no Hielo, sube su Defensa y Ventisca nunca falla.' 
+  },
   [WEATHER_MECHANICAL.FOG]: { 
+    icon: '🌫️', 
+    label: 'NIEBLA',
+    visual: 'fog',
+    description: 'Niebla densa que reduce drásticamente la precisión de todos los movimientos.' 
+  },
+  [WEATHER_MECHANICAL.MIST]: { 
     icon: '🌫️', 
     label: 'BRUMA',
     visual: 'fog',
-    description: 'Humedad ambiental que reduce ligeramente la visibilidad.' 
+    description: 'Humedad ligera que reduce suavemente la precisión de los movimientos.' 
   },
   [WEATHER_MECHANICAL.WIND]: {
     icon: '🍃',
     label: 'VIENTO',
     visual: 'wind',
     description: 'Brisa constante que activa habilidades de viento.'
+  },
+  [WEATHER_MECHANICAL.STRONG_WINDS]: {
+    icon: '🌀',
+    label: 'V. FUERTES',
+    visual: 'strong_winds',
+    description: 'Corrientes de aire Delta que eliminan las debilidades del tipo Volador.'
   },
   [WEATHER_MECHANICAL.CLEAR]: {
     icon: '',
