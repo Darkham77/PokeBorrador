@@ -35,14 +35,16 @@
   // Typography sharpening (Aggressive anti-blur)
   -webkit-font-smoothing: none !important;
   -moz-osx-font-smoothing: grayscale !important;
-  font-smooth: never !important;
+  #{"font-smooth"}: never !important;
   text-rendering: optimizeSpeed !important;
   font-variant-ligatures: none !important;
   -webkit-text-stroke: 0px !important; // Prevent subtle font weight blurring
+  -webkit-backface-visibility: hidden !important;
+  backface-visibility: hidden !important;
   
   // Pixel Art Rendering
   image-rendering: -webkit-optimize-contrast !important;
-  image-rendering: crisp-edges !important;
+  #{"image-rendering"}: crisp-edges !important;
   image-rendering: pixelated !important;
   -ms-interpolation-mode: nearest-neighbor !important;
   
@@ -55,15 +57,26 @@
 
 @mixin tooltip-premium {
   @include pixelated;
-  background: Rgba(10, 12, 20, 0.98) !important;
+  background: Rgba(10, 12, 20, 1) !important;
   border: 2px solid var(--yellow) !important;
   border-radius: 8px;
   padding: 10px 14px;
   box-shadow: 0 10px 30px Rgba(0, 0, 0, 0.8), inset 0 1px 1px Rgba(255, 255, 255, 0.05);
   color: white;
-  line-height: 1.5;
+  
+  // High-fidelity pixel isolation
+  font-family: 'Press Start 2P', 'Arial', sans-serif !important;
+  font-size: 8px !important; // Original size
+  line-height: 1.4 !important;
+  letter-spacing: 0 !important;
+  -webkit-font-smoothing: none !important;
+  -moz-osx-font-smoothing: grayscale !important;
+  #{"font-smooth"}: never !important;
+  
+  font-weight: normal !important;
   z-index: var(--z-tooltip);
   pointer-events: none;
+  image-rendering: pixelated !important;
 }
 
 @mixin pixel-perfect($size: 8px) {

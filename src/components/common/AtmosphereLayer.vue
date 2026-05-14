@@ -9,12 +9,12 @@ const props = defineProps({
   isPerformanceMode: { type: Boolean, default: false },
   isLocked: { type: Boolean, default: false },
   zIndex: { type: [Number, String], default: 0 },
-  seed: { type: Number, default: 0 },
+  animSeed: { type: Number, default: 0.5 },
   isVisible: { type: Boolean, default: false }
 })
 
-// Centralized Seed for Animations (Inheritable)
-const animSeed = ref(0.5)
+// Centralized Seed for Animations (Inherited from Map)
+const animSeed = computed(() => props.animSeed)
 const direction = computed(() => (animSeed.value > 0.5 ? 1 : -1))
 const flashRef = ref<HTMLElement | null>(null) // Ref para el flash overlay
 
@@ -42,6 +42,8 @@ const animClass = computed(() => {
 const dustLayer1Ref = ref<HTMLElement | null>(null)
 const dustLayer2Ref = ref<HTMLElement | null>(null)
 const mistLayerRef = ref<HTMLElement | null>(null)
+const mistLayer2Ref = ref<HTMLElement | null>(null)
+const mistLayer3Ref = ref<HTMLElement | null>(null)
 const layer1Ref = ref<HTMLElement | null>(null)
 const layer2Ref = ref<HTMLElement | null>(null)
 const lightningRef = ref<HTMLElement | null>(null)
@@ -55,7 +57,15 @@ const initWeatherAnim = () => {
   if (lightningTimer) lightningTimer.kill()
   
   // Limpiar y resetear posiciones e asegurar opacidad base
-  const allLayers = [layer1Ref.value, layer2Ref.value, dustLayer1Ref.value, dustLayer2Ref.value, mistLayerRef.value]
+  const allLayers = [
+    layer1Ref.value, 
+    layer2Ref.value, 
+    dustLayer1Ref.value, 
+    dustLayer2Ref.value, 
+    mistLayerRef.value,
+    mistLayer2Ref.value,
+    mistLayer3Ref.value
+  ]
   
   allLayers.forEach(layer => {
     if (layer) {
@@ -71,183 +81,232 @@ const initWeatherAnim = () => {
   }
   
   weatherTimeline = gsap.timeline()
-
   const w = props.weather
+  
+  // Semillas únicas por capa para desalinear el parallax (Globales)
+  const seed1 = animSeed.value
+  const seed2 = (animSeed.value * 1.618) % 1
+  const speedVar = 0.8 + (animSeed.value * 0.4) // Rango ±20% (0.8 a 1.2)
+
   if (w === 'clear' || props.isPerformanceMode) return
 
-  // Rain / Storm
-  if (w === 'rain' || w === 'storm') {
-    const isStorm = w === 'storm'
+  // Rain / Storm / Heavy Rain / Thunderstorm
+  if (['rain', 'storm', 'heavy_rain', 'thunderstorm'].includes(w)) {
+    const isStorm = w === 'storm' || w === 'thunderstorm'
+    const isHeavy = w === 'heavy_rain'
     
-    // Separamos totalmente las velocidades para evitar que la tormenta sea "infinita"
     let variantSpeed1, variantSpeed2;
     
-    if (isStorm) {
-      // Tormenta: Rango agresivo de 0.65s a 1.25s para notar la diferencia
+    if (isHeavy) {
+      variantSpeed1 = (0.35 + (animSeed.value * 0.2)) * speedVar
+      variantSpeed2 = variantSpeed1 * 1.3
+    } else if (isStorm) {
       const stormBase = 0.65
-      variantSpeed1 = stormBase + (animSeed.value * 0.6)
+      variantSpeed1 = (stormBase + (animSeed.value * 0.6)) * speedVar
       variantSpeed2 = variantSpeed1 * 1.4
     } else {
-      // Lluvia Normal: Velocidad mínima aumentada (duración 0.4s a 0.8s)
       const rainBase = 0.4
-      variantSpeed1 = rainBase + (animSeed.value * 0.4) 
+      variantSpeed1 = (rainBase + (animSeed.value * 0.4)) * speedVar
       variantSpeed2 = variantSpeed1 * 1.6
     }
     
-    // Desplazamientos iniciales deterministas basados en la semilla para romper la simetría
-    const start1X = (animSeed.value * 1234) % 256
-    const start1Y = (animSeed.value * 5678) % 256
-    const start2X = (animSeed.value * 9101) % 197
-    const start2Y = (animSeed.value * 1121) % 197
 
     if (layer1Ref.value) {
       const driftX = isStorm ? -256 : 0
-      weatherTimeline.fromTo(layer1Ref.value, 
-        { backgroundPosition: `${start1X}px ${start1Y}px` },
+      const s1X = (seed1 * 1234) % 256
+      const s1Y = (seed1 * 5678) % 256
+      
+      gsap.set(layer1Ref.value, { backgroundPosition: `${s1X}px ${s1Y}px` })
+      
+      weatherTimeline.to(layer1Ref.value, 
         {
-          backgroundPosition: `${start1X + driftX}px ${start1Y + 256}px`,
+          backgroundPosition: `+=${driftX}px +=256px`,
           duration: variantSpeed1,
           repeat: -1,
           ease: 'none'
         },
         0
-      )
+      ).progress(seed1)
     }
     if (layer2Ref.value) {
-      const size = isStorm ? 128 : 197
-      const driftX = isStorm ? -size : 0
-      weatherTimeline.fromTo(layer2Ref.value,
-        { backgroundPosition: `${start2X}px ${start2Y}px` },
+      const driftX = isStorm ? -256 : 0 
+      const s2X = (seed2 * 9101) % 256
+      const s2Y = (seed2 * 1121) % 256
+      
+      gsap.set(layer2Ref.value, { backgroundPosition: `${s2X}px ${s2Y}px` })
+      
+      weatherTimeline.to(layer2Ref.value, 
         {
-          backgroundPosition: `${start2X + driftX}px ${start2Y + size}px`,
-          duration: variantSpeed2,
+          backgroundPosition: `+=${driftX}px +=256px`,
+          duration: variantSpeed2 * (isHeavy ? 1.5 : 1),
           repeat: -1,
           ease: 'none'
         },
         0
-      )
+      ).progress(seed2)
     }
 
     if (isStorm) {
-      // Lightning logic
       const strike = () => {
-        if (props.weather !== 'storm' || !lightningRef.value) return
+        if (!['storm', 'thunderstorm'].includes(props.weather) || !lightningRef.value) return
         
-        const x1 = Math.floor(Math.random() * 60) + 10
-        const x2 = x1 + (Math.floor(Math.random() * 20) + 10)
-        lightningPos.value = { x1, x2 }
+        // Coordenada X al azar cubriendo casi todo el ancho (5% a 95%)
+        const x1 = Math.floor(Math.random() * 90) + 5
+        const isFlipped = Math.random() > 0.5
+        lightningPos.value = { x1, x2: x1 } // x2 es obligatorio en el tipo
 
         const tl = gsap.timeline()
-        tl.to(lightningRef.value, { opacity: 1, duration: 0.05 })
+        tl.to(lightningRef.value, { 
+          opacity: 1, 
+          duration: 0.05,
+          scaleX: isFlipped ? -1 : 1 
+        })
           .to(lightningRef.value, { opacity: 0, duration: 0.05 })
           .to(lightningRef.value, { opacity: 1, duration: 0.05 })
-          .to(lightningRef.value, { opacity: 0, duration: 0.2 })
+          .to(lightningRef.value, { opacity: 0, duration: 0.25 })
           
-        // Flash de alto rendimiento (solo opacidad en capa GPU)
         if (flashRef.value) {
           gsap.timeline()
             .to(flashRef.value, { opacity: 0.6, duration: 0.05 })
             .to(flashRef.value, { opacity: 0, duration: 0.4, ease: 'power2.out' })
         }
 
-        lightningTimer = gsap.delayedCall(4 + Math.random() * 6, strike)
+        const nextDelay = w === 'thunderstorm' ? (1 + Math.random() * 2) : (4 + Math.random() * 6)
+        lightningTimer = gsap.delayedCall(nextDelay, strike)
       }
       lightningTimer = gsap.delayedCall(2 + Math.random() * 3, strike)
     }
   }
 
-  // Snow / Blizzard
-  if (w === 'snow' || w === 'blizzard') {
+  // Snow / Blizzard / Hail
+  if (['snow', 'blizzard', 'hail'].includes(w)) {
     const isBlizzard = w === 'blizzard'
-    // Blizzard ultra-rápida (0.6s a 2s), Nieve dinámica y variada (2.5s a 10s)
-    const speed = isBlizzard 
-      ? (0.6 + animSeed.value * 1.4) 
-      : (2.5 + animSeed.value * 7.5) 
+    const isHail = w === 'hail'
     
-    const start1X = (animSeed.value * 1500) % 256
-    const start1Y = (animSeed.value * 2500) % 256
-    const start2X = (animSeed.value * 3500) % 192
-    const start2Y = (animSeed.value * 4500) % 192
+    // 1. Snow & Blizzard (Vientos cruzados, baldosas 256/192)
+    if (!isHail) {
+      if (layer1Ref.value) {
+        const s1X = (seed1 * 1500) % 256
+        const s1Y = (seed1 * 2500) % 256
+        const drift1X = isBlizzard ? -512 : 0
+        const dur1 = (isBlizzard ? 3.0 : 18.0) / speedVar // Frontal
+        
+        gsap.set(layer1Ref.value, { backgroundPosition: `${s1X}px ${s1Y}px` })
+        
+        weatherTimeline.to(layer1Ref.value, 
+          { 
+            backgroundPosition: `${drift1X >= 0 ? '+=' : '-='}${Math.abs(drift1X)}px +=1024px`, 
+            duration: dur1, 
+            repeat: -1, 
+            ease: 'none' 
+          }, 
+          0
+        )
 
-    if (layer1Ref.value) {
-      weatherTimeline.fromTo(layer1Ref.value,
-        { backgroundPosition: `${start1X}px ${start1Y}px` },
-        {
-          backgroundPosition: `${start1X - 256}px ${start1Y + 256}px`,
-          duration: speed,
+        if (layer2Ref.value) {
+          const s2X = (seed2 * 3500) % 192
+          const s2Y = (seed2 * 4500) % 192
+          const drift2X = isBlizzard ? 768 : 0
+          const dur2 = (isBlizzard ? 9.0 : 54.0) / speedVar 
+          
+          gsap.set(layer2Ref.value, { backgroundPosition: `${s2X}px ${s2Y}px` })
+
+          weatherTimeline.to(layer2Ref.value, 
+            { 
+              backgroundPosition: `${drift2X >= 0 ? '+=' : '-='}${Math.abs(drift2X)}px +=1536px`, 
+              duration: dur2, 
+              repeat: -1, 
+              ease: 'none' 
+            }, 
+            0
+          )
+        }
+      }
+    } else {
+      // 2. Hail (Caída pesada vertical, baldosas 128/64)
+      if (layer1Ref.value) {
+        const s1X = (seed1 * 1200) % 128
+        const s1Y = (seed1 * 2200) % 128
+        gsap.set(layer1Ref.value, { backgroundPosition: `${s1X}px ${s1Y}px` })
+        
+        weatherTimeline.to(layer1Ref.value, {
+          backgroundPosition: '0px +=512px',
+          duration: 1.0 / speedVar,
           repeat: -1,
           ease: 'none'
-        },
-        0
-      )
-    }
-    if (layer2Ref.value) {
-      weatherTimeline.fromTo(layer2Ref.value,
-        { backgroundPosition: `${start2X}px ${start2Y}px` },
-        {
-          backgroundPosition: `${start2X + 192}px ${start2Y + 192}px`,
-          duration: speed * 1.5,
+        }, 0)
+      }
+
+      if (layer2Ref.value) {
+        const speedVar = 0.9 + (animSeed.value * 0.2)
+        const s2X = (seed2 * 2800) % 64
+        const s2Y = (seed2 * 3800) % 64
+        gsap.set(layer2Ref.value, { backgroundPosition: `${s2X}px ${s2Y}px` })
+        
+        weatherTimeline.to(layer2Ref.value, {
+          backgroundPosition: '0px +=512px',
+          duration: 1.5 / speedVar,
           repeat: -1,
           ease: 'none'
-        },
-        0
-      )
+        }, 0)
+      }
     }
   }
 
-  // Sandstorm / Strong Winds (Dust)
-  if (w === 'sandstorm' || w === 'strong_winds') {
+  // Sandstorm / Strong Winds / Dust Storm
+  if (['sandstorm', 'strong_winds', 'dust_storm'].includes(w)) {
     const isStrongWind = w === 'strong_winds'
-    // Desplazamientos iniciales en X e Y para máxima variedad
+    const isDust = w === 'dust_storm'
     const s1X = (animSeed.value * 1200) % 64
     const s1Y = (animSeed.value * 3400) % 64
     const s2X = (animSeed.value * 2400) % 128
     const s2Y = (animSeed.value * 4800) % 128
 
     if (dustLayer1Ref.value) {
-      // Speed configuration: Strong winds are fast, but not too frantic
-      const speed1 = (0.7 + animSeed.value * 0.8) * (isStrongWind ? 1.2 : 1.5)
-      weatherTimeline.fromTo(dustLayer1Ref.value,
-        { backgroundPosition: `${s1X}px ${s1Y}px` },
+      // Velocidad para arena: ±20% varianza estándar
+      const speed1 = (1.0 + animSeed.value * 0.4) * (isStrongWind ? 1.0 : (isDust ? 1.2 : 0.8)) / speedVar
+      // Deriva fija: el CSS se encarga del volteo con scaleX
+      const driftX = -512
+      gsap.set(dustLayer1Ref.value, { backgroundPosition: `${s1X}px ${s1Y}px` })
+      
+      weatherTimeline.to(dustLayer1Ref.value,
         {
-          backgroundPosition: `${s1X - 512}px ${s1Y + 64}px`, 
+          backgroundPosition: `+=${driftX}px +=256px`, 
           duration: speed1,
           repeat: -1,
           ease: 'none'
         },
         0
-      )
+      ).progress(seed1)
 
       if (dustLayer2Ref.value) {
-        const seed2 = (animSeed.value * 1.618) % 1
         const speed2 = speed1 * (1.1 + seed2 * 0.4)
         
-        // Si es viento fuerte, las partículas son pequeñas pero visibles
         if (isStrongWind) {
-          gsap.set(dustLayer1Ref.value, { backgroundSize: '64px 64px' })
-          gsap.set(dustLayer2Ref.value, { backgroundSize: '128px 128px' })
+          gsap.set(dustLayer1Ref.value, { backgroundSize: '128px 128px' })
+          gsap.set(dustLayer2Ref.value, { backgroundSize: '256px 256px' })
         }
 
-        weatherTimeline.fromTo(dustLayer2Ref.value,
-          { backgroundPosition: `${s2X}px ${s2Y}px` },
+        gsap.set(dustLayer2Ref.value, { backgroundPosition: `${s2X}px ${s2Y}px` })
+        
+        weatherTimeline.to(dustLayer2Ref.value,
           {
-            backgroundPosition: `${s2X - 1024}px ${s2Y + 128}px`,
+            backgroundPosition: `-=1024px +=512px`,
             duration: speed2,
             repeat: -1,
             ease: 'none'
           },
           0
-        )
+        ).progress(seed2)
       }
     }
   }
 
-  // Fog / Mist / Wind / Heatwave / Cold / Coldwave
-  if (['fog', 'mist', 'wind', 'strong_winds', 'heatwave', 'sun', 'cold', 'coldwave'].includes(w)) {
+  // Fog / Mist / Wind / Strong Winds / Heatwave / Sun / Cold / Coldwave / Intense Sun
+  if (['fog', 'mist', 'wind', 'strong_winds', 'heatwave', 'sun', 'cold', 'coldwave', 'intense_sun'].includes(w)) {
     const target = mistLayerRef.value
     if (target) {
-      // Heatwave / Coldwave / Strong Winds tienen pulso activo
-      const hasPulse = ['heatwave', 'coldwave', 'strong_winds'].includes(w)
+      const hasPulse = ['heatwave', 'coldwave', 'strong_winds', 'intense_sun'].includes(w)
       const baseOpacity = hasPulse ? 0.5 : 0.8
       const maxOpacity = hasPulse ? 0.9 : 0.85
       
@@ -263,14 +322,52 @@ const initWeatherAnim = () => {
         0
       )
 
-      // Si es viento, añadimos un drift horizontal suave
-      if (w === 'wind' || w === 'strong_winds') {
-        weatherTimeline.to(target, {
-          backgroundPosition: `${direction.value * 512}px 0px`,
-          duration: w === 'strong_winds' ? 2 : 8,
+      // Animación de desplazamiento (Drift)
+      if (['wind', 'strong_winds', 'fog', 'mist'].includes(w)) {
+        const isFoggy = ['fog', 'mist'].includes(w);
+        const moveX = isFoggy ? 512 : -512; // Valor fijo, el CSS voltea
+        const moveY = isFoggy ? 256 : 0;
+        
+        // Variación de velocidad por mapa (Global speedVar ya calculada al inicio)
+        const baseDur = isFoggy ? 60 : (w === 'strong_winds' ? 2 : 8);
+        const dur = baseDur / speedVar;
+
+        // Capa 1 (512px)
+        const sX1 = (animSeed.value * 1234) % 512;
+        const sY1 = (animSeed.value * 5678) % 512;
+        gsap.set(mistLayerRef.value, { backgroundPosition: `${sX1}px ${sY1}px` });
+        weatherTimeline.to(mistLayerRef.value, {
+          backgroundPosition: `+=${moveX}px +=${moveY}px`,
+          duration: dur,
           repeat: -1,
           ease: 'none'
-        }, 0)
+        }, 0);
+
+        // Capa 2 (713px) - Más lenta
+        if (mistLayer2Ref.value) {
+          const sX2 = (animSeed.value * 3456) % 713;
+          const sY2 = (animSeed.value * 7890) % 713;
+          gsap.set(mistLayer2Ref.value, { backgroundPosition: `${sX2}px ${sY2}px` });
+          weatherTimeline.to(mistLayer2Ref.value, {
+            backgroundPosition: `+=${moveX * 1.4}px +=${moveY * 1.4}px`,
+            duration: dur * 2.1, // Drásticamente más lenta
+            repeat: -1,
+            ease: 'none'
+          }, 0);
+        }
+
+        // Capa 3 (911px) - Muy lenta (Profundo)
+        if (mistLayer3Ref.value) {
+          const sX3 = (animSeed.value * 9101) % 911;
+          const sY3 = (animSeed.value * 1121) % 911;
+          gsap.set(mistLayer3Ref.value, { backgroundPosition: `${sX3}px ${sY3}px` });
+          weatherTimeline.to(mistLayer3Ref.value, {
+            backgroundPosition: `+=${moveX * 1.8}px +=${moveY * 1.8}px`,
+            duration: dur * 3.5, // Casi estática
+            repeat: -1,
+            ease: 'none'
+          }, 0);
+        }
       }
     }
   }
@@ -285,6 +382,13 @@ watch(() => props.isVisible, async (visible) => {
     if (lightningTimer) lightningTimer.kill()
     if (layer1Ref.value) gsap.killTweensOf(layer1Ref.value)
     if (layer2Ref.value) gsap.killTweensOf(layer2Ref.value)
+  }
+})
+
+watch(() => props.animSeed, async () => {
+  if (props.isVisible && !props.isPerformanceMode) {
+    await nextTick()
+    initWeatherAnim()
   }
 })
 
@@ -404,29 +508,17 @@ watch(() => props.weather, (w) => {
   }
 }, { immediate: true })
 
-watch(() => props.seed, (val) => {
-  if (!val) {
-    animSeed.value = Math.random()
-  } else {
-    // Generador pseudo-aleatorio determinista basado en seno para máxima dispersión
-    const x = Math.sin(val) * 10000
-    animSeed.value = Math.abs(x - Math.floor(x))
-  }
-  
-  // Reiniciar animaciones con el nuevo seed si somos visibles
-  if (props.isVisible) {
-    initWeatherAnim()
-    initLeafAnim()
-  }
-}, { immediate: true })
-
 // Estilos dinámicos para el overlay de clima
-const weatherOverlayStyles = computed(() => ({
-  '--atmo-z-final': props.zIndex ? `calc(${props.zIndex} + 1)` : '1',
-  '--card-seed': animSeed.value,
-  '--card-speed': 0.6 + (animSeed.value * 1.0),
-  '--atmo-dir': direction.value
-}))
+const weatherOverlayStyles = computed(() => {
+  return {
+    '--atmo-z-final': props.zIndex ? `calc(${props.zIndex} + 1)` : '1',
+    '--card-seed': animSeed.value,
+    '--card-speed': 0.6 + (animSeed.value * 1.0),
+    '--atmo-dir': direction.value,
+    '--seed-x': (animSeed.value * 100) % 100,
+    '--seed-y': (animSeed.value * 300) % 100
+  }
+})
 </script>
 
 <template>
@@ -440,8 +532,8 @@ const weatherOverlayStyles = computed(() => ({
       :class="[weather, props.cycle, { 'is-performance': isPerformanceMode }]"
       :style="weatherOverlayStyles"
     >
-      <!-- Rain & Storm -->
-      <template v-if="weather === 'rain' || weather === 'storm'">
+      <!-- Rain, Storm, Heavy Rain, Thunderstorm -->
+      <template v-if="['rain', 'storm', 'heavy_rain', 'thunderstorm'].includes(weather)">
         <div
           ref="layer1Ref"
           class="rain-layer layer-1"
@@ -451,27 +543,32 @@ const weatherOverlayStyles = computed(() => ({
           class="rain-layer layer-2"
         />
         <div
-          v-if="weather === 'storm'"
+          v-if="['storm', 'thunderstorm'].includes(weather)"
           ref="lightningRef"
           class="lightning-bolt"
-          :style="{ '--lx1': lightningPos.x1 + '%', '--lx2': lightningPos.x2 + '%' }"
+          :style="{ '--lx': lightningPos.x1 }"
+        />
+        <div 
+          v-if="['storm', 'thunderstorm'].includes(weather)" 
+          ref="flashRef" 
+          class="lightning-flash-overlay" 
         />
       </template>
 
-      <!-- Snow & Blizzard -->
-      <template v-if="weather === 'snow' || weather === 'blizzard'">
+      <!-- Snow, Blizzard, Hail -->
+      <template v-if="['snow', 'blizzard', 'hail'].includes(weather)">
         <div
           ref="layer1Ref"
-          class="snow-layer layer-1"
+          :class="[weather === 'hail' ? 'hail-layer' : 'snow-layer', 'layer-1']"
         />
         <div
           ref="layer2Ref"
-          class="snow-layer layer-2"
+          :class="[weather === 'hail' ? 'hail-layer' : 'snow-layer', 'layer-2']"
         />
       </template>
 
-      <!-- Sandstorm & Strong Winds (Dust Particles) -->
-      <template v-if="weather === 'sandstorm' || weather === 'strong_winds'">
+      <!-- Sandstorm, Strong Winds, Dust Storm -->
+      <template v-if="['sandstorm', 'strong_winds', 'dust_storm'].includes(weather)">
         <div
           ref="dustLayer1Ref"
           class="sandstorm-layer layer-1"
@@ -484,19 +581,14 @@ const weatherOverlayStyles = computed(() => ({
         />
       </template>
 
-      <!-- Lightning Flash Overlay (High Performance) -->
-      <div 
-        v-if="weather === 'storm'" 
-        ref="flashRef" 
-        class="lightning-flash-overlay" 
-      />
+      <!-- El flash se movió arriba con el rayo -->
 
-      <!-- Fog, Mist, Wind, Heatwave, Sun & Cold -->
-      <template v-if="['fog', 'mist', 'wind', 'strong_winds', 'heatwave', 'sun', 'cold', 'coldwave'].includes(weather)">
-        <div
-          ref="mistLayerRef"
-          class="mist-layer"
-        />
+      <!-- Fog, Mist, Wind, Heatwave, Sun, Cold, Coldwave, Intense Sun -->
+      <!-- Capas de Bruma/Niebla (Triple capa para romper patrones) -->
+      <template v-if="['fog', 'mist', 'wind', 'strong_winds', 'heatwave', 'sun', 'cold', 'coldwave', 'intense_sun'].includes(weather)">
+        <div ref="mistLayerRef" class="mist-layer layer-1"></div>
+        <div ref="mistLayer2Ref" class="mist-layer layer-2"></div>
+        <div ref="mistLayer3Ref" class="mist-layer layer-3"></div>
       </template>
       
       <!-- Leaves (for Wind & Storm effects) -->
@@ -521,7 +613,7 @@ const weatherOverlayStyles = computed(() => ({
   filter: Grayscale(0.2) contrast(1.1); // Recuperado parte del color original
   will-change: transform, opacity;
   transform: translate3d(0,0,0);
-  z-index: 10;
+  z-index: calc(10 * 1);
 }
 
 .leaf-element {
@@ -532,7 +624,7 @@ const weatherOverlayStyles = computed(() => ({
   border-radius: 50% 0 50% 0;
   opacity: 0.8;
   pointer-events: none;
-  z-index: var(--z-low); // Asegurar visibilidad sobre la lluvia
+  z-index: calc(var(--z-low) * 1); // Asegurar visibilidad sobre la lluvia
   will-change: transform, opacity;
   transform: translate3d(0,0,0); // GPU Promotion
   // Eliminado Drop-Shadow para optimización GPU
@@ -545,10 +637,10 @@ const weatherOverlayStyles = computed(() => ({
   inset: 0;
   background: white;
   opacity: 0;
-  z-index: var(--z-modal-step);
-  pointer-events: none;
+  z-index: calc(5 * 1); // Por debajo del rayo (que tiene 10)
   will-change: opacity;
-  transform: translate3d(0,0,0);
+  image-rendering: pixelated;
+  pointer-events: none;
 }
 
 // Eliminado leaf-fall antiguo para evitar conflictos con GSAP
@@ -557,7 +649,7 @@ const weatherOverlayStyles = computed(() => ({
   position: absolute;
   inset: 0;
   pointer-events: none;
-  z-index: var(--atmo-z, 0); 
+  z-index: calc(var(--atmo-z, 0) * 1); 
   overflow: hidden;
   container-type: size; // Permite usar cqw/cqh para las hojas
   contain: layout style paint; // Optimización equilibrada: aisla el renderizado sin forzar buffers rígidos
@@ -568,7 +660,7 @@ const weatherOverlayStyles = computed(() => ({
 // Capas de clima (Niebla, Bruma, Calor)
 
 :deep(.weather-overlay) {
-  z-index: var(--atmo-z-final, var(--atmo-z, 0)) !important;
+  z-index: calc(var(--atmo-z-final, var(--atmo-z, 0)) * 1) !important;
   transform: scaleX(var(--atmo-dir, 1));
 }
 </style>

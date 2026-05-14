@@ -16,6 +16,9 @@ import { logger } from '@/logic/utils/logger'
 
 import { checkPlayerWinner, calculateSpawnGrid } from '@/logic/map/mapCardHelper'
 
+// Semilla aleatoria única para esta instancia de tarjeta en esta sesión
+const sessionWeatherSeed = Math.random() * 1000
+
 
 import type { MapLocation } from '@/types/encounters'
 
@@ -73,8 +76,8 @@ const imgPath = computed(() => {
 })
 
 const cycleEmoji = computed(() => {
-  const emojis: Record<string, string> = { morning: '🌅', day: '☀️', dusk: '🌇', night: '🌙' }
-  return emojis[props.cycle as string] || '☀️'
+  const emojis: Record<string, string> = { morning: '🌅', day: '🌞', dusk: '🌇', night: '🌙' }
+  return emojis[props.cycle as string] || '🌞'
 })
 
 const cycleName = computed(() => {
@@ -207,7 +210,7 @@ const processedGrid = computed<ProcessedSpawn[]>(() => {
     const appearingCycles = cycles.filter(c => (props.map.wild?.[c] || []).includes(id))
     const isLimited = appearingCycles.length > 0 && appearingCycles.length < cycles.length
     
-    const emojiMap: Record<string, string> = { morning: '🌅', day: '☀️', dusk: '🌇', night: '🌙' }
+    const emojiMap: Record<string, string> = { morning: '🌅', day: '🌞', dusk: '🌇', night: '🌙' }
     
     // Detección Atmosférica temprana para el texto
     const weather = computedWeather.value
@@ -363,7 +366,9 @@ const spawnGrid = computed(() => {
       :is-performance-mode="isPerformanceMode"
       :is-visible="isVisible"
       :is-locked="isLocked || isSafariLocked"
-      :seed="props.map.id.split('').reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0)"
+      :anim-seed="Math.abs((props.map.name.split('').reduce((acc, char, i) => {
+        return acc + (char.charCodeAt(0) * (i + 1))
+      }, 0) + sessionWeatherSeed) % 1000) / 1000"
     />
 
     <div

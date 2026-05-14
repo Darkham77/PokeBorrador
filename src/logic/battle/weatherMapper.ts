@@ -84,7 +84,7 @@ const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
     id: 'intense_sun',
     mech: WEATHER_MECHANICAL.SUN,
     label: 'SOL INTENSO',
-    icon: '☀️',
+    icon: '🔆',
     visual: 'sun',
     description: 'Potencia Fuego (x1.5), el Agua se evapora (x0). Rayo Solar sin carga.'
   },
@@ -94,7 +94,7 @@ const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
     id: 'rain',
     mech: WEATHER_MECHANICAL.RAIN,
     label: 'LLUVIA',
-    icon: '☔',
+    icon: '🌧️',
     visual: 'rain',
     description: 'Potencia Agua (x1.5), debilita Fuego (x0.5). Trueno y Vendaval nunca fallan.'
   },
@@ -102,15 +102,15 @@ const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
     id: 'storm',
     mech: WEATHER_MECHANICAL.RAIN,
     label: 'TORMENTA',
-    icon: '⚡',
+    icon: '⛈️',
     visual: 'storm',
     description: 'Tormenta eléctrica. Potencia Agua (x1.5), el Fuego se extingue (x0). Trueno nunca falla.'
   },
   'thunderstorm': {
     id: 'thunderstorm',
     mech: WEATHER_MECHANICAL.RAIN,
-    label: 'TORMENTA',
-    icon: '⚡',
+    label: 'T. ELÉCTRICA',
+    icon: '🌩️',
     visual: 'storm',
     description: 'Tormenta eléctrica intensa. Potencia Agua (x1.5) y el Fuego se extingue.'
   },
@@ -136,7 +136,7 @@ const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
     id: 'dust_storm',
     mech: WEATHER_MECHANICAL.SANDSTORM,
     label: 'T. POLVO',
-    icon: '🌫️',
+    icon: '🌪️',
     visual: 'sandstorm',
     description: 'Visibilidad reducida. Daña a tipos no Tierra/Roca/Acero y baja la precisión.'
   },
@@ -196,7 +196,7 @@ const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
     id: 'mist',
     mech: WEATHER_MECHANICAL.FOG,
     label: 'BRUMA',
-    icon: '🌫️',
+    icon: '💨',
     visual: 'fog',
     description: 'Humedad ligera que reduce suavemente la precisión de los movimientos.'
   },

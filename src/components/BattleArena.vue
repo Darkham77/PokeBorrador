@@ -33,7 +33,7 @@ import PVTooltip from '@/components/common/PVTooltip.vue'
 const battle = computed(() => battleStore.state)
 
 const cycleEmoji = computed(() => {
-  const emojis: Record<string, string> = { morning: '🌅', day: '☀️', dusk: '🌇', night: '🌙' }
+  const emojis: Record<string, string> = { morning: '🌅', day: '🌞', dusk: '🌇', night: '🌙' }
   return emojis[mapStore.currentCycle] || '☀️'
 })
 const seasonEmoji = computed(() => mapStore.currentSeason.icon)

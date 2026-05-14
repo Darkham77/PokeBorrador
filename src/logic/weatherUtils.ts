@@ -11,11 +11,17 @@ export const WEATHER_BLOCK_MULTIPLIER = 0;
 
 export const WEATHER_TYPE_MODIFIERS: Record<string, { boost?: string[], debuff?: string[], block?: string[] }> = {
   rain: { boost: ['water', 'bug', 'electric'], debuff: ['fire', 'rock', 'ground'] },
+  heavy_rain: { boost: ['water'], block: ['fire'], debuff: ['rock', 'ground'] },
   storm: { boost: ['water', 'electric', 'dragon'], block: ['fire', 'flying', 'bug'], debuff: ['rock', 'ground'] },
+  thunderstorm: { boost: ['electric', 'water', 'dragon'], block: ['fire', 'flying', 'bug'], debuff: ['rock', 'ground'] },
   sun: { boost: ['fire', 'grass', 'ground'], debuff: ['water', 'ice'] },
+  intense_sun: { boost: ['grass', 'fire'], block: ['water', 'ice'] },
   heatwave: { boost: ['fire', 'ground'], block: ['ice', 'grass'], debuff: ['water'] },
   snow: { boost: ['ice', 'steel'], debuff: ['fire', 'bug', 'flying'] },
+  hail: { boost: ['ice'], debuff: ['fire', 'bug', 'flying', 'grass'] },
   blizzard: { boost: ['ice'], block: ['fire', 'grass', 'bug', 'flying'], debuff: ['steel', 'rock'] },
+  cold: { boost: ['ice'], debuff: ['grass', 'bug'] },
+  coldwave: { boost: ['ice'], block: ['grass', 'bug'], debuff: ['fire', 'flying'] },
   sandstorm: { boost: ['rock', 'ground', 'steel'], debuff: ['flying', 'bug', 'fire'] },
   fog: { boost: ['ghost', 'psychic', 'dark'], debuff: ['flying'] },
   wind: { boost: ['flying', 'bug', 'psychic'], debuff: ['ground'] },

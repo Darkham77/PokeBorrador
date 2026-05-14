@@ -263,6 +263,7 @@ See the [Resources README](resources/README.md) for more details on these exampl
 - ✅ Store the tween/timeline return value when controlling playback (pause, play, reverse, kill).
 - ✅ Prefer timelines instead of chaining animations using `delay`.
 - ✅ Use **gsap.matchMedia()** for responsive breakpoints and **prefers-reduced-motion** so animations can be reduced or disabled for accessibility.
+- ✅ Use **Relative Operators (`+=`, `-=`)** for `backgroundPosition` animations when targets have randomized initial positions. This prevents "diagonal convergence" (funnel effect) and maintains consistent linear trajectories.
 
 ## Do Not
 

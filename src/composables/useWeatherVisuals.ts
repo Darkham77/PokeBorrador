@@ -36,34 +36,35 @@ export function useWeatherVisuals(options: WeatherVisualOptions) {
     let wContrast = 1.0
     const wHue = 0
 
-    if (weather === 'storm') { 
+    if (weather === 'storm' || weather === 'thunderstorm') { 
       const darknessFactor = isNight ? 1.0 : (isDusk ? 0.75 : 0.6)
-      wBrightness = darknessFactor; 
-      wSaturate = 0.6; 
+      wBrightness = weather === 'thunderstorm' ? (darknessFactor * 0.8) : darknessFactor; 
+      wSaturate = weather === 'thunderstorm' ? 0.4 : 0.6; 
       wContrast = 1.3; 
     }
-    else if (weather === 'snow' || weather === 'blizzard') { 
-      wBrightness = 0.85; 
+    else if (weather === 'snow' || weather === 'blizzard' || weather === 'hail' || weather === 'coldwave' || weather === 'cold') { 
+      wBrightness = weather === 'coldwave' ? 0.75 : 0.85; 
       wSaturate = 0.5; 
       wContrast = 1.2; 
     }
-    else if (weather === 'rain') { 
-      wBrightness = 0.8; 
-      wSaturate = 0.7; 
+    else if (weather === 'rain' || weather === 'heavy_rain') { 
+      wBrightness = weather === 'heavy_rain' ? 0.65 : 0.8; 
+      wSaturate = weather === 'heavy_rain' ? 0.5 : 0.7; 
+      wContrast = weather === 'heavy_rain' ? 1.2 : 1.0;
     }
     else if (weather === 'fog' || weather === 'mist') { 
       wBrightness = isNight ? 0.75 : 0.9; 
       wContrast = 0.8; 
       wSaturate = 0.2; 
     }
-    else if (weather === 'sandstorm') { 
-      wBrightness = 0.85; 
-      wSaturate = 1.2; 
+    else if (weather === 'sandstorm' || weather === 'dust_storm') { 
+      wBrightness = weather === 'dust_storm' ? 0.8 : 0.85; 
+      wSaturate = weather === 'dust_storm' ? 1.1 : 1.2; 
       wContrast = 1.1; 
     }
-    else if (weather === 'heatwave') { 
-      wBrightness = 1.1; 
-      wSaturate = 1.3; 
+    else if (weather === 'heatwave' || weather === 'intense_sun' || weather === 'sun') { 
+      wBrightness = weather === 'intense_sun' ? 1.2 : 1.1; 
+      wSaturate = weather === 'intense_sun' ? 1.4 : 1.3; 
       wContrast = 1.1; 
     }
 

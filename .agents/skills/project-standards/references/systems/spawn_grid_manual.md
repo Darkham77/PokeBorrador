@@ -85,9 +85,9 @@ Layers are ordered from back to front using the following `z-index` standard:
 
 To maintain the "Fog of War" and a clean UI, tooltips on route cards follow these standards:
 
-- **Cycle Emojis**: Use `🌅 (Morning)`, `☀️ (Day)`, `🌇 (Dusk)`, and `🌙 (Night)` to represent time restrictions.
+- **Time Emojis**: Use emojis (🌅, 🌞, 🌇, 🌙) in spawn tooltips to save space and maintain the retro aesthetic.
 - **Discovery State**:
-  - **Known (Seen/Caught)**: Display exact cycles using emojis: `Usual times: 🌅 ☀️`.
+  - **Known (Seen/Caught)**: Display exact cycles using emojis: `Usual times: 🌅 🌞`.
   - **Unknown**: Use the generic label `Not common in this route` for any Pokémon with time restrictions to avoid spoilers.
 - **24h Consistency**: Pokémon also available via **Fishing** are treated as 24h spawns; they do not display time restrictions.
 

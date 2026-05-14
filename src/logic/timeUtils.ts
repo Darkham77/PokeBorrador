@@ -105,9 +105,9 @@ export function getSeason(now: Temporal.Instant | number = getServerInstant()): 
   
   const seasons: Season[] = [
     { id: 'spring', label: 'Primavera', icon: '🌸' },
-    { id: 'summer', label: 'Verano', icon: '☀️' },
+    { id: 'summer', label: 'Verano', icon: '🌻' },
     { id: 'autumn', label: 'Otoño', icon: '🍂' },
-    { id: 'winter', label: 'Invierno', icon: '❄️' }
+    { id: 'winter', label: 'Invierno', icon: '⛄' }
   ];
   
   return seasons[seasonIndex] || (seasons[0] as Season);

@@ -186,7 +186,7 @@ function toggleCycle(c: string | null) {
             :class="{ active: mapStore.globalWeather === w.id }"
             @click.stop="toggleWeather(w.id)"
           >
-            {{ w.label }}
+            {{ w.icon }} {{ w.label }}
           </button>
         </PVTooltip>
       </div>

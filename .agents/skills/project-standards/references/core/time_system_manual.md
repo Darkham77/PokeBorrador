@@ -37,17 +37,34 @@ Poké Vicio implements a dual hierarchy system for atmospheric conditions:
 - **Temperatures**: Define the thermal state (Sun, Heatwave, Cold, Coldwave).
 - **Conditions**: Define atmospheric phenomena (Rain, Storm, Snow, Blizzard, Sandstorm, Fog, Wind).
 
-### 4.2 Official Hierarchy and Mechanics
+### Climas y Mecánicas de Combate
 
-| Category | Normal | Extreme | Official Mechanic (Normal -> Extreme) |
-| :--- | :--- | :--- | :--- |
-| **Temperature** | Sun (☀️) | Heatwave (🔥) | Fire+ / Water- -> **Desolate Land** (Water fails). |
-| **Temperature** | Cold (❄️) | Coldwave (🥶) | +Ice Def -> **Hail** (Turn damage). |
-| **Water** | Rain (☔) | Storm (⚡) | Water+ / Fire- -> **Primordial Sea** (Fire fails). |
-| **Ice** | Snow (❄️) | Blizzard (🌬️) | +Ice Def -> **Extreme Snow** (Dmg + Visibility). |
-| **Air** | Mist (🌫️) | Fog (⬜) | Aesthetic -> **Gen 4 Fog** (-Accuracy). |
-| **Earth** | Wind (🍃) | Strong Winds (🌀) | Aesthetic -> **Delta Stream** (Removes Flying Weakness). |
-| **Sand** | -- | Sandstorm (🌪️) | Turn Dmg + SpD Rock (Standard Mechanics). |
+El sistema cuenta con 19 tipos de clima, divididos en familias con niveles de intensidad:
+
+| Familia | Clima | Icono | Efecto Mecánico (Combat Boost / Block) |
+| :--- | :--- | :---: | :--- |
+| **Temperatura** | Sol | ☀️ | Boost: Fuego, Planta, Tierra. Debuff: Agua, Hielo. |
+| | Sol Intenso | 🔆 | Boost: Planta, Fuego (x2). **Block:** Agua. |
+| | Ola Calor | 🔥 | Boost: Fuego, Tierra. **Block:** Hielo, Planta. |
+| | Frío | 🧊 | Boost: Hielo. Debuff: Bicho, Planta. |
+| | Ola Frío | 🥶 | Boost: Hielo (x2). **Block:** Bicho, Planta, Volador. |
+| **Agua** | Lluvia | 🌧️ | Boost: Agua, Bicho, Eléctrico. Debuff: Fuego, Roca, Tierra. |
+| | Lluvia Fuerte | ☔ | Boost: Agua (x2). **Block:** Fuego. |
+| | Tormenta | ⛈️ | Boost: Agua, Eléctrico, Dragón. **Block:** Fuego, Volador. |
+| | T. Eléctrica | 🌩️ | Boost: Eléctrico (x2), Dragón. **Block:** Volador, Bicho. |
+| **Hielo** | Nieve | ❄️ | Boost: Hielo, Acero. Debuff: Fuego, Bicho. |
+| | Granizo | 🌨️ | Boost: Hielo. **Daño por turno** (excepto Hielo). |
+| | Ventisca | 🌬️ | Boost: Hielo. **Block:** Fuego, Planta, Bicho. |
+| **Atmosfera** | Niebla | 🌫️ | Boost: Fantasma, Psíquico, Siniestro. Debuff: Volador. |
+| | Bruma | 💨 | Boost: Hada, Agua. Debuff: Fuego. |
+| | Viento | 🍃 | Boost: Volador, Bicho, Psíquico. Debuff: Tierra. |
+| | V. Fuertes | 🌀 | Boost: Volador, Dragón, Psíquico. **Block:** Bicho, Tierra. |
+| **Tierra** | T. Arena | 🏜️ | Boost: Roca, Tierra, Acero. Debuff: Volador, Bicho. |
+| | T. Polvo | 🌪️ | Boost: Roca, Tierra. **Block:** Volador. |
+| **Especial** | Despejado | 🌈 | Sin efectos. |
+
+> [!IMPORTANT]
+> Los efectos de **Bloqueo (Block)** impiden totalmente que el tipo afectado pueda realizar daño significativo o aplicar estados, representando condiciones climáticas letales para ellos.
 
 ### 4.3 Visual Standards
 

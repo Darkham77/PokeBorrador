@@ -143,6 +143,7 @@ Performance work is a post-functionality pass. Do not optimize before core behav
 - Static subtrees re-rendering unnecessarily -> [perf-v-once-v-memo-directives](references/perf-v-once-v-memo-directives.md)
 - Over-abstraction in hot list paths -> [perf-avoid-component-abstraction-in-lists](references/perf-avoid-component-abstraction-in-lists.md)
 - Expensive updates triggered too often -> [updated-hook-performance](references/updated-hook-performance.md)
+- **Synchronizing External Animation Engines (GSAP)**: When a prop change must trigger a full re-initialization of an external animation (like a GSAP timeline), ALWAYS use a `watch` combined with `await nextTick()`. This ensures that any template-driven DOM updates (like `v-if` mounting/unmounting layers) are finished before the animation script targets the elements.
 
 ## 5) DOM & Event Quirks (Lessons Learned)
 
