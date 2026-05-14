@@ -2,7 +2,7 @@ import { gsapSleep as sleep } from '@/logic/utils/gsapHelpers'
 
 import { generateEncounter } from '@/logic/encounters'
 import { handleEntryAbilities } from './battleFlow.ts'
-import { getMechanicalWeather } from './weatherMapper.ts'
+import { getMechanicalWeather } from '../weather/weatherRegistry'
 import { FIRE_RED_MAPS } from '@/data/maps'
 import { useUIStore } from '@/stores/ui'
 import { useMapStore } from '@/stores/map'

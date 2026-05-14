@@ -52,10 +52,15 @@ export function useWeatherVisuals(options: WeatherVisualOptions) {
       wSaturate = weather === 'heavy_rain' ? 0.5 : 0.7; 
       wContrast = weather === 'heavy_rain' ? 1.2 : 1.0;
     }
-    else if (weather === 'fog' || weather === 'mist') { 
+    else if (weather === 'fog') { 
       wBrightness = isNight ? 0.75 : 0.9; 
       wContrast = 0.8; 
-      wSaturate = 0.2; 
+      wSaturate = 0.15; // Niebla casi monocromática
+    }
+    else if (weather === 'mist') { 
+      wBrightness = isNight ? 0.8 : 0.95; 
+      wContrast = 0.9; 
+      wSaturate = 1.0; // Bruma permite color total del fondo
     }
     else if (weather === 'sandstorm' || weather === 'dust_storm') { 
       wBrightness = weather === 'dust_storm' ? 0.8 : 0.85; 

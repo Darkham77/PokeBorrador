@@ -187,49 +187,54 @@ export const libraryContent = {
       <li>🌙 <strong>Noche</strong>: 20:00 - 04:00</li>
     </ul>
 
-    <h3>Estaciones</h3>
-    <p>Cambian cada <strong>semana real</strong> en secuencia: Primavera, Verano, Otoño e Invierno. Afectan la estética y los climas predominantes de cada ruta.</p>
-
-    <h3>Efectos en Combate</h3>
+    <h3>Jerarquía de Intensidad</h3>
     <table class="library-table">
-      <thead><tr><th>Clima</th><th>Bonos</th><th>Debilidades</th></tr></thead>
+      <thead><tr><th>Familia</th><th>Nivel 1</th><th>Nivel 2</th><th>Nivel 3</th><th>Nivel 4</th></tr></thead>
       <tbody>
-        <tr><td>☀️ Sol</td><td>Fuego +50%</td><td>Agua -50%</td></tr>
-        <tr><td>☔ Lluvia</td><td>Agua +50%</td><td>Fuego -50%</td></tr>
-        <tr><td>🌪️ Arena</td><td>Def. Esp Roca +50%</td><td>Daño residual</td></tr>
-        <tr><td>❄️ Nieve</td><td>Def. Física Hielo +50%</td><td>-</td></tr>
-        <tr><td>🌫️ Niebla</td><td>Precisión: 60%</td><td>Dusk Ball 3x</td></tr>
+        <tr><td>Calor</td><td>☀️ Sol</td><td>🔆 S. Intenso</td><td>🔥 O. Calor</td><td>--</td></tr>
+        <tr><td>Frío</td><td>🧊 Frío</td><td>🥶 O. Frío</td><td>--</td><td>--</td></tr>
+        <tr><td>Agua</td><td>🌧️ Lluvia</td><td>☔ L. Fuerte</td><td>⛈️ Tormenta</td><td>🌩️ T. Elec.</td></tr>
+        <tr><td>Hielo</td><td>❄️ Nieve</td><td>🌨️ Granizo</td><td>🌬️ Ventisca</td><td>--</td></tr>
+        <tr><td>Viento</td><td>🍃 Viento</td><td>🌀 V. Fuertes</td><td>--</td><td>--</td></tr>
+        <tr><td>Tierra</td><td>🏜️ T. Arena</td><td>🌪️ T. Polvo</td><td>--</td><td>--</td></tr>
       </tbody>
     </table>
 
-    <h3>Climas Extremos</h3>
+    <h3>Efectos Especiales</h3>
     <ul>
-      <li>🔥 <strong>Ola de Calor</strong>: El calor es tan intenso que los ataques de tipo <strong>Agua</strong> fallan automáticamente (se evaporan).</li>
-      <li>🥶 <strong>Ola de Frío</strong>: Las temperaturas bajo cero infligen daño por turno a todos los Pokémon.</li>
-      <li>⚡ <strong>Tormenta</strong>: Las lluvias torrenciales apagan cualquier llama. Los ataques de tipo <strong>Fuego</strong> fallan automáticamente.</li>
-      <li>🌬️ <strong>Ventisca</strong>: Inflige daño por turno a los no-hielo y reduce drásticamente la visión.</li>
+      <li>🔥 <strong>Ola de Calor</strong>: El calor es tan intenso que los ataques de tipo <strong>Agua</strong> se evaporan (Daño 0x).</li>
+      <li>🥶 <strong>Ola de Frío</strong>: Reduce la <strong>Velocidad al 50%</strong> de los no-hielo e inflige daño por turno.</li>
+      <li>⚡ <strong>Tormenta / T. Elec.</strong>: Las lluvias apagan cualquier llama. Los ataques de tipo <strong>Fuego</strong> fallan automáticamente.</li>
+      <li>🌬️ <strong>Ventisca</strong>: Bono de Defensa Física a tipo Hielo (+50%) y daño residual constante.</li>
       <li>🌀 <strong>Vientos Fuertes</strong>: Una barrera de aire elimina todas las debilidades del tipo Volador.</li>
+      <li>🌪️ <strong>T. Polvo</strong>: Visibilidad nula que bloquea completamente al tipo Volador.</li>
     </ul>
 
-    <h3>Influencia en Encuentros</h3>
-    <ul>
-      <li><strong>Aparición Dinámica</strong>: Un Pokémon puede aparecer si coincide su horario O si el clima favorece su tipo.</li>
-      <li><strong>Visitantes y Exclusivos</strong>: Comparten una probabilidad del 10%. Los exclusivos (como Castform) solo aparecen bajo su clima específico.</li>
-      <li><strong>Sincronización Global</strong>: El clima es idéntico para todos los jugadores en la misma zona y cambia al inicio de cada hora.</li>
-    </ul>
-
-    <h3>Clima en el Mundo vs. Combate</h3>
-    <p>El clima de la ruta es el estado natural. Si usas movimientos (como Danza Lluvia) en batalla, el clima cambiará temporalmente, pero al finalizar el combate, la ruta recuperará instantáneamente su estado original.</p>
-
+    <h3>Influencia en Encuentros (Spawn)</h3>
+    <p>Las condiciones atmosféricas alteran drásticamente qué Pokémon aparecen y con qué frecuencia:</p>
     <table class="library-table">
-      <thead><tr><th>Clima</th><th>Potencia Spawn (x1.5)</th><th>Penaliza (x0.4)</th></tr></thead>
+      <thead><tr><th>Clima</th><th>Boost (x1.5)</th><th>Penaliza (x0.4)</th><th>Bloquea (x0)</th></tr></thead>
       <tbody>
-        <tr><td>🌧️ Lluvia</td><td>Agua, Bicho, Eléctrico</td><td>Fuego, Roca, Tierra</td></tr>
-        <tr><td>☀️ Sol</td><td>Fuego, Planta, Tierra</td><td>Agua, Hielo</td></tr>
-        <tr><td>🌪️ Arena</td><td>Roca, Tierra, Acero</td><td>Volador, Bicho, Fuego</td></tr>
-        <tr><td>🌫️ Niebla</td><td>Fantasma, Psíquico, Siniestro</td><td>Volador</td></tr>
+        <tr><td>🌧️ Lluvia</td><td>Agua, Bicho</td><td>Fuego, Roca</td><td>-</td></tr>
+        <tr><td>☔ L. Fuerte</td><td>Agua</td><td>Roca, Tierra</td><td>Fuego</td></tr>
+        <tr><td>⛈️ Tormenta</td><td>Agua, Elec.</td><td>Roca, Tierra</td><td>Fuego, Volador</td></tr>
+        <tr><td>☀️ Sol</td><td>Fuego, Planta</td><td>Agua, Hielo</td><td>-</td></tr>
+        <tr><td>🔆 S. Intenso</td><td>Planta, Fuego</td><td>-</td><td>Agua, Hielo</td></tr>
+        <tr><td>🔥 O. Calor</td><td>Fuego, Tierra</td><td>Agua</td><td>Hielo, Planta</td></tr>
+        <tr><td>🥶 O. Frío</td><td>Hielo</td><td>Fuego, Volador</td><td>Bicho, Planta</td></tr>
+        <tr><td>❄️ Nieve</td><td>Hielo, Acero</td><td>Fuego, Bicho</td><td>-</td></tr>
+        <tr><td>🌬️ Ventisca</td><td>Hielo</td><td>Acero, Roca</td><td>Fuego, Planta</td></tr>
+        <tr><td>🌪️ T. Polvo</td><td>Roca, Tierra</td><td>Bicho</td><td>Volador</td></tr>
+        <tr><td>🌀 V. Fuertes</td><td>Volador, Dragón</td><td>-</td><td>Bicho, Tierra</td></tr>
+        <tr><td>🌫️ Niebla</td><td>Fantasma, Sini.</td><td>Volador</td><td>-</td></tr>
       </tbody>
     </table>
+
+    <h3>Visitantes y Exclusivos</h3>
+    <ul>
+      <li><strong>Cuota del 10%</strong>: El clima puede "invadir" la ruta con Pokémon no nativos, ocupando un 10% del total de apariciones.</li>
+      <li><strong>Exclusivos</strong>: Especies como Castform solo pueden aparecer bajo su clima específico.</li>
+    </ul>
   `
 }
 

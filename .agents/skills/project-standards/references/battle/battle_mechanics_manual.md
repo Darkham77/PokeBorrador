@@ -53,13 +53,14 @@ Each Seat has an associated **Team Slot** that contains the party data for that 
 To prevent desynchronization between the Map's visual weather and the Combat Engine's mechanical effects, all weather interactions MUST pass through the `weatherMapper.ts` system and use the global state.
 
 - **Single Source of Truth**: UI components (Grid, Tooltips) MUST consume weather data from `battleStore.state.weather` instead of local props or direct map state to ensure visual parity during combat transitions.
-- **Centralized Mapping**: Environmental tokens (e.g., `heatwave`, `blizzard`, `storm`) are normalized to mechanical keys (`sun`, `hail`, `rain`) via `getMechanicalWeather()`.
+- **Centralized Mapping**: Environmental tokens (e.g., `heatwave`, `blizzard`, `storm`) are normalized to mechanical keys (`sun`, `hail`, `rain`, `clear`) via `getMechanicalWeather()`.
 - **Standardized Blizzard**: The visual weather `blizzard` maps directly to mechanical weather `hail` (Granizo) to respect Gen 2-9 canonical standards.
+- **Dry Storms**: `thunderstorm` is mapped to `clear` mechanical weather to prevent Fire-type penalization while maintaining its specific offensive boosts.
 - **Status Move Exclusion**: Modifier indicators (auras, "Penalizado por..." text) MUST be suppressed for moves of category `status` (except specific cases like Solar Beam). Damage multipliers from weather/cycle DO NOT affect status moves; showing these indicators constitutes a false positive.
 - **Integrity Guard**: If a weather token is NOT registered in the mapper, the system returns an `UNKNOWN` state.
   - **HUD Feedback**: Displays a `⚠️` warning icon to notify that the weather lacks combat effects.
   - **Dev Feedback**: Triggers a `[WeatherIntegrity]` warning in the console.
-- **Mandatory Registry**: Any new weather added to `weather-tables.ts` MUST be added to `MAP_TO_MECHANICAL` and `WEATHER_UI_METADATA` in `weatherMapper.ts`.
+- **Mandatory Registry**: Any new weather added to `weather-tables.ts` MUST be added to `WEATHER_REGISTRY` in `weatherRegistry.ts`.
 - **Map Persistence**: Battles inherit the current route's weather. If the weather is "permanent" (turns: -1), it remains active for the entire battle duration unless manually overridden.
 - **Move Override**: Weather induced by moves (e.g., Rain Dance, Hail) lasts **5 turns** and takes absolute priority over the map weather.
 - **Restoration**: Once a temporary weather effect expires, the system MUST restore the original map/route weather instead of clearing to "Clear".

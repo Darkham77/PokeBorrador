@@ -6,7 +6,7 @@ import PVTooltip from '@/components/common/PVTooltip.vue'
 import MoveTooltip from '@/components/battle/MoveTooltip.vue'
 import { PDEX_TYPE_COLORS } from '@/logic/pokedexConstants'
 import { MOVE_DATA } from '@/data/moves'
-import { getMechanicalWeather, WEATHER_MECHANICAL } from '@/logic/battle/weatherMapper'
+import { getMechanicalWeather, WEATHER_MECHANICAL } from '@/logic/weather/weatherRegistry'
 import { getDayCycle } from '@/logic/timeUtils'
 import { useBattleStore } from '@/stores/battle'
 

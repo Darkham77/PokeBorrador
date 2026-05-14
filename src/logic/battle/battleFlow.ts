@@ -1,4 +1,4 @@
-import { getMechanicalWeather, WEATHER_MECHANICAL } from './weatherMapper.ts'
+import { getMechanicalWeather, WEATHER_MECHANICAL } from '../weather/weatherRegistry'
 import { gameBus } from '@/logic/gameBus'
 import type { Pokemon } from '@/types/pokemon'
 import type { BattleStages, LogFn, BattleWeather } from '@/types/battle'
@@ -114,5 +114,17 @@ export function applyEndTurnWeather(p: Pokemon, e: Pokemon, weather: BattleWeath
 
   if (mechWeather === WEATHER_MECHANICAL.SNOW) {
     // La nieve normal NO hace daño residual (Gen 9)
+  }
+
+  // Poder Solar (Solar Power) Recoil
+  if (mechWeather === WEATHER_MECHANICAL.SUN) {
+    [p, e].forEach(poke => {
+      if (poke.ability === 'Poder solar' && poke.hp > 0) {
+        const dmg = Math.max(1, Math.floor(poke.maxHp / 8));
+        poke.hp = Math.max(0, poke.hp - dmg);
+        addLog(`¡${poke.name} sufre por el sol ardiente! (-${dmg} HP)`, 'log-info', poke);
+        gameBus.emit('PLAY_SOUND', 'statusDamage');
+      }
+    });
   }
 }

@@ -37,7 +37,7 @@ Según el ciclo del día, el generador de clima ajusta las probabilidades de la 
 
 1. **La Mañana (Amanecer)**
    - **Niebla y Bruma**: Es uno de los momentos principales de aparición de niebla.
-   - **Tormentas**: Alta concentración de tormentas eléctricas (el 50% de las tormentas ocurren alrededor de la salida del sol).
+   - **Tormentas**: Alta concentración de tormentas eléctricas (el 50% de las tormentas ocurren alrededor de la salida del sol). Estas pueden presentarse como "Tormentas Secas" sin lluvia.
    - **Temperatura**: Inicia en su punto más bajo y comienza a subir gradualmente.
 
 2. **El Día (Mediodía)**
@@ -45,7 +45,7 @@ Según el ciclo del día, el generador de clima ajusta las probabilidades de la 
    - **Brisa Marina**: En zonas litorales, el aumento de temperatura en tierra crea una brisa que sopla desde el agua hacia la tierra.
 
 3. **La Tarde (Ocaso)**
-   - **Inestabilidad**: Pico de inestabilidad climática. Alta probabilidad de tormentas eléctricas, aguaceros pesados y niebla.
+   - **Inestabilidad**: Pico de inestabilidad climática. Alta probabilidad de tormentas eléctricas (frecuentemente secas), aguaceros pesados y niebla.
    - **Temperatura**: Alcanza su máximo al inicio de la tarde y luego desciende gradualmente hacia el anochecer.
 
 4. **La Noche**

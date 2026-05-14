@@ -7,7 +7,7 @@ import { dispatchMoveEffect } from './actions/actionRegistry.ts'
 import { decideEnemyMove, shouldEnemySwitch, findBestSwitchIndex } from './ai/battleAI.ts'
 import { gameBus } from '@/logic/gameBus'
 import { recalcPokemonStats } from '@/logic/pokemonFactory'
-import { getMechanicalWeather, WEATHER_MECHANICAL } from './weatherMapper.ts'
+import { getMechanicalWeather, WEATHER_MECHANICAL } from '../weather/weatherRegistry'
 import { getDayCycle } from '@/logic/timeUtils'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { MOVE_DATA } from '@/data/moves'
@@ -204,7 +204,8 @@ export async function runPlayerAction(store: BattleContext, moveIndex: number) {
     const isRainActive = mechWeather === WEATHER_MECHANICAL.RAIN || (mechWeather === WEATHER_MECHANICAL.CLEAR && (cycle === 'night' || cycle === 'dusk'))
     let finalAcc = moveAcc;
     
-    if (isRainActive && (executableMove.id === 'thunder' || executableMove.id === 'hurricane')) finalAcc = 100;
+    const isThunderstorm = weather === 'thunderstorm';
+    if ((isRainActive || isThunderstorm) && (executableMove.id === 'thunder' || executableMove.id === 'hurricane')) finalAcc = 100;
     else if (isSunActive && (executableMove.id === 'thunder' || executableMove.id === 'hurricane')) finalAcc = 50;
     else if ((mechWeather === WEATHER_MECHANICAL.HAIL || mechWeather === WEATHER_MECHANICAL.SNOW) && executableMove.id === 'blizzard') finalAcc = 100;
     else if (mechWeather === WEATHER_MECHANICAL.FOG) { const isMist = weather === "mist" || weather === "mist_visual"; finalAcc = Math.floor(moveAcc * (isMist ? 0.8 : 0.6)); }
@@ -450,7 +451,8 @@ export async function runEnemyAction(store: BattleContext) {
     
     let finalAcc = moveAcc;
 
-    if (isRaining && (executableMove.id === 'thunder' || executableMove.id === 'hurricane')) finalAcc = 100;
+    const isThunderstorm = weather === 'thunderstorm';
+    if ((isRaining || isThunderstorm) && (executableMove.id === 'thunder' || executableMove.id === 'hurricane')) finalAcc = 100;
     else if (isSunActive && (executableMove.id === 'thunder' || executableMove.id === 'hurricane')) finalAcc = 50;
     else if ((mechWeather === WEATHER_MECHANICAL.HAIL || mechWeather === WEATHER_MECHANICAL.SNOW) && executableMove.id === 'blizzard') finalAcc = 100;
     else if (mechWeather === WEATHER_MECHANICAL.FOG) { const isMist = weather === "mist" || weather === "mist_visual"; finalAcc = Math.floor(moveAcc * (isMist ? 0.8 : 0.6)); }

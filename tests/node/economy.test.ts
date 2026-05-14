@@ -3,8 +3,7 @@ import assert from 'node:assert/strict';
 import { 
   calculateIndividualHealCost, 
   pokemonNeedsHealing, 
-  calculateTotalHealCost,
-  HEAL_COST_TIER_MULTIPLIERS
+  calculateTotalHealCost
 } from '../../src/logic/economy/economyFormulas.ts';
 import type { Pokemon } from '../../src/types/pokemon';
 

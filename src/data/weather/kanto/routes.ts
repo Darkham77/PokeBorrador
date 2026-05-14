@@ -1,418 +1,418 @@
 export const kantoRoutesWeather = {
   "route1": {
     "spring": {
-      "morning": { "clear": 30, "rain": 9, "fog": 21, "wind": 28, "mist": 9, "storm": 1, "strong_winds": 2 },
-      "day": { "clear": 50, "rain": 14, "fog": 10, "wind": 24, "storm": 1, "strong_winds": 1 },
-      "dusk": { "clear": 30, "rain": 14, "fog": 25, "wind": 28, "storm": 1, "strong_winds": 2 },
-      "night": { "clear": 40, "rain": 9, "fog": 20, "wind": 28, "storm": 1, "strong_winds": 2 }
+      "morning": { "mist": 40, "fog": 20, "clear": 20, "rain": 7, "heavy_rain": 2, "storm": 1, "wind": 9, "strong_winds": 1 },
+      "day": { "clear": 40, "mist": 20, "fog": 10, "sun": 20, "intense_sun": 10 },
+      "dusk": { "mist": 40, "fog": 20, "clear": 20, "rain": 7, "heavy_rain": 2, "storm": 1, "wind": 9, "strong_winds": 1 },
+      "night": { "mist": 45, "fog": 25, "clear": 10, "rain": 14, "heavy_rain": 5, "storm": 1 }
     },
     "summer": {
-      "morning": { "clear": 60, "heatwave": 10, "rain": 9, "sun": 9, "wind": 9, "storm": 1, "strong_winds": 1, "intense_sun": 1 },
-      "day": { "clear": 50, "heatwave": 20, "rain": 4, "intense_sun": 15, "wind": 9, "storm": 1, "strong_winds": 1 },
-      "dusk": { "clear": 60, "rain": 19, "storm": 11, "wind": 9, "strong_winds": 1 },
-      "night": { "clear": 70, "rain": 14, "storm": 6, "wind": 9, "strong_winds": 1 }
+      "morning": { "sun": 25, "intense_sun": 18, "heatwave": 7, "clear": 40, "wind": 10 },
+      "day": { "sun": 30, "intense_sun": 25, "heatwave": 15, "clear": 20, "rain": 10 },
+      "dusk": { "sun": 25, "intense_sun": 18, "heatwave": 7, "clear": 40, "wind": 10 },
+      "night": { "clear": 85, "mist": 14, "rain": 1 }
     },
     "autumn": {
-      "morning": { "clear": 25, "rain": 14, "storm": 21, "fog": 10, "wind": 19, "strong_winds": 11 },
-      "day": { "clear": 40, "rain": 19, "storm": 11, "heavy_rain": 10, "wind": 9, "strong_winds": 11 },
-      "dusk": { "clear": 25, "rain": 19, "storm": 16, "fog": 10, "wind": 19, "strong_winds": 11 },
-      "night": { "clear": 40, "rain": 14, "storm": 11, "fog": 10, "wind": 14, "strong_winds": 11 }
+      "morning": { "rain": 30, "heavy_rain": 10, "wind": 30, "strong_winds": 10, "clear": 20 },
+      "day": { "rain": 40, "heavy_rain": 20, "wind": 20, "strong_winds": 10, "clear": 10 },
+      "dusk": { "rain": 30, "heavy_rain": 10, "wind": 30, "strong_winds": 10, "clear": 20 },
+      "night": { "rain": 45, "heavy_rain": 25, "storm": 15, "thunderstorm": 5, "clear": 10 }
     },
     "winter": {
-      "morning": { "clear": 30, "snow": 9, "fog": 15, "cold": 28, "coldwave": 17, "blizzard": 1 },
-      "day": { "clear": 45, "snow": 14, "fog": 5, "cold": 24, "coldwave": 11, "blizzard": 1 },
-      "dusk": { "clear": 30, "snow": 9, "fog": 15, "cold": 28, "coldwave": 17, "blizzard": 1 },
-      "night": { "clear": 40, "snow": 9, "fog": 10, "cold": 24, "coldwave": 16, "blizzard": 1 }
+      "morning": { "cold": 30, "coldwave": 20, "snow": 24, "hail": 5, "blizzard": 1, "clear": 20 },
+      "day": { "clear": 40, "cold": 20, "coldwave": 10, "snow": 20, "hail": 9, "blizzard": 1 },
+      "dusk": { "cold": 30, "coldwave": 20, "snow": 24, "hail": 5, "blizzard": 1, "clear": 20 },
+      "night": { "cold": 40, "coldwave": 30, "snow": 14, "hail": 10, "blizzard": 6 }
     }
   },
   "route2": {
     "spring": {
-      "morning": { "clear": 40, "rain": 9, "fog": 21, "wind": 19, "mist": 9, "storm": 1, "strong_winds": 1 },
-      "day": { "clear": 55, "rain": 14, "fog": 10, "wind": 19, "storm": 1, "strong_winds": 1 },
-      "dusk": { "clear": 35, "rain": 14, "fog": 25, "wind": 24, "storm": 1, "strong_winds": 1 },
-      "night": { "clear": 45, "rain": 9, "fog": 20, "wind": 24, "storm": 1, "strong_winds": 1 }
+      "morning": { "mist": 40, "fog": 20, "clear": 20, "rain": 10, "wind": 10 },
+      "day": { "clear": 50, "mist": 20, "fog": 10, "sun": 20 },
+      "dusk": { "mist": 40, "fog": 20, "clear": 20, "rain": 10, "wind": 10 },
+      "night": { "mist": 50, "fog": 30, "clear": 10, "rain": 10 }
     },
     "summer": {
-      "morning": { "clear": 70, "heatwave": 5, "rain": 9, "sun": 9, "wind": 4, "storm": 1, "strong_winds": 1, "intense_sun": 1 },
-      "day": { "clear": 60, "heatwave": 15, "rain": 4, "intense_sun": 10, "wind": 9, "storm": 1, "strong_winds": 1 },
-      "dusk": { "clear": 70, "rain": 14, "storm": 6, "wind": 9, "strong_winds": 1 },
-      "night": { "clear": 80, "rain": 9, "storm": 6, "wind": 4, "strong_winds": 1 }
+      "morning": { "sun": 25, "intense_sun": 18, "heatwave": 7, "clear": 40, "wind": 10 },
+      "day": { "sun": 30, "intense_sun": 25, "heatwave": 15, "clear": 20, "rain": 10 },
+      "dusk": { "sun": 25, "intense_sun": 18, "heatwave": 7, "clear": 40, "wind": 10 },
+      "night": { "clear": 70, "heatwave": 25, "rain": 5 }
     },
     "autumn": {
-      "morning": { "clear": 30, "rain": 14, "storm": 16, "fog": 15, "wind": 14, "strong_winds": 11 },
-      "day": { "clear": 50, "rain": 19, "storm": 6, "heavy_rain": 5, "wind": 9, "strong_winds": 11 },
-      "dusk": { "clear": 30, "rain": 19, "storm": 11, "fog": 15, "wind": 14, "strong_winds": 11 },
-      "night": { "clear": 50, "rain": 14, "storm": 6, "fog": 10, "wind": 9, "strong_winds": 11 }
+      "morning": { "rain": 30, "heavy_rain": 10, "wind": 30, "strong_winds": 10, "clear": 20 },
+      "day": { "rain": 40, "heavy_rain": 20, "wind": 20, "strong_winds": 10, "clear": 10 },
+      "dusk": { "rain": 30, "heavy_rain": 10, "wind": 30, "strong_winds": 10, "clear": 20 },
+      "night": { "rain": 50, "heavy_rain": 30, "storm": 15, "thunderstorm": 5 }
     },
     "winter": {
-      "morning": { "clear": 40, "snow": 9, "fog": 20, "cold": 19, "coldwave": 11, "blizzard": 1 },
-      "day": { "clear": 60, "snow": 14, "fog": 5, "cold": 14, "coldwave": 6, "blizzard": 1 },
-      "dusk": { "clear": 40, "snow": 9, "fog": 20, "cold": 19, "coldwave": 11, "blizzard": 1 },
-      "night": { "clear": 50, "snow": 9, "fog": 15, "cold": 14, "coldwave": 11, "blizzard": 1 }
+      "morning": { "cold": 30, "coldwave": 20, "snow": 24, "hail": 5, "blizzard": 1, "clear": 20 },
+      "day": { "clear": 50, "cold": 20, "coldwave": 10, "snow": 10, "hail": 9, "blizzard": 1 },
+      "dusk": { "cold": 30, "coldwave": 20, "snow": 24, "hail": 5, "blizzard": 1, "clear": 20 },
+      "night": { "cold": 40, "coldwave": 30, "snow": 14, "hail": 10, "blizzard": 6 }
     }
   },
   "route22": {
     "spring": {
-      "morning": { "clear": 40, "rain": 19, "wind": 28, "mist": 9, "storm": 1, "strong_winds": 2, "fog": 1 },
-      "day": { "clear": 60, "rain": 19, "wind": 19, "storm": 1, "strong_winds": 1 },
-      "dusk": { "clear": 40, "rain": 28, "wind": 28, "storm": 2, "strong_winds": 2 },
-      "night": { "clear": 50, "rain": 19, "wind": 28, "storm": 1, "strong_winds": 2 }
+      "morning": { "mist": 40, "fog": 20, "clear": 20, "wind": 15, "rain": 5 },
+      "day": { "clear": 50, "mist": 20, "fog": 10, "wind": 20 },
+      "dusk": { "mist": 40, "fog": 20, "clear": 20, "wind": 15, "rain": 5 },
+      "night": { "mist": 50, "fog": 30, "clear": 10, "rain": 10 }
     },
     "summer": {
-      "morning": { "clear": 70, "sun": 14, "wind": 14, "strong_winds": 1, "intense_sun": 1 },
-      "day": { "clear": 60, "sun": 24, "wind": 14, "strong_winds": 1, "intense_sun": 1 },
-      "dusk": { "clear": 75, "rain": 14, "wind": 9, "storm": 1, "strong_winds": 1 },
-      "night": { "clear": 80, "rain": 9, "wind": 9, "storm": 1, "strong_winds": 1 }
+      "morning": { "sun": 25, "intense_sun": 18, "heatwave": 7, "clear": 40, "wind": 10 },
+      "day": { "sun": 30, "intense_sun": 25, "heatwave": 15, "clear": 20, "rain": 10 },
+      "dusk": { "sun": 25, "intense_sun": 18, "heatwave": 7, "clear": 40, "wind": 10 },
+      "night": { "clear": 75, "heatwave": 24, "mist": 1 }
     },
     "autumn": {
-      "morning": { "clear": 30, "rain": 19, "storm": 21, "wind": 19, "strong_winds": 11 },
-      "day": { "clear": 50, "rain": 19, "storm": 11, "strong_winds": 20 },
-      "dusk": { "clear": 30, "rain": 19, "storm": 21, "wind": 19, "strong_winds": 11 },
-      "night": { "clear": 50, "rain": 19, "storm": 11, "wind": 9, "strong_winds": 11 }
+      "morning": { "wind": 30, "strong_winds": 10, "rain": 30, "heavy_rain": 10, "clear": 20 },
+      "day": { "wind": 40, "strong_winds": 20, "rain": 20, "heavy_rain": 10, "clear": 10 },
+      "dusk": { "wind": 30, "strong_winds": 10, "rain": 30, "heavy_rain": 10, "clear": 20 },
+      "night": { "wind": 50, "strong_winds": 20, "storm": 20, "thunderstorm": 10 }
     },
     "winter": {
-      "morning": { "clear": 40, "snow": 19, "cold": 28, "coldwave": 12, "blizzard": 1 },
-      "day": { "clear": 60, "snow": 19, "cold": 19, "blizzard": 1, "coldwave": 1 },
-      "dusk": { "clear": 40, "snow": 19, "cold": 28, "coldwave": 12, "blizzard": 1 },
-      "night": { "clear": 50, "snow": 19, "cold": 19, "coldwave": 11, "blizzard": 1 }
+      "morning": { "cold": 30, "coldwave": 20, "snow": 24, "hail": 5, "blizzard": 1, "clear": 20 },
+      "day": { "clear": 50, "cold": 20, "coldwave": 10, "snow": 10, "hail": 9, "blizzard": 1 },
+      "dusk": { "cold": 30, "coldwave": 20, "snow": 24, "hail": 5, "blizzard": 1, "clear": 20 },
+      "night": { "cold": 40, "coldwave": 30, "snow": 14, "hail": 10, "blizzard": 6 }
     }
   },
   "route3": {
     "spring": {
-      "morning": { "clear": 40, "rain": 9, "storm": 21, "wind": 28, "strong_winds": 2 },
-      "day": { "clear": 60, "rain": 14, "storm": 6, "wind": 19, "strong_winds": 1 },
-      "dusk": { "clear": 40, "rain": 19, "storm": 21, "wind": 19, "strong_winds": 1 },
-      "night": { "clear": 50, "rain": 14, "storm": 11, "wind": 24, "strong_winds": 1 }
+      "morning": { "mist": 40, "fog": 20, "clear": 20, "wind": 20 },
+      "day": { "clear": 50, "sun": 30, "wind": 20 },
+      "dusk": { "mist": 40, "fog": 20, "clear": 20, "wind": 20 },
+      "night": { "clear": 60, "mist": 20, "fog": 20 }
     },
     "summer": {
-      "morning": { "clear": 50, "heatwave": 10, "storm": 20, "wind": 19, "strong_winds": 1 },
-      "day": { "clear": 40, "heatwave": 30, "storm": 10, "intense_sun": 20 },
-      "dusk": { "clear": 50, "heatwave": 10, "storm": 20, "wind": 19, "strong_winds": 1 },
-      "night": { "clear": 70, "heatwave": 10, "storm": 10, "wind": 9, "strong_winds": 1 }
+      "morning": { "sun": 25, "intense_sun": 18, "heatwave": 7, "clear": 40, "wind": 10 },
+      "day": { "sun": 30, "intense_sun": 30, "heatwave": 20, "clear": 20 },
+      "dusk": { "sun": 25, "intense_sun": 18, "heatwave": 7, "clear": 40, "wind": 10 },
+      "night": { "clear": 70, "heatwave": 30 }
     },
     "autumn": {
-      "morning": { "clear": 25, "rain": 14, "storm": 31, "wind": 19, "strong_winds": 11 },
-      "day": { "clear": 40, "rain": 19, "storm": 16, "heavy_rain": 15, "strong_winds": 10 },
-      "dusk": { "clear": 25, "rain": 19, "storm": 26, "wind": 19, "strong_winds": 11 },
-      "night": { "clear": 40, "rain": 19, "storm": 16, "wind": 14, "strong_winds": 11 }
+      "morning": { "wind": 30, "strong_winds": 10, "mist": 40, "clear": 20 },
+      "day": { "wind": 40, "strong_winds": 20, "mist": 20, "clear": 20 },
+      "dusk": { "wind": 30, "strong_winds": 10, "mist": 40, "clear": 20 },
+      "night": { "wind": 50, "strong_winds": 25, "clear": 25 }
     },
     "winter": {
-      "morning": { "clear": 30, "snow": 19, "cold": 28, "coldwave": 22, "blizzard": 1 },
-      "day": { "clear": 50, "snow": 19, "cold": 19, "coldwave": 11, "blizzard": 1 },
-      "dusk": { "clear": 30, "snow": 19, "cold": 28, "coldwave": 22, "blizzard": 1 },
-      "night": { "clear": 40, "snow": 19, "cold": 24, "coldwave": 16, "blizzard": 1 }
+      "morning": { "cold": 30, "coldwave": 20, "snow": 10, "clear": 40 },
+      "day": { "clear": 60, "cold": 20, "coldwave": 10, "snow": 10 },
+      "dusk": { "cold": 30, "coldwave": 20, "snow": 10, "clear": 40 },
+      "night": { "cold": 50, "coldwave": 40, "clear": 10 }
     }
   },
   "route4": {
     "spring": {
-      "morning": { "clear": 50, "sandstorm": 19, "wind": 28, "strong_winds": 2, "dust_storm": 1 },
-      "day": { "clear": 60, "sandstorm": 19, "wind": 19, "strong_winds": 1, "dust_storm": 1 },
-      "dusk": { "clear": 50, "sandstorm": 19, "wind": 28, "strong_winds": 2, "dust_storm": 1 },
-      "night": { "clear": 60, "sandstorm": 19, "wind": 19, "strong_winds": 1, "dust_storm": 1 }
+      "morning": { "sandstorm": 30, "dust_storm": 10, "wind": 30, "clear": 30 },
+      "day": { "clear": 50, "sandstorm": 20, "wind": 30 },
+      "dusk": { "sandstorm": 30, "dust_storm": 10, "wind": 30, "clear": 30 },
+      "night": { "sandstorm": 40, "dust_storm": 20, "wind": 30, "clear": 10 }
     },
     "summer": {
-      "morning": { "clear": 40, "heatwave": 20, "sandstorm": 19, "dust_storm": 21 },
-      "day": { "clear": 30, "heatwave": 30, "sandstorm": 19, "dust_storm": 21 },
-      "dusk": { "clear": 40, "heatwave": 20, "sandstorm": 19, "dust_storm": 21 },
-      "night": { "clear": 60, "heatwave": 15, "sandstorm": 14, "dust_storm": 11 }
+      "morning": { "sandstorm": 35, "dust_storm": 15, "sun": 25, "clear": 25 },
+      "day": { "sun": 30, "intense_sun": 20, "sandstorm": 40, "dust_storm": 10 },
+      "dusk": { "sandstorm": 35, "dust_storm": 15, "sun": 25, "clear": 25 },
+      "night": { "clear": 60, "sandstorm": 25, "dust_storm": 15 }
     },
     "autumn": {
-      "morning": { "clear": 50, "rain": 9, "sandstorm": 19, "wind": 19, "storm": 1, "strong_winds": 1, "dust_storm": 1 },
-      "day": { "clear": 60, "rain": 9, "sandstorm": 19, "wind": 9, "storm": 1, "strong_winds": 1, "dust_storm": 1 },
-      "dusk": { "clear": 50, "rain": 9, "sandstorm": 19, "wind": 19, "storm": 1, "strong_winds": 1, "dust_storm": 1 },
-      "night": { "clear": 60, "rain": 9, "sandstorm": 19, "wind": 9, "storm": 1, "strong_winds": 1, "dust_storm": 1 }
+      "morning": { "wind": 40, "strong_winds": 10, "sandstorm": 30, "clear": 20 },
+      "day": { "wind": 50, "strong_winds": 20, "sandstorm": 20, "clear": 10 },
+      "dusk": { "wind": 40, "strong_winds": 10, "sandstorm": 30, "clear": 20 },
+      "night": { "wind": 60, "strong_winds": 30, "sandstorm": 10 }
     },
     "winter": {
-      "morning": { "clear": 50, "snow": 9, "sandstorm": 9, "cold": 19, "coldwave": 11, "blizzard": 1, "dust_storm": 1 },
-      "day": { "clear": 60, "snow": 9, "sandstorm": 9, "cold": 19, "blizzard": 1, "coldwave": 1, "dust_storm": 1 },
-      "dusk": { "clear": 50, "snow": 9, "sandstorm": 9, "cold": 19, "coldwave": 11, "blizzard": 1, "dust_storm": 1 },
-      "night": { "clear": 60, "snow": 9, "sandstorm": 9, "cold": 19, "blizzard": 1, "coldwave": 1, "dust_storm": 1 }
+      "morning": { "cold": 30, "coldwave": 20, "sandstorm": 30, "clear": 20 },
+      "day": { "clear": 40, "cold": 20, "sandstorm": 20, "dust_storm": 20 },
+      "dusk": { "cold": 30, "coldwave": 20, "sandstorm": 30, "clear": 20 },
+      "night": { "cold": 50, "coldwave": 30, "sandstorm": 20 }
     }
   },
   "route24": {
     "spring": {
-      "morning": { "clear": 30, "rain": 19, "fog": 21, "wind": 19, "mist": 9, "storm": 1, "strong_winds": 1 },
-      "day": { "clear": 50, "rain": 19, "fog": 10, "wind": 19, "storm": 1, "strong_winds": 1 },
-      "dusk": { "clear": 30, "rain": 28, "fog": 20, "wind": 19, "storm": 2, "strong_winds": 1 },
-      "night": { "clear": 50, "rain": 19, "fog": 10, "wind": 19, "storm": 1, "strong_winds": 1 }
+      "morning": { "mist": 40, "fog": 20, "clear": 30, "rain": 10 },
+      "day": { "clear": 60, "mist": 30, "fog": 10 },
+      "dusk": { "mist": 40, "fog": 20, "clear": 30, "rain": 10 },
+      "night": { "mist": 50, "fog": 40, "clear": 10 }
     },
     "summer": {
-      "morning": { "clear": 60, "rain": 19, "sun": 19, "storm": 1, "intense_sun": 1 },
-      "day": { "clear": 50, "rain": 19, "sun": 28, "storm": 1, "intense_sun": 2 },
-      "dusk": { "clear": 60, "rain": 19, "sun": 19, "storm": 1, "intense_sun": 1 },
-      "night": { "clear": 70, "rain": 19, "storm": 11 }
+      "morning": { "sun": 25, "intense_sun": 18, "heatwave": 7, "clear": 40, "rain": 10 },
+      "day": { "sun": 30, "intense_sun": 25, "heatwave": 15, "clear": 20, "rain": 10 },
+      "dusk": { "sun": 25, "intense_sun": 18, "heatwave": 7, "clear": 40, "rain": 10 },
+      "night": { "clear": 70, "heatwave": 25, "rain": 5 }
     },
     "autumn": {
-      "morning": { "clear": 25, "rain": 24, "storm": 26, "strong_winds": 25 },
-      "day": { "clear": 40, "rain": 28, "storm": 12, "strong_winds": 20 },
-      "dusk": { "clear": 25, "rain": 28, "storm": 22, "strong_winds": 25 },
-      "night": { "clear": 40, "rain": 28, "storm": 12, "strong_winds": 20 }
+      "morning": { "rain": 36, "heavy_rain": 15, "storm": 8, "thunderstorm": 1, "mist": 30, "clear": 10 },
+      "day": { "rain": 40, "heavy_rain": 20, "storm": 10, "thunderstorm": 5, "clear": 20, "wind": 5 },
+      "dusk": { "rain": 36, "heavy_rain": 15, "storm": 8, "thunderstorm": 1, "mist": 30, "clear": 10 },
+      "night": { "rain": 45, "heavy_rain": 25, "storm": 15, "thunderstorm": 5, "clear": 10 }
     },
     "winter": {
-      "morning": { "clear": 50, "snow": 19, "cold": 19, "coldwave": 11, "blizzard": 1 },
-      "day": { "clear": 60, "snow": 19, "cold": 19, "blizzard": 1, "coldwave": 1 },
-      "dusk": { "clear": 50, "snow": 19, "cold": 19, "coldwave": 11, "blizzard": 1 },
-      "night": { "clear": 60, "snow": 19, "cold": 19, "blizzard": 1, "coldwave": 1 }
+      "morning": { "cold": 30, "coldwave": 20, "snow": 24, "hail": 5, "blizzard": 1, "clear": 20 },
+      "day": { "clear": 40, "cold": 20, "coldwave": 10, "snow": 20, "hail": 9, "blizzard": 1 },
+      "dusk": { "cold": 30, "coldwave": 20, "snow": 24, "hail": 5, "blizzard": 1, "clear": 20 },
+      "night": { "cold": 40, "coldwave": 30, "snow": 14, "hail": 10, "blizzard": 6 }
     }
   },
   "route25": {
     "spring": {
-      "morning": { "clear": 30, "rain": 19, "fog": 21, "wind": 19, "mist": 9, "storm": 1, "strong_winds": 1 },
-      "day": { "clear": 50, "rain": 19, "fog": 10, "wind": 19, "storm": 1, "strong_winds": 1 },
-      "dusk": { "clear": 30, "rain": 28, "fog": 20, "wind": 19, "storm": 2, "strong_winds": 1 },
-      "night": { "clear": 50, "rain": 19, "fog": 10, "wind": 19, "storm": 1, "strong_winds": 1 }
+      "morning": { "mist": 40, "fog": 20, "clear": 30, "rain": 10 },
+      "day": { "clear": 60, "mist": 30, "fog": 10 },
+      "dusk": { "mist": 40, "fog": 20, "clear": 30, "rain": 10 },
+      "night": { "mist": 50, "fog": 40, "clear": 10 }
     },
     "summer": {
-      "morning": { "clear": 70, "rain": 19, "sun": 9, "storm": 1, "intense_sun": 1 },
-      "day": { "clear": 60, "rain": 19, "sun": 19, "storm": 1, "intense_sun": 1 },
-      "dusk": { "clear": 70, "rain": 19, "sun": 9, "storm": 1, "intense_sun": 1 },
-      "night": { "clear": 80, "rain": 19, "storm": 1 }
+      "morning": { "sun": 25, "intense_sun": 18, "heatwave": 7, "clear": 40, "rain": 10 },
+      "day": { "sun": 30, "intense_sun": 25, "heatwave": 15, "clear": 20, "rain": 10 },
+      "dusk": { "sun": 25, "intense_sun": 18, "heatwave": 7, "clear": 40, "rain": 10 },
+      "night": { "clear": 70, "heatwave": 25, "rain": 5 }
     },
     "autumn": {
-      "morning": { "clear": 25, "rain": 24, "storm": 26, "strong_winds": 25 },
-      "day": { "clear": 40, "rain": 28, "storm": 12, "strong_winds": 20 },
-      "dusk": { "clear": 25, "rain": 28, "storm": 22, "strong_winds": 25 },
-      "night": { "clear": 40, "rain": 28, "storm": 12, "strong_winds": 20 }
+      "morning": { "rain": 36, "heavy_rain": 15, "storm": 8, "thunderstorm": 1, "mist": 30, "clear": 10 },
+      "day": { "rain": 40, "heavy_rain": 20, "storm": 10, "thunderstorm": 5, "clear": 20, "wind": 5 },
+      "dusk": { "rain": 36, "heavy_rain": 15, "storm": 8, "thunderstorm": 1, "mist": 30, "clear": 10 },
+      "night": { "rain": 45, "heavy_rain": 25, "storm": 15, "thunderstorm": 5, "clear": 10 }
     },
     "winter": {
-      "morning": { "clear": 50, "snow": 28, "cold": 19, "blizzard": 2, "coldwave": 1 },
-      "day": { "clear": 60, "snow": 24, "cold": 14, "blizzard": 1, "coldwave": 1 },
-      "dusk": { "clear": 50, "snow": 28, "cold": 19, "blizzard": 2, "coldwave": 1 },
-      "night": { "clear": 60, "snow": 24, "cold": 14, "blizzard": 1, "coldwave": 1 }
+      "morning": { "cold": 30, "coldwave": 20, "snow": 24, "hail": 5, "blizzard": 1, "clear": 20 },
+      "day": { "clear": 40, "cold": 20, "coldwave": 10, "snow": 20, "hail": 9, "blizzard": 1 },
+      "dusk": { "cold": 30, "coldwave": 20, "snow": 24, "hail": 5, "blizzard": 1, "clear": 20 },
+      "night": { "cold": 40, "coldwave": 30, "snow": 14, "hail": 10, "blizzard": 6 }
     }
   },
   "route5": {
     "spring": {
-      "morning": { "clear": 40, "rain": 19, "fog": 20, "wind": 19, "storm": 1, "strong_winds": 1 },
-      "day": { "clear": 60, "rain": 14, "fog": 5, "wind": 19, "storm": 1, "strong_winds": 1 },
-      "dusk": { "clear": 40, "rain": 19, "fog": 20, "wind": 19, "storm": 1, "strong_winds": 1 },
-      "night": { "clear": 50, "rain": 14, "fog": 10, "wind": 24, "storm": 1, "strong_winds": 1 }
+      "morning": { "mist": 40, "fog": 20, "clear": 30, "rain": 10 },
+      "day": { "clear": 60, "mist": 30, "fog": 10 },
+      "dusk": { "mist": 40, "fog": 20, "clear": 30, "rain": 10 },
+      "night": { "mist": 50, "fog": 40, "clear": 10 }
     },
     "summer": {
-      "morning": { "clear": 70, "sun": 19, "wind": 9, "strong_winds": 1, "intense_sun": 1 },
-      "day": { "clear": 60, "sun": 28, "wind": 9, "strong_winds": 1, "intense_sun": 2 },
-      "dusk": { "clear": 70, "rain": 14, "sun": 14, "storm": 1, "intense_sun": 1 },
-      "night": { "clear": 80, "rain": 19, "storm": 1 }
+      "morning": { "sun": 25, "intense_sun": 18, "heatwave": 7, "clear": 40, "rain": 10 },
+      "day": { "sun": 30, "intense_sun": 25, "heatwave": 15, "clear": 20, "rain": 10 },
+      "dusk": { "sun": 25, "intense_sun": 18, "heatwave": 7, "clear": 40, "rain": 10 },
+      "night": { "clear": 70, "heatwave": 30 }
     },
     "autumn": {
-      "morning": { "clear": 30, "rain": 19, "storm": 21, "wind": 19, "strong_winds": 11 },
-      "day": { "clear": 50, "rain": 19, "storm": 11, "strong_winds": 20 },
-      "dusk": { "clear": 30, "rain": 19, "storm": 21, "wind": 19, "strong_winds": 11 },
-      "night": { "clear": 50, "rain": 19, "storm": 11, "wind": 9, "strong_winds": 11 }
+      "morning": { "rain": 30, "heavy_rain": 10, "mist": 40, "clear": 20 },
+      "day": { "rain": 40, "heavy_rain": 20, "mist": 20, "clear": 20 },
+      "dusk": { "rain": 30, "heavy_rain": 10, "mist": 40, "clear": 20 },
+      "night": { "rain": 45, "heavy_rain": 25, "fog": 20, "clear": 10 }
     },
     "winter": {
-      "morning": { "clear": 40, "snow": 19, "cold": 28, "coldwave": 12, "blizzard": 1 },
-      "day": { "clear": 60, "snow": 19, "cold": 19, "blizzard": 1, "coldwave": 1 },
-      "dusk": { "clear": 40, "snow": 19, "cold": 28, "coldwave": 12, "blizzard": 1 },
-      "night": { "clear": 50, "snow": 19, "cold": 19, "coldwave": 11, "blizzard": 1 }
+      "morning": { "cold": 30, "coldwave": 20, "snow": 10, "clear": 40 },
+      "day": { "clear": 60, "cold": 20, "coldwave": 10, "snow": 10 },
+      "dusk": { "cold": 30, "coldwave": 20, "snow": 10, "clear": 40 },
+      "night": { "cold": 50, "coldwave": 45, "clear": 5 }
     }
   },
   "route6": {
     "spring": {
-      "morning": { "clear": 40, "rain": 19, "fog": 20, "wind": 19, "storm": 1, "strong_winds": 1 },
-      "day": { "clear": 60, "rain": 14, "fog": 5, "wind": 19, "storm": 1, "strong_winds": 1 },
-      "dusk": { "clear": 40, "rain": 19, "fog": 20, "wind": 19, "storm": 1, "strong_winds": 1 },
-      "night": { "clear": 50, "rain": 14, "fog": 10, "wind": 24, "storm": 1, "strong_winds": 1 }
+      "morning": { "mist": 40, "fog": 20, "clear": 30, "rain": 10 },
+      "day": { "clear": 60, "mist": 30, "fog": 10 },
+      "dusk": { "mist": 40, "fog": 20, "clear": 30, "rain": 10 },
+      "night": { "mist": 50, "fog": 40, "clear": 10 }
     },
     "summer": {
-      "morning": { "clear": 70, "sun": 19, "wind": 9, "strong_winds": 1, "intense_sun": 1 },
-      "day": { "clear": 60, "sun": 28, "wind": 9, "strong_winds": 1, "intense_sun": 2 },
-      "dusk": { "clear": 70, "rain": 14, "sun": 14, "storm": 1, "intense_sun": 1 },
-      "night": { "clear": 80, "rain": 19, "storm": 1 }
+      "morning": { "sun": 25, "intense_sun": 18, "heatwave": 7, "clear": 40, "rain": 10 },
+      "day": { "sun": 30, "intense_sun": 25, "heatwave": 15, "clear": 20, "rain": 10 },
+      "dusk": { "sun": 25, "intense_sun": 18, "heatwave": 7, "clear": 40, "rain": 10 },
+      "night": { "clear": 75, "heatwave": 25 }
     },
     "autumn": {
-      "morning": { "clear": 30, "rain": 19, "storm": 21, "wind": 19, "strong_winds": 11 },
-      "day": { "clear": 50, "rain": 19, "storm": 11, "strong_winds": 20 },
-      "dusk": { "clear": 30, "rain": 19, "storm": 21, "wind": 19, "strong_winds": 11 },
-      "night": { "clear": 50, "rain": 19, "storm": 11, "wind": 9, "strong_winds": 11 }
+      "morning": { "rain": 30, "heavy_rain": 10, "mist": 40, "clear": 20 },
+      "day": { "rain": 40, "heavy_rain": 20, "mist": 20, "clear": 20 },
+      "dusk": { "rain": 30, "heavy_rain": 10, "mist": 40, "clear": 20 },
+      "night": { "rain": 45, "heavy_rain": 25, "fog": 20, "clear": 10 }
     },
     "winter": {
-      "morning": { "clear": 40, "snow": 19, "cold": 28, "coldwave": 12, "blizzard": 1 },
-      "day": { "clear": 60, "snow": 19, "cold": 19, "blizzard": 1, "coldwave": 1 },
-      "dusk": { "clear": 40, "snow": 19, "cold": 28, "coldwave": 12, "blizzard": 1 },
-      "night": { "clear": 50, "snow": 19, "cold": 19, "coldwave": 11, "blizzard": 1 }
+      "morning": { "cold": 30, "coldwave": 20, "snow": 10, "clear": 40 },
+      "day": { "clear": 60, "cold": 20, "coldwave": 10, "snow": 10 },
+      "dusk": { "cold": 30, "coldwave": 20, "snow": 10, "clear": 40 },
+      "night": { "cold": 50, "coldwave": 45, "clear": 5 }
     }
   },
   "route11": {
     "spring": {
-      "morning": { "clear": 40, "rain": 19, "fog": 20, "wind": 19, "storm": 1, "strong_winds": 1 },
-      "day": { "clear": 60, "rain": 14, "fog": 5, "wind": 19, "storm": 1, "strong_winds": 1 },
-      "dusk": { "clear": 40, "rain": 19, "fog": 20, "wind": 19, "storm": 1, "strong_winds": 1 },
-      "night": { "clear": 50, "rain": 14, "fog": 10, "wind": 24, "storm": 1, "strong_winds": 1 }
+      "morning": { "mist": 40, "fog": 20, "clear": 30, "rain": 10 },
+      "day": { "clear": 60, "mist": 30, "fog": 10 },
+      "dusk": { "mist": 40, "fog": 20, "clear": 30, "rain": 10 },
+      "night": { "mist": 50, "fog": 30, "clear": 10, "storm": 10 }
     },
     "summer": {
-      "morning": { "clear": 60, "sun": 9, "sandstorm": 14, "dust_storm": 16, "intense_sun": 1 },
-      "day": { "clear": 50, "sun": 19, "sandstorm": 14, "dust_storm": 16, "intense_sun": 1 },
-      "dusk": { "clear": 60, "rain": 14, "sun": 9, "sandstorm": 14, "storm": 1, "intense_sun": 1, "dust_storm": 1 },
-      "night": { "clear": 70, "rain": 19, "sandstorm": 9, "storm": 1, "dust_storm": 1 }
+      "morning": { "sun": 25, "intense_sun": 18, "heatwave": 7, "clear": 40, "rain": 10 },
+      "day": { "sun": 30, "intense_sun": 25, "heatwave": 15, "clear": 20, "rain": 10 },
+      "dusk": { "sun": 25, "intense_sun": 18, "heatwave": 7, "clear": 40, "rain": 10 },
+      "night": { "clear": 75, "heatwave": 20, "storm": 5 }
     },
     "autumn": {
-      "morning": { "clear": 30, "rain": 19, "storm": 21, "wind": 19, "strong_winds": 11 },
-      "day": { "clear": 50, "rain": 19, "storm": 11, "strong_winds": 20 },
-      "dusk": { "clear": 30, "rain": 19, "storm": 21, "wind": 19, "strong_winds": 11 },
-      "night": { "clear": 50, "rain": 19, "storm": 11, "wind": 9, "strong_winds": 11 }
+      "morning": { "rain": 30, "heavy_rain": 10, "mist": 40, "clear": 20 },
+      "day": { "rain": 40, "heavy_rain": 20, "mist": 20, "clear": 20 },
+      "dusk": { "rain": 30, "heavy_rain": 10, "mist": 40, "clear": 20 },
+      "night": { "rain": 45, "heavy_rain": 25, "storm": 20, "thunderstorm": 10 }
     },
     "winter": {
-      "morning": { "clear": 40, "snow": 19, "cold": 28, "coldwave": 12, "blizzard": 1 },
-      "day": { "clear": 60, "snow": 19, "cold": 19, "blizzard": 1, "coldwave": 1 },
-      "dusk": { "clear": 40, "snow": 19, "cold": 28, "coldwave": 12, "blizzard": 1 },
-      "night": { "clear": 50, "snow": 19, "cold": 19, "coldwave": 11, "blizzard": 1 }
+      "morning": { "cold": 30, "coldwave": 20, "snow": 10, "clear": 40 },
+      "day": { "clear": 60, "cold": 20, "coldwave": 10, "snow": 10 },
+      "dusk": { "cold": 30, "coldwave": 20, "snow": 10, "clear": 40 },
+      "night": { "cold": 50, "coldwave": 45, "clear": 5 }
     }
   },
   "route9": {
     "spring": {
-      "morning": { "clear": 40, "rain": 9, "storm": 21, "wind": 28, "strong_winds": 2 },
-      "day": { "clear": 60, "rain": 14, "storm": 6, "wind": 19, "strong_winds": 1 },
-      "dusk": { "clear": 40, "rain": 19, "storm": 21, "wind": 19, "strong_winds": 1 },
-      "night": { "clear": 50, "rain": 14, "storm": 11, "wind": 24, "strong_winds": 1 }
+      "morning": { "sandstorm": 30, "dust_storm": 10, "wind": 30, "clear": 30 },
+      "day": { "clear": 50, "sandstorm": 20, "wind": 30 },
+      "dusk": { "sandstorm": 30, "dust_storm": 10, "wind": 30, "clear": 30 },
+      "night": { "sandstorm": 40, "dust_storm": 20, "wind": 30, "clear": 10 }
     },
     "summer": {
-      "morning": { "clear": 50, "heatwave": 10, "sandstorm": 19, "dust_storm": 21 },
-      "day": { "clear": 40, "heatwave": 30, "sandstorm": 9, "dust_storm": 21 },
-      "dusk": { "clear": 50, "heatwave": 10, "sandstorm": 19, "dust_storm": 21 },
-      "night": { "clear": 70, "heatwave": 10, "sandstorm": 9, "dust_storm": 11 }
+      "morning": { "sandstorm": 35, "dust_storm": 15, "sun": 25, "clear": 25 },
+      "day": { "sun": 30, "intense_sun": 20, "sandstorm": 40, "dust_storm": 10 },
+      "dusk": { "sandstorm": 35, "dust_storm": 15, "sun": 25, "clear": 25 },
+      "night": { "clear": 60, "sandstorm": 25, "dust_storm": 15 }
     },
     "autumn": {
-      "morning": { "clear": 25, "rain": 14, "storm": 31, "wind": 19, "strong_winds": 11 },
-      "day": { "clear": 40, "rain": 19, "storm": 16, "heavy_rain": 15, "strong_winds": 10 },
-      "dusk": { "clear": 25, "rain": 19, "storm": 26, "wind": 19, "strong_winds": 11 },
-      "night": { "clear": 40, "rain": 19, "storm": 16, "wind": 14, "strong_winds": 11 }
+      "morning": { "wind": 40, "strong_winds": 10, "sandstorm": 30, "clear": 20 },
+      "day": { "wind": 50, "strong_winds": 20, "sandstorm": 20, "clear": 10 },
+      "dusk": { "wind": 40, "strong_winds": 10, "sandstorm": 30, "clear": 20 },
+      "night": { "wind": 60, "strong_winds": 30, "sandstorm": 10 }
     },
     "winter": {
-      "morning": { "clear": 30, "snow": 19, "cold": 28, "coldwave": 22, "blizzard": 1 },
-      "day": { "clear": 50, "snow": 19, "cold": 19, "coldwave": 11, "blizzard": 1 },
-      "dusk": { "clear": 30, "snow": 19, "cold": 28, "coldwave": 22, "blizzard": 1 },
-      "night": { "clear": 40, "snow": 19, "cold": 24, "coldwave": 16, "blizzard": 1 }
+      "morning": { "cold": 30, "coldwave": 20, "sandstorm": 30, "clear": 20 },
+      "day": { "clear": 40, "cold": 20, "sandstorm": 20, "dust_storm": 20 },
+      "dusk": { "cold": 30, "coldwave": 20, "sandstorm": 30, "clear": 20 },
+      "night": { "cold": 50, "coldwave": 30, "sandstorm": 20 }
     }
   },
   "route10": {
     "spring": {
-      "morning": { "clear": 40, "rain": 19, "storm": 21, "wind": 19, "strong_winds": 1 },
-      "day": { "clear": 60, "rain": 19, "storm": 6, "wind": 14, "strong_winds": 1 },
-      "dusk": { "clear": 40, "rain": 28, "storm": 12, "wind": 19, "strong_winds": 1 },
-      "night": { "clear": 50, "rain": 19, "storm": 11, "wind": 19, "strong_winds": 1 }
+      "morning": { "cold": 30, "wind": 30, "mist": 20, "clear": 20 },
+      "day": { "clear": 40, "cold": 20, "wind": 20, "mist": 20 },
+      "dusk": { "cold": 30, "wind": 30, "mist": 20, "clear": 20 },
+      "night": { "cold": 40, "wind": 30, "fog": 30 }
     },
     "summer": {
-      "morning": { "clear": 60, "sun": 19, "wind": 19, "strong_winds": 1, "intense_sun": 1 },
-      "day": { "clear": 50, "sun": 28, "wind": 19, "strong_winds": 1, "intense_sun": 2 },
-      "dusk": { "clear": 60, "rain": 19, "sun": 19, "storm": 1, "intense_sun": 1 },
-      "night": { "clear": 70, "rain": 19, "storm": 11 }
+      "morning": { "clear": 40, "sun": 20, "wind": 20, "mist": 20 },
+      "day": { "clear": 50, "sun": 20, "wind": 20, "mist": 10 },
+      "dusk": { "clear": 40, "sun": 20, "wind": 20, "mist": 20 },
+      "night": { "clear": 60, "heatwave": 10, "wind": 15, "fog": 15 }
     },
     "autumn": {
-      "morning": { "clear": 25, "rain": 24, "storm": 26, "strong_winds": 25 },
-      "day": { "clear": 40, "rain": 28, "storm": 12, "strong_winds": 20 },
-      "dusk": { "clear": 25, "rain": 28, "storm": 22, "strong_winds": 25 },
-      "night": { "clear": 40, "rain": 28, "storm": 12, "strong_winds": 20 }
+      "morning": { "wind": 40, "strong_winds": 20, "cold": 20, "clear": 20 },
+      "day": { "wind": 50, "strong_winds": 30, "cold": 10, "clear": 10 },
+      "dusk": { "wind": 40, "strong_winds": 20, "cold": 20, "clear": 20 },
+      "night": { "wind": 55, "strong_winds": 40, "clear": 5 }
     },
     "winter": {
-      "morning": { "clear": 40, "snow": 19, "cold": 19, "coldwave": 21, "blizzard": 1 },
-      "day": { "clear": 60, "snow": 19, "cold": 19, "blizzard": 1, "coldwave": 1 },
-      "dusk": { "clear": 40, "snow": 19, "cold": 19, "coldwave": 21, "blizzard": 1 },
-      "night": { "clear": 50, "snow": 19, "cold": 14, "coldwave": 16, "blizzard": 1 }
+      "morning": { "cold": 40, "snow": 30, "hail": 15, "blizzard": 5, "clear": 10 },
+      "day": { "cold": 30, "snow": 40, "hail": 20, "blizzard": 5, "clear": 5 },
+      "dusk": { "cold": 40, "snow": 30, "hail": 15, "blizzard": 5, "clear": 10 },
+      "night": { "cold": 50, "snow": 25, "hail": 15, "blizzard": 10 }
     }
   },
   "route8": {
     "spring": {
-      "morning": { "clear": 40, "rain": 19, "fog": 20, "wind": 19, "storm": 1, "strong_winds": 1 },
-      "day": { "clear": 60, "rain": 14, "fog": 5, "wind": 19, "storm": 1, "strong_winds": 1 },
-      "dusk": { "clear": 40, "rain": 19, "fog": 20, "wind": 19, "storm": 1, "strong_winds": 1 },
-      "night": { "clear": 50, "rain": 14, "fog": 10, "wind": 24, "storm": 1, "strong_winds": 1 }
+      "morning": { "mist": 40, "fog": 20, "clear": 30, "rain": 10 },
+      "day": { "clear": 60, "mist": 30, "fog": 10 },
+      "dusk": { "mist": 40, "fog": 20, "clear": 30, "rain": 10 },
+      "night": { "mist": 50, "fog": 40, "clear": 10 }
     },
     "summer": {
-      "morning": { "clear": 70, "sun": 19, "wind": 9, "strong_winds": 1, "intense_sun": 1 },
-      "day": { "clear": 60, "sun": 28, "wind": 9, "strong_winds": 1, "intense_sun": 2 },
-      "dusk": { "clear": 70, "rain": 14, "sun": 14, "storm": 1, "intense_sun": 1 },
-      "night": { "clear": 80, "rain": 19, "storm": 1 }
+      "morning": { "sun": 25, "intense_sun": 18, "heatwave": 7, "clear": 40, "rain": 10 },
+      "day": { "sun": 30, "intense_sun": 25, "heatwave": 15, "clear": 20, "rain": 10 },
+      "dusk": { "sun": 25, "intense_sun": 18, "heatwave": 7, "clear": 40, "rain": 10 },
+      "night": { "clear": 75, "heatwave": 25 }
     },
     "autumn": {
-      "morning": { "clear": 30, "rain": 19, "storm": 21, "wind": 19, "strong_winds": 11 },
-      "day": { "clear": 50, "rain": 19, "storm": 11, "strong_winds": 20 },
-      "dusk": { "clear": 30, "rain": 19, "storm": 21, "wind": 19, "strong_winds": 11 },
-      "night": { "clear": 50, "rain": 19, "storm": 11, "wind": 9, "strong_winds": 11 }
+      "morning": { "rain": 30, "heavy_rain": 10, "mist": 40, "clear": 20 },
+      "day": { "rain": 40, "heavy_rain": 20, "mist": 20, "clear": 20 },
+      "dusk": { "rain": 30, "heavy_rain": 10, "mist": 40, "clear": 20 },
+      "night": { "rain": 45, "heavy_rain": 25, "fog": 20, "clear": 10 }
     },
     "winter": {
-      "morning": { "clear": 40, "snow": 19, "cold": 28, "coldwave": 12, "blizzard": 1 },
-      "day": { "clear": 60, "snow": 19, "cold": 19, "blizzard": 1, "coldwave": 1 },
-      "dusk": { "clear": 40, "snow": 19, "cold": 28, "coldwave": 12, "blizzard": 1 },
-      "night": { "clear": 50, "snow": 19, "cold": 19, "coldwave": 11, "blizzard": 1 }
+      "morning": { "cold": 30, "coldwave": 20, "snow": 10, "clear": 40 },
+      "day": { "clear": 60, "cold": 20, "coldwave": 10, "snow": 10 },
+      "dusk": { "cold": 30, "coldwave": 20, "snow": 10, "clear": 40 },
+      "night": { "cold": 50, "coldwave": 45, "clear": 5 }
     }
   },
   "route12": {
     "spring": {
-      "morning": { "clear": 30, "rain": 19, "fog": 21, "wind": 19, "mist": 9, "storm": 1, "strong_winds": 1 },
-      "day": { "clear": 50, "rain": 19, "fog": 10, "wind": 19, "storm": 1, "strong_winds": 1 },
-      "dusk": { "clear": 30, "rain": 28, "fog": 20, "wind": 19, "storm": 2, "strong_winds": 1 },
-      "night": { "clear": 50, "rain": 19, "fog": 10, "wind": 19, "storm": 1, "strong_winds": 1 }
+      "morning": { "mist": 40, "fog": 20, "clear": 20, "rain": 20 },
+      "day": { "clear": 50, "mist": 30, "rain": 20 },
+      "dusk": { "mist": 40, "fog": 20, "clear": 20, "rain": 20 },
+      "night": { "mist": 50, "fog": 40, "clear": 10 }
     },
     "summer": {
-      "morning": { "clear": 60, "rain": 19, "sun": 19, "storm": 1, "intense_sun": 1 },
-      "day": { "clear": 50, "rain": 19, "sun": 28, "storm": 1, "intense_sun": 2 },
-      "dusk": { "clear": 60, "rain": 19, "sun": 19, "storm": 1, "intense_sun": 1 },
-      "night": { "clear": 70, "rain": 19, "storm": 11 }
+      "morning": { "sun": 25, "intense_sun": 18, "heatwave": 7, "clear": 40, "rain": 10 },
+      "day": { "sun": 30, "intense_sun": 25, "heatwave": 15, "clear": 20, "rain": 10 },
+      "dusk": { "sun": 25, "intense_sun": 18, "heatwave": 7, "clear": 40, "rain": 10 },
+      "night": { "clear": 70, "heatwave": 25, "rain": 5 }
     },
     "autumn": {
-      "morning": { "clear": 25, "rain": 24, "storm": 26, "strong_winds": 25 },
-      "day": { "clear": 40, "rain": 28, "storm": 12, "strong_winds": 20 },
-      "dusk": { "clear": 25, "rain": 28, "storm": 22, "strong_winds": 25 },
-      "night": { "clear": 40, "rain": 28, "storm": 12, "strong_winds": 20 }
+      "morning": { "rain": 36, "heavy_rain": 15, "storm": 8, "thunderstorm": 1, "wind": 30, "clear": 10 },
+      "day": { "rain": 40, "heavy_rain": 20, "storm": 10, "thunderstorm": 5, "wind": 20, "clear": 5 },
+      "dusk": { "rain": 36, "heavy_rain": 15, "storm": 8, "thunderstorm": 1, "wind": 30, "clear": 10 },
+      "night": { "rain": 45, "heavy_rain": 25, "storm": 15, "thunderstorm": 5, "wind": 10 }
     },
     "winter": {
-      "morning": { "clear": 40, "snow": 19, "cold": 19, "coldwave": 21, "blizzard": 1 },
-      "day": { "clear": 60, "snow": 19, "cold": 19, "blizzard": 1, "coldwave": 1 },
-      "dusk": { "clear": 40, "snow": 19, "cold": 19, "coldwave": 21, "blizzard": 1 },
-      "night": { "clear": 50, "snow": 19, "cold": 14, "coldwave": 16, "blizzard": 1 }
+      "morning": { "cold": 30, "coldwave": 20, "snow": 24, "hail": 5, "blizzard": 1, "clear": 20 },
+      "day": { "clear": 40, "cold": 20, "coldwave": 10, "snow": 20, "hail": 9, "blizzard": 1 },
+      "dusk": { "cold": 30, "coldwave": 20, "snow": 24, "hail": 5, "blizzard": 1, "clear": 20 },
+      "night": { "cold": 40, "coldwave": 30, "snow": 14, "hail": 10, "blizzard": 6 }
     }
   },
   "route13": {
     "spring": {
-      "morning": { "clear": 30, "rain": 19, "fog": 21, "wind": 19, "mist": 9, "storm": 1, "strong_winds": 1 },
-      "day": { "clear": 50, "rain": 19, "fog": 10, "wind": 19, "storm": 1, "strong_winds": 1 },
-      "dusk": { "clear": 30, "rain": 28, "fog": 20, "wind": 19, "storm": 2, "strong_winds": 1 },
-      "night": { "clear": 50, "rain": 19, "fog": 10, "wind": 19, "storm": 1, "strong_winds": 1 }
+      "morning": { "mist": 40, "fog": 20, "clear": 20, "rain": 20 },
+      "day": { "clear": 50, "mist": 30, "rain": 20 },
+      "dusk": { "mist": 40, "fog": 20, "clear": 20, "rain": 20 },
+      "night": { "mist": 50, "fog": 40, "clear": 10 }
     },
     "summer": {
-      "morning": { "clear": 60, "rain": 19, "sun": 19, "storm": 1, "intense_sun": 1 },
-      "day": { "clear": 50, "rain": 19, "sun": 28, "storm": 1, "intense_sun": 2 },
-      "dusk": { "clear": 60, "rain": 19, "sun": 19, "storm": 1, "intense_sun": 1 },
-      "night": { "clear": 70, "rain": 19, "storm": 11 }
+      "morning": { "sun": 25, "intense_sun": 18, "heatwave": 7, "clear": 40, "rain": 10 },
+      "day": { "sun": 30, "intense_sun": 25, "heatwave": 15, "clear": 20, "rain": 10 },
+      "dusk": { "sun": 25, "intense_sun": 18, "heatwave": 7, "clear": 40, "rain": 10 },
+      "night": { "clear": 70, "heatwave": 25, "rain": 5 }
     },
     "autumn": {
-      "morning": { "clear": 25, "rain": 24, "storm": 26, "strong_winds": 25 },
-      "day": { "clear": 40, "rain": 28, "storm": 12, "strong_winds": 20 },
-      "dusk": { "clear": 25, "rain": 28, "storm": 22, "strong_winds": 25 },
-      "night": { "clear": 40, "rain": 28, "storm": 12, "strong_winds": 20 }
+      "morning": { "rain": 36, "heavy_rain": 15, "storm": 8, "thunderstorm": 1, "wind": 30, "clear": 10 },
+      "day": { "rain": 40, "heavy_rain": 20, "storm": 10, "thunderstorm": 5, "wind": 20, "clear": 5 },
+      "dusk": { "rain": 36, "heavy_rain": 15, "storm": 8, "thunderstorm": 1, "wind": 30, "clear": 10 },
+      "night": { "rain": 45, "heavy_rain": 25, "storm": 15, "thunderstorm": 5, "wind": 10 }
     },
     "winter": {
-      "morning": { "clear": 40, "snow": 19, "cold": 19, "coldwave": 21, "blizzard": 1 },
-      "day": { "clear": 60, "snow": 19, "cold": 19, "blizzard": 1, "coldwave": 1 },
-      "dusk": { "clear": 40, "snow": 19, "cold": 19, "coldwave": 21, "blizzard": 1 },
-      "night": { "clear": 50, "snow": 19, "cold": 14, "coldwave": 16, "blizzard": 1 }
+      "morning": { "cold": 30, "coldwave": 20, "snow": 24, "hail": 5, "blizzard": 1, "clear": 20 },
+      "day": { "clear": 40, "cold": 20, "coldwave": 10, "snow": 20, "hail": 9, "blizzard": 1 },
+      "dusk": { "cold": 30, "coldwave": 20, "snow": 24, "hail": 5, "blizzard": 1, "clear": 20 },
+      "night": { "cold": 40, "coldwave": 30, "snow": 14, "hail": 10, "blizzard": 6 }
     }
   },
   "route23": {
     "spring": {
-      "morning": { "clear": 30, "rain": 19, "wind": 28, "mist": 19, "storm": 1, "strong_winds": 2, "fog": 1 },
-      "day": { "clear": 50, "rain": 19, "wind": 28, "storm": 1, "strong_winds": 2 },
-      "dusk": { "clear": 30, "rain": 28, "wind": 38, "storm": 2, "strong_winds": 2 },
-      "night": { "clear": 50, "rain": 19, "wind": 28, "storm": 1, "strong_winds": 2 }
+      "morning": { "cold": 30, "wind": 30, "mist": 20, "clear": 20 },
+      "day": { "clear": 40, "cold": 20, "wind": 20, "mist": 20 },
+      "dusk": { "cold": 30, "wind": 30, "mist": 20, "clear": 20 },
+      "night": { "cold": 40, "wind": 30, "fog": 30 }
     },
     "summer": {
-      "morning": { "clear": 50, "heatwave": 20, "sun": 28, "intense_sun": 2 },
-      "day": { "clear": 40, "heatwave": 30, "sun": 28, "intense_sun": 2 },
-      "dusk": { "clear": 50, "heatwave": 20, "sun": 28, "intense_sun": 2 },
-      "night": { "clear": 70, "heatwave": 10, "storm": 20 }
+      "morning": { "clear": 40, "sun": 20, "wind": 20, "mist": 20 },
+      "day": { "clear": 50, "sun": 20, "wind": 20, "mist": 10 },
+      "dusk": { "clear": 40, "sun": 20, "wind": 20, "mist": 20 },
+      "night": { "clear": 60, "heatwave": 10, "wind": 15, "fog": 15 }
     },
     "autumn": {
-      "morning": { "clear": 25, "rain": 24, "storm": 26, "strong_winds": 25 },
-      "day": { "clear": 40, "rain": 19, "storm": 11, "strong_winds": 30 },
-      "dusk": { "clear": 25, "rain": 28, "storm": 22, "strong_winds": 25 },
-      "night": { "clear": 40, "rain": 28, "storm": 12, "strong_winds": 20 }
+      "morning": { "wind": 40, "strong_winds": 20, "cold": 20, "clear": 20 },
+      "day": { "wind": 50, "strong_winds": 30, "cold": 10, "clear": 10 },
+      "dusk": { "wind": 40, "strong_winds": 20, "cold": 20, "clear": 20 },
+      "night": { "wind": 55, "strong_winds": 40, "clear": 5 }
     },
     "winter": {
-      "morning": { "clear": 40, "snow": 19, "cold": 19, "coldwave": 21, "blizzard": 1 },
-      "day": { "clear": 60, "snow": 19, "cold": 19, "blizzard": 1, "coldwave": 1 },
-      "dusk": { "clear": 40, "snow": 19, "cold": 19, "coldwave": 21, "blizzard": 1 },
-      "night": { "clear": 50, "snow": 19, "cold": 14, "coldwave": 16, "blizzard": 1 }
+      "morning": { "cold": 40, "snow": 30, "hail": 15, "blizzard": 5, "clear": 10 },
+      "day": { "cold": 30, "snow": 40, "hail": 20, "blizzard": 5, "clear": 5 },
+      "dusk": { "cold": 40, "snow": 30, "hail": 15, "blizzard": 5, "clear": 10 },
+      "night": { "cold": 50, "snow": 25, "hail": 15, "blizzard": 10 }
     }
   }
 };

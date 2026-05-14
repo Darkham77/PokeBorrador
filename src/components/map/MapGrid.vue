@@ -58,7 +58,7 @@ const getMapData = (loc: MapLocation): SpawnPoolData => {
   const activeEvents = eventStore.activeEvents || []
   
   // Determinar clima: El clima forzado (props.weather) tiene prioridad absoluta si no es undefined
-  const activeWeather = (props.weather !== undefined) ? props.weather : getRouteWeather(loc.id, mapStore.currentSeason.id, mapStore.currentEpochHour)
+  const activeWeather = (props.weather !== undefined) ? props.weather : getRouteWeather(loc.id, mapStore.currentSeason.id, mapStore.currentEpochHour, mapStore.currentCycle)
   
   const { pool, rates } = getEncounterPool(loc, props.cycle || 'day', activeWeather || 'clear', activeEvents)
 

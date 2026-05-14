@@ -37,56 +37,17 @@ To maximize player agency and world dynamism, the system uses an **OR (Additive)
 
 - A Pokémon appears if the current **Time Phase** matches its schedule.
 - **OR** if the current **Weather** favors its elemental type, even if it is outside its normal hours.
-- _Example_: A Staryu (Night) can appear during the _Day_ if it is _Raining_.
 
-### 5.2 Modificadores de Spawn por Clima
+### 5.2 Source of Truth
 
-Las condiciones atmosféricas afectan dinámicamente las probabilidades de encuentro según los tipos elementales del Pokémon.
+All logic regarding weather generation, hierarchy, intensity tiers, and **spawn modifiers (Boost/Block)** is centralized in the [Time & Atmosphere Manual](../core/time_system_manual.md).
 
-| Clima | Potencia (x1.5) | Penaliza (x0.4) | Bloquea (x0) |
-| :--- | :--- | :--- | :--- |
-| **Lluvia (🌧️)** | Agua, Bicho, Eléctrico | Fuego, Roca, Tierra | - |
-| **Tormenta (⛈️)** | Agua, Eléctrico, Dragón | Roca, Tierra | Fuego, Volador, Bicho |
-| **Sol (☀️)** | Fuego, Planta, Tierra | Agua, Hielo | - |
-| **Ola de Calor (🔥)** | Fuego, Tierra | Agua, Planta | Hielo |
-| **Nieve (❄️)** | Hielo, Acero | Fuego, Bicho | - |
-| **Ventisca (🌪️)** | Hielo | Acero, Roca | Fuego, Planta, Bicho, Volador |
-| **Tormenta Arena (🏜️)** | Roca, Tierra, Acero | Volador, Bicho, Fuego | - |
-| **Niebla (🌫️)** | Fantasma, Psíquico, Siniestro | Volador | - |
-| **Viento (🍃)** | Volador, Bicho, Psíquico | Tierra | - |
-| **Vientos Fuertes (🌀)** | Volador, Dragón, Psíquico | - | Bicho |
-| **Bruma (🌫️)** | Hada, Agua | Fuego | - |
-| **Tormenta Polvo (🌫️)** | Roca, Tierra | Volador, Bicho | - |
+### 5.3 Advanced Weather Parity
 
-### 5.3 Weather Invasions (Visitors & Relative Weights)
+Advanced weather types (Thunderstorm, Heatwave, blizzard, etc.) do NOT have automatic fallback to their base counterparts (Storm, Sun, Snow) in the encounter logic.
 
-When an atmospheric condition becomes active, the route's encounter pool is "invaded" by non-native Pokémon attracted by the weather.
-
-- **Weighted Quota**: All visitors and exclusives for a weather condition share a combined **10% probability** of the total pool.
-- **Internal Rarity**: Within that 10%, species follow relative weights defined in the map table (e.g., `{ pikachu: 95, zapdos: 5 }`).
-- **Exclusive Weather Spawns**: Species flagged as **Weather Exclusive** (e.g., Castform) will ONLY appear if their specific weather condition is active, ignoring all time cycles.
-
-### 5.4 Visual Feedback (Halo Cian FX & Coordinated Pulse)
-
-Pokémon synchronized with the weather display visual effects based on their rarity status.
-
-- **The Cyan Halo**: A vibrant cyan glow applied via `::before`.
-  - **Parity Specs**: Inset `-2%`, `Blur(2px)`, Opacity base `0.6`, Scale Max `1.05`.
-- **The Counter-Pulse (Coordinated Animation)**:
-  - When a Pokémon has both Red Aura and Cyan Halo, their animations MUST be perfectly synchronized in **counter-phase**.
-  - **Red Aura (Rare)**: 0% Small/Dim -> 50% Big/Bright.
-  - **Cyan Halo (Weather)**: 0% Big/Bright -> 50% Small/Dim.
-  - **Timing**: Both MUST use a 2s cycle and share the same `animation-delay` based on `var(--spawn-seed)`.
-
-### 5.5 UI Representation (Tooltips)
-
-Map tooltips use the following iconography to inform the player:
-
-- **Hierarchy**:
-  - `Aparición: ☀️ 🌙` (Cycle info)
-  - `🌧️ Visitante/Exclusivo/Potenciado por el clima` (Weather info)
-- **Fallback**: If no cycle or weather info is applicable, display `Habitante común`.
-- **Unknown Pokémon**: Silhouette with hint: `Atmospheric anomaly detected`.
+- **Mandatory Definition**: Every route with an advanced weather probability MUST have an explicit entry in `FIRE_RED_MAPS` weather configuration, or no visitors/exclusives will spawn during that event.
+- **Legendary Patterns**: Extreme weather (L4) should be used as a trigger for legendary or pseudo-legendary "Exclusives" (1-5% chance) to reward exploration under dangerous conditions.
 
 ---
 

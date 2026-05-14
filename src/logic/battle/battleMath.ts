@@ -126,12 +126,12 @@ const WEATHER_KEYS = { SUN: 'sun', RAIN: 'rain', SANDSTORM: 'sandstorm', SNOW: '
 
 const WEATHER_MAP: Record<string, string> = {
   sun: 'sun', heatwave: 'sun', intense_sun: 'sun',
-  rain: 'rain', storm: 'rain', thunderstorm: 'rain', heavy_rain: 'rain',
+  rain: 'rain', storm: 'rain', heavy_rain: 'rain',
   sandstorm: 'sandstorm', dust_storm: 'sandstorm',
   snow: 'snow', hail: 'hail', blizzard: 'hail',
   fog: 'fog', mist: 'fog',
   wind: 'wind', strong_winds: 'wind',
-  clear: 'clear'
+  clear: 'clear', thunderstorm: 'clear'
 };
 
 // ── Pure Helper Functions ──────────────────────────────────────────────────────
@@ -184,18 +184,19 @@ export function getMoveCategory(move: PureMove): 'status' | 'physical' | 'specia
 /**
  * Returns ability multiplier for offensive calculations.
  */
-export function getAbilityMultiplier(attacker: PurePokemon, move: PureMove): { mult: number; triggeredAbility: string | null } {
+export function getAbilityMultiplier(attacker: PurePokemon, move: PureMove, weather?: PureBattleWeather | null): { mult: number; triggeredAbility: string | null } {
   let mult = 1;
   let triggeredAbility: string | null = null;
   const ab = attacker.ability;
   const power = move.power ?? 0;
+  const moveType = move.type ?? 'normal';
 
   const isLowHp = (attacker.hp ?? 0) <= ((attacker.maxHp ?? 1) / 3);
   if (isLowHp) {
-    if (ab === 'Mar llamas' && move.type === 'fire')  { mult *= 1.5; triggeredAbility = ab; }
-    if (ab === 'Torrente'   && move.type === 'water') { mult *= 1.5; triggeredAbility = ab; }
-    if (ab === 'Espesura'   && move.type === 'grass') { mult *= 1.5; triggeredAbility = ab; }
-    if (ab === 'Enjambre'   && move.type === 'bug')   { mult *= 1.5; triggeredAbility = ab; }
+    if (ab === 'Mar llamas' && moveType === 'fire')  { mult *= 1.5; triggeredAbility = ab; }
+    if (ab === 'Torrente'   && moveType === 'water') { mult *= 1.5; triggeredAbility = ab; }
+    if (ab === 'Espesura'   && moveType === 'grass') { mult *= 1.5; triggeredAbility = ab; }
+    if (ab === 'Enjambre'   && moveType === 'bug')   { mult *= 1.5; triggeredAbility = ab; }
   }
   if (ab === 'Agallas' && attacker.status && getMoveCategory(move) === 'physical') {
     mult *= 1.5; triggeredAbility = ab;
@@ -203,6 +204,17 @@ export function getAbilityMultiplier(attacker: PurePokemon, move: PureMove): { m
   if (ab === 'Experto' && power > 0 && power <= 60) {
     mult *= 1.5; triggeredAbility = ab;
   }
+  
+  // Weather-dependent abilities
+  if (weather && weather.turns !== 0) {
+    const mech = getMechWeather(weather.type);
+    if (ab === 'Fuerza arena' && mech === WEATHER_KEYS.SANDSTORM) {
+      if (moveType === 'ground' || moveType === 'rock' || moveType === 'steel') {
+        mult *= 1.3; triggeredAbility = ab;
+      }
+    }
+  }
+
   return { mult, triggeredAbility };
 }
 
@@ -239,6 +251,11 @@ export function getEffectiveStat(
   const stageMult = (STAGE_MULTIPLIERS_STAT[String(stage)] as number) ?? 1.0;
   let val = Math.floor(baseVal * stageMult);
 
+    // Weather: Coldwave speed reduction (50% for non-ice)
+    if (statKey === "spe" && weather?.type === "coldwave" && pokemon.type !== "ice" && pokemon.type2 !== "ice") {
+      val = Math.floor(val * 0.5);
+    }
+
   // Ability + status modifiers
   const ab = pokemon.ability;
   const isSun  = mechWeather === WEATHER_KEYS.SUN  || (mechWeather === WEATHER_KEYS.CLEAR && (dayCycle === 'day' || dayCycle === 'morning'));
@@ -253,6 +270,9 @@ export function getEffectiveStat(
   }
   if (statKey === 'def') {
     if (ab === 'Escama especial' && pokemon.status) val = Math.floor(val * 1.5);
+  }
+  if (statKey === 'spa') {
+    if (ab === 'Poder solar' && isSun) val = Math.floor(val * 1.5);
   }
   if (statKey === 'spe') {
     let abilMult = 1;
@@ -326,7 +346,7 @@ export function calculateDamagePure(
   const baseDamage = Math.floor(((2 * attacker.level / 5 + 2) * power * A / D) / 50) + 2;
 
   // Ability multiplier (attacker)
-  let { mult: finalAbilityMult, triggeredAbility } = getAbilityMultiplier(attacker, { ...move, type: moveType, power, cat: moveCat });
+  let { mult: finalAbilityMult, triggeredAbility } = getAbilityMultiplier(attacker, { ...move, type: moveType, power, cat: moveCat }, weather);
 
   // Defender: Sebo
   if (defender.ability === 'Sebo' && (moveType === 'fire' || moveType === 'ice')) {
@@ -361,14 +381,17 @@ export function calculateDamagePure(
       if (moveType === 'water') weatherMult = (wType === 'heatwave') ? 0 : 0.5; // Heatwave evaporates water
     } else if (mechWeather === WEATHER_KEYS.RAIN) {
       if (moveType === 'water') weatherMult = 1.5;
-      if (moveType === 'fire')  weatherMult = (wType === 'storm') ? 0 : 0.5; // Storm extinguishes fire
+      if (moveType === 'fire')  weatherMult = (wType === 'storm' || wType === 'heavy_rain') ? 0 : 0.5; // Extreme rain extinguishes fire
+    } else if (wType === 'thunderstorm') {
+      if (moveType === 'electric' || moveType === 'dragon') weatherMult = 1.5;
     }
   }
 
-  // Solar Beam power reduction (Sandstorm, Snow, Hail, Fog)
+  // Solar Beam power reduction (Sandstorm, Snow, Hail, Fog, Rain, Thunderstorm)
   if (move.id === 'solar_beam' && weather && weather.turns !== 0) {
-    const adverseWeathers = [WEATHER_KEYS.SANDSTORM, WEATHER_KEYS.SNOW, WEATHER_KEYS.HAIL, WEATHER_KEYS.FOG];
-    if (adverseWeathers.includes(mechWeather as typeof adverseWeathers[number])) {
+    const isSun = mechWeather === WEATHER_KEYS.SUN;
+    const isClear = mechWeather === WEATHER_KEYS.CLEAR && weather.type !== 'thunderstorm';
+    if (!isSun && !isClear) {
       weatherMult *= 0.5;
     }
   }

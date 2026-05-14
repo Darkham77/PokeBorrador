@@ -160,6 +160,7 @@ _Multipliers:_
 | **Wind** | - | - | - | - | Activates wind-based abilities (Wind Power, Wind Rider). |
 | **S. Winds** | - | - | - | - | **Delta Stream**: Removes weaknesses of Flying-type Pokémon. |
 | **Mist/Bruma** | - | - | - | - | **Accuracy: 80% (All moves)**. Visual variant of Fog. |
+| **T. Eléctrica** | Electric/Dragon (1.5x) | - | - | - | **Thunder/Hurricane: 100% Acc**. Dry Storm (No fire penalty). |
 
 ### Extreme Weather Variants (Environment Only)
 

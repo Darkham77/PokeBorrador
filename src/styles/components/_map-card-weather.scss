@@ -124,16 +124,50 @@
       content: '';
       position: absolute;
       inset: 0;
-      // Bruma: Marco muy abierto para máxima visibilidad central
+      // Bruma: Marco muy abierto para máxima visibilidad central y tinte muy ligero
       background: Radial-Gradient(circle at 50% 50%, 
         Transparent 0%, 
-        Transparent 70%, 
-        Rgba(255, 255, 255, 0.02) 85%, 
-        Rgba(255, 255, 255, 0.1) 100%
+        Transparent 75%, 
+        Rgba(200, 230, 255, 0.01) 85%, 
+        Rgba(200, 230, 255, 0.05) 100%
       );
       box-shadow: 
-        inset 0 0 20px Rgba(255, 255, 255, 0.2),
-        inset 0 0 40px Rgba(255, 255, 255, 0.05);
+        inset 0 0 15px Rgba(255, 255, 255, 0.1),
+        inset 0 0 30px Rgba(255, 255, 255, 0.02);
+      pointer-events: none;
+      z-index: var(--z-low);
+    }
+  }
+
+  &.cold {
+    background: Rgba(100, 180, 255, 0.05); // Tinte azul gélido muy sutil
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: Radial-Gradient(circle at 50% 50%, 
+        Transparent 40%, 
+        Rgba(180, 220, 255, 0.08) 100%
+      );
+      box-shadow: inset 0 0 40px Rgba(180, 220, 255, 0.1);
+      pointer-events: none;
+      z-index: var(--z-low);
+    }
+  }
+
+  &.coldwave {
+    background: Rgba(150, 200, 255, 0.15); // Tinte azul más fuerte
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: Radial-Gradient(circle at 50% 50%, 
+        Transparent 20%, 
+        Rgba(200, 240, 255, 0.15) 100%
+      );
+      box-shadow: 
+        inset 0 0 60px Rgba(200, 240, 255, 0.2),
+        inset 0 0 100px Rgba(255, 255, 255, 0.1);
       pointer-events: none;
       z-index: var(--z-low);
     }
@@ -298,21 +332,21 @@
     }
 
     & .layer-1 {
-      background-image: url("data:image/svg+xml,%3Csvg width='512' height='512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='turbulence' baseFrequency='0.0078125' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='512' height='512' filter='url(%23f)' opacity='.4'/%3E%3C/svg%3E");
+      background-image: url("data:image/svg+xml,%3Csvg width='512' height='512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='turbulence' baseFrequency='0.05' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='512' height='512' filter='url(%23f)' opacity='.7'/%3E%3C/svg%3E");
       background-size: 512px 512px;
       z-index: 1;
       transform: translate3d(calc(var(--seed-x, 0) * 0.5px), calc(var(--seed-y, 0) * 0.5px), 0);
     }
 
     & .layer-2 {
-      background-image: url("data:image/svg+xml,%3Csvg width='713' height='713' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='turbulence' baseFrequency='0.0056101' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='713' height='713' filter='url(%23f)' opacity='.3'/%3E%3C/svg%3E");
+      background-image: url("data:image/svg+xml,%3Csvg width='713' height='713' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='turbulence' baseFrequency='0.03' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='713' height='713' filter='url(%23f)' opacity='.6'/%3E%3C/svg%3E");
       background-size: 713px 713px;
       z-index: 2;
       transform: translate3d(calc(var(--seed-x, 0) * 1.2px), calc(var(--seed-y, 0) * 1.2px), 0);
     }
 
     & .layer-3 {
-      background-image: url("data:image/svg+xml,%3Csvg width='911' height='911' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='turbulence' baseFrequency='0.0043907' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='911' height='911' filter='url(%23f)' opacity='.2'/%3E%3C/svg%3E");
+      background-image: url("data:image/svg+xml,%3Csvg width='911' height='911' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='turbulence' baseFrequency='0.02' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='911' height='911' filter='url(%23f)' opacity='.5'/%3E%3C/svg%3E");
       background-size: 911px 911px;
       z-index: 3;
       transform: translate3d(calc(var(--seed-x, 0) * 2.5px), calc(var(--seed-y, 0) * 2.5px), 0);
@@ -320,17 +354,17 @@
   }
 
   &.fog {
-    & .layer-1 { opacity: 0.6; }
-    & .layer-2 { opacity: 0.4; }
-    & .layer-3 { opacity: 0.3; }
-    .night & { opacity: 0.5; }
+    & .layer-1 { opacity: 0.8; }
+    & .layer-2 { opacity: 0.6; }
+    & .layer-3 { opacity: 0.4; }
+    .night & { opacity: 0.7; }
   }
 
   &.mist {
-    & .layer-1 { opacity: 0.12; }
-    & .layer-2 { opacity: 0.08; }
-    & .layer-3 { opacity: 0.05; }
-    .night & { opacity: 0.2; }
+    & .layer-1 { opacity: 0.55; }
+    & .layer-2 { opacity: 0.40; }
+    & .layer-3 { opacity: 0.25; }
+    .night & { opacity: 0.5; }
   }
 
   &.heatwave .mist-layer {
@@ -492,18 +526,6 @@
   }
 }
 
-@keyframes atmospheric-halo-pulse {
-  // Cuando la roja está en su punto MÍNIMO (0% / 100%)
-  0%, 100% { 
-    transform: Scale(1.05); 
-    opacity: 1; 
-  }
-  // Cuando la roja está en su punto MÁXIMO (50%)
-  50% { 
-    transform: Scale(1); 
-    opacity: 0.4; 
-  }
-}
 
 
 // Halo Oscuro para Spawns Penalizados

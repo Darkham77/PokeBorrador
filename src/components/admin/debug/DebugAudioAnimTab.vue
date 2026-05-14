@@ -14,7 +14,7 @@ import {
   DEBUG_ATTACK_FX, 
   DEBUG_STATS, 
   DEBUG_FIELD_EFFECTS, 
-  DEBUG_WEATHER_EFFECTS,
+// Weather effects removed
   DEBUG_UI_ANIMS,
   DEBUG_SPECIAL_MODES
 } from './debugConstants'
@@ -215,24 +215,6 @@ const isEffectActive = (type: string, category: string) => {
       </div>
     </div>
 
-    <!-- WEATHER SECTION -->
-    <div class="debug-section">
-      <h3 class="section-title">
-        CLIMA
-      </h3>
-      <div class="button-grid-small">
-        <button
-          v-for="w in DEBUG_WEATHER_EFFECTS"
-          :key="w.id"
-          class="debug-btn weather-btn"
-          :class="{ active: isEffectActive(w.id, 'weather') }"
-          @click.stop="setField(w.id, 5)"
-        >
-          <span class="icon">{{ w.icon }}</span>
-          {{ w.label }}
-        </button>
-      </div>
-    </div>
 
     <!-- SOUNDS SECTION -->
     <div class="debug-section">

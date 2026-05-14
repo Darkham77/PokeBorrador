@@ -4,9 +4,7 @@ El mundo de **Poké Vicio** es un ecosistema vivo y dinámico. El paso del tiemp
 
 ---
 
-## 📅 Ciclo Horario y Estaciones
-
-### El Ciclo de Tiempo
+## El Ciclo de Tiempo
 
 Para mantener un ritmo de juego ágil, el tiempo en el juego transcurre más rápido que en la realidad:
 
@@ -48,7 +46,7 @@ Inspirado en las lluvias torrenciales de Kyogre Primigenio.
 Un descenso térmico extremo que afecta a todos los seres vivos.
 
 - **Daño Residual**: Inflige daño por turno a todos los Pokémon, sin importar su tipo (a diferencia de la Tormenta Arena o Nieve).
-- **Penalización**: Puede reducir la velocidad de los Pokémon que no sean de tipo Hielo.
+- **Penalización**: Reduce la velocidad de los Pokémon que no sean de tipo Hielo al **50%**.
 
 ### 🌬️ Ventisca (Nieve Extrema)
 
@@ -65,28 +63,22 @@ Inspirado en el poder de Rayquaza.
 - **Protección Volador**: Elimina todas las debilidades del tipo **Volador**. Los ataques que normalmente serían supereficaces (Eléctrico, Hielo, Roca) pasan a hacer daño neutro.
 - **Visual**: Remolinos de aire constantes en las esquinas de la pantalla.
 
-### ⬜ Niebla (Gen 4 Standards)
-
-Un banco de niebla denso que dificulta la visión.
-
-- **Penalización**: La precisión de **todos los movimientos** se reduce al **60%**.
-- **Bono de Captura**: Las **Dusk Balls** ven su eficacia triplicada (3.0x).
-
 ---
 
 ## 🌦️ Jerarquía Climática
 
-El sistema distingue entre temperaturas base y condiciones atmosféricas, dividiéndose en estados **Normales** y **Extremos**.
+El sistema organiza los climas en niveles de intensidad dentro de cada familia. A mayor nivel, más drásticos son los efectos y bloqueos.
 
-| Categoría | Normal | Extremo | Efecto Especial (Normal -> Extremo) |
-| :-- | :-- | :-- | :-- |
-| **Temperatura** | Sol (☀️) | Ola de Calor (🔥) | Potencia Fuego. Ola de Calor: El Agua se evapora. |
-| **Temperatura** | Frío (❄️) | Ola de Frío (🥶) | Mejora Def. Hielo. Ola de Frío: Daño por turno. |
-| **Agua** | Lluvia (☔) | Tormenta (⚡) | Potencia Agua. Tormenta: El Fuego se extingue. |
-| **Hielo** | Nieve (❄️) | Ventisca (🌬️) | Mejora Def. Hielo. Ventisca: Daño + Visibilidad. |
-| **Aire** | Bruma (🌫️) | Niebla (⬜) | Bruma (80% Precisión). Niebla (60% Precisión). |
-| **Tierra** | Viento (🍃) | Vientos Fuertes (🌀) | Activa habilidades de viento. Vientos Fuertes: Elimina debilidades Volador. |
-| **Arena** | -- | Tormenta Arena (🌪️) | Daño residual + Bono SpD a tipo Roca. |
+| Familia       | Nivel 1 (Normal)  | Nivel 2 (Potenciado) | Nivel 3 (Extremo) | Nivel 4 (Catastrófico) |
+| :------------ | :---------------- | :------------------- | :---------------- | :--------------------- |
+| **Calor**     | Sol (☀️)          | Sol Intenso (🔆)     | Ola de Calor (🔥) | --                     |
+| **Frío**      | Frío (🧊)         | Ola de Frío (🥶)     | --                | --                     |
+| **Agua**      | Lluvia (🌧️)       | Lluvia Fuerte (☔)   | Tormenta (⛈️)     | --                     |
+| **Eléctrico** | T. Eléctrica (🌩️) | --                   | --                | --                     |
+| **Hielo**     | Nieve (❄️)        | Granizo (🌨️)         | Ventisca (🌬️)     | --                     |
+| **Viento**    | Viento (🍃)       | Vientos Fuertes (🌀) | --                | --                     |
+| **Atmosfera** | Bruma (💨)        | Niebla (🌫️)          | --                | --                     |
+| **Tierra**    | T. Arena (🏜️)     | T. Polvo (🌪️)        | --                | --                     |
 
 ---
 
@@ -96,6 +88,7 @@ El sistema distingue entre temperaturas base y condiciones atmosféricas, dividi
 
 - **Sol / Ola de Calor**: Fuego (1.5x) / Agua (0.5x). **Trueno/Huracán**: 50% Precisión.
 - **Lluvia / Tormenta**: Agua (1.5x) / Fuego (0.5x). **Trueno/Huracán**: 100% Precisión.
+- **T. Eléctrica**: Eléctrico (1.5x) / Dragón (1.5x). Fuego (1.0x - Sin penalización). **Trueno/Huracán**: 100% Precisión.
 - **Tormenta Arena**: Daño residual (1/16 PS) excepto para tipos Roca, Tierra y Acero. Los tipos Roca ganan +50% de Defensa Especial.
 - **Nieve**: Los tipos Hielo ganan +50% de Defensa Física.
 
@@ -116,18 +109,26 @@ La aparición de Pokémon en el mapa es un sistema dinámico regido por el tiemp
 
 Las condiciones atmosféricas alteran las probabilidades de encuentro según el tipo elemental:
 
-| Clima                    | Potencia (x1.5)               | Penaliza (x0.4)       | Bloquea (x0)                  |
-| :----------------------- | :---------------------------- | :-------------------- | :---------------------------- |
-| **Lluvia (🌧️)**          | Agua, Bicho, Eléctrico        | Fuego, Roca, Tierra   | --                            |
-| **Tormenta (⛈️)**        | Agua, Eléctrico, Dragón       | Roca, Tierra          | Fuego, Volador, Bicho         |
-| **Sol (☀️)**             | Fuego, Planta, Tierra         | Agua, Hielo           | --                            |
-| **Ola de Calor (🔥)**    | Fuego, Tierra                 | Agua, Planta          | Hielo                         |
-| **Nieve (❄️)**           | Hielo, Acero                  | Fuego, Bicho          | --                            |
-| **Ventisca (🌪️)**        | Hielo                         | Acero, Roca           | Fuego, Planta, Bicho, Volador |
-| **Tormenta Arena (🏜️)**  | Roca, Tierra, Acero           | Volador, Bicho, Fuego | --                            |
-| **Niebla (🌫️)**          | Fantasma, Psíquico, Siniestro | Volador               | --                            |
-| **Viento (🍃)**          | Volador, Bicho, Psíquico      | Tierra                | --                            |
-| **Vientos Fuertes (🌀)** | Volador, Dragón, Psíquico     | --                    | Bicho                         |
+| Clima | Potencia (x1.5) | Penaliza (x0.4) | Bloquea (x0) |
+| :-- | :-- | :-- | :-- |
+| **Lluvia (🌧️)** | Agua, Bicho, Eléctrico | Fuego, Roca, Tierra | - |
+| **Lluvia Fuerte (☔)** | Agua | Roca, Tierra | **Fuego** |
+| **Tormenta (⛈️)** | Agua, Eléctrico, Dragón | Roca, Tierra | **Fuego, Volador, Bicho** |
+| **T. Eléctrica (🌩️)** | Eléctrico, Dragón | Roca, Tierra | **Volador, Bicho** |
+| **Sol (☀️)** | Fuego, Planta, Tierra | Agua, Hielo | - |
+| **Sol Intenso (🔆)** | Planta, Fuego | - | **Agua, Hielo** |
+| **Ola de Calor (🔥)** | Fuego, Tierra | Agua | **Hielo, Planta** |
+| **Frío (🧊)** | Hielo | Bicho, Planta | - |
+| **Ola de Frío (🥶)** | Hielo | Fuego, Volador | **Bicho, Planta** |
+| **Nieve (❄️)** | Hielo, Acero | Fuego, Bicho, Volador | - |
+| **Granizo (🌨️)** | Hielo | Fuego, Bicho, Volador, Planta | - |
+| **Ventisca (🌪️)** | Hielo | Acero, Roca | **Fuego, Planta, Bicho, Volador** |
+| **Niebla (🌫️)** | Fantasma, Psíquico, Siniestro | Volador | - |
+| **Bruma (💨)** | Hada, Agua | Fuego | - |
+| **Viento (🍃)** | Volador, Bicho, Psíquico | Tierra | - |
+| **Vientos Fuertes (🌀)** | Volador, Dragón, Psíquico | - | **Bicho, Tierra** |
+| **T. Arena (🏜️)** | Roca, Tierra, Acero | Volador, Bicho, Fuego | - |
+| **T. Polvo (🌪️)** | Roca, Tierra | Bicho | **Volador** |
 
 ---
 

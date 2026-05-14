@@ -149,8 +149,6 @@ const fileLength: AuditRule = {
   ignorePattern: /\[PureVue-Ignore-Length\]/
 };
 
-
-
 const zIndexAudit: AuditRule = {
   regex: /z-index\s*:\s*(-?\d+)\b/gi,
   message: (match: string) => {

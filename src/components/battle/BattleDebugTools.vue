@@ -9,7 +9,6 @@ import PVTooltip from '@/components/common/PVTooltip.vue'
 import { PDEX_ORDER, GEN2_PDEX_ORDER } from '@/data/pokedex'
 import { gameBus } from '@/logic/gameBus'
 import DebugAudioAnimTab from '@/components/admin/debug/DebugAudioAnimTab.vue'
-import { getMechanicalWeather, WEATHER_UI_METADATA, WEATHER_VISUAL_METADATA } from '@/logic/battle/weatherMapper'
 import type { Pokemon } from '@/types/pokemon'
 
 const ALL_PDEX = [...PDEX_ORDER, ...GEN2_PDEX_ORDER]
@@ -19,6 +18,9 @@ const gameStore = useGameStore()
 const audio = useAudioStore()
 const isOpen = ref(false)
 const isEffectsOpen = ref(false)
+const isTimeOpen = ref(false)
+
+import TimeDebugControls from '@/components/admin/debug/shared/TimeDebugControls.vue'
 
 const isDebug = computed(() => typeof window !== 'undefined' && !!(window as unknown as { __VITE_DEBUG__?: unknown }).__VITE_DEBUG__)
 
@@ -179,42 +181,13 @@ const toggleStatus = (side: string, type: string) => {
   }
 }
 
-const setBattleWeather = (type: string | null) => {
-  if (!battleStore.state) return
-  if (!type || type === 'clear') {
-    battleStore.state.weather = { type: 'clear', turns: -1 }
-  } else {
-    battleStore.state.weather = { type, turns: 99 }
-  }
-  battleStore.addLog(`DEBUG: Weather changed to ${type || 'CLEAR'}`, 'log-info')
-}
-
-const weatherOptions = computed(() => {
-  // Combinamos todos los tipos técnicos (mecánicos y visuales) de forma única
-  const mechanicals = Object.keys(WEATHER_UI_METADATA).filter(k => k !== 'unknown' && k !== 'clear')
-  const visuals = Object.keys(WEATHER_VISUAL_METADATA)
-  const all = Array.from(new Set(['clear', ...mechanicals, ...visuals]))
-  
-  return all.map(w => {
-    const mech = getMechanicalWeather(w)
-    const ui = WEATHER_UI_METADATA[mech]
-    const visual = WEATHER_VISUAL_METADATA[w]
-    
-    return {
-      id: w,
-      label: visual?.label || ui?.label || w.toUpperCase(),
-      icon: visual?.icon || ui?.icon || '❓',
-      description: visual?.description || ui?.description || ''
-    }
-  })
-})
 </script>
 
 <template>
   <div
     v-if="isDebug"
     class="battle-debug-tools"
-    :class="{ 'is-open': isOpen || isEffectsOpen }"
+    :class="{ 'is-open': isOpen || isEffectsOpen || isTimeOpen }"
   >
     <Transition name="slide-up">
       <div
@@ -270,27 +243,6 @@ const weatherOptions = computed(() => {
                 @click.stop="toggleSearchMode"
               >
                 {{ battleStore.isSearching ? '🔗 CHAIN: ON' : '🔗 CHAIN: OFF' }}
-              </button>
-            </PVTooltip>
-          </div>
-          
-          <div class="section-label mt-2">
-            Weather Control
-          </div>
-          <div class="weather-debug-grid">
-            <PVTooltip
-              v-for="opt in weatherOptions"
-              :key="opt.id"
-              :title="opt.label"
-              :description="opt.description"
-            >
-              <button
-                class="weather-option-btn"
-                :class="{ active: battleStore.state?.weather?.type === opt.id || (!battleStore.state?.weather && opt.id === 'clear') }"
-                @click.stop="setBattleWeather(opt.id === 'clear' ? null : opt.id)"
-              >
-                <span class="w-icon">{{ opt.icon }}</span>
-                <span class="w-label">{{ opt.label }}</span>
               </button>
             </PVTooltip>
           </div>
@@ -456,12 +408,34 @@ const weatherOptions = computed(() => {
       </div>
     </Transition>
 
+    <!-- NEW TIME PANEL (MODULAR) -->
+    <Transition name="slide-up">
+      <div
+        v-if="isTimeOpen"
+        class="time-menu custom-scrollbar-vicio"
+      >
+        <div class="time-header">
+          <span class="icon">⌛</span>
+          <span class="title">TIME & WEATHER CONTROL</span>
+          <button
+            class="close-mini"
+            @click.stop="isTimeOpen = false"
+          >
+            ✕
+          </button>
+        </div>
+        <div class="time-scroll-area">
+          <TimeDebugControls />
+        </div>
+      </div>
+    </Transition>
+
     <div class="debug-triggers-row">
       <PVTooltip title="Debug Menu">
         <button
           class="debug-trigger"
           :class="{ active: isOpen }"
-          @click.stop="isOpen = !isOpen; isEffectsOpen = false"
+          @click.stop="isOpen = !isOpen; isEffectsOpen = false; isTimeOpen = false"
         >
           <span class="icon">🕹️</span>
           <span class="label">DEBUG</span>
@@ -472,10 +446,21 @@ const weatherOptions = computed(() => {
         <button
           class="effects-trigger"
           :class="{ active: isEffectsOpen }"
-          @click.stop="isEffectsOpen = !isEffectsOpen; isOpen = false"
+          @click.stop="isEffectsOpen = !isEffectsOpen; isOpen = false; isTimeOpen = false"
         >
           <span class="icon">✨</span>
           <span class="label">EFECTOS</span>
+        </button>
+      </PVTooltip>
+
+      <PVTooltip title="Time, Season & Weather">
+        <button
+          class="time-trigger"
+          :class="{ active: isTimeOpen }"
+          @click.stop="isTimeOpen = !isTimeOpen; isOpen = false; isEffectsOpen = false"
+        >
+          <span class="icon">⌛</span>
+          <span class="label">TIEMPO</span>
         </button>
       </PVTooltip>
     </div>
@@ -570,6 +555,62 @@ const weatherOptions = computed(() => {
     flex: 1;
     @include smooth-scroll;
   }
+}
+
+.time-menu {
+  background: Rgba(15, 15, 25, 0.99);
+  border: 2px solid var(--blue);
+  border-radius: 8px;
+  width: 340px;
+  max-width: 90vw;
+  max-height: 500px;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+  overflow-y: auto;
+  pointer-events: all;
+  box-shadow: 0 15px 50px Rgba(0,0,0,0.9);
+  @include gpu-layer;
+  margin-bottom: 12px;
+
+  .time-header {
+    background: Rgba(59, 130, 246, 0.15);
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid Rgba(255, 255, 255, 0.1);
+
+    .title { @include pixelated; font-size: 8px; color: var(--blue); flex: 1; }
+    .close-mini { background: none; border: none; color: white; cursor: pointer; opacity: 0.5; &:hover { opacity: 1; } }
+  }
+
+  .time-scroll-area {
+    padding: 16px;
+    min-height: 0;
+    overflow-y: auto;
+    flex: 1;
+    @include smooth-scroll;
+  }
+}
+
+.time-trigger {
+  @include btn-vicio('info', 'xs', true);
+  background: Rgba(20, 20, 30, 0.95);
+  border: 2px solid var(--blue);
+  color: var(--blue);
+  font-size: 7px;
+  height: 24px;
+  padding: 0 14px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  text-shadow: 1px 1px 0 $black;
+  box-shadow: 0 4px 15px Rgba(0, 0, 0, 0.6);
+  @include pixelated;
+  
+  &:hover, &.active { background: var(--blue); color: white; text-shadow: none; }
 }
 
 .debug-menu {

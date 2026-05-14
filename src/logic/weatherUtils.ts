@@ -1,6 +1,7 @@
 import { ROUTE_WEATHER_TABLES } from '@/data/weather-tables';
 import { getServerTime, getDayCycle } from '@/logic/timeUtils';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+import { WEATHER_REGISTRY } from './weather/weatherRegistry';
 
 type WeatherProbabilityTable = Record<string, number>;
 type SeasonWeatherTable = Record<string, WeatherProbabilityTable>;
@@ -8,27 +9,6 @@ type SeasonWeatherTable = Record<string, WeatherProbabilityTable>;
 export const WEATHER_BUFF_MULTIPLIER = 1.5;
 export const WEATHER_DEBUFF_MULTIPLIER = 0.4;
 export const WEATHER_BLOCK_MULTIPLIER = 0;
-
-export const WEATHER_TYPE_MODIFIERS: Record<string, { boost?: string[], debuff?: string[], block?: string[] }> = {
-  rain: { boost: ['water', 'bug', 'electric'], debuff: ['fire', 'rock', 'ground'] },
-  heavy_rain: { boost: ['water'], block: ['fire'], debuff: ['rock', 'ground'] },
-  storm: { boost: ['water', 'electric', 'dragon'], block: ['fire', 'flying', 'bug'], debuff: ['rock', 'ground'] },
-  thunderstorm: { boost: ['electric', 'water', 'dragon'], block: ['fire', 'flying', 'bug'], debuff: ['rock', 'ground'] },
-  sun: { boost: ['fire', 'grass', 'ground'], debuff: ['water', 'ice'] },
-  intense_sun: { boost: ['grass', 'fire'], block: ['water', 'ice'] },
-  heatwave: { boost: ['fire', 'ground'], block: ['ice', 'grass'], debuff: ['water'] },
-  snow: { boost: ['ice', 'steel'], debuff: ['fire', 'bug', 'flying'] },
-  hail: { boost: ['ice'], debuff: ['fire', 'bug', 'flying', 'grass'] },
-  blizzard: { boost: ['ice'], block: ['fire', 'grass', 'bug', 'flying'], debuff: ['steel', 'rock'] },
-  cold: { boost: ['ice'], debuff: ['grass', 'bug'] },
-  coldwave: { boost: ['ice'], block: ['grass', 'bug'], debuff: ['fire', 'flying'] },
-  sandstorm: { boost: ['rock', 'ground', 'steel'], debuff: ['flying', 'bug', 'fire'] },
-  fog: { boost: ['ghost', 'psychic', 'dark'], debuff: ['flying'] },
-  wind: { boost: ['flying', 'bug', 'psychic'], debuff: ['ground'] },
-  strong_winds: { boost: ['flying', 'dragon', 'psychic'], block: ['bug', 'ground'] },
-  mist: { boost: ['fairy', 'water'], debuff: ['fire'] },
-  dust_storm: { boost: ['rock', 'ground'], block: ['flying'], debuff: ['bug'] }
-};
 
 /**
  * Simple 32-bit hash function (DJB2) for string to number.
@@ -62,17 +42,18 @@ export function mulberry32(a: number): () => number {
  * @param {string} mapId - The route identifier.
  * @param {string} seasonId - The season identifier (spring, summer, autumn, winter).
  * @param {number} epochHour - The continuous epoch hour.
+ * @param {string} [forcedCycle] - Optional forced cycle for debug/testing.
  * @returns {string} The weather string (e.g., 'clear', 'rain', 'snow').
  */
-export function getRouteWeather(mapId: string, seasonId: string, epochHour: number): string {
+export function getRouteWeather(mapId: string, seasonId: string, epochHour: number, forcedCycle?: string): string {
   // 1. Get Probability Table
   const routeTables = (ROUTE_WEATHER_TABLES as Record<string, Record<string, Record<string, number> | Record<string, Record<string, number>>>>)[mapId];
   if (!routeTables || !routeTables[seasonId]) {
     return 'clear'; // Fallback for missing tables
   }
   
-  // Calculate cycle based on epochHour (continuous hours from epoch)
-  const cycle = getDayCycle(epochHour * 3600000);
+  // Use forced cycle if provided, otherwise calculate based on epochHour
+  const cycle = forcedCycle || getDayCycle(epochHour * 3600000);
   const seasonTable = routeTables[seasonId] as unknown as SeasonWeatherTable;
   if (!seasonTable) return 'clear';
   
@@ -121,7 +102,8 @@ export function getWeatherMultiplier(id: string, weather: string): number {
   const types = Array.isArray(pData.type) ? pData.type.map(t => t.toLowerCase()) : [pData.type.toLowerCase()];
   const w = weather.toLowerCase();
   
-  const mods = WEATHER_TYPE_MODIFIERS[w];
+  const entry = WEATHER_REGISTRY[w];
+  const mods = entry?.modifiers;
   if (!mods) return 1.0;
 
   if (mods.block?.some(t => types.includes(t))) return WEATHER_BLOCK_MULTIPLIER;

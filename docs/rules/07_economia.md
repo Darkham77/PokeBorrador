@@ -4,7 +4,7 @@
 
 ### Estado inicial del jugador
 
-```
+```text
 Dinero inicial: ₽3.000
 Pokéballs:      10
 Pociones:       3

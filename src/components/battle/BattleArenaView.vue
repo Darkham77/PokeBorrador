@@ -6,7 +6,7 @@ import { useBattleStore } from '@/stores/battle'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 import { useMapStore } from '@/stores/map'
-import { getVisualWeather } from '@/logic/battle/weatherMapper'
+import { getVisualWeather } from '@/logic/weather/weatherRegistry'
 import { useCombatCamera } from '@/composables/useCombatCamera'
 import { getCombatantPosition, WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator'
 import { getRouteWeather } from '@/logic/weatherUtils'
@@ -211,7 +211,7 @@ const computedWeather = computed(() => {
   if (mapStore.globalWeather) return mapStore.globalWeather
   
   // 3. Clima determinístico de la ruta
-  return getRouteWeather(battle.value?.locationId || 'route1', mapStore.currentSeason.id, mapStore.currentEpochHour)
+  return getRouteWeather(battle.value?.locationId || 'route1', mapStore.currentSeason.id, mapStore.currentEpochHour, mapStore.currentCycle)
 })
 
 const shouldShowEncounterLayers = computed(() => {

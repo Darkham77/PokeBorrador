@@ -49,7 +49,7 @@ const EGG_SPAWN_INTERVAL_MS = {
 
 ### Reglas de compatibilidad
 
-```
+```text
 1. Si alguno tiene grupo "no-eggs" → Incompatible (reason: 'No se puede criar')
    Pokémon no-eggs: cleffa, igglybuff, pichu, elekid, magby, togepi, mew, mewtwo,
                    articuno, zapdos, moltres, nidorina, nidoqueen

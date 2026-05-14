@@ -16,6 +16,7 @@ This manual details the protocols for adding new Pokémon, moves, abilities, and
 10. **External Asset Download (Bulbapedia)**: Requests to `archives.bulbagarden.net` require a `Referer: https://bulbapedia.bulbagarden.net/` header and a realistic `User-Agent`. Direct downloads without these headers will return `403 Forbidden`.
 11. **Fail-Fast Asset Policy**: Do not mask missing item images or visual assets with fallback emojis or generic icons in development. If an asset is missing, let the component fail visibly (e.g., hiding the image or showing a standard browser broken-link box) to allow developers to immediately notice and resolve the missing file.
 12. **Segmented Shop Audits**: Item asset validation and diagnostic tools must categorize and audit database collections independently (e.g., Poké Market vs BC Shop) based on their specific runtime filters (`market !== false` and `trainerShop === true`) to ensure 100% visual asset coverage across each shopping context.
+13. **Weather Token Consistency**: Always use the token **`snow`** for ice-based weather in metadata and encounter configs. The token `ice` is reserved for mechanical type references and must NOT be used as a weather ID to avoid registry mismatches.
 
 ---
 

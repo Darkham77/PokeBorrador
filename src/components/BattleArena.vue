@@ -6,7 +6,7 @@ import { useUIStore } from '@/stores/ui'
 import { useWindowListener } from '@/composables/useWindowListener'
 import { useMapStore } from '@/stores/map'
 import { getRouteWeather } from '@/logic/weatherUtils'
-import { getMechanicalWeather, WEATHER_UI_METADATA, WEATHER_VISUAL_METADATA } from '@/logic/battle/weatherMapper'
+import { getMechanicalWeather, WEATHER_UI_METADATA, WEATHER_VISUAL_METADATA } from '@/logic/weather/weatherRegistry'
 
 const isDebugActive = typeof window !== 'undefined' && !!(window as unknown as { __VITE_DEBUG__?: unknown }).__VITE_DEBUG__
 const BattleDebugTools = isDebugActive 
@@ -39,7 +39,7 @@ const cycleEmoji = computed(() => {
 const seasonEmoji = computed(() => mapStore.currentSeason.icon)
 const computedWeather = computed(() => {
   if (mapStore.globalWeather) return mapStore.globalWeather
-  return getRouteWeather(battle.value?.locationId || 'route1', mapStore.currentSeason.id, mapStore.currentEpochHour)
+  return getRouteWeather(battle.value?.locationId || 'route1', mapStore.currentSeason.id, mapStore.currentEpochHour, mapStore.currentCycle)
 })
 const weatherEmoji = computed(() => {
   const visual = WEATHER_VISUAL_METADATA[computedWeather.value as string]

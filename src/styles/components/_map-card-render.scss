@@ -157,23 +157,8 @@
     will-change: transform, opacity;
     pointer-events: auto;
     
-    &.rare-spawn {
-      animation: pulse-sprite-zoom 2s infinite ease-in-out;
-      animation-delay: calc(var(--spawn-seed, 0) * -10s);
-      
-      &::after {
-        content: '';
-        position: absolute;
-        inset: -2%;
-        background: Radial-Gradient(circle, Rgba(255, 0, 0, 0.7) 0%, transparent 70%);
-        will-change: transform, filter, opacity;
-  filter: Blur(2px);
-        z-index: calc(var(--z-base) - 1);
-        opacity: 0.6;
-        animation: pulse-aura-modern 2s infinite ease-in-out;
-        animation-delay: calc(var(--spawn-seed, 0) * -10s);
-        pointer-events: none;
-      }
+    &.atmospheric-spawn, &.rare-spawn {
+      position: relative;
     }
 
     .caught-badge {
@@ -241,12 +226,7 @@
   filter: none !important;
     }
     
-    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    will-change: transform;
-    transform: Translatez(0); 
-
     &:hover {
-      transform: Scale(1.1) Translatey(-2px);
       z-index: calc(var(--z-map-spawns) + 1) !important;
     }
   }

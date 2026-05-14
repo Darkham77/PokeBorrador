@@ -56,7 +56,7 @@ export const useMapStore = defineStore('map', () => {
   
   const currentWeather = computed(() => {
     if (globalWeather.value) return globalWeather.value
-    return getRouteWeather(currentMap.value, currentSeason.value.id, currentEpochHour.value)
+    return getRouteWeather(currentMap.value, currentSeason.value.id, currentEpochHour.value, currentCycle.value)
   })
   
   if (typeof window !== 'undefined') {
@@ -74,6 +74,20 @@ export const useMapStore = defineStore('map', () => {
   const dailyGuardianCaptures = ref<string[]>([])
   const mapWinners = ref<Record<string, import('@/types/stores').DominanceInfo>>({}) // locId -> winner
   const pendingAwards = ref<PendingAward[]>([])
+  
+  const setGlobalSeason = (s: string | null) => {
+    if (!s) {
+      forcedSeason.value = null
+      return
+    }
+    const seasons: Season[] = [
+      { id: 'spring', label: 'Primavera', icon: '🌸' },
+      { id: 'summer', label: 'Verano', icon: '🌻' },
+      { id: 'autumn', label: 'Otoño', icon: '🍂' },
+      { id: 'winter', label: 'Invierno', icon: '⛄' }
+    ]
+    forcedSeason.value = seasons.find(sea => sea.id === s) || null
+  }
   
   const setGlobalWeather = (w: string | null) => { globalWeather.value = w }
   const setGlobalCycle = (c: DayPhase | null) => { forcedCycle.value = c }
@@ -176,6 +190,7 @@ export const useMapStore = defineStore('map', () => {
     mapWinners,
     setGlobalWeather,
     setGlobalCycle,
+    setGlobalSeason,
     navigate
   }
 })

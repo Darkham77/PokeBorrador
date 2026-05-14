@@ -33,7 +33,9 @@ const animClass = computed(() => {
     wind: 'anim-drift',
     strong_winds: 'anim-drift',
     rain: 'anim-shake',
-    storm: 'anim-shake'
+    heavy_rain: 'anim-shake',
+    storm: 'anim-shake',
+    thunderstorm: 'anim-shake'
   }
   return anims[props.weather] || ''
 })
@@ -307,8 +309,9 @@ const initWeatherAnim = () => {
     const target = mistLayerRef.value
     if (target) {
       const hasPulse = ['heatwave', 'coldwave', 'strong_winds', 'intense_sun'].includes(w)
-      const baseOpacity = hasPulse ? 0.5 : 0.8
-      const maxOpacity = hasPulse ? 0.9 : 0.85
+      const isMist = w === 'mist'
+      const baseOpacity = isMist ? 0.4 : (hasPulse ? 0.5 : 0.8)
+      const maxOpacity = isMist ? 0.6 : (hasPulse ? 0.9 : 0.85)
       
       weatherTimeline.fromTo(target, 
         { opacity: baseOpacity },
@@ -329,7 +332,7 @@ const initWeatherAnim = () => {
         const moveY = isFoggy ? 256 : 0;
         
         // Variación de velocidad por mapa (Global speedVar ya calculada al inicio)
-        const baseDur = isFoggy ? 60 : (w === 'strong_winds' ? 2 : 8);
+        const baseDur = isFoggy ? 120 : (w === 'strong_winds' ? 2 : 8);
         const dur = baseDur / speedVar;
 
         // Capa 1 (512px)
@@ -436,7 +439,7 @@ const leavesRef = ref<HTMLElement[]>([])
 const leafTypes = ['wind', 'strong_winds', 'storm']
 
 const leafCount = computed(() => {
-  if (['storm', 'strong_winds', 'blizzard'].includes(props.weather)) return 15
+  if (['storm', 'strong_winds'].includes(props.weather)) return 15
   if (['wind'].includes(props.weather)) return 8
   return 0
 })
@@ -586,9 +589,18 @@ const weatherOverlayStyles = computed(() => {
       <!-- Fog, Mist, Wind, Heatwave, Sun, Cold, Coldwave, Intense Sun -->
       <!-- Capas de Bruma/Niebla (Triple capa para romper patrones) -->
       <template v-if="['fog', 'mist', 'wind', 'strong_winds', 'heatwave', 'sun', 'cold', 'coldwave', 'intense_sun'].includes(weather)">
-        <div ref="mistLayerRef" class="mist-layer layer-1"></div>
-        <div ref="mistLayer2Ref" class="mist-layer layer-2"></div>
-        <div ref="mistLayer3Ref" class="mist-layer layer-3"></div>
+        <div
+          ref="mistLayerRef"
+          class="mist-layer layer-1"
+        />
+        <div
+          ref="mistLayer2Ref"
+          class="mist-layer layer-2"
+        />
+        <div
+          ref="mistLayer3Ref"
+          class="mist-layer layer-3"
+        />
       </template>
       
       <!-- Leaves (for Wind & Storm effects) -->

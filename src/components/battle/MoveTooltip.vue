@@ -3,7 +3,7 @@
 import { computed } from 'vue'
 import { MOVE_DATA } from '@/data/moves'
 import { getMoveDescription } from '@/logic/pokemonUtils'
-import { getMechanicalWeather, WEATHER_MECHANICAL } from '@/logic/battle/weatherMapper'
+import { getMechanicalWeather, WEATHER_MECHANICAL } from '@/logic/weather/weatherRegistry'
 import { getDayCycle } from '@/logic/timeUtils'
 import { useBattleStore } from '@/stores/battle'
 import type { Move } from '@/types/pokemon'
@@ -35,10 +35,10 @@ const modifierInfo = computed(() => {
 
   const moveName = (m.name || '').toLowerCase()
 
-  // 1. Accuracy Boosted Moves
   if (moveName === 'trueno' || moveName === 'thunder' || moveName === 'vendaval' || moveName === 'hurricane') {
+    const isThunderstorm = weather?.toLowerCase() === 'thunderstorm'
     if (isSunny) return { type: 'penalized', text: 'Penalizado por Clima Soleado (Precisión 50%)' }
-    if (isRaining) return { type: 'boosted', text: 'Potenciado por Lluvia/Tormenta (¡No falla!)' }
+    if (isRaining || isThunderstorm) return { type: 'boosted', text: `Potenciado por ${isThunderstorm ? 'Tormenta Eléctrica' : 'Lluvia'} (¡No falla!)` }
   }
   
   if (moveName === 'ventisca' || moveName === 'blizzard') {

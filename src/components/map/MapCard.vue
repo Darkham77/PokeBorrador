@@ -10,8 +10,8 @@ import { useUIStore } from '@/stores/ui'
 import { useBattleStore } from '@/stores/battle'
 import { useGameStore } from '@/stores/game'
 import { useMapStore } from '@/stores/map'
-import { getRouteWeather, getWeatherMultiplier, WEATHER_TYPE_MODIFIERS } from '@/logic/weatherUtils'
-import { getMechanicalWeather, WEATHER_UI_METADATA, WEATHER_VISUAL_METADATA } from '@/logic/battle/weatherMapper'
+import { getRouteWeather, getWeatherMultiplier } from '@/logic/weatherUtils'
+import { getMechanicalWeather, WEATHER_UI_METADATA, WEATHER_VISUAL_METADATA, WEATHER_REGISTRY } from '@/logic/weather/weatherRegistry'
 import { logger } from '@/logic/utils/logger'
 
 import { checkPlayerWinner, calculateSpawnGrid } from '@/logic/map/mapCardHelper'
@@ -89,7 +89,7 @@ const seasonName = computed(() => mapStore.currentSeason.label)
 const seasonEmoji = computed(() => mapStore.currentSeason.icon)
 
 const computedWeather = computed(() => {
-  return props.forcedWeather || mapStore.globalWeather || getRouteWeather(props.map.id, mapStore.currentSeason.id, mapStore.currentEpochHour)
+  return props.forcedWeather || mapStore.globalWeather || getRouteWeather(props.map.id, mapStore.currentSeason.id, mapStore.currentEpochHour, mapStore.currentCycle)
 })
 
 const weatherEmoji = computed(() => {
@@ -107,7 +107,8 @@ const weatherName = computed(() => {
 })
 
 const weatherModifiersDescription = computed(() => {
-  const mods = WEATHER_TYPE_MODIFIERS[computedWeather.value as string]
+  const entry = WEATHER_REGISTRY[computedWeather.value as string]
+  const mods = entry?.modifiers
   if (!mods) return ''
   
   const translations: Record<string, string> = {
@@ -277,6 +278,92 @@ const currentCols = ref(3)
 let resizeObserver: ResizeObserver | null = null
 let intersectionObserver: IntersectionObserver | null = null
 
+import { gsap } from 'gsap'
+
+const spawnGridRef = ref<HTMLElement | null>(null)
+let auraContext: gsap.Context | null = null
+
+const initAuraAnimations = () => {
+  if (auraContext) auraContext.revert()
+  if (!spawnGridRef.value || !isVisible.value) return
+
+  auraContext = gsap.context((self: gsap.Context) => {
+    const AURA_CYCLE = 2.0
+    const wrappers = self.selector!('.sprite-wrapper') as HTMLElement[]
+
+    wrappers.forEach((el) => {
+      const isRare = el.classList.contains('rare-spawn')
+      const isAtmos = el.classList.contains('atmospheric-spawn')
+      
+      if (!isRare && !isAtmos) return
+
+      const seedAttr = el.style.getPropertyValue('--spawn-seed')
+      const seed = seedAttr ? parseFloat(seedAttr) : Math.random()
+      const baseDelay = (seed % 1) * AURA_CYCLE
+
+      // 1. Pokémon Pulse (Heartbeat)
+      const scaleMax = isAtmos ? 1.08 : 1.05
+      const tl = gsap.timeline({ repeat: -1, delay: baseDelay })
+      tl.to(el, { scale: scaleMax, duration: 0.4, ease: 'power2.out' })
+        .to(el, { scale: 1, duration: 0.8, ease: 'sine.inOut' })
+
+      // 2. Aura Effects (Siblings)
+      if (isRare) {
+        const rareAura = el.parentElement?.querySelector('.rare-aura')
+        if (rareAura) {
+          gsap.fromTo(rareAura, 
+            { opacity: 0, scale: 0.95 },
+            {
+              opacity: 1, 
+              scale: 1.05, 
+              duration: AURA_CYCLE / 2,
+              repeat: -1,
+              yoyo: true,
+              ease: 'sine.inOut',
+              delay: baseDelay
+            }
+          )
+        }
+      }
+
+      if (isAtmos) {
+        const atmosAura = el.parentElement?.querySelector('.atmospheric-aura')
+        if (atmosAura) {
+          const atmosDelay = isRare ? baseDelay + (AURA_CYCLE / 2) : baseDelay
+          gsap.fromTo(atmosAura,
+            { opacity: 0, scale: 0.95 },
+            {
+              opacity: 0.9, 
+              scale: 1.08, 
+              duration: AURA_CYCLE / 2, 
+              repeat: -1,
+              yoyo: true,
+              ease: 'sine.inOut',
+              delay: atmosDelay
+            }
+          )
+        }
+      }
+    })
+
+    // 3. Winner Crown
+    const crowns = self.selector!('.dom-badge.winning') as HTMLElement[]
+    crowns.forEach(crown => {
+      gsap.fromTo(crown,
+        { scale: 1, filter: 'Brightness(1)' },
+        {
+          scale: 1.05,
+          filter: 'Brightness(1.3)',
+          duration: 1.5,
+          repeat: -1,
+          yoyo: true,
+          ease: 'sine.inOut'
+        }
+      )
+    })
+  }, spawnGridRef.value)
+}
+
 onMounted(() => {
   if (cardRef.value) {
     resizeObserver = new ResizeObserver((entries) => {
@@ -291,7 +378,19 @@ onMounted(() => {
 
     intersectionObserver = new IntersectionObserver((entries) => {
       const entry = entries[0]
-      if (entry) isVisible.value = entry.isIntersecting
+      if (entry) {
+        isVisible.value = entry.isIntersecting
+        if (isVisible.value) {
+          gsap.killTweensOf(initAuraAnimations)
+          gsap.delayedCall(0.1, initAuraAnimations)
+        } else {
+          gsap.killTweensOf(initAuraAnimations)
+          if (auraContext) {
+            auraContext.revert()
+            auraContext = null
+          }
+        }
+      }
     }, { 
       rootMargin: '50px', 
       threshold: 0.01 
@@ -303,7 +402,10 @@ onMounted(() => {
 onUnmounted(() => {
   if (resizeObserver) resizeObserver.disconnect()
   if (intersectionObserver) intersectionObserver.disconnect()
+  if (auraContext) auraContext.revert()
 })
+
+
 
 const lockReason = computed(() => {
   if (props.isSafariLocked) return 'REQUIERE TICKET SAFARI'
@@ -338,6 +440,15 @@ const spawnGrid = computed(() => {
   const grid = new Array(totalSlots).fill(null)
   filteredSpawns.forEach((id, index) => { grid[totalSlots - 1 - index] = id })
   return { slots: grid, rows, cols }
+})
+
+import { watch } from 'vue'
+watch(() => JSON.stringify(spawnGrid.value.slots), (newVal, oldVal) => {
+  if (newVal === oldVal) return
+  if (isVisible.value) {
+    gsap.killTweensOf(initAuraAnimations)
+    gsap.delayedCall(0.05, initAuraAnimations)
+  }
 })
 </script>
 
@@ -446,6 +557,7 @@ const spawnGrid = computed(() => {
       class="location-spawns"
     >
       <div 
+        ref="spawnGridRef"
         class="spawn-grid-container" 
         :style="{ '--grid-cols': spawnGrid.cols, '--grid-rows': spawnGrid.rows }"
         :class="{ 'show-debug-grid': uiStore.isDebugGridMode }"
@@ -459,6 +571,16 @@ const spawnGrid = computed(() => {
             v-if="item.id"
             class="spawn-content"
           >
+            <!-- AURA DIVS (GSAP target) -->
+            <div
+              v-if="item.isRare"
+              class="aura-effect rare-aura"
+            />
+            <div
+              v-if="item.isAtmospheric"
+              class="aura-effect atmospheric-aura"
+            />
+
             <div 
               :class="['sprite-wrapper', { 
                 'rare-spawn': item.isRare, 
@@ -500,7 +622,7 @@ const spawnGrid = computed(() => {
     <!-- 6. Winner Crown (Bottom Right) -->
     <PVTooltip
       v-if="isPlayerWinner && !isPerformanceMode && !isLocked && !isSafariLocked"
-      class="dom-badge winning anim-aura"
+      class="dom-badge winning"
       title="DOMINADO"
       description="¡Bonus de captura activo por dominio de facción!"
       position="top"
@@ -512,5 +634,41 @@ const spawnGrid = computed(() => {
 
 <style scoped lang="scss">
 @use "@/styles/components/map-card-weather" as *;
-.spawn-tooltip-trigger { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; pointer-events: auto; }
+
+.sprite-wrapper {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.aura-effect {
+  position: absolute;
+  inset: -3%; 
+  border-radius: 50%;
+  filter: Blur(1.5px); 
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0;
+
+  &.rare-aura {
+    background: Radial-Gradient(circle, Rgba(255, 0, 0, 0.95) 0%, Transparent 70%);
+  }
+
+  &.atmospheric-aura {
+    background: Radial-Gradient(circle, Rgba(0, 255, 255, 0.9) 0%, Transparent 70%);
+  }
+}
+
+.spawn-tooltip-trigger {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+}
 </style>

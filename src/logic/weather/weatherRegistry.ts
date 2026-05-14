@@ -30,12 +30,17 @@ export interface WeatherDefinition {
   icon: string;             // UI Icon
   visual: string;           // AtmosphereLayer animation key
   description: string;      // Tactical description for tooltips
+  modifiers?: {             // Mechanical multipliers for types
+    boost?: string[];
+    debuff?: string[];
+    block?: string[];
+  }
 }
 
 /**
  * THE SINGLE SOURCE OF TRUTH FOR WEATHER
  */
-const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
+export const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
   clear: WeatherDefinition;
   sun: WeatherDefinition;
   rain: WeatherDefinition;
@@ -70,7 +75,8 @@ const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
     label: 'SOL',
     icon: '☀️',
     visual: 'sun',
-    description: 'Potencia Fuego (x1.5), debilita Agua (x0.5). Rayo Solar sin carga.'
+    description: 'Potencia Fuego (x1.5), debilita Agua/Hielo (x0.4). Rayo Solar sin carga.',
+    modifiers: { boost: ['fire', 'grass', 'ground'], debuff: ['water', 'ice'] }
   },
   'heatwave': {
     id: 'heatwave',
@@ -78,15 +84,17 @@ const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
     label: 'OLA CALOR',
     icon: '🔥',
     visual: 'heatwave',
-    description: 'Calor extremo. Potencia Fuego (x1.5), el Agua se evapora (x0). Rayo Solar sin carga.'
+    description: 'Calor extremo. Potencia Fuego (x1.5). Bloquea Hielo y Planta (x0). El Agua se penaliza.',
+    modifiers: { boost: ['fire', 'ground'], block: ['ice', 'grass'], debuff: ['water'] }
   },
   'intense_sun': {
     id: 'intense_sun',
     mech: WEATHER_MECHANICAL.SUN,
     label: 'SOL INTENSO',
     icon: '🔆',
-    visual: 'sun',
-    description: 'Potencia Fuego (x1.5), el Agua se evapora (x0). Rayo Solar sin carga.'
+    visual: 'intense_sun',
+    description: 'Sol abrasador. Potencia Fuego/Planta. Bloquea Agua y Hielo (x0).',
+    modifiers: { boost: ['grass', 'fire'], block: ['water', 'ice'] }
   },
 
   // --- RAIN GROUP ---
@@ -96,7 +104,8 @@ const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
     label: 'LLUVIA',
     icon: '🌧️',
     visual: 'rain',
-    description: 'Potencia Agua (x1.5), debilita Fuego (x0.5). Trueno y Vendaval nunca fallan.'
+    description: 'Potencia Agua/Bicho (x1.5), debilita Fuego/Roca (x0.4). Trueno nunca falla.',
+    modifiers: { boost: ['water', 'bug', 'electric'], debuff: ['fire', 'rock', 'ground'] }
   },
   'storm': {
     id: 'storm',
@@ -104,23 +113,26 @@ const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
     label: 'TORMENTA',
     icon: '⛈️',
     visual: 'storm',
-    description: 'Tormenta eléctrica. Potencia Agua (x1.5), el Fuego se extingue (x0). Trueno nunca falla.'
+    description: 'Tormenta eléctrica. Potencia Agua/Dragón. Bloquea Fuego, Volador y Bicho (x0).',
+    modifiers: { boost: ['water', 'electric', 'dragon'], block: ['fire', 'flying', 'bug'], debuff: ['rock', 'ground'] }
   },
   'thunderstorm': {
     id: 'thunderstorm',
-    mech: WEATHER_MECHANICAL.RAIN,
+    mech: WEATHER_MECHANICAL.CLEAR,
     label: 'T. ELÉCTRICA',
     icon: '🌩️',
-    visual: 'storm',
-    description: 'Tormenta eléctrica intensa. Potencia Agua (x1.5) y el Fuego se extingue.'
+    visual: 'thunderstorm',
+    description: 'Fuerte actividad eléctrica. Potencia Eléctrico/Dragón. No afecta al Fuego.',
+    modifiers: { boost: ['electric', 'dragon'], debuff: ['rock', 'ground'] }
   },
   'heavy_rain': {
     id: 'heavy_rain',
     mech: WEATHER_MECHANICAL.RAIN,
     label: 'LLUVIA FUERTE',
     icon: '☔',
-    visual: 'rain',
-    description: 'Lluvia torrencial. Potencia Agua (x1.5) y el Fuego se extingue.'
+    visual: 'heavy_rain',
+    description: 'Lluvia torrencial. Potencia Agua. Bloquea Fuego (x0).',
+    modifiers: { boost: ['water'], block: ['fire'], debuff: ['rock', 'ground'] }
   },
 
   // --- SAND GROUP ---
@@ -130,15 +142,17 @@ const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
     label: 'T. ARENA',
     icon: '🏜️',
     visual: 'sandstorm',
-    description: 'Daña a tipos no Tierra/Roca/Acero. Sube un 50% la Def. Especial de los tipo Roca.'
+    description: 'Daña a tipos no Tierra/Roca/Acero. Sube un 50% la Def. Especial de los tipo Roca.',
+    modifiers: { boost: ['rock', 'ground', 'steel'], debuff: ['flying', 'bug', 'fire'] }
   },
   'dust_storm': {
     id: 'dust_storm',
     mech: WEATHER_MECHANICAL.SANDSTORM,
     label: 'T. POLVO',
     icon: '🌪️',
-    visual: 'sandstorm',
-    description: 'Visibilidad reducida. Daña a tipos no Tierra/Roca/Acero y baja la precisión.'
+    visual: 'dust_storm',
+    description: 'Visibilidad nula. Daña por turno. Bloquea Volador (x0) y penaliza Bicho.',
+    modifiers: { boost: ['rock', 'ground'], block: ['flying'], debuff: ['bug'] }
   },
 
   // --- ICE GROUP ---
@@ -148,15 +162,17 @@ const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
     label: 'NIEVE',
     icon: '❄️',
     visual: 'snow',
-    description: 'Sube un 50% la Defensa de los tipo Hielo. Ventisca nunca falla.'
+    description: 'Sube un 50% la Defensa de los tipo Hielo. Ventisca nunca falla.',
+    modifiers: { boost: ['ice', 'steel'], debuff: ['fire', 'bug', 'flying'] }
   },
   'cold': {
     id: 'cold',
     mech: WEATHER_MECHANICAL.SNOW,
     label: 'FRÍO',
     icon: '❄️',
-    visual: 'snow',
-    description: 'Ambiente gélido que sube un 50% la Defensa de los tipo Hielo.'
+    visual: 'cold',
+    description: 'Ambiente gélido. Potencia Hielo. Penaliza Bicho y Planta.',
+    modifiers: { boost: ['ice'], debuff: ['grass', 'bug'] }
   },
   'hail': {
     id: 'hail',
@@ -164,7 +180,8 @@ const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
     label: 'GRANIZO',
     icon: '🌨️',
     visual: 'blizzard',
-    description: 'Daña a tipos no Hielo cada turno. Ventisca nunca falla.'
+    description: 'Daña a tipos no Hielo cada turno. Penaliza Fuego, Bicho, Volador y Planta.',
+    modifiers: { boost: ['ice'], debuff: ['fire', 'bug', 'flying', 'grass'] }
   },
   'blizzard': {
     id: 'blizzard',
@@ -172,15 +189,17 @@ const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
     label: 'VENTISCA',
     icon: '🌬️',
     visual: 'blizzard',
-    description: 'Tormenta de nieve. Daña a tipos no Hielo, sube su Defensa y Ventisca nunca falla.'
+    description: 'Tormenta de nieve. Daña por turno. Bloquea Fuego, Planta, Bicho y Volador (x0).',
+    modifiers: { boost: ['ice'], block: ['fire', 'grass', 'bug', 'flying'], debuff: ['steel', 'rock'] }
   },
   'coldwave': {
     id: 'coldwave',
     mech: WEATHER_MECHANICAL.HAIL,
     label: 'OLA FRÍO',
     icon: '🥶',
-    visual: 'blizzard',
-    description: 'Frío extremo que daña a tipos no Hielo y sube su Defensa.'
+    visual: 'coldwave',
+    description: 'Frío extremo. Daña por turno y reduce Velocidad (50%). Bloquea Bicho y Planta (x0).',
+    modifiers: { boost: ['ice'], block: ['grass', 'bug'], debuff: ['fire', 'flying'] }
   },
 
   // --- FOG GROUP ---
@@ -190,15 +209,17 @@ const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
     label: 'NIEBLA',
     icon: '🌫️',
     visual: 'fog',
-    description: 'Niebla densa que reduce drásticamente la precisión de todos los movimientos.'
+    description: 'Niebla densa. Potencia Fantasma/Siniestro. Reduce drásticamente la precisión.',
+    modifiers: { boost: ['ghost', 'psychic', 'dark'], debuff: ['flying'] }
   },
   'mist': {
     id: 'mist',
     mech: WEATHER_MECHANICAL.FOG,
     label: 'BRUMA',
     icon: '💨',
-    visual: 'fog',
-    description: 'Humedad ligera que reduce suavemente la precisión de los movimientos.'
+    visual: 'mist',
+    description: 'Humedad mágica. Potencia Hada/Agua. Penaliza Fuego.',
+    modifiers: { boost: ['fairy', 'water'], debuff: ['fire'] }
   },
 
   // --- WIND GROUP ---
@@ -208,7 +229,8 @@ const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
     label: 'VIENTO',
     icon: '🍃',
     visual: 'wind',
-    description: 'Brisa constante que activa habilidades de viento.'
+    description: 'Brisa constante. Potencia Volador/Psíquico. Penaliza Tierra.',
+    modifiers: { boost: ['flying', 'bug', 'psychic'], debuff: ['ground'] }
   },
   'strong_winds': {
     id: 'strong_winds',
@@ -216,7 +238,8 @@ const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
     label: 'V. FUERTES',
     icon: '🌀',
     visual: 'strong_winds',
-    description: 'Corrientes de aire Delta que eliminan las debilidades del tipo Volador.'
+    description: 'Corrientes Delta. Elimina debilidades Volador. Bloquea Bicho y Tierra (x0).',
+    modifiers: { boost: ['flying', 'dragon', 'psychic'], block: ['bug', 'ground'] }
   }
 };
 

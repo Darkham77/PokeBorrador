@@ -4,6 +4,7 @@ import { useShopStore } from '../../src/stores/shop';
 import { useGameStore } from '../../src/stores/game';
 import { useUIStore } from '../../src/stores/ui';
 import { SHOP_ITEMS } from '../../src/data/items';
+import type { Pokemon } from '../../src/types/pokemon';
 
 describe('Shop Store', () => {
   beforeEach(() => {
@@ -88,13 +89,13 @@ describe('Shop Store', () => {
       maxHp: 100,
       status: 'poison',
       moves: [{ pp: 5, maxPP: 20 }]
-    }] as any;
+    }] as unknown as Pokemon[];
     
     const success = shop.healAllPokemon();
     
     expect(success).toBe(true);
-    expect(game.state.team[0].hp).toBe(100);
-    expect(game.state.team[0].status).toBe(null);
-    expect(game.state.team[0].moves[0].pp).toBe(20);
+    expect(game.state.team![0]!.hp).toBe(100);
+    expect(game.state.team![0]!.status).toBe(null);
+    expect(game.state.team![0]!.moves![0]!.pp).toBe(20);
   });
 });
