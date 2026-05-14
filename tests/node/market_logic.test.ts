@@ -73,7 +73,7 @@ test('Market Logic: state management (seen ids)', () => {
   const result = ensureMarketSoldSeenState(state);
   assert.deepStrictEqual(result, []);
   
-  state.marketSoldSeenIds = ['valid-id', '', '  ', 123 as any];
+  state.marketSoldSeenIds = ['valid-id', '', '  ', 'invalid-type-simulated'];
   const cleaned = ensureMarketSoldSeenState(state);
   assert.deepStrictEqual(cleaned, ['valid-id']);
 });

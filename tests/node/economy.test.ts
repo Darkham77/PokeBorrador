@@ -5,14 +5,14 @@ import {
   pokemonNeedsHealing, 
   calculateTotalHealCost
 } from '../../src/logic/economy/economyFormulas.ts';
-import type { Pokemon } from '../../src/types/pokemon';
+import type { Pokemon, Move } from '../../src/types/pokemon';
 
 test('Economy Formulas: pokemonNeedsHealing', () => {
   const healthyPkmn: Partial<Pokemon> = {
     hp: 100,
     maxHp: 100,
     status: null,
-    moves: [{ name: 'Tackle', pp: 20, maxPP: 20 }] as any
+    moves: [{ name: 'Tackle', pp: 20, maxPP: 20 }] as (Move | null)[]
   };
 
   const damagedPkmn: Partial<Pokemon> = {
@@ -33,7 +33,7 @@ test('Economy Formulas: pokemonNeedsHealing', () => {
     hp: 100,
     maxHp: 100,
     status: null,
-    moves: [{ name: 'Tackle', pp: 10, maxPP: 20 }] as any
+    moves: [{ name: 'Tackle', pp: 10, maxPP: 20 }] as (Move | null)[]
   };
 
   assert.strictEqual(pokemonNeedsHealing(healthyPkmn as Pokemon), false, 'Healthy pokemon should not need healing');

@@ -2,9 +2,11 @@
 
 To guarantee a premium and "alive" visual experience, all cyclical animations must avoid perfect synchronization between multiple instances. To maintain system flexibility, **avoid hardcoding absolute durations or offsets** in documentation; refer to relative logic and symbolic constants.
 
-> [!IMPORTANT] **GSAP MANDATE**: All animations (UI, battle, transitions) MUST use GSAP. Manual CSS `@keyframes` or transitions on `transform/opacity` are FORBIDDEN as they conflict with GSAP's engine and cause layout jank.
+> [!IMPORTANT] **GSAP MANDATE**: All animations (UI, battle, transitions) MUST use GSAP. Manual CSS `@keyframes` or transitions on `transform/opacity` are FORBIDDEN as they conflict with GSAP's engine and cause layout jank or "stuck" frames.
 >
 > [!TIP] **Organic Entrance**: Use small random delays (`delay: Math.random() * 0.4`) when animating elements in a grid to avoid a rigid, "robotic" simultaneous appearance.
+>
+> [!CAUTION] **Target Validation**: ALWAYS verify that GSAP targets exist and are rendered (`length > 0` or `offsetParent !== null`) before creating tweens. Console warnings for missing targets in high-frequency loops (e.g. Map renders) will cause severe performance degradation and visual stutters.
 
 ## 0. Coordinate Initialization (Flicker Prevention)
 
@@ -53,6 +55,7 @@ Pokémon with high stats (Tier S/S+) use a rhythmic pulsing animation instead of
 - **Implementation**: Animate `opacity` and `Filter()` intensity using the `--tier-color` variable.
 - **Timing**: Use a "Slow Breathing" cycle (long duration) to avoid visual fatigue.
 - **Safety**: Avoid `Scale()` for ambient pulsing in containers with `overflow: hidden` to prevent visual clipping.
+- **Rhythmic Pulse (Heartbeat)**: For organic entities (Pokémon), prefer an asymmetric pulse over a simple `sine.inOut`. Use a GSAP Timeline: fast expansion (e.g., `0.4s` with `power2.out`) followed by a slower contraction (e.g., `0.8s` with `sine.inOut`) to simulate a lifelike heartbeat.
 
 ## 6. Proportional Interaction Offsets
 

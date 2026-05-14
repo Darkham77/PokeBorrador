@@ -3,6 +3,7 @@ import { setActivePinia, createPinia } from 'pinia';
 import { useGTSStore } from '../../src/stores/gts';
 import { useGameStore } from '../../src/stores/game';
 import { useUIStore } from '../../src/stores/ui';
+import type { MarketListing } from '../../src/logic/market';
 
 describe('GTS Store', () => {
   beforeEach(() => {
@@ -51,12 +52,20 @@ describe('GTS Store', () => {
     const game = useGameStore();
     const ui = useUIStore();
 
-    const mockListing = { id: 'list-1', price: 100, listing_type: 'item', data: { name: 'Potion' } };
+    const mockListing: MarketListing = { 
+      id: 'list-1', 
+      price: 100, 
+      listing_type: 'item', 
+      data: { name: 'Potion' },
+      status: 'active',
+      seller_id: 'seller-1',
+      created_at: new Date().toISOString()
+    };
     game.state.money = 500;
     game.db.rpc = vi.fn().mockResolvedValue({ data: { money: 400 }, error: null });
     game.fetchClaimQueue = vi.fn().mockResolvedValue([]);
 
-    const result = await gts.buyListing(mockListing as any);
+    const result = await gts.buyListing(mockListing);
 
     expect(result).toBe(true);
     expect(ui.setLoading).toHaveBeenCalledWith(true);
