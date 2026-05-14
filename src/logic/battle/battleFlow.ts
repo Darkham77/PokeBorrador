@@ -1,4 +1,4 @@
-import { getMechanicalWeather, WEATHER_MECHANICAL } from '../weather/weatherRegistry'
+import { getMechanicalWeather, WEATHER_MECHANICAL } from '../weather/weatherRegistry.ts'
 import { gameBus } from '@/logic/gameBus'
 import type { Pokemon } from '@/types/pokemon'
 import type { BattleStages, LogFn, BattleWeather } from '@/types/battle'

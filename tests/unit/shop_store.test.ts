@@ -1,10 +1,10 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
-import { useShopStore } from '../../src/stores/shop';
-import { useGameStore } from '../../src/stores/game';
-import { useUIStore } from '../../src/stores/ui';
-import { SHOP_ITEMS } from '../../src/data/items';
-import type { Pokemon } from '../../src/types/pokemon';
+import { useShopStore } from '../../src/stores/shop.ts';
+import { useGameStore } from '../../src/stores/game.ts';
+import { useUIStore } from '../../src/stores/ui.ts';
+import { SHOP_ITEMS } from '../../src/data/items.ts';
+import type { Pokemon } from '../../src/types/pokemon.ts';
 
 describe('Shop Store', () => {
   beforeEach(() => {

@@ -1,5 +1,5 @@
 import type { MoveAction } from '@/types/battle';
-import { getMechanicalWeather, WEATHER_MECHANICAL } from '../../weather/weatherRegistry';
+import { getMechanicalWeather, WEATHER_MECHANICAL } from '../../weather/weatherRegistry.ts';
 
 export const HEALING_ACTIONS: Record<string, MoveAction> = {
   'heal_50': (src, _tgt, _srcStages, _tgtStages, addLogFn) => {

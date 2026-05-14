@@ -17,6 +17,7 @@ All heavy components or those that animate frequently must be promoted to a GPU 
 - **Audit Safeguard**: This promotion is required even if the current state is `filter: none !important`, ensuring the compositor layer is pre-allocated and ready for dynamic transitions without triggering "GPU Gap" warnings.
 - **Z-Index Single Source of Truth**: Never use hardcoded integers for `z-index` (e.g., `10`, `-1`). All layering MUST be relative to centralized variables using `calc(var(--z-base) +/- X)` or named constants (e.g., `var(--z-map-spawns)`). Refer to `src/logic/constants/visuals.ts` for the authoritative values.
 - **Pixel Sharpening Layer**: Apply `transform: translateZ(0)` (or its sibling `translate3d(0,0,0)`) to elements with pixel fonts or small pixel-art sprites. This forces the browser to align the element to the physical pixel grid of the compositor layer, eliminating sub-pixel blurring artifacts during scaling or fractional positioning.
+- **Atmospheric Insets**: For large atmospheric overlays (Fog, Sandstorm), avoid excessive `inset` values (e.g., `-512px`). Use the minimum required to cover movement/parallax (e.g., `-128px`) to significantly reduce GPU memory overhead and avoid flickering in multi-column layouts.
 
 ## 2. Low-Cost Animations
 
@@ -33,6 +34,7 @@ All heavy components or those that animate frequently must be promoted to a GPU 
   - **Premium Glow**: For soft outlines (glows/auras), include `feGaussianBlur` (stdDeviation 0.5 - 1.0) **inside** the SVG filter. This is more efficient than combining an SVG outline with a CSS `drop-shadow`.
   - **Detection**: Run `.agents/skills/project-standards/scripts/audit/detect_outline_traps.py` to identify legacy outlines that require migration to SVG.
 - **Will-Change**: Use `@include will-animate(transform, opacity)` only on elements with constant animations (e.g., auras, Shiny pulses). Do not abuse, as it consumes video memory.
+- **GSAP Movement vs Opacity**: For high-density particle weather (e.g., Dust Storm), prioritize constant opacity combined with movement over pulsing opacity to minimize GPU recomposition cycles and maintain stability.
 
 ## 3. Smooth Scroll & Gutter
 

@@ -5,7 +5,7 @@ import {
   pokemonNeedsHealing, 
   calculateTotalHealCost
 } from '../../src/logic/economy/economyFormulas.ts';
-import type { Pokemon, Move } from '../../src/types/pokemon';
+import type { Pokemon, Move } from '../../src/types/pokemon.ts';
 
 test('Economy Formulas: pokemonNeedsHealing', () => {
   const healthyPkmn: Partial<Pokemon> = {

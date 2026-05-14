@@ -456,6 +456,7 @@ To prevent "z-index wars" and ensure consistent interaction, all layers MUST fol
   - Atmosphere/Filters: `z-index: -1`
   - Interactive Content: `z-index: var(--z-map-spawns)` (10)
   - UI Layer (Header, Pills, Guardian): `z-index: var(--z-map-ui)` (20)
+- **Immutable Hierarchy (Source of Truth)**: To prevent visual regressions, all map layering MUST use constants defined in `src/logic/constants/visuals.ts`. This ensures a permanent segregation: `Fondo (0) < Clima (8) < Oscuridad Hover (9) < Pokémon (10) < UI (20)`.
 
 ### 3. Layering Delta Standard (+10)
 

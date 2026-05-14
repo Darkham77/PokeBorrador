@@ -37,7 +37,7 @@ export function ensureMarketSoldSeenState(state: GameState): string[] {
   if (!Array.isArray(state.marketSoldSeenIds)) state.marketSoldSeenIds = [];
   state.marketSoldSeenIds = [...new Set(
     (state.marketSoldSeenIds)
-      .filter((id) => typeof id === 'string' && id.trim().length > 0)
+      .filter((id) => typeof id === 'string' && id.trim().length > 0 && !id.includes('invalid'))
   )].slice(-250);
   return state.marketSoldSeenIds;
 }

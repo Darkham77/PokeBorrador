@@ -185,7 +185,7 @@ To preserve the artistic integrity of the original pixel-art backgrounds, the sy
 | Target Element | Cycle Filter (Brightness/Hue) | Weather Filter (Rain/Arena) | Implementation Detail |
 | :--- | :---: | :---: | :--- |
 | **Map Backgrounds** | ❌ | ✅ | Relies on dedicated textures (e.g., `_noche`). |
-| **Map Spawns (Pokémon)** | ❌ | ✅ | Prevents double-darkening on the world map. |
+| **Map Spawns (Pokémon)** | ❌ | ❌ | Isolated from climate filters to preserve color integrity. |
 | **Battle Backgrounds** | ❌ | ✅ | Uses cycle-specific battle arena assets. |
 | **Battle Combatants** | ✅ | ✅ | Pokémon sprites must tint to integrate with the hour. |
 | **Battle Deco (Bushes/Rocks)** | ✅ | ✅ | Environmental objects must match lighting. |

@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
-import { useGTSStore } from '../../src/stores/gts';
-import { useGameStore } from '../../src/stores/game';
-import { useUIStore } from '../../src/stores/ui';
-import type { MarketListing } from '../../src/logic/market';
+import { useGTSStore } from '../../src/stores/gts.ts';
+import { useGameStore } from '../../src/stores/game.ts';
+import { useUIStore } from '../../src/stores/ui.ts';
+import type { MarketListing } from '../../src/logic/market.ts';
 
 describe('GTS Store', () => {
   beforeEach(() => {

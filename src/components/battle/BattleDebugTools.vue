@@ -523,7 +523,7 @@ const toggleStatus = (side: string, type: string) => {
   border: 2px solid var(--purple);
   border-radius: 8px;
   width: 340px;
-  max-width: 90vw;
+  max-width: dvw;
   max-height: 500px;
   display: flex;
   flex-direction: column;
@@ -562,7 +562,7 @@ const toggleStatus = (side: string, type: string) => {
   border: 2px solid var(--blue);
   border-radius: 8px;
   width: 340px;
-  max-width: 90vw;
+  max-width: dvw;
   max-height: 500px;
   display: flex;
   flex-direction: column;
@@ -622,7 +622,7 @@ const toggleStatus = (side: string, type: string) => {
   flex-direction: column;
   gap: 8px;
   width: 340px;
-  max-width: 90vw;
+  max-width: dvw;
   max-height: 400px;
   min-height: 0;
   overflow-x: hidden;

@@ -6,7 +6,7 @@ import {
   ensureMarketSoldSeenState 
 } from '../../src/logic/market.ts';
 import type { MarketListing, MarketFilters } from '../../src/logic/market.ts';
-import type { GameState } from '../../src/types/game';
+import type { GameState } from '../../src/types/game.ts';
 
 const mockListing: MarketListing = {
   id: 'uuid-1',
