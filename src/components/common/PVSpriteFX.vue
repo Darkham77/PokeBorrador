@@ -799,7 +799,7 @@ const shinyDebug = computed(() => {
       >{{ shinyDebug.label }}</span>
     </div>
 
-    <!-- BRILLOS SHINY (SIEMPRE DISPONIBLES) -->
+    <!-- BRILLOS SHINY (DISPONIBLES SI NO ESTÁ SIMPLIFICADO O ES FOREGROUND) -->
     <div
       v-if="isShiny && !isSimplified"
       ref="shinyRef"

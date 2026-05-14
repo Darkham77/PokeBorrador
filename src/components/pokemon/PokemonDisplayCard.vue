@@ -46,6 +46,15 @@ const uiStore = useUIStore()
 
 // Hierarchy & Performance Injections
 const isModalPerformance = inject<ComputedRef<boolean> | null>('isModalPerformanceMode', null)
+
+/**
+ * Determina si este componente está en el modal que el usuario tiene activo en primer plano.
+ */
+const isForeground = computed(() => {
+  if (isModalPerformance === null) return false
+  return isModalPerformance.value === false
+})
+
 const isPerformanceActive = computed(() => {
   if (uiStore.isSimplifiedModalsMode) return true
   
@@ -87,15 +96,24 @@ const cardClasses = computed(() => {
   if (props.pokemon.onMission) classes.push('on-mission')
   if (hasBadges.value) classes.push('with-badges')
   if (hasManyBadges.value) classes.push('many-badges')
-  if (isPerformanceActive.value) {
+  
+  // En modo performance extremo (forzado), simplificamos todo
+  if (uiStore.isSimplifiedModalsMode) {
     classes.push('is-performance-mode')
     return classes
+  }
+
+  // Si estamos en modo performance automático (modales de fondo), añadimos la clase pero NO retornamos todavía
+  // Queremos mantener las clases de identidad (shiny, aura) para que el CSS las reconozca
+  if (isPerformanceActive.value) {
+    classes.push('is-performance-mode')
   }
   
   if (props.pokemon.aura) classes.push(`aura-${props.pokemon.aura}-mini`)
   if (props.pokemon.isShiny) classes.push('is-shiny')
   if (props.pokemon.isGuardian) classes.push('is-guardian')
   if (isPremiumTier.value) classes.push('is-premium-tier')
+  
   return classes
 })
 
@@ -145,7 +163,7 @@ function getGenderClass(gender: string) {
     <!-- Sprite Section -->
     <div class="sprite-section">
       <PVSpriteFX
-        :enabled="isVisible && !isPerformanceActive"
+        :enabled="isVisible && (!isPerformanceActive || isForeground)"
         :is-shiny="pokemon.isShiny"
         :is-guardian="pokemon.isGuardian"
         :sparkle-count="5"

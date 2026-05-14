@@ -22,25 +22,29 @@
   .sparkle {
     // 15-85% distribution range to keep them near the sprite
     // Positions are randomized via GSAP in PVSpriteFX.vue
-    &:nth-child(n+1) { @include shiny-sparkle(0.5s, 50%, 50%); }
+    &:nth-child(n+1) { @include shiny-sparkle(0.1s, 50%, 50%); }
+    &:nth-child(2) { @include shiny-sparkle(0.6s, 40%, 60%); }
+    &:nth-child(3) { @include shiny-sparkle(1.2s, 60%, 40%); }
+    &:nth-child(4) { @include shiny-sparkle(1.8s, 35%, 35%); }
+    &:nth-child(5) { @include shiny-sparkle(2.2s, 65%, 65%); }
 
     // Support for extra particles
     &:nth-child(n+9) { @include shiny-sparkle(0.5s, 50%, 50%); }
   }
 }
 
-@mixin shiny-sparkle($delay: 0s, $top: 0%, $left: 0%) {
+@mixin shiny-sparkle($delay: 0s, $top: 50%, $left: 50%) {
   position: absolute;
   top: $top;
   left: $left;
-  width: 10%;
+  width: 14%;
   aspect-ratio: 1;
   opacity: 0;
-  z-index: calc(var(--z-map-spawns, 10) + 1);
+  z-index: calc(var(--z-map-spawns, 10) + 10);
   transform-origin: center center;
   transform: Translate(-50%, -50%);
-  animation: sparkle-pop 2.5s infinite ease-out;
-  animation-delay: calc(#{$delay} + (var(--fx-seed, 0) * -2.5s));
+  animation: sparkle-pop 3s infinite ease-in-out;
+  animation-delay: calc(#{$delay} + (var(--fx-seed, 0) * -3s));
 
   &::after {
     content: '';
@@ -94,9 +98,8 @@
       transform: none !important;
     }
     
-    & .pv-fx-shiny-overlay {
-       display: none !important;
-    }
+    // Shiny sparkles are now allowed in simplified mode 
+    // to provide a low-cost CSS fallback animation.
   }
 
   // Status Effects (Persistent) - Migrated to GSAP in PVSpriteFX.vue
@@ -248,7 +251,11 @@
    COMBATANT & BATTLE TRANSITION KEYFRAMES
    ========================================================================== */
 
-
+@keyframes sparkle-pop {
+  0%, 100% { transform: Translate(-50%, -50%) Scale(0) Rotate(0deg); opacity: 0; }
+  15%, 85% { opacity: 1; }
+  50% { transform: Translate(-50%, -50%) Scale(1.2) Rotate(180deg); opacity: 1; }
+}
 
 @keyframes pokeball-wobble {
   0%, 100% { transform: Rotate(0deg); }

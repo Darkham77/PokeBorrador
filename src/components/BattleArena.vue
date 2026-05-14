@@ -359,7 +359,7 @@ const handleClose = () => {
   border-top: 1px solid Rgba(255, 255, 255, 0.2);
   box-shadow: inset 0 10px 20px Rgba(0, 0, 0, 0.4);
   margin-top: -1px; // Solapamiento para evitar fugas de luz
-  min-height: 210px;
+  min-height: 180px;
 }
 
 </style>

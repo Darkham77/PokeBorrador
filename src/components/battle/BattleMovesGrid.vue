@@ -422,7 +422,7 @@ onUnmounted(() => {
   border-radius: 12px;
   overflow: hidden;
   box-sizing: border-box;
-  min-height: 72px;
+  min-height: 52px;
   user-select: none;
 
   &.is-dragging {
