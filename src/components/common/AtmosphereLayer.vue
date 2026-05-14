@@ -27,7 +27,8 @@ const animClass = computed(() => {
     heatwave: 'anim-glow',
     cold: 'anim-glow',
     coldwave: 'anim-glow',
-    sandstorm: 'anim-glow',
+    sandstorm: 'anim-drift',
+    dust_storm: 'anim-drift',
     mist: 'anim-drift',
     fog: 'anim-drift',
     wind: 'anim-drift',
@@ -45,7 +46,6 @@ const dustLayer1Ref = ref<HTMLElement | null>(null)
 const dustLayer2Ref = ref<HTMLElement | null>(null)
 const mistLayerRef = ref<HTMLElement | null>(null)
 const mistLayer2Ref = ref<HTMLElement | null>(null)
-const mistLayer3Ref = ref<HTMLElement | null>(null)
 const layer1Ref = ref<HTMLElement | null>(null)
 const layer2Ref = ref<HTMLElement | null>(null)
 const lightningRef = ref<HTMLElement | null>(null)
@@ -53,6 +53,32 @@ const lightningRef = ref<HTMLElement | null>(null)
 const lightningPos = ref({ x1: 20, x2: 60 })
 let weatherTimeline: gsap.core.Timeline | null = null
 let lightningTimer: gsap.core.Tween | null = null
+
+const applyParallaxLayer = (
+  layer: HTMLElement | null,
+  startX: number,
+  startY: number,
+  moveX: number,
+  moveY: number,
+  duration: number
+) => {
+  if (!layer || !weatherTimeline) return
+  gsap.killTweensOf(layer)
+  gsap.set(layer, { backgroundPosition: `${startX}px ${startY}px` })
+  
+  // Formateo estricto para GSAP (evita el bug de '+=-256px' y fallos con '+0px')
+  const opX = moveX >= 0 ? '+=' : '-='
+  const opY = moveY >= 0 ? '+=' : '-='
+  const valX = Math.abs(moveX) || 0.01
+  const valY = Math.abs(moveY) || 0.01
+  
+  weatherTimeline.to(layer, {
+    backgroundPosition: `${opX}${valX}px ${opY}${valY}px`,
+    duration,
+    repeat: -1,
+    ease: 'none'
+  }, 0)
+}
 
 const initWeatherAnim = () => {
   if (weatherTimeline) weatherTimeline.kill()
@@ -65,15 +91,14 @@ const initWeatherAnim = () => {
     dustLayer1Ref.value, 
     dustLayer2Ref.value, 
     mistLayerRef.value,
-    mistLayer2Ref.value,
-    mistLayer3Ref.value
+    mistLayer2Ref.value
   ]
   
   allLayers.forEach(layer => {
     if (layer) {
       gsap.killTweensOf(layer)
       gsap.set(layer, { clearProps: 'all' })
-      gsap.set(layer, { x: 0, y: 0, opacity: 0.8 })
+      gsap.set(layer, { x: 0, y: 0 }) // La opacidad la controla 100% el SCSS ahora
     }
   })
 
@@ -265,50 +290,32 @@ const initWeatherAnim = () => {
     const s2Y = (animSeed.value * 4800) % 128
 
     if (dustLayer1Ref.value) {
-      // Velocidad para arena: ±20% varianza estándar
       const speed1 = (1.0 + animSeed.value * 0.4) * (isStrongWind ? 1.0 : (isDust ? 1.2 : 0.8)) / speedVar
-      // Deriva fija: el CSS se encarga del volteo con scaleX
       const driftX = -512
-      gsap.set(dustLayer1Ref.value, { backgroundPosition: `${s1X}px ${s1Y}px` })
+      const isDiagonal = !['strong_winds', 'sandstorm', 'dust_storm'].includes(w)
+      const moveY1 = isDiagonal ? 256 : 0
       
-      weatherTimeline.to(dustLayer1Ref.value,
-        {
-          backgroundPosition: `+=${driftX}px +=256px`, 
-          duration: speed1,
-          repeat: -1,
-          ease: 'none'
-        },
-        0
-      ).progress(seed1)
+      applyParallaxLayer(dustLayer1Ref.value, s1X, s1Y, driftX, moveY1, speed1)
 
       if (dustLayer2Ref.value) {
-        const speed2 = speed1 * (1.1 + seed2 * 0.4)
+        const speed2 = (0.7 + animSeed.value * 0.3) * (isStrongWind ? 0.9 : (isDust ? 1.0 : 0.7)) / speedVar
         
         if (isStrongWind) {
           gsap.set(dustLayer1Ref.value, { backgroundSize: '128px 128px' })
           gsap.set(dustLayer2Ref.value, { backgroundSize: '256px 256px' })
         }
 
-        gsap.set(dustLayer2Ref.value, { backgroundPosition: `${s2X}px ${s2Y}px` })
-        
-        weatherTimeline.to(dustLayer2Ref.value,
-          {
-            backgroundPosition: `-=1024px +=512px`,
-            duration: speed2,
-            repeat: -1,
-            ease: 'none'
-          },
-          0
-        ).progress(seed2)
+        const moveY2 = isDiagonal ? 512 : 0
+        applyParallaxLayer(dustLayer2Ref.value, s2X, s2Y, -1024, moveY2, speed2)
       }
     }
   }
 
-  // Fog / Mist / Wind / Strong Winds / Heatwave / Sun / Cold / Coldwave / Intense Sun
-  if (['fog', 'mist', 'wind', 'strong_winds', 'heatwave', 'sun', 'cold', 'coldwave', 'intense_sun'].includes(w)) {
+  // Fog / Mist / Wind / Heatwave / Sun / Cold / Coldwave / Intense Sun / Dust Storm Mist
+  if (['fog', 'mist', 'wind', 'heatwave', 'sun', 'cold', 'coldwave', 'intense_sun', 'dust_storm'].includes(w)) {
     const target = mistLayerRef.value
     if (target) {
-      const hasPulse = ['heatwave', 'coldwave', 'strong_winds', 'intense_sun'].includes(w)
+      const hasPulse = ['heatwave', 'coldwave', 'intense_sun'].includes(w)
       const isMist = w === 'mist'
       const baseOpacity = isMist ? 0.4 : (hasPulse ? 0.5 : 0.8)
       const maxOpacity = isMist ? 0.6 : (hasPulse ? 0.9 : 0.85)
@@ -326,51 +333,30 @@ const initWeatherAnim = () => {
       )
 
       // Animación de desplazamiento (Drift)
-      if (['wind', 'strong_winds', 'fog', 'mist'].includes(w)) {
+      if (['wind', 'fog', 'mist', 'dust_storm'].includes(w)) {
         const isFoggy = ['fog', 'mist'].includes(w);
+        const isDust = w === 'dust_storm';
         const moveX = isFoggy ? 512 : -512; // Valor fijo, el CSS voltea
-        const moveY = isFoggy ? 256 : 0;
+        const moveY = isFoggy ? 256 : 0; // Solo diagonal en niebla/bruma, el resto horizontal
         
         // Variación de velocidad por mapa (Global speedVar ya calculada al inicio)
-        const baseDur = isFoggy ? 120 : (w === 'strong_winds' ? 2 : 8);
+        // T.Polvo va mucho más rápido (duración 3) que el viento normal (duración 8)
+        const baseDur = isFoggy ? 120 : (isDust ? 3 : 8);
         const dur = baseDur / speedVar;
 
-        // Capa 1 (512px)
-        const sX1 = (animSeed.value * 1234) % 512;
-        const sY1 = (animSeed.value * 5678) % 512;
-        gsap.set(mistLayerRef.value, { backgroundPosition: `${sX1}px ${sY1}px` });
-        weatherTimeline.to(mistLayerRef.value, {
-          backgroundPosition: `+=${moveX}px +=${moveY}px`,
-          duration: dur,
-          repeat: -1,
-          ease: 'none'
-        }, 0);
+        // Capa 1 (Fondo: Más pequeña, más lenta)
+        const sX1 = (animSeed.value * 1234) % 256;
+        const sY1 = (animSeed.value * 5678) % 256;
+        const varDur1 = dur * (1.8 + (animSeed.value * 0.4)); // ~2.0x duración, más lenta
 
-        // Capa 2 (713px) - Más lenta
-        if (mistLayer2Ref.value) {
-          const sX2 = (animSeed.value * 3456) % 713;
-          const sY2 = (animSeed.value * 7890) % 713;
-          gsap.set(mistLayer2Ref.value, { backgroundPosition: `${sX2}px ${sY2}px` });
-          weatherTimeline.to(mistLayer2Ref.value, {
-            backgroundPosition: `+=${moveX * 1.4}px +=${moveY * 1.4}px`,
-            duration: dur * 2.1, // Drásticamente más lenta
-            repeat: -1,
-            ease: 'none'
-          }, 0);
-        }
+        applyParallaxLayer(mistLayerRef.value, sX1, sY1, moveX * 0.5, moveY * 0.5, varDur1)
+        
+        // Capa 2 (Frente: Más grande, más rápida)
+        const sX2 = (animSeed.value * 3456) % 512;
+        const sY2 = (animSeed.value * 7890) % 512;
+        const varDur2 = dur * (0.9 + (animSeed.value * 0.2)); // ~1.0x duración, más rápida
 
-        // Capa 3 (911px) - Muy lenta (Profundo)
-        if (mistLayer3Ref.value) {
-          const sX3 = (animSeed.value * 9101) % 911;
-          const sY3 = (animSeed.value * 1121) % 911;
-          gsap.set(mistLayer3Ref.value, { backgroundPosition: `${sX3}px ${sY3}px` });
-          weatherTimeline.to(mistLayer3Ref.value, {
-            backgroundPosition: `+=${moveX * 1.8}px +=${moveY * 1.8}px`,
-            duration: dur * 3.5, // Casi estática
-            repeat: -1,
-            ease: 'none'
-          }, 0);
-        }
+        applyParallaxLayer(mistLayer2Ref.value, sX2, sY2, moveX, moveY, varDur2)
       }
     }
   }
@@ -587,8 +573,8 @@ const weatherOverlayStyles = computed(() => {
       <!-- El flash se movió arriba con el rayo -->
 
       <!-- Fog, Mist, Wind, Heatwave, Sun, Cold, Coldwave, Intense Sun -->
-      <!-- Capas de Bruma/Niebla (Triple capa para romper patrones) -->
-      <template v-if="['fog', 'mist', 'wind', 'strong_winds', 'heatwave', 'sun', 'cold', 'coldwave', 'intense_sun'].includes(weather)">
+      <!-- Capas de Bruma/Niebla (Doble capa para parallax) -->
+      <template v-if="['fog', 'mist', 'wind', 'dust_storm'].includes(weather)">
         <div
           ref="mistLayerRef"
           class="mist-layer layer-1"
@@ -596,10 +582,6 @@ const weatherOverlayStyles = computed(() => {
         <div
           ref="mistLayer2Ref"
           class="mist-layer layer-2"
-        />
-        <div
-          ref="mistLayer3Ref"
-          class="mist-layer layer-3"
         />
       </template>
       
