@@ -287,13 +287,6 @@ const onLoadingLeave = (el: Element, done: () => void) => {
             </div>
             
             <div
-              class="retry-btn secondary"
-              @click.stop="handleRetry"
-            >
-              REFRESCAR PARA RECUPERAR CONTROL
-            </div>
-            
-            <div
               class="risk-btn"
               @click.stop="dismissedLock = true"
             >

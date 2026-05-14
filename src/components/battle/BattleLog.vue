@@ -202,14 +202,14 @@ onMounted(() => {
   }
 
   .log-icon {
+    @include pixelated;
     width: 56px !important; 
     height: 56px !important;
     max-width: none !important;
     max-height: none !important;
     object-fit: contain;
-    @include pixelated;
     will-change: transform, filter, opacity;
-  filter: Drop-Shadow(0 4px 8px Rgba(0,0,0,0.4));
+    filter: Drop-Shadow(0 4px 8px Rgba(0,0,0,0.4));
     position: absolute;
     top: 50%;
     left: 50%;
@@ -217,14 +217,18 @@ onMounted(() => {
   }
 
   .log-emoji {
-    font-size: 24px;
-    will-change: transform, filter, opacity;
-  filter: Drop-Shadow(0 2px 4px Rgba(0, 0, 0, 0.4));
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: Translate(-50%, -50%);
     @include pixelated;
+    font-size: 16px; // Reducido para evitar desbordes
+    line-height: 1;
+    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif !important;
+    will-change: transform, filter, opacity;
+    filter: Drop-Shadow(0 2px 4px Rgba(0, 0, 0, 0.4));
+    
+    // Centrado absoluto con prioridad máxima - Forzamos minúscula para asegurar compatibilidad
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: Translate(-50%, -50%) !important;
   }
 
   .log-text {

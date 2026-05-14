@@ -139,6 +139,15 @@ The project uses a sophisticated audit and validation engine to ensure stability
 - **Temporal API Typings**: For robust type-safety without using `any`, any custom or polyfilled Temporal API properties (e.g., accessing year/month/day/hour/minute on the return value of `toZonedDateTimeISO()`) must be explicitly declared with formal types (like `ZonedDateTime` interface/class) inside the global `env.d.ts` instead of typing them as `unknown` or `any`.
 - **TypeScript Import Rigor**: Triple-slash references (e.g., `/// <reference types="vue" />`) are forbidden in `vite-env.d.ts` or any core file. Use standard ESM imports or `compilerOptions.types` in `tsconfig.json`.
 
+### 10. Atmospheric Filter Segregation
+
+- **Background Integrity**: Original pixel-art backgrounds (Map and Battle) MUST NOT be altered by day cycle post-processing (brightness/hue). They rely on dedicated textures (e.g., `_noche`, `_amanecer`).
+- **Targeted Filtering**:
+- **Targeted Filtering**:
+  - **Backgrounds**: Use `weatherOnlyFilter` on the background layer.
+  - **Pokémon Spawns & Combatants**: Use the **Isolation Wrapper Pattern**. Apply `weatherOnlyFilter` or `atmosphereFilter` only to a wrapper around the base `img` to keep FX (Shiny sparkles, Guardian auras, Status particles) and debug layers clean and vibrant.
+- **Source of Truth**: See [time_system_manual.md](./references/core/time_system_manual.md) for the implementation matrix.
+
 ### 5. CLI-First Debugging
 
 - **Efficiency Over GUI**: Use `window.__VITE_DEBUG__` commands to simulate states. It is MANDATORY to verify new content via CLI before committing.

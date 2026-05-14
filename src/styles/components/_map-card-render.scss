@@ -36,9 +36,9 @@
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    z-index: calc(var(--z-base) - 3);
+    z-index: 0; // Capa base del fondo
     transform: Translatez(0); 
-    filter: var(--atmosphere-filter, Brightness(0.8) Contrast(1.1));
+    filter: var(--weather-only-filter, Brightness(1) Contrast(1));
     will-change: transform; // Solo transform por defecto para ahorrar memoria
     
     @include pixelated;
@@ -60,7 +60,7 @@
     );
     opacity: 0.35;
     transition: opacity 0.3s ease;
-    z-index: calc(var(--z-base) - 1);
+    z-index: var(--z-map-overlay); // Constante centralizada (9)
     pointer-events: none;
   }
 
@@ -105,7 +105,7 @@
   }
 
   & > * { 
-    z-index: var(--z-base); 
+    z-index: var(--z-map-ui); // HUD y textos siempre arriba (20)
   }
 }
 
@@ -199,6 +199,15 @@
         transform: Translatey(-50%);
       }
     }
+  }
+
+  .pokemon-atmosphere-wrapper, .spawn-atmosphere-wrapper {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: visible;
   }
 
   img {

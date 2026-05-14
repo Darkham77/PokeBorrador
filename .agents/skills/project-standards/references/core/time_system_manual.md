@@ -173,3 +173,32 @@ Pokémon synchronized with the weather display a vibrant cyan glow via `PVSprite
 - **Extreme States**: Strong vignettes, pulse signatures, and GSAP-driven particle intensity.
 - **Filter Cleanup**: Temporary visual effects MUST use GSAP's `onComplete` with `clearProps: "filter"` to ensure no residual layers remain.
 - **Filter Reset Pattern**: Always include the `filter` property itself in `clearProps` alongside custom variables (e.g., `--fx-main-glow`).
+
+---
+
+## 9. Atmospheric Filter Segregation (Cycle vs Weather)
+
+To preserve the artistic integrity of the original pixel-art backgrounds, the system distinguishes between **Day Cycle** changes (handled via textures) and **Weather** effects (handled via post-processing).
+
+### 9.1 Segregation Matrix
+
+| Target Element | Cycle Filter (Brightness/Hue) | Weather Filter (Rain/Arena) | Implementation Detail |
+| :--- | :---: | :---: | :--- |
+| **Map Backgrounds** | ❌ | ✅ | Relies on dedicated textures (e.g., `_noche`). |
+| **Map Spawns (Pokémon)** | ❌ | ✅ | Prevents double-darkening on the world map. |
+| **Battle Backgrounds** | ❌ | ✅ | Uses cycle-specific battle arena assets. |
+| **Battle Combatants** | ✅ | ✅ | Pokémon sprites must tint to integrate with the hour. |
+| **Battle Deco (Bushes/Rocks)** | ✅ | ✅ | Environmental objects must match lighting. |
+
+1. **`weatherOnlyFilter`**: strictly isolates weather post-processing. It ignores cycle base values (e.g., it will NOT apply `Brightness(0.6)` during night).
+2. **`atmosphereFilter` (Full)**: the combined mix of Cycle + Weather. Used for mobile actors and dynamic objects.
+
+### 9.3 The Isolation Wrapper Pattern
+
+To prevent glowing FX (Shiny sparkles, Guardian auras, Status particles) and UI elements (Debug layers, arrows) from being darkened or tinted, the atmospheric filter MUST be applied via a dedicated **Internal Wrapper** around the base sprite, rather than on the parent container.
+
+- **Implementation**: Wrap the base sprite `img` in a `<div class="pokemon-atmosphere-wrapper">` (or similar) and apply the filter to that div.
+- **Result**: Particles, glows, and debug overlays rendered as siblings of the wrapper remain at 100% brightness and full color fidelity, regardless of the map's time or weather. This prevents "color pollution" on non-environmental effects.
+
+> [!IMPORTANT]
+> Background images MUST NEVER be touched by cycle-based post-processing. If a map looks too bright at night, the solution is to adjust the `_noche.webp` texture, NOT the CSS filter.

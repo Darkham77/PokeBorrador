@@ -297,7 +297,7 @@ const initWeatherAnim = () => {
       
       applyParallaxLayer(dustLayer1Ref.value, s1X, s1Y, driftX, moveY1, speed1)
 
-      if (dustLayer2Ref.value) {
+  if (dustLayer2Ref.value) {
         const speed2 = (0.7 + animSeed.value * 0.3) * (isStrongWind ? 0.9 : (isDust ? 1.0 : 0.7)) / speedVar
         
         if (isStrongWind) {
@@ -311,50 +311,57 @@ const initWeatherAnim = () => {
     }
   }
 
-  // Fog / Mist / Wind / Heatwave / Sun / Cold / Coldwave / Intense Sun / Dust Storm Mist
+  // Fog / Mist / Wind / Heatwave / Sun / Cold / Coldwave / Intense Sun / Dust Storm
   if (['fog', 'mist', 'wind', 'heatwave', 'sun', 'cold', 'coldwave', 'intense_sun', 'dust_storm'].includes(w)) {
     const target = mistLayerRef.value
     if (target) {
       const hasPulse = ['heatwave', 'coldwave', 'intense_sun'].includes(w)
       const isMist = w === 'mist'
-      const baseOpacity = isMist ? 0.4 : (hasPulse ? 0.5 : 0.8)
-      const maxOpacity = isMist ? 0.6 : (hasPulse ? 0.9 : 0.85)
+      const isDust = w === 'dust_storm'
       
-      weatherTimeline.fromTo(target, 
-        { opacity: baseOpacity },
-        { 
-          opacity: maxOpacity, 
-          duration: hasPulse ? (1.5 + animSeed.value) : 5, 
-          repeat: -1, 
-          yoyo: true, 
-          ease: hasPulse ? 'sine.inOut' : 'none' 
-        },
-        0
-      )
+      // Solo aplicamos pulso de opacidad si no es Tormenta de Polvo (para evitar parpadeo GPU)
+      if (!isDust) {
+        const baseOpacity = isMist ? 0.4 : (hasPulse ? 0.5 : 0.8)
+        const maxOpacity = isMist ? 0.6 : (hasPulse ? 0.9 : 0.85)
+        
+        weatherTimeline.fromTo(target, 
+          { opacity: baseOpacity },
+          { 
+            opacity: maxOpacity, 
+            duration: hasPulse ? (1.5 + animSeed.value) : 5, 
+            repeat: -1, 
+            yoyo: true, 
+            ease: hasPulse ? 'sine.inOut' : 'none' 
+          },
+          0
+        )
+      } else {
+        // Opacidad constante para T. Polvo para optimizar GPU
+        gsap.set(target, { opacity: 0.8 })
+      }
 
       // Animación de desplazamiento (Drift)
       if (['wind', 'fog', 'mist', 'dust_storm'].includes(w)) {
         const isFoggy = ['fog', 'mist'].includes(w);
         const isDust = w === 'dust_storm';
         const moveX = isFoggy ? 512 : -512; // Valor fijo, el CSS voltea
-        const moveY = isFoggy ? 256 : 0; // Solo diagonal en niebla/bruma, el resto horizontal
+        const moveY = isFoggy ? 512 : 0; // Solo diagonal en niebla/bruma, el resto horizontal
         
         // Variación de velocidad por mapa (Global speedVar ya calculada al inicio)
-        // T.Polvo va mucho más rápido (duración 3) que el viento normal (duración 8)
-        const baseDur = isFoggy ? 120 : (isDust ? 3 : 8);
+        const baseDur = isFoggy ? 80 : (isDust ? 3 : 8); // Reducido de 120 a 80 para que la niebla sea más dinámica
         const dur = baseDur / speedVar;
 
-        // Capa 1 (Fondo: Más pequeña, más lenta)
+        // Capa 1 (Fondo: Más pequeña, MUCHO más lenta)
         const sX1 = (animSeed.value * 1234) % 256;
         const sY1 = (animSeed.value * 5678) % 256;
-        const varDur1 = dur * (1.8 + (animSeed.value * 0.4)); // ~2.0x duración, más lenta
+        const varDur1 = dur * (2.5 + (animSeed.value * 0.5)); // Más lenta aún para profundidad
 
-        applyParallaxLayer(mistLayerRef.value, sX1, sY1, moveX * 0.5, moveY * 0.5, varDur1)
+        applyParallaxLayer(mistLayerRef.value, sX1, sY1, moveX * 0.3, moveY * 0.3, varDur1)
         
         // Capa 2 (Frente: Más grande, más rápida)
         const sX2 = (animSeed.value * 3456) % 512;
         const sY2 = (animSeed.value * 7890) % 512;
-        const varDur2 = dur * (0.9 + (animSeed.value * 0.2)); // ~1.0x duración, más rápida
+        const varDur2 = dur * (0.6 + (animSeed.value * 0.2)); // Más rápida para resaltar el primer plano
 
         applyParallaxLayer(mistLayer2Ref.value, sX2, sY2, moveX, moveY, varDur2)
       }

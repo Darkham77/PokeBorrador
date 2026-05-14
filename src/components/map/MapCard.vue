@@ -268,7 +268,7 @@ const processedGrid = computed<ProcessedSpawn[]>(() => {
 const isVisible = ref(false)
 import { useWeatherVisuals } from '@/composables/useWeatherVisuals'
 
-const { atmosphereFilter } = useWeatherVisuals({
+const { weatherOnlyFilter } = useWeatherVisuals({
   weather: computedWeather,
   cycle: computed(() => props.cycle)
 })
@@ -457,7 +457,7 @@ watch(() => JSON.stringify(spawnGrid.value.slots), (newVal, oldVal) => {
     ref="cardRef"
     :class="['location-card map-card legacy-panel', { locked: isLocked, 'safari-locked': isSafariLocked }]"
     :style="{ 
-      '--atmosphere-filter': atmosphereFilter,
+      '--weather-only-filter': weatherOnlyFilter,
       '--bg-image': `url('${imgPath}')`
     }"
     @click.stop="() => {
@@ -499,13 +499,15 @@ watch(() => JSON.stringify(spawnGrid.value.slots), (newVal, oldVal) => {
         : `Un Pokémon poderoso que protege la ruta. ${processedGuardian.isSeen ? 'Es un ' + processedGuardian.name + ' (' + processedGuardian.typeInfo + '). ' : ''}Derrótalo para liberar la zona y permitir que tu facción la domine, activando bonus de captura.`"
       position="top"
     >
-      <img 
-        :src="processedGuardian.sprite" 
-        class="guardian-mini-sprite" 
-        :class="{ captured: processedGuardian.captured, 'spawn-silhouette': !processedGuardian.isCaught }"
-        :style="{ '--spawn-seed': processedGuardian.seed }"
-        @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
-      >
+      <div class="spawn-atmosphere-wrapper">
+        <img 
+          :src="processedGuardian.sprite" 
+          class="guardian-mini-sprite" 
+          :class="{ captured: processedGuardian.captured, 'spawn-silhouette': !processedGuardian.isCaught }"
+          :style="{ '--spawn-seed': processedGuardian.seed }"
+          @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
+        >
+      </div>
       <span :class="['guardian-label', { captured: processedGuardian.captured }]">
         {{ processedGuardian.captured ? 'DERROTADO' : 'GUARDIÁN' }}
       </span>
@@ -594,12 +596,14 @@ watch(() => JSON.stringify(spawnGrid.value.slots), (newVal, oldVal) => {
                 position="top"
                 class="spawn-tooltip-trigger"
               >
-                <img
-                  :src="item.sprite"
-                  class="pixelated"
-                  :class="{ 'spawn-silhouette': !item.isCaught }"
-                  @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
-                >
+                <div class="spawn-atmosphere-wrapper">
+                  <img
+                    :src="item.sprite"
+                    class="pixelated"
+                    :class="{ 'spawn-silhouette': !item.isCaught }"
+                    @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
+                  >
+                </div>
               </PVTooltip>
             </div>
           </div>

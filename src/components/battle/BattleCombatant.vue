@@ -800,13 +800,18 @@ const onBallLeave = (el: Element, done: () => void) => {
             :sprite-scale="fxScale"
             :style="virtualStyle"
           >
-            <img
-              class="pokemon-combat-image"
-              :class="{ 'is-silhouette': isSilhouette }"
-              :src="imageUrl"
-              @load="handleLoad"
-              @error="handleImageError"
+            <div 
+              class="pokemon-atmosphere-wrapper"
+              :style="{ filter: isSilhouette ? 'none' : 'var(--atmosphere-filter)' }"
             >
+              <img
+                class="pokemon-combat-image"
+                :class="{ 'is-silhouette': isSilhouette }"
+                :src="imageUrl"
+                @load="handleLoad"
+                @error="handleImageError"
+              >
+            </div>
           </PVSpriteFX>
 
           <!-- Guía de tamaño real (Debug) -->
@@ -906,6 +911,15 @@ const onBallLeave = (el: Element, done: () => void) => {
     align-items: center;
     justify-content: center;
     transform-origin: bottom center;
+  }
+
+  .pokemon-atmosphere-wrapper {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: visible;
   }
 
     .pokemon-combat-image {

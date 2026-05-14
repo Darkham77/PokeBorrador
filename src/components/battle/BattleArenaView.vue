@@ -235,10 +235,17 @@ const atmosphereSeed = computed(() => {
   return (battle.value?.locationId || 'route1').split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
 })
 
-const { atmosphereFilter } = useWeatherVisuals({
+const { atmosphereFilter, weatherOnlyFilter } = useWeatherVisuals({
   weather: computedWeather,
   cycle: computed(() => mapStore.currentCycle)
 })
+
+// Unified Style Orchestration to prevent reactivity breaks in templates
+const arenaContentStyles = computed(() => ({
+  ...cameraStyles.value,
+  '--atmosphere-filter': atmosphereFilter.value,
+  '--weather-filter': weatherOnlyFilter.value
+}))
 
 // Watchers de Sincronización
 // Watcher para sincronizar sombras (Jugador y Enemigo)
@@ -372,7 +379,7 @@ watch(() => battleStore.isBattleActive, (active) => {
     </Transition>
     <div
       class="battle-arena-content"
-      :style="{ ...cameraStyles, filter: atmosphereFilter }"
+      :style="arenaContentStyles"
     >
       <VirtualSpace
         :show-guides="showGuides"
@@ -412,11 +419,16 @@ watch(() => battleStore.isBattleActive, (active) => {
             class="trainer-entity"
           >
             <div class="trainer-sprite-wrapper">
-              <img 
-                :src="getAssetUrl(ASSET_TYPES.TRAINER, battle?.trainerName || 'entrenador')" 
-                class="trainer-image"
-                @error="(e: Event) => (e.target as HTMLImageElement).src = getAssetUrl(ASSET_TYPES.TRAINER, 'entrenador')"
+              <div 
+                class="pokemon-atmosphere-wrapper"
+                :style="{ filter: 'var(--atmosphere-filter)' }"
               >
+                <img 
+                  :src="getAssetUrl(ASSET_TYPES.TRAINER, battle?.trainerName || 'entrenador')" 
+                  class="trainer-image"
+                  @error="(e: Event) => (e.target as HTMLImageElement).src = getAssetUrl(ASSET_TYPES.TRAINER, 'entrenador')"
+                >
+              </div>
             </div>
           </VirtualEntity>
 

@@ -13,9 +13,14 @@ export interface WeatherVisualOptions {
  */
 export function useWeatherVisuals(options: WeatherVisualOptions) {
   const atmosphereFilter = computed(() => {
-    const cycle = toValue(options.cycle)
-    const weather = toValue(options.weather)
+    return calculateAtmosphereFilter(toValue(options.cycle), toValue(options.weather), false)
+  })
 
+  const weatherOnlyFilter = computed(() => {
+    return calculateAtmosphereFilter(toValue(options.cycle), toValue(options.weather), true)
+  })
+
+  function calculateAtmosphereFilter(cycle: string, weather: string, weatherOnly: boolean) {
     const isNight = cycle === 'night'
     const isDusk = cycle === 'dusk'
     const isMorning = cycle === 'morning'
@@ -25,10 +30,12 @@ export function useWeatherVisuals(options: WeatherVisualOptions) {
     let saturate = 1.0
     let hue = 0
 
-    // 1. Cycle base values
-    if (isNight) { brightness = 0.6; contrast = 1.1; saturate = 0.8; }
-    else if (isDusk) { brightness = 0.8; contrast = 1.2; hue = -10; }
-    else if (isMorning) { brightness = 1.1; saturate = 0.9; hue = 5; }
+    // 1. Cycle base values (Ignored if weatherOnly is true)
+    if (!weatherOnly) {
+      if (isNight) { brightness = 0.6; contrast = 1.1; saturate = 0.8; }
+      else if (isDusk) { brightness = 0.8; contrast = 1.2; hue = -10; }
+      else if (isMorning) { brightness = 1.1; saturate = 0.9; hue = 5; }
+    }
 
     // 2. Weather modifiers
     let wBrightness = 1.0
@@ -55,12 +62,12 @@ export function useWeatherVisuals(options: WeatherVisualOptions) {
     else if (weather === 'fog') { 
       wBrightness = isNight ? 0.75 : 0.9; 
       wContrast = 0.8; 
-      wSaturate = 0.15; // Niebla casi monocromática
+      wSaturate = 0.15; 
     }
     else if (weather === 'mist') { 
       wBrightness = isNight ? 0.8 : 0.95; 
       wContrast = 0.9; 
-      wSaturate = 1.0; // Bruma permite color total del fondo
+      wSaturate = 1.0; 
     }
     else if (weather === 'sandstorm' || weather === 'dust_storm') { 
       wBrightness = weather === 'dust_storm' ? 0.8 : 0.85; 
@@ -74,7 +81,7 @@ export function useWeatherVisuals(options: WeatherVisualOptions) {
     }
 
     // 3. Final mix
-    const finalBrightness = isNight 
+    const finalBrightness = (!weatherOnly && isNight) 
       ? Math.max(0.4, brightness * wBrightness) 
       : (brightness * wBrightness)
     const finalSaturate = saturate * wSaturate
@@ -82,9 +89,10 @@ export function useWeatherVisuals(options: WeatherVisualOptions) {
     const finalHue = hue + wHue
 
     return `Brightness(${finalBrightness}) Contrast(${finalContrast}) Saturate(${finalSaturate}) hue-rotate(${finalHue}deg)`
-  })
+  }
 
   return {
-    atmosphereFilter
+    atmosphereFilter,
+    weatherOnlyFilter
   }
 }

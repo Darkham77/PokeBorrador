@@ -1,5 +1,4 @@
 
-
 /**
  * Módulo de Registro de Combate (Battle Logger)
  * Encargado de procesar y estandarizar los logs de batalla.
@@ -46,7 +45,7 @@ export function formatBattleLog(msg: string, type: string, source: BattleSource,
   }
 
   if (msg.startsWith('DEBUG:')) {
-    icon = '😈';
+    icon = '⚙️';
     iconType = 'emoji';
   } else if (source) {
     if (source === 'player') {

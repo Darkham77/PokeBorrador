@@ -11,10 +11,11 @@ export const Z_LAYERS = {
   MAP_FLOOR: 1,
   MAP_SHADOWS: 3,
   MAP_GRASS_BACK: 5,
+  MAP_WEATHER: 8,      // Detrás de spawns y overlay
+  MAP_OVERLAY: 9,      // Capa de oscurecimiento (vignette/hover)
   MAP_SPAWNS: 10,
   MAP_GROUND_FX: 15,
   MAP_GRASS_FRONT: 15,
-  MAP_WEATHER: 18,
   MAP_UI: 20,
 
   // HUD & Navigation

@@ -180,6 +180,7 @@ onUnmounted(() => {
   height: 100%;
   pointer-events: none;
   overflow: visible;
+  filter: var(--atmosphere-filter, Brightness(1) Contrast(1));
 
   &.layer-back { z-index: calc(var(--z-map-spawns) - 5); }
   // ENCOUNTER_ANIM BUSHES_BACK: cuando forceBehind, la capa front se mueve detrás del sprite
