@@ -1,30 +1,21 @@
 <script setup lang="ts">
 /**
  * PVAuraFX.vue
- * Gestiona los brillos Shiny y las auras de pantalla (Reflejo/Pantalla Luz).
- * MIGRACIÓN 1:1 DESDE PVSPRITEFX.VUE
+ * Gestiona las auras de pantalla (Reflejo/Pantalla Luz/Velo Sagrado).
+ * Las chispas Shiny ahora se renderizan via PVStatusFX como efecto secundario.
  */
 import { ref, watch, nextTick, onUnmounted } from 'vue'
 import { gsap } from 'gsap'
-import { useParticleEngine } from '@/composables/useParticleEngine'
 import { Z_LAYERS } from '@/logic/constants/visuals'
 
 const props = defineProps({
-  isShiny: { type: Boolean, required: true },
   isGuardian: { type: Boolean, required: true },
   hasReflect: { type: Boolean, required: true },
   hasLightScreen: { type: Boolean, required: true },
   hasSafeguard: { type: Boolean, required: true },
-  sparkleCount: { type: Number, required: true },
-  radius: { type: Number, required: true },
-  animSeed: { type: Number, required: true },
-  spriteScale: { type: Number, required: true },
-  enabled: { type: Boolean, required: true }
 })
 
 const rootRef = ref<HTMLElement | null>(null)
-const shinyRef = ref<HTMLElement | null>(null)
-const { initSystem: initShinySystem, killAll: killShinyFX } = useParticleEngine()
 
 const initScreenAuraFX = () => {
   const container = rootRef.value?.closest('.pv-fx-wrapper')
@@ -39,61 +30,11 @@ const initScreenAuraFX = () => {
   })
 }
 
-const initShinyFX = () => {
-  if (!shinyRef.value) return
-  const sparkles = Array.from(shinyRef.value.querySelectorAll('.sparkle')) as HTMLElement[]
-  const shinyRadius = props.radius * 1.1
-
-  initShinySystem(sparkles, {
-    seed: props.animSeed,
-    shape: 'circle',
-    area: { x: [0, shinyRadius] },
-    onRepeat: (el) => {
-      gsap.set(el, { filter: `Drop-Shadow(0 0 2px black) Drop-Shadow(0 0 4px gold)` })
-    },
-    createTweens: (el, _i, delay) => {
-      const maxScale = props.spriteScale * gsap.utils.random(0.3, 0.6) * 0.4
-      const duration = gsap.utils.random(1.0, 1.5)
-
-      return [
-        gsap.fromTo(el, 
-          { autoAlpha: 1, opacity: 1, y: 0, scale: 0, rotation: 0, xPercent: -50, yPercent: -50 },
-          {
-            scale: maxScale,
-            rotation: 180,
-            duration: duration,
-            repeat: -1,
-            repeatDelay: 1.3,
-            delay,
-            ease: 'power1.out'
-          }
-        ),
-        gsap.to(el, {
-          scale: 0,
-          rotation: 360,
-          duration: duration + 0.1,
-          repeat: -1,
-          repeatDelay: 1.2,
-          delay: delay + duration,
-        })
-      ]
-    }
-  })
-}
-
-watch([() => props.isShiny, () => props.enabled], () => {
-  nextTick(() => {
-    killShinyFX()
-    initShinyFX()
-  })
-}, { immediate: true })
-
 watch([() => props.hasReflect, () => props.hasLightScreen, () => props.hasSafeguard], () => {
   nextTick(() => initScreenAuraFX())
 }, { immediate: true })
 
 onUnmounted(() => {
-  killShinyFX()
   gsap.killTweensOf('.pv-fx-screen-overlay')
 })
 </script>
@@ -103,19 +44,6 @@ onUnmounted(() => {
     ref="rootRef"
     class="pv-aura-fx-layer"
   >
-    <!-- BRILLOS SHINY -->
-    <div
-      v-if="isShiny && enabled"
-      ref="shinyRef"
-      class="pv-fx-shiny-overlay"
-      data-fx-type="shiny"
-    >
-      <div
-        v-for="i in sparkleCount"
-        :key="i"
-        class="sparkle"
-      />
-    </div>
 
     <!-- PANTALLAS TÁCTICAS -->
     <div
@@ -176,19 +104,5 @@ onUnmounted(() => {
     background: Radial-Gradient(circle, #50fa7b 0%, Transparent 70%);
     mix-blend-mode: screen;
   }
-}
-
-.sparkle {
-  position: absolute;
-  font-size: 32px !important;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-  transform: Scale(0);
-  transform-style: preserve-3d;
-  &::before { content: '✨'; }
 }
 </style>

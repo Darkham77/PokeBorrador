@@ -242,7 +242,7 @@ onUnmounted(() => {
   cursor: pointer;
   overflow: hidden;
   padding: 0;
-  z-index: 10;
+  z-index: var(--z-map-spawns);
   transform: Translatez(0); 
   transform-origin: center center;
   transform-style: preserve-3d;
@@ -279,7 +279,7 @@ onUnmounted(() => {
     height: 50%;
     background: #ef5350;
     border-bottom: 3px solid #0a0a0a;
-    z-index: 1;
+    z-index: var(--z-map-floor);
   }
 
   &::after {
@@ -293,7 +293,7 @@ onUnmounted(() => {
     background: white;
     border: 3px solid #0a0a0a;
     border-radius: 50%;
-    z-index: 2;
+    z-index: calc(var(--z-map-floor) + 1);
     box-shadow: 0 0 0 3px white, 0 0 10px Rgba(0,0,0,0.2);
   }
 

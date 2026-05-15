@@ -42,7 +42,7 @@ describe('Battle Logger Utility', () => {
 
   it('should handle debug messages with emoji', () => {
     const result = formatBattleLog('DEBUG: test', 'log-info', 'player' as unknown as Parameters<typeof formatBattleLog>[2], mockCtx as unknown as Parameters<typeof formatBattleLog>[3])
-    expect(result.icon).toBe('😈')
+    expect(result.icon).toBe('⚙️')
     expect(result.iconType).toBe('emoji')
   })
 

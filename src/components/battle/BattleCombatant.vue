@@ -813,6 +813,7 @@ const onBallLeave = (el: Element, done: () => void) => {
             :radius="fxRadius"
             :sprite-scale="fxScale"
             :style="virtualStyle"
+            :is-battle="true"
           >
             <div 
               class="pokemon-atmosphere-wrapper"
@@ -925,6 +926,17 @@ const onBallLeave = (el: Element, done: () => void) => {
     align-items: center;
     justify-content: center;
     transform-origin: bottom center;
+  }
+
+  // Las sparkles shiny son hijos del sprite-idle-wrapper, que tiene scaleX/scaleY asincrónicos
+  // en la animación idle. Esto distorsiona las estrellas. Usamos isolation para crear un
+  // contexto de apilamiento propio que neutraliza el scale heredado del padre.
+  :deep(.pv-fx-shiny-overlay) {
+    isolation: isolate;
+  }
+
+  :deep(.pv-fx-shiny-overlay .sparkle) {
+    transform-origin: center center !important;
   }
 
   .pokemon-atmosphere-wrapper {

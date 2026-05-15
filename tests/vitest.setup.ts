@@ -95,6 +95,7 @@ vi.mock('gsap', () => {
       };
     },
     killTweensOf: vi.fn(),
+    set: vi.fn(),
     registerPlugin: vi.fn(),
     timeline: vi.fn().mockReturnValue({
       to: vi.fn().mockReturnThis(),

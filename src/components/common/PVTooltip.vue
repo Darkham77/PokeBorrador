@@ -303,10 +303,12 @@ onUnmounted(() => {
       &.is-boost {
         color: #4ade80; // Green
         filter: Drop-Shadow(0 0 2px Rgba(74, 222, 128, 0.4));
+        will-change: filter;
       }
       &.is-debuff {
         color: #f87171; // Red
         filter: Drop-Shadow(0 0 2px Rgba(248, 113, 113, 0.4));
+        will-change: filter;
       }
     }
   }
@@ -381,3 +383,4 @@ onUnmounted(() => {
   &.pos-right { transform: Translate(-10%, -50%); }
 }
 </style>
+

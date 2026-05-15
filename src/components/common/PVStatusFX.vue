@@ -6,19 +6,28 @@
  */
 import { onUnmounted, watch, nextTick, ref } from 'vue'
 import { gsap } from 'gsap'
-import { useParticleEngine } from '@/composables/useParticleEngine'
+import { useParticleEngine, type ParticleSystemOptions } from '@/composables/useParticleEngine'
 import { resolveEffectSettings } from '@/data/fx-configs'
 import { Z_LAYERS } from '@/logic/constants/visuals'
 
+interface FXData {
+  type: string;
+  emoji: string;
+  category?: string;
+  isField?: boolean;
+  active?: boolean;
+}
+
 const props = defineProps({
-  activeStatusEffects: { type: Array as () => any[], required: true },
-  secondaryEffects: { type: Array, required: true },
-  tacticalEffects: { type: Array, required: true },
-  fieldEffects: { type: Array, required: true },
+  activeStatusEffects: { type: Array as () => FXData[], required: true },
+  secondaryEffects: { type: Array as () => FXData[], required: true },
+  tacticalEffects: { type: Array as () => FXData[], required: true },
+  fieldEffects: { type: Array as () => FXData[], required: true },
   radius: { type: Number, required: true },
   animSeed: { type: Number, required: true },
   spriteScale: { type: Number, required: true },
-  isSimplified: { type: Boolean, required: true }
+  isSimplified: { type: Boolean, required: true },
+  isBattle: { type: Boolean, default: false }
 })
 
 const rootRef = ref<HTMLElement | null>(null)
@@ -28,6 +37,7 @@ const engines = new Map<string, ReturnType<typeof useParticleEngine>>()
 const activeUnifiedTypes = new Map<string, number>()
 
 const allUnifiedTypes = [
+  'shiny',
   'confused', 'cursed', 'attracted', 'seeded', 'trapped', 'ingrained',
   'protected', 'enduring', 'focus', 'lockon',
   'reflect', 'lightscreen', 'safeguard', 'mist', 'spikes'
@@ -39,10 +49,10 @@ allUnifiedTypes.forEach(type => {
 
 const getEngine = (type: string) => engines.get(type)!
 
-const applyGenericParticleSystem = (els: HTMLElement[], typeKey: string, engineInit: Function, options: { isField?: boolean, seed?: number, radius: number }) => {
+const applyGenericParticleSystem = (els: HTMLElement[], typeKey: string, engineInit: (els: HTMLElement[], options: ParticleSystemOptions) => void, options: { isField?: boolean, seed?: number, radius: number }) => {
   if (!els || els.length === 0) return
   
-  const settings = resolveEffectSettings(typeKey, options.radius, { isField: options.isField })
+  const settings = resolveEffectSettings(typeKey, options.radius, { isField: options.isField, isSimplified: props.isSimplified, isBattle: props.isBattle })
   
   engineInit(els, {
     seed: options.seed,
@@ -69,6 +79,7 @@ const applyGenericParticleSystem = (els: HTMLElement[], typeKey: string, engineI
         xPercent: -50, 
         yPercent: -50, 
         x: 0,
+        rotation: 0,
         imageRendering: 'auto',
         webkitFontSmoothing: 'none',
         filter: typeKey === 'freeze' ? 'Drop-Shadow(0 0 8px cyan) Brightness(2)' : 'none'
@@ -83,38 +94,54 @@ const applyGenericParticleSystem = (els: HTMLElement[], typeKey: string, engineI
       const growEase = settings.growDuration ? 'power4.out' : (typeKey === 'paralysis' ? 'none' : 'sine.inOut')
       const shrinkEase = settings.growDuration ? 'power1.inOut' : (typeKey === 'paralysis' ? 'none' : 'sine.inOut')
 
-      const growDurVal = typeof growDur === 'function' ? (growDur as any)() : growDur
-      const shrinkDurVal = typeof shrinkDur === 'function' ? (shrinkDur as any)() : shrinkDur
+      const growDurVal = typeof growDur === 'function' ? (growDur as () => number)() : growDur
+      const shrinkDurVal = typeof shrinkDur === 'function' ? (shrinkDur as () => number)() : shrinkDur
 
       // Explicit reset at the start of each loop
-      tl.set(el, { 
+      const resetProps: any = { 
         scale: 0.05, 
         opacity: settings.useFade ? 0 : settings.targetOpacity,
         xPercent: -50,
         yPercent: -50,
         y: '10%'
-      })
+      }
+      if (!settings.wobble) resetProps.rotation = 0
+      tl.set(el, resetProps)
 
       tl.to(el, {
         opacity: settings.targetOpacity,
         scale: growScale,
         duration: growDurVal,
-        ease: growEase
+        ease: growEase,
+        force3D: true
       })
       
       tl.to(el, {
         scale: 0.05,
         opacity: settings.useFade ? 0 : settings.targetOpacity,
         duration: shrinkDurVal,
-        ease: shrinkEase
+        ease: shrinkEase,
+        force3D: true
       })
 
       if (settings.wobble && typeof settings.wobble === 'object') {
-        const w = settings.wobble as { x: number, rotation: number, duration: number }
-        gsap.fromTo(el,
-          { xPercent: -50 - w.x, rotation: -w.rotation },
-          { xPercent: -50 + w.x, rotation: w.rotation, duration: w.duration, repeat: -1, yoyo: true, ease: 'sine.inOut' }
-        )
+        const w = settings.wobble as { x: number, rotation: number, duration: number, yoyo?: boolean, ease?: string }
+        const isYoyo = w.yoyo !== false
+        const ease = w.ease || 'sine.inOut'
+        
+        if (isYoyo) {
+          gsap.fromTo(el,
+            { xPercent: -50 - w.x, rotation: -w.rotation },
+            { xPercent: -50 + w.x, rotation: w.rotation, duration: w.duration, repeat: -1, yoyo: true, ease }
+          )
+        } else {
+          gsap.to(el, {
+            rotation: w.rotation,
+            duration: w.duration,
+            repeat: -1,
+            ease: 'none'
+          })
+        }
       }
       
       return [tl]
@@ -124,7 +151,7 @@ const applyGenericParticleSystem = (els: HTMLElement[], typeKey: string, engineI
 
 const initParticleAnim = (container: HTMLElement) => {
   if (props.isSimplified) return
-  const statusType = (props.activeStatusEffects[0] as any)?.type || ''
+  const statusType = props.activeStatusEffects[0]?.type || ''
   if (statusType) {
     const els = Array.from(container.querySelectorAll('.status-particle:not(.secondary-status):not(.tactical-status):not(.field-status)')) as HTMLElement[]
     applyGenericParticleSystem(els, statusType, initStatusSystem, { radius: props.radius, seed: props.animSeed })
@@ -143,10 +170,10 @@ const syncUnifiedSystems = (container: HTMLElement, forceReset = false) => {
     return
   }
 
-  const allActiveFX = [
-    ...props.secondaryEffects.map((fx: any) => ({ ...fx, category: 'secondary-container', isField: false })),
-    ...props.tacticalEffects.map((fx: any) => ({ ...fx, category: 'tactical-container', isField: false })),
-    ...props.fieldEffects.map((fx: any) => ({ ...fx, category: 'field-container', isField: true }))
+  const allActiveFX: FXData[] = [
+    ...props.secondaryEffects.map((fx) => ({ ...fx, category: 'secondary-container', isField: false })),
+    ...props.tacticalEffects.map((fx) => ({ ...fx, category: 'tactical-container', isField: false })),
+    ...props.fieldEffects.map((fx) => ({ ...fx, category: 'field-container', isField: true }))
   ]
 
   const currentTypes = allActiveFX.map(fx => fx.type)
@@ -220,7 +247,7 @@ onUnmounted(() => {
       :data-fx-type="fx.type"
     >
       <span
-        v-for="i in resolveEffectSettings(fx.type, radius).activeRange[1]"
+        v-for="i in resolveEffectSettings(fx.type, radius, { isField: fx.isField, isSimplified: props.isSimplified, isBattle: props.isBattle }).activeRange[1]"
         :key="i"
         class="status-particle secondary-status"
       >
@@ -240,7 +267,7 @@ onUnmounted(() => {
       :style="{ display: !isSimplified ? 'block' : 'none' }"
     >
       <span
-        v-for="i in resolveEffectSettings(fx.type, radius).activeRange[1]"
+        v-for="i in resolveEffectSettings(fx.type, radius, { isSimplified: props.isSimplified, isBattle: props.isBattle }).activeRange[1]"
         :key="i"
         class="status-particle tactical-status"
       >{{ fx.emoji }}</span>
@@ -256,7 +283,7 @@ onUnmounted(() => {
       :style="{ display: !isSimplified ? 'block' : 'none' }"
     >
       <span
-        v-for="i in 8"
+        v-for="i in resolveEffectSettings(fx.type, radius, { isField: true, isSimplified: props.isSimplified, isBattle: props.isBattle }).activeRange[1]"
         :key="i"
         class="status-particle field-status"
       >{{ fx.emoji }}</span>
@@ -278,16 +305,17 @@ onUnmounted(() => {
 .status-particle {
   position: absolute;
   font-size: 32px !important;
-  display: flex;
+  line-height: 0;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  line-height: 1;
   font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif;
   -webkit-font-smoothing: none;
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
-  transform: Scale(0);
+  transform-origin: 50% 50%;
+  will-change: transform, filter, opacity;
   transform-style: preserve-3d;
   backface-visibility: hidden;
   perspective: 1000px;

@@ -50,6 +50,7 @@ const handleBackgroundError = (e: Event) => {
   object-fit: cover;
   z-index: calc(var(--z-base) + 1);
   filter: var(--weather-filter, Brightness(1) Contrast(1));
+  will-change: filter;
   @include pixelated;
 }
 
@@ -59,3 +60,4 @@ const handleBackgroundError = (e: Event) => {
   pointer-events: none;
 }
 </style>
+

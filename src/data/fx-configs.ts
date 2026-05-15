@@ -9,6 +9,14 @@ export interface ParticleArea {
   y?: [number, number]
 }
 
+export interface WobbleConfig {
+  x: number
+  rotation: number
+  duration: number
+  yoyo?: boolean
+  ease?: string
+}
+
 export interface EffectSettings {
   shape: 'circle' | 'rect'
   area: ParticleArea
@@ -16,15 +24,16 @@ export interface EffectSettings {
   activeRange: [number, number]
   mult: number
   useFade: boolean
-  wobble: any
+  wobble: WobbleConfig | boolean
   stagger: number
   duration?: number
   targetOpacity?: number
   randomizeVars?: boolean | { min: number, max: number }
   growDuration?: number
+  rotation?: number
 }
 
-export const resolveEffectSettings = (typeKey: string, ar: number, options: { isField?: boolean } = {}): EffectSettings => {
+export const resolveEffectSettings = (typeKey: string, ar: number, options: { isField?: boolean, isSimplified?: boolean, isBattle?: boolean } = {}): EffectSettings => {
   const isField = options.isField || ['reflect', 'lightscreen', 'safeguard', 'mist', 'spikes'].includes(typeKey)
   const isFeetEffect = ['seed', 'trapped', 'bound', 'ingrain', 'seeded'].includes(typeKey)
   const isHeadEffect = ['sleep', 'confusion', 'attract', 'confused'].includes(typeKey)
@@ -32,7 +41,13 @@ export const resolveEffectSettings = (typeKey: string, ar: number, options: { is
   // 1. Helper para rango dinámico basado en radio
   const getDynamicRange = (base: [number, number]) => {
     const ratio = ar / 40
-    const scaleFactor = Math.max(0.15, Math.min(1.5, Math.pow(ratio, 2)))
+    let scaleFactor = Math.max(0.15, Math.min(2.5, Math.pow(ratio, 2)))
+    
+    // Reducción extra para miniaturas (fuera de batalla o modo simplificado)
+    if (typeKey === 'shiny' && (options.isSimplified || !options.isBattle)) {
+      scaleFactor *= 0.4
+    }
+
     return [
       Math.max(1, Math.round(base[0] * scaleFactor)),
       Math.max(1, Math.round(base[1] * scaleFactor))
@@ -67,7 +82,10 @@ export const resolveEffectSettings = (typeKey: string, ar: number, options: { is
     safeguard: { mult: 0.5, activeRange: getDynamicRange([1, 3]), useFade: true, duration: 3.0 , targetOpacity: 1.0 },
     lightscreen: { mult: 1.5, activeRange: getDynamicRange([1, 1]), useFade: true, duration: 3.0, targetOpacity: 1.0 },
     mist: { mult: 1.5, activeRange: getDynamicRange([14, 20]), useFade: true, duration: 5.0, randomizeVars: { min: 0.6, max: 2.5 }, targetOpacity: 0.9 },
-    spikes: { mult: 0.5, activeRange: getDynamicRange([4, 8]), useFade: true, duration: 2.5 }
+    spikes: { mult: 0.5, activeRange: getDynamicRange([4, 8]), useFade: true, duration: 2.5 },
+
+    // Shiny - chispas doradas orbitales (técnica wobble)
+    shiny: { mult: 0.2, activeRange: getDynamicRange([10, 16]), useFade: false, duration: 1.4, randomizeVars: { min: 0.6, max: 1.5 }, targetOpacity: 1.0, wobble: true }
   }
 
   const base = configs[typeKey] || { 
@@ -78,13 +96,15 @@ export const resolveEffectSettings = (typeKey: string, ar: number, options: { is
   }
   
   // 3. Parámetros de Wobble exactos
-  let wobbleConfig: any = false
+  let wobbleConfig: WobbleConfig | boolean = false
   if (typeKey === 'confusion' || typeKey === 'confused') {
     wobbleConfig = { x: 30, rotation: 10, duration: 0.12 }
   } else if (typeKey === 'attract' || typeKey === 'attraction') {
     wobbleConfig = { x: 15, rotation: 5, duration: 0.4 }
   } else if (typeKey === 'trapped') {
     wobbleConfig = { x: 5, rotation: 0, duration: 0.2 }
+  } else if (typeKey === 'shiny') {
+    wobbleConfig = { x: 0, rotation: 360, duration: 1.5, yoyo: false, ease: 'none' }
   }
   
   // 4. Área de dispersión
@@ -107,7 +127,7 @@ export const resolveEffectSettings = (typeKey: string, ar: number, options: { is
   const targetOpacity = base.targetOpacity ?? (isField ? 0.6 : (isTactical ? 1.0 : 1.0))
   const duration = base.duration || (isField ? 2.0 : (isTactical ? 1.2 : 0.8))
 
-  return {
+  const result: EffectSettings = {
     shape: isFeetEffect ? 'rect' : 'circle',
     area,
     offset,
@@ -121,4 +141,13 @@ export const resolveEffectSettings = (typeKey: string, ar: number, options: { is
     randomizeVars: base.randomizeVars ?? isPrimary,
     growDuration: base.growDuration
   }
+
+  // Ajustes finales dinámicos para Shiny
+  if (typeKey === 'shiny' && (options.isSimplified || !options.isBattle)) {
+    result.mult = 0.2
+  } else if (typeKey === 'shiny') {
+    result.mult = 0.45
+  }
+
+  return result
 }

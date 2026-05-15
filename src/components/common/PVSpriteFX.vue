@@ -13,6 +13,13 @@ import PVAuraFX from './PVAuraFX.vue'
 import { resolveEffectSettings } from '@/data/fx-configs'
 import { Z_LAYERS } from '@/logic/constants/visuals'
 
+interface FXData {
+  type: string;
+  emoji: string;
+  isField?: boolean;
+  active?: boolean;
+}
+
 const battleStore = useBattleStore()
 const uiStore = useUIStore()
 
@@ -43,7 +50,8 @@ const props = defineProps({
   isSilhouette: { type: Boolean, default: false },
   radius: { type: Number, default: 40 },
   spriteScale: { type: Number, default: 1 },
-  animState: { type: String, default: null }
+  animState: { type: String, default: null },
+  isBattle: { type: Boolean, default: false }
 })
 
 const isModalPerformance = inject<Ref<boolean> | null>('isModalPerformanceMode', null)
@@ -75,6 +83,7 @@ const wrapperClasses = computed(() => ({
 }))
 
 const secondaryEffects = computed(() => [
+  { active: props.isShiny, emoji: '⭐', type: 'shiny' },
   { active: props.isConfused, emoji: '💫', type: 'confused' },
   { active: props.isCursed, emoji: '👻', type: 'cursed' },
   { active: props.attracted, emoji: '💖', type: 'attracted' },
@@ -179,10 +188,17 @@ onUnmounted(() => {
 const allActiveFXDebug = computed(() => {
   if (!battleStore.debugShowFxRadius) return []
   const effects = [...activeStatusEffects.value, ...secondaryEffects.value, ...tacticalEffects.value, ...fieldEffects.value]
-  return effects.map(fx => {
-    const settings = resolveEffectSettings(fx.type, props.radius, { isField: (fx as any).isField })
-    const shape = settings.shape; const offset = settings.offset || { x: 0, y: 0 }; const area = settings.area as any
-    let style: any = { position: 'absolute', border: '1px solid ' + (shape === 'circle' ? 'rgba(255, 255, 255, 0.5)' : 'rgba(255, 165, 0, 0.8)'), pointerEvents: 'none', zIndex: '99', borderRadius: shape === 'circle' ? '50%' : '2px' }
+  return effects.map((fx: FXData) => {
+    const settings = resolveEffectSettings(fx.type, props.radius, { isField: fx.isField })
+    const shape = settings.shape; const offset = settings.offset || { x: 0, y: 0 }; 
+    const area = settings.area as { x: [number, number], y?: [number, number] }
+    const style: Record<string, string> = { 
+      position: 'absolute', 
+      border: '1px solid ' + (shape === 'circle' ? 'rgba(255, 255, 255, 0.5)' : 'rgba(255, 165, 0, 0.8)'), 
+      pointerEvents: 'none', 
+      zIndex: '99', 
+      borderRadius: shape === 'circle' ? '50%' : '2px' 
+    }
     if (shape === 'circle') {
       const radius = area.x[1]; style.width = `${radius * 2}%`; style.height = `${radius * 2}%`; style.top = `${50 + offset.y}%`; style.left = `${50 + offset.x}%`; style.transform = 'translate(-50%, -50%)'
     } else {
@@ -216,7 +232,7 @@ const allActiveFXDebug = computed(() => {
       :radius="radius"
       :anim-seed="animSeed"
       :sprite-scale="spriteScale"
-      :enabled="enabled"
+      :enabled="!isSimplified"
     />
 
     <PVStatusFX
@@ -227,7 +243,9 @@ const allActiveFXDebug = computed(() => {
       :radius="radius"
       :anim-seed="animSeed"
       :sprite-scale="spriteScale"
+      :enabled="!isSimplified"
       :is-simplified="isSimplified"
+      :is-battle="isBattle"
     />
 
     <!-- DEBUG GUIDES -->
@@ -267,7 +285,7 @@ const allActiveFXDebug = computed(() => {
 }
 .debug-guide {
   position: absolute; top: 50%; left: 50%; transform: Translate(-50%, -50%);
-  border: 1px dashed; border-radius: 50%; pointer-events: none; z-index: 9999;
+  border: 1px dashed; border-radius: 50%; pointer-events: none; z-index: calc(v-bind('Z_LAYERS.OVERLAY') - 1);
   display: flex; align-items: center; justify-content: center; @include pixelated;
   .label {
     position: absolute; top: -12px; background: Rgba(0, 0, 0, 0.8); color: white;

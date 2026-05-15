@@ -86,7 +86,7 @@ describe('BattleInfoCard - Ability Tooltips', () => {
 
     // Find the ability badge (🧠)
     // We look for the badge that contains the brain emoji
-    const badges = wrapper.findAll('.status-badge')
+    const badges = wrapper.findAll('.m-status-tag')
     const abilityBadge = badges.find(b => b.text().includes('🧠'))
     
     expect(abilityBadge).toBeDefined()

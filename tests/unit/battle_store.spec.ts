@@ -59,7 +59,7 @@ describe('Battle Store - Log Side Detection', () => {
     const battle = useBattleStore()
     battle.addLog('DEBUG: System override', 'log-info', 'player')
     
-    expect(battle.battleLogs[0]!.icon).toBe('😈')
+    expect(battle.battleLogs[0]!.icon).toBe('⚙️')
     expect(battle.battleLogs[0]!.iconType).toBe('emoji')
   })
 
