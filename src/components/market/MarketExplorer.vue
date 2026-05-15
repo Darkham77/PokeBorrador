@@ -4,15 +4,18 @@ import { computed } from 'vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { useGTSStore } from '@/stores/gts'
 import { useGameStore } from '@/stores/game'
+import { useAuthStore } from '@/stores/auth'
 import type { MarketListing } from '@/logic/market'
 import { formatCurrency } from '@/logic/utils/formatters'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
+import { formatDisplayDate } from '@/logic/timeUtils'
 
 import PokemonSelectionItem from '@/components/modals/PokemonSelectionItem.vue'
 import type { Pokemon } from '@/types/pokemon'
 
 const game = useGameStore()
 const gtsStore = useGTSStore()
+const auth = useAuthStore()
 
 function getPokemonTotalPower(p: Pokemon) {
   if (!p) return 0
@@ -29,14 +32,8 @@ function handleBuy(listing: MarketListing) {
   gtsStore.buyListing(listing)
 }
 
-const formatTime = (ts: string | number) => {
-  try {
-    const instant = typeof ts === 'string' ? Temporal.Instant.from(ts) : Temporal.Instant.fromEpochMilliseconds(Number(ts));
-    return instant.toZonedDateTimeISO('UTC').toLocaleString();
-  } catch {
-    return '---';
-  }
-}
+// formatTime is now centralized in timeUtils.ts as formatDisplayDate
+const formatTime = formatDisplayDate
 
 
 </script>
@@ -113,10 +110,14 @@ const formatTime = (ts: string | number) => {
           </div>
           <button 
             class="btn-vicio-primary btn-vicio-sm"
-            :disabled="game.state.money < item.price"
+            :disabled="game.state.money < item.price || item.seller_id === auth.user?.id"
             @click.stop="handleBuy(item)"
           >
-            {{ game.state.money < item.price ? 'SIN SALDO' : 'COMPRAR' }}
+            {{ 
+              item.seller_id === auth.user?.id 
+                ? 'TU OFERTA' 
+                : (game.state.money < item.price ? 'SIN SALDO' : 'COMPRAR') 
+            }}
           </button>
         </div>
       </div>

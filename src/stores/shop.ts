@@ -3,6 +3,7 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { useGameStore } from './game.ts'
 import { useUIStore } from './ui.ts'
+import { useWarStore } from './war.ts'
 import type { Pokemon, Move } from '@/types/pokemon'
 import { SHOP_ITEMS, ITEM_CATEGORIES, CATEGORY_LABELS } from '@/data/items'
 import { PLAYER_CLASSES } from '@/data/playerClasses'
@@ -12,6 +13,7 @@ import { calculateTotalHealCost } from '@/logic/economy/economyFormulas'
 export const useShopStore = defineStore('shop', () => {
   const gameStore = useGameStore()
   const uiStore = useUIStore()
+  const warStore = useWarStore()
   
   
   const marketCategory = ref('todos')
@@ -108,6 +110,31 @@ export const useShopStore = defineStore('shop', () => {
 
     
     uiStore.notify(`¡Compraste ${item.name}!`, '🏅')
+    gameStore.scheduleSave()
+  }
+
+  function buyItemWar(itemId: string) {
+    const item = SHOP_ITEMS.find(i => i.id === itemId)
+    if (!item || (item.warPrice || 0) <= 0) return
+
+    if (gameStore.state.trainerLevel < (item.unlockLv || 1)) {
+      uiStore.notify('¡Ítem bloqueado!', '🔒')
+      return
+    }
+
+    if ((warStore.warCoins || 0) < (item.warPrice || 0)) {
+      uiStore.notify('¡No tenés suficientes Monedas de Guerra!', '⚡')
+      return
+    }
+
+    // Deduct coins
+    warStore.warCoins -= (item.warPrice || 0)
+    gameStore.state.warCoins = warStore.warCoins
+    
+    // Add to inventory
+    gameStore.state.inventory[item.name] = (gameStore.state.inventory[item.name] || 0) + 1
+    
+    uiStore.notify(`¡Compraste ${item.name}!`, '⚔️')
     gameStore.scheduleSave()
   }
 
@@ -235,6 +262,7 @@ export const useShopStore = defineStore('shop', () => {
     healAllPokemon,
     getHealCost,
     getBlackMarketItems,
-    buyBlackMarketItem
+    buyBlackMarketItem,
+    buyItemWar
   }
 })

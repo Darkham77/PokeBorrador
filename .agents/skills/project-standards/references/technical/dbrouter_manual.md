@@ -57,6 +57,7 @@ In offline mode, changes are saved in memory and synchronized with the browser's
 - **Do Not Use Supabase Directly**: Always use `gameStore.db` or the injected router.
 - **RPCs**: If you create an RPC on the server, you MUST create its equivalent or a mock in `dbRouter.ts` so that offline mode does not break.
 - **Transactions**: There are no guaranteed multi-table transactions in the router; always design logic to be atomic at the row level whenever possible.
+- **Migration Integrity Patch**: To ensure `npm run validate:sql` passes in environments with inconsistent migration history, all new migrations MUST include `CREATE TABLE IF NOT EXISTS` blocks for the tables they affect. This prevents "no such table" errors during the isolated validation phase.
 - **Unit Testing & Mocking**: When mocking `DBRouter` in unit tests, you MUST provide a dummy URL/Key to satisfy the configuration check and explicitly inject your mock client into the private `_realClient` property to prevent the lazy-initializer from attempting a real connection.
 
 ---

@@ -6,6 +6,7 @@ import { formatCurrency } from '@/logic/utils/formatters'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import PokemonSelectionItem from '@/components/modals/PokemonSelectionItem.vue'
 import type { Pokemon } from '@/types/pokemon'
+import { formatDisplayDate } from '@/logic/timeUtils'
 
 const gtsStore = useGTSStore()
 
@@ -32,14 +33,8 @@ async function handleCancel(listingId: string) {
   }
 }
 
-const formatTime = (ts: string | number) => {
-  try {
-    const instant = typeof ts === 'string' ? Temporal.Instant.from(ts) : Temporal.Instant.fromEpochMilliseconds(Number(ts));
-    return instant.toZonedDateTimeISO('UTC').toLocaleString();
-  } catch {
-    return '---';
-  }
-}
+// formatTime is now centralized in timeUtils.ts as formatDisplayDate
+const formatTime = formatDisplayDate
 </script>
 
 <template>

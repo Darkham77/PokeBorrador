@@ -47,6 +47,11 @@ const handleTabChange = (tab: string, _event?: Event) => {
     return
   }
 
+  if (tab === 'war-shop') {
+    uiStore.isWarShopOpen = true
+    return
+  }
+
   if (tab === 'team') {
     modalStore.open('TeamManagement')
     return
@@ -260,6 +265,12 @@ onUnmounted(() => {
           >
             <span class="icon">🎖️</span><span class="nav-item-label">BC SHOP</span>
           </button>
+          <button
+            class="hud-nav-btn war-shop-nav-btn"
+            @click.stop="handleTabChange('war-shop'); uiStore.openHudGroup = null"
+          >
+            <span class="icon">🚩</span><span class="nav-item-label">GUERRA</span>
+          </button>
         </div>
       </Transition>
     </div>
@@ -318,7 +329,7 @@ onUnmounted(() => {
             :class="{ active: activeTab === 'war' }"
             @click.stop="handleTabChange('war'); uiStore.openHudGroup = null"
           >
-            <span class="icon">🚩</span><span class="nav-item-label">GUERRA</span>
+            <span class="icon">⚔️</span><span class="nav-item-label">DOMINANCIA</span>
           </button>
           <button
             class="hud-nav-btn"
@@ -526,6 +537,12 @@ onUnmounted(() => {
   }
   
   &.active .nav-item-label { color: var(--yellow); }
+
+  &.war-shop-nav-btn:hover {
+    border-color: var(--red);
+    box-shadow: 0 0 0 2px var(--red), 0 0 15px Rgba(239, 68, 68, 0.3);
+    .nav-item-label { color: var(--red); }
+  }
 }
 
 .badge-pill {

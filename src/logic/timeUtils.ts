@@ -117,3 +117,38 @@ export function getSeason(now: Temporal.Instant | number = getServerInstant()): 
 export function sleep(ms: number): Promise<void> {
   return new Promise(resolve => gsap.delayedCall(ms / 1000, resolve));
 }
+
+/**
+ * Formats a date string or number for UI display in GMT-3.
+ * Handles robust parsing of SQLite/Supabase/Legacy formats.
+ */
+export function formatDisplayDate(ts: string | number | null | undefined): string {
+  if (!ts) return '---';
+  try {
+    let cleanTs = typeof ts === 'string' ? ts.trim().replace(' ', 'T') : ts;
+
+    // Fix for SQLite datetime('now') missing 'Z' and 'T'
+    if (typeof cleanTs === 'string') {
+      // If it looks like YYYY-MM-DDTHH:MM:SS but lacks timezone, assume UTC (standard for our DB)
+      if (cleanTs.length === 19 && !cleanTs.includes('Z') && !cleanTs.includes('+')) {
+        cleanTs += 'Z';
+      }
+    }
+
+    const instant = typeof cleanTs === 'string'
+      ? Temporal.Instant.from(cleanTs)
+      : Temporal.Instant.fromEpochMilliseconds(Number(cleanTs));
+
+    const zdt = instant.toZonedDateTimeISO('America/Argentina/Buenos_Aires');
+
+    const day = String(zdt.day).padStart(2, '0');
+    const month = String(zdt.month).padStart(2, '0');
+    const hour = String(zdt.hour).padStart(2, '0');
+    const min = String(zdt.minute).padStart(2, '0');
+
+    return `${day}/${month} ${hour}:${min}`;
+  } catch (e) {
+    logger.warn('TIME', `Failed to format date: ${ts}`, (e as Error).message);
+    return '---';
+  }
+}

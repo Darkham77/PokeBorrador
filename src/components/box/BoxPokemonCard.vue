@@ -47,7 +47,7 @@ const visualBadges = computed(() => props.pokemon ? getPokemonVisualBadges(props
 const numBadges = computed(() => visualBadges.value.length)
 const hasBadges = computed(() => numBadges.value > 0)
 const hasManyBadges = computed(() => numBadges.value > 3)
-const tierInfo = computed(() => props.pokemon ? getPokemonTier(props.pokemon) : { tier: '?', color: 'var(--gray)', bg: 'Rgba(255,255,255,0.05)' })
+const tierInfo = computed(() => props.pokemon ? getPokemonTier(props.pokemon) : { tier: '?', color: 'var(--gray)', rgb: '30, 41, 59', bg: 'rgba(255, 255, 255, 0.05)' })
 const spriteUrl = computed(() => props.pokemon ? getAssetUrl(ASSET_TYPES.POKEMON, props.pokemon.id, { 
   isShiny: props.pokemon.isShiny 
 }) : '')
@@ -86,6 +86,8 @@ const bst = computed(() => {
 })
 
 const isPremiumTier = computed(() => props.pokemon && (tierInfo.value.tier === 'S' || tierInfo.value.tier === 'S+'))
+
+const tierColorRgb = computed(() => tierInfo.value?.rgb || '30, 41, 59')
 </script>
 
 <template>
@@ -102,6 +104,10 @@ const isPremiumTier = computed(() => props.pokemon && (tierInfo.value.tier === '
         'is-on-mission': props.pokemon?.onMission
       }
     ]"
+    :style="{ 
+      '--tier-color': tierInfo.color,
+      '--tier-color-rgb': tierColorRgb
+    }"
     @click.stop="cardEmit('click', $event, props.index)"
   >
     <div
@@ -222,24 +228,24 @@ const isPremiumTier = computed(() => props.pokemon && (tierInfo.value.tier === '
 @use "@/styles/core/tools" as *;
 
 .box-pokemon-card {
+  @include premium-card-hover(var(--tier-color, #1e293b), 1.02, -4px);
   @include pokemon-card-standard(20px);
-  transform: Translatez(0); // Hardware acceleration
-  will-change: transform; // Layer promotion
+  transform: Translatez(0); 
+  border-color: var(--tier-color, Rgba(255, 255, 255, 0.15)) !important;
   
   &.is-premium-tier {
-    --tier-color: v-bind('tierInfo.color');
     @include pokemon-card-premium-tier;
   }
 
   &.is-on-mission {
     .box-card-sprite {
       will-change: transform, filter, opacity;
-  filter: Grayscale(1);
+      filter: Grayscale(1);
       opacity: 0.6;
     }
     .card-info {
       will-change: transform, filter, opacity;
-  filter: Grayscale(0.5);
+      filter: Grayscale(0.5);
       opacity: 0.8;
     }
   }
@@ -247,14 +253,10 @@ const isPremiumTier = computed(() => props.pokemon && (tierInfo.value.tier === '
   // --- PERFORMANCE MODE OVERRIDES ---
   &.performance-mode {
     transition: background-color 0.2s ease, border-color 0.2s ease !important;
-    will-change: auto; // Liberar memoria GPU si no es necesario
+    will-change: auto; 
     
     &:hover {
-      @include shell-hover-blue;
-      transform: none !important;
-      will-change: transform, filter, opacity;
       filter: Brightness(1.1);
-      
       &::before { opacity: 0 !important; }
       
       :deep(.box-card-sprite) {
@@ -263,12 +265,12 @@ const isPremiumTier = computed(() => props.pokemon && (tierInfo.value.tier === '
     }
 
     &.selected {
-      background: Rgba(59, 130, 246, 0.2) !important;
-      border-color: #3b82f6 !important;
+      background: Rgba(var(--tier-color-rgb), 0.2) !important;
+      border-color: var(--tier-color) !important;
       box-shadow: none !important;
       
       &:hover {
-        background: Rgba(59, 130, 246, 0.3) !important;
+        background: Rgba(var(--tier-color-rgb), 0.3) !important;
         box-shadow: none !important;
       }
     }

@@ -51,7 +51,7 @@ export const SHOP_ITEMS = [
   },
   {
     id: 'everstone', cat: 'breeding', sprite: 'everstone',
-    name: 'Piedra Eterna', icon: '🪨', price: 10000, unlockLv: 15, tier: 'epic', market: false, trainerShop: false,
+    name: 'Piedra Eterna', icon: '🪨', price: 10000, unlockLv: 15, tier: 'epic', market: false, trainerShop: false, warPrice: 80,
     desc: 'Equipada en la guardería, asegura que la cría herede la naturaleza de este padre.'
   },
   {
@@ -66,32 +66,32 @@ export const SHOP_ITEMS = [
   },
   {
     id: 'power_weight', cat: 'breeding', sprite: 'power-weight',
-    name: 'Pesa Recia', icon: '🏋️', price: 0, unlockLv: 15, tier: 'epic', market: false, trainerShop: true, bcPrice: 1500,
+    name: 'Pesa Recia', icon: '🏋️', price: 0, unlockLv: 15, tier: 'epic', market: false, trainerShop: true, bcPrice: 1500, warPrice: 120,
     desc: 'Equipado en la guardería, fuerza la herencia del IV de HP de este padre.'
   },
   {
     id: 'power_bracer', cat: 'breeding', sprite: 'power-bracer',
-    name: 'Brazal Recio', icon: '🥊', price: 0, unlockLv: 15, tier: 'epic', market: false, trainerShop: true, bcPrice: 1500,
+    name: 'Brazal Recio', icon: '🥊', price: 0, unlockLv: 15, tier: 'epic', market: false, trainerShop: true, bcPrice: 1500, warPrice: 120,
     desc: 'Equipado en la guardería, fuerza la herencia del IV de Ataque de este padre.'
   },
   {
     id: 'power_belt', cat: 'breeding', sprite: 'power-belt',
-    name: 'Cinto Recio', icon: '🛡️', price: 0, unlockLv: 15, tier: 'epic', market: false, trainerShop: true, bcPrice: 1500,
+    name: 'Cinto Recio', icon: '🛡️', price: 0, unlockLv: 15, tier: 'epic', market: false, trainerShop: true, bcPrice: 1500, warPrice: 120,
     desc: 'Equipado en la guardería, fuerza la herencia del IV de Defensa de este padre.'
   },
   {
     id: 'power_lens', cat: 'breeding', sprite: 'power-lens',
-    name: 'Lente Recia', icon: '🔍', price: 0, unlockLv: 15, tier: 'epic', market: false, trainerShop: true, bcPrice: 1500,
+    name: 'Lente Recia', icon: '🔍', price: 0, unlockLv: 15, tier: 'epic', market: false, trainerShop: true, bcPrice: 1500, warPrice: 120,
     desc: 'Equipado en la guardería, fuerza la herencia del IV de At. Especial de este padre.'
   },
   {
     id: 'power_band', cat: 'breeding', sprite: 'power-band',
-    name: 'Banda Recia', icon: '🎗️', price: 0, unlockLv: 15, tier: 'epic', market: false, trainerShop: true, bcPrice: 1500,
+    name: 'Banda Recia', icon: '🎗️', price: 0, unlockLv: 15, tier: 'epic', market: false, trainerShop: true, bcPrice: 1500, warPrice: 120,
     desc: 'Equipado en la guardería, fuerza la herencia del IV de Def. Especial de este padre.'
   },
   {
     id: 'power_anklet', cat: 'breeding', sprite: 'power-anklet',
-    name: 'Franja Recia', icon: '👢', price: 0, unlockLv: 15, tier: 'epic', market: false, trainerShop: true, bcPrice: 1500,
+    name: 'Franja Recia', icon: '👢', price: 0, unlockLv: 15, tier: 'epic', market: false, trainerShop: true, bcPrice: 1500, warPrice: 120,
     desc: 'Equipado en la guardería, fuerza la herencia del IV de Velocidad de este padre.'
   },
   // ── POKÉBALLS ──────────────────────────────────────────────────────────────
@@ -324,32 +324,32 @@ export const SHOP_ITEMS = [
   },
   {
     id: 'incense_fire', cat: 'booster', sprite: 'luck-incense',
-    name: 'Incienso Fuego', icon: '🔥', price: 0, unlockLv: 10, tier: 'rare', market: false, trainerShop: true, bcPrice: 1500,
+    name: 'Incienso Fuego', icon: '🔥', price: 0, unlockLv: 10, tier: 'rare', market: false, trainerShop: true, bcPrice: 1500, warPrice: 150,
     desc: 'Aumenta la aparición de Pokémon de tipo Fuego durante 30 min.'
   },
   {
     id: 'incense_water', cat: 'booster', sprite: 'luck-incense',
-    name: 'Incienso Agua', icon: '💧', price: 0, unlockLv: 10, tier: 'rare', market: false, trainerShop: true, bcPrice: 1500,
+    name: 'Incienso Agua', icon: '💧', price: 0, unlockLv: 10, tier: 'rare', market: false, trainerShop: true, bcPrice: 1500, warPrice: 150,
     desc: 'Aumenta la aparición de Pokémon de tipo Agua durante 30 min.'
   },
   {
     id: 'incense_grass', cat: 'booster', sprite: 'luck-incense',
-    name: 'Incienso Planta', icon: '🌿', price: 0, unlockLv: 10, tier: 'rare', market: false, trainerShop: true, bcPrice: 1500,
+    name: 'Incienso Planta', icon: '🌿', price: 0, unlockLv: 10, tier: 'rare', market: false, trainerShop: true, bcPrice: 1500, warPrice: 150,
     desc: 'Aumenta la aparición de Pokémon de tipo Planta durante 30 min.'
   },
   {
     id: 'incense_normal', cat: 'booster', sprite: 'luck-incense',
-    name: 'Incienso Normal', icon: '⚪', price: 0, unlockLv: 10, tier: 'rare', market: false, trainerShop: true, bcPrice: 1500,
+    name: 'Incienso Normal', icon: '⚪', price: 0, unlockLv: 10, tier: 'rare', market: false, trainerShop: true, bcPrice: 1500, warPrice: 150,
     desc: 'Aumenta la aparición de Pokémon de tipo Normal durante 30 min.'
   },
   {
     id: 'incense_ghost', cat: 'booster', sprite: 'luck-incense',
-    name: 'Incienso Fantasma', icon: '👻', price: 0, unlockLv: 10, tier: 'rare', market: false, trainerShop: true, bcPrice: 1500,
+    name: 'Incienso Fantasma', icon: '👻', price: 0, unlockLv: 10, tier: 'rare', market: false, trainerShop: true, bcPrice: 1500, warPrice: 150,
     desc: 'Aumenta la aparición de Pokémon de tipo Fantasma durante 30 min.'
   },
   {
     id: 'incense_psychic', cat: 'booster', sprite: 'luck-incense',
-    name: 'Incienso Psíquico', icon: '🔮', price: 0, unlockLv: 10, tier: 'rare', market: false, trainerShop: true, bcPrice: 1500,
+    name: 'Incienso Psíquico', icon: '🔮', price: 0, unlockLv: 10, tier: 'rare', market: false, trainerShop: true, bcPrice: 1500, warPrice: 150,
     desc: 'Aumenta la aparición de Pokémon de tipo Psíquico durante 30 min.'
   },
   {

@@ -164,6 +164,7 @@ onUnmounted(() => {
     max-width="360px"
     variant="retro"
     padding="raw"
+    accent-color="var(--green)"
     :show-close-button="false"
     :close-on-click-outside="false"
     :prevent-close="isHealing"

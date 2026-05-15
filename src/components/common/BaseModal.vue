@@ -200,7 +200,8 @@ const props = defineProps({
     type: String,
     default: 'transparent',
     validator: (val: string) => ['transparent', 'solid', 'yellow-solid'].includes(val)
-  }
+  },
+  accentColor: { type: String, default: 'var(--yellow)' }
 })
 
 const emit = defineEmits(['close', 'confirm', 'cancel', 'submit'])
@@ -322,11 +323,12 @@ const onContentLeave = (el: Element, done: () => void) => {
 const cardStyles = computed(() => {
   if (props.type === 'fullscreen') return {}
   
-  const styles = { 
+  const styles: Record<string, string> = { 
     width: '100%',
     maxWidth: props.maxWidth,
     height: props.height,
-    maxHeight: props.maxHeight 
+    maxHeight: props.maxHeight,
+    '--modal-accent': props.accentColor
   }
 
   // Si es un panel lateral, el maxWidth también controla el width base

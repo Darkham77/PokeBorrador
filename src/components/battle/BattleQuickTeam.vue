@@ -83,29 +83,33 @@ const handleSwitch = (index: number) => {
   min-height: 0 !important;
   margin: 0 !important;
   padding: 8px !important;
-  background: Rgba(15, 23, 42, 0.6) !important; // Fondo Premium Unificado
+  background: Rgba(15, 23, 42, 0.7) !important; // Un poco más oscuro para resaltar borde
   -webkit-will-change: transform, opacity;
   will-change: transform, opacity;
   @include gpu-layer;
-  border: 1px solid Rgba(255, 255, 255, 0.1) !important;
+  border: 1px solid var(--tier-color) !important; // MARCO DE GRADO OBLIGATORIO
   border-radius: 20px !important;
   transition: all 0.2s ease !important;
   
-  // Hover unificado BLUE PREMIUM
+  // Hover unificado premium (usa el color de grado)
   &:hover {
-    @include shell-hover-blue;
-    transform: none !important; // Absolute stability
+    z-index: 10;
+    box-shadow: 0 0 15px Rgba(var(--tier-color-rgb), 0.3) !important;
   }
 
   &.is-active {
-    @include shell-selected-blue;
+    border-color: var(--tier-color) !important;
+    background: Rgba(var(--tier-color-rgb), 0.15) !important;
+    box-shadow: 
+      0 0 20px Rgba(var(--tier-color-rgb), 0.4),
+      inset 0 0 10px Rgba(var(--tier-color-rgb), 0.2) !important;
     transform: Scale(0.98);
   }
 
   &.is-fainted {
     opacity: 0.5;
     will-change: transform, filter, opacity;
-  filter: Grayscale(1);
+    filter: Grayscale(1);
     pointer-events: none;
   }
 }

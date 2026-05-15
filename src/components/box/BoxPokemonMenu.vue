@@ -175,6 +175,7 @@ const handleSellRocket = () => {
       <!-- Pokémon Summary (Sprite & Types) -->
       <div 
         class="pokemon-summary-card" 
+        :style="{ '--tier-color': tierInfo?.color }"
         @click.stop="handleDetail"
       >
         <div 
@@ -258,6 +259,7 @@ const handleSellRocket = () => {
               :key="t.uid"
               class="team-swap-card"
               :class="{ 'is-premium-tier': getPokemonTier(t).tier === 'S' || getPokemonTier(t).tier === 'S+' }"
+              :style="{ '--tier-color': getPokemonTier(t).color }"
               @click.stop="handleSwap(i as number)"
             >
               <!-- Tier Badge (Top Left) -->

@@ -27,4 +27,5 @@ To prevent spam and database overload, the following centralized limits apply:
 ## 🔄 Security Protocols
 
 - **Snapshot Validation**: When starting a trade, a snapshot of the player's state is taken. Only logical increments are allowed.
+- **GTS Integrity**: It is strictly forbidden to allow a player to buy their own listings. UI components MUST disable purchase buttons and change labels to "YOUR OFFER" when `item.seller_id` matches `auth.user.id`.
 - **UID Integrity**: The system verifies that the UID of the received Pokémon does not already exist on the player's side before finalizing the transaction.

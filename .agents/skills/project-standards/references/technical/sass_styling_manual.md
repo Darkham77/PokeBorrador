@@ -55,6 +55,7 @@ To bypass SASS color function collisions, we strictly follow a hierarchy of meth
 - **SECONDARY**: **Interpolation** `#{}`. Use ONLY for complex dynamic values.
   - ✅ `transform: Scale(#{$factor});`
 - **FORBIDDEN**: **string.unquote()** for standard filters. It violates the "Zero-Warning" architecture and makes the code harder to read.
+- **Lowercase Preference**: Since capitalization is 100% automated by the Vite plugin (`vite-plugin-sass-traps.ts`), developers and agents SHOULD write standard lowercase CSS/SASS functions. This maintains readability and follows standard CSS conventions.
 
 ### 5. GPU Performance & Hardware Acceleration (SSoT)
 
@@ -208,6 +209,9 @@ When refactoring legacy or generic components:
   - **SASS vs CSS Variables**: SASS color functions (like `color.scale`, `lighten()`, `darken()`) cannot process `var(--color)`. For interactive highlights/hovers, use static SASS fallbacks (e.g. `$yellow`) for calculations while maintaining the CSS variable for the main render to support dynamic themes.
   - **Variable Isolation**: In high-density or dynamically scoped components (e.g., within specialized filters or grids), if core SASS variables are not reliably available without manual imports, use **Direct Hex Values** to ensure visual stability and prevent "Color not defined" build errors.
   - **Inheritance vs Mixins**: Avoid using `@extend` for classes defined in external stylesheets (e.g., `.m-type-tag`) inside global or modular components. If the base stylesheet is not included in every build chunk, `@extend` will fail. Use the underlying mixin directly (e.g., `@include type-pill;`) instead.
+- **Standard RGB Injection**: For every dynamic color property (e.g., `--tier-color`, `--modal-accent`), a corresponding RGB channel variable (e.g., `--tier-color-rgb`) MUST be injected. This is the ONLY approved way to apply variable opacities in SASS while maintaining reactivity.
+  - ✅ `background: Rgba(var(--modal-accent-rgb), 0.2);`
+- **Identity Preservation**: SCSS rules MUST NOT override or strip visual identity markers (like tier borders) in any resource state (e.g., performance mode). Use CSS variables to ensure these markers persist and remain "owned" by the component.
 - **Z-Index Standardization**:
   - **MANDATORY**: Never use hardcoded numbers for `z-index` (e.g., `z-index: 10;`). Use CSS variables (`var(--z-low)`, `var(--z-base)`, `var(--z-modal)`, `var(--z-critical)`) or relative calculations `calc(var(--z-base) +/- X)` for consistent layering.
   - **Single Source of Truth**: All layering constants MUST be defined in `src/logic/constants/visuals.ts`. The use of hardcoded integers is strictly forbidden.

@@ -73,6 +73,7 @@
 }
 
 .pokemon-summary-card {
+  @include premium-card-hover(var(--tier-color, #1e293b), 1.01, -2px);
   @include pokemon-card-standard(24px);
   padding: 20px 24px;
   display: flex;
@@ -83,6 +84,7 @@
   cursor: pointer;
   position: relative;
   overflow: hidden;
+  border-color: var(--tier-color, Rgba(255, 255, 255, 0.1)) !important;
 
   @include responsive(768px) {
     flex-direction: column;
@@ -91,7 +93,7 @@
   }
 
   &:hover {
-    transform: none !important;
+    // Premium hover active
   }
 
   .sprite-box {
@@ -205,6 +207,7 @@
 }
 
 .team-swap-card {
+  @include premium-card-hover(var(--tier-color, #1e293b), 1.02, -4px);
   @include pokemon-card-standard(16px);
   padding: 10px;
   display: flex;
@@ -212,14 +215,15 @@
   align-items: center;
   cursor: pointer;
   position: relative;
+  overflow: hidden;
+  border-color: var(--tier-color, Rgba(255, 255, 255, 0.1)) !important;
 
   &.is-premium-tier {
     @include pokemon-card-premium-tier;
   }
 
   &:hover {
-    @include shell-hover-blue;
-    transform: none !important;
+    // Premium hover active
   }
 
   .slot-rank {

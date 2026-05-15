@@ -171,6 +171,7 @@ const isPremiumTier = computed(() => tierData.value.tier === 'S' || tierData.val
 @use "@/styles/components/badges" as *;
 
 .list-item {
+  @include premium-card-hover(var(--tier-color, $blue), 1.02, -5px);
   position: relative;
   
   &.is-premium-tier {

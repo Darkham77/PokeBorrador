@@ -23,6 +23,8 @@ The system uses a hierarchical approach to determine the active weather and ensu
 - **Temporal API Mandate**: The legacy `Date` object is FORBIDDEN for logic related to cycles, seasons, or event durations.
 - **Time Zone**: Always use `America/Argentina/Buenos_Aires` as the reference for server-time synchronization.
 - **Precision**: Use `Temporal.Instant` for absolute timestamps and `Temporal.Duration` for calculations.
+- **SQLite ISO Format**: Standard SQLite `datetime('now')` produces non-ISO strings. You MUST use `strftime('%Y-%m-%dT%H:%M:%SZ', 'now')` for all `DEFAULT` values in `schema.ts` to ensure compatibility with `Temporal.Instant.from()`.
+- **Centralized Formatting**: UI components MUST NOT implement local date formatting. Use `formatDisplayDate(ts)` from `src/logic/timeUtils.ts` to handle robust parsing of legacy strings and automated timezone adjustment.
 
 ---
 

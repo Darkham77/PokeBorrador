@@ -27,7 +27,7 @@
     transition: none !important;
     background: Rgba(30, 41, 59, 0.95) !important;
     box-shadow: none !important;
-    border-color: Rgba(255, 255, 255, 0.1) !important;
+    border-color: var(--tier-color) !important;
     will-change: opacity;
 
     &:hover {

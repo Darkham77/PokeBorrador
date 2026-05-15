@@ -134,6 +134,7 @@ const scheduleText = computed(() => {
     :show="show"
     max-width="500px"
     variant="retro"
+    accent-color="var(--yellow)"
     hide-header
     @close="emit('close')"
   >

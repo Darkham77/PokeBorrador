@@ -6,7 +6,7 @@ import { useUIStore } from '@/stores/ui'
 import { useElementVisibility } from '@/composables/useElementVisibility'
 
 import UnifiedBadgePill from '@/components/shared/UnifiedBadgePill.vue'
-import { getPokemonTier } from '@/logic/constants/tiers'
+import { getPokemonTier } from '@/logic/pokemon/tierEngine'
 import { getPokemonVisualBadges } from '@/logic/constants/tags'
 import PokemonTypePills from '@/components/shared/PokemonTypePills.vue'
 import { calculateTotalPower } from '@/logic/pokemonUtils'
@@ -82,6 +82,7 @@ const getHpClass = (pct: number) => {
 }
 
 const tierInfo = computed(() => getPokemonTier(props.pokemon))
+const tierColorRgb = computed(() => tierInfo.value?.rgb || '30, 41, 59')
 
 const badgesCount = computed(() => getPokemonVisualBadges(props.pokemon).length)
 const hasBadges = computed(() => badgesCount.value > 0)
@@ -142,7 +143,10 @@ function getGenderClass(gender: string) {
   <div
     ref="cardRef"
     :class="[cardClasses, { 'disable-click': disableCardClick }]"
-    :style="{ '--tier-color': tierInfo.color }"
+    :style="{ 
+      '--tier-color': tierInfo.color,
+      '--tier-color-rgb': tierColorRgb
+    }"
     @click.stop="!disableCardClick && emit('openDetail', index)"
   >
     <!-- Top Row: Items/Tags + Tier -->

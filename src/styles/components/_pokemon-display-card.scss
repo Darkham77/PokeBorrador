@@ -3,8 +3,10 @@
 @use "@/styles/components/badges" as *;
 
 .pokemon-display-card {
+  @include premium-card-hover(var(--tier-color, $blue), 1.02, -5px);
   width: 100%;
   @include pokemon-card-standard(24px);
+  border-color: var(--tier-color, Rgba(255, 255, 255, 0.15)) !important;
   padding: 10px;
   display: flex;
   flex-direction: column;
@@ -17,9 +19,8 @@
     &:active { cursor: grabbing; }
   }
 
-  &:hover {
-    & .pokemon-sprite { @include pokemon-sprite-hover-standard; }
-  }
+  & .pokemon-sprite { transition: all 0.4s ease; }
+  &:hover .pokemon-sprite { @include pokemon-sprite-hover-standard; }
 
   &.is-premium-tier {
     @include pokemon-card-premium-tier;
@@ -27,7 +28,7 @@
 
   &.is-performance-mode {
     background: Rgba(30, 41, 59, 0.6) !important;
-    border: 1px solid Rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid var(--tier-color) !important;
     box-shadow: 0 4px 10px Rgba(0, 0, 0, 0.4) !important;
     transition: none !important;
 

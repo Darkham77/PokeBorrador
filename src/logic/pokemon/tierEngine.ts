@@ -12,18 +12,19 @@ export interface TierConfig {
   min: number;
   max: number;
   color: string;
+  rgb: string;
   bg: string;
   label: string;
 }
 
 export const BOX_TIER_CONFIG: Record<string, TierConfig> = {
-  'S+': { min: 186, max: 186, color: '#FFD700', bg: 'Rgba(255,215,0,0.18)', label: 'S+' },
-  'S': { min: 168, max: 185, color: '#FFB800', bg: 'Rgba(255,184,0,0.14)', label: 'S' },
-  'A': { min: 140, max: 167, color: '#6BCB77', bg: 'Rgba(107,203,119,0.14)', label: 'A' },
-  'B': { min: 112, max: 139, color: '#3B8BFF', bg: 'Rgba(59,139,255,0.14)', label: 'B' },
-  'C': { min: 84, max: 111, color: '#C77DFF', bg: 'Rgba(199,125,255,0.14)', label: 'C' },
-  'D': { min: 56, max: 83, color: '#FF9632', bg: 'Rgba(255,150,50,0.14)', label: 'D' },
-  'F': { min: 0, max: 55, color: '#FF3B3B', bg: 'Rgba(255,59,59,0.14)', label: 'F' },
+  'S+': { min: 186, max: 186, color: '#ffd700', rgb: '255, 215, 0', bg: 'rgba(255, 215, 0, 0.18)', label: 'S+' },
+  'S': { min: 168, max: 185, color: '#ffb800', rgb: '255, 184, 0', bg: 'rgba(255, 184, 0, 0.14)', label: 'S' },
+  'A': { min: 140, max: 167, color: '#6bcb77', rgb: '107, 203, 119', bg: 'rgba(107, 203, 119, 0.14)', label: 'A' },
+  'B': { min: 112, max: 139, color: '#3b8bff', rgb: '59, 139, 255', bg: 'rgba(59, 139, 255, 0.14)', label: 'B' },
+  'C': { min: 84, max: 111, color: '#c77dff', rgb: '199, 125, 255', bg: 'rgba(199, 125, 255, 0.14)', label: 'C' },
+  'D': { min: 56, max: 83, color: '#ff9632', rgb: '255, 150, 50', bg: 'rgba(255, 150, 50, 0.14)', label: 'D' },
+  'F': { min: 0, max: 55, color: '#ff3b3b', rgb: '255, 59, 59', bg: 'rgba(255, 59, 59, 0.14)', label: 'F' },
 };
 
 /**

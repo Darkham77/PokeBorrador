@@ -45,7 +45,9 @@ const close = () => {
     title="PARCHE DE NATURALEZA"
     title-color="Rgba(74, 222, 128, 1)"
     header-background="Rgba(26, 26, 46, 1)"
-    max-width="400px"
+    variant="retro"
+    padding="raw"
+    accent-color="var(--green)"
     @close="close"
   >
     <div class="nature-modal-inner">

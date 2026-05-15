@@ -196,6 +196,7 @@ onUnmounted(() => {
 }
 
 .empty-placeholder {
+  @include premium-card-hover(var(--blue), 1.02, -4px);
   flex: 1;
   background: Rgba(255, 255, 255, 0.02);
   border: 2px dashed Rgba(255, 255, 255, 0.1);
@@ -209,14 +210,10 @@ onUnmounted(() => {
   transition: all 0.3s;
 
   &:hover {
-    background: Rgba(255, 255, 255, 0.05);
-    border-color: var(--blue);
-    transform: Translatey(-4px);
-    
     .plus-icon {
       transform: Scale(1.2) Rotate(90deg);
       will-change: transform, filter, opacity;
-  filter: Drop-Shadow(0 0 15px var(--blue));
+      filter: Drop-Shadow(0 0 15px var(--blue));
       color: var(--white);
     }
     
@@ -237,6 +234,11 @@ onUnmounted(() => {
     color: var(--gray);
     transition: all 0.3s;
   }
+}
+
+// Support dynamic Tier Identity even in Team Context
+:deep(.pokemon-display-card:hover) {
+  // Removed blue override to allow tier color to shine
 }
 
 .pvp-slot {

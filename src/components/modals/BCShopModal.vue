@@ -108,6 +108,7 @@ const close = () => {
     :max-width="isSmallScreen ? '100dvw' : '900px'"
     variant="retro"
     padding="raw"
+    accent-color="var(--purple)"
     @close="close"
   >
     <!-- Premium Header -->

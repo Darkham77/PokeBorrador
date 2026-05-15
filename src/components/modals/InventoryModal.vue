@@ -257,6 +257,7 @@ const close = () => {
     :max-width="isSmallScreen ? '100dvw' : modalWidth"
     variant="retro"
     padding="raw"
+    accent-color="var(--red)"
     :no-scroll="!!battleMode"
     @close="close"
   >
@@ -357,6 +358,7 @@ const close = () => {
       :show="!!itemActionMenu"
       max-width="320px"
       variant="retro"
+      accent-color="var(--red)"
       @close="itemActionMenu = null"
     >
       <template #header>

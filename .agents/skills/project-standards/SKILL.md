@@ -99,6 +99,9 @@ Consult these manuals for detailed implementation specifications:
 - **DBRouter Context Isolation**: Maintain absolute separation between Online (Supabase) and Offline (SQLite) contexts. Persistence logic migrations must strictly respect the `DBRouter` routing rules to prevent data pollution.
 - **Atomic Batching**: Large migrations or refactors MUST be performed in atomic batches (single files or small logical groups) to manage context limits and ensure precision. Avoid directory-wide mass processing in a single step.
 - **Pure Modules Pattern (Math Extraction)**: Core mathematical logic (battle formulas, weather cycles, stats calculation) MUST be extracted into standalone `*Math.ts` files. These modules must be "pure" (zero side effects, zero dependence on Vue/Pinia/Supabase). This allows using the high-performance Native Node.js Test Runner and ensures logic remains deterministic and portable.
+- **CSS Variable Propagation**: When using CSS variables to pass dynamic states (like grade colors) from JS to CSS in a component, they MUST be injected via the `:style` attribute on the root element. Avoid using SFC `v-bind` in CSS for variables that need to be accessed by parent components or global overrides, as Vue generates internal unique variable names that break external inheritance.
+- **Visual Identity (Zero-Stripping)**: Performance mode or simplified UI modes MUST NOT strip away the essential visual identity of game entities (e.g., Pokémon grade borders). Use CSS variables to maintain these markers consistently across all resource states.
+- **Tier Identity Single Source of Truth**: All Pokémon grade logic, tier calculations, and color mappings MUST be centralized in the `tierEngine.ts` logic. Redundant constant files for tiers are strictly forbidden to prevent visual desynchronization.
 
 ### 4. SASS and Build Integrity
 
@@ -118,6 +121,7 @@ Consult these manuals for detailed implementation specifications:
     - **Extension-First Imports**: When running tests or scripts via `node --experimental-strip-types`, all internal imports MUST include the `.ts` extension (e.g., `import { foo } from './bar.ts'`) to ensure resolution by the native loader.
     - **Permissions**: All maintenance scripts MUST adhere to the Node.js Permission Model (`--permission`). Utility scripts performing fetch/read/write must be restricted to their necessary scopes (e.g., `--allow-net`, `--allow-fs`).
     - **Resource Management**: Use the `using` keyword (Explicit Resource Management) for DB connections and file handles.
+- **Global Override Audit**: Global SCSS rules (especially in `src/styles/views/`) that use `!important` MUST be audited to ensure they do not sabotage component-level dynamic styling. Prefer using CSS variables for properties that change based on state to allow components to "own" their visual identity.
 
 ### 5. Integrity & Quality Enforcement
 

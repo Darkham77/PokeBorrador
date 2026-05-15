@@ -116,6 +116,7 @@ const close = () => {
     :max-width="isSmallScreen ? '100dvw' : '1020px'"
     variant="retro"
     padding="raw"
+    accent-color="var(--blue)"
     @close="close"
   >
     <!-- Cabecera Premium GTS -->

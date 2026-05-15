@@ -12,8 +12,17 @@
     background-color 0.4s ease,
     box-shadow 0.4s ease,
     border-color 0.4s ease;
-  overflow: hidden;
-  border: 1px solid Rgba(255, 255, 255, 0.15); // Increased for better definition
+  overflow: hidden; // Absolute clip
+  border: 1px solid Rgba(255, 255, 255, 0.15);
+  background-clip: padding-box; // Extra safety for bg bleed
+
+  // Ensure only background-filling headers respect the radius
+  > .card-header, 
+  > .pokemon-header,
+  > .selection-item-header {
+    border-top-left-radius: inherit;
+    border-top-right-radius: inherit;
+  }
   // removed will-change and contain to avoid layer explosion
   
   &::before {
@@ -27,7 +36,6 @@
   }
 
   &:hover {
-    @include shell-hover-blue;
     &::before { opacity: 1; }
   }
 
@@ -37,7 +45,7 @@
     
     &:hover {
       box-shadow: 
-        Inset 0 0 0 5px #5bb3ff, 
+        inset 0 0 0 5px #5bb3ff, 
         0 15px 35px Rgba(10, 132, 255, 0.5), 
         0 0 45px Rgba(10, 132, 255, 0.35) !important;
     }
@@ -45,8 +53,9 @@
 }
 
 @mixin pokemon-list-item-standard($radius: 12px) {
+  @include premium-card-hover(var(--tier-color, #1e293b), 1.02, -4px);
   @include shell(transparent); 
-  background: Linear-Gradient(135deg, Rgba(30, 41, 59, 0.8), Rgba(15, 23, 42, 0.95)) !important;
+  background: linear-gradient(135deg, Rgba(30, 41, 59, 0.8), Rgba(15, 23, 42, 0.95)) !important;
   border-radius: $radius;
   transition: 
     transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275),
@@ -54,8 +63,8 @@
     box-shadow 0.3s ease,
     border-color 0.3s ease;
   position: relative;
-  overflow: hidden;
-  border: 1px solid Rgba(255, 255, 255, 0.18) !important; // More defined border
+  overflow: hidden; // Prevent corner bleeding
+  border: 1px solid var(--tier-color, Rgba(255, 255, 255, 0.18)) !important;
   box-shadow: 0 4px 15px Rgba(0, 0, 0, 0.4), 0 0 10px Rgba(255, 255, 255, 0.02);
 
   &::before {
@@ -70,8 +79,6 @@
   }
 
   &:hover:not(.locked) {
-    @include shell-hover-blue;
-    transform: none !important; // Absolute stability
     &::before { opacity: 1; }
   }
 
@@ -164,7 +171,6 @@
   }
 
   &:hover {
-    @include shell-hover-blue; // Use global hover, don't redefine locally
     &::after {
       opacity: 1;
       border-color: var(--blue);

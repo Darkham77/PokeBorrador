@@ -114,13 +114,14 @@ const itemIcon = computed(() => {
 @use "@/styles/core/_mixins" as *;
 
 .inventory-item-card {
+  @include premium-card-hover($yellow, 1.02, -4px);
   @include card-premium(16px);
   width: 100%;
   min-width: 0; // Fix grid cell overflow
   aspect-ratio: 1 / 1.1;
   align-self: start; // Prevent vertical stretch
   position: relative;
-  overflow: hidden;
+  overflow: visible !important; // Permitir que el badge respire por debajo
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   background: Rgba(255, 255, 255, 0.02);
   border: 1px solid Rgba(255, 255, 255, 0.05);
@@ -170,9 +171,6 @@ const itemIcon = computed(() => {
   }
 
   &:hover {
-    @include shell-hover-blue;
-    transform: none !important;
-    
     .item-sprite {
       transform: Scale(1.1);
     }
@@ -234,29 +232,36 @@ const itemIcon = computed(() => {
 
     .quantity-pill {
       position: absolute;
-      bottom: -4px; // Anchored to the bottom edge
+      bottom: -10px; // Aire por debajo del contenedor
       left: 50%;
-      transform: Translatex(-50%); // Centered horizontally
+      transform: Translatex(-50%); 
       display: flex;
       align-items: center;
-      gap: 1px;
-      background: Linear-Gradient(135deg, #1e293b, #0f172a);
-      border: 1px solid var(--yellow); // Match high-contrast standard
-      padding: 1px 6px;
+      justify-content: center;
+      gap: 2px;
+      background: linear-gradient(135deg, #1e293b, #0f172a);
+      border: 1px solid var(--yellow); 
+      padding: 2px 8px;
       border-radius: 6px;
       box-shadow: 0 4px 10px Rgba(0, 0, 0, 0.4);
       z-index: var(--z-low);
+      min-width: 32px;
+      height: 16px;
+      box-sizing: border-box;
 
       .label {
         font-size: 8px;
         color: var(--yellow);
-        @include pixelated;
+        line-height: 1;
+        margin-top: -1px; // Pixel font alignment
       }
 
       .value {
-        font-size: 10px;
-        font-weight: 800;
+        @include pixelated;
+        font-size: 8px;
+        font-weight: 900;
         color: white;
+        line-height: 1;
       }
     }
   }

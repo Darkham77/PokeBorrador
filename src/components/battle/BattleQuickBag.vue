@@ -164,10 +164,11 @@ const handleUseItem = (item: BattleItem) => {
 }
 
 .quick-item-card {
+  @include premium-card-hover(var(--yellow), 1.02, -4px);
   position: relative;
   background: Rgba(30, 41, 59, 0.8) !important;
   border: 1px solid Rgba(255, 255, 255, 0.1) !important;
-  border-radius: 12px !important; // Menos redondeado, más premium
+  border-radius: 12px !important; 
   padding: 0 !important;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
@@ -175,19 +176,18 @@ const handleUseItem = (item: BattleItem) => {
   display: flex;
   justify-content: center;
   align-items: center;
-  overflow: visible !important; // Permitir que el badge se asome un poco abajo
+  overflow: visible !important; // Permitir que el badge respire por debajo
 
   &::after {
     content: '';
     position: absolute;
     inset: 0;
-    background: Linear-Gradient(135deg, Rgba(255, 255, 255, 0.05), transparent);
+    background: linear-gradient(135deg, Rgba(255, 255, 255, 0.05), transparent);
     pointer-events: none;
+    border-radius: inherit; // Mantener la forma
   }
 
   &:hover {
-    @include shell-hover-blue;
-    transform: none !important; // Absolute stability
     z-index: calc(var(--z-base) + 2);
   }
 
@@ -212,39 +212,36 @@ const handleUseItem = (item: BattleItem) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  transform: Translatey(-4px); // Subir un poco el item para dejar aire al badge
-  // Permitir que el sprite sea más grande que el contenedor
+  transform: Translatey(-8px); // Subir un poco más el sprite
   position: relative;
   
   .item-sprite {
     position: absolute;
-    min-width: 60px; // 1.5x del tamaño base para un oversize equilibrado
+    min-width: 60px; 
     min-height: 60px;
-    @include pixelated;
+    @include sprite-render;
     will-change: transform, filter, opacity;
-  filter: 
+    filter: 
       Drop-Shadow(0 4px 8px Rgba(0,0,0,0.5))
-      Brightness(1.1); // Un poco de brillo extra para resaltar el detalle
+      Brightness(1.1); 
     transition: transform 0.3s ease;
     pointer-events: none;
-    
-    // El clipping lo maneja el .quick-item-card { overflow: hidden }
   }
 }
 
 .quick-item-card:hover .item-sprite {
-  transform: Scale(1.1); // Micro-animación al hover
+  transform: Scale(1.1); 
 }
 
 .item-qty-badge {
   position: absolute;
-  bottom: -8px; // Pegado al borde inferior del contenedor
+  bottom: -6px; // Aire por debajo del contenedor
   left: 50%;
-  transform: Translatex(-50%); // Centrado horizontalmente (lowercase for safety)
+  transform: Translatex(-50%); 
   background: Rgba(0, 0, 0, 0.85);
   border: 1px solid var(--yellow);
   color: white;
-  font-size: 8px; // Un poco más pequeño para no tapar tanto
+  font-size: 8px; 
   padding: 1px 6px;
   border-radius: 4px;
   @include pixelated;

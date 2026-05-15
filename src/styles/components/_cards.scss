@@ -29,10 +29,7 @@
   }
 
   &:hover {
-    transform: translate3d(0, -8px, 0);
-    border-color: $yellow;
-    box-shadow: 0 0 0 1px $yellow, 0 12px 30px Rgba(0, 0, 0, 0.5);
-    z-index: var(--z-base);
+    @include premium-card-hover($yellow, 1.05, -8px);
     
     &::before {
       transform: scale3d(1.1, 1.1, 1);
@@ -59,8 +56,8 @@
   border-width: 2px;
   
   &:hover:not(.gym-defeated):not(.gym-locked) {
-    transform: translate3d(6px, 0, 0);
-    border-color: $red;
+    @include premium-card-hover($red, 1.05, 0px);
+    transform: Translate3d(6px, 0, 0) Scale(1.02) !important;
   }
 
   &.gym-defeated {

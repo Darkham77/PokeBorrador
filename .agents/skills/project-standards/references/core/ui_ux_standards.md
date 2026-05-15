@@ -280,6 +280,9 @@ The `BaseModal.vue` component supports parameterized aesthetics to maintain cons
 - **padding="raw"**: Use for full-bleed content (e.g., Shop/Inventory grids). The `retro` variant respects this to avoid double-padding.
 - **BaseModal Inheritance (X Logic)**: Respect `BaseModal`'s responsibility for rendering the close button. If `hide-header` is used, the button automatically transitions to a floating position. Never manually include an "X" or close button in custom header slots, as this leads to UI duplication.
 - **Modal Header Stats Cleanliness**: Numeric metrics displayed in modal headers (such as currency credits, trainer levels, limits, or active counts) MUST NOT use custom container frames, dark backgrounds, distinct padding, or surrounding box-shadows. They should be rendered as clean, transparent-background text labels directly on the modal header background. The values must use a standard large pixel font size (`16px`, `font-weight: 900`), applying standard green (`var(--green)`) for currency and standard gold (`var(--yellow)`) for limits, counts, or trainer levels to align with Poké Market, BC Shop, and GTS consistency.
+- **Dynamic Accent Color (`--modal-accent`)**: Modals MUST support a dynamic `accent-color` prop. This color is used to theme the perimetric border, the selection glow, and the internal scrollbar, allowing for section-specific branding (e.g., Red for Inventory, Purple for BC Shop, Blue for GTS, Green for Heal).
+  - **Implementation**: The prop is injected as a CSS variable `--modal-accent` on the modal's root element. Components MUST use this variable in their SCSS to override default colors for `border-color`, `box-shadow` (glow), and `scrollbar-color`.
+- **RGB Channel Pattern**: For every primary dynamic color variable (e.g., `--tier-color`, `--modal-accent`), a corresponding RGB channel variable (e.g., `--tier-color-rgb`) MUST be provided. This allows the CSS to apply custom opacities (e.g., `rgba(var(--tier-color-rgb), 0.2)`) while remaining fully reactive to JS changes.
 
 ### 8. Premium 3D Action Buttons
 
@@ -300,6 +303,7 @@ Standardized via the `@mixin btn-vicio-primary` and `.btn-vicio-primary` class:
 ### 9. Data Flow and Testability
 
 - **Prop-Drilling vs. Store-Access**: Information components (like `BattleInfoCard` or `PokemonStatusSection`) MUST rely on their `props` (`pokemon`) to process statuses and descriptions.
+- **HUD Navigation Continuity**: Contextual shortcuts for specific shops or modules (e.g., War Shop) SHOULD be mirrored in the primary HUD Navigation groups (e.g., MARKET) to ensure consistent user flow and minimize menu digging.
 - **FORBIDDEN**: Avoid direct access to the global `battleStore` within stat display logic if the component can be used in other contexts (Box, Bag, Tests). This ensures the component is individually testable without requiring an active battle state.
 
 ### 10. Admin Tool Modal Standards

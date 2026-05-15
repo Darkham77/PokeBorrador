@@ -38,11 +38,12 @@ Direct access to `localStorage` or `sessionStorage` can throw `SecurityError` if
 
 ### Triple Parity Synchronization
 
-If you modify the database schema:
+If you modify the database schema, you MUST maintain parity across all layers:
 
-1. Create the SQL migration in `database/migrations/`.
-2. Verify that the Vite plugin regenerates `src/logic/db/migrations_data.ts`.
-3. Update the absolute schema in `database/schemas/`.
+1. **Local Migration**: Create the SQL file in `database/migrations/`.
+2. **Logic Manifest**: Run `scripts/generate_migrations.ts` to update `src/logic/db/migrations_data.ts`.
+3. **Absolute Schema**: Update the corresponding SQL file in `database/schemas/` to reflect the final state.
+4. **SQLite Schema**: Update `TABLES_SCHEMA` in `src/logic/db/schema.ts` for fresh offline initializations.
 
 ## 🆔 UID Integrity (Anti-Cloning)
 

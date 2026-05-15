@@ -1,6 +1,7 @@
 // src/styles/core/mixins/_shop-standards.scss
 @use "../variables" as vars;
 @use "./layout" as *;
+@use "./shell" as *;
 @use "../gpu" as *;
 
 /**
@@ -282,24 +283,15 @@
  * Standard Shop Card Hover Effect
  * Unified elevation and glow effect.
  */
-@mixin shop-card-hover($accent-color: var(--yellow)) {
-  border-color: Rgba($accent-color, 0.5);
-  box-shadow: 
-    0 0 0 1px Rgba($accent-color, 0.2),
-    0 12px 40px Rgba(0, 0, 0, 0.6),
-    inset 0 0 25px Rgba($accent-color, 0.15);
-  transform: Translatey(-6px);
-  z-index: 10;
-
-  &::before {
-    opacity: 1;
-  }
+@mixin shop-card-hover($accent-color: var(--yellow), $variant: 'full') {
+  @include premium-card-hover($accent-color, 1.02, -6px, $variant);
 }
 
 /**
  * Standard Shop Item Card Base
  */
 @mixin shop-item-card($accent-color: var(--yellow)) {
+  @include shop-card-hover($accent-color);
   background: Rgba(255, 255, 255, 0.02);
   border: 1px solid Rgba(255, 255, 255, 0.06);
   border-radius: 20px;
@@ -310,19 +302,13 @@
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
+  background-clip: padding-box;
 
-  &::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(circle at 50% 0%, Rgba($accent-color, 0.08) 0%, transparent 70%);
-    opacity: 0;
-    transition: opacity 0.3s;
-    pointer-events: none;
-  }
-
-  &:hover:not(.locked) {
-    @include shop-card-hover($accent-color);
+  // Only background headers
+  > .shop-item-header,
+  > .item-tier-badge {
+    border-top-left-radius: inherit;
+    border-top-right-radius: inherit;
   }
 
   &.locked {
@@ -338,6 +324,7 @@
  * Used for explorers and dense lists.
  */
 @mixin shop-card-compact($accent-color: var(--yellow)) {
+  @include shop-card-hover($accent-color);
   background: Rgba(255, 255, 255, 0.02);
   border: 1px solid Rgba(255, 255, 255, 0.06);
   border-radius: 16px;
@@ -346,11 +333,7 @@
   flex-direction: column;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
-  overflow: hidden;
-
-  &:hover:not(.locked) {
-    @include shop-card-hover($accent-color);
-  }
+  overflow: hidden; // Critical: prevent corner bleed
 
   &.locked {
     opacity: 0.5;
