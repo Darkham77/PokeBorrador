@@ -98,7 +98,7 @@ const applyGenericParticleSystem = (els: HTMLElement[], typeKey: string, engineI
       const shrinkDurVal = typeof shrinkDur === 'function' ? (shrinkDur as () => number)() : shrinkDur
 
       // Explicit reset at the start of each loop
-      const resetProps: any = { 
+      const resetProps: gsap.TweenVars = { 
         scale: 0.05, 
         opacity: settings.useFade ? 0 : settings.targetOpacity,
         xPercent: -50,
@@ -225,7 +225,7 @@ onUnmounted(() => {
   >
     <!-- 1. Capas de Partículas de Estado -->
     <div
-      v-for="fx in (activeStatusEffects as any[])"
+      v-for="fx in (activeStatusEffects as FXData[])"
       :key="'status-'+fx.type"
       class="pv-fx-status-overlay"
       :class="'fx-type-' + fx.type"
@@ -240,7 +240,7 @@ onUnmounted(() => {
 
     <!-- 2. Capas de Partículas Secundarias -->
     <div
-      v-for="fx in (secondaryEffects as any[])"
+      v-for="fx in (secondaryEffects as FXData[])"
       :key="'sec-'+fx.type"
       class="pv-fx-status-overlay secondary-container"
       :class="'fx-type-' + fx.type"
@@ -259,7 +259,7 @@ onUnmounted(() => {
 
     <!-- 3. Capas de Partículas Tácticas -->
     <div
-      v-for="fx in (tacticalEffects as any[])"
+      v-for="fx in (tacticalEffects as FXData[])"
       :key="'tact-'+fx.type"
       class="pv-fx-status-overlay tactical-container"
       :class="'fx-type-' + fx.type"
@@ -275,7 +275,7 @@ onUnmounted(() => {
 
     <!-- 4. Capas de Partículas de Campo -->
     <div
-      v-for="fx in (fieldEffects as any[])"
+      v-for="fx in (fieldEffects as FXData[])"
       :key="'field-'+fx.type"
       class="pv-fx-status-overlay field-container"
       :class="'fx-type-' + fx.type"

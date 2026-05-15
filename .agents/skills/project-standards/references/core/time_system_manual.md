@@ -112,7 +112,7 @@ After the generation of all weather tables across all routes, seasons, and cycle
 
 ---
 
-## 6. Astronomical Constraints (Cycle Sensitivity)
+## 7. Astronomical Constraints (Cycle Sensitivity)
 
 To maintain logical immersion, certain weathers are restricted based on the in-game time cycle.
 
@@ -126,9 +126,18 @@ It is **STRICTLY FORBIDDEN** to use light-based weather states during the night 
   - Alternatively, increase the weight of `clear` or `fog/mist`.
 - **Mechanical Rule**: Abilities or moves that summon sun (Drizzle/Rain Dance equivalent) will still work visually as a "magical/temporary" effect, but the **Map Base State** must never be sun at night.
 
+### 🗃️ Cycle-Weather Matrix
+
+|Cycle|Prohibited Weather|Rationale|
+|:--|:--|:--|
+|**Morning**|None|All atmospheric states possible during sunrise.|
+|**Day**|None|Full visibility allow all states.|
+|**Dusk**|None|Sunset allows all atmospheric states.|
+|**Night**|`sun`, `intense_sun`|No direct solar radiation available after 20:00.|
+
 ---
 
-## 6. Combat & Spawn Modifiers (Full Matrix)
+## 8. Combat & Spawn Modifiers (Full Matrix)
 
 |Family|Weather|Icon|Mechanical Effects (Combat)|Spawn Modifiers (Boost/Block)|
 |:--|:--|:--|:--|:--|
@@ -153,7 +162,7 @@ It is **STRICTLY FORBIDDEN** to use light-based weather states during the night 
 
 ---
 
-## 7. Influence on Encounters (Spawns)
+## 9. Influence on Encounters (Spawns)
 
 ### 7.1 Combination Logic (Additive Window)
 
@@ -181,7 +190,7 @@ Pokémon synchronized with the weather display a vibrant cyan glow via `PVSprite
 
 ---
 
-## 8. Visual Standards (AtmosphereLayer)
+## 10. Visual Standards (AtmosphereLayer)
 
 - **Normal States**: Subtle radial gradients and color pulses.
 - **Extreme States**: Strong vignettes, pulse signatures, and GSAP-driven particle intensity.
@@ -190,7 +199,7 @@ Pokémon synchronized with the weather display a vibrant cyan glow via `PVSprite
 
 ---
 
-## 9. Atmospheric Filter Segregation (Cycle vs Weather)
+## 11. Atmospheric Filter Segregation (Cycle vs Weather)
 
 To preserve the artistic integrity of the original pixel-art backgrounds, the system distinguishes between **Day Cycle** changes (handled via textures) and **Weather** effects (handled via post-processing).
 
@@ -218,7 +227,7 @@ To prevent glowing FX (Shiny sparkles, Guardian auras, Status particles) and UI 
 
 ---
 
-## 11. Biome Classification System
+## 12. Biome Classification System
 
 To ensure atmospheric variety and geographical consistency, all maps must be tagged with a primary biome. These tags dictate default weather weights and specialized restrictions.
 

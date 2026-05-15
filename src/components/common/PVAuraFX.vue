@@ -44,7 +44,6 @@ onUnmounted(() => {
     ref="rootRef"
     class="pv-aura-fx-layer"
   >
-
     <!-- PANTALLAS TÁCTICAS -->
     <div
       v-if="hasReflect"

@@ -31,23 +31,39 @@ const BIOME_BANNED: Record<string, string[]> = {
   isMountain: [] // heatwave handled separately if needed
 };
 
+interface MapData {
+  id: string;
+  name: string;
+  isIndoors?: boolean;
+  isCave?: boolean;
+  [key: string]: unknown;
+}
+
+type WeatherTable = Record<string, number>;
+type CycleData = Record<string, WeatherTable>;
+type SeasonData = Record<string, CycleData>;
+type LandmarkWeather = Record<string, SeasonData>;
+
+const TYPED_MAPS = FIRE_RED_MAPS as unknown as MapData[];
+const TYPED_WEATHER = ROUTE_WEATHER_TABLES as unknown as LandmarkWeather;
+
 describe('Weather Integrity & Biome Restrictions', () => {
-  FIRE_RED_MAPS.forEach(map => {
+  TYPED_MAPS.forEach(map => {
     const mapId = map.id;
-    const isIndoors = (map as any).isIndoors;
-    const isCave = (map as any).isCave;
+    const isIndoors = !!map.isIndoors;
+    const isCave = !!map.isCave;
     
     // Extract all biome tags from the map object
-    const activeBiomes = Object.keys(BIOME_BANNED).filter(tag => (map as any)[tag]);
+    const activeBiomes = Object.keys(BIOME_BANNED).filter(tag => !!map[tag]);
 
-    const weatherData = (ROUTE_WEATHER_TABLES as any)[mapId];
+    const weatherData = TYPED_WEATHER[mapId];
 
     if (!weatherData) return;
 
     describe(`Map: ${mapId} (${map.name})`, () => {
-      Object.entries(weatherData).forEach(([season, seasonData]: [string, any]) => {
+      Object.entries(weatherData).forEach(([season, seasonData]) => {
         describe(`Season: ${season}`, () => {
-          Object.entries(seasonData).forEach(([cycle, table]: [string, any]) => {
+          Object.entries(seasonData).forEach(([cycle, table]) => {
             // Landmark tables are nested by cycle (morning, day, dusk, night)
             // or sometimes they are flat (rarely in this project's structure)
             
