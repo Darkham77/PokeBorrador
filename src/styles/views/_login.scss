@@ -61,7 +61,7 @@
 
   img {
     width: 280px;
-    max-width: 85vw;
+    max-width: 85dvw;
     height: auto;
     filter: Drop-Shadow(0 10px 20px Rgba(0, 0, 0, 0.4)) Drop-Shadow(0 0 15px Rgba(255, 255, 255, 0.1));
     @include pixelated;

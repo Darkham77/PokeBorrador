@@ -319,3 +319,12 @@ The project uses a Vite plugin (`vite-plugin-sass-traps.ts`) that automatically 
 
 - **GSAP Constraint**: When animating colors or gradients via JS, you MUST use the capitalized versions (e.g., `backgroundColor: 'Rgba(...)'`) if you are targeting elements that rely on those auto-formatted styles.
 - **Why**: Mismatched capitalization can cause GSAP to fail to "see" the current state of a property, leading to broken transitions or "flash" effects where the property jumps to the new value instead of tweening.
+
+## 25. Organic UI Floating Effects (GSAP)
+
+To give life to static branding elements (logos) or high-importance indicators without overloading the CPU with CSS keyframes:
+
+- **Rule**: Implement a continuous floating cycle using a single GSAP tween.
+- **Parameters**: Use `yoyo: true`, `repeat: -1`, and `ease: "sine.inOut"`.
+- **Vertical Displacement**: Keep the movement subtle (approx. 10-15px) to avoid motion sickness or layout distraction.
+- **GSAP Preference**: This approach is mandatory for persistent branding animations to ensure they remain synchronized with the overall game state and can be paused/killed efficiently during transitions.

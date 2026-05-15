@@ -99,7 +99,7 @@ if (typeof window !== 'undefined') {
   display: flex;
   flex-direction: column;
   gap: 20px;
-  max-height: 70vh;
+  max-height: 70dvh;
   overflow-y: auto;
   padding-right: 4px;
 

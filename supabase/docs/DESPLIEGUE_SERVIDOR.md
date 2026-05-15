@@ -25,32 +25,39 @@ Estos scripts se encargan de:
 
 ## 2. Despliegue en el Servidor (Producción / NAS QNAP)
 
-En entornos NAS o servidores con rutas personalizadas, es vital configurar correctamente el `PROJECT_ROOT` en el archivo `.env`.
+### 🛠️ Reglas de Oro para NAS (Actualizado Mayo 2026)
 
-### El Problema de los Volúmenes en NAS (Kong)
+#### 1. Volúmenes (El problema de la carpeta fantasma)
 
-Docker en entornos NAS tiene un comportamiento específico: si intentas montar un archivo que no existe, Docker creará una **carpeta vacía** con ese nombre. Esto rompe el servicio de Kong.
+Docker en NAS crea carpetas vacías si el archivo montado no existe. Para evitarlo:
 
-**Regla de Oro**: Siempre montamos la carpeta completa de configuración en lugar del archivo individual:
+- **Correcto**: Monta la carpeta completa: `- ${PROJECT_ROOT}/config:/etc/kong/declarative:ro`.
+- **Error**: Montar archivos individuales (`kong.yml`) rompe el arranque en QNAP.
 
-- **Correcto**: `- ${PROJECT_ROOT}/config:/etc/kong/declarative:ro`
-- **Error**: `- ${PROJECT_ROOT}/config/kong.yml:/var/lib/kong/kong.yml:ro` (Causará fallos en QNAP).
+#### 2. Permisos y Roles (Postgres 15+)
 
-### Sincronización Automática de Roles
+En versiones modernas, los permisos son restrictivos. El sistema se autogestiona con un `db-migrator` que:
 
-El stack incluye un servicio `db-migrator` que se encarga de:
+- Otorga `pg_read_server_files` al rol `postgres` para permitir que los scripts internos lean archivos de configuración.
+- Crea automáticamente los esquemas obligatorios (`auth`, `storage`, `realtime`, `graphql_public`).
+- Nombra a los roles correctos como dueños de cada esquema (`auth` pertenece a `supabase_auth_admin`, etc.).
 
-1. Crear los roles de sistema (`supabase_admin`, `authenticator`, etc.) si no existen en la imagen.
-2. Sincronizar sus contraseñas con el valor de `POSTGRES_PASSWORD` del `.env`.
-3. Reparar los permisos (`GRANT`) automáticamente en cada arranque.
+#### 3. Sincronización de Servicios (Race Conditions)
 
-## 3. Configuración de Red
+Para evitar que Auth o PostgREST fallen al arrancar:
 
-- **Puerto 8000**: API Gateway (Kong). Es el puerto principal de conexión.
-- **Puerto 3000**: Panel de control (Supabase Studio).
-- **URL Segura**: Asegúrate de que `POSTGRES_PASSWORD` no contenga caracteres especiales (como `@`, `#`, `/`) que puedan romper las URLs de conexión de los servicios.
+- **Dependencias**: Los servicios esperan a que el `db-migrator` finalice con éxito (`service_completed_successfully`).
+- Esto garantiza que cuando Auth intente conectar, los permisos y las extensiones (`uuid-ossp`, `pgcrypto`) ya estén listos.
 
-## 4. Actualización de Esquemas
+#### 4. Caracteres Especiales
 
-1. Genera una nueva versión de la imagen con los cambios en `database/schemas`.
-2. Sube la imagen y ejecuta `docker-compose up -d` en el servidor. El migrador se encargará del resto.
+**EVITA** caracteres como `@`, `:`, `/` o `#` en `POSTGRES_PASSWORD`. Rompen las URLs de conexión interna de Elixir (Realtime) y PostgREST.
+
+---
+
+## 🚀 Guía de Arranque Rápido
+
+1. Asegúrate de que el `.env` tiene las claves correctas.
+2. Ejecuta `docker-compose up -d`.
+3. Monitoriza el migrador: `docker logs -f supabase-db-migrator-pokevicio`.
+4. Solo cuando veas el check de éxito (`✅`), los demás servicios serán visibles.

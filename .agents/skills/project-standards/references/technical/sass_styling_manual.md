@@ -383,3 +383,19 @@ To ensure complex data (moves, stats, lists) remains readable and professional a
 - **Sober Space Reduction**: Periodically audit column widths to identify and reduce "dead space" in static columns (like NV or PP), redistributing that space to the primary identifying column (Name).
 - **Grid & Tag Layout Integrity**: Any refactor that ensanches or scales a standardized tag system (like Type Pills) MUST be accompanied by an audit of all grid layouts that contain them.
   - **MANDATORY**: If a pill size increase causes text clipping (e.g., in `_vicio-panes.scss`), the corresponding grid column (e.g., `grid-template-columns`) MUST be widened (Standard: 85px for Type tags) to maintain legibility.
+
+### 9. Premium Brand Integration (Floating Logos)
+
+To create a high-fidelity "wow factor" where the brand logo interacts with the UI shell:
+
+- **Rule**: Position brand logos to partially overlap the main content card using negative margins (e.g., `margin-bottom: -40px`).
+- **Compensation**: Apply a proportional `padding-top` to the child container and use `z-index` offsets (`calc(var(--z-base) + 2)`) to ensure the logo remains visible and centered.
+- **Goal**: Achieves a premium depth effect where the logo feels integrated into the interface rather than just sitting on top.
+
+### 10. Dynamic Wallpaper Scaling (Vertical Integrity)
+
+For full-screen wallpapers or map backgrounds where vertical visibility is prioritized over horizontal coverage:
+
+- **Rule**: Use `background-size: auto 100%` and `background-position: center`.
+- **Result**: Ensures the image is always **vertically complete** (no clipping at top/bottom) while allowing horizontal "growth" (expanding/cropping) to fill the width.
+- **Fallback**: If black bars are unacceptable for the specific use case, revert to `background-size: cover` to prioritize width coverage.

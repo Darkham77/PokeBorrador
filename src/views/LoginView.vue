@@ -186,7 +186,10 @@ const handleServerChange = () => {
     <div class="login-background-stars" />
     
     <div class="login-header-logo">
-      <img :src="getAssetUrl(ASSET_TYPES.UI, '../fondo/logo 1')" alt="Poké Vicio Logo">
+      <img
+        :src="getAssetUrl(ASSET_TYPES.UI, '../fondo/logo 1')"
+        alt="Poké Vicio Logo"
+      >
     </div>
 
     <div class="auth-card">
