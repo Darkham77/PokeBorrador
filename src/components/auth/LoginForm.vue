@@ -1,5 +1,8 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import { OFFICIAL_SERVERS, DEFAULT_SERVER } from '@/data/official_servers'
+import { safeStorage } from '@/logic/utils/storage'
+import { switchServer } from '@/logic/supabase'
 
 interface Props {
   serverType: string
@@ -18,6 +21,16 @@ const emit = defineEmits<{
 const email = ref('')
 const password = ref('')
 const username = ref('')
+const selectedServerId = ref('')
+
+onMounted(() => {
+  const stored = safeStorage.getItem('pokevicio_selected_server_id')
+  selectedServerId.value = stored || DEFAULT_SERVER.id
+})
+
+const handleServerChange = () => {
+  switchServer(selectedServerId.value)
+}
 
 const handleLogin = () => {
   emit('login', { email: email.value, password: password.value })
@@ -34,6 +47,24 @@ const handleLocalLogin = () => {
     v-if="serverType === 'online'"
     class="form-container"
   >
+    <!-- Selector de Servidor -->
+    <div class="server-selector-container">
+      <label class="selector-label">SERVIDOR OFICIAL</label>
+      <select 
+        v-model="selectedServerId" 
+        class="auth-input server-select"
+        @change="handleServerChange"
+      >
+        <option 
+          v-for="server in OFFICIAL_SERVERS" 
+          :key="server.id" 
+          :value="server.id"
+        >
+          {{ server.name }} [{{ server.region }}]
+        </option>
+      </select>
+    </div>
+
     <input 
       v-model="email"
       class="auth-input" 
@@ -154,5 +185,33 @@ const handleLocalLogin = () => {
 .auth-btn:hover:not(:disabled) {
   transform: Translatey(-2px);
   background: Rgba(255, 224, 77, 1);
+}
+
+.server-selector-container {
+  margin-bottom: 8px;
+  
+  .selector-label {
+    display: block;
+    @include pixelated;
+    font-size: 8px;
+    color: Rgba(255, 255, 255, 0.4);
+    margin-bottom: 8px;
+    margin-left: 4px;
+    text-transform: uppercase;
+  }
+}
+
+.server-select {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  padding-right: 40px !important;
+
+  option {
+    background: #1a1a1a;
+    color: white;
+  }
 }
 </style>

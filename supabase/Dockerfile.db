@@ -1,0 +1,10 @@
+# Dockerfile - Poké Vicio Database
+# Esta imagen contiene el motor de Supabase y el esquema del juego pre-instalado.
+
+FROM supabase/postgres:15.1.0.147
+
+# Copiamos las migraciones del proyecto al directorio de inicialización estándar de Postgres
+# Docker ejecutará estos archivos automáticamente al crear el volumen de datos.
+COPY ./database/migrations /docker-entrypoint-initdb.d/
+
+# El resto de la configuración se hereda de la imagen base de Supabase.

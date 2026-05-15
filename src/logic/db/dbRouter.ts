@@ -40,6 +40,16 @@ export class DBRouter {
   }
 
   /**
+   * Updates the server configuration and resets the active client.
+   * Used for switching between different official servers.
+   */
+  updateConfig(config: DBConfig): void {
+    this.config = config;
+    this._realClient = null; // Forces re-initialization on next call
+    logger.info('DBRouter', `Server configuration updated: ${config.url}`);
+  }
+
+  /**
    * Internal lazy initializer for Supabase client.
    */
   _ensureClient(): SupabaseClient | null {

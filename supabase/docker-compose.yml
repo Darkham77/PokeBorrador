@@ -1,0 +1,157 @@
+# SUPABASE DOCKER COMPOSE - Poké Vicio Edition
+# Basado en la configuración oficial de Supabase Self-Hosting
+
+version: '3.8'
+
+services:
+  db:
+    container_name: supabase-db-pokevicio
+    build:
+      context: ..
+      dockerfile: supabase/Dockerfile.db
+    healthcheck:
+      test: pg_isready -U postgres -d postgres
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    command:
+      - postgres
+      - -c
+      - config_file=/etc/postgresql/postgresql.conf
+      - -c
+      - log_min_messages=fatal # Reduce logging noise
+    restart: unless-stopped
+    ports:
+      - ${POSTGRES_PORT}:5432
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: postgres
+      PGDATA: /var/lib/postgresql/data
+    volumes:
+      - ./volumes/db/data:/var/lib/postgresql/data
+      - ./volumes/db/conf:/etc/postgresql
+
+  gotrue:
+    container_name: supabase-auth-pokevicio
+    image: supabase/gotrue:v2.132.3
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    environment:
+      GOTRUE_DB_DRIVER: postgres
+      GOTRUE_DB_DATABASE_URL: postgres://supabase_auth_admin:${POSTGRES_PASSWORD}@db:5432/postgres
+      GOTRUE_SITE_URL: ${SITE_URL}
+      GOTRUE_URI_ALLOW_LIST: ${ADDITIONAL_REDIRECT_URLS}
+      GOTRUE_JWT_SECRET: ${JWT_SECRET}
+      GOTRUE_JWT_EXP: 3600
+      GOTRUE_EXTERNAL_EMAIL_ENABLED: ${ENABLE_EMAIL_SIGNUP}
+      GOTRUE_MAILER_AUTOCONFIRM: ${ENABLE_EMAIL_AUTOCONFIRM}
+      GOTRUE_SMTP_ADMIN_EMAIL: ${SMTP_ADMIN_EMAIL}
+      GOTRUE_SMTP_HOST: ${SMTP_HOST}
+      GOTRUE_SMTP_PORT: ${SMTP_PORT}
+      GOTRUE_SMTP_USER: ${SMTP_USER}
+      GOTRUE_SMTP_PASS: ${SMTP_PASS}
+      GOTRUE_SMTP_SENDER_NAME: ${SMTP_SENDER_NAME}
+      GOTRUE_DB_MAX_POOL_SIZE: 20
+
+  postgrest:
+    container_name: supabase-postgrest-pokevicio
+    image: postgrest/postgrest:v11.2.0
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    environment:
+      PGRST_DB_URI: postgres://authenticator:${POSTGRES_PASSWORD}@db:5432/postgres
+      PGRST_DB_SCHEMA: public,storage,graphql_public
+      PGRST_DB_ANON_ROLE: anon
+      PGRST_JWT_SECRET: ${JWT_SECRET}
+      PGRST_DB_USE_CHECK_CONSTRAINTS: true
+      PGRST_DB_MAX_ROWS: 1000
+
+  realtime:
+    container_name: supabase-realtime-pokevicio
+    image: supabase/realtime:v2.25.75
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    environment:
+      PORT: 4000
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: postgres
+      DB_USER: supabase_admin
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      DB_SSL: 'false'
+      JWT_SECRET: ${JWT_SECRET}
+      REPLICATION_MODE: RLS
+      REPLICATION_SLOT_NAME: supabase_realtime_replication_slot
+      PUBLICATION_NAME: supabase_realtime
+      SECURE_CHANNELS: 'true'
+      SLOT_NAME: supabase_realtime_replication_slot
+      TEMPORARY_SLOT: 'false'
+
+  kong:
+    container_name: supabase-kong-pokevicio
+    image: kong:2.8.1
+    depends_on:
+      db:
+        condition: service_healthy
+      gotrue:
+        condition: service_started
+      postgrest:
+        condition: service_started
+      realtime:
+        condition: service_started
+    restart: unless-stopped
+    ports:
+      - ${KONG_HTTP_PORT}:8000
+      - ${KONG_HTTPS_PORT}:8443
+    volumes:
+      - ./config/kong.yml:/var/lib/kong/kong.yml
+    environment:
+      KONG_DATABASE: 'off'
+      KONG_DECLARATIVE_CONFIG: /var/lib/kong/kong.yml
+      KONG_DNS_ORDER: LAST,A,AAAA
+      KONG_PLUGINS: request-transformer,cors,key-auth,acl,jwt
+
+  meta:
+    container_name: supabase-meta-pokevicio
+    image: supabase/postgres-meta:v0.68.0
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    environment:
+      PG_META_PORT: 8080
+      PG_META_DB_HOST: db
+      PG_META_DB_PASSWORD: ${POSTGRES_PASSWORD}
+      PG_META_DB_SSL: 'false'
+
+  # MIGRACIONES AUTOMÁTICAS
+  db-migrator:
+    container_name: supabase-db-migrator-pokevicio
+    build:
+      context: ..
+      dockerfile: supabase/Dockerfile.db
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: on-failure
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    command: >
+      bash -c "
+        echo '🚀 Iniciando migración automática...' &&
+        for f in /docker-entrypoint-initdb.d/*.sql; do
+          echo '📄 Aplicando: $f' &&
+          psql -h db -U postgres -d postgres -f \"$f\" > /dev/null;
+        done &&
+        echo '✅ Migración completada.'
+      "
+
+networks:
+  default:
+    name: supabase-network-pokevicio
