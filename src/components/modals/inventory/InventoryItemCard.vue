@@ -270,6 +270,7 @@ const itemIcon = computed(() => {
     .item-name {
       display: -webkit-box;
       -webkit-line-clamp: 2;
+      line-clamp: 2;
       -webkit-box-orient: vertical;
       @include pixelated;
       font-size: 7px;

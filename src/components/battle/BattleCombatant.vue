@@ -11,10 +11,7 @@ import CombatShadow from './CombatShadow.vue'
 import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { useCombatShadowStore } from '@/stores/combatShadows'
-import { useBattleStore } from '@/stores/battle'
 import { gameBus } from '@/logic/gameBus'
-
-const battleStore = useBattleStore()
 import { WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator'
 
 import type { Pokemon } from '@/types/pokemon'
@@ -159,10 +156,10 @@ const initIdleAnim = () => {
 
 watchEffect(() => {
   // Rastreamos dependencias explícitamente para el watchEffect
-  const _s = props.pokemon?.status
-  const _c = props.pokemon?.confused
-  const _a = props.animState
-  const _f = isFloating.value
+  void props.pokemon?.status
+  void props.pokemon?.confused
+  void props.animState
+  void isFloating.value
   
   if (idleWrapperRef.value) {
     initIdleAnim()
