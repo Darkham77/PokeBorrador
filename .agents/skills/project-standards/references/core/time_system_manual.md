@@ -30,19 +30,33 @@ The system uses a hierarchical approach to determine the active weather and ensu
 
 The system organizes weather into levels of intensity. High-level weather (Extremes) typically includes **Block** mechanics.
 
-| Family     | Level 1 (Normal) | Level 2 (Enhanced) | Level 3 (Extreme) | Level 4 (Catastrophic) |
-| :--------- | :--------------- | :----------------- | :---------------- | :--------------------- |
-| **Heat**   | Sun (☀️)         | Intense Sun (🔆)   | Heatwave (🔥)     | --                     |
-| **Cold**   | Cold (🧊)        | Coldwave (🥶)      | --                | --                     |
-| **Rain**   | Rain (🌧️)        | Heavy Rain (☔)    | Storm (⛈️)        | Thunderstorm (🌩️)      |
-| **Ice**    | Snow (❄️)        | Hail (🌨️)          | Blizzard (🌬️)     | --                     |
-| **Wind**   | Wind (🍃)        | Strong Winds (🌀)  | --                | --                     |
-| **Atmos.** | Mist (💨)        | Fog (🌫️)           | --                | --                     |
-| **Earth**  | Sandstorm (🏜️)   | Dust Storm (🌪️)    | --                | --                     |
+|Family|Level 1 (Normal)|Level 2 (Enhanced)|Level 3 (Extreme)|Level 4 (Catastrophic)|Biome Restrictions|
+|:--|:--|:--|:--|:--|:--|
+|**Heat**|Sun (☀️)|Intense Sun (🔆)|Heatwave (🔥)|--|L1, L2: `isIndoors`, `isCave` (Banned)|
+|**Cold**|Cold (🧊)|Coldwave (🥶)|--|--|None (Allowed in all biomes)|
+|**Rain**|Rain (🌧️)|Heavy Rain (☔)|Storm (⛈️)|Thunderstorm (🌩️)|L1-L4: `isIndoors`, `isCave` (Banned)|
+|**Ice**|Snow (❄️)|Hail (🌨️)|Blizzard (🌬️)|--|L1-L3: `isIndoors`, `isCave` (Banned)|
+|**Wind**|Wind (🍃)|Strong Winds (🌀)|--|--|L1, L2: `isIndoors`, `isCave` (Banned)|
+|**Atmos.**|Mist (💨)|Fog (🌫️)|--|--|None (Allowed in all biomes)|
+|**Earth**|Sandstorm (🏜️)|Dust Storm (🌪️)|--|--|L1, L2: `isIndoors`, `isCave` (Banned)|
 
 ---
 
-## 5. Weather Decision Algorithm (3-Step Guideline)
+## 5. Structural Constraints (Biome Audit Mandate)
+
+To maintain structural consistency, it is **STRICTLY FORBIDDEN** to generate weather states that require open sky access or high-velocity atmospheric currents inside enclosed environments.
+
+- **`isIndoors`**: Represents buildings, houses, and labs.
+  - **Allowed**: `clear`, `mist`, `fog`, `heatwave` (L3), `cold` (L1), `coldwave` (L2).
+  - **Forbidden**: Rain (all levels), Ice (all levels), Wind (all levels), Direct Sun (L1, L2), Sand/Dust Storms (all levels).
+- **`isCave`**: Represents underground areas.
+  - **Allowed**: `mist`, `fog`, `heatwave` (L3), `cold` (L1), `coldwave` (L2), `clear`.
+  - **Forbidden**: Rain (all levels), Ice (all levels), Wind (all levels), Direct Sun (L1, L2), Sand/Dust Storms (all levels).
+- **Rationale**: Atmospheric temperature extremes (Heatwave/Coldwave) are allowed as they represent ambient environment/machinery, whereas precipitation, wind, and sandstorms require atmospheric exposure or high-velocity currents impossible in static underground biomes.
+
+---
+
+## 6. Weather Decision Algorithm (3-Step Guideline)
 
 > [!NOTE] This algorithm acts as a **GUIDE** for creating generic behaviors. Specialized routes (e.g., "Lightning Valley" with 50% Thunderstorm) may bypass these rules, but the **1% Floor** rule remains absolute.
 
@@ -72,12 +86,12 @@ For families NOT favored by the current season:
 
 The current season shifts the rarity curve of its "favored" families, making extreme niveles significantly more likely.
 
-| Season     | Favored Families      | Amplified Curve (L1 / L2 / L3 / L4) |
-| :--------- | :-------------------- | :---------------------------------- |
-| **Spring** | Atmosphere (Mist/Fog) | 60% / 30% / 9% / 1%                 |
-| **Summer** | Heat (Sun/Heatwave)   | **50% / 35% / 14%** / 1%            |
-| **Autumn** | Rain, Wind            | 60% / 25% / 14% / 1%                |
-| **Winter** | Cold, Ice             | **50% / 30% / 19%** / 1%            |
+|Season|Favored Families|Amplified Curve (L1 / L2 / L3 / L4)|
+|:--|:--|:--|
+|**Spring**|Atmosphere (Mist/Fog)|60% / 30% / 9% / 1%|
+|**Summer**|Heat (Sun/Heatwave)|**50% / 35% / 14%** / 1%|
+|**Autumn**|Rain, Wind|60% / 25% / 14% / 1%|
+|**Winter**|Cold, Ice|**50% / 30% / 19%** / 1%|
 
 #### 🧮 Calculation Example (Summer Heatwave)
 
@@ -116,26 +130,26 @@ It is **STRICTLY FORBIDDEN** to use light-based weather states during the night 
 
 ## 6. Combat & Spawn Modifiers (Full Matrix)
 
-| Family | Weather | Icon | Mechanical Effects (Combat) | Spawn Modifiers (Boost/Block) |
-| :--- | :--- | :--- | :--- | :--- |
-| **Heat** | Sun | ☀️ | 🔼 Fire/Grass. 🔽 Water/Ice. | 🔼 Fire, Grass, Earth. 🔽 Water, Ice. |
-| | Intense Sun | 🔆 | 🚫 Water, Ice. 🔼 Grass/Fire (2x). | 🔼 Fire, Grass. 🚫 Water, Ice. |
-| | Heatwave | 🔥 | 🚫 Ice, Grass. 🔼 Fire/Earth. | 🔼 Fire, Ground. 🚫 Ice, Grass. |
-| **Cold** | Cold | 🧊 | 🔼 Ice. 🔽 Bug, Grass. | 🔼 Ice. 🔽 Bug, Plant. |
-| | Coldwave | 🥶 | **Speed -50%** (Non-Ice). 🚫 Bug, Grass. | 🔼 Ice. 🚫 Bug, Plant. |
-| **Water** | Rain | 🌧️ | 🔼 Water/Elec. 🔽 Fire/Rock/Earth. | 🔼 Agua, Bicho, Elec. 🔽 Fuego, Roca, Tierra. |
-| | Heavy Rain | ☔ | 🚫 Fire. 🔼 Water (2x). | 🔼 Agua. 🚫 Fuego. 🔽 Roca, Tierra. |
-| | Storm | ⛈️ | 🚫 Fire, Flying, Bug. | 🔼 Agua, Elec, Dragon. 🚫 Fuego, Volador. |
-| | Thunderstorm | 🌩️ | 🔼 Elec (1.5x), Dragon (1.5x). Perfect Thunder. | 🔼 Elec (2x), Dragon. 🚫 Volador. |
-| **Ice** | Snow | ❄️ | 🔼 Def. Física Hielo (+50%). | 🔼 Hielo, Acero. 🔽 Fuego, Bicho, Volador. |
-| | Hail | 🌨️ | **Residual Damage**. | 🔼 Hielo. 🔽 Planta, Fuego, Bicho, Volador. |
-| | Blizzard | 🌬️ | 🚫 Fire, Grass, Bug, Fly. | 🔼 Hielo. 🚫 Fuego, Planta, Bicho, Volador. |
-| **Atmos.** | Fog | 🌫️ | 🔼 Ghost/Dark. 🔽 Flying. Acc 60%. | 🔼 Fantasma, Siniestro. 🔽 Volador. |
-| | Mist | 💨 | 🔼 Fairy, Water. 🔽 Fire. | 🔼 Hada, Agua. 🔽 Fuego. |
-| **Wind** | Wind | 🍃 | 🔼 Flying, Bug. 🔽 Earth. | 🔼 Volador, Bicho, Psíquico. 🔽 Tierra. |
-| | Strong Winds | 🌀 | **No Fly Weakness**. 🔼 Fly/Dragon. | 🔼 Volador, Dragon. 🚫 Bicho, Tierra. |
-| **Earth** | Sandstorm | 🏜️ | 🔼 Def. Esp Roca (+50%). Damage. | 🔼 Roca, Tierra, Acero. 🔽 Fuego, Volador, Bicho. |
-| | Dust Storm | 🌪️ | 🚫 Flying. 🔼 Rock/Earth. | 🔼 Roca, Tierra. 🚫 Volador. 🔽 Bicho. |
+|Family|Weather|Icon|Mechanical Effects (Combat)|Spawn Modifiers (Boost/Block)|
+|:--|:--|:--|:--|:--|
+|**Heat**|Sun|☀️|🔼 Fire/Grass. 🔽 Water/Ice.|🔼 Fire, Grass, Earth. 🔽 Water, Ice.|
+||Intense Sun|🔆|🚫 Water, Ice. 🔼 Grass/Fire (2x).|🔼 Fire, Grass. 🚫 Water, Ice.|
+||Heatwave|🔥|🚫 Ice, Grass. 🔼 Fire/Earth.|🔼 Fire, Ground. 🚫 Ice, Grass.|
+|**Cold**|Cold|🧊|🔼 Ice. 🔽 Bug, Grass.|🔼 Ice. 🔽 Bug, Plant.|
+||Coldwave|🥶|**Speed -50%** (Non-Ice). 🚫 Bug, Grass.|🔼 Ice. 🚫 Bug, Plant.|
+|**Water**|Rain|🌧️|🔼 Water/Elec. 🔽 Fire/Rock/Earth.|🔼 Agua, Bicho, Elec. 🔽 Fuego, Roca, Tierra.|
+||Heavy Rain|☔|🚫 Fire. 🔼 Water (2x).|🔼 Agua. 🚫 Fuego. 🔽 Roca, Tierra.|
+||Storm|⛈️|🚫 Fire, Flying, Bug.|🔼 Agua, Elec, Dragon. 🚫 Fuego, Volador.|
+||Thunderstorm|🌩️|🔼 Elec (1.5x), Dragon (1.5x). Perfect Thunder.|🔼 Elec (2x), Dragon. 🚫 Volador.|
+|**Ice**|Snow|❄️|🔼 Def. Física Hielo (+50%).|🔼 Hielo, Acero. 🔽 Fuego, Bicho, Volador.|
+||Hail|🌨️|**Residual Damage**.|🔼 Hielo. 🔽 Planta, Fuego, Bicho, Volador.|
+||Blizzard|🌬️|🚫 Fire, Grass, Bug, Fly.|🔼 Hielo. 🚫 Fuego, Planta, Bicho, Volador.|
+|**Atmos.**|Fog|🌫️|🔼 Ghost/Dark. 🔽 Flying. Acc 60%.|🔼 Fantasma, Siniestro. 🔽 Volador.|
+||Mist|💨|🔼 Fairy, Water. 🔽 Fire.|🔼 Hada, Agua. 🔽 Fuego.|
+|**Wind**|Wind|🍃|🔼 Flying, Bug. 🔽 Earth.|🔼 Volador, Bicho, Psíquico. 🔽 Tierra.|
+||Strong Winds|🌀|**No Fly Weakness**. 🔼 Fly/Dragon.|🔼 Volador, Dragon. 🚫 Bicho, Tierra.|
+|**Earth**|Sandstorm|🏜️|🔼 Def. Esp Roca (+50%). Damage.|🔼 Roca, Tierra, Acero. 🔽 Fuego, Volador, Bicho.|
+||Dust Storm|🌪️|🚫 Flying. 🔼 Rock/Earth.|🔼 Roca, Tierra. 🚫 Volador. 🔽 Bicho.|
 
 ---
 
@@ -182,13 +196,13 @@ To preserve the artistic integrity of the original pixel-art backgrounds, the sy
 
 ### 9.1 Segregation Matrix
 
-| Target Element | Cycle Filter (Brightness/Hue) | Weather Filter (Rain/Arena) | Implementation Detail |
-| :--- | :---: | :---: | :--- |
-| **Map Backgrounds** | ❌ | ✅ | Relies on dedicated textures (e.g., `_noche`). |
-| **Map Spawns (Pokémon)** | ❌ | ❌ | Isolated from climate filters to preserve color integrity. |
-| **Battle Backgrounds** | ❌ | ✅ | Uses cycle-specific battle arena assets. |
-| **Battle Combatants** | ✅ | ✅ | Pokémon sprites must tint to integrate with the hour. |
-| **Battle Deco (Bushes/Rocks)** | ✅ | ✅ | Environmental objects must match lighting. |
+|Target Element|Cycle Filter (Brightness/Hue)|Weather Filter (Rain/Arena)|Implementation Detail|
+|:--|:-:|:-:|:--|
+|**Map Backgrounds**|❌|✅|Relies on dedicated textures (e.g., `_noche`).|
+|**Map Spawns (Pokémon)**|❌|❌|Isolated from climate filters to preserve color integrity.|
+|**Battle Backgrounds**|❌|✅|Uses cycle-specific battle arena assets.|
+|**Battle Combatants**|✅|✅|Pokémon sprites must tint to integrate with the hour.|
+|**Battle Deco (Bushes/Rocks)**|✅|✅|Environmental objects must match lighting.|
 
 1. **`weatherOnlyFilter`**: strictly isolates weather post-processing. It ignores cycle base values (e.g., it will NOT apply `Brightness(0.6)` during night).
 2. **`atmosphereFilter` (Full)**: the combined mix of Cycle + Weather. Used for mobile actors and dynamic objects.
@@ -200,5 +214,28 @@ To prevent glowing FX (Shiny sparkles, Guardian auras, Status particles) and UI 
 - **Implementation**: Wrap the base sprite `img` in a `<div class="pokemon-atmosphere-wrapper">` (or similar) and apply the filter to that div.
 - **Result**: Particles, glows, and debug overlays rendered as siblings of the wrapper remain at 100% brightness and full color fidelity, regardless of the map's time or weather. This prevents "color pollution" on non-environmental effects.
 
-> [!IMPORTANT]
-> Background images MUST NEVER be touched by cycle-based post-processing. If a map looks too bright at night, the solution is to adjust the `_noche.webp` texture, NOT the CSS filter.
+> [!IMPORTANT] Background images MUST NEVER be touched by cycle-based post-processing. If a map looks too bright at night, the solution is to adjust the `_noche.webp` texture, NOT the CSS filter.
+
+---
+
+## 11. Biome Classification System
+
+To ensure atmospheric variety and geographical consistency, all maps must be tagged with a primary biome. These tags dictate default weather weights and specialized restrictions.
+
+|Biome Tag|Description|Favored Weather|Forbidden Weather|
+|:--|:--|:--|:--|
+|**`isPlains`**|Standard routes, meadows.|`clear`, `sun`, `rain` (L1).|None.|
+|**`isCoastal`**|Beaches, islands, sea routes.|`mist`, `fog`, `heavy_rain`.|`sandstorm`, `snow`.|
+|**`isForest`**|Woods, jungles, thickets.|`mist`, `rain`, `thunderstorm`.|`sandstorm`, `dust_storm`.|
+|**`isMountain`**|High altitude, peaks, cliffs.|`wind`, `snow`, `blizzard`, `hail`.|`heatwave` (Summer only).|
+|**`isDesert`**|Arid zones, ruins, dunes.|`sun`, `sandstorm`, `dust_storm`.|`rain`, `snow`, `hail`.|
+|**`isUrban`**|Cities, towns, villages.|`clear`, `heatwave` (L3).|`blizzard`, `dust_storm`.|
+|**`isVolcanic`**|Magma chambers, fire mountains.|`heatwave`, `fog` (ash), `dust_storm`.|`snow`, `hail`, `rain`.|
+|**`isSwamp`**|Marshes, mires, bogs.|`fog`, `heavy_rain`, `storm`.|`clear` (Rare).|
+|**`isArctic`**|Frozen wastelands, ice caves.|`coldwave`, `snow`, `blizzard`.|`sun`, `heatwave`.|
+
+### Implementation Rules
+
+1. **Inheritance**: A map can have multiple tags (e.g., `isCave` + `isMountain`). In such cases, the MOST restrictive rule applies (e.g., `isCave` bans `snow` even if `isMountain` favors it).
+2. **Probability Bias**: Regional weather tables MUST prioritize "Favored Weather" weights during the corresponding favored season (e.g., `isMountain` during Winter).
+3. **Data Source**: Tags are defined in `src/data/maps.ts`.

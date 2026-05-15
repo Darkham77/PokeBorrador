@@ -1,4 +1,4 @@
-import { kantoWeather } from './weather/kanto';
+import { kantoWeather } from './weather/kanto/index.ts';
 
 /**
  * Main repository for all regional weather tables.

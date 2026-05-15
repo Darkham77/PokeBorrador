@@ -19,10 +19,10 @@ export const kantoRoutesWeather = {
       "night": { "rain": 45, "heavy_rain": 25, "storm": 15, "thunderstorm": 5, "clear": 10 }
     },
     "winter": {
-      "morning": { "cold": 30, "coldwave": 20, "snow": 24, "hail": 5, "blizzard": 1, "clear": 20 },
-      "day": { "clear": 40, "cold": 20, "coldwave": 10, "snow": 20, "hail": 9, "blizzard": 1 },
-      "dusk": { "cold": 30, "coldwave": 20, "snow": 24, "hail": 5, "blizzard": 1, "clear": 20 },
-      "night": { "cold": 40, "coldwave": 30, "snow": 14, "hail": 10, "blizzard": 6 }
+      "morning": { "cold": 50, "coldwave": 30, "clear": 20 },
+      "day": { "clear": 60, "cold": 30, "coldwave": 10 },
+      "dusk": { "cold": 50, "coldwave": 30, "clear": 20 },
+      "night": { "cold": 60, "coldwave": 40 }
     }
   },
   "route2": {
@@ -45,10 +45,10 @@ export const kantoRoutesWeather = {
       "night": { "rain": 50, "heavy_rain": 30, "storm": 15, "thunderstorm": 5 }
     },
     "winter": {
-      "morning": { "cold": 30, "coldwave": 20, "snow": 24, "hail": 5, "blizzard": 1, "clear": 20 },
-      "day": { "clear": 50, "cold": 20, "coldwave": 10, "snow": 10, "hail": 9, "blizzard": 1 },
-      "dusk": { "cold": 30, "coldwave": 20, "snow": 24, "hail": 5, "blizzard": 1, "clear": 20 },
-      "night": { "cold": 40, "coldwave": 30, "snow": 14, "hail": 10, "blizzard": 6 }
+      "morning": { "cold": 60, "coldwave": 30, "mist": 10 },
+      "day": { "clear": 70, "cold": 20, "coldwave": 10 },
+      "dusk": { "cold": 60, "coldwave": 30, "mist": 10 },
+      "night": { "cold": 60, "coldwave": 40 }
     }
   },
   "route22": {
@@ -149,10 +149,10 @@ export const kantoRoutesWeather = {
       "night": { "rain": 45, "heavy_rain": 25, "storm": 15, "thunderstorm": 5, "clear": 10 }
     },
     "winter": {
-      "morning": { "cold": 30, "coldwave": 20, "snow": 24, "hail": 5, "blizzard": 1, "clear": 20 },
-      "day": { "clear": 40, "cold": 20, "coldwave": 10, "snow": 20, "hail": 9, "blizzard": 1 },
-      "dusk": { "cold": 30, "coldwave": 20, "snow": 24, "hail": 5, "blizzard": 1, "clear": 20 },
-      "night": { "cold": 40, "coldwave": 30, "snow": 14, "hail": 10, "blizzard": 6 }
+      "morning": { "cold": 50, "coldwave": 30, "mist": 20 },
+      "day": { "clear": 60, "cold": 20, "coldwave": 20 },
+      "dusk": { "cold": 50, "coldwave": 30, "mist": 20 },
+      "night": { "cold": 60, "coldwave": 40 }
     }
   },
   "route25": {
@@ -175,10 +175,10 @@ export const kantoRoutesWeather = {
       "night": { "rain": 45, "heavy_rain": 25, "storm": 15, "thunderstorm": 5, "clear": 10 }
     },
     "winter": {
-      "morning": { "cold": 30, "coldwave": 20, "snow": 24, "hail": 5, "blizzard": 1, "clear": 20 },
-      "day": { "clear": 40, "cold": 20, "coldwave": 10, "snow": 20, "hail": 9, "blizzard": 1 },
-      "dusk": { "cold": 30, "coldwave": 20, "snow": 24, "hail": 5, "blizzard": 1, "clear": 20 },
-      "night": { "cold": 40, "coldwave": 30, "snow": 14, "hail": 10, "blizzard": 6 }
+      "morning": { "cold": 50, "coldwave": 30, "mist": 20 },
+      "day": { "clear": 60, "cold": 20, "coldwave": 20 },
+      "dusk": { "cold": 50, "coldwave": 30, "mist": 20 },
+      "night": { "cold": 60, "coldwave": 40 }
     }
   },
   "route5": {
@@ -227,10 +227,10 @@ export const kantoRoutesWeather = {
       "night": { "rain": 45, "heavy_rain": 25, "fog": 20, "clear": 10 }
     },
     "winter": {
-      "morning": { "cold": 30, "coldwave": 20, "snow": 10, "clear": 40 },
-      "day": { "clear": 60, "cold": 20, "coldwave": 10, "snow": 10 },
-      "dusk": { "cold": 30, "coldwave": 20, "snow": 10, "clear": 40 },
-      "night": { "cold": 50, "coldwave": 45, "clear": 5 }
+      "morning": { "cold": 60, "coldwave": 40 },
+      "day": { "clear": 80, "cold": 20 },
+      "dusk": { "cold": 60, "coldwave": 40 },
+      "night": { "cold": 70, "coldwave": 30 }
     }
   },
   "route11": {
@@ -253,10 +253,10 @@ export const kantoRoutesWeather = {
       "night": { "rain": 45, "heavy_rain": 25, "storm": 20, "thunderstorm": 10 }
     },
     "winter": {
-      "morning": { "cold": 30, "coldwave": 20, "snow": 10, "clear": 40 },
-      "day": { "clear": 60, "cold": 20, "coldwave": 10, "snow": 10 },
-      "dusk": { "cold": 30, "coldwave": 20, "snow": 10, "clear": 40 },
-      "night": { "cold": 50, "coldwave": 45, "clear": 5 }
+      "morning": { "cold": 50, "coldwave": 30, "mist": 20 },
+      "day": { "clear": 70, "cold": 30 },
+      "dusk": { "cold": 50, "coldwave": 30, "mist": 20 },
+      "night": { "cold": 60, "coldwave": 40 }
     }
   },
   "route9": {
@@ -305,10 +305,10 @@ export const kantoRoutesWeather = {
       "night": { "wind": 55, "strong_winds": 40, "clear": 5 }
     },
     "winter": {
-      "morning": { "cold": 40, "snow": 30, "hail": 15, "blizzard": 5, "clear": 10 },
-      "day": { "cold": 30, "snow": 40, "hail": 20, "blizzard": 5, "clear": 5 },
-      "dusk": { "cold": 40, "snow": 30, "hail": 15, "blizzard": 5, "clear": 10 },
-      "night": { "cold": 50, "snow": 25, "hail": 15, "blizzard": 10 }
+      "morning": { "cold": 60, "mist": 30, "clear": 10 },
+      "day": { "cold": 50, "mist": 45, "clear": 5 },
+      "dusk": { "cold": 60, "mist": 30, "clear": 10 },
+      "night": { "cold": 70, "mist": 30 }
     }
   },
   "route8": {
@@ -357,10 +357,10 @@ export const kantoRoutesWeather = {
       "night": { "rain": 45, "heavy_rain": 25, "storm": 15, "thunderstorm": 5, "wind": 10 }
     },
     "winter": {
-      "morning": { "cold": 30, "coldwave": 20, "snow": 24, "hail": 5, "blizzard": 1, "clear": 20 },
-      "day": { "clear": 40, "cold": 20, "coldwave": 10, "snow": 20, "hail": 9, "blizzard": 1 },
-      "dusk": { "cold": 30, "coldwave": 20, "snow": 24, "hail": 5, "blizzard": 1, "clear": 20 },
-      "night": { "cold": 40, "coldwave": 30, "snow": 14, "hail": 10, "blizzard": 6 }
+      "morning": { "cold": 50, "coldwave": 30, "mist": 20 },
+      "day": { "clear": 60, "cold": 20, "coldwave": 20 },
+      "dusk": { "cold": 50, "coldwave": 30, "mist": 20 },
+      "night": { "cold": 60, "coldwave": 40 }
     }
   },
   "route13": {
@@ -383,10 +383,10 @@ export const kantoRoutesWeather = {
       "night": { "rain": 45, "heavy_rain": 25, "storm": 15, "thunderstorm": 5, "wind": 10 }
     },
     "winter": {
-      "morning": { "cold": 30, "coldwave": 20, "snow": 24, "hail": 5, "blizzard": 1, "clear": 20 },
-      "day": { "clear": 40, "cold": 20, "coldwave": 10, "snow": 20, "hail": 9, "blizzard": 1 },
-      "dusk": { "cold": 30, "coldwave": 20, "snow": 24, "hail": 5, "blizzard": 1, "clear": 20 },
-      "night": { "cold": 40, "coldwave": 30, "snow": 14, "hail": 10, "blizzard": 6 }
+      "morning": { "cold": 50, "coldwave": 30, "mist": 20 },
+      "day": { "clear": 60, "cold": 20, "coldwave": 20 },
+      "dusk": { "cold": 50, "coldwave": 30, "mist": 20 },
+      "night": { "cold": 60, "coldwave": 40 }
     }
   },
   "route23": {
