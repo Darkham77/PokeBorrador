@@ -24,7 +24,8 @@ The system uses a hierarchical approach to determine the active weather and ensu
 - **Time Zone**: Always use `America/Argentina/Buenos_Aires` as the reference for server-time synchronization.
 - **Precision**: Use `Temporal.Instant` for absolute timestamps and `Temporal.Duration` for calculations.
 - **SQLite ISO Format**: Standard SQLite `datetime('now')` produces non-ISO strings. You MUST use `strftime('%Y-%m-%dT%H:%M:%SZ', 'now')` for all `DEFAULT` values in `schema.ts` to ensure compatibility with `Temporal.Instant.from()`.
-- **Centralized Formatting**: UI components MUST NOT implement local date formatting. Use `formatDisplayDate(ts)` from `src/logic/timeUtils.ts` to handle robust parsing of legacy strings and automated timezone adjustment.
+- **Centralized Formatting**: UI components MUST NOT implement local date formatting. Use `formatDisplayDate(ts)` from `src/logic/timeUtils.ts` to handle robust parsing of legacy strings and automated timezone adjustment (standardized to GMT-3 for display).
+- **Persistence & Standardization**: To ensure absolute consistency between clients and persistence layers, all timestamps MUST be stored in **ISO 8601** format (e.g., `YYYY-MM-DDTHH:MM:SSZ`). Legacy database records MUST be migrated to this format to prevent parsing failures in the Temporal API.
 
 ---
 

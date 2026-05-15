@@ -144,7 +144,7 @@ The project uses a sophisticated audit and validation engine to ensure stability
 - **IDE & Workspace Config**: To ensure the IDE (like VS Code) applies the proper TypeScript program context and resolves development imports (e.g., `@vitejs/plugin-vue`) inside configuration files (e.g., `vite.config.ts`), these files must be explicitly declared in the root `tsconfig.json`'s `"include"` array.
 - **Temporal API Typings**: For robust type-safety without using `any`, any custom or polyfilled Temporal API properties (e.g., accessing year/month/day/hour/minute on the return value of `toZonedDateTimeISO()`) must be explicitly declared with formal types (like `ZonedDateTime` interface/class) inside the global `env.d.ts` instead of typing them as `unknown` or `any`.
 - **TypeScript Import Rigor**: Triple-slash references (e.g., `/// <reference types="vue" />`) are forbidden in `vite-env.d.ts` or any core file. Use standard ESM imports or `compilerOptions.types` in `tsconfig.json`.
-- **Strict Typification in Test Scripts**: Scripts used for auditing (like `tests/node/*.test.ts`) MUST follow the same strict type-safety rules as the source code. The use of `any` is forbidden in test files to ensure silent failures are avoided and linter consistency is maintained.
+- **Strict Typification in Test Scripts**: Scripts used for auditing (like `tests/node/*.test.ts`) and unit tests (`*.spec.ts`) MUST follow the same strict type-safety rules as the source code. The use of `any` is forbidden in all test files to ensure silent failures are avoided and linter consistency is maintained. Use `Partial<T>` or explicit interfaces for mocks.
 
 ### 10. Atmospheric Filter Segregation
 

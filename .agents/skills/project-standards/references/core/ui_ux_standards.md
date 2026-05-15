@@ -303,7 +303,8 @@ Standardized via the `@mixin btn-vicio-primary` and `.btn-vicio-primary` class:
 ### 9. Data Flow and Testability
 
 - **Prop-Drilling vs. Store-Access**: Information components (like `BattleInfoCard` or `PokemonStatusSection`) MUST rely on their `props` (`pokemon`) to process statuses and descriptions.
-- **HUD Navigation Continuity**: Contextual shortcuts for specific shops or modules (e.g., War Shop) SHOULD be mirrored in the primary HUD Navigation groups (e.g., MARKET) to ensure consistent user flow and minimize menu digging.
+- **HUD Navigation Continuity**: Contextual shortcuts for specific shops or modules (e.g., War Shop) SHOULD be mirrored in the primary HUD Navigation groups (e.g., MARKET) to ensure consistent user flow.
+- **Navigation Clarity & Iconographic Differentiation**: Avoid using the same icon or label for functionally distinct areas within the HUD. For instance, if "War" is used for the Market/Shop, the Social status tab should be renamed (e.g., "Dominance") and assigned a unique icon (e.g., ⚔️) to prevent navigational ambiguity.
 - **FORBIDDEN**: Avoid direct access to the global `battleStore` within stat display logic if the component can be used in other contexts (Box, Bag, Tests). This ensures the component is individually testable without requiring an active battle state.
 
 ### 10. Admin Tool Modal Standards
