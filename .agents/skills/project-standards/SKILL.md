@@ -63,6 +63,7 @@ Consult these manuals for detailed implementation specifications:
 - **Sprite Standard**: Use `@include sprite-render` for all game assets.
 - **Organic Feel (UPR/OVR)**: All atmospheric effects MUST use the **Universal Parallax Rule** (seed-based CSS transforms) and the **Organic Variability Rule** (randomized GSAP speeds via `animSeed`). This ensures that no two maps have the same visual weather rhythm.
 - **VFX Integrity**: To avoid visual contamination, status effects (Burn, Poison, etc.) MUST override persistent auras (Guardian, Shiny) instead of being superimposed. Use mutually exclusive `if/else if` chains in FX logic.
+- **Tactical Status Standardization**: Tactical states (Protect, Endure, etc.) MUST be represented by unique, solid, high-visibility icons. Avoid using multiple dispersed particles for tactical states, as those are strictly reserved for altered statuses (Burn, Poison, etc.).
 - **Filter Cleanup Mandate**: Temporary visual effects (flashes, pulses) MUST use GSAP's `onComplete` with `clearProps: "filter"` to ensure no residual 0px filters remain as base layers.
 - **Nuclear Reset Pattern**: When resetting complex CSS filter stacks, always include the `filter` property itself in `clearProps` alongside custom variables (e.g., `--fx-main-glow`) to ensure a clean browser state. Avoid applying `filter` or `Drop-Shadow` to parent containers of sprites that have their own internal FX system (`PVSpriteFX`) to prevent cumulative color pollution.
 - **GSAP Exclusive Mandate**: All animations in the project (UI transitions, battle effects, map movements, atmospheric FX) MUST be implemented using GSAP. The use of CSS `@keyframes`, transitions, or `setTimeout`/`setInterval` for animation flow is STRICTLY FORBIDDEN.
@@ -76,6 +77,7 @@ Consult these manuals for detailed implementation specifications:
 
 - **300/500-Line Rule**: Modularization MUST be proactive. Files exceeding **300 lines** should be reviewed for logic extraction into Composables (SRP focus). No logic or style file may exceed **500 lines**.
   - _Exemption_: Massive databases, metadata files (`*Metadata.ts`, `*DB.ts`), and modules in `src/data/` are exempt to maintain data cohesion.
+  - **Visual Configuration Extraction**: When modularizing massive visual components (Partículas, Auras) to comply with this rule, extract data dictionaries and configuration objects into external `.ts` files (e.g., `fx-configs.ts`) to keep the rendering logic clean.
 
 - **Zero-Invention**: Reuse `BaseModal`, `UnifiedCard`, and global mixins before creating ad-hoc styles.
 - **Centralized Formatters**: All numeric formatting logic (currency, large numbers, suffixes) MUST be centralized in `src/logic/utils/formatters.ts`. Direct use of `toLocaleString()` in components for currency is deprecated in favor of `formatCurrency()`.
@@ -160,6 +162,7 @@ The project uses a sophisticated audit and validation engine to ensure stability
 - **Source of Truth**: Always point to the centralized logic file (e.g., `spatialCoordinator.ts`) or `visuals.ts` as the owner of the numbers.
 - **Relativity**: Explain technical specs using symbolic names (`ENTITY_SIZE_P1/P2`) and logical relationships (`SAFE_ZONE_BOTTOM - ENTITY_SIZE_P1`) rather than absolute values.
 - **Z-Index Single Source of Truth**: All visual layering constants MUST be defined in `src/logic/constants/visuals.ts`. The use of JSON files or hardcoded integers is forbidden. SCSS variables in `_variables.scss` must reflect these TS constants.
+- **Strict Z-Index Layering**: The use of magic z-index numbers (`1`, `9999`) or raw CSS variables with unsafe fallbacks is strictly prohibited. You MUST reactively bind the official TS constant from the system using `calc(v-bind('Z_LAYERS.MAP_SPAWNS') + X)`.
 
 ### 8. Battle Engine Integrity (FSM)
 

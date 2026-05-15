@@ -237,6 +237,7 @@ Do not use global selectors that can match elements outside the current componen
 
 - ✅ **gsap.context(() => { gsap.to(".box", ...) }, containerRef)** — `.box` is only searched inside `containerRef`.
 - ❌ Running **gsap.to(".box", ...)** without a context scope in a component can affect other instances or the rest of the page.
+- ✅ **Component Instance Isolation**: When animating reusable components that may appear multiple times on the same page (e.g., Player vs Enemy sprites), NEVER use global `document.querySelector`. Always use a template ref (`rootRef.value?.closest('.class')`) to isolate the GSAP context and prevent targeting the wrong DOM instance.
 
 ## ScrollTrigger Cleanup
 

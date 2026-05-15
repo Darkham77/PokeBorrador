@@ -99,7 +99,10 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div ref="rootRef" class="pv-aura-fx-layer">
+  <div
+    ref="rootRef"
+    class="pv-aura-fx-layer"
+  >
     <!-- BRILLOS SHINY -->
     <div
       v-if="isShiny && enabled"
@@ -115,9 +118,18 @@ onUnmounted(() => {
     </div>
 
     <!-- PANTALLAS TÁCTICAS -->
-    <div v-if="hasReflect" class="pv-fx-screen-overlay reflect" />
-    <div v-if="hasLightScreen" class="pv-fx-screen-overlay light-screen" />
-    <div v-if="hasSafeguard" class="pv-fx-aura-overlay safeguard" />
+    <div
+      v-if="hasReflect"
+      class="pv-fx-screen-overlay reflect"
+    />
+    <div
+      v-if="hasLightScreen"
+      class="pv-fx-screen-overlay light-screen"
+    />
+    <div
+      v-if="hasSafeguard"
+      class="pv-fx-aura-overlay safeguard"
+    />
   </div>
 </template>
 

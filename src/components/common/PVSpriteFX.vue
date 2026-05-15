@@ -194,8 +194,15 @@ const allActiveFXDebug = computed(() => {
 </script>
 
 <template>
-  <div :class="wrapperClasses" :style="{ '--fx-seed': animSeed, '--fx-radius': radius }">
-    <div ref="spriteLayerRef" class="pv-fx-sprite-layer" :class="{ 'is-guardian': isGuardian && !status && !isSimplified }">
+  <div
+    :class="wrapperClasses"
+    :style="{ '--fx-seed': animSeed, '--fx-radius': radius }"
+  >
+    <div
+      ref="spriteLayerRef"
+      class="pv-fx-sprite-layer"
+      :class="{ 'is-guardian': isGuardian && !status && !isSimplified }"
+    >
       <slot />
     </div>
 
@@ -225,12 +232,20 @@ const allActiveFXDebug = computed(() => {
 
     <!-- DEBUG GUIDES -->
     <template v-if="battleStore.debugShowPokeRadius">
-      <div class="debug-guide debug-poke-radius" :style="{ width: (props.radius * 2) + '%', height: (props.radius * 2) + '%' }">
+      <div
+        class="debug-guide debug-poke-radius"
+        :style="{ width: (props.radius * 2) + '%', height: (props.radius * 2) + '%' }"
+      >
         <span class="label">POKE (Radius: {{ props.radius.toFixed(1) }}%)</span>
       </div>
     </template>
     <template v-if="battleStore.debugShowFxRadius">
-      <div v-for="fx in allActiveFXDebug" :key="fx.id" class="debug-guide debug-fx-radius" :style="fx.style">
+      <div
+        v-for="fx in allActiveFXDebug"
+        :key="fx.id"
+        class="debug-guide debug-fx-radius"
+        :style="fx.style"
+      >
         <span class="label">{{ fx.label }}</span>
       </div>
     </template>

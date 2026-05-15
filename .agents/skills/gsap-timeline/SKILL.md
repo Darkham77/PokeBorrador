@@ -96,6 +96,8 @@ master.to('.c', { opacity: 0 }, '+=0.2');
 - ✅ Add **labels** with `addLabel()` for readable, maintainable sequencing.
 - ✅ Pass **defaults** into the timeline constructor so child tweens inherit duration, ease, etc.
 - ✅ Put ScrollTrigger on the timeline (or top-level tween), not on tweens inside a timeline.
+- ✅ **Asymmetric Animation Pattern**: Implement independent durations for different phases of an animation (e.g., `growDuration` vs `shrinkDuration`) to achieve organic, non-linear rhythms like explosive "pop-ins" and slow fade-outs.
+- ✅ **Infinite Timeline Reset**: Always include an explicit `tl.set()` at the beginning of infinite timelines (`repeat: -1`) to ensure elements spawn from their exact initial state (e.g., `scale: 0.05`) and prevent flickering artifacts on loop restarts.
 
 ## Do Not
 

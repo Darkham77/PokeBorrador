@@ -192,7 +192,10 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div ref="rootRef" class="pv-status-fx-layer">
+  <div
+    ref="rootRef"
+    class="pv-status-fx-layer"
+  >
     <!-- 1. Capas de Partículas de Estado -->
     <div
       v-for="fx in (activeStatusEffects as any[])"

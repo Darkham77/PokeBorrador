@@ -212,6 +212,12 @@ Performance work is a post-functionality pass. Do not optimize before core behav
 - **Duplicate Declaration Safety**: When adding "legacy" or compatibility functions to an existing composable, ALWAYS verify that the identifier (function or variable name) is not already declared in the same file. Duplicate declarations in Javascript/Vue will result in a `SyntaxError: Identifier 'X' has already been declared` that prevents the entire application from loading.
 - **CSS Variable Reactivity Optimization**: When binding multiple complex reactive styles (like filters, transforms, or camera coordinates) to CSS variables in a template, ALWAYS consolidate them into a single `computed` object instead of spreading multiple reactive objects.
   - **WHY**: Using the spread operator (`:style="{ ...obj1, ...obj2 }"`) on reactive objects in the template can cause Vue to lose track of some reactive dependencies or override them incorrectly, leading to broken synchronization between the UI and external tools (like debug guides or zoom systems).
+- **Neutralizing Sub-component Roots in Flex Layouts**: When extracting absolutely positioned children from a flex container into a new sub-component, the new sub-component's root wrapper acts as a static flex item by default, disrupting the parent's layout.
+  - **REQUIRED**: Apply `position: absolute; inset: 0; pointer-events: none;` (or `display: contents`) to the sub-component's root wrapper to neutralize its impact on the parent's flex layout.
+- **Explicit Reactivity Tracking (Void Operator)**: When you need to force reactivity in a `watchEffect` without assigning the reactive property to a variable (which triggers ESLint "unused variable" warnings and breaks Zero-Warning policies).
+  - **PATTERN**: Use the `void` operator (e.g., `void props.pokemon?.status`). This explicitly tracks the dependency in Vue's reactivity system without creating an orphan variable.
+- **Reactive Animation Re-initialization**: When managing GSAP or canvas animations for a dynamic list of DOM elements, detect changes in the element count to safely force a re-initialization.
+  - **PATTERN**: Use a `Map` or similar structure to store the previous state/count and compare it during updates to safely restart the animation engine when new elements are injected into an already active effect.
 
 ## 6) Final self-check before finishing
 
