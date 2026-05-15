@@ -13,6 +13,10 @@ To prevent initialization race conditions (TDZ) and ensure reactive stability:
 - **Complex Sub-Component Isolation (SRP)**: Highly interactive sub-elements or dropdowns nested inside complex panels (e.g., the catch ball selection dropdown in combat panels) MUST be isolated into their own dedicated, single-purpose components (e.g., `BattleBallPicker.vue`). This keeps parent layout orchestrators light, maintainable, and prevents violating the 300/500-line rule.
 - **Prop-Driven Component Sizing**: Generic cards and items (e.g., `BoxPokemonCard`) MUST accept sizing props (e.g., `typePillSize`) rather than hardcoding CSS logic. This allows parent orchestrators (like `BattleQuickTeam`) to enforce density without breaking the child's encapsulation.
 - **WHY**: Ensures that watchers and hooks never attempt to read computed data before its dependencies are fully initialized.
+- **MANDATORY Error Mapping (Friendly Errors)**: All technical network or database errors (e.g., 401, 503, connection timeouts) MUST be processed through `getFriendlyErrorMessage`. 
+  - **Goal**: Translate cryptic messages ("Unauthorized", "Network Error") into narrative-friendly phrases (e.g., "¡El servidor está en mantenimiento! Inténtalo más tarde 🚧").
+- **Permissive Health Diagnostics**: In server health-check logic ("ping"), 4xx HTTP codes MUST be interpreted as **ONLINE**. 
+  - **Reasoning**: A 401/403 response confirms that the server is alive and responding, even if credentials are missing. Only 5xx codes or network timeouts should trigger an "OFFLINE" status.
 - **Modularity**: Adhere to the **500-line rule** for all UI components. If a view exceeds this, logic must be extracted to composables or sub-components.
 - **Explicit Scoping Patterns**: To force styles on child components (e.g., "always small" mode), avoid relying on parent IDs (`#parent .child`) which can be blocked by Vue `scoped` CSS.
   - **MANDATORY**: Pass an explicit class (e.g., `.is-compact`) directly to the child component or use a boolean prop to toggle internal layout classes.

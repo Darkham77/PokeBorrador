@@ -93,7 +93,11 @@ export function calculateDamage(attacker: Pokemon, defender: Pokemon, move: Part
     toPurePoke(attacker),
     toPurePoke(defender),
     toPureMove(move),
-    { weather: toPureWeather(ctx.weather) },
+    { 
+      weather: toPureWeather(ctx.weather),
+      atkStages: ctx.atkStages,
+      defStages: ctx.defStages
+    },
     getDayCycle()
   );
 

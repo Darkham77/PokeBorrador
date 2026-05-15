@@ -19,6 +19,7 @@ The `DBRouter` is the absolute owner of the Supabase client lifecycle.
 - **Lazy Init**: The Supabase client is NEVER created on boot if the mode is `offline`. It is instantiated only when a cloud-dependent property (like `auth` or `rpc`) is accessed in `online` mode.
 - **Autonomous Configuration**: The `supabase.ts` file only provides the config; the `DBRouter` imports `createClient` and manages the instance internally.
 - **Silent Boot**: This architecture prevents "Tracking Prevention" warnings on `localhost` or local-first environments.
+- **Dynamic Reconfiguration**: The `updateConfig({ url, key })` method allows switching between different official or local server instances in real-time without requiring a page reload or state reset.
 
 ---
 

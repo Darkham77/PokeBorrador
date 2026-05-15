@@ -3,8 +3,16 @@
  * Transforma errores técnicos en mensajes con personalidad.
  */
 
-export const getFriendlyErrorMessage = (error: any): string => {
-  const message = error?.message || String(error);
+export const getFriendlyErrorMessage = (error: unknown): string => {
+  let message = '';
+  
+  if (error instanceof Error) {
+    message = error.message;
+  } else if (typeof error === 'object' && error !== null && 'message' in error) {
+    message = String((error as Record<string, unknown>).message);
+  } else {
+    message = String(error);
+  }
   
   // 1. Errores de Conectividad (Sin Internet)
   if (!navigator.onLine) {

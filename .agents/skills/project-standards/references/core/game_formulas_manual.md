@@ -11,6 +11,11 @@ To support multi-generation mechanics and maintain the historical integrity of e
 
 The formulas module returns the specific formula based on the `ACTIVE_RULE_SET` as documented below.
 
+### 🚨 Bridge Integrity (Parameter Drift Prevention)
+The bridge between the UI and the math core (`battleFormulas.ts`) MUST pass all context parameters (stages, weather, cycle) explicitly to the pure core.
+- **Warning**: Never assume that `calculateDamagePure` will infer state. If a new parameter (like `atkStages`) is added to the core, it MUST be updated in the bridge immediately to prevent silent failures in combat logic.
+- **Verification**: Any change to the bridge MUST be validated with the `battle.spec.ts` suite to ensure no parameters are being dropped.
+
 ---
 
 ## ⚔️ Combat Formulas

@@ -91,20 +91,9 @@ const checkServerHealth = async () => {
     
     clearTimeout(timeout)
     
-    if (response.status === 503) {
-      serverStatus.value = 'offline'
-      serverStatusDetail.value = 'Mantenimiento 🚧'
-    } else if (response.status >= 500) {
-      serverStatus.value = 'offline'
-      serverStatusDetail.value = 'Error de Servidor 💥'
-    } else if (response.status === 401 || response.status === 403 || response.ok) {
-      serverStatus.value = 'online'
-      serverStatusDetail.value = 'Operativo ✅'
-    } else {
-      serverStatus.value = 'offline'
-      serverStatusDetail.value = `Error ${response.status}`
-    }
-  } catch (e) {
+    serverStatus.value = (response.status < 500) ? 'online' : 'offline'
+    serverStatusDetail.value = (response.status < 500) ? 'Operativo ✅' : 'Error de Servidor 💥'
+  } catch (_e) {
     serverStatus.value = 'offline'
     serverStatusDetail.value = 'Inalcanzable 💤'
   }
