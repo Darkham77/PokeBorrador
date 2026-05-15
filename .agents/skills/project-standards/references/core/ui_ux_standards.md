@@ -13,9 +13,9 @@ To prevent initialization race conditions (TDZ) and ensure reactive stability:
 - **Complex Sub-Component Isolation (SRP)**: Highly interactive sub-elements or dropdowns nested inside complex panels (e.g., the catch ball selection dropdown in combat panels) MUST be isolated into their own dedicated, single-purpose components (e.g., `BattleBallPicker.vue`). This keeps parent layout orchestrators light, maintainable, and prevents violating the 300/500-line rule.
 - **Prop-Driven Component Sizing**: Generic cards and items (e.g., `BoxPokemonCard`) MUST accept sizing props (e.g., `typePillSize`) rather than hardcoding CSS logic. This allows parent orchestrators (like `BattleQuickTeam`) to enforce density without breaking the child's encapsulation.
 - **WHY**: Ensures that watchers and hooks never attempt to read computed data before its dependencies are fully initialized.
-- **MANDATORY Error Mapping (Friendly Errors)**: All technical network or database errors (e.g., 401, 503, connection timeouts) MUST be processed through `getFriendlyErrorMessage`. 
+- **MANDATORY Error Mapping (Friendly Errors)**: All technical network or database errors (e.g., 401, 503, connection timeouts) MUST be processed through `getFriendlyErrorMessage`.
   - **Goal**: Translate cryptic messages ("Unauthorized", "Network Error") into narrative-friendly phrases (e.g., "¡El servidor está en mantenimiento! Inténtalo más tarde 🚧").
-- **Permissive Health Diagnostics**: In server health-check logic ("ping"), 4xx HTTP codes MUST be interpreted as **ONLINE**. 
+- **Permissive Health Diagnostics**: In server health-check logic ("ping"), 4xx HTTP codes MUST be interpreted as **ONLINE**.
   - **Reasoning**: A 401/403 response confirms that the server is alive and responding, even if credentials are missing. Only 5xx codes or network timeouts should trigger an "OFFLINE" status.
 - **Modularity**: Adhere to the **500-line rule** for all UI components. If a view exceeds this, logic must be extracted to composables or sub-components.
 - **Explicit Scoping Patterns**: To force styles on child components (e.g., "always small" mode), avoid relying on parent IDs (`#parent .child`) which can be blocked by Vue `scoped` CSS.
@@ -369,7 +369,7 @@ To ensure a seamless transition between full-map exploration and focused modal i
 
 To prevent visual "jitter" or layout shifts during state transitions, use **Sticky Refs** (local memory variables) that hold the last valid value while the underlying store is updating or clearing.
 
-- **Combat Anchors**: Keep ground-coordinates in a local `ref` that only updates when new *confirmed* data arrives.
+- **Combat Anchors**: Keep ground-coordinates in a local `ref` that only updates when new _confirmed_ data arrives.
 - **HUD Stability**: A Pokémon's info-card MUST stay visible during finishing animations (`isFinishing`) until the Pokémon physically leaves the screen or the HP reaches zero.
 
 ### 16. Persistent Player HUD
@@ -416,7 +416,7 @@ To maintain pixel-perfect alignment in the high-fidelity 2D combat arena:
 
 ### 2. Shadow & Ground Synchronization (Pixelated Standard)
 
-- **Rendered Parity**: Shadow positions MUST be calculated based on the *rendered* height of the sprite (`object-fit: contain`) inside the entity square.
+- **Rendered Parity**: Shadow positions MUST be calculated based on the _rendered_ height of the sprite (`object-fit: contain`) inside the entity square.
 - **Formula**: The vertical offset is derived from the ratio between the sprite's `feetY` (ground level) and the total `ENTITY_SIZE`.
 - **Pixelation Technique**: Generate shadows on a low-resolution canvas (e.g., 10x7), disable anti-aliasing (`imageSmoothingEnabled = false`), and scale up via CSS with `image-rendering: pixelated`.
 - **Centralization**: All shadow dimensions and base offsets MUST be controlled by `spatialCoordinator.ts`. Prohibit hardcoded dimensions in CSS (scoped or global) to avoid layout collisions.
