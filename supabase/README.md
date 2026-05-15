@@ -26,11 +26,22 @@ Este sistema utiliza un **Dockerfile** para integrar las migraciones dentro del 
 - **Cero Dependencias**: El servidor no necesita acceso a las carpetas de código fuente una vez desplegado.
 - **Seguridad**: Los esquemas están protegidos dentro de la capa de la imagen.
 
-## 📘 Documentación
+## 📦 Publicación de Imágenes (CI/CD)
 
-1. [Guía de Instalación](docs/INSTALACION.md)
-2. [Despliegue Profesional (VPS)](docs/DESPLIEGUE_SERVIDOR.md)
-3. [Manual de Mantenimiento](docs/MANTENIMIENTO.md)
+Si deseas subir tu propia versión de la base de datos a un registro como Docker Hub, utiliza los scripts incluidos:
+
+- **Windows (PowerShell)**: `.\scripts\publish-docker.ps1 -User tu-usuario -Tag 0.5.0`
+- **Linux/macOS (Bash)**: `./scripts/publish-docker.sh [tag] [usuario]`
+
+## 🛠️ Configuración de Ejemplo
+
+Para usuarios que desean desplegar el servidor sin construir las imágenes localmente, se proporciona `docker-compose.example.yml`. Este archivo ya viene pre-configurado con los puertos y parámetros actuales del proyecto.
+
+Para usarlo:
+
+1. Copia el archivo: `cp docker-compose.example.yml docker-compose.prod.yml`
+2. Ajusta las variables de entorno si es necesario.
+3. Levanta el stack: `docker-compose -f docker-compose.prod.yml up -d`
 
 ---
 

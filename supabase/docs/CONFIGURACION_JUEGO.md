@@ -12,25 +12,19 @@ Todas las credenciales necesarias se encuentran en el archivo `supabase/.env`.
 
 ## ⚙️ Configuración del Cliente (.env)
 
-En la **raíz del proyecto Poké Vicio** (fuera de la carpeta `supabase`), edita el archivo `.env`:
+En la **raíz del proyecto Poké Vicio**, edita el archivo `.env`. Puedes usar el `.env.example` unificado de la raíz como plantilla, ya que contiene todas las variables del servidor y del cliente en un solo lugar.
 
-```env
-# Configuración del Servidor Online
-VITE_SUPABASE_URL=http://localhost:8000
-VITE_SUPABASE_KEY=tu_anon_key_aqui
-```
+### ⚠️ Importante: Sincronización con Kong
 
-### 🔄 Cambio de Modo (Online/Offline)
+Si cambias la `ANON_KEY` o la `SERVICE_ROLE_KEY` en tu archivo `.env`, debes asegurarte de que también estén actualizadas en:
+👉 `supabase/config/kong.yml`
 
-El juego utiliza un `DBRouter` inteligente.
+Si no coinciden, Kong rechazará todas las peticiones del juego por seguridad.
 
-- Si estás en `localhost`, el juego intentará iniciar en modo **Offline** (SQLite) por defecto para desarrollo.
-- Para forzar el modo **Online**, asegúrate de que las variables de arriba estén configuradas y el juego detectará el servidor.
+## 🎨 Gestión Visual (Supabase Studio)
 
-## 🌐 Despliegue en Producción
+Para administrar tu base de datos (ver perfiles, editar estadísticas de jugadores, etc.), puedes entrar al panel gráfico en:
+👉 **`http://localhost:3000`**
 
-Si deseas que otros jugadores se conecten:
-
-1. Debes abrir los puertos `8000` (API) en tu router/firewall.
-2. En el `.env` de la raíz del juego, cambia `localhost` por tu IP pública o dominio.
-3. **IMPORTANTE**: En el `.env` de la carpeta `supabase`, asegúrate de que `SITE_URL` coincida con la URL donde alojarás el juego para que el sistema de login (Auth) funcione correctamente.
+Recuerda que para darte permisos de administrador en el juego, después de registrarte debes ejecutar el script:
+`.\supabase\scripts\set-admin.ps1 -Email tu@email.com`

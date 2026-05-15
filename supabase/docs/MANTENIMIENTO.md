@@ -16,16 +16,26 @@ docker-compose up -d --build
 2. El servicio **`db-migrator`** detecta el cambio, espera a que la base de datos esté lista y aplica las nuevas migraciones automáticamente.
 3. **Cero comandos manuales**: No necesitas ejecutar scripts de migración por separado.
 
-## 📦 Actualizar Servicios (Supabase)
+## 🛡️ Gestión de Administradores
 
-Para obtener las últimas versiones de las imágenes oficiales:
+Si necesitas dar permisos de administrador a un nuevo miembro del equipo:
 
-```bash
-docker-compose pull
-docker-compose up -d
-```
+1. Pídele que se registre en el juego.
+2. Ejecuta el script de administración con su correo:
+   `.\supabase\scripts\set-admin.ps1 -Email correo@miembro.com`
+
+## 🔑 Rotación de Llaves (Seguridad)
+
+Si sospechas que tus llaves han sido filtradas:
+
+1. Genera un nuevo `JWT_SECRET` en tu `.env`.
+2. Genera nuevas `ANON_KEY` y `SERVICE_ROLE_KEY`.
+3. **IMPORTANTE**: Actualiza el archivo `supabase/config/kong.yml` con las nuevas llaves.
+4. Reinicia el servidor: `docker-compose up -d`.
 
 ## 💾 Backups (Copias de Seguridad)
+
+...
 
 Para hacer un backup SQL completo de todos los datos de los jugadores:
 

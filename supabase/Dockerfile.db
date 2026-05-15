@@ -3,8 +3,8 @@
 
 FROM supabase/postgres:15.1.0.147
 
-# Copiamos las migraciones del proyecto al directorio de inicialización estándar de Postgres
-# Docker ejecutará estos archivos automáticamente al crear el volumen de datos.
+# Copiamos los esquemas y las migraciones al directorio de inicialización estándar de Postgres
+COPY ./database/schemas /docker-entrypoint-initdb.d/
 COPY ./database/migrations /docker-entrypoint-initdb.d/
 
 # El resto de la configuración se hereda de la imagen base de Supabase.

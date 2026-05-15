@@ -1,4 +1,4 @@
-_format_version: "1.1"
+_format_version: '1.1'
 
 services:
   - name: auth
@@ -29,7 +29,7 @@ plugins:
   - name: cors
     config:
       origins:
-        - "*"
+        - '*'
       methods:
         - GET
         - POST
@@ -56,3 +56,13 @@ plugins:
     config:
       key_names:
         - apikey
+
+consumers:
+  - username: anon
+    keyauth_credentials:
+      - key: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlzcyI6InN1cGFiYXNlIiwiaWF0IjoxNzc4ODY5NzA4LCJleHAiOjIwOTQyMjk3MDh9.I7w2s1Am6Ck_8T94sqzvK9JkWtSRyxFjFtCYse28gbk
+
+  - username: service_role
+    keyauth_credentials:
+      - key: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoic2VydmljZV9yb2xlIiwiaXNzIjoic3VwYWJhc2UiLCJpYXQiOjE3Nzg4Njk3MDgsImV4cCI6MjA5NDIyOTcwOH0.eJVY8368t1JYPpqON67rYj_FdJJx4nEW0iEf1pZ_0q4
+

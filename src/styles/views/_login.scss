@@ -4,8 +4,11 @@
   position: fixed !important;
   inset: 0;
   z-index: var(--z-hud);
-  background: var(--black) no-repeat center center;
-  background-size: cover;
+  background-color: var(--black);
+  background-repeat: no-repeat;
+  background-position: center center !important;
+  background-size: cover !important;
+  background-attachment: fixed;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -33,16 +36,61 @@
   padding: 40px 32px;
   width: 100%;
   max-width: 400px;
-  border: 1px solid Rgba(255, 255, 255, 0.08);
-  box-shadow: 0 20px 60px Rgba(0, 0, 0, 0.5);
-  background: Rgba(18, 18, 20, 0.95);
-  -webkit-will-change: opacity;
-  will-change: opacity;
+  border: 1px solid Rgba(255, 255, 255, 0.12);
+  box-shadow: 0 20px 80px Rgba(0, 0, 0, 0.6);
+  background: Rgba(15, 15, 18, 0.75);
+  backdrop-filter: Blur(12px);
+  -webkit-backdrop-filter: Blur(12px);
+  padding-top: 50px; // Espacio extra para el logo que se superpone
+  
+  -webkit-will-change: opacity, transform;
+  will-change: opacity, transform;
   @include gpu-layer;
-  animation: fadeIn 0.4s ease;
   z-index: var(--z-base);
   transform: Translatez(0);
-  @include gpu-layer;
+}
+
+.login-header-logo {
+  position: relative;
+  z-index: calc(var(--z-base) + 2);
+  margin-bottom: -40px; // Ajustado para no tapar demasiado el texto
+  pointer-events: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  img {
+    width: 280px;
+    max-width: 85vw;
+    height: auto;
+    filter: Drop-Shadow(0 10px 20px Rgba(0, 0, 0, 0.4)) Drop-Shadow(0 0 15px Rgba(255, 255, 255, 0.1));
+    @include pixelated;
+    transition: width 0.3s ease;
+  }
+}
+
+@media (max-width: 480px) {
+  .auth-card {
+    padding: 100px 20px 24px; // Más espacio para evitar solapamiento en pantallas muy pequeñas
+    border-radius: 20px;
+  }
+
+  .login-header-logo {
+    margin-bottom: -45px; // Ajuste fino para móvil
+    
+    img {
+      width: 180px; // Logo más pequeño en móvil
+    }
+  }
+
+  .auth-logo {
+    font-size: 16px;
+  }
+
+  .auth-sub {
+    font-size: 7px;
+    margin-bottom: 20px;
+  }
 }
 
 .auth-logo {

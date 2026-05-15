@@ -10,35 +10,47 @@ El servidor se basa en imágenes empaquetadas. El flujo es:
 2. **Subir la imagen** a un registro de contenedores.
 3. **Descargar y Correr** en el servidor final.
 
-### Construcción de la Imagen
+### Construcción y Publicación Automática
 
-Para generar la imagen con el esquema actual:
+Utiliza los scripts incluidos para automatizar el proceso de empaquetado y subida:
 
-```bash
-docker-compose build db
-```
+- **Windows**: `.\supabase\scripts\publish-docker.ps1 -User tu-usuario -Repository mi-repo -Tag 0.5.0`
+- **Linux**: `./supabase/scripts/publish-docker.sh [tag] [usuario] [repositorio]`
 
-Esto genera la imagen `supabase-db-pokevicio` que contiene todas las migraciones en su interior.
+Estos scripts se encargan de:
 
-## 2. Despliegue en el Servidor
+1. Construir la imagen localmente usando `supabase/Dockerfile.db`.
+2. Etiquetarla correctamente con tu usuario de Docker Hub.
+3. Subirla al registro oficial.
 
-En tu servidor de producción, solo necesitas el archivo `docker-compose.yml` y tu `.env`.
+## 2. Despliegue en el Servidor (Producción / NAS QNAP)
 
-Al ejecutar:
+En entornos NAS o servidores con rutas personalizadas, es vital configurar correctamente el `PROJECT_ROOT` en el archivo `.env`.
 
-```bash
-docker-compose up -d
-```
+### El Problema de los Volúmenes en NAS (Kong)
 
-Docker gestionará la descarga de las imágenes y la base de datos se inicializará sola con toda la lógica de Poké Vicio, sin depender de archivos externos en el servidor.
+Docker en entornos NAS tiene un comportamiento específico: si intentas montar un archivo que no existe, Docker creará una **carpeta vacía** con ese nombre. Esto rompe el servicio de Kong.
+
+**Regla de Oro**: Siempre montamos la carpeta completa de configuración en lugar del archivo individual:
+
+- **Correcto**: `- ${PROJECT_ROOT}/config:/etc/kong/declarative:ro`
+- **Error**: `- ${PROJECT_ROOT}/config/kong.yml:/var/lib/kong/kong.yml:ro` (Causará fallos en QNAP).
+
+### Sincronización Automática de Roles
+
+El stack incluye un servicio `db-migrator` que se encarga de:
+
+1. Crear los roles de sistema (`supabase_admin`, `authenticator`, etc.) si no existen en la imagen.
+2. Sincronizar sus contraseñas con el valor de `POSTGRES_PASSWORD` del `.env`.
+3. Reparar los permisos (`GRANT`) automáticamente en cada arranque.
 
 ## 3. Configuración de Red
 
-Asegúrate de permitir el tráfico en el puerto **8000** para el API Gateway.
+- **Puerto 8000**: API Gateway (Kong). Es el puerto principal de conexión.
+- **Puerto 3000**: Panel de control (Supabase Studio).
+- **URL Segura**: Asegúrate de que `POSTGRES_PASSWORD` no contenga caracteres especiales (como `@`, `#`, `/`) que puedan romper las URLs de conexión de los servicios.
 
 ## 4. Actualización de Esquemas
 
-Para aplicar cambios en la base de datos:
-
-1. Genera una nueva versión de la imagen con los cambios.
-2. Ejecuta `docker-compose up -d --build` para actualizar el contenedor en el servidor.
+1. Genera una nueva versión de la imagen con los cambios en `database/schemas`.
+2. Sube la imagen y ejecuta `docker-compose up -d` en el servidor. El migrador se encargará del resto.

@@ -10,21 +10,39 @@ Esta guía te ayudará a poner en marcha el servidor desde cero.
 
 ## 🛠️ Inicio Rápido
 
-Para poner en marcha todo el ecosistema de Supabase (Base de datos, Auth, API, Migraciones), solo necesitas ejecutar:
+Existen dos formas de levantar el servidor:
 
-```bash
-docker-compose up -d --build
-```
+1. **Modo Desarrollador** (Construcción local):
 
-### 🤖 ¿Qué ocurre automáticamente?
+    ```bash
+    docker-compose up -d --build
+    ```
 
-1. **Inicialización**: El sistema detecta si es la primera vez y genera llaves JWT y contraseñas seguras automáticamente.
-2. **Construcción**: Se empaqueta el esquema de la base de datos dentro de la imagen.
-3. **Migración**: Un contenedor especializado espera a que la DB esté lista y aplica todos los cambios.
-4. **Docker Up**: Levanta todos los servicios de la infraestructura de Supabase.
-5. **Sincronización**: Espera a que la base de datos esté lista y aplica las migraciones finales.
+2. **Modo Producción** (Uso de imágenes pre-construidas):
+
+    ```bash
+    docker-compose -f docker-compose.example.yml up -d
+    ```
+
+### 🎨 Acceso al Panel de Control (Studio)
+
+Una vez iniciado, puedes acceder al entorno gráfico de Supabase en:
+👉 **`http://localhost:3000`**
+
+Desde aquí puedes ver las tablas, ejecutar SQL y gestionar usuarios visualmente.
+
+## 🛡️ Configuración de Administrador
+
+Para convertir tu cuenta en administradora dentro del juego:
+
+1. Regístrate en el juego con tu email.
+2. Ejecuta el script de administración:
+   - **Windows**: `.\supabase\scripts\set-admin.ps1 -Email tu@email.com`
+   - **Linux**: `./supabase/scripts/set-admin.sh tu@email.com`
 
 ## ❓ Solución de Problemas
+
+...
 
 ### Los contenedores no inician
 

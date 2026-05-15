@@ -149,6 +149,30 @@ onMounted(() => {
     logger.warn('Login', 'Usuario ya logueado detectado en ruta /login. Forzando logout para resetear estado.')
     authStore.logout()
   }
+
+  // Animaciones GSAP
+  gsap.from('.login-header-logo', {
+    y: -100,
+    opacity: 0,
+    duration: 1.5,
+    ease: 'back.out(1.2)'
+  })
+
+  gsap.to('.login-header-logo img', {
+    y: 15,
+    duration: 3,
+    repeat: -1,
+    yoyo: true,
+    ease: 'sine.inOut'
+  })
+
+  gsap.from('.auth-card', {
+    y: 30,
+    opacity: 0,
+    duration: 1,
+    delay: 0.5,
+    ease: 'power3.out'
+  })
 })
 
 const handleServerChange = () => {
@@ -160,11 +184,12 @@ const handleServerChange = () => {
 <template>
   <div id="auth-screen">
     <div class="login-background-stars" />
+    
+    <div class="login-header-logo">
+      <img :src="getAssetUrl(ASSET_TYPES.UI, '../fondo/logo 1')" alt="Poké Vicio Logo">
+    </div>
 
     <div class="auth-card">
-      <div class="auth-logo">
-        Poké Vicio
-      </div>
       <div class="auth-sub">
         Te reto a dejar de jugarlo
       </div>
