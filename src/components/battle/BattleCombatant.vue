@@ -2,7 +2,7 @@
 <script setup lang="ts">
 
 
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, watchEffect } from 'vue'
 import { gsap } from 'gsap'
 
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
@@ -11,7 +11,10 @@ import CombatShadow from './CombatShadow.vue'
 import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { useCombatShadowStore } from '@/stores/combatShadows'
+import { useBattleStore } from '@/stores/battle'
 import { gameBus } from '@/logic/gameBus'
+
+const battleStore = useBattleStore()
 import { WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator'
 
 import type { Pokemon } from '@/types/pokemon'
@@ -113,12 +116,18 @@ const initIdleAnim = () => {
     idleTween = null
   }
 
-  const isFrozen = props.pokemon.status === 'freeze'
+  const status = props.pokemon.status?.toLowerCase() || ''
+  const isFrozen = status === 'freeze' || status === '🧊'
+  const isPara = status.includes('paraly') || status.includes('para') || status === '⚡'
+  const isConfused = (props.pokemon.confused || 0) > 0
   const isTrapped = (props.animState as string) === 'trapped'
   const isCatching = props.animState === 'catching'
   
-  if (isFrozen || isTrapped || isCatching) {
-    gsap.set(idleWrapperRef.value, { clearProps: 'transform' })
+  console.log(`[IdleAnim] ${props.pokemon.name}: status=${status}, isPara=${isPara}, isFrozen=${isFrozen}`)
+
+  if (isFrozen || isPara || isConfused || isTrapped || isCatching) {
+    gsap.killTweensOf(idleWrapperRef.value)
+    gsap.set(idleWrapperRef.value, { y: 0, rotation: 0, scaleX: 1, scaleY: 1 })
     return
   }
 
@@ -148,9 +157,17 @@ const initIdleAnim = () => {
   }
 }
 
-watch([() => props.pokemon?.status, () => props.animState, isFloating], () => {
-  initIdleAnim()
-}, { immediate: true })
+watchEffect(() => {
+  // Rastreamos dependencias explícitamente para el watchEffect
+  const _s = props.pokemon?.status
+  const _c = props.pokemon?.confused
+  const _a = props.animState
+  const _f = isFloating.value
+  
+  if (idleWrapperRef.value) {
+    initIdleAnim()
+  }
+})
 
 watch(idleWrapperRef, (el) => {
   if (el) initIdleAnim()

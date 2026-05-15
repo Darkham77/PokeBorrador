@@ -43,8 +43,6 @@
   z-index: calc(var(--z-map-spawns, 10) + 10);
   transform-origin: center center;
   transform: Translate(-50%, -50%);
-  animation: sparkle-pop 3s infinite ease-in-out;
-  animation-delay: calc(#{$delay} + (var(--fx-seed, 0) * -3s));
 
   &::after {
     content: '';
@@ -250,12 +248,6 @@
 /* ==========================================================================
    COMBATANT & BATTLE TRANSITION KEYFRAMES
    ========================================================================== */
-
-@keyframes sparkle-pop {
-  0%, 100% { transform: Translate(-50%, -50%) Scale(0) Rotate(0deg); opacity: 0; }
-  15%, 85% { opacity: 1; }
-  50% { transform: Translate(-50%, -50%) Scale(1.2) Rotate(180deg); opacity: 1; }
-}
 
 @keyframes pokeball-wobble {
   0%, 100% { transform: Rotate(0deg); }

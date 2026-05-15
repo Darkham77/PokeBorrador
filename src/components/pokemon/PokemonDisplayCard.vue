@@ -46,13 +46,21 @@ const uiStore = useUIStore()
 
 // Hierarchy & Performance Injections
 const isModalPerformance = inject<ComputedRef<boolean> | null>('isModalPerformanceMode', null)
+const isModalTop = inject<ComputedRef<boolean> | null>('isModalTop', null)
 
 /**
  * Determina si este componente está en el modal que el usuario tiene activo en primer plano.
  */
 const isForeground = computed(() => {
-  if (isModalPerformance === null) return false
-  return isModalPerformance.value === false
+  // 1. Prioridad: Flag explícito de jerarquía de modales
+  if (isModalTop !== null) return isModalTop.value
+  
+  // 2. Fallback: Basado en performance (si no es simplificado, asumimos foreground)
+  if (isModalPerformance !== null) {
+    return isModalPerformance.value === false
+  }
+  
+  return false
 })
 
 const isPerformanceActive = computed(() => {

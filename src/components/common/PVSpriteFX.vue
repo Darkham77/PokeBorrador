@@ -57,7 +57,10 @@ const props = defineProps({
   radius: { type: Number, default: 40 },
 
   // Escala absoluta del sprite para el tamaño de las partículas
-  spriteScale: { type: Number, default: 1 }
+  spriteScale: { type: Number, default: 1 },
+
+  // Estado de animación (para inmovilización)
+  animState: { type: String, default: null }
 })
 
 const uiStore = useUIStore()
@@ -132,24 +135,42 @@ const statusEmoji = computed(() => {
     poison: '☠️',
     sleep: '💤',
     paralysis: '⚡',
-    freeze: '🧊'
+    freeze: '❄️'
   }
   return (props.status ? (map as Record<string, string>)[props.status] : null) || null
 })
 
+const activeStatusEffects = computed(() => {
+  if (!props.status || isSimplified.value) return []
+  return [{ type: props.status, emoji: statusEmoji.value }]
+})
+
 // GSAP Logic for particles and persistent effects
-const spriteRef = ref<HTMLElement | null>(null)
+const spriteLayerRef = ref<HTMLElement | null>(null)
 const shinyRef = ref<HTMLElement | null>(null)
 
-const baseScale = computed(() => props.spriteScale * 1.2)
+const baseScale = computed(() => props.spriteScale)
 
 
 const statusAreaRadius = computed(() => props.radius)
 const { initSystem: initShinySystem, killAll: killShinyFX } = useParticleEngine()
 const { initSystem: initStatusSystem, killAll: killStatusFX } = useParticleEngine()
-const { initSystem: initUnifiedSystem, killAll: killUnifiedFX } = useParticleEngine()
 
-let retryCount = 0
+const engines = new Map<string, ReturnType<typeof useParticleEngine>>()
+const activeUnifiedTypes = new Map<string, number>()
+
+const allUnifiedTypes = [
+  'confused', 'cursed', 'attracted', 'seeded', 'trapped', 'ingrained',
+  'protected', 'enduring', 'focus', 'lockon',
+  'reflect', 'lightscreen', 'safeguard', 'mist', 'spikes'
+]
+
+allUnifiedTypes.forEach(type => {
+  engines.set(type, useParticleEngine())
+})
+
+const getEngine = (type: string) => engines.get(type)!
+
 const activeTweens: gsap.core.Tween[] = []
 const persistentTimelines: Record<string, gsap.core.Timeline> = {}
 
@@ -159,44 +180,33 @@ const killAllTimelines = () => {
   activeTweens.length = 0
   killShinyFX()
   killStatusFX()
-  killUnifiedFX()
+  engines.forEach(engine => engine.killAll())
 }
 
-const refreshPersistentFX = () => {
-  if (!spriteRef.value) return
+const refreshPersistentFX = (retryCount = 0) => {
+  if (!spriteLayerRef.value) return
   
-  // Usar nextTick para asegurar que el slot esté renderizado
-  const target = spriteRef.value.querySelector('img')
-  
-  if (props.status) {
-    console.log(`[PVSpriteFX] Persistent FX: status=${props.status}, target=${!!target}`)
-  }
+  // El slot puede tardar un ciclo en estar listo
+  const target = spriteLayerRef.value.querySelector('img')
   
   if (!target && retryCount < 3) {
-    retryCount++
-    setTimeout(refreshPersistentFX, 100)
+    setTimeout(() => refreshPersistentFX(retryCount + 1), 100)
     return
   }
 
-  retryCount = 0
-  
-  // Clean previous
-  if (target) {
-    gsap.killTweensOf(target)
-    gsap.set(target, { clearProps: 'filter,x,y,rotation' })
-  }
-  if (spriteRef.value) {
-    gsap.killTweensOf(spriteRef.value)
-    gsap.set(spriteRef.value, { clearProps: 'filter' })
-  }
-  
+  // 0. Limpiar solo los tweens internos gestionados por este componente
+  // NUNCA usar killTweensOf(target) ni clearProps masivo, 
+  // ya que eso mata las animaciones idle del Pokémon (respiración/flotación).
   activeTweens.forEach(t => t.kill())
   activeTweens.length = 0
   
   if (!target) return
 
-  // 0. Reset previous state
-  gsap.set(target, { clearProps: 'filter,x,y,rotation' })
+  // 0. Reset suave: limpiamos solo lo que ensuciamos, respetando las clases CSS del padre
+  gsap.set(target, { filter: '', x: 0, y: 0, rotation: 0 })
+  gsap.set(spriteLayerRef.value, { filter: '' })
+
+  const isImmobilized = props.status === 'freeze' || props.isTrapped || props.animState === 'catching'
 
   // 1. Cursed Aura (Pulse purple drop-shadow)
   if (props.isCursed) {
@@ -209,8 +219,8 @@ const refreshPersistentFX = () => {
     }))
   }
 
-  // 2. Confused Wobble (Fast jitter)
-  if (props.isConfused) {
+  // 2. Confused Wobble (Fast jitter) - Solo si NO está inmovilizado
+  if (props.isConfused && !isImmobilized) {
     activeTweens.push(gsap.to(target, {
       x: 2,
       rotation: 1,
@@ -273,14 +283,19 @@ const refreshPersistentFX = () => {
     ))
   }
 
-  // 7. Paralyze (Yellow Jitter)
-  if (props.status === 'paralysis') {
+  // 7. Paralyze (Yellow Jitter / Electro-shake) - Solo si NO está inmovilizado
+  const isParaStatus = props.status === 'paralysis' || props.status === 'paralyze' || props.status === '⚡'
+  if (isParaStatus && !isImmobilized) {
+    // Sacudimos tanto el target como el contenedor para máxima visibilidad
     activeTweens.push(gsap.fromTo(target,
-      { filter: 'Drop-Shadow(0 0 2px #ffd700) Brightness(1.2)' },
+      { 
+        filter: 'Drop-Shadow(0 0 2px #ffd700) Brightness(1.2)',
+        x: -3 
+      },
       {
-        filter: 'Drop-Shadow(0 0 8px #ffd700) Brightness(1.4) contrast(1.2)',
-        duration: 0.05,
-        x: 1,
+        filter: 'Drop-Shadow(0 0 10px #ffd700) Brightness(1.5) contrast(1.3)',
+        x: 3,
+        duration: 0.04,
         yoyo: true,
         repeat: -1,
         ease: 'none'
@@ -309,7 +324,7 @@ const refreshPersistentFX = () => {
     ))
   }
 
-  // 10. Aura Guardian (Solo si NO hay estado activo - VFX Integrity Rule)
+  // 10. Aura Guardian (Identidad permanente, coexiste con estados - VFX Integrity Rule)
   if (props.isGuardian && !props.status) {
     const isVibrant = props.vibrant
     const baseFilter = isVibrant 
@@ -319,7 +334,7 @@ const refreshPersistentFX = () => {
       ? 'Drop-Shadow(0 0 40px white) Drop-Shadow(0 0 15px Rgba(255, 255, 255, 0.9))'
       : 'Drop-Shadow(0 0 12px Rgba(255, 255, 255, 0.8))'
 
-    activeTweens.push(gsap.fromTo(spriteRef.value,
+    activeTweens.push(gsap.fromTo(spriteLayerRef.value,
       { filter: baseFilter },
       {
         filter: pulseFilter,
@@ -340,184 +355,129 @@ interface ParticleArea {
 }
 
 interface EffectSettings {
-  offset?: { x: number; y: number }
-  area: ParticleArea
-  activeRange: [number, number]
   shape: 'circle' | 'rect'
-  stagger?: number
-  wobble?: { x: number; rotation: number; duration: number }
+  area: ParticleArea
+  offset: { x: number; y: number }
+  activeRange: [number, number]
+  mult: number
+  useFade: boolean
+  wobble: any
+  stagger: number
+  duration?: number
+  targetOpacity?: number
+  randomizeVars?: boolean | { min: number, max: number }
+  growDuration?: number
 }
 
 /**
  * Centraliza las reglas visuales para todos los efectos de partículas.
  * Esto evita repetir la lógica de offset y área en múltiples motores.
  */
-const resolveEffectSettings = (type: string, ar: number, options: { isField?: boolean } = {}): EffectSettings => {
-  const typeKey = type.toLowerCase().replace('_', '-')
-  const isHeadEffect = typeKey === 'sleep' || typeKey === 'confusion' || typeKey === 'confused' || typeKey === 'dizzy'
-  const isFeetEffect = typeKey.includes('leech') || typeKey.includes('seed') || typeKey.includes('seeded') || typeKey === 'trapped' || typeKey === 'bound' || typeKey.includes('ingrain')
-  const isField = options.isField || false
-  
-  // 1. Cálculo de Offset (Cabeza vs Pies)
-  let offset: { x: number; y: number } | undefined = undefined
-  if (isHeadEffect) offset = { x: 0, y: -ar * 0.75 }
-  else if (isFeetEffect) offset = { x: 0, y: ar * 0.35 } // Un poco más arriba para que la caja respire
-  
-  // 2. Cálculo de Área y Forma
-  const factor = isHeadEffect ? 0.4 : 1.0
-  const maxRadius = isField ? 45 : ar * factor
-  
-  const shape = isFeetEffect ? 'rect' : 'circle'
-  const area: ParticleArea = shape === 'circle' 
-    ? { x: [0, maxRadius] } 
-    : { x: [-40, 40], y: [0, 15] } // Caja plana relativa al centro del offset
-  
-  // 3. Rango de partículas activas según la intensidad del estado
-  let activeRange: [number, number] = [2, 4]
-  if (typeKey === 'reflect') activeRange = [1, 1]
-  else if (typeKey === 'safeguard' || typeKey === 'lightscreen') activeRange = [1, 2]
-  else if (isField) activeRange = [6, 12]
-  else if (typeKey === 'protected' || typeKey === 'enduring' || typeKey === 'focus' || typeKey === 'lockon') activeRange = [1, 1]
-  else if (typeKey === 'burn') activeRange = [8, 12]
-  else if (typeKey === 'poison') activeRange = [2, 4]
-  else if (isHeadEffect) activeRange = [1, 2]
-  
-  // 4. Parámetros estéticos según el tipo de efecto (Wobble y Stagger)
-  let extraSettings: Partial<EffectSettings> = {}
-  
-  switch (type) {
-    case 'confusion':
-    case 'confused':
-      extraSettings = {
-        stagger: 0.4,
-        wobble: { x: 30, rotation: 10, duration: 0.12 }
-      }
-      break
-    case 'attraction':
-    case 'infatuation':
-      extraSettings = {
-        stagger: 0.6,
-        wobble: { x: 15, rotation: 5, duration: 0.4 } // Suave y romántico
-      }
-      break
-    case 'trapped':
-      extraSettings = {
-        stagger: 0.2,
-        wobble: { x: 5, rotation: 0, duration: 0.2 }
-      }
-      break
-    case 'mist':
-      extraSettings = {
-        stagger: 0.1
-      }
-      break
+const resolveEffectSettings = (typeKey: string, ar: number, options: { isField?: boolean } = {}): EffectSettings => {
+  const isField = options.isField || ['reflect', 'lightscreen', 'safeguard', 'mist', 'spikes'].includes(typeKey)
+  const isFeetEffect = ['seed', 'trapped', 'bound', 'ingrain'].includes(typeKey)
+  const isHeadEffect = ['sleep', 'confusion', 'attract', 'confused'].includes(typeKey)
+
+  // 1. Helper para rango dinámico basado en radio
+  const getDynamicRange = (base: [number, number]) => {
+    const ratio = ar / 40
+    const scaleFactor = Math.max(0.15, Math.min(1.5, Math.pow(ratio, 2)))
+    return [
+      Math.max(1, Math.round(base[0] * scaleFactor)),
+      Math.max(1, Math.round(base[1] * scaleFactor))
+    ] as [number, number]
   }
+
+  // 2. CONFIGURACIÓN CENTRALIZADA E INDEPENDIENTE
+  const configs: Record<string, Partial<EffectSettings>> = {
+    burn: { mult: 1.0, activeRange: getDynamicRange([12, 18]), useFade: false, duration: 1.2, randomizeVars: { min: 0.6, max: 2.0 } },
+    freeze: { mult: 0.4, activeRange: getDynamicRange([4, 6]), useFade: false, duration: 3.0 , randomizeVars: { min: 1.0, max: 2.0 } },
+    sleep: { mult: 1.0, activeRange: getDynamicRange([1, 2]), useFade: true, duration: 3.0, randomizeVars: { min: 1.0, max: 2.0 } },
+    paralysis: { mult: 1.0, activeRange: getDynamicRange([6, 10]), useFade: true, duration: 0.3, randomizeVars: { min: 1.0, max: 2.0 } },
+    poison: { mult: 0.8, activeRange: getDynamicRange([4, 6]), useFade: true, duration: 3.0, randomizeVars: { min: 1.0, max: 2.0 } },
+    toxic: { mult: 0.8, activeRange: getDynamicRange([4, 6]), useFade: true, duration: 3.0 },
+    confusion: { mult: 0.8, activeRange: getDynamicRange([1, 2]), useFade: true, wobble: true, duration: 6.0 },
+    confused: { mult: 0.8, activeRange: getDynamicRange([1, 2]), useFade: true, wobble: true, duration: 6.0 },
+    attracted: { mult: 0.8, activeRange: getDynamicRange([4, 6]), useFade: true, duration: 4.0, randomizeVars: { min: 1.0, max: 2.0 } },
+    cursed: { mult: 0.8, activeRange: getDynamicRange([2, 3]), useFade: true, duration: 3.0 },
+    seeded: { mult: 0.8, activeRange: getDynamicRange([6, 10]), useFade: true, duration: 5.0, randomizeVars: true },
+    seed: { mult: 0.8, activeRange: getDynamicRange([6, 10]), useFade: true, duration: 5.0, randomizeVars: true },
+    trapped: { mult: 1.4, activeRange: getDynamicRange([6, 10]), useFade: true, duration: 5.0, growDuration: 0.5, randomizeVars: true },
+    ingrained: { mult: 0.8, activeRange: getDynamicRange([6, 10]), useFade: true, duration: 1.5, randomizeVars: true },
+    
+    // Tactical
+    protected: { mult: 1.0, activeRange: getDynamicRange([4, 6]), useFade: true, duration: 1.5 },
+    enduring: { mult: 1.6, activeRange: getDynamicRange([1, 1]), useFade: false, duration: 1.2, growDuration: 0.3 },
+    focus: { mult: 1.0, activeRange: getDynamicRange([1, 1]), useFade: false, duration: 0.8, growDuration: 0.2 },
+    lockon: { mult: 1.0, activeRange: getDynamicRange([1, 1]), useFade: false, duration: 1.0, growDuration: 0.25 },
+
+    // Field
+    reflect: { mult: 1.5, activeRange: getDynamicRange([1, 1]), useFade: true, duration: 4.0, targetOpacity: 1.0 },
+    safeguard: { mult: 0.5, activeRange: getDynamicRange([1, 3]), useFade: true, duration: 3.0 , targetOpacity: 1.0 },
+    lightscreen: { mult: 1.5, activeRange: getDynamicRange([1, 1]), useFade: true, duration: 3.0, targetOpacity: 1.0 },
+    mist: { mult: 1.5, activeRange: getDynamicRange([14, 20]), useFade: true, duration: 5.0, randomizeVars: { min: 0.6, max: 2.5 }, targetOpacity: 0.9 },
+    spikes: { mult: 0.5, activeRange: getDynamicRange([4, 8]), useFade: true, duration: 2.5 }
+  }
+
+  const base = configs[typeKey] || { 
+    mult: 0.5, 
+    activeRange: getDynamicRange([2, 4]), 
+    useFade: true, 
+    duration: isField ? 3.0 : 1.5 
+  }
+  
+  // 3. Parámetros de Wobble exactos (Martes 12)
+  let wobbleConfig: any = false
+  if (typeKey === 'confusion' || typeKey === 'confused') {
+    wobbleConfig = { x: 30, rotation: 10, duration: 0.12 }
+  } else if (typeKey === 'attract' || typeKey === 'attraction') {
+    wobbleConfig = { x: 15, rotation: 5, duration: 0.4 }
+  } else if (typeKey === 'trapped') {
+    wobbleConfig = { x: 5, rotation: 0, duration: 0.2 }
+  }
+  
+  // 4. Área de dispersión (Órbita perimétrica para no tapar el centro)
+  const isClose = ['burn', 'poison', 'toxic', 'mist'].includes(typeKey)
+  const factor = (typeKey === 'paralysis') ? 1.3 : (isHeadEffect ? 0.4 : (isClose ? 0.7 : 1.0))
+  const maxRadius = isField ? (typeKey === 'mist' ? 25 : 45) : ar * factor
+  
+  const area: ParticleArea = (isFeetEffect) 
+    ? { x: [-40, 40], y: [0, 15] }
+    : { x: [maxRadius * 0.2, maxRadius] }
+
+  // 4. Offset dinámico exacto (Martes 12)
+  let offset: { x: number; y: number } = { x: 0, y: 0 }
+  if (isHeadEffect) offset = { x: 0, y: -ar * 0.75 }
+  else if (isFeetEffect) offset = { x: 0, y: ar * 0.35 }
+
+  const isPrimary = ['burn', 'freeze', 'sleep', 'paralysis', 'poison', 'toxic'].includes(typeKey)
+  const isTactical = ['protected', 'enduring', 'focus', 'lockon'].includes(typeKey)
+  
+  const targetOpacity = base.targetOpacity ?? (isField ? 0.6 : (isTactical ? 1.0 : 1.0))
+  const duration = base.duration || (isField ? 2.0 : (isTactical ? 1.2 : 0.8))
 
   return {
-    offset,
+    shape: isFeetEffect ? 'rect' : 'circle',
     area,
-    activeRange,
-    ...extraSettings,
-    shape
+    offset,
+    activeRange: base.activeRange || [2, 4],
+    mult: base.mult || 0.5,
+    useFade: base.useFade ?? true,
+    wobble: wobbleConfig,
+    stagger: base.stagger || 0,
+    duration,
+    targetOpacity,
+    randomizeVars: base.randomizeVars ?? isPrimary,
+    growDuration: base.growDuration
   }
 }
 
-/**
- * Motor Unificado para Efectos Secundarios, Tácticos y de Campo
- */
-const initUnifiedSystems = () => {
-  if (isSimplified.value) return
-
-  const container = spriteRef.value?.closest('.pv-fx-wrapper')
-  if (!container) return
-
-  const containers = container.querySelectorAll('.secondary-container, .tactical-container, .field-container')
-    containers.forEach(group => {
-      const type = group.getAttribute('data-fx-type') || 'generic'
-      const particles = Array.from(group.querySelectorAll('.status-particle')) as HTMLElement[]
-      if (particles.length === 0) return
-
-      const isTactical = group.classList.contains('tactical-container')
-      const isField = group.classList.contains('field-container')
-      
-      // Tipado dinámico para evitar errores de TS
-      const settings = resolveEffectSettings(type, props.radius, { isField })
-      if (battleStore.debugShowPokeRadius) {
-        console.log(`[FX Debug] Type: ${type} | Shape: ${settings.shape} | Area:`, settings.area)
-      }
-      
-        initUnifiedSystem(particles, {
-        seed: animSeed + type.length,
-        ...settings,
-        createTweens: (el, index, delay) => {
-          const duration = isTactical ? 0.8 : (isField ? 4.0 : 2.0)
-          
-          // Variación de tamaño orgánica (Más agresiva para efectos de campo como la niebla)
-          const randomFactor = isField ? (0.7 + Math.random() * 0.6) : (0.8 + ((index % 4) / 10))
-          const targetScale = baseScale.value * (isField ? 0.35 : 0.25) * randomFactor
-          
-          const finalDelay = delay + (settings.stagger ? (index * settings.stagger) : 0)
-          
-          const birthDuration = duration * 0.4
-          const deathDuration = duration * 0.6
-
-          // 1. TWEEN DE NACIMIENTO (Trayectoria + Fade)
-          const birth = gsap.fromTo(el,
-            { opacity: 0, scale: targetScale, y: '5%', xPercent: -50, yPercent: -50 },
-            {
-              opacity: 1,
-              y: '-15%',
-              duration: birthDuration,
-              repeat: -1,
-              repeatDelay: deathDuration,
-              delay: finalDelay,
-              ease: 'power1.out'
-            }
-          )
-
-          // 2. TWEEN DE MUERTE (Fade Out)
-          const death = gsap.fromTo(el,
-            { opacity: 1, y: '-15%' },
-            {
-              opacity: 0,
-              y: isTactical ? '-15%' : '-30%',
-              duration: deathDuration,
-              repeat: -1,
-              repeatDelay: birthDuration,
-              delay: finalDelay + birthDuration,
-              ease: 'power2.in'
-            }
-          )
-
-          const results: gsap.core.Animation[] = [birth, death]
-
-          // 3. TWEEN DE WOBBLE (Independiente y Rápido)
-          if (settings.wobble) {
-            const w = settings.wobble
-            results.push(gsap.fromTo(el,
-              { xPercent: -50 - w.x, rotation: -w.rotation },
-              {
-                xPercent: -50 + w.x,
-                rotation: w.rotation,
-                duration: w.duration,
-                repeat: -1,
-                yoyo: true,
-                ease: 'sine.inOut'
-              }
-            ))
-          }
-
-          return results
-        }
-      })
-    })
-}
 
 /**
  * Animaciones persistentes para elementos de pantalla (Reflejo / Pantalla Luz)
  */
 const initScreenAuraFX = () => {
-  const container = spriteRef.value?.closest('.pv-fx-wrapper')
+  const container = spriteLayerRef.value?.closest('.pv-fx-wrapper')
   if (!container) return
 
   const screens = container.querySelectorAll('.pv-fx-screen-overlay')
@@ -534,27 +494,26 @@ const initShinyFX = () => {
   if (!shinyRef.value) return
   const sparkles = Array.from(shinyRef.value.querySelectorAll('.sparkle')) as HTMLElement[]
   
-  const shinyRadius = props.radius * 1.25
+  const shinyRadius = props.radius * 1.1
 
   initShinySystem(sparkles, {
     seed: animSeed,
     shape: 'circle',
-    area: { x: [0, shinyRadius] }, // Órbita circular proporcional al tamaño del bicho
-    scaleRange: [baseScale.value * 0.7, baseScale.value * 1.3],
+    area: { x: [0, shinyRadius] },
     onRepeat: (el) => {
       gsap.set(el, { filter: `Drop-Shadow(0 0 2px black) Drop-Shadow(0 0 4px gold)` })
     },
     createTweens: (el, _i, delay) => {
+      const maxScale = baseScale.value * gsap.utils.random(0.3, 0.6) * 0.4
+      const duration = gsap.utils.random(1.0, 1.5)
+
       return [
         gsap.fromTo(el, 
-          { opacity: 0, y: 0, scale: 0, rotation: 0, xPercent: -50, yPercent: -50 },
+          { autoAlpha: 1, opacity: 1, y: 0, scale: 0, rotation: 0, xPercent: -50, yPercent: -50 },
           {
-            autoAlpha: 1,
-            opacity: 1,
-            y: '-12%',
-            scale: 1.2,
+            scale: maxScale,
             rotation: 180,
-            duration: 1.2,
+            duration: duration,
             repeat: -1,
             repeatDelay: 1.3,
             delay,
@@ -562,119 +521,194 @@ const initShinyFX = () => {
           }
         ),
         gsap.to(el, {
-          opacity: 0,
-          y: '-25%',
           scale: 0,
           rotation: 360,
-          duration: 1.3,
+          duration: duration + 0.1,
           repeat: -1,
           repeatDelay: 1.2,
-          delay: delay + 1.2,
+          delay: delay + duration,
         })
       ]
+    }
+  })
+}
+
+const applyGenericParticleSystem = (els: HTMLElement[], typeKey: string, engineInit: Function, options: { isField?: boolean, seed?: number, radius: number }) => {
+  if (!els || els.length === 0) return
+  
+  const settings = resolveEffectSettings(typeKey, options.radius, { isField: options.isField })
+  
+  engineInit(els, {
+    seed: options.seed,
+    ...settings,
+    disableRandomizeOnRepeat: false,
+    createTweens: (el: HTMLElement, index: number, delay: number) => {
+      const finalDelay = delay + (settings.stagger ? (index * settings.stagger) : 0)
+      const tl = gsap.timeline({ repeat: -1, delay: finalDelay, repeatRefresh: true })
+      
+      const totalDur = settings.duration || 0.8
+      const baseGrowDur = settings.growDuration || (totalDur / 2)
+      const baseShrinkDur = totalDur - baseGrowDur
+
+      const growDur = settings.randomizeVars ? () => gsap.utils.random(baseGrowDur * 0.8, baseGrowDur * 1.2) : baseGrowDur
+      const shrinkDur = settings.randomizeVars ? () => gsap.utils.random(baseShrinkDur * 0.8, baseShrinkDur * 1.2) : baseShrinkDur
+      
+      const maxScale = baseScale.value * settings.mult
+
+      // Initial state
+      gsap.set(el, { 
+        opacity: settings.useFade ? 0 : settings.targetOpacity, 
+        y: '10%', 
+        scale: 0.05, 
+        xPercent: -50, 
+        yPercent: -50, 
+        x: 0,
+        imageRendering: 'auto',
+        webkitFontSmoothing: 'none',
+        filter: typeKey === 'freeze' ? 'Drop-Shadow(0 0 8px cyan) Brightness(2)' : 'none'
+      })
+
+      const growScale = settings.randomizeVars 
+        ? () => {
+            const range = typeof settings.randomizeVars === 'object' ? settings.randomizeVars : { min: 0.6, max: 1.3 }
+            return (maxScale * gsap.utils.random(range.min, range.max))
+          } 
+        : maxScale
+      const growEase = settings.growDuration ? 'power4.out' : (typeKey === 'paralysis' ? 'none' : 'sine.inOut')
+      const shrinkEase = settings.growDuration ? 'power1.inOut' : (typeKey === 'paralysis' ? 'none' : 'sine.inOut')
+
+      const growDurVal = typeof growDur === 'function' ? (growDur as any)() : growDur
+      const shrinkDurVal = typeof shrinkDur === 'function' ? (shrinkDur as any)() : shrinkDur
+
+      // Explicit reset at the start of each loop
+      tl.set(el, { 
+        scale: 0.05, 
+        opacity: settings.useFade ? 0 : settings.targetOpacity,
+        xPercent: -50,
+        yPercent: -50,
+        y: '10%'
+      })
+
+      tl.to(el, {
+        opacity: settings.targetOpacity,
+        scale: growScale,
+        duration: growDurVal,
+        ease: growEase
+      })
+      
+      tl.to(el, {
+        scale: 0.05,
+        opacity: settings.useFade ? 0 : settings.targetOpacity,
+        duration: shrinkDurVal,
+        ease: shrinkEase
+      })
+
+      if (settings.wobble && typeof settings.wobble === 'object') {
+        const w = settings.wobble as { x: number, rotation: number, duration: number }
+        gsap.fromTo(el,
+          { xPercent: -50 - w.x, rotation: -w.rotation },
+          { xPercent: -50 + w.x, rotation: w.rotation, duration: w.duration, repeat: -1, yoyo: true, ease: 'sine.inOut' }
+        )
+      }
+      
+      return [tl]
     }
   })
 }
 
 const initParticleAnim = () => {
-  if (isSimplified.value || !statusEmoji.value || !spriteRef.value) return
-  
-  const container = spriteRef.value.closest('.pv-fx-wrapper')
+  if (isSimplified.value || !spriteLayerRef.value) return
+  const container = spriteLayerRef.value.closest('.pv-fx-wrapper')
   if (!container) return
   
-  const isConfusedState = props.status === 'confusion' || props.status === 'confused'
-  const particleEls = (isConfusedState) ? [] : Array.from(
-    container.querySelectorAll('.status-particle:not(.secondary-status)')
-  ) as HTMLElement[]
-  
-  if (particleEls.length === 0) return
-
-  const ar = statusAreaRadius.value
   const statusType = props.status || ''
-  
-  initStatusSystem(particleEls, {
-    seed: animSeed,
-    ...resolveEffectSettings(statusType, ar),
-    createTweens: (el, _i, delay) => {
-      const isPara = statusType === 'paralysis'
-      // Restauración de ritmos originales: Parálisis 0.15s, Fuego 0.6s, Otros 1.5s
-      const duration = isPara ? 0.15 : (statusType === 'burn' ? 0.6 : 1.5)
-      
-      // Variación orgánica: factor de 0.3 a 1.0 para el fuego
-      const randomFactor = statusType === 'burn' ? (0.3 + Math.random() * 0.7) : 1.0
-      const isFreeze = statusType === 'freeze'
-      const statusMultiplier = statusType === 'burn' ? 0.6 : (isFreeze ? 0.8 : 0.3)
-      const targetScale = baseScale.value * statusMultiplier * randomFactor
-      
-      return [
-        // 1. Nacimiento y Ascenso inicial (Rápido)
-        gsap.fromTo(el,
-          { opacity: 0, y: '10%', scale: 0, xPercent: -50, yPercent: -50, x: 0 },
-          {
-            opacity: 1,
-            y: isPara ? '0%' : '-10%',
-            x: isPara ? () => (Math.random() - 0.5) * 10 : 0, // Jitter eléctrico
-            scale: targetScale,
-            duration: isPara ? 0.05 : duration,
-            repeat: -1,
-            repeatDelay: isPara ? 0.1 : duration,
-            delay,
-            ease: isPara ? 'none' : 'power1.out',
-            onStart: () => {
-               gsap.set(el, { 
-                 imageRendering: 'auto',
-                 webkitFontSmoothing: 'none',
-                 filter: statusType === 'burn' ? 'none' : (statusType === 'freeze' ? 'Drop-Shadow(0 0 8px cyan) Brightness(2)' : 'none')
-               })
-            }
-          }
-        ),
-        // 2. Muerte y Desvanecimiento
-        gsap.to(el, {
-          opacity: 0,
-          y: isPara ? '0%' : '-30%',
-          scale: isPara ? targetScale : targetScale * 0.5,
-          filter: statusType === 'freeze' ? 'Drop-Shadow(0 0 6px cyan) Brightness(1.5)' : undefined,
-          duration: isPara ? 0.05 : duration,
-          repeat: -1,
-          repeatDelay: isPara ? 0.1 : duration,
-          delay: delay + (isPara ? 0.1 : duration),
-          ease: isPara ? 'none' : 'power1.in'
-        })
-      ]
+  if (statusEmoji.value && !['confusion', 'confused'].includes(statusType)) {
+    const els = Array.from(container.querySelectorAll('.status-particle:not(.secondary-status):not(.tactical-status):not(.field-status)')) as HTMLElement[]
+    applyGenericParticleSystem(els, statusType, initStatusSystem, { radius: statusAreaRadius.value, seed: animSeed })
+  }
+}
+
+const syncUnifiedSystems = (forceReset = false) => {
+  if (forceReset) {
+    activeUnifiedTypes.forEach((_, type) => getEngine(type).killAll())
+    activeUnifiedTypes.clear()
+  }
+
+  if (isSimplified.value || !spriteLayerRef.value) {
+    activeUnifiedTypes.forEach((_, type) => getEngine(type).killAll())
+    activeUnifiedTypes.clear()
+    return
+  }
+
+  const container = spriteLayerRef.value.closest('.pv-fx-wrapper')
+  if (!container) return
+
+  const allActiveFX = [
+    ...secondaryEffects.value.map(fx => ({ ...fx, category: 'secondary-container', isField: false })),
+    ...tacticalEffects.value.map(fx => ({ ...fx, category: 'tactical-container', isField: false })),
+    ...fieldEffects.value.map(fx => ({ ...fx, category: 'field-container', isField: true }))
+  ]
+
+  const currentTypes = allActiveFX.map(fx => fx.type)
+
+  // 1. Matar solo los efectos que ya no están activos
+  for (const type of activeUnifiedTypes.keys()) {
+    if (!currentTypes.includes(type)) {
+      getEngine(type).killAll()
+      activeUnifiedTypes.delete(type)
+    }
+  }
+
+  // 2. Inicializar efectos nuevos o con cambio de cantidad
+  allActiveFX.forEach(fx => {
+    const els = Array.from(container.querySelectorAll(`.pv-fx-status-overlay.${fx.category}.fx-type-${fx.type} .status-particle`)) as HTMLElement[]
+    const currentCount = activeUnifiedTypes.get(fx.type)
+
+    if (currentCount === undefined || currentCount !== els.length) {
+      activeUnifiedTypes.set(fx.type, els.length)
+      applyGenericParticleSystem(els, fx.type, getEngine(fx.type).initSystem, { radius: props.radius, seed: animSeed, isField: fx.isField })
     }
   })
 }
 
-
-
-
-
 // --- VIGILANCIA AUTOMATIZADA DE ESTADOS ---
+
 /**
- * En lugar de vigilar cada prop a mano, vigilamos los computados que ya filtran los estados activos.
- * Si se añade un nuevo estado a las listas de arriba, este watch lo detectará automáticamente.
+ * Reinicio total de sistemas visuales
  */
+const initAllFX = () => {
+  killAllTimelines()
+  initParticleAnim()
+  syncUnifiedSystems(true)
+  refreshPersistentFX()
+  initScreenAuraFX()
+  initShinyFX()
+}
+
+// Vigilancia de estados críticos (Requieren reinicio inmediato y total)
 watch([
   () => props.status,
-  () => props.radius,
   () => props.isShiny,
   () => props.isGuardian,
   () => props.pokeId,
-  isSimplified,
-  secondaryEffects, // Vigilancia automática de estados secundarios
-  tacticalEffects,  // Vigilancia automática de estados tácticos
-  fieldEffects      // Vigilancia automática de efectos de campo
+  isSimplified
 ], () => {
   nextTick(() => {
-    killAllTimelines()
-    initParticleAnim()
-    initUnifiedSystems()
-    refreshPersistentFX()
-    initScreenAuraFX()
-    initShinyFX()
+    initAllFX()
   })
 }, { deep: true, immediate: true })
+
+// Vigilancia inteligente de arrays secundarios (No reinician todo el componente)
+watch([
+  secondaryEffects,
+  tacticalEffects,
+  fieldEffects
+], () => {
+  nextTick(() => {
+    syncUnifiedSystems(false)
+    refreshPersistentFX()
+  })
+}, { deep: true })
 
 // --- SISTEMA DE DEBUG VISUAL AUTOMATIZADO ---
 const allActiveFXDebug = computed(() => {
@@ -731,20 +765,14 @@ const allActiveFXDebug = computed(() => {
 })
 
 const shinyDebug = computed(() => {
-  if (!battleStore.debugShowFxRadius || !props.isShiny) return null
-  const radius = props.radius * 1.25
-  const size = radius * 2
+  if (!battleStore.debugShowPokeRadius || !props.isShiny) return null
+  const size = props.radius * 2
   return {
     style: {
       width: `${size}%`,
       height: `${size}%`,
-      top: '50%',
-      left: '50%',
-      borderRadius: '50%',
-      borderColor: '#ffd700',
-      borderStyle: 'dashed',
-      borderWidth: '2px',
-      background: 'rgba(255, 215, 0, 0.25)'
+      borderColor: 'gold',
+      color: 'gold'
     },
     label: 'SHINY (circle)'
   }
@@ -757,9 +785,8 @@ const shinyDebug = computed(() => {
     :class="wrapperClasses"
     :style="{ '--fx-seed': animSeed, '--fx-radius': radius }"
   >
-    <!-- Capa de Sprite con efectos persistentes (Aura Guardian) -->
     <div 
-      ref="spriteRef"
+      ref="spriteLayerRef"
       class="pv-fx-sprite-layer"
       :class="{ 
         'is-guardian': isGuardian && !status && !isSimplified,
@@ -767,41 +794,15 @@ const shinyDebug = computed(() => {
         'is-freeze': status === 'freeze' && !isSimplified
       }"
     >
-      <slot />
+      <slot>
+        <!-- Fallback por si no pasan slot (Oculto por defecto para evitar broken images) -->
+        <img v-if="metadata.spriteUrl" :src="metadata.spriteUrl" class="pokemon-sprite-internal" />
+      </slot>
     </div>
 
-    <!-- GUIAS DE DEBUG (Solo visibles con VITE_DEBUG_ACTIVE) -->
-    <div 
-      v-if="battleStore.debugShowPokeRadius" 
-      class="debug-guide debug-poke-radius" 
-      :style="{ width: (props.radius * 2) + '%', height: (props.radius * 2) + '%', borderRadius: '50%' }"
-    >
-      <span class="label">POKE (Radius: {{ props.radius.toFixed(0) }}%)</span>
-    </div>
-
-    <div 
-      v-for="debug in allActiveFXDebug"
-      :key="'debug-'+debug.id"
-      class="debug-guide debug-fx-radius" 
-      :style="debug.style"
-    >
-      <span class="label">{{ debug.label }}</span>
-    </div>
-
-    <div 
-      v-if="shinyDebug" 
-      class="debug-guide" 
-      :style="shinyDebug.style"
-    >
-      <span
-        class="label"
-        style="background: gold; color: black; border-color: gold;"
-      >{{ shinyDebug.label }}</span>
-    </div>
-
-    <!-- BRILLOS SHINY (DISPONIBLES SI NO ESTÁ SIMPLIFICADO O ES FOREGROUND) -->
+    <!-- BRILLOS SHINY (SE MUESTRAN SI ESTÁ HABILITADO, IGNORANDO MODO SIMPLIFICADO) -->
     <div
-      v-if="isShiny && !isSimplified"
+      v-if="isShiny && props.enabled"
       ref="shinyRef"
       class="pv-fx-shiny-overlay"
       data-fx-type="shiny"
@@ -813,19 +814,25 @@ const shinyDebug = computed(() => {
       />
     </div>
 
-    <!-- Capa de Partículas de Estado -->
-    <div 
+    <!-- 1. Capas de Partículas de Estado (Quemado, Veneno, etc) -->
+    <div
+      v-for="fx in activeStatusEffects"
+      :key="'status-'+fx.type"
       class="pv-fx-status-overlay"
-      :style="{ display: (statusEmoji && !isSimplified) ? 'block' : 'none' }"
+      :class="'fx-type-' + fx.type"
+      :data-fx-type="fx.type"
     >
-      <span 
-        v-for="i in 12" 
-        :key="'status-'+i" 
-        class="status-particle"
-        :class="{ 'is-freeze': status === 'freeze' }"
+      <div
+        v-if="battleStore.debugShowFxRadius"
+        class="fx-debug-label"
       >
-        {{ status === 'freeze' ? '' : statusEmoji }}
-      </span>
+        {{ fx.emoji }} {{ fx.type.toUpperCase() }} ({{ resolveEffectSettings(fx.type, props.radius).shape }})
+      </div>
+      <span
+        v-for="n in 24"
+        :key="n"
+        class="status-particle"
+      >{{ fx.emoji }}</span>
     </div>
 
     <!-- 2. Capas de Partículas Secundarias (Confusión, Atracción, etc) -->
@@ -835,16 +842,15 @@ const shinyDebug = computed(() => {
       class="pv-fx-status-overlay secondary-container"
       :class="'fx-type-' + fx.type"
       :data-fx-type="fx.type"
-      :style="{ display: !isSimplified ? 'block' : 'none' }"
     >
       <div
-        v-if="battleStore.debugShowPokeRadius"
+        v-if="battleStore.debugShowFxRadius"
         class="fx-debug-label"
       >
         {{ fx.emoji }} {{ fx.type.toUpperCase() }} ({{ resolveEffectSettings(fx.type, props.radius).shape }})
       </div>
       <span
-        v-for="i in (fx.type === 'confusion' || fx.type === 'confused' ? 2 : 4)"
+        v-for="i in resolveEffectSettings(fx.type, props.radius).activeRange[1]"
         :key="i"
         class="status-particle secondary-status"
       >
@@ -880,21 +886,44 @@ const shinyDebug = computed(() => {
       :style="{ display: !isSimplified ? 'block' : 'none' }"
     >
       <span
-        v-for="i in resolveEffectSettings(fx.type, props.radius, { isField: true }).activeRange[1]"
+        v-for="i in 8"
         :key="i"
         class="status-particle field-status"
       >{{ fx.emoji }}</span>
     </div>
 
-    <!-- Capas de Caparazones Tácticos (Grandes envolventes) -->
-    <div
-      v-if="hasReflect && !isSimplified"
-      class="pv-fx-screen-overlay reflect"
-    />
-    <div
-      v-if="hasLightScreen && !isSimplified"
-      class="pv-fx-screen-overlay light-screen"
-    />
+    <!-- GUÍAS DE DEBUG (INDependientes y precisas) -->
+    <template v-if="battleStore.debugShowPokeRadius">
+      <div 
+        class="debug-guide debug-poke-radius"
+        :style="{ width: (props.radius * 2) + '%', height: (props.radius * 2) + '%' }"
+      >
+        <span class="label">POKE (Radius: {{ props.radius.toFixed(1) }}%)</span>
+      </div>
+
+      <div 
+        v-if="shinyDebug" 
+        class="debug-guide" 
+        :style="shinyDebug.style"
+      >
+        <span
+          class="label"
+          style="background: gold; color: black; border-color: gold;"
+        >{{ shinyDebug.label }}</span>
+      </div>
+    </template>
+
+    <!-- 6. Sistema de Debug Visual (Para todos los estados activos) -->
+    <template v-if="battleStore.debugShowFxRadius">
+      <div 
+        v-for="fx in allActiveFXDebug"
+        :key="fx.id"
+        class="debug-guide debug-fx-radius"
+        :style="fx.style"
+      >
+        <span class="label">{{ fx.label }}</span>
+      </div>
+    </template>
 
     <slot name="overlay" />
   </div>
@@ -905,6 +934,13 @@ const shinyDebug = computed(() => {
 
 // Los estilos base vienen del core/fx.scss
 // Aquí solo añadimos ajustes específicos de layout si fuera necesario
+.pv-sprite-internal {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+}
+
 .pv-fx-wrapper {
   width: fit-content;
   height: fit-content;
@@ -913,6 +949,15 @@ const shinyDebug = computed(() => {
   align-items: center;
   justify-content: center;
   @include pixelated;
+}
+
+.pv-fx-sprite-layer {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: calc(var(--z-map-spawns, 10) + 2);
+  will-change: transform, filter, opacity;
 }
 
 .pv-fx-screen-overlay {
@@ -954,11 +999,32 @@ const shinyDebug = computed(() => {
   }
 }
 
+.pv-fx-shiny-overlay {
+  .sparkle {
+    animation: none !important;
+  }
+}
+
+.sparkle,
 .status-particle {
+  position: absolute;
+  font-size: 32px !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif;
+  -webkit-font-smoothing: none;
+  -moz-osx-font-smoothing: unset;
+  font-smooth: never;
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
   transform: Scale(0);
+  /* Fix para el bug del color negro: Forzar capa 3D */
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+  perspective: 1000px;
 }
 
 /* --- DEBUG GUIDES --- */
@@ -968,7 +1034,9 @@ const shinyDebug = computed(() => {
   left: 50%;
   transform: Translate(-50%, -50%);
   border: 1px dashed;
+  border-radius: 50%;
   pointer-events: none;
+  user-select: none;
   z-index: 9999;
   display: flex;
   align-items: center;

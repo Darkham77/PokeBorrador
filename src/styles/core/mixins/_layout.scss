@@ -50,9 +50,6 @@
   
   // Core pixel font mapping
   font-family: var(--font-pixel, 'Press Start 2P'), 'Arial', sans-serif !important;
-  
-  // Force integer pixel rendering
-  transform: Translatez(0); 
 }
 
 @mixin tooltip-premium {

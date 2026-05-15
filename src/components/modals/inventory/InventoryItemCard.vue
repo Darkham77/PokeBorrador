@@ -234,15 +234,16 @@ const itemIcon = computed(() => {
 
     .quantity-pill {
       position: absolute;
-      bottom: 0;
-      right: 0;
+      bottom: -4px; // Anchored to the bottom edge
+      left: 50%;
+      transform: Translatex(-50%); // Centered horizontally
       display: flex;
       align-items: center;
       gap: 1px;
       background: Linear-Gradient(135deg, #1e293b, #0f172a);
-      border: 1px solid Rgba(255, 255, 255, 0.15);
-      padding: 2px 6px;
-      border-radius: 8px;
+      border: 1px solid var(--yellow); // Match high-contrast standard
+      padding: 1px 6px;
+      border-radius: 6px;
       box-shadow: 0 4px 10px Rgba(0, 0, 0, 0.4);
       z-index: var(--z-low);
 
@@ -267,13 +268,18 @@ const itemIcon = computed(() => {
     border-top: 1px solid Rgba(255, 255, 255, 0.05);
 
     .item-name {
-      display: block;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
       @include pixelated;
       font-size: 7px;
+      line-height: 1.3;
       color: Rgba(255, 255, 255, 0.9);
-      white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      height: 2.6em; // Reserved space for 2 lines to maintain grid symmetry
+      word-break: break-word;
+      white-space: normal; // Ensure wrapping is enabled
     }
   }
 

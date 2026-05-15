@@ -240,7 +240,7 @@ const handleUseItem = (item: BattleItem) => {
   position: absolute;
   bottom: -8px; // Pegado al borde inferior del contenedor
   left: 50%;
-  transform: Translatex(-50%); // Centrado horizontalmente
+  transform: Translatex(-50%); // Centrado horizontalmente (lowercase for safety)
   background: Rgba(0, 0, 0, 0.85);
   border: 1px solid var(--yellow);
   color: white;
@@ -251,6 +251,7 @@ const handleUseItem = (item: BattleItem) => {
   text-shadow: 1px 1px 0px black;
   z-index: var(--z-low);
   white-space: nowrap;
+  width: max-content;
 }
 
 .empty-bag-overlay {

@@ -9,6 +9,7 @@ const props = defineProps({
 
 // Provide the performance state to all children (BaseModal, PokemonDisplayCard, etc.)
 provide('isModalPerformanceMode', toRef(props, 'isSimplified'))
+provide('isModalTop', toRef(props, 'isTop'))
 </script>
 
 <template>
