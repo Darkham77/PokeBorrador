@@ -279,7 +279,7 @@ const handleRetry = () => {
           </feMerge>
         </filter>
 
-        <filter id="pixel-outline-optimized-2px">
+        <filter id="pixel-outline-optimized-3px">
           <feMorphology
             in="SourceAlpha"
             result="expanded"

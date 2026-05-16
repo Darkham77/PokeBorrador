@@ -1,10 +1,22 @@
-# Dockerfile - Poké Vicio Database
-# Esta imagen contiene el motor de Supabase y el esquema del juego pre-instalado.
-
+# Dockerfile - Poké Vicio Database (CLEAN START)
 FROM supabase/postgres:15.1.0.147
 
-# Copiamos los esquemas y las migraciones al directorio de inicialización estándar de Postgres
-COPY ./database/schemas /docker-entrypoint-initdb.d/
-COPY ./database/migrations /docker-entrypoint-initdb.d/
+# 1. LIMPIEZA RADICAL DE LA IMAGEN BASE
+# Borramos los scripts de inicialización que trae Supabase por defecto 
+# para evitar que corra 'migrate.sh' y de errores de socket/permisos.
+USER root
+RUN rm -rf /docker-entrypoint-initdb.d/*
 
-# El resto de la configuración se hereda de la imagen base de Supabase.
+# 2. Infraestructura de Supabase (Nuestros Cimientos)
+COPY ./supabase/scripts/init/*.sql /docker-entrypoint-initdb.d/
+
+# 3. Lógica del Juego (Estructura y Evolución)
+COPY ./database/schemas /game-schemas/
+COPY ./database/migrations /migrations/
+
+# 4. Orquestador
+COPY ./supabase/scripts/setup.sh /usr/local/bin/setup-system.sh
+RUN chmod +x /usr/local/bin/setup-system.sh
+
+# Volvemos al usuario postgres por seguridad
+USER postgres

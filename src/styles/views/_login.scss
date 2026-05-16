@@ -1,6 +1,7 @@
 @use "@/styles/core/tools" as *;
 
 #auth-screen {
+  @include smooth;
   position: fixed !important;
   inset: 0;
   z-index: var(--z-hud);
@@ -39,8 +40,8 @@
   border: 1px solid Rgba(255, 255, 255, 0.12);
   box-shadow: 0 20px 80px Rgba(0, 0, 0, 0.6);
   background: Rgba(15, 15, 18, 0.75);
-  backdrop-filter: Blur(12px);
   -webkit-backdrop-filter: Blur(12px);
+  backdrop-filter: Blur(12px);
   padding-top: 50px; // Espacio extra para el logo que se superpone
   
   -webkit-will-change: opacity, transform;
@@ -60,11 +61,15 @@
   align-items: center;
 
   img {
+    @include smooth;
+    image-rendering: auto !important;
     width: 280px;
     max-width: 85dvw;
     height: auto;
     filter: Drop-Shadow(0 10px 20px Rgba(0, 0, 0, 0.4)) Drop-Shadow(0 0 15px Rgba(255, 255, 255, 0.1));
-    @include pixelated;
+    pointer-events: none;
+    -webkit-user-select: none;
+    user-select: none;
     transition: width 0.3s ease;
   }
 }

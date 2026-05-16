@@ -3,6 +3,8 @@ import { computed, ref, onUnmounted } from 'vue'
 import { gsap } from 'gsap'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
+import { FIRE_RED_MAPS } from '@/data/maps'
+
 interface Props {
   locationId?: string
   layer: 'back' | 'front'
@@ -20,8 +22,17 @@ const props = withDefaults(defineProps<Props>(), {
   forceBehind: false
 })
 
+const isRock = computed(() => {
+  const map = FIRE_RED_MAPS.find(m => m.id === props.locationId)
+  if (!map) return false
+  // Según requerimiento: isMountain, isCave, isArctic, isVolcanic, isUrban (aunque Urban no esté en maps.ts actual, se incluye por robustez)
+  return !!((map as any).isMountain || (map as any).isCave || (map as any).isArctic || (map as any).isVolcanic || (map as any).isUrban)
+})
 
 const grassUrl = computed(() => {
+  if (isRock.value) {
+    return getAssetUrl(ASSET_TYPES.ENVIRONMENT, 'rock')
+  }
   // Intentar cargar pasto específico de la ruta, si no, usar el genérico tall-grass
   const id = props.locationId ? `${props.locationId}_tallgrass` : 'tall-grass'
   return getAssetUrl(ASSET_TYPES.ENVIRONMENT, id)
@@ -29,8 +40,10 @@ const grassUrl = computed(() => {
 
 const handleImageError = (e: Event) => {
   const target = e.target as HTMLImageElement
-  // Si falla el específico, forzar el genérico
-  if (target.src.includes('_tallgrass')) {
+  // Si falla el específico, forzar el genérico (según si es roca o pasto)
+  if (isRock.value) {
+    target.src = getAssetUrl(ASSET_TYPES.ENVIRONMENT, 'rock')
+  } else if (target.src.includes('_tallgrass')) {
     target.src = getAssetUrl(ASSET_TYPES.ENVIRONMENT, 'tall-grass')
   } else {
     target.style.display = 'none' 
@@ -45,6 +58,7 @@ interface BushConfig {
   ty: number
   ad: string
   ay: string
+  randomScale?: number // Cache random scale
 }
 
 // Configuraciones de los arbustos para mantener consistencia visual absoluta
@@ -63,7 +77,15 @@ const bushes: Record<'front' | 'back', BushConfig[]> = {
   ]
 }
 
-const activeBushes = computed(() => bushes[props.layer])
+const activeBushes = computed(() => {
+  const baseBushes = bushes[props.layer]
+  // Inyectar factor aleatorio determinista por ruta e ID para evitar jitter
+  return baseBushes.map(b => {
+    const seed = (b.id * 17 + (props.locationId?.length || 0) * 13) % 100
+    const randomFactor = 0.85 + (seed / 100) * 0.3 // 0.85 a 1.15
+    return { ...b, randomScale: b.scale * randomFactor }
+  })
+})
 const bushRefs = ref<HTMLElement[]>([])
 const wiggleTweens: gsap.core.Tween[] = []
 
@@ -101,6 +123,8 @@ const onLeave = (el: Element, done: () => void) => {
 
 const startWiggles = () => {
   stopWiggles()
+  if (isRock.value) return // Las rocas son estáticas
+
   bushRefs.value.forEach((el, i) => {
     if (!el) return
     const img = el.querySelector('img')
@@ -155,7 +179,7 @@ onUnmounted(() => {
           class="bush-wrapper"
           :class="b.cls"
           :style="{
-            transform: `Translate(calc(${b.tx} * var(--obj-scale) * 1px), calc(${b.ty} * var(--obj-scale) * 1px)) Scale(${b.scale})`
+            transform: `Translate(calc(${b.tx} * var(--obj-scale) * 1px), calc(${b.ty} * var(--obj-scale) * 1px)) Scale(${b.randomScale})`
           }"
         >
           <img 

@@ -4,7 +4,7 @@ import { gsap } from 'gsap'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import PokemonTypePills from '@/components/shared/PokemonTypePills.vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
-import { STATUS_TOOLTIP_MAP, STAT_EMOJI_MAP, STATUS_EMOJI_MAP } from '@/logic/battle/battleUiUtils'
+import { STATUS_TOOLTIP_MAP, STAT_EMOJI_MAP, STATUS_EMOJI_MAP, STATUS_NAME_MAP } from '@/logic/battle/battleUiUtils'
 import { useBattleStore } from '@/stores/battle'
 import { useProfileStore } from '@/stores/profile'
 import { getMechanicalWeather, WEATHER_MECHANICAL, WEATHER_UI_METADATA, WEATHER_VISUAL_METADATA, type WeatherMechanical } from '@/logic/weather/weatherRegistry'
@@ -337,7 +337,7 @@ const unifiedStatuses = computed<StatusIndicator[]>(() => {
     list.push({
       id: `primary-${s}`,
       emoji: (STATUS_EMOJI_MAP as Record<string, string>)[s] || '❓',
-      title: s.toUpperCase(),
+      title: (STATUS_NAME_MAP as Record<string, string>)[s] || s.toUpperCase(),
       description: (STATUS_TOOLTIP_MAP as Record<string, string>)[s] || s,
       count: s === 'sleep' ? p.value.sleepTurns : undefined,
       class: s

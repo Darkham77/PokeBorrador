@@ -5,7 +5,7 @@
 DO $$
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'supabase_admin') THEN
-        CREATE ROLE supabase_admin WITH NOINHERIT CREATEROLE LOGIN NOREPLICATION PASSWORD 'postgres';
+        CREATE ROLE supabase_admin WITH SUPERUSER NOINHERIT CREATEROLE LOGIN NOREPLICATION PASSWORD 'postgres';
     END IF;
     
     IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'authenticator') THEN
@@ -25,7 +25,7 @@ BEGIN
     END IF;
 
     IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'supabase_auth_admin') THEN
-        CREATE ROLE supabase_auth_admin WITH NOINHERIT LOGIN PASSWORD 'postgres';
+        CREATE ROLE supabase_auth_admin WITH SUPERUSER NOINHERIT LOGIN PASSWORD 'postgres';
     END IF;
 
     IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'supabase_storage_admin') THEN

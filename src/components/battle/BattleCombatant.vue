@@ -898,7 +898,9 @@ const onBallLeave = (el: Element, done: () => void) => {
             :data-tf="s.tf"
             :data-scale="s.scale"
             :data-delay="s.delay"
-          >✨</span>
+          >
+            <img :src="getAssetUrl(ASSET_TYPES.ENVIRONMENT, 'shiny')" class="shiny-asset-mini" alt="Sparkle">
+          </span>
         </TransitionGroup>
       </div>
     </Transition>
@@ -1094,9 +1096,18 @@ const onBallLeave = (el: Element, done: () => void) => {
     display: block;
     font-size: calc(var(--obj-scale, 1) * 12px);
     @include pixelated;
-    text-shadow: 0 0 5px Rgba(255, 215, 0, 0.8);
     will-change: transform, filter, opacity;
-  filter: Drop-Shadow(0 0 2px white);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    .shiny-asset-mini {
+      width: 24px;
+      height: 24px;
+      object-fit: contain;
+      filter: sepia(1) Saturate(12) hue-rotate(-15deg) Brightness(1.1);
+      @include pixelated;
+    }
   }
 }
 

@@ -22,6 +22,15 @@ export const STATUS_SHORT_LABEL_MAP = {
   freeze: 'FRZ'
 }
 
+export const STATUS_NAME_MAP = {
+  burn: 'QUEMADURA',
+  poison: 'VENENO',
+  sleep: 'SUEÑO',
+  paralysis: 'PARÁLISIS',
+  paralyze: 'PARÁLISIS',
+  freeze: 'CONGELACIÓN'
+}
+
 export const STATUS_TOOLTIP_MAP = {
   burn: 'QUEMADO: Pierde 1/8 HP por turno y su Ataque Físico se reduce al 50%.',
   poison: 'ENVENENADO: Pierde 1/8 HP por turno.',

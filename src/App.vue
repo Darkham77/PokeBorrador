@@ -341,12 +341,12 @@ const onLoadingLeave = (el: Element, done: () => void) => {
           </feMerge>
         </filter>
 
-        <filter id="pixel-outline-optimized-2px">
+        <filter id="pixel-outline-optimized-3px">
           <feMorphology
             in="SourceAlpha"
             result="expanded"
             operator="dilate"
-            radius="2"
+            radius="3"
           />
           <feFlood
             flood-color="black"
@@ -361,6 +361,29 @@ const onLoadingLeave = (el: Element, done: () => void) => {
           <feGaussianBlur
             in="outline-raw"
             stdDeviation="0.5"
+            result="outline"
+          />
+          <feMerge>
+            <feMergeNode in="outline" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
+
+        <filter id="pixel-outline-ice">
+          <feMorphology
+            in="SourceAlpha"
+            result="expanded"
+            operator="dilate"
+            radius="8"
+          />
+          <feFlood
+            flood-color="#e0ffff"
+            result="ice-color"
+          />
+          <feComposite
+            in="ice-color"
+            in2="expanded"
+            operator="in"
             result="outline"
           />
           <feMerge>

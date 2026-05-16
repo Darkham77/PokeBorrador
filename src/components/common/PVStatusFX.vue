@@ -7,6 +7,7 @@
 import { onUnmounted, watch, nextTick, ref } from 'vue'
 import { gsap } from 'gsap'
 import { useParticleEngine, type ParticleSystemOptions } from '@/composables/useParticleEngine'
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { resolveEffectSettings } from '@/data/fx-configs'
 import { Z_LAYERS } from '@/logic/constants/visuals'
 
@@ -251,7 +252,10 @@ onUnmounted(() => {
         :key="i"
         class="status-particle secondary-status"
       >
-        <span :class="{ 'wobble-content': fx.type === 'confusion' || fx.type === 'confused' }">
+        <span v-if="fx.type === 'shiny'" class="shiny-asset-wrapper">
+          <img :src="getAssetUrl(ASSET_TYPES.ENVIRONMENT, 'shiny')" class="shiny-asset" alt="Shiny">
+        </span>
+        <span v-else :class="{ 'wobble-content': fx.type === 'confusion' || fx.type === 'confused' }">
           {{ fx.emoji }}
         </span>
       </span>
@@ -319,5 +323,22 @@ onUnmounted(() => {
   transform-style: preserve-3d;
   backface-visibility: hidden;
   perspective: 1000px;
+}
+
+.shiny-asset-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.shiny-asset {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  // Tintado amarillo: Sepia + Saturación alta + Rotación de hue para llegar al amarillo/dorado
+  filter: sepia(1) Saturate(12) hue-rotate(-15deg) Brightness(1.1);
+  @include pixelated;
 }
 </style>

@@ -45,7 +45,7 @@ export const resolveEffectSettings = (typeKey: string, ar: number, options: { is
     
     // Reducción extra para miniaturas (fuera de batalla o modo simplificado)
     if (typeKey === 'shiny' && (options.isSimplified || !options.isBattle)) {
-      scaleFactor *= 0.4
+      scaleFactor *= 0.3
     }
 
     return [
@@ -144,7 +144,7 @@ export const resolveEffectSettings = (typeKey: string, ar: number, options: { is
 
   // Ajustes finales dinámicos para Shiny
   if (typeKey === 'shiny' && (options.isSimplified || !options.isBattle)) {
-    result.mult = 0.2
+    result.mult = 0.35
   } else if (typeKey === 'shiny') {
     result.mult = 0.45
   }

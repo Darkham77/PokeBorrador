@@ -163,7 +163,7 @@ El proyecto utiliza un motor de auditoría inteligente y validadores semánticos
 
 ```bash
 npm run dev               # Inicia el entorno de desarrollo (Vite)
-npm run type-check         # Verificación estricta de tipos TypeScript
+npm run validate:types         # Verificación estricta de tipos TypeScript
 npm run test               # Unit tests de UI y componentes (Vitest)
 npm run build              # Compilación para producción
 npm run assets:download    # Descarga sprites y recursos externos (Gen 1-9, Items, Trainers)
@@ -204,7 +204,7 @@ npm run assets:download -- --trainers   # Solo entrenadores
 Procesa todas las imágenes de `_raw-assets`, las convierte a WebP y las espeja en la estructura del proyecto:
 
 ```bash
-npm run convert-assets
+npm run assets:convert
 ```
 
 > [!TIP] El script detecta automáticamente si un asset es Pixel Art (basado en carpetas como `sprites/` o `icons/`) para aplicar compresión **Lossless**. Para el resto, aplica una calidad adaptativa basada en la resolución.
@@ -267,7 +267,7 @@ Para mantener la calidad y el orden del código, es una excelente práctica real
 El proyecto usa un sistema de espejado (mirroring) para optimizar imágenes automáticamente a WebP sin intervención manual pesada.
 
 - **Ubicación**: Coloca tus assets originales en `_raw-assets/`. La estructura debe ser idéntica a la del proyecto (ej: `_raw-assets/public/assets/maps/`).
-- **Compilación**: Ejecutá `npm run convert-assets`. El script procesará todo:
+- **Compilación**: Ejecutá `npm run assets:convert`. El script procesará todo:
   - **Conversión**: Todo se transforma a `.webp`.
   - **Pixel Art Safety**: Si el archivo está en carpetas de `sprites`, `icons`, `badges` o `items`, se usa **Lossless** para mantener la nitidez.
   - **Smart Quality**: Para imágenes grandes (> 250px), aplica una ligera compresión lossy para optimizar la carga inicial.

@@ -1,54 +1,91 @@
 #!/bin/bash
-
-# SETUP SCRIPT - SUPABASE POKÉ VICIO
-# Este script prepara el entorno para levantar Supabase con Docker.
-
+# =============================================================
+# POKÉ VICIO - STANDARDS COMPLIANT ORCHESTRATOR
+# Respeta la separación entre SCHEMAS y MIGRATIONS.
+# =============================================================
 set -e
 
-echo "🚀 Iniciando configuración del servidor Supabase para Poké Vicio..."
+echo "🛠️ Esperando a que el motor de DB en 'db:5432' esté listo..."
+until psql -h db -U postgres -d postgres -c 'SELECT 1' > /dev/null 2>&1; do
+  sleep 2
+done
 
-# 1. Crear .env si no existe
-if [ ! -f .env ]; then
-    echo "📄 Creando archivo .env desde la plantilla..."
-    cp .env.example .env
-    
-    # Generar contraseñas aleatorias
-    DB_PASS=$(openssl rand -base64 18 | tr -dc 'a-zA-Z0-9' | head -c 20)
-    JWT_SEC=$(openssl rand -base64 32 | tr -dc 'a-zA-Z0-9' | head -c 40)
-    
-    sed -i "s/POSTGRES_PASSWORD=super-secret-password-pokevicio/POSTGRES_PASSWORD=$DB_PASS/" .env
-    sed -i "s/JWT_SECRET=super-secret-jwt-token-must-be-long-and-random-77/JWT_SECRET=$JWT_SEC/" .env
-    
-    echo "🔑 Contraseñas generadas y guardadas en .env"
-    
-    # Generar LLaves JWT
-    if command -v node > /dev/null; then
-        echo "🛠️ Generando llaves JWT con Node..."
-        KEYS=$(node scripts/generate-keys.js "$JWT_SEC")
-        ANON_KEY=$(echo "$KEYS" | grep "ANON_KEY=" | cut -d'=' -f2)
-        SERVICE_KEY=$(echo "$KEYS" | grep "SERVICE_ROLE_KEY=" | cut -d'=' -f2)
-        
-        sed -i "s|ANON_KEY=.*|ANON_KEY=$ANON_KEY|" .env
-        sed -i "s|SERVICE_ROLE_KEY=.*|SERVICE_ROLE_KEY=$SERVICE_KEY|" .env
-        
-        echo "✅ Llaves JWT integradas en .env"
-    else
-        echo "⚠️ Node.js no detectado. Deberás generar las llaves manualmente o usar las por defecto."
-    fi
-else
-    echo "✅ El archivo .env ya existe. No se realizaron cambios."
-fi
+# --- 1. CONFIGURACIÓN DE INFRAESTRUCTURA ---
+echo "📁 Generando configuración de Kong..."
+mkdir -p /etc/kong/declarative
+cat <<EOF > /etc/kong/declarative/kong.yml
+_format_version: '1.1'
+services:
+  - name: auth
+    url: http://gotrue:9999
+    routes:
+      - name: auth
+        paths: [/auth/v1]
+        strip_path: true
+  - name: rest
+    url: http://postgrest:3000
+    routes:
+      - name: rest
+        paths: [/rest/v1]
+        strip_path: true
+  - name: realtime
+    url: http://realtime:4000
+    routes:
+      - name: realtime
+        paths: [/realtime/v1]
+        strip_path: true
+plugins:
+  - name: cors
+    config:
+      origins: ['*']
+      methods: [GET, POST, PUT, PATCH, DELETE, OPTIONS]
+      headers: [Accept, Accept-Language, Content-Language, Content-Type, Authorization, apikey, x-client-info]
+      exposed_headers: [Content-Range, X-Total-Count]
+  - name: key-auth
+    config:
+      key_names: [apikey]
+consumers:
+  - username: anon
+    keyauth_credentials:
+      - key: ${ANON_KEY}
+  - username: service_role
+    keyauth_credentials:
+      - key: ${SERVICE_ROLE_KEY}
+EOF
 
-# 2. Asegurar directorios de volúmenes
-echo "📁 Asegurando directorios de volúmenes..."
-mkdir -p volumes/db/data volumes/db/conf volumes/storage volumes/functions
+# --- 1. SINCRONIZAR SEGURIDAD BASE ---
+echo "🔑 Sincronizando seguridad base..."
+for role in supabase_admin supabase_auth_admin supabase_storage_admin authenticator; do
+  echo "  → Sincronizando contraseña y privilegios para: $role"
+  psql -h db -U postgres -d postgres -c "ALTER ROLE $role WITH SUPERUSER PASSWORD '${POSTGRES_PASSWORD}';"
+done
+echo "  ✓ Seguridad base sincronizada."
 
-# 3. Permisos
-chmod +x scripts/*.sh
+# --- 2. ESPERAR A SUPABASE AUTH (Crucial para auth.users) ---
+echo "⏳ Esperando a que Supabase Auth cree la tabla 'auth.users'..."
+until psql -h db -U postgres -d postgres -tAc "SELECT 1 FROM information_schema.tables WHERE table_schema = 'auth' AND table_name = 'users'" | grep -q 1; do
+  sleep 2
+done
+echo "  ✓ Tabla 'auth.users' detectada."
 
-echo ""
-echo "----------------------------------------------------------------"
-echo "✅ Configuración lista."
-echo "Para iniciar el servidor, ejecuta: docker-compose up -d"
-echo "Luego, para cargar las tablas, ejecuta: ./scripts/init-db.sh"
-echo "----------------------------------------------------------------"
+# --- 3. APLICAR ESQUEMAS DEL JUEGO (database/schemas) ---
+echo "🏛️ Aplicando Esquemas del Juego (Folder: schemas)..."
+for filepath in $(ls /game-schemas/*.sql | sort); do
+  echo "  → Esquema: $(basename "$filepath")"
+  psql -h db -U postgres -d postgres -f "$filepath"
+done
+
+# --- 4. APLICAR MIGRACIONES (database/migrations) ---
+echo "📋 Aplicando Migraciones (Folder: migrations)..."
+psql -h db -U postgres -d postgres -c "CREATE TABLE IF NOT EXISTS public._applied_migrations (filename TEXT PRIMARY KEY, applied_at TIMESTAMPTZ DEFAULT NOW());"
+for filepath in $(ls /migrations/*.sql | sort); do
+  filename=$(basename "$filepath")
+  already=$(psql -h db -U postgres -d postgres -tAc "SELECT 1 FROM public._applied_migrations WHERE filename='$filename'")
+  if [ "$already" != "1" ]; then
+    echo "  → Migración: $filename"
+    psql -h db -U postgres -d postgres -f "$filepath"
+    psql -h db -U postgres -d postgres -c "INSERT INTO public._applied_migrations (filename) VALUES ('$filename');"
+  fi
+done
+
+echo "✅ SISTEMA TOTALMENTE CONFIGURADO Y SINCRONIZADO."

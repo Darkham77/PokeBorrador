@@ -14,7 +14,7 @@
 
 // LEGACY: Usar pokemon-outline-optimized() para 1px
 @function pokemon-outline-2px($color: $darker) {
-  @return url(#pixel-outline-optimized-2px);
+  @return url(#pixel-outline-optimized-3px);
 }
 
 @function pokemon-outline-performance($color: $darker) {
@@ -22,7 +22,7 @@
 }
 
 @function pokemon-outline-optimized() {
-  @return url(#pixel-outline-optimized-2px);
+  @return url(#pixel-outline-optimized-3px);
 }
 
 @function pokemon-silhouette-optimized() {

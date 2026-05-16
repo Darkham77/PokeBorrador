@@ -149,8 +149,8 @@ const refreshPersistentFX = (retryCount = 0) => {
   }
   if (props.status === 'burn') {
     activeTweens.push(gsap.fromTo(target, 
-      { filter: 'Drop-Shadow(0 0 5px #ff4500) Brightness(1) Saturate(1.2)' },
-      { filter: 'Drop-Shadow(0 0 15px #ff8c00) Brightness(1.3) Saturate(1.8)', duration: 1, yoyo: true, repeat: -1, ease: 'sine.inOut' }
+      { filter: 'Drop-Shadow(0 0 25px #ff4500) Brightness(1) Saturate(1.2)' },
+      { filter: 'Drop-Shadow(0 0 40px #ff8c00) Brightness(1.4) Saturate(2.2)', duration: 1, yoyo: true, repeat: -1, ease: 'sine.inOut' }
     ))
   }
   if (props.status === 'poison') {
@@ -163,7 +163,9 @@ const refreshPersistentFX = (retryCount = 0) => {
     activeTweens.push(gsap.fromTo(target, { filter: 'Drop-Shadow(0 0 2px #ffd700) Brightness(1.2)', x: -3 }, { filter: 'Drop-Shadow(0 0 10px #ffd700) Brightness(1.5) contrast(1.3)', x: 3, duration: 0.04, yoyo: true, repeat: -1, ease: 'none' }))
   }
   if (props.status === 'freeze') {
-    activeTweens.push(gsap.set(target, { filter: 'Drop-Shadow(0 0 20px #00ffff) Brightness(1.6) contrast(0.7) Saturate(0.3)' }))
+    activeTweens.push(gsap.set(target, { 
+      filter: 'Brightness(1.6) contrast(0.7) Saturate(0.3) url(#pixel-outline-ice) Drop-Shadow(0 0 20px #00ffff)' 
+    }))
   }
   if (props.status === 'sleep') {
     activeTweens.push(gsap.fromTo(target, { filter: 'Brightness(1) Saturate(1)' }, { filter: 'Brightness(0.5) contrast(0.8) Saturate(0.5)', duration: 2, yoyo: true, repeat: -1, ease: 'sine.inOut' }))

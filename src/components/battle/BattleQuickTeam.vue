@@ -32,7 +32,6 @@ const handleSwitch = (index: number) => {
         :index="index"
         :is-selected="pokemon.uid === activePokemonUid"
         :hide-stats="true"
-        is-performance-mode
         type-pill-size="ssm"
         class="quick-card-override"
         :class="{ 

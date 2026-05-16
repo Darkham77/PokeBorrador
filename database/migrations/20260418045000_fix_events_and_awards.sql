@@ -6,4 +6,4 @@
 
 -- 3. Update DB version tracking
 UPDATE system_config SET value = '20260418045000' WHERE key = 'db_version';
-INSERT OR IGNORE INTO _migrations (id) VALUES ('20260418045000_fix_events_and_awards');
+INSERT INTO _migrations (id) VALUES ('20260418045000_fix_events_and_awards') ON CONFLICT (id) DO NOTHING;

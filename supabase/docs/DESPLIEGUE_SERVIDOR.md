@@ -55,9 +55,39 @@ Para evitar que Auth o PostgREST fallen al arrancar:
 
 ---
 
+## 🔒 Generación de Seguridad
+
+No utilices valores aleatorios simples para las llaves de API. Deben ser tokens JWT válidos firmados con tu `JWT_SECRET`.
+
+### 1. Generar JWT_SECRET (Llave Maestra)
+
+Usa OpenSSL para generar una cadena aleatoria fuerte:
+
+```bash
+openssl rand -base64 32
+```
+
+### 2. Generar ANON_KEY y SERVICE_ROLE_KEY
+
+Ejecuta estos comandos en tu terminal (reemplazando `TU_SECRET` por el resultado del paso anterior):
+
+**Para ANON_KEY:**
+
+```bash
+node -e "const s='TU_SECRET'; const p=Buffer.from(JSON.stringify({role:'anon',iss:'supabase',iat:Math.floor(Date.now()/1000)})).toString('base64url'); const h=Buffer.from(JSON.stringify({alg:'HS256',typ:'JWT'})).toString('base64url'); console.log(h+'.'+p+'.'+require('crypto').createHmac('sha256',s).update(h+'.'+p).digest('base64url'))"
+```
+
+**Para SERVICE_ROLE_KEY:**
+
+```bash
+node -e "const s='TU_SECRET'; const p=Buffer.from(JSON.stringify({role:'service_role',iss:'supabase',iat:Math.floor(Date.now()/1000)})).toString('base64url'); const h=Buffer.from(JSON.stringify({alg:'HS256',typ:'JWT'})).toString('base64url'); console.log(h+'.'+p+'.'+require('crypto').createHmac('sha256',s).update(h+'.'+p).digest('base64url'))"
+```
+
+---
+
 ## 🚀 Guía de Arranque Rápido
 
-1. Asegúrate de que el `.env` tiene las claves correctas.
+1. Asegúrate de que el `.env` tiene las claves generadas en el paso anterior.
 2. Ejecuta `docker-compose up -d`.
 3. Monitoriza el migrador: `docker logs -f supabase-db-migrator-pokevicio`.
 4. Solo cuando veas el check de éxito (`✅`), los demás servicios serán visibles.
