@@ -899,7 +899,11 @@ const onBallLeave = (el: Element, done: () => void) => {
             :data-scale="s.scale"
             :data-delay="s.delay"
           >
-            <img :src="getAssetUrl(ASSET_TYPES.ENVIRONMENT, 'shiny')" class="shiny-asset-mini" alt="Sparkle">
+            <img
+              :src="getAssetUrl(ASSET_TYPES.ENVIRONMENT, 'shiny')"
+              class="shiny-asset-mini"
+              alt="Sparkle"
+            >
           </span>
         </TransitionGroup>
       </div>

@@ -115,7 +115,7 @@ export const POKEMON_AESTHETICS = {
   fearow: { floating: true },
   zubat: { floating: true },
   golbat: { floating: true },
-  geodude: { floating: true },
+  geodude: { floating: false },
   magnemite: { floating: true },
   magneton: { floating: true },
   gastly: { floating: true },

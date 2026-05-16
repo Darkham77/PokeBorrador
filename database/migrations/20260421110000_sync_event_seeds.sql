@@ -1,7 +1,7 @@
 -- database/migrations/20260421110000_sync_event_seeds.sql
 
 -- 1. Nuclear repair: Drop and recreate with CASCADE to handle dependencies
-DROP TABLE IF EXISTS events_config CASCADE;
+DROP TABLE IF EXISTS events_config;
 
 CREATE TABLE events_config (
     id TEXT PRIMARY KEY,

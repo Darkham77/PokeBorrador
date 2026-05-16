@@ -22,11 +22,18 @@ const props = withDefaults(defineProps<Props>(), {
   forceBehind: false
 })
 
+interface MapTerrainData {
+  isMountain?: boolean
+  isCave?: boolean
+  isArctic?: boolean
+  isVolcanic?: boolean
+  isUrban?: boolean
+}
+
 const isRock = computed(() => {
-  const map = FIRE_RED_MAPS.find(m => m.id === props.locationId)
+  const map = FIRE_RED_MAPS.find(m => m.id === props.locationId) as MapTerrainData | undefined
   if (!map) return false
-  // Según requerimiento: isMountain, isCave, isArctic, isVolcanic, isUrban (aunque Urban no esté en maps.ts actual, se incluye por robustez)
-  return !!((map as any).isMountain || (map as any).isCave || (map as any).isArctic || (map as any).isVolcanic || (map as any).isUrban)
+  return !!(map.isMountain || map.isCave || map.isArctic || map.isVolcanic || map.isUrban)
 })
 
 const grassUrl = computed(() => {
@@ -77,15 +84,28 @@ const bushes: Record<'front' | 'back', BushConfig[]> = {
   ]
 }
 
+// Semilla aleatoria real para que cada encuentro sea único (según requerimiento del usuario)
+const sessionSeed = Math.floor(Math.random() * 1000000)
+
 const activeBushes = computed(() => {
   const baseBushes = bushes[props.layer]
-  // Inyectar factor aleatorio determinista por ruta e ID para evitar jitter
+  
   return baseBushes.map(b => {
-    const seed = (b.id * 17 + (props.locationId?.length || 0) * 13) % 100
-    const randomFactor = 0.85 + (seed / 100) * 0.3 // 0.85 a 1.15
-    return { ...b, randomScale: b.scale * randomFactor }
+    // Combinar semilla de la sesión con ID del arbusto para varianza extrema
+    const bushSeed = (sessionSeed ^ (b.id * 1313)) 
+    const scaleFactor = 0.7 + (Math.abs(bushSeed % 70) / 100) + (b.id * 0.1) 
+    const flip = (bushSeed % 2 === 0) ? -1 : 1
+    const offsetX = (bushSeed % 20) - 10 
+    
+    return { 
+      ...b, 
+      randomScale: scaleFactor,
+      flip,
+      offsetX
+    }
   })
 })
+
 const bushRefs = ref<HTMLElement[]>([])
 const wiggleTweens: gsap.core.Tween[] = []
 
@@ -179,7 +199,7 @@ onUnmounted(() => {
           class="bush-wrapper"
           :class="b.cls"
           :style="{
-            transform: `Translate(calc(${b.tx} * var(--obj-scale) * 1px), calc(${b.ty} * var(--obj-scale) * 1px)) Scale(${b.randomScale})`
+            transform: `Translate(calc((${b.tx} + ${b.offsetX}) * var(--obj-scale) * 1px), calc(${b.ty} * var(--obj-scale) * 1px)) Scale(${b.randomScale * b.flip}, ${b.randomScale})`
           }"
         >
           <img 

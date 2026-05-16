@@ -252,10 +252,20 @@ onUnmounted(() => {
         :key="i"
         class="status-particle secondary-status"
       >
-        <span v-if="fx.type === 'shiny'" class="shiny-asset-wrapper">
-          <img :src="getAssetUrl(ASSET_TYPES.ENVIRONMENT, 'shiny')" class="shiny-asset" alt="Shiny">
+        <span
+          v-if="fx.type === 'shiny'"
+          class="shiny-asset-wrapper"
+        >
+          <img
+            :src="getAssetUrl(ASSET_TYPES.ENVIRONMENT, 'shiny')"
+            class="shiny-asset"
+            alt="Shiny"
+          >
         </span>
-        <span v-else :class="{ 'wobble-content': fx.type === 'confusion' || fx.type === 'confused' }">
+        <span
+          v-else
+          :class="{ 'wobble-content': fx.type === 'confusion' || fx.type === 'confused' }"
+        >
           {{ fx.emoji }}
         </span>
       </span>

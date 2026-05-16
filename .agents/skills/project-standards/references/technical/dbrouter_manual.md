@@ -80,3 +80,12 @@ The router's `isLocal` property acts as the trigger for this privilege escalatio
 // Standard pattern for debug permission verification
 const isAdmin = computed(() => profileStore.isAdmin || db.isLocal);
 ```
+
+---
+
+## 🏛️ SQL Compatibility (SQLite)
+
+To ensure the local developer engine remains in parity with the production cloud engine:
+
+- **Forbidden Syntax**: NEVER use the `CASCADE` keyword in `DROP TABLE` or `DROP VIEW` statements, as SQLite does not support it and will fail during migration validation (`npm run validate:sql`).
+- **Idempotency**: Use `IF EXISTS` to prevent errors during re-runs of seed scripts.

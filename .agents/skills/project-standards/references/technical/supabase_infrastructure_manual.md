@@ -54,4 +54,12 @@ The client performs a "permissive ping" to verify server availability.
 ## 🚨 Maintenance Rules
 
 - **Schema Changes**: To update the database schema, add a new `.sql` file to `supabase/migrations`. The `db-migrator` will apply it on the next restart.
-- **Image Bloat**: Periodically run `docker system prune` to clear old build stages from the custom DB image.
+
+---
+
+## 🏗️ NAS & Postgres 15 Deployment (Qnap/Synology)
+
+When deploying to a restricted NAS environment using Postgres 15+:
+
+- **Superuser Mandate**: Postgres 15 introduces stricter schema ownership rules. During initialization, you MUST grant `SUPERUSER` to the core Supabase roles (`supabase_admin`, `authenticator`) to ensure migrations can bypass permission deadlocks on the `public` schema.
+- **Healthcheck Jitter**: Increase the `interval` and `retries` for the `db` healthcheck to accommodate lower CPU priority on NAS background tasks.

@@ -63,6 +63,8 @@ Consult these manuals for detailed implementation specifications:
 - **Sprite Standard**: Use `@include sprite-render` for all game assets.
 - **Organic Feel (UPR/OVR)**: All atmospheric effects MUST use the **Universal Parallax Rule** (seed-based CSS transforms) and the **Organic Variability Rule** (randomized GSAP speeds via `animSeed`). This ensures that no two maps have the same visual weather rhythm.
 - **VFX Integrity**: To avoid visual contamination, status effects (Burn, Poison, etc.) MUST override persistent auras (Guardian, Shiny) instead of being superimposed. Use mutually exclusive `if/else if` chains in FX logic.
+- **GSAP Filter Order**: When animating multiple filters in `PVSpriteFX`, the application order matters. Lighting filters (`Brightness`, `Contrast`) MUST be applied BEFORE outline or glow filters (`feMorphology`, `Drop-Shadow`) to prevent the effect from becoming washed out or losing sharpness.
+- **Organic Terrain Variation**: Combat terrain (`CombatGrass.vue`) MUST be unique for every encounter. A new random seed MUST be generated at the start of each battle to inject variations in scale (0.7x to 1.5x), horizontal flip, and small offsets, avoiding monotonous visual repetition.
 - **Tactical Status Standardization**: Tactical states (Protect, Endure, etc.) MUST be represented by unique, solid, high-visibility icons. Avoid using multiple dispersed particles for tactical states, as those are strictly reserved for altered statuses (Burn, Poison, etc.).
 - **Filter Cleanup Mandate**: Temporary visual effects (flashes, pulses) MUST use GSAP's `onComplete` with `clearProps: "filter"` to ensure no residual 0px filters remain as base layers.
 - **Nuclear Reset Pattern**: When resetting complex CSS filter stacks, always include the `filter` property itself in `clearProps` alongside custom variables (e.g., `--fx-main-glow`) to ensure a clean browser state. Avoid applying `filter` or `Drop-Shadow` to parent containers of sprites that have their own internal FX system (`PVSpriteFX`) to prevent cumulative color pollution.
@@ -81,6 +83,7 @@ Consult these manuals for detailed implementation specifications:
 
 - **Zero-Invention**: Reuse `BaseModal`, `UnifiedCard`, and global mixins before creating ad-hoc styles.
 - **Centralized Formatters**: All numeric formatting logic (currency, large numbers, suffixes) MUST be centralized in `src/logic/utils/formatters.ts`. Direct use of `toLocaleString()` in components for currency is deprecated in favor of `formatCurrency()`.
+- **Combat Status Localization**: Names for altered status effects (BURN, POISON, etc.) MUST be centralized in the Spanish `STATUS_NAME_MAP` within combat utilities. The use of literal strings for status names in UI components is strictly forbidden.
 - **Modal Lifecycle**: Synchronize performance mode with modal transitions.
 - **Import Hygiene**: When implementing cross-component signals (e.g., calling `loadingStore` from a View), ALWAYS verify the import is present. Missing imports in lifecycle hooks (`onMounted`) are a primary cause of initialization deadlocks.
 - **Engine Signaling (Loading Gate)**: Signal "App Mounted" only after the primary Vue views have finished mounting (`onMounted`). The loading veil MUST use `v-if` to be completely purged from the DOM after initialization, preventing blocking layers or performance issues.

@@ -398,4 +398,23 @@ For full-screen wallpapers or map backgrounds where vertical visibility is prior
 
 - **Rule**: Use `background-size: auto 100%` and `background-position: center`.
 - **Result**: Ensures the image is always **vertically complete** (no clipping at top/bottom) while allowing horizontal "growth" (expanding/cropping) to fill the width.
-- **Fallback**: If black bars are unacceptable for the specific use case, revert to `background-size: cover` to prioritize width coverage.
+
+### 11. High-Fidelity Combat Outlines (SVG Filters)
+
+For battle sprites, standard 2px/3px outlines may be too thin. Specialized status effects (like Freeze) MUST use dedicated SVG filters to maintain pixel-art sharpness at larger scales.
+
+- **Standard**: Use `#pixel-outline-ice` or similar filters with `feMorphology`.
+- **Radius**: Battle status outlines should use a **8px radius** to ensure high visibility and a "premium" feel.
+- **Sharpness**: Avoid `feGaussianBlur` in these filters to preserve a strict pixelated look.
+
+```xml
+<filter id="pixel-outline-ice">
+  <feMorphology in="SourceAlpha" operator="dilate" radius="8" />
+  <feFlood flood-color="#e0ffff" result="ice-color" />
+  <feComposite in="ice-color" operator="in" />
+  <feMerge>
+    <feMergeNode />
+    <feMergeNode in="SourceGraphic" />
+  </feMerge>
+</filter>
+```
