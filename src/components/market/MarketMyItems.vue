@@ -7,6 +7,7 @@ import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import PokemonSelectionItem from '@/components/modals/PokemonSelectionItem.vue'
 import type { Pokemon } from '@/types/pokemon'
 import { formatDisplayDate } from '@/logic/timeUtils'
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
 const gtsStore = useGTSStore()
 
@@ -83,15 +84,21 @@ const formatTime = formatDisplayDate
           </template>
           <div 
             v-else
-            class="my-listing-card-legacy"
+            class="my-listing-item-card"
           >
-            <!-- Legacy item display if needed, but mostly focused on pokemon -->
             <div class="card-visual">
-              <span class="i-icon">📦</span>
+              <img 
+                :src="getAssetUrl(ASSET_TYPES.ITEM, item.data.name || '')" 
+                class="i-sprite pixelated"
+                @error="(e: Event) => (e.target as HTMLImageElement).src = getAssetUrl(ASSET_TYPES.ITEM, 'Poción')"
+              >
             </div>
             <div class="card-info">
               <span class="name">{{ item.data.name }}</span>
-              <span class="price">₽{{ formatCurrency(item.price) }}</span>
+              <div class="i-meta">
+                <span class="qty">CANTIDAD: x{{ item.data.qty || 1 }}</span>
+                <span class="price">₽{{ formatCurrency(item.price) }}</span>
+              </div>
             </div>
             <button
               class="btn-vicio-danger btn-vicio-sm"
@@ -202,32 +209,28 @@ const formatTime = formatDisplayDate
       font-size: 16px;
       color: $coin-gold;
     }
-
-    .price-tag {
-      @include pixelated;
-      font-size: 16px;
-      color: $coin-gold;
-    }
   }
 }
 
-.my-listing-card-legacy {
-  @include shop-item-card($yellow);
+.my-listing-item-card {
+  padding: 15px;
+  display: flex;
   flex-direction: row;
   align-items: center;
   gap: 15px;
   width: 100%;
+  box-sizing: border-box;
 
   .card-visual {
     width: 48px;
     height: 48px;
     background: Rgba(0, 0, 0, 0.2);
-    border-radius: 10px;
+    border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    .i-icon { font-size: 20px; }
+    .i-sprite { width: 36px; height: 36px; object-fit: contain; }
   }
 
   .card-info {
@@ -235,8 +238,14 @@ const formatTime = formatDisplayDate
     display: flex;
     flex-direction: column;
     min-width: 0;
-    .name { font-size: 13px; font-weight: bold; color: var(--white); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .price { @include pixelated; font-size: 8px; color: $coin-gold; margin-top: 4px;}
+    .name { font-size: 13px; font-weight: bold; color: var(--white); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px; }
+    .i-meta {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      .qty { @include pixelated; font-size: 8px; color: $muted; }
+      .price { @include pixelated; font-size: 11px; color: $coin-gold; }
+    }
   }
 }
 

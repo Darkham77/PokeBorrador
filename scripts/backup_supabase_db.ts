@@ -226,7 +226,7 @@ export async function backupSupabaseDb() {
 
     } catch (dbErr: unknown) {
       console.error(styleText('red', `❌ Error al conectar o respaldar la base de datos de [${profile}]: ${(dbErr as Error).message}`));
-      try { await sql.end(); } catch {}
+      try { await sql.end(); } catch { /* ignore */ }
     }
   }
 }

@@ -51,19 +51,27 @@ function getPokemonTotalPower(p: Pokemon) {
   return TOT + totalIvs
 }
 
+const itemQty = ref(1)
+
 async function handlePublish() {
   if (!selection.value || price.value < 1) return
   
-  const success = await gtsStore.publishListing(activeMode.value, selection.value, price.value)
+  const publishData = activeMode.value === 'item' && 'qty' in selection.value
+    ? { name: selection.value.name, qty: itemQty.value }
+    : selection.value
+
+  const success = await gtsStore.publishListing(activeMode.value, publishData, price.value)
   if (success) {
     selection.value = null
     price.value = 1000
+    itemQty.value = 1
     // Optional: emit event to parent to switch tab
   }
 }
 
 function selectItem(item: Pokemon | InventoryItem) {
   selection.value = item
+  if ('qty' in item) { itemQty.value = 1 }
   // Suggest a default price?
 }
 
@@ -161,6 +169,20 @@ const net = computed(() => price.value - fee.value)
           <div class="selected-summary">
             <span class="label">VAS A VENDER:</span>
             <span class="val">{{ selection.name }}</span>
+          </div>
+
+          <div
+            v-if="activeMode === 'item' && selection && 'qty' in selection"
+            class="input-group"
+          >
+            <label>CANTIDAD (MÁX: {{ selection.qty }})</label>
+            <input 
+              v-model.number="itemQty" 
+              type="number" 
+              min="1"
+              :max="selection.qty"
+              class="price-input"
+            >
           </div>
 
           <div class="input-group">

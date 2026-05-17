@@ -186,7 +186,7 @@ export const useGTSStore = defineStore('gts', () => {
 
       const { data: _listingId, error } = await game.db.rpc('publish_listing_v2', {
         p_listing_type: type,
-        p_asset_data: type === 'pokemon' ? selection : { name: (selection as { name: string }).name, qty: 1 },
+        p_asset_data: type === 'pokemon' ? selection : { name: (selection as { name: string }).name, qty: (selection as { qty: number }).qty },
         p_price: Math.floor(price)
       })
 

@@ -41,6 +41,14 @@ If the destination is a deployment configuration (e.g., `docker-compose.yml` or 
 
 **NEVER** include, mix, or expose variables belonging to one server profile in the configuration or deployment of another. Isolation must be absolute.
 
+### Rule 5: Intelligent Dual Resolution (Profile Name vs Canonical ID)
+
+When developing CLI tools or automation scripts that accept a `--server` argument, implement an intelligent fallback mechanism. If the provided argument does not match a direct profile prefix (e.g., `cloud`), search the parsed configurations to see if the argument matches any profile's canonical `ID` property (e.g., `SERVER_cloud_ID=official-prod`). This ensures seamless developer ergonomics whether invoking by profile name or canonical ID.
+
+### Rule 6: Proactive Credential Placeholder Detection
+
+In automated infrastructure scripts (such as database migrations or backup generators), proactively check if the resolved credentials contain placeholder strings (e.g., `cloud_pass_placeholder`). If detected, gracefully bypass connection attempts and log a clear, informative warning to the user, preventing fatal runtime crashes or network timeouts.
+
 ## 3. Implementation Patterns & Use Cases
 
 ### A. Generating Local Server-Specific `.env` Files

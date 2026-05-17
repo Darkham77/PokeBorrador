@@ -282,7 +282,7 @@ export async function restoreSupabaseDb() {
   } catch (restErr: unknown) {
     console.error(styleText('red', `\n❌ Error fatal durante la restauración en [${profile}]: ${(restErr as Error).message}`));
     console.error(styleText('yellow', `🔄 La transacción ha sido revertida (ROLLBACK automático). La base de datos mantiene su estado anterior.`));
-    try { await sql.end(); } catch {}
+    try { await sql.end(); } catch { /* ignore */ }
     process.exit(1);
   }
 }

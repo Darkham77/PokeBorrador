@@ -24,6 +24,10 @@ It is MANDATORY to run the full verification chain before reporting a task as co
 
 > **Note**: Do not skip steps. High-fidelity web games require absolute build integrity.
 
+### Strict ESLint Compliance Rules
+
+- **Intent Comments in Empty Catch Blocks**: To comply with strict ESLint rules (`no-empty`), always include an explicit comment of intention (e.g., `catch { /* ignore */ }`) inside empty catch blocks designed to silence benign errors. Never leave a catch block completely empty.
+
 ### Python
 
 1. **Lint (Ruff):** Execute `ruff check "path" --fix`

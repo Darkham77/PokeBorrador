@@ -221,9 +221,10 @@ export async function updateSupabaseDb() {
           }
 
           let sqlContent = migContent;
-          // Adaptar dialecto SQLite a Postgres para manipulación de texto sobre columnas TIMESTAMPTZ
+          // Adaptar dialecto SQLite a Postgres para manipulación de texto sobre columnas TIMESTAMPTZ y dependencias CASCADE
           sqlContent = sqlContent.replace(/created_at NOT LIKE/g, "CAST(created_at AS TEXT) NOT LIKE");
           sqlContent = sqlContent.replace(/SET created_at = REPLACE\(created_at, ' ', 'T'\) \|\| 'Z'/g, "SET created_at = CAST(REPLACE(CAST(created_at AS TEXT), ' ', 'T') || 'Z' AS TIMESTAMPTZ)");
+          sqlContent = sqlContent.replace(/DROP TABLE IF EXISTS events_config;/g, "DROP TABLE IF EXISTS events_config CASCADE;");
 
           try {
             await sql.begin(async (tx) => {

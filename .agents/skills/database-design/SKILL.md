@@ -50,6 +50,7 @@ When modifying the database in a project with a local engine:
 
 - **Forced Sync**: To update an existing local SQLite database, always add a new SQL migration to `database/migrations/` and run the build script to regenerate the internal migrations data.
 - **Casing Parity**: SQLite column names MUST match the casing and property names of the JavaScript payloads (e.g., camelCase vs snake_case) to avoid insertion errors during property mapping.
+- **Dynamic In-Memory SQL Dialect Translation**: To maintain compatibility between local offline validation engines (which execute migrations against SQLite) and advanced remote execution (Postgres), preserve pure SQLite syntax in the `.sql` migration files on disk. In the automated migration runners, intercept and dynamically translate incompatible statements in memory (e.g., adding `CASCADE` to `DROP TABLE` or casting text dates to `TIMESTAMPTZ`) before executing them on Postgres.
 
 ---
 
