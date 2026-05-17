@@ -46,6 +46,7 @@ Consult these manuals for detailed implementation specifications:
 
 - **Legacy Migration Hub**: [legacy_migration_manual.md](./references/migration/legacy_migration_manual.md)
 - **DB Technical Notes**: [references/migration/](./references/migration/)
+- **SQLite Migration PL/pgSQL Sanitization**: Client-side SQLite WASM engines do not support PG PL/pgSQL constructs like `DROP FUNCTION` or `CREATE FUNCTION`. The SQL translator MUST intercept and strip these statements (e.g. in `sqlTranslator.ts`) to allow seamless offline schema upgrades.
 
 ---
 

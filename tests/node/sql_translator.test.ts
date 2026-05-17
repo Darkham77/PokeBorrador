@@ -15,4 +15,10 @@ describe('SQL Translator Logic (Native Node.js 26+ Test)', () => {
     assert.ok(output.includes('TEXT DEFAULT'));
     assert.ok(output.includes("datetime('now')"));
   });
+
+  test('should skip PostgreSQL-only DROP FUNCTION statements', () => {
+    const input = 'DROP FUNCTION IF EXISTS cancel_listing_v2(UUID)';
+    const output = translatePostgresToSqlite(input);
+    assert.strictEqual(output, '');
+  });
 });
