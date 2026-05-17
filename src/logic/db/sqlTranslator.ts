@@ -98,6 +98,7 @@ export function translatePostgresToSqlite(sql: string): string {
   const skipPatterns = [
     'CREATE FUNCTION',
     'CREATE OR REPLACE FUNCTION',
+    'DROP FUNCTION',
     'DO $$',
     'CREATE POLICY',
     'DROP POLICY',

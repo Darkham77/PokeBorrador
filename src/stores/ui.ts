@@ -122,6 +122,10 @@ export const useUIStore = defineStore('ui', () => {
     else modalStore.open('SocialCenter')
   }
 
+  function openClaims() {
+    useModalStore().open('SocialCenter', { initialTab: 'claims' })
+  }
+
   function toggleLibrary(tabId = null) { 
     const modalStore = useModalStore()
     if (modalStore.isOpen('Library')) modalStore.close('Library')
@@ -378,6 +382,7 @@ export const useUIStore = defineStore('ui', () => {
     },
     toggleTrade,
     toggleSocial,
+    openClaims,
     notify,
     notifications,
     isLoading,

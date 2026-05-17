@@ -39,18 +39,20 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: transparent;
-  overflow: visible;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  overflow: visible !important;
   z-index: var(--z-base);
 
   img {
-    width: 56px;
-    height: 56px;
+    width: 86px;
+    height: 86px;
     @include pixelated;
     position: relative;
     z-index: var(--z-base);
     will-change: transform, filter, opacity;
-  filter: Drop-Shadow(0 4px 8px Rgba(0,0,0,0.5));
+    filter: Drop-Shadow(0 4px 8px Rgba(0,0,0,0.5));
     transition: transform 0.3s ease;
   }
 }

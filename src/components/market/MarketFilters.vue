@@ -229,7 +229,7 @@ const getTypeEmoji = (type: string) => {
 .label {
   @include pixelated;
   font-size: 8px;
-  color: var(--purple-light);
+  color: var(--blue-light);
 }
 
 .arrow {
@@ -257,7 +257,7 @@ const getTypeEmoji = (type: string) => {
 }
 
 .mode-switch button.active {
-  background: var(--purple);
+  background: var(--blue);
   color: $white;
 }
 
@@ -274,12 +274,28 @@ const getTypeEmoji = (type: string) => {
 .search-input {
   width: 100%;
   padding: 10px 14px;
-  background: Rgba(255, 255, 255, 0.05);
-  border: 1px solid Rgba(255, 255, 255, 0.12);
-  border-radius: 12px;
+  background: Rgba(0, 0, 0, 0.4);
+  border: 1px solid Rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
   color: $white;
-  font-size: 13px;
+  font-size: 10px;
   outline: none;
+  transition: border-color 0.2s;
+}
+
+.search-input:focus {
+  border-color: var(--blue);
+}
+
+.filters-drawer {
+  background: Rgba(0, 0, 0, 0.2);
+  border: 1px solid Rgba(255, 255, 255, 0.04);
+  border-radius: 12px;
+  padding: 14px;
+  margin-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
 
 .filter-body {
@@ -289,6 +305,9 @@ const getTypeEmoji = (type: string) => {
 
 .filter-group {
   margin-bottom: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .group-header {
@@ -311,7 +330,12 @@ const getTypeEmoji = (type: string) => {
   margin-bottom: 8px;
 }
 
-.tags-grid {
+.sub-label {
+  font-size: 8px;
+  color: var(--gray);
+}
+
+.tags-grid, .tags-row {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
@@ -329,8 +353,8 @@ const getTypeEmoji = (type: string) => {
 }
 
 .tag-btn.active {
-  border-color: var(--purple);
-  background: Rgba(191, 90, 242, 0.2);
+  border-color: var(--blue);
+  background: Rgba(10, 132, 255, 0.2);
   color: $white;
 }
 

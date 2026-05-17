@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useGTSStore } from '@/stores/gts'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
+import { SHOP_ITEMS } from '@/data/items'
 import PokemonSelectionItem from '../modals/PokemonSelectionItem.vue'
 import type { Pokemon } from '@/types/pokemon'
 
@@ -69,10 +70,30 @@ async function handlePublish() {
   }
 }
 
+function updateSuggestedPrice() {
+  if (activeMode.value === 'item' && selection.value && 'qty' in selection.value) {
+    const nameStr = selection.value.name.toLowerCase()
+    const shopItem = SHOP_ITEMS.find(i => i.name.toLowerCase() === nameStr || i.id.toLowerCase() === nameStr)
+    if (shopItem && shopItem.price > 0) {
+      price.value = shopItem.price * itemQty.value
+    } else {
+      price.value = 1000
+    }
+  } else {
+    price.value = 1000
+  }
+}
+
+watch(itemQty, () => {
+  updateSuggestedPrice()
+})
+
 function selectItem(item: Pokemon | InventoryItem) {
   selection.value = item
-  if ('qty' in item) { itemQty.value = 1 }
-  // Suggest a default price?
+  if ('qty' in item) { 
+    itemQty.value = 1 
+  }
+  updateSuggestedPrice()
 }
 
 const fee = computed(() => Math.floor(price.value * gtsStore.MARKET_FEE))
@@ -275,9 +296,9 @@ const net = computed(() => price.value - fee.value)
       transition: all 0.2s;
 
       &.active {
-        background: Rgba(168, 85, 247, 1);
+        background: Rgba(56, 189, 248, 1);
         color: $white;
-        box-shadow: 0 0 15px Rgba(168, 85, 247, 0.3);
+        box-shadow: 0 0 15px Rgba(56, 189, 248, 0.3);
       }
     }
   }
@@ -350,13 +371,13 @@ const net = computed(() => price.value - fee.value)
     }
 
     &.selected {
-      background: Rgba(168, 85, 247, 0.1);
-      border-color: Rgba(168, 85, 247, 0.5);
-      box-shadow: 0 0 15px Rgba(168, 85, 247, 0.15);
+      background: Rgba(56, 189, 248, 0.1);
+      border-color: Rgba(56, 189, 248, 0.5);
+      box-shadow: 0 0 15px Rgba(56, 189, 248, 0.15);
       
       .selection-indicator .check-circle {
-        border-color: Rgba(168, 85, 247, 1);
-        background: Rgba(168, 85, 247, 1);
+        border-color: Rgba(56, 189, 248, 1);
+        background: Rgba(56, 189, 248, 1);
         color: white;
       }
     }
@@ -463,7 +484,7 @@ const net = computed(() => price.value - fee.value)
       display: block !important;
       font-size: 9px;
       @include pixelated;
-      color: Rgba(168, 85, 247, 1);
+      color: Rgba(56, 189, 248, 1);
       margin-bottom: 12px !important;
       text-align: center !important;
     }

@@ -12,7 +12,7 @@
     & .ps-tags-bar button { height: 24px; padding: 0 6px; gap: 4px; }
     & .ps-vertical-list { gap: 10px; padding: 5px 15px 15px 15px; }
     & .list-item { min-height: 80px; padding: 10px; gap: 12px; }
-    & .poke-preview { width: 56px; height: 56px; img { width: 44px; height: 44px; } }
+    & .poke-preview { width: 56px; height: 56px; overflow: visible !important; background: transparent !important; border: none !important; box-shadow: none !important; img { width: 68px; height: 68px; } }
     
     & .modal-footer {
       gap: 5px;
@@ -37,7 +37,7 @@ body .modal-footer-premium { padding: 8px 20px !important; }
     & .filters-bar { margin-bottom: 0; gap: 2px; }
     & .ps-vertical-list { padding-top: 2px; padding-bottom: 5px; gap: 8px; }
     & .list-item { min-height: 60px; padding: 8px; border-radius: 12px; }
-    & .poke-preview { width: 40px; height: 40px; img { width: 32px; height: 32px; } }
+    & .poke-preview { width: 40px; height: 40px; overflow: visible !important; background: transparent !important; border: none !important; box-shadow: none !important; img { width: 48px; height: 48px; } }
     & .poke-details .top-line .name-group .name { font-size: 7px; }
     & .poke-details .bottom-line { gap: 6px; }
   }

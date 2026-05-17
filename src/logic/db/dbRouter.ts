@@ -412,14 +412,23 @@ export class DBRouter {
           }
         }
 
-        const claimId = 'claim_' + Math.random().toString(36).substring(2, 11);
-        const assetPayload = {
-          type: listing.listing_type === 'pokemon' ? 'pokemon' : 'item',
-          data: assetDataObj
-        };
+        const saves = await queryLocal("SELECT save_data FROM game_saves WHERE user_id = ?", [userId]);
+        if (saves.length === 0) return { data: null, error: { message: 'Save not found' } };
+        const saveObj = (typeof saves[0]!.save_data === 'string' ? JSON.parse(saves[0]!.save_data as string) : saves[0]!.save_data) as OfflineSaveData;
+
+        if (listing.listing_type === 'pokemon') {
+          saveObj.box = saveObj.box || [];
+          saveObj.box.push(assetDataObj as Record<string, unknown>);
+        } else {
+          saveObj.inventory = saveObj.inventory || {};
+          const itemName = (assetDataObj as { name: string }).name;
+          const qty = Number((assetDataObj as { qty?: number }).qty || 1);
+          saveObj.inventory[itemName] = (saveObj.inventory[itemName] || 0) + qty;
+        }
+
         sqliteDb.run(
-          "INSERT INTO claim_queue (id, user_id, source_type, source_id, asset_data) VALUES (?, ?, 'gts_cancel', ?, ?)",
-          [claimId, userId, p_listing_id, JSON.stringify(assetPayload)]
+          "UPDATE game_saves SET save_data = ?, updated_at = datetime('now') WHERE user_id = ?",
+          [JSON.stringify(saveObj), userId]
         );
 
         sqliteDb.run(
@@ -428,7 +437,7 @@ export class DBRouter {
         );
 
         await persistSQLite();
-        return { data: true, error: null };
+        return { data: saveObj, error: null };
       }
 
       // 4. Claim Asset Emulation

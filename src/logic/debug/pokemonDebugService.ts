@@ -154,6 +154,7 @@ export const pokemonDebugService = {
         };
         game.state.eggs.push(eggToPush);
         ui.notify(`[DEBUG] Huevo de ${p.name} añadido a la mochila`, '🥚');
+        await game.save(false);
         break;
       }
 
@@ -172,8 +173,6 @@ export const pokemonDebugService = {
       default:
         logger.error('DEBUG', `Unknown protocol: ${protocol}`);
     }
-
-    await game.save(false);
   },
 
   /**

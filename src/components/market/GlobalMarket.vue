@@ -163,9 +163,9 @@ async function refresh() {
   h1 {
     @include pixelated;
     font-size: 14px;
-    color: Rgba(168, 85, 247, 1);
+    color: Rgba(56, 189, 248, 1);
     margin: 0 0 8px 0;
-    text-shadow: 0 0 15px Rgba(168, 85, 247, 0.3);
+    text-shadow: 0 0 15px Rgba(56, 189, 248, 0.3);
   }
   .subtitle {
     font-size: 11px;
@@ -232,9 +232,9 @@ async function refresh() {
 
   &:hover { color: $white; background: Rgba(255, 255, 255, 0.03); }
   &.active {
-    color: Rgba(168, 85, 247, 1);
-    background: Rgba(168, 85, 247, 0.05);
-    border-bottom-color: Rgba(168, 85, 247, 1);
+    color: Rgba(56, 189, 248, 1);
+    background: Rgba(56, 189, 248, 0.05);
+    border-bottom-color: Rgba(56, 189, 248, 1);
   }
 }
 
@@ -284,7 +284,7 @@ async function refresh() {
     
     button {
       padding: 12px 30px;
-      background: Rgba(168, 85, 247, 1);
+      background: Rgba(56, 189, 248, 1);
       border: none;
       color: $white;
       border-radius: 12px;

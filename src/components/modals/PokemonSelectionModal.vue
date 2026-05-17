@@ -206,7 +206,7 @@ const availablePokemon = computed<{ pokemon: Pokemon, _source: 'team' | 'box', i
   })
 })
 
-function toggleSelection(item: { pokemon: Pokemon, _source: 'team' | 'box', index: number }) {
+function toggleSelection(item: { pokemon: Pokemon, _source: 'team' | 'box' | 'market', index: number }) {
   const uid = item.pokemon.uid
   const sIdx = selectedUids.value.indexOf(uid)
   if (sIdx > -1) {
@@ -290,7 +290,7 @@ if (typeof window !== 'undefined') {
   }
 }
 
-function openDetail(item: { pokemon: Pokemon, _source: 'team' | 'box', index: number }) {
+function openDetail(item: { pokemon: Pokemon, _source: 'team' | 'box' | 'market', index: number }) {
   uiStore.openPokemonDetail(item.pokemon, item.index, item._source, { source: 'selection' })
 }
 </script>

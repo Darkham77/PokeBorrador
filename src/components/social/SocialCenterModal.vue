@@ -1,6 +1,6 @@
 <script setup lang="ts">
 
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import { useSocialStore } from '@/stores/social';
 import TradeClaimStatus from '@/components/social/TradeClaimStatus.vue';
 import { useGameStore } from '@/stores/game';
@@ -11,16 +11,22 @@ import SocialSearchTab from './SocialSearchTab.vue';
 
 interface Props {
   show?: boolean;
+  initialTab?: string;
 }
 
-withDefaults(defineProps<Props>(), {
-  show: false
+const props = withDefaults(defineProps<Props>(), {
+  show: false,
+  initialTab: 'friends'
 });
 
 const socialStore = useSocialStore();
 const gameStore = useGameStore();
 
-const activeTab = ref('friends'); // 'friends', 'requests', 'search', 'claims'
+const activeTab = ref(props.initialTab);
+
+watch(() => props.initialTab, (val) => {
+  if (val) activeTab.value = val;
+});
 
 const emit = defineEmits<{
   (e: 'close'): void

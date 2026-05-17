@@ -3,6 +3,7 @@ import { POKEMON_SPRITE_IDS } from '@/logic/pokedexConstants';
 export { POKEMON_SPRITE_IDS };
 import { resolveAsset } from '../utils/assetResolver.ts';
 import { MAPS_WITH_CYCLES } from '@/data/map-assets';
+import { SHOP_ITEMS } from '@/data/items';
 
 /**
  * POKEAPI_BASE: Now local paths for downloaded sprites.
@@ -235,11 +236,13 @@ export const getAssetUrl = (type: AssetType, rawId: string | number, options: As
 
     case ASSET_TYPES.ITEM: {
       const idStr = String(id).toLowerCase();
-      // PokeAPI items mapping
-      const mappedId = ITEM_MAPPING[idStr] || idStr.replace(/_/g, '-');
+      // 1. Check SHOP_ITEMS first by name or id
+      const shopItem = SHOP_ITEMS.find(i => i.name.toLowerCase() === idStr || i.id.toLowerCase() === idStr);
+      const mappedId = shopItem ? shopItem.sprite : (ITEM_MAPPING[idStr] || idStr.replace(/_/g, '-'));
       
-      // If it's in mapping, numeric, or a known PokeAPI slug pattern
-      const isPokeAPI = (ITEM_MAPPING[idStr] !== undefined) || 
+      // If it's found in SHOP_ITEMS, mapping, numeric, or a known PokeAPI slug pattern
+      const isPokeAPI = shopItem !== undefined ||
+                       (ITEM_MAPPING[idStr] !== undefined) || 
                        !isNaN(Number(idStr)) || 
                        idStr.includes('-') || 
                        idStr.includes('ball') || 

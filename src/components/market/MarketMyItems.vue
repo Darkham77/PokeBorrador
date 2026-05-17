@@ -8,8 +8,10 @@ import PokemonSelectionItem from '@/components/modals/PokemonSelectionItem.vue'
 import type { Pokemon } from '@/types/pokemon'
 import { formatDisplayDate } from '@/logic/timeUtils'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
+import { useUIStore } from '@/stores/ui'
 
 const gtsStore = useGTSStore()
+const uiStore = useUIStore()
 
 const activeListings = computed(() => gtsStore.activeMyListings)
 const history = computed(() => gtsStore.salesHistory)
@@ -23,15 +25,23 @@ function getPokemonTotalPower(p: Pokemon) {
   return baseTot + totalIvs
 }
 
-async function handleCancel(listingId: string) {
+function handleCancel(listingId: string) {
   console.log('[GTS] UI: handleCancel disparado para ID:', listingId)
-  if (confirm('¿Estás seguro de que deseas cancelar esta publicación? El objeto/Pokémon volverá a tu inventario.')) {
-    console.log('[GTS] UI: Confirmación aceptada, llamando al store...')
-    const success = await gtsStore.cancelListing(listingId)
-    console.log('[GTS] UI: Resultado cancelación en store:', success)
-  } else {
-    console.log('[GTS] UI: Cancelación abortada por el usuario.')
-  }
+  uiStore.openConfirm({
+    title: '¿CANCELAR PUBLICACIÓN?',
+    message: '¿Estás seguro de que deseas cancelar esta publicación? El objeto/Pokémon volverá a tu inventario.',
+    confirmText: 'ACEPTAR',
+    cancelText: 'CANCELAR',
+    type: 'danger',
+    onConfirm: async () => {
+      console.log('[GTS] UI: Confirmación aceptada, llamando al store...')
+      const success = await gtsStore.cancelListing(listingId)
+      console.log('[GTS] UI: Resultado cancelación en store:', success)
+    },
+    onCancel: () => {
+      console.log('[GTS] UI: Cancelación abortada por el usuario.')
+    }
+  })
 }
 
 // formatTime is now centralized in timeUtils.ts as formatDisplayDate
@@ -65,7 +75,7 @@ const formatTime = formatDisplayDate
             <PokemonSelectionItem
               :item="{
                 pokemon: item.data as unknown as Pokemon,
-                _source: 'box',
+                _source: 'market',
                 index: 0
               }"
               :total="getPokemonTotalPower(item.data as unknown as Pokemon)"
@@ -159,7 +169,7 @@ const formatTime = formatDisplayDate
 .mkt-section-title {
   @include pixelated;
   font-size: 8px;
-  color: Rgba(168, 85, 247, 1);
+  color: Rgba(56, 189, 248, 1);
   margin: 20px;
   margin-bottom: 0;
   letter-spacing: 1px;
@@ -190,9 +200,24 @@ const formatTime = formatDisplayDate
   .listing-card-override {
     background: transparent !important;
     padding: 15px !important;
-    pointer-events: none;
+    pointer-events: auto;
     box-shadow: none !important;
     width: 100%;
+    cursor: pointer;
+
+    :deep(.list-item) {
+      transform: none !important;
+      border: none !important;
+      box-shadow: none !important;
+      background: transparent !important;
+
+      &:hover {
+        transform: none !important;
+        border: none !important;
+        box-shadow: none !important;
+        background: transparent !important;
+      }
+    }
   }
 
   .listing-actions {
@@ -270,7 +295,7 @@ const formatTime = formatDisplayDate
     flex-direction: column;
     gap: 4px;
     .date { font-size: 10px; color: $muted; }
-    .item-name { font-size: 13px; color: var(--white); strong { color: Rgba(168, 85, 247, 1); } }
+    .item-name { font-size: 13px; color: var(--white); strong { color: Rgba(56, 189, 248, 1); } }
   }
 
   .sale-value {

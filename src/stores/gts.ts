@@ -218,18 +218,22 @@ export const useGTSStore = defineStore('gts', () => {
       ui.setLoading(true)
       ui.notify('Retirando publicación...', '🔄')
       
-      const { error } = await game.db.rpc('cancel_listing_v2', {
+      const { data: newSave, error } = await game.db.rpc('cancel_listing_v2', {
         p_listing_id: listingId
-      })
+      }) as { data: GameState | null, error: { message: string } | null }
 
       if (error) {
         console.error('[GTS] Error RPC cancel_listing_v2:', error)
         throw error
       }
 
-      console.log('[GTS] Cancelación exitosa en DB para ID:', listingId)
-      ui.notify('Publicación cancelada. El objeto se envió a tus Reclamos.', '✅')
-      await game.fetchClaimQueue()
+      if (newSave) {
+        game.updateState(newSave)
+        ui.notify('Publicación cancelada. El activo regresó a tu caja/inventario.', '✅')
+      } else {
+        ui.notify('Publicación cancelada con éxito.', '✅')
+      }
+
       await fetchUserData()
       return true
     } catch (e) {

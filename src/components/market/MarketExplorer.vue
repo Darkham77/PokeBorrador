@@ -77,7 +77,7 @@ const formatTime = formatDisplayDate
           <PokemonSelectionItem
             :item="{
               pokemon: item.data as unknown as Pokemon,
-              _source: 'box',
+              _source: 'market',
               index: 0
             }"
             :total="getPokemonTotalPower(item.data as unknown as Pokemon)"
@@ -164,9 +164,24 @@ const formatTime = formatDisplayDate
   .listing-card-override {
     background: transparent !important;
     padding: 15px !important;
-    pointer-events: none;
+    pointer-events: auto;
     box-shadow: none !important;
     width: 100%;
+    cursor: pointer;
+
+    :deep(.list-item) {
+      transform: none !important;
+      border: none !important;
+      box-shadow: none !important;
+      background: transparent !important;
+
+      &:hover {
+        transform: none !important;
+        border: none !important;
+        box-shadow: none !important;
+        background: transparent !important;
+      }
+    }
   }
 
   .explorer-item-card {
@@ -229,8 +244,8 @@ const formatTime = formatDisplayDate
 .loader {
   width: 32px;
   height: 32px;
-  border: 3px solid Rgba(168, 85, 247, 0.2);
-  border-top-color: Rgba(168, 85, 247, 1);
+  border: 3px solid Rgba(56, 189, 248, 0.2);
+  border-top-color: Rgba(56, 189, 248, 1);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-bottom: 16px;

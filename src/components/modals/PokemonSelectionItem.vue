@@ -8,15 +8,17 @@ import { ASSET_TYPES, getAssetUrl } from '@/logic/services/assetService'
 import UnifiedBadgePill from '@/components/shared/UnifiedBadgePill.vue'
 import { getPokemonTier } from '@/logic/pokemon/tierEngine'
 import { useBattleVisuals } from '@/composables/useBattleVisuals'
+import { useUIStore } from '@/stores/ui'
 
 import type { Pokemon } from '@/types/pokemon'
 
 const { getHpColor } = useBattleVisuals()
+const uiStore = useUIStore()
 
 interface Props {
   item: {
     pokemon: Pokemon
-    _source: 'team' | 'box'
+    _source: 'team' | 'box' | 'market'
     index: number
   }
   isSelected?: boolean
@@ -32,8 +34,9 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits<{
-  (e: 'select', item: { pokemon: Pokemon, _source: 'team' | 'box', index: number }): void
-  (e: 'openDetail', item: { pokemon: Pokemon, _source: 'team' | 'box', index: number }): void
+  (e: 'select', item: { pokemon: Pokemon, _source: 'team' | 'box' | 'market', index: number }): void
+  (e: 'openDetail', item: { pokemon: Pokemon, _source: 'team' | 'box' | 'market', index: number }): void
+  (e: 'open-detail', item: { pokemon: Pokemon, _source: 'team' | 'box' | 'market', index: number }): void
 }>()
 
 const tierData = computed(() => getPokemonTier(props.item.pokemon))
@@ -42,6 +45,18 @@ const ivTotal = computed(() => {
   return (ivs.hp || 0) + (ivs.atk || 0) + (ivs.def || 0) + (ivs.spa || 0) + (ivs.spd || 0) + (ivs.spe || 0)
 })
 const isPremiumTier = computed(() => tierData.value.tier === 'S' || tierData.value.tier === 'S+')
+
+function handleOpenDetail() {
+  uiStore.openPokemonDetail(props.item.pokemon, props.item.index, props.item._source, { source: 'selection' })
+}
+
+function handleClick() {
+  if (props.item._source === 'market') {
+    handleOpenDetail()
+  } else {
+    emit('select', props.item)
+  }
+}
 </script>
 
 <template>
@@ -55,7 +70,7 @@ const isPremiumTier = computed(() => tierData.value.tier === 'S' || tierData.val
       '--tier-color': tierData.color,
       '--tier-bg': tierData.bg
     }"
-    @click.stop="emit('select', item)"
+    @click.stop="handleClick"
   >
     <div class="poke-preview-container">
       <PVTooltip
@@ -63,20 +78,25 @@ const isPremiumTier = computed(() => tierData.value.tier === 'S' || tierData.val
         description="Ver información completa de este Pokémon."
         position="top"
         class="poke-preview"
-        @click.stop="emit('openDetail', item)"
       >
-        <PVSpriteFX
-          :is-shiny="item.pokemon.isShiny"
-          :is-guardian="item.pokemon.isGuardian"
-          :sparkle-count="5"
+        <div 
+          class="sprite-click-target" 
+          style="cursor: pointer;" 
+          @click.stop="handleOpenDetail"
         >
-          <img
-            :src="getAssetUrl(ASSET_TYPES.POKEMON, item.pokemon.id, { isShiny: item.pokemon.isShiny })"
-            alt=""
-            class="pixelated"
-            @error="e => { (e.target as HTMLImageElement).style.display = 'none' }"
+          <PVSpriteFX
+            :is-shiny="item.pokemon.isShiny"
+            :is-guardian="item.pokemon.isGuardian"
+            :sparkle-count="5"
           >
-        </PVSpriteFX>
+            <img
+              :src="getAssetUrl(ASSET_TYPES.POKEMON, item.pokemon.id, { isShiny: item.pokemon.isShiny })"
+              alt=""
+              class="pixelated"
+              @error="e => { (e.target as HTMLImageElement).style.display = 'none' }"
+            >
+          </PVSpriteFX>
+        </div>
       </PVTooltip>
     </div>
 
@@ -124,7 +144,7 @@ const isPremiumTier = computed(() => tierData.value.tier === 'S' || tierData.val
           <span
             class="source-tag"
             :class="item._source"
-          >{{ item._source === 'team' ? 'EQUIPO' : 'CAJA' }}</span>
+          >{{ item._source === 'team' ? 'EQUIPO' : (item._source === 'box' ? 'CAJA' : 'MERCADO') }}</span>
         </div>
 
         <div class="info-row stats-line">
