@@ -159,6 +159,40 @@ El proyecto utiliza un motor de auditoría inteligente y validadores semánticos
 | `npm run validate:abilities` | **Ability Sync**: Valida habilidades contra la base de datos oficial. |
 | `npm run validate:fsm` | **FSM Mastery Audit**: Verifica diagramas, implementación dinámica y paridad de flujo. |
 
+### ☁️ Gestión de Infraestructura Supabase y Servidores (Node.js 26+)
+
+El proyecto cuenta con un conjunto de herramientas automatizadas para gestionar el ciclo de vida de las bases de datos y la configuración de múltiples servidores (Cloud, NAS) a partir del archivo `.env` maestro unificado.
+
+| Comando | Descripción |
+| :-- | :-- |
+| `npm run servers:configure` | **Sincronización de GUI**: Parsea el `.env` maestro, extrae perfiles (`SERVER_<profile>_*`) y genera `src/data/official_servers.ts`. |
+| `npm run servers:db:update` | **Gestor y Migrador**: Conecta a la instancia elegida (`--server=<perfil>` o `--all`), inicializa esquemas y aplica parches incrementales. |
+| `npm run servers:db:backup` | **Generador de Respaldos**: Conecta al servidor elegido (`--server=<perfil>`), descubre tablas dinámicamente y descarga un respaldo JSON. |
+| `npm run servers:db:restore` | **Restaurador Transaccional**: Limpia en orden inverso y restaura transaccionalmente un archivo JSON hacia el servidor elegido (`--server=<perfil>`). |
+| `npm run servers:db:admin` | **Mantenimiento de Usuarios**: Permite desbanear, cambiar contraseñas, emails, usernames y promover a admin desde la CLI. |
+
+#### Ejemplos de Uso de Infraestructura
+
+```bash
+# 1. Sincronizar servidores en la interfaz del juego
+npm run servers:configure
+
+# 2. Inicializar o actualizar base de datos en un servidor específico
+npm run servers:db:update -- --server=nas-franco
+
+# 3. Actualizar base de datos en TODOS los servidores configurados en el .env
+npm run servers:db:update -- --all
+
+# 4. Descargar un respaldo completo en formato JSON de un servidor
+npm run servers:db:backup -- --server=nas-franco
+
+# 5. Restaurar el respaldo más reciente de forma automática a un servidor
+npm run servers:db:restore -- --server=nas-franco
+
+# 6. Restaurar un respaldo específico pasándole la ruta exacta del archivo
+npm run servers:db:restore -- --server=nas-franco --file=database/backups/nas-franco_backup_2026-05-17T05-29-09.json
+```
+
 ### Otros Comandos de Desarrollo
 
 ```bash
@@ -313,66 +347,47 @@ El proyecto incluye un sistema de protección automática (**"Ban Trap"**) para 
   2. Registra el motivo del baneo.
   3. Fuerza el cierre inmediato de la sesión.
 - **Efecto Visual**: El usuario afectado verá una pantalla de **ACCESO DENEGADO** con estética retro-moderna al intentar iniciar sesión, indicando el motivo de la sanción.
-- **Restauración de Cuentas**: El baneo es permanente hasta que un administrador lo revierta manualmente desde el panel de control de Supabase.
-  - **Pasos para desbanear**:
-    1. Entrá al SQL Editor de Supabase.
-    2. Ejecutá la siguiente consulta:
+- **Restauración de Cuentas**: El baneo es permanente hasta que un administrador lo revierta utilizando la herramienta de administración de consola (`servers:db:admin`).
+  - **Comando para desbanear**:
 
-    ```sql
-    UPDATE profiles
-    SET is_banned = false, ban_reason = NULL
-    WHERE email = 'usuario@ejemplo.com';
+    ```bash
+    npm run servers:db:admin -- --server=nas-franco --action=unban --email=usuario@ejemplo.com
     ```
 
 - **Modo Local**: En modo `offline` (localhost), el sistema de baneo está deshabilitado para permitir el testing sin riesgos.
 
-### 8. 🛡️ Mantenimiento de Usuarios (Admin SQL)
+### 8. 🛡️ Mantenimiento de Usuarios (Admin CLI)
 
-Comandos frecuentes para realizar mantenimiento manual sobre la base de datos de producción (Online).
+El proyecto cuenta con un gestor unificado de administración de usuarios en consola (`servers:db:admin`) que se conecta de forma nativa a cualquier instancia Supabase (Cloud o NAS) utilizando las credenciales del `.env` maestro, permitiendo realizar operaciones de mantenimiento avanzadas sin necesidad de ingresar al SQL Editor ni escribir consultas manuales.
 
 #### Cambiar Contraseña de un Usuario
 
-Para resetear la contraseña manualmente desde el SQL Editor:
+Para resetear la contraseña de forma segura (generando automáticamente el hash bcrypt con pygcrypto en el servidor):
 
-```sql
-UPDATE auth.users
-SET encrypted_password = crypt('NUEVA_CONTRASEÑA', gen_salt('bf'))
-WHERE email = 'usuario@ejemplo.com';
+```bash
+npm run servers:db:admin -- --server=nas-franco --action=set-password --email=usuario@ejemplo.com --password=NUEVA_CONTRASEÑA
 ```
 
 #### Cambiar Email de un Usuario
 
-Se debe actualizar tanto en la tabla de autenticación como en el perfil público para mantener la consistencia:
+El gestor actualiza automáticamente tanto la tabla de autenticación (`auth.users`) como el perfil público (`public.profiles`) en una única transacción DML para mantener la consistencia absoluta:
 
-```sql
--- 1. Actualizar Auth (Requerido para login)
-UPDATE auth.users
-SET email = 'nuevo@email.com',
-    email_confirmed_at = NOW()
-WHERE email = 'viejo@email.com';
-
--- 2. Actualizar Perfil (Requerido para lógica de juego)
-UPDATE public.profiles
-SET email = 'nuevo@email.com'
-WHERE email = 'viejo@email.com';
+```bash
+npm run servers:db:admin -- --server=nas-franco --action=set-email --email=viejo@email.com --new-email=nuevo@email.com
 ```
 
 #### Cambiar Nombre de Entrenador (Username)
 
-```sql
-UPDATE public.profiles
-SET username = 'NuevoNombre'
-WHERE email = 'usuario@ejemplo.com';
+```bash
+npm run servers:db:admin -- --server=nas-franco --action=set-username --email=usuario@ejemplo.com --username=NuevoNombre
 ```
 
 #### Promoción a Administrador (ADMIN Role)
 
 Para otorgar permisos de administrador a un usuario (acceso a paneles de debug en producción, bypass de ban-traps, etc.):
 
-```sql
-UPDATE public.profiles
-SET role = 'admin'
-WHERE email = 'usuario@ejemplo.com';
+```bash
+npm run servers:db:admin -- --server=nas-franco --action=promote --email=usuario@ejemplo.com
 ```
 
-> [!IMPORTANT] Los nombres de usuario deben ser únicos. Si el nombre ya existe, la consulta fallará debido a la restricción `UNIQUE`.
+> [!IMPORTANT] Los nombres de usuario deben ser únicos. Si el nombre ya está ocupado por otro jugador, la herramienta capturará la restricción `UNIQUE` y mostrará un mensaje de advertencia claro en consola.

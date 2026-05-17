@@ -1,7 +1,7 @@
 -- database/migrations/20260421110000_sync_event_seeds.sql
 
 -- 1. Nuclear repair: Drop and recreate with CASCADE to handle dependencies
-DROP TABLE IF EXISTS events_config;
+DROP TABLE IF EXISTS events_config CASCADE;
 
 CREATE TABLE events_config (
     id TEXT PRIMARY KEY,
@@ -18,6 +18,12 @@ CREATE TABLE events_config (
     last_awarded_at TEXT,
     updated_at TEXT
 );
+
+ALTER TABLE competition_entries DROP CONSTRAINT IF EXISTS competition_entries_event_id_fkey;
+ALTER TABLE competition_entries ADD CONSTRAINT competition_entries_event_id_fkey FOREIGN KEY (event_id) REFERENCES events_config(id);
+
+ALTER TABLE competition_results DROP CONSTRAINT IF EXISTS competition_results_event_id_fkey;
+ALTER TABLE competition_results ADD CONSTRAINT competition_results_event_id_fkey FOREIGN KEY (event_id) REFERENCES events_config(id);
 
 -- 2. Insertar eventos originales (Sintaxis Postgres: TRUE/FALSE)
 INSERT INTO events_config (id, name, icon, type, active, manual, schedule, config, description)

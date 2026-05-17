@@ -1,0 +1,17 @@
+{
+  "skill_name": "env-multi-server-parser",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Generate a clean .env file for the 'cloud' server from the project's master .env file.",
+      "expected_output": "A .env file containing global DOCKER_* variables and all SERVER_cloud_* variables without the prefix (e.g., ID, NAME, REGION, PG_META_CRYPTO_KEY, JWT_SECRET, etc.). Must not contain any variables from nas-franco.",
+      "files": [".env"]
+    },
+    {
+      "id": 2,
+      "prompt": "Write a Python function that takes the master .env file path and a server name, and returns a dictionary with the clean server variables and global DOCKER variables.",
+      "expected_output": "Python code that correctly filters by the SERVER_<profile>_ prefix and strips the prefix from the resulting keys, while also including global DOCKER_* variables.",
+      "files": [".env"]
+    }
+  ]
+}

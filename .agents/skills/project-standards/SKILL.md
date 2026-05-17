@@ -221,6 +221,14 @@ Use these scripts to verify project standards and ensure stability:
 - `npm run validate:fsm:flow`: State sequence verifier and race condition detection.
 - `npm run validate:fsm`: Unified FSM Mastery Audit (Diagrams + Implementation + Flow).
 
+### ☁️ Supabase Infrastructure & Multi-Server Management
+
+- `npm run servers:configure`: Parses the unified master `.env` file, extracts server profiles (`SERVER_<profile>_*`), and automatically generates `src/data/official_servers.ts`, maintaining a single source of truth.
+- `npm run servers:db:update`: Supabase database manager and migrator in Node.js 26+. Connects to the chosen instance (`--server=<profile>` or `--all`), dynamically extracts credentials and Tenant ID, initializes the database if empty (`baseline_schema.sql`), and applies secure incremental patches.
+- `npm run servers:db:backup`: Connects to the chosen Supabase server (`--server=<profile>`), dynamically discovers all tables in the `public` schema, and downloads a complete structured backup in JSON format into `database/backups/`.
+- `npm run servers:db:restore`: Transactionally restores a JSON backup file to the chosen server (`--server=<profile>`), cleaning existing tables in reverse hierarchical order and securely reinserting rows with automatic ROLLBACK support. Allows specifying `--file=<path>` or automatically detects the most recent backup.
+- `npm run servers:db:admin`: Supabase user admin CLI in Node.js 26+. Connects to the chosen server (`--server=<profile>`) to unban accounts, update passwords, change emails, modify trainer usernames, and promote users to ADMIN role directly from the command line (`--action=<unban|set-password|set-email|set-username|promote> --email=<email>`).
+
 ### 🖼️ Assets
 
 - `npm run assets:convert`: Unified pipeline for WebP conversion and mirroring.
