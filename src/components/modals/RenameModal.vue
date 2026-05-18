@@ -40,7 +40,7 @@ const daysUntilRename = computed(() => {
     const diff = now.since(lastRename, { largestUnit: 'hours' })
     const daysPassed = Math.floor(diff.hours / 24)
     return Math.max(0, 30 - daysPassed)
-  } catch (e) {
+  } catch (_e) {
     return 0
   }
 })
@@ -91,7 +91,7 @@ const submitRename = async () => {
       }
       emit('close')
     }
-  } catch (e: unknown) {
+  } catch (_e: unknown) {
     uiStore.notify('Error de conexión al cambiar el nombre.', '⚠️')
   } finally {
     isRenaming.value = false
@@ -111,7 +111,9 @@ const submitRename = async () => {
   >
     <div class="rename-modal-container">
       <div class="info-box">
-        <p class="desc-text">Ingresa tu nuevo nombre de entrenador. Recuerda que solo se permite un cambio cada 30 días.</p>
+        <p class="desc-text">
+          Ingresa tu nuevo nombre de entrenador. Recuerda que solo se permite un cambio cada 30 días.
+        </p>
       </div>
 
       <div class="input-section">
@@ -122,9 +124,12 @@ const submitRename = async () => {
           :disabled="!canRename || isRenaming"
           placeholder="Ej: Red..."
           maxlength="15"
-        />
+        >
         
-        <div v-if="!canRename" class="cooldown-notice">
+        <div
+          v-if="!canRename"
+          class="cooldown-notice"
+        >
           ⏳ Cooldown activo: Faltan <span class="days-highlight">{{ daysUntilRename }} días</span>.
         </div>
       </div>
@@ -161,15 +166,15 @@ const submitRename = async () => {
 }
 
 .info-box {
-  background: rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: Rgba(0, 0, 0, 0.2);
+  border: 1px solid Rgba(255, 255, 255, 0.05);
   border-radius: 8px;
   padding: 12px;
 }
 
 .desc-text {
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.7);
+  color: Rgba(255, 255, 255, 0.7);
   line-height: 1.4;
   @include pixelated;
 }
@@ -180,7 +185,7 @@ const submitRename = async () => {
   gap: 8px;
 
   .vicio-input {
-    background: rgba(0, 0, 0, 0.4);
+    background: Rgba(0, 0, 0, 0.4);
     border: 2px solid var(--blue);
     border-radius: 6px;
     color: var(--white);
@@ -206,10 +211,10 @@ const submitRename = async () => {
   font-size: 10px;
   color: var(--red);
   text-align: center;
-  background: rgba(239, 68, 68, 0.1);
+  background: Rgba(239, 68, 68, 0.1);
   padding: 8px;
   border-radius: 4px;
-  border: 1px solid rgba(239, 68, 68, 0.2);
+  border: 1px solid Rgba(239, 68, 68, 0.2);
   @include pixelated;
 
   .days-highlight {

@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient, type PostgrestError } from '@supabase/supabase-js';
 import { parseArgs } from 'node:util';
 
 const supabaseUrl = process.env.VITE_SUPABASE_URL;
@@ -28,32 +28,42 @@ async function main() {
 
   console.log(`Buscando usuario: ${targetUser}...`);
   
+  let profile: { id: string, username: string } | null = null;
+  
   // Buscar por ID primero, luego por nombre actual
-  let { data: profile, error } = await supabase
+  const { data: firstCheck, error: firstError } = await supabase
     .from('profiles')
     .select('id, username')
     .eq('id', targetUser)
-    .single() as { data: { id: string, username: string } | null, error: any };
+    .single();
 
-  if (error || !profile) {
+  const err1 = firstError as PostgrestError | null;
+  const data1 = firstCheck as { id: string, username: string } | null;
+
+  if (err1 || !data1) {
     console.log(`No encontrado por ID. Buscando por nombre de usuario...`);
     const { data: profilesByName, error: errByName } = await supabase
       .from('profiles')
       .select('id, username')
-      .ilike('username', targetUser) as { data: { id: string, username: string }[] | null, error: any };
+      .ilike('username', targetUser);
       
-    if (errByName || !profilesByName || profilesByName.length === 0) {
+    const err2 = errByName as PostgrestError | null;
+    const data2 = profilesByName as { id: string, username: string }[] | null;
+      
+    if (err2 || !data2 || data2.length === 0) {
       console.error(`❌ Usuario no encontrado.`);
       process.exit(1);
     }
     
-    if (profilesByName.length > 1) {
+    if (data2.length > 1) {
       console.error(`❌ Hay múltiples usuarios con el nombre '${targetUser}'. Usa su ID explícito.`);
-      profilesByName.forEach(p => console.log(`   - ID: ${p.id} | Nombre: ${p.username}`));
+      data2.forEach(p => console.log(`   - ID: ${p.id} | Nombre: ${p.username}`));
       process.exit(1);
     }
     
-    profile = profilesByName[0] as { id: string, username: string };
+    profile = data2[0] || null;
+  } else {
+    profile = data1;
   }
 
   console.log(`✅ Perfil encontrado: ID ${profile!.id} (Nombre actual: ${profile!.username})`);

@@ -16,12 +16,37 @@ export async function createTestDBRouter() {
   // Ensure we start from a clean state
   resetSQLite();
   
+  const mockProfile = {
+    username: 'ash',
+    last_renamed_at: null as string | null
+  };
+
   // Mock initSqlJs which is expected on window by sqliteEngine
   if (typeof window !== 'undefined') {
     window.initSqlJs = vi.fn().mockResolvedValue({
       Database: class {
         tables: string[] = [];
-        run(sql: string) { if (this.tables && this.tables.push) this.tables.push(sql); }
+        run(sql: string, params?: unknown[]) {
+          if (sql.includes('UPDATE profiles SET username = ?') && params && params.length >= 2) {
+            mockProfile.username = params[0] as string;
+            mockProfile.last_renamed_at = params[1] as string;
+          }
+          if (this.tables && this.tables.push) this.tables.push(sql);
+        }
+        exec(sql: string, params?: unknown[]) {
+          if (sql.includes('UPDATE profiles SET username = ?') && params && params.length >= 2) {
+            mockProfile.username = params[0] as string;
+            mockProfile.last_renamed_at = params[1] as string;
+            return [{ columns: [], values: [] }];
+          }
+          if (sql.includes('SELECT username, last_renamed_at') || sql.includes('SELECT last_renamed_at')) {
+            return [{
+              columns: ['username', 'last_renamed_at'],
+              values: [[mockProfile.username, mockProfile.last_renamed_at]]
+            }];
+          }
+          return [{ columns: [], values: [] }];
+        }
         prepare() { return { bind: () => {}, step: () => false, free: () => {} }; }
         export() { return new Uint8Array(); }
       }
