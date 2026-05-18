@@ -101,7 +101,24 @@ When deploying to a restricted NAS environment using Postgres 15+:
 
 - **Superuser Mandate**: Postgres 15 introduces stricter schema ownership rules. During initialization, you MUST grant `SUPERUSER` to the core Supabase roles (`supabase_admin`, `authenticator`) to ensure migrations can bypass permission deadlocks on the `public` schema.
 - **Healthcheck Jitter**: Increase the `interval` and `retries` for the `db` healthcheck to accommodate lower CPU priority on NAS background tasks.
-- **MikroTik Router Loopback & Hairpin NAT**: When mapping external ports (e.g., `8443` HTTPS via a public DDNS domain like `myqnapcloud.com`) to the internal QNAP local IP address, devices inside the same LAN will fail to connect due to loopback routing issues unless **Hairpin NAT** (a `src-nat` rule with a `masquerade` action for the local subnet directed to the target IP) is active on the MikroTik router.
+- **QNAP NAS External IP Drop Trap**: By default, a QNAP NAS will drop reply packets destined to public IP addresses if its local firewall (**QuFirewall**) is active (and set to block non-local subnets) or if the **Default Gateway** on the active Virtual Switch is misconfigured.
+  - *Symptom*: Sniffer on `bridge-local` shows incoming packets (`←`) to the NAS on port `8443` but no reply packets (`→`).
+  - *Fix (Bypass)*: Modify the **Hairpin NAT** rule in the router by unsetting the `src-address` filter (removing the local subnet restriction). This forces the router to masquerade **all** incoming traffic destined for the NAS (including external public IPs) to the router's local IP (`192.168.88.1`). The NAS receives them as local traffic, replies to the router, and the connection works perfectly.
+- **MikroTik RouterOS v7 FIB Decoupling Trap**: In RouterOS v7, Mangle `mark-routing` actions and routing tables are decoupled. The routing engine ignores marked packets and searches the `main` table unless a corresponding **Routing Rule** maps the mark to the table.
+  - *Fix*: You MUST add explicit routing rules:
+
+    ```routeros
+    /routing rule add routing-mark=to_ISP_1_franco action=lookup table=to_ISP_1_franco
+    /routing rule add routing-mark=to_ISP_2_omar action=lookup table=to_ISP_2_omar
+    ```
+
+- **"Excluir Router" Prerouting Accept Trap**: Many MikroTik multi-WAN setups include a high-priority accept rule for local traffic (`chain=prerouting action=accept dst-address-type=local comment="Excluir Router del Balanceo"`). When external packets are masqueraded to the router's IP (`192.168.88.1`), their reply packets are destined for `192.168.88.1` and hit this accept rule, terminating Mangle evaluation early. This prevents them from being marked with `to_ISP_1_franco`, causing them to route out the default WAN in `main` (Claro) with Personal's public IP as source, resulting in symmetric routing drops.
+  - *Fix (Quirúrgico)*: Add a high-priority, ultra-specific rule before the accept rule to intercept and route NAS replies (restricted to external connections via `connection-mark` to prevent internal loopback disconnection):
+
+    ```routeros
+    /ip firewall mangle add chain=prerouting action=mark-routing new-routing-mark=to_ISP_1_franco passthrough=no src-address=192.168.88.200 src-port=8443 protocol=tcp connection-mark=ISP1-input comment="Parche Quirurgico - Supabase WAN1 Reply" place-before=[Excluir Router index]
+    ```
+
 - **ESLint Code Quality Standards**:
   - **Double-Quoted Dollar Signs**: Never escape dollar signs (`\$`) in regular double-quoted strings (`"..."`) or regex literals inside deployment scripts. Escaping them is only valid within template literals and will trigger ESLint `no-useless-escape` errors.
   - **Non-Empty Catch Blocks**: Avoid writing empty `catch {}` blocks in node scripts. Always add at least a descriptive comment (e.g., `// Silently ignore`) inside the catch block to satisfy ESLint `no-empty` rules.

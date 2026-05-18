@@ -26,7 +26,7 @@ que ya existen.
 
 ## Arquitectura general
 
-```
+```text
 Supabase (tablas nuevas)
   ├── war_factions         → bando de cada jugador
   ├── war_points           → PT acumulados por bando por mapa por semana
@@ -612,6 +612,7 @@ Al final de cada tipo de encuentro (cuando se determina si ganó, capturó, etc.
 agregar una llamada a `addWarPoints()`:
 
 **Captura exitosa:**
+
 ```js
 // Dentro de la función que maneja la captura exitosa de un Pokémon salvaje
 // (buscar donde se llama captureWild() o equivalente)
@@ -620,21 +621,25 @@ await addWarPoints(currentMapId, isShiny ? 'shiny_capture' : 'capture', true);
 ```
 
 **Captura fallida (Pokémon se escapa):**
+
 ```js
 await addWarPoints(currentMapId, 'capture', false);
 ```
 
 **Victoria contra entrenador NPC:**
+
 ```js
 await addWarPoints(currentMapId, 'trainer_win', true);
 ```
 
 **Derrota contra entrenador NPC:**
+
 ```js
 await addWarPoints(currentMapId, 'trainer_win', false);
 ```
 
 **Pesca exitosa:**
+
 ```js
 await addWarPoints(currentMapId, 'fishing', true);
 ```

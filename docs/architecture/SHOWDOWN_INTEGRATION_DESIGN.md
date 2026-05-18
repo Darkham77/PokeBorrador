@@ -1,6 +1,7 @@
 # Integración de Pokémon Showdown - Documento de Diseño
 
 ## 1. Resumen del Proyecto
+
 - **Objetivo:** Reemplazar el motor de combate actual de Poké Vicio por el simulador open-source de Pokémon Showdown (vía `@pkmn/sim`).
 - **Propósito:** Delegar el 100% de la lógica de combate (cálculos de daño, precisión, estados, habilidades y mecánicas) a un motor infalible y probado por la comunidad.
 - **Público:** Jugadores que buscan combates precisos sin bugs, manteniendo la integridad del competitivo, tanto en modo Offline (Historia) como Online (PvP).
@@ -8,6 +9,7 @@
 - **No-Objetivos:** No se reescribirá la interfaz gráfica; el cliente de Vue y Phaser actuará como un "visualizador tonto" de los cálculos que dicte el simulador.
 
 ## 2. Asunciones y Requisitos No Funcionales
+
 1. **Datos Compatibles:** Asumimos que los datos actuales de nuestro juego (IVs, EVs, stats, movimientos) se pueden formatear a la sintaxis estándar de texto de equipos de Showdown antes de iniciar el combate.
 2. **Empaquetado Frontend:** Asumimos que podemos empaquetar `@pkmn/sim` (una librería Node) dentro de Vite y el navegador, posiblemente mediante un Web Worker.
 3. **Animaciones Desacopladas:** La UI se encargará de "retrasar" la información visual. Aunque el motor resuelva todo el turno en 1 milisegundo, nuestro *Store* debe reproducir visualmente los eventos paso a paso (ej. la animación del ataque primero, luego la barra de vida bajando).
@@ -24,13 +26,16 @@
 ## 4. Especificación Técnica y Flujo de Datos
 
 ### 4.1. Componentes del Sistema
+
 La integración se dividirá en 4 componentes principales con fronteras claras:
+
 1. **`BattleWorker.ts` (El Motor Oculto):** Web Worker dedicado. Importa `@pkmn/sim`, inicializa combates y recibe comandos del tipo `p1 move tackle`. Devuelve eventos crudos en formato `SIM-PROTOCOL`.
 2. **`ShowdownParser.ts` (El Traductor):** Clase utilitaria. Lee las salidas crudas (ej. `|-damage|p1a: Pikachu|50/100`) y las transforma en mutaciones ordenadas y legibles para nuestro frontend.
 3. **`useBattleEngineStore.ts` (Pinia Store):** El orquestador. Mantiene el estado visual actual, se comunica con el *Worker* y alimenta de datos a la UI.
 4. **`BattleArenaView.vue` (Vista de Combate):** Completamente reactiva. Solo pinta en pantalla lo que el Store dicta. Si el Store dice que Pikachu tiene 50 HP, dibuja la barra al 50%.
 
 ### 4.2. Flujo de Datos del Turno
+
 1. El jugador presiona un movimiento en la UI.
 2. La vista llama a `battleStore.sendAction('move 1')`.
 3. El *Store* despacha la acción al *Worker* vía `postMessage()`.

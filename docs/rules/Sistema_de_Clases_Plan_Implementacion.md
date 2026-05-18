@@ -403,7 +403,7 @@ const daycareCostMult = getClassModifier('daycareCost');
 
 ## 🚦 Orden de Implementación Recomendado
 
-```
+```text
 FASE 1 (Base de datos de clases)
     ↓
 FASE 2 (UI de selección — para poder probar)

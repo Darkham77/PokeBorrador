@@ -134,12 +134,12 @@ Este documento presenta un diseño técnico para las clases de jugador, detallan
 
 ---
 
-## Consideraciones Generales para la Implementación:
+## Consideraciones Generales para la Implementación
 
-*   **Gestión de Clases:** Se recomienda añadir una propiedad `player.class` al objeto `state` del jugador (`src/legacy/js/04_state.js`). La elección inicial de clase podría ser un paso en el tutorial o una opción en el menú principal. Un cambio de clase posterior podría implicar un costo significativo en `₽` o `Battle Coins`, o una serie de misiones específicas.
-*   **Balance y Progresión:** Es fundamental realizar pruebas exhaustivas para asegurar que los modificadores numéricos (`multiplicadores`, `porcentajes`) de cada clase estén equilibrados y que la progresión de clase (desbloqueo de habilidades o mejora de bonificaciones con el nivel de clase) sea gratificante. El `trainerLevel` y `trainerExp` existentes en `src/legacy/js/04_state.js` podrían adaptarse para representar el nivel de la clase.
-*   **Interfaz de Usuario (UI):** Cada clase podría tener elementos UI distintivos o secciones de menú exclusivas (ej. un botón para 
+* **Gestión de Clases:** Se recomienda añadir una propiedad `player.class` al objeto `state` del jugador (`src/legacy/js/04_state.js`). La elección inicial de clase podría ser un paso en el tutorial o una opción en el menú principal. Un cambio de clase posterior podría implicar un costo significativo en `₽` o `Battle Coins`, o una serie de misiones específicas.
+* **Balance y Progresión:** Es fundamental realizar pruebas exhaustivas para asegurar que los modificadores numéricos (`multiplicadores`, `porcentajes`) de cada clase estén equilibrados y que la progresión de clase (desbloqueo de habilidades o mejora de bonificaciones con el nivel de clase) sea gratificante. El `trainerLevel` y `trainerExp` existentes en `src/legacy/js/04_state.js` podrían adaptarse para representar el nivel de la clase.
+* **Interfaz de Usuario (UI):** Cada clase podría tener elementos UI distintivos o secciones de menú exclusivas (ej. un botón para
 Misiones Clandestinas para el Equipo Rocket, o un panel de Racha de Capturas para el Cazabichos). Esto reforzará la identidad de cada rol y proporcionará una experiencia de usuario más inmersiva.
-*   **Misiones Idle:** Para las clases que se benefician de misiones (como el Equipo Rocket), se puede implementar un sistema de misiones idle donde el jugador asigna Pokémon o recursos a una tarea y, después de un tiempo, recibe recompensas. Esto podría integrarse con el sistema de `daycare_missions` existente en `src/legacy/js/04_state.js`.
+* **Misiones Idle:** Para las clases que se benefician de misiones (como el Equipo Rocket), se puede implementar un sistema de misiones idle donde el jugador asigna Pokémon o recursos a una tarea y, después de un tiempo, recibe recompensas. Esto podría integrarse con el sistema de `daycare_missions` existente en `src/legacy/js/04_state.js`.
 
 Este enfoque técnico busca proporcionar una base sólida para la implementación de las clases, permitiendo una integración más fluida con la lógica de juego existente y ofreciendo una experiencia de juego rica y variada para los jugadores.

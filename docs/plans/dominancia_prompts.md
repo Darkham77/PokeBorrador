@@ -1,8 +1,9 @@
 # 🗺️ Prompts para implementar el Sistema de Dominancia — Poké Vicio
 
 > Usá cada prompt de forma **individual**, en orden. Antes de avanzar al siguiente, verificá que el juego cargue sin errores en la consola.
-> 
+>
 > **Estado actual de la implementación:**
+>
 > - ✅ SQL schema creado (`db_dominance_schema.sql`) — **pendiente ejecutarlo en Supabase**
 > - ✅ `src/legacy/js/04_state.js` — campos `faction`, `warCoins`, `warCoinsSpent`, `warDailyCap` añadidos al estado
 > - ✅ `src/legacy/js/21_dominance.js` — lógica central creada (guardianes, puntos, bonos, UI)
@@ -16,7 +17,7 @@
 
 No es un prompt para la IA. Debés vos mismo ir a **Supabase → SQL Editor** y ejecutar el archivo:
 
-```
+```text
 d:\Documentos\GitHub\PokeBorrador\db_dominance_schema.sql
 ```
 
@@ -26,7 +27,7 @@ Esto crea las tablas: `war_factions`, `war_points`, `war_dominance`, `guardian_c
 
 ## PROMPT 1 — Verificar el estado actual del archivo src/legacy/js/21_dominance.js
 
-```
+```text
 Abrí el archivo src/legacy/js/21_dominance.js y verificá que contenga las siguientes funciones. Si alguna falta, añadila al final sin tocar lo que ya existe:
 
 1. `renderFactionModal()` — muestra el modal `#faction-choice-modal` si `state.faction === null`
@@ -44,7 +45,7 @@ Si todas existen, respondé "Todo OK" y no modifiques nada.
 
 ## PROMPT 2 — Hook en src/legacy/js/06_encounters.js: Guardián en goLocation
 
-```
+```text
 En el archivo src/legacy/js/06_encounters.js, encontrá la función `goLocation(locId)`. Necesito hacer dos cambios quirúrgicos:
 
 **Cambio 1:** Convertir la función a `async`:
@@ -66,22 +67,24 @@ if (typeof tryTriggerGuardian === 'function') {
     return;
   }
 }
-```
+```text
 
 No toques nada más en el archivo. Verificá que el juego cargue sin errores de consola.
+
 ```
 
 ---
 
 ## PROMPT 3 — Hook en src/legacy/js/04_state.js: multiplicador shiny de dominancia
 
-```
+```text
+
 En el archivo src/legacy/js/04_state.js, dentro de la función `makePokemon(id, level)`, encontrá este bloque:
 
 ```js
 finalShinyRate = Math.max(1, finalShinyRate);
 const isShiny = Math.random() < (1 / finalShinyRate);
-```
+```text
 
 Justo ANTES de esa línea `finalShinyRate = Math.max(1, finalShinyRate);`, añadir:
 
@@ -90,22 +93,24 @@ Justo ANTES de esa línea `finalShinyRate = Math.max(1, finalShinyRate);`, añad
 if (typeof getDominanceShinyMultiplier === 'function' && window.currentEncounterMapId) {
   finalShinyRate = Math.floor(finalShinyRate / getDominanceShinyMultiplier(window.currentEncounterMapId));
 }
-```
+```text
 
 No toques nada más en el archivo. Verificá que el juego cargue sin errores.
+
 ```
 
 ---
 
 ## PROMPT 4 — Hook en src/legacy/js/07_battle.js: puntos de guerra al ganar
 
-```
+```text
+
 En el archivo src/legacy/js/07_battle.js, dentro de la función `endBattle(won)`, encontrá este bloque exacto:
 
 ```js
 setLog(`¡${b.enemy.name} fue derrotado!`, 'log-player');
 awardBattleExperience();
-```
+```text
 
 DESPUÉS de `awardBattleExperience();`, añadir:
 
@@ -118,22 +123,24 @@ if (typeof addWarPoints === 'function') {
     addWarPoints(wMapId, wType, true);
   }
 }
-```
+```text
 
 No toques nada más. Verificá que el juego cargue sin errores.
+
 ```
 
 ---
 
 ## PROMPT 5 — Hook en src/legacy/js/07_battle.js: multiplicador EXP de dominancia
 
-```
+```text
+
 En el archivo src/legacy/js/07_battle.js, dentro de la función `awardBattleExperience(isCapture = false)`, encontrá estas líneas:
 
 ```js
 const expMultiplier = isCapture ? 4 : ((b.isTrainer || b.isGym) ? 8 : 4);
 const baseExp = Math.floor(b.enemy.level * expMultiplier);
-```
+```text
 
 Reemplazalas por:
 
@@ -150,30 +157,35 @@ if (typeof getDominanceExpMultiplier === 'function' && b.locationId) {
 }
 
 const baseExp = Math.floor(b.enemy.level * expMultiplier);
-```
+```text
 
 No toques nada más. Verificá que el juego cargue sin errores.
+
 ```
 
 ---
 
 ## PROMPT 6 — Hook en src/legacy/js/07_battle.js: captura de Guardián
 
-```
+```text
+
 En el archivo src/legacy/js/07_battle.js, encontrá la función `catchSuccess(enemy)`.
 
 **Cambio 1:** Convertirla a async:
+
 - Cambiá `function catchSuccess(enemy)` por `async function catchSuccess(enemy)`
 
 **Cambio 2:** Dentro de la función, DESPUÉS de:
+
 ```js
 caught.hp = Math.min(caught.maxHp, Math.max(1, enemy.hp));
-```
+```text
 
 Y ANTES de:
+
 ```js
 if (!state.box) state.box = [];
-```
+```text
 
 Añadir este bloque:
 
@@ -188,16 +200,18 @@ if (enemy.isGuardian && typeof claimGuardianCapture === 'function') {
     return;
   }
 }
-```
+```text
 
 No toques nada más. Verificá que el juego cargue sin errores.
+
 ```
 
 ---
 
 ## PROMPT 7 — CSS de Dominancia en style.css
 
-```
+```text
+
 Abrí el archivo style.css. Andá al final del archivo y añadí el siguiente bloque de estilos. No modifiques ninguna línea existente, solo agregá al final:
 
 ```css
@@ -250,16 +264,18 @@ Abrí el archivo style.css. Andá al final del archivo y añadí el siguiente bl
   0%, 100% { transform: scale(1); }
   50% { transform: scale(1.08); }
 }
-```
+```text
 
 Verificá que el juego cargue sin errores de consola.
+
 ```
 
 ---
 
 ## PROMPT 8 — Verificar badge de facción en perfil (src/legacy/js/01_auth.js)
 
-```
+```text
+
 En el archivo src/legacy/js/01_auth.js, dentro de la función `updateProfilePanel(user, profile)`, verificá que exista un bloque que actualice el elemento `#player-faction-badge` según `state.faction`.
 
 Si NO existe, encontrá la línea donde termina el bloque `if (user && profile) { ... }` (cierra con `}`) y DESPUÉS de ese cierre de bloque, añadí:
@@ -279,32 +295,36 @@ if (factionBadge) {
     factionBadge.className = '';
   }
 }
-```
+```text
 
 Si YA existe ese bloque, no toques nada, respondé "Ya estaba".
+
 ```
 
 ---
 
 ## PROMPT 9 — Verificar llamada a initDominanceSystem en el login (src/legacy/js/01_auth.js)
 
-```
+```text
+
 En el archivo src/legacy/js/01_auth.js, dentro de la función `onLogin(user)`, verificá que exista esta línea (o similar) cerca del final del bloque try:
 
 ```js
 if (typeof initDominanceSystem === 'function') setTimeout(() => initDominanceSystem(), 1500);
-```
+```text
 
 Si NO existe, añadila justo ANTES de la línea `} catch (e) {` que cierra el bloque principal de `onLogin`.
 
 Si YA existe, no toques nada, respondé "Ya estaba".
+
 ```
 
 ---
 
 ## PROMPT 10 — Prueba final del sistema
 
-```
+```text
+
 Necesito que hagas una revisión integral del Sistema de Dominancia implementado en Poké Vicio. Revisá lo siguiente **leyendo los archivos actuales** (no hagas cambios aún):
 
 1. `src/legacy/js/21_dominance.js` — ¿Se define `initDominanceSystem`, `chooseFaction`, `tryTriggerGuardian`, `claimGuardianCapture`, `addWarPoints`, `renderWarPanel`, `renderWarShop`?
@@ -320,6 +340,7 @@ Necesito que hagas una revisión integral del Sistema de Dominancia implementado
 6. `index.html` — ¿Existe `<div id="tab-war">` con el panel de guerra? ¿Existe `<div id="faction-choice-modal">`? ¿Existe `<div id="war-shop-modal">`? ¿Existe `<script src="src/legacy/js/21_dominance.js">`?
 
 Reportá el estado de cada punto. Si hay algo faltante, hacé los cambios quirúrgicos necesarios.
+
 ```
 
 ---
@@ -327,7 +348,7 @@ Reportá el estado de cada punto. Si hay algo faltante, hacé los cambios quirú
 ## Notas de diseño (para referencia)
 
 | Concepto | Detalle |
-|---|---|
+| --- | --- |
 | Facciones | Team Unión (🟢) vs Team Poder (🟣) — elección permanente |
 | Guardianes | 35+ Pokémon en pool (Común/Raro/Élite) — determinístico por fecha+mapa |
 | Zonas de conflicto | 12 mapas rotativos diarios, elegidos por hash de la fecha |

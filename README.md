@@ -193,6 +193,28 @@ npm run servers:db:restore -- --server=nas-franco
 npm run servers:db:restore -- --server=nas-franco --file=database/backups/nas-franco_backup_2026-05-17T05-29-09.json
 ```
 
+#### 🌐 Resolución de Problemas de Red (MikroTik & Hairpin NAT)
+
+Si experimentas problemas de conectividad externa o timeouts al conectarte al Supabase del NAS desde fuera de tu red local, consulta el manual detallado en [supabase_infrastructure_manual.md](file:///.agents/skills/project-standards/references/technical/supabase_infrastructure_manual.md).
+
+Resumen de comandos MikroTik (Winbox / SSH) para resolver caídas de ruteo asimétrico:
+
+1. **Parche Quirúrgico de Mangle (Evita la exclusión del balanceador):**
+
+   ```routeros
+   /ip firewall mangle add chain=prerouting action=mark-routing new-routing-mark=to_ISP_1_franco passthrough=no src-address=192.168.88.200 src-port=8443 protocol=tcp connection-mark=ISP1-input comment="Parche Quirurgico - Supabase WAN1 Reply" place-before=[Excluir Router index]
+   ```
+
+2. **Reglas de Ruteo en RouterOS v7 (Asociación del FIB):**
+
+   ```routeros
+   /routing rule add routing-mark=to_ISP_1_franco action=lookup table=to_ISP_1_franco
+   /routing rule add routing-mark=to_ISP_2_omar action=lookup table=to_ISP_2_omar
+   ```
+
+3. **Bypass del Firewall del NAS (Hairpin NAT Universal):**
+   Remueve el filtro de `src-address` en tu regla de Hairpin NAT para masqueradear todas las conexiones entrantes (locales y externas) con la IP del router (`192.168.88.1`), forzando al NAS a aceptar y responder correctamente.
+
 ### Otros Comandos de Desarrollo
 
 ```bash

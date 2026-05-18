@@ -35,7 +35,7 @@ Donde `nature_mult` es:
 
 A nivel 50, un IV 31 vs IV 0 en un stat base 100:
 
-```
+```text
 IV31: floor((100×2 + 31) × 50/100 + 5) = floor(115.5 + 5) = 120
 IV0:  floor((100×2 + 0)  × 50/100 + 5) = floor(100 + 5)   = 105
 Diferencia: +15 puntos (≈ 14% más)
@@ -112,7 +112,7 @@ expGain = floor(enemy.level × 4 / 2) = floor(enemy.level × 2)  // 50% de derro
 
 ### Ítem Huevo Suerte Pequeño (booster)
 
-```
+```text
 expFinal = floor(baseExp × 1.5) // Mientras el buff esté activo
 ```
 
