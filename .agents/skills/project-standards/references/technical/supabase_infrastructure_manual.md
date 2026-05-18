@@ -57,6 +57,44 @@ The client performs a "permissive ping" to verify server availability.
 
 ---
 
+## 🔒 Security Hardening & RPC Standards
+
+### 1. GraphQL Schema Masking
+
+Since Poké Vicio communicates exclusively via PostgREST (REST API) and does not utilize GraphQL, exposing the database schema structure increases metadata footprint.
+
+- **Rule**: Mask all tables from the `pg_graphql` schema extension using explicit table comments:
+
+  ```sql
+  COMMENT ON TABLE public.table_name IS '@graphql(name: "hidden")';
+  ```
+
+### 2. Anon Privilege Revocation (Defense-in-Depth)
+
+By default, PostgreSQL grants read permissions to all roles.
+
+- **Rule**: Strictly private tables (e.g., `game_saves`, `eggs`, `chat_messages`) must explicitly revoke `SELECT` privileges from the anonymous (`anon`) role:
+
+  ```sql
+  REVOKE SELECT ON TABLE public.table_name FROM anon;
+  GRANT SELECT ON TABLE public.table_name TO authenticated;
+  ```
+
+### 3. Security Definer RPC Execution Control
+
+APIs implemented as database functions that bypass standard RLS (using `SECURITY DEFINER`) present potential security gaps if accessible by unauthorized callers.
+
+- **Rule**: Explicitly revoke execute access on all `SECURITY DEFINER` functions from `PUBLIC` and `anon` roles, granting execution strictly to `authenticated`:
+
+  ```sql
+  REVOKE EXECUTE ON FUNCTION public.my_rpc_function() FROM PUBLIC, anon;
+  GRANT EXECUTE ON FUNCTION public.my_rpc_function() TO authenticated;
+  ```
+
+- **Failsafe validation**: Always validate caller identity internally by comparing the target entity owner to `auth.uid()` within the function body to prevent signature or ID spoofing.
+
+---
+
 ## 🏗️ NAS & Postgres 15 Deployment (Qnap/Synology)
 
 When deploying to a restricted NAS environment using Postgres 15+:

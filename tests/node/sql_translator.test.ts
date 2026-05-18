@@ -21,4 +21,16 @@ describe('SQL Translator Logic (Native Node.js 26+ Test)', () => {
     const output = translatePostgresToSqlite(input);
     assert.strictEqual(output, '');
   });
+
+  test('should skip PostgreSQL-only REVOKE, GRANT, and ALTER FUNCTION statements', () => {
+    assert.strictEqual(translatePostgresToSqlite('REVOKE EXECUTE ON FUNCTION public.accept_trade_v2(uuid) FROM PUBLIC, anon;'), '');
+    assert.strictEqual(translatePostgresToSqlite('GRANT EXECUTE ON FUNCTION public.accept_trade_v2(uuid) TO authenticated;'), '');
+    assert.strictEqual(translatePostgresToSqlite('ALTER FUNCTION public.validate_game_save() SET search_path = public, pg_catalog;'), '');
+  });
+
+  test('should skip PostgreSQL-only RLS alter table statements', () => {
+    assert.strictEqual(translatePostgresToSqlite('ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;'), '');
+    assert.strictEqual(translatePostgresToSqlite('ALTER TABLE public.game_saves FORCE ROW LEVEL SECURITY;'), '');
+  });
 });
+

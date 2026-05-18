@@ -65,6 +65,9 @@ The engine automatically skips blocks that cannot be translated to SQLite, such 
 - `CREATE EXTENSION`
 - `ALTER PUBLICATION`
 - `ALTER TABLE ... ENABLE ROW LEVEL SECURITY`
+- `ALTER TABLE ... FORCE ROW LEVEL SECURITY`
+- `GRANT` / `REVOKE` (PostgreSQL privilege definitions)
+- `ALTER FUNCTION` (search path bindings, trigger parameter alters)
 
 ## Critical Limitations & Patterns
 
