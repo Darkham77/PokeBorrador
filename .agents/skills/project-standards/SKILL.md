@@ -41,6 +41,7 @@ Consult these manuals for detailed implementation specifications:
 | **Map & Spawns**         | [spawn_grid_manual.md](./references/systems/spawn_grid_manual.md)                         |
 | **Combat Camera**        | [combat_camera_manual.md](./references/battle/combat_camera_manual.md)                    |
 | **Dependencies**         | [dependency_management_manual.md](./references/technical/dependency_management_manual.md) |
+| **MikroTik & Ruteo**      | [mikrotik_routing_manual.md](./references/technical/mikrotik_routing_manual.md)             |
 
 ### 🛠️ Migration & Technical Support
 

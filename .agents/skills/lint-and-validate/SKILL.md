@@ -39,6 +39,17 @@ It is MANDATORY to run the full verification chain before reporting a task as co
 1. **Deprecation Check**: Replace legacy SASS ternary `if()` with modern `@if / @else` control blocks.
 2. **Variable Safety**: Verify that SASS color functions do not attempt to process CSS `var()` tokens directly.
 
+### Markdown / Documentation
+
+To maintain high documentation standards and clean compilation loops, all manual files (`**/*.md`) are validated using `npm run lint:md` (or `npx markdownlint` with appropriate parameters):
+
+1. **Rule Configuration**:
+   - **MD013 (Line Length)**: Disabled (`false`) to prevent false warnings on RouterOS CLI script listings and absolute file/image URLs.
+   - **MD024 (Duplicate Headings)**: Configured with `{"siblings_only": true}` to allow structural repeats (such as localized Advantages/Penalties) within separate nested sections.
+   - **MD045 (Alt Text)**: Strict alt-text is required for all images; reference-style image blocks must have descriptions (`![Description][ref_image]`).
+   - **MD060 (Table Column Style)**: Enforce standard pipe (`|`) spacing to ensure tables are aligned and readable.
+2. **Directory Exclusion**: Ignore build outputs, `node_modules`, and developmental chat attachments (`docs/media/**`) to avoid checking irrelevant temporary assets.
+
 ---
 
 > **Note for Poké Vicio**: Project-specific validation scripts (Hybrid Detection, Capitalization Audit, CSS Redundancy) have been moved to the [Manual de Validación y Calidad](../project-standards/references/validation_manual.md).
