@@ -1,6 +1,6 @@
 ---
 name: env-multi-server-parser
-description: Interprets, parses, and transforms environment variables from a unified master .env file containing multi-server grouped keys (SERVER_<profile>_<VAR>) and global settings (DOCKER_*). USE THIS SKILL WHENEVER the user requests server configuration, Supabase credential management, generating environment-specific .env files, modifying docker-compose.yml, or creating/executing deployment automation scripts (e.g., setup_supabase.py), even if the .env file is not explicitly mentioned.
+description: Interprets, parses, and transforms environment variables from a unified master .env file containing multi-server grouped keys (SERVER_<profile>_<VAR>) and global settings (DOCKER_*). USE THIS SKILL WHENEVER the user requests server configuration, Supabase credential management, generating environment-specific .env files, modifying docker-compose.yml, or creating/executing deployment automation scripts (e.g., setup_supabase.ts), even if the .env file is not explicitly mentioned.
 ---
 
 # Multi-Server Environment Interpreter & Parser (`.env`)
@@ -41,14 +41,6 @@ If the destination is a deployment configuration (e.g., `docker-compose.yml` or 
 
 **NEVER** include, mix, or expose variables belonging to one server profile in the configuration or deployment of another. Isolation must be absolute.
 
-### Rule 5: Intelligent Dual Resolution (Profile Name vs Canonical ID)
-
-When developing CLI tools or automation scripts that accept a `--server` argument, implement an intelligent fallback mechanism. If the provided argument does not match a direct profile prefix (e.g., `cloud`), search the parsed configurations to see if the argument matches any profile's canonical `ID` property (e.g., `SERVER_cloud_ID=official-prod`). This ensures seamless developer ergonomics whether invoking by profile name or canonical ID.
-
-### Rule 6: Proactive Credential Placeholder Detection
-
-In automated infrastructure scripts (such as database migrations or backup generators), proactively check if the resolved credentials contain placeholder strings (e.g., `cloud_pass_placeholder`). If detected, gracefully bypass connection attempts and log a clear, informative warning to the user, preventing fatal runtime crashes or network timeouts.
-
 ## 3. Implementation Patterns & Use Cases
 
 ### A. Generating Local Server-Specific `.env` Files
@@ -64,31 +56,35 @@ POOLER_TENANT_ID=your-tenant-id
 STORAGE_TENANT_ID=your-tenant-id
 ```
 
-### B. Consumption in Automation Scripts (Python / Bash)
+### B. Consumption in Automation Scripts (Node.js 26+ ESM / TypeScript)
 
-When developing or modifying scripts (such as `setup_supabase.py`), implement a parsing function that dynamically filters keys from the master environment based on the active server argument:
+When developing or modifying scripts (such as `setup_supabase.ts`), implement a parser that dynamically filters keys from the master environment based on the active server argument, utilizing Node.js 26+ native features:
 
-```python
-import os
-from dotenv import dotenv_values
+```typescript
+import fs from 'node:fs/promises';
 
-def load_server_config(master_env_path: str, server_profile: str) -> dict:
-    """
-    Loads and cleans environment variables for a specific server profile
-    from the master .env file.
-    """
-    raw_config = dotenv_values(master_env_path)
-    clean_config = {}
+async function loadServerConfig(masterEnvPath: string, serverProfile: string): Promise<Record<string, string>> {
+  const content = await fs.readFile(masterEnvPath, 'utf-8');
+  const cleanConfig: Record<string, string> = {};
+  
+  const prefix = `SERVER_${serverProfile}_`;
+  for (const line of content.split(/\r?\n/)) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith('#') || !trimmed.includes('=')) continue;
     
-    prefix = f"SERVER_{server_profile}_"
-    for key, value in raw_config.items():
-        if key.startswith(prefix):
-            clean_key = key[len(prefix):]
-            clean_config[clean_key] = value
-        elif key.startswith("DOCKER_"):
-            clean_config[key] = value
-            
-    return clean_config
+    const idx = trimmed.indexOf('=');
+    const key = trimmed.substring(0, idx).trim();
+    const value = trimmed.substring(idx + 1).trim();
+    
+    if (key.startsWith(prefix)) {
+      const cleanKey = key.substring(prefix.length);
+      cleanConfig[cleanKey] = value;
+    } else if (key.startsWith('DOCKER_')) {
+      cleanConfig[key] = value;
+    }
+  }
+  return cleanConfig;
+}
 ```
 
 ### C. Injection into `docker-compose.yml`

@@ -224,6 +224,13 @@ Use these scripts to verify project standards and ensure stability:
 
 ### ☁️ Supabase Infrastructure & Multi-Server Management
 
+- `npm run supabase:manage <command>`: Main Supabase CLI orchestrator in Node.js 26+ (`supabase/setup_supabase.ts`). Manages the Docker container lifecycle, smart environment variable inheritance, and custom Docker image generation for servers. Available subcommands:
+  - `all`: Performs the full pipeline (cloning official Supabase, generating configuration files, building the custom Docker image, and pushing it to Docker Hub) in a single step.
+  - `clone`: Performs a sparse-checkout of the official Supabase repository and dynamically injects our custom `Dockerfile`.
+  - `generate`: Reads the master `.env` file at the project root and generates server-specific `.env` files and the final `docker-compose.yml` file under `supabase/generated/`.
+  - `build`: Builds the custom Postgres Docker image (`pokevicio-db`) locally, pre-configured with the game's initial startup scripts.
+  - `publish`: Publishes the compiled custom Docker image to the specified Docker Hub registry.
+  - `add`: Consists of an interactive console-guided wizard to register new server profiles into the master `.env` file securely.
 - `npm run servers:configure`: Parses the unified master `.env` file, extracts server profiles (`SERVER_<profile>_*`), and automatically generates `src/data/official_servers.ts`, maintaining a single source of truth.
 - `npm run servers:db:update`: Supabase database manager and migrator in Node.js 26+. Connects to the chosen instance (`--server=<profile>` or `--all`), dynamically extracts credentials and Tenant ID, initializes the database if empty (`baseline_schema.sql`), and applies secure incremental patches.
 - `npm run servers:db:backup`: Connects to the chosen Supabase server (`--server=<profile>`), dynamically discovers all tables in the `public` schema, and downloads a complete structured backup in JSON format into `database/backups/`.

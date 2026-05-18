@@ -18,3 +18,8 @@ yarn-error.log*
 
 .gemini/
 dev-dist/
+
+# === [ SUPABASE MANAGER GENERATED ARTIFACTS ] ===
+supabase/docker/
+supabase/generated/
+supabase/temp_supabase/
