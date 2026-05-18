@@ -14,3 +14,13 @@ CREATE TABLE IF NOT EXISTS public.claim_queue (
 
 -- Index for performance on common lookups
 CREATE INDEX IF NOT EXISTS idx_claim_queue_user ON public.claim_queue(user_id);
+
+-- =====================================================
+-- CONTROLES DE SEGURIDAD (RLS, POLÍTICAS Y PRIVILEGIOS)
+-- =====================================================
+ALTER TABLE public.claim_queue ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Lectura propia de cola de reclamos" ON public.claim_queue;
+CREATE POLICY "Lectura propia de cola de reclamos" ON public.claim_queue FOR SELECT USING (auth.uid() = user_id);
+
+COMMENT ON TABLE public.claim_queue IS '@graphql(name: "hidden")';

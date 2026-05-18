@@ -51,7 +51,7 @@ BEGIN
 
   RETURN NEW;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql SET search_path = public, pg_catalog;
 
 -- Create the trigger
 DROP TRIGGER IF EXISTS trg_validate_game_save ON game_saves;

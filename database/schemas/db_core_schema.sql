@@ -70,7 +70,7 @@ BEGIN
   
   RETURN jsonb_build_object('success', true, 'last_save_id', v_new_id);
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_catalog;
 
 -- 4. RPC: Tiempo del Servidor
 -- Proporciona una fuente de tiempo inmutable para sincronizar misiones y eventos.
@@ -78,6 +78,47 @@ CREATE OR REPLACE FUNCTION fn_get_server_time()
 RETURNS timestamptz
 LANGUAGE sql
 STABLE
+SET search_path = public, pg_catalog
 AS $$
   SELECT now();
 $$;
+
+-- =====================================================
+-- CONTROLES DE SEGURIDAD (RLS, POLÍTICAS Y PRIVILEGIOS)
+-- =====================================================
+
+-- 1. Habilitar RLS
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.game_saves ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.system_config ENABLE ROW LEVEL SECURITY;
+
+-- 2. Políticas para profiles
+DROP POLICY IF EXISTS "Lectura pública de perfiles" ON public.profiles;
+CREATE POLICY "Lectura pública de perfiles" ON public.profiles FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Insertar propio perfil" ON public.profiles;
+CREATE POLICY "Insertar propio perfil" ON public.profiles FOR INSERT WITH CHECK (auth.uid() = id);
+
+DROP POLICY IF EXISTS "Actualizar propio perfil" ON public.profiles;
+CREATE POLICY "Actualizar propio perfil" ON public.profiles FOR UPDATE USING (auth.uid() = id) WITH CHECK (auth.uid() = id);
+
+-- 3. Políticas para game_saves
+DROP POLICY IF EXISTS "Lectura propia y amigos" ON public.game_saves;
+CREATE POLICY "Lectura propia y amigos" ON public.game_saves FOR SELECT USING (auth.role() = 'authenticated');
+
+DROP POLICY IF EXISTS "Insertar propio guardado" ON public.game_saves;
+CREATE POLICY "Insertar propio guardado" ON public.game_saves FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Actualizar propio guardado" ON public.game_saves;
+CREATE POLICY "Actualizar propio guardado" ON public.game_saves FOR UPDATE USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+
+-- 4. Políticas para system_config
+DROP POLICY IF EXISTS "Lectura pública system_config" ON public.system_config;
+CREATE POLICY "Lectura pública system_config" ON public.system_config FOR SELECT USING (true);
+
+-- 5. Privilegios de ejecución RPC
+REVOKE EXECUTE ON FUNCTION public.save_game_trusted(jsonb, uuid) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.save_game_trusted(jsonb, uuid) TO authenticated;
+
+-- 6. Ocultar tablas del esquema GraphQL
+COMMENT ON TABLE public.system_config IS '@graphql(name: "hidden")';

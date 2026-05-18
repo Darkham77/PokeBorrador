@@ -73,7 +73,7 @@ BEGIN
 
   RETURN v_trade_id;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_catalog;
 
 -- 2. RPC: Aceptar Oferta (Quita activos del receptor y mueve todo a claim_queue)
 CREATE OR REPLACE FUNCTION accept_trade_v2(
@@ -146,7 +146,7 @@ BEGIN
 
   RETURN TRUE;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_catalog;
 
 -- 3. RPC: Reclamar Activo de la Cola
 CREATE OR REPLACE FUNCTION claim_asset_v2(
@@ -192,4 +192,15 @@ BEGIN
 
   RETURN v_new_save;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_catalog;
+
+-- =====================================================
+-- CONTROLES DE SEGURIDAD (RPC PRIVILEGIOS)
+-- =====================================================
+REVOKE EXECUTE ON FUNCTION public.send_trade_offer_v2(uuid, jsonb, jsonb, bigint, jsonb, jsonb, bigint, text) FROM PUBLIC, anon;
+REVOKE EXECUTE ON FUNCTION public.accept_trade_v2(uuid) FROM PUBLIC, anon;
+REVOKE EXECUTE ON FUNCTION public.claim_asset_v2(uuid) FROM PUBLIC, anon;
+
+GRANT EXECUTE ON FUNCTION public.send_trade_offer_v2(uuid, jsonb, jsonb, bigint, jsonb, jsonb, bigint, text) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.accept_trade_v2(uuid) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.claim_asset_v2(uuid) TO authenticated;

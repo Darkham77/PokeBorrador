@@ -64,7 +64,7 @@ BEGIN
 
   RETURN v_listing_id;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_catalog;
 
 -- 2. RPC: Comprar con Escrow (Mueve activos y dinero a colas de reclamo)
 CREATE OR REPLACE FUNCTION buy_listing_v2(
@@ -122,7 +122,7 @@ BEGIN
 
   RETURN v_new_buyer_save;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_catalog;
 
 -- 3. RPC: Cancelar Publicación (Regresa activo a la cola del vendedor)
 CREATE OR REPLACE FUNCTION cancel_listing_v2(
@@ -151,4 +151,15 @@ BEGIN
 
   RETURN TRUE;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_catalog;
+
+-- =====================================================
+-- CONTROLES DE SEGURIDAD (RPC PRIVILEGIOS)
+-- =====================================================
+REVOKE EXECUTE ON FUNCTION public.publish_listing_v2(text, jsonb, bigint) FROM PUBLIC, anon;
+REVOKE EXECUTE ON FUNCTION public.buy_listing_v2(uuid) FROM PUBLIC, anon;
+REVOKE EXECUTE ON FUNCTION public.cancel_listing_v2(uuid) FROM PUBLIC, anon;
+
+GRANT EXECUTE ON FUNCTION public.publish_listing_v2(text, jsonb, bigint) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.buy_listing_v2(uuid) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.cancel_listing_v2(uuid) TO authenticated;

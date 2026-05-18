@@ -42,7 +42,7 @@ BEGIN
     v_new_save := jsonb_set(
       v_save, 
       ARRAY['inventory', v_item_name], 
-      to_jsonb(COALESCE((v_save->'inventory'->>v_item_name')::INT, 0) + v_item_qty)
+      to_jsonb(COALESCE((v_save->'inventory'->>v_item_name)::INT, 0) + v_item_qty)
     );
   END IF;
 

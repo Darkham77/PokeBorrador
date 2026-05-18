@@ -479,8 +479,8 @@ async function generar() {
       "      DB_POOL_SIZE: ${POOLER_DB_POOL_SIZE}\n      RLIMIT_NOFILE: \"65536\""
     );
     contenidoCompose = contenidoCompose.replace(
-      '        "/app/bin/migrate && /app/bin/supavisor eval \\"\\$\\$(cat /etc/pooler/pooler.exs)\\" && /app/bin/server"',
-      '        "/app/bin/migrate && /app/bin/supavisor eval \\"\\$\\$(cat /supabase-volumes/pooler/pooler.exs)\\" && /app/bin/server"'
+      "/etc/pooler/pooler.exs",
+      "/supabase-volumes/pooler/pooler.exs"
     );
 
     // Adaptar Analytics

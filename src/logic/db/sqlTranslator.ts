@@ -107,10 +107,16 @@ export function translatePostgresToSqlite(sql: string): string {
     'CREATE TRIGGER',
     'DROP TRIGGER',
     'CREATE EXTENSION',
-    'ALTER TABLE PROFILES ENABLE ROW LEVEL SECURITY'
+    'REVOKE',
+    'GRANT',
+    'ALTER FUNCTION'
   ];
   
   if (skipPatterns.some(pattern => upperSql.startsWith(pattern))) {
+    return '';
+  }
+
+  if (upperSql.startsWith('ALTER TABLE') && (upperSql.includes('ENABLE ROW LEVEL SECURITY') || upperSql.includes('FORCE ROW LEVEL SECURITY'))) {
     return '';
   }
 
