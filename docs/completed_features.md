@@ -4,26 +4,27 @@ Este documento sirve como referencia de los componentes, menús y herramientas q
 
 ## Lista de Referencia
 
-| Menú / Herramienta | Estado | Clases / Módulos de Referencia |
+| Menú / Herramienta | Estado | Componentes / Módulos de Referencia |
 | :--- | :--- | :--- |
-| **MAPA** | Finalizado | `MapCard.vue`, `MapGrid.vue`, `map.ts` (Store) |
-| **POKEMON -> EQUIPO** | Finalizado | `TeamList.vue`, `PokemonSelectionModal.vue`, `game.ts` (Store) |
-| **POKEMON -> POKEDEX** | Finalizado | `PokedexControls.vue`, `UnifiedPokemonDetailModal.vue`, `game.ts` (Store) |
-| **POKEMON -> CAJA PC** | Finalizado | `BoxView.vue`, `BoxGrid.vue`, `BoxFilters.vue`, `BoxTabs.vue`, `_box.scss` |
+| **MAPA** | Finalizado | `map/MapCard.vue`, `map/MapGrid.vue`, `map.ts` (Store) |
+| **POKEMON -> EQUIPO** | Finalizado | `modals/TeamManagementModal.vue`, `modals/PokemonSelectionModal.vue`, `game.ts` (Store) |
+| **POKEMON -> POKEDEX** | Finalizado | `pokedex/PokedexControls.vue`, `pokedex/PokedexPokemonCard.vue`, `modals/UnifiedPokemonDetailModal.vue`, `game.ts` (Store) |
+| **POKEMON -> CAJA PC** | Finalizado | `BoxView.vue`, `box/BoxGrid.vue`, `box/BoxFilters.vue`, `box/BoxTabs.vue`, `_box.scss` |
 | **HUDS** | Finalizado | `HUD_Navigation.vue`, `_hud.scss` |
-| **MODALS** | Finalizado | `BaseModal.vue`, `_modals.scss`, `modals.ts` (Store) |
-| **TOOLTIPS** | Finalizado | `PVTooltip.vue`, `_tooltips.scss`, `ui.ts` (Store) |
+| **MODALS** | Finalizado | `common/BaseModal.vue`, `_modals.scss`, `modals.ts` (Store) |
+| **TOOLTIPS** | Finalizado | `common/PVTooltip.vue`, `_tooltips.scss`, `ui.ts` (Store) |
 | **BIBLIOTECA** | Finalizado | `LibraryModal.vue`, `library.ts` (Store) |
-| **CHAT** | Finalizado | `GlobalChat.vue`, `SocialCenterModal.vue`, `chat.ts` (Store) |
-| **DEBUG** | Finalizado | `LocalDebugPanel.vue`, `debug.ts` (Store) |
+| **CHAT** | Finalizado | `social/GlobalChat.vue`, `social/SocialCenterModal.vue`, `chat.ts` (Store) |
+| **DEBUG** | Finalizado | `admin/LocalDebugPanel.vue`, `debug.ts` (Store) |
 | **AJUSTES** | Finalizado | `SettingsModal.vue`, `ui.ts` (Store) |
-| **PERFIL** | Finalizado | `ProfileModal.vue`, `trainer.ts` (Store) |
-| **CAMBIO DE BANDO** | Finalizado | `ClassSelectionModal.vue`, `FactionChoiceModal.vue`, `playerClass.ts` (Store) |
-| **BUSCADOR DE POKEMON** | Finalizado | `PokemonSelectionModal.vue`, `BoxFilters.vue`, `ui.ts` (Store) |
-| **VISOR DE DETALLES** | Finalizado | `UnifiedPokemonDetailModal.vue`, `pokemonDataProvider.ts` |
-| **MOCHILA** | Finalizado | `InventoryModal.vue`, `InventorySidebar.vue`, `InventoryItemCard.vue`, `inventory.ts` (Store), `_inventory.scss` |
-| **POKÉ MARKET** | Finalizado | `ShopModal.vue`, `ShopSidebar.vue`, `ShopItemCard.vue`, `shop.ts` (Store), `_shop.scss` |
-| **BC SHOP** | Finalizado | `BCShopModal.vue`, `BCShopSidebar.vue`, `BCShopItemCard.vue`, `shop.ts` (Store), `_shop.scss` |
+| **PERFIL** | Finalizado | `ProfileModal.vue`, `profile.ts` (Store), `game.ts` (Store) |
+| **SELECCIÓN DE CLASE / BANDO** | Finalizado | `modals/ClassSelectionModal.vue`, `modals/ClassMissionsModal.vue`, `modals/class/ClassDashboard.vue`, `FactionChoiceModal.vue`, `playerClass.ts` (Store) |
+| **BUSCADOR DE POKEMON** | Finalizado | `modals/PokemonSelectionModal.vue`, `box/BoxFilters.vue`, `ui.ts` (Store) |
+| **VISOR DE DETALLES** | Finalizado | `modals/UnifiedPokemonDetailModal.vue`, `pokemonDataProvider.ts` |
+| **MOCHILA** | Finalizado | `modals/InventoryModal.vue`, `modals/inventory/InventorySidebar.vue`, `modals/inventory/InventoryItemCard.vue`, `inventory.ts` (Store), `_inventory.scss` |
+| **POKÉ MARKET** | Finalizado | `modals/ShopModal.vue`, `modals/shop/ShopSidebar.vue`, `modals/shop/ShopItemCard.vue`, `shop.ts` (Store), `_shop.scss` |
+| **BC SHOP** | Finalizado | `modals/BCShopModal.vue`, `modals/bc-shop/BCShopSidebar.vue`, `modals/bc-shop/BCShopItemCard.vue`, `shop.ts` (Store), `_shop.scss` |
+| **WAR SHOP / MARKET DE GUERRA** | Finalizado | `modals/war-shop/WarShopModal.vue`, `modals/war-shop/WarShopItemCard.vue`, `shop.ts` (Store), `_shop.scss` |
 | **MOTOR DE CLIMA** | Finalizado | `weatherUtils.ts`, `weather-tables.ts`, `timeUtils.ts`, `map.ts` (Store) |
 | **GIMNASIOS** | Finalizado | `GymsView.vue`, `GymCard.vue`, `gyms.ts` (Store) |
 
