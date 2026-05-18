@@ -44,6 +44,9 @@ We prioritize a deliberate contrast between modern, sleek UI shells and classic,
   - **WHY**: Balances deep history readability on large screens with gameplay space protection on small screens while providing instant side-recognition.
 - **Log Area & Control Separation**: The combat log area MUST have an independent scrollbar for entry history. Admin/Debug controls (e.g. Shiny/Guardian toggles) MUST be positioned outside the log's scrolling container to ensure they don't block messages or collide with entry animations.
 - **Bottom Anchor Precision**: In fullscreen mode, action buttons MUST be positioned with a maximum of `2px` from the bottom edge (or `0px` with a slight negative margin) to ensure they feel physically anchored to the device frame.
+- **Bottom Navigation Bar Auto-Fit**: To prevent floating bottom navigation capsules (e.g., `hud-nav.pos-bottom`) from overflowing or clipping on narrow/mobile viewports, set their width to `max-content` and specify a horizontal safety margin (e.g., `max-width: calc(100% - 16px)`). Group elements horizontally using `justify-content: center` in the parent wrapper, and use fluid media queries to progressively contract internal `gap`, `padding`, and child `min-width` parameters rather than relying on browser-level `zoom` factors which can cause layout shifts.
+- **Flush Bottom Docking**: On narrow screen heights and mobile viewports, eliminate the vertical floating offset of bottom navigation bars (`bottom: 0`) to conserve valuable screen real estate and anchor the capsule directly to the device frame.
+- **Sharp Bottom Corners for Docked Elements**: Any bottom navigation bar docked flush against the screen edge must have its bottom corners squared off (`border-radius: Xpx Xpx 0 0`) across all screen configurations. This ensures a clean, aesthetically pleasing, and structurally sound visual intersection with the device frame, avoiding small rounded gaps.
 - **Zero-Gap Combat HUD**: In high-fidelity combat grids, eliminate vertical gaps between the arena and controls by using `row-gap: 0` and `auto` grid rows.
 - **Overlap Technique (-1px)**: Use a `margin-top: -1px` on control panels with dark/gradient backgrounds to prevent "light leaks" (black bars) between sections.
 - **Consolidated Premium Shells**: Apply `shell-premium` to the parent layout container (`.battle-controls-layout`) instead of individual sub-zones to ensure a seamless "single block" appearance.
@@ -169,6 +172,8 @@ We prioritize a deliberate contrast between modern, sleek UI shells and classic,
   - **Category Display Logic**: In compact mode, show the full category label (e.g., "Físico") if screen width > 420px. Abbreviate to "FIS/ESP" only on viewports ≤ 420px.
   - **Button Alignment**: Action buttons (Bag/Switch) flanking a central Poké Ball (64px) MUST use a fixed `min-height` (Standard: **40px**) instead of `100%` height to maintain visual symmetry and prevent unintended stretching.
   - **Premium Battle Actions**: Buttons like "Cambiar" or "Mochila" MUST use the `btn-vicio('sm')` mixin. Manual GSAP or generic button classes are forbidden to preserve the project's 3D pixel-art identity.
+    - **No Aesthetic Inventions**: Avoid introducing custom styling patterns (e.g., glassmorphism, transparent borders, custom drop-shadows) on buttons that diverge from the official `btn-vicio` mixins.
+    - **GSAP Hover Clash**: Standard UI buttons styled with `btn-vicio` rely on native CSS transitions for hover and active states (handled by the mixin). Adding redundant GSAP scale animations on mouseenter/mouseleave conflicts with the mixin's native hover translations (`translateY(-1px)`) and must be avoided.
   - **Move Button Solidity**: Combat moves MUST have solid dark backgrounds (`#12141c`) instead of high transparency. This ensures legibility of stats (PP, POT) while keeping type-colored borders for quick recognition.
 
 - **Sidebar HUD Standards (Team & Bag Quick-Access)**:
@@ -190,7 +195,13 @@ We prioritize a deliberate contrast between modern, sleek UI shells and classic,
 - **Battle-Aware Modifiers**: All dynamic move modifiers (glows, "boosted" text, accuracy indicators) MUST verify `battleStore.isBattleActive` before applying environmental or time-based logic. This prevents combat-only states (like night-time accuracy boosts) from leaking into the team information screens outside of active battle.
 - **Z-Index Layering**: HUD Navigation wrappers MUST use `pointer-events: none` and `z-index: var(--z-navigation)` to ensure they don't block interaction with Sidebar tools (Chat/Debug) while still allowing button clicks via `pointer-events: auto` on children.
 
-### 5. Input Groups & Financial Layouts (Large Number Safety)
+### 5. Cosmetics & Faction-Exclusive Design
+
+- **Pixel Font Legibility & Outlines**: Pixel fonts (Retro Typography) are highly sensitive to properties like `-webkit-text-stroke` or gradient-fill clippings with `-webkit-background-clip: text` and transparent color. These properties destroy pixel letterforms, causing them to look hollow and illegible. To achieve sharp outlines on pixel fonts, always use multiple solid pixel-aligned offset shadows (`text-shadow: 1px 1px 0 #color, -1px 1px 0 #color...`) combined with external soft glowing blur layers for premium effects.
+- **Faction-Exclusive Color Fidelity**: Cosmetics exclusive to factions (e.g., Team Unión and Team Poder) MUST align perfectly with their official brand identity and logo guidelines. They MUST avoid overlapping with existing elementary types (e.g., Union's blue must be Navy Blue/Gold/White to not clash with Flying/Vuelo's Cyan; Poder's colors must be Crimson/Slate/Orange/Gold to not clash with Fire/Fuego's solid red).
+- **Bi-Color Faction Contrast Rule**: To maximize character and visual separation in faction-exclusive chat or profile cosmetics, represent bicolor bandos by contrasting the text color and the glowing aura (e.g., Gold text with a Royal Blue aura for Unión; Orange/Gold text with a Crimson Red aura for Poder). This ensures both key brand colors are represented dynamically while keeping readability high.
+
+### 6. Input Groups & Financial Layouts (Large Number Safety)
 
 - **Input Stacking for Large Numbers**: Input groups housing numeric fields that can expand significantly (e.g., price inputs in the millions or billions) MUST be stacked vertically (`flex-direction: column`) rather than side-by-side in a narrow row. This allows the input box to stretch to 100% width of the form container, ensuring ample horizontal space for multi-million/billion figures.
 - **Negative Value Formatting & Wrapping Prevention**: When formatting negative values, deductions, or transaction fees, avoid spaces between the minus sign and currency symbol (render as `-₱` instead of `- ₱`). Always apply `white-space: nowrap` on financial summary rows/spans to guarantee that the minus sign never wraps to a separate line in narrow layouts.
@@ -238,6 +249,8 @@ We prioritize a deliberate contrast between modern, sleek UI shells and classic,
 
 - **Pointer Events Safety**: NEVER use `pointer-events: none` on interactive icons, badges, or pills that are intended to be clickable. This blocks the event from reaching the element or its parent's handler.
 - **Draggable Stability**: Apply `user-select: none` to draggable slots, cards, or grid items. This prevents text selection artifacts from disrupting the drag flow and ensures a stable "grab" feel.
+- **Dedicated Modal Isolation for Complex Inputs**: Identity changes (like renaming) or complex input-driven forms MUST not be crammed as inline-editing controls in narrow profiles, nor mixed inside simple Settings modals (which are meant only for global adjustments like zoom). Instead, design them as a dedicated sub-modal (e.g. `RenameModal.vue`) registered in `MODAL_REGISTRY` to guarantee ample visual space and prevent truncation or layout overflow.
+- **Standardized Action Links**: User-triggerable change actions inside profile modals (e.g. changing faction or changing names) should use a unified, subtle pixel-art link (`.change-link` class) instead of bulky, grey-bordered buttons, ensuring a clean, lightweight, and cohesive presentation.
 
 ### 4. Notifications & Toasts
 

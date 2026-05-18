@@ -5,8 +5,7 @@ description: Ensures the integrity of save data. Delegates technical rules to th
 
 # Skill: Save Integrity
 
-> [!IMPORTANT]
-> Any change in Pinia Stores or persistence logic MUST follow the rules in the [Save System Manual](../project-standards/references/save_system_manual.md).
+> [!IMPORTANT] Any change in Pinia Stores or persistence logic MUST follow the rules in the [Save System Manual](../project-standards/references/save_system_manual.md).
 
 ## Skill Focus
 
@@ -23,3 +22,4 @@ For specific protocols on database migrations and schema parity, consult the sta
 - **Version Check**: Always verify the `save_version` before attempting to load or migrate a user session.
 - **Domain + Port Sandbox Isolation**: Browser databases (LocalStorage/IndexedDB) are strictly isolated by `Protocol + Domain + Port`. In local dev, if Vite fallbacks to a different port (e.g., `5174` because `5173` is occupied), a blank database state will load. Always check the active browser address before running DB restore operations.
 - **Save Concurrency Redundancy**: Avoid invoking direct manual saves (`await game.save(false)`) inside UI/debug action loops or buttons if internal calls already trigger `scheduleSave()`. Concurrent duplicate saves inside the same millisecond trigger optimistic out-of-sync locks.
+- **Safe Browser Storage Utility**: When persisting user preferences, flags, or settings in the browser (e.g., custom zoom levels), ALWAYS use the `@/logic/utils/storage` `safeStorage` wrapper. This avoids exceptions in strict server-side rendering (SSR), sandbox environments, or browsers with disabled storage.

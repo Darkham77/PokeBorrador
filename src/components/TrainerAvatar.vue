@@ -35,40 +35,69 @@ const cls = computed(() => {
 
 const borderColor = computed(() => {
   if (props.borderOverride) return props.borderOverride;
-  if (props.level >= 20) return 'var(--yellow)';
-  if (props.level >= 10) return 'var(--silver)';
-  return 'var(--bronze)';
+  return 'rgba(255, 255, 255, 0.25)';
+});
+
+const shadowColor = computed(() => {
+  if (props.borderOverride) return `${props.borderOverride}44`;
+  return 'rgba(255, 255, 255, 0.08)';
 });
 
 const avatarClass = computed(() => {
   return props.avatarStyle ? ` ${props.avatarStyle}` : '';
 });
 
-const avatarStyles = computed((): CSSProperties => {
+// Check if current avatarStyle is a square style
+const isSquare = computed(() => {
+  return props.avatarStyle ? props.avatarStyle.includes('sq') : false;
+});
+
+// Outer container styles (MUST be transparent so it doesn't cover negative z-index pseudo-elements)
+const containerStyles = computed((): CSSProperties => {
   const sizePx = props.size;
   const bColor = borderColor.value;
+  const sColor = shadowColor.value;
   
-  const baseStyles: CSSProperties = {
+  return {
     width: `${sizePx}px`,
     height: `${sizePx}px`,
     minWidth: `${sizePx}px`,
     minHeight: `${sizePx}px`,
-    borderRadius: '50%',
-    border: `2px solid ${bColor}`,
-    boxShadow: `0 0 ${sizePx / 4}px ${bColor}66`,
     position: 'relative',
     flexShrink: 0,
-    boxSizing: 'border-box'
+    boxSizing: 'border-box',
+    borderStyle: 'solid',
+    borderWidth: '2px',
+    background: 'transparent', // Always transparent to allow glows underneath
+    ...(props.avatarStyle ? {} : {
+      borderRadius: '50%',
+      borderColor: bColor,
+      boxShadow: `0 0 ${sizePx / 4}px ${sColor}`
+    })
+  };
+});
+
+// Inner face wrapper styles (holds the actual face or cap graphic)
+const faceStyles = computed((): CSSProperties => {
+  const sizePx = props.size;
+  const rad = isSquare.value ? '6px' : '50%';
+  
+  const baseStyles: CSSProperties = {
+    width: '100%',
+    height: '100%',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    boxSizing: 'border-box',
+    borderRadius: rad,
+    zIndex: 2, // Drawn on top of pseudo-element gradients and masks
+    fontSize: `${sizePx / 2}px`
   };
 
   if (!cls.value) {
     return {
       ...baseStyles,
-      background: 'var(--bg-card)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      fontSize: `${sizePx / 2}px`
+      background: 'var(--bg-card)'
     };
   }
 
@@ -78,8 +107,8 @@ const avatarStyles = computed((): CSSProperties => {
 
   return {
     ...baseStyles,
-    backgroundColor: 'transparent',
-    backgroundImage: `Radial-Gradient(circle, ${cls.value.color}44 0%, transparent 80%), url('${displayUrl}')`,
+    backgroundColor: '#1e293b',
+    backgroundImage: `radial-gradient(circle, ${cls.value.color}44 0%, transparent 80%), url('${displayUrl}')`,
     backgroundSize: `cover, ${bgSize}`,
     backgroundPosition: `center, ${bgPos}`,
     backgroundRepeat: 'no-repeat',
@@ -94,12 +123,17 @@ const avatarStyles = computed((): CSSProperties => {
   <div 
     class="trainer-avatar-container" 
     :class="avatarClass" 
-    :style="avatarStyles"
+    :style="containerStyles"
   >
-    <template v-if="!cls">
-      🧢
-    </template>
-    <slot name="overlay" />
+    <div 
+      class="avatar-face-wrapper" 
+      :style="faceStyles"
+    >
+      <template v-if="!cls">
+        🧢
+      </template>
+      <slot name="overlay" />
+    </div>
   </div>
 </template>
 
@@ -108,11 +142,10 @@ const avatarStyles = computed((): CSSProperties => {
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
 
   &.blink-red {
     animation: blinkRed 1.5s infinite;
-    animation-delay: Calc(var(--avatar-seed, 0) * -1.5s);
+    animation-delay: calc(var(--avatar-seed, 0) * -1.5s);
   }
 }
 

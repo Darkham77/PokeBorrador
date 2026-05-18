@@ -71,10 +71,11 @@ graph TD
 
 BEFORE touching any files or starting the verification cycle, you MUST perform an initial commit to safeguard the current state.
 
-1. `git status` to check changes.
-2. `git add .`
-3. **Commit Message**: Use the "Elegant Protocol" (Step 148) to describe the work performed so far.
-4. **Why**: This ensures that even if an automated repair tool or linter modifies files, your original logic is preserved in the history and can be easily diffed.
+1. **Analyze Diff and Status**: Run `git status` and `git diff` to analyze ALL modified and untracked files in the workspace since the last commit. You MUST NOT rely solely on the current conversation context.
+2. **Comprehensive Message**: You MUST review every single modified file's diff to understand the changes made (even those from previous sessions or manual edits).
+3. `git add .`
+4. **Commit Message**: Use the "Elegant Protocol" (Step 189) to describe the work performed. The message MUST capture all changes across all modified files in the workspace since the last commit, not just those related to the current conversation.
+5. **Why**: This ensures that even if an automated repair tool or linter modifies files, your original logic is preserved in the history and can be easily diffed.
 
 ### 1. Task & Scratchpad Tracking (MANDATORY)
 
@@ -192,11 +193,12 @@ Commit messages MUST NOT be terse. They MUST provide a clear, technical chronicl
 
 ### 0. Source of Truth
 
-- **MANDATORY**: Use the current **task** and `walkthrough.md` as the primary sources for the commit message. A commit message that ignores the granular steps recorded in these artifacts is considered a failure.
+- **MANDATORY for Phase 0 (The Snapshot)**: Since this runs before the task/walkthrough are finalized for the current session, the absolute source of truth is the actual **`git diff` of all modified files**. You MUST inspect all unstaged and staged changes in the workspace since the last commit and list/comment on all of them.
+- **MANDATORY for Phase 9 (The Optimization Log)**: Use the current **task** and `walkthrough.md` as the primary sources for the commit message. A commit message that ignores the granular steps recorded in these artifacts is considered a failure.
 
 ### 1. Dual-Commit Strategy
 
-- **The Snapshot (Phase 0)**: Its purpose is to capture creative/logical work. It MUST use the "Elegant Protocol" (Header + Body with bullets) to explain the "what" and "why" of the user's changes.
+- **The Snapshot (Phase 0)**: Its purpose is to capture creative/logical work. It MUST use the "Elegant Protocol" (Header + Body with bullets) to explain the "what" and "why" of all modified files in the workspace (analyzing `git diff`), ensuring that no changes since the last commit are left undocumented.
 - **The Optimization Log (Phase 9)**: Its purpose is to document technical cleanup. It must be concise and list only audit repairs (linting, build fixes, SASS repairs).
 
 ### 2. Structure Requirement (The Elegant Protocol)

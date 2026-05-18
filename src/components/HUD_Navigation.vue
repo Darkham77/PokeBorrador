@@ -352,18 +352,24 @@ onUnmounted(() => {
   align-items: center;
   
   &.pos-bottom {
-    justify-content: space-around;
-    width: 100%;
+    justify-content: center;
+    width: max-content;
+    max-width: calc(100% - 16px);
+    margin: 0 auto;
     height: 70px;
-    padding: 0 10px;
     
     // PREMIUM SHELL ENHANCED
     @include shell-premium(linear-gradient(180deg, #161a2e 0%, #0a0c14 100%));
-    border-radius: 20px;
+    border-radius: 20px 20px 0 0;
     padding: 10px 24px;
     gap: 15px;
-    width: 100%;
     box-sizing: border-box;
+
+    @media (max-width: 480px) {
+      padding: 10px 12px;
+      gap: 6px;
+      border-radius: 16px 16px 0 0;
+    }
     
     // MULTI-LAYER REFLECTIONS & CONTRAST
     box-shadow: 
@@ -392,6 +398,18 @@ onUnmounted(() => {
       flex-direction: column;
       gap: 4px;
       min-width: 50px;
+
+      @media (max-width: 480px) {
+        min-width: 38px;
+        padding: 6px 2px;
+
+        .icon {
+          font-size: 14px;
+        }
+        .nav-item-label {
+          font-size: 7px;
+        }
+      }
     }
 
     /* CRITICAL: Ensure submenus are NOT clipped */

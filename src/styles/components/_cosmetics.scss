@@ -1,0 +1,685 @@
+// src/styles/components/_cosmetics.scss
+@use "sass:list";
+@use "../core/tools" as *;
+@use "../core/variables" as *;
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   NICKNAME STYLES (CHAT, USERNAME & PROFILE)
+   ───────────────────────────────────────────────────────────────────────────── */
+
+.nt-gold {
+  color: $coin-gold !important;
+  text-shadow: 0 0 8px Rgba(255, 215, 0, 0.6) !important;
+}
+
+.nt-silver {
+  color: Rgba(226, 232, 240, 1) !important;
+  text-shadow: 0 0 8px Rgba(226, 232, 240, 0.4) !important;
+}
+
+.nt-bronze {
+  color: Rgba(205, 127, 50, 1) !important;
+  text-shadow: 0 0 5px Rgba(205, 127, 50, 0.4) !important;
+}
+
+.nt-fire {
+  color: Rgba(255, 69, 0, 1) !important;
+  animation: anim-fire 2s infinite alternate !important;
+}
+
+.nt-water {
+  color: Rgba(56, 189, 248, 1) !important;
+  animation: anim-water 3s infinite linear !important;
+}
+
+.nt-spark {
+  color: Rgba(250, 204, 21, 1) !important;
+  animation: anim-spark 0.5s infinite !important;
+}
+
+.nt-dark {
+  color: Rgba(109, 40, 217, 1) !important;
+  text-shadow: 0 0 10px Rgba(76, 29, 149, 1) !important;
+}
+
+.nt-royal {
+  color: Rgba(236, 72, 153, 1) !important;
+  text-shadow: 0 0 10px Rgba(219, 39, 119, 1) !important;
+  font-style: italic !important;
+}
+
+.nt-ghost {
+  color: Rgba(148, 163, 184, 1) !important;
+  opacity: 0.7 !important;
+  will-change: transform, filter, opacity;
+  filter: Blur(0.5px) !important;
+}
+
+.nt-admin {
+  background: linear-gradient(90deg, #ff0055, #9e00ff, #00a2ff, #00ff77, #ff9e00, #ff0055) !important;
+  background-size: 200% auto !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  font-weight: 900 !important;
+  animation: admin-hologram 3s linear infinite !important;
+  filter: Drop-Shadow(0 0 2px Rgba(255, 255, 255, 0.5)) Drop-Shadow(0 0 6px Rgba(158, 0, 255, 0.35)) !important;
+  display: inline-block !important;
+}
+
+.nt-class-cazabichos {
+  color: #22c55e !important;
+  text-shadow: 0 0 6px Rgba(34, 197, 94, 0.5), 0 0 12px Rgba(21, 128, 61, 0.3) !important;
+  font-weight: 700 !important;
+  animation: anim-bug-flutter 2s ease-in-out infinite alternate !important;
+}
+
+.nt-class-criador {
+  color: #a855f7 !important;
+  text-shadow: 0 0 6px Rgba(168, 85, 247, 0.5), 0 0 12px Rgba(126, 34, 206, 0.3) !important;
+  font-weight: 700 !important;
+  animation: anim-breeder-pulse 2s ease-in-out infinite alternate !important;
+}
+
+.nt-class-rocket {
+  color: #ef4444 !important;
+  text-shadow: 0 0 8px #ef4444, 0 0 15px #991b1b !important;
+  font-weight: 700 !important;
+  animation: anim-rocket-shadow 1.5s ease-in-out infinite alternate !important;
+}
+
+.nt-class-entrenador {
+  color: #3b82f6 !important;
+  text-shadow: 0 0 6px Rgba(59, 130, 246, 0.5), 0 0 12px Rgba(29, 78, 216, 0.3) !important;
+  font-weight: 700 !important;
+  animation: anim-trainer-glow 2s ease-in-out infinite alternate !important;
+}
+
+.nt-faction-union {
+  color: #fbbf24 !important;
+  font-weight: 700 !important;
+  text-shadow: 
+    0 0 4px #2563eb, 
+    0 0 10px Rgba(37, 99, 235, 0.7), 
+    0 0 16px Rgba(37, 99, 235, 0.4) !important;
+  animation: anim-union-glow 2.5s ease-in-out infinite alternate !important;
+}
+
+.nt-faction-poder {
+  color: #f97316 !important;
+  font-weight: 700 !important;
+  text-shadow: 
+    0 0 4px #ef4444, 
+    0 0 10px Rgba(239, 68, 68, 0.7), 
+    0 0 16px Rgba(239, 68, 68, 0.4) !important;
+  animation: anim-poder-glow 2.2s ease-in-out infinite alternate !important;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   AVATAR BORDER FRAME STYLES (High-Fidelity Cosmic Elements & Professional Frames)
+   ───────────────────────────────────────────────────────────────────────────── */
+
+// Centralized mixin to build circle or square avatar frames with conic gradient animation
+@mixin make-avatar-frame(
+  $border-color,
+  $box-shadow,
+  $gradient-colors,
+  $spin-duration: 3s,
+  $border-radius: 50%,
+  $inset-before: -7px,
+  $inset-after: -4px,
+  $reverse: false,
+  $extra-animation: null,
+  $pulse-glow-animation: null
+) {
+  $actual-inset-before: $inset-before - $inset-after;
+  $actual-inset-after: 0px;
+
+  position: relative;
+  isolation: isolate !important; /* Forces a local stacking context so negative z-indexes are 100% visible */
+  border-color: $border-color !important;
+  border-style: solid !important;
+  border-width: 2px !important;
+  border-radius: $border-radius !important;
+
+  @if $pulse-glow-animation {
+    animation: $pulse-glow-animation !important;
+  } @else {
+    box-shadow: $box-shadow !important;
+  }
+
+  &::before {
+    content: ''; position: absolute; inset: $actual-inset-before;
+    border-radius: $border-radius !important; /* Circle for circle, Square for square! */
+    background: conic-gradient($gradient-colors);
+    z-index: -2;
+    
+    @if $border-radius == 50% {
+      // Circular gradients rotate
+      $dir: normal;
+      @if $reverse {
+        $dir: reverse;
+      }
+      @if $extra-animation {
+        animation: spin-slow $spin-duration linear infinite $dir, $extra-animation !important;
+      } @else {
+        animation: spin-slow $spin-duration linear infinite $dir !important;
+      }
+    } @else {
+      // Square gradients scale/pulse deterministically in place to avoid rotating corners
+      animation: square-gradient-pulse 2s ease-in-out infinite alternate !important;
+    }
+  }
+  &::after {
+    content: ''; position: absolute; inset: $actual-inset-after;
+    $offset: 2px;
+    @if $border-radius == 50% {
+      $offset: 0px;
+    }
+    border-radius: calc(#{$border-radius} - #{$offset}) !important;
+    background: #1e293b; /* Match standard avatar background color perfectly! */
+    z-index: -1;
+  }
+}
+
+/* --- CIRCULAR AVATAR FRAMES --- */
+.av-fire {
+  @include make-avatar-frame(#ff4400, null, (#ff0000,#ff8800,#ffcc00,#ff4400,#ff0000), 2s, 50%, -6px, -4px, false, null, fire-av-pulse 2s ease-in-out infinite);
+}
+.av-water {
+  @include make-avatar-frame(#0088ff, null, (#0033cc,#00aaff,#44eeff,#0066ff,#0033cc), 4s, 50%, -7px, -4px, false, null, water-av-pulse 3s ease-in-out infinite);
+}
+.av-electric {
+  @include make-avatar-frame(#ffe040, null, (#ffe000,#ffffff,#ffe000,#ff9900,#ffe000), 0.4s, 50%, -7px, -4px, false, elec-avatar 0.2s steps(1) infinite);
+}
+.av-psychic {
+  @include make-avatar-frame(#cc00ff, null, (#ff00cc,#9900ff,#6600cc,#ff44ff,#ff00cc), 3s, 50%, -7px, -4px, true, null, psychic-av-pulse 2.5s ease-in-out infinite);
+}
+.av-dark {
+  @include make-avatar-frame(#7700bb, null, (#2a0044,#7700bb,#330066,#9900cc,#2a0044), 5s, 50%, -7px, -4px, false, null, dark-av-pulse 4s ease-in-out infinite);
+  filter: Brightness(0.9) contrast(1.1) !important;
+}
+.av-ghost {
+  @include make-avatar-frame(#8855ff, null, (#440088,#cc88ff,#6622aa,#aa66ff,#440088), 4s, 50%, -7px, -4px, false, ghost-av-phase 2s ease-in-out infinite, ghost-av-pulse 2.5s ease-in-out infinite);
+}
+.av-ice {
+  @include make-avatar-frame(#88eeff, null, (#aaf0ff,#0088cc,#ddfaff,#44aaff,#aaf0ff), 6s, 50%, -7px, -4px, true, null, ice-av-pulse 3s ease-in-out infinite);
+  filter: Brightness(1.05) Saturate(0.9) !important;
+}
+.av-dragon {
+  @include make-avatar-frame(#4466ff, null, (#4466ff,#ff4400,#6688ff,#ff6600,#4466ff), 1.8s, 50%, -7px, -4px, false, null, dragon-av-pulse 2s ease-in-out infinite);
+}
+.av-legend {
+  @include make-avatar-frame(#ffdd00, null, (#ff0000,#ff8800,#ffff00,#00ff88,#00ffff,#0088ff,#ff00ff,#ff0000), 2s, 50%, -8px, -5px, false, legend-av-pulse 2s ease-in-out infinite);
+}
+.av-master {
+  @include make-avatar-frame(#aaaaaa, null, (#888888,#ffffff,#aaaaaa,#eeeeee,#888888), 5s, 50%, -7px, -4px, false, null, master-av-pulse 3s ease-in-out infinite);
+  filter: Brightness(1.05) !important;
+}
+
+/* --- SQUARE AVATAR FRAMES --- */
+.av-sq-fire {
+  @include make-avatar-frame(#ff4400, null, (#ff0000,#ff8800,#ffcc00,#ff4400,#ff0000), 2s, 8px, -6px, -4px, false, null, fire-av-pulse 2s ease-in-out infinite);
+}
+.av-sq-water {
+  @include make-avatar-frame(#0088ff, null, (#0033cc,#00aaff,#44eeff,#0066ff,#0033cc), 4s, 8px, -7px, -4px, false, null, water-av-pulse 3s ease-in-out infinite);
+}
+.av-sq-electric {
+  @include make-avatar-frame(#ffe040, null, (#ffe000,#ffffff,#ffe000,#ff9900,#ffe000), 0.4s, 8px, -7px, -4px, false, null, elec-avatar 2s ease-in-out infinite);
+}
+.av-sq-psychic {
+  @include make-avatar-frame(#cc00ff, null, (#ff00cc,#9900ff,#6600cc,#ff44ff,#ff00cc), 3s, 8px, -7px, -4px, true, null, psychic-av-pulse 2.5s ease-in-out infinite);
+}
+.av-sq-dark {
+  @include make-avatar-frame(#7700bb, null, (#2a0044,#7700bb,#330066,#9900cc,#2a0044), 5s, 8px, -7px, -4px, false, null, dark-av-pulse 4s ease-in-out infinite);
+  filter: Brightness(0.9) contrast(1.1) !important;
+}
+.av-sq-ghost {
+  @include make-avatar-frame(#8855ff, null, (#440088,#cc88ff,#6622aa,#aa66ff,#440088), 4s, 8px, -7px, -4px, false, ghost-av-phase 2s ease-in-out infinite, ghost-av-pulse 2.5s ease-in-out infinite);
+}
+.av-sq-ice {
+  @include make-avatar-frame(#88eeff, null, (#aaf0ff,#0088cc,#ddfaff,#44aaff,#aaf0ff), 6s, 8px, -7px, -4px, true, null, ice-av-pulse 3s ease-in-out infinite);
+  filter: Brightness(1.05) Saturate(0.9) !important;
+}
+.av-sq-dragon {
+  @include make-avatar-frame(#4466ff, null, (#4466ff,#ff4400,#6688ff,#ff6600,#4466ff), 1.8s, 8px, -7px, -4px, false, null, dragon-av-pulse 2s ease-in-out infinite);
+}
+.av-sq-legend {
+  @include make-avatar-frame(#ffdd00, null, (#ff0000,#ff8800,#ffff00,#00ff88,#00ffff,#0088ff,#ff00ff,#ff0000), 2s, 8px, -8px, -5px, false, legend-av-pulse 2s ease-in-out infinite);
+}
+.av-sq-master {
+  @include make-avatar-frame(#aaaaaa, null, (#888888,#ffffff,#aaaaaa,#eeeeee,#888888), 5s, 8px, -7px, -4px, false, null, master-av-pulse 3s ease-in-out infinite);
+  filter: Brightness(1.05) !important;
+}
+
+/* --- CLASS EXCLUSIVE FRAMES (CIRCULAR) --- */
+.av-class-cazabichos {
+  @include make-avatar-frame(#22c55e, null, (#15803d, #22c55e, #4ade80, #16a34a, #15803d), 3s, 50%, -7px, -4px, false, null, cazabichos-av-pulse 3s ease-in-out infinite);
+}
+.av-class-criador {
+  @include make-avatar-frame(#a855f7, null, (#7e22ce, #a855f7, #c084fc, #a855f7, #7e22ce), 2.5s, 50%, -7px, -4px, false, null, criador-av-pulse 2.5s ease-in-out infinite);
+}
+.av-class-rocket {
+  @include make-avatar-frame(#ef4444, null, (#991b1b, #ef4444, #7f1d1d, #ef4444, #991b1b), 1.5s, 50%, -7px, -4px, false, null, rocket-av-pulse 1.5s ease-in-out infinite);
+}
+.av-class-entrenador {
+  @include make-avatar-frame(#3b82f6, null, (#1d4ed8, #3b82f6, #60a5fa, #3b82f6, #1d4ed8), 2s, 50%, -7px, -4px, false, null, entrenador-av-pulse 2s ease-in-out infinite);
+}
+
+/* --- FACTION EXCLUSIVE FRAMES (CIRCULAR) --- */
+.av-faction-union {
+  @include make-avatar-frame(#1e40af, null, (#1e40af, #ffffff, #fbbf24, #172554, #fbbf24, #ffffff, #1e40af), 2.5s, 50%, -7px, -4px, false, null, union-av-pulse 2.5s ease-in-out infinite);
+}
+.av-faction-poder {
+  @include make-avatar-frame(#991b1b, null, (#991b1b, #0f172a, #f97316, #facc15, #f97316, #0f172a, #991b1b), 2.2s, 50%, -7px, -4px, false, null, poder-av-pulse 2.2s ease-in-out infinite);
+}
+
+/* --- CLASS EXCLUSIVE FRAMES (SQUARE) --- */
+.av-sq-cazabichos {
+  @include make-avatar-frame(#22c55e, null, (#15803d, #22c55e, #4ade80, #16a34a, #15803d), 3s, 8px, -7px, -4px, false, null, cazabichos-av-pulse 3s ease-in-out infinite);
+}
+.av-sq-criador {
+  @include make-avatar-frame(#a855f7, null, (#7e22ce, #a855f7, #c084fc, #a855f7, #7e22ce), 2.5s, 8px, -7px, -4px, false, null, criador-av-pulse 2.5s ease-in-out infinite);
+}
+.av-sq-rocket {
+  @include make-avatar-frame(#ef4444, null, (#991b1b, #ef4444, #7f1d1d, #ef4444, #991b1b), 1.5s, 8px, -7px, -4px, false, null, rocket-av-pulse 1.5s ease-in-out infinite);
+}
+.av-sq-entrenador {
+  @include make-avatar-frame(#3b82f6, null, (#1d4ed8, #3b82f6, #60a5fa, #3b82f6, #1d4ed8), 2s, 8px, -7px, -4px, false, null, entrenador-av-pulse 2s ease-in-out infinite);
+}
+
+/* --- FACTION EXCLUSIVE FRAMES (SQUARE) --- */
+.av-sq-faction-union {
+  @include make-avatar-frame(#1e40af, null, (#1e40af, #ffffff, #fbbf24, #172554, #fbbf24, #ffffff, #1e40af), 2.5s, 8px, -7px, -4px, false, null, union-av-pulse 2.5s ease-in-out infinite);
+}
+.av-sq-faction-poder {
+  @include make-avatar-frame(#991b1b, null, (#991b1b, #0f172a, #f97316, #facc15, #f97316, #0f172a, #991b1b), 2.2s, 8px, -7px, -4px, false, null, poder-av-pulse 2.2s ease-in-out infinite);
+}
+
+/* --- ADMIN EXCLUSIVE COSMETICS --- */
+.av-admin {
+  @include make-avatar-frame(#ef4444, null, (#ca8a04, #ef4444, #6d28d9, #ef4444, #ca8a04), 1s, 50%, -7px, -4px, false, null, admin-av-pulse 1.5s ease-in-out infinite);
+}
+.av-sq-admin {
+  @include make-avatar-frame(#ef4444, null, (#ca8a04, #ef4444, #6d28d9, #ef4444, #ca8a04), 1s, 8px, -7px, -4px, false, null, admin-av-pulse 1.5s ease-in-out infinite);
+}
+
+@keyframes admin-hologram {
+  0% { background-position: 0% center; }
+  100% { background-position: 200% center; }
+}
+
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   KEYFRAME ANIMATIONS
+   ───────────────────────────────────────────────────────────────────────────── */
+
+@keyframes anim-fire {
+  from {
+    text-shadow: 0 0 5px Rgba(239, 68, 68, 1);
+  }
+  to {
+    text-shadow: 0 0 15px Rgba(249, 115, 22, 1), 0 0 25px Rgba(250, 204, 21, 1);
+  }
+}
+
+@keyframes anim-water {
+  0% {
+    transform: Translatey(0);
+  }
+  50% {
+    transform: Translatey(-2px);
+  }
+  100% {
+    transform: Translatey(0);
+  }
+}
+
+@keyframes anim-spark {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+@keyframes anim-bug-flutter {
+  from {
+    text-shadow: 0 0 5px Rgba(34, 197, 94, 0.6);
+  }
+  to {
+    text-shadow: 0 0 12px Rgba(34, 197, 94, 0.8), 0 0 20px Rgba(134, 239, 172, 0.4);
+  }
+}
+
+@keyframes anim-breeder-pulse {
+  from {
+    text-shadow: 0 0 5px Rgba(168, 85, 247, 0.6);
+  }
+  to {
+    text-shadow: 0 0 12px Rgba(168, 85, 247, 0.8), 0 0 20px Rgba(216, 180, 254, 0.4);
+  }
+}
+
+@keyframes anim-rocket-shadow {
+  from {
+    text-shadow: 0 0 6px #ef4444, 0 0 12px #991b1b;
+  }
+  to {
+    text-shadow: 0 0 12px #ef4444, 0 0 24px #991b1b, 0 0 35px #000;
+  }
+}
+
+@keyframes anim-trainer-glow {
+  from {
+    text-shadow: 0 0 5px Rgba(59, 130, 246, 0.6);
+  }
+  to {
+    text-shadow: 0 0 12px Rgba(59, 130, 246, 0.8), 0 0 20px Rgba(147, 197, 253, 0.4);
+  }
+}
+
+@keyframes anim-pulse-avatar {
+  0% {
+    transform: Scale(1);
+  }
+  50% {
+    transform: Scale(1.05);
+  }
+  100% {
+    transform: Scale(1);
+  }
+}
+
+@keyframes spin-slow {
+  from { transform: Rotate(0deg); }
+  to { transform: Rotate(360deg); }
+}
+
+@keyframes elec-avatar {
+  0%, 100% { box-shadow: 0 0 0 3px #ffe040, 0 0 14px Rgba(255, 204, 0, 0.5); }
+  50% { box-shadow: 0 0 0 3px #ffffff, 0 0 20px Rgba(255, 238, 0, 0.58); }
+}
+
+@keyframes elec-spin {
+  from { transform: Rotate(0deg); }
+  to { transform: Rotate(360deg); }
+}
+
+@keyframes ghost-av-phase {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.78; }
+}
+
+@keyframes legend-av-pulse {
+  0%, 100% { box-shadow: 0 0 0 3px #ffdd00, 0 0 18px Rgba(255, 170, 0, 0.5); }
+  50% { box-shadow: 0 0 0 3px #ffffff, 0 0 28px #ffdd00, 0 0 44px Rgba(255, 136, 0, 0.25); }
+}
+
+@keyframes fire-av-pulse {
+  0%, 100% { box-shadow: 0 0 0 3px #ff4400, 0 0 12px Rgba(255, 68, 0, 0.4), inset 0 0 6px Rgba(255, 68, 0, 0.2); }
+  50% { box-shadow: 0 0 0 3px #ff8800, 0 0 24px Rgba(255, 68, 0, 0.8), inset 0 0 12px Rgba(255, 68, 0, 0.4); }
+}
+
+@keyframes water-av-pulse {
+  0%, 100% { box-shadow: 0 0 0 3px #0088ff, 0 0 10px Rgba(0, 136, 255, 0.35), inset 0 0 5px Rgba(0, 136, 255, 0.15); }
+  50% { box-shadow: 0 0 0 3px #44eeff, 0 0 20px Rgba(0, 136, 255, 0.7), inset 0 0 10px Rgba(0, 136, 255, 0.3); }
+}
+
+@keyframes ice-av-pulse {
+  0%, 100% { box-shadow: 0 0 0 3px #88eeff, 0 0 10px Rgba(136, 238, 255, 0.35), inset 0 0 5px Rgba(136, 238, 255, 0.15); }
+  50% { box-shadow: 0 0 0 3px #ffffff, 0 0 20px Rgba(136, 238, 255, 0.75), inset 0 0 10px Rgba(136, 238, 255, 0.3); }
+}
+
+@keyframes dragon-av-pulse {
+  0%, 100% { box-shadow: 0 0 0 3px #4466ff, 0 0 10px Rgba(68, 102, 255, 0.35), inset 0 0 5px Rgba(68, 102, 255, 0.15); }
+  50% { box-shadow: 0 0 0 3px #ff4400, 0 0 22px Rgba(68, 102, 255, 0.7), inset 0 0 10px Rgba(68, 102, 255, 0.3); }
+}
+
+@keyframes master-av-pulse {
+  0%, 100% { box-shadow: 0 0 0 3px #aaaaaa, 0 0 10px Rgba(170, 170, 170, 0.3), inset 0 0 5px Rgba(170, 170, 170, 0.15); }
+  50% { box-shadow: 0 0 0 3px #ffffff, 0 0 22px Rgba(255, 255, 255, 0.65), inset 0 0 10px Rgba(255, 255, 255, 0.3); }
+}
+
+@keyframes ghost-av-pulse {
+  0%, 100% { box-shadow: 0 0 0 3px #8855ff, 0 0 10px Rgba(136, 85, 255, 0.35), inset 0 0 5px Rgba(136, 85, 255, 0.15); }
+  50% { box-shadow: 0 0 0 3px #cc88ff, 0 0 22px Rgba(136, 85, 255, 0.7), inset 0 0 10px Rgba(136, 85, 255, 0.3); }
+}
+
+@keyframes dark-av-pulse {
+  0%, 100% { box-shadow: 0 0 0 3px #7700bb, 0 0 10px Rgba(119, 0, 187, 0.35), inset 0 0 5px Rgba(119, 0, 187, 0.15); }
+  50% { box-shadow: 0 0 0 3px #9900cc, 0 0 22px Rgba(119, 0, 187, 0.7), inset 0 0 10px Rgba(119, 0, 187, 0.3); }
+}
+
+@keyframes psychic-av-pulse {
+  0%, 100% { box-shadow: 0 0 0 3px #cc00ff, 0 0 10px Rgba(204, 0, 255, 0.35), inset 0 0 5px Rgba(204, 0, 255, 0.15); }
+  50% { box-shadow: 0 0 0 3px #ff44ff, 0 0 22px Rgba(204, 0, 255, 0.7), inset 0 0 10px Rgba(204, 0, 255, 0.3); }
+}
+
+@keyframes admin-av-pulse {
+  0%, 100% { box-shadow: 0 0 0 3px #ef4444, 0 0 12px Rgba(239, 68, 68, 0.45), inset 0 0 6px Rgba(239, 68, 68, 0.2); }
+  50% { box-shadow: 0 0 0 3px #facc15, 0 0 28px Rgba(239, 68, 68, 0.85), inset 0 0 14px Rgba(239, 68, 68, 0.4); }
+}
+
+@keyframes cazabichos-av-pulse {
+  0%, 100% { box-shadow: 0 0 0 3px #22c55e, 0 0 10px Rgba(34, 197, 94, 0.35), inset 0 0 5px Rgba(34, 197, 94, 0.15); }
+  50% { box-shadow: 0 0 0 3px #4ade80, 0 0 22px Rgba(34, 197, 94, 0.7), inset 0 0 10px Rgba(34, 197, 94, 0.3); }
+}
+
+@keyframes criador-av-pulse {
+  0%, 100% { box-shadow: 0 0 0 3px #a855f7, 0 0 10px Rgba(168, 85, 247, 0.35), inset 0 0 5px Rgba(168, 85, 247, 0.15); }
+  50% { box-shadow: 0 0 0 3px #c084fc, 0 0 22px Rgba(168, 85, 247, 0.7), inset 0 0 10px Rgba(168, 85, 247, 0.3); }
+}
+
+@keyframes rocket-av-pulse {
+  0%, 100% { box-shadow: 0 0 0 3px #ef4444, 0 0 10px Rgba(239, 68, 68, 0.35), inset 0 0 5px Rgba(239, 68, 68, 0.15); }
+  50% { box-shadow: 0 0 0 3px #b91c1c, 0 0 22px Rgba(239, 68, 68, 0.7), inset 0 0 10px Rgba(239, 68, 68, 0.3); }
+}
+
+@keyframes entrenador-av-pulse {
+  0%, 100% { box-shadow: 0 0 0 3px #3b82f6, 0 0 10px Rgba(59, 130, 246, 0.35), inset 0 0 5px Rgba(59, 130, 246, 0.15); }
+  50% { box-shadow: 0 0 0 3px #60a5fa, 0 0 22px Rgba(59, 130, 246, 0.7), inset 0 0 10px Rgba(59, 130, 246, 0.3); }
+}
+
+@keyframes union-av-pulse {
+  0%, 100% { box-shadow: 0 0 0 3px #1e40af, 0 0 10px Rgba(30, 64, 175, 0.35), inset 0 0 5px Rgba(30, 64, 175, 0.15); }
+  50% { box-shadow: 0 0 0 3px #fbbf24, 0 0 22px Rgba(251, 191, 36, 0.6), inset 0 0 10px Rgba(251, 191, 36, 0.25); }
+}
+
+@keyframes poder-av-pulse {
+  0%, 100% { box-shadow: 0 0 0 3px #991b1b, 0 0 10px Rgba(153, 27, 27, 0.35), inset 0 0 5px Rgba(153, 27, 27, 0.15); }
+  50% { box-shadow: 0 0 0 3px #f97316, 0 0 22px Rgba(249, 115, 22, 0.6), inset 0 0 10px Rgba(249, 115, 22, 0.25); }
+}
+
+@keyframes anim-union-glow {
+  0% { 
+    text-shadow: 
+      0 0 4px #2563eb, 
+      0 0 8px Rgba(37, 99, 235, 0.5);
+  }
+  100% { 
+    text-shadow: 
+      0 0 8px #2563eb, 
+      0 0 16px Rgba(37, 99, 235, 0.85), 
+      0 0 22px Rgba(255, 255, 255, 0.6); 
+  }
+}
+
+@keyframes anim-poder-glow {
+  0% { 
+    text-shadow: 
+      0 0 4px #ef4444, 
+      0 0 8px Rgba(239, 68, 68, 0.5);
+  }
+  100% { 
+    text-shadow: 
+      0 0 8px #ef4444, 
+      0 0 16px Rgba(239, 68, 68, 0.85), 
+      0 0 22px Rgba(251, 191, 36, 0.6); 
+  }
+}
+
+@keyframes square-gradient-pulse {
+  0% {
+    opacity: 0.7;
+    transform: Scale(1.0);
+  }
+  100% {
+    opacity: 1;
+    transform: Scale(1.08);
+  }
+}
+
+/* --- ELEMENTAL DAMAGE TYPE NICK STYLES --- */
+.nt-type-normal {
+  color: #9ca3b8 !important;
+  text-shadow: 0 0 5px Rgba(156, 163, 175, 0.4) !important;
+  font-weight: 700 !important;
+}
+
+.nt-type-grass {
+  color: #22c55e !important;
+  text-shadow: 0 0 6px Rgba(34, 197, 94, 0.5), 0 0 12px Rgba(21, 128, 61, 0.3) !important;
+  font-weight: 700 !important;
+  animation: anim-bug-flutter 2s ease-in-out infinite alternate !important;
+}
+
+.nt-type-ice {
+  color: #38bdf8 !important;
+  text-shadow: 0 0 6px Rgba(56, 189, 248, 0.6), 0 0 15px Rgba(255, 255, 255, 0.5) !important;
+  font-weight: 700 !important;
+  animation: anim-ice-glimmer 2.5s ease-in-out infinite alternate !important;
+}
+
+.nt-type-fighting {
+  color: #ea580c !important;
+  text-shadow: 0 0 6px Rgba(234, 88, 12, 0.6), 0 0 12px Rgba(127, 29, 29, 0.4) !important;
+  font-weight: 700 !important;
+}
+
+.nt-type-poison {
+  color: #a855f7 !important;
+  text-shadow: 0 0 6px Rgba(168, 85, 247, 0.6), 0 0 12px Rgba(76, 29, 149, 0.5) !important;
+  font-weight: 700 !important;
+  animation: anim-poison-drip 2s ease-in-out infinite alternate !important;
+}
+
+.nt-type-ground {
+  color: #ca8a04 !important;
+  text-shadow: 0 0 6px Rgba(202, 138, 4, 0.5), 0 0 12px Rgba(69, 26, 3, 0.4) !important;
+  font-weight: 700 !important;
+}
+
+.nt-type-flying {
+  color: #67e8f9 !important;
+  text-shadow: 0 0 8px Rgba(103, 232, 249, 0.6) !important;
+  font-weight: 700 !important;
+  animation: anim-water 3s infinite linear !important;
+}
+
+.nt-type-psychic {
+  color: #ec4899 !important;
+  text-shadow: 0 0 8px Rgba(236, 72, 153, 0.7), 0 0 15px Rgba(107, 33, 168, 0.4) !important;
+  font-weight: 700 !important;
+  animation: anim-psychic-pulse 1.5s ease-in-out infinite alternate !important;
+}
+
+.nt-type-bug {
+  color: #84cc16 !important;
+  text-shadow: 0 0 6px Rgba(132, 204, 22, 0.5) !important;
+  font-weight: 700 !important;
+  animation: anim-bug-flutter 1.5s ease-in-out infinite alternate !important;
+}
+
+.nt-type-rock {
+  color: #b45309 !important;
+  text-shadow: 0 0 5px Rgba(180, 83, 9, 0.6) !important;
+  font-weight: 700 !important;
+}
+
+.nt-type-dragon {
+  color: #4f46e5 !important;
+  text-shadow: 0 0 8px Rgba(79, 70, 229, 0.6), 0 0 15px Rgba(49, 46, 129, 0.5) !important;
+  font-weight: 700 !important;
+}
+
+.nt-type-steel {
+  color: #64748b !important;
+  text-shadow: 0 0 6px Rgba(100, 116, 139, 0.5), 0 0 12px Rgba(255, 255, 255, 0.3) !important;
+  font-weight: 700 !important;
+}
+
+.nt-type-fairy {
+  color: #f472b6 !important;
+  text-shadow: 0 0 6px Rgba(244, 114, 182, 0.6), 0 0 15px Rgba(253, 244, 255, 0.4) !important;
+  font-weight: 700 !important;
+  animation: anim-fairy-twinkle 2s ease-in-out infinite alternate !important;
+}
+
+/* --- KEYFRAME ANIMATIONS FOR ELEMENTS --- */
+@keyframes anim-ice-glimmer {
+  from { text-shadow: 0 0 5px Rgba(56, 189, 248, 0.6); }
+  to { text-shadow: 0 0 15px Rgba(56, 189, 248, 0.9), 0 0 25px Rgba(255, 255, 255, 0.8); }
+}
+
+@keyframes anim-poison-drip {
+  from { opacity: 0.85; }
+  to { opacity: 1; }
+}
+
+@keyframes anim-psychic-pulse {
+  from { transform: Scale(1); text-shadow: 0 0 6px Rgba(236, 72, 153, 0.5); }
+  to { transform: Scale(1.02); text-shadow: 0 0 15px Rgba(236, 72, 153, 0.9), 0 0 25px Rgba(168, 85, 247, 0.6); }
+}
+
+@keyframes anim-fairy-twinkle {
+  0%, 100% { opacity: 0.9; text-shadow: 0 0 6px Rgba(244, 114, 182, 0.5); }
+  50% { opacity: 1; text-shadow: 0 0 18px Rgba(244, 114, 182, 0.9), 0 0 30px Rgba(253, 244, 255, 0.7); }
+}
+
+/* --- DYNAMIC ELEMENTAL DAMAGE TYPES AVATAR FRAMES --- */
+$element-types: (
+  "normal": (#9ca3af, (#6b7280, #9ca3af, #d1d5db, #9ca3af, #6b7280), 4s, #cbd5e1),
+  "fire": (#ef4444, (#991b1b, #ef4444, #7f1d1d, #ef4444, #991b1b), 1.8s, #f87171),
+  "water": (#3b82f6, (#1d4ed8, #3b82f6, #60a5fa, #3b82f6, #1d4ed8), 2.2s, #60a5fa),
+  "grass": (#22c55e, (#15803d, #22c55e, #86efac, #22c55e, #15803d), 3s, #4ade80),
+  "electric": (#eab308, (#ca8a04, #eab308, #fef08a, #eab308, #ca8a04), 1.2s, #fef08a),
+  "ice": (#38bdf8, (#0284c7, #38bdf8, #e0f2fe, #38bdf8, #0284c7), 2.5s, #7dd3fc),
+  "fighting": (#ea580c, (#9a3412, #ea580c, #fdba74, #ea580c, #9a3412), 2s, #fb923c),
+  "poison": (#a855f7, (#7e22ce, #a855f7, #e9d5ff, #a855f7, #7e22ce), 2.4s, #c084fc),
+  "ground": (#ca8a04, (#854d0e, #ca8a04, #fef08a, #ca8a04, #854d0e), 3.5s, #facc15),
+  "flying": (#67e8f9, (#0891b2, #67e8f9, #ecfeff, #67e8f9, #0891b2), 2.8s, #a5f3fc),
+  "psychic": (#ec4899, (#be185d, #ec4899, #fbcfe8, #ec4899, #be185d), 1.5s, #f472b6),
+  "bug": (#84cc16, (#4d7c0f, #84cc16, #d9f99d, #84cc16, #4d7c0f), 2.2s, #a3e635),
+  "rock": (#b45309, (#78350f, #b45309, #fde68a, #b45309, #78350f), 4s, #d97706),
+  "ghost": (#6366f1, (#4338ca, #6366f1, #c7d2fe, #6366f1, #4338ca), 3.2s, #818cf8),
+  "dragon": (#4f46e5, (#312e81, #4f46e5, #818cf8, #4f46e5, #312e81), 1.6s, #6366f1),
+  "dark": (#1e1b4b, (#030712, #1e1b4b, #312e81, #1e1b4b, #030712), 2s, #312e81),
+  "steel": (#64748b, (#475569, #64748b, #cbd5e1, #64748b, #475569), 3.5s, #94a3b8),
+  "fairy": (#f472b6, (#db2777, #f472b6, #fce7f3, #f472b6, #db2777), 2.1s, #f9a8d4)
+);
+
+@each $name, $values in $element-types {
+  $base-color: list.nth($values, 1);
+  $gradient: list.nth($values, 2);
+  $duration: list.nth($values, 3);
+
+  .av-type-#{$name} {
+    @include make-avatar-frame($base-color, null, $gradient, $duration, 50%, -7px, -4px, false, null, type-#{$name}-pulse $duration ease-in-out infinite);
+  }
+
+  .av-sq-type-#{$name} {
+    @include make-avatar-frame($base-color, null, $gradient, $duration, 8px, -7px, -4px, false, null, type-#{$name}-pulse $duration ease-in-out infinite);
+  }
+}
+
+@each $name, $values in $element-types {
+  $base-color: list.nth($values, 1);
+  $light-color: list.nth($values, 4);
+  @keyframes type-#{$name}-pulse {
+    0%, 100% { box-shadow: 0 0 0 3px $base-color, 0 0 10px Rgba($base-color, 0.35), inset 0 0 5px Rgba($base-color, 0.15); }
+    50% { box-shadow: 0 0 0 3px $light-color, 0 0 22px Rgba($base-color, 0.7), inset 0 0 10px Rgba($base-color, 0.3); }
+  }
+}

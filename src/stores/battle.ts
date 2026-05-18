@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { sleep } from '@/logic/timeUtils'
 import { ref, computed, watch } from 'vue'
 import { logger } from '@/logic/utils/logger'
+import { safeStorage } from '@/logic/utils/storage.ts'
 import { useGameStore } from './game.ts'
 import { useWarStore } from './war.ts'
 import { useEventStore } from './events.ts'
@@ -76,7 +77,16 @@ export const useBattleStore = defineStore('battle', () => {
   const debugShowGuides = ref(false)
   const debugShowFxRadius = ref(false)
   const debugShowPokeRadius = ref(false)
-  const debugZoom = ref(1)
+  
+  const savedZoomVal = safeStorage.getItem('pvs_combat_zoom')
+  const parsedZoom = savedZoomVal !== null ? parseFloat(savedZoomVal) : 1.0
+  const initialZoom = !isNaN(parsedZoom) ? Math.max(0.5, Math.min(1.0, parsedZoom)) : 1.0
+  const debugZoom = ref(initialZoom)
+
+  watch(debugZoom, (newZoom) => {
+    safeStorage.setItem('pvs_combat_zoom', String(newZoom))
+  })
+
   const battleLogs = ref<BattleLog[]>([])
   const logQueue = ref<BattleLog[]>([])
   const isProcessingLogs = ref(false)

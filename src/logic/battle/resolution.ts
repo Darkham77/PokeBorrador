@@ -255,6 +255,16 @@ export async function calculateBattleRewards(ctx: BattleContext) {
   const locId = active.locationId
   const enemyRef = e
 
+  // Update statistics
+  if (!ctx.gs.state.stats) {
+    ctx.gs.state.stats = {}
+  }
+  if (isTr) {
+    ctx.gs.state.stats.trainersDefeated = (Number(ctx.gs.state.stats.trainersDefeated) || 0) + 1
+  } else {
+    ctx.gs.state.stats.wins = (Number(ctx.gs.state.stats.wins) || 0) + 1
+  }
+
   if (enemyRef?.isGuardian) await ctx.warStore.addPoints(locId, 'guardian', true)
   else await ctx.warStore.addPoints(locId, isTr ? 'trainer_win' : 'wild_win', true)
   

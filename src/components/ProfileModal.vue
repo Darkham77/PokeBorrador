@@ -6,6 +6,8 @@ import { useAuthStore } from '@/stores/auth'
 import { useProfileStore } from '@/stores/profile'
 import { usePlayerClassStore } from '@/stores/playerClass'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
+import { Z_LAYERS } from '@/logic/constants/visuals'
+import { useModalStore } from '@/stores/modals'
 
 // Components
 import BaseModal from '@/components/common/BaseModal.vue'
@@ -71,6 +73,12 @@ const lastSaveFormatted = computed(() => {
   return profileData.value.lastSave || 'Sin datos'
 })
 
+const modalStore = useModalStore()
+
+const openRename = () => {
+  modalStore.open('Rename')
+}
+
 const close = () => { emit('close') }
 
 const handleLogout = () => {
@@ -129,8 +137,17 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
           <div 
             id="profile-username"
             class="profile-username"
+            :class="gs.nick_style"
           >
-            {{ displayUsername }}
+            <span>{{ displayUsername }}</span>
+            <a
+              href="#"
+              class="change-link"
+              title="Cambiar Nombre"
+              @click.prevent.stop="openRename"
+            >
+              ✏️ CAMBIAR
+            </a>
           </div>
           <div
             id="profile-email"
@@ -208,20 +225,20 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
             class="logout-btn-legacy"
             @click.stop="handleLogout"
           >
-            🚪 CERRAR SESIÓN
+            <i class="fas fa-sign-out-alt" /> CERRAR SESIÓN
           </button>
           <button
             class="edit-btn-legacy"
             @click.stop="handleEditProfile"
           >
-            ✏️ Editar
+            <i class="fas fa-edit" /> EDITAR PERFIL
           </button>
           <div class="reset-wrap-legacy">
             <button
               class="reset-btn-legacy"
               @click.stop="handleResetEncounter"
             >
-              ⚠️ RESETEAR ENCUENTROS
+              <i class="fas fa-redo" /> RESETEAR ENCUENTROS
             </button>
             <div class="hint-text-legacy">
               Si solo te aparecen entrenadores, usa este botón.
@@ -282,52 +299,31 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
     justify-content: center;
     align-items: center;
     position: relative;
-    
-    // Legacy Elemental Aura Restorations
-    :deep(.trainer-avatar-container) {
-      border: 2px solid var(--yellow) !important;
-      box-shadow: 0 0 10px Rgba(0,0,0,0.5) !important;
-
-      &.av-fire {
-        border-color: Rgba(255, 68, 0, 1) !important;
-        box-shadow: 0 0 0 3px Rgba(255, 68, 0, 1), 0 0 0 5px Rgba(255, 136, 0, 0.4), 0 0 16px Rgba(255, 68, 0, 0.5) !important;
-        &::before {
-          content: ''; position: absolute; inset: -8px; border-radius: 50%;
-          background: conic-gradient(Rgba(255, 0, 0, 1),Rgba(255, 136, 0, 1),Rgba(255, 204, 0, 1),Rgba(255, 68, 0, 1),Rgba(255, 0, 0, 1));
-          z-index: calc(var(--z-base) - 1); animation: spin-slow 2s linear infinite;
-        }
-      }
-      
-      &.av-water {
-        border-color: Rgba(0, 136, 255, 1) !important;
-        box-shadow: 0 0 0 3px Rgba(0, 136, 255, 1), 0 0 0 5px Rgba(0, 170, 255, 0.3), 0 0 14px Rgba(0, 102, 255, 0.4) !important;
-        &::before {
-          content: ''; position: absolute; inset: -9px; border-radius: 50%;
-          background: conic-gradient(Rgba(0, 51, 204, 1),Rgba(0, 170, 255, 1),Rgba(68, 238, 255, 1),Rgba(0, 102, 255, 1),Rgba(0, 51, 204, 1));
-          z-index: calc(var(--z-base) - 1); animation: spin-slow 4s linear infinite;
-        }
-      }
-
-      &.av-legend {
-        border-color: Rgba(255, 221, 0, 1) !important;
-        box-shadow: 0 0 0 3px Rgba(255, 221, 0, 1), 0 0 18px Rgba(255, 170, 0, 0.5) !important;
-        &::before {
-          content: ''; position: absolute; inset: -10px; border-radius: 50%;
-          background: conic-gradient(Rgba(255, 0, 0, 1),Rgba(255, 136, 0, 1),Rgba(255, 255, 0, 1),Rgba(0, 255, 136, 1),Rgba(0, 255, 255, 1),Rgba(0, 136, 255, 1),Rgba(255, 0, 255, 1),Rgba(255, 0, 0, 1));
-          z-index: calc(var(--z-base) - 1); animation: spin-slow 2s linear infinite;
-        }
-      }
-    }
+    z-index: calc(v-bind('Z_LAYERS.BASE') + 1);
+    border-radius: 50%;
   }
-
-  @keyframes spin-slow { from{transform:Rotate(0deg)} to{transform:Rotate(360deg)} }
 
   .profile-username {
     @include pixelated;
-    font-size: 16px;
+    font-size: 20px;
     color: var(--yellow);
-    margin-bottom: 12px;
-    @include pixelated;
+    text-align: center;
+    margin-bottom: 4px;
+    text-shadow: 0 0 10px Rgba(255, 214, 10, 0.2);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    
+    .change-link {
+      font-size: 8px;
+      color: var(--yellow);
+      text-decoration: none;
+      font-weight: normal;
+      text-shadow: none;
+      
+      &:hover { text-decoration: underline; }
+    }
   }
 
   .profile-email {
@@ -418,28 +414,35 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
   }
 
   .logout-btn-legacy {
-    @include btn-vicio-danger;
-    padding: 16px;
-    font-size: 9px;
+    @include btn-vicio('danger', 'sm', true);
   }
 
   .edit-btn-legacy {
-    background: Rgba(255, 255, 255, 0.05);
-    color: var(--white);
-    border: 1px solid Rgba(255, 255, 255, 0.1);
-    @include hover-neon-yellow(1px);
-    &:hover { background: Rgba(255, 255, 255, 0.1); }
+    @include btn-vicio('primary', 'sm', true);
   }
 
   .reset-wrap-legacy {
     margin-top: 12px;
     text-align: center;
+    
     .reset-btn-legacy {
       background: transparent;
-      color: Rgba(255, 255, 255, 0.2);
+      border: 1px dashed Rgba(255, 255, 255, 0.1);
+      padding: 8px 12px;
+      border-radius: 8px;
+      color: Rgba(255, 255, 255, 0.4);
       font-size: 8px;
-      &:hover { color: Rgba(245, 158, 11, 1); }
+      @include pixelated;
+      cursor: pointer;
+      transition: all 0.2s;
+      
+      &:hover {
+        border-color: Rgba(245, 158, 11, 0.4);
+        color: Rgba(245, 158, 11, 1);
+        background: Rgba(245, 158, 11, 0.05);
+      }
     }
+    
     .hint-text-legacy {
       margin-top: 8px;
       font-size: 10px;

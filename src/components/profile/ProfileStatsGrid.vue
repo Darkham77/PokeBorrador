@@ -33,21 +33,21 @@ const formatNum = (num: number) => formatCurrency(num)
       <span class="legacy-stat-lbl">Medallas</span>
     </div>
     <div class="legacy-stat-item">
-      <span class="legacy-stat-val">{{ stats.wins }}</span>
+      <span class="legacy-stat-val">{{ stats?.wins ?? 0 }}</span>
       <span class="legacy-stat-lbl">Vics. Salvaje</span>
     </div>
     <div class="legacy-stat-item">
-      <span class="legacy-stat-val">{{ stats.trainersDefeated }}</span>
+      <span class="legacy-stat-val">{{ stats?.trainersDefeated ?? 0 }}</span>
       <span class="legacy-stat-lbl">Entr. Derrotados</span>
     </div>
-    <div class="legacy-stat-item highlight">
+    <div class="legacy-stat-item highlight money">
       <span class="legacy-stat-val">
-        <span class="currency-icon-money">₱</span>
+        <span class="currency-icon-money">₽</span>
         {{ formatNum(money) }}
       </span>
       <span class="legacy-stat-lbl">Dinero</span>
     </div>
-    <div class="legacy-stat-item highlight">
+    <div class="legacy-stat-item highlight bc">
       <span class="legacy-stat-val">
         <i class="fas fa-coins currency-icon-bc" />
         {{ formatNum(battleCoins) }}
@@ -86,12 +86,30 @@ const formatNum = (num: number) => formatCurrency(num)
   }
 
   &.highlight {
-    background: Linear-Gradient(135deg, Rgba(255, 214, 10, 0.05) 0%, Rgba(15, 23, 42, 0.4) 100%);
-    border-color: Rgba(255, 214, 10, 0.1);
+    &.money {
+      background: linear-gradient(135deg, Rgba(107, 203, 119, 0.05) 0%, Rgba(15, 23, 42, 0.4) 100%);
+      border-color: Rgba(107, 203, 119, 0.2);
+      
+      .legacy-stat-val {
+        color: $green;
+        text-shadow: 0 0 10px Rgba(107, 203, 119, 0.4);
+      }
+      .currency-icon-money {
+        color: $green;
+      }
+    }
     
-    .legacy-stat-val {
-      color: $yellow;
-      text-shadow: 0 0 10px Rgba(255, 214, 10, 0.3);
+    &.bc {
+      background: linear-gradient(135deg, Rgba(199, 125, 255, 0.05) 0%, Rgba(15, 23, 42, 0.4) 100%);
+      border-color: Rgba(199, 125, 255, 0.2);
+      
+      .legacy-stat-val {
+        color: $purple;
+        text-shadow: 0 0 10px Rgba(199, 125, 255, 0.5);
+      }
+      .currency-icon-bc {
+        color: $purple;
+      }
     }
   }
 }
@@ -115,7 +133,4 @@ const formatNum = (num: number) => formatCurrency(num)
   letter-spacing: 1px;
   @include pixelated;
 }
-
-.currency-icon-money { color: $yellow; }
-.currency-icon-bc { color: $purple; }
 </style>

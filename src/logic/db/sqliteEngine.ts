@@ -161,6 +161,68 @@ async function ensureSchemaIntegrity(): Promise<void> {
       logger.error('SQLite', `Error during integrity check for: ${schemaStr} - ${(e as Error).message}`)
     }
   }
+
+  // Post-repair: Migrate legacy chat columns if they exist in the database
+  try {
+    _sqliteDb.run("UPDATE global_chat_messages SET user_id = sender_id WHERE user_id IS NULL AND sender_id IS NOT NULL")
+    _sqliteDb.run("UPDATE global_chat_messages SET username = sender_name WHERE username IS NULL AND sender_name IS NOT NULL")
+    // Align sender IDs for mock accounts to ensure correct profile loading
+    _sqliteDb.run("UPDATE global_chat_messages SET user_id = 'local_ash' WHERE username = 'ash'")
+    _sqliteDb.run("UPDATE global_chat_messages SET user_id = 'local_entrenador' WHERE username = 'Entrenador' OR username = 'entrenador'")
+    
+    // Repair local dev profiles that defaulted to Entrenador
+    _sqliteDb.run("UPDATE profiles SET username = 'Ash' WHERE id = 'local_ash' AND username = 'Entrenador'")
+    
+    logger.info('SQLite', 'Legacy global chat columns migrated and aligned successfully.')
+  } catch (_err: unknown) {
+    // Columns or table might not exist or be loaded yet, which is safe to ignore
+  }
+
+  // Auto-repair: Populate missing profiles from game_saves to restore cosmetics and profile visibility
+  try {
+    const savesRes = _sqliteDb.exec("SELECT user_id, save_data FROM game_saves")
+    if (savesRes.length > 0) {
+      const rows = savesRes[0]!.values
+      for (const row of rows) {
+        const userId = row[0] as string
+        const rawSave = row[1] as string
+        if (!userId || !rawSave) continue
+        
+        // Check if profile exists
+        const profRes = _sqliteDb.exec("SELECT id FROM profiles WHERE id = ?", [userId])
+        if (profRes.length === 0) {
+          logger.info('SQLite', `Auto-repair: Creating missing profile for user ${userId} from save_data`)
+          
+          let saveData: Record<string, unknown> = {}
+          try {
+            if (typeof rawSave === 'string') {
+              saveData = JSON.parse(rawSave) as Record<string, unknown>
+            }
+          } catch (_) {
+            continue
+          }
+          const fallbackName = userId.startsWith('local_') ? userId.replace('local_', '') : 'Entrenador'
+          const capitalizedFallback = fallbackName.charAt(0).toUpperCase() + fallbackName.slice(1)
+          const username = (saveData.trainer as string) || capitalizedFallback
+          const trainerLevel = (saveData.trainerLevel as number) || 1
+          const playerClass = (saveData.playerClass as string) || 'entrenador'
+          const faction = (saveData.faction as string) || null
+          const avatarStyle = (saveData.avatar_style as string) || ''
+          const nickStyle = (saveData.nick_style as string) || ''
+          
+          _sqliteDb.run(
+            `INSERT INTO profiles (id, username, trainer_level, player_class, faction, avatar_style, nick_style) 
+             VALUES (?, ?, ?, ?, ?, ?, ?)`,
+            [userId, username, trainerLevel, playerClass, faction, avatarStyle, nickStyle]
+          )
+        }
+      }
+    }
+    logger.info('SQLite', 'Auto-repair for missing profiles complete.')
+  } catch (err: unknown) {
+    logger.warn('SQLite', `Auto-repair for profiles failed: ${(err as Error).message}`)
+  }
+
   logger.success('SQLite', 'Schema integrity check complete.')
   await persistSQLite()
 }

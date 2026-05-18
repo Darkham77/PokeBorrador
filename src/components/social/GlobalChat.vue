@@ -75,6 +75,7 @@ watch(() => chatStore.globalMessages.length, () => {
   if (isOpen.value) {
     nextTick(scrollToBottom);
   }
+  chatStore.fetchMissingCosmetics();
 });
 
 function handleOutsideClick(e: Event) {
@@ -91,8 +92,14 @@ function handleOutsideClick(e: Event) {
   }
 }
 
-onMounted(() => {
+function openTrainerProfile(userId?: string) {
+  if (!userId) return;
+  uiStore.open('TrainerProfile', { userId });
+}
+
+onMounted(async () => {
   chatStore.initGlobalChat();
+  await chatStore.fetchMissingCosmetics();
 });
 
 useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
@@ -143,16 +150,23 @@ useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
             class="message-row animate-pop"
           >
             <TrainerAvatar 
-              :player-class="msg.player_class" 
-              :level="msg.trainer_level" 
+              :player-class="chatStore.profileCosmetics[msg.user_id || '']?.player_class || msg.player_class" 
+              :level="chatStore.profileCosmetics[msg.user_id || '']?.trainer_level || msg.trainer_level" 
+              :avatar-style="chatStore.profileCosmetics[msg.user_id || '']?.avatar_style || undefined"
               :size="32"
+              class="clickable-avatar"
+              @click.stop="openTrainerProfile(msg.user_id)"
             />
             <div class="message-content">
               <div class="message-meta">
                 <span
-                  class="username"
-                  :class="msg.player_class"
-                >{{ msg.username }}</span>
+                  class="username clickable-username"
+                  :class="[
+                    chatStore.profileCosmetics[msg.user_id || '']?.player_class || msg.player_class, 
+                    chatStore.profileCosmetics[msg.user_id || '']?.nick_style
+                  ]"
+                  @click.stop="openTrainerProfile(msg.user_id)"
+                >{{ chatStore.profileCosmetics[msg.user_id || '']?.username || msg.username }}</span>
                 <span class="time">{{ formatTime(msg.created_at) }}</span>
               </div>
               <p class="text">
@@ -403,6 +417,26 @@ useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
 @keyframes pop {
   0% { transform: Scale(0.9); opacity: 0; }
   100% { transform: Scale(1.0); opacity: 1; }
+}
+
+.clickable-avatar {
+  cursor: pointer;
+  transition: transform 0.2s, filter 0.2s;
+
+  &:hover {
+    transform: Scale(1.1);
+    filter: Brightness(1.2);
+  }
+}
+
+.clickable-username {
+  cursor: pointer;
+  transition: opacity 0.2s;
+
+  &:hover {
+    text-decoration: underline;
+    opacity: 0.85;
+  }
 }
 
 </style>

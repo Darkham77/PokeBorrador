@@ -16,6 +16,7 @@ export interface ProfileData {
   nick_style: string;
   notificationHistory: NotificationItem[];
   lastSave: string;
+  last_renamed_at?: string;
 }
 
 export const useProfileStore = defineStore('profile', () => {
@@ -31,7 +32,8 @@ export const useProfileStore = defineStore('profile', () => {
     faction: null,
     nick_style: '',
     notificationHistory: [],
-    lastSave: 'Sin datos'
+    lastSave: 'Sin datos',
+    last_renamed_at: undefined
   })
 
   function updateProfile(data: Partial<ProfileData>) {
@@ -40,6 +42,29 @@ export const useProfileStore = defineStore('profile', () => {
 
   function syncProfileFromAuth(user: AuthUser, state: GameState) {
     if (!user) return
+
+    let lastSaveStr = 'Sin datos'
+    try {
+      const lsKey = 'pokemon_local_save_' + user.id
+      const lsRaw = localStorage.getItem(lsKey)
+      if (lsRaw) {
+        const parsed = JSON.parse(lsRaw)
+        if (parsed._last_updated) {
+          const temporalInstant = Temporal.Instant.fromEpochMilliseconds(Number(parsed._last_updated))
+          const zdt = temporalInstant.toZonedDateTimeISO('America/Argentina/Buenos_Aires')
+          const day = String(zdt.day).padStart(2, '0')
+          const month = String(zdt.month).padStart(2, '0')
+          const year = zdt.year
+          const hour = String(zdt.hour).padStart(2, '0')
+          const minute = String(zdt.minute).padStart(2, '0')
+          const second = String(zdt.second).padStart(2, '0')
+          lastSaveStr = `${day}/${month}/${year} ${hour}:${minute}:${second}`
+        }
+      }
+    } catch (_e) {
+      // Ignorar fallos al leer de localStorage en entornos aislados
+    }
+
     updateProfile({
       username: state.trainer || user.user_metadata?.username || 'Entrenador',
       email: user.email || '—',
@@ -50,7 +75,8 @@ export const useProfileStore = defineStore('profile', () => {
       badges: state.badges || 0,
       stats: state.stats || {},
       faction: state.faction || null,
-      notificationHistory: state.notificationHistory || []
+      notificationHistory: state.notificationHistory || [],
+      lastSave: lastSaveStr
     })
   }
 

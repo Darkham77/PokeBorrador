@@ -20,3 +20,4 @@ app.use(pinia)
 app.use(router)
 
 app.mount('#app')
+window.pwa_app_mounted = true

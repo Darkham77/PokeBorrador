@@ -237,6 +237,22 @@ export class DBRouter {
       const userId = (localUser as { id?: string } | null)?.id || 'local_user';
       const username = (localUser as { user_metadata?: { username?: string } } | null)?.user_metadata?.username || 'Invitado';
 
+      if (name === 'change_username') {
+        const { new_username } = params as { new_username: string };
+        const current = await queryLocal("SELECT last_renamed_at FROM profiles WHERE id = ?", [userId]);
+        
+        if (current.length > 0 && current[0]!.last_renamed_at) {
+          const lastRename = Temporal.Instant.from(current[0]!.last_renamed_at as string);
+          const thirtyDaysAgo = Temporal.Now.instant().subtract({ hours: 24 * 30 });
+          if (Temporal.Instant.compare(lastRename, thirtyDaysAgo) > 0) {
+            return { data: null, error: 'Solo puedes cambiar tu nombre una vez cada 30 días.' };
+          }
+        }
+        
+        await queryLocal("UPDATE profiles SET username = ?, last_renamed_at = ? WHERE id = ?", [new_username, Temporal.Now.instant().toString(), userId]);
+        return { data: { success: true }, error: null };
+      }
+
       if (name === 'save_game_trusted') {
         const { p_save_data, p_expected_id } = params as { p_save_data: Record<string, unknown>, p_expected_id: string | null };
         const newSaveId = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 11) + Date.now().toString(36);

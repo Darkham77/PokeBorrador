@@ -3,7 +3,6 @@ import { computed, watch, onMounted, provide, ref } from 'vue'
 import { gsap } from 'gsap'
 import { storeToRefs } from 'pinia'
 import { useBattleStore } from '@/stores/battle'
-import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 import { useMapStore } from '@/stores/map'
 import { getVisualWeather } from '@/logic/weather/weatherRegistry'
@@ -35,7 +34,6 @@ const { BASE_ENTITY_SIZE_PLAYER, BASE_ENTITY_SIZE_ENEMY } = WORLD_CONSTANTS
 
 const battleStore = useBattleStore()
 const { isSearching } = storeToRefs(battleStore)
-const gameStore = useGameStore()
 const mapStore = useMapStore()
 const uiStore = useUIStore()
 
@@ -47,7 +45,6 @@ const arenaRef = ref<HTMLElement | null>(null)
 const trainerRef = ref<HTMLElement | null>(null)
 const { cameraStyles, worldStyles, showGuides } = useCombatCamera(arenaRef)
 
-const gs = computed(() => gameStore.state)
 const battle = computed(() => battleStore.state)
 const enemy = computed(() => battle.value?.enemy)
 const player = computed(() => battle.value?.player)
@@ -362,6 +359,23 @@ watch(() => battleStore.isBattleActive, (active) => {
     }) // Pequeño delay para dejar que el modal se asiente
   }
 })
+
+// --- CONTROLES DE ZOOM DE CÁMARA ---
+const zoomIn = () => {
+  const current = battleStore.debugZoom
+  if (current < 1.0) {
+    const nextZoom = Math.min(1.0, Math.round((current + 0.1) * 10) / 10)
+    battleStore.debugZoom = nextZoom
+  }
+}
+
+const zoomOut = () => {
+  const current = battleStore.debugZoom
+  if (current > 0.5) {
+    const nextZoom = Math.max(0.5, Math.round((current - 0.1) * 10) / 10)
+    battleStore.debugZoom = nextZoom
+  }
+}
 </script>
 
 <template>
@@ -542,7 +556,6 @@ watch(() => battleStore.isBattleActive, (active) => {
           <BattleInfoCard
             :pokemon="player"
             :is-player="true"
-            :nick-style="gs.nick_style || undefined"
           />
         </div>
       </Transition>
@@ -555,6 +568,24 @@ watch(() => battleStore.isBattleActive, (active) => {
       @success="handleFishingSuccess"
       @fail="handleFishingFail"
     />
+
+    <!-- Controles de Zoom de Cámara -->
+    <div class="camera-zoom-controls">
+      <button
+        class="zoom-btn"
+        :disabled="battleStore.debugZoom >= 1.0"
+        @click.stop="zoomIn"
+      >
+        +
+      </button>
+      <button
+        class="zoom-btn"
+        :disabled="battleStore.debugZoom <= 0.5"
+        @click.stop="zoomOut"
+      >
+        -
+      </button>
+    </div>
   </div>
 </template>
 
@@ -626,6 +657,30 @@ watch(() => battleStore.isBattleActive, (active) => {
   will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 4px 8px Rgba(0,0,0,0.5));
   @include pixelated;
+}
+
+/* --- CONTROLES DE ZOOM DE CÁMARA --- */
+.camera-zoom-controls {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  display: flex;
+  gap: 8px;
+  z-index: calc(var(--z-base) + 40);
+  pointer-events: auto;
+  @include pixelated;
+}
+
+.zoom-btn {
+  @include btn-vicio('neutral', 'sm');
+  width: 28px !important;
+  height: 28px !important;
+  padding: 0 !important;
+  font-size: 10px !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
 }
 
 </style>

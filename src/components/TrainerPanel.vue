@@ -55,6 +55,7 @@ const handlePanelClick = (event: Event) => {
       id="hud-class-avatar"
       :player-class="gs.playerClass"
       :level="gs.trainerLevel"
+      :avatar-style="gs.avatar_style || undefined"
       :size="48"
     >
       <template #overlay>

@@ -40,6 +40,15 @@ export const useChatStore = defineStore('chat', () => {
   const globalMessages = ref<ChatMessage[]>([])
   const activeChatId = ref('global') // 'global' or userId
   
+  interface ProfileCacheItem {
+    username?: string;
+    player_class?: string;
+    trainer_level?: number;
+    avatar_style?: string;
+    nick_style?: string;
+  }
+  const profileCosmetics = ref<Record<string, ProfileCacheItem>>({})
+  
   let globalChannel: RealtimeChannel | null = null
   let inboxChannel: RealtimeChannel | null = null
   const outboxChannels: Record<string, RealtimeChannel> = {}
@@ -51,6 +60,30 @@ export const useChatStore = defineStore('chat', () => {
   watch(() => gameStore.state.chats, (newChats) => {
     Object.assign(privateChats, newChats || {})
   }, { deep: true })
+
+  // Mantener el perfil del propio usuario en la caché sincronizado de forma reactiva
+  watch(
+    () => [
+      gameStore.state.trainer,
+      gameStore.state.playerClass,
+      gameStore.state.trainerLevel,
+      gameStore.state.avatar_style,
+      gameStore.state.nick_style,
+      authStore.user?.id
+    ],
+    () => {
+      if (authStore.user?.id) {
+        profileCosmetics.value[authStore.user.id] = {
+          username: gameStore.state.trainer || authStore.user.user_metadata?.username || 'Entrenador',
+          player_class: gameStore.state.playerClass || 'entrenador',
+          trainer_level: gameStore.state.trainerLevel || 1,
+          avatar_style: gameStore.state.avatar_style || '',
+          nick_style: gameStore.state.nick_style || ''
+        }
+      }
+    },
+    { immediate: true, deep: true }
+  )
 
   async function loadGlobalHistory() {
     // If offline, ProxyQuery will handle the local SELECT
@@ -65,6 +98,51 @@ export const useChatStore = defineStore('chat', () => {
 
     if (!error && data) {
       globalMessages.value = [...data].reverse()
+      await fetchMissingCosmetics()
+    }
+  }
+
+  async function fetchMissingCosmetics() {
+    const db = gameStore.db
+    if (!db) return
+
+    // Populate own cosmetics
+    if (authStore.user?.id) {
+      profileCosmetics.value[authStore.user.id] = {
+        username: gameStore.state.trainer || authStore.user.user_metadata?.username || 'Entrenador',
+        player_class: gameStore.state.playerClass || 'entrenador',
+        trainer_level: gameStore.state.trainerLevel || 1,
+        avatar_style: gameStore.state.avatar_style || '',
+        nick_style: gameStore.state.nick_style || ''
+      }
+    }
+
+    if (!globalMessages.value.length) return
+
+    const uniqueUserIds = [...new Set(globalMessages.value.map(m => m.user_id).filter(Boolean))] as string[]
+    const missingIds = uniqueUserIds.filter(id => !profileCosmetics.value[id])
+    
+    if (missingIds.length > 0) {
+      try {
+        const { data, error } = await db
+          .from('profiles')
+          .select('id, username, player_class, trainer_level, avatar_style, nick_style')
+          .in('id', missingIds) as { data: { id: string; username?: string | null; player_class?: string | null; trainer_level?: number | null; avatar_style?: string | null; nick_style?: string | null }[] | null, error: unknown }
+
+        if (!error && data) {
+          data.forEach(p => {
+            profileCosmetics.value[p.id] = {
+              username: p.username || undefined,
+              player_class: p.player_class || undefined,
+              trainer_level: p.trainer_level || undefined,
+              avatar_style: p.avatar_style || '',
+              nick_style: p.nick_style || ''
+            }
+          })
+        }
+      } catch (err) {
+        logger.error('Chat', `Error fetching profile cosmetics: ${(err as Error).message}`)
+      }
     }
   }
 
@@ -84,6 +162,9 @@ export const useChatStore = defineStore('chat', () => {
         if (!globalMessages.value.some(m => m.id === row.id)) {
           globalMessages.value.push(row)
           if (globalMessages.value.length > 50) globalMessages.value.shift()
+          
+          // Fetch cosmetics for new message sender
+          fetchMissingCosmetics()
           
           // Sonido si el mensaje no es mío
           if (row.user_id !== authStore.user?.id) {
@@ -167,6 +248,7 @@ export const useChatStore = defineStore('chat', () => {
         }
         globalMessages.value.push(localRow as unknown as ChatMessage)
         if (globalMessages.value.length > 50) globalMessages.value.shift()
+        fetchMissingCosmetics()
       }
     }
   }
@@ -227,11 +309,13 @@ export const useChatStore = defineStore('chat', () => {
     globalMessages,
     privateChats,
     activeChatId,
+    profileCosmetics,
     initGlobalChat,
     initPrivateInbox,
     sendGlobalMessage,
     sendPrivateMessage,
     openChat,
-    closeChat
+    closeChat,
+    fetchMissingCosmetics
   }
 })

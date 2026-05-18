@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useGameStore } from './game.ts'
 import { useAuthStore } from './auth.ts'
 import { NICK_STYLES, AVATAR_STYLES } from '@/data/cosmeticsData'
@@ -19,19 +19,113 @@ export const useCosmeticsStore = defineStore('cosmetics', () => {
   const equippedNickStyle = computed(() => gameStore.state.nick_style || '')
   const equippedAvatarStyle = computed(() => gameStore.state.avatar_style || '')
 
+  // Check if context is local development
+  const isLocal = computed(() => {
+    if (import.meta.env.DEV) return true
+    if (typeof window !== 'undefined') {
+      const hn = window.location.hostname
+      return hn === 'localhost' || hn === '127.0.0.1' || hn.endsWith('.local')
+    }
+    return false
+  })
+
+  // Check if user is admin (local development counts as admin)
+  const isAdmin = computed(() => {
+    return authStore.user?.role === 'admin' || isLocal.value
+  })
+
+  // --- REACTIVE SANITIZATION WATCHER ---
+  watch(
+    [
+      computed(() => gameStore.state.playerClass),
+      computed(() => authStore.user?.role)
+    ],
+    () => {
+      sanitizeEquippedCosmetics()
+    },
+    { immediate: true }
+  )
+
+  function sanitizeEquippedCosmetics() {
+    const userClass = gameStore.state.playerClass || ''
+    const currentLevel = Math.max(gameStore.state.classLevel || 1, gameStore.state.trainerLevel || 1)
+
+    // 1. Sanitizar Nick Style
+    const currentNick = gameStore.state.nick_style || ''
+    if (currentNick) {
+      const nickDef = NICK_STYLES.find(n => n.id === currentNick)
+      if (nickDef) {
+        let shouldReset = false
+        if (nickDef.requiredRole === 'admin' && !isAdmin.value) {
+          shouldReset = true
+        }
+        if (nickDef.requiredClass) {
+          const isEligible = nickDef.requiredClass === userClass && currentLevel >= 25
+          if (!isEligible) {
+            shouldReset = true
+          }
+        }
+        if (shouldReset) {
+          gameStore.state.nick_style = null
+          gameStore.save(false)
+        }
+      }
+    }
+
+    // 2. Sanitizar Avatar Style
+    const currentAvatar = gameStore.state.avatar_style || ''
+    if (currentAvatar) {
+      const avatarDef = AVATAR_STYLES.find(a => a.id === currentAvatar)
+      if (avatarDef) {
+        let shouldReset = false
+        if (avatarDef.requiredRole === 'admin' && !isAdmin.value) {
+          shouldReset = true
+        }
+        if (avatarDef.requiredClass) {
+          const isEligible = avatarDef.requiredClass === userClass && currentLevel >= 25
+          if (!isEligible) {
+            shouldReset = true
+          }
+        }
+        if (shouldReset) {
+          gameStore.state.avatar_style = null
+          gameStore.save(false)
+        }
+      }
+    }
+  }
+
   // --- ACTIONS ---
   async function equipNickStyle(styleId: string) {
     if (!authStore.user || !gameStore.db) return
     
+    // Validación de seguridad antes de equipar
+    if (styleId) {
+      const styleDef = NICK_STYLES.find(n => n.id === styleId)
+      if (styleDef) {
+        const userClass = gameStore.state.playerClass || ''
+        const currentLevel = Math.max(gameStore.state.classLevel || 1, gameStore.state.trainerLevel || 1)
+        if (styleDef.requiredRole === 'admin' && !isAdmin.value) {
+          throw new Error('No tienes permiso para equipar este estilo de nick')
+        }
+        if (styleDef.requiredClass) {
+          const isEligible = styleDef.requiredClass === userClass && currentLevel >= 25
+          if (!isEligible) {
+            throw new Error('Este estilo de nick requiere la profesión activa y nivel 25')
+          }
+        }
+      }
+    }
+
     isLoading.value = true
     try {
       const { error } = await gameStore.db
         .from('profiles')
-        .update({ nick_style: styleId })
+        .update({ nick_style: styleId || null })
         .eq('id', authStore.user.id)
 
       if (!error) {
-        gameStore.state.nick_style = styleId
+        gameStore.state.nick_style = styleId || null
         gameStore.save(false)
       }
     } finally {
@@ -42,15 +136,33 @@ export const useCosmeticsStore = defineStore('cosmetics', () => {
   async function equipAvatarStyle(styleId: string) {
     if (!authStore.user || !gameStore.db) return
     
+    // Validación de seguridad antes de equipar
+    if (styleId) {
+      const styleDef = AVATAR_STYLES.find(a => a.id === styleId)
+      if (styleDef) {
+        const userClass = gameStore.state.playerClass || ''
+        const currentLevel = Math.max(gameStore.state.classLevel || 1, gameStore.state.trainerLevel || 1)
+        if (styleDef.requiredRole === 'admin' && !isAdmin.value) {
+          throw new Error('No tienes permiso para equipar este marco de avatar')
+        }
+        if (styleDef.requiredClass) {
+          const isEligible = styleDef.requiredClass === userClass && currentLevel >= 25
+          if (!isEligible) {
+            throw new Error('Este marco de avatar requiere la profesión activa y nivel 25')
+          }
+        }
+      }
+    }
+
     isLoading.value = true
     try {
       const { error } = await gameStore.db
         .from('profiles')
-        .update({ avatar_style: styleId })
+        .update({ avatar_style: styleId || null })
         .eq('id', authStore.user.id)
 
       if (!error) {
-        gameStore.state.avatar_style = styleId
+        gameStore.state.avatar_style = styleId || null
         gameStore.save(false)
       }
     } finally {
@@ -65,6 +177,7 @@ export const useCosmeticsStore = defineStore('cosmetics', () => {
     equippedAvatarStyle,
     isLoading,
     equipNickStyle,
-    equipAvatarStyle
+    equipAvatarStyle,
+    sanitizeEquippedCosmetics
   }
 })

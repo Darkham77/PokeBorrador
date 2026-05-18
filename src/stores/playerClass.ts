@@ -9,6 +9,8 @@ import { getClassModifier } from '@/logic/player/classEngine'
 import type { Pokemon } from '@/types/pokemon'
 
 
+import { AVATAR_STYLES } from '@/data/cosmeticsData'
+
 export interface ActiveMission {
   id: string
   startedAt: number
@@ -119,6 +121,30 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
     [...(gameStore.state.team || []), ...(gameStore.state.box || [])].forEach((p: Pokemon | null) => {
       if (p && p.onMission) p.onMission = false
     })
+
+    // Lógica de transición de cosméticos de clase
+    const currentAvatar = gameStore.state.avatar_style || ''
+    if (currentAvatar) {
+      const avatarDef = AVATAR_STYLES.find(a => a.id === currentAvatar)
+      if (avatarDef && avatarDef.requiredClass) {
+        const isSquare = currentAvatar.includes('-sq-')
+        const classToStyleMap: Record<string, string> = {
+          cazabichos: 'av-class-cazabichos',
+          criador: 'av-class-criador',
+          rocket: 'av-class-rocket',
+          entrenador: 'av-class-entrenador'
+        }
+        
+        const newBaseStyle = classToStyleMap[classId]
+        if (newBaseStyle) {
+          gameStore.state.avatar_style = isSquare 
+            ? newBaseStyle.replace('av-class-', 'av-sq-')
+            : newBaseStyle
+        } else {
+          gameStore.state.avatar_style = null // Volver al por defecto
+        }
+      }
+    }
 
     gameStore.state.playerClass = classId
     gameStore.state.classLevel = 1

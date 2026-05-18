@@ -28,13 +28,14 @@ const gameStore = useGameStore();
 const activeClassId = computed(() => props.classId || gameStore.state.playerClass);
 const cls = computed(() => activeClassId.value ? (PLAYER_CLASSES as Record<string, PlayerClass>)[activeClassId.value] : null);
 
-const trainerLevel = computed(() => gameStore.state.trainerLevel || 1);
-
 const borderColor = computed(() => {
   if (props.customBorder) return props.customBorder;
-  if (trainerLevel.value >= 20) return 'Rgba(255, 215, 0, 1)'; // Gold
-  if (trainerLevel.value >= 10) return 'Rgba(192, 192, 192, 1)'; // Silver
-  return 'Rgba(205, 127, 50, 1)'; // Bronze
+  return 'rgba(255, 255, 255, 0.25)';
+});
+
+const shadowColor = computed(() => {
+  if (props.customBorder) return `${props.customBorder}44`;
+  return 'rgba(255, 255, 255, 0.08)';
 });
 
 const avatarUrl = computed(() => {
@@ -49,8 +50,8 @@ const containerStyle = computed(() => ({
   minWidth: `${props.size}px`,
   minHeight: `${props.size}px`,
   borderColor: borderColor.value,
-  boxShadow: `0 0 ${props.size / 4}px ${borderColor.value}66`,
-  backgroundImage: cls.value ? `Radial-Gradient(circle, ${cls.value.color}44 0%, transparent 80%), url('${avatarUrl.value}')` : 'none'
+  boxShadow: `0 0 ${props.size / 4}px ${shadowColor.value}`,
+  backgroundImage: cls.value ? `radial-gradient(circle, ${cls.value.color}44 0%, transparent 80%), url('${avatarUrl.value}')` : 'none'
 }));
 </script>
 

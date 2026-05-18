@@ -11,6 +11,7 @@
     "dev": "node -e \"if(process.platform === 'win32') try { require('child_process').execSync('chcp 65001') } catch (e) {}\" && vite",
     "build": "npm run validate:types && vite build",
     "preview": "vite preview",
+    "admin:rename": "node --env-file=.env --permission --experimental-strip-types --allow-fs-read=. --allow-fs-write=. --allow-env scripts/admin_rename.ts",
     "validate:types": "vue-tsc --noEmit",
     "test": "vitest run",
     "test:node": "node --experimental-strip-types --experimental-test-coverage --test \"tests/node/**/*.test.ts\"",

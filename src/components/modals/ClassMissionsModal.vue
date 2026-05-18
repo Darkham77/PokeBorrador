@@ -144,7 +144,7 @@ const isMissionDone = computed(() => {
     @close="close"
   >
     <div 
-      class="class-modal-shell"
+      class="class-modal-shell custom-scrollbar-vicio"
       :style="{ '--cls-color': currentClass?.color || '#3b82f6' }"
     >
       <Transition
@@ -199,6 +199,13 @@ const isMissionDone = computed(() => {
 
   @media (max-width: 950px) {
     min-height: auto;
+    height: 100% !important;
+    overflow-y: auto !important;
+    @include smooth-scroll;
+
+    // Premium scrollbar fallback for standard browser engines
+    scrollbar-width: thin !important;
+    scrollbar-color: Rgba(255, 255, 255, 0.3) Rgba(0, 0, 0, 0.1) !important;
   }
 }
 

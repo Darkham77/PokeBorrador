@@ -16,8 +16,8 @@
     <style>
       /* Eliminate FOUC (Flash of Unstyled Content) */
       html, body {
-        background-color: #0a0a0a !important;
-        background: #0a0a0a !important;
+        background-color: #07080e !important;
+        background: #07080e !important;
         color: #fff;
         margin: 0;
         padding: 0;
@@ -26,21 +26,242 @@
         overflow: hidden;
       }
       #app { 
-        background: #0a0a0a; 
+        background: #07080e; 
         width: 100dvw;
         height: 100dvh; 
         overflow: hidden;
       }
+
+      /* Estilos para el fallback de conexión offline */
+      #offline-wrapper {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+        background: #07080e;
+        font-family: 'Nunito', sans-serif;
+        padding: 20px;
+        box-sizing: border-box;
+      }
+      
+      .offline-card {
+        background: rgba(15, 18, 32, 0.95);
+        border: 2px solid rgba(255, 255, 255, 0.15);
+        border-radius: 24px;
+        width: 100%;
+        max-width: 440px;
+        padding: 40px;
+        text-align: center;
+        box-shadow: 0 0 50px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(255, 255, 255, 0.02);
+        box-sizing: border-box;
+        transition: border-color 0.5s ease, box-shadow 0.5s ease;
+      }
+      
+      .offline-card.error-state {
+        border-color: rgba(255, 69, 58, 0.4);
+        box-shadow: 0 0 60px rgba(255, 69, 58, 0.15), inset 0 0 20px rgba(255, 69, 58, 0.05);
+        animation: cardPulse 3s infinite ease-in-out;
+      }
+      
+      @keyframes cardPulse {
+        0%, 100% { border-color: rgba(255, 69, 58, 0.4); box-shadow: 0 0 50px rgba(255, 69, 58, 0.15); }
+        50% { border-color: rgba(255, 69, 58, 0.8); box-shadow: 0 0 70px rgba(255, 69, 58, 0.35); }
+      }
+      
+      .icon-header {
+        margin-bottom: 24px;
+      }
+      
+      .wifi-icon {
+        display: inline-block;
+        font-size: 56px;
+        filter: drop-shadow(0 0 15px rgba(255, 214, 10, 0.3));
+        transition: filter 0.5s ease;
+      }
+      
+      .offline-card.error-state .wifi-icon {
+        filter: drop-shadow(0 0 15px rgba(255, 69, 58, 0.6));
+      }
+      
+      .pulse {
+        animation: pulseIcon 2s infinite ease-in-out;
+      }
+      
+      @keyframes pulseIcon {
+        0%, 100% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.08); opacity: 0.8; }
+      }
+      
+      .press-start {
+        font-family: 'Press Start 2P', monospace;
+        letter-spacing: 1px;
+        image-rendering: pixelated;
+      }
+      
+      .offline-title {
+        font-size: 16px;
+        color: #ffd60a;
+        margin: 0 0 20px 0;
+        transition: color 0.5s ease;
+      }
+      
+      .offline-card.error-state .offline-title {
+        color: #ff453a;
+      }
+      
+      .msg {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 14px;
+        line-height: 1.6;
+        margin: 0 0 24px 0;
+      }
+      
+      .spinner-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 16px;
+      }
+      
+      .spinner {
+        width: 36px;
+        height: 36px;
+        border: 3.5px solid rgba(255, 255, 255, 0.05);
+        border-top: 3.5px solid #ffd60a;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+      
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+      
+      .status-text {
+        font-size: 9px;
+        color: #ffd60a;
+      }
+      
+      .error-details {
+        margin: 10px 0 24px 0;
+        font-size: 11px;
+        color: rgba(255, 255, 255, 0.4);
+      }
+      
+      .error-details code {
+        background: rgba(0, 0, 0, 0.3);
+        padding: 4px 8px;
+        border-radius: 6px;
+        color: #ff453a;
+        font-family: monospace;
+      }
+      
+      .retry-btn-modern {
+        background: #ff453a;
+        color: #ffffff;
+        border: 2px solid #ffffff;
+        padding: 14px 28px;
+        font-size: 10px;
+        font-weight: bold;
+        border-radius: 8px;
+        cursor: pointer;
+        box-shadow: 0 4px 0 rgba(0, 0, 0, 0.3), 0 0 15px rgba(255, 69, 58, 0.3);
+        transition: all 0.2s ease;
+        outline: none;
+      }
+      
+      .retry-btn-modern:hover {
+        transform: translateY(-2px);
+        background: #ffffff;
+        color: #ff453a;
+        box-shadow: 0 6px 0 rgba(0, 0, 0, 0.2), 0 0 20px rgba(255, 255, 255, 0.4);
+      }
+      
+      .retry-btn-modern:active {
+        transform: translateY(1px);
+        box-shadow: 0 2px 0 rgba(0, 0, 0, 0.4);
+      }
     </style>
     
+    <script>
+      // Función para mostrar pantalla de error si falla la carga o no hay internet
+      function showOfflineScreen() {
+        var card = document.getElementById('offline-card');
+        var icon = document.getElementById('offline-icon');
+        var title = document.getElementById('offline-title');
+        var message = document.getElementById('offline-message');
+        var loader = document.getElementById('offline-loader');
+        var errorContent = document.getElementById('offline-error-content');
+        
+        if (card) card.className = 'offline-card error-state';
+        if (icon) {
+          icon.innerHTML = '⚠️';
+          icon.className = 'wifi-icon pulse';
+        }
+        if (title) title.innerHTML = 'CONEXIÓN FALLIDA';
+        if (message) message.innerHTML = 'El servidor de Poké Vicio está fuera de línea o no tienes conexión a internet.';
+        if (loader) loader.style.display = 'none';
+        if (errorContent) errorContent.style.display = 'block';
+      }
+
+      // Si el navegador ya detecta que no hay internet, actuar de inmediato
+      if (typeof navigator !== 'undefined' && !navigator.onLine) {
+        setTimeout(showOfflineScreen, 0);
+      }
+
+      // Capturar fallos en la carga del script principal o assets
+      function handleEntryPointError() {
+        showOfflineScreen();
+      }
+
+      // Fallback de seguridad: si después de 6 segundos Vue no se ha montado, mostrar error
+      setTimeout(function() {
+        if (typeof window !== 'undefined' && !window.pwa_app_mounted) {
+          showOfflineScreen();
+        }
+      }, 6000);
+    </script>
 
     <!-- LEGACY DEPENDENCIES -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.12.0/sql-wasm.js"></script>
     <!-- VUE ENTRY POINT -->
-    <script type="module" src="/src/main.ts"></script>
+    <script type="module" src="/src/main.ts" onerror="handleEntryPointError()"></script>
   </head>
   <body>
-    <div id="app"></div>
+    <div id="app">
+      <!-- Fallback de Conexión Offline / Servidor Caído (Reemplazado automáticamente por Vue cuando monta con éxito) -->
+      <div id="offline-wrapper">
+        <div class="offline-card" id="offline-card">
+          <div class="icon-header">
+            <span class="wifi-icon pulse" id="offline-icon">📶</span>
+          </div>
+          
+          <h2 class="press-start offline-title" id="offline-title">
+            CARGANDO JUEGO
+          </h2>
+          
+          <p class="msg" id="offline-message">
+            Iniciando la interfaz de Poké Vicio. Por favor espera unos instantes...
+          </p>
+  
+          <div class="spinner-container" id="offline-loader">
+            <div class="spinner"></div>
+            <span class="status-text press-start">CONECTANDO...</span>
+          </div>
+  
+          <div id="offline-error-content" style="display: none;">
+            <p class="error-details">
+              Detalle: <code>WEB_OFFLINE / CONEXIÓN RECHAZADA</code>
+            </p>
+            <button class="retry-btn-modern press-start" onclick="window.location.reload()">
+              REINTENTAR
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
     <div class="stars"></div>
   </body>
 </html>

@@ -406,6 +406,21 @@ export async function saveGame(state: GameState, user: AuthUser, options: SaveOp
       return { rollback: true, outOfSync: true };
     }
 
+    // Sincronizar campos principales en la tabla profiles para mantener consistencia
+    try {
+      await db.from('profiles').update({
+        username: save_data.trainer,
+        trainer_level: save_data.trainerLevel,
+        player_class: save_data.playerClass,
+        faction: save_data.faction,
+        avatar_style: save_data.avatar_style,
+        nick_style: save_data.nick_style
+      }).eq('id', user.id);
+      logger.success('SAVE', 'Campos de perfil sincronizados en la base de datos.');
+    } catch (e) {
+      logger.warn('SAVE', `Error al sincronizar campos del perfil: ${(e as Error).message}`);
+    }
+
     // IF successful migration save, we MUST update the user's version to v2
     let migrated = false;
     if (isLegacy) {

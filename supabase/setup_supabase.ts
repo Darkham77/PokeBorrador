@@ -630,6 +630,11 @@ async function todo(tag = "latest") {
   await publicar(tag);
 }
 
+function syncOfficialServers() {
+  info("Sincronizando official_servers.ts con el .env maestro...");
+  run(["npm", "run", "servers:configure"], undefined, false);
+}
+
 // ── Punto de Entrada CLI de Node.js ──────────────────────────────────────────
 async function main() {
   const args = process.argv.slice(2);
@@ -646,9 +651,11 @@ async function main() {
       break;
     case 'generate':
       await generar();
+      syncOfficialServers();
       break;
     case 'add':
       await agregar();
+      syncOfficialServers();
       break;
     case 'build':
       await construir(tag);
@@ -661,6 +668,7 @@ async function main() {
       break;
     case 'all':
       await todo(tag);
+      syncOfficialServers();
       break;
     case '-h':
     case '--help':

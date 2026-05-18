@@ -1,4 +1,4 @@
-import { ref, onMounted, onUnmounted, computed, type CSSProperties, type Ref } from 'vue'
+import { ref, onMounted, onUnmounted, computed, watch, type CSSProperties, type Ref } from 'vue'
 import { gameBus } from '@/logic/gameBus'
 import { WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator'
 import { useBattleStore } from '@/stores/battle'
@@ -20,6 +20,13 @@ export function useCombatCamera(viewportRef: Ref<HTMLElement | null>) {
 
   const showGuides = computed(() => battleStore.debugShowGuides)
   const debugZoom = computed(() => battleStore.debugZoom)
+
+  watch(debugZoom, () => {
+    if (viewportRef.value) {
+      const rect = viewportRef.value.getBoundingClientRect()
+      updateCamera(rect.width, rect.height)
+    }
+  })
 
   // Computed Styles
   const cameraStyles = computed<CSSProperties>(() => ({

@@ -23,7 +23,10 @@ export const useModalStore = defineStore('modals', () => {
    * Opens a modal by name from the registry.
    */
   const open = (name: string, props: Record<string, unknown> = {}) => {
-    const component = (MODAL_REGISTRY as Record<string, Component>)[name]
+    const registryKey = Object.keys(MODAL_REGISTRY).find(
+      key => key.toLowerCase() === name.toLowerCase()
+    )
+    const component = registryKey ? (MODAL_REGISTRY as Record<string, Component>)[registryKey] : undefined
     if (!component) {
       logger.error('ModalStore', `Modal "${name}" not found in registry`)
       return null

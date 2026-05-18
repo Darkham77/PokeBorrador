@@ -62,6 +62,7 @@ declare global {
   interface Window {
     __VITE_DEBUG__?: Record<string, (...args: unknown[]) => unknown>;
     drawBattleBackground?: (locationId: string, cycle: string) => void;
+    pwa_app_mounted?: boolean;
   }
 }
 

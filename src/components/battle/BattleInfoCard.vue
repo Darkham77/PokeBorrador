@@ -18,14 +18,12 @@ import type { Pokemon } from '@/types/pokemon'
 interface Props {
   pokemon?: Pokemon | null
   isPlayer?: boolean
-  nickStyle?: string
   isScrambled?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
   pokemon: null,
   isPlayer: false,
-  nickStyle: '',
   isScrambled: false
 })
 
@@ -388,8 +386,7 @@ const unifiedStatuses = computed<StatusIndicator[]>(() => {
     <div class="card-content-wrapper">
       <div class="card-header">
         <span 
-          class="poke-name" 
-          :class="isPlayer ? nickStyle : ''"
+          class="poke-name"
         >
           {{ isScrambled ? '???' : p.name }}
         </span>
