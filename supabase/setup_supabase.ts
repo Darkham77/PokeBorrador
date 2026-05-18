@@ -27,8 +27,6 @@ const ARCHIVO_MAESTRO   = path.resolve(BASE_DIR, '..', '.env'); // .env maestro 
 const CARPETA_GENERADOS = path.resolve(BASE_DIR, 'generated');
 const CARPETA_DOCKER    = path.resolve(BASE_DIR, 'docker');
 
-const ES_WINDOWS = process.platform === 'win32';
-
 // ── Contenido de Dockerfile Personalizado (1:1) ──────────────────────────────
 const DOCKERFILE_CONTENT = `# ─────────────────────────────────────────────────────────────────────────────
 # Poké Vicio — Custom Supabase Postgres Image
@@ -137,15 +135,8 @@ function run(cmd: string[], cwd?: string, check = true) {
 }
 
 // ── Lógica de Parseo y Mutación de .env ──────────────────────────────────────
-function getEnvVar(content: string, key: string): string | null {
-  const escapedKey = key.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-  const pattern = new RegExp(`^${escapedKey}\\s*=\\s*(.*)$`, 'm');
-  const match = content.match(pattern);
-  return match && match[1] ? match[1].trim() : null;
-}
-
 function setEnvVar(content: string, key: string, value: string, afterHeader?: string): string {
-  const escapedKey = key.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+  const escapedKey = key.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
   const pattern = new RegExp(`^${escapedKey}\\s*=\\s*.*$`, 'm');
   const replacement = `${key}=${value}`;
   
@@ -153,7 +144,7 @@ function setEnvVar(content: string, key: string, value: string, afterHeader?: st
     return content.replace(pattern, replacement);
   } else {
     if (afterHeader) {
-      const escapedHeader = afterHeader.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+      const escapedHeader = afterHeader.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
       const hPattern = new RegExp(`^${escapedHeader}\\s*$`, 'm');
       if (hPattern.test(content)) {
         return content.replace(hPattern, `${afterHeader}\n${replacement}`);
@@ -326,13 +317,17 @@ async function clonar() {
       return;
     }
     await fs.rm(CARPETA_DOCKER, { recursive: true, force: true });
-  } catch {}
+  } catch {
+    // La carpeta no existe, procedemos normalmente
+  }
 
   info("Clonando estructura de Supabase (sparse-checkout)...");
   const tempDir = path.resolve(BASE_DIR, 'temp_supabase');
   try {
     await fs.rm(tempDir, { recursive: true, force: true });
-  } catch {}
+  } catch {
+    // Nada que limpiar
+  }
 
   run(["git", "clone", "--depth", "1", "--filter=blob:none", "--sparse", "https://github.com/supabase/supabase.git", tempDir]);
   run(["git", "sparse-checkout", "set", "docker"], tempDir);
@@ -341,7 +336,9 @@ async function clonar() {
   await fs.rename(path.resolve(tempDir, 'docker'), CARPETA_DOCKER);
   try {
     await fs.rm(tempDir, { recursive: true, force: true });
-  } catch {}
+  } catch {
+    // Nada que limpiar
+  }
 
   info("Generando Dockerfile personalizado dinámicamente...");
   await fs.writeFile(path.resolve(CARPETA_DOCKER, 'Dockerfile'), DOCKERFILE_CONTENT, 'utf-8');
@@ -399,7 +396,7 @@ async function generar() {
     // 1. Reemplazar imagen de postgres por la imagen personalizada
     contenidoCompose = contenidoCompose.replace(
       "image: supabase/postgres:15.8.1.085",
-      "image: \${DOCKER_USER}/\${DOCKER_REPO_DB}:\${DOCKER_TAG_DB}"
+      "image: ${DOCKER_USER}/${DOCKER_REPO_DB}:${DOCKER_TAG_DB}"
     );
 
     // 2. Reemplazar montajes de archivos SQL de Supabase en db por el volumen nombrado
@@ -478,8 +475,8 @@ async function generar() {
       "      - supabase-volumes-v2:/supabase-volumes:ro,z"
     );
     contenidoCompose = contenidoCompose.replace(
-      "      DB_POOL_SIZE: \${POOLER_DB_POOL_SIZE}",
-      "      DB_POOL_SIZE: \${POOLER_DB_POOL_SIZE}\n      RLIMIT_NOFILE: \"65536\""
+      "      DB_POOL_SIZE: ${POOLER_DB_POOL_SIZE}",
+      "      DB_POOL_SIZE: ${POOLER_DB_POOL_SIZE}\n      RLIMIT_NOFILE: \"65536\""
     );
     contenidoCompose = contenidoCompose.replace(
       '        "/app/bin/migrate && /app/bin/supavisor eval \\"\\$\\$(cat /etc/pooler/pooler.exs)\\" && /app/bin/server"',
@@ -508,7 +505,9 @@ async function generar() {
   const vDir = path.resolve(CARPETA_GENERADOS, 'volumes');
   try {
     await fs.rm(vDir, { recursive: true, force: true });
-  } catch {}
+  } catch {
+    // No existía
+  }
 }
 
 async function agregar() {

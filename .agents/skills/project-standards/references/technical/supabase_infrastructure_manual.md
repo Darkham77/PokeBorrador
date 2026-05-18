@@ -63,3 +63,7 @@ When deploying to a restricted NAS environment using Postgres 15+:
 
 - **Superuser Mandate**: Postgres 15 introduces stricter schema ownership rules. During initialization, you MUST grant `SUPERUSER` to the core Supabase roles (`supabase_admin`, `authenticator`) to ensure migrations can bypass permission deadlocks on the `public` schema.
 - **Healthcheck Jitter**: Increase the `interval` and `retries` for the `db` healthcheck to accommodate lower CPU priority on NAS background tasks.
+- **MikroTik Router Loopback & Hairpin NAT**: When mapping external ports (e.g., `8443` HTTPS via a public DDNS domain like `myqnapcloud.com`) to the internal QNAP local IP address, devices inside the same LAN will fail to connect due to loopback routing issues unless **Hairpin NAT** (a `src-nat` rule with a `masquerade` action for the local subnet directed to the target IP) is active on the MikroTik router.
+- **ESLint Code Quality Standards**:
+  - **Double-Quoted Dollar Signs**: Never escape dollar signs (`\$`) in regular double-quoted strings (`"..."`) or regex literals inside deployment scripts. Escaping them is only valid within template literals and will trigger ESLint `no-useless-escape` errors.
+  - **Non-Empty Catch Blocks**: Avoid writing empty `catch {}` blocks in node scripts. Always add at least a descriptive comment (e.g., `// Silently ignore`) inside the catch block to satisfy ESLint `no-empty` rules.
