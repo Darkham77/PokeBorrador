@@ -99,9 +99,9 @@ const handleImageError = (e: Event) => {
           <h2 class="class-title">
             {{ cls.name }}
           </h2>
-          <p class="class-desc">
-            {{ cls.description }}
-          </p>
+          <div class="class-desc">
+            <span>{{ cls.description }}</span>
+          </div>
 
           <div class="stats-comparison">
             <div class="stats-section pros">
@@ -159,6 +159,9 @@ const handleImageError = (e: Event) => {
   display: flex;
   flex-direction: column;
   gap: 32px;
+  overflow-y: auto;
+  max-height: 85vh;
+  @include smooth-scroll;
 }
 
 .selection-header {
@@ -191,10 +194,12 @@ const handleImageError = (e: Event) => {
   @include gpu-layer;
   border: 1px solid Rgba(255, 255, 255, 0.1);
   border-radius: 12px;
-  padding: 32px 20px;
+  padding: 24px 16px;
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
   align-items: center;
+  height: 100%;
   transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   overflow: hidden;
   @include gpu-layer;
@@ -233,20 +238,23 @@ const handleImageError = (e: Event) => {
 }
 
 .avatar-circle-wrap {
-  margin-bottom: 24px;
+  margin-bottom: 20px;
   .avatar-circle {
-    width: 100px;
-    height: 100px;
-    background: Rgba(0, 0, 0, 0.3);
+    width: 90px;
+    height: 90px;
+    background: Rgba(0, 0, 0, 0.5);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 2px solid var(--cls-color);
-    box-shadow: 0 0 20px var(--cls-color)44;
+    border: 3px solid var(--cls-color);
+    box-shadow: 0 0 20px var(--cls-color)66;
+    overflow: hidden;
   }
   .trainer-pixel-art {
-    width: 70px;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
     @include sprite-render;
     transition: transform 0.4s;
   }
@@ -257,6 +265,8 @@ const handleImageError = (e: Event) => {
   font-size: 14px;
   color: var(--cls-color);
   margin-bottom: 16px;
+  text-align: center;
+  line-height: 1.3;
   text-shadow: 0 0 10px var(--cls-color)66;
   @include pixelated;
 }
@@ -267,9 +277,10 @@ const handleImageError = (e: Event) => {
   text-align: center;
   line-height: 1.5;
   margin-bottom: 24px;
-  height: 60px;
+  min-height: 72px;
   display: flex;
   align-items: center;
+  justify-content: center;
 }
 
 .stats-comparison {
@@ -277,8 +288,9 @@ const handleImageError = (e: Event) => {
   display: flex;
   flex-direction: column;
   gap: 20px;
-  margin-bottom: 32px;
+  margin-bottom: 20px;
   flex: 1;
+  padding-right: 4px;
 
   .stats-section {
     h3 {

@@ -29,7 +29,7 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits<{
-  (e: 'toggle-tag', tagId: string): void
+  'toggle-tag': [tagId: string]
 }>()
 
 const badges = computed(() => {

@@ -1,17 +1,38 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useSocialStore } from '@/stores/social'
+import { gsap } from 'gsap'
 
 // Components
-import SocialFriends from '@/components/social/SocialFriends.vue'
-import SocialSearch from '@/components/social/SocialSearch.vue'
-import SocialRequests from '@/components/social/SocialRequests.vue'
+import SocialFriendsTab from '@/components/social/SocialFriendsTab.vue'
+import SocialSearchTab from '@/components/social/SocialSearchTab.vue'
+import SocialRequestsTab from '@/components/social/SocialRequestsTab.vue'
 import SocialRankings from '@/components/social/SocialRankings.vue'
 
 const socialStore = useSocialStore()
 
 // 'friends', 'rankings', 'search', 'requests'
 const activeTab = ref('friends') 
+
+function selectTab(tab: string) {
+  if (activeTab.value === tab) return
+  
+  gsap.to('.social-view-content', {
+    opacity: 0,
+    y: 8,
+    duration: 0.15,
+    ease: 'power2.inOut',
+    onComplete: () => {
+      activeTab.value = tab
+      gsap.to('.social-view-content', {
+        opacity: 1,
+        y: 0,
+        duration: 0.25,
+        ease: 'power2.out'
+      })
+    }
+  })
+}
 
 onMounted(() => {
   socialStore.loadSocialData()
@@ -26,14 +47,14 @@ onMounted(() => {
       <button 
         class="tab-link" 
         :class="{ active: activeTab === 'friends' }"
-        @click.stop="activeTab = 'friends'"
+        @click.stop="selectTab('friends')"
       >
         <span class="tab-label">AMIGOS</span>
       </button>
       <button 
         class="tab-link rankings" 
         :class="{ active: activeTab === 'rankings' }"
-        @click.stop="activeTab = 'rankings'"
+        @click.stop="selectTab('rankings')"
       >
         <div class="glow-box" />
         <span class="tab-label">HALL</span>
@@ -41,14 +62,14 @@ onMounted(() => {
       <button 
         class="tab-link" 
         :class="{ active: activeTab === 'search' }"
-        @click.stop="activeTab = 'search'"
+        @click.stop="selectTab('search')"
       >
         <span class="tab-label">BUSCAR</span>
       </button>
       <button 
         class="tab-link" 
         :class="{ active: activeTab === 'requests' }"
-        @click.stop="activeTab = 'requests'"
+        @click.stop="selectTab('requests')"
       >
         <span class="tab-label">PEDIDOS</span>
         <span
@@ -60,10 +81,13 @@ onMounted(() => {
 
     <!-- Content Area -->
     <div class="social-view-content">
-      <SocialFriends v-if="activeTab === 'friends'" />
+      <SocialFriendsTab 
+        v-if="activeTab === 'friends'" 
+        @search-tab="selectTab('search')"
+      />
       <SocialRankings v-if="activeTab === 'rankings'" />
-      <SocialSearch v-if="activeTab === 'search'" />
-      <SocialRequests v-if="activeTab === 'requests'" />
+      <SocialSearchTab v-if="activeTab === 'search'" />
+      <SocialRequestsTab v-if="activeTab === 'requests'" />
     </div>
   </div>
 </template>
@@ -169,5 +193,4 @@ onMounted(() => {
   background: Rgba(0,0,0,0.1);
   @include gpu-layer;
 }
-
 </style>

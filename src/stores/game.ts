@@ -84,6 +84,19 @@ export const useGameStore = defineStore('game', () => {
         window.addEventListener('pv-save-unlock', () => {
           isSaveLocked.value = false
         })
+
+        // Cargar datos sociales y notificar solicitudes pendientes al iniciar sesión
+        import('./social.ts').then(async ({ useSocialStore }) => {
+          const socialStore = useSocialStore()
+          await socialStore.loadSocialData()
+          if (socialStore.pendingRequests.length > 0) {
+            const { useUIStore } = await import('./ui.ts')
+            const uiStore = useUIStore()
+            uiStore.notify(`¡Tenés ${socialStore.pendingRequests.length} solicitud(es) de amistad pendiente(s)!`, '🤝')
+          }
+        }).catch(err => {
+          logger.error('Social', `Error al cargar notificaciones iniciales: ${(err as Error).message}`)
+        })
       }
     }
   }

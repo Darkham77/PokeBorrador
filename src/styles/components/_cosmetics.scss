@@ -7,55 +7,69 @@
    NICKNAME STYLES (CHAT, USERNAME & PROFILE)
    ───────────────────────────────────────────────────────────────────────────── */
 
-.nt-gold {
+.nt-normal, .normal, .nick-style-normal,
+.username.normal, .name.normal, .trainer-name.normal, .profile-username.normal,
+.username.nt-normal, .name.nt-normal, .trainer-name.nt-normal, .profile-username.nt-normal,
+.username.nick-style-normal, .name.nick-style-normal, .trainer-name.nick-style-normal, .profile-username.nick-style-normal {
+  color: #ffffff !important;
+  text-shadow: none !important;
+  animation: none !important;
+  font-weight: 700 !important;
+  font-style: normal !important;
+  filter: none !important;
+  background: none !important;
+  -webkit-text-fill-color: initial !important;
+}
+
+.nt-gold, .nick-style-gold {
   color: $coin-gold !important;
   text-shadow: 0 0 8px Rgba(255, 215, 0, 0.6) !important;
 }
 
-.nt-silver {
+.nt-silver, .nick-style-silver {
   color: Rgba(226, 232, 240, 1) !important;
   text-shadow: 0 0 8px Rgba(226, 232, 240, 0.4) !important;
 }
 
-.nt-bronze {
+.nt-bronze, .nick-style-bronze {
   color: Rgba(205, 127, 50, 1) !important;
   text-shadow: 0 0 5px Rgba(205, 127, 50, 0.4) !important;
 }
 
-.nt-fire {
+.nt-fire, .nick-style-fire {
   color: Rgba(255, 69, 0, 1) !important;
   animation: anim-fire 2s infinite alternate !important;
 }
 
-.nt-water {
+.nt-water, .nick-style-water {
   color: Rgba(56, 189, 248, 1) !important;
   animation: anim-water 3s infinite linear !important;
 }
 
-.nt-spark {
+.nt-spark, .nick-style-spark {
   color: Rgba(250, 204, 21, 1) !important;
   animation: anim-spark 0.5s infinite !important;
 }
 
-.nt-dark {
+.nt-dark, .nick-style-dark {
   color: Rgba(109, 40, 217, 1) !important;
   text-shadow: 0 0 10px Rgba(76, 29, 149, 1) !important;
 }
 
-.nt-royal {
+.nt-royal, .nick-style-royal {
   color: Rgba(236, 72, 153, 1) !important;
   text-shadow: 0 0 10px Rgba(219, 39, 119, 1) !important;
   font-style: italic !important;
 }
 
-.nt-ghost {
+.nt-ghost, .nick-style-ghost {
   color: Rgba(148, 163, 184, 1) !important;
   opacity: 0.7 !important;
   will-change: transform, filter, opacity;
   filter: Blur(0.5px) !important;
 }
 
-.nt-admin {
+.nt-admin, .nick-style-admin {
   background: linear-gradient(90deg, #ff0055, #9e00ff, #00a2ff, #00ff77, #ff9e00, #ff0055) !important;
   background-size: 200% auto !important;
   -webkit-background-clip: text !important;
@@ -68,28 +82,28 @@
   display: inline-block !important;
 }
 
-.nt-class-cazabichos {
+.nt-class-cazabichos, .username.cazabichos, .name.cazabichos {
   color: #22c55e !important;
   text-shadow: 0 0 6px Rgba(34, 197, 94, 0.5), 0 0 12px Rgba(21, 128, 61, 0.3) !important;
   font-weight: 700 !important;
   animation: anim-bug-flutter 2s ease-in-out infinite alternate !important;
 }
 
-.nt-class-criador {
+.nt-class-criador, .username.criador, .name.criador {
   color: #a855f7 !important;
   text-shadow: 0 0 6px Rgba(168, 85, 247, 0.5), 0 0 12px Rgba(126, 34, 206, 0.3) !important;
   font-weight: 700 !important;
   animation: anim-breeder-pulse 2s ease-in-out infinite alternate !important;
 }
 
-.nt-class-rocket {
+.nt-class-rocket, .username.rocket, .name.rocket {
   color: #ef4444 !important;
   text-shadow: 0 0 8px #ef4444, 0 0 15px #991b1b !important;
   font-weight: 700 !important;
   animation: anim-rocket-shadow 1.5s ease-in-out infinite alternate !important;
 }
 
-.nt-class-entrenador {
+.nt-class-entrenador, .username.entrenador, .name.entrenador {
   color: #3b82f6 !important;
   text-shadow: 0 0 6px Rgba(59, 130, 246, 0.5), 0 0 12px Rgba(29, 78, 216, 0.3) !important;
   font-weight: 700 !important;

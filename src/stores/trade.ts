@@ -94,6 +94,7 @@ export const useTradeStore = defineStore('trade', () => {
     } else {
       tradeFriendSave.value = data.save_data as unknown as GameState
     }
+    uiStore.open('Trade')
   }
 
   async function sendTradeOffer({ isGift, offerMoney, requestMoney, message }: { isGift: boolean; offerMoney: number; requestMoney: number; message: string }) {

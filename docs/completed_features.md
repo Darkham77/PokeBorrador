@@ -14,7 +14,7 @@ Este documento sirve como referencia de los componentes, menús y herramientas q
 | **MODALS** | Finalizado | `common/BaseModal.vue`, `_modals.scss`, `modals.ts` (Store) |
 | **TOOLTIPS** | Finalizado | `common/PVTooltip.vue`, `_tooltips.scss`, `ui.ts` (Store) |
 | **BIBLIOTECA** | Finalizado | `LibraryModal.vue`, `library.ts` (Store) |
-| **CHAT** | Finalizado | `social/GlobalChat.vue`, `social/SocialCenterModal.vue`, `chat.ts` (Store) |
+| **CHAT Y SOCIAL** | Gran parte migrado (Falta TRADE y PvP) | `social/GlobalChat.vue`, `social/SocialCenterModal.vue`, `social/SocialFriendsTab.vue`, `chat.ts` (Store), `social.ts` (Store) |
 | **DEBUG** | Finalizado | `admin/LocalDebugPanel.vue`, `debug.ts` (Store) |
 | **AJUSTES** | Finalizado | `SettingsModal.vue`, `ui.ts` (Store) |
 | **PERFIL** | Finalizado | `ProfileModal.vue`, `profile.ts` (Store), `game.ts` (Store) |

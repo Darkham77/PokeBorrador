@@ -173,6 +173,12 @@ async function ensureSchemaIntegrity(): Promise<void> {
     // Repair local dev profiles that defaulted to Entrenador
     _sqliteDb.run("UPDATE profiles SET username = 'Ash' WHERE id = 'local_ash' AND username = 'Entrenador'")
     
+    // Seed default profiles for local testing
+    _sqliteDb.run("INSERT OR IGNORE INTO profiles (id, username, trainer_level, player_class, nick_style) VALUES ('local_ash', 'Ash', 10, 'entrenador', 'nick-style-gold')")
+    _sqliteDb.run("INSERT OR IGNORE INTO profiles (id, username, trainer_level, player_class, nick_style) VALUES ('local_entrenador', 'Entrenador', 5, 'entrenador', '')")
+    _sqliteDb.run("INSERT OR IGNORE INTO game_saves (user_id, save_data, updated_at) VALUES ('local_ash', '{\"trainer\":\"Ash\",\"trainerLevel\":10,\"playerClass\":\"entrenador\",\"nick_style\":\"nick-style-gold\"}', datetime('now'))")
+    _sqliteDb.run("INSERT OR IGNORE INTO game_saves (user_id, save_data, updated_at) VALUES ('local_entrenador', '{\"trainer\":\"Entrenador\",\"trainerLevel\":5,\"playerClass\":\"entrenador\",\"nick_style\":\"\"}', datetime('now'))")
+    
     logger.info('SQLite', 'Legacy global chat columns migrated and aligned successfully.')
   } catch (_err: unknown) {
     // Columns or table might not exist or be loaded yet, which is safe to ignore

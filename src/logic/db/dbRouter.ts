@@ -568,20 +568,37 @@ export class DBRouter {
    */
   channel(name: string): RealtimeChannel {
     if (this.mode === 'offline') {
+      // Usar BroadcastChannel nativo del navegador para emular Supabase Realtime entre pestañas locales
+      const bc = new BroadcastChannel(name);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      let broadcastCallback: any = null;
+
+      bc.onmessage = (event) => {
+        if (broadcastCallback && event.data?.type === 'broadcast') {
+          broadcastCallback(event.data);
+        }
+      };
+
       const mockChannel = {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        on: (type: any, _filter: any, _callback: any) => {
+        on: (type: any, _filter: any, callback: any) => {
           logger.info('DBRouter', `Mock Channel '${name}' subscribed to: ${type}`);
+          if (type === 'broadcast') {
+            broadcastCallback = callback;
+          }
           return mockChannel; 
         },
         subscribe: (cb?: (status: string) => void) => {
           if (cb) gsap.delayedCall(0.01, () => cb('SUBSCRIBED'));
-          return { unsubscribe: () => {} };
+          return mockChannel;
         },
-        send: (_args: unknown) => {
+        send: (args: unknown) => {
+          bc.postMessage(args);
           return Promise.resolve('ok');
         },
-        unsubscribe: () => {}
+        unsubscribe: () => {
+          bc.close();
+        }
       };
       return mockChannel as unknown as RealtimeChannel;
     }
@@ -594,7 +611,7 @@ export class DBRouter {
         on: () => basicMock,
         subscribe: (cb?: (status: string) => void) => {
           if (cb) gsap.delayedCall(0.01, () => cb('SUBSCRIBED'));
-          return { unsubscribe: () => {} };
+          return basicMock;
         },
         send: () => Promise.resolve('ok'),
         unsubscribe: () => {}

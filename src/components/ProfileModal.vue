@@ -137,7 +137,7 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
           <div 
             id="profile-username"
             class="profile-username"
-            :class="gs.nick_style"
+            :class="gs.nick_style || 'normal'"
           >
             <span>{{ displayUsername }}</span>
             <a
@@ -253,6 +253,7 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
 <style scoped lang="scss">
 @use "@/styles/core/_mixins" as *;
 @use "@/styles/core/tools" as *;
+@use "@/styles/components/cosmetics" as *;
 
 .profile-panel-content {
   width: 100%;
@@ -306,10 +307,8 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
   .profile-username {
     @include pixelated;
     font-size: 20px;
-    color: var(--yellow);
     text-align: center;
     margin-bottom: 4px;
-    text-shadow: 0 0 10px Rgba(255, 214, 10, 0.2);
     display: flex;
     justify-content: center;
     align-items: center;

@@ -44,12 +44,30 @@ const shadowColor = computed(() => {
 });
 
 const avatarClass = computed(() => {
-  return props.avatarStyle ? ` ${props.avatarStyle}` : '';
+  if (!props.avatarStyle || 
+      props.avatarStyle === 'null' || 
+      props.avatarStyle === 'undefined' || 
+      props.avatarStyle === 'none' || 
+      props.avatarStyle === 'default' || 
+      props.avatarStyle === 'sin-marco' || 
+      !props.avatarStyle.trim()) {
+    return '';
+  }
+  return ` ${props.avatarStyle}`;
 });
 
 // Check if current avatarStyle is a square style
 const isSquare = computed(() => {
-  return props.avatarStyle ? props.avatarStyle.includes('sq') : false;
+  if (!props.avatarStyle || 
+      props.avatarStyle === 'null' || 
+      props.avatarStyle === 'undefined' || 
+      props.avatarStyle === 'none' || 
+      props.avatarStyle === 'default' || 
+      props.avatarStyle === 'sin-marco' || 
+      !props.avatarStyle.trim()) {
+    return false;
+  }
+  return props.avatarStyle.includes('sq');
 });
 
 // Outer container styles (MUST be transparent so it doesn't cover negative z-index pseudo-elements)
@@ -57,6 +75,14 @@ const containerStyles = computed((): CSSProperties => {
   const sizePx = props.size;
   const bColor = borderColor.value;
   const sColor = shadowColor.value;
+  
+  const hasStyle = props.avatarStyle && 
+                   props.avatarStyle !== 'null' && 
+                   props.avatarStyle !== 'undefined' && 
+                   props.avatarStyle !== 'none' && 
+                   props.avatarStyle !== 'default' && 
+                   props.avatarStyle !== 'sin-marco' && 
+                   props.avatarStyle.trim() !== '';
   
   return {
     width: `${sizePx}px`,
@@ -69,7 +95,7 @@ const containerStyles = computed((): CSSProperties => {
     borderStyle: 'solid',
     borderWidth: '2px',
     background: 'transparent', // Always transparent to allow glows underneath
-    ...(props.avatarStyle ? {} : {
+    ...(hasStyle ? {} : {
       borderRadius: '50%',
       borderColor: bColor,
       boxShadow: `0 0 ${sizePx / 4}px ${sColor}`

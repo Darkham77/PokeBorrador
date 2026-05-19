@@ -182,6 +182,58 @@ export class ProxyQuery {
           where.push(`${s.args[0]} LIKE ?`);
           params.push((s.args[1] as string).replace(/\*/g, '%'));
         }
+        if (s.type === 'or') {
+          const filterStr = s.args[0] as string;
+          if (filterStr.includes('and(')) {
+            const clauses = filterStr.split(/\),?/);
+            const orClauses: string[] = [];
+            clauses.forEach(clause => {
+              const cleanClause = clause.replace(/and\(/g, '').trim();
+              if (!cleanClause) return;
+              const subFilters = cleanClause.split(',');
+              const andClauses: string[] = [];
+              subFilters.forEach(f => {
+                const parts = f.split('.');
+                if (parts.length >= 3) {
+                  const col = parts[0];
+                  const op = parts[1];
+                  const val = parts.slice(2).join('.');
+                  if (op === 'eq') {
+                    andClauses.push(`${col} = ?`);
+                    params.push(val);
+                  }
+                }
+              });
+              if (andClauses.length > 0) {
+                orClauses.push(`(${andClauses.join(' AND ')})`);
+              }
+            });
+            if (orClauses.length > 0) {
+              where.push(`(${orClauses.join(' OR ')})`);
+            }
+          } else {
+            const subFilters = filterStr.split(',');
+            const subClauses: string[] = [];
+            subFilters.forEach(f => {
+              const parts = f.split('.');
+              if (parts.length >= 3) {
+                const col = parts[0];
+                const op = parts[1];
+                const val = parts.slice(2).join('.');
+                if (op === 'eq') {
+                  subClauses.push(`${col} = ?`);
+                  params.push(val);
+                } else if (op === 'neq') {
+                  subClauses.push(`${col} != ?`);
+                  params.push(val);
+                }
+              }
+            });
+            if (subClauses.length > 0) {
+              where.push(`(${subClauses.join(' OR ')})`);
+            }
+          }
+        }
       });
 
       if (where.length > 0) sql += ` WHERE ${where.join(' AND ')}`;

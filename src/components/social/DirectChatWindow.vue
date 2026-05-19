@@ -2,6 +2,9 @@
 import { ref, computed, onMounted, nextTick, watch } from 'vue';
 import { useChatStore } from '@/stores/chat';
 import { useAuthStore } from '@/stores/auth';
+import { useUIStore } from '@/stores/ui';
+import TrainerAvatar from '@/components/TrainerAvatar.vue';
+import BaseModal from '@/components/common/BaseModal.vue';
 
 interface Props {
   friendId: string;
@@ -11,6 +14,7 @@ const props = defineProps<Props>();
 
 const chatStore = useChatStore();
 const authStore = useAuthStore();
+const uiStore = useUIStore();
 
 const newMessage = ref('');
 const messagesContainer = ref<HTMLDivElement | null>(null);
@@ -37,195 +41,144 @@ function closeChat() {
   chatStore.closeChat(props.friendId);
 }
 
-function toggleCollapse() {
-  if (chat.value) {
-    chat.value.isCollapsed = !chat.value.isCollapsed;
-    if (!chat.value.isCollapsed) {
-      nextTick(() => {
-        scrollToBottom();
-        inputField.value?.focus();
-      });
+function formatTime(iso: string | number | undefined) {
+  if (!iso) return '';
+  try {
+    let instant: Temporal.Instant;
+    if (typeof iso === 'string') {
+      const normalized = iso.includes('Z') || iso.includes('+') ? iso : iso.replace(' ', 'T') + 'Z';
+      instant = Temporal.Instant.from(normalized);
+    } else {
+      const ms = typeof iso === 'number' ? iso : Number(iso);
+      instant = Temporal.Instant.fromEpochMilliseconds(ms);
     }
+    return instant.toZonedDateTimeISO('UTC').toLocaleString(undefined, { hour: '2-digit', minute: '2-digit' });
+  } catch (_e) {
+    return '';
   }
+}
+
+function openTrainerProfile(userId?: string) {
+  if (!userId) return;
+  uiStore.open('TrainerProfile', { userId });
 }
 
 watch(() => chat.value?.messages.length, () => {
   if (chat.value && !chat.value.isCollapsed) {
     nextTick(scrollToBottom);
+    chatStore.fetchMissingCosmetics();
   }
 });
 
 onMounted(() => {
   nextTick(scrollToBottom);
   inputField.value?.focus();
+  chatStore.fetchMissingCosmetics();
 });
 </script>
 
 <template>
-  <div 
-    v-if="chat" 
-    class="direct-chat-window" 
-    :class="{ collapsed: chat.isCollapsed }"
+  <BaseModal
+    :show="!!chat && !chat.isCollapsed"
+    :title="'CHAT: ' + (chat?.username?.toUpperCase() || 'ENTRENADOR')"
+    type="side-right"
+    :lock-scroll="false"
+    overlay="none"
+    :show-close-button="true"
+    padding="raw"
+    @close="closeChat"
   >
-    <!-- Header -->
-    <header
-      class="chat-header"
-      @click.stop="toggleCollapse"
-    >
-      <div class="header-left">
-        <div
-          v-if="chat.unreadCount > 0"
-          class="unread-dot"
-        />
-        <div class="title">
-          {{ chat.username.toUpperCase() }}
-        </div>
-      </div>
-      <div class="header-right">
-        <button
-          class="header-btn"
-          @click.stop="toggleCollapse"
-        >
-          {{ chat.isCollapsed ? '□' : '–' }}
-        </button>
-        <button
-          class="header-btn close"
-          @click.stop="closeChat"
-        >
-          ×
-        </button>
-      </div>
-    </header>
-
-    <!-- Content (Hidden when collapsed) -->
-    <template v-if="!chat.isCollapsed">
+    <section class="chat-panel">
       <div
         ref="messagesContainer"
-        class="messages-container custom-scrollbar"
+        class="messages-list custom-scrollbar-vicio"
       >
         <div class="chat-start-hint">
-          Comienzo de la conversación
+          Comienzo de la conversación con {{ chat?.username }}
+        </div>
+        
+        <div
+          v-if="!chat?.messages?.length"
+          class="empty-state"
+        >
+          No hay mensajes aún...
         </div>
         
         <div 
-          v-for="(msg, idx) in chat.messages" 
+          v-for="(msg, idx) in chat?.messages" 
           :key="idx" 
-          class="message-wrap"
-          :class="{ 'is-me': msg.senderId === authStore.user?.id }"
+          class="message-row animate-pop"
         >
-          <div class="bubble animate-pop">
-            {{ msg.text }}
+          <TrainerAvatar 
+            :player-class="chatStore.profileCosmetics[msg.senderId || '']?.player_class || msg.player_class" 
+            :level="chatStore.profileCosmetics[msg.senderId || '']?.trainer_level || msg.trainer_level" 
+            :avatar-style="chatStore.profileCosmetics[msg.senderId || '']?.avatar_style || undefined"
+            :size="32"
+            class="clickable-avatar"
+            @click.stop="openTrainerProfile(msg.senderId)"
+          />
+          <div class="message-content" :class="{ 'is-me': msg.senderId === authStore.user?.id }">
+            <div class="message-meta">
+              <span
+                class="username clickable-username"
+                :class="chatStore.profileCosmetics[msg.senderId || '']?.nick_style || 'normal'"
+                @click.stop="openTrainerProfile(msg.senderId)"
+              >{{ chatStore.profileCosmetics[msg.senderId || '']?.username || msg.senderName }}</span>
+              <span class="time">{{ formatTime(msg.timestamp) }}</span>
+            </div>
+            <p class="text">
+              {{ msg.text }}
+            </p>
           </div>
         </div>
       </div>
 
       <footer class="chat-footer">
-        <input 
-          ref="inputField"
-          v-model="newMessage"
-          type="text" 
-          placeholder="Escribe algo..."
-          @keydown.enter="handleSendMessage"
-        >
-        <button
-          class="send-btn"
-          @click.stop="handleSendMessage"
-        >
-          ➤
-        </button>
+        <div class="input-container">
+          <input 
+            ref="inputField"
+            v-model="newMessage"
+            type="text" 
+            :placeholder="`Escribe a ${chat?.username}...`"
+            :maxlength="250"
+            @keydown.enter="handleSendMessage"
+          >
+          <button 
+            class="send-btn" 
+            :disabled="!newMessage.trim()"
+            @click.stop="handleSendMessage"
+          >
+            ➤
+          </button>
+        </div>
+        <p class="hint">
+          {{ newMessage.length }}/250
+        </p>
       </footer>
-    </template>
-  </div>
+    </section>
+  </BaseModal>
 </template>
 
 <style scoped lang="scss">
 @use "@/styles/core/_mixins" as *;
 @use "sass:string";
 
-.direct-chat-window {
-  width: 280px;
-  background: Rgba(13, 17, 23, 0.95);
-  -webkit-will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  @include gpu-layer;
-  border: 1px solid Rgba(199, 125, 255, 0.2);
-  border-radius: 12px 12px 0 0;
+.chat-panel {
+  width: 100%;
+  height: 100%;
+  background: Rgba(13, 17, 23, 0.98);
   display: flex;
   flex-direction: column;
-  box-shadow: 0 10px 30px Rgba(0, 0, 0, 0.5);
-  transition: height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  overflow: hidden;
-
-  &.collapsed {
-    height: 40px;
-  }
 }
 
-.chat-header {
-  height: 40px;
-  padding: 0 12px;
-  background: Linear-Gradient(90deg, var(--purple), Rgba(157, 78, 221, 1));
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  cursor: pointer;
-  user-select: none;
-
-  .header-left {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .unread-dot {
-    width: 8px;
-    height: 8px;
-    background: var(--white);
-    border-radius: 50%;
-    box-shadow: 0 0 10px var(--white);
-    animation: pulse 1.5s infinite;
-  }
-
-  .title {
-    @include pixelated;
-    font-size: 7px;
-    color: var(--white);
-    text-shadow: 0 1px 2px Rgba(0, 0, 0, 0.3);
-  }
-
-  .header-right {
-    display: flex;
-    gap: 4px;
-  }
-
-  .header-btn {
-    background: Rgba(0, 0, 0, 0.1);
-    border: none;
-    color: var(--white);
-    width: 24px;
-    height: 24px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background 0.2s;
-
-    &:hover { background: Rgba(255, 255, 255, 0.1); }
-    &.close:hover { background: Rgba(239, 68, 68, 0.4); }
-  }
-}
-
-.messages-container {
-  height: 300px;
+.messages-list {
+  flex: 1;
   overflow-y: auto;
-  min-height: 0;
-  padding: 12px;
+  padding: 15px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  background: Rgba(0, 0, 0, 0.2);
+  gap: 12px;
+  min-height: 0;
 }
 
 .chat-start-hint {
@@ -236,56 +189,79 @@ onMounted(() => {
   font-style: italic;
 }
 
-.message-wrap {
-  display: flex;
-  flex-direction: column;
-  
-  &.is-me {
-    align-items: flex-end;
-    .bubble {
-      background: Rgba(157, 78, 221, 0.25);
-      color: Rgba(233, 213, 255, 1);
-      border-bottom-right-radius: 2px;
-      border: 1px solid Rgba(157, 78, 221, 0.3);
-    }
-  }
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: Rgba(148, 163, 184, 1);
+  font-size: 12px;
+}
 
-  &:not(.is-me) {
-    align-items: flex-start;
-    .bubble {
-      background: Rgba(255, 255, 255, 0.05);
-      color: Rgba(238, 238, 238, 1);
-      border-bottom-left-radius: 2px;
-      border: 1px solid Rgba(255, 255, 255, 0.1);
-    }
+.message-row {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.message-content {
+  flex: 1;
+  background: Rgba(255, 255, 255, 0.03);
+  border-radius: 0 12px 12px 12px;
+  padding: 8px 12px;
+  border: 1px solid Rgba(255, 255, 255, 0.05);
+
+  &.is-me {
+    background: Rgba(157, 78, 221, 0.15);
+    border-color: Rgba(157, 78, 221, 0.3);
   }
 }
 
-.bubble {
-  max-width: 85%;
-  padding: 8px 12px;
-  border-radius: 12px;
-  font-size: 12px;
+.message-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+
+  .username {
+    font-size: 11px;
+    font-weight: 700;
+    color: Rgba(226, 232, 240, 1);
+  }
+
+  .time {
+    font-size: 9px;
+    color: Rgba(255, 255, 255, 0.5);
+  }
+}
+
+.text {
+  font-size: 13px;
+  color: Rgba(203, 213, 225, 1);
   line-height: 1.4;
   word-break: break-all;
+  margin: 0;
 }
 
 .chat-footer {
-  padding: 10px;
-  display: flex;
-  gap: 8px;
+  padding: 20px;
   background: Rgba(0, 0, 0, 0.2);
   border-top: 1px solid Rgba(255, 255, 255, 0.05);
+
+  .input-container {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
 
   input {
     flex: 1;
     background: Rgba(0, 0, 0, 0.3);
-    border: 1px solid Rgba(255, 255, 255, 0.1);
+    border: 1px solid Rgba(199, 125, 255, 0.2);
     border-radius: 8px;
-    padding: 8px 10px;
+    padding: 10px 12px;
     color: var(--white);
-    font-size: 12px;
+    font-size: 13px;
     outline: none;
+    transition: border-color 0.2s;
 
     &:focus { border-color: var(--purple-light); }
   }
@@ -294,16 +270,21 @@ onMounted(() => {
     background: var(--purple);
     border: none;
     border-radius: 8px;
-    width: 32px;
-    height: 32px;
+    width: 38px;
+    height: 38px;
     color: var(--white);
     cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 14px;
-    
-    &:hover { background: Rgba(157, 78, 221, 1); }
+    transition: all 0.2s;
+
+    &:hover:not(:disabled) { background: Rgba(157, 78, 221, 1); transform: Scale(1.05); }
+    &:disabled { opacity: 0.3; }
+  }
+
+  .hint {
+    font-size: 10px;
+    margin: 0;
+    text-align: right;
+    color: Rgba(255, 255, 255, 0.5);
   }
 }
 
@@ -311,15 +292,28 @@ onMounted(() => {
   animation: pop 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
 }
 
-@keyframes pulse {
-  0% { transform: Scale(1.0); opacity: 0.8; }
-  50% { transform: Scale(1.3); opacity: 1; }
-  100% { transform: Scale(1.0); opacity: 0.8; }
-}
-
 @keyframes pop {
-  0% { transform: Scale(0.8); opacity: 0; }
+  0% { transform: Scale(0.9); opacity: 0; }
   100% { transform: Scale(1.0); opacity: 1; }
 }
 
+.clickable-avatar {
+  cursor: pointer;
+  transition: transform 0.2s, filter 0.2s;
+
+  &:hover {
+    transform: Scale(1.1);
+    filter: Brightness(1.2);
+  }
+}
+
+.clickable-username {
+  cursor: pointer;
+  transition: opacity 0.2s;
+
+  &:hover {
+    text-decoration: underline;
+    opacity: 0.85;
+  }
+}
 </style>

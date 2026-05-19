@@ -6,6 +6,8 @@ import { PLAYER_CLASSES } from '@/data/playerClasses'
 import { formatCurrency } from '@/logic/utils/formatters'
 import { useAuthStore } from '@/stores/auth'
 import { useModalStore } from '@/stores/modals'
+import { useChatStore } from '@/stores/chat'
+import { useSocialStore } from '@/stores/social'
 import BaseModal from '@/components/common/BaseModal.vue'
 import TrainerAvatar from '@/components/TrainerAvatar.vue'
 
@@ -81,6 +83,8 @@ const isOwnProfile = computed(() => {
 })
 
 const modalStore = useModalStore()
+const chatStore = useChatStore()
+const socialStore = useSocialStore()
 
 const openRename = () => {
   modalStore.open('Rename')
@@ -160,7 +164,11 @@ watch(() => props.userId, () => {
 
 // Computeds for safe fallback mappings
 const trainerName = computed(() => {
-  return profile.value?.username || saveState.value?.trainer || 'Entrenador'
+  const cached = props.userId ? chatStore.profileCosmetics[props.userId] : null
+  if (cached?.username) return cached.username
+  const friend = props.userId ? socialStore.friends.find(f => f.id === props.userId) : null
+  if (friend?.username) return friend.username
+  return saveState.value?.trainer || profile.value?.username || 'Entrenador'
 })
 
 const faction = computed(() => {
@@ -168,6 +176,10 @@ const faction = computed(() => {
 })
 
 const playerClass = computed(() => {
+  const cached = props.userId ? chatStore.profileCosmetics[props.userId] : null
+  if (cached?.player_class !== undefined) return cached.player_class
+  const friend = props.userId ? socialStore.friends.find(f => f.id === props.userId) : null
+  if (friend?.playerClass !== undefined) return friend.playerClass
   return profile.value?.player_class || saveState.value?.playerClass || null
 })
 
@@ -177,14 +189,26 @@ const classDef = computed(() => {
 })
 
 const trainerLevel = computed(() => {
+  const cached = props.userId ? chatStore.profileCosmetics[props.userId] : null
+  if (cached?.trainer_level !== undefined) return cached.trainer_level
+  const friend = props.userId ? socialStore.friends.find(f => f.id === props.userId) : null
+  if (friend?.level !== undefined) return friend.level
   return profile.value?.trainer_level ?? saveState.value?.trainerLevel ?? 1
 })
 
 const avatarStyle = computed(() => {
+  const cached = props.userId ? chatStore.profileCosmetics[props.userId] : null
+  if (cached?.avatar_style !== undefined) return cached.avatar_style
+  const friend = props.userId ? socialStore.friends.find(f => f.id === props.userId) : null
+  if (friend?.avatar_style !== undefined) return friend.avatar_style
   return profile.value?.avatar_style ?? saveState.value?.avatar_style ?? ''
 })
 
 const nickStyle = computed(() => {
+  const cached = props.userId ? chatStore.profileCosmetics[props.userId] : null
+  if (cached?.nick_style !== undefined) return cached.nick_style
+  const friend = props.userId ? socialStore.friends.find(f => f.id === props.userId) : null
+  if (friend?.nick_style !== undefined) return friend.nick_style
   return profile.value?.nick_style ?? saveState.value?.nick_style ?? ''
 })
 
@@ -263,7 +287,7 @@ const isGymDefeated = (gymId: string) => {
 
 const factionLabel = computed(() => {
   const f = faction.value
-  if (!f) return 'Sin Bando'
+  if (!f || f === 'null' || f === 'undefined' || f.trim() === '') return 'Sin Bando'
   if (f === 'union') return 'Equipo Unión'
   if (f === 'poder') return 'Equipo Poder'
   if (f === 'rocket') return 'Equipo Rocket'
@@ -272,6 +296,7 @@ const factionLabel = computed(() => {
 
 const factionColor = computed(() => {
   const f = faction.value
+  if (!f || f === 'null' || f === 'undefined' || f.trim() === '') return 'rgba(148, 163, 184, 0.5)'
   if (f === 'union') return 'rgba(59, 130, 246, 1)'
   if (f === 'poder') return 'rgba(239, 68, 68, 1)'
   if (f === 'rocket') return 'rgba(148, 163, 184, 1)'
@@ -346,7 +371,7 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
           </div>
           <div
             class="profile-username"
-            :class="nickStyle"
+            :class="nickStyle || 'normal'"
           >
             <span>{{ trainerName }}</span>
             <a
@@ -379,7 +404,7 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
               :style="{ color: factionColor }"
             >
               <img
-                v-if="faction"
+                v-if="faction && faction !== 'null' && faction !== 'undefined' && faction.trim() !== ''"
                 :src="getAssetUrlLocal(ASSET_TYPES_LOCAL.FACTION, faction)"
                 class="faction-img"
                 @error="(e: Event) => { if (e.target) (e.target as HTMLImageElement).style.display = 'none' }"
@@ -472,14 +497,14 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
             GUERRA DE BANDOS
           </div>
           <div class="stats-grid">
-            <div class="stat-item highlight-war">
+            <div class="stat-item highlight-war-points">
               <span class="stat-val">
                 <i class="fas fa-shield-alt icon-war" />
                 {{ formatNum(totalWarPoints) }}
               </span>
               <span class="stat-lbl">Puntos de Guerra</span>
             </div>
-            <div class="stat-item highlight-war">
+            <div class="stat-item highlight-war-coins">
               <span class="stat-val">
                 <i class="fas fa-coins icon-war-coin" />
                 {{ formatNum(warCoins) }}
@@ -526,6 +551,7 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
 <style scoped lang="scss">
 @use "@/styles/core/_mixins" as *;
 @use "@/styles/core/tools" as *;
+@use "@/styles/components/cosmetics" as *;
 
 .profile-panel-content {
   width: 100%;
@@ -614,9 +640,7 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
   .profile-username {
     @include pixelated;
     font-size: 16px;
-    color: var(--yellow);
     margin-bottom: 12px;
-    text-shadow: 0 0 10px Rgba(255, 214, 10, 0.2);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -707,7 +731,8 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
   filter: Drop-Shadow(0 2px 4px Rgba(0, 0, 0, 0.4));
 
   &.locked-badge {
-    filter: Grayscale(1) Opacity(0.2) Drop-Shadow(none);
+    filter: Grayscale(100%) Brightness(0.5);
+    opacity: 0.25;
   }
 }
 
@@ -806,21 +831,23 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
     }
   }
 
-  &.highlight-war {
+  &.highlight-war-points {
     background: linear-gradient(135deg, Rgba(59, 130, 246, 0.05) 0%, Rgba(15, 23, 42, 0.4) 100%);
     border-color: Rgba(59, 130, 246, 0.2);
 
-    .stat-val {
+    .stat-val, .icon-war {
       color: #60a5fa;
       text-shadow: 0 0 10px Rgba(59, 130, 246, 0.4);
     }
+  }
 
-    .icon-war {
-      color: #60a5fa;
-    }
+  &.highlight-war-coins {
+    background: linear-gradient(135deg, Rgba(251, 191, 36, 0.05) 0%, Rgba(15, 23, 42, 0.4) 100%);
+    border-color: Rgba(251, 191, 36, 0.2);
 
-    .icon-war-coin {
+    .stat-val, .icon-war-coin {
       color: #fbbf24;
+      text-shadow: 0 0 10px Rgba(251, 191, 36, 0.4);
     }
   }
 }

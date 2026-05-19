@@ -75,7 +75,7 @@ const handlePanelClick = (event: Event) => {
     <div class="trainer-content">
       <div
         id="hud-name"
-        :class="['trainer-name', gs.nick_style]"
+        :class="['trainer-name', gs.nick_style || 'normal']"
       >
         {{ displayName }}
       </div>

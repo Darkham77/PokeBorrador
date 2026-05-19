@@ -69,7 +69,7 @@
     "vite-plugin-pwa": "^1.2.0",
     "vitest": "^3.0.7",
     "vue-eslint-parser": "^9.4.3",
-    "vue-tsc": "^3.2.8"
+    "vue-tsc": "^3.3.0"
   },
   "overrides": {
     "serialize-javascript": "^7.0.5"

@@ -68,31 +68,44 @@ const submitRename = async () => {
   isRenaming.value = true
   
   try {
-    const res = await gameStore.db.rpc('change_username', { new_username: targetName })
-    if (res.error) {
-      uiStore.notify(typeof res.error === 'string' ? res.error : 'Error al cambiar el nombre', '⚠️')
-    } else {
-      uiStore.notify('¡Nombre cambiado con éxito!', '✨')
-      // Update local states
-      gameStore.state.trainer = targetName
-      profileStore.updateProfile({ 
-        username: targetName, 
-        last_renamed_at: Temporal.Now.instant().toString() 
-      })
-      // Update local mock user if local
-      if (authStore.user?.id.startsWith('local_')) {
-        const localUserStr = localStorage.getItem('pokevicio_local_user')
-        if (localUserStr) {
-          const lu = JSON.parse(localUserStr)
-          if (!lu.user_metadata) lu.user_metadata = {}
-          lu.user_metadata.username = targetName
-          localStorage.setItem('pokevicio_local_user', JSON.stringify(lu))
-        }
+    const isLocal = authStore.sessionMode === 'offline' || authStore.user?.id.startsWith('local_')
+    
+    if (!isLocal) {
+      const res = await gameStore.db.rpc('change_username', { new_username: targetName })
+      if (res.error) {
+        uiStore.notify(typeof res.error === 'string' ? res.error : 'Error al cambiar el nombre', '⚠️')
+        isRenaming.value = false
+        return
       }
-      emit('close')
     }
+
+    // Bloque de éxito común para local y remoto
+    uiStore.notify('¡Nombre cambiado con éxito!', '✨')
+    gameStore.state.trainer = targetName
+    gameStore.save(false)
+    profileStore.updateProfile({ 
+      username: targetName, 
+      last_renamed_at: Temporal.Now.instant().toString() 
+    })
+    
+    if (authStore.user?.id.startsWith('local_')) {
+      const localUserStr = localStorage.getItem('pokevicio_local_user')
+      if (localUserStr) {
+        const lu = JSON.parse(localUserStr)
+        if (!lu.user_metadata) lu.user_metadata = {}
+        lu.user_metadata.username = targetName
+        localStorage.setItem('pokevicio_local_user', JSON.stringify(lu))
+      } else {
+        localStorage.setItem('pokevicio_local_user', JSON.stringify({
+          id: authStore.user.id,
+          email: authStore.user?.email || 'entrenador@local',
+          user_metadata: { username: targetName }
+        }))
+      }
+    }
+    emit('close')
   } catch (_e: unknown) {
-    uiStore.notify('Error de conexión al cambiar el nombre.', '⚠️')
+    uiStore.notify('Error al cambiar el nombre.', '⚠️')
   } finally {
     isRenaming.value = false
   }

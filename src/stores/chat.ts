@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
-import { ref, reactive, watch } from 'vue'
+import { ref, reactive, watch, computed } from 'vue'
+import { gsap } from 'gsap'
 import { useAuthStore } from './auth.ts'
 import { useGameStore } from './game.ts'
 import { useUIStore } from './ui.ts'
@@ -102,7 +103,7 @@ export const useChatStore = defineStore('chat', () => {
     }
   }
 
-  async function fetchMissingCosmetics() {
+  async function fetchMissingCosmetics(forceIds: string[] = []) {
     const db = gameStore.db
     if (!db) return
 
@@ -117,26 +118,40 @@ export const useChatStore = defineStore('chat', () => {
       }
     }
 
-    if (!globalMessages.value.length) return
+    if (!globalMessages.value.length && !forceIds.length) return
 
     const uniqueUserIds = [...new Set(globalMessages.value.map(m => m.user_id).filter(Boolean))] as string[]
-    const missingIds = uniqueUserIds.filter(id => !profileCosmetics.value[id])
+    const missingIds = [...new Set([...uniqueUserIds.filter(id => !profileCosmetics.value[id]), ...forceIds])]
     
     if (missingIds.length > 0) {
       try {
-        const { data, error } = await db
-          .from('profiles')
-          .select('id, username, player_class, trainer_level, avatar_style, nick_style')
-          .in('id', missingIds) as { data: { id: string; username?: string | null; player_class?: string | null; trainer_level?: number | null; avatar_style?: string | null; nick_style?: string | null }[] | null, error: unknown }
+        const [profRes, saveRes] = await Promise.all([
+          db.from('profiles').select('id, username, player_class, trainer_level, avatar_style, nick_style').in('id', missingIds),
+          db.from('game_saves').select('user_id, save_data').in('user_id', missingIds)
+        ]) as [
+          { data: { id: string; username?: string | null; player_class?: string | null; trainer_level?: number | null; avatar_style?: string | null; nick_style?: string | null }[] | null, error: unknown },
+          { data: { user_id: string; save_data?: unknown }[] | null, error: unknown }
+        ]
 
-        if (!error && data) {
-          data.forEach(p => {
-            profileCosmetics.value[p.id] = {
-              username: p.username || undefined,
-              player_class: p.player_class || undefined,
-              trainer_level: p.trainer_level || undefined,
-              avatar_style: p.avatar_style || '',
-              nick_style: p.nick_style || ''
+        if (!profRes.error) {
+          const profilesList = profRes.data || []
+          const savesList = saveRes.data || []
+
+          missingIds.forEach(id => {
+            const p = profilesList.find(prof => prof.id === id)
+            const saveRow = savesList.find(s => s.user_id === id)
+            const save = saveRow?.save_data ? (typeof saveRow.save_data === 'string' ? JSON.parse(saveRow.save_data) : saveRow.save_data) as Record<string, unknown> : {}
+
+            const fallbackName = id.startsWith('local_') ? id.replace('local_', '') : 'Entrenador'
+            const capitalizedFallback = fallbackName.charAt(0).toUpperCase() + fallbackName.slice(1)
+            const username = (save.trainer as string) || p?.username || capitalizedFallback
+
+            profileCosmetics.value[id] = {
+              username,
+              player_class: (save.playerClass as string) || p?.player_class || 'entrenador',
+              trainer_level: (save.trainerLevel as number) || p?.trainer_level || 1,
+              avatar_style: (save.avatar_style as string) || p?.avatar_style || '',
+              nick_style: (save.nick_style as string) || p?.nick_style || ''
             }
           })
         }
@@ -163,8 +178,10 @@ export const useChatStore = defineStore('chat', () => {
           globalMessages.value.push(row)
           if (globalMessages.value.length > 50) globalMessages.value.shift()
           
-          // Fetch cosmetics for new message sender
-          fetchMissingCosmetics()
+          const senderId = row.user_id as string
+          const cached = profileCosmetics.value[senderId]
+          const needsUpdate = !cached || cached.username !== row.username || cached.player_class !== row.player_class || cached.trainer_level !== row.trainer_level
+          fetchMissingCosmetics(needsUpdate ? [senderId] : [])
           
           // Sonido si el mensaje no es mío
           if (row.user_id !== authStore.user?.id) {
@@ -175,24 +192,133 @@ export const useChatStore = defineStore('chat', () => {
       .subscribe()
   }
 
+  async function loadPrivateHistory() {
+    if (!authStore.user || !gameStore.db) return
+    const myId = authStore.user.id
+    
+    // Buscar mensajes donde soy el destinatario o el remitente
+    const { data, error } = await gameStore.db.from('chat_messages')
+      .select('*')
+      .or(`type.eq.private:${myId},senderId.eq.${myId}`)
+      .order('created_at', { ascending: true })
+
+    if (error) {
+      logger.error('Chat', `Private history load error: ${(error as Error).message}`)
+      return
+    }
+
+    if (data && Array.isArray(data)) {
+      data.forEach((row: Record<string, unknown>) => {
+        const senderId = (row.senderId as string) || ''
+        const senderName = (row.senderName as string) || 'Entrenador'
+        const message = (row.message as string) || ''
+        const typeStr = (row.type as string) || ''
+        const createdAt = (row.created_at as string) || Temporal.Now.instant().toString()
+
+        const isIncoming = senderId !== myId
+        const friendId = isIncoming ? senderId : typeStr.replace('private:', '')
+        if (!friendId) return
+
+        const chatKey = friendId
+
+        if (!privateChats[chatKey]) {
+          privateChats[chatKey] = {
+            username: isIncoming ? senderName : 'Entrenador',
+            messages: [],
+            unreadCount: 0,
+            isCollapsed: true,
+            lastInteraction: Temporal.Now.instant().epochMilliseconds
+          }
+        }
+        const chat = privateChats[chatKey]
+        if (chat) {
+          const msgObj: ChatMessage = {
+            senderId,
+            senderName,
+            text: message,
+            timestamp: createdAt
+          }
+          if (!chat.messages.some(m => m.timestamp === msgObj.timestamp && m.text === msgObj.text)) {
+            chat.messages.push(msgObj)
+            try {
+              chat.lastInteraction = Temporal.Instant.from(createdAt).epochMilliseconds
+            } catch {
+              chat.lastInteraction = Temporal.Now.instant().epochMilliseconds
+            }
+            if (isIncoming && chat.isCollapsed) {
+              chat.unreadCount++
+            }
+          }
+        }
+      })
+      gameStore.state.chats = { ...privateChats }
+      pruneOldMessages()
+    }
+  }
+
+  async function pruneOldMessages() {
+    if (!authStore.user || !gameStore.db) return
+    const myId = authStore.user.id
+
+    try {
+      const { data } = await gameStore.db.from('chat_messages')
+        .select('created_at')
+        .eq('senderId', myId)
+        .order('created_at', { ascending: false })
+        .limit(1000)
+
+      if (data && Array.isArray(data) && data.length === 1000) {
+        const thresholdDate = ((data as unknown[])[999] as Record<string, unknown>)?.created_at as string
+        if (thresholdDate) {
+          await gameStore.db.from('chat_messages')
+            .delete()
+            .eq('senderId', myId)
+            .lt('created_at', thresholdDate)
+        }
+      }
+    } catch (err) {
+      logger.warn('Chat', `Pruning error: ${(err as Error).message}`)
+    }
+  }
+
   async function initPrivateInbox() {
     if (!authStore.user || inboxChannel) return
 
     const db = gameStore.db
     if (!db) return
+    
+    await loadPrivateHistory()
+
     inboxChannel = db.channel(`chat-inbox-${authStore.user.id}`)
-      inboxChannel.on('broadcast', { event: 'private_message' }, ({ payload }: { payload: ChatMessage }) => {
-        handleIncomingPrivate(payload)
-        audioStore.receivedMsg(); // Sonido al recibir mensaje privado
-      })
-      .subscribe()
+    inboxChannel.on('broadcast', { event: 'private_message' }, ({ payload }: { payload: ChatMessage }) => {
+      handleIncomingPrivate(payload)
+      audioStore.receivedMsg(); // Sonido al recibir mensaje privado
+    })
+    .subscribe()
   }
 
-  function handleIncomingPrivate(payload: ChatMessage) {
-    const friendId = payload.senderId as string
+  watch(() => authStore.user, (user) => {
+    if (user) {
+      gsap.delayedCall(0.5, () => {
+        if (inboxChannel) {
+          inboxChannel.unsubscribe()
+          inboxChannel = null
+        }
+        initPrivateInbox()
+      })
+    } else {
+      if (inboxChannel) {
+        inboxChannel.unsubscribe()
+        inboxChannel = null
+      }
+    }
+  }, { immediate: true })
+
+  function handleIncomingPrivate(payload: ChatMessage, targetChatId?: string) {
+    const chatKey = targetChatId || (payload.senderId as string)
     
-    if (!privateChats[friendId]) {
-      privateChats[friendId] = {
+    if (!privateChats[chatKey]) {
+      privateChats[chatKey] = {
         username: payload.senderName || 'Entrenador',
         messages: [],
         unreadCount: 0,
@@ -201,7 +327,8 @@ export const useChatStore = defineStore('chat', () => {
       }
     }
 
-    const chat = privateChats[friendId]
+    const chat = privateChats[chatKey]
+    if (!chat) return
     
     // Evitar duplicados sutiles (broadcast propio)
     const isDup = chat.messages.some((m: ChatMessage) => m.timestamp === payload.timestamp && m.text === payload.text)
@@ -213,7 +340,7 @@ export const useChatStore = defineStore('chat', () => {
     // Limitar historial por chat (25 mensajes)
     if (chat.messages.length > 25) chat.messages.shift()
 
-    if (activeChatId.value !== friendId && payload.senderId !== authStore.user?.id) {
+    if (activeChatId.value !== chatKey && payload.senderId !== authStore.user?.id) {
       chat.unreadCount++
       uiStore.notify(`Mensaje de ${chat.username}`, '💬')
     }
@@ -248,7 +375,7 @@ export const useChatStore = defineStore('chat', () => {
         }
         globalMessages.value.push(localRow as unknown as ChatMessage)
         if (globalMessages.value.length > 50) globalMessages.value.shift()
-        fetchMissingCosmetics()
+        fetchMissingCosmetics(authStore.user?.id ? [authStore.user.id] : [])
       }
     }
   }
@@ -266,18 +393,33 @@ export const useChatStore = defineStore('chat', () => {
     const db = gameStore.db
     // 1. Enviar vía broadcast
     if (!outboxChannels[friendId]) {
-      outboxChannels[friendId] = db.channel(`chat-inbox-${friendId}`).subscribe((status: string) => {
+      const chan = db.channel(`chat-inbox-${friendId}`)
+      outboxChannels[friendId] = chan
+      chan.subscribe((status: string) => {
         if (status === 'SUBSCRIBED' && outboxChannels[friendId]) {
-          outboxChannels[friendId].send({ type: 'broadcast', event: 'private_message', payload })
+          outboxChannels[friendId]?.send({ type: 'broadcast', event: 'private_message', payload })
         }
       })
     } else {
-      outboxChannels[friendId].send({ type: 'broadcast', event: 'private_message', payload })
+      outboxChannels[friendId]?.send({ type: 'broadcast', event: 'private_message', payload })
     }
 
     // 2. Agregar a historial propio y persistir
-    handleIncomingPrivate({ ...payload, senderId: authStore.user.id })
+    handleIncomingPrivate({ ...payload, senderId: authStore.user.id }, friendId)
     audioStore.sentMsg(); // Sonido al enviar privado
+
+    // 3. Persistir en base de datos (chat_messages) para que le llegue si está offline
+    const dbPayload = {
+      senderId: authStore.user.id,
+      senderName: payload.senderName,
+      message: payload.text,
+      type: `private:${friendId}`,
+      created_at: payload.timestamp
+    }
+    const { error } = await db.from('chat_messages').insert(dbPayload)
+    if (error) {
+      logger.error('Chat', `Private message db error: ${(error as Error).message}`)
+    }
   }
 
   function openChat(friendId: string, username: string) {
@@ -290,9 +432,13 @@ export const useChatStore = defineStore('chat', () => {
         lastInteraction: Temporal.Now.instant().epochMilliseconds
       }
     }
-    privateChats[friendId].unreadCount = 0
-    privateChats[friendId].isCollapsed = false
+    const chat = privateChats[friendId]
+    if (chat) {
+      chat.unreadCount = 0
+      chat.isCollapsed = false
+    }
     activeChatId.value = friendId
+    loadPrivateHistory()
   }
 
   function closeChat(friendId: string) {
@@ -305,11 +451,16 @@ export const useChatStore = defineStore('chat', () => {
     }
   }
 
+  const totalUnreadChats = computed(() => {
+    return Object.values(privateChats).reduce((sum, chat) => sum + chat.unreadCount, 0)
+  })
+
   return {
     globalMessages,
     privateChats,
     activeChatId,
     profileCosmetics,
+    totalUnreadChats,
     initGlobalChat,
     initPrivateInbox,
     sendGlobalMessage,

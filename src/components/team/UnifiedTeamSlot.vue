@@ -22,7 +22,16 @@ const props = withDefaults(defineProps<Props>(), {
   isTouchOver: false
 })
 
-const emit = defineEmits(['select', 'open-detail', 'open-item', 'send-to-box', 'drag-start', 'drag-over', 'drop-pokemon', 'drag-end'])
+const emit = defineEmits<{
+  select: [index: number]
+  'open-detail': [index: number]
+  'open-item': [index: number]
+  'send-to-box': [index: number]
+  'drag-start': [index: number]
+  'drag-over': [index: number | null]
+  'drop-pokemon': [index: number]
+  'drag-end': []
+}>()
 
 const touchTimer = ref<gsap.core.Tween | null>(null)
 const isTouchDragging = ref(false)

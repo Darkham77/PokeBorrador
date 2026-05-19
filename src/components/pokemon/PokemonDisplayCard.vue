@@ -32,12 +32,12 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits<{
-  (e: 'click'): void
-  (e: 'openDetail', index: number): void
-  (e: 'openItem', index: number): void
-  (e: 'sendToBox', index: number): void
-  (e: 'select', index: number): void
-  (e: 'toggle-tag', tagId: string): void
+  click: []
+  openDetail: [index: number]
+  openItem: [index: number]
+  sendToBox: [index: number]
+  select: [index: number]
+  'toggle-tag': [tagId: string]
 }>()
 
 const cardRef = ref(null)

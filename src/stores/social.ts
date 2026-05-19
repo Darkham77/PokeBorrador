@@ -1,13 +1,41 @@
 import { defineStore } from 'pinia'
-import { ref, reactive } from 'vue'
+import { ref, reactive, watch } from 'vue'
 import { gsap } from 'gsap'
 
 import { useAuthStore } from './auth.ts'
 import { useGameStore } from './game.ts'
 import { useUIStore } from './ui.ts'
 import { useAudioStore } from './audio.ts'
+import { useChatStore } from './chat.ts'
 import { logger } from '@/logic/utils/logger'
 import { GameState } from '@/types/game'
+
+function parseInstantSafe(val: unknown): Temporal.Instant | null {
+  if (!val) return null
+  try {
+    if (typeof val === 'number') {
+      return Temporal.Instant.fromEpochMilliseconds(val)
+    }
+    if (typeof val === 'string') {
+      const trimmed = val.trim()
+      const num = Number(trimmed)
+      if (!isNaN(num) && trimmed.length > 8) {
+        return Temporal.Instant.fromEpochMilliseconds(num)
+      }
+      let isoStr = trimmed
+      if (isoStr.includes(' ') && !isoStr.includes('T')) {
+        isoStr = isoStr.replace(' ', 'T')
+      }
+      if (!isoStr.endsWith('Z') && !isoStr.includes('+') && !isoStr.includes('-')) {
+        isoStr += 'Z'
+      }
+      return Temporal.Instant.from(isoStr)
+    }
+    return null
+  } catch (_e) {
+    return null
+  }
+}
 
 export interface Friend {
   id: string;
@@ -16,6 +44,7 @@ export interface Friend {
   badges: number;
   playerClass?: string;
   nick_style?: string;
+  avatar_style?: string;
   isOnline: boolean;
   lastSeen: Temporal.Instant | null;
 }
@@ -31,6 +60,8 @@ export interface PendingRequest {
     playerClass?: string;
     player_class?: string;
     full_name?: string;
+    nick_style?: string;
+    avatar_style?: string;
     save_data?: GameState;
   };
 }
@@ -41,6 +72,7 @@ export interface SearchResult {
   level: number;
   playerClass?: string;
   nick_style?: string;
+  avatar_style?: string;
   status: string;
   relId: string | null;
   isRequester: boolean;
@@ -74,6 +106,7 @@ interface ProfileRow {
   player_class?: string
   faction?: string
   nick_style?: string
+  avatar_style?: string
 }
 
 interface GameSaveRow {
@@ -93,13 +126,23 @@ export const useSocialStore = defineStore('social', () => {
   const searchResults = ref<SearchResult[]>([])
   const searchLoading = ref(false)
   const loading = ref(false)
+  const lastSearchQuery = ref('')
   
   const notifications = reactive({
     friends: 0,
     trades: 0,
     battles: 0,
+    chats: 0,
     total: 0
   })
+
+  watch(() => {
+    const chatStore = useChatStore()
+    return chatStore.totalUnreadChats
+  }, (unread) => {
+    notifications.chats = unread
+    notifications.total = notifications.friends + notifications.trades + notifications.battles + notifications.chats
+  }, { immediate: true })
 
   let presenceInterval: gsap.core.Tween | null = null
 
@@ -107,7 +150,7 @@ export const useSocialStore = defineStore('social', () => {
    * Carga datos sociales (amigos y solicitudes) usando DBRouter.
    */
   async function loadSocialData() {
-    if (!authStore.user || authStore.sessionMode === 'offline') {
+    if (!authStore.user) {
       friends.value = []
       pendingRequests.value = []
       return
@@ -140,19 +183,25 @@ export const useSocialStore = defineStore('social', () => {
           { data: GameSaveRow[] | null; error: unknown }
         ]
 
-        friends.value = (profRes.data as ProfileRow[] || []).map((p: ProfileRow) => {
-          const saveRow = (saveRes.data as GameSaveRow[])?.find((s: GameSaveRow) => s.user_id === p.id)
-          const save = (saveRow?.save_data as unknown as GameState) || {}
-          const lastSeen = saveRow?.updated_at ? Temporal.Instant.from(saveRow.updated_at) : null
+        friends.value = friendIds.map((fId: string) => {
+          const p = (profRes.data as ProfileRow[] || []).find((prof: ProfileRow) => prof.id === fId)
+          const saveRow = (saveRes.data as GameSaveRow[])?.find((s: GameSaveRow) => s.user_id === fId)
+          const save = saveRow?.save_data ? (typeof saveRow.save_data === 'string' ? JSON.parse(saveRow.save_data) : saveRow.save_data) as Partial<GameState> : {} as Partial<GameState>
+          const lastSeen = parseInstantSafe(saveRow?.updated_at)
           const isOnline = !!(lastSeen && (Temporal.Now.instant().epochMilliseconds - lastSeen.epochMilliseconds) < 5 * 60 * 1000)
 
+          const fallbackName = fId.startsWith('local_') ? fId.replace('local_', '') : 'Entrenador'
+          const capitalizedFallback = fallbackName.charAt(0).toUpperCase() + fallbackName.slice(1)
+          const username = (save.trainer as string) || p?.username || capitalizedFallback
+
           return {
-            id: p.id,
-            username: p.username,
-            level: (save.trainerLevel as number) || 1,
+            id: fId,
+            username,
+            level: (save.trainerLevel as number) || p?.trainer_level || 1,
             badges: typeof save.badges === 'object' ? Object.keys(save.badges).length : ((save.badges as number) || 0),
-            playerClass: save.playerClass as string,
-            nick_style: save.nick_style as string,
+            playerClass: (save.playerClass as string) || p?.player_class || 'entrenador',
+            nick_style: (save.nick_style as string) || p?.nick_style || '',
+            avatar_style: (save.avatar_style as string) || p?.avatar_style || '',
             isOnline,
             lastSeen
           }
@@ -164,9 +213,54 @@ export const useSocialStore = defineStore('social', () => {
       // 2. Solicitudes pendientes
       const { data: pending } = await db
         .from('friendships')
-        .select('*, profiles:requester_id(username)')
+        .select('*')
         .eq('addressee_id', authStore.user?.id)
         .eq('status', 'pending') as { data: PendingRequest[] | null; error: unknown }
+
+      if (pending && pending.length > 0) {
+        const requesterIds = pending.map((r: PendingRequest) => r.requester_id)
+        const [profRes, saveRes] = await Promise.all([
+          db.from('profiles').select('*').in('id', requesterIds),
+          db.from('game_saves').select('user_id,save_data').in('user_id', requesterIds)
+        ]) as [
+          { data: ProfileRow[] | null; error: unknown },
+          { data: GameSaveRow[] | null; error: unknown }
+        ]
+
+        const profilesMap = requesterIds.reduce((acc, reqId) => {
+          const p = (profRes.data || []).find((prof: ProfileRow) => prof.id === reqId)
+          const saveRow = (saveRes.data || []).find((s: GameSaveRow) => s.user_id === reqId)
+          const save = saveRow?.save_data ? (typeof saveRow.save_data === 'string' ? JSON.parse(saveRow.save_data) : saveRow.save_data) as Partial<GameState> : {} as Partial<GameState>
+          
+          const fallbackName = reqId.startsWith('local_') ? reqId.replace('local_', '') : 'Entrenador'
+          const capitalizedFallback = fallbackName.charAt(0).toUpperCase() + fallbackName.slice(1)
+          const username = (save.trainer as string) || p?.username || capitalizedFallback
+
+          acc[reqId] = {
+            username,
+            nick_style: (save.nick_style as string) || p?.nick_style || '',
+            trainer_level: (save.trainerLevel as number) || p?.trainer_level || 1,
+            player_class: (save.playerClass as string) || p?.player_class || 'entrenador',
+            avatar_style: (save.avatar_style as string) || p?.avatar_style || ''
+          }
+          return acc
+        }, {} as Record<string, { username: string; nick_style: string; trainer_level: number; player_class: string; avatar_style: string }>)
+
+        pending.forEach((r: PendingRequest) => {
+          const profInfo = profilesMap[r.requester_id]
+          if (profInfo) {
+            r.profiles = {
+              username: profInfo.username,
+              nick_style: profInfo.nick_style,
+              trainer_level: profInfo.trainer_level,
+              player_class: profInfo.player_class,
+              playerClass: profInfo.player_class,
+              level: profInfo.trainer_level,
+              avatar_style: profInfo.avatar_style
+            }
+          }
+        })
+      }
 
       pendingRequests.value = (pending || []) as PendingRequest[]
       
@@ -179,11 +273,17 @@ export const useSocialStore = defineStore('social', () => {
   }
 
   async function searchPlayers(query: string) {
-    if (!query || query.length < 2 || authStore.sessionMode === 'offline') {
+    if (!query || query.length < 2) {
       searchResults.value = []
       return
     }
 
+    if (!authStore.user?.id) {
+      searchResults.value = []
+      return
+    }
+
+    lastSearchQuery.value = query
     searchLoading.value = true
     const db = gameStore.db
     if (!db) { searchLoading.value = false; return }
@@ -193,8 +293,10 @@ export const useSocialStore = defineStore('social', () => {
         .from('profiles')
         .select('*')
         .ilike('username', `%${query}%`)
-        .neq('id', authStore.user?.id)
+        .neq('id', authStore.user.id)
         .limit(10) as { data: ProfileRow[] | null }
+
+      if (lastSearchQuery.value !== query) return
 
       if (profiles && profiles.length > 0) {
         const ids = profiles.map((p: ProfileRow) => p.id)
@@ -202,40 +304,45 @@ export const useSocialStore = defineStore('social', () => {
           db.from('game_saves').select('user_id,save_data').in('user_id', ids),
           db.from('friendships')
             .select('*')
-            .or(`requester_id.eq.${authStore.user?.id},addressee_id.eq.${authStore.user?.id}`)
+            .or(`requester_id.eq.${authStore.user.id},addressee_id.eq.${authStore.user.id}`)
         ]) as [
           { data: GameSaveRow[] | null; error: unknown },
           { data: FriendshipRow[] | null; error: unknown }
         ]
 
+        if (lastSearchQuery.value !== query) return
+
         searchResults.value = (profiles as ProfileRow[]).map((p: ProfileRow) => {
           const save = (saveRes.data?.find((s: GameSaveRow) => s.user_id === p.id)?.save_data as unknown as GameState) || {}
           const rel = relRes.data?.find((f: FriendshipRow) => 
-            (f.requester_id === authStore.user?.id && f.addressee_id === p.id) ||
-            (f.requester_id === p.id && f.addressee_id === authStore.user?.id)
+            (f.requester_id === authStore.user!.id && f.addressee_id === p.id) ||
+            (f.requester_id === p.id && f.addressee_id === authStore.user!.id)
           )
           
           return {
             id: p.id,
-            username: p.username,
-            level: (save.trainerLevel as number) || 1,
-            playerClass: save.playerClass as string,
-            nick_style: save.nick_style as string,
+            username: (save.trainer as string) || p.username,
+            level: (save.trainerLevel as number) || p.trainer_level || 1,
+            playerClass: (save.playerClass as string) || p.player_class || 'entrenador',
+            nick_style: (save.nick_style as string) || p.nick_style || '',
+            avatar_style: (save.avatar_style as string) || p.avatar_style || '',
             status: rel ? (rel.status as string) : 'none',
             relId: rel ? (rel.id as string) : null,
-            isRequester: rel ? rel.requester_id === authStore.user?.id : false
+            isRequester: rel ? rel.requester_id === authStore.user!.id : false
           }
         })
       } else {
         searchResults.value = []
       }
     } finally {
-      searchLoading.value = false
+      if (lastSearchQuery.value === query) {
+        searchLoading.value = false
+      }
     }
   }
 
   async function sendFriendRequest(targetId: string) {
-    if (authStore.sessionMode === 'offline' || !gameStore.db || !authStore.user) return
+    if (!gameStore.db || !authStore.user) return
 
     const { error } = await gameStore.db.from('friendships').insert({
       requester_id: authStore.user?.id,
@@ -278,7 +385,7 @@ export const useSocialStore = defineStore('social', () => {
   }
 
   async function refreshNotificationCount() {
-    if (!authStore.user || authStore.sessionMode === 'offline') return
+    if (!authStore.user) return
 
     const db = gameStore.db
     if (!db) return
@@ -297,7 +404,7 @@ export const useSocialStore = defineStore('social', () => {
     notifications.friends = res1.count || 0
     notifications.trades = (res2.count || 0) + (res3.count || 0)
     notifications.battles = res4.count || 0
-    notifications.total = notifications.friends + notifications.trades + notifications.battles
+    notifications.total = notifications.friends + notifications.trades + notifications.battles + notifications.chats
   }
 
   function startPresence() {
@@ -329,7 +436,7 @@ export const useSocialStore = defineStore('social', () => {
    * @param {string} sortBy - 'elo_rating' | 'trainer_level' | 'badges'
    */
   async function fetchLeaderboard(sortBy = 'elo_rating') {
-    if (authStore.sessionMode === 'offline' || !gameStore.db) {
+    if (!gameStore.db) {
       leaderboard.value = []
       return
     }
@@ -359,7 +466,7 @@ export const useSocialStore = defineStore('social', () => {
 
         leaderboard.value = (data as ProfileRow[]).map((p: ProfileRow) => {
           const saveRow = (saves as GameSaveRow[])?.find(s => s.user_id === p.id)
-          const lastSeen = saveRow?.updated_at ? Temporal.Instant.from(saveRow.updated_at) : null
+          const lastSeen = parseInstantSafe(saveRow?.updated_at)
           const isOnline = lastSeen && (Temporal.Now.instant().epochMilliseconds - lastSeen.epochMilliseconds) < 5 * 60 * 1000
 
           return {

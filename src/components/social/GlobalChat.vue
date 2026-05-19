@@ -99,6 +99,7 @@ function openTrainerProfile(userId?: string) {
 
 onMounted(async () => {
   chatStore.initGlobalChat();
+  chatStore.initPrivateInbox();
   await chatStore.fetchMissingCosmetics();
 });
 
@@ -161,10 +162,7 @@ useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
               <div class="message-meta">
                 <span
                   class="username clickable-username"
-                  :class="[
-                    chatStore.profileCosmetics[msg.user_id || '']?.player_class || msg.player_class, 
-                    chatStore.profileCosmetics[msg.user_id || '']?.nick_style
-                  ]"
+                  :class="chatStore.profileCosmetics[msg.user_id || '']?.nick_style || 'normal'"
                   @click.stop="openTrainerProfile(msg.user_id)"
                 >{{ chatStore.profileCosmetics[msg.user_id || '']?.username || msg.username }}</span>
                 <span class="time">{{ formatTime(msg.created_at) }}</span>

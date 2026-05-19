@@ -1,12 +1,48 @@
 <script setup lang="ts">
+import { onMounted, ref, watch, nextTick } from 'vue'
 import { useSocialStore } from '@/stores/social'
+import { useUIStore } from '@/stores/ui'
 import TrainerAvatar from '@/components/TrainerAvatar.vue'
+import { gsap } from 'gsap'
 
 const socialStore = useSocialStore()
+const uiStore = useUIStore()
+const listRef = ref<HTMLElement | null>(null)
+
+function openTrainerProfile(userId: string) {
+  uiStore.open('TrainerProfile', { userId })
+}
+
+function animateCards() {
+  nextTick(() => {
+    if (!listRef.value) return
+    const cards = listRef.value.querySelectorAll('.request-card')
+    if (cards.length > 0) {
+      gsap.killTweensOf(cards)
+      gsap.from(cards, {
+        opacity: 0,
+        x: -20,
+        scale: 0.95,
+        duration: 0.45,
+        stagger: 0.06,
+        ease: 'back.out(1.2)',
+        clearProps: 'all'
+      })
+    }
+  })
+}
+
+onMounted(() => {
+  animateCards()
+})
+
+watch(() => socialStore.pendingRequests, () => {
+  animateCards()
+}, { deep: true })
 </script>
 
 <template>
-  <div class="tab-content">
+  <div class="social-tab-content">
     <div
       v-if="socialStore.pendingRequests.length === 0"
       class="empty-state"
@@ -19,6 +55,7 @@ const socialStore = useSocialStore()
 
     <div
       v-else
+      ref="listRef"
       class="requests-list"
     >
       <div
@@ -28,24 +65,31 @@ const socialStore = useSocialStore()
       >
         <div class="request-info">
           <TrainerAvatar 
-            :player-class="req.profiles?.save_data?.playerClass" 
-            :level="req.profiles?.save_data?.trainerLevel" 
+            :player-class="req.profiles?.save_data?.playerClass || req.profiles?.playerClass || req.profiles?.player_class || 'Entrenador'" 
+            :level="req.profiles?.save_data?.trainerLevel || req.profiles?.level || req.profiles?.trainer_level || 1" 
+            :avatar-style="req.profiles?.avatar_style || req.profiles?.save_data?.avatar_style || undefined"
             :size="36"
+            class="clickable-avatar"
+            @click.stop="openTrainerProfile(req.requester_id)"
           />
           <div class="text">
-            <span class="username">{{ req.profiles?.username }}</span>
+            <span 
+              class="username clickable-username"
+              :class="req.profiles?.save_data?.nick_style || req.profiles?.nick_style"
+              @click.stop="openTrainerProfile(req.requester_id)"
+            >{{ req.profiles?.username }}</span>
             quiere ser tu amigo
           </div>
         </div>
         <div class="request-btns">
           <button
-            class="btn-accept"
+            class="btn-vicio-success btn-vicio-sm"
             @click.stop="socialStore.respondRequest(req.id, 'accepted')"
           >
             ACEPTAR
           </button>
           <button
-            class="btn-reject"
+            class="btn-vicio-danger btn-vicio-sm reject-btn"
             @click.stop="socialStore.respondRequest(req.id, 'rejected')"
           >
             ×
@@ -57,7 +101,6 @@ const socialStore = useSocialStore()
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
 .requests-list {
   display: flex;
   flex-direction: column;
@@ -72,6 +115,13 @@ const socialStore = useSocialStore()
   display: flex;
   justify-content: space-between;
   align-items: center;
+  transition: all 0.2s;
+
+  &:hover {
+    background: Rgba(157, 78, 221, 0.08);
+    border-color: Rgba(157, 78, 221, 0.3);
+    transform: Translatex(4px);
+  }
 
   .request-info {
     display: flex;
@@ -88,27 +138,15 @@ const socialStore = useSocialStore()
   .request-btns {
     display: flex;
     gap: 8px;
+    align-items: center;
 
-    .btn-accept {
-      background: Rgba(34, 197, 94, 1);
-      border: none;
-      color: var(--white);
-      padding: 8px 12px;
-      border-radius: 8px;
-      @include pixelated;
-      font-size: 6px;
-      cursor: pointer;
-    }
-
-    .btn-reject {
-      background: Rgba(239, 68, 68, 0.1);
-      border: 1px solid Rgba(239, 68, 68, 0.2);
-      color: Rgba(248, 113, 113, 1);
-      width: 32px;
-      height: 32px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 18px;
+    .reject-btn {
+      min-width: 32px;
+      padding: 0 !important;
+      font-size: 16px !important;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
   }
 }
@@ -120,4 +158,25 @@ const socialStore = useSocialStore()
   .icon { font-size: 40px; margin-bottom: 15px; opacity: 0.5; }
   p { font-size: 14px; margin-bottom: 20px; }
 }
+
+.clickable-avatar {
+  cursor: pointer;
+  transition: transform 0.2s, filter 0.2s;
+
+  &:hover {
+    transform: Scale(1.1);
+    filter: Brightness(1.2);
+  }
+}
+
+.clickable-username {
+  cursor: pointer;
+  transition: opacity 0.2s;
+
+  &:hover {
+    text-decoration: underline;
+    opacity: 0.85;
+  }
+}
 </style>
+

@@ -17,6 +17,7 @@ const props = withDefaults(defineProps<Props>(), {
 const gameStore = useGameStore()
 const uiStore = useUIStore()
 const socialStore = useSocialStore()
+const modalStore = useModalStore()
 const navRef = ref<HTMLElement | null>(null)
 
 const activeTab = computed({
@@ -25,8 +26,6 @@ const activeTab = computed({
 })
 
 const handleTabChange = (tab: string, _event?: Event) => {
-  const modalStore = useModalStore()
-  
   if (tab === 'bag') {
     modalStore.open('Inventory')
     return
@@ -56,14 +55,14 @@ const handleTabChange = (tab: string, _event?: Event) => {
     modalStore.open('TeamManagement')
     return
   }
+
+  if (['social', 'friends'].includes(tab)) {
+    modalStore.open('SocialCenter', { initialTab: 'friends' })
+    return
+  }
   
   activeTab.value = tab
   uiStore.openHudGroup = null // Close any open group when switching tabs
-  
-  // Social Center Modal
-  if (['social', 'friends'].includes(tab)) {
-    uiStore.toggleSocial()
-  }
 }
 
 const toggleGroupMenu = (name: string) => {
@@ -144,7 +143,7 @@ onUnmounted(() => {
     >
       <button
         class="hud-nav-btn group-btn"
-        :class="{ active: ['team', 'box', 'pokedex'].includes(activeTab) || uiStore.openHudGroup === 'POKEMON' }"
+        :class="{ active: ['box', 'pokedex'].includes(activeTab) || uiStore.openHudGroup === 'POKEMON' || modalStore.isOpen('TeamManagement') }"
         @click.stop="toggleGroupMenu('POKEMON')"
       >
         <span class="icon">⚡</span>
@@ -163,7 +162,7 @@ onUnmounted(() => {
         >
           <button
             class="hud-nav-btn"
-            :class="{ active: activeTab === 'team' }"
+            :class="{ active: modalStore.isOpen('TeamManagement') }"
             @click.stop="handleTabChange('team', $event); uiStore.openHudGroup = null"
           >
             <span class="icon">⚡</span><span class="nav-item-label">EQUIPO</span>
@@ -189,7 +188,7 @@ onUnmounted(() => {
     <!-- 3. MOCHILA -->
     <button
       class="hud-nav-btn"
-      :class="{ active: activeTab === 'bag' }"
+      :class="{ active: modalStore.isOpen('Inventory') }"
       @click.stop="handleTabChange('bag')"
     >
       <span class="icon">🎒</span>
@@ -227,7 +226,7 @@ onUnmounted(() => {
     >
       <button
         class="hud-nav-btn group-btn"
-        :class="{ active: ['online-market', 'market', 'trainer-shop'].includes(activeTab) || uiStore.openHudGroup === 'MARKET' }"
+        :class="{ active: uiStore.openHudGroup === 'MARKET' || modalStore.isOpen('GlobalMarket') || modalStore.isOpen('Shop') || modalStore.isOpen('BCShop') || modalStore.isOpen('WarShop') }"
         @click.stop="toggleGroupMenu('MARKET')"
       >
         <span class="icon">🏪</span>
@@ -246,27 +245,28 @@ onUnmounted(() => {
         >
           <button
             class="hud-nav-btn"
-            :class="{ active: activeTab === 'online-market' }"
+            :class="{ active: modalStore.isOpen('GlobalMarket') }"
             @click.stop="handleTabChange('online-market'); uiStore.openHudGroup = null"
           >
             <span class="icon">🌎</span><span class="nav-item-label">GLOBAL</span>
           </button>
           <button
             class="hud-nav-btn"
-            :class="{ active: activeTab === 'market' }"
+            :class="{ active: modalStore.isOpen('Shop') }"
             @click.stop="handleTabChange('market'); uiStore.openHudGroup = null"
           >
             <span class="icon">🛒</span><span class="nav-item-label">LOCAL</span>
           </button>
           <button
             class="hud-nav-btn"
-            :class="{ active: activeTab === 'trainer-shop' }"
+            :class="{ active: modalStore.isOpen('BCShop') }"
             @click.stop="handleTabChange('trainer-shop'); uiStore.openHudGroup = null"
           >
             <span class="icon">🎖️</span><span class="nav-item-label">BC SHOP</span>
           </button>
           <button
             class="hud-nav-btn war-shop-nav-btn"
+            :class="{ active: modalStore.isOpen('WarShop') }"
             @click.stop="handleTabChange('war-shop'); uiStore.openHudGroup = null"
           >
             <span class="icon">🚩</span><span class="nav-item-label">GUERRA</span>
@@ -282,10 +282,10 @@ onUnmounted(() => {
     >
       <button
         class="hud-nav-btn group-btn"
-        :class="{ active: ['friends', 'arena', 'ranking', 'war', 'events'].includes(activeTab) || uiStore.openHudGroup === 'SOCIAL' }"
+        :class="{ active: ['arena', 'ranking', 'war', 'events'].includes(activeTab) || uiStore.openHudGroup === 'SOCIAL' || modalStore.isOpen('SocialCenter') }"
         @click.stop="toggleGroupMenu('SOCIAL')"
       >
-        <span class="icon">👥</span>
+        <span class="icon">👪</span>
         <span class="nav-item-label">SOCIAL</span>
         <span
           v-if="socialStore.notifications.total"
@@ -305,10 +305,14 @@ onUnmounted(() => {
         >
           <button
             class="hud-nav-btn"
-            :class="{ active: activeTab === 'friends' }"
+            :class="{ active: modalStore.isOpen('SocialCenter') }"
             @click.stop="handleTabChange('friends'); uiStore.openHudGroup = null"
           >
             <span class="icon">🤝</span><span class="nav-item-label">AMIGOS</span>
+            <span
+              v-if="socialStore.notifications.chats > 0"
+              class="badge-pill"
+            >{{ socialStore.notifications.chats }}</span>
           </button>
           <button
             class="hud-nav-btn"
