@@ -214,7 +214,7 @@ const onLoadingLeave = (el: Element, done: () => void) => {
       @leave="onLoadingLeave"
     >
       <div
-        v-if="!loadingStore.isGateOpen && !isLoginPage"
+        v-if="!loadingStore.isGateOpen && (!isLoginPage || loadingInfo.active) && !dbIncompatible"
         class="loading-overlay"
         :class="{ 'global-overlay': loadingInfo.global }"
       >
@@ -235,28 +235,29 @@ const onLoadingLeave = (el: Element, done: () => void) => {
     </template>
     
     <template v-else-if="authStore.user">
-      <template v-if="gameStore.isReady">
-        <MainGameView v-show="!uiStore.isAnyFullscreenModalOpen" />
-        <!-- Bloqueo por Versión Outdated -->
-        <div
-          v-if="dbIncompatible"
-          class="loading-overlay version-lock"
-        >
-          <div class="lock-icon">
-            ⚠️
-          </div>
-          <h2>SERVIDOR DESACTUALIZADO</h2>
-          <p>Tu cliente (v{{ dbVersionInfo?.client }}) es más moderno que el servidor (v{{ dbVersionInfo?.db }}).</p>
-          <p class="admin-note">
-            Por favor, contacta al administrador para actualizar la base de datos.
-          </p>
-          <div
-            class="retry-btn"
-            @click.stop="handleRetry"
-          >
-            REINTENTAR
-          </div>
+      <!-- Bloqueo por Versión Outdated -->
+      <div
+        v-if="dbIncompatible"
+        class="loading-overlay version-lock"
+      >
+        <div class="lock-icon">
+          ⚠️
         </div>
+        <h2>SERVIDOR DESACTUALIZADO</h2>
+        <p>Tu cliente (v{{ dbVersionInfo?.client }}) es más moderno que el servidor (v{{ dbVersionInfo?.db }}).</p>
+        <p class="admin-note">
+          Por favor, contacta al administrador para actualizar la base de datos.
+        </p>
+        <div
+          class="retry-btn"
+          @click.stop="handleRetry"
+        >
+          REINTENTAR
+        </div>
+      </div>
+
+      <template v-else-if="gameStore.isReady">
+        <MainGameView v-show="!uiStore.isAnyFullscreenModalOpen" />
 
         <!-- Bloqueo por Sesión (Last-In-Wins) -->
         <div

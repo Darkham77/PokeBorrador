@@ -283,7 +283,7 @@ export class DBRouter {
         // 2. Upsert del save
         sqliteDb.run(
           `INSERT INTO game_saves (user_id, save_data, last_save_id, updated_at) 
-           VALUES (?, ?, ?, datetime('now'))
+           VALUES (?, ?, ?, strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
            ON CONFLICT(user_id) DO UPDATE SET 
             save_data = excluded.save_data, 
             last_save_id = excluded.last_save_id, 
@@ -351,7 +351,7 @@ export class DBRouter {
         }
 
         sqliteDb.run(
-          "UPDATE game_saves SET save_data = ?, updated_at = datetime('now') WHERE user_id = ?",
+          "UPDATE game_saves SET save_data = ?, updated_at = strftime('%Y-%m-%dT%H:%M:%SZ', 'now') WHERE user_id = ?",
           [JSON.stringify(saveObj), userId]
         );
 
@@ -383,7 +383,7 @@ export class DBRouter {
 
         buyerSave.money = (buyerSave.money || 0) - price;
         sqliteDb.run(
-          "UPDATE game_saves SET save_data = ?, updated_at = datetime('now') WHERE user_id = ?",
+          "UPDATE game_saves SET save_data = ?, updated_at = strftime('%Y-%m-%dT%H:%M:%SZ', 'now') WHERE user_id = ?",
           [JSON.stringify(buyerSave), userId]
         );
 
@@ -418,7 +418,7 @@ export class DBRouter {
         );
 
         sqliteDb.run(
-          "UPDATE market_listings SET status = 'sold', buyer_id = ?, created_at = datetime('now') WHERE id = ?",
+          "UPDATE market_listings SET status = 'sold', buyer_id = ?, created_at = strftime('%Y-%m-%dT%H:%M:%SZ', 'now') WHERE id = ?",
           [userId, p_listing_id]
         );
 
@@ -458,12 +458,12 @@ export class DBRouter {
         }
 
         sqliteDb.run(
-          "UPDATE game_saves SET save_data = ?, updated_at = datetime('now') WHERE user_id = ?",
+          "UPDATE game_saves SET save_data = ?, updated_at = strftime('%Y-%m-%dT%H:%M:%SZ', 'now') WHERE user_id = ?",
           [JSON.stringify(saveObj), userId]
         );
 
         sqliteDb.run(
-          "UPDATE market_listings SET status = 'cancelled', created_at = datetime('now') WHERE id = ?",
+          "UPDATE market_listings SET status = 'cancelled', created_at = strftime('%Y-%m-%dT%H:%M:%SZ', 'now') WHERE id = ?",
           [p_listing_id]
         );
 
@@ -504,7 +504,7 @@ export class DBRouter {
         }
 
         sqliteDb.run(
-          "UPDATE game_saves SET save_data = ?, updated_at = datetime('now') WHERE user_id = ?",
+          "UPDATE game_saves SET save_data = ?, updated_at = strftime('%Y-%m-%dT%H:%M:%SZ', 'now') WHERE user_id = ?",
           [JSON.stringify(userSave), userId]
         );
 
@@ -512,6 +512,244 @@ export class DBRouter {
 
         await persistSQLite();
         return { data: userSave, error: null };
+      }
+
+      // 5. Send Trade Offer Emulation
+      if (name === 'send_trade_offer_v2') {
+        const {
+          p_receiver_id,
+          p_offer_pokemon,
+          p_offer_items,
+          p_offer_money,
+          p_request_pokemon,
+          p_request_items,
+          p_request_money,
+          p_message
+        } = params as {
+          p_receiver_id: string;
+          p_offer_pokemon: Record<string, unknown> | null;
+          p_offer_items: Record<string, number> | null;
+          p_offer_money: number;
+          p_request_pokemon: Record<string, unknown> | null;
+          p_request_items: Record<string, number> | null;
+          p_request_money: number;
+          p_message: string;
+        };
+
+        const senderSaves = await queryLocal("SELECT save_data FROM game_saves WHERE user_id = ?", [userId]);
+        if (senderSaves.length === 0) return { data: null, error: { message: 'Save not found' } };
+        const senderSave = (typeof senderSaves[0]!.save_data === 'string' ? JSON.parse(senderSaves[0]!.save_data as string) : senderSaves[0]!.save_data) as OfflineSaveData;
+
+        // 1. Quitar Pokemon Ofrecido
+        if (p_offer_pokemon) {
+          const uid = p_offer_pokemon.uid as string;
+          const teamLenBefore = senderSave.team?.length || 0;
+          senderSave.team = (senderSave.team || []).filter((p) => p.uid !== uid);
+          if (senderSave.team.length === teamLenBefore) {
+            const boxLenBefore = senderSave.box?.length || 0;
+            senderSave.box = (senderSave.box || []).filter((p) => p.uid !== uid);
+            if (senderSave.box.length === boxLenBefore) {
+              return { data: null, error: { message: 'Pokémon no encontrado en tu inventario.' } };
+            }
+          }
+        }
+
+        // 2. Quitar Items Ofrecidos
+        if (p_offer_items) {
+          senderSave.inventory = senderSave.inventory || {};
+          for (const [itemName, qty] of Object.entries(p_offer_items)) {
+            const currentQty = senderSave.inventory[itemName] || 0;
+            if (currentQty < qty) {
+              return { data: null, error: { message: `Cantidad insuficiente de ${itemName}.` } };
+            }
+            senderSave.inventory[itemName] = currentQty - qty;
+            if (senderSave.inventory[itemName]! <= 0) {
+              delete senderSave.inventory[itemName];
+            }
+          }
+        }
+
+        // 3. Quitar Dinero Ofrecido
+        if (p_offer_money > 0) {
+          const currentMoney = senderSave.money || 0;
+          if (currentMoney < p_offer_money) {
+            return { data: null, error: { message: 'Dinero insuficiente.' } };
+          }
+          senderSave.money = currentMoney - p_offer_money;
+        }
+
+        sqliteDb.run(
+          "UPDATE game_saves SET save_data = ?, updated_at = strftime('%Y-%m-%dT%H:%M:%SZ', 'now') WHERE user_id = ?",
+          [JSON.stringify(senderSave), userId]
+        );
+
+        sqliteDb.run(
+          "INSERT INTO trade_offers (sender_id, receiver_id, offer_pokemon, offer_items, offer_money, request_pokemon, request_items, request_money, message, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')",
+          [
+            userId,
+            p_receiver_id,
+            p_offer_pokemon ? JSON.stringify(p_offer_pokemon) : null,
+            p_offer_items ? JSON.stringify(p_offer_items) : null,
+            p_offer_money,
+            p_request_pokemon ? JSON.stringify(p_request_pokemon) : null,
+            p_request_items ? JSON.stringify(p_request_items) : null,
+            p_request_money,
+            p_message || '',
+          ]
+        );
+
+        await persistSQLite();
+        // Obtener el ID insertado
+        const lastIdRes = await queryLocal("SELECT last_insert_rowid() as id");
+        const tradeId = (lastIdRes[0] as { id: number }).id;
+
+        return { data: tradeId, error: null };
+      }
+
+      // 6. Accept Trade Offer Emulation
+      if (name === 'accept_trade_v2') {
+        const { p_trade_id } = params as { p_trade_id: string | number };
+
+        const trades = await queryLocal("SELECT * FROM trade_offers WHERE id = ?", [p_trade_id]);
+        if (trades.length === 0) return { data: null, error: { message: 'Oferta no válida o ya procesada.' } };
+        const trade = trades[0] as {
+          id: number;
+          sender_id: string;
+          receiver_id: string;
+          offer_pokemon: string | null;
+          offer_items: string | null;
+          offer_money: number;
+          request_pokemon: string | null;
+          request_items: string | null;
+          request_money: number;
+          status: string;
+        };
+
+        if (trade.status !== 'pending') {
+          return { data: null, error: { message: 'Oferta no válida o ya procesada.' } };
+        }
+        if (trade.receiver_id !== userId) {
+          return { data: null, error: { message: 'No autorizado.' } };
+        }
+
+        const receiverSaves = await queryLocal("SELECT save_data FROM game_saves WHERE user_id = ?", [userId]);
+        if (receiverSaves.length === 0) return { data: null, error: { message: 'Save not found' } };
+        const receiverSave = (typeof receiverSaves[0]!.save_data === 'string' ? JSON.parse(receiverSaves[0]!.save_data as string) : receiverSaves[0]!.save_data) as OfflineSaveData;
+
+        // Parse columns since SQLite stores objects as strings/JSON strings
+        const offerPokeObj = trade.offer_pokemon ? (typeof trade.offer_pokemon === 'string' ? JSON.parse(trade.offer_pokemon) : trade.offer_pokemon) : null;
+        const offerItemsObj = trade.offer_items ? (typeof trade.offer_items === 'string' ? JSON.parse(trade.offer_items) : trade.offer_items) : null;
+        const requestPokeObj = trade.request_pokemon ? (typeof trade.request_pokemon === 'string' ? JSON.parse(trade.request_pokemon) : trade.request_pokemon) : null;
+        const requestItemsObj = trade.request_items ? (typeof trade.request_items === 'string' ? JSON.parse(trade.request_items) : trade.request_items) : null;
+
+        // 1. Validar y Quitar lo que el receptor ofrece (request del trade)
+        // 1a. Pokémon
+        if (requestPokeObj) {
+          const uid = requestPokeObj.uid as string;
+          const teamLenBefore = receiverSave.team?.length || 0;
+          receiverSave.team = (receiverSave.team || []).filter((p) => p.uid !== uid);
+          if (receiverSave.team.length === teamLenBefore) {
+            const boxLenBefore = receiverSave.box?.length || 0;
+            receiverSave.box = (receiverSave.box || []).filter((p) => p.uid !== uid);
+            if (receiverSave.box.length === boxLenBefore) {
+              return { data: null, error: { message: 'Pokémon solicitado no encontrado en tu inventario.' } };
+            }
+          }
+        }
+
+        // 1b. Dinero
+        if (trade.request_money > 0) {
+          const currentMoney = receiverSave.money || 0;
+          if (currentMoney < trade.request_money) {
+            return { data: null, error: { message: 'Dinero insuficiente para aceptar el intercambio.' } };
+          }
+          receiverSave.money = currentMoney - trade.request_money;
+        }
+
+        // 1c. Items
+        if (requestItemsObj) {
+          receiverSave.inventory = receiverSave.inventory || {};
+          for (const [itemName, qty] of Object.entries(requestItemsObj as Record<string, number>)) {
+            const currentQty = receiverSave.inventory[itemName] || 0;
+            if (currentQty < qty) {
+              return { data: null, error: { message: `Cantidad insuficiente de ${itemName}.` } };
+            }
+            receiverSave.inventory[itemName] = currentQty - qty;
+            if (receiverSave.inventory[itemName]! <= 0) {
+              delete receiverSave.inventory[itemName];
+            }
+          }
+        }
+
+        // 2. Persistir cambio en save del receptor
+        sqliteDb.run(
+          "UPDATE game_saves SET save_data = ?, updated_at = strftime('%Y-%m-%dT%H:%M:%SZ', 'now') WHERE user_id = ?",
+          [JSON.stringify(receiverSave), userId]
+        );
+
+        // 3. Mover activos a la COLA DE RECLAMO
+        // Lo que el emisor ofreció va al receptor (userId)
+        if (offerPokeObj) {
+          const claimId = 'claim_' + Math.random().toString(36).substring(2, 11);
+          sqliteDb.run(
+            "INSERT INTO claim_queue (id, user_id, source_type, source_id, asset_data) VALUES (?, ?, 'trade', ?, ?)",
+            [claimId, userId, String(p_trade_id), JSON.stringify({ type: 'pokemon', data: offerPokeObj })]
+          );
+        }
+        if (trade.offer_money > 0) {
+          const claimId = 'claim_' + Math.random().toString(36).substring(2, 11);
+          sqliteDb.run(
+            "INSERT INTO claim_queue (id, user_id, source_type, source_id, asset_data) VALUES (?, ?, 'trade', ?, ?)",
+            [claimId, userId, String(p_trade_id), JSON.stringify({ type: 'money', data: trade.offer_money })]
+          );
+        }
+        if (offerItemsObj) {
+          for (const [itemName, qty] of Object.entries(offerItemsObj as Record<string, number>)) {
+            if (qty > 0) {
+              const claimId = 'claim_' + Math.random().toString(36).substring(2, 11);
+              sqliteDb.run(
+                "INSERT INTO claim_queue (id, user_id, source_type, source_id, asset_data) VALUES (?, ?, 'trade', ?, ?)",
+                [claimId, userId, String(p_trade_id), JSON.stringify({ type: 'item', data: { name: itemName, qty } })]
+              );
+            }
+          }
+        }
+
+        // Lo que el receptor ofreció va al emisor (trade.sender_id)
+        if (requestPokeObj) {
+          const claimId = 'claim_' + Math.random().toString(36).substring(2, 11);
+          sqliteDb.run(
+            "INSERT INTO claim_queue (id, user_id, source_type, source_id, asset_data) VALUES (?, ?, 'trade', ?, ?)",
+            [claimId, trade.sender_id, String(p_trade_id), JSON.stringify({ type: 'pokemon', data: requestPokeObj })]
+          );
+        }
+        if (trade.request_money > 0) {
+          const claimId = 'claim_' + Math.random().toString(36).substring(2, 11);
+          sqliteDb.run(
+            "INSERT INTO claim_queue (id, user_id, source_type, source_id, asset_data) VALUES (?, ?, 'trade', ?, ?)",
+            [claimId, trade.sender_id, String(p_trade_id), JSON.stringify({ type: 'money', data: trade.request_money })]
+          );
+        }
+        if (requestItemsObj) {
+          for (const [itemName, qty] of Object.entries(requestItemsObj as Record<string, number>)) {
+            if (qty > 0) {
+              const claimId = 'claim_' + Math.random().toString(36).substring(2, 11);
+              sqliteDb.run(
+                "INSERT INTO claim_queue (id, user_id, source_type, source_id, asset_data) VALUES (?, ?, 'trade', ?, ?)",
+                [claimId, trade.sender_id, String(p_trade_id), JSON.stringify({ type: 'item', data: { name: itemName, qty } })]
+              );
+            }
+          }
+        }
+
+        // 4. Finalizar trade
+        sqliteDb.run(
+          "UPDATE trade_offers SET status = 'accepted', created_at = strftime('%Y-%m-%dT%H:%M:%SZ', 'now') WHERE id = ?",
+          [p_trade_id]
+        );
+
+        await persistSQLite();
+        return { data: true, error: null };
       }
 
       // Default mock success for other RPCs in offline mode
@@ -653,7 +891,10 @@ export async function checkDBCompatibility(router: DBRouter): Promise<DBCompatib
         .eq('key', 'db_version')
         .single();
       
-      if (!error && data) rawValue = (data as { value: unknown }).value;
+      if (error) {
+        throw error;
+      }
+      if (data) rawValue = (data as { value: unknown }).value;
     }
 
     if (rawValue) {
@@ -676,7 +917,7 @@ export async function checkDBCompatibility(router: DBRouter): Promise<DBCompatib
       db: dbVersion
     };
 
-    if (router.mode !== 'offline' && CLIENT_DB_VERSION > dbVersion) {
+    if (router.mode !== 'offline' && (CLIENT_DB_VERSION > dbVersion || dbVersion === 0)) {
       response.compatible = false;
       response.error = 'OUTDATED_SERVER';
     }
@@ -685,7 +926,15 @@ export async function checkDBCompatibility(router: DBRouter): Promise<DBCompatib
     return response;
   } catch (e: unknown) {
     loadingStore.finish('db_compat')
-    logger.warn('DBRouter', 'Compatibility check failed, assuming compatible.', (e as Error).message);
+    logger.error('DBRouter', 'Compatibility check failed.', (e as Error).message);
+    if (router.mode !== 'offline') {
+      return { 
+        compatible: false, 
+        client: CLIENT_DB_VERSION, 
+        db: 0,
+        error: 'OUTDATED_SERVER' 
+      };
+    }
     return { compatible: true, client: CLIENT_DB_VERSION, db: 0 };
   }
 }

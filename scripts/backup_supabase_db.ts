@@ -126,6 +126,9 @@ export async function backupSupabaseDb() {
     console.log(styleText('bold', styleText('cyan', `📥 INICIANDO RESPALDO DE BASE DE DATOS: [${profile}]`)));
     console.log(styleText('bold', styleText('blue', `==================================================`)));
 
+    const serverBackupDir = path.join(BACKUPS_DIR, profile);
+    await fsPromises.mkdir(serverBackupDir, { recursive: true });
+
     let dbUrl = conf.DATABASE_URL || conf.POSTGRES_URL || conf.PG_URL || '';
     if (!dbUrl) {
       const pass = conf.POSTGRES_PASSWORD || conf.DB_PASSWORD || '';
@@ -206,7 +209,7 @@ export async function backupSupabaseDb() {
       // 2. Guardar en archivo JSON
       const timestamp = Temporal.Now.instant().toString().replace(/[:.]/g, '-');
       const backupFilename = `${profile}_backup_${timestamp}.json`;
-      const backupFilePath = path.join(BACKUPS_DIR, backupFilename);
+      const backupFilePath = path.join(serverBackupDir, backupFilename);
 
       const fullBackupObject = {
         metadata: {

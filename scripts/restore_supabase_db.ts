@@ -132,21 +132,22 @@ export async function restoreSupabaseDb() {
   let targetBackupPath = fileArg ? path.resolve(process.cwd(), fileArg) : '';
 
   if (!targetBackupPath) {
-    console.log(styleText('cyan', `🔍 Buscando archivo de respaldo más reciente para [${profile}] en database/backups/...`));
+    const serverBackupDir = path.join(BACKUPS_DIR, profile);
+    console.log(styleText('cyan', `🔍 Buscando archivo de respaldo más reciente para [${profile}] en database/backups/${profile}/...`));
     try {
-      const files = await fsPromises.readdir(BACKUPS_DIR);
+      const files = await fsPromises.readdir(serverBackupDir);
       const matchingFiles = files
         .filter(f => f.startsWith(`${profile}_backup_`) && f.endsWith('.json'))
         .sort()
         .reverse();
 
       if (matchingFiles.length === 0 || matchingFiles[0] === undefined) {
-        console.error(styleText('red', `❌ Error: No se encontraron archivos de respaldo automáticos para "${profile}" en ${BACKUPS_DIR}.`));
+        console.error(styleText('red', `❌ Error: No se encontraron archivos de respaldo automáticos para "${profile}" en ${serverBackupDir}.`));
         console.error(styleText('yellow', `👉 Ejecuta primero un respaldo con: npm run servers:db:backup -- --server=${profile} o especifica --file=<ruta>`));
         process.exit(1);
       }
 
-      targetBackupPath = path.join(BACKUPS_DIR, matchingFiles[0]);
+      targetBackupPath = path.join(serverBackupDir, matchingFiles[0]);
       console.log(styleText('green', `🏷️  Archivo de respaldo detectado automáticamente: ${matchingFiles[0]}`));
     } catch (rErr: unknown) {
       console.error(styleText('red', `❌ Error al inspeccionar el directorio de respaldos: ${(rErr as Error).message}`));

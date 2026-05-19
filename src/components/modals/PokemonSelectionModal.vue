@@ -35,6 +35,7 @@ interface Props {
   allowDead?: boolean
   allowedIds?: string[]
   isItemContext?: boolean
+  customList?: Pokemon[]
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -54,7 +55,8 @@ const props = withDefaults(defineProps<Props>(), {
   preventClose: false,
   allowDead: false,
   allowedIds: () => [],
-  isItemContext: false
+  isItemContext: false,
+  customList: () => []
 })
 
 
@@ -105,7 +107,9 @@ const availablePokemon = computed<{ pokemon: Pokemon, _source: 'team' | 'box', i
   
   let sourceList: { pokemon: Pokemon, _source: 'team' | 'box', index: number }[] = []
   
-  if (props.battleMode === 'pvp') {
+  if (props.customList && props.customList.length > 0) {
+    sourceList = props.customList.map((p, i) => ({ pokemon: p, _source: 'box' as const, index: i }))
+  } else if (props.battleMode === 'pvp') {
     const pvpUids = (gameStore.state.pvpTeam || []) as string[]
     const allPokes = [...team, ...box].filter((p): p is Pokemon => p !== null)
     sourceList = allPokes

@@ -97,6 +97,9 @@ export function useSaveActions(
     }
     
     if (data && authStore.user) {
+      if (!data.trainer && authStore.user.user_metadata?.username) {
+        data.trainer = authStore.user.user_metadata.username
+      }
       updateState(data)
       authStore.user.last_save_id = lastSaveId || undefined
       
@@ -115,6 +118,8 @@ export function useSaveActions(
         uiStore.notify('Sincronizando progreso local más reciente...', '🔄')
         setTimeout(() => save(false), 3000)
       }
+    } else if (!data && authStore.user) {
+      state.trainer = authStore.user.user_metadata?.username || 'Entrenador'
     }
     
     loadingStore.finish('game_data')

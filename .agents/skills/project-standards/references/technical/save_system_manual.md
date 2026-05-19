@@ -59,6 +59,7 @@ If you modify the database schema, you MUST maintain parity across all layers:
 Accessing the `/login` route MUST trigger an immediate, synchronous cleanup of local session state (clearing `authStore` and `gameStore` memory) before any data loading begins.
 
 - **WHY**: Prevents authenticated state from interfering with the login view and ensures the "Loading Gate" remains open for the user.
+- **Autologin Isolation**: Accessing `/login` or completing a database import reload MUST invoke a deep logout (`authStore.logout()`) rather than a partial local cleanup. This completely terminates Supabase online sessions and registers the `block_autologin` flag, preventing browser initialization from automatically logging back in.
 
 ### 2. Tab Conflicts (Last-In-Wins)
 

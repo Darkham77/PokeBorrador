@@ -215,6 +215,9 @@ Use these scripts to verify project standards and ensure stability:
 - `npm run audit:fix`: Automatic standards repair (Node prefixes, Viewports).
 - `npm run audit:full`: **THE GOLD STANDARD**. Total audit (Code + FSM + Items + SQL + Abilities + Moves). MANDATORY before any commit.
 - `npm run lint`: Style and syntax verification (includes type-check).
+- `npm run test:node`: Runs the pure logic test suite using the native Node.js 26+ test runner.
+- `npm run test:all`: Sequentially runs the native Node.js tests (`test:node`) and the component tests in Vitest (`test`).
+- `npm run migrations:generate`: Scans local SQL migration files under `database/migrations/` and packages them into the production TypeScript migrations manifest (`src/logic/db/migrations_data.ts`).
 
 ### ⚔️ Battle Engine (FSM Mastery)
 
@@ -236,7 +239,9 @@ Use these scripts to verify project standards and ensure stability:
 - `npm run servers:db:update`: Supabase database manager and migrator in Node.js 26+. Connects to the chosen instance (`--server=<profile>` or `--all`), dynamically extracts credentials and Tenant ID, initializes the database if empty (`baseline_schema.sql`), and applies secure incremental patches.
 - `npm run servers:db:backup`: Connects to the chosen Supabase server (`--server=<profile>`), dynamically discovers all tables in the `public` schema, and downloads a complete structured backup in JSON format into `database/backups/`.
 - `npm run servers:db:restore`: Transactionally restores a JSON backup file to the chosen server (`--server=<profile>`), cleaning existing tables in reverse hierarchical order and securely reinserting rows with automatic ROLLBACK support. Allows specifying `--file=<path>` or automatically detects the most recent backup.
+- `npm run servers:db:local-import`: Imports the most recent JSON backup from a chosen Supabase server into the local SQLite database for offline testing and development.
 - `npm run servers:db:admin`: Supabase user admin CLI in Node.js 26+. Connects to the chosen server (`--server=<profile>`) to unban accounts, update passwords, change emails, modify trainer usernames, and promote users to ADMIN role directly from the command line (`--action=<unban|set-password|set-email|set-username|promote> --email=<email>`).
+- `npm run admin:rename`: Administrative CLI to rename a trainer directly in the database (`profiles` and `auth.users`) by their user ID or current username.
 
 ### 🖼️ Assets
 

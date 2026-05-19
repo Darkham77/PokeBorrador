@@ -431,7 +431,7 @@ const close = () => {
   }
 
   :deep(.item-premium-grid) {
-    grid-template-columns: repeat(4, 1fr) !important;
+    grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)) !important;
   }
 }
 </style>

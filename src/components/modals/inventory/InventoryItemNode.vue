@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ref, watch } from 'vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
 interface InventoryItem {
@@ -16,7 +17,7 @@ interface Props {
   multiSelectMode?: boolean
 }
 
-withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<Props>(), {
   isSelected: false,
   multiSelectMode: false
 })
@@ -24,6 +25,12 @@ withDefaults(defineProps<Props>(), {
 defineEmits<{
   (e: 'click'): void
 }>()
+
+const hasError = ref(false)
+
+watch(() => props.item.sprite, () => {
+  hasError.value = false
+})
 </script>
 
 <template>
@@ -37,15 +44,16 @@ defineEmits<{
   >
     <div class="item-icon-wrap">
       <img
+        v-if="item.sprite && !hasError"
         :src="getAssetUrl(ASSET_TYPES.ITEM, item.sprite)"
         :alt="item.name"
         class="item-sprite"
-        @error="e => { (e.target as HTMLImageElement).style.display = 'none' }"
+        @error="hasError = true"
       >
       <span
-        v-if="!item.sprite"
+        v-else
         class="fallback-icon"
-      >{{ item.icon }}</span>
+      >🚫</span>
       <span class="quantity">x{{ item.qty }}</span>
     </div>
     <div class="item-info">

@@ -251,8 +251,8 @@
       border: 1px solid Rgba(255, 255, 255, 0.1);
       box-shadow: 0 4px 12px Rgba(0, 0, 0, 0.5);
       
-      &::before, &::after {
-        background: $white;
+      &::before {
+        color: $white;
       }
     }
     
@@ -261,8 +261,8 @@
         background: Rgba(239, 68, 68, 0.95);
         border-color: Rgba(239, 68, 68, 0.2);
         
-        &::before, &::after {
-          background: $white;
+        &::before {
+          color: $white;
         }
       }
     }
@@ -279,9 +279,8 @@
     border: 1px solid var(--yellow);
     box-shadow: 0 4px 12px Rgba(255, 217, 61, 0.4);
     
-    &::before, &::after {
-      background: $black;
-      height: 2px;
+    &::before {
+      color: $black;
     }
   }
 }

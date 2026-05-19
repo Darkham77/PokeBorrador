@@ -1,14 +1,17 @@
 /// <reference types="vitest" />
-import { defineConfig } from 'vite'
+import { defineConfig, type ViteDevServer } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import path from 'node:path'
 import { Temporal } from '@js-temporal/polyfill'
+import type { IncomingMessage, ServerResponse } from 'node:http'
 
 
 import { generateMigrations } from './scripts/generate_migrations.ts'
 import { sassTrapsFixer } from './scripts/vite-plugin-sass-traps.ts'
 
 import { VitePWA } from 'vite-plugin-pwa'
+
+import fsPromises from 'node:fs/promises'
 
 function migrationsPlugin() {
   return {
@@ -24,6 +27,62 @@ function migrationsPlugin() {
   }
 }
 
+function devDbImportPlugin() {
+  return {
+    name: 'dev-db-import',
+    configureServer(server: ViteDevServer) {
+      server.middlewares.use(async (req: IncomingMessage, res: ServerResponse, next: () => void) => {
+        if (req.url?.startsWith('/api/dev-import-db-check')) {
+          const dbPath = path.resolve(__dirname, 'database/temp/imported.db')
+          try {
+            await fsPromises.access(dbPath)
+            res.writeHead(200, { 'Content-Type': 'application/json' })
+            res.end(JSON.stringify({ exists: true }))
+          } catch {
+            res.writeHead(200, { 'Content-Type': 'application/json' })
+            res.end(JSON.stringify({ exists: false }))
+          }
+          return;
+        }
+
+        if (req.url?.startsWith('/api/dev-import-db-cleanup')) {
+          const dbPath = path.resolve(__dirname, 'database/temp/imported.db')
+          try {
+            await fsPromises.unlink(dbPath)
+            console.log(' Gazelle [DevDB] Temporary imported.db cleaned up.')
+            res.writeHead(200, { 'Content-Type': 'text/plain' })
+            res.end('Cleaned up')
+          } catch {
+            res.writeHead(200, { 'Content-Type': 'text/plain' })
+            res.end('Already cleaned up')
+          }
+          return;
+        }
+
+        if (req.url?.startsWith('/api/dev-import-db')) {
+          const dbPath = path.resolve(__dirname, 'database/temp/imported.db')
+          try {
+            await fsPromises.access(dbPath)
+            const binary = await fsPromises.readFile(dbPath)
+            
+            res.writeHead(200, {
+              'Content-Type': 'application/octet-stream',
+              'Cache-Control': 'no-store'
+            })
+            res.end(binary)
+            console.log('📦 [DevDB] Temporary imported.db sent to client.')
+          } catch {
+            res.writeHead(404, { 'Content-Type': 'text/plain' })
+            res.end('No imported database found')
+          }
+          return;
+        }
+        next()
+      })
+    }
+  }
+}
+
 const buildInstant = Temporal.Now.instant().toZonedDateTimeISO('UTC');
 
 // https://vitejs.dev/config/
@@ -31,6 +90,7 @@ export default defineConfig({
   plugins: [
     vue(),
     migrationsPlugin(),
+    devDbImportPlugin(),
     sassTrapsFixer(),
     VitePWA({
       registerType: 'prompt',
@@ -108,6 +168,12 @@ export default defineConfig({
       '/api': {
         target: 'http://localhost:3000',
         changeOrigin: true,
+        bypass: (req) => {
+          if (req.url?.startsWith('/api/dev-import-db')) {
+            return req.url
+          }
+          return undefined
+        }
       },
     },
   },

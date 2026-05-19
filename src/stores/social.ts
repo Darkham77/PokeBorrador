@@ -71,6 +71,7 @@ export interface SearchResult {
   username: string;
   level: number;
   playerClass?: string;
+  faction?: string;
   nick_style?: string;
   avatar_style?: string;
   status: string;
@@ -127,6 +128,7 @@ export const useSocialStore = defineStore('social', () => {
   const searchLoading = ref(false)
   const loading = ref(false)
   const lastSearchQuery = ref('')
+  const sentRequestTimestamps = ref<number[]>([])
   
   const notifications = reactive({
     friends: 0,
@@ -272,7 +274,7 @@ export const useSocialStore = defineStore('social', () => {
     }
   }
 
-  async function searchPlayers(query: string) {
+  async function searchPlayers(query: string, filters?: { playerClass?: string; faction?: string }) {
     if (!query || query.length < 2) {
       searchResults.value = []
       return
@@ -289,29 +291,91 @@ export const useSocialStore = defineStore('social', () => {
     if (!db) { searchLoading.value = false; return }
     
     try {
-      const { data: profiles } = await db
-        .from('profiles')
-        .select('*')
-        .ilike('username', `%${query}%`)
-        .neq('id', authStore.user.id)
-        .limit(10) as { data: ProfileRow[] | null }
+      let profiles: ProfileRow[] | null = null
+      let saveRes: { data: GameSaveRow[] | null } = { data: null }
+      let relRes: { data: FriendshipRow[] | null } = { data: null }
 
-      if (lastSearchQuery.value !== query) return
-
-      if (profiles && profiles.length > 0) {
-        const ids = profiles.map((p: ProfileRow) => p.id)
-        const [saveRes, relRes] = await Promise.all([
-          db.from('game_saves').select('user_id,save_data').in('user_id', ids),
+      if (db.mode === 'offline') {
+        const [profRes, allSavesRes, allRelsRes] = await Promise.all([
+          db.from('profiles').select('*'),
+          db.from('game_saves').select('*'),
           db.from('friendships')
             .select('*')
             .or(`requester_id.eq.${authStore.user.id},addressee_id.eq.${authStore.user.id}`)
         ]) as [
-          { data: GameSaveRow[] | null; error: unknown },
-          { data: FriendshipRow[] | null; error: unknown }
+          { data: ProfileRow[] | null },
+          { data: GameSaveRow[] | null },
+          { data: FriendshipRow[] | null }
         ]
+
+        saveRes = { data: allSavesRes.data }
+        relRes = { data: allRelsRes.data }
+
+        const queryLower = query.toLowerCase()
+        profiles = (profRes.data || []).filter((p: ProfileRow) => {
+          if (p.id === authStore.user!.id) return false
+          
+          const save = (allSavesRes.data?.find((s: GameSaveRow) => s.user_id === p.id)?.save_data as unknown as GameState) || {}
+          const trainerName = (save.trainer as string) || p.username || ''
+          const originalUsername = p.username || ''
+          
+          const matchesQuery = 
+            trainerName.toLowerCase().includes(queryLower) ||
+            originalUsername.toLowerCase().includes(queryLower)
+            
+          if (!matchesQuery) return false
+          
+          if (filters?.playerClass) {
+            const currentClass = (save.playerClass as string) || p.player_class || 'entrenador'
+            if (currentClass.toLowerCase() !== filters.playerClass.toLowerCase()) return false
+          }
+          
+          if (filters?.faction) {
+            const currentFaction = (save.faction as string) || p.faction || ''
+            if (currentFaction.toLowerCase() !== filters.faction.toLowerCase()) return false
+          }
+          
+          return true
+        }).slice(0, 10)
+      } else {
+        let builder = db
+          .from('profiles')
+          .select('*')
+          .ilike('username', `%${query}%`)
+          .neq('id', authStore.user.id)
+
+        if (filters?.playerClass) {
+          builder = builder.eq('player_class', filters.playerClass)
+        }
+        if (filters?.faction) {
+          builder = builder.eq('faction', filters.faction)
+        }
+
+        const { data } = await builder.limit(10) as { data: ProfileRow[] | null }
+        profiles = data
 
         if (lastSearchQuery.value !== query) return
 
+        if (profiles && profiles.length > 0) {
+          const ids = profiles.map((p: ProfileRow) => p.id)
+          const [savesData, relsData] = await Promise.all([
+            db.from('game_saves').select('user_id,save_data').in('user_id', ids),
+            db.from('friendships')
+              .select('*')
+              .or(`requester_id.eq.${authStore.user.id},addressee_id.eq.${authStore.user.id}`)
+          ]) as [
+            { data: GameSaveRow[] | null },
+            { data: FriendshipRow[] | null }
+          ]
+
+          saveRes = { data: savesData.data }
+          relRes = { data: relsData.data }
+        }
+      }
+
+      if (lastSearchQuery.value !== query) return
+
+      if (profiles && profiles.length > 0) {
         searchResults.value = (profiles as ProfileRow[]).map((p: ProfileRow) => {
           const save = (saveRes.data?.find((s: GameSaveRow) => s.user_id === p.id)?.save_data as unknown as GameState) || {}
           const rel = relRes.data?.find((f: FriendshipRow) => 
@@ -324,6 +388,7 @@ export const useSocialStore = defineStore('social', () => {
             username: (save.trainer as string) || p.username,
             level: (save.trainerLevel as number) || p.trainer_level || 1,
             playerClass: (save.playerClass as string) || p.player_class || 'entrenador',
+            faction: (save.faction as string) || p.faction || undefined,
             nick_style: (save.nick_style as string) || p.nick_style || '',
             avatar_style: (save.avatar_style as string) || p.avatar_style || '',
             status: rel ? (rel.status as string) : 'none',
@@ -344,6 +409,14 @@ export const useSocialStore = defineStore('social', () => {
   async function sendFriendRequest(targetId: string) {
     if (!gameStore.db || !authStore.user) return
 
+    const now = Temporal.Now.instant().epochMilliseconds
+    sentRequestTimestamps.value = sentRequestTimestamps.value.filter(t => now - t < 60000)
+
+    if (sentRequestTimestamps.value.length >= 10) {
+      uiStore.notify('Límite de solicitudes de amistad alcanzado (máx. 10 por minuto)', '⚠️')
+      return
+    }
+
     const { error } = await gameStore.db.from('friendships').insert({
       requester_id: authStore.user?.id,
       addressee_id: targetId,
@@ -353,6 +426,7 @@ export const useSocialStore = defineStore('social', () => {
     if (error) {
       uiStore.notify('Error al enviar solicitud', '❌')
     } else {
+      sentRequestTimestamps.value.push(now)
       uiStore.notify('Solicitud enviada correctamente', '👥')
       audioStore.sentMsg() // Sonido al enviar solicitud
       const res = searchResults.value.find((p: SearchResult) => p.id === targetId)
@@ -380,6 +454,8 @@ export const useSocialStore = defineStore('social', () => {
 
     if (!error) {
       uiStore.notify('Amigo eliminado', '👋')
+      const chatStore = useChatStore()
+      chatStore.closeChat(targetId)
       await loadSocialData()
     }
   }

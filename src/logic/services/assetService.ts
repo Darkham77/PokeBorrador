@@ -23,7 +23,7 @@ const ITEM_MAPPING: Record<string, string> = {
   'quemadura': 'burn-heal',
   'despertar': 'awakening',
   'cura_total': 'full-heal',
-  'elixir': 'ether',
+  'elixir': 'elixir',
   'elixir_max': 'max-elixir',
   'piedra_fuego': 'fire-stone',
   'piedra_agua': 'water-stone',
@@ -82,7 +82,33 @@ const ITEM_MAPPING: Record<string, string> = {
   'restaurador_vigor': 'rare-candy',
   'lemonade': 'lemonade',
   'refresco': 'soda-pop',
-  'limonada': 'lemonade'
+  'limonada': 'lemonade',
+  'iman': 'magnet',
+  'subida_pp': 'pp-up',
+  'mt_toxico': 'tm-poison',
+  'ocaso_ball': 'dusk-ball',
+  'turno_ball': 'timer-ball',
+  'ultra_ball': 'ultra-ball',
+  'master_ball': 'master-ball',
+  'super_ball': 'great-ball',
+  'brazal_recio': 'power-bracer',
+  'baya_de_oro': 'lum-berry',
+  'baya_oro': 'lum-berry',
+  'carbon': 'charcoal',
+  'carbón': 'charcoal',
+  'agua_mistica': 'mystic-water',
+  'agua_mística': 'mystic-water',
+  'semilla_milagro': 'miracle-seed',
+  'colmillodragon': 'dragon-fang',
+  'colmillodragón': 'dragon-fang',
+  'escama_dragon': 'dragon-scale',
+  'escama_dragón': 'dragon-scale',
+  'polvo_plata': 'silver-powder',
+  'flecha_venenosa': 'poison-barb',
+  'trozo_estrella': 'star-piece',
+  'polvo_estelar': 'stardust',
+  'perla_grande': 'big-pearl',
+  'perla': 'pearl'
 };
 
 /**
@@ -236,20 +262,55 @@ export const getAssetUrl = (type: AssetType, rawId: string | number, options: As
 
     case ASSET_TYPES.ITEM: {
       const idStr = String(id).toLowerCase();
+      const normalizedInput = idStr.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[\s-]/g, '_');
+      
+      const itemAliases: Record<string, string> = {
+        'iman': 'magnet',
+        'elixir': 'elixir',
+        'subida_pp': 'pp-up',
+        'mt_toxico': 'tm-poison',
+        'ocaso_ball': 'dusk-ball',
+        'turno_ball': 'timer-ball',
+        'ultra_ball': 'ultra-ball',
+        'master_ball': 'master-ball',
+        'super_ball': 'great-ball',
+        'brazal_recio': 'power-bracer',
+        'cinto_recio': 'power-belt',
+        'pesa_recia': 'power-weight',
+        'banda_recia': 'power-band',
+        'lente_recia': 'power-lens',
+        'franja_recia': 'power-anklet',
+        'baya_de_oro': 'lum-berry',
+        'baya_oro': 'lum-berry'
+      };
+
+      const mappedAlias = itemAliases[normalizedInput] || itemAliases[idStr];
+      const searchName = mappedAlias || idStr;
+
       // 1. Check SHOP_ITEMS first by name or id
-      const shopItem = SHOP_ITEMS.find(i => i.name.toLowerCase() === idStr || i.id.toLowerCase() === idStr);
-      const mappedId = shopItem ? shopItem.sprite : (ITEM_MAPPING[idStr] || idStr.replace(/_/g, '-'));
+      const shopItem = SHOP_ITEMS.find(i => 
+        i.name.toLowerCase() === searchName || 
+        i.id.toLowerCase() === searchName ||
+        i.name.toLowerCase() === idStr ||
+        i.id.toLowerCase() === idStr
+      );
+      
+      const mappedId = shopItem 
+        ? shopItem.sprite 
+        : (mappedAlias || ITEM_MAPPING[normalizedInput] || ITEM_MAPPING[idStr] || idStr.replace(/_/g, '-'));
       
       // If it's found in SHOP_ITEMS, mapping, numeric, or a known PokeAPI slug pattern
       const isPokeAPI = shopItem !== undefined ||
+                       mappedAlias !== undefined ||
+                       (ITEM_MAPPING[normalizedInput] !== undefined) || 
                        (ITEM_MAPPING[idStr] !== undefined) || 
-                       !isNaN(Number(idStr)) || 
-                       idStr.includes('-') || 
-                       idStr.includes('ball') || 
-                       idStr.includes('stone') ||
-                       idStr.includes('repel') ||
-                       idStr.includes('fossil') ||
-                       ['potion', 'revive', 'heal', 'ether', 'elixir', 'antidote', 'share', 'leftovers', 'bell', 'band', 'sash', 'lens', 'candy', 'up', 'egg', 'nugget', 'pearl', 'dust', 'piece', 'spoon', 'tag', 'powder', 'club', 'light', 'stick', 'ticket', 'radar', 'awakening'].some(k => mappedId.includes(k));
+                       !isNaN(Number(mappedId)) || 
+                       mappedId.includes('-') || 
+                       mappedId.includes('ball') || 
+                       mappedId.includes('stone') ||
+                       mappedId.includes('repel') ||
+                       mappedId.includes('fossil') ||
+                       ['potion', 'revive', 'heal', 'ether', 'elixir', 'antidote', 'share', 'leftovers', 'bell', 'band', 'sash', 'lens', 'candy', 'up', 'egg', 'nugget', 'pearl', 'dust', 'piece', 'spoon', 'tag', 'powder', 'club', 'light', 'stick', 'ticket', 'radar', 'awakening', 'magnet'].some(k => mappedId.includes(k));
 
       if (isPokeAPI) {
         return resolveAsset(`${POKEAPI_ITEM_BASE}${mappedId}${extension}`);

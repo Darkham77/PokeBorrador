@@ -408,14 +408,31 @@ export async function saveGame(state: GameState, user: AuthUser, options: SaveOp
 
     // Sincronizar campos principales en la tabla profiles para mantener consistencia
     try {
-      await db.from('profiles').update({
-        username: save_data.trainer,
-        trainer_level: save_data.trainerLevel,
-        player_class: save_data.playerClass,
-        faction: save_data.faction,
-        avatar_style: save_data.avatar_style,
-        nick_style: save_data.nick_style
-      }).eq('id', user.id);
+      const { data: existingProf } = await db.from('profiles').select('id').eq('id', user.id).maybeSingle();
+      const finalUsername = save_data.trainer || user.user_metadata?.username || 'Entrenador';
+      
+      if (existingProf) {
+        await db.from('profiles').update({
+          username: finalUsername,
+          trainer_level: save_data.trainerLevel,
+          player_class: save_data.playerClass,
+          faction: save_data.faction,
+          avatar_style: save_data.avatar_style,
+          nick_style: save_data.nick_style
+        }).eq('id', user.id);
+      } else {
+        await db.from('profiles').insert({
+          id: user.id,
+          username: finalUsername,
+          email: user.email || `${user.id}@local`,
+          trainer_level: save_data.trainerLevel || 1,
+          player_class: save_data.playerClass || 'entrenador',
+          faction: save_data.faction || null,
+          avatar_style: save_data.avatar_style || '',
+          nick_style: save_data.nick_style || '',
+          role: 'user'
+        });
+      }
       logger.success('SAVE', 'Campos de perfil sincronizados en la base de datos.');
     } catch (e) {
       logger.warn('SAVE', `Error al sincronizar campos del perfil: ${(e as Error).message}`);

@@ -62,7 +62,7 @@ export const useTradeStore = defineStore('trade', () => {
   }
 
   async function refreshPendingTrades() {
-    if (!authStore.user || authStore.sessionMode === 'offline') return
+    if (!authStore.user) return
 
     const db = gameStore.db
     const [incomingRes, outgoingRes, acceptedRes] = await Promise.all([
@@ -99,7 +99,6 @@ export const useTradeStore = defineStore('trade', () => {
 
   async function sendTradeOffer({ isGift, offerMoney, requestMoney, message }: { isGift: boolean; offerMoney: number; requestMoney: number; message: string }) {
     if (!tradeTarget.value) return false
-    if (authStore.sessionMode === 'offline') return false
 
     const hasOffer = tradeOfferPoke.value !== null || Object.keys(tradeOfferItems).length > 0 || offerMoney > 0
     if (!hasOffer) {
@@ -145,7 +144,6 @@ export const useTradeStore = defineStore('trade', () => {
   }
 
   async function acceptTrade(tradeId: string | number) {
-    if (authStore.sessionMode === 'offline') return false
     
     try {
       loadingStore.start('accept_trade', 'Procesando intercambio...', 'Sincronizando con el servidor')

@@ -28,21 +28,33 @@ export async function loadBestSave(user: AuthUser | null, db: DBRouter): Promise
   let cloudSaveRow: { save_data: GameState; updated_at: string; last_save_id: string } | null = null;
   let finalSaveData: GameState | null = null;
 
-  // 1. Fetch Cloud Save if online
-  if (db.mode === 'online') {
-    try {
-      const { data: saves, error } = await db.from('game_saves')
-        .select('save_data, updated_at, last_save_id')
-        .eq('user_id', user.id)
-        .single();
-      
-      if (!error && saves) {
-        cloudSaveRow = saves as { save_data: GameState; updated_at: string; last_save_id: string };
-        finalSaveData = (saves as { save_data: GameState }).save_data;
+  // 1. Fetch Save from Database (Supabase in online mode, SQLite in offline mode)
+  try {
+    const { data: saves, error } = await db.from('game_saves')
+      .select('save_data, updated_at, last_save_id')
+      .eq('user_id', user.id)
+      .single();
+    
+    if (!error && saves) {
+      // Parse save_data if it is stored as a string (SQLite context)
+      let parsedSave = (saves as { save_data: unknown }).save_data;
+      if (typeof parsedSave === 'string') {
+        try {
+          parsedSave = JSON.parse(parsedSave);
+        } catch (_) {
+          // No es un JSON válido
+        }
       }
-    } catch (e) {
-      logger.error('LOAD', `Cloud fetch failed: ${(e as Error).message}`);
+      
+      cloudSaveRow = {
+        save_data: parsedSave as GameState,
+        updated_at: (saves as { updated_at: string }).updated_at,
+        last_save_id: (saves as { last_save_id: string }).last_save_id
+      };
+      finalSaveData = parsedSave as GameState;
     }
+  } catch (e) {
+    logger.error('LOAD', `Database fetch failed: ${(e as Error).message}`);
   }
 
   // 2. Fetch Local Save (Prioritize OPFS Binary over LocalStorage)
@@ -112,7 +124,23 @@ export async function loadBestSave(user: AuthUser | null, db: DBRouter): Promise
           cloudData.starterChosen = true;
         }
         
-        const cloudTime = cloudSaveRow.updated_at ? (Temporal.Instant.from(cloudSaveRow.updated_at) as unknown as { epochMilliseconds: number }).epochMilliseconds : 0;
+        let cloudTime = 0;
+        if (cloudSaveRow.updated_at) {
+          try {
+            let dateStr = cloudSaveRow.updated_at;
+            if (dateStr && !dateStr.includes('T') && dateStr.includes(' ')) {
+              dateStr = dateStr.replace(' ', 'T') + 'Z';
+            }
+            cloudTime = (Temporal.Instant.from(dateStr) as unknown as { epochMilliseconds: number }).epochMilliseconds;
+          } catch (_) {
+            try {
+              cloudTime = Date.parse(cloudSaveRow.updated_at);
+              if (isNaN(cloudTime)) cloudTime = 0;
+            } catch (__e) {
+              cloudTime = 0;
+            }
+          }
+        }
         const localTime = (localData as unknown as { _last_updated?: number })._last_updated || 0;
  
         // Legacy Rule: If local is at least 3s newer, prioritize it.

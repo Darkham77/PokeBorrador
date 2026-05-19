@@ -18,6 +18,7 @@ const _getAssetUrl = getAssetUrl
 interface InventoryItem {
   name: string
   qty: number
+  desc: string
 }
 
 const activeMode = ref<'pokemon' | 'item'>('pokemon')
@@ -39,7 +40,16 @@ const availablePokemon = computed(() => {
 const inventory = computed<InventoryItem[]>(() => {
   return Object.entries(game.state.inventory as Record<string, number>)
     .filter(([_name, qty]) => qty > 0)
-    .map(([name, qty]) => ({ name, qty }))
+    .map(([name, qty]) => {
+      const dbItem = SHOP_ITEMS.find(
+        (i) => i.name.toLowerCase() === name.toLowerCase() || i.id.toLowerCase() === name.toLowerCase()
+      )
+      return {
+        name,
+        qty,
+        desc: dbItem?.desc || 'Objeto sin descripción.'
+      }
+    })
 })
 
 function getPokemonTotalPower(p: Pokemon) {
@@ -152,24 +162,32 @@ const net = computed(() => price.value - fee.value)
               :class="{ selected: selection && 'name' in selection && selection.name === i.name }"
               @click.stop="selectItem(i)"
             >
-              <div class="item-visual">
-                <img 
-                  :src="_getAssetUrl(_ASSET_TYPES.ITEM, i.name)" 
-                  class="i-sprite pixelated"
-                  @error="(e: Event) => (e.target as HTMLImageElement).src = _getAssetUrl(_ASSET_TYPES.ITEM, 'Poción')"
-                >
-              </div>
-              <div class="item-details">
-                <span class="i-name">{{ i.name }}</span>
-                <div class="i-meta">
-                  <span class="i-qty">STOCK: {{ i.qty }}</span>
+              <PVTooltip
+                :title="i.name"
+                :description="i.desc"
+                position="top"
+                tag="div"
+                class="item-tooltip-trigger"
+              >
+                <div class="item-visual">
+                  <img 
+                    :src="_getAssetUrl(_ASSET_TYPES.ITEM, i.name)" 
+                    class="i-sprite pixelated"
+                    @error="(e: Event) => (e.target as HTMLImageElement).src = _getAssetUrl(_ASSET_TYPES.ITEM, 'Poción')"
+                  >
                 </div>
-              </div>
-              <div class="selection-indicator">
-                <div class="check-circle">
-                  <span v-if="selection && 'name' in selection && selection.name === i.name">✓</span>
+                <div class="item-details">
+                  <span class="i-name">{{ i.name }}</span>
+                  <div class="i-meta">
+                    <span class="i-qty">STOCK: {{ i.qty }}</span>
+                  </div>
                 </div>
-              </div>
+                <div class="selection-indicator">
+                  <div class="check-circle">
+                    <span v-if="selection && 'name' in selection && selection.name === i.name">✓</span>
+                  </div>
+                </div>
+              </PVTooltip>
             </div>
             <div
               v-if="inventory.length === 0"
@@ -355,14 +373,20 @@ const net = computed(() => price.value - fee.value)
     background: Rgba(255, 255, 255, 0.03);
     border: 1px solid Rgba(255, 255, 255, 0.05);
     border-radius: 16px;
-    padding: 12px 16px;
-    display: flex;
-    align-items: center;
-    gap: 15px;
+    padding: 0;
     cursor: pointer;
     transition: all 0.2s ease;
     position: relative;
     margin-bottom: 8px;
+
+    .item-tooltip-trigger {
+      display: flex !important;
+      align-items: center;
+      width: 100%;
+      gap: 15px;
+      padding: 12px 16px;
+      box-sizing: border-box;
+    }
 
     &:hover {
       background: Rgba(255, 255, 255, 0.06);

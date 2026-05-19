@@ -8,6 +8,8 @@ import { gsap } from 'gsap'
 const socialStore = useSocialStore()
 const uiStore = useUIStore()
 const searchQuery = ref('')
+const filterClass = ref('')
+const filterFaction = ref('')
 const listRef = ref<HTMLElement | null>(null)
 
 function openTrainerProfile(userId: string) {
@@ -15,8 +17,14 @@ function openTrainerProfile(userId: string) {
 }
 
 async function handleSearch() {
-  if (searchQuery.value.length < 2) return
-  await socialStore.searchPlayers(searchQuery.value)
+  if (searchQuery.value.length < 2) {
+    socialStore.searchResults = []
+    return
+  }
+  await socialStore.searchPlayers(searchQuery.value, {
+    playerClass: filterClass.value || undefined,
+    faction: filterFaction.value || undefined
+  })
 }
 
 function animateCards() {
@@ -42,6 +50,10 @@ onMounted(() => {
   animateCards()
 })
 
+watch([filterClass, filterFaction], () => {
+  handleSearch()
+})
+
 watch(() => socialStore.searchResults, () => {
   animateCards()
 }, { deep: true })
@@ -53,13 +65,57 @@ watch(() => socialStore.searchResults, () => {
       <input 
         v-model="searchQuery" 
         type="text" 
-        placeholder="Nombre del entrenador..." 
+        placeholder="Nombre del entrenador o usuario..." 
         @input="handleSearch"
       >
       <span
         v-if="socialStore.searchLoading"
         class="loader-mini"
       />
+    </div>
+
+    <div class="search-filters">
+      <div class="filter-group">
+        <label class="filter-label">FACCIÓN</label>
+        <select
+          v-model="filterFaction"
+          class="filter-select"
+        >
+          <option value="">
+            Todas
+          </option>
+          <option value="union">
+            Team Unión
+          </option>
+          <option value="poder">
+            Team Poder
+          </option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label class="filter-label">CLASE</label>
+        <select
+          v-model="filterClass"
+          class="filter-select"
+        >
+          <option value="">
+            Todas
+          </option>
+          <option value="entrenador">
+            Entrenador
+          </option>
+          <option value="rocket">
+            Rocket
+          </option>
+          <option value="cazador">
+            Cazador
+          </option>
+          <option value="profesor">
+            Profesor
+          </option>
+        </select>
+      </div>
     </div>
 
     <div
@@ -97,6 +153,12 @@ watch(() => socialStore.searchResults, () => {
           </div>
           <div class="meta">
             Nv.{{ player.level }} • {{ player.playerClass || 'Entrenador' }}
+            <span
+              v-if="player.faction"
+              :class="player.faction + '-text-small'"
+            >
+              • Team {{ player.faction === 'union' ? 'Unión' : 'Poder' }}
+            </span>
           </div>
         </div>
         
@@ -106,7 +168,7 @@ watch(() => socialStore.searchResults, () => {
             class="btn-vicio-secondary btn-vicio-sm" 
             @click.stop="socialStore.sendFriendRequest(player.id)"
           >
-            ➕ AGREGAR
+            ➕ ENVIAR
           </button>
           
           <button 
@@ -137,6 +199,63 @@ watch(() => socialStore.searchResults, () => {
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
+
+.search-filters {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  background: Rgba(0, 0, 0, 0.2);
+  border: 1px solid Rgba(199, 125, 255, 0.1);
+  border-radius: 12px;
+  padding: 10px 14px;
+}
+
+.filter-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.filter-label {
+  @include pixelated;
+  font-size: 7px;
+  color: Rgba(255, 255, 255, 0.4);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.filter-select {
+  background: Rgba(0, 0, 0, 0.3);
+  border: 1px solid Rgba(199, 125, 255, 0.15);
+  border-radius: 8px;
+  padding: 8px 12px;
+  color: var(--white);
+  font-size: 11px;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='rgba%28199, 125, 255, 0.6%29' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 28px;
+
+  &:focus, &:hover {
+    border-color: var(--purple-light);
+    box-shadow: 0 0 10px Rgba(157, 78, 221, 0.1);
+  }
+
+  option {
+    background: #161a2e;
+    color: white;
+  }
+}
+
+.union-text-small { color: #60a5fa; font-weight: bold; }
+.poder-text-small { color: #f87171; font-weight: bold; }
+
 .search-bar {
   margin-bottom: 20px;
   position: relative;
@@ -237,15 +356,31 @@ watch(() => socialStore.searchResults, () => {
 
 
 .status-badge {
-  @include pixelated;
-  font-size: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-family: 'Press Start 2P', 'Courier New', Courier, monospace, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  font-size: 8px;
   padding: 8px 12px;
   border-radius: 8px;
-  display: inline-block;
-  text-align: center;
+  @include pixelated;
+  gap: 6px;
+  line-height: 1.5;
   
-  &.pending { background: Rgba(255, 193, 7, 0.1); color: Rgba(255, 193, 7, 1); }
-  &.friend { background: Rgba(34, 197, 94, 0.1); color: Rgba(74, 222, 128, 1); }
+  &.pending {
+    background: #475569;
+    color: #facc15;
+    border: 1px solid Rgba(250, 204, 21, 0.25);
+    box-shadow: 0 3px 0 #334155;
+  }
+  
+  &.friend {
+    background: #1e293b;
+    color: #4ade80;
+    border: 1px solid Rgba(74, 222, 128, 0.25);
+    box-shadow: 0 3px 0 #0f172a;
+  }
 }
 
 .no-results {

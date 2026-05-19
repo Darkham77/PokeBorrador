@@ -6,6 +6,7 @@ import { useGameStore } from './game.ts'
 import { useUIStore } from './ui.ts'
 import { useAudioStore } from './audio.ts'
 import { logger } from '@/logic/utils/logger'
+import { useSocialStore } from './social.ts'
 
 
 import type { RealtimeChannel } from '@supabase/supabase-js'
@@ -52,6 +53,7 @@ export const useChatStore = defineStore('chat', () => {
   
   let globalChannel: RealtimeChannel | null = null
   let inboxChannel: RealtimeChannel | null = null
+  let lastMessageSentTimestamp = 0
   const outboxChannels: Record<string, RealtimeChannel> = {}
 
   // Computed proxy to private chats in game state for persistence
@@ -192,6 +194,25 @@ export const useChatStore = defineStore('chat', () => {
       .subscribe()
   }
 
+  function parseInstantEpoch(val: string | number | undefined): number {
+    if (!val) return 0
+    try {
+      if (typeof val === 'number') return val
+      let isoStr = val.trim()
+      const num = Number(isoStr)
+      if (!isNaN(num) && isoStr.length > 8) return num
+      if (isoStr.includes(' ') && !isoStr.includes('T')) {
+        isoStr = isoStr.replace(' ', 'T')
+      }
+      if (!isoStr.endsWith('Z') && !isoStr.includes('+') && !isoStr.includes('-')) {
+        isoStr += 'Z'
+      }
+      return Temporal.Instant.from(isoStr).epochMilliseconds
+    } catch {
+      return 0
+    }
+  }
+
   async function loadPrivateHistory() {
     if (!authStore.user || !gameStore.db) return
     const myId = authStore.user.id
@@ -208,6 +229,22 @@ export const useChatStore = defineStore('chat', () => {
     }
 
     if (data && Array.isArray(data)) {
+      // Registrar el lastInteraction inicial o el lastSaveTime para calcular nuevos mensajes
+      const lastSaveTime = ((gameStore.state as Record<string, unknown>)._last_updated as number) || 0
+      const initialLastInteractions: Record<string, number> = {}
+
+      data.forEach((row: Record<string, unknown>) => {
+        const senderId = (row.senderId as string) || ''
+        const typeStr = (row.type as string) || ''
+        const isIncoming = senderId !== myId
+        const friendId = isIncoming ? senderId : typeStr.replace('private:', '')
+        if (!friendId) return
+
+        if (privateChats[friendId] && initialLastInteractions[friendId] === undefined) {
+          initialLastInteractions[friendId] = privateChats[friendId].lastInteraction || 0
+        }
+      })
+
       data.forEach((row: Record<string, unknown>) => {
         const senderId = (row.senderId as string) || ''
         const senderName = (row.senderName as string) || 'Entrenador'
@@ -227,8 +264,9 @@ export const useChatStore = defineStore('chat', () => {
             messages: [],
             unreadCount: 0,
             isCollapsed: true,
-            lastInteraction: Temporal.Now.instant().epochMilliseconds
+            lastInteraction: 0
           }
+          initialLastInteractions[chatKey] = 0
         }
         const chat = privateChats[chatKey]
         if (chat) {
@@ -238,14 +276,25 @@ export const useChatStore = defineStore('chat', () => {
             text: message,
             timestamp: createdAt
           }
-          if (!chat.messages.some(m => m.timestamp === msgObj.timestamp && m.text === msgObj.text)) {
+
+          const msgEpoch = parseInstantEpoch(createdAt)
+          const isDup = chat.messages.some((m: ChatMessage) => {
+            return m.text === message && Math.abs(parseInstantEpoch(m.timestamp) - msgEpoch) < 2000
+          })
+
+          if (!isDup) {
             chat.messages.push(msgObj)
-            try {
-              chat.lastInteraction = Temporal.Instant.from(createdAt).epochMilliseconds
-            } catch {
-              chat.lastInteraction = Temporal.Now.instant().epochMilliseconds
+            if (chat.messages.length > 25) {
+              chat.messages.shift()
             }
-            if (isIncoming && chat.isCollapsed) {
+            chat.lastInteraction = msgEpoch
+
+            // Solo es un mensaje nuevo/no leído si se recibió después de la última interacción del chat,
+            // o si el chat no existía, se recibió después de la última vez que guardamos la partida.
+            const initialLast = initialLastInteractions[chatKey] || 0
+            const baselineTime = initialLast > 0 ? initialLast : lastSaveTime
+
+            if (isIncoming && chat.isCollapsed && baselineTime > 0 && msgEpoch > baselineTime) {
               chat.unreadCount++
             }
           }
@@ -352,6 +401,13 @@ export const useChatStore = defineStore('chat', () => {
   async function sendGlobalMessage(text: string) {
     if (!authStore.user || !text.trim() || !gameStore.db) return
 
+    const now = Temporal.Now.instant().epochMilliseconds
+    if (now - lastMessageSentTimestamp < 1000) {
+      uiStore.notify('Debes esperar 1 segundo entre mensajes', '⏳')
+      return
+    }
+    lastMessageSentTimestamp = now
+
     const payload = {
       user_id: authStore.user.id,
       username: gameStore.state.trainer || authStore.user.user_metadata?.username || 'Entrenador',
@@ -382,6 +438,13 @@ export const useChatStore = defineStore('chat', () => {
 
   async function sendPrivateMessage(friendId: string, text: string) {
     if (!authStore.user || !text.trim() || !privateChats[friendId] || !gameStore.db) return
+
+    const now = Temporal.Now.instant().epochMilliseconds
+    if (now - lastMessageSentTimestamp < 1000) {
+      uiStore.notify('Debes esperar 1 segundo entre mensajes', '⏳')
+      return
+    }
+    lastMessageSentTimestamp = now
 
     const payload = {
       senderId: authStore.user.id,
@@ -438,6 +501,8 @@ export const useChatStore = defineStore('chat', () => {
       chat.isCollapsed = false
     }
     activeChatId.value = friendId
+    gameStore.state.chats = { ...privateChats }
+    gameStore.scheduleSave()
     loadPrivateHistory()
   }
 
@@ -452,7 +517,12 @@ export const useChatStore = defineStore('chat', () => {
   }
 
   const totalUnreadChats = computed(() => {
-    return Object.values(privateChats).reduce((sum, chat) => sum + chat.unreadCount, 0)
+    const socialStore = useSocialStore()
+    const activeFriendIds = new Set((socialStore.friends || []).map(f => f.id))
+    return Object.entries(privateChats).reduce((sum, [friendId, chat]) => {
+      if (!activeFriendIds.has(friendId)) return sum
+      return sum + chat.unreadCount
+    }, 0)
   })
 
   return {

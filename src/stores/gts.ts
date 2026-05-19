@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import type { RealtimeChannel } from '@supabase/supabase-js'
 import { useAuthStore } from './auth.ts'
 import { useGameStore } from './game.ts'
@@ -22,6 +22,12 @@ export const useGTSStore = defineStore('gts', () => {
   const listings = ref<MarketListing[]>([])
   const myListings = ref<MarketListing[]>([])
   const salesHistory = ref<MarketListing[]>([])
+  
+  const unseenSalesCount = computed(() => {
+    if (auth.sessionMode === 'offline') return 0
+    return salesHistory.value.filter(sale => sale.status === 'sold' && !isMarketSoldSeen(sale.id, game.state)).length
+  })
+
   const loading = ref(false)
   const publishing = ref(false)
 
@@ -247,10 +253,22 @@ export const useGTSStore = defineStore('gts', () => {
     }
   }
 
+  // Auto-initialize realtime sales and fetch data on user login
+  watch(() => auth.user, (newUser) => {
+    if (newUser && auth.sessionMode !== 'offline') {
+      fetchUserData()
+      initRealtime()
+    } else {
+      stopRealtime()
+      myListings.value = []
+      salesHistory.value = []
+    }
+  }, { immediate: true })
+
   return {
     listings, myListings, salesHistory, loading, publishing, filters,
     MARKET_FEE, MAX_LISTINGS,
-    filteredListings, activeMyListings,
+    filteredListings, activeMyListings, unseenSalesCount,
     fetchListings, fetchUserData, initRealtime, stopRealtime,
     buyListing, publishListing, cancelListing
   }

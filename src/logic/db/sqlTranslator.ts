@@ -132,7 +132,7 @@ export function translatePostgresToSqlite(sql: string): string {
     .replace(/\b(BIGSERIAL|SERIAL)\b/gi, 'INTEGER')
     .replace(/::[a-z0-9]+/gi, '')
     // 2. Functions
-    .replace(/\bNOW\(\)/gi, "datetime('now')")
+    .replace(/\bNOW\(\)/gi, "strftime('%Y-%m-%dT%H:%M:%SZ', 'now')")
     .replace(/\bgen_random_uuid\(\)/gi, "hex(randomblob(16))")
     .replace(/\bEXTRACT\(epoch\s+FROM\s+([^)]+)\)/gi, "unixepoch($1)")
     .replace(/\bARRAY_AGG\b/gi, "json_group_array")
@@ -154,7 +154,7 @@ export function translatePostgresToSqlite(sql: string): string {
     .replace(/->/g, '->')
     // 4. SQL Patterns
     .replace(/FOR\s+UPDATE/gi, '')
-    .replace(/DEFAULT\s+datetime\('now'\)/gi, "DEFAULT (datetime('now'))")
+    .replace(/DEFAULT\s+strftime\('%Y-%m-%dT%H:%M:%SZ',\s*'now'\)/gi, "DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))")
     .replace(/DEFAULT\s+hex\(randomblob\(16\)\)/gi, "DEFAULT (hex(randomblob(16)))")
     .replace(/RAISE\s+EXCEPTION\s+'[^']*'/gi, 'SELECT 1')
     .replace(/\bADD\s+COLUMN\s+IF\s+NOT\s+EXISTS\b/gi, 'ADD COLUMN')

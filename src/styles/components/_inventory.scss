@@ -27,6 +27,12 @@
 
 .inventory-modal-container {
   @include shop-shell;
+
+  @media (min-width: 951px) {
+    height: auto;
+    min-height: 480px;
+    max-height: 600px;
+  }
 }
 
 .inventory-main {
@@ -43,7 +49,7 @@
 
   .item-premium-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
     grid-auto-rows: 1fr; // All rows same height
     align-items: stretch;
     gap: 16px;
@@ -51,7 +57,7 @@
     position: relative;
 
     @media (max-width: 768px) {
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
       gap: 8px;
     }
   }

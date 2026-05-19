@@ -200,6 +200,17 @@ export function registerSystemTools(debug: DebugSystem, { game, ui, modalStore, 
   })
 
   debug.register({
+    id: 'nav-social-center',
+    label: 'ABRIR CENTRO SOCIAL',
+    command: 'openSocialCenter',
+    category: 'navigation',
+    action: () => {
+      ui.open('SocialCenter')
+    },
+    description: 'Abre directamente el menú del Centro Social.'
+  })
+
+  debug.register({
     id: 'nav-hud-group',
     label: 'TOGGLE HUD GROUP',
     command: 'toggleHud',

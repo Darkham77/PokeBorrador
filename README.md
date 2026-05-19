@@ -153,11 +153,13 @@ El proyecto utiliza un motor de auditoría inteligente y validadores semánticos
 | `npm run audit:fix` | **Auto-corrección**: Aplica correcciones automáticas de estándares (Timers, Imports, SASS). |
 | `npm run audit:full` | **Pipeline Completo**: Ejecuta TODAS las validaciones (Lints, SQL, FSM, Items, Moves, Abilities). |
 | `npm run test:node` | **Native Test Runner**: Ejecuta pruebas de lógica pura usando el runner nativo de Node.js 26+. |
+| `npm run test:all` | **Batería Completa de Tests**: Ejecuta secuencialmente la suite nativa de Node.js (`test:node`) y los tests de componentes en Vitest (`test`). |
 | `npm run validate:sql` | **SQL Integrity**: Valida compatibilidad de migraciones con SQLite nativo (`node:sqlite`). |
 | `npm run validate:items` | **Item Database**: Verifica IDs, tipos e iconos en la base de datos de objetos. |
 | `npm run validate:moves` | **Move Sync**: Sincroniza semánticamente los movimientos con la PokeAPI. |
 | `npm run validate:abilities` | **Ability Sync**: Valida habilidades contra la base de datos oficial. |
 | `npm run validate:fsm` | **FSM Mastery Audit**: Verifica diagramas, implementación dinámica y paridad de flujo. |
+| `npm run migrations:generate` | **Generador de Migraciones**: Escanea las migraciones SQL locales de `database/migrations/` y las compila en el manifiesto TypeScript de producción. |
 
 ### ☁️ Gestión de Infraestructura Supabase y Servidores (Node.js 26+)
 
@@ -169,7 +171,10 @@ El proyecto cuenta con un conjunto de herramientas automatizadas para gestionar 
 | `npm run servers:db:update` | **Gestor y Migrador**: Conecta a la instancia elegida (`--server=<perfil>` o `--all`), inicializa esquemas y aplica parches incrementales. |
 | `npm run servers:db:backup` | **Generador de Respaldos**: Conecta al servidor elegido (`--server=<perfil>`), descubre tablas dinámicamente y descarga un respaldo JSON. |
 | `npm run servers:db:restore` | **Restaurador Transaccional**: Limpia en orden inverso y restaura transaccionalmente un archivo JSON hacia el servidor elegido (`--server=<perfil>`). |
+| `npm run servers:db:local-import` | **Importador SQLite Local**: Importa el respaldo JSON más reciente de Supabase hacia la base de datos local SQLite para pruebas offline. |
 | `npm run servers:db:admin` | **Mantenimiento de Usuarios**: Permite desbanear, cambiar contraseñas, emails, usernames y promover a admin desde la CLI. |
+| `npm run supabase:manage` | **Gestión de Docker/CLI**: Orquestador central de Supabase en local/Docker. Permite clonar, generar configuraciones unificadas y compilar/publicar la imagen local `pokevicio-db`. |
+| `npm run admin:rename` | **Renombrado Administrativo**: Cambia el nombre de entrenador de un usuario en Supabase directamente desde consola por ID o por el nombre actual. |
 
 #### Ejemplos de Uso de Infraestructura
 
@@ -190,7 +195,7 @@ npm run servers:db:backup -- --server=nas-franco
 npm run servers:db:restore -- --server=nas-franco
 
 # 6. Restaurar un respaldo específico pasándole la ruta exacta del archivo
-npm run servers:db:restore -- --server=nas-franco --file=database/backups/nas-franco_backup_2026-05-17T05-29-09.json
+npm run servers:db:restore -- --server=nas-franco --file=database/backups/nas-franco/nas-franco_backup_2026-05-17T05-29-09.json
 ```
 
 #### 🌐 Resolución de Problemas de Red (MikroTik & Hairpin NAT)

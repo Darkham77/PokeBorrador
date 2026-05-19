@@ -33,6 +33,19 @@ function openTrade(friend: Friend) {
   tradeStore.openTradeModal(friend.id, friend.username)
 }
 
+function confirmRemoveFriend(friend: Friend) {
+  uiStore.openConfirm({
+    title: 'ELIMINAR AMIGO',
+    message: `¿Estás seguro de que querés eliminar a ${friend.username} de tu lista de amigos?`,
+    confirmText: 'ELIMINAR',
+    cancelText: 'CANCELAR',
+    type: 'danger',
+    onConfirm: () => {
+      socialStore.removeFriend(friend.id)
+    }
+  })
+}
+
 const getUnreadCount = (friendId: string | number) => {
   return chatStore.privateChats[friendId]?.unreadCount || 0
 }
@@ -179,7 +192,7 @@ defineEmits<{
           >
             <button
               class="action-btn remove"
-              @click.stop="socialStore.removeFriend(friend.id)"
+              @click.stop="confirmRemoveFriend(friend)"
             >
               ×
             </button>

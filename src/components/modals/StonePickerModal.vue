@@ -3,7 +3,7 @@
  * StonePickerModal
  * Standardized modal for using evolution stones.
  */
-import { computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { useGameStore } from '@/stores/game';
 import { useUIStore } from '@/stores/ui';
 import { useEvolutionStore } from '@/stores/evolution';
@@ -11,6 +11,7 @@ import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { STONE_EVOLUTIONS } from '@/data/evolutionData';
 import { SHOP_ITEMS } from '@/data/items';
 import BaseModal from '@/components/common/BaseModal.vue';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 
 interface Props {
   show?: boolean
@@ -68,6 +69,18 @@ const useStone = (stoneName: string, toId: string) => {
   gameStore.save(false);
 };
 
+const imageErrors = ref<Record<string, boolean>>({});
+
+const stoneHasError = (stoneName: string) => !!imageErrors.value[stoneName];
+
+const handleImageError = (stoneName: string) => {
+  imageErrors.value[stoneName] = true;
+};
+
+watch(options, () => {
+  imageErrors.value = {};
+});
+
 const getStoneInfo = (name: string) => {
   return SHOP_ITEMS.find(i => i.name === name) || { icon: '💎', sprite: '' };
 };
@@ -101,15 +114,15 @@ const getPokemonName = (id: string) => {
         >
           <div class="stone-sprite-box">
             <img 
-              v-if="getStoneInfo(opt.stone).sprite"
-              :src="getStoneInfo(opt.stone).sprite" 
+              v-if="getStoneInfo(opt.stone).sprite && !stoneHasError(opt.stone)"
+              :src="getAssetUrl(ASSET_TYPES.ITEM, getStoneInfo(opt.stone).sprite)" 
               class="stone-sprite" 
-              @error="e => { (e.target as HTMLImageElement).style.display = 'none' }"
+              @error="handleImageError(opt.stone)"
             >
             <span
               v-else
               class="fallback-icon"
-            >{{ getStoneInfo(opt.stone).icon }}</span>
+            >🚫</span>
           </div>
 
           <div class="stone-details">

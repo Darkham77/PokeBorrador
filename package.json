@@ -23,6 +23,7 @@
     "servers:db:update": "node --permission --experimental-strip-types --allow-fs-read=. --allow-net scripts/update_supabase_db.ts",
     "servers:db:backup": "node --permission --experimental-strip-types --allow-fs-read=. --allow-fs-write=. --allow-net scripts/backup_supabase_db.ts",
     "servers:db:restore": "node --permission --experimental-strip-types --allow-fs-read=. --allow-net scripts/restore_supabase_db.ts",
+    "servers:db:local-import": "node --permission --experimental-strip-types --allow-fs-read=. --allow-fs-write=. scripts/import_backup_to_sqlite.ts",
     "servers:db:admin": "node --permission --experimental-strip-types --allow-fs-read=. --allow-net scripts/admin_supabase_users.ts",
     "supabase:manage": "node --permission --experimental-strip-types --allow-fs-read=. --allow-fs-write=. --allow-child-process supabase/setup_supabase.ts",
     "migrations:generate": "node --permission --experimental-strip-types --allow-fs-read=. --allow-fs-write=. scripts/generate_migrations.ts",

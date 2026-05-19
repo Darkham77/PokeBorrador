@@ -326,7 +326,7 @@ export async function execLocal(sql: string, params: unknown[] = []): Promise<vo
   await initSQLite();
   if (!db) return;
   db.run(sql, params);
-  persistSQLite();
+  await persistSQLite();
 }
 
 export async function insertLocal<T = Record<string, unknown>>(table: string, values: Record<string, unknown>): Promise<T | null> {
@@ -348,7 +348,7 @@ export async function insertLocal<T = Record<string, unknown>>(table: string, va
     lastId = lastRowIdResult[0]?.values[0]?.[0];
   } catch { lastId = values.id || values.user_id; }
   
-  persistSQLite();
+  await persistSQLite();
   return { id: lastId, ...values } as unknown as T;
 }
 

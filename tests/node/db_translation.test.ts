@@ -59,7 +59,7 @@ describe('Database Translation Engine (Native)', () => {
     });
 
     it('should translate NOW() and UUID generation', () => {
-      assert.ok(translatePostgresToSqlite("DEFAULT NOW()").includes("(datetime('now'))"));
+      assert.ok(translatePostgresToSqlite("DEFAULT NOW()").includes("(strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))"));
       assert.ok(translatePostgresToSqlite("gen_random_uuid()").includes("hex(randomblob(16))"));
     });
 

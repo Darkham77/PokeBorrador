@@ -197,6 +197,11 @@ export const SHOP_ITEMS = [
     desc: 'Restaura 10 PP de un movimiento.'
   },
   {
+    id: 'elixir_item', cat: 'pociones', sprite: 'elixir',
+    name: 'Elixir', icon: '🧪', price: 3000, unlockLv: 10, tier: 'rare',
+    desc: 'Restaura 10 PP de todos los movimientos.'
+  },
+  {
     id: 'elixir_max', cat: 'pociones', sprite: 'max-elixir',
     name: 'Elixir Máximo', icon: '🌟', price: 4500, unlockLv: 15, tier: 'legend',
     desc: 'Restaura todos los PP de todos los movimientos.'
@@ -274,6 +279,12 @@ export const SHOP_ITEMS = [
     name: 'Lente Zoom', icon: '🔍', price: 0, unlockLv: 8, tier: 'epic', market: false, trainerShop: true, bcPrice: 2400,
     desc: 'Equipable. Aumenta la tasa de golpe crítico del portador.',
     type: 'held', heldEffect: 'scope_lens'
+  },
+  {
+    id: 'magnet', cat: 'held', sprite: 'magnet',
+    name: 'Imán', icon: '🧲', price: 0, unlockLv: 8, tier: 'rare', market: false, trainerShop: true, bcPrice: 1500,
+    desc: 'Equipado: Potencia ataques de tipo Eléctrico (+20%).',
+    type: 'held', heldEffect: 'magnet'
   },
   // ── ESPECIALES / UTILITY ───────────────────────────────────────────────────
   {
@@ -470,7 +481,7 @@ export const SHOP_ITEMS = [
   // ── TMs (MT01-MT50) ────────────────────────────────────────────────────────
   { id: 'tm01', cat: 'especial', sprite: 'tm-fighting', name: 'MT01 Puño Certero', icon: '📀', price: 0, unlockLv: 15, tier: 'epic', market: false, trainerShop: true, bcPrice: 2500, desc: 'Enseña Puño Certero. Requiere concentración.' },
   { id: 'tm02', cat: 'especial', sprite: 'tm-dragon', name: 'MT02 Garra Dragón', icon: '📀', price: 0, unlockLv: 12, tier: 'rare', market: false, trainerShop: true, bcPrice: 2500, desc: 'Enseña Garra Dragón. Poderoso ataque de tipo Dragón.' },
-  { id: 'tm03', cat: 'especial', sprite: 'tm-water', name: 'MT03 Hidropulso', icon: '📀', price: 0, unlockLv: 10, tier: 'rare', market: false, trainerShop: false, bcPrice: 1500, desc: 'Enseña Hidropulso. Puede confundir al rival.' },
+  { id: 'tm03', cat: 'especial', sprite: 'tm-water', name: 'MT03 Pulso Agua', icon: '📀', price: 0, unlockLv: 10, tier: 'rare', market: false, trainerShop: false, bcPrice: 1500, desc: 'Enseña Pulso Agua. Puede confundir al rival.' },
   { id: 'tm04', cat: 'especial', sprite: 'tm-psychic', name: 'MT04 Paz Mental', icon: '📀', price: 0, unlockLv: 10, tier: 'rare', market: false, trainerShop: false, bcPrice: 1500, desc: 'Enseña Paz Mental. Sube At. Esp. y Def. Esp.' },
   { id: 'tm05', cat: 'especial', sprite: 'tm-normal', name: 'MT05 Rugido', icon: '📀', price: 0, unlockLv: 5, tier: 'common', market: false, trainerShop: true, bcPrice: 1000, desc: 'Enseña Rugido. Ahuyenta al rival.' },
   { id: 'tm06', cat: 'especial', sprite: 'tm-poison', name: 'MT06 Tóxico', icon: '📀', price: 0, unlockLv: 10, tier: 'rare', market: false, trainerShop: false, bcPrice: 2500, desc: 'Enseña Tóxico. Envenena gravemente al rival.' },

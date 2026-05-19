@@ -91,3 +91,17 @@ To ensure the local developer engine remains in parity with the production cloud
 - **Idempotency**: Use `IF EXISTS` to prevent errors during re-runs of seed scripts.
 - **Proxy Query Upsert/Insert Reusability**: In local SQLite WASM execution mode (`ProxyQuery`), `insert` queries can safely reuse `upsert` (`INSERT OR REPLACE`) logic to simplify offline query proxying while maintaining absolute compatibility with online PostgREST APIs.
 - **Auto-Parsing Known JSON Fields**: When emulating Supabase queries locally via SQLite WASM, stringified JSON columns (`save_data`, `team_data`, `data`, `config`, `schedule`, `asset_data`) must be automatically parsed within `executeLocal` before returning results to ensure seamless data consumption by Pinia stores.
+
+---
+
+## 📥 Dev Database Import & Local Mapping
+
+To streamline testing with production data without introducing UI inconsistencies or browser console pollution:
+
+### 1. Dev Database Import Check
+
+To prevent noisy HTTP 404 GET console errors during local development page refreshes, the client MUST query the check endpoint `/api/dev-import-db-check` first. If it returns `{ exists: true }`, only then does the engine fetch the full binary database from `/api/dev-import-db`.
+
+### 2. Local Nickname Mappings
+
+When converting online backups (Supabase JSON) to local SQLite format, user UUIDs MUST be translated to `local_<username>` (lowercase, spaces replaced by underscores) instead of email addresses. This preserves exact parity with the local/guest login username logic and ensures user saves load correctly. The original human-readable username must be preserved in the `profiles` table.

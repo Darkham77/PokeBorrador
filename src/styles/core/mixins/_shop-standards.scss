@@ -14,7 +14,7 @@
   max-height: 80dvh;
   min-height: 0;
   background: Rgba(0, 0, 0, 0.1);
-  border-radius: 0 0 24px 24px;
+  border-radius: 0;
   overflow: hidden;
   position: relative;
   box-sizing: border-box;
@@ -24,7 +24,6 @@
     height: 100%;
     flex: 1;
     max-height: none;
-    border-radius: 0;
   }
 }
 
@@ -40,14 +39,17 @@
   padding: 16px 12px;
   background: Rgba(0, 0, 0, 0.25);
   border-right: 1px solid $border-color;
-  height: 100%;
+  align-self: stretch;
+  height: auto;
   overflow-y: auto;
+  overflow-x: hidden;
   min-height: 0;
   box-sizing: border-box;
 
   @include responsive(950px) {
     width: 100%;
     height: auto;
+    align-self: auto;
     border-right: none;
     border-bottom: 1px solid $border-color;
     flex-direction: row;
@@ -394,6 +396,7 @@
   flex: 1;
   min-height: 0;
   overflow-y: auto;
+  overflow-x: hidden;
   padding: 20px;
   @include smooth-scroll;
   box-sizing: border-box;

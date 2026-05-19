@@ -7,11 +7,17 @@ import { useUIStore } from '@/stores/ui'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
 import type { ClaimItem } from '@/types/game'
+import { SHOP_ITEMS } from '@/data/items'
 
 interface PokemonAssetData {
   id: number;
   name: string;
   level: number;
+}
+
+interface ItemAssetData {
+  name: string;
+  qty: number;
 }
  
 const gameStore = useGameStore()
@@ -52,6 +58,12 @@ const receiveAll = async () => {
  
 const getAssetIcon = (asset: ClaimItem['asset_data']) => {
   if (asset.type === 'money') return getAssetUrl(ASSET_TYPES.ITEM, 'nugget')
+  if (asset.type === 'item') {
+    const itemData = asset.data as unknown as ItemAssetData
+    const dbItem = SHOP_ITEMS.find(i => i.name === itemData.name || i.id === itemData.name)
+    const slug = dbItem?.sprite || dbItem?.id || itemData.name
+    return getAssetUrl(ASSET_TYPES.ITEM, slug)
+  }
   return getAssetUrl(ASSET_TYPES.ITEM, 'pokeball')
 }
  
@@ -110,6 +122,12 @@ const getSpriteUrl = (id: string | number) => {
               class="asset-name"
             >
               ₽{{ (claim.asset_data.data as unknown as number).toLocaleString() }}
+            </div>
+            <div
+              v-else-if="claim.asset_data.type === 'item'"
+              class="asset-name"
+            >
+              {{ (claim.asset_data.data as unknown as ItemAssetData).name }} (x{{ (claim.asset_data.data as unknown as ItemAssetData).qty }})
             </div>
             <div class="source">
               Origen: {{ claim.source_type }}

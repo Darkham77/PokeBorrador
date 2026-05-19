@@ -40,7 +40,8 @@ const ITEM_MAPPING: Record<string, string> = {
   'quemadura': 'burn-heal',
   'despertar': 'awakening',
   'cura_total': 'full-heal',
-  'elixir': 'ether',
+  'elixir': 'elixir',
+  'iman': 'magnet',
   'elixir_max': 'max-elixir',
   'piedra_fuego': 'fire-stone',
   'piedra_agua': 'water-stone',
@@ -102,7 +103,18 @@ const ITEM_MAPPING: Record<string, string> = {
   'mineral_evolutivo': 'eviolite',
   'vidaesfera': 'life-orb',
   'refresco': 'soda-pop',
-  'limonada': 'lemonade'
+  'limonada': 'lemonade',
+  'carbon': 'charcoal',
+  'agua_mistica': 'mystic-water',
+  'semilla_milagro': 'miracle-seed',
+  'colmillodragon': 'dragon-fang',
+  'escama_dragon': 'dragon-scale',
+  'polvo_plata': 'silver-powder',
+  'flecha_venenosa': 'poison-barb',
+  'trozo_estrella': 'star-piece',
+  'polvo_estelar': 'stardust',
+  'perla_grande': 'big-pearl',
+  'perla': 'pearl'
 };
 
 const showdownTrainers = [

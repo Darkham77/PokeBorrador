@@ -5,6 +5,7 @@ import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 import { useSocialStore } from '@/stores/social'
 import { useModalStore } from '@/stores/modals'
+import { useGTSStore } from '@/stores/gts'
 
 interface Props {
   position?: string
@@ -18,6 +19,7 @@ const gameStore = useGameStore()
 const uiStore = useUIStore()
 const socialStore = useSocialStore()
 const modalStore = useModalStore()
+const gtsStore = useGTSStore()
 const navRef = ref<HTMLElement | null>(null)
 
 const activeTab = computed({
@@ -221,7 +223,7 @@ onUnmounted(() => {
 
     <!-- 6. MARKET (Grupo) -->
     <div 
-      class="hud-group"
+      class="hud-group relative-box"
       @mouseleave="uiStore.openHudGroup === 'MARKET' && (uiStore.openHudGroup = null)"
     >
       <button
@@ -231,6 +233,10 @@ onUnmounted(() => {
       >
         <span class="icon">🏪</span>
         <span class="nav-item-label">MARKET</span>
+        <span
+          v-if="gtsStore.unseenSalesCount + gameStore.state.claimQueue.length > 0"
+          class="badge-pill"
+        >{{ gtsStore.unseenSalesCount + gameStore.state.claimQueue.length }}</span>
       </button>
       
       <Transition
@@ -249,6 +255,10 @@ onUnmounted(() => {
             @click.stop="handleTabChange('online-market'); uiStore.openHudGroup = null"
           >
             <span class="icon">🌎</span><span class="nav-item-label">GLOBAL</span>
+            <span
+              v-if="gtsStore.unseenSalesCount + gameStore.state.claimQueue.length > 0"
+              class="badge-pill"
+            >{{ gtsStore.unseenSalesCount + gameStore.state.claimQueue.length }}</span>
           </button>
           <button
             class="hud-nav-btn"
@@ -310,9 +320,9 @@ onUnmounted(() => {
           >
             <span class="icon">🤝</span><span class="nav-item-label">AMIGOS</span>
             <span
-              v-if="socialStore.notifications.chats > 0"
+              v-if="(socialStore.notifications.chats + socialStore.notifications.friends) > 0"
               class="badge-pill"
-            >{{ socialStore.notifications.chats }}</span>
+            >{{ socialStore.notifications.chats + socialStore.notifications.friends }}</span>
           </button>
           <button
             class="hud-nav-btn"
@@ -320,6 +330,10 @@ onUnmounted(() => {
             @click.stop="handleTabChange('arena'); uiStore.openHudGroup = null"
           >
             <span class="icon">🏟️</span><span class="nav-item-label">ARENA</span>
+            <span
+              v-if="socialStore.notifications.battles > 0"
+              class="badge-pill"
+            >{{ socialStore.notifications.battles }}</span>
           </button>
           <button
             class="hud-nav-btn"

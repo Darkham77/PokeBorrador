@@ -386,6 +386,7 @@ const handleServerChange = () => {
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/tools" as *;
 @use "@/styles/views/login";
 
 #auth-screen {
@@ -396,21 +397,7 @@ const handleServerChange = () => {
   margin-bottom: 10px;
   
   .pwa-install-btn {
-    @include pixelated;
-    background: var(--yellow);
-    color: black;
-    border: none;
-    padding: 8px 16px;
-    font-size: 10px;
-    cursor: pointer;
-    border-radius: 4px;
-    box-shadow: 0 3px 0 #b39200;
-    transition: all 0.2s;
-    
-    &:hover {
-      transform: Translatey(-2px);
-      box-shadow: 0 5px 0 #b39200;
-    }
+    @include btn-vicio('primary', 'sm', false);
   }
 }
 

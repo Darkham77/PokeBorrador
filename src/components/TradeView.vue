@@ -1,19 +1,20 @@
 <script setup lang="ts">
 
-import { ref, reactive, computed } from 'vue'
+import { ref, computed, watch, nextTick } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useTradeStore } from '@/stores/trade'
-import TradePokemonSelector from './social/TradePokemonSelector.vue'
+import { useUIStore } from '@/stores/ui'
 import BaseModal from '@/components/common/BaseModal.vue'
 import TradeSidePanel from './social/TradeSidePanel.vue'
 import TradeFooter from './social/TradeFooter.vue'
 import type { Pokemon } from '@/types/pokemon'
+import { gsap } from 'gsap'
 
 interface Props {
   show?: boolean
 }
 
-withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<Props>(), {
   show: false
 })
 
@@ -23,6 +24,7 @@ const emit = defineEmits<{
 
 const gameStore = useGameStore()
 const tradeStore = useTradeStore()
+const uiStore = useUIStore()
 
 const gs = computed(() => gameStore.state)
 const target = computed(() => tradeStore.tradeTarget)
@@ -43,39 +45,39 @@ const offerMoney = ref(0)
 const requestMoney = ref(0)
 const message = ref('')
 
-type TradePoke = Pokemon & { _source: 'team' | 'box' }
-
-const selectorState = reactive({
-  show: false,
-  side: 'offer', // 'offer' or 'request'
-  title: '',
-  list: [] as TradePoke[]
-})
-
 const openSelector = (side: string) => {
-  selectorState.side = side
-  selectorState.show = true
-  
   if (side === 'offer') {
-    selectorState.title = 'SELECCIONA TU POKÉMON'
-    const team = gs.value.team.map((p) => ({ ...p, _source: 'team' as const }))
-    const box = (gs.value.box as (Pokemon | null)[]).filter((p): p is Pokemon => p !== null).map((p) => ({ ...p, _source: 'box' as const }))
-    selectorState.list = [...team, ...box]
+    const team = (gs.value.team || []).filter((p): p is Pokemon => p !== null)
+    const box = (gs.value.box as (Pokemon | null)[] || []).filter((p): p is Pokemon => p !== null)
+    const allMyPokemon = [...team, ...box]
+    
+    uiStore.open('PokemonSelection', {
+      title: 'SELECCIONA TU POKÉMON',
+      subtitle: 'Elige un Pokémon de tu equipo o caja para ofrecer.',
+      excludeUids: Array.from(tradeStore.lockedUids || []),
+      customList: allMyPokemon,
+      callbackConfirm: (selected: Pokemon[]) => {
+        if (selected && selected.length > 0) {
+          tradeStore.tradeOfferPoke = selected[0] || null
+        }
+      }
+    })
   } else {
-    selectorState.title = `POKÉMON DE ${target.value?.username}`
-    const team = (friendSave.value.team || []).map((p) => ({ ...p, _source: 'team' as const }))
-    const box = (friendSave.value.box || []).filter((p): p is Pokemon => p !== null).map((p) => ({ ...p, _source: 'box' as const }))
-    selectorState.list = [...team, ...box]
+    const team = (friendSave.value.team || []).filter((p): p is Pokemon => p !== null)
+    const box = (friendSave.value.box || []).filter((p): p is Pokemon => p !== null)
+    const allFriendPokemon = [...team, ...box]
+    
+    uiStore.open('PokemonSelection', {
+      title: `POKÉMON DE ${target.value?.username || 'ENTRENADOR'}`,
+      subtitle: `Elige un Pokémon de ${target.value?.username || 'su'} equipo o caja para pedir.`,
+      customList: allFriendPokemon,
+      callbackConfirm: (selected: Pokemon[]) => {
+        if (selected && selected.length > 0) {
+          tradeStore.tradeRequestPoke = selected[0] || null
+        }
+      }
+    })
   }
-}
-
-const handleSelectorSelect = (poke: TradePoke) => {
-  if (selectorState.side === 'offer') {
-    tradeStore.tradeOfferPoke = poke
-  } else {
-    tradeStore.tradeRequestPoke = poke
-  }
-  selectorState.show = false
 }
 
 const closeTrade = () => {
@@ -91,11 +93,27 @@ const toggleOfferItem = (itemName: string) => {
   }
 }
 
+const updateOfferItemQty = (itemName: string, qty: number) => {
+  if (qty <= 0) {
+    delete tradeStore.tradeOfferItems[itemName]
+  } else {
+    tradeStore.tradeOfferItems[itemName] = qty
+  }
+}
+
 const toggleRequestItem = (itemName: string) => {
   if (tradeStore.tradeRequestItems[itemName]) {
     delete tradeStore.tradeRequestItems[itemName]
   } else {
     tradeStore.tradeRequestItems[itemName] = 1
+  }
+}
+
+const updateRequestItemQty = (itemName: string, qty: number) => {
+  if (qty <= 0) {
+    delete tradeStore.tradeRequestItems[itemName]
+  } else {
+    tradeStore.tradeRequestItems[itemName] = qty
   }
 }
 
@@ -115,6 +133,35 @@ const handleSend = async () => {
   }
   isSending.value = false
 }
+
+// Entry animation using GSAP
+const animateEntry = () => {
+  if (document.querySelector('.trade-summary-bar')) {
+    gsap.fromTo('.trade-summary-bar', 
+      { y: -30, opacity: 0 }, 
+      { y: 0, opacity: 1, duration: 0.5, ease: 'back.out(1.2)' }
+    )
+  }
+  if (document.querySelector('.trade-grid .offer-side')) {
+    gsap.fromTo('.trade-grid .offer-side', 
+      { x: -50, opacity: 0 }, 
+      { x: 0, opacity: 1, duration: 0.6, ease: 'power2.out', delay: 0.1 }
+    )
+  }
+  if (document.querySelector('.trade-grid .request-side')) {
+    gsap.fromTo('.trade-grid .request-side', 
+      { x: 50, opacity: 0 }, 
+      { x: 0, opacity: 1, duration: 0.6, ease: 'power2.out', delay: 0.1 }
+    )
+  }
+}
+
+watch(() => props.show, async (newVal) => {
+  if (newVal) {
+    await nextTick()
+    animateEntry()
+  }
+}, { immediate: true })
 
 // Summary helpers
 const offerSummary = computed(() => {
@@ -165,6 +212,7 @@ const requestSummary = computed(() => {
       <div class="trade-grid">
         <!-- Left: My Side -->
         <TradeSidePanel
+          class="offer-side"
           title="Mi Equipo / Mochila"
           :pokemon="tradeStore.tradeOfferPoke"
           :inventory="gs.inventory"
@@ -173,11 +221,13 @@ const requestSummary = computed(() => {
           :max-money="gs.money"
           @open-selector="openSelector('offer')"
           @toggle-item="toggleOfferItem"
+          @update-item-qty="updateOfferItemQty"
           @update:money="val => offerMoney = val"
         />
 
         <!-- Right: Friend's Side -->
         <TradeSidePanel
+          class="request-side"
           :title="`Equipo de ${target?.username}`"
           :pokemon="tradeStore.tradeRequestPoke"
           :inventory="friendSave.inventory"
@@ -188,6 +238,7 @@ const requestSummary = computed(() => {
           :is-friend-side="true"
           @open-selector="openSelector('request')"
           @toggle-item="toggleRequestItem"
+          @update-item-qty="updateRequestItemQty"
           @update:money="val => requestMoney = val"
         />
       </div>
@@ -201,17 +252,6 @@ const requestSummary = computed(() => {
         @send="handleSend"
       />
     </template>
-
-    <!-- Enhanced Pokémon Selector (Nested Modal) -->
-    <TradePokemonSelector 
-      :show="selectorState.show"
-      :side="selectorState.side"
-      :title="selectorState.title"
-      :pokemon-list="selectorState.list"
-      :locked-uids="tradeStore.lockedUids"
-      @close="selectorState.show = false"
-      @select="handleSelectorSelect"
-    />
   </BaseModal>
 </template>
 
@@ -246,6 +286,8 @@ const requestSummary = computed(() => {
       font-size: 8px; 
       color: $white; 
       font-weight: 700;
+      line-height: 1.5;
+      @include pixelated;
     }
   }
 
@@ -254,11 +296,16 @@ const requestSummary = computed(() => {
 
 .trade-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 24px;
 
   @media (max-width: 768px) {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .offer-side,
+  .request-side {
+    min-width: 0;
   }
 }
 </style>

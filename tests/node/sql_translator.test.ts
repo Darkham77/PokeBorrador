@@ -13,7 +13,7 @@ describe('SQL Translator Logic (Native Node.js 26+ Test)', () => {
     const input = 'created_at TIMESTAMPTZ DEFAULT NOW()';
     const output = translatePostgresToSqlite(input);
     assert.ok(output.includes('TEXT DEFAULT'));
-    assert.ok(output.includes("datetime('now')"));
+    assert.ok(output.includes("strftime('%Y-%m-%dT%H:%M:%SZ', 'now')"));
   });
 
   test('should skip PostgreSQL-only DROP FUNCTION statements', () => {

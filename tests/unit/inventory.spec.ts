@@ -123,4 +123,36 @@ describe('Inventory Store', () => {
     expect(gameStore.state.inventory['Pokéball']).toBe(40)
     expect(gameStore.state.money).toBe(initialMoney + 1000)
   })
+
+  it('correctly maps inventory keys using normalizations and aliases', () => {
+    const store = useInventoryStore()
+    const gameStore = useGameStore()
+
+    // Setup mismatched keys
+    gameStore.state.inventory = {
+      'Subida PP': 2,
+      'MT Tóxico': 1,
+      'Imán': 3,
+      'Elixir': 5
+    }
+
+    // Try adding "Subida de PP" (which is official name for Subida PP)
+    store.addItem('Subida de PP', 1)
+    expect(gameStore.state.inventory['Subida PP']).toBe(3)
+
+    // Try removing "MT06 Tóxico" (which is official name for MT Tóxico)
+    store.removeItem('MT06 Tóxico', 1)
+    expect(gameStore.state.inventory['MT Tóxico']).toBeUndefined()
+
+    // Try selling "Imán" using alias "iman"
+    store.sellItem('iman', 1)
+    expect(gameStore.state.inventory['Imán']).toBe(2)
+
+    // Check bagItems calculated properties are mapped to official SHOP_ITEMS definitions
+    const bagItems = store.bagItems
+    const magnetItem = bagItems.find(i => i.name === 'Imán')
+    expect(magnetItem).toBeDefined()
+    expect(magnetItem?.id).toBe('magnet')
+    expect(magnetItem?.qty).toBe(2)
+  })
 })

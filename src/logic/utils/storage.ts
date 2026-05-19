@@ -42,6 +42,7 @@ export const safeStorage = {
     try {
       if (typeof localStorage === 'undefined') return
       localStorage.removeItem(key)
+      localStorage.removeItem(key + '_backup')
     } catch (e: unknown) {
       logger.warn('Storage', `Failed to remove item "${key}": ${e instanceof Error ? e.message : String(e)}`)
     }

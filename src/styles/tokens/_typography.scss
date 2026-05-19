@@ -1,7 +1,7 @@
 // src/styles/tokens/_typography.scss
 @use 'sass:map';
 
-$font-pixel:   'Press Start 2P', monospace;
+$font-pixel:   'Press Start 2P', 'Courier New', Courier, monospace, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 $font-ui:      'Nunito', sans-serif;
 $font-future:  'Orbitron', sans-serif;
 $font-classic: 'Cinzel', serif;

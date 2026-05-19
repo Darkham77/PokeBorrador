@@ -61,6 +61,7 @@ export const itemEffects: Record<string, (p: unknown) => ItemEffectResult> = {
 
   // --- PP & Stats ---
   'Éter': pokeEffect((p) => restorePP(p, 10)),
+  'Elixir': pokeEffect((p) => restorePP(p, 10)),
   'Elixir Máximo': pokeEffect((p) => restorePP(p, 999)),
   
   // --- Buffs / Special ---

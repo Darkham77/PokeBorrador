@@ -66,6 +66,63 @@ export async function initSQLite(options: { sqliteKey?: string, inMemory?: boole
     if (options.inMemory !== undefined) _isInMemory = options.inMemory
 
     const SQL = await window.initSqlJs({ locateFile: (file: string) => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.12.0/${file}` })
+    
+    // Check if we are in development mode and if there is a pending import
+    if (import.meta.env.DEV) {
+      try {
+        const checkRes = await fetch('/api/dev-import-db-check', { cache: 'no-store' })
+        if (checkRes.ok) {
+          const { exists } = await checkRes.json() as { exists: boolean }
+          if (exists) {
+            const response = await fetch('/api/dev-import-db', { cache: 'no-store' })
+            if (response.ok) {
+              logger.info('SQLite', 'Pending import found! Downloading dev_imported.db...')
+              
+              // Show importing overlay to the user
+              try {
+                const loadingStore = useLoadingStore()
+                loadingStore.start('db_import', 'Importando Base de Datos...', 'Instalando copia de seguridad, por favor espera', true)
+              } catch (_) {
+                // Safe fallback if store/pinia not ready
+              }
+
+              const arrayBuffer = await response.arrayBuffer()
+              const binary = new Uint8Array(arrayBuffer)
+              
+              // Save directly to IDB (both primary and backup)
+              await setToIDB(_sqliteKey, binary)
+              await setToIDB(_sqliteKey + '_backup', binary)
+              logger.success('SQLite', 'Dev DB successfully imported and persisted to IndexedDB!')
+              
+              // Trigger file cleanup on the dev server
+              try {
+                await fetch('/api/dev-import-db-cleanup', { method: 'POST' })
+              } catch (e) {
+                logger.warn('SQLite', 'Failed to cleanup import db file:', e)
+              }
+
+              // Set import reload flag to preserve session during reload
+              try {
+                sessionStorage.setItem('pokevicio_import_reload', 'true')
+                sessionStorage.setItem('pokevicio_import_original_path', window.location.pathname)
+              } catch (_) {
+                // Ignore if sessionStorage is not available
+              }
+
+              // Small delay so user sees the message
+              await new Promise(resolve => setTimeout(resolve, 1500))
+              
+              // Force page reload to initialize the game state with the new database
+              window.location.reload()
+              return null
+            }
+          }
+        }
+      } catch (err) {
+        logger.debug('SQLite', `No pending dev import DB found: ${(err as Error).message}`)
+      }
+    }
+
     let savedBinary = await getFromIDB(_sqliteKey)
 
     if (!savedBinary) {
@@ -236,7 +293,7 @@ async function ensureSchemaIntegrity(): Promise<void> {
 async function runMigrations(): Promise<void> {
   if (!_sqliteDb) return
   _sqliteDb.run("PRAGMA foreign_keys = OFF") // Disable FKs during structural changes
-  _sqliteDb.run("CREATE TABLE IF NOT EXISTS _migrations (id TEXT PRIMARY KEY, applied_at TEXT DEFAULT (datetime('now')))")
+  _sqliteDb.run("CREATE TABLE IF NOT EXISTS _migrations (id TEXT PRIMARY KEY, applied_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')))")
   const appliedRes = _sqliteDb.exec("SELECT id FROM _migrations")
   const applied = appliedRes[0]?.values.map((v: unknown[]) => v[0] as string) || []
 
@@ -282,7 +339,7 @@ async function runMigrations(): Promise<void> {
     const latestId = DATABASE_MIGRATIONS[DATABASE_MIGRATIONS.length - 1]!.id
     const version = parseInt(latestId.split('_')[0] || '0')
     logger.info('SQLite', `Updating system_config.db_version to ${version}`)
-    _sqliteDb.run("INSERT OR REPLACE INTO system_config (key, value, updated_at) VALUES ('db_version', ?, datetime('now'))", [version])
+    _sqliteDb.run("INSERT OR REPLACE INTO system_config (key, value, updated_at) VALUES ('db_version', ?, strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))", [version])
   }
 
   _sqliteDb.run("PRAGMA foreign_keys = ON")
