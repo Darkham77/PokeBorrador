@@ -20,6 +20,13 @@ enableCompileCache();
 const SOURCE_DIR = path.resolve(process.cwd(), '_raw-assets');
 const PUBLIC_ASSETS_DIR = path.resolve(process.cwd(), 'public', 'assets');
 
+interface BushCatalog {
+  grass: string[];
+  box: string[];
+  rock: string[];
+}
+const bushCatalog: BushCatalog = { grass: [], box: [], rock: [] };
+
 async function getFilesToConvert(dir: string): Promise<string[]> {
   const files: string[] = [];
   const pattern = '**/*.{png,jpg,jpeg,webp}';
@@ -62,6 +69,18 @@ async function processFile(filePath: string) {
     await image.webp(webpOptions).toFile(destFile);
     console.log(styleText('green', `   [OK] ${path.relative(process.cwd(), destFile)} (${isLossless ? 'Lossless' : 'Lossy'})`));
 
+    // Detección y catalogación automatizada para la biblioteca de ex-arbustos
+    if (destDir.includes('environment')) {
+      const name = path.parse(destPath).name;
+      const match = name.match(/^(grass|box|rock)-(\d+)$/);
+      if (match) {
+        const family = match[1] as keyof BushCatalog;
+        if (!bushCatalog[family].includes(name)) {
+          bushCatalog[family].push(name);
+        }
+      }
+    }
+
   } catch (err: unknown) {
     console.error(styleText('red', `   [ERROR] No se pudo procesar ${filePath}: ${(err as Error).message}`));
   }
@@ -89,7 +108,34 @@ async function main() {
     await processFile(file);
   }
 
+  // Ordenar y autogenerar el catálogo de ex-arbustos en TypeScript
+  console.log(styleText('yellow', `\n   📦 Generando catálogo de coberturas ambientales en src/logic/environment/bushCatalog.ts...`));
+  for (const family of ['grass', 'box', 'rock'] as const) {
+    bushCatalog[family].sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+  }
+
+  const catalogDir = path.resolve(process.cwd(), 'src', 'logic', 'environment');
+  await fs.mkdir(catalogDir, { recursive: true });
+  const catalogPath = path.join(catalogDir, 'bushCatalog.ts');
+
+  const catalogContent = `/**
+ * src/logic/environment/bushCatalog.ts
+ * 
+ * ARCHIVO AUTOGENERADO POR scripts/convert_assets.ts - NO EDITAR MANUALMENTE
+ * 
+ * Contiene el inventario descubierto de assets ambientales para coberturas de combate.
+ */
+
+export const BUSH_FAMILIES = ${JSON.stringify(bushCatalog, null, 2)} as const;
+
+export type BushFamily = keyof typeof BUSH_FAMILIES;
+`;
+
+  await fs.writeFile(catalogPath, catalogContent, 'utf-8');
+  console.log(styleText('green', `   [OK] Catálogo generado con éxito: ${bushCatalog.grass.length} pastos, ${bushCatalog.box.length} interiores, ${bushCatalog.rock.length} rocas.`));
+
   console.log(styleText('bold', '\n✨ Proceso de assets finalizado.\n'));
 }
 
 main();
+

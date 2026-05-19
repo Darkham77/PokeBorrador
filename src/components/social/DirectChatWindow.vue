@@ -117,7 +117,10 @@ onMounted(() => {
             class="clickable-avatar"
             @click.stop="openTrainerProfile(msg.senderId)"
           />
-          <div class="message-content" :class="{ 'is-me': msg.senderId === authStore.user?.id }">
+          <div
+            class="message-content"
+            :class="{ 'is-me': msg.senderId === authStore.user?.id }"
+          >
             <div class="message-meta">
               <span
                 class="username clickable-username"

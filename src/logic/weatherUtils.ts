@@ -10,31 +10,12 @@ export const WEATHER_BUFF_MULTIPLIER = 1.5;
 export const WEATHER_DEBUFF_MULTIPLIER = 0.4;
 export const WEATHER_BLOCK_MULTIPLIER = 0;
 
-/**
- * Simple 32-bit hash function (DJB2) for string to number.
- */
-function hashString(str: string): number {
-  let hash = 5381;
-  for (let i = 0; i < str.length; i++) {
-    hash = ((hash << 5) + hash) + str.charCodeAt(i);
-  }
-  return hash >>> 0;
-}
+import { mulberry32, hashString } from './utils/math.ts';
+export { mulberry32, hashString };
 
-/**
- * Mulberry32 PRNG
- * Fast, high quality PRNG for JavaScript
- * @param {number} a - The seed
- * @returns {function} A function that returns a float between 0 (inclusive) and 1 (exclusive)
- */
-export function mulberry32(a: number): () => number {
-  return function() {
-    let t = a += 0x6D2B79F5;
-    t = Math.imul(t ^ t >>> 15, t | 1);
-    t ^= t + Math.imul(t ^ t >>> 7, t | 61);
-    return ((t ^ t >>> 14) >>> 0) / 4294967296;
-  }
-}
+
+
+
 
 /**
  * Deterministically calculates the weather for a given route, season, and epoch hour.

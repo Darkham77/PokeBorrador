@@ -2,8 +2,7 @@
 import { computed, ref, onUnmounted } from 'vue'
 import { gsap } from 'gsap'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-
-import { FIRE_RED_MAPS } from '@/data/maps'
+import { getActiveBushesForMap, type ResolvedBushConfig } from '@/logic/environment/bushLibrary'
 
 interface Props {
   locationId?: string
@@ -22,38 +21,14 @@ const props = withDefaults(defineProps<Props>(), {
   forceBehind: false
 })
 
-interface MapTerrainData {
-  isMountain?: boolean
-  isCave?: boolean
-  isArctic?: boolean
-  isVolcanic?: boolean
-  isUrban?: boolean
-}
-
-const isRock = computed(() => {
-  const map = FIRE_RED_MAPS.find(m => m.id === props.locationId) as MapTerrainData | undefined
-  if (!map) return false
-  return !!(map.isMountain || map.isCave || map.isArctic || map.isVolcanic || map.isUrban)
-})
-
-const grassUrl = computed(() => {
-  if (isRock.value) {
-    return getAssetUrl(ASSET_TYPES.ENVIRONMENT, 'rock')
-  }
-  // Intentar cargar pasto específico de la ruta, si no, usar el genérico tall-grass
-  const id = props.locationId ? `${props.locationId}_tallgrass` : 'tall-grass'
-  return getAssetUrl(ASSET_TYPES.ENVIRONMENT, id)
-})
-
-const handleImageError = (e: Event) => {
+const handleImageError = (e: Event, family: string) => {
   const target = e.target as HTMLImageElement
-  // Si falla el específico, forzar el genérico (según si es roca o pasto)
-  if (isRock.value) {
+  if (family === 'rock') {
     target.src = getAssetUrl(ASSET_TYPES.ENVIRONMENT, 'rock')
-  } else if (target.src.includes('_tallgrass')) {
-    target.src = getAssetUrl(ASSET_TYPES.ENVIRONMENT, 'tall-grass')
+  } else if (family === 'box') {
+    target.src = getAssetUrl(ASSET_TYPES.ENVIRONMENT, 'box-1')
   } else {
-    target.style.display = 'none' 
+    target.src = getAssetUrl(ASSET_TYPES.ENVIRONMENT, 'tall-grass')
   }
 }
 
@@ -65,10 +40,9 @@ interface BushConfig {
   ty: number
   ad: string
   ay: string
-  randomScale?: number // Cache random scale
 }
 
-// Configuraciones de los arbustos para mantener consistencia visual absoluta
+// Configuraciones base de las posiciones para mantener consistencia visual absoluta
 const bushes: Record<'front' | 'back', BushConfig[]> = {
   front: [
     { id: 1, cls: 'bush-front-1', scale: 1.3, tx: -60, ty: 10, ad: '1.2s', ay: '0s' },
@@ -87,23 +61,8 @@ const bushes: Record<'front' | 'back', BushConfig[]> = {
 // Semilla aleatoria real para que cada encuentro sea único (según requerimiento del usuario)
 const sessionSeed = Math.floor(Math.random() * 1000000)
 
-const activeBushes = computed(() => {
-  const baseBushes = bushes[props.layer]
-  
-  return baseBushes.map(b => {
-    // Combinar semilla de la sesión con ID del arbusto para varianza extrema
-    const bushSeed = (sessionSeed ^ (b.id * 1313)) 
-    const scaleFactor = 0.7 + (Math.abs(bushSeed % 70) / 100) + (b.id * 0.1) 
-    const flip = (bushSeed % 2 === 0) ? -1 : 1
-    const offsetX = (bushSeed % 20) - 10 
-    
-    return { 
-      ...b, 
-      randomScale: scaleFactor,
-      flip,
-      offsetX
-    }
-  })
+const activeBushes = computed<ResolvedBushConfig[]>(() => {
+  return getActiveBushesForMap(props.locationId, props.layer, sessionSeed, bushes[props.layer])
 })
 
 const bushRefs = ref<HTMLElement[]>([])
@@ -143,7 +102,6 @@ const onLeave = (el: Element, done: () => void) => {
 
 const startWiggles = () => {
   stopWiggles()
-  if (isRock.value) return // Las rocas son estáticas
 
   bushRefs.value.forEach((el, i) => {
     if (!el) return
@@ -151,7 +109,7 @@ const startWiggles = () => {
     if (!img) return
     
     const config = activeBushes.value[i]
-    if (!config) return
+    if (!config || config.family !== 'grass') return // Solo se mueven los pastos
 
     const duration = parseFloat(config.ad)
     const delay = parseFloat(config.ay)
@@ -197,16 +155,16 @@ onUnmounted(() => {
           :key="b.id"
           ref="bushRefs"
           class="bush-wrapper"
-          :class="b.cls"
+          :class="[b.cls, b.tintClass]"
           :style="{
             transform: `Translate(calc((${b.tx} + ${b.offsetX}) * var(--obj-scale) * 1px), calc(${b.ty} * var(--obj-scale) * 1px)) Scale(${b.randomScale * b.flip}, ${b.randomScale})`
           }"
         >
           <img 
-            :src="grassUrl" 
+            :src="getAssetUrl(ASSET_TYPES.ENVIRONMENT, b.assetId)" 
             class="pixel-bush" 
-            alt="Grass"
-            @error="handleImageError"
+            alt="Environment Cover"
+            @error="(e) => handleImageError(e, b.family)"
           >
         </div>
       </div>
@@ -250,6 +208,11 @@ onUnmounted(() => {
   height: calc(var(--bush-size, 60px) * 1px);
   @include pixelated;
   will-change: transform;
+
+  // Tintes ambientales mediante filtros combinados
+  &.tint-desert .pixel-bush { filter: Sepia(0.5) Saturate(0.7) Hue-rotate(10deg) Brightness(0.95); }
+  &.tint-swamp .pixel-bush  { filter: Brightness(0.75) Saturate(1.2) Hue-rotate(20deg); }
+  &.tint-arctic .pixel-bush { filter: Saturate(0.1) Brightness(1.4) Contrast(1.1); }
 }
 
 .pixel-bush { 
@@ -261,4 +224,3 @@ onUnmounted(() => {
   will-change: transform;
 }
 </style>
-

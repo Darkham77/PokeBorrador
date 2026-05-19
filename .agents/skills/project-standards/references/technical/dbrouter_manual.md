@@ -89,3 +89,5 @@ To ensure the local developer engine remains in parity with the production cloud
 
 - **Forbidden Syntax**: NEVER use the `CASCADE` keyword in `DROP TABLE` or `DROP VIEW` statements, as SQLite does not support it and will fail during migration validation (`npm run validate:sql`).
 - **Idempotency**: Use `IF EXISTS` to prevent errors during re-runs of seed scripts.
+- **Proxy Query Upsert/Insert Reusability**: In local SQLite WASM execution mode (`ProxyQuery`), `insert` queries can safely reuse `upsert` (`INSERT OR REPLACE`) logic to simplify offline query proxying while maintaining absolute compatibility with online PostgREST APIs.
+- **Auto-Parsing Known JSON Fields**: When emulating Supabase queries locally via SQLite WASM, stringified JSON columns (`save_data`, `team_data`, `data`, `config`, `schedule`, `asset_data`) must be automatically parsed within `executeLocal` before returning results to ensure seamless data consumption by Pinia stores.

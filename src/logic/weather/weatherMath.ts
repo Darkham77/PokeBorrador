@@ -30,34 +30,16 @@ export function getDayCyclePure(nowMs: number): DayPhase {
   return 'night';
 }
 
-// ── PRNG ─────────────────────────────────────────────────────────────────────
+// ── Herramientas Matemáticas Globales ────────────────────────────────────────
 
-/**
- * Mulberry32 PRNG — fast, high quality, seed-deterministic.
- * @param a - The seed
- * @returns A function that returns a float [0, 1)
- */
-export function mulberry32(a: number): () => number {
-  return function () {
-    let t = (a += 0x6d2b79f5);
-    t = Math.imul(t ^ (t >>> 15), t | 1);
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
+import { mulberry32, hashString } from '../utils/math.ts';
+export { mulberry32, hashString };
 
-// ── String Hash ───────────────────────────────────────────────────────────────
 
-/** DJB2 hash: string → unsigned 32-bit number */
-export function hashString(str: string): number {
-  let hash = 5381;
-  for (let i = 0; i < str.length; i++) {
-    hash = ((hash << 5) + hash) + str.charCodeAt(i);
-  }
-  return hash >>> 0;
-}
+
 
 // ── Route Weather ─────────────────────────────────────────────────────────────
+
 
 /**
  * A nested weather table: seasonId → DayPhase → weatherType → probability (%)
