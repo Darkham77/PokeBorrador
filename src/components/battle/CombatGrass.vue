@@ -212,7 +212,9 @@ onUnmounted(() => {
   // Tintes ambientales mediante filtros combinados
   &.tint-desert .pixel-bush { filter: Sepia(0.5) Saturate(0.7) Hue-rotate(10deg) Brightness(0.95); }
   &.tint-swamp .pixel-bush  { filter: Brightness(0.75) Saturate(1.2) Hue-rotate(20deg); }
-  &.tint-arctic .pixel-bush { filter: Saturate(0.1) Brightness(1.4) Contrast(1.1); }
+  &.tint-arctic .pixel-bush { filter: Saturate(0) Brightness(1.8) Contrast(1.15); }
+
+
 }
 
 .pixel-bush { 

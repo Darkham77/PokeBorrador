@@ -49,30 +49,34 @@ Advanced weather types (Thunderstorm, Heatwave, blizzard, etc.) do NOT have auto
 - **Mandatory Definition**: Every route with an advanced weather probability MUST have an explicit entry in `FIRE_RED_MAPS` weather configuration, or no visitors/exclusives will spawn during that event.
 - **Legendary Patterns**: Extreme weather (L4) should be used as a trigger for legendary or pseudo-legendary "Exclusives" (1-5% chance) to reward exploration under dangerous conditions.
 
+### 5.4 Dynamic Environmental Overlays & Biome Hierarchy
+
+When resolving biome-specific combat overlays (e.g., dynamic bushes, rocks, boxes), highly specific biomes like `isArctic` MUST take precedence over generic biomes like `isCave` in the resolution hierarchy (`bushLibrary.ts`). This ensures that unique maps (such as Seafoam Islands / Islas Espuma) receive their correct specialized environmental assets and tinting.
+
 ---
 
-## 6. Calidad de los Encuentros (IVs y Potencial)
+## 6. Encounter Quality (IVs and Potential)
 
-La generación de IVs no es puramente aleatoria; está fuertemente influenciada por el contexto del encuentro.
+IV generation is not purely random; it is heavily influenced by the encounter context.
 
-### 6.1 Lógica de Suelos (ivFloor)
+### 6.1 Floor Logic (ivFloor)
 
-El sistema aplica un `ivFloor` dinámico antes de la creación. El IV final de cada estadística es `Math.max(ivFloor, randomValue)`.
+The system applies a dynamic `ivFloor` before creation. The final IV for each stat is `Math.max(ivFloor, randomValue)`.
 
-- **Cazabichos (Racha)**: El suelo es igual a la racha de capturas actual del jugador.
-- **Misiones de Clase**:
-  - 6h: Suelo 5.
-  - 12h: Suelo 10.
-  - 24h: Suelo 15.
+- **Bug Catcher (Streak)**: The floor equals the player's current catch streak.
+- **Class Missions**:
+  - 6h: Floor 5.
+  - 12h: Floor 10.
+  - 24h: Floor 15.
 
-### 6.2 El Método del Guardián (Doble Tirada)
+### 6.2 The Guardian Method (Double Roll)
 
-Los Pokémon Guardianes utilizan un algoritmo de **Doble Tirada de Dados**. Se generan dos valores aleatorios y se selecciona el mayor, lo que desplaza la curva de probabilidad hacia valores altos.
+Guardian Pokémon utilize a **Double Dice Roll** algorithm. Two random values are generated and the higher one is selected, shifting the probability curve toward higher values.
 
-- **Suelo Fijo**: Los Guardianes tienen un `ivFloor` inmutable de **12** en todas las estadísticas.
+- **Fixed Floor**: Guardians have an immutable `ivFloor` of **12** across all stats.
 
-### 6.3 Bonos de Guerra (Dominancia)
+### 6.3 War Bonuses (Dominance)
 
-Si un mapa está bajo el control total de la facción del jugador, se activa el **Bono de Dominancia**:
+If a map is under the total control of the player's faction, the **Dominance Bonus** activates:
 
-- **Efecto**: Todos los Pokémon salvajes capturados en ese mapa tienen un suelo garantizado de **15 IVs** en todas sus estadísticas.
+- **Effect**: All wild Pokémon caught on that map have a guaranteed floor of **15 IVs** across all stats.

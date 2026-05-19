@@ -285,6 +285,8 @@ Avoid spreading definitions for the same component across multiple files. This i
 - **Atmosphere & Weather Overlays**:
   - **Avoid Redundant Darkening**: Do NOT apply black semi-transparent backgrounds (`rgba(0,0,0,X)`) to weather or atmospheric overlays if a global `AtmosphereLayer` filter is active. This prevents "double-darkening" (clipping visual range) during the night cycle.
   - **Cycle-Specific Styles**: Use cycle-specific classes (e.g., `.night`, `.day`) passed from `AtmosphereLayer` to children for fine-grained CSS overrides instead of relying on JS logic for minor style shifts.
+  - **Universal Environmental Tinting**: Environmental CSS filter tints (e.g., `tint-arctic`, `tint-desert`, `tint-swamp`) MUST be applied universally to all cover families (rocks, grass, boxes) rather than being restricted to grass. For arctic biomes, ensure rocks and bushes achieve pure white/grey snowy overlays with high brightness (`Saturate(0) Brightness(1.5) Contrast(1.15)`) to maintain cohesive visual immersion.
+
 - **Goal**: Maintain 0 redefinitions for critical game components.
 - **Grid Stabilization**: When designing grids with variable content (like GymCards), prefer fixed widths or controlled `minmax` (e.g., `340px`) over `1fr`. This prevents layout expansion and horizontal scroll issues when the number of elements is odd or changes dynamically.
 - **Math-Based Layout Scaling (Robust Grid Pattern)**:

@@ -7,9 +7,10 @@
  * utilizando un PRNG determinista (mulberry32).
  */
 
-import { BUSH_FAMILIES, type BushFamily } from './bushCatalog';
-import { FIRE_RED_MAPS } from '@/data/maps';
+import { BUSH_FAMILIES, type BushFamily } from './bushCatalog.ts';
+import { FIRE_RED_MAPS } from '../../data/maps.ts';
 import { mulberry32 } from '../utils/math.ts';
+
 
 
 
@@ -65,10 +66,11 @@ export function getActiveBushesForMap(
 
   if (map) {
     const hierarchy = [
-      'isCave', 'isVolcanic', 'isUrban', 'isIndoors',
-      'isArctic', 'isDesert', 'isSwamp', 'isMountain',
+      'isArctic', 'isCave', 'isVolcanic', 'isUrban', 'isIndoors',
+      'isDesert', 'isSwamp', 'isMountain',
       'isCoastal', 'isForest', 'isPlains'
     ];
+
     for (const key of hierarchy) {
       if ((map as Record<string, unknown>)[key]) {
         activeBiomeKey = key;
@@ -104,8 +106,9 @@ export function getActiveBushesForMap(
     const roll2 = Math.floor(prng() * assets.length);
     const assetId = assets[roll2] ?? assets[0] ?? 'grass-1';
 
-    // Tinte aplicable solo si el asset es de la familia pastos
-    const tintClass = (selectedFamily === 'grass' && biomeConfig.tint) ? biomeConfig.tint : '';
+    // Tinte aplicable a cualquier familia de coberturas según configuración del bioma
+    const tintClass = biomeConfig.tint ? biomeConfig.tint : '';
+
 
     // Transformaciones aleatorias deterministas
     const scaleFactor = 0.7 + (prng() * 0.6) + (b.id * 0.05);
