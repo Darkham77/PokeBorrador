@@ -17,6 +17,7 @@ This manual details the protocols for adding new Pokémon, moves, abilities, and
 11. **Fail-Fast Asset Policy**: Do not mask missing item images or visual assets with fallback emojis or generic icons in development. If an asset is missing, let the component fail visibly (e.g., hiding the image or showing a standard browser broken-link box) to allow developers to immediately notice and resolve the missing file.
 12. **Segmented Shop Audits**: Item asset validation and diagnostic tools must categorize and audit database collections independently (e.g., Poké Market vs BC Shop) based on their specific runtime filters (`market !== false` and `trainerShop === true`) to ensure 100% visual asset coverage across each shopping context.
 13. **Weather Token Consistency**: Always use the token **`snow`** for ice-based weather in metadata and encounter configs. The token `ice` is reserved for mechanical type references and must NOT be used as a weather ID to avoid registry mismatches.
+14. **Self-Healing Ability Mapping**: To prevent strict data validations from failing due to external datasets or local databases having non-standard or translated names (e.g., Spanish translations like `Escape`, `Metamorfosis`, or `Electricidad estática`), the data loading/recalculation pipeline MUST automatically normalize these values to standard strings (e.g., 'Fuga', 'Mudar', 'Electricidad estática') before strict schemas are validated.
 
 ---
 
