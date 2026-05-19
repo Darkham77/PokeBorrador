@@ -125,6 +125,13 @@ export function sanitizePokemon(p: Pokemon): void {
   }
 
   // 1. Validar Habilidad
+  if (p.ability) {
+    const abilityLower = p.ability.toLowerCase().trim();
+    if (abilityLower === 'escape') p.ability = 'Fuga';
+    else if (abilityLower === 'metamorfosis') p.ability = 'Mudar';
+    else if (abilityLower === 'electricidad estática' || abilityLower === 'electricidad estatica') p.ability = 'Electricidad estática';
+  }
+
   const validAbilities = pokemonDataProvider.getSpeciesAbilities(p.id);
   if (!p.ability || !validAbilities.includes(p.ability)) {
     logger.warn('Self-Healing', `Reparando habilidad inválida (${p.ability}) para ${p.id}`);

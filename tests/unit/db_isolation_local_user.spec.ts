@@ -60,7 +60,7 @@ describe('Database Isolation for Local User', () => {
     const user = { id: 'local_user' } as AuthUser
     const state = { trainer: 'Ash', pokemon: [] } as unknown as GameState
 
-    const result = await saveGame(state, user, mockDb, { skipRemote: false })
+    const result = await saveGame(state, user, { db: mockDb, skipRemote: false })
     expect(result?.success).toBe(true)
     expect(result?.remote).toBe(false)
     expect(mockDb.rpc).not.toHaveBeenCalled()

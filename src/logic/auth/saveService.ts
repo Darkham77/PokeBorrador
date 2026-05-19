@@ -376,7 +376,7 @@ export async function saveGame(state: GameState, user: AuthUser, options: SaveOp
     logger.warn('SAVE', `Error en persistencia local (LS/OPFS): ${(e as Error).message}`);
   }
 
-  const isOnlineLocalUser = db && db.mode === 'online' && user.id === 'local_user';
+  const isOnlineLocalUser = db && db.mode === 'online' && (user.id === 'local_user' || user.id.startsWith('local_'));
 
   // 2. Database
   if (!db || options.skipRemote || isOnlineLocalUser) {
@@ -386,7 +386,7 @@ export async function saveGame(state: GameState, user: AuthUser, options: SaveOp
       logger.warn('SAVE', 'No DBRouter instance provided. Skipping DB save.');
     }
     
-    if (showNotif && notifyFn && (options.skipRemote || isOnlineLocalUser) && user.id !== 'local_user') {
+    if (showNotif && notifyFn && (options.skipRemote || isOnlineLocalUser) && user.id !== 'local_user' && !user.id.startsWith('local_')) {
       notifyFn('Progreso guardado localmente (Sesión Bloqueada)', '🟠');
     }
     

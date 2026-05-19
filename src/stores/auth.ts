@@ -10,13 +10,15 @@ import { SESSION_ID } from '@/logic/auth/sessionId'
 import type { AuthUser, SessionMode } from '@/types/auth'
 import type { Session } from '@supabase/supabase-js'
 
+const isLocalhost = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+
 export const useAuthStore = defineStore('auth', () => {
   const user = ref<AuthUser | null>(null)
   const session = ref<Session | null>(null)
   const loading = ref(true)
   const sessionId = ref(SESSION_ID)
   const sessionConflict = ref(false)
-  const sessionMode = ref<SessionMode>((safeStorage.getItem('pokevicio_session_mode') as SessionMode) || 'online') // 'online' | 'offline'
+  const sessionMode = ref<SessionMode>((safeStorage.getItem('pokevicio_session_mode') as SessionMode) || (isLocalhost ? 'offline' : 'online')) // 'online' | 'offline'
   const isOnline = ref(navigator.onLine)
   const connectionLost = ref(false)
   const sessionCheckInterval = ref<ReturnType<typeof setInterval> | null>(null)
@@ -86,6 +88,11 @@ export const useAuthStore = defineStore('auth', () => {
     useLoadingStore().start('auth_init', 'Iniciando sesión...', 'Conectando con el servidor', false)
     try {
       if (sessionMode.value === 'online') {
+        // Sincronizar el enrutador en modo online antes de pedir la sesión
+        if (supabase && typeof supabase.setMode === 'function') {
+          supabase.setMode('online')
+        }
+
         // 1. Verificar sesión con timeout de seguridad (3s) para evitar bloqueos infinitos
         const sessionPromise = supabase.auth.getSession();
         const timeoutPromise = new Promise((_, reject) => gsap.delayedCall(3, () => reject(new Error('TIMEOUT'))));
@@ -96,36 +103,41 @@ export const useAuthStore = defineStore('auth', () => {
           session.value = data.session
           user.value = data.session.user as unknown as AuthUser
           sessionMode.value = 'online'
-          if (supabase && typeof supabase.setMode === 'function') {
-            supabase.setMode('online')
-          }
           
-          // Registrar sesión en DB para unicidad con timeout
-          try {
-            const updatePromise = supabase.from('profiles').update({ current_session_id: sessionId.value }).eq('id', user.value?.id)
-            await Promise.race([updatePromise, new Promise((_, reject) => gsap.delayedCall(3, () => reject(new Error('UPDATE_TIMEOUT'))))])
-          } catch (e) {
-            logger.warn('Auth', `Session ID update failed or timed out: ${(e as Error).message}`)
+          const isLocalId = user.value?.id === 'local_user' || user.value?.id?.startsWith('local_')
+          
+          if (!isLocalId) {
+            // Registrar sesión en DB para unicidad con timeout
+            try {
+              const updatePromise = supabase.from('profiles').update({ current_session_id: sessionId.value }).eq('id', user.value?.id)
+              await Promise.race([updatePromise, new Promise((_, reject) => gsap.delayedCall(3, () => reject(new Error('UPDATE_TIMEOUT'))))])
+            } catch (e) {
+              logger.warn('Auth', `Session ID update failed or timed out: ${(e as Error).message}`)
+            }
           }
 
           startSessionMonitoring()
           
-          // Fetch profile meta con timeout
-          try {
-            const profilePromise = supabase.from('profiles').select('db_version, is_banned, ban_reason').eq('id', user.value?.id).single()
-            const { data: profile } = await Promise.race([profilePromise, new Promise((_, reject) => setTimeout(() => reject(new Error('FETCH_TIMEOUT')), 3000))]) as { data: { db_version: number, is_banned: boolean, ban_reason: string | null } | null }
-            
-            if (profile && user.value) {
-              user.value.db_version = profile.db_version || 1
-              if (profile.is_banned) {
-                isBanned.value = true
-                banReason.value = profile.ban_reason || 'Uso indebido de la plataforma'
-                logout() // Force out
-                return
+          if (!isLocalId) {
+            // Fetch profile meta con timeout
+            try {
+              const profilePromise = supabase.from('profiles').select('db_version, is_banned, ban_reason').eq('id', user.value?.id).single()
+              const { data: profile } = await Promise.race([profilePromise, new Promise((_, reject) => setTimeout(() => reject(new Error('FETCH_TIMEOUT')), 3000))]) as { data: { db_version: number, is_banned: boolean, ban_reason: string | null } | null }
+              
+              if (profile && user.value) {
+                user.value.db_version = profile.db_version || 1
+                if (profile.is_banned) {
+                  isBanned.value = true
+                  banReason.value = profile.ban_reason || 'Uso indebido de la plataforma'
+                  logout() // Force out
+                  return
+                }
               }
+            } catch (e) {
+              logger.warn('Auth', `Profile fetch failed or timed out: ${(e as Error).message}`)
+              if (user.value && !user.value.db_version) user.value.db_version = 1
             }
-          } catch (e) {
-            logger.warn('Auth', `Profile fetch failed or timed out: ${(e as Error).message}`)
+          } else {
             if (user.value && !user.value.db_version) user.value.db_version = 1
           }
 

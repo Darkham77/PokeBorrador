@@ -28,7 +28,7 @@ export async function loadBestSave(user: AuthUser | null, db: DBRouter): Promise
   let cloudSaveRow: { save_data: GameState; updated_at: string; last_save_id: string } | null = null;
   let finalSaveData: GameState | null = null;
 
-  const isOnlineLocalUser = db.mode === 'online' && user.id === 'local_user';
+  const isOnlineLocalUser = db.mode === 'online' && (user.id === 'local_user' || user.id.startsWith('local_'));
 
   // 1. Fetch Save from Database (Supabase in online mode, SQLite in offline mode)
   if (!isOnlineLocalUser) {

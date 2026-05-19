@@ -73,7 +73,8 @@ const submitRename = async () => {
     if (!isLocal) {
       const res = await gameStore.db.rpc('change_username', { new_username: targetName })
       if (res.error) {
-        uiStore.notify(typeof res.error === 'string' ? res.error : 'Error al cambiar el nombre', '⚠️')
+        const errorMsg = typeof res.error === 'string' ? res.error : ((res.error as { message: string } | null)?.message || 'Error al cambiar el nombre')
+        uiStore.notify(errorMsg, '⚠️')
         isRenaming.value = false
         return
       }

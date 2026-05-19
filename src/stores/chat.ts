@@ -57,11 +57,64 @@ export const useChatStore = defineStore('chat', () => {
   const outboxChannels: Record<string, RealtimeChannel> = {}
 
   // Computed proxy to private chats in game state for persistence
-  const privateChats = reactive<Record<string, PrivateChat>>((gameStore.state.chats as Record<string, PrivateChat>) || {})
+  let isInitialized = false
+  const privateChats = reactive<Record<string, PrivateChat>>({})
+
+  const getSanitizedChats = (chats: Record<string, PrivateChat> | undefined, forceCollapse = false): Record<string, PrivateChat> => {
+    const sanitized: Record<string, PrivateChat> = {}
+    if (chats) {
+      for (const [id, chat] of Object.entries(chats)) {
+        // 1. Ignorar chats contigo mismo
+        if (authStore.user?.id && id === authStore.user.id) continue
+        
+        // 2. Si estamos en modo online, filtrar chats con IDs locales o corruptos (ej. eq.local_user)
+        const isLocalKey = id === 'local_user' || id === 'eq.local_user' || id.startsWith('local_')
+        if (authStore.sessionMode === 'online' && isLocalKey) {
+          logger.info('Chat', `Filtrando chat local contaminado en modo online: ${id}`)
+          continue
+        }
+        
+        // 3. Si estamos en modo offline, filtrar chats que contengan UUIDs reales de Supabase en la nube
+        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+        if (authStore.sessionMode === 'offline' && uuidRegex.test(id)) {
+          logger.info('Chat', `Filtrando chat remoto en modo offline: ${id}`)
+          continue
+        }
+
+        // Si ya está inicializado, preservar el estado visual de isCollapsed de la instancia reactiva actual
+        const currentCollapsed = isInitialized && privateChats[id] ? privateChats[id].isCollapsed : true
+
+        sanitized[id] = {
+          ...chat,
+          isCollapsed: forceCollapse ? true : currentCollapsed
+        }
+      }
+    }
+    return sanitized
+  }
+
+  // Inicializar los chats existentes forzando que comiencen colapsados
+  if (gameStore.state.chats) {
+    Object.assign(privateChats, getSanitizedChats(gameStore.state.chats as Record<string, PrivateChat>, true))
+  }
+  isInitialized = true
 
   // Watch for game state changes (e.g. after a load) to sync privateChats
   watch(() => gameStore.state.chats, (newChats) => {
-    Object.assign(privateChats, newChats || {})
+    if (newChats) {
+      const sanitized = getSanitizedChats(newChats as Record<string, PrivateChat>, false)
+      // Eliminar chats locales que ya no existen en el nuevo estado
+      for (const key in privateChats) {
+        if (!sanitized[key]) {
+          delete privateChats[key]
+        }
+      }
+      Object.assign(privateChats, sanitized)
+    } else {
+      for (const key in privateChats) {
+        delete privateChats[key]
+      }
+    }
   }, { deep: true })
 
   // Mantener el perfil del propio usuario en la caché sincronizado de forma reactiva
@@ -371,7 +424,7 @@ export const useChatStore = defineStore('chat', () => {
         username: payload.senderName || 'Entrenador',
         messages: [],
         unreadCount: 0,
-        isCollapsed: false,
+        isCollapsed: true, // Nunca abrir automáticamente al recibir un mensaje
         lastInteraction: Temporal.Now.instant().epochMilliseconds
       }
     }
@@ -508,7 +561,7 @@ export const useChatStore = defineStore('chat', () => {
 
   function closeChat(friendId: string) {
     if (privateChats[friendId]) {
-      delete privateChats[friendId]
+      privateChats[friendId].isCollapsed = true
       gameStore.state.chats = { ...privateChats }
     }
     if (activeChatId.value === friendId) {

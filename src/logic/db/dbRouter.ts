@@ -131,7 +131,7 @@ export class DBRouter {
     this.currentSessionId = sessionId;
     
     const client = this.realClient;
-    if (this.mode === 'offline' || !client) return;
+    if (this.mode === 'offline' || !client || userId === 'local_user' || userId.startsWith('local_')) return;
 
     try {
       await client
