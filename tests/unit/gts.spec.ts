@@ -21,25 +21,27 @@ describe('GTS Store', () => {
       claimQueue: []
     })
     
+    const limitMock = vi.fn().mockResolvedValue({ data: [], error: null })
+    const orderMock = vi.fn().mockImplementation(() => {
+      const p = Promise.resolve({ data: [], error: null }) as any
+      p.limit = limitMock
+      return p
+    })
+
+    const builder: any = {}
+    builder.select = vi.fn().mockReturnValue(builder)
+    builder.eq = vi.fn().mockReturnValue(builder)
+    builder.neq = vi.fn().mockReturnValue(builder)
+    builder.order = orderMock
+    builder.single = vi.fn().mockResolvedValue({ data: { save_data: {} }, error: null })
+
     gs.db = {
-      from: vi.fn().mockReturnValue({
-        select: vi.fn().mockReturnValue({
-          eq: vi.fn().mockReturnValue({
-            order: vi.fn().mockReturnValue({
-              limit: vi.fn().mockResolvedValue({ data: [], error: null })
-            }),
-            neq: vi.fn().mockReturnValue({
-              order: vi.fn().mockResolvedValue({ data: [], error: null })
-            }),
-            single: vi.fn().mockResolvedValue({ data: { save_data: {} }, error: null })
-          })
-        }),
-        update: vi.fn().mockReturnValue({
-          eq: vi.fn().mockResolvedValue({ error: null })
-        }),
-        upsert: vi.fn().mockResolvedValue({ error: null }),
-        insert: vi.fn().mockResolvedValue({ error: null })
+      from: vi.fn().mockReturnValue(builder),
+      update: vi.fn().mockReturnValue({
+        eq: vi.fn().mockResolvedValue({ error: null })
       }),
+      upsert: vi.fn().mockResolvedValue({ error: null }),
+      insert: vi.fn().mockResolvedValue({ error: null }),
       rpc: vi.fn(),
       channel: vi.fn().mockReturnValue({
         on: vi.fn().mockReturnThis(),

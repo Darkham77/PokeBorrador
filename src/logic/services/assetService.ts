@@ -305,7 +305,7 @@ export const getAssetUrl = (type: AssetType, rawId: string | number, options: As
                        (ITEM_MAPPING[normalizedInput] !== undefined) || 
                        (ITEM_MAPPING[idStr] !== undefined) || 
                        !isNaN(Number(mappedId)) || 
-                       mappedId.includes('-') || 
+                       (mappedId.includes('-') && !idStr.startsWith('medalla')) || 
                        mappedId.includes('ball') || 
                        mappedId.includes('stone') ||
                        mappedId.includes('repel') ||
