@@ -376,15 +376,17 @@ export async function saveGame(state: GameState, user: AuthUser, options: SaveOp
     logger.warn('SAVE', `Error en persistencia local (LS/OPFS): ${(e as Error).message}`);
   }
 
+  const isOnlineLocalUser = db && db.mode === 'online' && user.id === 'local_user';
+
   // 2. Database
-  if (!db || options.skipRemote) {
-    if (options.skipRemote) {
-      logger.info('SAVE', 'Database save skipped (Session Locked). Local storage only.');
+  if (!db || options.skipRemote || isOnlineLocalUser) {
+    if (options.skipRemote || isOnlineLocalUser) {
+      logger.info('SAVE', `Database save skipped (${isOnlineLocalUser ? 'Local User in Online Mode' : 'Session Locked'}). Local storage only.`);
     } else {
       logger.warn('SAVE', 'No DBRouter instance provided. Skipping DB save.');
     }
     
-    if (showNotif && notifyFn && options.skipRemote) {
+    if (showNotif && notifyFn && (options.skipRemote || isOnlineLocalUser) && user.id !== 'local_user') {
       notifyFn('Progreso guardado localmente (Sesión Bloqueada)', '🟠');
     }
     

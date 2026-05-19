@@ -1,4 +1,3 @@
-
 import { defineStore } from 'pinia'
 import { ref, watch } from 'vue'
 import { gsap } from 'gsap'
@@ -7,6 +6,7 @@ import { supabase } from '@/logic/supabase'
 import { syncServerTime } from '@/logic/timeUtils'
 import { useLoadingStore } from './loading.ts'
 import { safeStorage } from '@/logic/utils/storage'
+import { SESSION_ID } from '@/logic/auth/sessionId'
 import type { AuthUser, SessionMode } from '@/types/auth'
 import type { Session } from '@supabase/supabase-js'
 
@@ -14,7 +14,7 @@ export const useAuthStore = defineStore('auth', () => {
   const user = ref<AuthUser | null>(null)
   const session = ref<Session | null>(null)
   const loading = ref(true)
-  const sessionId = ref(crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2))
+  const sessionId = ref(SESSION_ID)
   const sessionConflict = ref(false)
   const sessionMode = ref<SessionMode>((safeStorage.getItem('pokevicio_session_mode') as SessionMode) || 'online') // 'online' | 'offline'
   const isOnline = ref(navigator.onLine)
@@ -153,6 +153,9 @@ export const useAuthStore = defineStore('auth', () => {
       if (localUser && !user.value) {
         user.value = JSON.parse(localUser)
         sessionMode.value = 'offline'
+        if (supabase && typeof supabase.setMode === 'function') {
+          supabase.setMode('offline')
+        }
       }
     } finally {
       loading.value = false
@@ -225,37 +228,50 @@ export const useAuthStore = defineStore('auth', () => {
     return data
   }
 
+  async function checkDbConnectivity(): Promise<boolean> {
+    try {
+      const { error } = await supabase.from('profiles').select('id').limit(1).maybeSingle()
+      return !error
+    } catch (_) {
+      return false
+    }
+  }
+
   function startSessionMonitoring() {
     if (!user.value || sessionMode.value === 'offline') return
     
-    // Suscribirse a cambios en el perfil del usuario actual
+    // Suscribirse al canal para monitorear el estado de la conexión
     supabase.channel(`session_check_${user.value.id}`)
-      .on('postgres_changes', { 
-        event: 'UPDATE', 
-        schema: 'public', 
-        table: 'profiles', 
-        filter: `id=eq.${user.value.id}` 
-      }, (payload: { new: { current_session_id: string } }) => {
-        const newSessionId = payload.new.current_session_id
-        if (newSessionId && newSessionId !== sessionId.value) {
-          logger.warn('SESSION', 'Nueva sesión detectada en otro lugar. Bloqueando esta pestaña.')
-          sessionConflict.value = true
-          // Disparar evento global para componentes que no usen el store
-          window.dispatchEvent(new CustomEvent('session-conflict'))
-        }
-      })
-      .subscribe((status: string) => {
+      .subscribe(async (status: string) => {
         if (status === 'SUBSCRIBED') {
           connectionLost.value = false
         }
         if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
           if (sessionMode.value === 'online') {
-            logger.warn('SESSION', 'Conexión con el servidor perdida (Realtime).')
-            connectionLost.value = true
+            logger.warn('SESSION', 'Conexión con el servidor perdida (Realtime). Verificando conectividad HTTP...')
+            const isHttpOk = await checkDbConnectivity()
+            if (!isHttpOk) {
+              logger.error('SESSION', 'Confirmada pérdida de conexión HTTP. Activando advertencia.')
+              connectionLost.value = true
+            } else {
+              logger.info('SESSION', 'Conexión HTTP activa. Desconectando Realtime para evitar spam y continuando en modo degradado.')
+              connectionLost.value = false
+              
+              // Desconectar Realtime para detener intentos fallidos recurrentes de WebSocket
+              try {
+                const client = supabase.realClient
+                if (client && client.realtime) {
+                  client.realtime.disconnect()
+                }
+              } catch (err) {
+                logger.warn('Auth', `No se pudo desconectar el cliente de Realtime: ${(err as Error).message}`)
+              }
+            }
           }
         }
       })
   }
+
 
   async function localLogin(name: string) {
     loading.value = true
@@ -305,6 +321,9 @@ export const useAuthStore = defineStore('auth', () => {
     user.value = null
     session.value = null
     sessionMode.value = 'online'
+    if (supabase && typeof supabase.setMode === 'function') {
+      supabase.setMode('online')
+    }
     connectionLost.value = false
     sessionConflict.value = false
     

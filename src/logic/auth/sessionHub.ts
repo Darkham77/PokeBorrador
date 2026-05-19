@@ -2,6 +2,7 @@
 import { supabase } from '../supabase.ts'
 import { gameBus } from '../gameBus.ts'
 import { logger } from '../utils/logger.ts'
+import { SESSION_ID } from './sessionId.ts'
 
 /**
  * Session Hub - Multi-tab and Multi-device synchronization.
@@ -9,7 +10,6 @@ import { logger } from '../utils/logger.ts'
  */
 
 let sessionChannel: BroadcastChannel | null = null
-const SESSION_ID = crypto.randomUUID()
 let currentUserId: string | null = null
 let isLocked = false
 

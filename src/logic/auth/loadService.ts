@@ -28,12 +28,15 @@ export async function loadBestSave(user: AuthUser | null, db: DBRouter): Promise
   let cloudSaveRow: { save_data: GameState; updated_at: string; last_save_id: string } | null = null;
   let finalSaveData: GameState | null = null;
 
+  const isOnlineLocalUser = db.mode === 'online' && user.id === 'local_user';
+
   // 1. Fetch Save from Database (Supabase in online mode, SQLite in offline mode)
-  try {
-    const { data: saves, error } = await db.from('game_saves')
-      .select('save_data, updated_at, last_save_id')
-      .eq('user_id', user.id)
-      .single();
+  if (!isOnlineLocalUser) {
+    try {
+      const { data: saves, error } = await db.from('game_saves')
+        .select('save_data, updated_at, last_save_id')
+        .eq('user_id', user.id)
+        .single();
     
     if (!error && saves) {
       // Parse save_data if it is stored as a string (SQLite context)
@@ -55,6 +58,7 @@ export async function loadBestSave(user: AuthUser | null, db: DBRouter): Promise
     }
   } catch (e) {
     logger.error('LOAD', `Database fetch failed: ${(e as Error).message}`);
+  }
   }
 
   // 2. Fetch Local Save (Prioritize OPFS Binary over LocalStorage)

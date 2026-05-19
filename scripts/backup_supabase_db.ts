@@ -204,6 +204,34 @@ export async function backupSupabaseDb() {
         }
       }
 
+      // 1.5. Respaldar datos de autenticación (auth.users y auth.identities)
+      let authUsers: Record<string, unknown>[] = [];
+      let authIdentities: Record<string, unknown>[] = [];
+
+      try {
+        console.log(styleText('cyan', '👤 Descargando credenciales de usuario desde auth.users...'));
+        const usersRes = await sql`
+          SELECT *
+          FROM auth.users;
+        `;
+        authUsers = usersRes as unknown as Record<string, unknown>[];
+        console.log(styleText('gray', `   ✔️ auth.users: ${authUsers.length} usuarios respaldados.`));
+      } catch (authErr: unknown) {
+        console.error(styleText('yellow', `   ⚠️ Advertencia: No se pudo respaldar auth.users: ${(authErr as Error).message}`));
+      }
+
+      try {
+        console.log(styleText('cyan', '👤 Descargando identidades de usuario desde auth.identities...'));
+        const idRes = await sql`
+          SELECT *
+          FROM auth.identities;
+        `;
+        authIdentities = idRes as unknown as Record<string, unknown>[];
+        console.log(styleText('gray', `   ✔️ auth.identities: ${authIdentities.length} identidades respaldadas.`));
+      } catch (authErr: unknown) {
+        console.error(styleText('yellow', `   ⚠️ Advertencia: No se pudo respaldar auth.identities: ${(authErr as Error).message}`));
+      }
+
       await sql.end();
 
       // 2. Guardar en archivo JSON
@@ -218,7 +246,11 @@ export async function backupSupabaseDb() {
           totalTables: tables.length,
           totalRows
         },
-        data: backupData
+        data: backupData,
+        auth: {
+          users: authUsers,
+          identities: authIdentities
+        }
       };
 
       await fsPromises.writeFile(backupFilePath, JSON.stringify(fullBackupObject, null, 2), 'utf-8');

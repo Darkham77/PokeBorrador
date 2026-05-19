@@ -63,7 +63,15 @@ export class DBRouter {
 
     try {
       logger.info('DBRouter', 'Lazily initializing Supabase client...');
-      this._realClient = createClient(url, key);
+      this._realClient = createClient(url, key, {
+        realtime: {
+          reconnectAfterMs: (tries) => {
+            // Evitar spam constante en la consola si el servidor no soporta WebSockets
+            if (tries > 3) return 300000; // Intentar cada 5 minutos en lugar de cada pocos segundos
+            return [1000, 2000, 5000][tries - 1] || 5000;
+          }
+        }
+      });
       return this._realClient;
     } catch (err) {
       logger.error('DBRouter', 'Failed to initialize Supabase client:', (err as Error).message);

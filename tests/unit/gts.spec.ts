@@ -23,12 +23,19 @@ describe('GTS Store', () => {
     
     const limitMock = vi.fn().mockResolvedValue({ data: [], error: null })
     const orderMock = vi.fn().mockImplementation(() => {
-      const p = Promise.resolve({ data: [], error: null }) as any
+      const p = Promise.resolve({ data: [], error: null }) as unknown as Promise<{ data: unknown[]; error: null }> & { limit: typeof limitMock }
       p.limit = limitMock
       return p
     })
 
-    const builder: any = {}
+    interface MockBuilder {
+      select: Mock;
+      eq: Mock;
+      neq: Mock;
+      order: Mock;
+      single: Mock;
+    }
+    const builder = {} as unknown as MockBuilder
     builder.select = vi.fn().mockReturnValue(builder)
     builder.eq = vi.fn().mockReturnValue(builder)
     builder.neq = vi.fn().mockReturnValue(builder)
