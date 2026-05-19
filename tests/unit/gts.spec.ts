@@ -21,6 +21,14 @@ describe('GTS Store', () => {
       claimQueue: []
     })
     
+    interface SupabaseQueryBuilderMock {
+      select: Mock;
+      eq: Mock;
+      neq: Mock;
+      order: Mock;
+      single: Mock;
+    }
+
     const limitMock = vi.fn().mockResolvedValue({ data: [], error: null })
     const orderMock = vi.fn().mockImplementation(() => {
       const p = Promise.resolve({ data: [], error: null }) as unknown as Promise<{ data: unknown[]; error: null }> & { limit: typeof limitMock }
@@ -28,19 +36,16 @@ describe('GTS Store', () => {
       return p
     })
 
-    interface MockBuilder {
-      select: Mock;
-      eq: Mock;
-      neq: Mock;
-      order: Mock;
-      single: Mock;
+    const builder: SupabaseQueryBuilderMock = {
+      select: vi.fn(),
+      eq: vi.fn(),
+      neq: vi.fn(),
+      order: orderMock,
+      single: vi.fn().mockResolvedValue({ data: { save_data: {} }, error: null })
     }
-    const builder = {} as unknown as MockBuilder
-    builder.select = vi.fn().mockReturnValue(builder)
-    builder.eq = vi.fn().mockReturnValue(builder)
-    builder.neq = vi.fn().mockReturnValue(builder)
-    builder.order = orderMock
-    builder.single = vi.fn().mockResolvedValue({ data: { save_data: {} }, error: null })
+    builder.select.mockReturnValue(builder)
+    builder.eq.mockReturnValue(builder)
+    builder.neq.mockReturnValue(builder)
 
     gs.db = {
       from: vi.fn().mockReturnValue(builder),

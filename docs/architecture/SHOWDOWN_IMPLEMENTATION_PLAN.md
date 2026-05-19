@@ -36,6 +36,7 @@ Este documento detalla el plan técnico paso a paso para sustituir el sistema de
 2. Escribir un parser de expresiones regulares (o usar un módulo de `@pkmn/client`) para traducir las líneas de `SIM-PROTOCOL`.
    *Ejemplo:* Cuando llegue `|-damage|p1a: Pikachu|50/100`, el parser devolverá un objeto: `{ action: 'damage', target: 'player', currentHP: 50, maxHP: 100 }`.
 3. Construir adaptadores para estados críticos: Daño, Curación, Cambios de Clima, Faints (Debilitamiento), y Estados Alterados (Parálisis, Veneno).
+4. **Módulo de Localización (Textos de Batalla):** El protocolo de Showdown emite acciones crudas. El Parser debe incluir un sistema de traducción para convertir estos eventos a cadenas de texto amigables en español (ej. transformar `|move|p1a: Pikachu|Thunderbolt` a `"¡Pikachu usó Rayo!"`). Estos textos alimentarán la caja de diálogos de la interfaz.
 
 ## Fase 4: Integración con Pinia (El Puente Reactivo)
 
@@ -45,7 +46,7 @@ Este documento detalla el plan técnico paso a paso para sustituir el sistema de
 2. Instanciar el Web Worker al inicializar el store.
 3. Crear un estado reactivo (`state`) que represente la vista actual de la batalla (HP de los 2 Pokémon, sprites actuales de PokeAPI, clima activo).
 4. Escuchar los mensajes del *Worker* y pasarlos por el *Parser*.
-5. Implementar un **Sistema de Cola de Animaciones**: Si el turno produce 5 eventos (ataque, daño, veneno, daño de veneno), el Store debe aplicar esos cambios con intervalos (ej. `setTimeout` de 500ms) para que la UI tenga tiempo de animarlos secuencialmente, en lugar de aplicarlos todos al mismo tiempo.
+5. Implementar un **Sistema de Cola de Animaciones**: Si el turno produce 5 eventos (ataque, daño, veneno, daño de veneno), el Store debe aplicar esos cambios utilizando **GSAP (Timelines y Promesas)**. De acuerdo a la *Zero-Timer Policy* del proyecto, está estrictamente prohibido usar `setTimeout` o variables de estado para coordinar tiempos; las animaciones deben orquestarse secuencialmente y de forma determinista encadenando promesas o timelines de GSAP.
 
 ## Fase 5: Conexión con la Interfaz de Usuario (UI)
 
@@ -55,6 +56,7 @@ Este documento detalla el plan técnico paso a paso para sustituir el sistema de
 2. Hacer que las barras de vida y sprites se enlacen (`v-bind`) directamente a las variables reactivas de `useBattleEngineStore`.
 3. Actualizar los botones de ataques: Al presionar un ataque, simplemente invocar `battleStore.sendAction('move', moveIndex)`.
 4. Añadir *Watchers* para disparar efectos de Phaser/CSS cuando el estado cambie (ej. si `store.state.weather === 'rain'`, renderizar partículas de lluvia).
+5. **Sincronización de la Caja de Textos (Battle Log):** La UI debe recibir las cadenas de texto traducidas desde el Store y mostrarlas en la caja de diálogos, perfectamente sincronizadas con la *Timeline* de GSAP y la animación del ataque/evento correspondiente.
 
 ## Fase 6: Pruebas y Transición
 

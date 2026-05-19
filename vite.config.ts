@@ -129,8 +129,8 @@ export default defineConfig({
       workbox: {
         cleanupOutdatedCaches: true,
         globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,woff2}'],
-        // Aumentamos el límite de tamaño para assets grandes si los hay
-        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024
+        // Aumentamos el límite de tamaño para assets grandes si los hay (e.g. ShowdownWorker)
+        maximumFileSizeToCacheInBytes: 8 * 1024 * 1024
       },
       devOptions: {
         enabled: true
