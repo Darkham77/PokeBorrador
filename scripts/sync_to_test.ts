@@ -144,7 +144,27 @@ async function main(): Promise<void> {
     }
   }
 
-  console.log(`\n✨ Sync completed successfully!\n`);
+  console.log(`\n✨ Sync completed successfully!`);
+
+  // 6. Patch package.json in target for Vercel compatibility
+  // The main repo requires Node >=26. pokevicio-test targets Vercel, which only
+  // supports up to Node 24.x. We patch engines.node in the copy so the source
+  // of truth is never touched.
+  console.log(`\n🩹 Patching package.json for Vercel (Node 24.x)...`);
+  const targetPackageJsonPath = path.join(TARGET_DIR, 'package.json');
+  try {
+    const rawJson = await fs.readFile(targetPackageJsonPath, 'utf-8');
+    const pkg = JSON.parse(rawJson) as { engines?: { node?: string }; [key: string]: unknown };
+    if (!pkg.engines) pkg.engines = {};
+    const previous = pkg.engines.node ?? '(none)';
+    pkg.engines.node = '24.x';
+    await fs.writeFile(targetPackageJsonPath, JSON.stringify(pkg, null, 2) + '\n', 'utf-8');
+    console.log(`   [PATCHED] engines.node: ${previous} → 24.x`);
+  } catch (e: unknown) {
+    console.warn(`   [WARNING] Could not patch package.json: ${(e as Error).message}`);
+  }
+
+  console.log(`\n✨ Done!\n`);
 }
 
 main().catch(err => {
