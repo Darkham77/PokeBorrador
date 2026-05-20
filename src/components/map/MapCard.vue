@@ -5,6 +5,7 @@ import AtmosphereLayer from '@/components/common/AtmosphereLayer.vue'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { MAP_ROUTE_MAPPING } from '@/data/map-assets'
+import { translateType } from '@/data/types'
 
 import { useUIStore } from '@/stores/ui'
 import { useBattleStore } from '@/stores/battle'
@@ -110,15 +111,8 @@ const weatherModifiersDescription = computed(() => {
   const entry = WEATHER_REGISTRY[computedWeather.value as string]
   const mods = entry?.modifiers
   if (!mods) return ''
-  
-  const translations: Record<string, string> = {
-    water: 'Agua', bug: 'Bicho', electric: 'Eléctrico', fire: 'Fuego', rock: 'Roca', 
-    ground: 'Tierra', grass: 'Planta', ice: 'Hielo', steel: 'Acero', flying: 'Volador',
-    ghost: 'Fantasma', psychic: 'Psíquico', dark: 'Siniestro', dragon: 'Dragón', fairy: 'Hada',
-    normal: 'Normal', poison: 'Veneno', fighting: 'Lucha'
-  }
 
-  const formatList = (list?: string[]) => (list || []).map(t => translations[t] || t).join(', ')
+  const formatList = (list?: string[]) => (list || []).map(translateType).join(', ')
   
   let lines = []
   if (mods.boost?.length) lines.push(`▲ ${formatList(mods.boost)}`)
@@ -137,6 +131,17 @@ const factionAnimClass = computed(() => {
 
 const getPokemonSprite = (id: string) => getAssetUrl(ASSET_TYPES.POKEMON, id)
 
+const getFormattedTypes = (data: { type: string | string[]; type2?: string }): string => {
+  const types: string[] = []
+  if (Array.isArray(data.type)) {
+    types.push(...data.type)
+  } else {
+    if (data.type) types.push(data.type)
+    if (data.type2) types.push(data.type2)
+  }
+  return types.map(translateType).join('/').toUpperCase()
+}
+
 const processedGuardian = computed(() => {
   if (!props.dominance?.guardian) return null
   const id = props.dominance.guardian.id
@@ -153,7 +158,7 @@ const processedGuardian = computed(() => {
   
   const data = isSeen ? pokemonDataProvider.getPokemonData(id) : null
   const name = isSeen ? (data?.name || id.toUpperCase()) : 'Desconocido'
-  const typeInfo = (isSeen && data?.type) ? (Array.isArray(data.type) ? data.type.join('/') : data.type).toUpperCase() : '???'
+  const typeInfo = (isSeen && data) ? getFormattedTypes(data) : '???'
   const captured = props.dominance.guardian.captured || false
 
   return { 
@@ -205,7 +210,7 @@ const processedGrid = computed<ProcessedSpawn[]>(() => {
     const rate = props.spawnPool?.rates?.[id] || 10
     const data = isSeen ? pokemonDataProvider.getPokemonData(id) : null
     const name = isSeen ? (data?.name || id.toUpperCase()) : 'Desconocido'
-    const typeInfo = (isSeen && data?.type) ? `Tipo: ${(Array.isArray(data.type) ? data.type.join('/') : data.type).toUpperCase()}` : ''
+    const typeInfo = (isSeen && data) ? `Tipo: ${getFormattedTypes(data)}` : ''
 
     const cycles = ['morning', 'day', 'dusk', 'night']
     const appearingCycles = cycles.filter(c => (props.map.wild?.[c] || []).includes(id))
