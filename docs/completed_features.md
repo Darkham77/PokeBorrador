@@ -27,6 +27,8 @@ Este documento sirve como referencia de los componentes, menús y herramientas q
 | **WAR SHOP / MARKET DE GUERRA** | Finalizado | `modals/war-shop/WarShopModal.vue`, `modals/war-shop/WarShopItemCard.vue`, `shop.ts` (Store), `_shop.scss` |
 | **MOTOR DE CLIMA** | Finalizado | `weatherUtils.ts`, `weather-tables.ts`, `timeUtils.ts`, `map.ts` (Store) |
 | **GIMNASIOS** | Finalizado | `GymsView.vue`, `GymCard.vue`, `gyms.ts` (Store) |
+| **CRIANZA Y GUARDERÍA** | Finalizado | `modals/DaycareModal.vue`, `breeding/BreedingSummary.vue`, `breeding/DaycareSlot.vue`, `breeding/EggWarehouse.vue`, `breeding.ts` (Store) |
+| **MISIONES DE EVENTO** | Finalizado | `modals/EventMissionsModal.vue`, `events/EventMissions.vue`, `breeding.ts` (Store) |
 
 ## Reglas y Documentación Técnica
 
