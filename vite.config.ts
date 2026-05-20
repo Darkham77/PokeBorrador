@@ -100,7 +100,7 @@ export default defineConfig({
     sassTrapsFixer(),
     VitePWA({
       registerType: 'prompt',
-      includeAssets: ['/sql-wasm.wasm', '/assets/fondo/logo%203.webp'],
+      includeAssets: ['sql-wasm.wasm', 'assets/fondo/logo%203.webp'],
       manifest: {
         name: 'Poké Vicio',
         short_name: 'PokéVicio',
@@ -109,17 +109,17 @@ export default defineConfig({
         background_color: '#0a0c14',
         display: 'standalone',
         orientation: 'any',
-        start_url: '/',
-        scope: '/',
+        start_url: base,
+        scope: base,
         icons: [
           {
-            src: '/assets/fondo/logo%203.webp',
+            src: 'assets/fondo/logo%203.webp',
             sizes: '512x512',
             type: 'image/webp',
             purpose: 'any'
           },
           {
-            src: '/assets/fondo/logo%203.webp',
+            src: 'assets/fondo/logo%203.webp',
             sizes: '512x512',
             type: 'image/webp',
             purpose: 'maskable'

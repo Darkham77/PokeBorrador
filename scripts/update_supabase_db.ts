@@ -49,6 +49,15 @@ export async function updateSupabaseDb() {
   const lines = envContent.split('\n');
   const serverConfigs: Record<string, Record<string, string>> = {};
 
+  const KNOWN_SUFFIXES = [
+    'SUPABASE_PUBLIC_URL', 'API_EXTERNAL_URL', 'SUPABASE_ANON_KEY',
+    'SERVICE_ROLE_KEY', 'POSTGRES_PASSWORD', 'SECRET_KEY_BASE',
+    'DASHBOARD_USERNAME', 'DASHBOARD_PASSWORD', 'KONG_HTTPS_PORT',
+    'PG_META_CRYPTO_KEY', 'VAULT_ENC_KEY', 'DATABASE_URL',
+    'JWT_SECRET', 'SUPABASE_URL', 'TENANT_ID', 'IS_DEFAULT',
+    'ANON_KEY', 'SITE_URL', 'REGION', 'NAME', 'KEY', 'URL', 'ID',
+  ];
+
   for (const line of lines) {
     const trimmed = line.trim();
     if (!trimmed || trimmed.startsWith('#')) continue;
@@ -63,17 +72,20 @@ export async function updateSupabaseDb() {
       }
 
       if (fullKey.startsWith('SERVER_')) {
-        const parts = fullKey.split('_');
-        const profile = parts[1];
-        if (parts.length >= 3 && profile !== undefined) {
-          const cleanKey = parts.slice(2).join('_');
-          if (!serverConfigs[profile]) {
-            serverConfigs[profile] = {};
-          }
-          const targetConf = serverConfigs[profile];
-          if (targetConf) {
-            targetConf[cleanKey] = value;
-          }
+        const withoutPrefix = fullKey.slice('SERVER_'.length);
+        const matchedSuffix = KNOWN_SUFFIXES.find(s => withoutPrefix.endsWith(`_${s}`));
+        if (matchedSuffix === undefined) continue;
+
+        const profile = withoutPrefix.slice(0, withoutPrefix.length - matchedSuffix.length - 1);
+        if (!profile) continue;
+
+        const cleanKey = matchedSuffix;
+        if (!serverConfigs[profile]) {
+          serverConfigs[profile] = {};
+        }
+        const targetConf = serverConfigs[profile];
+        if (targetConf) {
+          targetConf[cleanKey] = value;
         }
       }
     }
@@ -244,6 +256,22 @@ export async function updateSupabaseDb() {
             }
           }
         }
+      }
+
+      // 4. Sincronizar db_version en system_config con la migración más reciente aplicada
+      const allAppliedRows = await sql`SELECT id FROM public._migrations`;
+      const versions = allAppliedRows
+        .map(r => parseInt((r.id as string).split('_')[0] || '0'))
+        .filter(v => v > 0);
+      if (versions.length > 0) {
+        const maxAppliedVersion = Math.max(...versions);
+        console.log(styleText('cyan', `🔄 Sincronizando db_version en system_config de [${profile}] a la versión: ${maxAppliedVersion}`));
+        await sql`
+          INSERT INTO public.system_config (key, value) 
+          VALUES ('db_version', ${JSON.stringify(maxAppliedVersion.toString())}::jsonb) 
+          ON CONFLICT (key) 
+          DO UPDATE SET value = EXCLUDED.value, updated_at = NOW()
+        `;
       }
 
       if (patchesApplied === 0) {
