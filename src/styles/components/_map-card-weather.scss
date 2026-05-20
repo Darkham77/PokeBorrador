@@ -541,25 +541,6 @@
 // PARIDAD TOTAL con Aura Roja (mismo tamaño, misma fuerza, pulso invertido)
 .atmospheric-spawn {
   position: relative;
-  
-  &::before {
-    content: '';
-    position: absolute;
-    inset: -2%; // Idéntico a .rare-spawn
-    background: Radial-Gradient(circle, 
-      Rgba(0, 255, 255, 0.7) 0%, 
-      Transparent 70%
-    ); // Idéntico gradiente que la roja
-    border-radius: 50%;
-    will-change: transform, filter, opacity;
-  filter: Blur(2px); // Idéntico a la roja
-    z-index: calc(var(--z-base) - 2);
-    opacity: 0.6; // Opacidad base igual a la roja
-    animation: atmospheric-halo-pulse 2s ease-in-out infinite;
-    animation-delay: calc(var(--spawn-seed, 0) * -10s);
-    will-change: filter, transform, opacity;
-    pointer-events: none;
-  }
 }
 
 

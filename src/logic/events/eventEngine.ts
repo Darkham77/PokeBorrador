@@ -58,6 +58,8 @@ const safeParse = (val: string | object | null | undefined): Record<string, unkn
 
 
 import { logger } from '../utils/logger.ts'
+import { GAME_TIMEZONE } from '../timeUtils.ts'
+
 
 export function getArgDateString(date: Date | InstanceType<typeof Temporal.ZonedDateTime> | InstanceType<typeof Temporal.Instant> = Temporal.Now.instant()): string {
   const zdt = (date instanceof Temporal.ZonedDateTime)
@@ -65,7 +67,7 @@ export function getArgDateString(date: Date | InstanceType<typeof Temporal.Zoned
     : (date instanceof Date 
         ? Temporal.Instant.fromEpochMilliseconds(date.getTime()) 
         : (date instanceof Temporal.Instant ? date : Temporal.Now.instant())
-      ).toZonedDateTimeISO('America/Argentina/Buenos_Aires')
+      ).toZonedDateTimeISO(GAME_TIMEZONE)
     
   return zdt.toPlainDate().toString();
 }
@@ -82,7 +84,7 @@ export function isEventActiveNow(event: Event, date: Date | InstanceType<typeof 
     : (date instanceof Date 
         ? Temporal.Instant.fromEpochMilliseconds(date.getTime()) 
         : (date instanceof Temporal.Instant ? date : Temporal.Now.instant())
-      ).toZonedDateTimeISO('America/Argentina/Buenos_Aires')
+      ).toZonedDateTimeISO(GAME_TIMEZONE)
 
   // 1. Absolute date check
   if (event.start_at && event.ends_at) {

@@ -2,7 +2,7 @@
 
 import { computed } from 'vue'
 import { useUIStore } from '@/stores/ui'
-
+import { formatTime } from '@/logic/timeUtils'
 
 const uiStore = useUIStore()
 
@@ -16,16 +16,6 @@ const props = withDefaults(defineProps<Props>(), {
   history: () => []
 })
 
-const formatTime = (ts: string | number) => {
-  try {
-    const val = Number(ts)
-    if (isNaN(val)) return '---'
-    const instant = Temporal.Instant.fromEpochMilliseconds(val)
-    return instant.toZonedDateTimeISO('UTC').toLocaleString()
-  } catch {
-    return '---'
-  }
-}
 
 const isHistoryOpen = computed({
   get: () => uiStore.isHistoryOpen,

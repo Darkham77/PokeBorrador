@@ -173,46 +173,51 @@ export const useChatStore = defineStore('chat', () => {
       }
     }
 
-    if (!globalMessages.value.length && !forceIds.length) return
+    // Collect all user IDs: global chat + private chat participants
+    const uniqueUserIds = new Set<string>()
+    globalMessages.value.forEach(m => { if (m.user_id) uniqueUserIds.add(m.user_id) })
+    Object.keys(privateChats).forEach(friendId => {
+      uniqueUserIds.add(friendId)
+      privateChats[friendId]?.messages.forEach(m => { if (m.senderId) uniqueUserIds.add(m.senderId) })
+    })
+    forceIds.forEach(id => { if (id) uniqueUserIds.add(id) })
 
-    const uniqueUserIds = [...new Set(globalMessages.value.map(m => m.user_id).filter(Boolean))] as string[]
-    const missingIds = [...new Set([...uniqueUserIds.filter(id => !profileCosmetics.value[id]), ...forceIds])]
-    
-    if (missingIds.length > 0) {
-      try {
-        const [profRes, saveRes] = await Promise.all([
-          db.from('profiles').select('id, username, player_class, trainer_level, avatar_style, nick_style').in('id', missingIds),
-          db.from('game_saves').select('user_id, save_data').in('user_id', missingIds)
-        ]) as [
-          { data: { id: string; username?: string | null; player_class?: string | null; trainer_level?: number | null; avatar_style?: string | null; nick_style?: string | null }[] | null, error: unknown },
-          { data: { user_id: string; save_data?: unknown }[] | null, error: unknown }
-        ]
+    const missingIds = [...uniqueUserIds].filter(id => id && !profileCosmetics.value[id])
+    if (missingIds.length === 0) return
 
-        if (!profRes.error) {
-          const profilesList = profRes.data || []
-          const savesList = saveRes.data || []
+    try {
+      const [profRes, saveRes] = await Promise.all([
+        db.from('profiles').select('id, username, player_class, trainer_level, avatar_style, nick_style').in('id', missingIds),
+        db.from('game_saves').select('user_id, save_data').in('user_id', missingIds)
+      ]) as [
+        { data: { id: string; username?: string | null; player_class?: string | null; trainer_level?: number | null; avatar_style?: string | null; nick_style?: string | null }[] | null, error: unknown },
+        { data: { user_id: string; save_data?: unknown }[] | null, error: unknown }
+      ]
 
-          missingIds.forEach(id => {
-            const p = profilesList.find(prof => prof.id === id)
-            const saveRow = savesList.find(s => s.user_id === id)
-            const save = saveRow?.save_data ? (typeof saveRow.save_data === 'string' ? JSON.parse(saveRow.save_data) : saveRow.save_data) as Record<string, unknown> : {}
+      if (!profRes.error) {
+        const profilesList = profRes.data || []
+        const savesList = saveRes.data || []
 
-            const fallbackName = id.startsWith('local_') ? id.replace('local_', '') : 'Entrenador'
-            const capitalizedFallback = fallbackName.charAt(0).toUpperCase() + fallbackName.slice(1)
-            const username = (save.trainer as string) || p?.username || capitalizedFallback
+        missingIds.forEach(id => {
+          const p = profilesList.find(prof => prof.id === id)
+          const saveRow = savesList.find(s => s.user_id === id)
+          const save = saveRow?.save_data ? (typeof saveRow.save_data === 'string' ? JSON.parse(saveRow.save_data) : saveRow.save_data) as Record<string, unknown> : {}
 
-            profileCosmetics.value[id] = {
-              username,
-              player_class: (save.playerClass as string) || p?.player_class || 'entrenador',
-              trainer_level: (save.trainerLevel as number) || p?.trainer_level || 1,
-              avatar_style: (save.avatar_style as string) || p?.avatar_style || '',
-              nick_style: (save.nick_style as string) || p?.nick_style || ''
-            }
-          })
-        }
-      } catch (err) {
-        logger.error('Chat', `Error fetching profile cosmetics: ${(err as Error).message}`)
+          const fallbackName = id.startsWith('local_') ? id.replace('local_', '') : 'Entrenador'
+          const capitalizedFallback = fallbackName.charAt(0).toUpperCase() + fallbackName.slice(1)
+          const username = (save.trainer as string) || p?.username || capitalizedFallback
+
+          profileCosmetics.value[id] = {
+            username,
+            player_class: (save.playerClass as string) || p?.player_class || 'entrenador',
+            trainer_level: (save.trainerLevel as number) || p?.trainer_level || 1,
+            avatar_style: (save.avatar_style as string) || p?.avatar_style || '',
+            nick_style: (save.nick_style as string) || p?.nick_style || ''
+          }
+        })
       }
+    } catch (err) {
+      logger.error('Chat', `Error fetching profile cosmetics: ${(err as Error).message}`)
     }
   }
 
@@ -287,7 +292,7 @@ export const useChatStore = defineStore('chat', () => {
       const initialLastInteractions: Record<string, number> = {}
 
       data.forEach((row: Record<string, unknown>) => {
-        const senderId = (row.senderId as string) || ''
+        const senderId = (row.senderId as string) || (row.senderid as string) || ''
         const typeStr = (row.type as string) || ''
         const isIncoming = senderId !== myId
         const friendId = isIncoming ? senderId : typeStr.replace('private:', '')
@@ -299,8 +304,8 @@ export const useChatStore = defineStore('chat', () => {
       })
 
       data.forEach((row: Record<string, unknown>) => {
-        const senderId = (row.senderId as string) || ''
-        const senderName = (row.senderName as string) || 'Entrenador'
+        const senderId = (row.senderId as string) || (row.senderid as string) || ''
+        const senderName = (row.senderName as string) || (row.sendername as string) || 'Entrenador'
         const message = (row.message as string) || ''
         const typeStr = (row.type as string) || ''
         const createdAt = (row.created_at as string) || Temporal.Now.instant().toString()
@@ -539,6 +544,11 @@ export const useChatStore = defineStore('chat', () => {
   }
 
   function openChat(friendId: string, username: string) {
+    const existingChat = privateChats[friendId]
+    if (existingChat && activeChatId.value === friendId && !existingChat.isCollapsed) {
+      return
+    }
+
     if (!privateChats[friendId]) {
       privateChats[friendId] = {
         username: username || 'Entrenador',

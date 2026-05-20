@@ -4,6 +4,8 @@
  * 
  * Absolute isolation: This module does not store state or connect to DB.
  */
+import { GAME_TIMEZONE } from '../timeUtils.ts'
+
 
 export const WAR_PTS_TABLE: Record<string, { win: number; lose: number }> = {
   CAPTURE: { win: 5, lose: 1 },
@@ -30,7 +32,7 @@ export const WEEKLY_WIN_BONUS_COINS = 50
 
 
 /**
- * Gets a clean date string for Argentina Time (UTC-3).
+ * Gets a clean date string for the configured game timezone.
  * @param {Date | Temporal.ZonedDateTime} date 
  * @returns {string} YYYY-MM-DD
  */
@@ -40,7 +42,7 @@ export function getArgDateString(date: Date | Temporal.ZonedDateTime | Temporal.
     : (date instanceof Date 
         ? Temporal.Instant.fromEpochMilliseconds(date.getTime()) 
         : (date instanceof Temporal.Instant ? date : Temporal.Now.instant())
-      ).toZonedDateTimeISO('America/Argentina/Buenos_Aires')
+      ).toZonedDateTimeISO(GAME_TIMEZONE)
   
   return zdt.toPlainDate().toString()
 }
@@ -57,7 +59,7 @@ export function getWeekId(date: Date | Temporal.ZonedDateTime | Temporal.Instant
     : (date instanceof Date 
         ? Temporal.Instant.fromEpochMilliseconds(date.getTime()) 
         : (date instanceof Temporal.Instant ? date : Temporal.Now.instant())
-      ).toZonedDateTimeISO('America/Argentina/Buenos_Aires')
+      ).toZonedDateTimeISO(GAME_TIMEZONE)
   
   return `${zdt.yearOfWeek}-W${String(zdt.weekOfYear).padStart(2, '0')}`
 }
@@ -87,7 +89,7 @@ export function isDisputePhase(date: Date | Temporal.ZonedDateTime | Temporal.In
     : (date instanceof Date 
         ? Temporal.Instant.fromEpochMilliseconds(date.getTime()) 
         : (date instanceof Temporal.Instant ? date : Temporal.Now.instant())
-      ).toZonedDateTimeISO('America/Argentina/Buenos_Aires')
+      ).toZonedDateTimeISO(GAME_TIMEZONE)
   
   const day = zdt.dayOfWeek // 1 (Mon) to 7 (Sun)
   return (day >= 1 && day <= 5)

@@ -10,6 +10,7 @@ import { EVOLUTION_TABLE, STONE_EVOLUTIONS, TRADE_EVOLUTIONS } from '@/data/evol
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import type { Pokemon } from '@/types/pokemon'
 import type { MoveBaseData } from '@/types/database'
+import { GAME_TIMEZONE } from '@/logic/timeUtils'
 
 interface EvolutionEntry {
   type: 'level' | 'stone' | 'trade';
@@ -202,10 +203,13 @@ export function usePokemonDetail(propsRefs: Record<string, MaybeRefOrGetter<unkn
     if (!dateVal) return isInstance.value ? 'SIN FECHA' : null
     
     try {
-      return (typeof dateVal === 'string' ? Temporal.Instant.from(dateVal) : Temporal.Instant.fromEpochMilliseconds(Number(dateVal))).toZonedDateTimeISO('UTC').toLocaleString('es-ES', { 
-        year: 'numeric', month: 'long', day: 'numeric',
-        hour: '2-digit', minute: '2-digit'
-      })
+      return (typeof dateVal === 'string' ? Temporal.Instant.from(dateVal) : Temporal.Instant.fromEpochMilliseconds(Number(dateVal)))
+        .toZonedDateTimeISO(GAME_TIMEZONE)
+        .toLocaleString('es-ES', { 
+          year: 'numeric', month: 'long', day: 'numeric',
+          hour: '2-digit', minute: '2-digit',
+          hour12: false
+        })
     } catch (_) {
       return null
     }

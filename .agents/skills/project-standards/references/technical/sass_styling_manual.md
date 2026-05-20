@@ -228,9 +228,9 @@ When refactoring legacy or generic components:
   - **REGLA**: Cuando un elemento tiene múltiples auras (ej: Roja por rareza y Cian por clima), las animaciones **DEBEN** estar en contra-fase exacta para evitar "ruido visual" y que un color eclipse al otro.
   - **Sincronización**: Ambas animaciones deben compartir el mismo `animation-delay` basado en semilla (ej: `var(--spawn-seed)`) para asegurar que el baile sea determinista por instancia.
   - **Comportamiento**:
-    - **Aura Principal (Rare)**: 0% Escala 1.0 (Mín) -> 50% Escala 1.05 (Máx).
-    - **Halo Secundario (Weather)**: 0% Escala 1.15 (Máx) -> 50% Escala 0.9 (Mín).
-  - **Resultado**: Mientras una se apaga, la otra brilla, manteniendo siempre un halo de color visible y distinguible.
+    - **Aura Principal (Rare)**: Escala 0.1 (Mín) -> Escala 2.0 (Máx).
+    - **Halo Secundario (Weather)**: Escala 2.0 (Máx) -> Escala 0.1 (Mín).
+  - **Resultado**: Mientras una se apaga/encoge, la otra brilla/crece, manteniendo siempre un halo de color visible y distinguible.
 - **Viewport Units (Mobile Safety)**:
   - **MANDATORY**: Use `dvh` and `dvw` (Dynamic Viewport) for any element requiring full-screen scaling.
   - **WHY**: Standard `vh`/`vw` units do not account for dynamic toolbars (URL bar, navigation) in mobile browsers like Safari. This leads to layout clipping or unwanted scrollbars.

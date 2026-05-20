@@ -308,40 +308,56 @@ const initAuraAnimations = () => {
         .to(el, { scale: 1, duration: 0.8, ease: 'sine.inOut' })
 
       // 2. Aura Effects (Siblings)
-      if (isRare) {
-        const rareAura = el.parentElement?.querySelector('.rare-aura')
-        if (rareAura) {
-          gsap.fromTo(rareAura, 
-            { opacity: 0, scale: 0.95 },
-            {
-              opacity: 1, 
-              scale: 1.05, 
-              duration: AURA_CYCLE / 2,
-              repeat: -1,
-              yoyo: true,
-              ease: 'sine.inOut',
-              delay: baseDelay
-            }
-          )
-        }
-      }
+      const rareAura = el.parentElement?.querySelector('.rare-aura')
+      const atmosAura = el.parentElement?.querySelector('.atmospheric-aura')
 
-      if (isAtmos) {
-        const atmosAura = el.parentElement?.querySelector('.atmospheric-aura')
-        if (atmosAura) {
-          const atmosDelay = isRare ? baseDelay + (AURA_CYCLE / 2) : baseDelay
-          gsap.fromTo(atmosAura,
-            { opacity: 0, scale: 0.95 },
-            {
-              opacity: 0.9, 
-              scale: 1.08, 
-              duration: AURA_CYCLE / 2, 
-              repeat: -1,
-              yoyo: true,
-              ease: 'sine.inOut',
-              delay: atmosDelay
-            }
-          )
+      if (rareAura || atmosAura) {
+        const auraTl = gsap.timeline({
+          repeat: -1,
+          yoyo: true,
+          delay: baseDelay
+        })
+
+        const duration = AURA_CYCLE / 2
+
+        if (rareAura && atmosAura) {
+          // Ambos existen: contra-fase estricta e inmediata
+          gsap.set(rareAura, { scale: 0.1, opacity: 0 })
+          gsap.set(atmosAura, { scale: 2.0, opacity: 0.9 })
+
+          auraTl.to(rareAura, {
+            scale: 2.0,
+            opacity: 1,
+            duration: duration,
+            ease: 'sine.inOut'
+          }, 0)
+
+          auraTl.to(atmosAura, {
+            scale: 0.1,
+            opacity: 0,
+            duration: duration,
+            ease: 'sine.inOut'
+          }, 0)
+        } else {
+          // Solo uno existe: comportamiento estándar
+          if (rareAura) {
+            gsap.set(rareAura, { scale: 0.1, opacity: 0 })
+            auraTl.to(rareAura, {
+              scale: 2.0,
+              opacity: 1,
+              duration: duration,
+              ease: 'sine.inOut'
+            }, 0)
+          }
+          if (atmosAura) {
+            gsap.set(atmosAura, { scale: 0.1, opacity: 0 })
+            auraTl.to(atmosAura, {
+              scale: 2.0,
+              opacity: 0.9,
+              duration: duration,
+              ease: 'sine.inOut'
+            }, 0)
+          }
         }
       }
     })
@@ -649,7 +665,13 @@ watch(() => JSON.stringify(spawnGrid.value.slots), (newVal, oldVal) => {
 
 .aura-effect {
   position: absolute;
-  inset: -3%; 
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: auto;
+  height: 95%;
+  aspect-ratio: 1 / 1;
   border-radius: 50%;
   filter: Blur(1.5px); 
   pointer-events: none;
@@ -657,10 +679,12 @@ watch(() => JSON.stringify(spawnGrid.value.slots), (newVal, oldVal) => {
   opacity: 0;
 
   &.rare-aura {
-    background: Radial-Gradient(circle, Rgba(255, 0, 0, 0.95) 0%, Transparent 70%);
+    z-index: 2;
+    background: Radial-Gradient(circle, Rgba(255, 0, 0, 0.9) 0%, Transparent 70%);
   }
 
   &.atmospheric-aura {
+    z-index: 1;
     background: Radial-Gradient(circle, Rgba(0, 255, 255, 0.9) 0%, Transparent 70%);
   }
 }

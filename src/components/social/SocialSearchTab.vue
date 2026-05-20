@@ -32,6 +32,7 @@ function animateCards() {
     if (!listRef.value) return
     const cards = listRef.value.querySelectorAll('.search-card')
     if (cards.length > 0) {
+      listRef.value.classList.add('tab-mounting')
       gsap.killTweensOf(cards)
       gsap.from(cards, {
         opacity: 0,
@@ -40,7 +41,10 @@ function animateCards() {
         duration: 0.45,
         stagger: 0.06,
         ease: 'back.out(1.2)',
-        clearProps: 'all'
+        clearProps: 'all',
+        onComplete: () => {
+          listRef.value?.classList.remove('tab-mounting')
+        }
       })
     }
   })
@@ -204,7 +208,7 @@ watch(() => socialStore.searchResults, () => {
 .search-filters {
   display: flex;
   gap: 12px;
-  margin-bottom: 20px;
+  margin-bottom: 0;
   background: Rgba(0, 0, 0, 0.2);
   border: 1px solid Rgba(199, 125, 255, 0.1);
   border-radius: 12px;
@@ -257,7 +261,7 @@ watch(() => socialStore.searchResults, () => {
 .poder-text-small { color: #f87171; font-weight: bold; }
 
 .search-bar {
-  margin-bottom: 20px;
+  margin-bottom: 0;
   position: relative;
 
   input {
@@ -295,6 +299,10 @@ watch(() => socialStore.searchResults, () => {
   display: flex;
   flex-direction: column;
   gap: 12px;
+
+  &.tab-mounting .search-card {
+    transition: none !important;
+  }
 }
 
 .search-card {
@@ -320,6 +328,7 @@ watch(() => socialStore.searchResults, () => {
     gap: 4px;
 
     .name { 
+      font-size: 14px;
       font-weight: 700; 
       color: var(--white); 
       line-height: 1.2;
@@ -385,9 +394,9 @@ watch(() => socialStore.searchResults, () => {
 
 .no-results {
   text-align: center;
-  padding: 20px;
-  color: Rgba(148, 163, 184, 1);
-  font-size: 12px;
+  padding: 40px 20px;
+  color: Rgba(148, 163, 184, 0.7);
+  font-size: 14px;
 }
 
 @keyframes spin { to { transform: Translatey(-50%) Rotate(360deg); } }

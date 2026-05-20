@@ -3,7 +3,6 @@ import { computed, onMounted, ref, watch, nextTick } from 'vue'
 import { useSocialStore } from '@/stores/social'
 import { useChatStore } from '@/stores/chat'
 import { useTradeStore } from '@/stores/trade'
-import { useLivePvPStore } from '@/stores/livePvP'
 import { useUIStore } from '@/stores/ui'
 import TrainerAvatar from '@/components/TrainerAvatar.vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
@@ -14,7 +13,6 @@ import type { Friend } from '@/stores/social'
 const socialStore = useSocialStore()
 const chatStore = useChatStore()
 const tradeStore = useTradeStore()
-const livePvP = useLivePvPStore()
 const uiStore = useUIStore()
 
 function openTrainerProfile(userId: string) {
@@ -27,6 +25,10 @@ const filteredFriends = computed(() => socialStore.friends)
 
 function openChat(friend: Friend) {
   chatStore.openChat(friend.id, friend.username)
+}
+
+function isChatActive(friendId: string) {
+  return chatStore.activeChatId === friendId && chatStore.privateChats[friendId] && !chatStore.privateChats[friendId].isCollapsed
 }
 
 function openTrade(friend: Friend) {
@@ -55,6 +57,7 @@ function animateCards() {
     if (!listRef.value) return
     const cards = listRef.value.querySelectorAll('.friend-card')
     if (cards.length > 0) {
+      listRef.value.classList.add('tab-mounting')
       gsap.killTweensOf(cards)
       gsap.from(cards, {
         opacity: 0,
@@ -63,7 +66,10 @@ function animateCards() {
         duration: 0.45,
         stagger: 0.06,
         ease: 'back.out(1.2)',
-        clearProps: 'all'
+        clearProps: 'all',
+        onComplete: () => {
+          listRef.value?.classList.remove('tab-mounting')
+        }
       })
     }
   })
@@ -73,9 +79,9 @@ onMounted(() => {
   animateCards()
 })
 
-watch(() => filteredFriends.value, () => {
+watch(() => filteredFriends.value.map(f => f.id).join(','), () => {
   animateCards()
-}, { deep: true })
+})
 
 defineEmits<{
   (e: 'search-tab'): void
@@ -149,6 +155,7 @@ defineEmits<{
           >
             <button
               class="action-btn chat"
+              :disabled="isChatActive(friend.id)"
               @click.stop="openChat(friend)"
             >
               💬
@@ -173,13 +180,14 @@ defineEmits<{
           </PVTooltip>
 
           <PVTooltip
-            title="DESAFÍO"
-            description="Retar a un combate PvP en vivo."
+            title="DESAFÍO (NO DISPONIBLE)"
+            description="Los combates PvP en vivo no están disponibles actualmente."
             position="top"
           >
             <button
               class="action-btn battle"
-              @click.stop="livePvP.sendInvite(friend.id, friend.username)"
+              disabled
+              @click.stop
             >
               ⚔️
             </button>
@@ -208,6 +216,10 @@ defineEmits<{
   display: flex;
   flex-direction: column;
   gap: 12px;
+
+  &.tab-mounting .friend-card {
+    transition: none !important;
+  }
 }
 
 .friend-card {
@@ -235,17 +247,17 @@ defineEmits<{
 
 .status-dot {
   position: absolute;
-  bottom: 0;
-  right: 0;
-  width: 10px;
-  height: 10px;
+  bottom: -8px;
+  right: -8px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
   border: 2px solid Rgba(16, 24, 34, 1);
-  background: Rgba(255, 255, 255, 0.5);
+  background: Rgba(239, 68, 68, 1);
 
   &.online {
     background: Rgba(34, 197, 94, 1);
-    box-shadow: 0 0 8px Rgba(34, 197, 94, 1);
+    box-shadow: 0 0 10px Rgba(34, 197, 94, 1);
   }
 }
 
@@ -287,7 +299,13 @@ defineEmits<{
     color: var(--white);
     position: relative;
 
-    &:hover { transform: Scale(1.1); }
+    &:hover:not(:disabled) { transform: Scale(1.1); }
+    &:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+      background: Rgba(255, 255, 255, 0.02);
+      color: Rgba(255, 255, 255, 0.3);
+    }
     &.chat:hover { background: Rgba(59, 130, 246, 0.2); color: Rgba(96, 165, 250, 1); }
     &.trade:hover { background: Rgba(34, 197, 94, 0.2); color: Rgba(74, 222, 128, 1); }
     &.battle:hover { background: Rgba(168, 85, 247, 0.2); color: Rgba(192, 132, 252, 1); }
@@ -346,3 +364,6 @@ defineEmits<{
   }
 }
 </style>
+
+
+

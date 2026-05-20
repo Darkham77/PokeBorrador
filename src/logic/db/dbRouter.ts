@@ -591,9 +591,12 @@ export class DBRouter {
           [JSON.stringify(senderSave), userId]
         );
 
+        const generatedId = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 11) + Date.now().toString(36);
+
         sqliteDb.run(
-          "INSERT INTO trade_offers (sender_id, receiver_id, offer_pokemon, offer_items, offer_money, request_pokemon, request_items, request_money, message, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')",
+          "INSERT INTO trade_offers (id, sender_id, receiver_id, offer_pokemon, offer_items, offer_money, request_pokemon, request_items, request_money, message, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')",
           [
+            generatedId,
             userId,
             p_receiver_id,
             p_offer_pokemon ? JSON.stringify(p_offer_pokemon) : null,
@@ -607,11 +610,7 @@ export class DBRouter {
         );
 
         await persistSQLite();
-        // Obtener el ID insertado
-        const lastIdRes = await queryLocal("SELECT last_insert_rowid() as id");
-        const tradeId = (lastIdRes[0] as { id: number }).id;
-
-        return { data: tradeId, error: null };
+        return { data: generatedId, error: null };
       }
 
       // 6. Accept Trade Offer Emulation
@@ -753,6 +752,69 @@ export class DBRouter {
         // 4. Finalizar trade
         sqliteDb.run(
           "UPDATE trade_offers SET status = 'accepted', created_at = strftime('%Y-%m-%dT%H:%M:%SZ', 'now') WHERE id = ?",
+          [p_trade_id]
+        );
+
+        await persistSQLite();
+        return { data: true, error: null };
+      }
+
+      // 7. Reject Trade Offer Emulation
+      if (name === 'reject_trade_v2') {
+        const { p_trade_id } = params as { p_trade_id: string | number };
+
+        const trades = await queryLocal("SELECT * FROM trade_offers WHERE id = ?", [p_trade_id]);
+        if (trades.length === 0) return { data: null, error: { message: 'Oferta no encontrada.' } };
+        const trade = trades[0] as {
+          id: number;
+          sender_id: string;
+          receiver_id: string;
+          offer_pokemon: string | null;
+          offer_items: string | null;
+          offer_money: number;
+          status: string;
+        };
+
+        if (trade.status !== 'pending') {
+          return { data: null, error: { message: 'Solo se pueden rechazar u ocultar ofertas pendientes.' } };
+        }
+        if (trade.sender_id !== userId && trade.receiver_id !== userId) {
+          return { data: null, error: { message: 'No autorizado.' } };
+        }
+
+        // Devolver activos al emisor (trade.sender_id) en su claim_queue
+        const offerPokeObj = trade.offer_pokemon ? (typeof trade.offer_pokemon === 'string' ? JSON.parse(trade.offer_pokemon) : trade.offer_pokemon) : null;
+        const offerItemsObj = trade.offer_items ? (typeof trade.offer_items === 'string' ? JSON.parse(trade.offer_items) : trade.offer_items) : null;
+
+        if (offerPokeObj) {
+          const claimId = 'claim_' + Math.random().toString(36).substring(2, 11);
+          sqliteDb.run(
+            "INSERT INTO claim_queue (id, user_id, source_type, source_id, asset_data) VALUES (?, ?, 'trade_refund', ?, ?)",
+            [claimId, trade.sender_id, String(p_trade_id), JSON.stringify({ type: 'pokemon', data: offerPokeObj })]
+          );
+        }
+        if (trade.offer_money > 0) {
+          const claimId = 'claim_' + Math.random().toString(36).substring(2, 11);
+          sqliteDb.run(
+            "INSERT INTO claim_queue (id, user_id, source_type, source_id, asset_data) VALUES (?, ?, 'trade_refund', ?, ?)",
+            [claimId, trade.sender_id, String(p_trade_id), JSON.stringify({ type: 'money', data: trade.offer_money })]
+          );
+        }
+        if (offerItemsObj) {
+          for (const [itemName, qty] of Object.entries(offerItemsObj as Record<string, number>)) {
+            if (qty > 0) {
+              const claimId = 'claim_' + Math.random().toString(36).substring(2, 11);
+              sqliteDb.run(
+                "INSERT INTO claim_queue (id, user_id, source_type, source_id, asset_data) VALUES (?, ?, 'trade_refund', ?, ?)",
+                [claimId, trade.sender_id, String(p_trade_id), JSON.stringify({ type: 'item', data: { name: itemName, qty } })]
+              );
+            }
+          }
+        }
+
+        // Marcar como rechazado
+        sqliteDb.run(
+          "UPDATE trade_offers SET status = 'rejected', created_at = strftime('%Y-%m-%dT%H:%M:%SZ', 'now') WHERE id = ?",
           [p_trade_id]
         );
 

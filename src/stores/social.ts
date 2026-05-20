@@ -483,6 +483,36 @@ export const useSocialStore = defineStore('social', () => {
     notifications.total = notifications.friends + notifications.trades + notifications.battles + notifications.chats
   }
 
+  /**
+   * Re-fetches the updated_at for all current friends and recalculates isOnline.
+   * Lightweight — only queries game_saves for friend IDs already loaded.
+   */
+  async function refreshFriendsPresence() {
+    const db = gameStore.db
+    if (!db || friends.value.length === 0) return
+    try {
+      const ids = friends.value.map(f => f.id)
+      const { data } = await db
+        .from('game_saves')
+        .select('user_id, updated_at')
+        .in('user_id', ids) as { data: { user_id: string; updated_at: string }[] | null }
+
+      if (!data) return
+      const now = Temporal.Now.instant().epochMilliseconds
+      friends.value = friends.value.map(f => {
+        const row = data.find(r => r.user_id === f.id)
+        const lastSeen = parseInstantSafe(row?.updated_at)
+        return {
+          ...f,
+          lastSeen,
+          isOnline: !!(lastSeen && (now - lastSeen.epochMilliseconds) < 5 * 60 * 1000)
+        }
+      })
+    } catch (err) {
+      logger.warn('Social', `refreshFriendsPresence error: ${(err as Error).message}`)
+    }
+  }
+
   function startPresence() {
     if (presenceInterval) presenceInterval.kill()
     if (authStore.sessionMode === 'offline') return
@@ -492,8 +522,11 @@ export const useSocialStore = defineStore('social', () => {
       await gameStore.db.from('game_saves').update({ 
         updated_at: Temporal.Now.instant().toString() 
       }).eq('user_id', authStore.user?.id)
-      
-      presenceInterval = gsap.delayedCall(120, ping)
+
+      // Refresh friends' presence on every ping cycle
+      await refreshFriendsPresence()
+
+      presenceInterval = gsap.delayedCall(60, ping)
     }
     
     ping()
@@ -581,6 +614,7 @@ export const useSocialStore = defineStore('social', () => {
     removeFriend,
     startPresence,
     stopPresence,
+    refreshFriendsPresence,
     refreshNotificationCount,
     fetchLeaderboard
   }

@@ -2,12 +2,13 @@
 
 import { ref, onMounted, watch } from 'vue';
 import { useSocialStore } from '@/stores/social';
-import TradeClaimStatus from '@/components/social/TradeClaimStatus.vue';
+import { useTradeStore } from '@/stores/trade';
 import { useGameStore } from '@/stores/game';
 import BaseModal from '@/components/common/BaseModal.vue';
 import SocialFriendsTab from './SocialFriendsTab.vue';
 import SocialRequestsTab from './SocialRequestsTab.vue';
 import SocialSearchTab from './SocialSearchTab.vue';
+import SocialTradesTab from './SocialTradesTab.vue';
 import { useWindowListener } from '@/composables/useWindowListener';
 
 interface Props {
@@ -22,11 +23,19 @@ const props = withDefaults(defineProps<Props>(), {
 
 const socialStore = useSocialStore();
 const gameStore = useGameStore();
+const tradeStore = useTradeStore();
 
-const activeTab = ref(props.initialTab);
+const activeTab = ref(props.initialTab === 'claims' ? 'trades' : props.initialTab);
+const bodyRef = ref<HTMLElement | null>(null);
 
 watch(() => props.initialTab, (val) => {
-  if (val) activeTab.value = val;
+  if (val) activeTab.value = val === 'claims' ? 'trades' : val;
+});
+
+watch(activeTab, () => {
+  if (bodyRef.value) {
+    bodyRef.value.scrollTop = 0;
+  }
 });
 
 const isSmallScreen = ref(window.innerWidth <= 950);
@@ -39,6 +48,7 @@ const emit = defineEmits<{
 
 onMounted(() => {
   socialStore.loadSocialData();
+  tradeStore.refreshPendingTrades();
 });
 </script>
 
@@ -106,18 +116,21 @@ onMounted(() => {
           BUSCAR
         </button>
         <button 
-          :class="{ active: activeTab === 'claims' }" 
-          @click.stop="activeTab = 'claims'"
+          :class="{ active: activeTab === 'trades' }" 
+          @click.stop="activeTab = 'trades'"
         >
-          RECLAMOS
+          INTERCAMBIOS
           <span
-            v-if="gameStore.state.claimQueue.length > 0"
+            v-if="(tradeStore.pendingCount + gameStore.state.claimQueue.length) > 0"
             class="badge-notif"
-          >{{ gameStore.state.claimQueue.length }}</span>
+          >{{ tradeStore.pendingCount + gameStore.state.claimQueue.length }}</span>
         </button>
       </nav>
 
-      <div class="modal-body custom-scrollbar">
+      <div
+        ref="bodyRef"
+        class="modal-body custom-scrollbar"
+      >
         <!-- TABS: FRIENDS -->
         <SocialFriendsTab 
           v-if="activeTab === 'friends'" 
@@ -130,23 +143,8 @@ onMounted(() => {
         <!-- TABS: SEARCH -->
         <SocialSearchTab v-if="activeTab === 'search'" />
 
-        <!-- TABS: CLAIMS -->
-        <div
-          v-if="activeTab === 'claims'"
-          class="tab-content-inner"
-        >
-          <TradeClaimStatus />
-          
-          <div
-            v-if="gameStore.state.claimQueue.length === 0"
-            class="empty-state"
-          >
-            <div class="icon">
-              📦
-            </div>
-            <p>No tenés reclamos pendientes.</p>
-          </div>
-        </div>
+        <!-- TABS: TRADES -->
+        <SocialTradesTab v-if="activeTab === 'trades'" />
       </div>
     </div>
   </BaseModal>
@@ -200,7 +198,7 @@ onMounted(() => {
     flex: 1;
     background: Rgba(255, 255, 255, 0.02);
     border: 1px solid Rgba(255, 255, 255, 0.05);
-    padding: 12px;
+    padding: 12px 6px;
     color: Rgba(255, 255, 255, 0.5);
     @include pixelated;
     font-size: 8px;
@@ -209,6 +207,17 @@ onMounted(() => {
     transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     font-weight: bold;
+    white-space: nowrap;
+
+    @media (max-width: 580px) {
+      font-size: 7px;
+      padding: 10px 4px;
+    }
+
+    @media (max-width: 480px) {
+      font-size: 6px;
+      padding: 8px 2px;
+    }
 
     &:hover:not(.active) {
       background: Rgba(255, 255, 255, 0.05);
@@ -258,6 +267,7 @@ onMounted(() => {
 .modal-body {
   flex: 1;
   overflow-y: auto;
+  scrollbar-gutter: stable;
   min-height: 380px;
   padding: 20px;
   background: Rgba(13, 10, 25, 0.2); // Premium purple tint overlay
@@ -282,14 +292,13 @@ onMounted(() => {
   color: Rgba(148, 163, 184, 0.7);
   
   .icon {
-    font-size: 48px;
-    margin-bottom: 16px;
+    font-size: 40px;
+    margin-bottom: 15px;
     filter: Drop-Shadow(0 0 12px Rgba(168, 85, 247, 0.2));
   }
   
   p {
-    @include pixelated;
-    font-size: 8px;
+    font-size: 14px;
     margin-bottom: 0;
   }
 }

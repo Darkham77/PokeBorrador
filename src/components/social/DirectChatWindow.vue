@@ -5,6 +5,9 @@ import { useAuthStore } from '@/stores/auth';
 import { useUIStore } from '@/stores/ui';
 import TrainerAvatar from '@/components/TrainerAvatar.vue';
 import BaseModal from '@/components/common/BaseModal.vue';
+import { gsap } from 'gsap';
+import { formatTime } from '@/logic/timeUtils';
+
 
 interface Props {
   friendId: string;
@@ -41,23 +44,6 @@ function closeChat() {
   chatStore.closeChat(props.friendId);
 }
 
-function formatTime(iso: string | number | undefined) {
-  if (!iso) return '';
-  try {
-    let instant: Temporal.Instant;
-    if (typeof iso === 'string') {
-      const normalized = iso.includes('Z') || iso.includes('+') ? iso : iso.replace(' ', 'T') + 'Z';
-      instant = Temporal.Instant.from(normalized);
-    } else {
-      const ms = typeof iso === 'number' ? iso : Number(iso);
-      instant = Temporal.Instant.fromEpochMilliseconds(ms);
-    }
-    return instant.toZonedDateTimeISO('UTC').toLocaleString(undefined, { hour: '2-digit', minute: '2-digit' });
-  } catch (_e) {
-    return '';
-  }
-}
-
 function openTrainerProfile(userId?: string) {
   if (!userId) return;
   uiStore.open('TrainerProfile', { userId });
@@ -69,6 +55,20 @@ watch(() => chat.value?.messages.length, () => {
     chatStore.fetchMissingCosmetics();
   }
 });
+
+watch(() => chat.value?.isCollapsed, (collapsed) => {
+  if (collapsed === false) {
+    nextTick(() => {
+      scrollToBottom();
+      inputField.value?.focus();
+    });
+    // Sincronizar el scroll al fondo con la animación de slide-in del modal lateral
+    gsap.delayedCall(0.1, scrollToBottom);
+    gsap.delayedCall(0.3, scrollToBottom);
+    gsap.delayedCall(0.5, scrollToBottom);
+    chatStore.fetchMissingCosmetics();
+  }
+}, { immediate: true });
 
 onMounted(() => {
   nextTick(scrollToBottom);

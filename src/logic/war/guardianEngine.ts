@@ -6,6 +6,8 @@
  * 
  * Absolute isolation: This module does not store state or connect to DB.
  */
+import { GAME_TIMEZONE } from '../timeUtils.ts'
+
 
 export interface GuardianBase {
   id: string;
@@ -62,7 +64,7 @@ export function hashString(str: string): number {
 }
 
 /**
- * Gets a clean date string for Argentina Time (UTC-3).
+ * Gets a clean date string for the configured game timezone.
  * @param {Date} date 
  * @returns {string} YYYY-MM-DD
  */
@@ -72,7 +74,7 @@ function getArgDateString(date: Date | Temporal.ZonedDateTime | Temporal.Instant
     : (date instanceof Date 
         ? Temporal.Instant.fromEpochMilliseconds(date.getTime()) 
         : (date instanceof Temporal.Instant ? date : Temporal.Now.instant())
-      ).toZonedDateTimeISO('America/Argentina/Buenos_Aires')
+      ).toZonedDateTimeISO(GAME_TIMEZONE)
     
   return zdt.toPlainDate().toString();
 }

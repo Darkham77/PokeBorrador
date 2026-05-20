@@ -8,6 +8,8 @@ import { useGameStore } from '@/stores/game';
 import { useUIStore } from '@/stores/ui';
 import TrainerAvatar from '@/components/TrainerAvatar.vue';
 import BaseModal from '@/components/common/BaseModal.vue';
+import { formatTime } from '@/logic/timeUtils';
+
 
 const chatStore = useChatStore();
 const gameStore = useGameStore();
@@ -50,23 +52,6 @@ async function handleSendMessage() {
 function scrollToBottom() {
   if (messagesContainer.value) {
     messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight;
-  }
-}
-
-function formatTime(iso: string | Date | undefined) {
-  if (!iso) return '';
-  try {
-    let instant: Temporal.Instant;
-    if (typeof iso === 'string') {
-      const normalized = iso.includes('Z') || iso.includes('+') ? iso : iso.replace(' ', 'T') + 'Z';
-      instant = Temporal.Instant.from(normalized);
-    } else {
-      const ms = typeof iso === 'number' ? iso : (iso instanceof Date ? iso.getTime() : Number(iso));
-      instant = Temporal.Instant.fromEpochMilliseconds(ms);
-    }
-    return instant.toZonedDateTimeISO('UTC').toLocaleString(undefined, { hour: '2-digit', minute: '2-digit' });
-  } catch (_e) {
-    return '';
   }
 }
 

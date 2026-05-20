@@ -59,7 +59,12 @@ const handleTabChange = (tab: string, _event?: Event) => {
   }
 
   if (['social', 'friends'].includes(tab)) {
-    modalStore.open('SocialCenter', { initialTab: 'friends' })
+    const initialTab = (socialStore.notifications.trades > 0 && (socialStore.notifications.chats + socialStore.notifications.friends) === 0)
+      ? 'trades'
+      : (socialStore.notifications.friends > 0 && socialStore.notifications.chats === 0)
+        ? 'requests'
+        : 'friends'
+    modalStore.open('SocialCenter', { initialTab })
     return
   }
   
@@ -234,9 +239,9 @@ onUnmounted(() => {
         <span class="icon">🏪</span>
         <span class="nav-item-label">MARKET</span>
         <span
-          v-if="gtsStore.unseenSalesCount + gameStore.state.claimQueue.length > 0"
+          v-if="gtsStore.unseenSalesCount > 0"
           class="badge-pill"
-        >{{ gtsStore.unseenSalesCount + gameStore.state.claimQueue.length }}</span>
+        >{{ gtsStore.unseenSalesCount }}</span>
       </button>
       
       <Transition
@@ -256,9 +261,9 @@ onUnmounted(() => {
           >
             <span class="icon">🌎</span><span class="nav-item-label">GLOBAL</span>
             <span
-              v-if="gtsStore.unseenSalesCount + gameStore.state.claimQueue.length > 0"
+              v-if="gtsStore.unseenSalesCount > 0"
               class="badge-pill"
-            >{{ gtsStore.unseenSalesCount + gameStore.state.claimQueue.length }}</span>
+            >{{ gtsStore.unseenSalesCount }}</span>
           </button>
           <button
             class="hud-nav-btn"
@@ -298,9 +303,9 @@ onUnmounted(() => {
         <span class="icon">👪</span>
         <span class="nav-item-label">SOCIAL</span>
         <span
-          v-if="socialStore.notifications.total"
+          v-if="socialStore.notifications.total + gameStore.state.claimQueue.length > 0"
           class="badge-pill"
-        >{{ socialStore.notifications.total }}</span>
+        >{{ socialStore.notifications.total + gameStore.state.claimQueue.length }}</span>
       </button>
 
       <Transition
@@ -320,9 +325,9 @@ onUnmounted(() => {
           >
             <span class="icon">🤝</span><span class="nav-item-label">AMIGOS</span>
             <span
-              v-if="(socialStore.notifications.chats + socialStore.notifications.friends) > 0"
+              v-if="(socialStore.notifications.chats + socialStore.notifications.friends + socialStore.notifications.trades + gameStore.state.claimQueue.length) > 0"
               class="badge-pill"
-            >{{ socialStore.notifications.chats + socialStore.notifications.friends }}</span>
+            >{{ socialStore.notifications.chats + socialStore.notifications.friends + socialStore.notifications.trades + gameStore.state.claimQueue.length }}</span>
           </button>
           <button
             class="hud-nav-btn"

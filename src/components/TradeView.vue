@@ -128,10 +128,10 @@ const handleSend = async () => {
     message: message.value
   })
   
+  isSending.value = false
   if (success) {
     closeTrade()
   }
-  isSending.value = false
 }
 
 // Entry animation using GSAP

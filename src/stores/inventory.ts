@@ -111,6 +111,7 @@ export const useInventoryStore = defineStore('inventory', () => {
     }
 
     return items.filter(item => {
+      if (item.qty <= 0) return false
       if (activeCategory.value !== 'todos' && activeCategory.value !== 'utilizables' && item.cat !== activeCategory.value) return false
       if (searchQuery.value && !item.name.toLowerCase().includes(searchQuery.value.toLowerCase())) return false
       return true

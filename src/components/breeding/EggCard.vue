@@ -1,6 +1,7 @@
 <script setup lang="ts">
 
 import type { DaycareEgg } from '@/types/breeding'
+import { formatTime } from '@/logic/timeUtils'
 
 interface Props {
   egg: DaycareEgg
@@ -12,10 +13,7 @@ const emit = defineEmits<{
   (e: 'collect', egg: DaycareEgg): void
 }>()
 
-const formatDate = (dateStr: string) => {
-  const date = Temporal.Instant.from(dateStr)
-  return date.toZonedDateTimeISO('UTC').toLocaleString()
-}
+
 </script>
 
 <template>
@@ -28,7 +26,7 @@ const formatDate = (dateStr: string) => {
         HUEVO DE {{ egg.species.toUpperCase() }}
       </div>
       <div class="egg-time">
-        GENERADO: {{ formatDate(egg.deposited_at) }}
+        GENERADO: {{ formatTime(egg.deposited_at) }}
       </div>
       <button
         class="collect-btn-retro"

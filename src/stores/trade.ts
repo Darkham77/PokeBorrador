@@ -117,6 +117,19 @@ export const useTradeStore = defineStore('trade', () => {
       return false
     }
 
+    // MANDATORY: Deduct items locally before saving to SQLite so DBs match
+    for (const [itemName, qty] of Object.entries(tradeOfferItems)) {
+      if (gameStore.state.inventory[itemName]) {
+        gameStore.state.inventory[itemName] -= qty
+        if (gameStore.state.inventory[itemName] <= 0) {
+          delete gameStore.state.inventory[itemName]
+        }
+      }
+    }
+    if (offerMoney > 0) {
+      gameStore.state.money -= offerMoney
+    }
+
     // MANDATORY: Pre-Action Flush (Always save before social actions with assets)
     uiStore.notify('Sincronizando inventario...', '🔄')
     await gameStore.save(false)
@@ -135,12 +148,21 @@ export const useTradeStore = defineStore('trade', () => {
     if (!error && tradeId) {
       uiStore.notify(`¡Oferta enviada a ${tradeTarget.value.username}!`, '🔄')
       audioStore.sentMsg() 
+      await gameStore.loadGame() // <-- OBLIGATORIO: Actualizar cliente post-escrow
       refreshPendingTrades()
       return true
+    } else {
+      // ROLLBACK LOCAL: Si falla, devolver los items
+      for (const [itemName, qty] of Object.entries(tradeOfferItems)) {
+        gameStore.state.inventory[itemName] = (gameStore.state.inventory[itemName] || 0) + qty
+      }
+      if (offerMoney > 0) {
+        gameStore.state.money += offerMoney
+      }
+      logger.error('TRADE', `Error al enviar oferta: ${(error as Error).message}`)
+      uiStore.notify('Error al enviar oferta: ' + (error as { message: string }).message, '❌')
+      return false
     }
-    
-    uiStore.notify('Error al enviar: ' + ((error as { message: string })?.message || 'Error desconocido'), '❌')
-    return false
   }
 
   async function acceptTrade(tradeId: string | number) {
@@ -174,14 +196,40 @@ export const useTradeStore = defineStore('trade', () => {
   }
 
   async function rejectTrade(tradeId: string | number) {
-    await gameStore.db.from('trade_offers').update({ status: 'rejected' }).eq('id', tradeId)
-    uiStore.notify('Oferta rechazada.', '👋')
-    await refreshPendingTrades()
+    try {
+      loadingStore.start('reject_trade', 'Cancelando intercambio...', 'Sincronizando con el servidor')
+      
+      // MANDATORY: Pre-Action Flush
+      uiStore.notify('Sincronizando inventario...', '🔄')
+      await gameStore.save(false)
+
+      const { error } = await gameStore.db.rpc('reject_trade_v2', {
+        p_trade_id: tradeId
+      })
+      if (error) throw new Error((error as { message: string }).message)
+      
+      uiStore.notify('Oferta cancelada/rechazada. Reembolso enviado a Reclamos.', '👋')
+      await gameStore.fetchClaimQueue()
+      await gameStore.loadGame() // <-- OBLIGATORIO: Actualizar cliente tras cambios de escrow
+      await refreshPendingTrades()
+      
+      loadingStore.finish('reject_trade')
+    } catch (err) {
+      loadingStore.finish('reject_trade')
+      logger.error('TRADE', `Error al cancelar/rechazar intercambio: ${(err as Error).message}`)
+      uiStore.notify('Error al procesar: ' + (err as { message: string }).message, '❌')
+    }
   }
 
   async function claimTrade(tradeId: string | number) {
-    const { error } = await gameStore.db.from('trade_offers').update({ status: 'claimed' }).eq('id', tradeId)
-    if (!error) await refreshPendingTrades()
+    try {
+      const { error } = await gameStore.db.from('trade_offers').update({ status: 'claimed' }).eq('id', tradeId)
+      if (error) throw new Error((error as { message: string }).message)
+      await refreshPendingTrades()
+    } catch (err) {
+      logger.error('TRADE', `Error al confirmar intercambio: ${(err as Error).message}`)
+      uiStore.notify('Error al confirmar: ' + (err as { message: string }).message, '❌')
+    }
   }
 
   const lockedUids = computed(() => {

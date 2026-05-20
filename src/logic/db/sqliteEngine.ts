@@ -165,6 +165,51 @@ async function ensureSchemaIntegrity(): Promise<void> {
   if (!_sqliteDb) return
   logger.info('SQLite', 'Verifying schema integrity...')
   
+  // Migración segura para la clave primaria de trade_offers (INTEGER -> TEXT/UUID)
+  try {
+    const info = _sqliteDb.exec("PRAGMA table_info(trade_offers)")
+    if (info.length > 0) {
+      const idCol = info[0]!.values.find((row: unknown[]) => (row[1] as string) === 'id')
+      if (idCol && (idCol[2] as string).toUpperCase() === 'INTEGER') {
+        logger.info('SQLite', 'Upgrading trade_offers.id from INTEGER to TEXT...')
+        _sqliteDb.run("PRAGMA foreign_keys = OFF")
+        _sqliteDb.run(`
+          CREATE TABLE trade_offers_new (
+            id TEXT PRIMARY KEY,
+            sender_id TEXT,
+            receiver_id TEXT,
+            offer_pokemon TEXT,
+            offer_items TEXT,
+            offer_money INTEGER DEFAULT 0,
+            request_pokemon TEXT,
+            request_items TEXT,
+            request_money INTEGER DEFAULT 0,
+            message TEXT,
+            status TEXT DEFAULT 'pending',
+            created_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
+            updated_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
+          )
+        `)
+        _sqliteDb.run(`
+          INSERT INTO trade_offers_new (
+            id, sender_id, receiver_id, offer_pokemon, offer_items, offer_money,
+            request_pokemon, request_items, request_money, message, status, created_at, updated_at
+          )
+          SELECT 
+            CAST(id AS TEXT), sender_id, receiver_id, offer_pokemon, offer_items, offer_money,
+            request_pokemon, request_items, request_money, message, status, created_at, updated_at
+          FROM trade_offers
+        `)
+        _sqliteDb.run("DROP TABLE trade_offers")
+        _sqliteDb.run("ALTER TABLE trade_offers_new RENAME TO trade_offers")
+        _sqliteDb.run("PRAGMA foreign_keys = ON")
+        logger.success('SQLite', 'trade_offers table primary key successfully converted to TEXT.')
+      }
+    }
+  } catch (e: unknown) {
+    logger.error('SQLite', `Failed to migrate trade_offers PK: ${(e as Error).message}`)
+  }
+  
   for (const schemaStr of TABLES_SCHEMA) {
     try {
       const parts = schemaStr.split('(')

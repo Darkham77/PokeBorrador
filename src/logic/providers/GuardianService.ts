@@ -7,6 +7,8 @@ import { logger } from '../utils/logger.ts';
 
 
 import { DBRouter } from '../db/dbRouter.ts';
+import { GAME_TIMEZONE } from '../timeUtils.ts';
+
 
 export interface Guardian {
   id: string;
@@ -130,7 +132,7 @@ export const GuardianService = {
 
   // Helpers
   getArgentinaDateString(): string {
-    return Temporal.Now.zonedDateTimeISO('America/Argentina/Buenos_Aires').toPlainDate().toString();
+    return Temporal.Now.zonedDateTimeISO(GAME_TIMEZONE).toPlainDate().toString();
   },
 
   hashString(str: string): number {

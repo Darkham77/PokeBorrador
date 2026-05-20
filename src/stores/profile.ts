@@ -2,6 +2,8 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import type { AuthUser } from '@/types/auth'
 import type { GameState, NotificationItem } from '@/types/game'
+import { GAME_TIMEZONE } from '@/logic/timeUtils'
+
 
 export interface ProfileData {
   username: string;
@@ -51,7 +53,7 @@ export const useProfileStore = defineStore('profile', () => {
         const parsed = JSON.parse(lsRaw)
         if (parsed._last_updated) {
           const temporalInstant = Temporal.Instant.fromEpochMilliseconds(Number(parsed._last_updated))
-          const zdt = temporalInstant.toZonedDateTimeISO('America/Argentina/Buenos_Aires')
+          const zdt = temporalInstant.toZonedDateTimeISO(GAME_TIMEZONE)
           const day = String(zdt.day).padStart(2, '0')
           const month = String(zdt.month).padStart(2, '0')
           const year = zdt.year

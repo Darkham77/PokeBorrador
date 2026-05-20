@@ -3,6 +3,7 @@ import { computed, inject, type Ref } from 'vue'
 import { getPokemonTier } from '@/logic/pokemonUtils'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
+import PVTooltip from '@/components/common/PVTooltip.vue'
 import UnifiedBadgePill from '@/components/shared/UnifiedBadgePill.vue'
 import { getPokemonVisualBadges } from '@/logic/constants/tags'
 import { useUIStore } from '@/stores/ui'
@@ -125,24 +126,33 @@ const tierColorRgb = computed(() => tierInfo.value?.rgb || '30, 41, 59')
 
     <!-- Sprite Section -->
     <div class="box-sprite-wrapper">
-      <div
+      <PVTooltip
         v-if="props.pokemon.onMission"
-        class="status-indicator mission"
+        title="Misión"
+        description="Este Pokémon está en una misión activa."
       >
-        M
-      </div>
-      <div
+        <div class="status-indicator mission">
+          M
+        </div>
+      </PVTooltip>
+      <PVTooltip
         v-if="props.pokemon.inDaycare"
-        class="status-indicator daycare"
+        title="Guardería"
+        description="Este Pokémon está en la guardería."
       >
-        G
-      </div>
-      <div
+        <div class="status-indicator daycare">
+          G
+        </div>
+      </PVTooltip>
+      <PVTooltip
         v-if="props.pokemon.onDefense"
-        class="status-indicator defense"
+        title="Defensa"
+        description="Este Pokémon está asignado a la defensa."
       >
-        D
-      </div>
+        <div class="status-indicator defense">
+          D
+        </div>
+      </PVTooltip>
       
       <PVSpriteFX
         :is-shiny="props.pokemon.isShiny"

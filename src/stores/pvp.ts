@@ -10,6 +10,8 @@ import { RANKED_REWARD_MILESTONES } from '@/data/rankedData'
 export { RANKED_REWARD_MILESTONES }
 import { getEloTier } from '@/logic/pvp/rankedEngine'
 import type { Pokemon } from '@/types/pokemon'
+import { GAME_TIMEZONE } from '@/logic/timeUtils'
+
 
 export const RANKED_REWARD_TIER_MARKS = [
   { name: 'Plata', elo: 1200, color: '#9E9E9E' },
@@ -222,17 +224,16 @@ export const usePvPStore = defineStore('pvp', () => {
 
   const seasonRange = computed(() => {
     const rules = currentSeasonRules.value || { name: 'Default', levelCap: 100, maxPokemon: 6 } as SeasonRules
-    const tz = 'America/Argentina/Buenos_Aires'
     
     const start = rules.startDate 
-      ? Temporal.ZonedDateTime.from(rules.startDate).withTimeZone(tz) 
-      : Temporal.ZonedDateTime.from('2026-04-01T00:00:00-03:00').withTimeZone(tz)
+      ? Temporal.ZonedDateTime.from(rules.startDate).withTimeZone(GAME_TIMEZONE) 
+      : Temporal.ZonedDateTime.from('2026-04-01T00:00:00-03:00').withTimeZone(GAME_TIMEZONE)
       
     const end = rules.endDate 
-      ? Temporal.ZonedDateTime.from(rules.endDate).withTimeZone(tz)
+      ? Temporal.ZonedDateTime.from(rules.endDate).withTimeZone(GAME_TIMEZONE)
       : start.add({ months: 3 })
     
-    const now = Temporal.Now.zonedDateTimeISO(tz)
+    const now = Temporal.Now.zonedDateTimeISO(GAME_TIMEZONE)
     const diff = end.since(now, { largestUnit: 'day' })
     const daysLeft = Math.max(0, Math.ceil(diff.days))
     

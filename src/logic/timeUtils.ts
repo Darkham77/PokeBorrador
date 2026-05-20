@@ -3,6 +3,11 @@ import { supabase } from './supabase.ts';
 import { safeStorage } from './utils/storage.ts';
 import { logger } from './utils/logger.ts';
 
+export const GAME_TIMEZONE = 
+  (typeof import.meta !== 'undefined' && import.meta.env?.VITE_TIMEZONE) ||
+  (typeof process !== 'undefined' && process.env?.VITE_TIMEZONE) ||
+  'America/Argentina/Buenos_Aires';
+
 /**
  * Time Synchronization Utility (Temporal API version)
  * Syncs the local system clock with the server time.
@@ -64,10 +69,10 @@ export function getServerTime(): number {
 }
 
 /**
- * Returns a ZonedDateTime adjusted to GMT-3.
+ * Returns a ZonedDateTime adjusted to the configured game timezone.
  */
 export function getGMT3Date(): Temporal.ZonedDateTime {
-  return getServerInstant().toZonedDateTimeISO('America/Argentina/Buenos_Aires');
+  return getServerInstant().toZonedDateTimeISO(GAME_TIMEZONE);
 }
 
 export type DayPhase = 'morning' | 'day' | 'dusk' | 'night';
@@ -139,7 +144,7 @@ export function formatDisplayDate(ts: string | number | null | undefined): strin
       ? Temporal.Instant.from(cleanTs)
       : Temporal.Instant.fromEpochMilliseconds(Number(cleanTs));
 
-    const zdt = instant.toZonedDateTimeISO('America/Argentina/Buenos_Aires');
+    const zdt = instant.toZonedDateTimeISO(GAME_TIMEZONE);
 
     const day = String(zdt.day).padStart(2, '0');
     const month = String(zdt.month).padStart(2, '0');
@@ -150,5 +155,30 @@ export function formatDisplayDate(ts: string | number | null | undefined): strin
   } catch (e) {
     logger.warn('TIME', `Failed to format date: ${ts}`, (e as Error).message);
     return '---';
+  }
+}
+/**
+ * Formats any timestamp (ISO string or epoch ms) as HH:mm in 24h format,
+ * adjusted to GAME_TIMEZONE. Use this in ALL UI components instead of
+ * local toLocaleString() calls that may produce AM/PM depending on locale.
+ */
+export function formatTime(ts: string | number | Date | null | undefined): string {
+  if (!ts) return '';
+  try {
+    let instant: Temporal.Instant;
+    if (ts instanceof Date) {
+      instant = Temporal.Instant.fromEpochMilliseconds(ts.getTime());
+    } else if (typeof ts === 'number') {
+      instant = Temporal.Instant.fromEpochMilliseconds(ts);
+    } else {
+      const normalized = ts.includes('Z') || ts.includes('+') || ts.includes('-', 10)
+        ? ts
+        : ts.replace(' ', 'T') + 'Z';
+      instant = Temporal.Instant.from(normalized);
+    }
+    const zdt = instant.toZonedDateTimeISO(GAME_TIMEZONE);
+    return `${String(zdt.hour).padStart(2, '0')}:${String(zdt.minute).padStart(2, '0')}`;
+  } catch (_e) {
+    return '';
   }
 }

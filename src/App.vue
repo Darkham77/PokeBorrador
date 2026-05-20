@@ -22,12 +22,14 @@ import { useWindowListener } from '@/composables/useWindowListener'
 import { logger } from '@/logic/utils/logger'
 
 import { useProfileStore } from '@/stores/profile'
+import { useSocialStore } from '@/stores/social'
 import { useRoute } from 'vue-router'
 
 const authStore = useAuthStore()
 const gameStore = useGameStore()
 const uiStore = useUIStore()
 const profileStore = useProfileStore()
+const socialStore = useSocialStore()
 const battleStore = useBattleStore()
 const loadingStore = useLoadingStore()
 const route = useRoute()
@@ -122,6 +124,9 @@ onMounted(async () => {
     
     // Sincronizar datos del perfil
     profileStore.syncProfileFromAuth(authStore.user!, gameStore.state)
+    
+    // Iniciar presencia social globalmente para reportar estado online
+    socialStore.startPresence()
   }
   
   // 4. Restore & Sync Zoom Level
@@ -133,6 +138,9 @@ watch(() => authStore.user, (newUser) => {
   if (newUser) {
     logger.info('App', 'Usuario detectado, re-aplicando escala visual...')
     uiStore.setZoom(uiStore.appZoom)
+  } else {
+    // Detener pings de presencia si el usuario cierra sesión
+    socialStore.stopPresence()
   }
 })
 
@@ -207,27 +215,29 @@ const onLoadingLeave = (el: Element, done: () => void) => {
       class="global-background-stars" 
     />
 
-    <!-- Pantalla de carga unificada -->
-    <Transition
-      :css="false"
-      @enter="onLoadingEnter"
-      @leave="onLoadingLeave"
-    >
-      <div
-        v-if="!loadingStore.isGateOpen && (!isLoginPage || loadingInfo.active) && !dbIncompatible"
-        class="loading-overlay"
-        :class="{ 'global-overlay': loadingInfo.global }"
+    <!-- GLOBAL LOADING OVERLAY -->
+    <Teleport to="body">
+      <Transition
+        :css="false"
+        @enter="onLoadingEnter"
+        @leave="onLoadingLeave"
       >
-        <div class="loader" />
-        <p>{{ loadingInfo.msg }}</p>
-        <span 
-          v-if="loadingInfo.sub" 
-          class="sub-text"
+        <div
+          v-if="!loadingStore.isGateOpen && (!isLoginPage || loadingInfo.active) && !dbIncompatible"
+          class="loading-overlay"
+          :class="{ 'global-overlay': loadingInfo.global }"
         >
-          {{ loadingInfo.sub }}
-        </span>
-      </div>
-    </Transition>
+          <div class="loader" />
+          <p>{{ loadingInfo.msg }}</p>
+          <span 
+            v-if="loadingInfo.sub" 
+            class="sub-text"
+          >
+            {{ loadingInfo.sub }}
+          </span>
+        </div>
+      </Transition>
+    </Teleport>
 
     <!-- Vistas de Ruta (Login tiene prioridad absoluta) -->
     <template v-if="isLoginPage">
@@ -236,10 +246,8 @@ const onLoadingLeave = (el: Element, done: () => void) => {
     
     <template v-else-if="authStore.user">
       <!-- Bloqueo por Versión Outdated -->
-      <div
-        v-if="dbIncompatible"
-        class="loading-overlay version-lock"
-      >
+      <Teleport v-if="dbIncompatible" to="body">
+        <div class="loading-overlay version-lock">
         <div class="lock-icon">
           ⚠️
         </div>
@@ -255,16 +263,15 @@ const onLoadingLeave = (el: Element, done: () => void) => {
           REINTENTAR
         </div>
       </div>
+      </Teleport>
 
       <template v-else-if="gameStore.isReady">
         <MainGameView v-show="!uiStore.isAnyFullscreenModalOpen" />
 
         <!-- Bloqueo por Sesión (Last-In-Wins) -->
-        <div
-          v-if="gameStore.isSaveLocked && !dismissedLock"
-          class="loading-overlay session-lock-overlay"
-        >
-          <div class="lock-icon-wrapper">
+        <Teleport v-if="gameStore.isSaveLocked && !dismissedLock" to="body">
+          <div class="loading-overlay session-lock-overlay">
+            <div class="lock-icon-wrapper">
             <span class="lock-emoji">🔒</span>
           </div>
           
@@ -295,6 +302,7 @@ const onLoadingLeave = (el: Element, done: () => void) => {
             </div>
           </div>
         </div>
+        </Teleport>
       </template>
     </template>
 

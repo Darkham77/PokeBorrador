@@ -18,6 +18,7 @@ function animateCards() {
     if (!listRef.value) return
     const cards = listRef.value.querySelectorAll('.request-card')
     if (cards.length > 0) {
+      listRef.value.classList.add('tab-mounting')
       gsap.killTweensOf(cards)
       gsap.from(cards, {
         opacity: 0,
@@ -26,7 +27,10 @@ function animateCards() {
         duration: 0.45,
         stagger: 0.06,
         ease: 'back.out(1.2)',
-        clearProps: 'all'
+        clearProps: 'all',
+        onComplete: () => {
+          listRef.value?.classList.remove('tab-mounting')
+        }
       })
     }
   })
@@ -105,6 +109,10 @@ watch(() => socialStore.pendingRequests, () => {
   display: flex;
   flex-direction: column;
   gap: 12px;
+
+  &.tab-mounting .request-card {
+    transition: none !important;
+  }
 }
 
 .request-card {
@@ -129,9 +137,14 @@ watch(() => socialStore.pendingRequests, () => {
     align-items: center;
     
     .text {
-      font-size: 12px;
+      font-size: 13px;
       color: Rgba(148, 163, 184, 1);
-      .username { color: var(--white); font-weight: 700; margin-right: 4px; }
+      .username {
+        color: var(--white);
+        font-weight: 700;
+        margin-right: 4px;
+        font-size: 14px;
+      }
     }
   }
 

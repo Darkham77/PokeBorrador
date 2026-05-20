@@ -34,9 +34,9 @@ function selectTab(tab: string) {
   })
 }
 
-onMounted(() => {
-  socialStore.loadSocialData()
-  socialStore.startPresence()
+onMounted(async () => {
+  await socialStore.loadSocialData()
+  await socialStore.refreshFriendsPresence()
 })
 </script>
 

@@ -40,17 +40,19 @@ const handleMoneyInput = (e: Event) => {
 }
 
 const mappedItems = computed(() => {
-  return Object.entries(props.inventory || {}).map(([name, qty]) => {
-    const dbItem = SHOP_ITEMS.find(i => i.name === name || i.id === name)
-    return {
-      id: dbItem?.id || name,
-      name,
-      qty,
-      desc: dbItem?.desc || '',
-      sprite: dbItem?.sprite || dbItem?.id || name,
-      tier: (dbItem?.tier as 'common' | 'rare' | 'epic' | 'legend') || 'common'
-    }
-  })
+  return Object.entries(props.inventory || {})
+    .filter(([_, qty]) => qty > 0)
+    .map(([name, qty]) => {
+      const dbItem = SHOP_ITEMS.find(i => i.name === name || i.id === name)
+      return {
+        id: dbItem?.id || name,
+        name,
+        qty,
+        desc: dbItem?.desc || '',
+        sprite: dbItem?.sprite || dbItem?.id || name,
+        tier: (dbItem?.tier as 'common' | 'rare' | 'epic' | 'legend') || 'common'
+      }
+    })
 })
 </script>
 

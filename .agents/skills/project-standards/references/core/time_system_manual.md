@@ -25,6 +25,7 @@ The system uses a hierarchical approach to determine the active weather and ensu
 - **Precision**: Use `Temporal.Instant` for absolute timestamps and `Temporal.Duration` for calculations.
 - **SQLite ISO Format**: Standard SQLite `datetime('now')` produces non-ISO strings. You MUST use `strftime('%Y-%m-%dT%H:%M:%SZ', 'now')` for all `DEFAULT` values in `schema.ts` to ensure compatibility with `Temporal.Instant.from()`.
 - **Centralized Formatting**: UI components MUST NOT implement local date formatting. Use `formatDisplayDate(ts)` from `src/logic/timeUtils.ts` to handle robust parsing of legacy strings and automated timezone adjustment (standardized to GMT-3 for display).
+- **24-Hour Time Format Mandate**: All in-game clocks, chat timestamps, and logs MUST use a strict 24-hour format (`HH:mm`) without AM/PM tags. Use the centralized `formatTime(ts)` utility from `src/logic/timeUtils.ts` (which guarantees formatting with `hour12: false` and timezone normalization under `GAME_TIMEZONE`) instead of local `.toLocaleString()` browser calls that vary depending on the client's locale.
 - **Persistence & Standardization**: To ensure absolute consistency between clients and persistence layers, all timestamps MUST be stored in **ISO 8601** format (e.g., `YYYY-MM-DDTHH:MM:SSZ`). Legacy database records MUST be migrated to this format to prevent parsing failures in the Temporal API.
 
 ---
@@ -185,10 +186,10 @@ When an atmospheric condition is active, the encounter pool includes non-native 
 
 Pokémon synchronized with the weather display a vibrant cyan glow via `PVSpriteFX`.
 
-- **Parity Specs**: Inset `-2%`, `Blur(2px)`, Opacity `0.6`, Scale Max `1.05`.
+- **Parity Specs**: Radial-Gradient circle (0.9 opacity at center, Transparent at 70%), Blur(1.5px), Scale Range `0.1 - 2.0`.
 - **Counter-Pulse**: Cyan Halo (Weather) and Red Aura (Rare) MUST pulse in counter-phase:
-  - **Red Aura**: 0% Small -> 50% Big/Bright.
-  - **Cyan Halo**: 0% Big/Bright -> 50% Small.
+  - **Red Aura**: Scale 0.1 (Min) -> Scale 2.0 (Max).
+  - **Cyan Halo**: Scale 2.0 (Max) -> Scale 0.1 (Min).
   - Both share a 2s cycle based on `var(--spawn-seed)`.
 
 ---
