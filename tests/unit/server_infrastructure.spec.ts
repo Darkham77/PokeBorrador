@@ -55,7 +55,7 @@ describe('Infraestructura de Servidores y Errores', () => {
     it('debe tener al menos un servidor oficial y uno por defecto', () => {
       expect(OFFICIAL_SERVERS.length).toBeGreaterThan(0);
       expect(DEFAULT_SERVER).toBeDefined();
-      expect(DEFAULT_SERVER.id).toBe('official-prod');
+      expect(DEFAULT_SERVER.id).toBe('official_prod');
     });
 
     it('debe persistir la selección del servidor en localStorage', () => {

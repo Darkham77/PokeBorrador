@@ -47,6 +47,17 @@ export async function configureOfficialServers() {
   const lines = content.split('\n');
   const serverConfigs: Record<string, Record<string, string>> = {};
 
+  // Known key suffixes in order of length (longest first) to ensure greedy matching.
+  // When a new SERVER_<PROFILE>_<SUFFIX> key is added to .env, add its suffix here.
+  const KNOWN_SUFFIXES = [
+    'SUPABASE_PUBLIC_URL', 'API_EXTERNAL_URL', 'SUPABASE_ANON_KEY',
+    'SERVICE_ROLE_KEY', 'POSTGRES_PASSWORD', 'SECRET_KEY_BASE',
+    'DASHBOARD_USERNAME', 'DASHBOARD_PASSWORD', 'KONG_HTTPS_PORT',
+    'PG_META_CRYPTO_KEY', 'VAULT_ENC_KEY', 'DATABASE_URL',
+    'JWT_SECRET', 'SUPABASE_URL', 'TENANT_ID', 'IS_DEFAULT',
+    'ANON_KEY', 'SITE_URL', 'REGION', 'NAME', 'KEY', 'URL', 'ID',
+  ];
+
   for (const line of lines) {
     const trimmed = line.trim();
     if (!trimmed || trimmed.startsWith('#')) continue;
@@ -62,18 +73,20 @@ export async function configureOfficialServers() {
       }
 
       if (fullKey.startsWith('SERVER_')) {
-        const parts = fullKey.split('_');
-        const profile = parts[1];
-        if (parts.length >= 3 && profile !== undefined) {
-          const cleanKey = parts.slice(2).join('_');
-          if (!serverConfigs[profile]) {
-            serverConfigs[profile] = {};
-          }
-          const targetConf = serverConfigs[profile];
-          if (targetConf) {
-            targetConf[cleanKey] = value;
-          }
-        }
+        const withoutPrefix = fullKey.slice('SERVER_'.length); // e.g. "nas_franco_ANON_KEY"
+
+        // Find which known suffix this key ends with
+        const matchedSuffix = KNOWN_SUFFIXES.find(s => withoutPrefix.endsWith(`_${s}`));
+        if (matchedSuffix === undefined) continue;
+
+        // Profile is everything before _<SUFFIX>
+        const profile = withoutPrefix.slice(0, withoutPrefix.length - matchedSuffix.length - 1);
+        if (!profile) continue;
+
+        const cleanKey = matchedSuffix;
+        if (!serverConfigs[profile]) serverConfigs[profile] = {};
+        const targetConf = serverConfigs[profile];
+        if (targetConf) targetConf[cleanKey] = value;
       }
     }
   }
@@ -102,7 +115,7 @@ export async function configureOfficialServers() {
     if (hasExplicitDefault) {
       isDefaultVal = conf.IS_DEFAULT === 'true';
     } else {
-      isDefaultVal = profile === 'cloud' || id === 'official-prod';
+      isDefaultVal = profile === 'cloud' || id === 'official_prod';
     }
 
     let serverObjStr = `  {\n    id: '${id}',\n    name: '${name}',\n    region: '${region}',\n    url: '${url}',\n    anonKey: '${anonKey}'`;

@@ -8,11 +8,11 @@ console.log('\n--- 📥 IMPORTADOR DE RESPALDOS A SQLITE LOCAL ---');
 
 // 1. Obtener argumentos de línea de comandos y normalizar según el .env
 const args = process.argv.slice(2);
-let serverNameInput = 'official-prod';
+let serverNameInput = 'official_prod';
 
 for (const arg of args) {
   if (arg.startsWith('--server=')) {
-    serverNameInput = arg.split('=')[1] || 'official-prod';
+    serverNameInput = arg.split('=')[1] || 'official_prod';
   }
 }
 

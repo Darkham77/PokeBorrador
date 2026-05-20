@@ -101,7 +101,7 @@ export async function backupSupabaseDb() {
     console.log(styleText('yellow', '⚠️  Especifica qué servidor deseas respaldar usando la bandera --server=<perfil> o --all.'));
     console.log(styleText('cyan', `Perfiles disponibles: ${allAvailable.join(', ')}`));
     console.log(styleText('gray', 'Ejemplo: npm run servers:db:backup -- --server=cloud'));
-    console.log(styleText('gray', 'Ejemplo: npm run servers:db:backup -- --server=nas-franco'));
+    console.log(styleText('gray', 'Ejemplo: npm run servers:db:backup -- --server=nas_franco'));
     console.log(styleText('gray', 'Ejemplo: npm run servers:db:backup -- --all'));
     process.exit(1);
   }

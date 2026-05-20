@@ -108,8 +108,8 @@ export async function restoreSupabaseDb() {
   if (!serverArg) {
     console.log(styleText('yellow', '⚠️  Especifica qué servidor deseas restaurar usando la bandera --server=<perfil>.'));
     console.log(styleText('cyan', `Perfiles disponibles: ${allAvailable.join(', ')}`));
-    console.log(styleText('gray', 'Ejemplo: npm run servers:db:restore -- --server=nas-franco'));
-    console.log(styleText('gray', 'Ejemplo con archivo específico: npm run servers:db:restore -- --server=nas-franco --file=database/backups/nas-franco_backup_...json'));
+    console.log(styleText('gray', 'Ejemplo: npm run servers:db:restore -- --server=nas_franco'));
+    console.log(styleText('gray', 'Ejemplo con archivo específico: npm run servers:db:restore -- --server=nas_franco --file=database/backups/nas_franco_backup_...json'));
     process.exit(1);
   }
 
