@@ -110,3 +110,5 @@ To provide clear visual feedback without redundancy, item usage logs must be spl
 - **Asset Detection**: The system looks for keywords (ball, stone, potion) to resolve assets from PokeAPI. If the item does not follow these conventions, it must be manually mapped in the resolver.
 - **Normalization**: IDs and names are treated as case-insensitive in the logic, but asset files must be in lowercase.
 - **Financial Transparency**: All bulk sale operations must show the total estimated profit in the confirmation dialog.
+- **Zero-Quantity Filtering**: Items with a quantity of `0` MUST be filtered out from inventory lists, HUD quick bag components, and item pill displays. The UI should only present items where `quantity > 0` to prevent cluttering the interface with empty item slots.
+

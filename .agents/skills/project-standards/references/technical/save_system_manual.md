@@ -38,6 +38,13 @@ Guest or local test user IDs (such as `local_user` or any ID starting with `loca
 
 - **Bypass Remote Operations**: Bypass all remote writes (RPC triggers, profile updates) and remote save loading for guest IDs, routing them entirely through offline storage engines (OPFS/LocalStorage) to prevent `400 Bad Request` or Postgres exceptions.
 
+### 6. Origin Private File System (OPFS) Safe Reads
+
+When reading files from OPFS (e.g., local saves or SQLite binary storage):
+
+- **Creation Flag**: When opening a file for reading, ALWAYS set `{ create: false }` in `getFileHandle`. Using `{ create: true }` on a missing file creates an empty 0-byte file, causing subsequent JSON parsers to crash with `Unexpected end of JSON input`.
+- **Zero-Byte & NotFound Handling**: Gracefully handle `NotFoundError` and files with `size === 0` by returning `null` or default state instead of throwing exceptions.
+
 ---
 
 ## 🏗️ Data Architecture (DBRouter)

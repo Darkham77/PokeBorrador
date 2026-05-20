@@ -29,6 +29,8 @@ Este documento sirve como referencia de los componentes, menús y herramientas q
 | **GIMNASIOS** | Finalizado | `GymsView.vue`, `GymCard.vue`, `gyms.ts` (Store) |
 | **CRIANZA Y GUARDERÍA** | Finalizado | `modals/DaycareModal.vue`, `breeding/BreedingSummary.vue`, `breeding/DaycareSlot.vue`, `breeding/EggWarehouse.vue`, `breeding.ts` (Store) |
 | **MISIONES DE EVENTO** | Finalizado | `modals/EventMissionsModal.vue`, `events/EventMissions.vue`, `breeding.ts` (Store) |
+| **EVENTOS MUNDIALES** | Finalizado | `modals/WorldEventsModal.vue`, `events.ts` (Store) |
+| **DOMINANCIA / GUERRA DE FACCIONES** | Finalizado | `modals/FactionWarModal.vue`, `war.ts` (Store) |
 
 ## Reglas y Documentación Técnica
 

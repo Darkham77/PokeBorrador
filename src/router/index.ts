@@ -37,17 +37,6 @@ const router = createRouter({
           component: () => import('@/views/SocialView.vue'),
         },
         {
-          path: 'events',
-          name: 'events',
-          component: () => import('@/views/EventsView.vue'),
-        },
-        {
-          path: 'war',
-          name: 'war',
-          component: () => import('@/views/WarView.vue'),
-        },
-
-        {
           path: 'bag',
           name: 'bag',
           component: () => import('@/views/BagView.vue'),

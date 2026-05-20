@@ -125,7 +125,7 @@ const handleImgError = (e: Event) => {
           <div class="dialogue-box">
             <span class="trainer-name">{{ mission.trainerName }} dice:</span>
             <p class="dialogue">
-              " <span v-html="mission.dialogue" /> "
+              " {{ mission.dialogue }} "
             </p>
           </div>
         </div>

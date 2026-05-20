@@ -3,6 +3,7 @@
 import { useWarStore } from '@/stores/war'
 import { computed, onMounted } from 'vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
+import { formatCurrency } from '@/logic/utils/formatters'
 import { WEEKLY_REWARD_MILESTONES } from '@/logic/war/warEngine'
 import MapControlList from './MapControlList.vue'
 
@@ -121,7 +122,11 @@ onMounted(async () => {
       </div>
 
       <div class="reward-preview">
-        Próximo premio: <span class="highlight">🪙{{ nextReward?.coins || 0 }} Monedas</span> al llegar a {{ nextReward?.pt || 0 }} PT
+        Próximo premio: 
+        <span class="highlight">
+          <span class="emoji">⚡</span>{{ formatCurrency(nextReward?.coins || 0) }} Monedas de Guerra
+        </span> 
+        al llegar a {{ formatCurrency(nextReward?.pt || 0) }} PT
       </div>
     </div>
 
@@ -132,7 +137,7 @@ onMounted(async () => {
           Saldo de Guerra
         </div>
         <div class="value">
-          ⚡{{ warStore.warCoins }}
+          <span class="emoji">⚡</span>{{ formatCurrency(warStore.warCoins) }}
         </div>
       </div>
       <div class="stat-item">
@@ -324,10 +329,23 @@ onMounted(async () => {
   background: Rgba(0,0,0,0.3);
   padding: 10px;
   border-radius: 8px;
+  line-height: 1.6; /* Generous spacing between wrapped lines */
   
   .highlight {
     color: var(--yellow, #facc15);
     font-weight: bold;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    vertical-align: middle;
+
+    .emoji {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      transform: Translatey(-3.5px);
+    }
   }
 }
 
@@ -347,12 +365,26 @@ onMounted(async () => {
       font-size: 9px;
       color: Rgba(136, 136, 136, 1);
       margin-bottom: 8px;
+      line-height: 1.4;
     }
     
     .value {
       @include pixelated;
       font-size: 12px;
       color: white;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      vertical-align: middle;
+
+      .emoji {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        line-height: 1;
+        transform: Translatey(-3.5px);
+      }
     }
   }
 }

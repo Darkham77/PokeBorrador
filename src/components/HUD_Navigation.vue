@@ -7,6 +7,7 @@ import { useSocialStore } from '@/stores/social'
 import { useModalStore } from '@/stores/modals'
 import { useGTSStore } from '@/stores/gts'
 import { useBreedingStore } from '@/stores/breeding'
+import { useEventStore } from '@/stores/events'
 
 interface Props {
   position?: string
@@ -22,6 +23,7 @@ const socialStore = useSocialStore()
 const modalStore = useModalStore()
 const gtsStore = useGTSStore()
 const breedingStore = useBreedingStore()
+const eventStore = useEventStore()
 const navRef = ref<HTMLElement | null>(null)
 
 const activeTab = computed({
@@ -32,7 +34,7 @@ const activeTab = computed({
 const totalSocialNotifications = computed(() => {
   return socialStore.notifications.total +
          gameStore.state.claimQueue.length +
-         breedingStore.fulfillableMissionsCount
+         eventStore.pendingAwards.length
 })
 
 const handleTabChange = (tab: string, _event?: Event) => {
@@ -163,16 +165,20 @@ onUnmounted(() => {
 
     <!-- 2. POKÉMON (Grupo) -->
     <div 
-      class="hud-group"
+      class="hud-group relative-box"
       @mouseleave="uiStore.openHudGroup === 'POKEMON' && (uiStore.openHudGroup = null)"
     >
       <button
         class="hud-nav-btn group-btn"
-        :class="{ active: ['box', 'pokedex'].includes(activeTab) || uiStore.openHudGroup === 'POKEMON' || modalStore.isOpen('TeamManagement') }"
+        :class="{ active: ['box', 'pokedex'].includes(activeTab) || uiStore.openHudGroup === 'POKEMON' || modalStore.isOpen('TeamManagement') || modalStore.isOpen('EventMissions') || modalStore.isOpen('DaycareMissions') }"
         @click.stop="toggleGroupMenu('POKEMON')"
       >
         <span class="icon">⚡</span>
         <span class="nav-item-label">POKÉMON</span>
+        <span
+          v-if="breedingStore.fulfillableMissionsCount > 0"
+          class="badge-pill"
+        >{{ breedingStore.fulfillableMissionsCount }}</span>
       </button>
       
       <Transition
@@ -198,6 +204,17 @@ onUnmounted(() => {
             @click.stop="handleTabChange('box', $event); uiStore.openHudGroup = null"
           >
             <span class="icon">📦</span><span class="nav-item-label">CAJA PC</span>
+          </button>
+          <button
+            class="hud-nav-btn"
+            :class="{ active: modalStore.isOpen('EventMissions') || modalStore.isOpen('DaycareMissions') }"
+            @click.stop="handleTabChange('missions'); uiStore.openHudGroup = null"
+          >
+            <span class="icon">📜</span><span class="nav-item-label">MISIONES</span>
+            <span
+              v-if="breedingStore.fulfillableMissionsCount > 0"
+              class="badge-pill"
+            >{{ breedingStore.fulfillableMissionsCount }}</span>
           </button>
           <button
             class="hud-nav-btn"
@@ -315,7 +332,7 @@ onUnmounted(() => {
     >
       <button
         class="hud-nav-btn group-btn"
-        :class="{ active: ['arena', 'ranking', 'war', 'events'].includes(activeTab) || uiStore.openHudGroup === 'SOCIAL' || modalStore.isOpen('SocialCenter') }"
+        :class="{ active: ['arena', 'ranking'].includes(activeTab) || uiStore.openHudGroup === 'SOCIAL' || modalStore.isOpen('SocialCenter') || modalStore.isOpen('WorldEvents') || modalStore.isOpen('FactionWar') }"
         @click.stop="toggleGroupMenu('SOCIAL')"
       >
         <span class="icon">👪</span>
@@ -347,17 +364,7 @@ onUnmounted(() => {
               class="badge-pill"
             >{{ socialStore.notifications.chats + socialStore.notifications.friends + socialStore.notifications.trades + gameStore.state.claimQueue.length }}</span>
           </button>
-          <button
-            class="hud-nav-btn"
-            :class="{ active: modalStore.isOpen('EventMissions') || modalStore.isOpen('DaycareMissions') }"
-            @click.stop="handleTabChange('missions'); uiStore.openHudGroup = null"
-          >
-            <span class="icon">📜</span><span class="nav-item-label">MISIONES</span>
-            <span
-              v-if="breedingStore.fulfillableMissionsCount > 0"
-              class="badge-pill"
-            >{{ breedingStore.fulfillableMissionsCount }}</span>
-          </button>
+
           <button
             class="hud-nav-btn"
             :class="{ active: activeTab === 'arena' }"
@@ -378,17 +385,21 @@ onUnmounted(() => {
           </button>
           <button
             class="hud-nav-btn"
-            :class="{ active: activeTab === 'war' }"
-            @click.stop="handleTabChange('war'); uiStore.openHudGroup = null"
+            :class="{ active: modalStore.isOpen('FactionWar') }"
+            @click.stop="modalStore.open('FactionWar'); uiStore.openHudGroup = null"
           >
             <span class="icon">⚔️</span><span class="nav-item-label">DOMINANCIA</span>
           </button>
           <button
             class="hud-nav-btn"
-            :class="{ active: activeTab === 'events' }"
-            @click.stop="handleTabChange('events'); uiStore.openHudGroup = null"
+            :class="{ active: modalStore.isOpen('WorldEvents') }"
+            @click.stop="modalStore.open('WorldEvents'); uiStore.openHudGroup = null"
           >
             <span class="icon">🎁</span><span class="nav-item-label">EVENTOS</span>
+            <span
+              v-if="eventStore.pendingAwards.length > 0"
+              class="badge-pill"
+            >{{ eventStore.pendingAwards.length }}</span>
           </button>
         </div>
       </Transition>
@@ -430,21 +441,6 @@ onUnmounted(() => {
       inset 0 1px 0 Rgba(255, 255, 255, 0.1); // Reflection on the top edge
     
     // Reflection parent is handled by position: fixed in parent/mobile class
-
-    &::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 1px;
-      background: linear-gradient(90deg, 
-        transparent, 
-        Rgba(255, 255, 255, 0.3), 
-        transparent
-      );
-      pointer-events: none;
-    }
 
     .hud-nav-btn {
       flex-direction: column;

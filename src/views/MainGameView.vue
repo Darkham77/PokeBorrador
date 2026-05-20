@@ -35,7 +35,6 @@ const PokedexView = defineAsyncComponent(() => import('@/views/PokedexView.vue')
 const MapView = defineAsyncComponent(() => import('@/views/MapView.vue'))
 const GymsView = defineAsyncComponent(() => import('@/views/GymsView.vue'))
 const BagView = defineAsyncComponent(() => import('@/views/BagView.vue'))
-const EventsView = defineAsyncComponent(() => import('@/views/EventsView.vue'))
 
 import GlobalChat from '@/components/social/GlobalChat.vue'
 import DirectChatWindow from '@/components/social/DirectChatWindow.vue'
@@ -212,15 +211,6 @@ useDocumentListener('keydown', initAudio, { once: true })
           class="tab-content"
         >
           <RankedArena />
-          <div class="hud-spacer-bottom" />
-        </div>
-
-        <div
-          v-else-if="activeTab === 'events'"
-          key="events"
-          class="tab-content"
-        >
-          <EventsView />
           <div class="hud-spacer-bottom" />
         </div>
       </div>

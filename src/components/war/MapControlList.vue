@@ -1,13 +1,29 @@
 <script setup lang="ts">
+import { ref, computed } from 'vue'
 import { useWarStore } from '@/stores/war'
+import { useMapStore } from '@/stores/map'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
-import { computed } from 'vue'
+import { MAP_ROUTE_MAPPING } from '@/data/map-assets'
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
 const warStore = useWarStore()
+const mapStore = useMapStore()
+const currentRegion = ref('kanto')
+
+const regions = [
+  { id: 'kanto', name: 'KANTO', active: true },
+  { id: 'johto', name: 'JOHTO', active: false },
+  { id: 'hoenn', name: 'HOENN', active: false }
+]
 
 interface MapData {
   id: string
   name: string
+}
+
+const getMapImage = (mapId: string) => {
+  const fileName = (MAP_ROUTE_MAPPING as Record<string, string>)[mapId] || 'default'
+  return getAssetUrl(ASSET_TYPES.MAP, fileName, { cycle: mapStore.currentCycle || 'day' })
 }
 
 const allMaps = computed(() => {
@@ -28,6 +44,11 @@ const allMaps = computed(() => {
     }
   })
 })
+
+const filteredMaps = computed(() => {
+  if (currentRegion.value !== 'kanto') return []
+  return allMaps.value
+})
 </script>
 
 <template>
@@ -35,36 +56,63 @@ const allMaps = computed(() => {
     <h3 class="wc-section-title">
       CONTROL TERRITORIAL
     </h3>
+
+    <!-- Region Selector Tabs -->
+    <div class="region-tabs">
+      <button
+        v-for="region in regions"
+        :key="region.id"
+        class="region-tab-btn"
+        :class="{ active: currentRegion === region.id, disabled: !region.active }"
+        :disabled="!region.active"
+        @click="currentRegion = region.id"
+      >
+        <span class="region-name">{{ region.name }}</span>
+        <span
+          v-if="!region.active"
+          class="coming-soon"
+        >PROXIMAMENTE</span>
+      </button>
+    </div>
     
     <div class="grid">
       <div
-        v-for="map in allMaps"
+        v-for="map in filteredMaps"
         :key="map.id"
         class="map-row"
         :class="map.winner"
       >
-        <div class="map-info">
-          <span class="map-name">{{ map.name }}</span>
-          <span
-            v-if="map.winner"
-            class="winner-badge"
-          >
-            {{ map.winner === 'union' ? 'UNION' : 'PODER' }}
-          </span>
-        </div>
+        <div class="map-row-content">
+          <div
+            class="map-thumbnail"
+            :style="{ backgroundImage: `url(${getMapImage(map.id)})` }"
+          />
 
-        <div class="dominance-bar">
-          <div
-            class="bar-fill union"
-            :style="{ width: map.unionPct + '%' }"
-          >
-            <span v-if="map.union > 0">{{ map.union }}</span>
-          </div>
-          <div
-            class="bar-fill poder"
-            :style="{ width: (100 - map.unionPct) + '%' }"
-          >
-            <span v-if="map.poder > 0">{{ map.poder }}</span>
+          <div class="map-details">
+            <div class="map-info">
+              <span class="map-name">{{ map.name }}</span>
+              <span
+                v-if="map.winner"
+                class="winner-badge"
+              >
+                {{ map.winner === 'union' ? 'UNION' : 'PODER' }}
+              </span>
+            </div>
+
+            <div class="dominance-bar">
+              <div
+                class="bar-fill union"
+                :style="{ width: map.unionPct + '%' }"
+              >
+                <span v-if="map.union > 0">{{ map.union }}</span>
+              </div>
+              <div
+                class="bar-fill poder"
+                :style="{ width: (100 - map.unionPct) + '%' }"
+              >
+                <span v-if="map.poder > 0">{{ map.poder }}</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -74,6 +122,7 @@ const allMaps = computed(() => {
 
 <style scoped lang="scss">
 @use "@/styles/core/_mixins" as *;
+
 .map-control-list {
   margin-top: 20px;
 }
@@ -86,6 +135,53 @@ const allMaps = computed(() => {
   text-align: center;
 }
 
+/* REGION TABS */
+.region-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid Rgba(255, 255, 255, 0.05);
+  padding-bottom: 8px;
+}
+
+.region-tab-btn {
+  @include pixelated;
+  font-size: 9px;
+  padding: 6px 12px;
+  background: Rgba(255, 255, 255, 0.02);
+  border: 1px solid Rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  color: var(--gray);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: all 0.2s;
+
+  &:hover:not(.disabled) {
+    background: Rgba(255, 255, 255, 0.08);
+    color: var(--white);
+  }
+
+  &.active {
+    background: Rgba(255, 255, 255, 0.1);
+    border-color: var(--yellow);
+    color: var(--yellow);
+  }
+
+  &.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .coming-soon {
+    font-size: 6px;
+    color: var(--gray);
+    margin-top: 2px;
+    opacity: 0.7;
+  }
+}
+
 .grid {
   display: flex;
   flex-direction: column;
@@ -94,7 +190,7 @@ const allMaps = computed(() => {
 
 .map-row {
   background: Rgba(255, 255, 255, 0.03);
-  padding: 12px;
+  padding: 10px;
   border-radius: 12px;
   border: 1px solid Rgba(255, 255, 255, 0.05);
   transition: all 0.2s;
@@ -108,11 +204,35 @@ const allMaps = computed(() => {
   &.poder { border-left: 4px solid Rgba(239, 68, 68, 1); }
 }
 
+.map-row-content {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.map-thumbnail {
+  width: 88px;
+  height: 88px;
+  background-size: cover;
+  background-position: center;
+  border-radius: 8px;
+  border: 1px solid Rgba(255, 255, 255, 0.1);
+  box-shadow: inset 0 0 6px Rgba(0, 0, 0, 0.6);
+  flex-shrink: 0;
+  image-rendering: pixelated;
+}
+
+.map-details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
 .map-info {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
 
   .map-name {
     font-size: 11px;
