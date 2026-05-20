@@ -122,6 +122,8 @@ We prioritize a deliberate contrast between modern, sleek UI shells and classic,
 - **FORBIDDEN**:
   - Using `text-shadow` with any blur radius (must be 0px).
 - **Centering**: Use **Flexbox/Grid** for centering. Avoid `transform: translate(-50%, -50%)` as it causes subpixel blurring in Chrome. Combine any unavoidable `Translatey/x` with `translateZ(0)` to maintain GPU layer stability during motion.
+- **Emoji/Icon Optical Centering**: When rendering inline emojis or symbols alongside pixel fonts, wrap them in a dedicated span (e.g. `.emoji`) with `display: inline-flex` (or `inline-block`) and apply a vertical translation of `-2px` to `-3.5px` (depending on the font size) to align them visually with the baseline of pixel glyphs.
+- **Line-Height for Wrapped Pixel Text**: When using pixelated fonts (like `Press Start 2P`), text wrapping can lead to extremely tight vertical spacing where lines overlap or touch. Always specify a generous `line-height` of `1.4` to `1.6` for multiline text containers to ensure proper legibility and vertical breathing room.
 - **BST Aesthetics**: Game-world data (Stats, IVs, Levels) MUST prioritize these sharp pixelated tokens to reinforce the "Retro Heart".
 - **Stat Color Standardization**:
   - **Level (NV)**: Purple (`#a855f7`).
