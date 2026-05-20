@@ -27,6 +27,25 @@ jobs:
 
       - name: Build project
         run: npm run build
+        env:
+          SERVER_nas_franco_ID: ${{ secrets.SERVER_nas_franco_ID }}
+          SERVER_nas_franco_NAME: ${{ secrets.SERVER_nas_franco_NAME }}
+          SERVER_nas_franco_REGION: ${{ secrets.SERVER_nas_franco_REGION }}
+          SERVER_nas_franco_TENANT_ID: ${{ secrets.SERVER_nas_franco_TENANT_ID }}
+          SERVER_nas_franco_PG_META_CRYPTO_KEY: ${{ secrets.SERVER_nas_franco_PG_META_CRYPTO_KEY }}
+          SERVER_nas_franco_VAULT_ENC_KEY: ${{ secrets.SERVER_nas_franco_VAULT_ENC_KEY }}
+          SERVER_nas_franco_SECRET_KEY_BASE: ${{ secrets.SERVER_nas_franco_SECRET_KEY_BASE }}
+          SERVER_nas_franco_POSTGRES_PASSWORD: ${{ secrets.SERVER_nas_franco_POSTGRES_PASSWORD }}
+          SERVER_nas_franco_SERVICE_ROLE_KEY: ${{ secrets.SERVER_nas_franco_SERVICE_ROLE_KEY }}
+          SERVER_nas_franco_ANON_KEY: ${{ secrets.SERVER_nas_franco_ANON_KEY }}
+          SERVER_nas_franco_JWT_SECRET: ${{ secrets.SERVER_nas_franco_JWT_SECRET }}
+          SERVER_nas_franco_DASHBOARD_PASSWORD: ${{ secrets.SERVER_nas_franco_DASHBOARD_PASSWORD }}
+          SERVER_nas_franco_DASHBOARD_USERNAME: ${{ secrets.SERVER_nas_franco_DASHBOARD_USERNAME }}
+          SERVER_nas_franco_SITE_URL: ${{ secrets.SERVER_nas_franco_SITE_URL }}
+          SERVER_nas_franco_SUPABASE_PUBLIC_URL: ${{ secrets.SERVER_nas_franco_SUPABASE_PUBLIC_URL }}
+          SERVER_nas_franco_API_EXTERNAL_URL: ${{ secrets.SERVER_nas_franco_API_EXTERNAL_URL }}
+          SERVER_nas_franco_KONG_HTTPS_PORT: ${{ secrets.SERVER_nas_franco_KONG_HTTPS_PORT }}
+          SERVER_nas_franco_DATABASE_URL: ${{ secrets.SERVER_nas_franco_DATABASE_URL }}
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
