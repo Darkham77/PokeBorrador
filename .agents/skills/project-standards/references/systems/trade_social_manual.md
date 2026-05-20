@@ -49,3 +49,10 @@ To guarantee reliable message delivery across active sessions and maintain an im
 1. **Global Heartbeat Hook**: To prevent active players from showing as offline while performing in-game actions (such as battle, daycare, or exploration), the presence heartbeat cycle (`socialStore.startPresence()`) MUST be called globally in `App.vue` once the game save loads, rather than being scoped to the social panel's lifecycle.
 2. **Instant Tab Refresh**: When loading the social view (`SocialView.vue`), trigger `refreshFriendsPresence()` immediately on mount to prevent waiting for the standard 60-second background heartbeat cycle.
 3. **Non-Obtrusive Avatar Dots**: To keep the interface clean and avoid obscuring trainer sprites, status indicator dots (`.status-dot`) MUST be limited to a standard size of `16px` and offset to `bottom: -8px; right: -8px` on the outer edge of avatar wrappers.
+
+---
+
+## 🔴 Notification Badges & Aggregation
+
+1. **Submenu Aggregation**: The notification badge on grouped primary HUD buttons (such as `SOCIAL`, which hosts chats, friend requests, and event missions) MUST represent the mathematical sum of all individual unread or actionable notifications within its submenus. This ensures no notifications remain hidden or "orphaned" under nested panels.
+
