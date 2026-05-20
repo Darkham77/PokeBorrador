@@ -5,7 +5,6 @@
 import { getFromIDB, setToIDB } from './idbHelper.ts'
 import { TABLES_SCHEMA } from './schema.ts'
 import { DATABASE_MIGRATIONS } from './migrations_data.ts'
-import { useLoadingStore } from '@/stores/loading'
 import { logger } from '../utils/logger.ts'
 
 export interface SQLiteResult {
@@ -18,6 +17,11 @@ export interface SQLiteDatabase {
   exec: (sql: string, params?: unknown[]) => SQLiteResult[];
   export: () => Uint8Array;
   prepare: (sql: string) => unknown;
+}
+
+export interface LoadingStore {
+  start: (id: string, title: string, description?: string, lockSession?: boolean) => void;
+  finish: (id: string) => void;
 }
 
 declare global {
@@ -80,8 +84,11 @@ export async function initSQLite(options: { sqliteKey?: string, inMemory?: boole
               
               // Show importing overlay to the user
               try {
-                const loadingStore = useLoadingStore()
-                loadingStore.start('db_import', 'Importando Base de Datos...', 'Instalando copia de seguridad, por favor espera', true)
+                if (typeof window !== 'undefined') {
+                  const { useLoadingStore } = await import('@/stores/loading')
+                  const loadingStore = useLoadingStore()
+                  loadingStore.start('db_import', 'Importando Base de Datos...', 'Instalando copia de seguridad, por favor espera', true)
+                }
               } catch (_) {
                 // Safe fallback if store/pinia not ready
               }
@@ -342,12 +349,22 @@ async function runMigrations(): Promise<void> {
   const appliedRes = _sqliteDb.exec("SELECT id FROM _migrations")
   const applied = appliedRes[0]?.values.map((v: unknown[]) => v[0] as string) || []
 
-  const loadingStore = useLoadingStore()
+  let loadingStore: LoadingStore | null = null
+  try {
+    if (typeof window !== 'undefined') {
+      const { useLoadingStore } = await import('@/stores/loading')
+      loadingStore = useLoadingStore()
+    }
+  } catch (_) {
+    // Fail silently in node test context
+  }
   
   for (const m of DATABASE_MIGRATIONS as { id: string, sql: string }[]) {
     if (!applied.includes(m.id)) {
       logger.info('SQLite', `Applying migration: ${m.id}`)
-      loadingStore.start('db_migration', 'Actualizando Base de Datos...', `Aplicando: ${m.id}`, false)
+      if (loadingStore) {
+        loadingStore.start('db_migration', 'Actualizando Base de Datos...', `Aplicando: ${m.id}`, false)
+      }
       try {
         const statements = splitSQLStatements(m.sql)
         statements.forEach(stmt => {
@@ -372,9 +389,9 @@ async function runMigrations(): Promise<void> {
         _sqliteDb.run("INSERT OR IGNORE INTO _migrations (id) VALUES (?)", [m.id])
         logger.success('SQLite', `Migration applied successfully: ${m.id}`)
         await persistSQLite()
-        loadingStore.finish('db_migration')
+        if (loadingStore) loadingStore.finish('db_migration')
       } catch (e: unknown) { 
-        loadingStore.finish('db_migration')
+        if (loadingStore) loadingStore.finish('db_migration')
         logger.error('SQLite', `Migration ${m.id} failed: ${(e as Error).message}`) 
       }
     }

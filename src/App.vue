@@ -246,62 +246,68 @@ const onLoadingLeave = (el: Element, done: () => void) => {
     
     <template v-else-if="authStore.user">
       <!-- Bloqueo por Versión Outdated -->
-      <Teleport v-if="dbIncompatible" to="body">
+      <Teleport
+        v-if="dbIncompatible"
+        to="body"
+      >
         <div class="loading-overlay version-lock">
-        <div class="lock-icon">
-          ⚠️
+          <div class="lock-icon">
+            ⚠️
+          </div>
+          <h2>SERVIDOR DESACTUALIZADO</h2>
+          <p>Tu cliente (v{{ dbVersionInfo?.client }}) es más moderno que el servidor (v{{ dbVersionInfo?.db }}).</p>
+          <p class="admin-note">
+            Por favor, contacta al administrador para actualizar la base de datos.
+          </p>
+          <div
+            class="retry-btn"
+            @click.stop="handleRetry"
+          >
+            REINTENTAR
+          </div>
         </div>
-        <h2>SERVIDOR DESACTUALIZADO</h2>
-        <p>Tu cliente (v{{ dbVersionInfo?.client }}) es más moderno que el servidor (v{{ dbVersionInfo?.db }}).</p>
-        <p class="admin-note">
-          Por favor, contacta al administrador para actualizar la base de datos.
-        </p>
-        <div
-          class="retry-btn"
-          @click.stop="handleRetry"
-        >
-          REINTENTAR
-        </div>
-      </div>
       </Teleport>
 
       <template v-else-if="gameStore.isReady">
         <MainGameView v-show="!uiStore.isAnyFullscreenModalOpen" />
 
         <!-- Bloqueo por Sesión (Last-In-Wins) -->
-        <Teleport v-if="gameStore.isSaveLocked && !dismissedLock" to="body">
+        <Teleport
+          v-if="gameStore.isSaveLocked && !dismissedLock"
+          to="body"
+        >
           <div class="loading-overlay session-lock-overlay">
             <div class="lock-icon-wrapper">
-            <span class="lock-emoji">🔒</span>
-          </div>
+              <span class="lock-emoji">🔒</span>
+            </div>
           
-          <h2 class="lock-title">
-            SESIÓN BLOQUEADA
-          </h2>
+            <h2 class="lock-title">
+              SESIÓN BLOQUEADA
+            </h2>
           
-          <div class="lock-content">
-            <p>Se ha detectado una sesión más reciente en otra pestaña o dispositivo.</p>
-            <p class="warning-box">
-              Este navegador está ahora en modo <strong>SOLO LECTURA</strong>.
-            </p>
-          </div>
+            <div class="lock-content">
+              <p>Se ha detectado una sesión más reciente en otra pestaña o dispositivo.</p>
+              <p class="warning-box">
+                Este navegador está ahora en modo <strong>SOLO LECTURA</strong>.
+              </p>
+            </div>
 
-          <div class="lock-actions">
-            <div
-              class="retry-btn primary reclaim-btn"
-              @click.stop="handleReclaim"
-            >
-              TOMAR CONTROL DE ESTA SESIÓN
-            </div>
+            <div class="lock-actions">
+              <div
+                class="retry-btn primary reclaim-btn"
+                @click.stop="handleReclaim"
+              >
+                TOMAR CONTROL DE ESTA SESIÓN
+              </div>
             
-            <div
-              class="risk-btn"
-              @click.stop="dismissedLock = true"
-            >
-              CONTINUAR SIN GUARDAR (RIESGO ALTO)
+              <div
+                class="risk-btn"
+                @click.stop="dismissedLock = true"
+              >
+                CONTINUAR SIN GUARDAR (RIESGO ALTO)
+              </div>
             </div>
           </div>
-        </div>
         </Teleport>
       </template>
     </template>

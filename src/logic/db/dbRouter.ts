@@ -3,9 +3,8 @@
 import { createClient, type SupabaseClient, type RealtimeChannel, type User, type Session } from '@supabase/supabase-js';
 import { ProxyQuery } from './proxyQuery.ts';
 import { gsap } from 'gsap';
-import { initSQLite, persistSQLite, queryLocal } from './sqliteEngine.ts';
+import { initSQLite, persistSQLite, queryLocal, type LoadingStore } from './sqliteEngine.ts';
 import { DATABASE_MIGRATIONS } from './migrations_data.ts';
-import { useLoadingStore } from '../../stores/loading.ts';
 import { logger } from '../utils/logger.ts';
 import type { DBConfig, DBMode, DBRouterOptions, DBCompatibilityResponse, DBResponse } from '@/types/database';
 
@@ -944,8 +943,19 @@ export const CLIENT_DB_VERSION = lastMigration
 
 
 export async function checkDBCompatibility(router: DBRouter): Promise<DBCompatibilityResponse> {
-  const loadingStore = useLoadingStore();
-  loadingStore.start('db_compat', 'Verificando Versión...', 'Comprobando compatibilidad de DB', false)
+  let loadingStore: LoadingStore | null = null;
+  try {
+    if (typeof window !== 'undefined') {
+      const { useLoadingStore } = await import('../../stores/loading.ts');
+      loadingStore = useLoadingStore();
+    }
+  } catch (_) {
+    // Fail silently in node test context
+  }
+
+  if (loadingStore) {
+    loadingStore.start('db_compat', 'Verificando Versión...', 'Comprobando compatibilidad de DB', false)
+  }
   try {
     let dbVersion = 0;
     let rawValue: unknown = null;
@@ -992,10 +1002,10 @@ export async function checkDBCompatibility(router: DBRouter): Promise<DBCompatib
       response.error = 'OUTDATED_SERVER';
     }
 
-    loadingStore.finish('db_compat')
+    if (loadingStore) loadingStore.finish('db_compat')
     return response;
   } catch (e: unknown) {
-    loadingStore.finish('db_compat')
+    if (loadingStore) loadingStore.finish('db_compat')
     logger.error('DBRouter', 'Compatibility check failed.', (e as Error).message);
     if (router.mode !== 'offline') {
       return { 
