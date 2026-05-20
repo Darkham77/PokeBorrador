@@ -359,9 +359,13 @@ export const useInventoryStore = defineStore('inventory', () => {
     const officialName = resolveNormalizedName(itemName)
     if (isGlobalItem(officialName)) return false
 
-    // Check if it's a held item (always equippable)
+    // Check if it's a held item or breeding held item (always equippable)
     const item = SHOP_ITEMS.find(i => i.name === officialName)
-    if (item && (item.cat === 'held' || item.type === 'held')) return true
+    if (item && (
+      item.cat === 'held' || 
+      item.type === 'held' || 
+      (item.cat === 'breeding' && item.id !== 'vigor_restorer' && !item.id.includes('berry'))
+    )) return true
 
     // Deep clone to avoid side effects during check
     const p = JSON.parse(JSON.stringify(pokemon))

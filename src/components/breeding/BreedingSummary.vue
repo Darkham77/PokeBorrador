@@ -1,14 +1,62 @@
 <script setup lang="ts">
-
-
-import { computed } from 'vue'
+import { computed, ref, watch, onMounted, onUnmounted } from 'vue'
 import { useBreedingStore } from '@/stores/breeding'
 import { usePlayerClassStore } from '@/stores/playerClass'
 import { getGeneticsForecast, type GeneticsForecast } from '@/logic/breeding/breedingEngine'
 import { COMPAT_TEXT } from '@/data/breeding/breedingConstants'
+import gsap from 'gsap'
+import { Temporal } from '@js-temporal/polyfill'
+import PVTooltip from '@/components/common/PVTooltip.vue'
 
 const breedingStore = useBreedingStore()
 const classStore = usePlayerClassStore()
+
+const heartRef = ref<HTMLElement | null>(null)
+let pulseTween: gsap.core.Tween | null = null
+
+const startPulse = () => {
+  if (pulseTween) return
+  if (!heartRef.value) return
+  
+  // Set initial state
+  gsap.set(heartRef.value, {
+    scale: 1.0,
+    opacity: 1,
+    filter: 'grayscale(0%) drop-shadow(0 0 0px rgba(239, 68, 68, 0))'
+  })
+
+  // Pulsing animation
+  pulseTween = gsap.to(heartRef.value, {
+    scale: 1.2,
+    filter: 'grayscale(0%) drop-shadow(0 0 15px rgba(239, 68, 68, 0.65))',
+    duration: 1.0,
+    repeat: -1,
+    yoyo: true,
+    ease: 'power1.inOut'
+  })
+}
+
+const stopPulse = () => {
+  if (pulseTween) {
+    pulseTween.kill()
+    pulseTween = null
+  }
+  if (heartRef.value) {
+    gsap.set(heartRef.value, {
+      scale: 1.0,
+      opacity: 0.1,
+      filter: 'grayscale(100%) drop-shadow(0 0 0px rgba(239, 68, 68, 0))'
+    })
+  }
+}
+
+watch(() => breedingStore.isBreeding, (active) => {
+  if (active) {
+    startPulse()
+  } else {
+    stopPulse()
+  }
+})
 
 const forecast = computed<GeneticsForecast | null>(() => {
   if (!breedingStore.isBreeding || !breedingStore.slots[0]?.pokemon || !breedingStore.slots[1]?.pokemon) return null
@@ -20,6 +68,9 @@ const forecast = computed<GeneticsForecast | null>(() => {
 })
 
 const compatStyle = computed(() => {
+  if (!breedingStore.isBreeding) {
+    return { label: 'Deposita 2 Pokémon', color: '#94a3b8' }
+  }
   const level = (breedingStore.compatibility?.level ?? 0) as number
   return (COMPAT_TEXT as Record<number, { label: string; color: string }>)[level] || { label: 'Desconocido', color: 'gray' }
 })
@@ -31,6 +82,18 @@ const formatTime = (ms: number | null) => {
   const s = String(left % 60).padStart(2, '0')
   return `${m}:${s}`
 }
+
+onMounted(() => {
+  if (breedingStore.isBreeding) {
+    startPulse()
+  } else {
+    stopPulse()
+  }
+})
+
+onUnmounted(() => {
+  stopPulse()
+})
 </script>
 
 <template>
@@ -52,8 +115,8 @@ const formatTime = (ms: number | null) => {
         </div>
       </div>
       <div
+        ref="heartRef"
         class="heart-fx"
-        :class="{ active: breedingStore.isBreeding }"
       >
         ❤️
       </div>
@@ -69,37 +132,49 @@ const formatTime = (ms: number | null) => {
       </div>
       
       <div class="forecast-grid">
-        <div
+        <PVTooltip
+          tag="div"
           class="forecast-item"
           :class="{ positive: forecast.ivsInherited >= 5 }"
+          title="IVs HEREDADOS"
+          description="Cantidad de valores individuales (IVs) que la cría heredará de sus padres. Equipar Lazo Destino a un padre aumenta los IVs heredados de 3 a 5 de 6."
         >
           <span class="label">IVs heredados:</span>
           <span class="value">{{ forecast.ivsInherited }} de 6</span>
-        </div>
+        </PVTooltip>
         
-        <div
+        <PVTooltip
+          tag="div"
           class="forecast-item"
           :class="{ active: forecast.natureGuaranteed }"
+          title="HERENCIA DE NATURALEZA"
+          description="Por defecto, la naturaleza de la cría es aleatoria. Equipar una Piedra Eterna a uno de los padres garantiza transmitir su naturaleza al 100%."
         >
           <span class="label">Naturaleza:</span>
           <span class="value">{{ forecast.natureGuaranteed ? 'GARANTIZADA' : 'Aleatoria' }}</span>
-        </div>
+        </PVTooltip>
 
-        <div
+        <PVTooltip
+          tag="div"
           class="forecast-item"
           :class="{ active: forecast.masudaActive }"
+          title="MÉTODO MASUDA"
+          description="Se activa si los padres son de distintas nacionalidades (por ej. un Ditto extranjero). Multiplica por 6 la probabilidad de que la cría sea Shiny."
         >
           <span class="label">Método Masuda:</span>
           <span class="value">{{ forecast.masudaActive ? `ACTIVO (x${forecast.shinyMultiplier})` : 'Inactivo' }}</span>
-        </div>
+        </PVTooltip>
 
-        <div
+        <PVTooltip
+          tag="div"
           class="forecast-item"
           :class="{ positive: forecast.eggMovesCount > 0 }"
+          title="MOVIMIENTOS HUEVO"
+          description="Movimientos especiales que el bebé puede aprender al nacer si alguno de los padres conoce un movimiento compatible en su lista de movimientos huevo."
         >
           <span class="label">Movimientos Huevo:</span>
           <span class="value">{{ forecast.eggMovesCount > 0 ? 'DETECTADOS ✨' : 'Ninguno' }}</span>
-        </div>
+        </PVTooltip>
       </div>
 
       <div class="forecast-help">
@@ -145,47 +220,33 @@ const formatTime = (ms: number | null) => {
   opacity: 0.1;
   will-change: transform, filter, opacity;
   filter: Grayscale(100%);
-  transition: all 0.5s;
-  
-  &.active {
-    opacity: 1;
-  filter: Grayscale(0%);
-    animation: pulse 2s infinite;
-  }
-}
-
-@keyframes pulse {
-  0% { transform: Scale(1.0); will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  filter: Drop-Shadow(0 0 0 Rgba(239, 68, 68, 0)); }
-  50% { transform: Scale(1.2); will-change: transform, filter, opacity;
-  filter: Drop-Shadow(0 0 15px Rgba(239, 68, 68, 0.6)); }
-  100% { transform: Scale(1.0); will-change: transform, filter, opacity;
-  filter: Drop-Shadow(0 0 0 Rgba(239, 68, 68, 0)); }
 }
 
 .forecast-card {
-  background: Rgba(30, 41, 59, 0.7);
-  border-radius: 20px;
-  padding: 24px;
-  border: 1px solid Rgba(139, 92, 246, 0.3);
-  box-shadow: 0 10px 30px Rgba(0,0,0,0.2);
+  background: Rgba(30, 41, 59, 0.85);
+  border-radius: 16px;
+  padding: 12px;
+  border: 1px solid Rgba(255, 51, 102, 0.25);
+  box-shadow: 0 10px 30px Rgba(0,0,0,0.3);
+  width: 100%;
+  box-sizing: border-box;
   
   .forecast-header {
     display: flex;
     align-items: center;
-    gap: 12px;
-    margin-bottom: 20px;
-    padding-bottom: 12px;
+    gap: 8px;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
     border-bottom: 1px solid Rgba(255,255,255,0.05);
     
-    .icon { font-size: 20px; }
+    .icon { font-size: 16px; }
     h4 {
-      font-size: 14px;
+      font-size: 11px;
       font-weight: 800;
       color: $white;
       text-transform: uppercase;
-      letter-spacing: 1px;
+      letter-spacing: 0.5px;
+      line-height: 1.5;
     }
   }
 }
@@ -193,36 +254,45 @@ const formatTime = (ms: number | null) => {
 .forecast-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  margin-bottom: 20px;
+  gap: 8px;
+  margin-bottom: 12px;
 }
 
 .forecast-item {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: 12px;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  justify-content: flex-start !important;
+  width: 100% !important;
+  box-sizing: border-box;
+  gap: 6px;
+  padding: 8px !important;
   background: Rgba(0,0,0,0.2);
-  border-radius: 12px;
+  border-radius: 10px;
   border: 1px solid transparent;
   transition: all 0.3s;
+  cursor: help;
   
   .label {
-    font-size: 10px;
+    font-size: 8px;
     color: $muted;
     font-weight: 600;
+    text-align: left;
+    line-height: 1.4;
   }
   
   .value {
-    font-size: 12px;
+    font-size: 10px;
     color: $white;
     font-weight: 700;
+    text-align: left;
+    line-height: 1.4;
   }
   
   &.active {
-    border-color: Rgba(139, 92, 246, 0.4);
-    background: Rgba(139, 92, 246, 0.05);
-    .value { color: Rgba(167, 139, 250, 1); }
+    border-color: Rgba(255, 51, 102, 0.35);
+    background: Rgba(255, 51, 102, 0.04);
+    .value { color: #ff668f; }
   }
   
   &.positive {
@@ -233,12 +303,12 @@ const formatTime = (ms: number | null) => {
 }
 
 .forecast-help {
-  padding-top: 12px;
+  padding-top: 10px;
   border-top: 1px dashed Rgba(51, 65, 85, 1);
   p {
-    font-size: 11px;
+    font-size: 9px;
     color: Rgba(148, 163, 184, 1);
-    line-height: 1.5;
+    line-height: 1.6;
   }
 }
 </style>

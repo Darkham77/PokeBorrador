@@ -11,6 +11,8 @@ import PVTooltip from '@/components/common/PVTooltip.vue'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { POKEMON_TAGS, POKEMON_BADGES, hasPokemonTag } from '@/logic/constants/tags'
 import { logger } from '@/logic/utils/logger'
+import { useBreedingStore } from '@/stores/breeding'
+import { checkCompatibility } from '@/logic/breeding/breedingEngine'
 import PokemonSelectionItem from './PokemonSelectionItem.vue'
 import type { Pokemon } from '@/types/pokemon'
 
@@ -33,9 +35,11 @@ interface Props {
   activePokemonUid?: string | null
   preventClose?: boolean
   allowDead?: boolean
-  allowedIds?: string[]
+  allowedIds?: string[] | null
   isItemContext?: boolean
   customList?: Pokemon[]
+  isDaycareContext?: boolean
+  daycareSlotIdx?: number
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -54,9 +58,11 @@ const props = withDefaults(defineProps<Props>(), {
   activePokemonUid: null,
   preventClose: false,
   allowDead: false,
-  allowedIds: () => [],
+  allowedIds: null,
   isItemContext: false,
-  customList: () => []
+  customList: () => [],
+  isDaycareContext: false,
+  daycareSlotIdx: 0
 })
 
 
@@ -80,6 +86,15 @@ const sortBy = ref(savedFilters.sortBy || 'recent') // 'recent', 'level', 'ivs',
 const sortOrder = ref(savedFilters.sortOrder || 'desc')
 const activeTags = ref<string[]>(Array.isArray(savedFilters.activeTags) ? savedFilters.activeTags : [])
 const selectedUids = ref<string[]>([])
+
+const breedingStore = useBreedingStore()
+const filterCompatibleOnly = ref(false)
+
+const otherDaycarePokemon = computed(() => {
+  if (!props.isDaycareContext) return null
+  const otherSlotIdx = props.daycareSlotIdx === 1 ? 0 : 1
+  return breedingStore.slots.find((s) => s.slotIndex === otherSlotIdx)?.pokemon || null
+})
 
 // Persist filters
 watch([sortBy, sortOrder, activeTags, searchQuery], () => {
@@ -154,7 +169,7 @@ const availablePokemon = computed<{ pokemon: Pokemon, _source: 'team' | 'box', i
     if (props.isBattleSwitch && p.hp <= 0 && !props.allowDead) return false
     
     // Filter by specific allowed IDs
-    if (props.allowedIds && props.allowedIds.length > 0 && !props.allowedIds.includes(p.uid)) return false
+    if (props.allowedIds && !props.allowedIds.includes(p.uid)) return false
     
     if (searchQuery.value) {
       const q = searchQuery.value.toLowerCase()
@@ -173,6 +188,11 @@ const availablePokemon = computed<{ pokemon: Pokemon, _source: 'team' | 'box', i
         if (tag === 'box') return item._source === 'box'
         return hasPokemonTag(p, tag)
       })) return false
+    }
+
+    if (props.isDaycareContext && filterCompatibleOnly.value && otherDaycarePokemon.value) {
+      const compat = checkCompatibility(p, otherDaycarePokemon.value)
+      if (!compat || compat.level === 0) return false
     }
 
     return true
@@ -278,6 +298,7 @@ function clearFilters() {
   sortBy.value = 'recent'
   sortOrder.value = 'desc'
   activeTags.value = []
+  filterCompatibleOnly.value = false
 }
 
 if (typeof window !== 'undefined') {
@@ -398,7 +419,7 @@ function openDetail(item: { pokemon: Pokemon, _source: 'team' | 'box' | 'market'
               description="Resetear búsqueda, orden y etiquetas."
             >
               <button
-                v-if="activeTags.length > 0 || searchQuery || sortBy !== 'recent'"
+                v-if="activeTags.length > 0 || searchQuery || sortBy !== 'recent' || filterCompatibleOnly"
                 class="ps-clear-icon-btn"
                 @click.stop="clearFilters"
               >
@@ -437,6 +458,21 @@ function openDetail(item: { pokemon: Pokemon, _source: 'team' | 'box' | 'market'
                   <span class="ps-tag-label">{{ POKEMON_BADGES.shiny.shortLabel }}</span>
                 </button>
               </PVTooltip>
+
+              <PVTooltip 
+                v-if="isDaycareContext && otherDaycarePokemon"
+                title="COMPATIBLES" 
+                description="Mostrar solo Pokémon compatibles con el otro slot de crianza." 
+                position="bottom"
+              >
+                <button
+                  :class="{ active: filterCompatibleOnly }"
+                  @click.stop="filterCompatibleOnly = !filterCompatibleOnly"
+                >
+                  <span class="icon">❤️</span>
+                  <span class="ps-tag-label">COMPATIBLE</span>
+                </button>
+              </PVTooltip>
             </div>
           </div>
         </div>
@@ -449,8 +485,10 @@ function openDetail(item: { pokemon: Pokemon, _source: 'team' | 'box' | 'market'
           :item="item"
           :is-selected="selectedUids.includes(item.pokemon.uid)"
           :total="getPokemonTotalPower(item.pokemon)"
-          :is-battle-context="props.isBattleSwitch || props.isItemContext || (props.allowedIds && props.allowedIds.length > 0)"
+          :is-battle-context="props.isBattleSwitch || props.isItemContext || !!(props.allowedIds && props.allowedIds.length > 0)"
           :auto-confirm="props.autoConfirm"
+          :is-daycare-context="props.isDaycareContext"
+          :daycare-slot-idx="props.daycareSlotIdx"
           @select="toggleSelection"
           @open-detail="openDetail"
         />

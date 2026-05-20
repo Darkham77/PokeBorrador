@@ -1,17 +1,23 @@
 <script setup lang="ts">
 import { useBreedingStore } from '@/stores/breeding';
+import { useUIStore } from '@/stores/ui';
 import { POKEMON_DB } from '@/data/pokemonDB';
 import type { DaycareEgg } from '@/types/breeding';
 
 const breedingStore = useBreedingStore();
+const uiStore = useUIStore();
 
 const getPokemonName = (id: string) => (POKEMON_DB as Record<string, { name: string }>)[id]?.name || 'Huevo';
 
 const handleClaim = (egg: DaycareEgg) => {
   const cost = egg.inherited_ivs?._cost as number || 0;
-  if (confirm(`¿Quieres recoger este huevo de ${getPokemonName(egg.species)}? Costo: ₽${cost.toLocaleString()}`)) {
-    breedingStore.claimEgg(egg.id);
-  }
+  uiStore.openConfirm({
+    title: 'RECOGER HUEVO',
+    message: `¿Quieres recoger este huevo de ${getPokemonName(egg.species)} por ₽${cost.toLocaleString()}?`,
+    onConfirm: () => {
+      breedingStore.claimEgg(egg.id);
+    }
+  });
 };
 </script>
 
@@ -91,14 +97,14 @@ const handleClaim = (egg: DaycareEgg) => {
   align-items: center;
   margin-bottom: 24px;
   
-  h3 { @include pixelated; font-size: 10px; color: Rgba(168, 85, 247, 1); margin-bottom: 6px; }
+  h3 { @include pixelated; font-size: 10px; color: $pokecenter-pink; margin-bottom: 6px; }
   p { font-size: 12px; color: $muted; }
 }
 
 .count-badge {
-  background: Rgba(168, 85, 247, 0.1);
-  border: 1px solid Rgba(168, 85, 247, 0.3);
-  color: Rgba(168, 85, 247, 1);
+  background: Rgba($pokecenter-pink, 0.08);
+  border: 1px solid Rgba($pokecenter-pink, 0.3);
+  color: $pokecenter-pink;
   padding: 6px 12px;
   border-radius: 99px;
   font-size: 12px;
@@ -142,7 +148,7 @@ const handleClaim = (egg: DaycareEgg) => {
 
   &:hover {
     background: Rgba(255, 255, 255, 0.06);
-    border-color: Rgba(168, 85, 247, 0.4);
+    border-color: Rgba($pokecenter-pink, 0.4);
     transform: Translatey(-4px);
     
     .egg-hover-action {
@@ -166,7 +172,7 @@ const handleClaim = (egg: DaycareEgg) => {
 .scanned-badge {
   position: absolute;
   bottom: -4px;
-  background: Rgba(168, 85, 247, 1);
+  background: $pokecenter-pink;
   color: $white;
   font-size: 6px;
   @include pixelated;
@@ -190,7 +196,7 @@ const handleClaim = (egg: DaycareEgg) => {
   bottom: 0;
   left: 0;
   right: 0;
-  background: Rgba(168, 85, 247, 1);
+  background: $pokecenter-pink;
   color: $white;
   @include pixelated;
   font-size: 8px;

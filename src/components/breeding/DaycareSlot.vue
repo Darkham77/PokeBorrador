@@ -2,6 +2,11 @@
 import { computed } from 'vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import type { Pokemon } from '@/types/pokemon'
+import PVTooltip from '@/components/common/PVTooltip.vue'
+import { NATURE_DATA } from '@/data/natures'
+import { useGameStore } from '@/stores/game'
+import { useInventoryStore } from '@/stores/inventory'
+import { useUIStore } from '@/stores/ui'
 
 interface Props {
   slotId: string
@@ -19,6 +24,42 @@ const emit = defineEmits<{
   (e: 'withdraw'): void
 }>()
 
+const gameStore = useGameStore()
+const inventoryStore = useInventoryStore()
+const uiStore = useUIStore()
+
+const findPokemonLocation = (p: Pokemon) => {
+  if (!p) return null
+  const teamIndex = gameStore.state.team.findIndex(x => x && x.uid === p.uid)
+  if (teamIndex !== -1) {
+    return { context: 'team' as const, index: teamIndex }
+  }
+  const boxIndex = gameStore.state.box.findIndex(x => x && x.uid === p.uid)
+  if (boxIndex !== -1) {
+    return { context: 'box' as const, index: boxIndex }
+  }
+  return null
+}
+
+const handleItemClick = () => {
+  const p = props.pokemon
+  if (!p) return
+  
+  const loc = findPokemonLocation(p)
+  if (!loc) {
+    uiStore.notify('No se pudo localizar este Pokémon', '⚠️')
+    return
+  }
+  
+  if (p.heldItem) {
+    const item = p.heldItem
+    inventoryStore.unequipItem(loc.context, loc.index)
+    uiStore.notify(`¡${item} retirado!`, '🎒')
+  } else {
+    uiStore.toggleInventory(loc.context, loc.index)
+  }
+}
+
 const genderIcon = computed(() => {
   if (!props.pokemon?.gender) return ''
   return props.pokemon.gender === 'M' ? '♂' : '♀'
@@ -26,6 +67,10 @@ const genderIcon = computed(() => {
 
 const getSprite = (id: string | number, isShiny: boolean) => {
   return getAssetUrl(ASSET_TYPES.POKEMON, id, { isShiny })
+}
+
+const getNatureDescription = (natureName: string) => {
+  return (NATURE_DATA as Record<string, { desc: string }>)[natureName]?.desc || 'Sin efecto en estadísticas.'
 }
 </script>
 
@@ -66,19 +111,31 @@ const getSprite = (id: string | number, isShiny: boolean) => {
           >
         </div>
         <div class="poke-info">
-          <div class="name-line">
-            <span class="name">{{ pokemon.name.toUpperCase() }}</span>
-            <span class="lv">LVL.{{ pokemon.level }}</span>
-          </div>
-          <div class="stats-line">
-            IVS: {{ pokemon.ivs.hp }}/{{ pokemon.ivs.atk }}/{{ pokemon.ivs.def }}/{{ pokemon.ivs.spa }}/{{ pokemon.ivs.spd }}/{{ pokemon.ivs.spe }}
+          <div class="p-name-stack-daycare">
+            <span class="name">{{ pokemon.nickname || pokemon.name.toUpperCase() }}</span>
             <span
-              class="gender"
-              :class="pokemon.gender"
+              v-if="pokemon.nickname"
+              class="species-subtitle"
+            >{{ pokemon.name.toUpperCase() }}</span>
+          </div>
+          <div class="lv-gender-line">
+            <span class="m-badge-level">NV.{{ pokemon.level }}</span>
+            <span
+              v-if="pokemon.gender"
+              class="m-badge-gender mini"
+              :class="pokemon.gender === 'M' ? 'male' : 'female'"
             >{{ genderIcon }}</span>
           </div>
+          <div class="stats-line">
+            IVS: <span class="stats-values">{{ pokemon.ivs.hp }}/{{ pokemon.ivs.atk }}/{{ pokemon.ivs.def }}/{{ pokemon.ivs.spa }}/{{ pokemon.ivs.spd }}/{{ pokemon.ivs.spe }}</span>
+          </div>
           <div class="nature-line">
-            {{ pokemon.nature.toUpperCase() }}
+            <PVTooltip
+              :title="`NATURALEZA: ${pokemon.nature.toUpperCase()}`"
+              :description="getNatureDescription(pokemon.nature)"
+            >
+              <span class="nature-text">{{ pokemon.nature.toUpperCase() }}</span>
+            </PVTooltip>
           </div>
         </div>
       </div>
@@ -95,7 +152,10 @@ const getSprite = (id: string | number, isShiny: boolean) => {
         </div>
       </div>
 
-      <div class="item-status">
+      <div
+        class="item-status"
+        @click.stop="handleItemClick"
+      >
         <div
           v-if="pokemon.heldItem"
           class="item-badge active"
@@ -122,6 +182,7 @@ const getSprite = (id: string | number, isShiny: boolean) => {
 
 <style scoped lang="scss">
 @use "@/styles/core/_mixins" as *;
+@use "@/styles/components/_badges.scss" as badges;
 .daycare-slot-legacy {
   background: $card-dark;
   border: 2px solid Rgba(255,255,255,0.06);
@@ -132,6 +193,11 @@ const getSprite = (id: string | number, isShiny: boolean) => {
   flex-direction: column;
   position: relative;
   transition: all 0.2s;
+
+  @media (max-width: 950px) {
+    min-height: 180px;
+    padding: 12px;
+  }
 
   &.empty {
     border-style: dashed;
@@ -150,6 +216,10 @@ const getSprite = (id: string | number, isShiny: boolean) => {
   font-size: 7px;
   color: $muted;
   margin-bottom: 20px;
+
+  @media (max-width: 950px) {
+    margin-bottom: 8px;
+  }
 }
 
 .slot-empty {
@@ -168,6 +238,11 @@ const getSprite = (id: string | number, isShiny: boolean) => {
   display: flex;
   gap: 15px;
   margin-bottom: 20px;
+
+  @media (max-width: 950px) {
+    gap: 10px;
+    margin-bottom: 10px;
+  }
 }
 
 .sprite-box {
@@ -178,20 +253,75 @@ const getSprite = (id: string | number, isShiny: boolean) => {
   .pixel-sprite { width: 56px; height: 56px; @include pixelated; }
 }
 
+
 .poke-info {
   flex: 1;
-  .name-line {
-    display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;
-    .name { font-size: 13px; font-weight: 900; color: $white; }
-    .lv { @include pixelated; font-size: 8px; color: $coin-gold; }
+  display: flex;
+  flex-direction: column;
+
+  .p-name-stack-daycare {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    margin-bottom: 6px;
+
+    .name {
+      @include pixelated;
+      font-size: 11px;
+      font-weight: 900;
+      color: $white;
+      text-transform: uppercase;
+      text-shadow: 1px 1px 0 #000;
+    }
+
+    .species-subtitle {
+      @include pixel-perfect(6.5px);
+      color: var(--yellow);
+      opacity: 0.8;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
   }
+
+  .lv-gender-line {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 6px;
+    
+    .m-badge-gender.mini {
+      @include badges.badge-gender(12px);
+      font-size: 12px;
+    }
+  }
+
   .stats-line {
-    font-size: 10px; color: Rgba(148, 163, 184, 1); font-family: monospace;
-    .gender { margin-left: 8px; font-weight: bold; }
-    .M { color: Rgba(56, 189, 248, 1); }
-    .F { color: Rgba(251, 113, 133, 1); }
+    @include pixelated;
+    font-size: 8px;
+    color: $muted;
+    margin-bottom: 4px;
+    
+    .stats-values {
+      color: $green;
+      font-family: monospace;
+      font-size: 9px;
+      font-weight: bold;
+    }
   }
-  .nature-line { font-size: 10px; color: $coin-gold; margin-top: 4px; font-weight: bold; }
+
+  .nature-line {
+    @include pixelated;
+    font-size: 8px;
+    color: $coin-gold;
+    font-weight: bold;
+    
+    .nature-text {
+      border-bottom: 1px dashed Rgba($coin-gold, 0.5);
+      cursor: help;
+      padding-bottom: 1px;
+    }
+  }
 }
 
 .vigor-status {
@@ -203,24 +333,31 @@ const getSprite = (id: string | number, isShiny: boolean) => {
 
 .item-status {
   margin-bottom: 20px;
+  cursor: pointer;
+  transition: transform 0.2s, filter 0.2s;
+  user-select: none;
+
+  &:hover {
+    transform: Scale(1.02);
+    filter: Brightness(1.15);
+  }
+
+  &:active {
+    transform: Scale(0.98);
+  }
+
   .item-badge {
     padding: 8px 12px; border-radius: 10px; font-size: 10px;
-    &.active { background: Rgba(168, 85, 247, 0.1); border: 1px solid Rgba(168, 85, 247, 0.2); color: $white; }
-    &.none { background: Rgba(0,0,0,0.2); color: Rgba(71, 85, 105, 1); font-style: italic; border: 1px dashed Rgba(255,255,255,0.05); }
+    text-align: center;
+    @include pixelated;
+    &.active { background: Rgba($pokecenter-pink, 0.08); border: 1px solid Rgba($pokecenter-pink, 0.2); color: $white; }
+    &.none { background: Rgba(0,0,0,0.2); color: Rgba(148, 163, 184, 0.6); font-style: italic; border: 1px dashed Rgba(255,255,255,0.08); }
   }
 }
 
 .withdraw-btn-retro {
   margin-top: auto;
-  padding: 12px;
-  background: Rgba(255,255,255,0.03);
-  border: 1px solid Rgba(255,255,255,0.1);
-  border-radius: 12px;
-  color: Rgba(148, 163, 184, 1);
-  @include pixelated;
-  font-size: 7px;
-  cursor: pointer;
-  
-  &:hover { background: Rgba(239, 68, 68, 0.1); color: Rgba(248, 113, 113, 1); border-color: Rgba(239, 68, 68, 0.2); }
+  @include btn-vicio('danger', 'sm', true);
+  width: 100%;
 }
 </style>

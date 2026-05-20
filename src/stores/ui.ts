@@ -26,7 +26,7 @@ export interface PokemonSelectionConfig {
   multi?: boolean;
   maxSelect?: number;
   minSelect?: number;
-  allowedIds?: string[];
+  allowedIds?: string[] | null;
   excludeUids?: string[];
   callbackConfirm?: (selected: Pokemon[]) => void;
   [key: string]: unknown;

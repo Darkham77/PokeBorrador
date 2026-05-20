@@ -34,7 +34,6 @@ import BoxView from '@/components/BoxView.vue'
 const PokedexView = defineAsyncComponent(() => import('@/views/PokedexView.vue'))
 const MapView = defineAsyncComponent(() => import('@/views/MapView.vue'))
 const GymsView = defineAsyncComponent(() => import('@/views/GymsView.vue'))
-const DaycareView = defineAsyncComponent(() => import('@/views/DaycareView.vue'))
 const BagView = defineAsyncComponent(() => import('@/views/BagView.vue'))
 const EventsView = defineAsyncComponent(() => import('@/views/EventsView.vue'))
 
@@ -197,14 +196,6 @@ useDocumentListener('keydown', initAudio, { once: true })
           <div class="hud-spacer-bottom" />
         </div>
 
-        <div
-          v-else-if="activeTab === 'daycare'"
-          key="daycare"
-          class="tab-content"
-        >
-          <DaycareView />
-          <div class="hud-spacer-bottom" />
-        </div>
 
         <div
           v-else-if="activeTab === 'ranking'"

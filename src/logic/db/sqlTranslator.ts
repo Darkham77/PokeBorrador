@@ -109,7 +109,8 @@ export function translatePostgresToSqlite(sql: string): string {
     'CREATE EXTENSION',
     'REVOKE',
     'GRANT',
-    'ALTER FUNCTION'
+    'ALTER FUNCTION',
+    'SELECT SETVAL'
   ];
   
   if (skipPatterns.some(pattern => upperSql.startsWith(pattern))) {

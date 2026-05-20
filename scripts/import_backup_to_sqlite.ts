@@ -6,13 +6,62 @@ import { TABLES_SCHEMA } from '../src/logic/db/schema.ts';
 
 console.log('\n--- 📥 IMPORTADOR DE RESPALDOS A SQLITE LOCAL ---');
 
-// 1. Obtener argumentos de línea de comandos
+// 1. Obtener argumentos de línea de comandos y normalizar según el .env
 const args = process.argv.slice(2);
-let serverName = 'official-prod';
+let serverNameInput = 'official-prod';
 
 for (const arg of args) {
   if (arg.startsWith('--server=')) {
-    serverName = arg.split('=')[1] || 'official-prod';
+    serverNameInput = arg.split('=')[1] || 'official-prod';
+  }
+}
+
+// Normalizar usando el .env si existe
+let serverName = serverNameInput;
+const envPath = path.resolve(process.cwd(), '.env');
+if (fs.existsSync(envPath)) {
+  const envContent = fs.readFileSync(envPath, 'utf8');
+  const lines = envContent.split('\n');
+  const serverConfigs: Record<string, Record<string, string>> = {};
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith('#')) continue;
+
+    const match = trimmed.match(/^([^=]+)=(.*)$/);
+    if (match && match[1] !== undefined && match[2] !== undefined) {
+      const fullKey = match[1].trim();
+      let value = match[2].trim();
+      if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+        value = value.slice(1, -1);
+      }
+
+      if (fullKey.startsWith('SERVER_')) {
+        const parts = fullKey.split('_');
+        const profile = parts[1];
+        if (parts.length >= 3 && profile !== undefined) {
+          const cleanKey = parts.slice(2).join('_');
+          if (!serverConfigs[profile]) {
+            serverConfigs[profile] = {};
+          }
+          const targetConf = serverConfigs[profile];
+          if (targetConf) {
+            targetConf[cleanKey] = value;
+          }
+        }
+      }
+    }
+  }
+
+  // Buscar coincidencia por nombre de perfil o por ID
+  let conf = serverConfigs[serverNameInput];
+  if (!conf) {
+    const found = Object.keys(serverConfigs).find(p => serverConfigs[p]?.ID === serverNameInput);
+    if (found) conf = serverConfigs[found];
+  }
+
+  if (conf) {
+    serverName = conf.ID || serverNameInput;
   }
 }
 

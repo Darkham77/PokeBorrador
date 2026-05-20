@@ -39,6 +39,33 @@ export const useBreedingStore = defineStore('breeding', () => {
   const loading = ref(false);
 
   // --- GETTERS ---
+  const fulfillableMissionsCount = computed(() => {
+    const missions = dailyMissions.value.filter(m => !m.completed);
+    if (missions.length === 0) return 0;
+    
+    const team = gameStore.state.team || [];
+    const box = gameStore.state.box || [];
+    const allPokes = [...team, ...box].filter((p): p is Pokemon => p !== null);
+    
+    return missions.filter(mission => {
+      const targetId = mission.targetId;
+      return allPokes.some(p => {
+        if (p.onMission || p.inDaycare) return false;
+        if (p.id !== targetId) return false;
+        
+        const req = mission.requirement || { type: 'level', minLevel: 0 };
+        if (req.type === 'level') return p.level >= (req.minLevel || 0);
+        if (req.type === 'iv_total') {
+          const total = (p.ivs?.hp || 0) + (p.ivs?.atk || 0) + (p.ivs?.def || 0) + (p.ivs?.spa || 0) + (p.ivs?.spd || 0) + (p.ivs?.spe || 0);
+          return total >= (req.minIvTotal || 0);
+        }
+        if (req.type === 'nature') return p.nature === req.nature;
+        if (req.type === 'iv_31') return p.ivs?.[req.stat31 as keyof Pokemon['ivs']] === 31;
+        return true;
+      });
+    }).length;
+  });
+
   const isBreeding = computed(() => slots.value.length === 2 && !!slots.value[0]?.pokemon && !!slots.value[1]?.pokemon);
   
   const compatibility = computed(() => {
@@ -71,7 +98,16 @@ export const useBreedingStore = defineStore('breeding', () => {
   async function loadDaycare() {
     loading.value = true;
     try {
-      // Simulate hydration
+      const team = gameStore.state.team || [];
+      const box = gameStore.state.box || [];
+      const all = [...team, ...box];
+      const deposited = all.filter(p => p && p.inDaycare);
+      
+      slots.value = deposited.map((p, idx) => ({
+        pokemon: p,
+        slotIndex: idx,
+        deposited_at: Temporal.Now.instant().toString()
+      }));
     } finally {
       loading.value = false;
     }
@@ -96,6 +132,26 @@ export const useBreedingStore = defineStore('breeding', () => {
     slots.value.forEach((s) => s.deposited_at = now);
 
     uiStore.notify(`¡${pokemon.name} depositado en la Guardería!`, '🏡');
+    gameStore.scheduleSave();
+    return true;
+  }
+
+  function withdraw(slotIndex: number) {
+    const slot = slots.value.find(s => s.slotIndex === slotIndex);
+    if (!slot || !slot.pokemon) return false;
+
+    const pokemonUid = slot.pokemon.uid;
+    const team = gameStore.state.team || [];
+    const box = gameStore.state.box || [];
+    const found = [...team, ...box].find(p => p && p.uid === pokemonUid);
+    if (found) {
+      found.inDaycare = false;
+    } else {
+      slot.pokemon.inDaycare = false;
+    }
+
+    slots.value = slots.value.filter(s => s.slotIndex !== slotIndex);
+    uiStore.notify(`¡${slot.pokemon.name} retirado de la Guardería!`, '🏡');
     gameStore.scheduleSave();
     return true;
   }
@@ -317,6 +373,7 @@ export const useBreedingStore = defineStore('breeding', () => {
     slots,
     warehouseEggs,
     dailyMissions,
+    fulfillableMissionsCount,
     missionRefreshes,
     loading,
     isBreeding,
@@ -324,6 +381,7 @@ export const useBreedingStore = defineStore('breeding', () => {
     nextEggTime,
     loadDaycare,
     deposit,
+    withdraw,
     claimEgg,
     checkDailyReset,
     refreshMissions,

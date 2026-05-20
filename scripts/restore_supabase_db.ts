@@ -124,26 +124,28 @@ export async function restoreSupabaseDb() {
     process.exit(1);
   }
 
+  const canonicalName = conf.ID || profile;
+
   console.log(styleText('bold', styleText('blue', `\n==================================================`)));
-  console.log(styleText('bold', styleText('cyan', `🔄 INICIANDO RESTAURACIÓN DE BASE DE DATOS: [${profile}]`)));
+  console.log(styleText('bold', styleText('cyan', `🔄 INICIANDO RESTAURACIÓN DE BASE DE DATOS: [${canonicalName}]`)));
   console.log(styleText('bold', styleText('blue', `==================================================`)));
 
   // 1. Resolver archivo de respaldo a utilizar
   let targetBackupPath = fileArg ? path.resolve(process.cwd(), fileArg) : '';
 
   if (!targetBackupPath) {
-    const serverBackupDir = path.join(BACKUPS_DIR, profile);
-    console.log(styleText('cyan', `🔍 Buscando archivo de respaldo más reciente para [${profile}] en database/backups/${profile}/...`));
+    const serverBackupDir = path.join(BACKUPS_DIR, canonicalName);
+    console.log(styleText('cyan', `🔍 Buscando archivo de respaldo más reciente para [${canonicalName}] en database/backups/${canonicalName}/...`));
     try {
       const files = await fsPromises.readdir(serverBackupDir);
       const matchingFiles = files
-        .filter(f => f.startsWith(`${profile}_backup_`) && f.endsWith('.json'))
+        .filter(f => f.startsWith(`${canonicalName}_backup_`) && f.endsWith('.json'))
         .sort()
         .reverse();
 
       if (matchingFiles.length === 0 || matchingFiles[0] === undefined) {
-        console.error(styleText('red', `❌ Error: No se encontraron archivos de respaldo automáticos para "${profile}" en ${serverBackupDir}.`));
-        console.error(styleText('yellow', `👉 Ejecuta primero un respaldo con: npm run servers:db:backup -- --server=${profile} o especifica --file=<ruta>`));
+        console.error(styleText('red', `❌ Error: No se encontraron archivos de respaldo automáticos para "${canonicalName}" en ${serverBackupDir}.`));
+        console.error(styleText('yellow', `👉 Ejecuta primero un respaldo con: npm run servers:db:backup -- --server=${canonicalName} o especifica --file=<ruta>`));
         process.exit(1);
       }
 
@@ -204,12 +206,12 @@ export async function restoreSupabaseDb() {
         if (host.endsWith('.supabase.co')) {
           const ref = conf.TENANT_ID || conf.POOLER_TENANT_ID || host.split('.')[0] || 'postgres';
           host = `db.${host.split('.')[0]}.supabase.co`;
-          console.log(styleText('cyan', `🏷️  Tenant ID / Project Ref detectado para [${profile}]: ${ref}`));
+          console.log(styleText('cyan', `🏷️  Tenant ID / Project Ref detectado para [${canonicalName}]: ${ref}`));
           dbUrl = `postgres://postgres:${encodeURIComponent(pass)}@${host}:${port}/postgres`;
         } else {
           port = conf.POSTGRES_PORT || conf.DB_PORT || '5432';
           const tenant = conf.TENANT_ID || conf.POOLER_TENANT_ID || 'your-tenant-id';
-          console.log(styleText('cyan', `🏷️  Tenant ID detectado para [${profile}]: ${tenant}`));
+          console.log(styleText('cyan', `🏷️  Tenant ID detectado para [${canonicalName}]: ${tenant}`));
           dbUrl = `postgres://postgres.${tenant}:${encodeURIComponent(pass)}@${host}:${port}/postgres`;
         }
       } catch {
@@ -219,18 +221,18 @@ export async function restoreSupabaseDb() {
   }
 
   if (!dbUrl) {
-    console.error(styleText('red', `❌ Error: No se pudo construir la URL de conexión Postgres para el perfil "${profile}".`));
+    console.error(styleText('red', `❌ Error: No se pudo construir la URL de conexión Postgres para el perfil "${canonicalName}".`));
     console.error(styleText('yellow', `👉 Asegúrate de tener SERVER_${profile}_POSTGRES_PASSWORD y SERVER_${profile}_SUPABASE_PUBLIC_URL en el .env`));
     process.exit(1);
   }
 
   if (dbUrl.includes('placeholder')) {
-    console.error(styleText('red', `❌ Error: La contraseña para "${profile}" es un placeholder. No se puede restaurar.`));
+    console.error(styleText('red', `❌ Error: La contraseña para "${canonicalName}" es un placeholder. No se puede restaurar.`));
     process.exit(1);
   }
 
   const isSupabaseCloud = dbUrl.includes('.supabase.co');
-  console.log(styleText('cyan', `🔌 Conectando al servidor Postgres de [${profile}]...`));
+  console.log(styleText('cyan', `🔌 Conectando al servidor Postgres de [${canonicalName}]...`));
 
   const sql = postgres(dbUrl, { ssl: isSupabaseCloud ? 'require' : false, max: 1 });
 
@@ -542,12 +544,12 @@ export async function restoreSupabaseDb() {
       await tx`GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public TO anon, authenticated;`;
       console.log(styleText('green', `   ✔️ Privilegios restablecidos correctamente.`));
 
-      console.log(styleText('bold', styleText('green', `\n🎉 Transacción completada con éxito. ${totalRestoredRows} filas totales restauradas en [${profile}].`)));
+      console.log(styleText('bold', styleText('green', `\n🎉 Transacción completada con éxito. ${totalRestoredRows} filas totales restauradas en [${canonicalName}].`)));
     });
 
     await sql.end();
   } catch (restErr: unknown) {
-    console.error(styleText('red', `\n❌ Error fatal durante la restauración en [${profile}]: ${(restErr as Error).message}`));
+    console.error(styleText('red', `\n❌ Error fatal durante la restauración en [${canonicalName}]: ${(restErr as Error).message}`));
     console.error(styleText('yellow', `🔄 La transacción ha sido revertida (ROLLBACK automático). La base de datos mantiene su estado anterior.`));
     try { await sql.end(); } catch { /* ignore */ }
     process.exit(1);

@@ -97,17 +97,17 @@ const bannerStyle = computed(() => ({
           </div>
         </div>
 
-        <!-- 2. Guardería -->
+        <!-- 2. Misiones -->
         <div
           class="pc-banner"
-          @click.stop="emit('openTab', 'daycare')"
+          @click.stop="emit('openTab', 'daycare-missions')"
         >
           <div class="pc-banner-icon">
             📜
           </div>
           <div class="pc-banner-content-wrapper">
             <div class="pc-banner-title">
-              GUARDERÍA
+              MISIONES DIARIAS
             </div>
             <div class="pc-banner-inner-flex">
               <div class="pc-banner-text">

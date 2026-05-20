@@ -46,9 +46,11 @@ const ballsList = computed(() => {
   const inventory = _gameStore.state.inventory || {}
   return Object.entries(inventory)
     .map(([name, qty]) => {
+      const count = qty as number
+      if (count <= 0) return null
       const found = SHOP_ITEMS.find(i => i.name === name)
       if (found?.cat === 'pokeballs' || name.toLowerCase().includes('ball')) {
-        return { name, qty: qty as number }
+        return { name, qty: count }
       }
       return null
     })

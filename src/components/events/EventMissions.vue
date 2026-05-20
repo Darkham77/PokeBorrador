@@ -1,28 +1,76 @@
 <script setup lang="ts">
-
+import { onMounted } from 'vue';
 import { useBreedingStore } from '@/stores/breeding';
-import { ref } from 'vue';
+import { useModalStore } from '@/stores/modals';
+import { useGameStore } from '@/stores/game';
+import { useUIStore } from '@/stores/ui';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
-import DaycarePicker from './DaycarePicker.vue';
-import type { Pokemon } from '@/types/pokemon';
 import type { DaycareMission } from '@/types/breeding';
+import type { Pokemon } from '@/types/pokemon';
 
 const breedingStore = useBreedingStore();
+const modalStore = useModalStore();
+const gameStore = useGameStore();
+const uiStore = useUIStore();
 
-const isDeliveryPickerOpen = ref(false);
-const activeMissionIndex = ref(-1);
+const getMatchingPokesForMission = (mission: DaycareMission) => {
+  const team = gameStore.state.team || [];
+  const box = gameStore.state.box || [];
+  const allPokes = [...team, ...box].filter((p): p is Pokemon => p !== null);
+  
+  const targetId = mission.targetId;
+  return allPokes.filter(p => {
+    if (p.onMission || p.inDaycare) return false;
+    if (p.id !== targetId) return false;
+    
+    const req = mission.requirement || { type: 'level', minLevel: 0 };
+    if (req.type === 'level') return p.level >= (req.minLevel || 0);
+    if (req.type === 'iv_total') {
+      const total = (p.ivs?.hp || 0) + (p.ivs?.atk || 0) + (p.ivs?.def || 0) + (p.ivs?.spa || 0) + (p.ivs?.spd || 0) + (p.ivs?.spe || 0);
+      return total >= (req.minIvTotal || 0);
+    }
+    if (req.type === 'nature') return p.nature === req.nature;
+    if (req.type === 'iv_31') return p.ivs?.[req.stat31 as keyof Pokemon['ivs']] === 31;
+    return true;
+  });
+};
+
+const canDeliverMission = (mission: DaycareMission) => {
+  if (mission.completed) return false;
+  return getMatchingPokesForMission(mission).length > 0;
+};
 
 const openDelivery = (idx: number) => {
-  activeMissionIndex.value = idx;
-  isDeliveryPickerOpen.value = true;
+  const mission = breedingStore.dailyMissions[idx];
+  if (!mission) return;
+  
+  const matchingPokes = getMatchingPokesForMission(mission);
+  
+  if (matchingPokes.length === 0) {
+    uiStore.notify('No tienes ningún Pokémon que cumpla los requisitos de esta misión.', '⚠️');
+    return;
+  }
+
+  const allowedIds = matchingPokes.map(p => p.uid);
+  
+  modalStore.open('PokemonSelection', {
+    title: 'ENTREGAR POKÉMON',
+    subtitle: `Elige el Pokémon para entregar a ${mission.trainerName}`,
+    allowedIds,
+    autoConfirm: true,
+    onConfirm: (selected: Pokemon[]) => {
+      const first = selected?.[0];
+      if (first) {
+        breedingStore.completeMission(idx, first.uid);
+      }
+    }
+  });
 };
 
-const handleDelivery = (pokemon: Pokemon) => {
-  if (confirm(`¿Seguro que quieres entregar a ${pokemon.name}? Se irá para siempre.`)) {
-    breedingStore.completeMission(activeMissionIndex.value, pokemon.uid);
-    isDeliveryPickerOpen.value = false;
-  }
-};
+onMounted(() => {
+  breedingStore.loadDaycare();
+  breedingStore.checkDailyReset();
+});
 
 const handleImgError = (e: Event) => {
   const target = e.target as HTMLImageElement;
@@ -33,7 +81,7 @@ const handleImgError = (e: Event) => {
 </script>
 
 <template>
-  <div class="daycare-missions">
+  <div class="event-missions">
     <header class="missions-header">
       <div class="title-wrap">
         <h3>Misiones Diarias</h3>
@@ -77,7 +125,7 @@ const handleImgError = (e: Event) => {
           <div class="dialogue-box">
             <span class="trainer-name">{{ mission.trainerName }} dice:</span>
             <p class="dialogue">
-              "{{ mission.dialogue }}"
+              " <span v-html="mission.dialogue" /> "
             </p>
           </div>
         </div>
@@ -93,6 +141,7 @@ const handleImgError = (e: Event) => {
           <button 
             v-if="!mission.completed" 
             class="btn-deliver"
+            :disabled="!canDeliverMission(mission)"
             @click.stop="openDelivery(index)"
           >
             ENTREGAR
@@ -100,22 +149,12 @@ const handleImgError = (e: Event) => {
         </div>
       </div>
     </div>
-
-    <!-- Specialized Picker for Delivery -->
-    <DaycarePicker
-      v-if="isDeliveryPickerOpen"
-      :slot-index="-1"
-      mode="delivery"
-      :mission="breedingStore.dailyMissions[activeMissionIndex]"
-      @select="handleDelivery"
-      @close="isDeliveryPickerOpen = false"
-    />
   </div>
 </template>
 
 <style scoped lang="scss">
 @use "@/styles/core/_mixins" as *;
-.daycare-missions {
+.event-missions {
   padding: 10px 0;
 }
 
@@ -130,9 +169,9 @@ const handleImgError = (e: Event) => {
 }
 
 .btn-refresh {
-  background: Rgba(59, 130, 246, 0.1);
-  border: 1px solid Rgba(59, 130, 246, 0.3);
-  color: Rgba(96, 165, 250, 1);
+  background: Rgba(255, 51, 102, 0.08);
+  border: 1px solid Rgba(255, 51, 102, 0.25);
+  color: #ff4d88;
   padding: 6px 12px;
   border-radius: 8px;
   font-size: 11px;
@@ -140,7 +179,7 @@ const handleImgError = (e: Event) => {
   cursor: pointer;
   transition: all 0.2s;
   
-  &:hover:not(:disabled) { background: Rgba(59, 130, 246, 0.2); transform: Scale(1.05); }
+  &:hover:not(:disabled) { background: Rgba(255, 51, 102, 0.15); transform: Scale(1.05); }
   &:disabled { opacity: 0.5; cursor: not-allowed; }
 }
 
@@ -242,17 +281,6 @@ const handleImgError = (e: Event) => {
 
 .btn-deliver {
   width: 100%;
-  padding: 12px;
-  border-radius: 10px;
-  background: Linear-Gradient(135deg, #8b5cf6, #6366f1);
-  color: $white;
-  border: none;
-  @include pixelated;
-  font-size: 8px;
-  cursor: pointer;
-  box-shadow: 0 4px 0 #4f46e5;
-  transition: all 0.1s;
-  
-  &:active { transform: Translatey(2px); box-shadow: 0 2px 0 #4f46e5; }
+  @include btn-vicio('primary', 'sm', true);
 }
 </style>

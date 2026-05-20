@@ -6,6 +6,7 @@ import { useUIStore } from '@/stores/ui'
 import { useSocialStore } from '@/stores/social'
 import { useModalStore } from '@/stores/modals'
 import { useGTSStore } from '@/stores/gts'
+import { useBreedingStore } from '@/stores/breeding'
 
 interface Props {
   position?: string
@@ -20,11 +21,18 @@ const uiStore = useUIStore()
 const socialStore = useSocialStore()
 const modalStore = useModalStore()
 const gtsStore = useGTSStore()
+const breedingStore = useBreedingStore()
 const navRef = ref<HTMLElement | null>(null)
 
 const activeTab = computed({
   get: () => uiStore.activeTab,
   set: (val: string) => { uiStore.activeTab = val }
+})
+
+const totalSocialNotifications = computed(() => {
+  return socialStore.notifications.total +
+         gameStore.state.claimQueue.length +
+         breedingStore.fulfillableMissionsCount
 })
 
 const handleTabChange = (tab: string, _event?: Event) => {
@@ -58,6 +66,11 @@ const handleTabChange = (tab: string, _event?: Event) => {
     return
   }
 
+  if (tab === 'daycare') {
+    modalStore.open('Daycare')
+    return
+  }
+
   if (['social', 'friends'].includes(tab)) {
     const initialTab = (socialStore.notifications.trades > 0 && (socialStore.notifications.chats + socialStore.notifications.friends) === 0)
       ? 'trades'
@@ -65,6 +78,11 @@ const handleTabChange = (tab: string, _event?: Event) => {
         ? 'requests'
         : 'friends'
     modalStore.open('SocialCenter', { initialTab })
+    return
+  }
+
+  if (tab === 'missions') {
+    modalStore.open('EventMissions')
     return
   }
   
@@ -303,9 +321,9 @@ onUnmounted(() => {
         <span class="icon">👪</span>
         <span class="nav-item-label">SOCIAL</span>
         <span
-          v-if="socialStore.notifications.total + gameStore.state.claimQueue.length > 0"
+          v-if="totalSocialNotifications > 0"
           class="badge-pill"
-        >{{ socialStore.notifications.total + gameStore.state.claimQueue.length }}</span>
+        >{{ totalSocialNotifications }}</span>
       </button>
 
       <Transition
@@ -328,6 +346,17 @@ onUnmounted(() => {
               v-if="(socialStore.notifications.chats + socialStore.notifications.friends + socialStore.notifications.trades + gameStore.state.claimQueue.length) > 0"
               class="badge-pill"
             >{{ socialStore.notifications.chats + socialStore.notifications.friends + socialStore.notifications.trades + gameStore.state.claimQueue.length }}</span>
+          </button>
+          <button
+            class="hud-nav-btn"
+            :class="{ active: modalStore.isOpen('EventMissions') || modalStore.isOpen('DaycareMissions') }"
+            @click.stop="handleTabChange('missions'); uiStore.openHudGroup = null"
+          >
+            <span class="icon">📜</span><span class="nav-item-label">MISIONES</span>
+            <span
+              v-if="breedingStore.fulfillableMissionsCount > 0"
+              class="badge-pill"
+            >{{ breedingStore.fulfillableMissionsCount }}</span>
           </button>
           <button
             class="hud-nav-btn"

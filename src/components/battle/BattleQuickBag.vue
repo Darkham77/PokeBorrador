@@ -31,12 +31,14 @@ const inventory = computed(() => gameStore.state.inventory || {})
 const battleItems = computed<BattleItem[]>(() => {
   const items: BattleItem[] = []
   Object.entries(inventory.value).forEach(([name, qty]) => {
+    const count = qty as number
+    if (count <= 0) return
     const itemData = SHOP_ITEMS.find(i => i.name === name)
     if (!itemData) return
     
     const isTrainer = battleStore.state?.isTrainer
     if (itemData.cat === 'pociones' || (itemData.cat === 'pokeballs' && !isTrainer)) {
-      items.push({ ...itemData, qty: qty as number })
+      items.push({ ...itemData, qty: count })
     }
   })
   

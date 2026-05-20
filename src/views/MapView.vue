@@ -14,12 +14,14 @@ import type { Event as GameEvent } from '@/logic/events/eventEngine'
 import type { MapLocation } from '@/types/encounters'
 import { pokemonNeedsHealing } from '@/logic/economy/economyFormulas'
 import type { Pokemon } from '@/types/pokemon'
+import { useBreedingStore } from '@/stores/breeding'
 
 const gameStore = useGameStore()
 const mapStore = useMapStore()
 const uiStore = useUIStore()
 const eventStore = useEventStore()
 const modalStore = useModalStore()
+const breedingStore = useBreedingStore()
 
 const navigateToMap = (loc: MapLocation | string | number) => {
   const id = typeof loc === 'object' ? loc.id : String(loc)
@@ -27,7 +29,13 @@ const navigateToMap = (loc: MapLocation | string | number) => {
 }
 
 const openTab = (tab: string) => {
-  uiStore.activeTab = tab
+  if (tab === 'daycare') {
+    modalStore.open('Daycare')
+  } else if (tab === 'daycare-missions') {
+    modalStore.open('EventMissions')
+  } else {
+    uiStore.activeTab = tab
+  }
 }
 
 const openCenter = () => {
@@ -43,7 +51,7 @@ const openCenter = () => {
 
 // Mapeo de misiones para los sprites
 const missionSprites = computed(() => {
-  const missions = gameStore.state.daycare_missions || []
+  const missions = (gameStore.state.daycare_missions || []).filter(m => !m.completed)
   return Array.from(new Set(missions.map((m: DaycareMission) => m?.trainerSprite).filter(Boolean))).slice(0, 4) as string[]
 })
 
@@ -83,7 +91,7 @@ const mappedAwards = computed(() => mapStore.pendingAwards.map((a: PendingAward)
 
     <!-- Estatus Superior (PC, Guardería, etc) -->
     <MapStatusSummary
-      :missions-remaining="gameStore.state.daycare_missions?.length || 0"
+      :missions-remaining="breedingStore.fulfillableMissionsCount"
       :mission-sprites="missionSprites"
       :gym-rematches="8 - (gameStore.state.defeatedGyms?.length || 0)" 
       :gym-sprites="gymSprites"

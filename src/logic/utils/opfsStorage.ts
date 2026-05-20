@@ -6,13 +6,13 @@ import { logger } from './logger.ts';
  * High-performance binary storage for save games.
  */
 
-export async function getOpfsFile(fileName: string) {
+export async function getOpfsFile(fileName: string, options: FileSystemGetFileOptions = { create: true }) {
   const root = await navigator.storage.getDirectory()
-  return await (root as FileSystemDirectoryHandle).getFileHandle(fileName, { create: true })
+  return await (root as FileSystemDirectoryHandle).getFileHandle(fileName, options)
 }
 
 export async function writeOpfsFile(fileName: string, data: Uint8Array | string) {
-  const handle = await getOpfsFile(fileName)
+  const handle = await getOpfsFile(fileName, { create: true })
   const writable = await handle.createWritable()
   await writable.write(data)
   await writable.close()
@@ -20,11 +20,17 @@ export async function writeOpfsFile(fileName: string, data: Uint8Array | string)
 
 export async function readOpfsFile(fileName: string): Promise<Uint8Array | null> {
   try {
-    const handle = await getOpfsFile(fileName)
+    const handle = await getOpfsFile(fileName, { create: false })
     const file = await handle.getFile()
     const buffer = await file.arrayBuffer()
+    if (buffer.byteLength === 0) {
+      return null
+    }
     return new Uint8Array(buffer)
   } catch (e) {
+    if ((e as Error).name === 'NotFoundError') {
+      return null
+    }
     logger.warn('OPFS', `Error reading ${fileName}: ${(e as Error).message}`)
     return null
   }

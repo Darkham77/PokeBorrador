@@ -51,11 +51,6 @@ const router = createRouter({
           path: 'bag',
           name: 'bag',
           component: () => import('@/views/BagView.vue'),
-        },
-        {
-          path: 'daycare',
-          name: 'daycare',
-          component: () => import('@/views/DaycareView.vue'),
         }
       ]
     }

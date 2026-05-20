@@ -67,7 +67,9 @@ const filteredItems = computed<Item[]>(() => (inventoryStore.bagItems as Item[])
 const totalObjectsCount = computed(() => {
   const source = props.battleMode 
     ? (filteredItems.value || [])
-    : Object.entries(gameStore.state.inventory || {}).map(([name, qty]) => ({ name, id: name, qty: qty as number }))
+    : Object.entries(gameStore.state.inventory || {})
+        .filter(([, qty]) => (qty as number) > 0)
+        .map(([name, qty]) => ({ name, id: name, qty: qty as number }))
   return source.reduce((s, v) => s + (v.qty || 0), 0)
 })
 const selectedObjectsTotal = computed(() => Array.from(selectedItems.values()).reduce((s, v) => s + v, 0))
@@ -118,9 +120,12 @@ const handleActionSelect = (type: string) => {
 
     if (uiStore.inventoryTarget) {
       // Logic for pre-selected target
-      if (dbItem.cat === 'held' || dbItem.type === 'held') {
+      if (dbItem.cat === 'held' || dbItem.type === 'held' || (dbItem.cat === 'breeding' && dbItem.id !== 'vigor_restorer' && !dbItem.id.includes('berry'))) {
         const success = inventoryStore.equipItem(dbItem.name, uiStore.inventoryTarget.context, uiStore.inventoryTarget.index)
-        if (success) uiStore.notify(`¡${dbItem.name} equipado!`, '🎒')
+        if (success) {
+          uiStore.notify(`¡${dbItem.name} equipado!`, '🎒')
+          uiStore.toggleInventory() // Close inventory after equipping
+        }
         else uiStore.notify(`No se pudo equipar`, '⚠️')
       } else {
         const res = inventoryStore.useItem(dbItem.name, uiStore.inventoryTarget.context, uiStore.inventoryTarget.index)

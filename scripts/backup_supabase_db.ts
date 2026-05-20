@@ -122,11 +122,13 @@ export async function backupSupabaseDb() {
       continue;
     }
 
+    const canonicalName = conf.ID || profile;
+
     console.log(styleText('bold', styleText('blue', `\n==================================================`)));
-    console.log(styleText('bold', styleText('cyan', `📥 INICIANDO RESPALDO DE BASE DE DATOS: [${profile}]`)));
+    console.log(styleText('bold', styleText('cyan', `📥 INICIANDO RESPALDO DE BASE DE DATOS: [${canonicalName}]`)));
     console.log(styleText('bold', styleText('blue', `==================================================`)));
 
-    const serverBackupDir = path.join(BACKUPS_DIR, profile);
+    const serverBackupDir = path.join(BACKUPS_DIR, canonicalName);
     await fsPromises.mkdir(serverBackupDir, { recursive: true });
 
     let dbUrl = conf.DATABASE_URL || conf.POSTGRES_URL || conf.PG_URL || '';
@@ -141,12 +143,12 @@ export async function backupSupabaseDb() {
           if (host.endsWith('.supabase.co')) {
             const ref = conf.TENANT_ID || conf.POOLER_TENANT_ID || host.split('.')[0] || 'postgres';
             host = `db.${host.split('.')[0]}.supabase.co`;
-            console.log(styleText('cyan', `🏷️  Tenant ID / Project Ref detectado para [${profile}]: ${ref}`));
+            console.log(styleText('cyan', `🏷️  Tenant ID / Project Ref detectado para [${canonicalName}]: ${ref}`));
             dbUrl = `postgres://postgres:${encodeURIComponent(pass)}@${host}:${port}/postgres`;
           } else {
             port = conf.POSTGRES_PORT || conf.DB_PORT || '5432';
             const tenant = conf.TENANT_ID || conf.POOLER_TENANT_ID || 'your-tenant-id';
-            console.log(styleText('cyan', `🏷️  Tenant ID detectado para [${profile}]: ${tenant}`));
+            console.log(styleText('cyan', `🏷️  Tenant ID detectado para [${canonicalName}]: ${tenant}`));
             dbUrl = `postgres://postgres.${tenant}:${encodeURIComponent(pass)}@${host}:${port}/postgres`;
           }
         } catch {
@@ -156,18 +158,18 @@ export async function backupSupabaseDb() {
     }
 
     if (!dbUrl) {
-      console.error(styleText('red', `❌ Error: No se pudo construir la URL de conexión Postgres para el perfil "${profile}".`));
+      console.error(styleText('red', `❌ Error: No se pudo construir la URL de conexión Postgres para el perfil "${canonicalName}".`));
       console.error(styleText('yellow', `👉 Asegúrate de tener SERVER_${profile}_POSTGRES_PASSWORD y SERVER_${profile}_SUPABASE_PUBLIC_URL en el .env`));
       continue;
     }
 
     if (dbUrl.includes('placeholder')) {
-      console.log(styleText('yellow', `⚠️  Advertencia: La contraseña para "${profile}" es un placeholder. Omitiendo respaldo.`));
+      console.log(styleText('yellow', `⚠️  Advertencia: La contraseña para [${canonicalName}] es un placeholder. Omitiendo respaldo.`));
       continue;
     }
 
     const isSupabaseCloud = dbUrl.includes('.supabase.co');
-    console.log(styleText('cyan', `🔌 Conectando al servidor Postgres de [${profile}]...`));
+    console.log(styleText('cyan', `🔌 Conectando al servidor Postgres de [${canonicalName}]...`));
 
     const sql = postgres(dbUrl, { ssl: isSupabaseCloud ? 'require' : false, max: 1 });
 
@@ -182,12 +184,12 @@ export async function backupSupabaseDb() {
       `;
 
       if (tables.length === 0) {
-        console.log(styleText('yellow', `⚠️  No se encontraron tablas en el esquema public de [${profile}].`));
+        console.log(styleText('yellow', `⚠️  No se encontraron tablas en el esquema public de [${canonicalName}].`));
         await sql.end();
         continue;
       }
 
-      console.log(styleText('green', `📊 Se detectaron ${tables.length} tablas en [${profile}]. Iniciando descarga...`));
+      console.log(styleText('green', `📊 Se detectaron ${tables.length} tablas en [${canonicalName}]. Iniciando descarga...`));
 
       const backupData: Record<string, Record<string, unknown>[]> = {};
       let totalRows = 0;
@@ -236,12 +238,12 @@ export async function backupSupabaseDb() {
 
       // 2. Guardar en archivo JSON
       const timestamp = Temporal.Now.instant().toString().replace(/[:.]/g, '-');
-      const backupFilename = `${profile}_backup_${timestamp}.json`;
+      const backupFilename = `${canonicalName}_backup_${timestamp}.json`;
       const backupFilePath = path.join(serverBackupDir, backupFilename);
 
       const fullBackupObject = {
         metadata: {
-          profile,
+          profile: canonicalName,
           timestamp: Temporal.Now.instant().toString(),
           totalTables: tables.length,
           totalRows
@@ -255,12 +257,12 @@ export async function backupSupabaseDb() {
 
       await fsPromises.writeFile(backupFilePath, JSON.stringify(fullBackupObject, null, 2), 'utf-8');
 
-      console.log(styleText('green', `\n✨ Respaldo completado exitosamente en [${profile}]:`));
+      console.log(styleText('green', `\n✨ Respaldo completado exitosamente en [${canonicalName}]:`));
       console.log(styleText('cyan', `📂 Archivo guardado en: ${backupFilePath}`));
       console.log(styleText('cyan', `📈 Resumen: ${tables.length} tablas, ${totalRows} filas totales.`));
 
     } catch (dbErr: unknown) {
-      console.error(styleText('red', `❌ Error al conectar o respaldar la base de datos de [${profile}]: ${(dbErr as Error).message}`));
+      console.error(styleText('red', `❌ Error al conectar o respaldar la base de datos de [${canonicalName}]: ${(dbErr as Error).message}`));
       try { await sql.end(); } catch { /* ignore */ }
     }
   }

@@ -9,11 +9,15 @@ import UnifiedBadgePill from '@/components/shared/UnifiedBadgePill.vue'
 import { getPokemonTier } from '@/logic/pokemon/tierEngine'
 import { useBattleVisuals } from '@/composables/useBattleVisuals'
 import { useUIStore } from '@/stores/ui'
+import { useBreedingStore } from '@/stores/breeding'
+import { COMPAT_TEXT } from '@/logic/breeding/breedingData'
+import { checkCompatibility } from '@/logic/breeding/breedingEngine'
 
 import type { Pokemon } from '@/types/pokemon'
 
 const { getHpColor } = useBattleVisuals()
 const uiStore = useUIStore()
+const breedingStore = useBreedingStore()
 
 interface Props {
   item: {
@@ -25,12 +29,16 @@ interface Props {
   total: number
   isBattleContext?: boolean
   autoConfirm?: boolean
+  isDaycareContext?: boolean
+  daycareSlotIdx?: number
 }
 
 const props = withDefaults(defineProps<Props>(), {
   isSelected: false,
   isBattleContext: false,
-  autoConfirm: false
+  autoConfirm: false,
+  isDaycareContext: false,
+  daycareSlotIdx: 0
 })
 
 const emit = defineEmits<{
@@ -45,6 +53,15 @@ const ivTotal = computed(() => {
   return (ivs.hp || 0) + (ivs.atk || 0) + (ivs.def || 0) + (ivs.spa || 0) + (ivs.spd || 0) + (ivs.spe || 0)
 })
 const isPremiumTier = computed(() => tierData.value.tier === 'S' || tierData.value.tier === 'S+')
+
+const listCompatibility = computed(() => {
+  if (!props.isDaycareContext) return null
+  const otherSlotIdx = props.daycareSlotIdx === 1 ? 0 : 1
+  const otherSlot = breedingStore.slots.find((s) => s.slotIndex === otherSlotIdx)
+  const otherPoke = otherSlot?.pokemon
+  if (!otherPoke) return null
+  return checkCompatibility(props.item.pokemon, otherPoke)
+})
 
 function handleOpenDetail() {
   uiStore.openPokemonDetail(props.item.pokemon, props.item.index, props.item._source, { source: 'selection' })
@@ -174,6 +191,39 @@ function handleClick() {
         </div>
         <span class="hp-text">{{ item.pokemon.hp }} / {{ item.pokemon.maxHp }}</span>
       </div>
+      
+      <!-- Daycare Info (Compatibility / Vigor) -->
+      <div
+        v-if="isDaycareContext"
+        class="daycare-item-meta"
+      >
+        <div class="compat-status">
+          <template v-if="listCompatibility">
+            <span :style="{ color: (COMPAT_TEXT as Record<number, { color: string, label: string }>)[listCompatibility.level]?.color || '#ff668f' }">
+              COMPATIBILIDAD: {{ (COMPAT_TEXT as Record<number, { color: string, label: string }>)[listCompatibility.level]?.label || 'Desconocida' }}
+            </span>
+            <span
+              v-if="listCompatibility.eggSpecies"
+              class="egg-hint"
+            >
+              🥚 {{ listCompatibility.eggSpecies }}
+            </span>
+          </template>
+          <template v-else>
+            <span class="waiting-status">Esperando pareja</span>
+          </template>
+        </div>
+        
+        <div
+          v-if="item.pokemon.vigor !== undefined"
+          class="vigor-status-mini"
+        >
+          <span class="label">VIGOR: </span>
+          <span :class="['value', { low: item.pokemon.vigor <= 2 }]">⚡ {{ item.pokemon.vigor }}/10</span>
+        </div>
+      </div>
+      
+      <slot name="extra" />
     </div>
 
     <div 
@@ -256,6 +306,44 @@ function handleClick() {
     flex-shrink: 0;
     min-width: 65px;
     text-align: right;
+  }
+}
+
+.daycare-item-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed Rgba(255, 255, 255, 0.05);
+  width: 100%;
+}
+
+.compat-status {
+  font-size: 8px;
+  @include pixelated;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.waiting-status { color: Rgba(255, 255, 255, 0.25); }
+.egg-hint { color: var(--daycare-pink, #ff3366); }
+
+.vigor-status-mini {
+  font-size: 8px;
+  @include pixelated;
+  
+  .label {
+    color: var(--gray, #94a3b8);
+  }
+  
+  .value {
+    color: #22c55e;
+    font-weight: bold;
+    &.low {
+      color: #ef4444;
+    }
   }
 }
 </style>
