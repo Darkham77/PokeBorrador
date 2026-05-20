@@ -4,7 +4,7 @@ import { logger } from '@/logic/utils/logger'
 import { safeStorage } from '@/logic/utils/storage'
 
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
       path: '/login',

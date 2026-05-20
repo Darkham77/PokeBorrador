@@ -85,8 +85,14 @@ function devDbImportPlugin() {
 
 const buildInstant = Temporal.Now.instant().toZonedDateTimeISO('UTC');
 
+// Detect if building on GitHub Actions for GitHub Pages
+const isGithubActions = !!process.env.GITHUB_ACTIONS
+const repoName = process.env.GITHUB_REPOSITORY?.split('/')[1]
+const base = process.env.VITE_BASE_URL || (isGithubActions && repoName ? `/${repoName}/` : '/')
+
 // https://vitejs.dev/config/
 export default defineConfig({
+  base,
   plugins: [
     vue(),
     migrationsPlugin(),
@@ -178,7 +184,7 @@ export default defineConfig({
     },
   },
   build: {
-    chunkSizeWarningLimit: 800, // Reduced limit as Phaser is gone
+    chunkSizeWarningLimit: 1000, // Increased to 1000 to accommodate game database size
     rollupOptions: {
       output: {
         manualChunks(id) {
@@ -187,6 +193,15 @@ export default defineConfig({
           }
           if (id.includes('node_modules/@supabase')) {
             return 'vendor-db';
+          }
+          if (id.includes('node_modules/gsap')) {
+            return 'vendor-gsap';
+          }
+          if (id.includes('node_modules/@js-temporal')) {
+            return 'vendor-temporal';
+          }
+          if (id.includes('src/data/')) {
+            return 'game-data';
           }
           return;
         }
