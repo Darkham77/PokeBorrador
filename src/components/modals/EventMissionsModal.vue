@@ -34,7 +34,7 @@ onMounted(() => {
     :show="show"
     :type="isSmallScreen ? 'fullscreen' : 'center'"
     :max-width="isSmallScreen ? '100dvw' : '650px'"
-    :height="isSmallScreen ? '100dvh' : '450px'"
+    :height="isSmallScreen ? '100dvh' : 'auto'"
     variant="retro"
     padding="raw"
     accent-color="var(--pokecenter-pink)"
@@ -132,8 +132,9 @@ onMounted(() => {
 }
 
 .missions-modal-content-inner {
-  height: calc(100% - 64px);
+  height: 100%;
   overflow-y: auto;
   padding: 20px;
+  box-sizing: border-box;
 }
 </style>
