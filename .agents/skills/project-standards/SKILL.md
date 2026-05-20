@@ -220,6 +220,7 @@ Use these scripts to verify project standards and ensure stability:
 - `npm run test:node`: Runs the pure logic test suite using the native Node.js 26+ test runner.
 - `npm run test:all`: Sequentially runs the native Node.js tests (`test:node`) and the component tests in Vitest (`test`).
 - `npm run migrations:generate`: Scans local SQL migration files under `database/migrations/` and packages them into the production TypeScript migrations manifest (`src/logic/db/migrations_data.ts`).
+- `npm run sync:test`: **Test Repo Sync**. Copies the full source tree (`src/`, `api/`, `public/`, `scripts/`, `database/migrations/`, config files) from `PokeBorrador` into the sibling `pokevicio-test` repository. If `pokevicio-test` doesn't exist yet, it auto-clones it via SSH. Preserves `.git` and `.github` intact. Run this after a feature branch is stable to push a clean snapshot for QA testing without exposing the main dev repo.
 
 ### ⚔️ Battle Engine (FSM Mastery)
 

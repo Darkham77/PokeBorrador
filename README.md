@@ -160,6 +160,7 @@ El proyecto utiliza un motor de auditoría inteligente y validadores semánticos
 | `npm run validate:abilities` | **Ability Sync**: Valida habilidades contra la base de datos oficial. |
 | `npm run validate:fsm` | **FSM Mastery Audit**: Verifica diagramas, implementación dinámica y paridad de flujo. |
 | `npm run migrations:generate` | **Generador de Migraciones**: Escanea las migraciones SQL locales de `database/migrations/` y las compila en el manifiesto TypeScript de producción. |
+| `npm run sync:test` | **Sincronización a Repo de Testing**: Copia el árbol de fuentes completo (`src/`, `api/`, `public/`, `scripts/`, `database/migrations/`, archivos de config) desde `PokeBorrador` al repositorio hermano `pokevicio-test`. Si `pokevicio-test` no existe, lo clona automáticamente vía SSH. Preserva `.git` y `.github` intactos. Usarlo cuando una rama de feature está estable y se quiere enviar un snapshot limpio para QA. |
 
 ### ☁️ Gestión de Infraestructura Supabase y Servidores (Node.js 26+)
 
@@ -228,6 +229,7 @@ npm run validate:types         # Verificación estricta de tipos TypeScript
 npm run test               # Unit tests de UI y componentes (Vitest)
 npm run build              # Compilación para producción
 npm run assets:download    # Descarga sprites y recursos externos (Gen 1-9, Items, Trainers)
+npm run sync:test          # Sincroniza el código fuente al repo hermano pokevicio-test para QA
 ```
 
 ### Reglas de Oro
