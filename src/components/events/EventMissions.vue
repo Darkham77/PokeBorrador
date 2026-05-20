@@ -225,7 +225,7 @@ const handleImgError = (e: Event) => {
 
 .trainer-section {
   display: flex;
-  gap: 12px;
+  gap: 16px;
   
   .trainer-avatar {
     width: 48px;
@@ -249,8 +249,20 @@ const handleImgError = (e: Event) => {
   
   .dialogue-box {
     flex: 1;
-    .trainer-name { font-size: 10px; color: Rgba(148, 163, 184, 1); text-transform: uppercase; margin-bottom: 4px; display: block; }
-    .dialogue { font-size: 12px; color: $white; line-height: 1.4; font-style: italic; }
+    .trainer-name { 
+      font-size: 8px; 
+      color: Rgba(255, 255, 255, 0.4); 
+      text-transform: uppercase; 
+      margin-bottom: 6px; 
+      display: block; 
+      letter-spacing: 0.5px;
+    }
+    .dialogue { 
+      font-size: 9px; 
+      color: $white; 
+      line-height: 1.8; 
+      font-style: italic; 
+    }
   }
 }
 
@@ -274,8 +286,9 @@ const handleImgError = (e: Event) => {
   .reward-info {
     display: flex;
     flex-direction: column;
+    gap: 4px;
     .label { font-size: 8px; color: $muted; text-transform: uppercase; letter-spacing: 0.5px; }
-    .val { font-size: 12px; color: Rgba(34, 197, 94, 1); font-weight: 800; }
+    .val { font-size: 9px; color: Rgba(34, 197, 94, 1); font-weight: 800; }
   }
 }
 
