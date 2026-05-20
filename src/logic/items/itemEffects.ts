@@ -76,6 +76,13 @@ export const itemEffects: Record<string, (p: unknown) => ItemEffectResult> = {
     p.vigor = currentVigor + 1;
     return { success: true, message: `recuperó 1 de vigor (${p.vigor}/${maxVigor})` };
   }),
+  'Restaurador de Vigor': pokeEffect((p) => {
+    const maxVigor = 10;
+    const currentVigor = Number(p.vigor || 0);
+    if (currentVigor >= maxVigor) return { success: false, message: 'Vigor al máximo.' };
+    p.vigor = maxVigor;
+    return { success: true, message: `recuperó todo su vigor (${p.vigor}/${maxVigor})` };
+  }),
   'Recordador de Movimientos': pokeEffect((_p) => {
     // This item is special as it opens a menu
     return { success: true, message: 'abriendo menú de movimientos', resultType: 'relearner', deferred: true };

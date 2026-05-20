@@ -44,11 +44,13 @@ const isSmallScreen = ref(window.innerWidth <= 950)
 const handleResize = () => { isSmallScreen.value = window.innerWidth <= 950 }
 useWindowListener('resize', handleResize)
 
-// Battle Mode auto-category
+// Battle/Target Auto-category selection
 watch(() => props.show, (val) => {
   if (val) {
     if (props.initialCategory) {
       inventoryStore.activeCategory = props.initialCategory
+    } else if (uiStore.inventoryTarget) {
+      inventoryStore.activeCategory = 'utilizables'
     } else if (props.battleMode) {
       inventoryStore.activeCategory = 'pociones'
     }

@@ -9,6 +9,7 @@ import BaseModal from '@/components/common/BaseModal.vue'
 import DaycareSlot from '@/components/breeding/DaycareSlot.vue'
 import BreedingSummary from '@/components/breeding/BreedingSummary.vue'
 import EggWarehouse from '@/components/breeding/EggWarehouse.vue'
+import IncubatingEggs from '@/components/breeding/IncubatingEggs.vue'
 
 interface Props {
   show?: boolean
@@ -107,6 +108,13 @@ onMounted(() => {
             @withdraw="withdraw(1)"
           />
         </div>
+      </div>
+
+      <div class="divider-line" />
+
+      <!-- Incubating section: Backpack Eggs -->
+      <div class="incubating-section">
+        <IncubatingEggs />
       </div>
 
       <div class="divider-line" />

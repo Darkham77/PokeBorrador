@@ -359,8 +359,16 @@ export const useInventoryStore = defineStore('inventory', () => {
     const officialName = resolveNormalizedName(itemName)
     if (isGlobalItem(officialName)) return false
 
-    // Check if it's a held item or breeding held item (always equippable)
     const item = SHOP_ITEMS.find(i => i.name === officialName)
+
+    if (pokemon.inDaycare) {
+      if (!item) return false
+      const isVigorRestorer = item.id === 'vigor_restorer' || item.id === 'caramelo_vigor' || item.name === 'Restaurador de Vigor' || item.name === 'Caramelo de vigor'
+      const isBreedingHeld = item.cat === 'breeding'
+      return !!(isVigorRestorer || isBreedingHeld)
+    }
+
+    // Check if it's a held item or breeding held item (always equippable)
     if (item && (
       item.cat === 'held' || 
       item.type === 'held' || 

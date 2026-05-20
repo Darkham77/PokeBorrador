@@ -25,8 +25,10 @@ export const useBreedingStore = defineStore('breeding', () => {
   const classStore = usePlayerClassStore();
   const eventStore = useEventStore();
 
-  // --- STATE ---
-  const slots = ref<DaycareSlot[]>([]); // [{ pokemon, slot_index, deposited_at }]
+  const slots = ref<DaycareSlot[]>([
+    { pokemon: null, slotIndex: 0, deposited_at: null },
+    { pokemon: null, slotIndex: 1, deposited_at: null }
+  ]); // [{ pokemon, slot_index, deposited_at }]
   const warehouseEggs = ref<DaycareEgg[]>([]); // Eggs waiting to be claimed
   const dailyMissions = computed<DaycareMission[]>({
     get: () => gameStore.state.daycare_missions || [],
@@ -98,16 +100,41 @@ export const useBreedingStore = defineStore('breeding', () => {
   async function loadDaycare() {
     loading.value = true;
     try {
+      slots.value = [
+        { pokemon: null, slotIndex: 0, deposited_at: null },
+        { pokemon: null, slotIndex: 1, deposited_at: null }
+      ];
+
       const team = gameStore.state.team || [];
       const box = gameStore.state.box || [];
       const all = [...team, ...box];
       const deposited = all.filter(p => p && p.inDaycare);
       
-      slots.value = deposited.map((p, idx) => ({
-        pokemon: p,
-        slotIndex: idx,
-        deposited_at: Temporal.Now.instant().toString()
-      }));
+      let needsSave = false;
+      deposited.forEach(p => {
+        let idx = typeof p.daycareSlot === 'number' ? p.daycareSlot : -1;
+        if (idx === -1) {
+          idx = slots.value.findIndex(s => s.pokemon === null);
+          if (idx === -1) idx = 0;
+          p.daycareSlot = idx;
+          needsSave = true;
+        }
+        // If daycareDepositedAt is missing (save predates this feature),
+        // assign it now and mark for save so it persists on future loads
+        if (!p.daycareDepositedAt) {
+          p.daycareDepositedAt = Temporal.Now.instant().toString();
+          needsSave = true;
+        }
+        slots.value[idx] = {
+          pokemon: p,
+          slotIndex: idx,
+          deposited_at: p.daycareDepositedAt
+        };
+      });
+
+      if (needsSave) {
+        gameStore.scheduleSave();
+      }
     } finally {
       loading.value = false;
     }
@@ -120,16 +147,13 @@ export const useBreedingStore = defineStore('breeding', () => {
     }
 
     pokemon.inDaycare = true;
-    
-    const now = Temporal.Now.instant().toString();
-    const existing = slots.value.findIndex((s) => s.slotIndex === slotIndex);
-    if (existing !== -1) {
-      slots.value[existing] = { pokemon, slotIndex, deposited_at: now };
-    } else {
-      slots.value.push({ pokemon, slotIndex, deposited_at: now });
+    pokemon.daycareSlot = slotIndex;
+    // Preserve deposited_at from the first deposit so the egg timer never resets
+    if (!pokemon.daycareDepositedAt) {
+      pokemon.daycareDepositedAt = Temporal.Now.instant().toString();
     }
-
-    slots.value.forEach((s) => s.deposited_at = now);
+    const now = pokemon.daycareDepositedAt;
+    slots.value[slotIndex] = { pokemon, slotIndex, deposited_at: now };
 
     uiStore.notify(`¡${pokemon.name} depositado en la Guardería!`, '🏡');
     gameStore.scheduleSave();
@@ -137,7 +161,7 @@ export const useBreedingStore = defineStore('breeding', () => {
   }
 
   function withdraw(slotIndex: number) {
-    const slot = slots.value.find(s => s.slotIndex === slotIndex);
+    const slot = slots.value[slotIndex];
     if (!slot || !slot.pokemon) return false;
 
     const pokemonUid = slot.pokemon.uid;
@@ -146,11 +170,15 @@ export const useBreedingStore = defineStore('breeding', () => {
     const found = [...team, ...box].find(p => p && p.uid === pokemonUid);
     if (found) {
       found.inDaycare = false;
+      found.daycareSlot = undefined;
+      found.daycareDepositedAt = undefined;
     } else {
       slot.pokemon.inDaycare = false;
+      slot.pokemon.daycareSlot = undefined;
+      slot.pokemon.daycareDepositedAt = undefined;
     }
 
-    slots.value = slots.value.filter(s => s.slotIndex !== slotIndex);
+    slots.value[slotIndex] = { pokemon: null, slotIndex, deposited_at: null };
     uiStore.notify(`¡${slot.pokemon.name} retirado de la Guardería!`, '🏡');
     gameStore.scheduleSave();
     return true;
@@ -342,15 +370,19 @@ export const useBreedingStore = defineStore('breeding', () => {
 
     let newlyReady = false;
     eggs.forEach((egg) => {
-      if (egg.steps > 0) {
+      if (!egg.ready && egg.steps > 0) {
         egg.steps = Math.max(0, egg.steps - (reduction / 1000));
-        if (egg.steps === 0) newlyReady = true;
+        if (egg.steps === 0) {
+          egg.ready = true;
+          newlyReady = true;
+        }
       }
     });
 
     if (newlyReady) {
-      uiStore.notify('¡Un huevo está listo para eclosionar!', '🐣');
+      uiStore.notify('¡Un Huevo Pokémon está listo para eclosionar!', '🐣');
     }
+    gameStore.scheduleSave();
   }
 
   function updateEggIvs(eggId: string, ivs: Partial<PokemonIVs>) {

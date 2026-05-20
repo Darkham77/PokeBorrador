@@ -5,6 +5,7 @@ import { getBattleRewardModifiers } from '@/logic/war/bonusEngine'
 import { levelUpPokemon } from '@/logic/pokemonFactory'
 import type { BattleContext } from '@/types/battleContext'
 import type { Pokemon } from '@/types/pokemon'
+import { useBreedingStore } from '@/stores/breeding'
 
 /**
  * Handles the fainting of a Pokémon.
@@ -142,7 +143,21 @@ export async function terminateBattle(ctx: BattleContext, win: boolean, fled = f
   active.over = true
   ctx.faintedSides.value.clear()
   
-  if (win && !fled) await calculateBattleRewards(ctx)
+  if (win && !fled) {
+    await calculateBattleRewards(ctx)
+    try {
+      const breedingStore = useBreedingStore()
+      if (active.isGym) {
+        breedingStore.reduceHatchTimers('gym')
+      } else if (active.isCapture) {
+        breedingStore.reduceHatchTimers('capture')
+      } else {
+        breedingStore.reduceHatchTimers('battle')
+      }
+    } catch (e) {
+      console.error('Failed to reduce hatch timers:', e)
+    }
+  }
   
   syncAndPersist(ctx)
 

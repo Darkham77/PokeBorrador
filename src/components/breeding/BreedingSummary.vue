@@ -75,12 +75,19 @@ const compatStyle = computed(() => {
   return (COMPAT_TEXT as Record<number, { label: string; color: string }>)[level] || { label: 'Desconocido', color: 'gray' }
 })
 
-const formatTime = (ms: number | null) => {
+const formatMs = (ms: number | null): string => {
   if (!ms) return '--:--'
   const left = Math.max(0, Math.floor((ms - Temporal.Now.instant().epochMilliseconds) / 1000))
   const m = String(Math.floor(left / 60)).padStart(2, '0')
   const s = String(left % 60).padStart(2, '0')
   return `${m}:${s}`
+}
+
+// Ticker GSAP: actualiza el display del timer cada frame sin setInterval
+const displayTime = ref(formatMs(breedingStore.nextEggTime))
+
+const tickerFn = () => {
+  displayTime.value = formatMs(breedingStore.nextEggTime)
 }
 
 onMounted(() => {
@@ -89,10 +96,12 @@ onMounted(() => {
   } else {
     stopPulse()
   }
+  gsap.ticker.add(tickerFn)
 })
 
 onUnmounted(() => {
   stopPulse()
+  gsap.ticker.remove(tickerFn)
 })
 </script>
 
@@ -111,7 +120,7 @@ onUnmounted(() => {
           class="timer"
         >
           <span class="timer-icon">⏳</span>
-          {{ formatTime(breedingStore.nextEggTime) }}
+          {{ displayTime }}
         </div>
       </div>
       <div

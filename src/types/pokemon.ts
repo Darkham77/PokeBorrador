@@ -125,6 +125,8 @@ export interface Pokemon {
   onMission?: boolean;
   onDefense?: boolean;
   inDaycare?: boolean;
+  daycareSlot?: number;
+  daycareDepositedAt?: string;
   furyCutterCount?: number;
   lastMove?: Move | null;
   thrashTurns?: number;
@@ -154,4 +156,9 @@ export interface PokemonEgg {
   ivs?: Partial<PokemonIVs>;
   movesAtBirth?: string[];
   obtainedAt?: number;
+  scanned?: boolean;
+  predictedInfo?: {
+    name: string;
+    ivTotal: number;
+  };
 }
