@@ -3,7 +3,12 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches:
-      - main # cada push a main dispara el deploy
+      - main
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
 
 jobs:
   build-and-deploy:
@@ -22,7 +27,6 @@ jobs:
 
       - name: Build project
         run: npm run build
-        # asegúrate que tu script "build" en package.json genere la carpeta dist/
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
