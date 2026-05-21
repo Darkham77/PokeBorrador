@@ -141,6 +141,7 @@ export interface AssetOptions {
   back?: boolean; // Legacy fallback
   cycle?: 'morning' | 'day' | 'dusk' | 'night';
   trainerSuffix?: 'avatar' | 'front' | 'back';
+  isLowPower?: boolean;
   [key: string]: unknown;
 }
 
@@ -195,6 +196,10 @@ export const getAssetUrl = (type: AssetType, rawId: string | number, options: As
           night: '_noche'
         };
         finalId = `${id}${suffixes[options.cycle] || '_dia'}`;
+      }
+
+      if (options.isLowPower) {
+        finalId = `${finalId}_mobile`;
       }
 
       const mapPath = `/assets/maps/${finalId}${extension}`;

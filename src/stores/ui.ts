@@ -57,6 +57,28 @@ export const useUIStore = defineStore('ui', () => {
   const isDebugGridMode = ref(false)
   const debugAnimationsEnabled = ref(true)
   const debugPokedexMode = ref<'none' | 'seen' | 'caught' | null>(null)
+
+  // Screen width tracking for dynamic reactivity (resizing support)
+  const windowWidth = ref(typeof window !== 'undefined' ? window.innerWidth : 1024)
+  if (typeof window !== 'undefined') {
+    window.addEventListener('resize', () => {
+      windowWidth.value = window.innerWidth
+    })
+  }
+
+  // Low Power Mode
+  const lowPowerMode = ref<'auto' | 'enabled' | 'disabled'>(
+    (safeStorage.getItem('low-power-mode') as 'auto' | 'enabled' | 'disabled') || 'auto'
+  )
+  const isLowPowerActive = computed(() => {
+    if (lowPowerMode.value === 'enabled') return true
+    if (lowPowerMode.value === 'disabled') return false
+    return windowWidth.value < 768
+  })
+  function setLowPowerMode(mode: 'auto' | 'enabled' | 'disabled') {
+    lowPowerMode.value = mode
+    safeStorage.setItem('low-power-mode', mode)
+  }
   
   // Team Management Debug Flags
   const pvpAutoFillDisabled = ref(false)
@@ -200,7 +222,7 @@ export const useUIStore = defineStore('ui', () => {
     const battleStore = useBattleStore()
     
     // Check if battle is active and we are in mobile/fullscreen mode (<= 950px)
-    const isBattleFullscreen = battleStore.isBattleActive && window.innerWidth <= 950
+    const isBattleFullscreen = battleStore.isBattleActive && windowWidth.value <= 950
     const isStackFullscreen = modalStore.stack.some(m => (m.props.type === 'fullscreen' || m.props.maxHeight === '100dvh') && !m.closing)
     
     return isBattleFullscreen || isStackFullscreen
@@ -339,6 +361,10 @@ export const useUIStore = defineStore('ui', () => {
   return {
     isAnyModalOpen,
     isAnyBlockingModalOpen,
+    windowWidth,
+    lowPowerMode,
+    isLowPowerActive,
+    setLowPowerMode,
     isAnyFullscreenModalOpen,
     isPerformanceMode,
     isDebugPerformanceMode,

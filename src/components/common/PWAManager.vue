@@ -95,12 +95,14 @@ import { usePWA } from '@/composables/usePWA'
 import { useAuthStore } from '@/stores/auth'
 import { useAudioStore } from '@/stores/audio'
 import { useGameStore } from '@/stores/game'
+import { useLoadingStore } from '@/stores/loading'
 import { logger } from '@/logic/utils/logger'
 import BaseModal from './BaseModal.vue'
 
 const authStore = useAuthStore()
 const audioStore = useAudioStore()
 const gameStore = useGameStore()
+const loadingStore = useLoadingStore()
 const { canInstall, installApp, needRefresh, updateServiceWorker } = usePWA() as { 
   canInstall: Ref<boolean>; 
   installApp: () => Promise<boolean>; 
@@ -149,12 +151,16 @@ const checkPermissions = () => {
   showPermissionsModal.value = true
 }
 
-// Observamos el login para pedir permisos si es necesario
-watch(() => authStore.user, (val) => {
-  if (val) {
-    checkPermissions()
-  }
-}, { immediate: true })
+// Observamos que el usuario esté logueado y la carga inicial del juego haya terminado antes de solicitar permisos
+watch(
+  [() => authStore.user, () => loadingStore.isGateOpen],
+  ([user, isGateOpen]) => {
+    if (user && isGateOpen) {
+      checkPermissions()
+    }
+  },
+  { immediate: true }
+)
 
 const handlePermissions = async () => {
   // Guardar que el usuario ya aceptó

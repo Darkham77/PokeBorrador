@@ -99,7 +99,7 @@ self.addEventListener('message', (event) => {
             // Si falla la elección manual (ej. bloqueado en Dig o Fly)
             battle.choose('p2', 'default');
           }
-        } catch (e) {
+        } catch {
           battle.choose('p2', 'default');
         }
       }

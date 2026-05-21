@@ -69,6 +69,16 @@ async function processFile(filePath: string) {
     await image.webp(webpOptions).toFile(destFile);
     console.log(styleText('green', `   [OK] ${path.relative(process.cwd(), destFile)} (${isLossless ? 'Lossless' : 'Lossy'})`));
 
+    // Generar versión móvil optimizada para mapas
+    if (filePath.toLowerCase().includes('maps/')) {
+      const destMobileFile = path.join(destDir, `${path.parse(destPath).name}_mobile.webp`);
+      await sharp(filePath)
+        .resize({ width: 400, kernel: 'nearest' })
+        .webp(webpOptions)
+        .toFile(destMobileFile);
+      console.log(styleText('green', `   [OK] ${path.relative(process.cwd(), destMobileFile)} (Mobile 400px Nearest)`));
+    }
+
     // Detección y catalogación automatizada para la biblioteca de ex-arbustos
     if (destDir.includes('environment')) {
       const name = path.parse(destPath).name;

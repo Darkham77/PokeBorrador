@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, ref, onUnmounted, onMounted } from 'vue'
+// [PureVue-Ignore-Length]
+import { computed, ref, onUnmounted, onMounted, watch } from 'vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import AtmosphereLayer from '@/components/common/AtmosphereLayer.vue'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
@@ -20,6 +21,9 @@ import { checkPlayerWinner, calculateSpawnGrid } from '@/logic/map/mapCardHelper
 // Semilla aleatoria única para esta instancia de tarjeta en esta sesión
 const sessionWeatherSeed = Math.random() * 1000
 
+// Flare URLs for spawn auras
+const flare1Url = getAssetUrl(ASSET_TYPES.ENVIRONMENT, 'flare_1')
+const flare2Url = getAssetUrl(ASSET_TYPES.ENVIRONMENT, 'flare_2')
 
 import type { MapLocation } from '@/types/encounters'
 
@@ -73,7 +77,10 @@ const isPerformanceMode = computed(() => {
 
 const imgPath = computed(() => {
   const fileName = (MAP_ROUTE_MAPPING as Record<string, string>)[props.map.id] || 'default'
-  return getAssetUrl(ASSET_TYPES.MAP, fileName, { cycle: props.cycle })
+  return getAssetUrl(ASSET_TYPES.MAP, fileName, { 
+    cycle: props.cycle,
+    isLowPower: uiStore.isLowPowerActive
+  })
 })
 
 const cycleEmoji = computed(() => {
@@ -306,32 +313,38 @@ const initAuraAnimations = () => {
       const seed = seedAttr ? parseFloat(seedAttr) : Math.random()
       const baseDelay = (seed % 1) * AURA_CYCLE
 
-      // 1. Pokémon Pulse (Heartbeat)
-      const scaleMax = isAtmos ? 1.08 : 1.05
-      const tl = gsap.timeline({ repeat: -1, delay: baseDelay })
-      tl.to(el, { scale: scaleMax, duration: 0.4, ease: 'power2.out' })
-        .to(el, { scale: 1, duration: 0.8, ease: 'sine.inOut' })
+      // 1. Pokémon Pulse (Heartbeat) - Disabled in low power mode for performance
+      if (!uiStore.isLowPowerActive) {
+        const scaleMax = isAtmos ? 1.08 : 1.05
+        const tl = gsap.timeline({ repeat: -1, delay: baseDelay })
+        tl.to(el, { scale: scaleMax, duration: 0.4, ease: 'power2.out' })
+          .to(el, { scale: 1, duration: 0.8, ease: 'sine.inOut' })
+      }
 
-      // 2. Aura Effects (Siblings)
+      // 2. Aura Effects (Siblings) - Enabled in both modes
       const rareAura = el.parentElement?.querySelector('.rare-aura')
       const atmosAura = el.parentElement?.querySelector('.atmospheric-aura')
 
       if (rareAura || atmosAura) {
         const auraTl = gsap.timeline({
           repeat: -1,
-          yoyo: true,
           delay: baseDelay
         })
 
         const duration = AURA_CYCLE / 2
 
         if (rareAura && atmosAura) {
-          // Ambos existen: contra-fase estricta e inmediata
+          // Both exist: strict contra-phase immediately
           gsap.set(rareAura, { scale: 0.1, opacity: 0 })
-          gsap.set(atmosAura, { scale: 2.0, opacity: 0.9 })
+          gsap.set(atmosAura, { scale: 3.375, opacity: 0.9 })
+
+          // Rotate rareAura at start when at minimum size
+          auraTl.call(() => {
+            gsap.set(rareAura, { rotation: Math.random() * 360 })
+          }, [], 0)
 
           auraTl.to(rareAura, {
-            scale: 2.0,
+            scale: 3.375,
             opacity: 1,
             duration: duration,
             ease: 'sine.inOut'
@@ -343,45 +356,90 @@ const initAuraAnimations = () => {
             duration: duration,
             ease: 'sine.inOut'
           }, 0)
+
+          // Rotate atmosAura at middle when at minimum size
+          auraTl.call(() => {
+            gsap.set(atmosAura, { rotation: Math.random() * 360 })
+          }, [], duration)
+
+          auraTl.to(rareAura, {
+            scale: 0.1,
+            opacity: 0,
+            duration: duration,
+            ease: 'sine.inOut'
+          }, duration)
+
+          auraTl.to(atmosAura, {
+            scale: 3.375,
+            opacity: 0.9,
+            duration: duration,
+            ease: 'sine.inOut'
+          }, duration)
         } else {
-          // Solo uno existe: comportamiento estándar
+          // Standard single aura pulse
           if (rareAura) {
             gsap.set(rareAura, { scale: 0.1, opacity: 0 })
+
+            auraTl.call(() => {
+              gsap.set(rareAura, { rotation: Math.random() * 360 })
+            }, [], 0)
+
             auraTl.to(rareAura, {
-              scale: 2.0,
+              scale: 3.375,
               opacity: 1,
               duration: duration,
               ease: 'sine.inOut'
             }, 0)
+
+            auraTl.to(rareAura, {
+              scale: 0.1,
+              opacity: 0,
+              duration: duration,
+              ease: 'sine.inOut'
+            }, duration)
           }
           if (atmosAura) {
             gsap.set(atmosAura, { scale: 0.1, opacity: 0 })
+
+            auraTl.call(() => {
+              gsap.set(atmosAura, { rotation: Math.random() * 360 })
+            }, [], 0)
+
             auraTl.to(atmosAura, {
-              scale: 2.0,
+              scale: 3.375,
               opacity: 0.9,
               duration: duration,
               ease: 'sine.inOut'
             }, 0)
+
+            auraTl.to(atmosAura, {
+              scale: 0.1,
+              opacity: 0,
+              duration: duration,
+              ease: 'sine.inOut'
+            }, duration)
           }
         }
       }
     })
 
-    // 3. Winner Crown
-    const crowns = self.selector!('.dom-badge.winning') as HTMLElement[]
-    crowns.forEach(crown => {
-      gsap.fromTo(crown,
-        { scale: 1, filter: 'Brightness(1)' },
-        {
-          scale: 1.05,
-          filter: 'Brightness(1.3)',
-          duration: 1.5,
-          repeat: -1,
-          yoyo: true,
-          ease: 'sine.inOut'
-        }
-      )
-    })
+    // 3. Winner Crown - Disabled in low power mode for performance
+    if (!uiStore.isLowPowerActive) {
+      const crowns = self.selector!('.dom-badge.winning') as HTMLElement[]
+      crowns.forEach(crown => {
+        gsap.fromTo(crown,
+          { scale: 1, filter: 'Brightness(1)' },
+          {
+            scale: 1.05,
+            filter: 'Brightness(1.3)',
+            duration: 1.5,
+            repeat: -1,
+            yoyo: true,
+            ease: 'sine.inOut'
+          }
+        )
+      })
+    }
   }, spawnGridRef.value)
 }
 
@@ -463,7 +521,6 @@ const spawnGrid = computed(() => {
   return { slots: grid, rows, cols }
 })
 
-import { watch } from 'vue'
 watch(() => JSON.stringify(spawnGrid.value.slots), (newVal, oldVal) => {
   if (newVal === oldVal) return
   if (isVisible.value) {
@@ -471,6 +528,24 @@ watch(() => JSON.stringify(spawnGrid.value.slots), (newVal, oldVal) => {
     gsap.delayedCall(0.05, initAuraAnimations)
   }
 })
+
+watch(() => uiStore.isLowPowerActive, () => {
+  if (isVisible.value) {
+    initAuraAnimations()
+  }
+})
+
+watch(spawnGridRef, (newRef) => {
+  if (newRef && isVisible.value) {
+    gsap.killTweensOf(initAuraAnimations)
+    gsap.delayedCall(0.05, initAuraAnimations)
+  } else if (!newRef) {
+    if (auraContext) {
+      auraContext.revert()
+      auraContext = null
+    }
+  }
+}, { flush: 'post' })
 </script>
 
 <template>
@@ -479,7 +554,9 @@ watch(() => JSON.stringify(spawnGrid.value.slots), (newVal, oldVal) => {
     :class="['location-card map-card legacy-panel', { locked: isLocked, 'safari-locked': isSafariLocked }]"
     :style="{ 
       '--weather-only-filter': weatherOnlyFilter,
-      '--bg-image': `url('${imgPath}')`
+      '--bg-image': `url('${imgPath}')`,
+      '--flare-1-url': `url('${flare1Url}')`,
+      '--flare-2-url': `url('${flare2Url}')`
     }"
     @click.stop="() => {
       logger.debug('MapCard', `Click detected. isLocked: ${isLocked}, isPerformanceMode: ${isPerformanceMode}`);
@@ -496,6 +573,7 @@ watch(() => JSON.stringify(spawnGrid.value.slots), (newVal, oldVal) => {
       :cycle="cycle"
       :season="mapStore.currentSeason.id"
       :is-performance-mode="isPerformanceMode"
+      :is-low-power="uiStore.isLowPowerActive"
       :is-visible="isVisible"
       :is-locked="isLocked || isSafariLocked"
       :anim-seed="Math.abs((props.map.name.split('').reduce((acc, char, i) => {
@@ -598,10 +676,12 @@ watch(() => JSON.stringify(spawnGrid.value.slots), (newVal, oldVal) => {
             <div
               v-if="item.isRare"
               class="aura-effect rare-aura"
+              :class="{ 'is-low-power': uiStore.isLowPowerActive }"
             />
             <div
               v-if="item.isAtmospheric"
               class="aura-effect atmospheric-aura"
+              :class="{ 'is-low-power': uiStore.isLowPowerActive }"
             />
 
             <div 
@@ -678,19 +758,41 @@ watch(() => JSON.stringify(spawnGrid.value.slots), (newVal, oldVal) => {
   height: 95%;
   aspect-ratio: 1 / 1;
   border-radius: 50%;
-  filter: Blur(1.5px); 
   pointer-events: none;
   z-index: 1;
   opacity: 0;
+  image-rendering: auto !important;
+  
+  // Mask properties to colorize monochrome assets on the fly
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
 
   &.rare-aura {
     z-index: 2;
-    background: Radial-Gradient(circle, Rgba(255, 0, 0, 0.9) 0%, Transparent 70%);
+    -webkit-mask-image: var(--flare-2-url);
+    mask-image: var(--flare-2-url);
+    background: radial-gradient(circle, Rgba(255, 0, 0, 0.95) 0%, Rgba(255, 0, 0, 0.35) 60%, transparent 100%);
+    filter: Blur(1.5px);
+
+    &.is-low-power {
+      filter: none !important;
+    }
   }
 
   &.atmospheric-aura {
     z-index: 1;
-    background: Radial-Gradient(circle, Rgba(0, 255, 255, 0.9) 0%, Transparent 70%);
+    -webkit-mask-image: var(--flare-1-url);
+    mask-image: var(--flare-1-url);
+    background: radial-gradient(circle, Rgba(0, 255, 255, 0.95) 0%, Rgba(0, 255, 255, 0.35) 60%, transparent 100%);
+    filter: Blur(1.5px);
+
+    &.is-low-power {
+      filter: none !important;
+    }
   }
 }
 

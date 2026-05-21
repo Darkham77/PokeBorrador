@@ -7,7 +7,7 @@ const dbPath = path.resolve(import.meta.dirname, '../src/game/battle/showdown/sa
 const dbRaw = fs.readFileSync(dbPath, 'utf-8');
 const showdownDB = JSON.parse(dbRaw);
 
-const allMoves = Object.values(showdownDB.moves) as any[];
+const allMoves = Object.values(showdownDB.moves) as { id: string; name: string }[];
 
 let totalMovesTested = 0;
 let failedMoves = 0;
@@ -74,8 +74,9 @@ for (const move of allMoves) {
     }
     totalMovesTested++;
 
-  } catch (error: any) {
-    console.error(`Error simulando movimiento ${move.name}:`, error.message);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`Error simulando movimiento ${move.name}:`, message);
   }
 }
 

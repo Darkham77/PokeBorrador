@@ -71,6 +71,49 @@ const handleZoomInput = (e: Event) => {
         </div>
       </div>
 
+      <div class="setting-section">
+        <label class="setting-label">
+          Modo Bajo Consumo:
+        </label>
+        <div class="power-buttons">
+          <button 
+            type="button"
+            class="power-btn" 
+            :class="{ active: uiStore.lowPowerMode === 'auto' }"
+            @click="uiStore.setLowPowerMode('auto')"
+          >
+            AUTO
+          </button>
+          <button 
+            type="button"
+            class="power-btn" 
+            :class="{ active: uiStore.lowPowerMode === 'enabled' }"
+            @click="uiStore.setLowPowerMode('enabled')"
+          >
+            ACTIVADO
+          </button>
+          <button 
+            type="button"
+            class="power-btn" 
+            :class="{ active: uiStore.lowPowerMode === 'disabled' }"
+            @click="uiStore.setLowPowerMode('disabled')"
+          >
+            DESACTIVADO
+          </button>
+        </div>
+        <p class="power-desc">
+          <span v-if="uiStore.lowPowerMode === 'auto'">
+            Activo automáticamente si el ancho de pantalla es menor a 768px (Móviles).
+          </span>
+          <span v-else-if="uiStore.lowPowerMode === 'enabled'">
+            Optimización forzada (Reduce resolución y simplifica efectos visuales).
+          </span>
+          <span v-else>
+            Efectos visuales y resolución completa en todas las pantallas.
+          </span>
+        </p>
+      </div>
+
       <div class="settings-actions">
         <button 
           class="btn-vicio-primary btn-vicio-full"
@@ -92,7 +135,7 @@ const handleZoomInput = (e: Event) => {
 }
 
 .zoom-section {
-  margin-bottom: 32px;
+  margin-bottom: 24px;
 }
 
 .zoom-label {
@@ -123,6 +166,56 @@ const handleZoomInput = (e: Event) => {
   font-size: 8px;
   color: Rgba(255, 255, 255, 0.2);
   @include pixelated;
+}
+
+.setting-section {
+  margin-bottom: 32px;
+}
+
+.setting-label {
+  display: block;
+  font-size: 14px;
+  color: var(--white);
+  margin-bottom: 12px;
+  font-weight: 700;
+}
+
+.power-buttons {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+}
+
+.power-btn {
+  flex: 1;
+  background: Rgba(255, 255, 255, 0.05);
+  border: 2px solid Rgba(255, 255, 255, 0.1);
+  color: var(--white);
+  padding: 8px 4px;
+  font-size: 9px;
+  font-weight: 800;
+  cursor: pointer;
   @include pixelated;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: Rgba(255, 255, 255, 0.1);
+    border-color: Rgba(255, 255, 255, 0.2);
+  }
+
+  &.active {
+    background: var(--yellow);
+    border-color: var(--yellow);
+    color: #1a1c2e;
+    box-shadow: 0 0 8px var(--yellow);
+  }
+}
+
+.power-desc {
+  margin-top: 12px;
+  font-size: 9px;
+  color: Rgba(255, 255, 255, 0.5);
+  line-height: 1.4;
+  min-height: 26px;
 }
 </style>

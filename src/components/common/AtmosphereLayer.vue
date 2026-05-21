@@ -10,7 +10,8 @@ const props = defineProps({
   isLocked: { type: Boolean, default: false },
   zIndex: { type: [Number, String], default: 0 },
   animSeed: { type: Number, default: 0.5 },
-  isVisible: { type: Boolean, default: false }
+  isVisible: { type: Boolean, default: false },
+  isLowPower: { type: Boolean, default: false }
 })
 
 // Centralized Seed for Animations (Inherited from Map)
@@ -155,7 +156,7 @@ const initWeatherAnim = () => {
         0
       ).progress(seed1)
     }
-    if (layer2Ref.value) {
+    if (layer2Ref.value && !props.isLowPower) {
       const driftX = isStorm ? -256 : 0 
       const s2X = (seed2 * 9101) % 256
       const s2Y = (seed2 * 1121) % 256
@@ -230,7 +231,7 @@ const initWeatherAnim = () => {
           0
         )
 
-        if (layer2Ref.value) {
+        if (layer2Ref.value && !props.isLowPower) {
           const s2X = (seed2 * 3500) % 192
           const s2Y = (seed2 * 4500) % 192
           const drift2X = isBlizzard ? 768 : 0
@@ -264,7 +265,7 @@ const initWeatherAnim = () => {
         }, 0)
       }
 
-      if (layer2Ref.value) {
+      if (layer2Ref.value && !props.isLowPower) {
         const speedVar = 0.9 + (animSeed.value * 0.2)
         const s2X = (seed2 * 2800) % 64
         const s2Y = (seed2 * 3800) % 64
@@ -297,7 +298,7 @@ const initWeatherAnim = () => {
       
       applyParallaxLayer(dustLayer1Ref.value, s1X, s1Y, driftX, moveY1, speed1)
 
-  if (dustLayer2Ref.value) {
+  if (dustLayer2Ref.value && !props.isLowPower) {
         const speed2 = (0.7 + animSeed.value * 0.3) * (isStrongWind ? 0.9 : (isDust ? 1.0 : 0.7)) / speedVar
         
         if (isStrongWind) {
@@ -321,8 +322,15 @@ const initWeatherAnim = () => {
       
       // Solo aplicamos pulso de opacidad si no es Tormenta de Polvo (para evitar parpadeo GPU)
       if (!isDust) {
-        const baseOpacity = isMist ? 0.4 : (hasPulse ? 0.5 : 0.8)
-        const maxOpacity = isMist ? 0.6 : (hasPulse ? 0.9 : 0.85)
+        let baseOpacity = isMist ? 0.4 : (hasPulse ? 0.5 : 0.8)
+        let maxOpacity = isMist ? 0.6 : (hasPulse ? 0.9 : 0.85)
+        
+        // In low power mode, we lose the foreground mist layer.
+        // Increase the opacity of the remaining background layer to compensate.
+        if (isMist && props.isLowPower) {
+          baseOpacity = 0.75
+          maxOpacity = 0.9
+        }
         
         weatherTimeline.fromTo(target, 
           { opacity: baseOpacity },
@@ -359,11 +367,13 @@ const initWeatherAnim = () => {
         applyParallaxLayer(mistLayerRef.value, sX1, sY1, moveX * 0.3, moveY * 0.3, varDur1)
         
         // Capa 2 (Frente: Más grande, más rápida)
-        const sX2 = (animSeed.value * 3456) % 512;
-        const sY2 = (animSeed.value * 7890) % 512;
-        const varDur2 = dur * (0.6 + (animSeed.value * 0.2)); // Más rápida para resaltar el primer plano
+        if (!props.isLowPower) {
+          const sX2 = (animSeed.value * 3456) % 512;
+          const sY2 = (animSeed.value * 7890) % 512;
+          const varDur2 = dur * (0.6 + (animSeed.value * 0.2)); // Más rápida para resaltar el primer plano
 
-        applyParallaxLayer(mistLayer2Ref.value, sX2, sY2, moveX, moveY, varDur2)
+          applyParallaxLayer(mistLayer2Ref.value, sX2, sY2, moveX, moveY, varDur2)
+        }
       }
     }
   }
@@ -409,6 +419,22 @@ watch(() => props.isPerformanceMode, async (isPaused) => {
   }
 })
 
+watch(() => props.isLowPower, async () => {
+  if (props.isVisible && !props.isPerformanceMode) {
+    // Kill existing leaf tweens first to prevent orphaned animations
+    leavesRef.value.forEach(el => {
+      if (el) gsap.killTweensOf(el)
+    })
+    
+    // Wait for template v-if elements to mount/unmount in the DOM
+    await nextTick()
+    await nextTick()
+    
+    initWeatherAnim()
+    initLeafAnim()
+  }
+})
+
 onMounted(async () => {
   if (props.isVisible) {
     await nextTick()
@@ -432,9 +458,14 @@ const leavesRef = ref<HTMLElement[]>([])
 const leafTypes = ['wind', 'strong_winds', 'storm']
 
 const leafCount = computed(() => {
-  if (['storm', 'strong_winds'].includes(props.weather)) return 15
-  if (['wind'].includes(props.weather)) return 8
-  return 0
+  let count = 0
+  if (['storm', 'strong_winds'].includes(props.weather)) count = 15
+  else if (['wind'].includes(props.weather)) count = 8
+  
+  if (props.isLowPower) {
+    return Math.round(count / 2)
+  }
+  return count
 })
 
 const initLeafAnim = () => {
@@ -535,6 +566,7 @@ const weatherOverlayStyles = computed(() => {
           class="rain-layer layer-1"
         />
         <div
+          v-if="!isLowPower"
           ref="layer2Ref"
           class="rain-layer layer-2"
         />
@@ -558,6 +590,7 @@ const weatherOverlayStyles = computed(() => {
           :class="[weather === 'hail' ? 'hail-layer' : 'snow-layer', 'layer-1']"
         />
         <div
+          v-if="!isLowPower"
           ref="layer2Ref"
           :class="[weather === 'hail' ? 'hail-layer' : 'snow-layer', 'layer-2']"
         />
@@ -571,6 +604,7 @@ const weatherOverlayStyles = computed(() => {
           :class="{ 'dust-only': weather === 'strong_winds' }"
         />
         <div
+          v-if="!isLowPower"
           ref="dustLayer2Ref"
           class="sandstorm-layer layer-2"
           :class="{ 'dust-only': weather === 'strong_winds' }"
@@ -587,6 +621,7 @@ const weatherOverlayStyles = computed(() => {
           class="mist-layer layer-1"
         />
         <div
+          v-if="!isLowPower"
           ref="mistLayer2Ref"
           class="mist-layer layer-2"
         />

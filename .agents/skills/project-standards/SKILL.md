@@ -36,6 +36,7 @@ Consult these manuals for detailed implementation specifications:
 | **Testing & Simulation** | [browser_testing_manual.md](./references/qa/browser_testing_manual.md)                    |
 | **Animations & FX**      | [animation_standards.md](./references/battle/animation_standards.md)                      |
 | **GPU & Performance**    | [gpu_optimization_manual.md](./references/technical/gpu_optimization_manual.md)           |
+| **Low Power Mode**       | [low_power_mode_manual.md](./references/technical/low_power_mode_manual.md)               |
 | **SASS & Styling**       | [sass_styling_manual.md](./references/technical/sass_styling_manual.md)                   |
 | **Asset Pipeline**       | [asset_service_manual.md](./references/technical/asset_service_manual.md)                 |
 | **Map & Spawns**         | [spawn_grid_manual.md](./references/systems/spawn_grid_manual.md)                         |
@@ -183,6 +184,14 @@ The project uses a sophisticated audit and validation engine to ensure stability
 - **Visual Completion**: FSM states representing visual actions (Damage, Faint, Catch) MUST wait for the corresponding GSAP promise resolution.
 - **Mandatory Audit**: Run `validate_fsm_diagrams.ts`, `validate_fsm_implementation.ts`, and `validate_fsm_flow_parity.ts` (or `npm run validate:fsm`) before every commit that touches battle logic. Zero critical errors are allowed.
 - **Substate Parity**: All sub-states defined in `battleStateMachine.ts` MUST be actively used in logic or UI. Obsolete or orphaned states (e.g., `REORDER_TEAM`) must be removed to maintain a clean FSM audit and prevent architectural drift.
+
+### 11. Low Power Mode & Mobile Performance
+
+- **Mobile FPS Target**: To maintain 60 FPS on mobile, the UI store (`ui.ts`) manages `lowPowerMode` (`'auto' | 'enabled' | 'disabled'`) and exposes `isLowPowerActive`.
+- **Dynamic Resolution**: Route maps and backgrounds must serve a `_mobile.webp` version (400px width limit, `nearest` neighbor filtering) if `isLowPowerActive` is true.
+- **Atmospheric Degradation**: Weather overlays must omit secondary parallax layers (`layer-2`) and scale down leaf/particle counts by 50%.
+- **Persisted State**: The user preference must be persisted in `LocalStorage` with the key `'low-power-mode'`.
+- **Manual Control**: The settings menu must expose Retro UI options to configure this mode.
 
 ---
 
