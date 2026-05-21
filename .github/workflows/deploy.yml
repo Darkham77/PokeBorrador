@@ -47,6 +47,9 @@ jobs:
           SERVER_nas_franco_KONG_HTTPS_PORT: ${{ secrets.SERVER_nas_franco_KONG_HTTPS_PORT }}
           SERVER_nas_franco_DATABASE_URL: ${{ secrets.SERVER_nas_franco_DATABASE_URL }}
 
+      - name: Create SPA 404 fallback for GitHub Pages
+        run: cp ./dist/index.html ./dist/404.html
+
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:

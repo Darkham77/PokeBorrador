@@ -58,7 +58,7 @@ const handleLogin = async () => {
   try {
     await authStore.login(email.value, password.value)
     await gameStore.loadGame()
-    window.location.href = '/'
+    window.location.href = import.meta.env.BASE_URL
   } catch (err: unknown) {
     error.value = getFriendlyErrorMessage(err)
   } finally {
@@ -128,7 +128,7 @@ const handleLocalLogin = async () => {
     await authStore.localLogin(username.value)
     gsap.delayedCall(0.8, async () => {
       await gameStore.loadGame()
-      window.location.href = '/'
+      window.location.href = import.meta.env.BASE_URL
     })
   } catch (_err) {
     error.value = 'Error al entrar en modo local'
