@@ -89,6 +89,7 @@ To provide clear visual feedback without redundancy, item usage logs must be spl
 | `tm` | Teach moves | ✅ Mandatory |
 | `stone` | Evolution | ✅ Mandatory |
 | `special` | Global buffs, Repels | ✅ Mandatory |
+| `breeding` | Daycare & Vigor recovery | ❌ Forbidden (Except 'vigor_restorer') |
 
 ---
 
@@ -111,4 +112,5 @@ To provide clear visual feedback without redundancy, item usage logs must be spl
 - **Normalization**: IDs and names are treated as case-insensitive in the logic, but asset files must be in lowercase.
 - **Financial Transparency**: All bulk sale operations must show the total estimated profit in the confirmation dialog.
 - **Zero-Quantity Filtering**: Items with a quantity of `0` MUST be filtered out from inventory lists, HUD quick bag components, and item pill displays. The UI should only present items where `quantity > 0` to prevent cluttering the interface with empty item slots.
+- **Breeding Exception**: Items under the `breeding` category are normally forbidden from having direct active effects or entries in `itemEffects.ts` (HEALING_ITEMS). The only exception is `vigor_restorer` (Restaurador de Vigor), which is consumed directly on Pokémon to restore daycare vigor.
 
