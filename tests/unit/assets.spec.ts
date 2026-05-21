@@ -40,6 +40,18 @@ describe('AssetService & Resolver', () => {
     })
   })
 
+  describe('AssetService: Map Routing', () => {
+    it('debe resolver mapas normales', () => {
+      expect(getAssetUrl(ASSET_TYPES.MAP, 'ruta1', { cycle: 'day' }))
+        .toBe('/assets/maps/ruta1_dia.webp')
+    })
+
+    it('debe agregar el sufijo _mobile si isLowPower está activo', () => {
+      expect(getAssetUrl(ASSET_TYPES.MAP, 'ruta1', { cycle: 'day', isLowPower: true }))
+        .toBe('/assets/maps/ruta1_dia_mobile.webp')
+    })
+  })
+
   describe('AssetService: Item Routing', () => {
     it('debe mapear nombres internos a IDs de PokeAPI (localizado)', () => {
       expect(getAssetUrl(ASSET_TYPES.ITEM, 'super_pocion'))
