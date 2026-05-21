@@ -39,7 +39,6 @@
     z-index: 0; // Capa base del fondo
     transform: Translatez(0); 
     filter: var(--weather-only-filter, Brightness(1) Contrast(1));
-    will-change: transform; // Solo transform por defecto para ahorrar memoria
     
     @include pixelated;
     -ms-interpolation-mode: nearest-neighbor !important;
@@ -303,7 +302,9 @@
   left: 12px;
 }
 
-.faction-logo { width: 32px; height: 32px; will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  filter: Drop-Shadow(0 2px 4px Rgba(0,0,0,0.8)); }
+.faction-logo {
+  width: 32px;
+  height: 32px;
+  filter: Drop-Shadow(0 2px 4px Rgba(0,0,0,0.8));
+}
 .pulse { animation: pulse 2s infinite; }
