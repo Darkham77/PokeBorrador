@@ -45,6 +45,11 @@ const isLoginPage = computed(() => {
   return window.location?.pathname === '/login' || route.path === '/login'
 })
 
+const isSandboxPage = computed(() => {
+  if (typeof window === 'undefined') return false
+  return window.location?.pathname === '/showdown-sandbox' || route.path === '/showdown-sandbox'
+})
+
 const loadingInfo = computed(() => {
   // 1. Centralized Loading Store (Highest Priority)
   if (loadingStore.isActive) {
@@ -64,7 +69,7 @@ const loadingInfo = computed(() => {
   
   // 3. Game Data & Engine Boot (ULTRA-STICKY GATE)
   // No soltamos la pantalla negra hasta que TODO el motor esté listo
-  if (authStore.user && !isLoginPage.value && (!gameStore.isDataLoaded || !gameStore.isEngineReady)) {
+  if (authStore.user && !isLoginPage.value && !isSandboxPage.value && (!gameStore.isDataLoaded || !gameStore.isEngineReady)) {
     const msg = !gameStore.isDataLoaded ? 'Cargando datos...' : 'Iniciando motor...'
     
     return { 
@@ -98,14 +103,14 @@ onMounted(async () => {
 
 
   // 2. Recuperar sesión (Autologin)
-  if (isLoginPage.value) {
-    loadingStore.clearAll() // Limpiar TODO si es login
+  if (isLoginPage.value || isSandboxPage.value) {
+    loadingStore.clearAll() // Limpiar TODO si es login o sandbox
     loadingStore.markAppMounted() // Abrir puerta inmediatamente
   }
   await authStore.checkSession()
 
-  // 3. Check DB Compatibility & Load Game (Omitir si estamos en login para evitar bloqueos)
-  if (authStore.user && !isLoginPage.value) {
+  // 3. Check DB Compatibility & Load Game (Omitir si estamos en login o sandbox para evitar bloqueos)
+  if (authStore.user && !isLoginPage.value && !isSandboxPage.value) {
     const comp = await checkDBCompatibility(gameStore.db as unknown as DBRouter)
     if (!comp.compatible) {
       dbIncompatible.value = true
@@ -211,7 +216,7 @@ const onLoadingLeave = (el: Element, done: () => void) => {
   <div id="vue-app">
     <!-- RESTORE LEGACY BACKGROUND (Only visible when game is fully ready and NOT loading) -->
     <div 
-      v-show="isReadyToSeeGame || isLoginPage"
+      v-show="isReadyToSeeGame || isLoginPage || isSandboxPage"
       class="global-background-stars" 
     />
 
@@ -223,7 +228,7 @@ const onLoadingLeave = (el: Element, done: () => void) => {
         @leave="onLoadingLeave"
       >
         <div
-          v-if="!loadingStore.isGateOpen && (!isLoginPage || loadingInfo.active) && !dbIncompatible"
+          v-if="!loadingStore.isGateOpen && (!isLoginPage || loadingInfo.active) && !dbIncompatible && !isSandboxPage"
           class="loading-overlay"
           :class="{ 'global-overlay': loadingInfo.global }"
         >
@@ -239,8 +244,8 @@ const onLoadingLeave = (el: Element, done: () => void) => {
       </Transition>
     </Teleport>
 
-    <!-- Vistas de Ruta (Login tiene prioridad absoluta) -->
-    <template v-if="isLoginPage">
+    <!-- Vistas de Ruta (Login y Sandbox tienen prioridad absoluta) -->
+    <template v-if="isLoginPage || isSandboxPage">
       <router-view />
     </template>
     
