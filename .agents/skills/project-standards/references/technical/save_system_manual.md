@@ -100,6 +100,12 @@ To optimize performance and server load:
 - **Critical Events**: Actions such as winning a badge, catching a legendary, or performing a trade force an immediate atomic save.
 - **Pre-Action Flush**: Before any social action, a save is forced to ensure that the local state matches the server.
 
+### 3. Concurrency Protection (Locking)
+
+- **Early Locking**: The concurrency lock (`_isSaving = true`) must be acquired synchronously at the very beginning of the `saveGame` function before any asynchronous yield (such as GZIP compression or OPFS file writes).
+- **WHY**: Preventing overlapping async runs is critical during rapid-succession saves (e.g., fast combat action transitions). It ensures that concurrent save calls return `null` immediately and do not proceed with duplicate expected database/save IDs, avoiding out-of-sync conflict toasts.
+- **Cleanup**: Always wrap the entire save logic in a `try...finally` block to guarantee the `_isSaving` flag is reset to `false`.
+
 ---
 
 ## 🏗️ Store Architecture Integrity

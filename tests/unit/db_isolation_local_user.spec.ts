@@ -66,4 +66,43 @@ describe('Database Isolation for Local User', () => {
     expect(mockDb.rpc).not.toHaveBeenCalled()
     expect(mockDb.from).not.toHaveBeenCalled()
   })
+
+  it('should prevent concurrent overlapping calls to saveGame', async () => {
+    const { writeOpfsFile } = await import('@/logic/utils/opfsStorage')
+    
+    let resolveSave: (value: void) => void = () => {}
+    const savePromise = new Promise<void>((resolve) => {
+      resolveSave = resolve
+    })
+
+    vi.mocked(writeOpfsFile).mockImplementationOnce(() => savePromise)
+
+    const mockDb = {
+      mode: 'online',
+      rpc: vi.fn().mockResolvedValue({ data: { success: true, last_save_id: '123' } }),
+      from: vi.fn().mockReturnValue({
+        select: vi.fn().mockReturnValue({
+          eq: vi.fn().mockReturnValue({
+            maybeSingle: vi.fn().mockResolvedValue({ data: null })
+          })
+        })
+      })
+    } as unknown as DBRouter
+
+    const user = { id: 'test_user', email: 'test@example.com' } as AuthUser
+    const state = { trainer: 'Ash', pokemon: [] } as unknown as GameState
+
+    // Start first save (will block on writeOpfsFile)
+    const firstSavePromise = saveGame(state, user, { db: mockDb, showNotif: false })
+
+    // Call saveGame again concurrently (should return null immediately)
+    const secondSaveResult = await saveGame(state, user, { db: mockDb, showNotif: false })
+    expect(secondSaveResult).toBeNull()
+
+    // Resolve the first save
+    resolveSave()
+    const firstSaveResult = await firstSavePromise
+    expect(firstSaveResult?.success).toBe(true)
+  })
 })
+
