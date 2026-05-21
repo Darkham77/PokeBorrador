@@ -264,6 +264,7 @@ See the [Resources README](resources/README.md) for more details on these exampl
 - ✅ Prefer timelines instead of chaining animations using `delay`.
 - ✅ Use **gsap.matchMedia()** for responsive breakpoints and **prefers-reduced-motion** so animations can be reduced or disabled for accessibility.
 - ✅ Use **Relative Operators (`+=`, `-=`)** for `backgroundPosition` animations when targets have randomized initial positions. This prevents "diagonal convergence" (funnel effect) and maintains consistent linear trajectories.
+- ✅ Pass the context parameter (`ctx` or `self`) directly to inner animation methods or delayed calls inside `gsap.context(...)` rather than relying on outer-scope assignments, which remain `null` during synchronous callback execution.
 
 ## Do Not
 
@@ -272,3 +273,4 @@ See the [Resources README](resources/README.md) for more details on these exampl
 - ❌ Rely on the default **immediateRender: true** when stacking multiple **from()** or **fromTo()** tweens on the same property of the same target; set **immediateRender: false** on the later tweens so they animate correctly.
 - ❌ Use invalid or non-existent ease names; stick to documented eases.
 - ❌ Forget that **gsap.from()** uses the element’s current state as the end state; the initial values in the tween will be applied immediately unless `immediateRender: false` is in the `vars`.
+- ❌ Reference outer-scope variables assigned to the returned context instance inside the `gsap.context()` callback itself, since the callback executes synchronously before the assignment completes.

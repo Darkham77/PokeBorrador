@@ -124,6 +124,7 @@ vi.mock('gsap', () => {
       kill: vi.fn().mockReturnThis(),
       addLabel: vi.fn().mockReturnThis(),
       eventCallback: vi.fn().mockReturnThis(),
+      progress: vi.fn().mockReturnThis(),
     }),
     utils: {
       clamp: (min: number, max: number, v?: number) => v !== undefined ? Math.min(Math.max(v, min), max) : (val: number) => Math.min(Math.max(val, min), max),

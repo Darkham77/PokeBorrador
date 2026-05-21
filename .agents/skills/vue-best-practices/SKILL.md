@@ -220,6 +220,10 @@ Performance work is a post-functionality pass. Do not optimize before core behav
   - **PATTERN**: Use a `Map` or similar structure to store the previous state/count and compare it during updates to safely restart the animation engine when new elements are injected into an already active effect.
 - **Reactive Watchers for Deep Layout Updates**: When updating complex UI layouts or external engines (like a virtual camera viewport scale) from a computed property or store value (`battleStore.debugZoom`), set up an explicit `watch` on the computed reference to trigger immediate recalculations (`updateCamera()`). This ensures fluid UI updates without manual window resize events.
 - **Temporal for Cooldown Calculations**: When calculating complex, time-restricted actions or cooldown gates (e.g. rename limits, daily actions), strictly use the `@js-temporal/polyfill` (`Temporal` API) instead of the legacy `Date` object. This ensures robust timezone management and precise comparison metrics, matching the repository's modern standard requirements.
+- **Post-Flush Watchers for Dynamic DOM Queries**: When a watcher triggers logic that queries the DOM (such as using `document.querySelectorAll` or refs to query elements rendered with `v-for` or `v-if`), standard watchers execute before virtual DOM updates are flushed to the real DOM. This causes query selectors to return stale or empty arrays.
+  - **PATTERN**: Always specify `{ flush: 'post' }` in the watcher options, or wrap DOM-dependent queries inside `await nextTick()`.
+  - **WHY**: Ensures that the browser DOM has settled with the latest template updates before the selection and animation logic (e.g., GSAP targets initialization) runs.
+
 
 ## 6) Final self-check before finishing
 

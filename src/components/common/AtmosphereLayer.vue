@@ -2,6 +2,7 @@
 // [PureVue-Ignore-Length]
 import { ref, computed, watch, onUnmounted, nextTick, onMounted } from 'vue'
 import { gsap } from 'gsap'
+import { logger } from '@/logic/utils/logger'
 
 const containerRef = ref<HTMLElement | null>(null)
 let atmosphereContext: gsap.Context | null = null
@@ -395,65 +396,61 @@ const cleanUpAtmosphere = () => {
 }
 
 const initAtmosphere = () => {
+  logger.debug('AtmosphereLayer', 'initAtmosphere called', {
+    weather: props.weather,
+    isVisible: props.isVisible,
+    isPerformanceMode: props.isPerformanceMode,
+    isLowPower: props.isLowPower,
+    hasContainer: !!containerRef.value
+  })
   cleanUpAtmosphere()
   
   if (!props.isVisible || props.isPerformanceMode || props.isLocked || props.weather === 'clear') {
     return
   }
 
-  atmosphereContext = gsap.context(() => {
+  atmosphereContext = gsap.context((ctx) => {
     initWeatherAnim()
-    initLeafAnim()
+    initLeafAnim(ctx)
   }, containerRef.value || undefined)
 }
 
-watch(() => props.isVisible, async (visible) => {
-  if (visible) {
-    await nextTick()
-    initAtmosphere()
-  } else {
-    cleanUpAtmosphere()
-  }
-})
-
-watch(() => props.animSeed, () => {
-  if (props.isVisible && !props.isPerformanceMode) {
-    initAtmosphere()
-  }
-})
-
-watch(() => props.weather, async () => {
-  if (props.isVisible && !props.isPerformanceMode) {
-    await nextTick()
-    initAtmosphere()
-  }
-})
-
-watch(() => props.isPerformanceMode, async (isPaused) => {
-  if (!isPaused) {
-    if (props.isVisible) {
+watch(
+  [
+    () => props.isVisible,
+    () => props.weather,
+    () => props.isLowPower,
+    () => props.isPerformanceMode,
+    () => props.animSeed
+  ],
+  async ([visible, weather, lowPower, perfMode]) => {
+    logger.debug('AtmosphereLayer', 'Unified watch triggered', {
+      visible,
+      weather,
+      lowPower,
+      perfMode
+    })
+    if (visible && !perfMode) {
+      // Wait twice for DOM to settle and children (leaves v-for) to render
       await nextTick()
       await nextTick()
-      initAtmosphere()
+      if (props.isVisible && !props.isPerformanceMode) {
+        initAtmosphere()
+      }
+    } else {
+      cleanUpAtmosphere()
     }
-  } else {
-    cleanUpAtmosphere()
-  }
-})
-
-watch(() => props.isLowPower, async () => {
-  if (props.isVisible && !props.isPerformanceMode) {
-    // Wait for template v-if elements to mount/unmount in the DOM
-    await nextTick()
-    await nextTick()
-    initAtmosphere()
-  }
-})
+  },
+  { flush: 'post' }
+)
 
 onMounted(async () => {
-  if (props.isVisible) {
+  if (props.isVisible && !props.isPerformanceMode) {
     await nextTick()
-    initAtmosphere()
+    await nextTick()
+    if (props.isVisible && !props.isPerformanceMode) {
+      initAtmosphere()
+    }
   }
 })
 
@@ -466,7 +463,6 @@ defineExpose({
 })
 
 // 4. GSAP Leaf Animation
-const leavesRef = ref<HTMLElement[]>([])
 const leafTypes = ['wind', 'strong_winds', 'storm']
 
 const leafCount = computed(() => {
@@ -480,14 +476,28 @@ const leafCount = computed(() => {
   return count
 })
 
-const initLeafAnim = () => {
-  const ctx = atmosphereContext
+const initLeafAnim = (ctx: gsap.Context) => {
+  logger.debug('AtmosphereLayer', 'initLeafAnim triggered', {
+    weather: props.weather,
+    isPerformanceMode: props.isPerformanceMode,
+    ctxExists: !!ctx,
+    leafCount: leafCount.value
+  })
   if (!leafTypes.includes(props.weather) || props.isPerformanceMode || !ctx) return
   
-  leavesRef.value.forEach((el, i) => {
-    if (!el) return
-    
+  // [PureVue-Ignore]
+  const leafNodes = containerRef.value?.querySelectorAll('.leaf-element')
+  logger.debug('AtmosphereLayer', 'leafNodes query result', {
+    nodesCount: leafNodes?.length || 0,
+    containerExists: !!containerRef.value
+  })
+  if (!leafNodes || leafNodes.length === 0) return
+  
+  const activeLeaves = Array.from(leafNodes) as HTMLElement[]
+  
+  activeLeaves.forEach((el, i) => {
     const animateLeaf = () => {
+      if (atmosphereContext !== ctx || ctx.reverted) return
       if (!props.isVisible || props.isPerformanceMode || !ctx || !leafTypes.includes(props.weather)) return
       
       const s1 = Math.random()
@@ -527,7 +537,7 @@ const initLeafAnim = () => {
             duration: baseDuration + (Math.random() * speedVariation),
             ease: 'none',
             onComplete: () => {
-              if (!ctx) return
+              if (atmosphereContext !== ctx || ctx.reverted) return
               ctx.add(() => {
                 gsap.delayedCall(Math.random() * 1.5, animateLeaf)
               })
@@ -547,12 +557,6 @@ const initLeafAnim = () => {
     })
   })
 }
-
-watch(() => props.weather, (w) => {
-  if (leafTypes.includes(w)) {
-    nextTick(initLeafAnim)
-  }
-}, { immediate: true })
 
 // Estilos dinámicos para el overlay de clima
 const weatherOverlayStyles = computed(() => {
@@ -651,7 +655,6 @@ const weatherOverlayStyles = computed(() => {
         <div
           v-for="n in leafCount"
           :key="'leaf-'+n"
-          ref="leavesRef"
           class="leaf-element"
         />
       </template>

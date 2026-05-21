@@ -9,9 +9,28 @@ vi.mock('@/logic/auth/loadService', () => ({
   loadBestSave: vi.fn()
 }))
 
+const mockQuery = {
+  select: vi.fn().mockReturnThis(),
+  or: vi.fn().mockReturnThis(),
+  order: vi.fn().mockReturnThis(),
+  limit: vi.fn().mockReturnThis(),
+  then: vi.fn(function(onfulfilled) {
+    if (onfulfilled) {
+      return Promise.resolve(onfulfilled({ data: [], error: null }))
+    }
+    return Promise.resolve({ data: [], error: null })
+  })
+}
+
 vi.mock('@/logic/supabase', () => ({
   supabase: {
-    from: vi.fn()
+    from: vi.fn(() => mockQuery),
+    updateConfig: vi.fn(),
+    channel: vi.fn().mockReturnValue({
+      on: vi.fn().mockReturnThis(),
+      subscribe: vi.fn().mockReturnThis(),
+      unsubscribe: vi.fn().mockReturnThis()
+    })
   }
 }))
 
