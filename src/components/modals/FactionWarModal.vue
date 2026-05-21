@@ -6,6 +6,15 @@ import { useGameStore } from '@/stores/game'
 import { useModalStore } from '@/stores/modals'
 import { useWindowListener } from '@/composables/useWindowListener'
 import WarDashboard from '@/components/war/WarDashboard.vue'
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
+
+// Expose to template
+const getAssetUrlLocal = getAssetUrl
+const ASSET_TYPES_LOCAL = ASSET_TYPES
+
+const handleImgError = (e: Event) => {
+  (e.target as HTMLImageElement).style.display = 'none'
+}
 
 interface Props {
   show?: boolean
@@ -87,9 +96,19 @@ const openFactionChoice = () => {
           <div class="card-glow" />
           <div class="card-inner">
             <div class="shields-art">
-              <span class="shield blue">🛡️</span>
+              <img
+                :src="getAssetUrlLocal(ASSET_TYPES_LOCAL.FACTION, 'union')"
+                class="faction-logo union-logo"
+                alt="Team Unión"
+                @error="handleImgError"
+              >
               <span class="vs-text">VS</span>
-              <span class="shield red">🛡️</span>
+              <img
+                :src="getAssetUrlLocal(ASSET_TYPES_LOCAL.FACTION, 'poder')"
+                class="faction-logo poder-logo"
+                alt="Team Poder"
+                @error="handleImgError"
+              >
             </div>
             
             <h2>¡ELIGE TU DESTINO!</h2>
@@ -103,7 +122,7 @@ const openFactionChoice = () => {
             </p>
 
             <button
-              class="retro-btn select-faction-btn"
+              class="select-faction-btn"
               @click.stop="openFactionChoice"
             >
               ELEGIR BANDO
@@ -141,7 +160,7 @@ const openFactionChoice = () => {
 
   .title-icon {
     font-size: 24px;
-    filter: drop-shadow(0 0 8px rgba(250, 204, 21, 0.4));
+    filter: Drop-Shadow(0 0 8px Rgba(250, 204, 21, 0.4));
   }
 
   .title-text-wrap {
@@ -182,13 +201,13 @@ const openFactionChoice = () => {
 
 .welcome-card {
   position: relative;
-  background: rgba(0, 0, 0, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: Rgba(0, 0, 0, 0.4);
+  border: 1px solid Rgba(255, 255, 255, 0.05);
   border-radius: 16px;
   width: 100%;
   max-width: 480px;
   overflow: hidden;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 10px 30px Rgba(0, 0, 0, 0.5);
 
   .card-glow {
     position: absolute;
@@ -214,16 +233,18 @@ const openFactionChoice = () => {
     gap: 16px;
     margin-bottom: 24px;
 
-    .shield {
-      font-size: 36px;
+    .faction-logo {
+      width: 64px;
+      height: 64px;
+      object-fit: contain;
       animation: floatShield 3s ease-in-out infinite;
 
-      &.blue {
-        filter: drop-shadow(0 0 12px rgba(59, 130, 246, 0.6));
+      &.union-logo {
+        filter: Drop-Shadow(0 0 12px Rgba(59, 130, 246, 0.6));
       }
 
-      &.red {
-        filter: drop-shadow(0 0 12px rgba(239, 68, 68, 0.6));
+      &.poder-logo {
+        filter: Drop-Shadow(0 0 12px Rgba(239, 68, 68, 0.6));
         animation-delay: 1.5s;
       }
     }
@@ -232,7 +253,7 @@ const openFactionChoice = () => {
       @include pixelated;
       font-size: 14px;
       color: var(--gray);
-      text-shadow: 0 0 8px rgba(255, 255, 255, 0.2);
+      text-shadow: 0 0 8px Rgba(255, 255, 255, 0.2);
     }
   }
 
@@ -262,26 +283,8 @@ const openFactionChoice = () => {
     margin-bottom: 32px;
   }
 
-  .retro-btn {
-    @include pixelated;
-    font-size: 10px;
-    padding: 12px 24px;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-
-    &.select-faction-btn {
-      background: var(--yellow);
-      border: 2px solid var(--white);
-      color: var(--black);
-      box-shadow: 0 4px 12px rgba(250, 204, 21, 0.2);
-
-      &:hover {
-        background: var(--white);
-        transform: translateY(-2px);
-        box-shadow: 0 6px 16px rgba(255, 255, 255, 0.3);
-      }
-    }
+  .select-faction-btn {
+    @include btn-vicio('primary', 'md');
   }
 }
 
@@ -290,13 +293,13 @@ const openFactionChoice = () => {
 }
 
 @keyframes floatShield {
-  0% { transform: translateY(0); }
-  50% { transform: translateY(-8px); }
-  100% { transform: translateY(0); }
+  0% { transform: Translatey(0); }
+  50% { transform: Translatey(-8px); }
+  100% { transform: Translatey(0); }
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: Translatey(10px); }
+  to { opacity: 1; transform: Translatey(0); }
 }
 </style>
