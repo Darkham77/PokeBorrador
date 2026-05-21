@@ -265,6 +265,8 @@ See the [Resources README](resources/README.md) for more details on these exampl
 - ✅ Use **gsap.matchMedia()** for responsive breakpoints and **prefers-reduced-motion** so animations can be reduced or disabled for accessibility.
 - ✅ Use **Relative Operators (`+=`, `-=`)** for `backgroundPosition` animations when targets have randomized initial positions. This prevents "diagonal convergence" (funnel effect) and maintains consistent linear trajectories.
 - ✅ Pass the context parameter (`ctx` or `self`) directly to inner animation methods or delayed calls inside `gsap.context(...)` rather than relying on outer-scope assignments, which remain `null` during synchronous callback execution.
+- ✅ Use **gsap.fromTo()** with explicit initial states when animating properties like `filter` (e.g., `brightness(...)`) or `boxShadow` that are not pre-declared in CSS. This avoids initialization glitches (such as elements flashing black) caused by GSAP interpolating from uninitialized default states.
+- ✅ Ensure that elements undergoing GSAP transform animations do not have generic CSS transitions (like `transition: all`) in their stylesheets. Limit CSS transitions strictly to color/background-color properties to prevent browser transition-engine collisions with GSAP’s frame-by-frame interpolation.
 
 ## Do Not
 
@@ -274,3 +276,5 @@ See the [Resources README](resources/README.md) for more details on these exampl
 - ❌ Use invalid or non-existent ease names; stick to documented eases.
 - ❌ Forget that **gsap.from()** uses the element’s current state as the end state; the initial values in the tween will be applied immediately unless `immediateRender: false` is in the `vars`.
 - ❌ Reference outer-scope variables assigned to the returned context instance inside the `gsap.context()` callback itself, since the callback executes synchronously before the assignment completes.
+- ❌ Animate variables with GSAP on elements that have generic `transition: all` styles in their CSS stylesheets, as this triggers layout/transform collisions between CSS and JS animation loops.
+- ❌ Rely on implicit start states when animating properties like filters or complex shadows with `gsap.to()`; always declare them explicitly via `gsap.fromTo()` to prevent visual flashing/black glitches.

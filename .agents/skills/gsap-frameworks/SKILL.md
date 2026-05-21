@@ -238,6 +238,7 @@ Do not use global selectors that can match elements outside the current componen
 - ✅ **gsap.context(() => { gsap.to(".box", ...) }, containerRef)** — `.box` is only searched inside `containerRef`.
 - ❌ Running **gsap.to(".box", ...)** without a context scope in a component can affect other instances or the rest of the page.
 - ✅ **Component Instance Isolation**: When animating reusable components that may appear multiple times on the same page (e.g., Player vs Enemy sprites), NEVER use global `document.querySelector`. Always use a template ref (`rootRef.value?.closest('.class')`) to isolate the GSAP context and prevent targeting the wrong DOM instance.
+- ✅ **Context Scope Hierarchy**: Ensure the GSAP context scope element (the second argument of `gsap.context()`) is a parent to all target elements you wish to animate. A GSAP context scoped to a sub-element (e.g., `spawnGridRef.value`) cannot locate or animate sibling elements (such as overlays or badges) that lie outside that sub-hierarchy. To animate global card elements, scope the context to the main container (`cardRef.value`) and use direct template refs.
 
 ## ScrollTrigger Cleanup
 
@@ -261,6 +262,7 @@ Do not create GSAP animations in the component’s setup or in a synchronous top
 - ❌ Use selector strings without a **scope** (pass the container to gsap.context() as the second argument) so selectors don’t match elements outside the component.
 - ❌ Skip cleanup; always call **ctx.revert()** in onUnmounted / onMount’s return so animations and ScrollTriggers are killed when the component is destroyed.
 - ❌ Register plugins inside a component body that runs every render (it doesn't hurt anything, it's just wasteful); register once at app level.
+- ❌ Attempt to animate elements outside the chosen GSAP context scope (e.g., selecting card-level elements inside a context scoped to a nested child grid). This will cause the selectors to silently fail to find the targets.
 
 ### Learn More
 

@@ -108,6 +108,7 @@ Consult these manuals for detailed implementation specifications:
 - **CSS Variable Propagation**: When using CSS variables to pass dynamic states (like grade colors) from JS to CSS in a component, they MUST be injected via the `:style` attribute on the root element. Avoid using SFC `v-bind` in CSS for variables that need to be accessed by parent components or global overrides, as Vue generates internal unique variable names that break external inheritance.
 - **Visual Identity (Zero-Stripping)**: Performance mode or simplified UI modes MUST NOT strip away the essential visual identity of game entities (e.g., Pokémon grade borders). Use CSS variables to maintain these markers consistently across all resource states.
 - **Tier Identity Single Source of Truth**: All Pokémon grade logic, tier calculations, and color mappings MUST be centralized in the `tierEngine.ts` logic. Redundant constant files for tiers are strictly forbidden to prevent visual desynchronization.
+- **Strict DB-to-UI Comparison**: When writing UI conditional logic or animations depending on database models (such as war factions or items), always compare against the official database string values in Spanish (e.g., `'poder'` instead of English `'power'`). Using incorrect literals causes animations and behaviors to fail silently.
 
 ### 4. SASS and Build Integrity
 
