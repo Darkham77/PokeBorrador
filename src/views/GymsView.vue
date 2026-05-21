@@ -119,7 +119,8 @@ const handleBadgeLeave = (e: MouseEvent) => {
   
   @media (max-width: 1024px) {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: center;
+    text-align: center;
   }
 }
 
@@ -136,6 +137,10 @@ const handleBadgeLeave = (e: MouseEvent) => {
   color: var(--gray);
   line-height: 1.6;
   max-width: 600px;
+
+  @media (max-width: 1024px) {
+    margin: 0 auto;
+  }
 }
 
 .badge-summary {
@@ -145,6 +150,11 @@ const handleBadgeLeave = (e: MouseEvent) => {
   border: 1px solid Rgba(255, 255, 255, 0.1);
   min-width: 320px;
   position: relative;
+
+  @media (max-width: 480px) {
+    min-width: 100%;
+    padding: 15px 10px;
+  }
 }
 
 .badge-title {

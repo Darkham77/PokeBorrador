@@ -54,7 +54,7 @@ async function processFile(filePath: string) {
       filePath.toLowerCase().includes(p)
     );
 
-    const image = sharp(filePath);
+    let image = sharp(filePath);
     const metadata = await image.metadata();
 
     // Configuración de WebP
@@ -66,11 +66,17 @@ async function processFile(filePath: string) {
       webpOptions.quality = (metadata.width! < 250 || metadata.height! < 250) ? 98 : 80;
     }
 
+    const isMap = filePath.toLowerCase().includes('maps/');
+
+    if (isMap) {
+      image = image.resize({ width: 600, kernel: 'nearest' });
+    }
+
     await image.webp(webpOptions).toFile(destFile);
     console.log(styleText('green', `   [OK] ${path.relative(process.cwd(), destFile)} (${isLossless ? 'Lossless' : 'Lossy'})`));
 
     // Generar versión móvil optimizada para mapas
-    if (filePath.toLowerCase().includes('maps/')) {
+    if (isMap) {
       const destMobileFile = path.join(destDir, `${path.parse(destPath).name}_mobile.webp`);
       await sharp(filePath)
         .resize({ width: 400, kernel: 'nearest' })

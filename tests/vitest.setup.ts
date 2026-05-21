@@ -94,6 +94,24 @@ vi.mock('gsap', () => {
         play: vi.fn().mockReturnThis()
       };
     },
+    context: (fn: (self: {
+      add: (addFn: () => void) => unknown;
+      revert: () => void;
+      kill: () => void;
+      selector: (selector: string) => Element[];
+    }) => void) => {
+      const self = {
+        add: (addFn: () => void) => {
+          addFn();
+          return self;
+        },
+        revert: vi.fn(),
+        kill: vi.fn(),
+        selector: vi.fn(() => [] as Element[])
+      };
+      if (typeof fn === 'function') fn(self);
+      return self;
+    },
     killTweensOf: vi.fn(),
     set: vi.fn(),
     registerPlugin: vi.fn(),

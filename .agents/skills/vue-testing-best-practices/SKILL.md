@@ -27,6 +27,10 @@ Vue.ts testing best practices, patterns, and common gotchas.
   - **Pattern**: Mock `rpc`, `upsert`, and `from().select()` chains to return predictable results.
   - **MANDATORY**: Ensure the mock handles `getTimeOffset` and `setTimeOffset` correctly if testing time-manipulation tools.
 - **Robust Mocks for Combat Logic**: When unit testing complex combat turns (e.g., `battleTurn.ts`) that interact with multiple Pinia stores and the GameBus, ensure the mock store provides a complete and consistent state. This includes nested properties (like `activeBattle.player.moves`) and all required base stats (`atk`, `def`, `maxHp`). Insufficient or shallow mocks often lead to silent failures or "property of undefined" errors during Vitest execution.
+- **Mocking GSAP Context in Vitest**: When testing Vue components that utilize `gsap.context()` for managing animation lifecycles, mock `gsap.context` globally in the test setup (e.g., `vitest.setup.ts`). The mock must implement the complete, typed signatures of `.add()`, `.revert()`, `.kill()`, and `.selector()` without resorting to `any` or `@ts-ignore` to satisfy strict linting.
+- **Testing Deferred Rendering via IntersectionObserver**: When testing components that conditionally render heavy DOM elements (e.g., `v-if="isVisible"`) based on `IntersectionObserver` visibility:
+  - Provide a global mock for `IntersectionObserver` in the test files or setup that satisfies the full TypeScript interface (`root`, `rootMargin`, `scrollMargin`, `thresholds`, `observe()`, `unobserve()`, `disconnect()`, `takeRecords()`).
+  - Vue updates the DOM asynchronously; therefore, always use `await wrapper.vm.$nextTick()` after triggering the observer callback before asserting the presence, visibility, or classes of conditional elements.
 
 ## Reference
 

@@ -27,6 +27,25 @@ global.ResizeObserver = class {
   disconnect() {}
 }
 
+// Global mock for IntersectionObserver to simulate visibility in tests
+global.IntersectionObserver = class IntersectionObserverMock implements IntersectionObserver {
+  readonly root: Element | Document | null = null;
+  readonly rootMargin: string = '';
+  readonly scrollMargin: string = '';
+  readonly thresholds: ReadonlyArray<number> = [];
+
+  constructor(callback: IntersectionObserverCallback) {
+    callback([{ isIntersecting: true } as IntersectionObserverEntry], this)
+  }
+
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+  takeRecords(): IntersectionObserverEntry[] {
+    return []
+  }
+}
+
 interface MapCardInstance {
   processedGuardian: {
     name: string;
@@ -68,8 +87,9 @@ describe('MapCard Discovery Logic', () => {
     spawnPool: { generic: ['pidgey', 'rattata'], specific: [] as string[], rates: {} as Record<string, number> }
   }
 
-  it('renders guardian as silhouette if not seen', () => {
+  it('renders guardian as silhouette if not seen', async () => {
     const wrapper = mount(MapCard, { props: defaultProps as unknown as InstanceType<typeof MapCard>['$props'] })
+    await wrapper.vm.$nextTick()
     const guardianImg = wrapper.find('.guardian-mini-sprite')
     const vm = wrapper.vm as unknown as MapCardInstance
     
@@ -112,6 +132,7 @@ describe('MapCard Discovery Logic', () => {
   it('reveals info but keeps silhouettes in "seen" debug mode', async () => {
     uiStore.debugPokedexMode = 'seen'
     const wrapper = mount(MapCard, { props: defaultProps as unknown as InstanceType<typeof MapCard>['$props'] })
+    await wrapper.vm.$nextTick()
     const guardianImg = wrapper.find('.guardian-mini-sprite')
     const vm = wrapper.vm as unknown as MapCardInstance
     
@@ -129,6 +150,7 @@ describe('MapCard Discovery Logic', () => {
   it('removes silhouettes and adds badges in "caught" debug mode', async () => {
     uiStore.debugPokedexMode = 'caught'
     const wrapper = mount(MapCard, { props: defaultProps as unknown as InstanceType<typeof MapCard>['$props'] })
+    await wrapper.vm.$nextTick()
     const guardianImg = wrapper.find('.guardian-mini-sprite')
     const vm = wrapper.vm as unknown as MapCardInstance
     
