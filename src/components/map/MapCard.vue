@@ -590,7 +590,7 @@ watch(spawnGridRef, (newRef) => {
 
     <!-- 1. Guardian (Top Left) -->
     <PVTooltip
-      v-if="processedGuardian && !isLocked && !isSafariLocked"
+      v-if="processedGuardian && !isLocked && !isSafariLocked && isVisible"
       class="guardian-status-badge"
       :title="!processedGuardian.isSeen ? 'POKÉMON DESCONOCIDO' : (processedGuardian.captured ? 'GUARDIÁN DERROTADO' : 'POKÉMON GUARDIÁN')"
       :description="processedGuardian.captured 
@@ -626,7 +626,7 @@ watch(spawnGridRef, (newRef) => {
 
     <!-- 3. Faction Status (Middle Left, below Guardian) -->
     <PVTooltip
-      v-if="dominance?.winner && dominance?.winner !== 'none' && !isPerformanceMode && !isLocked && !isSafariLocked"
+      v-if="dominance?.winner && dominance?.winner !== 'none' && !isPerformanceMode && !isLocked && !isSafariLocked && isVisible"
       class="faction-status-pill"
       title="DOMINIO FACCIÓN"
       :description="`Controlado por ${dominance.winner === 'union' ? 'Unión' : 'Poder'}`"
@@ -641,7 +641,7 @@ watch(spawnGridRef, (newRef) => {
 
     <!-- 4. Fishing Icon (Bottom Left) -->
     <PVTooltip
-      v-if="map.fishing && !isPerformanceMode && !isLocked && !isSafariLocked"
+      v-if="map.fishing && !isPerformanceMode && !isLocked && !isSafariLocked && isVisible"
       class="fishing-pill-standalone"
       title="PESCA"
       description="¡Esta zona tiene agua! Puedes pescar Pokémon aquí."
@@ -654,7 +654,7 @@ watch(spawnGridRef, (newRef) => {
 
     <!-- 5. Spawns Grid (MOVED UP to be behind other UI elements) -->
     <div
-      v-if="!isLocked && !isPerformanceMode"
+      v-if="!isLocked && !isPerformanceMode && isVisible"
       class="location-spawns"
     >
       <div 
@@ -762,6 +762,7 @@ watch(spawnGridRef, (newRef) => {
   z-index: 1;
   opacity: 0;
   image-rendering: auto !important;
+  will-change: transform, opacity;
   
   // Mask properties to colorize monochrome assets on the fly
   -webkit-mask-size: contain;
@@ -775,7 +776,7 @@ watch(spawnGridRef, (newRef) => {
     z-index: 2;
     -webkit-mask-image: var(--flare-2-url);
     mask-image: var(--flare-2-url);
-    background: radial-gradient(circle, Rgba(255, 0, 0, 0.95) 0%, Rgba(255, 0, 0, 0.35) 60%, transparent 100%);
+    background-color: Rgba(255, 0, 0, 0.9);
     filter: Blur(1.5px);
 
     &.is-low-power {
@@ -787,7 +788,7 @@ watch(spawnGridRef, (newRef) => {
     z-index: 1;
     -webkit-mask-image: var(--flare-1-url);
     mask-image: var(--flare-1-url);
-    background: radial-gradient(circle, Rgba(0, 255, 255, 0.95) 0%, Rgba(0, 255, 255, 0.35) 60%, transparent 100%);
+    background-color: Rgba(0, 255, 255, 0.85);
     filter: Blur(1.5px);
 
     &.is-low-power {

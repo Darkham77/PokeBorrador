@@ -1,6 +1,10 @@
 <script setup lang="ts">
+// [PureVue-Ignore-Length]
 import { ref, computed, watch, onUnmounted, nextTick, onMounted } from 'vue'
 import { gsap } from 'gsap'
+
+const containerRef = ref<HTMLElement | null>(null)
+let atmosphereContext: gsap.Context | null = null
 
 const props = defineProps({
   weather: { type: String, default: 'clear' },
@@ -176,31 +180,34 @@ const initWeatherAnim = () => {
 
     if (isStorm) {
       const strike = () => {
-        if (!['storm', 'thunderstorm'].includes(props.weather) || !lightningRef.value) return
+        const ctx = atmosphereContext
+        if (!props.isVisible || props.isPerformanceMode || !ctx || !['storm', 'thunderstorm'].includes(props.weather) || !lightningRef.value) return
         
         // Coordenada X al azar cubriendo casi todo el ancho (5% a 95%)
         const x1 = Math.floor(Math.random() * 90) + 5
         const isFlipped = Math.random() > 0.5
         lightningPos.value = { x1, x2: x1 } // x2 es obligatorio en el tipo
 
-        const tl = gsap.timeline()
-        tl.to(lightningRef.value, { 
-          opacity: 1, 
-          duration: 0.05,
-          scaleX: isFlipped ? -1 : 1 
-        })
-          .to(lightningRef.value, { opacity: 0, duration: 0.05 })
-          .to(lightningRef.value, { opacity: 1, duration: 0.05 })
-          .to(lightningRef.value, { opacity: 0, duration: 0.25 })
-          
-        if (flashRef.value) {
-          gsap.timeline()
-            .to(flashRef.value, { opacity: 0.6, duration: 0.05 })
-            .to(flashRef.value, { opacity: 0, duration: 0.4, ease: 'power2.out' })
-        }
+        ctx.add(() => {
+          const tl = gsap.timeline()
+          tl.to(lightningRef.value, { 
+            opacity: 1, 
+            duration: 0.05,
+            scaleX: isFlipped ? -1 : 1 
+          })
+            .to(lightningRef.value, { opacity: 0, duration: 0.05 })
+            .to(lightningRef.value, { opacity: 1, duration: 0.05 })
+            .to(lightningRef.value, { opacity: 0, duration: 0.25 })
+            
+          if (flashRef.value) {
+            gsap.timeline()
+              .to(flashRef.value, { opacity: 0.6, duration: 0.05 })
+              .to(flashRef.value, { opacity: 0, duration: 0.4, ease: 'power2.out' })
+          }
 
-        const nextDelay = w === 'thunderstorm' ? (1 + Math.random() * 2) : (4 + Math.random() * 6)
-        lightningTimer = gsap.delayedCall(nextDelay, strike)
+          const nextDelay = w === 'thunderstorm' ? (1 + Math.random() * 2) : (4 + Math.random() * 6)
+          lightningTimer = gsap.delayedCall(nextDelay, strike)
+        })
       }
       lightningTimer = gsap.delayedCall(2 + Math.random() * 3, strike)
     }
@@ -378,75 +385,80 @@ const initWeatherAnim = () => {
     }
   }
 }
+const cleanUpAtmosphere = () => {
+  if (atmosphereContext) {
+    atmosphereContext.revert()
+    atmosphereContext = null
+  }
+  weatherTimeline = null
+  lightningTimer = null
+}
+
+const initAtmosphere = () => {
+  cleanUpAtmosphere()
+  
+  if (!props.isVisible || props.isPerformanceMode || props.isLocked || props.weather === 'clear') {
+    return
+  }
+
+  atmosphereContext = gsap.context(() => {
+    initWeatherAnim()
+    initLeafAnim()
+  }, containerRef.value || undefined)
+}
+
 watch(() => props.isVisible, async (visible) => {
   if (visible) {
     await nextTick()
-    initWeatherAnim()
-    initLeafAnim()
+    initAtmosphere()
   } else {
-    if (weatherTimeline) weatherTimeline.kill()
-    if (lightningTimer) lightningTimer.kill()
-    if (layer1Ref.value) gsap.killTweensOf(layer1Ref.value)
-    if (layer2Ref.value) gsap.killTweensOf(layer2Ref.value)
+    cleanUpAtmosphere()
   }
 })
 
-watch(() => props.animSeed, async () => {
+watch(() => props.animSeed, () => {
   if (props.isVisible && !props.isPerformanceMode) {
-    await nextTick()
-    initWeatherAnim()
+    initAtmosphere()
   }
 })
 
 watch(() => props.weather, async () => {
   if (props.isVisible && !props.isPerformanceMode) {
     await nextTick()
-    initWeatherAnim()
-    initLeafAnim()
+    initAtmosphere()
   }
 })
 
 watch(() => props.isPerformanceMode, async (isPaused) => {
-  if (!isPaused && props.isVisible) {
-    // Doble tick para asegurar que v-if en el template ha re-montado los elementos
-    await nextTick()
-    await nextTick()
-    initWeatherAnim()
-    initLeafAnim()
-  } else if (isPaused) {
-    if (weatherTimeline) weatherTimeline.pause()
-    if (lightningTimer) lightningTimer.pause()
+  if (!isPaused) {
+    if (props.isVisible) {
+      await nextTick()
+      await nextTick()
+      initAtmosphere()
+    }
+  } else {
+    cleanUpAtmosphere()
   }
 })
 
 watch(() => props.isLowPower, async () => {
   if (props.isVisible && !props.isPerformanceMode) {
-    // Kill existing leaf tweens first to prevent orphaned animations
-    leavesRef.value.forEach(el => {
-      if (el) gsap.killTweensOf(el)
-    })
-    
     // Wait for template v-if elements to mount/unmount in the DOM
     await nextTick()
     await nextTick()
-    
-    initWeatherAnim()
-    initLeafAnim()
+    initAtmosphere()
   }
 })
 
 onMounted(async () => {
   if (props.isVisible) {
     await nextTick()
-    initWeatherAnim()
-    initLeafAnim()
+    initAtmosphere()
   }
 })
 
 onUnmounted(() => {
-  if (weatherTimeline) weatherTimeline.kill()
-  if (lightningTimer) lightningTimer.kill()
-  leavesRef.value.forEach(el => gsap.killTweensOf(el))
+  cleanUpAtmosphere()
 })
 
 defineExpose({
@@ -469,14 +481,14 @@ const leafCount = computed(() => {
 })
 
 const initLeafAnim = () => {
-  if (!leafTypes.includes(props.weather) || props.isPerformanceMode) return
+  const ctx = atmosphereContext
+  if (!leafTypes.includes(props.weather) || props.isPerformanceMode || !ctx) return
   
   leavesRef.value.forEach((el, i) => {
     if (!el) return
-    gsap.killTweensOf(el)
     
     const animateLeaf = () => {
-      if (!leafTypes.includes(props.weather)) return
+      if (!props.isVisible || props.isPerformanceMode || !ctx || !leafTypes.includes(props.weather)) return
       
       const s1 = Math.random()
       const s2 = Math.random()
@@ -486,38 +498,43 @@ const initLeafAnim = () => {
       const startX = fromTop ? (80 + s2 * 40) : 115 
       const startY = fromTop ? -20 : (s2 * 60)
       
-      // Reset inmediato de estado para evitar parpadeos de brillo/opacidad
-      gsap.set(el, { 
-        left: `${startX}%`, 
-        top: `${startY}%`, 
-        x: 0,
-        y: 0,
-        opacity: 0.9,
-        scale: 0.9 + Math.random() * 1.2, // Variación de tamaño entre 0.9x y 2.1x
-        rotation: Math.random() * 360
-      })
+      ctx.add(() => {
+        // Reset inmediato de estado para evitar parpadeos de brillo/opacidad
+        gsap.set(el, { 
+          left: `${startX}%`, 
+          top: `${startY}%`, 
+          x: 0,
+          y: 0,
+          opacity: 0.9,
+          scale: 0.9 + Math.random() * 1.2, // Variación de tamaño entre 0.9x y 2.1x
+          rotation: Math.random() * 360
+        })
 
-      // Speed configuration: Strong winds are the fastest, common wind is slow
-      // We apply a multiplier based on the global animSeed to ensure different maps look unique
-      const seedMod = 0.8 + (animSeed.value * 0.4) // Multiplier between 0.8x and 1.2x
-      
-      const isCommonWind = props.weather === 'wind'
-      const isStrongWind = props.weather === 'strong_winds'
-      const baseDuration = (isCommonWind ? 3.5 : (isStrongWind ? 1.2 : 1.5)) * seedMod
-      const speedVariation = (isCommonWind ? 4.0 : (isStrongWind ? 1.0 : 2.0)) * seedMod
+        // Speed configuration: Strong winds are the fastest, common wind is slow
+        // We apply a multiplier based on the global animSeed to ensure different maps look unique
+        const seedMod = 0.8 + (animSeed.value * 0.4) // Multiplier between 0.8x and 1.2x
+        
+        const isCommonWind = props.weather === 'wind'
+        const isStrongWind = props.weather === 'strong_winds'
+        const baseDuration = (isCommonWind ? 3.5 : (isStrongWind ? 1.2 : 1.5)) * seedMod
+        const speedVariation = (isCommonWind ? 4.0 : (isStrongWind ? 1.0 : 2.0)) * seedMod
 
-      gsap.to(el,
-        {
-          x: '-350cqw', 
-          y: '80cqh',
-          rotation: `+=1080`,
-          duration: baseDuration + (Math.random() * speedVariation),
-          ease: 'none',
-          onComplete: () => {
-            gsap.delayedCall(Math.random() * 1.5, animateLeaf)
+        gsap.to(el,
+          {
+            x: '-350cqw', 
+            y: '80cqh',
+            rotation: `+=1080`,
+            duration: baseDuration + (Math.random() * speedVariation),
+            ease: 'none',
+            onComplete: () => {
+              if (!ctx) return
+              ctx.add(() => {
+                gsap.delayedCall(Math.random() * 1.5, animateLeaf)
+              })
+            }
           }
-        }
-      )
+        )
+      })
     }
     
     const isCommonWind = props.weather === 'wind'
@@ -525,7 +542,9 @@ const initLeafAnim = () => {
     const seedMod = 0.8 + (animSeed.value * 0.4)
     const baseDelay = isCommonWind ? 0.8 : (isStrongWind ? 0.3 : 0.4)
     
-    gsap.delayedCall(i * baseDelay * seedMod, animateLeaf)
+    ctx.add(() => {
+      gsap.delayedCall(i * baseDelay * seedMod, animateLeaf)
+    })
   })
 }
 
