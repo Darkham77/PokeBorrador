@@ -163,11 +163,14 @@
     width: calc(100% * var(--sprite-scale));
     height: calc(100% * var(--sprite-scale));
     position: relative;
-    will-change: transform, opacity;
     pointer-events: auto;
     
     &.atmospheric-spawn, &.rare-spawn {
       position: relative;
+      
+      &:not(.is-low-power *) {
+        will-change: transform, opacity;
+      }
     }
 
     .caught-badge {
@@ -225,23 +228,25 @@
     padding: 0;
     object-fit: contain;
     @include pixelated;
+    
+    &:not(.is-low-power *) {
+      will-change: transform, filter, opacity;
+    }
+    
     &:not(.spawn-silhouette) {
       &.pixelated, & {
-        will-change: filter, transform, opacity;
         filter: pokemon-outline-optimized();
       }
     }
 
     &.spawn-silhouette {
-      will-change: transform, filter, opacity;
-  filter: pokemon-silhouette-optimized() !important;
+      filter: pokemon-silhouette-optimized() !important;
       opacity: 1 !important;
     }
 
     // Performance mode toggle
     .performance-mode & {
-      will-change: transform, filter, opacity;
-  filter: none !important;
+      filter: none !important;
     }
     
     &:hover {

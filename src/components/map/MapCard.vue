@@ -583,12 +583,17 @@ watch(spawnGridRef, (newRef) => {
 <template>
   <div
     ref="cardRef"
-    :class="['location-card map-card legacy-panel', { locked: isLocked, 'safari-locked': isSafariLocked }]"
+    :class="['location-card map-card legacy-panel', {
+      locked: isLocked,
+      'safari-locked': isSafariLocked,
+      'is-low-power': uiStore.isLowPowerActive,
+      'performance-mode': isPerformanceMode
+    }]"
     :style="{ 
       '--weather-only-filter': weatherOnlyFilter,
-      '--bg-image': `url('${imgPath}')`,
-      '--flare-1-url': `url('${flare1Url}')`,
-      '--flare-2-url': `url('${flare2Url}')`
+      '--bg-image': isVisible ? `url('${imgPath}')` : 'none',
+      '--flare-1-url': isVisible ? `url('${flare1Url}')` : 'none',
+      '--flare-2-url': isVisible ? `url('${flare2Url}')` : 'none'
     }"
     @click.stop="() => {
       logger.debug('MapCard', `Click detected. isLocked: ${isLocked}, isPerformanceMode: ${isPerformanceMode}`);

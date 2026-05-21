@@ -43,14 +43,24 @@
   @include pixelated;
   margin: 0 !important;
   display: block !important;
-  @include gpu-layer;
+  
+  &:not(.is-low-power *) {
+    @include gpu-layer;
+  }
 
   &:not(.spawn-silhouette) {
-    will-change: transform, filter, opacity;
-  filter: Drop-Shadow(0 0 5px Rgba(255,255,255,0.4)) !important;
+    &:not(.is-low-power *) {
+      will-change: transform, filter, opacity;
+      filter: Drop-Shadow(0 0 5px Rgba(255,255,255,0.4)) !important;
+    }
+    
+    .is-low-power & {
+      will-change: auto !important;
+      filter: none;
+    }
     
     &.captured {
-  filter: Grayscale(100%) !important;
+      filter: Grayscale(100%) !important;
       opacity: 0.8 !important;
     }
   }
@@ -58,6 +68,10 @@
   &.spawn-silhouette {
     @include pokemon-silhouette;
     transform: none !important;
+    
+    .is-low-power & {
+      will-change: auto !important;
+    }
   }
 }
 
