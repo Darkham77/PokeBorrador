@@ -54,6 +54,35 @@ function resolveNormalizedName(name: string): string {
   return aliases[norm] || name;
 }
 
+export function isItemUsableOutsideCombat(item: { id: string; cat?: string; type?: string } | null | undefined): boolean {
+  if (!item) return false
+  const cat = item.cat
+  const type = item.type
+  const id = item.id
+
+  const valuables = ['nugget', 'pearl', 'big_pearl', 'stardust', 'star_piece']
+  if (valuables.includes(id)) return false
+
+  if (cat === 'pokeballs') return false
+
+  if (id && id.toLowerCase().startsWith('tm')) return true
+
+  if (id === 'helix_fossil' || id === 'dome_fossil' || id === 'old_amber') return true
+
+  if (
+    cat === 'pociones' ||
+    cat === 'stones' || type === 'stone' ||
+    cat === 'held' || type === 'held' ||
+    cat === 'booster' || type === 'booster' ||
+    cat === 'utility' || type === 'usable' ||
+    cat === 'breeding'
+  ) {
+    return true
+  }
+
+  return false
+}
+
 export const useInventoryStore = defineStore('inventory', () => {
   const gameStore = useGameStore()
   const uiStore = useUIStore()
@@ -107,6 +136,18 @@ export const useInventoryStore = defineStore('inventory', () => {
         if (pokemon) {
           items = items.filter(item => isItemUsableOn(item.name, pokemon))
         }
+      } else {
+        items = items.filter(item => {
+          if (!isItemUsableOutsideCombat(item)) return false
+          
+          const officialName = resolveNormalizedName(item.name)
+          if (isGlobalItem(officialName)) return true
+
+          const isHeld = item.cat === 'held' || item.type === 'held' || (item.cat === 'breeding' && item.id !== 'vigor_restorer' && !item.id.includes('berry'))
+          if (isHeld) return (gameStore.state.team || []).length > 0
+
+          return (gameStore.state.team || []).some((pokemon: Pokemon) => isItemUsableOn(item.name, pokemon))
+        })
       }
     }
 

@@ -1,4 +1,4 @@
-import { ref, computed, watch, type Ref, type ComponentPublicInstance } from 'vue'
+import { ref, type Ref, type ComponentPublicInstance } from 'vue'
 import { useUIStore } from '@/stores/ui'
 import { useGameStore } from '@/stores/game'
 import { useWindowListener, useDocumentListener } from '@/composables/useWindowListener'
@@ -15,11 +15,6 @@ export function useMainLayout(
   const hudBottomHeight = ref(gameStore.state.starterChosen ? 80 : 0)
   const isHudHidden = ref(false)
 
-  const activeTab = computed(() => uiStore.activeTab)
-  watch(activeTab, () => {
-    isHudHidden.value = false
-  })
-
   // 1. Outside Click logic
   function handleOutsideClick(e: MouseEvent) {
     if (!uiStore.openHudGroup) return
@@ -34,45 +29,7 @@ export function useMainLayout(
     }
   }
 
-  // 2. Scroll logic
-  let lastScrollY = 0
-  let scrollTicking = false
-  function handleScroll(e: Event) {
-    if (scrollTicking) return
-    scrollTicking = true
-    
-    requestAnimationFrame(() => {
-      let target = e.target as HTMLElement | null
-      if (e.target === document || e.target === window) target = document.documentElement
-      
-      if (!target || (target.tagName !== 'HTML' && (!target.classList || !target.classList.contains('tab-content')))) {
-        scrollTicking = false
-        return
-      }
-
-      const currentScrollY = target.scrollTop
-      
-      if (currentScrollY <= 50) {
-        if (isHudHidden.value) isHudHidden.value = false
-        lastScrollY = currentScrollY
-        scrollTicking = false
-        return
-      }
-
-      const diff = currentScrollY - lastScrollY
-      const threshold = 60
-      
-      if (Math.abs(diff) > threshold) {
-        const nextHidden = diff > 0
-        if (isHudHidden.value !== nextHidden) {
-          isHudHidden.value = nextHidden
-        }
-        lastScrollY = currentScrollY
-      }
-      
-      scrollTicking = false
-    })
-  }
+  // 2. Scroll logic - Disabled to keep HUD permanently visible
 
   // 3. Height calculation logic
   let isUpdatingHeight = false
@@ -113,7 +70,7 @@ export function useMainLayout(
     updateHudHeight()
   }, { passive: true })
 
-  useWindowListener('scroll', handleScroll, { passive: true, capture: true })
+  // Scroll listener removed to keep HUD permanently visible
   useDocumentListener('click', handleOutsideClick as EventListener)
 
   return {

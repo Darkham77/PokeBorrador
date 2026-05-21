@@ -12,6 +12,7 @@ import { sassTrapsFixer } from './scripts/vite-plugin-sass-traps.ts'
 import { VitePWA } from 'vite-plugin-pwa'
 
 import fsPromises from 'node:fs/promises'
+import fs from 'node:fs'
 
 function migrationsPlugin() {
   return {
@@ -83,7 +84,22 @@ function devDbImportPlugin() {
   }
 }
 
-const buildInstant = Temporal.Now.instant().toZonedDateTimeISO('UTC');
+// Leer timezone desde .env
+const getEnvTimezone = (): string => {
+  try {
+    const envPath = path.resolve(__dirname, '.env')
+    const envContent = fs.readFileSync(envPath, 'utf-8')
+    const match = envContent.match(/^VITE_TIMEZONE\s*=\s*(.+)$/m)
+    if (match && match[1]) {
+      return match[1].trim()
+    }
+  } catch (_e) {
+    // Fallback si hay algún problema
+  }
+  return 'UTC'
+}
+
+const buildInstant = Temporal.Now.instant().toZonedDateTimeISO(getEnvTimezone());
 
 // Detect if building on GitHub Actions for GitHub Pages
 const isGithubActions = !!process.env.GITHUB_ACTIONS

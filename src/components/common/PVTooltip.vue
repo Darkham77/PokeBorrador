@@ -21,6 +21,7 @@ const activePosition = ref(props.position)
 const arrowOffset = ref({ x: 0, y: 0 })
 
 let timeout: gsap.core.Tween | null = null
+let touchTimeout: gsap.core.Tween | null = null
 
 const isRightSide = ref(false)
 
@@ -127,10 +128,42 @@ let clickBlockTimeout: gsap.core.Tween | null = null
 
 const hide = () => {
   if (timeout) timeout.kill()
+  if (touchTimeout) {
+    touchTimeout.kill()
+    touchTimeout = null
+  }
   isVisible.value = false
   window.removeEventListener('scroll', hide, { capture: true })
   window.removeEventListener('wheel', hide)
   window.removeEventListener('touchmove', hide)
+}
+
+const handleTouchStart = () => {
+  if (touchTimeout) {
+    touchTimeout.kill()
+    touchTimeout = null
+  }
+  
+  touchTimeout = gsap.delayedCall(0.5, () => {
+    show()
+    touchTimeout = null
+  })
+}
+
+const handleTouchEnd = () => {
+  if (touchTimeout) {
+    touchTimeout.kill()
+    touchTimeout = null
+  }
+  hide()
+}
+
+const handleTouchMove = () => {
+  if (touchTimeout) {
+    touchTimeout.kill()
+    touchTimeout = null
+  }
+  hide()
 }
 
 const handleTriggerClick = (event: MouseEvent) => {
@@ -167,6 +200,10 @@ const handleMouseEnter = () => {
   show()
 }
 
+const handleContextMenu = (event: Event) => {
+  event.preventDefault()
+}
+
 // If it becomes disabled while showing, hide it immediately
 watch(() => props.disabled, (newVal) => {
   if (newVal) hide()
@@ -174,6 +211,10 @@ watch(() => props.disabled, (newVal) => {
 
 onUnmounted(() => {
   hide()
+  if (touchTimeout) {
+    touchTimeout.kill()
+    touchTimeout = null
+  }
 })
 </script>
 
@@ -185,9 +226,12 @@ onUnmounted(() => {
     audit-ignore="[PureVue-Ignore]" 
     @mouseenter="handleMouseEnter"
     @mouseleave="hide"
-    @touchstart="show"
-    @touchend="hide"
+    @touchstart="handleTouchStart"
+    @touchend="handleTouchEnd"
+    @touchmove="handleTouchMove"
+    @touchcancel="handleTouchEnd"
     @click="handleTriggerClick"
+    @contextmenu="handleContextMenu"
   >
     <slot />
     
@@ -246,6 +290,12 @@ onUnmounted(() => {
 .pv-tooltip-wrapper {
   display: inline-flex;
   align-items: center;
+  -webkit-touch-callout: none !important;
+  -webkit-user-select: none !important;
+  -khtml-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+  user-select: none !important;
 }
 
 .pv-tooltip-teleported {

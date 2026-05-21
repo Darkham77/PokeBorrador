@@ -400,6 +400,16 @@ const processedGrid = computed<ProcessedSpawn[]>(() => {
 })
 
 const isVisible = ref(false)
+
+const keepWarm = computed(() => {
+  const isMobileDevice = uiStore.windowWidth < 768
+  return !isMobileDevice && !uiStore.isLowPowerActive
+})
+
+const showBg = computed(() => {
+  return isVisible.value || keepWarm.value
+})
+
 import { useWeatherVisuals } from '@/composables/useWeatherVisuals'
 
 const { weatherOnlyFilter } = useWeatherVisuals({
@@ -589,7 +599,7 @@ onMounted(() => {
     resizeObserver.observe(cardRef.value)
 
     const isMobileDevice = uiStore.windowWidth < 768
-    const marginValue = isMobileDevice ? '180px' : '50px'
+    const marginValue = isMobileDevice ? '180px' : '1200px'
 
     intersectionObserver = new IntersectionObserver((entries) => {
       const entry = entries[0]
@@ -712,9 +722,9 @@ watch(spawnGridRef, (newRef) => {
     }]"
     :style="{ 
       '--weather-only-filter': weatherOnlyFilter,
-      '--bg-image': isVisible ? `url('${imgPath}')` : 'none',
-      '--flare-1-url': isVisible ? `url('${flare1Url}')` : 'none',
-      '--flare-2-url': isVisible ? `url('${flare2Url}')` : 'none'
+      '--bg-image': showBg ? `url('${imgPath}')` : 'none',
+      '--flare-1-url': showBg ? `url('${flare1Url}')` : 'none',
+      '--flare-2-url': showBg ? `url('${flare2Url}')` : 'none'
     }"
     @click.stop="() => {
       logger.debug('MapCard', `Click detected. isLocked: ${isLocked}, isPerformanceMode: ${isPerformanceMode}`);

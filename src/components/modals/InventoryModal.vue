@@ -3,7 +3,7 @@
 import { ref, computed, reactive, watch } from 'vue'
 import { useWindowListener } from '@/composables/useWindowListener'
 import { useGameStore } from '@/stores/game'
-import { useInventoryStore, type Item } from '@/stores/inventory'
+import { useInventoryStore, type Item, isItemUsableOutsideCombat } from '@/stores/inventory'
 import { useUIStore } from '@/stores/ui'
 import { useBattleStore } from '@/stores/battle'
 import { useModalStore } from '@/stores/modals'
@@ -11,6 +11,7 @@ import BaseModal from '@/components/common/BaseModal.vue'
 import { formatCurrency } from '@/logic/utils/formatters'
 import { SHOP_ITEMS } from '@/data/items'
 import { isValidTarget } from '@/logic/items/itemEffects'
+import { isGlobalItem } from '@/logic/providers/itemProvider'
 import type { Pokemon } from '@/types/pokemon'
 
 // Sub-components
@@ -62,6 +63,20 @@ const multiSelectMode = ref<string | null>(null)
 const selectedItems = reactive(new Map<string, number>()) // name -> qty
 const quantitySelectionItem = ref<Item | null>(null)
 const itemActionMenu = ref<Item | null>(null) // { item, type: 'sell'|'release'|'menu' }
+
+const isItemUsableOrEquippable = (item: Item | null) => {
+  if (!item) return false
+  const dbItem = SHOP_ITEMS.find(i => i.id === item.id || i.name === item.name)
+  if (!dbItem) return false
+  return isItemUsableOutsideCombat(dbItem)
+}
+
+const isItemHeld = (item: Item | null) => {
+  if (!item) return false
+  const dbItem = SHOP_ITEMS.find(i => i.id === item.id || i.name === item.name)
+  if (!dbItem) return false
+  return dbItem.cat === 'held' || dbItem.type === 'held' || (dbItem.cat === 'breeding' && dbItem.id !== 'vigor_restorer' && !dbItem.id.includes('berry'))
+}
 
 // Getters
 const modalWidth = computed(() => props.battleMode ? '480px' : '800px')
@@ -139,18 +154,33 @@ const handleActionSelect = (type: string) => {
       return
     }
 
-    // Traditional targeting if no pre-selected target
-    const validTargets = (gameStore.state.team || []).filter((p: Pokemon) => isValidTarget(dbItem.name, p))
+    // Outside combat targetless actions
+    if (isGlobalItem(dbItem.name)) {
+      const res = inventoryStore.useItem(dbItem.name)
+      if (res.success) uiStore.notify(res.message, '✨')
+      else uiStore.notify(res.message, '⚠️')
+      itemActionMenu.value = null
+      return
+    }
+
+    const isHeld = dbItem.cat === 'held' || dbItem.type === 'held' || (dbItem.cat === 'breeding' && dbItem.id !== 'vigor_restorer' && !dbItem.id.includes('berry'))
+    const validTargets = isHeld
+      ? (gameStore.state.team || [])
+      : (gameStore.state.team || []).filter((p: Pokemon) => isValidTarget(dbItem.name, p))
     
     if (validTargets.length === 0) {
-      uiStore.notify(`Este objeto no tiene objetivos válidos en tu equipo`, '🎒')
+      if (isHeld) {
+        uiStore.notify(`No tienes ningún Pokémon en tu equipo para equipar este objeto`, '⚠️')
+      } else {
+        uiStore.notify(`Este objeto no tiene objetivos válidos en tu equipo`, '🎒')
+      }
       itemActionMenu.value = null
       return
     }
 
     const battleStore = useBattleStore()
     modalStore.open('PokemonSelection', {
-      title: `USAR ${dbItem.name?.toUpperCase()}`,
+      title: isHeld ? `EQUIPAR ${dbItem.name?.toUpperCase()}` : `USAR ${dbItem.name?.toUpperCase()}`,
       isBattleSwitch: false, // Permitir seleccionar al activo para curaciones
       includeTeam: true,
       allowDead: dbItem.name?.toLowerCase().includes('revivir') || !props.battleMode,
@@ -160,13 +190,19 @@ const handleActionSelect = (type: string) => {
         if (selected && selected.length > 0) {
           const index = (gameStore.state.team || []).findIndex((p: Pokemon) => p.uid === selected[0]!.uid)
           if (index !== -1) {
-            const res = inventoryStore.useItem(dbItem.name, 'team', index)
-            if (res.success) {
-              uiStore.notify(res.message, '✨')
-              if (props.battleMode) close() // Close inventory ONLY on success in battle
+            if (isHeld) {
+              const success = inventoryStore.equipItem(dbItem.name, 'team', index)
+              if (success) uiStore.notify(`¡${dbItem.name} equipado!`, '🎒')
+              else uiStore.notify(`No se pudo equipar`, '⚠️')
             } else {
-              uiStore.notify(res.message, '⚠️')
-              // Keep inventory open on failure
+              const res = inventoryStore.useItem(dbItem.name, 'team', index)
+              if (res.success) {
+                uiStore.notify(res.message, '✨')
+                if (props.battleMode) close() // Close inventory ONLY on success in battle
+              } else {
+                uiStore.notify(res.message, '⚠️')
+                // Keep inventory open on failure
+              }
             }
           }
         }
@@ -380,6 +416,18 @@ const close = () => {
           @click.stop="handleActionSelect('use')"
         >
           <span class="icon">✨</span> USAR / EQUIPAR
+        </button>
+        <button
+          v-else-if="!battleMode && isItemUsableOrEquippable(itemActionMenu)"
+          class="menu-btn vicio-primary"
+          @click.stop="handleActionSelect('use')"
+        >
+          <template v-if="isItemHeld(itemActionMenu)">
+            <span class="icon">🎒</span> EQUIPAR
+          </template>
+          <template v-else>
+            <span class="icon">✨</span> USAR
+          </template>
         </button>
         <button
           v-if="!battleMode"

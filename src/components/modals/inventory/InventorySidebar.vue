@@ -1,16 +1,15 @@
 <script setup lang="ts">
 import { computed, watch } from 'vue'
 import { useInventoryStore } from '@/stores/inventory'
-import { useUIStore } from '@/stores/ui'
 
 const inventoryStore = useInventoryStore()
-const uiStore = useUIStore()
 
 const activeCategory = computed(() => inventoryStore.activeCategory)
 
 const categories = computed(() => {
   const list = [
     { id: 'todos', label: 'Todos', icon: '📦' },
+    { id: 'utilizables', label: 'Utilizables', icon: '⭐' },
     { id: 'pokeballs', label: 'Balls', icon: '⚪' },
     { id: 'pociones', label: 'Cura', icon: '🧪' },
     { id: 'stones', label: 'Piedras', icon: '💎' },
@@ -18,10 +17,6 @@ const categories = computed(() => {
     { id: 'breeding', label: 'Crianza', icon: '🥚' },
     { id: 'especial', label: 'Otros', icon: '✨' }
   ]
-
-  if (uiStore.inventoryTarget) {
-    list.unshift({ id: 'utilizables', label: 'Utilizables', icon: '⭐' })
-  }
 
   return list
 })

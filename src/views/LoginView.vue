@@ -49,6 +49,7 @@ const switchAuthTab = (tab: string) => {
 }
 
 const handleLogin = async () => {
+  if (serverStatus.value !== 'online') return
   if (!email.value || !password.value) {
     error.value = 'Completa todos los campos'
     return
@@ -300,7 +301,7 @@ const handleServerChange = () => {
           >
           <button
             class="auth-btn"
-            :disabled="loading"
+            :disabled="loading || serverStatus !== 'online'"
             @click.stop="handleLogin"
           >
             ▶ ENTRAR

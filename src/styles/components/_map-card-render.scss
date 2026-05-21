@@ -87,6 +87,29 @@
     }
   }
 
+  &.is-low-power {
+    &:hover {
+      transform: none !important;
+      box-shadow: none !important;
+      border-color: Rgba(255, 255, 255, 0.2) !important;
+
+      &::before {
+        transform: none !important;
+        will-change: auto !important;
+        filter: var(--weather-only-filter, Brightness(1) contrast(1)) !important;
+      }
+
+      &::after {
+        opacity: 0.35 !important;
+        background: linear-gradient(to top, 
+          Rgba(0, 0, 0, 0.85) 0%, 
+          Rgba(0, 0, 0, 0.2) 50%, 
+          Rgba(0, 0, 0, 0.8) 100%
+        ) !important;
+      }
+    }
+  }
+
   &.locked, &.safari-locked {
     will-change: transform, filter, opacity;
   filter: none !important;
