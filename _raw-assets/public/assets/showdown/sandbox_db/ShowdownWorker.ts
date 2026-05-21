@@ -92,7 +92,16 @@ self.addEventListener('message', (event) => {
         // Obtener movimientos válidos
         const moves = enemyActive.moves;
         const randomMoveIndex = Math.floor(Math.random() * moves.length) + 1;
-        battle.choose('p2', `move ${randomMoveIndex}`);
+        
+        try {
+          const success = battle.choose('p2', `move ${randomMoveIndex}`);
+          if (!success) {
+            // Si falla la elección manual (ej. bloqueado en Dig o Fly)
+            battle.choose('p2', 'default');
+          }
+        } catch (e) {
+          battle.choose('p2', 'default');
+        }
       }
 
       // 4. Capturar solo los nuevos logs generados en este turno

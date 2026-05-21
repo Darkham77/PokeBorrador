@@ -11,12 +11,7 @@ const router = createRouter({
       name: 'login',
       component: () => import('@/views/LoginView.vue'),
     },
-    {
-      path: '/showdown-sandbox',
-      name: 'showdown-sandbox',
-      component: () => import('@/views/ShowdownSandboxView.vue'),
-      meta: { requiresAuth: false },
-    },
+
     {
       path: '/',
       component: () => import('@/views/GameView.vue'),

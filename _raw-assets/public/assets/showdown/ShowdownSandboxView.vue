@@ -384,8 +384,9 @@ const getMoveType = (moveId: string) => {
             v-for="(log, idx) in store.battleLog"
             :key="idx"
             class="console-line"
+            :class="`log-${log.type}`"
           >
-            <span class="line-arrow">&gt;</span> {{ log }}
+            <span class="line-arrow">&gt;</span> {{ log.text }}
           </div>
           <div
             v-if="store.isAnimating"
@@ -1074,6 +1075,20 @@ const getMoveType = (moveId: string) => {
   white-space: pre-wrap;
   border-bottom: 1px dashed Rgba(255, 255, 255, 0.03);
   padding-bottom: 6px;
+
+  &.log-start { color: #f5f5f7; font-weight: bold; }
+  &.log-move { color: #ffffff; }
+  &.log-damage { color: #ff5e5e; }
+  &.log-heal { color: #6ee7b7; }
+  &.log-faint { color: #ef4444; font-weight: bold; }
+  &.log-supereffective { color: #fbbf24; font-weight: bold; }
+  &.log-resisted { color: #9ca3af; }
+  &.log-crit { color: #f97316; font-weight: bold; text-shadow: 0 0 5px Rgba(249, 115, 22, 0.4); }
+  &.log-ability { color: #60a5fa; font-weight: bold; }
+  &.log-status { color: #c084fc; }
+  &.log-weather { color: #38bdf8; }
+  &.log-miss { color: #9ca3af; font-style: italic; }
+  &.log-info { color: #d1d5db; }
 
   .line-arrow {
     color: var(--blue, #0a84ff);

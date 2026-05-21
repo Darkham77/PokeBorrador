@@ -17,11 +17,14 @@ export interface SandboxPokemon {
 
 export const useShowdownSandboxStore = defineStore('showdownSandbox', {
   state: () => ({
+    // Setup UI
     isSetupMode: true,
     playerPokemonId: 'charizard',
-    playerMoves: ['flamethrower', 'slash', 'wingattack', 'earthquake'],
+    playerMoves: ['flamethrower', 'airslash', 'dragonpulse', 'roost'],
     enemyPokemonId: 'blastoise',
-    enemyMoves: ['surf', 'bite', 'icebeam', 'rapidspin'],
+    enemyMoves: ['surf', 'icebeam', 'darkpulse', 'shellsmash'],
+
+    // Battle State
     worker: null as Worker | null,
     playerPokemon: null as SandboxPokemon | null,
     enemyPokemon: null as SandboxPokemon | null,
@@ -29,11 +32,11 @@ export const useShowdownSandboxStore = defineStore('showdownSandbox', {
     playerMaxHP: 100,
     enemyHP: 100,
     enemyMaxHP: 100,
-    currentMessage: '¡Preparándote para el combate!',
-    battleLog: [] as string[],
+    battleLog: [] as ParsedEvent[],
+    currentMessage: '¡Esperando conexión con el motor de Showdown!',
     isAnimating: false,
     gameOver: false,
-    winner: '',
+    winner: null as string | null,
   }),
 
   actions: {
@@ -162,8 +165,8 @@ export const useShowdownSandboxStore = defineStore('showdownSandbox', {
      */
     async executeAnimationQueue(events: ParsedEvent[]) {
       for (const event of events) {
-        // Registrar en el log global histórico
-        this.battleLog.push(event.text);
+        // Registrar en el log global histórico el evento completo
+        this.battleLog.push(event);
         
         // Ejecutar animación y esperar su resolución antes del siguiente evento
         await this.animateEvent(event);
@@ -279,9 +282,15 @@ export const useShowdownSandboxStore = defineStore('showdownSandbox', {
             duration: 0.5,
             ease: 'power1.in',
           });
+        } else if (event.type === 'ability') {
+          tl.to({}, { duration: 0.1 })
+            .to({}, { duration: 1.0 }); // tiempo extra para leer habilidad
+        } else if (event.type === 'miss' || event.type === 'status' || event.type === 'weather' || event.type === 'info') {
+          // Sólo esperar un poco para que se lea el log
+          tl.to({}, { duration: 0.9 });
         } else {
-          // Delay de lectura determinista usando el timeline para textos estáticos (ej: "¡Es muy eficaz!")
-          tl.delay(0.8);
+          // Eventos de información general (crit, supereffective)
+          tl.to({}, { duration: 1.0 });
         }
       });
     },
