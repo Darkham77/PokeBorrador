@@ -339,135 +339,137 @@ export async function saveGame(state: GameState, user: AuthUser, options: SaveOp
   const { showNotif = true, notifyFn, db } = options;
   if (!user || _isSaving) return null;
 
-  const raw_data = serializeState(state);
-  const { data: save_data, hadDuplicates, issues } = validateAndSanitize(raw_data);
-
-  // VERSIONED SECURITY LOGIC
-  const currentVersion = options.userVersion || 1;
-  const isLegacy = currentVersion < 2;
-
-  // IF Duplicates found AND we are ONLINE AND NOT LEGACY -> Protocol ROLLBACK
-  // Legacy accounts (v1) get a "graceful cleanup" on their first save
-  if (hadDuplicates && db && db.mode === 'online' && !isLegacy) {
-    logger.error('SAVE', 'Duplicados críticos detectados en v2+. Iniciando ROLLBACK.', issues);
-    try {
-      const { data } = await db.from('game_saves').select('save_data').eq('user_id', user.id).single();
-      const serverSave = data as { save_data: GameState } | null;
-      if (serverSave?.save_data) {
-        return { rollback: true, serverData: serverSave.save_data };
-      }
-    } catch(e) {
-      logger.error('SAVE', `Error durante rollback: ${(e as Error).message}`);
-    }
-    return { rollback: true, error: 'Inconsistencia detectada. Recarga la página.' };
-  }
-
-  (save_data as { _last_updated?: number })._last_updated = Temporal.Now.instant().epochMilliseconds;
-
-  // 1. Local Persistence (Legacy LocalStorage + Modern OPFS GZIP)
-  try {
-    const json = JSON.stringify(save_data);
-    localStorage.setItem('pokemon_local_save_' + user.id, json);
-    
-    // Modern High-Fidelity Binary Storage (OPFS)
-    const compressed = await compress(json);
-    await writeOpfsFile(`save_${user.id}.gz`, compressed);
-  } catch (e) {
-    logger.warn('SAVE', `Error en persistencia local (LS/OPFS): ${(e as Error).message}`);
-  }
-
-  const isOnlineLocalUser = db && db.mode === 'online' && (user.id === 'local_user' || user.id.startsWith('local_'));
-
-  // 2. Database
-  if (!db || options.skipRemote || isOnlineLocalUser) {
-    if (options.skipRemote || isOnlineLocalUser) {
-      logger.info('SAVE', `Database save skipped (${isOnlineLocalUser ? 'Local User in Online Mode' : 'Session Locked'}). Local storage only.`);
-    } else {
-      logger.warn('SAVE', 'No DBRouter instance provided. Skipping DB save.');
-    }
-    
-    if (showNotif && notifyFn && (options.skipRemote || isOnlineLocalUser) && user.id !== 'local_user' && !user.id.startsWith('local_')) {
-      notifyFn('Progreso guardado localmente (Sesión Bloqueada)', '🟠');
-    }
-    
-    return { success: true, remote: false };
-  }
-
   _isSaving = true;
   try {
-    const { data: res, error } = await db.rpc('save_game_trusted', {
-      p_save_data: save_data,
-      p_expected_id: options.lastSaveId || null
-    });
+    const raw_data = serializeState(state);
+    const { data: save_data, hadDuplicates, issues } = validateAndSanitize(raw_data);
 
-    if (error) throw error;
-    
-    const resData = res as { success: boolean; error: string; last_save_id: string } | null;
-    if (resData && resData.success === false && resData.error === 'OUT_OF_SYNC') {
-      logger.warn('SAVE', 'Concurrencia detectada. El servidor tiene una versión más nueva.');
-      return { rollback: true, outOfSync: true };
-    }
+    // VERSIONED SECURITY LOGIC
+    const currentVersion = options.userVersion || 1;
+    const isLegacy = currentVersion < 2;
 
-    // Sincronizar campos principales en la tabla profiles para mantener consistencia
-    try {
-      const { data: existingProf } = await db.from('profiles').select('id').eq('id', user.id).maybeSingle();
-      const finalUsername = save_data.trainer || user.user_metadata?.username || 'Entrenador';
-      
-      if (existingProf) {
-        await db.from('profiles').update({
-          username: finalUsername,
-          trainer_level: save_data.trainerLevel,
-          player_class: save_data.playerClass,
-          faction: save_data.faction,
-          avatar_style: save_data.avatar_style,
-          nick_style: save_data.nick_style
-        }).eq('id', user.id);
-      } else {
-        await db.from('profiles').insert({
-          id: user.id,
-          username: finalUsername,
-          email: user.email || `${user.id}@local`,
-          trainer_level: save_data.trainerLevel || 1,
-          player_class: save_data.playerClass || 'entrenador',
-          faction: save_data.faction || null,
-          avatar_style: save_data.avatar_style || '',
-          nick_style: save_data.nick_style || '',
-          role: 'user'
-        });
-      }
-      logger.success('SAVE', 'Campos de perfil sincronizados en la base de datos.');
-    } catch (e) {
-      logger.warn('SAVE', `Error al sincronizar campos del perfil: ${(e as Error).message}`);
-    }
-
-    // IF successful migration save, we MUST update the user's version to v2
-    let migrated = false;
-    if (isLegacy) {
+    // IF Duplicates found AND we are ONLINE AND NOT LEGACY -> Protocol ROLLBACK
+    // Legacy accounts (v1) get a "graceful cleanup" on their first save
+    if (hadDuplicates && db && db.mode === 'online' && !isLegacy) {
+      logger.error('SAVE', 'Duplicados críticos detectados en v2+. Iniciando ROLLBACK.', issues);
       try {
-        await db.from('profiles').update({ db_version: 2 }).eq('id', user.id);
-        migrated = true;
-        logger.success('SAVE', 'Account migrated to db_version v2');
+        const { data } = await db.from('game_saves').select('save_data').eq('user_id', user.id).single();
+        const serverSave = data as { save_data: GameState } | null;
+        if (serverSave?.save_data) {
+          return { rollback: true, serverData: serverSave.save_data };
+        }
       } catch(e) {
-        logger.warn('SAVE', `Migration update failed: ${(e as Error).message}`);
+        logger.error('SAVE', `Error durante rollback: ${(e as Error).message}`);
       }
+      return { rollback: true, error: 'Inconsistencia detectada. Recarga la página.' };
     }
 
-    if (showNotif && notifyFn) {
-      if (migrated) notifyFn('¡Cuenta migrada a Seguridad v2!', '✨');
-      else if (hadDuplicates) notifyFn('Cache saneada (duplicados eliminados)', '🛡️');
-      else notifyFn('Juego Guardado', '💾');
+    (save_data as { _last_updated?: number })._last_updated = Temporal.Now.instant().epochMilliseconds;
+
+    // 1. Local Persistence (Legacy LocalStorage + Modern OPFS GZIP)
+    try {
+      const json = JSON.stringify(save_data);
+      localStorage.setItem('pokemon_local_save_' + user.id, json);
+      
+      // Modern High-Fidelity Binary Storage (OPFS)
+      const compressed = await compress(json);
+      await writeOpfsFile(`save_${user.id}.gz`, compressed);
+    } catch (e) {
+      logger.warn('SAVE', `Error en persistencia local (LS/OPFS): ${(e as Error).message}`);
     }
-    
-    return { 
-      success: true, 
-      sanitized: hadDuplicates, 
-      migrated,
-      lastSaveId: resData?.last_save_id 
-    };
-  } catch (e: unknown) {
-    const errMsg = e instanceof Error ? e.message : 'Unknown error';
-    logger.warn('SAVE', `Error en DB Persistente: ${errMsg}`);
-    return { success: false, error: errMsg };
+
+    const isOnlineLocalUser = db && db.mode === 'online' && (user.id === 'local_user' || user.id.startsWith('local_'));
+
+    // 2. Database
+    if (!db || options.skipRemote || isOnlineLocalUser) {
+      if (options.skipRemote || isOnlineLocalUser) {
+        logger.info('SAVE', `Database save skipped (${isOnlineLocalUser ? 'Local User in Online Mode' : 'Session Locked'}). Local storage only.`);
+      } else {
+        logger.warn('SAVE', 'No DBRouter instance provided. Skipping DB save.');
+      }
+      
+      if (showNotif && notifyFn && (options.skipRemote || isOnlineLocalUser) && user.id !== 'local_user' && !user.id.startsWith('local_')) {
+        notifyFn('Progreso guardado localmente (Sesión Bloqueada)', '🟠');
+      }
+      
+      return { success: true, remote: false };
+    }
+
+    try {
+      const { data: res, error } = await db.rpc('save_game_trusted', {
+        p_save_data: save_data,
+        p_expected_id: options.lastSaveId || null
+      });
+
+      if (error) throw error;
+      
+      const resData = res as { success: boolean; error: string; last_save_id: string } | null;
+      if (resData && resData.success === false && resData.error === 'OUT_OF_SYNC') {
+        logger.warn('SAVE', 'Concurrencia detectada. El servidor tiene una versión más nueva.');
+        return { rollback: true, outOfSync: true };
+      }
+
+      // Sincronizar campos principales en la tabla profiles para mantener consistencia
+      try {
+        const { data: existingProf } = await db.from('profiles').select('id').eq('id', user.id).maybeSingle();
+        const finalUsername = save_data.trainer || user.user_metadata?.username || 'Entrenador';
+        
+        if (existingProf) {
+          await db.from('profiles').update({
+            username: finalUsername,
+            trainer_level: save_data.trainerLevel,
+            player_class: save_data.playerClass,
+            faction: save_data.faction,
+            avatar_style: save_data.avatar_style,
+            nick_style: save_data.nick_style
+          }).eq('id', user.id);
+        } else {
+          await db.from('profiles').insert({
+            id: user.id,
+            username: finalUsername,
+            email: user.email || `${user.id}@local`,
+            trainer_level: save_data.trainerLevel || 1,
+            player_class: save_data.playerClass || 'entrenador',
+            faction: save_data.faction || null,
+            avatar_style: save_data.avatar_style || '',
+            nick_style: save_data.nick_style || '',
+            role: 'user'
+          });
+        }
+        logger.success('SAVE', 'Campos de perfil sincronizados en la base de datos.');
+      } catch (e) {
+        logger.warn('SAVE', `Error al sincronizar campos del perfil: ${(e as Error).message}`);
+      }
+
+      // IF successful migration save, we MUST update the user's version to v2
+      let migrated = false;
+      if (isLegacy) {
+        try {
+          await db.from('profiles').update({ db_version: 2 }).eq('id', user.id);
+          migrated = true;
+          logger.success('SAVE', 'Account migrated to db_version v2');
+        } catch(e) {
+          logger.warn('SAVE', `Migration update failed: ${(e as Error).message}`);
+        }
+      }
+
+      if (showNotif && notifyFn) {
+        if (migrated) notifyFn('¡Cuenta migrada a Seguridad v2!', '✨');
+        else if (hadDuplicates) notifyFn('Cache saneada (duplicados eliminados)', '🛡️');
+        else notifyFn('Juego Guardado', '💾');
+      }
+      
+      return { 
+        success: true, 
+        sanitized: hadDuplicates, 
+        migrated,
+        lastSaveId: resData?.last_save_id 
+      };
+    } catch (e: unknown) {
+      const errMsg = e instanceof Error ? e.message : 'Unknown error';
+      logger.warn('SAVE', `Error en DB Persistente: ${errMsg}`);
+      return { success: false, error: errMsg };
+    }
   } finally {
     _isSaving = false;
   }
