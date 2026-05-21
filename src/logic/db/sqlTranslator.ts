@@ -117,7 +117,11 @@ export function translatePostgresToSqlite(sql: string): string {
     return '';
   }
 
-  if (upperSql.startsWith('ALTER TABLE') && (upperSql.includes('ENABLE ROW LEVEL SECURITY') || upperSql.includes('FORCE ROW LEVEL SECURITY'))) {
+  if (upperSql.startsWith('ALTER TABLE') && (
+    upperSql.includes('ENABLE ROW LEVEL SECURITY') ||
+    upperSql.includes('FORCE ROW LEVEL SECURITY') ||
+    upperSql.includes('REPLICA IDENTITY')
+  )) {
     return '';
   }
 
