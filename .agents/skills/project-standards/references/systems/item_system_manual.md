@@ -31,6 +31,7 @@ Defines what the item does when used on a Pokémon or globally.
 - **Consumption**: The item is automatically consumed upon success.
 - **Battle Mode**: In combat, the selection modal MUST use the `allowedIds` filter to ONLY show valid targets (e.g., only fainted Pokémon for Revives).
 - **Failure Handling**: If an item application fails, do NOT close the inventory. Notify the cause and let the user retry.
+- **Dynamic Tab Persistence**: The active tab state of the inventory/backpack modal must be dynamically persistent via `localStorage` so that the user's last tab selection is remembered across sessions. The system must not force a default tab choice globally, except when the inventory is opened with a pre-selected target Pokémon context (e.g., when choosing an item to apply directly to a Pokémon), in which case the `'utilizables'` tab must be dynamically activated to streamline the item selection process.
 
 ### 2.1 Battle Quick Bag Protocol
 
