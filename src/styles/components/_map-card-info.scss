@@ -125,5 +125,9 @@
     border-color: Rgba(79, 172, 254, 0.4);
     animation: buoyFloat 4s infinite ease-in-out;
     animation-delay: calc(var(--card-seed, 0) * -4s);
+
+    &.is-low-power {
+      animation: none !important;
+    }
   }
 }

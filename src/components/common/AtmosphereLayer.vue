@@ -25,7 +25,7 @@ const flashRef = ref<HTMLElement | null>(null) // Ref para el flash overlay
 
 // 2. Shake/Wobble Animation Class
 const animClass = computed(() => {
-  if (props.isLocked || props.isPerformanceMode) return ''
+  if (props.isLocked || props.isPerformanceMode || props.isLowPower) return ''
   const anims: Record<string, string> = {
     clear: 'anim-glow',
     sun: 'anim-glow',

@@ -132,7 +132,7 @@ const weatherModifiersDescription = computed(() => {
 const atmosphere = ref<{ animClass?: string } | null>(null)
 
 const factionAnimClass = computed(() => {
-  if (!props.dominance?.winner) return ''
+  if (!props.dominance?.winner || uiStore.isLowPowerActive) return ''
   return props.dominance.winner === 'union' ? 'anim-shine' : 'anim-thump'
 })
 
@@ -333,53 +333,40 @@ const initAuraAnimations = () => {
 
         const duration = AURA_CYCLE / 2
 
-        if (rareAura && atmosAura) {
-          // Both exist: strict contra-phase immediately
-          gsap.set(rareAura, { scale: 0.1, opacity: 0 })
-          gsap.set(atmosAura, { scale: 3.375, opacity: 0.9 })
+        if (uiStore.isLowPowerActive) {
+          // Low Power Mode: Static scale/rotation, only animate opacity
+          if (rareAura) gsap.set(rareAura, { scale: 2.2, rotation: 0 })
+          if (atmosAura) gsap.set(atmosAura, { scale: 2.2, rotation: 0 })
 
-          // Rotate rareAura at start when at minimum size
-          auraTl.call(() => {
-            gsap.set(rareAura, { rotation: Math.random() * 360 })
-          }, [], 0)
+          if (rareAura && atmosAura) {
+            // Contra-phase opacity animations
+            gsap.set(rareAura, { opacity: 0 })
+            gsap.set(atmosAura, { opacity: 0.9 })
 
-          auraTl.to(rareAura, {
-            scale: 3.375,
-            opacity: 1,
-            duration: duration,
-            ease: 'sine.inOut'
-          }, 0)
-
-          auraTl.to(atmosAura, {
-            scale: 0.1,
-            opacity: 0,
-            duration: duration,
-            ease: 'sine.inOut'
-          }, 0)
-
-          // Rotate atmosAura at middle when at minimum size
-          auraTl.call(() => {
-            gsap.set(atmosAura, { rotation: Math.random() * 360 })
-          }, [], duration)
-
-          auraTl.to(rareAura, {
-            scale: 0.1,
-            opacity: 0,
-            duration: duration,
-            ease: 'sine.inOut'
-          }, duration)
-
-          auraTl.to(atmosAura, {
-            scale: 3.375,
-            opacity: 0.9,
-            duration: duration,
-            ease: 'sine.inOut'
-          }, duration)
+            auraTl.to(rareAura, { opacity: 1, duration: duration, ease: 'sine.inOut' }, 0)
+            auraTl.to(atmosAura, { opacity: 0, duration: duration, ease: 'sine.inOut' }, 0)
+            auraTl.to(rareAura, { opacity: 0, duration: duration, ease: 'sine.inOut' }, duration)
+            auraTl.to(atmosAura, { opacity: 0.9, duration: duration, ease: 'sine.inOut' }, duration)
+          } else {
+            if (rareAura) {
+              gsap.set(rareAura, { opacity: 0 })
+              auraTl.to(rareAura, { opacity: 1, duration: duration, ease: 'sine.inOut' }, 0)
+              auraTl.to(rareAura, { opacity: 0, duration: duration, ease: 'sine.inOut' }, duration)
+            }
+            if (atmosAura) {
+              gsap.set(atmosAura, { opacity: 0 })
+              auraTl.to(atmosAura, { opacity: 0.9, duration: duration, ease: 'sine.inOut' }, 0)
+              auraTl.to(atmosAura, { opacity: 0, duration: duration, ease: 'sine.inOut' }, duration)
+            }
+          }
         } else {
-          // Standard single aura pulse
-          if (rareAura) {
+          // Normal Mode: Scale, rotate, and opacity animations
+          if (rareAura && atmosAura) {
+            // Both exist: strict contra-phase immediately
             gsap.set(rareAura, { scale: 0.1, opacity: 0 })
+            gsap.set(atmosAura, { scale: 3.375, opacity: 0.9 })
 
+            // Rotate rareAura at start when at minimum size
             auraTl.call(() => {
               gsap.set(rareAura, { rotation: Math.random() * 360 })
             }, [], 0)
@@ -391,33 +378,75 @@ const initAuraAnimations = () => {
               ease: 'sine.inOut'
             }, 0)
 
+            auraTl.to(atmosAura, {
+              scale: 0.1,
+              opacity: 0,
+              duration: duration,
+              ease: 'sine.inOut'
+            }, 0)
+
+            // Rotate atmosAura at middle when at minimum size
+            auraTl.call(() => {
+              gsap.set(atmosAura, { rotation: Math.random() * 360 })
+            }, [], duration)
+
             auraTl.to(rareAura, {
               scale: 0.1,
               opacity: 0,
               duration: duration,
               ease: 'sine.inOut'
             }, duration)
-          }
-          if (atmosAura) {
-            gsap.set(atmosAura, { scale: 0.1, opacity: 0 })
-
-            auraTl.call(() => {
-              gsap.set(atmosAura, { rotation: Math.random() * 360 })
-            }, [], 0)
 
             auraTl.to(atmosAura, {
               scale: 3.375,
               opacity: 0.9,
               duration: duration,
               ease: 'sine.inOut'
-            }, 0)
-
-            auraTl.to(atmosAura, {
-              scale: 0.1,
-              opacity: 0,
-              duration: duration,
-              ease: 'sine.inOut'
             }, duration)
+          } else {
+            // Standard single aura pulse
+            if (rareAura) {
+              gsap.set(rareAura, { scale: 0.1, opacity: 0 })
+
+              auraTl.call(() => {
+                gsap.set(rareAura, { rotation: Math.random() * 360 })
+              }, [], 0)
+
+              auraTl.to(rareAura, {
+                scale: 3.375,
+                opacity: 1,
+                duration: duration,
+                ease: 'sine.inOut'
+              }, 0)
+
+              auraTl.to(rareAura, {
+                scale: 0.1,
+                opacity: 0,
+                duration: duration,
+                ease: 'sine.inOut'
+              }, duration)
+            }
+            if (atmosAura) {
+              gsap.set(atmosAura, { scale: 0.1, opacity: 0 })
+
+              auraTl.call(() => {
+                gsap.set(atmosAura, { rotation: Math.random() * 360 })
+              }, [], 0)
+
+              auraTl.to(atmosAura, {
+                scale: 3.375,
+                opacity: 0.9,
+                duration: duration,
+                ease: 'sine.inOut'
+              }, 0)
+
+              auraTl.to(atmosAura, {
+                scale: 0.1,
+                opacity: 0,
+                duration: duration,
+                ease: 'sine.inOut'
+              }, duration)
+            }
           }
         }
       }
@@ -455,6 +484,9 @@ onMounted(() => {
     })
     resizeObserver.observe(cardRef.value)
 
+    const isMobileDevice = uiStore.windowWidth < 768
+    const marginValue = isMobileDevice ? '180px' : '50px'
+
     intersectionObserver = new IntersectionObserver((entries) => {
       const entry = entries[0]
       if (entry) {
@@ -471,7 +503,7 @@ onMounted(() => {
         }
       }
     }, { 
-      rootMargin: '50px', 
+      rootMargin: marginValue, 
       threshold: 0.01 
     })
     intersectionObserver.observe(cardRef.value)
@@ -647,7 +679,9 @@ watch(spawnGridRef, (newRef) => {
       description="¡Esta zona tiene agua! Puedes pescar Pokémon aquí."
       position="top"
     >
-      <div class="interactive-pill fishing-pill map-pill">
+      <div 
+        :class="['interactive-pill fishing-pill map-pill', { 'is-low-power': uiStore.isLowPowerActive }]"
+      >
         <span class="pill-icon">🎣</span>
       </div>
     </PVTooltip>
