@@ -2,7 +2,7 @@
 // src/styles/components/_map-card-render.scss
 @use 'sass:string';
 @use '../core/tools' as *;
-@use './map-card-animations';
+
 @use './map-card-info';
 
 
@@ -307,4 +307,4 @@
   height: 32px;
   filter: Drop-Shadow(0 2px 4px Rgba(0,0,0,0.8));
 }
-.pulse { animation: pulse 2s infinite; }
+

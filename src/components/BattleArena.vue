@@ -1,6 +1,7 @@
 <script setup lang="ts">
 
-import { ref, computed, watch, defineAsyncComponent, type Component } from 'vue'
+import { ref, computed, watch, defineAsyncComponent, type Component, onMounted, onUnmounted, nextTick } from 'vue'
+import { gsap } from 'gsap'
 import { useBattleStore } from '@/stores/battle'
 import { useUIStore } from '@/stores/ui'
 import { useWindowListener } from '@/composables/useWindowListener'
@@ -60,24 +61,94 @@ const weatherName = computed(() => {
   return WEATHER_UI_METADATA[mech]?.label || 'Normal'
 })
 
-const weatherAnimClass = computed(() => {
-  if (uiStore.isPerformanceMode) return ''
-  const anims: Record<string, string> = {
-    clear: 'anim-glow',
-    sun: 'anim-glow',
-    heatwave: 'anim-glow',
-    cold: 'anim-glow',
-    coldwave: 'anim-glow',
-    sandstorm: 'anim-glow',
-    mist: 'anim-drift',
-    fog: 'anim-drift',
-    wind: 'anim-drift',
-    strong_winds: 'anim-drift',
-    rain: 'anim-shake',
-    storm: 'anim-shake'
+const envPillRef = ref<HTMLElement | null>(null)
+let pillContext: gsap.Context | null = null
+
+const initBattlePillAnimation = () => {
+  if (pillContext) {
+    pillContext.revert()
+    pillContext = null
   }
-  return anims[computedWeather.value] || ''
+
+  if (!battleStore.isBattleActive || uiStore.isPerformanceMode || uiStore.isLowPowerActive) {
+    return
+  }
+
+  pillContext = gsap.context(() => {
+    const el = envPillRef.value
+    if (el) {
+      const weather = computedWeather.value
+      let type: 'glow' | 'drift' | 'shake' | '' = ''
+      if (['clear', 'sun', 'heatwave', 'cold', 'coldwave', 'sandstorm', 'dust_storm', 'intense_sun'].includes(weather)) {
+        type = 'glow'
+      } else if (['mist', 'fog', 'wind', 'strong_winds'].includes(weather)) {
+        type = 'drift'
+      } else if (['rain', 'heavy_rain', 'storm', 'thunderstorm', 'hail'].includes(weather)) {
+        type = 'shake'
+      }
+
+      const seed = 0.5
+
+      if (type === 'glow') {
+        const tl = gsap.fromTo(el,
+          { filter: 'brightness(1.0)', boxShadow: '0 4px 15px rgba(0, 0, 0, 0.4)' },
+          {
+            boxShadow: '0 4px 15px rgba(0, 0, 0, 0.4), 0px 0px 8px rgba(255, 204, 0, 0.6)',
+            filter: 'brightness(1.2)',
+            duration: 1.5,
+            yoyo: true,
+            repeat: -1,
+            ease: 'sine.inOut'
+          }
+        )
+        tl.progress(seed)
+      } else if (type === 'drift') {
+        const tl = gsap.to(el, {
+          x: 3,
+          duration: 2.0,
+          yoyo: true,
+          repeat: -1,
+          ease: 'power1.inOut'
+        })
+        tl.progress(seed)
+      } else if (type === 'shake') {
+        const tl = gsap.timeline({ repeat: -1 })
+        tl.to(el, { rotation: 2, duration: 0.125, ease: 'power1.inOut' })
+          .to(el, { rotation: -2, duration: 0.25, ease: 'power1.inOut' })
+          .to(el, { rotation: 0, duration: 0.125, ease: 'power1.inOut' })
+        tl.progress(seed)
+      }
+    }
+  }, envPillRef.value || undefined)
+}
+
+onMounted(() => {
+  nextTick(() => {
+    initBattlePillAnimation()
+  })
 })
+
+onUnmounted(() => {
+  if (pillContext) {
+    pillContext.revert()
+    pillContext = null
+  }
+})
+
+watch(
+  [
+    () => battleStore.isBattleActive,
+    computedWeather,
+    () => uiStore.isPerformanceMode,
+    () => uiStore.isLowPowerActive
+  ],
+  () => {
+    nextTick(() => {
+      initBattlePillAnimation()
+    })
+  },
+  { flush: 'post' }
+)
 
 // Body Class Management
 watch(() => battleStore.isBattleActive, (active) => {
@@ -113,9 +184,8 @@ const handleClose = () => {
   >
     <div class="battle-header-actions">
       <div 
+        ref="envPillRef"
         class="environment-pill"
-        :class="weatherAnimClass"
-        :style="{ '--card-seed': 0.5 }"
       >
         <PVTooltip :title="`Hora: ${cycleName}`">
           <span class="env-icon hover-bounce">{{ cycleEmoji }}</span>

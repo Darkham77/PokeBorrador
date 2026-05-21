@@ -1,6 +1,6 @@
 <script setup lang="ts">
 // [PureVue-Ignore-Length]
-import { computed, ref, onUnmounted, onMounted, watch } from 'vue'
+import { computed, ref, onUnmounted, onMounted, watch, nextTick, type ComponentPublicInstance } from 'vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import AtmosphereLayer from '@/components/common/AtmosphereLayer.vue'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
@@ -129,12 +129,134 @@ const weatherModifiersDescription = computed(() => {
   return lines.length ? `\n\n${lines.join('\n')}` : ''
 })
 
-const atmosphere = ref<{ animClass?: string } | null>(null)
-
-const factionAnimClass = computed(() => {
-  if (!props.dominance?.winner || uiStore.isLowPowerActive) return ''
-  return props.dominance.winner === 'union' ? 'anim-shine' : 'anim-thump'
+const cardSeed = computed(() => {
+  const sum = props.map.name.split('').reduce((acc, char, i) => {
+    return acc + (char.charCodeAt(0) * (i + 1))
+  }, 0)
+  return (sum % 100) / 100
 })
+
+const locationTagRef = ref<ComponentPublicInstance | null>(null)
+const factionPillRef = ref<ComponentPublicInstance | null>(null)
+const fishingPillRef = ref<HTMLElement | null>(null)
+const crownRef = ref<ComponentPublicInstance | null>(null)
+
+let pillContext: gsap.Context | null = null
+
+const initPillAnimations = () => {
+  if (pillContext) {
+    pillContext.revert()
+    pillContext = null
+  }
+
+  if (!isVisible.value || isPerformanceMode.value || uiStore.isLowPowerActive) {
+    return
+  }
+
+  pillContext = gsap.context(() => {
+    const seed = cardSeed.value
+
+    // 1. Weather Tag / Location Tag
+    const weatherEl = locationTagRef.value?.$el as HTMLElement | undefined
+    if (weatherEl) {
+      const weather = computedWeather.value
+      let type: 'glow' | 'drift' | 'shake' | '' = ''
+      if (['clear', 'sun', 'heatwave', 'cold', 'coldwave', 'sandstorm', 'dust_storm', 'intense_sun'].includes(weather)) {
+        type = 'glow'
+      } else if (['mist', 'fog', 'wind', 'strong_winds'].includes(weather)) {
+        type = 'drift'
+      } else if (['rain', 'heavy_rain', 'storm', 'thunderstorm', 'hail'].includes(weather)) {
+        type = 'shake'
+      }
+
+      if (type === 'glow') {
+        const tl = gsap.fromTo(weatherEl,
+          { filter: 'brightness(1.0)', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.4)' },
+          {
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.4), 0px 0px 8px rgba(255, 204, 0, 0.6)',
+            filter: 'brightness(1.2)',
+            duration: 1.5,
+            yoyo: true,
+            repeat: -1,
+            ease: 'sine.inOut'
+          }
+        )
+        tl.progress(seed)
+      } else if (type === 'drift') {
+        const tl = gsap.to(weatherEl, {
+          x: 3,
+          duration: 2.0,
+          yoyo: true,
+          repeat: -1,
+          ease: 'power1.inOut'
+        })
+        tl.progress(seed)
+      } else if (type === 'shake') {
+        const tl = gsap.timeline({ repeat: -1 })
+        tl.to(weatherEl, { rotation: 2, duration: 0.125, ease: 'power1.inOut' })
+          .to(weatherEl, { rotation: -2, duration: 0.25, ease: 'power1.inOut' })
+          .to(weatherEl, { rotation: 0, duration: 0.125, ease: 'power1.inOut' })
+        tl.progress(seed)
+      }
+    }
+
+    // 2. Faction Pill
+    const factionEl = factionPillRef.value?.$el as HTMLElement | undefined
+    if (factionEl) {
+      const winner = props.dominance?.winner
+      if (winner === 'union') {
+        const tl = gsap.fromTo(factionEl,
+          { rotation: 0, scale: 1, filter: 'brightness(1.0)' },
+          {
+            rotation: 10,
+            scale: 1.05,
+            filter: 'brightness(1.3)',
+            duration: 2.5,
+            yoyo: true,
+            repeat: -1,
+            ease: 'sine.inOut'
+          }
+        )
+        tl.progress(seed)
+      } else if (winner === 'poder') {
+        const tl = gsap.timeline({ repeat: -1 })
+        tl.fromTo(factionEl,
+          { scale: 1.0 },
+          { scale: 1.15, duration: 0.3, ease: 'power1.inOut' }
+        )
+        .to(factionEl, { scale: 1.0, duration: 0.3, ease: 'power1.inOut' })
+        .to(factionEl, { scale: 1.0, duration: 1.4 })
+        tl.progress(seed)
+      }
+    }
+
+    // 3. Fishing Pill
+    if (fishingPillRef.value) {
+      const tl = gsap.timeline({ repeat: -1 })
+      tl.to(fishingPillRef.value, { y: -8, rotation: 5, duration: 1.32, ease: 'sine.inOut' })
+        .to(fishingPillRef.value, { y: 2, rotation: -3, duration: 1.32, ease: 'sine.inOut' })
+        .to(fishingPillRef.value, { y: 0, rotation: 0, duration: 1.36, ease: 'sine.inOut' })
+      tl.progress(seed)
+    }
+
+    // 4. Winner Crown - Desactivada en bajo consumo por rendimiento
+    const crownEl = crownRef.value?.$el as HTMLElement | undefined
+    if (crownEl && !uiStore.isLowPowerActive) {
+      const tl = gsap.fromTo(crownEl,
+        { scale: 1, filter: 'brightness(1.0)' },
+        {
+          scale: 1.05,
+          filter: 'brightness(1.3)',
+          duration: 1.5,
+          repeat: -1,
+          yoyo: true,
+          ease: 'sine.inOut'
+        }
+      )
+      tl.progress(seed)
+    }
+  }, cardRef.value || undefined)
+}
 
 const getPokemonSprite = (id: string) => getAssetUrl(ASSET_TYPES.POKEMON, id)
 
@@ -451,24 +573,6 @@ const initAuraAnimations = () => {
         }
       }
     })
-
-    // 3. Winner Crown - Disabled in low power mode for performance
-    if (!uiStore.isLowPowerActive) {
-      const crowns = self.selector!('.dom-badge.winning') as HTMLElement[]
-      crowns.forEach(crown => {
-        gsap.fromTo(crown,
-          { scale: 1, filter: 'Brightness(1)' },
-          {
-            scale: 1.05,
-            filter: 'Brightness(1.3)',
-            duration: 1.5,
-            repeat: -1,
-            yoyo: true,
-            ease: 'sine.inOut'
-          }
-        )
-      })
-    }
   }, spawnGridRef.value)
 }
 
@@ -507,6 +611,10 @@ onMounted(() => {
       threshold: 0.01 
     })
     intersectionObserver.observe(cardRef.value)
+
+    nextTick(() => {
+      initPillAnimations()
+    })
   }
 })
 
@@ -514,6 +622,7 @@ onUnmounted(() => {
   if (resizeObserver) resizeObserver.disconnect()
   if (intersectionObserver) intersectionObserver.disconnect()
   if (auraContext) auraContext.revert()
+  if (pillContext) pillContext.revert()
 })
 
 
@@ -561,11 +670,23 @@ watch(() => JSON.stringify(spawnGrid.value.slots), (newVal, oldVal) => {
   }
 })
 
-watch(() => uiStore.isLowPowerActive, () => {
-  if (isVisible.value) {
-    initAuraAnimations()
-  }
-})
+watch(
+  [
+    isVisible,
+    isPerformanceMode,
+    () => uiStore.isLowPowerActive,
+    computedWeather,
+    () => props.dominance?.winner,
+    () => props.map.fishing,
+    isPlayerWinner
+  ],
+  () => {
+    nextTick(() => {
+      initPillAnimations()
+    })
+  },
+  { flush: 'post' }
+)
 
 watch(spawnGridRef, (newRef) => {
   if (newRef && isVisible.value) {
@@ -605,7 +726,6 @@ watch(spawnGridRef, (newRef) => {
     }"
   >
     <AtmosphereLayer
-      ref="atmosphere"
       :weather="computedWeather"
       :cycle="cycle"
       :season="mapStore.currentSeason.id"
@@ -651,7 +771,8 @@ watch(spawnGridRef, (newRef) => {
 
     <!-- 2. Cycle Pill (Top Right) -->
     <PVTooltip
-      :class="['location-tag', (isLocked || isSafariLocked) ? 'tag-locked' : 'tag-wild', atmosphere?.animClass]"
+      ref="locationTagRef"
+      :class="['location-tag', (isLocked || isSafariLocked) ? 'tag-locked' : 'tag-wild']"
       :title="(isLocked || isSafariLocked) ? 'ZONA BLOQUEADA' : 'ESTADO AMBIENTAL'"
       :description="(isLocked || isSafariLocked) ? lockDescription : `Ciclo: ${cycleName}\nEstación: ${seasonName}\nClima: ${weatherName}${weatherModifiersDescription}`"
       position="top"
@@ -664,12 +785,13 @@ watch(spawnGridRef, (newRef) => {
     <!-- 3. Faction Status (Middle Left, below Guardian) -->
     <PVTooltip
       v-if="dominance?.winner && dominance?.winner !== 'none' && !isPerformanceMode && !isLocked && !isSafariLocked && isVisible"
+      ref="factionPillRef"
       class="faction-status-pill"
       title="DOMINIO FACCIÓN"
       :description="`Controlado por ${dominance.winner === 'union' ? 'Unión' : 'Poder'}`"
       position="top"
     >
-      <div :class="['pill-content', factionAnimClass]">
+      <div class="pill-content">
         <span class="faction-emoji">
           {{ dominance.winner === 'union' ? '⭐' : '✊' }}
         </span>
@@ -685,6 +807,7 @@ watch(spawnGridRef, (newRef) => {
       position="top"
     >
       <div 
+        ref="fishingPillRef"
         :class="['interactive-pill fishing-pill map-pill', { 'is-low-power': uiStore.isLowPowerActive }]"
       >
         <span class="pill-icon">🎣</span>
@@ -766,6 +889,7 @@ watch(spawnGridRef, (newRef) => {
     <!-- 6. Winner Crown (Bottom Right) -->
     <PVTooltip
       v-if="isPlayerWinner && !isPerformanceMode && !isLocked && !isSafariLocked"
+      ref="crownRef"
       class="dom-badge winning"
       title="DOMINADO"
       description="¡Bonus de captura activo por dominio de facción!"

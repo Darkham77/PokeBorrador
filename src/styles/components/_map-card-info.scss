@@ -58,7 +58,7 @@
   box-shadow: 0 4px 12px Rgba(0, 0, 0, 0.4);
   z-index: var(--z-map-ui) !important; /* Standardized Layer (+10 vs Spawns) */
   pointer-events: auto;
-  transition: all 0.2s ease;
+  transition: background 0.2s ease, border-color 0.2s ease;
 
   &:hover {
     transform: Scale(1.05);
@@ -120,11 +120,5 @@
   &.fishing-pill {
     color: Rgba(79, 172, 254, 1);
     border-color: Rgba(79, 172, 254, 0.4);
-    animation: buoyFloat 4s infinite ease-in-out;
-    animation-delay: calc(var(--card-seed, 0) * -4s);
-
-    &.is-low-power {
-      animation: none !important;
-    }
   }
 }

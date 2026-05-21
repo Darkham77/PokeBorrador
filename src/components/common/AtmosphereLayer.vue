@@ -24,28 +24,7 @@ const animSeed = computed(() => props.animSeed)
 const direction = computed(() => (animSeed.value > 0.5 ? 1 : -1))
 const flashRef = ref<HTMLElement | null>(null) // Ref para el flash overlay
 
-// 2. Shake/Wobble Animation Class
-const animClass = computed(() => {
-  if (props.isLocked || props.isPerformanceMode || props.isLowPower) return ''
-  const anims: Record<string, string> = {
-    clear: 'anim-glow',
-    sun: 'anim-glow',
-    heatwave: 'anim-glow',
-    cold: 'anim-glow',
-    coldwave: 'anim-glow',
-    sandstorm: 'anim-drift',
-    dust_storm: 'anim-drift',
-    mist: 'anim-drift',
-    fog: 'anim-drift',
-    wind: 'anim-drift',
-    strong_winds: 'anim-drift',
-    rain: 'anim-shake',
-    heavy_rain: 'anim-shake',
-    storm: 'anim-shake',
-    thunderstorm: 'anim-shake'
-  }
-  return anims[props.weather] || ''
-})
+// Legacy Shake/Wobble Animation Class removed. Pill animations migrated to GSAP.
 
 // 3. GSAP Orchestrator for Weather Layers
 const dustLayer1Ref = ref<HTMLElement | null>(null)
@@ -458,9 +437,7 @@ onUnmounted(() => {
   cleanUpAtmosphere()
 })
 
-defineExpose({
-  animClass
-})
+defineExpose({})
 
 // 4. GSAP Leaf Animation
 const leafTypes = ['wind', 'strong_winds', 'storm']
@@ -664,7 +641,6 @@ const weatherOverlayStyles = computed(() => {
 
 <style scoped lang="scss">
 @use "@/styles/components/map-card-weather" as *;
-@use "@/styles/components/map-card-animations" as *;
 
 .dust-only {
   opacity: 0.6 !important; // Aumentado para visibilidad
