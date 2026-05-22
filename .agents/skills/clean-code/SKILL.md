@@ -99,6 +99,7 @@ priority: CRITICAL
 | God functions | Split by responsibility |
 | Empty rulesets | Remove blocks containing only comments |
 | Generating reports or logs in arbitrary directories | Write temporary files/reports exclusively to the `scratch/` folder and clean them up when done |
+| Misformatted Markdown tables | Ensure Markdown tables have a preceding blank line before the table header to prevent parsing and rendering bugs |
 
 ---
 
