@@ -156,6 +156,7 @@
   cursor: pointer;
   user-select: none;
   will-change: transform, filter;
+  filter: Brightness(1);
 
 
 
@@ -163,8 +164,32 @@
     padding: 8px 12px; border-radius: 10px; font-size: 10px;
     text-align: center;
     @include pixelated;
-    &.active { background: Rgba($pokecenter-pink, 0.08); border: 1px solid Rgba($pokecenter-pink, 0.2); color: $white; }
+    &.active { 
+      background: Rgba($pokecenter-pink, 0.08); 
+      border: 1px solid Rgba($pokecenter-pink, 0.2); 
+      color: $white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
     &.none { background: Rgba(0,0,0,0.2); color: Rgba(148, 163, 184, 0.6); font-style: italic; border: 1px dashed Rgba(255,255,255,0.08); }
+  }
+
+  .item-mini-sprite {
+    width: 14px;
+    height: 14px;
+    object-fit: contain;
+    @include pixelated;
+    transform: Scale(4.5);
+    transform-origin: center;
+    margin-right: 18px; /* Offset to prevent overlapping text while exceeding visual bounds */
+  }
+
+  .item-emoji-fallback {
+    font-size: 10px;
+    line-height: 1;
   }
 }
 

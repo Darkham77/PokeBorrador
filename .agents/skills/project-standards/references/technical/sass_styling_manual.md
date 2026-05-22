@@ -347,6 +347,8 @@ To maintain "Zero-Warning" compliance, use the centralized GPU mixins defined in
 - You MUST import core tools: `@use "@/styles/core/tools" as *;`.
 - **GSAP Sync Mandate**: When animating properties like `Filter` or `Transform` via GSAP (JavaScript), you MUST use the **Capitalized** versions of the values (e.g., `filter: "Brightness(1.5)"`).
   - **Why**: The Vite SASS plugin capitalizes these values in the CSS. If GSAP uses lowercase, it will fail to read the current state of the property from the DOM, causing "visual jumps" or broken tweens.
+- **Initial Filter State for GSAP Animations**: When animating CSS filters (like brightness) on an element using GSAP, you MUST declare an explicit initial filter value in the CSS sheet (e.g., `filter: brightness(1);`) and declare `will-change: filter;` on that class. Without a defined baseline, Webkit/Blink browsers will render the element as completely transparent for one frame at the start of the animation, causing a noticeable flicker.
+- **Visual Scaling of Pixel Art Sprites**: To scale pixel art sprites (e.g., in badges or lists) without expanding their physical bounding boxes or shifting neighboring layout nodes, apply `transform: scale(N)` instead of increasing `width`/`height`. Use `margin-right: X` (layout offset) and add `white-space: nowrap;` to the text content within the flex container to accommodate the visual growth without breaking long labels into multiple lines.
 
 ---
 

@@ -8,6 +8,7 @@ import { NATURE_DATA } from '@/data/natures'
 import { useGameStore } from '@/stores/game'
 import { useInventoryStore } from '@/stores/inventory'
 import { useUIStore } from '@/stores/ui'
+import { getItemByName } from '@/data/items'
 
 interface Props {
   slotId: string
@@ -115,7 +116,7 @@ const handleItemMouseEnter = () => {
   if (itemTween) itemTween.kill()
   itemTween = gsap.to(itemStatusRef.value, {
     scale: 1.02,
-    filter: 'brightness(1.15)',
+    filter: 'Brightness(1.15)',
     duration: 0.2,
     ease: 'power2.out'
   })
@@ -126,7 +127,7 @@ const handleItemMouseLeave = () => {
   if (itemTween) itemTween.kill()
   itemTween = gsap.to(itemStatusRef.value, {
     scale: 1,
-    filter: 'brightness(1)',
+    filter: 'Brightness(1)',
     duration: 0.2,
     ease: 'power2.out'
   })
@@ -136,7 +137,7 @@ const handleItemMouseDown = () => {
   if (itemTween) itemTween.kill()
   itemTween = gsap.to(itemStatusRef.value, {
     scale: 0.98,
-    filter: 'brightness(1.15)',
+    filter: 'Brightness(1.15)',
     duration: 0.1,
     ease: 'power2.out'
   })
@@ -146,7 +147,7 @@ const handleItemMouseUp = () => {
   if (itemTween) itemTween.kill()
   itemTween = gsap.to(itemStatusRef.value, {
     scale: isHoveringItem.value ? 1.02 : 1,
-    filter: isHoveringItem.value ? 'brightness(1.15)' : 'brightness(1)',
+    filter: isHoveringItem.value ? 'Brightness(1.15)' : 'Brightness(1)',
     duration: 0.1,
     ease: 'power2.out'
   })
@@ -222,6 +223,13 @@ const getSprite = (id: string | number, isShiny: boolean) => {
 const getNatureDescription = (natureName: string) => {
   return (NATURE_DATA as Record<string, { desc: string }>)[natureName]?.desc || 'Sin efecto en estadísticas.'
 }
+
+const heldItemSprite = computed(() => {
+  if (!props.pokemon?.heldItem) return ''
+  const item = getItemByName(props.pokemon.heldItem)
+  if (!item?.sprite) return ''
+  return getAssetUrl(ASSET_TYPES.ITEM, item.sprite)
+})
 </script>
 
 <template>
@@ -318,7 +326,17 @@ const getNatureDescription = (natureName: string) => {
           v-if="pokemon.heldItem"
           class="item-badge active"
         >
-          📦 {{ pokemon.heldItem.toUpperCase() }}
+          <img
+            v-if="heldItemSprite"
+            :src="heldItemSprite"
+            class="item-mini-sprite"
+            @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
+          >
+          <span
+            v-else
+            class="item-emoji-fallback"
+          >📦</span>
+          {{ pokemon.heldItem.toUpperCase() }}
         </div>
         <div
           v-else
