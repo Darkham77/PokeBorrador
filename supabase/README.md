@@ -199,8 +199,9 @@ Para disponibilizar de manera segura la base de datos y la API de Supabase desde
 1. Abre la aplicación **myQNAPcloud** en la interfaz web de tu QNAP.
 2. Asegúrate de configurar un dominio DDNS personalizado (ej. `francogp.myqnapcloud.com`).
 3. En la pestaña **Certificado SSL**, solicita y activa el certificado gratuito de **Let's Encrypt**.
-   > [!NOTE]
-   > QNAP gestiona automáticamente el HTTPS y renovará el certificado cada 3 meses sin necesidad de configuraciones manuales o contenedores adicionales de Nginx/Certbot.
+
+> [!NOTE]
+> QNAP gestiona automáticamente el HTTPS y renovará el certificado cada 3 meses sin necesidad de configuraciones manuales o contenedores adicionales de Nginx/Certbot.
 
 ### 2. Configurar el Proxy Inverso en QTS (QNAP)
 
@@ -271,8 +272,8 @@ Para evitar esto:
    docker compose up -d --force-recreate
    ```
 
-   > [!TIP]
-   > Con esta arquitectura, los clientes externos de juego se comunicarán de forma segura por HTTPS a `https://francogp.myqnapcloud.com:8443`. QNAP resolverá y descifrará el SSL en su puerto `8443` y enviará las peticiones localmente en HTTP limpio al puerto `8000` del contenedor Docker, mientras que el puerto seguro de Kong Docker se bindea al `8444` del host evitando choques de puertos.
+> [!TIP]
+> Con esta arquitectura, los clientes externos de juego se comunicarán de forma segura por HTTPS a `https://francogp.myqnapcloud.com:8443`. QNAP resolverá y descifrará el SSL en su puerto `8443` y enviará las peticiones localmente en HTTP limpio al puerto `8000` del contenedor Docker, mientras que el puerto seguro de Kong Docker se bindea al `8444` del host evitando choques de puertos.
 
 ---
 

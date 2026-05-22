@@ -60,49 +60,53 @@ Antes de comenzar, asegúrate de tener instalado **Node.js (v26.0.0 o superior)*
 
 ## 🛠️ Entorno de Desarrollo
 
-Para iniciar el servidor de desarrollo local:
+### 🛡️ Configuración de Seguridad de NPM (Recomendado)
 
-1. **Configuración de Seguridad de NPM**:
-   Para mitigar riesgos como ataques de cadena de suministro (*supply chain attacks*), inyección de malware o ejecución de scripts maliciosos, debes modificar la configuración global de Node Package Manager ejecutando los siguientes comandos en tu terminal:
+Para mitigar riesgos como ataques de cadena de suministro (*supply chain attacks*), inyección de malware o ejecución de scripts maliciosos, debes modificar la configuración global de Node Package Manager ejecutando los siguientes comandos en tu terminal:
 
-   ```bash
-   # 1. Desactivar la ejecución automática de scripts (Pre/Post install)
-   # Esto evita que un paquete malicioso ejecute código en tu máquina al instalar paquetes
-   npm config set ignore-scripts true
+```bash
+# 1. Desactivar la ejecución automática de scripts (Pre/Post install)
+# Esto evita que un paquete malicioso ejecute código en tu máquina al instalar paquetes
+npm config set ignore-scripts true
 
-   # 2. Forzar el uso de HTTPS para todo el registro
-   npm config set registry https://registry.npmjs.org/
+# 2. Forzar el uso de HTTPS para todo el registro
+npm config set registry https://registry.npmjs.org/
 
-   # 3. Requerir obligatoriamente firmas de paquetes válidas
-   npm config set audit-level high
-   ```
+# 3. Requerir obligatoriamente firmas de paquetes válidas
+npm config set audit-level high
+```
 
 >[!NOTE]
 > **Nota sobre `ignore-scripts`**: Al activar esto, algunos paquetes legítimos que compilan binarios nativos (como `node-gyp` o herramientas de profiling) podrían fallar al instalarse. Si confías plenamente en un paquete específico y necesitas ejecutar sus scripts de compilación, puedes compilarlo manualmente usando `npm rebuild` o ejecutándolo de forma aislada una única vez con `npm run <script> --ignore-scripts=false`.
 
-1. **Instalar dependencias**:
-   El archivo `package-lock.json` es tu barrera de seguridad más crítica porque almacena los hashes criptográficos (integrity SHA-512) de cada paquete.
+### 🚀 Pasos para Iniciar el Servidor Local
+
+El archivo `package-lock.json` es tu barrera de seguridad más crítica porque almacena los hashes criptográficos (integrity SHA-512) de cada paquete.
 
 >[!IMPORTANT]
-> **Regla estricta**: En entornos de desarrollo, CI/CD o producción, nunca uses `npm install` a secas si quieres garantizar una reproducibilidad segura. Usa siempre:
->
-> ```bash
-> npm ci
-> ```
+> **Regla estricta**: En entornos de desarrollo, CI/CD o producción, nunca uses `npm install` a secas si quieres garantizar una reproducibilidad segura. Usa siempre `npm ci`.
 
-1. **Actualizar dependencias** (Si hay nuevas versiones o warnings de seguridad):
+Sigue estos pasos para configurar e iniciar tu entorno de desarrollo:
+
+1. **Instalar dependencias**:
+
+   ```bash
+   npm ci
+   ```
+
+2. **Actualizar dependencias** (Si hay nuevas versiones o warnings de seguridad):
 
    ```bash
    npm update
    ```
 
-2. **Configurar Variables de Entorno**: Copia el archivo `.env.example` y renómbralo a `.env`, luego completa los valores de Supabase:
+3. **Configurar Variables de Entorno**: Copia el archivo `.env.example` y renómbralo a `.env`, luego completa los valores de Supabase:
 
    ```bash
    cp .env.example .env
    ```
 
-3. **Iniciar Vite**:
+4. **Iniciar Vite**:
 
    ```bash
    npm run dev
