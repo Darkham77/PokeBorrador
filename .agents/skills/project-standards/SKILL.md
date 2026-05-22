@@ -60,6 +60,7 @@ Consult these manuals for detailed implementation specifications:
 - **Modern Shell**: High-contrast solid backgrounds, premium gradients, HSL shadows for containers.
 - **Retro Heart**: Pixel Art and Sharp typography (`Press Start 2P`) for game content.
 - **Pixel-Perfect**: Pixelated elements (sprites, items, badges) MUST use `@include pixelated`. This mixin handles browser fallbacks and typography sharpening. Typography for stats and headers must always be pixelated.
+- **Overlapping Sprite Stacking (Cards Deck)**: In retro-modern flex lists or reward displays, use negative margins (e.g. `margin-left: -16px` on sibling `.item-sprite` elements) to create a high-density, overlapping deck structure. Accompany this with a smooth hover micro-animation using GSAP transitions or CSS `:hover` that slightly scales (`scale(1.2)`), lifts (`translateY(-4px)`), and elevates the z-index (`z-index: 10`) of the targeted sprite to provide premium tactile feedback.
 
 ### 2. GPU & Rendering
 
@@ -120,11 +121,12 @@ Consult these manuals for detailed implementation specifications:
 - **Audit Exemptions**: Utility, maintenance, and migration scripts (located in `scripts/`) are EXEMPT from legacy code audits (e.g., `legacyDates`) to allow technical support tasks without false positives.
 - **@use Standard**: Forbidden use of `@import`. Use `@use` and `@forward`.
 - **Zero-Warning**: Always maintain 0 errors and 0 warnings in `lint` and `vue-tsc`. It is MANDATORY to run `npm run lint` before presenting final changes to the user. If it's not zero, fix it and run the audit again.
-- **Template Event Casting**: When using strict TypeScript in `.vue` files, it is mandatory to cast event targets in the template (e.g., `(e.target as HTMLImageElement)`) to satisfy `vue-tsc` checks on specific DOM properties.
+- **Template Event Casting & Fallbacks**: When using strict TypeScript in `.vue` files, cast event targets in the template (e.g., `(e.target as HTMLImageElement)`) to satisfy `vue-tsc` checks. For dynamic assets that may not exist, always implement a graceful fallback handler like `@error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"` to cleanly hide missing items from the DOM and avoid raw broken image icons.
 - **Dependency Shield**: Scripts using external libraries must handle `ImportError` and provide installation instructions.
   - **Node.js 26+ Native Standards**:
     - **Temporal API**: The legacy `Date` object is DEPRECATED for engine logic and timestamps. Use `Temporal` for all precise timing and durations.
-      - **Native-First Architecture**: Follow a "Native-First" approach by loading the `@js-temporal/polyfill` conditionally via `src/logic/utils/temporal-init.ts`. Global types MUST be provided via `tsconfig.json` (types array) and `src/types/env.d.ts` (global augmentation) instead of local imports to prevent namespace conflicts between native and polyfill types.
+      - **Native-First Architecture**: Follow a "Native-First" approach by loading the `@js-temporal/polyfill` conditionally via `src/logic/utils/temporal-init.ts`. Global types MUST be provided via `tsconfig.json` (types array) and `src/types/env.d.ts` (global augmentation) instead of local imports to prevent namespace conflicts between native and polyfill types. Avoid importing `{ Temporal }` locally in Vue SFCs or normal utility modules.
+      - **Temporal API Comparison & Coercion**: When comparing `Temporal` objects, use the static compare method `Temporal.Instant.compare(now, range.start) >= 0` instead of native operators like `>=`. When coercing to strings, use `${obj}` or `String(obj)`. When coercing to numbers, use properties/methods of the object, not `+obj`. When concatenating, use `${str}${obj}` or `str.concat(obj)`. In templates, coerce to a string before rendering.
       - **BigInt Precision**: When performing calculations with nanosecond precision (`epochNanoseconds`), ALWAYS use explicit `BigInt()` casts (e.g., `BigInt(instant.epochNanoseconds)`) to ensure consistency across all IDEs and TypeScript environments.
       - **Atomicity**: To prevent time inconsistencies (clock skew/race conditions) and unnecessary system calls/allocations when chaining time formatting, always capture a single Temporal instance in a constant (e.g., `const now = Temporal.Now.instant().toZonedDateTimeISO('UTC')`) and perform subsequent calculations/formatting on that single instance.
     - **Map Upsert**: Use `Map.prototype.getOrInsertComputed` (or native patterns) for efficient cache lookups.
