@@ -164,6 +164,139 @@ const ELEMENT_COLORS: Record<string, { base: string, light: string }> = {
   fairy: { base: '#f472b6', light: '#f9a8d4' }
 };
 
+interface SpinConfig {
+  duration: number;
+  rotationDir?: number;
+}
+
+const SPIN_CONFIGS: Record<string, SpinConfig> = {
+  fire: { duration: 2 },
+  water: { duration: 4 },
+  electric: { duration: 0.4 },
+  psychic: { duration: 3, rotationDir: -360 },
+  dark: { duration: 5 },
+  ghost: { duration: 4 },
+  ice: { duration: 6, rotationDir: -360 },
+  dragon: { duration: 1.8 },
+  legend: { duration: 2 },
+  master: { duration: 5 },
+  cazabichos: { duration: 3 },
+  criador: { duration: 2.5 },
+  rocket: { duration: 1.5 },
+  entrenador: { duration: 2 },
+  union: { duration: 2.5 },
+  poder: { duration: 2.2 },
+  admin: { duration: 1.0 }
+};
+
+const TYPE_SPIN_DURATIONS: Record<string, number> = {
+  normal: 3.5, steel: 3.5, fire: 1.8, water: 2.2, grass: 3.0, electric: 1.2,
+  ice: 2.5, fighting: 2.0, poison: 2.4, ground: 3.5, flying: 2.8, psychic: 1.5,
+  bug: 2.2, rock: 4.0, ghost: 3.2, dragon: 1.6, dark: 2.0, fairy: 2.1
+};
+
+interface ShadowConfig {
+  from: string;
+  to: string;
+  duration: number;
+  steps?: boolean;
+}
+
+const SHADOW_CONFIGS: Record<string, ShadowConfig> = {
+  fire: {
+    from: '0 0 0 3px #ff4400, 0 0 12px rgba(255, 68, 0, 0.4), inset 0 0 6px rgba(255, 68, 0, 0.2)',
+    to: '0 0 0 3px #ff8800, 0 0 24px rgba(255, 68, 0, 0.8), inset 0 0 12px rgba(255, 68, 0, 0.4)',
+    duration: 1
+  },
+  water: {
+    from: '0 0 0 3px #0088ff, 0 0 10px rgba(0, 136, 255, 0.35), inset 0 0 5px rgba(0, 136, 255, 0.15)',
+    to: '0 0 0 3px #44eeff, 0 0 20px rgba(0, 136, 255, 0.7), inset 0 0 10px rgba(0, 136, 255, 0.3)',
+    duration: 1.5
+  },
+  electric: {
+    from: '0 0 0 3px #ffe040, 0 0 14px rgba(255, 204, 0, 0.5)',
+    to: '0 0 0 3px #ffffff, 0 0 20px rgba(255, 238, 0, 0.58)',
+    duration: 0.1,
+    steps: true
+  },
+  psychic: {
+    from: '0 0 0 3px #cc00ff, 0 0 10px rgba(204, 0, 255, 0.35), inset 0 0 5px rgba(204, 0, 255, 0.15)',
+    to: '0 0 0 3px #ff44ff, 0 0 22px rgba(204, 0, 255, 0.7), inset 0 0 10px rgba(204, 0, 255, 0.3)',
+    duration: 1.25
+  },
+  dark: {
+    from: '0 0 0 3px #7700bb, 0 0 10px rgba(119, 0, 187, 0.35), inset 0 0 5px rgba(119, 0, 187, 0.15)',
+    to: '0 0 0 3px #9900cc, 0 0 22px rgba(119, 0, 187, 0.7), inset 0 0 10px rgba(119, 0, 187, 0.3)',
+    duration: 2
+  },
+  ghost: {
+    from: '0 0 0 3px #8855ff, 0 0 10px rgba(136, 85, 255, 0.35), inset 0 0 5px rgba(136, 85, 255, 0.15)',
+    to: '0 0 0 3px #cc88ff, 0 0 22px rgba(136, 85, 255, 0.7), inset 0 0 10px rgba(136, 85, 255, 0.3)',
+    duration: 1.25
+  },
+  ice: {
+    from: '0 0 0 3px #88eeff, 0 0 10px rgba(136, 238, 255, 0.35), inset 0 0 5px rgba(136, 238, 255, 0.15)',
+    to: '0 0 0 3px #ffffff, 0 0 20px rgba(136, 238, 255, 0.75), inset 0 0 10px rgba(136, 238, 255, 0.3)',
+    duration: 1.5
+  },
+  dragon: {
+    from: '0 0 0 3px #4466ff, 0 0 10px rgba(68, 102, 255, 0.35), inset 0 0 5px rgba(68, 102, 255, 0.15)',
+    to: '0 0 0 3px #ff4400, 0 0 22px rgba(68, 102, 255, 0.7), inset 0 0 10px rgba(68, 102, 255, 0.3)',
+    duration: 1
+  },
+  legend: {
+    from: '0 0 0 3px #ffdd00, 0 0 18px rgba(255, 170, 0, 0.5)',
+    to: '0 0 0 3px #ffffff, 0 0 28px #ffdd00, 0 0 44px rgba(255, 136, 0, 0.25)',
+    duration: 1
+  },
+  master: {
+    from: '0 0 0 3px #aaaaaa, 0 0 10px rgba(170, 170, 170, 0.3), inset 0 0 5px rgba(170, 170, 170, 0.15)',
+    to: '0 0 0 3px #ffffff, 0 0 22px rgba(255, 255, 255, 0.65), inset 0 0 10px rgba(255, 255, 255, 0.3)',
+    duration: 1.5
+  },
+  cazabichos: {
+    from: '0 0 0 3px #22c55e, 0 0 10px rgba(34, 197, 94, 0.35), inset 0 0 5px rgba(34, 197, 94, 0.15)',
+    to: '0 0 0 3px #4ade80, 0 0 22px rgba(34, 197, 94, 0.7), inset 0 0 10px rgba(34, 197, 94, 0.3)',
+    duration: 1.5
+  },
+  criador: {
+    from: '0 0 0 3px #a855f7, 0 0 10px rgba(168, 85, 247, 0.35), inset 0 0 5px rgba(168, 85, 247, 0.15)',
+    to: '0 0 0 3px #c084fc, 0 0 22px rgba(168, 85, 247, 0.7), inset 0 0 10px rgba(168, 85, 247, 0.3)',
+    duration: 1.25
+  },
+  rocket: {
+    from: '0 0 0 3px #ef4444, 0 0 10px rgba(239, 68, 68, 0.35), inset 0 0 5px rgba(239, 68, 68, 0.15)',
+    to: '0 0 0 3px #b91c1c, 0 0 22px rgba(239, 68, 68, 0.7), inset 0 0 10px rgba(239, 68, 68, 0.3)',
+    duration: 0.75
+  },
+  entrenador: {
+    from: '0 0 0 3px #3b82f6, 0 0 10px rgba(59, 130, 246, 0.35), inset 0 0 5px rgba(59, 130, 246, 0.15)',
+    to: '0 0 0 3px #60a5fa, 0 0 22px rgba(59, 130, 246, 0.7), inset 0 0 10px rgba(59, 130, 246, 0.3)',
+    duration: 1
+  },
+  union: {
+    from: '0 0 0 3px #1e40af, 0 0 10px rgba(30, 64, 175, 0.35), inset 0 0 5px rgba(30, 64, 175, 0.15)',
+    to: '0 0 0 3px #fbbf24, 0 0 22px rgba(251, 191, 36, 0.6), inset 0 0 10px rgba(251, 191, 36, 0.25)',
+    duration: 1.25
+  },
+  poder: {
+    from: '0 0 0 3px #991b1b, 0 0 10px rgba(153, 27, 27, 0.35), inset 0 0 5px rgba(153, 27, 27, 0.15)',
+    to: '0 0 0 3px #f97316, 0 0 22px rgba(249, 115, 22, 0.6), inset 0 0 10px rgba(249, 115, 22, 0.25)',
+    duration: 1.1
+  },
+  admin: {
+    from: '0 0 0 3px #ef4444, 0 0 12px rgba(239, 68, 68, 0.45), inset 0 0 6px rgba(239, 68, 68, 0.2)',
+    to: '0 0 0 3px #facc15, 0 0 28px rgba(239, 68, 68, 0.85), inset 0 0 14px rgba(239, 68, 68, 0.4)',
+    duration: 0.75
+  }
+};
+
+const TYPE_SHADOW_DURATIONS: Record<string, number> = {
+  normal: 1.75, steel: 1.75, fire: 0.9, water: 1.1, grass: 1.5, electric: 0.6,
+  ice: 1.25, fighting: 1.0, poison: 1.2, ground: 1.75, flying: 1.4, psychic: 0.75,
+  bug: 1.1, rock: 2.0, ghost: 1.6, dragon: 0.8, dark: 1.0, fairy: 1.05
+};
+
 const observer = new IntersectionObserver((entries) => {
   entries.forEach((entry) => {
     if (activeTimeline) {
@@ -208,216 +341,61 @@ function initAnimations() {
 
   activeTimeline = gsap.timeline({ repeat: -1 });
 
-  // 1. Frame Background Rotation or Scale (for Squares)
-  if (frameRef.value) {
-    const isSq = isSquare.value;
-    if (isSq) {
-      // Square frame pulse
-      activeTimeline.fromTo(frameRef.value,
-        { scale: 1.0, opacity: 0.7 },
-        { scale: 1.08, opacity: 1.0, duration: 1, yoyo: true, repeat: -1, ease: 'sine.inOut' },
-        0
-      );
-    } else {
-      // Round frame spin
-      let duration = 3;
-      let rotationDir = 360;
+  // 1. Frame Background Rotation (for Rounds, squares do not spin or pulse frame elements)
+  if (frameRef.value && !isSquare.value) {
+    let spinDuration = 3;
+    let rotationDir = 360;
 
-      if (cleanStyle.includes('fire')) duration = 2;
-      else if (cleanStyle.includes('water')) duration = 4;
-      else if (cleanStyle.includes('electric')) duration = 0.4;
-      else if (cleanStyle.includes('psychic')) { duration = 3; rotationDir = -360; }
-      else if (cleanStyle.includes('dark')) duration = 5;
-      else if (cleanStyle.includes('ghost')) duration = 4;
-      else if (cleanStyle.includes('ice')) { duration = 6; rotationDir = -360; }
-      else if (cleanStyle.includes('dragon')) duration = 1.8;
-      else if (cleanStyle.includes('legend')) duration = 2;
-      else if (cleanStyle.includes('master')) duration = 5;
-      else if (cleanStyle.includes('cazabichos')) duration = 3;
-      else if (cleanStyle.includes('criador')) duration = 2.5;
-      else if (cleanStyle.includes('rocket')) duration = 1.5;
-      else if (cleanStyle.includes('entrenador')) duration = 2;
-      else if (cleanStyle.includes('union')) duration = 2.5;
-      else if (cleanStyle.includes('poder')) duration = 2.2;
-      else if (cleanStyle.includes('admin')) duration = 1.0;
-
-      // Handle type duration
-      if (cleanStyle.startsWith('type-')) {
-        const typeName = cleanStyle.replace('type-', '');
-        const colors = ELEMENT_COLORS[typeName];
-        if (colors) {
-          if (typeName === 'normal' || typeName === 'steel') duration = 3.5;
-          else if (typeName === 'fire') duration = 1.8;
-          else if (typeName === 'water') duration = 2.2;
-          else if (typeName === 'grass') duration = 3.0;
-          else if (typeName === 'electric') duration = 1.2;
-          else if (typeName === 'ice') duration = 2.5;
-          else if (typeName === 'fighting') duration = 2.0;
-          else if (typeName === 'poison') duration = 2.4;
-          else if (typeName === 'ground') duration = 3.5;
-          else if (typeName === 'flying') duration = 2.8;
-          else if (typeName === 'psychic') duration = 1.5;
-          else if (typeName === 'bug') duration = 2.2;
-          else if (typeName === 'rock') duration = 4.0;
-          else if (typeName === 'ghost') duration = 3.2;
-          else if (typeName === 'dragon') duration = 1.6;
-          else if (typeName === 'dark') duration = 2.0;
-          else if (typeName === 'fairy') duration = 2.1;
-        }
+    const matchedSpinKey = Object.keys(SPIN_CONFIGS).find(k => cleanStyle.includes(k));
+    if (matchedSpinKey) {
+      const config = SPIN_CONFIGS[matchedSpinKey]!;
+      spinDuration = config.duration;
+      if (config.rotationDir !== undefined) {
+        rotationDir = config.rotationDir;
       }
-
-      activeTimeline.to(frameRef.value, {
-        rotation: rotationDir,
-        duration: duration,
-        repeat: -1,
-        ease: 'none'
-      }, 0);
     }
+
+    if (cleanStyle.startsWith('type-')) {
+      const typeName = cleanStyle.replace('type-', '');
+      if (TYPE_SPIN_DURATIONS[typeName] !== undefined) {
+        spinDuration = TYPE_SPIN_DURATIONS[typeName]!;
+      }
+    }
+
+    activeTimeline.to(frameRef.value, {
+      rotation: rotationDir,
+      duration: spinDuration,
+      repeat: -1,
+      ease: 'none'
+    }, 0);
   }
 
   // 2. Pulse Glow & Styling for Container Box Shadow
-  let shadowAnim: { from: string, to: string, duration: number, ease?: string, steps?: boolean } | null = null;
+  let shadowAnim: ShadowConfig | null = null;
+  const matchedShadowKey = Object.keys(SHADOW_CONFIGS).find(k => cleanStyle.includes(k));
 
-  if (cleanStyle.includes('fire')) {
-    shadowAnim = {
-      from: '0 0 0 3px #ff4400, 0 0 12px rgba(255, 68, 0, 0.4), inset 0 0 6px rgba(255, 68, 0, 0.2)',
-      to: '0 0 0 3px #ff8800, 0 0 24px rgba(255, 68, 0, 0.8), inset 0 0 12px rgba(255, 68, 0, 0.4)',
-      duration: 1
-    };
-  } else if (cleanStyle.includes('water')) {
-    shadowAnim = {
-      from: '0 0 0 3px #0088ff, 0 0 10px rgba(0, 136, 255, 0.35), inset 0 0 5px rgba(0, 136, 255, 0.15)',
-      to: '0 0 0 3px #44eeff, 0 0 20px rgba(0, 136, 255, 0.7), inset 0 0 10px rgba(0, 136, 255, 0.3)',
-      duration: 1.5
-    };
-  } else if (cleanStyle.includes('electric')) {
-    shadowAnim = {
-      from: '0 0 0 3px #ffe040, 0 0 14px rgba(255, 204, 0, 0.5)',
-      to: '0 0 0 3px #ffffff, 0 0 20px rgba(255, 238, 0, 0.58)',
-      duration: 0.1,
-      steps: true
-    };
-  } else if (cleanStyle.includes('psychic')) {
-    shadowAnim = {
-      from: '0 0 0 3px #cc00ff, 0 0 10px rgba(204, 0, 255, 0.35), inset 0 0 5px rgba(204, 0, 255, 0.15)',
-      to: '0 0 0 3px #ff44ff, 0 0 22px rgba(204, 0, 255, 0.7), inset 0 0 10px rgba(204, 0, 255, 0.3)',
-      duration: 1.25
-    };
-  } else if (cleanStyle.includes('dark')) {
-    shadowAnim = {
-      from: '0 0 0 3px #7700bb, 0 0 10px rgba(119, 0, 187, 0.35), inset 0 0 5px rgba(119, 0, 187, 0.15)',
-      to: '0 0 0 3px #9900cc, 0 0 22px rgba(119, 0, 187, 0.7), inset 0 0 10px rgba(119, 0, 187, 0.3)',
-      duration: 2
-    };
-  } else if (cleanStyle.includes('ghost')) {
-    shadowAnim = {
-      from: '0 0 0 3px #8855ff, 0 0 10px rgba(136, 85, 255, 0.35), inset 0 0 5px rgba(136, 85, 255, 0.15)',
-      to: '0 0 0 3px #cc88ff, 0 0 22px rgba(136, 85, 255, 0.7), inset 0 0 10px rgba(136, 85, 255, 0.3)',
-      duration: 1.25
-    };
+  if (matchedShadowKey) {
+    shadowAnim = SHADOW_CONFIGS[matchedShadowKey]!;
+  } else if (cleanStyle.startsWith('type-')) {
+    const typeName = cleanStyle.replace('type-', '');
+    const colors = ELEMENT_COLORS[typeName];
+    if (colors && TYPE_SHADOW_DURATIONS[typeName] !== undefined) {
+      shadowAnim = {
+        from: `0 0 0 3px ${colors.base}, 0 0 10px rgba(${hexToRgb(colors.base)}, 0.35), inset 0 0 5px rgba(${hexToRgb(colors.base)}, 0.15)`,
+        to: `0 0 0 3px ${colors.light}, 0 0 22px rgba(${hexToRgb(colors.base)}, 0.7), inset 0 0 10px rgba(${hexToRgb(colors.base)}, 0.3)`,
+        duration: TYPE_SHADOW_DURATIONS[typeName]!
+      };
+    }
+  }
+
+  if (cleanStyle.includes('ghost')) {
     activeTimeline.fromTo(containerRef.value,
       { opacity: 1 },
       { opacity: 0.78, duration: 1, yoyo: true, repeat: -1, ease: 'sine.inOut' },
       0
     );
-  } else if (cleanStyle.includes('ice')) {
-    shadowAnim = {
-      from: '0 0 0 3px #88eeff, 0 0 10px rgba(136, 238, 255, 0.35), inset 0 0 5px rgba(136, 238, 255, 0.15)',
-      to: '0 0 0 3px #ffffff, 0 0 20px rgba(136, 238, 255, 0.75), inset 0 0 10px rgba(136, 238, 255, 0.3)',
-      duration: 1.5
-    };
-  } else if (cleanStyle.includes('dragon')) {
-    shadowAnim = {
-      from: '0 0 0 3px #4466ff, 0 0 10px rgba(68, 102, 255, 0.35), inset 0 0 5px rgba(68, 102, 255, 0.15)',
-      to: '0 0 0 3px #ff4400, 0 0 22px rgba(68, 102, 255, 0.7), inset 0 0 10px rgba(68, 102, 255, 0.3)',
-      duration: 1
-    };
-  } else if (cleanStyle.includes('legend')) {
-    shadowAnim = {
-      from: '0 0 0 3px #ffdd00, 0 0 18px rgba(255, 170, 0, 0.5)',
-      to: '0 0 0 3px #ffffff, 0 0 28px #ffdd00, 0 0 44px rgba(255, 136, 0, 0.25)',
-      duration: 1
-    };
-  } else if (cleanStyle.includes('master')) {
-    shadowAnim = {
-      from: '0 0 0 3px #aaaaaa, 0 0 10px rgba(170, 170, 170, 0.3), inset 0 0 5px rgba(170, 170, 170, 0.15)',
-      to: '0 0 0 3px #ffffff, 0 0 22px rgba(255, 255, 255, 0.65), inset 0 0 10px rgba(255, 255, 255, 0.3)',
-      duration: 1.5
-    };
-  } else if (cleanStyle.includes('cazabichos')) {
-    shadowAnim = {
-      from: '0 0 0 3px #22c55e, 0 0 10px rgba(34, 197, 94, 0.35), inset 0 0 5px rgba(34, 197, 94, 0.15)',
-      to: '0 0 0 3px #4ade80, 0 0 22px rgba(34, 197, 94, 0.7), inset 0 0 10px rgba(34, 197, 94, 0.3)',
-      duration: 1.5
-    };
-  } else if (cleanStyle.includes('criador')) {
-    shadowAnim = {
-      from: '0 0 0 3px #a855f7, 0 0 10px rgba(168, 85, 247, 0.35), inset 0 0 5px rgba(168, 85, 247, 0.15)',
-      to: '0 0 0 3px #c084fc, 0 0 22px rgba(168, 85, 247, 0.7), inset 0 0 10px rgba(168, 85, 247, 0.3)',
-      duration: 1.25
-    };
-  } else if (cleanStyle.includes('rocket')) {
-    shadowAnim = {
-      from: '0 0 0 3px #ef4444, 0 0 10px rgba(239, 68, 68, 0.35), inset 0 0 5px rgba(239, 68, 68, 0.15)',
-      to: '0 0 0 3px #b91c1c, 0 0 22px rgba(239, 68, 68, 0.7), inset 0 0 10px rgba(239, 68, 68, 0.3)',
-      duration: 0.75
-    };
-  } else if (cleanStyle.includes('entrenador')) {
-    shadowAnim = {
-      from: '0 0 0 3px #3b82f6, 0 0 10px rgba(59, 130, 246, 0.35), inset 0 0 5px rgba(59, 130, 246, 0.15)',
-      to: '0 0 0 3px #60a5fa, 0 0 22px rgba(59, 130, 246, 0.7), inset 0 0 10px rgba(59, 130, 246, 0.3)',
-      duration: 1
-    };
-  } else if (cleanStyle.includes('union')) {
-    shadowAnim = {
-      from: '0 0 0 3px #1e40af, 0 0 10px rgba(30, 64, 175, 0.35), inset 0 0 5px rgba(30, 64, 175, 0.15)',
-      to: '0 0 0 3px #fbbf24, 0 0 22px rgba(251, 191, 36, 0.6), inset 0 0 10px rgba(251, 191, 36, 0.25)',
-      duration: 1.25
-    };
-  } else if (cleanStyle.includes('poder')) {
-    shadowAnim = {
-      from: '0 0 0 3px #991b1b, 0 0 10px rgba(153, 27, 27, 0.35), inset 0 0 5px rgba(153, 27, 27, 0.15)',
-      to: '0 0 0 3px #f97316, 0 0 22px rgba(249, 115, 22, 0.6), inset 0 0 10px rgba(249, 115, 22, 0.25)',
-      duration: 1.1
-    };
-  } else if (cleanStyle.includes('admin')) {
-    shadowAnim = {
-      from: '0 0 0 3px #ef4444, 0 0 12px rgba(239, 68, 68, 0.45), inset 0 0 6px rgba(239, 68, 68, 0.2)',
-      to: '0 0 0 3px #facc15, 0 0 28px rgba(239, 68, 68, 0.85), inset 0 0 14px rgba(239, 68, 68, 0.4)',
-      duration: 0.75
-    };
-  } else if (cleanStyle.startsWith('type-')) {
-    const typeName = cleanStyle.replace('type-', '');
-    const colors = ELEMENT_COLORS[typeName];
-    if (colors) {
-      let pDur = 1.5;
-      if (typeName === 'normal' || typeName === 'steel') pDur = 1.75;
-      else if (typeName === 'fire') pDur = 0.9;
-      else if (typeName === 'water') pDur = 1.1;
-      else if (typeName === 'grass') pDur = 1.5;
-      else if (typeName === 'electric') pDur = 0.6;
-      else if (typeName === 'ice') pDur = 1.25;
-      else if (typeName === 'fighting') pDur = 1.0;
-      else if (typeName === 'poison') pDur = 1.2;
-      else if (typeName === 'ground') pDur = 1.75;
-      else if (typeName === 'flying') pDur = 1.4;
-      else if (typeName === 'psychic') pDur = 0.75;
-      else if (typeName === 'bug') pDur = 1.1;
-      else if (typeName === 'rock') pDur = 2.0;
-      else if (typeName === 'ghost') pDur = 1.6;
-      else if (typeName === 'dragon') pDur = 0.8;
-      else if (typeName === 'dark') pDur = 1.0;
-      else if (typeName === 'fairy') pDur = 1.05;
-
-      shadowAnim = {
-        from: `0 0 0 3px ${colors.base}, 0 0 10px rgba(${hexToRgb(colors.base)}, 0.35), inset 0 0 5px rgba(${hexToRgb(colors.base)}, 0.15)`,
-        to: `0 0 0 3px ${colors.light}, 0 0 22px rgba(${hexToRgb(colors.base)}, 0.7), inset 0 0 10px rgba(${hexToRgb(colors.base)}, 0.3)`,
-        duration: pDur
-      };
-    }
   }
 
-  // Handle blink-red fallback style
   if (styleClass.includes('blink-red')) {
     shadowAnim = {
       from: '0 0 5px var(--red)',
