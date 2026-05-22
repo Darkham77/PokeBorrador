@@ -6,7 +6,7 @@ Este manual detalla los comandos y configuraciones necesarios para trabajar en l
 
 Antes de comenzar, asegúrate de tener instalado **Node.js (v26.0.0 o superior)** en tu sistema.
 
-> [!IMPORTANT] El proyecto utiliza características modernas del motor V8 y requiere explícitamente Node 26+. Si tu versión es inferior, el comando `npm install` lanzará una advertencia sugiriendo la actualización.
+> [!IMPORTANT] El proyecto utiliza características modernas del motor V8 y requiere explícitamente Node 26+. Si tu versión es inferior, el comando `npm ci` (o `npm install`) lanzará una advertencia sugiriendo la actualización.
 
 ### 🌐 Instalación de Node.js y NPM
 
@@ -62,25 +62,47 @@ Antes de comenzar, asegúrate de tener instalado **Node.js (v26.0.0 o superior)*
 
 Para iniciar el servidor de desarrollo local:
 
-1. **Instalar dependencias**:
+1. **Configuración de Seguridad de NPM**:
+   Para mitigar riesgos como ataques de cadena de suministro (*supply chain attacks*), inyección de malware o ejecución de scripts maliciosos, debes modificar la configuración global de Node Package Manager ejecutando los siguientes comandos en tu terminal:
 
    ```bash
-   npm install
+   # 1. Desactivar la ejecución automática de scripts (Pre/Post install)
+   # Esto evita que un paquete malicioso ejecute código en tu máquina al instalar paquetes
+   npm config set ignore-scripts true
+
+   # 2. Forzar el uso de HTTPS para todo el registro
+   npm config set registry https://registry.npmjs.org/
+
+   # 3. Requerir obligatoriamente firmas de paquetes válidas
+   npm config set audit-level high
    ```
 
-2. **Actualizar dependencias** (Si hay nuevas versiones o warnings de seguridad):
+>[!NOTE]
+> **Nota sobre `ignore-scripts`**: Al activar esto, algunos paquetes legítimos que compilan binarios nativos (como `node-gyp` o herramientas de profiling) podrían fallar al instalarse. Si confías plenamente en un paquete específico y necesitas ejecutar sus scripts de compilación, puedes compilarlo manualmente usando `npm rebuild` o ejecutándolo de forma aislada una única vez con `npm run <script> --ignore-scripts=false`.
+
+1. **Instalar dependencias**:
+   El archivo `package-lock.json` es tu barrera de seguridad más crítica porque almacena los hashes criptográficos (integrity SHA-512) de cada paquete.
+
+>[!IMPORTANT]
+> **Regla estricta**: En entornos de desarrollo, CI/CD o producción, nunca uses `npm install` a secas si quieres garantizar una reproducibilidad segura. Usa siempre:
+>
+> ```bash
+> npm ci
+> ```
+
+1. **Actualizar dependencias** (Si hay nuevas versiones o warnings de seguridad):
 
    ```bash
    npm update
    ```
 
-3. **Configurar Variables de Entorno**: Copia el archivo `.env.example` y renómbralo a `.env`, luego completa los valores de Supabase:
+2. **Configurar Variables de Entorno**: Copia el archivo `.env.example` y renómbralo a `.env`, luego completa los valores de Supabase:
 
    ```bash
    cp .env.example .env
    ```
 
-4. **Iniciar Vite**:
+3. **Iniciar Vite**:
 
    ```bash
    npm run dev
@@ -314,16 +336,16 @@ node --permission --allow-fs-read=. --allow-fs-write=. scripts/tu_script.ts
 
 Si bajas cambios del repositorio (git pull) y el comando `npm run dev` falla o tira errores inesperados, generalmente es porque se instalaron nuevas librerías que no tienes en tu entorno local.
 
-- **Solución**: Ejecutá `npm install` para sincronizar las dependencias.
+- **Solución**: Ejecutá `npm ci` para sincronizar las dependencias de forma segura (evitando el uso de `npm install`).
 - **Tip**: Se recomienda ejecutar periódicamente `npm update` para mantener todas las librerías actualizadas.
 
 ### 2. 🛡️ Auditoría de Estándares
 
 Para mantener la calidad y el orden del código, es una excelente práctica realizar una auditoría periódica (cada 2 o 3 días de trabajo).
 
-- **Instrucción**: Pedile a la IA: _"Hace una auditoría a todo el proyecto y revisá que cumpla con /project-standards"_.
+- **Instrucción**: Pedile a la IA: *"Hace una auditoría a todo el proyecto y revisá que cumpla con /project-standards"*.
 - **Resultado**: La IA detectará archivos que exceden las 500 líneas, errores de estilo o violaciones a la arquitectura.
-- **Acción**: Después del reporte, pedile que genere el _"plan de corrección"_ para normalizar el código.
+- **Acción**: Después del reporte, pedile que genere el *"plan de corrección"* para normalizar el código.
 
 ### 3. 🖼️ Gestión de Imágenes (`_raw-assets`)
 
