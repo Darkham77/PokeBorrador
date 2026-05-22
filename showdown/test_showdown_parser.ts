@@ -1,9 +1,9 @@
 import fs from 'fs';
 import path from 'path';
 import { Battle } from '@pkmn/sim';
-import { parseShowdownLog } from '../src/game/battle/showdown/sandbox_db/ShowdownParser';
+import { parseShowdownLog } from './sandbox_db/ShowdownParser.ts';
 
-const dbPath = path.resolve(import.meta.dirname, '../src/game/battle/showdown/sandbox_db/data/showdown_db.json');
+const dbPath = path.resolve(import.meta.dirname, './sandbox_db/data/showdown_db.json');
 const dbRaw = fs.readFileSync(dbPath, 'utf-8');
 const showdownDB = JSON.parse(dbRaw);
 
@@ -20,8 +20,30 @@ let failedMoves = 0;
 const unhandledTypes = new Set<string>();
 const englishTextIssues = new Set<string>();
 
-const DUMMY_POKEMON_1 = { species: 'smeargle', level: 100, moves: [] as string[] };
-const DUMMY_POKEMON_2 = { species: 'blissey', level: 100, moves: ['splash'] };
+const DUMMY_POKEMON_1 = {
+  name: 'Smeargle',
+  species: 'smeargle',
+  level: 100,
+  moves: [] as string[],
+  item: '',
+  ability: 'owntempo',
+  nature: 'Hardy',
+  evs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 },
+  ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
+  gender: 'M',
+};
+const DUMMY_POKEMON_2 = {
+  name: 'Blissey',
+  species: 'blissey',
+  level: 100,
+  moves: ['splash'],
+  item: '',
+  ability: 'naturalcure',
+  nature: 'Hardy',
+  evs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 },
+  ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
+  gender: 'F',
+};
 
 for (const move of allMoves) {
   try {

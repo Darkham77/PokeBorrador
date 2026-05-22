@@ -154,14 +154,17 @@ async function main() {
       pokemon: { type: 'boolean' },
       items: { type: 'boolean' },
       trainers: { type: 'boolean' },
+      showdown: { type: 'boolean' },
       limit: { type: 'string' }
     }
   });
 
-  const noFlags = !values.pokemon && !values.items && !values.trainers;
+  const noFlags = !values.pokemon && !values.items && !values.trainers && !values.showdown;
   const doPokemon = noFlags || values.pokemon;
   const doItems = noFlags || values.items;
   const doTrainers = noFlags || values.trainers;
+  // --showdown es siempre opt-in: no se incluye en el "download all" para no requerir @pkmn/sim por defecto
+  const doShowdown = values.showdown ?? false;
   const pokemonLimit = values.limit ? parseInt(values.limit) : TOTAL_POKEMON_SPECIES;
 
   console.log(styleText('bold', '\n--- 📥 UNIVERSAL ASSET DOWNLOADER ---'));
@@ -212,6 +215,28 @@ async function main() {
     }
     await Promise.all(trainerPromises);
     console.log(styleText('green', '✅ Trainer sprites complete.'));
+  }
+
+  // 4. SHOWDOWN SPRITES (todas las generaciones, desde play.pokemonshowdown.com)
+  if (doShowdown) {
+    console.log(styleText('yellow', '\n📦 Fetching Showdown sprites + cries (all gens)...'));
+    const { Dex } = await import('@pkmn/sim');
+    const { downloadAllSprites } = await import('../showdown/sandbox_db/cloner/fetch_sprites.ts');
+
+    // isNonstandard: null=estándar, 'Past'=Dexit (reales), 'CAP'/'LGPE'/'Unobtainable'=excluir
+    const fullDex = Dex.forGen(9);
+    let pokemonIds = fullDex.species.all()
+      .filter(s => s.isNonstandard === null || s.isNonstandard === 'Past')
+      .map(s => s.id);
+
+    if (values.limit) {
+      const lim = parseInt(values.limit);
+      if (!isNaN(lim)) pokemonIds = pokemonIds.slice(0, lim);
+    }
+
+    console.log(styleText('gray', `   ${pokemonIds.length} Pokémon found across all generations.`));
+    await downloadAllSprites(pokemonIds, 5, 50);
+    console.log(styleText('green', '✅ Showdown sprites complete.'));
   }
 
   console.log(styleText('bold', styleText('green', `\n✨ ALL ASSETS UPDATED in ${OUTPUT_DIR}\n`)));
