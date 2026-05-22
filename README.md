@@ -218,8 +218,7 @@ Resumen de comandos MikroTik (Winbox / SSH) para resolver caídas de ruteo asim�
    /routing rule add routing-mark=to_ISP_2_omar action=lookup table=to_ISP_2_omar
    ```
 
-3. **Bypass del Firewall del NAS (Hairpin NAT Universal):**
-   Remueve el filtro de `src-address` en tu regla de Hairpin NAT para masqueradear todas las conexiones entrantes (locales y externas) con la IP del router (`192.168.88.1`), forzando al NAS a aceptar y responder correctamente.
+3. **Bypass del Firewall del NAS (Hairpin NAT Universal):** Remueve el filtro de `src-address` en tu regla de Hairpin NAT para masqueradear todas las conexiones entrantes (locales y externas) con la IP del router (`192.168.88.1`), forzando al NAS a aceptar y responder correctamente.
 
 ### Otros Comandos de Desarrollo
 
@@ -258,6 +257,7 @@ npm run assets:download -- --limit=151  # Solo primera generación
 npm run assets:download -- --pokemon    # Solo Pokémon (Front/Back/Shiny)
 npm run assets:download -- --items      # Solo ítems
 npm run assets:download -- --trainers   # Solo entrenadores
+npm run assets:download -- --showdown   # Solo Pokémon de Showdown (Front/Back/Shiny, Cries)
 ```
 
 > [!NOTE] Los recursos se descargan en la carpeta `external_assets/`. Estos archivos están fuera del pipeline automático de `_raw-assets` por defecto para evitar duplicación masiva, pero podés moverlos manualmente si necesitás procesarlos.
