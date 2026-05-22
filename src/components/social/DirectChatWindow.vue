@@ -123,6 +123,7 @@ onMounted(() => {
           >
             <div class="message-meta">
               <span
+                v-gsap-nick="chatStore.profileCosmetics[msg.senderId || '']?.nick_style || 'normal'"
                 class="username clickable-username"
                 :class="chatStore.profileCosmetics[msg.senderId || '']?.nick_style || 'normal'"
                 @click.stop="openTrainerProfile(msg.senderId)"

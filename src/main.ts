@@ -10,14 +10,20 @@ import '@/styles/_index.scss'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import PokemonPreview from '@/components/admin/debug/PokemonPreview.vue'
 
+// Global Directives
+import { gsapNick } from '@/directives/gsapNick'
+
 const app = createApp(App)
 const pinia = createPinia()
 
 app.component('PVTooltip', PVTooltip)
 app.component('PokemonPreview', PokemonPreview)
 
+app.directive('gsap-nick', gsapNick)
+
 app.use(pinia)
 app.use(router)
 
 app.mount('#app')
 window.pwa_app_mounted = true
+

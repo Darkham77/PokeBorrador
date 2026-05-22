@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref, onMounted, onUnmounted } from 'vue';
+import { gsap } from 'gsap';
 
 interface Props {
   guardian: {
@@ -16,12 +17,53 @@ const emit = defineEmits<{
 }>();
 
 const name = computed(() => props.guardian.id.toUpperCase());
+
+const overlayRef = ref<HTMLElement | null>(null);
+const alertBoxRef = ref<HTMLElement | null>(null);
+const warningRef = ref<HTMLElement | null>(null);
+
+let warningTween: gsap.core.Tween | null = null;
+
+onMounted(() => {
+  // Fade in overlay
+  gsap.fromTo(overlayRef.value, 
+    { opacity: 0 },
+    { opacity: 1, duration: 0.3, ease: 'power2.out' }
+  );
+
+  // Slide up alert box
+  gsap.fromTo(alertBoxRef.value,
+    { y: 30, opacity: 0 },
+    { y: 0, opacity: 1, duration: 0.4, ease: 'back.out(1.275)' }
+  );
+
+  // Pulse warning icon
+  warningTween = gsap.fromTo(warningRef.value,
+    { scale: 1.0 },
+    { scale: 1.1, duration: 0.5, yoyo: true, repeat: -1, ease: 'sine.inOut' }
+  );
+});
+
+onUnmounted(() => {
+  if (warningTween) {
+    warningTween.kill();
+  }
+});
 </script>
 
 <template>
-  <div class="guardian-overlay">
-    <div class="alert-box">
-      <div class="warning-icon">
+  <div
+    ref="overlayRef"
+    class="guardian-overlay"
+  >
+    <div
+      ref="alertBoxRef"
+      class="alert-box"
+    >
+      <div
+        ref="warningRef"
+        class="warning-icon"
+      >
         ⚠️
       </div>
       <h3 class="press-start">
@@ -58,7 +100,6 @@ const name = computed(() => props.guardian.id.toUpperCase());
   align-items: center;
   justify-content: center;
   padding: 24px;
-  animation: fadeIn 0.3s ease-out;
   transform: Translatez(0);
 }
 
@@ -77,13 +118,12 @@ const name = computed(() => props.guardian.id.toUpperCase());
   width: 100%;
   text-align: center;
   box-shadow: 0 0 50px Rgba(245, 158, 11, 0.2);
-  animation: slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .warning-icon {
   font-size: 40px;
   margin-bottom: 20px;
-  animation: pulse 1s infinite;
+  display: inline-block;
 }
 
 h3 {
@@ -117,7 +157,7 @@ h3 {
 .battle-btn {
   width: 100%;
   padding: 16px;
-  background: Linear-Gradient(135deg, Rgba(251, 191, 36, 1), Rgba(245, 158, 11, 1));
+  background: linear-gradient(135deg, Rgba(251, 191, 36, 1), Rgba(245, 158, 11, 1));
   border: none;
   border-radius: 16px;
   color: Rgba(0, 0, 0, 1);
@@ -132,21 +172,5 @@ h3 {
   &:active {
     transform: Scale(0.98);
   }
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes slideUp {
-  from { transform: Translatey(30px); opacity: 0; }
-  to { transform: Translatey(0); opacity: 1; }
-}
-
-@keyframes pulse {
-  0% { transform: Scale(1.0); }
-  50% { transform: Scale(1.1); }
-  100% { transform: Scale(1.0); }
 }
 </style>

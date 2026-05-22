@@ -78,8 +78,9 @@ const formatRank = (index: number) => `#${index + 1}`;
           />
           <div class="name-group">
             <span
+              v-gsap-nick="row.nick_style || 'normal'"
               class="trainer-name"
-              :class="row.nick_style"
+              :class="row.nick_style || 'normal'"
             >{{ row.username }}</span>
             <span class="trainer-level m-badge-level">Nv. {{ row.level }} • {{ row.badges }} 🏅</span>
           </div>

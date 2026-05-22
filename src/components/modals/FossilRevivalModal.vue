@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed, nextTick } from 'vue'
 import { gsap } from 'gsap'
 import { useUIStore } from '@/stores/ui'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
@@ -24,28 +24,93 @@ const pokemonSprite = computed(() => {
   return getAssetUrl(ASSET_TYPES.POKEMON, pokemon.value.id, { isShiny: pokemon.value.isShiny })
 })
 
+const overlayRef = ref<HTMLElement | null>(null)
+const glowRef = ref<HTMLElement | null>(null)
+const fossilRef = ref<HTMLElement | null>(null)
+const pokemonRef = ref<HTMLElement | null>(null)
+const statsCardRef = ref<HTMLElement | null>(null)
+const flashRef = ref<HTMLElement | null>(null)
+
 let revivalTimeline: gsap.core.Timeline | null = null
+let fossilPulseTween: gsap.core.Tween | null = null
+let pokemonFloatTween: gsap.core.Tween | null = null
 
 onMounted(() => {
+  // Set initial state
+  gsap.set(overlayRef.value, { opacity: 0 })
+  gsap.to(overlayRef.value, { opacity: 1, duration: 0.5, ease: 'power2.out' })
+
   revivalTimeline = gsap.timeline()
 
   // 1. Initial wait
   revivalTimeline.to({}, { duration: 1.5 })
   
   // 2. Start glowing
-  revivalTimeline.add(() => { step.value = 1 })
+  revivalTimeline.add(() => {
+    step.value = 1
+    nextTick(() => {
+      // Glow scale & opacity transition
+      gsap.fromTo(glowRef.value, 
+        { scale: 0, opacity: 0 },
+        { scale: 3, opacity: 1, duration: 2, ease: 'sine.inOut' }
+      )
+      // Pulse animation for the fossil item image
+      fossilPulseTween = gsap.fromTo(fossilRef.value,
+        { scale: 1, filter: 'drop-shadow(0 0 15px rgba(255, 217, 61, 0.5))' },
+        { scale: 1.1, filter: 'drop-shadow(0 0 25px rgba(255, 217, 61, 0.9))', duration: 0.5, yoyo: true, repeat: -1, ease: 'sine.inOut' }
+      )
+    })
+  })
   revivalTimeline.to({}, { duration: 3.0 })
 
   // 3. Flash screen
-  revivalTimeline.add(() => { step.value = 2 })
+  revivalTimeline.add(() => {
+    step.value = 2
+    // Trigger white flash overlay using GSAP
+    gsap.timeline()
+      .set(flashRef.value, { display: 'block', opacity: 0 })
+      .to(flashRef.value, { opacity: 1, duration: 0.2, ease: 'power2.out' })
+      .to(flashRef.value, { opacity: 0, duration: 0.2, ease: 'power2.in', onComplete: () => {
+        if (flashRef.value) flashRef.value.style.display = 'none'
+      }})
+  })
   revivalTimeline.to({}, { duration: 0.4 })
 
   // 4. Reveal!
-  revivalTimeline.add(() => { step.value = 3 })
+  revivalTimeline.add(() => {
+    if (fossilPulseTween) {
+      fossilPulseTween.kill()
+      fossilPulseTween = null
+    }
+
+    step.value = 3
+    nextTick(() => {
+      // Update glow to white/gold based on shiny status
+      if (pokemon.value?.isShiny) {
+        gsap.to(glowRef.value, { background: 'radial-gradient(circle, gold 0%, transparent 70%)', duration: 0.5 })
+      } else {
+        gsap.to(glowRef.value, { background: 'radial-gradient(circle, var(--white) 0%, transparent 70%)', duration: 0.5 })
+      }
+
+      // Float animation for Pokemon image
+      pokemonFloatTween = gsap.fromTo(pokemonRef.value,
+        { y: 0 },
+        { y: -10, duration: 1, yoyo: true, repeat: -1, ease: 'power1.inOut' }
+      )
+
+      // Slide up stats card
+      gsap.fromTo(statsCardRef.value,
+        { y: 30, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.6, ease: 'back.out(1.28)' }
+      )
+    })
+  })
 })
 
 onUnmounted(() => {
   if (revivalTimeline) revivalTimeline.kill()
+  if (fossilPulseTween) fossilPulseTween.kill()
+  if (pokemonFloatTween) pokemonFloatTween.kill()
 })
 
 function handleClose() {
@@ -55,7 +120,10 @@ function handleClose() {
 </script>
 
 <template>
-  <div class="fossil-overlay">
+  <div
+    ref="overlayRef"
+    class="fossil-overlay"
+  >
     <div
       v-if="fossilData"
       class="fossil-stage"
@@ -67,9 +135,9 @@ function handleClose() {
       <div class="animation-container">
         <!-- Glow Layer -->
         <div 
+          ref="glowRef"
           class="fossil-glow"
           :class="[
-            { 'step-1': step >= 1 },
             { 'revealed': step === 3 },
             { 'is-shiny': step === 3 && pokemon?.isShiny }
           ]"
@@ -78,9 +146,9 @@ function handleClose() {
         <!-- Sprite Layer -->
         <img 
           v-if="step < 3"
+          ref="fossilRef"
           :src="itemSprite"
           class="fossil-img"
-          :class="{ 'step-1': step === 1 }"
           alt="Fossil"
           @error="e => { (e.target as HTMLImageElement).style.display = 'none' }" 
         >
@@ -90,8 +158,9 @@ function handleClose() {
           :sparkle-count="5"
         >
           <img 
-            :src="pokemonSprite"
-            class="pokemon-img" 
+            ref="pokemonRef"
+            :src="pokemonSprite" 
+            class="pokemon-img"
             alt="Pokemon"
             @error="e => { (e.target as HTMLImageElement).style.display = 'none' }"
           >
@@ -115,6 +184,7 @@ function handleClose() {
       <!-- Stats Card (Only on step 3) -->
       <div
         v-if="step === 3 && pokemon"
+        ref="statsCardRef"
         class="stats-card"
       >
         <div class="stat-row nature-row">
@@ -186,8 +256,9 @@ function handleClose() {
 
     <!-- White Flash Layer -->
     <div
-      v-if="step === 2"
+      ref="flashRef"
       class="flash-layer"
+      style="display: none; opacity: 0;"
     />
   </div>
 </template>
@@ -203,21 +274,18 @@ function handleClose() {
   -webkit-will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
   backdrop-filter: Blur(15px);
-  backdrop-filter: Blur(15px);
   @include gpu-layer;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   padding: 20px;
-  animation: fadeIn 0.5s ease;
   transform: Translatez(0);
   @include gpu-layer;
 }
 
 .fossil-stage {
   text-align: center;
-  transition: all 0.5s;
   max-width: 400px;
   width: 100%;
   display: flex;
@@ -248,25 +316,19 @@ function handleClose() {
   position: absolute;
   width: 100px;
   height: 100px;
-  background: Radial-Gradient(circle, var(--yellow) 0%, transparent 70%);
+  background: radial-gradient(circle, var(--yellow) 0%, transparent 70%);
   opacity: 0;
   border-radius: 50%;
   will-change: transform, filter, opacity;
   filter: Blur(15px);
-  transition: all 2s ease-in-out;
   @include will-animate(transform);
   
-  &.step-1 {
-    opacity: 1;
-    transform: Scale(3);
-  }
-  
   &.revealed {
-    background: Radial-Gradient(circle, var(--white) 0%, transparent 70%);
+    background: radial-gradient(circle, var(--white) 0%, transparent 70%);
   }
   
   &.is-shiny {
-    background: Radial-Gradient(circle, gold 0%, transparent 70%);
+    background: radial-gradient(circle, gold 0%, transparent 70%);
   }
 }
 
@@ -279,12 +341,7 @@ function handleClose() {
   z-index: var(--z-base);
   will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 0 15px Rgba(0,0,0,0.8));
-  transition: all 1s;
   @include will-animate(transform);
-  
-  &.step-1 {
-    animation: itemPulse 1s infinite alternate;
-  }
 }
 
 .pokemon-img {
@@ -296,7 +353,6 @@ function handleClose() {
   z-index: var(--z-base);
   will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 0 30px Rgba(255,255,255,0.6));
-  animation: bounce 2s infinite;
   @include will-animate(transform);
 }
 
@@ -331,10 +387,8 @@ function handleClose() {
   border-radius: 20px;
   padding: 20px;
   width: 100%;
-  animation: slideUp 0.6s cubic-bezier(0.18, 0.89, 0.32, 1.28) backwards;
   -webkit-will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
-  backdrop-filter: Blur(5px);
   backdrop-filter: Blur(5px);
   @include gpu-layer;
 }
@@ -401,15 +455,5 @@ function handleClose() {
   inset: 0;
   background: var(--white);
   z-index: var(--z-base);
-  animation: flash 0.4s ease-out forwards;
 }
-
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-@keyframes itemPulse { from { transform: Scale(1); will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  filter: Drop-Shadow(0 0 15px Rgba(255,217,61,0.5)); } to { transform: Scale(1.1); will-change: transform, filter, opacity;
-  filter: Drop-Shadow(0 0 25px Rgba(255,217,61,0.9)); } }
-@keyframes bounce { 0%, 100% { transform: Translatey(0); } 50% { transform: Translatey(-10px); } }
-@keyframes flash { 0% { opacity: 0; } 50% { opacity: 1; } 100% { opacity: 0; } }
-@keyframes slideUp { from { transform: Translatey(30px); opacity: 0; } to { transform: Translatey(0); opacity: 1; } }
 </style>

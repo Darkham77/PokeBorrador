@@ -135,8 +135,9 @@ defineEmits<{
           
           <div class="friend-info">
             <div
+              v-gsap-nick="friend.nick_style || 'normal'"
               class="name clickable-username"
-              :class="friend.nick_style"
+              :class="friend.nick_style || 'normal'"
               @click.stop="openTrainerProfile(friend.id)"
             >
               {{ friend.username }}

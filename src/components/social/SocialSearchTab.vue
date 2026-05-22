@@ -149,8 +149,9 @@ watch(() => socialStore.searchResults, () => {
         />
         <div class="player-info">
           <div 
+            v-gsap-nick="player.nick_style || 'normal'"
             class="name clickable-username"
-            :class="player.nick_style"
+            :class="player.nick_style || 'normal'"
             @click.stop="openTrainerProfile(player.id)"
           >
             {{ player.username }}

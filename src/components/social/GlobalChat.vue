@@ -146,6 +146,7 @@ useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
             <div class="message-content">
               <div class="message-meta">
                 <span
+                  v-gsap-nick="chatStore.profileCosmetics[msg.user_id || '']?.nick_style || 'normal'"
                   class="username clickable-username"
                   :class="chatStore.profileCosmetics[msg.user_id || '']?.nick_style || 'normal'"
                   @click.stop="openTrainerProfile(msg.user_id)"

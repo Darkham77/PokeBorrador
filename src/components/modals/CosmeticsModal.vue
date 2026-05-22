@@ -179,6 +179,7 @@ const selectAvatar = (style: AvatarStyle) => {
           >
             <div class="preview-area">
               <span
+                v-gsap-nick="style.class"
                 class="preview-nick"
                 :class="style.class"
               >{{ profileStore.profileData.username || 'Entrenador' }}</span>

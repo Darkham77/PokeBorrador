@@ -113,8 +113,9 @@ async function onClaim() {
         />
         <div class="trainer-texts">
           <span
+            v-gsap-nick="cosmetics.nick_style || 'normal'"
             class="username clickable-username"
-            :class="cosmetics.nick_style"
+            :class="cosmetics.nick_style || 'normal'"
             @click.stop="openProfile"
           >{{ cosmetics.username }}</span>
 

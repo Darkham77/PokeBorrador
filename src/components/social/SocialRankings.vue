@@ -85,8 +85,9 @@ const getFactionColor = (faction: string) => {
 
           <div class="rank-info">
             <div
+              v-gsap-nick="player.nick_style || 'normal'"
               class="player-name"
-              :class="player.nick_style"
+              :class="player.nick_style || 'normal'"
             >
               {{ player.username }}
               <span 

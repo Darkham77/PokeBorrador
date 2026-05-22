@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { computed, type CSSProperties } from 'vue';
+import { computed, type CSSProperties, ref, onMounted, onUnmounted, watch, nextTick } from 'vue';
 import { PLAYER_CLASSES } from '@/data/playerClasses';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import gsap from 'gsap';
 
 interface Props {
   playerClass?: string | null
@@ -56,33 +57,26 @@ const avatarClass = computed(() => {
   return ` ${props.avatarStyle}`;
 });
 
-// Check if current avatarStyle is a square style
+const hasFrame = computed(() => {
+  return !!(props.avatarStyle && 
+         props.avatarStyle !== 'null' && 
+         props.avatarStyle !== 'undefined' && 
+         props.avatarStyle !== 'none' && 
+         props.avatarStyle !== 'default' && 
+         props.avatarStyle !== 'sin-marco' && 
+         props.avatarStyle.trim());
+});
+
 const isSquare = computed(() => {
-  if (!props.avatarStyle || 
-      props.avatarStyle === 'null' || 
-      props.avatarStyle === 'undefined' || 
-      props.avatarStyle === 'none' || 
-      props.avatarStyle === 'default' || 
-      props.avatarStyle === 'sin-marco' || 
-      !props.avatarStyle.trim()) {
-    return false;
-  }
+  if (!hasFrame.value) return false;
   return props.avatarStyle.includes('sq');
 });
 
-// Outer container styles (MUST be transparent so it doesn't cover negative z-index pseudo-elements)
+// Outer container styles
 const containerStyles = computed((): CSSProperties => {
   const sizePx = props.size;
   const bColor = borderColor.value;
   const sColor = shadowColor.value;
-  
-  const hasStyle = props.avatarStyle && 
-                   props.avatarStyle !== 'null' && 
-                   props.avatarStyle !== 'undefined' && 
-                   props.avatarStyle !== 'none' && 
-                   props.avatarStyle !== 'default' && 
-                   props.avatarStyle !== 'sin-marco' && 
-                   props.avatarStyle.trim() !== '';
   
   return {
     width: `${sizePx}px`,
@@ -94,8 +88,8 @@ const containerStyles = computed((): CSSProperties => {
     boxSizing: 'border-box',
     borderStyle: 'solid',
     borderWidth: '2px',
-    background: 'transparent', // Always transparent to allow glows underneath
-    ...(hasStyle ? {} : {
+    background: 'transparent',
+    ...(hasFrame.value ? {} : {
       borderRadius: '50%',
       borderColor: bColor,
       boxShadow: `0 0 ${sizePx / 4}px ${sColor}`
@@ -103,7 +97,7 @@ const containerStyles = computed((): CSSProperties => {
   };
 });
 
-// Inner face wrapper styles (holds the actual face or cap graphic)
+// Inner face wrapper styles
 const faceStyles = computed((): CSSProperties => {
   const sizePx = props.size;
   const rad = isSquare.value ? '6px' : '50%';
@@ -116,7 +110,7 @@ const faceStyles = computed((): CSSProperties => {
     justifyContent: 'center',
     boxSizing: 'border-box',
     borderRadius: rad,
-    zIndex: 2, // Drawn on top of pseudo-element gradients and masks
+    zIndex: 2,
     fontSize: `${sizePx / 2}px`
   };
 
@@ -143,14 +137,354 @@ const faceStyles = computed((): CSSProperties => {
     '--avatar-seed': Math.random()
   } as CSSProperties;
 });
+
+// GSAP Animations Integration
+const containerRef = ref<HTMLElement | null>(null);
+const frameRef = ref<HTMLElement | null>(null);
+let activeTimeline: gsap.core.Timeline | null = null;
+
+const ELEMENT_COLORS: Record<string, { base: string, light: string }> = {
+  normal: { base: '#9ca3af', light: '#cbd5e1' },
+  fire: { base: '#ef4444', light: '#f87171' },
+  water: { base: '#3b82f6', light: '#60a5fa' },
+  grass: { base: '#22c55e', light: '#4ade80' },
+  electric: { base: '#eab308', light: '#fef08a' },
+  ice: { base: '#38bdf8', light: '#7dd3fc' },
+  fighting: { base: '#ea580c', light: '#fb923c' },
+  poison: { base: '#a855f7', light: '#c084fc' },
+  ground: { base: '#ca8a04', light: '#facc15' },
+  flying: { base: '#67e8f9', light: '#a5f3fc' },
+  psychic: { base: '#ec4899', light: '#f472b6' },
+  bug: { base: '#84cc16', light: '#a3e635' },
+  rock: { base: '#b45309', light: '#d97706' },
+  ghost: { base: '#6366f1', light: '#818cf8' },
+  dragon: { base: '#4f46e5', light: '#6366f1' },
+  dark: { base: '#1e1b4b', light: '#312e81' },
+  steel: { base: '#64748b', light: '#94a3b8' },
+  fairy: { base: '#f472b6', light: '#f9a8d4' }
+};
+
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach((entry) => {
+    if (activeTimeline) {
+      if (entry.isIntersecting) {
+        activeTimeline.play();
+      } else {
+        activeTimeline.pause();
+      }
+    }
+  });
+}, { threshold: 0.05 });
+
+function cleanAnimations() {
+  if (containerRef.value) {
+    observer.unobserve(containerRef.value);
+  }
+  if (activeTimeline) {
+    activeTimeline.kill();
+    activeTimeline = null;
+  }
+  if (containerRef.value) {
+    gsap.set(containerRef.value, { clearProps: 'boxShadow,borderColor,opacity' });
+  }
+  if (frameRef.value) {
+    gsap.set(frameRef.value, { clearProps: 'transform,rotation,opacity,scale' });
+  }
+}
+
+function initAnimations() {
+  cleanAnimations();
+  
+  if (!containerRef.value) return;
+  observer.observe(containerRef.value);
+
+  const styleClass = props.avatarStyle || '';
+  if (!styleClass.trim()) return;
+
+  const cleanStyle = styleClass
+    .replace('av-sq-', '')
+    .replace('av-', '')
+    .trim();
+
+  activeTimeline = gsap.timeline({ repeat: -1 });
+
+  // 1. Frame Background Rotation or Scale (for Squares)
+  if (frameRef.value) {
+    const isSq = isSquare.value;
+    if (isSq) {
+      // Square frame pulse
+      activeTimeline.fromTo(frameRef.value,
+        { scale: 1.0, opacity: 0.7 },
+        { scale: 1.08, opacity: 1.0, duration: 1, yoyo: true, repeat: -1, ease: 'sine.inOut' },
+        0
+      );
+    } else {
+      // Round frame spin
+      let duration = 3;
+      let rotationDir = 360;
+
+      if (cleanStyle.includes('fire')) duration = 2;
+      else if (cleanStyle.includes('water')) duration = 4;
+      else if (cleanStyle.includes('electric')) duration = 0.4;
+      else if (cleanStyle.includes('psychic')) { duration = 3; rotationDir = -360; }
+      else if (cleanStyle.includes('dark')) duration = 5;
+      else if (cleanStyle.includes('ghost')) duration = 4;
+      else if (cleanStyle.includes('ice')) { duration = 6; rotationDir = -360; }
+      else if (cleanStyle.includes('dragon')) duration = 1.8;
+      else if (cleanStyle.includes('legend')) duration = 2;
+      else if (cleanStyle.includes('master')) duration = 5;
+      else if (cleanStyle.includes('cazabichos')) duration = 3;
+      else if (cleanStyle.includes('criador')) duration = 2.5;
+      else if (cleanStyle.includes('rocket')) duration = 1.5;
+      else if (cleanStyle.includes('entrenador')) duration = 2;
+      else if (cleanStyle.includes('union')) duration = 2.5;
+      else if (cleanStyle.includes('poder')) duration = 2.2;
+      else if (cleanStyle.includes('admin')) duration = 1.0;
+
+      // Handle type duration
+      if (cleanStyle.startsWith('type-')) {
+        const typeName = cleanStyle.replace('type-', '');
+        const colors = ELEMENT_COLORS[typeName];
+        if (colors) {
+          if (typeName === 'normal' || typeName === 'steel') duration = 3.5;
+          else if (typeName === 'fire') duration = 1.8;
+          else if (typeName === 'water') duration = 2.2;
+          else if (typeName === 'grass') duration = 3.0;
+          else if (typeName === 'electric') duration = 1.2;
+          else if (typeName === 'ice') duration = 2.5;
+          else if (typeName === 'fighting') duration = 2.0;
+          else if (typeName === 'poison') duration = 2.4;
+          else if (typeName === 'ground') duration = 3.5;
+          else if (typeName === 'flying') duration = 2.8;
+          else if (typeName === 'psychic') duration = 1.5;
+          else if (typeName === 'bug') duration = 2.2;
+          else if (typeName === 'rock') duration = 4.0;
+          else if (typeName === 'ghost') duration = 3.2;
+          else if (typeName === 'dragon') duration = 1.6;
+          else if (typeName === 'dark') duration = 2.0;
+          else if (typeName === 'fairy') duration = 2.1;
+        }
+      }
+
+      activeTimeline.to(frameRef.value, {
+        rotation: rotationDir,
+        duration: duration,
+        repeat: -1,
+        ease: 'none'
+      }, 0);
+    }
+  }
+
+  // 2. Pulse Glow & Styling for Container Box Shadow
+  let shadowAnim: { from: string, to: string, duration: number, ease?: string, steps?: boolean } | null = null;
+
+  if (cleanStyle.includes('fire')) {
+    shadowAnim = {
+      from: '0 0 0 3px #ff4400, 0 0 12px rgba(255, 68, 0, 0.4), inset 0 0 6px rgba(255, 68, 0, 0.2)',
+      to: '0 0 0 3px #ff8800, 0 0 24px rgba(255, 68, 0, 0.8), inset 0 0 12px rgba(255, 68, 0, 0.4)',
+      duration: 1
+    };
+  } else if (cleanStyle.includes('water')) {
+    shadowAnim = {
+      from: '0 0 0 3px #0088ff, 0 0 10px rgba(0, 136, 255, 0.35), inset 0 0 5px rgba(0, 136, 255, 0.15)',
+      to: '0 0 0 3px #44eeff, 0 0 20px rgba(0, 136, 255, 0.7), inset 0 0 10px rgba(0, 136, 255, 0.3)',
+      duration: 1.5
+    };
+  } else if (cleanStyle.includes('electric')) {
+    shadowAnim = {
+      from: '0 0 0 3px #ffe040, 0 0 14px rgba(255, 204, 0, 0.5)',
+      to: '0 0 0 3px #ffffff, 0 0 20px rgba(255, 238, 0, 0.58)',
+      duration: 0.1,
+      steps: true
+    };
+  } else if (cleanStyle.includes('psychic')) {
+    shadowAnim = {
+      from: '0 0 0 3px #cc00ff, 0 0 10px rgba(204, 0, 255, 0.35), inset 0 0 5px rgba(204, 0, 255, 0.15)',
+      to: '0 0 0 3px #ff44ff, 0 0 22px rgba(204, 0, 255, 0.7), inset 0 0 10px rgba(204, 0, 255, 0.3)',
+      duration: 1.25
+    };
+  } else if (cleanStyle.includes('dark')) {
+    shadowAnim = {
+      from: '0 0 0 3px #7700bb, 0 0 10px rgba(119, 0, 187, 0.35), inset 0 0 5px rgba(119, 0, 187, 0.15)',
+      to: '0 0 0 3px #9900cc, 0 0 22px rgba(119, 0, 187, 0.7), inset 0 0 10px rgba(119, 0, 187, 0.3)',
+      duration: 2
+    };
+  } else if (cleanStyle.includes('ghost')) {
+    shadowAnim = {
+      from: '0 0 0 3px #8855ff, 0 0 10px rgba(136, 85, 255, 0.35), inset 0 0 5px rgba(136, 85, 255, 0.15)',
+      to: '0 0 0 3px #cc88ff, 0 0 22px rgba(136, 85, 255, 0.7), inset 0 0 10px rgba(136, 85, 255, 0.3)',
+      duration: 1.25
+    };
+    activeTimeline.fromTo(containerRef.value,
+      { opacity: 1 },
+      { opacity: 0.78, duration: 1, yoyo: true, repeat: -1, ease: 'sine.inOut' },
+      0
+    );
+  } else if (cleanStyle.includes('ice')) {
+    shadowAnim = {
+      from: '0 0 0 3px #88eeff, 0 0 10px rgba(136, 238, 255, 0.35), inset 0 0 5px rgba(136, 238, 255, 0.15)',
+      to: '0 0 0 3px #ffffff, 0 0 20px rgba(136, 238, 255, 0.75), inset 0 0 10px rgba(136, 238, 255, 0.3)',
+      duration: 1.5
+    };
+  } else if (cleanStyle.includes('dragon')) {
+    shadowAnim = {
+      from: '0 0 0 3px #4466ff, 0 0 10px rgba(68, 102, 255, 0.35), inset 0 0 5px rgba(68, 102, 255, 0.15)',
+      to: '0 0 0 3px #ff4400, 0 0 22px rgba(68, 102, 255, 0.7), inset 0 0 10px rgba(68, 102, 255, 0.3)',
+      duration: 1
+    };
+  } else if (cleanStyle.includes('legend')) {
+    shadowAnim = {
+      from: '0 0 0 3px #ffdd00, 0 0 18px rgba(255, 170, 0, 0.5)',
+      to: '0 0 0 3px #ffffff, 0 0 28px #ffdd00, 0 0 44px rgba(255, 136, 0, 0.25)',
+      duration: 1
+    };
+  } else if (cleanStyle.includes('master')) {
+    shadowAnim = {
+      from: '0 0 0 3px #aaaaaa, 0 0 10px rgba(170, 170, 170, 0.3), inset 0 0 5px rgba(170, 170, 170, 0.15)',
+      to: '0 0 0 3px #ffffff, 0 0 22px rgba(255, 255, 255, 0.65), inset 0 0 10px rgba(255, 255, 255, 0.3)',
+      duration: 1.5
+    };
+  } else if (cleanStyle.includes('cazabichos')) {
+    shadowAnim = {
+      from: '0 0 0 3px #22c55e, 0 0 10px rgba(34, 197, 94, 0.35), inset 0 0 5px rgba(34, 197, 94, 0.15)',
+      to: '0 0 0 3px #4ade80, 0 0 22px rgba(34, 197, 94, 0.7), inset 0 0 10px rgba(34, 197, 94, 0.3)',
+      duration: 1.5
+    };
+  } else if (cleanStyle.includes('criador')) {
+    shadowAnim = {
+      from: '0 0 0 3px #a855f7, 0 0 10px rgba(168, 85, 247, 0.35), inset 0 0 5px rgba(168, 85, 247, 0.15)',
+      to: '0 0 0 3px #c084fc, 0 0 22px rgba(168, 85, 247, 0.7), inset 0 0 10px rgba(168, 85, 247, 0.3)',
+      duration: 1.25
+    };
+  } else if (cleanStyle.includes('rocket')) {
+    shadowAnim = {
+      from: '0 0 0 3px #ef4444, 0 0 10px rgba(239, 68, 68, 0.35), inset 0 0 5px rgba(239, 68, 68, 0.15)',
+      to: '0 0 0 3px #b91c1c, 0 0 22px rgba(239, 68, 68, 0.7), inset 0 0 10px rgba(239, 68, 68, 0.3)',
+      duration: 0.75
+    };
+  } else if (cleanStyle.includes('entrenador')) {
+    shadowAnim = {
+      from: '0 0 0 3px #3b82f6, 0 0 10px rgba(59, 130, 246, 0.35), inset 0 0 5px rgba(59, 130, 246, 0.15)',
+      to: '0 0 0 3px #60a5fa, 0 0 22px rgba(59, 130, 246, 0.7), inset 0 0 10px rgba(59, 130, 246, 0.3)',
+      duration: 1
+    };
+  } else if (cleanStyle.includes('union')) {
+    shadowAnim = {
+      from: '0 0 0 3px #1e40af, 0 0 10px rgba(30, 64, 175, 0.35), inset 0 0 5px rgba(30, 64, 175, 0.15)',
+      to: '0 0 0 3px #fbbf24, 0 0 22px rgba(251, 191, 36, 0.6), inset 0 0 10px rgba(251, 191, 36, 0.25)',
+      duration: 1.25
+    };
+  } else if (cleanStyle.includes('poder')) {
+    shadowAnim = {
+      from: '0 0 0 3px #991b1b, 0 0 10px rgba(153, 27, 27, 0.35), inset 0 0 5px rgba(153, 27, 27, 0.15)',
+      to: '0 0 0 3px #f97316, 0 0 22px rgba(249, 115, 22, 0.6), inset 0 0 10px rgba(249, 115, 22, 0.25)',
+      duration: 1.1
+    };
+  } else if (cleanStyle.includes('admin')) {
+    shadowAnim = {
+      from: '0 0 0 3px #ef4444, 0 0 12px rgba(239, 68, 68, 0.45), inset 0 0 6px rgba(239, 68, 68, 0.2)',
+      to: '0 0 0 3px #facc15, 0 0 28px rgba(239, 68, 68, 0.85), inset 0 0 14px rgba(239, 68, 68, 0.4)',
+      duration: 0.75
+    };
+  } else if (cleanStyle.startsWith('type-')) {
+    const typeName = cleanStyle.replace('type-', '');
+    const colors = ELEMENT_COLORS[typeName];
+    if (colors) {
+      let pDur = 1.5;
+      if (typeName === 'normal' || typeName === 'steel') pDur = 1.75;
+      else if (typeName === 'fire') pDur = 0.9;
+      else if (typeName === 'water') pDur = 1.1;
+      else if (typeName === 'grass') pDur = 1.5;
+      else if (typeName === 'electric') pDur = 0.6;
+      else if (typeName === 'ice') pDur = 1.25;
+      else if (typeName === 'fighting') pDur = 1.0;
+      else if (typeName === 'poison') pDur = 1.2;
+      else if (typeName === 'ground') pDur = 1.75;
+      else if (typeName === 'flying') pDur = 1.4;
+      else if (typeName === 'psychic') pDur = 0.75;
+      else if (typeName === 'bug') pDur = 1.1;
+      else if (typeName === 'rock') pDur = 2.0;
+      else if (typeName === 'ghost') pDur = 1.6;
+      else if (typeName === 'dragon') pDur = 0.8;
+      else if (typeName === 'dark') pDur = 1.0;
+      else if (typeName === 'fairy') pDur = 1.05;
+
+      shadowAnim = {
+        from: `0 0 0 3px ${colors.base}, 0 0 10px rgba(${hexToRgb(colors.base)}, 0.35), inset 0 0 5px rgba(${hexToRgb(colors.base)}, 0.15)`,
+        to: `0 0 0 3px ${colors.light}, 0 0 22px rgba(${hexToRgb(colors.base)}, 0.7), inset 0 0 10px rgba(${hexToRgb(colors.base)}, 0.3)`,
+        duration: pDur
+      };
+    }
+  }
+
+  // Handle blink-red fallback style
+  if (styleClass.includes('blink-red')) {
+    shadowAnim = {
+      from: '0 0 5px var(--red)',
+      to: '0 0 15px var(--red)',
+      duration: 0.75
+    };
+    activeTimeline.fromTo(containerRef.value,
+      { borderColor: 'var(--red)' },
+      { borderColor: 'var(--red-light)', duration: 0.75, yoyo: true, repeat: -1, ease: 'sine.inOut' },
+      0
+    );
+  }
+
+  if (shadowAnim) {
+    const easeVal = shadowAnim.steps ? 'steps(1)' : 'sine.inOut';
+    activeTimeline.fromTo(containerRef.value,
+      { boxShadow: shadowAnim.from },
+      { boxShadow: shadowAnim.to, duration: shadowAnim.duration, yoyo: true, repeat: -1, ease: easeVal },
+      0
+    );
+  }
+}
+
+function hexToRgb(hex: string): string {
+  const shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
+  const fullHex = hex.replace(shorthandRegex, (_, r, g, b) => r + r + g + g + b + b);
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(fullHex);
+  return result ? 
+    `${parseInt(result[1]!, 16)}, ${parseInt(result[2]!, 16)}, ${parseInt(result[3]!, 16)}` : 
+    '255, 255, 255';
+}
+
+onMounted(() => {
+  nextTick(() => {
+    initAnimations();
+  });
+});
+
+onUnmounted(() => {
+  cleanAnimations();
+});
+
+watch(() => props.avatarStyle, () => {
+  nextTick(() => {
+    initAnimations();
+  });
+});
+
+watch(() => hasFrame.value, () => {
+  nextTick(() => {
+    initAnimations();
+  });
+});
 </script>
 
 <template>
   <div 
+    ref="containerRef"
     class="trainer-avatar-container" 
     :class="avatarClass" 
     :style="containerStyles"
   >
+    <div
+      v-if="hasFrame"
+      ref="frameRef"
+      class="avatar-frame-bg"
+    />
     <div 
       class="avatar-face-wrapper" 
       :style="faceStyles"
@@ -168,15 +502,11 @@ const faceStyles = computed((): CSSProperties => {
   display: flex;
   align-items: center;
   justify-content: center;
-
-  &.blink-red {
-    animation: blinkRed 1.5s infinite;
-    animation-delay: calc(var(--avatar-seed, 0) * -1.5s);
-  }
+  position: relative;
 }
 
-@keyframes blinkRed {
-  0%, 100% { box-shadow: 0 0 5px var(--red); border-color: var(--red); }
-  50% { box-shadow: 0 0 15px var(--red); border-color: var(--red-light); }
+.avatar-frame-bg {
+  position: absolute;
+  pointer-events: none;
 }
 </style>

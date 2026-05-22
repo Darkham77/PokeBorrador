@@ -371,9 +371,11 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
           </div>
           <div
             class="profile-username"
-            :class="nickStyle || 'normal'"
           >
-            <span>{{ trainerName }}</span>
+            <span
+              v-gsap-nick="nickStyle || 'normal'"
+              :class="nickStyle || 'normal'"
+            >{{ trainerName }}</span>
             <a
               v-if="isOwnProfile"
               href="#"

@@ -78,8 +78,9 @@ watch(() => socialStore.pendingRequests, () => {
           />
           <div class="text">
             <span 
+              v-gsap-nick="req.profiles?.save_data?.nick_style || req.profiles?.nick_style || 'normal'"
               class="username clickable-username"
-              :class="req.profiles?.save_data?.nick_style || req.profiles?.nick_style"
+              :class="req.profiles?.save_data?.nick_style || req.profiles?.nick_style || 'normal'"
               @click.stop="openTrainerProfile(req.requester_id)"
             >{{ req.profiles?.username }}</span>
             quiere ser tu amigo

@@ -38,17 +38,14 @@
 
 .nt-fire, .nick-style-fire {
   color: Rgba(255, 69, 0, 1) !important;
-  animation: anim-fire 2s infinite alternate !important;
 }
 
 .nt-water, .nick-style-water {
   color: Rgba(56, 189, 248, 1) !important;
-  animation: anim-water 3s infinite linear !important;
 }
 
 .nt-spark, .nick-style-spark {
   color: Rgba(250, 204, 21, 1) !important;
-  animation: anim-spark 0.5s infinite !important;
 }
 
 .nt-dark, .nick-style-dark {
@@ -77,7 +74,6 @@
   -webkit-text-fill-color: transparent !important;
   color: transparent !important;
   font-weight: 900 !important;
-  animation: admin-hologram 3s linear infinite !important;
   filter: Drop-Shadow(0 0 2px Rgba(255, 255, 255, 0.5)) Drop-Shadow(0 0 6px Rgba(158, 0, 255, 0.35)) !important;
   display: inline-block !important;
 }
@@ -86,28 +82,24 @@
   color: #22c55e !important;
   text-shadow: 0 0 6px Rgba(34, 197, 94, 0.5), 0 0 12px Rgba(21, 128, 61, 0.3) !important;
   font-weight: 700 !important;
-  animation: anim-bug-flutter 2s ease-in-out infinite alternate !important;
 }
 
 .nt-class-criador, .username.criador, .name.criador {
   color: #a855f7 !important;
   text-shadow: 0 0 6px Rgba(168, 85, 247, 0.5), 0 0 12px Rgba(126, 34, 206, 0.3) !important;
   font-weight: 700 !important;
-  animation: anim-breeder-pulse 2s ease-in-out infinite alternate !important;
 }
 
 .nt-class-rocket, .username.rocket, .name.rocket {
   color: #ef4444 !important;
   text-shadow: 0 0 8px #ef4444, 0 0 15px #991b1b !important;
   font-weight: 700 !important;
-  animation: anim-rocket-shadow 1.5s ease-in-out infinite alternate !important;
 }
 
 .nt-class-entrenador, .username.entrenador, .name.entrenador {
   color: #3b82f6 !important;
   text-shadow: 0 0 6px Rgba(59, 130, 246, 0.5), 0 0 12px Rgba(29, 78, 216, 0.3) !important;
   font-weight: 700 !important;
-  animation: anim-trainer-glow 2s ease-in-out infinite alternate !important;
 }
 
 .nt-faction-union {
@@ -117,7 +109,6 @@
     0 0 4px #2563eb, 
     0 0 10px Rgba(37, 99, 235, 0.7), 
     0 0 16px Rgba(37, 99, 235, 0.4) !important;
-  animation: anim-union-glow 2.5s ease-in-out infinite alternate !important;
 }
 
 .nt-faction-poder {
@@ -127,7 +118,6 @@
     0 0 4px #ef4444, 
     0 0 10px Rgba(239, 68, 68, 0.7), 
     0 0 16px Rgba(239, 68, 68, 0.4) !important;
-  animation: anim-poder-glow 2.2s ease-in-out infinite alternate !important;
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
@@ -156,44 +146,34 @@
   border-style: solid !important;
   border-width: 2px !important;
   border-radius: $border-radius !important;
+  box-shadow: $box-shadow !important;
 
-  @if $pulse-glow-animation {
-    animation: $pulse-glow-animation !important;
-  } @else {
-    box-shadow: $box-shadow !important;
-  }
-
-  &::before {
-    content: ''; position: absolute; inset: $actual-inset-before;
-    border-radius: $border-radius !important; /* Circle for circle, Square for square! */
-    background: conic-gradient($gradient-colors);
-    z-index: -2;
-    
-    @if $border-radius == 50% {
-      // Circular gradients rotate
-      $dir: normal;
-      @if $reverse {
-        $dir: reverse;
-      }
-      @if $extra-animation {
-        animation: spin-slow $spin-duration linear infinite $dir, $extra-animation !important;
-      } @else {
-        animation: spin-slow $spin-duration linear infinite $dir !important;
-      }
-    } @else {
-      // Square gradients scale/pulse deterministically in place to avoid rotating corners
-      animation: square-gradient-pulse 2s ease-in-out infinite alternate !important;
-    }
-  }
-  &::after {
-    content: ''; position: absolute; inset: $actual-inset-after;
-    $offset: 2px;
-    @if $border-radius == 50% {
-      $offset: 0px;
-    }
-    border-radius: calc(#{$border-radius} - #{$offset}) !important;
-    background: #1e293b; /* Match standard avatar background color perfectly! */
+  .avatar-frame-bg {
+    position: absolute;
+    inset: -2px;
+    border-radius: inherit;
     z-index: -1;
+    
+    &::before {
+      content: '';
+      position: absolute;
+      inset: $actual-inset-before;
+      border-radius: $border-radius !important; /* Circle for circle, Square for square! */
+      background: conic-gradient($gradient-colors);
+      z-index: -2;
+    }
+    &::after {
+      content: '';
+      position: absolute;
+      inset: $actual-inset-after;
+      $offset: 2px;
+      @if $border-radius == 50% {
+        $offset: 0px;
+      }
+      border-radius: calc(#{$border-radius} - #{$offset}) !important;
+      background: #1e293b; /* Match standard avatar background color perfectly! */
+      z-index: -1;
+    }
   }
 }
 
@@ -319,232 +299,7 @@
   @include make-avatar-frame(#ef4444, null, (#ca8a04, #ef4444, #6d28d9, #ef4444, #ca8a04), 1s, 8px, -7px, -4px, false, null, admin-av-pulse 1.5s ease-in-out infinite);
 }
 
-@keyframes admin-hologram {
-  0% { background-position: 0% center; }
-  100% { background-position: 200% center; }
-}
 
-
-/* ─────────────────────────────────────────────────────────────────────────────
-   KEYFRAME ANIMATIONS
-   ───────────────────────────────────────────────────────────────────────────── */
-
-@keyframes anim-fire {
-  from {
-    text-shadow: 0 0 5px Rgba(239, 68, 68, 1);
-  }
-  to {
-    text-shadow: 0 0 15px Rgba(249, 115, 22, 1), 0 0 25px Rgba(250, 204, 21, 1);
-  }
-}
-
-@keyframes anim-water {
-  0% {
-    transform: Translatey(0);
-  }
-  50% {
-    transform: Translatey(-2px);
-  }
-  100% {
-    transform: Translatey(0);
-  }
-}
-
-@keyframes anim-spark {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.7;
-  }
-}
-
-@keyframes anim-bug-flutter {
-  from {
-    text-shadow: 0 0 5px Rgba(34, 197, 94, 0.6);
-  }
-  to {
-    text-shadow: 0 0 12px Rgba(34, 197, 94, 0.8), 0 0 20px Rgba(134, 239, 172, 0.4);
-  }
-}
-
-@keyframes anim-breeder-pulse {
-  from {
-    text-shadow: 0 0 5px Rgba(168, 85, 247, 0.6);
-  }
-  to {
-    text-shadow: 0 0 12px Rgba(168, 85, 247, 0.8), 0 0 20px Rgba(216, 180, 254, 0.4);
-  }
-}
-
-@keyframes anim-rocket-shadow {
-  from {
-    text-shadow: 0 0 6px #ef4444, 0 0 12px #991b1b;
-  }
-  to {
-    text-shadow: 0 0 12px #ef4444, 0 0 24px #991b1b, 0 0 35px #000;
-  }
-}
-
-@keyframes anim-trainer-glow {
-  from {
-    text-shadow: 0 0 5px Rgba(59, 130, 246, 0.6);
-  }
-  to {
-    text-shadow: 0 0 12px Rgba(59, 130, 246, 0.8), 0 0 20px Rgba(147, 197, 253, 0.4);
-  }
-}
-
-@keyframes anim-pulse-avatar {
-  0% {
-    transform: Scale(1);
-  }
-  50% {
-    transform: Scale(1.05);
-  }
-  100% {
-    transform: Scale(1);
-  }
-}
-
-@keyframes spin-slow {
-  from { transform: Rotate(0deg); }
-  to { transform: Rotate(360deg); }
-}
-
-@keyframes elec-avatar {
-  0%, 100% { box-shadow: 0 0 0 3px #ffe040, 0 0 14px Rgba(255, 204, 0, 0.5); }
-  50% { box-shadow: 0 0 0 3px #ffffff, 0 0 20px Rgba(255, 238, 0, 0.58); }
-}
-
-@keyframes elec-spin {
-  from { transform: Rotate(0deg); }
-  to { transform: Rotate(360deg); }
-}
-
-@keyframes ghost-av-phase {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.78; }
-}
-
-@keyframes legend-av-pulse {
-  0%, 100% { box-shadow: 0 0 0 3px #ffdd00, 0 0 18px Rgba(255, 170, 0, 0.5); }
-  50% { box-shadow: 0 0 0 3px #ffffff, 0 0 28px #ffdd00, 0 0 44px Rgba(255, 136, 0, 0.25); }
-}
-
-@keyframes fire-av-pulse {
-  0%, 100% { box-shadow: 0 0 0 3px #ff4400, 0 0 12px Rgba(255, 68, 0, 0.4), inset 0 0 6px Rgba(255, 68, 0, 0.2); }
-  50% { box-shadow: 0 0 0 3px #ff8800, 0 0 24px Rgba(255, 68, 0, 0.8), inset 0 0 12px Rgba(255, 68, 0, 0.4); }
-}
-
-@keyframes water-av-pulse {
-  0%, 100% { box-shadow: 0 0 0 3px #0088ff, 0 0 10px Rgba(0, 136, 255, 0.35), inset 0 0 5px Rgba(0, 136, 255, 0.15); }
-  50% { box-shadow: 0 0 0 3px #44eeff, 0 0 20px Rgba(0, 136, 255, 0.7), inset 0 0 10px Rgba(0, 136, 255, 0.3); }
-}
-
-@keyframes ice-av-pulse {
-  0%, 100% { box-shadow: 0 0 0 3px #88eeff, 0 0 10px Rgba(136, 238, 255, 0.35), inset 0 0 5px Rgba(136, 238, 255, 0.15); }
-  50% { box-shadow: 0 0 0 3px #ffffff, 0 0 20px Rgba(136, 238, 255, 0.75), inset 0 0 10px Rgba(136, 238, 255, 0.3); }
-}
-
-@keyframes dragon-av-pulse {
-  0%, 100% { box-shadow: 0 0 0 3px #4466ff, 0 0 10px Rgba(68, 102, 255, 0.35), inset 0 0 5px Rgba(68, 102, 255, 0.15); }
-  50% { box-shadow: 0 0 0 3px #ff4400, 0 0 22px Rgba(68, 102, 255, 0.7), inset 0 0 10px Rgba(68, 102, 255, 0.3); }
-}
-
-@keyframes master-av-pulse {
-  0%, 100% { box-shadow: 0 0 0 3px #aaaaaa, 0 0 10px Rgba(170, 170, 170, 0.3), inset 0 0 5px Rgba(170, 170, 170, 0.15); }
-  50% { box-shadow: 0 0 0 3px #ffffff, 0 0 22px Rgba(255, 255, 255, 0.65), inset 0 0 10px Rgba(255, 255, 255, 0.3); }
-}
-
-@keyframes ghost-av-pulse {
-  0%, 100% { box-shadow: 0 0 0 3px #8855ff, 0 0 10px Rgba(136, 85, 255, 0.35), inset 0 0 5px Rgba(136, 85, 255, 0.15); }
-  50% { box-shadow: 0 0 0 3px #cc88ff, 0 0 22px Rgba(136, 85, 255, 0.7), inset 0 0 10px Rgba(136, 85, 255, 0.3); }
-}
-
-@keyframes dark-av-pulse {
-  0%, 100% { box-shadow: 0 0 0 3px #7700bb, 0 0 10px Rgba(119, 0, 187, 0.35), inset 0 0 5px Rgba(119, 0, 187, 0.15); }
-  50% { box-shadow: 0 0 0 3px #9900cc, 0 0 22px Rgba(119, 0, 187, 0.7), inset 0 0 10px Rgba(119, 0, 187, 0.3); }
-}
-
-@keyframes psychic-av-pulse {
-  0%, 100% { box-shadow: 0 0 0 3px #cc00ff, 0 0 10px Rgba(204, 0, 255, 0.35), inset 0 0 5px Rgba(204, 0, 255, 0.15); }
-  50% { box-shadow: 0 0 0 3px #ff44ff, 0 0 22px Rgba(204, 0, 255, 0.7), inset 0 0 10px Rgba(204, 0, 255, 0.3); }
-}
-
-@keyframes admin-av-pulse {
-  0%, 100% { box-shadow: 0 0 0 3px #ef4444, 0 0 12px Rgba(239, 68, 68, 0.45), inset 0 0 6px Rgba(239, 68, 68, 0.2); }
-  50% { box-shadow: 0 0 0 3px #facc15, 0 0 28px Rgba(239, 68, 68, 0.85), inset 0 0 14px Rgba(239, 68, 68, 0.4); }
-}
-
-@keyframes cazabichos-av-pulse {
-  0%, 100% { box-shadow: 0 0 0 3px #22c55e, 0 0 10px Rgba(34, 197, 94, 0.35), inset 0 0 5px Rgba(34, 197, 94, 0.15); }
-  50% { box-shadow: 0 0 0 3px #4ade80, 0 0 22px Rgba(34, 197, 94, 0.7), inset 0 0 10px Rgba(34, 197, 94, 0.3); }
-}
-
-@keyframes criador-av-pulse {
-  0%, 100% { box-shadow: 0 0 0 3px #a855f7, 0 0 10px Rgba(168, 85, 247, 0.35), inset 0 0 5px Rgba(168, 85, 247, 0.15); }
-  50% { box-shadow: 0 0 0 3px #c084fc, 0 0 22px Rgba(168, 85, 247, 0.7), inset 0 0 10px Rgba(168, 85, 247, 0.3); }
-}
-
-@keyframes rocket-av-pulse {
-  0%, 100% { box-shadow: 0 0 0 3px #ef4444, 0 0 10px Rgba(239, 68, 68, 0.35), inset 0 0 5px Rgba(239, 68, 68, 0.15); }
-  50% { box-shadow: 0 0 0 3px #b91c1c, 0 0 22px Rgba(239, 68, 68, 0.7), inset 0 0 10px Rgba(239, 68, 68, 0.3); }
-}
-
-@keyframes entrenador-av-pulse {
-  0%, 100% { box-shadow: 0 0 0 3px #3b82f6, 0 0 10px Rgba(59, 130, 246, 0.35), inset 0 0 5px Rgba(59, 130, 246, 0.15); }
-  50% { box-shadow: 0 0 0 3px #60a5fa, 0 0 22px Rgba(59, 130, 246, 0.7), inset 0 0 10px Rgba(59, 130, 246, 0.3); }
-}
-
-@keyframes union-av-pulse {
-  0%, 100% { box-shadow: 0 0 0 3px #1e40af, 0 0 10px Rgba(30, 64, 175, 0.35), inset 0 0 5px Rgba(30, 64, 175, 0.15); }
-  50% { box-shadow: 0 0 0 3px #fbbf24, 0 0 22px Rgba(251, 191, 36, 0.6), inset 0 0 10px Rgba(251, 191, 36, 0.25); }
-}
-
-@keyframes poder-av-pulse {
-  0%, 100% { box-shadow: 0 0 0 3px #991b1b, 0 0 10px Rgba(153, 27, 27, 0.35), inset 0 0 5px Rgba(153, 27, 27, 0.15); }
-  50% { box-shadow: 0 0 0 3px #f97316, 0 0 22px Rgba(249, 115, 22, 0.6), inset 0 0 10px Rgba(249, 115, 22, 0.25); }
-}
-
-@keyframes anim-union-glow {
-  0% { 
-    text-shadow: 
-      0 0 4px #2563eb, 
-      0 0 8px Rgba(37, 99, 235, 0.5);
-  }
-  100% { 
-    text-shadow: 
-      0 0 8px #2563eb, 
-      0 0 16px Rgba(37, 99, 235, 0.85), 
-      0 0 22px Rgba(255, 255, 255, 0.6); 
-  }
-}
-
-@keyframes anim-poder-glow {
-  0% { 
-    text-shadow: 
-      0 0 4px #ef4444, 
-      0 0 8px Rgba(239, 68, 68, 0.5);
-  }
-  100% { 
-    text-shadow: 
-      0 0 8px #ef4444, 
-      0 0 16px Rgba(239, 68, 68, 0.85), 
-      0 0 22px Rgba(251, 191, 36, 0.6); 
-  }
-}
-
-@keyframes square-gradient-pulse {
-  0% {
-    opacity: 0.7;
-    transform: Scale(1.0);
-  }
-  100% {
-    opacity: 1;
-    transform: Scale(1.08);
-  }
-}
 
 /* --- ELEMENTAL DAMAGE TYPE NICK STYLES --- */
 .nt-type-normal {
@@ -557,14 +312,12 @@
   color: #22c55e !important;
   text-shadow: 0 0 6px Rgba(34, 197, 94, 0.5), 0 0 12px Rgba(21, 128, 61, 0.3) !important;
   font-weight: 700 !important;
-  animation: anim-bug-flutter 2s ease-in-out infinite alternate !important;
 }
 
 .nt-type-ice {
   color: #38bdf8 !important;
   text-shadow: 0 0 6px Rgba(56, 189, 248, 0.6), 0 0 15px Rgba(255, 255, 255, 0.5) !important;
   font-weight: 700 !important;
-  animation: anim-ice-glimmer 2.5s ease-in-out infinite alternate !important;
 }
 
 .nt-type-fighting {
@@ -577,7 +330,6 @@
   color: #a855f7 !important;
   text-shadow: 0 0 6px Rgba(168, 85, 247, 0.6), 0 0 12px Rgba(76, 29, 149, 0.5) !important;
   font-weight: 700 !important;
-  animation: anim-poison-drip 2s ease-in-out infinite alternate !important;
 }
 
 .nt-type-ground {
@@ -590,21 +342,18 @@
   color: #67e8f9 !important;
   text-shadow: 0 0 8px Rgba(103, 232, 249, 0.6) !important;
   font-weight: 700 !important;
-  animation: anim-water 3s infinite linear !important;
 }
 
 .nt-type-psychic {
   color: #ec4899 !important;
   text-shadow: 0 0 8px Rgba(236, 72, 153, 0.7), 0 0 15px Rgba(107, 33, 168, 0.4) !important;
   font-weight: 700 !important;
-  animation: anim-psychic-pulse 1.5s ease-in-out infinite alternate !important;
 }
 
 .nt-type-bug {
   color: #84cc16 !important;
   text-shadow: 0 0 6px Rgba(132, 204, 22, 0.5) !important;
   font-weight: 700 !important;
-  animation: anim-bug-flutter 1.5s ease-in-out infinite alternate !important;
 }
 
 .nt-type-rock {
@@ -629,29 +378,9 @@
   color: #f472b6 !important;
   text-shadow: 0 0 6px Rgba(244, 114, 182, 0.6), 0 0 15px Rgba(253, 244, 255, 0.4) !important;
   font-weight: 700 !important;
-  animation: anim-fairy-twinkle 2s ease-in-out infinite alternate !important;
 }
 
-/* --- KEYFRAME ANIMATIONS FOR ELEMENTS --- */
-@keyframes anim-ice-glimmer {
-  from { text-shadow: 0 0 5px Rgba(56, 189, 248, 0.6); }
-  to { text-shadow: 0 0 15px Rgba(56, 189, 248, 0.9), 0 0 25px Rgba(255, 255, 255, 0.8); }
-}
 
-@keyframes anim-poison-drip {
-  from { opacity: 0.85; }
-  to { opacity: 1; }
-}
-
-@keyframes anim-psychic-pulse {
-  from { transform: Scale(1); text-shadow: 0 0 6px Rgba(236, 72, 153, 0.5); }
-  to { transform: Scale(1.02); text-shadow: 0 0 15px Rgba(236, 72, 153, 0.9), 0 0 25px Rgba(168, 85, 247, 0.6); }
-}
-
-@keyframes anim-fairy-twinkle {
-  0%, 100% { opacity: 0.9; text-shadow: 0 0 6px Rgba(244, 114, 182, 0.5); }
-  50% { opacity: 1; text-shadow: 0 0 18px Rgba(244, 114, 182, 0.9), 0 0 30px Rgba(253, 244, 255, 0.7); }
-}
 
 /* --- DYNAMIC ELEMENTAL DAMAGE TYPES AVATAR FRAMES --- */
 $element-types: (
@@ -689,14 +418,7 @@ $element-types: (
   }
 }
 
-@each $name, $values in $element-types {
-  $base-color: list.nth($values, 1);
-  $light-color: list.nth($values, 4);
-  @keyframes type-#{$name}-pulse {
-    0%, 100% { box-shadow: 0 0 0 3px $base-color, 0 0 10px Rgba($base-color, 0.35), inset 0 0 5px Rgba($base-color, 0.15); }
-    50% { box-shadow: 0 0 0 3px $light-color, 0 0 22px Rgba($base-color, 0.7), inset 0 0 10px Rgba($base-color, 0.3); }
-  }
-}
+
 
 /* ─────────────────────────────────────────────────────────────────────────────
    STATUS DOTS (ONLINE / OFFLINE INDICATORS)

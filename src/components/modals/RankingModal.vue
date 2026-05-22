@@ -252,6 +252,7 @@ watch(activeSort, async () => {
             <div class="player-details">
               <div class="player-name-row">
                 <span
+                  v-gsap-nick="player.nick_style || 'normal'"
                   class="player-name-text"
                   :class="player.nick_style || 'normal'"
                 >

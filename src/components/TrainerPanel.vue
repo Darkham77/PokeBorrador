@@ -75,6 +75,7 @@ const handlePanelClick = (event: Event) => {
     <div class="trainer-content">
       <div
         id="hud-name"
+        v-gsap-nick="gs.nick_style || 'normal'"
         :class="['trainer-name', gs.nick_style || 'normal']"
       >
         {{ displayName }}
