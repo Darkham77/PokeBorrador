@@ -1,5 +1,5 @@
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 import { Battle } from '@pkmn/sim';
 import { parseShowdownLog } from './sandbox_db/ShowdownParser.ts';
 

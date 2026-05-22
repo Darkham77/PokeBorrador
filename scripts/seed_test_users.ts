@@ -11,7 +11,7 @@ if (!fs.existsSync(dbPath)) {
   process.exit(1);
 }
 
-const db = new DatabaseSync(dbPath);
+using db = new DatabaseSync(dbPath);
 
 // Helper to create a structured Pokemon object
 function createMockPokemon(id: string, name: string, type: string, type2: string | null, level: number, isShiny: boolean = false, heldItem: string | null = null): Record<string, unknown> {

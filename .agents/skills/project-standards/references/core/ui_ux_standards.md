@@ -68,8 +68,10 @@ We prioritize a deliberate contrast between modern, sleek UI shells and classic,
 - **Responsive Header Stacking**: Modal headers containing both a title and a search/control group MUST switch to `flex-direction: column` and `align-items: stretch` on mobile to prevent horizontal clipping.
 - **Dynamic Viewport (dvh) Standard**: For full-screen containers (Modals, Combat Arena, Main View), use `dvh` units (e.g., `min-height: 100dvh`) instead of `vh`. This ensures the UI is resilient to browser UI bars (address bar, navigation) on iOS and Android.
   - **Audit Protection**: Usage of legacy `vw`/`vh` with numeric values is flagged as an error by `detect_viewport_units.py`.
+  - **Viewport Migration Integrity**: Ensure regex viewport replacers do not strip numeric coefficients (e.g., preserve `85dvh` instead of converting to raw `dvh`).
 - **Bottom Anchor Precision**: In mobile fullscreen, the action zone (Map/Arena) MUST be the flexible element (`flex: 1`) to push all UI controls to the absolute bottom edge (`0px` padding, `-2px` margin).
-- **Emoji Scaling (Pixel Fonts)**: Never use `transform: Scale()` for emojis in buttons; use direct `font-size` (e.g., `32px`) and `inline-flex` with a relative offset (e.g., `top: -2px`) to center the emoji with the pixelated text baseline.
+- **Emoji Scaling & Alignment (Pixel Fonts)**: Never use `transform: Scale()` for emojis in buttons; use direct `font-size` (e.g., `32px`) and `inline-flex` with a relative offset (e.g., `top: -2px`) to center the emoji with the pixelated text baseline.
+  - **Emoji Optical Vertical Alignment**: When placing oversized emojis as icons within flex containers, always declare `line-height: 1` and `user-select: none` to bypass browser line-height offsets and prevent text selection boxes from clipping the layout.
 - **Loading Orchestration Gate (Sync Bypass)**: The global loading veil MUST be managed via `v-if` based on `LoadingStore.isGateOpen`.
   - **CRITICAL**: To prevent infinite loops on authentication routes, the gate MUST be forced OPEN síncronamente in `App.vue` if `window.location.pathname === '/login'`, bypassing the standard `onMounted` flow.
   - **WHY**: Ensures the user can always escape a corrupted session or "loading data" loop by manually navigating to login.

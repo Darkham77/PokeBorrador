@@ -160,7 +160,7 @@ const handleImageError = (e: Event) => {
   flex-direction: column;
   gap: 32px;
   overflow-y: auto;
-  max-height: 85vh;
+  max-height: 85dvh;
   @include smooth-scroll;
 }
 

@@ -241,7 +241,7 @@ if (fs.existsSync(dbPath)) {
 }
 
 console.log(`🔌 Creando base de datos SQLite temporal en: ${dbPath}`);
-const db = new DatabaseSync(dbPath);
+using db = new DatabaseSync(dbPath);
 
 // 5. Crear esquemas de tablas
 console.log('⚡ Inicializando esquemas de tablas...');
