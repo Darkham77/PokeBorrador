@@ -244,6 +244,8 @@ When refactoring legacy or generic components:
 - **Interaction Stability (Zero-Translatey)**:
   - **Rule**: Avoid vertical displacements (`TranslateY`) in the `:hover` or `:active` states of cards and interactive list elements (e.g., in inventory, battle Pokemon selectors, or boxes). The use of `TranslateY` causes visual artifacts ("ghosting") and layout shifts in dense layouts.
   - **Standard**: Use border-color transitions (`border-color`), brightness filters (`Brightness`), or uniform scale transformations (`Scale`) that do not alter the rendering flow. To neutralize unwanted inherited hover effects, apply `transform: none !important;`.
+- **Avatar Frame Inset Integrity**:
+  - **Rule**: For avatar elements (e.g., `TrainerAvatar` cosmetics) using conic-gradient backgrounds or borders, the `.avatar-frame-bg` element requires an explicit `inset: 0` (instead of negative values like `inset: -2px`) to prevent rendering a black ring/circle artifact, particularly visible on square avatar frames.
 - **Hidden Scrollbars Compatibility**:
   - **Rule**: To hide scrollbars robustly without triggering IDE compatibility warnings, declare full compatibility across engines:
 
