@@ -245,21 +245,7 @@ defineEmits<{
   align-items: center;
 }
 
-.status-dot {
-  position: absolute;
-  bottom: -8px;
-  right: -8px;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  border: 2px solid Rgba(16, 24, 34, 1);
-  background: Rgba(239, 68, 68, 1);
 
-  &.online {
-    background: Rgba(34, 197, 94, 1);
-    box-shadow: 0 0 10px Rgba(34, 197, 94, 1);
-  }
-}
 
 .friend-info {
   display: flex;

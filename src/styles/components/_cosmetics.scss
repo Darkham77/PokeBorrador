@@ -703,10 +703,10 @@ $element-types: (
    ───────────────────────────────────────────────────────────────────────────── */
 .status-dot {
   position: absolute;
-  bottom: -2px;
-  right: -2px;
-  width: 10px;
-  height: 10px;
+  bottom: -8px;
+  right: -8px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
   border: 2px solid #101822;
   background: #ef4444; // Default offline red
@@ -714,8 +714,8 @@ $element-types: (
   box-shadow: 0 0 4px Rgba(239, 68, 68, 0.4);
 
   &.online {
-    background: #22c55e !important; // Online green
-    box-shadow: 0 0 10px #22c55e !important;
+    background: #22c55e;
+    box-shadow: 0 0 10px #22c55e;
   }
 }
 

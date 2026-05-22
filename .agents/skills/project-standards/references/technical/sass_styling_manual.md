@@ -121,6 +121,11 @@ The legacy `@import` directive is deprecated. This project strictly follows the 
 > **Detection**: Any warning in the console stating `Sass @import rules are deprecated` MUST be fixed immediately by migrating to `@use`.
 > **Fix**: Replace `@import "path";` with `@use "path" as *;` (if you need global members) or `@use "path";` (and access via namespace).
 
+> [!CAUTION]
+> **Production Build Mixin Isolation Trap**: Vite's HMR dev mode resolves SASS mixins globally across partials, which can mask missing `@use` declarations. However, Vite's production bundler compiles each partial in **isolation**. A subfile (e.g., `_pokemon.scss`) that uses a mixin defined in another subfile (e.g., `text-outline` from `_layout.scss`) **MUST** explicitly `@use '_layout' as *;` locally, even if the HMR dev build appears to work without it.
+> **Symptom**: The application works flawlessly in `npm run dev` but throws a `Undefined mixin` compile error on `npm run build`.
+> **Rule**: Before shipping any SASS partial that uses a mixin not defined within itself, verify that the defining file is explicitly `@use`d at the top of that partial.
+
 ---
 
 ## ✨ Design Aesthetics: Hybrid Retro-Modern Standard
@@ -265,6 +270,10 @@ When refactoring legacy or generic components:
 - **Tier-Aware Styling**:
   - **Rule**: Any list or grid representing Pokémon (e.g., swap menu, market, battle team) must dynamically reflect the premium hierarchy of the PC Box.
   - **Standard**: Apply the `.is-premium-tier` class if the Pokémon belongs to Tier S or S+. This class must inherit the premium combination (`@include pokemon-card-premium-tier`) with consistent radial highlights (`Radial-Gradient` in `::before`).
+- **Pixel Font Legibility & Outlines**: Pixel fonts (Retro Typography) are highly sensitive to properties like `-webkit-text-stroke` or gradient-fill clippings with `-webkit-background-clip: text` and transparent color. These properties destroy pixel letterforms, causing them to look hollow and illegible. To achieve sharp outlines on pixel fonts, always use multiple solid pixel-aligned offset shadows (`text-shadow: 1px 1px 0 #color, -1px 1px 0 #color...`) combined with external soft glowing blur layers for premium effects.
+- **White Text Contrast Mandate on Light Backgrounds**: Any pixel text rendered over a **light or variable-color background** (e.g., yellow type pills, season badges, dynamic gradient cards) MUST use `color: white` combined with `@include text-outline;`. Using dark text on yellow is a contrast failure — white text with a thin black `text-shadow` outline guarantees legibility on any background color. This is the project standard, proven in type-damage pills and must be enforced universally.
+- **Text Outline Padding Safety (Clipping Prevention)**: When applying `@include text-outline;` (which adds pixel-level `text-shadow` offsets), the container's padding MUST be at least `4px 8px`. Insufficient padding causes the outline shadow to be visually clipped by the container's boundaries, making the text appear to touch or overflow the border. If a badge or pill looks "cramped" after adding an outline, increase padding — never reduce the outline.
+
 - **Global Pollution**: Do not define variables or mixins directly in component styles; always centralize them in tokens/partials and `@use` them.
 
 ### 4. CSS Redundancy & "Single Source of Truth"

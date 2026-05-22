@@ -158,8 +158,8 @@ const faceStyles = computed((): CSSProperties => {
       <template v-if="!cls">
         🧢
       </template>
-      <slot name="overlay" />
     </div>
+    <slot name="overlay" />
   </div>
 </template>
 
