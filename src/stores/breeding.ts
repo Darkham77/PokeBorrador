@@ -3,6 +3,8 @@ import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import { useGameStore } from './game.ts';
 import { useUIStore } from './ui.ts';
+import { useAuthStore } from './auth.ts';
+import gsap from 'gsap';
 import { 
   checkCompatibility, 
   calculateInheritance, 
@@ -24,6 +26,7 @@ export const useBreedingStore = defineStore('breeding', () => {
   const uiStore = useUIStore();
   const classStore = usePlayerClassStore();
   const eventStore = useEventStore();
+  const authStore = useAuthStore();
 
   const slots = ref<DaycareSlot[]>([
     { pokemon: null, slotIndex: 0, deposited_at: null },
@@ -39,6 +42,25 @@ export const useBreedingStore = defineStore('breeding', () => {
     set: (val) => { gameStore.state.daycare_mission_refreshes = val }
   });
   const loading = ref(false);
+
+  // --- HELPERS & PERSISTENCE ---
+
+  function calculateBreedingCost(pA: Pokemon, pB: Pokemon): number {
+    const countPerfect = (p: Pokemon) => {
+      if (!p.ivs) return 0;
+      return Object.values(p.ivs).filter(val => val === 30 || val === 31).length;
+    };
+    const totalPerfect = countPerfect(pA) + countPerfect(pB);
+    if (totalPerfect <= 2) return 2000;
+    if (totalPerfect <= 5) return 5000;
+    if (totalPerfect <= 8) return 12000;
+    return 25000;
+  }
+
+  function saveWarehouseEggs() {
+    const userId = authStore.user?.id || 'default';
+    localStorage.setItem(`daycare_warehouse_eggs_${userId}`, JSON.stringify(warehouseEggs.value));
+  }
 
   // --- GETTERS ---
   const fulfillableMissionsCount = computed(() => {
@@ -88,6 +110,10 @@ export const useBreedingStore = defineStore('breeding', () => {
     
     if (!slots.value[0]?.deposited_at || !slots.value[1]?.deposited_at) return null;
 
+    const pA = slots.value[0]?.pokemon;
+    const pB = slots.value[1]?.pokemon;
+    if (!pA || !pB || (pA.vigor || 0) <= 0 || (pB.vigor || 0) <= 0) return null;
+
     const depA = Temporal.Instant.from(slots.value[0].deposited_at).epochMilliseconds;
     const depB = Temporal.Instant.from(slots.value[1].deposited_at).epochMilliseconds;
     const earliest = Math.max(depA, depB);
@@ -104,6 +130,11 @@ export const useBreedingStore = defineStore('breeding', () => {
         { pokemon: null, slotIndex: 0, deposited_at: null },
         { pokemon: null, slotIndex: 1, deposited_at: null }
       ];
+
+      // Restore eggs from LocalStorage
+      const userId = authStore.user?.id || 'default';
+      const stored = localStorage.getItem(`daycare_warehouse_eggs_${userId}`);
+      warehouseEggs.value = stored ? JSON.parse(stored) : [];
 
       const team = gameStore.state.team || [];
       const box = gameStore.state.box || [];
@@ -135,6 +166,9 @@ export const useBreedingStore = defineStore('breeding', () => {
       if (needsSave) {
         gameStore.scheduleSave();
       }
+
+      // Capa 1: Check retroactively if a new egg should be generated
+      await checkAndGenerateEgg();
     } finally {
       loading.value = false;
     }
@@ -187,16 +221,16 @@ export const useBreedingStore = defineStore('breeding', () => {
   async function checkAndGenerateEgg() {
     if (!isBreeding.value || compatibility.value.level === 0) return;
     if (!slots.value[0]?.pokemon || !slots.value[1]?.pokemon) return;
+    if (!nextEggTime.value) return;
     
     const now = Temporal.Now.instant().epochMilliseconds;
-    if (nextEggTime.value && now < nextEggTime.value) return;
+    if (now < nextEggTime.value) return;
 
     const pA = slots.value[0].pokemon as Pokemon;
     const pB = slots.value[1].pokemon as Pokemon;
     const compat = compatibility.value;
 
     if ((pA.vigor || 0) <= 0 || (pB.vigor || 0) <= 0) {
-      uiStore.notify('Uno de los padres no tiene vigor suficiente.', '💤');
       return;
     }
 
@@ -207,6 +241,8 @@ export const useBreedingStore = defineStore('breeding', () => {
 
     const abilityName = inheritAbility(pA, pB);
     const abilityIndex = abilityName ? 1 : 0;
+
+    const breedingCost = calculateBreedingCost(pA, pB);
 
     const egg: DaycareEgg = {
       id: `egg_${now}_${Math.random().toString(36).substring(2, 7)}`,
@@ -222,16 +258,34 @@ export const useBreedingStore = defineStore('breeding', () => {
       movesAtBirth: inheritMoves(pA, pB, eggSpecies),
       abilityIndex: abilityIndex,
       isShiny: Math.random() < calculateShinyChance(pA, pB, 1/4096, eventStore.globalMultipliers?.shiny || 1),
-      cost: 5000
+      cost: breedingCost,
+      inherited_ivs: {
+        _cost: breedingCost,
+        _scanned: false
+      }
     };
 
+    // Consume parent vigor by 1 point
+    pA.vigor = Math.max(0, (pA.vigor || 0) - 1);
+    pB.vigor = Math.max(0, (pB.vigor || 0) - 1);
+
     warehouseEggs.value.push(egg);
+    saveWarehouseEggs();
     
     const isoNow = Temporal.Now.instant().toString();
-    if (slots.value[0]) slots.value[0].deposited_at = isoNow;
-    if (slots.value[1]) slots.value[1].deposited_at = isoNow;
+    if (slots.value[0]) {
+      slots.value[0].deposited_at = isoNow;
+      pA.daycareDepositedAt = isoNow;
+    }
+    if (slots.value[1]) {
+      slots.value[1].deposited_at = isoNow;
+      pB.daycareDepositedAt = isoNow;
+    }
 
     uiStore.notify(' ¡Apareció un huevo en la Guardería!', '🥚');
+    if ((pA.vigor || 0) <= 0 || (pB.vigor || 0) <= 0) {
+      uiStore.notify('¡Uno de los padres se ha quedado sin vigor! Consigue Caramelos de vigor o Restauradores de vigor para continuar criando.', '💤');
+    }
     gameStore.scheduleSave();
   }
 
@@ -269,6 +323,7 @@ export const useBreedingStore = defineStore('breeding', () => {
     gameStore.state.eggs.push(eggToPush);
     gameStore.state.money -= egg.cost;
     warehouseEggs.value.splice(eggIndex, 1);
+    saveWarehouseEggs();
     
     uiStore.notify('¡Huevo recogido! Camina para eclosionarlo.', '🥚');
     gameStore.scheduleSave();
@@ -286,6 +341,7 @@ export const useBreedingStore = defineStore('breeding', () => {
     if (egg.ivs) {
       if (!egg.inherited_ivs) egg.inherited_ivs = { };
       egg.inherited_ivs._scanned = true;
+      saveWarehouseEggs();
       uiStore.notify(`¡Huevo de ${POKEMON_DB[egg.species as keyof typeof POKEMON_DB]?.name} escaneado!`, '🔍');
       gameStore.scheduleSave();
     }
@@ -389,6 +445,7 @@ export const useBreedingStore = defineStore('breeding', () => {
     const egg = warehouseEggs.value.find(e => e.id === eggId);
     if (egg) {
       egg.ivs = { ...egg.ivs, ...ivs } as PokemonIVs;
+      saveWarehouseEggs();
       gameStore.scheduleSave();
     }
   }
@@ -397,7 +454,32 @@ export const useBreedingStore = defineStore('breeding', () => {
     const idx = warehouseEggs.value.findIndex(e => e.id === eggId);
     if (idx !== -1) {
       warehouseEggs.value.splice(idx, 1);
+      saveWarehouseEggs();
       gameStore.scheduleSave();
+    }
+  }
+
+  let bgPoller: gsap.core.Tween | null = null;
+
+  function initBackgroundPoller() {
+    if (bgPoller) bgPoller.kill();
+
+    const poll = async () => {
+      if (isBreeding.value && nextEggTime.value) {
+        const nowMs = Temporal.Now.instant().epochMilliseconds;
+        if (nowMs >= nextEggTime.value) {
+          await checkAndGenerateEgg();
+        }
+      }
+      bgPoller = gsap.delayedCall(10, poll);
+    };
+    bgPoller = gsap.delayedCall(10, poll);
+  }
+
+  function cleanupBackgroundPoller() {
+    if (bgPoller) {
+      bgPoller.kill();
+      bgPoller = null;
     }
   }
 
@@ -424,6 +506,8 @@ export const useBreedingStore = defineStore('breeding', () => {
     checkAndGenerateEgg,
     updateEggIvs,
     deleteEgg,
+    initBackgroundPoller,
+    cleanupBackgroundPoller,
     eggs: computed(() => warehouseEggs.value)
   };
 });

@@ -51,9 +51,11 @@ onMounted(() => {
           </div>
         </div>
         
-        <div class="header-stats-clean">
-          <span class="stat-label">DISPONIBLES:</span>
-          <span class="value">{{ breedingStore.dailyMissions.filter(m => !m.completed).length }}</span>
+        <div class="header-stats">
+          <div class="stat-node">
+            <span class="shop-stat-label">DISPONIBLES</span>
+            <span class="value">{{ breedingStore.dailyMissions.filter(m => !m.completed).length }}</span>
+          </div>
         </div>
       </div>
     </template>
@@ -69,65 +71,19 @@ onMounted(() => {
 @use "@/styles/core/tools" as *;
 
 .missions-modal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  padding: 0 16px;
-  height: 100%;
-}
+  @include shop-header;
 
-.missions-title-group {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-
-  .title-icon {
-    font-size: 24px;
-    filter: Drop-Shadow(0 2px 4px Rgba(0, 0, 0, 0.2));
+  .missions-title-group {
+    @include shop-header-title(var(--pokecenter-pink));
   }
 
-  .title-text-wrap {
+  .header-stats {
     display: flex;
-    flex-direction: column;
-    
-    .main-title {
-      font-family: 'Outfit', sans-serif;
-      font-weight: 800;
-      font-size: 1.25rem;
-      letter-spacing: 0.5px;
-      color: #fff;
-      text-shadow: 0 2px 4px Rgba(0, 0, 0, 0.3);
+    gap: 24px;
+
+    .stat-node {
+      @include shop-header-stat(var(--pokecenter-pink));
     }
-
-    .sub-title {
-      font-size: 0.65rem;
-      font-weight: 700;
-      color: var(--pokecenter-pink);
-      letter-spacing: 1px;
-      text-transform: uppercase;
-    }
-  }
-}
-
-.header-stats-clean {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: transparent;
-  padding: 0;
-
-  .stat-label {
-    @include pixelated;
-    font-size: 8px;
-    color: Rgba(255, 255, 255, 0.7);
-  }
-
-  .value {
-    @include pixelated;
-    font-size: 16px;
-    font-weight: 900;
-    color: var(--yellow);
   }
 }
 

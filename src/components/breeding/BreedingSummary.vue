@@ -5,7 +5,6 @@ import { usePlayerClassStore } from '@/stores/playerClass'
 import { getGeneticsForecast, type GeneticsForecast } from '@/logic/breeding/breedingEngine'
 import { COMPAT_TEXT } from '@/data/breeding/breedingConstants'
 import gsap from 'gsap'
-import { Temporal } from '@js-temporal/polyfill'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 
 const breedingStore = useBreedingStore()
@@ -50,7 +49,22 @@ const stopPulse = () => {
   }
 }
 
-watch(() => breedingStore.isBreeding, (active) => {
+const isCompatible = computed(() => {
+  return (breedingStore.compatibility?.level ?? 0) > 0
+})
+
+const hasVigor = computed(() => {
+  const pA = breedingStore.slots[0]?.pokemon
+  const pB = breedingStore.slots[1]?.pokemon
+  if (!pA || !pB) return false
+  return (pA.vigor ?? 0) > 0 && (pB.vigor ?? 0) > 0
+})
+
+const isActivelyBreeding = computed(() => {
+  return breedingStore.isBreeding && isCompatible.value && hasVigor.value
+})
+
+watch(isActivelyBreeding, (active) => {
   if (active) {
     startPulse()
   } else {
@@ -88,10 +102,18 @@ const displayTime = ref(formatMs(breedingStore.nextEggTime))
 
 const tickerFn = () => {
   displayTime.value = formatMs(breedingStore.nextEggTime)
+  
+  // Capa 3: Check in real-time if timer hit zero while active
+  if (breedingStore.isBreeding && breedingStore.nextEggTime) {
+    const nowMs = Temporal.Now.instant().epochMilliseconds
+    if (nowMs >= breedingStore.nextEggTime) {
+      breedingStore.checkAndGenerateEgg()
+    }
+  }
 }
 
 onMounted(() => {
-  if (breedingStore.isBreeding) {
+  if (isActivelyBreeding.value) {
     startPulse()
   } else {
     stopPulse()
@@ -119,8 +141,18 @@ onUnmounted(() => {
           v-if="breedingStore.isBreeding"
           class="timer"
         >
-          <span class="timer-icon">⏳</span>
-          {{ displayTime }}
+          <template v-if="!isCompatible">
+            <span class="timer-icon">⏳</span>
+            {{ displayTime }}
+          </template>
+          <template v-else-if="!hasVigor">
+            <span class="timer-icon">💤</span>
+            <span style="color: #ef4444; font-weight: bold; text-shadow: 0 0 5px rgba(239, 68, 68, 0.4);">CANSADOS (SIN VIGOR)</span>
+          </template>
+          <template v-else>
+            <span class="timer-icon">⏳</span>
+            {{ displayTime }}
+          </template>
         </div>
       </div>
       <div

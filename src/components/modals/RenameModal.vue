@@ -5,7 +5,6 @@ import { useProfileStore } from '@/stores/profile'
 import { useGameStore } from '@/stores/game'
 import { useAuthStore } from '@/stores/auth'
 import BaseModal from '@/components/common/BaseModal.vue'
-import { Temporal } from '@js-temporal/polyfill'
 
 interface Props {
   show?: boolean

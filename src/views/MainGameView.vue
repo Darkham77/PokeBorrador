@@ -39,7 +39,6 @@ const BagView = defineAsyncComponent(() => import('@/views/BagView.vue'))
 import GlobalChat from '@/components/social/GlobalChat.vue'
 import DirectChatWindow from '@/components/social/DirectChatWindow.vue'
 import { useChatStore } from '@/stores/chat'
-import RankedArena from '@/components/social/RankedArena.vue'
 
 const gameStore = useGameStore()
 const uiStore = useUIStore()
@@ -83,6 +82,7 @@ onMounted(() => {
   eventStore.checkPendingAwards()
   livePvP.initInvitePoller()
   breedingStore.checkDailyReset()
+  breedingStore.initBackgroundPoller()
 
   // Signal that DOM is ready
   const loadingStore = useLoadingStore()
@@ -91,6 +91,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   logger.info('MainGameView', 'UNMOUNTED.')
+  breedingStore.cleanupBackgroundPoller()
 })
 
 // Initialize audio context on first user interaction
@@ -191,18 +192,6 @@ useDocumentListener('keydown', initAudio, { once: true })
           class="tab-content"
         >
           <GymsView />
-          <div class="hud-spacer-bottom" />
-        </div>
-
-
-
-
-        <div
-          v-else-if="activeTab === 'pvp'"
-          key="pvp"
-          class="tab-content"
-        >
-          <RankedArena />
           <div class="hud-spacer-bottom" />
         </div>
       </div>

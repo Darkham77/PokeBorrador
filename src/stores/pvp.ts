@@ -10,7 +10,7 @@ import { RANKED_REWARD_MILESTONES } from '@/data/rankedData'
 export { RANKED_REWARD_MILESTONES }
 import { getEloTier } from '@/logic/pvp/rankedEngine'
 import type { Pokemon } from '@/types/pokemon'
-import { GAME_TIMEZONE } from '@/logic/timeUtils'
+import { GAME_TIMEZONE, parseZonedTime } from '@/logic/timeUtils'
 
 
 export const RANKED_REWARD_TIER_MARKS = [
@@ -31,6 +31,8 @@ interface SeasonRules {
   name: string
   startDate?: string
   endDate?: string
+  seasonStartDate?: string
+  seasonEndDate?: string
   bannedPokemonIds?: string[]
   levelCap: number
   allowedTypes?: string[]
@@ -120,11 +122,12 @@ export const usePvPStore = defineStore('pvp', () => {
 
   async function fetchSeasonRules() {
     if (!gameStore.db) return
-    const { data } = await gameStore.db.from('ranked_rules_config').select('*').eq('id', 'current').maybeSingle() as { data: { season_name: string, config: string } | null }
+    const { data } = await gameStore.db.from('ranked_rules_config').select('*').eq('id', 'current').maybeSingle() as { data: { season_name: string, config: string | Record<string, unknown> } | null }
     if (data) {
+      const configObj = typeof data.config === 'string' ? JSON.parse(data.config || '{}') : (data.config || {})
       currentSeasonRules.value = {
         name: data.season_name,
-        ...JSON.parse(data.config || '{}')
+        ...configObj
       }
     }
   }
@@ -225,21 +228,18 @@ export const usePvPStore = defineStore('pvp', () => {
   const seasonRange = computed(() => {
     const rules = currentSeasonRules.value || { name: 'Default', levelCap: 100, maxPokemon: 6 } as SeasonRules
     
-    const start = rules.startDate 
-      ? Temporal.ZonedDateTime.from(rules.startDate).withTimeZone(GAME_TIMEZONE) 
-      : Temporal.ZonedDateTime.from('2026-04-01T00:00:00-03:00').withTimeZone(GAME_TIMEZONE)
-      
-    const end = rules.endDate 
-      ? Temporal.ZonedDateTime.from(rules.endDate).withTimeZone(GAME_TIMEZONE)
-      : start.add({ months: 3 })
+    const start = parseZonedTime(rules.startDate || rules.seasonStartDate, '2026-04-01T00:00:00')
+    
+    const defaultEndStr = start.add({ months: 3 }).toString()
+    const end = parseZonedTime(rules.endDate || rules.seasonEndDate, defaultEndStr)
     
     const now = Temporal.Now.zonedDateTimeISO(GAME_TIMEZONE)
     const diff = end.since(now, { largestUnit: 'day' })
     const daysLeft = Math.max(0, Math.ceil(diff.days))
     
     return {
-      start: Temporal.Instant.fromEpochMilliseconds(start.epochMilliseconds),
-      end: Temporal.Instant.fromEpochMilliseconds(end.epochMilliseconds),
+      start: start.toInstant(),
+      end: end.toInstant(),
       daysLeft
     }
   })

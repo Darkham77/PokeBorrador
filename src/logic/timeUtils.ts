@@ -182,3 +182,49 @@ export function formatTime(ts: string | number | Date | null | undefined): strin
     return '';
   }
 }
+
+/**
+ * Safely parses any date/time string or number into a Temporal.ZonedDateTime in the configured GAME_TIMEZONE.
+ * Falls back to a default PlainDateTime or offset string if parsing fails.
+ * Handles ISO strings, date-only formats (YYYY-MM-DD), date-time without offset, and milliseconds timestamps.
+ */
+export function parseZonedTime(
+  ts: string | number | null | undefined,
+  fallback = '2026-04-01T00:00:00'
+): Temporal.ZonedDateTime {
+  if (!ts) {
+    return Temporal.PlainDateTime.from(fallback).toZonedDateTime(GAME_TIMEZONE);
+  }
+
+  try {
+    if (typeof ts === 'number') {
+      return Temporal.Instant.fromEpochMilliseconds(ts).toZonedDateTimeISO(GAME_TIMEZONE);
+    }
+
+    const clean = ts.trim();
+    if (clean === '') {
+      return Temporal.PlainDateTime.from(fallback).toZonedDateTime(GAME_TIMEZONE);
+    }
+
+    if (clean.endsWith('Z')) {
+      return Temporal.Instant.from(clean).toZonedDateTimeISO(GAME_TIMEZONE);
+    }
+
+    return Temporal.PlainDateTime.from(clean).toZonedDateTime(GAME_TIMEZONE);
+  } catch (_err) {
+    try {
+      if (typeof ts === 'string') {
+        return Temporal.Instant.from(ts.trim()).toZonedDateTimeISO(GAME_TIMEZONE);
+      }
+    } catch (_instantErr) {
+      // Ignore and proceed to fallback
+    }
+
+    try {
+      return Temporal.PlainDateTime.from(fallback).toZonedDateTime(GAME_TIMEZONE);
+    } catch (_fallbackErr) {
+      return Temporal.Instant.fromEpochMilliseconds(0).toZonedDateTimeISO(GAME_TIMEZONE);
+    }
+  }
+}
+

@@ -55,91 +55,173 @@ body .selection-container {
 }
 
 .ps-tags-section {
-  margin-top: -2px; // Pull up slightly more
-  padding: 0 20px;
+  margin-top: 4px;
+  padding: 0;
   display: flex;
   justify-content: center;
   width: 100%;
 
   .ps-tags-row-unified {
-    display: inline-flex; // Shrink to content instead of full width
+    display: flex;
+    width: 100%;
     align-items: center;
-    flex-wrap: wrap;
-    gap: 8px 10px;
-    background: Rgba(255, 255, 255, 0.03);
-    border: 1px solid Rgba(255, 255, 255, 0.05);
-    border-radius: 10px;
-    padding: 4px 10px;
+    justify-content: space-between;
+    gap: 8px;
+    background: Rgba(0, 0, 0, 0.2);
+    border: 1px solid Rgba(255, 255, 255, 0.06);
+    border-radius: 8px;
+    padding: 5px 8px;
     min-height: 32px;
-    max-width: 100%; // Ensure it doesn't overflow
   }
 
   .ps-clear-icon-btn {
-    background: none;
-    border: none;
-    padding: 0;
-    font-size: 10px;
-    cursor: pointer;
-    transition: all 0.2s;
-    line-height: 1;
+    background: Rgba(255, 255, 255, 0.03);
+    border: 1px solid Rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
+    width: 22px;
+    height: 22px;
     display: flex;
     align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     flex-shrink: 0;
     
     &:hover {
-      transform: Scale(1.2);
+      transform: Scale(1.05);
+      background: Rgba(255, 255, 255, 0.08);
+      border-color: Rgba(255, 255, 255, 0.15);
+    }
+
+    &.disabled {
+      opacity: 0.25;
+      background: transparent;
+      border-color: Rgba(255, 255, 255, 0.03);
+      cursor: not-allowed;
+      pointer-events: none;
+      
+      &:hover {
+        transform: none;
+        background: transparent;
+      }
     }
   }
 
   .ps-tags-list-horizontal {
+    display: flex;
+    flex: 1;
+    align-items: center;
     flex-wrap: wrap;
-    justify-content: flex-start;
-    padding: 4px 0;
-    padding-bottom: 2px; // Space for scrollbar if needed
+    gap: 4px;
+    justify-content: flex-end;
+    padding: 0;
 
     &::-webkit-scrollbar { display: none; height: 0; }
-    scrollbar-width: none; // Firefox
-    -ms-overflow-style: none; // IE/Edge
+    scrollbar-width: none;
+    -ms-overflow-style: none;
     
     button {
-      height: 20px;
+      height: 22px;
       flex-shrink: 0;
-      background: Rgba(255, 255, 255, 0.03);
-      border: 1px solid Rgba(255, 255, 255, 0.1);
+      background: Rgba(255, 255, 255, 0.02);
+      border: 1px solid Rgba(255, 255, 255, 0.08);
       border-radius: 6px;
       display: flex;
       align-items: center;
-      padding: 0 6px;
-      gap: 3px;
+      padding: 0 8px;
+      gap: 4px;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
       will-change: transform, filter, opacity;
-  filter: Grayscale(1);
-      opacity: 0.6;
+      filter: Grayscale(1);
+      opacity: 0.55;
 
-      .icon { font-size: 8px; }
+      .icon { 
+        font-size: 8px; 
+        transition: transform 0.2s ease;
+      }
+      
       .ps-tag-label {
         @include pixelated;
         font-size: 6px !important;
+        font-weight: 500;
         color: var(--gray);
         text-transform: uppercase;
-
-        .active & {
-          color: var(--yellow);
-        }
+        letter-spacing: 0.5px;
       }
 
       &:hover {
-        opacity: 1;
-        background: Rgba(255, 255, 255, 0.08);
+        opacity: 0.9;
+        background: Rgba(255, 255, 255, 0.06);
+        border-color: Rgba(255, 255, 255, 0.15);
+        transform: Translatey(-0.5px);
+        
+        .icon {
+          transform: Scale(1.1);
+        }
       }
 
       &.active {
-        background: Rgba(255, 255, 255, 0.1);
-        border-color: var(--yellow);
-        will-change: transform, filter, opacity;
-  filter: Grayscale(0);
+        filter: Grayscale(0);
         opacity: 1;
+        background: Rgba(255, 255, 255, 0.08);
+        border-width: 1px;
+        transform: none;
+        
+        .ps-tag-label {
+          color: white;
+        }
+
+        &.ps-tag-fav {
+          border-color: #FFD93D;
+          color: #FFD93D;
+          box-shadow: 0 0 6px Rgba(255, 217, 61, 0.25);
+          background: Rgba(255, 217, 61, 0.05);
+          .ps-tag-label { color: #FFD93D; }
+        }
+        &.ps-tag-breed {
+          border-color: #FF4D4D;
+          color: #FF4D4D;
+          box-shadow: 0 0 6px Rgba(255, 77, 77, 0.25);
+          background: Rgba(255, 77, 77, 0.05);
+          .ps-tag-label { color: #FF4D4D; }
+        }
+        &.ps-tag-competitive {
+          border-color: #34C759;
+          color: #34C759;
+          box-shadow: 0 0 6px Rgba(52, 199, 89, 0.25);
+          background: Rgba(52, 199, 89, 0.05);
+          .ps-tag-label { color: #34C759; }
+        }
+        &.ps-tag-trade {
+          border-color: #AF52DE;
+          color: #AF52DE;
+          box-shadow: 0 0 6px Rgba(175, 82, 222, 0.25);
+          background: Rgba(175, 82, 222, 0.05);
+          .ps-tag-label { color: #AF52DE; }
+        }
+        &.ps-tag-iv31 {
+          border-color: #00E5FF;
+          color: #00E5FF;
+          box-shadow: 0 0 6px Rgba(0, 229, 255, 0.25);
+          background: Rgba(0, 229, 255, 0.05);
+          .ps-tag-label { color: #00E5FF; }
+        }
+        &.ps-tag-shiny {
+          border-color: #FFB300;
+          color: #FFB300;
+          box-shadow: 0 0 6px Rgba(255, 179, 0, 0.25);
+          background: Rgba(255, 179, 0, 0.05);
+          .ps-tag-label { color: #FFB300; }
+        }
+        &.ps-tag-compatible {
+          border-color: #FF2D55;
+          color: #FF2D55;
+          box-shadow: 0 0 8px Rgba(255, 45, 85, 0.35);
+          background: Rgba(255, 45, 85, 0.08);
+          .ps-tag-label { color: #FF2D55; }
+        }
       }
     }
   }

@@ -88,13 +88,14 @@ const activeTags = ref<string[]>(Array.isArray(savedFilters.activeTags) ? savedF
 const selectedUids = ref<string[]>([])
 
 const breedingStore = useBreedingStore()
-const filterCompatibleOnly = ref(false)
 
 const otherDaycarePokemon = computed(() => {
   if (!props.isDaycareContext) return null
   const otherSlotIdx = props.daycareSlotIdx === 1 ? 0 : 1
   return breedingStore.slots.find((s) => s.slotIndex === otherSlotIdx)?.pokemon || null
 })
+
+const filterCompatibleOnly = ref(props.isDaycareContext && !!otherDaycarePokemon.value)
 
 // Persist filters
 watch([sortBy, sortOrder, activeTags, searchQuery], () => {
@@ -419,8 +420,9 @@ function openDetail(item: { pokemon: Pokemon, _source: 'team' | 'box' | 'market'
               description="Resetear búsqueda, orden y etiquetas."
             >
               <button
-                v-if="activeTags.length > 0 || searchQuery || sortBy !== 'recent' || filterCompatibleOnly"
                 class="ps-clear-icon-btn"
+                :class="{ disabled: !(activeTags.length > 0 || searchQuery || sortBy !== 'recent' || filterCompatibleOnly) }"
+                :disabled="!(activeTags.length > 0 || searchQuery || sortBy !== 'recent' || filterCompatibleOnly)"
                 @click.stop="clearFilters"
               >
                 🧹
@@ -436,7 +438,7 @@ function openDetail(item: { pokemon: Pokemon, _source: 'team' | 'box' | 'market'
                 position="bottom"
               >
                 <button
-                  :class="{ active: activeTags.includes(t.id) }"
+                  :class="['ps-tag-' + t.id, { active: activeTags.includes(t.id) }]"
                   @click.stop="toggleTagFilter(t.id)"
                 >
                   <span class="icon">{{ t.icon }}</span>
@@ -451,7 +453,7 @@ function openDetail(item: { pokemon: Pokemon, _source: 'team' | 'box' | 'market'
                 position="bottom"
               >
                 <button
-                  :class="{ active: activeTags.includes('shiny') }"
+                  :class="['ps-tag-shiny', { active: activeTags.includes('shiny') }]"
                   @click.stop="toggleTagFilter('shiny')"
                 >
                   <span class="icon">{{ POKEMON_BADGES.shiny.icon }}</span>
@@ -460,13 +462,13 @@ function openDetail(item: { pokemon: Pokemon, _source: 'team' | 'box' | 'market'
               </PVTooltip>
 
               <PVTooltip 
-                v-if="isDaycareContext && otherDaycarePokemon"
-                title="COMPATIBLES" 
-                description="Mostrar solo Pokémon compatibles con el otro slot de crianza." 
+                v-if="isDaycareContext"
+                :title="otherDaycarePokemon ? 'COMPATIBLES' : 'MODO COMPATIBLE'" 
+                :description="otherDaycarePokemon ? `Mostrar solo Pokémon compatibles con ${otherDaycarePokemon.name}.` : 'Filtro compatible (elige una pareja en el otro slot para filtrar).'" 
                 position="bottom"
               >
                 <button
-                  :class="{ active: filterCompatibleOnly }"
+                  :class="['ps-tag-compatible', { active: filterCompatibleOnly }]"
                   @click.stop="filterCompatibleOnly = !filterCompatibleOnly"
                 >
                   <span class="icon">❤️</span>
