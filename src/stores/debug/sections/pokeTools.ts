@@ -1,7 +1,8 @@
 import type { DebugSystem, DebugContext } from '@/stores/debug'
 import type { Pokemon } from '@/types/pokemon'
+import { POKEMON_DB } from '@/data/pokemonDB'
 
-export function registerPokeTools(debug: DebugSystem, { game, ui, mapStore }: DebugContext) {
+export function registerPokeTools(debug: DebugSystem, { game, ui, mapStore, breedingStore }: DebugContext) {
   debug.register({
     id: 'poke-set-pokedex-mode',
     label: 'MODO POKEDEX',
@@ -165,5 +166,112 @@ export function registerPokeTools(debug: DebugSystem, { game, ui, mapStore }: De
       ui.notify('Equipo curado', '💊')
     },
     description: 'Cura completamente a todos los Pokémon del equipo.'
+  })
+
+  debug.register({
+    id: 'breeding-debug-eggs',
+    label: 'VER DETALLES DE HUEVOS (CLI)',
+    command: 'debugEggs',
+    category: 'pokes',
+    action: () => {
+      const db = POKEMON_DB as Record<string, { name: string }>
+      
+      const warehouse = breedingStore.warehouseEggs.map(e => ({
+        id: e.id,
+        especie: db[e.species]?.name || e.species,
+        nivel: e.level,
+        naturaleza: e.nature,
+        shiny: e.isShiny ? '✨ SÍ' : 'NO',
+        ivs: `HP: ${e.ivs.hp}, ATK: ${e.ivs.atk}, DEF: ${e.ivs.def}, SPA: ${e.ivs.spa}, SPD: ${e.ivs.spd}, SPE: ${e.ivs.spe}`,
+        costo: `₽${e.inherited_ivs?._cost || e.cost || 0}`,
+        escaneado: e.inherited_ivs?._scanned ? 'SÍ' : 'NO'
+      }))
+
+      const backpack = (game.state.eggs || []).map(e => ({
+        uid: e.uid,
+        especie: db[e.id]?.name || e.id,
+        pasosRestantes: e.steps,
+        listo: e.ready ? '🐣 SÍ' : 'NO',
+        shiny: e.isShiny ? '✨ SÍ' : 'NO',
+        naturaleza: e.nature || 'N/A',
+        ivs: e.ivs ? `HP: ${e.ivs.hp || 0}, ATK: ${e.ivs.atk || 0}, DEF: ${e.ivs.def || 0}, SPA: ${e.ivs.spa || 0}, SPD: ${e.ivs.spd || 0}, SPE: ${e.ivs.spe || 0}` : 'Desconocido',
+        escaneado: e.scanned ? 'SÍ' : 'NO'
+      }))
+
+      console.group('🥚 [DEBUG] DETALLES DE HUEVOS ACTIVOS')
+      console.log('--- EN ALMACÉN DE GUARDERÍA ---')
+      if (warehouse.length > 0) {
+        console.table(warehouse)
+      } else {
+        console.log('No hay huevos en el almacén de la guardería.')
+      }
+
+      console.log('--- EN LA MOCHILA ---')
+      if (backpack.length > 0) {
+        console.table(backpack)
+      } else {
+        console.log('No hay huevos en la mochila.')
+      }
+      console.groupEnd()
+
+      ui.notify('Detalles de huevos impresos en consola', '🥚')
+      return { warehouseEggs: breedingStore.warehouseEggs, backpackEggs: game.state.eggs }
+    },
+    description: 'Imprime en la consola de desarrollo la lista detallada y las propiedades secretas de todos los huevos.'
+  })
+
+  debug.register({
+    id: 'breeding-scan-egg',
+    label: 'ESCANEAR HUEVO (CLI)',
+    command: 'scanEgg',
+    category: 'pokes',
+    action: (idOrAll?: string) => {
+      const db = POKEMON_DB as Record<string, { name: string }>
+      let scannedCount = 0
+
+      const scanAll = !idOrAll || idOrAll.toLowerCase() === 'all'
+
+      // Scan warehouse eggs
+      breedingStore.warehouseEggs.forEach(e => {
+        if (scanAll || e.id === idOrAll) {
+          if (!e.inherited_ivs) e.inherited_ivs = {}
+          e.inherited_ivs._scanned = true
+          scannedCount++
+        }
+      })
+      if (breedingStore.saveWarehouseEggs) {
+        breedingStore.saveWarehouseEggs()
+      }
+
+      // Scan backpack eggs
+      if (game.state.eggs) {
+        game.state.eggs.forEach(e => {
+          if (scanAll || e.uid === idOrAll || e.id === idOrAll) {
+            e.scanned = true
+            
+            // Calculate total IV
+            const eggIvs = e.ivs || {}
+            const totalIv = Object.keys(eggIvs).reduce((acc, key) => {
+              const val = eggIvs[key]
+              return acc + (typeof val === 'number' ? val : 0)
+            }, 0)
+
+            e.predictedInfo = {
+              name: db[e.id]?.name || 'Huevo Pokémon',
+              ivTotal: totalIv
+            }
+            scannedCount++
+          }
+        })
+      }
+
+      if (scannedCount > 0) {
+        ui.notify(`Se han escaneado ${scannedCount} huevo(s)`, '🔍')
+        game.saveGame(false)
+      } else {
+        ui.notify('No se encontró ningún huevo para escanear', '❌')
+      }
+    },
+    description: 'Escanea un huevo por ID/UID en almacén o mochila, o todos si se omite el argumento.'
   })
 }

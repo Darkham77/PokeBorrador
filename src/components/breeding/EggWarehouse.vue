@@ -11,9 +11,11 @@ const getPokemonName = (id: string) => (POKEMON_DB as Record<string, { name: str
 
 const handleClaim = (egg: DaycareEgg) => {
   const cost = egg.inherited_ivs?._cost as number || 0;
+  const isScanned = !!egg.inherited_ivs?._scanned;
+  const displayName = isScanned ? `huevo de ${getPokemonName(egg.species)}` : 'Huevo Pokémon';
   uiStore.openConfirm({
     title: 'RECOGER HUEVO',
-    message: `¿Quieres recoger este huevo de ${getPokemonName(egg.species)} por ₽${cost.toLocaleString()}?`,
+    message: `¿Quieres recoger este ${displayName} por ₽${cost.toLocaleString()}?`,
     onConfirm: () => {
       breedingStore.claimEgg(egg.id);
     }
@@ -70,7 +72,7 @@ const handleClaim = (egg: DaycareEgg) => {
         
         <div class="egg-info">
           <div class="name">
-            {{ getPokemonName(egg.species) }}
+            {{ egg.inherited_ivs?._scanned ? getPokemonName(egg.species) : 'HUEVO POKÉMON' }}
           </div>
           <div class="cost">
             Costo: <span>₽{{ (egg.inherited_ivs?._cost || 0).toLocaleString() }}</span>
@@ -183,11 +185,36 @@ const handleClaim = (egg: DaycareEgg) => {
 
 .egg-info {
   text-align: center;
-  .name { font-size: 13px; font-weight: 700; color: Rgba(241, 245, 249, 1); margin-bottom: 4px; }
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+
+  .name {
+    font-size: 11px;
+    font-weight: 700;
+    color: Rgba(241, 245, 249, 1);
+    line-height: 1.4;
+    min-height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
   .cost {
-    font-size: 10px;
+    font-size: 9px;
     color: Rgba(148, 163, 184, 1);
-    span { color: Rgba(250, 204, 21, 1); font-weight: 800; }
+    line-height: 1.4;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+
+    span {
+      color: Rgba(250, 204, 21, 1);
+      font-weight: 800;
+      font-size: 11px;
+    }
   }
 }
 

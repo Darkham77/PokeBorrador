@@ -1,7 +1,7 @@
 <script setup lang="ts">
-
 import type { DaycareEgg } from '@/types/breeding'
 import { formatTime } from '@/logic/timeUtils'
+import { POKEMON_DB } from '@/data/pokemonDB'
 
 interface Props {
   egg: DaycareEgg
@@ -13,7 +13,7 @@ const emit = defineEmits<{
   (e: 'collect', egg: DaycareEgg): void
 }>()
 
-
+const getPokemonName = (id: string) => (POKEMON_DB as Record<string, { name: string }>)[id]?.name || 'Huevo'
 </script>
 
 <template>
@@ -23,7 +23,7 @@ const emit = defineEmits<{
     </div>
     <div class="egg-info">
       <div class="egg-name">
-        HUEVO DE {{ egg.species.toUpperCase() }}
+        {{ egg.inherited_ivs?._scanned ? `HUEVO DE ${getPokemonName(egg.species).toUpperCase()}` : 'HUEVO POKÉMON' }}
       </div>
       <div class="egg-time">
         GENERADO: {{ formatTime(egg.deposited_at) }}
@@ -58,14 +58,18 @@ const emit = defineEmits<{
   &:hover { border-color: Rgba(255,255,255,0.12); }
   
   .egg-icon-box { 
-    font-size: 32px; 
+    font-size: 36px; 
     width: 60px; 
     height: 60px; 
-    background: Rgba(0,0,0,0.3); 
-    border-radius: 12px; 
     display: flex; 
     align-items: center; 
     justify-content: center; 
+    filter: Drop-Shadow(0 4px 6px Rgba(0, 0, 0, 0.3));
+    transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+    .egg-card-retro:hover & {
+      transform: Scale(1.1) Rotate(5deg);
+    }
   }
   
   .egg-name { font-size: 12px; font-weight: 800; color: $white; margin-bottom: 5px; }

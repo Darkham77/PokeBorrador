@@ -247,10 +247,15 @@ const getNatureDescription = (natureName: string) => {
 
 .sprite-box {
   width: 64px; height: 64px;
-  background: Rgba(0,0,0,0.3);
-  border-radius: 12px;
   display: flex; align-items: center; justify-content: center;
-  .pixel-sprite { width: 56px; height: 56px; @include pixelated; }
+  filter: Drop-Shadow(0 4px 6px Rgba(0, 0, 0, 0.35));
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+  .daycare-slot-legacy:hover & {
+    transform: Scale(1.05);
+  }
+
+  .pixel-sprite { width: 60px; height: 60px; @include pixelated; }
 }
 
 

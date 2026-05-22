@@ -4,6 +4,7 @@ import { useGameStore } from '@/stores/game'
 import { useMapStore, type PendingAward } from '@/stores/map'
 import MapEventCarousel from '@/components/map/MapEventCarousel.vue'
 import MapStatusSummary from '@/components/map/MapStatusSummary.vue'
+import WalkedEggsPanel from '@/components/breeding/WalkedEggsPanel.vue'
 import MapGrid from '@/components/map/MapGrid.vue'
 import { useUIStore } from '@/stores/ui'
 import { useEventStore } from '@/stores/events'
@@ -103,6 +104,9 @@ const mappedAwards = computed(() => mapStore.pendingAwards.map((a: PendingAward)
       @open-center="openCenter"
       @open-event="modalStore.open('EventDetail', { event: eventStore.activeEvents[0] })"
     />
+
+    <!-- Walking eggs progress panel -->
+    <WalkedEggsPanel />
 
     <!-- Localizaciones (Grilla de Mapas) -->
     <div class="legacy-divider">

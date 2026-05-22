@@ -234,19 +234,46 @@ export const useChatStore = defineStore('chat', () => {
         schema: 'public',
         table: 'global_chat_messages'
       }, ({ new: row }: { new: Record<string, unknown> }) => {
-        if (!globalMessages.value.some(m => m.id === row.id)) {
-          globalMessages.value.push(row)
-          if (globalMessages.value.length > 50) globalMessages.value.shift()
-          
-          const senderId = row.user_id as string
-          const cached = profileCosmetics.value[senderId]
-          const needsUpdate = !cached || cached.username !== row.username || cached.player_class !== row.player_class || cached.trainer_level !== row.trainer_level
-          fetchMissingCosmetics(needsUpdate ? [senderId] : [])
-          
-          // Sonido si el mensaje no es mío
-          if (row.user_id !== authStore.user?.id) {
-            audioStore.receivedMsg();
+        // Deduplicar por ID real de Supabase
+        const alreadyById = globalMessages.value.some(m => m.id !== undefined && m.id === row.id)
+        if (alreadyById) return
+
+        // Deduplicar el push optimista propio: mismo user_id + mismo mensaje + timestamp muy cercano (<3s)
+        const isOwnOptimistic = row.user_id === authStore.user?.id &&
+          globalMessages.value.some(m => {
+            if (m.user_id !== row.user_id || m.message !== row.message) return false
+            // Si el ID del optimista es un número temporal (epochMs) y no un UUID, es el push optimista
+            if (typeof m.id === 'number') {
+              const diff = Math.abs((m.id as number) - (new Date(row.created_at as string).getTime()))
+              return diff < 3000
+            }
+            return false
+          })
+
+        if (isOwnOptimistic) {
+          // Reemplazar el mensaje optimista con el definitivo (que tiene el ID real de Supabase)
+          const idx = globalMessages.value.findIndex(m =>
+            typeof m.id === 'number' &&
+            m.user_id === row.user_id &&
+            m.message === row.message
+          )
+          if (idx !== -1) {
+            globalMessages.value.splice(idx, 1, row as unknown as ChatMessage)
           }
+          return
+        }
+
+        globalMessages.value.push(row as unknown as ChatMessage)
+        if (globalMessages.value.length > 50) globalMessages.value.shift()
+        
+        const senderId = row.user_id as string
+        const cached = profileCosmetics.value[senderId]
+        const needsUpdate = !cached || cached.username !== row.username || cached.player_class !== row.player_class || cached.trainer_level !== row.trainer_level
+        fetchMissingCosmetics(needsUpdate ? [senderId] : [])
+        
+        // Sonido si el mensaje no es mío
+        if (row.user_id !== authStore.user?.id) {
+          audioStore.receivedMsg();
         }
       })
       .subscribe()
@@ -480,17 +507,17 @@ export const useChatStore = defineStore('chat', () => {
     } else {
       audioStore.sentMsg(); // Sonido al enviar satisfactoriamente
       
-      // En modo Offline, no hay disparador de Postgres Realtime, así que pusheamos manualmente
-      if (authStore.sessionMode === 'offline') {
-        const localRow = {
-          id: Temporal.Now.instant().epochMilliseconds,
-          ...payload,
-          created_at: Temporal.Now.instant().toString()
-        }
-        globalMessages.value.push(localRow as unknown as ChatMessage)
-        if (globalMessages.value.length > 50) globalMessages.value.shift()
-        fetchMissingCosmetics(authStore.user?.id ? [authStore.user.id] : [])
+      // Push optimista inmediato: el mensaje propio aparece al instante sin esperar Realtime.
+      // En modo online, el handler de Realtime luego lo reemplaza con el registro definitivo de Supabase.
+      // En modo offline, no hay Realtime, así que este push es el único.
+      const optimisticRow = {
+        id: Temporal.Now.instant().epochMilliseconds, // ID temporal numérico; el handler lo reemplaza si llega Realtime
+        ...payload,
+        created_at: Temporal.Now.instant().toString()
       }
+      globalMessages.value.push(optimisticRow as unknown as ChatMessage)
+      if (globalMessages.value.length > 50) globalMessages.value.shift()
+      fetchMissingCosmetics(authStore.user?.id ? [authStore.user.id] : [])
     }
   }
 

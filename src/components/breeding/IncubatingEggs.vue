@@ -27,10 +27,6 @@ const getProgress = (egg: PokemonEgg) => {
   }
 }
 
-const openScanner = () => {
-  modalStore.open('EggScanner')
-}
-
 const hatchEgg = (egg: PokemonEgg) => {
   modalStore.open('HatchAnimation', { egg })
 }
@@ -44,12 +40,6 @@ const hatchEgg = (egg: PokemonEgg) => {
         <p>Huevos que llevas contigo en tu mochila (camina o gana batallas para eclosionarlos)</p>
       </div>
       <div class="actions">
-        <button
-          class="btn-vicio-secondary scanner-btn"
-          @click.stop="openScanner"
-        >
-          🔍 ESCÁNER DE HUEVOS
-        </button>
         <div
           class="count-badge"
           :class="{ empty: eggs.length === 0 }"
@@ -79,44 +69,46 @@ const hatchEgg = (egg: PokemonEgg) => {
         class="egg-card"
         :class="{ ready: egg.ready || egg.steps <= 0 }"
       >
-        <div class="egg-visual">
-          <div class="egg-sprite">
-            🥚
+        <!-- Upper Main Row (Sprite + Progress details) -->
+        <div class="egg-main-row">
+          <!-- Free-floating Egg Sprite -->
+          <div class="egg-visual">
+            <span class="egg-sprite">🥚</span>
+            <span
+              v-if="egg.isShiny"
+              class="shiny-star"
+            >✨</span>
           </div>
-          <div
-            v-if="egg.isShiny"
-            class="shiny-star"
-          >
-            ✨
+
+          <!-- Progress and Info details -->
+          <div class="egg-details">
+            <div class="name">
+              {{ getEggName(egg) }}
+            </div>
+            
+            <div class="progress-container">
+              <div class="progress-bar-wrapper">
+                <div
+                  class="progress-bar"
+                  :style="{ width: `${getProgress(egg).percentage}%` }"
+                />
+              </div>
+              <div class="progress-text">
+                <span class="steps-val">{{ Math.floor(getProgress(egg).walked).toLocaleString() }} / {{ getProgress(egg).total.toLocaleString() }} pasos</span>
+                <span class="pct-val">{{ Math.round(getProgress(egg).percentage) }}%</span>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div class="egg-details">
-          <div class="name">
-            {{ getEggName(egg) }}
-          </div>
-          
-          <div class="progress-container">
-            <div class="progress-bar-wrapper">
-              <div
-                class="progress-bar"
-                :style="{ width: `${getProgress(egg).percentage}%` }"
-              />
-            </div>
-            <div class="progress-text">
-              <span>{{ Math.floor(getProgress(egg).walked).toLocaleString() }} / {{ getProgress(egg).total.toLocaleString() }} pasos</span>
-              <span>{{ Math.round(getProgress(egg).percentage) }}%</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="action-zone">
+        <!-- Bottom Footer Row (Status as footnote) -->
+        <div class="egg-footer-status">
           <button
             v-if="egg.ready || egg.steps <= 0"
             class="btn-vicio-success hatch-btn pulsing"
             @click.stop="hatchEgg(egg)"
           >
-            🐣 ECLOSIONAR
+            🐣 ECLOSIONAR HUEVO
           </button>
           <div
             v-else
@@ -208,8 +200,9 @@ const hatchEgg = (egg: PokemonEgg) => {
 
 .egg-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
   gap: 16px;
+  justify-content: center;
 
   @media (max-width: 600px) {
     grid-template-columns: 1fr;
@@ -217,52 +210,77 @@ const hatchEgg = (egg: PokemonEgg) => {
 }
 
 .egg-card {
-  background: Rgba(255, 255, 255, 0.02);
-  border: 1px solid Rgba(255, 255, 255, 0.05);
-  border-radius: 18px;
-  padding: 16px;
+  background: linear-gradient(135deg, Rgba(30, 15, 26, 0.75) 0%, Rgba(15, 5, 12, 0.92) 100%);
+  border: 1px solid Rgba(255, 51, 102, 0.15);
+  border-radius: 16px;
+  padding: 10px 14px;
   display: flex;
-  align-items: center;
-  gap: 16px;
+  flex-direction: column; /* Stack details row and status footer vertically */
+  gap: 6px;
   position: relative;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   overflow: hidden;
+  width: 100%;
+  max-width: 450px;
+  margin: 0 auto;
+  box-shadow: 0 4px 15px Rgba(0, 0, 0, 0.35), inset 0 0 15px Rgba(255, 51, 102, 0.05);
+
+  @media (max-width: 520px) {
+    padding: 10px 12px;
+    max-width: 320px;
+  }
 
   &:hover {
-    background: Rgba(255, 255, 255, 0.04);
-    border-color: Rgba(255, 51, 102, 0.25);
+    background: linear-gradient(135deg, Rgba(38, 20, 33, 0.8) 0%, Rgba(20, 8, 16, 0.96) 100%);
+    border-color: Rgba(255, 51, 102, 0.35);
     transform: Translatey(-2px);
+    box-shadow: 0 6px 20px Rgba(255, 51, 102, 0.12), inset 0 0 15px Rgba(255, 51, 102, 0.08);
+  }
+
+  &:hover .egg-visual {
+    transform: Scale(1.1) Rotate(5deg);
   }
 
   &.ready {
-    border-color: Rgba(34, 197, 94, 0.4);
-    background: Rgba(34, 197, 94, 0.03);
-    box-shadow: 0 0 15px Rgba(34, 197, 94, 0.05);
+    border-color: Rgba(34, 197, 94, 0.35);
+    background: linear-gradient(135deg, Rgba(20, 35, 25, 0.75) 0%, Rgba(8, 18, 12, 0.92) 100%);
+    box-shadow: 0 4px 15px Rgba(34, 197, 94, 0.1), inset 0 0 15px Rgba(34, 197, 94, 0.05);
 
     &:hover {
-      border-color: Rgba(34, 197, 94, 0.7);
-      box-shadow: 0 0 20px Rgba(34, 197, 94, 0.1);
+      border-color: Rgba(34, 197, 94, 0.65);
+      background: linear-gradient(135deg, Rgba(26, 46, 33, 0.8) 0%, Rgba(12, 26, 18, 0.96) 100%);
+      box-shadow: 0 6px 22px Rgba(34, 197, 94, 0.18), inset 0 0 15px Rgba(34, 197, 94, 0.08);
     }
   }
 }
 
+/* Main row for visual sprite and progress statistics */
+.egg-main-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+/* Free-floating visual egg styling (No artificial backgrounds or squares) */
 .egg-visual {
-  width: 54px;
-  height: 54px;
-  background: Rgba(0, 0, 0, 0.25);
-  border-radius: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 28px;
+  width: 48px;
+  height: 48px;
+  font-size: 34px;
   position: relative;
+  filter: Drop-Shadow(0 4px 6px Rgba(0, 0, 0, 0.3));
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 
   .shiny-star {
     position: absolute;
-    top: -4px;
-    right: -4px;
-    font-size: 12px;
-    filter: Drop-Shadow(0 0 5px var(--yellow));
+    top: -2px;
+    right: -2px;
+    font-size: 11px;
+    filter: Drop-Shadow(0 0 4px var(--yellow));
   }
 }
 
@@ -270,13 +288,14 @@ const hatchEgg = (egg: PokemonEgg) => {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
   min-width: 0;
 
   .name {
-    font-size: 13px;
-    font-weight: 700;
-    color: #f1f5f9;
+    font-size: 11px;
+    @include pixelated;
+    color: #ffffff;
+    letter-spacing: 0.5px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -290,8 +309,9 @@ const hatchEgg = (egg: PokemonEgg) => {
 }
 
 .progress-bar-wrapper {
-  height: 6px;
-  background: Rgba(255, 255, 255, 0.05);
+  height: 8px;
+  background: Rgba(0, 0, 0, 0.45);
+  border: 1px solid Rgba(255, 255, 255, 0.05);
   border-radius: 99px;
   overflow: hidden;
   position: relative;
@@ -311,22 +331,28 @@ const hatchEgg = (egg: PokemonEgg) => {
 .progress-text {
   display: flex;
   justify-content: space-between;
-  font-size: 9px;
+  align-items: center;
+  font-size: 8.5px;
   color: #94a3b8;
-  font-family: monospace;
+  @include pixelated;
+  white-space: nowrap;
 }
 
-.action-zone {
+/* Footnote layout for breeding egg status */
+.egg-footer-status {
+  width: 100%;
   display: flex;
-  align-items: center;
   justify-content: center;
-  min-width: 90px;
+  align-items: center;
+  margin-top: 2px;
 }
 
 .hatch-btn {
-  font-size: 7px;
-  padding: 8px 12px;
+  font-size: 7.5px;
+  padding: 6px 12px;
+  width: 100%;
   @include pixelated;
+  box-shadow: 0 4px 12px Rgba(34, 197, 94, 0.2);
 }
 
 .pulsing {
@@ -346,9 +372,12 @@ const hatchEgg = (egg: PokemonEgg) => {
 }
 
 .walking-label {
-  font-size: 9px;
-  color: #94a3b8;
+  font-size: 8px;
+  color: #64748b;
   @include pixelated;
   opacity: 0.8;
+  display: inline-block;
+  text-align: center;
+  margin-top: 2px;
 }
 </style>

@@ -508,6 +508,7 @@ export const useBreedingStore = defineStore('breeding', () => {
     deleteEgg,
     initBackgroundPoller,
     cleanupBackgroundPoller,
+    saveWarehouseEggs,
     eggs: computed(() => warehouseEggs.value)
   };
 });

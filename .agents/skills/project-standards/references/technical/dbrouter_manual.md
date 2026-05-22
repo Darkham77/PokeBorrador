@@ -61,6 +61,14 @@ In offline mode, changes are saved in memory and synchronized with the browser's
 - **Migration Integrity Patch**: To ensure `npm run validate:sql` passes in environments with inconsistent migration history, all new migrations MUST include `CREATE TABLE IF NOT EXISTS` blocks for the tables they affect. This prevents "no such table" errors during the isolated validation phase.
 - **Unit Testing & Mocking**: When mocking `DBRouter` in unit tests, you MUST provide a dummy URL/Key to satisfy the configuration check and explicitly inject your mock client into the private `_realClient` property to prevent the lazy-initializer from attempting a real connection.
 
+### 4. Realtime & Optimistic Updates Pattern
+
+When implementing features that rely on Supabase Realtime subscriptions (e.g., chat, battle lobbies, or trade queues) to display database updates:
+
+- **Optimistic Push**: Never wait for the Supabase Realtime channel event to display the player's own actions. Implement an immediate local optimistic push (using a temporary ID like `Temporal.Now.instant().epochMilliseconds`) so the UI responds instantly.
+- **Idempotency & Reconciled Deduplication**: Since the Realtime `postgres_changes` event will eventually broadcast the official row back to the client, the listener MUST handle deduplication. Because the optimistic ID (numeric) differs from the database ID (UUID), deduplicate by checking a unique combination of `user_id`, `message/payload`, and a close timestamp difference (e.g., `< 3000ms`).
+- **Splice/Replacement**: When matching a broadcast event with an optimistic local item, use `.splice()` to replace the temporary object with the definitive backend row (which contains the real ID) instead of pushing a duplicate.
+
 ---
 
 ## 😈 Administrative Privilege Standards
