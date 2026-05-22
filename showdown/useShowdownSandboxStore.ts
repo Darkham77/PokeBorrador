@@ -152,8 +152,8 @@ export const useShowdownSandboxStore = defineStore('showdownSandbox', {
           name: leaderPoke.name,
           types: leaderPoke.types,
           spriteUrl: isShiny
-            ? (isPlayer ? `/showdown/assets/back-shiny/${leaderPoke.sprites.backShiny}` : `/showdown/assets/front-shiny/${leaderPoke.sprites.frontShiny}`)
-            : (isPlayer ? `/showdown/assets/back/${leaderPoke.sprites.back}` : `/showdown/assets/front/${leaderPoke.sprites.front}`),
+            ? (isPlayer ? `showdown/assets/back-shiny/${leaderPoke.sprites.backShiny}` : `showdown/assets/front-shiny/${leaderPoke.sprites.frontShiny}`)
+            : (isPlayer ? `showdown/assets/back/${leaderPoke.sprites.back}` : `showdown/assets/front/${leaderPoke.sprites.front}`),
           isAnimated: isShiny
             ? (isPlayer ? leaderPoke.sprites.backShinyAnimated : leaderPoke.sprites.frontShinyAnimated)
             : (isPlayer ? leaderPoke.sprites.backAnimated : leaderPoke.sprites.frontAnimated),
@@ -184,8 +184,8 @@ export const useShowdownSandboxStore = defineStore('showdownSandbox', {
         if (poke && poke.sprites) {
           const moves = getRandomMoves(poke.types, allMoves);
           const spriteUrl = isPlayer
-            ? `/showdown/assets/back/${poke.sprites.back}`
-            : `/showdown/assets/front/${poke.sprites.front}`;
+            ? `showdown/assets/back/${poke.sprites.back}`
+            : `showdown/assets/front/${poke.sprites.front}`;
             
           team.push({
             id: pokeId,
@@ -363,7 +363,7 @@ export const useShowdownSandboxStore = defineStore('showdownSandbox', {
       const pokemon = typedDB.pokemon[pokemonId];
       if (pokemon && pokemon.sprites && pokemon.sprites.cry) {
         if (typeof window !== 'undefined' && typeof Audio !== 'undefined') {
-          const audio = new Audio(`/showdown/assets/cries/${pokemon.sprites.cry}`);
+          const audio = new Audio(`showdown/assets/cries/${pokemon.sprites.cry}`);
           audio.volume = 0.4;
           audio.play().catch(err => {
             console.warn('El audio no pudo reproducirse (bloqueo de autoplay):', err);

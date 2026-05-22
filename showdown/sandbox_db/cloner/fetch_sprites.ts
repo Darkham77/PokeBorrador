@@ -14,13 +14,13 @@ const BASE_URLS = {
   cries: 'https://play.pokemonshowdown.com/audio/cries/',
 };
 
-// Rutas locales de almacenamiento dentro de _raw-assets/showdown
+// Rutas locales de almacenamiento dentro de showdown/assets
 const OUTPUT_DIRS = {
-  front: path.resolve('_raw-assets/showdown/front'),
-  back: path.resolve('_raw-assets/showdown/back'),
-  frontShiny: path.resolve('_raw-assets/showdown/front-shiny'),
-  backShiny: path.resolve('_raw-assets/showdown/back-shiny'),
-  cries: path.resolve('_raw-assets/showdown/cries'),
+  front: path.resolve('showdown/assets/front'),
+  back: path.resolve('showdown/assets/back'),
+  frontShiny: path.resolve('showdown/assets/front-shiny'),
+  backShiny: path.resolve('showdown/assets/back-shiny'),
+  cries: path.resolve('showdown/assets/cries'),
 };
 
 /**
