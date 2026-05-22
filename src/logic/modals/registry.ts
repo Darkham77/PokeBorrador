@@ -20,6 +20,7 @@ export const MODAL_REGISTRY = {
   Profile: defineAsyncComponent(() => import('@/components/ProfileModal.vue')),
   Rename: defineAsyncComponent(() => import('@/components/modals/RenameModal.vue')),
   TrainerProfile: defineAsyncComponent(() => import('@/components/modals/TrainerProfileModal.vue')),
+  Ranking: defineAsyncComponent(() => import('@/components/modals/RankingModal.vue')),
   Library: defineAsyncComponent(() => import('@/components/LibraryModal.vue')),
   Cosmetics: defineAsyncComponent(() => import('@/components/modals/CosmeticsModal.vue')),
   FossilRevival: defineAsyncComponent(() => import('@/components/modals/FossilRevivalModal.vue')),

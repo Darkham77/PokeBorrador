@@ -697,3 +697,25 @@ $element-types: (
     50% { box-shadow: 0 0 0 3px $light-color, 0 0 22px Rgba($base-color, 0.7), inset 0 0 10px Rgba($base-color, 0.3); }
   }
 }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   STATUS DOTS (ONLINE / OFFLINE INDICATORS)
+   ───────────────────────────────────────────────────────────────────────────── */
+.status-dot {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid #101822;
+  background: #ef4444; // Default offline red
+  z-index: 5;
+  box-shadow: 0 0 4px Rgba(239, 68, 68, 0.4);
+
+  &.online {
+    background: #22c55e !important; // Online green
+    box-shadow: 0 0 10px #22c55e !important;
+  }
+}
+

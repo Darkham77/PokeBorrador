@@ -283,11 +283,21 @@ async function ensureSchemaIntegrity(): Promise<void> {
     _sqliteDb.run("UPDATE profiles SET username = 'Ash' WHERE id = 'local_ash' AND username = 'Entrenador'")
     
     // Seed default profiles for local testing
-    _sqliteDb.run("INSERT OR IGNORE INTO profiles (id, username, trainer_level, player_class, nick_style) VALUES ('local_ash', 'Ash', 10, 'entrenador', 'nick-style-gold')")
-    _sqliteDb.run("INSERT OR IGNORE INTO profiles (id, username, trainer_level, player_class, nick_style) VALUES ('local_entrenador', 'Entrenador', 5, 'entrenador', '')")
-    _sqliteDb.run("INSERT OR IGNORE INTO game_saves (user_id, save_data, updated_at) VALUES ('local_ash', '{\"trainer\":\"Ash\",\"trainerLevel\":10,\"playerClass\":\"entrenador\",\"nick_style\":\"nick-style-gold\"}', datetime('now'))")
-    _sqliteDb.run("INSERT OR IGNORE INTO game_saves (user_id, save_data, updated_at) VALUES ('local_entrenador', '{\"trainer\":\"Entrenador\",\"trainerLevel\":5,\"playerClass\":\"entrenador\",\"nick_style\":\"\"}', datetime('now'))")
+    _sqliteDb.run("INSERT OR IGNORE INTO profiles (id, username, trainer_level, player_class, nick_style, avatar_style) VALUES ('local_ash', 'Ash', 10, 'entrenador', 'nick-style-gold', 'av-fire')")
+    _sqliteDb.run("INSERT OR IGNORE INTO profiles (id, username, trainer_level, player_class, nick_style, avatar_style) VALUES ('local_entrenador', 'Entrenador', 5, 'entrenador', 'nt-class-criador', 'av-class-criador')")
+    _sqliteDb.run("INSERT OR IGNORE INTO game_saves (user_id, save_data, updated_at) VALUES ('local_ash', '{\"trainer\":\"Ash\",\"trainerLevel\":10,\"playerClass\":\"entrenador\",\"nick_style\":\"nick-style-gold\",\"avatar_style\":\"av-fire\"}', datetime('now'))")
+    _sqliteDb.run("INSERT OR IGNORE INTO game_saves (user_id, save_data, updated_at) VALUES ('local_entrenador', '{\"trainer\":\"Entrenador\",\"trainerLevel\":5,\"playerClass\":\"entrenador\",\"nick_style\":\"nt-class-criador\",\"avatar_style\":\"av-class-criador\"}', datetime('now'))")
     
+    // Update existing profiles to preventively set cosmetics if they were seeded previously without them
+    _sqliteDb.run("UPDATE profiles SET avatar_style = 'av-fire' WHERE id = 'local_ash' AND (avatar_style IS NULL OR avatar_style = '')")
+    _sqliteDb.run("UPDATE profiles SET nick_style = 'nick-style-gold' WHERE id = 'local_ash' AND (nick_style IS NULL OR nick_style = '')")
+    _sqliteDb.run("UPDATE profiles SET avatar_style = 'av-class-criador' WHERE id = 'local_entrenador' AND (avatar_style IS NULL OR avatar_style = '')")
+    _sqliteDb.run("UPDATE profiles SET nick_style = 'nt-class-criador' WHERE id = 'local_entrenador' AND (nick_style IS NULL OR nick_style = '')")
+    
+    // Update existing game_saves to preventively set cosmetics if they were saved previously without them
+    _sqliteDb.run("UPDATE game_saves SET save_data = '{\"trainer\":\"Ash\",\"trainerLevel\":10,\"playerClass\":\"entrenador\",\"nick_style\":\"nick-style-gold\",\"avatar_style\":\"av-fire\"}' WHERE user_id = 'local_ash' AND (save_data NOT LIKE '%avatar_style%')")
+    _sqliteDb.run("UPDATE game_saves SET save_data = '{\"trainer\":\"Entrenador\",\"trainerLevel\":5,\"playerClass\":\"entrenador\",\"nick_style\":\"nt-class-criador\",\"avatar_style\":\"av-class-criador\"}' WHERE user_id = 'local_entrenador' AND (save_data NOT LIKE '%avatar_style%')")
+
     logger.info('SQLite', 'Legacy global chat columns migrated and aligned successfully.')
   } catch (_err: unknown) {
     // Columns or table might not exist or be loaded yet, which is safe to ignore
@@ -488,7 +498,11 @@ export const db: {
         if (builder._limit) sql += ` LIMIT ${builder._limit}`
         
         const res = _sqliteDb.exec(sql, params)
-        const result = res[0]!;
+        if (!res || res.length === 0) {
+          if (resolve) resolve([])
+          return []
+        }
+        const result = res[0]!
         const data = result.values.map((row: unknown[]) => {
           const obj: Record<string, unknown> = {}
           result.columns.forEach((col: string, i: number) => (obj as Record<string, unknown>)[col] = row[i])

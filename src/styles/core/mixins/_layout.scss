@@ -108,3 +108,15 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+@mixin text-outline($color: #000, $width: 1px) {
+  text-shadow: 
+    #{$width} #{$width} 0 $color, 
+    -#{$width} -#{$width} 0 $color, 
+    #{$width} -#{$width} 0 $color, 
+    -#{$width} #{$width} 0 $color,
+    0 #{$width} 0 $color,
+    0 -#{$width} 0 $color,
+    #{$width} 0 0 $color,
+    -#{$width} 0 0 $color;
+}

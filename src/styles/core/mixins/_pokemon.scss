@@ -1,4 +1,5 @@
 @use "../mixins/shell" as *;
+@use "../mixins/layout" as *;
 @use "../gpu" as *;
 @use "../functions" as *;
 
@@ -126,7 +127,7 @@
   border: 1px solid Rgba(0, 0, 0, 0.25);
   background-image: Linear-Gradient(135deg, Rgba(255, 255, 255, 0.22) 0%, Rgba(255, 255, 255, 0) 50%, Rgba(0, 0, 0, 0.3) 100%);
   background-clip: padding-box;
-  text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
+  @include text-outline(#000, 1px);
   font-family: var(--font-pixel, 'Press Start 2P', monospace);
   transition: transform 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
   white-space: nowrap;
@@ -145,7 +146,7 @@
   border: 1px solid Rgba(0, 0, 0, 0.2);
   background-image: Linear-Gradient(135deg, Rgba(255, 255, 255, 0.18) 0%, Rgba(255, 255, 255, 0) 50%, Rgba(0, 0, 0, 0.25) 100%);
   background-clip: padding-box;
-  text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
+  @include text-outline(#000, 1px);
   box-shadow: 0 1px 3px Rgba(0, 0, 0, 0.2);
   white-space: nowrap;
 }

@@ -123,3 +123,8 @@ body .pixelated {
   // scrollbar-width: none;
   // scrollbar-color: transparent transparent;
 }
+
+.text-outline {
+  @include text-outline(var(--black, #000), 1px);
+}
+

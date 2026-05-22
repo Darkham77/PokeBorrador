@@ -40,7 +40,6 @@ import GlobalChat from '@/components/social/GlobalChat.vue'
 import DirectChatWindow from '@/components/social/DirectChatWindow.vue'
 import { useChatStore } from '@/stores/chat'
 import RankedArena from '@/components/social/RankedArena.vue'
-import GlobalRanking from '@/components/social/GlobalRanking.vue'
 
 const gameStore = useGameStore()
 const uiStore = useUIStore()
@@ -196,14 +195,7 @@ useDocumentListener('keydown', initAudio, { once: true })
         </div>
 
 
-        <div
-          v-else-if="activeTab === 'ranking'"
-          key="ranking"
-          class="tab-content"
-        >
-          <GlobalRanking />
-          <div class="hud-spacer-bottom" />
-        </div>
+
 
         <div
           v-else-if="activeTab === 'pvp'"

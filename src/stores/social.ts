@@ -88,6 +88,7 @@ export interface LeaderboardEntry {
   playerClass?: string;
   faction?: string;
   nick_style?: string;
+  avatar_style?: string;
   isOnline?: boolean;
 }
 
@@ -587,6 +588,7 @@ export const useSocialStore = defineStore('social', () => {
             playerClass: p.player_class,
             faction: p.faction,
             nick_style: p.nick_style,
+            avatar_style: p.avatar_style,
             isOnline: !!isOnline
           }
         })

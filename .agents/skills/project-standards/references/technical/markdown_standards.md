@@ -21,7 +21,7 @@ For the markdown parser to correctly render an alert banner instead of a standar
   > This is preceded by a list bullet and will render as a bullet item.
 ```
 
-####  Correct Setup
+#### 👍 Correct Setup
 ```markdown
 > [!NOTE]
 > This starts at column 0 and will render as a native blue note banner.
@@ -46,7 +46,7 @@ To maintain continuous numbering:
 3. Third step (will render as 1. Third step).
 ```
 
-####  Correct List Separation
+#### 👍 Correct List Separation
 ```markdown
 1. First step.
 2. Second step.
@@ -56,3 +56,27 @@ To maintain continuous numbering:
 
 3. Third step (retains correct numbering sequence).
 ```
+
+## 3. File Links, Anchors, and Media
+
+To ensure cross-compatibility and easy navigation within development environments:
+
+### Clickable File Links
+- Always use standard markdown link syntax with the `file://` scheme and absolute paths: `[link text](file:///absolute/path/to/file)`.
+- For specific line ranges, append the line anchor: `[link text](file:///absolute/path/to/file#L123-L145)`.
+- **Rigor**: Never surround the link text with backticks. That breaks the rendering and formatting of clickable links in many IDE previews.
+  - ❌ Incorrect: `[`utils.py`](file:///path/to/utils.py)`
+  - 👍 Correct: `[utils.py](file:///path/to/utils.py)`
+
+### Embedding Media
+- To embed images and videos, you **MUST** use the image syntax: `![caption](/absolute/path/to/file.jpg)`. Standard links will not display the media inline.
+- Provide a brief, descriptive caption.
+- **Artifact Sandbox**: If you are embedding a file in an artifact or markdown file and it is not already in the designated assets/artifacts folder, you **MUST** first copy it to the local media directory before referencing it.
+
+## 4. Technical Content & Referential Integrity (Zero-Hardcoding)
+
+Manuals and project documentation must reflect logical concepts and structures rather than ephemeral values.
+
+- **Referential Integrity**: Documentation and manuals MUST avoid hardcoded game constants (e.g., pixel sizes, coordinate values).
+- **Source of Truth**: Always point to the centralized logic file (e.g., `spatialCoordinator.ts`) or `visuals.ts` as the owner of the numbers.
+- **Relativity**: Explain technical specs using symbolic names (e.g., `ENTITY_SIZE_P1/P2`) and logical relationships (e.g., `SAFE_ZONE_BOTTOM - ENTITY_SIZE_P1`) rather than absolute values.

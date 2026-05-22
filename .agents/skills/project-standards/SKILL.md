@@ -174,11 +174,8 @@ The project uses a sophisticated audit and validation engine to ensure stability
 - **Windows CLI Compatibility**: When chaining commands in PowerShell (default Windows CLI), avoid the `&&` operator; use `;` or run commands sequentially to ensure cross-platform stability.
 - **Standardized Logging (HybridLogger)**: Consolidation of `HybridLogger` with context tags (e.g., `[Battle]`, `[GTS]`, `[Chat]`) is MANDATORY. This ensures "Zero-Log" production standards while maintaining CSS styling in browsers and ANSI in terminals. Direct `console.log` is FORBIDDEN in production-bound logic.
 
-### 7. Symbolic Documentation & Source of Truth (Zero-Hardcoding)
+### 7. Z-Index Governance & Constants
 
-- **Referential Integrity**: Documentation and manuals MUST avoid hardcoded game constants (e.g., pixel sizes, coordinate values).
-- **Source of Truth**: Always point to the centralized logic file (e.g., `spatialCoordinator.ts`) or `visuals.ts` as the owner of the numbers.
-- **Relativity**: Explain technical specs using symbolic names (`ENTITY_SIZE_P1/P2`) and logical relationships (`SAFE_ZONE_BOTTOM - ENTITY_SIZE_P1`) rather than absolute values.
 - **Z-Index Single Source of Truth**: All visual layering constants MUST be defined in `src/logic/constants/visuals.ts`. The use of JSON files or hardcoded integers is forbidden. SCSS variables in `_variables.scss` must reflect these TS constants.
 - **Strict Z-Index Layering**: The use of magic z-index numbers (`1`, `9999`) or raw CSS variables with unsafe fallbacks is strictly prohibited. You MUST reactively bind the official TS constant from the system using `calc(v-bind('Z_LAYERS.MAP_SPAWNS') + X)`.
 

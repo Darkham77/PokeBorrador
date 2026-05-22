@@ -87,6 +87,11 @@ const handleTabChange = (tab: string, _event?: Event) => {
     modalStore.open('EventMissions')
     return
   }
+
+  if (tab === 'ranking') {
+    modalStore.open('Ranking')
+    return
+  }
   
   activeTab.value = tab
   uiStore.openHudGroup = null // Close any open group when switching tabs
@@ -332,7 +337,7 @@ onUnmounted(() => {
     >
       <button
         class="hud-nav-btn group-btn"
-        :class="{ active: ['arena', 'ranking'].includes(activeTab) || uiStore.openHudGroup === 'SOCIAL' || modalStore.isOpen('SocialCenter') || modalStore.isOpen('WorldEvents') || modalStore.isOpen('FactionWar') }"
+        :class="{ active: activeTab === 'arena' || modalStore.isOpen('Ranking') || uiStore.openHudGroup === 'SOCIAL' || modalStore.isOpen('SocialCenter') || modalStore.isOpen('WorldEvents') || modalStore.isOpen('FactionWar') }"
         @click.stop="toggleGroupMenu('SOCIAL')"
       >
         <span class="icon">👪</span>
@@ -378,7 +383,7 @@ onUnmounted(() => {
           </button>
           <button
             class="hud-nav-btn"
-            :class="{ active: activeTab === 'ranking' }"
+            :class="{ active: modalStore.isOpen('Ranking') }"
             @click.stop="handleTabChange('ranking'); uiStore.openHudGroup = null"
           >
             <span class="icon">🏅</span><span class="nav-item-label">RANKING</span>
