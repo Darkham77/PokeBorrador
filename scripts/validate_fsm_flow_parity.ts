@@ -4,7 +4,7 @@
  */
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { styleText } from 'node:util';
+import { styleText, parseArgs } from 'node:util';
 
 const SRC_ROOT = path.resolve(process.cwd(), 'src');
 const MANUAL_PATH = path.resolve(process.cwd(), '.agents/skills/project-standards/references/battle/battle_mechanics_manual.md');
@@ -46,7 +46,6 @@ async function getExecutionSequence(): Promise<string[]> {
     }
   }
   
-  // Ordenamos por archivo y luego por aparición interna (heurística de flujo)
   return sequence.map(s => s.state);
 }
 
@@ -76,11 +75,25 @@ function parseMermaidSequences(content: string) {
   return sequences;
 }
 
-async function runAudit() {
+async function main() {
+  const { values } = parseArgs({
+    options: {
+      output: { type: 'string', short: 'o' },
+      summary: { type: 'boolean', short: 's' }
+    }
+  });
+
   const sep = (c = '─') => c.repeat(60);
   console.log(styleText('bold', '\n' + sep('═')));
   console.log(styleText('bold', '🛡️  VALIDADOR FSM: PARIDAD DE FLUJO v7.6'));
   console.log(sep('═'));
+
+  try {
+    await fs.access(MANUAL_PATH);
+  } catch {
+    console.error(styleText('red', `❌ Manual no encontrado: ${MANUAL_PATH}`));
+    process.exit(1);
+  }
 
   const manual = await fs.readFile(MANUAL_PATH, 'utf-8');
   const executionSequence = await getExecutionSequence();
@@ -89,38 +102,87 @@ async function runAudit() {
   console.log(styleText('cyan', `\nSecuencia detectada en el código (${executionSequence.length} pasos):`));
   console.log(executionSequence.slice(0, 10).join(' -> ') + (executionSequence.length > 10 ? ' ...' : ''));
 
-  let errors = 0;
+  const errors: string[] = [];
+  const warnings: string[] = [];
+  const okTransitions: string[] = [];
+  const loopTransitions: string[] = [];
+
   mermaidSeqs.forEach((seq, idx) => {
-    console.log(`\nVerificando Secuencia Mermaid #${idx + 1}:`);
     seq.forEach((step: TransitionStep) => {
-      // Buscamos si existe alguna pareja (A, B) tal que index(B) > index(A)
       const allFromIndices = executionSequence.map((s, i) => s === step.from ? i : -1).filter(i => i !== -1);
       const allToIndices = executionSequence.map((s, i) => s === step.to ? i : -1).filter(i => i !== -1);
 
       if (allFromIndices.length === 0 || allToIndices.length === 0) return;
 
-      // Una transición es válida si existe al menos una ocurrencia de 'to' después de 'from'
       const hasValidSequence = allFromIndices.some(fIdx => allToIndices.some(tIdx => tIdx > fIdx));
 
       if (!hasValidSequence && !step.isLoop) {
-        console.log(styleText('red', `  ❌ FAIL: Secuencia no encontrada en el código: ${step.from} -> ${step.to}`));
-        errors++;
+        errors.push(`Secuencia Mermaid #${idx + 1}: ${step.from} -> ${step.to} no encontrada en el código.`);
       } else if (step.isLoop) {
-        console.log(styleText('blue', `  🔄 LOOP: ${step.from} -> ${step.to} (Validado como circular)`));
+        loopTransitions.push(`Secuencia Mermaid #${idx + 1}: ${step.from} -> ${step.to} (Loop circular)`);
       } else {
-        console.log(styleText('green', `  ✅ OK: ${step.from} -> ${step.to}`));
+        okTransitions.push(`Secuencia Mermaid #${idx + 1}: ${step.from} -> ${step.to}`);
       }
     });
   });
 
-  console.log(`\n${sep('═')}`);
-  console.log(`RESULTADO: ${errors === 0 ? styleText('green', '0 Errores') : styleText('red', errors + ' Errores')}`);
-  console.log(sep('═') + '\n');
+  console.log(`\n════════════════════════════════════`);
+  console.log(`    FSM FLOW PARITY REPORT`);
+  console.log(`════════════════════════════════════`);
+  console.log(`🤖 Pasos detectados en código:  ${executionSequence.length}`);
+  console.log(`🧜 Secuencias Mermaid evaluadas: ${mermaidSeqs.length}`);
+  console.log(`✅ Transiciones correctas:       ${okTransitions.length}`);
+  console.log(`🔄 Transiciones loop/circular:   ${loopTransitions.length}`);
+  console.log(`════════════════════════════════════\n`);
 
-  process.exit(errors > 0 ? 1 : 0);
+  if (values.output) {
+    const outputPath = path.resolve(process.cwd(), values.output as string);
+    const lines = [
+      `--- FSM FLOW PARITY REPORT ---`,
+      `Pasos en código:              ${executionSequence.length}`,
+      `Secuencias Mermaid evaluadas: ${mermaidSeqs.length}`,
+      `Transiciones correctas:       ${okTransitions.length}`,
+      `Transiciones loop/circular:   ${loopTransitions.length}`,
+      `\nErrors (${errors.length}):`,
+      ...errors.map(e => `  - ${e}`),
+      `\nWarnings (${warnings.length}):`,
+      ...warnings.map(w => `  - ${w}`)
+    ];
+    await fs.writeFile(outputPath, lines.join('\n'), 'utf-8');
+    console.log(styleText('cyan', `\n✨ Reporte completo escrito en: ${values.output}`));
+  }
+
+  if (values.summary) {
+    console.log(styleText('cyan', `\n[INFO] Modo resumen activo: ${errors.length} errores, ${warnings.length} advertencias.`));
+  } else {
+    if (warnings.length) {
+      console.log(styleText('yellow', `⚠️  ADVERTENCIAS (${warnings.length}):`));
+      const limit = 30;
+      warnings.slice(0, limit).forEach(w => console.log(`   ${w}`));
+      if (warnings.length > limit) {
+        console.log(styleText('cyan', `   ... y ${warnings.length - limit} advertencias más (usa -o para ver todas)`));
+      }
+      console.log('');
+    }
+
+    if (errors.length) {
+      console.log(styleText('red', `❌ ERRORES (${errors.length}):`));
+      const limit = 30;
+      errors.slice(0, limit).forEach(e => console.log(`   ${e}`));
+      if (errors.length > limit) {
+        console.log(styleText('cyan', `   ... y ${errors.length - limit} errores más (usa -o para ver todos)`));
+      }
+    } else {
+      console.log(styleText('green', '✅ Paridad de flujo validada exitosamente.'));
+    }
+  }
+
+  if (errors.length > 0) {
+    process.exit(1);
+  }
 }
 
-runAudit().catch(err => {
-  console.error(styleText('red', `💥 Error fatal: ${err.message}`));
+main().catch(err => {
+  console.error(styleText('red', `\n💥 Error fatal: ${err.message}`));
   process.exit(1);
 });

@@ -57,6 +57,10 @@ This file defines the immutable DNA of the Poké Vicio project. Every AI agent i
 - **Explicit Command Disclosure**: The confirmation request MUST include the exact command(s) that are about to be executed so the user can review them.
 - **Safety First**: Rollbacks are high-risk operations. Never assume the user wants a destructive revert without a clear, final "Yes" from their side.
 
+## 9. Output Directory Integrity (Scratch Folder)
+
+- **Scratch Directory Mandate**: Whenever generating temporary files, debug outputs, text reports, summaries, or any validation/audit reports (regardless of file extension: `.txt`, `.log`, `.json`, etc.) intended for inspection, review, or later study, they MUST be stored exclusively in the `scratch/` directory at the project root. Dumping these temporary reports or files in the project root, source directories, or any other arbitrary location is strictly prohibited to maintain repository cleanliness.
+
 ---
 
 _Note: If you are an AI agent and haven't loaded `@/project-standards` yet, do it now._

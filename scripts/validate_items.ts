@@ -11,7 +11,7 @@
 
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { styleText } from 'node:util';
+import { styleText, parseArgs } from 'node:util';
 import { enableCompileCache } from 'node:module';
 
 enableCompileCache();
@@ -40,6 +40,13 @@ interface ShopItem {
 }
 
 async function main() {
+  const { values } = parseArgs({
+    options: {
+      output: { type: 'string', short: 'o' },
+      summary: { type: 'boolean', short: 's' }
+    }
+  });
+
   console.log(styleText('bold', '\n--- 🛡️  ITEM INTEGRITY VALIDATOR ---'));
 
   try {
@@ -158,19 +165,49 @@ async function main() {
   console.log(`💊 HEALING_ITEMS scanned: ${healingItems.size}`);
   console.log(`════════════════════════════════════\n`);
 
-  if (warnings.length) {
-    console.log(styleText('yellow', `⚠️  WARNINGS (${warnings.length}):`));
-    warnings.forEach(w => console.log(`   ${w}`));
-    console.log('');
+  if (values.output) {
+    const outputPath = path.resolve(process.cwd(), values.output as string);
+    const lines = [
+      `--- ITEM INTEGRITY REPORT ---`,
+      `SHOP_ITEMS scanned:    ${shopItems.length}`,
+      `HEALING_ITEMS scanned: ${healingItems.size}`,
+      `\nErrors (${errors.length}):`,
+      ...errors.map(e => `  - ${e}`),
+      `\nWarnings (${warnings.length}):`,
+      ...warnings.map(w => `  - ${w}`)
+    ];
+    await fs.writeFile(outputPath, lines.join('\n'), 'utf-8');
+    console.log(styleText('cyan', `\n✨ Reporte completo escrito en: ${values.output}`));
   }
 
-  if (errors.length) {
-    console.log(styleText('red', `❌ ERRORS (${errors.length}):`));
-    errors.forEach(e => console.log(`   ${e}`));
-    console.log('\n' + styleText('red', 'Fix these errors before considering items complete.'));
-    process.exit(1);
+  if (values.summary) {
+    console.log(styleText('cyan', `\n[INFO] Modo resumen activo: ${errors.length} errores, ${warnings.length} advertencias.`));
   } else {
-    console.log(styleText('green', '✅ All items passed validation! SHOP_ITEMS and HEALING_ITEMS are in sync.'));
+    if (warnings.length) {
+      console.log(styleText('yellow', `⚠️  WARNINGS (${warnings.length}):`));
+      const limit = 30;
+      warnings.slice(0, limit).forEach(w => console.log(`   ${w}`));
+      if (warnings.length > limit) {
+        console.log(styleText('cyan', `   ... y ${warnings.length - limit} advertencias más (usa -o para ver todas)`));
+      }
+      console.log('');
+    }
+
+    if (errors.length) {
+      console.log(styleText('red', `❌ ERRORS (${errors.length}):`));
+      const limit = 30;
+      errors.slice(0, limit).forEach(e => console.log(`   ${e}`));
+      if (errors.length > limit) {
+        console.log(styleText('cyan', `   ... y ${errors.length - limit} errores más (usa -o para ver todos)`));
+      }
+      console.log('\n' + styleText('red', 'Fix these errors before considering items complete.'));
+    } else {
+      console.log(styleText('green', '✅ All items passed validation! SHOP_ITEMS and HEALING_ITEMS are in sync.'));
+    }
+  }
+
+  if (errors.length > 0) {
+    process.exit(1);
   }
 }
 

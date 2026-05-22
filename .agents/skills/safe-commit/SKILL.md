@@ -106,10 +106,13 @@ You MUST run these commands and fix EVERY issue until a clean pass is achieved.
 1.  **Full Audit Pass**: `npm run audit:full`
     - This command captures EVERYTHING (SASS, GPU, FSM, SQL, Items, Moves, Abilities).
     - **CRITICAL**: You MUST NOT skip this. It is the only way to ensure total system integrity.
+    - **Context Protection**: If the audit outputs a massive log that threatens to saturate the context window, run the validation scripts using their summary or report variants to keep console logs clean:
+      - For high-level summaries: `npm run audit:summary`, `npm run validate:items:summary`, `npm run validate:abilities:summary`, `npm run validate:moves:summary`, `npm run validate:sandbox:summary`, or `npm run validate:fsm:summary`.
+      - For redirecting full outputs to files: `npm run audit:report` (writes to `scratch/audit_report.txt`), `npm run validate:items:report` (writes to `scratch/items_report.txt`), `npm run validate:abilities:report` (writes to `scratch/abilities_report.txt`), `npm run validate:moves:report` (writes to `scratch/moves_report.txt`), `npm run validate:sandbox:report` (writes to `scratch/sandbox_report.txt`), or `npm run validate:fsm:report` (writes to `scratch/fsm_report.txt`). All validation/audit reports MUST be generated under the `scratch/` folder. Read these output files using `view_file` to review issues.
 2.  **Automatic Repair**: `npm run audit:fix`
     - Run this to handle easy fixes (Viewports, Node prefixes, ESM extensions).
 3.  **Manual Repair Discovery (THE REPORT)**:
-    - Review the output of `audit:full` again.
+    - Review the output of `audit:full` (or the generated report files) again.
     - Identify all warnings/errors that `:fix` DID NOT resolve (e.g., `gpuGaps`, `legacyDates`, `zIndexAudit`).
     - **MANDATORY**: List these issues in your response to the user as a "Technical Debt Report" before proceeding to fix them manually.
 4.  **Manual Repair Phase**:
@@ -143,12 +146,12 @@ If the database schema has changed:
 
 ### 6. Workspace Cleanup (MANDATORY)
 
-Before extracting lessons or committing, you MUST delete all temporary artifacts created during the development or verification process.
+Before extracting lessons or committing, you MUST clean up all temporary artifacts created during the development or verification process.
 
+- **Scratch Mandate Adherence**: Verify that any temporary files, debug outputs, text reports, or summaries created for review or study were written exclusively to the `scratch/` directory.
 - Delete all files and content in the **scratchpad** that are no longer needed.
-- Delete any ad-hoc test files (e.g., `test_output.txt`, `tmp_log.tson`) created in the root or subdirectories.
-- **Audit Cleanup**: Delete all `.txt` files related to auditing (generally containing `_audit_` in the name, like `audit_results.txt` or `gpu_audit_results.txt`). **CRITICAL: NEVER delete `requirements.txt` in the root.**
-- Ensure `git status` does not show untracked temporary files that should not be in the repository.
+- Delete any ad-hoc test files, logs, or reports created. All files generated for inspection, review, or later study MUST be deleted from the `scratch/` directory (e.g., `scratch/audit_report.txt`, `scratch/items_report.txt`, etc.). **CRITICAL: NEVER delete `requirements.txt` in the root.**
+- Ensure `git status` does not show untracked temporary files, logs, or report files in the project root or source directories.
 
 ### 7. Walkthrough Generation (MANDATORY)
 

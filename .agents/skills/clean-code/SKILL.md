@@ -98,6 +98,7 @@ priority: CRITICAL
 | Magic numbers | Named constants |
 | God functions | Split by responsibility |
 | Empty rulesets | Remove blocks containing only comments |
+| Generating reports or logs in arbitrary directories | Write temporary files/reports exclusively to the `scratch/` folder and clean them up when done |
 
 ---
 

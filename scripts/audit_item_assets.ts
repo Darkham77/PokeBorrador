@@ -10,7 +10,7 @@
 
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { styleText } from 'node:util';
+import { styleText, parseArgs } from 'node:util';
 import { SHOP_ITEMS } from '../src/data/items.ts';
 
 const ITEM_MAPPING: Record<string, string> = {
@@ -94,6 +94,13 @@ interface AuditResult {
 }
 
 async function main() {
+  const { values } = parseArgs({
+    options: {
+      output: { type: 'string', short: 'o' },
+      summary: { type: 'boolean', short: 's' }
+    }
+  });
+
   console.log(styleText('bold', '\n--- 🔎 ITEM IMAGE ASSETS AUDIT ---'));
   
   const publicDir = path.resolve(process.cwd(), 'public');
@@ -176,17 +183,43 @@ async function main() {
   const allMissing = results.filter(r => !r.found);
 
   if (allMissing.length > 0) {
-    console.log(styleText('red', '\n⚠️ DETALLE DE IMÁGENES FALTANTES:'));
-    allMissing.forEach(i => {
-      console.log(`   - 🚫 ${styleText('bold', i.name)} (ID: ${i.id})`);
-      console.log(`        Tiendas:       ${i.shops.join(' y ') || 'Ninguna (Solo Base)'}`);
-      i.expectedPaths.forEach(p => {
-        const relPath = path.relative(process.cwd(), p);
-        console.log(`        Ruta esperada: ${styleText('underline', relPath)}`);
+    if (values.summary) {
+      console.log(styleText('cyan', `\n[INFO] Modo resumen activo: ${allMissing.length} imágenes de ítems faltantes.`));
+    } else {
+      console.log(styleText('red', '\n⚠️ DETALLE DE IMÁGENES FALTANTES:'));
+      const limit = 30;
+      const toPrint = allMissing.slice(0, limit);
+      toPrint.forEach(i => {
+        console.log(`   - 🚫 ${styleText('bold', i.name)} (ID: ${i.id})`);
+        console.log(`        Tiendas:       ${i.shops.join(' y ') || 'Ninguna (Solo Base)'}`);
+        i.expectedPaths.forEach(p => {
+          const relPath = path.relative(process.cwd(), p);
+          console.log(`        Ruta esperada: ${styleText('underline', relPath)}`);
+        });
       });
-    });
+      if (allMissing.length > limit) {
+        console.log(styleText('cyan', `\n[INFO] Se muestran solo las primeras ${limit} de un total de ${allMissing.length} imágenes faltantes para evitar saturar la terminal.`));
+        console.log(styleText('cyan', `👉 Para guardar el reporte completo a un archivo: npm run audit -- --output=scratch/item_assets_report.txt (o añade flags directamente al script)`));
+      }
+    }
   } else {
     console.log(styleText('green', '\n🎉 ¡Excelente! Todas las imágenes de ítems de ambas tiendas están presentes físicamente en el sistema.'));
+  }
+
+  if (values.output) {
+    const outputPath = path.resolve(process.cwd(), values.output as string);
+    const lines = [
+      `--- ITEM IMAGE ASSETS AUDIT REPORT ---`,
+      `Total Local Shop: ${localShopItems.length} (Missing: ${localMissing.length})`,
+      `Total BC Shop: ${bcShopItems.length} (Missing: ${bcMissing.length})`,
+      `\nDetailed Missing Items:`
+    ];
+    allMissing.forEach(i => {
+      lines.push(`- [MISSING] ${i.name} (ID: ${i.id}) [Shops: ${i.shops.join(', ') || 'None'}]`);
+      i.expectedPaths.forEach(p => lines.push(`  Expected: ${path.relative(process.cwd(), p)}`));
+    });
+    await fs.writeFile(outputPath, lines.join('\n'), 'utf-8');
+    console.log(styleText('cyan', `\n✨ Reporte completo escrito en: ${values.output}`));
   }
 }
 

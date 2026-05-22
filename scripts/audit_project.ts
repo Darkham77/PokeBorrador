@@ -407,7 +407,14 @@ async function checkZIndexConsistency(fix: boolean): Promise<string[]> {
 }
 
 async function main() {
-  const { values } = parseArgs({ options: { fix: { type: 'boolean', short: 'f' }, path: { type: 'string', short: 'p', default: '.' } } });
+  const { values } = parseArgs({
+    options: {
+      fix: { type: 'boolean', short: 'f' },
+      path: { type: 'string', short: 'p', default: '.' },
+      output: { type: 'string', short: 'o' },
+      summary: { type: 'boolean', short: 's' }
+    }
+  });
   console.log(styleText('bold', '\n--- 🔎 POKE VICIO - INTELLIGENT AUDIT ---'));
   
   // Consistency Check
@@ -421,8 +428,71 @@ async function main() {
   const files = await getFilesToAudit(path.resolve(process.cwd(), values.path as string));
   let all: Violation[] = [];
   for (const f of files) all = all.concat(await auditFile(f, !!values.fix));
-  all.forEach(v => console.log(styleText(v.severity === 'error' ? 'red' : 'yellow', `[${v.severity.toUpperCase()}] ${path.relative(process.cwd(), v.file)}:${v.line} -> ${v.message} ("${v.context}")`)));
+
+  if (values.summary) {
+    console.log(styleText('bold', '\n--- 📊 RESUMEN DE VIOLACIONES ---'));
+    
+    const fileGroups: Record<string, number> = {};
+    const typeGroups: Record<string, number> = {};
+
+    for (const v of all) {
+      const rel = path.relative(process.cwd(), v.file);
+      fileGroups[rel] = (fileGroups[rel] || 0) + 1;
+
+      let type = 'Otros';
+      if (v.message.includes('Unidad legacy')) type = 'Viewport (dvh/dvw)';
+      else if (v.message.includes('will-change')) type = 'Falta will-change (GPU)';
+      else if (v.message.includes('Temporal')) type = 'Uso de Date (Temporal)';
+      else if (v.message.includes('prefijo')) type = 'Import de Node sin prefijo';
+      else if (v.message.includes('extensión')) type = 'Import relativo sin extensión';
+      else if (v.message.includes('Zero-Ignore')) type = 'TypeScript Ignore';
+      else if (v.message.includes('setTimeout manual')) type = 'setTimeout manual en script';
+      else if (v.message.includes('timer de ANIMACIÓN')) type = 'setTimeout/setInterval en UI';
+      else if (v.message.includes('sin \'using\'')) type = 'Falta explicit resource (\'using\')';
+      else if (v.message.includes('Animación manual')) type = 'Animación/Transición manual (GSAP)';
+      else if (v.message.includes('Z-Index')) type = 'Z-Index fuera de estándar';
+      else if (v.message.includes('archivo tiene')) type = 'Largo de archivo (>300/500 líneas)';
+
+      typeGroups[type] = (typeGroups[type] || 0) + 1;
+    }
+
+    console.log('\nPor tipo de regla:');
+    Object.entries(typeGroups)
+      .sort((a, b) => b[1] - a[1])
+      .forEach(([type, count]) => {
+        console.log(`  - ${type}: ${count}`);
+      });
+
+    console.log('\nTop 15 archivos con más problemas:');
+    Object.entries(fileGroups)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 15)
+      .forEach(([file, count]) => {
+        console.log(`  - ${file}: ${count} violaciones`);
+      });
+  } else {
+    const limit = 50;
+    const toPrint = all.slice(0, limit);
+    toPrint.forEach(v => console.log(styleText(v.severity === 'error' ? 'red' : 'yellow', `[${v.severity.toUpperCase()}] ${path.relative(process.cwd(), v.file)}:${v.line} -> ${v.message} ("${v.context}")`)));
+    if (all.length > limit) {
+      console.log(styleText('cyan', `\n[INFO] Se muestran solo las primeras ${limit} violaciones de un total de ${all.length} para evitar saturar la terminal.`));
+      console.log(styleText('cyan', `👉 Para ver el resumen consolidado por archivo y regla: npm run audit -- --summary`));
+      console.log(styleText('cyan', `👉 Para exportar el reporte completo a un archivo: npm run audit -- --output=scratch/audit_report.txt`));
+    }
+  }
+
   console.log(`\n❌ Errores: ${all.filter(v=>v.severity==='error').length} | ⚠️ Advertencias: ${all.filter(v=>v.severity==='warning').length}`);
   if (values.fix) console.log(styleText('cyan', '✨ Correcciones aplicadas.'));
+
+  if (values.output) {
+    const outputPath = path.resolve(process.cwd(), values.output as string);
+    if (outputPath.endsWith('.json')) {
+      await fs.writeFile(outputPath, JSON.stringify(all, null, 2), 'utf-8');
+    } else {
+      const lines = all.map(v => `[${v.severity.toUpperCase()}] ${path.relative(process.cwd(), v.file)}:${v.line} -> ${v.message} ("${v.context}")`);
+      await fs.writeFile(outputPath, lines.join('\n'), 'utf-8');
+    }
+    console.log(styleText('cyan', `\n✨ Reporte completo escrito en: ${values.output}`));
+  }
 }
 main();

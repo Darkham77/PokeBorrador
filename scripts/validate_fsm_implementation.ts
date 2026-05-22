@@ -3,7 +3,7 @@
  */
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { styleText } from 'node:util';
+import { styleText, parseArgs } from 'node:util';
 
 const SRC_ROOT = path.resolve(process.cwd(), 'src');
 const MANUAL_PATH = path.resolve(process.cwd(), '.agents/skills/project-standards/references/battle/battle_mechanics_manual.md');
@@ -78,111 +78,172 @@ function parseFsmConstants(fsmCode: string) {
   return { allKeys, substates };
 }
 
-async function runAudit() {
+async function main() {
+  const { values } = parseArgs({
+    options: {
+      output: { type: 'string', short: 'o' },
+      summary: { type: 'boolean', short: 's' }
+    }
+  });
+
   const sep = (c = '─') => c.repeat(60);
   console.log(styleText('bold', '\n' + sep('═')));
   console.log(styleText('bold', '🛡️  VALIDADOR FSM: IMPLEMENTACIÓN v7.6'));
   console.log(sep('═'));
 
+  try {
+    await fs.access(MANUAL_PATH);
+    await fs.access(FSM_PATH);
+  } catch {
+    console.error(styleText('red', `❌ Archivos requeridos no encontrados.`));
+    process.exit(1);
+  }
+
   const manualCode = await fs.readFile(MANUAL_PATH, 'utf-8');
   const fsmCode = await fs.readFile(FSM_PATH, 'utf-8');
   const fileData = await discoverFsmRelatedFiles();
   
-  // Código excluyendo la definición de la FSM para evitar auto-matches
   const externalCode = fileData.filter(f => !f.path.includes('battleStateMachine.ts')).map(d => d.content).join('\n\n');
   const allCode = fileData.map(d => d.content).join('\n\n');
 
   const { states: mermaidStates, syncRequired } = parseMermaid(manualCode);
   const { allKeys, substates } = parseFsmConstants(fsmCode);
 
-  let errors = 0; let warnings = 0;
+  const errors: string[] = [];
+  const warnings: string[] = [];
 
   // 1. Mermaid -> JS
-  console.log(`\n${styleText('cyan', '[CHECK 1]')} Nodos Mermaid -> JS (${mermaidStates.size} estados)`);
   mermaidStates.forEach(s => {
-    if (!allKeys.has(s)) { console.log(styleText('red', `  ❌ FAIL: '${s}' falta en JS.`)); errors++; }
+    if (!allKeys.has(s)) {
+      errors.push(`[CHECK 1] Nodo Mermaid '${s}' falta en JS.`);
+    }
   });
 
-  // 2. Uso de Constantes (Regex Quirúrgico)
-  console.log(`\n${styleText('cyan', '[CHECK 2]')} Uso de Constantes en Lógica/UI (${allKeys.size} constantes)`);
+  // 2. Uso de Constantes
   allKeys.forEach(k => {
     const usageRx = new RegExp(`(?:\\.|'|")(${k})(?:'|")?`, 'g');
     if (!externalCode.match(usageRx)) {
-      console.log(styleText('yellow', `  ⚠️  WARN: '${k}' sin uso real fuera de su definición.`));
-      warnings++;
+      warnings.push(`[CHECK 2] Constante '${k}' definida pero sin uso real fuera de battleStateMachine.ts.`);
     }
   });
 
   // 3. Subestados (Referencias de transiciones)
-  console.log(`\n${styleText('cyan', '[CHECK 3]')} Referencias de Subestados (${substates.size} subestados)`);
   substates.forEach(s => {
     const refRx = new RegExp(`(?:isSubState|fsm\\.transition|emit|SUBSTATES)\\s*\\(\\s*[^)]*${s}|['"]${s}['"]`, 'g');
     if (!externalCode.match(refRx)) {
-      console.log(styleText('yellow', `  ⚠️  WARN: [PENDIENTE/HURERFANO]: ${s}`));
-      warnings++;
+      warnings.push(`[CHECK 3] Subestado [PENDIENTE/HUÉRFANO]: '${s}'`);
     }
   });
 
-  // 4. Timers Ciegos (Quirúrgico línea a línea)
-  console.log(`\n${styleText('cyan', '[CHECK 4]')} Timers Ciegos - setTimeout no atómico`);
-  let timerIssues = 0;
+  // 4. Timers Ciegos
   fileData.forEach(file => {
     file.content.split('\n').forEach((line, idx) => {
       const t = line.trim();
       if (!t.includes('setTimeout') || t.startsWith('//')) return;
       const isAtomic = t.includes('await new Promise') || t.startsWith('await') || t.includes('return new Promise') || t.includes('=>');
       if (!isAtomic) {
-        console.log(styleText('yellow', `  ⚠️  WARN [${path.basename(file.path)}:${idx+1}] setTimeout no atómico: ${t.slice(0, 60)}`));
-        timerIssues++; warnings++;
+        warnings.push(`[CHECK 4] setTimeout no atómico en ${path.basename(file.path)}:${idx + 1}: ${t.slice(0, 60)}`);
       }
     });
   });
-  if (timerIssues === 0) console.log(styleText('green', '  ✅ OK: Todos los timers son atómicos.'));
 
   // 5. Sincronización Mandatoria (await)
-  console.log(`\n${styleText('cyan', '[CHECK 5]')} Sincronización (await) en fases críticas`);
   syncRequired.forEach(sub => {
     const usageRx = new RegExp(`(?:\\.|'|")(${sub})(?:'|")?`, 'g');
     let um: RegExpExecArray | null;
     let found = false; let unawaited = false;
     while ((um = usageRx.exec(allCode)) !== null) {
       const idx = um.index;
-      const context = allCode.slice(Math.max(0, idx - 300), idx); // Contexto ampliado
+      const context = allCode.slice(Math.max(0, idx - 300), idx);
       if (context.includes(`${sub}:`) || context.includes('//')) continue;
       found = true;
       if (!context.includes('await')) unawaited = true;
     }
-    if (found && unawaited) { console.log(styleText('yellow', `  ⚠️  WARN: '${sub}' exige await según manual.`)); warnings++; }
-    else if (found) console.log(styleText('green', `  ✅ OK: ${sub} sincronizado.`));
+    if (found && unawaited) {
+      warnings.push(`[CHECK 5] '${sub}' exige await según manual.`);
+    }
   });
 
   // 6. Guardas de Idempotencia
-  console.log(`\n${styleText('cyan', '[CHECK 6]')} Guardas de Idempotencia`);
   ['isProcessing', 'handleFaint', 'faintedSides'].forEach(g => {
-    if (allCode.includes(g)) console.log(styleText('green', `  ✅ OK: Guarda '${g}' activa.`));
-    else { console.log(styleText('red', `  ❌ FAIL: Falta guarda '${g}'`)); errors++; }
+    if (!allCode.includes(g)) {
+      errors.push(`[CHECK 6] Falta guarda de idempotencia '${g}'`);
+    }
   });
 
   // 7. Regla de Asientos (HUD)
-  console.log(`\n${styleText('cyan', '[CHECK 7]')} Regla de Asientos (Visibilidad HUD)`);
   const seatRuleRx = /!s\?\.enemy\s*&&\s*!s\?\._initialEnemy|!battleStore\.state\.enemy|battleStore\.state\.enemy\s*===\s*null|!battleStore\.state\?\.enemy|!s\?\.enemy/;
-  if (seatRuleRx.test(allCode)) console.log(styleText('green', '  ✅ OK: Regla Maestra detectada.'));
-  else { console.log(styleText('red', '  ❌ FAIL: No se detecta la regla de asientos.')); errors++; }
+  if (!seatRuleRx.test(allCode)) {
+    errors.push(`[CHECK 7] No se detecta la regla de asientos para visibilidad HUD.`);
+  }
 
   // 8. Ciclo Level Up
-  console.log(`\n${styleText('cyan', '[CHECK 8]')} Ciclo LEVEL_UP_MODAL / pendingMoves`);
-  if (allCode.includes('levelUpPokemon') && allCode.includes('CHECK_PENDING') && allCode.includes('pendingMoves')) console.log(styleText('green', '  ✅ OK: Ciclo detectado.'));
-  else { console.log(styleText('red', '  ❌ FAIL: Ciclo de Level Up desalineado.')); errors++; }
+  if (!(allCode.includes('levelUpPokemon') && allCode.includes('CHECK_PENDING') && allCode.includes('pendingMoves'))) {
+    errors.push(`[CHECK 8] Ciclo de Level Up desalineado (falta levelUpPokemon, CHECK_PENDING o pendingMoves).`);
+  }
 
   // 9. Persistencia
-  console.log(`\n${styleText('cyan', '[CHECK 9]')} persistenceMode SINGLE`);
-  if (allCode.includes('persistenceMode') && (allCode.includes("'SINGLE'") || allCode.includes('"SINGLE"'))) console.log(styleText('green', '  ✅ OK: Rama SINGLE detectada.'));
-  else { console.log(styleText('red', '  ❌ FAIL: Rama SINGLE no detectada.')); errors++; }
+  if (!(allCode.includes('persistenceMode') && (allCode.includes("'SINGLE'") || allCode.includes('"SINGLE"')))) {
+    errors.push(`[CHECK 9] Rama persistenceMode SINGLE no detectada en código.`);
+  }
 
-  console.log(`\n${sep('═')}`);
-  console.log(`RESULTADO FINAL: ${styleText(errors > 0 ? 'red' : 'green', errors + ' Errores')} | ${styleText('yellow', warnings + ' Avisos')}`);
-  console.log(sep('═') + '\n');
-  if (errors > 0) process.exit(1);
+  console.log(`\n════════════════════════════════════`);
+  console.log(`    FSM IMPLEMENTATION REPORT`);
+  console.log(`════════════════════════════════════`);
+  console.log(`📂 Archivos escaneados:   ${fileData.length}`);
+  console.log(`🧜 Estados Mermaid:       ${mermaidStates.size}`);
+  console.log(`⚙️ Constantes FSM:        ${allKeys.size}`);
+  console.log(`⚙️ Subestados:            ${substates.size}`);
+  console.log(`════════════════════════════════════\n`);
+
+  if (values.output) {
+    const outputPath = path.resolve(process.cwd(), values.output as string);
+    const lines = [
+      `--- FSM IMPLEMENTATION REPORT ---`,
+      `Archivos escaneados:   ${fileData.length}`,
+      `Estados Mermaid:       ${mermaidStates.size}`,
+      `Constantes FSM:        ${allKeys.size}`,
+      `Subestados:            ${substates.size}`,
+      `\nErrors (${errors.length}):`,
+      ...errors.map(e => `  - ${e}`),
+      `\nWarnings (${warnings.length}):`,
+      ...warnings.map(w => `  - ${w}`)
+    ];
+    await fs.writeFile(outputPath, lines.join('\n'), 'utf-8');
+    console.log(styleText('cyan', `\n✨ Reporte completo escrito en: ${values.output}`));
+  }
+
+  if (values.summary) {
+    console.log(styleText('cyan', `\n[INFO] Modo resumen activo: ${errors.length} errores, ${warnings.length} advertencias.`));
+  } else {
+    if (warnings.length) {
+      console.log(styleText('yellow', `⚠️  ADVERTENCIAS (${warnings.length}):`));
+      const limit = 30;
+      warnings.slice(0, limit).forEach(w => console.log(`   ${w}`));
+      if (warnings.length > limit) {
+        console.log(styleText('cyan', `   ... y ${warnings.length - limit} advertencias más (usa -o para ver todas)`));
+      }
+      console.log('');
+    }
+
+    if (errors.length) {
+      console.log(styleText('red', `❌ ERRORES (${errors.length}):`));
+      const limit = 30;
+      errors.slice(0, limit).forEach(e => console.log(`   ${e}`));
+      if (errors.length > limit) {
+        console.log(styleText('cyan', `   ... y ${errors.length - limit} errores más (usa -o para ver todos)`));
+      }
+    } else {
+      console.log(styleText('green', '✅ Todos los checks de implementación de la FSM pasaron con éxito.'));
+    }
+  }
+
+  if (errors.length > 0) {
+    process.exit(1);
+  }
 }
 
-runAudit().catch(err => { console.error(err); process.exit(1); });
+main().catch(err => {
+  console.error(styleText('red', `\n💥 Error fatal: ${err.message}`));
+  process.exit(1);
+});

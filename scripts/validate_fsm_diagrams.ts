@@ -2,14 +2,13 @@
  * validate_fsm_diagrams.ts
  * Auditoría FSM vs Manual: compara el diagrama Mermaid contra las constantes en TS.
  */
-import fs from 'node:fs';
+import fs from 'node:fs/promises';
 import path from 'node:path';
+import { styleText, parseArgs } from 'node:util';
 
 const SRC_ROOT = path.resolve(process.cwd(), 'src');
 const MANUAL_PATH = path.resolve(process.cwd(), '.agents/skills/project-standards/references/battle/battle_mechanics_manual.md');
 const FSM_PATH = path.join(SRC_ROOT, 'logic/battle/battleStateMachine.ts');
-
-const sep = (c = '─', n = 60) => c.repeat(n);
 
 function parseMermaid(manualCode: string) {
   const states = new Set<string>();
@@ -72,28 +71,40 @@ function parseJsFsm(fsmCode: string) {
   return { allKeys, jsTransitions };
 }
 
-function runAudit() {
-  console.log(sep('═'));
-  console.log('🔍 VALIDADOR FSM: DIAGRAMAS v7.6');
-  console.log(sep('═'));
+async function main() {
+  const { values } = parseArgs({
+    options: {
+      output: { type: 'string', short: 'o' },
+      summary: { type: 'boolean', short: 's' }
+    }
+  });
 
-  if (!fs.existsSync(MANUAL_PATH)) return console.error('❌ Manual no encontrado:', MANUAL_PATH);
-  if (!fs.existsSync(FSM_PATH)) return console.error('❌ FSM TS no encontrado:', FSM_PATH);
+  console.log(styleText('bold', '\n--- 🛡️  FSM DIAGRAMS VALIDATOR ---'));
 
-  const manualCode = fs.readFileSync(MANUAL_PATH, 'utf-8');
-  const fsmCode = fs.readFileSync(FSM_PATH, 'utf-8');
+  try {
+    await fs.access(MANUAL_PATH);
+    await fs.access(FSM_PATH);
+  } catch {
+    console.error(styleText('red', `❌ Archivos requeridos no encontrados.`));
+    process.exit(1);
+  }
+
+  const manualCode = await fs.readFile(MANUAL_PATH, 'utf-8');
+  const fsmCode = await fs.readFile(FSM_PATH, 'utf-8');
 
   const { states: mermaidStates, transitions: mermaidTransitions } = parseMermaid(manualCode);
   const { allKeys: jsKeys, jsTransitions } = parseJsFsm(fsmCode);
 
-  let errors = 0;
+  const errors: string[] = [];
+  const warnings: string[] = [];
 
-  console.log(`\n[CHECK 1] Nodos Mermaid -> Constantes JS (${mermaidStates.size} estados)`);
+  // [CHECK 1] Nodos Mermaid -> Constantes JS
   const missing = Array.from(mermaidStates).filter(s => !jsKeys.has(s));
-  if (missing.length === 0) console.log('  ✅ OK: Sincronización perfecta de estados.');
-  else { missing.forEach(s => { console.log(`  ❌ FAIL: Faltante en JS: ${s}`); errors++; }); }
+  missing.forEach(s => {
+    errors.push(`Faltante en JS: ${s}`);
+  });
 
-  console.log(`\n[CHECK 2] Transiciones Top-Level`);
+  // [CHECK 2] Transiciones Top-Level
   const topLevelRx = /export const BATTLE_STATES\s*=\s*\{([\s\S]*?)\}/;
   const tlm = fsmCode.match(topLevelRx);
   const topLevelJs = new Set(tlm?.[1] ? Array.from(tlm[1].matchAll(/([A-Z][A-Z0-9_]+)\s*:/g)).map(x => x[1]!) : []);
@@ -101,13 +112,68 @@ function runAudit() {
   const topTransitions = mermaidTransitions.filter(t => topLevelJs.has(t.from) && topLevelJs.has(t.to));
   topTransitions.forEach(mt => {
     const exists = jsTransitions.some(jt => jt.from === mt.from && jt.to === mt.to);
-    if (!exists) { console.log(`  ❌ FAIL: Transición ${mt.from} -> ${mt.to} falta en validTransitions.`); errors++; }
+    if (!exists) {
+      errors.push(`Transición ${mt.from} -> ${mt.to} falta en validTransitions.`);
+    }
   });
-  if (topTransitions.length > 0 && errors === 0) console.log(`  ✅ OK: ${topTransitions.length} transiciones validadas.`);
 
-  console.log(`\n${sep('═')}`);
-  if (errors === 0) console.log('🎉 AUDITORÍA PERFECTA.');
-  else { console.log(`🚨 ${errors} desalineación(es).`); process.exit(1); }
+  console.log(`\n════════════════════════════════════`);
+  console.log(`    FSM DIAGRAMS INTEGRITY REPORT`);
+  console.log(`════════════════════════════════════`);
+  console.log(`🧜 Mermaid states:       ${mermaidStates.size}`);
+  console.log(`🧜 Mermaid transitions:  ${mermaidTransitions.length}`);
+  console.log(`⚙️ JS Keys:              ${jsKeys.size}`);
+  console.log(`⚙️ JS Transitions:       ${jsTransitions.length}`);
+  console.log(`════════════════════════════════════\n`);
+
+  if (values.output) {
+    const outputPath = path.resolve(process.cwd(), values.output as string);
+    const lines = [
+      `--- FSM DIAGRAMS INTEGRITY REPORT ---`,
+      `Mermaid states:       ${mermaidStates.size}`,
+      `Mermaid transitions:  ${mermaidTransitions.length}`,
+      `JS Keys:              ${jsKeys.size}`,
+      `JS Transitions:       ${jsTransitions.length}`,
+      `\nErrors (${errors.length}):`,
+      ...errors.map(e => `  - ${e}`),
+      `\nWarnings (${warnings.length}):`,
+      ...warnings.map(w => `  - ${w}`)
+    ];
+    await fs.writeFile(outputPath, lines.join('\n'), 'utf-8');
+    console.log(styleText('cyan', `\n✨ Reporte completo escrito en: ${values.output}`));
+  }
+
+  if (values.summary) {
+    console.log(styleText('cyan', `\n[INFO] Modo resumen activo: ${errors.length} errores, ${warnings.length} advertencias.`));
+  } else {
+    if (warnings.length) {
+      console.log(styleText('yellow', `⚠️  ADVERTENCIAS (${warnings.length}):`));
+      const limit = 30;
+      warnings.slice(0, limit).forEach(w => console.log(`   ${w}`));
+      if (warnings.length > limit) {
+        console.log(styleText('cyan', `   ... y ${warnings.length - limit} advertencias más (usa -o para ver todas)`));
+      }
+      console.log('');
+    }
+
+    if (errors.length) {
+      console.log(styleText('red', `❌ ERRORES (${errors.length}):`));
+      const limit = 30;
+      errors.slice(0, limit).forEach(e => console.log(`   ${e}`));
+      if (errors.length > limit) {
+        console.log(styleText('cyan', `   ... y ${errors.length - limit} errores más (usa -o para ver todos)`));
+      }
+    } else {
+      console.log(styleText('green', '🎉 AUDITORÍA PERFECTA.'));
+    }
+  }
+
+  if (errors.length > 0) {
+    process.exit(1);
+  }
 }
 
-runAudit();
+main().catch(err => {
+  console.error(styleText('red', `\n💥 Error fatal: ${err.message}`));
+  process.exit(1);
+});

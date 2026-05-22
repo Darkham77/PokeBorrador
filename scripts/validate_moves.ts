@@ -9,7 +9,7 @@
 
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { styleText } from 'node:util';
+import { styleText, parseArgs } from 'node:util';
 import { enableCompileCache } from 'node:module';
 
 enableCompileCache();
@@ -88,6 +88,13 @@ async function getPokeApiMoves(): Promise<PokeApiMove[]> {
 }
 
 async function main() {
+  const { values } = parseArgs({
+    options: {
+      output: { type: 'string', short: 'o' },
+      summary: { type: 'boolean', short: 's' }
+    }
+  });
+
   console.log(styleText('bold', '\n--- 🛡️  POKEMON MOVE VALIDATOR ---'));
 
   try {
@@ -239,21 +246,54 @@ async function main() {
 
   console.log(`\n════════════════════════════════════`);
   console.log(`    REPORTE DE INTEGRIDAD DE MOVIMIENTOS`);
+  console.log(`════════════════════════════════════`);
+  console.log(`📊 Movimientos en learnsets:          ${learnsetMoves.size}`);
+  console.log(`📚 Movimientos definidos:             ${definedMoves.size}`);
   console.log(`════════════════════════════════════\n`);
 
-  if (warnings.length) {
-    console.log(styleText('yellow', `⚠️  ADVERTENCIAS (${warnings.length}):`));
-    warnings.forEach(w => console.log(`   ${w}`));
-    console.log('');
+  if (values.output) {
+    const outputPath = path.resolve(process.cwd(), values.output as string);
+    const lines = [
+      `--- REPORTE DE INTEGRIDAD DE MOVIMIENTOS ---`,
+      `Movimientos en learnsets:          ${learnsetMoves.size}`,
+      `Movimientos definidos:             ${definedMoves.size}`,
+      `\nErrores (${errors.length}):`,
+      ...errors.map(e => `  - ${e}`),
+      `\nAdvertencias (${warnings.length}):`,
+      ...warnings.map(w => `  - ${w}`)
+    ];
+    await fs.writeFile(outputPath, lines.join('\n'), 'utf-8');
+    console.log(styleText('cyan', `\n✨ Reporte completo escrito en: ${values.output}`));
   }
 
-  if (errors.length) {
-    console.log(styleText('red', `❌ ERRORES (${errors.length}):`));
-    errors.forEach(e => console.log(`   ${e}`));
-    console.log('\n' + styleText('red', 'Corrige estos errores en src/data/moves.ts.'));
-    process.exit(1);
+  if (values.summary) {
+    console.log(styleText('cyan', `\n[INFO] Modo resumen activo: ${errors.length} errores, ${warnings.length} advertencias.`));
   } else {
-    console.log(styleText('green', '✅ Todos los movimientos pasaron la validación de integridad.'));
+    if (warnings.length) {
+      console.log(styleText('yellow', `⚠️  ADVERTENCIAS (${warnings.length}):`));
+      const limit = 30;
+      warnings.slice(0, limit).forEach(w => console.log(`   ${w}`));
+      if (warnings.length > limit) {
+        console.log(styleText('cyan', `   ... y ${warnings.length - limit} advertencias más (usa -o para ver todas)`));
+      }
+      console.log('');
+    }
+
+    if (errors.length) {
+      console.log(styleText('red', `❌ ERRORES (${errors.length}):`));
+      const limit = 30;
+      errors.slice(0, limit).forEach(e => console.log(`   ${e}`));
+      if (errors.length > limit) {
+        console.log(styleText('cyan', `   ... y ${errors.length - limit} errores más (usa -o para ver todos)`));
+      }
+      console.log('\n' + styleText('red', 'Corrige estos errores en src/data/moves.ts.'));
+    } else {
+      console.log(styleText('green', '✅ Todos los movimientos pasaron la validación de integridad.'));
+    }
+  }
+
+  if (errors.length > 0) {
+    process.exit(1);
   }
 }
 

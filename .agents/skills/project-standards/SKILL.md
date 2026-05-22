@@ -150,6 +150,7 @@ The project uses a sophisticated audit and validation engine to ensure stability
 - **Zero-Warning Policy**: Zero errors and zero warnings are required for any core system component.
   - **Native TS**: Prefer `node --experimental-strip-types` for running utility scripts instead of `tsx`/`ts-node` when possible.
   - **Module Prefix**: Use the `node:` prefix for all built-in module imports (e.g., `import fs from 'node:fs'`).
+- **Scratch Directory Mandate**: Any generated logs, text reports, summaries, or audit output files (regardless of file extension: `.txt`, `.log`, `.json`, etc.) created for review, debugging, or later study MUST be stored exclusively in the `scratch/` directory at the project root. Writing temporary report files, summaries, or logs in the project root, source directories, or any other arbitrary directory is strictly forbidden to preserve repository cleanliness.
 
 ### 9. TypeScript Integrity & Zero-Ignore Policy
 
@@ -226,8 +227,21 @@ Use these scripts to verify project standards and ensure stability:
 - `npm run validate:types`: TypeScript type integrity verification (Zero Errors).
 - `npm run validate:sql`: SQL schema and migration validator against local engine.
 - `npm run validate:items`: Integrity audit for item and object databases.
+- `npm run validate:items:summary`: Runs item database validation in summary mode (no detailed logs in console).
+- `npm run validate:items:report`: Runs item database validation and saves detailed output to `items_report.txt`.
+- `npm run validate:abilities`: Semi-integrity validation for abilities database against PokeAPI.
+- `npm run validate:abilities:summary`: Runs ability database validation in summary mode.
+- `npm run validate:abilities:report`: Runs ability database validation and saves detailed output to `abilities_report.txt`.
+- `npm run validate:moves`: Semi-integrity validation for moves database against PokeAPI.
+- `npm run validate:moves:summary`: Runs move database validation in summary mode.
+- `npm run validate:moves:report`: Runs move database validation and saves detailed output to `moves_report.txt`.
+- `npm run validate:sandbox`: Validation for moves tooltip render in the battle sandbox.
+- `npm run validate:sandbox:summary`: Runs sandbox validation in summary mode.
+- `npm run validate:sandbox:report`: Runs sandbox validation and saves detailed output to `sandbox_report.txt`.
 - `npm run audit`: Unified standards scan (Viewports, GPU, SASS filters).
 - `npm run audit:fix`: Automatic standards repair (Node prefixes, Viewports).
+- `npm run audit:summary`: Runs project audit in summary mode (hides detailed violation logs).
+- `npm run audit:report`: Runs project audit and saves detailed output to `audit_report.txt`.
 - `npm run audit:full`: **THE GOLD STANDARD**. Total audit (Code + FSM + Items + SQL + Abilities + Moves). MANDATORY before any commit.
 - `npm run lint`: Style and syntax verification (includes type-check).
 - `npm run test:node`: Runs the pure logic test suite using the native Node.js 26+ test runner.
@@ -241,6 +255,8 @@ Use these scripts to verify project standards and ensure stability:
 - `npm run validate:fsm:implementation`: Deep audit of FSM architectural layers.
 - `npm run validate:fsm:flow`: State sequence verifier and race condition detection.
 - `npm run validate:fsm`: Unified FSM Mastery Audit (Diagrams + Implementation + Flow).
+- `npm run validate:fsm:summary`: Runs FSM validation in summary mode.
+- `npm run validate:fsm:report`: Runs FSM validation and saves detailed output to `fsm_report.txt`.
 
 ### ☁️ Supabase Infrastructure & Multi-Server Management
 

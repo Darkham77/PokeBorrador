@@ -171,20 +171,33 @@ Antes de realizar una entrega o desplegar cambios, es **MANDATORIO** que el cód
 
 ### 🛡️ Auditoría e Integridad (Node.js 26+)
 
-El proyecto utiliza un motor de auditoría inteligente y validadores semánticos para garantizar un estado de **Zero-Warning**. Es obligatorio ejecutar estos controles antes de cualquier entrega.
+El proyecto utiliza un motor de auditoría inteligente y validadores semánticos para garantizar la calidad del código.
 
 | Comando | Descripción |
 | :-- | :-- |
 | `npm run audit` | **Auditoría Inteligente**: Analiza patrones legacy (Date), colisiones SASS y optimización GPU. |
 | `npm run audit:fix` | **Auto-corrección**: Aplica correcciones automáticas de estándares (Timers, Imports, SASS). |
+| `npm run audit:summary` | **Resumen de Auditoría**: Ejecuta la auditoría en modo resumen (oculta detalles de violaciones). |
+| `npm run audit:report` | **Reporte de Auditoría**: Genera un archivo detallado `scratch/audit_report.txt` con todas las violaciones. |
 | `npm run audit:full` | **Pipeline Completo**: Ejecuta TODAS las validaciones (Lints, SQL, FSM, Items, Moves, Abilities). |
 | `npm run test:node` | **Native Test Runner**: Ejecuta pruebas de lógica pura usando el runner nativo de Node.js 26+. |
 | `npm run test:all` | **Batería Completa de Tests**: Ejecuta secuencialmente la suite nativa de Node.js (`test:node`) y los tests de componentes en Vitest (`test`). |
 | `npm run validate:sql` | **SQL Integrity**: Valida compatibilidad de migraciones con SQLite nativo (`node:sqlite`). |
 | `npm run validate:items` | **Item Database**: Verifica IDs, tipos e iconos en la base de datos de objetos. |
+| `npm run validate:items:summary` | **Resumen de Objetos**: Valida los objetos omitiendo listados detallados en consola. |
+| `npm run validate:items:report` | **Reporte de Objetos**: Genera un archivo detallado `scratch/items_report.txt` con la validación de objetos. |
 | `npm run validate:moves` | **Move Sync**: Sincroniza semánticamente los movimientos con la PokeAPI. |
+| `npm run validate:moves:summary` | **Resumen de Movimientos**: Valida movimientos omitiendo listados detallados en consola. |
+| `npm run validate:moves:report` | **Reporte de Movimientos**: Genera un archivo detallado `scratch/moves_report.txt` con la validación de movimientos. |
 | `npm run validate:abilities` | **Ability Sync**: Valida habilidades contra la base de datos oficial. |
+| `npm run validate:abilities:summary` | **Resumen de Habilidades**: Valida habilidades omitiendo listados detallados en consola. |
+| `npm run validate:abilities:report` | **Reporte de Habilidades**: Genera un archivo detallado `scratch/abilities_report.txt` con la validación de habilidades. |
+| `npm run validate:sandbox` | **Sandbox Validate**: Valida los tooltips de movimientos en el sandbox de batalla. |
+| `npm run validate:sandbox:summary` | **Resumen de Sandbox**: Valida el sandbox omitiendo listados detallados en consola. |
+| `npm run validate:sandbox:report` | **Reporte de Sandbox**: Genera un archivo detallado `scratch/sandbox_report.txt` con la validación de sandbox. |
 | `npm run validate:fsm` | **FSM Mastery Audit**: Verifica diagramas, implementación dinámica y paridad de flujo. |
+| `npm run validate:fsm:summary` | **Resumen de FSM**: Valida la FSM omitiendo listados detallados en consola. |
+| `npm run validate:fsm:report` | **Reporte de FSM**: Genera un archivo detallado `scratch/fsm_report.txt` con la validación de FSM. |
 | `npm run migrations:generate` | **Generador de Migraciones**: Escanea las migraciones SQL locales de `database/migrations/` y las compila en el manifiesto TypeScript de producción. |
 | `npm run sync:test` | **Sincronización a Repo de Testing**: Copia el árbol de fuentes completo (`src/`, `api/`, `public/`, `scripts/`, `database/migrations/`, archivos de config) desde `PokeBorrador` al repositorio hermano `pokevicio-test`. Si `pokevicio-test` no existe, lo clona automáticamente vía SSH. Preserva `.git` y `.github` intactos. Usarlo cuando una rama de feature está estable y se quiere enviar un snapshot limpio para QA. |
 
