@@ -8,5 +8,5 @@ CREATE POLICY "Actualizar propia oferta" ON public.trade_offers
 
 -- Update DB version tracking
 INSERT INTO public.system_config (key, value)
-VALUES ('db_version', '"20260519234000"'::jsonb)
+VALUES ('db_version', '20260519234000'::jsonb)
 ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW();

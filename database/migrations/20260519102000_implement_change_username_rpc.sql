@@ -55,5 +55,5 @@ GRANT EXECUTE ON FUNCTION public.change_username(text) TO authenticated, service
 
 -- Update DB version tracking
 INSERT INTO public.system_config (key, value) 
-VALUES ('db_version', '"20260519102000"'::jsonb) 
+VALUES ('db_version', '20260519102000'::jsonb) 
 ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW();
