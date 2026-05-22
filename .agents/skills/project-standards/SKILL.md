@@ -43,6 +43,7 @@ Consult these manuals for detailed implementation specifications:
 | **Combat Camera**        | [combat_camera_manual.md](./references/battle/combat_camera_manual.md)                    |
 | **Dependencies**         | [dependency_management_manual.md](./references/technical/dependency_management_manual.md) |
 | **MikroTik & Ruteo**     | [mikrotik_routing_manual.md](./references/technical/mikrotik_routing_manual.md)           |
+| **Markdown & Docs**      | [markdown_standards.md](./references/technical/markdown_standards.md)                     |
 
 ### 🛠️ Migration & Technical Support
 
