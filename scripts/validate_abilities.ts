@@ -40,13 +40,12 @@ const CACHE_FILE = path.join(CACHE_DIR, 'pokeapi_ability_cache.json');
 
 async function getPokeApiAbilities(): Promise<PokeApiAbility[]> {
   try {
-    await fs.mkdir(CACHE_DIR, { recursive: true });
     const cacheExists = await fs.access(CACHE_FILE).then(() => true).catch(() => false);
-    
     if (cacheExists) {
       console.log(styleText('blue', "ℹ️ Cargando habilidades de PokeAPI desde la caché..."));
       return JSON.parse(await fs.readFile(CACHE_FILE, 'utf8')) as PokeApiAbility[];
     }
+    await fs.mkdir(CACHE_DIR, { recursive: true });
   } catch {
     // Silently fail and fetch if cache error
   }

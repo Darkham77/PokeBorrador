@@ -45,13 +45,12 @@ function normalizeName(name: string) {
 
 async function getPokeApiMoves(): Promise<PokeApiMove[]> {
   try {
-    await fs.mkdir(CACHE_DIR, { recursive: true });
     const cacheExists = await fs.access(CACHE_FILE).then(() => true).catch(() => false);
-    
     if (cacheExists) {
       console.log(styleText('blue', "ℹ️ Cargando movimientos de PokeAPI desde la caché..."));
       return JSON.parse(await fs.readFile(CACHE_FILE, 'utf8')) as PokeApiMove[];
     }
+    await fs.mkdir(CACHE_DIR, { recursive: true });
   } catch {
     console.log(styleText('yellow', "⚠️ No se pudo acceder a la caché de PokeAPI."));
   }

@@ -39,7 +39,7 @@
     "validate:fsm": "npm run validate:fsm:diagrams && npm run validate:fsm:implementation && npm run validate:fsm:flow",
     "validate:items": "node --permission --experimental-strip-types --allow-fs-read=. scripts/validate_items.ts",
     "validate:abilities": "node --permission --experimental-strip-types --allow-fs-read=. --allow-fs-write=. --allow-net=pokeapi.co scripts/validate_abilities.ts",
-    "validate:moves": "node --permission --experimental-strip-types --allow-fs-read=. scripts/validate_moves.ts",
+    "validate:moves": "node --permission --experimental-strip-types --allow-fs-read=. --allow-fs-write=. --allow-net=pokeapi.co scripts/validate_moves.ts",
     "validate:sandbox": "node --permission --experimental-strip-types --allow-fs-read=. scripts/validate_sandbox_moves_tooltip.ts",
     "sync:test": "node --experimental-strip-types scripts/sync_to_test.ts"
   },

@@ -109,6 +109,9 @@ Consult these manuals for detailed implementation specifications:
 - **Visual Identity (Zero-Stripping)**: Performance mode or simplified UI modes MUST NOT strip away the essential visual identity of game entities (e.g., Pokémon grade borders). Use CSS variables to maintain these markers consistently across all resource states.
 - **Tier Identity Single Source of Truth**: All Pokémon grade logic, tier calculations, and color mappings MUST be centralized in the `tierEngine.ts` logic. Redundant constant files for tiers are strictly forbidden to prevent visual desynchronization.
 - **Strict DB-to-UI Comparison**: When writing UI conditional logic or animations depending on database models (such as war factions or items), always compare against the official database string values in Spanish (e.g., `'poder'` instead of English `'power'`). Using incorrect literals causes animations and behaviors to fail silently.
+- **Move Description Fallback Chain**: Spanish translations for battle moves MUST implement a multi-layer fallback chain to avoid English leaks: first, query the `pokemonDataProvider` for official database/local translations; second, fall back to the local static `move_descriptions.json` translation dictionary; and third, use Showdown's `shortDesc` as a last-resort fallback.
+- **Reactive Store Sanitization (Pokemon Switching)**: When switching active Pokémon entities in stores or views, you MUST sanitize their active moveset: auto-complete up to 4 moves with STAB guarantee, deduplicate moves using a `Set`, and filter out any empty or invalid entries.
+
 
 ### 4. SASS and Build Integrity
 
