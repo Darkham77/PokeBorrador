@@ -6,6 +6,8 @@ import ShowdownTeambuilder from './components/ShowdownTeambuilder.vue';
 import ShowdownHudCard from './components/ShowdownHudCard.vue';
 import showdownDB from './sandbox_db/data/showdown_db.json';
 import type { ShowdownLocalDB } from './sandbox_db/cloner/extract_logic';
+import ShowdownMoveTooltip from './components/ShowdownMoveTooltip.vue';
+import moveTranslations from './sandbox_db/data/move_translations.json';
 
 // [PureVue-Ignore] - Ignorar accesos directos del visual en este test de integración
 const store = useShowdownSandboxStore();
@@ -17,6 +19,42 @@ const typedDB = showdownDB as unknown as ShowdownLocalDB;
 
 // Estado de control para el menú de dos niveles
 const currentMenu = ref<'root' | 'moves' | 'switch'>('root');
+
+const activeTooltipMoveId = ref<string | null>(null);
+
+const handleMoveMouseEnter = (moveId: string) => {
+  if (window.matchMedia('(hover: hover)').matches) {
+    activeTooltipMoveId.value = moveId;
+  }
+};
+
+const handleMoveMouseLeave = () => {
+  if (window.matchMedia('(hover: hover)').matches) {
+    activeTooltipMoveId.value = null;
+  }
+};
+
+const handleMoveClick = (moveId: string, idx: number) => {
+  if (store.isAnimating || store.gameOver) return;
+
+  const supportsHover = window.matchMedia('(hover: hover)').matches;
+
+  if (supportsHover) {
+    store.chooseMove(idx);
+    activeTooltipMoveId.value = null;
+  } else {
+    if (activeTooltipMoveId.value === moveId) {
+      store.chooseMove(idx);
+      activeTooltipMoveId.value = null;
+    } else {
+      activeTooltipMoveId.value = moveId;
+    }
+  }
+};
+
+watch(currentMenu, () => {
+  activeTooltipMoveId.value = null;
+});
 
 const goBack = () => {
   router.push('/');
@@ -51,8 +89,8 @@ watch(() => store.battleLog.length, () => {
 });
 
 const getMoveDisplayName = (moveId: string) => {
-  const move = typedDB.moves[moveId];
-  return move ? move.name : moveId;
+  const cleanId = moveId.toLowerCase().replace(/[^a-z0-9]/g, '');
+  return (moveTranslations as Record<string, string>)[cleanId] || typedDB.moves[cleanId]?.name || moveId;
 };
 
 const getMoveType = (moveId: string) => {
@@ -209,14 +247,24 @@ const handleSwitchSelection = (targetIndex: number) => {
                 v-else-if="currentMenu === 'moves' && store.playerPokemon"
                 class="moves-layout-wrapper"
               >
+                <!-- Tooltip matemático premium -->
+                <ShowdownMoveTooltip
+                  :move-id="activeTooltipMoveId || ''"
+                  :attacker="store.playerPokemon"
+                  :defender="store.enemyPokemon"
+                  :visible="!!activeTooltipMoveId"
+                />
+
                 <div class="moves-grid">
                   <button
                     v-for="(moveId, idx) in store.playerPokemon.moves"
                     :key="moveId"
                     class="move-btn"
-                    :class="[`move-${getMoveType(moveId)}`, { 'disabled': store.isAnimating }]"
+                    :class="[`move-${getMoveType(moveId)}`, { 'disabled': store.isAnimating, 'active-tooltip': activeTooltipMoveId === moveId }]"
                     :disabled="store.isAnimating"
-                    @click="store.chooseMove(idx)"
+                    @click="handleMoveClick(moveId, idx)"
+                    @mouseenter="handleMoveMouseEnter(moveId)"
+                    @mouseleave="handleMoveMouseLeave()"
                   >
                     <div class="move-info">
                       <span class="move-name">{{ getMoveDisplayName(moveId) }}</span>
@@ -809,6 +857,12 @@ const handleSwitchSelection = (targetIndex: number) => {
     cursor: not-allowed;
     box-shadow: none;
     border-color: Rgba(255, 255, 255, 0.05);
+  }
+
+  &.active-tooltip {
+    border-color: #ffffff !important;
+    box-shadow: 0 0 15px Rgba(255, 255, 255, 0.4) !important;
+    transform: Translatey(-2px);
   }
 
   &:hover:not(.disabled) {

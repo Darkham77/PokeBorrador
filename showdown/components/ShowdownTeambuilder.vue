@@ -3,25 +3,58 @@ import { computed } from 'vue';
 import { useShowdownSandboxStore } from '../useShowdownSandboxStore';
 import type { ShowdownLocalDB } from '../sandbox_db/cloner/extract_logic';
 import showdownDB from '../sandbox_db/data/showdown_db.json';
+import moveTranslations from '../sandbox_db/data/move_translations.json';
 
 const store = useShowdownSandboxStore();
 const typedDB = showdownDB as unknown as ShowdownLocalDB;
+
+const TYPE_TRANSLATIONS: Record<string, string> = {
+  normal: 'Normal',
+  fire: 'Fuego',
+  water: 'Agua',
+  grass: 'Planta',
+  electric: 'Eléctrico',
+  ice: 'Hielo',
+  fighting: 'Lucha',
+  poison: 'Veneno',
+  ground: 'Tierra',
+  flying: 'Volador',
+  psychic: 'Psíquico',
+  bug: 'Bicho',
+  rock: 'Roca',
+  ghost: 'Fantasma',
+  dragon: 'Dragón',
+  dark: 'Siniestro',
+  steel: 'Acero',
+  fairy: 'Hada'
+};
+
+const translateType = (type: string) => {
+  return TYPE_TRANSLATIONS[type.toLowerCase()] || type;
+};
 
 const pokemonList = computed(() => {
   return Object.values(typedDB.pokemon).sort((a, b) => a.name.localeCompare(b.name));
 });
 
 const moveList = computed(() => {
-  return Object.values(typedDB.moves).sort((a, b) => a.name.localeCompare(b.name));
+  return Object.values(typedDB.moves).map(move => {
+    const cleanId = move.id.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const nameEs = (moveTranslations as Record<string, string>)[cleanId] || move.name;
+    return {
+      ...move,
+      nameEs
+    };
+  }).sort((a, b) => a.nameEs.localeCompare(b.nameEs));
 });
 
-// Cambios de selección reproducen grito automáticamente
+// Cambios de selección reproducen grito automáticamente y actualizan movimientos compatibles
 const handlePlayerPokeChange = () => {
-  store.playCry(store.playerPokemonId);
+  store.setPlayerLeader(store.playerPokemonId);
 };
 
 const handleEnemyPokeChange = () => {
-  store.playCry(store.enemyPokemonId);
+  store.setEnemyLeader(store.enemyPokemonId);
 };
 </script>
 
@@ -78,7 +111,7 @@ const handleEnemyPokeChange = () => {
                 :key="move.id"
                 :value="move.id"
               >
-                {{ move.name }} - {{ move.type }} (Poder: {{ move.basePower }})
+                {{ move.nameEs }} - {{ translateType(move.type) }} (Poder: {{ move.basePower }})
               </option>
             </select>
           </div>
@@ -132,7 +165,7 @@ const handleEnemyPokeChange = () => {
                 :key="move.id"
                 :value="move.id"
               >
-                {{ move.name }} - {{ move.type }} (Poder: {{ move.basePower }})
+                {{ move.nameEs }} - {{ translateType(move.type) }} (Poder: {{ move.basePower }})
               </option>
             </select>
           </div>

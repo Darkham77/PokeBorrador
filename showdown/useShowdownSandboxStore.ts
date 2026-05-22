@@ -93,6 +93,32 @@ export const useShowdownSandboxStore = defineStore('showdownSandbox', {
 
   actions: {
     /**
+     * Establece el líder Pokémon del jugador y auto-completa sus movimientos según su tipo elemental
+     */
+    setPlayerLeader(pokemonId: string) {
+      this.playerPokemonId = pokemonId;
+      this.playCry(pokemonId);
+      const poke = typedDB.pokemon[pokemonId];
+      if (poke) {
+        const allLocalMoves = Object.values(typedDB.moves) as LocalMove[];
+        this.playerMoves = getRandomMoves(poke.types, allLocalMoves);
+      }
+    },
+
+    /**
+     * Establece el líder Pokémon del rival y auto-completa sus movimientos según su tipo elemental
+     */
+    setEnemyLeader(pokemonId: string) {
+      this.enemyPokemonId = pokemonId;
+      this.playCry(pokemonId);
+      const poke = typedDB.pokemon[pokemonId];
+      if (poke) {
+        const allLocalMoves = Object.values(typedDB.moves) as LocalMove[];
+        this.enemyMoves = getRandomMoves(poke.types, allLocalMoves);
+      }
+    },
+
+    /**
      * Genera un equipo completo de 6 Pokémon usando autocompletado competitivo
      */
     generateTeam(leaderId: string, leaderMoves: string[], isShiny: boolean, isPlayer: boolean): SandboxPokemon[] {
@@ -103,6 +129,24 @@ export const useShowdownSandboxStore = defineStore('showdownSandbox', {
       // 1. Agregar al líder seleccionado
       const leaderPoke = typedDB.pokemon[leaderId];
       if (leaderPoke && leaderPoke.sprites) {
+        // SANITIZE LEADER MOVES: Filtrar vacíos, nulos, no válidos o duplicados
+        let sanitizedMoves = leaderMoves
+          .map(m => m ? m.trim().toLowerCase() : '')
+          .filter(m => m !== '' && typedDB.moves[m]);
+        
+        sanitizedMoves = [...new Set(sanitizedMoves)];
+        
+        // Autocompletar hasta tener exactamente 4 movimientos válidos
+        if (sanitizedMoves.length < 4) {
+          const allLocalMoves = Object.values(typedDB.moves) as LocalMove[];
+          const extraMoves = getRandomMoves(leaderPoke.types, allLocalMoves);
+          for (const moveId of extraMoves) {
+            if (!sanitizedMoves.includes(moveId) && sanitizedMoves.length < 4) {
+              sanitizedMoves.push(moveId);
+            }
+          }
+        }
+
         team.push({
           id: leaderId,
           name: leaderPoke.name,
@@ -113,7 +157,7 @@ export const useShowdownSandboxStore = defineStore('showdownSandbox', {
           isAnimated: isShiny
             ? (isPlayer ? leaderPoke.sprites.backShinyAnimated : leaderPoke.sprites.frontShinyAnimated)
             : (isPlayer ? leaderPoke.sprites.backAnimated : leaderPoke.sprites.frontAnimated),
-          moves: [...leaderMoves],
+          moves: sanitizedMoves,
           hp: leaderPoke.baseStats.hp,
           maxHp: leaderPoke.baseStats.hp,
           status: '',

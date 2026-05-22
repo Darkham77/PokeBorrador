@@ -1,5 +1,6 @@
 import type { ShowdownLocalDB } from './cloner/extract_logic.ts';
 import showdownDB from './data/showdown_db.json';
+import moveTranslations from './data/move_translations.json';
 
 const typedDB = showdownDB as unknown as ShowdownLocalDB;
 
@@ -33,8 +34,7 @@ function getPokemonName(rawId: string): string {
 function getMoveName(moveId: string): string {
   if (!moveId) return '';
   const cleanId = moveId.toLowerCase().replace(/[^a-z0-9]/g, '');
-  const localMove = typedDB.moves[cleanId];
-  return localMove ? localMove.name : moveId;
+  return (moveTranslations as Record<string, string>)[cleanId] || typedDB.moves[cleanId]?.name || moveId;
 }
 
 export function filterShowdownLogs(logs: string[]): string[] {
