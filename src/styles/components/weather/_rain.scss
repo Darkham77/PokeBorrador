@@ -1,0 +1,101 @@
+.weather-overlay {
+  // Lluvia Normal (Vertical)
+  &.rain {
+    background: rgba(0, 15, 30, 0.1);
+    mix-blend-mode: screen;
+
+    & .rain-layer {
+      position: absolute;
+      inset: 0;
+      background-repeat: repeat;
+      background-image: url("data:image/svg+xml,%3Csvg width='256' height='256' viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cline x1='20' y1='10' x2='20' y2='40' stroke='white' stroke-width='1' stroke-linecap='round' opacity='0.5'/%3E%3Cline x1='145' y1='35' x2='145' y2='65' stroke='white' stroke-width='1' stroke-linecap='round' opacity='0.3'/%3E%3Cline x1='255' y1='5' x2='255' y2='35' stroke='white' stroke-width='1' stroke-linecap='round' opacity='0.4'/%3E%3Cline x1='80' y1='110' x2='80' y2='140' stroke='white' stroke-width='1' stroke-linecap='round' opacity='0.5'/%3E%3Cline x1='195' y1='135' x2='195' y2='165' stroke='white' stroke-width='1' stroke-linecap='round' opacity='0.3'/%3E%3Cline x1='25' y1='205' x2='25' y2='235' stroke='white' stroke-width='1' stroke-linecap='round' opacity='0.4'/%3E%3C/svg%3E");
+      will-change: transform;
+      backface-visibility: hidden;
+      image-rendering: pixelated;
+    }
+
+    & .layer-1 { 
+      background-size: 256px 256px; 
+      opacity: 0.8; 
+      transform: translate3d(calc(var(--seed-x, 0) * 0.8px), calc(var(--seed-y, 0) * 0.8px), 0);
+    }
+    & .layer-2 { 
+      background-size: 128px 256px; 
+      opacity: 0.6; 
+      transform: translate3d(calc(var(--seed-x, 0) * 1.5px), calc(var(--seed-y, 0) * 1.5px), 0);
+    }
+  }
+
+  // Tormenta (Diagonal + Rayos)
+  &.storm {
+    background: rgba(0, 10, 25, 0.3);
+    
+    & .rain-layer {
+      mix-blend-mode: screen; 
+      position: absolute;
+      inset: -512px;
+      background-repeat: repeat;
+      background-image: url("data:image/svg+xml,%3Csvg width='256' height='256' viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cg stroke='white' stroke-width='1'%3E%3Cline x1='20' y1='10' x2='0' y2='30' opacity='0.9'/%3E%3Cline x1='60' y1='40' x2='40' y2='60' opacity='0.7'/%3E%3Cline x1='100' y1='20' x2='80' y2='40' opacity='0.8'/%3E%3Cline x1='140' y1='50' x2='120' y2='70' opacity='0.6'/%3E%3Cline x1='180' y1='10' x2='160' y2='30' opacity='0.9'/%3E%3Cline x1='220' y1='40' x2='200' y2='60' opacity='0.7'/%3E%3Cline x1='260' y1='20' x2='240' y2='40' opacity='0.8'/%3E%3Cline x1='40' y1='100' x2='20' y2='120' opacity='0.6'/%3E%3Cline x1='80' y1='130' x2='60' y2='150' opacity='0.9'/%3E%3Cline x1='120' y1='110' x2='100' y2='130' opacity='0.7'/%3E%3Cline x1='160' y1='140' x2='140' y2='160' opacity='0.8'/%3E%3Cline x1='200' y1='110' x2='180' y2='130' opacity='0.6'/%3E%3Cline x1='240' y1='140' x2='220' y2='160' opacity='0.9'/%3E%3Cline x1='25' y1='180' x2='5' y2='200' opacity='0.7'/%3E%3Cline x1='65' y1='210' x2='45' y2='230' opacity='0.8'/%3E%3Cline x1='105' y1='190' x2='85' y2='210' opacity='0.6'/%3E%3Cline x1='145' y1='220' x2='125' y2='240' opacity='0.9'/%3E%3Cline x1='185' y1='200' x2='165' y2='220' opacity='0.7'/%3E%3Cline x1='225' y1='230' x2='205' y2='250' opacity='0.8'/%3E%3Cline x1='265' y1='200' x2='245' y2='220' opacity='0.6'/%3E%3C/g%3E%3C/svg%3E");
+      will-change: transform;
+      backface-visibility: hidden;
+      image-rendering: pixelated;
+    }
+
+    & .layer-1 { 
+      background-size: 256px 256px; 
+      opacity: 0.9; 
+    }
+    & .layer-1 {
+      transform: translate3d(calc(var(--seed-x, 0) * 0.5px), calc(var(--seed-y, 0) * 0.5px), 0);
+    }
+    & .layer-2 { 
+      background-size: 128px 128px; 
+      opacity: 0.75; 
+      transform: translate3d(calc(var(--seed-x, 0) * -1.2px), calc(var(--seed-y, 0) * -1.2px), 0);
+    }
+  }
+
+  &.storm, &.thunderstorm {
+    .lightning-bolt {
+      mix-blend-mode: screen;
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 120px;
+      left: calc(var(--lx, 50) * 1%);
+      transform: translateX(-50%);
+      z-index: var(--z-map-spawns);
+      background-image: url("data:image/svg+xml,%3Csvg width='100' height='240' viewBox='0 0 100 240' xmlns='http://www.w3.org/2000/svg'%3E%3Cpolyline points='50,0 40,80 60,70 30,150 50,140 20,240' fill='none' stroke='white' stroke-width='4' stroke-linecap='square' stroke-linejoin='miter'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-size: 100% 100%;
+      opacity: 0;
+      will-change: transform, opacity;
+      image-rendering: pixelated;
+      filter: drop-shadow(0 0 8px rgba(255, 255, 255, 1));
+    }
+  }
+
+  &.heavy_rain {
+    background: rgba(0, 5, 20, 0.2);
+    mix-blend-mode: screen;
+
+    & .rain-layer {
+      position: absolute;
+      inset: -512px;
+      background-repeat: repeat;
+      background-image: url("data:image/svg+xml,%3Csvg width='256' height='256' viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cg stroke='white' stroke-width='1'%3E%3Cline x1='10' y1='10' x2='10' y2='40' opacity='0.4'/%3E%3Cline x1='50' y1='60' x2='50' y2='90' opacity='0.3'/%3E%3Cline x1='90' y1='20' x2='90' y2='50' opacity='0.4'/%3E%3Cline x1='130' y1='80' x2='130' y2='110' opacity='0.3'/%3E%3Cline x1='170' y1='15' x2='170' y2='45' opacity='0.4'/%3E%3Cline x1='210' y1='70' x2='210' y2='100' opacity='0.3'/%3E%3Cline x1='250' y1='30' x2='250' y2='60' opacity='0.4'/%3E%3Cline x1='30' y1='140' x2='30' y2='170' opacity='0.3'/%3E%3Cline x1='70' y1='190' x2='70' y2='220' opacity='0.4'/%3E%3Cline x1='110' y1='150' x2='110' y2='180' opacity='0.3'/%3E%3Cline x1='150' y1='210' x2='150' y2='240' opacity='0.4'/%3E%3Cline x1='190' y1='160' x2='190' y2='190' opacity='0.3'/%3E%3Cline x1='230' y1='220' x2='230' y2='250' opacity='0.4'/%3E%3Cline x1='15' y1='240' x2='15' y2='270' opacity='0.3'/%3E%3C/g%3E%3C/svg%3E");
+      image-rendering: pixelated;
+    }
+    & .layer-1 { 
+      opacity: 1; 
+      background-size: 256px 256px; 
+      transform: translate3d(calc(var(--seed-x, 0) * 0.6px), calc(var(--seed-y, 0) * 0.6px), 0);
+    }
+    & .layer-2 { 
+      opacity: 0.7; 
+      background-size: 128px 128px; 
+      background-position: 64px 0; 
+      transform: translate3d(calc(var(--seed-x, 0) * 1.8px), calc(var(--seed-y, 0) * 1.8px), 0);
+    }
+  }
+}

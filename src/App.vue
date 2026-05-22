@@ -14,6 +14,9 @@ import ConnectionWarning from '@/components/ui/ConnectionWarning.vue'
 import LivePvPArena from '@/components/battle/LivePvPArena.vue'
 import BattleArena from '@/components/BattleArena.vue'
 import PWAManager from '@/components/common/PWAManager.vue'
+import SVGFilters from '@/components/common/SVGFilters.vue'
+import VersionLockOverlay from '@/components/overlays/VersionLockOverlay.vue'
+import SessionLockOverlay from '@/components/overlays/SessionLockOverlay.vue'
 import { useUIStore } from '@/stores/ui'
 import { useBattleStore } from '@/stores/battle'
 import { useLoadingStore } from '@/stores/loading'
@@ -203,12 +206,31 @@ const handleReclaim = async () => {
 }
 
 // GSAP Transitions for Loading Overlay
+const loaderTween = ref<gsap.core.Tween | null>(null)
+
 const onLoadingEnter = (el: Element, done: () => void) => {
   gsap.fromTo(el, { opacity: 0 }, { opacity: 1, duration: 0.5, ease: 'none', onComplete: done })
+  
+  const loaderEl = el.querySelector('.loader')
+  if (loaderEl) {
+    if (loaderTween.value) loaderTween.value.kill()
+    loaderTween.value = gsap.to(loaderEl, {
+      rotation: 360,
+      duration: 1,
+      repeat: -1,
+      ease: 'none'
+    })
+  }
 }
 
 const onLoadingLeave = (el: Element, done: () => void) => {
-  gsap.to(el, { opacity: 0, duration: 0.8, ease: 'power2.inOut', onComplete: done })
+  gsap.to(el, { opacity: 0, duration: 0.8, ease: 'power2.inOut', onComplete: () => {
+    if (loaderTween.value) {
+      loaderTween.value.kill()
+      loaderTween.value = null
+    }
+    done()
+  } })
 }
 </script>
 
@@ -223,6 +245,7 @@ const onLoadingLeave = (el: Element, done: () => void) => {
     <!-- GLOBAL LOADING OVERLAY -->
     <Teleport to="body">
       <Transition
+        appear
         :css="false"
         @enter="onLoadingEnter"
         @leave="onLoadingLeave"
@@ -255,22 +278,11 @@ const onLoadingLeave = (el: Element, done: () => void) => {
         v-if="dbIncompatible"
         to="body"
       >
-        <div class="loading-overlay version-lock">
-          <div class="lock-icon">
-            ⚠️
-          </div>
-          <h2>SERVIDOR DESACTUALIZADO</h2>
-          <p>Tu cliente (v{{ dbVersionInfo?.client }}) es más moderno que el servidor (v{{ dbVersionInfo?.db }}).</p>
-          <p class="admin-note">
-            Por favor, contacta al administrador para actualizar la base de datos.
-          </p>
-          <div
-            class="retry-btn"
-            @click.stop="handleRetry"
-          >
-            REINTENTAR
-          </div>
-        </div>
+        <VersionLockOverlay
+          :client-version="dbVersionInfo?.client"
+          :db-version="dbVersionInfo?.db"
+          @retry="handleRetry"
+        />
       </Teleport>
 
       <template v-else-if="gameStore.isReady">
@@ -281,38 +293,10 @@ const onLoadingLeave = (el: Element, done: () => void) => {
           v-if="gameStore.isSaveLocked && !dismissedLock"
           to="body"
         >
-          <div class="loading-overlay session-lock-overlay">
-            <div class="lock-icon-wrapper">
-              <span class="lock-emoji">🔒</span>
-            </div>
-          
-            <h2 class="lock-title">
-              SESIÓN BLOQUEADA
-            </h2>
-          
-            <div class="lock-content">
-              <p>Se ha detectado una sesión más reciente en otra pestaña o dispositivo.</p>
-              <p class="warning-box">
-                Este navegador está ahora en modo <strong>SOLO LECTURA</strong>.
-              </p>
-            </div>
-
-            <div class="lock-actions">
-              <div
-                class="retry-btn primary reclaim-btn"
-                @click.stop="handleReclaim"
-              >
-                TOMAR CONTROL DE ESTA SESIÓN
-              </div>
-            
-              <div
-                class="risk-btn"
-                @click.stop="dismissedLock = true"
-              >
-                CONTINUAR SIN GUARDAR (RIESGO ALTO)
-              </div>
-            </div>
-          </div>
+          <SessionLockOverlay
+            @reclaim="handleReclaim"
+            @dismiss="dismissedLock = true"
+          />
         </Teleport>
       </template>
     </template>
@@ -330,134 +314,7 @@ const onLoadingLeave = (el: Element, done: () => void) => {
     <PWAManager />
     
     <!-- Optimized SVG Filters for Pixel Art -->
-    <svg
-      style="visibility: hidden; position: absolute;"
-      width="0"
-      height="0"
-      xmlns="http://www.w3.org/2000/svg"
-      version="1.1"
-    >
-      <defs>
-        <filter id="pixel-outline-optimized">
-          <feMorphology
-            in="SourceAlpha"
-            result="expanded"
-            operator="dilate"
-            radius="1"
-          />
-          <feFlood
-            flood-color="black"
-            result="black"
-          />
-          <feComposite
-            in="black"
-            in2="expanded"
-            operator="in"
-            result="outline"
-          />
-          <feMerge>
-            <feMergeNode in="outline" />
-            <feMergeNode in="SourceGraphic" />
-          </feMerge>
-        </filter>
-
-        <filter id="pixel-outline-optimized-3px">
-          <feMorphology
-            in="SourceAlpha"
-            result="expanded"
-            operator="dilate"
-            radius="3"
-          />
-          <feFlood
-            flood-color="black"
-            result="black"
-          />
-          <feComposite
-            in="black"
-            in2="expanded"
-            operator="in"
-            result="outline-raw"
-          />
-          <feGaussianBlur
-            in="outline-raw"
-            stdDeviation="0.5"
-            result="outline"
-          />
-          <feMerge>
-            <feMergeNode in="outline" />
-            <feMergeNode in="SourceGraphic" />
-          </feMerge>
-        </filter>
-
-        <filter id="pixel-outline-ice">
-          <feMorphology
-            in="SourceAlpha"
-            result="expanded"
-            operator="dilate"
-            radius="8"
-          />
-          <feFlood
-            flood-color="#e0ffff"
-            result="ice-color"
-          />
-          <feComposite
-            in="ice-color"
-            in2="expanded"
-            operator="in"
-            result="outline"
-          />
-          <feMerge>
-            <feMergeNode in="outline" />
-            <feMergeNode in="SourceGraphic" />
-          </feMerge>
-        </filter>
-
-        <filter id="pixel-silhouette-optimized">
-          <!-- 1. Body: Solid Black -->
-          <feColorMatrix
-            in="SourceAlpha"
-            type="matrix"
-            values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0"
-            result="black-body"
-          />
-          
-          <!-- 2. Outline: White (1.0px Dilate - SourceAlpha) -->
-          <feMorphology
-            in="SourceAlpha"
-            operator="dilate"
-            radius="1.0"
-            result="expanded"
-          />
-          <feComposite
-            in="expanded"
-            in2="SourceAlpha"
-            operator="out"
-            result="outline-mask"
-          />
-          
-          <!-- 3. Convert mask to white outline -->
-          <feColorMatrix
-            in="outline-mask"
-            type="matrix"
-            values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 1 0"
-            result="white-outline-sharp"
-          />
-          
-          <!-- 4. Smooth the outline -->
-          <feGaussianBlur
-            in="white-outline-sharp"
-            stdDeviation="1.0"
-            result="white-outline-blur"
-          />
-          
-          <!-- 5. Final Merge: Body on top of Outline -->
-          <feMerge>
-            <feMergeNode in="white-outline-blur" />
-            <feMergeNode in="black-body" />
-          </feMerge>
-        </filter>
-      </defs>
-    </svg>
+    <SVGFilters />
   </div>
 </template>
 
@@ -524,156 +381,8 @@ const onLoadingLeave = (el: Element, done: () => void) => {
   border: 5px solid Rgba(255, 255, 255, 0.1);
   border-top-color: var(--yellow);
   border-radius: 50%;
-  animation: spin 1s linear infinite;
 }
 
-@keyframes spin {
-  to { transform: Rotate(360deg); }
-}
-
-.version-lock .lock-icon {
-  font-size: 48px;
-  margin-bottom: 20px;
-}
-
-.version-lock h2 {
-  color: #ff3333;
-  margin-bottom: 15px;
-}
-
-.version-lock p {
-  margin-top: 5px;
-  color: $white;
-}
-
-.version-lock .admin-note {
-  color: var(--yellow);
-  opacity: 0.8;
-  font-size: 10px;
-}
-
-.retry-btn {
-  margin-top: 30px;
-  padding: 10px 20px;
-  background: #ff3333;
-  color: $white;
-  cursor: pointer;
-  border: 2px solid $white;
-  transition: all 0.2s;
-}
-
-.retry-btn:hover {
-  transform: Scale(1.1);
-  background: $white;
-  color: #ff3333;
-}
-
-.session-lock-overlay {
-  background: Rgba(0, 0, 0, 0.95);
-  -webkit-will-change: opacity;
-  will-change: opacity;
-  border: 2px solid var(--blue);
-  box-shadow: inset 0 0 50px Rgba(0, 150, 255, 0.2), 0 0 100px Rgba(0, 100, 255, 0.3);
-  padding: 40px;
-  
-  .lock-icon-wrapper {
-    margin-bottom: 30px;
-  filter: Drop-Shadow(0 0 20px Rgba(0, 150, 255, 0.6));
-    animation: lock-pulse 2s ease-in-out infinite;
-  }
-
-  .lock-emoji {
-    font-size: 80px;
-    display: block;
-    line-height: 1;
-  }
-  
-  .lock-title {
-    color: var(--blue);
-    font-size: 24px;
-    letter-spacing: 2px;
-    text-shadow: 0 0 15px Rgba(0, 150, 255, 0.8);
-    margin-bottom: 25px;
-  }
-
-  .lock-content {
-    max-width: 400px;
-    margin-bottom: 35px;
-    
-    p {
-      color: $white;
-      font-size: 11px;
-      line-height: 1.6;
-      margin: 10px 0;
-    }
-
-    .warning-box {
-      margin-top: 20px;
-      padding: 12px;
-      background: Rgba(0, 150, 255, 0.1);
-      border: 1px dashed var(--blue);
-      color: var(--blue);
-      font-size: 10px;
-      @include pixelated;
-    }
-  }
-
-  .lock-actions {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    width: 100%;
-    max-width: 350px;
-  }
-  
-  .retry-btn {
-    margin: 0;
-    padding: 15px;
-    background: Rgba(255, 255, 255, 0.1);
-    font-size: 10px;
-    font-weight: bold;
-    border-radius: 4px;
-    box-shadow: 0 4px 0 Rgba(0, 0, 0, 0.3);
-    border: 1px solid Rgba(255, 255, 255, 0.2);
-    
-    &.primary {
-      background: var(--blue);
-      border-color: $white;
-      color: $white;
-    }
-
-    &.reclaim-btn {
-      background: var(--green);
-      color: $dark;
-      font-weight: 900;
-    }
-    
-    &:hover {
-      background: $white;
-      color: var(--blue);
-      transform: Translatey(-2px);
-      box-shadow: 0 6px 0 Rgba(0, 0, 0, 0.2);
-    }
-  }
-
-  .risk-btn {
-    font-size: 8px;
-    color: $white;
-    opacity: 0.5;
-    cursor: pointer;
-    text-decoration: underline;
-    transition: opacity 0.2s;
-    
-    &:hover {
-      opacity: 1;
-      color: #ff3333;
-    }
-  }
-}
-
-@keyframes lock-pulse {
-  0%, 100% { transform: Scale(1); }
-  50% { transform: Scale(1.05); }
-}
+/* Overlays are styled inside their respective SFC components */
 
 </style>

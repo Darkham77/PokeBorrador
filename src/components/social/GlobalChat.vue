@@ -2,6 +2,7 @@
 
 
 import { ref, onMounted, nextTick, computed, watch } from 'vue';
+import { gsap } from 'gsap';
 import { useDocumentListener } from '@/composables/useWindowListener';
 import { useChatStore } from '@/stores/chat';
 import { useGameStore } from '@/stores/game';
@@ -82,6 +83,13 @@ function openTrainerProfile(userId?: string) {
   uiStore.open('TrainerProfile', { userId });
 }
 
+const onMessageEnter = (el: Element, done: () => void) => {
+  gsap.fromTo(el,
+    { scale: 0.9, opacity: 0 },
+    { scale: 1.0, opacity: 1, duration: 0.25, ease: 'back.out(1.7)', onComplete: done }
+  )
+}
+
 onMounted(async () => {
   chatStore.initGlobalChat();
   chatStore.initPrivateInbox();
@@ -130,34 +138,39 @@ useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
             No hay mensajes aún...
           </div>
           
-          <div 
-            v-for="msg in chatStore.globalMessages" 
-            :key="msg.id" 
-            class="message-row animate-pop"
+          <TransitionGroup
+            :css="false"
+            @enter="onMessageEnter"
           >
-            <TrainerAvatar 
-              :player-class="chatStore.profileCosmetics[msg.user_id || '']?.player_class || msg.player_class" 
-              :level="chatStore.profileCosmetics[msg.user_id || '']?.trainer_level || msg.trainer_level" 
-              :avatar-style="chatStore.profileCosmetics[msg.user_id || '']?.avatar_style || undefined"
-              :size="32"
-              class="clickable-avatar"
-              @click.stop="openTrainerProfile(msg.user_id)"
-            />
-            <div class="message-content">
-              <div class="message-meta">
-                <span
-                  v-gsap-nick="chatStore.profileCosmetics[msg.user_id || '']?.nick_style || 'normal'"
-                  class="username clickable-username"
-                  :class="chatStore.profileCosmetics[msg.user_id || '']?.nick_style || 'normal'"
-                  @click.stop="openTrainerProfile(msg.user_id)"
-                >{{ chatStore.profileCosmetics[msg.user_id || '']?.username || msg.username }}</span>
-                <span class="time">{{ formatTime(msg.created_at) }}</span>
+            <div 
+              v-for="msg in chatStore.globalMessages" 
+              :key="msg.id" 
+              class="message-row"
+            >
+              <TrainerAvatar 
+                :player-class="chatStore.profileCosmetics[msg.user_id || '']?.player_class || msg.player_class" 
+                :level="chatStore.profileCosmetics[msg.user_id || '']?.trainer_level || msg.trainer_level" 
+                :avatar-style="chatStore.profileCosmetics[msg.user_id || '']?.avatar_style || undefined"
+                :size="32"
+                class="clickable-avatar"
+                @click.stop="openTrainerProfile(msg.user_id)"
+              />
+              <div class="message-content">
+                <div class="message-meta">
+                  <span
+                    v-gsap-nick="chatStore.profileCosmetics[msg.user_id || '']?.nick_style || 'normal'"
+                    class="username clickable-username"
+                    :class="chatStore.profileCosmetics[msg.user_id || '']?.nick_style || 'normal'"
+                    @click.stop="openTrainerProfile(msg.user_id)"
+                  >{{ chatStore.profileCosmetics[msg.user_id || '']?.username || msg.username }}</span>
+                  <span class="time">{{ formatTime(msg.created_at) }}</span>
+                </div>
+                <p class="text">
+                  {{ msg.message }}
+                </p>
               </div>
-              <p class="text">
-                {{ msg.message }}
-              </p>
             </div>
-          </div>
+          </TransitionGroup>
         </div>
 
         <footer class="chat-footer">
@@ -216,7 +229,6 @@ useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
   align-items: center;
   gap: 10px;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 4px 15px Rgba(0, 0, 0, 0.4);
 
   &:hover {
@@ -278,7 +290,6 @@ useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.2s;
 
     &:hover {
       background: Rgba(239, 68, 68, 0.15);
@@ -362,7 +373,6 @@ useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
     color: $white;
     font-size: 13px;
     outline: none;
-    transition: border-color 0.2s;
 
     &:focus { border-color: var(--purple-light); }
     &:disabled { opacity: 0.5; cursor: not-allowed; }
@@ -376,7 +386,6 @@ useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
     height: 38px;
     color: $white;
     cursor: pointer;
-    transition: all 0.2s;
 
     &:hover:not(:disabled) { background: Rgba(157, 78, 221, 1); transform: Scale(1.05); }
     &:disabled { opacity: 0.3; }
@@ -392,20 +401,8 @@ useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
   .hint-error { color: Rgba(248, 113, 113, 1); font-weight: 700; }
 }
 
-// Animations removed as BaseModal handles them
-
-.animate-pop {
-  animation: pop 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-}
-
-@keyframes pop {
-  0% { transform: Scale(0.9); opacity: 0; }
-  100% { transform: Scale(1.0); opacity: 1; }
-}
-
 .clickable-avatar {
   cursor: pointer;
-  transition: transform 0.2s, filter 0.2s;
 
   &:hover {
     transform: Scale(1.1);
@@ -415,13 +412,11 @@ useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
 
 .clickable-username {
   cursor: pointer;
-  transition: opacity 0.2s;
 
   &:hover {
     text-decoration: underline;
     opacity: 0.85;
   }
 }
-
 </style>
 

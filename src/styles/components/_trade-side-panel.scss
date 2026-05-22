@@ -1,0 +1,290 @@
+@use "@/styles/core/_mixins" as *;
+@use "@/styles/core/variables" as *;
+
+
+.trade-side {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  background: Rgba(255, 255, 255, 0.01);
+  border: 1px solid Rgba(255, 255, 255, 0.03);
+  padding: 20px;
+  border-radius: 24px;
+  height: 100%;
+  box-sizing: border-box;
+  min-width: 0;
+
+  .side-title {
+    font-size: 10px;
+    @include pixelated;
+    color: var(--gray);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+}
+
+.selected-poke-display {
+  width: 100%;
+}
+
+.poke-card-wrap {
+  position: relative;
+  width: 100%;
+  cursor: pointer;
+
+  &:hover {
+    .change-hint-overlay {
+      opacity: 1;
+    }
+  }
+
+  .change-hint-overlay {
+    position: absolute;
+    inset: 0;
+    background: Rgba(0, 0, 0, 0.7);
+    backdrop-filter: Blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 20px;
+    opacity: 0;
+    z-index: var(--z-map-spawns);
+    pointer-events: none;
+
+    span {
+      @include pixelated;
+      font-size: 9px;
+      color: var(--yellow);
+      letter-spacing: 1px;
+    }
+  }
+}
+
+.btn-open-selector {
+  width: 100%;
+  padding: 24px 16px;
+  background: Rgba(255, 255, 255, 0.02);
+  border: 2px dashed Rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  color: #888;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+
+  .plus-icon {
+    font-size: 24px;
+    font-weight: 300;
+    line-height: 1;
+  }
+
+  .btn-text {
+    @include pixelated;
+    font-size: 8px;
+    letter-spacing: 1px;
+  }
+
+  &:hover {
+    background: Rgba(168, 85, 247, 0.05);
+    border-color: var(--purple);
+    color: #fff;
+  }
+}
+
+.item-selection-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+  gap: 12px;
+  max-height: 240px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  min-height: 0;
+  padding: 8px;
+  background: Rgba(0, 0, 0, 0.2);
+  border-radius: 16px;
+  border: 1px solid Rgba(255, 255, 255, 0.05);
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: Rgba(255, 255, 255, 0.15);
+    border-radius: 3px;
+  }
+}
+
+.empty-items-state {
+  padding: 16px;
+  text-align: center;
+  background: Rgba(0, 0, 0, 0.1);
+  border-radius: 16px;
+  color: Rgba(255, 255, 255, 0.25);
+  font-size: 9px;
+  @include pixelated;
+}
+
+.money-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  margin-top: auto;
+
+  .money-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    @include pixelated;
+    font-size: 8px;
+    color: var(--gray);
+
+    .max-text {
+      color: Rgba(255, 255, 255, 0.4);
+    }
+  }
+
+  .money-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+
+    .currency-symbol {
+      position: absolute;
+      left: 16px;
+      font-size: 16px;
+      font-weight: bold;
+      color: $coin-gold;
+      pointer-events: none;
+    }
+
+    .money-input {
+      width: 100%;
+      background: Rgba(0, 0, 0, 0.4);
+      border: 1px solid Rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      padding: 12px 12px 12px 36px;
+      color: $coin-gold;
+      font-weight: 900;
+      font-size: 15px;
+      outline: none;
+      box-sizing: border-box;
+
+      &:focus {
+        border-color: Rgba(255, 215, 0, 0.4);
+        background: Rgba(0, 0, 0, 0.5);
+        box-shadow: 0 0 10px Rgba(255, 215, 0, 0.15);
+      }
+
+      &::-webkit-outer-spin-button,
+      &::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+      &[type=number] {
+        -moz-appearance: textfield;
+      }
+    }
+  }
+}
+
+.gift-overlay {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: Rgba(107, 203, 119, 0.03);
+  border: 2px dashed Rgba(107, 203, 119, 0.15);
+  border-radius: 20px;
+  padding: 30px;
+  text-align: center;
+
+  .gift-icon {
+    font-size: 40px;
+    display: block;
+    margin-bottom: 12px;
+  }
+
+  .gift-title {
+    font-weight: 900;
+    font-size: 11px;
+    @include pixelated;
+    color: var(--green);
+    display: block;
+    margin-bottom: 8px;
+    letter-spacing: 1px;
+  }
+
+  .gift-text {
+    font-size: 11px;
+    color: Rgba(255, 255, 255, 0.4);
+    margin: 0;
+  }
+}
+.item-card-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.qty-control-overlay {
+  position: absolute;
+  inset: 0;
+  background: Rgba(0, 0, 0, 0.8);
+  backdrop-filter: Blur(4px);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  z-index: var(--z-map-spawns);
+  border: 1px solid Rgba(168, 85, 247, 0.4);
+  padding: 4px;
+  box-sizing: border-box;
+
+  .qty-btn {
+    width: 20px;
+    height: 20px;
+    border-radius: 6px;
+    border: 1px solid Rgba(255, 255, 255, 0.1);
+    background: Rgba(255, 255, 255, 0.05);
+    color: white;
+    font-size: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    @include pixelated;
+
+    &:hover:not(:disabled) {
+      background: var(--purple);
+      border-color: var(--purple);
+      color: white;
+    }
+
+    &:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+
+    &.remove {
+      background: Rgba(239, 68, 68, 0.2);
+      border-color: Rgba(239, 68, 68, 0.4);
+      color: #ef4444;
+      
+      &:hover {
+        background: #ef4444;
+        color: white;
+      }
+    }
+  }
+
+  .qty-val {
+    @include pixelated;
+    font-size: 9px;
+    font-weight: bold;
+    color: var(--yellow);
+    min-width: 16px;
+    text-align: center;
+  }
+}

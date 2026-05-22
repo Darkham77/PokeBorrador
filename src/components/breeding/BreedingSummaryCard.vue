@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { Pokemon, BreedingCompatibility } from '@/types/pokemon'
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 
 interface Props {
   parentA: Pokemon
@@ -21,7 +22,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const eggSpeciesName = computed(() => {
   if (!props.compatibility.eggSpecies) return '—'
-  return props.compatibility.eggSpecies.charAt(0).toUpperCase() + props.compatibility.eggSpecies.slice(1)
+  return pokemonDataProvider.resolveSpeciesName(props.compatibility.eggSpecies)
 })
 
 const powerMap: Record<string, { stat: string, label: string }> = {

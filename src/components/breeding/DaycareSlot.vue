@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, onUnmounted, watch } from 'vue'
+import { gsap } from 'gsap'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import type { Pokemon } from '@/types/pokemon'
 import PVTooltip from '@/components/common/PVTooltip.vue'
@@ -27,6 +28,155 @@ const emit = defineEmits<{
 const gameStore = useGameStore()
 const inventoryStore = useInventoryStore()
 const uiStore = useUIStore()
+
+const slotRef = ref<HTMLElement | null>(null)
+const itemStatusRef = ref<HTMLElement | null>(null)
+
+let slotBorderTween: gsap.core.Tween | null = null
+let plusIconTween: gsap.core.Tween | null = null
+let spriteBoxTween: gsap.core.Tween | null = null
+let itemTween: gsap.core.Tween | null = null
+
+const isHoveringItem = ref(false)
+
+const handleSlotMouseEnter = () => {
+  if (!props.pokemon) {
+    if (slotBorderTween) slotBorderTween.kill()
+    slotBorderTween = gsap.to(slotRef.value, {
+      borderColor: '#ffd700',
+      duration: 0.3,
+      ease: 'power2.out'
+    })
+
+    const plusIcon = slotRef.value?.querySelector('.plus-icon')
+    if (plusIcon) {
+      if (plusIconTween) plusIconTween.kill()
+      plusIconTween = gsap.to(plusIcon, {
+        scale: 1.1,
+        color: '#ffd700',
+        duration: 0.3,
+        ease: 'power2.out'
+      })
+    }
+  } else {
+    if (slotBorderTween) slotBorderTween.kill()
+    slotBorderTween = gsap.to(slotRef.value, {
+      borderColor: 'rgba(255, 255, 255, 0.15)',
+      duration: 0.3,
+      ease: 'power2.out'
+    })
+
+    const spriteBox = slotRef.value?.querySelector('.sprite-box')
+    if (spriteBox) {
+      if (spriteBoxTween) spriteBoxTween.kill()
+      spriteBoxTween = gsap.to(spriteBox, {
+        scale: 1.05,
+        duration: 0.3,
+        ease: 'power2.out'
+      })
+    }
+  }
+}
+
+const handleSlotMouseLeave = () => {
+  if (slotBorderTween) slotBorderTween.kill()
+  slotBorderTween = gsap.to(slotRef.value, {
+    borderColor: 'rgba(255, 255, 255, 0.06)',
+    duration: 0.3,
+    ease: 'power2.out'
+  })
+
+  if (!props.pokemon) {
+    const plusIcon = slotRef.value?.querySelector('.plus-icon')
+    if (plusIcon) {
+      if (plusIconTween) plusIconTween.kill()
+      plusIconTween = gsap.to(plusIcon, {
+        scale: 1,
+        color: 'rgba(51, 65, 85, 1)',
+        duration: 0.3,
+        ease: 'power2.out'
+      })
+    }
+  } else {
+    const spriteBox = slotRef.value?.querySelector('.sprite-box')
+    if (spriteBox) {
+      if (spriteBoxTween) spriteBoxTween.kill()
+      spriteBoxTween = gsap.to(spriteBox, {
+        scale: 1,
+        duration: 0.3,
+        ease: 'power2.out'
+      })
+    }
+  }
+}
+
+const handleItemMouseEnter = () => {
+  isHoveringItem.value = true
+  if (itemTween) itemTween.kill()
+  itemTween = gsap.to(itemStatusRef.value, {
+    scale: 1.02,
+    filter: 'brightness(1.15)',
+    duration: 0.2,
+    ease: 'power2.out'
+  })
+}
+
+const handleItemMouseLeave = () => {
+  isHoveringItem.value = false
+  if (itemTween) itemTween.kill()
+  itemTween = gsap.to(itemStatusRef.value, {
+    scale: 1,
+    filter: 'brightness(1)',
+    duration: 0.2,
+    ease: 'power2.out'
+  })
+}
+
+const handleItemMouseDown = () => {
+  if (itemTween) itemTween.kill()
+  itemTween = gsap.to(itemStatusRef.value, {
+    scale: 0.98,
+    filter: 'brightness(1.15)',
+    duration: 0.1,
+    ease: 'power2.out'
+  })
+}
+
+const handleItemMouseUp = () => {
+  if (itemTween) itemTween.kill()
+  itemTween = gsap.to(itemStatusRef.value, {
+    scale: isHoveringItem.value ? 1.02 : 1,
+    filter: isHoveringItem.value ? 'brightness(1.15)' : 'brightness(1)',
+    duration: 0.1,
+    ease: 'power2.out'
+  })
+}
+
+watch(() => props.pokemon, () => {
+  if (slotBorderTween) slotBorderTween.kill()
+  if (plusIconTween) plusIconTween.kill()
+  if (spriteBoxTween) spriteBoxTween.kill()
+  if (itemTween) itemTween.kill()
+  
+  if (slotRef.value) {
+    gsap.set(slotRef.value, { borderColor: 'rgba(255, 255, 255, 0.06)' })
+    const plusIcon = slotRef.value.querySelector('.plus-icon')
+    if (plusIcon) {
+      gsap.set(plusIcon, { scale: 1, color: 'rgba(51, 65, 85, 1)' })
+    }
+    const spriteBox = slotRef.value.querySelector('.sprite-box')
+    if (spriteBox) {
+      gsap.set(spriteBox, { scale: 1 })
+    }
+  }
+})
+
+onUnmounted(() => {
+  if (slotBorderTween) slotBorderTween.kill()
+  if (plusIconTween) plusIconTween.kill()
+  if (spriteBoxTween) spriteBoxTween.kill()
+  if (itemTween) itemTween.kill()
+})
 
 const findPokemonLocation = (p: Pokemon) => {
   if (!p) return null
@@ -76,9 +226,12 @@ const getNatureDescription = (natureName: string) => {
 
 <template>
   <div
+    ref="slotRef"
     class="daycare-slot-legacy"
     :class="{ empty: !pokemon }"
     @click.stop="!pokemon ? emit('deposit') : null"
+    @mouseenter="handleSlotMouseEnter"
+    @mouseleave="handleSlotMouseLeave"
   >
     <div class="slot-marker">
       RANURA {{ slotId.toUpperCase() }}
@@ -153,8 +306,13 @@ const getNatureDescription = (natureName: string) => {
       </div>
 
       <div
+        ref="itemStatusRef"
         class="item-status"
         @click.stop="handleItemClick"
+        @mouseenter="handleItemMouseEnter"
+        @mouseleave="handleItemMouseLeave"
+        @mousedown="handleItemMouseDown"
+        @mouseup="handleItemMouseUp"
       >
         <div
           v-if="pokemon.heldItem"
@@ -181,188 +339,5 @@ const getNatureDescription = (natureName: string) => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
-@use "@/styles/components/_badges.scss" as badges;
-.daycare-slot-legacy {
-  background: $card-dark;
-  border: 2px solid Rgba(255,255,255,0.06);
-  border-radius: 16px;
-  padding: 20px;
-  min-height: 250px;
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  transition: all 0.2s;
-
-  @media (max-width: 950px) {
-    min-height: 180px;
-    padding: 12px;
-  }
-
-  &.empty {
-    border-style: dashed;
-    cursor: pointer;
-    justify-content: center;
-    align-items: center;
-    background: Rgba(0,0,0,0.2);
-    &:hover { border-color: $coin-gold; .plus-icon { color: $coin-gold; transform: #{'Scale(1.1)'}; } }
-  }
-
-  &:not(.empty):hover { border-color: Rgba(255,255,255,0.15); }
-}
-
-.slot-marker {
-  @include pixelated;
-  font-size: 7px;
-  color: $muted;
-  margin-bottom: 20px;
-
-  @media (max-width: 950px) {
-    margin-bottom: 8px;
-  }
-}
-
-.slot-empty {
-  text-align: center;
-  .plus-icon { font-size: 30px; color: Rgba(51, 65, 85, 1); margin-bottom: 10px; transition: all 0.2s; }
-  .hint { @include pixelated; font-size: 7px; color: Rgba(71, 85, 105, 1); }
-}
-
-.slot-filled {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-}
-
-.poke-header {
-  display: flex;
-  gap: 15px;
-  margin-bottom: 20px;
-
-  @media (max-width: 950px) {
-    gap: 10px;
-    margin-bottom: 10px;
-  }
-}
-
-.sprite-box {
-  width: 64px; height: 64px;
-  display: flex; align-items: center; justify-content: center;
-  filter: Drop-Shadow(0 4px 6px Rgba(0, 0, 0, 0.35));
-  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-
-  .daycare-slot-legacy:hover & {
-    transform: Scale(1.05);
-  }
-
-  .pixel-sprite { width: 60px; height: 60px; @include pixelated; }
-}
-
-
-.poke-info {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-
-  .p-name-stack-daycare {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 2px;
-    margin-bottom: 6px;
-
-    .name {
-      @include pixelated;
-      font-size: 11px;
-      font-weight: 900;
-      color: $white;
-      text-transform: uppercase;
-      text-shadow: 1px 1px 0 #000;
-    }
-
-    .species-subtitle {
-      @include pixel-perfect(6.5px);
-      color: var(--yellow);
-      opacity: 0.8;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-  }
-
-  .lv-gender-line {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    margin-bottom: 6px;
-    
-    .m-badge-gender.mini {
-      @include badges.badge-gender(12px);
-      font-size: 12px;
-    }
-  }
-
-  .stats-line {
-    @include pixelated;
-    font-size: 8px;
-    color: $muted;
-    margin-bottom: 4px;
-    
-    .stats-values {
-      color: $green;
-      font-family: monospace;
-      font-size: 9px;
-      font-weight: bold;
-    }
-  }
-
-  .nature-line {
-    @include pixelated;
-    font-size: 8px;
-    color: $coin-gold;
-    font-weight: bold;
-    
-    .nature-text {
-      border-bottom: 1px dashed Rgba($coin-gold, 0.5);
-      cursor: help;
-      padding-bottom: 1px;
-    }
-  }
-}
-
-.vigor-status {
-  margin-bottom: 15px;
-  .label { font-size: 9px; font-weight: bold; color: $muted; margin-bottom: 6px; }
-  .vigor-bar-bg { height: 4px; background: Rgba(0,0,0,0.4); border-radius: 2px; overflow: hidden; }
-  .vigor-fill { height: 100%; transition: width 0.3s; }
-}
-
-.item-status {
-  margin-bottom: 20px;
-  cursor: pointer;
-  transition: transform 0.2s, filter 0.2s;
-  user-select: none;
-
-  &:hover {
-    transform: Scale(1.02);
-    filter: Brightness(1.15);
-  }
-
-  &:active {
-    transform: Scale(0.98);
-  }
-
-  .item-badge {
-    padding: 8px 12px; border-radius: 10px; font-size: 10px;
-    text-align: center;
-    @include pixelated;
-    &.active { background: Rgba($pokecenter-pink, 0.08); border: 1px solid Rgba($pokecenter-pink, 0.2); color: $white; }
-    &.none { background: Rgba(0,0,0,0.2); color: Rgba(148, 163, 184, 0.6); font-style: italic; border: 1px dashed Rgba(255,255,255,0.08); }
-  }
-}
-
-.withdraw-btn-retro {
-  margin-top: auto;
-  @include btn-vicio('danger', 'sm', true);
-  width: 100%;
-}
+@use "@/styles/components/daycare-slot";
 </style>

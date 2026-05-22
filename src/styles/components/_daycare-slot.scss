@@ -1,0 +1,175 @@
+@use "@/styles/core/_mixins" as *;
+@use "@/styles/core/variables" as *;
+@use "@/styles/components/_badges.scss" as badges;
+
+
+.daycare-slot-legacy {
+  background: $card-dark;
+  border: 2px solid Rgba(255,255,255,0.06);
+  border-radius: 16px;
+  padding: 20px;
+  min-height: 250px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+
+  @media (max-width: 950px) {
+    min-height: 180px;
+    padding: 12px;
+  }
+
+  &.empty {
+    border-style: dashed;
+    cursor: pointer;
+    justify-content: center;
+    align-items: center;
+    background: Rgba(0,0,0,0.2);
+  }
+}
+
+.slot-marker {
+  @include pixelated;
+  font-size: 7px;
+  color: $muted;
+  margin-bottom: 20px;
+
+  @media (max-width: 950px) {
+    margin-bottom: 8px;
+  }
+}
+
+.slot-empty {
+  text-align: center;
+  .plus-icon { 
+    font-size: 30px; 
+    color: Rgba(51, 65, 85, 1); 
+    margin-bottom: 10px; 
+    will-change: transform;
+  }
+  .hint { @include pixelated; font-size: 7px; color: Rgba(71, 85, 105, 1); }
+}
+
+.slot-filled {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.poke-header {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 20px;
+
+  @media (max-width: 950px) {
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+}
+
+.sprite-box {
+  width: 64px; height: 64px;
+  display: flex; align-items: center; justify-content: center;
+  filter: Drop-Shadow(0 4px 6px Rgba(0, 0, 0, 0.35));
+  will-change: transform, filter;
+  .pixel-sprite { width: 60px; height: 60px; @include pixelated; }
+}
+
+.poke-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+
+  .p-name-stack-daycare {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    margin-bottom: 6px;
+
+    .name {
+      @include pixelated;
+      font-size: 11px;
+      font-weight: 900;
+      color: $white;
+      text-transform: uppercase;
+      text-shadow: 1px 1px 0 #000;
+    }
+
+    .species-subtitle {
+      @include pixel-perfect(6.5px);
+      color: var(--yellow);
+      opacity: 0.8;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+  }
+
+  .lv-gender-line {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 6px;
+    
+    .m-badge-gender.mini {
+      @include badges.badge-gender(12px);
+      font-size: 12px;
+    }
+  }
+
+  .stats-line {
+    @include pixelated;
+    font-size: 8px;
+    color: $muted;
+    margin-bottom: 4px;
+    
+    .stats-values {
+      color: $green;
+      font-family: monospace;
+      font-size: 9px;
+      font-weight: bold;
+    }
+  }
+
+  .nature-line {
+    @include pixelated;
+    font-size: 8px;
+    color: $coin-gold;
+    font-weight: bold;
+    
+    .nature-text {
+      border-bottom: 1px dashed Rgba($coin-gold, 0.5);
+      cursor: help;
+      padding-bottom: 1px;
+    }
+  }
+}
+
+.vigor-status {
+  margin-bottom: 15px;
+  .label { font-size: 9px; font-weight: bold; color: $muted; margin-bottom: 6px; }
+  .vigor-bar-bg { height: 4px; background: Rgba(0,0,0,0.4); border-radius: 2px; overflow: hidden; }
+  .vigor-fill { height: 100%; }
+}
+
+.item-status {
+  margin-bottom: 20px;
+  cursor: pointer;
+  user-select: none;
+  will-change: transform, filter;
+
+
+
+  .item-badge {
+    padding: 8px 12px; border-radius: 10px; font-size: 10px;
+    text-align: center;
+    @include pixelated;
+    &.active { background: Rgba($pokecenter-pink, 0.08); border: 1px solid Rgba($pokecenter-pink, 0.2); color: $white; }
+    &.none { background: Rgba(0,0,0,0.2); color: Rgba(148, 163, 184, 0.6); font-style: italic; border: 1px dashed Rgba(255,255,255,0.08); }
+  }
+}
+
+.withdraw-btn-retro {
+  margin-top: auto;
+  @include btn-vicio('danger', 'sm', true);
+  width: 100%;
+}

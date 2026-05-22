@@ -1,0 +1,205 @@
+@use "@/styles/core/_mixins" as *;
+@use "@/styles/core/variables" as *;
+
+
+.heal-modal-inner {
+  padding: 8px 0;
+  text-align: center;
+}
+
+.subtitle {
+  color: Rgba(255, 255, 255, 0.4);
+  font-size: 8px;
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  @include pixelated;
+}
+
+.team-slots {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 10px 10px 20px 10px;
+}
+
+.slot {
+  width: 90px;
+  height: 90px;
+  background: Rgba(255, 255, 255, 0.03);
+  border: 2px solid Rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: visible; // Critical for PVSpriteFX particles
+  
+  &.empty {
+    opacity: 0.3;
+    border-style: dashed;
+  }
+  
+  &.active {
+    opacity: 1;
+    background: Rgba(255, 255, 255, 0.06);
+  }
+
+  &.healing {
+    background: Rgba(34, 197, 94, 0.08);
+    border-color: Rgba(34, 197, 94, 0.4);
+    box-shadow: 0 0 20px Rgba(34, 197, 94, 0.2);
+  }
+}
+
+.poke-sprite {
+  width: 72px;
+  height: 72px;
+  @include sprite-render;
+  will-change: transform, filter, opacity;
+  filter: Grayscale(0.8) Brightness(0.5);
+  position: relative;
+  z-index: calc(var(--z-base) + 2);
+}
+
+.type-aura {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(circle, var(--type-color) 0%, transparent 70%);
+  opacity: 0.15;
+  z-index: calc(var(--z-base) + 1);
+}
+
+.needs-heal-badge {
+  position: absolute;
+  top: 4px;
+  right: 0px;
+  font-size: 14px;
+  z-index: var(--z-low);
+  will-change: transform, filter, opacity;
+  filter: Drop-Shadow(0 0 5px Rgba(239, 68, 68, 0.5));
+}
+
+.slot.active {
+  .type-aura { opacity: 0.3; }
+  .poke-sprite { 
+    will-change: transform, filter, opacity;
+    filter: Grayscale(0) Brightness(1); 
+  }
+}
+
+.slot.healing {
+  background: Rgba(34, 197, 94, 0.05);
+  border-color: Rgba(34, 197, 94, 0.3);
+  
+  .type-aura {
+    opacity: 0.6;
+  }
+  
+  .poke-sprite {
+    will-change: transform, filter, opacity;
+    filter: Brightness(1.2) Drop-Shadow(0 0 10px Rgba(255, 255, 255, 0.6));
+  }
+}
+
+.slot.is-shiny {
+  border-color: Rgba(255, 214, 10, 0.4);
+  box-shadow: 0 0 20px Rgba(255, 214, 10, 0.1);
+}
+
+.slot.is-premium-tier {
+  @include pokemon-card-premium-tier;
+}
+
+.progress-container {
+  margin-top: 10px;
+}
+
+.progress-bar {
+  height: 6px;
+  background: Rgba(255, 255, 255, 0.05);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 12px;
+  border: 1px solid Rgba(255, 255, 255, 0.05);
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, Rgba(34, 197, 94, 1), Rgba(74, 222, 128, 1));
+  box-shadow: 0 0 15px Rgba(34, 197, 94, 0.5);
+}
+
+.healing-text {
+  color: Rgba(34, 197, 94, 1);
+  font-size: 7px;
+  letter-spacing: 1px;
+  @include pixelated;
+}
+
+.cost-notice {
+  background: Rgba(239, 68, 68, 0.05);
+  padding: 16px;
+  border-radius: 16px;
+  border: 1px solid Rgba(239, 68, 68, 0.2);
+  @include shell;
+  
+  .cost-label {
+    font-size: 7px;
+    color: Rgba(239, 68, 68, 1);
+    margin-bottom: 12px;
+    @include pixelated;
+    letter-spacing: 1px;
+  }
+  
+  .price-tag {
+    font-size: 20px;
+    color: var(--white);
+    text-shadow: 0 0 15px Rgba(255, 255, 255, 0.2);
+    @include pixelated;
+  }
+  
+  .rocket-surcharge {
+    display: block;
+    margin-top: 10px;
+    color: Rgba(239, 68, 68, 0.6);
+    font-size: 7px;
+    @include pixelated;
+    text-transform: uppercase;
+  }
+}
+
+.heal-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.btn-heal-primary {
+  @include btn-vicio-danger;
+  width: 100%;
+}
+
+.btn-cancel-secondary {
+  background: Rgba(255, 255, 255, 0.03);
+  color: Rgba(255, 255, 255, 0.4);
+  border: 1px solid Rgba(255, 255, 255, 0.1);
+  padding: 12px;
+  border-radius: 12px;
+  font-size: 8px;
+  cursor: pointer;
+  @include pixelated;
+  
+  &:hover:not(:disabled) {
+    background: Rgba(255, 255, 255, 0.08);
+    color: var(--white);
+    border-color: Rgba(255, 255, 255, 0.2);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}

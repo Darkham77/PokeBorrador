@@ -7,6 +7,7 @@
  */
 
 import fs from 'node:fs/promises';
+import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { styleText } from 'node:util';
 import { enableCompileCache } from 'node:module';
@@ -23,7 +24,7 @@ interface AuditRule {
   regex: RegExp;
   message: string | ((match: string) => string);
   fix?: (match: string) => string;
-  check?: (context: string, match: RegExpExecArray) => boolean;
+  check?: (context: string, match: RegExpExecArray, filePath?: string) => boolean;
   severity?: 'error' | 'warning';
   fixable?: boolean;
   addImport?: string;
@@ -53,10 +54,35 @@ const viewport: AuditRule = {
 const gpuGaps: AuditRule = {
   regex: /(backdrop-filter|filter):/gi,
   message: "Filtro detectado sin 'will-change'. Considera añadir promoción de capa.",
-  check: (content: string, match: RegExpExecArray) => {
+  check: (content: string, match: RegExpExecArray, filePath?: string) => {
     const start = Math.max(0, match.index - 500);
     const end = Math.min(content.length, match.index + 500);
     const context = content.substring(start, end);
+
+    // 1. Check for standard disable/ignore comments in the context
+    if (/audit-disable\s+gpu-gaps|will-change:\s*(skip|ignore|false)/i.test(context)) {
+      return false;
+    }
+
+    // 2. Check if this is a high-density component (card, sprite, avatar, nickname, weather, list, grid, cell, row, icon, badge)
+    // We analyze the surrounding text or selector for typical high-density keywords
+    const beforeMatch = content.substring(start, match.index);
+    const lastSemi = Math.max(beforeMatch.lastIndexOf(';'), beforeMatch.lastIndexOf('}'), beforeMatch.lastIndexOf('{'));
+    const selectorText = beforeMatch.substring(lastSemi + 1).trim();
+
+    const highDensityKeywords = /(card|item|sprite|avatar|nickname|badge|icon|grid|list|row|cell|weather|overlay|background)/i;
+    if (highDensityKeywords.test(selectorText) || (filePath && highDensityKeywords.test(filePath))) {
+      return false;
+    }
+
+    // 3. Only warn if the filter is dynamically animated or transitioned via CSS
+    // Check if there is transition or animation property in the context that targets filter/backdrop-filter/all
+    const isDynamic = /transition\s*:[^;]*(filter|backdrop-filter|all)|animation\s*:/gi.test(context);
+    if (!isDynamic) {
+      return false; // Static filter - does not require layer promotion
+    }
+
+    // 4. Warn if will-change is missing
     return !/(will-change|will-animate)/gi.test(context);
   },
   fixable: false 
@@ -117,27 +143,70 @@ const manualAnimations: AuditRule = {
 
 const manualTimersFrontend: AuditRule = {
   regex: /\b(set|clear)(Timeout|Interval)\b/g,
-  message: (match: string) => `Timer de ANIMACIÓN detectado: '${match}'. MIGRACIÓN OBLIGATORIA A GSAP: Prohibido en componentes UI para gestionar flujo visual. Está estrictamente PROHIBIDO borrar este timer sin migrar su lógica a GSAP (ej: gsap.delayedCall) para evitar desincronización de flujo.`,
-  severity: 'warning', 
-  check: (_content: string, _match: RegExpExecArray) => {
-    // TODO: TEMPORAL - Deshabilitado hasta terminar la migración de animaciones a GSAP.
-    // Una vez terminada la migración, volver a habilitar este check.
-    return false;
+  message: (match: string) => `Timer de ANIMACIÓN/UI detectado: '${match}'. MIGRACIÓN OBLIGATORIA A GSAP: Prohibido en componentes UI y lógicas para gestionar flujo visual o reintentos de carga. Usa gsap.delayedCall, timelines o promesas deterministas.`,
+  severity: 'error', 
+  check: (content: string, _match: RegExpExecArray, filePath?: string) => {
+    if (!filePath) return false;
+    if (/audit-disable\s+timers/i.test(content)) return false;
+    // Strictly block inside Vue SFCs under src/components/ to protect component logic
+    return filePath.endsWith('.vue') && filePath.includes('src' + path.sep + 'components');
+  },
+  fixable: false
+};
 
-    /* 
-    // Only context-aware check for animation keywords in Vue files
-    const contextStart = Math.max(0, match.index - 150);
-    const contextEnd = Math.min(content.length, match.index + 150);
-    const context = content.substring(contextStart, contextEnd).toLowerCase();
+const jsonStringifyInWatch: AuditRule = {
+  regex: /\bwatch\s*\(\s*(?:\(\)\s*=>\s*)?JSON\.stringify/g,
+  message: "Uso de 'JSON.stringify' dentro de un watcher detectado. Serializar objetos/arrays en watchers de alta frecuencia satura la CPU. Realiza comparaciones directas por elementos o usa watchers profundos ({ deep: true }) con moderación.",
+  severity: 'error',
+  fixable: false
+};
+
+const intersectionObserverRoot: AuditRule = {
+  regex: /new\s+IntersectionObserver\s*\(\s*[^,]+,\s*\{\s*[^}]*root\s*:\s*(?!null\b)[a-zA-Z0-9_$]/g,
+  message: "Uso de 'root' dinámico o DOM en IntersectionObserver detectado. En contenedores escalados o con zoom (ej: #zoomable-content), usar un root distinto de null genera fallos de cálculo de visibilidad que apagan animaciones. Deja 'root' como 'null' (viewport) o no lo declares.",
+  severity: 'warning',
+  fixable: false
+};
+
+const dbInTemplates: AuditRule = {
+  regex: /\b(pokemonDataProvider|DBRouter|sqlite|supabase)\b/g,
+  message: "Acceso directo a Base de Datos o Data Provider detectado dentro de un bloque <template>. Está PROHIBIDO consultar datos en el render loop. Cachea los datos reactivamente con 'computed' en <script> y expón una estructura de datos lista para renderizar.",
+  severity: 'error',
+  fixable: false
+};
+
+const functionCallsInTemplates: AuditRule = {
+  regex: /(?::[a-zA-Z0-9-]+|v-bind:[a-zA-Z0-9-]+)="([a-zA-Z0-9_$]+)\([^"]*\)"|\{\{\s*([a-zA-Z0-9_$]+)\([^}]*\)\s*\}\}/g,
+  message: (match: string) => `Llamada a función/método '${match}' detectada en plantilla Vue. Está PROHIBIDO llamar a funciones que realicen consultas a bases de datos, transformaciones de array (.map/.filter) o lógica pesada en el render loop. Cachea los datos con 'computed'.`,
+  severity: 'error',
+  check: (_content: string, match: RegExpExecArray, filePath?: string) => {
+    if (!filePath) return false;
+    const funcName = match[1] || match[2];
+    if (!funcName) return false;
     
-    const animKeywords = [
-      'anim', 'fade', 'show', 'hide', 'visible', 'active', 'opacity', 
-      'transform', 'duration', 'delay', 'isloading', 'isvisible', 'isactive',
-      'transition', 'oncomplete', 'flash', 'bounce', 'pulse'
-    ];
+    // Ignorar funciones seguras comunes de formato o traducción
+    const safeFunctions = /^(t|i18n|translate|formatCurrency|formatNumber|class|style|typeof)$/i;
+    if (safeFunctions.test(funcName)) return false;
     
-    return animKeywords.some(key => context.includes(key));
-    */
+    try {
+      const fullFileContent = readFileSync(filePath, 'utf-8');
+      const scriptStart = fullFileContent.indexOf('<script');
+      const scriptEnd = fullFileContent.indexOf('</script>');
+      if (scriptStart === -1 || scriptEnd === -1) return false;
+      const scriptContent = fullFileContent.substring(scriptStart, scriptEnd);
+      
+      const funcDefRegex = new RegExp(`(?:const|let|var|function)\\s+${funcName}\\b[^;]*`, 'g');
+      const defMatch = funcDefRegex.exec(scriptContent);
+      if (!defMatch) return false;
+      
+      const defStart = defMatch.index;
+      const defContext = scriptContent.substring(defStart, Math.min(scriptContent.length, defStart + 1000));
+      
+      const isHeavy = /\b(pokemonDataProvider|DBRouter|sqlite|supabase|getGuardianData|\.map\(|\.filter\(|\.reduce\()/i.test(defContext);
+      return isHeavy;
+    } catch (_e) {
+      return false;
+    }
   },
   fixable: false
 };
@@ -185,7 +254,7 @@ const zIndexAudit: AuditRule = {
 };
 
 const config = {
-  viewport, gpuGaps, legacyDates, nodePrefix, esmExtensions, tsIgnore, timersPromises, explicitResource, fileLength, zIndexAudit, manualAnimations, manualTimersFrontend
+  viewport, gpuGaps, legacyDates, nodePrefix, esmExtensions, tsIgnore, timersPromises, explicitResource, fileLength, zIndexAudit, manualAnimations, manualTimersFrontend, jsonStringifyInWatch, intersectionObserverRoot, dbInTemplates, functionCallsInTemplates
 };
 
 async function getFilesToAudit(dir: string): Promise<string[]> {
@@ -211,7 +280,7 @@ async function auditFile(filePath: string, fix: boolean): Promise<Violation[]> {
     const tag = 'script';
     const block = isVue ? extractBlock(content, tag) : content;
     if (block) {
-      const allRules: AuditRule[] = [legacyDates, nodePrefix, esmExtensions, tsIgnore, timersPromises, explicitResource];
+      const allRules: AuditRule[] = [legacyDates, nodePrefix, esmExtensions, tsIgnore, timersPromises, explicitResource, config.jsonStringifyInWatch, config.intersectionObserverRoot];
       let rules: AuditRule[] = allRules;
       
       // EXCEPCIÓN: Ignorar 'legacyDates' en scripts de utilidad/migración
@@ -252,6 +321,14 @@ async function auditFile(filePath: string, fix: boolean): Promise<Violation[]> {
     const block = extractBlock(content, tag);
     if (block) {
       runRules(filePath, block, [config.manualTimersFrontend], violations, fix, findBlockStart(content, tag));
+    }
+  }
+
+  if (isVue) {
+    const tag = 'template';
+    const block = extractBlock(content, tag);
+    if (block) {
+      runRules(filePath, block, [config.dbInTemplates, config.functionCallsInTemplates], violations, fix, findBlockStart(content, tag));
     }
   }
 
@@ -319,7 +396,7 @@ function runRules(filePath: string, content: string, rules: AuditRule[], violati
       // 1. Specialized checks
       if (rule.check) {
         if (rule === config.gpuGaps || rule === config.manualTimersFrontend) {
-          if (!rule.check(content, match)) continue;
+          if (!rule.check(content, match, filePath)) continue;
         } else {
           if (!rule.check(filePath, match)) continue;
         }
@@ -341,7 +418,7 @@ function runRules(filePath: string, content: string, rules: AuditRule[], violati
         const execMatch = rule.regex.exec(content);
         if (rule.check) {
           const pass = (rule === config.gpuGaps) 
-            ? rule.check(content, execMatch!) 
+            ? rule.check(content, execMatch!, filePath) 
             : rule.check(filePath, execMatch!);
           if (!pass) return match;
         }

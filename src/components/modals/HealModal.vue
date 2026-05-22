@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { gsap } from 'gsap'
 import { useShopStore } from '@/stores/shop'
 import { useGameStore } from '@/stores/game'
@@ -71,6 +71,106 @@ function getPokemonFX(p: Pokemon | null) {
 function needsHealing(p: Pokemon | null) {
   if (!p) return false
   return p.hp < p.maxHp || p.status || p.moves?.some((m) => m && m.pp < (m.maxPP || 0))
+}
+
+const slotRefs = ref<HTMLElement[]>([])
+const auraRefs = ref<HTMLElement[]>([])
+const spriteRefs = ref<HTMLElement[]>([])
+
+const activeTweensMap = new Map<number, gsap.core.Tween[]>()
+
+function clearSlotAnimations(index: number) {
+  const tweens = activeTweensMap.get(index)
+  if (tweens) {
+    tweens.forEach(t => t.kill())
+    activeTweensMap.delete(index)
+  }
+  const slot = slotRefs.value[index]
+  const aura = auraRefs.value[index]
+  const sprite = spriteRefs.value[index]
+  if (slot) gsap.set(slot, { scale: 1, clearProps: 'scale,background,borderColor,boxShadow' })
+  if (aura) gsap.set(aura, { scale: 1, opacity: 0.3, clearProps: 'scale,opacity' })
+  if (sprite) gsap.set(sprite, { scale: 1, rotation: 0, filter: 'grayscale(0) brightness(1)', clearProps: 'scale,rotation,filter' })
+}
+
+function startSlotAnimations(index: number) {
+  clearSlotAnimations(index)
+
+  const slot = slotRefs.value[index]
+  const aura = auraRefs.value[index]
+  const sprite = spriteRefs.value[index]
+
+  if (!slot) return
+
+  const tweens: gsap.core.Tween[] = []
+
+  tweens.push(gsap.to(slot, {
+    scale: 1.1,
+    backgroundColor: 'rgba(34, 197, 94, 0.08)',
+    borderColor: 'rgba(34, 197, 94, 0.4)',
+    boxShadow: '0 0 20px rgba(34, 197, 94, 0.2)',
+    duration: 0.5,
+    ease: 'power3.out'
+  }))
+
+  if (aura) {
+    gsap.set(aura, { opacity: 0.6 })
+    tweens.push(gsap.to(aura, {
+      scale: 1.2,
+      opacity: 0.7,
+      duration: 0.75,
+      yoyo: true,
+      repeat: -1,
+      ease: 'sine.inOut'
+    }))
+  }
+
+  if (sprite) {
+    gsap.set(sprite, {
+      filter: 'brightness(1.2) drop-shadow(0 0 10px rgba(255, 255, 255, 0.6))'
+    })
+    tweens.push(gsap.to(sprite, {
+      scale: 1.15,
+      rotation: 3,
+      duration: 0.6,
+      yoyo: true,
+      repeat: -1,
+      ease: 'sine.inOut'
+    }))
+  }
+
+  activeTweensMap.set(index, tweens)
+}
+
+watch([isHealing, healedCount], ([newIsHealing, newHealedCount]) => {
+  if (!newIsHealing) {
+    for (let i = 0; i < team.value.length; i++) {
+      clearSlotAnimations(i)
+    }
+  } else {
+    for (let i = 0; i < team.value.length; i++) {
+      if (i < newHealedCount) {
+        if (!activeTweensMap.has(i)) {
+          startSlotAnimations(i)
+        }
+      } else {
+        clearSlotAnimations(i)
+      }
+    }
+  }
+}, { immediate: true })
+
+function onBadgeEnter(el: Element, done: () => void) {
+  const tl = gsap.timeline({ onComplete: done })
+  tl.fromTo(el, 
+    { scale: 0, rotation: -20 }, 
+    { scale: 1.2, rotation: 10, duration: 0.28, ease: 'power1.out' }
+  ).to(el, {
+    scale: 1,
+    rotation: 0,
+    duration: 0.12,
+    ease: 'power1.inOut'
+  })
 }
 
 async function handleHeal() {
@@ -152,6 +252,9 @@ onMounted(() => {
 
 onUnmounted(() => {
   gsap.killTweensOf(handleHeal)
+  for (let i = 0; i < team.value.length; i++) {
+    clearSlotAnimations(i)
+  }
 })
 </script>
 
@@ -180,6 +283,7 @@ onUnmounted(() => {
           <div 
             v-for="(p, i) in team" 
             :key="p?.uid || i" 
+            :ref="(el) => { if (el) slotRefs[i] = el as HTMLElement }"
             class="slot"
             :class="{ 
               'active': !!p, 
@@ -201,17 +305,26 @@ onUnmounted(() => {
               :vibrant="true"
             >
               <!-- Indicator for injured/PP-depleted Pokemon -->
-              <div 
-                v-if="needsHealing(p)" 
-                class="needs-heal-badge"
+              <Transition
+                :css="false"
+                @enter="onBadgeEnter"
               >
-                🚑
-              </div>
+                <div 
+                  v-if="needsHealing(p)" 
+                  class="needs-heal-badge"
+                >
+                  🚑
+                </div>
+              </Transition>
 
               <!-- Type Glow Aura -->
-              <div class="type-aura" />
+              <div 
+                :ref="(el) => { if (el) auraRefs[i] = el as HTMLElement }"
+                class="type-aura" 
+              />
               
               <img 
+                :ref="(el) => { if (el) spriteRefs[i] = el as HTMLElement }"
                 :src="getAssetUrl(ASSET_TYPES.POKEMON, p.id || p.name, { isShiny: p.isShiny })" 
                 class="poke-sprite"
                 :alt="p.name"
@@ -297,231 +410,5 @@ onUnmounted(() => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/tools" as *;
-
-.heal-modal-inner {
-  padding: 8px 0;
-  text-align: center;
-}
-
-.subtitle {
-  color: Rgba(255, 255, 255, 0.4);
-  font-size: 8px;
-  margin-bottom: 12px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  @include pixelated;
-}
-
-.team-slots {
-  display: flex;
-  justify-content: center;
-  gap: 12px;
-  flex-wrap: wrap;
-  padding: 10px 10px 20px 10px;
-}
-
-.slot {
-  width: 90px;
-  height: 90px;
-  background: Rgba(255, 255, 255, 0.03);
-  border: 2px solid Rgba(255, 255, 255, 0.08);
-  border-radius: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-  overflow: visible; // Critical for PVSpriteFX particles
-  
-  &.empty {
-    opacity: 0.3;
-    border-style: dashed;
-  }
-  
-  &.active {
-    opacity: 1;
-    background: Rgba(255, 255, 255, 0.06);
-  }
-
-  &.healing {
-    background: Rgba(34, 197, 94, 0.08);
-    border-color: Rgba(34, 197, 94, 0.4);
-    box-shadow: 0 0 20px Rgba(34, 197, 94, 0.2);
-    transform: Scale(1.1);
-  }
-}
-
-.poke-sprite {
-  width: 72px;
-  height: 72px;
-  @include sprite-render;
-  will-change: transform, filter, opacity;
-  filter: Grayscale(0.8) Brightness(0.5);
-  transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  position: relative;
-  z-index: calc(var(--z-base) + 2);
-}
-
-.type-aura {
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: Radial-Gradient(circle, var(--type-color) 0%, transparent 70%);
-  opacity: 0.15;
-  transition: opacity 0.3s;
-  z-index: calc(var(--z-base) + 1);
-}
-
-.needs-heal-badge {
-  position: absolute;
-  top: 4px;
-  right: 0px;
-  font-size: 14px;
-  z-index: var(--z-low);
-  will-change: transform, filter, opacity;
-  filter: Drop-Shadow(0 0 5px Rgba(239, 68, 68, 0.5));
-  animation: bounce-in 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-@keyframes bounce-in {
-  0% { transform: Scale(0) Rotate(-20deg); }
-  70% { transform: Scale(1.2) Rotate(10deg); }
-  100% { transform: Scale(1) Rotate(0deg); }
-}
-
-.slot.active {
-  .type-aura { opacity: 0.3; }
-  .poke-sprite { will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  filter: Grayscale(0) Brightness(1); }
-}
-
-.slot.healing {
-  background: Rgba(34, 197, 94, 0.05);
-  border-color: Rgba(34, 197, 94, 0.3);
-  
-  .type-aura {
-    opacity: 0.6;
-    animation: pulse-aura 1.5s infinite;
-  }
-  
-  .poke-sprite {
-    will-change: transform, filter, opacity;
-  filter: Brightness(1.2) Drop-Shadow(0 0 10px Rgba(255, 255, 255, 0.6));
-    animation: pulse-sprite 0.6s infinite alternate;
-  }
-}
-
-.slot.is-shiny {
-  border-color: Rgba(255, 214, 10, 0.4);
-  box-shadow: 0 0 20px Rgba(255, 214, 10, 0.1);
-}
-
-.slot.is-premium-tier {
-  @include pokemon-card-premium-tier;
-}
-
-@keyframes pulse-aura {
-  0%, 100% { transform: Scale(1); opacity: 0.4; }
-  50% { transform: Scale(1.2); opacity: 0.7; }
-}
-
-@keyframes pulse-sprite {
-  from { transform: Scale(1) Rotate(0deg); }
-  to { transform: Scale(1.15) Rotate(3deg); }
-}
-
-.progress-container {
-  margin-top: 10px;
-}
-
-.progress-bar {
-  height: 6px;
-  background: Rgba(255, 255, 255, 0.05);
-  border-radius: 3px;
-  overflow: hidden;
-  margin-bottom: 12px;
-  border: 1px solid Rgba(255, 255, 255, 0.05);
-}
-
-.progress-fill {
-  height: 100%;
-  background: Linear-Gradient(90deg, Rgba(34, 197, 94, 1), Rgba(74, 222, 128, 1));
-  box-shadow: 0 0 15px Rgba(34, 197, 94, 0.5);
-  transition: width 0.1s linear;
-}
-
-.healing-text {
-  color: Rgba(34, 197, 94, 1);
-  font-size: 7px;
-  letter-spacing: 1px;
-  @include pixelated;
-}
-
-.cost-notice {
-  background: Rgba(239, 68, 68, 0.05);
-  padding: 16px;
-  border-radius: 16px;
-  border: 1px solid Rgba(239, 68, 68, 0.2);
-  @include shell;
-  
-  .cost-label {
-    font-size: 7px;
-    color: Rgba(239, 68, 68, 1);
-    margin-bottom: 12px;
-    @include pixelated;
-    letter-spacing: 1px;
-  }
-  
-  .price-tag {
-    font-size: 20px;
-    color: var(--white);
-    text-shadow: 0 0 15px Rgba(255, 255, 255, 0.2);
-    @include pixelated;
-  }
-  
-  .rocket-surcharge {
-    display: block;
-    margin-top: 10px;
-    color: Rgba(239, 68, 68, 0.6);
-    font-size: 7px;
-    @include pixelated;
-    text-transform: uppercase;
-  }
-}
-
-.heal-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.btn-heal-primary {
-  @include btn-vicio-danger;
-  width: 100%;
-}
-
-.btn-cancel-secondary {
-  background: Rgba(255, 255, 255, 0.03);
-  color: Rgba(255, 255, 255, 0.4);
-  border: 1px solid Rgba(255, 255, 255, 0.1);
-  padding: 12px;
-  border-radius: 12px;
-  font-size: 8px;
-  cursor: pointer;
-  transition: all 0.2s;
-  @include pixelated;
-  
-  &:hover:not(:disabled) {
-    background: Rgba(255, 255, 255, 0.08);
-    color: var(--white);
-    border-color: Rgba(255, 255, 255, 0.2);
-  }
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-}
+@use "@/styles/components/heal-modal";
 </style>

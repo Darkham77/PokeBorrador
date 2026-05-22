@@ -3,21 +3,20 @@
  * HatchAnimationModal
  * Standardized full-screen animation for egg hatching.
  */
-import { ref, onMounted, nextTick } from 'vue'
+import { ref, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import { gsap } from 'gsap'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import BaseModal from '@/components/common/BaseModal.vue'
 import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
 
 import type { Pokemon, PokemonEgg } from '@/types/pokemon'
+import { useGameStore } from '@/stores/game'
 
 interface Props {
   show?: boolean
   pokemon?: Pokemon | null
   egg?: PokemonEgg | null
 }
-
-import { useGameStore } from '@/stores/game'
 
 const props = withDefaults(defineProps<Props>(), {
   show: false,
@@ -35,8 +34,12 @@ const showParticles = ref(false)
 const resultPokemon = ref<Pokemon | null>(null)
 const particlesRef = ref<HTMLElement[]>([])
 
-// GSAP Timelines
+// GSAP References
 let idleTimeline: gsap.core.Timeline | null = null
+let glowTween: gsap.core.Tween | null = null
+let hintTween: gsap.core.Tween | null = null
+let shimmerTween: gsap.core.Timeline | gsap.core.Tween | null = null
+const activeTweens: gsap.core.Tween[] = []
 
 const prepareResult = async () => {
   if (props.pokemon) {
@@ -72,17 +75,68 @@ const getSprite = (id: string | number, isShiny: boolean) => {
   return getAssetUrl(ASSET_TYPES.POKEMON, id, { isShiny })
 }
 
+const cleanupAnimations = () => {
+  if (idleTimeline) {
+    idleTimeline.kill()
+    idleTimeline = null
+  }
+  if (glowTween) {
+    glowTween.kill()
+    glowTween = null
+  }
+  if (hintTween) {
+    hintTween.kill()
+    hintTween = null
+  }
+  if (shimmerTween) {
+    shimmerTween.kill()
+    shimmerTween = null
+  }
+  activeTweens.forEach(t => t.kill())
+  activeTweens.length = 0
+}
+
+const initAnimations = async () => {
+  cleanupAnimations()
+  
+  stage.value = 'egg'
+  showParticles.value = false
+  resultPokemon.value = null
+  
+  await prepareResult()
+  await nextTick()
+  
+  // Start idle animation
+  idleTimeline = gsap.timeline({ repeat: -1 })
+  idleTimeline.to('.egg-sprite', {
+    y: -15,
+    duration: 1,
+    yoyo: true,
+    ease: 'sine.inOut'
+  })
+
+  glowTween = gsap.fromTo('.glow-ring', 
+    { scale: 0.8, opacity: 0.8 },
+    { scale: 1.5, opacity: 0, duration: 2, repeat: -1, ease: 'none' }
+  )
+
+  hintTween = gsap.fromTo('.hatch-hint',
+    { opacity: 0.3 },
+    { opacity: 0.8, duration: 0.75, repeat: -1, yoyo: true, ease: 'sine.inOut' }
+  )
+}
+
 const handleEggClick = () => {
   if (stage.value !== 'egg') return
   
   stage.value = 'crack'
-  if (idleTimeline) idleTimeline.kill()
+  cleanupAnimations()
 
   const win = window as unknown as { playSound?: (s: string) => void }
   win.playSound?.('egg_crack')
   
   // 1. Shake animation
-  gsap.to('.egg-sprite', {
+  const shakeTween = gsap.to('.egg-sprite', {
     x: 'random(-5, 5)',
     rotation: 'random(-5, 5)',
     duration: 0.1,
@@ -90,6 +144,7 @@ const handleEggClick = () => {
     yoyo: true,
     ease: 'none'
   })
+  activeTweens.push(shakeTween)
 
   // 2. Final reveal
   gsap.delayedCall(1.2, () => {
@@ -99,14 +154,22 @@ const handleEggClick = () => {
     
     nextTick(() => {
       // Reveal animations
-      gsap.from('.reveal-visual', {
+      const revealTween = gsap.from('.reveal-visual', {
         opacity: 0,
         scale: 0.9,
         duration: 0.8,
         ease: 'power2.out'
       })
+      activeTweens.push(revealTween)
 
-      gsap.to('.shimmer-bg', {
+      // Pop-in animation for pokemon sprite
+      const popTween = gsap.fromTo('.pokemon-sprite',
+        { scale: 0 },
+        { scale: 1.2, duration: 0.5, ease: 'back.out(1.7)' }
+      )
+      activeTweens.push(popTween)
+
+      shimmerTween = gsap.to('.shimmer-bg', {
         rotation: 360,
         duration: 10,
         repeat: -1,
@@ -118,7 +181,7 @@ const handleEggClick = () => {
         if (!el) return
         const tx = (Math.random() - 0.5) * 300
         const ty = (Math.random() - 0.5) * 300
-        gsap.fromTo(el,
+        const pTween = gsap.fromTo(el,
           { x: 0, y: 0, opacity: 1, scale: 1 },
           {
             x: tx,
@@ -130,35 +193,28 @@ const handleEggClick = () => {
             ease: 'power2.out'
           }
         )
+        activeTweens.push(pTween)
       })
     })
   })
 }
 
-onMounted(async () => {
-  if (props.show) {
-    await prepareResult()
-    
-    // Start idle animation
-    idleTimeline = gsap.timeline({ repeat: -1 })
-    
-    idleTimeline.to('.egg-sprite', {
-      y: -15,
-      duration: 1,
-      yoyo: true,
-      ease: 'sine.inOut'
-    })
-
-    gsap.fromTo('.glow-ring', 
-      { scale: 0.8, opacity: 0.8 },
-      { scale: 1.5, opacity: 0, duration: 2, repeat: -1, ease: 'none' }
-    )
-
-    gsap.fromTo('.hatch-hint',
-      { opacity: 0.3 },
-      { opacity: 0.8, duration: 0.75, repeat: -1, yoyo: true, ease: 'sine.inOut' }
-    )
+watch(() => props.show, (newShow) => {
+  if (newShow) {
+    initAnimations()
+  } else {
+    cleanupAnimations()
   }
+})
+
+onMounted(() => {
+  if (props.show) {
+    initAnimations()
+  }
+})
+
+onUnmounted(() => {
+  cleanupAnimations()
 })
 </script>
 
@@ -262,189 +318,5 @@ onMounted(async () => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
-@use "@/styles/core/tools" as *;
-
-.hatch-immersion-container {
-  position: relative;
-  width: 100%;
-  height: 100dvh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  background: Radial-Gradient(circle at center, Rgba(30, 41, 59, 0.4) 0%, transparent 100%);
-  @include gpu-layer;
-}
-
-.egg-visual {
-  position: relative;
-  @include gpu-layer;
-
-  .egg-sprite {
-    width: 140px;
-    @include sprite-render;
-    will-change: transform, filter, opacity;
-  filter: Drop-Shadow(0 0 20px Rgba(255,255,255,0.2));
-    animation: bounce 2s infinite ease-in-out;
-  }
-  .egg-sprite.shake {
-    animation: shake 0.2s infinite;
-  }
-}
-
-.glow-ring {
-  position: absolute;
-  top: 50%; left: 50%;
-  transform: Translate(-50%, -50%);
-  width: 200px; height: 200px;
-  border: 2px solid Rgba(255,255,255,0.1);
-  border-radius: 50%;
-  animation: pulse-ring 2s infinite;
-  @include gpu-layer;
-}
-
-.reveal-visual {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
-  animation: fade-in 0.8s ease-out forwards;
-  @include gpu-layer;
-}
-
-.pokemon-display {
-  position: relative;
-  text-align: center;
-  .pokemon-sprite {
-    width: 180px;
-    @include sprite-render;
-    will-change: transform, filter, opacity;
-  filter: Drop-Shadow(0 0 30px var(--yellow));
-    animation: pop-in 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  }
-
-
-
-}
-
-.splash-text {
-  @include pixelated;
-  font-size: 14px;
-  color: $white;
-  margin-top: 30px;
-  text-shadow: 0 4px 8px Rgba(0,0,0,0.5);
-  @include pixelated;
-}
-
-.stats-card {
-  background: Rgba(255, 255, 255, 0.05);
-  border: 1px solid Rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  padding: 15px 20px;
-  margin-top: 25px;
-  width: 320px;
-  max-width: 90%;
-  @include gpu-layer;
-
-  .stat-row {
-    display: flex; justify-content: space-between; margin-bottom: 8px;
-    &:last-child { margin-bottom: 0; }
-    .label { color: var(--gray); font-size: 11px; }
-    .val { color: var(--yellow); font-size: 11px; font-weight: bold; }
-  }
-}
-
-/* Animations */
-@keyframes bounce {
-  0%, 100% { transform: Translatey(0); }
-  50% { transform: Translatey(-15px); }
-}
-
-@keyframes shake {
-  0% { transform: Translatex(0); }
-  25% { transform: Translatex(-5px); }
-  75% { transform: Translatex(5px); }
-}
-
-@keyframes pulse-ring {
-  0% { transform: Translate(-50%, -50%) Scale(0.8); opacity: 0.8; }
-  100% { transform: Translate(-50%, -50%) Scale(1.5); opacity: 0; }
-}
-
-@keyframes fade-in {
-  from { opacity: 0; transform: Scale(0.9); }
-  to { opacity: 1; transform: Scale(1.0); }
-}
-
-@keyframes pop-in {
-  from { transform: Scale(0); }
-  to { transform: Scale(1.2); }
-}
-
-/* Particles */
-.particles-field {
-  position: absolute;
-  top: 50%; left: 50%;
-  pointer-events: none;
-}
-
-.particle {
-  position: absolute;
-  width: 6px; height: 6px;
-  background: var(--yellow);
-  border-radius: 50%;
-  animation: explode 1.5s ease-out forwards;
-  animation-delay: var(--delay);
-  @include gpu-layer;
-}
-
-@keyframes explode {
-  0% { transform: Translate(0, 0); opacity: 1; }
-  100% { transform: Translate(var(--x), var(--y)); opacity: 0; }
-}
-
-.shimmer-bg {
-  position: absolute;
-  inset: -100px;
-  background: Radial-Gradient(circle at center, Rgba(255,217,61,0.1) 0%, transparent 70%);
-  animation: rotate 10s linear infinite;
-  @include gpu-layer;
-}
-
-@keyframes rotate {
-  from { transform: Rotate(0deg); }
-  to { transform: Rotate(360deg); }
-}
-
-.hatch-hint {
-  position: absolute;
-  bottom: -60px;
-  left: 50%;
-  transform: Translatex(-50%);
-  @include pixelated;
-  font-size: 10px;
-  color: Rgba(255, 255, 255, 0.6);
-  white-space: nowrap;
-}
-
-:deep(.base-modal-card) {
-  background: transparent !important;
-  border: none !important;
-  box-shadow: none !important;
-  overflow: visible !important;
-  max-height: none !important;
-}
-
-:deep(.base-modal-content) {
-  overflow: visible !important;
-  padding: 0 !important;
-}
-
-:deep(.base-modal-overlay) {
-  -webkit-will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  backdrop-filter: Blur(10px);
-  @include gpu-layer;
-}
+@use "@/styles/components/hatch-animation-modal";
 </style>

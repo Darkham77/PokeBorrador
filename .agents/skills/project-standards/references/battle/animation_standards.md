@@ -4,6 +4,8 @@ To guarantee a premium and "alive" visual experience, all cyclical animations mu
 
 > [!IMPORTANT] **GSAP MANDATE**: All animations (UI, battle, transitions) MUST use GSAP. Manual CSS `@keyframes` or transitions on `transform/opacity` are FORBIDDEN as they conflict with GSAP's engine and cause layout jank or "stuck" frames.
 >
+> [!IMPORTANT] **ZERO-TIMER POLICY**: It is STRICTLY FORBIDDEN to use native browser timers (`setTimeout`, `setInterval`) or reactive numeric steps to wait for animations or coordinate visual flows in frontend views and component logic. This causes synchronization loss and performance glitches. Always use GSAP's deterministic orchestration: `.then()` promises, `await` on tweens/timelines, `gsap.delayedCall()`, or GSAP lifecycle callbacks (`onComplete`, `onStart`).
+>
 > [!TIP] **Organic Entrance**: Use small random delays (`delay: Math.random() * 0.4`) when animating elements in a grid to avoid a rigid, "robotic" simultaneous appearance.
 >
 > [!CAUTION] **Target Validation**: ALWAYS verify that GSAP targets exist and are rendered (`length > 0` or `offsetParent !== null`) before creating tweens. Console warnings for missing targets in high-frequency loops (e.g. Map renders) will cause severe performance degradation and visual stutters.

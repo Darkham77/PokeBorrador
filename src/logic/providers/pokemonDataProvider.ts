@@ -151,6 +151,25 @@ export const pokemonDataProvider = {
     },
 
     /**
+     * Resuelve el nombre visible de una especie a partir de su ID de base de datos,
+     * saneando códigos internos o sufijos evolutivos (como eevee_thunder).
+     */
+    resolveSpeciesName(id: string): string {
+        if (!id) return '';
+        const normalizedId = String(id).toLowerCase();
+        if (normalizedId.startsWith('eevee_')) {
+            return 'Eevee';
+        }
+        const dbData = _pokemonDb.value[normalizedId];
+        if (dbData) {
+            return dbData.name;
+        }
+        // Fallback: capitalizar y quitar sufijos
+        const base = normalizedId.split('_')[0] || normalizedId;
+        return base.charAt(0).toUpperCase() + base.slice(1);
+    },
+
+    /**
      * Método para actualizar la base de datos (útil para futura integración con BD real)
      */
     updatePokemonDb(newDb: Record<string, PokemonBaseData>) {

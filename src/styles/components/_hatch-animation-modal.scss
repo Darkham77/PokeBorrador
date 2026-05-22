@@ -1,0 +1,154 @@
+@use "@/styles/core/_mixins" as *;
+@use "@/styles/core/variables" as *;
+
+
+.hatch-immersion-container {
+  position: relative;
+  width: 100%;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at center, Rgba(30, 41, 59, 0.4) 0%, transparent 100%);
+  @include gpu-layer;
+}
+
+.egg-visual {
+  position: relative;
+  @include gpu-layer;
+
+  .egg-sprite {
+    width: 140px;
+    @include sprite-render;
+    will-change: transform, filter, opacity;
+    filter: Drop-Shadow(0 0 20px Rgba(255, 255, 255, 0.2));
+  }
+}
+
+.glow-ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: Translate(-50%, -50%);
+  width: 200px;
+  height: 200px;
+  border: 2px solid Rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  @include gpu-layer;
+}
+
+.reveal-visual {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  @include gpu-layer;
+}
+
+.pokemon-display {
+  position: relative;
+  text-align: center;
+
+  .pokemon-sprite {
+    width: 180px;
+    @include sprite-render;
+    will-change: transform, filter, opacity;
+    filter: Drop-Shadow(0 0 30px var(--yellow));
+  }
+}
+
+.splash-text {
+  @include pixelated;
+  font-size: 14px;
+  color: $white;
+  margin-top: 30px;
+  text-shadow: 0 4px 8px Rgba(0, 0, 0, 0.5);
+}
+
+.stats-card {
+  background: Rgba(255, 255, 255, 0.05);
+  border: 1px solid Rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 15px 20px;
+  margin-top: 25px;
+  width: 320px;
+  max-width: 90%;
+  @include gpu-layer;
+
+  .stat-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+
+    .label {
+      color: var(--gray);
+      font-size: 11px;
+    }
+
+    .val {
+      color: var(--yellow);
+      font-size: 11px;
+      font-weight: bold;
+    }
+  }
+}
+
+/* Particles */
+.particles-field {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  pointer-events: none;
+}
+
+.particle {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background: var(--yellow);
+  border-radius: 50%;
+  @include gpu-layer;
+}
+
+.shimmer-bg {
+  position: absolute;
+  inset: -100px;
+  background: radial-gradient(circle at center, Rgba(255, 217, 61, 0.1) 0%, transparent 70%);
+  @include gpu-layer;
+}
+
+.hatch-hint {
+  position: absolute;
+  bottom: -60px;
+  left: 50%;
+  transform: Translatex(-50%);
+  @include pixelated;
+  font-size: 10px;
+  color: Rgba(255, 255, 255, 0.6);
+  white-space: nowrap;
+}
+
+:deep(.base-modal-card) {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  overflow: visible !important;
+  max-height: none !important;
+}
+
+:deep(.base-modal-content) {
+  overflow: visible !important;
+  padding: 0 !important;
+}
+
+:deep(.base-modal-overlay) {
+  -webkit-will-change: transform, filter, opacity;
+  will-change: transform, filter, opacity;
+  backdrop-filter: Blur(10px);
+  @include gpu-layer;
+}

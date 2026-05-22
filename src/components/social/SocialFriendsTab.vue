@@ -57,7 +57,6 @@ function animateCards() {
     if (!listRef.value) return
     const cards = listRef.value.querySelectorAll('.friend-card')
     if (cards.length > 0) {
-      listRef.value.classList.add('tab-mounting')
       gsap.killTweensOf(cards)
       gsap.from(cards, {
         opacity: 0,
@@ -66,10 +65,7 @@ function animateCards() {
         duration: 0.45,
         stagger: 0.06,
         ease: 'back.out(1.2)',
-        clearProps: 'all',
-        onComplete: () => {
-          listRef.value?.classList.remove('tab-mounting')
-        }
+        clearProps: 'all'
       })
     }
   })
@@ -213,144 +209,5 @@ defineEmits<{
 </template>
 
 <style scoped lang="scss">
-.friends-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-
-  &.tab-mounting .friend-card {
-    transition: none !important;
-  }
-}
-
-.friend-card {
-  background: Rgba(255, 255, 255, 0.03);
-  border: 1px solid Rgba(255, 255, 255, 0.05);
-  border-radius: 16px;
-  padding: 12px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  transition: all 0.2s;
-
-  &:hover {
-    background: Rgba(255, 255, 255, 0.05);
-    border-color: Rgba(199, 125, 255, 0.2);
-    transform: Translatex(4px);
-  }
-}
-
-.friend-main {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-}
-
-
-
-.friend-info {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-
-  .name {
-    font-size: 14px;
-    font-weight: 700;
-    color: Rgba(241, 245, 249, 1);
-    line-height: 1.2;
-  }
-  
-  .meta {
-    font-size: 11px;
-    color: Rgba(255, 255, 255, 0.5);
-    line-height: 1.2;
-  }
-}
-
-.friend-actions {
-  display: flex;
-  gap: 6px;
-
-  .action-btn {
-    width: 32px;
-    height: 32px;
-    border-radius: 10px;
-    border: none;
-    cursor: pointer;
-    font-size: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s;
-    background: Rgba(255, 255, 255, 0.05);
-    color: var(--white);
-    position: relative;
-
-    &:hover:not(:disabled) { transform: Scale(1.1); }
-    &:disabled {
-      opacity: 0.35;
-      cursor: not-allowed;
-      background: Rgba(255, 255, 255, 0.02);
-      color: Rgba(255, 255, 255, 0.3);
-    }
-    &.chat:hover { background: Rgba(59, 130, 246, 0.2); color: Rgba(96, 165, 250, 1); }
-    &.trade:hover { background: Rgba(34, 197, 94, 0.2); color: Rgba(74, 222, 128, 1); }
-    &.battle:hover { background: Rgba(168, 85, 247, 0.2); color: Rgba(192, 132, 252, 1); }
-    &.remove:hover { 
-      @include btn-vicio-danger;
-      width: 32px; height: 32px; // Keep same size
-      font-size: 14px;
-    }
-
-    .chat-badge {
-      position: absolute;
-      top: -5px;
-      right: -5px;
-      background: Rgba(239, 68, 68, 1);
-      color: white;
-      border-radius: 50%;
-      min-width: 14px;
-      height: 14px;
-      font-size: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: sans-serif;
-      border: 1px solid Rgba(0, 0, 0, 0.3);
-      box-shadow: 0 2px 4px Rgba(0, 0, 0, 0.3);
-      padding: 0 3px;
-    }
-  }
-}
-
-.empty-state {
-  text-align: center;
-  padding: 40px 20px;
-  color: Rgba(148, 163, 184, 1);
-  .icon { font-size: 40px; margin-bottom: 15px; opacity: 0.5; }
-  p { font-size: 14px; margin-bottom: 20px; }
-}
-
-.clickable-avatar {
-  cursor: pointer;
-  transition: transform 0.2s, filter 0.2s;
-
-  &:hover {
-    transform: Scale(1.1);
-    filter: Brightness(1.2);
-  }
-}
-
-.clickable-username {
-  cursor: pointer;
-  transition: opacity 0.2s;
-
-  &:hover {
-    text-decoration: underline;
-    opacity: 0.85;
-  }
-}
+@use "@/styles/components/social-friends-tab";
 </style>
-
-
-

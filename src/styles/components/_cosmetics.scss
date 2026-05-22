@@ -152,7 +152,7 @@
     position: absolute;
     inset: 0;
     border-radius: inherit;
-    z-index: -1;
+    z-index: calc(var(--z-base) - 1);
     
     &::before {
       content: '';
@@ -160,7 +160,7 @@
       inset: $actual-inset-before;
       border-radius: $border-radius !important; /* Circle for circle, Square for square! */
       background: conic-gradient($gradient-colors);
-      z-index: -2;
+      z-index: calc(var(--z-base) - 2);
     }
     &::after {
       content: '';
@@ -172,7 +172,7 @@
       }
       border-radius: calc(#{$border-radius} - #{$offset}) !important;
       background: #1e293b; /* Match standard avatar background color perfectly! */
-      z-index: -1;
+      z-index: calc(var(--z-base) - 1);
     }
   }
 }
@@ -432,7 +432,7 @@ $element-types: (
   border-radius: 50%;
   border: 2px solid #101822;
   background: #ef4444; // Default offline red
-  z-index: 5;
+  z-index: calc(var(--z-base) + 5);
   box-shadow: 0 0 4px Rgba(239, 68, 68, 0.4);
 
   &.online {

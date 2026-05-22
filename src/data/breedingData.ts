@@ -55,10 +55,10 @@ export const EGG_GROUPS = {
 };
 
 export const COMPAT_TEXT = {
-  0: { label: '❌ Incompatibles', color: '#ff5252' },
-  1: { label: '😐 Poco interés', color: '#ffb142' },
-  2: { label: '🙂 Compatibles', color: '#33d9b2' },
-  3: { label: '❤️ Muy compatibles', color: '#ff793f' },
+  0: { label: '❌ Incompatible', color: '#ff5252' },
+  1: { label: '😐 Baja', color: '#ffb142' },
+  2: { label: '🙂 Buena', color: '#33d9b2' },
+  3: { label: '❤️ Excelente', color: '#ff793f' },
 };
 
 export const EGG_GROUP_TRANSLATIONS = {

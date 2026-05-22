@@ -70,6 +70,13 @@ watch(() => chat.value?.isCollapsed, (collapsed) => {
   }
 }, { immediate: true });
 
+const onMessageEnter = (el: Element, done: () => void) => {
+  gsap.fromTo(el,
+    { scale: 0.9, opacity: 0 },
+    { scale: 1.0, opacity: 1, duration: 0.25, ease: 'back.out(1.7)', onComplete: done }
+  )
+}
+
 onMounted(() => {
   nextTick(scrollToBottom);
   inputField.value?.focus();
@@ -104,37 +111,42 @@ onMounted(() => {
           No hay mensajes aún...
         </div>
         
-        <div 
-          v-for="(msg, idx) in chat?.messages" 
-          :key="idx" 
-          class="message-row animate-pop"
+        <TransitionGroup
+          :css="false"
+          @enter="onMessageEnter"
         >
-          <TrainerAvatar 
-            :player-class="chatStore.profileCosmetics[msg.senderId || '']?.player_class || msg.player_class" 
-            :level="chatStore.profileCosmetics[msg.senderId || '']?.trainer_level || msg.trainer_level" 
-            :avatar-style="chatStore.profileCosmetics[msg.senderId || '']?.avatar_style || undefined"
-            :size="32"
-            class="clickable-avatar"
-            @click.stop="openTrainerProfile(msg.senderId)"
-          />
-          <div
-            class="message-content"
-            :class="{ 'is-me': msg.senderId === authStore.user?.id }"
+          <div 
+            v-for="(msg, idx) in chat?.messages" 
+            :key="idx" 
+            class="message-row"
           >
-            <div class="message-meta">
-              <span
-                v-gsap-nick="chatStore.profileCosmetics[msg.senderId || '']?.nick_style || 'normal'"
-                class="username clickable-username"
-                :class="chatStore.profileCosmetics[msg.senderId || '']?.nick_style || 'normal'"
-                @click.stop="openTrainerProfile(msg.senderId)"
-              >{{ chatStore.profileCosmetics[msg.senderId || '']?.username || msg.senderName }}</span>
-              <span class="time">{{ formatTime(msg.timestamp) }}</span>
+            <TrainerAvatar 
+              :player-class="chatStore.profileCosmetics[msg.senderId || '']?.player_class || msg.player_class" 
+              :level="chatStore.profileCosmetics[msg.senderId || '']?.trainer_level || msg.trainer_level" 
+              :avatar-style="chatStore.profileCosmetics[msg.senderId || '']?.avatar_style || undefined"
+              :size="32"
+              class="clickable-avatar"
+              @click.stop="openTrainerProfile(msg.senderId)"
+            />
+            <div
+              class="message-content"
+              :class="{ 'is-me': msg.senderId === authStore.user?.id }"
+            >
+              <div class="message-meta">
+                <span
+                  v-gsap-nick="chatStore.profileCosmetics[msg.senderId || '']?.nick_style || 'normal'"
+                  class="username clickable-username"
+                  :class="chatStore.profileCosmetics[msg.senderId || '']?.nick_style || 'normal'"
+                  @click.stop="openTrainerProfile(msg.senderId)"
+                >{{ chatStore.profileCosmetics[msg.senderId || '']?.username || msg.senderName }}</span>
+                <span class="time">{{ formatTime(msg.timestamp) }}</span>
+              </div>
+              <p class="text">
+                {{ msg.text }}
+              </p>
             </div>
-            <p class="text">
-              {{ msg.text }}
-            </p>
           </div>
-        </div>
+        </TransitionGroup>
       </div>
 
       <footer class="chat-footer">
@@ -265,7 +277,6 @@ onMounted(() => {
     color: var(--white);
     font-size: 13px;
     outline: none;
-    transition: border-color 0.2s;
 
     &:focus { border-color: var(--purple-light); }
   }
@@ -278,7 +289,6 @@ onMounted(() => {
     height: 38px;
     color: var(--white);
     cursor: pointer;
-    transition: all 0.2s;
 
     &:hover:not(:disabled) { background: Rgba(157, 78, 221, 1); transform: Scale(1.05); }
     &:disabled { opacity: 0.3; }
@@ -292,18 +302,8 @@ onMounted(() => {
   }
 }
 
-.animate-pop {
-  animation: pop 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-}
-
-@keyframes pop {
-  0% { transform: Scale(0.9); opacity: 0; }
-  100% { transform: Scale(1.0); opacity: 1; }
-}
-
 .clickable-avatar {
   cursor: pointer;
-  transition: transform 0.2s, filter 0.2s;
 
   &:hover {
     transform: Scale(1.1);
@@ -313,7 +313,6 @@ onMounted(() => {
 
 .clickable-username {
   cursor: pointer;
-  transition: opacity 0.2s;
 
   &:hover {
     text-decoration: underline;

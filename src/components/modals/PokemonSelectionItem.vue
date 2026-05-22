@@ -12,6 +12,7 @@ import { useUIStore } from '@/stores/ui'
 import { useBreedingStore } from '@/stores/breeding'
 import { COMPAT_TEXT } from '@/logic/breeding/breedingData'
 import { checkCompatibility } from '@/logic/breeding/breedingEngine'
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 
 import type { Pokemon } from '@/types/pokemon'
 
@@ -61,6 +62,11 @@ const listCompatibility = computed(() => {
   const otherPoke = otherSlot?.pokemon
   if (!otherPoke) return null
   return checkCompatibility(props.item.pokemon, otherPoke)
+})
+
+const eggSpeciesName = computed(() => {
+  if (!listCompatibility.value?.eggSpecies) return ''
+  return pokemonDataProvider.resolveSpeciesName(listCompatibility.value.eggSpecies)
 })
 
 function handleOpenDetail() {
@@ -200,13 +206,13 @@ function handleClick() {
         <div class="compat-status">
           <template v-if="listCompatibility">
             <span :style="{ color: (COMPAT_TEXT as Record<number, { color: string, label: string }>)[listCompatibility.level]?.color || '#ff668f' }">
-              COMPATIBILIDAD: {{ (COMPAT_TEXT as Record<number, { color: string, label: string }>)[listCompatibility.level]?.label || 'Desconocida' }}
+              AFINIDAD: {{ (COMPAT_TEXT as Record<number, { color: string, label: string }>)[listCompatibility.level]?.label || 'Desconocida' }}
             </span>
             <span
               v-if="listCompatibility.eggSpecies"
               class="egg-hint"
             >
-              🥚 {{ listCompatibility.eggSpecies }}
+              🥚 {{ eggSpeciesName }}
             </span>
           </template>
           <template v-else>

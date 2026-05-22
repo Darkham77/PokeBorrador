@@ -1,0 +1,217 @@
+@use "@/styles/core/tools" as *;
+@use "@/styles/core/mixins" as *;
+
+.rank-card {
+  background: Rgba(255, 255, 255, 0.02);
+  padding: 20px;
+  border-radius: 16px;
+  border: 1px solid Rgba(255, 255, 255, 0.05);
+  box-shadow: inset 0 0 12px Rgba(255, 255, 255, 0.02);
+}
+
+.tier-display {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.tier-icon-wrapper {
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  filter: Drop-Shadow(0 0 15px Rgba(255, 215, 0, 0.2));
+  animation: float 4s ease-in-out infinite;
+}
+
+.tier-image {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.tier-emoji-badge {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at 35% 35%, Rgba(255, 255, 255, 0.05) 0%, Rgba(0, 0, 0, 0.4) 100%), Rgba(255, 255, 255, 0.01);
+  border: 2px solid var(--tier-color);
+  box-shadow: 
+    0 0 20px color-mix(in srgb, var(--tier-color) 40%, transparent), 
+    inset 0 0 12px color-mix(in srgb, var(--tier-color) 20%, transparent);
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 50%;
+    background: linear-gradient(to bottom, Rgba(255, 255, 255, 0.08), transparent);
+    border-radius: 36px 36px 0 0;
+  }
+
+  .emoji {
+    font-size: 34px;
+    line-height: 1;
+    filter: Drop-Shadow(0 2px 4px Rgba(0, 0, 0, 0.5)) Drop-Shadow(0 0 8px color-mix(in srgb, var(--tier-color) 50%, transparent));
+    user-select: none;
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    display: inline-block;
+  }
+
+  &:hover .emoji {
+    transform: Scale(1.15) Rotate(5deg);
+  }
+}
+
+@keyframes float {
+  0%, 100% { transform: Translatey(0); }
+  50% { transform: Translatey(-6px); }
+}
+
+.tier-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  h2 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 900;
+    letter-spacing: -0.5px;
+    text-shadow: 0 0 15px Rgba(255, 255, 255, 0.1);
+  }
+}
+
+.tier-label {
+  font-size: 8px;
+  @include pixelated;
+  color: Rgba(148, 163, 184, 0.4);
+}
+
+.elo-badge {
+  align-self: flex-start;
+  display: inline-block;
+  background: Rgba(255, 255, 255, 0.05);
+  border: 1px solid Rgba(255, 255, 255, 0.08);
+  padding: 4px 10px;
+  border-radius: 8px;
+  @include pixelated;
+  font-size: 8px;
+  color: var(--yellow);
+  text-shadow: 0 0 8px Rgba(255, 214, 10, 0.3);
+}
+
+.arena-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border-top: 1px solid Rgba(255, 255, 255, 0.05);
+  padding-top: 16px;
+  gap: 8px;
+}
+
+.stat-item { 
+  text-align: center;
+  background: Rgba(0, 0, 0, 0.15);
+  border: 1px solid Rgba(255, 255, 255, 0.02);
+  padding: 8px 4px;
+  border-radius: 10px;
+
+  .val { 
+    display: block; 
+    font-size: 14px; 
+    font-weight: bold; 
+    color: var(--white);
+  }
+  .lab { 
+    font-size: 8px; 
+    color: Rgba(148, 163, 184, 0.5); 
+    font-weight: bold; 
+    @include pixelated;
+    margin-top: 2px;
+  }
+}
+
+.passive-defense {
+  background: Rgba(0, 0, 0, 0.2);
+  padding: 16px;
+  border-radius: 16px;
+  border: 1px solid Rgba(255, 255, 255, 0.05);
+}
+
+.def-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  gap: 12px;
+
+  .title-group {
+    h3 { 
+      margin: 0; 
+      font-size: 11px; 
+      font-weight: 800; 
+      color: var(--white);
+    }
+    p { 
+      margin: 4px 0 0; 
+      font-size: 9px; 
+      color: Rgba(148, 163, 184, 0.5); 
+    }
+  }
+}
+
+.toggle-btn {
+  padding: 8px 16px;
+  border-radius: 10px;
+  border: 1px solid Rgba(255, 255, 255, 0.08);
+  @include pixelated;
+  font-size: 7px;
+  cursor: pointer;
+  background: Rgba(255, 255, 255, 0.03);
+  color: Rgba(148, 163, 184, 0.6);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &:hover {
+    background: Rgba(255, 255, 255, 0.08);
+    color: var(--white);
+    border-color: Rgba(255, 255, 255, 0.15);
+  }
+
+  &.active {
+    background: Rgba(34, 197, 94, 0.15);
+    color: Rgba(74, 222, 128, 1);
+    border-color: Rgba(34, 197, 94, 0.3);
+    box-shadow: 0 0 15px Rgba(34, 197, 94, 0.15);
+  }
+}
+
+.def-status { 
+  font-size: 8px; 
+  padding: 8px 12px; 
+  border-radius: 8px; 
+  text-align: center; 
+  font-weight: bold; 
+  @include pixelated;
+
+  &.active { 
+    background: Rgba(34, 197, 94, 0.08); 
+    color: Rgba(74, 222, 128, 1); 
+    border: 1px solid Rgba(34, 197, 94, 0.15);
+  }
+  &.inactive { 
+    background: Rgba(239, 68, 68, 0.08); 
+    color: Rgba(248, 113, 113, 1); 
+    border: 1px solid Rgba(239, 68, 68, 0.15);
+  }
+}

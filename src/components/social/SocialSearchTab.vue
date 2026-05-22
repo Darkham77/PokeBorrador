@@ -50,6 +50,35 @@ function animateCards() {
   })
 }
 
+const loaderTween = ref<gsap.core.Tween | null>(null)
+
+watch(() => socialStore.searchLoading, (loading) => {
+  nextTick(() => {
+    if (loading) {
+      if (!loaderTween.value) {
+        loaderTween.value = gsap.to('.loader-mini', {
+          rotation: 360,
+          duration: 0.8,
+          repeat: -1,
+          ease: 'none'
+        })
+      }
+    } else {
+      if (loaderTween.value) {
+        loaderTween.value.kill()
+        loaderTween.value = null
+      }
+    }
+  })
+}, { immediate: true })
+
+import { onUnmounted } from 'vue'
+onUnmounted(() => {
+  if (loaderTween.value) {
+    loaderTween.value.kill()
+  }
+})
+
 onMounted(() => {
   animateCards()
 })
@@ -240,7 +269,6 @@ watch(() => socialStore.searchResults, () => {
   font-size: 11px;
   outline: none;
   cursor: pointer;
-  transition: all 0.2s ease-in-out;
   appearance: none;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='rgba%28199, 125, 255, 0.6%29' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
   background-repeat: no-repeat;
@@ -274,7 +302,6 @@ watch(() => socialStore.searchResults, () => {
     color: var(--white);
     font-size: 14px;
     outline: none;
-    transition: all 0.2s;
 
     &:focus { 
       border-color: var(--purple-light); 
@@ -292,7 +319,6 @@ watch(() => socialStore.searchResults, () => {
     border: 2px solid Rgba(255, 255, 255, 0.1);
     border-top-color: var(--purple-light);
     border-radius: 50%;
-    animation: spin 0.8s linear infinite;
   }
 }
 
@@ -300,10 +326,6 @@ watch(() => socialStore.searchResults, () => {
   display: flex;
   flex-direction: column;
   gap: 12px;
-
-  &.tab-mounting .search-card {
-    transition: none !important;
-  }
 }
 
 .search-card {
@@ -314,7 +336,6 @@ watch(() => socialStore.searchResults, () => {
   display: flex;
   align-items: center;
   gap: 12px;
-  transition: all 0.2s;
 
   &:hover {
     background: Rgba(255, 255, 255, 0.05);
@@ -345,7 +366,6 @@ watch(() => socialStore.searchResults, () => {
 
 .clickable-avatar {
   cursor: pointer;
-  transition: transform 0.2s, filter 0.2s;
 
   &:hover {
     transform: Scale(1.1);
@@ -355,15 +375,12 @@ watch(() => socialStore.searchResults, () => {
 
 .clickable-username {
   cursor: pointer;
-  transition: opacity 0.2s;
 
   &:hover {
     text-decoration: underline;
     opacity: 0.85;
   }
 }
-
-
 
 .status-badge {
   display: inline-flex;
@@ -399,7 +416,5 @@ watch(() => socialStore.searchResults, () => {
   color: Rgba(148, 163, 184, 0.7);
   font-size: 14px;
 }
-
-@keyframes spin { to { transform: Translatey(-50%) Rotate(360deg); } }
 </style>
 

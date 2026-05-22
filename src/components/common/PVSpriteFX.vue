@@ -120,7 +120,8 @@ const refreshPersistentFX = (retryCount = 0) => {
   if (!spriteLayerRef.value) return
   const target = spriteLayerRef.value.querySelector('img')
   if (!target && retryCount < 3) {
-    setTimeout(() => refreshPersistentFX(retryCount + 1), 100)
+    const t = gsap.delayedCall(0.1, () => refreshPersistentFX(retryCount + 1))
+    activeTweens.push(t)
     return
   }
   activeTweens.forEach(t => t.kill())

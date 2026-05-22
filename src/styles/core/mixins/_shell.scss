@@ -60,11 +60,11 @@
     border-color 0.3s ease;
   
   position: relative;
-  z-index: 1;
+  z-index: calc(var(--z-base) + 1);
 
   &:hover:not(.locked):not(.disabled):not(.is-unseen) {
     transform: Translatey($elevation) Scale($scale);
-    z-index: 15;
+    z-index: calc(var(--z-base) + 15);
 
     @if $variant == 'full' {
       border-color: #{$color} !important;

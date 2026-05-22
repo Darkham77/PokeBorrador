@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, inject, type Ref } from 'vue'
+import { computed, inject, ref, watch, onUnmounted, type Ref } from 'vue'
+import { gsap } from 'gsap'
 import { getPokemonTier } from '@/logic/pokemonUtils'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
@@ -89,6 +90,82 @@ const bst = computed(() => {
 const isPremiumTier = computed(() => props.pokemon && (tierInfo.value.tier === 'S' || tierInfo.value.tier === 'S+'))
 
 const tierColorRgb = computed(() => tierInfo.value?.rgb || '30, 41, 59')
+
+// --- ANIMACIONES DE GSAP ---
+const animatedHpRatio = ref(hpRatio.value)
+watch(hpRatio, (newVal) => {
+  gsap.to(animatedHpRatio, {
+    value: newVal,
+    duration: 0.3,
+    ease: 'power2.out'
+  })
+}, { immediate: true })
+
+const selectedBorderRef = ref<HTMLElement | null>(null)
+const checkBoxRef = ref<HTMLElement | null>(null)
+let borderPulseTween: gsap.core.Tween | null = null
+let checkBoxTween: gsap.core.Tween | null = null
+
+const startBorderPulse = () => {
+  if (borderPulseTween) borderPulseTween.kill()
+  if (!selectedBorderRef.value) return
+  borderPulseTween = gsap.fromTo(selectedBorderRef.value, 
+    { opacity: 0.3 }, 
+    { 
+      opacity: 0.8, 
+      duration: 1.0, 
+      yoyo: true, 
+      repeat: -1, 
+      ease: 'sine.inOut' 
+    }
+  )
+}
+
+const stopBorderPulse = () => {
+  if (borderPulseTween) {
+    borderPulseTween.kill()
+    borderPulseTween = null
+  }
+}
+
+const animateCheckBox = (isSelected: boolean) => {
+  if (checkBoxTween) checkBoxTween.kill()
+  if (!checkBoxRef.value) return
+  
+  if (isSelected) {
+    checkBoxTween = gsap.fromTo(checkBoxRef.value,
+      { scale: 1, boxShadow: 'none' },
+      { 
+        scale: 1.1, 
+        boxShadow: '0 0 15px rgba(239, 68, 68, 0.5)', 
+        duration: 0.2, 
+        ease: 'back.out(1.7)' 
+      }
+    )
+  } else {
+    checkBoxTween = gsap.to(checkBoxRef.value, {
+      scale: 1,
+      boxShadow: 'none',
+      duration: 0.2,
+      ease: 'power2.out'
+    })
+  }
+}
+
+watch(() => props.isSelected, (newVal) => {
+  if (newVal) {
+    gsap.delayedCall(0, startBorderPulse)
+    gsap.delayedCall(0, () => animateCheckBox(true))
+  } else {
+    stopBorderPulse()
+    gsap.delayedCall(0, () => animateCheckBox(false))
+  }
+}, { immediate: true })
+
+onUnmounted(() => {
+  stopBorderPulse()
+  if (checkBoxTween) checkBoxTween.kill()
+})
 </script>
 
 <template>
@@ -212,7 +289,7 @@ const tierColorRgb = computed(() => tierInfo.value?.rgb || '30, 41, 59')
         <div
           class="hp-fill"
           :style="{ 
-            width: (hpRatio * 100) + '%', 
+            width: (animatedHpRatio * 100) + '%', 
             background: statColor 
           }"
         />
@@ -225,12 +302,20 @@ const tierColorRgb = computed(() => tierInfo.value?.rgb || '30, 41, 59')
       class="selection-check"
     >
       <div
+        ref="checkBoxRef"
         class="check-box"
         :class="{ checked: props.isSelected }"
       >
         <span v-if="props.isSelected">✓</span>
       </div>
     </div>
+
+    <!-- Borde de selección animado con GSAP -->
+    <div
+      v-if="props.isSelected"
+      ref="selectedBorderRef"
+      class="selected-border-pulse"
+    />
   </div>
 </template>
 
@@ -284,6 +369,15 @@ const tierColorRgb = computed(() => tierInfo.value?.rgb || '30, 41, 59')
         box-shadow: none !important;
       }
     }
+  }
+
+  .selected-border-pulse {
+    position: absolute;
+    inset: 0;
+    border: 2px solid var(--red);
+    border-radius: inherit;
+    pointer-events: none;
+    z-index: var(--z-low);
   }
 }
 </style>

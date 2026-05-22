@@ -918,7 +918,6 @@ const onBallLeave = (el: Element, done: () => void) => {
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   @include pixelated;
   overflow: visible;
 
@@ -988,15 +987,6 @@ const onBallLeave = (el: Element, done: () => void) => {
 }
 
 .sprite-animator {
-  // Las transiciones de transform deben estar desactivadas por defecto
-  // para evitar que el posicionamiento inicial parezca un salto.
-  transition: opacity 0.8s ease-in-out, transform 0s; 
-  
-  &.is-jumping { 
-    animation: pokemon-jump 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; 
-    transition: none !important; 
-    z-index: calc(var(--z-map-spawns) + 10); 
-  }
   position: relative;
   z-index: var(--z-map-spawns);
   width: 100%;
@@ -1015,7 +1005,6 @@ const onBallLeave = (el: Element, done: () => void) => {
   &.is-technical-hidden {
     opacity: 0 !important;
     pointer-events: none;
-    transition: none !important;
   }
 }
 
@@ -1035,18 +1024,13 @@ const onBallLeave = (el: Element, done: () => void) => {
 }
 
 .energy-catching {
-  animation: energy-catch 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
   transform-origin: 50% var(--shadow-y, 90%);
   pointer-events: none;
 }
 
 .energy-releasing {
-  animation: energy-release 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards !important;
   transform-origin: 50% var(--shadow-y, 90%);
 }
-
-.ball-fade-enter-active, .ball-fade-leave-active { transition: opacity 0.3s ease-in-out !important; }
-.ball-fade-enter-from, .ball-fade-leave-to { opacity: 0 !important; }
 
 .trapped-pokeball {
   position: absolute;
@@ -1137,14 +1121,8 @@ const onBallLeave = (el: Element, done: () => void) => {
     .spike-item {
       font-size: calc(var(--fx-scale, 1) * 28px);
       display: inline-block;
-      animation: 
-        ground-pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards,
-        ground-item-jump 2s infinite ease-in-out 0.4s;
       will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 2px 2px Rgba(0,0,0,0.3));
-      
-      &:nth-child(2) { animation-delay: 0.1s, 0.7s; }
-      &:nth-child(3) { animation-delay: 0.2s, 1s; }
     }
   }
   
@@ -1153,21 +1131,8 @@ const onBallLeave = (el: Element, done: () => void) => {
       font-size: calc(var(--fx-scale, 1) * 42px);
       display: inline-block;
       transform: Translatey(5px);
-      animation: 
-        ground-grow 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards,
-        ground-item-pulse 3s infinite ease-in-out 0.6s;
     }
   }
-}
-
-.ground-fx-pop-enter-active {
-  animation: ground-pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-}
-
-.ground-fx-pop-leave-active {
-  transition: opacity 0.3s ease, transform 0.3s ease;
-  opacity: 0;
-  transform: Scale(0);
 }
 
 .stat-arrows-container {

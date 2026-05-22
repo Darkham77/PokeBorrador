@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
+import { gsap } from 'gsap'
 import BaseModal from '@/components/common/BaseModal.vue'
 import { useEventStore } from '@/stores/events'
 import { useModalStore } from '@/stores/modals'
@@ -13,7 +14,7 @@ interface Props {
   show?: boolean
 }
 
-withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<Props>(), {
   show: false
 })
 
@@ -30,18 +31,55 @@ const handleResize = () => { isSmallScreen.value = window.innerWidth <= 950 }
 useWindowListener('resize', handleResize)
 
 const now = ref(Temporal.Now.instant().epochMilliseconds)
-let timerId: ReturnType<typeof setInterval> | null = null
+let timerTween: gsap.core.Tween | null = null
+
+const updateTime = () => {
+  now.value = Temporal.Now.instant().epochMilliseconds
+  timerTween = gsap.delayedCall(1, updateTime)
+}
 
 onMounted(() => {
   eventStore.fetchEvents()
   eventStore.checkPendingAwards()
-  timerId = setInterval(() => {
-    now.value = Temporal.Now.instant().epochMilliseconds
-  }, 1000)
+  updateTime()
 })
 
+const activeBadgesCtx = ref<gsap.Context | null>(null)
+
+const startBadgeAnimations = () => {
+  if (activeBadgesCtx.value) {
+    activeBadgesCtx.value.revert()
+    activeBadgesCtx.value = null
+  }
+
+  // Prevent GSAP warnings if there are no active badges in the DOM
+  if (!document.querySelector('.active-badge')) return
+
+  activeBadgesCtx.value = gsap.context(() => {
+    gsap.fromTo(".active-badge", 
+      { boxShadow: "0 0 0 0 rgba(74, 222, 128, 0.4)" },
+      { 
+        boxShadow: "0 0 0 6px rgba(74, 222, 128, 0)",
+        duration: 1.4,
+        repeat: -1,
+        ease: "sine.out"
+      }
+    )
+  })
+}
+
+watch([activeEvents, () => props.show], async () => {
+  await nextTick()
+  startBadgeAnimations()
+}, { immediate: true })
+
 onUnmounted(() => {
-  if (timerId) clearInterval(timerId)
+  if (timerTween) {
+    timerTween.kill()
+  }
+  if (activeBadgesCtx.value) {
+    activeBadgesCtx.value.revert()
+  }
 })
 
 const formatTime = (isoTime: string) => {
@@ -104,7 +142,7 @@ const openParticipationModal = (event: GameEvent) => {
           :disabled="isLoading"
           @click.stop="eventStore.fetchEvents()"
         >
-          {{ isLoading ? '...' : 'REFRESCAR' }}
+          REFRESCAR
         </button>
       </div>
     </template>
@@ -141,10 +179,10 @@ const openParticipationModal = (event: GameEvent) => {
       <!-- ACTIVE EVENTS GRID -->
       <div class="events-grid">
         <div
-          v-if="activeEvents.length === 0 && !isLoading"
+          v-if="activeEvents.length === 0"
           class="no-events"
         >
-          No hay eventos activos en este momento.
+          {{ isLoading ? 'Cargando eventos...' : 'No hay eventos activos en este momento.' }}
         </div>
 
         <div
@@ -227,7 +265,7 @@ const openParticipationModal = (event: GameEvent) => {
 
   .title-icon {
     font-size: 24px;
-    filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.4));
+    filter: Drop-Shadow(0 0 8px Rgba(255, 215, 0, 0.4));
   }
 
   .title-text-wrap {
@@ -262,16 +300,21 @@ const openParticipationModal = (event: GameEvent) => {
   font-size: 8px;
   padding: 8px 12px;
   border-radius: 6px;
-  border: 2px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.05);
+  border: 2px solid Rgba(255, 255, 255, 0.1);
+  background: Rgba(255, 255, 255, 0.05);
   color: var(--white);
   cursor: pointer;
-  transition: all 0.2s;
+  transition/* */: all 0.2s;
 
   &:hover:not(:disabled) {
-    background: rgba(255, 255, 255, 0.12);
-    transform: translateY(-2px);
-    border-color: rgba(255, 255, 255, 0.2);
+    background: Rgba(255, 255, 255, 0.12);
+    transform: Translatey(-2px);
+    border-color: Rgba(255, 255, 255, 0.2);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 
   &.refresh {
@@ -295,14 +338,14 @@ const openParticipationModal = (event: GameEvent) => {
 
 /* REWARD BOX */
 .awards-box {
-  background: rgba(34, 197, 94, 0.05);
-  border: 1px solid rgba(34, 197, 94, 0.2);
+  background: Rgba(34, 197, 94, 0.05);
+  border: 1px solid Rgba(34, 197, 94, 0.2);
   border-radius: 12px;
   padding: 4px;
   margin-bottom: 20px;
 
   .box-inner {
-    background: rgba(0, 0, 0, 0.3);
+    background: Rgba(0, 0, 0, 0.3);
     border-radius: 8px;
     padding: 12px;
   }
@@ -318,8 +361,8 @@ const openParticipationModal = (event: GameEvent) => {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    background: Rgba(255, 255, 255, 0.03);
+    border: 1px solid Rgba(255, 255, 255, 0.05);
     padding: 10px 14px;
     border-radius: 8px;
     margin-bottom: 8px;
@@ -355,16 +398,16 @@ const openParticipationModal = (event: GameEvent) => {
 
 .event-card {
   background: $card-dark;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid Rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  transition: border-color 0.2s, transform 0.2s;
+  transition/* */: border-color 0.2s, transform 0.2s;
 
   &:hover {
-    border-color: rgba(255, 215, 0, 0.5);
-    transform: translateY(-2px);
+    border-color: Rgba(255, 215, 0, 0.5);
+    transform: Translatey(-2px);
   }
 
   .banner-box {
@@ -392,13 +435,13 @@ const openParticipationModal = (event: GameEvent) => {
     .event-id-icon {
       width: 40px;
       height: 40px;
-      background: rgba(0, 0, 0, 0.3);
+      background: Rgba(0, 0, 0, 0.3);
       border-radius: 8px;
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 20px;
-      border: 1px solid rgba(255, 255, 255, 0.05);
+      border: 1px solid Rgba(255, 255, 255, 0.05);
     }
 
     .event-main-meta {
@@ -418,7 +461,7 @@ const openParticipationModal = (event: GameEvent) => {
       font-size: 7px;
       padding: 2px 6px;
       border-radius: 4px;
-      background: rgba(59, 130, 246, 0.1);
+      background: Rgba(59, 130, 246, 0.1);
       color: var(--blue-bright);
       font-weight: bold;
       width: fit-content;
@@ -457,28 +500,21 @@ const openParticipationModal = (event: GameEvent) => {
       font-size: 8px;
       padding: 6px 12px;
       border-radius: 6px;
-      background: rgba(74, 222, 128, 0.1);
+      background: Rgba(74, 222, 128, 0.1);
       border: 1px solid var(--green-bright);
       color: var(--green-bright);
-      text-shadow: 0 0 8px rgba(74, 222, 128, 0.3);
-      animation: pulseActive 2s infinite;
+      text-shadow: 0 0 8px Rgba(74, 222, 128, 0.3);
     }
   }
-}
-
-@keyframes pulseActive {
-  0% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.4); }
-  70% { box-shadow: 0 0 0 6px rgba(74, 222, 128, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0); }
 }
 
 .no-events {
   grid-column: 1 / -1;
   text-align: center;
   padding: 40px;
-  background: rgba(255, 255, 255, 0.02);
+  background: Rgba(255, 255, 255, 0.02);
   border-radius: 12px;
-  border: 1px dashed rgba(255, 255, 255, 0.1);
+  border: 1px dashed Rgba(255, 255, 255, 0.1);
   color: var(--gray);
   font-style: italic;
   font-size: 12px;

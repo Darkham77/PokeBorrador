@@ -76,7 +76,7 @@
     opacity: 0.5; // More present in base state
     transition: opacity 0.3s;
     pointer-events: none;
-    z-index: 1;
+    z-index: calc(var(--z-base) + 1);
   }
 
   &:hover:not(.locked) {
@@ -165,7 +165,7 @@
     border: 1px solid var(--tier-color, #ffd60a);
     opacity: 0.6;
     pointer-events: none;
-    z-index: 5;
+    z-index: calc(var(--z-base) + 5);
     box-sizing: border-box;
     @include gpu-layer;
     box-shadow: Inset 0 0 10px color-mix(in srgb, var(--tier-color, #ffd60a), transparent 70%);
