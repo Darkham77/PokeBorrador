@@ -140,3 +140,23 @@ To test functions that depend on probability (e.g., capture success, move accura
 - **Pattern**: Use `vi.spyOn(Math, 'random')` to force specific outcomes.
 - **Verification**: Calculate the exact threshold required for success (e.g., `b / 65535` for capture) and mock values slightly above and below that threshold to verify both paths (success/failure).
 - **Cleanup**: Always use `vi.restoreAllMocks()` or `spy.mockRestore()` to avoid polluting subsequent tests.
+
+### 5. Deep Reactivity in Debug Command Mutations
+
+When writing debug commands or console helpers that mutate nested properties of reactive Vue 3 refs (e.g., `ctx.activeBattle.value.player.hp = ...`), the changes might not be programmatically detected by Vue's reactivity system. To guarantee immediate visual update across UI observers and components, you MUST force deep reactivity updates by spreading the nested object and re-assigning the root ref:
+```ts
+active.player = { ...active.player }
+ctx.activeBattle.value = { ...active }
+```
+This triggers reactive watchers and updates HUD components instantly.
+
+### 6. window.__VITE_DEBUG__ Sanitization in Unit Tests
+
+In testing environments that define the `window` object (such as `jsdom` with Vitest), stores will automatically register their console debug commands on `window.__VITE_DEBUG__` during instantiation. To prevent test isolation leakage, memory leaks, or side effects across different test specs, you MUST explicitly clean up the global debug object in a `beforeEach` hook:
+```ts
+beforeEach(() => {
+  delete (window as any).__VITE_DEBUG__
+})
+```
+This guarantees a clean global state for each test run.
+
