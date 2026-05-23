@@ -94,6 +94,10 @@ Every new asset category MUST be explicitly registered in:
 2. The `getAssetUrl` switch-case logic to handle path resolution.
 3. The `AssetPipeline` (`convert_assets.ts`) to ensure it's mirrored from `_raw-assets`.
 
+#### Dynamic Family Scanning
+
+When organizing and grouping environmental assets (e.g., bushes, trees, rocks) by prefix in conversion scripts, use an inclusive threshold `count >= 1` (rather than `count > 1`). This ensures single-asset categories (like `bushsnow` or `grassflower`) are properly registered as families, preventing type declaration compile-time errors in dynamic environments.
+
 #### Folder Architecture
 
 To process raw images, place them in the root `_raw-assets/` directory:

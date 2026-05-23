@@ -252,3 +252,9 @@ To ensure atmospheric variety and geographical consistency, all maps must be tag
 1. **Inheritance**: A map can have multiple tags (e.g., `isCave` + `isMountain`). In such cases, the MOST restrictive rule applies (e.g., `isCave` bans `snow` even if `isMountain` favors it).
 2. **Probability Bias**: Regional weather tables MUST prioritize "Favored Weather" weights during the corresponding favored season (e.g., `isMountain` during Winter).
 3. **Data Source**: Tags are defined in `src/data/maps.ts`.
+
+---
+
+## 13. Targeted Biome Tinting System
+
+When applying CSS atmospheric filters (like hue-rotate, sepia, or brightness overlays) to biomes (e.g., cave brown, desert yellow), restrict the tint class only to specific asset families (e.g., `rock` or `tree`) instead of applying them globally to all scenery. This prevents visual saturation or excessive darkening, and keeps other colorful elements (like crystals or snow grass) clean and vibrant.
