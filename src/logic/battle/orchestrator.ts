@@ -297,14 +297,12 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
     }
   }
 
-  const tagsStr = mapTags.join(', ') || 'ninguno'
   const startMsg = isTrainer || isGym 
     ? `¡${trainerName} te desafía!` 
     : `¡Un ${initialEnemy.name} salvaje apareció!`
   
   ctx.addLog(startMsg, 'log-info', initialEnemy)
-  ctx.addLog(`[Entorno] Bioma: ${activeBiome} (Etiquetas: ${tagsStr})`, 'log-info')
-  logger.info('Orchestrator', `Combat started in biome: ${activeBiome} (Tags: ${tagsStr}) for location: ${locationId}`)
+  logger.info('Orchestrator', `Combat started in biome: ${activeBiome} (Tags: ${mapTags.join(', ') || 'ninguno'}) for location: ${locationId}`)
   
   handleEntryAbilities(initialPlayer, initialEnemy, ctx.playerStages.value, ctx.enemyStages.value, ctx.addLog)
   

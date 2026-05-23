@@ -68,7 +68,8 @@ async function processFile(filePath: string) {
       }
     }
 
-    const isMap = filePath.toLowerCase().includes('maps/');
+    const pathSegments = relPath.split(path.sep);
+    const isMap = pathSegments.includes('maps');
 
     if (isMap) {
       image = image.resize({ width: 600, kernel: 'nearest' });
