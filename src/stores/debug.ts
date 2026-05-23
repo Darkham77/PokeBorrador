@@ -109,6 +109,8 @@ export const useDebugStore = defineStore('debug', () => {
       delete window.__VITE_DEBUG__
       return
     }
+    // Preserve existing sub-objects (e.g. .battle from setupBattleDebug).
+    // Only add/update the flat tool commands without wiping the whole object.
     if (!window.__VITE_DEBUG__) window.__VITE_DEBUG__ = {}
 
     tools.value.forEach(tool => {

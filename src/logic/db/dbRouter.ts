@@ -277,7 +277,7 @@ export class DBRouter {
 
       if (name === 'save_game_trusted') {
         const { p_save_data, p_expected_id } = params as { p_save_data: Record<string, unknown>, p_expected_id: string | null };
-        const newSaveId = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 11) + Date.now().toString(36);
+        const newSaveId = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 11) + Temporal.Now.instant().epochMilliseconds.toString(36);
         
         // 1. Verificar concurrencia (optimistic lock)
         if (p_expected_id) {
@@ -590,7 +590,7 @@ export class DBRouter {
           [JSON.stringify(senderSave), userId]
         );
 
-        const generatedId = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 11) + Date.now().toString(36);
+        const generatedId = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 11) + Temporal.Now.instant().epochMilliseconds.toString(36);
 
         sqliteDb.run(
           "INSERT INTO trade_offers (id, sender_id, receiver_id, offer_pokemon, offer_items, offer_money, request_pokemon, request_items, request_money, message, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')",

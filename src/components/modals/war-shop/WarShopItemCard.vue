@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
+import { gsap } from 'gsap'
 import { useShopStore } from '@/stores/shop'
 import { useWarStore } from '@/stores/war'
 import { useGameStore } from '@/stores/game'
@@ -27,6 +28,8 @@ const warStore = useWarStore()
 const gameStore = useGameStore()
 const uiStore = useUIStore()
 
+const cardRef = ref<HTMLElement | null>(null)
+
 const isUnlocked = computed(() => {
   return (gameStore.state.trainerLevel || 1) >= (props.item.unlockLv || 1)
 })
@@ -52,13 +55,100 @@ const handleImageError = (e: Event) => {
     (e.target as HTMLImageElement).style.display = 'none'
   }
 }
+
+// ── GSAP HOVER HANDLERS ──────────────────────────────────────────────────────
+
+function handleMouseEnter() {
+  if (!cardRef.value || !isUnlocked.value) return
+  
+  gsap.to(cardRef.value, {
+    y: -4,
+    borderColor: 'Rgba(239, 68, 68, 0.5)',
+    boxShadow: '0 8px 24px Rgba(239, 68, 68, 0.15)',
+    duration: 0.3,
+    ease: 'power2.out'
+  })
+
+  const glow = cardRef.value.querySelector('.glow-bg')
+  if (glow) {
+    gsap.to(glow, {
+      opacity: 1,
+      duration: 0.3,
+      ease: 'power2.out'
+    })
+  }
+
+  const img = cardRef.value.querySelector('.item-visual-box img')
+  if (img) {
+    gsap.to(img, {
+      scale: 1.1,
+      rotation: 5,
+      duration: 0.3,
+      ease: 'power2.out'
+    })
+  }
+}
+
+function handleMouseLeave() {
+  if (!cardRef.value || !isUnlocked.value) return
+
+  gsap.to(cardRef.value, {
+    y: 0,
+    borderColor: 'Rgba(239, 68, 68, 0.2)',
+    boxShadow: 'none',
+    duration: 0.3,
+    ease: 'power2.out'
+  })
+
+  const glow = cardRef.value.querySelector('.glow-bg')
+  if (glow) {
+    gsap.to(glow, {
+      opacity: 0,
+      duration: 0.3,
+      ease: 'power2.out'
+    })
+  }
+
+  const img = cardRef.value.querySelector('.item-visual-box img')
+  if (img) {
+    gsap.to(img, {
+      scale: 1,
+      rotation: 0,
+      duration: 0.3,
+      ease: 'power2.out'
+    })
+  }
+}
+
+function handleButtonEnter(e: MouseEvent) {
+  gsap.to(e.currentTarget, {
+    y: -2,
+    boxShadow: '0 6px 20px Rgba(239, 68, 68, 0.4)',
+    duration: 0.2,
+    ease: 'power2.out'
+  })
+}
+
+function handleButtonLeave(e: MouseEvent) {
+  gsap.to(e.currentTarget, {
+    y: 0,
+    boxShadow: '0 4px 12px Rgba(239, 68, 68, 0.2)',
+    duration: 0.2,
+    ease: 'power2.out'
+  })
+}
 </script>
 
 <template>
   <div 
+    ref="cardRef"
     class="war-shop-item-card"
     :class="{ locked: !isUnlocked }"
+    @mouseenter="handleMouseEnter"
+    @mouseleave="handleMouseLeave"
   >
+    <div class="glow-bg" />
+    
     <!-- Tier Tag -->
     <span
       v-if="item.tier"
@@ -107,6 +197,8 @@ const handleImageError = (e: Event) => {
         class="btn-war-buy"
         :disabled="!hasEnoughCoins"
         @click.stop="buy"
+        @mouseenter="handleButtonEnter"
+        @mouseleave="handleButtonLeave"
       >
         {{ hasEnoughCoins ? 'CANJEAR' : 'SIN MONEDAS' }}
       </button>
@@ -131,31 +223,17 @@ const handleImageError = (e: Event) => {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   overflow: hidden;
   backdrop-filter: Blur(10px);
+  will-change: transform, border-color, box-shadow;
 
-  &::before {
-    content: '';
+  .glow-bg {
     position: absolute;
     inset: 0;
     background: linear-gradient(135deg, Rgba(239, 68, 68, 0.1) 0%, transparent 100%);
     opacity: 0;
-    transition: opacity 0.3s ease;
-  }
-
-  &:hover:not(.locked) {
-    transform: Translatey(-4px);
-    border-color: Rgba(239, 68, 68, 0.5);
-    box-shadow: 0 8px 24px Rgba(239, 68, 68, 0.15);
-    
-    &::before {
-      opacity: 1;
-    }
-
-    .item-visual-box img {
-      transform: Scale(1.1) Rotate(5deg);
-    }
+    pointer-events: none;
+    will-change: opacity;
   }
 
   &.locked {
@@ -205,7 +283,7 @@ const handleImageError = (e: Event) => {
     width: 38px;
     height: 38px;
     image-rendering: pixelated;
-    transition: transform 0.3s ease;
+    will-change: transform;
   }
 }
 
@@ -287,18 +365,8 @@ const handleImageError = (e: Event) => {
   font-family: 'Press Start 2P', monospace;
   font-size: 9px;
   cursor: pointer;
-  transition: all 0.2s ease;
   box-shadow: 0 4px 12px Rgba(239, 68, 68, 0.2);
-
-  &:hover:not(:disabled) {
-    transform: Translatey(-2px);
-    box-shadow: 0 6px 20px Rgba(239, 68, 68, 0.4);
-    filter: Brightness(1.1);
-  }
-
-  &:active:not(:disabled) {
-    transform: Translatey(0);
-  }
+  will-change: transform, box-shadow;
 
   &:disabled {
     background: #1f2937;

@@ -38,6 +38,9 @@ const loadingStore = useLoadingStore()
 const route = useRoute()
 const dbIncompatible = ref(false)
 const dbVersionInfo = ref<DBCompatibilityResponse | null>(null)
+// Mutex: prevents concurrent executions of initGameSession() caused by the
+// watcher firing while onMounted's async call is still in progress.
+const isSessionInitializing = ref(false)
 const dismissedLock = computed({
   get: () => uiStore.hasDismissedSessionLock,
   set: (val) => { uiStore.hasDismissedSessionLock = val }
@@ -97,8 +100,50 @@ const loadingInfo = computed(() => {
 })
 
 const isReadyToSeeGame = computed(() => {
-  return authStore.user && loadingStore.isGateOpen
+  return authStore.user && gameStore.isReady && loadingStore.isGateOpen
 })
+
+const showLoadingOverlay = computed(() => {
+  if (dbIncompatible.value) return false
+  if (isSandboxPage.value) return false
+
+  if (isLoginPage.value) {
+    return loadingInfo.value.active
+  }
+
+  if (authStore.user) {
+    return !gameStore.isReady || !loadingStore.isGateOpen
+  }
+
+  return !loadingStore.isGateOpen
+})
+
+const initGameSession = async () => {
+  if (isSessionInitializing.value) return
+  if (authStore.user && !isLoginPage.value && !isSandboxPage.value && !gameStore.isReady) {
+    isSessionInitializing.value = true
+    try {
+      const comp = await checkDBCompatibility(gameStore.db as unknown as DBRouter)
+      if (!comp.compatible) {
+        dbIncompatible.value = true
+        dbVersionInfo.value = comp
+        return
+      }
+      
+      await gameStore.loadGame()
+      
+      if (gameStore.state.activeBattle && !gameStore.state.activeBattle.over) {
+        logger.info('App', 'Detectado combate persistente. Restaurando estado...')
+        battleStore.restoreBattle(gameStore.state.activeBattle)
+      }
+      
+      profileStore.syncProfileFromAuth(authStore.user, gameStore.state)
+      socialStore.startPresence()
+    } finally {
+      isSessionInitializing.value = false
+    }
+  }
+}
 
 onMounted(async () => {
   // 1. Init Global Error Handlers (Vue Bridge)
@@ -112,34 +157,20 @@ onMounted(async () => {
   }
   await authStore.checkSession()
 
-  // 3. Check DB Compatibility & Load Game (Omitir si estamos en login o sandbox para evitar bloqueos)
-  if (authStore.user && !isLoginPage.value && !isSandboxPage.value) {
-    const comp = await checkDBCompatibility(gameStore.db as unknown as DBRouter)
-    if (!comp.compatible) {
-      dbIncompatible.value = true
-      dbVersionInfo.value = comp
-      return // Stop initialization
-    }
-    
-    // Si la DB es compatible, cargar la partida
-    await gameStore.loadGame()
-    
-    // Restaurar combate si existe uno activo en el estado guardado
-    if (gameStore.state.activeBattle && !gameStore.state.activeBattle.over) {
-      logger.info('App', 'Detectado combate persistente. Restaurando estado...')
-      battleStore.restoreBattle(gameStore.state.activeBattle)
-    }
-    
-    // Sincronizar datos del perfil
-    profileStore.syncProfileFromAuth(authStore.user!, gameStore.state)
-    
-    // Iniciar presencia social globalmente para reportar estado online
-    socialStore.startPresence()
-  }
+  // 3. Check DB Compatibility & Load Game
+  await initGameSession()
   
   // 4. Restore & Sync Zoom Level
   uiStore.setZoom(uiStore.appZoom)
 })
+
+// Sincronizar estado de la partida reactivamente al cambiar de ruta o usuario
+watch(
+  () => [authStore.user, isLoginPage.value, isSandboxPage.value],
+  async () => {
+    await initGameSession()
+  }
+)
 
 // RE-APPLY ZOOM on login/user changes to prevent PWA resolution glitches
 watch(() => authStore.user, (newUser) => {
@@ -251,7 +282,7 @@ const onLoadingLeave = (el: Element, done: () => void) => {
         @leave="onLoadingLeave"
       >
         <div
-          v-if="!loadingStore.isGateOpen && (!isLoginPage || loadingInfo.active) && !dbIncompatible && !isSandboxPage"
+          v-if="showLoadingOverlay"
           class="loading-overlay"
           :class="{ 'global-overlay': loadingInfo.global }"
         >

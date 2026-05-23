@@ -180,44 +180,47 @@ export const useAuthStore = defineStore('auth', () => {
     const loadingStore = useLoadingStore()
     loadingStore.start('auth_action', 'Verificando credenciales...', 'Por favor espera', true)
     
-    if (supabase && typeof supabase.setMode === 'function') {
-      supabase.setMode('online')
-    }
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password })
-    if (error) throw error
-    
-    session.value = data.session
-    user.value = data.user as unknown as AuthUser
-    sessionMode.value = 'online'
-    if (supabase && typeof supabase.setMode === 'function') {
-      supabase.setMode('online')
-    }
-    
-    // Registrar sesión
-    await supabase.from('profiles').update({ current_session_id: sessionId.value }).eq('id', data.user.id)
-    
-    interface ProfileData {
-      db_version: number;
-      is_banned: boolean;
-      ban_reason: string | null;
-    }
-    const { data: profile } = await supabase.from('profiles').select('db_version, is_banned, ban_reason').eq('id', data.user.id).single() as { data: ProfileData | null }
-    
-    if (profile?.is_banned) {
-      isBanned.value = true
-      banReason.value = profile.ban_reason || 'Uso indebido de la plataforma'
-      await supabase.auth.signOut()
-      user.value = null
-      session.value = null
-      throw new Error('BAN:' + banReason.value)
-    }
+    try {
+      if (supabase && typeof supabase.setMode === 'function') {
+        supabase.setMode('online')
+      }
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+      if (error) throw error
+      
+      session.value = data.session
+      user.value = data.user as unknown as AuthUser
+      sessionMode.value = 'online'
+      if (supabase && typeof supabase.setMode === 'function') {
+        supabase.setMode('online')
+      }
+      
+      // Registrar sesión
+      await supabase.from('profiles').update({ current_session_id: sessionId.value }).eq('id', data.user.id)
+      
+      interface ProfileData {
+        db_version: number;
+        is_banned: boolean;
+        ban_reason: string | null;
+      }
+      const { data: profile } = await supabase.from('profiles').select('db_version, is_banned, ban_reason').eq('id', data.user.id).single() as { data: ProfileData | null }
+      
+      if (profile?.is_banned) {
+        isBanned.value = true
+        banReason.value = profile.ban_reason || 'Uso indebido de la plataforma'
+        await supabase.auth.signOut()
+        user.value = null
+        session.value = null
+        throw new Error('BAN:' + banReason.value)
+      }
 
-    if (profile && user.value) user.value.db_version = profile.db_version || 1
-    
-    startSessionMonitoring()
-    syncServerTime()
-    loadingStore.finish('auth_action')
-    return data
+      if (profile && user.value) user.value.db_version = profile.db_version || 1
+      
+      startSessionMonitoring()
+      syncServerTime()
+      return data
+    } finally {
+      loadingStore.finish('auth_action')
+    }
   }
 
   async function signup(email: string, password: string, username: string) {

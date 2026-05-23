@@ -11,6 +11,7 @@ import { getItemByName } from '@/data/items'
 import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue'
 import BaseModal from '@/components/common/BaseModal.vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
+import { Z_LAYERS } from '@/logic/constants/visuals'
 import { gsap } from 'gsap'
 
 interface Props {
@@ -32,6 +33,7 @@ const ui = useUIStore()
 
 // State and references
 const listRef = ref<HTMLElement | null>(null)
+const tierIconRef = ref<HTMLElement | null>(null)
 const milestones = RANKED_REWARD_MILESTONES
 const imageError = ref(false)
 
@@ -49,6 +51,16 @@ useWindowListener('resize', handleResize)
 onMounted(async () => {
   await pvp.loadPvPData()
   animateList()
+  
+  if (tierIconRef.value) {
+    gsap.to(tierIconRef.value, {
+      y: -6,
+      duration: 2,
+      yoyo: true,
+      repeat: -1,
+      ease: 'power1.inOut'
+    })
+  }
 })
 
 const allowedTypes = computed<string[]>(() => pvp.currentSeasonRules?.allowedTypes || [])
@@ -118,6 +130,123 @@ const animateList = () => {
     }
   })
 }
+
+// ── GSAP HOVER HANDLERS ──────────────────────────────────────────────────────
+
+function handleCardEnter(e: MouseEvent, isLocked: boolean) {
+  if (isLocked) return
+  gsap.to(e.currentTarget, {
+    x: 4,
+    backgroundColor: 'Rgba(255, 255, 255, 0.04)',
+    borderColor: 'Rgba(59, 130, 246, 0.2)',
+    duration: 0.25,
+    ease: 'power2.out'
+  })
+}
+
+function handleCardLeave(e: MouseEvent, isClaimed: boolean) {
+  const bg = isClaimed ? 'Rgba(34, 197, 94, 0.03)' : 'Rgba(255, 255, 255, 0.02)'
+  const border = isClaimed ? 'Rgba(34, 197, 94, 0.15)' : 'Rgba(255, 255, 255, 0.04)'
+  gsap.to(e.currentTarget, {
+    x: 0,
+    backgroundColor: bg,
+    borderColor: border,
+    duration: 0.25,
+    ease: 'power2.out'
+  })
+}
+
+function handleSpriteEnter(e: MouseEvent) {
+  gsap.to(e.currentTarget, {
+    y: -4,
+    scale: 1.2,
+    zIndex: Z_LAYERS.MAP_SPAWNS,
+    duration: 0.2,
+    ease: 'back.out(1.275)'
+  })
+}
+
+function handleSpriteLeave(e: MouseEvent) {
+  gsap.to(e.currentTarget, {
+    y: 0,
+    scale: 1,
+    zIndex: Z_LAYERS.MAP_FLOOR,
+    duration: 0.2,
+    ease: 'power2.out'
+  })
+}
+
+function handlePillEnter(e: MouseEvent) {
+  gsap.to(e.currentTarget, {
+    y: -1,
+    backgroundColor: 'Rgba(255, 255, 255, 0.07)',
+    borderColor: 'Rgba(59, 130, 246, 0.3)',
+    color: 'var(--white)',
+    boxShadow: '0 4px 12px Rgba(59, 130, 246, 0.1)',
+    duration: 0.2,
+    ease: 'power2.out'
+  })
+}
+
+function handlePillLeave(e: MouseEvent) {
+  gsap.to(e.currentTarget, {
+    y: 0,
+    backgroundColor: 'Rgba(255, 255, 255, 0.03)',
+    borderColor: 'Rgba(255, 255, 255, 0.08)',
+    color: 'Rgba(241, 245, 249, 0.9)',
+    boxShadow: 'none',
+    duration: 0.2,
+    ease: 'power2.out'
+  })
+}
+
+// NOTE: claim-btn and search-btn use @include btn-vicio mixin.
+// Per ui_ux_standards.md (GSAP Hover Clash rule), btn-vicio manages
+// its own hover via native CSS transitions. No GSAP handlers needed.
+
+function handleEmojiEnter(e: MouseEvent) {
+  const emoji = (e.currentTarget as HTMLElement).querySelector('.emoji')
+  if (emoji) {
+    gsap.to(emoji, {
+      scale: 1.15,
+      rotate: 5,
+      duration: 0.3,
+      ease: 'back.out(1.275)'
+    })
+  }
+}
+
+function handleEmojiLeave(e: MouseEvent) {
+  const emoji = (e.currentTarget as HTMLElement).querySelector('.emoji')
+  if (emoji) {
+    gsap.to(emoji, {
+      scale: 1,
+      rotate: 0,
+      duration: 0.3,
+      ease: 'power2.out'
+    })
+  }
+}
+
+function handleToggleBtnEnter(e: MouseEvent) {
+  gsap.to(e.currentTarget, {
+    backgroundColor: 'Rgba(255, 255, 255, 0.08)',
+    color: 'var(--white)',
+    borderColor: 'Rgba(255, 255, 255, 0.15)',
+    duration: 0.25,
+    ease: 'power2.out'
+  })
+}
+
+function handleToggleBtnLeave(e: MouseEvent) {
+  gsap.to(e.currentTarget, {
+    backgroundColor: '',
+    color: '',
+    borderColor: '',
+    duration: 0.25,
+    ease: 'power2.out'
+  })
+}
 </script>
 
 <template>
@@ -165,7 +294,10 @@ const animateList = () => {
         <!-- Rank Card Info -->
         <section class="rank-card">
           <div class="tier-display">
-            <div class="tier-icon-wrapper">
+            <div
+              ref="tierIconRef"
+              class="tier-icon-wrapper"
+            >
               <img
                 v-if="!imageError"
                 :src="getRankIcon(pvp.eloTier?.id || 'bronce')"
@@ -177,6 +309,8 @@ const animateList = () => {
                 v-else
                 class="tier-emoji-badge"
                 :style="{ '--tier-color': pvp.eloTier?.color || '#888' }"
+                @mouseenter="handleEmojiEnter"
+                @mouseleave="handleEmojiLeave"
               >
                 <span class="emoji">{{ pvp.eloTier?.icon || '🥉' }}</span>
               </div>
@@ -219,6 +353,8 @@ const animateList = () => {
               :class="{ active: pvp.passiveTeamActive }"
               class="toggle-btn"
               @click.stop="pvp.togglePassiveTeam"
+              @mouseenter="handleToggleBtnEnter"
+              @mouseleave="handleToggleBtnLeave"
             >
               {{ pvp.passiveTeamActive ? 'ACTIVADO' : 'DESACTIVADO' }}
             </button>
@@ -256,6 +392,8 @@ const animateList = () => {
               :key="m.id"
               class="milestone-card"
               :class="{ locked: !isUnlocked(m.elo), claimed: isClaimed(m.id) }"
+              @mouseenter="e => handleCardEnter(e, !isUnlocked(m.elo))"
+              @mouseleave="e => handleCardLeave(e, isClaimed(m.id))"
             >
               <div class="m-icon">
                 <div class="m-icon-sprites">
@@ -266,6 +404,8 @@ const animateList = () => {
                     class="pixel-art milestone-sprite"
                     :alt="name"
                     @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
+                    @mouseenter="handleSpriteEnter"
+                    @mouseleave="handleSpriteLeave"
                   >
                 </div>
               </div>
@@ -279,7 +419,11 @@ const animateList = () => {
                     :description="getItemDesc(name)"
                     position="top"
                   >
-                    <span class="m-prize-pill">
+                    <span
+                      class="m-prize-pill"
+                      @mouseenter="handlePillEnter"
+                      @mouseleave="handlePillLeave"
+                    >
                       <img
                         :src="getItemSpriteUrl(name)"
                         class="pixel-art pill-sprite"

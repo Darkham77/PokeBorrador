@@ -59,7 +59,7 @@ describe('GTS Store', () => {
       data: { name: 'Potion' },
       status: 'active',
       seller_id: 'seller-1',
-      created_at: new Date().toISOString()
+      created_at: Temporal.Now.instant().toString()
     };
     game.state.money = 500;
     game.db.rpc = vi.fn().mockResolvedValue({ data: { money: 400 }, error: null });

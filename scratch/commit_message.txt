@@ -1,0 +1,10 @@
+feat(daycare): refactor daycare slot animations, sanitize species names, and fix layout shifts in world events
+
+- Refactored DaycareSlot.vue hover and active state animations to use GSAP, extracting styling to a separate _daycare-slot.scss file.
+- Normalized internal Pokemon species IDs (e.g., eevee_thunder -> Eevee) in BreedingSummaryCard.vue and PokemonSelectionItem.vue using resolveSpeciesName helper.
+- Reformulated breeding affinity texts from "COMPATIBILIDAD: Compatibles" to "AFINIDAD: Buena" to prevent redundant phrasing and ugly text wraps.
+- Stabilized WorldEventsModal.vue layout during data refresh to prevent modal height shrinking and refresh button layout shifting.
+- Corrected GSAP target warnings in WorldEventsModal.vue by checking for DOM element existence before triggering badge pulse animations.
+- Modularized SocialFriendsTab.vue and TradeSidePanel.vue components to abide by the project's 300-line SRP rules.
+- Cleaned up obsolete CSS transition declarations across core SCSS sheets (_arena.scss, _map-card-weather.scss).
+- Added SessionLockOverlay.vue, VersionLockOverlay.vue, and SVGFilters.vue to components.

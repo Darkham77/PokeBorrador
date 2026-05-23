@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, onUnmounted } from 'vue'
+import { computed, ref, onUnmounted, watch } from 'vue'
 import { gsap } from 'gsap'
 import PokemonDisplayCard from '@/components/pokemon/PokemonDisplayCard.vue'
 
@@ -135,6 +135,128 @@ function handleTouchEnd(e: TouchEvent) {
     isTouchDragging.value = false
   }
 }
+
+// ── GSAP HOVER HANDLERS ──────────────────────────────────────────────────────
+
+const isPvpSlot = computed(() => props.isPvp)
+
+function handlePlaceholderEnter(e: MouseEvent) {
+  const el = e.currentTarget as HTMLElement
+  if (!el) return
+  
+  const accentColor = isPvpSlot.value ? 'var(--purple-light)' : 'var(--blue)'
+  const shadowColor = isPvpSlot.value ? 'Rgba(199, 125, 255, 0.2)' : 'Rgba(10, 132, 255, 0.2)'
+  
+  gsap.to(el, {
+    y: -4,
+    scale: 1.02,
+    borderColor: accentColor,
+    boxShadow: `0 10px 25px Rgba(0, 0, 0, 0.3), 0 0 15px ${shadowColor}`,
+    backgroundColor: 'Rgba(255, 255, 255, 0.04)',
+    duration: 0.3,
+    ease: 'power2.out'
+  })
+
+  const plus = el.querySelector('.plus-icon')
+  if (plus) {
+    gsap.to(plus, {
+      scale: 1.2,
+      rotation: 90,
+      filter: `Drop-Shadow(0 0 15px ${accentColor})`,
+      color: 'var(--white)',
+      duration: 0.4,
+      ease: 'back.out(1.7)'
+    })
+  }
+
+  const label = el.querySelector('.label')
+  if (label) {
+    gsap.to(label, {
+      color: accentColor,
+      duration: 0.3,
+      ease: 'power2.out'
+    })
+  }
+}
+
+function handlePlaceholderLeave(e: MouseEvent) {
+  const el = e.currentTarget as HTMLElement
+  if (!el) return
+  
+  const baseBorderColor = isPvpSlot.value ? 'Rgba(199, 125, 255, 0.3)' : 'Rgba(255, 255, 255, 0.1)'
+
+  gsap.to(el, {
+    y: 0,
+    scale: 1,
+    borderColor: baseBorderColor,
+    boxShadow: 'none',
+    backgroundColor: 'Rgba(255, 255, 255, 0.02)',
+    duration: 0.3,
+    ease: 'power2.out'
+  })
+
+  const plus = el.querySelector('.plus-icon')
+  if (plus) {
+    gsap.to(plus, {
+      scale: 1,
+      rotation: 0,
+      filter: 'none',
+      color: 'Rgba(255, 255, 255, 0.3)',
+      duration: 0.4,
+      ease: 'power2.out'
+    })
+  }
+
+  const label = el.querySelector('.label')
+  if (label) {
+    gsap.to(label, {
+      color: 'var(--gray)',
+      duration: 0.3,
+      ease: 'power2.out'
+    })
+  }
+}
+
+// ── WATCHERS FOR DRAG OVERLAY ANIMATIONS ──────────────────────────────────────
+
+const isOver = computed(() => isDragOver.value || props.isTouchOver)
+
+watch(isOver, (newVal) => {
+  const overlay = document.querySelector(`[data-index="${props.index}"] .drag-position-overlay`)
+  const num = document.querySelector(`[data-index="${props.index}"] .pos-number`)
+  if (!overlay || !num) return
+
+  if (newVal) {
+    gsap.to(overlay, {
+      backgroundColor: 'Rgba(10, 132, 255, 0.15)',
+      borderWidth: 3,
+      borderStyle: 'solid',
+      duration: 0.2,
+      ease: 'power2.out'
+    })
+    gsap.to(num, {
+      opacity: 1,
+      scale: 1.2,
+      duration: 0.2,
+      ease: 'back.out(1.5)'
+    })
+  } else {
+    gsap.to(overlay, {
+      backgroundColor: 'Rgba(0, 0, 0, 0.85)',
+      borderWidth: 2,
+      borderStyle: 'dashed',
+      duration: 0.2,
+      ease: 'power2.out'
+    })
+    gsap.to(num, {
+      opacity: 0.8,
+      scale: 1,
+      duration: 0.2,
+      ease: 'power2.out'
+    })
+  }
+})
+
 onUnmounted(() => {
   if (touchTimer.value) touchTimer.value.kill()
 })
@@ -164,6 +286,8 @@ onUnmounted(() => {
       v-if="isEmpty"
       class="empty-placeholder"
       @click.stop="emit('select', index)"
+      @mouseenter="handlePlaceholderEnter"
+      @mouseleave="handlePlaceholderLeave"
     >
       <span class="plus-icon">✚</span>
       <span class="label">AÑADIR</span>
@@ -182,8 +306,12 @@ onUnmounted(() => {
       @select="emit('select', index)"
     />
 
-    <!-- Overlay de número de posición durante el drag -->
-    <Transition name="fade">
+    <!-- Overlay de número de posición durante el drag (animado por GSAP) -->
+    <Transition
+      :css="false"
+      @enter="el => gsap.fromTo(el, { opacity: 0 }, { opacity: 1, duration: 0.2, ease: 'power2.out' })"
+      @leave="(el, done) => gsap.to(el, { opacity: 0, duration: 0.2, ease: 'power2.in', onComplete: done })"
+    >
       <div
         v-if="isDraggingAny"
         class="drag-position-overlay"
@@ -196,16 +324,15 @@ onUnmounted(() => {
 
 <style scoped lang="scss">
 @use "@/styles/core/_mixins" as *;
+
 .team-slot {
   width: 100%;
   min-height: 260px;
   display: flex;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
 }
 
 .empty-placeholder {
-  @include premium-card-hover(var(--blue), 1.02, -4px);
   flex: 1;
   background: Rgba(255, 255, 255, 0.02);
   border: 2px dashed Rgba(255, 255, 255, 0.1);
@@ -216,51 +343,25 @@ onUnmounted(() => {
   justify-content: center;
   gap: 12px;
   cursor: pointer;
-  transition: all 0.3s;
-
-  &:hover {
-    .plus-icon {
-      transform: Scale(1.2) Rotate(90deg);
-      will-change: transform, filter, opacity;
-      filter: Drop-Shadow(0 0 15px var(--blue));
-      color: var(--white);
-    }
-    
-    .label {
-      color: var(--blue);
-    }
-  }
+  will-change: transform, border-color, background-color, box-shadow;
 
   .plus-icon {
     font-size: 32px;
     color: Rgba(255, 255, 255, 0.3);
-    transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    will-change: transform, filter, color;
   }
 
   .label {
     @include pixelated;
     font-size: 8px;
     color: var(--gray);
-    transition: all 0.3s;
+    will-change: color;
   }
-}
-
-// Support dynamic Tier Identity even in Team Context
-:deep(.pokemon-display-card:hover) {
-  // Removed blue override to allow tier color to shine
 }
 
 .pvp-slot {
   .empty-placeholder {
     border-color: Rgba(199, 125, 255, 0.3);
-    
-    &:hover {
-      border-color: var(--purple-light);
-      .plus-icon { will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  filter: Drop-Shadow(0 0 10px var(--purple-light)); }
-      .label { color: var(--purple-light); }
-    }
   }
 }
 
@@ -278,33 +379,14 @@ onUnmounted(() => {
   z-index: var(--z-low);
   pointer-events: none; 
   border: 2px dashed var(--blue);
-  transition: all 0.2s;
 
   .pos-number {
     font-size: 80px;
     color: var(--blue);
     @include pixelated;
     opacity: 0.8;
-  filter: Drop-Shadow(0 0 10px Rgba(10, 132, 255, 0.5));
-    transition: all 0.2s;
+    filter: Drop-Shadow(0 0 10px Rgba(10, 132, 255, 0.5));
+    will-change: transform, opacity;
   }
-}
-
-.is-drag-over .drag-position-overlay {
-  background: Rgba(10, 132, 255, 0.15);
-  border-style: solid;
-  border-width: 3px;
-
-  .pos-number {
-    opacity: 1;
-    transform: Scale(1.2);
-  }
-}
-
-.fade-enter-active, .fade-leave-active {
-  transition: opacity 0.3s;
-}
-.fade-enter-from, .fade-leave-to {
-  opacity: 0;
 }
 </style>

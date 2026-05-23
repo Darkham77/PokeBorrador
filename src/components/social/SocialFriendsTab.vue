@@ -75,7 +75,7 @@ onMounted(() => {
   animateCards()
 })
 
-watch(() => filteredFriends.value.map(f => f.id).join(','), () => {
+watch(() => filteredFriends.value.map((f: Friend) => f.id).join(','), () => {
   animateCards()
 })
 

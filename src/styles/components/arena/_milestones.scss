@@ -41,7 +41,7 @@
   scrollbar-gutter: stable;
 
   &.list-animating .milestone-card {
-    transition: none !important;
+    transition-property: none !important;
   }
 }
 
@@ -54,14 +54,7 @@
   border-radius: 12px;
   gap: 12px;
   position: relative;
-  transition: all 0.25s ease;
   will-change: transform, border-color, background-color;
-
-  &:hover:not(.locked) {
-    background: Rgba(255, 255, 255, 0.04);
-    border-color: Rgba(59, 130, 246, 0.2);
-    transform: Translatex(4px);
-  }
 
   &.locked { 
     opacity: 0.4; 
@@ -97,14 +90,8 @@
         height: 32px;
         @include pixelated;
         filter: Drop-Shadow(0 2px 4px Rgba(0, 0, 0, 0.4));
-        transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), z-index 0s;
         position: relative;
-        z-index: 1;
-
-        &:hover {
-          transform: Translatey(-4px) Scale(1.2);
-          z-index: 10;
-        }
+        z-index: var(--z-map-floor);
 
         &:not(:first-child) {
           margin-left: -16px; // High-quality retro overlapping stack effect
@@ -146,7 +133,6 @@
     font-weight: 600;
     color: Rgba(241, 245, 249, 0.9);
     cursor: help;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     box-sizing: border-box;
 
     .pill-sprite {
@@ -157,6 +143,7 @@
       vertical-align: middle;
       @include pixelated;
       filter: Drop-Shadow(0 1px 2px Rgba(0, 0, 0, 0.3));
+      will-change: filter;
     }
 
     .qty {
@@ -165,34 +152,12 @@
       margin-left: 4px;
       text-shadow: 0 0 8px Rgba(255, 214, 10, 0.3);
     }
-
-    &:hover {
-      background: Rgba(255, 255, 255, 0.07);
-      border-color: Rgba(59, 130, 246, 0.3);
-      transform: Translatey(-1px);
-      color: var(--white);
-      box-shadow: 0 4px 12px Rgba(59, 130, 246, 0.1);
-    }
   }
 
   .claim-btn {
-    background: var(--blue-light);
-    color: white;
-    border: none;
-    padding: 6px 12px;
-    border-radius: 8px;
+    @include btn-vicio('secondary', 'sm', false);
     font-size: 8px;
-    font-weight: bold;
-    cursor: pointer;
-    @include pixelated;
-    box-shadow: 0 4px 10px Rgba(59, 130, 246, 0.25);
-    transition: all 0.2s;
-
-    &:hover {
-      transform: Translatey(-1px);
-      box-shadow: 0 6px 14px Rgba(59, 130, 246, 0.4);
-      filter: Brightness(1.1);
-    }
+    padding: 6px 12px;
   }
 
   .claimed-badge { 
@@ -252,29 +217,10 @@
 }
 
 .search-btn {
+  @include btn-vicio('primary', 'md', true);
   width: 100%;
-  padding: 14px;
-  border: none;
-  border-radius: 12px;
-  background: linear-gradient(135deg, var(--blue-light), #1d4ed8);
-  color: white;
-  @include pixelated;
   font-size: 8px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   gap: 10px;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 15px Rgba(59, 130, 246, 0.3);
-  font-weight: bold;
-  letter-spacing: 0.5px;
-
-  &:hover:not(:disabled) {
-    transform: Translatey(-2px);
-    box-shadow: 0 6px 20px Rgba(59, 130, 246, 0.45);
-    filter: Brightness(1.1);
-  }
 
   &:disabled {
     background: Rgba(255, 255, 255, 0.02);
@@ -282,5 +228,6 @@
     color: Rgba(148, 163, 184, 0.3);
     cursor: not-allowed;
     box-shadow: none;
+    transform: none;
   }
 }

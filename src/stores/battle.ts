@@ -11,14 +11,16 @@ import { useAudioStore } from './audio.ts'
 import { useMapStore } from './map.ts'
 import { useUIStore } from './ui.ts'
 import { createBattleStateMachine, BATTLE_STATES, BATTLE_SUBSTATES } from '../logic/battle/battleStateMachine.ts'
-import { clearVolatileStatus, tickStatus, tickLeechSeed } from '../logic/battle/battleStatus.ts'
+import { clearVolatileStatus } from '../logic/battle/battleStatus.ts'
 import { startBattleSequence, initBattleSequence, restoreBattleState } from '../logic/battle/orchestrator.ts'
 import { processFaint, terminateBattle, syncAndPersist } from '../logic/battle/resolution.ts'
 import { handleBattleFlowCompletion, triggerNextEncounter, startEncounter } from '../logic/battle/searchLoop.ts'
 import { formatBattleLog } from '../logic/battle/battleLogger.ts'
 import { executeTurn, runEnemyAction } from '../logic/battle/battleTurn.ts'
-import { applyEndTurnWeather, handleEntryAbilities } from '../logic/battle/battleFlow.ts'
+import { handleEntryAbilities, applyEndTurnEffects as executeEndTurnEffects } from '../logic/battle/battleFlow.ts'
 import { handleItemUsage } from '../logic/battle/battleItems.ts'
+import { executeFlee } from '../logic/battle/battleFlee.ts'
+import { setupBattleDebug } from '../logic/battle/battleDebug.ts'
 import { gameBus } from '@/logic/gameBus'
 import type { GameStore, EventStore, AudioStore, UIStore, BattleOptions } from '@/types/stores'
 import type { BattleContext } from '@/types/battleContext'
@@ -255,68 +257,7 @@ export const useBattleStore = defineStore('battle', () => {
     }
   }
 
-  const applyEndTurnEffects = async () => {
-    const p = activeBattle.value?.player
-    const e = activeBattle.value?.enemy
-    if (!p || !e) return
-    
-    const active = activeBattle.value
-    if (active && active.futureSightTurns && active.futureSightTurns > 0) {
-      active.futureSightTurns--
-      if (active.futureSightTurns === 0) {
-        const fsTarget = active.futureSightTarget
-        if (fsTarget && fsTarget.hp > 0) {
-          const dmg = Math.max(10, Math.floor(fsTarget.maxHp * 0.15))
-          fsTarget.hp = Math.max(0, fsTarget.hp - dmg)
-          addLog(`¡Se cumplió la premonición! ${fsTarget.name} recibió daño.`, 'log-info', fsTarget)
-          gameBus.emit('PLAY_SOUND', 'statusDamage')
-        }
-      }
-    }
-
-    tickStatus(p, addLog, 'player')
-    tickStatus(e, addLog, 'enemy')
-    tickLeechSeed(p, e, addLog)
-    tickLeechSeed(e, p, addLog)
-    
-    const w = activeBattle.value?.weather
-    if (w && w.turns > 0) {
-      w.turns--
-      if (w.turns === 0) {
-        addLog(`¡El efecto de ${w.type} se desvaneció!`, 'log-info')
-        w.type = mapStore.currentWeather || 'clear'
-        w.turns = -1
-      }
-    }
-
-    const fieldEffects = ['reflect', 'lightScreen', 'safeguard', 'mist'] as const
-    const sides = [
-      { stages: playerStages, name: 'Jugador', log: 'log-player' as const },
-      { stages: enemyStages, name: 'Enemigo', log: 'log-enemy' as const }
-    ]
-    sides.forEach(side => {
-      fieldEffects.forEach(effect => {
-        const stages = side.stages.value
-        if (stages[effect] > 0) {
-          stages[effect]--
-          if (stages[effect] === 0) {
-            const effectLabel = effect === 'reflect' ? 'Reflejo' : effect === 'lightScreen' ? 'Pantalla Luz' : effect
-            addLog(`¡El efecto de ${effectLabel} del ${side.name} se desvaneció!`, side.log)
-          }
-        }
-      })
-    })
-
-    if (activeBattle.value) applyEndTurnWeather(p, e, activeBattle.value.weather, addLog)
-    
-    if (p.hp <= 0) await handleFaint('player')
-    if (isBattleActive.value && e.hp <= 0) await handleFaint('enemy')
-    
-    persistBattle()
-    if (activeBattle.value && !activeBattle.value.over) {
-      activeBattle.value.turnCount++
-    }
-  }
+  const applyEndTurnEffects = async () => await executeEndTurnEffects(getContext())
 
   const handleFaint = async (side: 'player' | 'enemy') => await processFaint(getContext(), side)
 
@@ -488,33 +429,9 @@ export const useBattleStore = defineStore('battle', () => {
 
 
   if (typeof window !== 'undefined') {
-    const win = window as unknown as { __VITE_DEBUG__: Record<string, unknown> }
-    win.__VITE_DEBUG__ = win.__VITE_DEBUG__ || {};
-    win.__VITE_DEBUG__.forceFlee = async () => {
-      logger.warn('DEBUG', 'Forzando huida del combate...')
-      fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.FLEE_ATTEMPT)
-      await endBattle(false, true)
-    };
-
-    win.__VITE_DEBUG__.battle = {
-      setPlayerStatus: (s: Pokemon['status']) => { if (activeBattle.value?.player) activeBattle.value.player.status = s },
-      setEnemyStatus: (s: Pokemon['status']) => { if (activeBattle.value?.enemy) activeBattle.value.enemy.status = s },
-      setPlayerStage: (stat: keyof BattleStages, val: number) => { playerStages.value[stat] = val },
-      setEnemyStage: (stat: keyof BattleStages, val: number) => { enemyStages.value[stat] = val },
-      setWeather: (w: string) => { if (activeBattle.value) activeBattle.value.weather = { type: w, turns: 5 } },
-      fullHeal: () => {
-        const p = activeBattle.value?.player;
-        if (p) {
-          p.hp = p.maxHp; 
-          p.status = null; 
-          (p as Pokemon & { confused?: number; seeded?: boolean }).confused = 0; 
-          (p as Pokemon & { confused?: number; seeded?: boolean }).seeded = false
-        }
-      },
-      killEnemy: () => { if (activeBattle.value?.enemy) activeBattle.value.enemy.hp = 0 },
-      animations: () => animations.value,
-      store: () => useBattleStore()
-    }
+    const win = window as unknown as { __VITE_DEBUG_STORE_RESOLVER__?: () => unknown }
+    win.__VITE_DEBUG_STORE_RESOLVER__ = () => useBattleStore()
+    setupBattleDebug(getContext())
   }
 
   return {
@@ -551,60 +468,7 @@ export const useBattleStore = defineStore('battle', () => {
     clearLogs,
     executeMove,
     persistBattle,
-    flee: async () => {
-      if (isProcessing.value) return;
-      
-      if (activeBattle.value && (activeBattle.value.isTrainer || activeBattle.value.isGym)) {
-        addLog('¡No puedes huir de un combate de entrenador!', 'log-error', 'player');
-        return;
-      }
-
-      uiStore.openConfirm({
-        title: 'HUIR DEL COMBATE',
-        message: '¿Estás seguro que deseas huir de este encuentro?',
-        confirmText: 'SÍ, HUIR',
-        cancelText: 'VOLVER',
-        onConfirm: async () => {
-          isProcessing.value = true;
-          if (!activeBattle.value) { isProcessing.value = false; return }
-          activeBattle.value.escapeAttempts = (activeBattle.value.escapeAttempts || 0);
-          
-          if (!activeBattle.value.player || !activeBattle.value.enemy) { isProcessing.value = false; return }
-          
-          const { calculateEscapeChance } = await import('../logic/battle/battleEngine');
-          const canEscape = calculateEscapeChance(
-            activeBattle.value.player, 
-            activeBattle.value.enemy, 
-            activeBattle.value.escapeAttempts, 
-            { 
-              playerStages: playerStages.value, 
-              enemyStages: enemyStages.value, 
-              weather: activeBattle.value.weather 
-            }
-          );
-
-          if (canEscape) {
-            audio.flee();
-            addLog('¡Escapaste sin problemas!', 'log-info', 'player');
-            
-            fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ESCAPE_PROCESS);
-            fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.PLAY_ESCAPE_ANIM);
-            gameBus.emit('PLAY_ESCAPE_ANIM', { side: 'player' });
-            
-            await sleep(1000);
-            await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.VACATE_SEAT);
-            if (activeBattle.value) activeBattle.value.enemy = null;
-            await endBattle(false, true);
-          } else {
-            if (activeBattle.value) activeBattle.value.escapeAttempts++;
-            addLog('¡No pudiste escapar!', 'log-info', 'player');
-            
-            await runEnemyAction(getContext());
-          }
-          isProcessing.value = false;
-        }
-      });
-    },
+    flee: async () => await executeFlee(getContext()),
     completeBattleFlow: (option?: string) => completeBattleFlow(option),
     triggerSearchEncounter,
     setFinishing: (cb: () => void) => { fsm.transition(BATTLE_STATES.REWARDS_PHASE); battleEndCallback.value = cb },

@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
+import { gsap } from 'gsap'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 
@@ -29,6 +30,7 @@ defineEmits<{
 }>()
 
 const hasError = ref(false)
+const cardRef = ref<HTMLElement | null>(null)
 
 watch(() => props.item.sprite, () => {
   hasError.value = false
@@ -58,16 +60,146 @@ const itemFontSize = computed(() => {
   
   const divisor = Math.max(maxWordLength, totalLength / 2.1)
   
-  // Safe limits
   const minFontSize = divisor >= 10 ? 4.5 : (divisor >= 8 ? 5.2 : 6.2)
   const maxFontSize = 10
   
   return `clamp(${minFontSize}px, calc(72cqw / ${divisor}), ${maxFontSize}px)`
 })
+
+// ── GSAP HOVER HANDLERS ──────────────────────────────────────────────────────
+
+function handleMouseEnter() {
+  if (!cardRef.value || props.isSelected) return
+  
+  const tier = props.item.tier || 'common'
+  let accentColor = 'var(--yellow)'
+  if (tier === 'rare') accentColor = '#3b82f6'
+  else if (tier === 'epic') accentColor = '#a855f7'
+  
+  const glowOpacity = tier === 'legend' ? '0.7' : '0.8'
+  
+  gsap.to(cardRef.value, {
+    y: -4,
+    scale: 1.02,
+    borderColor: accentColor,
+    boxShadow: `0 20px 40px Rgba(0, 0, 0, 0.6), inset 0 30px 60px -20px color-mix(in srgb, ${accentColor}, transparent 80%), 0 0 20px color-mix(in srgb, ${accentColor}, transparent ${glowOpacity})`,
+    duration: 0.4,
+    ease: 'back.out(1.275)'
+  })
+  
+  const sprite = cardRef.value.querySelector('.item-sprite')
+  if (sprite) {
+    gsap.to(sprite, {
+      scale: 1.1,
+      duration: 0.3,
+      ease: 'power2.out'
+    })
+  }
+}
+
+function handleMouseLeave() {
+  if (!cardRef.value || props.isSelected) return
+  
+  const tier = props.item.tier || 'common'
+  let baseBorderColor = 'Rgba(255, 255, 255, 0.05)'
+  if (tier === 'rare') baseBorderColor = 'Rgba(59, 130, 246, 0.2)'
+  else if (tier === 'epic') baseBorderColor = 'Rgba(168, 85, 247, 0.2)'
+  else if (tier === 'legend') baseBorderColor = 'Rgba(245, 158, 11, 0.2)'
+
+  gsap.to(cardRef.value, {
+    y: 0,
+    scale: 1,
+    borderColor: baseBorderColor,
+    boxShadow: '0 10px 40px Rgba(0, 0, 0, 0.8)',
+    duration: 0.4,
+    ease: 'power2.out'
+  })
+
+  const sprite = cardRef.value.querySelector('.item-sprite')
+  if (sprite) {
+    gsap.to(sprite, {
+      scale: 1,
+      duration: 0.3,
+      ease: 'power2.out'
+    })
+  }
+}
+
+// ── WATCHERS FOR SELECTION STATE ─────────────────────────────────────────────
+
+watch(() => props.isSelected, (newVal) => {
+  if (!cardRef.value) return
+  const checkBox = cardRef.value.querySelector('.check-box')
+  
+  if (newVal) {
+    gsap.to(cardRef.value, {
+      scale: 0.98,
+      y: 0,
+      borderColor: 'var(--blue)',
+      boxShadow: 'inset 0 0 0 4px var(--blue), 0 0 20px Rgba(10, 132, 255, 0.4)',
+      duration: 0.2,
+      ease: 'power2.out'
+    })
+    if (checkBox) {
+      gsap.to(checkBox, {
+        backgroundColor: 'var(--yellow)',
+        borderColor: 'var(--yellow)',
+        boxShadow: '0 0 10px Rgba(255, 214, 10, 0.5)',
+        duration: 0.2,
+        ease: 'power2.out'
+      })
+    }
+  } else {
+    // Reset to base state
+    const tier = props.item.tier || 'common'
+    let baseBorderColor = 'Rgba(255, 255, 255, 0.05)'
+    if (tier === 'rare') baseBorderColor = 'Rgba(59, 130, 246, 0.2)'
+    else if (tier === 'epic') baseBorderColor = 'Rgba(168, 85, 247, 0.2)'
+    else if (tier === 'legend') baseBorderColor = 'Rgba(245, 158, 11, 0.2)'
+
+    gsap.to(cardRef.value, {
+      y: 0,
+      scale: 1,
+      borderColor: baseBorderColor,
+      boxShadow: '0 10px 40px Rgba(0, 0, 0, 0.8)',
+      duration: 0.4,
+      ease: 'power2.out'
+    })
+    if (checkBox) {
+      gsap.to(checkBox, {
+        backgroundColor: 'Rgba(0, 0, 0, 0.4)',
+        borderColor: 'Rgba(255, 255, 255, 0.2)',
+        boxShadow: 'none',
+        duration: 0.2,
+        ease: 'power2.out'
+      })
+    }
+  }
+}, { immediate: true })
+
+onMounted(() => {
+  // Apply initial states if selected at mount
+  if (props.isSelected && cardRef.value) {
+    gsap.set(cardRef.value, {
+      scale: 0.98,
+      borderColor: 'var(--blue)',
+      boxShadow: 'inset 0 0 0 4px var(--blue), 0 0 20px Rgba(10, 132, 255, 0.4)'
+    })
+    const checkBox = cardRef.value.querySelector('.check-box')
+    if (checkBox) {
+      gsap.set(checkBox, {
+        backgroundColor: 'var(--yellow)',
+        borderColor: 'var(--yellow)',
+        boxShadow: '0 0 10px Rgba(255, 214, 10, 0.5)'
+      })
+    }
+  }
+})
 </script>
 
 <template>
   <div 
+    ref="cardRef"
     class="inventory-item-card"
     :class="{ 
       selected: isSelected,
@@ -75,6 +207,8 @@ const itemFontSize = computed(() => {
       [tierClass]: true
     }"
     @click.stop="$emit('click', $event)"
+    @mouseenter="handleMouseEnter"
+    @mouseleave="handleMouseLeave"
   >
     <PVTooltip
       :title="item.name"
@@ -138,7 +272,6 @@ const itemFontSize = computed(() => {
 @use "@/styles/core/_mixins" as *;
 
 .inventory-item-card {
-  @include premium-card-hover($yellow, 1.02, -4px);
   @include card-premium(16px);
   width: 100%;
   min-width: 0; // Fix grid cell overflow
@@ -146,7 +279,6 @@ const itemFontSize = computed(() => {
   align-self: start; // Prevent vertical stretch
   position: relative;
   overflow: visible !important; // Permitir que el badge respire por debajo
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   background: Rgba(255, 255, 255, 0.02);
   border: 1px solid Rgba(255, 255, 255, 0.05);
   cursor: pointer;
@@ -171,7 +303,6 @@ const itemFontSize = computed(() => {
     inset: 0;
     background: radial-gradient(circle at top right, Rgba(255, 255, 255, 0.1), transparent 70%);
     opacity: 0.4; // Consistent base sheen
-    transition: opacity 0.3s;
     pointer-events: none;
     z-index: 1;
   }
@@ -193,17 +324,6 @@ const itemFontSize = computed(() => {
     border-color: Rgba(245, 158, 11, 0.2);
     .item-tier-badge { color: var(--yellow); }
     .item-bg-glow { background: radial-gradient(circle, Rgba(245, 158, 11, 0.15) 0%, transparent 70%); }
-  }
-
-  &:hover {
-    .item-sprite {
-      transform: Scale(1.1);
-    }
-  }
-
-  &.selected {
-    @include shell-selected-blue;
-    transform: Scale(0.98);
   }
 
   .item-tier-badge {
@@ -252,7 +372,6 @@ const itemFontSize = computed(() => {
       z-index: calc(var(--z-base) + 1);
       will-change: transform, filter, opacity;
       filter: Drop-Shadow(0 4px 8px Rgba(0, 0, 0, 0.3));
-      transition: transform 0.3s ease;
     }
 
     .fallback-icon {
@@ -338,23 +457,8 @@ const itemFontSize = computed(() => {
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: all 0.2s;
-
-      &.checked {
-        background: var(--yellow);
-        border-color: var(--yellow);
-        color: black;
-        font-weight: 900;
-        font-size: clamp(8px, 8cqw, 10px);
-        box-shadow: 0 0 10px Rgba(255, 214, 10, 0.5);
-      }
+      will-change: background-color, border-color, box-shadow;
     }
   }
-}
-
-@keyframes borderPulse {
-  0% { opacity: 0.4; }
-  50% { opacity: 1; }
-  100% { opacity: 0.4; }
 }
 </style>

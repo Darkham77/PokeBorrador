@@ -1,10 +1,9 @@
 <script setup lang="ts">
 declare const __APP_VERSION__: string
 
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import { gsap } from 'gsap'
 import { useAuthStore } from '@/stores/auth'
-import { useGameStore } from '@/stores/game'
 import { usePWA } from '@/composables/usePWA'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { logger } from '@/logic/utils/logger'
@@ -19,7 +18,6 @@ import AuthServerSelector from '@/components/auth/AuthServerSelector.vue'
 const wallpaperUrl = computed(() => `url('${getAssetUrl(ASSET_TYPES.UI, '../fondo/WALLPAPER')}')`)
 
 const authStore = useAuthStore()
-const gameStore = useGameStore()
 
 const authTab = ref('login') // 'login' | 'signup'
 const serverMode = ref('local') // 'online' | 'local'
@@ -46,6 +44,7 @@ const switchAuthTab = (tab: string) => {
   authTab.value = tab
   error.value = null
   success.value = null
+  gsap.set('.auth-tab', { clearProps: 'all' })
 }
 
 const handleLogin = async () => {
@@ -58,7 +57,6 @@ const handleLogin = async () => {
   error.value = null
   try {
     await authStore.login(email.value, password.value)
-    await gameStore.loadGame()
     window.location.href = import.meta.env.BASE_URL
   } catch (err: unknown) {
     error.value = getFriendlyErrorMessage(err)
@@ -127,8 +125,7 @@ const handleLocalLogin = async () => {
   error.value = null
   try {
     await authStore.localLogin(username.value)
-    gsap.delayedCall(0.8, async () => {
-      await gameStore.loadGame()
+    gsap.delayedCall(0.8, () => {
       window.location.href = import.meta.env.BASE_URL
     })
   } catch (_err) {
@@ -176,6 +173,129 @@ onMounted(() => {
   })
 })
 
+function handleTabEnter(e: MouseEvent) {
+  const tab = e.currentTarget as HTMLElement
+  if (!tab.classList.contains('active')) {
+    gsap.to(tab, {
+      color: 'var(--white)',
+      duration: 0.2
+    })
+  }
+}
+
+function handleTabLeave(e: MouseEvent) {
+  const tab = e.currentTarget as HTMLElement
+  if (!tab.classList.contains('active')) {
+    gsap.to(tab, {
+      color: 'var(--gray)',
+      duration: 0.2
+    })
+  }
+}
+
+function handleInputEnter(e: MouseEvent) {
+  const el = e.currentTarget as HTMLInputElement
+  if (document.activeElement !== el) {
+    gsap.to(el, {
+      borderColor: 'rgba(191, 90, 242, 0.4)',
+      backgroundColor: 'rgba(255, 255, 255, 0.08)',
+      duration: 0.2
+    })
+  }
+}
+
+function handleInputLeave(e: MouseEvent) {
+  const el = e.currentTarget as HTMLInputElement
+  if (document.activeElement !== el) {
+    gsap.to(el, {
+      borderColor: 'rgba(255, 255, 255, 0.12)',
+      backgroundColor: 'rgba(255, 255, 255, 0.06)',
+      duration: 0.2
+    })
+  }
+}
+
+function handleInputFocus(e: FocusEvent) {
+  const el = e.currentTarget as HTMLInputElement
+  gsap.to(el, {
+    borderColor: '#bf5af2',
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    duration: 0.2
+  })
+}
+
+function handleInputBlur(e: FocusEvent) {
+  const el = e.currentTarget as HTMLInputElement
+  gsap.to(el, {
+    borderColor: 'rgba(255, 255, 255, 0.12)',
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    duration: 0.2
+  })
+}
+
+watch(authTab, (newTab) => {
+  nextTick(() => {
+    const tabs = document.querySelectorAll('.auth-tab')
+    tabs.forEach(tab => {
+      const tabText = tab.textContent?.trim().toLowerCase().replace(/\s+/g, '')
+      const expectedText = newTab === 'login' ? 'iniciarsesión' : 'registrarse'
+      const isTabActive = tabText === expectedText
+      if (isTabActive) {
+        gsap.to(tab, {
+          color: '#ffffff',
+          backgroundColor: '#bf5af2',
+          duration: 0.3
+        })
+      } else {
+        gsap.to(tab, {
+          color: '#86868b',
+          backgroundColor: 'transparent',
+          duration: 0.3
+        })
+      }
+    })
+  })
+}, { immediate: true })
+
+watch(error, (newVal) => {
+  if (newVal && newVal.startsWith('BAN:')) {
+    nextTick(() => {
+      const card = document.querySelector('.auth-ban-card')
+      if (card) {
+        gsap.killTweensOf(card)
+        const tl = gsap.timeline()
+        tl.to(card, { x: -4, duration: 0.05 })
+          .to(card, { x: 4, duration: 0.05 })
+          .to(card, { x: -4, duration: 0.05 })
+          .to(card, { x: 4, duration: 0.05 })
+          .to(card, { x: -2, duration: 0.05 })
+          .to(card, { x: 2, duration: 0.05 })
+          .to(card, { x: 0, duration: 0.05 })
+      }
+    })
+  }
+})
+
+watch(isOnline, (online) => {
+  if (!online) {
+    nextTick(() => {
+      const alert = document.querySelector('.internet-alert')
+      if (alert) {
+        gsap.killTweensOf(alert)
+        gsap.to(alert, {
+          opacity: 0.6,
+          duration: 1,
+          yoyo: true,
+          repeat: -1,
+          ease: 'sine.inOut'
+        })
+      }
+    })
+  } else {
+    gsap.killTweensOf('.internet-alert')
+  }
+}, { immediate: true })
+
 const handleServerChange = () => {
   switchServer(selectedServerId.value)
   checkServerHealth()
@@ -203,6 +323,8 @@ const handleServerChange = () => {
           class="auth-tab"
           :class="{ active: authTab === 'login' }"
           @click.stop="switchAuthTab('login')"
+          @mouseenter="handleTabEnter"
+          @mouseleave="handleTabLeave"
         >
           Iniciar Sesión
         </button>
@@ -210,6 +332,8 @@ const handleServerChange = () => {
           class="auth-tab"
           :class="{ active: authTab === 'signup' }"
           @click.stop="switchAuthTab('signup')"
+          @mouseenter="handleTabEnter"
+          @mouseleave="handleTabLeave"
         >
           Registrarse
         </button>
@@ -274,6 +398,10 @@ const handleServerChange = () => {
               v-model="selectedServerId" 
               class="auth-input server-select"
               @change="handleServerChange"
+              @focus="handleInputFocus"
+              @blur="handleInputBlur"
+              @mouseenter="handleInputEnter"
+              @mouseleave="handleInputLeave"
             >
               <option 
                 v-for="server in OFFICIAL_SERVERS" 
@@ -291,6 +419,10 @@ const handleServerChange = () => {
             type="email"
             placeholder="Email"
             @keyup.enter="handleLogin"
+            @focus="handleInputFocus"
+            @blur="handleInputBlur"
+            @mouseenter="handleInputEnter"
+            @mouseleave="handleInputLeave"
           >
           <input
             v-model="password"
@@ -298,6 +430,10 @@ const handleServerChange = () => {
             type="password"
             placeholder="Contraseña"
             @keyup.enter="handleLogin"
+            @focus="handleInputFocus"
+            @blur="handleInputBlur"
+            @mouseenter="handleInputEnter"
+            @mouseleave="handleInputLeave"
           >
           <button
             class="auth-btn"
@@ -317,6 +453,10 @@ const handleServerChange = () => {
             placeholder="Nombre de Entrenador"
             maxlength="20"
             @keyup.enter="handleLocalLogin"
+            @focus="handleInputFocus"
+            @blur="handleInputBlur"
+            @mouseenter="handleInputEnter"
+            @mouseleave="handleInputLeave"
           >
           <button
             class="auth-btn"
@@ -336,6 +476,10 @@ const handleServerChange = () => {
             placeholder="Nombre de Entrenador"
             maxlength="20"
             @keyup.enter="handleSignup"
+            @focus="handleInputFocus"
+            @blur="handleInputBlur"
+            @mouseenter="handleInputEnter"
+            @mouseleave="handleInputLeave"
           >
           <input
             v-model="email"
@@ -343,6 +487,10 @@ const handleServerChange = () => {
             type="email"
             placeholder="Email"
             @keyup.enter="handleSignup"
+            @focus="handleInputFocus"
+            @blur="handleInputBlur"
+            @mouseenter="handleInputEnter"
+            @mouseleave="handleInputLeave"
           >
           <input
             v-model="password"
@@ -350,6 +498,10 @@ const handleServerChange = () => {
             type="password"
             placeholder="Contraseña (mín. 6 caracteres)"
             @keyup.enter="handleSignup"
+            @focus="handleInputFocus"
+            @blur="handleInputBlur"
+            @mouseenter="handleInputEnter"
+            @mouseleave="handleInputLeave"
           >
           <button
             class="auth-btn"
@@ -445,13 +597,7 @@ const handleServerChange = () => {
   border-radius: 10px;
   margin-bottom: 16px;
   text-align: center;
-  animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-  0% { opacity: 0.6; }
-  50% { opacity: 1; }
-  100% { opacity: 0.6; }
+  will-change: opacity;
 }
 
 .server-select {

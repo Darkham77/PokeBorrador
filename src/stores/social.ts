@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref, reactive, watch } from 'vue'
+import { ref, reactive, watch, computed } from 'vue'
 import { gsap } from 'gsap'
 
 import { useAuthStore } from './auth.ts'
@@ -7,6 +7,8 @@ import { useGameStore } from './game.ts'
 import { useUIStore } from './ui.ts'
 import { useAudioStore } from './audio.ts'
 import { useChatStore } from './chat.ts'
+import { useLeaderboardStore } from './leaderboard.ts'
+import { usePlayerSearchStore } from './playerSearch.ts'
 import { logger } from '@/logic/utils/logger'
 import { GameState } from '@/types/game'
 
@@ -122,13 +124,20 @@ export const useSocialStore = defineStore('social', () => {
   const gameStore = useGameStore()
   const uiStore = useUIStore()
   const audioStore = useAudioStore()
+  const leaderboardStore = useLeaderboardStore()
+  const playerSearchStore = usePlayerSearchStore()
 
   const friends = ref<Friend[]>([])
   const pendingRequests = ref<PendingRequest[]>([])
-  const searchResults = ref<SearchResult[]>([])
-  const searchLoading = ref(false)
+  const searchResults = computed<SearchResult[]>({
+    get: () => playerSearchStore.searchResults,
+    set: (val: SearchResult[]) => { playerSearchStore.searchResults = val }
+  })
+  const searchLoading = computed<boolean>({
+    get: () => playerSearchStore.searchLoading,
+    set: (val: boolean) => { playerSearchStore.searchLoading = val }
+  })
   const loading = ref(false)
-  const lastSearchQuery = ref('')
   const sentRequestTimestamps = ref<number[]>([])
   
   const notifications = reactive({
@@ -276,135 +285,7 @@ export const useSocialStore = defineStore('social', () => {
   }
 
   async function searchPlayers(query: string, filters?: { playerClass?: string; faction?: string }) {
-    if (!query || query.length < 2) {
-      searchResults.value = []
-      return
-    }
-
-    if (!authStore.user?.id) {
-      searchResults.value = []
-      return
-    }
-
-    lastSearchQuery.value = query
-    searchLoading.value = true
-    const db = gameStore.db
-    if (!db) { searchLoading.value = false; return }
-    
-    try {
-      let profiles: ProfileRow[] | null = null
-      let saveRes: { data: GameSaveRow[] | null } = { data: null }
-      let relRes: { data: FriendshipRow[] | null } = { data: null }
-
-      if (db.mode === 'offline') {
-        const [profRes, allSavesRes, allRelsRes] = await Promise.all([
-          db.from('profiles').select('*'),
-          db.from('game_saves').select('*'),
-          db.from('friendships')
-            .select('*')
-            .or(`requester_id.eq.${authStore.user.id},addressee_id.eq.${authStore.user.id}`)
-        ]) as [
-          { data: ProfileRow[] | null },
-          { data: GameSaveRow[] | null },
-          { data: FriendshipRow[] | null }
-        ]
-
-        saveRes = { data: allSavesRes.data }
-        relRes = { data: allRelsRes.data }
-
-        const queryLower = query.toLowerCase()
-        profiles = (profRes.data || []).filter((p: ProfileRow) => {
-          if (p.id === authStore.user!.id) return false
-          
-          const save = (allSavesRes.data?.find((s: GameSaveRow) => s.user_id === p.id)?.save_data as unknown as GameState) || {}
-          const trainerName = (save.trainer as string) || p.username || ''
-          const originalUsername = p.username || ''
-          
-          const matchesQuery = 
-            trainerName.toLowerCase().includes(queryLower) ||
-            originalUsername.toLowerCase().includes(queryLower)
-            
-          if (!matchesQuery) return false
-          
-          if (filters?.playerClass) {
-            const currentClass = (save.playerClass as string) || p.player_class || 'entrenador'
-            if (currentClass.toLowerCase() !== filters.playerClass.toLowerCase()) return false
-          }
-          
-          if (filters?.faction) {
-            const currentFaction = (save.faction as string) || p.faction || ''
-            if (currentFaction.toLowerCase() !== filters.faction.toLowerCase()) return false
-          }
-          
-          return true
-        }).slice(0, 10)
-      } else {
-        let builder = db
-          .from('profiles')
-          .select('*')
-          .ilike('username', `%${query}%`)
-          .neq('id', authStore.user.id)
-
-        if (filters?.playerClass) {
-          builder = builder.eq('player_class', filters.playerClass)
-        }
-        if (filters?.faction) {
-          builder = builder.eq('faction', filters.faction)
-        }
-
-        const { data } = await builder.limit(10) as { data: ProfileRow[] | null }
-        profiles = data
-
-        if (lastSearchQuery.value !== query) return
-
-        if (profiles && profiles.length > 0) {
-          const ids = profiles.map((p: ProfileRow) => p.id)
-          const [savesData, relsData] = await Promise.all([
-            db.from('game_saves').select('user_id,save_data').in('user_id', ids),
-            db.from('friendships')
-              .select('*')
-              .or(`requester_id.eq.${authStore.user.id},addressee_id.eq.${authStore.user.id}`)
-          ]) as [
-            { data: GameSaveRow[] | null },
-            { data: FriendshipRow[] | null }
-          ]
-
-          saveRes = { data: savesData.data }
-          relRes = { data: relsData.data }
-        }
-      }
-
-      if (lastSearchQuery.value !== query) return
-
-      if (profiles && profiles.length > 0) {
-        searchResults.value = (profiles as ProfileRow[]).map((p: ProfileRow) => {
-          const save = (saveRes.data?.find((s: GameSaveRow) => s.user_id === p.id)?.save_data as unknown as GameState) || {}
-          const rel = relRes.data?.find((f: FriendshipRow) => 
-            (f.requester_id === authStore.user!.id && f.addressee_id === p.id) ||
-            (f.requester_id === p.id && f.addressee_id === authStore.user!.id)
-          )
-          
-          return {
-            id: p.id,
-            username: (save.trainer as string) || p.username,
-            level: (save.trainerLevel as number) || p.trainer_level || 1,
-            playerClass: (save.playerClass as string) || p.player_class || 'entrenador',
-            faction: (save.faction as string) || p.faction || undefined,
-            nick_style: (save.nick_style as string) || p.nick_style || '',
-            avatar_style: (save.avatar_style as string) || p.avatar_style || '',
-            status: rel ? (rel.status as string) : 'none',
-            relId: rel ? (rel.id as string) : null,
-            isRequester: rel ? rel.requester_id === authStore.user!.id : false
-          }
-        })
-      } else {
-        searchResults.value = []
-      }
-    } finally {
-      if (lastSearchQuery.value === query) {
-        searchLoading.value = false
-      }
-    }
+    await playerSearchStore.searchPlayers(query, filters)
   }
 
   async function sendFriendRequest(targetId: string) {
@@ -538,66 +419,17 @@ export const useSocialStore = defineStore('social', () => {
     presenceInterval = null
   }
 
-  const leaderboard = ref<LeaderboardEntry[]>([])
-  const leaderboardLoading = ref(false)
+  const leaderboard = computed<LeaderboardEntry[]>({
+    get: () => leaderboardStore.leaderboard,
+    set: (val: LeaderboardEntry[]) => { leaderboardStore.leaderboard = val }
+  })
+  const leaderboardLoading = computed<boolean>({
+    get: () => leaderboardStore.leaderboardLoading,
+    set: (val: boolean) => { leaderboardStore.leaderboardLoading = val }
+  })
 
-  /**
-   * Obtiene el Top 100 mundial basado en el criterio especificado.
-   * @param {string} sortBy - 'elo_rating' | 'trainer_level' | 'badges'
-   */
   async function fetchLeaderboard(sortBy = 'elo_rating') {
-    if (!gameStore.db) {
-      leaderboard.value = []
-      return
-    }
-
-    leaderboardLoading.value = true
-    const db = gameStore.db
-    if (!db) {
-      leaderboardLoading.value = false
-      return
-    }
-
-    try {
-      const { data, error } = await db
-        .from('profiles')
-        .select('*')
-        .order(sortBy, { ascending: false })
-        .limit(100) as { data: ProfileRow[] | null; error: unknown }
-
-      if (error) throw error
-
-      if (data && data.length > 0) {
-        const ids = data.map((p: ProfileRow) => p.id)
-        const { data: saves } = await db
-          .from('game_saves')
-          .select('user_id, updated_at')
-          .in('user_id', ids) as { data: GameSaveRow[] | null; error: unknown }
-
-        leaderboard.value = (data as ProfileRow[]).map((p: ProfileRow) => {
-          const saveRow = (saves as GameSaveRow[])?.find(s => s.user_id === p.id)
-          const lastSeen = parseInstantSafe(saveRow?.updated_at)
-          const isOnline = lastSeen && (Temporal.Now.instant().epochMilliseconds - lastSeen.epochMilliseconds) < 5 * 60 * 1000
-
-          return {
-            id: p.id,
-            username: p.username,
-            elo: p.elo_rating || 1000,
-            level: p.trainer_level || 1,
-            badges: p.badges || 0,
-            playerClass: p.player_class,
-            faction: p.faction,
-            nick_style: p.nick_style,
-            avatar_style: p.avatar_style,
-            isOnline: !!isOnline
-          }
-        })
-      }
-    } catch (err) {
-      logger.error('Social', `Leaderboard error: ${(err as Error).message}`)
-    } finally {
-      leaderboardLoading.value = false
-    }
+    await leaderboardStore.fetchLeaderboard(sortBy)
   }
 
   return {

@@ -10,7 +10,7 @@
  *  - GSAP Exclusive: all motion via gsap timelines / onComplete.
  *  - Zero-Any / Zero-Ignore TypeScript policy.
  */
-import { computed, onMounted, onBeforeUnmount, watch, useTemplateRef } from 'vue'
+import { computed, onMounted, onBeforeUnmount, watch, useTemplateRef, nextTick } from 'vue'
 import { gsap } from 'gsap'
 import { useGameStore } from '@/stores/game'
 import { useModalStore } from '@/stores/modals'
@@ -44,6 +44,8 @@ const wiggleTimelines = new Map<string, gsap.core.Timeline>()
 
 /** Kick off an infinite wiggle on the egg icon of a ready egg card. */
 function startWiggle(uid: string): void {
+  // Guard: bail out if uid is undefined or empty — the DOM node won't exist yet.
+  if (!uid || uid === 'undefined') return
   if (wiggleTimelines.has(uid)) return
 
   const selector = `[data-egg-uid="${uid}"] .egg-icon`
@@ -69,7 +71,12 @@ function stopWiggle(uid: string): void {
 
 /** Synchronise wiggle timelines with current egg list. */
 function syncWiggles(): void {
-  const readyUids = new Set(eggs.value.filter(isReady).map(e => e.uid))
+  // Only process eggs with a valid uid — undefined means data not yet loaded.
+  const readyUids = new Set(
+    eggs.value
+      .filter(e => isReady(e) && e.uid != null && e.uid !== 'undefined')
+      .map(e => e.uid)
+  )
 
   // Start wiggles for newly ready eggs
   for (const uid of readyUids) {
@@ -95,14 +102,16 @@ function animateIn(): void {
 // ─── Lifecycle ────────────────────────────────────────────────────────────────
 onMounted(() => {
   animateIn()
-  syncWiggles()
+  // nextTick ensures the v-for has rendered [data-egg-uid] attributes
+  // before GSAP tries to query them with a CSS selector.
+  nextTick(() => syncWiggles())
 })
 
 onBeforeUnmount(() => {
   for (const uid of wiggleTimelines.keys()) stopWiggle(uid)
 })
 
-watch(eggs, syncWiggles, { deep: false })
+watch(eggs, () => nextTick(() => syncWiggles()), { deep: false })
 
 // ─── Actions ──────────────────────────────────────────────────────────────────
 function hatchEgg(egg: PokemonEgg): void {

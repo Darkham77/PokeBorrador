@@ -24,7 +24,7 @@
   justify-content: center;
   position: relative;
   filter: Drop-Shadow(0 0 15px Rgba(255, 215, 0, 0.2));
-  animation: float 4s ease-in-out infinite;
+  will-change: transform;
 }
 
 .tier-image {
@@ -65,18 +65,9 @@
     line-height: 1;
     filter: Drop-Shadow(0 2px 4px Rgba(0, 0, 0, 0.5)) Drop-Shadow(0 0 8px color-mix(in srgb, var(--tier-color) 50%, transparent));
     user-select: none;
-    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     display: inline-block;
+    will-change: transform;
   }
-
-  &:hover .emoji {
-    transform: Scale(1.15) Rotate(5deg);
-  }
-}
-
-@keyframes float {
-  0%, 100% { transform: Translatey(0); }
-  50% { transform: Translatey(-6px); }
 }
 
 .tier-info {
@@ -180,13 +171,7 @@
   cursor: pointer;
   background: Rgba(255, 255, 255, 0.03);
   color: Rgba(148, 163, 184, 0.6);
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-
-  &:hover {
-    background: Rgba(255, 255, 255, 0.08);
-    color: var(--white);
-    border-color: Rgba(255, 255, 255, 0.15);
-  }
+  will-change: background-color, color, border-color;
 
   &.active {
     background: Rgba(34, 197, 94, 0.15);

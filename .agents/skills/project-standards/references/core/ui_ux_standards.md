@@ -84,8 +84,11 @@ We prioritize a deliberate contrast between modern, sleek UI shells and classic,
     - **Desktop Rule**: On screens > 1410px, the bottom nav is HIDDEN unless `isHudHidden` is true (scroll-down).
     - **Implementation**: Sync using a `.hud-visible-active` class on the container that forces `display: flex !important`.
   - **Permission Persistence**: Persist PWA setup and notification permission states in `localStorage` to avoid re-triggering intrusive setup modals on every session.
-  - **The "Deep Reset" Mandate (Resolution Sync)**: Transitions from Login/Title screens to the main game MUST be handled via physical reload (`window.location.href = '/'`) instead of SPA navigation (`router.push`).
+  - **The "Deep Reset" Mandate (Resolution Sync)**: Transitions from Login/Title screens to the main game MUST be handled via physical reload (`window.location.href = import.meta.env.BASE_URL`) instead of SPA navigation (`router.push`).
     - **WHY**: Standalone PWA windows frequently glitch their internal viewport dimensions (`100dvh`) during internal navigation. A physical reload forces a hardware-level re-sync of the viewport and manifest state.
+    - **WHY (GitHub Pages)**: Hardcoding `'/'` breaks GitHub Pages deployments where the app lives at a subpath (e.g., `/Pokemon-Online/`). Always use `import.meta.env.BASE_URL` which resolves to the correct base path in all environments (`'/'` locally, `'/Pokemon-Online/'` on GH Pages).
+    - **FORBIDDEN**: Using `router.push('/')` for post-login navigation. This routes to the legacy `GameView.vue` stub (unimplemented) instead of letting `App.vue` correctly initialize `MainGameView` after session detection. It also breaks the PWA standalone viewport and GitHub Pages base URL simultaneously.
+    - **Correct Implementation**: `window.location.href = import.meta.env.BASE_URL` (in both online login and local login handlers).
 - **GSAP State Fail-safe**: Every global state change triggered by a visual transition (e.g., `open`, `close` in `ModalStore`) MUST include a `gsap.delayedCall` fallback (approx. 450-500ms) to ensure state integrity even if a component-level animation fails to report back.
   - **Reactive Scale Injection (Zoom)**: Any component responsible for the primary visual scale (e.g., `App.vue`) MUST use a `watch` on the user session state to re-apply the global zoom factor (`uiStore.setZoom`).
     - **WHY**: Ensures that if the browser resets its zoom factor during a session transition, the game engine explicitly re-asserts the correct pixel-perfect scale.

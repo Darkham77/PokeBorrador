@@ -7,7 +7,7 @@ import { formatCurrency } from '@/logic/utils/formatters'
 import { useAuthStore } from '@/stores/auth'
 import { useModalStore } from '@/stores/modals'
 import { useChatStore } from '@/stores/chat'
-import { useSocialStore } from '@/stores/social'
+import { useSocialStore, type Friend } from '@/stores/social'
 import BaseModal from '@/components/common/BaseModal.vue'
 import TrainerAvatar from '@/components/TrainerAvatar.vue'
 
@@ -166,7 +166,7 @@ watch(() => props.userId, () => {
 const trainerName = computed(() => {
   const cached = props.userId ? chatStore.profileCosmetics[props.userId] : null
   if (cached?.username) return cached.username
-  const friend = props.userId ? socialStore.friends.find(f => f.id === props.userId) : null
+  const friend = props.userId ? socialStore.friends.find((f: Friend) => f.id === props.userId) : null
   if (friend?.username) return friend.username
   return saveState.value?.trainer || profile.value?.username || 'Entrenador'
 })
@@ -178,7 +178,7 @@ const faction = computed(() => {
 const playerClass = computed(() => {
   const cached = props.userId ? chatStore.profileCosmetics[props.userId] : null
   if (cached?.player_class !== undefined) return cached.player_class
-  const friend = props.userId ? socialStore.friends.find(f => f.id === props.userId) : null
+  const friend = props.userId ? socialStore.friends.find((f: Friend) => f.id === props.userId) : null
   if (friend?.playerClass !== undefined) return friend.playerClass
   return profile.value?.player_class || saveState.value?.playerClass || null
 })
@@ -191,7 +191,7 @@ const classDef = computed(() => {
 const trainerLevel = computed(() => {
   const cached = props.userId ? chatStore.profileCosmetics[props.userId] : null
   if (cached?.trainer_level !== undefined) return cached.trainer_level
-  const friend = props.userId ? socialStore.friends.find(f => f.id === props.userId) : null
+  const friend = props.userId ? socialStore.friends.find((f: Friend) => f.id === props.userId) : null
   if (friend?.level !== undefined) return friend.level
   return profile.value?.trainer_level ?? saveState.value?.trainerLevel ?? 1
 })
@@ -199,7 +199,7 @@ const trainerLevel = computed(() => {
 const avatarStyle = computed(() => {
   const cached = props.userId ? chatStore.profileCosmetics[props.userId] : null
   if (cached?.avatar_style !== undefined) return cached.avatar_style
-  const friend = props.userId ? socialStore.friends.find(f => f.id === props.userId) : null
+  const friend = props.userId ? socialStore.friends.find((f: Friend) => f.id === props.userId) : null
   if (friend?.avatar_style !== undefined) return friend.avatar_style
   return profile.value?.avatar_style ?? saveState.value?.avatar_style ?? ''
 })
@@ -207,7 +207,7 @@ const avatarStyle = computed(() => {
 const nickStyle = computed(() => {
   const cached = props.userId ? chatStore.profileCosmetics[props.userId] : null
   if (cached?.nick_style !== undefined) return cached.nick_style
-  const friend = props.userId ? socialStore.friends.find(f => f.id === props.userId) : null
+  const friend = props.userId ? socialStore.friends.find((f: Friend) => f.id === props.userId) : null
   if (friend?.nick_style !== undefined) return friend.nick_style
   return profile.value?.nick_style ?? saveState.value?.nick_style ?? ''
 })

@@ -245,40 +245,4 @@
   }
 }
 
-/* ==========================================================================
-   COMBATANT & BATTLE TRANSITION KEYFRAMES
-   ========================================================================== */
-
-@keyframes pokeball-wobble {
-  0%, 100% { transform: Rotate(0deg); }
-  25% { transform: Rotate(-20deg); }
-  75% { transform: Rotate(20deg); }
-}
-
-@keyframes pokeball-shake-blink { 
-  0%, 100% { will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  filter: Brightness(1); } 
-  50% { will-change: transform, filter, opacity;
-  filter: Brightness(2) Hue-Rotate(10deg); } 
-}
-
-@keyframes pokeball-success-blink { 
-  0%, 100% { will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  filter: Brightness(1); } 
-  50% { will-change: transform, filter, opacity;
-  filter: Brightness(1.8) Sepia(0.5) Hue-Rotate(-10deg); } 
-}
-
-@keyframes catch-sparkle-out {
-  0% { transform: Translate(-50%, -50%) Scale(0) Rotate(0deg); opacity: 1; }
-  15% { transform: Translate(calc(-50% + var(--tx) * 0.15 * 1px), calc(-50% + var(--ty) * 0.6 * 1px)) Scale(calc(var(--scale) * 1.2)) Rotate(90deg); opacity: 1; }
-  35% { transform: Translate(calc(-50% + var(--tx) * 0.35 * 1px), calc(-50% + var(--ty) * 0.95 * 1px)) Scale(calc(var(--scale) * 1.1)) Rotate(180deg); opacity: 1; }
-  50% { transform: Translate(calc(-50% + var(--tx) * 0.5 * 1px), calc(-50% + var(--ty) * 1px)) Scale(var(--scale)) Rotate(360deg); opacity: 1; }
-  65% { transform: Translate(calc(-50% + var(--tx) * 0.65 * 1px), calc(-50% + var(--ty) * 0.95 * 1px)) Scale(calc(var(--scale) * 0.9)) Rotate(450deg); opacity: 1; }
-  85% { transform: Translate(calc(-50% + var(--tx) * 0.85 * 1px), calc(-50% + (var(--ty) * 0.5 + var(--tf) * 0.5) * 1px)) Scale(calc(var(--scale) * 0.7)) Rotate(540deg); opacity: 0.8; }
-  100% { transform: Translate(calc(-50% + var(--tx) * 1px), calc(-50% + var(--tf) * 1px)) Scale(0) Rotate(720deg); opacity: 0; }
-}
-
 

@@ -2,6 +2,9 @@ import { getMechanicalWeather, WEATHER_MECHANICAL } from '../weather/weatherRegi
 import { gameBus } from '@/logic/gameBus'
 import type { Pokemon } from '@/types/pokemon'
 import type { BattleStages, LogFn, BattleWeather } from '@/types/battle'
+import { tickStatus, tickLeechSeed } from './battleStatus.ts'
+import { useMapStore } from '@/stores/map.ts'
+import type { BattleContext } from '@/types/battleContext'
 
 export function handleEntryAbilities(playerPoke: Pokemon, enemyPoke: Pokemon, playerStages: BattleStages, enemyStages: BattleStages, addLog: LogFn) {
   if (!playerPoke || !enemyPoke) return // GUARDIA CRÍTICA
@@ -126,5 +129,70 @@ export function applyEndTurnWeather(p: Pokemon, e: Pokemon, weather: BattleWeath
         gameBus.emit('PLAY_SOUND', 'statusDamage');
       }
     });
+  }
+}
+
+export async function applyEndTurnEffects(ctx: BattleContext) {
+  const active = ctx.activeBattle.value
+  const p = active?.player
+  const e = active?.enemy
+  if (!p || !e || !active) return
+
+  const mapStore = useMapStore()
+
+  if (active.futureSightTurns && active.futureSightTurns > 0) {
+    active.futureSightTurns--
+    if (active.futureSightTurns === 0) {
+      const fsTarget = active.futureSightTarget
+      if (fsTarget && fsTarget.hp > 0) {
+        const dmg = Math.max(10, Math.floor(fsTarget.maxHp * 0.15))
+        fsTarget.hp = Math.max(0, fsTarget.hp - dmg)
+        ctx.addLog(`¡Se cumplió la premonición! ${fsTarget.name} recibió daño.`, 'log-info', fsTarget)
+        gameBus.emit('PLAY_SOUND', 'statusDamage')
+      }
+    }
+  }
+
+  tickStatus(p, ctx.addLog, 'player')
+  tickStatus(e, ctx.addLog, 'enemy')
+  tickLeechSeed(p, e, ctx.addLog)
+  tickLeechSeed(e, p, ctx.addLog)
+  
+  const w = active.weather
+  if (w && w.turns > 0) {
+    w.turns--
+    if (w.turns === 0) {
+      ctx.addLog(`¡El efecto de ${w.type} se desvaneció!`, 'log-info')
+      w.type = mapStore.currentWeather || 'clear'
+      w.turns = -1
+    }
+  }
+
+  const fieldEffects = ['reflect', 'lightScreen', 'safeguard', 'mist'] as const
+  const sides = [
+    { stages: ctx.playerStages, name: 'Jugador', log: 'log-player' as const },
+    { stages: ctx.enemyStages, name: 'Enemigo', log: 'log-enemy' as const }
+  ]
+  sides.forEach(side => {
+    fieldEffects.forEach(effect => {
+      const stages = side.stages.value
+      if (stages[effect] > 0) {
+        stages[effect]--
+        if (stages[effect] === 0) {
+          const effectLabel = effect === 'reflect' ? 'Reflejo' : effect === 'lightScreen' ? 'Pantalla Luz' : effect
+          ctx.addLog(`¡El efecto de ${effectLabel} del ${side.name} se desvaneció!`, side.log)
+        }
+      }
+    })
+  })
+
+  applyEndTurnWeather(p, e, active.weather, ctx.addLog)
+  
+  if (p.hp <= 0) await ctx.handleFaint('player')
+  if (ctx.isBattleActive.value && e.hp <= 0) await ctx.handleFaint('enemy')
+  
+  ctx.persistBattle()
+  if (active && !active.over) {
+    active.turnCount++
   }
 }
