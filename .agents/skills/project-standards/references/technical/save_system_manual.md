@@ -171,8 +171,10 @@ To prevent data loss during background service worker updates:
 ### 1. The "Save-Before-Update" Protocol
 
 - **Configuration**: `vite.config.ts` MUST use `registerType: 'prompt'`. Using `'autoUpdate'` is strictly FORBIDDEN as it can trigger reloads while the player is in an unsaved state.
-- **Implementation**: The update modal (`PWAManager.vue`) MUST call `gameStore.save(false)` before executing `updateServiceWorker()`.
-- **WHY**: Ensures that any progress made since the last 60s auto-save is persisted before the browser context is destroyed by the update.
+- **Implementation**: The update modal (`PWAManager.vue`) MUST call `gameStore.save(false)` before executing `updateServiceWorker(true)`.
+  - **Auto-Reload**: Always pass `true` to `updateServiceWorker(true)` to skip waiting and trigger an automatic page refresh.
+  - **Concurrent Clicks Prevention**: Disable the update button immediately after the first click and transition to a loading state to prevent the user from triggering multiple concurrent `gameStore.save()` calls.
+- **WHY**: Ensures that any progress made since the last 60s auto-save is persisted before the browser context is destroyed by the update, and prevents database write locks or data corruption from multiple parallel save operations.
 
 ---
 

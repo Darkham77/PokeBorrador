@@ -9,7 +9,7 @@
 
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { getActiveBushesForMap, BIOME_BUSH_CONFIG } from '../../src/logic/environment/bushLibrary.ts';
+import { getActiveBushesForMap, BIOME_BUSH_CONFIG, BUSH_FAMILIES } from '../../src/logic/environment/bushLibrary.ts';
 
 const baseBushes = [
   { id: 1, cls: 'bush-front-1', scale: 1.3, tx: -60, ty: 10, ad: '1.2s', ay: '0s' },
@@ -21,10 +21,11 @@ describe('Bush Library (bushLibrary.ts)', () => {
     const bushes = getActiveBushesForMap('route1', 'front', 12345, baseBushes);
     assert.strictEqual(bushes.length, 2);
     
-    // Ruta 1 es isPlains (95% pastos, 5% rocas)
+    // Ruta 1 es isPlains
     const first = bushes[0];
     assert.ok(first);
-    assert.ok(['grass', 'rock', 'box'].includes(first.family));
+    assert.ok(Object.keys(BUSH_FAMILIES).includes(first.family));
+    assert.ok(['bush', 'tree', 'none'].includes(first.animationType));
     assert.ok(typeof first.randomScale === 'number');
     assert.ok(first.randomScale > 0.5);
     assert.ok(first.flip === 1 || first.flip === -1);
@@ -36,12 +37,63 @@ describe('Bush Library (bushLibrary.ts)', () => {
     assert.ok(bushes.length > 0);
   });
 
-  it('debe priorizar isArctic sobre isCave para Islas Espuma (seafoam_islands)', () => {
-    const bushes = getActiveBushesForMap('seafoam_islands', 'front', 777, baseBushes);
-    assert.strictEqual(bushes.length, 2);
-    const first = bushes[0];
-    assert.ok(first);
-    assert.strictEqual(first.tintClass, 'tint-arctic');
+  it('debe aplicar tinte marrón (tint-cave) solo a las rocas en biomas de cueva', () => {
+    // mt_moon es un mapa de cueva (isCave)
+    const bushes = getActiveBushesForMap('mt_moon', 'front', 42, baseBushes);
+    assert.ok(bushes.length > 0);
+    for (const bush of bushes) {
+      if (bush.family === 'rock') {
+        assert.strictEqual(bush.tintClass, 'tint-cave');
+      }
+    }
+  });
+
+  it('debe aplicar la configuración de cueva de cristal (rocas y mezcla de cristales) en Cueva Celeste', () => {
+    // cerulean_cave es isCrystalCave
+    let foundRock = false;
+    let foundCrystal = false;
+
+    for (let seed = 0; seed < 100; seed++) {
+      const bushes = getActiveBushesForMap('cerulean_cave', 'front', seed, baseBushes);
+      assert.strictEqual(bushes.length, 2);
+      
+      for (const bush of bushes) {
+        if (bush.family === 'rock') {
+          foundRock = true;
+          assert.strictEqual(bush.tintClass, 'tint-cave');
+        } else {
+          foundCrystal = true;
+          assert.ok(bush.family.startsWith('crystal'), `Debería ser una familia de cristal (obtenido: ${bush.family})`);
+          assert.strictEqual(bush.tintClass, '');
+        }
+      }
+    }
+
+    assert.ok(foundRock, 'Debería haber generado al menos un elemento rock');
+    assert.ok(foundCrystal, 'Debería haber generado al menos un elemento de cristal');
+  });
+
+  it('debe priorizar isArctic sobre isCave e imponer tinte ártico solo a la familia rock en Islas Espuma', () => {
+    // Probamos con múltiples semillas para asegurar cobertura de ambas familias ('rock' y 'bush')
+    let foundRock = false;
+    let foundBush = false;
+
+    for (let seed = 0; seed < 100; seed++) {
+      const bushes = getActiveBushesForMap('seafoam_islands', 'front', seed, baseBushes);
+      assert.strictEqual(bushes.length, 2);
+      
+      for (const bush of bushes) {
+        if (bush.family === 'rock') {
+          foundRock = true;
+          assert.strictEqual(bush.tintClass, 'tint-arctic');
+        } else if (bush.family === 'bushsnow') {
+          foundBush = true;
+          assert.strictEqual(bush.tintClass, '');
+        }
+      }
+    }
+    assert.ok(foundRock, 'Debería haber generado al menos un elemento rock');
+    assert.ok(foundBush, 'Debería haber generado al menos un elemento bush');
   });
 
   it('debe ser determinista para la misma semilla de sesión y capa', () => {
@@ -60,10 +112,12 @@ describe('Bush Library (bushLibrary.ts)', () => {
 
   it('debe contener la configuración correcta de biomas en BIOME_BUSH_CONFIG', () => {
     assert.ok(BIOME_BUSH_CONFIG['isDesert']);
-    assert.strictEqual(BIOME_BUSH_CONFIG['isDesert'].tint, 'tint-desert');
-    assert.strictEqual(BIOME_BUSH_CONFIG['isDesert'].weights.rock, 95);
+    assert.strictEqual(BIOME_BUSH_CONFIG['isDesert'].tint?.class, 'tint-desert');
+    assert.deepStrictEqual(BIOME_BUSH_CONFIG['isDesert'].tint?.families, ['rock']);
+    assert.strictEqual(BIOME_BUSH_CONFIG['isDesert'].weights.rock, 70);
 
     assert.ok(BIOME_BUSH_CONFIG['isSwamp']);
-    assert.strictEqual(BIOME_BUSH_CONFIG['isSwamp'].tint, 'tint-swamp');
+    assert.strictEqual(BIOME_BUSH_CONFIG['isSwamp'].tint?.class, 'tint-swamp');
+    assert.strictEqual(BIOME_BUSH_CONFIG['isSwamp'].tint?.families, undefined);
   });
 });

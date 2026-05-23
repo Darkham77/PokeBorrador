@@ -19,7 +19,7 @@ export function useSaveActions(
   const loadingStore = useLoadingStore()
 
   async function loadGame() {
-    loadingStore.start('game_data', 'Cargando datos...', 'Leyendo partida guardada', false)
+    loadingStore.start('game_data', 'Cargando datos...', 'Leyendo partida guardada', false, '📂')
     
     if (!authStore.user) {
       return { success: true, guest: true }

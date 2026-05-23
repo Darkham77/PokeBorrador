@@ -74,7 +74,21 @@
         <div class="update-warning">
           Se guardará tu progreso antes de reiniciar.
         </div>
+        
+        <div
+          v-if="isUpdating"
+          class="pwa-progress-wrapper"
+        >
+          <div class="pwa-progress-container">
+            <div
+              class="pwa-progress-bar"
+              :style="{ width: `${progress}%` }"
+            />
+          </div>
+          <span class="pwa-progress-text">{{ progressText }}</span>
+        </div>
         <button
+          v-else
           class="pv-button-retro"
           @click.stop="handleUpdate"
         >
@@ -112,6 +126,9 @@ const { canInstall, installApp, needRefresh, updateServiceWorker } = usePWA() as
 
 const showInstallModal = ref(false)
 const showPermissionsModal = ref(false)
+const isUpdating = ref(false)
+const progress = ref(0)
+const progressText = ref('')
 
 // Gestión de Instalación
 watch(canInstall, (val) => {
@@ -180,17 +197,39 @@ const handlePermissions = async () => {
 
 // Gestión de Actualizaciones
 const handleUpdate = async () => {
+  // Prevent concurrent click updates
+  if (isUpdating.value) return
+  isUpdating.value = true
+  progress.value = 10
+  progressText.value = 'Iniciando guardado...'
+
   // Intentar guardar el juego antes de recargar
   if (authStore.user && gameStore.save) {
     try {
+      progress.value = 30
+      progressText.value = 'Guardando progreso...'
       await gameStore.save(false)
+      progress.value = 60
+      progressText.value = 'Progreso guardado.'
       logger.success('PWA', 'Juego guardado antes de actualizar SW')
     } catch (e) {
       logger.error('PWA', `Error al guardar antes de actualizar: ${(e as Error).message}`)
+      progressText.value = 'Error al guardar. Continuando...'
     }
   }
   
-  updateServiceWorker()
+  progress.value = 80
+  progressText.value = 'Aplicando actualización...'
+  
+  try {
+    await updateServiceWorker(true)
+    progress.value = 100
+    progressText.value = 'Reiniciando...'
+  } catch (e) {
+    logger.error('PWA', `Error al actualizar Service Worker: ${(e as Error).message}`)
+    // Fallback en caso de fallo crítico en la actualización del SW: recarga forzada
+    window.location.reload()
+  }
 }
 
 onMounted(() => {
@@ -290,5 +329,38 @@ onMounted(() => {
     transform: Translatey(2px);
     box-shadow: 0 0 0 #b39200;
   }
+}
+
+.pwa-progress-wrapper {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.pwa-progress-container {
+  width: 100%;
+  height: 16px;
+  background: Rgba(0, 0, 0, 0.5);
+  border: 2px solid var(--yellow);
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+
+.pwa-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--yellow) 0%, #ffc107 100%);
+  box-shadow: 0 0 8px var(--yellow);
+  transition: width 0.3s ease;
+}
+
+.pwa-progress-text {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
+  color: #fff;
+  text-shadow: 1px 1px 0 #000;
+  @include pixelated;
 }
 </style>

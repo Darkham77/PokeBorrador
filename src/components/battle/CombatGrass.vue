@@ -2,7 +2,7 @@
 import { computed, ref, onUnmounted } from 'vue'
 import { gsap } from 'gsap'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import { getActiveBushesForMap, type ResolvedBushConfig } from '@/logic/environment/bushLibrary'
+import { getActiveBushesForMap, type ResolvedBushConfig, BUSH_FAMILIES, type BushFamily } from '@/logic/environment/bushLibrary'
 
 interface Props {
   locationId?: string
@@ -23,13 +23,9 @@ const props = withDefaults(defineProps<Props>(), {
 
 const handleImageError = (e: Event, family: string) => {
   const target = e.target as HTMLImageElement
-  if (family === 'rock') {
-    target.src = getAssetUrl(ASSET_TYPES.ENVIRONMENT, 'rock')
-  } else if (family === 'box') {
-    target.src = getAssetUrl(ASSET_TYPES.ENVIRONMENT, 'box-1')
-  } else {
-    target.src = getAssetUrl(ASSET_TYPES.ENVIRONMENT, 'tall-grass')
-  }
+  const familyAssets = BUSH_FAMILIES[family as BushFamily]
+  const fallback = familyAssets && familyAssets[0] ? familyAssets[0] : 'bush-1'
+  target.src = getAssetUrl(ASSET_TYPES.ENVIRONMENT, fallback)
 }
 
 interface BushConfig {
@@ -109,19 +105,34 @@ const startWiggles = () => {
     if (!img) return
     
     const config = activeBushes.value[i]
-    if (!config || config.family !== 'grass') return // Solo se mueven los pastos
+    if (!config || config.animationType === 'none') return
 
     const duration = parseFloat(config.ad)
     const delay = parseFloat(config.ay)
 
-    wiggleTweens.push(gsap.to(img, {
-      rotation: 5,
-      duration: duration / 2,
-      delay: Math.abs(delay),
-      yoyo: true,
-      repeat: -1,
-      ease: 'sine.inOut'
-    }))
+    if (config.animationType === 'tree') {
+      // Balanceo lento y suave usando rotation/skewX desde la base (bottom center)
+      wiggleTweens.push(gsap.to(img, {
+        transformOrigin: 'bottom center',
+        rotation: 2,
+        skewX: 1,
+        duration: duration * 1.5,
+        delay: Math.abs(delay),
+        yoyo: true,
+        repeat: -1,
+        ease: 'sine.inOut'
+      }))
+    } else if (config.animationType === 'bush') {
+      // Rotación rápida clásica (vaivén de arbusto)
+      wiggleTweens.push(gsap.to(img, {
+        rotation: 5,
+        duration: duration / 2,
+        delay: Math.abs(delay),
+        yoyo: true,
+        repeat: -1,
+        ease: 'sine.inOut'
+      }))
+    }
   })
 }
 
@@ -209,12 +220,10 @@ onUnmounted(() => {
   @include pixelated;
   will-change: transform;
 
-  // Tintes ambientales mediante filtros combinados
   &.tint-desert .pixel-bush { filter: Sepia(0.5) Saturate(0.7) Hue-rotate(10deg) Brightness(0.95); }
   &.tint-swamp .pixel-bush  { filter: Brightness(0.75) Saturate(1.2) Hue-rotate(20deg); }
   &.tint-arctic .pixel-bush { filter: Saturate(0) Brightness(1.8) Contrast(1.15); }
-
-
+  &.tint-cave .pixel-bush   { filter: Sepia(0.3) Saturate(0.95) Hue-rotate(-15deg) Brightness(0.9); }
 }
 
 .pixel-bush { 

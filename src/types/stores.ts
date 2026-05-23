@@ -19,6 +19,7 @@ export interface WorldMap {
   lv: [number, number];
   isCave?: boolean;
   isIndoors?: boolean;
+  isCrystalCave?: boolean;
   fishing?: { pool: string[]; rates: number[]; lv: [number, number] };
   weather?: Record<string, { visitors: Record<string, number>; exclusive?: Record<string, number> }>;
 }

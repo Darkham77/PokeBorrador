@@ -1,76 +1,66 @@
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
+import { MAP_ROUTE_MAPPING, AVAILABLE_BATTLE_MAPS } from '@/data/map-assets'
 
-/**
- * Maps each location to a biome key.
- * Biomes: bosque | montana | playa | puente | ruta | pvp | tower | safari | mansion | celeste | espuma | central
- */
-const BIOME_MAP = {
-  // Forest / jungle
-  forest: 'bosque', route2: 'bosque', route25: 'puente',
-  // Mountain / cave
-  cave: 'montana', mt_moon: 'montana', rock_tunnel: 'montana',
-  victory_road: 'montana', diglett_cave: 'montana',
-  cerulean_cave: 'celeste',
-  // Water / beach
-  water: 'playa', seafoam_islands: 'espuma',
-  // Safaris & Mansions
-  safari_zone: 'safari', mansion: 'mansion',
-  // Bridge routes
-  route24: 'puente', route12: 'puente',
-  // Pokemon Tower
-  pokemon_tower: 'tower',
-  // Gym / pvp
-  gym: 'pvp', pvp: 'pvp',
-  // Central / Power Plant
-  power_plant: 'central',
-  // Default routes → ruta
-}
-
-const BG_ASSETS = {
-  bosque: ['dawn', 'day', 'night'],
-  montana: ['dawn', 'day', 'dusk', 'night'],
-  playa: ['dawn', 'day', 'night'],
-  puente: ['dawn', 'day', 'dusk', 'night'],
-  ruta: ['dawn', 'day', 'night'],
-  pvp: ['dawn', 'day', 'night'],
-  // Special ones with single image or specific names
-  tower: 'pokemon_tower_bg',
-  safari: 'zonasafari',
-  mansion: 'mansionpokemon',
-  celeste: 'cuevaceleste',
-  espuma: 'islasespuma',
-  central: 'centralenergía',
-  fishing: 'bg_fishing'
+const CYCLE_SUFFIXES: Record<string, string> = {
+  // English keys
+  morning: '_amanecer',
+  dawn: '_amanecer',
+  day: '_dia',
+  dusk: '_atardecer',
+  night: '_noche',
+  // Spanish keys (fallbacks)
+  amanecer: '_amanecer',
+  dia: '_dia',
+  atardecer: '_atardecer',
+  noche: '_noche'
 }
 
 export function useBattleBackground() {
   /**
    * Returns the asset URL for a given location and time of day.
    * @param {string} locationId 
-   * @param {string} cycle - dawn | day | dusk | night
-   * @param {boolean} isFishing 
+   * @param {string} cycle - morning | day | dusk | night
+   * @param {boolean} _isFishing - Unused (same as normal battle background)
    * @returns {{ url: string, isBakedIn: boolean }}
    */
-  function getBackgroundUrl(locationId: string, cycle = 'day', isFishing = false) {
-    if (isFishing) return { url: getAssetUrl(ASSET_TYPES.BATTLE_BG, 'bg_fishing'), isBakedIn: false }
+  function getBackgroundUrl(locationId: string, cycle = 'day', _isFishing = false) {
+    let baseName = MAP_ROUTE_MAPPING[locationId as keyof typeof MAP_ROUTE_MAPPING]
+    if (!baseName) {
+      if (locationId === 'gym' || locationId === 'pvp') {
+        baseName = 'gimnasio'
+      } else {
+        baseName = 'ruta1' // Default fallback
+      }
+    }
 
-    const biome = (BIOME_MAP as Record<string, string>)[locationId] || 'ruta'
-    const assetDef = (BG_ASSETS as Record<string, string | string[]>)[biome]
+    const suffix = CYCLE_SUFFIXES[cycle.toLowerCase()] || '_dia'
+    const battleMapsSet = new Set<string>(AVAILABLE_BATTLE_MAPS)
 
-    let fileName;
+    let fileName = `${baseName}${suffix}`
     let isBakedIn = false
-    if (Array.isArray(assetDef)) {
-      // Check if the specific cycle exists for this biome, fallback to 'day'
-      const variant = assetDef.includes(cycle) ? cycle : 'day'
-      fileName = `${biome}_${variant}`
-      isBakedIn = variant !== 'day' // Si no es el default, tiene el ciclo horneado
+
+    if (battleMapsSet.has(fileName)) {
+      // The cycle-suffixed file exists
+      isBakedIn = suffix !== '_dia'
     } else {
-      // Static biome image
-      fileName = assetDef
+      // Fallback to day version
+      const dayFileName = `${baseName}_dia`
+      if (battleMapsSet.has(dayFileName)) {
+        fileName = dayFileName
+        isBakedIn = false
+      } else if (battleMapsSet.has(baseName)) {
+        // Fallback to base name without suffix
+        fileName = baseName
+        isBakedIn = false
+      } else {
+        // Ultimate fallback
+        fileName = 'ruta1_dia'
+        isBakedIn = false
+      }
     }
 
     return {
-      url: getAssetUrl(ASSET_TYPES.BATTLE_BG, fileName || 'ruta_day'),
+      url: getAssetUrl(ASSET_TYPES.BATTLE_BG, fileName),
       isBakedIn
     }
   }

@@ -85,7 +85,7 @@ export const useAuthStore = defineStore('auth', () => {
     }
 
     loading.value = true
-    useLoadingStore().start('auth_init', 'Iniciando sesión...', 'Conectando con el servidor', false)
+    useLoadingStore().start('auth_init', 'Iniciando sesión...', 'Conectando con el servidor', false, '📶')
     try {
       if (sessionMode.value === 'online') {
         // Sincronizar el enrutador en modo online antes de pedir la sesión
@@ -178,7 +178,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   async function login(email: string, password: string) {
     const loadingStore = useLoadingStore()
-    loadingStore.start('auth_action', 'Verificando credenciales...', 'Por favor espera', true)
+    loadingStore.start('auth_action', 'Verificando credenciales...', 'Por favor espera', true, '🔑')
     
     try {
       if (supabase && typeof supabase.setMode === 'function') {
@@ -291,7 +291,7 @@ export const useAuthStore = defineStore('auth', () => {
   async function localLogin(name: string) {
     loading.value = true
     const loadingStore = useLoadingStore()
-    loadingStore.start('auth_action', 'Entrando como invitado...', 'Preparando partida local', true)
+    loadingStore.start('auth_action', 'Entrando como invitado...', 'Preparando partida local', true, '🎮')
     try {
       const userData = {
         id: 'local_' + name.toLowerCase().replace(/\s+/g, '_'),

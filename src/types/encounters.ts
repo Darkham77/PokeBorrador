@@ -21,6 +21,7 @@ export interface MapLocation {
   desc?: string;
   isCave?: boolean;
   isIndoors?: boolean;
+  isCrystalCave?: boolean;
   wild?: {
     morning?: string[];
     day?: string[];

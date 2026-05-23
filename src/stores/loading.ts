@@ -9,6 +9,7 @@ export interface LoadingItem {
   subMessage: string;
   isGlobal: boolean;
   timestamp: number;
+  icon?: string;
 }
 
 export const useLoadingStore = defineStore('loading', () => {
@@ -23,11 +24,12 @@ export const useLoadingStore = defineStore('loading', () => {
    * @param {string} message - Primary message to display
    * @param {string} subMessage - Secondary/hint text
    * @param {boolean} isGlobal - If true, it uses the dark global overlay (higher priority)
+   * @param {string} icon - Emoji or icon to display (default: '📶')
    */
-  function start(id: string, message = 'Procesando...', subMessage = 'Por favor, no cierres la ventana', isGlobal = true) {
+  function start(id: string, message = 'Procesando...', subMessage = 'Por favor, no cierres la ventana', isGlobal = true, icon = '📶') {
     // If ID already exists, update it instead of pushing
     const index = stack.value.findIndex(item => item.id === id)
-    const payload: LoadingItem = { id, message, subMessage, isGlobal, timestamp: Temporal.Now.instant().epochMilliseconds }
+    const payload: LoadingItem = { id, message, subMessage, isGlobal, timestamp: Temporal.Now.instant().epochMilliseconds, icon }
     
     if (index !== -1) {
       stack.value[index] = payload

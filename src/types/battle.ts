@@ -31,6 +31,7 @@ export interface BattleState {
   locationId: string;
   isCave?: boolean;
   isIndoors?: boolean;
+  isCrystalCave?: boolean;
   isTrainer: boolean;
   trainerName?: string;
   isGym?: boolean;

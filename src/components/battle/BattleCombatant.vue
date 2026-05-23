@@ -261,7 +261,7 @@ watch(isBallVisible, (visible) => {
 }, { immediate: true })
 
 const handleImageError = (e: Event) => {
-  (e.target as HTMLImageElement).src = getAssetUrl(ASSET_TYPES.ENVIRONMENT, 'tall-grass')
+  (e.target as HTMLImageElement).src = getAssetUrl(ASSET_TYPES.ENVIRONMENT, 'bush-1')
 }
 
 const handleBallError = (e: Event) => {
@@ -900,7 +900,7 @@ const onBallLeave = (el: Element, done: () => void) => {
             :data-delay="s.delay"
           >
             <img
-              :src="getAssetUrl(ASSET_TYPES.ENVIRONMENT, 'shiny')"
+              :src="getAssetUrl(ASSET_TYPES.FX, 'shiny')"
               class="shiny-asset-mini"
               alt="Sparkle"
             >

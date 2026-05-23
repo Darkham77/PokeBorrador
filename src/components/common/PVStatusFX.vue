@@ -257,7 +257,7 @@ onUnmounted(() => {
           class="shiny-asset-wrapper"
         >
           <img
-            :src="getAssetUrl(ASSET_TYPES.ENVIRONMENT, 'shiny')"
+            :src="getAssetUrl(ASSET_TYPES.FX, 'shiny')"
             class="shiny-asset"
             alt="Shiny"
           >

@@ -18,7 +18,7 @@ export function usePokemonActions(
   
   async function chooseStarter(id: string) {
     const loadingStore = useLoadingStore()
-    loadingStore.start('choose_starter', 'Preparando aventura...', 'Asignando primer compañero', true)
+    loadingStore.start('choose_starter', 'Preparando aventura...', 'Asignando primer compañero', true, '🎒')
     
     const uiStore = useUIStore()
     const starter = makePokemon(id, 5)

@@ -7,12 +7,12 @@
       background: radial-gradient(circle at 50% 50%, 
         transparent 0%, 
         transparent 40%, 
-        rgba(255, 255, 255, 0.05) 60%, 
-        rgba(255, 255, 255, 0.2) 100%
+        Rgba(255, 255, 255, 0.05) 60%, 
+        Rgba(255, 255, 255, 0.2) 100%
       );
       box-shadow: 
-        inset 0 0 35px rgba(255, 255, 255, 0.5),
-        inset 0 0 80px rgba(255, 255, 255, 0.15);
+        inset 0 0 35px Rgba(255, 255, 255, 0.5),
+        inset 0 0 80px Rgba(255, 255, 255, 0.15);
       pointer-events: none;
       z-index: var(--z-low);
     }
@@ -27,56 +27,56 @@
       background: radial-gradient(circle at 50% 50%, 
         transparent 0%, 
         transparent 75%, 
-        rgba(200, 230, 255, 0.01) 85%, 
-        rgba(200, 230, 255, 0.05) 100%
+        Rgba(200, 230, 255, 0.01) 85%, 
+        Rgba(200, 230, 255, 0.05) 100%
       );
       box-shadow: 
-        inset 0 0 15px rgba(255, 255, 255, 0.1),
-        inset 0 0 30px rgba(255, 255, 255, 0.02);
+        inset 0 0 15px Rgba(255, 255, 255, 0.1),
+        inset 0 0 30px Rgba(255, 255, 255, 0.02);
       pointer-events: none;
       z-index: var(--z-low);
     }
   }
 
   &.cold {
-    background: rgba(100, 180, 255, 0.05); // Tinte azul gélido muy sutil
+    background: Rgba(100, 180, 255, 0.05); // Tinte azul gélido muy sutil
     &::after {
       content: '';
       position: absolute;
       inset: 0;
       background: radial-gradient(circle at 50% 50%, 
         transparent 40%, 
-        rgba(180, 220, 255, 0.08) 100%
+        Rgba(180, 220, 255, 0.08) 100%
       );
-      box-shadow: inset 0 0 40px rgba(180, 220, 255, 0.1);
+      box-shadow: inset 0 0 40px Rgba(180, 220, 255, 0.1);
       pointer-events: none;
       z-index: var(--z-low);
     }
   }
 
   &.coldwave {
-    background: rgba(150, 200, 255, 0.15); // Tinte azul más fuerte
+    background: Rgba(150, 200, 255, 0.15); // Tinte azul más fuerte
     &::after {
       content: '';
       position: absolute;
       inset: 0;
       background: radial-gradient(circle at 50% 50%, 
         transparent 20%, 
-        rgba(200, 240, 255, 0.15) 100%
+        Rgba(200, 240, 255, 0.15) 100%
       );
       box-shadow: 
-        inset 0 0 60px rgba(200, 240, 255, 0.2),
-        inset 0 0 100px rgba(255, 255, 255, 0.1);
+        inset 0 0 60px Rgba(200, 240, 255, 0.2),
+        inset 0 0 100px Rgba(255, 255, 255, 0.1);
       pointer-events: none;
       z-index: var(--z-low);
     }
   }
 
   &.snow {
-    background: rgba(255, 255, 255, 0.25);
+    background: Rgba(255, 255, 255, 0.25);
 
     &.night {
-      background: rgba(255, 255, 255, 0.1) !important;
+      background: Rgba(255, 255, 255, 0.1) !important;
     }
     & .snow-layer {
       position: absolute;
@@ -104,7 +104,7 @@
   }
 
   &.hail {
-    background: rgba(176, 196, 222, 0.2);
+    background: Rgba(176, 196, 222, 0.2);
     & .hail-layer {
       position: absolute;
       inset: -100px;
@@ -125,7 +125,7 @@
   }
 
   &.blizzard {
-    background: rgba(255, 255, 255, 0.35);
+    background: Rgba(255, 255, 255, 0.35);
     
     & .snow-layer {
       position: absolute;
@@ -151,19 +151,19 @@
 
   // Cyan halo
   &.cold {
-    background: radial-gradient(circle at center, transparent 30%, rgba(0, 255, 255, 0.05) 100%);
+    background: radial-gradient(circle at center, transparent 30%, Rgba(0, 255, 255, 0.05) 100%);
     &::after {
       content: '';
       position: absolute;
       inset: 0;
-      background: radial-gradient(circle, rgba(0, 255, 255, 0) 60%, rgba(0, 255, 255, 0.1) 100%);
-      box-shadow: inset 0 0 40px rgba(0, 255, 255, 0.05);
+      background: radial-gradient(circle, Rgba(0, 255, 255, 0) 60%, Rgba(0, 255, 255, 0.1) 100%);
+      box-shadow: inset 0 0 40px Rgba(0, 255, 255, 0.05);
       pointer-events: none;
     }
   }
 
   &.coldwave {
-    background: radial-gradient(circle at center, transparent 20%, rgba(0, 200, 255, 0.1) 100%);
+    background: radial-gradient(circle at center, transparent 20%, Rgba(0, 200, 255, 0.1) 100%);
     &::after {
       content: '';
       position: absolute;
@@ -171,12 +171,12 @@
       pointer-events: none;
       z-index: var(--z-low);
       
-      background: radial-gradient(circle at center, transparent 30%, rgba(0, 255, 255, 0.1) 100%);
+      background: radial-gradient(circle at center, transparent 30%, Rgba(0, 255, 255, 0.1) 100%);
       
       box-shadow: 
-        inset 0 0 20px rgba(150, 240, 255, 0.95),
-        inset 0 0 50px rgba(0, 180, 255, 0.6),
-        inset 0 0 150px rgba(0, 150, 255, 0.2);
+        inset 0 0 20px Rgba(150, 240, 255, 0.95),
+        inset 0 0 50px Rgba(0, 180, 255, 0.6),
+        inset 0 0 150px Rgba(0, 150, 255, 0.2);
     }
   }
 
@@ -187,14 +187,14 @@
       will-change: transform, opacity;
 
       &.layer-1 {
-        background-image: url("/assets/environment/pattern-noise-1.webp");
+        background-image: url("/assets/fx/pattern-noise-1.webp");
         background-size: 256px 256px;
         z-index: calc(var(--z-base) + 1);
         transform: translate3d(calc(var(--seed-x, 0) * 0.5px), calc(var(--seed-y, 0) * 0.5px), 0);
       }
 
       &.layer-2 {
-        background-image: url("/assets/environment/pattern-noise-2.webp");
+        background-image: url("/assets/fx/pattern-noise-2.webp");
         background-size: 512px 512px;
         z-index: calc(var(--z-base) + 2);
         transform: translate3d(calc(var(--seed-x, 0) * 1.2px), calc(var(--seed-y, 0) * 1.2px), 0);
@@ -203,20 +203,20 @@
   }
 
   &.fog {
-    & .layer-1 { opacity: 1; filter: contrast(1.5) brightness(1.2); }
-    & .layer-2 { opacity: 1; filter: contrast(1.3) brightness(1.1); }
+    & .layer-1 { opacity: 1; filter: contrast(1.5) Brightness(1.2); }
+    & .layer-2 { opacity: 1; filter: contrast(1.3) Brightness(1.1); }
     .night & { opacity: 0.9; }
   }
 
   &.mist {
-    & .layer-1 { opacity: 1; filter: contrast(1.2) brightness(1.1); }
-    & .layer-2 { opacity: 0.9; filter: contrast(1.1) brightness(1.05); }
+    & .layer-1 { opacity: 1; filter: contrast(1.2) Brightness(1.1); }
+    & .layer-2 { opacity: 0.9; filter: contrast(1.1) Brightness(1.05); }
     .night & { opacity: 0.8; }
   }
 
   // Second Hail block
   &.hail {
-    background: rgba(200, 230, 255, 0.2);
+    background: Rgba(200, 230, 255, 0.2);
     & .hail-layer {
       position: absolute;
       inset: 0;

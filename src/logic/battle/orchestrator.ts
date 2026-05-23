@@ -40,7 +40,30 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
     battleOptions = {}, isFishing = false, wasSearching: wasSearchingOpt = null
   } = options
 
-  logger.info('Orchestrator', 'startBattleSequence starting...', { locationId, isTrainer, isGym, wasSearchingOpt })
+  const map = FIRE_RED_MAPS.find(m => m.id === locationId)
+  let activeBiome = 'isPlains'
+  const mapTags: string[] = []
+  if (map) {
+    const hierarchy = [
+      'isArctic', 'isIndoors', 'isUrban', 'isVolcanic', 'isCrystalCave', 'isCave',
+      'isDesert', 'isSwamp', 'isMountain',
+      'isCoastal', 'isForest', 'isPlains'
+    ];
+    for (const key of hierarchy) {
+      if ((map as Record<string, unknown>)[key]) {
+        activeBiome = key;
+        break;
+      }
+    }
+    for (const key of hierarchy) {
+      if ((map as Record<string, unknown>)[key]) {
+        mapTags.push(key)
+      }
+    }
+  }
+  const tagsStr = mapTags.join(', ') || 'ninguno'
+
+  logger.info('Orchestrator', `startBattleSequence starting... Biome: ${activeBiome} (Tags: ${tagsStr}) for location: ${locationId}`, { isTrainer, isGym, wasSearchingOpt })
 
   const playerPoke = ctx.gs.state.team.find((p) => p.hp > 0 && !p.onMission && !p.onDefense)
   if (!playerPoke) {
@@ -82,6 +105,7 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
     trainerName, locationId,
     isCave: FIRE_RED_MAPS.find(m => m.id === locationId)?.isCave || false,
     isIndoors: FIRE_RED_MAPS.find(m => m.id === locationId)?.isIndoors || false,
+    isCrystalCave: FIRE_RED_MAPS.find(m => m.id === locationId)?.isCrystalCave || false,
     turn: 'player', turnCount: 1, over: false,
     isFishing, rarity,
     weather: { 
@@ -250,11 +274,38 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
   ctx.attackerSide.value = null
   ctx.activeMove.value = null
   
+  // Log active biome and map properties
+  const map = FIRE_RED_MAPS.find(m => m.id === locationId)
+  let activeBiome = 'isPlains'
+  const mapTags: string[] = []
+  if (map) {
+    const hierarchy = [
+      'isArctic', 'isIndoors', 'isUrban', 'isVolcanic', 'isCrystalCave', 'isCave',
+      'isDesert', 'isSwamp', 'isMountain',
+      'isCoastal', 'isForest', 'isPlains'
+    ];
+    for (const key of hierarchy) {
+      if ((map as Record<string, unknown>)[key]) {
+        activeBiome = key;
+        break;
+      }
+    }
+    for (const key of hierarchy) {
+      if ((map as Record<string, unknown>)[key]) {
+        mapTags.push(key)
+      }
+    }
+  }
+
+  const tagsStr = mapTags.join(', ') || 'ninguno'
   const startMsg = isTrainer || isGym 
     ? `¡${trainerName} te desafía!` 
     : `¡Un ${initialEnemy.name} salvaje apareció!`
   
   ctx.addLog(startMsg, 'log-info', initialEnemy)
+  ctx.addLog(`[Entorno] Bioma: ${activeBiome} (Etiquetas: ${tagsStr})`, 'log-info')
+  logger.info('Orchestrator', `Combat started in biome: ${activeBiome} (Tags: ${tagsStr}) for location: ${locationId}`)
+  
   handleEntryAbilities(initialPlayer, initialEnemy, ctx.playerStages.value, ctx.enemyStages.value, ctx.addLog)
   
   if (isTrainer || isGym) await ctx.gs.scheduleSave()

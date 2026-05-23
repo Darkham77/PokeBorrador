@@ -43,7 +43,6 @@ export const MODAL_REGISTRY = {
   FactionWar: defineAsyncComponent(() => import('@/components/modals/FactionWarModal.vue')),
   BattleSwitch: defineAsyncComponent(() => import('@/components/modals/PokemonSelectionModal.vue')),
   SessionConflict: defineAsyncComponent(() => import('@/components/auth/SessionConflictModal.vue')),
-  EggScanner: defineAsyncComponent(() => import('@/components/EggScannerModal.vue')),
   Trade: defineAsyncComponent(() => import('@/components/TradeView.vue')),
   HealOverlay: defineAsyncComponent(() => import('@/components/modals/HealModal.vue')),
   NaturePatch: defineAsyncComponent(() => import('@/components/modals/NaturePatchModal.vue')),

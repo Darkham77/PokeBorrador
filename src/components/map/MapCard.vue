@@ -22,8 +22,8 @@ import { checkPlayerWinner, calculateSpawnGrid } from '@/logic/map/mapCardHelper
 const sessionWeatherSeed = Math.random() * 1000
 
 // Flare URLs for spawn auras
-const flare1Url = getAssetUrl(ASSET_TYPES.ENVIRONMENT, 'flare_1')
-const flare2Url = getAssetUrl(ASSET_TYPES.ENVIRONMENT, 'flare_2')
+const flare1Url = getAssetUrl(ASSET_TYPES.FX, 'flare_1')
+const flare2Url = getAssetUrl(ASSET_TYPES.FX, 'flare_2')
 
 import type { MapLocation } from '@/types/encounters'
 

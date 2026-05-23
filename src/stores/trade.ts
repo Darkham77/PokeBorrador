@@ -168,7 +168,7 @@ export const useTradeStore = defineStore('trade', () => {
   async function acceptTrade(tradeId: string | number) {
     
     try {
-      loadingStore.start('accept_trade', 'Procesando intercambio...', 'Sincronizando con el servidor')
+      loadingStore.start('accept_trade', 'Procesando intercambio...', 'Sincronizando con el servidor', true, '🔄')
       
       // MANDATORY: Pre-Action Flush
       uiStore.notify('Sincronizando inventario...', '🔄')
@@ -197,7 +197,7 @@ export const useTradeStore = defineStore('trade', () => {
 
   async function rejectTrade(tradeId: string | number) {
     try {
-      loadingStore.start('reject_trade', 'Cancelando intercambio...', 'Sincronizando con el servidor')
+      loadingStore.start('reject_trade', 'Cancelando intercambio...', 'Sincronizando con el servidor', true, '🔄')
       
       // MANDATORY: Pre-Action Flush
       uiStore.notify('Sincronizando inventario...', '🔄')

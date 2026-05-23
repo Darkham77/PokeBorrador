@@ -35,6 +35,7 @@ export interface BattleContext {
   faintedSides: Ref<Set<string>>;
   isCave?: boolean;
   isIndoors?: boolean;
+  isCrystalCave?: boolean;
   
   handleFaint: (side: 'player' | 'enemy') => Promise<void>;
   addLog: (msg: string, type?: string, source?: Pokemon | string | null, sideOverride?: 'player' | 'enemy' | null) => void;

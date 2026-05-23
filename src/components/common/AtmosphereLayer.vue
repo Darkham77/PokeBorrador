@@ -2,7 +2,6 @@
 // [PureVue-Ignore-Length]
 import { ref, computed, watch, onUnmounted, nextTick, onMounted } from 'vue'
 import { gsap } from 'gsap'
-import { logger } from '@/logic/utils/logger'
 
 const containerRef = ref<HTMLElement | null>(null)
 let atmosphereContext: gsap.Context | null = null
@@ -375,13 +374,6 @@ const cleanUpAtmosphere = () => {
 }
 
 const initAtmosphere = () => {
-  logger.debug('AtmosphereLayer', 'initAtmosphere called', {
-    weather: props.weather,
-    isVisible: props.isVisible,
-    isPerformanceMode: props.isPerformanceMode,
-    isLowPower: props.isLowPower,
-    hasContainer: !!containerRef.value
-  })
   cleanUpAtmosphere()
   
   if (!props.isVisible || props.isPerformanceMode || props.isLocked || props.weather === 'clear') {
@@ -402,13 +394,7 @@ watch(
     () => props.isPerformanceMode,
     () => props.animSeed
   ],
-  async ([visible, weather, lowPower, perfMode]) => {
-    logger.debug('AtmosphereLayer', 'Unified watch triggered', {
-      visible,
-      weather,
-      lowPower,
-      perfMode
-    })
+  async ([visible, , , perfMode]) => {
     if (visible && !perfMode) {
       // Wait twice for DOM to settle and children (leaves v-for) to render
       await nextTick()
@@ -454,20 +440,10 @@ const leafCount = computed(() => {
 })
 
 const initLeafAnim = (ctx: gsap.Context) => {
-  logger.debug('AtmosphereLayer', 'initLeafAnim triggered', {
-    weather: props.weather,
-    isPerformanceMode: props.isPerformanceMode,
-    ctxExists: !!ctx,
-    leafCount: leafCount.value
-  })
   if (!leafTypes.includes(props.weather) || props.isPerformanceMode || !ctx) return
   
   // [PureVue-Ignore]
   const leafNodes = containerRef.value?.querySelectorAll('.leaf-element')
-  logger.debug('AtmosphereLayer', 'leafNodes query result', {
-    nodesCount: leafNodes?.length || 0,
-    containerExists: !!containerRef.value
-  })
   if (!leafNodes || leafNodes.length === 0) return
   
   const activeLeaves = Array.from(leafNodes) as HTMLElement[]

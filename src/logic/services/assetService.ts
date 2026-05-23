@@ -128,6 +128,7 @@ export const ASSET_TYPES = {
   RANK: 'rank',
   ICON: 'icon',
   ENVIRONMENT: 'environment',
+  FX: 'fx',
   DATA: 'data',
   BADGE: 'badge'
 } as const;
@@ -242,11 +243,14 @@ export const getAssetUrl = (type: AssetType, rawId: string | number, options: As
     case ASSET_TYPES.ENVIRONMENT:
       return resolveAsset(`/assets/environment/${id}.webp`);
 
+    case ASSET_TYPES.FX:
+      return resolveAsset(`/assets/fx/${id}.webp`);
+
     case ASSET_TYPES.BANNER:
       return resolveAsset(`/assets/ui/banners/${id}${extension}`);
 
     case ASSET_TYPES.BATTLE_BG:
-      return resolveAsset(`/assets/sprites/battle/${id}${extension}`);
+      return resolveAsset(`/assets/maps_battle/${id}${extension}`);
 
     case ASSET_TYPES.UI:
     case ASSET_TYPES.VFX:

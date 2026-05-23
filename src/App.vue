@@ -15,6 +15,7 @@ import LivePvPArena from '@/components/battle/LivePvPArena.vue'
 import BattleArena from '@/components/BattleArena.vue'
 import PWAManager from '@/components/common/PWAManager.vue'
 import SVGFilters from '@/components/common/SVGFilters.vue'
+import PVLoadingOverlay from '@/components/common/PVLoadingOverlay.vue'
 import VersionLockOverlay from '@/components/overlays/VersionLockOverlay.vue'
 import SessionLockOverlay from '@/components/overlays/SessionLockOverlay.vue'
 import { useUIStore } from '@/stores/ui'
@@ -64,13 +65,14 @@ const loadingInfo = computed(() => {
       active: true, 
       msg: cur?.message || 'Cargando...', 
       sub: cur?.subMessage || '',
-      global: cur?.isGlobal || false
+      global: cur?.isGlobal || false,
+      icon: cur?.icon || '📶'
     }
   }
 
   // 2. Auth Loading
   if (authStore.loading) {
-    return { active: true, msg: 'Iniciando sesión...', sub: 'Conectando con el servidor', global: false }
+    return { active: true, msg: 'Iniciando sesión...', sub: 'Conectando con el servidor', global: false, icon: '📶' }
   }
   
   // 3. Game Data & Engine Boot (ULTRA-STICKY GATE)
@@ -82,7 +84,8 @@ const loadingInfo = computed(() => {
       active: true, 
       msg, 
       sub: 'Preparando entorno de juego', 
-      global: false 
+      global: false,
+      icon: !gameStore.isDataLoaded ? '📂' : '⚙️'
     }
   }
 
@@ -92,11 +95,12 @@ const loadingInfo = computed(() => {
       active: true, 
       msg: gameStore.state.overlayMessage || 'Procesando...', 
       sub: 'Por favor, no cierres la ventana',
-      global: true 
+      global: true,
+      icon: '⏳'
     }
   }
 
-  return { active: false, msg: '', sub: '', global: false }
+  return { active: false, msg: '', sub: '', global: false, icon: '📶' }
 })
 
 const isReadyToSeeGame = computed(() => {
@@ -237,31 +241,12 @@ const handleReclaim = async () => {
 }
 
 // GSAP Transitions for Loading Overlay
-const loaderTween = ref<gsap.core.Tween | null>(null)
-
 const onLoadingEnter = (el: Element, done: () => void) => {
   gsap.fromTo(el, { opacity: 0 }, { opacity: 1, duration: 0.5, ease: 'none', onComplete: done })
-  
-  const loaderEl = el.querySelector('.loader')
-  if (loaderEl) {
-    if (loaderTween.value) loaderTween.value.kill()
-    loaderTween.value = gsap.to(loaderEl, {
-      rotation: 360,
-      duration: 1,
-      repeat: -1,
-      ease: 'none'
-    })
-  }
 }
 
 const onLoadingLeave = (el: Element, done: () => void) => {
-  gsap.to(el, { opacity: 0, duration: 0.8, ease: 'power2.inOut', onComplete: () => {
-    if (loaderTween.value) {
-      loaderTween.value.kill()
-      loaderTween.value = null
-    }
-    done()
-  } })
+  gsap.to(el, { opacity: 0, duration: 0.8, ease: 'power2.inOut', onComplete: done })
 }
 </script>
 
@@ -281,20 +266,14 @@ const onLoadingLeave = (el: Element, done: () => void) => {
         @enter="onLoadingEnter"
         @leave="onLoadingLeave"
       >
-        <div
+        <PVLoadingOverlay
           v-if="showLoadingOverlay"
-          class="loading-overlay"
-          :class="{ 'global-overlay': loadingInfo.global }"
-        >
-          <div class="loader" />
-          <p>{{ loadingInfo.msg }}</p>
-          <span 
-            v-if="loadingInfo.sub" 
-            class="sub-text"
-          >
-            {{ loadingInfo.sub }}
-          </span>
-        </div>
+          :title="loadingInfo.msg"
+          :message="loadingInfo.sub"
+          status-text="CONECTANDO..."
+          :icon="loadingInfo.icon"
+          :card-class="loadingInfo.global ? 'global-overlay' : ''"
+        />
       </Transition>
     </Teleport>
 
@@ -368,50 +347,6 @@ const onLoadingLeave = (el: Element, done: () => void) => {
   zoom: var(--app-zoom, 1);
   @include gpu-layer;
   will-change: zoom, transform;
-}
-
-.loading-overlay {
-  position: fixed;
-  inset: 0;
-  width: 100dvw;
-  height: 100dvh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  background: $black;
-  z-index: var(--z-max);
-  color: var(--yellow);
-  @include pixelated;
-  font-size: 12px;
-  text-align: center;
-}
-
-.loading-overlay p {
-  margin-top: 25px;
-  margin-bottom: 10px;
-}
-
-.loading-overlay .sub-text {
-  font-size: 8px;
-  opacity: 0.6;
-  text-transform: uppercase;
-}
-
-.loading-overlay.global-overlay {
-  background: Rgba(0, 0, 0, 0.95);
-  -webkit-will-change: opacity;
-  will-change: opacity;
-  @include gpu-layer;
-}
-
-
-.loader {
-  width: 50px;
-  height: 50px;
-  border: 5px solid Rgba(255, 255, 255, 0.1);
-  border-top-color: var(--yellow);
-  border-radius: 50%;
 }
 
 /* Overlays are styled inside their respective SFC components */

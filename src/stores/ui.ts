@@ -229,10 +229,10 @@ export const useUIStore = defineStore('ui', () => {
   })
 
   const isLoading = ref(false)
-  function setLoading(val: boolean, msg: string = 'Procesando...', sub: string = 'Por favor espera') { 
+  function setLoading(val: boolean, msg: string = 'Procesando...', sub: string = 'Por favor espera', icon = '⏳') { 
     isLoading.value = val 
     const loadingStore = useLoadingStore()
-    if (val) loadingStore.start('ui_generic', msg, sub, true)
+    if (val) loadingStore.start('ui_generic', msg, sub, true, icon)
     else loadingStore.finish('ui_generic')
   }
 
@@ -352,7 +352,6 @@ export const useUIStore = defineStore('ui', () => {
   const isPPUpOpen = createModalRef('PPUp')
   const isAbilityPillOpen = createModalRef('AbilityPill')
   const isFossilRevivalOpen = createModalRef('FossilRevival')
-  const isEggScannerOpen = createModalRef('EggScanner')
   const isHatchModalOpen = createModalRef('HatchModal')
   const isCosmeticsModalOpen = createModalRef('Cosmetics')
   const isFactionChoiceOpen = createModalRef('FactionChoice')
@@ -380,7 +379,6 @@ export const useUIStore = defineStore('ui', () => {
     libraryTab,
     isTradeOpen,
     isSocialOpen,
-    isEggScannerOpen,
     isHatchModalOpen,
     hatchedPokemon,
     isClassSelectionOpen,

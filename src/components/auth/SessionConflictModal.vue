@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useAuthStore } from '@/stores/auth'
+import PVLoadingOverlay from '@/components/common/PVLoadingOverlay.vue'
 
 interface Props {
   show?: boolean
@@ -23,48 +24,39 @@ async function handleLogout() {
 <template>
   <Teleport to="body">
     <transition name="fade">
-      <div
+      <PVLoadingOverlay
         v-if="show"
-        class="session-blocked-overlay"
+        theme="warning"
+        title="SESIÓN ABIERTA EN OTRO LUGAR"
+        message="Parece que abriste el juego en otra pestaña o navegador. Para jugar aquí, debés cerrar las otras instancias."
+        icon="⚠️"
+        :show-spinner="false"
+        :critical="true"
       >
-        <div class="blocked-card">
-          <div class="icon-header">
-            <span class="warning-icon">⚠️</span>
-          </div>
-          
-          <h2>SESIÓN DUPLICADA</h2>
-          
-          <p class="msg">
-            Parece que has iniciado sesión en otra pestaña o dispositivo. 
-            Para proteger tus datos, esta sesión ha sido bloqueada.
-          </p>
-  
-          <div class="actions">
-            <button
-              class="btn-vicio-primary"
-              @click.stop="handleReconnect"
-            >
-              USAR AQUÍ
-            </button>
-            <button
-              class="btn-vicio-danger"
-              @click.stop="handleLogout"
-            >
-              CERRAR SESIÓN
-            </button>
-          </div>
-  
-          <p class="footer">
-            ID de sesión: <code>{{ authStore.sessionId.substring(0, 8) }}</code>
-          </p>
-        </div>
-      </div>
+        <template #actions>
+          <button
+            class="action-btn reclaim-btn"
+            @click.stop="handleReconnect"
+          >
+            ▶ USAR AQUÍ
+          </button>
+          <button
+            class="action-btn danger-btn"
+            @click.stop="handleLogout"
+          >
+            CERRAR SESIÓN
+          </button>
+        </template>
+
+        <template #footer>
+          ID de sesión: <code>{{ authStore.sessionId.substring(0, 8) }}</code>
+        </template>
+      </PVLoadingOverlay>
     </transition>
   </Teleport>
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
 @use "@/styles/core/tools" as *;
 
 .fade-enter-active, .fade-leave-active {
@@ -74,71 +66,47 @@ async function handleLogout() {
   opacity: 0;
 }
 
-.session-blocked-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: var(--z-critical);
-  background: Rgba(0, 0, 0, 0.9);
-  -webkit-will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  backdrop-filter: Blur(20px);
-  @include gpu-layer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  @include gpu-layer;
-}
-
-.blocked-card {
-  background: Rgba(20, 20, 22, 0.9);
-  border: 1px solid Rgba(255, 214, 10, 0.3);
-  border-radius: 32px;
+.action-btn {
   width: 100%;
-  max-width: 420px;
-  padding: 48px;
-  text-align: center;
-  box-shadow: 0 40px 80px Rgba(0, 0, 0, 0.9),
-              0 0 40px Rgba(255, 214, 10, 0.1);
-  @include gpu-layer;
-}
+  padding: 16px;
+  background: Rgba(255, 255, 255, 0.1);
+  font-size: 11px;
+  font-family: 'Press Start 2P', monospace;
+  font-weight: 900;
+  border-radius: 16px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 0 Rgba(0, 0, 0, 0.3);
 
-.icon-header {
-  margin-bottom: 32px;
-  .warning-icon {
-    font-size: 56px;
-    will-change: transform, filter, opacity;
-  filter: Drop-Shadow(0 0 20px Rgba(255, 214, 10, 0.6));
+  &.reclaim-btn {
+    background: var(--yellow);
+    color: #111;
+    border: 1px solid Rgba(255, 255, 255, 0.2);
+    box-shadow: 0 10px 20px Rgba(255, 214, 10, 0.2);
+
+    &:hover {
+      background: $white;
+      transform: Translatey(-2px);
+      box-shadow: 0 12px 24px Rgba(255, 255, 255, 0.3);
+    }
+  }
+
+  &.danger-btn {
+    background: Rgba(255, 59, 59, 0.1);
+    color: var(--red);
+    border: 1px solid Rgba(255, 59, 59, 0.3);
+
+    &:hover {
+      background: var(--red);
+      color: $white;
+      transform: Translatey(-2px);
+      box-shadow: 0 8px 16px Rgba(255, 59, 59, 0.2);
+    }
   }
 }
 
-h2 {
-  @include pixelated;
-  font-size: 16px;
-  color: $yellow;
-  margin-bottom: 24px;
-  @include pixelated;
-}
-
-.msg {
-  color: Rgba(255, 255, 255, 0.6);
-  font-size: 16px;
-  line-height: 1.7;
-  margin-bottom: 40px;
-}
-
-.actions {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  margin-bottom: 32px;
-}
-
-.footer {
-  font-size: 8px;
-  color: Rgba(255, 255, 255, 0.2);
-  @include pixelated;
-  @include pixelated;
-  code { color: $purple; }
+code {
+  color: $purple;
 }
 </style>

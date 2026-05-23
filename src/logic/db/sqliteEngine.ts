@@ -21,7 +21,7 @@ export interface SQLiteDatabase {
 }
 
 export interface LoadingStore {
-  start: (id: string, title: string, description?: string, lockSession?: boolean) => void;
+  start: (id: string, title?: string, description?: string, lockSession?: boolean, icon?: string) => void;
   finish: (id: string) => void;
 }
 
@@ -88,7 +88,7 @@ export async function initSQLite(options: { sqliteKey?: string, inMemory?: boole
                 if (typeof window !== 'undefined') {
                   const { useLoadingStore } = await import('@/stores/loading')
                   const loadingStore = useLoadingStore()
-                  loadingStore.start('db_import', 'Importando Base de Datos...', 'Instalando copia de seguridad, por favor espera', true)
+                  loadingStore.start('db_import', 'Importando Base de Datos...', 'Instalando copia de seguridad, por favor espera', true, '💾')
                 }
               } catch (_) {
                 // Safe fallback if store/pinia not ready
@@ -190,7 +190,7 @@ async function runMigrations(): Promise<void> {
     if (!applied.includes(m.id)) {
       logger.info('SQLite', `Applying migration: ${m.id}`)
       if (loadingStore) {
-        loadingStore.start('db_migration', 'Actualizando Base de Datos...', `Aplicando: ${m.id}`, false)
+        loadingStore.start('db_migration', 'Actualizando Base de Datos...', `Aplicando: ${m.id}`, false, '⚙️')
       }
       try {
         const statements = splitSQLStatements(m.sql)
