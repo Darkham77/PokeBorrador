@@ -221,6 +221,12 @@ const handleUpdate = async () => {
   progress.value = 80
   progressText.value = 'Aplicando actualización...'
   
+  // Salvavidas (fail-safe): Si el Service Worker se queda colgado y no recarga la página en 3.5 segundos, forzamos la recarga física.
+  gsap.delayedCall(3.5, () => {
+    logger.warn('PWA', 'La actualización automática del SW excedió el tiempo límite. Forzando recarga.')
+    window.location.reload()
+  })
+
   try {
     await updateServiceWorker(true)
     progress.value = 100
