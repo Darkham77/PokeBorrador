@@ -18,6 +18,7 @@ This manual details the protocols for adding new Pokémon, moves, abilities, and
 12. **Segmented Shop Audits**: Item asset validation and diagnostic tools must categorize and audit database collections independently (e.g., Poké Market vs BC Shop) based on their specific runtime filters (`market !== false` and `trainerShop === true`) to ensure 100% visual asset coverage across each shopping context.
 13. **Weather Token Consistency**: Always use the token **`snow`** for ice-based weather in metadata and encounter configs. The token `ice` is reserved for mechanical type references and must NOT be used as a weather ID to avoid registry mismatches.
 14. **Self-Healing Ability Mapping**: To prevent strict data validations from failing due to external datasets or local databases having non-standard or translated names (e.g., Spanish translations like `Escape`, `Metamorfosis`, or `Electricidad estática`), the data loading/recalculation pipeline MUST automatically normalize these values to standard strings (e.g., 'Fuga', 'Mudar', 'Electricidad estática') before strict schemas are validated.
+15. **Thematic and Unique Mission Descriptions**: Class deployment descriptions (e.g., basic, advanced, expert) MUST be unique and specific per duration (6h, 12h, 24h) and player class to ensure an immersive RPG experience and avoid repetitive placeholder text.
 
 ---
 
