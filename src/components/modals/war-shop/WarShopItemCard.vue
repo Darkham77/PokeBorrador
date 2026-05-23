@@ -251,7 +251,7 @@ function handleButtonLeave(e: MouseEvent) {
   font-size: 7px;
   padding: 4px 8px;
   border-radius: 4px;
-  z-index: 2;
+  z-index: calc(var(--z-map-floor) + 1);
   border: 1px solid Rgba(255, 255, 255, 0.1);
   
   &.tier-common { background: #94a3b8; color: #0f172a; }
@@ -264,7 +264,7 @@ function handleButtonLeave(e: MouseEvent) {
   display: flex;
   gap: 12px;
   align-items: center;
-  z-index: 1;
+  z-index: var(--z-map-floor);
 }
 
 .item-visual-box {

@@ -36,7 +36,7 @@
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    z-index: 0; // Capa base del fondo
+    z-index: var(--z-base); // Capa base del fondo
     transform: Translatez(0); 
     filter: var(--weather-only-filter, Brightness(1) Contrast(1));
     
@@ -311,7 +311,21 @@
   position: absolute;
   bottom: 12px;
   right: 12px;
-  font-size: 20px;
+  font-size: 16px;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  .pill-content {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+    height: 100% !important;
+    line-height: 1 !important;
+    text-align: center !important;
+    transform: Translatey(-4px) !important;
+  }
   
   &.winning {
     color: var(--yellow);

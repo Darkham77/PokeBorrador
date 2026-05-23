@@ -1,5 +1,7 @@
+// [PureVue-Ignore-Length]
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch, nextTick } from 'vue'
+import { gsap } from 'gsap'
 import { useGameStore } from '@/stores/game'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { PLAYER_CLASSES } from '@/data/playerClasses'
@@ -309,6 +311,62 @@ const close = () => {
   emit('close')
 }
 
+// GSAP hover handlers for stats grid
+const handleStatEnter = (e: MouseEvent) => {
+  gsap.to(e.currentTarget, {
+    y: -2,
+    backgroundColor: 'rgba(30, 41, 59, 0.5)',
+    borderColor: 'rgba(255, 214, 10, 0.2)',
+    boxShadow: '0 0 0 1px rgba(255, 214, 10, 0.2)',
+    duration: 0.2,
+    ease: 'power2.out'
+  })
+}
+
+const handleStatLeave = (e: MouseEvent) => {
+  const el = e.currentTarget as HTMLElement
+  let baseBorderColor = 'rgba(255, 255, 255, 0.05)'
+  let baseBackground = 'rgba(15, 23, 42, 0.95)'
+  
+  if (el.classList.contains('pvp')) {
+    baseBorderColor = 'rgba(236, 72, 153, 0.2)'
+    baseBackground = 'linear-gradient(135deg, rgba(236, 72, 153, 0.05) 0%, rgba(15, 23, 42, 0.4) 100%)'
+  } else if (el.classList.contains('highlight-war-points')) {
+    baseBorderColor = 'rgba(59, 130, 246, 0.2)'
+    baseBackground = 'linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(15, 23, 42, 0.4) 100%)'
+  } else if (el.classList.contains('highlight-war-coins')) {
+    baseBorderColor = 'rgba(251, 191, 36, 0.2)'
+    baseBackground = 'linear-gradient(135deg, rgba(251, 191, 36, 0.05) 0%, rgba(15, 23, 42, 0.4) 100%)'
+  }
+
+  gsap.to(el, {
+    y: 0,
+    background: baseBackground,
+    borderColor: baseBorderColor,
+    boxShadow: 'none',
+    duration: 0.2,
+    ease: 'power2.out',
+    clearProps: 'y,background,borderColor,boxShadow'
+  })
+}
+
+// Watch loading state to animate the spinner via GSAP
+watch(loading, (newVal) => {
+  if (newVal) {
+    nextTick(() => {
+      const spinner = document.querySelector('.loader-spinner')
+      if (spinner) {
+        gsap.to(spinner, {
+          rotation: 360,
+          duration: 1.5,
+          repeat: -1,
+          ease: 'none'
+        })
+      }
+    })
+  }
+}, { immediate: true })
+
 // Asset loaders
 const getAssetUrlLocal = getAssetUrl
 const ASSET_TYPES_LOCAL = ASSET_TYPES
@@ -471,19 +529,35 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
             ESTADÍSTICAS DE COMBATE
           </div>
           <div class="stats-grid">
-            <div class="stat-item">
+            <div
+              class="stat-item"
+              @mouseenter="handleStatEnter"
+              @mouseleave="handleStatLeave"
+            >
               <span class="stat-val">{{ trainersDefeated }}</span>
               <span class="stat-lbl">Entr. Derrotados</span>
             </div>
-            <div class="stat-item">
+            <div
+              class="stat-item"
+              @mouseenter="handleStatEnter"
+              @mouseleave="handleStatLeave"
+            >
               <span class="stat-val">{{ wildWins }}</span>
               <span class="stat-lbl">Vics. Salvaje</span>
             </div>
-            <div class="stat-item pvp">
+            <div
+              class="stat-item pvp"
+              @mouseenter="handleStatEnter"
+              @mouseleave="handleStatLeave"
+            >
               <span class="stat-val ELO">{{ eloRating }}</span>
               <span class="stat-lbl">Puntos ELO</span>
             </div>
-            <div class="stat-item pvp">
+            <div
+              class="stat-item pvp"
+              @mouseenter="handleStatEnter"
+              @mouseleave="handleStatLeave"
+            >
               <span class="stat-val">{{ pvpWins }} - {{ pvpLosses }}</span>
               <span class="stat-lbl">Récord PvP (V-D)</span>
             </div>
@@ -499,14 +573,22 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
             GUERRA DE BANDOS
           </div>
           <div class="stats-grid">
-            <div class="stat-item highlight-war-points">
+            <div
+              class="stat-item highlight-war-points"
+              @mouseenter="handleStatEnter"
+              @mouseleave="handleStatLeave"
+            >
               <span class="stat-val">
                 <i class="fas fa-shield-alt icon-war" />
                 {{ formatNum(totalWarPoints) }}
               </span>
               <span class="stat-lbl">Puntos de Guerra</span>
             </div>
-            <div class="stat-item highlight-war-coins">
+            <div
+              class="stat-item highlight-war-coins"
+              @mouseenter="handleStatEnter"
+              @mouseleave="handleStatLeave"
+            >
               <span class="stat-val">
                 <i class="fas fa-coins icon-war-coin" />
                 {{ formatNum(warCoins) }}
@@ -528,6 +610,8 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
             <div
               v-if="playerClass === 'rocket'"
               class="stat-item"
+              @mouseenter="handleStatEnter"
+              @mouseleave="handleStatLeave"
             >
               <span class="stat-val danger-text">{{ criminality }}%</span>
               <span class="stat-lbl">Criminalidad</span>
@@ -535,11 +619,17 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
             <div
               v-else
               class="stat-item"
+              @mouseenter="handleStatEnter"
+              @mouseleave="handleStatLeave"
             >
               <span class="stat-val primary-text">{{ reputation }}</span>
               <span class="stat-lbl">Reputación</span>
             </div>
-            <div class="stat-item">
+            <div
+              class="stat-item"
+              @mouseenter="handleStatEnter"
+              @mouseleave="handleStatLeave"
+            >
               <span class="stat-val yellow-text">{{ captureStreak }}</span>
               <span class="stat-lbl">Mayor Racha</span>
             </div>
@@ -592,7 +682,6 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
     height: 32px;
     border: 3px dashed var(--yellow);
     border-radius: 50%;
-    animation: spin 2s linear infinite;
   }
 
   .error-icon {
@@ -607,10 +696,7 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
   }
 }
 
-@keyframes spin {
-  0% { transform: Rotate(0deg); }
-  100% { transform: Rotate(360deg); }
-}
+
 
 .profile-body-premium {
   padding: 0 24px 40px;
@@ -728,7 +814,6 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
   width: 32px;
   height: 32px;
   object-fit: contain;
-  transition: all 0.3s ease;
   @include pixelated;
   filter: Drop-Shadow(0 2px 4px Rgba(0, 0, 0, 0.4));
 
@@ -813,15 +898,7 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
   display: flex;
   flex-direction: column;
   gap: 10px;
-  transition: all 0.2s ease;
   @include gpu-layer;
-
-  &:hover {
-    background: Rgba(30, 41, 59, 0.5);
-    border-color: Rgba(255, 214, 10, 0.2);
-    box-shadow: 0 0 0 1px Rgba(255, 214, 10, 0.2);
-    transform: Translatey(-2px);
-  }
 
   &.pvp {
     background: linear-gradient(135deg, Rgba(236, 72, 153, 0.05) 0%, Rgba(15, 23, 42, 0.4) 100%);

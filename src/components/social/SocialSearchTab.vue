@@ -12,6 +12,23 @@ const filterClass = ref('')
 const filterFaction = ref('')
 const listRef = ref<HTMLElement | null>(null)
 
+const isFactionValid = (faction: string | undefined | null) => {
+  return !!(faction && faction !== 'null' && faction !== 'NULL' && faction !== 'undefined' && faction.trim() !== '' && faction.toLowerCase() !== 'none')
+}
+
+const getFactionLabel = (faction: string | undefined | null) => {
+  if (!faction) return ''
+  const labels: Record<string, string> = {
+    'union': 'Unión',
+    'poder': 'Poder',
+    'rocket': 'Rocket',
+    'magma': 'Magma',
+    'aqua': 'Aqua',
+    'galactic': 'Galactic'
+  }
+  return labels[faction.toLowerCase()] || faction
+}
+
 function openTrainerProfile(userId: string) {
   uiStore.open('TrainerProfile', { userId })
 }
@@ -186,12 +203,12 @@ watch(() => socialStore.searchResults, () => {
             {{ player.username }}
           </div>
           <div class="meta">
-            Nv.{{ player.level }} • {{ player.playerClass || 'Entrenador' }}
+            Nv.{{ player.level }} • {{ (player.playerClass && player.playerClass !== 'null' && player.playerClass !== 'Null' && player.playerClass !== 'NULL') ? player.playerClass : 'Entrenador' }}
             <span
-              v-if="player.faction"
+              v-if="isFactionValid(player.faction)"
               :class="player.faction + '-text-small'"
             >
-              • Team {{ player.faction === 'union' ? 'Unión' : 'Poder' }}
+              • Team {{ getFactionLabel(player.faction) }}
             </span>
           </div>
         </div>

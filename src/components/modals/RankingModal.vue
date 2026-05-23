@@ -35,6 +35,7 @@ useWindowListener('resize', handleResize)
 
 // Faction styling mapping
 const getFactionColor = (faction: string) => {
+  if (!faction || faction === 'null' || faction === 'NULL' || faction === 'undefined' || faction.trim() === '') return 'rgba(156, 163, 175, 1)'
   const colors: Record<string, string> = {
     'union': 'rgba(59, 130, 246, 1)',
     'poder': 'rgba(239, 68, 68, 1)',
@@ -47,6 +48,7 @@ const getFactionColor = (faction: string) => {
 }
 
 const getFactionLabel = (faction: string) => {
+  if (!faction || faction === 'null' || faction === 'NULL' || faction === 'undefined' || faction.trim() === '') return ''
   const labels: Record<string, string> = {
     'union': 'Unión',
     'poder': 'Poder',
@@ -61,6 +63,88 @@ const getFactionLabel = (faction: string) => {
 // Trainer Profile Click Handler
 const openTrainerProfile = (userId: string) => {
   uiStore.open('TrainerProfile', { userId })
+}
+
+// GSAP hover handlers
+const handleCardEnter = (e: MouseEvent) => {
+  const el = e.currentTarget as HTMLElement
+  gsap.to(el, {
+    x: 4,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderColor: 'rgba(251, 191, 36, 0.25)',
+    duration: 0.2,
+    ease: 'power2.out'
+  })
+}
+
+const handleCardLeave = (e: MouseEvent) => {
+  const el = e.currentTarget as HTMLElement
+  let baseBorderColor = 'rgba(255, 255, 255, 0.05)'
+  let baseBackground = 'rgba(255, 255, 255, 0.02)'
+  
+  if (el.classList.contains('rank-1')) {
+    baseBorderColor = 'rgba(251, 191, 36, 0.35)'
+    baseBackground = 'linear-gradient(90deg, rgba(251, 191, 36, 0.1), rgba(0, 0, 0, 0))'
+  } else if (el.classList.contains('rank-2')) {
+    baseBorderColor = 'rgba(148, 163, 184, 0.35)'
+    baseBackground = 'linear-gradient(90deg, rgba(148, 163, 184, 0.1), rgba(0, 0, 0, 0))'
+  } else if (el.classList.contains('rank-3')) {
+    baseBorderColor = 'rgba(180, 83, 9, 0.35)'
+    baseBackground = 'linear-gradient(90deg, rgba(180, 83, 9, 0.1), rgba(0, 0, 0, 0))'
+  }
+
+  gsap.to(el, {
+    x: 0,
+    background: baseBackground,
+    borderColor: baseBorderColor,
+    duration: 0.2,
+    ease: 'power2.out',
+    clearProps: 'x,background,borderColor'
+  })
+}
+
+const handleButtonEnter = (e: MouseEvent) => {
+  gsap.to(e.currentTarget, {
+    y: -1,
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+    duration: 0.2,
+    ease: 'power2.out'
+  })
+}
+
+const handleButtonLeave = (e: MouseEvent) => {
+  gsap.to(e.currentTarget, {
+    y: 0,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    duration: 0.2,
+    ease: 'power2.out',
+    clearProps: 'y,backgroundColor,borderColor'
+  })
+}
+
+const handleTabEnter = (e: MouseEvent) => {
+  const el = e.currentTarget as HTMLElement
+  if (el.classList.contains('active')) return
+  gsap.to(el, {
+    color: '#ffffff',
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    duration: 0.2,
+    ease: 'power2.out'
+  })
+}
+
+const handleTabLeave = (e: MouseEvent) => {
+  const el = e.currentTarget as HTMLElement
+  if (el.classList.contains('active')) return
+  gsap.to(el, {
+    color: 'rgba(255, 255, 255, 0.5)',
+    backgroundColor: 'transparent',
+    duration: 0.2,
+    ease: 'power2.out',
+    clearProps: 'color,backgroundColor'
+  })
 }
 
 // Fetch leaderboards
@@ -128,6 +212,8 @@ watch(activeSort, async () => {
           class="retro-btn refresh"
           :disabled="socialStore.leaderboardLoading"
           @click.stop="loadLeaderboard"
+          @mouseenter="handleButtonEnter"
+          @mouseleave="handleButtonLeave"
         >
           {{ socialStore.leaderboardLoading ? '...' : '🔄' }}
         </button>
@@ -163,6 +249,8 @@ watch(activeSort, async () => {
           class="sort-tab"
           :class="{ active: activeSort === 'elo_rating' }"
           @click.stop="activeSort = 'elo_rating'"
+          @mouseenter="handleTabEnter"
+          @mouseleave="handleTabLeave"
         >
           ELO
         </button>
@@ -170,6 +258,8 @@ watch(activeSort, async () => {
           class="sort-tab"
           :class="{ active: activeSort === 'trainer_level' }"
           @click.stop="activeSort = 'trainer_level'"
+          @mouseenter="handleTabEnter"
+          @mouseleave="handleTabLeave"
         >
           Nivel
         </button>
@@ -177,6 +267,8 @@ watch(activeSort, async () => {
           class="sort-tab"
           :class="{ active: activeSort === 'badges' }"
           @click.stop="activeSort = 'badges'"
+          @mouseenter="handleTabEnter"
+          @mouseleave="handleTabLeave"
         >
           Medallas
         </button>
@@ -210,6 +302,8 @@ watch(activeSort, async () => {
             class="rank-card"
             :class="`rank-${index + 1}`"
             @click.stop="openTrainerProfile(player.id)"
+            @mouseenter="handleCardEnter"
+            @mouseleave="handleCardLeave"
           >
             <!-- Rank placement indicator -->
             <div class="rank-badge">
@@ -259,7 +353,7 @@ watch(activeSort, async () => {
                   {{ player.username }}
                 </span>
                 <span
-                  v-if="player.faction"
+                  v-if="player.faction && player.faction !== 'null' && player.faction !== 'NULL' && player.faction !== 'undefined' && player.faction.trim() !== ''"
                   class="faction-tag-badge"
                   :style="{ backgroundColor: getFactionColor(player.faction) }"
                 >
@@ -267,7 +361,7 @@ watch(activeSort, async () => {
                 </span>
               </div>
               <div class="player-stats-row">
-                <span class="player-class-info">{{ player.playerClass || 'Entrenador' }}</span>
+                <span class="player-class-info">{{ (player.playerClass && player.playerClass !== 'null' && player.playerClass !== 'Null' && player.playerClass !== 'NULL') ? player.playerClass : 'Entrenador' }}</span>
                 <span class="divider">•</span>
                 <span class="player-level-info">Nv. {{ player.level }}</span>
               </div>
@@ -336,13 +430,6 @@ watch(activeSort, async () => {
   border: 2px solid Rgba(255, 255, 255, 0.1);
   color: var(--white);
   border-radius: 6px;
-  transition: all 0.2s;
-
-  &:hover:not(:disabled) {
-    background: Rgba(255, 255, 255, 0.12);
-    transform: Translatey(-1px);
-    border-color: Rgba(255, 255, 255, 0.2);
-  }
 
   &.refresh {
     font-size: 10px;
@@ -454,12 +541,6 @@ watch(activeSort, async () => {
     color: Rgba(255, 255, 255, 0.5);
     cursor: pointer;
     border-radius: 8px;
-    transition: all 0.2s;
-
-    &:hover {
-      color: var(--white);
-      background: Rgba(255, 255, 255, 0.03);
-    }
 
     &.active {
       background: var(--yellow);
@@ -507,10 +588,6 @@ watch(activeSort, async () => {
   display: flex;
   flex-direction: column;
   gap: 8px;
-
-  &.list-animating .rank-card {
-    transition: none !important;
-  }
 }
 
 .rank-card {
@@ -522,14 +599,7 @@ watch(activeSort, async () => {
   border-radius: 10px;
   padding: 10px 14px;
   cursor: pointer;
-  transition: all 0.2s;
   will-change: transform, background-color, border-color;
-
-  &:hover {
-    background: Rgba(255, 255, 255, 0.05);
-    border-color: Rgba(251, 191, 36, 0.25);
-    transform: Translatex(4px);
-  }
 
   // Top 3 distinct backgrounds
   &.rank-1 {

@@ -140,7 +140,7 @@
     font-weight: bold;
     padding: 3px 8px;
     border-radius: 8px;
-    z-index: 2;
+    z-index: calc(var(--z-map-floor) + 1);
     
     &.tier-common { background: Rgba(148, 163, 184, 0.08); color: #94a3b8; border: 1px solid Rgba(148, 163, 184, 0.15); }
     &.tier-rare { background: Rgba(59, 130, 246, 0.08); color: #60a5fa; border: 1px solid Rgba(59, 130, 246, 0.15); }

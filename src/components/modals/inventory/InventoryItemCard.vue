@@ -304,7 +304,7 @@ onMounted(() => {
     background: radial-gradient(circle at top right, Rgba(255, 255, 255, 0.1), transparent 70%);
     opacity: 0.4; // Consistent base sheen
     pointer-events: none;
-    z-index: 1;
+    z-index: var(--z-map-floor);
   }
   
   // TIER VARIANTS

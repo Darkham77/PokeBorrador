@@ -92,7 +92,7 @@ const handleSwitch = (index: number) => {
   
   // Hover unificado premium (usa el color de grado)
   &:hover {
-    z-index: 10;
+    z-index: var(--z-map-spawns);
     box-shadow: 0 0 15px Rgba(var(--tier-color-rgb), 0.3) !important;
   }
 

@@ -18,20 +18,29 @@ vi.mock('@/logic/assetService', () => ({
   }
 }))
 
+interface DebugWindow {
+  __VITE_DEBUG__?: {
+    battle: {
+      fullHeal: () => void
+      killEnemy: () => Promise<void>
+    }
+  }
+}
+
 describe('Battle Debug Commands', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
-    delete (window as any).__VITE_DEBUG__
+    delete (window as unknown as DebugWindow).__VITE_DEBUG__
   })
 
   it('should initialize and register debug commands on window', () => {
     useBattleStore()
 
-    const win = window as any
+    const win = window as unknown as DebugWindow
     expect(win.__VITE_DEBUG__).toBeDefined()
-    expect(win.__VITE_DEBUG__.battle).toBeDefined()
-    expect(win.__VITE_DEBUG__.battle.fullHeal).toBeTypeOf('function')
-    expect(win.__VITE_DEBUG__.battle.killEnemy).toBeTypeOf('function')
+    expect(win.__VITE_DEBUG__?.battle).toBeDefined()
+    expect(win.__VITE_DEBUG__?.battle.fullHeal).toBeTypeOf('function')
+    expect(win.__VITE_DEBUG__?.battle.killEnemy).toBeTypeOf('function')
   })
 
   it('should fullHeal player and sync with game team HP reactively', () => {
@@ -51,8 +60,8 @@ describe('Battle Debug Commands', () => {
     } as unknown as BattleState
 
     // 3. Ejecutar fullHeal desde el window registrado por useBattleStore()
-    const win = window as any
-    win.__VITE_DEBUG__.battle.fullHeal()
+    const win = window as unknown as DebugWindow
+    win.__VITE_DEBUG__?.battle.fullHeal()
 
     // 4. Comprobar que el Pokémon en batalla se curó
     expect(battleStore.state.player!.hp).toBe(100)
@@ -75,8 +84,8 @@ describe('Battle Debug Commands', () => {
     } as unknown as BattleState
 
     // Ejecutar killEnemy desde el window registrado por useBattleStore()
-    const win = window as any
-    await win.__VITE_DEBUG__.battle.killEnemy()
+    const win = window as unknown as DebugWindow
+    await win.__VITE_DEBUG__?.battle.killEnemy()
 
     // Comprobar que el enemigo fue vaciado del asiento (hp -> 0 y faint completado)
     expect(battleStore.state.enemy).toBeNull()

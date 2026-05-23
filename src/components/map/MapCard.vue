@@ -239,21 +239,48 @@ const initPillAnimations = () => {
       tl.progress(seed)
     }
 
-    // 4. Winner Crown - Desactivada en bajo consumo por rendimiento
+    // 4. Winner Crown - GPU-Accelerated Premium Floating & Mask Shine Animation
     const crownEl = crownRef.value?.$el as HTMLElement | undefined
     if (crownEl && !uiStore.isLowPowerActive) {
-      const tl = gsap.fromTo(crownEl,
-        { scale: 1, filter: 'brightness(1.0)' },
+      // Float animation for the entire badge
+      const floatTl = gsap.fromTo(crownEl,
+        { y: 0, scale: 1 },
         {
+          y: -4,
           scale: 1.05,
-          filter: 'brightness(1.3)',
-          duration: 1.5,
-          repeat: -1,
+          duration: 1.4,
           yoyo: true,
+          repeat: -1,
           ease: 'sine.inOut'
         }
       )
-      tl.progress(seed)
+      floatTl.progress(seed)
+
+      // Masked flare rotation and breathing pulse (Highly optimized, zero paint-repaints)
+      const shineEl = crownEl.querySelector('.crown-shine-aura') as HTMLElement | undefined
+      if (shineEl) {
+        // Continuous rotation
+        gsap.to(shineEl, {
+          rotation: 360,
+          duration: 10,
+          repeat: -1,
+          ease: 'none'
+        })
+
+        // Organic scale & opacity breathe (highly dramatic glowing range)
+        const breatheTl = gsap.fromTo(shineEl,
+          { scale: 0.8, opacity: 0.35 },
+          {
+            scale: 1.5,
+            opacity: 0.8,
+            duration: 1.8,
+            yoyo: true,
+            repeat: -1,
+            ease: 'sine.inOut'
+          }
+        )
+        breatheTl.progress(seed)
+      }
     }
   }, cardRef.value || undefined)
 }
@@ -905,7 +932,13 @@ watch(spawnGridRef, (newRef) => {
       description="¡Bonus de captura activo por dominio de facción!"
       position="top"
     >
-      <span class="pill-content">👑</span>
+      <div class="crown-glow-wrapper">
+        <div 
+          v-if="!uiStore.isLowPowerActive" 
+          class="crown-shine-aura" 
+        />
+        <span class="pill-content">👑</span>
+      </div>
     </PVTooltip>
   </div>
 </template>
@@ -915,7 +948,7 @@ watch(spawnGridRef, (newRef) => {
 
 .sprite-wrapper {
   position: relative;
-  z-index: 2;
+  z-index: calc(var(--z-map-floor) + 1);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -932,7 +965,7 @@ watch(spawnGridRef, (newRef) => {
   aspect-ratio: 1 / 1;
   border-radius: 50%;
   pointer-events: none;
-  z-index: 1;
+  z-index: var(--z-map-floor);
   opacity: 0;
   image-rendering: auto !important;
   will-change: transform, opacity;
@@ -946,7 +979,7 @@ watch(spawnGridRef, (newRef) => {
   mask-position: center;
 
   &.rare-aura {
-    z-index: 2;
+    z-index: calc(var(--z-map-floor) + 1);
     -webkit-mask-image: var(--flare-2-url);
     mask-image: var(--flare-2-url);
     background-color: Rgba(255, 0, 0, 0.9);
@@ -958,7 +991,7 @@ watch(spawnGridRef, (newRef) => {
   }
 
   &.atmospheric-aura {
-    z-index: 1;
+    z-index: var(--z-map-floor);
     -webkit-mask-image: var(--flare-1-url);
     mask-image: var(--flare-1-url);
     background-color: Rgba(0, 255, 255, 0.85);
@@ -972,12 +1005,66 @@ watch(spawnGridRef, (newRef) => {
 
 .spawn-tooltip-trigger {
   position: relative;
-  z-index: 2;
+  z-index: calc(var(--z-map-floor) + 1);
   width: 100%;
   height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
   pointer-events: auto;
+}
+
+:deep(.dom-badge) {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 16px !important;
+
+  .crown-glow-wrapper {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
+  }
+
+  .crown-shine-aura {
+    position: absolute;
+    top: 50% !important;
+    left: 50% !important;
+    width: 38px;
+    height: 38px;
+    margin-top: -21px !important; // Align with the crown emoji's visual vertical offset
+    margin-left: -19px !important;
+    background-color: Rgba(255, 215, 0, 0.8) !important;
+    pointer-events: none;
+    z-index: -1 !important; // Sit behind the crown
+    opacity: 0.65;
+    will-change: transform, opacity;
+
+    -webkit-mask-image: var(--flare-1-url);
+    mask-image: var(--flare-1-url);
+    -webkit-mask-size: contain;
+    mask-size: contain;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    mask-position: center;
+  }
+
+  .pill-content {
+    position: relative;
+    z-index: 1;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+    height: 100% !important;
+    line-height: 1 !important;
+    text-align: center !important;
+    transform: Translatey(-4px) !important;
+  }
 }
 </style>

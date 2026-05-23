@@ -421,7 +421,8 @@ export async function saveGame(state: GameState, user: AuthUser, options: SaveOp
             player_class: save_data.playerClass,
             faction: save_data.faction,
             avatar_style: save_data.avatar_style,
-            nick_style: save_data.nick_style
+            nick_style: save_data.nick_style,
+            badges: save_data.badges || 0
           }).eq('id', user.id);
         } else {
           await db.from('profiles').insert({
@@ -433,6 +434,7 @@ export async function saveGame(state: GameState, user: AuthUser, options: SaveOp
             faction: save_data.faction || null,
             avatar_style: save_data.avatar_style || '',
             nick_style: save_data.nick_style || '',
+            badges: save_data.badges || 0,
             role: 'user'
           });
         }

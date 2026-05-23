@@ -283,8 +283,8 @@ async function ensureSchemaIntegrity(): Promise<void> {
     _sqliteDb.run("UPDATE profiles SET username = 'Ash' WHERE id = 'local_ash' AND username = 'Entrenador'")
     
     // Seed default profiles for local testing
-    _sqliteDb.run("INSERT OR IGNORE INTO profiles (id, username, trainer_level, player_class, nick_style, avatar_style) VALUES ('local_ash', 'Ash', 10, 'entrenador', 'nick-style-gold', 'av-fire')")
-    _sqliteDb.run("INSERT OR IGNORE INTO profiles (id, username, trainer_level, player_class, nick_style, avatar_style) VALUES ('local_entrenador', 'Entrenador', 5, 'entrenador', 'nt-class-criador', 'av-class-criador')")
+    _sqliteDb.run("INSERT OR IGNORE INTO profiles (id, username, trainer_level, player_class, nick_style, avatar_style, badges) VALUES ('local_ash', 'Ash', 10, 'entrenador', 'nick-style-gold', 'av-fire', 0)")
+    _sqliteDb.run("INSERT OR IGNORE INTO profiles (id, username, trainer_level, player_class, nick_style, avatar_style, badges) VALUES ('local_entrenador', 'Entrenador', 5, 'entrenador', 'nt-class-criador', 'av-class-criador', 0)")
     _sqliteDb.run("INSERT OR IGNORE INTO game_saves (user_id, save_data, updated_at) VALUES ('local_ash', '{\"trainer\":\"Ash\",\"trainerLevel\":10,\"playerClass\":\"entrenador\",\"nick_style\":\"nick-style-gold\",\"avatar_style\":\"av-fire\"}', datetime('now'))")
     _sqliteDb.run("INSERT OR IGNORE INTO game_saves (user_id, save_data, updated_at) VALUES ('local_entrenador', '{\"trainer\":\"Entrenador\",\"trainerLevel\":5,\"playerClass\":\"entrenador\",\"nick_style\":\"nt-class-criador\",\"avatar_style\":\"av-class-criador\"}', datetime('now'))")
     
@@ -335,10 +335,11 @@ async function ensureSchemaIntegrity(): Promise<void> {
           const avatarStyle = (saveData.avatar_style as string) || ''
           const nickStyle = (saveData.nick_style as string) || ''
           
+          const badges = (saveData.badges as number) || 0
           _sqliteDb.run(
-            `INSERT INTO profiles (id, username, trainer_level, player_class, faction, avatar_style, nick_style) 
-             VALUES (?, ?, ?, ?, ?, ?, ?)`,
-            [userId, username, trainerLevel, playerClass, faction, avatarStyle, nickStyle]
+            `INSERT INTO profiles (id, username, trainer_level, player_class, faction, avatar_style, nick_style, badges) 
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+            [userId, username, trainerLevel, playerClass, faction, avatarStyle, nickStyle, badges]
           )
         }
       }

@@ -9,13 +9,34 @@ onMounted(() => {
   socialStore.fetchLeaderboard()
 })
 
-const getFactionColor = (faction: string) => {
+const getFactionColor = (faction: string | undefined | null) => {
+  if (!faction || faction === 'null' || faction === 'NULL' || faction === 'undefined' || faction.trim() === '') return 'rgba(156, 163, 175, 1)'
   const colors: Record<string, string> = {
-    'magma': 'Rgba(239, 68, 68, 1)',
-    'aqua': 'Rgba(59, 130, 246, 1)',
-    'galactic': 'Rgba(167, 139, 250, 1)'
+    'union': 'rgba(59, 130, 246, 1)',
+    'poder': 'rgba(239, 68, 68, 1)',
+    'rocket': 'rgba(148, 163, 184, 1)',
+    'magma': 'rgba(239, 68, 68, 1)',
+    'aqua': 'rgba(59, 130, 246, 1)',
+    'galactic': 'rgba(167, 139, 250, 1)'
   }
-  return colors[faction?.toLowerCase()] || 'Rgba(156, 163, 175, 1)'
+  return colors[faction?.toLowerCase()] || 'rgba(156, 163, 175, 1)'
+}
+
+const getFactionLabel = (faction: string | undefined | null) => {
+  if (!faction || faction === 'null' || faction === 'NULL' || faction === 'undefined' || faction.trim() === '') return ''
+  const labels: Record<string, string> = {
+    'union': 'Unión',
+    'poder': 'Poder',
+    'rocket': 'Rocket',
+    'magma': 'Magma',
+    'aqua': 'Aqua',
+    'galactic': 'Galactic'
+  }
+  return labels[faction?.toLowerCase()] || faction
+}
+
+const isFactionValid = (faction: string | undefined | null) => {
+  return !!(faction && faction !== 'null' && faction !== 'NULL' && faction !== 'undefined' && faction.trim() !== '' && faction.toLowerCase() !== 'none')
 }
 </script>
 
@@ -91,11 +112,11 @@ const getFactionColor = (faction: string) => {
             >
               {{ player.username }}
               <span 
-                v-if="player.faction" 
+                v-if="isFactionValid(player.faction)" 
                 class="faction-tag" 
                 :style="{ backgroundColor: getFactionColor(player.faction) }"
               >
-                {{ player.faction }}
+                {{ getFactionLabel(player.faction) }}
               </span>
             </div>
             <div class="player-meta">

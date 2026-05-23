@@ -60,7 +60,7 @@
     gap: 16px;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
-    z-index: 50; // Ensure tabs are above content
+    z-index: var(--z-low); // Ensure tabs are above content
     flex-shrink: 0; // Prevent sidebar from being squeezed
     -ms-overflow-style: none;
     &::-webkit-scrollbar { display: none; }
@@ -339,6 +339,7 @@
 
   &.locked {
     opacity: 0.5;
+    will-change: transform, filter, opacity;
     filter: Grayscale(0.9);
   }
 }
