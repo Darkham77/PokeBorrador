@@ -14,7 +14,6 @@
   border: none;
   font-family: 'Press Start 2P', 'Courier New', Courier, monospace, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
   cursor: pointer;
-  transition: transform 0.1s, filter 0.2s, box-shadow 0.2s;
   @include pixelated;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
@@ -28,7 +27,6 @@
     align-items: center;
     justify-content: center;
     line-height: 1;
-    transition: transform 0.2s;
     
     // Fine-tune vertical alignment for pixel fonts/emojis
     transform: Translatey(-1px); 
@@ -171,7 +169,6 @@
   border: none;
   border-radius: 50%;
   cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: var(--z-low);
   pointer-events: auto;
 
@@ -181,7 +178,6 @@
     height: 32px;
     border-radius: 50%;
     background: Rgba(255, 255, 255, 0.05);
-    transition: inherit;
     border: 1px solid Rgba(255, 255, 255, 0.05);
 
     &::before {
@@ -199,7 +195,6 @@
       mask-size: contain;
       -webkit-mask-size: contain;
       color: Rgba(255, 255, 255, 0.6);
-      transition: inherit;
     }
   }
   

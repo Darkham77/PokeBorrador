@@ -2,8 +2,9 @@
 <script setup lang="ts">
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import TrainerAvatar from '@/components/TrainerAvatar.vue'
-
+import { gsap } from 'gsap'
 import { type ClassDefinition } from '@/stores/playerClass'
+import { useModalStore } from '@/stores/modals'
 
 interface Props {
   currentClass?: ClassDefinition | null
@@ -17,11 +18,17 @@ withDefaults(defineProps<Props>(), {
   trainerRank: 'Novato'
 })
 
+const modalStore = useModalStore()
+
 const emit = defineEmits<{
-  (e: 'openMissions'): void
   (e: 'changeClass'): void
   (e: 'close'): void
 }>()
+
+const openMissionsModal = () => {
+  modalStore.close('ClassMissions')
+  modalStore.open('EventMissions')
+}
 
 const getTrainerSprite = (id: string | number | undefined) => {
   return getAssetUrl(ASSET_TYPES.TRAINER, id as string, { trainerSuffix: 'front' });
@@ -31,6 +38,69 @@ const handleImageError = (e: Event) => {
   if (e.target) {
     (e.target as HTMLImageElement).style.display = 'none'
   }
+}
+
+// GSAP Hover Interactions
+const onTrainerMouseEnter = (event: MouseEvent) => {
+  const target = event.currentTarget as HTMLElement
+  gsap.to(target, {
+    scale: 1.05,
+    duration: 0.3,
+    ease: 'power2.out',
+    overwrite: 'auto'
+  })
+}
+
+const onTrainerMouseLeave = (event: MouseEvent) => {
+  const target = event.currentTarget as HTMLElement
+  gsap.to(target, {
+    scale: 1,
+    duration: 0.3,
+    ease: 'power2.out',
+    overwrite: 'auto'
+  })
+}
+
+const onRankCardMouseEnter = (event: MouseEvent) => {
+  const target = event.currentTarget as HTMLElement
+  gsap.to(target, {
+    backgroundColor: 'Rgba(15, 23, 42, 0.6)',
+    x: 5,
+    duration: 0.2,
+    ease: 'power2.out',
+    overwrite: 'auto'
+  })
+}
+
+const onRankCardMouseLeave = (event: MouseEvent) => {
+  const target = event.currentTarget as HTMLElement
+  gsap.to(target, {
+    backgroundColor: 'Rgba(15, 23, 42, 0.4)',
+    x: 0,
+    duration: 0.2,
+    ease: 'power2.out',
+    overwrite: 'auto'
+  })
+}
+
+const onAbilityMouseEnter = (event: MouseEvent) => {
+  const target = event.currentTarget as HTMLElement
+  gsap.to(target, {
+    backgroundColor: 'Rgba(255, 255, 255, 0.06)',
+    duration: 0.2,
+    ease: 'power2.out',
+    overwrite: 'auto'
+  })
+}
+
+const onAbilityMouseLeave = (event: MouseEvent) => {
+  const target = event.currentTarget as HTMLElement
+  gsap.to(target, {
+    backgroundColor: 'Rgba(15, 23, 42, 0.4)',
+    duration: 0.2,
+    ease: 'power2.out',
+    overwrite: 'auto'
+  })
 }
 </script>
 
@@ -43,6 +113,8 @@ const handleImageError = (e: Event) => {
         <img 
           :src="getTrainerSprite(currentClass?.showdownSpriteId || currentClass?.id)"
           class="trainer-big-img" 
+          @mouseenter="onTrainerMouseEnter"
+          @mouseleave="onTrainerMouseLeave"
           @error="handleImageError"
         >
         <div class="avatar-mini-circle">
@@ -63,22 +135,17 @@ const handleImageError = (e: Event) => {
       </p>
 
       <div class="rank-cards">
-        <div class="rank-card level">
+        <div 
+          class="rank-card level"
+          @mouseenter="onRankCardMouseEnter"
+          @mouseleave="onRankCardMouseLeave"
+        >
           <div class="card-icon">
             🎖️
           </div>
           <div class="card-text">
             <span class="label">NIVEL ENTRENADOR</span>
             <span class="value">Nv. {{ trainerLevel }}</span>
-          </div>
-        </div>
-        <div class="rank-card rank">
-          <div class="card-icon">
-            ✨
-          </div>
-          <div class="card-text">
-            <span class="label">RANGO ACTUAL</span>
-            <span class="value highlight">{{ trainerRank }}</span>
           </div>
         </div>
       </div>
@@ -97,7 +164,9 @@ const handleImageError = (e: Event) => {
             v-for="(bonus, idx) in currentClass?.bonuses" 
             :key="idx"
             class="ability-item"
-            :class="{ locked: Number(idx) + 1 > (currentClass?.bonusLevels?.[Number(idx)] || 1) && trainerLevel < (currentClass?.bonusLevels?.[Number(idx)] || 0) }"
+            :class="{ locked: (currentClass?.bonusLevels?.[Number(idx)] || 1) > trainerLevel }"
+            @mouseenter="onAbilityMouseEnter"
+            @mouseleave="onAbilityMouseLeave"
           >
             <div class="ability-checkbox">
               {{ (currentClass?.bonusLevels?.[Number(idx)] || 1) <= trainerLevel ? '✅' : '🔒' }}
@@ -113,14 +182,11 @@ const handleImageError = (e: Event) => {
                 Requiere Nivel de Entrenador {{ currentClass?.bonusLevels?.[Number(idx)] }}
               </span>
             </div>
-            <div
-              v-if="(currentClass?.bonusLevels?.[Number(idx)] || 1) > trainerLevel"
+            <div 
+              v-if="(currentClass?.bonusLevels?.[Number(idx)] || 1) > 1" 
               class="lv-badge"
             >
-              Nv. {{ currentClass?.bonusLevels?.[Number(idx)] }}
-            </div>
-            <div class="ability-help">
-              ?
+              NV. {{ currentClass?.bonusLevels?.[Number(idx)] }}
             </div>
           </div>
         </div>
@@ -137,15 +203,14 @@ const handleImageError = (e: Event) => {
             v-for="(penalty, idx) in currentClass?.penalties" 
             :key="idx"
             class="ability-item limitation"
+            @mouseenter="onAbilityMouseEnter"
+            @mouseleave="onAbilityMouseLeave"
           >
             <div class="ability-checkbox">
               ❌
             </div>
             <div class="ability-content">
               <p>{{ penalty }}</p>
-            </div>
-            <div class="ability-help">
-              ?
             </div>
           </div>
         </div>
@@ -155,9 +220,9 @@ const handleImageError = (e: Event) => {
       <div class="dashboard-actions">
         <button 
           class="missions-btn-wide"
-          @click.stop="emit('openMissions')"
+          @click.stop="openMissionsModal"
         >
-          <span class="icon">📋</span> MISIONES PASIVAS
+          <span class="icon">📋</span> MISIONES DE CLASE
         </button>
 
         <div class="action-footer">
@@ -248,10 +313,8 @@ const handleImageError = (e: Event) => {
         height: 220px;
         @include pixelated;
         will-change: transform, filter, opacity;
-  filter: Drop-Shadow(0 20px 40px Rgba(0,0,0,0.8));
+        filter: Drop-Shadow(0 20px 40px Rgba(0,0,0,0.8));
         z-index: var(--z-base);
-        transition: transform 0.3s ease;
-        &:hover { transform: Scale(1.05); }
       }
 
       .avatar-mini-circle {
@@ -319,9 +382,6 @@ const handleImageError = (e: Event) => {
     align-items: center;
     gap: 20px;
     text-align: left;
-    transition: all 0.2s;
-
-    &:hover { background: Rgba(15, 23, 42, 0.6); transform: Translatex(5px); }
 
     .card-icon { 
       width: 48px; height: 48px;
@@ -389,10 +449,7 @@ const handleImageError = (e: Event) => {
     display: flex;
     align-items: center;
     gap: 16px;
-    transition: all 0.2s;
     border-left: 3px solid Rgba(34, 197, 94, 1);
-
-    &:hover { background: Rgba(255, 255, 255, 0.06); }
 
     .ability-checkbox { 
       width: 28px; height: 28px;
@@ -470,10 +527,6 @@ const handleImageError = (e: Event) => {
   }
 }
 
-@keyframes pulse {
-  100% { transform: Scale(1); opacity: 0.1; }
-}
-
 @media (max-width: 950px) {
   .dashboard-layout {
     flex-direction: column;
@@ -545,5 +598,4 @@ const handleImageError = (e: Event) => {
     }
   }
 }
-
 </style>

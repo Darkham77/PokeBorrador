@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { gsap } from 'gsap'
 import { useUIStore } from '@/stores/ui'
 import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
@@ -52,85 +53,203 @@ const handleForget = () => {
   uiStore.notify(`¡${pokemon.value.name} no aprendió ${newMove.value.name}!`, '📖')
   uiStore.finishMoveLearning()
 }
+
+// GSAP Modal Animations
+const onBeforeEnter = (el: Element) => {
+  const overlay = el as HTMLElement
+  const card = overlay.querySelector('.learning-card') as HTMLElement
+  
+  gsap.set(overlay, { opacity: 0 })
+  if (card) {
+    gsap.set(card, { scale: 0.9, opacity: 0 })
+  }
+}
+
+const onEnter = (el: Element, done: () => void) => {
+  const overlay = el as HTMLElement
+  const card = overlay.querySelector('.learning-card') as HTMLElement
+
+  const tl = gsap.timeline({ onComplete: done })
+  tl.to(overlay, { opacity: 1, duration: 0.25, ease: 'power2.out' })
+  if (card) {
+    tl.to(card, { scale: 1, opacity: 1, duration: 0.3, ease: 'back.out(1.56)' }, '-=0.15')
+  }
+}
+
+const onLeave = (el: Element, done: () => void) => {
+  const overlay = el as HTMLElement
+  const card = overlay.querySelector('.learning-card') as HTMLElement
+
+  const tl = gsap.timeline({ onComplete: done })
+  if (card) {
+    tl.to(card, { scale: 0.9, opacity: 0, duration: 0.2, ease: 'power2.in' })
+  }
+  tl.to(overlay, { opacity: 0, duration: 0.2, ease: 'power2.in' }, '-=0.1')
+}
+
+// GSAP Hover Interactions
+const onMoveMouseEnter = (event: MouseEvent, moveColor: string) => {
+  const target = event.currentTarget as HTMLElement
+  if (target.classList.contains('is-new')) return
+
+  gsap.to(target, {
+    backgroundColor: 'Rgba(255, 255, 255, 0.06)',
+    borderColor: moveColor,
+    x: 4,
+    duration: 0.2,
+    ease: 'power2.out',
+    overwrite: 'auto'
+  })
+
+  const label = target.querySelector('.replace-label') as HTMLElement
+  if (label) {
+    gsap.to(label, {
+      opacity: 1,
+      x: 0,
+      duration: 0.2,
+      ease: 'power2.out',
+      overwrite: 'auto'
+    })
+  }
+}
+
+const onMoveMouseLeave = (event: MouseEvent) => {
+  const target = event.currentTarget as HTMLElement
+  if (target.classList.contains('is-new')) return
+
+  gsap.to(target, {
+    backgroundColor: 'Rgba(255, 255, 255, 0.03)',
+    borderColor: 'Rgba(255, 255, 255, 0.08)',
+    x: 0,
+    duration: 0.2,
+    ease: 'power2.out',
+    overwrite: 'auto'
+  })
+
+  const label = target.querySelector('.replace-label') as HTMLElement
+  if (label) {
+    gsap.to(label, {
+      opacity: 0,
+      x: 10,
+      duration: 0.2,
+      ease: 'power2.out',
+      overwrite: 'auto'
+    })
+  }
+}
+
+const onForgetMouseEnter = (event: MouseEvent) => {
+  const target = event.currentTarget as HTMLElement
+  gsap.to(target, {
+    backgroundColor: 'Rgba(239, 68, 68, 0.1)',
+    color: 'Rgba(248, 113, 113, 1)',
+    borderColor: 'Rgba(239, 68, 68, 1)',
+    duration: 0.2,
+    ease: 'power2.out',
+    overwrite: 'auto'
+  })
+}
+
+const onForgetMouseLeave = (event: MouseEvent) => {
+  const target = event.currentTarget as HTMLElement
+  gsap.to(target, {
+    backgroundColor: 'Rgba(255, 255, 255, 0.03)',
+    color: 'var(--gray)',
+    borderColor: 'Rgba(255, 255, 255, 0.06)',
+    duration: 0.2,
+    ease: 'power2.out',
+    overwrite: 'auto'
+  })
+}
 </script>
 
 <template>
-  <div
-    v-if="currentData"
-    class="learning-overlay"
+  <Transition
+    @before-enter="onBeforeEnter"
+    @enter="onEnter"
+    @leave="onLeave"
   >
-    <div class="learning-card animate-pop">
-      <header class="card-header">
-        <div class="header-badge">
-          NUEVO MOVIMIENTO
-        </div>
-        <h2>APRENDIENDO TÉCNICA</h2>
-        <p><strong>{{ pokemon?.name }}</strong> quiere aprender <span class="highlight">{{ newMove?.name }}</span>.</p>
-      </header>
-
-      <div class="new-move-display">
-        <div
-          class="move-card is-new"
-          :style="{ '--move-color': getMoveColor(newMove?.name) }"
-        >
-          <div class="move-main">
-            <span class="move-name">{{ newMove?.name }}</span>
-            <PokemonTypeTag
-              :type="getMoveType(newMove?.name)"
-              size="md"
-              class="pixelated"
-            />
+    <div
+      v-if="currentData"
+      class="learning-overlay"
+    >
+      <div class="learning-card">
+        <header class="card-header">
+          <div class="header-badge">
+            NUEVO MOVIMIENTO
           </div>
-          <div class="move-stats">
-            <span>POT: {{ getMovePower(newMove?.name) }}</span>
-            <span>PP: {{ newMove?.maxPP }}</span>
-          </div>
-        </div>
-      </div>
+          <h2>APRENDIENDO TÉCNICA</h2>
+          <p><strong>{{ pokemon?.name }}</strong> quiere aprender <span class="highlight">{{ newMove?.name }}</span>.</p>
+        </header>
 
-      <div class="instruction">
-        ¿Qué movimiento debería olvidar?
-      </div>
-
-      <div class="moves-list">
-        <div 
-          v-for="(m, index) in pokemon?.moves" 
-          :key="index"
-          class="move-card"
-          :style="{ '--move-color': getMoveColor(m?.name) }"
-          @click.stop="handleReplace(Number(index))"
-        >
+        <div class="new-move-display">
           <div
-            v-if="m"
-            class="move-content"
+            class="move-card is-new"
+            :style="{ '--move-color': getMoveColor(newMove?.name) }"
           >
             <div class="move-main">
-              <span class="move-name">{{ m.name }}</span>
+              <span class="move-name">{{ newMove?.name }}</span>
               <PokemonTypeTag
-                :type="getMoveType(m.name)"
-                size="sm"
+                :type="getMoveType(newMove?.name)"
+                size="md"
                 class="pixelated"
               />
             </div>
             <div class="move-stats">
-              <span>POT: {{ getMovePower(m.name) }}</span>
-              <span>PP: {{ m.pp }} / {{ m.maxPP }}</span>
+              <span>POT: {{ getMovePower(newMove?.name) }}</span>
+              <span>PP: {{ newMove?.maxPP }}</span>
             </div>
           </div>
-          <div class="replace-label">
-            REEMPLAZAR
+        </div>
+
+        <div class="instruction">
+          ¿Qué movimiento debería olvidar?
+        </div>
+
+        <div class="moves-list">
+          <div 
+            v-for="(m, index) in pokemon?.moves" 
+            :key="index"
+            class="move-card"
+            :style="{ '--move-color': getMoveColor(m?.name) }"
+            @mouseenter="onMoveMouseEnter($event, getMoveColor(m?.name))"
+            @mouseleave="onMoveMouseLeave($event)"
+            @click.stop="handleReplace(Number(index))"
+          >
+            <div
+              v-if="m"
+              class="move-content"
+            >
+              <div class="move-main">
+                <span class="move-name">{{ m.name }}</span>
+                <PokemonTypeTag
+                  :type="getMoveType(m.name)"
+                  size="sm"
+                  class="pixelated"
+                />
+              </div>
+              <div class="move-stats">
+                <span>POT: {{ getMovePower(m.name) }}</span>
+                <span>PP: {{ m.pp }} / {{ m.maxPP }}</span>
+              </div>
+            </div>
+            <div class="replace-label">
+              REEMPLAZAR
+            </div>
           </div>
         </div>
-      </div>
 
-      <button
-        class="forget-btn"
-        @click.stop="handleForget"
-      >
-        ❌ CANCELAR Y NO APRENDER
-      </button>
+        <button
+          class="forget-btn"
+          @mouseenter="onForgetMouseEnter"
+          @mouseleave="onForgetMouseLeave"
+          @click.stop="handleForget"
+        >
+          ❌ CANCELAR Y NO APRENDER
+        </button>
+      </div>
     </div>
-  </div>
+  </Transition>
 </template>
 
 <style scoped lang="scss">
@@ -217,24 +336,14 @@ const handleForget = () => {
   border-radius: 16px;
   padding: 14px;
   cursor: pointer;
-  transition: all 0.2s;
   position: relative;
   overflow: hidden;
-
-  &:hover {
-    background: Rgba(255,255,255,0.06);
-    border-color: var(--move-color);
-    transform: Translatex(4px);
-    
-    .replace-label { opacity: 1; transform: Translatex(0); }
-  }
 
   &.is-new {
     background: Rgba(255, 217, 61, 0.05);
     border: 2px solid var(--move-color);
     box-shadow: 0 0 20px Rgba(255, 217, 61, 0.1);
     cursor: default;
-    &:hover { transform: none; }
   }
 
   .move-main {
@@ -263,7 +372,6 @@ const handleForget = () => {
     color: Rgba(239, 68, 68, 1);
     opacity: 0;
     transform: Translatex(10px);
-    transition: all 0.2s;
   }
 }
 
@@ -277,15 +385,5 @@ const handleForget = () => {
   @include pixelated;
   font-size: 9px;
   cursor: pointer;
-  transition: all 0.2s;
-
-  &:hover {
-    background: Rgba(239, 68, 68, 0.1);
-    color: Rgba(248, 113, 113, 1);
-    border-color: Rgba(239, 68, 68, 1);
-  }
 }
-
-.animate-pop { animation: pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
-@keyframes pop { from { transform: Scale(0.9); opacity: 0; } to { transform: Scale(1); opacity: 1; } }
 </style>

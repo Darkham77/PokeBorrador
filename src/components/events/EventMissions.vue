@@ -1,10 +1,13 @@
 <script setup lang="ts">
-import { onMounted } from 'vue';
+import { onMounted, onUnmounted, ref, computed } from 'vue';
+import { gsap } from 'gsap';
 import { useBreedingStore } from '@/stores/breeding';
 import { useModalStore } from '@/stores/modals';
 import { useGameStore } from '@/stores/game';
 import { useUIStore } from '@/stores/ui';
+import { usePlayerClassStore } from '@/stores/playerClass';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { CLASS_MISSIONS } from '@/data/playerClasses';
 import type { DaycareMission } from '@/types/breeding';
 import type { Pokemon } from '@/types/pokemon';
 
@@ -12,6 +15,7 @@ const breedingStore = useBreedingStore();
 const modalStore = useModalStore();
 const gameStore = useGameStore();
 const uiStore = useUIStore();
+const classStore = usePlayerClassStore();
 
 const getMatchingPokesForMission = (mission: DaycareMission) => {
   const team = gameStore.state.team || [];
@@ -67,10 +71,123 @@ const openDelivery = (idx: number) => {
   });
 };
 
+const activeMission = computed(() => classStore.activeMission);
+const trainerLevel = computed(() => gameStore.state.trainerLevel || 1);
+
+const now = ref(Temporal.Now.instant().epochMilliseconds);
+let timer: gsap.core.Tween | null = null;
+
 onMounted(() => {
   breedingStore.loadDaycare();
   breedingStore.checkDailyReset();
+
+  const updateTime = () => {
+    now.value = Temporal.Now.instant().epochMilliseconds;
+    timer = gsap.delayedCall(1, updateTime);
+  };
+  timer = gsap.delayedCall(1, updateTime);
 });
+
+onUnmounted(() => {
+  if (timer) timer.kill();
+});
+
+const missionProgress = computed(() => {
+  if (!activeMission.value) return 0;
+  const total = activeMission.value.endsAt - activeMission.value.startedAt;
+  const elapsed = now.value - activeMission.value.startedAt;
+  return Math.min(100, Math.max(0, Math.floor((elapsed / total) * 100)));
+});
+
+const isMissionDone = computed(() => {
+  if (!activeMission.value) return false;
+  return now.value >= activeMission.value.endsAt;
+});
+
+function getClassReward(clsId: string | undefined) {
+  if (clsId === 'rocket') return { icon: '₽', name: '₽ y Recompensas' };
+  if (clsId === 'cazabichos') return { icon: '🐛', name: 'Pokémon Bicho e Ítems' };
+  if (clsId === 'entrenador') return { icon: '📈', name: 'Experiencia de Combate' };
+  if (clsId === 'criador') return { icon: '🧬', name: 'Mejora de IVs' };
+  return { icon: '🎁', name: 'Recompensas de Clase' };
+}
+
+function getMissionDesc(mId: string, clsId: string | undefined) {
+  if (clsId === 'cazabichos') {
+    if (mId === 'mission_6h') return 'Recolecta néctar y feromonas en el bosque para atraer especímenes comunes.';
+    if (mId === 'mission_12h') return 'Captura especímenes raros y cataloga la población de coleópteros de la zona.';
+    if (mId === 'mission_24h') return 'Expedición profunda en busca de especímenes exóticos con IVs genéticos excepcionales.';
+  }
+  if (clsId === 'rocket') {
+    if (mId === 'mission_6h') return 'Extorsión local a comerciantes y patrullaje de territorio bajo control Rocket.';
+    if (mId === 'mission_12h') return 'Exportación de especímenes incautados al mercado negro para obtener altos dividendos.';
+    if (mId === 'mission_24h') return 'Infiltración en las instalaciones de Silph Co. para sustraer prototipos de tecnología secreta.';
+  }
+  if (clsId === 'entrenador') {
+    if (mId === 'mission_6h') return 'Rutina de calentamiento y combates rápidos en el gimnasio local para afilar reflejos.';
+    if (mId === 'mission_12h') return 'Sesión intensa en gimnasio de alto rendimiento para potenciar la experiencia de combate.';
+    if (mId === 'mission_24h') return 'Maratón de duelos contra líderes veteranos y optimización táctica del equipo a nivel profesional.';
+  }
+  if (clsId === 'criador') {
+    if (mId === 'mission_6h') return 'Monitoreo y análisis nutricional de huevos en la incubadora de la guardería.';
+    if (mId === 'mission_12h') return 'Entrenamiento genético intensivo y selección de rasgos para mejorar estadísticas base.';
+    if (mId === 'mission_24h') return 'Optimización molecular avanzada de la cadena de ADN para transferir herencias genéticas perfectas.';
+  }
+  return 'Realiza tareas especiales de clase.';
+}
+
+async function startClassMission(missionId: string) {
+  const m = CLASS_MISSIONS.find(x => x.id === missionId);
+  if (!m) return;
+  const cls = classStore.playerClass;
+  
+  if (cls === 'cazabichos') {
+    classStore.startMission(missionId);
+  } else {
+    const box = gameStore.state.box || [];
+    const team = gameStore.state.team || [];
+    const allPokes = [...team, ...box].filter((p): p is Pokemon => p !== null);
+    
+    const isRocket = cls === 'rocket';
+    const filtered = allPokes.filter(p => {
+      if (p.onMission || p.inDaycare) return false;
+      if (isRocket) {
+        return p.type === 'poison' || p.type2 === 'poison';
+      }
+      return true;
+    });
+    
+    if (filtered.length === 0) {
+      uiStore.notify(
+        isRocket 
+          ? 'No tienes ningún Pokémon tipo VENENO disponible.' 
+          : 'No tienes ningún Pokémon disponible para esta misión.', 
+        '⚠️'
+      );
+      return;
+    }
+
+    const allowedIds = filtered.map(p => p.uid);
+
+    modalStore.open('PokemonSelection', {
+      title: isRocket ? '💀 SACRIFICIO ROCKET' : '⚡ ENVIAR POKÉMON',
+      subtitle: isRocket 
+        ? 'Selecciona 1 Pokémon tipo VENENO para el mercado negro.' 
+        : 'Selecciona al Pokémon que realizará la misión.',
+      allowedIds,
+      autoConfirm: true,
+      onConfirm: (selected: Pokemon[]) => {
+        const p = selected?.[0];
+        if (p) {
+          const idx = gameStore.state.box.findIndex((bp: Pokemon | null) => bp && bp.uid === p.uid);
+          if (idx !== -1) {
+            classStore.startMission(missionId, { targetPokemonIdx: idx });
+          }
+        }
+      }
+    });
+  }
+}
 
 const handleImgError = (e: Event) => {
   const target = e.target as HTMLImageElement;
@@ -149,6 +266,87 @@ const handleImgError = (e: Event) => {
         </div>
       </div>
     </div>
+
+    <!-- Class Missions Section -->
+    <div 
+      v-if="classStore.currentClassDef" 
+      class="class-missions-container"
+      :style="{ '--class-color': classStore.currentClassDef.color || '#3b82f6' }"
+    >
+      <header class="section-title-wrap">
+        <h3>Despliegues de {{ classStore.currentClassDef.name }}</h3>
+        <span class="class-level-badge">NIVEL {{ classStore.classLevel }}</span>
+      </header>
+
+      <!-- Active Mission Banner -->
+      <div
+        v-if="activeMission"
+        class="active-mission-banner"
+      >
+        <div class="banner-info">
+          <span class="banner-title">{{ isMissionDone ? 'OPERACIÓN COMPLETADA' : 'OPERACIÓN EN CURSO' }}</span>
+          <p class="m-name">
+            {{ CLASS_MISSIONS.find(m => m.id === (activeMission?.id))?.name }}
+          </p>
+          <div class="mission-progress-bar">
+            <div
+              class="progress-fill"
+              :style="{ width: missionProgress + '%' }"
+            />
+          </div>
+        </div>
+        <button
+          v-if="isMissionDone"
+          class="collect-btn"
+          @click.stop="classStore.collectMission"
+        >
+          RECLAMAR
+        </button>
+        <div
+          v-else
+          class="timer-dot"
+        />
+      </div>
+
+      <div class="missions-grid">
+        <div 
+          v-for="m in CLASS_MISSIONS" 
+          :key="m.id" 
+          class="mission-card"
+          :class="{ completed: activeMission?.id === m.id }"
+        >
+          <div class="trainer-section">
+            <div class="trainer-avatar">
+              <span class="avatar-placeholder">{{ classStore.currentClassDef?.icon }}</span>
+            </div>
+            <div class="dialogue-box">
+              <span class="trainer-name">{{ m.durationHs }}H · REQUISITO: NV. {{ m.reqLv }}</span>
+              <p class="dialogue">
+                " {{ getMissionDesc(m.id, classStore.currentClassDef?.id) }} "
+              </p>
+            </div>
+          </div>
+
+          <div class="reward-section">
+            <div class="reward-tag">
+              <span class="reward-icon">{{ getClassReward(classStore.currentClassDef?.id).icon }}</span>
+              <div class="reward-info">
+                <span class="label">Recompensa Estimada</span>
+                <span class="val">{{ getClassReward(classStore.currentClassDef?.id).name }}</span>
+              </div>
+            </div>
+            
+            <button 
+              class="btn-deliver"
+              :disabled="trainerLevel < m.reqLv || !!activeMission"
+              @click.stop="startClassMission(m.id)"
+            >
+              {{ activeMission?.id === m.id ? 'EN CURSO' : (activeMission ? 'BLOQUEADO' : 'DESPLEGAR') }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -221,6 +419,8 @@ const handleImgError = (e: Event) => {
   @include pixelated;
   padding: 4px 8px;
   border-radius: 4px;
+  border: 1px solid #000000;
+  text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
 }
 
 .trainer-section {
@@ -295,5 +495,106 @@ const handleImgError = (e: Event) => {
 .btn-deliver {
   width: 100%;
   @include btn-vicio('primary', 'sm', true);
+}
+
+.class-missions-container {
+  margin-top: 24px;
+  border-top: 1px solid Rgba(255, 255, 255, 0.05);
+  padding-top: 24px;
+  margin-bottom: 24px;
+
+  .section-title-wrap {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+
+    h3 {
+      font-weight: 800;
+      @include pixelated;
+      font-size: 10px;
+      color: var(--class-color);
+      margin: 0;
+    }
+
+    .class-level-badge {
+      background: var(--class-color);
+      color: white;
+      font-size: 8px;
+      font-weight: 800;
+      padding: 2px 6px;
+      border-radius: 4px;
+      @include pixelated;
+      border: 1px solid #000000;
+      text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
+    }
+  }
+
+  .active-mission-banner {
+    background: Rgba(34, 197, 94, 0.06);
+    border: 1px solid Rgba(34, 197, 94, 0.2);
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+
+    .banner-info {
+      flex: 1;
+      
+      .banner-title {
+        @include pixelated;
+        font-size: 8px;
+        color: Rgba(34, 197, 94, 1);
+        margin-bottom: 4px;
+        display: block;
+      }
+      
+      .m-name {
+        font-size: 12px;
+        color: white;
+        font-weight: 700;
+        margin: 0 0 8px 0;
+      }
+    }
+
+    .mission-progress-bar {
+      height: 6px;
+      background: Rgba(0, 0, 0, 0.3);
+      border-radius: 3px;
+      overflow: hidden;
+      
+      .progress-fill {
+        height: 100%;
+        background: Rgba(34, 197, 94, 1);
+        transition: width 0.3s;
+      }
+    }
+
+    .collect-btn {
+      padding: 10px 20px;
+      background: Rgba(34, 197, 94, 1);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      @include pixelated;
+      font-size: 8px;
+      cursor: pointer;
+      box-shadow: 0 0 15px Rgba(34, 197, 94, 0.3);
+      
+      &:hover {
+        filter: Brightness(1.1);
+      }
+    }
+
+    .timer-dot {
+      width: 8px;
+      height: 8px;
+      background: Rgba(34, 197, 94, 1);
+      border-radius: 50%;
+      box-shadow: 0 0 10px Rgba(34, 197, 94, 0.8);
+    }
+  }
 }
 </style>

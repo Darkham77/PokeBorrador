@@ -104,27 +104,4 @@
   }
 }
 
-// TRANSITIONS
-.list-complete-enter-active {
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-}
 
-.list-complete-leave-active {
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  position: absolute;
-  width: 130px; // Match min-width of grid
-}
-
-.list-complete-enter-from {
-  opacity: 0;
-  transform: Scale(0.9) Translatey(10px);
-}
-
-.list-complete-leave-to {
-  opacity: 0;
-  transform: Scale(0.9);
-}
-
-.list-complete-move {
-  transition: transform 0.3s ease;
-}

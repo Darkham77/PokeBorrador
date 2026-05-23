@@ -7,12 +7,6 @@
   position: relative;
   @include shell(Rgba(30, 41, 59, 0.5));
   border-radius: $radius;
-  transition: 
-    transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275),
-    opacity 0.4s ease,
-    background-color 0.4s ease,
-    box-shadow 0.4s ease,
-    border-color 0.4s ease;
   overflow: hidden; // Absolute clip
   border: 1px solid Rgba(255, 255, 255, 0.15);
   background-clip: padding-box; // Extra safety for bg bleed
@@ -32,7 +26,6 @@
     inset: 0;
     background: Radial-Gradient(circle at top right, Rgba(255, 255, 255, 0.1), transparent 70%);
     opacity: 0.4; // Consistent base sheen
-    transition: opacity 0.3s;
     pointer-events: none;
   }
 
@@ -58,11 +51,6 @@
   @include shell(transparent); 
   background: linear-gradient(135deg, Rgba(30, 41, 59, 0.8), Rgba(15, 23, 42, 0.95)) !important;
   border-radius: $radius;
-  transition: 
-    transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275),
-    background-color 0.3s ease,
-    box-shadow 0.3s ease,
-    border-color 0.3s ease;
   position: relative;
   overflow: hidden; // Prevent corner bleeding
   border: 1px solid var(--tier-color, Rgba(255, 255, 255, 0.18)) !important;
@@ -74,7 +62,6 @@
     inset: 0;
     background: Radial-Gradient(circle at top right, Rgba(255, 255, 255, 0.18), transparent 70%);
     opacity: 0.5; // More present in base state
-    transition: opacity 0.3s;
     pointer-events: none;
     z-index: calc(var(--z-base) + 1);
   }
@@ -95,7 +82,6 @@
 
 @mixin pokemon-sprite-base-standard {
   @include sprite-render;
-  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), filter 0.4s ease;
   will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 8px 12px Rgba(0, 0, 0, 0.3));
 }
@@ -129,7 +115,6 @@
   background-clip: padding-box;
   @include text-outline(#000, 1px);
   font-family: var(--font-pixel, 'Press Start 2P', monospace);
-  transition: transform 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
   white-space: nowrap;
 }
 

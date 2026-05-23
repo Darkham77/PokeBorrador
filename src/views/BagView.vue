@@ -4,6 +4,7 @@ import { useGameStore } from '@/stores/game'
 import { getItemSpriteUrl } from '@/logic/inventory/inventoryEngine'
 import { ITEM_CATEGORIES, CATEGORY_LABELS } from '@/data/items'
 import { formatCurrency } from '@/logic/utils/formatters'
+import { gsap } from 'gsap'
 
 const inventoryStore = useInventoryStore()
 const gameStore = useGameStore()
@@ -15,6 +16,93 @@ const categories = ITEM_CATEGORIES.map(id => ({
 
 const onUseItem = (name: string) => {
   inventoryStore.useItem(name)
+}
+
+// GSAP Interactions
+const onTabClick = (catId: string, event: MouseEvent) => {
+  inventoryStore.activeCategory = catId
+  const target = event.currentTarget as HTMLElement
+  
+  const tabs = target.parentElement?.querySelectorAll('.tab-btn')
+  if (tabs) {
+    tabs.forEach(tab => {
+      if (tab !== target) {
+        gsap.to(tab, {
+          backgroundColor: 'Rgba(255, 255, 255, 0.05)',
+          color: 'var(--gray)',
+          borderColor: 'Rgba(255, 255, 255, 0.1)',
+          duration: 0.2,
+          overwrite: 'auto'
+        })
+      }
+    })
+  }
+  
+  gsap.to(target, {
+    backgroundColor: 'var(--purple)',
+    color: 'var(--white)',
+    borderColor: 'var(--purple-light)',
+    duration: 0.2,
+    overwrite: 'auto'
+  })
+}
+
+const onItemMouseEnter = (event: MouseEvent) => {
+  const target = event.currentTarget as HTMLElement
+  gsap.to(target, {
+    backgroundColor: 'Rgba(255, 255, 255, 0.06)',
+    y: -2,
+    duration: 0.2,
+    ease: 'power2.out',
+    overwrite: 'auto'
+  })
+}
+
+const onItemMouseLeave = (event: MouseEvent) => {
+  const target = event.currentTarget as HTMLElement
+  const isSelected = target.classList.contains('selected')
+  gsap.to(target, {
+    backgroundColor: isSelected ? 'Rgba(16, 185, 129, 0.05)' : 'Rgba(255, 255, 255, 0.03)',
+    y: 0,
+    duration: 0.2,
+    ease: 'power2.out',
+    overwrite: 'auto'
+  })
+}
+
+const onItemClick = (itemName: string, qty: number, event: MouseEvent) => {
+  if (inventoryStore.bagSellMode) {
+    inventoryStore.toggleBagSellSelect(itemName, qty)
+    const target = event.currentTarget as HTMLElement
+    const isSelected = !!inventoryStore.bagSellSelected[itemName]
+    
+    gsap.to(target, {
+      borderColor: isSelected ? 'var(--green-bright)' : 'Rgba(255, 255, 255, 0.08)',
+      backgroundColor: isSelected ? 'Rgba(16, 185, 129, 0.05)' : 'Rgba(255, 255, 255, 0.06)',
+      duration: 0.2,
+      overwrite: 'auto'
+    })
+  }
+}
+
+const onSellModeMouseEnter = (event: MouseEvent) => {
+  const target = event.currentTarget as HTMLElement
+  gsap.to(target, {
+    backgroundColor: 'Rgba(255, 255, 255, 0.1)',
+    duration: 0.2,
+    ease: 'power2.out',
+    overwrite: 'auto'
+  })
+}
+
+const onSellModeMouseLeave = (event: MouseEvent) => {
+  const target = event.currentTarget as HTMLElement
+  gsap.to(target, {
+    backgroundColor: 'Rgba(255, 255, 255, 0.05)',
+    duration: 0.2,
+    ease: 'power2.out',
+    overwrite: 'auto'
+  })
 }
 </script>
 
@@ -47,7 +135,7 @@ const onUseItem = (name: string) => {
             v-for="cat in categories" 
             :key="cat.id"
             :class="['tab-btn', { active: inventoryStore.activeCategory === cat.id }]"
-            @click.stop="inventoryStore.activeCategory = cat.id"
+            @click.stop="onTabClick(cat.id, $event)"
           >
             {{ cat.label }}
           </button>
@@ -97,7 +185,9 @@ const onUseItem = (name: string) => {
             v-for="item in inventoryStore.bagItems" 
             :key="item.name"
             :class="['item-card', { selected: !!inventoryStore.bagSellSelected[item.name] }]"
-            @click.stop="inventoryStore.bagSellMode ? inventoryStore.toggleBagSellSelect(item.name, Number(item.qty)) : null"
+            @mouseenter="onItemMouseEnter"
+            @mouseleave="onItemMouseLeave"
+            @click.stop="onItemClick(item.name, Number(item.qty), $event)"
           >
             <div class="item-icon-container">
               <div
@@ -170,6 +260,8 @@ const onUseItem = (name: string) => {
       >
         <button
           class="btn-sell-mode"
+          @mouseenter="onSellModeMouseEnter"
+          @mouseleave="onSellModeMouseLeave"
           @click.stop="inventoryStore.toggleBagSellMode"
         >
           💰 Vender Objetos
@@ -262,7 +354,6 @@ const onUseItem = (name: string) => {
   color: var(--gray);
   font-size: 11px;
   cursor: pointer;
-  transition: all 0.2s;
 }
 
 .tab-btn.active {
@@ -290,14 +381,12 @@ const onUseItem = (name: string) => {
   flex-direction: column;
   align-items: center;
   gap: 12px;
-  transition: all 0.2s;
   cursor: default;
   position: relative;
 }
 
 .item-card:hover {
   background: Rgba(255, 255, 255, 0.06);
-  transform: Translatey(-2px);
 }
 
 .item-card.selected {
@@ -382,7 +471,6 @@ const onUseItem = (name: string) => {
   @include pixelated;
   font-size: 10px;
   cursor: pointer;
-  transition: all 0.2s;
 }
 
 .sell-qty-selector {

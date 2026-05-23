@@ -28,7 +28,12 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const spinnerRef = ref<HTMLElement | null>(null)
+const cardRef = ref<HTMLElement | null>(null)
+const iconRef = ref<HTMLElement | null>(null)
+
 let spinnerTween: gsap.core.Tween | null = null
+let glowTween: gsap.core.Tween | null = null
+let pulseTween: gsap.core.Tween | null = null
 
 const startRotation = () => {
   if (spinnerTween) spinnerTween.kill()
@@ -42,18 +47,83 @@ const startRotation = () => {
   }
 }
 
+const startGlow = () => {
+  if (glowTween) glowTween.kill()
+  if (!cardRef.value) return
+
+  let borderColorFrom = ''
+  let borderColorTo = ''
+  let boxShadowFrom = ''
+  let boxShadowTo = ''
+
+  if (props.theme === 'default') {
+    borderColorFrom = 'Rgba(59, 130, 246, 0.4)'
+    borderColorTo = 'Rgba(59, 130, 246, 0.8)'
+    boxShadowFrom = '0 0 40px Rgba(59, 130, 246, 0.15), inset 0 0 20px Rgba(59, 130, 246, 0.05)'
+    boxShadowTo = '0 0 60px Rgba(59, 130, 246, 0.3), inset 0 0 20px Rgba(59, 130, 246, 0.05)'
+  } else if (props.theme === 'error') {
+    borderColorFrom = 'Rgba(239, 68, 68, 0.4)'
+    borderColorTo = 'Rgba(239, 68, 68, 0.8)'
+    boxShadowFrom = '0 0 40px Rgba(239, 68, 68, 0.15), inset 0 0 20px Rgba(239, 68, 68, 0.1)'
+    boxShadowTo = '0 0 60px Rgba(239, 68, 68, 0.3), inset 0 0 20px Rgba(239, 68, 68, 0.1)'
+  } else if (props.theme === 'warning') {
+    borderColorFrom = 'Rgba(245, 158, 11, 0.4)'
+    borderColorTo = 'Rgba(245, 158, 11, 0.8)'
+    boxShadowFrom = '0 0 40px Rgba(245, 158, 11, 0.15), inset 0 0 20px Rgba(245, 158, 11, 0.05)'
+    boxShadowTo = '0 0 60px Rgba(245, 158, 11, 0.3), inset 0 0 20px Rgba(245, 158, 11, 0.05)'
+  } else if (props.theme === 'purple') {
+    borderColorFrom = 'Rgba(168, 85, 247, 0.4)'
+    borderColorTo = 'Rgba(168, 85, 247, 0.8)'
+    boxShadowFrom = '0 0 40px Rgba(168, 85, 247, 0.15), inset 0 0 20px Rgba(168, 85, 247, 0.05)'
+    boxShadowTo = '0 0 60px Rgba(168, 85, 247, 0.3), inset 0 0 20px Rgba(168, 85, 247, 0.05)'
+  }
+
+  glowTween = gsap.fromTo(cardRef.value,
+    { borderColor: borderColorFrom, boxShadow: boxShadowFrom },
+    {
+      borderColor: borderColorTo,
+      boxShadow: boxShadowTo,
+      duration: 1.5,
+      yoyo: true,
+      repeat: -1,
+      ease: 'sine.inOut'
+    }
+  )
+}
+
+const startPulse = () => {
+  if (pulseTween) pulseTween.kill()
+  if (iconRef.value) {
+    pulseTween = gsap.fromTo(iconRef.value,
+      { scale: 1, opacity: 1 },
+      {
+        scale: 1.08,
+        opacity: 0.75,
+        duration: 1,
+        yoyo: true,
+        repeat: -1,
+        ease: 'sine.inOut'
+      }
+    )
+  }
+}
+
 onMounted(() => {
   nextTick(() => {
     if (props.showSpinner) {
       startRotation()
     }
+    startGlow()
+    if (props.icon) {
+      startPulse()
+    }
   })
 })
 
 onUnmounted(() => {
-  if (spinnerTween) {
-    spinnerTween.kill()
-  }
+  if (spinnerTween) spinnerTween.kill()
+  if (glowTween) glowTween.kill()
+  if (pulseTween) pulseTween.kill()
 })
 
 watch(() => props.showSpinner, (show) => {
@@ -66,6 +136,23 @@ watch(() => props.showSpinner, (show) => {
     spinnerTween = null
   }
 })
+
+watch(() => props.theme, () => {
+  nextTick(() => {
+    startGlow()
+  })
+})
+
+watch(() => props.icon, (newIcon) => {
+  if (newIcon) {
+    nextTick(() => {
+      startPulse()
+    })
+  } else if (pulseTween) {
+    pulseTween.kill()
+    pulseTween = null
+  }
+})
 </script>
 
 <template>
@@ -75,12 +162,18 @@ watch(() => props.showSpinner, (show) => {
       { 'is-critical': critical }
     ]"
   >
-    <div :class="['pv-loading-card', theme, cardClass]">
+    <div
+      ref="cardRef"
+      :class="['pv-loading-card', theme, cardClass]"
+    >
       <div
         v-if="icon"
         class="icon-header"
       >
-        <span class="wifi-icon pulse">{{ icon }}</span>
+        <span
+          ref="iconRef"
+          class="wifi-icon"
+        >{{ icon }}</span>
       </div>
 
       <h2
@@ -185,7 +278,6 @@ watch(() => props.showSpinner, (show) => {
     border: 2px solid Rgba(59, 130, 246, 0.4);
     box-shadow: 0 0 50px Rgba(59, 130, 246, 0.15),
                 inset 0 0 20px Rgba(59, 130, 246, 0.05);
-    animation: glow-default 3s infinite ease-in-out;
 
     .loading-title { color: var(--yellow); }
     .spinner { border-top-color: var(--yellow); }
@@ -197,7 +289,6 @@ watch(() => props.showSpinner, (show) => {
     border: 2px solid Rgba(239, 68, 68, 0.4);
     box-shadow: 0 0 50px Rgba(239, 68, 68, 0.2),
                 inset 0 0 20px Rgba(239, 68, 68, 0.1);
-    animation: glow-error 3s infinite ease-in-out;
 
     .loading-title { color: Rgba(239, 68, 68, 1); }
     .spinner { border-top-color: Rgba(239, 68, 68, 1); }
@@ -209,7 +300,6 @@ watch(() => props.showSpinner, (show) => {
     border: 2px solid Rgba(245, 158, 11, 0.4);
     box-shadow: 0 0 50px Rgba(245, 158, 11, 0.15),
                 inset 0 0 20px Rgba(245, 158, 11, 0.05);
-    animation: glow-warning 3s infinite ease-in-out;
 
     .loading-title { color: Rgb(245, 158, 11); }
     .spinner { border-top-color: Rgb(245, 158, 11); }
@@ -221,33 +311,12 @@ watch(() => props.showSpinner, (show) => {
     border: 2px solid Rgba(168, 85, 247, 0.4);
     box-shadow: 0 0 50px Rgba(168, 85, 247, 0.15),
                 inset 0 0 20px Rgba(168, 85, 247, 0.05);
-    animation: glow-purple 3s infinite ease-in-out;
 
     .loading-title { color: Rgb(168, 85, 247); }
     .spinner { border-top-color: Rgb(168, 85, 247); }
     .status-text { color: Rgb(168, 85, 247); }
     .wifi-icon { filter: Drop-Shadow(0 0 15px Rgba(168, 85, 247, 0.5)); }
   }
-}
-
-@keyframes glow-default {
-  0%, 100% { border-color: Rgba(59, 130, 246, 0.4); box-shadow: 0 0 40px Rgba(59, 130, 246, 0.15); }
-  50% { border-color: Rgba(59, 130, 246, 0.8); box-shadow: 0 0 60px Rgba(59, 130, 246, 0.3); }
-}
-
-@keyframes glow-error {
-  0%, 100% { border-color: Rgba(239, 68, 68, 0.4); box-shadow: 0 0 40px Rgba(239, 68, 68, 0.15); }
-  50% { border-color: Rgba(239, 68, 68, 0.8); box-shadow: 0 0 60px Rgba(239, 68, 68, 0.3); }
-}
-
-@keyframes glow-warning {
-  0%, 100% { border-color: Rgba(245, 158, 11, 0.4); box-shadow: 0 0 40px Rgba(245, 158, 11, 0.15); }
-  50% { border-color: Rgba(245, 158, 11, 0.8); box-shadow: 0 0 60px Rgba(245, 158, 11, 0.3); }
-}
-
-@keyframes glow-purple {
-  0%, 100% { border-color: Rgba(168, 85, 247, 0.4); box-shadow: 0 0 40px Rgba(168, 85, 247, 0.15); }
-  50% { border-color: Rgba(168, 85, 247, 0.8); box-shadow: 0 0 60px Rgba(168, 85, 247, 0.3); }
 }
 
 .icon-header {
@@ -257,15 +326,6 @@ watch(() => props.showSpinner, (show) => {
     font-size: 48px;
     will-change: transform, filter, opacity;
   }
-}
-
-.pulse {
-  animation: pulse-icon 2s infinite ease-in-out;
-}
-
-@keyframes pulse-icon {
-  0%, 100% { transform: Scale(1); opacity: 1; }
-  50% { transform: Scale(1.08); opacity: 0.75; }
 }
 
 .loading-title {

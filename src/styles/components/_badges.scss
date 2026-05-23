@@ -109,8 +109,7 @@
   clip-path: none;
   box-sizing: border-box;
   
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  &:hover { transform: Scale(1.1); will-change: transform, filter, opacity;
+  &:hover { transform: Scale(1.1);
   will-change: transform, filter, opacity;
   filter: Brightness(1.2); }
 }
@@ -131,7 +130,6 @@
   @include pixelated;
   font-size: 16px; // Much larger as requested
   font-weight: 900;
-  transition: all 0.2s ease;
   will-change: transform, filter;
   
   // Style: White color with solid black outline (like name font)
@@ -170,7 +168,6 @@
   justify-content: center;
   font-size: 16px;
   @include pixelated;
-  transition: all 0.2s ease;
   will-change: transform, filter;
 
   &.burn, &.brn { filter: Drop-Shadow(0 0 5px $red); }

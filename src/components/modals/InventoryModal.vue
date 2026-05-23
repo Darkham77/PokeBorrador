@@ -1,6 +1,7 @@
 <script setup lang="ts">
 
-import { ref, computed, reactive, watch } from 'vue'
+import { ref, computed, reactive, watch, nextTick } from 'vue'
+import { gsap } from 'gsap'
 import { useWindowListener } from '@/composables/useWindowListener'
 import { useGameStore } from '@/stores/game'
 import { useInventoryStore, type Item, isItemUsableOutsideCombat } from '@/stores/inventory'
@@ -45,18 +46,7 @@ const isSmallScreen = ref(window.innerWidth <= 950)
 const handleResize = () => { isSmallScreen.value = window.innerWidth <= 950 }
 useWindowListener('resize', handleResize)
 
-// Battle/Target Auto-category selection
-watch(() => props.show, (val) => {
-  if (val) {
-    if (props.initialCategory) {
-      inventoryStore.activeCategory = props.initialCategory
-    } else if (uiStore.inventoryTarget) {
-      inventoryStore.activeCategory = 'utilizables'
-    } else if (props.battleMode) {
-      inventoryStore.activeCategory = 'pociones'
-    }
-  }
-}, { immediate: true })
+// Battle/Target Auto-category selection moved below filteredItems to avoid ReferenceError
 
 // State
 const multiSelectMode = ref<string | null>(null)
@@ -81,6 +71,78 @@ const isItemHeld = (item: Item | null) => {
 // Getters
 const modalWidth = computed(() => props.battleMode ? '480px' : '800px')
 const filteredItems = computed<Item[]>(() => (inventoryStore.bagItems as Item[]) || [])
+
+// Local items state to handle smooth transitions on tab switches
+const displayedItems = ref<Item[]>([])
+const lastCategory = ref(inventoryStore.activeCategory)
+const lastSearchQuery = ref(inventoryStore.searchQuery)
+const isCategorySwitching = ref(false)
+
+// Battle/Target Auto-category selection
+watch(() => props.show, (val) => {
+  if (val) {
+    if (props.initialCategory) {
+      inventoryStore.activeCategory = props.initialCategory
+    } else if (uiStore.inventoryTarget) {
+      inventoryStore.activeCategory = 'utilizables'
+    } else if (props.battleMode) {
+      inventoryStore.activeCategory = 'pociones'
+    }
+    displayedItems.value = [...filteredItems.value]
+    
+    // Ensure grid is visible when reopening
+    nextTick(() => {
+      const gridEl = document.querySelector('.inventory-grid-wrapper')
+      if (gridEl) {
+        gsap.set(gridEl, { opacity: 1, y: 0 })
+      }
+    })
+  }
+}, { immediate: true })
+
+watch(() => [inventoryStore.activeCategory, inventoryStore.searchQuery], async ([newCat, newQuery]) => {
+  const gridEl = document.querySelector('.inventory-grid-wrapper')
+  if (gridEl) {
+    isCategorySwitching.value = true
+    gsap.killTweensOf(gridEl)
+    
+    // Fade out the entire grid container
+    await gsap.to(gridEl, {
+      opacity: 0,
+      y: 8,
+      duration: 0.12,
+      ease: 'power2.out'
+    })
+    
+    // Update local items
+    lastCategory.value = newCat as string
+    lastSearchQuery.value = newQuery as string
+    displayedItems.value = [...filteredItems.value]
+    
+    // Wait for DOM update
+    await nextTick()
+    
+    // Fade the grid container back in
+    await gsap.to(gridEl, {
+      opacity: 1,
+      y: 0,
+      duration: 0.18,
+      ease: 'power2.out'
+    })
+    
+    isCategorySwitching.value = false
+  } else {
+    lastCategory.value = newCat as string
+    lastSearchQuery.value = newQuery as string
+    displayedItems.value = [...filteredItems.value]
+  }
+})
+
+watch(() => filteredItems.value, (newVal) => {
+  if (!isCategorySwitching.value) {
+    displayedItems.value = [...newVal]
+  }
+}, { deep: true })
 const totalObjectsCount = computed(() => {
   const source = props.battleMode 
     ? (filteredItems.value || [])
@@ -291,6 +353,73 @@ const close = () => {
   handleCancelSelection()
   uiStore.inventoryTarget = null
 }
+
+// GSAP List Transition Hooks
+const onBeforeEnter = (el: Element) => {
+  if (isCategorySwitching.value) return
+  const item = el as HTMLElement
+  gsap.set(item, {
+    opacity: 0,
+    scale: 0.9,
+    y: 10
+  })
+}
+
+const onEnter = (el: Element, done: () => void) => {
+  if (isCategorySwitching.value) {
+    done()
+    return
+  }
+  const item = el as HTMLElement
+  gsap.to(item, {
+    opacity: 1,
+    scale: 1,
+    y: 0,
+    duration: 0.25,
+    ease: 'power2.out',
+    onComplete: done
+  })
+}
+
+const onLeave = (el: Element, done: () => void) => {
+  if (isCategorySwitching.value) {
+    done()
+    return
+  }
+  const item = el as HTMLElement
+  const rect = item.getBoundingClientRect()
+  const parent = item.parentElement
+  
+  if (parent) {
+    const parentRect = parent.getBoundingClientRect()
+    const left = rect.left - parentRect.left
+    const top = rect.top - parentRect.top
+    
+    gsap.set(item, {
+      position: 'absolute',
+      left: `${left}px`,
+      top: `${top}px`,
+      width: rect.width,
+      height: rect.height,
+      zIndex: 0
+    })
+  } else {
+    gsap.set(item, {
+      position: 'absolute',
+      width: rect.width,
+      height: rect.height,
+      zIndex: 0
+    })
+  }
+  
+  gsap.to(item, {
+    opacity: 0,
+    scale: 0.9,
+    duration: 0.2,
+    ease: 'power2.in',
+    onComplete: done
+  })
+}
 </script>
 
 <template>
@@ -353,13 +482,16 @@ const close = () => {
         <!-- GRID AREA -->
         <div class="inventory-grid-wrapper custom-scrollbar">
           <TransitionGroup 
-            v-if="filteredItems.length"
-            name="list-complete" 
-            tag="div" 
+            v-if="displayedItems.length"
+            :css="false"
+            tag="div"
             class="item-premium-grid"
+            @before-enter="onBeforeEnter"
+            @enter="onEnter" 
+            @leave="onLeave"
           >
             <InventoryItemCard
-              v-for="item in filteredItems"
+              v-for="item in displayedItems"
               :key="item.name"
               :item="item"
               :is-selected="selectedItems.has(item.name)"

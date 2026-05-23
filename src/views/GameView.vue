@@ -1,4 +1,51 @@
 <script setup lang="ts">
+import { gsap } from 'gsap'
+
+const onBeforeEnter = (el: Element) => {
+  gsap.set(el, { opacity: 0, y: 10 })
+}
+
+const onEnter = (el: Element, done: () => void) => {
+  gsap.to(el, {
+    opacity: 1,
+    y: 0,
+    duration: 0.2,
+    ease: 'power2.out',
+    onComplete: done
+  })
+}
+
+const onLeave = (el: Element, done: () => void) => {
+  gsap.to(el, {
+    opacity: 0,
+    y: 10,
+    duration: 0.2,
+    ease: 'power2.in',
+    onComplete: done
+  })
+}
+
+const onNavItemMouseEnter = (event: MouseEvent) => {
+  const target = event.currentTarget as HTMLElement
+  gsap.to(target, {
+    backgroundColor: 'Rgba(255, 255, 255, 0.05)',
+    color: '#ffffff',
+    duration: 0.2,
+    overwrite: 'auto'
+  })
+}
+
+const onNavItemMouseLeave = (event: MouseEvent) => {
+  const target = event.currentTarget as HTMLElement
+  const isActive = target.classList.contains('active')
+  
+  gsap.to(target, {
+    backgroundColor: isActive ? 'Rgba(255, 184, 0, 0.1)' : 'transparent',
+    color: isActive ? 'var(--yellow)' : 'var(--gray)',
+    duration: 0.2,
+    overwrite: 'auto'
+  })
+}
 </script>
 
 <template>
@@ -12,8 +59,10 @@
       <main class="content-area">
         <router-view v-slot="{ Component }">
           <transition
-            name="fade"
             mode="out-in"
+            @before-enter="onBeforeEnter"
+            @enter="onEnter"
+            @leave="onLeave"
           >
             <component :is="Component" />
           </transition>
@@ -25,6 +74,8 @@
           to="/"
           class="nav-item"
           active-class="active"
+          @mouseenter="onNavItemMouseEnter"
+          @mouseleave="onNavItemMouseLeave"
         >
           <span>🗺️</span>
           <span>Mapa</span>
@@ -33,6 +84,8 @@
           to="/team"
           class="nav-item"
           active-class="active"
+          @mouseenter="onNavItemMouseEnter"
+          @mouseleave="onNavItemMouseLeave"
         >
           <span>⚡</span>
           <span>Equipo</span>
@@ -41,6 +94,8 @@
           to="/pokedex"
           class="nav-item"
           active-class="active"
+          @mouseenter="onNavItemMouseEnter"
+          @mouseleave="onNavItemMouseLeave"
         >
           <span>📖</span>
           <span>Pokedex</span>
@@ -110,7 +165,6 @@
   color: var(--gray);
   font-size: 11px;
   font-weight: bold;
-  transition: all 0.2s;
 }
 
 .nav-item span:first-child {
@@ -118,25 +172,12 @@
 }
 
 .nav-item:hover {
-  background: Rgba(255, 255, 255, 0.05);
   color: var(--white);
 }
 
 .nav-item.active {
   background: Rgba(255, 184, 0, 0.1);
   color: var(--yellow);
-}
-
-/* Transitions */
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.2s, transform 0.2s;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-  transform: Translatey(10px);
 }
 
 @media (max-width: 768px) {

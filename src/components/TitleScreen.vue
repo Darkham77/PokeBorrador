@@ -3,6 +3,7 @@ import { useGameStore } from '@/stores/game'
 import { useAuthStore } from '@/stores/auth'
 import { computed } from 'vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
+import { gsap } from 'gsap'
 
 const gameStore = useGameStore()
 const authStore = useAuthStore()
@@ -14,6 +15,61 @@ const handleChooseStarter = async (id: string) => {
 
 const handleLogout = () => {
   authStore.logout()
+}
+
+const getStarterConfig = (type: string) => {
+  if (type === 'grass') {
+    return {
+      color: 'rgba(50, 215, 75, 0.8)',
+      bg: 'rgba(50, 215, 75, 0.15)',
+      shadow: '0 12px 35px rgba(50, 215, 75, 0.35)'
+    }
+  }
+  if (type === 'fire') {
+    return {
+      color: 'rgba(255, 69, 58, 0.8)',
+      bg: 'rgba(255, 69, 58, 0.15)',
+      shadow: '0 12px 35px rgba(255, 69, 58, 0.35)'
+    }
+  }
+  return {
+    color: 'rgba(10, 132, 255, 0.8)',
+    bg: 'rgba(10, 132, 255, 0.15)',
+    shadow: '0 12px 35px rgba(10, 132, 255, 0.35)'
+  }
+}
+
+const handleMouseEnter = (event: MouseEvent, type: string) => {
+  const el = event.currentTarget as HTMLElement
+  const config = getStarterConfig(type)
+  
+  gsap.to(el, {
+    y: -12,
+    scale: 1.03,
+    borderColor: config.color,
+    backgroundColor: config.bg,
+    boxShadow: config.shadow,
+    '--glow-opacity': 1,
+    duration: 0.35,
+    ease: 'power2.out',
+    overwrite: 'auto'
+  })
+}
+
+const handleMouseLeave = (event: MouseEvent) => {
+  const el = event.currentTarget as HTMLElement
+  
+  gsap.to(el, {
+    y: 0,
+    scale: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    boxShadow: 'none',
+    '--glow-opacity': 0,
+    duration: 0.3,
+    ease: 'power2.inOut',
+    overwrite: 'auto'
+  })
 }
 </script>
 
@@ -39,6 +95,8 @@ const handleLogout = () => {
         class="starter-card grass"
         :style="{ '--card-seed': 0.1 }"
         @click.stop="handleChooseStarter('bulbasaur')"
+        @mouseenter="handleMouseEnter($event, 'grass')"
+        @mouseleave="handleMouseLeave($event)"
       >
         <div class="starter-img-container">
           <img
@@ -71,6 +129,8 @@ const handleLogout = () => {
         class="starter-card fire"
         :style="{ '--card-seed': 0.5 }"
         @click.stop="handleChooseStarter('charmander')"
+        @mouseenter="handleMouseEnter($event, 'fire')"
+        @mouseleave="handleMouseLeave($event)"
       >
         <div class="starter-img-container">
           <img
@@ -103,6 +163,8 @@ const handleLogout = () => {
         class="starter-card water"
         :style="{ '--card-seed': 0.9 }"
         @click.stop="handleChooseStarter('squirtle')"
+        @mouseenter="handleMouseEnter($event, 'water')"
+        @mouseleave="handleMouseLeave($event)"
       >
         <div class="starter-img-container">
           <img

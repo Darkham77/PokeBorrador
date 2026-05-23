@@ -13,7 +13,7 @@
   width: 100%;
   margin: 0;
   padding: 60px 20px;
-  animation: fadeIn 0.4s ease;
+
   overflow-y: auto;
   overflow-x: hidden;
   box-sizing: border-box;
@@ -92,7 +92,7 @@
   align-items: center;
   gap: 12px;
   cursor: pointer;
-  transition: all 0.2s;
+
   position: relative;
   overflow: hidden;
   height: 100%;
@@ -162,13 +162,6 @@
   }
 
   /* Resaltado Dorado para el Banner de Eventos (Literal 1919) */
-  &.event-active {
-    border: 1px solid $yellow !important;
-    background: Rgba(255, 215, 0, 0.08) !important;
-    box-shadow: 0 0 16px Rgba(255, 215, 0, 0.25) !important;
-    animation: pulseGoldBanner 3s infinite ease-in-out;
-    animation-delay: calc(var(--card-seed, 0) * -3s);
-  }
 }
 
 /* Carrusel de Eventos (Literal 1883) */
@@ -179,7 +172,7 @@
   cursor: pointer;
   display: flex;
   align-items: center;
-  transition: all 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+
 
   &:hover {
     background: Rgba(255, 215, 0, 0.1) !important;
@@ -193,7 +186,7 @@
   position: absolute;
   inset: 0;
   opacity: 0;
-  transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1), transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+
   transform: Translatex(10px);
   display: flex;
   align-items: center;
@@ -223,7 +216,7 @@
   height: 4px;
   border-radius: 50%;
   background: Rgba(255, 255, 255, 0.15);
-  transition: all 0.3s ease;
+
 
   &.active {
     background: $yellow;
@@ -233,7 +226,4 @@
   }
 }
 
-@keyframes pulseGoldBanner {
-  0%, 100% { box-shadow: 0 0 10px Rgba(255, 215, 0, 0.2); }
-  50% { box-shadow: 0 0 20px Rgba(255, 215, 0, 0.4); }
-}
+

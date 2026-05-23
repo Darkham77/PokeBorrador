@@ -82,7 +82,7 @@
   border-radius: 12px;
   color: Rgba(255, 255, 255, 0.4);
   cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+
   text-align: left;
   outline: none;
   width: 100%;
@@ -107,7 +107,7 @@
     border: 1px solid Rgba(255, 255, 255, 0.05);
     border-radius: 10px;
     font-size: 16px;
-    transition: inherit;
+
     flex-shrink: 0;
 
     @include responsive(950px) {
@@ -121,7 +121,7 @@
     @include pixelated;
     font-size: 8px;
     letter-spacing: 0.5px;
-    transition: inherit;
+
     font-weight: bold;
 
     @include responsive(950px) {
@@ -156,7 +156,7 @@
       border-radius: 0 4px 4px 0;
       box-shadow: 0 0 12px $accent-color;
       opacity: 0;
-      transition: opacity 0.3s ease;
+
 
       @include responsive(950px) {
         left: 8%;
@@ -301,7 +301,7 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
   position: relative;
   overflow: hidden;
   background-clip: padding-box;
@@ -333,7 +333,7 @@
   padding: 12px;
   display: flex;
   flex-direction: column;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+
   position: relative;
   overflow: hidden; // Critical: prevent corner bleed
 
@@ -354,7 +354,7 @@
   background: linear-gradient(135deg, Rgba($accent-color, 0.15) 0%, Rgba(0, 0, 0, 0.2) 100%);
   color: $accent-color;
   box-shadow: 0 4px 15px Rgba($accent-color, 0.1);
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+
   outline: none;
   
   &:hover:not(:disabled) {
