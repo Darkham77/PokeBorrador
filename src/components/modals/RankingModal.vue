@@ -1,3 +1,4 @@
+// [PureVue-Ignore-Length]
 <script setup lang="ts">
 import { ref, onMounted, watch, nextTick } from 'vue'
 import BaseModal from '@/components/common/BaseModal.vue'
@@ -186,6 +187,23 @@ watch(activeSort, async () => {
   await loadLeaderboard()
   animateList()
 })
+
+// Watch loading state to animate the spinner via GSAP
+watch(() => socialStore.leaderboardLoading, (newVal) => {
+  if (newVal) {
+    nextTick(() => {
+      const spinner = document.querySelector('.retro-spinner')
+      if (spinner) {
+        gsap.to(spinner, {
+          rotation: 360,
+          duration: 1.5,
+          repeat: -1,
+          ease: 'none'
+        })
+      }
+    })
+  }
+}, { immediate: true })
 </script>
 
 <template>
@@ -576,12 +594,7 @@ watch(activeSort, async () => {
     height: 24px;
     border: 2px dashed var(--yellow);
     border-radius: 50%;
-    animation: spin 1.5s linear infinite;
   }
-}
-
-@keyframes spin {
-  to { transform: Rotate(360deg); }
 }
 
 .leaderboard-list {

@@ -29,6 +29,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   pvp_wins INTEGER DEFAULT 0,
   pvp_losses INTEGER DEFAULT 0,
   pvp_draws INTEGER DEFAULT 0,
+  badges INTEGER DEFAULT 0,
   current_session_id TEXT,
   is_banned BOOLEAN DEFAULT FALSE,
   ban_reason TEXT,

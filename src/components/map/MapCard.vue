@@ -1027,7 +1027,7 @@ watch(spawnGridRef, (newRef) => {
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 1;
+    z-index: var(--z-map-floor);
   }
 
   .crown-shine-aura {
@@ -1040,7 +1040,7 @@ watch(spawnGridRef, (newRef) => {
     margin-left: -19px !important;
     background-color: Rgba(255, 215, 0, 0.8) !important;
     pointer-events: none;
-    z-index: -1 !important; // Sit behind the crown
+    z-index: calc(var(--z-base) - 1) !important; // Sit behind the crown
     opacity: 0.65;
     will-change: transform, opacity;
 
@@ -1056,7 +1056,7 @@ watch(spawnGridRef, (newRef) => {
 
   .pill-content {
     position: relative;
-    z-index: 1;
+    z-index: var(--z-map-floor);
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
