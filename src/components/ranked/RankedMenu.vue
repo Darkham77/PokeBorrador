@@ -90,9 +90,13 @@ const cancelSearch = () => {
       </button>
       <div
         v-else
+        v-gsap-loop="{ effect: 'pulse-shadow', color: 'rgba(59, 130, 246, 0.4)', duration: 2 }"
         class="searching-state card-glass"
       >
-        <div class="spinner" />
+        <div 
+          v-gsap-loop="{ effect: 'spin', duration: 1 }"
+          class="spinner" 
+        />
         <span class="press-start">BUSCANDO RIVAL...</span>
         <button
           class="cancel-btn"
@@ -288,7 +292,6 @@ const cancelSearch = () => {
   align-items: center;
   justify-content: space-between;
   border-color: var(--blue);
-  animation: pulse 2s infinite;
 
   .spinner {
     width: 20px;
@@ -296,7 +299,6 @@ const cancelSearch = () => {
     border: 3px solid Rgba(59, 130, 246, 0.2);
     border-top-color: Rgba(59, 130, 246, 1);
     border-radius: 50%;
-    animation: spin 1s linear infinite;
   }
 }
 
@@ -382,16 +384,5 @@ const cancelSearch = () => {
     font-weight: bold;
     color: var(--white);
   }
-}
-
-
-@keyframes spin {
-  to { transform: Rotate(360deg); }
-}
-
-@keyframes pulse {
-  0% { box-shadow: 0 0 0 0 Rgba(59, 130, 246, 0.4); }
-  70% { box-shadow: 0 0 0 10px Rgba(59, 130, 246, 0); }
-  100% { box-shadow: 0 0 0 0 Rgba(59, 130, 246, 0); }
 }
 </style>

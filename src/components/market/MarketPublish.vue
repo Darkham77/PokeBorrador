@@ -304,7 +304,7 @@ const net = computed(() => price.value - fee.value)
 
     button {
       padding: 8px 16px;
-      border: none;
+      border: 1px solid transparent;
       background: transparent;
       color: $muted;
       @include pixelated;
@@ -316,6 +316,8 @@ const net = computed(() => price.value - fee.value)
       &.active {
         background: Rgba(56, 189, 248, 1);
         color: $white;
+        border-color: #000000;
+        text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
         box-shadow: 0 0 15px Rgba(56, 189, 248, 0.3);
       }
     }

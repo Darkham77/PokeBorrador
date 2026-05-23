@@ -249,7 +249,7 @@ const getTypeEmoji = (type: string) => {
   padding: 4px 10px;
   font-size: 9px;
   border-radius: 7px;
-  border: none;
+  border: 1px solid transparent;
   cursor: pointer;
   background: transparent;
   color: var(--gray);
@@ -259,6 +259,8 @@ const getTypeEmoji = (type: string) => {
 .mode-switch button.active {
   background: var(--blue);
   color: $white;
+  border-color: #000000;
+  text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
 }
 
 .context-label {

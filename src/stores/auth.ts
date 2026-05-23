@@ -93,11 +93,33 @@ export const useAuthStore = defineStore('auth', () => {
           supabase.setMode('online')
         }
 
-        // 1. Verificar sesión con timeout de seguridad (3s) para evitar bloqueos infinitos
-        const sessionPromise = supabase.auth.getSession();
-        const timeoutPromise = new Promise((_, reject) => gsap.delayedCall(3, () => reject(new Error('TIMEOUT'))));
+        // 1. Verificar sesión con estrategia de reintento para tolerar el arranque en frío del servidor de la NAS
+        let data: { session: Session | null } = { session: null }
+        let attempt = 1
+        const maxAttempts = 2
         
-        const { data } = await Promise.race([sessionPromise, timeoutPromise]) as { data: { session: Session | null } };
+        while (attempt <= maxAttempts) {
+          try {
+            // El primer intento usa un timeout más corto (5s) para despertar al servidor si está en frío.
+            // El segundo intento usa un timeout más largo (15s) para dar tiempo a que responda.
+            const timeoutSeconds = attempt === 1 ? 5 : 15
+            const sessionPromise = supabase.auth.getSession()
+            const timeoutPromise = new Promise((_, reject) => gsap.delayedCall(timeoutSeconds, () => reject(new Error('TIMEOUT'))))
+            
+            const response = await Promise.race([sessionPromise, timeoutPromise]) as { data: { session: Session | null } }
+            data = response.data
+            break // Exitoso, salir del bucle
+          } catch (e) {
+            logger.warn('Auth', `Intento ${attempt}/${maxAttempts} de getSession falló o dio timeout: ${(e as Error).message}`)
+            if (attempt < maxAttempts) {
+              attempt++
+              // Esperar un breve delay antes del reintento para que el servidor termine de levantar
+              await new Promise(resolve => setTimeout(resolve, 1500))
+            } else {
+              throw e // Si se agotaron los intentos, propagar error
+            }
+          }
+        }
         
         if (data?.session?.user) {
           session.value = data.session
@@ -107,10 +129,10 @@ export const useAuthStore = defineStore('auth', () => {
           const isLocalId = user.value?.id === 'local_user' || user.value?.id?.startsWith('local_')
           
           if (!isLocalId) {
-            // Registrar sesión en DB para unicidad con timeout
+            // Registrar sesión en DB para unicidad con timeout (10s)
             try {
               const updatePromise = supabase.from('profiles').update({ current_session_id: sessionId.value }).eq('id', user.value?.id)
-              await Promise.race([updatePromise, new Promise((_, reject) => gsap.delayedCall(3, () => reject(new Error('UPDATE_TIMEOUT'))))])
+              await Promise.race([updatePromise, new Promise((_, reject) => gsap.delayedCall(10, () => reject(new Error('UPDATE_TIMEOUT'))))])
             } catch (e) {
               logger.warn('Auth', `Session ID update failed or timed out: ${(e as Error).message}`)
             }
@@ -119,10 +141,10 @@ export const useAuthStore = defineStore('auth', () => {
           startSessionMonitoring()
           
           if (!isLocalId) {
-            // Fetch profile meta con timeout
+            // Fetch profile meta con timeout (10s)
             try {
               const profilePromise = supabase.from('profiles').select('db_version, is_banned, ban_reason').eq('id', user.value?.id).single()
-              const { data: profile } = await Promise.race([profilePromise, new Promise((_, reject) => setTimeout(() => reject(new Error('FETCH_TIMEOUT')), 3000))]) as { data: { db_version: number, is_banned: boolean, ban_reason: string | null } | null }
+              const { data: profile } = await Promise.race([profilePromise, new Promise((_, reject) => setTimeout(() => reject(new Error('FETCH_TIMEOUT')), 10000))]) as { data: { db_version: number, is_banned: boolean, ban_reason: string | null } | null }
               
               if (profile && user.value) {
                 user.value.db_version = profile.db_version || 1

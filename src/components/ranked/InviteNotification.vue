@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 import { gsap } from 'gsap';
 import { useLivePvPStore } from '@/stores/livePvP';
 
@@ -21,10 +21,17 @@ const emit = defineEmits<{
 }>();
 
 const livePvP = useLivePvPStore();
+const containerRef = ref<HTMLElement | null>(null);
 
 let timer: gsap.core.Tween | null = null;
 
 onMounted(() => {
+  if (containerRef.value) {
+    gsap.fromTo(containerRef.value,
+      { y: -120, opacity: 0, xPercent: -50 },
+      { y: 0, opacity: 1, xPercent: -50, duration: 0.4, ease: 'back.out(1.275)' }
+    );
+  }
   timer = gsap.delayedCall(30, () => {
     emit('close');
   }); // 30s auto-dismiss
@@ -47,7 +54,10 @@ const decline = async () => {
 </script>
 
 <template>
-  <div class="invite-notification card-glass">
+  <div
+    ref="containerRef"
+    class="invite-notification card-glass"
+  >
     <div class="header press-start">
       ⚔️ ¡DESAFÍO PvP!
     </div>
@@ -94,7 +104,6 @@ const decline = async () => {
   border-radius: 20px;
   padding: 20px;
   text-align: center;
-  animation: slideDown 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   @include gpu-layer;
 }
 
@@ -162,17 +171,6 @@ button {
 
   &:hover {
     background: Rgba(255, 59, 59, 0.2);
-  }
-}
-
-@keyframes slideDown {
-  from {
-    transform: Translate(-50%, -100%);
-    opacity: 0;
-  }
-  to {
-    transform: Translate(-50%, 0);
-    opacity: 1;
   }
 }
 </style>

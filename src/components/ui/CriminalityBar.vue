@@ -32,8 +32,8 @@ const isMax = computed(() => criminality.value >= 100)
       </div>
       <div class="bar-bg">
         <div 
+          v-gsap-loop="{ effect: 'blink-red', duration: 0.5, active: isMax }"
           class="bar-fill" 
-          :class="{ blinking: isMax }"
           :style="{ height: criminality + '%' }"
         >
           <div
@@ -108,15 +108,7 @@ const isMax = computed(() => criminality.value >= 100)
   text-shadow: 1px 1px var(--black), 0 0 5px Rgba(239, 68, 68, 0.4);
 }
 
-.blinking {
-  animation: blinkRed 0.5s infinite;
-}
 
-@keyframes blinkRed {
-  0% { background: Rgba(239, 68, 68, 1); box-shadow: 0 0 20px Rgba(239, 68, 68, 1); }
-  50% { background: Rgba(153, 27, 27, 1); box-shadow: 0 0 5px Rgba(153, 27, 27, 1); }
-  100% { background: Rgba(239, 68, 68, 1); box-shadow: 0 0 20px Rgba(239, 68, 68, 1); }
-}
 
 .slide-right-enter-active, .slide-right-leave-active {
   transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);

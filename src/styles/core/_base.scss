@@ -98,15 +98,6 @@ body .pixelated {
   image-rendering: pixelated !important;
 }
 
-.screen {
-  animation: fadeIn 0.4s ease;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: Translatey(10px); }
-  to { opacity: 1; transform: Translatey(0); }
-}
-
 // Global Scrollbar Utility
 .custom-scrollbar-vicio {
   &::-webkit-scrollbar {

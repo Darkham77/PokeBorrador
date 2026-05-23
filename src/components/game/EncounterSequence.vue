@@ -153,7 +153,6 @@ const handleFishingStart = () => {
   justify-content: center;
   padding: 20px;
   pointer-events: auto;
-  animation: fadeIn 0.3s ease;
 }
 
 .fishing-card {
@@ -209,10 +208,5 @@ const handleFishingStart = () => {
     will-change: transform, filter, opacity;
   filter: Brightness(1.1);
   }
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
 }
 </style>

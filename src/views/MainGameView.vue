@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, defineAsyncComponent } from 'vue'
+import { computed, onMounted, onUnmounted, ref, defineAsyncComponent, watch, nextTick } from 'vue'
 import { gsap } from 'gsap'
 import { useDocumentListener } from '@/composables/useWindowListener'
 import { useBodyClass } from '@/composables/useBodyClass'
@@ -93,6 +93,20 @@ onUnmounted(() => {
   logger.info('MainGameView', 'UNMOUNTED.')
   breedingStore.cleanupBackgroundPoller()
 })
+
+watch(() => gs.value.starterChosen, (val) => {
+  if (val) {
+    nextTick(() => {
+      const el = document.getElementById('game-screen')
+      if (el) {
+        gsap.fromTo(el,
+          { opacity: 0, y: 10 },
+          { opacity: 1, y: 0, duration: 0.4, ease: 'power2.out' }
+        )
+      }
+    })
+  }
+}, { immediate: true })
 
 // Initialize audio context on first user interaction
 const initAudio = () => {

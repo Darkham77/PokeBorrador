@@ -70,7 +70,10 @@ const isFactionValid = (faction: string | undefined | null) => {
         v-if="socialStore.leaderboardLoading" 
         class="loader"
       >
-        <div class="spinner" />
+        <div 
+          v-gsap-loop="'spin'"
+          class="spinner" 
+        />
         <p>Consultando el Salón Global...</p>
       </div>
 
@@ -298,13 +301,10 @@ const isFactionValid = (faction: string | undefined | null) => {
     border-top-color: Rgba(251, 191, 36, 1);
     border-radius: 50%;
     margin: 0 auto 15px;
-    animation: spin 1s linear infinite;
   }
 }
 
-@keyframes spin {
-  to { transform: Rotate(360deg); }
-}
+
 
 .empty-state {
   text-align: center;

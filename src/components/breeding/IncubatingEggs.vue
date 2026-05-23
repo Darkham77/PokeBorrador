@@ -105,7 +105,8 @@ const hatchEgg = (egg: PokemonEgg) => {
         <div class="egg-footer-status">
           <button
             v-if="egg.ready || egg.steps <= 0"
-            class="btn-vicio-success hatch-btn pulsing"
+            v-gsap-loop="{ effect: 'pulse-shadow', color: 'rgba(34, 197, 94, 0.4)', duration: 2 }"
+            class="btn-vicio-success hatch-btn"
             @click.stop="hatchEgg(egg)"
           >
             🐣 ECLOSIONAR HUEVO
@@ -355,21 +356,6 @@ const hatchEgg = (egg: PokemonEgg) => {
   box-shadow: 0 4px 12px Rgba(34, 197, 94, 0.2);
 }
 
-.pulsing {
-  animation: pulse-green 2s infinite;
-}
-
-@keyframes pulse-green {
-  0% {
-    box-shadow: 0 0 0 0 Rgba(34, 197, 94, 0.4);
-  }
-  70% {
-    box-shadow: 0 0 0 10px Rgba(34, 197, 94, 0);
-  }
-  100% {
-    box-shadow: 0 0 0 0 Rgba(34, 197, 94, 0);
-  }
-}
 
 .walking-label {
   font-size: 8px;

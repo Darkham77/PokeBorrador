@@ -1,6 +1,7 @@
 <script setup lang="ts">
 
 import { ref, onMounted, onUnmounted } from 'vue'
+import { useGsapTransition } from '@/composables/useGsapTransition'
 import { useAuthStore } from '@/stores/auth'
 import { useGameStore } from '@/stores/game'
 import { useGTSStore } from '@/stores/gts'
@@ -38,6 +39,11 @@ onMounted(async () => {
 
 onUnmounted(() => {
   gtsStore.stopRealtime()
+})
+
+const offlineTransitionHooks = useGsapTransition({
+  type: 'fade',
+  duration: 0.3
 })
 
 async function refresh() {
@@ -86,22 +92,30 @@ async function refresh() {
       </nav>
     </header>
 
-    <div
-      v-if="auth.sessionMode === 'offline'"
-      class="offline-mask"
+    <Transition
+      :css="false"
+      v-on="offlineTransitionHooks"
     >
-      <div class="offline-card">
-        <span class="icon">🛰️</span>
-        <h2>SIN CONEXIÓN</h2>
-        <p>El GTS requiere conexión a la Red Satelital de Kanto para sincronizar ofertas con otros entrenadores.</p>
-        <button @click.stop="emit('close')">
-          VOLVER
-        </button>
+      <div
+        v-if="auth.sessionMode === 'offline'"
+        class="offline-mask"
+      >
+        <div class="offline-card">
+          <span
+            v-gsap-loop="{ effect: 'float', duration: 3, y: -8, rotation: 0 }"
+            class="icon"
+          >🛰️</span>
+          <h2>SIN CONEXIÓN</h2>
+          <p>El GTS requiere conexión a la Red Satelital de Kanto para sincronizar ofertas con otros entrenadores.</p>
+          <button @click.stop="emit('close')">
+            VOLVER
+          </button>
+        </div>
       </div>
-    </div>
+    </Transition>
 
     <main
-      v-else
+      v-if="auth.sessionMode !== 'offline'"
       class="gts-content"
     >
       <div

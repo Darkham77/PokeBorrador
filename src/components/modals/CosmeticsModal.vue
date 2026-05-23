@@ -195,6 +195,7 @@ const selectAvatar = (style: AvatarStyle) => {
               </span>
               <span
                 v-else-if="style.requiredRole || style.requiredClass || style.requiredFaction"
+                v-gsap-loop="{ effect: 'pulse-shadow', color: 'rgba(74, 222, 128, 0.4)', boxShadow: '0 0 8px rgba(74, 222, 128, 0.5)', duration: 2 }"
                 class="lock-tag unlocked"
                 :class="[style.requiredClass, style.requiredFaction]"
               >
@@ -276,6 +277,7 @@ const selectAvatar = (style: AvatarStyle) => {
               </span>
               <span
                 v-else-if="style.requiredRole || style.requiredClass || style.requiredFaction"
+                v-gsap-loop="{ effect: 'pulse-shadow', color: 'rgba(74, 222, 128, 0.4)', boxShadow: '0 0 8px rgba(74, 222, 128, 0.5)', duration: 2 }"
                 class="lock-tag unlocked"
                 :class="[style.requiredClass, style.requiredFaction]"
               >
@@ -429,7 +431,6 @@ const selectAvatar = (style: AvatarStyle) => {
         color: #4ade80;
         background: Rgba(34, 197, 94, 0.15);
         border: 1px solid Rgba(34, 197, 94, 0.3);
-        animation: pulse-unlocked 2s infinite alternate;
       }
 
       &.cazabichos {
@@ -471,14 +472,7 @@ const selectAvatar = (style: AvatarStyle) => {
   }
 }
 
-@keyframes pulse-unlocked {
-  from {
-    box-shadow: 0 0 2px Rgba(74, 222, 128, 0.2);
-  }
-  to {
-    box-shadow: 0 0 8px Rgba(74, 222, 128, 0.5);
-  }
-}
+
 
 .avatar-preview-box {
   padding: 10px;

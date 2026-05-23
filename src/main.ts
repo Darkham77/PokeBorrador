@@ -12,6 +12,7 @@ import PokemonPreview from '@/components/admin/debug/PokemonPreview.vue'
 
 // Global Directives
 import { gsapNick } from '@/directives/gsapNick'
+import { gsapLoop } from '@/directives/gsapLoop'
 
 const app = createApp(App)
 const pinia = createPinia()
@@ -20,6 +21,7 @@ app.component('PVTooltip', PVTooltip)
 app.component('PokemonPreview', PokemonPreview)
 
 app.directive('gsap-nick', gsapNick)
+app.directive('gsap-loop', gsapLoop)
 
 app.use(pinia)
 app.use(router)

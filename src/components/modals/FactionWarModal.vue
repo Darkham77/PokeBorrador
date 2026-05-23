@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
+import gsap from 'gsap'
 import BaseModal from '@/components/common/BaseModal.vue'
 import { useWarStore } from '@/stores/war'
 import { useGameStore } from '@/stores/game'
@@ -97,6 +98,7 @@ const openFactionChoice = () => {
           <div class="card-inner">
             <div class="shields-art">
               <img
+                v-gsap-loop="{ effect: 'bounce', y: -8, duration: 3 }"
                 :src="getAssetUrlLocal(ASSET_TYPES_LOCAL.FACTION, 'union')"
                 class="faction-logo union-logo"
                 alt="Team Unión"
@@ -104,6 +106,7 @@ const openFactionChoice = () => {
               >
               <span class="vs-text">VS</span>
               <img
+                v-gsap-loop="{ effect: 'bounce', y: -8, duration: 3, delay: 1.5 }"
                 :src="getAssetUrlLocal(ASSET_TYPES_LOCAL.FACTION, 'poder')"
                 class="faction-logo poder-logo"
                 alt="Team Poder"
@@ -132,12 +135,17 @@ const openFactionChoice = () => {
       </div>
 
       <!-- 2. Active Faction Dashboard -->
-      <div
-        v-else
-        class="active-dashboard-wrapper"
+      <Transition
+        :css="false"
+        @enter="(el, done) => gsap.fromTo(el, { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.3, onComplete: done })"
       >
-        <WarDashboard />
-      </div>
+        <div
+          v-if="warStore.faction"
+          class="active-dashboard-wrapper"
+        >
+          <WarDashboard />
+        </div>
+      </Transition>
     </div>
   </BaseModal>
 </template>
@@ -238,7 +246,6 @@ const openFactionChoice = () => {
       height: 64px;
       object-fit: contain;
       will-change: transform, filter;
-      animation: floatShield 3s ease-in-out infinite;
 
       &.union-logo {
         filter: Drop-Shadow(0 0 12px Rgba(59, 130, 246, 0.6));
@@ -246,7 +253,6 @@ const openFactionChoice = () => {
 
       &.poder-logo {
         filter: Drop-Shadow(0 0 12px Rgba(239, 68, 68, 0.6));
-        animation-delay: 1.5s;
       }
     }
 
@@ -289,18 +295,4 @@ const openFactionChoice = () => {
   }
 }
 
-.active-dashboard-wrapper {
-  animation: fadeIn 0.3s ease-out;
-}
-
-@keyframes floatShield {
-  0% { transform: Translatey(0); }
-  50% { transform: Translatey(-8px); }
-  100% { transform: Translatey(0); }
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: Translatey(10px); }
-  to { opacity: 1; transform: Translatey(0); }
-}
 </style>

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 
 import { computed } from 'vue';
+import gsap from 'gsap';
 import { useGameStore } from '@/stores/game';
 import { useUIStore } from '@/stores/ui';
 import { usePlayerClassStore } from '@/stores/playerClass';
@@ -38,102 +39,118 @@ const select = (id: string) => {
 
 <template>
   <Teleport to="body">
-    <div 
-      v-if="uiStore.isClassSelectionOpen"
-      class="class-selector-overlay"
-      @click.self="close"
+    <Transition
+      :css="false"
+      @enter="(el, done) => {
+        gsap.fromTo(el, { opacity: 0 }, { opacity: 1, duration: 0.3 });
+        const content = el.querySelector('.modal-content');
+        if (content) gsap.fromTo(content, { scale: 0.95, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.3, ease: 'power2.out', onComplete: done });
+        else done();
+      }"
+      @leave="(el, done) => {
+        gsap.to(el, { opacity: 0, duration: 0.2 });
+        const content = el.querySelector('.modal-content');
+        if (content) gsap.to(content, { scale: 0.95, opacity: 0, duration: 0.2, onComplete: done });
+        else done();
+      }"
     >
-      <div class="modal-content">
-        <header class="modal-header">
-          <h2 class="press-start gold-text">
-            🎭 ELEGÍ TU CLASE
-          </h2>
-          <p class="description">
-            {{ isChange ? `Cambiar de clase cuesta ` : 'Esta elección define cómo jugás. Podés cambiar más adelante por ' }}
-            <strong class="gold-text">{{ COST.toLocaleString() }} Battle Coins</strong>.
-          </p>
-        </header>
-
-        <div class="class-grid">
-          <div 
-            v-for="cls in classes" 
-            :key="cls.id"
-            class="class-card"
-            :class="{ active: currentClassId === cls.id }"
-            :style="{ '--class-color': cls.color, '--class-glow': cls.color + '55' }"
-            @click.stop="select(cls.id)"
-          >
-            <div
-              v-if="currentClassId === cls.id"
-              class="active-badge press-start"
-            >
-              ACTIVA
-            </div>
-            
-            <div class="avatar-wrapper">
-              <PlayerAvatar
-                :class-id="cls.id"
-                :size="80"
-              />
-            </div>
-
-            <h3
-              class="press-start"
-              :style="{ color: cls.color }"
-            >
-              {{ cls.name }}
-            </h3>
-            <p class="class-desc">
-              {{ cls.description }}
+      <div 
+        v-if="uiStore.isClassSelectionOpen"
+        class="class-selector-overlay"
+        @click.self="close"
+      >
+        <div class="modal-content">
+          <header class="modal-header">
+            <h2 class="press-start gold-text">
+              🎭 ELEGÍ TU CLASE
+            </h2>
+            <p class="description">
+              {{ isChange ? `Cambiar de clase cuesta ` : 'Esta elección define cómo jugás. Podés cambiar más adelante por ' }}
+              <strong class="gold-text">{{ COST.toLocaleString() }} Battle Coins</strong>.
             </p>
+          </header>
 
-            <div class="benefits">
-              <h4 class="green-text">
-                ✅ VENTAJAS
-              </h4>
-              <ul>
-                <li
-                  v-for="b in cls.bonuses"
-                  :key="b"
-                >
-                  {{ b }}
-                </li>
-              </ul>
-            </div>
-
-            <div class="penalties">
-              <h4 class="red-text">
-                ❌ PENALIZACIONES
-              </h4>
-              <ul>
-                <li
-                  v-for="p in cls.penalties"
-                  :key="p"
-                >
-                  {{ p }}
-                </li>
-              </ul>
-            </div>
-
-            <button
-              class="select-btn press-start"
-              :style="{ background: `Linear-Gradient(135deg, ${cls.color}, ${cls.colorDark})` }"
+          <div class="class-grid">
+            <div 
+              v-for="cls in classes" 
+              :key="cls.id"
+              class="class-card"
+              :class="{ active: currentClassId === cls.id }"
+              :style="{ '--class-color': cls.color, '--class-glow': cls.color + '55' }"
+              @click.stop="select(cls.id)"
             >
-              {{ currentClassId === cls.id ? '✓ CLASE ACTUAL' : (isChange ? '🔄 CAMBIAR' : '▶ ELEGIR') }}
-            </button>
-          </div>
-        </div>
+              <div
+                v-if="currentClassId === cls.id"
+                class="active-badge press-start"
+              >
+                ACTIVA
+              </div>
+            
+              <div class="avatar-wrapper">
+                <PlayerAvatar
+                  :class-id="cls.id"
+                  :size="80"
+                />
+              </div>
 
-        <footer class="modal-footer">
-          <button
-            class="close-btn"
-            @click.stop="close"
-          >
-            CERRAR
-          </button>
-        </footer>
+              <h3
+                class="press-start"
+                :style="{ color: cls.color }"
+              >
+                {{ cls.name }}
+              </h3>
+              <p class="class-desc">
+                {{ cls.description }}
+              </p>
+
+              <div class="benefits">
+                <h4 class="green-text">
+                  ✅ VENTAJAS
+                </h4>
+                <ul>
+                  <li
+                    v-for="b in cls.bonuses"
+                    :key="b"
+                  >
+                    {{ b }}
+                  </li>
+                </ul>
+              </div>
+
+              <div class="penalties">
+                <h4 class="red-text">
+                  ❌ PENALIZACIONES
+                </h4>
+                <ul>
+                  <li
+                    v-for="p in cls.penalties"
+                    :key="p"
+                  >
+                    {{ p }}
+                  </li>
+                </ul>
+              </div>
+
+              <button
+                class="select-btn press-start"
+                :style="{ background: `Linear-Gradient(135deg, ${cls.color}, ${cls.colorDark})` }"
+              >
+                {{ currentClassId === cls.id ? '✓ CLASE ACTUAL' : (isChange ? '🔄 CAMBIAR' : '▶ ELEGIR') }}
+              </button>
+            </div>
+          </div>
+
+          <footer class="modal-footer">
+            <button
+              class="close-btn"
+              @click.stop="close"
+            >
+              CERRAR
+            </button>
+          </footer>
+        </div>
       </div>
-    </div>
+    </Transition>
   </Teleport>
 </template>
 
@@ -155,7 +172,6 @@ const select = (id: string) => {
   backdrop-filter: Blur(8px);
   backdrop-filter: Blur(8px);
   @include gpu-layer;
-  animation: fadeIn 0.3s ease;
   transform: Translatez(0);
 }
 
@@ -286,8 +302,5 @@ h3 { text-align: center; margin-bottom: 12px; font-size: 14px; }
   }
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
+
 </style>

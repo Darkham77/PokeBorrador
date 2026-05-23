@@ -44,7 +44,10 @@ const formatTime = formatDisplayDate
       v-if="gtsStore.loading"
       class="loading-state"
     >
-      <div class="loader" />
+      <div
+        v-gsap-loop="'spin'"
+        class="loader"
+      />
       <p>Sincronizando ofertas...</p>
     </div>
 
@@ -247,10 +250,7 @@ const formatTime = formatDisplayDate
   border: 3px solid Rgba(56, 189, 248, 0.2);
   border-top-color: Rgba(56, 189, 248, 1);
   border-radius: 50%;
-  animation: spin 1s linear infinite;
   margin-bottom: 16px;
 }
-
-@keyframes spin { to { transform: Rotate(360deg); } }
 
 </style>

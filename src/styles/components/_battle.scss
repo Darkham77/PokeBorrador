@@ -282,18 +282,4 @@ body.is-battle-active {
   &.player-sprite { align-items: flex-end; justify-content: flex-start; }
 }
 
-.bat-pokemon-sprite {
-  height: clamp(60px, 35cqi, 160px);
-  width: auto;
-  @include pixelated;
-  will-change: transform, filter, opacity;
-  filter: Drop-Shadow(0 2cqi 2cqi Rgba(0,0,0,0.5));
-  animation: idle 3s infinite ease-in-out;
-  
-  &.back { height: clamp(80px, 45cqi, 200px); }
-}
 
-@keyframes idle {
-  0%, 100% { transform: Translatey(0); }
-  50% { transform: Translatey(-1.5cqi); }
-}

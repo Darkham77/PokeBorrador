@@ -41,7 +41,10 @@ const activeDisplayEvents = computed(() => {
         <div class="glow" />
         <div class="event-banner-content">
           <div class="event-banner-header">
-            <span class="icon">{{ event.icon }}</span>
+            <span
+              v-gsap-loop="{ effect: 'pulse', scale: 1.1, duration: 1, delay: index * 0.33 }"
+              class="icon"
+            >{{ event.icon }}</span>
             <div class="name">
               {{ event.name }}
             </div>
@@ -114,8 +117,6 @@ const activeDisplayEvents = computed(() => {
         font-size: 1.2rem;
         will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 0 5px var(--event-color));
-        animation: pulse 2s infinite;
-        animation-delay: calc(var(--event-seed, 0) * -2s);
         flex-shrink: 0;
       }
       
@@ -142,11 +143,7 @@ const activeDisplayEvents = computed(() => {
   }
 }
 
-@keyframes pulse {
-  0% { transform: Scale(1.0); opacity: 1; }
-  50% { transform: Scale(1.1); opacity: 0.8; }
-  100% { transform: Scale(1.0); opacity: 1; }
-}
+
 
 .banner-slide-enter-active,
 .banner-slide-leave-active {

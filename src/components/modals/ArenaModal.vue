@@ -13,6 +13,7 @@ import BaseModal from '@/components/common/BaseModal.vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import { Z_LAYERS } from '@/logic/constants/visuals'
 import { gsap } from 'gsap'
+import { useGsapTransition } from '@/composables/useGsapTransition'
 
 interface Props {
   show?: boolean
@@ -61,6 +62,11 @@ onMounted(async () => {
       ease: 'power1.inOut'
     })
   }
+})
+
+const offlineTransitionHooks = useGsapTransition({
+  type: 'fade',
+  duration: 0.3
 })
 
 const allowedTypes = computed<string[]>(() => pvp.currentSeasonRules?.allowedTypes || [])
@@ -279,16 +285,24 @@ function handleToggleBtnLeave(e: MouseEvent) {
     </template>
 
     <div class="arena-modal-content-inner">
-      <div
-        v-if="auth.sessionMode === 'offline'"
-        class="offline-mask"
+      <Transition
+        :css="false"
+        v-on="offlineTransitionHooks"
       >
-        <div class="lock-card">
-          <span class="icon">📡</span>
-          <h3>ARENA DESCONECTADA</h3>
-          <p>Conéctate a la red global para participar en encuentros clasificatorios y defender tu posición en el ranking.</p>
+        <div
+          v-if="auth.sessionMode === 'offline'"
+          class="offline-mask"
+        >
+          <div class="lock-card">
+            <span
+              v-gsap-loop="{ effect: 'float', duration: 4, y: -5, rotation: 3 }"
+              class="icon"
+            >📡</span>
+            <h3>ARENA DESCONECTADA</h3>
+            <p>Conéctate a la red global para participar en encuentros clasificatorios y defender tu posición en el ranking.</p>
+          </div>
         </div>
-      </div>
+      </Transition>
 
       <main class="arena-main custom-scrollbar">
         <!-- Rank Card Info -->

@@ -185,6 +185,13 @@ onMounted(async () => {
 
 watch(activeSort, async () => {
   await loadLeaderboard()
+  nextTick(() => {
+    const tabs = document.querySelectorAll('.sort-tab')
+    tabs.forEach(tab => {
+      gsap.killTweensOf(tab)
+      gsap.set(tab, { clearProps: 'color,backgroundColor' })
+    })
+  })
   animateList()
 })
 
@@ -491,7 +498,8 @@ watch(() => socialStore.leaderboardLoading, (newVal) => {
       border-radius: 4px;
       background: var(--yellow);
       color: var(--white);
-      @include text-outline(#000, 1px);
+      border: 1px solid #000000;
+      text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
       @include pixelated;
     }
 
@@ -554,7 +562,7 @@ watch(() => socialStore.leaderboardLoading, (newVal) => {
     @include pixelated;
     font-size: 8px;
     background: transparent;
-    border: none;
+    border: 1px solid transparent;
     padding: 8px 0;
     color: Rgba(255, 255, 255, 0.5);
     cursor: pointer;
@@ -564,7 +572,8 @@ watch(() => socialStore.leaderboardLoading, (newVal) => {
       background: var(--yellow);
       color: var(--white);
       font-weight: bold;
-      @include text-outline(#000, 1px);
+      border-color: #000000;
+      text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
       box-shadow: 0 2px 6px Rgba(251, 191, 36, 0.3);
     }
   }

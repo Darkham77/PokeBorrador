@@ -45,7 +45,6 @@
   align-items: center;
   justify-content: center;
   padding: 40px;
-  animation: modal-fade-in 0.3s ease-out;
 
   .lock-card {
     text-align: center;
@@ -62,7 +61,6 @@
       margin-bottom: 20px; 
       filter: Drop-Shadow(0 0 15px Rgba(59, 130, 246, 0.4));
       will-change: transform, filter;
-      animation: lock-float 4s ease-in-out infinite;
     }
     
     h3 { 
@@ -91,14 +89,4 @@
   overflow-y: auto;
   min-height: 0;
   background: Rgba(13, 10, 25, 0.2); // Premium purple tint overlay
-}
-
-@keyframes lock-float {
-  0%, 100% { transform: Translatey(0) Rotate(0deg); }
-  50% { transform: Translatey(-5px) Rotate(3deg); }
-}
-
-@keyframes modal-fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
 }

@@ -107,7 +107,6 @@
       display: block;
       filter: Drop-Shadow(0 0 10px Rgba(56, 189, 248, 0.5));
       will-change: transform, filter;
-      animation: float 3s ease-in-out infinite;
     }
 
     h2 {
@@ -148,9 +147,4 @@
       }
     }
   }
-}
-
-@keyframes float {
-  0%, 100% { transform: Translatey(0); }
-  50% { transform: Translatey(-8px); }
 }

@@ -19,12 +19,6 @@ body .nav {
   padding-bottom: calc(8px + env(safe-area-inset-bottom));
   z-index: var(--z-navigation);
   
-  @keyframes pulse {
-    0% { transform: Scale(1.0); filter: Drop-Shadow(0 0 0 Rgba(239, 68, 68, 0)); }
-    50% { transform: Scale(1.2); filter: Drop-Shadow(0 0 15px Rgba(239, 68, 68, 0.6)); }
-    100% { transform: Scale(1.0); filter: Drop-Shadow(0 0 0 Rgba(239, 68, 68, 0)); }
-  }
-  
   transform: Translatez(0);
   border-top: 1px solid Rgba(255, 255, 255, 0.08);
   justify-content: space-around;

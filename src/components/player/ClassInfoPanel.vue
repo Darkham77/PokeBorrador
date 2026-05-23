@@ -1,6 +1,7 @@
 <script setup lang="ts">
 
 import { computed } from 'vue';
+import gsap from 'gsap';
 import { useGameStore } from '@/stores/game';
 import { useUIStore } from '@/stores/ui';
 import { PLAYER_CLASSES } from '@/data/playerClasses';
@@ -63,191 +64,207 @@ const rankTitle = computed(() => {
 
 <template>
   <Teleport to="body">
-    <div 
-      v-if="uiStore.isProfileOpen && cls"
-      class="class-info-overlay"
-      @click.self="close"
+    <Transition
+      :css="false"
+      @enter="(el, done) => {
+        gsap.fromTo(el, { opacity: 0 }, { opacity: 1, duration: 0.2 });
+        const modal = el.querySelector('.info-modal');
+        if (modal) gsap.fromTo(modal, { scale: 0.95, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.25, ease: 'back.out(1.2)', onComplete: done });
+        else done();
+      }"
+      @leave="(el, done) => {
+        gsap.to(el, { opacity: 0, duration: 0.2 });
+        const modal = el.querySelector('.info-modal');
+        if (modal) gsap.to(modal, { scale: 0.95, opacity: 0, duration: 0.2, onComplete: done });
+        else done();
+      }"
     >
       <div 
-        class="info-modal"
-        :style="{ '--class-color': cls.color, '--class-color-dark': cls.colorDark }"
+        v-if="uiStore.isProfileOpen && cls"
+        class="class-info-overlay"
+        @click.self="close"
       >
-        <button
-          class="close-modal-btn"
-          @click.stop="close"
+        <div 
+          class="info-modal"
+          :style="{ '--class-color': cls.color, '--class-color-dark': cls.colorDark }"
         >
-          ✕
-        </button>
+          <button
+            class="close-modal-btn"
+            @click.stop="close"
+          >
+            ✕
+          </button>
 
-        <div class="modal-layout">
-          <!-- Left Column -->
-          <aside class="left-col">
-            <div class="sprite-preview">
-              <img
-                :src="getAssetUrl(ASSET_TYPES.TRAINER, cls.avatarSpriteId, { trainerSuffix: 'front' })"
-                :alt="cls.name"
-                class="class-sprite"
-                @error="e => { (e.target as HTMLImageElement).style.display = 'none' }"
-              >
-              <div class="avatar-floating">
-                <PlayerAvatar :size="60" />
-              </div>
-            </div>
-
-            <div class="class-title-block">
-              <h2 class="press-start">
-                {{ cls.name }}
-              </h2>
-              <p class="quote">
-                "{{ cls.description }}"
-              </p>
-            </div>
-
-            <div class="stats-cards">
-              <div class="stat-card">
-                <span class="icon">🎖️</span>
-                <div class="stat-info">
-                  <label class="press-start">NIVEL</label>
-                  <div
-                    class="value press-start"
-                    :style="{ color: cls.color }"
-                  >
-                    Nv. {{ trainerLevel }}
-                  </div>
-                </div>
-              </div>
-              <div class="stat-card">
-                <span class="icon">✨</span>
-                <div class="stat-info">
-                  <label class="press-start">RANGO</label>
-                  <div class="value rank">
-                    {{ rankTitle }}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </aside>
-
-          <!-- Right Column -->
-          <main class="right-col">
-            <section class="abilities-section">
-              <div class="section-header">
-                <div class="bar green" />
-                <h3 class="press-start green-text">
-                  HABILIDADES DE CLASE
-                </h3>
-              </div>
-              
-              <div class="ability-list">
-                <div 
-                  v-for="(bonus, i) in cls.bonuses" 
-                  :key="i"
-                  class="ability-item"
-                  :class="{ locked: trainerLevel < (safeBonusLevels[i] || 1) }"
-                  :style="{ borderLeftColor: trainerLevel >= (safeBonusLevels[i] || 1) ? cls.color : '#374151' }"
+          <div class="modal-layout">
+            <!-- Left Column -->
+            <aside class="left-col">
+              <div class="sprite-preview">
+                <img
+                  :src="getAssetUrl(ASSET_TYPES.TRAINER, cls.avatarSpriteId, { trainerSuffix: 'front' })"
+                  :alt="cls.name"
+                  class="class-sprite"
+                  @error="e => { (e.target as HTMLImageElement).style.display = 'none' }"
                 >
-                  <span class="status-icon">{{ trainerLevel >= (safeBonusLevels[i] || 1) ? '✅' : '🔒' }}</span>
-                  <div class="ability-content">
-                    <div class="ability-top">
-                      <span class="bonus-text">{{ bonus }}</span>
-                      <span
-                        v-if="(safeBonusLevels[i] || 1) > 1"
-                        class="lv-req press-start"
-                      >Nv.{{ safeBonusLevels[i] }}</span>
-                      
-                      <PVTooltip
-                        title="MECÁNICA"
-                        :description="cls.technicalBonuses?.[i] || 'Detalles no disponibles.'"
-                        position="top"
-                      >
-                        <div class="tooltip-trigger-vicio">
-                          ❓
-                        </div>
-                      </PVTooltip>
-                    </div>
-                    <p
-                      v-if="trainerLevel < (safeBonusLevels[i] || 1)"
-                      class="req-text"
+                <div class="avatar-floating">
+                  <PlayerAvatar :size="60" />
+                </div>
+              </div>
+
+              <div class="class-title-block">
+                <h2 class="press-start">
+                  {{ cls.name }}
+                </h2>
+                <p class="quote">
+                  "{{ cls.description }}"
+                </p>
+              </div>
+
+              <div class="stats-cards">
+                <div class="stat-card">
+                  <span class="icon">🎖️</span>
+                  <div class="stat-info">
+                    <label class="press-start">NIVEL</label>
+                    <div
+                      class="value press-start"
+                      :style="{ color: cls.color }"
                     >
-                      Requiere Nivel de Entrenador {{ safeBonusLevels[i] || 1 }}
-                    </p>
+                      Nv. {{ trainerLevel }}
+                    </div>
                   </div>
                 </div>
-              </div>
-            </section>
-
-            <section class="penalties-section">
-              <div class="section-header">
-                <div class="bar red" />
-                <h3 class="press-start red-text">
-                  LIMITACIONES
-                </h3>
-              </div>
-
-              <div class="ability-list">
-                <div 
-                  v-for="(penalty, i) in cls.penalties" 
-                  :key="i"
-                  class="ability-item penalty"
-                >
-                  <span class="status-icon">❌</span>
-                  <div class="ability-content">
-                    <div class="ability-top">
-                      <span class="bonus-text">{{ penalty }}</span>
-                      
-                      <PVTooltip
-                        title="EFECTO NEGATIVO"
-                        :description="cls.technicalPenalties?.[i] || 'Detalles no disponibles.'"
-                        position="top"
-                      >
-                        <div class="tooltip-trigger-vicio">
-                          ❓
-                        </div>
-                      </PVTooltip>
+                <div class="stat-card">
+                  <span class="icon">✨</span>
+                  <div class="stat-info">
+                    <label class="press-start">RANGO</label>
+                    <div class="value rank">
+                      {{ rankTitle }}
                     </div>
                   </div>
                 </div>
               </div>
-            </section>
+            </aside>
 
-            <!-- Actions -->
-            <footer class="info-footer">
-              <button
-                class="action-btn main press-start"
-                @click.stop="openMissions"
-              >
-                <div class="shine" />
-                📋 MISIONES PASIVAS
-              </button>
+            <!-- Right Column -->
+            <main class="right-col">
+              <section class="abilities-section">
+                <div class="section-header">
+                  <div class="bar green" />
+                  <h3 class="press-start green-text">
+                    HABILIDADES DE CLASE
+                  </h3>
+                </div>
+              
+                <div class="ability-list">
+                  <div 
+                    v-for="(bonus, i) in cls.bonuses" 
+                    :key="i"
+                    class="ability-item"
+                    :class="{ locked: trainerLevel < (safeBonusLevels[i] || 1) }"
+                    :style="{ borderLeftColor: trainerLevel >= (safeBonusLevels[i] || 1) ? cls.color : '#374151' }"
+                  >
+                    <span class="status-icon">{{ trainerLevel >= (safeBonusLevels[i] || 1) ? '✅' : '🔒' }}</span>
+                    <div class="ability-content">
+                      <div class="ability-top">
+                        <span class="bonus-text">{{ bonus }}</span>
+                        <span
+                          v-if="(safeBonusLevels[i] || 1) > 1"
+                          class="lv-req press-start"
+                        >Nv.{{ safeBonusLevels[i] }}</span>
+                      
+                        <PVTooltip
+                          title="MECÁNICA"
+                          :description="cls.technicalBonuses?.[i] || 'Detalles no disponibles.'"
+                          position="top"
+                        >
+                          <div class="tooltip-trigger-vicio">
+                            ❓
+                          </div>
+                        </PVTooltip>
+                      </div>
+                      <p
+                        v-if="trainerLevel < (safeBonusLevels[i] || 1)"
+                        class="req-text"
+                      >
+                        Requiere Nivel de Entrenador {{ safeBonusLevels[i] || 1 }}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </section>
 
-              <button
-                v-if="classId === 'entrenador'"
-                class="action-btn rep press-start"
-                @click.stop="openRepShop"
-              >
-                🏅 TIENDA DE REPUTACIÓN
-              </button>
+              <section class="penalties-section">
+                <div class="section-header">
+                  <div class="bar red" />
+                  <h3 class="press-start red-text">
+                    LIMITACIONES
+                  </h3>
+                </div>
 
-              <div class="footer-row">
+                <div class="ability-list">
+                  <div 
+                    v-for="(penalty, i) in cls.penalties" 
+                    :key="i"
+                    class="ability-item penalty"
+                  >
+                    <span class="status-icon">❌</span>
+                    <div class="ability-content">
+                      <div class="ability-top">
+                        <span class="bonus-text">{{ penalty }}</span>
+                      
+                        <PVTooltip
+                          title="EFECTO NEGATIVO"
+                          :description="cls.technicalPenalties?.[i] || 'Detalles no disponibles.'"
+                          position="top"
+                        >
+                          <div class="tooltip-trigger-vicio">
+                            ❓
+                          </div>
+                        </PVTooltip>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <!-- Actions -->
+              <footer class="info-footer">
                 <button
-                  class="action-btn secondary press-start"
-                  @click.stop="openSelection"
+                  class="action-btn main press-start"
+                  @click.stop="openMissions"
                 >
-                  🔄 CAMBIAR CLASE<br>
-                  <span class="cost">10,000 BC</span>
+                  <div class="shine" />
+                  📋 MISIONES PASIVAS
                 </button>
+
                 <button
-                  class="action-btn primary press-start"
-                  @click.stop="close"
+                  v-if="classId === 'entrenador'"
+                  class="action-btn rep press-start"
+                  @click.stop="openRepShop"
                 >
-                  ✓ ENTENDIDO
+                  🏅 TIENDA DE REPUTACIÓN
                 </button>
-              </div>
-            </footer>
-          </main>
+
+                <div class="footer-row">
+                  <button
+                    class="action-btn secondary press-start"
+                    @click.stop="openSelection"
+                  >
+                    🔄 CAMBIAR CLASE<br>
+                    <span class="cost">10,000 BC</span>
+                  </button>
+                  <button
+                    class="action-btn primary press-start"
+                    @click.stop="close"
+                  >
+                    ✓ ENTENDIDO
+                  </button>
+                </div>
+              </footer>
+            </main>
+          </div>
         </div>
       </div>
-    </div>
+    </Transition>
   </Teleport>
 </template>
 
@@ -267,7 +284,6 @@ const rankTitle = computed(() => {
   backdrop-filter: Blur(4px);
   backdrop-filter: Blur(4px);
   @include gpu-layer;
-  animation: fadeIn 0.2s ease;
   transform: Translatez(0);
 }
 
@@ -484,7 +500,7 @@ const rankTitle = computed(() => {
 .green-text { color: Rgba(34, 197, 94, 1); }
 .red-text { color: Rgba(239, 68, 68, 1); }
 
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
 
 @media (max-width: 600px) {
   .modal-layout { padding: 24px; gap: 24px; }

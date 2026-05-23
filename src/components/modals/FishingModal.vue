@@ -120,6 +120,20 @@ onUnmounted(() => {
   gameActive.value = false
   gsap.killTweensOf(spawnNext)
 })
+
+// Local directive to animate the rhythm ring with GSAP
+const vGsapShrink = {
+  mounted(el: HTMLElement, binding: { value: number }) {
+    const duration = binding.value / 1000
+    const tl = gsap.timeline()
+    tl.fromTo(el, 
+      { scale: 1.8, opacity: 0 },
+      { scale: 1, duration, ease: 'none' }
+    )
+    tl.to(el, { opacity: 1, duration: duration * 0.2, ease: 'none' }, 0)
+    tl.to(el, { borderColor: '#ffffff', duration: duration * 0.8, ease: 'none' }, duration * 0.2)
+  }
+}
 </script>
 
 <template>
@@ -153,8 +167,8 @@ onUnmounted(() => {
             {{ note.id }}
           </div>
           <div
+            v-gsap-shrink="speedBase"
             class="rhythm-ring"
-            :style="{ animationDuration: speedBase + 'ms' }"
           />
         </div>
       </TransitionGroup>
@@ -263,16 +277,11 @@ onUnmounted(() => {
     inset: -10px;
     border: 4px solid Rgba(59, 130, 246, 1);
     border-radius: 50%;
-    animation: shrink linear forwards;
     pointer-events: none;
   }
 }
 
-@keyframes shrink {
-  from { transform: Scale(1.8); opacity: 0; }
-  20% { opacity: 1; }
-  to { transform: Scale(1); opacity: 1; border-color: var(--white); }
-}
+
 
 .note-leave-active {
   transition: all 0.2s ease;

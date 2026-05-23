@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import gsap from 'gsap'
 import { useWindowListener } from '@/composables/useWindowListener'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
@@ -267,79 +268,94 @@ function selectAdventure(_slotIndex: number) {
     </template>
 
     <!-- ADVENTURE SECTION -->
-    <section
-      v-if="activeTab === 'adventure'"
-      class="tm-section-container"
+    <Transition
+      :css="false"
+      @enter="(el, done) => gsap.fromTo(el, { opacity: 0, y: 4 }, { opacity: 1, y: 0, duration: 0.3, ease: 'power2.out', onComplete: done })"
     >
-      <div class="slots-grid">
-        <UnifiedTeamSlot
-          v-for="(p, i) in adventureTeam"
-          :key="'adv-' + i"
-          :pokemon="p"
-          :index="i"
-          :is-dragging-any="isDragging"
-          :is-touch-over="touchOverIndex === i"
-          @open-detail="openDetail(p)"
-          @open-item="openItem(p)"
-          @send-to-box="sendToBox(p)"
-          @select="selectAdventure"
-          @drag-start="handleDragStart"
-          @drag-over="(idx) => touchOverIndex = idx"
-          @drag-end="handleDragEnd"
-          @drop-pokemon="handleDrop"
-        />
-      </div>
-    </section>
+      <section
+        v-if="activeTab === 'adventure'"
+        class="tm-section-container"
+      >
+        <div class="slots-grid">
+          <UnifiedTeamSlot
+            v-for="(p, i) in adventureTeam"
+            :key="'adv-' + i"
+            :pokemon="p"
+            :index="i"
+            :is-dragging-any="isDragging"
+            :is-touch-over="touchOverIndex === i"
+            @open-detail="openDetail(p)"
+            @open-item="openItem(p)"
+            @send-to-box="sendToBox(p)"
+            @select="selectAdventure"
+            @drag-start="handleDragStart"
+            @drag-over="(idx) => touchOverIndex = idx"
+            @drag-end="handleDragEnd"
+            @drop-pokemon="handleDrop"
+          />
+        </div>
+      </section>
+    </Transition>
 
     <!-- PVP SECTION -->
-    <section
-      v-if="activeTab === 'pvp'"
-      class="tm-section-container"
+    <Transition
+      :css="false"
+      @enter="(el, done) => gsap.fromTo(el, { opacity: 0, y: 4 }, { opacity: 1, y: 0, duration: 0.3, ease: 'power2.out', onComplete: done })"
     >
-      <div class="slots-grid">
-        <UnifiedTeamSlot
-          v-for="(p, i) in pvpTeam"
-          :key="'pvp-' + i"
-          :pokemon="p"
-          :index="i"
-          :is-dragging-any="isDragging"
-          :is-touch-over="touchOverIndex === i"
-          is-pvp
-          @open-detail="openDetail(p)"
-          @open-item="openItem(p)"
-          @select="selectPvp(i)"
-          @drag-start="handleDragStart"
-          @drag-over="(idx) => touchOverIndex = idx"
-          @drag-end="handleDragEnd"
-          @drop-pokemon="handleDrop"
-        />
-      </div>
-    </section>
+      <section
+        v-if="activeTab === 'pvp'"
+        class="tm-section-container"
+      >
+        <div class="slots-grid">
+          <UnifiedTeamSlot
+            v-for="(p, i) in pvpTeam"
+            :key="'pvp-' + i"
+            :pokemon="p"
+            :index="i"
+            :is-dragging-any="isDragging"
+            :is-touch-over="touchOverIndex === i"
+            is-pvp
+            @open-detail="openDetail(p)"
+            @open-item="openItem(p)"
+            @select="selectPvp(i)"
+            @drag-start="handleDragStart"
+            @drag-over="(idx) => touchOverIndex = idx"
+            @drag-end="handleDragEnd"
+            @drop-pokemon="handleDrop"
+          />
+        </div>
+      </section>
+    </Transition>
 
     <!-- WAR SECTION -->
-    <section
-      v-if="activeTab === 'war'"
-      class="tm-section-container"
+    <Transition
+      :css="false"
+      @enter="(el, done) => gsap.fromTo(el, { opacity: 0, y: 4 }, { opacity: 1, y: 0, duration: 0.3, ease: 'power2.out', onComplete: done })"
     >
-      <div class="slots-grid">
-        <UnifiedTeamSlot
-          v-for="(p, i) in warTeam"
-          :key="'war-' + i"
-          :pokemon="p"
-          :index="i"
-          :is-dragging-any="isDragging"
-          :is-touch-over="touchOverIndex === i"
-          is-pvp
-          @open-detail="openDetail(p)"
-          @open-item="openItem(p)"
-          @select="selectWar(i)"
-          @drag-start="handleDragStart"
-          @drag-over="(idx) => touchOverIndex = idx"
-          @drag-end="handleDragEnd"
-          @drop-pokemon="handleDrop"
-        />
-      </div>
-    </section>
+      <section
+        v-if="activeTab === 'war'"
+        class="tm-section-container"
+      >
+        <div class="slots-grid">
+          <UnifiedTeamSlot
+            v-for="(p, i) in warTeam"
+            :key="'war-' + i"
+            :pokemon="p"
+            :index="i"
+            :is-dragging-any="isDragging"
+            :is-touch-over="touchOverIndex === i"
+            is-pvp
+            @open-detail="openDetail(p)"
+            @open-item="openItem(p)"
+            @select="selectWar(i)"
+            @drag-start="handleDragStart"
+            @drag-over="(idx) => touchOverIndex = idx"
+            @drag-end="handleDragEnd"
+            @drop-pokemon="handleDrop"
+          />
+        </div>
+      </section>
+    </Transition>
   </BaseModal>
 </template>
 
@@ -412,7 +428,6 @@ function selectAdventure(_slotIndex: number) {
 }
 
 .tm-section-container {
-  animation: fadeIn 0.3s ease-out;
   background: none !important;
   border: none !important;
   box-shadow: none !important;
@@ -434,10 +449,7 @@ function selectAdventure(_slotIndex: number) {
   }
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: Translatey(4px); }
-  to { opacity: 1; transform: Translatey(0); }
-}
+
 
 :deep(.modal-header-premium) {
   border-bottom: none !important;

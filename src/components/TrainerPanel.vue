@@ -65,7 +65,10 @@ const handlePanelClick = (event: Event) => {
           description="Tienes solicitudes de intercambio pendientes."
           position="top"
         >
-          <div class="alert-badge">
+          <div 
+            v-gsap-loop="{ effect: 'pulse', scale: 1.1, duration: 1, ease: 'sine.inOut' }"
+            class="alert-badge"
+          >
             !
           </div>
         </PVTooltip>
@@ -155,15 +158,10 @@ const handlePanelClick = (event: Event) => {
   font-weight: bold;
   border: 2px solid var(--white);
   box-shadow: 0 0 10px Rgba(239, 68, 68, 0.5);
-  animation: pulse-red 2s infinite;
   z-index: var(--z-base);
 }
 
-@keyframes pulse-red {
-  0% { transform: Scale(1); box-shadow: 0 0 0 0 Rgba(239, 68, 68, 0.7); }
-  70% { transform: Scale(1.1); box-shadow: 0 0 0 10px Rgba(239, 68, 68, 0); }
-  100% { transform: Scale(1); box-shadow: 0 0 0 0 Rgba(239, 68, 68, 0); }
-}
+
 
 .trainer-content {
   display: flex;

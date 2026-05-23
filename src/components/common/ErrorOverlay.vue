@@ -1,7 +1,7 @@
 <script setup lang="ts">
 
 import { ref } from 'vue'
-import { gsap } from 'gsap'
+import { useGsapTransition } from '@/composables/useGsapTransition'
 import { useErrorStore } from '@/stores/errorStore'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
@@ -55,99 +55,110 @@ const closeError = () => {
   errorStore.clearError()
   uiStore.closeAll() // Restore background block by clearing the stack
 }
+
+const transitionHooks = useGsapTransition({
+  type: 'slide-up',
+  yOffset: 10,
+  duration: 0.3
+})
 </script>
 
 <template>
   <Teleport to="body">
-    <div
-      v-if="errorStore.activeError"
-      class="error-overlay"
+    <Transition
+      :css="false"
+      v-on="transitionHooks"
     >
-      <div class="error-card modal-scrollable-content">
-        <div class="error-header">
-          <span class="error-icon">⚠️</span>
-          <div class="error-title">
-            ERROR EN EL JUEGO
-          </div>
-        </div>
-
-        <div class="error-content custom-scrollbar modal-scrollable-content">
-          <p class="error-intro">
-            ¡Uy! Algo salió mal. Pasale una captura de esto al desarrollador para que pueda arreglarlo.
-          </p>
-
-          <div class="error-message-box">
-            <strong>Mensaje:</strong> {{ errorStore.activeError.message }}
-          </div>
-
-          <div class="error-user-action-container">
-            <div class="error-sub-title">
-              ¿QUÉ ESTABAS HACIENDO?
-            </div>
-            <textarea
-              v-model="errorStore.activeError.userAction"
-              placeholder="Ej: Estaba por cambiar de Pokémon en batalla..."
-            />
-            <div class="sub-text">
-              Esta información nos ayuda a reproducir y arreglar el error más rápido.
+      <div
+        v-if="errorStore.activeError"
+        class="error-overlay"
+      >
+        <div class="error-card modal-scrollable-content">
+          <div class="error-header">
+            <span class="error-icon">⚠️</span>
+            <div class="error-title">
+              ERROR EN EL JUEGO
             </div>
           </div>
 
-          <div class="error-stack-wrap">
-            <div class="error-sub-title">
-              DETALLES TÉCNICOS:
+          <div class="error-content custom-scrollbar modal-scrollable-content">
+            <p class="error-intro">
+              ¡Uy! Algo salió mal. Pasale una captura de esto al desarrollador para que pueda arreglarlo.
+            </p>
+
+            <div class="error-message-box">
+              <strong>Mensaje:</strong> {{ errorStore.activeError.message }}
             </div>
-            <pre class="error-stack modal-scrollable-content">{{ errorStore.activeError.stack }}</pre>
+
+            <div class="error-user-action-container">
+              <div class="error-sub-title">
+                ¿QUÉ ESTABAS HACIENDO?
+              </div>
+              <textarea
+                v-model="errorStore.activeError.userAction"
+                placeholder="Ej: Estaba por cambiar de Pokémon en batalla..."
+              />
+              <div class="sub-text">
+                Esta información nos ayuda a reproducir and arreglar el error más rápido.
+              </div>
+            </div>
+
+            <div class="error-stack-wrap">
+              <div class="error-sub-title">
+                DETALLES TÉCNICOS:
+              </div>
+              <pre class="error-stack modal-scrollable-content">{{ errorStore.activeError.stack }}</pre>
+            </div>
+
+            <div class="error-game-context">
+              <div class="error-sub-title">
+                ESTADO DEL JUEGO:
+              </div>
+              <div class="error-context-item">
+                <strong>Entrenador:</strong> {{ gameStore.state.trainer || authStore.user?.user_metadata?.username || 'N/A' }} (Nv. {{ gameStore.state.trainerLevel || 0 }})
+              </div>
+              <div class="error-context-item">
+                <strong>Medallas:</strong> {{ gameStore.state.badges || 0 }}
+              </div>
+              <div class="error-context-item">
+                <strong>Tipo:</strong> {{ errorStore.activeError.type }}
+              </div>
+              <div
+                v-if="errorStore.activeError.lineno"
+                class="error-context-item"
+              >
+                <strong>Línea:</strong> {{ errorStore.activeError.lineno }}:{{ errorStore.activeError.colno }}
+              </div>
+            </div>
           </div>
 
-          <div class="error-game-context">
-            <div class="error-sub-title">
-              ESTADO DEL JUEGO:
-            </div>
-            <div class="error-context-item">
-              <strong>Entrenador:</strong> {{ gameStore.state.trainer || authStore.user?.user_metadata?.username || 'N/A' }} (Nv. {{ gameStore.state.trainerLevel || 0 }})
-            </div>
-            <div class="error-context-item">
-              <strong>Medallas:</strong> {{ gameStore.state.badges || 0 }}
-            </div>
-            <div class="error-context-item">
-              <strong>Tipo:</strong> {{ errorStore.activeError.type }}
-            </div>
-            <div
-              v-if="errorStore.activeError.lineno"
-              class="error-context-item"
+          <div class="error-footer">
+            <button
+              class="btn-vicio-secondary btn-vicio-sm"
+              @click.stop="copyError"
             >
-              <strong>Línea:</strong> {{ errorStore.activeError.lineno }}:{{ errorStore.activeError.colno }}
-            </div>
+              <i
+                class="fas"
+                :class="copied ? 'fa-check' : 'fa-copy'"
+              />
+              {{ copied ? '¡COPIADO!' : 'COPIAR ERROR' }}
+            </button>
+            <button
+              class="btn-vicio-primary btn-vicio-sm"
+              @click.stop="reloadGame"
+            >
+              <i class="fas fa-sync" /> REINICIAR JUEGO
+            </button>
+            <button
+              class="btn-vicio-neutral btn-vicio-sm"
+              @click.stop="closeError"
+            >
+              ✕ CERRAR
+            </button>
           </div>
-        </div>
-
-        <div class="error-footer">
-          <button
-            class="btn-vicio-secondary btn-vicio-sm"
-            @click.stop="copyError"
-          >
-            <i
-              class="fas"
-              :class="copied ? 'fa-check' : 'fa-copy'"
-            />
-            {{ copied ? '¡COPIADO!' : 'COPIAR ERROR' }}
-          </button>
-          <button
-            class="btn-vicio-primary btn-vicio-sm"
-            @click.stop="reloadGame"
-          >
-            <i class="fas fa-sync" /> REINICIAR JUEGO
-          </button>
-          <button
-            class="btn-vicio-neutral btn-vicio-sm"
-            @click.stop="closeError"
-          >
-            ✕ CERRAR
-          </button>
         </div>
       </div>
-    </div>
+    </Transition>
   </Teleport>
 </template>
 
@@ -167,7 +178,6 @@ const closeError = () => {
   will-change: transform, filter, opacity;
   backdrop-filter: Blur(10px);
   @include gpu-layer;
-  animation: fadeIn 0.3s ease;
   font-family: 'Nunito', sans-serif;
   @include gpu-layer;
 }
@@ -308,14 +318,5 @@ const closeError = () => {
   gap: 12px;
   flex-wrap: wrap;
   justify-content: flex-end;
-}
-
-
-
-
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: Translatey(10px); }
-  to { opacity: 1; transform: Translatey(0); }
 }
 </style>
