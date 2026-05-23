@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { gsap } from 'gsap'
 import { BOX_TIER_CONFIG } from '@/logic/pokemon/tierEngine'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue'
@@ -115,6 +116,40 @@ const AVAILABLE_TAGS = [
   { id: 'shy', label: 'SHY', icon: '✨' },
   { id: 'team', label: 'TEAM', icon: '👥' }
 ]
+
+const beforeEnter = (el: Element) => {
+  gsap.set(el, { 
+    height: 0,
+    opacity: 0,
+    overflow: 'hidden'
+  })
+}
+
+const enter = (el: Element, done: () => void) => {
+  gsap.fromTo(el, 
+    { height: 0, opacity: 0 },
+    { 
+      height: 'auto', 
+      opacity: 1, 
+      duration: 0.35, 
+      ease: 'power2.out',
+      onComplete: () => {
+        gsap.set(el, { clearProps: 'height,overflow' })
+        done()
+      }
+    }
+  )
+}
+
+const leave = (el: Element, done: () => void) => {
+  gsap.to(el, { 
+    height: 0, 
+    opacity: 0, 
+    duration: 0.25, 
+    ease: 'power2.in',
+    onComplete: done 
+  })
+}
 </script>
 
 <template>
@@ -267,7 +302,12 @@ const AVAILABLE_TAGS = [
     </div> <!-- end box-controls-compact -->
 
     <!-- Panel Extendido de Filtros (Optimizado Mixto) -->
-    <Transition name="pixel-slide">
+    <Transition
+      :css="false"
+      @before-enter="beforeEnter"
+      @enter="enter"
+      @leave="leave"
+    >
       <div
         v-if="isFiltersOpen"
         class="filters-expanded-premium"
@@ -444,146 +484,5 @@ const AVAILABLE_TAGS = [
   </div>
 </template>
 
-<style scoped lang="scss">
-@use "@/styles/core/tools" as *;
+<style scoped lang="scss" src="@/styles/components/_box-filters.scss"></style>
 
-.filters-expanded-premium {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  margin-top: 12px;
-}
-
-.filters-grid-columns {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
-  align-items: start;
-
-  @media (max-width: 900px) {
-    grid-template-columns: 1fr;
-  }
-}
-
-.filter-column {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.compact-section {
-  background: Rgba(0, 0, 0, 0.2);
-  border: 1px solid Rgba(255, 255, 255, 0.05);
-  border-radius: 16px;
-  padding: 16px;
-  
-  &.full-width { grid-column: span 2; }
-  
-  @media (max-width: 900px) {
-    &.full-width { grid-column: span 1; }
-  }
-
-  .box-section-label {
-    @include pixelated;
-    font-size: 7px;
-    color: var(--gray);
-    margin-bottom: 16px;
-    opacity: 0.6;
-    letter-spacing: 1px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-
-    &::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: Linear-Gradient(to right, Rgba(255,255,255,0.05), transparent);
-    }
-  }
-}
-
-.iv-mini-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.slider-row-mini, .iv-slider-row-mini {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 2px 0;
-
-  .label, .stat-name {
-    @include pixelated;
-    font-size: 7px;
-    color: var(--gray);
-    width: 70px;
-    white-space: nowrap;
-    opacity: 0.8;
-  }
-
-  input[type="range"] {
-    flex: 1;
-    height: 4px;
-    border-radius: 2px;
-    -webkit-appearance: none;
-    outline: none;
-
-    &::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      width: 12px;
-      height: 12px;
-      background: var(--stat-color, var(--yellow));
-      border-radius: 50%;
-      cursor: pointer;
-      box-shadow: 0 0 10px var(--stat-color);
-      border: 1px solid Rgba(0, 0, 0, 0.4);
-    }
-  }
-
-  .val, .stat-val {
-    @include pixelated;
-    font-size: 8px;
-    min-width: 25px;
-    text-align: right;
-  }
-}
-
-.filter-footer-compact {
-  margin-top: 12px;
-  padding-top: 16px;
-  border-top: 1px solid Rgba(255, 255, 255, 0.05);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.results-badge-mini {
-  @include pixelated;
-  font-size: 8px;
-  color: var(--yellow);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: Rgba(255, 214, 10, 0.05);
-  padding: 6px 12px;
-  border-radius: 8px;
-  border: 1px solid Rgba(255, 214, 10, 0.1);
-}
-
-.rocket-filter-trigger {
-  @include btn-vicio('danger', 'sm');
-  margin-left: auto;
-  font-size: 7px;
-  height: 28px;
-  padding: 0 16px;
-  white-space: nowrap;
-
-  .icon {
-    font-size: 10px;
-    margin-right: 4px;
-  }
-}
-</style>

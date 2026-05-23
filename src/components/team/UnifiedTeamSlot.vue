@@ -37,6 +37,18 @@ const touchTimer = ref<gsap.core.Tween | null>(null)
 const isTouchDragging = ref(false)
 const touchStartX = ref(0)
 const touchStartY = ref(0)
+const touchDeltaX = ref(0)
+const touchDeltaY = ref(0)
+
+const touchDragStyle = computed(() => {
+  if (!isTouchDragging.value) return {}
+  return {
+    transform: `translate(${touchDeltaX.value}px, ${touchDeltaY.value}px)`,
+    zIndex: 9999,
+    pointerEvents: 'none' as const,
+    position: 'relative' as const
+  }
+})
 
 const isEmpty = computed(() => !props.pokemon)
 const isDragOver = ref(false)
@@ -72,9 +84,11 @@ function handleTouchStart(e: TouchEvent) {
   if (!touch) return
   touchStartX.value = touch.clientX
   touchStartY.value = touch.clientY
+  touchDeltaX.value = 0
+  touchDeltaY.value = 0
   isTouchDragging.value = false
   
-  touchTimer.value = gsap.delayedCall(0.8, () => {
+  touchTimer.value = gsap.delayedCall(0.35, () => {
     isTouchDragging.value = true
     if (e.currentTarget) (e.currentTarget as HTMLElement).style.touchAction = 'none'
     emit('drag-start', props.index)
@@ -83,15 +97,20 @@ function handleTouchStart(e: TouchEvent) {
 }
 
 function handleTouchMove(e: TouchEvent) {
+  const touch = e.touches?.[0]
+  if (!touch) return
+
   if (isTouchDragging.value) {
     e.preventDefault()
+    
+    // Update visual displacement coordinates
+    touchDeltaX.value = touch.clientX - touchStartX.value
+    touchDeltaY.value = touch.clientY - touchStartY.value
     
     // Temporarily disable pointer events to detect what's UNDER the finger
     const el = e.currentTarget as HTMLElement
     if (el) el.style.pointerEvents = 'none'
     
-    const touch = e.touches?.[0]
-    if (!touch) return
     const target = document.elementFromPoint(touch.clientX, touch.clientY)
     const slot = target?.closest('.team-slot') as HTMLElement | null
     
@@ -106,13 +125,10 @@ function handleTouchMove(e: TouchEvent) {
       emit('drag-over', null)
     }
   } else {
-    const touch = e.touches?.[0]
-    if (touch) {
-      const deltaX = Math.abs(touch.clientX - touchStartX.value)
-      const deltaY = Math.abs(touch.clientY - touchStartY.value)
-      if (deltaX > 10 || deltaY > 10) {
-        if (touchTimer.value) touchTimer.value.kill()
-      }
+    const deltaX = Math.abs(touch.clientX - touchStartX.value)
+    const deltaY = Math.abs(touch.clientY - touchStartY.value)
+    if (deltaX > 15 || deltaY > 15) {
+      if (touchTimer.value) touchTimer.value.kill()
     }
   }
 }
@@ -121,10 +137,19 @@ function handleTouchEnd(e: TouchEvent) {
   if (touchTimer.value) touchTimer.value.kill()
   if (isTouchDragging.value) {
     if (e.currentTarget) (e.currentTarget as HTMLElement).style.touchAction = ''
+    
+    // Temporarily disable pointer events to find slot under finger
+    const el = e.currentTarget as HTMLElement
+    if (el) el.style.pointerEvents = 'none'
+    
     const touch = e.changedTouches?.[0]
-    if (!touch) return
-    const target = document.elementFromPoint(touch.clientX, touch.clientY)
-    const slot = target?.closest('.team-slot') as HTMLElement | null
+    let slot: HTMLElement | null = null
+    if (touch) {
+      const target = document.elementFromPoint(touch.clientX, touch.clientY)
+      slot = target?.closest('.team-slot') as HTMLElement | null
+    }
+    
+    if (el) el.style.pointerEvents = 'auto'
     
     if (slot && slot.dataset.index !== undefined) {
       const targetIndex = parseInt(slot.dataset.index)
@@ -132,7 +157,10 @@ function handleTouchEnd(e: TouchEvent) {
     } else {
       emit('drag-end')
     }
+    
     isTouchDragging.value = false
+    touchDeltaX.value = 0
+    touchDeltaY.value = 0
   }
 }
 
@@ -293,18 +321,23 @@ onUnmounted(() => {
       <span class="label">AÑADIR</span>
     </div>
     
-    <PokemonDisplayCard
+    <div
       v-else-if="pokemon"
-      :pokemon="pokemon"
-      :index="index"
-      :is-pvp="isPvp"
-      :max-obey-lv="maxObeyLv"
-      disable-card-click
-      @open-detail="emit('open-detail', index)"
-      @open-item="emit('open-item', index)"
-      @send-to-box="emit('send-to-box', index)"
-      @select="emit('select', index)"
-    />
+      class="slot-card-wrapper"
+      :style="touchDragStyle"
+    >
+      <PokemonDisplayCard
+        :pokemon="pokemon"
+        :index="index"
+        :is-pvp="isPvp"
+        :max-obey-lv="maxObeyLv"
+        disable-card-click
+        @open-detail="emit('open-detail', index)"
+        @open-item="emit('open-item', index)"
+        @send-to-box="emit('send-to-box', index)"
+        @select="emit('select', index)"
+      />
+    </div>
 
     <!-- Overlay de número de posición durante el drag (animado por GSAP) -->
     <Transition
@@ -330,6 +363,10 @@ onUnmounted(() => {
   min-height: 260px;
   display: flex;
   position: relative;
+
+  @media (max-width: 580px) {
+    min-height: 190px;
+  }
 }
 
 .empty-placeholder {
@@ -345,10 +382,20 @@ onUnmounted(() => {
   cursor: pointer;
   will-change: transform, border-color, background-color, box-shadow;
 
+  @media (max-width: 580px) {
+    border-radius: 12px;
+    gap: 6px;
+    padding: 8px;
+  }
+
   .plus-icon {
     font-size: 32px;
     color: Rgba(255, 255, 255, 0.3);
     will-change: transform, filter, color;
+
+    @media (max-width: 580px) {
+      font-size: 20px;
+    }
   }
 
   .label {
@@ -356,6 +403,10 @@ onUnmounted(() => {
     font-size: 8px;
     color: var(--gray);
     will-change: color;
+
+    @media (max-width: 580px) {
+      font-size: 7px;
+    }
   }
 }
 
@@ -380,6 +431,10 @@ onUnmounted(() => {
   pointer-events: none; 
   border: 2px dashed var(--blue);
 
+  @media (max-width: 580px) {
+    border-radius: 12px;
+  }
+
   .pos-number {
     font-size: 80px;
     color: var(--blue);
@@ -387,6 +442,18 @@ onUnmounted(() => {
     opacity: 0.8;
     filter: Drop-Shadow(0 0 10px Rgba(10, 132, 255, 0.5));
     will-change: transform, opacity;
+
+    @media (max-width: 580px) {
+      font-size: 40px;
+    }
   }
+}
+
+.slot-card-wrapper {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  position: relative;
+  will-change: transform;
 }
 </style>

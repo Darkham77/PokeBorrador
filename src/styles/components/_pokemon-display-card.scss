@@ -280,3 +280,168 @@
 }
 
 .on-mission { opacity: 0.6; filter: Grayscale(0.5); will-change: filter; }
+
+@media (max-width: 580px) {
+  .pokemon-display-card {
+    padding: 6px !important;
+    border-radius: 12px !important;
+
+    :deep(.unified-badge-pill) {
+      top: 6px !important;
+      left: 4px !important;
+
+      .pill-container {
+        padding: 4px !important;
+        border-radius: 8px !important;
+        gap: 4px !important;
+      }
+
+      .badge-icon {
+        font-size: 9px !important;
+        width: 14px !important;
+        height: 14px !important;
+        padding: 0 !important;
+
+        &.is-text {
+          font-size: 6px !important;
+        }
+
+        &.is-shiny {
+          font-size: 9px !important;
+          transform: none !important;
+        }
+        &.is-iv31 {
+          font-size: 7px !important;
+          letter-spacing: -0.5px !important;
+        }
+        &.is-fav {
+          font-size: 9px !important;
+          transform: none !important;
+        }
+        &.is-breed {
+          font-size: 9px !important;
+          transform: none !important;
+        }
+        &.is-competitive {
+          font-size: 9px !important;
+          transform: none !important;
+        }
+        &.is-box {
+          font-size: 9px !important;
+          transform: none !important;
+        }
+        &.is-trade {
+          font-size: 9px !important;
+          transform: none !important;
+        }
+
+        .badge-item-img {
+          transform: Scale(1.1) !important;
+        }
+      }
+
+      .pv-tooltip-wrapper {
+        width: 14px !important;
+        height: 14px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+
+        &:has(.is-item) {
+          width: 16px !important;
+          height: 16px !important;
+        }
+      }
+    }
+
+    & .card-tier-badge {
+      top: 6px !important;
+      right: 6px !important;
+      font-size: 8px !important;
+      padding: 2px 4px !important;
+    }
+
+    & .sprite-section {
+      height: 60px !important;
+      margin: 2px 0 !important;
+
+      & .pokemon-sprite {
+        width: 70px !important;
+        height: 70px !important;
+      }
+    }
+
+    & .pokemon-info {
+      padding: 0 4px !important;
+      margin-bottom: 4px !important;
+      width: 100% !important;
+
+      .name-line {
+        gap: 4px !important;
+        margin-bottom: 4px !important;
+
+        .pdc-pokemon-name {
+          font-size: 7px !important;
+        }
+        .pdc-species-subtitle {
+          font-size: 6px !important;
+        }
+      }
+
+      .pdc-types {
+        margin-bottom: 6px !important;
+
+        :deep(.m-type-tag) {
+          font-size: 5.5px !important;
+          padding: 3px 5px !important;
+          letter-spacing: -0.2px !important;
+          border-radius: 40px !important;
+        }
+      }
+
+      .level-line {
+        gap: 4px !important;
+        margin-bottom: 4px !important;
+        font-size: 6px !important;
+      }
+    }
+
+    & .hp-container {
+      margin-top: 4px !important;
+
+      .hp-bar-outer {
+        height: 5px !important;
+      }
+
+      .hp-stats {
+        font-size: 6px !important;
+        margin-top: 2px !important;
+      }
+    }
+
+    .status-labels {
+      gap: 4px !important;
+      margin-bottom: 6px !important;
+
+      .status-tag {
+        font-size: 6px !important;
+        padding: 2px 4px !important;
+      }
+    }
+
+    .pdc-action-grid {
+      gap: 4px !important;
+
+      .footer-btn {
+        font-size: 6px !important;
+        padding: 5px 2px !important;
+        border-radius: 6px !important;
+        gap: 2px !important;
+
+        .emoji {
+          font-size: 7px !important;
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,229 @@
+@use "@/styles/core/tools" as *;
+
+.hud-nav {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  
+  &.pos-bottom {
+    justify-content: center;
+    width: max-content;
+    max-width: calc(100% - 16px);
+    margin: 0 auto;
+    height: 70px;
+    
+    // PREMIUM SHELL ENHANCED
+    @include shell-premium(linear-gradient(180deg, #161a2e 0%, #0a0c14 100%));
+    border-radius: 20px 20px 0 0;
+    padding: 10px 24px;
+    gap: 15px;
+    box-sizing: border-box;
+
+    @media (max-width: 480px) {
+      padding: 10px 12px;
+      gap: 6px;
+      border-radius: 16px 16px 0 0;
+    }
+    
+    // MULTI-LAYER REFLECTIONS & CONTRAST
+    box-shadow: 
+      0 10px 40px Rgba(0, 0, 0, 0.6),
+      0 -10px 50px Rgba(0, 0, 0, 0.7),
+      inset 0 1px 0 Rgba(255, 255, 255, 0.1); // Reflection on the top edge
+    
+    // Reflection parent is handled by position: fixed in parent/mobile class
+
+    .hud-nav-btn {
+      flex-direction: column;
+      gap: 4px;
+      min-width: 50px;
+
+      @media (max-width: 480px) {
+        min-width: 38px;
+        padding: 6px 2px;
+
+        .icon {
+          font-size: 14px;
+        }
+        .nav-item-label {
+          font-size: 7px;
+        }
+      }
+    }
+
+    /* CRITICAL: Ensure submenus are NOT clipped */
+    overflow: visible !important;
+  }
+}
+
+.hud-nav-btn {
+  background: Rgba(255,255,255,0.05);
+  border: 1px solid Rgba(255,255,255,0.1);
+  border-radius: 12px;
+  padding: 8px 12px;
+  color: $white;
+  cursor: pointer;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  min-width: 60px;
+  transition: all 0.2s;
+  position: relative;
+
+  padding: 8px 12px;
+  
+  .icon { font-size: 16px; }
+  .nav-item-label {
+    @include pixelated;
+    font-weight: 400;
+    font-size: clamp(6px, 12cqw, 8px);
+    color: Rgba(255, 255, 255, 0.75);
+    @include pixelated;
+    white-space: nowrap;
+  }
+
+  &:hover {
+    background: Rgba(255, 255, 255, 0.12);
+    border-color: var(--yellow);
+    box-shadow: 
+      0 0 0 2px var(--yellow),
+      0 0 15px Rgba(255, 214, 10, 0.4);
+    z-index: var(--z-base);
+    transform: Translatey(-2px);
+  }
+  
+  &.active {
+    background: Rgba(255, 204, 0, 0.15);
+    border-color: var(--yellow);
+    box-shadow: 
+      0 0 0 2px var(--yellow),
+      0 0 30px Rgba(255, 214, 10, 0.45),
+      inset 0 0 12px Rgba(255, 214, 10, 0.1);
+    z-index: var(--z-base);
+    .nav-item-label { 
+      color: var(--yellow); 
+      opacity: 1; 
+      text-shadow: 0 0 8px Rgba(255, 214, 10, 0.5); 
+    }
+  }
+}
+
+.hud-group {
+  position: relative;
+  overflow: visible !important;
+}
+
+.hud-submenu {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: linear-gradient(180deg, #161a2e 0%, #0a0c14 100%);
+  border: 1px solid Rgba(255, 255, 255, 0.15);
+  border-radius: 14px;
+  padding: 8px;
+  z-index: var(--z-modal);
+  width: max-content !important;
+  min-width: 0 !important;
+  align-items: stretch !important;
+  box-shadow: 0 20px 50px Rgba(0, 0, 0, 0.7);
+  overflow: visible;
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 20px;
+    background: transparent;
+  }
+}
+
+.pos-top .hud-submenu {
+  top: calc(100% + 5px);
+  bottom: auto !important;
+  left: 50%;
+  transform: Translatex(-50%);
+  
+  &::before { top: -15px; }
+}
+
+.pos-bottom .hud-submenu {
+  bottom: calc(100% + 5px);
+  top: auto !important;
+  left: 50%;
+  transform: Translatex(-50%);
+  
+  &::before { bottom: -15px; }
+}
+
+.hud-submenu .hud-nav-btn {
+  flex-direction: row !important;
+  justify-content: flex-start !important;
+  align-items: center !important;
+  width: 100% !important;
+  min-width: unset !important;
+  padding: 10px 14px;
+  gap: 10px;
+  background: Rgba(255, 255, 255, 0.05);
+  border: 1px solid Rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  white-space: nowrap;
+  
+  &:hover { 
+    background: Rgba(255, 255, 255, 0.1); 
+    border-color: var(--yellow);
+    box-shadow: 0 0 0 2px var(--yellow), 0 0 15px Rgba(255, 214, 10, 0.3);
+    transform: Translatex(6px);
+    z-index: var(--z-base);
+  }
+  
+  &.active {
+    background: Rgba(255, 204, 0, 0.12);
+    border-color: var(--yellow);
+    box-shadow: 0 0 0 2px var(--yellow), 0 0 25px Rgba(255, 214, 10, 0.4), inset 0 0 10px Rgba(255, 214, 10, 0.1);
+  }
+
+  .icon { font-size: 14px; }
+  .nav-item-label { 
+    font-size: 8px; 
+    color: $white;
+    white-space: nowrap;
+    @include pixelated;
+  }
+  
+  &.active .nav-item-label { color: var(--yellow); }
+
+  &.war-shop-nav-btn:hover {
+    border-color: var(--red);
+    box-shadow: 0 0 0 2px var(--red), 0 0 15px Rgba(239, 68, 68, 0.3);
+    .nav-item-label { color: var(--red); }
+  }
+}
+
+.badge-pill {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background: #ef4444;
+  color: white;
+  @include pixelated;
+  font-size: 7px;
+  padding: 4px 6px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px Rgba(239, 68, 68, 0.4);
+}
+
+.relative-box { position: relative; }
+
+@media (max-width: 768px) {
+  .hud-nav-btn {
+    min-width: 50px;
+    padding: 6px 4px;
+    .nav-item-label { 
+      font-size: 8px; 
+      @include pixelated;
+    }
+  }
+}

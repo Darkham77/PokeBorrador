@@ -488,12 +488,10 @@ export function calculateCatchRate(pokemon: PurePokemon, rawBallType = 'poke-bal
 
   return { caught: shakes === 4, shakes: Math.min(3, shakes) };
 }
-
 export function calculateEscapeChance(playerPoke: PurePokemon, wildPoke: PurePokemon, attempts: number, weather: PureBattleWeather | null) {
   const pSpe = getEffectiveStat(playerPoke, 'spe', {}, weather);
   const eSpe = getEffectiveStat(wildPoke, 'spe', {}, weather);
   const safeESpe = Math.max(1, eSpe);
-
   // Modern (Gen 4+)
   const f = Math.floor((pSpe * 128) / safeESpe) + 30 * attempts;
   return Math.floor(Math.random() * 256) < f;

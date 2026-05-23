@@ -425,11 +425,12 @@ function selectAdventure(_slotIndex: number) {
   gap: 12px;
   grid-template-columns: repeat(3, 1fr);
   
-  @media (max-width: 850px) {
+  @media (max-width: 650px) {
     grid-template-columns: repeat(2, 1fr);
   }
   @media (max-width: 580px) {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
   }
 }
 

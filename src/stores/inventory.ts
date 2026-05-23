@@ -474,7 +474,6 @@ export const useInventoryStore = defineStore('inventory', () => {
     return item
   }
 
-
   return {
     // Bag
     bagSellMode,
@@ -498,4 +497,3 @@ export const useInventoryStore = defineStore('inventory', () => {
     processBatchAction
   }
 })
-

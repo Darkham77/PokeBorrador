@@ -175,6 +175,7 @@ watch(() => socialStore.pendingRequests, () => {
 
 .clickable-avatar {
   cursor: pointer;
+  will-change: transform, filter;
   transition: transform 0.2s, filter 0.2s;
 
   &:hover {

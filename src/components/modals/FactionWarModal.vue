@@ -237,6 +237,7 @@ const openFactionChoice = () => {
       width: 64px;
       height: 64px;
       object-fit: contain;
+      will-change: transform, filter;
       animation: floatShield 3s ease-in-out infinite;
 
       &.union-logo {

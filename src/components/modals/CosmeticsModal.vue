@@ -346,6 +346,7 @@ const selectAvatar = (style: AvatarStyle) => {
   align-items: center;
   gap: 16px;
   cursor: pointer;
+  will-change: transform, filter;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
 

@@ -424,6 +424,8 @@ onUnmounted(() => {
   box-sizing: border-box;
   min-height: 52px;
   user-select: none;
+  filter: Brightness(1) Grayscale(0);
+  will-change: filter, transform;
 
   &.is-dragging {
     opacity: 0.4;
