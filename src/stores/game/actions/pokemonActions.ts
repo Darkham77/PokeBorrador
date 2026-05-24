@@ -164,9 +164,7 @@ export function usePokemonActions(
         }
         
         if (!legacyEgg.uid) {
-          const timestamp = typeof Temporal !== 'undefined'
-            ? Temporal.Now.instant().epochMilliseconds
-            : Date.now();
+          const timestamp = Temporal.Now.instant().epochMilliseconds;
           legacyEgg.uid = `egg_${legacyEgg.id || 'unknown'}-${timestamp}-${Math.random().toString(36).substring(2, 7)}`;
         }
         

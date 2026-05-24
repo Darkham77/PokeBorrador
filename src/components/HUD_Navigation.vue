@@ -37,6 +37,24 @@ const totalSocialNotifications = computed(() => {
          eventStore.pendingAwards.length
 })
 
+const readyEggsCount = computed(() => {
+  return (gameStore.state.eggs || []).filter(egg => egg.ready === true || egg.steps <= 0).length
+})
+
+const handleMouseEnter = (group: string) => {
+  if (window.matchMedia('(hover: hover)').matches) {
+    uiStore.openHudGroup = group
+  }
+}
+
+const handleMouseLeave = (group: string) => {
+  if (window.matchMedia('(hover: hover)').matches) {
+    if (uiStore.openHudGroup === group) {
+      uiStore.openHudGroup = null
+    }
+  }
+}
+
 const handleTabChange = (tab: string, _event?: Event) => {
   if (tab === 'bag') {
     modalStore.open('Inventory')
@@ -176,8 +194,8 @@ onUnmounted(() => {
     <!-- 2. POKÉMON (Grupo) -->
     <div 
       class="hud-group relative-box"
-      @mouseenter="uiStore.openHudGroup = 'POKEMON'"
-      @mouseleave="uiStore.openHudGroup === 'POKEMON' && (uiStore.openHudGroup = null)"
+      @mouseenter="handleMouseEnter('POKEMON')"
+      @mouseleave="handleMouseLeave('POKEMON')"
     >
       <button
         class="hud-nav-btn group-btn"
@@ -267,16 +285,16 @@ onUnmounted(() => {
       <span class="icon">🥚</span>
       <span class="nav-item-label">CRIANZA</span>
       <span
-        v-if="gameStore.state.eggs?.length"
+        v-if="readyEggsCount > 0"
         class="badge-pill"
-      >{{ gameStore.state.eggs.length }}</span>
+      >{{ readyEggsCount }}</span>
     </button>
 
     <!-- 6. MARKET (Grupo) -->
     <div 
       class="hud-group relative-box"
-      @mouseenter="uiStore.openHudGroup = 'MARKET'"
-      @mouseleave="uiStore.openHudGroup === 'MARKET' && (uiStore.openHudGroup = null)"
+      @mouseenter="handleMouseEnter('MARKET')"
+      @mouseleave="handleMouseLeave('MARKET')"
     >
       <button
         class="hud-nav-btn group-btn"
@@ -340,8 +358,8 @@ onUnmounted(() => {
     <!-- 7. SOCIAL (Grupo) -->
     <div 
       class="hud-group relative-box"
-      @mouseenter="uiStore.openHudGroup = 'SOCIAL'"
-      @mouseleave="uiStore.openHudGroup === 'SOCIAL' && (uiStore.openHudGroup = null)"
+      @mouseenter="handleMouseEnter('SOCIAL')"
+      @mouseleave="handleMouseLeave('SOCIAL')"
     >
       <button
         class="hud-nav-btn group-btn"

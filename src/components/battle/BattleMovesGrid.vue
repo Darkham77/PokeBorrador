@@ -46,6 +46,23 @@ const draggedIndex = ref<number | null>(null)
 const isDragging = ref(false)
 const dragOverIndex = ref<number | null>(null)
 
+const touchTimer = ref<gsap.core.Tween | null>(null)
+const isTouchDragging = ref(false)
+const touchStartX = ref(0)
+const touchStartY = ref(0)
+const touchDeltaX = ref(0)
+const touchDeltaY = ref(0)
+
+const touchDragStyle = (index: number) => {
+  if (!isTouchDragging.value || draggedIndex.value !== index) return {}
+  return {
+    transform: `translate(${touchDeltaX.value}px, ${touchDeltaY.value}px)`,
+    zIndex: 9999,
+    pointerEvents: 'none' as const,
+    position: 'relative' as const
+  }
+}
+
 const onDragStart = (index: number, e: DragEvent) => {
   if (!props.canReorder || !fullMoves.value[index]) return
   draggedIndex.value = index
@@ -74,6 +91,122 @@ const onDragEnd = () => {
   isDragging.value = false
   draggedIndex.value = null
   dragOverIndex.value = null
+}
+
+function handleTouchStart(index: number, e: TouchEvent) {
+  if (!props.canReorder || !fullMoves.value[index]) return
+  
+  const touch = e.touches?.[0]
+  if (!touch) return
+  
+  touchStartX.value = touch.clientX
+  touchStartY.value = touch.clientY
+  touchDeltaX.value = 0
+  touchDeltaY.value = 0
+  isTouchDragging.value = false
+  
+  const el = moveRefs.value[index]
+  if (el) {
+    el.addEventListener('touchmove', handleTouchMoveNonPassive, { passive: false })
+    el.addEventListener('touchend', handleTouchEndNonPassive)
+    el.addEventListener('touchcancel', handleTouchEndNonPassive)
+  }
+  
+  touchTimer.value = gsap.delayedCall(0.3, () => {
+    isTouchDragging.value = true
+    draggedIndex.value = index
+    isDragging.value = true
+    if (el) el.style.touchAction = 'none'
+    if ('vibrate' in navigator) navigator.vibrate(50)
+  })
+}
+
+function handleTouchMoveNonPassive(e: TouchEvent) {
+  if (isTouchDragging.value) {
+    e.preventDefault()
+  }
+  handleTouchMove(e)
+}
+
+function handleTouchEndNonPassive(e: TouchEvent) {
+  const index = draggedIndex.value
+  if (index !== null) {
+    const el = moveRefs.value[index]
+    if (el) {
+      el.removeEventListener('touchmove', handleTouchMoveNonPassive)
+      el.removeEventListener('touchend', handleTouchEndNonPassive)
+      el.removeEventListener('touchcancel', handleTouchEndNonPassive)
+    }
+  }
+  handleTouchEnd(e)
+}
+
+function handleTouchMove(e: TouchEvent) {
+  const touch = e.touches?.[0]
+  if (!touch) return
+
+  if (isTouchDragging.value && draggedIndex.value !== null) {
+    touchDeltaX.value = touch.clientX - touchStartX.value
+    touchDeltaY.value = touch.clientY - touchStartY.value
+    
+    const el = moveRefs.value[draggedIndex.value]
+    if (el) el.style.pointerEvents = 'none'
+    
+    const target = document.elementFromPoint(touch.clientX, touch.clientY)
+    const slot = target?.closest('.move-slot-wrapper') as HTMLElement | null
+    
+    if (el) el.style.pointerEvents = 'auto'
+    
+    if (slot) {
+      const targetIndex = moveRefs.value.indexOf(slot)
+      if (targetIndex !== -1) {
+        dragOverIndex.value = targetIndex
+      } else {
+        dragOverIndex.value = null
+      }
+    } else {
+      dragOverIndex.value = null
+    }
+  } else {
+    const deltaX = Math.abs(touch.clientX - touchStartX.value)
+    const deltaY = Math.abs(touch.clientY - touchStartY.value)
+    if (deltaX > 15 || deltaY > 15) {
+      if (touchTimer.value) touchTimer.value.kill()
+    }
+  }
+}
+
+function handleTouchEnd(e: TouchEvent) {
+  if (touchTimer.value) touchTimer.value.kill()
+  if (isTouchDragging.value && draggedIndex.value !== null) {
+    const el = moveRefs.value[draggedIndex.value]
+    if (el) el.style.touchAction = ''
+    
+    if (el) el.style.pointerEvents = 'none'
+    
+    const touch = e.changedTouches?.[0]
+    let slot: HTMLElement | null = null
+    if (touch) {
+      const target = document.elementFromPoint(touch.clientX, touch.clientY)
+      slot = target?.closest('.move-slot-wrapper') as HTMLElement | null
+    }
+    
+    if (el) el.style.pointerEvents = 'auto'
+    
+    if (slot) {
+      const targetIndex = moveRefs.value.indexOf(slot)
+      if (targetIndex !== -1 && targetIndex !== draggedIndex.value) {
+        emit('reorder-moves', draggedIndex.value, targetIndex)
+      }
+    }
+    
+    isTouchDragging.value = false
+    draggedIndex.value = null
+    isDragging.value = false
+    dragOverIndex.value = null
+    touchDeltaX.value = 0
+    touchDeltaY.value = 0
+  }
 }
 
 const getMoveData = (move: Move | null) => {
@@ -253,6 +386,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   glowTweens.forEach(t => t.kill())
+  if (touchTimer.value) touchTimer.value.kill()
 })
 </script>
 
@@ -278,17 +412,20 @@ onUnmounted(() => {
           'is-disabled': move && isMoveDisabled(move)
         }
       ]"
-      :style="{ 
-        '--m-type-color': getMoveColor(move),
-        '--m-type-rgb': hexToRgb(getMoveColor(move)),
-        background: move 
-          ? `#12141c Linear-Gradient(${i % 2 === 0 ? '90deg' : '270deg'}, Rgba(${hexToRgb(getMoveColor(move))}, 0.15) 0%, Transparent 100%)`
-          : `#0a0c10`,
-        borderColor: move && getMoveModifier(move) === 'boosted' ? '$coin-gold' : 
-          move && getMoveModifier(move) === 'penalized' ? '#ff4444' :
-          move ? `Rgba(${hexToRgb(getMoveColor(move))}, 0.6)` : 
-          'Rgba(255, 255, 255, 0.1)'
-      }"
+      :style="[
+        { 
+          '--m-type-color': getMoveColor(move),
+          '--m-type-rgb': hexToRgb(getMoveColor(move)),
+          background: move 
+            ? `#12141c Linear-Gradient(${i % 2 === 0 ? '90deg' : '270deg'}, Rgba(${hexToRgb(getMoveColor(move))}, 0.15) 0%, Transparent 100%)`
+            : `#0a0c10`,
+          borderColor: move && getMoveModifier(move) === 'boosted' ? '$coin-gold' : 
+            move && getMoveModifier(move) === 'penalized' ? '#ff4444' :
+            move ? `Rgba(${hexToRgb(getMoveColor(move))}, 0.6)` : 
+            'Rgba(255, 255, 255, 0.1)'
+        },
+        touchDragStyle(i)
+      ]"
       :draggable="canReorder && !!move"
       @dragstart="onDragStart(i, $event)"
       @dragover="onDragOver(i, $event)"
@@ -297,6 +434,8 @@ onUnmounted(() => {
       @dragend="onDragEnd"
       @mouseenter="onHover(i, true)"
       @mouseleave="onHover(i, false)"
+      @touchstart="handleTouchStart(i, $event)"
+      @contextmenu.prevent
     >
       <!-- Info Zone with Tooltip -->
       <template v-if="move">
@@ -305,6 +444,7 @@ onUnmounted(() => {
           :delay="400" 
           position="top"
           hide-on-click
+          touch-instant
           class="info-tooltip-wrapper"
           :disabled="isDragging"
         >

@@ -299,3 +299,45 @@
   
   vertical-align: middle;
 }
+
+@media (max-width: 600px) {
+  .pdex-custom-header {
+    padding: 12px 16px;
+    
+    .poke-identity {
+      gap: 8px;
+      
+      .p-id {
+        padding: 4px 8px;
+        font-size: 7px;
+      }
+      
+      .name-with-edit {
+        gap: 4px !important;
+      }
+      
+      .p-name {
+        font-size: 14px !important;
+      }
+      
+      .p-nickname-prefix {
+        font-size: 7px;
+      }
+    }
+
+    .header-right {
+      margin-right: 40px;
+      gap: 6px;
+      
+      .p-types {
+        gap: 4px;
+      }
+
+      .m-type-tag {
+        font-size: 6px !important;
+        padding: 3px 6px !important;
+        border-radius: 4px !important;
+      }
+    }
+  }
+}

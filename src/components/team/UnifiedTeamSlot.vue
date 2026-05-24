@@ -33,6 +33,7 @@ const emit = defineEmits<{
   'drag-end': []
 }>()
 
+const slotRef = ref<HTMLElement | null>(null)
 const touchTimer = ref<gsap.core.Tween | null>(null)
 const isTouchDragging = ref(false)
 const touchStartX = ref(0)
@@ -88,12 +89,36 @@ function handleTouchStart(e: TouchEvent) {
   touchDeltaY.value = 0
   isTouchDragging.value = false
   
+  const el = slotRef.value
+  if (el) {
+    el.addEventListener('touchmove', handleTouchMoveNonPassive, { passive: false })
+    el.addEventListener('touchend', handleTouchEndNonPassive)
+    el.addEventListener('touchcancel', handleTouchEndNonPassive)
+  }
+  
   touchTimer.value = gsap.delayedCall(0.35, () => {
     isTouchDragging.value = true
-    if (e.currentTarget) (e.currentTarget as HTMLElement).style.touchAction = 'none'
+    if (el) el.style.touchAction = 'none'
     emit('drag-start', props.index)
     if ('vibrate' in navigator) navigator.vibrate(50)
   }) // Long press threshold
+}
+
+function handleTouchMoveNonPassive(e: TouchEvent) {
+  if (isTouchDragging.value) {
+    e.preventDefault() // Stop page scroll since it's registered non-passively
+  }
+  handleTouchMove(e)
+}
+
+function handleTouchEndNonPassive(e: TouchEvent) {
+  const el = slotRef.value
+  if (el) {
+    el.removeEventListener('touchmove', handleTouchMoveNonPassive)
+    el.removeEventListener('touchend', handleTouchEndNonPassive)
+    el.removeEventListener('touchcancel', handleTouchEndNonPassive)
+  }
+  handleTouchEnd(e)
 }
 
 function handleTouchMove(e: TouchEvent) {
@@ -101,14 +126,12 @@ function handleTouchMove(e: TouchEvent) {
   if (!touch) return
 
   if (isTouchDragging.value) {
-    e.preventDefault()
-    
     // Update visual displacement coordinates
     touchDeltaX.value = touch.clientX - touchStartX.value
     touchDeltaY.value = touch.clientY - touchStartY.value
     
     // Temporarily disable pointer events to detect what's UNDER the finger
-    const el = e.currentTarget as HTMLElement
+    const el = slotRef.value
     if (el) el.style.pointerEvents = 'none'
     
     const target = document.elementFromPoint(touch.clientX, touch.clientY)
@@ -136,10 +159,10 @@ function handleTouchMove(e: TouchEvent) {
 function handleTouchEnd(e: TouchEvent) {
   if (touchTimer.value) touchTimer.value.kill()
   if (isTouchDragging.value) {
-    if (e.currentTarget) (e.currentTarget as HTMLElement).style.touchAction = ''
+    const el = slotRef.value
+    if (el) el.style.touchAction = ''
     
     // Temporarily disable pointer events to find slot under finger
-    const el = e.currentTarget as HTMLElement
     if (el) el.style.pointerEvents = 'none'
     
     const touch = e.changedTouches?.[0]
@@ -292,6 +315,7 @@ onUnmounted(() => {
 
 <template>
   <div
+    ref="slotRef"
     class="team-slot"
     :class="{ 
       'empty': isEmpty, 
@@ -306,9 +330,7 @@ onUnmounted(() => {
     @dragleave="onDragLeave"
     @drop="onDrop"
     @touchstart="handleTouchStart"
-    @touchmove="handleTouchMove"
-    @touchend="handleTouchEnd"
-    @touchcancel="handleTouchEnd"
+    @contextmenu.prevent
   >
     <div
       v-if="isEmpty"

@@ -265,7 +265,6 @@
   margin-top: 20px;
   box-shadow: 0 4px 0 Rgba(37, 99, 235, 1);
   @include pixelated;
-  transition: background-color 0.15s ease;
 
   &:active {
     transform: Translatey(2px);

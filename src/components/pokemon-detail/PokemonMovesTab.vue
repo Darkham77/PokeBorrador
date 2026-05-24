@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { ref } from 'vue'
+import { useWindowListener } from '@/composables/useWindowListener'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import MoveTooltip from '@/components/battle/MoveTooltip.vue'
 import BattleMovesGrid from '@/components/battle/BattleMovesGrid.vue'
@@ -26,6 +28,12 @@ withDefaults(defineProps<Props>(), {
 const emit = defineEmits<{
   (e: 'reorder-moves', fromIndex: number, toIndex: number): void
 }>()
+
+const isSmallScreen = ref(typeof window !== 'undefined' ? window.innerWidth <= 600 : false)
+const handleResize = () => {
+  isSmallScreen.value = window.innerWidth <= 600
+}
+useWindowListener('resize', handleResize)
 
 function handleReorder(fromIndex: number, toIndex: number) {
   emit('reorder-moves', fromIndex, toIndex)
@@ -102,7 +110,7 @@ function handleReorder(fromIndex: number, toIndex: number) {
             <div class="grid-cell move-type">
               <PokemonTypeTag
                 :type="m.type || 'normal'"
-                size="sm"
+                :size="isSmallScreen ? 'ssm' : 'sm'"
               />
             </div>
             <div class="grid-cell move-cat pixelated">

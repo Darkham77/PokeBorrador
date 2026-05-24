@@ -280,6 +280,10 @@ function handleClickOutside(e: MouseEvent) {
 // --- HELPERS ---
 const currentSprite = computed(() => pokemonDataProvider.getSpriteUrl(config.value.id, config.value.isShiny))
 
+function getPokemonSprite(id: string): string {
+  return pokemonDataProvider.getSpriteUrl(id)
+}
+
 onMounted(() => {
   speciesSearch.value = (pokemonDataProvider.getPokemonData(config.value.id)?.name || config.value.id).toUpperCase()
   natureSearch.value = config.value.nature.toUpperCase()
@@ -350,7 +354,7 @@ onUnmounted(() => {
               @click.stop="selectSpecies(p)"
             >
               <img
-                :src="pokemonDataProvider.getSpriteUrl(p.id)"
+                :src="getPokemonSprite(p.id)"
                 class="item-icon"
                 @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
               >

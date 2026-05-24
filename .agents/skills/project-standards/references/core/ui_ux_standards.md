@@ -272,6 +272,8 @@ We prioritize a deliberate contrast between modern, sleek UI shells and classic,
 - **Standardized Action Links**: User-triggerable change actions inside profile modals (e.g. changing faction or changing names) should use a unified, subtle pixel-art link (`.change-link` class) instead of bulky, grey-bordered buttons, ensuring a clean, lightweight, and cohesive presentation.
 - **Touch-Drag Scroll Prevention**: On touchscreen devices, draggable elements MUST have `touch-action: none` declared in CSS (e.g., `.team-slot:not(.empty) { touch-action: none }`). This prevents the browser from initiating scroll gestures and canceling the JavaScript touch event lifecycle.
 - **Under-Finger Droppable Target Detection**: During touch drags, to detect which target element is under the user's finger using `document.elementFromPoint`, you MUST temporarily disable pointer events on the dragged element/wrapper (e.g., `style.pointerEvents = 'none'`) during the coordinate query, and restore them immediately after.
+- **Touch-Drag Event Target Cleans**: Do not rely on `e.currentTarget` inside async touch event handlers (`touchmove`, `touchend`, `touchcancel`) if the listeners are detached dynamically during execution. The browser will set it to `null`. Use solid component template references (e.g. `slotRef.value` or `ref="slotRef"`) to keep references valid.
+- **Mobile Support for Draggable Elements**: Native HTML5 `draggable="true"` attributes are not supported on most mobile browsers. Implement custom touch handlers (`touchstart`, `touchmove`, `touchend`) with a 300ms long-press threshold to trigger touch-drag sequences without blocking standard viewport scroll.
 
 ### 4. Notifications & Toasts
 
@@ -291,6 +293,7 @@ All tooltips MUST use the `PVTooltip.vue` system. Native HTML `title` attributes
 - **Symmetrical Transitions**: When using mirrored positioning (e.g., right-side expansion), transition transforms MUST be inverted simetrically to prevent horizontal sliding during entrance.
 - **Structured Content**: Prefer `\n` (with `white-space: pre-wrap`) over horizontal separators (`|`) for atmospheric or complex data.
 - **Scroll Behavior**: Tooltips MUST hide automatically as soon as the user initiates a `scroll`, `wheel`, or `touchmove` event. This prevents "floating" tooltips from losing their anchor during rapid navigation.
+- **Instant Touch Tooltips for Info Triggers**: For dedicated informational buttons (like the `?` move detail trigger), apply `touch-instant` to bypass the standard 500ms touch-hold delay. These tooltips must display immediately on `touchstart` and remain open after `touchend` until dismissed by a click/tap outside.
 
 ### 6. Data-Driven Tooltips (In-Game Manuals)
 

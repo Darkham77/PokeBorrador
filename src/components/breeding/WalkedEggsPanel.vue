@@ -245,6 +245,11 @@ function hatchEgg(egg: PokemonEgg): void {
       inset 0 1px 1px Rgba(255, 255, 255, 0.08);
   }
 
+  @media (max-width: 600px) {
+    flex: 1 1 100%;
+    max-width: none;
+  }
+
   // ── Ready state — subtle green accent, still quiet ───────────────────────
   &.is-ready {
     border-color: Rgba(34, 197, 94, 0.3);

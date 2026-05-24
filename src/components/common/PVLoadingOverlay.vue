@@ -259,7 +259,7 @@ watch(() => props.icon, (newIcon) => {
   align-items: center;
   justify-content: center;
   padding: 15px;
-  z-index: 10;
+  z-index: v-bind('Z_LAYERS.MAP_SPAWNS');
   box-sizing: border-box;
   border-radius: inherit;
 }

@@ -133,7 +133,6 @@ const faceStyles = computed((): CSSProperties => {
     backgroundPosition: `center, ${bgPos}`,
     backgroundRepeat: 'no-repeat',
     imageRendering: 'pixelated',
-    transition: 'background-position 0.2s',
     '--avatar-seed': Math.random()
   } as CSSProperties;
 });

@@ -786,13 +786,15 @@ const spawnGrid = computed(() => {
   return { slots: grid, rows, cols }
 })
 
-watch(() => JSON.stringify(spawnGrid.value.slots), (newVal, oldVal) => {
-  if (newVal === oldVal) return
+watch(() => spawnGrid.value.slots, (newVal, oldVal) => {
+  if (oldVal && newVal.length === oldVal.length && newVal.every((val, i) => val === oldVal[i])) {
+    return
+  }
   if (isVisible.value) {
     gsap.killTweensOf(initAuraAnimations)
     gsap.delayedCall(0.05, initAuraAnimations)
   }
-})
+}, { deep: false })
 
 watch(
   [

@@ -445,3 +445,19 @@
     }
   }
 }
+
+@media (max-width: 600px) {
+  .vp-moves-list-grid {
+    min-width: 0 !important;
+    
+    .grid-header, .grid-row {
+      grid-template-columns: 25px 1fr 60px 85px 30px 30px 30px !important;
+      padding: 0 4px !important;
+      
+      .grid-cell, .h-col {
+        padding: 8px 4px !important;
+        font-size: 7.5px !important;
+      }
+    }
+  }
+}

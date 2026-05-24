@@ -6,15 +6,17 @@ let activeTooltipHide: ((immediate?: boolean) => void) | null = null
 <script setup lang="ts">
 import { ref, nextTick, inject, watch, onUnmounted, computed } from 'vue'
 import { gsap } from 'gsap'
+import { Z_LAYERS } from '@/logic/constants/visuals'
 
 const props = defineProps({
   title: { type: String, default: '' },
   description: { type: String, default: '' },
   position: { type: String, default: 'top' }, // top, bottom, left, right
-  delay: { type: Number, default: 250 },
+  delay: { type: Number, default: 500 },
   tag: { type: String, default: 'span' },
   disabled: { type: Boolean, default: false },
-  hideOnClick: { type: Boolean, default: false }
+  hideOnClick: { type: Boolean, default: false },
+  touchInstant: { type: Boolean, default: false }
 })
 
 const isSimplified = inject('isModalPerformanceMode', ref(false))
@@ -28,6 +30,9 @@ const arrowOffset = ref({ x: 0, y: 0 })
 let timeout: gsap.core.Tween | null = null
 let touchTimeout: gsap.core.Tween | null = null
 let isImmediateLeave = false
+let lastTouchTime = 0
+let touchStartX = 0
+let touchStartY = 0
 
 const isRightSide = ref(false)
 
@@ -104,16 +109,18 @@ const updatePosition = () => {
   }
 }
 
-const show = () => {
+const show = (immediate = false) => {
   if (isSimplified.value || props.disabled || isBlockedByClick.value) return 
   if (timeout) timeout.kill()
   
-  timeout = gsap.delayedCall(props.delay / 1000, async () => {
+  const actualDelay = (immediate || props.touchInstant) ? 0 : Math.max(500, props.delay)
+  
+  timeout = gsap.delayedCall(actualDelay / 1000, async () => {
     // Hide previous tooltip immediately before showing this one
-    if (activeTooltipHide && activeTooltipHide !== hideInstance) {
+    if (activeTooltipHide && activeTooltipHide !== hideInstanceLogic) {
       activeTooltipHide(true)
     }
-    activeTooltipHide = hideInstance
+    activeTooltipHide = hideInstanceLogic
 
     if (trigger.value) {
       const rect = trigger.value.getBoundingClientRect()
@@ -126,10 +133,11 @@ const show = () => {
     await nextTick()
     updatePosition()
     
-    // Auto-hide on scroll/wheel to prevent floating artifacts
+    // Auto-hide on scroll/wheel/click-outside to prevent floating artifacts
     window.addEventListener('scroll', hideScroll, { passive: true, capture: true })
     window.addEventListener('wheel', hideScroll, { passive: true })
-    window.addEventListener('touchmove', hideScroll, { passive: true })
+    window.addEventListener('click', hideClickOutside, { capture: true })
+    window.addEventListener('touchstart', hideClickOutside, { capture: true })
   })
 }
 
@@ -143,7 +151,7 @@ const hide = (immediate = false) => {
     touchTimeout = null
   }
   
-  if (activeTooltipHide === hideInstance) {
+  if (activeTooltipHide === hideInstanceLogic) {
     activeTooltipHide = null
   }
   
@@ -154,10 +162,11 @@ const hide = (immediate = false) => {
   isVisible.value = false
   window.removeEventListener('scroll', hideScroll, { capture: true })
   window.removeEventListener('wheel', hideScroll)
-  window.removeEventListener('touchmove', hideScroll)
+  window.removeEventListener('click', hideClickOutside, { capture: true })
+  window.removeEventListener('touchstart', hideClickOutside, { capture: true })
 }
 
-const hideInstance = (immediate = false) => {
+const hideInstanceLogic = (immediate = false) => {
   hide(immediate)
 }
 
@@ -165,37 +174,80 @@ const hideScroll = () => {
   hide(false)
 }
 
-const handleTouchStart = () => {
+const hideClickOutside = (event: Event) => {
+  const target = event.target as Node
+  if (
+    tooltip.value && !tooltip.value.contains(target) &&
+    trigger.value && !trigger.value.contains(target)
+  ) {
+    hide(true)
+  }
+}
+
+const updateTouchTime = () => {
+  lastTouchTime = Date.now()
+}
+
+const handleTouchStart = (e: TouchEvent) => {
+  updateTouchTime()
+  const touch = e.touches?.[0]
+  if (touch) {
+    touchStartX = touch.clientX
+    touchStartY = touch.clientY
+  }
   if (touchTimeout) {
     touchTimeout.kill()
     touchTimeout = null
   }
-  touchTimeout = gsap.delayedCall(0.5, () => {
-    show()
-    touchTimeout = null
-  })
+  
+  if (props.touchInstant) {
+    show(true)
+  } else {
+    touchTimeout = gsap.delayedCall(0.5, () => {
+      show(true)
+      touchTimeout = null
+    })
+  }
 }
 
 const handleTouchEnd = () => {
+  updateTouchTime()
   if (touchTimeout) {
     touchTimeout.kill()
     touchTimeout = null
   }
-  hide()
+  if (props.touchInstant) {
+    return // Let touchInstant tooltips stay open until a click outside
+  }
+  if (!isVisible.value) {
+    hide()
+  }
 }
 
-const handleTouchMove = () => {
-  if (touchTimeout) {
-    touchTimeout.kill()
-    touchTimeout = null
+const handleTouchMove = (e: TouchEvent) => {
+  updateTouchTime()
+  const touch = e.touches?.[0]
+  if (!touch) return
+  
+  const deltaX = Math.abs(touch.clientX - touchStartX)
+  const deltaY = Math.abs(touch.clientY - touchStartY)
+  
+  if (deltaX > 15 || deltaY > 15) {
+    if (touchTimeout) {
+      touchTimeout.kill()
+      touchTimeout = null
+    }
+    if (isVisible.value) {
+      hide()
+    }
   }
-  hide()
 }
 
 const handleTriggerClick = (event: MouseEvent) => {
+  hide(true)
+  
   if (!props.hideOnClick) return
   event.stopPropagation()
-  hide(false)
   isBlockedByClick.value = true
   
   if (clickBlockTimeout) clickBlockTimeout.kill()
@@ -219,7 +271,10 @@ const descriptionSegments = computed(() => {
 })
 
 const handleMouseEnter = () => {
-  show()
+  if (Date.now() - lastTouchTime < 1000) return
+  if (window.matchMedia('(hover: hover)').matches) {
+    show(false)
+  }
 }
 
 const handleContextMenu = (event: Event) => {
@@ -477,7 +532,7 @@ onUnmounted(() => {
     width: 0;
     height: 0;
     border: 6px solid transparent;
-    z-index: 10;
+    z-index: v-bind('Z_LAYERS.MAP_SPAWNS');
   }
 
   .pos-top & {

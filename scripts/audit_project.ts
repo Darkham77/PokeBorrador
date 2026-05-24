@@ -284,7 +284,7 @@ async function auditFile(filePath: string, fix: boolean): Promise<Violation[]> {
       let rules: AuditRule[] = allRules;
       
       // EXCEPCIÓN: Ignorar 'legacyDates' en scripts de utilidad/migración
-      if (filePath.includes('scripts' + path.sep) || filePath.includes('audit_project.ts')) {
+      if (filePath.includes('scripts' + path.sep) || filePath.includes('supabase' + path.sep) || filePath.includes('audit_project.ts')) {
         rules = rules.filter(r => r !== config.legacyDates);
       }
 
