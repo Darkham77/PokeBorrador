@@ -330,3 +330,10 @@ To give life to static branding elements (logos) or high-importance indicators w
 - **Parameters**: Use `yoyo: true`, `repeat: -1`, and `ease: "sine.inOut"`.
 - **Vertical Displacement**: Keep the movement subtle (approx. 10-15px) to avoid motion sickness or layout distraction.
 - **GSAP Preference**: This approach is mandatory for persistent branding animations to ensure they remain synchronized with the overall game state and can be paused/killed efficiently during transitions.
+
+## 26. GSAP Hover Interactions on Selected/Active Cards
+
+To maintain premium tactical feedback, elements in a selected (`.selected`) or active combat state (`.is-active`) MUST still trigger GSAP hover animations rather than being frozen:
+
+- **Hover Entrance**: Scale (`scale: 1.02` to `1.03`) and lift (`y: -3`) the card smoothly. Ensure the border color transitions to its corresponding high-contrast tier color or active glow.
+- **Hover Leave (Restoration)**: On `mouseleave`, check if the card has the `selected` or `is-active` class. Animate the properties back to the specific selected values (e.g., target scale `0.98` and tier glow for combat active cards, or target scale `1` and blue border/glow for standard selected inventory/box cards) before calling `clearProps` in `onComplete`. This guarantees seamless transitions without visual "snaps" or layout jumps.

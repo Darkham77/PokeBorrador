@@ -515,7 +515,12 @@ To ensure consistent interaction feedback, the UI/Control layer of an interactiv
 
 Hardcoded numeric values for `z-index` (e.g., `10`, `20`) are strictly FORBIDDEN in SCSS. Always use standardized CSS variables (e.g., `var(--z-map-spawns)`) defined in `src/logic/constants/visuals.ts`.
 
+- **HUD Overlap Priority**: Stacking containers housing interactive control panels (e.g., `#move-panel` in the Battle Arena controls) MUST be assigned `z-index: var(--z-hud)` (1000) instead of `var(--z-low)`. This guarantees the control layers sit on top of the battle scene, allowing hover transforms or list overflow to display without vertical clipping.
 - **Visibility Guard**: If an entire view appears "dark and disabled", verify that the `LoadingGate` (z-index: `MAX`) or a blocking modal hasn't been left open due to an unhandled JS error in the mounting lifecycle.
+
+### 5. Hover Clearance in Scrollable Layouts
+
+Scrollable grids or lists (e.g., `.quick-bag-grid` or `.quick-team-grid`) with `overflow-y: auto` natively clip children at their scroll boundaries. To allow child micro-animations (like scaling and vertical translation in hover states) to display without clipping, you MUST declare a top/bottom safety padding (e.g., `padding-top: 12px; padding-bottom: 6px;`) on the inner grid container. This provides sufficient visual headroom for hovered/expanded items.
 
 ---
 

@@ -163,6 +163,7 @@ The project uses a sophisticated audit and validation engine to ensure stability
 
 - **Zero-Ignore Policy**: The use of `@ts-ignore`, `@ts-nocheck`, or any variant that bypasses TypeScript compiler checks is STRICTLY FORBIDDEN.
 - **Verification Workflow**: Always run `npm run lint` BEFORE any commit operation. Type safety is non-negotiable (incorporated into the lint pipeline).
+- **SVG className Object Type-Safety**: SVG elements feature an `SVGAnimatedString` object for `.className` rather than a standard string. To prevent runtime type exceptions (e.g. `TypeError: className.includes is not a function`) during global event delegation, you MUST query `classList` (e.g. `el.classList.contains()`) or use array conversions (e.g. `Array.from(el.classList)`) instead of string-matching methods directly on `.className`.
 - **JSDoc Integrity**: When editing code (especially via `multi_replace_file_content`), ALWAYS verify the preservation of the `/**` opening tags. Deleting these tags breaks JSDoc transformation in esbuild/vite and leads to documentation/type generation failures.
 - **IDE & Workspace Config**: To ensure the IDE (like VS Code) applies the proper TypeScript program context and resolves development imports (e.g., `@vitejs/plugin-vue`) inside configuration files (e.g., `vite.config.ts`), these files must be explicitly declared in the root `tsconfig.json`'s `"include"` array.
 - **Temporal API Typings**: For robust type-safety without using `any`, any custom or polyfilled Temporal API properties (e.g., accessing year/month/day/hour/minute on the return value of `toZonedDateTimeISO()`) must be explicitly declared with formal types (like `ZonedDateTime` interface/class) inside the global `env.d.ts` instead of typing them as `unknown` or `any`.
@@ -172,7 +173,6 @@ The project uses a sophisticated audit and validation engine to ensure stability
 ### 10. Atmospheric Filter Segregation
 
 - **Background Integrity**: Original pixel-art backgrounds (Map and Battle) MUST NOT be altered by day cycle post-processing (brightness/hue). They rely on dedicated textures (e.g., `_noche`, `_amanecer`).
-- **Targeted Filtering**:
 - **Targeted Filtering**:
   - **Backgrounds**: Use `weatherOnlyFilter` on the background layer.
   - **Pokémon Spawns & Combatants**: Use the **Isolation Wrapper Pattern**. Apply `weatherOnlyFilter` or `atmosphereFilter` only to a wrapper around the base `img` to keep FX (Shiny sparkles, Guardian auras, Status particles) and debug layers clean and vibrant.
