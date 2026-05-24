@@ -4,7 +4,7 @@ import { ref, computed, reactive, watch, nextTick } from 'vue'
 import { gsap } from 'gsap'
 import { useWindowListener } from '@/composables/useWindowListener'
 import { useGameStore } from '@/stores/game'
-import { useInventoryStore, type Item, isItemUsableOutsideCombat } from '@/stores/inventory'
+import { useInventoryStore, type Item } from '@/stores/inventory'
 import { useUIStore } from '@/stores/ui'
 import { useBattleStore } from '@/stores/battle'
 import { useModalStore } from '@/stores/modals'
@@ -18,8 +18,10 @@ import type { Pokemon } from '@/types/pokemon'
 // Sub-components
 import InventorySidebar from './inventory/InventorySidebar.vue'
 import InventoryItemCard from './inventory/InventoryItemCard.vue'
+import { useGridTransitions } from '@/composables/useGridTransitions'
 import InventoryControls from './inventory/InventoryControls.vue'
 import InventoryQuantityModal from './inventory/InventoryQuantityModal.vue'
+import InventoryActionMenu from './inventory/InventoryActionMenu.vue'
 
 interface Props { 
   show?: boolean
@@ -54,19 +56,7 @@ const selectedItems = reactive(new Map<string, number>()) // name -> qty
 const quantitySelectionItem = ref<Item | null>(null)
 const itemActionMenu = ref<Item | null>(null) // { item, type: 'sell'|'release'|'menu' }
 
-const isItemUsableOrEquippable = (item: Item | null) => {
-  if (!item) return false
-  const dbItem = SHOP_ITEMS.find(i => i.id === item.id || i.name === item.name)
-  if (!dbItem) return false
-  return isItemUsableOutsideCombat(dbItem)
-}
 
-const isItemHeld = (item: Item | null) => {
-  if (!item) return false
-  const dbItem = SHOP_ITEMS.find(i => i.id === item.id || i.name === item.name)
-  if (!dbItem) return false
-  return dbItem.cat === 'held' || dbItem.type === 'held' || (dbItem.cat === 'breeding' && dbItem.id !== 'vigor_restorer' && !dbItem.id.includes('berry'))
-}
 
 // Getters
 const modalWidth = computed(() => props.battleMode ? '480px' : '800px')
@@ -354,72 +344,9 @@ const close = () => {
   uiStore.inventoryTarget = null
 }
 
-// GSAP List Transition Hooks
-const onBeforeEnter = (el: Element) => {
-  if (isCategorySwitching.value) return
-  const item = el as HTMLElement
-  gsap.set(item, {
-    opacity: 0,
-    scale: 0.9,
-    y: 10
-  })
-}
+const { onBeforeEnter, onEnter, onLeave } = useGridTransitions(isCategorySwitching)
 
-const onEnter = (el: Element, done: () => void) => {
-  if (isCategorySwitching.value) {
-    done()
-    return
-  }
-  const item = el as HTMLElement
-  gsap.to(item, {
-    opacity: 1,
-    scale: 1,
-    y: 0,
-    duration: 0.25,
-    ease: 'power2.out',
-    onComplete: done
-  })
-}
 
-const onLeave = (el: Element, done: () => void) => {
-  if (isCategorySwitching.value) {
-    done()
-    return
-  }
-  const item = el as HTMLElement
-  const rect = item.getBoundingClientRect()
-  const parent = item.parentElement
-  
-  if (parent) {
-    const parentRect = parent.getBoundingClientRect()
-    const left = rect.left - parentRect.left
-    const top = rect.top - parentRect.top
-    
-    gsap.set(item, {
-      position: 'absolute',
-      left: `${left}px`,
-      top: `${top}px`,
-      width: rect.width,
-      height: rect.height,
-      zIndex: 0
-    })
-  } else {
-    gsap.set(item, {
-      position: 'absolute',
-      width: rect.width,
-      height: rect.height,
-      zIndex: 0
-    })
-  }
-  
-  gsap.to(item, {
-    opacity: 0,
-    scale: 0.9,
-    duration: 0.2,
-    ease: 'power2.in',
-    onComplete: done
-  })
-}
 </script>
 
 <template>
@@ -528,55 +455,14 @@ const onLeave = (el: Element, done: () => void) => {
     />
 
     <!-- SINGLE ITEM ACTION MENU -->
-    <BaseModal
+    <InventoryActionMenu
       v-if="itemActionMenu"
       :show="!!itemActionMenu"
-      max-width="320px"
-      variant="retro"
-      accent-color="var(--red)"
+      :item="itemActionMenu"
+      :battle-mode="battleMode"
       @close="itemActionMenu = null"
-    >
-      <template #header>
-        <div class="action-menu-header">
-          {{ itemActionMenu.name }}
-        </div>
-      </template>
-      <div class="action-menu-body">
-        <button
-          v-if="uiStore.inventoryTarget"
-          class="menu-btn vicio-primary"
-          @click.stop="handleActionSelect('use')"
-        >
-          <span class="icon">✨</span> USAR / EQUIPAR
-        </button>
-        <button
-          v-else-if="!battleMode && isItemUsableOrEquippable(itemActionMenu)"
-          class="menu-btn vicio-primary"
-          @click.stop="handleActionSelect('use')"
-        >
-          <template v-if="isItemHeld(itemActionMenu)">
-            <span class="icon">🎒</span> EQUIPAR
-          </template>
-          <template v-else>
-            <span class="icon">✨</span> USAR
-          </template>
-        </button>
-        <button
-          v-if="!battleMode"
-          class="menu-btn vicio-warning"
-          @click.stop="handleActionSelect('sell')"
-        >
-          <span class="icon">💰</span> VENDER
-        </button>
-        <button
-          v-if="!battleMode"
-          class="menu-btn vicio-danger"
-          @click.stop="handleActionSelect('release')"
-        >
-          <span class="icon">🗑️</span> TIRAR
-        </button>
-      </div>
-    </BaseModal>
+      @action="handleActionSelect"
+    />
   </BaseModal>
 </template>
 
@@ -584,31 +470,7 @@ const onLeave = (el: Element, done: () => void) => {
 @use "@/styles/core/_mixins" as *;
 @use "@/styles/components/inventory";
 
-.action-menu-header {
-  @include pixelated;
-  font-size: 10px;
-  color: var(--yellow);
-  text-align: center;
-  width: 100%;
-}
 
-.action-menu-body {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding: 16px 0;
-
-  .menu-btn {
-    width: 100%;
-    margin-bottom: 8px;
-    
-    &.vicio-primary { @include btn-vicio('primary', 'md', true); }
-    &.vicio-warning { @include btn-vicio('primary', 'md', true); }
-    &.vicio-danger  { @include btn-vicio('danger', 'md', true); }
-    
-    .icon { font-size: 16px; }
-  }
-}
 
 .is-battle-mode {
   height: 520px !important;

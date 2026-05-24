@@ -28,7 +28,7 @@ import BattleInfoCard from './BattleInfoCard.vue'
 import CombatGrass from './CombatGrass.vue'
 import AtmosphereLayer from '@/components/common/AtmosphereLayer.vue'
 import FishingMinigame from './FishingMinigame.vue'
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
+import CameraZoomControls from './CameraZoomControls.vue'
 
 const { BASE_ENTITY_SIZE_PLAYER, BASE_ENTITY_SIZE_ENEMY } = WORLD_CONSTANTS
 
@@ -72,8 +72,7 @@ battleStore.animations = {
   playBallFadeOut: animations.playBallFadeOut
 }
 const {
-  wildRevealActive, isEmerging,
-  isInitialLoad, isCaptureSequenceActive,
+  isInitialLoad,
   isFaintInProgress, faintedPokemonSnapshot,
     playerAnimState,
     enemyAnimState,
@@ -91,110 +90,17 @@ const {
 const {
   isEnemyHudSuppressed,
   isPlayerHudSuppressed,
-  activeEnemyHudData,
-  shouldScrambleEnemyData
+  shouldScrambleEnemyData,
+  activeEnemyData,
+  activeEnemyIsSilhouette,
+  bushIsBehind,
+  enemyIsJumping,
+  isInstantBush,
+  enemyIsFloating,
+  isEnemyTechnicalHidden,
+  isPlayerTechnicalHidden,
+  shouldShowEncounterLayers
 } = useBattleHud(animations, battleStore, enemy)
-
-
-const activeEnemyData = computed(() => {
-  const s = battleStore.fsm?.currentState
-  const sub = battleStore.fsm?.currentSubState
-
-  if (s === 'REWARDS_PHASE' && sub === 'EMPTY_WAIT') {
-    return null
-  }
-  
-  // Si estamos en búsqueda o introducción y el asiento está vacío, 
-  // mostramos el 'initialEnemy' como silueta de seguridad (Evita fantasmas)
-  const realEnemy = activeEnemyHudData.value
-  if (!realEnemy && (s === 'FIRST_INTRO' || s === 'SEARCH_PHASE' || s === 'INITIALIZING')) {
-    return battleStore.state?._initialEnemy || null
-  }
-
-  return realEnemy
-})
-
-const activeEnemyIsSilhouette = computed(() => {
-  if (battleStore.isSilhouetteMode) return true
-  const sub = battleStore.fsm?.currentSubState
-  if (!sub) return false
-  return [
-    'PARALLEL_PREP', 'PARALLEL_ENTRY', 'SILHOUETTE_MODE', 'BUSH_IDLE', 
-    'ENTRY_ANIM', 'ENCOUNTER_ANIM', 'PARALLEL_JUMP'
-  ].includes(sub)
-})
-
-// Determinismo de profundidad: El arbusto se va al fondo SOLO durante el salto o revelación cromática.
-// En PARALLEL_PREP / BUSH_VISIBLE se mantiene el efecto "sándwich" (detrás de la capa frontal).
-const bushIsBehind = computed(() => {
-  const sub = battleStore.fsm?.currentSubState
-  if (!sub) return false
-  return isEmerging.value || ['ENCOUNTER_ANIM', 'PARALLEL_JUMP', 'REVEAL_COLORS', 'BUSH_FADE'].includes(sub)
-})
-
-const enemyIsJumping = computed(() => {
-  const sub = battleStore.fsm?.currentSubState
-  if (!sub) return false
-  return isEmerging.value || sub === 'ENCOUNTER_ANIM' || sub === 'PARALLEL_JUMP'
-})
-
-const isInstantBush = computed(() => {
-  if (isInitialLoad.value) return true
-  const sub = battleStore.fsm?.currentSubState
-  // En FIRST_INTRO (Entrada directa), los arbustos son instantáneos
-  return battleStore.fsm?.currentState === 'FIRST_INTRO' || sub === 'BUSH_VISIBLE'
-})
-
-const enemyIsFloating = computed(() => {
-  if (!activeEnemyData.value) return false
-  if (activeEnemyData.value.isFloating !== undefined) return activeEnemyData.value.isFloating
-  
-  const p = activeEnemyData.value
-  const isFlying = p.type === 'flying' || p.type2 === 'flying'
-  const isLevitating = p.ability === 'Levitación'
-  if (isFlying || isLevitating) return true
-
-  const data = p.id ? pokemonDataProvider.getPokemonData(p.id) : null
-  return data?.isFloating || false
-})
-
-const isWildEncounter = computed(() => {
-  if (isSearching.value) return true
-  return !!(battleStore.state && !battleStore.state.isTrainer && !battleStore.state.isGym)
-})
-
-const isEnemyTechnicalHidden = computed(() => {
-  const sub = battleStore.fsm?.currentSubState
-  const state = battleStore.fsm?.currentState
-  const isTrainer = !isWildEncounter.value
-  
-  // 1. Forzar ocultación en estados de promoción técnica (Slot 2 -> Slot 1)
-  if (sub === 'GEN_TEAMS') return true
-  
-  // 2. Si estamos en búsqueda, ocultar durante la generación técnica de datos
-  if (state === 'SEARCH_PHASE') {
-    const technicalSubstates = [
-      'RECEIVE_CONFIG', 'WEIGHT_CALCULATION', 'INJECT_FILTERS', 
-      'READY_FOR_GEN'
-    ]
-    if (technicalSubstates.includes(sub || '')) return true
-  }
-
-  // 3. Ocultar mientras el entrenador es visible (Mood Visual)
-  const trainerVisibleStates = ['TRAINER_ENTRY', 'T_VISUAL', 'TRAINER_RETREAT', 'POKEMON_CALL', 'RENDER_BALL']
-  if (isTrainer && trainerVisibleStates.includes(sub || '')) return true
-  
-  return false
-})
-
-const isPlayerTechnicalHidden = computed(() => {
-  const sub = battleStore.currentSubState
-  const isTrainer = battleStore.state?.isTrainer || battleStore.state?.isGym
-  
-  // El jugador está oculto mientras el entrenador del jugador es visible (Mood Visual)
-  // Por ahora la lógica de entrada de entrenador jugador es síncrona con POKEMON_CALL
-  return !!isTrainer && ['TRAINER_ENTRY', 'T_VISUAL'].includes(sub || '')
-})
 
 const computedWeather = computed(() => {
   // 1. Prioridad Absoluta: Clima de combate activo (Store de Batalla)
@@ -210,23 +116,6 @@ const computedWeather = computed(() => {
   // 3. Clima determinístico de la ruta
   return getRouteWeather(battle.value?.locationId || 'route1', mapStore.currentSeason.id, mapStore.currentEpochHour, mapStore.currentCycle)
 })
-
-const shouldShowEncounterLayers = computed(() => {
-  if (enemyAnimState.value === 'catching' || enemyAnimState.value === 'trapped' || enemyAnimState.value === 'releasing') return false
-  if (isCaptureSequenceActive.value || isFaintInProgress.value) return false
-  
-  // Si el Pokémon vuela, no mostramos capas ambientales (arbustos)
-  if (enemyIsFloating.value) return false
-
-  const fsmSub = battleStore.fsm?.currentSubState
-  // Mostrar capas (arbustos) en todos los estados de búsqueda y entrada salvaje plana
-  if (fsmSub && ['PARALLEL_ENTRY', 'PARALLEL_JUMP', 'ENTRY_ANIM', 'ENCOUNTER_ANIM', 'BUSH_IDLE', 'WILD_ENTRY', 'BUSH_FADE', 'REVEAL_COLORS'].includes(fsmSub)) {
-    return isWildEncounter.value
-  }
-
-  return isWildEncounter.value && (isSearching.value || wildRevealActive.value)
-})
-
 
 const atmosphereSeed = computed(() => {
   return (battle.value?.locationId || 'route1').split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
@@ -282,8 +171,6 @@ watch(
       resetAll()
 
       battleStore.attackerSide = null
-
-      battleStore.attackerSide = null
       battleStore.activeMove = null
       battleStore.enemyStages = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0, reflect: 0, lightScreen: 0, safeguard: 0, mist: 0, spikes: 0 }
     }
@@ -303,16 +190,18 @@ const handleFishingFail = async () => {
 
 watch(isIntroInProgress, (val) => { battleStore.isIntroAnimating = val }, { immediate: true })
 
+const triggerPreloadCoords = () => preloadCombatCoords(
+  battle.value?.player || null,
+  battle.value?.enemy || null,
+  p1Pos.value,
+  p2Pos.value,
+  battle.value?.playerTeam || [],
+  battle.value?.enemyTeam || []
+)
+
 onMounted(async () => {
   initListeners()
-  await preloadCombatCoords(
-    (battle.value?.player || null), 
-    (battle.value?.enemy || null), 
-    p1Pos.value, 
-    p2Pos.value,
-    battle.value?.playerTeam || [],
-    battle.value?.enemyTeam || []
-  )
+  await triggerPreloadCoords()
   gsap.delayedCall(0.5, () => { isInitialLoad.value = false })
 })
 
@@ -320,33 +209,15 @@ onMounted(async () => {
 watch(trainerAnimState, (newState) => {
   if (!trainerRef.value) return
   gsap.killTweensOf(trainerRef.value)
-
   if (newState === 'entering') {
-    gsap.fromTo(trainerRef.value, 
-      { x: '150%', scale: 0.8, opacity: 0 },
-      { x: '0%', scale: 1, opacity: 1, duration: 0.8, ease: 'back.out(1.2)' }
-    )
+    gsap.fromTo(trainerRef.value, { x: '150%', scale: 0.8, opacity: 0 }, { x: '0%', scale: 1, opacity: 1, duration: 0.8, ease: 'back.out(1.2)' })
   } else if (newState === 'retreating') {
-    gsap.to(trainerRef.value, {
-      x: '150%', scale: 0.8, opacity: 0, 
-      duration: 0.8, 
-      ease: 'power2.in'
-    })
+    gsap.to(trainerRef.value, { x: '150%', scale: 0.8, opacity: 0, duration: 0.8, ease: 'power2.in' })
   }
 })
 
-// Ejecutar PRELOAD_COORDS para combates consecutivos
 watch(() => battleStore.currentSubState, async (sub) => {
-  if (sub === 'PRELOAD_FINAL_COORDS') {
-    await preloadCombatCoords(
-      (battle.value?.player || null), 
-      (battle.value?.enemy || null), 
-      p1Pos.value, 
-      p2Pos.value,
-      battle.value?.playerTeam || [],
-      battle.value?.enemyTeam || []
-    )
-  }
+  if (sub === 'PRELOAD_FINAL_COORDS') await triggerPreloadCoords()
 })
 
 // Forzar actualización de cámara cuando el combate se activa para evitar el glitch de "pantalla negra"
@@ -360,22 +231,7 @@ watch(() => battleStore.isBattleActive, (active) => {
   }
 })
 
-// --- CONTROLES DE ZOOM DE CÁMARA ---
-const zoomIn = () => {
-  const current = battleStore.debugZoom
-  if (current < 1.0) {
-    const nextZoom = Math.min(1.0, Math.round((current + 0.1) * 10) / 10)
-    battleStore.debugZoom = nextZoom
-  }
-}
-
-const zoomOut = () => {
-  const current = battleStore.debugZoom
-  if (current > 0.5) {
-    const nextZoom = Math.max(0.5, Math.round((current - 0.1) * 10) / 10)
-    battleStore.debugZoom = nextZoom
-  }
-}
+// Zoom controls are now managed by CameraZoomControls component
 </script>
 
 <template>
@@ -570,22 +426,7 @@ const zoomOut = () => {
     />
 
     <!-- Controles de Zoom de Cámara -->
-    <div class="camera-zoom-controls">
-      <button
-        class="zoom-btn"
-        :disabled="battleStore.debugZoom >= 1.0"
-        @click.stop="zoomIn"
-      >
-        +
-      </button>
-      <button
-        class="zoom-btn"
-        :disabled="battleStore.debugZoom <= 0.5"
-        @click.stop="zoomOut"
-      >
-        -
-      </button>
-    </div>
+    <CameraZoomControls />
   </div>
 </template>
 
@@ -659,28 +500,6 @@ const zoomOut = () => {
   @include pixelated;
 }
 
-/* --- CONTROLES DE ZOOM DE CÁMARA --- */
-.camera-zoom-controls {
-  position: absolute;
-  bottom: 12px;
-  left: 12px;
-  display: flex;
-  gap: 8px;
-  z-index: calc(var(--z-base) + 40);
-  pointer-events: auto;
-  @include pixelated;
-}
 
-.zoom-btn {
-  @include btn-vicio('neutral', 'sm');
-  width: 28px !important;
-  height: 28px !important;
-  padding: 0 !important;
-  font-size: 10px !important;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 4px;
-}
 
 </style>

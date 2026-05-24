@@ -12,8 +12,10 @@ import { switchServer } from '@/logic/supabase'
 import { safeStorage } from '@/logic/utils/storage'
 import { getFriendlyErrorMessage } from '@/logic/utils/friendlyErrors'
 
-// Components
 import AuthServerSelector from '@/components/auth/AuthServerSelector.vue'
+import AuthOnlineLogin from '@/components/auth/AuthOnlineLogin.vue'
+import AuthOnlineSignup from '@/components/auth/AuthOnlineSignup.vue'
+import AuthLocalLogin from '@/components/auth/AuthLocalLogin.vue'
 
 const wallpaperUrl = computed(() => `url('${getAssetUrl(ASSET_TYPES.UI, '../fondo/WALLPAPER')}')`)
 
@@ -148,12 +150,14 @@ onMounted(() => {
     authStore.logout()
   }
 
-  // Animaciones GSAP
   gsap.from('.login-header-logo', {
     y: -100,
     opacity: 0,
     duration: 1.5,
-    ease: 'back.out(1.2)'
+    ease: 'back.out(1.2)',
+    onComplete: () => {
+      gsap.set('.login-header-logo', { clearProps: 'transform' })
+    }
   })
 
   gsap.to('.login-header-logo img', {
@@ -193,45 +197,7 @@ function handleTabLeave(e: MouseEvent) {
   }
 }
 
-function handleInputEnter(e: MouseEvent) {
-  const el = e.currentTarget as HTMLInputElement
-  if (document.activeElement !== el) {
-    gsap.to(el, {
-      borderColor: 'rgba(191, 90, 242, 0.4)',
-      backgroundColor: 'rgba(255, 255, 255, 0.08)',
-      duration: 0.2
-    })
-  }
-}
 
-function handleInputLeave(e: MouseEvent) {
-  const el = e.currentTarget as HTMLInputElement
-  if (document.activeElement !== el) {
-    gsap.to(el, {
-      borderColor: 'rgba(255, 255, 255, 0.12)',
-      backgroundColor: 'rgba(255, 255, 255, 0.06)',
-      duration: 0.2
-    })
-  }
-}
-
-function handleInputFocus(e: FocusEvent) {
-  const el = e.currentTarget as HTMLInputElement
-  gsap.to(el, {
-    borderColor: '#bf5af2',
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-    duration: 0.2
-  })
-}
-
-function handleInputBlur(e: FocusEvent) {
-  const el = e.currentTarget as HTMLInputElement
-  gsap.to(el, {
-    borderColor: 'rgba(255, 255, 255, 0.12)',
-    backgroundColor: 'rgba(255, 255, 255, 0.06)',
-    duration: 0.2
-  })
-}
 
 watch(authTab, (newTab) => {
   nextTick(() => {
@@ -375,142 +341,37 @@ const handleServerChange = () => {
 
       <div class="auth-forms">
         <!-- ONLINE LOGIN -->
-        <div v-if="serverMode === 'online' && authTab === 'login'">
-          <!-- Alerta de Internet -->
-          <div 
-            v-if="!isOnline" 
-            class="internet-alert"
-          >
-            ⚠️ SIN CONEXIÓN A INTERNET
-          </div>
-
-          <div class="server-list-container">
-            <div class="label-row">
-              <label class="server-label">Seleccionar Servidor</label>
-              <div 
-                class="status-indicator"
-                :class="serverStatus"
-              >
-                {{ serverStatusDetail || (serverStatus === 'checking' ? '...' : serverStatus === 'online' ? 'EN LÍNEA' : 'OFFLINE') }}
-              </div>
-            </div>
-            <select 
-              v-model="selectedServerId" 
-              class="auth-input server-select"
-              @change="handleServerChange"
-              @focus="handleInputFocus"
-              @blur="handleInputBlur"
-              @mouseenter="handleInputEnter"
-              @mouseleave="handleInputLeave"
-            >
-              <option 
-                v-for="server in OFFICIAL_SERVERS" 
-                :key="server.id" 
-                :value="server.id"
-              >
-                {{ server.name }} [{{ server.region }}]
-              </option>
-            </select>
-          </div>
-
-          <input
-            v-model="email"
-            class="auth-input"
-            type="email"
-            placeholder="Email"
-            @keyup.enter="handleLogin"
-            @focus="handleInputFocus"
-            @blur="handleInputBlur"
-            @mouseenter="handleInputEnter"
-            @mouseleave="handleInputLeave"
-          >
-          <input
-            v-model="password"
-            class="auth-input"
-            type="password"
-            placeholder="Contraseña"
-            @keyup.enter="handleLogin"
-            @focus="handleInputFocus"
-            @blur="handleInputBlur"
-            @mouseenter="handleInputEnter"
-            @mouseleave="handleInputLeave"
-          >
-          <button
-            class="auth-btn"
-            :disabled="loading || serverStatus !== 'online'"
-            @click.stop="handleLogin"
-          >
-            ▶ ENTRAR
-          </button>
-        </div>
+        <AuthOnlineLogin
+          v-if="serverMode === 'online' && authTab === 'login'"
+          v-model:selected-server-id="selectedServerId"
+          v-model:email-value="email"
+          v-model:password-value="password"
+          :loading="loading"
+          :is-online="isOnline"
+          :server-status="serverStatus"
+          :server-status-detail="serverStatusDetail"
+          :official-servers="OFFICIAL_SERVERS"
+          @server-change="handleServerChange"
+          @login="handleLogin"
+        />
 
         <!-- LOCAL LOGIN -->
-        <div v-if="serverMode === 'local'">
-          <input
-            v-model="username"
-            class="auth-input"
-            type="text"
-            placeholder="Nombre de Entrenador"
-            maxlength="20"
-            @keyup.enter="handleLocalLogin"
-            @focus="handleInputFocus"
-            @blur="handleInputBlur"
-            @mouseenter="handleInputEnter"
-            @mouseleave="handleInputLeave"
-          >
-          <button
-            class="auth-btn"
-            :disabled="loading"
-            @click.stop="handleLocalLogin"
-          >
-            ▶ JUGAR LOCAL
-          </button>
-        </div>
+        <AuthLocalLogin
+          v-if="serverMode === 'local'"
+          v-model:username-value="username"
+          :loading="loading"
+          @local-login="handleLocalLogin"
+        />
 
         <!-- SIGNUP -->
-        <div v-if="serverMode === 'online' && authTab === 'signup'">
-          <input
-            v-model="username"
-            class="auth-input"
-            type="text"
-            placeholder="Nombre de Entrenador"
-            maxlength="20"
-            @keyup.enter="handleSignup"
-            @focus="handleInputFocus"
-            @blur="handleInputBlur"
-            @mouseenter="handleInputEnter"
-            @mouseleave="handleInputLeave"
-          >
-          <input
-            v-model="email"
-            class="auth-input"
-            type="email"
-            placeholder="Email"
-            @keyup.enter="handleSignup"
-            @focus="handleInputFocus"
-            @blur="handleInputBlur"
-            @mouseenter="handleInputEnter"
-            @mouseleave="handleInputLeave"
-          >
-          <input
-            v-model="password"
-            class="auth-input"
-            type="password"
-            placeholder="Contraseña (mín. 6 caracteres)"
-            @keyup.enter="handleSignup"
-            @focus="handleInputFocus"
-            @blur="handleInputBlur"
-            @mouseenter="handleInputEnter"
-            @mouseleave="handleInputLeave"
-          >
-          <button
-            class="auth-btn"
-            :disabled="loading"
-            @click.stop="handleSignup"
-          >
-            ▶ CREAR CUENTA
-          </button>
-        </div>
+        <AuthOnlineSignup
+          v-if="serverMode === 'online' && authTab === 'signup'"
+          v-model:username-value="username"
+          v-model:email-value="email"
+          v-model:password-value="password"
+          :loading="loading"
+          @signup="handleSignup"
+        />
 
         <div
           v-if="loading"

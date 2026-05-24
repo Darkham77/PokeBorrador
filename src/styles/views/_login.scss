@@ -17,6 +17,7 @@
   min-height: 100dvh;
   padding: 20px;
   overflow-y: auto;
+  scrollbar-gutter: stable;
   font-family: 'Nunito', sans-serif;
 }
 
@@ -59,6 +60,8 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  will-change: transform, opacity;
+  @include gpu-layer;
 
   img {
     @include smooth;

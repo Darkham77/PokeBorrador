@@ -370,6 +370,10 @@ export const useBattleStore = defineStore('battle', () => {
       await sleep(300)
       activeBattle.value.player = null
       clearVolatileStatus(oldPoke)
+
+      // Transición a WAIT_TIMER para sincronización con el manual de FSM
+      await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.WAIT_TIMER)
+      await sleep(500)
     }
 
     await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.POKEMON_CALL)
