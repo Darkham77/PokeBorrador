@@ -31,6 +31,7 @@ Vue.ts testing best practices, patterns, and common gotchas.
 - **Testing Deferred Rendering via IntersectionObserver**: When testing components that conditionally render heavy DOM elements (e.g., `v-if="isVisible"`) based on `IntersectionObserver` visibility:
   - Provide a global mock for `IntersectionObserver` in the test files or setup that satisfies the full TypeScript interface (`root`, `rootMargin`, `scrollMargin`, `thresholds`, `observe()`, `unobserve()`, `disconnect()`, `takeRecords()`).
   - Vue updates the DOM asynchronously; therefore, always use `await wrapper.vm.$nextTick()` after triggering the observer callback before asserting the presence, visibility, or classes of conditional elements.
+- **Exposing Internals for Wrapper VM Access (`defineExpose`)**: In Vue 3 `<script setup>`, components are closed by default, meaning their internal properties and state are not exposed to the parent or unit tests via `wrapper.vm`. When migrating Option API components to Composition API, you MUST explicitly expose any properties, refs, or methods that the test suite expects to assert on using `defineExpose({ ... })` to avoid undefined property failures in tests.
 
 ## Reference
 

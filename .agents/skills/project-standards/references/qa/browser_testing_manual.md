@@ -53,6 +53,7 @@ When testing complex states (e.g., defeat), verify the Pinia state directly:
 1. Check store state via `window.__VITE_DEBUG__.battleStore.state`.
 2. Verify DOM updates in the Vue UI.
 3. Prioritize using `BattleDebugTools.vue` before injecting states manually via console.
+4. **CLI Combat Debug Commands**: When interacting with battle state via console tools, note that functions (like `damagePlayer`, `switchPlayerPokemon`, etc.) are defined under the active store. You must resolve them through the store namespace, for example using the resolver pattern: `window.__VITE_DEBUG__.battle.store().damagePlayer(30)` or `window.__VITE_DEBUG__.battle.store().switchPlayerPokemon(idx)` rather than executing them directly on the `window.__VITE_DEBUG__.battle` parent namespace.
 
 ### 4. UI Overrides vs. Database State
 
