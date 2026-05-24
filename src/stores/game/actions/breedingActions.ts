@@ -34,7 +34,8 @@ export function useBreedingActions(
   async function executeHatch(egg: PokemonEgg) {
     const { recalcPokemonStats } = await import('@/logic/pokemonFactory')
     
-    const p = makePokemon(egg.id, 1, {
+    const speciesId = egg.pokemonId || egg.id
+    const p = makePokemon(speciesId, 1, {
       isShiny: egg.isShiny,
       isGuardian: egg.isGuardian,
       nature: egg.nature,
@@ -42,7 +43,7 @@ export function useBreedingActions(
       gender: egg.gender
     })
 
-    if (!p) throw new Error(`Failed to create pokemon from egg ${egg.id}`)
+    if (!p) throw new Error(`Failed to create pokemon from egg ${speciesId}`)
 
     if (egg.ivs) {
       p.ivs = { ...p.ivs, ...egg.ivs }

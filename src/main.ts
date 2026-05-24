@@ -1,10 +1,16 @@
 import './logic/utils/temporal-init.ts'
 import { createApp } from 'vue'
 
-import { createPinia } from 'pinia'
+import { createPinia, type Pinia } from 'pinia'
 import App from './App.vue'
 import router from './router'
 import '@/styles/_index.scss'
+
+declare global {
+  interface Window {
+    Pinia?: Pinia
+  }
+}
 
 // Global Components
 import PVTooltip from '@/components/common/PVTooltip.vue'
@@ -18,6 +24,10 @@ import { initGlobalHoverSystem } from '@/logic/globalHover'
 
 const app = createApp(App)
 const pinia = createPinia()
+
+if (typeof window !== 'undefined') {
+  window.Pinia = pinia
+}
 
 app.component('PVTooltip', PVTooltip)
 app.component('PokemonPreview', PokemonPreview)

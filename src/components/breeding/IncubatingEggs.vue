@@ -12,7 +12,8 @@ const eggs = computed<PokemonEgg[]>(() => gameStore.state.eggs || [])
 
 const getEggName = (egg: PokemonEgg) => {
   if (egg.scanned || egg.predictedInfo) {
-    return (POKEMON_DB as Record<string, { name: string }>)[egg.id]?.name || 'Huevo Pokémon'
+    const speciesId = egg.pokemonId || egg.id
+    return (POKEMON_DB as Record<string, { name: string }>)[speciesId]?.name || 'Huevo Pokémon'
   }
   return 'Huevo Pokémon'
 }

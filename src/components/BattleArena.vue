@@ -156,6 +156,20 @@ watch(() => battleStore.isBattleActive, (active) => {
   else document.body.classList.remove('in-battle') // [PureVue-Ignore]
 }, { immediate: true })
 
+const handleMouseEnter = (event: MouseEvent) => {
+  const el = event.currentTarget as HTMLElement
+  if (el) {
+    gsap.to(el, { scale: 1.3, y: -2, duration: 0.2, ease: 'back.out(1.5)', overwrite: 'auto' })
+  }
+}
+
+const handleMouseLeave = (event: MouseEvent) => {
+  const el = event.currentTarget as HTMLElement
+  if (el) {
+    gsap.to(el, { scale: 1, y: 0, duration: 0.2, ease: 'power2.out', overwrite: 'auto' })
+  }
+}
+
 const handleClose = () => {
   if (battleStore.isFinishing) {
     battleStore.completeBattleFlow('map')
@@ -188,16 +202,28 @@ const handleClose = () => {
         class="environment-pill"
       >
         <PVTooltip :title="`Hora: ${cycleName}`">
-          <span class="env-icon hover-bounce">{{ cycleEmoji }}</span>
+          <span 
+            class="env-icon hover-bounce"
+            @mouseenter="handleMouseEnter"
+            @mouseleave="handleMouseLeave"
+          >{{ cycleEmoji }}</span>
         </PVTooltip>
         <PVTooltip :title="`Estación: ${seasonName}`">
-          <span class="env-icon hover-bounce">{{ seasonEmoji }}</span>
+          <span 
+            class="env-icon hover-bounce"
+            @mouseenter="handleMouseEnter"
+            @mouseleave="handleMouseLeave"
+          >{{ seasonEmoji }}</span>
         </PVTooltip>
         <PVTooltip
           v-if="weatherEmoji"
           :title="`Clima: ${weatherName}`"
         >
-          <span class="env-icon hover-bounce">{{ weatherEmoji }}</span>
+          <span 
+            class="env-icon hover-bounce"
+            @mouseenter="handleMouseEnter"
+            @mouseleave="handleMouseLeave"
+          >{{ weatherEmoji }}</span>
         </PVTooltip>
       </div>
     </div>
@@ -300,13 +326,8 @@ const handleClose = () => {
   .env-icon {
     font-size: 16px;
     will-change: transform, filter, opacity;
-  filter: Drop-Shadow(0 2px 4px Rgba(0, 0, 0, 0.5));
+    filter: Drop-Shadow(0 2px 4px Rgba(0, 0, 0, 0.5));
     cursor: pointer;
-    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    
-    &.hover-bounce:hover {
-      transform: Scale(1.3) Translatey(-2px);
-    }
   }
 }
 
@@ -320,7 +341,6 @@ const handleClose = () => {
   flex-direction: column;
   min-height: 0;
   overflow: hidden;
-  transition: opacity 0.3s ease;
 
   &.is-fullscreen {
     flex: 1;

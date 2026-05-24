@@ -16,7 +16,7 @@ import { Z_LAYERS } from '../src/logic/constants/visuals.ts';
 
 enableCompileCache();
 
-const IGNORE_DIRS = new Set(['node_modules', '.git', 'dist', 'backup_legacy_code', 'public', 'docs', 'scratch']);
+const IGNORE_DIRS = new Set(['node_modules', '.git', 'dist', 'backup_legacy_code', 'public', 'docs', 'scratch', 'showdown']);
 const AUDIT_EXTENSIONS = new Set(['.vue', '.scss', '.css', '.ts', '.js']);
 
 

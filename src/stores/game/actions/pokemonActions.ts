@@ -3,7 +3,7 @@ import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { useUIStore } from '@/stores/ui'
 import { useLoadingStore } from '@/stores/loading'
 import type { GameState } from '@/types/game'
-import type { Pokemon } from '@/types/pokemon'
+import type { Pokemon, PokemonEgg } from '@/types/pokemon'
 
 export function usePokemonActions(
   state: GameState, 
@@ -143,9 +143,38 @@ export function usePokemonActions(
     scheduleSave()
   }
 
+  interface LegacyEgg extends PokemonEgg {
+    pokemonId?: string;
+  }
+
   function sanitizeAll() {
     state.team.forEach(p => p && sanitizePokemon(p))
     if (state.box) state.box.forEach(p => p && sanitizePokemon(p))
+    
+    if (state.eggs && Array.isArray(state.eggs)) {
+      state.eggs.forEach((egg: PokemonEgg) => {
+        if (!egg) return;
+        const legacyEgg = egg as LegacyEgg;
+        
+        if (legacyEgg.pokemonId && legacyEgg.pokemonId !== legacyEgg.id) {
+          if (!legacyEgg.uid) {
+            legacyEgg.uid = `egg_${legacyEgg.id}`;
+          }
+          legacyEgg.id = legacyEgg.pokemonId;
+        }
+        
+        if (!legacyEgg.uid) {
+          const timestamp = typeof Temporal !== 'undefined'
+            ? Temporal.Now.instant().epochMilliseconds
+            : Date.now();
+          legacyEgg.uid = `egg_${legacyEgg.id || 'unknown'}-${timestamp}-${Math.random().toString(36).substring(2, 7)}`;
+        }
+        
+        if (legacyEgg.ready === undefined) {
+          legacyEgg.ready = (legacyEgg.steps <= 0);
+        }
+      });
+    }
   }
 
   return { registerPokedex, chooseStarter, addPokemon, removePokemon, reorderTeam, reorderMoves, sendToBox, togglePokeTag, sanitizeAll }

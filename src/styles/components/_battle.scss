@@ -222,10 +222,10 @@ body.is-battle-active {
   @include pixelated;
   
   // Offsets también escalados
-  &.bush-front-1 { --bx: calc(var(--obj-scale, 1) * -12px); --by: calc(var(--obj-scale, 1) * 6px); --bs: 1.2; animation: bush-wiggle 1.2s infinite ease-in-out; }
-  &.bush-front-2 { --bx: calc(var(--obj-scale, 1) * 17px); --by: calc(var(--obj-scale, 1) * 2px); --bs: 1.0; animation: bush-wiggle 1.5s infinite ease-in-out -0.4s; }
-  &.bush-back-1 { --bx: calc(var(--obj-scale, 1) * -17px); --by: calc(var(--obj-scale, 1) * -15px); --bs: 0.9; animation: bush-wiggle 1.8s infinite ease-in-out -0.8s; }
-  &.bush-back-2 { --bx: calc(var(--obj-scale, 1) * 10px); --by: calc(var(--obj-scale, 1) * -12px); --bs: 1.1; animation: bush-wiggle 2.1s infinite ease-in-out -0.2s; }
+  &.bush-front-1 { --bx: calc(var(--obj-scale, 1) * -12px); --by: calc(var(--obj-scale, 1) * 6px); --bs: 1.2; }
+  &.bush-front-2 { --bx: calc(var(--obj-scale, 1) * 17px); --by: calc(var(--obj-scale, 1) * 2px); --bs: 1.0; }
+  &.bush-back-1 { --bx: calc(var(--obj-scale, 1) * -17px); --by: calc(var(--obj-scale, 1) * -15px); --bs: 0.9; }
+  &.bush-back-2 { --bx: calc(var(--obj-scale, 1) * 10px); --by: calc(var(--obj-scale, 1) * -12px); --bs: 1.1; }
   
   transform: Translate(var(--bx), var(--by)) Scale(var(--bs));
 }

@@ -42,8 +42,7 @@
   }
 
   &:disabled {
-    will-change: transform, filter, opacity;
-  filter: Grayscale(1);
+    filter: Grayscale(1);
     opacity: 0.6;
     cursor: not-allowed;
     box-shadow: none;
@@ -76,28 +75,28 @@
 // 3. VARIANT: Colors and 3D shadows
 @mixin btn-vicio-variant($variant: 'primary', $size: 'md') {
   $base-color: #facc15; // default yellow
-  $shadow: #b45309;
+  $shadow: Rgba(180, 83, 9, 0.99);
   $text: #000;
 
   @if $variant == 'secondary' {
     $base-color: #7c3aed;
-    $shadow: #5b21b6;
+    $shadow: Rgba(91, 33, 182, 0.99);
     $text: #fff;
   } @else if $variant == 'danger' {
     $base-color: #ef4444;
-    $shadow: #991b1b;
+    $shadow: Rgba(153, 27, 27, 0.99);
     $text: #fff;
   } @else if $variant == 'info' {
     $base-color: #60a5fa;
-    $shadow: #2563eb;
+    $shadow: Rgba(37, 99, 235, 0.99);
     $text: #fff;
   } @else if $variant == 'success' {
     $base-color: #22c55e;
-    $shadow: #15803d;
+    $shadow: Rgba(21, 128, 61, 0.99);
     $text: #fff;
   } @else if $variant == 'neutral' {
     $base-color: #94a3b8;
-    $shadow: #475569;
+    $shadow: Rgba(71, 85, 105, 0.99);
     $text: #fff;
   }
 
@@ -114,10 +113,9 @@
   $depth: 4px;
   @if $size == 'sm' { $depth: 3px; }
 
-  box-shadow: 0 $depth 0 $shadow;
+  box-shadow: 0 $depth 1.5px $shadow;
 
   &:hover:not(:disabled) {
-    will-change: transform, filter, opacity;
     filter: Brightness(1.1);
     // Transform and box-shadow raising are handled by GSAP
   }
@@ -129,7 +127,7 @@
   &.active {
     background: color.scale($base-color, $lightness: 15%);
     box-shadow: 
-      0 $depth 0 $shadow,
+      0 $depth 1.5px $shadow,
       0 0 15px Rgba($base-color, 0.4);
     border: 2px solid Rgba(255, 255, 255, 0.8);
     transform: none !important;
@@ -137,7 +135,7 @@
     &:hover:not(:disabled) {
       background: color.scale($base-color, $lightness: 20%);
       transform: Translatey(-1px) !important;
-      box-shadow: 0 ($depth + 1px) 0 $shadow, 0 0 20px Rgba($base-color, 0.6);
+      box-shadow: 0 ($depth + 1px) 1.5px $shadow, 0 0 20px Rgba($base-color, 0.6);
     }
   }
 }

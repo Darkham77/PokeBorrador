@@ -113,6 +113,49 @@ function is3DButton(el: HTMLElement): boolean {
          Array.from(el.classList).some(cls => cls.startsWith('btn-vicio'))
 }
 
+function getElementShadowColorAndDepth(el: HTMLElement): { color: string; depth: number; blur: string } {
+  // If we already have the base shadow cached, return it!
+  if (el.dataset.baseShadowColor && el.dataset.baseShadowDepth) {
+    return {
+      color: el.dataset.baseShadowColor,
+      depth: parseFloat(el.dataset.baseShadowDepth),
+      blur: el.dataset.baseShadowBlur || '1.5px'
+    }
+  }
+
+  const computed = typeof window !== 'undefined' ? window.getComputedStyle(el).boxShadow : ''
+  if (!computed || computed === 'none') {
+    const defaultVal = { color: 'rgba(0,0,0,0)', depth: 0, blur: '1.5px' }
+    el.dataset.baseShadowColor = defaultVal.color
+    el.dataset.baseShadowDepth = String(defaultVal.depth)
+    el.dataset.baseShadowBlur = defaultVal.blur
+    return defaultVal
+  }
+
+  // Parse color (supports color at the beginning or end of the shadow segment)
+  const colorMatch = computed.match(/(rgba?\(.*?\))/)
+  if (colorMatch && colorMatch[1]) {
+    const color = colorMatch[1]
+    const rest = computed.replace(color, '').trim().split(/\s+/)
+    const cleanOffsets = rest.filter(val => val && !val.includes('rgba') && !val.includes('rgb'))
+    const yOffset = parseFloat(cleanOffsets[1] || '0')
+    const blur = cleanOffsets[2] || '1.5px'
+    
+    // Cache the base stylesheet values so they never drift during active animations!
+    el.dataset.baseShadowColor = color
+    el.dataset.baseShadowDepth = String(yOffset)
+    el.dataset.baseShadowBlur = blur
+
+    return { color, depth: yOffset, blur }
+  }
+
+  const fallback = { color: 'rgba(0,0,0,0)', depth: 0, blur: '1.5px' }
+  el.dataset.baseShadowColor = fallback.color
+  el.dataset.baseShadowDepth = String(fallback.depth)
+  el.dataset.baseShadowBlur = fallback.blur
+  return fallback
+}
+
 export function initGlobalHoverSystem() {
   if (typeof window === 'undefined') return
 
@@ -167,7 +210,7 @@ export function initGlobalHoverSystem() {
       const isCloseBtn = el.classList.contains('modal-close-btn') || el.classList.contains('modal-close-btn-floating')
       const isConfirm = is3DButton(el)
       const isCancel = el.classList.contains('btn-cancel')
-      const isRetro = !!el.closest('.variant-retro')
+      const isRetro = !!el.closest('.variant-retro') && !Array.from(el.classList).some(cls => cls.startsWith('btn-vicio'))
       const is3D = isConfirm || (isCancel && isRetro)
 
       if (isCloseBtn) {
@@ -178,28 +221,21 @@ export function initGlobalHoverSystem() {
           overwrite: 'auto'
         })
       } else if (is3D) {
+        const shadowInfo = getElementShadowColorAndDepth(el)
         if (isRetro) {
           gsap.to(el, {
             x: 0,
             y: 0,
-            boxShadow: '2px 2px 0 rgba(0,0,0,0.2)',
+            boxShadow: `2px 2px 1.5px ${shadowInfo.color}`,
             duration: 0.08,
             ease: 'power1.out',
             overwrite: 'auto'
           })
         } else {
-          const isSmall = el.classList.contains('btn-vicio-sm') || el.classList.contains('sm') || el.classList.contains('xs') || el.classList.contains('btn-vicio-xs')
-          const baseDepth = isSmall ? 3 : 4
-          let shadowColor = '#b45309'
-          if (el.classList.contains('btn-vicio-secondary')) shadowColor = '#5b21b6'
-          else if (el.classList.contains('btn-vicio-danger')) shadowColor = '#991b1b'
-          else if (el.classList.contains('btn-vicio-success')) shadowColor = '#15803d'
-          else if (el.classList.contains('btn-vicio-neutral')) shadowColor = '#475569'
-          else if (el.classList.contains('btn-vicio-info')) shadowColor = '#2563eb'
-
+          const targetDepth = Math.max(0, shadowInfo.depth - 2)
           gsap.to(el, {
             y: 2,
-            boxShadow: `0 ${Math.max(0, baseDepth - 2)}px 0 ${shadowColor}`,
+            boxShadow: `0 ${targetDepth}px 1.5px ${shadowInfo.color}`,
             duration: 0.08,
             ease: 'power1.out',
             overwrite: 'auto'
@@ -409,7 +445,7 @@ function triggerEnter(el: HTMLElement) {
     const isCloseBtn = el.classList.contains('modal-close-btn') || el.classList.contains('modal-close-btn-floating')
     const isConfirm = is3DButton(el)
     const isCancel = el.classList.contains('btn-cancel')
-    const isRetro = !!el.closest('.variant-retro')
+    const isRetro = !!el.closest('.variant-retro') && !Array.from(el.classList).some(cls => cls.startsWith('btn-vicio'))
 
     if (isCloseBtn) {
       scale = 1.1
@@ -445,6 +481,7 @@ function triggerEnter(el: HTMLElement) {
         gsap.to(wrapper, tweenVars)
       }
     } else if (isConfirm || (isCancel && isRetro)) {
+      const shadowInfo = getElementShadowColorAndDepth(el)
       if (isRetro) {
         x = -2
         y = -2
@@ -452,7 +489,7 @@ function triggerEnter(el: HTMLElement) {
         duration = 0.15
         ease = 'power1.out'
         if (isConfirm) {
-          boxShadow = '6px 6px 0 rgba(0,0,0,0.4)'
+          boxShadow = `6px 6px 1.5px ${shadowInfo.color}`
         }
       } else {
         x = 0
@@ -462,16 +499,8 @@ function triggerEnter(el: HTMLElement) {
         ease = 'power1.out'
         
         if (isConfirm && !el.classList.contains('is-danger')) {
-          const isSmall = el.classList.contains('btn-vicio-sm') || el.classList.contains('sm') || el.classList.contains('xs') || el.classList.contains('btn-vicio-xs')
-          const baseDepth = isSmall ? 3 : 4
-          let shadowColor = '#b45309'
-          if (el.classList.contains('btn-vicio-secondary')) shadowColor = '#5b21b6'
-          else if (el.classList.contains('btn-vicio-danger')) shadowColor = '#991b1b'
-          else if (el.classList.contains('btn-vicio-success')) shadowColor = '#15803d'
-          else if (el.classList.contains('btn-vicio-neutral')) shadowColor = '#475569'
-          else if (el.classList.contains('btn-vicio-info')) shadowColor = '#2563eb'
-          
-          boxShadow = `0 ${baseDepth + 1}px 0 ${shadowColor}`
+          const targetDepth = shadowInfo.depth + 1
+          boxShadow = `0 ${targetDepth}px 1.5px ${shadowInfo.color}`
         } else if (el.classList.contains('is-danger')) {
           boxShadow = '0 6px 20px rgba(220, 38, 38, 0.5)'
         }
@@ -487,10 +516,13 @@ function triggerEnter(el: HTMLElement) {
   const tweenVars: gsap.TweenVars = {
     scale,
     y,
-    x,
     duration,
     ease,
     overwrite: 'auto'
+  }
+
+  if (x !== 0) {
+    tweenVars.x = x
   }
 
   if (rotation !== 0) tweenVars.rotation = rotation
@@ -538,13 +570,24 @@ function triggerEnter(el: HTMLElement) {
 function triggerLeave(el: HTMLElement) {
   if (el.dataset.gsapHover || el.dataset.gsapCustomHover) return
 
-  let propsToClear = 'transform,scale,y,x'
-  let targetBorderColor: string | null = null
-  let targetBoxShadow: string | null = null  
   const isCloseBtn = el.classList.contains('modal-close-btn') || el.classList.contains('modal-close-btn-floating')
   const isConfirm = is3DButton(el)
   const isCancel = el.classList.contains('btn-cancel')
-  const isRetro = !!el.closest('.variant-retro')
+  const isRetro = !!el.closest('.variant-retro') && !Array.from(el.classList).some(cls => cls.startsWith('btn-vicio'))
+
+  let propsToClear = 'transform,scale,y'
+  const hasXTranslation = el.classList.contains('friend-card') || 
+    el.classList.contains('map-row') || 
+    el.classList.contains('pc-banner') || 
+    (el.closest('.hud-submenu') && el.classList.contains('hud-nav-btn')) ||
+    isRetro
+
+  if (hasXTranslation) {
+    propsToClear += ',x'
+  }
+
+  let targetBorderColor: string | null = null
+  let targetBoxShadow: string | null = null  
 
   if (isCloseBtn) {
     propsToClear += ',rotation'
@@ -580,22 +623,14 @@ function triggerLeave(el: HTMLElement) {
     }
   } else if (isConfirm || (isCancel && isRetro)) {
     propsToClear += ',boxShadow'
+    const shadowInfo = getElementShadowColorAndDepth(el)
     if (isRetro) {
       if (isConfirm) {
-        targetBoxShadow = '4px 4px 0 rgba(0,0,0,0.3)'
+        targetBoxShadow = `4px 4px 1.5px ${shadowInfo.color}`
       }
     } else {
       if (isConfirm && !el.classList.contains('is-danger')) {
-        const isSmall = el.classList.contains('btn-vicio-sm') || el.classList.contains('sm') || el.classList.contains('xs') || el.classList.contains('btn-vicio-xs')
-        const baseDepth = isSmall ? 3 : 4
-        let shadowColor = '#b45309'
-        if (el.classList.contains('btn-vicio-secondary')) shadowColor = '#5b21b6'
-        else if (el.classList.contains('btn-vicio-danger')) shadowColor = '#991b1b'
-        else if (el.classList.contains('btn-vicio-success')) shadowColor = '#15803d'
-        else if (el.classList.contains('btn-vicio-neutral')) shadowColor = '#475569'
-        else if (el.classList.contains('btn-vicio-info')) shadowColor = '#2563eb'
-        
-        targetBoxShadow = `0 ${baseDepth}px 0 ${shadowColor}`
+        targetBoxShadow = `0 ${shadowInfo.depth}px 1.5px ${shadowInfo.color}`
       } else if (el.classList.contains('is-danger')) {
         targetBoxShadow = '0 4px 15px rgba(220, 38, 38, 0.4)'
       }
@@ -708,13 +743,16 @@ function triggerLeave(el: HTMLElement) {
   const clearVars: gsap.TweenVars = {
     scale: targetScale,
     y: 0,
-    x: 0,
     duration: 0.15,
     ease: 'power1.out',
     overwrite: 'auto',
     onComplete: () => {
       gsap.set(el, { clearProps: propsToClear })
     }
+  }
+
+  if (hasXTranslation) {
+    clearVars.x = 0
   }
 
   if (el.classList.contains('btn-catch-ball')) {

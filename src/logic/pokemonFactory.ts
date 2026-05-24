@@ -220,9 +220,9 @@ export interface PokemonCreationOptions {
 /**
  * Crea un objeto Pokemon completo.
  */
-export function makePokemon(id: string, level: number, options: PokemonCreationOptions = {}): Pokemon | null {
-  if (!id) return null;
-  id = id.toLowerCase();
+export function makePokemon(idVal: string | number, level: number, options: PokemonCreationOptions = {}): Pokemon | null {
+  if (idVal === undefined || idVal === null || idVal === '') return null;
+  let id = String(idVal).toLowerCase().trim();
   
   if (level > 100) level = 100;
   let base = pokemonDataProvider.getPokemonData(id);

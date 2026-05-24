@@ -69,32 +69,7 @@
   @include smooth-scroll;
 }
 
-// Move Detail Modal
-.move-detail-overlay {
-  position: fixed;
-  inset: 0;
-  @include shell-premium(Rgba(0, 0, 0, 0.85));
-  z-index: var(--z-max);
-  display: none;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
-  animation: fadeIn 0.3s ease forwards;
-  
-  &.active { display: flex; }
-}
 
-.move-detail-card {
-  background: Linear-Gradient(180deg, var(--card2) 0%, var(--card) 100%);
-  border-radius: 32px;
-  width: 100%;
-  max-width: 400px;
-  padding: 32px;
-  position: relative;
-  box-shadow: 0 30px 60px -12px Rgba(0, 0, 0, 0.7), inset 0 1px 1px Rgba(255,255,255,0.05);
-  border: 1px solid Rgba(255, 255, 255, 0.1);
-  animation: appear 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
 
 
 

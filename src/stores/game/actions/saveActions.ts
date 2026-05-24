@@ -116,7 +116,7 @@ export function useSaveActions(
 
       if (isNewerThanCloud) {
         uiStore.notify('Sincronizando progreso local más reciente...', '🔄')
-        setTimeout(() => save(false), 3000)
+        gsap.delayedCall(3.0, () => save(false))
       }
     } else if (!data && authStore.user) {
       state.trainer = authStore.user.user_metadata?.username || 'Entrenador'

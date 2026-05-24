@@ -169,6 +169,23 @@ export function registerPokeTools(debug: DebugSystem, { game, ui, mapStore, bree
   })
 
   debug.register({
+    id: 'poke-test-evolution',
+    label: 'PROBAR EVOLUCIÓN (CLI)',
+    command: 'testEvolution',
+    category: 'pokes',
+    action: (slotIndex = 0, targetSpeciesId = 'vaporeon', itemName = 'Piedra Agua') => {
+      const pokemon = game.state.team[slotIndex]
+      if (!pokemon) {
+        ui.notify('No hay un Pokémon en la ranura especificada', '❌')
+        return
+      }
+      ui.notify(`Iniciando evolución de ${pokemon.name} a ${targetSpeciesId}...`, '✨')
+      ui.startEvolution(pokemon, targetSpeciesId, itemName)
+    },
+    description: 'Dispara la escena de evolución animada para el Pokémon en la ranura indicada (índice 0-5).'
+  })
+
+  debug.register({
     id: 'breeding-debug-eggs',
     label: 'VER DETALLES DE HUEVOS (CLI)',
     command: 'debugEggs',

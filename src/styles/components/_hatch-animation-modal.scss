@@ -1,154 +1,292 @@
 @use "@/styles/core/_mixins" as *;
 @use "@/styles/core/variables" as *;
 
+.hatch-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: calc(var(--z-modal) + 2000); // Prioritario por encima de todos los modales base
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  @include pixelated;
+  @include gpu-layer;
+  transform: Translatez(0);
+}
 
-.hatch-immersion-container {
+.hatch-backdrop {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, Rgba(26, 26, 46, 1) 0%, $dark 100%);
+  z-index: var(--z-base);
+  will-change: background-color;
+}
+
+.hatch-container {
   position: relative;
   width: 100%;
-  height: 100dvh;
+  height: 100%;
+  max-width: 420px;
+  z-index: calc(var(--z-base) + 1);
+}
+
+.hatch-focus-area {
+  position: absolute;
+  top: 35%;
+  left: 50%;
+  transform: Translate(-50%, -50%);
+  width: 190px;
+  height: 190px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hatch-info-area {
+  position: absolute;
+  top: calc(35% + 95px); // Colocado exactamente debajo del área del huevo/Pokémon
+  left: 50%;
+  transform: Translatex(-50%);
+  width: 100%;
+  max-width: 420px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  background: radial-gradient(circle at center, Rgba(30, 41, 59, 0.4) 0%, transparent 100%);
-  @include gpu-layer;
+  padding: 0 20px;
+  box-sizing: border-box;
 }
 
-.egg-visual {
-  position: relative;
-  @include gpu-layer;
+.reveal-info-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
 
-  .egg-sprite {
-    width: 140px;
-    @include sprite-render;
-    will-change: transform, filter, opacity;
-    filter: Drop-Shadow(0 0 20px Rgba(255, 255, 255, 0.2));
+/* --- AURAS (Cian, Oro y Plata) --- */
+.auras-field {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: Translate(-50%, -50%);
+  width: 320px;
+  height: 320px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: var(--z-base);
+}
+
+.aura-layer {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  border-radius: 50%;
+  will-change: transform, opacity;
+  image-rendering: auto !important;
+
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  filter: Blur(1.5px);
+
+  &.rare-aura {
+    z-index: calc(var(--z-base) + 1);
+    -webkit-mask-image: var(--flare-2-url);
+    mask-image: var(--flare-2-url);
+    background-color: var(--aura-color-2);
+  }
+
+  &.atmospheric-aura {
+    z-index: var(--z-base);
+    -webkit-mask-image: var(--flare-1-url);
+    mask-image: var(--flare-1-url);
+    background-color: var(--aura-color-1);
+  }
+}
+
+/* --- FASE HUEVO --- */
+.egg-stage-wrapper {
+  position: relative;
+  width: 160px;
+  height: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.egg-sprite {
+  will-change: transform, filter;
+  filter: Drop-Shadow(0 0 20px Rgba(255, 255, 255, 0.25));
+
+  &.egg-sprite-emoji {
+    font-size: 90px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+    filter: Drop-Shadow(0 0 25px Rgba(255, 255, 255, 0.35));
   }
 }
 
 .glow-ring {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: Translate(-50%, -50%);
-  width: 200px;
-  height: 200px;
-  border: 2px solid Rgba(255, 255, 255, 0.1);
+  width: 180px;
+  height: 180px;
+  border: 2px solid Rgba(255, 255, 255, 0.12);
   border-radius: 50%;
+  pointer-events: none;
   @include gpu-layer;
 }
 
-.reveal-visual {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
-  @include gpu-layer;
+.hatch-hint {
+  @include pixelated;
+  font-size: 10px;
+  color: Rgba(255, 255, 255, 0.65);
+  margin-top: 20px;
+  text-shadow: 0 2px 4px Rgba(0, 0, 0, 0.6);
+  white-space: nowrap;
 }
 
-.pokemon-display {
+/* --- FASE REVELACIÓN --- */
+.sprite-glow-wrapper {
   position: relative;
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 190px;
+  height: 190px;
+}
 
-  .pokemon-sprite {
-    width: 180px;
-    @include sprite-render;
-    will-change: transform, filter, opacity;
-    filter: Drop-Shadow(0 0 30px var(--yellow));
-  }
+.pokemon-sprite-fx {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 190px;
+  height: 190px;
+  will-change: transform;
+}
+
+.pokemon-sprite {
+  width: 160px;
+  height: 160px;
+  object-fit: contain;
+  @include pixelated;
 }
 
 .splash-text {
   @include pixelated;
-  font-size: 14px;
+  font-size: 13px;
   color: $white;
-  margin-top: 30px;
-  text-shadow: 0 4px 8px Rgba(0, 0, 0, 0.5);
+  margin-top: 16px;
+  text-shadow: 0 4px 8px Rgba(0, 0, 0, 0.6);
+
+  .highlight {
+    color: var(--yellow);
+    font-weight: bold;
+  }
 }
 
+/* --- TARJETA DE STATS --- */
 .stats-card {
-  background: Rgba(255, 255, 255, 0.05);
-  border: 1px solid Rgba(255, 255, 255, 0.1);
+  background: Rgba(255, 255, 255, 0.04);
+  border: 1.5px solid Rgba(255, 255, 255, 0.1);
   border-radius: 12px;
-  padding: 15px 20px;
-  margin-top: 25px;
-  width: 320px;
-  max-width: 90%;
+  padding: 16px 20px;
+  margin-top: 16px;
+  width: 340px;
+  max-width: 95%;
+  text-align: left;
   @include gpu-layer;
 
   .stat-row {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 8px;
+    align-items: center;
+    margin-bottom: 10px;
+    border-bottom: 1px dashed Rgba(255, 255, 255, 0.06);
+    padding-bottom: 8px;
 
     &:last-child {
       margin-bottom: 0;
+      border-bottom: none;
+      padding-bottom: 0;
     }
 
     .label {
+      @include pixelated;
+      font-size: 9px;
       color: var(--gray);
-      font-size: 11px;
     }
 
     .val {
+      @include pixelated;
+      font-size: 9px;
       color: var(--yellow);
-      font-size: 11px;
       font-weight: bold;
+
+      &.interactive-val {
+        border-bottom: 1px dotted Rgba(255, 255, 255, 0.3);
+        cursor: help;
+        display: inline-block;
+
+        &:hover {
+          color: var(--blue-light, #60a5fa) !important;
+          border-bottom-color: var(--blue-light, #60a5fa);
+        }
+      }
+
+      &.ivs-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 6px 12px;
+        text-align: right;
+      }
     }
   }
 }
 
-/* Particles */
+/* --- BOTÓN CONFIRMAR --- */
+.btn-confirm {
+  background: var(--blue);
+  color: var(--white);
+  border: none;
+  padding: 12px 24px;
+  font-family: inherit;
+  font-size: 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-top: 20px;
+  box-shadow: 0 4px 0 Rgba(37, 99, 235, 1);
+  @include pixelated;
+  transition: background-color 0.15s ease;
+
+  &:active {
+    transform: Translatey(2px);
+    box-shadow: 0 2px 0 Rgba(37, 99, 235, 1);
+  }
+}
+
+/* --- PARTÍCULAS --- */
 .particles-field {
   position: absolute;
   top: 50%;
   left: 50%;
+  transform: Translate(-50%, -50%);
   pointer-events: none;
 }
 
 .particle {
   position: absolute;
-  width: 6px;
-  height: 6px;
-  background: var(--yellow);
+  width: 5px;
+  height: 5px;
+  background: var(--particle-color, var(--yellow));
   border-radius: 50%;
-  @include gpu-layer;
-}
-
-.shimmer-bg {
-  position: absolute;
-  inset: -100px;
-  background: radial-gradient(circle at center, Rgba(255, 217, 61, 0.1) 0%, transparent 70%);
-  @include gpu-layer;
-}
-
-.hatch-hint {
-  position: absolute;
-  bottom: -60px;
-  left: 50%;
-  transform: Translatex(-50%);
-  @include pixelated;
-  font-size: 10px;
-  color: Rgba(255, 255, 255, 0.6);
-  white-space: nowrap;
-}
-
-:deep(.base-modal-card) {
-  background: transparent !important;
-  border: none !important;
-  box-shadow: none !important;
-  overflow: visible !important;
-  max-height: none !important;
-}
-
-:deep(.base-modal-content) {
-  overflow: visible !important;
-  padding: 0 !important;
-}
-
-:deep(.base-modal-overlay) {
-  -webkit-will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  backdrop-filter: Blur(10px);
   @include gpu-layer;
 }

@@ -1,9 +1,18 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, nextTick } from 'vue';
 import { useEvolutionStore } from '@/stores/evolution';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { gsap } from 'gsap';
+
+defineProps<{
+  id?: string;
+  show?: boolean;
+}>();
+
+defineEmits<{
+  (e: 'close'): void;
+}>();
 
 const evolutionStore = useEvolutionStore();
 const step = ref('intro'); // intro | flashing | transformed | final
@@ -33,6 +42,12 @@ const startSequence = () => {
   const tl = gsap.timeline({
     onComplete: () => {
       step.value = 'final';
+      nextTick(() => {
+        gsap.fromTo('.result-text', 
+          { opacity: 0, y: 10 },
+          { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out' }
+        );
+      });
     }
   });
 
@@ -166,7 +181,7 @@ const close = () => {
 .evolution-overlay {
   position: fixed;
   inset: 0;
-  z-index: var(--z-overlay);
+  z-index: calc(var(--z-modal) + 2000);
   background: Radial-Gradient(circle at center, Rgba(26, 26, 46, 1) 0%, $dark 100%);
   display: flex;
   align-items: center;
@@ -235,7 +250,6 @@ const close = () => {
 }
 
 .result-text {
-  animation: fadeIn 0.5s ease;
   p {
     color: var(--white);
     font-size: 13px;

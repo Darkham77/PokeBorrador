@@ -196,6 +196,7 @@ const formatTime = formatDisplayDate
   padding: 0;
   gap: 0;
   position: relative;
+  overflow: visible !important;
 
   .listing-card-override {
     background: transparent !important;
@@ -228,6 +229,8 @@ const formatTime = formatDisplayDate
     padding-top: 10px;
     background: Rgba(0, 0, 0, 0.3);
     border-top: 1px dashed Rgba(255, 255, 255, 0.1);
+    border-bottom-left-radius: inherit;
+    border-bottom-right-radius: inherit;
 
     .price-tag {
       @include pixelated;

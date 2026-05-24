@@ -311,7 +311,6 @@ const net = computed(() => price.value - fee.value)
       font-size: 8px;
       cursor: pointer;
       border-radius: 10px;
-      transition: all 0.2s;
 
       &.active {
         background: Rgba(56, 189, 248, 1);
@@ -377,7 +376,6 @@ const net = computed(() => price.value - fee.value)
     border-radius: 16px;
     padding: 0;
     cursor: pointer;
-    transition: all 0.2s ease;
     position: relative;
     margin-bottom: 8px;
 
@@ -463,7 +461,6 @@ const net = computed(() => price.value - fee.value)
         align-items: center;
         justify-content: center;
         font-size: 10px;
-        transition: all 0.2s;
       }
     }
   }

@@ -21,7 +21,6 @@ export const useAuthStore = defineStore('auth', () => {
   const sessionMode = ref<SessionMode>((safeStorage.getItem('pokevicio_session_mode') as SessionMode) || (isLocalhost ? 'offline' : 'online')) // 'online' | 'offline'
   const isOnline = ref(navigator.onLine)
   const connectionLost = ref(false)
-  const sessionCheckInterval = ref<ReturnType<typeof setInterval> | null>(null)
   const isBanned = ref(false)
   const banReason = ref('')
 
@@ -352,8 +351,6 @@ export const useAuthStore = defineStore('auth', () => {
 
     safeStorage.removeItem('pokevicio_local_user')
     safeStorage.removeItem('pokevicio_session_mode')
-    
-    if (sessionCheckInterval.value) clearInterval(sessionCheckInterval.value)
     
     user.value = null
     session.value = null
