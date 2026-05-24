@@ -64,6 +64,11 @@ describe('Pokemon Factory', () => {
       expect(p!.id).toBe('pidgey');
     });
 
+    it('should handle numeric IDs correctly by casting to string and fallback', () => {
+      const p = makePokemon(1776736888069.925, 5);
+      expect(p!.id).toBe('pidgey');
+    });
+
     it('should respect level limits', () => {
       const p = makePokemon('charmander', 150);
       expect(p!.level).toBe(100);
