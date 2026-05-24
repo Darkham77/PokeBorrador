@@ -298,7 +298,7 @@ async function onClaim() {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  transition: all 0.2s;
+  
 
   &:hover {
     background: Rgba(255, 255, 255, 0.03);
@@ -519,13 +519,13 @@ async function onClaim() {
 /* ── Interactivity ── */
 .clickable-avatar {
   cursor: pointer;
-  transition: transform 0.2s, filter 0.2s;
+  
   &:hover { transform: Scale(1.08); filter: Brightness(1.15); }
 }
 
 .clickable-username {
   cursor: pointer;
-  transition: opacity 0.2s;
+  
   &:hover { text-decoration: underline; opacity: 0.85; }
 }
 </style>

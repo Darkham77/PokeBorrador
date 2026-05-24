@@ -200,7 +200,7 @@ const select = (id: string) => {
   border: 2px solid Rgba(255, 255, 255, 0.08);
   padding: 32px 24px;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  
   position: relative;
   display: flex;
   flex-direction: column;
@@ -278,7 +278,7 @@ h3 { text-align: center; margin-bottom: 12px; font-size: 14px; }
   color: $white;
   font-size: 10px;
   cursor: pointer;
-  transition: opacity 0.2s;
+  
   &:hover { opacity: 0.9; }
 }
 

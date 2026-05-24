@@ -29,12 +29,7 @@
   font-size: 13px;
   gap: spacing(1.5);
   @include will-animate(transform, box-shadow, filter);
-  transition: 
-    transform 0.18s ease,
-    box-shadow 0.18s ease,
-    background-color 0.18s ease,
-    color 0.18s ease,
-    border-color 0.18s ease;
+  
   white-space: nowrap;
   box-shadow: 0 6px 16px Rgba(0, 0, 0, 0.35), inset 0 1px 0 Rgba(255, 255, 255, 0.12);
   height: auto; 
@@ -47,13 +42,6 @@
   .nav-item-label {
     display: block;
     line-height: 1;
-  }
-
-  &:hover {
-    transform: Translate3d(0, -2px, 0);
-    box-shadow: 0 10px 22px Rgba(0, 0, 0, 0.45), 0 0 12px Rgba(255, 255, 255, 0.12);
-    will-change: transform, filter, opacity;
-  filter: Brightness(1.05);
   }
 
   &.active {

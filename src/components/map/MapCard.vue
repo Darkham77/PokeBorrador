@@ -613,6 +613,93 @@ const initAuraAnimations = () => {
   }, spawnGridRef.value)
 }
 
+const bgRef = ref<HTMLElement | null>(null)
+const overlayRef = ref<HTMLElement | null>(null)
+const isHovered = ref(false)
+
+const onMouseEnter = () => {
+  if (isLocked.value || uiStore.isLowPowerActive || isPerformanceMode.value) return
+  isHovered.value = true
+  
+  gsap.to(cardRef.value, {
+    y: -8,
+    borderColor: '#ffd60a',
+    boxShadow: '0 15px 35px rgba(0,0,0,0.6), 0 0 25px rgba(255, 204, 0, 0.4)',
+    duration: 0.25,
+    ease: 'power2.out',
+    overwrite: 'auto'
+  })
+  
+  if (bgRef.value) {
+    gsap.to(bgRef.value, {
+      scale: 1.08,
+      duration: 0.25,
+      ease: 'power2.out',
+      overwrite: 'auto'
+    })
+  }
+  
+  if (overlayRef.value) {
+    gsap.to(overlayRef.value, {
+      opacity: 1,
+      duration: 0.25,
+      ease: 'power2.out',
+      overwrite: 'auto'
+    })
+  }
+}
+
+const onMouseLeave = () => {
+  isHovered.value = false
+  
+  if (uiStore.isLowPowerActive) {
+    gsap.set([cardRef.value, bgRef.value, overlayRef.value], { clearProps: 'transform,scale,y,boxShadow,borderColor,opacity' })
+    return
+  }
+  
+  gsap.to(cardRef.value, {
+    y: 0,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+    boxShadow: 'none',
+    duration: 0.25,
+    ease: 'power2.out',
+    overwrite: 'auto',
+    onComplete: () => {
+      if (!isHovered.value) {
+        gsap.set(cardRef.value, { clearProps: 'transform,y,boxShadow,borderColor' })
+      }
+    }
+  })
+  
+  if (bgRef.value) {
+    gsap.to(bgRef.value, {
+      scale: 1,
+      duration: 0.25,
+      ease: 'power2.out',
+      overwrite: 'auto',
+      onComplete: () => {
+        if (!isHovered.value) {
+          gsap.set(bgRef.value, { clearProps: 'transform,scale' })
+        }
+      }
+    })
+  }
+  
+  if (overlayRef.value) {
+    gsap.to(overlayRef.value, {
+      opacity: 0.35,
+      duration: 0.25,
+      ease: 'power2.out',
+      overwrite: 'auto',
+      onComplete: () => {
+        if (!isHovered.value) {
+          gsap.set(overlayRef.value, { clearProps: 'opacity' })
+        }
+      }
+    })
+  }
+}
+
 onMounted(() => {
   if (cardRef.value) {
     resizeObserver = new ResizeObserver((entries) => {
@@ -740,19 +827,7 @@ watch(spawnGridRef, (newRef) => {
 
 <template>
   <div
-    ref="cardRef"
-    :class="['location-card map-card legacy-panel', {
-      locked: isLocked,
-      'safari-locked': isSafariLocked,
-      'is-low-power': uiStore.isLowPowerActive,
-      'performance-mode': isPerformanceMode
-    }]"
-    :style="{ 
-      '--weather-only-filter': weatherOnlyFilter,
-      '--bg-image': showBg ? `url('${imgPath}')` : 'none',
-      '--flare-1-url': showBg ? `url('${flare1Url}')` : 'none',
-      '--flare-2-url': showBg ? `url('${flare2Url}')` : 'none'
-    }"
+    class="map-card-wrapper"
     @click.stop="() => {
       logger.debug('MapCard', `Click detected. isLocked: ${isLocked}, isPerformanceMode: ${isPerformanceMode}`);
       if (!isLocked && !isPerformanceMode) {
@@ -761,185 +836,214 @@ watch(spawnGridRef, (newRef) => {
         logger.warn('MapCard', 'Navigation blocked:', { isLocked, isPerformanceMode, isBattleActive: battleStore.isBattleActive, isAnyBlockingModalOpen: uiStore.isAnyBlockingModalOpen });
       }
     }"
+    @mouseenter="onMouseEnter"
+    @mouseleave="onMouseLeave"
   >
-    <AtmosphereLayer
-      :weather="computedWeather"
-      :cycle="cycle"
-      :season="mapStore.currentSeason.id"
-      :is-performance-mode="isPerformanceMode"
-      :is-low-power="uiStore.isLowPowerActive"
-      :is-visible="isVisible"
-      :is-locked="isLocked || isSafariLocked"
-      :anim-seed="Math.abs((props.map.name.split('').reduce((acc, char, i) => {
-        return acc + (char.charCodeAt(0) * (i + 1))
-      }, 0) + sessionWeatherSeed) % 1000) / 1000"
-    />
-
     <div
-      v-if="isLocked || isSafariLocked"
-      class="lock-overlay"
+      ref="cardRef"
+      :class="['location-card map-card legacy-panel', {
+        locked: isLocked,
+        'safari-locked': isSafariLocked,
+        'is-low-power': uiStore.isLowPowerActive,
+        'performance-mode': isPerformanceMode,
+        'is-hovered': isHovered
+      }]"
+      :style="{ 
+        '--weather-only-filter': weatherOnlyFilter,
+        '--bg-image': showBg ? `url('${imgPath}')` : 'none',
+        '--flare-1-url': showBg ? `url('${flare1Url}')` : 'none',
+        '--flare-2-url': showBg ? `url('${flare2Url}')` : 'none'
+      }"
     >
-      <span class="lock-text">{{ lockReason }}</span>
-    </div>
+      <!-- Real divs for background and overlay to support GSAP animations -->
+      <div 
+        ref="bgRef"
+        class="map-card-bg"
+      />
+      <div 
+        ref="overlayRef"
+        class="map-card-overlay"
+      />
 
-    <!-- 1. Guardian (Top Left) -->
-    <PVTooltip
-      v-if="processedGuardian && !isLocked && !isSafariLocked && isVisible"
-      class="guardian-status-badge"
-      :title="!processedGuardian.isSeen ? 'POKÉMON DESCONOCIDO' : (processedGuardian.captured ? 'GUARDIÁN DERROTADO' : 'POKÉMON GUARDIÁN')"
-      :description="processedGuardian.captured 
-        ? 'El protector de esta ruta ha sido vencido, permitiendo que una facción tome el control total.' 
-        : `Un Pokémon poderoso que protege la ruta. ${processedGuardian.isSeen ? 'Es un ' + processedGuardian.name + ' (' + processedGuardian.typeInfo + '). ' : ''}Derrótalo para liberar la zona y permitir que tu facción la domine, activando bonus de captura.`"
-      position="top"
-    >
-      <div class="spawn-atmosphere-wrapper">
-        <img 
-          :src="processedGuardian.sprite" 
-          class="guardian-mini-sprite" 
-          :class="{ captured: processedGuardian.captured, 'spawn-silhouette': !processedGuardian.isCaught }"
-          :style="{ '--spawn-seed': processedGuardian.seed }"
-          @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
-        >
+      <AtmosphereLayer
+        :weather="computedWeather"
+        :cycle="cycle"
+        :season="mapStore.currentSeason.id"
+        :is-performance-mode="isPerformanceMode"
+        :is-low-power="uiStore.isLowPowerActive"
+        :is-visible="isVisible"
+        :is-locked="isLocked || isSafariLocked"
+        :anim-seed="Math.abs((props.map.name.split('').reduce((acc, char, i) => {
+          return acc + (char.charCodeAt(0) * (i + 1))
+        }, 0) + sessionWeatherSeed) % 1000) / 1000"
+      />
+
+      <div
+        v-if="isLocked || isSafariLocked"
+        class="lock-overlay"
+      >
+        <span class="lock-text">{{ lockReason }}</span>
       </div>
-      <span :class="['guardian-label', { captured: processedGuardian.captured }]">
-        {{ processedGuardian.captured ? 'DERROTADO' : 'GUARDIÁN' }}
-      </span>
-    </PVTooltip>
 
-    <!-- 2. Cycle Pill (Top Right) -->
-    <PVTooltip
-      ref="locationTagRef"
-      :class="['location-tag', (isLocked || isSafariLocked) ? 'tag-locked' : 'tag-wild']"
-      :title="(isLocked || isSafariLocked) ? 'ZONA BLOQUEADA' : 'ESTADO AMBIENTAL'"
-      :description="(isLocked || isSafariLocked) ? lockDescription : `Ciclo: ${cycleName}\nEstación: ${seasonName}\nClima: ${weatherName}${weatherModifiersDescription}`"
-      position="top"
-    >
-      <span class="pill-content">
-        {{ (isLocked || isSafariLocked) ? '🔒' : (cycleEmoji + seasonEmoji + weatherEmoji) }}
-      </span>
-    </PVTooltip>
-
-    <!-- 3. Faction Status (Middle Left, below Guardian) -->
-    <PVTooltip
-      v-if="dominance?.winner && dominance?.winner !== 'none' && !isPerformanceMode && !isLocked && !isSafariLocked && isVisible"
-      ref="factionPillRef"
-      class="faction-status-pill"
-      title="DOMINIO FACCIÓN"
-      :description="`Controlado por ${dominance.winner === 'union' ? 'Unión' : 'Poder'}`"
-      position="top"
-    >
-      <div class="pill-content">
-        <span class="faction-emoji">
-          {{ dominance.winner === 'union' ? '⭐' : '✊' }}
+      <!-- 1. Guardian (Top Left) -->
+      <PVTooltip
+        v-if="processedGuardian && !isLocked && !isSafariLocked && isVisible"
+        class="guardian-status-badge"
+        :title="!processedGuardian.isSeen ? 'POKÉMON DESCONOCIDO' : (processedGuardian.captured ? 'GUARDIÁN DERROTADO' : 'POKÉMON GUARDIÁN')"
+        :description="processedGuardian.captured 
+          ? 'El protector de esta ruta ha sido vencido, permitiendo que una facción tome el control total.' 
+          : `Un Pokémon poderoso que protege la ruta. ${processedGuardian.isSeen ? 'Es un ' + processedGuardian.name + ' (' + processedGuardian.typeInfo + '). ' : ''}Derrótalo para liberar la zona y permitir que tu facción la domine, activando bonus de captura.`"
+        position="top"
+      >
+        <div class="spawn-atmosphere-wrapper">
+          <img 
+            :src="processedGuardian.sprite" 
+            class="guardian-mini-sprite" 
+            :class="{ captured: processedGuardian.captured, 'spawn-silhouette': !processedGuardian.isCaught }"
+            :style="{ '--spawn-seed': processedGuardian.seed }"
+            @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
+          >
+        </div>
+        <span :class="['guardian-label', { captured: processedGuardian.captured }]">
+          {{ processedGuardian.captured ? 'DERROTADO' : 'GUARDIÁN' }}
         </span>
-      </div>
-    </PVTooltip>
+      </PVTooltip>
 
-    <!-- 4. Fishing Icon (Bottom Left) -->
-    <PVTooltip
-      v-if="map.fishing && !isPerformanceMode && !isLocked && !isSafariLocked && isVisible"
-      class="fishing-pill-standalone"
-      title="PESCA"
-      description="¡Esta zona tiene agua! Puedes pescar Pokémon aquí."
-      position="top"
-    >
-      <div 
-        ref="fishingPillRef"
-        :class="['interactive-pill fishing-pill map-pill', { 'is-low-power': uiStore.isLowPowerActive }]"
+      <!-- 2. Cycle Pill (Top Right) -->
+      <PVTooltip
+        ref="locationTagRef"
+        :class="['location-tag', (isLocked || isSafariLocked) ? 'tag-locked' : 'tag-wild']"
+        :title="(isLocked || isSafariLocked) ? 'ZONA BLOQUEADA' : 'ESTADO AMBIENTAL'"
+        :description="(isLocked || isSafariLocked) ? lockDescription : `Ciclo: ${cycleName}\nEstación: ${seasonName}\nClima: ${weatherName}${weatherModifiersDescription}`"
+        position="top"
       >
-        <span class="pill-icon">🎣</span>
-      </div>
-    </PVTooltip>
+        <span class="pill-content">
+          {{ (isLocked || isSafariLocked) ? '🔒' : (cycleEmoji + seasonEmoji + weatherEmoji) }}
+        </span>
+      </PVTooltip>
 
-    <!-- 5. Spawns Grid (MOVED UP to be behind other UI elements) -->
-    <div
-      v-if="!isLocked && !isPerformanceMode && isVisible"
-      class="location-spawns"
-    >
-      <div 
-        ref="spawnGridRef"
-        class="spawn-grid-container" 
-        :style="{ '--grid-cols': spawnGrid.cols, '--grid-rows': spawnGrid.rows }"
-        :class="{ 'show-debug-grid': uiStore.isDebugGridMode }"
+      <!-- 3. Faction Status (Middle Left, below Guardian) -->
+      <PVTooltip
+        v-if="dominance?.winner && dominance?.winner !== 'none' && !isPerformanceMode && !isLocked && !isSafariLocked && isVisible"
+        ref="factionPillRef"
+        class="faction-status-pill"
+        title="DOMINIO FACCIÓN"
+        :description="`Controlado por ${dominance.winner === 'union' ? 'Unión' : 'Poder'}`"
+        position="top"
       >
-        <div
-          v-for="item in processedGrid"
-          :key="item.key"
-          class="spawn-slot"
+        <div class="pill-content">
+          <span class="faction-emoji">
+            {{ dominance.winner === 'union' ? '⭐' : '✊' }}
+          </span>
+        </div>
+      </PVTooltip>
+
+      <!-- 4. Fishing Icon (Bottom Left) -->
+      <PVTooltip
+        v-if="map.fishing && !isPerformanceMode && !isLocked && !isSafariLocked && isVisible"
+        class="fishing-pill-standalone"
+        title="PESCA"
+        description="¡Esta zona tiene agua! Puedes pescar Pokémon aquí."
+        position="top"
+      >
+        <div 
+          ref="fishingPillRef"
+          :class="['interactive-pill fishing-pill map-pill', { 'is-low-power': uiStore.isLowPowerActive }]"
+        >
+          <span class="pill-icon">🎣</span>
+        </div>
+      </PVTooltip>
+
+      <!-- 5. Spawns Grid (MOVED UP to be behind other UI elements) -->
+      <div
+        v-if="!isLocked && !isPerformanceMode && isVisible"
+        class="location-spawns"
+      >
+        <div 
+          ref="spawnGridRef"
+          class="spawn-grid-container" 
+          :style="{ '--grid-cols': spawnGrid.cols, '--grid-rows': spawnGrid.rows }"
+          :class="{ 'show-debug-grid': uiStore.isDebugGridMode }"
         >
           <div
-            v-if="item.id"
-            class="spawn-content"
+            v-for="item in processedGrid"
+            :key="item.key"
+            class="spawn-slot"
           >
-            <!-- AURA DIVS (GSAP target) -->
             <div
-              v-if="item.isRare"
-              class="aura-effect rare-aura"
-              :class="{ 'is-low-power': uiStore.isLowPowerActive }"
-            />
-            <div
-              v-if="item.isAtmospheric"
-              class="aura-effect atmospheric-aura"
-              :class="{ 'is-low-power': uiStore.isLowPowerActive }"
-            />
-
-            <div 
-              :class="['sprite-wrapper', { 
-                'rare-spawn': item.isRare, 
-                'atmospheric-spawn': item.isAtmospheric
-              }]"
-              :style="{ '--spawn-seed': item.seed }"
+              v-if="item.id"
+              class="spawn-content"
             >
-              <PVTooltip
-                :title="item.tooltipTitle"
-                :description="item.tooltipDesc"
-                position="top"
-                class="spawn-tooltip-trigger"
+              <!-- AURA DIVS (GSAP target) -->
+              <div
+                v-if="item.isRare"
+                class="aura-effect rare-aura"
+                :class="{ 'is-low-power': uiStore.isLowPowerActive }"
+              />
+              <div
+                v-if="item.isAtmospheric"
+                class="aura-effect atmospheric-aura"
+                :class="{ 'is-low-power': uiStore.isLowPowerActive }"
+              />
+
+              <div 
+                :class="['sprite-wrapper', { 
+                  'rare-spawn': item.isRare, 
+                  'atmospheric-spawn': item.isAtmospheric
+                }]"
+                :style="{ '--spawn-seed': item.seed }"
               >
-                <div class="spawn-atmosphere-wrapper">
-                  <img
-                    :src="item.sprite"
-                    class="pixelated"
-                    :class="{ 'spawn-silhouette': !item.isCaught }"
-                    @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
-                  >
-                </div>
-              </PVTooltip>
+                <PVTooltip
+                  :title="item.tooltipTitle"
+                  :description="item.tooltipDesc"
+                  position="top"
+                  class="spawn-tooltip-trigger"
+                >
+                  <div class="spawn-atmosphere-wrapper">
+                    <img
+                      :src="item.sprite"
+                      class="pixelated"
+                      :class="{ 'spawn-silhouette': !item.isCaught }"
+                      @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
+                    >
+                  </div>
+                </PVTooltip>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <div
-      v-if="!isPerformanceMode"
-      class="location-header"
-    >
-      <div class="location-name">
-        {{ map.name }}
+      <div
+        v-if="!isPerformanceMode"
+        class="location-header"
+      >
+        <div class="location-name">
+          {{ map.name }}
+        </div>
+        <div class="location-desc">
+          {{ map.desc }}
+        </div>
       </div>
-      <div class="location-desc">
-        {{ map.desc }}
-      </div>
-    </div>
 
-    <!-- 6. Winner Crown (Bottom Right) -->
-    <PVTooltip
-      v-if="isPlayerWinner && !isPerformanceMode && !isLocked && !isSafariLocked"
-      ref="crownRef"
-      class="dom-badge winning"
-      title="DOMINADO"
-      description="¡Bonus de captura activo por dominio de facción!"
-      position="top"
-    >
-      <div class="crown-glow-wrapper">
-        <div 
-          v-if="!uiStore.isLowPowerActive" 
-          class="crown-shine-aura" 
-        />
-        <span class="pill-content">👑</span>
-      </div>
-    </PVTooltip>
+      <!-- 6. Winner Crown (Bottom Right) -->
+      <PVTooltip
+        v-if="isPlayerWinner && !isPerformanceMode && !isLocked && !isSafariLocked"
+        ref="crownRef"
+        class="dom-badge winning"
+        title="DOMINADO"
+        description="¡Bonus de captura activo por dominio de facción!"
+        position="top"
+      >
+        <div class="crown-glow-wrapper">
+          <div 
+            v-if="!uiStore.isLowPowerActive" 
+            class="crown-shine-aura" 
+          />
+          <span class="pill-content">👑</span>
+        </div>
+      </PVTooltip>
+    </div>
   </div>
 </template>
 
@@ -1066,5 +1170,14 @@ watch(spawnGridRef, (newRef) => {
     text-align: center !important;
     transform: Translatey(-4px) !important;
   }
+}
+</style>
+
+<style scoped lang="scss">
+.map-card-wrapper {
+  position: relative;
+  height: 220px;
+  width: 100%;
+  overflow: visible;
 }
 </style>

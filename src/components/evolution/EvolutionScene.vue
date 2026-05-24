@@ -258,7 +258,7 @@ const close = () => {
   border-radius: 8px;
   cursor: pointer;
   box-shadow: 0 4px 0 Rgba(37, 99, 235, 1);
-  transition: transform 0.1s;
+  
   
   &:active {
     transform: Translatey(2px);

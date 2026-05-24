@@ -103,7 +103,7 @@ const shadowsArray = computed<CombatShadow[]>(() => {
   transform-origin: center center;
   /* Eliminamos transiciones de posición (left/top) para evitar el "corrimiento" visual */
   /* Solo permitimos opacidad para apariciones/desapariciones suaves */
-  transition: opacity 0.4s ease;
+  
   will-change: opacity;
   pointer-events: none;
   z-index: calc(var(--z-base) - 1);

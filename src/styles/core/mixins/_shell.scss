@@ -54,31 +54,10 @@
  * @param $variant: 'full' (glow + border + sheen) or 'minimal' (only lift + subtle shadow).
  */
 @mixin premium-card-hover($color: var(--yellow), $scale: 1.02, $elevation: -6px, $variant: 'full') {
-  transition: 
-    transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275),
-    box-shadow 0.4s ease,
-    border-color 0.3s ease;
-  
   position: relative;
   z-index: calc(var(--z-base) + 1);
 
   &:hover:not(.locked):not(.disabled):not(.is-unseen) {
-    transform: Translatey($elevation) Scale($scale);
     z-index: calc(var(--z-base) + 15);
-
-    @if $variant == 'full' {
-      border-color: #{$color} !important;
-      
-      // The "Kabutops" Effect:
-      // 1. Outer elevation shadow
-      // 2. INTERNAL Spotlight (inset shadow) - Always behind content
-      // 3. Outer aura glow
-      box-shadow: 
-        0 20px 40px Rgba(0, 0, 0, 0.6),
-        inset 0 30px 60px -20px color-mix(in srgb, #{$color}, transparent 80%),
-        0 0 20px color-mix(in srgb, #{$color}, transparent 70%) !important;
-    } @else if $variant == 'minimal' {
-      box-shadow: 0 15px 35px Rgba(0, 0, 0, 0.5) !important;
-    }
   }
 }

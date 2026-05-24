@@ -410,7 +410,7 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
     @include pixelated;
     font-size: 9px;
     cursor: pointer;
-    transition: all 0.2s;
+    
     @include pixelated;
   }
 
@@ -435,7 +435,7 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
       font-size: 8px;
       @include pixelated;
       cursor: pointer;
-      transition: all 0.2s;
+      
       
       &:hover {
         border-color: Rgba(245, 158, 11, 0.4);

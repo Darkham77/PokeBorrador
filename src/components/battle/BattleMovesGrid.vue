@@ -486,7 +486,7 @@ onUnmounted(() => {
     width: 16px;
     display: flex;
     z-index: var(--z-base);
-    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    
 
     @media (max-width: 420px) {
       width: 12px;
@@ -506,7 +506,7 @@ onUnmounted(() => {
     border: none !important;
     box-shadow: none !important;
     transform: none !important;
-    transition: all 0.3s ease;
+    
   }
 
   &.is-boosted {
@@ -541,7 +541,7 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   cursor: help;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  
   user-select: none;
   @include pixelated;
 

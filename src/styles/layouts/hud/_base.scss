@@ -13,9 +13,7 @@
   z-index: var(--z-hud);
   pointer-events: none;
   @include will-animate(transform, opacity);
-  transition: 
-    transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), 
-    opacity 0.2s ease;
+  
   contain: layout; 
   overflow: visible !important;
 
@@ -47,11 +45,7 @@
       inset 0 -1px 2px Rgba(0, 0, 0, 0.4);
       
     @include will-animate(transform, opacity);
-    transition: 
-      transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
-      background-color 0.2s ease,
-      box-shadow 0.2s ease,
-      opacity 0.2s ease;
+    
     white-space: nowrap;
     position: relative;
     backface-visibility: hidden; 

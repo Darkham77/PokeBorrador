@@ -218,7 +218,7 @@ h3 {
   height: 100%;
   background: Linear-Gradient(90deg, #c8a060, #9E9E9E, #FFB800, #E5C100, #89CFF0, $coin-gold);
   border-radius: 999px;
-  transition: width 1s cubic-bezier(0.34, 1.56, 0.64, 1);
+  
 }
 
 .tier-marker {
@@ -252,7 +252,7 @@ h3 {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  transition: all 0.3s;
+  
 
   &.unlocked {
     border-color: Rgba(107, 203, 119, 0.3);
@@ -305,7 +305,7 @@ h3 {
   background: Rgba(107, 203, 119, 0.2);
   color: var(--green);
   border: 1px solid Rgba(107, 203, 119, 0.3);
-  transition: all 0.2s;
+  
 
   &:hover:not(:disabled) {
     background: Rgba(107, 203, 119, 0.3);

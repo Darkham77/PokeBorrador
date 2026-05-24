@@ -158,7 +158,7 @@ const handleUseItem = (item: BattleItem) => {
   grid-template-columns: repeat(auto-fill, 76px); 
   gap: 8px;
   width: 100%;
-  padding: 4px;
+  padding: 12px 4px 6px 4px;
   justify-content: center;
   align-content: start;
   min-height: 100%;
@@ -168,12 +168,12 @@ const handleUseItem = (item: BattleItem) => {
 .quick-item-card {
   @include premium-card-hover(var(--yellow), 1.02, -4px);
   position: relative;
-  background: Rgba(30, 41, 59, 0.8) !important;
-  border: 1px solid Rgba(255, 255, 255, 0.1) !important;
-  border-radius: 12px !important; 
-  padding: 0 !important;
+  background: Rgba(30, 41, 59, 0.8);
+  border: 1px solid Rgba(255, 255, 255, 0.1);
+  border-radius: 12px; 
+  padding: 0;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  
   aspect-ratio: 1;
   display: flex;
   justify-content: center;
@@ -187,14 +187,6 @@ const handleUseItem = (item: BattleItem) => {
     background: linear-gradient(135deg, Rgba(255, 255, 255, 0.05), transparent);
     pointer-events: none;
     border-radius: inherit; // Mantener la forma
-  }
-
-  &:hover {
-    z-index: calc(var(--z-base) + 2);
-  }
-
-  &:active {
-    transform: Scale(0.95) !important;
   }
 }
 
@@ -226,7 +218,7 @@ const handleUseItem = (item: BattleItem) => {
     filter: 
       Drop-Shadow(0 4px 8px Rgba(0,0,0,0.5))
       Brightness(1.1); 
-    transition: transform 0.3s ease;
+    
     pointer-events: none;
   }
 }

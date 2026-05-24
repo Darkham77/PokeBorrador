@@ -321,7 +321,7 @@ onMounted(() => {
   padding: 12px 24px;
   font-size: 12px;
   cursor: pointer;
-  transition: transform 0.2s;
+  
   width: 100%;
   border-radius: 4px;
   box-shadow: 0 4px 0 #b39200;
@@ -359,7 +359,7 @@ onMounted(() => {
   height: 100%;
   background: linear-gradient(90deg, var(--yellow) 0%, #ffc107 100%);
   box-shadow: 0 0 8px var(--yellow);
-  transition: width 0.3s ease;
+  
 }
 
 .pwa-progress-text {

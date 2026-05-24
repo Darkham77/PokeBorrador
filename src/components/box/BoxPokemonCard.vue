@@ -326,7 +326,7 @@ onUnmounted(() => {
   @include premium-card-hover(var(--tier-color, #1e293b), 1.02, -4px);
   @include pokemon-card-standard(20px);
   transform: Translatez(0); 
-  border-color: var(--tier-color, Rgba(255, 255, 255, 0.15)) !important;
+  border-color: var(--tier-color, Rgba(255, 255, 255, 0.15));
   
   &.is-premium-tier {
     @include pokemon-card-premium-tier;
@@ -347,7 +347,7 @@ onUnmounted(() => {
 
   // --- PERFORMANCE MODE OVERRIDES ---
   &.performance-mode {
-    transition: background-color 0.2s ease, border-color 0.2s ease !important;
+    
     will-change: auto; 
     
     &:hover {

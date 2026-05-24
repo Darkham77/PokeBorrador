@@ -67,7 +67,7 @@ const pMoves = computed(() => (props.pokemon.moves || []).filter((m): m is Move 
   padding: 14px;
   text-align: left;
   cursor: pointer;
-  transition: all 0.2s;
+  
   display: flex;
   flex-direction: column;
   justify-content: space-between;

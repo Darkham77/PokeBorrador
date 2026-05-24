@@ -196,7 +196,7 @@ const handleImgError = (e: Event) => {
   border: 1px solid Rgba(255,255,255,0.1);
   color: Rgba(255,255,255,0.3);
   cursor: pointer;
-  transition: all 0.2s;
+  
 }
 
 .tag-btn.active {
@@ -216,7 +216,7 @@ const handleImgError = (e: Event) => {
   color: var(--white);
   cursor: pointer;
   font-size: 20px;
-  transition: all 0.2s;
+  
 }
 
 .close-btn:hover { background: var(--red); }

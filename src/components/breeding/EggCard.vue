@@ -65,7 +65,7 @@ const getPokemonName = (id: string) => (POKEMON_DB as Record<string, { name: str
     align-items: center; 
     justify-content: center; 
     filter: Drop-Shadow(0 4px 6px Rgba(0, 0, 0, 0.3));
-    transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    
 
     .egg-card-retro:hover & {
       transform: Scale(1.1) Rotate(5deg);

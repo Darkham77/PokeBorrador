@@ -11,24 +11,27 @@
   height: 220px;
   background: transparent; 
   border-radius: 20px;
-  border: 2px solid Rgba(255, 255, 255, 0.2) !important;
+  border: 2px solid Rgba(255, 255, 255, 0.2);
   padding: 15px;
   cursor: pointer;
-  // transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  overflow: visible;
+  overflow: hidden;
   z-index: var(--z-base);
   display: flex;
-
-  &:hover {
-    z-index: var(--z-base); 
-  }
   flex-direction: column;
   align-items: center;
   @include pixelated;
+  will-change: transform, border-color, box-shadow;
 
-  // Layer 0: Background with Atmosphere Filters
-  &::before {
-    content: '';
+  // Disable inherited location-card background to prevent sharp corners showing behind
+  &::before, &.location-card::before {
+    display: none !important;
+    content: none !important;
+    background: none !important;
+    background-image: none !important;
+  }
+
+  // Background with Atmosphere Filters
+  .map-card-bg {
     position: absolute;
     inset: 0; 
     border-radius: 18px; 
@@ -38,90 +41,56 @@
     background-repeat: no-repeat;
     z-index: var(--z-base); // Capa base del fondo
     transform: Translatez(0); 
-    filter: var(--weather-only-filter, Brightness(1) Contrast(1));
+    filter: var(--weather-only-filter, Brightness(1) contrast(1));
+    will-change: transform, filter, opacity;
     
     @include pixelated;
     -ms-interpolation-mode: nearest-neighbor !important;
   }
 
-
-
-  // Layer 1: Vignette
-  &::after {
-    content: '';
+  // Vignette
+  .map-card-overlay {
     position: absolute;
     inset: 0;
     border-radius: 18px;
-    background: Linear-Gradient(to top, 
+    background: linear-gradient(to top, 
       Rgba(0, 0, 0, 0.85) 0%, 
       Rgba(0, 0, 0, 0.2) 50%, 
       Rgba(0, 0, 0, 0.8) 100%
     );
     opacity: 0.35;
-    transition: opacity 0.3s ease;
+    will-change: opacity, background;
+    
     z-index: var(--z-map-overlay); // Constante centralizada (9)
     pointer-events: none;
   }
 
-  &:hover {
-    transform: Translatey(-8px);
-    box-shadow: 
-      0 0 0 2px var(--yellow), 
-      0 15px 35px Rgba(0,0,0,0.6), 
-      0 0 25px Rgba(255, 204, 0, 0.4);
-    border-color: var(--yellow) !important;
-
-    &::before { 
-      transform: Scale(1.08); 
-      will-change: transform, filter, opacity;
-  filter: var(--atmosphere-filter-hover, Brightness(1.0) Contrast(1.2)); 
-    }
-
-    &::after {
-      opacity: 1;
-      background: Linear-Gradient(to top, 
-        Rgba(0, 0, 0, 0.9) 0%, 
-        Rgba(0, 0, 0, 0.4) 50%, 
-        Rgba(0, 0, 0, 0.8) 100%
-      );
+  &.is-hovered {
+    .map-card-bg { 
+      filter: var(--atmosphere-filter-hover, Brightness(1.0) contrast(1.2)); 
     }
   }
 
   &.is-low-power {
-    &:hover {
-      transform: none !important;
-      box-shadow: none !important;
-      border-color: Rgba(255, 255, 255, 0.2) !important;
-
-      &::before {
-        transform: none !important;
-        will-change: auto !important;
+    &.is-hovered {
+      .map-card-bg {
         filter: var(--weather-only-filter, Brightness(1) contrast(1)) !important;
-      }
-
-      &::after {
-        opacity: 0.35 !important;
-        background: linear-gradient(to top, 
-          Rgba(0, 0, 0, 0.85) 0%, 
-          Rgba(0, 0, 0, 0.2) 50%, 
-          Rgba(0, 0, 0, 0.8) 100%
-        ) !important;
       }
     }
   }
 
   &.locked, &.safari-locked {
     will-change: transform, filter, opacity;
-  filter: none !important;
+    filter: none !important;
     opacity: 1 !important;
 
-    &::before { 
-  filter: Grayscale(1) Brightness(0.4) !important; 
+    .map-card-bg { 
+      filter: Grayscale(1) Brightness(0.4) !important; 
     }
     
     .location-header, .location-spawns, .guardian-status-badge, .faction-dominance {
       will-change: transform, filter, opacity;
-  filter: Grayscale(1) Brightness(0.6);
+      filter: Grayscale(1) Brightness(0.6);
       opacity: 0.4;
     }
   }

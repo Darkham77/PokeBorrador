@@ -132,7 +132,7 @@ const onClaim = async () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  transition: all 0.2s;
+  
 
   &:hover {
     background: Rgba(255, 255, 255, 0.05);

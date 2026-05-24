@@ -112,8 +112,7 @@ const handleCancel = () => {
       
       &:hover {
         background: Linear-Gradient(135deg, $white, $coin-gold);
-        transform: Translate(-2px, -2px);
-        box-shadow: 6px 6px 0 Rgba(0,0,0,0.4);
+        // Handled by GSAP
       }
     }
   }
@@ -132,10 +131,10 @@ const handleCancel = () => {
     font-weight: 700;
     @include pixelated;
     cursor: pointer;
-    transition: all 0.2s;
+    
     
     &:active {
-      transform: Scale(0.95);
+      // Handled by GSAP
     }
   }
   

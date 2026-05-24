@@ -442,7 +442,7 @@ function handleClose() {
   @include pixelated;
   font-size: 10px;
   cursor: pointer;
-  transition: all 0.2s;
+  
   
   &:hover {
     background: Rgba(37, 99, 235, 1);

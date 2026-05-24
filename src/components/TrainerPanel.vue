@@ -130,7 +130,7 @@ const handlePanelClick = (event: Event) => {
   height: 100%;
   background: Linear-Gradient(90deg, Rgba(199, 125, 255, 1), Rgba(155, 77, 202, 1));
   border-radius: 10px;
-  transition: width 0.5s;
+  
 }
 
 .class-label {

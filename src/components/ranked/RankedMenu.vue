@@ -272,7 +272,7 @@ const cancelSearch = () => {
   color: var(--white);
   cursor: pointer;
   box-shadow: 0 4px 15px Rgba(59, 130, 246, 0.3);
-  transition: all 0.2s;
+  
   display: flex;
   align-items: center;
   justify-content: center;
@@ -330,7 +330,7 @@ const cancelSearch = () => {
   color: var(--gray);
   padding: 10px 16px;
   cursor: pointer;
-  transition: all 0.2s;
+  
   font-size: 7px;
 
   &.active {

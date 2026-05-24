@@ -168,7 +168,7 @@ const hexToRgba = (hex: string, alpha: number) => {
   border-radius: 18px;
   text-align: center;
   border: 1px solid Rgba(255, 255, 255, 0.05);
-  transition: all 0.3s ease;
+  
 
   &:hover {
     background: Rgba(255, 255, 255, 0.04);
@@ -272,7 +272,7 @@ const hexToRgba = (hex: string, alpha: number) => {
   border-radius: 16px;
   font-size: 10px;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  
 
   &:hover {
     background: var(--move-accent);

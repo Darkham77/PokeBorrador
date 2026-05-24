@@ -190,7 +190,7 @@ const getPokemonName = (id: string) => {
   border: 1px solid Rgba(255, 255, 255, 0.06);
   border-radius: 16px;
   padding: 12px;
-  transition: all 0.2s;
+  
 
   &.disabled {
     opacity: 0.3;
@@ -231,7 +231,7 @@ const getPokemonName = (id: string) => {
     font-weight: 700;
     font-size: 14px;
     color: white;
-    transition: color 0.2s;
+    
   }
   .evo-target {
     font-size: 11px;
@@ -249,7 +249,7 @@ const getPokemonName = (id: string) => {
   padding: 10px 14px;
   border-radius: 8px;
   cursor: pointer;
-  transition: all 0.2s;
+  
   @include pixelated;
 
   &:hover:not(:disabled) {

@@ -114,7 +114,7 @@ const handleGiftChange = (e: Event) => {
   font-weight: 900;
   cursor: pointer;
   box-shadow: 0 4px 15px Rgba(168, 85, 247, 0.3);
-  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  
 
   &:hover:not(:disabled) {
     transform: Translatey(-2px);

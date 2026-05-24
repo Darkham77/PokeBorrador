@@ -112,7 +112,7 @@ watch(() => socialStore.pendingRequests, () => {
   gap: 12px;
 
   &.tab-mounting .request-card {
-    transition: none !important;
+    
   }
 }
 
@@ -124,7 +124,7 @@ watch(() => socialStore.pendingRequests, () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  transition: all 0.2s;
+  
 
   &:hover {
     background: Rgba(157, 78, 221, 0.08);
@@ -176,7 +176,7 @@ watch(() => socialStore.pendingRequests, () => {
 .clickable-avatar {
   cursor: pointer;
   will-change: transform, filter;
-  transition: transform 0.2s, filter 0.2s;
+  
 
   &:hover {
     transform: Scale(1.1);
@@ -186,7 +186,7 @@ watch(() => socialStore.pendingRequests, () => {
 
 .clickable-username {
   cursor: pointer;
-  transition: opacity 0.2s;
+  
 
   &:hover {
     text-decoration: underline;

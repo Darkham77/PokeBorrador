@@ -216,7 +216,7 @@ const isFactionValid = (faction: string | undefined | null) => {
   border: 1px solid Rgba(255, 255, 255, 0.08);
   border-radius: 10px;
   padding: 10px 15px;
-  transition: all 0.2s;
+  
 
   &:hover {
     background: Rgba(255, 255, 255, 0.05);

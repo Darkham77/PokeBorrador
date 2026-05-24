@@ -207,7 +207,7 @@ const submitRename = async () => {
     font-size: 14px;
     outline: none;
     text-align: center;
-    transition: border-color 0.2s;
+    
 
     &:focus {
       border-color: var(--yellow);

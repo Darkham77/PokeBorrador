@@ -20,7 +20,7 @@ body .evolve-pane {
       max-width: 100%;
       margin: 0 auto;
       @include will-animate(transform, box-shadow);
-      transition: all 0.3s ease;
+      
       
       .evo-from, .evo-to {
         display: flex;
@@ -37,7 +37,7 @@ body .evolve-pane {
         @include pixelated;
         will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 5px 15px Rgba(0,0,0,0.4));
-        transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        
         
         &:hover { transform: Scale(1.2); }
       }

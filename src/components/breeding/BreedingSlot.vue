@@ -145,7 +145,7 @@ const genderSymbol = (g: string | null | undefined) => {
   min-height: 200px;
   display: flex;
   flex-direction: column;
-  transition: all 0.3s ease;
+  
   position: relative;
   overflow: hidden;
 
@@ -250,7 +250,7 @@ const genderSymbol = (g: string | null | undefined) => {
     @include pixelated;
     font-size: 9px;
     cursor: pointer;
-    transition: transform 0.1s;
+    
 
     &:active { transform: Scale(0.95); }
 

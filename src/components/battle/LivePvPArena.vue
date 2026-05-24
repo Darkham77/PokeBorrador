@@ -406,7 +406,7 @@ function handleForfeit() {
 .hp-fill {
   height: 100%;
   background: Rgba(48, 209, 88, 1);
-  transition: width 0.3s;
+  
 }
 
 .hp-text { font-size: 10px; text-align: right; color: Rgba(136, 136, 136, 1); }

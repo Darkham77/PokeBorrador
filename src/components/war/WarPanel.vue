@@ -174,7 +174,7 @@ const getFactionIcon = (faction: string) => {
   color: var(--gray);
   font-size: 24px;
   cursor: pointer;
-  transition: color 0.2s;
+  
   &:hover { color: white; }
 }
 
@@ -237,7 +237,7 @@ const getFactionIcon = (faction: string) => {
 
   .segment {
     height: 100%;
-    transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+    
     &.union { background: Rgba(59, 130, 246, 1); box-shadow: 0 0 20px Rgba(59, 130, 246, 0.4); }
     &.contested { background: Rgba(68, 68, 68, 1); }
     &.poder { background: Rgba(239, 68, 68, 1); box-shadow: 0 0 20px Rgba(239, 68, 68, 0.4); }
@@ -292,6 +292,6 @@ const getFactionIcon = (faction: string) => {
   .icon { font-size: 20px; }
 }
 
-.slide-up-enter-active, .slide-up-leave-active { transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+.slide-up-enter-active, .slide-up-leave-active {  }
 .slide-up-enter-from, .slide-up-leave-to { transform: Translatey(100%); opacity: 0; }
 </style>

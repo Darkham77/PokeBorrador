@@ -161,7 +161,7 @@ const formatBonus = (key: string, val: number | string | boolean | undefined) =>
     cursor: pointer;
     font-size: 16px;
     opacity: 0.6;
-    transition: opacity 0.2s;
+    
     &:hover { opacity: 1; }
   }
 }
@@ -184,7 +184,7 @@ const formatBonus = (key: string, val: number | string | boolean | undefined) =>
   border: 1px solid Rgba(255, 255, 255, 0.08);
   border-radius: 16px;
   padding: 20px;
-  transition: transform 0.2s;
+  
 
   &:hover { transform: Scale(1.01); border-color: Rgba(251, 191, 36, 0.4); }
 

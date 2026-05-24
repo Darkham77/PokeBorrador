@@ -293,7 +293,7 @@ onMounted(() => {
 .log-entry {
   padding-left: 6px;
   border-radius: 4px 0 0 4px;
-  transition: background 0.3s ease;
+  
   min-height: 28px !important;
   
   &:hover {

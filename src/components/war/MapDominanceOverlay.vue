@@ -98,7 +98,7 @@ const factionLabel = computed(() => {
     .fill {
       height: 100%;
       background: var(--blue);
-      transition: width 0.3s ease;
+      
     }
   }
 

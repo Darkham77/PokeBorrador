@@ -190,7 +190,7 @@ const consumeItem = (name: string) => {
   padding: 14px 18px;
   color: var(--white);
   cursor: pointer;
-  transition: all 0.2s;
+  
   text-align: left;
 
   &:hover {

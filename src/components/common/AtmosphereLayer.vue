@@ -299,17 +299,20 @@ const initWeatherAnim = () => {
   }
 
   // Fog / Mist / Wind / Heatwave / Sun / Cold / Coldwave / Intense Sun / Dust Storm
-  if (['fog', 'mist', 'wind', 'heatwave', 'sun', 'cold', 'coldwave', 'intense_sun', 'dust_storm'].includes(w)) {
+  // Fog / Mist / Wind / Strong Winds / Heatwave / Sun / Cold / Coldwave / Intense Sun / Dust Storm
+  if (['fog', 'mist', 'wind', 'strong_winds', 'heatwave', 'sun', 'cold', 'coldwave', 'intense_sun', 'dust_storm'].includes(w)) {
     const target = mistLayerRef.value
     if (target) {
       const hasPulse = ['heatwave', 'coldwave', 'intense_sun'].includes(w)
       const isMist = w === 'mist'
+      const isWind = w === 'wind'
+      const isStrongWind = w === 'strong_winds'
       const isDust = w === 'dust_storm'
       
-      // Solo aplicamos pulso de opacidad si no es Tormenta de Polvo (para evitar parpadeo GPU)
+      // Only apply opacity pulsing if it is not Dust Storm (to prevent GPU flickering)
       if (!isDust) {
-        let baseOpacity = isMist ? 0.4 : (hasPulse ? 0.5 : 0.8)
-        let maxOpacity = isMist ? 0.6 : (hasPulse ? 0.9 : 0.85)
+        let baseOpacity = isMist ? 0.4 : (isWind ? 0.15 : (isStrongWind ? 0.35 : (hasPulse ? 0.5 : 0.8)))
+        let maxOpacity = isMist ? 0.6 : (isWind ? 0.25 : (isStrongWind ? 0.5 : (hasPulse ? 0.9 : 0.85)))
         
         // In low power mode, we lose the foreground mist layer.
         // Increase the opacity of the remaining background layer to compensate.
@@ -330,33 +333,36 @@ const initWeatherAnim = () => {
           0
         )
       } else {
-        // Opacidad constante para T. Polvo para optimizar GPU
+        // Constant opacity for Dust Storm to optimize GPU
         gsap.set(target, { opacity: 0.8 })
       }
 
-      // Animación de desplazamiento (Drift)
-      if (['wind', 'fog', 'mist', 'dust_storm'].includes(w)) {
+      // Drift Animation
+      if (['wind', 'strong_winds', 'fog', 'mist', 'dust_storm'].includes(w)) {
         const isFoggy = ['fog', 'mist'].includes(w);
         const isDust = w === 'dust_storm';
-        const moveX = isFoggy ? 512 : -512; // Valor fijo, el CSS voltea
-        const moveY = isFoggy ? 512 : 0; // Solo diagonal en niebla/bruma, el resto horizontal
+        const isStrong = w === 'strong_winds';
+        const moveX = isFoggy ? 512 : -512; // Fixed value, CSS handles flipping
+        const moveY = isFoggy ? 512 : 0; // Only diagonal for fog/mist, horizontal for the rest
         
-        // Variación de velocidad por mapa (Global speedVar ya calculada al inicio)
-        const baseDur = isFoggy ? 80 : (isDust ? 3 : 8); // Reducido de 120 a 80 para que la niebla sea más dinámica
+        // Speed variation per map (Global speedVar already calculated at start)
+        // Vientos fuertes is faster (4s) than standard wind (8s)
+        const baseDur = isFoggy ? 80 : (isDust ? 3 : (isStrong ? 4 : 8));
         const dur = baseDur / speedVar;
 
-        // Capa 1 (Fondo: Más pequeña, MUCHO más lenta)
+        // Layer 1 (Background: Smaller, MUCH slower)
         const sX1 = (animSeed.value * 1234) % 256;
         const sY1 = (animSeed.value * 5678) % 256;
-        const varDur1 = dur * (2.5 + (animSeed.value * 0.5)); // Más lenta aún para profundidad
+        const varDur1 = dur * (2.5 + (animSeed.value * 0.5)); // Slower for depth
 
-        applyParallaxLayer(mistLayerRef.value, sX1, sY1, moveX * 0.3, moveY * 0.3, varDur1)
+        // Multiply by 0.5 instead of 0.3 to ensure moveX/moveY are multiples of 256px background size, preventing visual jumps on loop repeat
+        applyParallaxLayer(mistLayerRef.value, sX1, sY1, moveX * 0.5, moveY * 0.5, varDur1)
         
-        // Capa 2 (Frente: Más grande, más rápida)
+        // Layer 2 (Foreground: Larger, faster)
         if (!props.isLowPower) {
           const sX2 = (animSeed.value * 3456) % 512;
           const sY2 = (animSeed.value * 7890) % 512;
-          const varDur2 = dur * (0.6 + (animSeed.value * 0.2)); // Más rápida para resaltar el primer plano
+          const varDur2 = dur * (0.6 + (animSeed.value * 0.2)); // Faster to highlight foreground
 
           applyParallaxLayer(mistLayer2Ref.value, sX2, sY2, moveX, moveY, varDur2)
         }
@@ -591,7 +597,7 @@ const weatherOverlayStyles = computed(() => {
 
       <!-- Fog, Mist, Wind, Heatwave, Sun, Cold, Coldwave, Intense Sun -->
       <!-- Capas de Bruma/Niebla (Doble capa para parallax) -->
-      <template v-if="['fog', 'mist', 'wind', 'dust_storm'].includes(weather)">
+      <template v-if="['fog', 'mist', 'wind', 'strong_winds', 'dust_storm'].includes(weather)">
         <div
           ref="mistLayerRef"
           class="mist-layer layer-1"

@@ -70,7 +70,7 @@
       color: white;
       outline: none;
       font-size: 13px;
-      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      
       
       &:focus {
         border-color: var(--yellow);
@@ -288,7 +288,7 @@
         cursor: pointer;
         font-size: 14px;
         font-weight: bold;
-        transition: all 0.2s;
+        
         display: flex;
         align-items: center;
         justify-content: center;

@@ -63,7 +63,7 @@
     justify-content: center;
   }
 
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  
   @include will-animate(transform, opacity);
 
   & > * {
@@ -117,7 +117,7 @@
   pointer-events: none;
   z-index: var(--z-hud);
   transform: Translate3D(0, 0, 0);
-  transition: bottom 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  
   @include will-animate(bottom, transform);
   
   & > * {
@@ -161,6 +161,6 @@
 }
 
 .hud-container, .hud-sidebar-tools, .hud-bottom-wrapper {
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  
   @include will-animate(transform, opacity);
 }

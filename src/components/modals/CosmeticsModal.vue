@@ -349,7 +349,7 @@ const selectAvatar = (style: AvatarStyle) => {
   gap: 16px;
   cursor: pointer;
   will-change: transform, filter;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  
   position: relative;
 
   &:hover {
@@ -503,7 +503,7 @@ const selectAvatar = (style: AvatarStyle) => {
   padding: 6px 12px;
   border-radius: 8px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  
   display: flex;
   align-items: center;
   gap: 6px;

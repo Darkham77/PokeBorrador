@@ -89,7 +89,7 @@ const selectTab = (tabId: string) => {
 @use "@/styles/core/tools" as *;
 
 .fade-enter-active, .fade-leave-active {
-  transition: opacity 0.2s ease;
+  
 }
 .fade-enter-from, .fade-leave-to {
   opacity: 0;
@@ -155,7 +155,7 @@ const selectTab = (tabId: string) => {
     padding: 12px 16px; // Ajustado
     border-radius: 10px;
     cursor: pointer;
-    transition: all 0.2s ease;
+    
     @include pixelated;
     font-size: 12px;
     line-height: 1.2;

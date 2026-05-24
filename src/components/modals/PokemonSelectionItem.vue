@@ -300,7 +300,7 @@ function handleClick() {
 
   .hp-bar-fill {
     height: 100%;
-    transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    
     box-shadow: 0 0 10px Rgba(255,255,255,0.2);
   }
 

@@ -118,14 +118,12 @@
 
   &:hover:not(:disabled) {
     will-change: transform, filter, opacity;
-  filter: Brightness(1.1);
-    transform: Translatey(-1px) Translatez(0);
-    box-shadow: 0 ($depth + 1px) 0 $shadow;
+    filter: Brightness(1.1);
+    // Transform and box-shadow raising are handled by GSAP
   }
 
   &:active:not(:disabled) {
-    transform: Translatey(2px) Translatez(0);
-    box-shadow: 0 (max(0px, $depth - 2px)) 0 $shadow;
+    // Transform and box-shadow pressing are handled by GSAP
   }
 
   &.active {
@@ -199,21 +197,15 @@
   }
   
   &:hover {
-    transform: Scale(1.1);
-    transform-origin: center;
-    
+    // Scale and parent wrapper transitions are handled by GSAP
     & .close-icon-wrapper {
-      background: Rgba(239, 68, 68, 0.2);
-      border-color: Rgba(239, 68, 68, 0.3);
-
       &::before {
         color: #ef4444;
-        transform: Translate(-50%, -50%) Rotate(180deg);
       }
     }
   }
 
   &:active {
-    transform: Scale(0.9);
+    // Press shrink is handled by GSAP
   }
 }

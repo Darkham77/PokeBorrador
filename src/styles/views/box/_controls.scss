@@ -78,7 +78,6 @@
     line-height: 40px; 
     @include pixelated;
     outline: none;
-    transition: all 0.3s;
 
     &::placeholder {
       color: var(--gray);
@@ -105,7 +104,6 @@
     color: var(--gray);
     font-size: 10px;
     cursor: pointer;
-    transition: all 0.2s;
     @include pixelated;
     z-index: var(--z-low);
 
@@ -139,7 +137,6 @@
     cursor: pointer;
     border-radius: 8px;
     white-space: nowrap;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
     &:hover { color: var(--white); background: Rgba(255, 255, 255, 0.05); }
     &.active {

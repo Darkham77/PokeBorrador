@@ -147,7 +147,7 @@ const activeDisplayEvents = computed(() => {
 
 .banner-slide-enter-active,
 .banner-slide-leave-active {
-  transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+  
 }
 
 .banner-slide-enter-from {

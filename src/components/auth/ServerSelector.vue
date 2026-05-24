@@ -71,7 +71,7 @@ const emit = defineEmits<{
   cursor: pointer;
   font-size: 10px;
   @include pixelated;
-  transition: all 0.2s;
+  
   display: flex;
   align-items: center;
   justify-content: center;

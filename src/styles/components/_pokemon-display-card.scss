@@ -6,7 +6,7 @@
   @include premium-card-hover(var(--tier-color, $blue), 1.02, -5px);
   width: 100%;
   @include pokemon-card-standard(24px);
-  border-color: var(--tier-color, Rgba(255, 255, 255, 0.15)) !important;
+  border-color: var(--tier-color, Rgba(255, 255, 255, 0.15));
   padding: 10px;
   display: flex;
   flex-direction: column;
@@ -19,7 +19,7 @@
     &:active { cursor: grabbing; }
   }
 
-  & .pokemon-sprite { transition: all 0.4s ease; }
+  & .pokemon-sprite {  }
   &:hover .pokemon-sprite { @include pokemon-sprite-hover-standard; }
 
   &.is-premium-tier {
@@ -30,7 +30,7 @@
     background: Rgba(30, 41, 59, 0.6) !important;
     border: 1px solid var(--tier-color) !important;
     box-shadow: 0 4px 10px Rgba(0, 0, 0, 0.4) !important;
-    transition: none !important;
+    
 
     &::before, &::after { display: none !important; }
     animation: none !important;
@@ -209,7 +209,7 @@
 
     .hp-bar-inner {
       height: 100%;
-      transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+      
       @include will-animate(width);
       
       &.hp-high { background: Linear-Gradient(90deg, Rgba(34, 197, 94, 1), Rgba(134, 239, 172, 1)); }
@@ -260,7 +260,7 @@
       background: Rgba(255, 255, 255, 0.05);
       color: white;
       cursor: pointer;
-      transition: all 0.2s;
+      
 
       .emoji { font-size: 8px; }
 

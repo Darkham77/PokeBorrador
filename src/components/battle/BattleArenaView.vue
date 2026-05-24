@@ -625,7 +625,7 @@ const zoomOut = () => {
 /* Animaciones laterales diferenciadas */
 .hud-fade-enemy-enter-active, .hud-fade-enemy-leave-active,
 .hud-fade-player-enter-active, .hud-fade-player-leave-active { 
-  transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1), transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); 
+   
   @include gpu-layer;
 }
 
@@ -638,7 +638,7 @@ const zoomOut = () => {
   pointer-events: none;
 }
 
-.fade-overlay-enter-active, .fade-overlay-leave-active { transition: opacity 0.6s ease; }
+.fade-overlay-enter-active, .fade-overlay-leave-active {  }
 .fade-overlay-enter-from, .fade-overlay-leave-to { opacity: 0; }
 
 .trainer-entity {

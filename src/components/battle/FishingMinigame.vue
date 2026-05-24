@@ -330,7 +330,7 @@ onUnmounted(() => {
     @include pixelated;
     font-size: 18px;
     box-shadow: 0 0 20px Rgba(10, 132, 255, 0.4);
-    transition: all 0.2s ease;
+    
     z-index: calc(var(--z-map-floor) + 1);
     position: relative;
   }

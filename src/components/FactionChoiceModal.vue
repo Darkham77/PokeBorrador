@@ -153,7 +153,7 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
   flex-direction: column;
   align-items: center;
   gap: 16px;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  
   text-align: center;
 
   &.union-btn {

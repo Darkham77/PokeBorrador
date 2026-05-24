@@ -193,7 +193,7 @@ const vGsapShrink = {
   align-items: center;
   justify-content: center;
   cursor: crosshair;
-  transition: background 0.5s;
+  
   @include gpu-layer;
 
   &.fail {
@@ -284,7 +284,7 @@ const vGsapShrink = {
 
 
 .note-leave-active {
-  transition: all 0.2s ease;
+  
 }
 .note-leave-to {
   transform: Translate(-50%, -50%) Scale(1.5);

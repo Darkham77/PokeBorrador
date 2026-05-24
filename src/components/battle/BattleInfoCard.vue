@@ -727,7 +727,7 @@ const unifiedStatuses = computed<StatusIndicator[]>(() => {
   color: #ffd60a;
   text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
   box-shadow: 0 0 10px Rgba(255, 214, 10, 0.2);
-  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  
 
   &:hover {
     background: Rgba(255, 214, 10, 0.4);
@@ -754,7 +754,7 @@ const unifiedStatuses = computed<StatusIndicator[]>(() => {
   padding: 4px 6px;
   border-radius: 8px;
   background: #000000;
-  transition: all 0.2s ease;
+  
 
   &:hover {
     background: #1a1a1a;

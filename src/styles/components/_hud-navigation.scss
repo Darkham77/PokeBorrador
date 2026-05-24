@@ -68,7 +68,7 @@
   align-items: center;
   gap: 8px;
   min-width: 60px;
-  transition: all 0.2s;
+  
   position: relative;
 
   padding: 8px 12px;
@@ -85,12 +85,7 @@
 
   &:hover {
     background: Rgba(255, 255, 255, 0.12);
-    border-color: var(--yellow);
-    box-shadow: 
-      0 0 0 2px var(--yellow),
-      0 0 15px Rgba(255, 214, 10, 0.4);
     z-index: var(--z-base);
-    transform: Translatey(-2px);
   }
   
   &.active {
@@ -173,9 +168,6 @@
   
   &:hover { 
     background: Rgba(255, 255, 255, 0.1); 
-    border-color: var(--yellow);
-    box-shadow: 0 0 0 2px var(--yellow), 0 0 15px Rgba(255, 214, 10, 0.3);
-    transform: Translatex(6px);
     z-index: var(--z-base);
   }
   
@@ -196,8 +188,6 @@
   &.active .nav-item-label { color: var(--yellow); }
 
   &.war-shop-nav-btn:hover {
-    border-color: var(--red);
-    box-shadow: 0 0 0 2px var(--red), 0 0 15px Rgba(239, 68, 68, 0.3);
     .nav-item-label { color: var(--red); }
   }
 }

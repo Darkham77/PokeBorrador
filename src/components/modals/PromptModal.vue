@@ -113,7 +113,7 @@ const handleCancel = () => {
     font-family: 'Inter', sans-serif;
     font-size: 16px;
     outline: none;
-    transition: all 0.2s;
+    
     
     &:focus {
       border-color: var(--yellow);
@@ -135,7 +135,7 @@ const handleCancel = () => {
     font-weight: 700;
     @include pixelated;
     cursor: pointer;
-    transition: all 0.2s;
+    
     @include pixelated;
     
     &:active {

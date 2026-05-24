@@ -176,6 +176,7 @@ onUnmounted(() => {
     <!-- 2. POKÉMON (Grupo) -->
     <div 
       class="hud-group relative-box"
+      @mouseenter="uiStore.openHudGroup = 'POKEMON'"
       @mouseleave="uiStore.openHudGroup === 'POKEMON' && (uiStore.openHudGroup = null)"
     >
       <button
@@ -274,6 +275,7 @@ onUnmounted(() => {
     <!-- 6. MARKET (Grupo) -->
     <div 
       class="hud-group relative-box"
+      @mouseenter="uiStore.openHudGroup = 'MARKET'"
       @mouseleave="uiStore.openHudGroup === 'MARKET' && (uiStore.openHudGroup = null)"
     >
       <button
@@ -338,6 +340,7 @@ onUnmounted(() => {
     <!-- 7. SOCIAL (Grupo) -->
     <div 
       class="hud-group relative-box"
+      @mouseenter="uiStore.openHudGroup = 'SOCIAL'"
       @mouseleave="uiStore.openHudGroup === 'SOCIAL' && (uiStore.openHudGroup = null)"
     >
       <button

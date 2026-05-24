@@ -90,7 +90,7 @@ watch(() => props.item.sprite, () => {
   align-items: center;
   gap: 16px;
   cursor: pointer;
-  transition: all 0.2s;
+  
   position: relative;
 
   &:hover {
@@ -146,7 +146,7 @@ watch(() => props.item.sprite, () => {
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: all 0.2s;
+      
       
       &.checked {
         background: var(--yellow);

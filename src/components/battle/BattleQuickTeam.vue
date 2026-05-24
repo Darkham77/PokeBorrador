@@ -72,7 +72,7 @@ const handleSwitch = (index: number) => {
   justify-content: center;
   gap: 8px; // Gap consistente
   width: 100%;
-  padding: 4px;
+  padding: 12px 4px 6px 4px;
 }
 
 /* Overrides para integrar la tarjeta de la caja en el grid compacto de combate */
@@ -86,15 +86,8 @@ const handleSwitch = (index: number) => {
   -webkit-will-change: transform, opacity;
   will-change: transform, opacity;
   @include gpu-layer;
-  border: 1px solid var(--tier-color) !important; // MARCO DE GRADO OBLIGATORIO
+  border: 1px solid var(--tier-color); // MARCO DE GRADO OBLIGATORIO
   border-radius: 20px !important;
-  transition: all 0.2s ease !important;
-  
-  // Hover unificado premium (usa el color de grado)
-  &:hover {
-    z-index: var(--z-map-spawns);
-    box-shadow: 0 0 15px Rgba(var(--tier-color-rgb), 0.3) !important;
-  }
 
   &.is-active {
     border-color: var(--tier-color) !important;
@@ -102,7 +95,7 @@ const handleSwitch = (index: number) => {
     box-shadow: 
       0 0 20px Rgba(var(--tier-color-rgb), 0.4),
       inset 0 0 10px Rgba(var(--tier-color-rgb), 0.2) !important;
-    transform: Scale(0.98);
+    transform: Scale(0.98) !important;
   }
 
   &.is-fainted {

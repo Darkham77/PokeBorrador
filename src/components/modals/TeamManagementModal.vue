@@ -393,7 +393,7 @@ function selectAdventure(_slotIndex: number) {
   font-size: 8px;
   white-space: nowrap;
   flex-shrink: 0;
-  transition: all .2s;
+  
   letter-spacing: 1px;
   position: relative;
 

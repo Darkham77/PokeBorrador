@@ -93,7 +93,7 @@ async function addItem(item: ShopItem, qty = 10) {
   border: 1px solid transparent;
   border-radius: 14px;
   cursor: pointer;
-  transition: all 0.2s;
+  
 
   &:hover {
     background: Rgba(255, 255, 255, 0.07);

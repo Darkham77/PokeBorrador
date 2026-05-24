@@ -258,9 +258,7 @@
     
     &:hover {
       & .close-icon-wrapper {
-        background: Rgba(239, 68, 68, 0.95);
-        border-color: Rgba(239, 68, 68, 0.2);
-        
+        // Handled by GSAP
         &::before {
           color: $white;
         }

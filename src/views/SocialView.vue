@@ -123,7 +123,7 @@ onMounted(async () => {
   font-size: 8px;
   cursor: pointer;
   position: relative;
-  transition: all 0.2s;
+  
   display: flex;
   align-items: center;
   justify-content: center;
@@ -162,7 +162,7 @@ onMounted(async () => {
       background: Rgba(255, 184, 0, 0.05);
       border-radius: 8px;
       opacity: 0;
-      transition: opacity 0.3s;
+      
     }
 
     &:hover .glow-box, &.active .glow-box {

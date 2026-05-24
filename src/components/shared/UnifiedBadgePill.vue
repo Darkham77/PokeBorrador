@@ -139,16 +139,9 @@ const handleItemImageError = (e: Event) => {
       justify-content: center !important;
       height: 100%;
       line-height: 0;
-      transition: all 0.2s ease;
-
+      
       &:hover {
         cursor: pointer; // Unified pointer for all interactive badges
-        
-        .badge-icon {
-          will-change: transform, filter;
-          transform: Scale(1.3) !important;
-          filter: Brightness(1.2);
-        }
       }
     }
   }
@@ -229,7 +222,7 @@ const handleItemImageError = (e: Event) => {
     justify-content: center !important;
     @include flex-center;
     @include pixelated;
-    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    
     color: var(--badge-color, #ccc);
     font-weight: 900;
     line-height: 1;
@@ -238,11 +231,11 @@ const handleItemImageError = (e: Event) => {
     // NORMALIZACIÓN VISUAL ESTÁNDAR (MD, LG, XL)
     &.is-shiny { font-size: 0.85em; } 
     &.is-iv31 { font-size: 0.75em; letter-spacing: -0.5px; font-weight: 900; }
-    &.is-fav { font-size: 0.8em; transform: Scale(0.95); }
-    &.is-breed { font-size: 1.6em; transform: Scale(1.1); } 
-    &.is-competitive { font-size: 1.4em; transform: Scale(1.1); } 
-    &.is-box { font-size: 1.4em; transform: Scale(1.1); } 
-    &.is-trade { font-size: 1.3em; transform: Scale(1.1); } 
+    &.is-fav { font-size: 0.75em; }
+    &.is-breed { font-size: 1.76em; } 
+    &.is-competitive { font-size: 1.54em; } 
+    &.is-box { font-size: 1.54em; } 
+    &.is-trade { font-size: 1.43em; } 
     &.is-item { 
       font-size: 1.1em; 
     }
@@ -278,13 +271,6 @@ const handleItemImageError = (e: Event) => {
     &.is-locked {
       cursor: default !important;
       opacity: 0.9;
-    }
-
-    &:hover {
-      transform: Scale(1.3) !important;
-      will-change: transform, filter, opacity;
-  filter: Brightness(1.2);
-      z-index: calc(var(--z-low) + 1);
     }
 
     &.can-edit {

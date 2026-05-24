@@ -152,7 +152,7 @@ const formatRank = (index: number) => `#${index + 1}`;
   font-size: 6px;
   padding: 6px 10px;
   cursor: pointer;
-  transition: all 0.2s;
+  
 
   &:hover {
     color: var(--white);
@@ -177,7 +177,7 @@ const formatRank = (index: number) => `#${index + 1}`;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s;
+  
 
   &:hover:not(:disabled) {
     background: Rgba(255, 255, 255, 0.1);
@@ -207,7 +207,7 @@ const formatRank = (index: number) => `#${index + 1}`;
   background: Rgba(0, 0, 0, 0.2);
   border: 1px solid Rgba(255, 255, 255, 0.05);
   border-radius: 12px;
-  transition: transform 0.2s;
+  
 
   &.is-me {
     background: Rgba(107, 203, 119, 0.08);

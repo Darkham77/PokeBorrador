@@ -253,7 +253,7 @@ const getTypeEmoji = (type: string) => {
   cursor: pointer;
   background: transparent;
   color: var(--gray);
-  transition: all 0.2s;
+  
 }
 
 .mode-switch button.active {
@@ -282,7 +282,7 @@ const getTypeEmoji = (type: string) => {
   color: $white;
   font-size: 10px;
   outline: none;
-  transition: border-color 0.2s;
+  
 }
 
 .search-input:focus {

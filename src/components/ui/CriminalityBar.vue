@@ -95,7 +95,7 @@ const isMax = computed(() => criminality.value >= 100)
 .bar-fill {
   width: 100%;
   background: Rgba(239, 68, 68, 1);
-  transition: height 0.3s ease;
+  
   box-shadow: 0 0 15px Rgba(239, 68, 68, 1);
   position: relative;
 }
@@ -111,7 +111,7 @@ const isMax = computed(() => criminality.value >= 100)
 
 
 .slide-right-enter-active, .slide-right-leave-active {
-  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  
 }
 .slide-right-enter-from, .slide-right-leave-to {
   opacity: 0;

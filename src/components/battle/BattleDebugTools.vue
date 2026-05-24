@@ -776,7 +776,7 @@ const toggleStatus = (side: string, type: string) => {
   border-radius: 8px;
   background: Rgba(255, 255, 255, 0.03);
   border: 1px solid Rgba(255, 255, 255, 0.1);
-  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  
 
   .w-icon { font-size: 14px; }
   .w-label { 

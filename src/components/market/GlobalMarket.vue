@@ -218,7 +218,7 @@ async function refresh() {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s;
+  
   &:hover:not(:disabled) { background: Rgba(255, 255, 255, 0.1); transform: Rotate(45deg); }
   &:disabled { opacity: 0.5; cursor: wait; }
 }
@@ -238,7 +238,7 @@ async function refresh() {
   display: flex;
   align-items: center;
   gap: 10px;
-  transition: all 0.2s;
+  
   border-radius: 12px 12px 0 0;
 
   .t-icon { font-size: 14px; }

@@ -438,7 +438,7 @@ const rankTitle = computed(() => {
   cursor: help;
   color: Rgba(71, 85, 105, 1);
   font-size: 12px;
-  transition: color 0.2s;
+  
   &:hover { color: $white; }
 }
 
@@ -459,7 +459,7 @@ const rankTitle = computed(() => {
   color: $white;
   font-size: 9px;
   cursor: pointer;
-  transition: all 0.2s;
+  
   position: relative;
   overflow: hidden;
 

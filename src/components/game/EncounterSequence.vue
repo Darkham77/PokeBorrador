@@ -200,7 +200,7 @@ const handleFishingStart = () => {
   box-shadow: 0 4px 16px Rgba(59, 130, 246, 0.5);
   margin-top: 12px;
   width: 100%;
-  transition: transform 0.2s;
+  
   @include pixelated;
 
   &:hover {

@@ -200,7 +200,7 @@ const handleImageError = (e: Event) => {
   justify-content: space-between;
   align-items: center;
   height: 100%;
-  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  
   overflow: hidden;
   @include gpu-layer;
 
@@ -232,7 +232,7 @@ const handleImageError = (e: Event) => {
     inset: 0;
     background: Radial-Gradient(circle at center, var(--cls-color) 0%, transparent 70%);
     opacity: 0.05;
-    transition: opacity 0.4s;
+    
     pointer-events: none;
   }
 }
@@ -256,7 +256,7 @@ const handleImageError = (e: Event) => {
     height: 100%;
     object-fit: cover;
     @include sprite-render;
-    transition: transform 0.4s;
+    
   }
 }
 

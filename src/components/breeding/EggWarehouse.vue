@@ -145,7 +145,7 @@ const handleClaim = (egg: DaycareEgg) => {
   gap: 12px;
   position: relative;
   cursor: pointer;
-  transition: all 0.2s;
+  
   overflow: hidden;
 
   &:hover {
@@ -230,6 +230,6 @@ const handleClaim = (egg: DaycareEgg) => {
   padding: 8px 0;
   text-align: center;
   transform: Translatey(100%);
-  transition: transform 0.2s;
+  
 }
 </style>

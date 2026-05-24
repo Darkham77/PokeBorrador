@@ -129,6 +129,6 @@ const getIvColor = (val: number) => {
 
 .iv-label { width: 60px; font-size: 10px; color: Rgba(136, 136, 136, 1); }
 .iv-track { flex: 1; height: 6px; background: Rgba(0,0,0,0.4); border-radius: 3px; overflow: hidden; }
-.iv-fill { height: 100%; border-radius: 3px; transition: width 0.8s ease-out; }
+.iv-fill { height: 100%; border-radius: 3px;  }
 .iv-val { width: 24px; text-align: right; font-size: 11px; font-weight: bold; }
 </style>

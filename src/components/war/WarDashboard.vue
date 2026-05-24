@@ -275,7 +275,7 @@ onMounted(async () => {
     .fill {
       height: 100%;
       background: Linear-Gradient(90deg, Rgba(59, 130, 246, 1), Rgba(96, 165, 250, 1));
-      transition: width 0.5s ease-out;
+      
       box-shadow: 0 0 10px Rgba(59, 130, 246, 0.5);
     }
   }
@@ -301,7 +301,7 @@ onMounted(async () => {
         border: 2px solid var(--black);
         border-radius: 50%;
         margin-bottom: 4px;
-        transition: all 0.3s;
+        
       }
       
       .pt-label {

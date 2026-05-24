@@ -41,7 +41,7 @@
     border-radius: 10px;
     font-size: 12px;
     height: 32px;
-    transition: all 0.2s;
+    
 
     &:focus {
       outline: none;
@@ -108,7 +108,7 @@
   font-size: 7px;
   cursor: pointer;
   margin-top: 10px;
-  transition: all 0.2s;
+  
 
   &:hover { background: Rgba(124, 58, 237, 0.1); border-style: solid; color: var(--white); }
 }

@@ -54,6 +54,6 @@ const compatStyle = computed(() => props.compatText[props.compatibility.level] |
   }
 
   .compat-bar-bg { height: 6px; background: Rgba(0,0,0,0.4); border-radius: 3px; overflow: hidden; }
-  .compat-fill { height: 100%; background: var(--compat-color); box-shadow: 0 0 15px var(--compat-color); transition: width 0.8s; }
+  .compat-fill { height: 100%; background: var(--compat-color); box-shadow: 0 0 15px var(--compat-color);  }
 }
 </style>

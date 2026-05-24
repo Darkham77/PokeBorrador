@@ -73,7 +73,7 @@ const shadowStyle = computed(() => {
   background-repeat: no-repeat;
   @include pixelated;
   transform-origin: center center;
-  transition: opacity 0.8s ease;
+  
   will-change: opacity;
   pointer-events: none;
   z-index: calc(var(--z-base) - 1); // Detrás del pokemon

@@ -166,7 +166,7 @@ function removeMove(slotIndex: number) {
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      transition: all 0.2s;
+      
 
       &.btn-random-fill {
         background: Rgba(255, 170, 0, 0.1);
@@ -204,7 +204,7 @@ function removeMove(slotIndex: number) {
     justify-content: space-between;
     align-items: center;
     cursor: pointer;
-    transition: all 0.2s;
+    
 
     &:hover { background: Rgba(255, 255, 255, 0.1); }
     
@@ -290,7 +290,7 @@ function removeMove(slotIndex: number) {
         font-size: 11px;
         border-radius: 6px;
         cursor: pointer;
-        transition: all 0.2s;
+        
         
         &:hover { background: Rgba(124, 58, 237, 0.1); color: var(--vicio-primary); }
       }

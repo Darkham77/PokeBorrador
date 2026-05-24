@@ -49,7 +49,7 @@ const uiStore = useUIStore()
   padding: 8px;
   color: $white;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  
   min-width: 48px;
 
   span:not(:first-child) {

@@ -77,7 +77,7 @@ const handleImgError = (e: Event) => {
   pointer-events: auto; /* Tooltip needs pointer */
   @include gpu-layer;
   box-shadow: 0 4px 6px Rgba(0,0,0,0.3);
-  transition: all 0.3s ease;
+  
   cursor: help;
   @include gpu-layer;
 
@@ -123,7 +123,7 @@ const handleImgError = (e: Event) => {
 /* Transitions */
 .list-enter-active,
 .list-leave-active {
-  transition: all 0.5s ease;
+  
 }
 .list-enter-from,
 .list-leave-to {

@@ -156,7 +156,7 @@ const filteredMaps = computed(() => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  transition: all 0.2s;
+  
 
   &:hover:not(.disabled) {
     background: Rgba(255, 255, 255, 0.08);
@@ -193,11 +193,10 @@ const filteredMaps = computed(() => {
   padding: 10px;
   border-radius: 12px;
   border: 1px solid Rgba(255, 255, 255, 0.05);
-  transition: all 0.2s;
+  
 
   &:hover {
     background: Rgba(255, 255, 255, 0.06);
-    transform: Translatex(4px);
   }
 
   &.union { border-left: 4px solid Rgba(59, 130, 246, 1); }
@@ -266,7 +265,7 @@ const filteredMaps = computed(() => {
     font-size: 7px;
     font-weight: bold;
     color: white;
-    transition: width 0.5s ease;
+    
 
     &.union { background: Rgba(59, 130, 246, 1); box-shadow: inset 0 0 10px Rgba(0, 0, 0, 0.3); }
     &.poder { background: Rgba(239, 68, 68, 1); box-shadow: inset 0 0 10px Rgba(0, 0, 0, 0.3); }

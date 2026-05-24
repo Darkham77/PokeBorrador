@@ -146,7 +146,7 @@ button {
   padding: 10px 16px;
   border-radius: 12px;
   cursor: pointer;
-  transition: all 0.2s;
+  
   border: 1px solid;
 
   &:hover {

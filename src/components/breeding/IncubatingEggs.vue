@@ -219,7 +219,7 @@ const hatchEgg = (egg: PokemonEgg) => {
   flex-direction: column; /* Stack details row and status footer vertically */
   gap: 6px;
   position: relative;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  
   overflow: hidden;
   width: 100%;
   max-width: 450px;
@@ -274,7 +274,7 @@ const hatchEgg = (egg: PokemonEgg) => {
   font-size: 34px;
   position: relative;
   filter: Drop-Shadow(0 4px 6px Rgba(0, 0, 0, 0.3));
-  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  
 
   .shiny-star {
     position: absolute;
@@ -322,7 +322,7 @@ const hatchEgg = (egg: PokemonEgg) => {
   height: 100%;
   background: linear-gradient(90deg, #ff3366 0%, #a855f7 100%);
   border-radius: 99px;
-  transition: width 0.4s ease-out;
+  
 }
 
 .ready .progress-bar {

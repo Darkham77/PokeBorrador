@@ -65,7 +65,7 @@ const activeTab = ref('events'); // 'events' | 'ranked'
       cursor: pointer;
       padding: 10px 0;
       border-bottom: 2px solid transparent;
-      transition: all 0.2s;
+      
       &:hover { color: $white; }
       &.active {
         color: var(--yellow);

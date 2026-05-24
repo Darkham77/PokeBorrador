@@ -375,7 +375,7 @@ const handleImgError = (e: Event) => {
   font-size: 11px;
   font-weight: 700;
   cursor: pointer;
-  transition: all 0.2s;
+  
   
   &:hover:not(:disabled) { background: Rgba(255, 51, 102, 0.15); transform: Scale(1.05); }
   &:disabled { opacity: 0.5; cursor: not-allowed; }
@@ -401,7 +401,7 @@ const handleImgError = (e: Event) => {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  transition: border-color 0.3s;
+  
 
   &.completed {
     border-color: Rgba(34, 197, 94, 0.4);
@@ -568,7 +568,7 @@ const handleImgError = (e: Event) => {
       .progress-fill {
         height: 100%;
         background: Rgba(34, 197, 94, 1);
-        transition: width 0.3s;
+        
       }
     }
 

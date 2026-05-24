@@ -162,7 +162,7 @@ h3 {
   border-radius: 16px;
   color: Rgba(0, 0, 0, 1);
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
+  
 
   &:hover {
     transform: Scale(1.02);

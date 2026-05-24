@@ -201,7 +201,7 @@ const onEnter = (el: Element, done: () => void) => {
   gap: 0;
   position: relative;
   overflow: visible !important; 
-  z-index: var(--z-low);
+  z-index: var(--z-hud);
   
   @media (max-width: 959px) {
     padding: 0;
@@ -219,7 +219,7 @@ const onEnter = (el: Element, done: () => void) => {
   align-items: stretch; // Estirar para coincidir con la altura del centro
   justify-content: space-between;
   gap: 5px; // Gap mínimo entre zonas
-  transition: filter 0.4s ease, opacity 0.4s ease;
+  
   width: 100%;
   max-width: 100%;
   margin: 0;

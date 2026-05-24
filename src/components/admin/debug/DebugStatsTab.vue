@@ -303,7 +303,7 @@ function setPlayerClass(c: string) {
     background: transparent;
     color: var(--gray);
     cursor: pointer;
-    transition: all 0.2s;
+    
     display: flex;
     align-items: center;
     justify-content: center;
@@ -326,7 +326,7 @@ function setPlayerClass(c: string) {
     padding: 4px 10px;
     border-radius: 6px;
     cursor: pointer;
-    transition: all 0.2s;
+    
 
     &:hover {
       background: Rgba(239, 68, 68, 0.3);
@@ -361,7 +361,7 @@ function setPlayerClass(c: string) {
   border-radius: 8px;
   padding: 8px 4px;
   cursor: pointer;
-  transition: all 0.25s ease;
+  
   user-select: none;
   filter: Grayscale(100%);
   will-change: filter;

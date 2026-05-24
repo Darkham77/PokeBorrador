@@ -249,7 +249,7 @@ watch(
     font-size: 8px;
     cursor: pointer;
     border-radius: 8px;
-    transition: background 0.2s, color 0.2s, border-color 0.2s;
+    
     display: flex;
     align-items: center;
     justify-content: center;
@@ -294,7 +294,7 @@ watch(
 
   &.tab-mounting :deep(.trade-card),
   &.tab-mounting :deep(.claim-card) {
-    transition: none !important;
+    
   }
 }
 

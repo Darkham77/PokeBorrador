@@ -139,7 +139,7 @@ onMounted(() => {
   border: 1px solid Rgba(255, 255, 255, 0.05);
   position: relative;
   overflow: hidden;
-  transition: all 0.3s ease;
+  
   
   &:hover:not(.sold-out) {
     border-color: Rgba(239, 68, 68, 0.4);
@@ -231,7 +231,7 @@ onMounted(() => {
   @include pixelated;
   font-size: 8px;
   cursor: pointer;
-  transition: all 0.2s;
+  
   
   &:hover:not(:disabled) {
     background: Rgba(220, 38, 38, 1);

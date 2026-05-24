@@ -184,7 +184,7 @@ const getStatLabel = (key: string) => {
 .fill {
   height: 100%;
   border-radius: inherit;
-  transition: width 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  
 }
 
 .main-track {

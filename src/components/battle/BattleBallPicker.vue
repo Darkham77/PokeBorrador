@@ -247,16 +247,14 @@ onUnmounted(() => {
   transform-origin: center center;
   transform-style: preserve-3d;
   will-change: transform, filter, box-shadow;
-  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  
 
   &:hover:not(:disabled) {
-    transform: Scale(1.1) Rotate(5deg);
     filter: Brightness(1.1);
     box-shadow: 0 10px 20px Rgba(0,0,0,0.5), Inset 0 -3px 0 Rgba(0,0,0,0.1) !important;
   }
 
   &:active:not(:disabled) {
-    transform: Scale(0.9);
   }
 
   &:disabled {
@@ -368,7 +366,7 @@ onUnmounted(() => {
   text-align: left;
   position: relative;
   overflow: hidden;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  
 
   .ball-sprite-wrapper {
     width: 36px;

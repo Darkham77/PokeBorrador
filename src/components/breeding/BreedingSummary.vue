@@ -311,7 +311,7 @@ onUnmounted(() => {
   background: Rgba(0,0,0,0.2);
   border-radius: 10px;
   border: 1px solid transparent;
-  transition: all 0.3s;
+  
   cursor: help;
   
   .label {

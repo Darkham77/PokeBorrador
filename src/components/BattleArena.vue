@@ -425,7 +425,7 @@ const handleClose = () => {
 }
 :deep(#move-panel) { 
   grid-area: moves; 
-  z-index: var(--z-low); 
+  z-index: var(--z-hud); 
   border-top: 1px solid Rgba(255, 255, 255, 0.2);
   box-shadow: inset 0 10px 20px Rgba(0, 0, 0, 0.4);
   margin-top: -1px; // Solapamiento para evitar fugas de luz

@@ -77,7 +77,7 @@ const containerStyle = computed(() => ({
   background-position: center;
   background-repeat: no-repeat;
   @include pixelated;
-  transition: all 0.2s ease;
+  
   position: relative;
   display: flex;
   align-items: center;

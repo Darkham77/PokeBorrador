@@ -105,7 +105,7 @@ const close = () => {
   justify-content: space-between;
   align-items: center;
   cursor: pointer;
-  transition: all 0.2s;
+  
   color: var(--white);
 
   &:hover { 

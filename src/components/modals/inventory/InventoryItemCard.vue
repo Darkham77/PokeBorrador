@@ -66,64 +66,13 @@ const itemFontSize = computed(() => {
   return `clamp(${minFontSize}px, calc(72cqw / ${divisor}), ${maxFontSize}px)`
 })
 
-// ── GSAP HOVER HANDLERS ──────────────────────────────────────────────────────
-
-function handleMouseEnter() {
-  if (!cardRef.value || props.isSelected) return
-  
+const tierColor = computed(() => {
   const tier = props.item.tier || 'common'
-  let accentColor = 'var(--yellow)'
-  if (tier === 'rare') accentColor = '#3b82f6'
-  else if (tier === 'epic') accentColor = '#a855f7'
-  
-  const glowOpacity = tier === 'legend' ? '0.7' : '0.8'
-  
-  gsap.to(cardRef.value, {
-    y: -4,
-    scale: 1.02,
-    borderColor: accentColor,
-    boxShadow: `0 20px 40px Rgba(0, 0, 0, 0.6), inset 0 30px 60px -20px color-mix(in srgb, ${accentColor}, transparent 80%), 0 0 20px color-mix(in srgb, ${accentColor}, transparent ${glowOpacity})`,
-    duration: 0.4,
-    ease: 'back.out(1.275)'
-  })
-  
-  const sprite = cardRef.value.querySelector('.item-sprite')
-  if (sprite) {
-    gsap.to(sprite, {
-      scale: 1.1,
-      duration: 0.3,
-      ease: 'power2.out'
-    })
-  }
-}
-
-function handleMouseLeave() {
-  if (!cardRef.value || props.isSelected) return
-  
-  const tier = props.item.tier || 'common'
-  let baseBorderColor = 'Rgba(255, 255, 255, 0.05)'
-  if (tier === 'rare') baseBorderColor = 'Rgba(59, 130, 246, 0.2)'
-  else if (tier === 'epic') baseBorderColor = 'Rgba(168, 85, 247, 0.2)'
-  else if (tier === 'legend') baseBorderColor = 'Rgba(245, 158, 11, 0.2)'
-
-  gsap.to(cardRef.value, {
-    y: 0,
-    scale: 1,
-    borderColor: baseBorderColor,
-    boxShadow: '0 10px 40px Rgba(0, 0, 0, 0.8)',
-    duration: 0.4,
-    ease: 'power2.out'
-  })
-
-  const sprite = cardRef.value.querySelector('.item-sprite')
-  if (sprite) {
-    gsap.to(sprite, {
-      scale: 1,
-      duration: 0.3,
-      ease: 'power2.out'
-    })
-  }
-}
+  if (tier === 'rare') return '#3b82f6'
+  if (tier === 'epic') return '#a855f7'
+  if (tier === 'legend') return 'var(--yellow)'
+  return 'var(--yellow)'
+})
 
 // ── WATCHERS FOR SELECTION STATE ─────────────────────────────────────────────
 
@@ -206,9 +155,8 @@ onMounted(() => {
       'multi-mode': multiSelectMode,
       [tierClass]: true
     }"
+    :style="{ '--tier-color': tierColor }"
     @click.stop="$emit('click', $event)"
-    @mouseenter="handleMouseEnter"
-    @mouseleave="handleMouseLeave"
   >
     <PVTooltip
       :title="item.name"

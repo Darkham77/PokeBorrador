@@ -25,7 +25,7 @@
   gap: 12px;
   pointer-events: none;
   transform: Translatez(0);
-  transition: bottom 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  
 
   /* Ensure items are clickable even if the container is passthrough */
   :deep(> *) {

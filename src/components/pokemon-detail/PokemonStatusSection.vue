@@ -178,7 +178,7 @@ const abilityStyle = computed(() => ({
 
 .progress-inner { 
   height: 100%; 
-  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  
   box-shadow: 0 0 10px currentColor;
   @include will-animate(width);
 }
@@ -209,7 +209,7 @@ const abilityStyle = computed(() => ({
   justify-content: center;
   text-align: center;
   border: 1px solid Rgba(255, 255, 255, 0.08);
-  transition: transform 0.2s;
+  
   cursor: help;
   min-height: 70px; // Ensure consistent height
 

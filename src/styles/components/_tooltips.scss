@@ -17,7 +17,6 @@
   max-width: min(350px, 90dvw);
   white-space: normal;
   word-wrap: break-word;
-  transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1), transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   transform: Translatey(10px) Translatex(-50%) Translatez(0);
   left: 50%;
   bottom: 125%;
@@ -151,7 +150,6 @@
   width: 240px;
   opacity: 0;
   visibility: hidden;
-  transition: all 0.25s cubic-bezier(0.18, 0.89, 0.32, 1.28);
   text-align: left;
   white-space: normal;
   will-change: transform, filter, opacity;
@@ -196,7 +194,6 @@
   cursor: pointer;
   pointer-events: auto !important;
   font-size: 14px;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   -webkit-user-select: none;
   user-select: none;
   margin-left: 8px;

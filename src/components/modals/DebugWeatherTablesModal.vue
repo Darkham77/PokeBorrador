@@ -297,7 +297,7 @@ function formatRouteName(id: string) {
   display: flex;
   align-items: center;
   gap: 8px;
-  transition: all 0.2s ease;
+  
   white-space: nowrap;
 
   .region-dot {
@@ -421,7 +421,7 @@ function formatRouteName(id: string) {
   background: Rgba(255, 255, 255, 0.02);
   border-radius: 8px;
   border: 1px solid Rgba(255, 255, 255, 0.04);
-  transition: all 0.3s ease;
+  
 
   &:hover {
     background: Rgba(255, 255, 255, 0.05);

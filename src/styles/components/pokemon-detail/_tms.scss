@@ -48,7 +48,7 @@
         padding: 6px 8px;
         border-radius: 6px;
         cursor: pointer;
-        transition: all 0.2s;
+        
         
         &.active {
           background: var(--yellow);
@@ -73,7 +73,7 @@
       background: Rgba(255,255,255,0.04);
       border-radius: 16px;
       border: 1px solid Rgba(255,255,255,0.05);
-      transition: all 0.2s;
+      
       
       &.incompatible {
         opacity: 0.4;

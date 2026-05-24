@@ -84,7 +84,7 @@
   cursor: pointer;
   position: relative;
   overflow: hidden;
-  border-color: var(--tier-color, Rgba(255, 255, 255, 0.1)) !important;
+  border-color: var(--tier-color, Rgba(255, 255, 255, 0.1));
 
   @include responsive(768px) {
     flex-direction: column;
@@ -134,7 +134,7 @@
       font-size: 11px;
       @include pixelated;
       cursor: pointer;
-      transition: all 0.2s;
+      
       
       &:hover {
         background: Rgba(255, 255, 255, 0.1);
@@ -216,7 +216,7 @@
   cursor: pointer;
   position: relative;
   overflow: hidden;
-  border-color: var(--tier-color, Rgba(255, 255, 255, 0.1)) !important;
+  border-color: var(--tier-color, Rgba(255, 255, 255, 0.1));
 
   &.is-premium-tier {
     @include pokemon-card-premium-tier;

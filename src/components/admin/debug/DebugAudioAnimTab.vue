@@ -449,7 +449,7 @@ const isEffectActive = (type: string, category: string) => {
     font-size: 8px;
     border-radius: 8px;
     cursor: pointer;
-    transition: all 0.2s;
+    
 
     &.active {
       background: var(--purple);
@@ -495,7 +495,7 @@ const isEffectActive = (type: string, category: string) => {
   gap: 8px;
   @include pixelated;
   font-size: 7px;
-  transition: all 0.2s;
+  
 
   &:hover {
     background: Rgba(255, 255, 255, 0.08);
@@ -528,7 +528,7 @@ const isEffectActive = (type: string, category: string) => {
   align-items: center;
   justify-content: space-between;
   margin-bottom: 8px;
-  transition: all 0.2s;
+  
 
   &:hover {
     background: Rgba(255, 255, 255, 0.08);
@@ -597,7 +597,7 @@ const isEffectActive = (type: string, category: string) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s;
+  
   
   &:hover {
     background: var(--purple);

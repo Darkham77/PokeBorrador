@@ -159,7 +159,7 @@ const handleMove = (targetBoxIndex: number) => {
   padding: 1px;
   position: relative;
   cursor: pointer;
-  transition: all 0.3s Cubic-Bezier(0.4, 0, 0.2, 1);
+  
   border-radius: 12px;
   overflow: hidden;
   display: flex;
@@ -182,7 +182,7 @@ const handleMove = (targetBoxIndex: number) => {
     inset: 0;
     background: Radial-Gradient(circle at center, Rgba(255,255,255,0.05) 0%, transparent 70%);
     opacity: 0;
-    transition: opacity 0.3s ease;
+    
     z-index: calc(var(--z-base) - 1);
   }
 
@@ -216,7 +216,7 @@ const handleMove = (targetBoxIndex: number) => {
     @include pixelated;
     font-size: 10px;
     color: var(--white);
-    transition: color 0.3s ease;
+    
   }
 
   .box-stats {

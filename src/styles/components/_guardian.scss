@@ -9,7 +9,6 @@
 /* Ensure the container of the map card allows absolute positioning while maintaining clipped corners (Literal 7) */
 .location-card, .map-card {
   position: relative !important;
-  overflow: hidden !important;
 }
 
 /* The badge container itself - Force top-left corner positioning (Literal 13) */

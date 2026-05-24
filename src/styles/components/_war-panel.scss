@@ -59,7 +59,7 @@ $poder-color: var(--red);
   background: Rgba(255, 255, 255, 0.03);
   border: 1px solid Rgba(255, 255, 255, 0.06);
   border-radius: 20px;
-  transition: all 0.2s;
+  
 
   &:hover {
     background: Rgba(255, 255, 255, 0.06);
@@ -86,7 +86,7 @@ $poder-color: var(--red);
   background-position: center bottom;
   border: 1px solid Rgba(255, 255, 255, 0.06);
   box-shadow: 0 15px 35px Rgba(0, 0, 0, 0.4);
-  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  
 
   &:hover {
     transform: Translatey(-8px) scale3d(1.02, 1.02, 1);
@@ -113,6 +113,6 @@ $poder-color: var(--red);
   display: flex;
   box-shadow: inset 0 2px 4px Rgba(0, 0, 0, 0.5);
 
-  .bar-union { height: 100%; transition: width 0.5s ease; background: var(--blue); box-shadow: 0 0 10px var(--blue); }
-  .bar-poder { height: 100%; transition: width 0.5s ease; background: var(--red); box-shadow: 0 0 10px var(--red); }
+  .bar-union { height: 100%;  background: var(--blue); box-shadow: 0 0 10px var(--blue); }
+  .bar-poder { height: 100%;  background: var(--red); box-shadow: 0 0 10px var(--red); }
 }

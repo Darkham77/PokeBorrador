@@ -150,7 +150,7 @@ const startMode = (mode: string) => {
       padding: 8px 36px 8px 36px;
       color: white;
       font-size: 13px;
-      transition: all 0.2s;
+      
 
       &:focus {
         background: Rgba(0, 0, 0, 0.4);

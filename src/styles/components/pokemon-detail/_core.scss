@@ -25,13 +25,8 @@
       z-index: var(--z-base);
       will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 20px 40px Rgba(0,0,0,0.7));
-      transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      transform: Translatey($sprite-translate); 
       
-      &:hover {
-        transform: Scale(1.05) Translatey(calc($sprite-translate - 5%));
-        @include pixelated;
-      }
+      transform: Translatey($sprite-translate); 
     }
     
     .sprite-glow {
@@ -76,21 +71,15 @@
     gap: 6px;
     color: Rgba(255,255,255,0.3);
     cursor: pointer;
-    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    
     position: relative;
     
-    i.tab-icon { font-size: 18px; transition: transform 0.3s; }
+    i.tab-icon { font-size: 18px;  }
     .tab-label { font-size: 9px; font-weight: 800; letter-spacing: 0.5px; }
-    
-    &:hover:not(.active) { 
-      color: Rgba(255,255,255,0.7);
-      background: Radial-Gradient(circle at bottom, Rgba(255,255,255,0.06) 0%, transparent 80%);
-      i.tab-icon { transform: Translatey(-3px); }
-    }
     
     &.active {
       color: var(--yellow);
-      background: Radial-Gradient(circle at bottom, Rgba(var(--type-color-rgb), 0.15) 0%, transparent 70%);
+      background: radial-gradient(circle at bottom, Rgba(var(--type-color-rgb), 0.15) 0%, transparent 70%);
       transform: Translatey(-2px);
       
       &::after {

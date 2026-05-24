@@ -149,7 +149,7 @@ const confirmRelease = () => {
   background: Rgba(34, 34, 34, 1);
   border: 3px solid Rgba(68, 68, 68, 1);
   color: var(--white);
-  transition: all 0.1s;
+  
 }
 
 .legacy-btn:hover {
@@ -185,7 +185,7 @@ const confirmRelease = () => {
 
 /* Transitions */
 .pixel-slide-enter-active, .pixel-slide-leave-active {
-  transition: all 0.2s steps(4);
+  
 }
 .pixel-slide-enter-from, .pixel-slide-leave-to {
   opacity: 0;

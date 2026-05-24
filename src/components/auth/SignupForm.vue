@@ -71,7 +71,7 @@ const handleSignup = () => {
   font-family: 'Nunito', sans-serif;
   font-size: 16px;
   outline: none;
-  transition: all 0.2s;
+  
   box-sizing: border-box;
   width: 100%;
 }
@@ -89,7 +89,7 @@ const handleSignup = () => {
   @include pixelated;
   font-size: 12px;
   cursor: pointer;
-  transition: all 0.2s;
+  
   margin-top: 8px;
   display: flex;
   align-items: center;

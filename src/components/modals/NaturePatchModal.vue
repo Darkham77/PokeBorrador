@@ -101,7 +101,7 @@ const close = () => {
     padding: 14px;
     text-align: left;
     cursor: pointer;
-    transition: all 0.2s;
+    
 
     &:hover { 
       background: Rgba(255,255,255,0.06); 

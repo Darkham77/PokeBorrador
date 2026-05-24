@@ -65,7 +65,7 @@ const emit = defineEmits<{
   box-shadow: 0 4px 0 Rgba(0, 0, 0, 0.3);
   border: 1px solid Rgba(255, 255, 255, 0.2);
   cursor: pointer;
-  transition: all 0.2s;
+  
   
   &.reclaim-btn {
     background: var(--green);
@@ -91,7 +91,7 @@ const emit = defineEmits<{
   cursor: pointer;
   text-decoration: underline;
   margin-top: 8px;
-  transition: opacity 0.2s;
+  
   
   &:hover {
     opacity: 1;

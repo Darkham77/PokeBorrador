@@ -196,7 +196,7 @@ const handleZoomInput = (e: Event) => {
   font-weight: 800;
   cursor: pointer;
   @include pixelated;
-  transition: all 0.2s ease;
+  
 
   &:hover {
     background: Rgba(255, 255, 255, 0.1);

@@ -203,7 +203,7 @@ const handleConfirm = () => {
       color: white;
       font-size: 20px;
       cursor: pointer;
-      transition: all 0.2s;
+      
 
       &:hover:not(:disabled) {
         background: Rgba(255, 255, 255, 0.1);

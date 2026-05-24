@@ -204,7 +204,7 @@ onMounted(() => {
     font-size: 8px;
     cursor: pointer;
     border-radius: 12px;
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    
     position: relative;
     font-weight: bold;
     white-space: nowrap;

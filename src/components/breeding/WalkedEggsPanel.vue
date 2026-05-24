@@ -236,11 +236,10 @@ function hatchEgg(egg: PokemonEgg): void {
   min-width: 160px;
   cursor: default;
   outline: none;
-  transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+  
 
   &:hover {
     border-color: Rgba(255, 255, 255, 0.15);
-    transform: Translatey(-2px);
     box-shadow:
       0 12px 30px Rgba(0, 0, 0, 0.55),
       inset 0 1px 1px Rgba(255, 255, 255, 0.08);
@@ -260,7 +259,6 @@ function hatchEgg(egg: PokemonEgg): void {
       box-shadow:
         0 12px 30px Rgba(0, 0, 0, 0.55),
         0 0 20px Rgba(34, 197, 94, 0.14);
-      transform: Translatey(-3px);
     }
 
     &:focus-visible {
@@ -333,7 +331,7 @@ function hatchEgg(egg: PokemonEgg): void {
   border-radius: 99px;
   // Subdued violet gradient — less saturated than before
   background: linear-gradient(90deg, Rgba(168, 85, 247, 0.7) 0%, Rgba(99, 102, 241, 0.7) 100%);
-  transition: width 0.5s ease-out;
+  
 
   .is-ready & {
     background: linear-gradient(90deg, Rgba(34, 197, 94, 0.75) 0%, Rgba(16, 185, 129, 0.75) 100%);

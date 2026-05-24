@@ -75,7 +75,7 @@ const formatNum = (num: number) => formatCurrency(num)
   display: flex;
   flex-direction: column;
   gap: 10px;
-  transition: all 0.2s ease;
+  
   @include gpu-layer;
 
   &:hover {

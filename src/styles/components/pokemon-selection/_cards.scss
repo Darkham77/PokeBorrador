@@ -53,7 +53,7 @@
     z-index: var(--z-base);
     will-change: transform, filter, opacity;
     filter: Drop-Shadow(0 4px 8px Rgba(0,0,0,0.5));
-    transition: transform 0.3s ease;
+    
   }
 }
 
@@ -159,7 +159,7 @@
   align-items: center;
   justify-content: center;
   color: var(--blue);
-  transition: all 0.2s;
+  
 }
 
 .selected .check-circle {

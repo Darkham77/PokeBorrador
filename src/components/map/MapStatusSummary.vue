@@ -47,6 +47,7 @@ const bannerStyle = computed(() => ({
     <!-- Carta Centro Pokémon (Izq: 50%) -->
     <div class="pc-left">
       <div
+        v-gsap-hover="{ scale: 1.02, y: -6, duration: 0.25 }"
         class="pokecenter-banner"
         @click.stop="emit('openCenter')"
       >
@@ -71,6 +72,7 @@ const bannerStyle = computed(() => ({
       <div class="pc-banner-grid">
         <!-- 1. Evento -->
         <div
+          v-gsap-hover="{ scale: 1.02, y: -4, duration: 0.25 }"
           class="pc-banner event-banner"
           :class="{ active: rivalEventActive }"
           :style="{ '--card-seed': 0.2 }"
@@ -99,6 +101,7 @@ const bannerStyle = computed(() => ({
 
         <!-- 2. Misiones -->
         <div
+          v-gsap-hover="{ scale: 1.02, y: -4, duration: 0.25 }"
           class="pc-banner"
           @click.stop="emit('openTab', 'daycare-missions')"
         >
@@ -148,6 +151,7 @@ const bannerStyle = computed(() => ({
 
         <!-- 3. Gimnasios -->
         <div
+          v-gsap-hover="{ scale: 1.02, y: -4, duration: 0.25 }"
           class="pc-banner"
           @click.stop="emit('openTab', 'gyms')"
         >
@@ -187,6 +191,7 @@ const bannerStyle = computed(() => ({
 
         <!-- 4. Crianza -->
         <div
+          v-gsap-hover="{ scale: 1.02, y: -4, duration: 0.25 }"
           class="pc-banner"
           @click.stop="emit('openTab', 'daycare')"
         >
@@ -249,7 +254,7 @@ const bannerStyle = computed(() => ({
   border-radius: 20px;
   position: relative;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  
   box-shadow: 0 10px 40px Rgba(0,0,0,0.6), inset 0 0 15px Rgba(0,0,0,0.5);
   border: 4px solid Rgba(255, 0, 127, 1) !important;
   overflow: hidden; // Crucial para que la imagen siga la curva
@@ -276,11 +281,7 @@ const bannerStyle = computed(() => ({
   }
 
   &:hover {
-    transform: Translatey(-6px);
     border-color: var(--yellow) !important;
-    box-shadow: 
-      0 20px 50px Rgba(0, 0, 0, 0.7), 
-      0 0 30px Rgba(255, 214, 10, 0.5);
   }
 }
 
@@ -347,7 +348,7 @@ const bannerStyle = computed(() => ({
   gap: 16px;
   position: relative;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  
   min-height: 85px;
   
   border: 1px solid Rgba(255, 255, 255, 0.1);
@@ -363,11 +364,6 @@ const bannerStyle = computed(() => ({
   &:hover {
     background: Rgba(255, 255, 255, 0.12);
     border-color: var(--yellow);
-    box-shadow: 
-      0 0 0 1px var(--yellow), 
-      0 12px 30px Rgba(0, 0, 0, 0.6), 
-      0 0 20px Rgba(255, 214, 10, 0.4);
-    transform: Translatey(-4px);
     z-index: calc(var(--z-base) + 5);
   }
 
@@ -475,7 +471,7 @@ const bannerStyle = computed(() => ({
     height: 32px;
     object-fit: contain;
     @include sprite-render;
-    transition: none !important;
+    
     transform: Translatez(0);
   }
 
@@ -536,10 +532,6 @@ const bannerStyle = computed(() => ({
         Rgba(30, 41, 59, 0.95) 100%
       ) !important;
       border-color: var(--yellow) !important;
-      box-shadow: 
-        0 0 0 2px var(--yellow), 
-        0 15px 40px Rgba(0, 0, 0, 0.7), 
-        0 0 35px Rgba(255, 214, 10, 0.6);
     }
   }
 }

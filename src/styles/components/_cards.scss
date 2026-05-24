@@ -6,7 +6,7 @@
   @include card-premium;
   padding: spacing(5);
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  
   border: 1px solid Rgba(255, 255, 255, 0.08);
   position: relative;
   overflow: hidden;
@@ -25,14 +25,13 @@
     background-repeat: no-repeat;
     will-change: transform, filter, opacity;
     z-index: var(--z-base);
-    transition: transform 0.6s ease, filter 0.4s ease;
+    
   }
 
   &:hover {
     @include premium-card-hover($yellow, 1.05, -8px);
     
     &::before {
-      transform: scale3d(1.1, 1.1, 1);
       will-change: transform, filter, opacity;
     }
   }
@@ -57,7 +56,6 @@
   
   &:hover:not(.gym-defeated):not(.gym-locked) {
     @include premium-card-hover($red, 1.05, 0px);
-    transform: Translate3d(6px, 0, 0) Scale(1.02) !important;
   }
 
   &.gym-defeated {

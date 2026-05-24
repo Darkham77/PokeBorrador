@@ -228,7 +228,7 @@ const handleSwitch = () => {
   @include pixelated;
   font-size: 8px;
   cursor: pointer;
-  transition: all 0.2s;
+  
   
   &.switch {
     background: Rgba(51, 65, 85, 1);
