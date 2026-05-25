@@ -82,6 +82,32 @@ const moveNameEs = computed(() => {
   return (moveTranslations as Record<string, string>)[cleanId] || move.value.name;
 });
 
+const GEN3_CUT_MOVES_TRANSLATIONS: Record<string, string> = {
+  flash: 'Disminuye la precisión del objetivo en un nivel.',
+  cut: 'Causa daño al oponente sin efectos secundarios adicionales.',
+  strength: 'Causa daño al oponente sin efectos secundarios adicionales.',
+  rocksmash: 'Puede reducir la Defensa del oponente en un nivel (50% de probabilidad).',
+  secretpower: 'Tiene un 30% de probabilidad de causar un efecto secundario según el terreno.',
+  dive: 'El usuario se sumerge en el primer turno y ataca en el segundo.',
+  dig: 'El usuario se entierra en el primer turno y ataca en el segundo.',
+  fly: 'El usuario vuela alto en el primer turno y ataca en el segundo.',
+  waterfall: 'Causa daño al oponente sin efectos secundarios adicionales.',
+  hiddenpower: 'Su tipo y potencia base varían según los valores individuales (IVs) del usuario.',
+  return: 'Su potencia base es mayor cuanto más feliz sea el Pokémon con su entrenador (hasta 102).',
+  frustration: 'Su potencia base es mayor cuanto menos feliz sea el Pokémon con su entrenador (hasta 102).',
+  pursuit: 'Inflige el doble de daño si el oponente intenta retirarse de la batalla este turno.',
+  signalbeam: 'Puede confundir al objetivo (10% de probabilidad).',
+  karatechop: 'Tiene una alta probabilidad de asestar un golpe crítico.',
+  cometpunch: 'Ataca de 2 a 5 veces consecutivas en el mismo turno.',
+  doubleslap: 'Ataca de 2 a 5 veces consecutivas en el mismo turno.',
+  barrage: 'Ataca de 2 a 5 veces consecutivas en el mismo turno.',
+  spikecannon: 'Ataca de 2 a 5 veces consecutivas en el mismo turno.',
+  furyattack: 'Ataca de 2 a 5 veces consecutivas en el mismo turno.',
+  pinmissile: 'Ataca de 2 a 5 veces consecutivas en el mismo turno.',
+  bonerush: 'Ataca de 2 a 5 veces consecutivas en el mismo turno.',
+  mudslap: 'Causa daño e inflige una reducción de precisión del 100% al oponente.'
+};
+
 // Descripción oficial en español
 const moveDesc = computed(() => {
   if (!move.value) return '';
@@ -93,14 +119,20 @@ const moveDesc = computed(() => {
     return getMoveDescription(nameEs, gameMoveData);
   }
   
-  // Fallback a descripciones oficiales en español de PokeAPI para Showdown Sandbox
   const cleanId = move.value.id.toLowerCase().replace(/[^a-z0-9]/g, '');
+  
+  // Si es un movimiento cortado en generaciones modernas de PokeAPI, usar mapeo clásico Gen 3
+  if (GEN3_CUT_MOVES_TRANSLATIONS[cleanId]) {
+    return GEN3_CUT_MOVES_TRANSLATIONS[cleanId];
+  }
+  
+  // Fallback a descripciones oficiales en español de PokeAPI para Showdown Sandbox
   const translatedDesc = (moveDescriptions as Record<string, string>)[cleanId];
-  if (translatedDesc) {
+  if (translatedDesc && !translatedDesc.includes('no se puede usar')) {
     return translatedDesc;
   }
   
-  // Fallback si no está en ninguna base de datos
+  // Fallback si no está en ninguna base de datos o si tiene el leak de inutilizable
   return move.value.shortDesc || move.value.desc || 'Causa daño al oponente sin efectos secundarios adicionales.';
 });
 
