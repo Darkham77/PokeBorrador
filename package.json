@@ -51,6 +51,7 @@
     "validate:sandbox": "node --permission --experimental-strip-types --allow-fs-read=. --allow-fs-write=. scripts/validate_sandbox_moves_tooltip.ts",
     "validate:sandbox:summary": "npm run validate:sandbox -- --summary",
     "validate:sandbox:report": "npm run validate:sandbox -- --output=scratch/sandbox_report.txt",
+    "validate:translations": "node --permission --experimental-strip-types --allow-fs-read=. --allow-fs-write=. scripts/validate_translations.ts",
     "validate:fsm:summary": "npm run validate:fsm:implementation -- --summary",
     "validate:fsm:report": "npm run validate:fsm:implementation -- --output=scratch/fsm_report.txt",
     "sync:test": "node --experimental-strip-types scripts/sync_to_test.ts"

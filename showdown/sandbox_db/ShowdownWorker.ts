@@ -2,6 +2,132 @@ import { Battle } from '@pkmn/sim';
 
 let battle: Battle | null = null;
 
+// Diccionarios estáticos para traducir naturalezas y habilidades al inglés del simulador
+const NATURE_MAP_ES_TO_EN: Record<string, string> = {
+  'Audaz': 'Brave',
+  'Firme': 'Adamant',
+  'Pícaro': 'Naughty',
+  'Manso': 'Quiet',
+  'Serio': 'Serious',
+  'Osado': 'Bold',
+  'Plácido': 'Relaxed',
+  'Agitado': 'Impish',
+  'Jovial': 'Jolly',
+  'Ingenuo': 'Naive',
+  'Modesto': 'Modest',
+  'Moderado': 'Mild',
+  'Raro': 'Quirky',
+  'Dócil': 'Docile',
+  'Tímido': 'Timid',
+  'Activo': 'Hasty',
+  'Alocado': 'Rash',
+  'Tranquilo': 'Calm',
+  'Grosero': 'Sassy',
+  'Cauto': 'Careful',
+  'Afable': 'Mild',
+  'Amable': 'Gentle',
+  'Huraño': 'Lonely',
+  'Placido': 'Relaxed',
+  'Psíquico': 'Quiet',
+  'Picaro': 'Naughty',
+  'Timido': 'Timid',
+};
+
+const ABILITY_MAP_ES_TO_EN: Record<string, string> = {
+  'Espesura': 'overgrow',
+  'Clorofila': 'chlorophyll',
+  'Mar llamas': 'blaze',
+  'Poder Solar': 'solarpower',
+  'Torrente': 'torrent',
+  'Lluvia Ligera': 'raindish',
+  'Vista lince': 'keeneye',
+  'Alboroto': 'uproar',
+  'Escape': 'runaway',
+  'Agallas': 'guts',
+  'Polvo escudo': 'shielddust',
+  'Mudar': 'shedskin',
+  'Electricidad estática': 'static',
+  'Pararrayos': 'lightningrod',
+  'Robustez': 'sturdy',
+  'Nerviosismo': 'tension',
+  'Infiltrador': 'infiltrator',
+  'Humedad': 'damp',
+  'Aclimatación': 'cloudnine',
+  'Nado rápido': 'swiftswim',
+  'Ráfaga': 'speedboost',
+  'Adaptable': 'adaptability',
+  'Cura Natural': 'naturalcure',
+  'Velo húmedo': 'waterveil',
+  'Sebo': 'thickfat',
+  'Caparazón': 'shellarmor',
+  'Armadura Batalla': 'battlearmor',
+  'Francotirador': 'sniper',
+  'Intrépido': 'scrappy',
+  'Ojo Compuesto': 'compoundeyes',
+  'Velo arena': 'sandveil',
+  'Insonorizar': 'soundproof',
+  'Intimidación': 'intimidate',
+  'Absorbe Fuego': 'flashfire',
+  'Absorbe Agua': 'waterabsorb',
+  'Efecto Espora': 'effectspore',
+  'Trampa Arena': 'arenatrap',
+  'Recogida': 'pickup',
+  'Espíritu Vital': 'vitalspirit',
+  'Sincronía': 'synchronize',
+  'Cuerpo Puro': 'clearbody',
+  'Despiste': 'oblivious',
+  'Imán': 'magnetpull',
+  'Fuga': 'runaway',
+  'Hedor': 'stench',
+  'Levitación': 'levitate',
+  'Cabeza Roca': 'rockhead',
+  'Insomnio': 'insomnia',
+  'Corte Fuerte': 'hypercutter',
+  'Flexibilidad': 'limber',
+  'Madrugar': 'earlybird',
+  'Enjambre': 'swarm',
+  'Cuerpo Llama': 'flamebody',
+  'Rastro': 'trace',
+  'Inmunidad': 'immunity',
+  'Presión': 'pressure',
+  'Punto tóxico': 'poisonpoint',
+  'Descarga': 'download',
+  'Experto': 'technician',
+  'Absorbe Voltio': 'voltabsorb',
+  'Foco interno': 'innerfocus',
+  'Rivalidad': 'rivalry',
+  'Muro Mágico': 'magicguard',
+  'Viscosidad': 'stickyhold',
+  'Dicha': 'serenegrace',
+  'Sombra Trampa': 'shadowtag',
+  'Bucle Aire': 'airlock',
+  'Cambio Color': 'colorchange',
+  'Gran Encanto': 'cutecharm',
+  'Potencia': 'hugepower',
+  'Energía Pura': 'purepower',
+  'Llovizna': 'drizzle',
+  'Sequía': 'drought',
+  'Chorro Arena': 'sandstream',
+  'Ausente': 'truant',
+  'Entusiasmo': 'hustle',
+  'Escama Especial': 'marvelscale',
+  'Predicción': 'forecast',
+  'Menos': 'minus',
+  'Más': 'plus',
+  'Ventosas': 'suctioncups',
+  'Humo Blanco': 'whitesmoke'
+};
+
+const ABILITY_MAP_EN_TO_ES: Record<string, string> = {};
+const NATURE_MAP_EN_TO_ES: Record<string, string> = {};
+
+for (const [es, en] of Object.entries(ABILITY_MAP_ES_TO_EN)) {
+  ABILITY_MAP_EN_TO_ES[en] = es;
+}
+for (const [es, en] of Object.entries(NATURE_MAP_ES_TO_EN)) {
+  NATURE_MAP_EN_TO_ES[en] = es;
+}
+
 // Tabla de efectividades de tipos de Generación 3 para la IA Estratégica
 const TYPE_CHART: Record<string, Record<string, number>> = {
   Normal: { Rock: 0.5, Ghost: 0, Steel: 0.5 },
@@ -98,6 +224,30 @@ interface WorkerSandboxPokemon {
   ability?: string;
 }
 
+interface SimStatusState {
+  id: string;
+  time?: number;
+}
+
+interface SimBoosts {
+  atk: number;
+  def: number;
+  spa: number;
+  spd: number;
+  spe: number;
+  accuracy: number;
+  evasion: number;
+}
+
+interface SimStats {
+  hp?: number;
+  atk: number;
+  def: number;
+  spa: number;
+  spd: number;
+  spe: number;
+}
+
 interface SimPokemon {
   species: {
     id: string;
@@ -108,12 +258,32 @@ interface SimPokemon {
   status: string;
   fainted: boolean;
   types: string[];
-  moveSlots: Array<{ id: string }>;
+  moveSlots: Array<{
+    id: string;
+    pp: number;
+    maxpp: number;
+    disabled?: boolean | string;
+  }>;
+  baseStoredStats?: SimStats;
+  storedStats?: SimStats;
+  boosts?: SimBoosts;
+  statusState?: SimStatusState;
+  ability?: string;
+  set?: {
+    nature?: string;
+  };
+}
+
+interface SimSideCondition {
+  id: string;
+  duration?: number;
+  layers?: number;
 }
 
 interface SimPlayer {
   pokemon: SimPokemon[];
   active: (SimPokemon | null)[];
+  sideConditions: Record<string, { id: string; duration?: number; layers?: number }>;
 }
 
 /**
@@ -127,7 +297,70 @@ const getTeamStatus = (player: SimPlayer) => {
     hp: p.hp,
     maxHp: p.maxhp,
     status: p.status || (p.fainted ? 'fnt' : ''),
+    baseStoredStats: p.baseStoredStats ? {
+      hp: p.baseStoredStats.hp || 0,
+      atk: p.baseStoredStats.atk || 0,
+      def: p.baseStoredStats.def || 0,
+      spa: p.baseStoredStats.spa || 0,
+      spd: p.baseStoredStats.spd || 0,
+      spe: p.baseStoredStats.spe || 0,
+    } : null,
+    storedStats: p.storedStats ? {
+      atk: p.storedStats.atk || 0,
+      def: p.storedStats.def || 0,
+      spa: p.storedStats.spa || 0,
+      spd: p.storedStats.spd || 0,
+      spe: p.storedStats.spe || 0,
+    } : null,
+    boosts: p.boosts ? {
+      atk: p.boosts.atk || 0,
+      def: p.boosts.def || 0,
+      spa: p.boosts.spa || 0,
+      spd: p.boosts.spd || 0,
+      spe: p.boosts.spe || 0,
+      accuracy: p.boosts.accuracy || 0,
+      evasion: p.boosts.evasion || 0,
+    } : null,
+    statusState: p.statusState ? {
+      id: p.statusState.id || '',
+      time: typeof p.statusState.time === 'number' ? p.statusState.time : 0,
+    } : null,
+    moveSlots: p.moveSlots ? p.moveSlots.map(ms => ({
+      id: ms.id,
+      pp: ms.pp,
+      maxpp: ms.maxpp,
+      disabled: ms.disabled || false
+    })) : [],
+    ability: p.ability ? (ABILITY_MAP_EN_TO_ES[p.ability] || p.ability) : '',
+    nature: p.set?.nature ? (NATURE_MAP_EN_TO_ES[p.set.nature] || p.set.nature) : ''
   }));
+};
+
+/**
+ * Obtiene las condiciones de campo laterales activas
+ */
+const getSideConditions = (player: SimPlayer): SimSideCondition[] => {
+  if (!player || !player.sideConditions) return [];
+  return Object.keys(player.sideConditions).map((key) => {
+    const cond = player.sideConditions[key];
+    return {
+      id: key,
+      duration: cond.duration,
+      layers: cond.layers,
+    };
+  });
+};
+
+/**
+ * Obtiene el estado del clima en el campo de batalla
+ */
+const getFieldState = (battleInstance: Battle) => {
+  return {
+    weather: battleInstance.field.weather || '',
+    weatherDuration: typeof battleInstance.field.weatherState.duration === 'number'
+      ? battleInstance.field.weatherState.duration
+      : 0,
+  };
 };
 
 /**
@@ -179,31 +412,39 @@ self.addEventListener('message', (event) => {
       battle = new Battle({ formatid: 'gen3customgame' as never });
 
       // 2. Formatear y registrar los equipos completos en Showdown
-      const formattedPlayerTeam = playerTeam.map((p: WorkerSandboxPokemon) => ({
-        name: p.name,
-        species: p.id,
-        moves: p.moves,
-        ability: p.ability || 'overgrow',
-        level: 50,
-        evs: { hp: 85, atk: 85, def: 85, spa: 85, spd: 85, spe: 85 },
-        ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
-        nature: 'Serious',
-        item: '',
-        gender: '',
-      }));
+      const formattedPlayerTeam = playerTeam.map((p: WorkerSandboxPokemon) => {
+        const engAbility = p.ability ? (ABILITY_MAP_ES_TO_EN[p.ability] || p.ability.toLowerCase()) : 'overgrow';
+        const engNature = p.nature ? (NATURE_MAP_ES_TO_EN[p.nature] || 'Serious') : 'Serious';
+        return {
+          name: p.name,
+          species: p.id,
+          moves: p.moves,
+          ability: engAbility,
+          level: 50,
+          evs: { hp: 85, atk: 85, def: 85, spa: 85, spd: 85, spe: 85 },
+          ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
+          nature: engNature,
+          item: '',
+          gender: '',
+        };
+      });
 
-      const formattedEnemyTeam = enemyTeam.map((p: WorkerSandboxPokemon) => ({
-        name: p.name,
-        species: p.id,
-        moves: p.moves,
-        ability: p.ability || 'torrent',
-        level: 50,
-        evs: { hp: 85, atk: 85, def: 85, spa: 85, spd: 85, spe: 85 },
-        ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
-        nature: 'Serious',
-        item: '',
-        gender: '',
-      }));
+      const formattedEnemyTeam = enemyTeam.map((p: WorkerSandboxPokemon) => {
+        const engAbility = p.ability ? (ABILITY_MAP_ES_TO_EN[p.ability] || p.ability.toLowerCase()) : 'torrent';
+        const engNature = p.nature ? (NATURE_MAP_ES_TO_EN[p.nature] || 'Serious') : 'Serious';
+        return {
+          name: p.name,
+          species: p.id,
+          moves: p.moves,
+          ability: engAbility,
+          level: 50,
+          evs: { hp: 85, atk: 85, def: 85, spa: 85, spd: 85, spe: 85 },
+          ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
+          nature: engNature,
+          item: '',
+          gender: '',
+        };
+      });
 
       battle.setPlayer('p1', {
         name: 'Player',
@@ -238,6 +479,9 @@ self.addEventListener('message', (event) => {
           enemyMaxHP: enemyActive ? enemyActive.maxhp : 100,
           playerTeam: getTeamStatus(battle.p1),
           enemyTeam: getTeamStatus(battle.p2),
+          fieldState: getFieldState(battle),
+          playerSideConditions: getSideConditions(battle.p1),
+          enemySideConditions: getSideConditions(battle.p2),
         }
       });
 
@@ -367,6 +611,9 @@ self.addEventListener('message', (event) => {
           enemyFainted: enemyActiveNew ? enemyActiveNew.fainted : true,
           playerTeam: getTeamStatus(battle.p1),
           enemyTeam: getTeamStatus(battle.p2),
+          fieldState: getFieldState(battle),
+          playerSideConditions: getSideConditions(battle.p1),
+          enemySideConditions: getSideConditions(battle.p2),
         },
       });
     }

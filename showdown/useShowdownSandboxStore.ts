@@ -1,8 +1,10 @@
 import { defineStore } from 'pinia';
 import type { ShowdownLocalDB } from './sandbox_db/cloner/extract_logic.ts';
-import showdownDB from './sandbox_db/data/showdown_db.json';
+import showdownDB from './sandbox_db/data/showdown_db_es.json';
 import { parseShowdownLog, type ParsedEvent } from './sandbox_db/ShowdownParser.ts';
+import { executeAnimationQueue } from './logic/showdownAnimations.ts';
 import gsap from 'gsap';
+import { NATURES } from '../src/data/natures.ts';
 
 const typedDB = showdownDB as unknown as ShowdownLocalDB;
 
@@ -16,6 +18,42 @@ export interface SandboxPokemon {
   hp?: number;
   maxHp?: number;
   status?: string; // fnt, psn, tox, brn, par, slp, frz
+  baseStoredStats?: {
+    hp: number;
+    atk: number;
+    def: number;
+    spa: number;
+    spd: number;
+    spe: number;
+  } | null;
+  storedStats?: {
+    atk: number;
+    def: number;
+    spa: number;
+    spd: number;
+    spe: number;
+  } | null;
+  boosts?: {
+    atk: number;
+    def: number;
+    spa: number;
+    spd: number;
+    spe: number;
+    accuracy: number;
+    evasion: number;
+  } | null;
+  statusState?: {
+    id: string;
+    time: number;
+  } | null;
+  moveSlots?: Array<{
+    id: string;
+    pp: number;
+    maxpp: number;
+    disabled?: boolean | string;
+  }> | null;
+  ability?: string;
+  nature?: string;
 }
 
 export interface SandboxSimPokemon {
@@ -24,6 +62,34 @@ export interface SandboxSimPokemon {
   hp?: number;
   maxHp?: number;
   status?: string;
+  baseStoredStats?: {
+    hp: number;
+    atk: number;
+    def: number;
+    spa: number;
+    spd: number;
+    spe: number;
+  } | null;
+  storedStats?: {
+    atk: number;
+    def: number;
+    spa: number;
+    spd: number;
+    spe: number;
+  } | null;
+  boosts?: {
+    atk: number;
+    def: number;
+    spa: number;
+    spd: number;
+    spe: number;
+    accuracy: number;
+    evasion: number;
+  } | null;
+  statusState?: {
+    id: string;
+    time: number;
+  } | null;
 }
 
 interface LocalMove {
@@ -89,6 +155,9 @@ export const useShowdownSandboxStore = defineStore('showdownSandbox', {
     isAnimating: false,
     gameOver: false,
     winner: null as string | null,
+    weather: { weather: '', weatherDuration: 0 } as { weather: string; weatherDuration: number },
+    playerSideConditions: [] as Array<{ id: string; duration?: number; layers?: number }>,
+    enemySideConditions: [] as Array<{ id: string; duration?: number; layers?: number }>,
   }),
 
   actions: {
@@ -147,6 +216,11 @@ export const useShowdownSandboxStore = defineStore('showdownSandbox', {
           }
         }
 
+        const leaderAbility = leaderPoke.abilities && leaderPoke.abilities.length > 0
+          ? leaderPoke.abilities[0]
+          : 'Espesura';
+        const leaderNature = NATURES[Math.floor(Math.random() * NATURES.length)] || 'Serio';
+
         team.push({
           id: leaderId,
           name: leaderPoke.name,
@@ -161,6 +235,8 @@ export const useShowdownSandboxStore = defineStore('showdownSandbox', {
           hp: leaderPoke.baseStats.hp,
           maxHp: leaderPoke.baseStats.hp,
           status: '',
+          ability: leaderAbility,
+          nature: leaderNature,
         });
       }
 
@@ -187,6 +263,11 @@ export const useShowdownSandboxStore = defineStore('showdownSandbox', {
             ? `showdown/assets/back/${poke.sprites.back}`
             : `showdown/assets/front/${poke.sprites.front}`;
             
+          const benchAbility = poke.abilities && poke.abilities.length > 0
+            ? poke.abilities[Math.floor(Math.random() * poke.abilities.length)]
+            : 'Espesura';
+          const benchNature = NATURES[Math.floor(Math.random() * NATURES.length)] || 'Serio';
+
           team.push({
             id: pokeId,
             name: poke.name,
@@ -197,6 +278,8 @@ export const useShowdownSandboxStore = defineStore('showdownSandbox', {
             hp: poke.baseStats.hp,
             maxHp: poke.baseStats.hp,
             status: '',
+            ability: benchAbility,
+            nature: benchNature,
           });
         }
       }
@@ -216,6 +299,13 @@ export const useShowdownSandboxStore = defineStore('showdownSandbox', {
           localPoke.hp = workerPoke.hp;
           localPoke.maxHp = workerPoke.maxHp;
           localPoke.status = workerPoke.status;
+          localPoke.baseStoredStats = workerPoke.baseStoredStats;
+          localPoke.storedStats = workerPoke.storedStats;
+          localPoke.boosts = workerPoke.boosts;
+          localPoke.statusState = workerPoke.statusState;
+          localPoke.moveSlots = workerPoke.moveSlots;
+          if (workerPoke.ability) localPoke.ability = workerPoke.ability;
+          if (workerPoke.nature) localPoke.nature = workerPoke.nature;
         }
       }
       
@@ -294,6 +384,9 @@ export const useShowdownSandboxStore = defineStore('showdownSandbox', {
         if (action === 'started') {
           this.playerSimTeam = data.playerTeam || [];
           this.enemySimTeam = data.enemyTeam || [];
+          this.weather = data.fieldState || { weather: '', weatherDuration: 0 };
+          this.playerSideConditions = data.playerSideConditions || [];
+          this.enemySideConditions = data.enemySideConditions || [];
           // Sincronizar equipos de 6 y HP reales del líder
           this.syncTeamStatus(true, data.playerTeam);
           this.syncTeamStatus(false, data.enemyTeam);
@@ -310,6 +403,9 @@ export const useShowdownSandboxStore = defineStore('showdownSandbox', {
 
           this.playerSimTeam = data.playerTeam || [];
           this.enemySimTeam = data.enemyTeam || [];
+          this.weather = data.fieldState || { weather: '', weatherDuration: 0 };
+          this.playerSideConditions = data.playerSideConditions || [];
+          this.enemySideConditions = data.enemySideConditions || [];
           // Sincronizar estadísticas de los equipos después de animar
           this.syncTeamStatus(true, data.playerTeam);
           this.syncTeamStatus(false, data.enemyTeam);
@@ -415,183 +511,11 @@ export const useShowdownSandboxStore = defineStore('showdownSandbox', {
     },
 
     /**
-     * Orquestador secuencial de animaciones
+     * Orquestador secuencial de animaciones delegadas
      */
     async executeAnimationQueue(events: ParsedEvent[]) {
-      for (const event of events) {
-        this.battleLog.push(event);
-        await this.animateEvent(event);
-      }
+      await executeAnimationQueue(this, events);
       this.isAnimating = false;
-    },
-
-    /**
-     * Ejecuta animaciones y desplazamientos físicos mediante GSAP.
-     * Devuelve una Promesa para garantizar la secuencialidad perfecta.
-     */
-    animateEvent(event: ParsedEvent): Promise<void> {
-      return new Promise<void>((resolve) => {
-        this.currentMessage = event.text;
-
-        const tl = gsap.timeline({ onComplete: () => resolve() });
-        const data = event.data;
-
-        if (event.type === 'move' && data) {
-          const spriteId = data.isPlayerAttacking ? '#player-sprite' : '#enemy-sprite';
-          const direction = data.isPlayerAttacking ? 25 : -25;
-
-          tl.to(spriteId, {
-            x: `+=${direction}`,
-            y: `-=${direction / 2}`,
-            duration: 0.15,
-            ease: 'power1.out',
-          })
-          .to(spriteId, {
-            x: 0,
-            y: 0,
-            duration: 0.25,
-            ease: 'power2.inOut',
-          });
-        } else if (event.type === 'damage' && data) {
-          const spriteId = data.isPlayer ? '#player-sprite' : '#enemy-sprite';
-          const hpBarId = data.isPlayer ? '#player-hp' : '#enemy-hp';
-          const currentHP = data.currentHP ?? 0;
-          const maxHP = data.maxHP ?? 100;
-          const hpPct = (currentHP / maxHP) * 100;
-
-          tl.to(spriteId, {
-            x: '+=6',
-            filter: 'brightness(1.8) sepia(1) saturate(1000%) hue-rotate(-50deg)',
-            duration: 0.05,
-            yoyo: true,
-            repeat: 5,
-          })
-          .to(spriteId, {
-            x: 0,
-            filter: 'none',
-            duration: 0.05,
-          })
-          .to(hpBarId, {
-            width: `${hpPct}%`,
-            duration: 0.4,
-            ease: 'power1.out',
-            onStart: () => {
-              if (data.isPlayer) {
-                this.playerHP = currentHP;
-                this.playerMaxHP = maxHP;
-              } else {
-                this.enemyHP = currentHP;
-                this.enemyMaxHP = maxHP;
-              }
-            }
-          }, '<');
-        } else if (event.type === 'heal' && data) {
-          const spriteId = data.isPlayer ? '#player-sprite' : '#enemy-sprite';
-          const hpBarId = data.isPlayer ? '#player-hp' : '#enemy-hp';
-          const currentHP = data.currentHP ?? 0;
-          const maxHP = data.maxHP ?? 100;
-          const hpPct = (currentHP / maxHP) * 100;
-
-          tl.to(spriteId, {
-            filter: 'brightness(1.5) saturate(1000%) hue-rotate(90deg)',
-            duration: 0.3,
-            yoyo: true,
-            repeat: 1,
-          })
-          .to(spriteId, {
-            filter: 'none',
-            duration: 0.1,
-          })
-          .to(hpBarId, {
-            width: `${hpPct}%`,
-            duration: 0.4,
-            onStart: () => {
-              if (data.isPlayer) {
-                this.playerHP = currentHP;
-                this.playerMaxHP = maxHP;
-              } else {
-                this.enemyHP = currentHP;
-                this.enemyMaxHP = maxHP;
-              }
-            }
-          }, '<');
-        } else if (event.type === 'faint' && data) {
-          const spriteId = data.isPlayer ? '#player-sprite' : '#enemy-sprite';
-          
-          tl.to(spriteId, {
-            y: '+=80',
-            opacity: 0,
-            duration: 0.5,
-            ease: 'power1.in',
-            onStart: () => {
-              const pokemonId = data.isPlayer ? this.playerPokemon?.id : this.enemyPokemon?.id;
-              if (pokemonId) {
-                this.playCry(pokemonId);
-              }
-            }
-          });
-        } else if (event.type === 'switch' && data) {
-          const isPlayer = data.isPlayer;
-          const spriteId = isPlayer ? '#player-sprite' : '#enemy-sprite';
-
-          tl.to(spriteId, {
-            x: isPlayer ? -150 : 150,
-            y: 50,
-            scale: 0.2,
-            opacity: 0,
-            duration: 0.4,
-            ease: 'back.in(1.7)',
-            onComplete: () => {
-              const incomingSpeciesId = data.moveId || '';
-              const team = isPlayer ? this.playerTeam : this.enemyTeam;
-              const idx = team.findIndex(p => p.id === incomingSpeciesId);
-              
-              if (idx !== -1) {
-                const incomingPoke = team[idx];
-                if (incomingPoke !== undefined) {
-                  if (isPlayer) {
-                    this.activePlayerIndex = idx;
-                    this.playerPokemon = incomingPoke;
-                    this.playerHP = data.currentHP ?? this.playerHP;
-                    this.playerMaxHP = data.maxHP ?? this.playerMaxHP;
-                  } else {
-                    this.activeEnemyIndex = idx;
-                    this.enemyPokemon = incomingPoke;
-                    this.enemyHP = data.currentHP ?? this.enemyHP;
-                    this.enemyMaxHP = data.maxHP ?? this.enemyMaxHP;
-                  }
-                }
-              }
-              
-              if (incomingSpeciesId) {
-                this.playCry(incomingSpeciesId);
-              }
-            }
-          })
-          .set(spriteId, {
-            x: isPlayer ? 150 : -150,
-            y: -50,
-            scale: 0.1,
-            opacity: 0
-          })
-          .to(spriteId, {
-            x: 0,
-            y: 0,
-            scale: 1,
-            opacity: 1,
-            duration: 0.5,
-            ease: 'back.out(1.2)',
-            clearProps: 'transform,opacity'
-          });
-        } else if (event.type === 'ability') {
-          tl.to({}, { duration: 0.1 })
-            .to({}, { duration: 1.0 });
-        } else if (event.type === 'miss' || event.type === 'status' || event.type === 'weather' || event.type === 'info') {
-          tl.to({}, { duration: 0.9 });
-        } else {
-          tl.to({}, { duration: 1.0 });
-        }
-      });
     },
   },
 });

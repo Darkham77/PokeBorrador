@@ -236,18 +236,37 @@ async function main() {
     warnings.push('No se detectaron transiciones GSAP en el Tooltip.');
   }
 
-  // 4c. Verify ShowdownSandboxView integrations
+  // 4c. Verify ShowdownSandboxView integrations (supporting modular subcomponents)
   const viewCode = await fs.readFile(SANDBOX_VIEW_PATH, 'utf8');
+  let controlsCode = '';
+  let battleMenuCode = '';
+  try {
+    const controlsPath = path.resolve(process.cwd(), 'showdown/components/ShowdownControls.vue');
+    controlsCode = await fs.readFile(controlsPath, 'utf8');
+  } catch {
+    // Fail silently if ShowdownControls.vue is not found (legacy support)
+  }
+  try {
+    const battleMenuPath = path.resolve(process.cwd(), 'showdown/components/ShowdownBattleMenu.vue');
+    battleMenuCode = await fs.readFile(battleMenuPath, 'utf8');
+  } catch {
+    // Fail silently if ShowdownBattleMenu.vue is not found
+  }
 
-  const importsTooltip = viewCode.includes('ShowdownMoveTooltip') &&
-    (viewCode.includes('./components/ShowdownMoveTooltip.vue') || viewCode.includes('./components/ShowdownMoveTooltip'));
-  const instantiatesTooltip = viewCode.includes('<ShowdownMoveTooltip') || viewCode.includes('<showdown-move-tooltip');
-  const hasHoverEvents = (viewCode.includes('onMoveMouseEnter') || viewCode.includes('handleMoveMouseEnter')) &&
-    (viewCode.includes('onMoveMouseLeave') || viewCode.includes('handleMoveMouseLeave'));
-  const hasMobileFallback = viewCode.includes('hover: hover') || viewCode.includes('activeTooltipMove') || viewCode.includes('matchMedia');
+  const combinedCode = viewCode + '\n' + controlsCode + '\n' + battleMenuCode;
+
+  const importsTooltip = combinedCode.includes('ShowdownMoveTooltip') &&
+    (combinedCode.includes('./components/ShowdownMoveTooltip.vue') || 
+     combinedCode.includes('./components/ShowdownMoveTooltip') ||
+     combinedCode.includes('./ShowdownMoveTooltip.vue') ||
+     combinedCode.includes('./ShowdownMoveTooltip'));
+  const instantiatesTooltip = combinedCode.includes('<ShowdownMoveTooltip') || combinedCode.includes('<showdown-move-tooltip');
+  const hasHoverEvents = (combinedCode.includes('onMoveMouseEnter') || combinedCode.includes('handleMoveMouseEnter')) &&
+    (combinedCode.includes('onMoveMouseLeave') || combinedCode.includes('handleMoveMouseLeave'));
+  const hasMobileFallback = combinedCode.includes('hover: hover') || combinedCode.includes('activeTooltipMove') || combinedCode.includes('matchMedia');
 
   if (importsTooltip && instantiatesTooltip) {
-    achievements.push('`ShowdownMoveTooltip` se importa e instancia correctamente en la vista del Sandbox.');
+    achievements.push('`ShowdownMoveTooltip` se importa e instancia correctamente en la vista del Sandbox (o sus subcomponentes).');
   } else {
     errors.push('El Sandbox no incluye o no instancia `ShowdownMoveTooltip` en su plantilla.');
   }

@@ -1,5 +1,10 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
+import ShowdownStatusTooltip from './ShowdownStatusTooltip.vue';
+import ShowdownSideConditionTooltip from './ShowdownSideConditionTooltip.vue';
+import ShowdownPartyTracker from './ShowdownPartyTracker.vue';
+import ShowdownAbilityTooltip from './ShowdownAbilityTooltip.vue';
+import ShowdownNatureTooltip from './ShowdownNatureTooltip.vue';
 
 export interface SandboxPokemon {
   id: string;
@@ -11,6 +16,48 @@ export interface SandboxPokemon {
   hp?: number;
   maxHp?: number;
   status?: string; // psn, par, brn, slp, frz, fnt
+  baseStoredStats?: {
+    hp: number;
+    atk: number;
+    def: number;
+    spa: number;
+    spd: number;
+    spe: number;
+  } | null;
+  storedStats?: {
+    atk: number;
+    def: number;
+    spa: number;
+    spd: number;
+    spe: number;
+  } | null;
+  boosts?: {
+    atk: number;
+    def: number;
+    spa: number;
+    spd: number;
+    spe: number;
+    accuracy: number;
+    evasion: number;
+  } | null;
+  statusState?: {
+    id: string;
+    time: number;
+  } | null;
+  moveSlots?: Array<{
+    id: string;
+    pp: number;
+    maxpp: number;
+    disabled?: boolean | string;
+  }> | null;
+  ability?: string;
+  nature?: string;
+}
+
+export interface SideCondition {
+  id: string;
+  duration?: number;
+  layers?: number;
 }
 
 const props = defineProps<{
@@ -19,7 +66,30 @@ const props = defineProps<{
   maxHp: number;
   team: SandboxPokemon[];
   isPlayer: boolean;
+  sideConditions?: SideCondition[];
 }>();
+
+const getSideConditionEmoji = (id: string) => {
+  const map: Record<string, string> = {
+    reflect: '🛡️',
+    lightscreen: '✨',
+    spikes: '🪵',
+    safeguard: '🌸',
+    mist: '🌫️'
+  };
+  return map[id.toLowerCase()] || '🌀';
+};
+
+const getSideConditionName = (id: string) => {
+  const map: Record<string, string> = {
+    reflect: 'REFLEJO',
+    lightscreen: 'P. LUZ',
+    spikes: 'PÚAS',
+    safeguard: 'SALVAGUARDIA',
+    mist: 'NEBLINA'
+  };
+  return map[id.toLowerCase()] || id.toUpperCase();
+};
 
 // Calcula el porcentaje de salud actual
 const hpPercent = computed(() => {
@@ -49,10 +119,8 @@ const getStatusBadgeText = (status?: string) => {
   return map[status.toLowerCase()] || status.toUpperCase();
 };
 
-// Obtiene de forma segura un miembro del equipo por su índice
-const getMember = (index: number): SandboxPokemon | undefined => {
-  return props.team[index];
-};
+const showAbilityTooltip = ref(false);
+const showNatureTooltip = ref(false);
 </script>
 
 <template>
@@ -65,13 +133,22 @@ const getMember = (index: number): SandboxPokemon | undefined => {
     <div class="hud-header">
       <div class="name-status">
         <span class="poke-name">{{ pokemon.name.toUpperCase() }}</span>
-        <span
+        <ShowdownStatusTooltip
           v-if="pokemon.status && pokemon.status !== 'fnt'"
-          class="status-badge"
-          :class="`badge-${pokemon.status.toLowerCase()}`"
+          :status-id="pokemon.status"
+          :pokemon-name="pokemon.name"
+          :base-stored-stats="pokemon.baseStoredStats"
+          :stored-stats="pokemon.storedStats"
+          :boosts="pokemon.boosts"
+          :status-state="pokemon.statusState"
         >
-          {{ getStatusBadgeText(pokemon.status) }}
-        </span>
+          <span
+            class="status-badge"
+            :class="`badge-${pokemon.status.toLowerCase()}`"
+          >
+            {{ getStatusBadgeText(pokemon.status) }}
+          </span>
+        </ShowdownStatusTooltip>
       </div>
       <span class="poke-level">Nv50</span>
     </div>
@@ -86,6 +163,39 @@ const getMember = (index: number): SandboxPokemon | undefined => {
       >
         {{ t }}
       </span>
+    </div>
+
+    <!-- Metadata Row: Ability & Nature -->
+    <div class="hud-metadata-row">
+      <div 
+        class="metadata-badge ability-badge"
+        @mouseenter="showAbilityTooltip = true"
+        @mouseleave="showAbilityTooltip = false"
+      >
+        <span class="badge-label">HAB</span>
+        <span class="badge-value">{{ pokemon.ability || 'Ninguna' }}</span>
+        
+        <ShowdownAbilityTooltip
+          :ability-name="pokemon.ability || ''"
+          :pokemon-name="pokemon.name"
+          :visible="showAbilityTooltip"
+        />
+      </div>
+
+      <div 
+        class="metadata-badge nature-badge"
+        @mouseenter="showNatureTooltip = true"
+        @mouseleave="showNatureTooltip = false"
+      >
+        <span class="badge-label">NAT</span>
+        <span class="badge-value">{{ pokemon.nature || 'Neutra' }}</span>
+
+        <ShowdownNatureTooltip
+          :nature-name="pokemon.nature || ''"
+          :pokemon-name="pokemon.name"
+          :visible="showNatureTooltip"
+        />
+      </div>
     </div>
 
     <!-- HP Bar section -->
@@ -112,40 +222,35 @@ const getMember = (index: number): SandboxPokemon | undefined => {
     </div>
 
     <!-- Party Status Tracker: 6 pixelated Pokéballs -->
-    <div class="party-tracker">
-      <div
-        v-for="idx in 6"
-        :key="`ball-${idx}`"
-        class="party-ball-slot"
+    <ShowdownPartyTracker :team="team" />
+
+    <!-- Active Side Conditions: Small translucent pills below the party tracker -->
+    <div
+      v-if="sideConditions && sideConditions.length > 0"
+      class="side-conditions-row"
+    >
+      <ShowdownSideConditionTooltip
+        v-for="cond in sideConditions"
+        :key="cond.id"
+        :condition-id="cond.id"
+        :duration="cond.duration"
+        :layers="cond.layers"
       >
-        <!-- Slot vacío (sin Pokémon cargado en ese índice) -->
-        <div
-          v-if="idx - 1 >= team.length || !getMember(idx - 1)"
-          class="ball-pixel ball-empty"
-          title="Ranura Vacía"
-        />
-        <!-- Pokémon debilitado -->
-        <div
-          v-else-if="getMember(idx - 1)?.hp === 0 || getMember(idx - 1)?.status === 'fnt'"
-          class="ball-pixel ball-fainted"
-          :title="`${getMember(idx - 1)?.name || ''} (Debilitado)`"
+        <span
+          class="side-condition-pill"
+          :class="`pill-${cond.id.toLowerCase()}`"
         >
-          <span class="cross-faint">×</span>
-        </div>
-        <!-- Pokémon con estado alterado -->
-        <div
-          v-else-if="getMember(idx - 1)?.status"
-          class="ball-pixel ball-status"
-          :class="`ball-status-${getMember(idx - 1)?.status?.toLowerCase()}`"
-          :title="`${getMember(idx - 1)?.name || ''} (${getStatusBadgeText(getMember(idx - 1)?.status)})`"
-        />
-        <!-- Pokémon vivo y saludable -->
-        <div
-          v-else
-          class="ball-pixel ball-healthy"
-          :title="getMember(idx - 1)?.name || ''"
-        />
-      </div>
+          {{ getSideConditionEmoji(cond.id) }} {{ getSideConditionName(cond.id) }}
+          <span
+            v-if="cond.layers && cond.layers > 1"
+            class="cond-count"
+          >x{{ cond.layers }}</span>
+          <span
+            v-else-if="cond.duration"
+            class="cond-count"
+          >({{ cond.duration }})</span>
+        </span>
+      </ShowdownSideConditionTooltip>
     </div>
   </div>
 </template>
@@ -230,7 +335,64 @@ const getMember = (index: number): SandboxPokemon | undefined => {
   .hud-types {
     display: flex;
     gap: 6px;
+    margin-bottom: 8px;
+  }
+
+  .hud-metadata-row {
+    display: flex;
+    gap: 8px;
     margin-bottom: 12px;
+  }
+
+  .metadata-badge {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-family: var(--font-pixel);
+    font-size: 6px;
+    padding: 3px 6px;
+    border-radius: 4px;
+    background: Rgba(255, 255, 255, 0.05);
+    border: 1px solid Rgba(255, 255, 255, 0.12);
+    color: #e5e5ea;
+    cursor: pointer;
+    box-shadow: 0 2px 4px Rgba(0, 0, 0, 0.3);
+    will-change: filter, transform;
+    transition: background 0.2s, border-color 0.2s, transform 0.2s;
+    flex: 1;
+    justify-content: center;
+
+    &:hover {
+      background: Rgba(255, 255, 255, 0.1);
+      transform: Translatey(-1px);
+    }
+
+    .badge-label {
+      font-weight: bold;
+      color: #86868b;
+    }
+
+    .badge-value {
+      font-weight: bold;
+      color: #f5f5f7;
+    }
+
+    &.ability-badge:hover {
+      border-color: Rgba(96, 165, 250, 0.5);
+      box-shadow: 0 0 8px Rgba(96, 165, 250, 0.2);
+      .badge-label {
+        color: #60a5fa;
+      }
+    }
+
+    &.nature-badge:hover {
+      border-color: Rgba(251, 191, 36, 0.5);
+      box-shadow: 0 0 8px Rgba(251, 191, 36, 0.2);
+      .badge-label {
+        color: #fbbf24;
+      }
+    }
   }
 
   .type-tag {
@@ -244,17 +406,24 @@ const getMember = (index: number): SandboxPokemon | undefined => {
     box-shadow: 0 2px 4px Rgba(0,0,0,0.3);
     border: 1px solid Rgba(0, 0, 0, 0.2);
 
-    &.type-fire { background: linear-gradient(135deg, #ff453a, #ff9f0a); }
-    &.type-water { background: linear-gradient(135deg, #0a84ff, #58a6ff); }
-    &.type-flying { background: linear-gradient(135deg, #bf5af2, #0a84ff); }
-    &.type-ground { background: linear-gradient(135deg, #e0a96d, #8b5a2b); }
-    &.type-grass { background: linear-gradient(135deg, #30d158, #34c759); }
-    &.type-normal { background: linear-gradient(135deg, #8e8e93, #aeaea2); }
-    &.type-poison { background: linear-gradient(135deg, #af52de, #bf5af2); }
-    &.type-electric { background: linear-gradient(135deg, #ffd60a, #ffcc00); }
-    &.type-ice { background: linear-gradient(135deg, #5ac8fa, #64d2ff); }
-    &.type-psychic { background: linear-gradient(135deg, #ff2d55, #ff375f); }
-    &.type-dragon { background: linear-gradient(135deg, #5856d6, #007aff); }
+    &.type-normal { background: linear-gradient(135deg, #A8A878, #8A8A5C); }
+    &.type-fuego, &.type-fire { background: linear-gradient(135deg, #F08030, #C4611B); }
+    &.type-agua, &.type-water { background: linear-gradient(135deg, #6890F0, #3E69C9); }
+    &.type-planta, &.type-grass { background: linear-gradient(135deg, #78C850, #4E9A2D); }
+    &.type-eléctrico, &.type-electrico, &.type-electric { background: linear-gradient(135deg, #F8D030, #C9A318); }
+    &.type-hielo, &.type-ice { background: linear-gradient(135deg, #98D8D8, #60A5A5); }
+    &.type-lucha, &.type-fighting { background: linear-gradient(135deg, #C03028, #8C1C17); }
+    &.type-veneno, &.type-poison { background: linear-gradient(135deg, #A040A0, #732873); }
+    &.type-tierra, &.type-ground { background: linear-gradient(135deg, #E0C068, #B09443); }
+    &.type-volador, &.type-flying { background: linear-gradient(135deg, #A890F0, #7A5EC9); }
+    &.type-psíquico, &.type-psiquico, &.type-psychic { background: linear-gradient(135deg, #F85888, #C4305D); }
+    &.type-bicho, &.type-bug { background: linear-gradient(135deg, #A8B820, #7A8512); }
+    &.type-roca, &.type-rock { background: linear-gradient(135deg, #B8A038, #8A7520); }
+    &.type-fantasma, &.type-ghost { background: linear-gradient(135deg, #705898, #4D396B); }
+    &.type-dragón, &.type-dragon { background: linear-gradient(135deg, #7038F8, #4719C2); }
+    &.type-siniestro, &.type-dark { background: linear-gradient(135deg, #705848, #4D3A2F); }
+    &.type-acero, &.type-steel { background: linear-gradient(135deg, #B8B8D0, #8A8AA3); }
+    &.type-hada, &.type-fairy { background: linear-gradient(135deg, #EE99AC, #C26377); }
   }
 
   .hp-section {
@@ -314,92 +483,63 @@ const getMember = (index: number): SandboxPokemon | undefined => {
     }
   }
 
-  /* --- Party Status Tracker (Pokéballs Grid) --- */
-  .party-tracker {
+
+
+  .side-conditions-row {
     display: flex;
-    justify-content: flex-start;
-    gap: 8px;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
     padding-top: 8px;
     border-top: 1px dashed Rgba(255, 255, 255, 0.1);
   }
 
-  .party-ball-slot {
-    width: 14px;
-    height: 14px;
-    display: flex;
+  .side-condition-pill {
+    font-family: var(--font-pixel);
+    font-size: 6px;
+    padding: 3px 6px;
+    border-radius: 4px;
+    background: Rgba(255, 255, 255, 0.08);
+    border: 1px solid Rgba(255, 255, 255, 0.15);
+    color: #e5e5ea;
+    display: inline-flex;
     align-items: center;
-    justify-content: center;
-  }
+    gap: 3px;
+    cursor: pointer;
+    box-shadow: 0 1px 3px Rgba(0, 0, 0, 0.3);
+    will-change: filter, transform;
+    transition: background 0.2s, transform 0.2s;
 
-  .ball-pixel {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    border: 1px solid Rgba(0, 0, 0, 0.8);
-    position: relative;
-    box-shadow: 0 1px 3px Rgba(0, 0, 0, 0.5);
-
-    /* Pokéball clásica viva */
-    &.ball-healthy {
-      background: linear-gradient(180deg, #ff3b30 50%, #ffffff 50%);
-      
-      &::after {
-        content: "";
-        position: absolute;
-        width: 4px;
-        height: 4px;
-        background: #fff;
-        border: 1px solid #000;
-        border-radius: 50%;
-        top: 3px;
-        left: 3px;
-      }
+    &:hover {
+      background: Rgba(255, 255, 255, 0.15);
+      transform: Translatey(-1px);
     }
 
-    /* Pokéball debilitada */
-    &.ball-fainted {
-      background: linear-gradient(180deg, #8e8e93 50%, #48484a 50%);
-      opacity: 0.5;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-
-      .cross-faint {
-        font-size: 8px;
-        color: #ff3b30;
-        font-weight: bold;
-        line-height: 1;
-        position: relative;
-        top: -1px;
-      }
+    .cond-count {
+      color: var(--yellow, #ffd60a);
+      font-weight: bold;
+      margin-left: 2px;
     }
 
-    /* Ranura vacía (sin Pokémon asignado) */
-    &.ball-empty {
-      background: #1c1c1e;
-      border: 1px dashed Rgba(255, 255, 255, 0.2);
-      box-shadow: none;
+    &.pill-reflect {
+      border-color: Rgba(162, 155, 254, 0.4);
+      background: Rgba(162, 155, 254, 0.12);
     }
-
-    /* Pokéballs con estado alterado */
-    &.ball-status {
-      &::after {
-        content: "";
-        position: absolute;
-        width: 4px;
-        height: 4px;
-        background: #fff;
-        border: 1px solid #000;
-        border-radius: 50%;
-        top: 3px;
-        left: 3px;
-      }
-
-      &-psn, &-tox { background: linear-gradient(180deg, #bf5af2 50%, #ffffff 50%); }
-      &-par { background: linear-gradient(180deg, #ffd60a 50%, #ffffff 50%); }
-      &-brn { background: linear-gradient(180deg, #ff9f0a 50%, #ffffff 50%); }
-      &-slp { background: linear-gradient(180deg, #8e8e93 50%, #ffffff 50%); }
-      &-frz { background: linear-gradient(180deg, #64d2ff 50%, #ffffff 50%); }
+    &.pill-lightscreen {
+      border-color: Rgba(255, 234, 167, 0.4);
+      background: Rgba(255, 234, 167, 0.12);
+    }
+    &.pill-spikes {
+      border-color: Rgba(225, 112, 85, 0.4);
+      background: Rgba(225, 112, 85, 0.12);
+    }
+    &.pill-safeguard {
+      border-color: Rgba(253, 121, 168, 0.4);
+      background: Rgba(253, 121, 168, 0.12);
+    }
+    &.pill-mist {
+      border-color: Rgba(129, 236, 236, 0.4);
+      background: Rgba(129, 236, 236, 0.12);
     }
   }
 }

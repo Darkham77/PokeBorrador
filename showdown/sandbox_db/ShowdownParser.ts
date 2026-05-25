@@ -1,5 +1,5 @@
 import type { ShowdownLocalDB } from './cloner/extract_logic.ts';
-import showdownDB from './data/showdown_db.json';
+import showdownDB from './data/showdown_db_es.json';
 import moveTranslations from './data/move_translations.json';
 
 const typedDB = showdownDB as unknown as ShowdownLocalDB;

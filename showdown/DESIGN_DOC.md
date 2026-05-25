@@ -63,6 +63,7 @@ sequenceDiagram
 | **Debilitation Flow** | **Option A**: Forced Selection Full Overlay Modal | Hard-locks input on faint, ensuring the game FSM never triggers actions until the Showdown worker gets its swap index. | **Option B**: Dialogue inline selectors, **Option C**: Automatic swift backup. |
 | **Rival Combat AI** | **Option B**: Basic Strategic AI (Type counters & 15% tactical swaps) | Provides a realistic training playground. Makes bot interactions satisfying without adding network overhead. | **Option A**: Full random (too easy), **Option C**: Heavy deep neural predictions. |
 | **Simulation Core** | **Option 1**: Worker-based full `@pkmn/sim` orchestration | Guarantees complete Gen 3 mechanical integrity (Intimidate, entry spikes, status persistent damage) automatically. | **Option 2**: Recreating 1v1 micro-battles in store (extreme fragile). |
+| **Nature & Ability Sync**| **Option A (Enfoque A)**: Full logic & stats synchronization | Enforces 100% mathematical simulation fidelity. Selected natures apply exact +10%/-10% stat modifiers in the Showdown engine. | **Option B**: Esthetic-only visual badges (neutra nature in engine). |
 
 ---
 
@@ -104,6 +105,16 @@ For `switch` events:
 5. Slide/fade the new active sprite in from a digital Pokéball flash.
 6. Clear styles using `clearProps` on animation completion.
 7. Resolve animation Promise to advance FSM.
+
+### 5.5 Nature & Ability Synchronization (`ShowdownWorker.ts` & HUD)
+
+- **HUD Metadata Badges**: `ShowdownHudCard.vue` displays Habilidad and Naturaleza in a compact row below the elemental types.
+- **Dynamic Tooltips**:
+  - `ShowdownAbilityTooltip.vue`: Renders description from `ABILITY_DATA` with entrance/exit GSAP animations.
+  - `ShowdownNatureTooltip.vue`: Renders `up`/`down` stats and description from `NATURE_DATA` with GSAP animations.
+- **Worker translation**:
+  - The worker uses a static dictionary to map Spanish nature names to their standard English names (e.g., `"Firme" -> "Adamant"`) before passing the team array to `@pkmn/sim`.
+  - The worker uses a Spanish ability database to map active ability names back to their standard English Showdown IDs (e.g., `"Espesura" -> "overgrow"`) for complete type-safe engine calculations.
 
 ---
 

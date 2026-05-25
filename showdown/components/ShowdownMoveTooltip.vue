@@ -5,8 +5,9 @@ import { getMoveDescription } from '../../src/logic/pokemonUtils';
 import { pokemonDataProvider } from '../../src/logic/providers/pokemonDataProvider';
 import moveTranslations from '../sandbox_db/data/move_translations.json';
 import moveDescriptions from '../sandbox_db/data/move_descriptions.json';
-import showdownDB from '../sandbox_db/data/showdown_db.json';
+import showdownDB from '../sandbox_db/data/showdown_db_es.json';
 import type { ShowdownLocalDB } from '../sandbox_db/cloner/extract_logic';
+import ShowdownMoveMathBreakdown from './ShowdownMoveMathBreakdown.vue';
 import gsap from 'gsap';
 
 interface Props {
@@ -15,6 +16,12 @@ interface Props {
     id: string;
     name: string;
     types: string[];
+    moveSlots?: Array<{
+      id: string;
+      pp: number;
+      maxpp: number;
+      disabled?: boolean | string;
+    }> | null;
   } | null;
   defender: {
     id: string;
@@ -97,11 +104,56 @@ const moveDesc = computed(() => {
   return move.value.shortDesc || move.value.desc || 'Causa daño al oponente sin efectos secundarios adicionales.';
 });
 
+const currentPP = computed(() => {
+  if (!move.value) return 0;
+  const cleanId = move.value.id.toLowerCase().replace(/[^a-z0-9]/g, '');
+  const slot = props.attacker?.moveSlots?.find(s => s.id.toLowerCase().replace(/[^a-z0-9]/g, '') === cleanId);
+  return slot ? slot.pp : move.value.pp;
+});
+
+const maxPP = computed(() => {
+  if (!move.value) return 0;
+  const cleanId = move.value.id.toLowerCase().replace(/[^a-z0-9]/g, '');
+  const slot = props.attacker?.moveSlots?.find(s => s.id.toLowerCase().replace(/[^a-z0-9]/g, '') === cleanId);
+  return slot ? slot.maxpp : move.value.pp;
+});
+
+// Diccionario de traducción de tipos Español -> Inglés
+const typeMapEsToEn: Record<string, string> = {
+  normal: 'normal',
+  fuego: 'fire',
+  agua: 'water',
+  planta: 'grass',
+  eléctrico: 'electric',
+  electrico: 'electric',
+  hielo: 'ice',
+  lucha: 'fighting',
+  veneno: 'poison',
+  tierra: 'ground',
+  volador: 'flying',
+  psíquico: 'psychic',
+  psiquico: 'psychic',
+  bicho: 'bug',
+  roca: 'rock',
+  fantasma: 'ghost',
+  dragón: 'dragon',
+  dragon: 'dragon',
+  siniestro: 'dark',
+  acero: 'steel',
+  hada: 'fairy'
+};
+
+const getEnglishType = (type?: string): string => {
+  if (!type) return 'normal';
+  const clean = type.trim().toLowerCase();
+  return typeMapEsToEn[clean] || clean;
+};
+
 // Cálculo dinámico de STAB (Mismo Tipo)
 const hasStab = computed(() => {
   if (!props.attacker || !props.attacker.types || !move.value) return false;
-  const moveType = move.value.type.toLowerCase();
-  return props.attacker.types.some(t => t.toLowerCase() === moveType);
+  const moveTypeEn = getEnglishType(move.value.type);
+  return props.attacker.types.some(t => getEnglishType(t) === moveTypeEn);
 });
 
 const stabMultiplier = computed(() => {
@@ -112,14 +164,14 @@ const stabMultiplier = computed(() => {
 // Cálculo dinámico de efectividad cruzada contra defensor
 const effectiveness = computed(() => {
   if (!props.defender || !props.defender.types || !move.value) return 1.0;
-  const moveType = move.value.type.toLowerCase();
   
+  const moveTypeEn = getEnglishType(move.value.type);
   const def = {
-    type: props.defender.types[0]?.toLowerCase() || 'normal',
-    type2: props.defender.types[1]?.toLowerCase() || undefined
+    type: getEnglishType(props.defender.types[0]),
+    type2: props.defender.types[1] ? getEnglishType(props.defender.types[1]) : undefined
   };
   
-  return getCombinedEffectiveness(moveType, def);
+  return getCombinedEffectiveness(moveTypeEn, def);
 });
 
 // Calificación visual de efectividad
@@ -208,7 +260,7 @@ const onLeave = (el: Element, done: () => void) => {
           <div class="move-stats">
             <div class="stat-item">
               <span class="stat-label">PP:</span>
-              <span class="stat-value">{{ move.pp }}/{{ move.pp }}</span>
+              <span class="stat-value">{{ currentPP }}/{{ maxPP }}</span>
             </div>
             <div class="stat-item">
               <span class="stat-label">Prec:</span>
@@ -217,49 +269,18 @@ const onLeave = (el: Element, done: () => void) => {
           </div>
         </div>
 
-        <!-- Math breakdown -->
-        <div class="tooltip-math-section">
-          <h4 class="section-title">
-            📊 ANÁLISIS MATEMÁTICO
-          </h4>
-          
-          <div class="math-grid">
-            <div class="math-row">
-              <span class="math-label">Poder Base (BP):</span>
-              <span class="math-value highlight">{{ move.basePower || '—' }}</span>
-            </div>
-
-            <div class="math-row">
-              <span class="math-label">STAB (x1.5 Coincidencia):</span>
-              <span :class="['math-value', { 'stab-active': hasStab && move.category.toLowerCase() !== 'status' }]">
-                {{ hasStab && move.category.toLowerCase() !== 'status' ? '✓ Sí (x1.5)' : '✗ No (x1.0)' }}
-              </span>
-            </div>
-
-            <div class="math-row">
-              <span class="math-label">Eficacia vs {{ defender?.name }}:</span>
-              <span :class="['math-value', effectivenessClass]">
-                {{ effectivenessLabel }}
-              </span>
-            </div>
-
-            <div class="math-total-row">
-              <span class="total-label">POTENCIA ESTIMADA:</span>
-              <span
-                v-if="move.category.toLowerCase() !== 'status' && move.basePower > 0"
-                class="total-value"
-              >
-                {{ move.basePower }} x {{ stabMultiplier }} x {{ effectiveness }} = <strong class="total-result">{{ estimatedPower }}</strong>
-              </span>
-              <span
-                v-else
-                class="total-value status-only"
-              >
-                Efecto de Estado (N/A)
-              </span>
-            </div>
-          </div>
-        </div>
+        <!-- Math breakdown (Extracted subcomponent) -->
+        <ShowdownMoveMathBreakdown
+          :base-power="move.basePower"
+          :category="move.category"
+          :has-stab="hasStab"
+          :defender-name="defender?.name || ''"
+          :effectiveness-label="effectivenessLabel"
+          :effectiveness-class="effectivenessClass"
+          :stab-multiplier="stabMultiplier"
+          :effectiveness="effectiveness"
+          :estimated-power="estimatedPower"
+        />
 
         <!-- Description -->
         <div class="tooltip-desc-section">
