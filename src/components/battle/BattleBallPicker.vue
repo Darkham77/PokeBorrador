@@ -343,6 +343,7 @@ onUnmounted(() => {
   gap: 8px;
   max-height: calc(100dvh - 200px); // Expand to top of screen
   overflow-y: auto;
+  overflow-x: hidden; // Evitar scrollbar horizontal por variaciones de subpíxeles o scrollbars verticales
   padding: 2px; // Space for hover outlines
   @include m.smooth-scroll;
 

@@ -8,11 +8,10 @@ import { ref, onMounted, onUnmounted, nextTick, watch, provide, computed } from 
 import { gsap } from 'gsap'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
-import PVTooltip from '@/components/common/PVTooltip.vue'
-import { NATURE_DATA } from '@/data/natures'
-import { ABILITY_DATA } from '@/data/abilities'
 import type { Pokemon, PokemonEgg } from '@/types/pokemon'
 import { useGameStore } from '@/stores/game'
+import HatchStatsCard from '@/components/breeding/HatchStatsCard.vue'
+import { getAuraStyles } from '@/logic/breeding/hatchAuras'
 
 interface Props {
   id?: string
@@ -64,75 +63,14 @@ const getSprite = (id: string | number, isShiny: boolean) => {
   return getAssetUrl(ASSET_TYPES.POKEMON, id, { isShiny })
 }
 
-const getNatureInfo = (nature: string) => {
-  if (!nature) return { desc: 'Sin datos de naturaleza.' }
-  const data = NATURE_DATA as Record<string, { desc: string }>
-  const entry = data[nature] || Object.entries(data).find(([k]) => k.toLowerCase() === nature.toLowerCase())?.[1]
-  return entry || { desc: 'Naturaleza desconocida.' }
-}
-
-const getAbilityDesc = (ability: string) => {
-  if (!ability) return 'Habilidad especial de este Pokémon.'
-  const data = ABILITY_DATA as Record<string, string | { desc: string }>
-  const entry = data[ability] || Object.entries(data).find(([k]) => k.toLowerCase() === ability.toLowerCase())?.[1]
-  if (!entry) return 'Habilidad especial de este Pokémon.'
-  return typeof entry === 'string' ? entry : (entry.desc || 'Habilidad especial de este Pokémon.')
-}
-
 const hintText = computed(() => {
   if (taps.value === 0) return '¡HAZ CLIC PARA ECLOSIONAR!'
   if (taps.value === 1) return '¡EL HUEVO SE ESTÁ AGRIETANDO!'
   return '¡YA CASI...! ¡UN TOQUE MÁS!'
 })
 
-const TYPE_AURA_COLORS: Record<string, { c1: string; c2: string }> = {
-  normal: { c1: 'rgba(168, 168, 120, 0.95)', c2: 'rgba(120, 120, 90, 0.8)' },
-  fire: { c1: 'rgba(240, 128, 48, 0.95)', c2: 'rgba(180, 70, 20, 0.85)' },
-  water: { c1: 'rgba(104, 144, 240, 0.95)', c2: 'rgba(30, 70, 180, 0.85)' },
-  grass: { c1: 'rgba(120, 200, 80, 0.95)', c2: 'rgba(40, 130, 30, 0.85)' },
-  electric: { c1: 'rgba(248, 208, 48, 0.95)', c2: 'rgba(200, 140, 0, 0.85)' },
-  ice: { c1: 'rgba(152, 216, 216, 0.95)', c2: 'rgba(70, 170, 180, 0.85)' },
-  fighting: { c1: 'rgba(192, 48, 40, 0.95)', c2: 'rgba(120, 20, 20, 0.85)' },
-  poison: { c1: 'rgba(160, 64, 160, 0.95)', c2: 'rgba(90, 20, 100, 0.85)' },
-  ground: { c1: 'rgba(224, 192, 104, 0.95)', c2: 'rgba(160, 120, 50, 0.85)' },
-  flying: { c1: 'rgba(168, 144, 240, 0.95)', c2: 'rgba(100, 70, 200, 0.85)' },
-  psychic: { c1: 'rgba(248, 88, 136, 0.95)', c2: 'rgba(180, 20, 80, 0.85)' },
-  bug: { c1: 'rgba(168, 184, 32, 0.95)', c2: 'rgba(100, 120, 10, 0.85)' },
-  rock: { c1: 'rgba(184, 160, 56, 0.95)', c2: 'rgba(120, 100, 20, 0.85)' },
-  ghost: { c1: 'rgba(112, 88, 152, 0.95)', c2: 'rgba(60, 40, 100, 0.85)' },
-  dragon: { c1: 'rgba(112, 56, 248, 0.95)', c2: 'rgba(50, 20, 180, 0.85)' },
-  dark: { c1: 'rgba(112, 88, 72, 0.95)', c2: 'rgba(60, 45, 35, 0.85)' },
-  steel: { c1: 'rgba(184, 184, 208, 0.95)', c2: 'rgba(120, 120, 150, 0.85)' },
-  fairy: { c1: 'rgba(240, 166, 178, 0.95)', c2: 'rgba(180, 90, 110, 0.85)' }
-}
-
 const auraStyles = computed(() => {
-  let c1 = 'rgba(0, 255, 255, 0.85)' // Cian brillante por defecto
-  let c2 = 'rgba(0, 190, 255, 0.75)' // Azul profundo por defecto
-
-  if (resultPokemon.value) {
-    const primaryType = resultPokemon.value.type?.toLowerCase() || 'normal'
-    const colors = TYPE_AURA_COLORS[primaryType] ?? TYPE_AURA_COLORS.normal ?? { c1: 'rgba(0, 255, 255, 0.85)', c2: 'rgba(0, 190, 255, 0.75)' }
-    c1 = colors.c1
-    c2 = colors.c2
-
-    // Si es shiny o guardián, sobreescribir con los colores de rareza premium
-    if (resultPokemon.value.isShiny) {
-      c1 = 'rgba(255, 215, 0, 0.95)' // Oro brillante
-      c2 = 'rgba(255, 140, 0, 0.85)' // Naranja fuego
-    } else if (resultPokemon.value.isGuardian) {
-      c1 = 'rgba(255, 255, 255, 0.95)' // Blanco puro
-      c2 = 'rgba(173, 216, 230, 0.85)' // Plateado / Celeste suave
-    }
-  }
-
-  return {
-    '--flare-1-url': `url('${flare1Url}')`,
-    '--flare-2-url': `url('${flare2Url}')`,
-    '--aura-color-1': c1,
-    '--aura-color-2': c2,
-    '--particle-color': c1
-  }
+  return getAuraStyles(resultPokemon.value, flare1Url, flare2Url)
 })
 
 const prepareResult = async () => {
@@ -187,7 +125,7 @@ const initAnimations = async () => {
     ease: 'sine.inOut'
   })
 
-  // Animar el anillo de brillo místico alrededor del huevo
+  // Animar el anillo de brillo místico al rededor del huevo
   const glow = gsap.fromTo('.glow-ring', 
     { scale: 0.8, opacity: 0.5 },
     { scale: 1.4, opacity: 0, duration: 1.8, repeat: -1, ease: 'power1.out' }
@@ -511,42 +449,10 @@ onUnmounted(() => {
             </div>
 
             <!-- Tarjeta Premium de Stats -->
-            <div
+            <HatchStatsCard
               v-if="resultPokemon"
-              class="stats-card"
-            >
-              <div class="stat-row">
-                <span class="label">Naturaleza:</span>
-                <PVTooltip
-                  title="NATURALEZA"
-                  :description="getNatureInfo(resultPokemon.nature).desc"
-                  position="top"
-                >
-                  <span class="val interactive-val m-interactive-label">{{ resultPokemon.nature }}</span>
-                </PVTooltip>
-              </div>
-              <div class="stat-row">
-                <span class="label">Habilidad:</span>
-                <PVTooltip
-                  title="HABILIDAD"
-                  :description="getAbilityDesc(resultPokemon.ability || 'Común')"
-                  position="top"
-                >
-                  <span class="val interactive-val m-interactive-label">{{ resultPokemon.ability || 'Común' }}</span>
-                </PVTooltip>
-              </div>
-              <div class="stat-row ivs-row">
-                <span class="label">IVs:</span>
-                <span class="val ivs-grid">
-                  <span>HP: {{ resultPokemon.ivs?.hp }}</span>
-                  <span>ATK: {{ resultPokemon.ivs?.atk }}</span>
-                  <span>DEF: {{ resultPokemon.ivs?.def }}</span>
-                  <span>SPA: {{ resultPokemon.ivs?.spa }}</span>
-                  <span>SPD: {{ resultPokemon.ivs?.spd }}</span>
-                  <span>SPE: {{ resultPokemon.ivs?.spe }}</span>
-                </span>
-              </div>
-            </div>
+              :pokemon="resultPokemon"
+            />
 
             <!-- Botón de Confirmación -->
             <button

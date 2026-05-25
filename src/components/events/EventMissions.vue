@@ -8,6 +8,7 @@ import { useUIStore } from '@/stores/ui';
 import { usePlayerClassStore } from '@/stores/playerClass';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import { CLASS_MISSIONS } from '@/data/playerClasses';
+import MissionCard from './MissionCard.vue';
 import type { DaycareMission } from '@/types/breeding';
 import type { Pokemon } from '@/types/pokemon';
 
@@ -188,13 +189,6 @@ async function startClassMission(missionId: string) {
     });
   }
 }
-
-const handleImgError = (e: Event) => {
-  const target = e.target as HTMLImageElement;
-  target.style.display = 'none';
-  const placeholder = target.nextElementSibling as HTMLElement;
-  if (placeholder) placeholder.style.display = 'flex';
-};
 </script>
 
 <template>
@@ -214,57 +208,22 @@ const handleImgError = (e: Event) => {
     </header>
 
     <div class="missions-grid">
-      <div 
-        v-for="(mission, index) in (breedingStore.dailyMissions as DaycareMission[])" 
+      <MissionCard
+        v-for="(mission, index) in (breedingStore.dailyMissions as DaycareMission[])"
         :key="index"
-        class="mission-card"
-        :class="{ completed: mission.completed }"
-      >
-        <div
-          v-if="mission.completed"
-          class="completed-badge"
-        >
-          ✓ COMPLETADA
-        </div>
-        
-        <div class="trainer-section">
-          <div class="trainer-avatar">
-            <img 
-              :src="getAssetUrl(ASSET_TYPES.TRAINER, mission.trainerSprite)" 
-              class="pixelated"
-              @error="handleImgError"
-            >
-            <span
-              class="avatar-placeholder"
-              style="display: none;"
-            >👤</span>
-          </div>
-          <div class="dialogue-box">
-            <span class="trainer-name">{{ mission.trainerName }} dice:</span>
-            <p class="dialogue">
-              " {{ mission.dialogue }} "
-            </p>
-          </div>
-        </div>
-
-        <div class="reward-section">
-          <div class="reward-tag">
-            <span class="reward-icon">{{ mission.reward.icon }}</span>
-            <div class="reward-info">
-              <span class="label">Recompensa</span>
-              <span class="val">{{ mission.reward.name }} x{{ mission.reward.qty }}</span>
-            </div>
-          </div>
-          <button 
-            v-if="!mission.completed" 
-            class="btn-deliver"
-            :disabled="!canDeliverMission(mission)"
-            @click.stop="openDelivery(index)"
-          >
-            ENTREGAR
-          </button>
-        </div>
-      </div>
+        :avatar="getAssetUrl(ASSET_TYPES.TRAINER, mission.trainerSprite)"
+        is-avatar-url
+        :title="mission.trainerName + ' dice:'"
+        :dialogue="mission.dialogue"
+        :reward-icon="mission.reward.icon"
+        reward-label="Recompensa"
+        :reward-val="mission.reward.name + ' x' + mission.reward.qty"
+        btn-text="ENTREGAR"
+        :btn-disabled="!canDeliverMission(mission)"
+        :is-completed="mission.completed"
+        completed-badge-text="✓ COMPLETADA"
+        @action="openDelivery(index)"
+      />
     </div>
 
     <!-- Class Missions Section -->
@@ -309,42 +268,20 @@ const handleImgError = (e: Event) => {
       </div>
 
       <div class="missions-grid">
-        <div 
-          v-for="m in CLASS_MISSIONS" 
-          :key="m.id" 
-          class="mission-card"
-          :class="{ completed: activeMission?.id === m.id }"
-        >
-          <div class="trainer-section">
-            <div class="trainer-avatar">
-              <span class="avatar-placeholder">{{ classStore.currentClassDef?.icon }}</span>
-            </div>
-            <div class="dialogue-box">
-              <span class="trainer-name">{{ m.durationHs }}H · REQUISITO: NV. {{ m.reqLv }}</span>
-              <p class="dialogue">
-                " {{ getMissionDesc(m.id, classStore.currentClassDef?.id) }} "
-              </p>
-            </div>
-          </div>
-
-          <div class="reward-section">
-            <div class="reward-tag">
-              <span class="reward-icon">{{ getClassReward(classStore.currentClassDef?.id).icon }}</span>
-              <div class="reward-info">
-                <span class="label">Recompensa Estimada</span>
-                <span class="val">{{ getClassReward(classStore.currentClassDef?.id).name }}</span>
-              </div>
-            </div>
-            
-            <button 
-              class="btn-deliver"
-              :disabled="trainerLevel < m.reqLv || !!activeMission"
-              @click.stop="startClassMission(m.id)"
-            >
-              {{ activeMission?.id === m.id ? 'EN CURSO' : (activeMission ? 'BLOQUEADO' : 'DESPLEGAR') }}
-            </button>
-          </div>
-        </div>
+        <MissionCard
+          v-for="m in CLASS_MISSIONS"
+          :key="m.id"
+          :avatar="classStore.currentClassDef?.icon"
+          :title="m.durationHs + 'H · REQUISITO: NV. ' + m.reqLv"
+          :dialogue="getMissionDesc(m.id, classStore.currentClassDef?.id)"
+          :reward-icon="getClassReward(classStore.currentClassDef?.id).icon"
+          reward-label="Recompensa Estimada"
+          :reward-val="getClassReward(classStore.currentClassDef?.id).name"
+          :btn-text="activeMission?.id === m.id ? 'EN CURSO' : (activeMission ? 'BLOQUEADO' : 'DESPLEGAR')"
+          :btn-disabled="trainerLevel < m.reqLv || !!activeMission"
+          :is-completed="activeMission?.id === m.id"
+          @action="startClassMission(m.id)"
+        />
       </div>
     </div>
   </div>
@@ -389,112 +326,6 @@ const handleImgError = (e: Event) => {
   @media (min-width: 640px) {
     grid-template-columns: 1fr 1fr;
   }
-}
-
-.mission-card {
-  background: Rgba(255, 255, 255, 0.03);
-  border: 1px solid Rgba(255, 255, 255, 0.08);
-  border-radius: 16px;
-  padding: 16px;
-  position: relative;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  
-
-  &.completed {
-    border-color: Rgba(34, 197, 94, 0.4);
-    background: Rgba(34, 197, 94, 0.02);
-  }
-}
-
-.completed-badge {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  background: Rgba(34, 197, 94, 1);
-  color: $white;
-  font-size: 8px;
-  @include pixelated;
-  padding: 4px 8px;
-  border-radius: 4px;
-  border: 1px solid #000000;
-  text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
-}
-
-.trainer-section {
-  display: flex;
-  gap: 16px;
-  
-  .trainer-avatar {
-    width: 48px;
-    height: 48px;
-    background: Rgba(0, 0, 0, 0.2);
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 24px;
-
-    img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      @include pixelated;
-    }
-
-    .pixelated { @include pixelated; }
-  }
-  
-  .dialogue-box {
-    flex: 1;
-    .trainer-name { 
-      font-size: 8px; 
-      color: Rgba(255, 255, 255, 0.4); 
-      text-transform: uppercase; 
-      margin-bottom: 6px; 
-      display: block; 
-      letter-spacing: 0.5px;
-    }
-    .dialogue { 
-      font-size: 9px; 
-      color: $white; 
-      line-height: 1.8; 
-      font-style: italic; 
-    }
-  }
-}
-
-.reward-section {
-  margin-top: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.reward-tag {
-  background: Rgba(0, 0, 0, 0.2);
-  border: 1px solid Rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
-  padding: 8px 12px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-
-  .reward-icon { font-size: 24px; }
-  .reward-info {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    .label { font-size: 8px; color: $muted; text-transform: uppercase; letter-spacing: 0.5px; }
-    .val { font-size: 9px; color: Rgba(34, 197, 94, 1); font-weight: 800; }
-  }
-}
-
-.btn-deliver {
-  width: 100%;
-  @include btn-vicio('primary', 'sm', true);
 }
 
 .class-missions-container {

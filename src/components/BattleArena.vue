@@ -368,7 +368,7 @@ const handleClose = () => {
     grid-template-rows: 1fr auto;
     grid-template-areas: 
       "log arena"
-      "log moves";
+      "moves moves";
     row-gap: 0;
     column-gap: 0;
     align-items: stretch;

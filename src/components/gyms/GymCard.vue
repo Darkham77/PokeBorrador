@@ -4,6 +4,7 @@ import { gsap } from 'gsap'
 import { useGymsStore } from '@/stores/gyms'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue'
+import GymRewardPanel from './GymRewardPanel.vue'
 
 interface GymDifficulty {
   pokemon: string[];
@@ -45,24 +46,6 @@ const gymsStore = useGymsStore()
 const selectedDifficulty = defineModel<string>('difficulty', { default: 'easy' })
 const cardRef = ref<HTMLElement | null>(null)
 
-const estimatedRewards = computed(() => {
-  if (!props.gym?.difficulties) return { money: 0, exp: 0 }
-  
-  const diff = props.gym.difficulties[selectedDifficulty.value as keyof typeof props.gym.difficulties] || props.gym.difficulties.easy
-  if (!diff?.levels) return { money: 0, exp: 0 }
-
-  const avgLevel = diff.levels.reduce((a, b) => a + b, 0) / diff.levels.length
-  
-  // Fórmulas de recompensa escaladas
-  const mults: Record<string, number> = { easy: 1, normal: 2.2, hard: 4.5 }
-  const mult = mults[selectedDifficulty.value] || 1
-  
-  return {
-    money: Math.floor(avgLevel * 30 * mult),
-    exp: Math.floor(avgLevel * 180 * mult)
-  }
-})
-
 onMounted(() => {
   if (cardRef.value) {
     gsap.from(cardRef.value, {
@@ -98,7 +81,7 @@ const handleMouseEnter = () => {
     y: -4,
     duration: 0.4,
     ease: 'back.out(1.7)',
-    borderColor: 'Rgba(255, 255, 255, 0.4)'
+    borderColor: 'rgba(255, 255, 255, 0.4)'
   })
   
   const sprite = cardRef.value.querySelector('.leader-sprite')
@@ -106,7 +89,7 @@ const handleMouseEnter = () => {
     gsap.to(sprite, {
       scale: 1.1,
       y: -5,
-      filter: 'Drop-Shadow(0 8px 15px Rgba(0,0,0,0.6))',
+      filter: 'drop-shadow(0 8px 15px rgba(0,0,0,0.6))',
       duration: 0.4,
       ease: 'back.out(1.7)'
     })
@@ -120,7 +103,7 @@ const handleMouseLeave = () => {
     y: 0,
     duration: 0.4,
     ease: 'power2.out',
-    borderColor: 'Rgba(255, 255, 255, 0.15)'
+    borderColor: 'rgba(255, 255, 255, 0.15)'
   })
   
   const sprite = cardRef.value.querySelector('.leader-sprite')
@@ -128,7 +111,7 @@ const handleMouseLeave = () => {
     gsap.to(sprite, {
       scale: 1,
       y: 0,
-      filter: 'Drop-Shadow(0 5px 10px Rgba(0,0,0,0.5))',
+      filter: 'drop-shadow(0 5px 10px rgba(0,0,0,0.5))',
       duration: 0.4,
       ease: 'power2.out'
     })
@@ -138,7 +121,7 @@ const handleMouseLeave = () => {
 const handleBtnEnter = (e: MouseEvent) => {
   gsap.to(e.currentTarget, {
     scale: 1.05,
-    backgroundColor: 'Rgba(255, 255, 255, 0.15)',
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
     duration: 0.3,
     ease: 'power2.out'
   })
@@ -147,7 +130,7 @@ const handleBtnEnter = (e: MouseEvent) => {
 const handleBtnLeave = (e: MouseEvent) => {
   gsap.to(e.currentTarget, {
     scale: 1,
-    backgroundColor: 'Rgba(255, 255, 255, 0.05)',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
     duration: 0.3,
     ease: 'power2.out'
   })
@@ -165,7 +148,7 @@ const handleBtnLeave = (e: MouseEvent) => {
   >
     <div
       class="pv-card-header"
-      :style="{ background: `Linear-Gradient(180deg, ${gym.typeColor}15 0%, transparent 100%)` }"
+      :style="{ background: `linear-gradient(180deg, ${gym.typeColor}15 0%, transparent 100%)` }"
     >
       <div class="header-main">
         <div class="leader-info">
@@ -200,25 +183,10 @@ const handleBtnLeave = (e: MouseEvent) => {
       </div>
       
       <!-- Panel de Recompensa de Medalla Destacada -->
-      <div class="medal-reward-box">
-        <img 
-          :src="getAssetUrl(ASSET_TYPES.BADGE, gym.id)" 
-          :alt="gym.badgeName"
-          class="reward-badge-img"
-        >
-        <div class="medal-detail">
-          <span class="reward-title">RECOMPENSA DE VICTORIA</span>
-          <span class="medal-name">{{ gym.badgeName }}</span>
-          
-          <div class="reward-grid">
-            <span class="tm-reward">+ {{ gym.rewardTM }}</span>
-            <div class="reward-extras">
-              <span class="reward-pill exp">✨ {{ estimatedRewards.exp }} XP</span>
-              <span class="reward-pill money">₱ {{ estimatedRewards.money }}</span>
-            </div>
-          </div>
-        </div>
-      </div>
+      <GymRewardPanel
+        :gym="gym"
+        :difficulty="selectedDifficulty"
+      />
     </div>
 
     <div class="pv-card-footer">
@@ -420,95 +388,6 @@ const handleBtnLeave = (e: MouseEvent) => {
     @include pixelated;
     filter: Drop-Shadow(0 5px 10px Rgba(0,0,0,0.5));
     will-change: filter, transform;
-  }
-}
-
-/* Placa de Recompensa Destacada */
-.medal-reward-box {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  background: Rgba(0, 0, 0, 0.35);
-  border: 1px solid Rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
-  padding: 10px 14px;
-  box-shadow: inset 0 2px 8px Rgba(0, 0, 0, 0.4);
-}
-
-.reward-badge-img {
-  width: 24px;
-  height: 24px;
-  object-fit: contain;
-  image-rendering: pixelated;
-  filter: Drop-Shadow(0 0 4px Rgba(255, 215, 0, 0.4));
-}
-
-.medal-detail {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  min-width: 0;
-}
-
-.reward-title {
-  @include pixelated;
-  font-size: 6px;
-  color: var(--gray);
-  opacity: 0.6;
-  letter-spacing: 0.5px;
-}
-
-.medal-name {
-  @include pixelated;
-  font-size: 8px;
-  color: $coin-gold;
-  text-shadow: 0 0 8px Rgba(255, 214, 10, 0.3);
-  line-height: 1.4;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.reward-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin-top: 4px;
-}
-
-.tm-reward {
-  @include pixelated;
-  font-size: 6px;
-  color: #fff;
-  background: Rgba(255, 255, 255, 0.1);
-  padding: 2px 6px;
-  border-radius: 4px;
-  align-self: flex-start;
-  border: 1px solid Rgba(255, 255, 255, 0.05);
-}
-
-.reward-extras {
-  display: flex;
-  gap: 6px;
-}
-
-.reward-pill {
-  font-size: 6px;
-  padding: 2px 6px;
-  border-radius: 4px;
-  @include pixelated;
-  border: 1px solid transparent;
-
-  &.exp {
-    color: #4cc9f0;
-    background: Rgba(76, 201, 240, 0.1);
-    border-color: Rgba(76, 201, 240, 0.2);
-  }
-
-  &.money {
-    color: #ffd700;
-    background: Rgba(255, 215, 0, 0.1);
-    border-color: Rgba(255, 215, 0, 0.2);
   }
 }
 

@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { useInventoryStore } from '@/stores/inventory'
 import { useGameStore } from '@/stores/game'
-import { getItemSpriteUrl } from '@/logic/inventory/inventoryEngine'
 import { ITEM_CATEGORIES, CATEGORY_LABELS } from '@/data/items'
 import { formatCurrency } from '@/logic/utils/formatters'
 import { gsap } from 'gsap'
+import BagItemCard from '@/components/inventory/BagItemCard.vue'
 
 const inventoryStore = useInventoryStore()
 const gameStore = useGameStore()
@@ -28,9 +28,9 @@ const onTabClick = (catId: string, event: MouseEvent) => {
     tabs.forEach(tab => {
       if (tab !== target) {
         gsap.to(tab, {
-          backgroundColor: 'Rgba(255, 255, 255, 0.05)',
+          backgroundColor: 'rgba(255, 255, 255, 0.05)',
           color: 'var(--gray)',
-          borderColor: 'Rgba(255, 255, 255, 0.1)',
+          borderColor: 'rgba(255, 255, 255, 0.1)',
           duration: 0.2,
           overwrite: 'auto'
         })
@@ -47,29 +47,6 @@ const onTabClick = (catId: string, event: MouseEvent) => {
   })
 }
 
-const onItemMouseEnter = (event: MouseEvent) => {
-  const target = event.currentTarget as HTMLElement
-  gsap.to(target, {
-    backgroundColor: 'Rgba(255, 255, 255, 0.06)',
-    y: -2,
-    duration: 0.2,
-    ease: 'power2.out',
-    overwrite: 'auto'
-  })
-}
-
-const onItemMouseLeave = (event: MouseEvent) => {
-  const target = event.currentTarget as HTMLElement
-  const isSelected = target.classList.contains('selected')
-  gsap.to(target, {
-    backgroundColor: isSelected ? 'Rgba(16, 185, 129, 0.05)' : 'Rgba(255, 255, 255, 0.03)',
-    y: 0,
-    duration: 0.2,
-    ease: 'power2.out',
-    overwrite: 'auto'
-  })
-}
-
 const onItemClick = (itemName: string, qty: number, event: MouseEvent) => {
   if (inventoryStore.bagSellMode) {
     inventoryStore.toggleBagSellSelect(itemName, qty)
@@ -77,8 +54,8 @@ const onItemClick = (itemName: string, qty: number, event: MouseEvent) => {
     const isSelected = !!inventoryStore.bagSellSelected[itemName]
     
     gsap.to(target, {
-      borderColor: isSelected ? 'var(--green-bright)' : 'Rgba(255, 255, 255, 0.08)',
-      backgroundColor: isSelected ? 'Rgba(16, 185, 129, 0.05)' : 'Rgba(255, 255, 255, 0.06)',
+      borderColor: isSelected ? 'var(--green-bright)' : 'rgba(255, 255, 255, 0.08)',
+      backgroundColor: isSelected ? 'rgba(16, 185, 129, 0.05)' : 'rgba(255, 255, 255, 0.06)',
       duration: 0.2,
       overwrite: 'auto'
     })
@@ -88,7 +65,7 @@ const onItemClick = (itemName: string, qty: number, event: MouseEvent) => {
 const onSellModeMouseEnter = (event: MouseEvent) => {
   const target = event.currentTarget as HTMLElement
   gsap.to(target, {
-    backgroundColor: 'Rgba(255, 255, 255, 0.1)',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
     duration: 0.2,
     ease: 'power2.out',
     overwrite: 'auto'
@@ -98,7 +75,7 @@ const onSellModeMouseEnter = (event: MouseEvent) => {
 const onSellModeMouseLeave = (event: MouseEvent) => {
   const target = event.currentTarget as HTMLElement
   gsap.to(target, {
-    backgroundColor: 'Rgba(255, 255, 255, 0.05)',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
     duration: 0.2,
     ease: 'power2.out',
     overwrite: 'auto'
@@ -181,75 +158,18 @@ const onSellModeMouseLeave = (event: MouseEvent) => {
           v-else
           class="items-grid"
         >
-          <div 
-            v-for="item in inventoryStore.bagItems" 
+          <BagItemCard
+            v-for="item in inventoryStore.bagItems"
             :key="item.name"
-            :class="['item-card', { selected: !!inventoryStore.bagSellSelected[item.name] }]"
-            @mouseenter="onItemMouseEnter"
-            @mouseleave="onItemMouseLeave"
-            @click.stop="onItemClick(item.name, Number(item.qty), $event)"
-          >
-            <div class="item-icon-container">
-              <div
-                class="bag-item-qty"
-                @click.stop="inventoryStore.toggleBagSellSelect(item.name, Number(item.qty))"
-              >
-                {{ item.qty }}
-              </div>
-              <img
-                :src="getItemSpriteUrl(item.name)"
-                :alt="item.name"
-                class="item-sprite"
-                @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
-              >
-            </div>
-            
-            <div class="item-details">
-              <div class="item-name">
-                {{ item.name }}
-              </div>
-            </div>
-
-            <div
-              v-if="!inventoryStore.bagSellMode"
-              class="item-footer"
-            >
-              <button
-                class="use-btn"
-                @click.stop="onUseItem(item.name)"
-              >
-                USAR
-              </button>
-            </div>
-
-            <!-- Sell Qty Selector -->
-            <div
-              v-else-if="inventoryStore.bagSellSelected[item.name] !== undefined"
-              class="sell-qty-selector"
-            >
-              <div class="qty-controls">
-                <button @click.stop="inventoryStore.updateBagSellQty(item.name, (inventoryStore.bagSellSelected[item.name] || 0) - 1, Number(item.qty))">
-                  -
-                </button>
-                <input 
-                  type="number" 
-                  min="1" 
-                  :max="Number(item.qty)"
-                  :value="inventoryStore.bagSellSelected[item.name]" 
-                  @input="(e: Event) => inventoryStore.updateBagSellQty(item.name, (e.target as HTMLInputElement).value, Number(item.qty))"
-                >
-                <button @click="inventoryStore.updateBagSellQty(item.name, 1, Number(item.qty))">
-                  MIN
-                </button>
-                <button @click="inventoryStore.updateBagSellQty(item.name, Number(item.qty), Number(item.qty))">
-                  MAX
-                </button>
-                <button @click.stop="inventoryStore.updateBagSellQty(item.name, (inventoryStore.bagSellSelected[item.name] || 0) + 1, Number(item.qty))">
-                  +
-                </button>
-              </div>
-            </div>
-          </div>
+            :item="item"
+            :is-selected="!!inventoryStore.bagSellSelected[item.name]"
+            :sell-mode="inventoryStore.bagSellMode"
+            :sell-qty="inventoryStore.bagSellSelected[item.name]"
+            @use="onUseItem"
+            @click="onItemClick(item.name, Number(item.qty), $event)"
+            @qty-click="inventoryStore.toggleBagSellSelect(item.name, Number(item.qty))"
+            @update-qty="(val) => inventoryStore.updateBagSellQty(item.name, val, Number(item.qty))"
+          />
         </div>
       </div>
 
@@ -372,71 +292,6 @@ const onSellModeMouseLeave = (event: MouseEvent) => {
   gap: 16px;
 }
 
-.item-card {
-  background: Rgba(255, 255, 255, 0.03);
-  border: 1px solid Rgba(255, 255, 255, 0.08);
-  border-radius: 16px;
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  cursor: default;
-  position: relative;
-}
-
-.item-card:hover {
-  background: Rgba(255, 255, 255, 0.06);
-}
-
-.item-card.selected {
-  border-color: var(--green-bright);
-  background: Rgba(16, 185, 129, 0.05);
-}
-
-.item-icon-container {
-  position: relative;
-  width: 48px;
-  height: 48px;
-}
-
-.item-sprite {
-  width: 100%;
-  height: 100%;
-  @include sprite-render;
-  object-fit: contain;
-}
-
-.item-qty {
-  position: absolute;
-  bottom: -4px;
-  right: -4px;
-  background: var(--purple);
-  color: var(--white);
-  font-size: 9px;
-  padding: 2px 6px;
-  border-radius: 6px;
-  font-weight: bold;
-}
-
-.item-name {
-  font-size: 12px;
-  font-weight: bold;
-  text-align: center;
-  color: var(--white);
-}
-
-.use-btn {
-  padding: 6px 16px;
-  border-radius: 8px;
-  border: none;
-  background: var(--purple);
-  color: var(--white);
-  font-size: 10px;
-  font-weight: bold;
-  cursor: pointer;
-}
-
 .sell-actions {
   background: Rgba(16, 185, 129, 0.1);
   border: 1px solid Rgba(16, 185, 129, 0.2);
@@ -470,31 +325,6 @@ const onSellModeMouseLeave = (event: MouseEvent) => {
   color: var(--white);
   @include pixelated;
   font-size: 10px;
-  cursor: pointer;
-}
-
-.sell-qty-selector {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.sell-qty-selector input {
-  width: 40px;
-  background: Rgba(0, 0, 0, 0.3);
-  border: 1px solid Rgba(255, 255, 255, 0.1);
-  color: var(--white);
-  text-align: center;
-  border-radius: 4px;
-}
-
-.sell-qty-selector button {
-  background: Rgba(255, 255, 255, 0.1);
-  border: none;
-  color: var(--white);
-  width: 24px;
-  height: 24px;
-  border-radius: 4px;
   cursor: pointer;
 }
 

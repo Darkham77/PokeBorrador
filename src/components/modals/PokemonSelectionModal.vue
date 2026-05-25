@@ -7,13 +7,13 @@ import { useGameStore } from '@/stores/game'
 import { useModalStore } from '@/stores/modals'
 import { safeStorage } from '@/logic/utils/storage'
 import BaseModal from '@/components/common/BaseModal.vue'
-import PVTooltip from '@/components/common/PVTooltip.vue'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
-import { POKEMON_TAGS, POKEMON_BADGES, hasPokemonTag } from '@/logic/constants/tags'
+import { hasPokemonTag } from '@/logic/constants/tags'
 import { logger } from '@/logic/utils/logger'
 import { useBreedingStore } from '@/stores/breeding'
 import { checkCompatibility } from '@/logic/breeding/breedingEngine'
 import PokemonSelectionItem from './PokemonSelectionItem.vue'
+import PokemonSelectionFilters from './PokemonSelectionFilters.vue'
 import type { Pokemon } from '@/types/pokemon'
 
 const uiStore = useUIStore()
@@ -276,31 +276,7 @@ function forceClose() {
   useModalStore().close('PokemonSelection')
 }
 
-function setSort(type: string) {
-  if (sortBy.value === type) {
-    sortOrder.value = sortOrder.value === 'desc' ? 'asc' : 'desc'
-  } else {
-    sortBy.value = type
-    sortOrder.value = 'desc'
-  }
-}
 
-function toggleTagFilter(tagId: string) {
-  const idx = activeTags.value.indexOf(tagId)
-  if (idx > -1) {
-    activeTags.value.splice(idx, 1)
-  } else {
-    activeTags.value.push(tagId)
-  }
-}
-
-function clearFilters() {
-  searchQuery.value = ''
-  sortBy.value = 'recent'
-  sortOrder.value = 'desc'
-  activeTags.value = []
-  filterCompatibleOnly.value = false
-}
 
 if (typeof window !== 'undefined') {
   const win = window as unknown as { _openPokemonSelectionModal?: (opts: Record<string, unknown>) => void }
@@ -341,144 +317,15 @@ function openDetail(item: { pokemon: Pokemon, _source: 'team' | 'box' | 'market'
     </template>
 
     <div class="selection-container">
-      <div class="filters-bar">
-        <div class="ps-search-row">
-          <span class="ps-search-icon">🔍</span>
-          <input 
-            v-model="searchQuery" 
-            type="text" 
-            placeholder="Buscar por nombre o ID..."
-            class="ps-search-input"
-          >
-          <button
-            v-if="searchQuery"
-            class="ps-clear-search"
-            @click.stop="searchQuery = ''"
-          >
-            ✕
-          </button>
-        </div>
-        <div class="ps-sort-btns">
-          <PVTooltip
-            title="MÁS RECIENTES"
-            description="Orden cronológico de captura."
-            position="bottom"
-            class="ps-sort-wrapper"
-          >
-            <button
-              :class="{ active: sortBy === 'recent' }"
-              @click.stop="setSort('recent')"
-            >
-              REC {{ sortBy === 'recent' ? (sortOrder === 'desc' ? '▼' : '▲') : '' }}
-            </button>
-          </PVTooltip>
-          <PVTooltip
-            title="NIVEL"
-            description="Orden por nivel de combate."
-            position="bottom"
-            class="ps-sort-wrapper"
-          >
-            <button
-              :class="{ active: sortBy === 'level' }"
-              @click.stop="setSort('level')"
-            >
-              LVL {{ sortBy === 'level' ? (sortOrder === 'desc' ? '▼' : '▲') : '' }}
-            </button>
-          </PVTooltip>
-          <PVTooltip
-            title="IVs"
-            description="Potencial genético total."
-            position="bottom"
-            class="ps-sort-wrapper"
-          >
-            <button
-              :class="{ active: sortBy === 'ivs' }"
-              @click.stop="setSort('ivs')"
-            >
-              IVs {{ sortBy === 'ivs' ? (sortOrder === 'desc' ? '▼' : '▲') : '' }}
-            </button>
-          </PVTooltip>
-          <PVTooltip
-            title="PODER TOTAL"
-            description="Suma de estadísticas base e IVs individuales."
-            position="bottom"
-            class="ps-sort-wrapper"
-          >
-            <button
-              :class="{ active: sortBy === 'TOT' }"
-              @click.stop="setSort('TOT')"
-            >
-              TOTAL {{ sortBy === 'TOT' ? (sortOrder === 'desc' ? '▼' : '▲') : '' }}
-            </button>
-          </PVTooltip>
-        </div>
-
-        <div class="ps-tags-section">
-          <div class="ps-tags-row-unified">
-            <PVTooltip
-              title="LIMPIAR FILTROS"
-              description="Resetear búsqueda, orden y etiquetas."
-            >
-              <button
-                class="ps-clear-icon-btn"
-                :class="{ disabled: !(activeTags.length > 0 || searchQuery || sortBy !== 'recent' || filterCompatibleOnly) }"
-                :disabled="!(activeTags.length > 0 || searchQuery || sortBy !== 'recent' || filterCompatibleOnly)"
-                @click.stop="clearFilters"
-              >
-                🧹
-              </button>
-            </PVTooltip>
-
-            <div class="ps-tags-list-horizontal">
-              <PVTooltip 
-                v-for="t in POKEMON_TAGS" 
-                :key="t.id"
-                :title="t.label" 
-                :description="t.desc" 
-                position="bottom"
-              >
-                <button
-                  :class="['ps-tag-' + t.id, { active: activeTags.includes(t.id) }]"
-                  @click.stop="toggleTagFilter(t.id)"
-                >
-                  <span class="icon">{{ t.icon }}</span>
-                  <span class="ps-tag-label">{{ t.shortLabel || t.label }}</span>
-                </button>
-              </PVTooltip>
-              
-              <PVTooltip 
-                v-if="POKEMON_BADGES.shiny"
-                :title="POKEMON_BADGES.shiny.label" 
-                :description="POKEMON_BADGES.shiny.desc" 
-                position="bottom"
-              >
-                <button
-                  :class="['ps-tag-shiny', { active: activeTags.includes('shiny') }]"
-                  @click.stop="toggleTagFilter('shiny')"
-                >
-                  <span class="icon">{{ POKEMON_BADGES.shiny.icon }}</span>
-                  <span class="ps-tag-label">{{ POKEMON_BADGES.shiny.shortLabel }}</span>
-                </button>
-              </PVTooltip>
-
-              <PVTooltip 
-                v-if="isDaycareContext"
-                :title="otherDaycarePokemon ? 'COMPATIBLES' : 'MODO COMPATIBLE'" 
-                :description="otherDaycarePokemon ? `Mostrar solo Pokémon compatibles con ${otherDaycarePokemon.name}.` : 'Filtro compatible (elige una pareja en el otro slot para filtrar).'" 
-                position="bottom"
-              >
-                <button
-                  :class="['ps-tag-compatible', { active: filterCompatibleOnly }]"
-                  @click.stop="filterCompatibleOnly = !filterCompatibleOnly"
-                >
-                  <span class="icon">❤️</span>
-                  <span class="ps-tag-label">COMPATIBLE</span>
-                </button>
-              </PVTooltip>
-            </div>
-          </div>
-        </div>
-      </div>
+      <PokemonSelectionFilters
+        v-model:search-query="searchQuery"
+        v-model:sort-by="sortBy"
+        v-model:sort-order="sortOrder"
+        v-model:active-tags="activeTags"
+        v-model:filter-compatible-only="filterCompatibleOnly"
+        :is-daycare-context="props.isDaycareContext"
+        :other-daycare-pokemon="otherDaycarePokemon"
+      />
 
       <div class="ps-vertical-list scrollable-content">
         <PokemonSelectionItem

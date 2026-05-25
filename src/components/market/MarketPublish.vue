@@ -3,17 +3,13 @@ import { ref, computed, watch } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useGTSStore } from '@/stores/gts'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { SHOP_ITEMS } from '@/data/items'
 import PokemonSelectionItem from '../modals/PokemonSelectionItem.vue'
+import MarketItemCard from './MarketItemCard.vue'
 import type { Pokemon } from '@/types/pokemon'
 
 const game = useGameStore()
 const gtsStore = useGTSStore()
-
-// Expose to template
-const _ASSET_TYPES = ASSET_TYPES
-const _getAssetUrl = getAssetUrl
 
 interface InventoryItem {
   name: string
@@ -70,7 +66,7 @@ async function handlePublish() {
   const publishData = activeMode.value === 'item' && 'qty' in selection.value
     ? { name: selection.value.name, qty: itemQty.value }
     : selection.value
-
+  
   const success = await gtsStore.publishListing(activeMode.value, publishData, price.value)
   if (success) {
     selection.value = null
@@ -155,40 +151,13 @@ const net = computed(() => price.value - fee.value)
           </template>
 
           <template v-else>
-            <div 
+            <MarketItemCard
               v-for="i in inventory"
               :key="i.name"
-              class="selectable-item-card"
-              :class="{ selected: selection && 'name' in selection && selection.name === i.name }"
-              @click.stop="selectItem(i)"
-            >
-              <PVTooltip
-                :title="i.name"
-                :description="i.desc"
-                position="top"
-                tag="div"
-                class="item-tooltip-trigger"
-              >
-                <div class="item-visual">
-                  <img 
-                    :src="_getAssetUrl(_ASSET_TYPES.ITEM, i.name)" 
-                    class="i-sprite pixelated"
-                    @error="(e: Event) => (e.target as HTMLImageElement).src = _getAssetUrl(_ASSET_TYPES.ITEM, 'Poción')"
-                  >
-                </div>
-                <div class="item-details">
-                  <span class="i-name">{{ i.name }}</span>
-                  <div class="i-meta">
-                    <span class="i-qty">STOCK: {{ i.qty }}</span>
-                  </div>
-                </div>
-                <div class="selection-indicator">
-                  <div class="check-circle">
-                    <span v-if="selection && 'name' in selection && selection.name === i.name">✓</span>
-                  </div>
-                </div>
-              </PVTooltip>
-            </div>
+              :item="i"
+              :is-selected="!!(selection && 'name' in selection && selection.name === i.name)"
+              @select="selectItem(i)"
+            />
             <div
               v-if="inventory.length === 0"
               class="empty-list"
@@ -370,100 +339,6 @@ const net = computed(() => price.value - fee.value)
     padding-right: 6px;
   }
 
-  .selectable-item-card {
-    background: Rgba(255, 255, 255, 0.03);
-    border: 1px solid Rgba(255, 255, 255, 0.05);
-    border-radius: 16px;
-    padding: 0;
-    cursor: pointer;
-    position: relative;
-    margin-bottom: 8px;
-
-    .item-tooltip-trigger {
-      display: flex !important;
-      align-items: center;
-      width: 100%;
-      gap: 15px;
-      padding: 12px 16px;
-      box-sizing: border-box;
-    }
-
-    &:hover {
-      background: Rgba(255, 255, 255, 0.06);
-      border-color: Rgba(255, 255, 255, 0.1);
-      transform: Translatex(4px);
-    }
-
-    &.selected {
-      background: Rgba(56, 189, 248, 0.1);
-      border-color: Rgba(56, 189, 248, 0.5);
-      box-shadow: 0 0 15px Rgba(56, 189, 248, 0.15);
-      
-      .selection-indicator .check-circle {
-        border-color: Rgba(56, 189, 248, 1);
-        background: Rgba(56, 189, 248, 1);
-        color: white;
-      }
-    }
-
-    .item-visual {
-      width: 44px;
-      height: 44px;
-      background: Rgba(0, 0, 0, 0.2);
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-
-      .i-sprite {
-        width: 32px;
-        height: 32px;
-        object-fit: contain;
-      }
-    }
-
-    .item-details {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      min-width: 0;
-
-      .i-name {
-        font-size: 13px;
-        font-weight: bold;
-        color: var(--white);
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-
-      .i-meta {
-        display: flex;
-        gap: 10px;
-        .i-qty {
-          @include pixelated;
-          font-size: 8px;
-          color: $muted;
-        }
-      }
-    }
-
-    .selection-indicator {
-      flex-shrink: 0;
-      .check-circle {
-        width: 18px;
-        height: 18px;
-        border-radius: 50%;
-        border: 2px solid Rgba(255, 255, 255, 0.1);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 10px;
-      }
-    }
-  }
   .i-icon { font-size: 24px; }
 
   .publish-panel {

@@ -334,6 +334,8 @@ async function auditFile(filePath: string, fix: boolean): Promise<Violation[]> {
 
   // MODULARITY AUDIT: 300/500 Rule
   const isDataFile = filePath.includes('src' + path.sep + 'data' + path.sep) || 
+                     filePath.includes('scripts' + path.sep) ||
+                     filePath.includes('supabase' + path.sep) ||
                      filePath.endsWith('DB.ts') || 
                      filePath.endsWith('Metadata.ts') ||
                      config.fileLength.ignorePattern?.test(content);

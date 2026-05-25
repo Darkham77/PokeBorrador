@@ -58,28 +58,28 @@ const handleSwitch = (index: number) => {
   background: transparent !important; 
   border: none !important;
   padding: 0 !important;
-  height: 100% !important;
-  min-height: 0; // Fix flex scroll collapse
+  height: auto !important;
+  min-height: 100%; // Fix flex scroll collapse
   overflow-y: auto !important;
+  overflow-x: hidden !important; // Evitar estrictamente scrollbars horizontales
   @include gpu-layer;
-  @include smooth-scroll;
   @include smooth-scroll;
 }
 
 .quick-team-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(100px, 160px));
+  grid-template-columns: repeat(auto-fill, 115px); // Ancho fijo reducido para evitar deformación y asegurar que entren 6
   justify-content: center;
-  gap: 8px; // Gap consistente
+  gap: 6px; // Gap reducido para ahorrar espacio
   width: 100%;
   padding: 12px 4px 6px 4px;
 }
 
 /* Overrides para integrar la tarjeta de la caja en el grid compacto de combate */
 :deep(.quick-card-override) {
-  width: 100% !important;
-  height: 100% !important;
-  min-height: 0 !important;
+  width: 115px !important; // Ancho fijo compacto
+  height: 155px !important; // Altura suficiente para mostrar la barra de HP sin cortes
+  min-height: 155px !important;
   margin: 0 !important;
   padding: 8px !important;
   background: Rgba(15, 23, 42, 0.7) !important; // Un poco más oscuro para resaltar borde
@@ -88,6 +88,14 @@ const handleSwitch = (index: number) => {
   @include gpu-layer;
   border: 1px solid var(--tier-color); // MARCO DE GRADO OBLIGATORIO
   border-radius: 20px !important;
+
+  .card-info {
+    padding-left: 0 !important; // Forzar alineación y centrado perfectos
+    text-align: center !important;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
 
   &.is-active {
     border-color: var(--tier-color) !important;

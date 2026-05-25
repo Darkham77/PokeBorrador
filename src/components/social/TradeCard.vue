@@ -6,6 +6,7 @@ import { useAuthStore } from '@/stores/auth';
 import { useGameStore } from '@/stores/game';
 import { useUIStore } from '@/stores/ui';
 import TrainerAvatar from '@/components/TrainerAvatar.vue';
+import TradeAssetsGrid from './TradeAssetsGrid.vue';
 import type { TradeOffer } from '@/types/stores';
 
 type CardMode = 'incoming' | 'outgoing' | 'accepted';
@@ -54,23 +55,6 @@ const participantId = computed(() =>
   props.mode === 'incoming' ? props.trade.sender_id : props.trade.receiver_id
 );
 const cosmetics = computed(() => getCosmetics(participantId.value));
-
-const hasOffer = computed(() =>
-  !!props.trade.offer_pokemon || props.trade.offer_money > 0 ||
-  Object.values(props.trade.offer_items ?? {}).some(q => q > 0)
-);
-
-const hasRequest = computed(() =>
-  !!props.trade.request_pokemon || props.trade.request_money > 0 ||
-  Object.values(props.trade.request_items ?? {}).some(q => q > 0)
-);
-
-const offerItems = computed(() =>
-  Object.entries(props.trade.offer_items ?? {}).filter(([, q]) => q > 0)
-);
-const requestItems = computed(() =>
-  Object.entries(props.trade.request_items ?? {}).filter(([, q]) => q > 0)
-);
 
 function openProfile() {
   uiStore.open('TrainerProfile', { userId: participantId.value });
@@ -148,84 +132,11 @@ async function onClaim() {
     </div>
 
     <!-- ASSETS GRID (incoming/outgoing) -->
-    <div
+    <TradeAssetsGrid
       v-if="mode !== 'accepted'"
-      class="trade-assets-grid"
-    >
-      <!-- Offer column -->
-      <div class="asset-column offer">
-        <span class="column-title">{{ mode === 'incoming' ? 'Ofrece:' : 'Ofreciste:' }}</span>
-        <div class="assets-box">
-          <div
-            v-if="trade.offer_pokemon"
-            class="asset-badge pokemon"
-          >
-            <span class="icon">🐾</span>
-            <span class="badge-name">{{ trade.offer_pokemon.name }}</span>
-            <span class="badge-level">Nv.{{ trade.offer_pokemon.level }}</span>
-          </div>
-          <div
-            v-if="trade.offer_money > 0"
-            class="asset-badge money"
-          >
-            <span class="icon">₽</span>
-            <span class="badge-val">{{ trade.offer_money.toLocaleString() }}</span>
-          </div>
-          <div
-            v-for="[name, qty] in offerItems"
-            :key="name"
-            class="asset-badge item"
-          >
-            <span class="icon">🎒</span>
-            <span class="badge-name">{{ name }}</span>
-            <span class="badge-qty">x{{ qty }}</span>
-          </div>
-          <div
-            v-if="!hasOffer"
-            class="no-assets"
-          >
-            Nada
-          </div>
-        </div>
-      </div>
-
-      <!-- Request column -->
-      <div class="asset-column request">
-        <span class="column-title">{{ mode === 'incoming' ? 'Pide a cambio:' : 'Pediste:' }}</span>
-        <div class="assets-box">
-          <div
-            v-if="trade.request_pokemon"
-            class="asset-badge pokemon requested"
-          >
-            <span class="icon">🐾</span>
-            <span class="badge-name">{{ trade.request_pokemon.name }}</span>
-            <span class="badge-level">Nv.{{ trade.request_pokemon.level }}</span>
-          </div>
-          <div
-            v-if="trade.request_money > 0"
-            class="asset-badge money requested"
-          >
-            <span class="icon">₽</span>
-            <span class="badge-val">{{ trade.request_money.toLocaleString() }}</span>
-          </div>
-          <div
-            v-for="[name, qty] in requestItems"
-            :key="name"
-            class="asset-badge item requested"
-          >
-            <span class="icon">🎒</span>
-            <span class="badge-name">{{ name }}</span>
-            <span class="badge-qty">x{{ qty }}</span>
-          </div>
-          <div
-            v-if="!hasRequest"
-            class="no-assets gift"
-          >
-            ¡Es un Regalo! 🎁
-          </div>
-        </div>
-      </div>
-    </div>
+      :trade="trade"
+      :mode="mode"
+    />
 
     <!-- MESSAGE BUBBLE -->
     <div
@@ -357,94 +268,6 @@ async function onClaim() {
   color: #facc15;
   padding: 4px 8px;
   border-radius: 6px;
-}
-
-/* ── Assets grid ── */
-.trade-assets-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-
-  @media (max-width: 500px) { grid-template-columns: 1fr; }
-}
-
-.asset-column {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-
-  .column-title {
-    font-size: 11px;
-    font-weight: 600;
-    color: Rgba(255, 255, 255, 0.4);
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-  }
-
-  .assets-box {
-    background: Rgba(0, 0, 0, 0.2);
-    border: 1px solid Rgba(255, 255, 255, 0.03);
-    border-radius: 10px;
-    padding: 8px;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    min-height: 50px;
-    justify-content: center;
-  }
-}
-
-.asset-badge {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  background: Rgba(255, 255, 255, 0.03);
-  border: 1px solid Rgba(255, 255, 255, 0.05);
-  border-radius: 8px;
-  padding: 6px 8px;
-
-  .icon { font-size: 11px; }
-
-  .badge-name, .badge-val {
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--white);
-  }
-
-  .badge-level, .badge-qty {
-    font-size: 11px;
-    color: Rgba(255, 255, 255, 0.5);
-    margin-left: auto;
-  }
-
-  &.pokemon {
-    background: Rgba(168, 85, 247, 0.06);
-    border-color: Rgba(168, 85, 247, 0.12);
-  }
-  &.money {
-    background: Rgba(234, 179, 8, 0.06);
-    border-color: Rgba(234, 179, 8, 0.12);
-    .icon { color: #facc15; }
-    .badge-val { color: #facc15; font-weight: bold; }
-  }
-  &.item {
-    background: Rgba(59, 130, 246, 0.06);
-    border-color: Rgba(59, 130, 246, 0.12);
-  }
-
-  &.requested {
-    &.pokemon { background: Rgba(239, 68, 68, 0.05); border-color: Rgba(239, 68, 68, 0.1); }
-    &.money   { background: Rgba(239, 68, 68, 0.05); border-color: Rgba(239, 68, 68, 0.1); .icon, .badge-val { color: #fca5a5; } }
-    &.item    { background: Rgba(239, 68, 68, 0.05); border-color: Rgba(239, 68, 68, 0.1); }
-  }
-}
-
-.no-assets {
-  font-size: 11px;
-  color: Rgba(255, 255, 255, 0.3);
-  text-align: center;
-
-  &.gift { color: #4ade80; font-weight: bold; }
 }
 
 /* ── Message bubble ── */

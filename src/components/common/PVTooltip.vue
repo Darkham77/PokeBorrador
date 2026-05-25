@@ -7,6 +7,7 @@ let activeTooltipHide: ((immediate?: boolean) => void) | null = null
 import { ref, nextTick, inject, watch, onUnmounted, computed } from 'vue'
 import { gsap } from 'gsap'
 import { Z_LAYERS } from '@/logic/constants/visuals'
+import { useTooltipPosition } from '@/composables/useTooltipPosition'
 
 const props = defineProps({
   title: { type: String, default: '' },
@@ -23,9 +24,14 @@ const isSimplified = inject('isModalPerformanceMode', ref(false))
 const isVisible = ref(false)
 const trigger = ref<HTMLElement | null>(null)
 const tooltip = ref<HTMLElement | null>(null)
-const coords = ref({ top: 0, left: 0 as number | 'auto', right: 'auto' as number | 'auto' })
-const activePosition = ref(props.position)
-const arrowOffset = ref({ x: 0, y: 0 })
+
+const {
+  coords,
+  activePosition,
+  arrowOffset,
+  isRightSide,
+  updatePosition
+} = useTooltipPosition(trigger, tooltip, props.position)
 
 let timeout: gsap.core.Tween | null = null
 let touchTimeout: gsap.core.Tween | null = null
@@ -33,81 +39,6 @@ let isImmediateLeave = false
 let lastTouchTime = 0
 let touchStartX = 0
 let touchStartY = 0
-
-const isRightSide = ref(false)
-
-const updatePosition = () => {
-  if (!trigger.value || !tooltip.value) return
-  
-  const rect = trigger.value.getBoundingClientRect()
-  const tipRect = tooltip.value.getBoundingClientRect()
-  const scrollY = window.scrollY
-  const scrollX = window.scrollX
-  const viewportWidth = window.innerWidth
-  const viewportHeight = window.innerHeight
-  
-  let pos = props.position
-  const gap = 12
-  const padding = 15 // Safety margin from edges
-
-  const triggerCenter = rect.left + rect.width / 2
-  isRightSide.value = triggerCenter > viewportWidth / 2
-
-  // --- 1. FLIPPING LOGIC (Vertical) ---
-  if (pos === 'top' && rect.top - tipRect.height - gap < padding) {
-    pos = 'bottom'
-  } else if (pos === 'bottom' && rect.bottom + tipRect.height + gap > viewportHeight - padding) {
-    pos = 'top'
-  }
-  activePosition.value = pos
-
-  // --- 2. BASE COORDINATES ---
-  let top = 0
-  let left = 0
-  
-  if (pos === 'top' || pos === 'bottom') {
-    top = pos === 'top' ? rect.top + scrollY - gap : rect.bottom + scrollY + gap
-    left = triggerCenter + scrollX
-  } else if (pos === 'left') {
-    top = rect.top + scrollY + rect.height / 2
-    left = rect.left + scrollX - gap
-  } else if (pos === 'right') {
-    top = rect.top + scrollY + rect.height / 2
-    left = rect.right + scrollX + gap
-  }
-
-  // --- 3. NUDGING & ARROW LOGIC ---
-  const anchorX = triggerCenter + scrollX
-  const anchorY = top
-  
-  if (pos === 'top' || pos === 'bottom') {
-    const halfWidth = tipRect.width / 2
-    
-    // Horizontal Nudge
-    if (left - halfWidth < padding + scrollX) {
-      left = padding + scrollX + halfWidth
-    } else if (left + halfWidth > viewportWidth + scrollX - padding) {
-      left = viewportWidth + scrollX - padding - halfWidth
-    }
-    
-    arrowOffset.value = { x: anchorX - left, y: 0 }
-  } else {
-    // Left/Right Vertical Nudge
-    const halfHeight = tipRect.height / 2
-    if (top - halfHeight < padding + scrollY) {
-      top = padding + scrollY + halfHeight
-    } else if (top + halfHeight > viewportHeight + scrollY - padding) {
-      top = viewportHeight + scrollY - padding - halfHeight
-    }
-    arrowOffset.value = { x: 0, y: anchorY - top }
-  }
-  
-  coords.value = { 
-    top: Math.round(top), 
-    left: Math.round(left), 
-    right: 'auto' 
-  }
-}
 
 const show = (immediate = false) => {
   if (isSimplified.value || props.disabled || isBlockedByClick.value) return 

@@ -62,7 +62,7 @@ body.is-battle-active {
     grid-template-rows: 1fr auto;
     grid-template-areas:
       "log arena"
-      "log panel";
+      "panel panel";
     gap: 0; // Eliminado el espacio entre paneles
     max-width: 100%;
     height: 100%; // Llenar el modal nativo

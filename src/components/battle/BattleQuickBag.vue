@@ -144,8 +144,8 @@ const handleUseItem = (item: BattleItem) => {
   background: transparent !important;
   border: none !important;
   padding: 0 !important;
-  height: 100% !important;
-  min-height: 0; // Fix flex scroll collapse
+  height: auto !important;
+  min-height: 100%; // Fix flex scroll collapse
   overflow-y: auto !important;
   @include gpu-layer;
   @include smooth-scroll;
@@ -154,11 +154,10 @@ const handleUseItem = (item: BattleItem) => {
 
 .quick-bag-grid {
   display: grid;
-  // Tamaño fijo para evitar que las tarjetas se estiren demasiado en pantallas anchas
-  grid-template-columns: repeat(auto-fill, 76px); 
+  grid-template-columns: repeat(auto-fill, 76px); // Rellena con más columnas de 76px si el espacio lo permite
   gap: 8px;
   width: 100%;
-  padding: 12px 4px 6px 4px;
+  padding: 12px 6px 6px 6px;
   justify-content: center;
   align-content: start;
   min-height: 100%;

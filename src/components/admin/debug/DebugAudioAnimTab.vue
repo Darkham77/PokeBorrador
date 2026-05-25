@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useBattleStore } from '@/stores/battle'
+import DebugActionList from './DebugActionList.vue'
 import type { Pokemon } from '@/types/pokemon'
 import type { BattleStages } from '@/types/battle'
 
@@ -235,91 +236,29 @@ const isEffectActive = (type: string, category: string) => {
     </div>
 
     <!-- ENCOUNTER ANIMS SECTION -->
-    <div class="debug-section">
-      <h3 class="section-title">
-        ENCUENTRO SALVAJE
-      </h3>
-      <div class="button-list">
-        <button
-          v-for="a in DEBUG_ENCOUNTER_ANIMS"
-          :key="a.id"
-          class="debug-btn-long"
-          @click.stop="triggerAnim(a.id)"
-        >
-          <div class="btn-content">
-            <span class="icon">{{ a.icon }}</span>
-            <div class="text">
-              <span class="label">{{ a.label }}</span>
-              <span
-                v-if="a.desc"
-                class="desc"
-              >{{ a.desc }}</span>
-            </div>
-          </div>
-          <span class="arrow">▶</span>
-        </button>
-      </div>
-    </div>
+    <DebugActionList
+      title="ENCUENTRO SALVAJE"
+      :items="DEBUG_ENCOUNTER_ANIMS"
+      @action="triggerAnim"
+    />
 
     <!-- COMBAT ANIMS SECTION -->
-    <div class="debug-section">
-      <h3 class="section-title">
-        COMBATE Y ESTADO
-      </h3>
-      <div class="button-list">
-        <button
-          v-for="a in DEBUG_COMBAT_ANIMS"
-          :key="a.id"
-          class="debug-btn-long"
-          @click.stop="triggerAnim(a.id)"
-        >
-          <div class="btn-content">
-            <span class="icon">{{ a.icon }}</span>
-            <div class="text">
-              <span class="label">{{ a.label }}</span>
-              <span
-                v-if="a.desc"
-                class="desc"
-              >{{ a.desc }}</span>
-            </div>
-          </div>
-          <span class="arrow">▶</span>
-        </button>
-      </div>
-    </div>
+    <DebugActionList
+      title="COMBATE Y ESTADO"
+      :items="DEBUG_COMBAT_ANIMS"
+      @action="triggerAnim"
+    />
     
     <!-- CATCH ANIMS SECTION -->
-    <div class="debug-section">
-      <h3
-        class="section-title"
-        style="color: #ffd700; border-bottom-color: Rgba(255, 215, 0, 0.3);"
-      >
-        FASES DE CAPTURA
-      </h3>
-      <div class="button-list">
-        <button
-          v-for="a in DEBUG_CATCH_ANIMS"
-          :key="a.id"
-          class="debug-btn-long"
-          style="background: Rgba(40, 30, 0, 0.4); border-color: Rgba(255, 215, 0, 0.2);"
-          @click.stop="triggerAnim(a.id)"
-        >
-          <div class="btn-content">
-            <span class="icon">{{ a.icon }}</span>
-            <div class="text">
-              <span
-                class="label"
-                style="color: #fef3c7;"
-              >{{ a.label }}</span>
-            </div>
-          </div>
-          <span
-            class="arrow"
-            style="color: #f59e0b;"
-          >▶</span>
-        </button>
-      </div>
-    </div>
+    <DebugActionList
+      title="FASES DE CAPTURA"
+      :items="DEBUG_CATCH_ANIMS"
+      :title-style="{ color: '#ffd700', borderBottomColor: 'rgba(255, 215, 0, 0.3)' }"
+      :card-style="{ background: 'rgba(40, 30, 0, 0.4)', borderColor: 'rgba(255, 215, 0, 0.2)' }"
+      :label-style="{ color: '#fef3c7' }"
+      :arrow-style="{ color: '#f59e0b' }"
+      @action="triggerAnim"
+    />
 
     <!-- ATTACK FX SECTION -->
     <div class="debug-section">
@@ -340,78 +279,28 @@ const isEffectActive = (type: string, category: string) => {
     </div>
 
     <!-- UI ANIMS SECTION -->
-    <div class="debug-section">
-      <h3
-        class="section-title"
-        style="color: #60a5fa; border-bottom-color: Rgba(96, 165, 250, 0.3);"
-      >
-        ANIMACIONES DE INTERFAZ (GSAP)
-      </h3>
-      <div class="button-list">
-        <button
-          v-for="a in DEBUG_UI_ANIMS"
-          :key="a.id"
-          class="debug-btn-long"
-          style="background: Rgba(30, 58, 138, 0.2); border-color: Rgba(96, 165, 250, 0.2);"
-          @click.stop="triggerAnim(a.id)"
-        >
-          <div class="btn-content">
-            <span class="icon">{{ a.icon }}</span>
-            <div class="text">
-              <span
-                class="label"
-                style="color: #dbeafe;"
-              >{{ a.label }}</span>
-              <span
-                class="desc"
-                style="color: #93c5fd;"
-              >{{ a.desc }}</span>
-            </div>
-          </div>
-          <span
-            class="arrow"
-            style="color: #60a5fa;"
-          >▶</span>
-        </button>
-      </div>
-    </div>
+    <DebugActionList
+      title="ANIMACIONES DE INTERFAZ (GSAP)"
+      :items="DEBUG_UI_ANIMS"
+      :title-style="{ color: '#60a5fa', borderBottomColor: 'rgba(96, 165, 250, 0.3)' }"
+      :card-style="{ background: 'rgba(30, 58, 138, 0.2)', borderColor: 'rgba(96, 165, 250, 0.2)' }"
+      :label-style="{ color: '#dbeafe' }"
+      :desc-style="{ color: '#93c5fd' }"
+      :arrow-style="{ color: '#60a5fa' }"
+      @action="triggerAnim"
+    />
 
     <!-- SPECIAL MODES SECTION -->
-    <div class="debug-section">
-      <h3
-        class="section-title"
-        style="color: #f472b6; border-bottom-color: Rgba(244, 114, 182, 0.3);"
-      >
-        MODOS ESPECIALES
-      </h3>
-      <div class="button-list">
-        <button
-          v-for="m in DEBUG_SPECIAL_MODES"
-          :key="m.id"
-          class="debug-btn-long"
-          style="background: Rgba(131, 24, 67, 0.2); border-color: Rgba(244, 114, 182, 0.2);"
-          @click.stop="m.id === 'silhouette' ? toggleSilhouette() : null"
-        >
-          <div class="btn-content">
-            <span class="icon">{{ m.icon }}</span>
-            <div class="text">
-              <span
-                class="label"
-                style="color: #fce7f3;"
-              >{{ m.label }}</span>
-              <span
-                class="desc"
-                style="color: #f9a8d4;"
-              >{{ m.desc }}</span>
-            </div>
-          </div>
-          <span
-            class="arrow"
-            style="color: #f472b6;"
-          >▶</span>
-        </button>
-      </div>
-    </div>
+    <DebugActionList
+      title="MODOS ESPECIALES"
+      :items="DEBUG_SPECIAL_MODES"
+      :title-style="{ color: '#f472b6', borderBottomColor: 'rgba(244, 114, 182, 0.3)' }"
+      :card-style="{ background: 'rgba(131, 24, 67, 0.2)', borderColor: 'rgba(244, 114, 182, 0.2)' }"
+      :label-style="{ color: '#fce7f3' }"
+      :desc-style="{ color: '#f9a8d4' }"
+      :arrow-style="{ color: '#f472b6' }"
+      @action="(id) => id === 'silhouette' ? toggleSilhouette() : null"
+    />
   </div>
 </template>
 
@@ -514,44 +403,6 @@ const isEffectActive = (type: string, category: string) => {
   }
 
   .icon { font-size: 16px; }
-}
-
-.debug-btn-long {
-  width: 100%;
-  background: Rgba(255, 255, 255, 0.03);
-  border: 1px solid Rgba(255, 255, 255, 0.05);
-  color: white;
-  padding: 14px 16px;
-  border-radius: 12px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 8px;
-  
-
-  &:hover {
-    background: Rgba(255, 255, 255, 0.08);
-    transform: Translatex(4px);
-  }
-
-  .btn-content {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    
-    .icon { font-size: 20px; }
-    
-    .text {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 2px;
-      
-      .label { @include pixelated; font-size: 8px; }
-      .desc { font-size: 9px; color: Rgba(255, 255, 255, 0.4); }
-    }
-  }
 }
 
 .stats-list {

@@ -1,6 +1,5 @@
 <script setup lang="ts">
-
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { NATURE_DATA } from '@/data/natures'
 import { ABILITY_DATA } from '@/data/abilities'
@@ -9,6 +8,7 @@ import PokemonIVEditor from './PokemonIVEditor.vue'
 import PokemonMovePicker from './PokemonMovePicker.vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import PokemonPreview from './PokemonPreview.vue'
+import DebugSearchSelect from './DebugSearchSelect.vue'
 
 interface PokemonConfig {
   id: string
@@ -30,14 +30,13 @@ interface PokemonConfig {
 interface SpeciesOption {
   id: string
   name: string
+  icon?: string
 }
 
 interface MapOption {
   id: string
   name: string
 }
-
-const creatorRef = ref<HTMLElement | null>(null)
 
 // --- STATE ---
 const config = ref<PokemonConfig>({
@@ -57,48 +56,22 @@ const config = ref<PokemonConfig>({
   protocol: 'catch'
 })
 
-// --- SEARCH & FILTERING ---
-const speciesSearch = ref('')
-const natureSearch = ref('')
-const abilitySearch = ref('')
-const mapSearch = ref('')
-
-const showSpeciesDropdown = ref(false)
-const showNatureDropdown = ref(false)
-const showAbilityDropdown = ref(false)
-const showMapDropdown = ref(false)
-const activeMoveSlot = ref<number | null>(null)
-
 const allSpecies = computed<SpeciesOption[]>(() => {
   const db = pokemonDataProvider.getPokemonDb()
-  return Object.keys(db).map(id => ({ id, name: db[id]?.name || id }))
+  return Object.keys(db).map(id => ({ 
+    id, 
+    name: db[id]?.name || id,
+    icon: pokemonDataProvider.getSpriteUrl(id)
+  }))
 })
 
-const filteredSpecies = computed(() => {
-  const s = speciesSearch.value.toLowerCase()
-  return allSpecies.value.filter(p => p.id.includes(s) || p.name.toLowerCase().includes(s)).slice(0, 50)
-})
+const allNatures = Object.keys(NATURE_DATA).map(n => ({ id: n, name: n }))
 
-const allNatures = Object.keys(NATURE_DATA)
-const filteredNatures = computed(() => {
-  const s = natureSearch.value.toLowerCase()
-  return allNatures.filter(n => n.toLowerCase().includes(s))
-})
-
-const allAbilities = Object.keys(ABILITY_DATA)
-const filteredAbilities = computed(() => {
-  const s = abilitySearch.value.toLowerCase()
-  return allAbilities.filter(a => a.toLowerCase().includes(s))
-})
+const allAbilities = Object.keys(ABILITY_DATA).map(a => ({ id: a, name: a }))
 
 const allMaps = computed<MapOption[]>(() => {
   const maps = pokemonDataProvider.getMaps() as { id: string, name?: string }[]
   return maps.map(m => ({ id: m.id, name: m.name || m.id }))
-})
-
-const filteredMaps = computed(() => {
-  const s = mapSearch.value.toLowerCase()
-  return allMaps.value.filter(m => m.id.includes(s) || m.name.toLowerCase().includes(s))
 })
 
 const speciesMoves = computed<string[]>(() => {
@@ -123,14 +96,11 @@ const baseStats = computed(() => {
 
 function selectSpecies(p: SpeciesOption) {
   config.value.id = p.id
-  speciesSearch.value = p.name.toUpperCase()
-  showSpeciesDropdown.value = false
   
   // Update default ability for species
   const abilities = pokemonDataProvider.getSpeciesAbilities(p.id)
   if (abilities.length > 0) {
     config.value.ability = abilities[0] || ''
-    abilitySearch.value = config.value.ability.toUpperCase()
   }
   
   autoFillMoves()
@@ -139,24 +109,6 @@ function selectSpecies(p: SpeciesOption) {
 watch(() => config.value.level, () => {
   autoFillMoves()
 })
-
-function selectNature(n: string) {
-  config.value.nature = n
-  natureSearch.value = n.toUpperCase()
-  showNatureDropdown.value = false
-}
-
-function selectAbility(a: string) {
-  config.value.ability = a
-  abilitySearch.value = a.toUpperCase()
-  showAbilityDropdown.value = false
-}
-
-function selectMap(m: MapOption) {
-  config.value.mapId = m.id
-  mapSearch.value = m.name.toUpperCase()
-  showMapDropdown.value = false
-}
 
 function autoFillMoves() {
   const data = pokemonDataProvider.getPokemonData(config.value.id)
@@ -218,7 +170,6 @@ function handleRandomize() {
   if (!randomSpecies) return
   
   config.value.id = randomSpecies.id
-  speciesSearch.value = (randomSpecies.name || '').toUpperCase()
   
   config.value.level = Math.floor(Math.random() * 100) + 1
   
@@ -228,8 +179,7 @@ function handleRandomize() {
   const natures = allNatures
   const randomNature = natures[Math.floor(Math.random() * natures.length)]
   if (randomNature) {
-    config.value.nature = randomNature
-    natureSearch.value = randomNature.toUpperCase()
+    config.value.nature = randomNature.id
   }
   
   const abilities = pokemonDataProvider.getSpeciesAbilities(randomSpecies.id)
@@ -237,7 +187,6 @@ function handleRandomize() {
     const randomAbility = abilities[Math.floor(Math.random() * abilities.length)]
     if (randomAbility) {
       config.value.ability = randomAbility
-      abilitySearch.value = randomAbility.toUpperCase()
     }
   }
   
@@ -250,7 +199,6 @@ function handleRandomize() {
     const randomMap = maps[Math.floor(Math.random() * maps.length)]
     if (randomMap) {
       config.value.mapId = randomMap.id
-      mapSearch.value = (randomMap.name || '').toUpperCase()
     }
   }
   
@@ -267,41 +215,16 @@ function handleRandomize() {
   randomFillMoves()
 }
 
-function handleClickOutside(e: MouseEvent) {
-  if (creatorRef.value && !creatorRef.value.contains(e.target as Node)) {
-    showSpeciesDropdown.value = false
-    showNatureDropdown.value = false
-    showAbilityDropdown.value = false
-    showMapDropdown.value = false
-    activeMoveSlot.value = null
-  }
-}
-
 // --- HELPERS ---
 const currentSprite = computed(() => pokemonDataProvider.getSpriteUrl(config.value.id, config.value.isShiny))
 
-function getPokemonSprite(id: string): string {
-  return pokemonDataProvider.getSpriteUrl(id)
-}
-
 onMounted(() => {
-  speciesSearch.value = (pokemonDataProvider.getPokemonData(config.value.id)?.name || config.value.id).toUpperCase()
-  natureSearch.value = config.value.nature.toUpperCase()
-  abilitySearch.value = config.value.ability.toUpperCase()
-  
   if (allMaps.value.length > 0) {
     const firstMap = allMaps.value[0]
     if (firstMap) {
       config.value.mapId = firstMap.id
-      mapSearch.value = (firstMap.name || '').toUpperCase()
     }
   }
-  
-  window.addEventListener('mousedown', handleClickOutside)
-})
-
-onUnmounted(() => {
-  window.removeEventListener('mousedown', handleClickOutside)
 })
 </script>
 
@@ -328,40 +251,14 @@ onUnmounted(() => {
         <h4>BASE & ATRIBUTOS</h4>
         
         <!-- Species Search -->
-        <div class="debug-input-group search-select-container">
-          <label>ESPECIE</label>
-          <PVTooltip
-            title="Buscador de especies"
-            description="Busca y selecciona la especie base del Pokémon."
-          >
-            <input 
-              v-model="speciesSearch" 
-              type="text" 
-              placeholder="BUSCAR..."
-              class="search-input"
-              @focus="showSpeciesDropdown = true"
-            >
-          </PVTooltip>
-          <div
-            v-if="showSpeciesDropdown"
-            class="options-dropdown custom-scrollbar"
-          >
-            <div 
-              v-for="p in filteredSpecies" 
-              :key="p.id" 
-              class="option-item"
-              :class="{ active: config.id === p.id }"
-              @click.stop="selectSpecies(p)"
-            >
-              <img
-                :src="getPokemonSprite(p.id)"
-                class="item-icon"
-                @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
-              >
-              {{ p.name.toUpperCase() }}
-            </div>
-          </div>
-        </div>
+        <DebugSearchSelect
+          v-model="config.id"
+          label="ESPECIE"
+          :options="allSpecies"
+          tooltip-title="Buscador de especies"
+          tooltip-desc="Busca y selecciona la especie base del Pokémon."
+          @select="selectSpecies"
+        />
 
         <div class="debug-input-group">
           <label>NIVEL (1-100)</label>
@@ -386,63 +283,21 @@ onUnmounted(() => {
         />
 
         <!-- Nature & Ability -->
-        <div class="debug-input-group search-select-container">
-          <label>NATURALEZA</label>
-          <PVTooltip
-            title="Naturaleza"
-            description="Modificadores de estadísticas basados en la personalidad."
-          >
-            <input 
-              v-model="natureSearch" 
-              type="text" 
-              placeholder="BUSCAR..."
-              @focus="showNatureDropdown = true"
-            >
-          </PVTooltip>
-          <div
-            v-if="showNatureDropdown"
-            class="options-dropdown custom-scrollbar"
-          >
-            <div 
-              v-for="n in filteredNatures" 
-              :key="n" 
-              class="option-item"
-              :class="{ active: config.nature === n }"
-              @click.stop="selectNature(n)"
-            >
-              {{ n.toUpperCase() }}
-            </div>
-          </div>
-        </div>
+        <DebugSearchSelect
+          v-model="config.nature"
+          label="NATURALEZA"
+          :options="allNatures"
+          tooltip-title="Naturaleza"
+          tooltip-desc="Modificadores de estadísticas basados en la personalidad."
+        />
 
-        <div class="debug-input-group search-select-container">
-          <label>HABILIDAD</label>
-          <PVTooltip
-            title="Habilidad"
-            description="Capacidad especial pasiva de esta especie."
-          >
-            <input 
-              v-model="abilitySearch" 
-              type="text" 
-              placeholder="BUSCAR..."
-              @focus="showAbilityDropdown = true"
-            >
-          </PVTooltip>
-          <div
-            v-if="showAbilityDropdown"
-            class="options-dropdown custom-scrollbar"
-          >
-            <div 
-              v-for="a in filteredAbilities" 
-              :key="a" 
-              class="option-item"
-              :class="{ active: config.ability === a }"
-              @click.stop="selectAbility(a)"
-            >
-              {{ a.toUpperCase() }}
-            </div>
-          </div>
-        </div>
+        <DebugSearchSelect
+          v-model="config.ability"
+          label="HABILIDAD"
+          :options="allAbilities"
+          tooltip-title="Habilidad"
+          tooltip-desc="Capacidad especial pasiva de esta especie."
+        />
       </div>
 
       <!-- Right: Preview & Moves -->
@@ -486,34 +341,13 @@ onUnmounted(() => {
         </div>
       
         <!-- Origin Route Dropdown -->
-        <div class="debug-input-group search-select-container">
-          <label>ORIGEN</label>
-          <PVTooltip
-            title="Ruta de origen"
-            description="Lugar donde se registrará que fue encontrado el Pokémon."
-          >
-            <input 
-              v-model="mapSearch" 
-              type="text" 
-              placeholder="BUSCAR..."
-              @focus="showMapDropdown = true"
-            >
-          </PVTooltip>
-          <div
-            v-if="showMapDropdown"
-            class="options-dropdown custom-scrollbar"
-          >
-            <div 
-              v-for="m in filteredMaps" 
-              :key="m.id" 
-              class="option-item"
-              :class="{ active: config.mapId === m.id }"
-              @click.stop="selectMap(m)"
-            >
-              {{ m.name.toUpperCase() }}
-            </div>
-          </div>
-        </div>
+        <DebugSearchSelect
+          v-model="config.mapId"
+          label="ORIGEN"
+          :options="allMaps"
+          tooltip-title="Ruta de origen"
+          tooltip-desc="Lugar donde se registrará que fue encontrado el Pokémon."
+        />
       </div>
     </div>
 

@@ -190,7 +190,6 @@ const handleImageError = (e: Event) => {
   -webkit-will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
   backdrop-filter: Blur(10px);
-  backdrop-filter: Blur(10px);
   @include gpu-layer;
   border: 1px solid Rgba(255, 255, 255, 0.1);
   border-radius: 12px;
@@ -200,14 +199,13 @@ const handleImageError = (e: Event) => {
   justify-content: space-between;
   align-items: center;
   height: 100%;
-  
   overflow: hidden;
-  @include gpu-layer;
+  transition: transform 0.25s ease-out, border-color 0.25s ease-out, box-shadow 0.25s ease-out;
 
   @include hover-neon-yellow(1px);
 
   &:hover {
-    transform: Translatey(-10px) rotatex(2deg);
+    transform: Translatey(-10px) rotateX(2deg);
     border-color: var(--yellow) !important;
     
     .card-glow { opacity: 0.2; }
@@ -256,8 +254,12 @@ const handleImageError = (e: Event) => {
     height: 100%;
     object-fit: cover;
     @include sprite-render;
-    
+    transition: transform 0.25s ease-out;
   }
+}
+
+.card-glow {
+  transition: opacity 0.25s ease-out;
 }
 
 .class-title {

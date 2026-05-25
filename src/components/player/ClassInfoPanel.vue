@@ -1,5 +1,4 @@
 <script setup lang="ts">
-
 import { computed } from 'vue';
 import gsap from 'gsap';
 import { useGameStore } from '@/stores/game';
@@ -7,7 +6,7 @@ import { useUIStore } from '@/stores/ui';
 import { PLAYER_CLASSES } from '@/data/playerClasses';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import PlayerAvatar from './PlayerAvatar.vue';
-import PVTooltip from '@/components/common/PVTooltip.vue';
+import ClassBonusList from './ClassBonusList.vue';
 
 interface PlayerClass {
   id: string
@@ -32,7 +31,6 @@ const cls = computed<PlayerClass | null>(() => {
   if (!classId.value) return null
   return (PLAYER_CLASSES as Record<string, PlayerClass>)[classId.value] || null
 });
-const safeBonusLevels = computed(() => cls.value?.bonusLevels || []);
 const trainerLevel = computed(() => gameStore.state.trainerLevel || 1);
 
 const close = () => {
@@ -146,85 +144,10 @@ const rankTitle = computed(() => {
 
             <!-- Right Column -->
             <main class="right-col">
-              <section class="abilities-section">
-                <div class="section-header">
-                  <div class="bar green" />
-                  <h3 class="press-start green-text">
-                    HABILIDADES DE CLASE
-                  </h3>
-                </div>
-              
-                <div class="ability-list">
-                  <div 
-                    v-for="(bonus, i) in cls.bonuses" 
-                    :key="i"
-                    class="ability-item"
-                    :class="{ locked: trainerLevel < (safeBonusLevels[i] || 1) }"
-                    :style="{ borderLeftColor: trainerLevel >= (safeBonusLevels[i] || 1) ? cls.color : '#374151' }"
-                  >
-                    <span class="status-icon">{{ trainerLevel >= (safeBonusLevels[i] || 1) ? '✅' : '🔒' }}</span>
-                    <div class="ability-content">
-                      <div class="ability-top">
-                        <span class="bonus-text">{{ bonus }}</span>
-                        <span
-                          v-if="(safeBonusLevels[i] || 1) > 1"
-                          class="lv-req press-start"
-                        >Nv.{{ safeBonusLevels[i] }}</span>
-                      
-                        <PVTooltip
-                          title="MECÁNICA"
-                          :description="cls.technicalBonuses?.[i] || 'Detalles no disponibles.'"
-                          position="top"
-                        >
-                          <div class="tooltip-trigger-vicio">
-                            ❓
-                          </div>
-                        </PVTooltip>
-                      </div>
-                      <p
-                        v-if="trainerLevel < (safeBonusLevels[i] || 1)"
-                        class="req-text"
-                      >
-                        Requiere Nivel de Entrenador {{ safeBonusLevels[i] || 1 }}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </section>
-
-              <section class="penalties-section">
-                <div class="section-header">
-                  <div class="bar red" />
-                  <h3 class="press-start red-text">
-                    LIMITACIONES
-                  </h3>
-                </div>
-
-                <div class="ability-list">
-                  <div 
-                    v-for="(penalty, i) in cls.penalties" 
-                    :key="i"
-                    class="ability-item penalty"
-                  >
-                    <span class="status-icon">❌</span>
-                    <div class="ability-content">
-                      <div class="ability-top">
-                        <span class="bonus-text">{{ penalty }}</span>
-                      
-                        <PVTooltip
-                          title="EFECTO NEGATIVO"
-                          :description="cls.technicalPenalties?.[i] || 'Detalles no disponibles.'"
-                          position="top"
-                        >
-                          <div class="tooltip-trigger-vicio">
-                            ❓
-                          </div>
-                        </PVTooltip>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </section>
+              <ClassBonusList
+                :cls="cls"
+                :trainer-level="trainerLevel"
+              />
 
               <!-- Actions -->
               <footer class="info-footer">
@@ -395,51 +318,6 @@ const rankTitle = computed(() => {
   display: flex;
   flex-direction: column;
   gap: 32px;
-}
-
-.section-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 20px;
-  .bar { width: 6px; height: 20px; border-radius: 3px; }
-  .bar.green { background: Rgba(34, 197, 94, 1); box-shadow: 0 0 10px Rgba(34, 197, 94, 0.4); }
-  .bar.red { background: Rgba(239, 68, 68, 1); box-shadow: 0 0 10px Rgba(239, 68, 68, 0.4); }
-  h3 { font-size: 11px; letter-spacing: 1.5px; }
-}
-
-.ability-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.ability-item {
-  background: Rgba(0, 0, 0, 0.4);
-  padding: 14px 16px;
-  border-radius: 14px;
-  border-left: 4px solid;
-  display: flex;
-  gap: 12px;
-  align-items: center;
-
-  &.locked { opacity: 0.6; .bonus-text { color: $muted; } }
-  &.penalty { border-left-color: Rgba(239, 68, 68, 0.4); }
-
-  .status-icon { font-size: 16px; flex-shrink: 0; }
-  .ability-content { flex: 1; min-width: 0; }
-  .ability-top { display: flex; align-items: center; gap: 8px; }
-  .bonus-text { font-size: 13px; color: Rgba(226, 232, 240, 1); line-height: 1.4; flex-grow: 1; }
-  .lv-req { font-size: 8px; background: Rgba(255, 255, 255, 0.05); padding: 2px 6px; border-radius: 4px; color: $muted; }
-  .req-text { font-size: 10px; color: Rgba(71, 85, 105, 1); margin-top: 4px; }
-}
-
-.tooltip-trigger-vicio {
-  cursor: help;
-  color: Rgba(71, 85, 105, 1);
-  font-size: 12px;
-  
-  &:hover { color: $white; }
 }
 
 .info-footer {

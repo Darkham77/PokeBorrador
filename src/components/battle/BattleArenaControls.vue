@@ -244,30 +244,33 @@ const onEnter = (el: Element, done: () => void) => {
 }
 
 .quick-shortcut-zone {
-  flex: 1;
   display: flex;
   flex-direction: column;
-  height: 0;
+  height: auto;
   min-height: 100%;
   overflow: hidden;
   border-left: 1px solid Rgba(255, 255, 255, 0.05);
   border-right: 1px solid Rgba(255, 255, 255, 0.05);
   
   &.zone-team { 
-    min-width: 110px; 
+    flex: 0 1 730px; // No crece más de 730px (suficiente para 6 tarjetas), se encoge si falta espacio
+    max-width: 730px;
+    min-width: 120px;
   }
-  &.zone-bag { min-width: 140px; }
+  &.zone-bag { 
+    flex: 1 1 90px; // Crece para ocupar el resto del espacio a la derecha, se encoge hasta 90px (1 columna)
+    min-width: 90px;
+  }
 }
 
 .controls-content {
-  width: 100%;
-  max-width: var(--move-panel-max-width);
+  flex: 0 0 var(--move-panel-max-width); // El panel de movimientos es rígido y no se puede achicar ni deformar
+  width: var(--move-panel-max-width);
   display: flex;
   flex-direction: column;
   gap: 0;
-  flex-shrink: 0;
   padding: 0 !important;
-  margin: 0 !important;
+  margin: 0 !important; // Junto a la zona de Pokémon, sin márgenes extra
   position: relative;
   justify-content: flex-start;
 }
