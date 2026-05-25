@@ -63,7 +63,7 @@ sequenceDiagram
 | **Debilitation Flow** | **Option A**: Forced Selection Full Overlay Modal | Hard-locks input on faint, ensuring the game FSM never triggers actions until the Showdown worker gets its swap index. | **Option B**: Dialogue inline selectors, **Option C**: Automatic swift backup. |
 | **Rival Combat AI** | **Option B**: Basic Strategic AI (Type counters & 15% tactical swaps) | Provides a realistic training playground. Makes bot interactions satisfying without adding network overhead. | **Option A**: Full random (too easy), **Option C**: Heavy deep neural predictions. |
 | **Simulation Core** | **Option 1**: Worker-based full `@pkmn/sim` orchestration | Guarantees complete Gen 3 mechanical integrity (Intimidate, entry spikes, status persistent damage) automatically. | **Option 2**: Recreating 1v1 micro-battles in store (extreme fragile). |
-| **Nature & Ability Sync**| **Option A (Enfoque A)**: Full logic & stats synchronization | Enforces 100% mathematical simulation fidelity. Selected natures apply exact +10%/-10% stat modifiers in the Showdown engine. | **Option B**: Esthetic-only visual badges (neutra nature in engine). |
+| **Nature & Ability Sync** | **Option A (Enfoque A)**: Full logic & stats synchronization | Enforces 100% mathematical simulation fidelity. Selected natures apply exact +10%/-10% stat modifiers in the Showdown engine. | **Option B**: Esthetic-only visual badges (neutra nature in engine). |
 
 ---
 

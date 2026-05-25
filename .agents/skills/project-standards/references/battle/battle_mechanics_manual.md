@@ -1100,3 +1100,9 @@ Camera settings (zoom levels, visual guides) are considered persistent battle st
 The combat log container MUST remain isolated from administrative controls.
 
 - **Overflow Integrity**: Debug buttons MUST be positioned outside the log's scrolling viewport. This prevents the "log-animation-clash" where incoming messages cause the entire control panel to scroll or shift unexpectedly.
+
+### 4. Bidirectional Engine Translation and Parity Sync
+
+To maintain strict competitive integrity inside the combat engine while offering a localized premium UI experience:
+- **Bidirectional Worker Translation**: When utilizing an engine written in English (e.g., `@pkmn/sim`) alongside a Spanish interface, you MUST implement deterministic bidirectional translator maps (such as `NATURE_MAP_ES_TO_EN` / `ABILITY_MAP_ES_TO_EN` and their dynamic inversions) inside the Web Worker thread (`ShowdownWorker.ts`).
+- **Translation Execution Flow**: Translate all Spanish user choices (types, moves, abilities, natures) to their corresponding English keys before submitting them to the simulator. Conversely, intercept all outputs and status frames from the simulator and translate them back to Spanish before propagating them to the Pinia store and the reactive HUD cards. This ensures perfect mathematical stat modifiers (+10%/-10% nature boosts, STAB calculations) apply correctly inside the simulator engine without causing UI leaks.

@@ -589,3 +589,14 @@ To facilitate real-time mechanical verification without disrupting the "Pixel He
 To prevent overloading the HUD with irrelevant information, weather and time cycle advantages or penalties MUST only be shown if they directly affect the active Pokémon's types or moves.
 
 - **Evaluation**: The HUD must check if the active Pokémon shares a type with the active weather or time cycle effects, or if any of its available moves are influenced by them.
+
+### 24. Special/Atypical Elemental Types in Audits
+
+To prevent false positive translation leaks in static database validations:
+- **Curse Type Exception ("???")**: The custom elemental type `"???"` used by the *Maldición (Curse)* move in generations 2-4 MUST be registered as a valid and allowed Spanish type in any translation/database audit suite (`validate_translations.ts`), preventing false-positive mismatches.
+
+### 25. High-Fidelity Vue 3 GSAP Tooltip Coordination
+
+To ensure optimal GPU performance and eliminate race conditions or memory leaks in dynamic layouts:
+- **Zero-Timer & Zero-Variable Coordination**: When showing dynamic tooltips on hover or tap (e.g., abilities, natures), do NOT use manual CSS transition timers, `setTimeout`, or custom coordination state variables in JS.
+- **Vue Transition Lifecycle hooks**: Bind GSAP transitions directly to Vue's `<Transition :css="false">` lifecycle hooks (`@before-enter`, `@enter`, `@leave`). Set the initial transparent state in `beforeEnter`, execute the animation inside `enter` (calling the `done` callback on complete), and reverse it cleanly in `leave`, ensuring smooth 60fps animations.
