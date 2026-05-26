@@ -200,14 +200,14 @@ async function main() {
   try {
     const transRaw = await fs.readFile(TRANSLATIONS_PATH, 'utf-8');
     moveTranslations = JSON.parse(transRaw);
-  } catch (e) {
+  } catch (_e) {
     console.warn('⚠️ No se pudo cargar move_translations.json, se usarán fallbacks.');
   }
 
   try {
     const descRaw = await fs.readFile(DESCRIPTIONS_PATH, 'utf-8');
     moveDescriptions = JSON.parse(descRaw);
-  } catch (e) {
+  } catch (_e) {
     console.warn('⚠️ No se pudo cargar move_descriptions.json, se usarán fallbacks.');
   }
 

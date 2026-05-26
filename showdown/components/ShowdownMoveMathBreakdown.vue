@@ -69,7 +69,7 @@ const getKoColorClass = (text?: string) => {
 
       <!-- Estimaciones de Daño Real y KO en Sandbox -->
       <template v-if="category.toLowerCase() !== 'status' && basePower > 0 && minDamage !== undefined">
-        <div class="math-divider"></div>
+        <div class="math-divider" />
         
         <div class="math-row damage-row">
           <span class="math-label dmg-label">Rango de Daño Real:</span>

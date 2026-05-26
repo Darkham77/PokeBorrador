@@ -1,10 +1,27 @@
 import gsap from 'gsap';
 import type { ParsedEvent } from '../sandbox_db/ShowdownParser.ts';
+import type { SandboxPokemon } from './showdownMath.ts';
+
+interface SandboxStore {
+  battleLog: ParsedEvent[];
+  currentMessage: string;
+  playerHP: number;
+  playerMaxHP: number;
+  enemyHP: number;
+  enemyMaxHP: number;
+  playCry: (id: string) => void;
+  playerPokemon: SandboxPokemon | null;
+  enemyPokemon: SandboxPokemon | null;
+  playerTeam: SandboxPokemon[];
+  enemyTeam: SandboxPokemon[];
+  activePlayerIndex: number;
+  activeEnemyIndex: number;
+}
 
 /**
  * Orquestador secuencial de animaciones para la cola de eventos de batalla
  */
-export async function executeAnimationQueue(store: any, events: ParsedEvent[]): Promise<void> {
+export async function executeAnimationQueue(store: SandboxStore, events: ParsedEvent[]): Promise<void> {
   for (const event of events) {
     store.battleLog.push(event);
     await animateEvent(store, event);
@@ -15,7 +32,7 @@ export async function executeAnimationQueue(store: any, events: ParsedEvent[]): 
  * Ejecuta animaciones y desplazamientos físicos mediante GSAP.
  * Devuelve una Promesa para garantizar la secuencialidad perfecta.
  */
-export function animateEvent(store: any, event: ParsedEvent): Promise<void> {
+export function animateEvent(store: SandboxStore, event: ParsedEvent): Promise<void> {
   return new Promise<void>((resolve) => {
     store.currentMessage = event.text;
 
@@ -130,7 +147,7 @@ export function animateEvent(store: any, event: ParsedEvent): Promise<void> {
         onComplete: () => {
           const incomingSpeciesId = data.moveId || '';
           const team = isPlayer ? store.playerTeam : store.enemyTeam;
-          const idx = team.findIndex((p: any) => p.id === incomingSpeciesId);
+          const idx = team.findIndex((p: SandboxPokemon) => p.id === incomingSpeciesId);
 
           if (idx !== -1) {
             const incomingPoke = team[idx];

@@ -15,9 +15,9 @@ interface DBMove {
 }
 
 interface ShowdownDB {
-  pokemon: Record<string, any>;
+  pokemon: Record<string, unknown>;
   moves: Record<string, DBMove>;
-  abilities: Record<string, any>;
+  abilities: Record<string, unknown>;
 }
 
 const CLEAN_DESCRIPTIONS: Record<string, string> = {

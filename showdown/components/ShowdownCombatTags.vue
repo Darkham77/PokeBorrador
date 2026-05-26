@@ -515,10 +515,14 @@ const onLeave = (el: Element, done: () => void) => {
 
         <template #content>
           <div class="combat-tag-tooltip-content">
-            <p class="tooltip-desc">{{ tag.description }}</p>
+            <p class="tooltip-desc">
+              {{ tag.description }}
+            </p>
             <div class="tooltip-divider" />
             <div class="tooltip-effects">
-              <div class="effects-title">EFECTOS MECÁNICOS (GEN 3):</div>
+              <div class="effects-title">
+                EFECTOS MECÁNICOS (GEN 3):
+              </div>
               <div
                 v-for="eff in tag.effects"
                 :key="eff"
