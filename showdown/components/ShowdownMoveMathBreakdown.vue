@@ -59,8 +59,8 @@ defineProps<{
 
 <style scoped lang="scss">
 .tooltip-math-section {
-  background: rgba(0, 0, 0, 0.35);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: Rgba(0, 0, 0, 0.35);
+  border: 1px solid Rgba(255, 255, 255, 0.05);
   border-radius: 8px;
   padding: 10px;
 
@@ -100,7 +100,7 @@ defineProps<{
 
       &.stab-active {
         color: #32d74b;
-        text-shadow: 0 0 4px rgba(50, 215, 75, 0.3);
+        text-shadow: 0 0 4px Rgba(50, 215, 75, 0.3);
       }
 
       &.eff-immune {
@@ -113,7 +113,7 @@ defineProps<{
       &.eff-super {
         color: #32d74b;
         font-weight: bold;
-        text-shadow: 0 0 4px rgba(50, 215, 75, 0.3);
+        text-shadow: 0 0 4px Rgba(50, 215, 75, 0.3);
       }
       &.eff-neutral {
         color: #fff;
@@ -124,7 +124,7 @@ defineProps<{
   .math-total-row {
     margin-top: 6px;
     padding-top: 8px;
-    border-top: 1px dashed rgba(255, 255, 255, 0.1);
+    border-top: 1px dashed Rgba(255, 255, 255, 0.1);
     display: flex;
     flex-direction: column;
     gap: 4px;
@@ -143,7 +143,7 @@ defineProps<{
       .total-result {
         font-size: 11px;
         color: var(--yellow, #ffd60a);
-        text-shadow: 0 0 6px rgba(255, 214, 10, 0.4);
+        text-shadow: 0 0 6px Rgba(255, 214, 10, 0.4);
       }
 
       &.status-only {

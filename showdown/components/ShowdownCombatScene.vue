@@ -136,7 +136,7 @@ const getWeatherName = (weather?: string) => {
   position: absolute;
   top: 16px;
   left: 50%;
-  transform: translateX(-50%);
+  transform: Translatex(-50%);
   z-index: 100;
   pointer-events: auto;
 }
@@ -147,23 +147,23 @@ const getWeatherName = (weather?: string) => {
   font-weight: bold;
   padding: 6px 12px;
   border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  background: rgba(15, 18, 32, 0.75);
-  backdrop-filter: blur(8px);
+  border: 1px solid Rgba(255, 255, 255, 0.15);
+  background: Rgba(15, 18, 32, 0.75);
+  backdrop-filter: Blur(8px);
   color: #fff;
   display: flex;
   align-items: center;
   gap: 6px;
   cursor: pointer;
   box-shadow: 
-    0 10px 25px rgba(0, 0, 0, 0.5),
-    inset 0 1px 1px rgba(255, 255, 255, 0.1);
+    0 10px 25px Rgba(0, 0, 0, 0.5),
+    inset 0 1px 1px Rgba(255, 255, 255, 0.1);
   will-change: filter, transform;
   transition: background 0.2s, transform 0.2s;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.15);
-    transform: translateY(-1px);
+    background: Rgba(255, 255, 255, 0.15);
+    transform: Translatey(-1px);
   }
 
   .weather-badge-emoji {
@@ -177,39 +177,39 @@ const getWeatherName = (weather?: string) => {
   .weather-badge-turns {
     color: var(--yellow, #ffd60a);
     font-size: 7px;
-    background: rgba(0, 0, 0, 0.3);
+    background: Rgba(0, 0, 0, 0.3);
     padding: 1px 4px;
     border-radius: 4px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    border: 1px solid Rgba(255, 255, 255, 0.05);
   }
 
   &.badge-sunnyday {
-    border-color: rgba(255, 159, 10, 0.4);
-    background: rgba(255, 159, 10, 0.15);
+    border-color: Rgba(255, 159, 10, 0.4);
+    background: Rgba(255, 159, 10, 0.15);
     box-shadow: 
-      0 10px 25px rgba(0, 0, 0, 0.5),
-      0 0 15px rgba(255, 159, 10, 0.15);
+      0 10px 25px Rgba(0, 0, 0, 0.5),
+      0 0 15px Rgba(255, 159, 10, 0.15);
   }
   &.badge-raindance {
-    border-color: rgba(10, 132, 255, 0.4);
-    background: rgba(10, 132, 255, 0.15);
+    border-color: Rgba(10, 132, 255, 0.4);
+    background: Rgba(10, 132, 255, 0.15);
     box-shadow: 
-      0 10px 25px rgba(0, 0, 0, 0.5),
-      0 0 15px rgba(10, 132, 255, 0.15);
+      0 10px 25px Rgba(0, 0, 0, 0.5),
+      0 0 15px Rgba(10, 132, 255, 0.15);
   }
   &.badge-sandstorm {
-    border-color: rgba(191, 90, 242, 0.4);
-    background: rgba(191, 90, 242, 0.15);
+    border-color: Rgba(191, 90, 242, 0.4);
+    background: Rgba(191, 90, 242, 0.15);
     box-shadow: 
-      0 10px 25px rgba(0, 0, 0, 0.5),
-      0 0 15px rgba(191, 90, 242, 0.15);
+      0 10px 25px Rgba(0, 0, 0, 0.5),
+      0 0 15px Rgba(191, 90, 242, 0.15);
   }
   &.badge-hail {
-    border-color: rgba(100, 210, 255, 0.4);
-    background: rgba(100, 210, 255, 0.15);
+    border-color: Rgba(100, 210, 255, 0.4);
+    background: Rgba(100, 210, 255, 0.15);
     box-shadow: 
-      0 10px 25px rgba(0, 0, 0, 0.5),
-      0 0 15px rgba(100, 210, 255, 0.15);
+      0 10px 25px Rgba(0, 0, 0, 0.5),
+      0 0 15px Rgba(100, 210, 255, 0.15);
   }
 }
 
@@ -225,8 +225,8 @@ const getWeatherName = (weather?: string) => {
     left: 30%;
     width: 400px;
     height: 400px;
-    background: radial-gradient(circle, rgba(10, 132, 255, 0.15) 0%, transparent 70%);
-    filter: blur(40px);
+    background: radial-gradient(circle, Rgba(10, 132, 255, 0.15) 0%, transparent 70%);
+    filter: Blur(40px);
     pointer-events: none;
     animation: float-slow 15s infinite alternate ease-in-out;
   }
@@ -235,8 +235,8 @@ const getWeatherName = (weather?: string) => {
     position: absolute;
     inset: 0;
     background-image: 
-      radial-gradient(circle, rgba(255,255,255,0.15) 1px, transparent 1px),
-      radial-gradient(circle, rgba(255,255,255,0.08) 1.5px, transparent 1.5px);
+      radial-gradient(circle, Rgba(255,255,255,0.15) 1px, transparent 1px),
+      radial-gradient(circle, Rgba(255,255,255,0.08) 1.5px, transparent 1.5px);
     background-size: 120px 120px, 200px 200px;
     background-position: 0 0, 40px 60px;
     opacity: 0.5;
@@ -248,13 +248,13 @@ const getWeatherName = (weather?: string) => {
     width: 100%;
     height: 60%;
     background-image: 
-      linear-gradient(rgba(10, 132, 255, 0.08) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(10, 132, 255, 0.08) 1px, transparent 1px);
+      linear-gradient(Rgba(10, 132, 255, 0.08) 1px, transparent 1px),
+      linear-gradient(90deg, Rgba(10, 132, 255, 0.08) 1px, transparent 1px);
     background-size: 50px 50px;
     background-position: center bottom;
     transform: perspective(260px) rotateX(60deg);
     transform-origin: bottom center;
-    mask-image: linear-gradient(to top, rgba(0, 0, 0, 1) 20%, rgba(0, 0, 0, 0) 100%);
+    mask-image: linear-gradient(to top, Rgba(0, 0, 0, 1) 20%, Rgba(0, 0, 0, 0) 100%);
     pointer-events: none;
   }
 }
@@ -292,22 +292,22 @@ const getWeatherName = (weather?: string) => {
   width: 180px;
   height: 60px;
   border-radius: 50%;
-  background: radial-gradient(ellipse at center, rgba(10, 132, 255, 0.25) 0%, rgba(10, 132, 255, 0) 70%);
-  border: 2px solid rgba(10, 132, 255, 0.3);
+  background: radial-gradient(ellipse at center, Rgba(10, 132, 255, 0.25) 0%, Rgba(10, 132, 255, 0) 70%);
+  border: 2px solid Rgba(10, 132, 255, 0.3);
   box-shadow: 
-    0 0 25px rgba(10, 132, 255, 0.3),
-    inset 0 0 15px rgba(10, 132, 255, 0.2);
+    0 0 25px Rgba(10, 132, 255, 0.3),
+    inset 0 0 15px Rgba(10, 132, 255, 0.2);
   transform: scaleY(0.4);
   animation: pulse-glow 3s infinite alternate ease-in-out;
 
   &.enemy-pad {
     width: 160px;
     height: 50px;
-    background: radial-gradient(ellipse at center, rgba(255, 69, 58, 0.25) 0%, rgba(255, 69, 58, 0) 70%);
-    border-color: rgba(255, 69, 58, 0.3);
+    background: radial-gradient(ellipse at center, Rgba(255, 69, 58, 0.25) 0%, Rgba(255, 69, 58, 0) 70%);
+    border-color: Rgba(255, 69, 58, 0.3);
     box-shadow: 
-      0 0 25px rgba(255, 69, 58, 0.3),
-      inset 0 0 15px rgba(255, 69, 58, 0.2);
+      0 0 25px Rgba(255, 69, 58, 0.3),
+      inset 0 0 15px Rgba(255, 69, 58, 0.2);
   }
 }
 
@@ -325,7 +325,7 @@ const getWeatherName = (weather?: string) => {
   max-width: 160px;
   max-height: 160px;
   object-fit: contain;
-  filter: drop-shadow(0 10px 15px rgba(0, 0, 0, 0.6));
+  filter: Drop-Shadow(0 10px 15px Rgba(0, 0, 0, 0.6));
   animation: float-sprite 4s infinite alternate ease-in-out;
   transform-origin: bottom center;
 }
@@ -343,17 +343,17 @@ const getWeatherName = (weather?: string) => {
 
 // Animaciones Clave
 @keyframes float-slow {
-  0% { transform: translateY(0) scale(1); }
-  100% { transform: translateY(-20px) scale(1.05); }
+  0% { transform: Translatey(0) Scale(1); }
+  100% { transform: Translatey(-20px) Scale(1.05); }
 }
 
 @keyframes float-sprite {
-  0% { transform: translateY(0); }
-  100% { transform: translateY(-8px); }
+  0% { transform: Translatey(0); }
+  100% { transform: Translatey(-8px); }
 }
 
 @keyframes pulse-glow {
-  0% { opacity: 0.7; transform: scaleY(0.4) scale(0.95); }
-  100% { opacity: 1; transform: scaleY(0.4) scale(1.05); }
+  0% { opacity: 0.7; transform: scaleY(0.4) Scale(0.95); }
+  100% { opacity: 1; transform: scaleY(0.4) Scale(1.05); }
 }
 </style>
