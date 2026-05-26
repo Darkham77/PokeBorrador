@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { getCombinedEffectiveness } from '../../src/logic/pokemon/typeEngine';
-import { getMoveDescription } from '../../src/logic/pokemonUtils';
-import { pokemonDataProvider } from '../../src/logic/providers/pokemonDataProvider';
 import moveTranslations from '../sandbox_db/data/move_translations.json';
 import moveDescriptions from '../sandbox_db/data/move_descriptions.json';
 import showdownDB from '../sandbox_db/data/showdown_db_es.json';
@@ -101,7 +99,6 @@ const GEN3_CUT_MOVES_TRANSLATIONS: Record<string, string> = {
 // Descripción oficial en español
 const moveDesc = computed(() => {
   if (!move.value) return '';
-  const nameEs = moveNameEs.value;
   const cleanId = move.value.id.toLowerCase().replace(/[^a-z0-9]/g, '');
   
   // 1. Si es un movimiento cortado en generaciones modernas de PokeAPI, usar mapeo clásico Gen 3
@@ -109,20 +106,14 @@ const moveDesc = computed(() => {
     return GEN3_CUT_MOVES_TRANSLATIONS[cleanId];
   }
   
-  // 2. Fallback a descripciones oficiales en español de PokeAPI para Showdown Sandbox
+  // 2. Obtener descripción oficial en español de la base de datos exclusiva del Sandbox
   const translatedDesc = (moveDescriptions as Record<string, string>)[cleanId];
   if (translatedDesc && !translatedDesc.includes('no se puede usar')) {
     return translatedDesc;
   }
   
-  // 3. Buscar en la base de datos interna de Poke Vicio por nombre en español (fallback secundario)
-  const gameMoveData = pokemonDataProvider.getMoveData(nameEs);
-  if (gameMoveData) {
-    return getMoveDescription(nameEs, gameMoveData);
-  }
-  
-  // 4. Fallback si no está en ninguna base de datos o si tiene el leak de inutilizable
-  return move.value.shortDesc || move.value.desc || 'Causa daño al oponente sin efectos secundarios adicionales.';
+  // 3. Fallback directo a la descripción original corta de Showdown (en inglés o español local de Showdown)
+  return move.value.shortDesc || move.value.desc || 'Descripción no disponible en la base de datos del Sandbox.';
 });
 
 const currentPP = computed(() => {
