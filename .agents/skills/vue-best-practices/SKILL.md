@@ -144,6 +144,7 @@ Performance work is a post-functionality pass. Do not optimize before core behav
 - Over-abstraction in hot list paths -> [perf-avoid-component-abstraction-in-lists](references/perf-avoid-component-abstraction-in-lists.md)
 - Expensive updates triggered too often -> [updated-hook-performance](references/updated-hook-performance.md)
 - **Synchronizing External Animation Engines (GSAP)**: When a prop change must trigger a full re-initialization of an external animation (like a GSAP timeline), ALWAYS use a `watch` combined with `await nextTick()`. This ensures that any template-driven DOM updates (like `v-if` mounting/unmounting layers) are finished before the animation script targets the elements.
+- **GSAP Teleport Target Safety**: To prevent 'target not found' warnings when animating elements inside teleported slots (such as `BaseModal` layouts), avoid using raw string selectors (e.g., `'.fishing-card'`) in `onMounted`. Use Vue template refs (`ref`) instead, and trigger the tweens inside a `watch` checking the modal's active/show state combined with `await nextTick()`.
 
 ## 5) DOM & Event Quirks (Lessons Learned)
 
@@ -159,6 +160,7 @@ Performance work is a post-functionality pass. Do not optimize before core behav
   - **Pattern**: `const lockReason = computed(() => { if (isLockedByTicket) return 'Needs Ticket'; if (isLockedByMedals) return 'Needs 8 Medals'; return null; })`.
   - **Why**: Keeps templates clean, ensures consistency between tooltips and overlays, and makes the logic easier to test and maintain compared to inline ternary operators.
 - **Teleport & Scoped Styles**: Components using `<Teleport to="body">` (like `BaseModal`) **MUST** use global SCSS (not `scoped`) for positioning and overlay styles. Scoped styles often fail to apply correctly once the element is moved out of its original DOM hierarchy.
+- **Unified Modal Wrapper Mandate**: For any overlay, popup, or interactive minigame window, avoid writing custom absolute/fixed overlay divs or manual positioning container hierarchies. Always wrap the component UI in the centralized `BaseModal` component to guarantee proper teleportation to body and automatic integration into the dynamic z-index stacking depth registry.
 - **Scrollbar Styling in Scoped SFCs**: Styles like `::-webkit-scrollbar` often fail to apply correctly when inside a `<style scoped>` block because the browser doesn't correctly attribute them to the component's unique data-attribute. You **must** move these styles to a global `<style lang="scss">` block (without `scoped`) or a shared global utility file to ensure they apply to all targeted containers.
 - **Global Window Listeners (Safe Lifecycle)**: Global window listeners (added via `useWindowListener` or native `addEventListener`) MUST be managed carefully to avoid memory leaks.
   - **MANDATORY**: Use the project's standardized `useWindowListener` composable (`@/composables/useWindowListener`) for all `resize` or `scroll` listeners. It centralizes lifecycle hooks and ensures zero-leak cleanup.

@@ -62,6 +62,8 @@ Consult these manuals for detailed implementation specifications:
 - **Pixel-Perfect**: Pixelated elements (sprites, items, badges) MUST use `@include pixelated`. This mixin handles browser fallbacks and typography sharpening. Typography for stats and headers must always be pixelated.
 - **Overlapping Sprite Stacking (Cards Deck)**: In retro-modern flex lists or reward displays, use negative margins (e.g. `margin-left: -16px` on sibling `.item-sprite` elements) to create a high-density, overlapping deck structure. Accompany this with a smooth hover micro-animation using GSAP transitions or CSS `:hover` that slightly scales (`scale(1.2)`), lifts (`translateY(-4px)`), and elevates the z-index (`z-index: 10`) of the targeted sprite to provide premium tactile feedback.
 - **Emoji Bounding Box descent (Windows)**: When vertically centering emoji sprites or badges (e.g., `👑`) inside flex layouts, Segoe UI Emoji features substantial top ascent padding on Windows. Apply a manual offset (e.g., `transform: translateY(-4px) !important`) to counteract this baseline descent and center it visually.
+- **Select Dropdown Aesthetic Parity**: When styling select elements inside custom dark admin panels, always override default browser styles with `appearance: none`, specify a premium custom chevron SVG background, and use a dark background for `option` elements to maintain aesthetic parity with standard text inputs.
+- **Strict 2D CSS Grid Sizing**: For grid-based minigames or boards, always specify both `grid-template-columns` and `grid-template-rows` explicitly (e.g., using `repeat(N, 1fr)`) to prevent cell heights/widths from shifting dynamically based on content (such as text emojis or temporary graphics).
 
 ### 2. GPU & Rendering
 
