@@ -1,6 +1,6 @@
 import type { ShowdownLocalDB } from './cloner/extract_logic.ts';
-import showdownDB from './data/showdown_db_es.json';
-import moveTranslations from './data/move_translations.json';
+import showdownDB from './data/showdown_db_es.json' with { type: 'json' };
+import moveTranslations from './data/move_translations.json' with { type: 'json' };
 
 const typedDB = showdownDB as unknown as ShowdownLocalDB;
 
@@ -38,6 +38,38 @@ function getMoveName(moveId: string): string {
 }
 
 /**
+ * Helper para obtener el nombre de una habilidad localizado en español
+ */
+function translateAbility(abilityName: string): string {
+  if (!abilityName) return '';
+  const cleanId = abilityName.toLowerCase().replace(/[^a-z0-9]/g, '');
+  return typedDB.abilities[cleanId]?.name || abilityName;
+}
+
+/**
+ * Helper para obtener el nombre de un objeto localizado en español
+ */
+function translateItem(itemName: string): string {
+  if (!itemName) return '';
+  const cleanId = itemName.toLowerCase().replace(/[^a-z0-9]/g, '');
+  const itemMap: Record<string, string> = {
+    leftovers: 'Restos',
+    choiceband: 'Cinta Elegida',
+    lumberry: 'Baya Lum',
+    sitrusberry: 'Baya Cidra',
+    salacberry: 'Baya Salac',
+    liechiberry: 'Baya Lichi',
+    focusband: 'Cinta Enfocada',
+    brightpowder: 'Polvo Brillo',
+    quickclaw: 'Garra Rápida',
+    mentalherb: 'Hierba Mental',
+    whiteherb: 'Hierba Mental',
+    kingsrock: 'Roca del Rey'
+  };
+  return itemMap[cleanId] || itemName;
+}
+
+/**
  * Helper para obtener el nombre localizado en español de cualquier efecto, habilidad, objeto o movimiento
  */
 function translateEffect(effect: string): string {
@@ -67,26 +99,12 @@ function translateEffect(effect: string): string {
   
   // 2. Traducir habilidades
   if (prefix === 'ability' || typedDB.abilities[cleanId]) {
-    return typedDB.abilities[cleanId]?.name || cleanEffect;
+    return translateAbility(cleanEffect);
   }
   
   // 3. Traducir objetos comunes
   if (prefix === 'item') {
-    const itemMap: Record<string, string> = {
-      leftovers: 'Restos',
-      choiceband: 'Cinta Elegida',
-      lumberry: 'Baya Lum',
-      sitrusberry: 'Baya Cidra',
-      salacberry: 'Baya Salac',
-      liechiberry: 'Baya Lichi',
-      focusband: 'Cinta Enfocada',
-      brightpowder: 'Polvo Brillo',
-      quickclaw: 'Garra Rápida',
-      mentalherb: 'Hierba Mental',
-      whiteherb: 'Hierba Mental',
-      kingsrock: 'Roca del Rey'
-    };
-    return itemMap[cleanId] || cleanEffect;
+    return translateItem(cleanEffect);
   }
   
   // 4. Traducir términos y estados comunes en inglés
@@ -409,10 +427,10 @@ export function parseShowdownLog(logs: string[]): ParsedEvent[] {
             text = `¡El efecto de ${moveName} se activó en ${target}!`;
           }
         } else if (effect.startsWith('ability: ')) {
-          const ability = effect.replace('ability: ', '');
+          const ability = translateAbility(effect.replace('ability: ', ''));
           text = `¡La habilidad ${ability} de ${target} se activó!`;
         } else if (effect.startsWith('item: ')) {
-          const item = effect.replace('item: ', '');
+          const item = translateItem(effect.replace('item: ', ''));
           text = `¡El objeto ${item} de ${target} hizo efecto!`;
         } else if (effect === 'Trapped') {
           text = `¡${target} no puede escapar!`;
@@ -425,7 +443,7 @@ export function parseShowdownLog(logs: string[]): ParsedEvent[] {
       case '-ability': {
         const rawTarget = parts[1] || '';
         const target = getPokemonName(rawTarget);
-        const ability = parts[2] || '';
+        const ability = translateAbility(parts[2] || '');
         events.push({ type: 'ability', text: `¡Se activó la habilidad ${ability} de ${target}!` });
         break;
       }
@@ -440,7 +458,7 @@ export function parseShowdownLog(logs: string[]): ParsedEvent[] {
       case '-item': {
         const rawTarget = parts[1] || '';
         const target = getPokemonName(rawTarget);
-        const item = parts[2] || '';
+        const item = translateItem(parts[2] || '');
         events.push({ type: 'info', text: `¡${target} obtuvo el objeto ${item}!` });
         break;
       }
@@ -448,7 +466,7 @@ export function parseShowdownLog(logs: string[]): ParsedEvent[] {
       case '-enditem': {
         const rawTarget = parts[1] || '';
         const target = getPokemonName(rawTarget);
-        const item = parts[2] || '';
+        const item = translateItem(parts[2] || '');
         events.push({ type: 'info', text: `¡${target} consumió o perdió el objeto ${item}!` });
         break;
       }
