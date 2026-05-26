@@ -1,6 +1,6 @@
 
 import { describe, it, expect, vi } from 'vitest'
-import { getRouteWeather, mulberry32 } from '@/logic/weatherUtils'
+import { getRouteWeather, mulberry32, getWeatherMultiplier } from '@/logic/weatherUtils'
 
 // Mock the weather tables
 vi.mock('@/data/weather-tables', () => ({
@@ -92,6 +92,33 @@ describe('weatherUtils', () => {
     it('should handle bad probability tables safely by returning a string', () => {
       const weather = getRouteWeather('bad_route', 'spring', 0)
       expect(typeof weather).toBe('string')
+    })
+  })
+
+  describe('getWeatherMultiplier', () => {
+    it('should return 1.0 if species does not exist, or weather is invalid/clear', () => {
+      expect(getWeatherMultiplier('unknown', 'storm')).toBe(1.0)
+      expect(getWeatherMultiplier('pidgey', 'clear')).toBe(1.0)
+    })
+
+    it('should correctly block dual-type pokemon (Pidgey - normal/flying under storm)', () => {
+      // storm blocks: fire, flying, bug
+      // Pidgey is normal/flying
+      expect(getWeatherMultiplier('pidgey', 'storm')).toBe(0)
+    })
+
+    it('should correctly block single-type pokemon (Charmander - fire under storm)', () => {
+      expect(getWeatherMultiplier('charmander', 'storm')).toBe(0)
+    })
+
+    it('should boost pokemon with weather boosted type (Pikachu - electric under storm)', () => {
+      // storm boosts: water, electric, dragon
+      expect(getWeatherMultiplier('pikachu', 'storm')).toBe(1.5)
+    })
+
+    it('should debuff pokemon with weather debuffed type (Sandshrew - ground under storm)', () => {
+      // storm debuffs: rock, ground
+      expect(getWeatherMultiplier('sandshrew', 'storm')).toBe(0.4)
     })
   })
 })
