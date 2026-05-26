@@ -55,7 +55,7 @@ const isMax = computed(() => criminality.value >= 100)
 
 .criminality-container {
   position: fixed;
-  right: 20px;
+  right: calc(6px + var(--scrollbar-width, 0px));
   top: 50%;
   transform: Translatey(-50%);
   width: 24px; // Aumentado para dar aire lateral
@@ -106,6 +106,9 @@ const isMax = computed(() => criminality.value >= 100)
   font-weight: 800;
   color: Rgba(239, 68, 68, 1);
   text-shadow: 1px 1px var(--black), 0 0 5px Rgba(239, 68, 68, 0.4);
+  writing-mode: vertical-lr;
+  transform: Rotate(180deg);
+  @include pixelated;
 }
 
 

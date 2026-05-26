@@ -56,5 +56,6 @@ export const MODAL_REGISTRY = {
   BoxPokemonMenu: defineAsyncComponent(() => import('@/components/box/BoxPokemonMenu.vue')),
   BoxMove: defineAsyncComponent(() => import('@/components/box/BoxMoveModal.vue')),
   DebugStackTest: defineAsyncComponent(() => import('@/components/modals/DebugStackTestModal.vue')),
-  DebugWeatherTables: defineAsyncComponent(() => import('@/components/modals/DebugWeatherTablesModal.vue'))
+  DebugWeatherTables: defineAsyncComponent(() => import('@/components/modals/DebugWeatherTablesModal.vue')),
+  RouteSpawns: defineAsyncComponent(() => import('@/components/modals/RouteSpawnsModal.vue'))
 }

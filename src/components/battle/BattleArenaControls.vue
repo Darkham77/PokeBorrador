@@ -240,6 +240,12 @@ const onEnter = (el: Element, done: () => void) => {
       display: none !important;
     }
     justify-content: center;
+
+    .controls-content {
+      flex: 1 1 auto;
+      width: 100%;
+      max-width: var(--move-panel-max-width);
+    }
   }
 }
 

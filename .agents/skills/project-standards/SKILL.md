@@ -8,7 +8,7 @@ description: Core governance for the Poké Vicio project. Enforces Hybrid Retro-
 This skill governs the DNA of the project. Technical implementation details are delegated to specialized manuals to ensure a lightweight and effective rule base.
 
 - **MANUAL PUSH MANDATE**: You are FORBIDDEN from executing `git push`. You MUST inform the user that the local repository is clean and updated, and they should perform the push manually when ready.
-- **WIP Audit Documentation**: If the commit is partial or part of an ongoing migration, it is acceptable to commit even with audit failures (SASS, Aesthetics, Length), provided they are explicitly listed in the commit message as "Pending Migrations". This allows work to be synchronized without being blocked by pre-existing technical debt, maintaining traceability.
+- **Zero Audit Failures**: The project is now fully migrated. Under NO circumstances are audit failures (SASS, Aesthetics, Length, FSM, Types, Lint) allowed in any commit. Every single commit must be 100% clean and compliant with the validation pipeline.
 
 ## 🧭 Navigation Hub
 

@@ -149,6 +149,14 @@ const initGameSession = async () => {
   }
 }
 
+const updateScrollbarWidth = () => {
+  if (typeof window === 'undefined') return
+  const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth
+  document.documentElement.style.setProperty('--scrollbar-width', `${scrollbarWidth}px`)
+}
+
+useWindowListener('resize', updateScrollbarWidth)
+
 onMounted(async () => {
   // 1. Init Global Error Handlers (Vue Bridge)
   initGlobalErrorHandlers()
@@ -166,6 +174,9 @@ onMounted(async () => {
   
   // 4. Restore & Sync Zoom Level
   uiStore.setZoom(uiStore.appZoom)
+  
+  // 5. Calculate scrollbar width for responsive positioning
+  updateScrollbarWidth()
 })
 
 // Sincronizar estado de la partida reactivamente al cambiar de ruta o usuario

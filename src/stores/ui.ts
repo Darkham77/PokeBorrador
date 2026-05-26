@@ -80,6 +80,15 @@ export const useUIStore = defineStore('ui', () => {
     safeStorage.setItem('low-power-mode', mode)
   }
   
+  // Hide Map Pokemon Mode
+  const hideMapPokemon = ref<boolean>(
+    safeStorage.getItem('hide-map-pokemon') === 'true'
+  )
+  function setHideMapPokemon(val: boolean) {
+    hideMapPokemon.value = val
+    safeStorage.setItem('hide-map-pokemon', val ? 'true' : 'false')
+  }
+  
   // Team Management Debug Flags
   const pvpAutoFillDisabled = ref(false)
   const warAutoFillDisabled = ref(false)
@@ -124,44 +133,22 @@ export const useUIStore = defineStore('ui', () => {
 
   // ── MODAL TRIGGERS ─────────────────────────────────────────────────────────
   
-  function toggleProfile() { 
-    const modalStore = useModalStore()
-    if (modalStore.isOpen('Profile')) modalStore.close('Profile')
-    else modalStore.open('Profile')
+  function toggleProfile() {
+    const s = useModalStore(); if (s.isOpen('Profile')) s.close('Profile'); else s.open('Profile')
   }
-  
-  function toggleSettings() { 
-    const modalStore = useModalStore()
-    if (modalStore.isOpen('Settings')) modalStore.close('Settings')
-    else modalStore.open('Settings')
+  function toggleSettings() {
+    const s = useModalStore(); if (s.isOpen('Settings')) s.close('Settings'); else s.open('Settings')
   }
-
-  function toggleHistory() { isHistoryOpen.value = !isHistoryOpen.value }
-  
-  function toggleSocial() { 
-    const modalStore = useModalStore()
-    if (modalStore.isOpen('SocialCenter')) modalStore.close('SocialCenter')
-    else modalStore.open('SocialCenter')
+  const toggleHistory = () => { isHistoryOpen.value = !isHistoryOpen.value }
+  function toggleSocial() {
+    const s = useModalStore(); if (s.isOpen('SocialCenter')) s.close('SocialCenter'); else s.open('SocialCenter')
   }
-
-  function openClaims() {
-    useModalStore().open('SocialCenter', { initialTab: 'claims' })
+  const openClaims = () => useModalStore().open('SocialCenter', { initialTab: 'claims' })
+  function toggleLibrary(tabId = null) {
+    const s = useModalStore(); if (s.isOpen('Library')) s.close('Library'); else s.open('Library', { initialTab: tabId })
   }
-
-  function toggleLibrary(tabId = null) { 
-    const modalStore = useModalStore()
-    if (modalStore.isOpen('Library')) modalStore.close('Library')
-    else modalStore.open('Library', { initialTab: tabId })
-  }
-  
-  function open(name: string, props: Record<string, unknown> = {}) {
-    useModalStore().open(name, props)
-  }
-
-  function close(name: string) {
-    useModalStore().close(name)
-  }
-
+  const open = (name: string, props: Record<string, unknown> = {}) => useModalStore().open(name, props)
+  const close = (name: string) => useModalStore().close(name)
   function closeAll() {
     useModalStore().closeAll()
     isHistoryOpen.value = false
@@ -172,27 +159,14 @@ export const useUIStore = defineStore('ui', () => {
 
   // ── MODAL STACKING SYSTEM (Z-INDEX) ────────────────────────────────────────
   const activeModalStack = ref<string[]>([])
-  
   function registerModal(modalId: string) {
-    if (!activeModalStack.value.includes(modalId)) {
-      activeModalStack.value.push(modalId)
-    }
+    if (!activeModalStack.value.includes(modalId)) activeModalStack.value.push(modalId)
   }
-
-  function unregisterModal(modalId: string) {
-    activeModalStack.value = activeModalStack.value.filter(id => id !== modalId)
-  }
-
-  const getModalDepth = (modalId: string) => {
-    return activeModalStack.value.indexOf(modalId)
-  }
+  const unregisterModal = (modalId: string) => { activeModalStack.value = activeModalStack.value.filter(id => id !== modalId) }
+  const getModalDepth = (modalId: string) => activeModalStack.value.indexOf(modalId)
 
   function toggleHudGroup(name: string | null) {
-    if (openHudGroup.value === name) {
-      openHudGroup.value = null
-    } else {
-      openHudGroup.value = name
-    }
+    openHudGroup.value = openHudGroup.value === name ? null : name
   }
 
   const hasDismissedSessionLock = ref(false)
@@ -364,6 +338,8 @@ export const useUIStore = defineStore('ui', () => {
     lowPowerMode,
     isLowPowerActive,
     setLowPowerMode,
+    hideMapPokemon,
+    setHideMapPokemon,
     isAnyFullscreenModalOpen,
     isPerformanceMode,
     isDebugPerformanceMode,

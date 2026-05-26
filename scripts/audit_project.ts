@@ -351,15 +351,6 @@ async function auditFile(filePath: string, fix: boolean): Promise<Violation[]> {
         severity: 'error',
         fixable: false
       });
-    } else if (lineCount > 300) {
-      violations.push({
-        file: filePath,
-        line: lineCount,
-        message: `Advertencia de Modularización: El archivo tiene ${lineCount} líneas. Se RECOMIENDA iniciar la fragmentación a partir de las 300 líneas para mantener la agilidad del código.`,
-        context: `SLOC: ${lineCount}`,
-        severity: 'warning',
-        fixable: false
-      });
     }
   }
 
@@ -506,7 +497,9 @@ async function main() {
 
   const files = await getFilesToAudit(path.resolve(process.cwd(), values.path as string));
   let all: Violation[] = [];
-  for (const f of files) all = all.concat(await auditFile(f, !!values.fix));
+  for (const f of files) {
+    all = all.concat(await auditFile(f, !!values.fix));
+  }
 
   if (values.summary) {
     console.log(styleText('bold', '\n--- 📊 RESUMEN DE VIOLACIONES ---'));
@@ -549,6 +542,8 @@ async function main() {
       .forEach(([file, count]) => {
         console.log(`  - ${file}: ${count} violaciones`);
       });
+
+    console.log(`\n❌ Errores: ${all.filter(v=>v.severity==='error').length} | ⚠️ Advertencias: ${all.filter(v=>v.severity==='warning').length}`);
   } else {
     const limit = 50;
     const toPrint = all.slice(0, limit);
@@ -558,9 +553,9 @@ async function main() {
       console.log(styleText('cyan', `👉 Para ver el resumen consolidado por archivo y regla: npm run audit -- --summary`));
       console.log(styleText('cyan', `👉 Para exportar el reporte completo a un archivo: npm run audit -- --output=scratch/audit_report.txt`));
     }
+    console.log(`\n❌ Errores: ${all.filter(v=>v.severity==='error').length} | ⚠️ Advertencias: ${all.filter(v=>v.severity==='warning').length}`);
   }
 
-  console.log(`\n❌ Errores: ${all.filter(v=>v.severity==='error').length} | ⚠️ Advertencias: ${all.filter(v=>v.severity==='warning').length}`);
   if (values.fix) console.log(styleText('cyan', '✨ Correcciones aplicadas.'));
 
   if (values.output) {

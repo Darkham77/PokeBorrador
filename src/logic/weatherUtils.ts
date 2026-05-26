@@ -80,7 +80,15 @@ export function getWeatherMultiplier(id: string, weather: string): number {
   const pData = pokemonDataProvider.getPokemonData(id);
   if (!pData || !weather || weather === 'clear') return 1.0;
   
-  const types = Array.isArray(pData.type) ? pData.type.map(t => t.toLowerCase()) : [pData.type.toLowerCase()];
+  const types: string[] = []
+  if (Array.isArray(pData.type)) {
+    types.push(...pData.type.map(t => t.toLowerCase()))
+  } else if (pData.type) {
+    types.push(pData.type.toLowerCase())
+  }
+  if (pData.type2) {
+    types.push(pData.type2.toLowerCase())
+  }
   const w = weather.toLowerCase();
   
   const entry = WEATHER_REGISTRY[w];

@@ -24,7 +24,7 @@ body {
 
   &.modal-open {
     overflow: hidden !important;
-    touch-action: none;
+    overscroll-behavior-x: contain !important;
 
     .zoom-target,
     #vue-app {

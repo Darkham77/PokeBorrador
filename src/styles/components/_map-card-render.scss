@@ -30,7 +30,6 @@
     background-image: none !important;
   }
 
-  // Background with Atmosphere Filters
   .map-card-bg {
     position: absolute;
     inset: 0; 
@@ -40,11 +39,13 @@
     background-position: center;
     background-repeat: no-repeat;
     z-index: var(--z-base); // Capa base del fondo
-    transform: Translatez(0); 
+    transform: none; 
     filter: var(--weather-only-filter, Brightness(1) contrast(1));
-    will-change: transform, filter, opacity;
+    will-change: filter, opacity;
     
     @include pixelated;
+    -webkit-backface-visibility: visible !important;
+    backface-visibility: visible !important;
     -ms-interpolation-mode: nearest-neighbor !important;
   }
 
@@ -278,8 +279,8 @@
 .dom-badge {
   @extend .map-pill;
   position: absolute;
-  bottom: 12px;
-  right: 12px;
+  top: 103px;
+  left: 12px;
   font-size: 16px;
   display: flex !important;
   align-items: center !important;

@@ -17,6 +17,54 @@ import { getMechanicalWeather, WEATHER_UI_METADATA, WEATHER_VISUAL_METADATA, WEA
 import { logger } from '@/logic/utils/logger'
 
 import { checkPlayerWinner, calculateSpawnGrid } from '@/logic/map/mapCardHelper'
+import { useModalStore } from '@/stores/modals'
+
+const modalStore = useModalStore()
+const pokeballTriggerRef = ref<HTMLElement | null>(null)
+
+const openRouteSpawnsModal = () => {
+  modalStore.open('RouteSpawns', {
+    map: props.map,
+    weather: computedWeather.value,
+    cycle: props.cycle
+  })
+}
+
+const onPokeballMouseEnter = () => {
+  if (uiStore.isLowPowerActive) return
+  if (pokeballTriggerRef.value) {
+    gsap.to(pokeballTriggerRef.value, {
+      x: -8,
+      y: -8,
+      scale: 1.35,
+      duration: 0.25,
+      ease: 'power2.out',
+      overwrite: 'auto'
+    })
+  }
+}
+
+const onPokeballMouseLeave = () => {
+  if (uiStore.isLowPowerActive) {
+    if (pokeballTriggerRef.value) {
+      gsap.set(pokeballTriggerRef.value, { clearProps: 'transform,x,y,scale' })
+    }
+    return
+  }
+  if (pokeballTriggerRef.value) {
+    gsap.to(pokeballTriggerRef.value, {
+      x: 0,
+      y: 0,
+      scale: 1,
+      duration: 0.25,
+      ease: 'power2.out',
+      overwrite: 'auto',
+      onComplete: () => {
+        gsap.set(pokeballTriggerRef.value, { clearProps: 'transform,x,y,scale' })
+      }
+    })
+  }
+}
 
 // Semilla aleatoria única para esta instancia de tarjeta en esta sesión
 const sessionWeatherSeed = Math.random() * 1000
@@ -416,7 +464,7 @@ const processedGrid = computed<ProcessedSpawn[]>(() => {
       sprite: getAssetUrl(ASSET_TYPES.POKEMON, id), 
       isSeen, 
       isCaught, 
-      isRare: (rate < 10) || isVisitor || isExclusive, 
+      isRare: (rate <= 5) || isVisitor || isExclusive, 
       isAtmospheric: isSpecialWeatherSpawn, 
       tooltipTitle: name, 
       tooltipDesc: typeInfo ? `${typeInfo}\n${timeText}` : timeText, 
@@ -958,7 +1006,7 @@ watch(spawnGridRef, (newRef) => {
 
       <!-- 5. Spawns Grid (MOVED UP to be behind other UI elements) -->
       <div
-        v-if="!isLocked && !isPerformanceMode && isVisible"
+        v-if="!isLocked && !isPerformanceMode && isVisible && !uiStore.hideMapPokemon"
         class="location-spawns"
       >
         <div 
@@ -1043,6 +1091,29 @@ watch(spawnGridRef, (newRef) => {
             class="crown-shine-aura" 
           />
           <span class="pill-content">👑</span>
+        </div>
+      </PVTooltip>
+
+      <!-- 7. Spawns Report Pokéball Trigger (Bottom Right Corner) -->
+      <PVTooltip
+        v-if="!isLocked && !isSafariLocked && !isPerformanceMode"
+        title="REPORTE DE ENCUENTROS"
+        description="Ver probabilidades en tiempo real de todos los Pokémon."
+        position="top"
+        class="pokeball-route-tooltip"
+      >
+        <div
+          ref="pokeballTriggerRef"
+          class="pokeball-route-trigger"
+          @click.stop.prevent="openRouteSpawnsModal"
+          @mouseenter="onPokeballMouseEnter"
+          @mouseleave="onPokeballMouseLeave"
+        >
+          <img
+            :src="getAssetUrl(ASSET_TYPES.ITEM, 'poke-ball')"
+            class="pokeball-icon"
+            alt="Spawns"
+          >
         </div>
       </PVTooltip>
     </div>
@@ -1181,5 +1252,36 @@ watch(spawnGridRef, (newRef) => {
   height: 220px;
   width: 100%;
   overflow: visible;
+}
+
+.pokeball-route-tooltip {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  z-index: var(--z-map-ui);
+  pointer-events: none;
+}
+
+.pokeball-route-trigger {
+  position: absolute;
+  bottom: -12px;
+  right: -12px;
+  width: 48px;
+  height: 48px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+  will-change: transform;
+  z-index: var(--z-map-ui);
+
+  .pokeball-icon {
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+    @include sprite-render;
+    filter: Drop-Shadow(0 2px 4px Rgba(0, 0, 0, 0.5));
+  }
 }
 </style>

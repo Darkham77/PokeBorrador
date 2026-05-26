@@ -114,6 +114,38 @@ const handleZoomInput = (e: Event) => {
         </p>
       </div>
 
+      <div class="setting-section">
+        <label class="setting-label">
+          Ocultar Pokémon en Mapa:
+        </label>
+        <div class="power-buttons">
+          <button 
+            type="button"
+            class="power-btn" 
+            :class="{ active: uiStore.hideMapPokemon }"
+            @click="uiStore.setHideMapPokemon(true)"
+          >
+            ACTIVADO
+          </button>
+          <button 
+            type="button"
+            class="power-btn" 
+            :class="{ active: !uiStore.hideMapPokemon }"
+            @click="uiStore.setHideMapPokemon(false)"
+          >
+            DESACTIVADO
+          </button>
+        </div>
+        <p class="power-desc">
+          <span v-if="uiStore.hideMapPokemon">
+            Oculta los Pokémon salvajes del mapa. Solo podrás verlos en el reporte de encuentros (botón Poké Ball).
+          </span>
+          <span v-else>
+            Los Pokémon salvajes se muestran directamente sobre el mapa.
+          </span>
+        </p>
+      </div>
+
       <div class="settings-actions">
         <button 
           class="btn-vicio-primary btn-vicio-full"
