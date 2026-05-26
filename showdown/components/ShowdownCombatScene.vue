@@ -1,9 +1,217 @@
 <script setup lang="ts">
+import { computed, watch, onMounted, onUnmounted, ref, type CSSProperties } from 'vue';
 import { useShowdownSandboxStore } from '../useShowdownSandboxStore';
 import ShowdownHudCard from './ShowdownHudCard.vue';
 import ShowdownWeatherTooltip from './ShowdownWeatherTooltip.vue';
+import VirtualSpace from '@/components/battle/VirtualSpace.vue';
+import VirtualEntity from '@/components/battle/VirtualEntity.vue';
+import BattleEnvironment from '@/components/battle/BattleEnvironment.vue';
+import { getCombatantPosition, WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { gsap } from 'gsap';
 
 const store = useShowdownSandboxStore();
+
+// Spatial coordinate constants
+const { BASE_ENTITY_SIZE_PLAYER, BASE_ENTITY_SIZE_ENEMY } = WORLD_CONSTANTS;
+const p1Pos = computed(() => getCombatantPosition('player'));
+const p2Pos = computed(() => getCombatantPosition('enemy'));
+
+// Isolated Camera Zoom and Guides State for Showdown Sandbox
+const debugZoom = ref(1.0);
+const debugShowGuides = ref(false);
+
+const arenaRef = ref<HTMLElement | null>(null);
+const vpWidth = ref(0);
+const vpHeight = ref(0);
+const camWidth = ref(0);
+const camHeight = ref(0);
+const tx = ref(0);
+const ty = ref(0);
+const scale = ref(1);
+
+const cameraStyles = computed<CSSProperties>(() => ({
+  width: `${camWidth.value}px`,
+  height: `${camHeight.value}px`,
+  position: 'relative',
+  overflow: 'hidden',
+  backgroundColor: '#000',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center'
+}));
+
+const worldStyles = computed<CSSProperties & Record<string, string | number>>(() => ({
+  position: 'absolute',
+  top: '0',
+  left: '0',
+  width: `${WORLD_CONSTANTS.MAP_WIDTH}px`,
+  height: `${WORLD_CONSTANTS.MAP_HEIGHT}px`,
+  transform: `translate(${tx.value}px, ${ty.value}px) scale(${scale.value})`,
+  transformOrigin: '0 0',
+  willChange: 'transform',
+  '--obj-scale': WORLD_CONSTANTS.OBJECT_SCALE,
+  '--bush-size': WORLD_CONSTANTS.BUSH_SIZE,
+  '--preview-size': WORLD_CONSTANTS.PREVIEW_SIZE
+}));
+
+const updateCamera = (width: number, height: number) => {
+  if (!width || !height || width < 100 || height < 100) return;
+
+  let cw = width;
+  let ch = height;
+
+  const ratio = cw / ch;
+  if (ratio > WORLD_CONSTANTS.RATIO_MAX) {
+    cw = ch * WORLD_CONSTANTS.RATIO_MAX;
+  } else if (ratio < WORLD_CONSTANTS.RATIO_MIN) {
+    ch = cw / WORLD_CONSTANTS.RATIO_MIN;
+  }
+
+  camWidth.value = cw;
+  camHeight.value = ch;
+
+  const scaleX = cw / WORLD_CONSTANTS.VISIBLE_UNITS_X;
+  const scaleY = ch / WORLD_CONSTANTS.VISIBLE_UNITS_Y;
+  const currentScale = Math.min(scaleX, scaleY) * debugZoom.value;
+  scale.value = currentScale;
+
+  tx.value = (cw / 2) - (WORLD_CONSTANTS.TARGET_X * currentScale);
+  ty.value = (ch / 2) - (WORLD_CONSTANTS.TARGET_Y * currentScale);
+};
+
+let resizeObserver: ResizeObserver | null = null;
+
+// Zoom Interaction Handlers with GSAP
+const zoomIn = () => {
+  const targetVal = Math.min(1.0, Math.round((debugZoom.value + 0.1) * 10) / 10);
+  gsap.to(debugZoom, {
+    value: targetVal,
+    duration: 0.3,
+    ease: 'power2.out',
+    onUpdate: () => {
+      if (arenaRef.value) {
+        const rect = arenaRef.value.getBoundingClientRect();
+        updateCamera(rect.width, rect.height);
+      }
+    }
+  });
+};
+
+const zoomOut = () => {
+  const targetVal = Math.max(0.5, Math.round((debugZoom.value - 0.1) * 10) / 10);
+  gsap.to(debugZoom, {
+    value: targetVal,
+    duration: 0.3,
+    ease: 'power2.out',
+    onUpdate: () => {
+      if (arenaRef.value) {
+        const rect = arenaRef.value.getBoundingClientRect();
+        updateCamera(rect.width, rect.height);
+      }
+    }
+  });
+};
+
+const toggleGuides = () => {
+  debugShowGuides.value = !debugShowGuides.value;
+};
+
+// Animated elements references
+const playerSpriteRef = ref<HTMLElement | null>(null);
+const enemySpriteRef = ref<HTMLElement | null>(null);
+const playerPlatformRef = ref<HTMLElement | null>(null);
+const enemyPlatformRef = ref<HTMLElement | null>(null);
+
+let playerFloatTween: gsap.core.Tween | null = null;
+let enemyFloatTween: gsap.core.Tween | null = null;
+let playerPlatformTween: gsap.core.Tween | null = null;
+let enemyPlatformTween: gsap.core.Tween | null = null;
+
+const initGsapAnimations = () => {
+  // Clear any existing CSS transforms on platforms and set initial properties through GSAP
+  // to avoid CSS vs GSAP transform string collisions.
+  if (playerPlatformRef.value) {
+    gsap.set(playerPlatformRef.value, { scaleY: 0.4, scaleX: 1.0, opacity: 0.8 });
+    playerPlatformTween = gsap.to(playerPlatformRef.value, {
+      scaleX: 1.05,
+      opacity: 0.9,
+      duration: 2.2,
+      repeat: -1,
+      yoyo: true,
+      ease: 'sine.inOut'
+    });
+  }
+
+  if (enemyPlatformRef.value) {
+    gsap.set(enemyPlatformRef.value, { scaleY: 0.4, scaleX: 1.0, opacity: 0.8 });
+    enemyPlatformTween = gsap.to(enemyPlatformRef.value, {
+      scaleX: 1.05,
+      opacity: 0.9,
+      duration: 2.0,
+      repeat: -1,
+      yoyo: true,
+      ease: 'sine.inOut'
+    });
+  }
+
+  if (playerSpriteRef.value) {
+    playerFloatTween = gsap.to(playerSpriteRef.value, {
+      y: -12,
+      duration: 2.2,
+      repeat: -1,
+      yoyo: true,
+      ease: 'sine.inOut'
+    });
+  }
+
+  if (enemySpriteRef.value) {
+    enemyFloatTween = gsap.to(enemySpriteRef.value, {
+      y: -10,
+      duration: 2.0,
+      repeat: -1,
+      yoyo: true,
+      ease: 'sine.inOut'
+    });
+  }
+};
+
+onMounted(() => {
+  resizeObserver = new ResizeObserver((entries) => {
+    requestAnimationFrame(() => {
+      if (!resizeObserver) return;
+      for (const entry of entries) {
+        const { width, height } = entry.contentRect;
+        vpWidth.value = width;
+        vpHeight.value = height;
+        updateCamera(width, height);
+      }
+    });
+  });
+
+  if (arenaRef.value) {
+    resizeObserver.observe(arenaRef.value);
+    const rect = arenaRef.value.getBoundingClientRect();
+    updateCamera(rect.width, rect.height);
+  }
+
+  initGsapAnimations();
+});
+
+onUnmounted(() => {
+  if (resizeObserver) resizeObserver.disconnect();
+  if (playerFloatTween) playerFloatTween.kill();
+  if (enemyFloatTween) enemyFloatTween.kill();
+  if (playerPlatformTween) playerPlatformTween.kill();
+  if (enemyPlatformTween) enemyPlatformTween.kill();
+});
+
+watch(debugZoom, () => {
+  if (arenaRef.value) {
+    const rect = arenaRef.value.getBoundingClientRect();
+    updateCamera(rect.width, rect.height);
+  }
+});
 
 const getWeatherEmoji = (weather?: string) => {
   if (!weather) return '🍃';
@@ -29,12 +237,85 @@ const getWeatherName = (weather?: string) => {
 </script>
 
 <template>
-  <div class="battle-scene">
-    <!-- Background Grid & Stars -->
-    <div class="arena-background">
-      <div class="nebula-glow" />
-      <div class="stars-layer" />
-      <div class="battle-grid-3d" />
+  <div
+    ref="arenaRef"
+    class="battle-scene"
+  >
+    <!-- Viewport with Dynamic Camera Styles -->
+    <div
+      class="battle-arena-content"
+      :style="cameraStyles"
+    >
+      <VirtualSpace
+        :show-guides="debugShowGuides"
+        :world-styles="worldStyles"
+      >
+        <!-- Environment locked strictly to Gym (gimnasio) -->
+        <BattleEnvironment
+          location-id="gym"
+          current-cycle="dia"
+          class="smooth-backdrop"
+        />
+
+        <!-- Virtual Entities Layer -->
+        <div class="battle-sprites">
+          <!-- Enemy Plattform & Sprite -->
+          <VirtualEntity
+            v-if="store.enemyPokemon"
+            class="combatant-sprite"
+            :x="p2Pos.x"
+            :y="p2Pos.y"
+            :w="BASE_ENTITY_SIZE_ENEMY"
+            :h="BASE_ENTITY_SIZE_ENEMY"
+          >
+            <div class="combatant-wrapper enemy-wrapper">
+              <div
+                ref="enemyPlatformRef"
+                class="platform-pad enemy-pad"
+              />
+              <div
+                ref="enemySpriteRef"
+                class="sprite-box"
+              >
+                <img 
+                  id="enemy-sprite"
+                  :src="getAssetUrl(ASSET_TYPES.POKEMON, store.enemyPokemon.num || store.enemyPokemon.id, { isBack: false, isShiny: store.enemyShiny })" 
+                  :alt="store.enemyPokemon.name"
+                  class="pokemon-sprite pixelated"
+                >
+              </div>
+            </div>
+          </VirtualEntity>
+
+          <!-- Player Plattform & Sprite -->
+          <VirtualEntity
+            v-if="store.playerPokemon"
+            class="combatant-sprite"
+            :x="p1Pos.x"
+            :y="p1Pos.y"
+            :w="BASE_ENTITY_SIZE_PLAYER"
+            :h="BASE_ENTITY_SIZE_PLAYER"
+          >
+            <div class="combatant-wrapper player-wrapper">
+              <div
+                ref="playerPlatformRef"
+                class="platform-pad player-pad"
+              />
+              <div
+                ref="playerSpriteRef"
+                class="sprite-box"
+              >
+                <img 
+                  id="player-sprite"
+                  :src="getAssetUrl(ASSET_TYPES.POKEMON, store.playerPokemon.num || store.playerPokemon.id, { isBack: true, isShiny: store.playerShiny })" 
+                  :alt="store.playerPokemon.name"
+                  class="pokemon-sprite pixelated"
+                >
+              </div>
+            </div>
+          </VirtualEntity>
+        </div>
+      </VirtualSpace>
     </div>
 
     <!-- Floating Weather Badge in Battle Arena -->
@@ -60,41 +341,6 @@ const getWeatherName = (weather?: string) => {
       </ShowdownWeatherTooltip>
     </div>
 
-    <!-- Combatants Scene -->
-    <div class="combatants-container">
-      <!-- Enemy Platform & Sprite -->
-      <div
-        v-if="store.enemyPokemon"
-        class="combatant-wrapper enemy-wrapper"
-      >
-        <div class="platform-pad enemy-pad" />
-        <div class="sprite-box">
-          <img 
-            id="enemy-sprite"
-            :src="store.enemyPokemon.spriteUrl" 
-            :alt="store.enemyPokemon.name"
-            class="pokemon-sprite pixelated"
-          >
-        </div>
-      </div>
-
-      <!-- Player Platform & Sprite -->
-      <div
-        v-if="store.playerPokemon"
-        class="combatant-wrapper player-wrapper"
-      >
-        <div class="platform-pad player-pad" />
-        <div class="sprite-box">
-          <img 
-            id="player-sprite"
-            :src="store.playerPokemon.spriteUrl" 
-            :alt="store.playerPokemon.name"
-            class="pokemon-sprite pixelated"
-          >
-        </div>
-      </div>
-    </div>
-
     <!-- Floating Info Cards HUD -->
     <div class="hud-overlay">
       <!-- Enemy HUD Card -->
@@ -117,10 +363,36 @@ const getWeatherName = (weather?: string) => {
         :side-conditions="store.playerSideConditions"
       />
     </div>
+
+    <!-- Camera Zoom & Debug Guides Controls -->
+    <div class="camera-zoom-controls">
+      <button
+        class="zoom-btn"
+        :disabled="debugZoom >= 1.0"
+        @click.stop="zoomIn"
+      >
+        +
+      </button>
+      <button
+        class="zoom-btn"
+        :disabled="debugZoom <= 0.5"
+        @click.stop="zoomOut"
+      >
+        -
+      </button>
+      <button
+        class="zoom-btn debug-btn"
+        @click.stop="toggleGuides"
+      >
+        🗺️
+      </button>
+    </div>
   </div>
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
+
 .battle-scene {
   flex: 1;
   position: relative;
@@ -130,6 +402,26 @@ const getWeatherName = (weather?: string) => {
   justify-content: center;
   height: 100%;
   width: 100%;
+  background: #000;
+}
+
+.battle-arena-content {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.smooth-backdrop {
+  :deep(.arena-bg) {
+    image-rendering: auto !important;
+  }
+}
+
+.battle-sprites {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: calc(var(--z-base) + 10);
 }
 
 .floating-weather-container {
@@ -213,96 +505,40 @@ const getWeatherName = (weather?: string) => {
   }
 }
 
-.arena-background {
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(circle at center, #1b1130 0%, #05060b 100%);
-  z-index: 1;
-
-  .nebula-glow {
-    position: absolute;
-    top: 20%;
-    left: 30%;
-    width: 400px;
-    height: 400px;
-    background: radial-gradient(circle, Rgba(10, 132, 255, 0.15) 0%, transparent 70%);
-    filter: Blur(40px);
-    pointer-events: none;
-    animation: float-slow 15s infinite alternate ease-in-out;
-  }
-
-  .stars-layer {
-    position: absolute;
-    inset: 0;
-    background-image: 
-      radial-gradient(circle, Rgba(255,255,255,0.15) 1px, transparent 1px),
-      radial-gradient(circle, Rgba(255,255,255,0.08) 1.5px, transparent 1.5px);
-    background-size: 120px 120px, 200px 200px;
-    background-position: 0 0, 40px 60px;
-    opacity: 0.5;
-  }
-
-  .battle-grid-3d {
-    position: absolute;
-    bottom: 0;
-    width: 100%;
-    height: 60%;
-    background-image: 
-      linear-gradient(Rgba(10, 132, 255, 0.08) 1px, transparent 1px),
-      linear-gradient(90deg, Rgba(10, 132, 255, 0.08) 1px, transparent 1px);
-    background-size: 50px 50px;
-    background-position: center bottom;
-    transform: perspective(260px) rotateX(60deg);
-    transform-origin: bottom center;
-    mask-image: linear-gradient(to top, Rgba(0, 0, 0, 1) 20%, Rgba(0, 0, 0, 0) 100%);
-    pointer-events: none;
-  }
-}
-
-.combatants-container {
-  position: absolute;
-  inset: 0;
-  z-index: 10;
-  pointer-events: none;
+/* Flex styling for VirtualEntity alignment */
+.combatant-sprite {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  overflow: visible;
 }
 
 .combatant-wrapper {
-  position: absolute;
-  width: 240px;
-  height: 240px;
+  width: 100%;
+  height: 100%;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
   align-items: center;
-
-  &.enemy-wrapper {
-    top: 15%;
-    right: 18%;
-  }
-
-  &.player-wrapper {
-    bottom: 12%;
-    left: 18%;
-  }
+  position: relative;
+  overflow: visible;
 }
 
 .platform-pad {
   position: absolute;
   bottom: 0;
-  width: 180px;
-  height: 60px;
+  left: 5%;
+  right: 5%;
+  height: 30%;
   border-radius: 50%;
   background: radial-gradient(ellipse at center, Rgba(10, 132, 255, 0.25) 0%, Rgba(10, 132, 255, 0) 70%);
   border: 2px solid Rgba(10, 132, 255, 0.3);
   box-shadow: 
     0 0 25px Rgba(10, 132, 255, 0.3),
     inset 0 0 15px Rgba(10, 132, 255, 0.2);
-  transform: scaleY(0.4);
-  animation: pulse-glow 3s infinite alternate ease-in-out;
+  transform-origin: bottom center;
 
   &.enemy-pad {
-    width: 160px;
-    height: 50px;
     background: radial-gradient(ellipse at center, Rgba(255, 69, 58, 0.25) 0%, Rgba(255, 69, 58, 0) 70%);
     border-color: Rgba(255, 69, 58, 0.3);
     box-shadow: 
@@ -316,17 +552,18 @@ const getWeatherName = (weather?: string) => {
   display: flex;
   justify-content: center;
   align-items: flex-end;
-  height: 200px;
-  width: 200px;
-  margin-bottom: 10px;
+  height: 100%;
+  width: 100%;
+  position: relative;
+  overflow: visible;
 }
 
 .pokemon-sprite {
-  max-width: 160px;
-  max-height: 160px;
+  width: 100%;
+  height: 100%;
   object-fit: contain;
+  object-position: bottom center;
   filter: Drop-Shadow(0 10px 15px Rgba(0, 0, 0, 0.6));
-  animation: float-sprite 4s infinite alternate ease-in-out;
   transform-origin: bottom center;
 }
 
@@ -341,19 +578,31 @@ const getWeatherName = (weather?: string) => {
   image-rendering: pixelated;
 }
 
-// Animaciones Clave
-@keyframes float-slow {
-  0% { transform: Translatey(0) Scale(1); }
-  100% { transform: Translatey(-20px) Scale(1.05); }
+/* Camera Zoom Scoped Controls Styling */
+.camera-zoom-controls {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  display: flex;
+  gap: 8px;
+  z-index: calc(var(--z-base) + 40);
+  pointer-events: auto;
+  @include pixelated;
 }
 
-@keyframes float-sprite {
-  0% { transform: Translatey(0); }
-  100% { transform: Translatey(-8px); }
-}
+.zoom-btn {
+  @include btn-vicio('neutral', 'sm');
+  width: 28px !important;
+  height: 28px !important;
+  padding: 0 !important;
+  font-size: 10px !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
 
-@keyframes pulse-glow {
-  0% { opacity: 0.7; transform: scaleY(0.4) Scale(0.95); }
-  100% { opacity: 1; transform: scaleY(0.4) Scale(1.05); }
+  &.debug-btn {
+    font-size: 12px !important;
+  }
 }
 </style>

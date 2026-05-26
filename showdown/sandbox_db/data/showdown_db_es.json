@@ -12099,8 +12099,8 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 20,
-      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
-      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
+      "desc": "El usuario realiza un movimiento elegido al azar de entre los de su equipo.",
+      "shortDesc": "El usuario realiza un movimiento elegido al azar de entre los de su equipo."
     },
     "astonish": {
       "id": "astonish",
@@ -12132,8 +12132,8 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 10,
-      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
-      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
+      "desc": "El usuario aguanta golpes durante dos turnos y devuelve el doble del daño recibido.",
+      "shortDesc": "El usuario aguanta golpes durante dos turnos y devuelve el doble del daño recibido."
     },
     "blizzard": {
       "id": "blizzard",
@@ -12308,8 +12308,8 @@
       "basePower": 60,
       "accuracy": true,
       "pp": 20,
-      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
-      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
+      "desc": "Ataque rápido y garantizado que no puede fallar.",
+      "shortDesc": "Ataque rápido y garantizado que no puede fallar."
     },
     "flail": {
       "id": "flail",
@@ -12330,8 +12330,8 @@
       "basePower": 0,
       "accuracy": 70,
       "pp": 20,
-      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
-      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
+      "desc": "Reduce la precisión del objetivo en un nivel.",
+      "shortDesc": "Reduce la precisión del objetivo en un nivel."
     },
     "fly": {
       "id": "fly",
@@ -12363,8 +12363,8 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 40,
-      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
-      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
+      "desc": "Permite golpear a Pokémon de tipo Fantasma con movimientos de tipo Normal y Lucha.",
+      "shortDesc": "Permite golpear a Pokémon de tipo Fantasma con movimientos de tipo Normal y Lucha."
     },
     "furycutter": {
       "id": "furycutter",
@@ -12418,8 +12418,8 @@
       "basePower": 70,
       "accuracy": 100,
       "pp": 15,
-      "desc": "",
-      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
+      "desc": "Su tipo y potencia varían según los valores individuales (IVs) del usuario.",
+      "shortDesc": "Su tipo y potencia varían según los valores individuales (IVs) del usuario."
     },
     "highjumpkick": {
       "id": "highjumpkick",
@@ -12451,8 +12451,8 @@
       "basePower": 70,
       "accuracy": 95,
       "pp": 25,
-      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
-      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
+      "desc": "Una patada voladora. Si falla, el usuario recibe daño por retroceso.",
+      "shortDesc": "Una patada voladora. Si falla, el usuario recibe daño por retroceso."
     },
     "leafblade": {
       "id": "leafblade",
@@ -12539,8 +12539,8 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 20,
-      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
-      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
+      "desc": "El usuario imita el último movimiento utilizado por el objetivo.",
+      "shortDesc": "El usuario imita el último movimiento utilizado por el objetivo."
     },
     "naturepower": {
       "id": "naturepower",
@@ -12561,8 +12561,8 @@
       "basePower": 60,
       "accuracy": 100,
       "pp": 15,
-      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
-      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
+      "desc": "Puede hacer retroceder al objetivo (30% de probabilidad).",
+      "shortDesc": "Puede hacer retroceder al objetivo (30% de probabilidad)."
     },
     "nightmare": {
       "id": "nightmare",
@@ -12572,8 +12572,8 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 15,
-      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
-      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
+      "desc": "Causa daño residual cada turno a un oponente dormido.",
+      "shortDesc": "Causa daño residual cada turno a un oponente dormido."
     },
     "odorsleuth": {
       "id": "odorsleuth",
@@ -12583,8 +12583,8 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 40,
-      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
-      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
+      "desc": "Permite golpear a Fantasmas con Normal y Lucha, y anula aumentos de evasión.",
+      "shortDesc": "Permite golpear a Fantasmas con Normal y Lucha, y anula aumentos de evasión."
     },
     "outrage": {
       "id": "outrage",
@@ -12627,8 +12627,8 @@
       "basePower": 40,
       "accuracy": 100,
       "pp": 20,
-      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
-      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
+      "desc": "Inflige el doble de daño si el oponente intenta retirarse de la batalla.",
+      "shortDesc": "Inflige el doble de daño si el oponente intenta retirarse de la batalla."
     },
     "recover": {
       "id": "recover",
@@ -12880,8 +12880,8 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 20,
-      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
-      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
+      "desc": "Cambia el tipo del Pokémon usuario según el terreno de combate.",
+      "shortDesc": "Cambia el tipo del Pokémon usuario según el terreno de combate."
     },
     "clamp": {
       "id": "clamp",
@@ -12891,8 +12891,8 @@
       "basePower": 35,
       "accuracy": 75,
       "pp": 10,
-      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
-      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
+      "desc": "Atrapa al objetivo en una tenaza causando daño residual durante 2-5 turnos.",
+      "shortDesc": "Atrapa al objetivo en una tenaza causando daño residual durante 2-5 turnos."
     },
     "cottonspore": {
       "id": "cottonspore",
@@ -13177,8 +13177,8 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 15,
-      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
-      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
+      "desc": "Reduce la potencia de los ataques eléctricos en el campo de batalla.",
+      "shortDesc": "Reduce la potencia de los ataques eléctricos en el campo de batalla."
     },
     "payday": {
       "id": "payday",
@@ -13331,8 +13331,8 @@
       "basePower": 70,
       "accuracy": 100,
       "pp": 20,
-      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
-      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
+      "desc": "Tiene un 30% de probabilidad de causar un efecto secundario según el terreno.",
+      "shortDesc": "Tiene un 30% de probabilidad de causar un efecto secundario según el terreno."
     },
     "snatch": {
       "id": "snatch",
@@ -13419,8 +13419,8 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 20,
-      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
-      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
+      "desc": "Aumenta drásticamente el Ataque Especial del usuario en dos niveles.",
+      "shortDesc": "Aumenta drásticamente el Ataque Especial del usuario en dos niveles."
     },
     "thrash": {
       "id": "thrash",
@@ -13474,8 +13474,8 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 15,
-      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
-      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
+      "desc": "Reduce la potencia de los ataques de fuego en el campo de batalla.",
+      "shortDesc": "Reduce la potencia de los ataques de fuego en el campo de batalla."
     },
     "whirlpool": {
       "id": "whirlpool",
@@ -13562,8 +13562,8 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 30,
-      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
-      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
+      "desc": "Aumenta drásticamente la Defensa del usuario en dos niveles.",
+      "shortDesc": "Aumenta drásticamente la Defensa del usuario en dos niveles."
     },
     "block": {
       "id": "block",
@@ -13606,8 +13606,8 @@
       "basePower": 20,
       "accuracy": 100,
       "pp": 30,
-      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
-      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
+      "desc": "Puede reducir la Velocidad del objetivo (10% de probabilidad).",
+      "shortDesc": "Puede reducir la Velocidad del objetivo (10% de probabilidad)."
     },
     "charm": {
       "id": "charm",
@@ -13650,8 +13650,8 @@
       "basePower": 0,
       "accuracy": 55,
       "pp": 15,
-      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
-      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
+      "desc": "Duerme al objetivo mediante un silbido de hierba.",
+      "shortDesc": "Duerme al objetivo mediante un silbido de hierba."
     },
     "growl": {
       "id": "growl",
@@ -13815,8 +13815,8 @@
       "basePower": 0,
       "accuracy": 80,
       "pp": 15,
-      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
-      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
+      "desc": "Causa una cantidad de daño aleatoria basada en el nivel del usuario.",
+      "shortDesc": "Causa una cantidad de daño aleatoria basada en el nivel del usuario."
     },
     "rocktomb": {
       "id": "rocktomb",
@@ -13881,8 +13881,8 @@
       "basePower": 60,
       "accuracy": 100,
       "pp": 10,
-      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
-      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
+      "desc": "Causa el doble de daño a un objetivo paralizado, pero cura su parálisis.",
+      "shortDesc": "Causa el doble de daño a un objetivo paralizado, pero cura su parálisis."
     },
     "smog": {
       "id": "smog",
@@ -14079,8 +14079,8 @@
       "basePower": 15,
       "accuracy": 85,
       "pp": 20,
-      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
-      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
+      "desc": "Ataca de 2 a 5 veces consecutivas en el mismo turno.",
+      "shortDesc": "Ataca de 2 a 5 veces consecutivas en el mismo turno."
     },
     "boneclub": {
       "id": "boneclub",
@@ -14090,8 +14090,8 @@
       "basePower": 65,
       "accuracy": 85,
       "pp": 20,
-      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
-      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
+      "desc": "Puede hacer retroceder al objetivo (10% de probabilidad).",
+      "shortDesc": "Puede hacer retroceder al objetivo (10% de probabilidad)."
     },
     "cometpunch": {
       "id": "cometpunch",
@@ -14101,8 +14101,8 @@
       "basePower": 18,
       "accuracy": 85,
       "pp": 15,
-      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
-      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
+      "desc": "Ataca de 2 a 5 veces consecutivas en el mismo turno.",
+      "shortDesc": "Ataca de 2 a 5 veces consecutivas en el mismo turno."
     },
     "constrict": {
       "id": "constrict",
@@ -14112,8 +14112,8 @@
       "basePower": 10,
       "accuracy": 100,
       "pp": 35,
-      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
-      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
+      "desc": "Puede reducir la Velocidad del oponente (10% de probabilidad).",
+      "shortDesc": "Puede reducir la Velocidad del oponente (10% de probabilidad)."
     },
     "dizzypunch": {
       "id": "dizzypunch",
@@ -14123,8 +14123,8 @@
       "basePower": 70,
       "accuracy": 100,
       "pp": 10,
-      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
-      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
+      "desc": "Puede confundir al objetivo (20% de probabilidad).",
+      "shortDesc": "Puede confundir al objetivo (20% de probabilidad)."
     },
     "doubleslap": {
       "id": "doubleslap",
@@ -14134,8 +14134,8 @@
       "basePower": 15,
       "accuracy": 85,
       "pp": 10,
-      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
-      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
+      "desc": "Ataca de 2 a 5 veces consecutivas en el mismo turno.",
+      "shortDesc": "Ataca de 2 a 5 veces consecutivas en el mismo turno."
     },
     "dragonrage": {
       "id": "dragonrage",
@@ -14145,8 +14145,8 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 10,
-      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
-      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
+      "desc": "Causa siempre 40 PS de daño al objetivo de forma fija.",
+      "shortDesc": "Causa siempre 40 PS de daño al objetivo de forma fija."
     },
     "eggbomb": {
       "id": "eggbomb",
@@ -14156,8 +14156,8 @@
       "basePower": 100,
       "accuracy": 75,
       "pp": 10,
-      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
-      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
+      "desc": "Lanza un huevo masivo que explota causando daño.",
+      "shortDesc": "Lanza un huevo masivo que explota causando daño."
     },
     "frustration": {
       "id": "frustration",
@@ -14167,8 +14167,8 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 20,
-      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
-      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
+      "desc": "Su potencia aumenta cuanto menos feliz sea el Pokémon con su entrenador.",
+      "shortDesc": "Su potencia aumenta cuanto menos feliz sea el Pokémon con su entrenador."
     },
     "howl": {
       "id": "howl",
@@ -14200,8 +14200,8 @@
       "basePower": 30,
       "accuracy": 90,
       "pp": 20,
-      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
-      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
+      "desc": "Ataca durante 5 turnos consecutivos, duplicando su daño con cada acierto.",
+      "shortDesc": "Ataca durante 5 turnos consecutivos, duplicando su daño con cada acierto."
     },
     "karatechop": {
       "id": "karatechop",
@@ -14211,8 +14211,8 @@
       "basePower": 50,
       "accuracy": 100,
       "pp": 25,
-      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
-      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
+      "desc": "Tiene una alta probabilidad de asestar un golpe crítico.",
+      "shortDesc": "Tiene una alta probabilidad de asestar un golpe crítico."
     },
     "lowkick": {
       "id": "lowkick",
@@ -14233,8 +14233,8 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 30,
-      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
-      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
+      "desc": "Causa un terremoto de potencia aleatoria basada en una escala de 4 a 10.",
+      "shortDesc": "Causa un terremoto de potencia aleatoria basada en una escala de 4 a 10."
     },
     "meditate": {
       "id": "meditate",
@@ -14244,8 +14244,8 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 40,
-      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
-      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
+      "desc": "Aumenta el Ataque del usuario en un nivel.",
+      "shortDesc": "Aumenta el Ataque del usuario en un nivel."
     },
     "psychoboost": {
       "id": "psychoboost",
@@ -14255,8 +14255,8 @@
       "basePower": 140,
       "accuracy": 90,
       "pp": 5,
-      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
-      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
+      "desc": "Ataque masivo que reduce el Ataque Especial del usuario en dos niveles.",
+      "shortDesc": "Ataque masivo que reduce el Ataque Especial del usuario en dos niveles."
     },
     "rage": {
       "id": "rage",
@@ -14266,8 +14266,8 @@
       "basePower": 20,
       "accuracy": 100,
       "pp": 20,
-      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
-      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
+      "desc": "Aumenta el Ataque del usuario cada vez que es golpeado por el rival.",
+      "shortDesc": "Aumenta el Ataque del usuario cada vez que es golpeado por el rival."
     },
     "razorwind": {
       "id": "razorwind",
@@ -14277,8 +14277,8 @@
       "basePower": 80,
       "accuracy": 100,
       "pp": 10,
-      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
-      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
+      "desc": "El usuario crea un torbellino en el primer turno y ataca en el segundo.",
+      "shortDesc": "El usuario crea un torbellino en el primer turno y ataca en el segundo."
     },
     "refresh": {
       "id": "refresh",
@@ -14288,8 +14288,8 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 20,
-      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
-      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
+      "desc": "Cura al usuario de parálisis, envenenamiento o quemaduras.",
+      "shortDesc": "Cura al usuario de parálisis, envenenamiento o quemaduras."
     },
     "return": {
       "id": "return",
@@ -14299,8 +14299,8 @@
       "basePower": 0,
       "accuracy": 100,
       "pp": 20,
-      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
-      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
+      "desc": "Su potencia aumenta cuanto más feliz sea el Pokémon con su entrenador.",
+      "shortDesc": "Su potencia aumenta cuanto más feliz sea el Pokémon con su entrenador."
     },
     "rollingkick": {
       "id": "rollingkick",
@@ -14310,8 +14310,8 @@
       "basePower": 60,
       "accuracy": 85,
       "pp": 15,
-      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
-      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
+      "desc": "Puede hacer retroceder al objetivo (30% de probabilidad).",
+      "shortDesc": "Puede hacer retroceder al objetivo (30% de probabilidad)."
     },
     "sharpen": {
       "id": "sharpen",
@@ -14321,8 +14321,8 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 30,
-      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
-      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
+      "desc": "Aumenta el Ataque del usuario en un nivel al afilar sus bordes.",
+      "shortDesc": "Aumenta el Ataque del usuario en un nivel al afilar sus bordes."
     },
     "signalbeam": {
       "id": "signalbeam",
@@ -14332,8 +14332,8 @@
       "basePower": 75,
       "accuracy": 100,
       "pp": 15,
-      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
-      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
+      "desc": "Puede confundir al objetivo (10% de probabilidad).",
+      "shortDesc": "Puede confundir al objetivo (10% de probabilidad)."
     },
     "silverwind": {
       "id": "silverwind",
@@ -14343,8 +14343,8 @@
       "basePower": 60,
       "accuracy": 100,
       "pp": 5,
-      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
-      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
+      "desc": "Puede aumentar todas las estadísticas del usuario en un nivel (10%).",
+      "shortDesc": "Puede aumentar todas las estadísticas del usuario en un nivel (10%)."
     },
     "skyuppercut": {
       "id": "skyuppercut",
@@ -14354,8 +14354,8 @@
       "basePower": 85,
       "accuracy": 90,
       "pp": 15,
-      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
-      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
+      "desc": "Un gancho ascendente que puede golpear a objetivos en el aire (Vuelo).",
+      "shortDesc": "Un gancho ascendente que puede golpear a objetivos en el aire (Vuelo)."
     },
     "sonicboom": {
       "id": "sonicboom",
@@ -14365,8 +14365,8 @@
       "basePower": 0,
       "accuracy": 90,
       "pp": 20,
-      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
-      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
+      "desc": "Causa siempre 20 PS de daño al objetivo de forma fija.",
+      "shortDesc": "Causa siempre 20 PS de daño al objetivo de forma fija."
     },
     "spiderweb": {
       "id": "spiderweb",
@@ -14376,8 +14376,8 @@
       "basePower": 0,
       "accuracy": true,
       "pp": 10,
-      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
-      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
+      "desc": "Evita que el objetivo pueda huir o ser cambiado del combate.",
+      "shortDesc": "Evita que el objetivo pueda huir o ser cambiado del combate."
     },
     "spikecannon": {
       "id": "spikecannon",
@@ -14387,8 +14387,8 @@
       "basePower": 20,
       "accuracy": 100,
       "pp": 15,
-      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
-      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
+      "desc": "Ataca de 2 a 5 veces consecutivas en el mismo turno.",
+      "shortDesc": "Ataca de 2 a 5 veces consecutivas en el mismo turno."
     },
     "teleport": {
       "id": "teleport",
@@ -14409,8 +14409,8 @@
       "basePower": 25,
       "accuracy": 100,
       "pp": 20,
-      "desc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente.",
-      "shortDesc": "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
+      "desc": "Ataca dos veces e inflige daño con probabilidad de envenenar (20%).",
+      "shortDesc": "Ataca dos veces e inflige daño con probabilidad de envenenar (20%)."
     },
     "bonemerang": {
       "id": "bonemerang",

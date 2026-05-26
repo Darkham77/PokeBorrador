@@ -76,11 +76,25 @@ const onLeave = (el: Element, done: () => void) => {
         </div>
         <div class="tooltip-desc-section">
           <!-- Modificadores visuales elegantes -->
-          <div class="modifiers-row" v-if="natureUp || natureDown">
-            <span class="stat-mod mod-up" v-if="natureUp">▲ {{ natureUp.toUpperCase() }} (+10%)</span>
-            <span class="stat-mod mod-down" v-if="natureDown">▼ {{ natureDown.toUpperCase() }} (-10%)</span>
+          <div
+            v-if="natureUp || natureDown"
+            class="modifiers-row"
+          >
+            <span
+              v-if="natureUp"
+              class="stat-mod mod-up"
+            >▲ {{ natureUp.toUpperCase() }} (+10%)</span>
+            <span
+              v-if="natureDown"
+              class="stat-mod mod-down"
+            >▼ {{ natureDown.toUpperCase() }} (-10%)</span>
           </div>
-          <p class="desc-text" :class="{ 'neutra': !natureUp && !natureDown }">{{ natureDesc }}</p>
+          <p
+            class="desc-text"
+            :class="{ 'neutra': !natureUp && !natureDown }"
+          >
+            {{ natureDesc }}
+          </p>
         </div>
       </div>
     </Transition>

@@ -1,0 +1,50 @@
+=== REPORTE DE MOVIMIENTOS CON RECORDATORIOS DE COMBATE (COUNTDOWNS/TAGS) ===
+Fecha de generación: 2026-05-26T01:32:42.289Z
+Total de movimientos identificados: 37
+
+## Estado Volátil (21):
+  - [charge] Carga: Aplica un estado volátil al objetivo o al usuario
+  - [disable] Anulación: Aplica un estado volátil al objetivo o al usuario
+  - [encore] Otra Vez: Otra Vez: obliga a repetir el último movimiento
+  - [foresight] Profecía: Aplica un estado volátil al objetivo o al usuario
+  - [nightmare] Pesadilla: Aplica un estado volátil al objetivo o al usuario
+  - [odorsleuth] Rastreo: Aplica un estado volátil al objetivo o al usuario
+  - [taunt] Mofa: Mofa: impide usar movimientos de estado
+  - [focuspunch] Puño Certero: Aplica un estado volátil al objetivo o al usuario
+  - [imprison] Sellar: Aplica un estado volátil al objetivo o al usuario
+  - [ingrain] Arraigo: Aplica un estado volátil al objetivo o al usuario
+  - [leechseed] Drenadoras: Planta semillas que drenan PS cada turno
+  - [perishsong] Canto Mortal: Canto Mortal: debilita a los combatientes en 3 turnos
+  - [snatch] Robo: Aplica un estado volátil al objetivo o al usuario
+  - [substitute] Sustituto: Crea un sustituto con parte de los PS del usuario
+  - [torment] Tormento: Aplica un estado volátil al objetivo o al usuario
+  - [yawn] Bostezo: Aplica un estado volátil al objetivo o al usuario
+  - [destinybond] Mismo Destino: Aplica un estado volátil al objetivo o al usuario
+  - [grudge] Rabia: Aplica un estado volátil al objetivo o al usuario
+  - [attract] Atracción: Aplica un estado volátil al objetivo o al usuario
+  - [confusion] Confusión: Confusión: puede causar autodaño durante algunos turnos
+  - [defensecurl] Rizo Defensa: Aplica un estado volátil al objetivo o al usuario
+
+## Efecto Retardado (3):
+  - [doomdesire] Deseo Oculto: Se activa o causa daño de forma diferida tras un número fijo de turnos
+  - [futuresight] Premonición: Se activa o causa daño de forma diferida tras un número fijo de turnos
+  - [wish] Deseo: Se activa o causa daño de forma diferida tras un número fijo de turnos
+
+## Atrapamiento Recurrente (Bind) (6):
+  - [bind] Atadura: Atrapa al objetivo y causa daño residual durante 2-5 turnos
+  - [clamp] Tenaza: Atrapa al objetivo y causa daño residual durante 2-5 turnos
+  - [firespin] Giro Fuego: Atrapa al objetivo y causa daño residual durante 2-5 turnos
+  - [sandtomb] Bucle Arena: Atrapa al objetivo y causa daño residual durante 2-5 turnos
+  - [whirlpool] Torbellino: Atrapa al objetivo y causa daño residual durante 2-5 turnos
+  - [wrap] Constricción: Atrapa al objetivo y causa daño residual durante 2-5 turnos
+
+## Condición de Bando (5):
+  - [lightscreen] Pantalla de Luz: Pantalla de Luz: reduce daño especial durante 5 turnos
+  - [mist] Neblina: Neblina: protege de bajadas de características durante 5 turnos
+  - [reflect] Reflejo: Reflejo: reduce daño físico durante 5 turnos
+  - [safeguard] Velo Sagrado: Velo Sagrado: protege contra estados durante 5 turnos
+  - [spikes] Púas: Púas: causa daño al entrar a combatir (acumulable hasta 3 capas)
+
+## Efecto de Campo / Pseudo-Clima (2):
+  - [mudsport] Chapoteo Lodo: Modifica las condiciones globales del campo de batalla por 5 turnos
+  - [watersport] Hidrochorro: Modifica las condiciones globales del campo de batalla por 5 turnos

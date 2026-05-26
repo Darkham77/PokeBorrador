@@ -18,6 +18,7 @@ export interface SandboxPokemon {
   hp?: number;
   maxHp?: number;
   status?: string; // fnt, psn, tox, brn, par, slp, frz
+  num?: number;
   baseStoredStats?: {
     hp: number;
     atk: number;
@@ -54,6 +55,7 @@ export interface SandboxPokemon {
   }> | null;
   ability?: string;
   nature?: string;
+  volatiles?: Record<string, { id: string; duration?: number; time?: number; layers?: number; hp?: number; source?: string }> | null;
 }
 
 export interface SandboxSimPokemon {
@@ -235,6 +237,7 @@ export const useShowdownSandboxStore = defineStore('showdownSandbox', {
           hp: leaderPoke.baseStats.hp,
           maxHp: leaderPoke.baseStats.hp,
           status: '',
+          num: leaderPoke.num,
           ability: leaderAbility,
           nature: leaderNature,
         });
@@ -278,6 +281,7 @@ export const useShowdownSandboxStore = defineStore('showdownSandbox', {
             hp: poke.baseStats.hp,
             maxHp: poke.baseStats.hp,
             status: '',
+            num: poke.num,
             ability: benchAbility,
             nature: benchNature,
           });
@@ -306,6 +310,7 @@ export const useShowdownSandboxStore = defineStore('showdownSandbox', {
           localPoke.moveSlots = workerPoke.moveSlots;
           if (workerPoke.ability) localPoke.ability = workerPoke.ability;
           if (workerPoke.nature) localPoke.nature = workerPoke.nature;
+          localPoke.volatiles = workerPoke.volatiles;
         }
       }
       

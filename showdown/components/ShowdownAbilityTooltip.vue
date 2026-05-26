@@ -65,7 +65,9 @@ const onLeave = (el: Element, done: () => void) => {
           <span class="poke-ref">{{ pokemonName }}</span>
         </div>
         <div class="tooltip-desc-section">
-          <p class="desc-text">{{ abilityDesc }}</p>
+          <p class="desc-text">
+            {{ abilityDesc }}
+          </p>
         </div>
       </div>
     </Transition>

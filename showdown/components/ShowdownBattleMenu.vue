@@ -9,6 +9,39 @@ import moveTranslations from '../sandbox_db/data/move_translations.json';
 const store = useShowdownSandboxStore();
 const typedDB = showdownDB as unknown as ShowdownLocalDB;
 
+import { calculateDamageRange } from '../logic/showdownMath';
+
+const getMoveDamageEstimate = (moveId: string) => {
+  if (!store.playerPokemon || !store.enemyPokemon) return null;
+  const cleanId = moveId.toLowerCase().replace(/[^a-z0-9]/g, '');
+  const move = typedDB.moves[cleanId];
+  if (!move || move.basePower <= 0 || move.category.toLowerCase() === 'status') return null;
+  
+  const sandboxMove = {
+    id: move.id,
+    name: move.name,
+    type: move.type,
+    category: move.category,
+    basePower: move.basePower,
+    accuracy: move.accuracy
+  };
+  
+  return calculateDamageRange(
+    store.playerPokemon,
+    store.enemyPokemon,
+    sandboxMove,
+    store.weather.weather
+  );
+};
+
+const getDmgColorClass = (dmg: { minPercent: number; maxPercent: number }) => {
+  if (dmg.minPercent >= 100) return 'dmg-ohko';
+  if (dmg.maxPercent >= 100) return 'dmg-possible-ohko';
+  if (dmg.minPercent * 2 >= 100) return 'dmg-2hko';
+  if (dmg.maxPercent * 2 >= 100) return 'dmg-possible-2hko';
+  return 'dmg-neutral';
+};
+
 // Estado de control para el menú de dos niveles
 const currentMenu = ref<'root' | 'moves' | 'switch'>('root');
 const activeTooltipMoveId = ref<string | null>(null);
@@ -145,8 +178,18 @@ const handleSwitchSelection = (targetIndex: number) => {
             <div class="move-info">
               <span class="move-name">{{ getMoveDisplayName(moveId) }}</span>
               <div class="move-meta">
-                <span class="move-pp" v-if="getMovePPInfo(moveId)">{{ getMovePPInfo(moveId) }}</span>
+                <span
+                  v-if="getMovePPInfo(moveId)"
+                  class="move-pp"
+                >{{ getMovePPInfo(moveId) }}</span>
                 <span class="move-type-label">{{ getMoveType(moveId).toUpperCase() }}</span>
+                <span
+                  v-if="getMoveDamageEstimate(moveId)"
+                  class="move-dmg-estimate"
+                  :class="getDmgColorClass(getMoveDamageEstimate(moveId)!)"
+                >
+                  {{ getMoveDamageEstimate(moveId)!.minPercent }}%-{{ getMoveDamageEstimate(moveId)!.maxPercent }}%
+                </span>
               </div>
             </div>
             <div class="move-sheen" />
@@ -345,6 +388,45 @@ const handleSwitchSelection = (targetIndex: number) => {
     padding: 2px 4px;
     border-radius: 4px;
     border: 1px solid Rgba(255, 255, 255, 0.1);
+  }
+
+  .move-dmg-estimate {
+    font-family: var(--font-pixel);
+    font-size: 6px;
+    font-weight: bold;
+    padding: 2px 5px;
+    border-radius: 4px;
+    box-shadow: 0 1px 4px Rgba(0, 0, 0, 0.4);
+    border: 1px solid Rgba(255, 255, 255, 0.1);
+    white-space: nowrap;
+
+    &.dmg-ohko {
+      color: #32d74b;
+      background: Rgba(50, 215, 75, 0.12);
+      border-color: Rgba(50, 215, 75, 0.35);
+      text-shadow: 0 0 4px Rgba(50, 215, 75, 0.5);
+    }
+    &.dmg-possible-ohko {
+      color: #ffd60a;
+      background: Rgba(255, 214, 10, 0.12);
+      border-color: Rgba(255, 214, 10, 0.35);
+      text-shadow: 0 0 4px Rgba(255, 214, 10, 0.5);
+    }
+    &.dmg-2hko {
+      color: #ff9f0a;
+      background: Rgba(255, 159, 10, 0.12);
+      border-color: Rgba(255, 159, 10, 0.35);
+    }
+    &.dmg-possible-2hko {
+      color: #ff453a;
+      background: Rgba(255, 69, 58, 0.12);
+      border-color: Rgba(255, 69, 58, 0.35);
+    }
+    &.dmg-neutral {
+      color: #aeaebe;
+      background: Rgba(0, 0, 0, 0.4);
+      border-color: Rgba(255, 255, 255, 0.05);
+    }
   }
 
   .move-sheen {

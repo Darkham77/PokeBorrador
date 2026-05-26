@@ -37,6 +37,87 @@ function getMoveName(moveId: string): string {
   return (moveTranslations as Record<string, string>)[cleanId] || typedDB.moves[cleanId]?.name || moveId;
 }
 
+/**
+ * Helper para obtener el nombre localizado en español de cualquier efecto, habilidad, objeto o movimiento
+ */
+function translateEffect(effect: string): string {
+  if (!effect) return '';
+  
+  // Normalizar y remover prefijos comunes de Showdown
+  let cleanEffect = effect;
+  let prefix = '';
+  
+  if (effect.startsWith('move: ')) {
+    cleanEffect = effect.replace('move: ', '');
+    prefix = 'move';
+  } else if (effect.startsWith('ability: ')) {
+    cleanEffect = effect.replace('ability: ', '');
+    prefix = 'ability';
+  } else if (effect.startsWith('item: ')) {
+    cleanEffect = effect.replace('item: ', '');
+    prefix = 'item';
+  }
+  
+  const cleanId = cleanEffect.toLowerCase().replace(/[^a-z0-9]/g, '');
+  
+  // 1. Traducir movimientos
+  if (prefix === 'move' || typedDB.moves[cleanId]) {
+    return getMoveName(cleanEffect);
+  }
+  
+  // 2. Traducir habilidades
+  if (prefix === 'ability' || typedDB.abilities[cleanId]) {
+    return typedDB.abilities[cleanId]?.name || cleanEffect;
+  }
+  
+  // 3. Traducir objetos comunes
+  if (prefix === 'item') {
+    const itemMap: Record<string, string> = {
+      leftovers: 'Restos',
+      choiceband: 'Cinta Elegida',
+      lumberry: 'Baya Lum',
+      sitrusberry: 'Baya Cidra',
+      salacberry: 'Baya Salac',
+      liechiberry: 'Baya Lichi',
+      focusband: 'Cinta Enfocada',
+      brightpowder: 'Polvo Brillo',
+      quickclaw: 'Garra Rápida',
+      mentalherb: 'Hierba Mental',
+      whiteherb: 'Hierba Mental',
+      kingsrock: 'Roca del Rey'
+    };
+    return itemMap[cleanId] || cleanEffect;
+  }
+  
+  // 4. Traducir términos y estados comunes en inglés
+  const commonMap: Record<string, string> = {
+    confusion: 'Confusión',
+    leechseed: 'Drenadoras',
+    substitute: 'Sustituto',
+    perishsong: 'Canto Mortal',
+    uproar: 'Alboroto',
+    attract: 'Atracción',
+    taunt: 'Mofa',
+    encore: 'Otra Vez',
+    disable: 'Anulación',
+    torment: 'Tormento',
+    yawn: 'Bostezo',
+    nightmare: 'Pesadilla',
+    destinybond: 'Mismo Destino',
+    grudge: 'Rabia',
+    imprison: 'Sellar',
+    ingrain: 'Arraigo',
+    charge: 'Carga',
+    magnetrise: 'Levidad',
+    embargo: 'Embargo',
+    healblock: 'Anticura',
+    focuspunch: 'Puño Certero',
+    flinch: 'Retroceso'
+  };
+  
+  return commonMap[cleanId] || cleanEffect;
+}
+
 export function filterShowdownLogs(logs: string[]): string[] {
   const filtered: string[] = [];
   for (let i = 0; i < logs.length; i++) {
@@ -398,15 +479,17 @@ export function parseShowdownLog(logs: string[]): ParsedEvent[] {
         if (effect.includes('confusion')) text = `¡${target} se ha confundido!`;
         else if (effect.includes('Leech Seed')) text = `¡A ${target} le han plantado drenadoras!`;
         else if (effect.includes('Substitute')) text = `¡${target} creó un sustituto!`;
-        else {
+        else if (effect.startsWith('perish')) {
+          const count = effect.replace('perish', '');
+          text = `¡La cuenta de Canto Mortal de ${target} bajó a ${count}!`;
+        } else {
+          const translated = translateEffect(effect);
           if (effect.startsWith('move: ')) {
-            const moveName = getMoveName(effect.replace('move: ', ''));
-            text = `¡A ${target} le afecta el movimiento ${moveName}!`;
+            text = `¡A ${target} le afecta el movimiento ${translated}!`;
           } else if (effect.startsWith('ability: ')) {
-            const ability = effect.replace('ability: ', '');
-            text = `¡A ${target} le afecta la habilidad ${ability}!`;
+            text = `¡A ${target} le afecta la habilidad ${translated}!`;
           } else {
-            text = `¡A ${target} le afecta ${effect}!`;
+            text = `¡A ${target} le afecta el efecto de ${translated}!`;
           }
         }
         
@@ -422,11 +505,11 @@ export function parseShowdownLog(logs: string[]): ParsedEvent[] {
         if (effect.includes('confusion')) text = `¡${target} ya no está confundido!`;
         else if (effect.includes('Substitute')) text = `¡El sustituto de ${target} se desvaneció!`;
         else {
+          const translated = translateEffect(effect);
           if (effect.startsWith('move: ')) {
-            const moveName = getMoveName(effect.replace('move: ', ''));
-            text = `¡El efecto de ${moveName} en ${target} ha terminado!`;
+            text = `¡El efecto de ${translated} en ${target} ha terminado!`;
           } else {
-            text = `¡El efecto en ${target} ha terminado!`;
+            text = `¡El efecto de ${translated} en ${target} ha terminado!`;
           }
         }
         

@@ -10,24 +10,14 @@ import type { ShowdownLocalDB } from '../sandbox_db/cloner/extract_logic';
 import ShowdownMoveMathBreakdown from './ShowdownMoveMathBreakdown.vue';
 import gsap from 'gsap';
 
+import { useShowdownSandboxStore } from '../useShowdownSandboxStore';
+import { calculateDamageRange } from '../logic/showdownMath';
+import type { SandboxPokemon } from '../logic/showdownMath';
+
 interface Props {
   moveId: string;
-  attacker: {
-    id: string;
-    name: string;
-    types: string[];
-    moveSlots?: Array<{
-      id: string;
-      pp: number;
-      maxpp: number;
-      disabled?: boolean | string;
-    }> | null;
-  } | null;
-  defender: {
-    id: string;
-    name: string;
-    types: string[];
-  } | null;
+  attacker: SandboxPokemon | null;
+  defender: SandboxPokemon | null;
   visible: boolean;
 }
 
@@ -232,6 +222,26 @@ const estimatedPower = computed(() => {
   return Math.floor(move.value.basePower * stabMultiplier.value * effectiveness.value);
 });
 
+const store = useShowdownSandboxStore();
+
+const damageResult = computed(() => {
+  if (!props.attacker || !props.defender || !move.value) return null;
+  const sandboxMove = {
+    id: move.value.id,
+    name: move.value.name,
+    type: move.value.type,
+    category: move.value.category,
+    basePower: move.value.basePower,
+    accuracy: move.value.accuracy
+  };
+  return calculateDamageRange(
+    props.attacker,
+    props.defender,
+    sandboxMove,
+    store.weather.weather
+  );
+});
+
 // Animaciones GSAP usando hooks de Vue Transition
 const onBeforeEnter = (el: Element) => {
   gsap.set(el, {
@@ -312,6 +322,11 @@ const onLeave = (el: Element, done: () => void) => {
           :stab-multiplier="stabMultiplier"
           :effectiveness="effectiveness"
           :estimated-power="estimatedPower"
+          :min-damage="damageResult?.minDamage"
+          :max-damage="damageResult?.maxDamage"
+          :min-percent="damageResult?.minPercent"
+          :max-percent="damageResult?.maxPercent"
+          :ko-chance-text="damageResult?.koChanceText"
         />
 
         <!-- Description -->

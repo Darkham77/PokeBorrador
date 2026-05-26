@@ -272,6 +272,7 @@ interface SimPokemon {
   set?: {
     nature?: string;
   };
+  volatiles?: Record<string, { id: string; duration?: number; time?: number; layers?: number; hp?: number }>;
 }
 
 interface SimSideCondition {
@@ -332,7 +333,19 @@ const getTeamStatus = (player: SimPlayer) => {
       disabled: ms.disabled || false
     })) : [],
     ability: p.ability ? (ABILITY_MAP_EN_TO_ES[p.ability] || p.ability) : '',
-    nature: p.set?.nature ? (NATURE_MAP_EN_TO_ES[p.set.nature] || p.set.nature) : ''
+    nature: p.set?.nature ? (NATURE_MAP_EN_TO_ES[p.set.nature] || p.set.nature) : '',
+    volatiles: p.volatiles ? Object.keys(p.volatiles).reduce((acc, key) => {
+      const v = p.volatiles[key];
+      acc[key] = {
+        id: v.id || key,
+        duration: typeof v.duration === 'number' ? v.duration : undefined,
+        time: typeof v.time === 'number' ? v.time : undefined,
+        layers: typeof v.layers === 'number' ? v.layers : undefined,
+        hp: typeof v.hp === 'number' ? v.hp : undefined,
+        source: v.sourceEffect?.id || v.sourceEffect?.name || v.effect?.id || v.effect?.name || (v.source ? (v.source.id || v.source.name || String(v.source)) : undefined),
+      };
+      return acc;
+    }, {} as Record<string, { id: string; duration?: number; time?: number; layers?: number; hp?: number }>) : {}
   }));
 };
 

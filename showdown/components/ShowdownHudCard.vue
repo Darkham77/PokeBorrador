@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
+import gsap from 'gsap';
 import ShowdownStatusTooltip from './ShowdownStatusTooltip.vue';
-import ShowdownSideConditionTooltip from './ShowdownSideConditionTooltip.vue';
 import ShowdownPartyTracker from './ShowdownPartyTracker.vue';
 import ShowdownAbilityTooltip from './ShowdownAbilityTooltip.vue';
 import ShowdownNatureTooltip from './ShowdownNatureTooltip.vue';
+import ShowdownCombatTags from './ShowdownCombatTags.vue';
 
 export interface SandboxPokemon {
   id: string;
@@ -69,28 +70,6 @@ const props = defineProps<{
   sideConditions?: SideCondition[];
 }>();
 
-const getSideConditionEmoji = (id: string) => {
-  const map: Record<string, string> = {
-    reflect: '🛡️',
-    lightscreen: '✨',
-    spikes: '🪵',
-    safeguard: '🌸',
-    mist: '🌫️'
-  };
-  return map[id.toLowerCase()] || '🌀';
-};
-
-const getSideConditionName = (id: string) => {
-  const map: Record<string, string> = {
-    reflect: 'REFLEJO',
-    lightscreen: 'P. LUZ',
-    spikes: 'PÚAS',
-    safeguard: 'SALVAGUARDIA',
-    mist: 'NEBLINA'
-  };
-  return map[id.toLowerCase()] || id.toUpperCase();
-};
-
 // Calcula el porcentaje de salud actual
 const hpPercent = computed(() => {
   if (props.maxHp <= 0) return 0;
@@ -121,6 +100,67 @@ const getStatusBadgeText = (status?: string) => {
 
 const showAbilityTooltip = ref(false);
 const showNatureTooltip = ref(false);
+
+const hasActiveBoosts = computed(() => {
+  if (!props.pokemon?.boosts) return false;
+  return Object.values(props.pokemon.boosts).some(val => val !== 0);
+});
+
+const activeBoostsList = computed(() => {
+  if (!props.pokemon?.boosts) return {};
+  const list: Record<string, number> = {};
+  const statsKeys: Array<'atk' | 'def' | 'spa' | 'spd' | 'spe' | 'accuracy' | 'evasion'> = ['atk', 'def', 'spa', 'spd', 'spe', 'accuracy', 'evasion'];
+  
+  const translations: Record<string, string> = {
+    atk: 'Atk',
+    def: 'Def',
+    spa: 'SpA',
+    spd: 'SpD',
+    spe: 'Vel',
+    accuracy: 'Pre',
+    evasion: 'Eva'
+  };
+
+  for (const key of statsKeys) {
+    const val = props.pokemon.boosts[key];
+    if (val && val !== 0) {
+      list[translations[key] || key] = val;
+    }
+  }
+  return list;
+});
+
+const onBoostsBeforeEnter = (el: Element) => {
+  const isPlayerSide = props.isPlayer;
+  gsap.set(el, {
+    opacity: 0,
+    x: isPlayerSide ? 25 : -25,
+    scale: 0.9
+  });
+};
+
+const onBoostsEnter = (el: Element, done: () => void) => {
+  gsap.to(el, {
+    opacity: 1,
+    x: 0,
+    scale: 1,
+    duration: 0.3,
+    ease: 'back.out(1.5)',
+    onComplete: done
+  });
+};
+
+const onBoostsLeave = (el: Element, done: () => void) => {
+  const isPlayerSide = props.isPlayer;
+  gsap.to(el, {
+    opacity: 0,
+    x: isPlayerSide ? 20 : -20,
+    scale: 0.9,
+    duration: 0.25,
+    ease: 'power2.in',
+    onComplete: done
+  });
+};
 </script>
 
 <template>
@@ -224,34 +264,36 @@ const showNatureTooltip = ref(false);
     <!-- Party Status Tracker: 6 pixelated Pokéballs -->
     <ShowdownPartyTracker :team="team" />
 
-    <!-- Active Side Conditions: Small translucent pills below the party tracker -->
-    <div
-      v-if="sideConditions && sideConditions.length > 0"
-      class="side-conditions-row"
+    <!-- Smart Combat Tags: Volatiles and Side Conditions unified -->
+    <ShowdownCombatTags
+      :pokemon="pokemon"
+      :side-conditions="sideConditions"
+    />
+
+    <!-- Panel Flotante de Boosts de Estadísticas (Columna Vertical acoplada al lateral) -->
+    <Transition
+      :css="false"
+      @before-enter="onBoostsBeforeEnter"
+      @enter="onBoostsEnter"
+      @leave="onBoostsLeave"
     >
-      <ShowdownSideConditionTooltip
-        v-for="cond in sideConditions"
-        :key="cond.id"
-        :condition-id="cond.id"
-        :duration="cond.duration"
-        :layers="cond.layers"
+      <div 
+        v-if="hasActiveBoosts" 
+        class="floating-boosts-column"
+        :class="[isPlayer ? 'player-boosts' : 'enemy-boosts']"
       >
-        <span
-          class="side-condition-pill"
-          :class="`pill-${cond.id.toLowerCase()}`"
+        <div 
+          v-for="(val, stat) in activeBoostsList" 
+          :key="stat"
+          class="boost-chip"
+          :class="val > 0 ? 'boost-up' : 'boost-down'"
         >
-          {{ getSideConditionEmoji(cond.id) }} {{ getSideConditionName(cond.id) }}
-          <span
-            v-if="cond.layers && cond.layers > 1"
-            class="cond-count"
-          >x{{ cond.layers }}</span>
-          <span
-            v-else-if="cond.duration"
-            class="cond-count"
-          >({{ cond.duration }})</span>
-        </span>
-      </ShowdownSideConditionTooltip>
-    </div>
+          <span class="boost-symbol">{{ val > 0 ? '▲' : '▼' }}</span>
+          <span class="boost-stat-name">{{ stat.toUpperCase() }}</span>
+          <span class="boost-val">{{ val > 0 ? '+' + val : val }}</span>
+        </div>
+      </div>
+    </Transition>
   </div>
 </template>
 
@@ -540,6 +582,79 @@ const showNatureTooltip = ref(false);
     &.pill-mist {
       border-color: Rgba(129, 236, 236, 0.4);
       background: Rgba(129, 236, 236, 0.12);
+    }
+  }
+
+  .floating-boosts-column {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    z-index: 45;
+    pointer-events: none;
+    top: 24px;
+  }
+
+  .player-boosts {
+    right: -52px; // Se posiciona a la derecha del borde azul
+    align-items: flex-start;
+  }
+
+  .enemy-boosts {
+    left: -52px; // Se posiciona a la izquierda del borde rojo
+    align-items: flex-end;
+  }
+
+  .boost-chip {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    font-family: var(--font-pixel);
+    font-size: 6px;
+    font-weight: bold;
+    padding: 3px 5px;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px Rgba(0, 0, 0, 0.4);
+    border: 1px solid Rgba(0, 0, 0, 0.2);
+    width: 44px;
+    justify-content: center;
+
+    &.boost-up {
+      color: #32d74b;
+      background: Rgba(12, 14, 25, 0.9);
+      border-color: Rgba(50, 215, 75, 0.4);
+      box-shadow: 
+        0 2px 4px Rgba(0, 0, 0, 0.4),
+        0 0 6px Rgba(50, 215, 75, 0.15);
+    }
+
+    &.boost-down {
+      color: #ff453a;
+      background: Rgba(12, 14, 25, 0.9);
+      border-color: Rgba(255, 69, 58, 0.4);
+      box-shadow: 
+        0 2px 4px Rgba(0, 0, 0, 0.4),
+        0 0 6px Rgba(255, 69, 58, 0.15);
+    }
+
+    .boost-symbol {
+      font-size: 5px;
+    }
+
+    .boost-stat-name {
+      color: #86868b;
+    }
+
+    .boost-val {
+      font-weight: 900;
+    }
+    
+    &.boost-up .boost-val {
+      color: #32d74b;
+    }
+
+    &.boost-down .boost-val {
+      color: #ff453a;
     }
   }
 }

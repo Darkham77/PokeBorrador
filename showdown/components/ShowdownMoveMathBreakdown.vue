@@ -9,7 +9,20 @@ defineProps<{
   stabMultiplier: number;
   effectiveness: number;
   estimatedPower: number;
+  minDamage?: number;
+  maxDamage?: number;
+  minPercent?: number;
+  maxPercent?: number;
+  koChanceText?: string;
 }>();
+
+const getKoColorClass = (text?: string) => {
+  if (!text) return 'ko-neutral';
+  if (text.includes('OHKO')) return 'ko-ohko';
+  if (text.includes('2HKO')) return 'ko-2hko';
+  if (text.includes('3HKO')) return 'ko-3hko';
+  return 'ko-neutral';
+};
 </script>
 
 <template>
@@ -53,6 +66,26 @@ defineProps<{
           Efecto de Estado (N/A)
         </span>
       </div>
+
+      <!-- Estimaciones de Daño Real y KO en Sandbox -->
+      <template v-if="category.toLowerCase() !== 'status' && basePower > 0 && minDamage !== undefined">
+        <div class="math-divider"></div>
+        
+        <div class="math-row damage-row">
+          <span class="math-label dmg-label">Rango de Daño Real:</span>
+          <span class="math-value dmg-value">
+            <strong class="dmg-range">{{ minDamage }} - {{ maxDamage }} PS</strong>
+            <span class="dmg-percent"> ({{ minPercent }}% - {{ maxPercent }}%)</span>
+          </span>
+        </div>
+
+        <div class="math-row ko-row">
+          <span class="math-label">Probabilidad de KO:</span>
+          <span :class="['math-value ko-value', getKoColorClass(koChanceText)]">
+            {{ koChanceText }}
+          </span>
+        </div>
+      </template>
     </div>
   </div>
 </template>
@@ -121,9 +154,15 @@ defineProps<{
     }
   }
 
+  .math-divider {
+    height: 1px;
+    background: linear-gradient(90deg, Rgba(255, 255, 255, 0) 0%, Rgba(255, 255, 255, 0.08) 50%, Rgba(255, 255, 255, 0) 100%);
+    margin: 4px 0;
+  }
+
   .math-total-row {
-    margin-top: 6px;
-    padding-top: 8px;
+    margin-top: 2px;
+    padding-top: 6px;
     border-top: 1px dashed Rgba(255, 255, 255, 0.1);
     display: flex;
     flex-direction: column;
@@ -149,6 +188,60 @@ defineProps<{
       &.status-only {
         color: #86868b;
         font-style: italic;
+      }
+    }
+  }
+
+  // Estilos de Daño
+  .damage-row {
+    .dmg-label {
+      color: #8a8a93;
+    }
+    
+    .dmg-value {
+      font-size: 8px;
+    }
+
+    .dmg-range {
+      color: #30d158;
+      text-shadow: 0 0 4px Rgba(48, 209, 88, 0.25);
+    }
+
+    .dmg-percent {
+      color: #8e8e93;
+    }
+  }
+
+  .ko-row {
+    margin-top: 2px;
+    
+    .ko-value {
+      font-size: 8px;
+      text-transform: uppercase;
+      padding: 1px 4px;
+      border-radius: 3px;
+      
+      &.ko-ohko {
+        color: #ff453a;
+        background: Rgba(255, 69, 58, 0.15);
+        border: 1px solid Rgba(255, 69, 58, 0.25);
+        text-shadow: 0 0 4px Rgba(255, 69, 58, 0.3);
+      }
+
+      &.ko-2hko {
+        color: #ff9f0a;
+        background: Rgba(255, 159, 10, 0.15);
+        border: 1px solid Rgba(255, 159, 10, 0.25);
+      }
+
+      &.ko-3hko {
+        color: #ffd60a;
+        background: Rgba(255, 214, 10, 0.1);
+        border: 1px solid Rgba(255, 214, 10, 0.2);
+      }
+
+      &.ko-neutral {
+        color: #aeaebe;
       }
     }
   }
