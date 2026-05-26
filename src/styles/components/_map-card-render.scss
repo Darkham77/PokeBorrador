@@ -225,13 +225,13 @@
       will-change: transform, filter, opacity;
     }
     
-    &:not(.spawn-silhouette) {
+    &:not(.spawn-silhouette):not(.is-pre-rendered) {
       &.pixelated, & {
         filter: pokemon-outline-optimized();
       }
     }
 
-    &.spawn-silhouette {
+    &.spawn-silhouette:not(.is-pre-rendered) {
       filter: pokemon-silhouette-optimized() !important;
       opacity: 1 !important;
     }

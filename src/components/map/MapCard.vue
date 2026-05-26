@@ -476,6 +476,12 @@ const processedGrid = computed<ProcessedSpawn[]>(() => {
 
 const isVisible = ref(false)
 
+import { getProcessedSprite } from '@/logic/utils/spriteOutliner'
+
+const processedSprites = ref<Record<string, string>>({})
+const guardianProcessedSprite = ref<string>('')
+
+
 const keepWarm = computed(() => {
   const isMobileDevice = uiStore.windowWidth < 768
   return !isMobileDevice && !uiStore.isLowPowerActive
@@ -873,6 +879,47 @@ watch(spawnGridRef, (newRef) => {
     }
   }
 }, { flush: 'post' })
+
+// Watch spawn grid to process and cache outlines
+watch(
+  () => processedGrid.value,
+  (newGrid) => {
+    if (!newGrid) return
+    newGrid.forEach(async (item) => {
+      if (!item.id || !item.sprite) return
+      const key = item.key
+      if (processedSprites.value[key]) return
+
+      const type = !item.isCaught ? 'silhouette' : 'outline'
+      try {
+        const processed = await getProcessedSprite(item.sprite, type)
+        processedSprites.value[key] = processed
+      } catch (e) {
+        console.warn('[MapCard] Failed to process outline for spawn:', item.id, e)
+      }
+    })
+  },
+  { immediate: true, deep: true }
+)
+
+// Watch guardian to process outline
+watch(
+  () => processedGuardian.value,
+  async (newGuardian) => {
+    if (!newGuardian || !newGuardian.sprite) {
+      guardianProcessedSprite.value = ''
+      return
+    }
+    const type = !newGuardian.isCaught ? 'silhouette' : 'outline'
+    try {
+      const processed = await getProcessedSprite(newGuardian.sprite, type)
+      guardianProcessedSprite.value = processed
+    } catch (e) {
+      console.warn('[MapCard] Failed to process outline for guardian:', newGuardian.id, e)
+    }
+  },
+  { immediate: true }
+)
 </script>
 
 <template>
@@ -947,9 +994,13 @@ watch(spawnGridRef, (newRef) => {
       >
         <div class="spawn-atmosphere-wrapper">
           <img 
-            :src="processedGuardian.sprite" 
+            :src="guardianProcessedSprite || processedGuardian.sprite" 
             class="guardian-mini-sprite" 
-            :class="{ captured: processedGuardian.captured, 'spawn-silhouette': !processedGuardian.isCaught }"
+            :class="{ 
+              captured: processedGuardian.captured, 
+              'spawn-silhouette': !guardianProcessedSprite && !processedGuardian.isCaught,
+              'is-pre-rendered': !!guardianProcessedSprite 
+            }"
             :style="{ '--spawn-seed': processedGuardian.seed }"
             @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
           >
@@ -1051,9 +1102,12 @@ watch(spawnGridRef, (newRef) => {
                 >
                   <div class="spawn-atmosphere-wrapper">
                     <img
-                      :src="item.sprite"
+                      :src="processedSprites[item.key] || item.sprite"
                       class="pixelated"
-                      :class="{ 'spawn-silhouette': !item.isCaught }"
+                      :class="{ 
+                        'spawn-silhouette': !processedSprites[item.key] && !item.isCaught,
+                        'is-pre-rendered': !!processedSprites[item.key]
+                      }"
                       @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
                     >
                   </div>
