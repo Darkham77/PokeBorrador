@@ -34,6 +34,7 @@ For development best practices and common gotchas, use `vue-best-practices`.
 - DOM reads are stale inside watcher callbacks → See [watch-flush-timing](references/watch-flush-timing.md)
 - Deep watchers report identical old/new values → See [watch-deep-same-object-reference](references/watch-deep-same-object-reference.md)
 - watchEffect runs before template refs update → See [watcheffect-flush-post-for-refs](references/watcheffect-flush-post-for-refs.md)
+- Immediate watchers accessing computed properties before declaration → See [watch-immediate-tdz-reference-error](references/watch-immediate-tdz-reference-error.md)
 
 ### Components
 
