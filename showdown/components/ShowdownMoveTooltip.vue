@@ -102,27 +102,26 @@ const GEN3_CUT_MOVES_TRANSLATIONS: Record<string, string> = {
 const moveDesc = computed(() => {
   if (!move.value) return '';
   const nameEs = moveNameEs.value;
-  
-  // Buscar en la base de datos interna de Poke Vicio por nombre en español
-  const gameMoveData = pokemonDataProvider.getMoveData(nameEs);
-  if (gameMoveData) {
-    return getMoveDescription(nameEs, gameMoveData);
-  }
-  
   const cleanId = move.value.id.toLowerCase().replace(/[^a-z0-9]/g, '');
   
-  // Si es un movimiento cortado en generaciones modernas de PokeAPI, usar mapeo clásico Gen 3
+  // 1. Si es un movimiento cortado en generaciones modernas de PokeAPI, usar mapeo clásico Gen 3
   if (GEN3_CUT_MOVES_TRANSLATIONS[cleanId]) {
     return GEN3_CUT_MOVES_TRANSLATIONS[cleanId];
   }
   
-  // Fallback a descripciones oficiales en español de PokeAPI para Showdown Sandbox
+  // 2. Fallback a descripciones oficiales en español de PokeAPI para Showdown Sandbox
   const translatedDesc = (moveDescriptions as Record<string, string>)[cleanId];
   if (translatedDesc && !translatedDesc.includes('no se puede usar')) {
     return translatedDesc;
   }
   
-  // Fallback si no está en ninguna base de datos o si tiene el leak de inutilizable
+  // 3. Buscar en la base de datos interna de Poke Vicio por nombre en español (fallback secundario)
+  const gameMoveData = pokemonDataProvider.getMoveData(nameEs);
+  if (gameMoveData) {
+    return getMoveDescription(nameEs, gameMoveData);
+  }
+  
+  // 4. Fallback si no está en ninguna base de datos o si tiene el leak de inutilizable
   return move.value.shortDesc || move.value.desc || 'Causa daño al oponente sin efectos secundarios adicionales.';
 });
 
