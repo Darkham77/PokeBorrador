@@ -164,4 +164,69 @@ All spacing and sizing in multiples of 8:
 
 ---
 
+
 > **Note for Poké Vicio**: All project-specific UI rules (Hybrid Retro-Modern, SASS filters, specific badge layouts) have been moved to the [Manual de Estándares UI/UX](../project-standards/references/ui_ux_standards.md).
+
+---
+
+## 8. Flex Layout — Battle HUD Patterns (Poké Vicio)
+
+> These patterns apply specifically to the **Battle HUD** (`#move-panel` / `BattleArenaControls`), where height must be strictly controlled by the center column (moves + buttons) and the side zones must never expand the panel.
+
+### 8.1 Height Containment with `height: 0` + `min-height: 100%`
+
+In a flex-container with `align-items: stretch`, a child with `height: auto` **contributes its intrinsic height** to the container (can expand the parent). A child with `height: 0` does **not** contribute — the container height is determined by other siblings — but `min-height: 100%` stretches the child to fill whatever height the container ends up being.
+
+```scss
+// ✅ CORRECT — does NOT expand the parent, but fills it
+.flex-child {
+  height: 0;
+  min-height: 100%;
+  overflow-y: auto;
+}
+
+// ❌ WRONG — expands the parent to fit its content
+.flex-child {
+  height: auto;
+  min-height: 100%;
+}
+```
+
+> **When to use:** Any sidebar/zone in a HUD where height must be controlled by a center column (e.g., move buttons), NOT by the zone's own content.
+
+---
+
+### 8.2 Exact Width Formula for N Fixed-Size Cards
+
+To calculate the `flex-basis` / `max-width` that fits exactly N cards in one row:
+
+```
+width = N × card_width + (N-1) × gap + padding_left + padding_right + scrollbar_width
+```
+
+**Example — 6 Pokémon cards (Poké Vicio):**
+- `6 × 115px` (cards) + `5 × 6px` (gaps) + `4px + 4px` (grid padding) + `17px` (scrollbar) = **745px**
+
+```scss
+.zone-team {
+  flex: 0 1 745px; // Never wider than 6 cards; shrinks if needed → wraps to 2nd row
+  max-width: 745px;
+}
+```
+
+---
+
+### 8.3 Vertical-Only Scroll in Flex Zones
+
+To enable vertical scrolling without horizontal scrollbar in a flex child zone:
+
+```scss
+.scrollable-zone {
+  height: 0;           // Containment (see 8.1)
+  min-height: 100%;    // Fill parent
+  overflow-y: auto;    // Vertical scrollbar when content overflows
+  overflow-x: hidden;  // Never show horizontal scrollbar
+}
+```
+
+> **Never use `overflow: hidden`** on zones that need to scroll — it silently clips content without giving the user a way to reach it.
