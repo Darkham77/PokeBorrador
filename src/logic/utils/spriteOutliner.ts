@@ -114,3 +114,74 @@ export function getProcessedSprite(
   processingCache.set(cacheKey, promise);
   return promise;
 }
+
+const auraCache = new Map<string, string>();
+const auraProcessingCache = new Map<string, Promise<string>>();
+
+/**
+ * Pre-renders an aura with color and Gaussian blur from a monochrome mask texture.
+ * Caches the result globally to avoid duplicate rendering across components.
+ */
+export function getProcessedAura(
+  maskUrl: string,
+  fillColor: string,
+  blurRadius: number
+): Promise<string> {
+  const cacheKey = `${maskUrl}-${fillColor}-${blurRadius}`;
+
+  if (auraCache.has(cacheKey)) {
+    return Promise.resolve(auraCache.get(cacheKey)!);
+  }
+
+  if (auraProcessingCache.has(cacheKey)) {
+    return auraProcessingCache.get(cacheKey)!;
+  }
+
+  const promise = (async () => {
+    try {
+      const img = await loadImage(maskUrl);
+      
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        throw new Error('Could not get 2D context from canvas');
+      }
+
+      // Add padding to avoid clipping the blurred edges of the aura (typically blurRadius * 2)
+      const padding = Math.ceil(blurRadius * 2) + 2;
+      canvas.width = img.naturalWidth + padding * 2;
+      canvas.height = img.naturalHeight + padding * 2;
+
+      // 1. Create a colorized mask on a temp canvas
+      const tempCanvas = document.createElement('canvas');
+      tempCanvas.width = img.naturalWidth;
+      tempCanvas.height = img.naturalHeight;
+      const tempCtx = tempCanvas.getContext('2d');
+      if (!tempCtx) {
+        throw new Error('Could not get 2D context from temp canvas');
+      }
+
+      tempCtx.drawImage(img, 0, 0);
+      tempCtx.globalCompositeOperation = 'source-in';
+      tempCtx.fillStyle = fillColor;
+      tempCtx.fillRect(0, 0, img.naturalWidth, img.naturalHeight);
+
+      // 2. Draw the colorized mask onto the main canvas with a Gaussian blur filter
+      ctx.filter = `blur(${blurRadius}px)`;
+      ctx.drawImage(tempCanvas, padding, padding);
+      ctx.filter = 'none';
+
+      const resultUrl = canvas.toDataURL('image/png');
+      auraCache.set(cacheKey, resultUrl);
+      return resultUrl;
+    } catch (error) {
+      console.warn('[SpriteOutliner] Failed to generate processed aura:', maskUrl, error);
+      return maskUrl; // Fallback to original monochrome texture URL
+    } finally {
+      auraProcessingCache.delete(cacheKey);
+    }
+  })();
+
+  auraProcessingCache.set(cacheKey, promise);
+  return promise;
+}

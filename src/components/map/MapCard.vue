@@ -476,10 +476,12 @@ const processedGrid = computed<ProcessedSpawn[]>(() => {
 
 const isVisible = ref(false)
 
-import { getProcessedSprite } from '@/logic/utils/spriteOutliner'
+import { getProcessedSprite, getProcessedAura } from '@/logic/utils/spriteOutliner'
 
 const processedSprites = ref<Record<string, string>>({})
 const guardianProcessedSprite = ref<string>('')
+const processedRareAura = ref<string>('')
+const processedAtmosAura = ref<string>('')
 
 
 const keepWarm = computed(() => {
@@ -793,6 +795,18 @@ onMounted(() => {
     nextTick(() => {
       initPillAnimations()
     })
+
+    // Pre-render global auras for spawns
+    try {
+      getProcessedAura(flare2Url, 'rgba(255, 0, 0, 0.9)', 1.5).then(url => {
+        processedRareAura.value = url
+      })
+      getProcessedAura(flare1Url, 'rgba(0, 255, 255, 0.85)', 1.5).then(url => {
+        processedAtmosAura.value = url
+      })
+    } catch (e) {
+      console.warn('[MapCard] Failed to pre-render auras:', e)
+    }
   }
 })
 
@@ -949,7 +963,9 @@ watch(
         '--weather-only-filter': weatherOnlyFilter,
         '--bg-image': showBg ? `url('${imgPath}')` : 'none',
         '--flare-1-url': showBg ? `url('${flare1Url}')` : 'none',
-        '--flare-2-url': showBg ? `url('${flare2Url}')` : 'none'
+        '--flare-2-url': showBg ? `url('${flare2Url}')` : 'none',
+        '--pre-rendered-rare-aura': processedRareAura ? `url('${processedRareAura}')` : 'none',
+        '--pre-rendered-atmos-aura': processedAtmosAura ? `url('${processedAtmosAura}')` : 'none'
       }"
     >
       <!-- Real divs for background and overlay to support GSAP animations -->
@@ -1079,12 +1095,18 @@ watch(
               <div
                 v-if="item.isRare"
                 class="aura-effect rare-aura"
-                :class="{ 'is-low-power': uiStore.isLowPowerActive }"
+                :class="{ 
+                  'is-low-power': uiStore.isLowPowerActive,
+                  'is-pre-rendered': !!processedRareAura
+                }"
               />
               <div
                 v-if="item.isAtmospheric"
                 class="aura-effect atmospheric-aura"
-                :class="{ 'is-low-power': uiStore.isLowPowerActive }"
+                :class="{ 
+                  'is-low-power': uiStore.isLowPowerActive,
+                  'is-pre-rendered': !!processedAtmosAura
+                }"
               />
 
               <div 
@@ -1211,10 +1233,22 @@ watch(
 
   &.rare-aura {
     z-index: calc(var(--z-map-floor) + 1);
-    -webkit-mask-image: var(--flare-2-url);
-    mask-image: var(--flare-2-url);
-    background-color: Rgba(255, 0, 0, 0.9);
-    filter: Blur(1.5px);
+    
+    &:not(.is-pre-rendered) {
+      -webkit-mask-image: var(--flare-2-url);
+      mask-image: var(--flare-2-url);
+      background-color: Rgba(255, 0, 0, 0.9);
+      filter: Blur(1.5px);
+    }
+
+    &.is-pre-rendered {
+      background-image: var(--pre-rendered-rare-aura);
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      background-color: transparent;
+      filter: none !important;
+    }
 
     &.is-low-power {
       filter: none !important;
@@ -1223,10 +1257,22 @@ watch(
 
   &.atmospheric-aura {
     z-index: var(--z-map-floor);
-    -webkit-mask-image: var(--flare-1-url);
-    mask-image: var(--flare-1-url);
-    background-color: Rgba(0, 255, 255, 0.85);
-    filter: Blur(1.5px);
+    
+    &:not(.is-pre-rendered) {
+      -webkit-mask-image: var(--flare-1-url);
+      mask-image: var(--flare-1-url);
+      background-color: Rgba(0, 255, 255, 0.85);
+      filter: Blur(1.5px);
+    }
+
+    &.is-pre-rendered {
+      background-image: var(--pre-rendered-atmos-aura);
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      background-color: transparent;
+      filter: none !important;
+    }
 
     &.is-low-power {
       filter: none !important;
