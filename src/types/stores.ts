@@ -41,6 +41,7 @@ export interface BattleOptions {
   wasSearching?: boolean;
   enemyTeam?: Pokemon[];
   isFishing?: boolean;
+  isArchaeology?: boolean;
   isGuardian?: boolean;
   pts?: number;
   isDebug?: boolean;

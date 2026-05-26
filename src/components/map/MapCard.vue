@@ -464,7 +464,7 @@ const processedGrid = computed<ProcessedSpawn[]>(() => {
       sprite: getAssetUrl(ASSET_TYPES.POKEMON, id), 
       isSeen, 
       isCaught, 
-      isRare: (rate <= 5) || isVisitor || isExclusive, 
+      isRare: (rate <= 5) || isExclusive, 
       isAtmospheric: isSpecialWeatherSpawn, 
       tooltipTitle: name, 
       tooltipDesc: typeInfo ? `${typeInfo}\n${timeText}` : timeText, 
@@ -842,10 +842,18 @@ const lockDescription = computed(() => {
 })
 
 const spawnGrid = computed(() => {
-  // Filtrar Pokémon bloqueados por el clima (Multiplier = 0)
   const weather = computedWeather.value
+  const cycle = props.cycle || 'day'
+  const wildList = props.map.wild?.[cycle] || []
+
+  // Filtrar Pokémon bloqueados por el clima (Multiplier = 0) o desactivados/fuera de hora (0% probabilidad)
   const filteredSpawns = allSpawns.value.filter(id => {
-    return getWeatherMultiplier(id, weather) > 0
+    const isVisitor = !!(props.map.weather?.[weather]?.visitors as Record<string, unknown>)?.[id]
+    const isExclusive = !!(props.map.weather?.[weather]?.exclusive as Record<string, unknown>)?.[id]
+    const isFishingActive = !!props.map.fishing?.pool?.includes(id)
+    const isWildActive = wildList.includes(id) || isVisitor || isExclusive || isFishingActive
+
+    return isWildActive && getWeatherMultiplier(id, weather) > 0
   })
 
   const { rows, cols, totalSlots } = calculateSpawnGrid(filteredSpawns.length, currentCols.value)

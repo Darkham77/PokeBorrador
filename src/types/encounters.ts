@@ -3,7 +3,7 @@ import { Pokemon } from './pokemon.ts';
 import type { DominanceInfo } from './stores.ts';
 import type { Event } from '@/logic/events/eventEngine';
 
-export type EncounterType = 'wild' | 'trainer' | 'fishing' | 'guardian' | 'defender';
+export type EncounterType = 'wild' | 'trainer' | 'fishing' | 'guardian' | 'defender' | 'archaeology';
 
 export interface Encounter {
   type: EncounterType;
@@ -38,6 +38,11 @@ export interface MapLocation {
   };
   lv: number[];
   fishing?: {
+    pool: string[];
+    rates: number[];
+    lv: number[];
+  };
+  archaeology?: {
     pool: string[];
     rates: number[];
     lv: number[];

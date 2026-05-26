@@ -28,6 +28,7 @@ import BattleInfoCard from './BattleInfoCard.vue'
 import CombatGrass from './CombatGrass.vue'
 import AtmosphereLayer from '@/components/common/AtmosphereLayer.vue'
 import FishingMinigame from './FishingMinigame.vue'
+import ArchaeologyMinigame from './ArchaeologyMinigame.vue'
 import CameraZoomControls from './CameraZoomControls.vue'
 
 const { BASE_ENTITY_SIZE_PLAYER, BASE_ENTITY_SIZE_ENEMY } = WORLD_CONSTANTS
@@ -185,6 +186,15 @@ const handleFishingSuccess = async () => {
 
 const handleFishingFail = async () => {
   logger.warn('BattleArenaView', 'Fishing FAIL')
+}
+
+const handleArchaeologySuccess = async () => {
+  logger.success('BattleArenaView', 'Archaeology SUCCESS')
+  await triggerSearchEncounter()
+}
+
+const handleArchaeologyFail = async () => {
+  logger.warn('BattleArenaView', 'Archaeology FAIL')
 }
 
 
@@ -418,11 +428,19 @@ watch(() => battleStore.isBattleActive, (active) => {
     </div>
 
     <FishingMinigame
-      v-if="battleStore.fsm?.currentSubState === 'MINIGAME_CHECK' && enemy"
+      v-if="battleStore.fsm?.currentSubState === 'MINIGAME_CHECK' && enemy && battleStore.state?.isFishing"
       :enemy="enemy"
       :rarity="battle?.rarity || 50"
       @success="handleFishingSuccess"
       @fail="handleFishingFail"
+    />
+
+    <ArchaeologyMinigame
+      v-if="battleStore.fsm?.currentSubState === 'MINIGAME_CHECK' && enemy && battleStore.state?.isArchaeology"
+      :enemy="enemy"
+      :rarity="battle?.rarity || 50"
+      @success="handleArchaeologySuccess"
+      @fail="handleArchaeologyFail"
     />
 
     <!-- Controles de Zoom de Cámara -->

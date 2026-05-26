@@ -1,10 +1,12 @@
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { ref, watch, nextTick } from 'vue'
 import { gsap } from 'gsap'
+import BaseModal from '@/components/common/BaseModal.vue'
 import type { Pokemon } from '@/types/pokemon'
 
 interface Props {
-  type: string // 'rival' or 'fishing'
+  show?: boolean
+  type: string // 'rival' or 'fishing' or 'archaeology'
   pokemon?: Pokemon | null
   rarity?: string
   onStart?: (() => void) | null
@@ -12,6 +14,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
+  show: false,
   pokemon: null,
   rarity: '',
   onStart: null,
@@ -22,106 +25,192 @@ const emit = defineEmits<{
   (e: 'close'): void
 }>()
 
-onMounted(() => {
-  if (props.type === 'rival') {
-    // 1. Flicker animation
-    gsap.to('.rival-flicker', {
-      opacity: 0.3,
-      duration: 0.07,
-      repeat: -1,
-      yoyo: true,
-      ease: 'none'
-    });
+// Template Refs
+const rivalFlicker = ref<HTMLElement | null>(null)
+const rivalExclamation = ref<HTMLElement | null>(null)
+const fishingCard = ref<HTMLElement | null>(null)
+const fishingIcon = ref<HTMLElement | null>(null)
 
-    // 2. Exclamation bounce
-    gsap.fromTo('.rival-exclamation', 
-      { scale: 0.8 },
-      { scale: 1.2, duration: 0.2, repeat: -1, yoyo: true, ease: 'back.out(2)' }
-    );
+watch(() => props.show, async (newVal) => {
+  if (newVal) {
+    await nextTick()
 
-    // 3. Auto-close
-    gsap.delayedCall(1.2, () => {
-      if (props.onComplete) props.onComplete()
-      emit('close')
-    });
+    if (props.type === 'rival') {
+      if (rivalFlicker.value) {
+        gsap.to(rivalFlicker.value, {
+          opacity: 0.3,
+          duration: 0.07,
+          repeat: -1,
+          yoyo: true,
+          ease: 'none'
+        })
+      }
+
+      if (rivalExclamation.value) {
+        gsap.fromTo(rivalExclamation.value, 
+          { scale: 0.8 },
+          { scale: 1.2, duration: 0.2, repeat: -1, yoyo: true, ease: 'back.out(2)' }
+        )
+      }
+
+      gsap.delayedCall(1.2, () => {
+        if (props.onComplete) props.onComplete()
+        emit('close')
+      })
+    }
+
+    if (props.type === 'fishing' || props.type === 'archaeology') {
+      if (fishingCard.value) {
+        gsap.from(fishingCard.value, {
+          scale: 0.8,
+          y: 20,
+          duration: 0.5,
+          ease: 'back.out(1.7)'
+        })
+      }
+
+      if (fishingIcon.value) {
+        gsap.to(fishingIcon.value, {
+          y: -20,
+          duration: 0.75,
+          repeat: -1,
+          yoyo: true,
+          ease: 'sine.inOut'
+        })
+      }
+    }
   }
-
-  if (props.type === 'fishing') {
-    gsap.from('.fishing-intro-overlay', {
-      opacity: 0,
-      duration: 0.3,
-      ease: 'power2.out'
-    });
-    
-    gsap.from('.fishing-card', {
-      scale: 0.8,
-      y: 20,
-      duration: 0.5,
-      ease: 'back.out(1.7)'
-    });
-
-    gsap.to('.fishing-icon', {
-      y: -20,
-      duration: 0.75,
-      repeat: -1,
-      yoyo: true,
-      ease: 'sine.inOut'
-    });
-  }
-})
+}, { immediate: true })
 
 const handleFishingStart = () => {
+  if (props.onStart) props.onStart()
+  emit('close')
+}
+
+const handleArchaeologyStart = () => {
   if (props.onStart) props.onStart()
   emit('close')
 }
 </script>
 
 <template>
-  <div class="encounter-sequence-container">
-    <!-- RIVAL SEQUENCE -->
-    <template v-if="type === 'rival'">
-      <div class="rival-flicker" />
-      <div class="rival-exclamation">
-        !
-      </div>
-    </template>
-
-    <!-- FISHING INTRO -->
-    <template v-if="type === 'fishing'">
-      <div class="fishing-intro-overlay">
-        <div class="fishing-card">
-          <div class="fishing-icon">
-            🎣
-          </div>
-          <div class="fishing-title">
-            ¡ALGO PICÓ!
-          </div>
-          <div class="fishing-text">
-            ¡Un Pokémon ha mordido el anzuelo!
-          </div>
-          <button 
-            class="fishing-btn" 
-            @click.stop="handleFishingStart"
-          >
-            🎣 ¡MINIJUEGO DE PESCA!
-          </button>
+  <!-- RIVAL SEQUENCE -->
+  <template v-if="type === 'rival'">
+    <BaseModal
+      :show="show"
+      hide-header
+      :show-close-button="false"
+      overlay="none"
+      padding="raw"
+      :show-border="false"
+      max-width="100vw"
+      max-height="100vh"
+    >
+      <div class="rival-sequence-wrapper">
+        <div 
+          ref="rivalFlicker" 
+          class="rival-flicker" 
+        />
+        <div 
+          ref="rivalExclamation" 
+          class="rival-exclamation"
+        >
+          !
         </div>
       </div>
-    </template>
-  </div>
+    </BaseModal>
+  </template>
+
+  <!-- FISHING INTRO -->
+  <template v-else-if="type === 'fishing'">
+    <BaseModal
+      :show="show"
+      hide-header
+      :show-close-button="false"
+      overlay="dark"
+      padding="raw"
+      :show-border="false"
+      max-width="380px"
+    >
+      <div 
+        ref="fishingCard" 
+        class="fishing-card"
+      >
+        <div 
+          ref="fishingIcon" 
+          class="fishing-icon"
+        >
+          🎣
+        </div>
+        <div class="fishing-title">
+          ¡ALGO PICÓ!
+        </div>
+        <div class="fishing-text">
+          ¡Un Pokémon ha mordido el anzuelo!
+        </div>
+        <button 
+          class="fishing-btn" 
+          @click.stop="handleFishingStart"
+        >
+          🎣 ¡MINIJUEGO DE PESCA!
+        </button>
+      </div>
+    </BaseModal>
+  </template>
+
+  <!-- ARCHAEOLOGY INTRO -->
+  <template v-else-if="type === 'archaeology'">
+    <BaseModal
+      :show="show"
+      hide-header
+      :show-close-button="false"
+      overlay="dark"
+      padding="raw"
+      :show-border="false"
+      max-width="380px"
+    >
+      <div
+        ref="fishingCard"
+        class="fishing-card"
+        style="border-color: #eab308; box-shadow: 0 0 30px rgba(234, 179, 8, 0.4);"
+      >
+        <div 
+          ref="fishingIcon" 
+          class="fishing-icon"
+        >
+          🧱
+        </div>
+        <div
+          class="fishing-title"
+          style="color: #eab308;"
+        >
+          ¡FÓSIL DETECTADO!
+        </div>
+        <div class="fishing-text">
+          ¡Se han encontrado rastros antiguos en la roca!
+        </div>
+        <button 
+          class="fishing-btn" 
+          style="background: linear-gradient(135deg, #eab308, #ca8a04); box-shadow: 0 4px 16px rgba(234, 179, 8, 0.5);"
+          @click.stop="handleArchaeologyStart"
+        >
+          ⛏️ ¡MINIJUEGO DE ARQUEOLOGÍA!
+        </button>
+      </div>
+    </BaseModal>
+  </template>
 </template>
 
 <style scoped lang="scss">
 @use '@/styles/core/tools' as *;
 
-.encounter-sequence-container {
+.rival-sequence-wrapper {
   position: fixed;
   inset: 0;
-  z-index: var(--z-max);
-  pointer-events: none;
   display: flex;
   align-items: center;
   justify-content: center;
+  pointer-events: none;
 }
 
 .rival-flicker {
@@ -130,7 +219,6 @@ const handleFishingStart = () => {
   background: var(--white);
   opacity: 0.1;
   pointer-events: none;
-  z-index: calc(var(--z-max) + 1);
 }
 
 .rival-exclamation {
@@ -139,22 +227,9 @@ const handleFishingStart = () => {
   font-size: 80px;
   color: Rgba(255, 59, 48, 1);
   text-shadow: 0 0 20px Rgba(255, 59, 48, 0.6);
-  z-index: calc(var(--z-max) + 2);
 }
 
 /* Fishing Styles */
-.fishing-intro-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: var(--z-max);
-  background: Rgba(0, 0, 0, 0.85);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  pointer-events: auto;
-}
-
 .fishing-card {
   @include card-premium;
   background: var(--card);
@@ -178,7 +253,6 @@ const handleFishingStart = () => {
   font-size: 12px;
   color: var(--blue);
   margin-bottom: 16px;
-  @include pixelated;
 }
 
 .fishing-text {
@@ -195,18 +269,16 @@ const handleFishingStart = () => {
   border: none;
   border-radius: 14px;
   cursor: pointer;
-  background: Linear-Gradient(135deg, var(--blue), Rgba(37, 99, 235, 1));
+  background: linear-gradient(135deg, var(--blue), Rgba(37, 99, 235, 1));
   color: var(--white);
   box-shadow: 0 4px 16px Rgba(59, 130, 246, 0.5);
   margin-top: 12px;
   width: 100%;
-  
-  @include pixelated;
 
   &:hover {
     transform: Translatey(-2px);
     will-change: transform, filter, opacity;
-  filter: Brightness(1.1);
+    filter: Brightness(1.1);
   }
 }
 </style>

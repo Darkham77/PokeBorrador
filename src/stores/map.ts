@@ -149,7 +149,7 @@ export const useMapStore = defineStore('map', () => {
     logger.success('MapStore', `Encounter generated: ${encounter.type}`);
 
     // 4. Procesar Tipo de Encuentro
-    const wildEnc = encounter as { type: string; pokemon: Pokemon; pts?: number; faction?: string };
+    const wildEnc = encounter as { type: string; pokemon: Pokemon; pts?: number; faction?: string; rarity?: number };
     if (wildEnc.type === 'wild') {
       battleStore._startBattle(wildEnc.pokemon, { 
         locationId: locId,
@@ -169,6 +169,42 @@ export const useMapStore = defineStore('map', () => {
       // TODO: Implementar búsqueda de defensores reales desde Supabase
       // Por ahora notificamos
       uiStore.notify(`¡Defensor del Team ${wildEnc.faction?.toUpperCase()} detectado!`, '⚔️')
+    } else if (wildEnc.type === 'fishing') {
+      const { showFishingIntro, startFishingMinigame } = await import('@/logic/encounterUI')
+      showFishingIntro(wildEnc.pokemon, wildEnc.rarity || 50, () => {
+        startFishingMinigame(
+          wildEnc.pokemon,
+          wildEnc.rarity || 50,
+          () => {
+            battleStore._startBattle(wildEnc.pokemon, { 
+              locationId: locId,
+              wasSearching: true,
+              isFishing: true
+            })
+          },
+          () => {
+            uiStore.notify('El Pokémon escapó...', '💨')
+          }
+        )
+      })
+    } else if (wildEnc.type === 'archaeology') {
+      const { showArchaeologyIntro, startArchaeologyMinigame } = await import('@/logic/encounterUI')
+      showArchaeologyIntro(wildEnc.pokemon, wildEnc.rarity || 50, () => {
+        startArchaeologyMinigame(
+          wildEnc.pokemon,
+          wildEnc.rarity || 50,
+          () => {
+            battleStore._startBattle(wildEnc.pokemon, { 
+              locationId: locId,
+              wasSearching: true,
+              isArchaeology: true
+            })
+          },
+          () => {
+            uiStore.notify('El fósil se desmoronó...', '💨')
+          }
+        )
+      })
     }
   }
 

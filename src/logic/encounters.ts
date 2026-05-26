@@ -180,7 +180,10 @@ export async function generateEncounter(locId: string, state: EncounterState, op
   }
 
   // 3. Fishing Chance (if applicable)
-  const fishingBonus = options.eventFishingBonus || 1;
+  const weather = options.weather || 'clear';
+  const isRainy = ['rain', 'heavy_rain', 'storm', 'thunderstorm'].includes(weather.toLowerCase());
+  const climateFishingMultiplier = isRainy ? 1.20 : 1.0;
+  const fishingBonus = (options.eventFishingBonus || 1) * climateFishingMultiplier;
   if (loc.fishing && Math.random() < GAME_RATIOS.encounters.fishing * fishingBonus) {
     const { pool, rates } = loc.fishing;
     const selectedId = selectFromPool(pool, rates);
@@ -199,8 +202,27 @@ export async function generateEncounter(locId: string, state: EncounterState, op
     };
   }
 
+  // 3.1 Archaeology Chance (if applicable)
+  if (loc.archaeology && Math.random() < 0.15) {
+    const archPool = loc.archaeology.pool;
+    const archRates = loc.archaeology.rates;
+    const selectedId = selectFromPool(archPool, archRates);
+    const minLv = loc.archaeology.lv[0] || 15;
+    const maxLv = loc.archaeology.lv[1] || 25;
+    const level = Math.floor(Math.random() * (maxLv - minLv + 1)) + minLv;
+    const totalRate = archRates.reduce((a: number, b: number) => a + b, 0);
+    const rateIdx = archPool.indexOf(selectedId);
+    const rateVal = archRates[rateIdx];
+    const rarity = ((rateVal !== undefined ? rateVal : 0) / (totalRate || 1)) * 100;
+    
+    return {
+      type: 'archaeology',
+      pokemon: makePokemon(selectedId, level, { shinyMultiplier: options.shinyMultiplier }) as Pokemon,
+      rarity
+    };
+  }
+
   // 4. Wild Pokemon Pool Selection (Normal)
-  const weather = options.weather || 'clear';
   let { pool, rates } = getEncounterPool(loc, cycle, weather, activeEvents);
 
   // 4.1 Lógica de Clima: Multiplicadores e Invasiones
@@ -208,13 +230,19 @@ export async function generateEncounter(locId: string, state: EncounterState, op
     const visitorIndices = rates.map((r, i) => r < 0 ? i : -1).filter(i => i !== -1);
     const nativeIndices = rates.map((r, i) => r >= 0 ? i : -1).filter(i => i !== -1);
 
-    // Aplicar multiplicadores (Buffs, Debuffs, Blocks)
-    nativeIndices.forEach(idx => {
-      const spId = pool[idx];
-      if (spId) {
-        rates[idx] = (rates[idx] || 0) * getWeatherMultiplier(spId, weather);
-      }
-    });
+     // Aplicar multiplicadores (Buffs, Debuffs, Blocks)
+     const wConfig = loc.weather?.[weather];
+     const exclusives = wConfig?.exclusive ? (Array.isArray(wConfig.exclusive) ? wConfig.exclusive : Object.keys(wConfig.exclusive)) : [];
+
+     nativeIndices.forEach(idx => {
+       const spId = pool[idx];
+       if (spId) {
+         const isExclusive = exclusives.includes(spId);
+         if (!isExclusive) {
+           rates[idx] = (rates[idx] || 0) * getWeatherMultiplier(spId, weather);
+         }
+       }
+     });
 
     // Normalización Proporcional de Visitantes (10% del peso total)
     if (visitorIndices.length > 0) {

@@ -173,6 +173,7 @@ export const FIRE_RED_MAPS = [
     id: 'diglett_cave', name: 'Cueva Diglett', icon: '🕳️', badges: 2, desc: 'Atajo bajo tierra.', isCave: true, isMountain: true,
     wild: { morning: ['diglett', 'dugtrio'], day: ['diglett', 'dugtrio'], dusk: ['diglett'], night: ['diglett', 'dugtrio'] },
     rates: { morning: [95, 5], day: [95, 5], dusk: [100], night: [98, 2] }, lv: [15, 31],
+    archaeology: { pool: ['kabuto', 'omanyte'], rates: [50, 50], lv: [15, 20] },
     weather: {
       sandstorm: { visitors: { onix: 50, geodude: 40 }, exclusive: { golem: 10 } },
       fog: { visitors: { zubat: 80, golbat: 20 } },
@@ -195,6 +196,7 @@ export const FIRE_RED_MAPS = [
     id: 'rock_tunnel', name: 'Túnel Roca', icon: '🔦', badges: 3, desc: 'Oscuridad total.', isCave: true, isMountain: true,
     wild: { morning: ['zubat', 'geodude', 'machop', 'onix'], day: ['zubat', 'geodude', 'machop', 'onix'], dusk: ['zubat', 'geodude'], night: ['zubat', 'geodude', 'machop', 'onix'] },
     rates: { morning: [50, 40, 5, 5], day: [50, 40, 5, 5], dusk: [60, 40], night: [50, 35, 10, 5] }, lv: [16, 21],
+    archaeology: { pool: ['kabuto', 'omanyte', 'aerodactyl'], rates: [45, 45, 10], lv: [18, 24] },
     weather: {
       sandstorm: { visitors: { graveler: 80, rhyhorn: 20 } },
       fog: { visitors: { gastly: 85, haunter: 10 }, exclusive: { gengar: 5 } },
@@ -356,6 +358,7 @@ export const FIRE_RED_MAPS = [
     id: 'victory_road', name: 'Calle Victoria', icon: '⛰️', badges: 8, desc: 'El desafío final.', isCave: true, isMountain: true,
     wild: { morning: ['machop', 'machoke', 'geodude', 'graveler', 'onix', 'marowak', 'hitmonlee', 'hitmonchan'], day: ['machop', 'machoke', 'geodude', 'graveler', 'onix', 'marowak', 'hitmonlee', 'hitmonchan'], dusk: ['machoke', 'graveler', 'onix'], night: ['machop', 'machoke', 'geodude', 'graveler', 'onix', 'marowak', 'hitmonlee', 'hitmonchan'] },
     rates: { morning: [15, 15, 15, 15, 10, 10, 10, 10], day: [15, 15, 15, 15, 10, 10, 10, 10], dusk: [40, 30, 30], night: [15, 15, 15, 15, 10, 10, 10, 10] }, lv: [42, 50],
+    archaeology: { pool: ['kabuto', 'omanyte', 'aerodactyl'], rates: [30, 30, 40], lv: [40, 50] },
     weather: {
       sandstorm: { visitors: { machamp: 80, golem: 20 } },
       fog: { visitors: { haunter: 80, kadabra: 20 } },

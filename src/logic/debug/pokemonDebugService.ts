@@ -9,6 +9,10 @@ import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import type { Pokemon } from '@/types/pokemon';
 import { logger } from '../utils/logger.ts';
 
+interface DebugPokemon extends Pokemon {
+  mapId?: string | null
+}
+
 interface GenerateParams {
   id?: string
   level?: number
@@ -22,6 +26,7 @@ interface GenerateParams {
   nickname?: string | null
   friendship?: number
   heldItem?: string | null
+  mapId?: string | null
 }
 
 interface EggData {
@@ -60,7 +65,8 @@ export const pokemonDebugService = {
       moves = null,
       nickname = null,
       friendship = 70,
-      heldItem = null
+      heldItem = null,
+      mapId = null
     } = params;
 
     // 1. Create base instance
@@ -68,6 +74,10 @@ export const pokemonDebugService = {
     const mappedGender = (gender && genderMap[gender]) ? genderMap[gender] : undefined;
     const p = makePokemon(id, level, { isShiny, nature: nature || undefined, ability: ability || undefined, gender: mappedGender, heldItem: heldItem || undefined })
     if (!p) return {} as Pokemon
+
+    if (mapId) {
+      (p as DebugPokemon).mapId = mapId
+    }
 
     // 2. Apply Overrides
     if (ivs) {
@@ -169,6 +179,56 @@ export const pokemonDebugService = {
         // Trigger Vue Modal Sequence
         ui.open('HatchAnimation', { pokemon: p });
         break;
+
+      case 'fishing_minigame': {
+        const { showFishingIntro, startFishingMinigame } = await import('@/logic/encounterUI')
+        const battleStore = useBattleStore();
+        showFishingIntro(p, 50, () => {
+          startFishingMinigame(
+            p,
+            50,
+            async () => {
+              ui.notify(`¡Pesca exitosa! Iniciando combate...`, '🎣')
+              await battleStore._startBattle(p, { 
+                locationId: (p as DebugPokemon).mapId || 'route12',
+                isDebug: true,
+                isFishing: true
+              })
+              const modalStore = useModalStore()
+              modalStore.closeAll()
+            },
+            () => {
+              ui.notify('El Pokémon escapó...', '💨')
+            }
+          )
+        })
+        break;
+      }
+
+      case 'archaeology_minigame': {
+        const { showArchaeologyIntro, startArchaeologyMinigame } = await import('@/logic/encounterUI')
+        const battleStore = useBattleStore();
+        showArchaeologyIntro(p, 50, () => {
+          startArchaeologyMinigame(
+            p,
+            50,
+            async () => {
+              ui.notify(`¡Excavación exitosa! Iniciando combate...`, '⛏️')
+              await battleStore._startBattle(p, { 
+                locationId: (p as DebugPokemon).mapId || 'mt_moon',
+                isDebug: true,
+                isArchaeology: true
+              })
+              const modalStore = useModalStore()
+              modalStore.closeAll()
+            },
+            () => {
+              ui.notify('El fósil se desmoronó...', '💨')
+            }
+          )
+        })
+        break;
+      }
 
       default:
         logger.error('DEBUG', `Unknown protocol: ${protocol}`);

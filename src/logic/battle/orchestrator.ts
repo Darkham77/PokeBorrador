@@ -23,6 +23,7 @@ export interface BattleOptions {
   trainerName?: string;
   battleOptions?: Record<string, unknown>;
   isFishing?: boolean;
+  isArchaeology?: boolean;
   wasSearching?: boolean;
   isDebug?: boolean;
   over?: boolean;
@@ -37,7 +38,7 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
   const { 
     isGym = false, gymId = undefined, locationId = 'plains', 
     isTrainer = false, enemyTeam = undefined, trainerName = 'Entrenador',
-    battleOptions = {}, isFishing = false, wasSearching: wasSearchingOpt = null
+    battleOptions = {}, isFishing = false, isArchaeology = false, wasSearching: wasSearchingOpt = null
   } = options
 
   const map = FIRE_RED_MAPS.find(m => m.id === locationId)
@@ -107,7 +108,7 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
     isIndoors: FIRE_RED_MAPS.find(m => m.id === locationId)?.isIndoors || false,
     isCrystalCave: FIRE_RED_MAPS.find(m => m.id === locationId)?.isCrystalCave || false,
     turn: 'player', turnCount: 1, over: false,
-    isFishing, rarity,
+    isFishing, isArchaeology, rarity,
     weather: { 
       type: getMechanicalWeather(mapStore.currentWeather), 
       visual: mapStore.currentWeather, 

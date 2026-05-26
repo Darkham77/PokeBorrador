@@ -50,6 +50,7 @@ export interface BattleState {
   _initialEnemy?: Pokemon | null;
   _initialPlayer?: Pokemon | null;
   isFishing?: boolean;
+  isArchaeology?: boolean;
   lastDamage?: number;
   enemyUsedItem?: boolean;
   rewardTM?: string;

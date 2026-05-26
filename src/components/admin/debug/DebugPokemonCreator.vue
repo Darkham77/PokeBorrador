@@ -9,6 +9,7 @@ import PokemonMovePicker from './PokemonMovePicker.vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import PokemonPreview from './PokemonPreview.vue'
 import DebugSearchSelect from './DebugSearchSelect.vue'
+import type { MapLocation } from '@/types/encounters'
 
 interface PokemonConfig {
   id: string
@@ -69,9 +70,31 @@ const allNatures = Object.keys(NATURE_DATA).map(n => ({ id: n, name: n }))
 
 const allAbilities = Object.keys(ABILITY_DATA).map(a => ({ id: a, name: a }))
 
+const selectedMinigame = ref<'fishing' | 'archaeology'>('fishing')
+
 const allMaps = computed<MapOption[]>(() => {
   const maps = pokemonDataProvider.getMaps() as { id: string, name?: string }[]
   return maps.map(m => ({ id: m.id, name: m.name || m.id }))
+})
+
+const filteredMaps = computed(() => {
+  const maps = pokemonDataProvider.getMaps() as unknown as MapLocation[]
+  return maps
+    .filter(m => {
+      if (selectedMinigame.value === 'fishing') {
+        return !!m.fishing
+      } else if (selectedMinigame.value === 'archaeology') {
+        return !!m.archaeology
+      }
+      return true
+    })
+    .map(m => ({ id: m.id, name: m.name || m.id }))
+})
+
+watch(selectedMinigame, () => {
+  if (filteredMaps.value.length > 0) {
+    config.value.mapId = filteredMaps.value[0]?.id || ''
+  }
 })
 
 const speciesMoves = computed<string[]>(() => {
@@ -340,11 +363,31 @@ onMounted(() => {
           </PVTooltip>
         </div>
       
+        <div class="debug-input-group">
+          <label>MINIJUEGO</label>
+          <PVTooltip
+            title="Minijuego"
+            description="Selecciona el minijuego de captura para testear."
+          >
+            <select
+              v-model="selectedMinigame"
+              class="debug-select-standard"
+            >
+              <option value="fishing">
+                🎣 PESCA
+              </option>
+              <option value="archaeology">
+                ⛏️ ARQUEOLOGÍA
+              </option>
+            </select>
+          </PVTooltip>
+        </div>
+      
         <!-- Origin Route Dropdown -->
         <DebugSearchSelect
           v-model="config.mapId"
           label="ORIGEN"
-          :options="allMaps"
+          :options="filteredMaps"
           tooltip-title="Ruta de origen"
           tooltip-desc="Lugar donde se registrará que fue encontrado el Pokémon."
         />
@@ -363,6 +406,19 @@ onMounted(() => {
             @click.stop="executeAction('catch')"
           >
             ATRAPAR
+          </button>
+        </PVTooltip>
+          
+        <PVTooltip
+          title="Iniciar minijuego de captura"
+          description="Inicia la secuencia y el minijuego de captura seleccionado."
+        >
+          <button
+            class="btn-vicio-primary"
+            style="background: linear-gradient(135deg, #10b981, #059669); box-shadow: 0 4px 16px rgba(16, 185, 129, 0.4);"
+            @click.stop="executeAction(selectedMinigame + '_minigame')"
+          >
+            MINIJUEGO
           </button>
         </PVTooltip>
           

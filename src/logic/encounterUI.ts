@@ -39,3 +39,30 @@ export function startFishingMinigame(enemy: Pokemon, rarity: number, onWin: () =
     onFail: onFail
   })
 }
+
+/**
+ * Shows the archaeology intro modal and then starts the minigame.
+ */
+export function showArchaeologyIntro(pokemon: Pokemon, rarity: number, onStart: () => void): void {
+  const modalStore = useModalStore()
+  modalStore.open('EncounterSequence', {
+    type: 'archaeology',
+    pokemon: pokemon,
+    rarity: rarity,
+    onStart: onStart
+  })
+}
+
+/**
+ * Starts the grid-based archaeology minigame via Vue UI.
+ */
+export function startArchaeologyMinigame(enemy: Pokemon, rarity: number, onWin: () => void, onFail: () => void): void {
+  const modalStore = useModalStore()
+  
+  modalStore.open('Archaeology', {
+    pokemon: enemy,
+    rarity: rarity,
+    onWin: onWin,
+    onFail: onFail
+  })
+}

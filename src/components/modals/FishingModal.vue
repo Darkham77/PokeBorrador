@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 import { gsap } from 'gsap'
+import BaseModal from '@/components/common/BaseModal.vue'
 import type { Pokemon } from '@/types/pokemon'
 
 interface Props {
+  show?: boolean
   pokemon: Pokemon
   rarity?: number
   onWin?: (() => void) | null
@@ -11,6 +13,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
+  show: false,
   rarity: 0,
   onWin: null,
   onFail: null
@@ -137,43 +140,53 @@ const vGsapShrink = {
 </script>
 
 <template>
-  <div
-    class="fishing-game-overlay"
-    :class="{ fail: isFailed }"
+  <BaseModal
+    :show="show"
+    type="fullscreen"
+    hide-header
+    :show-close-button="false"
+    overlay="dark"
+    padding="raw"
+    :show-border="false"
   >
-    <div class="rhythm-container">
-      <div class="fishing-hint">
-        <h3>¡RITMO DE PESCA!</h3>
-        <p>Hacé clic en los números <span>1, 2, 3...</span></p>
-        <p class="secondary">
-          ¡Mantené el foco!
-        </p>
-      </div>
-
-      <div class="rhythm-counter">
-        NOTAS: {{ clickedNotesCount }} / {{ totalNotes }}
-      </div>
-
-      <TransitionGroup name="note">
-        <div
-          v-for="note in notes"
-          v-show="!note.isHit"
-          :key="note.id"
-          class="rhythm-note"
-          :style="{ left: note.x + '%', top: note.y + '%' }"
-          @mousedown.stop="handleNoteClick(note)"
-        >
-          <div class="note-number">
-            {{ note.id }}
-          </div>
-          <div
-            v-gsap-shrink="speedBase"
-            class="rhythm-ring"
-          />
+    <div
+      class="fishing-game-overlay"
+      :class="{ fail: isFailed }"
+    >
+      <div class="rhythm-container">
+        <div class="fishing-hint">
+          <h3>¡RITMO DE PESCA!</h3>
+          <p>Hacé clic en los números <span>1, 2, 3...</span></p>
+          <p class="secondary">
+            ¡Mantené el foco!
+          </p>
         </div>
-      </TransitionGroup>
+
+        <div class="rhythm-counter">
+          NOTAS: {{ clickedNotesCount }} / {{ totalNotes }}
+        </div>
+
+        <TransitionGroup name="note">
+          <div
+            v-for="note in notes"
+            v-show="!note.isHit"
+            :key="note.id"
+            class="rhythm-note"
+            :style="{ left: note.x + '%', top: note.y + '%' }"
+            @mousedown.stop="handleNoteClick(note)"
+          >
+            <div class="note-number">
+              {{ note.id }}
+            </div>
+            <div
+              v-gsap-shrink="speedBase"
+              class="rhythm-ring"
+            />
+          </div>
+        </TransitionGroup>
+      </div>
     </div>
-  </div>
+  </BaseModal>
 </template>
 
 <style scoped lang="scss">
@@ -182,19 +195,15 @@ const vGsapShrink = {
 .fishing-game-overlay {
   position: fixed;
   inset: 0;
-  z-index: var(--z-modal);
   background: Rgba(0, 0, 0, 0.9);
   -webkit-will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
-  backdrop-filter: Blur(10px);
   backdrop-filter: Blur(10px);
   @include gpu-layer;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: crosshair;
-  
-  @include gpu-layer;
 
   &.fail {
     background: Rgba(153, 27, 27, 0.9);
@@ -281,11 +290,6 @@ const vGsapShrink = {
   }
 }
 
-
-
-.note-leave-active {
-  
-}
 .note-leave-to {
   transform: Translate(-50%, -50%) Scale(1.5);
   opacity: 0;
