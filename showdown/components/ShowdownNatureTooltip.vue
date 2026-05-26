@@ -76,11 +76,25 @@ const onLeave = (el: Element, done: () => void) => {
         </div>
         <div class="tooltip-desc-section">
           <!-- Modificadores visuales elegantes -->
-          <div class="modifiers-row" v-if="natureUp || natureDown">
-            <span class="stat-mod mod-up" v-if="natureUp">▲ {{ natureUp.toUpperCase() }} (+10%)</span>
-            <span class="stat-mod mod-down" v-if="natureDown">▼ {{ natureDown.toUpperCase() }} (-10%)</span>
+          <div
+            v-if="natureUp || natureDown"
+            class="modifiers-row"
+          >
+            <span
+              v-if="natureUp"
+              class="stat-mod mod-up"
+            >▲ {{ natureUp.toUpperCase() }} (+10%)</span>
+            <span
+              v-if="natureDown"
+              class="stat-mod mod-down"
+            >▼ {{ natureDown.toUpperCase() }} (-10%)</span>
           </div>
-          <p class="desc-text" :class="{ 'neutra': !natureUp && !natureDown }">{{ natureDesc }}</p>
+          <p
+            class="desc-text"
+            :class="{ 'neutra': !natureUp && !natureDown }"
+          >
+            {{ natureDesc }}
+          </p>
         </div>
       </div>
     </Transition>
@@ -92,21 +106,21 @@ const onLeave = (el: Element, done: () => void) => {
   position: absolute;
   bottom: calc(100% + 8px);
   left: 50%;
-  transform: translateX(-50%);
+  transform: Translatex(-50%);
   z-index: 150;
   width: 250px;
   pointer-events: none;
 }
 
 .nature-tooltip-card {
-  background: linear-gradient(135deg, rgba(12, 14, 25, 0.96) 0%, rgba(24, 28, 50, 0.98) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: linear-gradient(135deg, Rgba(12, 14, 25, 0.96) 0%, Rgba(24, 28, 50, 0.98) 100%);
+  border: 1px solid Rgba(255, 255, 255, 0.15);
   border-radius: 12px;
   box-shadow: 
-    0 -10px 25px rgba(0, 0, 0, 0.7),
-    0 0 10px rgba(251, 191, 36, 0.2);
+    0 -10px 25px Rgba(0, 0, 0, 0.7),
+    0 0 10px Rgba(251, 191, 36, 0.2);
   padding: 12px;
-  backdrop-filter: blur(8px);
+  backdrop-filter: Blur(8px);
   pointer-events: auto;
 }
 
@@ -114,7 +128,7 @@ const onLeave = (el: Element, done: () => void) => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
+  border-bottom: 1px dashed Rgba(255, 255, 255, 0.1);
   padding-bottom: 6px;
   margin-bottom: 8px;
 }
@@ -149,18 +163,18 @@ const onLeave = (el: Element, done: () => void) => {
     font-weight: bold;
     padding: 2px 4px;
     border-radius: 4px;
-    border: 1px solid rgba(0, 0, 0, 0.2);
+    border: 1px solid Rgba(0, 0, 0, 0.2);
 
     &.mod-up {
       color: #32d74b;
-      background: rgba(50, 215, 75, 0.1);
-      border-color: rgba(50, 215, 75, 0.2);
+      background: Rgba(50, 215, 75, 0.1);
+      border-color: Rgba(50, 215, 75, 0.2);
     }
 
     &.mod-down {
       color: #ff453a;
-      background: rgba(255, 69, 58, 0.1);
-      border-color: rgba(255, 69, 58, 0.2);
+      background: Rgba(255, 69, 58, 0.1);
+      border-color: Rgba(255, 69, 58, 0.2);
     }
   }
 
@@ -170,7 +184,7 @@ const onLeave = (el: Element, done: () => void) => {
     line-height: 1.4;
     color: #e5e5ea;
     margin: 0;
-    text-shadow: 1px 1px 0px rgba(0,0,0,0.5);
+    text-shadow: 1px 1px 0px Rgba(0,0,0,0.5);
 
     &.neutra {
       color: #86868b;

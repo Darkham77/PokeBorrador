@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { gsap } from 'gsap'
 import BaseModal from '@/components/common/BaseModal.vue'
 import EventCard from './EventCard.vue'
 import { useEventStore } from '@/stores/events'
@@ -24,6 +25,32 @@ const { activeEvents, pendingAwards, isLoading } = storeToRefs(eventStore)
 const isSmallScreen = ref(window.innerWidth <= 950)
 const handleResize = () => { isSmallScreen.value = window.innerWidth <= 950 }
 useWindowListener('resize', handleResize)
+
+const onBtnHover = (event: MouseEvent, isEntering: boolean) => {
+  const btn = event.currentTarget as HTMLElement
+  if (!btn || btn.hasAttribute('disabled')) return
+  const isClaim = btn.classList.contains('claim')
+  if (isEntering) {
+    gsap.to(btn, {
+      background: isClaim ? 'var(--green)' : 'rgba(255, 255, 255, 0.12)',
+      y: -2,
+      borderColor: isClaim ? 'var(--green-bright)' : 'rgba(255, 255, 255, 0.2)',
+      duration: 0.2,
+      ease: 'power2.out',
+      overwrite: 'auto'
+    })
+  } else {
+    gsap.to(btn, {
+      background: isClaim ? 'var(--green)' : 'rgba(255, 255, 255, 0.05)',
+      y: 0,
+      borderColor: isClaim ? 'var(--green-bright)' : 'rgba(255, 255, 255, 0.1)',
+      duration: 0.2,
+      ease: 'power2.out',
+      overwrite: 'auto',
+      clearProps: 'transform,background,borderColor'
+    })
+  }
+}
 
 onMounted(() => {
   eventStore.fetchEvents()
@@ -54,6 +81,8 @@ onMounted(() => {
         <button
           class="retro-btn refresh"
           :disabled="isLoading"
+          @mouseenter="onBtnHover($event, true)"
+          @mouseleave="onBtnHover($event, false)"
           @click.stop="eventStore.fetchEvents()"
         >
           REFRESCAR
@@ -81,6 +110,8 @@ onMounted(() => {
               </div>
               <button
                 class="retro-btn claim"
+                @mouseenter="onBtnHover($event, true)"
+                @mouseleave="onBtnHover($event, false)"
                 @click.stop="eventStore.claimAward(award.id)"
               >
                 RECLAMAR
@@ -166,13 +197,6 @@ onMounted(() => {
   background: Rgba(255, 255, 255, 0.05);
   color: var(--white);
   cursor: pointer;
-  transition: all 0.2s;
-
-  &:hover:not(:disabled) {
-    background: Rgba(255, 255, 255, 0.12);
-    transform: Translatey(-2px);
-    border-color: Rgba(255, 255, 255, 0.2);
-  }
 
   &:disabled {
     opacity: 0.5;

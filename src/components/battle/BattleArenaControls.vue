@@ -246,19 +246,21 @@ const onEnter = (el: Element, done: () => void) => {
 .quick-shortcut-zone {
   display: flex;
   flex-direction: column;
-  height: auto;
-  min-height: 100%;
-  overflow: hidden;
+  height: 0;        // No contribuye a la altura del move-panel; esa la define controls-content
+  min-height: 100%; // Se estira al alto del contenedor vía align-items: stretch del padre
+  overflow-y: auto; // Scrollbar cuando Pokémon o items no caben
+  overflow-x: hidden;
   border-left: 1px solid Rgba(255, 255, 255, 0.05);
   border-right: 1px solid Rgba(255, 255, 255, 0.05);
   
   &.zone-team { 
-    flex: 0 1 730px; // No crece más de 730px (suficiente para 6 tarjetas), se encoge si falta espacio
-    max-width: 730px;
+    // 6×115px (tarjetas) + 5×6px (gaps) + 8px (padding grid) + 17px (scrollbar) = 745px
+    flex: 0 1 745px;
+    max-width: 745px;
     min-width: 120px;
   }
   &.zone-bag { 
-    flex: 1 1 90px; // Crece para ocupar el resto del espacio a la derecha, se encoge hasta 90px (1 columna)
+    flex: 1 1 90px; // Crece para rellenar el espacio vacío que zone-team no ocupa
     min-width: 90px;
   }
 }

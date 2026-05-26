@@ -145,7 +145,10 @@ const handleSwitchSelection = (targetIndex: number) => {
             <div class="move-info">
               <span class="move-name">{{ getMoveDisplayName(moveId) }}</span>
               <div class="move-meta">
-                <span class="move-pp" v-if="getMovePPInfo(moveId)">{{ getMovePPInfo(moveId) }}</span>
+                <span
+                  v-if="getMovePPInfo(moveId)"
+                  class="move-pp"
+                >{{ getMovePPInfo(moveId) }}</span>
                 <span class="move-type-label">{{ getMoveType(moveId).toUpperCase() }}</span>
               </div>
             </div>
@@ -331,10 +334,10 @@ const handleSwitchSelection = (targetIndex: number) => {
     font-family: var(--font-pixel);
     font-size: 6px;
     color: var(--yellow, #ffd60a);
-    background: rgba(0, 0, 0, 0.4);
+    background: Rgba(0, 0, 0, 0.4);
     padding: 2px 4px;
     border-radius: 4px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    border: 1px solid Rgba(255, 255, 255, 0.05);
   }
 
   .move-type-label {

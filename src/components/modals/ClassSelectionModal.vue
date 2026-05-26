@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
+import { gsap } from 'gsap';
 import { useWindowListener } from '@/composables/useWindowListener';
 import { usePlayerClassStore } from '@/stores/playerClass';
 import { PLAYER_CLASSES } from '@/data/playerClasses';
@@ -56,6 +57,68 @@ const handleImageError = (e: Event) => {
     (e.target as HTMLImageElement).style.display = 'none';
   }
 };
+
+const onCardHover = (event: MouseEvent, isEntering: boolean) => {
+  const card = event.currentTarget as HTMLElement;
+  if (!card) return;
+  const glow = card.querySelector('.card-glow');
+  const sprite = card.querySelector('.trainer-pixel-art');
+
+  if (isEntering) {
+    gsap.to(card, {
+      y: -10,
+      rotateX: 2,
+      borderColor: 'var(--yellow)',
+      duration: 0.25,
+      ease: 'power2.out',
+      overwrite: 'auto'
+    });
+    if (glow) {
+      gsap.to(glow, {
+        opacity: 0.2,
+        duration: 0.25,
+        ease: 'power2.out',
+        overwrite: 'auto'
+      });
+    }
+    if (sprite) {
+      gsap.to(sprite, {
+        scale: 1.1,
+        duration: 0.25,
+        ease: 'power2.out',
+        overwrite: 'auto'
+      });
+    }
+  } else {
+    gsap.to(card, {
+      y: 0,
+      rotateX: 0,
+      borderColor: 'rgba(255, 255, 255, 0.1)',
+      duration: 0.25,
+      ease: 'power2.out',
+      overwrite: 'auto',
+      clearProps: 'transform,borderColor'
+    });
+    if (glow) {
+      gsap.to(glow, {
+        opacity: 0.05,
+        duration: 0.25,
+        ease: 'power2.out',
+        overwrite: 'auto',
+        clearProps: 'opacity'
+      });
+    }
+    if (sprite) {
+      gsap.to(sprite, {
+        scale: 1,
+        duration: 0.25,
+        ease: 'power2.out',
+        overwrite: 'auto',
+        clearProps: 'transform'
+      });
+    }
+  }
+};
 </script>
 
 <template>
@@ -83,6 +146,8 @@ const handleImageError = (e: Event) => {
           class="class-card-premium"
           :style="{ '--cls-color': cls.color }"
           :class="{ 'is-current': classStore.playerClass === cls.id }"
+          @mouseenter="onCardHover($event, true)"
+          @mouseleave="onCardHover($event, false)"
         >
           <div class="card-glow" />
           
@@ -200,17 +265,8 @@ const handleImageError = (e: Event) => {
   align-items: center;
   height: 100%;
   overflow: hidden;
-  transition: transform 0.25s ease-out, border-color 0.25s ease-out, box-shadow 0.25s ease-out;
 
   @include hover-neon-yellow(1px);
-
-  &:hover {
-    transform: Translatey(-10px) rotateX(2deg);
-    border-color: var(--yellow) !important;
-    
-    .card-glow { opacity: 0.2; }
-    .trainer-pixel-art { transform: Scale(1.1); }
-  }
 
   &.is-current {
     border-color: Rgba(34, 197, 94, 1);
@@ -254,12 +310,11 @@ const handleImageError = (e: Event) => {
     height: 100%;
     object-fit: cover;
     @include sprite-render;
-    transition: transform 0.25s ease-out;
   }
 }
 
 .card-glow {
-  transition: opacity 0.25s ease-out;
+  opacity: 0.05;
 }
 
 .class-title {

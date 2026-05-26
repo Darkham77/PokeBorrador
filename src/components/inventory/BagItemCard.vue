@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { getItemSpriteUrl } from '@/logic/inventory/inventoryEngine'
 import { gsap } from 'gsap'
+import { Z_LAYERS } from '@/logic/constants/visuals'
 
 const props = defineProps<{
   item: { name: string; qty: number | string }
@@ -159,7 +160,7 @@ const onItemMouseLeave = (event: MouseEvent) => {
   border-radius: 6px;
   font-weight: bold;
   cursor: pointer;
-  z-index: 2;
+  z-index: calc(v-bind('Z_LAYERS.MAP_FLOOR') + 1);
 }
 
 .item-name {

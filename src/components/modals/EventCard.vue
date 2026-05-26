@@ -60,6 +60,55 @@ const openParticipationModal = () => {
   })
 }
 
+const onCardHover = (event: MouseEvent, isEntering: boolean) => {
+  const card = event.currentTarget as HTMLElement
+  if (!card) return
+  if (isEntering) {
+    gsap.to(card, {
+      borderColor: 'rgba(255, 215, 0, 0.5)',
+      y: -2,
+      duration: 0.2,
+      ease: 'power2.out',
+      overwrite: 'auto'
+    })
+  } else {
+    gsap.to(card, {
+      borderColor: 'rgba(255, 255, 255, 0.1)',
+      y: 0,
+      duration: 0.2,
+      ease: 'power2.out',
+      overwrite: 'auto',
+      clearProps: 'borderColor,transform'
+    })
+  }
+}
+
+const onBtnHover = (event: MouseEvent, isEntering: boolean) => {
+  const btn = event.currentTarget as HTMLElement
+  if (!btn || btn.hasAttribute('disabled')) return
+  const isAction = btn.classList.contains('action')
+  if (isEntering) {
+    gsap.to(btn, {
+      background: isAction ? 'var(--yellow)' : 'rgba(255, 255, 255, 0.12)',
+      y: -2,
+      borderColor: isAction ? 'var(--white)' : 'rgba(255, 255, 255, 0.2)',
+      duration: 0.2,
+      ease: 'power2.out',
+      overwrite: 'auto'
+    })
+  } else {
+    gsap.to(btn, {
+      background: isAction ? 'var(--yellow)' : 'rgba(255, 255, 255, 0.05)',
+      y: 0,
+      borderColor: isAction ? 'var(--white)' : 'rgba(255, 255, 255, 0.1)',
+      duration: 0.2,
+      ease: 'power2.out',
+      overwrite: 'auto',
+      clearProps: 'transform,background,borderColor'
+    })
+  }
+}
+
 onMounted(() => {
   updateTime()
   
@@ -92,6 +141,8 @@ onUnmounted(() => {
   <div
     class="event-card"
     :class="{ 'has-banner': typeof event.config === 'object' && event.config?.banner }"
+    @mouseenter="onCardHover($event, true)"
+    @mouseleave="onCardHover($event, false)"
   >
     <!-- Banner -->
     <div
@@ -131,6 +182,8 @@ onUnmounted(() => {
         <button 
           v-if="event.type === 'competition'" 
           class="retro-btn action"
+          @mouseenter="onBtnHover($event, true)"
+          @mouseleave="onBtnHover($event, false)"
           @click.stop="openParticipationModal"
         >
           PARTICIPAR
@@ -155,17 +208,10 @@ onUnmounted(() => {
   font-size: 8px;
   padding: 8px 12px;
   border-radius: 6px;
-  border: 2px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.05);
+  border: 2px solid Rgba(255, 255, 255, 0.1);
+  background: Rgba(255, 255, 255, 0.05);
   color: var(--white);
   cursor: pointer;
-  transition: all 0.2s;
-
-  &:hover:not(:disabled) {
-    background: rgba(255, 255, 255, 0.12);
-    transform: translateY(-2px);
-    border-color: rgba(255, 255, 255, 0.2);
-  }
 
   &:disabled {
     opacity: 0.5;
@@ -182,17 +228,11 @@ onUnmounted(() => {
 
 .event-card {
   background: $card-dark;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid Rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  transition: border-color 0.2s, transform 0.2s;
-
-  &:hover {
-    border-color: rgba(255, 215, 0, 0.5);
-    transform: translateY(-2px);
-  }
 
   .banner-box {
     height: 120px;
@@ -219,13 +259,13 @@ onUnmounted(() => {
     .event-id-icon {
       width: 40px;
       height: 40px;
-      background: rgba(0, 0, 0, 0.3);
+      background: Rgba(0, 0, 0, 0.3);
       border-radius: 8px;
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 20px;
-      border: 1px solid rgba(255, 255, 255, 0.05);
+      border: 1px solid Rgba(255, 255, 255, 0.05);
     }
 
     .event-main-meta {
@@ -245,7 +285,7 @@ onUnmounted(() => {
       font-size: 7px;
       padding: 2px 6px;
       border-radius: 4px;
-      background: rgba(59, 130, 246, 0.1);
+      background: Rgba(59, 130, 246, 0.1);
       color: var(--blue-bright);
       font-weight: bold;
       width: fit-content;
@@ -284,10 +324,10 @@ onUnmounted(() => {
       font-size: 8px;
       padding: 6px 12px;
       border-radius: 6px;
-      background: rgba(74, 222, 128, 0.1);
+      background: Rgba(74, 222, 128, 0.1);
       border: 1px solid var(--green-bright);
       color: var(--green-bright);
-      text-shadow: 0 0 8px rgba(74, 222, 128, 0.3);
+      text-shadow: 0 0 8px Rgba(74, 222, 128, 0.3);
     }
   }
 }

@@ -1,0 +1,143 @@
+@use "@/styles/core/_mixins" as *;
+@use "@/styles/core/tools" as *;
+
+.debug-menu {
+  background: rgba(15, 15, 25, 0.98);
+  border: 2px solid var(--yellow);
+  border-radius: 6px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  box-sizing: border-box;
+  max-height: 400px;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.9);
+  -webkit-will-change: transform, opacity;
+  will-change: transform, opacity;
+  @include gpu-layer;
+  position: relative;
+  @include smooth-scroll;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    pointer-events: none;
+  }
+}
+
+.debug-row {
+  display: flex;
+  gap: 4px;
+  .debug-btn { flex: 1; }
+}
+
+.debug-section {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+
+  .section-label {
+    font-size: 6px;
+    color: var(--yellow);
+    text-transform: uppercase;
+    margin-bottom: 2px;
+    opacity: 0.9;
+    letter-spacing: 0.5px;
+  }
+}
+
+.debug-btn {
+  @include btn-vicio('default', 'xs', true);
+  font-size: 7px !important;
+  height: 24px !important;
+  text-align: center;
+  padding: 0 4px !important;
+  
+  &.kill-btn { @include btn-vicio('danger', 'xs', true); }
+  &.heal-btn { @include btn-vicio('success', 'xs', true); }
+  &.search-btn { @include btn-vicio('info', 'xs', true); border-color: var(--yellow); }
+  &.catch-btn { 
+    @include btn-vicio('primary', 'xs', true); 
+    background: linear-gradient(135deg, var(--purple-light) 0%, var(--red) 100%);
+    border-color: var(--white);
+    margin-top: 2px;
+  }
+}
+
+.btn-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+}
+
+.mini-btn {
+  @include btn-vicio('neutral', 'xs', true);
+  height: 20px !important;
+  font-size: 6px !important;
+  padding: 0 !important;
+  border-color: rgba(255, 255, 255, 0.2);
+  
+  &.active {
+    background: var(--yellow) !important;
+    color: $black !important;
+    border-color: $white !important;
+    box-shadow: 0 0 10px rgba(250, 204, 21, 0.4);
+    filter: none !important;
+    will-change: filter;
+  }
+}
+
+.swap-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 24px;
+  
+  &.mt-1 { margin-top: 2px; }
+  
+  .swap-btn { 
+    @include btn-vicio('default', 'xs', true); 
+    width: 24px !important; 
+    height: 24px !important; 
+    font-size: 10px;
+    padding: 0 !important;
+  }
+  
+  .swap-input { 
+    width: 50px; 
+    background: $black; 
+    border: 1px solid rgba(255, 255, 255, 0.4); 
+    color: white; 
+    @include pixelated; 
+    font-size: 10px; 
+    text-align: center; 
+    height: 100%; 
+    border-radius: 2px;
+
+    &::-webkit-outer-spin-button,
+    &::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    &[type=number] {
+      -moz-appearance: textfield;
+      appearance: textfield;
+    }
+  }
+}
+
+.debug-footer { 
+  font-size: 5px; 
+  text-align: center; 
+  opacity: 0.4; 
+  margin-top: 6px;
+  letter-spacing: 1px;
+}

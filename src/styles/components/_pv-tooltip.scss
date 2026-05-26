@@ -1,0 +1,136 @@
+@use "@/styles/core/tools" as *;
+
+.pv-tooltip-wrapper {
+  display: inline-flex;
+  align-items: center;
+  -webkit-touch-callout: none !important;
+  -webkit-user-select: none !important;
+  user-select: none !important;
+}
+
+.pv-tooltip-teleported {
+  position: absolute;
+  z-index: var(--z-critical); // Above everything
+  pointer-events: none !important;
+  min-width: 120px;
+  max-width: 320px;
+  width: max-content;
+  
+  &.pos-top {
+    transform: translate(-50%, -100%);
+  }
+  &.pos-bottom {
+    transform: translate(-50%, 0);
+  }
+  &.pos-left {
+    transform: translate(-100%, -50%);
+  }
+  &.pos-right {
+    transform: translate(0, -50%);
+  }
+}
+
+.tooltip-animate-wrapper {
+  @include tooltip-premium;
+  position: relative;
+  will-change: transform, opacity;
+  
+  .tooltip-content {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .pv-tooltip-title {
+    @include pixelated;
+    font-size: 8px;
+    color: var(--yellow);
+    text-shadow: 1px 1px 0px rgba(0, 0, 0, 0.5);
+    padding-bottom: 8px;
+    margin-bottom: 8px;
+    line-height: 1.4;
+    display: block;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+
+    &:last-child {
+      margin-bottom: 0;
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+  }
+
+  .pv-tooltip-desc {
+    @include pixelated;
+    display: block;
+    color: rgba(241, 245, 249, 0.9);
+    font-size: 9px; 
+    line-height: 1.6;
+    white-space: pre-wrap;
+
+    .symbol-align {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      vertical-align: middle;
+      line-height: 0;
+      margin: 0 2px;
+      transform: translateY(-1px);
+      font-size: 1.2em; 
+
+      &.is-boost {
+        color: #4ade80; // Green
+        filter: drop-shadow(0 0 2px rgba(74, 222, 128, 0.4));
+        will-change: filter;
+      }
+      &.is-debuff {
+        color: #f87171; // Red
+        filter: drop-shadow(0 0 2px rgba(248, 113, 113, 0.4));
+        will-change: filter;
+      }
+    }
+  }
+
+  .tooltip-arrow {
+    position: absolute;
+    width: 0;
+    height: 0;
+    border: 6px solid transparent;
+    z-index: v-bind('Z_LAYERS.MAP_SPAWNS');
+  }
+
+  .pos-top & {
+    .tooltip-arrow {
+      top: 100%;
+      left: calc(50% + var(--arrow-x, 0px));
+      transform: translatex(-50%);
+      border-top-color: var(--yellow);
+    }
+  }
+
+  .pos-bottom & {
+    .tooltip-arrow {
+      bottom: 100%;
+      left: calc(50% + var(--arrow-x, 0px));
+      transform: translatex(-50%);
+      border-bottom-color: var(--yellow);
+    }
+  }
+
+  .pos-left & {
+    .tooltip-arrow {
+      left: 100%;
+      top: calc(50% + var(--arrow-y, 0px));
+      transform: translatey(-50%);
+      border-left-color: var(--yellow);
+    }
+  }
+
+  .pos-right & {
+    .tooltip-arrow {
+      right: 100%;
+      top: calc(50% + var(--arrow-y, 0px));
+      transform: translatey(-50%);
+      border-right-color: var(--yellow);
+    }
+  }
+}

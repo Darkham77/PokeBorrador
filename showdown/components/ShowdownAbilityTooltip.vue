@@ -65,7 +65,9 @@ const onLeave = (el: Element, done: () => void) => {
           <span class="poke-ref">{{ pokemonName }}</span>
         </div>
         <div class="tooltip-desc-section">
-          <p class="desc-text">{{ abilityDesc }}</p>
+          <p class="desc-text">
+            {{ abilityDesc }}
+          </p>
         </div>
       </div>
     </Transition>
@@ -77,21 +79,21 @@ const onLeave = (el: Element, done: () => void) => {
   position: absolute;
   bottom: calc(100% + 8px);
   left: 50%;
-  transform: translateX(-50%);
+  transform: Translatex(-50%);
   z-index: 150;
   width: 250px;
   pointer-events: none;
 }
 
 .ability-tooltip-card {
-  background: linear-gradient(135deg, rgba(12, 14, 25, 0.96) 0%, rgba(24, 28, 50, 0.98) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: linear-gradient(135deg, Rgba(12, 14, 25, 0.96) 0%, Rgba(24, 28, 50, 0.98) 100%);
+  border: 1px solid Rgba(255, 255, 255, 0.15);
   border-radius: 12px;
   box-shadow: 
-    0 -10px 25px rgba(0, 0, 0, 0.7),
-    0 0 10px rgba(96, 165, 250, 0.2);
+    0 -10px 25px Rgba(0, 0, 0, 0.7),
+    0 0 10px Rgba(96, 165, 250, 0.2);
   padding: 12px;
-  backdrop-filter: blur(8px);
+  backdrop-filter: Blur(8px);
   pointer-events: auto;
 }
 
@@ -99,7 +101,7 @@ const onLeave = (el: Element, done: () => void) => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
+  border-bottom: 1px dashed Rgba(255, 255, 255, 0.1);
   padding-bottom: 6px;
   margin-bottom: 8px;
 }
@@ -125,7 +127,7 @@ const onLeave = (el: Element, done: () => void) => {
     line-height: 1.4;
     color: #e5e5ea;
     margin: 0;
-    text-shadow: 1px 1px 0px rgba(0,0,0,0.5);
+    text-shadow: 1px 1px 0px Rgba(0,0,0,0.5);
   }
 }
 </style>

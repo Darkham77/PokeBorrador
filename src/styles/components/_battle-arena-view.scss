@@ -1,0 +1,68 @@
+@use "@/styles/core/_mixins" as *;
+
+.battle-arena {
+  position: relative;
+  width: 100%;
+  flex: 1;
+  background: black;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  
+  @media (min-width: 1081px) {
+    grid-area: arena;
+    height: 100% !important;
+  }
+}
+
+.battle-arena-content { position: absolute; inset: 0; overflow: hidden; @include pixelated; }
+.battle-sprites { position: absolute; inset: 0; pointer-events: none; z-index: calc(var(--z-base) + 10); }
+
+.battle-info-container {
+  position: absolute; inset: 0; z-index: calc(var(--z-base) + 30);
+  padding: 4cqw; display: flex; flex-direction: column; pointer-events: none;
+  @media (max-width: 600px) { padding: 2cqw; }
+}
+
+.combatant-info-wrap { pointer-events: auto; }
+.enemy-side { align-self: flex-start; }
+.player-side { align-self: flex-end; margin-top: auto; }
+
+/* Animaciones laterales diferenciadas */
+.hud-fade-enemy-enter-active, .hud-fade-enemy-leave-active,
+.hud-fade-player-enter-active, .hud-fade-player-leave-active { 
+   
+  @include gpu-layer;
+}
+
+.hud-fade-enemy-enter-from, .hud-fade-enemy-leave-to { opacity: 0; transform: translate(-20px) scale(0.98); }
+.hud-fade-player-enter-from, .hud-fade-player-leave-to { opacity: 0; transform: translate(20px) scale(0.98); }
+
+/* --- ANIMACIONES DE ENTRENADOR Y TRANSICIONES --- */
+.global-transition-overlay {
+  position: absolute; inset: 0; background: black; z-index: var(--z-max);
+  pointer-events: none;
+}
+
+.fade-overlay-enter-active, .fade-overlay-leave-active {  }
+.fade-overlay-enter-from, .fade-overlay-leave-to { opacity: 0; }
+
+.trainer-entity {
+  z-index: var(--z-map-spawns);
+  display: flex; align-items: flex-end; justify-content: center;
+  will-change: transform, opacity;
+}
+
+.trainer-sprite-wrapper {
+  width: 100%; height: 100%; display: flex; align-items: flex-end; justify-content: center;
+  padding-bottom: 10%; // Alineación base
+}
+
+.trainer-image {
+  height: 90%; width: auto; object-fit: contain;
+  will-change: transform, filter, opacity;
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5));
+  @include pixelated;
+}
