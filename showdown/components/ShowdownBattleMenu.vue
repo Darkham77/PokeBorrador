@@ -145,10 +145,7 @@ const handleSwitchSelection = (targetIndex: number) => {
             <div class="move-info">
               <span class="move-name">{{ getMoveDisplayName(moveId) }}</span>
               <div class="move-meta">
-                <span
-                  v-if="getMovePPInfo(moveId)"
-                  class="move-pp"
-                >{{ getMovePPInfo(moveId) }}</span>
+                <span class="move-pp" v-if="getMovePPInfo(moveId)">{{ getMovePPInfo(moveId) }}</span>
                 <span class="move-type-label">{{ getMoveType(moveId).toUpperCase() }}</span>
               </div>
             </div>
