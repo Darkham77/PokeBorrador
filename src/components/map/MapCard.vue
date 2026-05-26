@@ -851,7 +851,8 @@ const spawnGrid = computed(() => {
     const isVisitor = !!(props.map.weather?.[weather]?.visitors as Record<string, unknown>)?.[id]
     const isExclusive = !!(props.map.weather?.[weather]?.exclusive as Record<string, unknown>)?.[id]
     const isFishingActive = !!props.map.fishing?.pool?.includes(id)
-    const isWildActive = wildList.includes(id) || isVisitor || isExclusive || isFishingActive
+    const hasWildRestrictions = !!props.map.wild
+    const isWildActive = !hasWildRestrictions || wildList.includes(id) || isVisitor || isExclusive || isFishingActive
 
     return isWildActive && getWeatherMultiplier(id, weather) > 0
   })

@@ -75,7 +75,7 @@ describe('encounters.js', () => {
 
   it('should not block exclusive weather spawns by type-based weather multipliers', async () => {
     const { pokemonDataProvider } = await import('@/logic/providers/pokemonDataProvider')
-    ;(pokemonDataProvider.getMaps as any).mockReturnValueOnce([
+    vi.mocked(pokemonDataProvider.getMaps).mockReturnValueOnce([
       {
         id: 'route24',
         wild: { day: ['pidgey'] },
@@ -84,16 +84,36 @@ describe('encounters.js', () => {
         weather: {
           storm: { exclusive: ['zapdos'] }
         }
-      } as any
-    ])
-    ;(pokemonDataProvider.getPokemonData as any).mockImplementation((id: string) => {
-      if (id === 'zapdos') return { type: 'electric', type2: 'flying', hp: 90, atk: 90, def: 85, spa: 125, spd: 90, spe: 100 } as any
-      return { type: 'flying', hp: 40, atk: 45, def: 40, spa: 35, spd: 35, spe: 56 } as any
+      }
+    ] as unknown as ReturnType<typeof pokemonDataProvider.getMaps>)
+
+    vi.mocked(pokemonDataProvider.getPokemonData).mockImplementation((id: string) => {
+      if (id === 'zapdos') {
+        return {
+          type: 'electric',
+          type2: 'flying',
+          hp: 90,
+          atk: 90,
+          def: 85,
+          spa: 125,
+          spd: 90,
+          spe: 100
+        } as unknown as ReturnType<typeof pokemonDataProvider.getPokemonData>
+      }
+      return {
+        type: 'flying',
+        hp: 40,
+        atk: 45,
+        def: 40,
+        spa: 35,
+        spd: 35,
+        spe: 56
+      } as unknown as ReturnType<typeof pokemonDataProvider.getPokemonData>
     })
 
     const result = await generateEncounter(
       'route24',
-      mockState as any,
+      mockState as unknown as Parameters<typeof generateEncounter>[1],
       { forceEncounter: true, weather: 'storm' }
     )
     expect(result).toBeDefined()

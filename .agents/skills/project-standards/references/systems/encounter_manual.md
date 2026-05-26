@@ -53,6 +53,10 @@ Advanced weather types (Thunderstorm, Heatwave, blizzard, etc.) do NOT have auto
 
 When resolving biome-specific combat overlays (e.g., dynamic bushes, rocks, boxes), highly specific biomes like `isArctic` MUST take precedence over generic biomes like `isCave` in the resolution hierarchy (`bushLibrary.ts`). This ensures that unique maps (such as Seafoam Islands / Islas Espuma) receive their correct specialized environmental assets and tinting.
 
+### 5.5 Weather Multiplier Bypass for Exclusives
+
+Pokémon designated as weather-exclusives in the location configuration must bypass the type-based weather block/debuff multipliers of their own active weather. This ensures type-restricted species (e.g. Zapdos, a Flying-type) can correctly spawn during the weather condition (e.g. Storm) that introduces them.
+
 ---
 
 ## 6. Encounter Quality (IVs and Potential)

@@ -101,6 +101,10 @@ The environment state (weather, cycle) must be calculated once at the parent lev
 
 When calculating weather, a `null` or `undefined` global state MUST trigger the deterministic `getRouteWeather` function. Skipping this check (e.g. `if (weather !== 'clear')`) when the value is `null` causes the system to omit climate-injected visitors, breaking the atmospheric experience.
 
+### 7.3 Fallback for Undefined Spawn Lists
+
+When computing the route spawn grid (`spawnGrid` in `MapCard.vue`), if the map configuration does not specify any cycle-based wild spawn lists (`props.map.wild` is undefined), the system must default to active wild status (`isWildActive = true`) for all candidate species. This preserves rendering logic for custom maps or mock test instances where cyclic schedules are omitted.
+
 ## 8. Weather & Terrain Resolution Rules
 
 ### 8.1 Dual-Type Modifier Evaluation
