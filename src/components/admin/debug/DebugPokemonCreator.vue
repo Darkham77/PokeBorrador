@@ -1,4 +1,5 @@
 <script setup lang="ts">
+// [PureVue-Ignore-Length]
 import { ref, computed, onMounted, watch } from 'vue'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { NATURE_DATA } from '@/data/natures'

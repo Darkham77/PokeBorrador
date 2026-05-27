@@ -220,6 +220,7 @@ When refactoring legacy or generic components:
 - **Z-Index Standardization**:
   - **MANDATORY**: Never use hardcoded numbers for `z-index` (e.g., `z-index: 10;`). Use CSS variables (`var(--z-low)`, `var(--z-base)`, `var(--z-modal)`, `var(--z-critical)`) or relative calculations `calc(var(--z-base) +/- X)` for consistent layering.
   - **Single Source of Truth**: All layering constants MUST be defined in `src/logic/constants/visuals.ts`. The use of hardcoded integers is strictly forbidden.
+  - **Relative Map Layering**: When layering elements over the map floor or map spawns (e.g., in minigames, map markers, or modal feedback overlays), use relative calculations based on standard anchors: `calc(var(--z-map-floor) + X)` or `var(--z-map-spawns)` rather than arbitrary hardcoded integers.
 - **Unified Tag Components (Type Tags)**: Avoid replicating CSS declarations or ad-hoc templates for elemental types. Always use the centralized `PokemonTypeTag.vue` component, which enforces sharp `@include pixelated` styling, proper color variables, and respects layout standardizations without SASS duplication.
 - **GPU Promotion**: Any element applying a `filter` or `backdrop-filter` MUST include an explicit `will-change: filter` or `will-change: backdrop-filter` to prevent rendering jank.
 - **Modern Control Flow**: The legacy ternary `if()` function is deprecated in SASS 1.8+. Always use standard `@if / @else` blocks for conditional styling logic to ensure build-log cleanliness.

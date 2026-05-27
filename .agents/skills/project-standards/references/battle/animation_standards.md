@@ -337,3 +337,13 @@ To maintain premium tactical feedback, elements in a selected (`.selected`) or a
 
 - **Hover Entrance**: Scale (`scale: 1.02` to `1.03`) and lift (`y: -3`) the card smoothly. Ensure the border color transitions to its corresponding high-contrast tier color or active glow.
 - **Hover Leave (Restoration)**: On `mouseleave`, check if the card has the `selected` or `is-active` class. Animate the properties back to the specific selected values (e.g., target scale `0.98` and tier glow for combat active cards, or target scale `1` and blue border/glow for standard selected inventory/box cards) before calling `clearProps` in `onComplete`. This guarantees seamless transitions without visual "snaps" or layout jumps.
+
+## 27. GSAP Callback Reference Null Safety
+
+To prevent the `GSAP target null not found` console warnings when a component starts to unmount during hover or exit animations (e.g., `MapCard.vue`), all asynchronous GSAP callbacks (`onComplete`, `onStart`, `onUpdate`) MUST check that the target DOM references are not null before performing mutations or applying styles.
+- **Rule**: Wrap callback operations in null checks: `if (elementRef.value) { ... }`.
+
+## 28. Vue Transitions and Manual CSS Animations in Minigames
+
+To prevent violating the zero-manual-animations rule, standard CSS transition definitions (e.g., `.fade-enter-active`) and Vue `<Transition>` tags should be avoided in game modals and minigames unless coordinated with the GSAP engine. If a simple modal or minigame requires toggle feedback, use direct reactive visibility states instead of uncoordinated CSS transitions to maintain deterministic timing.
+

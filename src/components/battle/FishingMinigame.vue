@@ -249,14 +249,12 @@ onUnmounted(() => {
       </div>
 
       <!-- Feedback -->
-      <Transition name="fade">
-        <div
-          v-if="feedback"
-          class="game-feedback pixel-text"
-        >
-          {{ feedback }}
-        </div>
-      </Transition>
+      <div
+        v-if="feedback"
+        class="game-feedback pixel-text"
+      >
+        {{ feedback }}
+      </div>
     </div>
   </BaseModal>
 </template>
@@ -348,7 +346,7 @@ onUnmounted(() => {
     @include pixelated;
     font-size: 16px;
     box-shadow: 0 0 15px Rgba(10, 132, 255, 0.4);
-    z-index: 2;
+    z-index: calc(var(--z-map-floor) + 1);
     position: relative;
   }
 
@@ -381,18 +379,8 @@ onUnmounted(() => {
   padding: 12px 24px;
   border-radius: 12px;
   border: 1px solid Rgba(255, 77, 77, 0.3);
-  z-index: 10;
+  z-index: var(--z-map-spawns);
   text-align: center;
   box-shadow: 0 4px 20px Rgba(0, 0, 0, 0.5);
-}
-
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.2s ease;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
 }
 </style>

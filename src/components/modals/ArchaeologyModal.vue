@@ -416,7 +416,6 @@ onUnmounted(() => {
   cursor: pointer;
   position: relative;
   overflow: hidden;
-  transition: background-color 0.2s;
 
   &:hover:not(.is-dug) {
     background: #92400e;
