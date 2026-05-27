@@ -12,6 +12,7 @@ import DebugModalsTab from './debug/DebugModalsTab.vue'
 import DebugMapTab from './debug/DebugMapTab.vue'
 import DebugMissionsTab from './debug/DebugMissionsTab.vue'
 import DebugAudioAnimTab from './debug/DebugAudioAnimTab.vue'
+import DebugTrainersTab from './debug/DebugTrainersTab.vue'
 
 import BaseModal from '@/components/common/BaseModal.vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
@@ -82,6 +83,7 @@ const selectedCategory = ref('stats')
               { id: 'stats', label: 'STATS', desc: 'Atributos del jugador, dinero, elo y facción.' },
               { id: 'items', label: 'ITEMS', desc: 'Añadir objetos al inventario.' },
               { id: 'pokes', label: 'POKES', desc: 'Gestión de Pokedex y equipo.' },
+              { id: 'trainers', label: 'ENTREN', desc: 'Simular combates contra entrenadores, policías y líderes.' },
               { id: 'map', label: 'MAPA', desc: 'Visualización de grilla y rendimiento.' },
               { id: 'missions', label: 'MISI', desc: 'Control de misiones de guardería.' },
               { id: 'time', label: 'TIEMPO', desc: 'Simulación de ciclos y climas.' },
@@ -118,6 +120,9 @@ const selectedCategory = ref('stats')
           
           <DebugPokemonTab
             v-if="selectedCategory === 'pokes'"
+          />
+          <DebugTrainersTab
+            v-if="selectedCategory === 'trainers'"
           />
           <DebugMapTab
             v-if="selectedCategory === 'map'"

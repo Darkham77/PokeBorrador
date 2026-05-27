@@ -304,7 +304,7 @@ watch(() => battleStore.isBattleActive, (active) => {
                 :style="{ filter: 'var(--atmosphere-filter)' }"
               >
                 <img 
-                  :src="getAssetUrl(ASSET_TYPES.TRAINER, battle?.trainerName || 'entrenador')" 
+                  :src="getAssetUrl(ASSET_TYPES.TRAINER, battle?.trainerSprite || battle?.trainerName || 'entrenador')" 
                   class="trainer-image"
                   @error="(e: Event) => (e.target as HTMLImageElement).src = getAssetUrl(ASSET_TYPES.TRAINER, 'entrenador')"
                 >

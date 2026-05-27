@@ -34,6 +34,7 @@ export interface BattleState {
   isCrystalCave?: boolean;
   isTrainer: boolean;
   trainerName?: string;
+  trainerSprite?: string;
   isGym?: boolean;
   gymId?: string;
   weather: BattleWeather;

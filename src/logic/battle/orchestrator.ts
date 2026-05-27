@@ -102,6 +102,7 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
     _initialEnemy: finalEnemyPoke,
     _initialPlayer: playerPoke,
     isGym, gymId, isTrainer, enemyTeam,
+    trainerSprite: battleOptions.trainerSprite as string || undefined,
     playerTeam: ctx.gs.state.team,
     trainerName, locationId,
     isCave: FIRE_RED_MAPS.find(m => m.id === locationId)?.isCave || false,
@@ -192,7 +193,7 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
     
     if (isTrainer || isGym) {
       await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.TRAINER_ENTRY)
-      await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.T_VISUAL)
+      await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.T_VISUAL, 1000)
     } else {
       await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.WILD_ENTRY)
       if (ctx.activeBattle.value) ctx.activeBattle.value.enemy = finalEnemyPoke
@@ -247,9 +248,9 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
 
     if (isTrainer || isGym) {
       await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.TRAINER_ENCOUNTER)
-      await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.SHOW_DIALOGS)
+      await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.SHOW_DIALOGS, 1500)
       await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.TRAINER_RETREAT, 800)
-      await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.POKEMON_CALL, 100)
+      await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.POKEMON_CALL, 800)
       if (ctx.activeBattle.value) ctx.activeBattle.value.enemy = initialEnemy
     } else {
       await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.WILD_ENTRY)

@@ -83,31 +83,70 @@
   }
 
   .btn-magic-fill {
-    background: Rgba(255, 170, 0, 0.1);
-    border: 1px solid Rgba(255, 170, 0, 0.25);
-    color: var(--yellow);
-    width: 18px;
-    height: 18px;
-    border-radius: 5px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    font-size: 8px;
-    outline: none;
-    box-sizing: border-box;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 24px !important;
+    height: 24px !important;
+    min-width: 24px !important;
+    max-width: 24px !important;
+    aspect-ratio: 1 / 1 !important;
+    border-radius: 6px !important;
+    background: #1e1c1a !important;
+    border: 1.5px solid #7c3aed !important; // default magic wand purple border
+    box-shadow: 0 2px 0 #4c1d95 !important;
+    color: #fff !important;
+    font-size: 11px !important;
+    cursor: pointer !important;
+    outline: none !important;
+    box-sizing: border-box !important;
+    padding: 0 !important;
+    transition: all 0.05s ease !important;
+    transform: none !important;
 
     &:hover {
-      background: var(--yellow);
-      color: #000;
-      transform: Scale(1.1);
+      border-color: #a78bfa !important;
+      background: #252220 !important;
+    }
+
+    &:active {
+      transform: Translatey(2px) !important;
+      box-shadow: none !important;
+    }
+
+    // Brown/Dice variant
+    &.btn-random-fill {
+      border-color: #8e622e !important;
+      box-shadow: 0 2px 0 #5c3e1c !important;
+
+      &:hover {
+        border-color: #c09158 !important;
+        background: #252220 !important;
+      }
+
+      &:active {
+        transform: Translatey(2px) !important;
+        box-shadow: none !important;
+      }
     }
 
     &.lg {
-      width: 24px;
-      height: 24px;
-      border-radius: 6px;
-      font-size: 11px;
+      width: 28px !important;
+      height: 28px !important;
+      min-width: 28px !important;
+      max-width: 28px !important;
+      font-size: 13px !important;
+      border-radius: 8px !important;
+      box-shadow: 0 3px 0 #4c1d95 !important;
+
+      &.btn-random-fill {
+        box-shadow: 0 3px 0 #5c3e1c !important;
+      }
+
+      &:active {
+        transform: Translatey(3px) !important;
+        box-shadow: none !important;
+      }
     }
   }
 
