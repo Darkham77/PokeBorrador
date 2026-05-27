@@ -1106,3 +1106,16 @@ The combat log container MUST remain isolated from administrative controls.
 To maintain strict competitive integrity inside the combat engine while offering a localized premium UI experience:
 - **Bidirectional Worker Translation**: When utilizing an engine written in English (e.g., `@pkmn/sim`) alongside a Spanish interface, you MUST implement deterministic bidirectional translator maps (such as `NATURE_MAP_ES_TO_EN` / `ABILITY_MAP_ES_TO_EN` and their dynamic inversions) inside the Web Worker thread (`ShowdownWorker.ts`).
 - **Translation Execution Flow**: Translate all Spanish user choices (types, moves, abilities, natures) to their corresponding English keys before submitting them to the simulator. Conversely, intercept all outputs and status frames from the simulator and translate them back to Spanish before propagating them to the Pinia store and the reactive HUD cards. This ensures perfect mathematical stat modifiers (+10%/-10% nature boosts, STAB calculations) apply correctly inside the simulator engine without causing UI leaks.
+
+---
+
+## 🏛️ Battle Engine Integrity (FSM)
+
+To ensure stability and 1:1 parity between visual execution and state flow:
+
+- **Documentation Parity**: The code MUST remain a 1:1 implementation of the Mermaid diagrams in `battle_mechanics_manual.md`.
+- **Deterministic Flow**: Avoid naked `setTimeout` calls in combat logic. Initialization sequences and FSM state transitions MUST be strictly synchronized with `await animations.triggerX()` or GSAP promises to prevent engine deadlocks and race conditions. Hardcoded timers for animation waiting are forbidden.
+- **Visual Completion**: FSM states representing visual actions (Damage, Faint, Catch) MUST wait for the corresponding GSAP promise resolution.
+- **Mandatory Audit**: Run `validate_fsm_diagrams.ts`, `validate_fsm_implementation.ts`, and `validate_fsm_flow_parity.ts` (or `npm run validate:fsm`) before every commit that touches battle logic. Zero critical errors are allowed.
+- **Substate Parity**: All sub-states defined in `battleStateMachine.ts` MUST be actively used in logic or UI. Obsolete or orphaned states (e.g., `REORDER_TEAM`) must be removed to maintain a clean FSM audit and prevent architectural drift.
+

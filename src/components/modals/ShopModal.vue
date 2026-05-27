@@ -13,10 +13,12 @@ import ShopItemCard from './shop/ShopItemCard.vue'
 
 interface Props {
   show?: boolean
+  initialCategory?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  show: false
+  show: false,
+  initialCategory: 'todos'
 })
 
 const emit = defineEmits<{
@@ -30,7 +32,7 @@ const isSmallScreen = ref(window.innerWidth <= 950)
 const handleResize = () => { isSmallScreen.value = window.innerWidth <= 950 }
 useWindowListener('resize', handleResize)
 
-const activeTab = ref('todos')
+const activeTab = ref(props.initialCategory || 'todos')
 const search = ref('')
 
 interface ShopItem {
@@ -83,7 +85,7 @@ watch([activeTab, search], () => {
 // Disparar al abrir el modal y resetear filtros
 watch(() => props.show, (val) => {
   if (val) {
-    activeTab.value = 'todos'
+    activeTab.value = props.initialCategory || 'todos'
     search.value = ''
     animateGrid()
   }

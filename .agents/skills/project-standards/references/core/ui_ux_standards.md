@@ -604,3 +604,32 @@ To prevent false positive translation leaks in static database validations:
 To ensure optimal GPU performance and eliminate race conditions or memory leaks in dynamic layouts:
 - **Zero-Timer & Zero-Variable Coordination**: When showing dynamic tooltips on hover or tap (e.g., abilities, natures), do NOT use manual CSS transition timers, `setTimeout`, or custom coordination state variables in JS.
 - **Vue Transition Lifecycle hooks**: Bind GSAP transitions directly to Vue's `<Transition :css="false">` lifecycle hooks (`@before-enter`, `@enter`, `@leave`). Set the initial transparent state in `beforeEnter`, execute the animation inside `enter` (calling the `done` callback on complete), and reverse it cleanly in `leave`, ensuring smooth 60fps animations.
+
+### 26. Z-Index Governance & Virtual World Layering
+
+To maintain a coherent sense of depth in the 2D-perspective virtual world and prevent layout conflicts:
+
+- **Z-Index Single Source of Truth**: All visual layering constants MUST be defined in `src/logic/constants/visuals.ts`. The use of JSON files or hardcoded integers is forbidden. SCSS variables in `_variables.scss` must reflect these TS constants.
+- **Strict Z-Index Layering**: The use of magic z-index numbers (`1`, `9999`) or raw CSS variables with unsafe fallbacks is strictly prohibited. You MUST reactively bind the official TS constant from the system using `calc(v-bind('Z_LAYERS.MAP_SPAWNS') + X)`.
+- **Layering Matrix (relative to `--z-map-spawns` [Default: 10])**:
+
+| Layer                     | Formula                         | Logical Order        |
+| :------------------------ | :------------------------------ | :------------------- |
+| **Environment (Floor)**   | `calc(var(--z-base) + 1)`       | 1 (Bottom)           |
+| **Shadows**               | `calc(var(--z-map-spawns) - 7)` | 3                    |
+| **Grass (Back)**          | `calc(var(--z-map-spawns) - 5)` | 5                    |
+| **Pokemon/Spawns**        | `var(--z-map-spawns)`           | 10 (Base)            |
+| **Sprite Layer**          | `calc(var(--z-map-spawns) + 1)` | 11                   |
+| **Shiny Sparkles**        | `calc(var(--z-map-spawns) + 2)` | 12                   |
+| **Status Icons (Emojis)** | `calc(var(--z-map-spawns) + 3)` | 13                   |
+| **Auras/Screens**         | `calc(var(--z-map-spawns) + 4)` | 14                   |
+| **Ground Effects**        | `calc(var(--z-map-spawns) + 5)` | 15 (Over feet)       |
+| **Grass (Front)**         | `calc(var(--z-map-spawns) + 5)` | 15 (Top)             |
+| **Tactical FX (🛡️, 🎯)**  | `calc(var(--z-map-spawns) + 5)` | 15 (Global Critical) |
+
+### 27. Special Layout and Maquetación Rules
+
+- **Emoji Bounding Box descent (Windows)**: When vertically centering emoji sprites or badges (e.g., `👑`) inside flex layouts, Segoe UI Emoji features substantial top ascent padding on Windows. Apply a manual offset (e.g., `transform: translateY(-4px) !important`) to counteract this baseline descent and center it visually.
+- **Select Dropdown Aesthetic Parity**: When styling select elements inside custom dark admin panels, always override default browser styles with `appearance: none`, specify a premium custom chevron SVG background, and use a dark background for `option` elements to maintain aesthetic parity with standard text inputs.
+- **Strict 2D CSS Grid Sizing**: For grid-based minigames or boards, always specify both `grid-template-columns` and `grid-template-rows` explicitly (e.g., using `repeat(N, 1fr)`) to prevent cell heights/widths from shifting dynamically based on content (such as text emojis or temporary graphics).
+

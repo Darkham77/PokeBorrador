@@ -3,11 +3,13 @@ import { computed } from 'vue'
 import { useUIStore } from '@/stores/ui'
 import { useWarStore } from '@/stores/war'
 import { SHOP_ITEMS } from '@/data/items'
+import { useGameStore } from '@/stores/game'
 import BaseModal from '@/components/common/BaseModal.vue'
 import WarShopItemCard from './WarShopItemCard.vue'
 
 const uiStore = useUIStore()
 const warStore = useWarStore()
+const gameStore = useGameStore()
 
 const isOpen = computed({
   get: () => uiStore.isWarShopOpen,
@@ -15,7 +17,32 @@ const isOpen = computed({
 })
 
 const warItems = computed(() => {
-  return SHOP_ITEMS.filter(item => (item.warPrice || 0) > 0)
+  const coins = warStore.warCoins || 0
+  const trainerLevel = gameStore.state.trainerLevel || 1
+
+  return SHOP_ITEMS
+    .filter(item => (item.warPrice || 0) > 0)
+    .slice()
+    .sort((a, b) => {
+      const aUnlocked = trainerLevel >= (a.unlockLv || 1)
+      const bUnlocked = trainerLevel >= (b.unlockLv || 1)
+      const aAffordable = coins >= (a.warPrice || 0)
+      const bAffordable = coins >= (b.warPrice || 0)
+
+      const aCanBuy = aUnlocked && aAffordable
+      const bCanBuy = bUnlocked && bAffordable
+
+      if (aCanBuy !== bCanBuy) {
+        return aCanBuy ? -1 : 1
+      }
+      if (aUnlocked !== bUnlocked) {
+        return aUnlocked ? -1 : 1
+      }
+      if ((a.unlockLv || 1) !== (b.unlockLv || 1)) {
+        return (a.unlockLv || 1) - (b.unlockLv || 1)
+      }
+      return (a.warPrice || 0) - (b.warPrice || 0)
+    })
 })
 
 const closeWarShop = () => {

@@ -96,7 +96,7 @@ const mappedAwards = computed(() => mapStore.pendingAwards.map((a: PendingAward)
       :mission-sprites="missionSprites"
       :gym-rematches="8 - (gameStore.state.defeatedGyms?.length || 0)" 
       :gym-sprites="gymSprites"
-      :egg-count="gameStore.state.eggs?.length || 0"
+      :egg-count="breedingStore.warehouseEggs?.length || 0"
       :rival-event-active="activeEventData.active"
       :rival-event-text="activeEventData.text"
       :rival-event-icon="activeEventData.icon"

@@ -3,6 +3,8 @@ import { computed, ref, onMounted, nextTick, watch, onUnmounted } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 import { useGymsStore } from '@/stores/gyms'
+import { useModalStore } from '@/stores/modals'
+import { useBreedingStore } from '@/stores/breeding'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import { formatCurrency } from '@/logic/utils/formatters'
 import { SHOP_ITEMS } from '@/data/items'
@@ -10,6 +12,8 @@ import { SHOP_ITEMS } from '@/data/items'
 const _gameStore = useGameStore()
 const _uiStore = useUIStore()
 const gymsStore = useGymsStore()
+const modalStore = useModalStore()
+const breedingStore = useBreedingStore()
 
 const money = computed(() => _gameStore.state.money)
 const battleCoins = computed(() => _gameStore.state.battleCoins || 0)
@@ -37,6 +41,46 @@ const medalsBreakdown = computed(() => {
     .map(g => `${g.badge} ${g.badgeName} (${g.leader})`)
     
   return `Medallas obtenidas (${defeated.length}/8):\n${earnedList.map(item => `• ${item}`).join('\n')}\n\nDesbloquean nuevas zonas y Pokémon.`
+})
+
+/**
+ * Detalle dinámico de huevos en incubación y listos en la guardería
+ */
+const eggsBreakdown = computed(() => {
+  const incubating = _gameStore.state.eggs || []
+  const warehouse = breedingStore.warehouseEggs || []
+  
+  const lines: string[] = []
+  
+  if (incubating.length === 0 && warehouse.length === 0) {
+    return 'No tienes huevos en incubación ni en la guardería.\n¡Haz clic para ir a la Guardería!'
+  }
+  
+  if (incubating.length > 0) {
+    lines.push(`Incubando: ${incubating.length} ${incubating.length === 1 ? 'huevo' : 'huevos'}`)
+    incubating.forEach((egg, idx) => {
+      if (egg.ready || egg.steps <= 0) {
+        lines.push(`• Huevo ${idx + 1}: ¡Listo para nacer!🐣`)
+      } else {
+        lines.push(`• Huevo ${idx + 1}: ${Math.ceil(egg.steps).toLocaleString()} pasos`)
+      }
+    })
+  } else {
+    lines.push('No hay huevos en incubación.')
+  }
+  
+  lines.push('') // Separador de secciones
+  
+  if (warehouse.length > 0) {
+    lines.push(`En Guardería: ${warehouse.length} ${warehouse.length === 1 ? 'huevo sin reclamar' : 'huevos sin reclamar'}🥚`)
+  } else {
+    lines.push('No hay huevos pendientes en la Guardería.')
+  }
+  
+  lines.push('')
+  lines.push('Haz clic para abrir la Guardería.')
+  
+  return lines.join('\n')
 })
 
 /**
@@ -118,6 +162,9 @@ watch([money, battleCoins, medals, balls, eggCount], () => {
 }, { deep: true })
 
 onMounted(async () => {
+  // Cargar estado inicial de la guardería para sincronizar el almacén de huevos
+  breedingStore.loadDaycare()
+
   await nextTick()
   
   // Ejecución inicial
@@ -155,7 +202,10 @@ onUnmounted(() => {
       :description="`Saldo: ₱${(money || 0).toLocaleString()}. Moneda principal obtenida en combates y venta de objetos.`"
       position="bottom"
     >
-      <div class="hud-pill money-pill">
+      <div
+        class="hud-pill money-pill clickable-pill"
+        @click.stop="modalStore.open('Shop', { initialCategory: 'todos' })"
+      >
         <span class="currency-icon-money">₱</span>
         <span
           id="hud-money"
@@ -171,7 +221,10 @@ onUnmounted(() => {
       :description="`Saldo: ${(battleCoins || 0).toLocaleString()} BC. Moneda de élite obtenida en eventos y misiones especiales.`"
       position="bottom"
     >
-      <div class="hud-pill bc-pill">
+      <div
+        class="hud-pill bc-pill clickable-pill"
+        @click.stop="modalStore.open('BCShop')"
+      >
         <i class="fas fa-coins currency-icon-bc" />
         <span
           id="hud-bc"
@@ -187,7 +240,10 @@ onUnmounted(() => {
       :description="medalsBreakdown"
       position="bottom"
     >
-      <div class="hud-pill badge-pill">
+      <div
+        class="hud-pill badge-pill clickable-pill"
+        @click.stop="_uiStore.activeTab = 'gyms'; _uiStore.openHudGroup = null"
+      >
         <i class="fas fa-medal" />
         <span
           id="badge-count"
@@ -203,7 +259,10 @@ onUnmounted(() => {
       :description="`Total: ${balls}\n\n${ballsBreakdown}`"
       position="bottom"
     >
-      <div class="hud-pill ball-pill">
+      <div
+        class="hud-pill ball-pill clickable-pill"
+        @click.stop="modalStore.open('Shop', { initialCategory: 'pokeballs' })"
+      >
         <div class="ball-icon-wrap">
           <img
             src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40' width='40' height='40'><circle cx='20' cy='20' r='19' fill='%23222' stroke='%23111' stroke-width='1.5'/><path d='M1 20 A19 19 0 0 1 39 20 Z' fill='%23e63030'/><path d='M1 20 A19 19 0 0 0 39 20 Z' fill='%23f5f5f5'/><rect x='1' y='18' width='38' height='4' fill='%23111'/><circle cx='20' cy='20' r='6' fill='%23111'/><circle cx='20' cy='20' r='4' fill='%23f5f5f5'/><circle cx='18' cy='18' r='1.2' fill='%23ffffff' opacity='0.7'/></svg>"
@@ -224,13 +283,13 @@ onUnmounted(() => {
     <!-- HUEVOS -->
     <PVTooltip
       title="⚡ HUEVOS POKÉMON"
-      description="Huevos en proceso de incubación. Haz clic para ver detalles."
+      :description="eggsBreakdown"
       position="bottom"
     >
       <div
         id="hud-egg-container"
         class="hud-pill egg-pill"
-        @click.stop="_uiStore.toggleProfile()"
+        @click.stop="modalStore.open('Daycare')"
       >
         <span>🥚</span>
         <span
@@ -260,6 +319,12 @@ onUnmounted(() => {
   padding: 4px 2px;
   overflow: hidden;
   gap: 2px;
+
+  &.clickable-pill {
+    cursor: pointer;
+    transition: background-color 0.2s;
+    &:hover { background: Rgba($white, 0.05); }
+  }
 
   .pill-value {
     @include pixelated;

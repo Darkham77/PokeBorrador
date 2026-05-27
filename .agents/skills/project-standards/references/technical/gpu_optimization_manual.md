@@ -87,3 +87,16 @@ To ensure performance standards are maintained, the project uses automated stati
 - **Promotion Check**: The engine detects any usage of `filter` (especially in atmospheric overlays or Premium Shells) that lacks a corresponding `will-change` promotion within a 500-character window.
 - **Why**: Static verification prevents "GPU Stutter" in production by ensuring layers are promoted to the compositor BEFORE they are needed for transitions.
 - **Manual Verification**: Use the "Layer Borders" and "Paint Flashing" tools in Chrome DevTools to verify that atmospheric overlays (`::after` frames) maintain a single, stable compositor layer.
+
+---
+
+## 7. Atmospheric Filter Segregation
+
+To maintain image quality and prevent color contamination from environmental day/night or weather post-processing filters:
+
+- **Background Integrity**: Original pixel-art backgrounds (Map and Battle) MUST NOT be altered by day cycle post-processing (brightness/hue). They rely on dedicated textures (e.g., `_noche`, `_amanecer`).
+- **Targeted Filtering**:
+  - **Backgrounds**: Use `weatherOnlyFilter` on the background layer.
+  - **Pokémon Spawns & Combatants**: Use the **Isolation Wrapper Pattern**. Apply `weatherOnlyFilter` or `atmosphereFilter` only to a wrapper around the base `img` to keep FX (Shiny sparkles, Guardian auras, Status particles) and debug layers clean and vibrant.
+- **Source of Truth**: See [time_system_manual.md](../core/time_system_manual.md) for the implementation matrix.
+

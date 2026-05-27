@@ -347,3 +347,18 @@ To prevent the `GSAP target null not found` console warnings when a component st
 
 To prevent violating the zero-manual-animations rule, standard CSS transition definitions (e.g., `.fade-enter-active`) and Vue `<Transition>` tags should be avoided in game modals and minigames unless coordinated with the GSAP engine. If a simple modal or minigame requires toggle feedback, use direct reactive visibility states instead of uncoordinated CSS transitions to maintain deterministic timing.
 
+## 29. Advanced GSAP & CSS Interoperability Guidelines
+
+### GSAP Centering & CSS Transforms Clashing
+Avoid centering absolute elements with `transform: translate(-50%, -50%)` in CSS if GSAP is animating properties like `rotation` or `scale`. GSAP overrides the inline `transform` property, displacing the element. Center elements mathematically using absolute coordinates (`top: 50%; left: 50%`) and negative margins (`margin-top`, `margin-left`), leaving `transform` completely free for GSAP.
+
+### GPU-Accelerated Mask Shines
+To animate glowing weather rings, shiny rings, or winner badge flares, use CSS `mask-image` with standard `rotation`/`scale`/`opacity` properties instead of animating `filter: drop-shadow()` or `filter: blur()`. This shifts all calculations entirely to the GPU compositor layer, yielding 0 repaint cost.
+
+### GSAP Loading Spinner Watcher
+To satisfy the GSAP-only animation mandate for loading spinners without using manual CSS `@keyframes`, animate spinner rotation continuously using a GSAP tween reactively triggered inside a watch handler of the store loading state (e.g., `leaderboardLoading`) in `nextTick`.
+
+### Filter Cleanup Mandate
+Temporary visual effects (flashes, pulses) MUST use GSAP's `onComplete` with `clearProps: "filter"` to ensure no residual 0px filters remain as base layers.
+
+

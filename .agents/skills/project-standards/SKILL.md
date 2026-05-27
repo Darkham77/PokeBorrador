@@ -61,9 +61,7 @@ Consult these manuals for detailed implementation specifications:
 - **Retro Heart**: Pixel Art and Sharp typography (`Press Start 2P`) for game content.
 - **Pixel-Perfect**: Pixelated elements (sprites, items, badges) MUST use `@include pixelated`. This mixin handles browser fallbacks and typography sharpening. Typography for stats and headers must always be pixelated.
 - **Overlapping Sprite Stacking (Cards Deck)**: In retro-modern flex lists or reward displays, use negative margins (e.g. `margin-left: -16px` on sibling `.item-sprite` elements) to create a high-density, overlapping deck structure. Accompany this with a smooth hover micro-animation using GSAP transitions or CSS `:hover` that slightly scales (`scale(1.2)`), lifts (`translateY(-4px)`), and elevates the z-index (`z-index: 10`) of the targeted sprite to provide premium tactile feedback.
-- **Emoji Bounding Box descent (Windows)**: When vertically centering emoji sprites or badges (e.g., `👑`) inside flex layouts, Segoe UI Emoji features substantial top ascent padding on Windows. Apply a manual offset (e.g., `transform: translateY(-4px) !important`) to counteract this baseline descent and center it visually.
-- **Select Dropdown Aesthetic Parity**: When styling select elements inside custom dark admin panels, always override default browser styles with `appearance: none`, specify a premium custom chevron SVG background, and use a dark background for `option` elements to maintain aesthetic parity with standard text inputs.
-- **Strict 2D CSS Grid Sizing**: For grid-based minigames or boards, always specify both `grid-template-columns` and `grid-template-rows` explicitly (e.g., using `repeat(N, 1fr)`) to prevent cell heights/widths from shifting dynamically based on content (such as text emojis or temporary graphics).
+- **Maquetación y Detalles UI**: Las reglas específicas de maquetación (como alineaciones de Emojis en Windows, overrides de dropdowns select, y reglas de CSS Grid) han sido modularizadas en [ui_ux_standards.md](./references/core/ui_ux_standards.md).
 
 ### 2. GPU & Rendering
 
@@ -74,12 +72,7 @@ Consult these manuals for detailed implementation specifications:
 - **GSAP Filter Order**: When animating multiple filters in `PVSpriteFX`, the application order matters. Lighting filters (`Brightness`, `Contrast`) MUST be applied BEFORE outline or glow filters (`feMorphology`, `Drop-Shadow`) to prevent the effect from becoming washed out or losing sharpness.
 - **Organic Terrain Variation**: Combat terrain (`CombatGrass.vue`) MUST be unique for every encounter. A new random seed MUST be generated at the start of each battle to inject variations in scale (0.7x to 1.5x), horizontal flip, and small offsets, avoiding monotonous visual repetition.
 - **Tactical Status Standardization**: Tactical states (Protect, Endure, etc.) MUST be represented by unique, solid, high-visibility icons. Avoid using multiple dispersed particles for tactical states, as those are strictly reserved for altered statuses (Burn, Poison, etc.).
-- **Filter Cleanup Mandate**: Temporary visual effects (flashes, pulses) MUST use GSAP's `onComplete` with `clearProps: "filter"` to ensure no residual 0px filters remain as base layers.
-- **Nuclear Reset Pattern**: When resetting complex CSS filter stacks, always include the `filter` property itself in `clearProps` alongside custom variables (e.g., `--fx-main-glow`) to ensure a clean browser state. Avoid applying `filter` or `Drop-Shadow` to parent containers of sprites that have their own internal FX system (`PVSpriteFX`) to prevent cumulative color pollution.
-- **GSAP Exclusive Mandate**: All animations in the project (UI transitions, battle effects, map movements, atmospheric FX) MUST be implemented using GSAP. The use of CSS `@keyframes`, transitions, or `setTimeout`/`setInterval` for animation flow is STRICTLY FORBIDDEN.
-- **GSAP Centering & CSS Transforms Clashing**: Avoid centering absolute elements with `transform: translate(-50%, -50%)` in CSS if GSAP is animating properties like `rotation` or `scale`. GSAP overrides the inline `transform` property, displacing the element. Center elements mathematically using absolute coordinates (`top: 50%; left: 50%`) and negative margins (`margin-top`, `margin-left`), leaving `transform` completely free for GSAP.
-- **GPU-Accelerated Mask Shines**: To animate glowing weather rings, shiny rings, or winner badge flares, use CSS `mask-image` with standard `rotation`/`scale`/`opacity` properties instead of animating `filter: drop-shadow()` or `filter: blur()`. This shifts all calculations entirely to the GPU compositor layer, yielding 0 repaint cost.
-- **GSAP Loading Spinner Watcher**: To satisfy the GSAP-only animation mandate for loading spinners without using manual CSS `@keyframes`, animate spinner rotation continuously using a GSAP tween reactively triggered inside a watch handler of the store loading state (e.g., `leaderboardLoading`) in `nextTick`.
+- **GSAP Exclusive Mandate**: All animations in the project (UI transitions, battle effects, map movements, atmospheric FX) MUST be implemented using GSAP. The use of CSS `@keyframes`, transitions, or `setTimeout`/`setInterval` for animation flow is STRICTLY FORBIDDEN. Refer to [animation_standards.md](./references/battle/animation_standards.md) for details on CSS clashing, GPU shines, and filter cleanups.
 - **Zero-Timer & Zero-Variable Policy**: It is STRICTLY FORBIDDEN to use `setTimeout` or numeric timers to wait for visual completion. Sequential animation coordination MUST NOT be handled via reactive state variables (e.g., boolean flags or counters). You MUST use GSAP's native deterministic orchestration: timelines, promises (`await tween`), or `onComplete` callbacks.
 - **Zero Heavy Logic in Vue Templates**: Accessing databases, data providers (e.g., `DBRouter`, `pokemonDataProvider`, `sqlite`, `supabase`), or executing heavy transformations (`.map`, `.filter`, `.reduce`) inside `<template>` expressions or bindings is strictly prohibited. All UI data must be resolved in `<script>` and cached using reactive `computed` properties.
 - **Zero Serialization in Watchers**: Do not use `JSON.stringify` inside watch handlers. High-frequency watchers carrying serialization overhead saturate the CPU and cause severe frame drops.
@@ -133,11 +126,7 @@ Consult these manuals for detailed implementation specifications:
 - **Template Event Casting & Fallbacks**: When using strict TypeScript in `.vue` files, cast event targets in the template (e.g., `(e.target as HTMLImageElement)`) to satisfy `vue-tsc` checks. For dynamic assets that may not exist, always implement a graceful fallback handler like `@error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"` to cleanly hide missing items from the DOM and avoid raw broken image icons.
 - **Dependency Shield**: Scripts using external libraries must handle `ImportError` and provide installation instructions.
   - **Node.js 26+ Native Standards**:
-    - **Temporal API**: The legacy `Date` object is DEPRECATED for engine logic and timestamps. Use `Temporal` for all precise timing and durations.
-      - **Native-First Architecture**: Follow a "Native-First" approach by loading the `@js-temporal/polyfill` conditionally via `src/logic/utils/temporal-init.ts`. Global types MUST be provided via `tsconfig.json` (types array) and `src/types/env.d.ts` (global augmentation) instead of local imports to prevent namespace conflicts between native and polyfill types. Avoid importing `{ Temporal }` locally in Vue SFCs or normal utility modules.
-      - **Temporal API Comparison & Coercion**: When comparing `Temporal` objects, use the static compare method `Temporal.Instant.compare(now, range.start) >= 0` instead of native operators like `>=`. When coercing to strings, use `${obj}` or `String(obj)`. When coercing to numbers, use properties/methods of the object, not `+obj`. When concatenating, use `${str}${obj}` or `str.concat(obj)`. In templates, coerce to a string before rendering.
-      - **BigInt Precision**: When performing calculations with nanosecond precision (`epochNanoseconds`), ALWAYS use explicit `BigInt()` casts (e.g., `BigInt(instant.epochNanoseconds)`) to ensure consistency across all IDEs and TypeScript environments.
-      - **Atomicity**: To prevent time inconsistencies (clock skew/race conditions) and unnecessary system calls/allocations when chaining time formatting, always capture a single Temporal instance in a constant (e.g., `const now = Temporal.Now.instant().toZonedDateTimeISO('UTC')`) and perform subsequent calculations/formatting on that single instance.
+    - **Temporal API**: The legacy `Date` object is DEPRECATED for engine logic and timestamps. Use `Temporal` for all precise timing and durations. Refer to [dependency_management_manual.md](./references/technical/dependency_management_manual.md) for detailed guidelines on the Native-First polyfill structure, comparisons, coercions, and formatting.
     - **Map Upsert**: Use `Map.prototype.getOrInsertComputed` (or native patterns) for efficient cache lookups.
     - **Native Test Runner**: Use `node:test` for all pure logic unit tests (`npm run test:node`). This avoids the overhead of JSDOM/Vitest for non-UI logic.
     - **Dynamic Store Loading**: When writing logic code that is tested via the native test runner (`node:test`), avoid static imports of Vue/Pinia store modules. The native loader cannot resolve browser-specific ESM aliases (`@/`) or register Pinia contexts at import-time. Use dynamic imports protected by a `typeof window !== 'undefined'` check to bypass loading during tests.
@@ -161,10 +150,10 @@ The project uses a sophisticated audit and validation engine to ensure stability
   - **Module Prefix**: Use the `node:` prefix for all built-in module imports (e.g., `import fs from 'node:fs'`).
 - **Scratch Directory Mandate**: Any generated logs, text reports, summaries, or audit output files (regardless of file extension: `.txt`, `.log`, `.json`, etc.) created for review, debugging, or later study MUST be stored exclusively in the `scratch/` directory at the project root. Writing temporary report files, summaries, or logs in the project root, source directories, or any other arbitrary directory is strictly forbidden to preserve repository cleanliness.
 
-### 9. TypeScript Integrity & Zero-Ignore Policy
+### 6. TypeScript Integrity & Zero-Ignore Policy
 
 - **Zero-Ignore Policy**: The use of `@ts-ignore`, `@ts-nocheck`, or any variant that bypasses TypeScript compiler checks is STRICTLY FORBIDDEN.
-- **Verification Workflow**: Always run `npm run lint` BEFORE any commit operation. Type safety is non-negotiable (incorporated into the lint pipeline).
+- **Verification Workflow**: For daily development, run `npm run lint` (which includes type-checking) to verify syntax and type safety. Running `npm run audit:full` is mandatory before any commit operation to ensure the repository remains unbroken.
 - **SVG className Object Type-Safety**: SVG elements feature an `SVGAnimatedString` object for `.className` rather than a standard string. To prevent runtime type exceptions (e.g. `TypeError: className.includes is not a function`) during global event delegation, you MUST query `classList` (e.g. `el.classList.contains()`) or use array conversions (e.g. `Array.from(el.classList)`) instead of string-matching methods directly on `.className`.
 - **JSDoc Integrity**: When editing code (especially via `multi_replace_file_content`), ALWAYS verify the preservation of the `/**` opening tags. Deleting these tags breaks JSDoc transformation in esbuild/vite and leads to documentation/type generation failures.
 - **IDE & Workspace Config**: To ensure the IDE (like VS Code) applies the proper TypeScript program context and resolves development imports (e.g., `@vitejs/plugin-vue`) inside configuration files (e.g., `vite.config.ts`), these files must be explicitly declared in the root `tsconfig.json`'s `"include"` array.
@@ -172,40 +161,18 @@ The project uses a sophisticated audit and validation engine to ensure stability
 - **TypeScript Import Rigor**: Triple-slash references (e.g., `/// <reference types="vue" />`) are forbidden in `vite-env.d.ts` or any core file. Use standard ESM imports or `compilerOptions.types` in `tsconfig.json`.
 - **Strict Typification in Test Scripts**: Scripts used for auditing (like `tests/node/*.test.ts`) and unit tests (`*.spec.ts`) MUST follow the same strict type-safety rules as the source code. The use of `any` is forbidden in all test files to prevent silent failures and maintain linter consistency. Instead of bypassing compilation with `any`, declare a typed interface for your mocks (e.g., `interface DebugWindow`) and perform clean casts (e.g., `window as unknown as DebugWindow`) to ensure absolute type-safety.
 
-### 10. Atmospheric Filter Segregation
-
-- **Background Integrity**: Original pixel-art backgrounds (Map and Battle) MUST NOT be altered by day cycle post-processing (brightness/hue). They rely on dedicated textures (e.g., `_noche`, `_amanecer`).
-- **Targeted Filtering**:
-  - **Backgrounds**: Use `weatherOnlyFilter` on the background layer.
-  - **Pokémon Spawns & Combatants**: Use the **Isolation Wrapper Pattern**. Apply `weatherOnlyFilter` or `atmosphereFilter` only to a wrapper around the base `img` to keep FX (Shiny sparkles, Guardian auras, Status particles) and debug layers clean and vibrant.
-- **Source of Truth**: See [time_system_manual.md](./references/core/time_system_manual.md) for the implementation matrix.
-
-### 5. CLI-First Debugging
+### 7. CLI-First Debugging
 
 - **Efficiency Over GUI**: Use `window.__VITE_DEBUG__` commands to simulate states. It is MANDATORY to verify new content via CLI before committing.
 - **Windows CLI Compatibility**: When chaining commands in PowerShell (default Windows CLI), avoid the `&&` operator; use `;` or run commands sequentially to ensure cross-platform stability.
 - **Standardized Logging (HybridLogger)**: Consolidation of `HybridLogger` with context tags (e.g., `[Battle]`, `[GTS]`, `[Chat]`) is MANDATORY. This ensures "Zero-Log" production standards while maintaining CSS styling in browsers and ANSI in terminals. Direct `console.log` is FORBIDDEN in production-bound logic.
 
-### 7. Z-Index Governance & Constants
+### 8. Z-Index, FSM & Low Power Governance
 
-- **Z-Index Single Source of Truth**: All visual layering constants MUST be defined in `src/logic/constants/visuals.ts`. The use of JSON files or hardcoded integers is forbidden. SCSS variables in `_variables.scss` must reflect these TS constants.
-- **Strict Z-Index Layering**: The use of magic z-index numbers (`1`, `9999`) or raw CSS variables with unsafe fallbacks is strictly prohibited. You MUST reactively bind the official TS constant from the system using `calc(v-bind('Z_LAYERS.MAP_SPAWNS') + X)`.
-
-### 8. Battle Engine Integrity (FSM)
-
-- **Documentation Parity**: The code MUST remain a 1:1 implementation of the Mermaid diagrams in `battle_mechanics_manual.md`.
-- **Deterministic Flow**: Avoid naked `setTimeout` calls in combat logic. Initialization sequences and FSM state transitions MUST be strictly synchronized with `await animations.triggerX()` or GSAP promises to prevent engine deadlocks and race conditions. Hardcoded timers for animation waiting are forbidden.
-- **Visual Completion**: FSM states representing visual actions (Damage, Faint, Catch) MUST wait for the corresponding GSAP promise resolution.
-- **Mandatory Audit**: Run `validate_fsm_diagrams.ts`, `validate_fsm_implementation.ts`, and `validate_fsm_flow_parity.ts` (or `npm run validate:fsm`) before every commit that touches battle logic. Zero critical errors are allowed.
-- **Substate Parity**: All sub-states defined in `battleStateMachine.ts` MUST be actively used in logic or UI. Obsolete or orphaned states (e.g., `REORDER_TEAM`) must be removed to maintain a clean FSM audit and prevent architectural drift.
-
-### 11. Low Power Mode & Mobile Performance
-
-- **Mobile FPS Target**: To maintain 60 FPS on mobile, the UI store (`ui.ts`) manages `lowPowerMode` (`'auto' | 'enabled' | 'disabled'`) and exposes `isLowPowerActive`.
-- **Dynamic Resolution**: Route maps and backgrounds must serve a `_mobile.webp` version (400px width limit, `nearest` neighbor filtering) if `isLowPowerActive` is true.
-- **Atmospheric Degradation**: Weather overlays must omit secondary parallax layers (`layer-2`) and scale down leaf/particle counts by 50%.
-- **Persisted State**: The user preference must be persisted in `LocalStorage` with the key `'low-power-mode'`.
-- **Manual Control**: The settings menu must expose Retro UI options to configure this mode.
+These specific technical rules have been moved to their respective specialized manuals:
+- **Z-Index Layering**: Consolidado en [ui_ux_standards.md](./references/core/ui_ux_standards.md).
+- **Battle Engine (FSM)**: Consolidado en [battle_mechanics_manual.md](./references/battle/battle_mechanics_manual.md).
+- **Low Power Mode**: Consolidado en [low_power_mode_manual.md](./references/technical/low_power_mode_manual.md).
 
 ---
 
@@ -227,64 +194,6 @@ To ensure rigor and traceability, every complex task MUST follow the artifact li
 - [ ] **CLI-First**: Have I verified the state via console?
 - [ ] **Zero-Warning**: Do `npm run lint` and `build` pass without warnings?
 
-## 📊 Diagnostic Tools
+## 📊 Diagnostic Tools & Reference
 
-Use these scripts to verify project standards and ensure stability:
-
-### 🛡️ Core Validation
-
-- `npm run validate:types`: TypeScript type integrity verification (Zero Errors).
-- `npm run validate:sql`: SQL schema and migration validator against local engine.
-- `npm run validate:items`: Integrity audit for item and object databases.
-- `npm run validate:items:summary`: Runs item database validation in summary mode (no detailed logs in console).
-- `npm run validate:items:report`: Runs item database validation and saves detailed output to `items_report.txt`.
-- `npm run validate:abilities`: Semi-integrity validation for abilities database against PokeAPI.
-- `npm run validate:abilities:summary`: Runs ability database validation in summary mode.
-- `npm run validate:abilities:report`: Runs ability database validation and saves detailed output to `abilities_report.txt`.
-- `npm run validate:moves`: Semi-integrity validation for moves database against PokeAPI.
-- `npm run validate:moves:summary`: Runs move database validation in summary mode.
-- `npm run validate:moves:report`: Runs move database validation and saves detailed output to `moves_report.txt`.
-- `npm run validate:sandbox`: Validation for moves tooltip render in the battle sandbox.
-- `npm run validate:sandbox:summary`: Runs sandbox validation in summary mode.
-- `npm run validate:sandbox:report`: Runs sandbox validation and saves detailed output to `sandbox_report.txt`.
-- `npm run audit`: Unified standards scan (Viewports, GPU, SASS filters).
-- `npm run audit:fix`: Automatic standards repair (Node prefixes, Viewports).
-- `npm run audit:summary`: Runs project audit in summary mode (hides detailed violation logs).
-- `npm run audit:report`: Runs project audit and saves detailed output to `audit_report.txt`.
-- `npm run audit:full`: **THE GOLD STANDARD**. Total audit (Code + FSM + Items + SQL + Abilities + Moves). MANDATORY before any commit.
-- `npm run lint`: Style and syntax verification (includes type-check).
-- `npm run test:node`: Runs the pure logic test suite using the native Node.js 26+ test runner.
-- `npm run test:all`: Sequentially runs the native Node.js tests (`test:node`) and the component tests in Vitest (`test`).
-- `npm run migrations:generate`: Scans local SQL migration files under `database/migrations/` and packages them into the production TypeScript migrations manifest (`src/logic/db/migrations_data.ts`).
-- `npm run sync:test`: **Test Repo Sync**. Copies the full source tree (`src/`, `api/`, `public/`, `scripts/`, `database/migrations/`, config files) from `PokeBorrador` into the sibling `pokevicio-test` repository. If `pokevicio-test` doesn't exist yet, it auto-clones it via SSH. Preserves `.git` and `.github` intact. Run this after a feature branch is stable to push a clean snapshot for QA testing without exposing the main dev repo.
-
-### ⚔️ Battle Engine (FSM Mastery)
-
-- `npm run validate:fsm:diagrams`: 1:1 parity verifier between code and Mermaid diagrams.
-- `npm run validate:fsm:implementation`: Deep audit of FSM architectural layers.
-- `npm run validate:fsm:flow`: State sequence verifier and race condition detection.
-- `npm run validate:fsm`: Unified FSM Mastery Audit (Diagrams + Implementation + Flow).
-- `npm run validate:fsm:summary`: Runs FSM validation in summary mode.
-- `npm run validate:fsm:report`: Runs FSM validation and saves detailed output to `fsm_report.txt`.
-
-### ☁️ Supabase Infrastructure & Multi-Server Management
-
-- `npm run supabase:manage <command>`: Main Supabase CLI orchestrator in Node.js 26+ (`supabase/setup_supabase.ts`). Manages the Docker container lifecycle, smart environment variable inheritance, and custom Docker image generation for servers. Available subcommands:
-  - `all`: Performs the full pipeline (cloning official Supabase, generating configuration files, building the custom Docker image, and pushing it to Docker Hub) in a single step.
-  - `clone`: Performs a sparse-checkout of the official Supabase repository and dynamically injects our custom `Dockerfile`.
-  - `generate`: Reads the master `.env` file at the project root and generates server-specific `.env` files and the final `docker-compose.yml` file under `supabase/generated/`.
-  - `build`: Builds the custom Postgres Docker image (`pokevicio-db`) locally, pre-configured with the game's initial startup scripts.
-  - `publish`: Publishes the compiled custom Docker image to the specified Docker Hub registry.
-  - `add`: Consists of an interactive console-guided wizard to register new server profiles into the master `.env` file securely.
-- `npm run servers:configure`: Parses the unified master `.env` file, extracts server profiles (`SERVER_<profile>_*`), and automatically generates `src/data/official_servers.ts`, maintaining a single source of truth.
-- `npm run servers:db:update`: Supabase database manager and migrator in Node.js 26+. Connects to the chosen instance (`--server=<profile>` or `--all`), dynamically extracts credentials and Tenant ID, initializes the database if empty (`baseline_schema.sql`), and applies secure incremental patches.
-- `npm run servers:db:backup`: Connects to the chosen Supabase server (`--server=<profile>`), dynamically discovers all tables in the `public` schema, and downloads a complete structured backup in JSON format into `database/backups/`.
-- `npm run servers:db:restore`: Transactionally restores a JSON backup file to the chosen server (`--server=<profile>`), cleaning existing tables in reverse hierarchical order and securely reinserting rows with automatic ROLLBACK support. Allows specifying `--file=<path>` or automatically detects the most recent backup.
-- `npm run servers:db:local-import`: Imports the most recent JSON backup from a chosen Supabase server into the local SQLite database for offline testing and development.
-- `npm run servers:db:admin`: Supabase user admin CLI in Node.js 26+. Connects to the chosen server (`--server=<profile>`) to unban accounts, update passwords, change emails, modify trainer usernames, and promote users to ADMIN role directly from the command line (`--action=<unban|set-password|set-email|set-username|promote> --email=<email>`).
-- `npm run admin:rename`: Administrative CLI to rename a trainer directly in the database (`profiles` and `auth.users`) by their user ID or current username.
-
-### 🖼️ Assets
-
-- `npm run assets:convert`: Unified pipeline for WebP conversion and mirroring.
-- `npm run assets:download`: External sprite downloader (PokeAPI/Showdown).
+All validation, testing, and multi-server setup scripts (`validate:*`, `audit:*`, `supabase:manage`) have been consolidated. Refer to [validation_manual.md](./references/qa/validation_manual.md) for the complete command reference table.

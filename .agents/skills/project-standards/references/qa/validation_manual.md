@@ -72,3 +72,59 @@ The project uses a unified audit system located in `scripts/audit_project.ts`:
 19. **PokeAPI Cache Under Version Control**: The `scripts/.cache/` directory containing PokeAPI response caches (moves, abilities) MUST remain under version control. This ensures that `npm run audit:full` and all `validate:*` scripts can execute successfully without an active internet connection, which is critical for CI environments and offline development.
 20. **Mandato del Directorio Scratch**: Cualquier reporte temporal, registro (log), resumen o reporte de auditoría/validación (independientemente de su extensión de archivo: `.txt`, `.log`, `.json`, etc.) que sea generado para su posterior estudio, análisis o revisión, debe ser guardado única y exclusivamente dentro de la carpeta `scratch/` en la raíz del proyecto. Queda terminantemente prohibido dejar o escribir estos reportes temporales en la raíz del proyecto, en carpetas de código fuente o en cualquier otra ubicación arbitraria para mantener la limpieza del repositorio.
 
+---
+
+## 📊 NPM Diagnostic & Maintenance Scripts Reference
+
+Use these scripts to verify project standards, manage servers, and run audits:
+
+### 🛡️ Core Validation
+* `npm run validate:types`: TypeScript type integrity verification (Zero Errors).
+* `npm run validate:sql`: SQL schema and migration validator against local engine.
+* `npm run validate:items`: Integrity audit for item and object databases.
+* `npm run validate:items:summary`: Runs item database validation in summary mode.
+* `npm run validate:items:report`: Runs item database validation and saves detailed output to `items_report.txt`.
+* `npm run validate:abilities`: Semi-integrity validation for abilities database against PokeAPI.
+* `npm run validate:abilities:summary`: Runs ability database validation in summary mode.
+* `npm run validate:abilities:report`: Runs ability database validation and saves detailed output to `abilities_report.txt`.
+* `npm run validate:moves`: Semi-integrity validation for moves database against PokeAPI.
+* `npm run validate:moves:summary`: Runs move database validation in summary mode.
+* `npm run validate:moves:report`: Runs move database validation and saves detailed output to `moves_report.txt`.
+* `npm run validate:sandbox`: Validation for moves tooltip render in the battle sandbox.
+* `npm run validate:sandbox:summary`: Runs sandbox validation in summary mode.
+* `npm run validate:sandbox:report`: Runs sandbox validation and saves detailed output to `sandbox_report.txt`.
+* `npm run audit`: Unified standards scan (Viewports, GPU, SASS filters).
+* `npm run audit:fix`: Automatic standards repair (Node prefixes, Viewports).
+* `npm run audit:summary`: Runs project audit in summary mode.
+* `npm run audit:report`: Runs project audit and saves detailed output to `audit_report.txt`.
+* `npm run audit:full`: **THE GOLD STANDARD**. Total audit (Code + FSM + Items + SQL + Abilities + Moves). MANDATORY before any commit.
+* `npm run lint`: Style and syntax verification (includes type-check).
+* `npm run test:node`: Runs the pure logic test suite using the native Node.js 26+ test runner.
+* `npm run test:all`: Sequentially runs the native Node.js tests (`test:node`) and the component tests in Vitest (`test`).
+* `npm run migrations:generate`: Scans local SQL migration files under `database/migrations/` and packages them into the production TypeScript migrations manifest.
+* `npm run sync:test`: **Test Repo Sync**. Copies the full source tree to sibling `pokevicio-test` repository.
+
+### ⚔️ Battle Engine (FSM Mastery)
+* `npm run validate:fsm:diagrams`: 1:1 parity verifier between code and Mermaid diagrams.
+* `npm run validate:fsm:implementation`: Deep audit of FSM architectural layers.
+* `npm run validate:fsm:flow`: State sequence verifier and race condition detection.
+* `npm run validate:fsm`: Unified FSM Mastery Audit (Diagrams + Implementation + Flow).
+* `npm run validate:fsm:summary`: Runs FSM validation in summary mode.
+* `npm run validate:fsm:report`: Runs FSM validation and saves detailed output to `fsm_report.txt`.
+
+### ☁️ Supabase Infrastructure & Multi-Server Management
+* `npm run supabase:manage <command>`: Main Supabase CLI orchestrator in Node.js 26+ (`supabase/setup_supabase.ts`). Manages the Docker container lifecycle.
+  * Subcommands: `all`, `clone`, `generate`, `build`, `publish`, `add`.
+* `npm run servers:configure`: Parses unified master `.env` file, extracts profiles, and automatically generates `src/data/official_servers.ts`.
+* `npm run servers:db:update`: Supabase database manager and migrator in Node.js 26+.
+* `npm run servers:db:backup`: Connects to chosen Supabase server and downloads complete structured backup to `database/backups/`.
+* `npm run servers:db:restore`: Transactionally restores a JSON backup file to the chosen server.
+* `npm run servers:db:local-import`: Imports the most recent JSON backup from a chosen Supabase server into the local SQLite database.
+* `npm run servers:db:admin`: Supabase user admin CLI in Node.js 26+ (unban, update passwords, promote, etc.).
+* `npm run admin:rename`: Administrative CLI to rename a trainer directly in the database.
+
+### 🖼️ Assets
+* `npm run assets:convert`: Unified pipeline for WebP conversion and mirroring.
+* `npm run assets:download`: External sprite downloader (PokeAPI/Showdown).
+
+

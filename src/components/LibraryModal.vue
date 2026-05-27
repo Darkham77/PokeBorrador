@@ -174,7 +174,6 @@ const selectTab = (tabId: string) => {
     &:hover {
       background: Rgba(255, 255, 255, 0.04);
       color: $white;
-      padding-left: 20px;
       border-color: Rgba(250, 204, 21, 0.2);
     }
 
