@@ -193,7 +193,10 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
     
     if (isTrainer || isGym) {
       await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.TRAINER_ENTRY)
-      await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.T_VISUAL, 1000)
+      await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.T_VISUAL)
+      if (ctx.animations?.triggerTrainerEntry) {
+        await ctx.animations.triggerTrainerEntry()
+      }
     } else {
       await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.WILD_ENTRY)
       if (ctx.activeBattle.value) ctx.activeBattle.value.enemy = finalEnemyPoke
@@ -248,9 +251,24 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
 
     if (isTrainer || isGym) {
       await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.TRAINER_ENCOUNTER)
-      await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.SHOW_DIALOGS, 1500)
-      await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.TRAINER_RETREAT, 800)
-      await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.POKEMON_CALL, 800)
+      if (ctx.animations?.triggerTrainerEntry) {
+        await ctx.animations.triggerTrainerEntry()
+      }
+
+      await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.SHOW_DIALOGS)
+      if (ctx.animations?.triggerTrainerDialogs) {
+        await ctx.animations.triggerTrainerDialogs()
+      }
+
+      await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.TRAINER_RETREAT)
+      if (ctx.animations?.triggerTrainerRetreat) {
+        await ctx.animations.triggerTrainerRetreat()
+      }
+
+      await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.POKEMON_CALL)
+      if (ctx.animations?.triggerPokemonCall) {
+        await ctx.animations.triggerPokemonCall()
+      }
       if (ctx.activeBattle.value) ctx.activeBattle.value.enemy = initialEnemy
     } else {
       await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.WILD_ENTRY)

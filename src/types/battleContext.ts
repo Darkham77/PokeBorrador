@@ -60,5 +60,9 @@ export interface BattleContext {
     handleFaintAnim: (detail: string | { side?: string; isFaint?: boolean } | { detail?: string | { side: string; isFaint?: boolean } }) => Promise<void>;
     playCatchCelebration: (side: string) => Promise<void>;
     playBallFadeOut: (side: string) => Promise<void>;
+    triggerTrainerEntry: () => Promise<void>;
+    triggerTrainerDialogs: () => Promise<void>;
+    triggerTrainerRetreat: () => Promise<void>;
+    triggerPokemonCall: () => Promise<void>;
   };
 }

@@ -401,4 +401,39 @@ gsap.to(sprite, { scale: 1, duration: 0.4, ease: "back.out(1.2)" }) // releasing
 - **Why**: `back.out()` spends extra time in the overshoot phase (scale > 1) before settling. Even with equal `duration`, users perceive this as a longer, slower animation compared to a clean `power2.inOut`.
 
 
+## 33. FSM Transition Timing: Animation Bridge Pattern (Trainer Flow)
+
+When the battle orchestrator needs to advance through FSM states that have associated GSAP animations, it MUST `await` the animation's Promise through the `ctx.animations` bridge instead of using hardcoded timer delays. Timer delays (`sleep(1500)`) are brittle because they decouple timing from the animation that justifies it.
+
+### ❌ Anti-Pattern (timer-based)
+
+```typescript
+// Wrong: timing is a guess. If the animation changes, the timer goes stale silently.
+await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.TRAINER_ENCOUNTER)
+await sleep(1000) // guessing how long the sprite takes to slide in
+await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.SHOW_DIALOGS)
+await sleep(1500) // guessing how long dialogs take
+```
+
+### ✅ Correct Pattern (bridge-based)
+
+```typescript
+// Correct: the orchestrator awaits the real GSAP timeline from the animation bridge.
+await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.TRAINER_ENCOUNTER)
+if (ctx.animations?.triggerTrainerEntry) await ctx.animations.triggerTrainerEntry()
+
+await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.SHOW_DIALOGS)
+if (ctx.animations?.triggerTrainerDialogs) await ctx.animations.triggerTrainerDialogs()
+```
+
+### Extending the bridge
+
+To add a new synchronizable animation phase:
+1. Add a method in `useBattleAnimations.ts` that returns `awaitAnimation(tl)`.
+2. Declare its signature in `BattleContext.animations` (`battleContext.ts`).
+3. Register it in the `battleStore.animations = { ... }` block in `BattleArenaView.vue`.
+4. Replace the corresponding `sleep(N)` call in `orchestrator.ts` with `await ctx.animations.newMethod()`.
+
+The `ctx.animations?.method` optional-chaining guard is required because the bridge is registered asynchronously by the Vue component — it may be absent when the battle is launched headlessly (e.g., from a Node test or debug script).
+
 

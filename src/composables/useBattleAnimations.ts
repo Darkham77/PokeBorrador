@@ -170,13 +170,19 @@ export function useBattleAnimations(
 
         case 'TRAINER_ENTRY':
         case 'T_VISUAL':
+          // Visual state set reactively by the FSM watcher (fallback for direct substate transitions)
+          // Timing is now owned by triggerTrainerEntry() in the bridge
           trainerAnimState.value = 'entering'
           isTrainerVisible.value = true
           break
         
         case 'TRAINER_RETREAT':
-          trainerAnimState.value = 'retreating'
-          gsap.delayedCall(0.8, () => { isTrainerVisible.value = false; trainerAnimState.value = null })
+          // Timing is now owned by triggerTrainerRetreat() in the bridge;
+          // this case acts as a reactive fallback only
+          if (trainerAnimState.value !== 'retreating') {
+            trainerAnimState.value = 'retreating'
+            gsap.delayedCall(0.8, () => { isTrainerVisible.value = false; trainerAnimState.value = null })
+          }
           break
 
         case 'EMPTY_WAIT':
@@ -205,6 +211,47 @@ export function useBattleAnimations(
   )
 
   const triggerWildEmergence = () => Promise.resolve()
+
+  // --- Trainer flow bridge methods ---
+  // Each method returns a GSAP-backed Promise so the orchestrator can await
+  // real animation completion instead of guessing with hardcoded timers.
+
+  const triggerTrainerEntry = (): Promise<void> => {
+    trainerAnimState.value = 'entering'
+    isTrainerVisible.value = true
+    const tl = createTimeline()
+    // Allow ~1s for the trainer sprite slide-in to settle visually
+    tl.to({}, { duration: 1.0 })
+    return awaitAnimation(tl)
+  }
+
+  const triggerTrainerDialogs = (): Promise<void> => {
+    const tl = createTimeline()
+    // ~0.4s fade-in + ~0.8s minimum read time = 1.2s total
+    tl.to({}, { duration: 1.2 })
+    return awaitAnimation(tl)
+  }
+
+  const triggerTrainerRetreat = (): Promise<void> => {
+    trainerAnimState.value = 'retreating'
+    const tl = createTimeline()
+    tl.to({}, {
+      duration: 0.8,
+      onComplete: () => {
+        isTrainerVisible.value = false
+        trainerAnimState.value = null
+      }
+    })
+    return awaitAnimation(tl)
+  }
+
+  const triggerPokemonCall = (): Promise<void> => {
+    seats.value.player.animState = 'releasing'
+    const tl = createTimeline()
+    // Allow ~0.8s for the Poké Ball release animation
+    tl.to({}, { duration: 0.8 })
+    return awaitAnimation(tl)
+  }
 
   const triggerSearchEncounter = () => {
     const tl = createTimeline()
@@ -341,6 +388,10 @@ export function useBattleAnimations(
     revealWildPokemon,
     triggerWildEmergence,
     triggerSearchEncounter,
+    triggerTrainerEntry,
+    triggerTrainerDialogs,
+    triggerTrainerRetreat,
+    triggerPokemonCall,
     triggerCatchSparkles,
     initListeners,
     isPlayerSpriteSuppressed,

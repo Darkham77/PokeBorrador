@@ -70,7 +70,11 @@ battleStore.animations = {
   handleShakeRequest: animations.handleShakeRequest,
   handleFaintAnim: animations.handleFaintAnim,
   playCatchCelebration: animations.playCatchCelebration,
-  playBallFadeOut: animations.playBallFadeOut
+  playBallFadeOut: animations.playBallFadeOut,
+  triggerTrainerEntry: animations.triggerTrainerEntry,
+  triggerTrainerDialogs: animations.triggerTrainerDialogs,
+  triggerTrainerRetreat: animations.triggerTrainerRetreat,
+  triggerPokemonCall: animations.triggerPokemonCall
 }
 const {
   isInitialLoad,

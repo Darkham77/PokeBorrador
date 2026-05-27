@@ -80,6 +80,19 @@ To prevent layout collapse in scrollable flex containers (Common in Debug and Gr
   }
   ```
 
+- **Divider Collapse in `flex-direction: column`**: An empty `<div>` used as a visual separator inside a `display: flex; flex-direction: column` container is treated as a flex item with zero intrinsic size, causing it to collapse to `0px` height and become invisible.
+  - **Fix**: Force it out of the flex flow:
+    ```scss
+    .section-divider {
+      display: block !important;
+      height: 2px !important;
+      min-height: 2px !important;
+      background: Rgba(255, 255, 255, 0.15);
+      flex-shrink: 0;
+    }
+    ```
+  - **Why**: `display: block !important` prevents the parent flex context from controlling the element's size, allowing `height` and `min-height` to take effect.
+
 > [!IMPORTANT]
 > **VUE COMPONENT RULE**: Interpolation `#{}` only works inside `<style lang="scss">`. If you apply this fix to a `.vue` file, you **MUST** ensure the style block has the `lang="scss"` attribute.
 
