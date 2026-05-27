@@ -15,7 +15,7 @@ description: Orchestrator for adding new Pokémon to the system. Uses fetch scri
 Use the fetch script to generate base code blocks:
 
 ```bash
-npx tsx .agents/skills/add-pokemon/scripts/fetch_pokemon.ts <english_name>
+node --experimental-strip-types .agents/skills/add-pokemon/scripts/fetch_pokemon.ts <english_name>
 ```
 
 ### 2. Code Integration

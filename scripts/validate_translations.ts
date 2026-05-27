@@ -173,7 +173,7 @@ async function main() {
     `══════════════════════════════════════════════════════════════`,
     `🛡️  REPORT DE AUDITORÍA DE TRADUCCIÓN DEL SHOWDOWN SANDBOX 🛡️`,
     `══════════════════════════════════════════════════════════════`,
-    `Fecha: ${new Date().toISOString()}`,
+    `Fecha: ${Temporal.Now.instant().toString()}`,
     `Pokémon Auditados:   ${pokemonEntries.length}`,
     `Ataques Auditados:   ${moveEntries.length}`,
     `Logros/Aciertos:     ${achievements.length}`,

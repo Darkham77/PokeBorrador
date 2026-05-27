@@ -13,7 +13,7 @@ description: Utility script to fill the inventory with test items. Delegates the
 1. Generate the injection snippet:
 
    ```bash
-   npx tsx .agents/skills/populate-tester-inventory/scripts/populate_inventory.ts
+   node --experimental-strip-types .agents/skills/populate-tester-inventory/scripts/populate_inventory.ts
    ```
 
 2. Follow the detailed injection protocol in the [Browser Testing Manual](../project-standards/references/browser_testing_manual.md).

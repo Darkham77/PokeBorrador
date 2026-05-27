@@ -146,7 +146,7 @@ The project uses a sophisticated audit and validation engine to ensure stability
   - **Semantic Validation**: Synchronizes Moves, Abilities, and Items against PokeAPI/Official Data to prevent data drift.
   - **FSM Mastery (`validate:fsm`)**: Ensura 1:1 parity between battle logic and FSM documentation (diagrams, implementation, flow).
 - **Zero-Warning Policy**: Zero errors and zero warnings are required for any core system component.
-  - **Native TS**: Prefer `node --experimental-strip-types` for running utility scripts instead of `tsx`/`ts-node` when possible.
+  - **Native TS Mandate**: The use of `tsx` or `ts-node` for running local utility scripts is STRICTLY PROHIBITED. All utility scripts and tests MUST run natively utilizing `node --experimental-strip-types` paired with Node.js 26+ sandboxed permissions flags.
   - **Module Prefix**: Use the `node:` prefix for all built-in module imports (e.g., `import fs from 'node:fs'`).
 - **Scratch Directory Mandate**: Any generated logs, text reports, summaries, or audit output files (regardless of file extension: `.txt`, `.log`, `.json`, etc.) created for review, debugging, or later study MUST be stored exclusively in the `scratch/` directory at the project root. Writing temporary report files, summaries, or logs in the project root, source directories, or any other arbitrary directory is strictly forbidden to preserve repository cleanliness.
 

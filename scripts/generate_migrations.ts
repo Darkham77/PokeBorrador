@@ -90,7 +90,10 @@ export const DATABASE_MIGRATIONS = ${JSON.stringify(migrations, null, 2)};
   const outputDir = path.dirname(OUTPUT_FILE);
   await fs.mkdir(outputDir, { recursive: true });
 
-  await fs.writeFile(OUTPUT_FILE, output);
+  {
+    await using fileHandle = await fs.open(OUTPUT_FILE, 'w');
+    await fileHandle.writeFile(output);
+  }
   console.log(`[Migrations Generator] Generated ${migrations.length} migrations in ${OUTPUT_FILE}`);
 }
 
