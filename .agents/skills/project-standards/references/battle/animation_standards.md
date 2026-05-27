@@ -361,4 +361,44 @@ To satisfy the GSAP-only animation mandate for loading spinners without using ma
 ### Filter Cleanup Mandate
 Temporary visual effects (flashes, pulses) MUST use GSAP's `onComplete` with `clearProps: "filter"` to ensure no residual 0px filters remain as base layers.
 
+## 30. `isFloating` Truthiness vs. Existence Check
+
+When determining whether a Pokémon has explicit ground (`floating: false`) or floating (`floating: true`) aesthetics in `pokemonDataProvider`, always check existence before using the value:
+
+```typescript
+// ❌ Wrong: treats explicit false as "not floating" but skips the check
+if (data.isFloating) return true
+
+// ✅ Correct: respects explicit false (ground species) and falls through to type-based fallback only when undefined
+if (data.isFloating !== undefined) return data.isFloating
+```
+
+- **Why**: Using `if (data.isFloating)` as a truthiness check silently ignores the `false` case, causing ground-species with a Flying type to be incorrectly classified as floating. This suppresses `CombatGrass` bushes and misaligns the shadow layer.
+
+## 31. SVG Filter Region for Large Blur Auras
+
+When using `feGaussianBlur` with `stdDeviation >= 6` inside an SVG `<filter>`, the default region (`0% 0% 100% 100%`) will clip the aura at the sprite edges. Expand it explicitly:
+
+```xml
+<filter id="my-filter" x="-100%" y="-100%" width="300%" height="300%">
+```
+
+- **Why**: A spread of `stdDeviation="12"` extends approximately 3× the source bounds. Without the expanded region, the glow is silently cropped — especially visible on large Pokémon sprites near the container edges.
+
+## 32. GSAP Ease Symmetry for Mirror Animations (Enter / Exit)
+
+When two GSAP animations are the visual inverse of each other (e.g., `catching` sucking a sprite to scale 0 vs. `releasing` expanding it back to scale 1), they MUST use the **same `ease` curve** to be perceived as equally fast:
+
+```typescript
+// ✅ Symmetric — both are power2.inOut
+gsap.to(sprite, { scale: 0, duration: 0.4, ease: "power2.inOut" }) // catching
+gsap.to(sprite, { scale: 1, duration: 0.4, ease: "power2.inOut" }) // releasing
+
+// ❌ Asymmetric — back.out has an elastic overshoot phase that makes it feel slower
+gsap.to(sprite, { scale: 1, duration: 0.4, ease: "back.out(1.2)" }) // releasing
+```
+
+- **Why**: `back.out()` spends extra time in the overshoot phase (scale > 1) before settling. Even with equal `duration`, users perceive this as a longer, slower animation compared to a clean `power2.inOut`.
+
+
 

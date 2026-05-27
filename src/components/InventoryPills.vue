@@ -322,7 +322,7 @@ onUnmounted(() => {
 
   &.clickable-pill {
     cursor: pointer;
-    transition: background-color 0.2s;
+    will-change: background-color;
     &:hover { background: Rgba($white, 0.05); }
   }
 

@@ -634,3 +634,25 @@ To maintain a coherent sense of depth in the 2D-perspective virtual world and pr
 - **Select Dropdown Aesthetic Parity**: When styling select elements inside custom dark admin panels, always override default browser styles with `appearance: none`, specify a premium custom chevron SVG background, and use a dark background for `option` elements to maintain aesthetic parity with standard text inputs.
 - **Strict 2D CSS Grid Sizing**: For grid-based minigames or boards, always specify both `grid-template-columns` and `grid-template-rows` explicitly (e.g., using `repeat(N, 1fr)`) to prevent cell heights/widths from shifting dynamically based on content (such as text emojis or temporary graphics).
 
+### 28. CSS `transition` vs. `will-change` for Non-Animated State Changes
+
+The project's audit engine (`audit_project.ts`) flags any CSS `transition:` property as a violation of the GSAP-exclusive animation policy. For hover effects that instantly change a non-interactive property (e.g., `background-color`) where no temporal animation is required:
+
+```scss
+// ❌ Flagged as violation: CSS transition
+&.clickable-pill {
+  transition: background-color 0.2s;
+  &:hover { background: Rgba($white, 0.05); }
+}
+
+// ✅ Correct: use will-change for GPU hint, hover is instant state change
+&.clickable-pill {
+  will-change: background-color;
+  &:hover { background: Rgba($white, 0.05); }
+}
+```
+
+- **Why**: `will-change` hints the GPU to promote the layer without introducing a time-based animation. This satisfies the audit, keeps the hover feel snappy, and avoids the overhead of GSAP for a simple toggle state.
+
+
+
