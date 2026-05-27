@@ -113,6 +113,7 @@ After the generation of all weather tables across all routes, seasons, and cycle
 - **Rule of Existence**: It is STRICTLY FORBIDDEN for any of the 18 weather types to have a 0% global presence.
 - **Verification**: Every weather defined in the hierarchy MUST appear in at least one route's probability table in at least one season/cycle combination.
 - **Redundancy**: Even the most catastrophic weathers (L4) must be discoverable somewhere in the world to ensure all "Exclusive" spawns and mechanical effects are accessible to the player.
+- **Custom Hybrid Weather System Preservation**: When updating or modernizing the climate lists, always preserve custom Poké Vicio hybrid configurations (such as the custom Tier 2 `hail` (Granizo) / Tier 1 `snow` (Nieve) coexistence in Kanto's climate hierarchy) rather than blindly aligning with official 9th Generation standards that phase out specific conditions.
 
 ---
 

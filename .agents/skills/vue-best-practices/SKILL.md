@@ -185,6 +185,8 @@ Performance work is a post-functionality pass. Do not optimize before core behav
 
 - **Pinia Initialization Guard**: If a component accesses a store during `setup` (e.g., in a `computed` property), ensure that all required Vue utilities (like `computed`, `ref`) are correctly imported in the root component.
   - **Why**: A missing import in a high-level component can cause a silent failure that prevents Pinia from being correctly associated with the application instance, leading to the "getActivePinia() was called but there was no active Pinia" error in child components.
+- **Pinia Store Headless Environment Compatibility**: When accessing global browser APIs (such as `localStorage` or `window`) inside Pinia store actions, getters, or initialization hooks, always guard the access with safety checks like `typeof localStorage !== 'undefined'`.
+  - **Why**: Prevents runtime reference errors and critical test failures in headless or server-side/testing environments (like Vitest or Node.js) where these globals are not defined.
 - **Mandatory defineEmits in `<script setup>`**: When using `<script setup>`, any custom events MUST be explicitly declared via `const emit = defineEmits([...])`.
   - **Why**: Accessing `emit` without declaration (common in Options API migration) will cause runtime errors (`ReferenceError: emit is not defined`) and block logic such as close animations in modals.
 - **Dynamic Contextual Styling**: When a component's theme depends on a dynamic state (e.g., player class or faction), apply the state as a class to a high-level wrapper and use nested SCSS or computed variables to adjust internal styles (backgrounds, border colors, shadows).

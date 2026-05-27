@@ -60,7 +60,9 @@ export const useBreedingStore = defineStore('breeding', () => {
 
   function saveWarehouseEggs() {
     const userId = authStore.user?.id || 'default';
-    localStorage.setItem(`daycare_warehouse_eggs_${userId}`, JSON.stringify(warehouseEggs.value));
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem(`daycare_warehouse_eggs_${userId}`, JSON.stringify(warehouseEggs.value));
+    }
   }
 
   // --- GETTERS ---
@@ -109,7 +111,7 @@ export const useBreedingStore = defineStore('breeding', () => {
 
       // Restore eggs from LocalStorage
       const userId = authStore.user?.id || 'default';
-      const stored = localStorage.getItem(`daycare_warehouse_eggs_${userId}`);
+      const stored = typeof localStorage !== 'undefined' ? localStorage.getItem(`daycare_warehouse_eggs_${userId}`) : null;
       warehouseEggs.value = stored ? JSON.parse(stored) : [];
 
       const team = gameStore.state.team || [];

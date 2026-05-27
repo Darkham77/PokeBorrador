@@ -58,6 +58,7 @@ We prioritize a deliberate contrast between modern, sleek UI shells and classic,
   - **Implementation**: Use a `ResizeObserver` or a standardized `updateHudHeight` function in the root view (`MainGameView.vue`).
   - **CSS Usage**: `padding-top: var(--hud-top-padding, 110px);`.
 - **HUD Minimal Mandate**: Remove redundant data from the HUD if it is intrinsic to the current route (e.g., weather/cycle). HUD should focus on inventory and resources.
+- **Prevention of Layout Shifts on Active/Hover States**: In flex-based tab bars, navigation items, or menus, avoid dynamically changing paddings, margins, or adding borders (e.g., changing `border: none` to `border: 1px solid`) on `:hover` or `.active` states. This causes layout shifts that move sibling elements horizontally or vertically. Instead, use static transparent borders (`border: 1px solid transparent`) or outline styles (`outline`) in the base state and only change the color dynamically on hover/active states.
 - **Numeric Scaling (`fitText`)**: Values that can grow significantly (e.g., Currency) MUST use dynamic scaling logic to ensure absolute containment within HUD pills.
   - **Robust Measurement**: Always use `parent.clientWidth` (or `parent.offsetWidth - padding`) for `maxW` calculations instead of hardcoded constants. This ensures the text fits regardless of the user's viewport or zoom level.
   - **Large Value Simplification**: If a numeric value exceeds **9,999,999**, simplify it using a suffix (e.g., `10M`, `15M`).
