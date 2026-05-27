@@ -64,7 +64,13 @@ onUnmounted(() => {
     ref="selectRef"
     class="debug-input-group search-select-container"
   >
-    <label>{{ label }}</label>
+    <div
+      class="label-row"
+      style="display: flex; justify-content: space-between; align-items: center; width: 100%;"
+    >
+      <label>{{ label }}</label>
+      <slot name="label-action" />
+    </div>
     <PVTooltip
       :title="tooltipTitle"
       :description="tooltipDesc"

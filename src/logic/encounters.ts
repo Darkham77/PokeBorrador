@@ -185,7 +185,64 @@ export async function generateEncounter(locId: string, state: EncounterState, op
   const climateFishingMultiplier = isRainy ? 1.20 : 1.0;
   const fishingBonus = (options.eventFishingBonus || 1) * climateFishingMultiplier;
   if (loc.fishing && Math.random() < GAME_RATIOS.encounters.fishing * fishingBonus) {
-    const { pool, rates } = loc.fishing;
+    const pool = [...loc.fishing.pool];
+    const rates = [...loc.fishing.rates];
+
+    // Ensure rates match pool length
+    while (rates.length < pool.length) rates.push(10);
+
+    // Apply Weather injections (visitors & exclusives) to fishing pool
+    const wConfig = loc.weather?.[weather];
+    if (weather && weather !== 'clear' && wConfig) {
+      if (wConfig.exclusive) {
+        const exclusives = Array.isArray(wConfig.exclusive) ? wConfig.exclusive : Object.keys(wConfig.exclusive);
+        exclusives.forEach(id => {
+          if (!pool.includes(id)) {
+            pool.push(id);
+            const weight = Array.isArray(wConfig.exclusive) ? 5 : ((wConfig.exclusive as Record<string, number>)[id] || 5);
+            rates.push(weight || 5);
+          }
+        });
+      }
+      if (wConfig.visitors) {
+        const visitors = Array.isArray(wConfig.visitors) ? wConfig.visitors : Object.keys(wConfig.visitors);
+        visitors.forEach(id => {
+          if (!pool.includes(id)) {
+            pool.push(id);
+            const weight = Array.isArray(wConfig.visitors) ? -10 : -((wConfig.visitors as Record<string, number>)[id] || 10);
+            rates.push(weight || -10);
+          }
+        });
+      }
+    }
+
+    // Apply Weather Multipliers & Normalization to fishing pool
+    if (weather && weather !== 'clear') {
+      const visitorIndices = rates.map((r, i) => r < 0 ? i : -1).filter(i => i !== -1);
+      const nativeIndices = rates.map((r, i) => r >= 0 ? i : -1).filter(i => i !== -1);
+      const exclusives = wConfig?.exclusive ? (Array.isArray(wConfig.exclusive) ? wConfig.exclusive : Object.keys(wConfig.exclusive)) : [];
+
+      nativeIndices.forEach(idx => {
+        const spId = pool[idx];
+        if (spId) {
+          const isExclusive = exclusives.includes(spId);
+          if (!isExclusive) {
+            rates[idx] = (rates[idx] || 0) * getWeatherMultiplier(spId, weather);
+          }
+        }
+      });
+
+      if (visitorIndices.length > 0) {
+        const totalNativeWeight = nativeIndices.reduce((sum, idx) => sum + (rates[idx] || 0), 0);
+        const visitorQuota = totalNativeWeight / 9; // 10% of total
+        const sumRelativeWeights = visitorIndices.reduce((sum, idx) => sum + Math.abs(rates[idx] || 0), 0);
+        visitorIndices.forEach(idx => {
+          const relativeWeight = Math.abs(rates[idx] || 0) / (sumRelativeWeights || 1);
+          rates[idx] = visitorQuota * relativeWeight;
+        });
+      }
+    }
+
     const selectedId = selectFromPool(pool, rates);
     const minLv = loc.fishing.lv[0] || 10;
     const maxLv = loc.fishing.lv[1] || 20;
@@ -194,10 +251,32 @@ export async function generateEncounter(locId: string, state: EncounterState, op
     const rateIdx = pool.indexOf(selectedId);
     const rateVal = rates[rateIdx];
     const rarity = ((rateVal !== undefined ? rateVal : 0) / (totalRate || 1)) * 100;
+
+    const pokemon = makePokemon(selectedId, level, { shinyMultiplier: options.shinyMultiplier }) as Pokemon;
+    if (pokemon) {
+      const weatherCfg = loc.weather?.[weather];
+      const isVisitor = !!(weatherCfg?.visitors && (
+        (!Array.isArray(weatherCfg.visitors) && (weatherCfg.visitors as Record<string, number>)[selectedId]) || 
+        (Array.isArray(weatherCfg.visitors) && weatherCfg.visitors.includes(selectedId))
+      ));
+      const isExclusive = !!(weatherCfg?.exclusive && (
+        (!Array.isArray(weatherCfg.exclusive) && (weatherCfg.exclusive as Record<string, number>)[selectedId]) || 
+        (Array.isArray(weatherCfg.exclusive) && weatherCfg.exclusive.includes(selectedId))
+      ));
+      const multiplier = getWeatherMultiplier(selectedId, weather);
+      const isBuffed = !isVisitor && !isExclusive && multiplier > 1.0;
+      const isDebuffed = !isVisitor && !isExclusive && multiplier < 1.0 && multiplier > 0;
+      
+      if (isVisitor || isExclusive || isBuffed || isDebuffed) {
+        pokemon.isAtmospheric = true;
+        pokemon.weatherOrigin = weather;
+        if (isDebuffed) pokemon.isWeatherStruggling = true;
+      }
+    }
     
     return { 
       type: 'fishing', 
-      pokemon: makePokemon(selectedId, level, { shinyMultiplier: options.shinyMultiplier }) as Pokemon,
+      pokemon,
       rarity 
     };
   }

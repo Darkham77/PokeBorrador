@@ -118,6 +118,47 @@ describe('Weather Integrity & Biome Restrictions', () => {
           });
         });
       });
+
+      // Verify that weather visitors or exclusives do not overlap with normal/native spawns of the same route
+      test('Weather visitors and exclusives should not overlap with native spawns', () => {
+        const nativeSpawns = new Set<string>();
+        
+        const wild = map.wild as Record<string, string[]> | undefined;
+        if (wild) {
+          Object.values(wild).forEach(list => {
+            if (Array.isArray(list)) list.forEach(id => nativeSpawns.add(id));
+          });
+        }
+        
+        const fishing = map.fishing as { pool?: string[] } | undefined;
+        if (fishing?.pool) {
+          fishing.pool.forEach(id => nativeSpawns.add(id));
+        }
+        
+        const archaeology = map.archaeology as { pool?: string[] } | undefined;
+        if (archaeology?.pool) {
+          archaeology.pool.forEach(id => nativeSpawns.add(id));
+        }
+
+        const weather = map.weather as Record<string, { visitors?: Record<string, number> | string[], exclusive?: Record<string, number> | string[] }> | undefined;
+        if (weather) {
+          Object.entries(weather).forEach(([weatherType, cfg]) => {
+            if (cfg.visitors) {
+              const visitors = Array.isArray(cfg.visitors) ? cfg.visitors : Object.keys(cfg.visitors);
+              visitors.forEach(v => {
+                assert.ok(!nativeSpawns.has(v), `Weather visitor "${v}" under weather "${weatherType}" in map "${map.id}" is already a native spawn (wild/fishing/archaeology) on this map.`);
+              });
+            }
+            if (cfg.exclusive) {
+              const exclusives = Array.isArray(cfg.exclusive) ? cfg.exclusive : Object.keys(cfg.exclusive);
+              exclusives.forEach(e => {
+                assert.ok(!nativeSpawns.has(e), `Weather exclusive "${e}" under weather "${weatherType}" in map "${map.id}" is already a native spawn (wild/fishing/archaeology) on this map.`);
+              });
+            }
+          });
+        }
+      });
+
     });
   });
 });

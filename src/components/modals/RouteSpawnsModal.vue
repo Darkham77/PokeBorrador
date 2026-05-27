@@ -160,6 +160,7 @@ const parsedDescriptionLines = computed(() => {
 })
 
 const getStatusTooltip = (type: string) => {
+  const weatherName = weatherLabel.value || 'el clima actual'
   const tooltips: Record<string, { title: string, desc: string }> = {
     'Común': {
       title: 'Común',
@@ -167,27 +168,27 @@ const getStatusTooltip = (type: string) => {
     },
     'Visitante': {
       title: 'Visitante Climático',
-      desc: 'Pokémon que no habita esta zona normalmente, pero es atraído por el clima actual.'
+      desc: `Pokémon que no habita esta zona normalmente, pero es atraído por el clima actual (${weatherName}).`
     },
     'Exclusivo': {
       title: 'Exclusivo Climático',
-      desc: 'Pokémon que solo puede aparecer en esta zona bajo las condiciones del clima actual.'
+      desc: `Pokémon que solo puede aparecer en esta zona bajo las condiciones del clima actual (${weatherName}).`
     },
     'Bloqueado': {
       title: 'Bloqueado por Clima',
-      desc: 'El clima actual impide que este Pokémon aparezca en la zona.'
+      desc: `El clima actual (${weatherName}) impide que este Pokémon aparezca en la zona.`
     },
     'Fuera de hora': {
       title: 'Fuera de Hora',
       desc: 'Este Pokémon no está activo en esta ruta durante este ciclo horario.'
     },
     'Potenciado': {
-      title: 'Potenciado por Clima',
-      desc: 'La probabilidad de aparición de este Pokémon ha sido aumentada por el clima actual.'
+      title: `Potenciado por clima (${weatherName})`,
+      desc: `La probabilidad de aparición de este Pokémon ha sido aumentada por el clima actual: ${weatherName}.`
     },
     'Debilitado': {
-      title: 'Debilitado por Clima',
-      desc: 'La probabilidad de aparición de este Pokémon ha sido reducida por el clima actual.'
+      title: `Debilitado por clima (${weatherName})`,
+      desc: `La probabilidad de aparición de este Pokémon ha sido reducida por el clima actual: ${weatherName}.`
     },
     'Pesca': {
       title: 'Encuentro de Pesca',
@@ -381,31 +382,111 @@ const wildSpawns = computed(() => {
 const fishingSpawns = computed(() => {
   if (!props.map.fishing?.pool) return []
 
-  const fishingPool = props.map.fishing.pool
-  const fishingRates = props.map.fishing.rates || []
-  const totalFishingRate = fishingRates.reduce((sum, r) => sum + r, 0)
+  let pool = [...props.map.fishing.pool]
+  let rates = [...props.map.fishing.rates]
+  while (rates.length < pool.length) rates.push(10)
 
+  // Apply Weather injections (visitors & exclusives) to fishing pool
+  const weatherCfg = props.map.weather?.[props.weather]
+  if (props.weather && props.weather !== 'clear' && weatherCfg) {
+    if (weatherCfg.exclusive) {
+      const exclusives = Array.isArray(weatherCfg.exclusive) ? weatherCfg.exclusive : Object.keys(weatherCfg.exclusive)
+      exclusives.forEach(id => {
+        if (!pool.includes(id)) {
+          pool.push(id)
+          const weight = Array.isArray(weatherCfg.exclusive) ? 5 : ((weatherCfg.exclusive as Record<string, number>)[id] || 5)
+          rates.push(weight)
+        }
+      })
+    }
+    if (weatherCfg.visitors) {
+      const visitors = Array.isArray(weatherCfg.visitors) ? weatherCfg.visitors : Object.keys(weatherCfg.visitors)
+      visitors.forEach(id => {
+        if (!pool.includes(id)) {
+          pool.push(id)
+          const weight = Array.isArray(weatherCfg.visitors) ? -10 : -((weatherCfg.visitors as Record<string, number>)[id] || 10)
+          rates.push(weight)
+        }
+      })
+    }
+  }
+
+  // Apply Weather Multipliers & Normalization to fishing pool
+  if (props.weather && props.weather !== 'clear') {
+    const visitorIndices = rates.map((r, i) => r < 0 ? i : -1).filter(i => i !== -1)
+    const nativeIndices = rates.map((r, i) => r >= 0 ? i : -1).filter(i => i !== -1)
+    const exclusives = weatherCfg?.exclusive ? (Array.isArray(weatherCfg.exclusive) ? weatherCfg.exclusive : Object.keys(weatherCfg.exclusive)) : []
+
+    nativeIndices.forEach(idx => {
+      const spId = pool[idx]
+      if (spId) {
+        const isExclusive = exclusives.includes(spId)
+        if (!isExclusive) {
+          rates[idx] = (rates[idx] || 0) * getWeatherMultiplier(spId, props.weather)
+        }
+      }
+    })
+
+    if (visitorIndices.length > 0) {
+      const totalNativeWeight = nativeIndices.reduce((sum, idx) => sum + (rates[idx] || 0), 0)
+      const visitorQuota = totalNativeWeight / 9 // 10% weight
+      const sumRelativeWeights = visitorIndices.reduce((sum, idx) => sum + Math.abs(rates[idx] || 0), 0)
+      visitorIndices.forEach(idx => {
+        const relativeWeight = Math.abs(rates[idx] || 0) / (sumRelativeWeights || 1)
+        rates[idx] = visitorQuota * relativeWeight
+      })
+    }
+  }
+
+  const totalRate = rates.reduce((sum, r) => sum + r, 0)
   const seenPokedex = gameStore.state.seenPokedex || []
   const caughtPokedex = gameStore.state.pokedex || []
 
-  return fishingPool.map((id, index) => {
-    const rateVal = fishingRates[index] !== undefined ? fishingRates[index] : 10
-    const percentage = totalFishingRate > 0 ? (rateVal / totalFishingRate) * 100 : 0
+  return pool.map((id, index) => {
+    const rateVal = rates[index] || 0
+    const percentage = totalRate > 0 ? (rateVal / totalRate) * 100 : 0
+
+    // Calculate base percentage (without weather)
+    const baseIndex = props.map.fishing!.pool.indexOf(id)
+    let baseRate = 0
+    let basePercentage = 0
+    if (baseIndex !== -1) {
+      baseRate = props.map.fishing!.rates[baseIndex] !== undefined ? props.map.fishing!.rates[baseIndex] : 10
+      const totalBase = props.map.fishing!.rates.reduce((sum, r) => sum + r, 0)
+      basePercentage = totalBase > 0 ? (baseRate / totalBase) * 100 : 0
+    }
+
+    const diff = percentage - basePercentage
 
     const isSeen = seenPokedex.includes(id) || caughtPokedex.includes(id)
     const isCaught = caughtPokedex.includes(id)
     const data = isSeen ? pokemonDataProvider.getPokemonData(id) : null
     const name = isSeen ? (data?.name || id.toUpperCase()) : 'Desconocido'
 
-    // Multiplicador por clima
+    // Status type mapping
+    const isVisitor = !!(weatherCfg?.visitors && (
+      (!Array.isArray(weatherCfg.visitors) && (weatherCfg.visitors as Record<string, number>)[id]) || 
+      (Array.isArray(weatherCfg.visitors) && weatherCfg.visitors.includes(id))
+    ))
+    const isExclusive = !!(weatherCfg?.exclusive && (
+      (!Array.isArray(weatherCfg.exclusive) && (weatherCfg.exclusive as Record<string, number>)[id]) || 
+      (Array.isArray(weatherCfg.exclusive) && weatherCfg.exclusive.includes(id))
+    ))
+
     const multiplier = getWeatherMultiplier(id, props.weather)
-    const isBuffed = multiplier > 1.0
-    const isDebuffed = multiplier < 1.0 && multiplier > 0
+    const isBuffed = !isVisitor && !isExclusive && multiplier > 1.0
+    const isDebuffed = !isVisitor && !isExclusive && multiplier < 1.0 && multiplier > 0
     const isBlocked = multiplier === 0
 
     let spawnType = 'Pesca'
     let statusClass = 'common'
-    if (isBlocked) {
+    if (isVisitor) {
+      spawnType = 'Visitante'
+      statusClass = 'visitor'
+    } else if (isExclusive) {
+      spawnType = 'Exclusivo'
+      statusClass = 'exclusive'
+    } else if (isBlocked) {
       spawnType = 'Bloqueado'
       statusClass = 'blocked'
     } else if (isBuffed) {
@@ -423,9 +504,9 @@ const fishingSpawns = computed(() => {
       isCaught,
       sprite: getAssetUrl(ASSET_TYPES.POKEMON, id),
       percentage,
-      baseRate: rateVal,
-      basePercentage: percentage,
-      diff: 0,
+      baseRate,
+      basePercentage,
+      diff,
       spawnType,
       statusClass,
       multiplier,
@@ -911,7 +992,10 @@ const isRainyWeather = computed(() => {
 
               <!-- Climate Multiplier -->
               <div class="col-multiplier row-cell flex-align text-center">
-                <template v-if="poke.multiplier === 0">
+                <template v-if="poke.spawnType === 'Visitante' || poke.spawnType === 'Exclusivo'">
+                  <span :class="['status-tag', poke.statusClass]">{{ weatherEmoji }} {{ weatherLabel }}</span>
+                </template>
+                <template v-else-if="poke.multiplier === 0">
                   <span class="status-tag blocked">Bloqueado</span>
                 </template>
                 <template v-else-if="poke.multiplier !== 1">

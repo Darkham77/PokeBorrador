@@ -301,3 +301,38 @@ To assist in debugging and provide player clarity, all stat-related UI elements 
 - **Stat Breakdowns**: Admin/Debug tooltips (e.g., `getStatBreakdown`) MUST display the full calculation path: `Base x Clima x Stage x Habilidad x Estado = Final`.
 - **Percentage-based Stages**: Stage indicators (↑/↓) MUST display the exact percentage modifier (e.g., `+50%`, `-33%`, `+100%`) instead of just the stage level (+1, -1). This helps users visualize the real impact of the modifier.
 - **Centralized Logic**: Always use `getEffectiveStat` as the Single Source of Truth for combat calculations to ensure the HUD breakdown matches the actual damage dealt.
+
+---
+
+## 🎮 Minigame Formulas
+
+Minigames (like Fishing) scale their difficulty parameters dynamically based on the encounter's spawn rate or rarity. These formulas are encapsulated in `src/logic/minigames/minigameMath.ts`.
+
+To ensure that rare Pokémon (low spawn percentage / rarity) are more challenging, the engine calculates difficulty using the inverted rarity factor:
+```text
+Difficulty_Factor = 101 - Rarity
+```
+
+### 1. Fishing Note Count
+Calculates the number of rhythm notes players must hit during a fishing minigame:
+```text
+Total_Notes = Math.min(22, 5 + Math.floor(Difficulty_Factor / 7))
+```
+- **Rarity**: The Pokemon's spawn percentage (1 to 100).
+- **Bounds**: Always returns an integer between `5` (easiest, rarity 100%) and `22` (hardest, rarity 1%).
+
+### 2. Fishing Ring Speed
+Calculates the base duration (in milliseconds) for the ring to collapse from its outer bound to the perfect target:
+```text
+Speed_Base = Math.max(380, 1100 - (Difficulty_Factor * 7.5))
+```
+- **Bounds**: Always returns a duration between `380ms` (for rarity 1%, making it collapse extremely fast) and `1092.5ms` (for rarity 100%).
+
+### 3. Fishing Hit Window
+Calculates the precision timing tolerance window (in milliseconds) around the perfect target frame:
+```text
+Hit_Window = Math.max(100, 190 - (Difficulty_Factor / 1.3))
+```
+- **Bounds**: Always returns a tolerance window between `113ms` (for rarity 1%, narrowest timing) and `189ms` (for rarity 100%, widest timing).
+
+

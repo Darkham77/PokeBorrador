@@ -1,20 +1,25 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, nextTick } from 'vue'
 import { gsap } from 'gsap'
 import BaseModal from '@/components/common/BaseModal.vue'
 import type { Pokemon } from '@/types/pokemon'
+import {
+  calculateFishingTotalNotes,
+  calculateFishingSpeedBase,
+  calculateFishingHitWindow,
+} from '@/logic/minigames/minigameMath'
 
 interface Props {
   show?: boolean
   pokemon: Pokemon
-  rarity?: number
+  rarity?: number // 1-100
   onWin?: (() => void) | null
   onFail?: (() => void) | null
 }
 
 const props = withDefaults(defineProps<Props>(), {
   show: false,
-  rarity: 0,
+  rarity: 50,
   onWin: null,
   onFail: null
 })
@@ -25,242 +30,310 @@ const emit = defineEmits<{
   (e: 'close'): void
 }>()
 
-// Game configuration
-const totalNotes = Math.min(22, 5 + Math.floor(props.rarity / 7))
-const speedBase = Math.max(380, 1100 - (props.rarity * 7.5))
-const hitWindow = Math.max(100, 190 - (props.rarity / 1.3))
+const gameActive = ref(true)
+const feedback = ref('')
+
+let gameCall: gsap.core.Tween | null = null
+const totalNotes = calculateFishingTotalNotes(props.rarity)
+const speedBase = calculateFishingSpeedBase(props.rarity)
+const hitWindow = calculateFishingHitWindow(props.rarity)
 const spawnInterval = speedBase * 0.7
 
-interface FishingNote {
+interface Note {
   id: number
-  x: number
-  y: number
+  x: number // in px
+  y: number // in px
   startTime: number
-  isHit: boolean
+  clicked: boolean
 }
 
-// State
-const spawnedNotesCount = ref(0)
+const activeNotes = ref<Note[]>([])
 const clickedNotesCount = ref(0)
-const notes = ref<FishingNote[]>([])
-const gameActive = ref(true)
-const isFailed = ref(false)
+const spawnedNotesCount = ref(0)
+const activePositions = ref<{ x: number; y: number }[]>([])
+const activeTweens = new Map<number, gsap.core.Tween[]>()
 
 const spawnNext = () => {
   if (!gameActive.value || spawnedNotesCount.value >= totalNotes) return
 
   spawnedNotesCount.value++
-  const id = spawnedNotesCount.value
-  const x = 15 + Math.random() * 70
-  const y = 20 + Math.random() * 60
+  const noteId = spawnedNotesCount.value
+  
+  // Anti-overlapping logic in pixels (380x380 container)
+  const padding = 60
+  const minDistance = 85
+  let x = 0
+  let y = 0
+  let tooClose = false
+  let attempts = 0
 
-  const note: FishingNote = {
-    id,
+  do {
+    tooClose = false
+    x = padding + Math.random() * (380 - padding * 2)
+    y = padding + Math.random() * (380 - padding * 2)
+
+    for (const pos of activePositions.value) {
+      const dist = Math.sqrt(Math.pow(x - pos.x, 2) + Math.pow(y - pos.y, 2))
+      if (dist < minDistance) {
+        tooClose = true
+        break
+      }
+    }
+    attempts++
+  } while (tooClose && attempts < 15)
+
+  const myPos = { x, y }
+  activePositions.value.push(myPos)
+
+  const note: Note = {
+    id: noteId,
     x,
     y,
-    startTime: gsap.globalTimeline.time() * 1000,
-    isHit: false
+    startTime: performance.now(),
+    clicked: false
   }
 
-  notes.value.push(note)
+  activeNotes.value.push(note)
 
-  // Fail if not clicked in time
-  gsap.delayedCall((speedBase + hitWindow) / 1000, () => {
-    if (gameActive.value && !note.isHit) {
-      fail()
+  // Fail timer if not clicked
+  const failCall = gsap.delayedCall((speedBase + 150) / 1000, () => {
+    if (!note.clicked && gameActive.value) {
+      activePositions.value = activePositions.value.filter(p => p !== myPos)
+      failGame('¡Perdiste el ritmo!')
     }
   })
 
-  // Schedule next spawn
-  if (spawnedNotesCount.value < totalNotes) {
-    gsap.delayedCall(spawnInterval / 1000, spawnNext)
-  }
+  // Visual Ring Animation
+  nextTick(() => {
+    const el = document.querySelector(`.rhythm-note[data-note-id="${noteId}"] .rhythm-ring`)
+    if (el) {
+      const ringAnim = gsap.fromTo(el, 
+        { scale: 3.0, opacity: 0 },
+        { 
+          scale: 1.0, 
+          opacity: 1, 
+          duration: speedBase / 1000, 
+          ease: 'none',
+          onComplete: () => { gsap.to(el, { opacity: 0, duration: 0.1 }) }
+        }
+      )
+      activeTweens.set(noteId, [failCall, ringAnim])
+    }
+  })
+
+  gameCall = gsap.delayedCall(spawnInterval / 1000, spawnNext)
 }
 
-const handleNoteClick = (note: FishingNote) => {
-  if (!gameActive.value || note.isHit) return
+const handleNoteClick = (note: Note) => {
+  if (note.clicked || !gameActive.value) return
 
-  const elapsed = (gsap.globalTimeline.time() * 1000) - note.startTime
-  const diff = Math.abs(elapsed - speedBase)
+  if (note.id !== clickedNotesCount.value + 1) {
+    failGame('¡Orden equivocado!')
+    return
+  }
 
-  if (diff <= hitWindow) {
-    note.isHit = true
+  const elapsed = performance.now() - note.startTime
+  const accuracy = Math.abs(elapsed - speedBase)
+
+  if (accuracy < hitWindow) {
+    note.clicked = true
     clickedNotesCount.value++
     
-    if (clickedNotesCount.value >= totalNotes) {
-      win()
+    // Clear from active positions
+    activePositions.value = activePositions.value.filter(p => p.x !== note.x || p.y !== note.y)
+
+    // Kill the fail timer and ring animation
+    const tweens = activeTweens.get(note.id)
+    if (tweens) {
+      tweens.forEach(t => t.kill())
+      activeTweens.delete(note.id)
     }
+
+    // Success animation
+    const noteEl = document.querySelector(`.rhythm-note[data-note-id="${note.id}"]`)
+    if (noteEl) {
+      gsap.to(noteEl, { scale: 1.2, duration: 0.1, yoyo: true, repeat: 1 })
+    }
+
+    gsap.delayedCall(0.1, () => {
+      activeNotes.value = activeNotes.value.filter(n => n.id !== note.id)
+      if (clickedNotesCount.value >= totalNotes) {
+        finishGame(true)
+      }
+    })
   } else {
-    fail()
+    failGame(accuracy < speedBase ? '¡Muy pronto!' : '¡Muy tarde!')
   }
 }
 
-const win = () => {
-  gameActive.value = false
-  gsap.delayedCall(0.5, () => {
-    if (props.onWin) props.onWin()
-    emit('win')
-    emit('close')
-  })
-}
-
-const fail = () => {
+const failGame = (msg: string) => {
   if (!gameActive.value) return
   gameActive.value = false
-  isFailed.value = true
-  gsap.delayedCall(1, () => {
+  feedback.value = msg
+  gsap.delayedCall(1, () => finishGame(false))
+}
+
+const finishGame = (success: boolean) => {
+  gameActive.value = false
+  if (gameCall) gameCall.kill()
+  activeTweens.forEach(tweens => tweens.forEach(t => t.kill()))
+  activeTweens.clear()
+  activePositions.value = []
+
+  if (success) {
+    if (props.onWin) props.onWin()
+    emit('win')
+  } else {
     if (props.onFail) props.onFail()
     emit('fail')
-    emit('close')
-  })
+  }
+  emit('close')
 }
 
 onMounted(() => {
-  gsap.delayedCall(1, spawnNext)
+  gsap.delayedCall(0.8, spawnNext)
+
+  gsap.to('.fishing-icon', {
+    y: -10,
+    duration: 1,
+    repeat: -1,
+    yoyo: true,
+    ease: 'sine.inOut'
+  })
 })
 
 onUnmounted(() => {
-  gameActive.value = false
-  gsap.killTweensOf(spawnNext)
+  if (gameCall) gameCall.kill()
+  activeTweens.forEach(tweens => tweens.forEach(t => t.kill()))
 })
-
-// Local directive to animate the rhythm ring with GSAP
-const vGsapShrink = {
-  mounted(el: HTMLElement, binding: { value: number }) {
-    const duration = binding.value / 1000
-    const tl = gsap.timeline()
-    tl.fromTo(el, 
-      { scale: 1.8, opacity: 0 },
-      { scale: 1, duration, ease: 'none' }
-    )
-    tl.to(el, { opacity: 1, duration: duration * 0.2, ease: 'none' }, 0)
-    tl.to(el, { borderColor: '#ffffff', duration: duration * 0.8, ease: 'none' }, duration * 0.2)
-  }
-}
 </script>
 
 <template>
   <BaseModal
     :show="show"
-    type="fullscreen"
     hide-header
     :show-close-button="false"
     overlay="dark"
     padding="raw"
     :show-border="false"
+    max-width="440px"
   >
-    <div
-      class="fishing-game-overlay"
-      :class="{ fail: isFailed }"
-    >
-      <div class="rhythm-container">
-        <div class="fishing-hint">
-          <h3>¡RITMO DE PESCA!</h3>
-          <p>Hacé clic en los números <span>1, 2, 3...</span></p>
-          <p class="secondary">
-            ¡Mantené el foco!
-          </p>
+    <div class="rhythm-container">
+      <!-- Background / Hint -->
+      <div class="fishing-hint">
+        <div class="fishing-icon">
+          🎣
         </div>
-
-        <div class="rhythm-counter">
-          NOTAS: {{ clickedNotesCount }} / {{ totalNotes }}
+        <div class="fishing-text">
+          <h3 class="pixel-text">
+            ¡RITMO DE PESCA!
+          </h3>
+          <p>Hacé clic en las notas en orden <span>1, 2, 3...</span></p>
         </div>
-
-        <TransitionGroup name="note">
-          <div
-            v-for="note in notes"
-            v-show="!note.isHit"
-            :key="note.id"
-            class="rhythm-note"
-            :style="{ left: note.x + '%', top: note.y + '%' }"
-            @mousedown.stop="handleNoteClick(note)"
-          >
-            <div class="note-number">
-              {{ note.id }}
-            </div>
-            <div
-              v-gsap-shrink="speedBase"
-              class="rhythm-ring"
-            />
-          </div>
-        </TransitionGroup>
       </div>
+
+      <!-- Counter -->
+      <div class="rhythm-counter pixel-text">
+        NOTAS: {{ clickedNotesCount }} / {{ totalNotes }}
+      </div>
+
+      <!-- Game Area (Fija 380x380 px) -->
+      <div class="game-area">
+        <div 
+          v-for="note in activeNotes" 
+          :key="note.id"
+          class="rhythm-note"
+          :class="{ 'success': note.clicked }"
+          :style="{ left: `${note.x}px`, top: `${note.y}px` }"
+          :data-note-id="note.id"
+          @mousedown.stop="handleNoteClick(note)"
+          @touchstart.prevent.stop="handleNoteClick(note)"
+        >
+          <div class="rhythm-circle">
+            {{ note.id }}
+          </div>
+          <div 
+            class="rhythm-ring" 
+          />
+        </div>
+      </div>
+
+      <!-- Feedback -->
+      <Transition name="fade">
+        <div
+          v-if="feedback"
+          class="game-feedback pixel-text"
+        >
+          {{ feedback }}
+        </div>
+      </Transition>
     </div>
   </BaseModal>
 </template>
 
-<style scoped lang="scss">
-@use "@/styles/core/tools" as *;
-
-.fishing-game-overlay {
-  position: fixed;
-  inset: 0;
-  background: Rgba(0, 0, 0, 0.9);
-  -webkit-will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  backdrop-filter: Blur(10px);
-  @include gpu-layer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: crosshair;
-
-  &.fail {
-    background: Rgba(153, 27, 27, 0.9);
-  }
-}
+<style lang="scss" scoped>
+@use "@/styles/core/_mixins" as *;
 
 .rhythm-container {
   position: relative;
   width: 100%;
-  height: 100%;
-  max-width: 1000px;
-  max-height: 800px;
-  user-select: none;
+  background: var(--card, #12131a);
+  border: 2px solid Rgba(10, 132, 255, 0.4);
+  border-radius: 28px;
+  box-shadow: 0 0 40px Rgba(0, 0, 0, 0.6);
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+  align-items: center;
 }
 
 .fishing-hint {
-  position: absolute;
-  top: 40px;
-  left: 50%;
-  transform: Translatex(-50%);
-  text-align: center;
-  pointer-events: none;
-  
-  h3 {
-    @include pixelated;
-    font-size: 16px;
-    color: Rgba(59, 130, 246, 1);
-    margin-bottom: 12px;
-    text-shadow: 0 0 10px Rgba(59, 130, 246, 0.5);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+  background: Rgba(10, 132, 255, 0.1);
+  padding: 12px 20px;
+  border-radius: 16px;
+  border: 1px solid Rgba(10, 132, 255, 0.2);
+  width: 100%;
+
+  .fishing-icon {
+    font-size: 40px;
   }
 
-  p {
-    font-size: 14px;
-    color: Rgba(238, 238, 238, 1);
-    span { color: Rgba(250, 204, 21, 1); font-weight: bold; }
-  }
-
-  .secondary {
-    font-size: 11px;
-    opacity: 0.6;
-    margin-top: 8px;
-    text-transform: uppercase;
+  .fishing-text {
+    h3 {
+      font-size: 11px;
+      color: var(--blue, #0a84ff);
+      margin-bottom: 4px;
+      text-shadow: 0 0 10px Rgba(10, 132, 255, 0.5);
+    }
+    p {
+      font-size: 9px;
+      color: #ccc;
+      span { color: #fff; font-weight: bold; }
+    }
   }
 }
 
 .rhythm-counter {
-  position: absolute;
-  bottom: 40px;
-  left: 50%;
-  transform: Translatex(-50%);
-  @include pixelated;
-  font-size: 14px;
-  color: var(--white);
-  background: Rgba(255, 255, 255, 0.05);
-  padding: 12px 24px;
-  border-radius: 99px;
-  border: 1px solid Rgba(255, 255, 255, 0.1);
+  text-align: center;
+  font-size: 12px;
+  color: #fff;
+  margin-bottom: 16px;
+  letter-spacing: 1px;
+}
+
+.game-area {
+  position: relative;
+  width: 380px;
+  height: 380px;
+  background: Rgba(0, 0, 0, 0.4);
+  border-radius: 20px;
+  border: 2px solid Rgba(10, 132, 255, 0.2);
+  overflow: hidden;
+  box-shadow: inset 0 0 20px Rgba(0, 0, 0, 0.8);
 }
 
 .rhythm-note {
@@ -268,30 +341,68 @@ const vGsapShrink = {
   width: 70px;
   height: 70px;
   transform: Translate(-50%, -50%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
   cursor: pointer;
+  user-select: none;
+  touch-action: none;
 
-  .note-number {
+  .rhythm-circle {
+    width: 100%;
+    height: 100%;
+    background: Rgba(10, 132, 255, 0.2);
+    border: 3px solid var(--blue, #0a84ff);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
     @include pixelated;
-    font-size: 20px;
-    color: var(--white);
-    z-index: var(--z-base);
-    text-shadow: 0 2px 4px Rgba(0,0,0,0.5);
+    font-size: 16px;
+    box-shadow: 0 0 15px Rgba(10, 132, 255, 0.4);
+    z-index: 2;
+    position: relative;
   }
 
   .rhythm-ring {
     position: absolute;
-    inset: -10px;
-    border: 4px solid Rgba(59, 130, 246, 1);
+    inset: 0;
+    border: 4px solid Rgba(10, 132, 255, 0.8);
     border-radius: 50%;
     pointer-events: none;
+    opacity: 0;
+  }
+
+  &.success .rhythm-circle {
+    background: Rgba(34, 197, 94, 0.2);
+    border-color: #22c55e;
+    transform: Scale(1.2);
+    box-shadow: 0 0 30px Rgba(34, 197, 94, 0.6);
   }
 }
 
-.note-leave-to {
-  transform: Translate(-50%, -50%) Scale(1.5);
+.game-feedback {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: Translate(-50%, -50%);
+  font-size: 14px;
+  color: #ff4d4d;
+  text-shadow: 0 0 10px Rgba(255, 77, 77, 0.5);
+  background: Rgba(0, 0, 0, 0.9);
+  padding: 12px 24px;
+  border-radius: 12px;
+  border: 1px solid Rgba(255, 77, 77, 0.3);
+  z-index: 10;
+  text-align: center;
+  box-shadow: 0 4px 20px Rgba(0, 0, 0, 0.5);
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
   opacity: 0;
 }
 </style>

@@ -721,7 +721,7 @@ const onMouseLeave = () => {
     ease: 'power2.out',
     overwrite: 'auto',
     onComplete: () => {
-      if (!isHovered.value) {
+      if (!isHovered.value && cardRef.value) {
         gsap.set(cardRef.value, { clearProps: 'transform,y,boxShadow,borderColor' })
       }
     }
@@ -734,7 +734,7 @@ const onMouseLeave = () => {
       ease: 'power2.out',
       overwrite: 'auto',
       onComplete: () => {
-        if (!isHovered.value) {
+        if (!isHovered.value && bgRef.value) {
           gsap.set(bgRef.value, { clearProps: 'transform,scale' })
         }
       }
@@ -748,7 +748,7 @@ const onMouseLeave = () => {
       ease: 'power2.out',
       overwrite: 'auto',
       onComplete: () => {
-        if (!isHovered.value) {
+        if (!isHovered.value && overlayRef.value) {
           gsap.set(overlayRef.value, { clearProps: 'opacity' })
         }
       }

@@ -120,4 +120,49 @@ describe('encounters.js', () => {
     expect(result!.type).toBe('wild')
     expect(result!.pokemon!.id).toBe('zapdos')
   })
+
+  it('should generate fishing encounter and apply weather multipliers/visitors/exclusives to fishing pool', async () => {
+    const { pokemonDataProvider } = await import('@/logic/providers/pokemonDataProvider')
+    
+    vi.mocked(pokemonDataProvider.getMaps).mockReturnValueOnce([
+      {
+        id: 'route22',
+        wild: { day: ['pidgey'] },
+        rates: { day: [100] },
+        lv: [3, 5],
+        fishing: { pool: ['magikarp', 'poliwag'], rates: [80, 20], lv: [5, 10] },
+        weather: {
+          rain: { visitors: { psyduck: 100 } }
+        }
+      }
+    ] as unknown as ReturnType<typeof pokemonDataProvider.getMaps>)
+
+    vi.mocked(pokemonDataProvider.getPokemonData).mockImplementation((id: string) => {
+      if (id === 'magikarp') return { type: 'water' } as unknown as ReturnType<typeof pokemonDataProvider.getPokemonData>;
+      if (id === 'poliwag') return { type: 'water' } as unknown as ReturnType<typeof pokemonDataProvider.getPokemonData>;
+      if (id === 'psyduck') return { type: 'water' } as unknown as ReturnType<typeof pokemonDataProvider.getPokemonData>;
+      return { type: 'normal' } as unknown as ReturnType<typeof pokemonDataProvider.getPokemonData>;
+    })
+
+    let callCount = 0
+    vi.spyOn(Math, 'random').mockImplementation(() => {
+      callCount++
+      if (callCount === 1) return 0.99 // Dispute check: bypass
+      if (callCount === 2) return 0.99 // Trainer check: bypass (0.99 * 100 = 99)
+      if (callCount === 3) return 0.0001 // Fishing check: force trigger
+      if (callCount === 4) return 0.1 // selectFromPool
+      return 0.5 // level calculation
+    })
+
+    const result = await generateEncounter(
+      'route22',
+      mockState as unknown as Parameters<typeof generateEncounter>[1],
+      { weather: 'rain' }
+    )
+
+    expect(result).toBeDefined()
+    expect(result!.type).toBe('fishing')
+    expect(result!.pokemon).toBeDefined()
+    expect(result!.rarity).toBeGreaterThan(0)
+  })
 })

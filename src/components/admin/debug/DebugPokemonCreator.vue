@@ -185,47 +185,20 @@ async function executeAction(protocol: string) {
   }
 }
 
-function handleRandomize() {
+function randomizeSpecies() {
   const speciesList = allSpecies.value
   if (speciesList.length === 0) return
-  
   const randomSpecies = speciesList[Math.floor(Math.random() * speciesList.length)]
-  if (!randomSpecies) return
-  
-  config.value.id = randomSpecies.id
-  
+  if (randomSpecies) {
+    selectSpecies(randomSpecies)
+  }
+}
+
+function randomizeLevel() {
   config.value.level = Math.floor(Math.random() * 100) + 1
-  
-  config.value.isShiny = Math.random() < 0.05 // 5% shiny
-  config.value.isGuardian = Math.random() < 0.01 // 1% guardian
-  
-  const natures = allNatures
-  const randomNature = natures[Math.floor(Math.random() * natures.length)]
-  if (randomNature) {
-    config.value.nature = randomNature.id
-  }
-  
-  const abilities = pokemonDataProvider.getSpeciesAbilities(randomSpecies.id)
-  if (abilities.length > 0) {
-    const randomAbility = abilities[Math.floor(Math.random() * abilities.length)]
-    if (randomAbility) {
-      config.value.ability = randomAbility
-    }
-  }
-  
-  config.value.gender = Math.random() > 0.5 ? 'M' : 'F'
-  config.value.friendship = Math.floor(Math.random() * 256)
-  config.value.nickname = ''
-  
-  const maps = allMaps.value
-  if (maps.length > 0) {
-    const randomMap = maps[Math.floor(Math.random() * maps.length)]
-    if (randomMap) {
-      config.value.mapId = randomMap.id
-    }
-  }
-  
-  // IVs
+}
+
+function randomizeIVs() {
   config.value.ivs = {
     hp: Math.floor(Math.random() * 32),
     atk: Math.floor(Math.random() * 32),
@@ -234,7 +207,70 @@ function handleRandomize() {
     spd: Math.floor(Math.random() * 32),
     spe: Math.floor(Math.random() * 32)
   }
-  
+}
+
+function randomizeNature() {
+  const natures = allNatures
+  const randomNature = natures[Math.floor(Math.random() * natures.length)]
+  if (randomNature) {
+    config.value.nature = randomNature.id
+  }
+}
+
+function randomizeAbility() {
+  const abilities = pokemonDataProvider.getSpeciesAbilities(config.value.id)
+  if (abilities.length > 0) {
+    const randomAbility = abilities[Math.floor(Math.random() * abilities.length)]
+    if (randomAbility) {
+      config.value.ability = randomAbility
+    }
+  }
+}
+
+function randomizeNickname() {
+  const names = ['POKI', 'CRACK', 'VICIADO', 'RAYO', 'TITAN', 'FURIA', 'CHISPA', 'GOKU', 'PEPE']
+  config.value.nickname = Math.random() > 0.3 ? names[Math.floor(Math.random() * names.length)] || '' : ''
+}
+
+function randomizeMinigame() {
+  selectedMinigame.value = Math.random() > 0.5 ? 'fishing' : 'archaeology'
+}
+
+function randomizeOrigin() {
+  const maps = filteredMaps.value.length > 0 ? filteredMaps.value : allMaps.value
+  if (maps.length > 0) {
+    const randomMap = maps[Math.floor(Math.random() * maps.length)]
+    if (randomMap) {
+      config.value.mapId = randomMap.id
+    }
+  }
+}
+
+function randomizeBase() {
+  randomizeSpecies()
+  randomizeLevel()
+  randomizeNature()
+  randomizeAbility()
+  randomizeIVs()
+}
+
+function randomizeVisuals() {
+  config.value.isShiny = Math.random() < 0.05 // 5% shiny
+  config.value.isGuardian = Math.random() < 0.01 // 1% guardian
+  config.value.gender = Math.random() > 0.5 ? 'M' : 'F'
+}
+
+function randomizeExtras() {
+  randomizeNickname()
+  randomizeMinigame()
+  randomizeOrigin()
+  config.value.friendship = Math.floor(Math.random() * 256)
+}
+
+function handleRandomize() {
+  randomizeBase()
+  randomizeVisuals()
+  randomizeExtras()
   randomFillMoves()
 }
 
@@ -271,7 +307,22 @@ onMounted(() => {
     <div class="creator-grid">
       <!-- Left: Species & Stats -->
       <div class="creator-section">
-        <h4>BASE & ATRIBUTOS</h4>
+        <div class="section-header-row">
+          <h4>BASE & ATRIBUTOS</h4>
+          <div class="header-actions">
+            <PVTooltip
+              title="Aleatorizar Base y Atributos"
+              description="Selecciona especie, nivel, IVs, naturaleza y habilidad al azar."
+            >
+              <button
+                class="btn-magic-fill btn-random-fill lg"
+                @click.stop="randomizeBase"
+              >
+                🎲
+              </button>
+            </PVTooltip>
+          </div>
+        </div>
         
         <!-- Species Search -->
         <DebugSearchSelect
@@ -281,10 +332,40 @@ onMounted(() => {
           tooltip-title="Buscador de especies"
           tooltip-desc="Busca y selecciona la especie base del Pokémon."
           @select="selectSpecies"
-        />
+        >
+          <template #label-action>
+            <PVTooltip
+              title="Especie al azar"
+              description="Selecciona una especie Pokémon aleatoria."
+            >
+              <button
+                class="btn-magic-fill btn-random-fill"
+                @click.stop="randomizeSpecies"
+              >
+                🎲
+              </button>
+            </PVTooltip>
+          </template>
+        </DebugSearchSelect>
 
         <div class="debug-input-group">
-          <label>NIVEL (1-100)</label>
+          <div
+            class="label-row"
+            style="display: flex; justify-content: space-between; align-items: center; width: 100%;"
+          >
+            <label>NIVEL (1-100)</label>
+            <PVTooltip
+              title="Nivel al azar"
+              description="Asigna un nivel aleatorio entre 1 y 100."
+            >
+              <button
+                class="btn-magic-fill btn-random-fill"
+                @click.stop="randomizeLevel"
+              >
+                🎲
+              </button>
+            </PVTooltip>
+          </div>
           <PVTooltip
             title="Nivel del Pokémon"
             description="Ajusta el nivel del Pokémon (entre 1 y 100)."
@@ -300,10 +381,29 @@ onMounted(() => {
 
         <PokemonBaseStats :stats="baseStats" />
           
-        <PokemonIVEditor 
-          :ivs="config.ivs" 
-          @update:iv="(stat: string, val: number) => (config.ivs)[stat] = val" 
-        />
+        <div class="debug-input-group">
+          <div
+            class="label-row"
+            style="display: flex; justify-content: space-between; align-items: center; width: 100%;"
+          >
+            <label>VALORES INDIVIDUALES (IVS)</label>
+            <PVTooltip
+              title="IVs al azar"
+              description="Genera valores de genética individuales (0-31) al azar para cada estadística."
+            >
+              <button
+                class="btn-magic-fill btn-random-fill"
+                @click.stop="randomizeIVs"
+              >
+                🎲
+              </button>
+            </PVTooltip>
+          </div>
+          <PokemonIVEditor 
+            :ivs="config.ivs" 
+            @update:iv="(stat: string, val: number) => (config.ivs)[stat] = val" 
+          />
+        </div>
 
         <!-- Nature & Ability -->
         <DebugSearchSelect
@@ -312,7 +412,21 @@ onMounted(() => {
           :options="allNatures"
           tooltip-title="Naturaleza"
           tooltip-desc="Modificadores de estadísticas basados en la personalidad."
-        />
+        >
+          <template #label-action>
+            <PVTooltip
+              title="Naturaleza al azar"
+              description="Asigna una personalidad/naturaleza aleatoria."
+            >
+              <button
+                class="btn-magic-fill btn-random-fill"
+                @click.stop="randomizeNature"
+              >
+                🎲
+              </button>
+            </PVTooltip>
+          </template>
+        </DebugSearchSelect>
 
         <DebugSearchSelect
           v-model="config.ability"
@@ -320,12 +434,41 @@ onMounted(() => {
           :options="allAbilities"
           tooltip-title="Habilidad"
           tooltip-desc="Capacidad especial pasiva de esta especie."
-        />
+        >
+          <template #label-action>
+            <PVTooltip
+              title="Habilidad al azar"
+              description="Asigna una habilidad aleatoria disponible para esta especie."
+            >
+              <button
+                class="btn-magic-fill btn-random-fill"
+                @click.stop="randomizeAbility"
+              >
+                🎲
+              </button>
+            </PVTooltip>
+          </template>
+        </DebugSearchSelect>
       </div>
 
       <!-- Right: Preview & Moves -->
       <div class="creator-section">
-        <h4>VISUALIZACIÓN & ATAQUES</h4>
+        <div class="section-header-row">
+          <h4>VISUALIZACIÓN & ATAQUES</h4>
+          <div class="header-actions">
+            <PVTooltip
+              title="Aleatorizar Aspecto Visual"
+              description="Aleatoriza género, variocolor (shiny) y estado guardián."
+            >
+              <button
+                class="btn-magic-fill btn-random-fill lg"
+                @click.stop="randomizeVisuals"
+              >
+                🎲
+              </button>
+            </PVTooltip>
+          </div>
+        </div>
         
         <PokemonPreview
           :sprite-url="currentSprite"
@@ -343,14 +486,53 @@ onMounted(() => {
           @auto-fill="autoFillMoves"
           @random-fill="randomFillMoves"
         />
+
+        <button 
+          class="btn-vicio-secondary sm"
+          style="margin-top: 12px; margin-bottom: 4px;"
+          @click.stop="handleRandomize"
+        >
+          🎲 ALEATORIO
+        </button>
       </div>
 
       <!-- Bottom/Right: Extras & Action -->
       <div class="creator-section">
-        <h4>EXTRAS & ACCIONES</h4>
+        <div class="section-header-row">
+          <h4>EXTRAS & ACCIONES</h4>
+          <div class="header-actions">
+            <PVTooltip
+              title="Aleatorizar Extras"
+              description="Genera origen de ruta y amistad al azar, y limpia el apodo."
+            >
+              <button
+                class="btn-magic-fill btn-random-fill lg"
+                @click.stop="randomizeExtras"
+              >
+                🎲
+              </button>
+            </PVTooltip>
+          </div>
+        </div>
       
         <div class="debug-input-group">
-          <label>APODO (NICKNAME)</label>
+          <div
+            class="label-row"
+            style="display: flex; justify-content: space-between; align-items: center; width: 100%;"
+          >
+            <label>APODO (NICKNAME)</label>
+            <PVTooltip
+              title="Apodo al azar"
+              description="Asigna un apodo aleatorio o limpia el campo."
+            >
+              <button
+                class="btn-magic-fill btn-random-fill"
+                @click.stop="randomizeNickname"
+              >
+                🎲
+              </button>
+            </PVTooltip>
+          </div>
           <PVTooltip
             title="Apodo"
             description="Asigna un nombre personalizado al Pokémon."
@@ -364,7 +546,23 @@ onMounted(() => {
         </div>
       
         <div class="debug-input-group">
-          <label>MINIJUEGO</label>
+          <div
+            class="label-row"
+            style="display: flex; justify-content: space-between; align-items: center; width: 100%;"
+          >
+            <label>MINIJUEGO</label>
+            <PVTooltip
+              title="Minijuego al azar"
+              description="Selecciona de forma aleatoria el minijuego de captura."
+            >
+              <button
+                class="btn-magic-fill btn-random-fill"
+                @click.stop="randomizeMinigame"
+              >
+                🎲
+              </button>
+            </PVTooltip>
+          </div>
           <PVTooltip
             title="Minijuego"
             description="Selecciona el minijuego de captura para testear."
@@ -390,7 +588,21 @@ onMounted(() => {
           :options="filteredMaps"
           tooltip-title="Ruta de origen"
           tooltip-desc="Lugar donde se registrará que fue encontrado el Pokémon."
-        />
+        >
+          <template #label-action>
+            <PVTooltip
+              title="Origen al azar"
+              description="Asigna una ruta de origen aleatoria."
+            >
+              <button
+                class="btn-magic-fill btn-random-fill"
+                @click.stop="randomizeOrigin"
+              >
+                🎲
+              </button>
+            </PVTooltip>
+          </template>
+        </DebugSearchSelect>
       </div>
     </div>
 
@@ -414,8 +626,7 @@ onMounted(() => {
           description="Inicia la secuencia y el minijuego de captura seleccionado."
         >
           <button
-            class="btn-vicio-primary"
-            style="background: linear-gradient(135deg, #10b981, #059669); box-shadow: 0 4px 16px rgba(16, 185, 129, 0.4);"
+            class="btn-vicio-success"
             @click.stop="executeAction(selectedMinigame + '_minigame')"
           >
             MINIJUEGO

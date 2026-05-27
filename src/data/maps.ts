@@ -25,7 +25,7 @@ export const FIRE_RED_MAPS = [
       sun: { visitors: { bulbasaur: 10 }, exclusive: { sunflora: 100 } },
       fog: { visitors: { abra: 100 } },
       mist: { visitors: { oddish: 50, bellsprout: 50 } },
-      wind: { visitors: { pidgey: 70, spearow: 30 } },
+      wind: { visitors: { spearow: 100 } },
       heatwave: { visitors: { exeggutor: 100 } },
       heavy_rain: { visitors: { psyduck: 80, golduck: 20 } },
       thunderstorm: { visitors: { pikachu: 100 } }
@@ -53,10 +53,12 @@ export const FIRE_RED_MAPS = [
       storm: { visitors: { pikachu: 80, magnemite: 20 } },
       sun: { visitors: { ponyta: 100 } },
       sandstorm: { visitors: { sandshrew: 100 } },
-      wind: { visitors: { spearow: 80, fearow: 20 } },
+      wind: { visitors: { fearow: 100 } },
       dust_storm: { visitors: { sandslash: 100 } },
       thunderstorm: { visitors: { raichu: 100 } },
-      heatwave: { visitors: { ponyta: 80, rapidash: 20 } }
+      heatwave: { visitors: { ponyta: 80, rapidash: 20 } },
+      coldwave: { visitors: { jynx: 100 } },
+      blizzard: { visitors: { jynx: 95 }, exclusive: { articuno: 5 } }
     }
   },
   {
@@ -106,11 +108,11 @@ export const FIRE_RED_MAPS = [
     fishing: { pool: ['psyduck', 'krabby', 'horsea'], rates: [35, 35, 30], lv: [1, 5] },
     weather: {
       rain: { visitors: { slowpoke: 70, poliwag: 30 } },
-      storm: { visitors: { pikachu: 95 }, exclusive: { zapdos: 5 } },
+      storm: { visitors: { pikachu: 100 } },
       fog: { visitors: { venomoth: 100 } },
       strong_winds: { visitors: { dragonair: 100 } },
       heavy_rain: { visitors: { poliwrath: 100 } },
-      thunderstorm: { visitors: { raichu: 90, dragonite: 10 } }
+      thunderstorm: { visitors: { raichu: 85, dragonite: 10 }, exclusive: { zapdos: 5 } }
     }
   },
   {
@@ -121,7 +123,6 @@ export const FIRE_RED_MAPS = [
       rain: { visitors: { krabby: 70, staryu: 30 } },
       sun: { visitors: { charmander: 10 } },
       fog: { visitors: { kadabra: 100 } },
-      mist: { visitors: { abra: 100 } },
       heavy_rain: { visitors: { kingler: 100 } },
       heatwave: { visitors: { charmander: 50, charmeleon: 50 } },
       thunderstorm: { visitors: { electabuzz: 100 } }
@@ -186,7 +187,7 @@ export const FIRE_RED_MAPS = [
     rates: { morning: [20, 20, 15, 15, 15, 15], day: [20, 20, 15, 15, 15, 15], dusk: [60, 40], night: [70, 30] }, lv: [14, 18],
     weather: {
       sandstorm: { visitors: { machop: 70, geodude: 30 } },
-      sun: { visitors: { mankey: 80, primeape: 20 } },
+      sun: { visitors: { primeape: 100 } },
       fog: { visitors: { drowzee: 100 } },
       dust_storm: { visitors: { machoke: 100 } },
       heatwave: { visitors: { primeape: 100 } }
@@ -201,7 +202,6 @@ export const FIRE_RED_MAPS = [
       sandstorm: { visitors: { graveler: 80, rhyhorn: 20 } },
       fog: { visitors: { gastly: 85, haunter: 10 }, exclusive: { gengar: 5 } },
       snow: { visitors: { seel: 100 } },
-      mist: { visitors: { zubat: 90, golbat: 10 } },
       cold: { visitors: { seel: 90, shellder: 10 } },
       coldwave: { visitors: { dewgong: 100 } },
       dust_storm: { visitors: { graveler: 100 } },
@@ -217,7 +217,7 @@ export const FIRE_RED_MAPS = [
       rain: { visitors: { krabby: 100 } },
       fog: { visitors: { abra: 100 } },
       strong_winds: { visitors: { fearow: 100 } },
-      wind: { visitors: { spearow: 80, pidgey: 20 } },
+      wind: { visitors: { pidgey: 100 } },
       cold: { visitors: { shellder: 100 } },
       thunderstorm: { visitors: { electabuzz: 90, zapdos: 10 } },
       heavy_rain: { visitors: { kingler: 100 } }
@@ -240,7 +240,7 @@ export const FIRE_RED_MAPS = [
     rates: { morning: [18, 15, 13, 13, 10, 10, 10, 8, 2, 1], day: [18, 15, 13, 13, 10, 10, 10, 8, 2, 1], dusk: [38, 35, 20, 7], night: [40, 35, 20, 5] }, lv: [18, 22],
     weather: {
       sun: { visitors: { arcanine: 50, ninetales: 50 } },
-      fog: { visitors: { kadabra: 70, haunter: 30 } },
+      fog: { visitors: { haunter: 80, gastly: 20 } },
       heatwave: { visitors: { magmar: 100 } },
       intense_sun: { visitors: { exeggutor: 100 } },
       rain: { visitors: { psyduck: 100 } },
@@ -257,7 +257,6 @@ export const FIRE_RED_MAPS = [
     rates: { morning: [100], day: [100], dusk: [80, 20], night: [70, 20, 10] }, lv: [20, 25],
     weather: {
       fog: { visitors: { gengar: 80, alakazam: 20 } },
-      mist: { visitors: { gastly: 100 } },
       cold: { visitors: { misdreavus: 100 } }
     }
   },
@@ -272,7 +271,6 @@ export const FIRE_RED_MAPS = [
       sun: { visitors: { tangela: 100 } },
       strong_winds: { visitors: { dragonite: 95 }, exclusive: { lugia: 5 } },
       mist: { visitors: { tentacruel: 100 } },
-      fog: { visitors: { shellder: 100 } },
       wind: { visitors: { pidgeotto: 100 } },
       heavy_rain: { visitors: { gyarados: 100 } },
       thunderstorm: { visitors: { dragonite: 100 } },
@@ -285,7 +283,6 @@ export const FIRE_RED_MAPS = [
     rates: { morning: [18, 8, 18, 18, 18, 10, 10], day: [18, 8, 18, 18, 18, 10, 10], dusk: [50, 35, 15], night: [60, 40] }, lv: [24, 28],
     weather: {
       sun: { visitors: { vileplume: 50, victreebel: 50 } },
-      rain: { visitors: { farfetchd: 100 } },
       fog: { visitors: { venomoth: 100 } },
       mist: { visitors: { gloom: 50, weepinbell: 50 } },
       heatwave: { visitors: { vileplume: 50, victreebel: 50 } },
@@ -302,13 +299,10 @@ export const FIRE_RED_MAPS = [
       rain: { visitors: { psyduck: 70, golduck: 30 } },
       sun: { visitors: { exeggutor: 60, tangela: 40 } },
       sandstorm: { visitors: { rhydon: 100 } },
-      mist: { visitors: { pinsir: 50, scyther: 50 } },
       fog: { visitors: { venonat: 100 } },
       wind: { visitors: { pidgeotto: 100 } },
       heatwave: { visitors: { magmar: 100 } },
       intense_sun: { visitors: { tangela: 100 } },
-      heavy_rain: { visitors: { chansey: 100 } },
-      thunderstorm: { visitors: { scyther: 50, pinsir: 50 } },
       dust_storm: { visitors: { rhydon: 100 } },
       strong_winds: { visitors: { dragonite: 100 } }
     }
@@ -319,12 +313,9 @@ export const FIRE_RED_MAPS = [
     rates: { morning: [20, 10, 15, 15, 15, 10, 10, 5], day: [20, 10, 15, 15, 15, 10, 10, 5], dusk: [60, 40], night: [50, 30, 20] }, lv: [30, 40],
     fishing: { pool: ['shellder', 'dewgong', 'tentacruel'], rates: [50, 25, 25], lv: [30, 40] },
     weather: {
-      snow: { visitors: { cloyster: 85, lapras: 10 }, exclusive: { articuno: 5 } },
-      rain: { visitors: { tentacruel: 60, kingler: 40 } },
-      coldwave: { visitors: { dewgong: 100 } },
-      cold: { visitors: { shellder: 70, seel: 30 } },
-      blizzard: { visitors: { jynx: 100 } },
-      fog: { visitors: { staryu: 100 } },
+      cold: { visitors: { cloyster: 90, lapras: 10 } },
+      coldwave: { visitors: { cloyster: 85, lapras: 10 }, exclusive: { articuno: 5 } },
+      rain: { visitors: { kingler: 100 } },
       heavy_rain: { visitors: { cloyster: 100 } }
     }
   },
@@ -333,10 +324,9 @@ export const FIRE_RED_MAPS = [
     wild: { morning: ['koffing', 'weezing', 'grimer', 'muk', 'ponyta', 'rapidash', 'magmar', 'vulpix', 'growlithe'], day: ['koffing', 'weezing', 'grimer', 'muk', 'ponyta', 'rapidash', 'magmar', 'vulpix', 'growlithe'], dusk: ['koffing', 'grimer', 'magmar'], night: ['weezing', 'muk', 'magmar'] },
     rates: { morning: [15, 10, 15, 10, 15, 10, 5, 10, 10], day: [15, 10, 15, 10, 15, 10, 5, 10, 10], dusk: [40, 40, 20], night: [40, 40, 20] }, lv: [32, 38],
     weather: {
-      sun: { visitors: { arcanine: 60, rapidash: 40 } },
-      heatwave: { visitors: { magmar: 95 }, exclusive: { moltres: 5 } },
-      fog: { visitors: { haunter: 80, muk: 20 } },
-      mist: { visitors: { koffing: 100 } }
+      sun: { visitors: { arcanine: 100 } },
+      heatwave: { exclusive: { moltres: 5 } },
+      fog: { visitors: { haunter: 100 } }
     }
   },
   {
@@ -345,7 +335,6 @@ export const FIRE_RED_MAPS = [
     rates: { morning: [15, 10, 15, 10, 15, 10, 15, 10], day: [15, 10, 15, 10, 15, 10, 15, 10], dusk: [50, 50], night: [50, 50] }, lv: [40, 45],
     weather: {
       sandstorm: { visitors: { rhydon: 70, marowak: 30 } },
-      sun: { visitors: { primeape: 80, fearow: 20 } },
       storm: { visitors: { magneton: 100 } },
       wind: { visitors: { pidgeot: 100 } },
       strong_winds: { visitors: { dragonite: 100 } },
@@ -362,12 +351,9 @@ export const FIRE_RED_MAPS = [
     weather: {
       sandstorm: { visitors: { machamp: 80, golem: 20 } },
       fog: { visitors: { haunter: 80, kadabra: 20 } },
-      snow: { visitors: { dewgong: 100 } },
-      mist: { visitors: { onix: 100 } },
-      cold: { visitors: { cloyster: 100 } },
+      cold: { visitors: { cloyster: 70, dewgong: 30 } },
       dust_storm: { visitors: { machamp: 100 } },
-      blizzard: { visitors: { artincuno: 10, lapras: 90 } },
-      coldwave: { visitors: { jynx: 100 } }
+      coldwave: { visitors: { jynx: 90, lapras: 10 } }
     }
   },
   {
@@ -377,9 +363,7 @@ export const FIRE_RED_MAPS = [
     fishing: { pool: ['golduck', 'poliwhirl', 'gyarados'], rates: [50, 40, 10], lv: [30, 50] },
     weather: {
       fog: { visitors: { alakazam: 90, gengar: 9 }, exclusive: { mewtwo: 1 } },
-      storm: { visitors: { dragonite: 80, magneton: 20 } },
-      mist: { visitors: { ditto: 100 } },
-      thunderstorm: { visitors: { dragonite: 80, magneton: 20 } }
+      mist: { visitors: { ditto: 100 } }
     }
   }
 ];

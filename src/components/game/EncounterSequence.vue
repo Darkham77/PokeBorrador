@@ -5,15 +5,17 @@ import BaseModal from '@/components/common/BaseModal.vue'
 import type { Pokemon } from '@/types/pokemon'
 
 interface Props {
+  id?: string
   show?: boolean
   type: string // 'rival' or 'fishing' or 'archaeology'
   pokemon?: Pokemon | null
-  rarity?: string
+  rarity?: number | string
   onStart?: (() => void) | null
   onComplete?: (() => void) | null
 }
 
 const props = withDefaults(defineProps<Props>(), {
+  id: '',
   show: false,
   pokemon: null,
   rarity: '',
