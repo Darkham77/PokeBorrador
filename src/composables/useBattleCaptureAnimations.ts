@@ -120,7 +120,7 @@ export function useBattleCaptureAnimations(
     
     const tl = createTimeline()
     tl.to({}, {
-      duration: 0.8,
+      duration: 0.4,
       onComplete: () => {
         seats.value[side]!.animState = null
       }
@@ -152,7 +152,7 @@ export function useBattleCaptureAnimations(
 
     const tl = createTimeline()
     tl.to({}, {
-      duration: 0.8,
+      duration: 0.4,
       onComplete: () => {
         seats.value[side]!.animState = 'trapped'
       }

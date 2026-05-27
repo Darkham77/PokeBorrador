@@ -86,6 +86,8 @@ export function useCombatCamera(viewportRef: Ref<HTMLElement | null>) {
   }
 
   let resizeObserver: ResizeObserver | null = null
+  let onToggleGuides: () => void
+  let onToggleZoom: () => void
 
   onMounted(() => {
     resizeObserver = new ResizeObserver((entries) => {
@@ -106,21 +108,26 @@ export function useCombatCamera(viewportRef: Ref<HTMLElement | null>) {
       updateCamera(rect.width, rect.height)
     }
 
-    gameBus.on('TOGGLE_CAMERA_GUIDES', () => {
+    onToggleGuides = () => {
       battleStore.debugShowGuides = !battleStore.debugShowGuides
-    })
+    }
 
-    gameBus.on('TOGGLE_DEBUG_ZOOM', () => {
+    onToggleZoom = () => {
       battleStore.debugZoom = battleStore.debugZoom === 1 ? 0.4 : 1
       if (viewportRef.value) {
         const rect = viewportRef.value.getBoundingClientRect()
         updateCamera(rect.width, rect.height)
       }
-    })
+    }
+
+    gameBus.on('TOGGLE_CAMERA_GUIDES', onToggleGuides)
+    gameBus.on('TOGGLE_DEBUG_ZOOM', onToggleZoom)
   })
 
   onUnmounted(() => {
     if (resizeObserver) resizeObserver.disconnect()
+    if (onToggleGuides) gameBus.off('TOGGLE_CAMERA_GUIDES', onToggleGuides)
+    if (onToggleZoom) gameBus.off('TOGGLE_DEBUG_ZOOM', onToggleZoom)
   })
 
   return {

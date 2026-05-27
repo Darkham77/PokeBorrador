@@ -38,11 +38,14 @@ export function useBattleShadows() {
 
   const isFlying = (pokemon: Pokemon | null) => {
     if (!pokemon || !pokemon.id) return false
-    // Si el objeto ya trae la propiedad (ej: inyectada), la usamos
-    if (pokemon.isFloating !== undefined) return pokemon.isFloating
-    // Si no, consultamos al provider centralizado de estética
     const data = pokemonDataProvider.getPokemonData(pokemon.id)
-    return data?.isFloating || false
+    if (!data) return false
+    if (data.isFloating !== undefined) return data.isFloating
+    
+    const types: string[] = []
+    if (data.type) types.push(data.type.toLowerCase())
+    if (data.type2) types.push(data.type2.toLowerCase())
+    return types.includes('flying')
   }
 
   // Sincronizar visibilidad y posición de la sombra enemiga

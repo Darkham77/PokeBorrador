@@ -314,7 +314,7 @@ watch(() => battleStore.isBattleActive, (active) => {
 
           <!-- Enemigo -->
           <BattleCombatant
-            v-if="activeEnemyData"
+            v-if="activeEnemyData || enemyAnimState"
             :key="`enemy-${activeEnemyData?.uid || activeEnemyData?.id || 'empty'}`"
             side="enemy"
             :pokemon="activeEnemyData as Pokemon"
@@ -363,7 +363,7 @@ watch(() => battleStore.isBattleActive, (active) => {
 
           <!-- Jugador -->
           <BattleCombatant
-            v-if="player"
+            v-if="player || playerAnimState"
             :key="`player-${player?.uid || player?.id || 'empty'}`"
             side="player"
             :pokemon="player"

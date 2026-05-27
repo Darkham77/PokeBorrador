@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { gsap } from 'gsap'
 import { sleep } from '@/logic/timeUtils'
 import { useBattleStore } from '@/stores/battle'
@@ -18,6 +18,32 @@ const audio = useAudioStore()
 
 const visualEnemyId = ref(1)
 const visualPlayerId = ref(1)
+
+const getPokedexIndex = (pokemonId?: string | null) => {
+  if (!pokemonId) return 1
+  const idx = ALL_PDEX.indexOf(pokemonId)
+  return idx === -1 ? 1 : idx + 1
+}
+
+// Sincronizar inputs bidireccionalmente con los pokemones en combate
+watch(() => battleStore.state?.player?.id, (newId) => {
+  if (newId) {
+    visualPlayerId.value = getPokedexIndex(newId)
+  }
+}, { immediate: true })
+
+const activeEnemyId = computed(() => {
+  const poke = (battleStore.isBattleActive && !battleStore.isSearching && battleStore.state?.enemy)
+    ? battleStore.state.enemy
+    : (battleStore.upcomingPokemon || battleStore.state?.enemy)
+  return poke?.id || null
+})
+
+watch(activeEnemyId, (newId) => {
+  if (newId) {
+    visualEnemyId.value = getPokedexIndex(newId)
+  }
+}, { immediate: true })
 
 const defeatEnemy = async () => {
   const e = battleStore.enemy
@@ -125,8 +151,10 @@ const updateVisualSwap = (side = 'enemy') => {
   const targetId = (ALL_PDEX[Math.max(0, num - 1)] || ALL_PDEX[0]) as string
   if (side === 'player' && battleStore.state?.player) {
     battleStore.state.player.id = targetId
+    battleStore.state.player = { ...battleStore.state.player }
   } else if (battleStore.state?.enemy) {
     battleStore.state.enemy.id = targetId
+    battleStore.state.enemy = { ...battleStore.state.enemy }
   }
 }
 

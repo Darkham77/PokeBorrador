@@ -2,7 +2,7 @@
 <script setup lang="ts">
 
 
-import { ref, computed, watch, watchEffect } from 'vue'
+import { ref, computed, watch, watchEffect, nextTick } from 'vue'
 import { gsap } from 'gsap'
 
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
@@ -16,6 +16,15 @@ import { WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator'
 
 import type { Pokemon } from '@/types/pokemon'
 import type { BattleStages } from '@/types/battle'
+
+// Caché persistente para las Pokéballs y coordenadas de energía por lado de combate
+const pokeballCoordsCache = new Map<string, { top: string; left: string }>()
+const rawCoordsCache = new Map<string, { x: number; y: number }>()
+
+// Referencias DOM
+const spriteRef = ref<HTMLElement | null>(null)
+const spriteRotationRef = ref<HTMLElement | null>(null)
+const shadowWrapperRef = ref<HTMLElement | null>(null)
 
 interface SparkleData {
   id: string | number
@@ -81,6 +90,7 @@ const emit = defineEmits<{
 
 const naturalSize = ref({ w: 0, h: 0 })
 const idleWrapperRef = ref<HTMLElement | null>(null)
+const seatKey = computed(() => `${props.side}-${props.position.x}-${props.position.y}`)
 let idleTween: gsap.core.Tween | null = null
 
 
@@ -97,12 +107,12 @@ const imageUrl = computed(() => {
 
 const isFloating = computed(() => {
   if (!props.pokemon) return false
-  if (props.pokemon.isFloating !== undefined) return props.pokemon.isFloating
   const data = pokemonDataProvider.getPokemonData(props.pokemon.id)
-  if (data?.isFloating) return true
+  if (!data) return false
+  if (data.isFloating !== undefined) return data.isFloating
   const types: string[] = []
-  if (props.pokemon.type) types.push(props.pokemon.type.toLowerCase())
-  if (props.pokemon.type2) types.push(props.pokemon.type2.toLowerCase())
+  if (data.type) types.push(data.type.toLowerCase())
+  if (data.type2) types.push(data.type2.toLowerCase())
   return types.includes('flying')
 })
 
@@ -210,6 +220,8 @@ const localGroundY = computed(() => {
   if (shadow && shadow.feetY !== undefined) {
     return `${shadow.feetY * 100}%`
   }
+  const cached = pokeballCoordsCache.get(seatKey.value)
+  if (cached) return cached.top
   return props.groundY
 })
 
@@ -238,6 +250,12 @@ const stickyCoords = computed(() => {
       const offsetX = (shadow.feetX - 0.5) * entitySize
       left = `calc(50% + ${offsetX}px)`
     }
+  } else {
+    const cached = pokeballCoordsCache.get(seatKey.value)
+    if (cached) {
+      left = cached.left
+      top = cached.top
+    }
   }
   
   return { top, left }
@@ -253,10 +271,64 @@ const isBallVisible = computed(() => {
 const internalBallId = ref('pokeball')
 const memorizedBallCoords = ref({ top: '90%', left: '50%' })
 
+const getSpriteFeetOrigin = () => {
+  const shadow = currentShadow.value
+  const scale = (WORLD_CONSTANTS as { OBJECT_SCALE: number }).OBJECT_SCALE || 2
+  const entitySize = props.baseSize * scale
+  const feetX = shadow?.feetX ?? 0.5
+  const offsetX = (feetX - 0.5) * entitySize
+  
+  let floatOffset = 0
+  if (isFloating.value) {
+    const isMobile = typeof window !== 'undefined' && window.innerWidth <= 690
+    floatOffset = isMobile ? 18 : 40
+  }
+  
+  // El origen de la escala son exactamente los pies del sprite (desplazados hacia arriba si flota)
+  return `calc(50% + ${offsetX}px) calc(${localGroundY.value} - ${floatOffset}px)`
+}
+
+const getBallTargetCoords = () => {
+  const scale = (WORLD_CONSTANTS as { OBJECT_SCALE: number }).OBJECT_SCALE || 2
+  const containerHeight = props.baseSize * scale
+  
+  let floatOffset = 0
+  if (isFloating.value) {
+    const isMobile = typeof window !== 'undefined' && window.innerWidth <= 690
+    floatOffset = isMobile ? 18 : 40
+  }
+  
+  const ballHeight = 40 * scale
+  
+  // Distancia del ground Y respecto al bottom del contenedor (100%)
+  const groundPct = parseFloat(localGroundY.value) / 100
+  const groundOffsetFromBottom = containerHeight * (groundPct - 1)
+  
+  // Alineación horizontal
+  const shadow = currentShadow.value
+  let targetX = 0
+  if (shadow && shadow.feetX !== undefined) {
+    targetX = (shadow.feetX - 0.5) * (props.baseSize * scale)
+  }
+  
+  // Y es la posición de la Poké Ball respecto al bottom del contenedor
+  const targetY = groundOffsetFromBottom - (ballHeight * 0.35) + floatOffset
+  
+  return { x: targetX, y: targetY }
+}
+
 watch(isBallVisible, (visible) => {
   if (visible) {
     internalBallId.value = props.ballId || 'pokeball'
-    memorizedBallCoords.value = { ...stickyCoords.value }
+    const newCoords = { ...stickyCoords.value }
+    memorizedBallCoords.value = newCoords
+    pokeballCoordsCache.set(seatKey.value, newCoords)
+    rawCoordsCache.set(seatKey.value, getBallTargetCoords())
+  } else {
+    const cached = pokeballCoordsCache.get(seatKey.value)
+    if (cached) {
+      memorizedBallCoords.value = { ...cached }
+    }
   }
 }, { immediate: true })
 
@@ -292,9 +364,6 @@ const triggerStatArrow = (stat: string, dir: 'up' | 'down') => {
   })
 }
 
-const spriteRef = ref<HTMLElement | null>(null)
-const spriteRotationRef = ref<HTMLElement | null>(null)
-const shadowWrapperRef = ref<HTMLElement | null>(null)
 
 watch(() => props.isEmerging, (val) => {
   if (val && spriteRef.value) {
@@ -352,22 +421,83 @@ watch(() => props.isFainting, (val) => {
 })
 
 watch(() => props.animState, (val) => {
-  if (!spriteRef.value) return
-  if (val === 'catching') {
-    gsap.to(spriteRef.value, {
-      scale: 0,
-      opacity: 0,
-      filter: "Brightness(0) Invert(1) Drop-Shadow(0 0 20px #00ccff)",
-      duration: 0.8,
-      ease: "power2.inOut"
-    })
-  } else if (val === 'releasing') {
-    gsap.fromTo(spriteRef.value, 
-      { scale: 0, opacity: 1, filter: "Brightness(0) Invert(1) Drop-Shadow(0 0 20px #00ccff)" },
-      { scale: 1, opacity: 1, filter: "none", duration: 0.8, ease: "back.out(1.7)" }
-    )
-  }
-})
+  nextTick(() => {
+    if (!spriteRef.value) return
+    
+    if (val === 'catching') {
+      const origin = getSpriteFeetOrigin()
+      const cachedRaw = rawCoordsCache.get(seatKey.value)
+      const coords = cachedRaw || getBallTargetCoords()
+      
+      // Ocultar la sombra wrapper inmediatamente cuando empieza la animación
+      if (shadowWrapperRef.value) {
+        gsap.set(shadowWrapperRef.value, { display: "none" })
+      }
+      
+      gsap.killTweensOf(spriteRef.value)
+      
+      // Forzamos el filtro de energía azul, brillo (glow) y pivote en el centro
+      gsap.set(spriteRef.value, { 
+        transformOrigin: origin,
+        filter: "url(#pixel-energy-optimized)" 
+      })
+      
+      // Succión hacia la Poké Ball con GSAP determinista utilizando los pies como centro
+      gsap.to(spriteRef.value, {
+        x: coords.x,
+        y: coords.y,
+        scale: 0,
+        opacity: 0,
+        duration: 0.4,
+        ease: "power2.inOut",
+        onComplete: () => {
+          // Dejar el sprite listo para cuando reaparezca pero invisible
+          gsap.set(spriteRef.value, { x: 0, y: 0, scale: 1, filter: "none", clearProps: "transformOrigin" })
+          if (shadowWrapperRef.value) {
+            gsap.set(shadowWrapperRef.value, { clearProps: "display" })
+          }
+        }
+      })
+    } else if (val === 'releasing') {
+      const origin = getSpriteFeetOrigin()
+      const cachedRaw = rawCoordsCache.get(seatKey.value)
+      const coords = cachedRaw || getBallTargetCoords()
+      
+      // Ocultar la sombra al liberar, reaparecerá al completarse
+      if (shadowWrapperRef.value) {
+        gsap.set(shadowWrapperRef.value, { display: "none" })
+      }
+      
+      gsap.killTweensOf(spriteRef.value)
+      
+      // Empezamos desde la Poké Ball, escala 0, con filtro de energía, opacidad 0 y pivote en el centro
+      gsap.set(spriteRef.value, { 
+        transformOrigin: origin,
+        x: coords.x, 
+        y: coords.y, 
+        scale: 0, 
+        opacity: 0, 
+        filter: "url(#pixel-energy-optimized)" 
+      })
+      
+      // Expansión suave y retorno al estado original
+      gsap.to(spriteRef.value, {
+        x: 0,
+        y: 0,
+        scale: 1,
+        opacity: 1,
+        duration: 0.4,
+        ease: "power2.inOut",
+        onComplete: () => {
+          gsap.set(spriteRef.value, { clearProps: "filter,x,y,scale,opacity,transformOrigin" })
+          if (shadowWrapperRef.value) {
+            gsap.set(shadowWrapperRef.value, { clearProps: "display" })
+          }
+        }
+      })
+    }
+  })
+}, { immediate: true })
 
 watch(() => props.isAttacking, (val) => {
   if (val && spriteRef.value && props.activeMove) {
@@ -710,13 +840,13 @@ const onBallLeave = (el: Element, done: () => void) => {
     :h="baseSize"
   >
     <div
-      v-if="hasSeat && animState !== 'trapped' && !isCaptureSuccess"
+      v-if="hasSeat"
       ref="spriteRef"
       class="sprite-animator"
       :style="{ '--fx-scale': fxScale }"
       :class="[{ 
         'is-attacking': isAttacking,
-        'is-technical-hidden': hidden
+        'is-technical-hidden': hidden || animState === 'trapped' || isCaptureSuccess
       }, getAttackAnimClass]"
     >
       <!-- Sombra integrada (Sigue el dash pero no el flotado) -->
@@ -1018,8 +1148,8 @@ const onBallLeave = (el: Element, done: () => void) => {
   z-index: var(--z-map-spawns);
 
   &.is-floating-species { 
-    margin-bottom: 40px; 
-    @media (max-width: 690px) { margin-bottom: 18px; } 
+    transform: Translatey(-40px);
+    @media (max-width: 690px) { transform: Translatey(-18px); } 
   }
 }
 

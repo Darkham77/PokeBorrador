@@ -136,15 +136,16 @@ export function useBattleHud(
 
   const enemyIsFloating = computed(() => {
     if (!activeEnemyData.value) return false
-    if (activeEnemyData.value.isFloating !== undefined) return activeEnemyData.value.isFloating
-    
     const p = activeEnemyData.value
-    const isFlying = p.type === 'flying' || p.type2 === 'flying'
+    const data = p.id ? pokemonDataProvider.getPokemonData(p.id) : null
+    if (!data) return false
+    if (data.isFloating !== undefined) return data.isFloating
+    
+    const isFlying = data.type === 'flying' || data.type2 === 'flying'
     const isLevitating = p.ability === 'Levitación'
     if (isFlying || isLevitating) return true
 
-    const data = p.id ? pokemonDataProvider.getPokemonData(p.id) : null
-    return data?.isFloating || false
+    return false
   })
 
   const isWildEncounter = computed(() => {
