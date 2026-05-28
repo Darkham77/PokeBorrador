@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import type { Pokemon, BreedingCompatibility } from '@/types/pokemon'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
+import EggSprite from '@/components/common/EggSprite.vue'
 
 interface Props {
   parentA: Pokemon
@@ -81,7 +82,13 @@ const geneticsSummary = computed(() => {
       <!-- Especie -->
       <div class="stat-item specie">
         <span class="label">ESPECIE</span>
-        <span class="value">🥚 {{ eggSpeciesName }}</span>
+        <span
+          class="value"
+          style="display: flex; align-items: center; gap: 4px;"
+        >
+          <EggSprite size="16" />
+          {{ eggSpeciesName }}
+        </span>
       </div>
 
       <!-- Naturaleza -->

@@ -4,6 +4,7 @@ import { useGameStore } from '@/stores/game'
 import { useModalStore } from '@/stores/modals'
 import { POKEMON_DB } from '@/data/pokemonDB'
 import type { PokemonEgg } from '@/types/pokemon'
+import EggSprite from '@/components/common/EggSprite.vue'
 
 const gameStore = useGameStore()
 const modalStore = useModalStore()
@@ -74,7 +75,13 @@ const hatchEgg = (egg: PokemonEgg) => {
         <div class="egg-main-row">
           <!-- Free-floating Egg Sprite -->
           <div class="egg-visual">
-            <span class="egg-sprite">🥚</span>
+            <span class="egg-sprite">
+              <EggSprite
+                :tint="egg.tint"
+                size="38"
+                class="egg-sprite-img"
+              />
+            </span>
             <span
               v-if="egg.isShiny"
               class="shiny-star"
@@ -272,10 +279,20 @@ const hatchEgg = (egg: PokemonEgg) => {
   justify-content: center;
   width: 48px;
   height: 48px;
-  font-size: 34px;
   position: relative;
   filter: Drop-Shadow(0 4px 6px Rgba(0, 0, 0, 0.3));
   
+  .egg-sprite {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .egg-sprite-img {
+    width: 38px;
+    height: 38px;
+    @include pixelated;
+  }
 
   .shiny-star {
     position: absolute;

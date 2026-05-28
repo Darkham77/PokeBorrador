@@ -8,6 +8,7 @@ import { useBreedingStore } from '@/stores/breeding'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import { formatCurrency } from '@/logic/utils/formatters'
 import { SHOP_ITEMS } from '@/data/items'
+import EggSprite from '@/components/common/EggSprite.vue'
 
 const _gameStore = useGameStore()
 const _uiStore = useUIStore()
@@ -291,7 +292,7 @@ onUnmounted(() => {
         class="hud-pill egg-pill"
         @click.stop="modalStore.open('Daycare')"
       >
-        <span>🥚</span>
+        <EggSprite size="26" />
         <span
           id="egg-count"
           ref="eggRef"

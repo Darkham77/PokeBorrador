@@ -6,6 +6,7 @@ import { levelUpPokemon } from '@/logic/pokemonFactory'
 import type { BattleContext } from '@/types/battleContext'
 import type { Pokemon } from '@/types/pokemon'
 import { useBreedingStore } from '@/stores/breeding'
+import { useUIStore } from '@/stores/ui'
 
 /**
  * Handles the fainting of a Pokémon.
@@ -161,18 +162,39 @@ export async function terminateBattle(ctx: BattleContext, win: boolean, fled = f
   
   syncAndPersist(ctx)
 
-  await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.VACATE_SEAT);
-  if (active) active.enemy = null;
-  if (active) active._initialEnemy = null;
-  
-  await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.FADEOUT_BALL);
-  await sleep(300); // Duración exacta de la animación de fadeout de la pokebola
+  // Ejecutamos animaciones de salida en paralelo para el jugador y el enemigo si siguen activos
+  if (fsm.currentState.value === BATTLE_STATES.ACTIVE_BATTLE) {
+    const playerExited = active.player && active.player.hp > 0 && ctx.animations?.handleFaintAnim
+      ? ctx.animations.handleFaintAnim({ side: 'player', pokemon: active.player })
+      : Promise.resolve()
+
+    const enemyExited = active.enemy && active.enemy.hp > 0 && ctx.animations?.handleFaintAnim
+      ? ctx.animations.handleFaintAnim({ side: 'enemy', pokemon: active.enemy })
+      : Promise.resolve()
+
+    await Promise.all([playerExited, enemyExited])
+  }
+
+  // Solo hacemos transición de finalización del enemigo si seguimos en ACTIVE_BATTLE
+  if (fsm.currentState.value === BATTLE_STATES.ACTIVE_BATTLE) {
+    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.VACATE_SEAT)
+    if (active) active.enemy = null
+    if (active) active._initialEnemy = null
+    
+    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.FADEOUT_BALL)
+    if (active.isCapture && ctx.animations?.playBallFadeOut) {
+      await ctx.animations.playBallFadeOut('enemy')
+    }
+  } else {
+    if (active) active.enemy = null
+    if (active) active._initialEnemy = null
+  }
 
   await fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.CHECK_OUTCOME)
 
   if (!win && !fled) {
     await fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.EMPTY_WAIT)
-    await sleep(1000)
+    await sleep(200)
     await ctx.gs.save(false)
     
     await fsm.transition(BATTLE_STATES.EXIT_BATTLE)
@@ -197,49 +219,48 @@ export async function terminateBattle(ctx: BattleContext, win: boolean, fled = f
   
   await ctx.gs.save(false)
   await ctx.waitForLogs()
+  
+  // Esperar a que el jugador termine de aprender técnicas en el modal
+  const uiStore = useUIStore()
+  while (uiStore.learnQueue.length > 0 || uiStore.currentMoveToLearn) {
+    await sleep(100)
+  }
+  
   syncTeamHP(ctx)
 
   await fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.EMPTY_WAIT)
-  await sleep(1000)
+  await sleep(200) // Pausa de limpieza orgánica reducida a 200ms
 
+  // Reordenamiento animado: recall del incorrecto + release del correcto en paralelo
   const firstHealthy = ctx.gs.state.team.find((p: Pokemon) => p && p.hp > 0)
-  const currentActive = active.player
-  const needsReorder = firstHealthy && (!currentActive || firstHealthy.uid !== currentActive.uid)
-  
-  if (needsReorder) {
-    await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.SWITCHING)
-    if (currentActive && currentActive.hp > 0) {
-      await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.POKEMON_RECALL)
-      await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.RENDER_BALL)
-      gameBus.emit('PLAY_WITHDRAW', { side: 'player' })
-      await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.ENERGY_RECALL)
-      await sleep(800)
-      await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.VACATE_SEAT)
-      await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.FADEOUT_BALL)
-      if (ctx.animations?.playBallFadeOut) {
-        await ctx.animations.playBallFadeOut('player')
-      }
-      active.player = null
-    }
+  const oldPlayer = active.player
+  const needsSwap = firstHealthy && (!oldPlayer || oldPlayer.uid !== firstHealthy.uid)
 
-    await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.POKEMON_CALL)
-    await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.RENDER_BALL)
-    
-    await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.OCCUPY_SEAT)
+  if (needsSwap && firstHealthy) {
+    // Set exitingPlayer so BattleArenaView renders both combatants simultaneously
+    if (oldPlayer && oldPlayer.hp > 0) ctx.exitingPlayer.value = oldPlayer
     active.player = firstHealthy
     active.playerTeamIndex = ctx.gs.state.team.findIndex((p: Pokemon) => p.uid === firstHealthy.uid)
 
-    gameBus.emit('PLAY_SEND_OUT', { side: 'player', pokemon: firstHealthy })
-    await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.ENERGY_RELEASE)
-    await sleep(800)
-    
-    await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.POKEMON_APPEAR)
-    await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.FADEOUT_BALL)
-    if (ctx.animations?.playBallFadeOut) {
-      await ctx.animations.playBallFadeOut('player')
+    const withdrawPromise = oldPlayer && oldPlayer.hp > 0 && ctx.animations?.handleCatchRequest
+      ? ctx.animations.handleCatchRequest({ side: 'player', pokemon: oldPlayer })
+      : Promise.resolve()
+
+    const sendOutPromise = ctx.animations?.handleReleaseRequest
+      ? ctx.animations.handleReleaseRequest({ side: 'player', pokemon: firstHealthy })
+      : Promise.resolve()
+
+    await Promise.all([withdrawPromise, sendOutPromise])
+    ctx.exitingPlayer.value = null
+  } else if (firstHealthy && !oldPlayer) {
+    // No old player (first battle start) — just the release animation
+    active.player = firstHealthy
+    active.playerTeamIndex = ctx.gs.state.team.findIndex((p: Pokemon) => p.uid === firstHealthy.uid)
+    if (ctx.animations?.handleReleaseRequest) {
+      await ctx.animations.handleReleaseRequest({ side: 'player', pokemon: firstHealthy })
     }
   }
-  
+
   const persistenceMode = active.persistenceMode as string || 'PERSISTENT'
   const isSingle = persistenceMode === 'SINGLE' || active.isTrainer
   
@@ -343,6 +364,9 @@ export async function calculateBattleRewards(ctx: BattleContext) {
       if (pendingMoves && pendingMoves.length > 0) {
         await fsm.transition(BATTLE_STATES.LEVEL_UP_MODAL, BATTLE_SUBSTATES.SHOW_CHOICE)
         p.pendingMoves = pendingMoves
+        
+        const uiStore = useUIStore()
+        uiStore.addToLearnQueue(pendingMoves.map(m => ({ pokemon: p, move: m })))
       }
     }
   }

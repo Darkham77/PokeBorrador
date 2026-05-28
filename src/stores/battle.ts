@@ -103,6 +103,8 @@ export const useBattleStore = defineStore('battle', () => {
   const enemyStages = ref<BattleStages>({ ...INITIAL_STAGES })
   const upcomingPokemon = ref<Pokemon | null>(null)
   const debugLoopPokemon = ref<Pokemon | null>(null)
+  const exitingPlayer = ref<Pokemon | null>(null)
+  const exitingEnemy = ref<Pokemon | null>(null)
   const animations = ref<BattleContext['animations']>()
 
   const player = computed(() => activeBattle.value?.player)
@@ -145,7 +147,9 @@ export const useBattleStore = defineStore('battle', () => {
     attackerSide, 
     activeMove,
     faintedSides,
-    animations: animations.value,
+    exitingPlayer,
+    exitingEnemy,
+    get animations() { return animations.value || undefined },
     addLog, 
     endBattle, 
     completeBattleFlow, 
@@ -237,22 +241,27 @@ export const useBattleStore = defineStore('battle', () => {
   const executeMove = async (moveIndex: number) => {
     if (isProcessing.value || !isBattleActive.value) return
     isProcessing.value = true
-    fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.EXEC_TURN)
-    fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.TURN_ENGINE)
-    await executeTurn(getContext(), moveIndex)
-    
-    if (!activeBattle.value) {
-      isProcessing.value = false
-      return
-    }
+    try {
+      fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.EXEC_TURN)
+      fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.TURN_ENGINE)
+      await executeTurn(getContext(), moveIndex)
+      
+      if (!activeBattle.value) {
+        return
+      }
 
-    if (!activeBattle.value.over) await applyEndTurnEffects()
-    activeMove.value = null
-    
-    if (activeBattle.value && !activeBattle.value.over) {
-      fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ANIM_SYNC)
-      fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.UPDATE_BUTTON)
-      fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT)
+      if (!activeBattle.value.over) await applyEndTurnEffects()
+      activeMove.value = null
+      
+      if (activeBattle.value && !activeBattle.value.over) {
+        fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ANIM_SYNC)
+        fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.UPDATE_BUTTON)
+        fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT)
+      }
+    } catch (error) {
+      logger.error('BattleStore', `Error executing move index ${moveIndex}: ${(error as Error).message}`, error)
+      addLog('¡Ocurrió un error al ejecutar el movimiento!', 'log-error')
+    } finally {
       isProcessing.value = false
     }
   }
@@ -303,8 +312,11 @@ export const useBattleStore = defineStore('battle', () => {
       return
     } else if (castRes.action !== 'fail') {
       if (castRes.pokemon && activeBattle.value?.player) {
-        activeBattle.value.player = { ...castRes.pokemon }
-        syncTeamHP()
+        const isTargetActive = (targetIndex === null || targetIndex === activeBattle.value.playerTeamIndex)
+        if (isTargetActive) {
+          activeBattle.value.player = { ...castRes.pokemon }
+          syncTeamHP()
+        }
       }
       
       persistBattle()
@@ -358,38 +370,39 @@ export const useBattleStore = defineStore('battle', () => {
 
     if (oldPoke && oldPoke.hp > 0) {
       await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.SWITCHING)
-      await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.POKEMON_RECALL)
-      await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.RENDER_BALL)
       addLog(`¡Bien hecho, ${oldPoke.name}! ¡Regresa!`, 'log-info', 'player')
-      gameBus.emit('PLAY_WITHDRAW', { side: 'player' })
+      addLog(`¡Envía a ${newPoke.name}!`, 'log-info', newPoke)
       
-      await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.ENERGY_RECALL)
-      await sleep(500)
-      await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.VACATE_SEAT)
-      await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.FADEOUT_BALL)
-      await sleep(300)
-      activeBattle.value.player = null
+      exitingPlayer.value = oldPoke
+      activeBattle.value.player = newPoke
+      activeBattle.value.playerTeamIndex = teamIndex
       clearVolatileStatus(oldPoke)
 
-      // Transición a WAIT_TIMER para sincronización con el manual de FSM
-      await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.WAIT_TIMER)
-      await sleep(500)
-    }
+      if (!activeBattle.value.participants.includes(newPoke.uid)) {
+        activeBattle.value.participants.push(newPoke.uid)
+      }
 
-    await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.POKEMON_CALL)
-    await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.RENDER_BALL)
-    
-    await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.OCCUPY_SEAT)
-    activeBattle.value.player = newPoke; 
-    activeBattle.value.playerTeamIndex = teamIndex
-    
-    gameBus.emit('PLAY_SEND_OUT', { side: 'player', pokemon: newPoke })
-    await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.ENERGY_RELEASE)
-    await sleep(800)
-    
-    await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.POKEMON_APPEAR)
-    await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.FADEOUT_BALL)
-    await sleep(300)
+      const withdrawPromise = animations.value?.handleCatchRequest
+        ? animations.value.handleCatchRequest({ side: 'player', pokemon: oldPoke })
+        : Promise.resolve()
+
+      const sendOutPromise = animations.value?.handleReleaseRequest
+        ? animations.value.handleReleaseRequest({ side: 'player', pokemon: newPoke })
+        : Promise.resolve()
+
+      await Promise.all([withdrawPromise, sendOutPromise])
+      exitingPlayer.value = null
+    } else {
+      await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.POKEMON_CALL)
+      activeBattle.value.player = newPoke
+      activeBattle.value.playerTeamIndex = teamIndex
+      
+      if (animations.value?.handleReleaseRequest) {
+        await animations.value.handleReleaseRequest({ side: 'player', pokemon: newPoke })
+      } else {
+        await sleep(800)
+      }
+    }
     
     if (!activeBattle.value.participants.includes(newPoke.uid)) {
       activeBattle.value.participants.push(newPoke.uid)
@@ -460,6 +473,8 @@ export const useBattleStore = defineStore('battle', () => {
     attackerSide,
     activeMove,
     upcomingPokemon,
+    exitingPlayer,
+    exitingEnemy,
     animations,
     trainerAnimState,
     isSilhouetteMode,

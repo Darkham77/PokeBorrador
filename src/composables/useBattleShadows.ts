@@ -1,6 +1,8 @@
 import { ref, computed, watch, onUnmounted } from 'vue'
 import { useCombatShadowStore } from '@/stores/combatShadows'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
+import { POKEMON_FEET_DATABASE } from '@/data/pokemonFeetDatabase'
+
 import { WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import type { Pokemon } from '@/types/pokemon'
@@ -52,16 +54,26 @@ export function useBattleShadows() {
   const syncEnemyShadow = async (visible: boolean, data: Pokemon | null, pos: Position, animState: unknown) => {
     const shadowId = getStableShadowId(data, 'enemy')
     
+    // Inicializar coordenadas inmediatamente si el asiento está ocupado por un pokemon
+    if (data) {
+      const url = getAssetUrl(ASSET_TYPES.POKEMON, data.id, { isShiny: data.isShiny, isBack: false })
+      let dbKey = url || ''
+      const base = import.meta.env.BASE_URL || '/'
+      if (base !== '/' && dbKey.startsWith(base)) {
+        dbKey = dbKey.slice(base.length - 1)
+      }
+      const cached = dbKey ? POKEMON_FEET_DATABASE[dbKey] : null
+      if (!cached) {
+        throw new Error(`[PokemonFeetDatabase] Sprite key "${dbKey}" not found in POKEMON_FEET_DATABASE. Did you forget to compile assets? Run "npm run assets:convert".`)
+      }
+      const isFlyingPoke = isFlying(data)
+      
+      stableEnemyGroundY.value = isFlyingPoke ? '90%' : `${cached.feetY * 100}%`
+    }
+
     // Limpieza de sombras huérfanas si el ID cambia (evita duplicados al capturar/cambiar)
     if (lastEnemyShadowId.value && lastEnemyShadowId.value !== shadowId) {
       if (lastEnemyShadowId.value) shadowStore.hideShadow(lastEnemyShadowId.value)
-      
-      // Intentar usar caché inmediatamente para evitar saltos al 90% si no es necesario
-      const url = data ? getAssetUrl(ASSET_TYPES.POKEMON, data.id, { isShiny: data.isShiny, isBack: false }) : null
-      const cached = url ? shadowStore.feetCache.get(url) : null
-      const isFlyingPoke = isFlying(data)
-      
-      stableEnemyGroundY.value = isFlyingPoke ? '90%' : (cached ? `${cached.feetY * 100}%` : '90%')
     }
     lastEnemyShadowId.value = shadowId
     currentEnemyShadowKey.value = shadowId
@@ -90,15 +102,26 @@ export function useBattleShadows() {
   const syncPlayerShadow = async (pokemon: Pokemon | null, pos: Position, animState: unknown) => {
     const shadowId = getStableShadowId(pokemon, 'player')
 
+    // Inicializar coordenadas inmediatamente si el asiento está ocupado por un pokemon
+    if (pokemon) {
+      const url = getAssetUrl(ASSET_TYPES.POKEMON, pokemon.id, { isShiny: pokemon.isShiny, isBack: true })
+      let dbKey = url || ''
+      const base = import.meta.env.BASE_URL || '/'
+      if (base !== '/' && dbKey.startsWith(base)) {
+        dbKey = dbKey.slice(base.length - 1)
+      }
+      const cached = dbKey ? POKEMON_FEET_DATABASE[dbKey] : null
+      if (!cached) {
+        throw new Error(`[PokemonFeetDatabase] Sprite key "${dbKey}" not found in POKEMON_FEET_DATABASE. Did you forget to compile assets? Run "npm run assets:convert".`)
+      }
+      const isFlyingPoke = isFlying(pokemon)
+
+      stablePlayerGroundY.value = isFlyingPoke ? '90%' : `${cached.feetY * 100}%`
+    }
+
     // Limpieza de sombras huérfanas
     if (lastPlayerShadowId.value && lastPlayerShadowId.value !== shadowId) {
       if (lastPlayerShadowId.value) shadowStore.hideShadow(lastPlayerShadowId.value)
-      
-      const url = pokemon ? getAssetUrl(ASSET_TYPES.POKEMON, pokemon.id, { isShiny: pokemon.isShiny, isBack: true }) : null
-      const cached = url ? shadowStore.feetCache.get(url) : null
-      const isFlyingPoke = isFlying(pokemon)
-
-      stablePlayerGroundY.value = isFlyingPoke ? '90%' : (cached ? `${cached.feetY * 100}%` : '90%')
     }
     lastPlayerShadowId.value = shadowId
     currentPlayerShadowKey.value = shadowId

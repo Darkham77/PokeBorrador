@@ -3,6 +3,8 @@ import { useBreedingStore } from '@/stores/breeding';
 import { useUIStore } from '@/stores/ui';
 import { POKEMON_DB } from '@/data/pokemonDB';
 import type { DaycareEgg } from '@/types/breeding';
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import EggSprite from '@/components/common/EggSprite.vue';
 
 const breedingStore = useBreedingStore();
 const uiStore = useUIStore();
@@ -43,7 +45,11 @@ const handleClaim = (egg: DaycareEgg) => {
       class="empty-state"
     >
       <div class="icon">
-        🥚
+        <img
+          :src="getAssetUrl(ASSET_TYPES.POKEMON, 'egg')"
+          alt="Huevo"
+          class="egg-sprite-empty"
+        >
       </div>
       <p>El almacén está vacío. ¡Pon a criar a tus Pokémon!</p>
     </div>
@@ -60,7 +66,11 @@ const handleClaim = (egg: DaycareEgg) => {
       >
         <div class="egg-visual">
           <div class="egg-sprite">
-            🥚
+            <EggSprite
+              :tint="egg.tint"
+              size="48"
+              class="egg-sprite-img"
+            />
           </div>
           <div
             v-if="egg.inherited_ivs?._scanned"
@@ -124,7 +134,13 @@ const handleClaim = (egg: DaycareEgg) => {
   padding: 60px 20px;
   color: Rgba(71, 85, 105, 1);
   
-  .icon { font-size: 48px; margin-bottom: 16px; opacity: 0.3; }
+  .icon { margin-bottom: 16px; display: flex; justify-content: center; }
+  .egg-sprite-empty {
+    width: 64px;
+    height: 64px;
+    opacity: 0.3;
+    @include pixelated;
+  }
   p { font-size: 14px; }
 }
 
@@ -167,8 +183,13 @@ const handleClaim = (egg: DaycareEgg) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 32px;
   position: relative;
+
+  .egg-sprite-img {
+    width: 48px;
+    height: 48px;
+    @include pixelated;
+  }
 }
 
 .scanned-badge {

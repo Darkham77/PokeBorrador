@@ -70,7 +70,9 @@ export const POKEMON_SPRITE_IDS = {
  * Gets the PokeAPI sprite URL for a given species ID.
  */
 export function getSpriteUrl(id: string, isShiny = false) {
-  if (id && id.includes('egg')) return getAssetUrl(ASSET_TYPES.ITEM, 'egg');
+  if (id && (id.toLowerCase() === 'egg' || id.toLowerCase().startsWith('egg_') || id.toLowerCase().startsWith('egg-'))) {
+    return getAssetUrl(ASSET_TYPES.ITEM, 'egg');
+  }
   return getAssetUrl(ASSET_TYPES.POKEMON, id, { isShiny });
 }
 

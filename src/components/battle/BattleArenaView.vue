@@ -74,22 +74,47 @@ battleStore.animations = {
   triggerTrainerEntry: animations.triggerTrainerEntry,
   triggerTrainerDialogs: animations.triggerTrainerDialogs,
   triggerTrainerRetreat: animations.triggerTrainerRetreat,
-  triggerPokemonCall: animations.triggerPokemonCall
+  triggerPokemonCall: animations.triggerPokemonCall,
+  handleHealRequest: animations.handleHealRequest
 }
 const {
   isInitialLoad,
   isFaintInProgress, faintedPokemonSnapshot,
-    playerAnimState,
-    enemyAnimState,
-    playerActivePokeballId,
-    enemyActivePokeballId,
-    catchSparkles,
-  playerCaptureActive, enemyCaptureActive,
-  playerIsShaking, playerIsBlinking, enemyIsShaking, enemyIsBlinking,
+  playerAnimState,
+  enemyAnimState,
+  catchSparkles,
   isIntroInProgress, triggerSearchEncounter, initListeners,
   trainerAnimState, isTrainerVisible, isGlobalFadeActive,
-  resetAll
+  resetAll,
+  getPokemonAnimState,
+  getPokemonBallId,
+  getPokemonCaptureActive,
+  getPokemonIsShaking,
+  getPokemonIsBlinking,
+  getPokemonIsHealing
 } = animations
+
+const playerCombatants = computed(() => {
+  const list: Pokemon[] = []
+  if (battleStore.exitingPlayer) {
+    list.push(battleStore.exitingPlayer)
+  }
+  if (player.value) {
+    list.push(player.value)
+  }
+  return list
+})
+
+const enemyCombatants = computed(() => {
+  const list: Pokemon[] = []
+  if (battleStore.exitingEnemy) {
+    list.push(battleStore.exitingEnemy)
+  }
+  if (enemy.value) {
+    list.push(enemy.value)
+  }
+  return list
+})
 
 
 const {
@@ -216,7 +241,9 @@ const triggerPreloadCoords = () => preloadCombatCoords(
 onMounted(async () => {
   initListeners()
   await triggerPreloadCoords()
-  gsap.delayedCall(0.5, () => { isInitialLoad.value = false })
+  const tl = gsap.timeline()
+  tl.to({}, { duration: 0.5 })
+  tl.add(() => { isInitialLoad.value = false })
 })
 
 // GSAP: Animación de Entrenador
@@ -237,11 +264,13 @@ watch(() => battleStore.currentSubState, async (sub) => {
 // Forzar actualización de cámara cuando el combate se activa para evitar el glitch de "pantalla negra"
 watch(() => battleStore.isBattleActive, (active) => {
   if (active) {
-    gsap.delayedCall(0.1, () => {
+    const tl = gsap.timeline()
+    tl.to({}, { duration: 0.1 })
+    tl.add(() => {
       if (arenaRef.value) {
         window.dispatchEvent(new Event('resize'))
       }
-    }) // Pequeño delay para dejar que el modal se asiente
+    })
   }
 })
 
@@ -318,31 +347,32 @@ watch(() => battleStore.isBattleActive, (active) => {
 
           <!-- Enemigo -->
           <BattleCombatant
-            v-if="activeEnemyData || enemyAnimState"
-            :key="`enemy-${activeEnemyData?.uid || activeEnemyData?.id || 'empty'}`"
+            v-for="p in enemyCombatants"
+            :key="`enemy-${p.uid || p.id}`"
             side="enemy"
-            :pokemon="activeEnemyData as Pokemon"
+            :pokemon="p"
             :position="p2Pos"
             :target-position="p1Pos"
             :base-size="BASE_ENTITY_SIZE_ENEMY"
             :ground-y="enemyGroundY"
             :shadow-key="currentEnemyShadowKey"
-            :anim-state="enemyAnimState"
-            :ball-id="enemyActivePokeballId"
-            :is-shaking="enemyIsShaking"
-            :is-blinking="enemyIsBlinking"
-            :is-silhouette="activeEnemyIsSilhouette"
-            :is-attacking="battleStore.attackerSide === 'enemy'"
+            :anim-state="getPokemonAnimState('enemy', p)"
+            :ball-id="getPokemonBallId('enemy', p)"
+            :is-shaking="getPokemonIsShaking('enemy', p)"
+            :is-blinking="getPokemonIsBlinking('enemy', p)"
+            :is-healing="getPokemonIsHealing('enemy', p)"
+            :is-silhouette="activeEnemyIsSilhouette && p.uid === activeEnemyData?.uid"
+            :is-attacking="battleStore.attackerSide === 'enemy' && p.uid === activeEnemyData?.uid"
             :active-move="battleStore.activeMove ? { side: battleStore.activeMove.side || 'enemy', cat: battleStore.activeMove.cat || 'physical', name: battleStore.activeMove.name } : null"
             :show-guides="showGuides"
-            :is-capture-success="enemyCaptureActive"
+            :is-capture-success="getPokemonCaptureActive('enemy', p)"
             :sparkles="catchSparkles.filter(s => s.side === 'enemy')"
-            :is-fainting="isFaintInProgress && faintedPokemonSnapshot?.side === 'enemy'"
-            :is-emerging="enemyIsJumping"
+            :is-fainting="isFaintInProgress && faintedPokemonSnapshot?.side === 'enemy' && !(battle?.isTrainer || battle?.isGym) && faintedPokemonSnapshot?.uid === p.uid"
+            :is-emerging="enemyIsJumping && p.uid === activeEnemyData?.uid"
             :suppress-fx="isSearching || isIntroInProgress"
             :stages="battleStore.enemyStages"
-            :hidden="isEnemyTechnicalHidden"
-            :has-seat="!!battleStore.state?.enemy"
+            :hidden="isEnemyTechnicalHidden && p.uid === activeEnemyData?.uid"
+            :has-seat="true"
           />
 
           <!-- Arbustos Adelante --
@@ -367,28 +397,29 @@ watch(() => battleStore.isBattleActive, (active) => {
 
           <!-- Jugador -->
           <BattleCombatant
-            v-if="player || playerAnimState"
-            :key="`player-${player?.uid || player?.id || 'empty'}`"
+            v-for="p in playerCombatants"
+            :key="`player-${p.uid || p.id}`"
             side="player"
-            :pokemon="player"
+            :pokemon="p"
             :position="p1Pos"
             :target-position="p2Pos"
             :base-size="BASE_ENTITY_SIZE_PLAYER"
             :ground-y="playerGroundY"
             :shadow-key="currentPlayerShadowKey"
-            :anim-state="playerAnimState"
-            :ball-id="playerActivePokeballId"
-            :is-shaking="playerIsShaking"
-            :is-blinking="playerIsBlinking"
-            :is-attacking="battleStore.attackerSide === 'player'"
+            :anim-state="getPokemonAnimState('player', p)"
+            :ball-id="getPokemonBallId('player', p)"
+            :is-shaking="getPokemonIsShaking('player', p)"
+            :is-blinking="getPokemonIsBlinking('player', p)"
+            :is-healing="getPokemonIsHealing('player', p)"
+            :is-attacking="battleStore.attackerSide === 'player' && p.uid === player?.uid"
             :active-move="battleStore.activeMove ? { side: battleStore.activeMove.side || 'player', cat: battleStore.activeMove.cat || 'physical', name: battleStore.activeMove.name } : null"
             :show-guides="showGuides"
-            :is-capture-success="playerCaptureActive"
+            :is-capture-success="getPokemonCaptureActive('player', p)"
             :sparkles="catchSparkles.filter(s => s.side === 'player')"
             :stages="battleStore.playerStages"
-            :is-fainting="isFaintInProgress && faintedPokemonSnapshot?.side === 'player'"
-            :hidden="isPlayerTechnicalHidden"
-            :has-seat="!!battleStore.state?.player"
+            :is-fainting="false"
+            :hidden="isPlayerTechnicalHidden && p.uid === player?.uid"
+            :has-seat="true"
           />
         </div>
       </VirtualSpace>

@@ -342,10 +342,17 @@ export async function runEnemyAction(store: BattleContext) {
       if (!newPoke) return
       store.addLog(`¡${store.activeBattle.value.trainerName || 'El entrenador'} retira a ${e.name}!`, 'log-enemy', 'enemy_trainer')
       
+      if (store.exitingEnemy) store.exitingEnemy.value = e
+
       await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.TRAINER_RETREAT)
       await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.POKEMON_RECALL)
-      gameBus.emit('PLAY_WITHDRAW', { side: 'enemy' })
-      await sleep(800)
+      
+      const withdrawPromise = store.animations?.handleCatchRequest
+        ? store.animations.handleCatchRequest({ side: 'enemy', pokemon: e })
+        : Promise.resolve()
+      
+      await withdrawPromise
+      
       await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.VACATE_SEAT)
       
       store.activeBattle.value.enemy = newPoke
@@ -355,8 +362,13 @@ export async function runEnemyAction(store: BattleContext) {
       await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.POKEMON_CALL)
       await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.OCCUPY_SEAT)
       store.addLog(`¡Envía a ${newPoke.name}!`, 'log-enemy', newPoke)
-      gameBus.emit('PLAY_SEND_OUT', { side: 'enemy', pokemon: newPoke })
-      await sleep(800)
+      
+      const releasePromise = store.animations?.handleReleaseRequest
+        ? store.animations.handleReleaseRequest({ side: 'enemy', pokemon: newPoke })
+        : Promise.resolve()
+
+      await releasePromise
+      if (store.exitingEnemy) store.exitingEnemy.value = null
 
       if (store.enemyStages.value.spikes && store.enemyStages.value.spikes > 0 && newPoke.type !== 'flying' && newPoke.type2 !== 'flying' && newPoke.ability !== 'Levitación') {
         const dmg = Math.floor(newPoke.maxHp * (store.enemyStages.value.spikes / 8))

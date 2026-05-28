@@ -221,7 +221,16 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
   const fsm = ctx.fsm
 
   ctx.isIntroAnimating.value = true
-  await fsm.transition(BATTLE_STATES.INITIALIZING, BATTLE_SUBSTATES.PRELOAD_FINAL_COORDS, 50)
+  await fsm.transition(BATTLE_STATES.INITIALIZING, BATTLE_SUBSTATES.PRELOAD_FINAL_COORDS)
+
+  // Esperar a que la vista (BattleArenaView) se monte y registre las funciones de animación
+  for (let i = 0; i < 40; i++) {
+    if (ctx.animations) break
+    await sleep(50)
+  }
+
+  const currentPlayer = ctx.activeBattle.value?.player
+  const needsCall = !currentPlayer || (currentPlayer.uid !== initialPlayer.uid)
 
   if (wasSearching) {
     await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.ENCOUNTER_TYPE_CHECK)
@@ -231,21 +240,40 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
     
     const inventoryBinoculars = ctx.gs.state.inventory['binoculars'] || 0
     const hasBinoculars = ctx.debugBinoculars.value || (inventoryBinoculars > 0)
+    
+    // Capture current (wrong-order) pokemon BEFORE overwriting activeBattle.player
+    const oldPlayerBeforeSearch = needsCall ? ctx.activeBattle.value?.player ?? null : null
+    const hasRealSwap = oldPlayerBeforeSearch && oldPlayerBeforeSearch.uid !== initialPlayer.uid
+
+    if (needsCall && ctx.activeBattle.value) {
+      if (hasRealSwap) ctx.exitingPlayer.value = oldPlayerBeforeSearch
+      ctx.activeBattle.value.player = initialPlayer
+    }
+
+    const promises: Promise<void>[] = []
     if (!hasBinoculars) {
       if (ctx.animations?.triggerSearchEncounter) {
-        // Sincronizamos FSM con las fases internas de la animación
         fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.JUMP_SHADOW)
-        await sleep(300)
-        fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.JUMP_COLOR)
-        await ctx.animations.triggerSearchEncounter()
+        promises.push(ctx.animations.triggerSearchEncounter())
       } else {
-        await sleep(150)
-        await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.BUSH_FADE, 100)
-        await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.REVEAL_COLORS, 500)
+        promises.push(fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.REVEAL_COLORS, 600))
       }
     } else {
-      await sleep(600)
+      promises.push(sleep(600))
     }
+
+    if (needsCall && ctx.animations?.handleReleaseRequest) {
+      // Run recall of wrong-order pokemon + sendout of correct pokemon in parallel
+      if (hasRealSwap && ctx.animations.handleCatchRequest) {
+        promises.push(ctx.animations.handleCatchRequest({ side: 'player', pokemon: oldPlayerBeforeSearch }))
+      }
+      promises.push(ctx.animations.handleReleaseRequest({ side: 'player', pokemon: initialPlayer }))
+    }
+
+    if (promises.length > 0) {
+      await Promise.all(promises)
+    }
+    if (hasRealSwap) ctx.exitingPlayer.value = null
   } else {
     await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.ENCOUNTER_TYPE_CHECK)
 
@@ -276,17 +304,31 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
       await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.BUSH_VISIBLE)
       await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.SILHOUETTE_MODE)
     }
+
+    if (needsCall && ctx.activeBattle.value) {
+      const oldPoke = ctx.activeBattle.value.player
+      if (oldPoke && oldPoke.uid !== initialPlayer.uid) {
+        ctx.exitingPlayer.value = oldPoke
+      }
+      
+      ctx.activeBattle.value.player = initialPlayer
+      
+      const withdrawPromise = oldPoke && oldPoke.uid !== initialPlayer.uid && ctx.animations?.handleCatchRequest
+        ? ctx.animations.handleCatchRequest({ side: 'player', pokemon: oldPoke })
+        : Promise.resolve()
+        
+      const sendOutPromise = ctx.animations?.handleReleaseRequest
+        ? ctx.animations.handleReleaseRequest({ side: 'player', pokemon: initialPlayer })
+        : Promise.resolve()
+        
+      // FSM transition moved AFTER animations complete so the watcher
+      // doesn't overwrite UID-tracked animState values mid-animation
+      await Promise.all([withdrawPromise, sendOutPromise])
+      await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.POKEMON_CALL)
+      ctx.exitingPlayer.value = null
+    }
   }
 
-  const currentPlayer = ctx.activeBattle.value?.player
-  const needsCall = !currentPlayer || (currentPlayer.uid !== initialPlayer.uid)
-
-  if (needsCall && ctx.activeBattle.value) {
-    await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.POKEMON_CALL, 100)
-    ctx.activeBattle.value.player = initialPlayer
-  }
-  
-  await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.ANIM_SYNC, 800)
   await fsm.transition(BATTLE_STATES.REORDER_TEAM, null)
   
   window.dispatchEvent(new Event('resize'))
@@ -350,7 +392,7 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
   }
 
   ctx.isIntroAnimating.value = false
-  await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT, 300)
+  await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT)
   ctx.isIntroAnimating.value = false
 }
 

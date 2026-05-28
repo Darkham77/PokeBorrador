@@ -23,6 +23,49 @@ const PUBLIC_ASSETS_DIR = path.resolve(process.cwd(), 'public', 'assets');
 
 const environmentFiles: string[] = [];
 
+const pokemonFeetDatabase: Record<string, { feetY: number; feetX: number }> = {};
+
+async function calculateFeetPoints(filePath: string): Promise<{ feetY: number; feetX: number }> {
+  try {
+    const { data, info } = await sharp(filePath).raw().toBuffer({ resolveWithObject: true });
+    const width = info.width;
+    const height = info.height;
+    const channels = info.channels;
+
+    if (channels < 4) {
+      return { feetY: 0.9, feetX: 0.5 };
+    }
+
+    let minX = width;
+    let maxX = 0;
+    let lowestY = -1;
+
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        const index = (y * width + x) * channels;
+        const alpha = data[index + 3] ?? 0;
+        if (alpha > 50) {
+          if (x < minX) minX = x;
+          if (x > maxX) maxX = x;
+          if (y > lowestY) lowestY = y;
+        }
+      }
+    }
+
+    if (lowestY !== -1) {
+      const centerX = (minX + maxX) / 2;
+      return {
+        feetY: Number((lowestY / height).toFixed(4)),
+        feetX: Number((centerX / width).toFixed(4))
+      };
+    }
+  } catch (err) {
+    console.error(`Error calculating feet for ${filePath}:`, err);
+  }
+  return { feetY: 0.9, feetX: 0.5 };
+}
+
+
 async function getFilesToConvert(dir: string): Promise<string[]> {
   const files: string[] = [];
   const pattern = '**/*.{png,jpg,jpeg,webp}';
@@ -93,6 +136,16 @@ async function processFile(filePath: string) {
       const name = path.parse(destPath).name;
       environmentFiles.push(name);
     }
+
+    // Calcular coordenadas de anclaje de Pokémon
+    const isPokemonSprite = relPath.toLowerCase().includes('sprites/pokemon') && 
+                            !relPath.toLowerCase().includes('sprites/pokemon/egg');
+    if (isPokemonSprite) {
+      const normalizedPath = '/' + relPath.replace(/^public\//, '').replace(/\.(png|jpg|jpeg|webp)$/i, '.webp').replace(/\\/g, '/');
+      const points = await calculateFeetPoints(filePath);
+      pokemonFeetDatabase[normalizedPath] = points;
+    }
+
 
   } catch (err: unknown) {
     console.error(styleText('red', `   [ERROR] No se pudo procesar ${filePath}: ${(err as Error).message}`));
@@ -248,6 +301,37 @@ export const AVAILABLE_BATTLE_MAPS = ${JSON.stringify(battleMaps, null, 2)} as c
 
   await fs.writeFile(mapAssetsPath, generatedContent, 'utf-8');
   console.log(styleText('green', `   [OK] Catálogo de mapas de combate integrado en src/data/map-assets.ts (${battleMaps.length} mapas)`));
+
+  // Generar base de datos inmutable de anclaje de pies de Pokémon
+  console.log(styleText('yellow', `\n   📦 Generando base de datos estática de anclajes en src/data/pokemonFeetDatabase.ts...`));
+  const databaseDir = path.resolve(process.cwd(), 'src', 'data');
+  await fs.mkdir(databaseDir, { recursive: true });
+  const databasePath = path.join(databaseDir, 'pokemonFeetDatabase.ts');
+
+  // Ordenar las claves alfabéticamente para limpieza
+  const sortedDatabase: Record<string, { feetY: number; feetX: number }> = {};
+  for (const key of Object.keys(pokemonFeetDatabase).sort()) {
+    sortedDatabase[key] = pokemonFeetDatabase[key]!;
+  }
+
+  const databaseContent = `/**
+ * src/data/pokemonFeetDatabase.ts
+ * 
+ * ARCHIVO INMUTABLE Y AUTOGENERADO POR scripts/convert_assets.ts - NO MODIFICAR MANUALMENTE
+ * 
+ * Contiene las coordenadas de anclaje de pies (feetX y feetY) precalculadas para cada sprite.
+ */
+
+export interface FeetPoints {
+  readonly feetY: number;
+  readonly feetX: number;
+}
+
+export const POKEMON_FEET_DATABASE: Readonly<Record<string, FeetPoints>> = ${JSON.stringify(sortedDatabase, null, 2)} as const;
+`;
+
+  await fs.writeFile(databasePath, databaseContent, 'utf-8');
+  console.log(styleText('green', `   [OK] Base de datos de anclaje generada con éxito (${Object.keys(sortedDatabase).length} sprites precalculados).`));
 
   console.log(styleText('bold', '\n✨ Proceso de assets finalizado.\n'));
 }

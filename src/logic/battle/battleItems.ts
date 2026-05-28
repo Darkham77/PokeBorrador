@@ -58,7 +58,6 @@ export async function handleItemUsage(itemName: string, p: Pokemon, e: Pokemon, 
       if (options.fsm) {
         await options.fsm.transition('ACTIVE_BATTLE', 'CATCH_SHAKE')
       }
-      audio.wobble()
       gameBus.emit('CATCH_SHAKE', { side: 'enemy' })
       // Duración de un shake + pequeña pausa
       await sleep(1000)
@@ -70,7 +69,6 @@ export async function handleItemUsage(itemName: string, p: Pokemon, e: Pokemon, 
       if (options.fsm) {
         await options.fsm.transition('ACTIVE_BATTLE', 'CATCH_SUCCESS')
       }
-      audio.caught()
       gameBus.emit('CATCH_SUCCESS', { side: 'enemy' })
       addLog(`¡Ya está! ¡${e.name} atrapado!`, 'log-catch', e)
       
@@ -129,6 +127,17 @@ export async function handleItemUsage(itemName: string, p: Pokemon, e: Pokemon, 
       audio.heal()
       addLog(`¡${p.name} ${res.message}!`, 'log-info', itemName, 'player')
       consumeItem(itemName)
+      
+      const isActive = options.ctx?.activeBattle?.value?.player?.uid === p.uid
+      if (isActive) {
+        if (options.ctx?.animations?.handleHealRequest) {
+          await options.ctx.animations.handleHealRequest({ side: 'player' })
+        } else {
+          gameBus.emit('PLAY_HEAL', { side: 'player' })
+          await sleep(600)
+        }
+      }
+
       return { action: 'heal', pokemon: res.pokemon }
     } else {
       addLog('No tuvo efecto.', 'log-info', p)

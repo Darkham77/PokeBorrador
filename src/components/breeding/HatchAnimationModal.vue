@@ -12,6 +12,7 @@ import type { Pokemon, PokemonEgg } from '@/types/pokemon'
 import { useGameStore } from '@/stores/game'
 import HatchStatsCard from '@/components/breeding/HatchStatsCard.vue'
 import { getAuraStyles } from '@/logic/breeding/hatchAuras'
+import EggSprite from '@/components/common/EggSprite.vue'
 
 interface Props {
   id?: string
@@ -103,6 +104,12 @@ const cleanupAnimations = () => {
   }
   activeTweens.forEach(t => t.kill())
   activeTweens.length = 0
+  if (document.querySelector('.egg-stage-wrapper')) {
+    gsap.set('.egg-stage-wrapper', { clearProps: 'all' })
+  }
+  if (document.querySelector('.egg-sprite')) {
+    gsap.set('.egg-sprite', { clearProps: 'all' })
+  }
 }
 
 const initAnimations = async () => {
@@ -117,9 +124,9 @@ const initAnimations = async () => {
   await prepareResult()
   await nextTick()
   
-  // Movimiento de levitación suave del huevo en reposo
+  // Movimiento de levitación suave del huevo en reposo en el contenedor padre
   idleTimeline = gsap.timeline({ repeat: -1, yoyo: true })
-  idleTimeline.to('.egg-sprite', {
+  idleTimeline.to('.egg-stage-wrapper', {
     y: -12,
     duration: 1.2,
     ease: 'sine.inOut'
@@ -199,96 +206,7 @@ const handleEggClick = () => {
     cleanupAnimations()
     playSound('egg_crack')
 
-    const hatchTimeline = gsap.timeline({
-      onComplete: () => {
-        stage.value = 'reveal'
-        showParticles.value = true
-        showAuras.value = true
-        playSound('evolution_complete')
-        
-        nextTick(() => {
-          // Animación de entrada de la tarjeta de Stats y Pokémon
-          gsap.fromTo('.reveal-info-wrapper',
-            { opacity: 0 },
-            { opacity: 1, duration: 0.6, ease: 'power2.out' }
-          )
-
-          gsap.fromTo('.pokemon-sprite-fx',
-            { scale: 0 },
-            { 
-              scale: 1.15, 
-              duration: 0.6, 
-              ease: 'back.out(1.5)', 
-              onComplete: () => {
-                gsap.to('.pokemon-sprite-fx', { scale: 1.0, duration: 0.2 })
-              }
-            }
-          )
-
-          // Animaciones de las auras concéntricas en contra-fase
-          if (rareAuraRef.value && atmosAuraRef.value) {
-            // Rotaciones opuestas continuas
-            gsap.to(rareAuraRef.value, {
-              rotation: 360,
-              duration: 15,
-              repeat: -1,
-              ease: 'none'
-            })
-            gsap.to(atmosAuraRef.value, {
-              rotation: -360,
-              duration: 15,
-              repeat: -1,
-              ease: 'none'
-            })
-
-            // Respiración concéntrica de escalas y opacidad (contra-fase)
-            gsap.fromTo(rareAuraRef.value,
-              { scale: 0.8, opacity: 0.3 },
-              { scale: 2.4, opacity: 0.95, duration: 2.2, yoyo: true, repeat: -1, ease: 'sine.inOut' }
-            )
-            gsap.fromTo(atmosAuraRef.value,
-              { scale: 2.4, opacity: 0.95 },
-              { scale: 0.8, opacity: 0.3, duration: 2.2, yoyo: true, repeat: -1, ease: 'sine.inOut' }
-            )
-          }
-
-          // Explosión tridimensional de partículas
-          particlesRef.value.forEach((el) => {
-            if (!el) return
-            const angle = Math.random() * Math.PI * 2
-            const distance = 80 + Math.random() * 140
-            const tx = Math.cos(angle) * distance
-            const ty = Math.sin(angle) * distance
-            
-            gsap.fromTo(el,
-              { x: 0, y: 0, opacity: 1, scale: 1 },
-              {
-                x: tx,
-                y: ty,
-                opacity: 0,
-                scale: 0,
-                duration: 'random(1.2, 2.0)',
-                delay: 'random(0, 0.25)',
-                ease: 'power2.out'
-              }
-            )
-          })
-
-          // Entrada suave de elementos informativos y botón de confirmación
-          gsap.fromTo('.stats-card',
-            { opacity: 0, y: 15 },
-            { opacity: 1, y: 0, duration: 0.5, delay: 0.7, ease: 'power2.out' }
-          )
-
-          gsap.fromTo('.btn-confirm',
-            { opacity: 0, y: 15 },
-            { opacity: 1, y: 0, duration: 0.5, delay: 1.2, ease: 'power2.out' }
-          )
-
-          stage.value = 'final'
-        })
-      }
-    })
+    const hatchTimeline = gsap.timeline()
 
     // Temblor de eclosión creciente de alta frecuencia
     hatchTimeline.fromTo('.egg-sprite',
@@ -317,10 +235,104 @@ const handleEggClick = () => {
       ease: 'power1.in'
     }, '+=0.05')
 
+    // En el pico del destello (pantalla 100% blanca), realizamos la eclosión
+    hatchTimeline.call(() => {
+      stage.value = 'reveal'
+      showParticles.value = true
+      showAuras.value = true
+      playSound('evolution_complete')
+      
+      nextTick(() => {
+        // Animación de entrada de la tarjeta de Stats y Pokémon
+        gsap.fromTo('.reveal-info-wrapper',
+          { opacity: 0 },
+          { opacity: 1, duration: 0.6, ease: 'power2.out' }
+        )
+
+        gsap.fromTo('.pokemon-sprite-fx',
+          { scale: 0 },
+          { 
+            scale: 1.15, 
+            duration: 0.6, 
+            ease: 'back.out(1.5)', 
+            onComplete: () => {
+              gsap.to('.pokemon-sprite-fx', { scale: 1.0, duration: 0.2 })
+            }
+          }
+        )
+
+        // Animaciones de las auras concéntricas en contra-fase
+        if (rareAuraRef.value && atmosAuraRef.value) {
+          // Rotaciones opuestas continuas
+          gsap.to(rareAuraRef.value, {
+            rotation: 360,
+            duration: 15,
+            repeat: -1,
+            ease: 'none'
+          })
+          gsap.to(atmosAuraRef.value, {
+            rotation: -360,
+            duration: 15,
+            repeat: -1,
+            ease: 'none'
+          })
+
+          // Respiración concéntrica de escalas y opacidad (contra-fase)
+          gsap.fromTo(rareAuraRef.value,
+            { scale: 0.8, opacity: 0.3 },
+            { scale: 2.4, opacity: 0.95, duration: 2.2, yoyo: true, repeat: -1, ease: 'sine.inOut' }
+          )
+          gsap.fromTo(atmosAuraRef.value,
+            { scale: 2.4, opacity: 0.95 },
+            { scale: 0.8, opacity: 0.3, duration: 2.2, yoyo: true, repeat: -1, ease: 'sine.inOut' }
+          )
+        }
+
+        // Explosión de partículas
+        particlesRef.value.forEach((el) => {
+          if (!el) return
+          const angle = Math.random() * Math.PI * 2
+          const distance = 80 + Math.random() * 140
+          const tx = Math.cos(angle) * distance
+          const ty = Math.sin(angle) * distance
+          
+          gsap.fromTo(el,
+            { x: 0, y: 0, opacity: 1, scale: 1 },
+            {
+              x: tx,
+              y: ty,
+              opacity: 0,
+              scale: 0,
+              duration: 'random(1.2, 2.0)',
+              delay: 'random(0, 0.25)',
+              ease: 'power2.out'
+            }
+          )
+        })
+
+        // Entrada suave de los stats
+        gsap.fromTo('.stats-card',
+          { opacity: 0, y: 15 },
+          { opacity: 1, y: 0, duration: 0.5, delay: 0.7, ease: 'power2.out' }
+        )
+
+        gsap.fromTo('.btn-confirm',
+          { opacity: 0, y: 15 },
+          { opacity: 1, y: 0, duration: 0.5, delay: 1.2, ease: 'power2.out' }
+        )
+      })
+    })
+
+    // Desvanecer el flash blanco mientras se revela la nueva criatura
     hatchTimeline.to('.hatch-backdrop', {
       backgroundColor: '',
       duration: 0.6,
       ease: 'power2.out'
+    })
+
+    // Fin de la animación completa
+    hatchTimeline.eventCallback('onComplete', () => {
+      stage.value = 'final'
     })
   }
 }
@@ -375,8 +387,11 @@ onUnmounted(() => {
             v-if="stage === 'egg' || stage === 'shake'"
             class="egg-stage-wrapper"
           >
-            <div class="egg-sprite egg-sprite-emoji">
-              🥚
+            <div class="egg-sprite">
+              <EggSprite
+                size="120"
+                :tint="egg?.tint"
+              />
             </div>
             <div class="glow-ring" />
           </div>

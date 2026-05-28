@@ -33,6 +33,8 @@ export interface BattleContext {
   attackerSide: Ref<'player' | 'enemy' | null>;
   activeMove: Ref<Move | null>;
   faintedSides: Ref<Set<string>>;
+  exitingPlayer: Ref<Pokemon | null>;
+  exitingEnemy: Ref<Pokemon | null>;
   isCave?: boolean;
   isIndoors?: boolean;
   isCrystalCave?: boolean;
@@ -54,15 +56,16 @@ export interface BattleContext {
     revealWildPokemon: (isInstant?: boolean) => Promise<void>;
     triggerWildEmergence: () => Promise<void>;
     triggerCatchSparkles: (side: string) => Promise<void>;
-    handleCatchRequest: (detail: string | { side?: string; ballId?: string }) => Promise<void>;
-    handleReleaseRequest: (detail: string | { side?: string }) => Promise<void>;
+    handleCatchRequest: (detail: string | { side?: string; ballId?: string; pokemon?: Pokemon }) => Promise<void>;
+    handleReleaseRequest: (detail: string | { side?: string; pokemon?: Pokemon }) => Promise<void>;
     handleShakeRequest: (detail: string | { side?: string }) => void;
-    handleFaintAnim: (detail: string | { side?: string; isFaint?: boolean } | { detail?: string | { side: string; isFaint?: boolean } }) => Promise<void>;
+    handleFaintAnim: (detail: string | { side?: string; isFaint?: boolean; pokemon?: Pokemon } | { detail?: string | { side: string; isFaint?: boolean; pokemon?: Pokemon } }) => Promise<void>;
     playCatchCelebration: (side: string) => Promise<void>;
     playBallFadeOut: (side: string) => Promise<void>;
     triggerTrainerEntry: () => Promise<void>;
     triggerTrainerDialogs: () => Promise<void>;
     triggerTrainerRetreat: () => Promise<void>;
     triggerPokemonCall: () => Promise<void>;
+    handleHealRequest?: (detail: string | { side?: string }) => Promise<void>;
   };
 }

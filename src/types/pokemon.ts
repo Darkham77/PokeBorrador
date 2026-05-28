@@ -162,4 +162,5 @@ export interface PokemonEgg {
     name: string;
     ivTotal: number;
   };
+  tint?: string;
 }

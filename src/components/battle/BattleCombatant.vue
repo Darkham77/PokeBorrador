@@ -2,7 +2,7 @@
 <script setup lang="ts">
 
 
-import { ref, computed, watch, watchEffect, nextTick } from 'vue'
+import { ref, computed, watch, watchEffect, nextTick, onMounted, onUnmounted } from 'vue'
 import { gsap } from 'gsap'
 
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
@@ -11,6 +11,7 @@ import CombatShadow from './CombatShadow.vue'
 import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { useCombatShadowStore } from '@/stores/combatShadows'
+import { useBattleStore } from '@/stores/battle'
 import { gameBus } from '@/logic/gameBus'
 import { WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator'
 
@@ -47,6 +48,7 @@ interface Props {
   ballId?: string
   isShaking?: boolean
   isBlinking?: boolean
+  isHealing?: boolean
   isSilhouette?: boolean
   isAttacking?: boolean
   activeMove?: { side: string; cat: 'physical' | 'special' | 'status'; name: string } | null
@@ -69,6 +71,7 @@ const props = withDefaults(defineProps<Props>(), {
   ballId: 'pokeball',
   isShaking: false,
   isBlinking: false,
+  isHealing: false,
   isSilhouette: false,
   isAttacking: false,
   activeMove: null,
@@ -91,6 +94,12 @@ const emit = defineEmits<{
 const naturalSize = ref({ w: 0, h: 0 })
 const idleWrapperRef = ref<HTMLElement | null>(null)
 const seatKey = computed(() => `${props.side}-${props.position.x}-${props.position.y}`)
+const cacheKey = computed(() => {
+  if (props.pokemon) {
+    return props.pokemon.uid || `${props.side}-${props.pokemon.id}`
+  }
+  return seatKey.value
+})
 let idleTween: gsap.core.Tween | null = null
 
 
@@ -213,6 +222,8 @@ const pokeballShadowUrl = computed(() => {
 })
 
 const shadowStore = useCombatShadowStore()
+const battleStore = useBattleStore()
+const isReleaseStarted = ref(false)
 const currentShadow = computed(() => props.shadowKey ? shadowStore.activeShadows.get(props.shadowKey) : null)
 
 const localGroundY = computed(() => {
@@ -220,7 +231,7 @@ const localGroundY = computed(() => {
   if (shadow && shadow.feetY !== undefined) {
     return `${shadow.feetY * 100}%`
   }
-  const cached = pokeballCoordsCache.get(seatKey.value)
+  const cached = pokeballCoordsCache.get(cacheKey.value)
   if (cached) return cached.top
   return props.groundY
 })
@@ -251,7 +262,7 @@ const stickyCoords = computed(() => {
       left = `calc(50% + ${offsetX}px)`
     }
   } else {
-    const cached = pokeballCoordsCache.get(seatKey.value)
+    const cached = pokeballCoordsCache.get(cacheKey.value)
     if (cached) {
       left = cached.left
       top = cached.top
@@ -317,20 +328,20 @@ const getBallTargetCoords = () => {
   return { x: targetX, y: targetY }
 }
 
-watch(isBallVisible, (visible) => {
+watch(() => [isBallVisible.value, stickyCoords.value] as const, ([visible]) => {
   if (visible) {
     internalBallId.value = props.ballId || 'pokeball'
     const newCoords = { ...stickyCoords.value }
     memorizedBallCoords.value = newCoords
-    pokeballCoordsCache.set(seatKey.value, newCoords)
-    rawCoordsCache.set(seatKey.value, getBallTargetCoords())
+    pokeballCoordsCache.set(cacheKey.value, newCoords)
+    rawCoordsCache.set(cacheKey.value, getBallTargetCoords())
   } else {
-    const cached = pokeballCoordsCache.get(seatKey.value)
+    const cached = pokeballCoordsCache.get(cacheKey.value)
     if (cached) {
       memorizedBallCoords.value = { ...cached }
     }
   }
-}, { immediate: true })
+}, { immediate: true, deep: true })
 
 const handleImageError = (e: Event) => {
   (e.target as HTMLImageElement).src = getAssetUrl(ASSET_TYPES.ENVIRONMENT, 'bush-1')
@@ -420,84 +431,102 @@ watch(() => props.isFainting, (val) => {
   }
 })
 
-watch(() => props.animState, (val) => {
-  nextTick(() => {
-    if (!spriteRef.value) return
+const triggerBallAnimation = (val: string | null) => {
+  if (!spriteRef.value || !val) return
+  
+  if (val === 'catching') {
+    const origin = getSpriteFeetOrigin()
+    const cachedRaw = rawCoordsCache.get(cacheKey.value)
+    const coords = cachedRaw || getBallTargetCoords()
     
-    if (val === 'catching') {
-      const origin = getSpriteFeetOrigin()
-      const cachedRaw = rawCoordsCache.get(seatKey.value)
-      const coords = cachedRaw || getBallTargetCoords()
-      
-      // Ocultar la sombra wrapper inmediatamente cuando empieza la animación
-      if (shadowWrapperRef.value) {
-        gsap.set(shadowWrapperRef.value, { display: "none" })
-      }
-      
-      gsap.killTweensOf(spriteRef.value)
-      
-      // Forzamos el filtro de energía azul, brillo (glow) y pivote en el centro
-      gsap.set(spriteRef.value, { 
-        transformOrigin: origin,
-        filter: "url(#pixel-energy-optimized)" 
-      })
-      
-      // Succión hacia la Poké Ball con GSAP determinista utilizando los pies como centro
-      gsap.to(spriteRef.value, {
-        x: coords.x,
-        y: coords.y,
-        scale: 0,
-        opacity: 0,
-        duration: 0.4,
-        ease: "power2.inOut",
-        onComplete: () => {
-          // Dejar el sprite listo para cuando reaparezca pero invisible
-          gsap.set(spriteRef.value, { x: 0, y: 0, scale: 1, filter: "none", clearProps: "transformOrigin" })
-          if (shadowWrapperRef.value) {
-            gsap.set(shadowWrapperRef.value, { clearProps: "display" })
-          }
-        }
-      })
-    } else if (val === 'releasing') {
-      const origin = getSpriteFeetOrigin()
-      const cachedRaw = rawCoordsCache.get(seatKey.value)
-      const coords = cachedRaw || getBallTargetCoords()
-      
-      // Ocultar la sombra al liberar, reaparecerá al completarse
-      if (shadowWrapperRef.value) {
-        gsap.set(shadowWrapperRef.value, { display: "none" })
-      }
-      
-      gsap.killTweensOf(spriteRef.value)
-      
-      // Empezamos desde la Poké Ball, escala 0, con filtro de energía, opacidad 0 y pivote en el centro
-      gsap.set(spriteRef.value, { 
-        transformOrigin: origin,
-        x: coords.x, 
-        y: coords.y, 
-        scale: 0, 
-        opacity: 0, 
-        filter: "url(#pixel-energy-optimized)" 
-      })
-      
-      // Expansión suave y retorno al estado original
-      gsap.to(spriteRef.value, {
-        x: 0,
-        y: 0,
-        scale: 1,
-        opacity: 1,
-        duration: 0.4,
-        ease: "power2.inOut",
-        onComplete: () => {
-          gsap.set(spriteRef.value, { clearProps: "filter,x,y,scale,opacity,transformOrigin" })
-          if (shadowWrapperRef.value) {
-            gsap.set(shadowWrapperRef.value, { clearProps: "display" })
-          }
-        }
-      })
+    // Ocultar la sombra wrapper inmediatamente cuando empieza la animación
+    if (shadowWrapperRef.value) {
+      gsap.set(shadowWrapperRef.value, { display: "none" })
     }
-  })
+    
+    gsap.killTweensOf(spriteRef.value)
+    
+    // Forzamos el filtro de energía azul, brillo (glow) y pivote en el centro
+    gsap.set(spriteRef.value, { 
+      transformOrigin: origin,
+      filter: "url(#pixel-energy-optimized)" 
+    })
+    
+    // Succión hacia la Poké Ball con GSAP determinista utilizando los pies como centro
+    const tween = gsap.to(spriteRef.value, {
+      x: coords.x,
+      y: coords.y,
+      scale: 0,
+      opacity: 0,
+      duration: 0.4,
+      ease: "power2.inOut",
+      onComplete: () => {
+        // Dejar el sprite listo para cuando reaparezca pero invisible
+        gsap.set(spriteRef.value, { x: 0, y: 0, scale: 1, filter: "none", clearProps: "transformOrigin" })
+        if (shadowWrapperRef.value) {
+          gsap.set(shadowWrapperRef.value, { clearProps: "display" })
+        }
+      }
+    })
+    
+    const animKey = `${props.side}-${props.pokemon?.uid || 'active'}`
+    gameBus.emit('REGISTER_TWEEN', { key: animKey, tween })
+  } else if (val === 'releasing') {
+    isReleaseStarted.value = true
+    const origin = getSpriteFeetOrigin()
+    const cachedRaw = rawCoordsCache.get(cacheKey.value)
+    const coords = cachedRaw || getBallTargetCoords()
+    
+    // Ocultar la sombra al liberar, reaparecerá al completarse
+    if (shadowWrapperRef.value) {
+      gsap.set(shadowWrapperRef.value, { display: "none" })
+    }
+    
+    gsap.killTweensOf(spriteRef.value)
+    
+    // Empezamos desde la Poké Ball, escala 0, con filtro de energía, opacidad 0 y pivote en el centro
+    gsap.set(spriteRef.value, { 
+      transformOrigin: origin,
+      x: coords.x, 
+      y: coords.y, 
+      scale: 0, 
+      opacity: 0, 
+      filter: "url(#pixel-energy-optimized)" 
+    })
+    
+    // Expansión suave y retorno al estado original
+    const tween = gsap.to(spriteRef.value, {
+      x: 0,
+      y: 0,
+      scale: 1,
+      opacity: 1,
+      duration: 0.4,
+      ease: "power2.inOut",
+      onComplete: () => {
+        gsap.set(spriteRef.value, { clearProps: "filter,x,y,scale,opacity,transformOrigin" })
+        if (shadowWrapperRef.value) {
+          gsap.set(shadowWrapperRef.value, { clearProps: "display" })
+        }
+      }
+    })
+
+    const animKey = `${props.side}-${props.pokemon?.uid || 'active'}`
+    gameBus.emit('REGISTER_TWEEN', { key: animKey, tween })
+  }
+}
+
+watch(() => props.animState, (val) => {
+  if (val !== 'releasing') {
+    isReleaseStarted.value = false
+  }
+  nextTick(() => triggerBallAnimation(val))
 }, { immediate: true })
+
+watch(spriteRef, (newEl) => {
+  if (newEl) {
+    nextTick(() => triggerBallAnimation(props.animState))
+  }
+})
 
 watch(() => props.isAttacking, (val) => {
   if (val && spriteRef.value && props.activeMove) {
@@ -618,6 +647,7 @@ watch(() => [props.isShaking, props.isBlinking], ([shaking, blinking]) => {
   // Si hay una Pokebola visible, la animamos a ella
   if (pokeballImgRef.value) {
     if (shaking) {
+      gameBus.emit('PLAY_SOUND', 'wobble')
       gsap.to(pokeballImgRef.value, {
         keyframes: [
           { rotation: 18, duration: 0.08, ease: 'power1.out' },
@@ -683,6 +713,30 @@ watch(() => [props.isShaking, props.isBlinking], ([shaking, blinking]) => {
         }
       )
     }
+  }
+})
+
+watch(() => props.isHealing, (val) => {
+  if (val && spriteRotationRef.value) {
+    gsap.set(spriteRotationRef.value, { transition: "none" })
+    const tl = gsap.timeline()
+    tl.to(spriteRotationRef.value, {
+      y: -15,
+      scale: 1.08,
+      filter: "brightness(1.4) sepia(0.8) hue-rotate(300deg) saturate(2)",
+      duration: 0.25,
+      ease: "power1.out"
+    })
+    .to(spriteRotationRef.value, {
+      y: 0,
+      scale: 1,
+      filter: "brightness(1) sepia(0) hue-rotate(0deg) saturate(1)",
+      duration: 0.25,
+      ease: "power1.in",
+      onComplete: () => {
+        gsap.set(spriteRotationRef.value, { clearProps: "y,scale,filter,transition" })
+      }
+    })
   }
 })
 
@@ -828,6 +882,103 @@ const onBallLeave = (el: Element, done: () => void) => {
     onComplete: done 
   })
 }
+
+interface SmokeParticle {
+  id: string | number
+  x: number
+  y: number
+  vx: number
+  vy: number
+  scale: number
+  opacity: number
+}
+const smokeParticles = ref<SmokeParticle[]>([])
+
+const runEscapeAnimation = (type: 'teleport' | 'flee') => {
+  if (!spriteRef.value) return
+
+  if (type === 'teleport') {
+    gameBus.emit('PLAY_SOUND', 'flee')
+    
+    const tl = gsap.timeline()
+    tl.to(spriteRef.value, {
+      scaleY: 2.0,
+      scaleX: 0.1,
+      opacity: 0,
+      filter: 'brightness(3) contrast(1.5)',
+      duration: 0.4,
+      ease: 'power3.in',
+      onComplete: () => {
+        gsap.set(spriteRef.value, { clearProps: 'opacity,scale,transform,filter' })
+      }
+    })
+  } else {
+    gameBus.emit('PLAY_SOUND', 'flee')
+    
+    const count = 15
+    const list: SmokeParticle[] = []
+    for (let i = 0; i < count; i++) {
+      const angle = Math.random() * Math.PI * 2
+      const speed = 1.5 + Math.random() * 3
+      list.push({
+        id: `smoke-${Temporal.Now.instant().epochMilliseconds}-${i}-${Math.random()}`,
+        x: 0,
+        y: -10,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed - 1.5,
+        scale: 1.0 + Math.random() * 1.5,
+        opacity: 0.9
+      })
+    }
+    smokeParticles.value = list
+
+    const updateTicker = () => {
+      let active = false
+      smokeParticles.value.forEach(p => {
+        p.x += p.vx
+        p.y += p.vy
+        p.opacity -= 0.03
+        p.scale += 0.02
+        if (p.opacity > 0) active = true
+      })
+      
+      if (active) {
+        requestAnimationFrame(updateTicker)
+      } else {
+        smokeParticles.value = []
+      }
+    }
+    requestAnimationFrame(updateTicker)
+
+    gsap.to(spriteRef.value, {
+      x: 400,
+      opacity: 0,
+      scale: 0.7,
+      duration: 0.45,
+      ease: 'power2.in',
+      onComplete: () => {
+        gsap.set(spriteRef.value, { clearProps: 'opacity,scale,transform,x' })
+      }
+    })
+  }
+}
+
+const handleEscapeEvent = (e: Event) => {
+  const data = (e as CustomEvent).detail
+  if (data.side === props.side && (!data.pokemon || data.pokemon.uid === props.pokemon?.uid)) {
+    const isTrainerCombat = !!battleStore.state?.isTrainer || !!battleStore.state?.isGym
+    if (isTrainerCombat) return
+    runEscapeAnimation(data.type)
+  }
+}
+
+onMounted(() => {
+  gameBus.on('TRIGGER_COMBATANT_ESCAPE', handleEscapeEvent)
+})
+
+onUnmounted(() => {
+  gameBus.off('TRIGGER_COMBATANT_ESCAPE', handleEscapeEvent)
+})
 </script>
 
 <template>
@@ -843,7 +994,10 @@ const onBallLeave = (el: Element, done: () => void) => {
       v-if="hasSeat"
       ref="spriteRef"
       class="sprite-animator"
-      :style="{ '--fx-scale': fxScale }"
+      :style="[
+        { '--fx-scale': fxScale },
+        animState === 'releasing' && !isReleaseStarted ? { opacity: 0, transform: 'scale(0)' } : {}
+      ]"
       :class="[{ 
         'is-attacking': isAttacking,
         'is-technical-hidden': hidden || animState === 'trapped' || isCaptureSuccess
@@ -1038,6 +1192,23 @@ const onBallLeave = (el: Element, done: () => void) => {
         </TransitionGroup>
       </div>
     </Transition>
+
+    <!-- Partículas de Humo de Escape -->
+    <div
+      v-if="smokeParticles.length > 0"
+      class="smoke-particles-container"
+      :style="{ top: localGroundY }"
+    >
+      <span
+        v-for="p in smokeParticles"
+        :key="p.id"
+        class="smoke-particle"
+        :style="{
+          transform: `translate(${p.x}px, ${p.y}px) scale(${p.scale})`,
+          opacity: p.opacity
+        }"
+      />
+    </div>
   </VirtualEntity>
 </template>
 
@@ -1285,5 +1456,25 @@ const onBallLeave = (el: Element, done: () => void) => {
   &.down { color: #f87171; }
 }
 
-</style>
+.smoke-particles-container {
+  position: absolute;
+  left: 50%;
+  transform: Translate(-50%, -50%);
+  pointer-events: none;
+  z-index: var(--z-map-ui);
+  overflow: visible;
+}
 
+.smoke-particle {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  background: #e5e7eb;
+  border-radius: 50%;
+  box-shadow: 0 0 6px Rgba(156, 163, 175, 0.6);
+  opacity: 0.8;
+  pointer-events: none;
+  will-change: transform, opacity;
+  @include pixelated;
+}
+</style>

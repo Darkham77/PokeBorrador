@@ -1,5 +1,4 @@
 import { ref, computed, watch, toValue, type MaybeRefOrGetter } from 'vue'
-import { gsap } from 'gsap'
 import { gameBus } from '@/logic/gameBus'
 import { logger } from '@/logic/utils/logger'
 import { awaitAnimation, createTimeline } from '@/logic/utils/gsapHelpers'
@@ -35,10 +34,17 @@ export function useBattleAnimations(
     handleCatchRequest,
     handleShakeRequest,
     handleBlinkRequest,
+    handleHealRequest,
     handleFaintAnim,
     playCatchCelebration,
     playBallFadeOut,
-    resetCaptureStates
+    resetCaptureStates,
+    getPokemonAnimState,
+    getPokemonBallId,
+    getPokemonCaptureActive,
+    getPokemonIsShaking,
+    getPokemonIsBlinking,
+    getPokemonIsHealing
   } = captureAnims
 
   // 2. Wild / Entry visual states
@@ -86,11 +92,14 @@ export function useBattleAnimations(
     isWildEntryAnimation.value = true
     isEmerging.value = false 
     
-    gsap.delayedCall(0.6, () => {
+    const tl = createTimeline()
+    tl.to({}, { duration: 0.6 })
+    tl.add(() => {
       isWildSilhouette.value = false
       isWildEntryAnimation.value = false
       wildRevealActive.value = false
     })
+    return awaitAnimation(tl)
   }
 
   // FSM Watcher for sync
@@ -145,7 +154,8 @@ export function useBattleAnimations(
           isWildSilhouette.value = true
           
           if (!isEmerging.value) {
-            gsap.delayedCall(0, () => {
+            const tl = createTimeline()
+            tl.add(() => {
               isEmerging.value = true
             })
           }
@@ -160,13 +170,21 @@ export function useBattleAnimations(
 
         case 'POKEMON_CALL':
         case 'ENERGY_RELEASE':
-          seats.value.player.animState = 'releasing'
-          break
+          // Only set via FSM if no UID-tracked animation is already in progress
+          // (handleReleaseRequest manages this directly when switching)
+          if (!seats.value.player.entry.pokemonUid) {
+            seats.value.player.entry.animState = 'releasing'
+          }
+          break;
 
         case 'POKEMON_RECALL':
         case 'ENERGY_RECALL':
-          seats.value.player.animState = 'catching'
-          break
+          // Only set via FSM if no UID-tracked animation is already in progress
+          // (handleCatchRequest manages this directly when switching)
+          if (!seats.value.player.exit.pokemonUid) {
+            seats.value.player.exit.animState = 'catching'
+          }
+          break;
 
         case 'TRAINER_ENTRY':
         case 'T_VISUAL':
@@ -175,13 +193,15 @@ export function useBattleAnimations(
           trainerAnimState.value = 'entering'
           isTrainerVisible.value = true
           break
-        
         case 'TRAINER_RETREAT':
-          // Timing is now owned by triggerTrainerRetreat() in the bridge;
-          // this case acts as a reactive fallback only
           if (trainerAnimState.value !== 'retreating') {
             trainerAnimState.value = 'retreating'
-            gsap.delayedCall(0.8, () => { isTrainerVisible.value = false; trainerAnimState.value = null })
+            const tl = createTimeline()
+            tl.to({}, { duration: 0.8 })
+            tl.add(() => {
+              isTrainerVisible.value = false
+              trainerAnimState.value = null
+            })
           }
           break
 
@@ -194,14 +214,21 @@ export function useBattleAnimations(
           isTrainerVisible.value = false
           Object.keys(seats.value).forEach(side => { 
             const seat = seats.value[side]
-            if (seat) seat.animState = null 
+            if (seat) {
+              seat.entry.animState = null
+              seat.exit.animState = null
+            }
           })
           break
 
         case null:
+          // Only clear seats that don't have an active UID-tracked animation in progress
           Object.keys(seats.value).forEach(side => { 
             const seat = seats.value[side]
-            if (seat) seat.animState = null 
+            if (seat) {
+              if (!seat.entry.pokemonUid) seat.entry.animState = null
+              if (!seat.exit.pokemonUid) seat.exit.animState = null
+            }
           })
           isEmerging.value = false
           isWildEntryAnimation.value = false
@@ -246,7 +273,7 @@ export function useBattleAnimations(
   }
 
   const triggerPokemonCall = (): Promise<void> => {
-    seats.value.player.animState = 'releasing'
+    seats.value.player.entry.animState = 'releasing'
     const tl = createTimeline()
     // Allow ~0.8s for the Poké Ball release animation
     tl.to({}, { duration: 0.8 })
@@ -301,6 +328,7 @@ export function useBattleAnimations(
     
     gameBus.on('PLAY_DAMAGE', (e: Event) => handleShakeRequest((e as CustomEvent).detail))
     gameBus.on('PLAY_BLINK', (e: Event) => handleBlinkRequest((e as CustomEvent).detail))
+    gameBus.on('PLAY_HEAL', (e: Event) => handleHealRequest((e as CustomEvent).detail))
     
     gameBus.on('CATCH_SHAKE', (e: Event) => {
       handleShakeRequest((e as CustomEvent).detail)
@@ -310,6 +338,21 @@ export function useBattleAnimations(
     gameBus.on('POKEMON_FAINT', (e: Event) => handleFaintAnim((e as CustomEvent).detail))
     gameBus.on('PLAY_FAINT', (e: Event) => handleFaintAnim((e as CustomEvent).detail))
     gameBus.on('ENCOUNTER_ANIM', () => triggerSearchEncounter())
+
+    gameBus.on('PLAY_ESCAPE_ANIM', (e: Event) => {
+      const data = (e as CustomEvent).detail
+      const side = typeof data === 'string' ? data : (data?.side || 'player')
+      const isWild = !battleStore.state?.isTrainer && !battleStore.state?.isGym
+      
+      if (side === 'player' || !isWild) {
+        const pokemon = side === 'player' ? battleStore.state?.player : battleStore.state?.enemy
+        handleCatchRequest({ side, pokemon: pokemon || undefined })
+      } else {
+        const type = data?.type || 'flee'
+        const pokemon = battleStore.state?.enemy
+        gameBus.emit('TRIGGER_COMBATANT_ESCAPE', { side: 'enemy', pokemon, type })
+      }
+    })
 
     gameBus.on('PLAY_ATTACK_ANIM', (e: Event) => {
       const data = (e as CustomEvent).detail
@@ -325,7 +368,9 @@ export function useBattleAnimations(
         side: side as 'player' | 'enemy'
       } as Move
       
-      gsap.delayedCall(0.5, () => {
+      const tl = createTimeline()
+      tl.to({}, { duration: 0.5 })
+      tl.add(() => {
         battleStore.attackerSide = null
         battleStore.activeMove = null
       })
@@ -341,9 +386,12 @@ export function useBattleAnimations(
       Object.keys(seats.value).forEach(side => {
         const seat = seats.value[side]
         if (seat) {
-          seat.isCaptureActive = false
-          seat.ballId = 'pokeball'
-          seat.animState = null
+          seat.entry.isCaptureActive = false
+          seat.entry.ballId = 'pokeball'
+          seat.entry.animState = null
+          seat.exit.isCaptureActive = false
+          seat.exit.ballId = 'pokeball'
+          seat.exit.animState = null
         }
       })
       resetCaptureStates()
@@ -352,7 +400,9 @@ export function useBattleAnimations(
     watch(() => battleStore.upcomingPokemon, (newVal) => {
       if (newVal && battleStore.isSearching) {
         upcomingIsEmerging.value = true
-        gsap.delayedCall(1.2, () => { upcomingIsEmerging.value = false })
+        const tl = createTimeline()
+        tl.to({}, { duration: 1.2 })
+        tl.add(() => { upcomingIsEmerging.value = false })
       }
     })
   }
@@ -400,6 +450,13 @@ export function useBattleAnimations(
     handleReleaseRequest,
     handleShakeRequest,
     playCatchCelebration,
-    playBallFadeOut
+    playBallFadeOut,
+    getPokemonAnimState,
+    getPokemonBallId,
+    getPokemonCaptureActive,
+    getPokemonIsShaking,
+    getPokemonIsBlinking,
+    getPokemonIsHealing,
+    handleHealRequest
   }
 }

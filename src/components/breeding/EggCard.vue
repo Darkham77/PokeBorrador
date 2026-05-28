@@ -2,6 +2,7 @@
 import type { DaycareEgg } from '@/types/breeding'
 import { formatTime } from '@/logic/timeUtils'
 import { POKEMON_DB } from '@/data/pokemonDB'
+import EggSprite from '@/components/common/EggSprite.vue'
 
 interface Props {
   egg: DaycareEgg
@@ -19,7 +20,11 @@ const getPokemonName = (id: string) => (POKEMON_DB as Record<string, { name: str
 <template>
   <div class="egg-card-retro">
     <div class="egg-icon-box">
-      🥚
+      <EggSprite
+        :tint="egg.tint"
+        size="48"
+        class="egg-sprite-img"
+      />
     </div>
     <div class="egg-info">
       <div class="egg-name">
@@ -58,7 +63,6 @@ const getPokemonName = (id: string) => (POKEMON_DB as Record<string, { name: str
   &:hover { border-color: Rgba(255,255,255,0.12); }
   
   .egg-icon-box { 
-    font-size: 36px; 
     width: 60px; 
     height: 60px; 
     display: flex; 
@@ -66,6 +70,11 @@ const getPokemonName = (id: string) => (POKEMON_DB as Record<string, { name: str
     justify-content: center; 
     filter: Drop-Shadow(0 4px 6px Rgba(0, 0, 0, 0.3));
     
+    .egg-sprite-img {
+      width: 48px;
+      height: 48px;
+      @include pixelated;
+    }
 
     .egg-card-retro:hover & {
       transform: Scale(1.1) Rotate(5deg);

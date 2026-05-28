@@ -178,7 +178,7 @@ export const getAssetUrl = (type: AssetType, rawId: string | number, options: As
     case ASSET_TYPES.POKEMON: {
       const stringId = String(id).toLowerCase();
       const num = (POKEMON_SPRITE_IDS as Record<string, number>)[stringId] || id;
-      if (typeof id === 'string' && id.toLowerCase().startsWith('egg')) return resolveAsset(`${POKEAPI_ITEM_BASE}egg${extension}`);
+      if (typeof id === 'string' && id.toLowerCase().startsWith('egg')) return resolveAsset(`/assets/sprites/egg${extension}`);
       
       const folder = isShiny ? 'shiny/' : '';
       const back = isBack ? 'back/' : '';

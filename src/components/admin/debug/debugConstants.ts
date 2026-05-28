@@ -58,7 +58,10 @@ export const DEBUG_ENCOUNTER_ANIMS: DebugItem[] = [
 export const DEBUG_COMBAT_ANIMS: DebugItem[] = [
   { id: 'shake_damage', label: 'SACUDIDA DAÑO', icon: '💢' },
   { id: 'blink', label: 'PARPADEO BRILLOSO', icon: '💡' },
-  { id: 'faint', label: 'DEBILITAMIENTO', icon: '💀' }
+  { id: 'heal', label: 'CURACIÓN (POCIÓN)', icon: '💊' },
+  { id: 'faint', label: 'DEBILITAMIENTO', icon: '💀' },
+  { id: 'escape_flee', label: 'ESCAPE (HUMO)', icon: '💨' },
+  { id: 'escape_teleport', label: 'ESCAPE (TELEPORT)', icon: '🌀' }
 ]
 
 export const DEBUG_CATCH_ANIMS: DebugItem[] = [

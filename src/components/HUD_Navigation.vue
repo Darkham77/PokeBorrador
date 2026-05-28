@@ -8,6 +8,7 @@ import { useModalStore } from '@/stores/modals'
 import { useGTSStore } from '@/stores/gts'
 import { useBreedingStore } from '@/stores/breeding'
 import { useEventStore } from '@/stores/events'
+import EggSprite from '@/components/common/EggSprite.vue'
 
 interface Props {
   position?: string
@@ -282,7 +283,12 @@ onUnmounted(() => {
       :class="{ active: activeTab === 'daycare' }"
       @click.stop="handleTabChange('daycare')"
     >
-      <span class="icon">🥚</span>
+      <span class="icon">
+        <EggSprite
+          size="20"
+          style="display: inline-flex; justify-content: center; align-items: center;"
+        />
+      </span>
       <span class="nav-item-label">CRIANZA</span>
       <span
         v-if="readyEggsCount > 0"

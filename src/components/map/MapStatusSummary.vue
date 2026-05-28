@@ -2,6 +2,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
+import EggSprite from '@/components/common/EggSprite.vue'
 
 interface Props {
   missionsRemaining?: number
@@ -196,7 +197,10 @@ const bannerStyle = computed(() => ({
           @click.stop="emit('openTab', 'daycare')"
         >
           <div class="pc-banner-icon">
-            🥚
+            <EggSprite
+              size="28"
+              style="image-rendering: pixelated; display: inline-flex; justify-content: center; align-items: center;"
+            />
           </div>
           <div class="pc-banner-content-wrapper">
             <div class="pc-banner-title">

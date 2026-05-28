@@ -13,13 +13,14 @@ import {
   inheritAbility,
   calculateShinyChance,
 } from '@/logic/breeding/breedingEngine';
+import { eggFactory } from '@/logic/breeding/eggFactory';
 import { EGG_SPAWN_INTERVAL_MS } from '@/logic/breeding/breedingData';
 import { POKEMON_DB } from '@/data/pokemonDB';
 import { usePlayerClassStore } from './playerClass.ts';
 import { useEventStore } from './events.ts';
 import { useDaycareMissionsStore } from './daycareMissions.ts';
 import type { DaycareSlot, DaycareEgg, DaycareMission } from '@/types/breeding';
-import type { Pokemon, PokemonEgg, PokemonIVs } from '@/types/pokemon';
+import type { Pokemon, PokemonIVs } from '@/types/pokemon';
 
 export const useBreedingStore = defineStore('breeding', () => {
   const gameStore = useGameStore();
@@ -222,26 +223,16 @@ export const useBreedingStore = defineStore('breeding', () => {
 
     const breedingCost = calculateBreedingCost(pA, pB);
 
-    const egg: DaycareEgg = {
-      id: `egg_${now}_${Math.random().toString(36).substring(2, 7)}`,
+    const egg = eggFactory.createDaycareEgg({
       species: eggSpecies,
-      name: 'Huevo Pokémon',
-      level: 1,
-      isEgg: true,
-      steps: 2500,
-      mother_id: compat.motherId || '',
-      deposited_at: Temporal.Now.instant().toString(),
+      motherId: compat.motherId,
       ivs: calculateInheritance(pA, pB, itemA, itemB, playerClass),
       nature: inheritNature(pA, pB, itemA, itemB) || 'Serio',
       movesAtBirth: inheritMoves(pA, pB, eggSpecies),
       abilityIndex: abilityIndex,
       isShiny: Math.random() < calculateShinyChance(pA, pB, 1/4096, eventStore.globalMultipliers?.shiny || 1),
-      cost: breedingCost,
-      inherited_ivs: {
-        _cost: breedingCost,
-        _scanned: false
-      }
-    };
+      cost: breedingCost
+    });
 
     // Consume parent vigor by 1 point
     pA.vigor = Math.max(0, (pA.vigor || 0) - 1);
@@ -281,23 +272,16 @@ export const useBreedingStore = defineStore('breeding', () => {
 
     if (!gameStore.state.eggs) gameStore.state.eggs = [];
     
-    const eggForInventory: PokemonEgg = {
-      uid: egg.id,
-      id: egg.species,
+    const eggToPush = eggFactory.createPokemonEgg({
+      species: egg.species,
       steps: egg.steps,
-      ready: false,
       ivs: egg.ivs,
       nature: egg.nature,
       movesAtBirth: egg.movesAtBirth,
       abilitySlot: egg.abilityIndex,
-      isShiny: egg.isShiny
-    };
-    
-    const eggToPush = {
-      ...eggForInventory,
-      uid: `${eggForInventory.id}-${Temporal.Now.instant().epochMilliseconds}`,
-      ready: false
-    };
+      isShiny: egg.isShiny,
+      tint: egg.tint
+    });
     gameStore.state.eggs.push(eggToPush);
     gameStore.state.money -= egg.cost;
     warehouseEggs.value.splice(eggIndex, 1);

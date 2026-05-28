@@ -158,5 +158,54 @@ export const STAT_ACTIONS: Record<string, MoveAction> = {
       srcStages[s] = tgtStages[s] || 0;
     });
     addLogFn(`¡${src.name} copió los cambios de estadísticas de ${tgt.name}!`, 'log-info', src);
+  },
+  'stat_down_enemy_atk': (_src, tgt, _srcStages, tgtStages, addLogFn) => {
+    tgtStages.atk = Math.max(-6, (tgtStages.atk || 0) - 1);
+    addLogFn(`¡El Ataque de ${tgt.name} bajó!`, 'log-info', tgt);
+  },
+  'stat_down_enemy_def': (_src, tgt, _srcStages, tgtStages, addLogFn) => {
+    tgtStages.def = Math.max(-6, (tgtStages.def || 0) - 1);
+    addLogFn(`¡La Defensa de ${tgt.name} bajó!`, 'log-info', tgt);
+  },
+  'stat_down_enemy_spe': (_src, tgt, _srcStages, tgtStages, addLogFn) => {
+    tgtStages.spe = Math.max(-6, (tgtStages.spe || 0) - 1);
+    addLogFn(`¡La Velocidad de ${tgt.name} bajó!`, 'log-info', tgt);
+  },
+  'stat_down_enemy_spa': (_src, tgt, _srcStages, tgtStages, addLogFn) => {
+    tgtStages.spa = Math.max(-6, (tgtStages.spa || 0) - 1);
+    addLogFn(`¡El At. Esp de ${tgt.name} bajó!`, 'log-info', tgt);
+  },
+  'stat_down_enemy_spd': (_src, tgt, _srcStages, tgtStages, addLogFn) => {
+    tgtStages.spd = Math.max(-6, (tgtStages.spd || 0) - 1);
+    addLogFn(`¡La Def. Esp de ${tgt.name} bajó!`, 'log-info', tgt);
+  },
+  'stat_down_enemy_acc': (_src, tgt, _srcStages, tgtStages, addLogFn) => {
+    tgtStages.acc = Math.max(-6, (tgtStages.acc || 0) - 1);
+    addLogFn(`¡La Precisión de ${tgt.name} bajó!`, 'log-info', tgt);
+  },
+  'stat_down_enemy_eva': (_src, tgt, _srcStages, tgtStages, addLogFn) => {
+    tgtStages.eva = Math.max(-6, (tgtStages.eva || 0) - 1);
+    addLogFn(`¡La Evasión de ${tgt.name} bajó!`, 'log-info', tgt);
+  },
+  'stat_down_enemy_def_2': (_src, tgt, _srcStages, tgtStages, addLogFn) => {
+    tgtStages.def = Math.max(-6, (tgtStages.def || 0) - 2);
+    addLogFn(`¡La Defensa de ${tgt.name} bajó mucho!`, 'log-info', tgt);
+  },
+  'stat_down_enemy_atk_2': (_src, tgt, _srcStages, tgtStages, addLogFn) => {
+    tgtStages.atk = Math.max(-6, (tgtStages.atk || 0) - 2);
+    addLogFn(`¡El Ataque de ${tgt.name} bajó mucho!`, 'log-info', tgt);
+  },
+  'stat_down_enemy_spe_2': (_src, tgt, _srcStages, tgtStages, addLogFn) => {
+    tgtStages.spe = Math.max(-6, (tgtStages.spe || 0) - 2);
+    addLogFn(`¡La Velocidad de ${tgt.name} bajó mucho!`, 'log-info', tgt);
+  },
+  'stat_down_enemy_spd_2': (_src, tgt, _srcStages, tgtStages, addLogFn) => {
+    tgtStages.spd = Math.max(-6, (tgtStages.spd || 0) - 2);
+    addLogFn(`¡La Def. Esp de ${tgt.name} bajó mucho!`, 'log-info', tgt);
+  },
+  'stat_down_enemy_atk_def': (_src, tgt, _srcStages, tgtStages, addLogFn) => {
+    tgtStages.atk = Math.max(-6, (tgtStages.atk || 0) - 1);
+    tgtStages.def = Math.max(-6, (tgtStages.def || 0) - 1);
+    addLogFn(`¡El Ataque y Defensa de ${tgt.name} bajaron!`, 'log-info', tgt);
   }
 };

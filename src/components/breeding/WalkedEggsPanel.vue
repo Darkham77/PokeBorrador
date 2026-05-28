@@ -14,7 +14,9 @@ import { computed, onMounted, onBeforeUnmount, watch, useTemplateRef, nextTick }
 import { gsap } from 'gsap'
 import { useGameStore } from '@/stores/game'
 import { useModalStore } from '@/stores/modals'
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import type { PokemonEgg } from '@/types/pokemon'
+import EggSprite from '@/components/common/EggSprite.vue'
 
 // ─── Stores ───────────────────────────────────────────────────────────────────
 const gameStore  = useGameStore()
@@ -89,7 +91,7 @@ function syncWiggles(): void {
   }
 }
 
-/** Animate panel entry using GSAP (no CSS @keyframes). */
+/** An animate panel entry using GSAP (no CSS @keyframes). */
 function animateIn(): void {
   if (!panelRef.value) return
   gsap.fromTo(
@@ -129,7 +131,11 @@ function hatchEgg(egg: PokemonEgg): void {
   >
     <!-- Section label -->
     <div class="panel-label">
-      🥚 <span>EN CAMINATA</span>
+      <img
+        :src="getAssetUrl(ASSET_TYPES.POKEMON, 'egg')"
+        alt="Huevo"
+        class="egg-label-icon"
+      > <span>EN CAMINATA</span>
     </div>
 
     <!-- Egg cards row -->
@@ -148,7 +154,11 @@ function hatchEgg(egg: PokemonEgg): void {
       >
         <!-- Egg icon (GSAP target) -->
         <div class="egg-icon">
-          🥚
+          <EggSprite
+            :tint="egg.tint"
+            size="28"
+            class="egg-sprite-img"
+          />
           <span
             v-if="egg.isShiny"
             class="shiny-star"
@@ -207,6 +217,12 @@ function hatchEgg(egg: PokemonEgg): void {
   color: var(--gray);
   padding: 0 4px;
   opacity: 0.75;
+
+  .egg-label-icon {
+    width: 14px;
+    height: 14px;
+    @include pixelated;
+  }
 }
 
 // ── Cards row ─────────────────────────────────────────────────────────────────
@@ -281,15 +297,18 @@ function hatchEgg(egg: PokemonEgg): void {
   display: flex;
   align-items: center;
   justify-content: center;
-  // Neutralise emoji line-height offset so the glyph sits truly centred
-  line-height: 1;
-  font-size: 20px;
   background: Rgba(255, 255, 255, 0.04);
   border-radius: 10px;
   flex-shrink: 0;
   filter: Drop-Shadow(0 2px 4px Rgba(0, 0, 0, 0.4));
   box-shadow: inset 0 0 8px Rgba(0, 0, 0, 0.25);
   user-select: none;
+
+  .egg-sprite-img {
+    width: 28px;
+    height: 28px;
+    @include pixelated;
+  }
 
   .shiny-star {
     position: absolute;

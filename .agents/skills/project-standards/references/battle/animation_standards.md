@@ -361,6 +361,13 @@ To satisfy the GSAP-only animation mandate for loading spinners without using ma
 ### Filter Cleanup Mandate
 Temporary visual effects (flashes, pulses) MUST use GSAP's `onComplete` with `clearProps: "filter"` to ensure no residual 0px filters remain as base layers.
 
+### GSAP Target Prevention for Conditional Elements (v-if)
+To prevent `GSAP target not found` console warnings on elements that are rendered conditionally (e.g., using Vue's `v-if` or elements removed during rapid state/prop updates), always verify the presence of the target elements in the DOM using `document.querySelector` before creating tweens or calling cleanup methods like `gsap.set(target, { clearProps: 'all' })`.
+
+### Decoupling Concurrent GSAP Animations on a Single Target
+Animating different properties on the same target simultaneously (such as a cyclical idle floating/levitation motion and an interactive click wobble/shake) can cause conflicts in the `transform` property calculations, leading to positional jumping, snaps, or freezes.
+- **Solution**: Decouple the animations by applying the passive/idle animation to a parent wrapper container (e.g., `.wrapper`) and the active/interactive wobble animation to the child element itself (e.g., `.sprite`).
+
 ## 30. `isFloating` Truthiness vs. Existence Check
 
 When determining whether a Pokémon has explicit ground (`floating: false`) or floating (`floating: true`) aesthetics in `pokemonDataProvider`, always check existence before using the value:

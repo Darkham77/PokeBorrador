@@ -52,6 +52,7 @@ export function registerBattleTools(debug: DebugSystem, _context: DebugContext) 
         'shake': 'CATCH_SHAKE',
         'shake_damage': 'PLAY_DAMAGE',
         'blink': 'PLAY_BLINK',
+        'heal': 'PLAY_HEAL',
         'success': 'CATCH_SUCCESS',
         'faint': 'POKEMON_FAINT',
         'attack': 'PLAY_ATTACK_ANIM',
@@ -64,6 +65,15 @@ export function registerBattleTools(debug: DebugSystem, _context: DebugContext) 
       const event = eventMap[type] || type
       const payload: Record<string, unknown> = { side, ...options }
       
+      // Manejo especial para escape de pokemon (teleport y flee)
+      if (type === 'escape_teleport' || type === 'escape_flee') {
+        const escapeType = type === 'escape_teleport' ? 'teleport' : 'flee'
+        const battle = useBattleStore()
+        const pokemon = side === 'player' ? battle.state?.player : (battle.isBattleActive && !battle.isSearching && battle.state?.enemy ? battle.state.enemy : (battle.upcomingPokemon || battle.state?.enemy))
+        gameBus.emit('TRIGGER_COMBATANT_ESCAPE', { side, pokemon, type: escapeType })
+        return `Efecto de escape ${escapeType} emitido para ${side}`
+      }
+
       // Manejo especial para START_BATTLE (Introducciones)
       if (type === 'emergence') payload.animationPhase = 1
       if (type === 'reveal') payload.animationPhase = 3

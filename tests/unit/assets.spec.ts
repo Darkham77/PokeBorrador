@@ -36,7 +36,7 @@ describe('AssetService & Resolver', () => {
 
     it('debe manejar huevos como ítems especiales (localizado)', () => {
       expect(getAssetUrl(ASSET_TYPES.POKEMON, 'egg_water'))
-        .toBe('/assets/sprites/items/egg.webp')
+        .toBe('/assets/sprites/egg.webp')
     })
   })
 

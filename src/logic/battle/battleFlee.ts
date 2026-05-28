@@ -1,4 +1,3 @@
-import { sleep } from '@/logic/timeUtils'
 import { gameBus } from '@/logic/gameBus'
 import type { BattleContext } from '@/types/battleContext'
 
@@ -19,6 +18,20 @@ export async function executeFlee(ctx: BattleContext) {
     onConfirm: async () => {
       ctx.isProcessing.value = true
       if (!ctx.activeBattle.value) { ctx.isProcessing.value = false; return }
+      
+      const isPreCombat = ctx.fsm.currentState.value !== ctx.BATTLE_STATES.ACTIVE_BATTLE
+      if (isPreCombat) {
+        ctx.audio.flee()
+        ctx.addLog('¡Escapaste sin problemas!', 'log-info', 'player')
+        
+        ctx.fsm.transition(ctx.fsm.currentState.value, ctx.BATTLE_SUBSTATES.ESCAPE_PROCESS)
+        gameBus.emit('PLAY_ESCAPE_ANIM', { side: 'player' })
+        
+        await ctx.endBattle(false, true)
+        ctx.isProcessing.value = false
+        return
+      }
+
       ctx.activeBattle.value.escapeAttempts = (ctx.activeBattle.value.escapeAttempts || 0)
       
       const p = ctx.activeBattle.value.player
@@ -45,9 +58,6 @@ export async function executeFlee(ctx: BattleContext) {
         ctx.fsm.transition(ctx.BATTLE_STATES.ACTIVE_BATTLE, ctx.BATTLE_SUBSTATES.PLAY_ESCAPE_ANIM)
         gameBus.emit('PLAY_ESCAPE_ANIM', { side: 'player' })
         
-        await sleep(1000)
-        await ctx.fsm.transition(ctx.BATTLE_STATES.ACTIVE_BATTLE, ctx.BATTLE_SUBSTATES.VACATE_SEAT)
-        if (ctx.activeBattle.value) ctx.activeBattle.value.enemy = null
         await ctx.endBattle(false, true)
       } else {
         if (ctx.activeBattle.value) ctx.activeBattle.value.escapeAttempts++
