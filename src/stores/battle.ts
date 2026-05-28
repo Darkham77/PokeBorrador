@@ -302,10 +302,7 @@ export const useBattleStore = defineStore('battle', () => {
       
       // Fase de Desvanecimiento (Phase 4 de la captura)
       await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.FADEOUT_BALL)
-      if (animations.value) {
-        await animations.value.playBallFadeOut('enemy')
-      }
-      
+      if (animations.value) await animations.value.playBallFadeOut('enemy')
       isProcessing.value = false
       await fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.EMPTY_WAIT)
       await endBattle(true, false)
@@ -318,26 +315,20 @@ export const useBattleStore = defineStore('battle', () => {
           syncTeamHP()
         }
       }
-      
       persistBattle()
       await sleep(800)
-      
       await runEnemyAction(getContext())
     }
-    
     if (activeBattle.value && !activeBattle.value.over) {
       fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT)
     }
     isProcessing.value = false
   }
-
   const endBattle = async (win: boolean, fled: boolean) => {
     logger.info('BattleStore', `endBattle called. Win: ${win}, Fled: ${fled}`)
     return terminateBattle(getContext(), win, fled)
   }
-
   const syncTeamHP = () => {
-    // Sincronización manual de HP
     const team = gs.state.team;
     const active = activeBattle.value;
     if (active?.player && team && team[active.playerTeamIndex]) {
@@ -345,7 +336,6 @@ export const useBattleStore = defineStore('battle', () => {
       if (p) p.hp = active.player.hp
     }
   }
-  
   const _executeSwitch = async (teamIndex: number, isForced = false) => {
     if (isProcessing.value && !isForced) return
     isProcessing.value = true

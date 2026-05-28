@@ -443,4 +443,13 @@ To add a new synchronizable animation phase:
 
 The `ctx.animations?.method` optional-chaining guard is required because the bridge is registered asynchronously by the Vue component — it may be absent when the battle is launched headlessly (e.g., from a Node test or debug script).
 
+## 34. Sequential Animation Orchestration (Animated Reordering)
 
+When changing the active combatant during state transitions (e.g. at battle resolution before returning to the search loop), the change MUST NOT be executed instantaneously. 
+
+- **Orchestration**: The swap must be coordinated as a sequential animation flow:
+  1. Set the outgoing combatant as `exitingPlayer`.
+  2. Recall the old combatant (`handleCatchRequest`).
+  3. Release the new healthy combatant (`handleReleaseRequest`).
+  4. Run both in parallel using `Promise.all` and wait for their GSAP tweens to complete before clearing `exitingPlayer`.
+  5. Only continue FSM state changes (e.g., transition to `SEARCH_PHASE` or `completeBattleFlow`) after the visual sequence completes.

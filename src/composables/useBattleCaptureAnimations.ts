@@ -437,72 +437,30 @@ export function useBattleCaptureAnimations(
     })
   }
 
-  const getPokemonAnimState = (side: string, pokemon?: Pokemon | null) => {
-    if (!pokemon) return null
+  const getSeatProperty = <K extends keyof AnimSlotState>(
+    side: string,
+    pokemon: Pokemon | null | undefined,
+    prop: K,
+    fallback: AnimSlotState[K]
+  ): AnimSlotState[K] => {
+    if (!pokemon) return fallback
     const seat = seats.value[side]
-    if (!seat) return null
-    if (pokemon.uid && seat.entry.pokemonUid === pokemon.uid) return seat.entry.animState
-    if (pokemon.uid && seat.exit.pokemonUid === pokemon.uid) return seat.exit.animState
+    if (!seat) return fallback
+    if (pokemon.uid && seat.entry.pokemonUid === pokemon.uid) return seat.entry[prop]
+    if (pokemon.uid && seat.exit.pokemonUid === pokemon.uid) return seat.exit[prop]
     const isActive = side === 'player'
       ? (battleStore.player?.uid === pokemon.uid)
       : (battleStore.enemy?.uid === pokemon.uid)
-    return isActive ? seat.entry.animState : seat.exit.animState
+    const activeSlot = isActive ? seat.entry : seat.exit
+    return activeSlot[prop] !== undefined ? activeSlot[prop] : fallback
   }
-  const getPokemonBallId = (side: string, pokemon?: Pokemon | null) => {
-    if (!pokemon) return 'pokeball'
-    const seat = seats.value[side]
-    if (!seat) return 'pokeball'
-    if (pokemon.uid && seat.entry.pokemonUid === pokemon.uid) return seat.entry.ballId
-    if (pokemon.uid && seat.exit.pokemonUid === pokemon.uid) return seat.exit.ballId
-    const isActive = side === 'player'
-      ? (battleStore.player?.uid === pokemon.uid)
-      : (battleStore.enemy?.uid === pokemon.uid)
-    return isActive ? seat.entry.ballId : seat.exit.ballId
-  }
-  const getPokemonCaptureActive = (side: string, pokemon?: Pokemon | null) => {
-    if (!pokemon) return false
-    const seat = seats.value[side]
-    if (!seat) return false
-    if (pokemon.uid && seat.entry.pokemonUid === pokemon.uid) return seat.entry.isCaptureActive
-    if (pokemon.uid && seat.exit.pokemonUid === pokemon.uid) return seat.exit.isCaptureActive
-    const isActive = side === 'player'
-      ? (battleStore.player?.uid === pokemon.uid)
-      : (battleStore.enemy?.uid === pokemon.uid)
-    return isActive ? seat.entry.isCaptureActive : seat.exit.isCaptureActive
-  }
-  const getPokemonIsShaking = (side: string, pokemon?: Pokemon | null) => {
-    if (!pokemon) return false
-    const seat = seats.value[side]
-    if (!seat) return false
-    if (pokemon.uid && seat.entry.pokemonUid === pokemon.uid) return seat.entry.isShaking
-    if (pokemon.uid && seat.exit.pokemonUid === pokemon.uid) return seat.exit.isShaking
-    const isActive = side === 'player'
-      ? (battleStore.player?.uid === pokemon.uid)
-      : (battleStore.enemy?.uid === pokemon.uid)
-    return isActive ? seat.entry.isShaking : seat.exit.isShaking
-  }
-  const getPokemonIsBlinking = (side: string, pokemon?: Pokemon | null) => {
-    if (!pokemon) return false
-    const seat = seats.value[side]
-    if (!seat) return false
-    if (pokemon.uid && seat.entry.pokemonUid === pokemon.uid) return seat.entry.isBlinking
-    if (pokemon.uid && seat.exit.pokemonUid === pokemon.uid) return seat.exit.isBlinking
-    const isActive = side === 'player'
-      ? (battleStore.player?.uid === pokemon.uid)
-      : (battleStore.enemy?.uid === pokemon.uid)
-    return isActive ? seat.entry.isBlinking : seat.exit.isBlinking
-  }
-  const getPokemonIsHealing = (side: string, pokemon?: Pokemon | null) => {
-    if (!pokemon) return false
-    const seat = seats.value[side]
-    if (!seat) return false
-    if (pokemon.uid && seat.entry.pokemonUid === pokemon.uid) return seat.entry.isHealing
-    if (pokemon.uid && seat.exit.pokemonUid === pokemon.uid) return seat.exit.isHealing
-    const isActive = side === 'player'
-      ? (battleStore.player?.uid === pokemon.uid)
-      : (battleStore.enemy?.uid === pokemon.uid)
-    return isActive ? !!seat.entry.isHealing : !!seat.exit.isHealing
-  }
+
+  const getPokemonAnimState = (side: string, pokemon?: Pokemon | null) => getSeatProperty(side, pokemon, 'animState', null)
+  const getPokemonBallId = (side: string, pokemon?: Pokemon | null) => getSeatProperty(side, pokemon, 'ballId', 'pokeball')
+  const getPokemonCaptureActive = (side: string, pokemon?: Pokemon | null) => getSeatProperty(side, pokemon, 'isCaptureActive', false)
+  const getPokemonIsShaking = (side: string, pokemon?: Pokemon | null) => getSeatProperty(side, pokemon, 'isShaking', false)
+  const getPokemonIsBlinking = (side: string, pokemon?: Pokemon | null) => getSeatProperty(side, pokemon, 'isBlinking', false)
+  const getPokemonIsHealing = (side: string, pokemon?: Pokemon | null) => getSeatProperty(side, pokemon, 'isHealing', false)
 
   return {
     caughtPokemonSnapshot,

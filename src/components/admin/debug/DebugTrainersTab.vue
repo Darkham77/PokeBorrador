@@ -165,6 +165,10 @@ function randomizeTrainerSprite() {
   }
 }
 
+function getPokeSpriteUrl(id: string, isShiny?: boolean) {
+  return pokemonDataProvider.getSpriteUrl(id, isShiny)
+}
+
 function generateRandomTeam() {
   const size = Math.max(1, Math.min(6, genTeamSize.value))
   const team: Pokemon[] = []
@@ -517,7 +521,7 @@ onMounted(() => {
         >
           <div class="card-top">
             <img 
-              :src="pokemonDataProvider.getSpriteUrl(p.id, p.isShiny)" 
+              :src="getPokeSpriteUrl(p.id, p.isShiny)" 
               class="poke-sprite"
               @error="(e) => handleSpriteError(e, p.id, p.isShiny)"
             >
@@ -787,7 +791,6 @@ onMounted(() => {
   flex-direction: column;
   align-items: center;
   position: relative;
-  transition: all 0.2s ease;
   
   &:hover {
     background: Rgba(255, 255, 255, 0.05);
@@ -917,7 +920,6 @@ onMounted(() => {
   background: Rgba(0, 0, 0, 0.4);
   color: var(--gray);
   cursor: pointer;
-  transition: all 0.2s ease;
 
   &.active {
     background: Rgba(255, 255, 255, 0.05);

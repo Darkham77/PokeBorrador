@@ -161,6 +161,7 @@ The project uses a sophisticated audit and validation engine to ensure stability
 - **Temporal API Typings**: For robust type-safety without using `any`, any custom or polyfilled Temporal API properties (e.g., accessing year/month/day/hour/minute on the return value of `toZonedDateTimeISO()`) must be explicitly declared with formal types (like `ZonedDateTime` interface/class) inside the global `env.d.ts` instead of typing them as `unknown` or `any`.
 - **TypeScript Import Rigor**: Triple-slash references (e.g., `/// <reference types="vue" />`) are forbidden in `vite-env.d.ts` or any core file. Use standard ESM imports or `compilerOptions.types` in `tsconfig.json`.
 - **Strict Typification in Test Scripts**: Scripts used for auditing (like `tests/node/*.test.ts`) and unit tests (`*.spec.ts`) MUST follow the same strict type-safety rules as the source code. The use of `any` is forbidden in all test files to prevent silent failures and maintain linter consistency. Instead of bypassing compilation with `any`, declare a typed interface for your mocks (e.g., `interface DebugWindow`) and perform clean casts (e.g., `window as unknown as DebugWindow`) to ensure absolute type-safety.
+- **Generic Key Access Type-Safety**: To maintain strict type safety and avoid the use of `any` when dynamically accessing object properties in utility/helper functions, use TypeScript generic index constraints: `<K extends keyof T>(obj: T, key: K, fallback: T[K])` instead of casting the target object as `any`.
 
 ### 7. CLI-First Debugging
 
