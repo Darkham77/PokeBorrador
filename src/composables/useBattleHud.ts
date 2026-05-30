@@ -17,8 +17,8 @@ export function useBattleHud(
   const {
     isFaintInProgress,
     faintedPokemonSnapshot,
-    isCaptureSequenceActive,
-    caughtPokemonSnapshot
+    caughtPokemonSnapshot,
+    seats
   } = animations
 
   /**
@@ -26,8 +26,14 @@ export function useBattleHud(
    * REGLA MAESTRA: Asiento ocupado -> HUD Visible. Asiento vacío -> HUD Oculto.
    */
   const isEnemyHudSuppressed = computed(() => {
+    const enemySeat = seats.value.seat2
+    const isEnemyCaptureActive = enemySeat?.entry.isCaptureActive || 
+                                 enemySeat?.entry.isAnimatingCapture || 
+                                 enemySeat?.exit.isCaptureActive || 
+                                 enemySeat?.exit.isAnimatingCapture
+    if (isEnemyCaptureActive) return false
     const s = toValue(battleStore.state)
-    // REGLA MAESTRA: Ocultar si no hay enemigo activo Y no hay previsualización inicial
+    // REGLA MAESTRA (Manual §4.UI): Asiento ocupado -> HUD visible. Asiento vacío -> HUD oculto.
     return !s?.enemy && !s?._initialEnemy
   })
 
@@ -36,6 +42,12 @@ export function useBattleHud(
    * REGLA MAESTRA: Asiento ocupado -> HUD Visible. Asiento vacío -> HUD Oculto.
    */
   const isPlayerHudSuppressed = computed(() => {
+    const playerSeat = seats.value.seat1
+    const isPlayerCaptureActive = playerSeat?.entry.isCaptureActive || 
+                                  playerSeat?.entry.isAnimatingCapture || 
+                                  playerSeat?.exit.isCaptureActive || 
+                                  playerSeat?.exit.isAnimatingCapture
+    if (isPlayerCaptureActive) return false
     return !toValue(battleStore.state)?.player
   })
 
@@ -49,8 +61,13 @@ export function useBattleHud(
     const subState = toValue(battleStore.fsm?.currentSubState)
     if (state === 'REWARDS_PHASE' && subState === 'EMPTY_WAIT') return null
 
-    // 1. Prioridad: Snapshot de captura (durante la animación de éxito)
-    if (isCaptureSequenceActive.value && caughtPokemonSnapshot.value) return caughtPokemonSnapshot.value
+    // 1. Prioridad: Snapshot de captura (durante la animación de éxito) en asiento enemigo (seat2)
+    const enemySeat = seats.value.seat2
+    const isEnemyCaptureActive = enemySeat?.entry.isCaptureActive || 
+                                 enemySeat?.entry.isAnimatingCapture || 
+                                 enemySeat?.exit.isCaptureActive || 
+                                 enemySeat?.exit.isAnimatingCapture
+    if (isEnemyCaptureActive && caughtPokemonSnapshot.value) return caughtPokemonSnapshot.value
     
     // 2. Prioridad: Snapshot de desmayo (mientras desaparece)
     if (isFaintInProgress.value && faintedPokemonSnapshot.value?.side === 'enemy') return faintedPokemonSnapshot.value
@@ -64,6 +81,15 @@ export function useBattleHud(
     return toValue(enemyRef) || toValue(battleStore.state)?._initialEnemy
   })
 
+  const activePlayerHudData = computed(() => {
+    if (isFaintInProgress.value && faintedPokemonSnapshot.value?.side === 'player') return faintedPokemonSnapshot.value
+    return toValue(battleStore.state)?.player || null
+  })
+
+  const activePlayerData = computed(() => {
+    return activePlayerHudData.value
+  })
+
   const gs = useGameStore()
   
   /**
@@ -72,18 +98,28 @@ export function useBattleHud(
    */
   const shouldScrambleEnemyData = computed(() => {
     const subState = toValue(battleStore.fsm?.currentSubState)
+    const state = toValue(battleStore.fsm?.currentState)
     const inventory = gs.state.inventory || {}
     const hasBinoculars = (inventory.binoculars || 0) > 0
-    
-    const isSilhouetteState = [
-      'ENTRY_ANIM', 
-      'PARALLEL_PREP', 
-      'PARALLEL_ENTRY', 
-      'SILHOUETTE_MODE', 
+
+    if (hasBinoculars) return false
+
+    // Regla de inicialización (Manual §19): durante INITIALIZING, CONTEXT_SETUP, SEARCH_PHASE y FIRST_INTRO el Pokémon
+    // nunca está revelado. Scramble desde el primer frame, sin importar el substate.
+    if (['INITIALIZING', 'CONTEXT_SETUP', 'SEARCH_PHASE', 'FIRST_INTRO'].includes(state || '')) return true
+
+    // Durante ACTIVE_BATTLE: solo en substates donde el Pokémon aún no fue revelado.
+    // ENCOUNTER_ANIM cubre el salto desde el arbusto (Manual §19: HP bars remain hidden).
+    const isSilhouetteSubstate = [
+      'ENTRY_ANIM',
+      'ENCOUNTER_ANIM',
+      'PARALLEL_PREP',
+      'PARALLEL_ENTRY',
+      'SILHOUETTE_MODE',
       'BUSH_IDLE'
     ].includes(subState || '')
 
-    return isSilhouetteState && !hasBinoculars
+    return isSilhouetteSubstate
   })
 
   // Nuevos estados computados extraídos de BattleArenaView.vue
@@ -211,6 +247,7 @@ export function useBattleHud(
     activeEnemyHudData,
     shouldScrambleEnemyData,
     activeEnemyData,
+    activePlayerData,
     activeEnemyIsSilhouette,
     bushIsBehind,
     enemyIsJumping,

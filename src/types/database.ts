@@ -1,6 +1,7 @@
 
 export interface LearnsetMove {
   lv: number;
+  id: string;
   name: string;
   pp: number;
 }
@@ -36,6 +37,8 @@ export interface AbilityBaseData {
 }
 
 export interface MoveBaseData {
+  id: string;
+  name: string;
   power: number;
   acc: number;
   type: string;

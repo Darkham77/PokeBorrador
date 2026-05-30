@@ -15,6 +15,7 @@ export interface UnifiedStatus {
   count?: number | string
   class: string
   isBoosted?: boolean
+  stageValue?: number
 }
 
 export function useCombatantStatus(
@@ -195,11 +196,21 @@ export function useCombatantStatus(
     // 1. Estado Primario
     if (target.status) {
       const s = target.status.toLowerCase()
+      const emoji = (STATUS_EMOJI_MAP as Record<string, string>)[s]
+      const title = (STATUS_NAME_MAP as Record<string, string>)[s]
+      const description = (STATUS_TOOLTIP_MAP as Record<string, string>)[s]
+
+      if (!emoji || !title || !description) {
+        throw new Error(
+          `[STATUS MATCH ERROR] Missing mapping for status "${s}". Emoji: ${emoji}, Title: ${title}, Description: ${description}`
+        )
+      }
+
       list.push({
         id: `primary-${s}`,
-        emoji: (STATUS_EMOJI_MAP as Record<string, string>)[s] || '❓',
-        title: (STATUS_NAME_MAP as Record<string, string>)[s] || s.toUpperCase(),
-        description: (STATUS_TOOLTIP_MAP as Record<string, string>)[s] || s,
+        emoji,
+        title,
+        description,
         count: s === 'sleep' ? target.sleepTurns : undefined,
         class: s
       })
@@ -225,7 +236,8 @@ export function useCombatantStatus(
         emoji: s.icon,
         title: s.text?.split('(')[0]?.trim() || '',
         description: `Multiplicador actual: ${s.text?.match(/\(([^)]+)\)/)?.[1] || '100%'}`,
-        class: `stage ${(s.val || 0) > 0 ? 'is-up' : 'is-down'}`
+        class: `stage ${(s.val || 0) > 0 ? 'is-up' : 'is-down'}`,
+        stageValue: s.val
       })
     })
 

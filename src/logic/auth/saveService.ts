@@ -11,6 +11,7 @@ import { compress } from '@/logic/utils/compression';
 import { writeOpfsFile } from '@/logic/utils/opfsStorage';
 import { logger } from '@/logic/utils/logger';
 import type { DBRouter } from '@/logic/db/dbRouter';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 
 export interface SaveResult {
   success?: boolean;
@@ -285,8 +286,35 @@ export function validateAndSanitize(data: SaveData): { valid: boolean, data: Sav
     uids.add(p.uid);
   };
 
-    if (data.team) data.team.forEach((p) => checkPoke(p, 'equipo'));
-    if (data.box) data.box.forEach((p) => checkPoke(p, 'caja'));
+  const sanitizeMoves = (p: Pokemon) => {
+    if (p && Array.isArray(p.moves)) {
+      p.moves.forEach((m) => {
+        if (m && m.name) {
+          const resolvedId = pokemonDataProvider.resolveMoveId(m.name);
+          if (resolvedId) {
+            m.id = resolvedId;
+            const dbMove = pokemonDataProvider.getMoveData(resolvedId);
+            if (dbMove) {
+              m.name = dbMove.name;
+            }
+          }
+        }
+      });
+    }
+  };
+
+  if (data.team) {
+    data.team.forEach((p) => {
+      checkPoke(p, 'equipo');
+      sanitizeMoves(p);
+    });
+  }
+  if (data.box) {
+    data.box.forEach((p) => {
+      checkPoke(p, 'caja');
+      sanitizeMoves(p);
+    });
+  }
 
   if (duplicateUids.size > 0) {
     // We sanitize by removing subsequent duplicates

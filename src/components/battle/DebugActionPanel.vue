@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import { gsap } from 'gsap'
 import { sleep } from '@/logic/timeUtils'
 import { useBattleStore } from '@/stores/battle'
 import { useGameStore } from '@/stores/game'
@@ -77,6 +76,10 @@ const healEnemy = () => {
   battleStore.addLog('DEBUG: Enemigo curado.', 'log-info', e)
 }
 
+const addExpForNextLevel = async () => {
+  await battleStore.awardDebugExp()
+}
+
 const debugCapture = async () => {
   if (!battleStore.state?.enemy || battleStore.isProcessing) return
   
@@ -86,31 +89,51 @@ const debugCapture = async () => {
   
   battleStore.addLog(`DEBUG: Lanzando ${itemName} (100% Efectividad)...`, 'log-catch', itemName)
   
+  const anims = battleStore.animations
+
   // 1. Ball hit
   audio.ballHit()
-  gameBus.emit('PLAY_CATCH_ENERGY', { side: 'enemy', ballId: itemName })
-  await sleep(1000)
+  if (anims?.handleCatchRequest) {
+    await anims.handleCatchRequest({ side: 'enemy', ballId: itemName })
+  } else {
+    gameBus.emit('PLAY_CATCH_ENERGY', { side: 'enemy', ballId: itemName })
+    await sleep(1000)
+  }
 
   // 2. Shakes
   for (let i = 0; i < 3; i++) {
     audio.wobble()
-    gameBus.emit('CATCH_SHAKE', { side: 'enemy' })
-    await sleep(1000)
+    if (anims?.handleShakeRequest) {
+      await anims.handleShakeRequest({ side: 'enemy' })
+    } else {
+      gameBus.emit('CATCH_SHAKE', { side: 'enemy' })
+      await sleep(1000)
+    }
   }
 
   // 3. Success
-  await sleep(500)
   audio.caught()
-  gameBus.emit('CATCH_SUCCESS', { side: 'enemy' })
   battleStore.addLog(`¡Ya está! ¡${e.name} atrapado!`, 'log-catch', e)
   
   battleStore.state.isCapture = true
   gameStore.addPokemon(e, { notify: true })
   
-  gsap.delayedCall(2, async () => {
-    await battleStore.endBattle(true, false)
-    battleStore.isProcessing = false
-  })
+  // Fase de Festejo (Phase 3 de la captura)
+  if (anims?.playCatchCelebration) {
+    await anims.playCatchCelebration('enemy')
+  } else {
+    await sleep(1500)
+  }
+
+  // Fase de Desvanecimiento (Phase 4 de la captura)
+  if (anims?.playBallFadeOut) {
+    await anims.playBallFadeOut('enemy')
+  } else {
+    await sleep(2000)
+  }
+  
+  await battleStore.endBattle(true, false)
+  battleStore.isProcessing = false
 }
 
 const toggleBinoculars = () => {
@@ -223,6 +246,17 @@ const toggleStatus = (side: string, type: string) => {
         @click.stop="healEnemy"
       >
         HEAL ENEMY
+      </button>
+    </div>
+    <div
+      class="debug-row"
+      style="margin-top: 2px;"
+    >
+      <button
+        class="debug-btn exp-btn"
+        @click.stop="addExpForNextLevel"
+      >
+        ⚡ EXP AL SIGUIENTE NIVEL
       </button>
     </div>
 

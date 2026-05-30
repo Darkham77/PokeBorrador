@@ -1,4 +1,4 @@
-import { getMechanicalWeather, WEATHER_MECHANICAL } from '../weather/weatherRegistry.ts'
+import { getMechanicalWeather, WEATHER_MECHANICAL, WEATHER_REGISTRY } from '../weather/weatherRegistry.ts'
 import { gameBus } from '@/logic/gameBus'
 import type { Pokemon } from '@/types/pokemon'
 import type { BattleStages, LogFn, BattleWeather } from '@/types/battle'
@@ -82,19 +82,21 @@ export function canAttack(pokemon: Pokemon, addLog: LogFn) {
 
 export function applyEndTurnWeather(p: Pokemon, e: Pokemon, weather: BattleWeather | null, addLog: LogFn) {
   const mechWeather = getMechanicalWeather(weather?.type);
+  const wType = (weather?.visual || weather?.type || '').toLowerCase();
+  const weatherLabel = WEATHER_REGISTRY[wType]?.label || 'CLIMA';
 
   if (mechWeather === WEATHER_MECHANICAL.SANDSTORM) {
     const isSandImmune = (poke: Pokemon) => ['rock', 'ground', 'steel'].includes(poke.type) || ['rock', 'ground', 'steel'].includes(poke.type2 || '')
     if (!isSandImmune(p)) {
-      const dmg = Math.floor(p.maxHp / 16)
+      const dmg = Math.max(1, Math.floor(p.maxHp / 16))
       p.hp = Math.max(0, p.hp - dmg)
-      addLog(`¡La tormenta de arena alcanza a ${p.name}!`, 'log-player', p)
+      addLog(`¡El efecto de ${weatherLabel} daña a ${p.name}! (-${dmg} HP)`, 'log-player', p)
       gameBus.emit('PLAY_SOUND', 'statusDamage')
     }
     if (!isSandImmune(e)) {
-      const dmg = Math.floor(e.maxHp / 16)
+      const dmg = Math.max(1, Math.floor(e.maxHp / 16))
       e.hp = Math.max(0, e.hp - dmg)
-      addLog(`¡La tormenta de arena alcanza a ${e.name}!`, 'log-enemy', e)
+      addLog(`¡El efecto de ${weatherLabel} daña a ${e.name}! (-${dmg} HP)`, 'log-enemy', e)
       gameBus.emit('PLAY_SOUND', 'statusDamage')
     }
   }
@@ -102,15 +104,15 @@ export function applyEndTurnWeather(p: Pokemon, e: Pokemon, weather: BattleWeath
   if (mechWeather === WEATHER_MECHANICAL.HAIL) {
     const isHailImmune = (poke: Pokemon) => poke.type === 'ice' || poke.type2 === 'ice'
     if (!isHailImmune(p)) {
-      const dmg = Math.floor(p.maxHp / 16)
+      const dmg = Math.max(1, Math.floor(p.maxHp / 16))
       p.hp = Math.max(0, p.hp - dmg)
-      addLog(`¡El granizo alcanza a ${p.name}!`, 'log-player', p)
+      addLog(`¡El efecto de ${weatherLabel} daña a ${p.name}! (-${dmg} HP)`, 'log-player', p)
       gameBus.emit('PLAY_SOUND', 'statusDamage')
     }
     if (!isHailImmune(e)) {
-      const dmg = Math.floor(e.maxHp / 16)
+      const dmg = Math.max(1, Math.floor(e.maxHp / 16))
       e.hp = Math.max(0, e.hp - dmg)
-      addLog(`¡El granizo alcanza a ${e.name}!`, 'log-enemy', e)
+      addLog(`¡El efecto de ${weatherLabel} daña a ${e.name}! (-${dmg} HP)`, 'log-enemy', e)
       gameBus.emit('PLAY_SOUND', 'statusDamage')
     }
   }

@@ -74,7 +74,8 @@ export const DEBUG_CATCH_ANIMS: DebugItem[] = [
 export const DEBUG_ATTACK_FX: DebugItem[] = [
   { id: 'physical', label: 'FÍSICO', icon: '⚔️', cat: 'physical' },
   { id: 'special', label: 'ESPECIAL', icon: '🔮', cat: 'special' },
-  { id: 'status', label: 'ESTADO', icon: '🧪', cat: 'status' }
+  { id: 'status', label: 'ESTADO', icon: '🧪', cat: 'status' },
+  { id: 'selfKO', label: 'EXPLOSIÓN', icon: '💥', cat: 'selfKO' }
 ]
 
 export const DEBUG_STATS: DebugItem[] = [

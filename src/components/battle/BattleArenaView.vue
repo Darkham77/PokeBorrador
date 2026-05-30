@@ -75,7 +75,9 @@ battleStore.animations = {
   triggerTrainerDialogs: animations.triggerTrainerDialogs,
   triggerTrainerRetreat: animations.triggerTrainerRetreat,
   triggerPokemonCall: animations.triggerPokemonCall,
-  handleHealRequest: animations.handleHealRequest
+  handleHealRequest: animations.handleHealRequest,
+  // Bridge de bloqueo de turnos: el motor espera la animación de ataque antes de continuar.
+  awaitTween: animations.awaitTween
 }
 const {
   isInitialLoad,
@@ -122,6 +124,7 @@ const {
   isPlayerHudSuppressed,
   shouldScrambleEnemyData,
   activeEnemyData,
+  activePlayerData,
   activeEnemyIsSilhouette,
   bushIsBehind,
   enemyIsJumping,
@@ -274,6 +277,33 @@ watch(() => battleStore.isBattleActive, (active) => {
   }
 })
 
+// GSAP HUD Transitions complying with the project mandate
+// @before-enter: sets initial state synchronously before the first rendered frame
+// to prevent the 1-2 frame flash at opacity:1 (CSS default) before GSAP takes over.
+const onHudEnemyBeforeEnter = (el: Element) => {
+  gsap.set(el, { opacity: 0, x: -20, scale: 0.98 })
+}
+
+const onHudEnemyEnter = (el: Element, done: () => void) => {
+  gsap.to(el, { opacity: 1, x: 0, scale: 1, duration: 0.4, ease: "power2.out", onComplete: done })
+}
+
+const onHudEnemyLeave = (el: Element, done: () => void) => {
+  gsap.to(el, { opacity: 0, x: -20, scale: 0.98, duration: 0.4, ease: "power2.in", onComplete: done })
+}
+
+const onHudPlayerBeforeEnter = (el: Element) => {
+  gsap.set(el, { opacity: 0, x: 20, scale: 0.98 })
+}
+
+const onHudPlayerEnter = (el: Element, done: () => void) => {
+  gsap.to(el, { opacity: 1, x: 0, scale: 1, duration: 0.4, ease: "power2.out", onComplete: done })
+}
+
+const onHudPlayerLeave = (el: Element, done: () => void) => {
+  gsap.to(el, { opacity: 0, x: 20, scale: 0.98, duration: 0.4, ease: "power2.in", onComplete: done })
+}
+
 // Zoom controls are now managed by CameraZoomControls component
 </script>
 
@@ -362,8 +392,8 @@ watch(() => battleStore.isBattleActive, (active) => {
             :is-blinking="getPokemonIsBlinking('enemy', p)"
             :is-healing="getPokemonIsHealing('enemy', p)"
             :is-silhouette="activeEnemyIsSilhouette && p.uid === activeEnemyData?.uid"
-            :is-attacking="battleStore.attackerSide === 'enemy' && p.uid === activeEnemyData?.uid"
-            :active-move="battleStore.activeMove ? { side: battleStore.activeMove.side || 'enemy', cat: battleStore.activeMove.cat || 'physical', name: battleStore.activeMove.name } : null"
+            :is-attacking="battleStore.attackerSide === 'enemy' && p.uid === enemy?.uid"
+            :active-move="battleStore.activeMove ? { side: battleStore.activeMove.side || 'enemy', cat: battleStore.activeMove.cat || 'physical', name: battleStore.activeMove.name, selfKO: battleStore.activeMove.selfKO } : null"
             :show-guides="showGuides"
             :is-capture-success="getPokemonCaptureActive('enemy', p)"
             :sparkles="catchSparkles.filter(s => s.side === 'enemy')"
@@ -412,7 +442,7 @@ watch(() => battleStore.isBattleActive, (active) => {
             :is-blinking="getPokemonIsBlinking('player', p)"
             :is-healing="getPokemonIsHealing('player', p)"
             :is-attacking="battleStore.attackerSide === 'player' && p.uid === player?.uid"
-            :active-move="battleStore.activeMove ? { side: battleStore.activeMove.side || 'player', cat: battleStore.activeMove.cat || 'physical', name: battleStore.activeMove.name } : null"
+            :active-move="battleStore.activeMove ? { side: battleStore.activeMove.side || 'player', cat: battleStore.activeMove.cat || 'physical', name: battleStore.activeMove.name, selfKO: battleStore.activeMove.selfKO } : null"
             :show-guides="showGuides"
             :is-capture-success="getPokemonCaptureActive('player', p)"
             :sparkles="catchSparkles.filter(s => s.side === 'player')"
@@ -438,9 +468,15 @@ watch(() => battleStore.isBattleActive, (active) => {
 
     <!-- HUD -->
     <div class="battle-info-container">
-      <Transition name="hud-fade-enemy">
+      <Transition
+        :css="false"
+        @before-enter="onHudEnemyBeforeEnter"
+        @enter="onHudEnemyEnter"
+        @leave="onHudEnemyLeave"
+      >
         <div
           v-if="!isEnemyHudSuppressed && activeEnemyData"
+          :key="`hud-enemy-seat`"
           class="combatant-info-wrap enemy-side"
         >
           <BattleInfoCard 
@@ -449,13 +485,19 @@ watch(() => battleStore.isBattleActive, (active) => {
           />
         </div>
       </Transition>
-      <Transition name="hud-fade-player">
+      <Transition
+        :css="false"
+        @before-enter="onHudPlayerBeforeEnter"
+        @enter="onHudPlayerEnter"
+        @leave="onHudPlayerLeave"
+      >
         <div
-          v-if="!isPlayerHudSuppressed && player"
+          v-if="!isPlayerHudSuppressed && activePlayerData"
+          :key="`hud-player-seat`"
           class="combatant-info-wrap player-side"
         >
           <BattleInfoCard
-            :pokemon="player"
+            :pokemon="activePlayerData as Pokemon"
             :is-player="true"
           />
         </div>

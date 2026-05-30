@@ -51,7 +51,7 @@ interface Props {
   isHealing?: boolean
   isSilhouette?: boolean
   isAttacking?: boolean
-  activeMove?: { side: string; cat: 'physical' | 'special' | 'status'; name: string } | null
+  activeMove?: { side: string; cat: 'physical' | 'special' | 'status' | 'selfKO'; name: string; selfKO?: boolean } | null
   showGuides?: boolean
   isCaptureSuccess?: boolean
   sparkles?: SparkleData[]
@@ -223,7 +223,6 @@ const pokeballShadowUrl = computed(() => {
 
 const shadowStore = useCombatShadowStore()
 const battleStore = useBattleStore()
-const isReleaseStarted = ref(false)
 const currentShadow = computed(() => props.shadowKey ? shadowStore.activeShadows.get(props.shadowKey) : null)
 
 const localGroundY = computed(() => {
@@ -351,29 +350,7 @@ const handleBallError = (e: Event) => {
   (e.target as HTMLImageElement).src = getAssetUrl(ASSET_TYPES.ITEM, 'pokeball')
 }
 
-// --- ANIMACIONES DE STATS ---
-const statArrows = ref<{ id: number; dir: 'up' | 'down'; stat: string }[]>([])
-watch(() => props.stages, (newS, oldS) => {
-  if (!oldS) return
-  
-  const stats: (keyof BattleStages)[] = ['atk', 'def', 'spa', 'spd', 'spe', 'acc', 'eva']
-  stats.forEach(s => {
-    const diff = (newS[s] || 0) - (oldS[s] || 0)
-    if (diff !== 0) {
-      triggerStatArrow(String(s), diff > 0 ? 'up' : 'down')
-      // Emitir sonido directamente desde la vista reactiva
-      gameBus.emit('PLAY_SOUND', diff > 0 ? 'statRaise' : 'statLower')
-    }
-  })
-}, { deep: true })
 
-const triggerStatArrow = (stat: string, dir: 'up' | 'down') => {
-  const id = Temporal.Now.instant().epochMilliseconds + Math.random()
-  statArrows.value.push({ id, dir, stat })
-  gsap.delayedCall(1.2, () => {
-    statArrows.value = statArrows.value.filter(a => a.id !== id)
-  })
-}
 
 
 watch(() => props.isEmerging, (val) => {
@@ -472,7 +449,6 @@ const triggerBallAnimation = (val: string | null) => {
     const animKey = `${props.side}-${props.pokemon?.uid || 'active'}`
     gameBus.emit('REGISTER_TWEEN', { key: animKey, tween })
   } else if (val === 'releasing') {
-    isReleaseStarted.value = true
     const origin = getSpriteFeetOrigin()
     const cachedRaw = rawCoordsCache.get(cacheKey.value)
     const coords = cachedRaw || getBallTargetCoords()
@@ -516,9 +492,6 @@ const triggerBallAnimation = (val: string | null) => {
 }
 
 watch(() => props.animState, (val) => {
-  if (val !== 'releasing') {
-    isReleaseStarted.value = false
-  }
   nextTick(() => triggerBallAnimation(val))
 }, { immediate: true })
 
@@ -528,10 +501,23 @@ watch(spriteRef, (newEl) => {
   }
 })
 
-watch(() => props.isAttacking, (val) => {
-  if (val && spriteRef.value && props.activeMove) {
+watch(() => {
+  if (!props.isAttacking || !props.activeMove) return null
+  return `${props.isAttacking}-${props.activeMove.name}-${props.activeMove.cat}`
+}, (newVal) => {
+  console.log('[BattleCombatant] isAttacking watch triggered:', {
+    side: props.side,
+    isAttacking: props.isAttacking,
+    move: props.activeMove ? { ...props.activeMove } : null,
+    spriteRef: !!spriteRef.value,
+    spriteRotationRef: !!spriteRotationRef.value,
+    animState: props.animState
+  })
+  if (newVal && spriteRef.value) {
+    const move = props.activeMove
+    if (!move) return
     const isPlayerSide = props.side === 'player'
-    const cat = props.activeMove.cat
+    const cat = move.cat
     const tl = gsap.timeline()
     
     // Calcular vector hacia el objetivo (si no hay objetivo, usar dirección lateral por defecto)
@@ -560,7 +546,50 @@ watch(() => props.isAttacking, (val) => {
       }
     }
     
-    if (cat === 'physical' || !cat) {
+    if (move.selfKO || cat === 'selfKO') {
+      // Secuencia de explosión (GSAP)
+      const shakeTimeline = gsap.timeline()
+      for (let i = 0; i < 8; i++) {
+        const shakeX = (Math.random() - 0.5) * 30
+        const shakeY = (Math.random() - 0.5) * 30
+        shakeTimeline.to(spriteRef.value, {
+          x: shakeX,
+          y: shakeY,
+          duration: 0.05,
+          ease: "none"
+        })
+      }
+      tl.add(shakeTimeline)
+      
+      tl.add(() => {
+        gameBus.emit('PLAY_SOUND', 'faint')
+      })
+
+      tl.to(spriteRef.value, {
+        scale: 1.6,
+        filter: "Brightness(1.8) Drop-Shadow(0 0 25px #ff4500)",
+        duration: 0.25,
+        ease: "power2.out"
+      })
+      
+      tl.to(spriteRef.value, {
+        scale: 0,
+        opacity: 0,
+        filter: "Brightness(3) Drop-Shadow(0 0 35px #ffffff)",
+        duration: 0.35,
+        ease: "power2.in"
+      })
+
+      tl.to(spriteRef.value, {
+        x: 0,
+        y: 0,
+        scale: 1,
+        opacity: 1,
+        filter: "Brightness(1)",
+        clearProps: "all",
+        duration: 0.01
+      })
+    } else if (cat === 'physical' || !cat) {
       const dashDist = 60
       const prepDist = -15
       
@@ -598,6 +627,10 @@ watch(() => props.isAttacking, (val) => {
         }
       )
     }
+    
+    // Natively register the GSAP attack timeline so the turn engine can await it
+    const animKey = `attack-${props.side}`
+    gameBus.emit('REGISTER_TWEEN', { key: animKey, tween: tl })
   }
 })
 
@@ -643,7 +676,7 @@ watch(() => props.pokemon?.status, (newS, oldS) => {
 const pokeballImgRef = ref<HTMLImageElement | null>(null)
 let successBlinkTween: gsap.core.Tween | null = null
 
-watch(() => [props.isShaking, props.isBlinking], ([shaking, blinking]) => {
+watch(() => props.isShaking, (shaking) => {
   // Si hay una Pokebola visible, la animamos a ella
   if (pokeballImgRef.value) {
     if (shaking) {
@@ -657,12 +690,6 @@ watch(() => [props.isShaking, props.isBlinking], ([shaking, blinking]) => {
           { rotation: 0, duration: 0.08, ease: 'power1.in' }
         ]
       })
-    }
-    if (blinking) {
-      gsap.fromTo(pokeballImgRef.value,
-        { filter: 'Brightness(1)' },
-        { filter: 'Brightness(2) Hue-Rotate(10deg)', duration: 0.2, yoyo: true, repeat: 1, ease: 'power1.inOut' }
-      )
     }
   } 
   // Si NO hay Pokebola, animamos al Sprite del Pokémon (Daño en combate)
@@ -697,6 +724,21 @@ watch(() => [props.isShaking, props.isBlinking], ([shaking, blinking]) => {
         tl.set(spriteRotationRef.value, { opacity: b.op }, b.t)
       })
     }
+  }
+})
+
+watch(() => props.isBlinking, (blinking) => {
+  // Si hay una Pokebola visible, la animamos a ella
+  if (pokeballImgRef.value) {
+    if (blinking) {
+      gsap.fromTo(pokeballImgRef.value,
+        { filter: 'Brightness(1)' },
+        { filter: 'Brightness(2) Hue-Rotate(10deg)', duration: 0.2, yoyo: true, repeat: 1, ease: 'power1.inOut' }
+      )
+    }
+  } 
+  // Si NO hay Pokebola, animamos al Sprite del Pokémon (Daño en combate)
+  else if (!props.isCaptureSuccess) {
     if (blinking && spriteRotationRef.value) {
       const shakeDist = props.side === 'player' ? -10 : 10
       gsap.set(spriteRotationRef.value, { transition: "none" })
@@ -752,7 +794,7 @@ watch(() => props.isCaptureSuccess, (success) => {
       successBlinkTween.kill()
       successBlinkTween = null
     }
-    gsap.to(pokeballImgRef.value, { filter: 'Brightness(1)', duration: 0.1 })
+    gsap.set(pokeballImgRef.value, { clearProps: 'filter' })
   }
 })
 
@@ -804,23 +846,7 @@ const onSparkleEnter = (el: Element, done: () => void) => {
   })
 }
 
-const onStatArrowEnter = (el: Element, done: () => void) => {
-  gsap.fromTo(el, 
-    { y: 20, opacity: 0, scale: 0.5 },
-    {
-      y: -60,
-      opacity: 0,
-      scale: 1,
-      duration: 1,
-      ease: "power1.out",
-      onStart: () => {
-        gsap.to(el, { opacity: 1, duration: 0.2 })
-        gsap.to(el, { scale: 1.2, duration: 0.2 })
-      },
-      onComplete: done
-    }
-  )
-}
+
 
 const onGroundPopEnter = (el: Element, done: () => void) => {
   const isSpikes = el.classList.contains('spikes')
@@ -994,13 +1020,11 @@ onUnmounted(() => {
       v-if="hasSeat"
       ref="spriteRef"
       class="sprite-animator"
-      :style="[
-        { '--fx-scale': fxScale },
-        animState === 'releasing' && !isReleaseStarted ? { opacity: 0, transform: 'scale(0)' } : {}
-      ]"
+      :style="{ '--fx-scale': fxScale }"
       :class="[{ 
         'is-attacking': isAttacking,
-        'is-technical-hidden': hidden || animState === 'trapped' || isCaptureSuccess
+        'is-technical-hidden': hidden || animState === 'trapped' || isCaptureSuccess,
+        'releasing': animState === 'releasing'
       }, getAttackAnimClass]"
     >
       <!-- Sombra integrada (Sigue el dash pero no el flotado) -->
@@ -1122,22 +1146,6 @@ onUnmounted(() => {
             <span>{{ naturalSize.w }}x{{ naturalSize.h }}</span>
           </div>
           <!-- NOTE: guide-real-size must be position:absolute (see styles) to avoid flex layout shifts -->
-          
-          <!-- Flechas de Stats -->
-          <div class="stat-arrows-container">
-            <TransitionGroup
-              :css="false"
-              @enter="onStatArrowEnter"
-            >
-              <div 
-                v-for="a in statArrows" 
-                :key="a.id"
-                :class="['stat-arrow', a.dir]"
-              >
-                {{ a.dir === 'up' ? '▲' : '▼' }}
-              </div>
-            </TransitionGroup>
-          </div>
         </div>
       </div>
     </div>
@@ -1152,7 +1160,7 @@ onUnmounted(() => {
         v-if="isBallVisible"
         :key="`ball-${side}-${pokemon.uid || pokemon.id}`"
         class="trapped-pokeball"
-        :style="memorizedBallCoords"
+        :style="[memorizedBallCoords, { filter: 'var(--atmosphere-filter)' }]"
       >
         <img
           ref="pokeballImgRef"
@@ -1307,6 +1315,11 @@ onUnmounted(() => {
     opacity: 0 !important;
     pointer-events: none;
   }
+
+  &.releasing {
+    opacity: 0;
+    transform: Scale(0);
+  }
 }
 
 .sprite-rotation-layer {
@@ -1434,26 +1447,6 @@ onUnmounted(() => {
       transform: Translatey(5px);
     }
   }
-}
-
-.stat-arrows-container {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: var(--z-low);
-}
-
-.stat-arrow {
-  position: absolute;
-  font-size: calc(var(--fx-scale, 1) * 40px);
-  font-weight: bold;
-  text-shadow: 0 0 10px Rgba(0,0,0,0.5);
-  
-  &.up { color: #4ade80; }
-  &.down { color: #f87171; }
 }
 
 .smoke-particles-container {

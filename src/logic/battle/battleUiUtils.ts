@@ -35,7 +35,8 @@ export const STATUS_TOOLTIP_MAP = {
   burn: 'QUEMADO: Pierde 1/8 HP por turno y su Ataque Físico se reduce al 50%.',
   poison: 'ENVENENADO: Pierde 1/8 HP por turno.',
   sleep: 'DORMIDO: No puede atacar durante 1-3 turnos.',
-  paralyze: 'PARALIZADO: Su Velocidad se reduce al 25% y tiene un 25% de probabilidad de no atacar.',
+  paralyze: 'PARALIZADO: Su Velocidad se reduce al 50% y tiene un 25% de probabilidad de no atacar.',
+  paralysis: 'PARALIZADO: Su Velocidad se reduce al 50% y tiene un 25% de probabilidad de no atacar.',
   freeze: 'CONGELADO: No puede atacar. 20% de probabilidad de descongelarse cada turno.'
 }
 

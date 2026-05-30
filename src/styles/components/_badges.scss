@@ -181,6 +181,27 @@
     filter: Brightness(1.2);
   }
 
+  .stage-arrow {
+    font-size: 8px;
+    margin-left: 1px;
+    font-weight: bold;
+    font-family: var(--font-pixel, 'Press Start 2P', monospace);
+    @include pixelated;
+    
+    &.up {
+      color: #10B981;
+      text-shadow: 1px 1px 0 #000;
+    }
+    &.down {
+      color: #EF4444;
+      text-shadow: 1px 1px 0 #000;
+    }
+
+    @media (max-width: 600px) {
+      font-size: 6px;
+    }
+  }
+
   @media (max-width: 600px) {
     font-size: 12px;
   }

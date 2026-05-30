@@ -207,5 +207,87 @@ export const STAT_ACTIONS: Record<string, MoveAction> = {
     tgtStages.atk = Math.max(-6, (tgtStages.atk || 0) - 1);
     tgtStages.def = Math.max(-6, (tgtStages.def || 0) - 1);
     addLogFn(`¡El Ataque y Defensa de ${tgt.name} bajaron!`, 'log-info', tgt);
+  },
+
+  // Missing stat_up_self mappings
+  'stat_up_self_atk': (src, _tgt, srcStages, _tgtStages, addLogFn) => {
+    srcStages.atk = Math.min(6, (srcStages.atk || 0) + 1);
+    addLogFn(`¡El Ataque de ${src.name} subió!`, 'log-info', src);
+  },
+  'stat_up_self_def': (src, _tgt, srcStages, _tgtStages, addLogFn) => {
+    srcStages.def = Math.min(6, (srcStages.def || 0) + 1);
+    addLogFn(`¡La Defensa de ${src.name} subió!`, 'log-info', src);
+  },
+  'stat_up_self_spa': (src, _tgt, srcStages, _tgtStages, addLogFn) => {
+    srcStages.spa = Math.min(6, (srcStages.spa || 0) + 1);
+    addLogFn(`¡El At. Esp de ${src.name} subió!`, 'log-info', src);
+  },
+  'stat_up_self_spd': (src, _tgt, srcStages, _tgtStages, addLogFn) => {
+    srcStages.spd = Math.min(6, (srcStages.spd || 0) + 1);
+    addLogFn(`¡La Def. Esp de ${src.name} subió!`, 'log-info', src);
+  },
+  'stat_up_self_spe': (src, _tgt, srcStages, _tgtStages, addLogFn) => {
+    srcStages.spe = Math.min(6, (srcStages.spe || 0) + 1);
+    addLogFn(`¡La Velocidad de ${src.name} subió!`, 'log-info', src);
+  },
+  'stat_up_self_eva': (src, _tgt, srcStages, _tgtStages, addLogFn) => {
+    srcStages.eva = Math.min(6, (srcStages.eva || 0) + 1);
+    addLogFn(`¡La Evasión de ${src.name} subió!`, 'log-info', src);
+  },
+  'stat_up_self_acc': (src, _tgt, srcStages, _tgtStages, addLogFn) => {
+    srcStages.acc = Math.min(6, (srcStages.acc || 0) + 1);
+    addLogFn(`¡La Precisión de ${src.name} subió!`, 'log-info', src);
+  },
+
+  'stat_up_self_atk_2': (src, _tgt, srcStages, _tgtStages, addLogFn) => {
+    srcStages.atk = Math.min(6, (srcStages.atk || 0) + 2);
+    addLogFn(`¡El Ataque de ${src.name} subió mucho!`, 'log-info', src);
+  },
+  'stat_up_self_def_2': (src, _tgt, srcStages, _tgtStages, addLogFn) => {
+    srcStages.def = Math.min(6, (srcStages.def || 0) + 2);
+    addLogFn(`¡La Defensa de ${src.name} subió mucho!`, 'log-info', src);
+  },
+  'stat_up_self_spa_2': (src, _tgt, srcStages, _tgtStages, addLogFn) => {
+    srcStages.spa = Math.min(6, (srcStages.spa || 0) + 2);
+    addLogFn(`¡El At. Esp de ${src.name} subió mucho!`, 'log-info', src);
+  },
+  'stat_up_self_spd_2': (src, _tgt, srcStages, _tgtStages, addLogFn) => {
+    srcStages.spd = Math.min(6, (srcStages.spd || 0) + 2);
+    addLogFn(`¡La Def. Esp de ${src.name} subió mucho!`, 'log-info', src);
+  },
+  'stat_up_self_spe_2': (src, _tgt, srcStages, _tgtStages, addLogFn) => {
+    srcStages.spe = Math.min(6, (srcStages.spe || 0) + 2);
+    addLogFn(`¡La Velocidad de ${src.name} subió mucho!`, 'log-info', src);
+  },
+  'stat_up_self_eva_2': (src, _tgt, srcStages, _tgtStages, addLogFn) => {
+    srcStages.eva = Math.min(6, (srcStages.eva || 0) + 2);
+    addLogFn(`¡La Evasión de ${src.name} subió mucho!`, 'log-info', src);
+  },
+
+  'stat_up_self_atk_spe': (src, _tgt, srcStages, _tgtStages, addLogFn) => {
+    srcStages.atk = Math.min(6, (srcStages.atk || 0) + 1);
+    srcStages.spe = Math.min(6, (srcStages.spe || 0) + 1);
+    addLogFn(`¡El Ataque y Velocidad de ${src.name} subieron!`, 'log-info', src);
+  },
+  'stat_up_self_def_spd': (src, _tgt, srcStages, _tgtStages, addLogFn) => {
+    srcStages.def = Math.min(6, (srcStages.def || 0) + 1);
+    srcStages.spd = Math.min(6, (srcStages.spd || 0) + 1);
+    addLogFn(`¡La Defensa y Def. Esp de ${src.name} subieron!`, 'log-info', src);
+  },
+  'stat_up_self_spa_spd': (src, _tgt, srcStages, _tgtStages, addLogFn) => {
+    srcStages.spa = Math.min(6, (srcStages.spa || 0) + 1);
+    srcStages.spd = Math.min(6, (srcStages.spd || 0) + 1);
+    addLogFn(`¡El At. Esp y Def. Esp de ${src.name} subieron!`, 'log-info', src);
+  },
+  'stat_up_self_atk_def': (src, _tgt, srcStages, _tgtStages, addLogFn) => {
+    srcStages.atk = Math.min(6, (srcStages.atk || 0) + 1);
+    srcStages.def = Math.min(6, (srcStages.def || 0) + 1);
+    addLogFn(`¡El Ataque y Defensa de ${src.name} subieron!`, 'log-info', src);
+  },
+  'stat_up_self_all': (src, _tgt, srcStages, _tgtStages, addLogFn) => {
+    ['atk', 'def', 'spa', 'spd', 'spe', 'acc', 'eva'].forEach(s => {
+      srcStages[s] = Math.min(6, (srcStages[s] || 0) + 1);
+    });
+    addLogFn(`¡Todas las estadísticas de ${src.name} subieron!`, 'log-info', src);
   }
 };

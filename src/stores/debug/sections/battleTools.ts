@@ -2,6 +2,7 @@ import { gameBus } from '@/logic/gameBus'
 import { useAudioStore } from '@/stores/audio'
 import { useBattleStore } from '@/stores/battle'
 import type { Pokemon } from '@/types/pokemon'
+import { MAX_POKEMON_LEVEL } from '@/data/constants'
 
 import type { DebugSystem, DebugContext } from '@/stores/debug'
 
@@ -65,6 +66,30 @@ export function registerBattleTools(debug: DebugSystem, _context: DebugContext) 
       const event = eventMap[type] || type
       const payload: Record<string, unknown> = { side, ...options }
       
+      // Manejo especial para animación de ataque (incluyendo selfKO/explosion)
+      if (type === 'attack') {
+        const battle = useBattleStore()
+        battle.attackerSide = side as 'player' | 'enemy'
+        battle.activeMove = {
+          name: options.cat === 'selfKO' ? 'Autodestrucción' : 'Ataque Debug',
+          cat: options.cat === 'selfKO' ? 'special' : ((options.cat as 'physical' | 'special' | 'status' | undefined) || 'physical'),
+          selfKO: options.cat === 'selfKO',
+          pp: 5,
+          maxPP: 5
+        }
+        
+        if (battle.animations?.awaitTween) {
+          battle.animations.awaitTween(`attack-${side}`).then(() => {
+            battle.attackerSide = null
+            battle.activeMove = null
+          })
+        } else {
+          battle.attackerSide = null
+          battle.activeMove = null
+        }
+        return `Animación de ataque debug iniciada para ${side}.`
+      }
+
       // Manejo especial para escape de pokemon (teleport y flee)
       if (type === 'escape_teleport' || type === 'escape_flee') {
         const escapeType = type === 'escape_teleport' ? 'teleport' : 'flee'
@@ -85,7 +110,7 @@ export function registerBattleTools(debug: DebugSystem, _context: DebugContext) 
         if (type === 'trainer_out') battle.trainerAnimState = 'out'
         if (type === 'levelUp') {
           const p = side === 'player' ? battle.state?.player : (battle.state?.enemy || battle.upcomingPokemon)
-          if (p) p.level++
+          if (p && p.level < MAX_POKEMON_LEVEL) p.level++
         }
         return `Animación de UI ${type} disparada.`
       }

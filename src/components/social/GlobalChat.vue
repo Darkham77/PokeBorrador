@@ -92,7 +92,6 @@ const onMessageEnter = (el: Element, done: () => void) => {
 
 onMounted(async () => {
   chatStore.initGlobalChat();
-  chatStore.initPrivateInbox();
   await chatStore.fetchMissingCosmetics();
 });
 

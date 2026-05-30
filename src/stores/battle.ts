@@ -297,12 +297,12 @@ export const useBattleStore = defineStore('battle', () => {
         await animations.value.playCatchCelebration('enemy')
       }
       
-      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.VACATE_SEAT)
-      activeBattle.value.enemy = null
-      
       // Fase de Desvanecimiento (Phase 4 de la captura)
       await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.FADEOUT_BALL)
       if (animations.value) await animations.value.playBallFadeOut('enemy')
+      
+      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.VACATE_SEAT)
+      activeBattle.value.enemy = null
       isProcessing.value = false
       await fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.EMPTY_WAIT)
       await endBattle(true, false)
@@ -316,8 +316,25 @@ export const useBattleStore = defineStore('battle', () => {
         }
       }
       persistBattle()
-      await sleep(800)
+      if (castRes.action === 'heal') {
+        await sleep(800)
+      }
+      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.APPLY_MOVE)
       await runEnemyAction(getContext())
+      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.EVAL_HP)
+
+      if (activeBattle.value?.player && activeBattle.value.player.hp <= 0) {
+        await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.RESOLVE_PLAYER_FAINT)
+        await handleFaint('player')
+        isProcessing.value = false
+        return
+      }
+      if (activeBattle.value?.enemy && activeBattle.value.enemy.hp <= 0) {
+        await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.RESOLVE_ENEMY_FAINT)
+        await handleFaint('enemy')
+        isProcessing.value = false
+        return
+      }
     }
     if (activeBattle.value && !activeBattle.value.over) {
       fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT)
@@ -417,7 +434,24 @@ export const useBattleStore = defineStore('battle', () => {
     }
     persistBattle()
     
-    if (typeof isForced !== 'undefined' && !isForced) await runEnemyAction(getContext())
+    if (typeof isForced !== 'undefined' && !isForced) {
+      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.APPLY_MOVE)
+      await runEnemyAction(getContext())
+      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.EVAL_HP)
+
+      if (activeBattle.value?.player && activeBattle.value.player.hp <= 0) {
+        await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.RESOLVE_PLAYER_FAINT)
+        await handleFaint('player')
+        isProcessing.value = false
+        return
+      }
+      if (activeBattle.value?.enemy && activeBattle.value.enemy.hp <= 0) {
+        await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.RESOLVE_ENEMY_FAINT)
+        await handleFaint('enemy')
+        isProcessing.value = false
+        return
+      }
+    }
     
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT)
     isProcessing.value = false
@@ -434,6 +468,10 @@ export const useBattleStore = defineStore('battle', () => {
 
   const triggerSearchEncounter = async () => await triggerNextEncounter(getContext())
 
+  const awardDebugExp = async () => {
+    const { awardDebugExp: awardExpFn } = await import('../logic/battle/resolution.ts')
+    await awardExpFn(getContext())
+  }
 
   if (typeof window !== 'undefined') {
     const win = window as unknown as { __VITE_DEBUG_STORE_RESOLVER__?: () => unknown }
@@ -444,6 +482,7 @@ export const useBattleStore = defineStore('battle', () => {
   return {
     state: activeBattle,
     isBattleActive,
+    awardDebugExp,
     isFinishing,
     isProcessing,
     isSearching,

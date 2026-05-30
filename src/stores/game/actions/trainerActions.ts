@@ -1,4 +1,5 @@
 import { TRAINER_RANKS, MARKET_UNLOCKS } from '@/data/trainer'
+import { MAX_POKEMON_LEVEL } from '@/data/constants'
 import { gsap } from 'gsap'
 import { levelUpPokemon } from '@/logic/pokemonFactory'
 import { useUIStore, type LearnItem } from '@/stores/ui'
@@ -47,7 +48,7 @@ export function useTrainerActions(state: GameState, scheduleSave: () => Promise<
     const uiStore = useUIStore()
     const learnQueue: LearnItem[] = []
 
-    while (pokemon.exp >= pokemon.expNeeded && pokemon.level < 100) {
+    while (pokemon.exp >= pokemon.expNeeded && pokemon.level < MAX_POKEMON_LEVEL) {
       pokemon.exp -= pokemon.expNeeded
       const pendingMoves = levelUpPokemon(pokemon)
       

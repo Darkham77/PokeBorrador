@@ -12,6 +12,7 @@ export const useEvolutionStore = defineStore('evolution', () => {
   const isEvolving = ref(false);
   const sourcePokemon = ref<Pokemon | null>(null);
   const targetId = ref<string | null>(null);
+  const itemName = ref<string>('');
   const onComplete = ref<((data: { pokemon: Pokemon, pendingMoves: PokemonMove[] }) => void) | null>(null);
   const pendingMoves = ref<PokemonMove[]>([]);
 
@@ -21,11 +22,18 @@ export const useEvolutionStore = defineStore('evolution', () => {
    * Starts the evolution sequence.
    * @param {Object} pokemon - The pokemon instance to evolve.
    * @param {String} targetSpeciesId - The ID of the target species.
+   * @param {String} evItemName - Name of the evolutionary item used (optional).
    * @param {Function} callback - Callback after the animation finishes.
    */
-  function startEvolution(pokemon: Pokemon, targetSpeciesId: string, callback: ((data: { pokemon: Pokemon, pendingMoves: PokemonMove[] }) => void) | null = null) {
+  function startEvolution(
+    pokemon: Pokemon, 
+    targetSpeciesId: string, 
+    evItemName = '', 
+    callback: ((data: { pokemon: Pokemon, pendingMoves: PokemonMove[] }) => void) | null = null
+  ) {
     sourcePokemon.value = pokemon;
     targetId.value = targetSpeciesId;
+    itemName.value = evItemName;
     isEvolving.value = true;
     onComplete.value = callback;
     pendingMoves.value = [];
@@ -79,6 +87,7 @@ export const useEvolutionStore = defineStore('evolution', () => {
     isEvolving,
     sourcePokemon,
     targetId,
+    itemName,
     pendingMoves,
     startEvolution,
     evolve,

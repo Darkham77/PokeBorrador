@@ -31,7 +31,8 @@ const isControlsDisabled = computed(() => {
          battleStore.isIntroAnimating || 
          battleStore.isFinishing ||
          battleStore.isSearching ||
-         ['INITIALIZING', 'FIRST_INTRO'].includes(s || ''))
+         battle.value?.over ||
+         ['INITIALIZING', 'FIRST_INTRO', 'LEVEL_UP_MODAL', 'REWARDS_PHASE'].includes(s || ''))
 })
 
 const execShowBattleSwitch = () => { 
@@ -53,7 +54,7 @@ const execShowBattleSwitch = () => {
           if (livePvP.battleState.active) {
             livePvP._commitPick({ type: 'switch', switchIndex: index })
           } else {
-            battleStore.executeSwitch(index, true)
+            battleStore.executeSwitch(index, isForced)
           }
         }
       }

@@ -206,6 +206,11 @@ Exp = floor(BaseExp * Distribution * ClassMult * GlobalMult)
 - **BaseExp**: `Enemy_Level * 4`.
 - **Distribution**: 1.0 (Active), 0.5 (EXP Share).
 
+### 3. Level Limit & Experience Cap
+
+- **`MAX_POKEMON_LEVEL`**: `100` (centralized in `constants.ts`).
+- **Cap Behavior**: When a Pokémon reaches level 100, its current experience (`exp`) is set to `0`, and its experience needed (`expNeeded`) becomes `Infinity`. No additional experience can be gained.
+
 ---
 
 ## 🧬 Statistics (Stats)

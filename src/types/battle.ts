@@ -58,6 +58,7 @@ export interface BattleState {
   playerStages?: BattleStages;
   enemyStages?: BattleStages;
   battleLogs?: BattleLog[];
+  rewardsProcessed?: boolean;
   persistenceMode?: 'local' | 'remote';
   learnQueue?: unknown[];
   isPvP?: boolean;

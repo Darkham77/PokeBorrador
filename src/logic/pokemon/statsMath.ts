@@ -7,12 +7,14 @@
  * @module statsMath
  */
 
+import { MAX_POKEMON_LEVEL } from '../../data/constants.ts';
+
 /**
  * Calculates the EXP needed for the current level.
  * Medium Fast curve scaled for web game: (Lv+1)^3 - Lv^3
  */
 export function getExpNeededPure(level: number): number {
-  if (level >= 100) return Infinity;
+  if (level >= MAX_POKEMON_LEVEL) return Infinity;
   return Math.floor(Math.pow(level + 1, 3) - Math.pow(level, 3));
 }
 

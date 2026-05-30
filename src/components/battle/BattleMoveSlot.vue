@@ -49,6 +49,130 @@ const moveData = computed(() => {
   }
 })
 
+const finalPower = computed(() => {
+  const md = moveData.value
+  if (!md || md.power === undefined || md.power === 0) return md?.power || 0
+
+  let power = md.power
+  const attacker = props.playerInfo
+  const defender = battleStore.state?.enemy
+  const weather = battleStore.state?.weather
+  const mechWeather = getMechanicalWeather(weather?.type)
+  const cycle = getDayCycle()
+
+  if (!attacker) return power
+
+  // 1. STAB
+  const moveType = md.type.toLowerCase()
+  let stab = (moveType === attacker.type?.toLowerCase() || moveType === attacker.type2?.toLowerCase()) ? 1.5 : 1
+  if (attacker.ability === 'Adaptable' && stab > 1) stab = 2
+  power *= stab
+
+  // 2. Weather
+  let weatherMult = 1
+  if (weather && weather.turns !== 0) {
+    const wType = weather.type.toLowerCase()
+    if (mechWeather === WEATHER_MECHANICAL.SUN) {
+      if (moveType === 'fire') weatherMult = 1.5
+      if (moveType === 'water') weatherMult = (wType === 'heatwave') ? 0 : 0.5
+    } else if (mechWeather === WEATHER_MECHANICAL.RAIN) {
+      if (moveType === 'water') weatherMult = 1.5
+      if (moveType === 'fire') weatherMult = (wType === 'storm' || wType === 'heavy_rain') ? 0 : 0.5
+      if (moveType === 'electric' || moveType === 'dragon') weatherMult = 1.5
+    } else if (wType === 'thunderstorm') {
+      if (moveType === 'electric' || moveType === 'dragon') weatherMult = 1.5
+    }
+  }
+
+  // Solar Beam
+  if (md.id === 'solar_beam' && weather && weather.turns !== 0) {
+    const isSun = mechWeather === WEATHER_MECHANICAL.SUN
+    const isClear = mechWeather === WEATHER_MECHANICAL.CLEAR && weather.type !== 'thunderstorm'
+    if (!isSun && !isClear) {
+      weatherMult *= 0.5
+    }
+  }
+
+  // Day cycle
+  if (weatherMult === 1 && (mechWeather === WEATHER_MECHANICAL.CLEAR || !weather)) {
+    if ((cycle === 'day' || cycle === 'morning') && moveType === 'fire') weatherMult = 1.2
+    if ((cycle === 'night' || cycle === 'dusk') && moveType === 'water') weatherMult = 1.2
+  }
+
+  power *= weatherMult
+
+  // 3. Ability
+  let abilMult = 1
+  const isLowHp = attacker.hp <= (attacker.maxHp / 3)
+  if (isLowHp) {
+    if (attacker.ability === 'Mar llamas' && moveType === 'fire') abilMult = 1.5
+    if (attacker.ability === 'Torrente' && moveType === 'water') abilMult = 1.5
+    if (attacker.ability === 'Espesura' && moveType === 'grass') abilMult = 1.5
+    if (attacker.ability === 'Enjambre' && moveType === 'bug') abilMult = 1.5
+  }
+  if (attacker.ability === 'Experto' && md.power <= 60) {
+    abilMult *= 1.5
+  }
+  if (weather && weather.turns !== 0 && attacker.ability === 'Fuerza arena' && mechWeather === WEATHER_MECHANICAL.SANDSTORM) {
+    if (moveType === 'ground' || moveType === 'rock' || moveType === 'steel') {
+      abilMult *= 1.3
+    }
+  }
+  power *= abilMult
+
+  // 4. Defender Ability
+  if (defender && defender.ability === 'Sebo' && (moveType === 'fire' || moveType === 'ice')) {
+    power *= 0.5
+  }
+
+  // 5. Item
+  let itemMult = 1
+  if (attacker.heldItem) {
+    const h = attacker.heldItem
+    const typeBoosters: Record<string, string> = {
+      'Carbón': 'fire', 'Imán': 'electric', 'Agua Mística': 'water',
+      'Semilla Milagro': 'grass', 'Cinturón Negro': 'fighting',
+      'Cuchara Torcida': 'psychic', 'Hechizo': 'ghost', 'Polvo Plata': 'bug',
+      'Flecha Venenosa': 'poison'
+    }
+    if (typeBoosters[h] === moveType) itemMult = 1.2
+    if (h === 'Cinta Elegida' && md.cat === 'physical') itemMult = 1.5
+  }
+  power *= itemMult
+
+  return Math.max(1, Math.round(power))
+})
+
+const finalAccuracy = computed(() => {
+  const md = moveData.value
+  if (!md || md.acc === undefined || md.acc === 1000) return md?.acc || 0
+
+  let acc = md.acc
+  const weather = battleStore.state?.weather?.type
+  const mechWeather = getMechanicalWeather(weather)
+  const cycle = getDayCycle()
+  const isSunActive = mechWeather === WEATHER_MECHANICAL.SUN || (mechWeather === WEATHER_MECHANICAL.CLEAR && (cycle === 'day' || cycle === 'morning'))
+  const isRainActive = mechWeather === WEATHER_MECHANICAL.RAIN || (mechWeather === WEATHER_MECHANICAL.CLEAR && (cycle === 'night' || cycle === 'dusk'))
+
+  const isThunderstorm = weather === 'thunderstorm'
+  if ((isRainActive || isThunderstorm) && (md.id === 'thunder' || md.id === 'hurricane')) {
+    acc = 100
+  } else if (isSunActive && (md.id === 'thunder' || md.id === 'hurricane')) {
+    acc = 50
+  } else if ((mechWeather === WEATHER_MECHANICAL.HAIL || mechWeather === WEATHER_MECHANICAL.SNOW) && md.id === 'blizzard') {
+    acc = 100
+  } else if (mechWeather === WEATHER_MECHANICAL.FOG) {
+    const isMist = weather === "mist" || weather === "mist_visual"
+    acc = Math.floor(md.acc * (isMist ? 0.8 : 0.6))
+  }
+
+  const accStage = battleStore.playerStages?.acc || 0
+  const evaStage = battleStore.enemyStages?.eva || 0
+  
+  acc = acc * (1 + (0.33 * accStage)) * (1 - (0.33 * evaStage))
+  return Math.max(0, Math.min(100, Math.round(acc)))
+})
+
 const moveColor = computed(() => {
   if (!props.move) return '#444'
   const type = moveData.value ? moveData.value.type.toLowerCase() : 'normal'
@@ -298,16 +422,48 @@ onUnmounted(() => {
         <div class="move-details-row">
           <div class="detail-item">
             <span class="d-label pixelated">POT:</span>
-            <span class="d-val pixelated">{{ moveData!.power || '-' }}</span>
+            <span 
+              class="d-val pixelated"
+              :class="{
+                'stat-boosted': finalPower > (moveData!.power || 0),
+                'stat-penalized': finalPower < (moveData!.power || 0)
+              }"
+            >
+              {{ finalPower || '-' }}
+              <span
+                v-if="finalPower > (moveData!.power || 0)"
+                class="arrow up"
+              >▲</span>
+              <span
+                v-if="finalPower < (moveData!.power || 0)"
+                class="arrow down"
+              >▼</span>
+            </span>
           </div>
           <div class="detail-item">
             <span class="d-label pixelated">PREC:</span>
-            <span class="d-val pixelated">
+            <span 
+              class="d-val pixelated"
+              :class="{
+                'stat-boosted': moveData!.acc !== 1000 && finalAccuracy > (moveData!.acc || 0),
+                'stat-penalized': moveData!.acc !== 1000 && finalAccuracy < (moveData!.acc || 0)
+              }"
+            >
               <span
                 v-if="moveData!.acc === 1000"
                 class="infinity-emoji"
               >♾️</span>
-              <template v-else>{{ moveData!.acc || '-' }}</template>
+              <template v-else>
+                {{ finalAccuracy || '-' }}
+                <span
+                  v-if="finalAccuracy > (moveData!.acc || 0)"
+                  class="arrow up"
+                >▲</span>
+                <span
+                  v-if="finalAccuracy < (moveData!.acc || 0)"
+                  class="arrow down"
+                >▼</span>
+              </template>
             </span>
           </div>
           <div class="detail-item">

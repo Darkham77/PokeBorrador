@@ -58,7 +58,7 @@ export interface BattleContext {
     triggerCatchSparkles: (side: string) => Promise<void>;
     handleCatchRequest: (detail: string | { side?: string; ballId?: string; pokemon?: Pokemon }) => Promise<void>;
     handleReleaseRequest: (detail: string | { side?: string; pokemon?: Pokemon }) => Promise<void>;
-    handleShakeRequest: (detail: string | { side?: string }) => void;
+    handleShakeRequest: (detail: string | { side?: string }) => Promise<void>;
     handleFaintAnim: (detail: string | { side?: string; isFaint?: boolean; pokemon?: Pokemon } | { detail?: string | { side: string; isFaint?: boolean; pokemon?: Pokemon } }) => Promise<void>;
     playCatchCelebration: (side: string) => Promise<void>;
     playBallFadeOut: (side: string) => Promise<void>;
@@ -67,5 +67,6 @@ export interface BattleContext {
     triggerTrainerRetreat: () => Promise<void>;
     triggerPokemonCall: () => Promise<void>;
     handleHealRequest?: (detail: string | { side?: string }) => Promise<void>;
+    awaitTween?: (key: string) => Promise<void>;
   };
 }

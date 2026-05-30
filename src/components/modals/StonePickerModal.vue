@@ -65,7 +65,7 @@ const useStone = (stoneName: string, toId: string) => {
 
   close();
   // Start evolution scene
-  evolutionStore.startEvolution(pokemon.value, toId);
+  evolutionStore.startEvolution(pokemon.value, toId, stoneName);
   gameStore.save(false);
 };
 

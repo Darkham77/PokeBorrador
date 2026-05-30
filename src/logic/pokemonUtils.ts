@@ -81,7 +81,21 @@ export function getMovesAtLevel(id: string, level: number): PokemonMove[] {
       type: moveData?.type || 'normal',
       power: moveData?.power || 0,
       acc: moveData?.acc || 100,
-      cat: moveData?.cat || 'physical'
+      cat: moveData?.cat || 'physical',
+      priority: moveData?.priority,
+      effect: moveData?.effect,
+      recoil: moveData?.recoil,
+      selfKO: moveData?.selfKO,
+      drain: moveData?.drain,
+      hits: moveData?.hits,
+      fixedDmg: moveData?.fixedDmg,
+      ohko: moveData?.ohko,
+      halfHP: moveData?.halfHP,
+      endeavor: moveData?.endeavor,
+      levelDmg: moveData?.levelDmg,
+      counter: moveData?.counter,
+      turns: moveData?.turns,
+      sound: moveData?.sound
     };
   });
 }

@@ -51,6 +51,11 @@ export interface Move {
   recoil?: number | boolean;
   selfKO?: boolean;
   side?: 'player' | 'enemy';
+  ohko?: boolean;
+  endeavor?: boolean;
+  counter?: boolean;
+  turns?: number;
+  sound?: boolean;
 }
 
 export type PokemonMove = Move;

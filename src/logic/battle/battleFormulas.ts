@@ -18,6 +18,7 @@ import {
 import { getDayCycle } from '../timeUtils.ts';
 import type { Pokemon, Move } from '@/types/pokemon';
 import type { BattleStages, BattleWeather } from '@/types/battle';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 
 export interface DamageOptions {
   atkStages?: number;
@@ -46,8 +47,9 @@ function toPurePoke(p: Pokemon): PurePokemon {
 }
 
 function toPureMove(m: Partial<Move>): PureMove {
+  const resolvedId = m.id || (m.name ? pokemonDataProvider.resolveMoveId(m.name) : '');
   return {
-    id: m.id || '',
+    id: resolvedId,
     type: m.type || 'normal',
     power: m.power || 0,
     cat: m.cat || 'physical'

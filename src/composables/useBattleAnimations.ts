@@ -3,7 +3,7 @@ import { gameBus } from '@/logic/gameBus'
 import { logger } from '@/logic/utils/logger'
 import { awaitAnimation, createTimeline } from '@/logic/utils/gsapHelpers'
 import type { useBattleStore } from '@/stores/battle'
-import type { Pokemon, Move } from '@/types/pokemon'
+import type { Pokemon } from '@/types/pokemon'
 import { useBattleCaptureAnimations } from '@/composables/useBattleCaptureAnimations'
 
 export function useBattleAnimations(
@@ -44,7 +44,8 @@ export function useBattleAnimations(
     getPokemonCaptureActive,
     getPokemonIsShaking,
     getPokemonIsBlinking,
-    getPokemonIsHealing
+    getPokemonIsHealing,
+    awaitTween
   } = captureAnims
 
   // 2. Wild / Entry visual states
@@ -172,8 +173,8 @@ export function useBattleAnimations(
         case 'ENERGY_RELEASE':
           // Only set via FSM if no UID-tracked animation is already in progress
           // (handleReleaseRequest manages this directly when switching)
-          if (!seats.value.player.entry.pokemonUid) {
-            seats.value.player.entry.animState = 'releasing'
+          if (!seats.value.seat1.entry.pokemonUid) {
+            seats.value.seat1.entry.animState = 'releasing'
           }
           break;
 
@@ -181,8 +182,8 @@ export function useBattleAnimations(
         case 'ENERGY_RECALL':
           // Only set via FSM if no UID-tracked animation is already in progress
           // (handleCatchRequest manages this directly when switching)
-          if (!seats.value.player.exit.pokemonUid) {
-            seats.value.player.exit.animState = 'catching'
+          if (!seats.value.seat1.exit.pokemonUid) {
+            seats.value.seat1.exit.animState = 'catching'
           }
           break;
 
@@ -273,7 +274,7 @@ export function useBattleAnimations(
   }
 
   const triggerPokemonCall = (): Promise<void> => {
-    seats.value.player.entry.animState = 'releasing'
+    seats.value.seat1.entry.animState = 'releasing'
     const tl = createTimeline()
     // Allow ~0.8s for the Poké Ball release animation
     tl.to({}, { duration: 0.8 })
@@ -287,18 +288,18 @@ export function useBattleAnimations(
     isEmerging.value = false
 
     tl.to({}, { 
-      duration: 0.6, 
+      duration: 0.5, 
       onStart: () => { isEmerging.value = true },
       onComplete: () => { wildRevealActive.value = false }
     })
     
     tl.to({}, {
-      duration: 0.8,
+      duration: 0.4,
       onComplete: () => { isWildSilhouette.value = false }
     })
 
     tl.to({}, {
-      duration: 0.6,
+      duration: 0.3,
       onComplete: () => {
         isWildEntryAnimation.value = false
         isEmerging.value = false
@@ -335,6 +336,12 @@ export function useBattleAnimations(
       handleBlinkRequest((e as CustomEvent).detail)
     })
     
+    gameBus.on('CATCH_SUCCESS', (e: Event) => {
+      const data = (e as CustomEvent).detail
+      const side = typeof data === 'string' ? data : (data?.side || 'enemy')
+      playCatchCelebration(side)
+    })
+    
     gameBus.on('POKEMON_FAINT', (e: Event) => handleFaintAnim((e as CustomEvent).detail))
     gameBus.on('PLAY_FAINT', (e: Event) => handleFaintAnim((e as CustomEvent).detail))
     gameBus.on('ENCOUNTER_ANIM', () => triggerSearchEncounter())
@@ -354,34 +361,12 @@ export function useBattleAnimations(
       }
     })
 
-    gameBus.on('PLAY_ATTACK_ANIM', (e: Event) => {
-      const data = (e as CustomEvent).detail
-      const side = (typeof data === 'string' ? data : (data?.side || 'player')) as 'player' | 'enemy'
-      const cat = (data?.cat || 'physical')
-      
-      battleStore.attackerSide = side
-      battleStore.activeMove = { 
-        name: 'VisualMove', 
-        pp: 1, 
-        maxPP: 1, 
-        cat: (cat || 'physical') as 'physical' | 'special' | 'status',
-        side: side as 'player' | 'enemy'
-      } as Move
-      
-      const tl = createTimeline()
-      tl.to({}, { duration: 0.5 })
-      tl.add(() => {
-        battleStore.attackerSide = null
-        battleStore.activeMove = null
-      })
-    })
+    // PLAY_ATTACK_ANIM: orquestación delegada completamente a battleTurn.ts.
+    // store.attackerSide.value y store.activeMove.value son seteados y limpiados
+    // de forma determinista por runPlayerAction/runEnemyAction via awaitTween.
+    // No se registra ningún listener aquí para evitar sobrescritura y carrera de limpieza.
 
-    gameBus.on('CATCH_SUCCESS', (e: Event) => {
-      const data = (e as CustomEvent).detail
-      const side = typeof data === 'string' ? data : (data?.side || 'enemy')
-      playCatchCelebration(side).then(() => playBallFadeOut(side))
-    })
-    
+
     gameBus.on('START_BATTLE', (_e) => {
       Object.keys(seats.value).forEach(side => {
         const seat = seats.value[side]
@@ -398,7 +383,8 @@ export function useBattleAnimations(
     })
 
     watch(() => battleStore.upcomingPokemon, (newVal) => {
-      if (newVal && battleStore.isSearching) {
+      const isSearchState = toValue(battleStore.fsm.currentState) === 'SEARCH_PHASE'
+      if (newVal && battleStore.isSearching && isSearchState) {
         upcomingIsEmerging.value = true
         const tl = createTimeline()
         tl.to({}, { duration: 1.2 })
@@ -419,6 +405,7 @@ export function useBattleAnimations(
     caughtPokemonSnapshot,
     isFaintInProgress,
     faintedPokemonSnapshot,
+    seats,
     playerAnimState,
     enemyAnimState,
     playerActivePokeballId,
@@ -457,6 +444,7 @@ export function useBattleAnimations(
     getPokemonIsShaking,
     getPokemonIsBlinking,
     getPokemonIsHealing,
-    handleHealRequest
+    handleHealRequest,
+    awaitTween
   }
 }

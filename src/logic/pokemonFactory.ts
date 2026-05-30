@@ -1,7 +1,7 @@
 
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { NATURES } from '@/data/natures';
-import { GAME_RATIOS } from '@/data/constants';
+import { GAME_RATIOS, MAX_POKEMON_LEVEL } from '@/data/constants';
 import { getMovesAtLevel } from '@/logic/pokemonUtils';
 import { useEventStore } from '@/stores/events';
 import { usePlayerClassStore } from '@/stores/playerClass';
@@ -146,18 +146,25 @@ export function sanitizePokemon(p: Pokemon): void {
 
   p.moves.forEach((m, idx) => {
     if (!m) return;
-    // Si el nombre es inválido, intentar recuperar de DB o asignar Placaje
-    if (!m.name || m.name === 'null' || m.name === 'undefined' || m.name === '???') {
-      logger.warn('Self-Healing', `Movimiento ${idx} corrupto detectado en ${p.id}`);
-      m.name = 'Placaje';
+    
+    // Resolve ID if missing
+    if (!m.id && m.name) {
+      m.id = pokemonDataProvider.resolveMoveId(m.name);
     }
 
-    const moveData = pokemonDataProvider.getMoveData(m.name);
+    // Si el ID es inválido, intentar recuperar o asignar 'tackle'
+    if (!m.id || m.id === 'null' || m.id === 'undefined' || m.id === '???') {
+      logger.warn('Self-Healing', `Movimiento ${idx} corrupto detectado en ${p.id}`);
+      m.id = 'tackle';
+    }
+
+    const moveData = pokemonDataProvider.getMoveData(m.id);
     if (!moveData) {
-      logger.warn('Self-Healing', `Movimiento ${m.name} no existe en DB, reasignando a Placaje`);
-      m.name = 'Placaje';
-      const fallback = pokemonDataProvider.getMoveData('Placaje');
+      logger.warn('Self-Healing', `Movimiento ${m.id} no existe en DB, reasignando a tackle`);
+      m.id = 'tackle';
+      const fallback = pokemonDataProvider.getMoveData('tackle');
       if (fallback) {
+        m.name = fallback.name;
         Object.assign(m, {
           power: fallback.power,
           type: fallback.type,
@@ -169,12 +176,27 @@ export function sanitizePokemon(p: Pokemon): void {
       }
     } else {
       // Sincronización Mandatoria
+      m.id = moveData.id;
+      m.name = moveData.name;
       m.power = moveData.power || 0;
       m.type = moveData.type || 'normal';
       m.acc = moveData.acc || 100;
       m.cat = moveData.cat || 'physical';
       m.effect = moveData.effect;
       m.maxPP = moveData.pp || 35;
+      m.selfKO = moveData.selfKO;
+      m.recoil = moveData.recoil;
+      m.drain = moveData.drain;
+      m.priority = moveData.priority;
+      m.hits = moveData.hits;
+      m.fixedDmg = moveData.fixedDmg;
+      m.ohko = moveData.ohko;
+      m.halfHP = moveData.halfHP;
+      m.endeavor = moveData.endeavor;
+      m.levelDmg = moveData.levelDmg;
+      m.counter = moveData.counter;
+      m.turns = moveData.turns;
+      m.sound = moveData.sound;
       if (m.pp === undefined) m.pp = m.maxPP;
       if (m.pp > m.maxPP) m.pp = m.maxPP;
     }
@@ -182,11 +204,12 @@ export function sanitizePokemon(p: Pokemon): void {
 
   // Si no tiene movimientos, darle al menos uno
   if (p.moves.length === 0) {
-    logger.warn('Self-Healing', `${p.id} no tiene movimientos, asignando Placaje`);
-    const fallback = pokemonDataProvider.getMoveData('Placaje');
+    logger.warn('Self-Healing', `${p.id} no tiene movimientos, asignando tackle`);
+    const fallback = pokemonDataProvider.getMoveData('tackle');
     if (fallback) {
       p.moves.push({
-        name: 'Placaje',
+        id: 'tackle',
+        name: fallback.name,
         power: fallback.power,
         type: fallback.type,
         acc: fallback.acc,
@@ -201,6 +224,26 @@ export function sanitizePokemon(p: Pokemon): void {
   if (!p.gender && !GENDERLESS.includes(p.id)) p.gender = assignGender(p.id);
   if (p.hp === undefined || isNaN(p.hp)) p.hp = p.maxHp;
   if (p.hp > p.maxHp) p.hp = p.maxHp;
+
+  // 4. Validar Nivel y Experiencia límite (Auto-healing de corrupción)
+  if (p.level > MAX_POKEMON_LEVEL) {
+    logger.warn('Self-Healing', `Pokémon ${p.id} con nivel superior al máximo (${p.level}), ajustando a ${MAX_POKEMON_LEVEL}`);
+    p.level = MAX_POKEMON_LEVEL;
+  }
+  
+  if (p.level === MAX_POKEMON_LEVEL) {
+    if (p.exp !== 0 || p.expNeeded !== Infinity) {
+      logger.warn('Self-Healing', `Ajustando experiencia de nivel máximo para ${p.id}`);
+      p.exp = 0;
+      p.expNeeded = Infinity;
+    }
+  } else {
+    const maxExpAllowed = p.expNeeded - 1;
+    if (p.exp > maxExpAllowed) {
+      logger.warn('Self-Healing', `Experiencia de ${p.id} supera el límite del nivel (${p.exp}/${p.expNeeded}), ajustando a ${maxExpAllowed}`);
+      p.exp = maxExpAllowed;
+    }
+  }
 }
 
 export interface PokemonCreationOptions {
@@ -224,7 +267,7 @@ export function makePokemon(idVal: string | number, level: number, options: Poke
   if (idVal === undefined || idVal === null || idVal === '') return null;
   let id = String(idVal).toLowerCase().trim();
   
-  if (level > 100) level = 100;
+  if (level > MAX_POKEMON_LEVEL) level = MAX_POKEMON_LEVEL;
   let base = pokemonDataProvider.getPokemonData(id);
   if (!base) {
     logger.error('Factory', `Missing Pokémon in DB: ${id}`);
@@ -325,7 +368,7 @@ export function makePokemon(idVal: string | number, level: number, options: Poke
 }
 
 export function levelUpPokemon(p: Pokemon): PokemonMove[] | null {
-  if (p.level >= 100) return [];
+  if (p.level >= MAX_POKEMON_LEVEL) return [];
   // Everstone block
   if (p.heldItem === 'Piedra Eterna') return null;
 

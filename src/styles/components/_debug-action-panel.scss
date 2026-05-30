@@ -2,7 +2,7 @@
 @use "@/styles/core/tools" as *;
 
 .debug-menu {
-  background: rgba(15, 15, 25, 0.98);
+  background: Rgba(15, 15, 25, 0.98);
   border: 2px solid var(--yellow);
   border-radius: 6px;
   padding: 8px;
@@ -15,7 +15,7 @@
   min-height: 0;
   overflow-x: hidden;
   overflow-y: auto;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.9);
+  box-shadow: 0 10px 40px Rgba(0,0,0,0.9);
   -webkit-will-change: transform, opacity;
   will-change: transform, opacity;
   @include gpu-layer;
@@ -26,7 +26,7 @@
     content: "";
     position: absolute;
     inset: 0;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid Rgba(255, 255, 255, 0.1);
     pointer-events: none;
   }
 }
@@ -42,7 +42,7 @@
   flex-direction: column;
   gap: 4px;
   padding: 6px 0;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid Rgba(255, 255, 255, 0.1);
 
   .section-label {
     font-size: 6px;
@@ -64,6 +64,7 @@
   &.kill-btn { @include btn-vicio('danger', 'xs', true); }
   &.heal-btn { @include btn-vicio('success', 'xs', true); }
   &.search-btn { @include btn-vicio('info', 'xs', true); border-color: var(--yellow); }
+  &.exp-btn { @include btn-vicio('info', 'xs', true); }
   &.catch-btn { 
     @include btn-vicio('primary', 'xs', true); 
     background: linear-gradient(135deg, var(--purple-light) 0%, var(--red) 100%);
@@ -83,13 +84,13 @@
   height: 20px !important;
   font-size: 6px !important;
   padding: 0 !important;
-  border-color: rgba(255, 255, 255, 0.2);
+  border-color: Rgba(255, 255, 255, 0.2);
   
   &.active {
     background: var(--yellow) !important;
     color: $black !important;
     border-color: $white !important;
-    box-shadow: 0 0 10px rgba(250, 204, 21, 0.4);
+    box-shadow: 0 0 10px Rgba(250, 204, 21, 0.4);
     filter: none !important;
     will-change: filter;
   }
@@ -114,7 +115,7 @@
   .swap-input { 
     width: 50px; 
     background: $black; 
-    border: 1px solid rgba(255, 255, 255, 0.4); 
+    border: 1px solid Rgba(255, 255, 255, 0.4); 
     color: white; 
     @include pixelated; 
     font-size: 10px; 

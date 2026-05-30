@@ -177,7 +177,7 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
   await fsm.transition(BATTLE_STATES.INITIALIZING, BATTLE_SUBSTATES.ASYNC_THREAD)
   await fsm.transition(BATTLE_STATES.INITIALIZING, BATTLE_SUBSTATES.GEN_TEAMS)
   await fsm.transition(BATTLE_STATES.INITIALIZING, BATTLE_SUBSTATES.MARK_EVENT)
-  await fsm.transition(BATTLE_STATES.INITIALIZING, BATTLE_SUBSTATES.PRELOAD_FINAL_COORDS, 50)
+  await fsm.transition(BATTLE_STATES.INITIALIZING, BATTLE_SUBSTATES.PRELOAD_FINAL_COORDS, 0)
   await fsm.transition(BATTLE_STATES.INITIALIZING, BATTLE_SUBSTATES.SET_SEARCH_FLAG)
 
   if (wasSearching) {
@@ -220,6 +220,24 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
   const { BATTLE_STATES, BATTLE_SUBSTATES } = ctx
   const fsm = ctx.fsm
 
+  // Reset activeBattle state fields if reusing object
+  if (ctx.activeBattle.value) {
+    ctx.activeBattle.value.over = false
+    ctx.activeBattle.value.turnCount = 1
+    ctx.activeBattle.value.turn = 'player'
+    ctx.activeBattle.value.isCapture = false
+    ctx.activeBattle.value.escapeAttempts = 0
+    ctx.activeBattle.value.participants = [initialPlayer.uid]
+    ctx.activeBattle.value.lastDamage = undefined
+    ctx.activeBattle.value.enemyUsedItem = false
+    ctx.activeBattle.value.futureSightTurns = undefined
+    ctx.activeBattle.value.futureSightTarget = null
+  }
+
+  // Clear volatile status on both sides
+  ctx.clearVolatileStatus(initialPlayer)
+  ctx.clearVolatileStatus(initialEnemy)
+
   ctx.isIntroAnimating.value = true
   await fsm.transition(BATTLE_STATES.INITIALIZING, BATTLE_SUBSTATES.PRELOAD_FINAL_COORDS)
 
@@ -256,10 +274,8 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
         fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.JUMP_SHADOW)
         promises.push(ctx.animations.triggerSearchEncounter())
       } else {
-        promises.push(fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.REVEAL_COLORS, 600))
+        promises.push(fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.REVEAL_COLORS, 0))
       }
-    } else {
-      promises.push(sleep(600))
     }
 
     if (needsCall && ctx.animations?.handleReleaseRequest) {
@@ -300,7 +316,7 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
       if (ctx.activeBattle.value) ctx.activeBattle.value.enemy = initialEnemy
     } else {
       await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.WILD_ENTRY)
-      await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.PARALLEL_PREP, 400)
+      await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.PARALLEL_PREP, 0)
       await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.BUSH_VISIBLE)
       await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.SILHOUETTE_MODE)
     }

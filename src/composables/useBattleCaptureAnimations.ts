@@ -4,6 +4,7 @@ import { gameBus } from '@/logic/gameBus'
 import { awaitAnimation, createTimeline } from '@/logic/utils/gsapHelpers'
 import type { useBattleStore } from '@/stores/battle'
 import type { Pokemon } from '@/types/pokemon'
+import { useBattleSeats } from '@/composables/useBattleSeats'
 
 export interface CatchSparkle {
   id: string;
@@ -15,22 +16,6 @@ export interface CatchSparkle {
   delay: string;
 }
 
-export interface AnimSlotState {
-  animState: 'catching' | 'trapped' | 'releasing' | null;
-  ballId: string;
-  isCaptureActive: boolean;
-  isAnimatingCapture: boolean;
-  isShaking: boolean;
-  isBlinking: boolean;
-  isHealing?: boolean;
-  pokemonUid?: string | null;
-}
-
-export interface SeatState {
-  entry: AnimSlotState;
-  exit: AnimSlotState;
-}
-
 export function useBattleCaptureAnimations(
   battleStore: ReturnType<typeof useBattleStore>,
   enemyRef: MaybeRefOrGetter<Pokemon | null | undefined>
@@ -40,51 +25,28 @@ export function useBattleCaptureAnimations(
   const faintedPokemonSnapshot = ref<(Partial<Pokemon> & { side: string }) | null>(null)
   const catchSparkles = ref<CatchSparkle[]>([])
 
-  const createDefaultSlot = (): AnimSlotState => ({
-    animState: null,
-    ballId: 'pokeball',
-    isCaptureActive: false,
-    isAnimatingCapture: false,
-    isShaking: false,
-    isBlinking: false,
-    isHealing: false,
-    pokemonUid: null
-  })
+  const {
+    seats,
+    getSeat,
+    getSeatProperty
+  } = useBattleSeats()
 
-  const createDefaultSeat = (): SeatState => ({
-    entry: createDefaultSlot(),
-    exit: createDefaultSlot()
-  })
-
-  const seats = ref<{
-    player: SeatState;
-    enemy: SeatState;
-    [key: string]: SeatState;
-  }>({
-    player: createDefaultSeat(),
-    enemy: createDefaultSeat()
-  })
-
-  // Explicit initialization to prevent types issue
-  seats.value.player = createDefaultSeat()
-  seats.value.enemy = createDefaultSeat()
-
-  const playerAnimState = computed(() => seats.value.player.entry.animState)
-  const enemyAnimState = computed(() => seats.value.enemy.entry.animState)
-  const playerActivePokeballId = computed(() => seats.value.player.entry.ballId)
-  const enemyActivePokeballId = computed(() => seats.value.enemy.entry.ballId)
-  const playerCaptureActive = computed(() => seats.value.player.entry.isCaptureActive)
-  const enemyCaptureActive = computed(() => seats.value.enemy.entry.isCaptureActive)
-  const playerIsShaking = computed(() => seats.value.player.entry.isShaking)
-  const playerIsBlinking = computed(() => seats.value.player.entry.isBlinking)
-  const enemyIsShaking = computed(() => seats.value.enemy.entry.isShaking)
-  const enemyIsBlinking = computed(() => seats.value.enemy.entry.isBlinking)
+  const playerAnimState = computed(() => seats.value.seat1.entry.animState)
+  const enemyAnimState = computed(() => seats.value.seat2.entry.animState)
+  const playerActivePokeballId = computed(() => seats.value.seat1.entry.ballId)
+  const enemyActivePokeballId = computed(() => seats.value.seat2.entry.ballId)
+  const playerCaptureActive = computed(() => seats.value.seat1.entry.isCaptureActive)
+  const enemyCaptureActive = computed(() => seats.value.seat2.entry.isCaptureActive)
+  const playerIsShaking = computed(() => seats.value.seat1.entry.isShaking)
+  const playerIsBlinking = computed(() => seats.value.seat1.entry.isBlinking)
+  const enemyIsShaking = computed(() => seats.value.seat2.entry.isShaking)
+  const enemyIsBlinking = computed(() => seats.value.seat2.entry.isBlinking)
 
   const isCaptureSequenceActive = computed(() => 
-    seats.value.player.entry.isCaptureActive || seats.value.enemy.entry.isCaptureActive ||
-    seats.value.player.entry.isAnimatingCapture || seats.value.enemy.entry.isAnimatingCapture ||
-    seats.value.player.exit.isCaptureActive || seats.value.enemy.exit.isCaptureActive ||
-    seats.value.player.exit.isAnimatingCapture || seats.value.enemy.exit.isAnimatingCapture
+    Object.values(seats.value).some(seat => 
+      seat.entry.isCaptureActive || seat.entry.isAnimatingCapture ||
+      seat.exit.isCaptureActive || seat.exit.isAnimatingCapture
+    )
   )
 
   const triggerCatchSparkles = (side: string) => {
@@ -178,13 +140,9 @@ export function useBattleCaptureAnimations(
   const handleReleaseRequest = async (detail: string | { side?: string, pokemon?: Pokemon }) => {
     const side = typeof detail === 'string' ? detail : (detail?.side || 'player')
     const pokemon = typeof detail === 'object' ? detail?.pokemon : null
-    const seatKey = side
-
-    if (!seats.value[seatKey]) {
-      seats.value[seatKey] = createDefaultSeat()
-    }
-    const slot = seats.value[seatKey].entry
-    const exitSlot = seats.value[seatKey].exit
+    const seat = getSeat(side)
+    const slot = seat.entry
+    const exitSlot = seat.exit
 
     if (pokemon?.tags) {
       const ballTag = pokemon.tags.find(t => t.startsWith('ball:'))
@@ -224,12 +182,7 @@ export function useBattleCaptureAnimations(
   const handleCatchRequest = async (detail: string | { side?: string, ballId?: string, pokemon?: Pokemon }) => {
     const side = typeof detail === 'string' ? detail : (detail?.side || 'enemy')
     const pokemon = typeof detail === 'object' ? (detail as { pokemon?: Pokemon })?.pokemon : null
-    const seatKey = side
-
-    if (!seats.value[seatKey]) {
-      seats.value[seatKey] = createDefaultSeat()
-    }
-    const slot = seats.value[seatKey].exit
+    const slot = getSeat(side).exit
 
     if (typeof detail === 'object' && detail?.ballId) {
       const id = detail.ballId.toLowerCase()
@@ -260,6 +213,8 @@ export function useBattleCaptureAnimations(
     const targetUid = pokemon?.uid || target?.uid || null
     slot.pokemonUid = targetUid
     slot.animState = 'catching'
+    slot.isCaptureActive = false
+    slot.isAnimatingCapture = true
 
     // Poll until the component registers the tween and the animation completes.
     const animKey = `${side}-${targetUid || 'active'}`
@@ -268,24 +223,29 @@ export function useBattleCaptureAnimations(
     slot.animState = 'trapped'
   }
 
-  const handleShakeRequest = (detail: string | { side?: string }) => {
+  const handleShakeRequest = (detail: string | { side?: string }): Promise<void> => {
     const side = typeof detail === 'string' ? detail : (detail?.side || 'enemy')
-    const seat = seats.value[side]
+    const seat = getSeat(side)
     if (seat) {
       seat.entry.isShaking = true 
       seat.exit.isShaking = true 
       const tl = createTimeline()
-      tl.to({}, { duration: 0.48 })
+      // La animación de balanceo físico de la Poké Ball en el componente dura 0.60s
+      tl.to({}, { duration: 0.60 })
       tl.add(() => { 
         seat.entry.isShaking = false 
         seat.exit.isShaking = false 
       })
+      // Pausa dramática añadida al timeline de GSAP para sincronizar de forma pura
+      tl.to({}, { duration: 0.40 })
+      return awaitAnimation(tl)
     }
+    return Promise.resolve()
   }
 
-  const handleBlinkRequest = (detail: string | { side?: string }) => {
+  const handleBlinkRequest = (detail: string | { side?: string }): Promise<void> => {
     const side = typeof detail === 'string' ? detail : (detail?.side || 'enemy')
-    const seat = seats.value[side]
+    const seat = getSeat(side)
     if (seat) {
       seat.entry.isBlinking = true
       seat.exit.isBlinking = true
@@ -295,12 +255,14 @@ export function useBattleCaptureAnimations(
         seat.entry.isBlinking = false 
         seat.exit.isBlinking = false 
       })
+      return awaitAnimation(tl)
     }
+    return Promise.resolve()
   }
 
   const handleHealRequest = async (detail: string | { side?: string }) => {
     const side = typeof detail === 'string' ? detail : (detail?.side || 'player')
-    const seat = seats.value[side]
+    const seat = getSeat(side)
     if (seat) {
       seat.entry.isHealing = true
       seat.exit.isHealing = true
@@ -330,17 +292,13 @@ export function useBattleCaptureAnimations(
     
     faintedPokemonSnapshot.value = side === 'enemy' 
       ? (toValue(enemyRef) ? { ...toValue(enemyRef), side: 'enemy' } : { side: 'enemy' })
-      : { side: 'player' }
+      : (battleStore.player ? { ...battleStore.player, side: 'player' } : { side: 'player' })
       
     isFaintInProgress.value = true
     const tl = createTimeline()
     
     if (hasTrainer) {
-      const seatKey = side
-      if (!seats.value[seatKey]) {
-        seats.value[seatKey] = createDefaultSeat()
-      }
-      const slot = seats.value[seatKey].exit
+      const slot = getSeat(side).exit
       slot.animState = 'catching'
       
       const pokemon = side === 'player' ? battleStore.player : toValue(enemyRef)
@@ -381,6 +339,11 @@ export function useBattleCaptureAnimations(
   }
 
   const playCatchCelebration = (side: string) => {
+    const seat = getSeat(side)
+    if (seat) {
+      seat.entry.isCaptureActive = true
+      seat.exit.isCaptureActive = true
+    }
     const tl = createTimeline()
     tl.to({}, {
       duration: 1.5,
@@ -393,20 +356,20 @@ export function useBattleCaptureAnimations(
   }
 
   const playBallFadeOut = (side: string) => {
-    const seat = seats.value[side]
+    const seat = getSeat(side)
     if (!seat) return Promise.resolve()
     
     const tl = createTimeline()
     tl.add(() => {
       seat.entry.isCaptureActive = false 
       seat.exit.isCaptureActive = false 
+      seat.entry.animState = null
+      seat.exit.animState = null
     })
     tl.to({}, { duration: 0.4 })
     tl.add(() => {
       seat.entry.isAnimatingCapture = false
       seat.exit.isAnimatingCapture = false
-      seat.entry.animState = null
-      seat.exit.animState = null
       caughtPokemonSnapshot.value = null
     })
     return awaitAnimation(tl)
@@ -437,30 +400,12 @@ export function useBattleCaptureAnimations(
     })
   }
 
-  const getSeatProperty = <K extends keyof AnimSlotState>(
-    side: string,
-    pokemon: Pokemon | null | undefined,
-    prop: K,
-    fallback: AnimSlotState[K]
-  ): AnimSlotState[K] => {
-    if (!pokemon) return fallback
-    const seat = seats.value[side]
-    if (!seat) return fallback
-    if (pokemon.uid && seat.entry.pokemonUid === pokemon.uid) return seat.entry[prop]
-    if (pokemon.uid && seat.exit.pokemonUid === pokemon.uid) return seat.exit[prop]
-    const isActive = side === 'player'
-      ? (battleStore.player?.uid === pokemon.uid)
-      : (battleStore.enemy?.uid === pokemon.uid)
-    const activeSlot = isActive ? seat.entry : seat.exit
-    return activeSlot[prop] !== undefined ? activeSlot[prop] : fallback
-  }
-
-  const getPokemonAnimState = (side: string, pokemon?: Pokemon | null) => getSeatProperty(side, pokemon, 'animState', null)
-  const getPokemonBallId = (side: string, pokemon?: Pokemon | null) => getSeatProperty(side, pokemon, 'ballId', 'pokeball')
-  const getPokemonCaptureActive = (side: string, pokemon?: Pokemon | null) => getSeatProperty(side, pokemon, 'isCaptureActive', false)
-  const getPokemonIsShaking = (side: string, pokemon?: Pokemon | null) => getSeatProperty(side, pokemon, 'isShaking', false)
-  const getPokemonIsBlinking = (side: string, pokemon?: Pokemon | null) => getSeatProperty(side, pokemon, 'isBlinking', false)
-  const getPokemonIsHealing = (side: string, pokemon?: Pokemon | null) => getSeatProperty(side, pokemon, 'isHealing', false)
+  const getPokemonAnimState = (side: string, pokemon?: Pokemon | null) => getSeatProperty(side, pokemon, 'animState', null, battleStore.player?.uid, battleStore.enemy?.uid)
+  const getPokemonBallId = (side: string, pokemon?: Pokemon | null) => getSeatProperty(side, pokemon, 'ballId', 'pokeball', battleStore.player?.uid, battleStore.enemy?.uid)
+  const getPokemonCaptureActive = (side: string, pokemon?: Pokemon | null) => getSeatProperty(side, pokemon, 'isCaptureActive', false, battleStore.player?.uid, battleStore.enemy?.uid)
+  const getPokemonIsShaking = (side: string, pokemon?: Pokemon | null) => getSeatProperty(side, pokemon, 'isShaking', false, battleStore.player?.uid, battleStore.enemy?.uid)
+  const getPokemonIsBlinking = (side: string, pokemon?: Pokemon | null) => getSeatProperty(side, pokemon, 'isBlinking', false, battleStore.player?.uid, battleStore.enemy?.uid)
+  const getPokemonIsHealing = (side: string, pokemon?: Pokemon | null) => getSeatProperty(side, pokemon, 'isHealing', false, battleStore.player?.uid, battleStore.enemy?.uid)
 
   return {
     caughtPokemonSnapshot,
@@ -494,6 +439,7 @@ export function useBattleCaptureAnimations(
     getPokemonCaptureActive,
     getPokemonIsShaking,
     getPokemonIsBlinking,
-    getPokemonIsHealing
+    getPokemonIsHealing,
+    awaitTween
   }
 }

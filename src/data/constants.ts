@@ -1,9 +1,9 @@
-/**
- * CENTRALIZED GAME RATIOS & CHANCES
- * This file contains all the percentage chances and rates 
- * for the different mechanics of the game.
- */
+export const MAX_POKEMON_LEVEL = 100;
+
 export const GAME_RATIOS = {
+  // --- Pokémon Level ---
+  maxPokemonLevel: MAX_POKEMON_LEVEL,
+
   // --- Shiny ---
   // Shiny encounter rate. 2000 means 1 in 2000 chance.
   shinyRate: 3000,

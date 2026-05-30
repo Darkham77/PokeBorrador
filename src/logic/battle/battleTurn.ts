@@ -71,15 +71,26 @@ export async function executeTurn(store: BattleContext, moveIndex: number) {
     queue.push({ source: 'player', action: () => runPlayerAction(store, moveIndex) })
   }
 
+  console.log('[executeTurn] Queue initialized:', queue.map(q => q.source))
   await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.BUILD_QUEUE)
   
   while (queue.length > 0) {
+    console.log('[executeTurn] Loop iteration start, queue length:', queue.length)
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.POP_ACTION)
     const currentAction = queue.shift()
-    if (!currentAction) break
+    if (!currentAction) {
+      console.log('[executeTurn] No current action, breaking')
+      break
+    }
 
+    console.log('[executeTurn] Running action:', currentAction.source)
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.APPLY_MOVE)
-    await currentAction.action()
+    try {
+      await currentAction.action()
+      console.log('[executeTurn] Action completed successfully:', currentAction.source)
+    } catch (e) {
+      console.error('[executeTurn] Error running action:', currentAction.source, e)
+    }
 
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.EVAL_HP)
 
@@ -95,11 +106,17 @@ export async function executeTurn(store: BattleContext, moveIndex: number) {
       break;
     }
 
-    if (store.activeBattle.value?.over) break;
+    if (store.activeBattle.value?.over) {
+      console.log('[executeTurn] Battle is over, breaking')
+      break;
+    }
 
     if (queue.length > 0) {
+      console.log('[executeTurn] Queue has more items, transitioning to EVAL_CONTINUE')
       await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.EVAL_CONTINUE)
       await sleep(400)
+    } else {
+      console.log('[executeTurn] Queue is empty, finishing loop')
     }
   }
   
@@ -135,8 +152,9 @@ export async function runPlayerAction(store: BattleContext, moveIndex: number) {
   p.lastMove = move;
   store.attackerSide.value = 'player'
   
-  move.pp--
-  store.addLog(`¡${p.name} usó ${move.name}!`, 'log-player', p)
+  try {
+    move.pp--
+    store.addLog(`¡${p.name} usó ${move.name}!`, 'log-player', p)
 
   let executableMove: Move = { ...move };
   
@@ -237,8 +255,7 @@ export async function runPlayerAction(store: BattleContext, moveIndex: number) {
   let hitsDealt = 0;
   let totalDamageDealt = 0;
 
-  try {
-    for (let i = 0; i < totalHits; i++) {
+  for (let i = 0; i < totalHits; i++) {
       if (e.hp <= 0) break;
 
       const result = calculateDamage(p, e, executableMove, { 
@@ -268,7 +285,6 @@ export async function runPlayerAction(store: BattleContext, moveIndex: number) {
         }
 
         e.hp = Math.max(0, e.hp - damage)
-        gameBus.emit('PLAY_DAMAGE', { side: 'enemy', damage })
         if (store.activeBattle.value) store.activeBattle.value.lastDamage = damage
         hitsDealt++;
         
@@ -279,8 +295,9 @@ export async function runPlayerAction(store: BattleContext, moveIndex: number) {
           store.addLog(`¡La furia de ${e.name} está creciendo!`, 'log-info', e);
         }
 
-        if (executableMove.cat !== 'status') {
-          await sleep(200)
+        // Awaiting the damage animation (GSAP) before processing next hit — Zero-Timer Policy.
+        if (executableMove.cat !== 'status' && store.animations?.handleShakeRequest) {
+          await store.animations.handleShakeRequest({ side: 'enemy' })
         }
       }
     }
@@ -312,15 +329,18 @@ export async function runPlayerAction(store: BattleContext, moveIndex: number) {
       store.addLog(`¡${p.name} se sacrificó!`, 'log-info', p);
     }
 
-    store.attackerSide.value = null
-
     if (executableMove.effect && hitsDealt > 0 && store.activeBattle.value) {
       dispatchMoveEffect(executableMove.effect as string, p, e, store.playerStages.value, store.enemyStages.value, store.addLog, store)
     }
- 
   } catch (err) {
     logger.error('Battle', `Error in runPlayerAction: ${(err as Error).message}`)
     store.addLog('¡Error en el turno del jugador!', 'log-error', p)
+  } finally {
+    if (store.animations?.awaitTween) {
+      await store.animations.awaitTween('attack-player')
+    }
+    store.attackerSide.value = null
+    store.activeMove.value = null
   }
 }
 
@@ -404,7 +424,8 @@ export async function runEnemyAction(store: BattleContext) {
   e.snatching = false;
   e.lastMove = enemyMove
   store.attackerSide.value = 'enemy'
-  store.addLog(`¡${e.name} usó ${enemyMove.name}!`, 'log-enemy', e)
+  try {
+    store.addLog(`¡${e.name} usó ${enemyMove.name}!`, 'log-enemy', e)
 
   let executableMove: Move = { ...enemyMove };
 
@@ -489,8 +510,7 @@ export async function runEnemyAction(store: BattleContext) {
   let hitsDealt = 0;
   let totalDamageDealt = 0;
 
-  try {
-    for (let i = 0; i < totalHits; i++) {
+  for (let i = 0; i < totalHits; i++) {
       if (p.hp <= 0) break;
 
       const eResult = calculateDamage(e, p, executableMove, {
@@ -521,7 +541,6 @@ export async function runEnemyAction(store: BattleContext) {
         }
 
         p.hp = Math.max(0, p.hp - damage)
-        gameBus.emit('PLAY_DAMAGE', { side: 'player', damage })
         if (store.activeBattle.value) store.activeBattle.value.lastDamage = damage
         hitsDealt++;
 
@@ -532,8 +551,9 @@ export async function runEnemyAction(store: BattleContext) {
           store.addLog(`¡La furia de ${p.name} está creciendo!`, 'log-info', p);
         }
         
-        if (enemyMove.cat !== 'status') {
-          await sleep(200)
+        // Awaiting the damage animation (GSAP) before processing next hit — Zero-Timer Policy.
+        if (enemyMove.cat !== 'status' && store.animations?.handleShakeRequest) {
+          await store.animations.handleShakeRequest({ side: 'player' })
         }
       }
     }
@@ -565,13 +585,17 @@ export async function runEnemyAction(store: BattleContext) {
       store.addLog(`¡${e.name} se sacrificó!`, 'log-info', e);
     }
 
-    store.attackerSide.value = null
-
     if (executableMove.effect && hitsDealt > 0 && store.activeBattle.value) {
       dispatchMoveEffect(executableMove.effect as string, e, p, store.enemyStages.value, store.playerStages.value, store.addLog, store)
     }
   } catch (err) {
     logger.error('Battle', `Error in runEnemyAction: ${(err as Error).message}`)
     store.addLog('¡Error en el turno del oponente!', 'log-error', e)
+  } finally {
+    if (store.animations?.awaitTween) {
+      await store.animations.awaitTween('attack-enemy')
+    }
+    store.attackerSide.value = null
+    store.activeMove.value = null
   }
 }

@@ -220,7 +220,11 @@ const formatMult = (m: number) => {
             class="m-status-tag"
             :class="[status.class, { 'is-boosted': status.isBoosted }]"
           >
-            {{ status.emoji }}
+            {{ status.emoji }}<span 
+              v-if="status.stageValue !== undefined" 
+              class="stage-arrow"
+              :class="status.stageValue > 0 ? 'up' : 'down'"
+            >{{ status.stageValue > 0 ? '▲' : '▼' }}{{ Math.abs(status.stageValue) }}</span>
             <span
               v-if="status.count"
               class="status-counter"

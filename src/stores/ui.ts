@@ -233,7 +233,7 @@ export const useUIStore = defineStore('ui', () => {
     // Dynamic import to break circular dependency: ui -> evolution -> game -> ui
     import('@/stores/evolution').then(m => {
       const evolutionStore = m.useEvolutionStore()
-      evolutionStore.startEvolution(pokemon, targetId, () => {
+      evolutionStore.startEvolution(pokemon, targetId, itemName, () => {
         useModalStore().close('Evolution')
       })
     })

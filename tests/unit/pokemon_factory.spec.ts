@@ -5,16 +5,23 @@ import { makePokemon, levelUpPokemon } from '@/logic/pokemonFactory';
 vi.mock('@/logic/providers/pokemonDataProvider', () => ({
   pokemonDataProvider: {
     getPokemonData: vi.fn((id) => {
-      if (id === 'charmander') return { id: 'charmander', name: 'Charmander', emoji: '🔥', type: 'fire', hp: 39, atk: 52, def: 43, spa: 60, spd: 50, spe: 65, learnset: [{ lv: 10, name: 'Lanzallamas' }] };
+      if (id === 'charmander') return { id: 'charmander', name: 'Charmander', emoji: '🔥', type: 'fire', hp: 39, atk: 52, def: 43, spa: 60, spd: 50, spe: 65, learnset: [{ lv: 10, id: 'flamethrower', name: 'Lanzallamas' }] };
       if (id === 'pidgey') return { id: 'pidgey', name: 'Pidgey', emoji: '🐦', type: 'normal', hp: 40, atk: 45, def: 40, spa: 35, spd: 35, spe: 56 };
       return null;
     }),
     getNatureData: vi.fn(() => ({ up: null, down: null })),
     getSpeciesAbilities: vi.fn(() => ['Mar Llamas']),
-    getMoveData: vi.fn((name) => {
-      if (name === 'Placaje') return { power: 40, type: 'normal', cat: 'physical', pp: 35 };
-      if (name === 'Lanzallamas') return { power: 90, type: 'fire', cat: 'special', pp: 15 };
-      return { power: 40, type: 'normal', cat: 'physical', pp: 35 };
+    resolveMoveId: vi.fn((name) => {
+      if (!name) return '';
+      const lower = name.toLowerCase().trim();
+      if (lower === 'placaje' || lower === 'ataque') return 'tackle';
+      if (lower === 'lanzallamas') return 'flamethrower';
+      return name;
+    }),
+    getMoveData: vi.fn((id) => {
+      if (id === 'tackle') return { id: 'tackle', name: 'Placaje', power: 40, type: 'normal', cat: 'physical', pp: 35 };
+      if (id === 'flamethrower') return { id: 'flamethrower', name: 'Lanzallamas', power: 90, type: 'fire', cat: 'special', pp: 15 };
+      return { id: 'tackle', name: 'Placaje', power: 40, type: 'normal', cat: 'physical', pp: 35 };
     })
   }
 }));
@@ -43,7 +50,7 @@ vi.mock('@/stores/war', () => ({
 }));
 
 vi.mock('@/logic/pokemonUtils', () => ({
-  getMovesAtLevel: vi.fn(() => [{ name: 'Placaje', pp: 35, maxPP: 35 }])
+  getMovesAtLevel: vi.fn(() => [{ id: 'tackle', name: 'Placaje', pp: 35, maxPP: 35 }])
 }));
 
 describe('Pokemon Factory', () => {

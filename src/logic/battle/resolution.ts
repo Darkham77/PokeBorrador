@@ -4,7 +4,7 @@ import { calculateBaseExp, processExpGain, calculateMoneyGain } from './battleRe
 import { getBattleRewardModifiers } from '@/logic/war/bonusEngine'
 import { levelUpPokemon } from '@/logic/pokemonFactory'
 import type { BattleContext } from '@/types/battleContext'
-import type { Pokemon } from '@/types/pokemon'
+import type { Pokemon, PokemonMove } from '@/types/pokemon'
 import { useBreedingStore } from '@/stores/breeding'
 import { useUIStore } from '@/stores/ui'
 
@@ -144,7 +144,8 @@ export async function terminateBattle(ctx: BattleContext, win: boolean, fled = f
   active.over = true
   ctx.faintedSides.value.clear()
   
-  if (win && !fled) {
+  if (win && !fled && !active.rewardsProcessed) {
+    active.rewardsProcessed = true
     await calculateBattleRewards(ctx)
     try {
       const breedingStore = useBreedingStore()
@@ -177,14 +178,14 @@ export async function terminateBattle(ctx: BattleContext, win: boolean, fled = f
 
   // Solo hacemos transición de finalización del enemigo si seguimos en ACTIVE_BATTLE
   if (fsm.currentState.value === BATTLE_STATES.ACTIVE_BATTLE) {
-    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.VACATE_SEAT)
-    if (active) active.enemy = null
-    if (active) active._initialEnemy = null
-    
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.FADEOUT_BALL)
     if (active.isCapture && ctx.animations?.playBallFadeOut) {
       await ctx.animations.playBallFadeOut('enemy')
     }
+    
+    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.VACATE_SEAT)
+    if (active) active.enemy = null
+    if (active) active._initialEnemy = null
   } else {
     if (active) active.enemy = null
     if (active) active._initialEnemy = null
@@ -356,17 +357,41 @@ export async function calculateBattleRewards(ctx: BattleContext) {
     
     if (reward.levelUp) {
       ctx.audio.levelUp()
-      ctx.addLog(`¡${p.name} subió al nivel ${p.level}!`, 'log-info', p)
       
       await fsm.transition(BATTLE_STATES.LEVEL_UP_MODAL, BATTLE_SUBSTATES.CHECK_PENDING)
-      const pendingMoves = levelUpPokemon(p)
       
-      if (pendingMoves && pendingMoves.length > 0) {
+      const allPendingMoves: PokemonMove[] = []
+      for (let i = 0; i < reward.levelsGained; i++) {
+        const pendingMoves = levelUpPokemon(p)
+        if (pendingMoves) {
+          allPendingMoves.push(...pendingMoves)
+        }
+      }
+      
+      ctx.addLog(`¡${p.name} subió al nivel ${p.level}!`, 'log-info', p)
+
+      if (allPendingMoves.length > 0) {
         await fsm.transition(BATTLE_STATES.LEVEL_UP_MODAL, BATTLE_SUBSTATES.SHOW_CHOICE)
-        p.pendingMoves = pendingMoves
+        p.pendingMoves = allPendingMoves
         
         const uiStore = useUIStore()
-        uiStore.addToLearnQueue(pendingMoves.map(m => ({ pokemon: p, move: m })))
+        uiStore.addToLearnQueue(allPendingMoves.map(m => ({ pokemon: p, move: m })))
+      }
+
+      // Sincronizar evolución por nivel
+      if (p.heldItem === 'Piedra Eterna') {
+        ctx.addLog(`${p.name} evitó evolucionar debido a la Piedra Eterna.`, 'log-info', p)
+      } else {
+        const { checkLevelUpEvolution } = await import('../evolutionLogic.ts')
+        const targetId = checkLevelUpEvolution(p)
+        if (targetId) {
+          const uiStore = useUIStore()
+          uiStore.startEvolution(p, targetId, '')
+          // Esperar síncronamente mientras el modal de evolución esté abierto
+          while (uiStore.isEvolutionOpen) {
+            await sleep(100)
+          }
+        }
       }
     }
   }
@@ -379,6 +404,23 @@ export async function calculateBattleRewards(ctx: BattleContext) {
   ctx.gs.state.money += moneyGained
   if (moneyGained > 0) ctx.audio.money()
   ctx.addLog(`¡Ganaste ₽${moneyGained}!`, 'log-info', 'player')
+
+  if (active.player) {
+    const teamPoke = ctx.gs.state.team.find((tp: Pokemon) => tp && tp.uid === active.player?.uid)
+    if (teamPoke) {
+      active.player.level = teamPoke.level
+      active.player.exp = teamPoke.exp
+      active.player.expNeeded = teamPoke.expNeeded
+      active.player.maxHp = teamPoke.maxHp
+      active.player.hp = teamPoke.hp
+      active.player.atk = teamPoke.atk
+      active.player.def = teamPoke.def
+      active.player.spa = teamPoke.spa
+      active.player.spd = teamPoke.spd
+      active.player.spe = teamPoke.spe
+      active.player.moves = teamPoke.moves ? teamPoke.moves.map(m => m ? ({ ...m }) : null) : []
+    }
+  }
 }
 
 /**
@@ -429,3 +471,110 @@ export function syncAndPersist(ctx: BattleContext) {
   }
   ctx.gs.save(false)
 }
+
+/**
+ * Simulates a standard experience reward in battle for testing purposes.
+ */
+export async function awardDebugExp(ctx: BattleContext) {
+  const active = ctx.activeBattle.value
+  if (!active || !active.player) return
+
+  const p = active.player
+  const teamPoke = ctx.gs.state.team.find((tp: Pokemon) => tp && tp.uid === p.uid)
+  if (!teamPoke) return
+
+  const needed = teamPoke.expNeeded - teamPoke.exp
+  if (needed <= 0) return
+
+  ctx.addLog(`DEBUG: Añadiendo ${needed} EXP para subir de nivel...`, 'log-info', p)
+
+  const participantsSet = new Set([p.uid])
+  const reward = processExpGain(teamPoke, needed, participantsSet, {
+    isActive: true,
+    classMult: 1,
+    totalExpMult: 1,
+    participantsSet
+  })
+
+  if (reward) {
+    ctx.addLog(`${teamPoke.name} ganó ${reward.gained} EXP.`, 'log-player', teamPoke)
+    
+    if (reward.levelUp) {
+      ctx.audio.levelUp()
+      
+      const { BATTLE_STATES, BATTLE_SUBSTATES } = ctx
+      const fsm = ctx.fsm
+      const prevState = fsm.currentState.value
+      const prevSubState = fsm.currentSubState.value
+
+      await fsm.transition(BATTLE_STATES.LEVEL_UP_MODAL, BATTLE_SUBSTATES.CHECK_PENDING)
+      
+      const allPendingMoves: PokemonMove[] = []
+      for (let i = 0; i < reward.levelsGained; i++) {
+        const pendingMoves = levelUpPokemon(teamPoke)
+        if (pendingMoves) {
+          allPendingMoves.push(...pendingMoves)
+        }
+      }
+      
+      ctx.addLog(`¡${teamPoke.name} subió al nivel ${teamPoke.level}!`, 'log-info', teamPoke)
+
+      // Sync active player copy stats
+      p.level = teamPoke.level
+      p.exp = teamPoke.exp
+      p.expNeeded = teamPoke.expNeeded
+      p.maxHp = teamPoke.maxHp
+      p.hp = teamPoke.hp
+      p.atk = teamPoke.atk
+      p.def = teamPoke.def
+      p.spa = teamPoke.spa
+      p.spd = teamPoke.spd
+      p.spe = teamPoke.spe
+      p.moves = teamPoke.moves ? teamPoke.moves.map(m => m ? ({ ...m }) : null) : []
+
+      if (allPendingMoves.length > 0) {
+        await fsm.transition(BATTLE_STATES.LEVEL_UP_MODAL, BATTLE_SUBSTATES.SHOW_CHOICE)
+        teamPoke.pendingMoves = allPendingMoves
+        
+        const uiStore = useUIStore()
+        uiStore.addToLearnQueue(allPendingMoves.map(m => ({ pokemon: teamPoke, move: m })))
+
+        while (uiStore.learnQueue.length > 0 || uiStore.currentMoveToLearn) {
+          await sleep(100)
+        }
+      }
+
+      // Sincronizar evolución por nivel en debug
+      if (teamPoke.heldItem === 'Piedra Eterna') {
+        ctx.addLog(`${teamPoke.name} evitó evolucionar debido a la Piedra Eterna.`, 'log-info', teamPoke)
+      } else {
+        const { checkLevelUpEvolution } = await import('../evolutionLogic.ts')
+        const targetId = checkLevelUpEvolution(teamPoke)
+        if (targetId) {
+          const uiStore = useUIStore()
+          uiStore.startEvolution(teamPoke, targetId, '')
+          // Esperar síncronamente mientras el modal de evolución esté abierto
+          while (uiStore.isEvolutionOpen) {
+            await sleep(100)
+          }
+        }
+      }
+
+      // Sync active player copy stats (including newly learned/replaced moves & evolution stats)
+      p.level = teamPoke.level
+      p.exp = teamPoke.exp
+      p.expNeeded = teamPoke.expNeeded
+      p.maxHp = teamPoke.maxHp
+      p.hp = teamPoke.hp
+      p.atk = teamPoke.atk
+      p.def = teamPoke.def
+      p.spa = teamPoke.spa
+      p.spd = teamPoke.spd
+      p.spe = teamPoke.spe
+      p.moves = teamPoke.moves ? teamPoke.moves.map(m => m ? ({ ...m }) : null) : []
+
+      await fsm.transition(prevState, prevSubState)
+    }
+  }
+}
+

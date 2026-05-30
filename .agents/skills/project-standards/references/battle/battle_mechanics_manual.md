@@ -418,6 +418,9 @@ stateDiagram-v2
     
     INITIALIZING --> SEARCH_PHASE : Teams Ready
     
+    REWARDS_PHASE --> LEVEL_UP_MODAL : Has Levels Gained
+    LEVEL_UP_MODAL --> REWARDS_PHASE : Sequence Completed
+    
     REWARDS_PHASE --> CHECK_PERSISTENCE : Rewards Completed
     
     state CHECK_PERSISTENCE <<choice>>
@@ -426,6 +429,8 @@ stateDiagram-v2
     
     ACTIVE_BATTLE --> EXIT_BATTLE : Defeat / Manual Flee
     ACTIVE_BATTLE --> REWARDS_PHASE : Victory / Capture
+    ACTIVE_BATTLE --> LEVEL_UP_MODAL : Debug Level Up
+    LEVEL_UP_MODAL --> ACTIVE_BATTLE : Debug Finished
     
     SEARCH_PHASE --> ACTIVE_BATTLE : Start Encounter
     SEARCH_PHASE --> EXIT_BATTLE : Return to Map
@@ -636,6 +641,12 @@ stateDiagram-v2
     
     note right of CHECK_OUTCOME: Skips XP and Level-up if enemy fled
 ```
+
+#### Experience Cap at Maximum Level
+
+To maintain combat mechanics integrity, experience distribution during the `DISTRIBUTE_XP` phase is strictly capped:
+- If a Pokémon has reached `MAX_POKEMON_LEVEL` (100), its `exp` is fixed to `0` and `expNeeded` is `Infinity`.
+- The engine blocks any experience gain (`gained = 0`) for this Pokémon, preventing level-up notifications, triggers, or UI modal locks associated with level changes.
 
 ### 6. Search Phase (Persistent Mode)
 
