@@ -306,8 +306,9 @@ const onHover = (isEntering: boolean) => {
   if (!el || isDisabled.value) return
 
   if (isEntering) {
+    const isSmallScreen = typeof window !== 'undefined' && window.innerWidth <= 768
     gsap.to(el, { 
-      scale: 1.08, 
+      scale: isSmallScreen ? 1 : 1.08, 
       filter: 'Brightness(1.1)',
       zIndex: 10,
       duration: 0.3, 
