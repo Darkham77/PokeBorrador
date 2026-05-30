@@ -770,15 +770,13 @@ stateDiagram-v2
         CHECK_ACTIVE_SEAT --> SWITCHING : "Seat Empty or Different Member"
         
         state SWITCHING {
-            state fork_state <<fork>>
-            [*] --> fork_state
-            fork_state --> POKEMON_RECALL : "Recall incorrect/out-of-order Pokémon"
-            fork_state --> POKEMON_CALL : "Call correct/in-order Pokémon"
-            
-            state join_state <<join>>
-            POKEMON_RECALL --> join_state
-            POKEMON_CALL --> join_state
-            join_state --> [*]
+            [*] --> RECALL_AND_CALL
+            state RECALL_AND_CALL {
+                [*] --> POKEMON_RECALL : "Recall incorrect/out-of-order Pokémon"
+                --
+                [*] --> POKEMON_CALL : "Call correct/in-order Pokémon"
+            }
+            RECALL_AND_CALL --> [*]
         }
     }
 ```
