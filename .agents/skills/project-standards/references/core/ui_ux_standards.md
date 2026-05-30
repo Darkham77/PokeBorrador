@@ -183,6 +183,7 @@ We prioritize a deliberate contrast between modern, sleek UI shells and classic,
   - **Precision Spacing**: When using absolute side-tabs, reduce internal card padding on the adjacent side (Standard: **4px**) to eliminate "dead space" between the icon and content.
   - **Threshold 1 (< 560px)**: Split stats (POT, PREC, CAT, PP) into a 2x2 grid.
   - **Threshold 2 (< 420px)**: Move the Type Tag to Row 1 (compacted). Card height MUST be normalized to ~64px to maintain density.
+  - **No Scale on Mobile Hover/Touch**: Symmetrical scaling or zoom effects on interactive slots (such as the 1.08 scale transition) MUST be disabled on small viewports (width <= 768px). This prevents touch interactions from shifting layouts and pushing absolute-positioned sub-elements (like the `?` info button/tooltip wrapper) off-screen.
 - **Combat Panel Standards (The "Always Small" Layout)**:
   - **Constraint**: Combat move cards MUST be limited to a maximum width of **200px** to ensure a 2-column grid fits in a 412px-420px mobile viewport.
   - **Grid Balancing**: Use asymmetric column widths (e.g., `grid-template-columns: 1.4fr 1fr`) to give more space to descriptive categories (POT/CAT) while keeping numeric stats (PREC/PP) aligned to the right.
