@@ -334,7 +334,7 @@ onUnmounted(() => {
           </div>
           
           <div 
-            v-for="i in (6 - team.length)" 
+            v-for="i in Math.max(0, 6 - team.length)" 
             :key="'empty-' + i"
             class="slot empty"
           >
