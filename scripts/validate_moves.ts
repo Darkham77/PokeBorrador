@@ -111,32 +111,32 @@ async function main() {
   const errors: string[] = [];
   const warnings: string[] = [];
 
-  // 1. Extract moves from learnsets
+  // 1. Extract moves from learnsets (using English ID)
   const learnsetBlockRegex = /learnset:\s*\[([\s\S]+?)\]/g;
-  const moveNameRegex = /name:\s*'([^']+)'/g;
+  const moveIdRegex = /id:\s*'([^']+)'/g;
   const learnsetMoves = new Set<string>();
   
   let blockMatch;
   while ((blockMatch = learnsetBlockRegex.exec(dbContent)) !== null) {
     const block = blockMatch[1]!;
-    let nameMatch;
-    while ((nameMatch = moveNameRegex.exec(block)) !== null) {
-      if (nameMatch[1] !== 'Unknown') learnsetMoves.add(nameMatch[1]!);
+    let idMatch;
+    while ((idMatch = moveIdRegex.exec(block)) !== null) {
+      if (idMatch[1] !== 'Unknown') learnsetMoves.add(idMatch[1]!);
     }
   }
 
-  // 2. Extract defined moves from MOVE_DATA
+  // 2. Extract defined moves from MOVE_DATA (using English keys)
   const definedMoves = new Map<string, { line: number, content: string }>();
   const movesLines = movesContent.split('\n');
   
   movesLines.forEach((line, index) => {
     const match = line.match(/'([^']+)':\s*\{/);
     if (match) {
-      const name = match[1]!;
-      if (definedMoves.has(name)) {
-        errors.push(`[${name}] Duplicado en MOVE_DATA (Línea ${index + 1}).`);
+      const key = match[1]!;
+      if (definedMoves.has(key)) {
+        errors.push(`[${key}] Duplicado en MOVE_DATA (Línea ${index + 1}).`);
       }
-      definedMoves.set(name, { line: index + 1, content: line });
+      definedMoves.set(key, { line: index + 1, content: line });
     }
   });
 
@@ -145,7 +145,7 @@ async function main() {
 
   const apiMoves = await getPokeApiMoves();
 
-  // 3. Structural & Semantic Validation
+  // 3. Structural & Semantic Validation (English ID match)
   learnsetMoves.forEach(move => {
     if (!definedMoves.has(move)) {
       errors.push(`[${move}] Aparece en un learnset pero NO está definido en MOVE_DATA.`);
@@ -161,14 +161,14 @@ async function main() {
       errors.push(`${tag} Movimiento de estado con potencia mayor a 0.`);
     }
 
-    // Specific move checks
-    if (name === 'Furia Dragón' && !content.includes('fixedDmg: 40')) {
+    // Specific move checks (using English keys)
+    if (name === 'dragon_rage' && !content.includes('fixedDmg: 40')) {
       errors.push(`${tag} Falta 'fixedDmg: 40'.`);
     }
-    if (name === 'Súper Colmillo' && !content.includes('halfHP: true')) {
+    if (name === 'super_colmillo' && !content.includes('halfHP: true')) {
       errors.push(`${tag} Falta 'halfHP: true'.`);
     }
-    if (name === 'Esfuerzo' && !content.includes('endeavor: true')) {
+    if (name === 'endeavor' && !content.includes('endeavor: true')) {
       errors.push(`${tag} Falta 'endeavor: true'.`);
     }
 
@@ -184,10 +184,12 @@ async function main() {
       errors.push(`${tag} Usa "effect: 'fixedDmg'" en lugar de "fixedDmg: X".`);
     }
 
-    // PokeAPI Semantic Sync
+    // PokeAPI Semantic Sync (English Name match)
     if (apiMoves.length > 0) {
       const norm = normalizeName(name);
-      const apiMove = apiMoves.find((m: PokeApiMove) => m.names.some((n: { name: string; language: { name: string } }) => n.language.name === 'es' && normalizeName(n.name) === norm));
+      const apiMove = apiMoves.find((m: PokeApiMove) => {
+        return normalizeName(m.name) === norm || normalizeName(m.name) === norm.replace(/_/g, '');
+      });
       
       if (apiMove) {
         const apiCat = apiMove.meta?.category?.name || '';

@@ -107,6 +107,8 @@ async function main() {
   const allCode = fileData.map(d => d.content).join('\n\n');
 
   const { states: mermaidStates, syncRequired } = parseMermaid(manualCode);
+  mermaidStates.delete('fork_state');
+  mermaidStates.delete('join_state');
   const { allKeys, substates } = parseFsmConstants(fsmCode);
 
   const errors: string[] = [];

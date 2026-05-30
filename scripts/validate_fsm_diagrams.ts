@@ -41,7 +41,7 @@ function parseMermaid(manualCode: string) {
     });
   }
 
-  ['__START__', '__END__', 'choice'].forEach(s => states.delete(s));
+  ['__START__', '__END__', 'choice', 'fork_state', 'join_state'].forEach(s => states.delete(s));
   return { states, transitions };
 }
 
