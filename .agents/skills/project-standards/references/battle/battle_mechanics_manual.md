@@ -616,17 +616,8 @@ stateDiagram-v2
         CHECK_OUTCOME --> DISTRIBUTE_XP : Victory / Capture
         CHECK_OUTCOME --> WAIT_LOG_QUEUE_ONLY : Target Escaped
         
-        state WAIT_LOG_QUEUE_ONLY {
-            [*] --> WAIT_LOG_QUEUE : Wait for Flee Log
-            WAIT_LOG_QUEUE --> [*]
-        }
-        
-        state DISTRIBUTE_XP {
-            [*] --> WAIT_LOG_QUEUE : Wait for all entries
-            WAIT_LOG_QUEUE --> [*] : Log Finished
-        }
-        
-        DISTRIBUTE_XP --> LEVEL_UP_MODAL : All rewards displayed
+        DISTRIBUTE_XP --> LEVEL_UP_MODAL : Has Levels Gained
+        DISTRIBUTE_XP --> EMPTY_WAIT : No Level Up
         
         state LEVEL_UP_MODAL {
             [*] --> CHECK_PENDING: "Check Moves"
@@ -636,7 +627,12 @@ stateDiagram-v2
             CHECK_PENDING --> [*]
         }
         
-        WAIT_LOG_QUEUE_ONLY --> [*]: "End Phase"
+        LEVEL_UP_MODAL --> EMPTY_WAIT : Sequence Completed
+        WAIT_LOG_QUEUE_ONLY --> [*] : End Phase
+        
+        EMPTY_WAIT --> CHECK_PERSISTENCE : Check persistence
+        state CHECK_PERSISTENCE <<choice>>
+        CHECK_PERSISTENCE --> [*]
     }
     
     note right of CHECK_OUTCOME: Skips XP and Level-up if enemy fled
@@ -770,13 +766,9 @@ stateDiagram-v2
         CHECK_ACTIVE_SEAT --> SWITCHING : "Seat Empty or Different Member"
         
         state SWITCHING {
-            [*] --> RECALL_AND_CALL
-            state RECALL_AND_CALL {
-                [*] --> POKEMON_RECALL : "Recall incorrect/out-of-order Pokémon"
-                --
-                [*] --> POKEMON_CALL : "Call correct/in-order Pokémon"
-            }
-            RECALL_AND_CALL --> [*]
+            [*] --> POKEMON_RECALL : "Recall incorrect/out-of-order Pokémon"
+            --
+            [*] --> POKEMON_CALL : "Call correct/in-order Pokémon"
         }
     }
 ```
@@ -831,11 +823,9 @@ stateDiagram-v2
         }
         
         state WILD_ENTRY {
-            state PARALLEL_PREP {
-                [*] --> BUSH_VISIBLE: "Z-Index Sandwich (Between layers)"
-                --
-                [*] --> SILHOUETTE_MODE
-            }
+            [*] --> BUSH_VISIBLE: "Z-Index Sandwich (Between layers)"
+            --
+            [*] --> SILHOUETTE_MODE
         }
     }
 ```
@@ -868,6 +858,7 @@ stateDiagram-v2
                 [*] --> BUSH_FADE: "Grass Fade & Z-Index behind Pokemon"
                 --
                 [*] --> JUMP_SHADOW: "Jump Silhouette"
+                --
                 [*] --> JUMP_COLOR: "Jump Color"
             }
             
