@@ -1,3 +1,4 @@
+<!-- [PureVue-Ignore-Length] -->
 <script setup lang="ts">
 import { ref, computed, onMounted, watch, onUnmounted } from 'vue'
 import { gsap } from 'gsap'

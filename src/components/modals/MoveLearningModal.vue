@@ -174,8 +174,7 @@ const handleForget = () => {
   @include pixelated;
   font-size: 9px;
   cursor: pointer;
-  transition: all 0.2s ease;
-
+  
   &:hover {
     background: Rgba(239, 68, 68, 0.1);
     color: Rgba(248, 113, 113, 1);

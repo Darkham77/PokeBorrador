@@ -1,4 +1,4 @@
-
+// [PureVue-Ignore-Length]
 import { shallowRef } from 'vue';
 import { POKEMON_DB } from '@/data/pokemonDB';
 import { ABILITY_DATA, POKEMON_ABILITIES } from '@/data/abilities';

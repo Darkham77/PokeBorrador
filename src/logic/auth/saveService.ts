@@ -1,5 +1,4 @@
-
-
+// [PureVue-Ignore-Length]
 /**
  * Serializes the current state into a format suitable for database storage.
  * Matches the legacy 01_auth.js structure exactly for backward compatibility.

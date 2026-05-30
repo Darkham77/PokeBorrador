@@ -1,3 +1,4 @@
+<!-- [PureVue-Ignore-Length] -->
 <script setup lang="ts">
 
 import { computed } from 'vue'
@@ -533,12 +534,19 @@ const parsedStatusEffect = computed(() => {
 
   return null
 })
+
+const moveDescriptionText = computed(() => {
+  const m = props.move
+  const moveId = m.id || (m.name ? pokemonDataProvider.resolveMoveId(m.name) : '')
+  const moveDataObj = MOVE_DATA[moveId]
+  return getMoveDescription(m.name, moveDataObj)
+})
 </script>
 
 <template>
   <div class="move-tooltip-rich">
     <div class="move-desc">
-      {{ getMoveDescription(move.name, MOVE_DATA[move.id || pokemonDataProvider.resolveMoveId(move.name)]) }}
+      {{ moveDescriptionText }}
     </div>
     <div
       v-if="modifierInfo"

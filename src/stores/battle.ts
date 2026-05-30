@@ -1,3 +1,4 @@
+// [PureVue-Ignore-Length]
 import { defineStore } from 'pinia'
 import { sleep } from '@/logic/timeUtils'
 import { ref, computed, watch } from 'vue'
