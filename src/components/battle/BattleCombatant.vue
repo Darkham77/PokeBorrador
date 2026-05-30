@@ -435,7 +435,7 @@ const triggerBallAnimation = (val: string | null) => {
       y: coords.y,
       scale: 0,
       opacity: 0,
-      duration: 0.4,
+      duration: 0.5,
       ease: "power2.inOut",
       onComplete: () => {
         // Dejar el sprite listo para cuando reaparezca pero invisible
@@ -476,7 +476,7 @@ const triggerBallAnimation = (val: string | null) => {
       y: 0,
       scale: 1,
       opacity: 1,
-      duration: 0.4,
+      duration: 0.5,
       ease: "power2.inOut",
       onComplete: () => {
         gsap.set(spriteRef.value, { clearProps: "filter,x,y,scale,opacity,transformOrigin" })

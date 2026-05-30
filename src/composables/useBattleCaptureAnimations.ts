@@ -313,13 +313,13 @@ export function useBattleCaptureAnimations(
       }
 
       tl.to({}, {
-        duration: 0.4,
+        duration: 0.5,
         onComplete: () => {
           slot.animState = 'trapped'
         }
       })
       tl.to({}, {
-        duration: 0.4,
+        duration: 0.5,
         onComplete: () => {
           isFaintInProgress.value = false 
           faintedPokemonSnapshot.value = null 
