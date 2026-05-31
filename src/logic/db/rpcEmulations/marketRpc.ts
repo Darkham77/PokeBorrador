@@ -209,7 +209,12 @@ export async function emulateClaimAsset(
 
   if (assetPayload.type === 'pokemon') {
     userSave.team = userSave.team || [];
-    userSave.team.push(assetPayload.data as Record<string, unknown>);
+    if (userSave.team.length < 6) {
+      userSave.team.push(assetPayload.data as Record<string, unknown>);
+    } else {
+      userSave.box = userSave.box || [];
+      userSave.box.push(assetPayload.data as Record<string, unknown>);
+    }
   } else if (assetPayload.type === 'money') {
     userSave.money = (userSave.money || 0) + Number(assetPayload.data);
   } else if (assetPayload.type === 'item') {

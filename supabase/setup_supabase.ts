@@ -199,9 +199,26 @@ async function parseEnvFile(filePath: string): Promise<Record<string, string>> {
 
 function getServerNames(envVars: Record<string, string>): string[] {
   const names = new Set<string>();
+  const KNOWN_SUFFIXES = [
+    'SUPABASE_PUBLIC_URL', 'API_EXTERNAL_URL', 'SUPABASE_ANON_KEY',
+    'SERVICE_ROLE_KEY', 'POSTGRES_PASSWORD', 'SECRET_KEY_BASE',
+    'DASHBOARD_USERNAME', 'DASHBOARD_PASSWORD', 'KONG_HTTPS_PORT',
+    'PG_META_CRYPTO_KEY', 'VAULT_ENC_KEY', 'DATABASE_URL',
+    'JWT_SECRET', 'SUPABASE_URL', 'TENANT_ID', 'IS_DEFAULT',
+    'LOGFLARE_PRIVATE_ACCESS_TOKEN', 'LOGFLARE_PUBLIC_ACCESS_TOKEN',
+    'ANON_KEY', 'SITE_URL', 'REGION', 'NAME', 'KEY', 'URL', 'ID',
+  ];
+
   for (const key of Object.keys(envVars)) {
-    if (key.startsWith('SERVER_') && (key.match(/_/g) || []).length >= 2) {
-      names.add(key.split('_')[1]!);
+    if (key.startsWith('SERVER_')) {
+      const withoutPrefix = key.substring(7);
+      const matchedSuffix = KNOWN_SUFFIXES.find(s => withoutPrefix.endsWith(`_${s}`));
+      if (matchedSuffix !== undefined) {
+        const profile = withoutPrefix.substring(0, withoutPrefix.length - matchedSuffix.length - 1);
+        if (profile) {
+          names.add(profile);
+        }
+      }
     }
   }
   return Array.from(names).sort();
@@ -259,6 +276,8 @@ async function ensureServerKeys(serverName: string, envVars: Record<string, stri
     SECRET_KEY_BASE:   () => crypto.randomBytes(48).toString('base64'),
     VAULT_ENC_KEY:     () => crypto.randomBytes(16).toString('hex'),
     PG_META_CRYPTO_KEY: () => crypto.randomBytes(24).toString('base64'),
+    LOGFLARE_PRIVATE_ACCESS_TOKEN: () => crypto.randomBytes(32).toString('hex'),
+    LOGFLARE_PUBLIC_ACCESS_TOKEN:  () => crypto.randomBytes(32).toString('hex'),
   };
 
   for (const [key, fn] of Object.entries(simpleKeys)) {
@@ -270,7 +289,13 @@ async function ensureServerKeys(serverName: string, envVars: Record<string, stri
   if (Object.keys(generated).length > 0) {
     await using fileHandle = await fs.open(ARCHIVO_MAESTRO, 'r+');
     let content = await fileHandle.readFile({ encoding: 'utf-8' });
-    const hText = `# === [ SERVIDOR: ${serverName} ] ===`;
+    let hText = `# === [ SERVIDOR: ${serverName} ] ===`;
+    if (!content.includes(hText)) {
+      const altText = `# === [ SERVIDOR: ${serverName.replace(/_/g, '-')} ] ===`;
+      if (content.includes(altText)) {
+        hText = altText;
+      }
+    }
     for (const [k, v] of Object.entries(generated)) {
       content = setEnvVar(content, `${prefix}${k}`, v, hText);
     }
@@ -352,6 +377,15 @@ async function generar() {
   const varsEnv = await parseMasterEnv();
   const servidores = getServerNames(varsEnv);
   if (servidores.length === 0) return;
+
+  // Si no existe la plantilla de Supabase, la clonamos automáticamente
+  try {
+    await fs.access(path.resolve(CARPETA_DOCKER, 'docker-compose.yml'));
+  } catch {
+    info("No se encontró la plantilla de Supabase en 'supabase/docker'. Clonando automáticamente...");
+    await clonar();
+  }
+
   await fs.mkdir(CARPETA_GENERADOS, { recursive: true });
 
   const baseVars = await parseEnvFile(path.resolve(CARPETA_DOCKER, '.env.example'));
@@ -453,8 +487,8 @@ async function generar() {
 
     // Adaptar Vector
     contenidoCompose = contenidoCompose.replace(
-      "  vector:\n    container_name: supabase-vector\n    image: timberio/vector:0.53.0-alpine\n    restart: unless-stopped\n    volumes:",
-      "  vector:\n    container_name: supabase-vector\n    image: timberio/vector:0.53.0-alpine\n    restart: unless-stopped\n    depends_on:\n      db:\n        condition: service_healthy\n    volumes:"
+      "    healthcheck:\n      test:\n        [\n          \"CMD\",\n          \"wget\",\n          \"--no-verbose\",\n          \"--tries=1\",\n          \"--spider\",\n          \"http://vector:9001/health\"\n        ]\n      timeout: 5s\n      interval: 5s\n      retries: 3\n    depends_on:\n      analytics:\n        condition: service_healthy",
+      "    healthcheck:\n      test:\n        [\n          \"CMD\",\n          \"wget\",\n          \"--no-verbose\",\n          \"--tries=1\",\n          \"--spider\",\n          \"http://vector:9001/health\"\n        ]\n      timeout: 5s\n      interval: 5s\n      retries: 3\n    depends_on:\n      db:\n        condition: service_healthy\n      analytics:\n        condition: service_healthy"
     );
     contenidoCompose = contenidoCompose.replace(
       "      - ./volumes/logs/vector.yml:/etc/vector/vector.yml:ro,z",

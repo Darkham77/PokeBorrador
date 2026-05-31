@@ -220,6 +220,13 @@ function normalizeData(state: GameState): GameState {
   state.team = state.team.map((p: Pokemon) => fixPoke(p)).filter((p: Pokemon | null): p is Pokemon => p !== null);
   state.box = state.box.map((p: Pokemon) => fixPoke(p)).filter((p: Pokemon | null): p is Pokemon => p !== null);
 
+  // Patch: If the team exceeds 6 pokemon, safely move the excess to the box
+  if (state.team.length > 6) {
+    const excess = state.team.slice(6);
+    state.team = state.team.slice(0, 6);
+    state.box = [...state.box, ...excess];
+  }
+
   // Normalize legacy badges (array to count)
   if (Array.isArray(state.badges)) {
     state.badges = state.badges.length;
