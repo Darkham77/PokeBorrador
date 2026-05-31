@@ -10,6 +10,14 @@ withDefaults(defineProps<Props>(), {
   show: false
 })
 
+defineOptions({
+  inheritAttrs: false
+})
+
+defineEmits<{
+  (e: 'close'): void
+}>()
+
 const authStore = useAuthStore()
 
 function handleReconnect() {
