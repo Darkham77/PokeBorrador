@@ -38,3 +38,11 @@ The cost in PokéDollars scales according to the total number of perfect IVs (30
 
 - **Daycare Warehouse Indicators**: Banners, alerts, and counters in the map or HUD regarding pending daycare actions MUST reflect the daycare warehouse (`daycareWarehouse`) inventory size (e.g., pending generated eggs) rather than the active incubating team slots, to prevent data redundancy and keep the trainer correctly informed about outstanding actions.
 
+## 6. Daycare UI & State Restrictions
+
+- **Busy State Blocking**: Pokémon placed in daycare (incubating/breeding, represented by daycare icons/states) MUST be prevented from being traded, put on GTS, released, sold (individually or bulk), or selected for active battles. They should be visually locked or disabled in selectors with explanatory badges.
+- **Vertical Alignment & Centering**: Daycare slots (Ranura A and B) must display their layout elements (sprite, stats, items, status) vertically and center them across both desktop and mobile viewports.
+- **Breeding Compatibility Emojis**: Emojis expressing breeding compatibility (e.g., compatibility rate indicators) must be rendered in dedicated wrappers and styled to a readable size (e.g., `26px`) rather than using default inline text font sizes (e.g., `10px`), ensuring high readability.
+- **Inner Sprite Hover Target**: For hover animations on Daycare elements (like rotation or pulse effects on eggs), coordinate GSAP transitions directly on the inner sprite graphic element (`.egg-sprite`) instead of the container wrapper (`.egg-visual`) to prevent rotating the entire background or other layout elements.
+
+

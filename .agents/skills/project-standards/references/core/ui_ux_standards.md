@@ -300,6 +300,7 @@ All tooltips MUST use the `PVTooltip.vue` system. Native HTML `title` attributes
 - **Symmetrical Transitions**: When using mirrored positioning (e.g., right-side expansion), transition transforms MUST be inverted simetrically to prevent horizontal sliding during entrance.
 - **Structured Content**: Prefer `\n` (with `white-space: pre-wrap`) over horizontal separators (`|`) for atmospheric or complex data.
 - **Scroll Behavior**: Tooltips MUST hide automatically as soon as the user initiates a `scroll`, `wheel`, or `touchmove` event. This prevents "floating" tooltips from losing their anchor during rapid navigation.
+- **Horizontal Edge Flipping**: Tooltips using `pos-left` or `pos-right` (horizontal alignment) MUST perform dynamic horizontal edge checking against the viewport boundary margins. If the tooltip's calculated horizontal boundaries overflow the viewport edges, the position must be dynamically flipped (e.g., from `left` to `right` or vice-versa) to prevent horizontal layout cutoff.
 - **Instant Touch Tooltips for Info Triggers**: For dedicated informational buttons (like the `?` move detail trigger), apply `touch-instant` to bypass the standard 500ms touch-hold delay. These tooltips must display immediately on `touchstart` and remain open after `touchend` until dismissed by a click/tap outside.
 
 ### 6. Data-Driven Tooltips (In-Game Manuals)
