@@ -11,7 +11,7 @@ import type { DBRouter } from '@/logic/db/dbRouter'
 
 export function useSaveActions(
   state: GameState, 
-  authStore: { user: AuthUser | null }, 
+  authStore: { user: AuthUser | null, logout?: () => Promise<void> }, 
   db: Ref<DBRouter>, 
   updateState: (data: GameState) => void
 ) {
@@ -79,15 +79,31 @@ export function useSaveActions(
           return { success: false, offline: true };
         } else {
           const retryCount = typeof sessionStorage !== 'undefined' ? parseInt(sessionStorage.getItem('load_retry_count') || '0') : 0;
+          
+          if (retryCount >= 9) {
+            if (typeof sessionStorage !== 'undefined') {
+              sessionStorage.setItem('load_retry_count', '0');
+            }
+            loadingStore.setProgress('game_data', 'Error de conexión persistente', 'Redireccionando al inicio de sesión...');
+            if (authStore.logout) {
+              authStore.logout();
+            } else {
+              window.location.reload();
+            }
+            return { success: false, error: true };
+          }
+
+          if (typeof sessionStorage !== 'undefined') {
+            sessionStorage.setItem('load_retry_count', (retryCount + 1).toString());
+          }
+
           if (retryCount < 1) {
-            if (typeof sessionStorage !== 'undefined') sessionStorage.setItem('load_retry_count', (retryCount + 1).toString());
             loadingStore.setProgress('game_data', 'Red inestable...', 'Reconectando al servidor...');
             window.location.reload();
             return { success: false, reconnecting: true };
           } else {
             loadingStore.setProgress('game_data', 'Error de conexión', 'La red no responde. Toca en cualquier lugar para reintentar.');
             window.addEventListener('click', () => {
-              if (typeof sessionStorage !== 'undefined') sessionStorage.setItem('load_retry_count', '0');
               window.location.reload();
             }, { once: true });
             return { success: false, error: true };

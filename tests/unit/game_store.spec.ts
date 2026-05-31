@@ -181,4 +181,27 @@ describe('Game Store - loadGame with Timeout & Retries', () => {
     expect(loadingStore.current!.message).toBe('Error de conexión')
     expect(window.location.reload).not.toHaveBeenCalled()
   })
+
+  it('debe cerrar sesión y redirigir si se alcanzan 10 intentos fallidos', async () => {
+    const gameStore = useGameStore()
+    const authStore = useAuthStore()
+    const loadingStore = useLoadingStore()
+
+    authStore.user = { id: 'user123', user_metadata: { username: 'User123' } } as unknown as NonNullable<typeof authStore.user>
+    authStore.logout = vi.fn().mockResolvedValue(undefined)
+    
+    // Simular que ya se reintentó 9 veces
+    sessionStorage.setItem('load_retry_count', '9')
+    loadBestSaveMock.mockReturnValue(new Promise(() => {}))
+
+    const loadPromise = gameStore.loadGame()
+
+    await vi.advanceTimersByTimeAsync(20000)
+    await loadPromise
+
+    expect(loadingStore.current!.message).toBe('Error de conexión persistente')
+    expect(authStore.logout).toHaveBeenCalled()
+    expect(window.location.reload).not.toHaveBeenCalled()
+    expect(sessionStorage.getItem('load_retry_count')).toBe('0')
+  })
 })
