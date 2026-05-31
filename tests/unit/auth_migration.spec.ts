@@ -100,4 +100,29 @@ describe('Auth Load Service (Migration v2)', () => {
     expect(result.data!.team.length).toBe(1);
     expect(result.issues).toContain('Duplicado de UID detectado: same_id (Squirtle) en equipo');
   });
+
+  it('should patch team sizes greater than 6 by moving excess to box', async () => {
+    const oversizedSave = {
+      trainer: 'OversizedTeam',
+      team: [
+        { id: 'pikachu', level: 5, uid: 'p1' },
+        { id: 'bulbasaur', level: 5, uid: 'p2' },
+        { id: 'squirtle', level: 5, uid: 'p3' },
+        { id: 'charmander', level: 5, uid: 'p4' },
+        { id: 'pidgey', level: 5, uid: 'p5' },
+        { id: 'rattata', level: 5, uid: 'p6' },
+        { id: 'weedle', level: 5, uid: 'p7' }
+      ],
+      box: [],
+      _last_updated: Temporal.Now.instant().epochMilliseconds
+    };
+    
+    db.mode = 'offline';
+    localStorageMock.setItem('pokemon_local_save_test_user', JSON.stringify(oversizedSave));
+
+    const result = await loadBestSave(mockUser, db);
+    expect(result.data!.team.length).toBe(6);
+    expect(result.data!.box.length).toBe(1);
+    expect(result.data!.box[0]!.id).toBe('weedle');
+  });
 });
