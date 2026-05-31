@@ -394,9 +394,10 @@ export async function checkDBCompatibility(router: DBRouter): Promise<DBCompatib
       }
       
       const valObj = rawValue as Record<string, unknown> | null;
-      dbVersion = (typeof rawValue === 'object' && valObj !== null && 'db_version' in valObj) 
+      const parsed = (typeof rawValue === 'object' && valObj !== null && 'db_version' in valObj) 
         ? parseInt((valObj.db_version as string | number) + '' || '0') 
         : parseInt((rawValue as string | number) + '' || '0');
+      dbVersion = isNaN(parsed) ? 0 : parsed;
     }
 
     logger.info('DBRouter', `Compatibility Check: Client v${CLIENT_DB_VERSION} | DB v${dbVersion}`);

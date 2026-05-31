@@ -268,7 +268,7 @@ export async function updateSupabaseDb() {
         console.log(styleText('cyan', `🔄 Sincronizando db_version en system_config de [${profile}] a la versión: ${maxAppliedVersion}`));
         await sql`
           INSERT INTO public.system_config (key, value) 
-          VALUES ('db_version', ${JSON.stringify(maxAppliedVersion.toString())}::jsonb) 
+          VALUES ('db_version', ${maxAppliedVersion}::jsonb) 
           ON CONFLICT (key) 
           DO UPDATE SET value = EXCLUDED.value, updated_at = NOW()
         `;
