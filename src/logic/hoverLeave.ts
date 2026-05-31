@@ -238,16 +238,16 @@ export function triggerLeave(el: HTMLElement) {
       })
     }
   } else if (el.classList.contains('egg-card')) {
-    const eggVisual = el.querySelector('.egg-visual')
-    if (eggVisual) {
-      gsap.to(eggVisual, {
+    const eggTarget = el.querySelector('.egg-sprite') || el.querySelector('.egg-visual')
+    if (eggTarget) {
+      gsap.to(eggTarget, {
         scale: 1,
         rotation: 0,
         duration: 0.15,
         ease: 'power1.out',
         overwrite: 'auto',
         onComplete: () => {
-          gsap.set(eggVisual, { clearProps: 'transform,scale,rotation' })
+          gsap.set(eggTarget, { clearProps: 'transform,scale,rotation' })
         }
       })
     }

@@ -283,9 +283,9 @@ export function triggerEnter(el: HTMLElement) {
       })
     }
   } else if (el.classList.contains('egg-card')) {
-    const eggVisual = el.querySelector('.egg-visual')
-    if (eggVisual) {
-      gsap.to(eggVisual, {
+    const eggTarget = el.querySelector('.egg-sprite') || el.querySelector('.egg-visual')
+    if (eggTarget) {
+      gsap.to(eggTarget, {
         scale: 1.1,
         rotation: 5,
         duration: 0.2,

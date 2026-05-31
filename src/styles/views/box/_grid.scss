@@ -44,11 +44,32 @@
     }
   }
 
-  .tier-badge {
+  .top-right-column {
     position: absolute;
     top: 10px;
     right: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
     z-index: var(--z-low);
+
+    .tier-badge {
+      position: static !important;
+    }
+
+    .card-status-indicators {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      margin-top: 2px;
+
+      .status-indicator {
+        font-size: 10px;
+        line-height: 1.2;
+      }
+    }
   }
 
   .box-sprite-wrapper {

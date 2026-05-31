@@ -165,7 +165,7 @@ const availablePokemon = computed<{ pokemon: Pokemon, _source: 'team' | 'box', i
   const filtered = sourceList.filter(item => {
     const p = item.pokemon
     if (!p) return false
-    if (p.onMission || p.inDaycare) return false
+    if (p.onMission || p.inDaycare || p.onDefense) return false
     if (props.isBattleSwitch && props.activePokemonUid === p.uid) return false
     if (props.isBattleSwitch && p.hp <= 0 && !props.allowDead) return false
     

@@ -164,11 +164,42 @@ function getGenderClass(gender: string) {
         class="badges-spacer"
       />
 
-      <div
-        class="card-tier-badge m-badge-tier"
-        :style="{ '--tier-bg': tierInfo.bg, '--tier-color': tierInfo.color }"
-      >
-        {{ tierInfo.tier }}
+      <div class="top-right-column">
+        <div
+          class="card-tier-badge m-badge-tier"
+          :style="{ '--tier-bg': tierInfo.bg, '--tier-color': tierInfo.color }"
+        >
+          {{ tierInfo.tier }}
+        </div>
+        <div class="card-status-indicators">
+          <PVTooltip
+            v-if="pokemon.onMission"
+            title="Misión"
+            description="Este Pokémon está en una misión activa."
+          >
+            <div class="status-indicator mission">
+              🧭
+            </div>
+          </PVTooltip>
+          <PVTooltip
+            v-if="pokemon.inDaycare"
+            title="Guardería"
+            description="Este Pokémon está en la guardería."
+          >
+            <div class="status-indicator daycare">
+              🥚
+            </div>
+          </PVTooltip>
+          <PVTooltip
+            v-if="pokemon.onDefense"
+            title="Defensa"
+            description="Este Pokémon está asignado a la defensa."
+          >
+            <div class="status-indicator defense">
+              🛡️
+            </div>
+          </PVTooltip>
+        </div>
       </div>
     </div>
 
@@ -229,10 +260,6 @@ function getGenderClass(gender: string) {
           v-if="disobeys"
           class="status-tag obedience"
         >NV ALTO</span>
-        <span
-          v-if="pokemon.onMission"
-          class="status-tag mission"
-        >EN MISIÓN</span>
       </div>
       
       <div class="hp-container">

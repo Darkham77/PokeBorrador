@@ -179,7 +179,8 @@ onUnmounted(() => {
         'many-badges': hasManyBadges,
         'performance-mode': isPerformanceActive,
         'is-premium-tier': isPremiumTier,
-        'is-on-mission': props.pokemon?.onMission
+        'is-on-mission': props.pokemon?.onMission,
+        'is-busy': props.pokemon?.onMission || props.pokemon?.inDaycare || props.pokemon?.onDefense
       }
     ]"
     :style="{ 
@@ -188,11 +189,44 @@ onUnmounted(() => {
     }"
     @click.stop="cardEmit('click', $event, props.index)"
   >
-    <div
-      class="tier-badge m-badge-tier"
-      :style="{ color: tierInfo.color, background: tierInfo.bg }"
-    >
-      {{ tierInfo.tier }}
+    <div class="top-right-column">
+      <div
+        class="tier-badge m-badge-tier"
+        :style="{ color: tierInfo.color, background: tierInfo.bg }"
+      >
+        {{ tierInfo.tier }}
+      </div>
+
+      <!-- Indicadores de Estado -->
+      <div class="card-status-indicators">
+        <PVTooltip
+          v-if="props.pokemon.onMission"
+          title="Misión"
+          description="Este Pokémon está en una misión activa."
+        >
+          <div class="status-indicator mission">
+            🧭
+          </div>
+        </PVTooltip>
+        <PVTooltip
+          v-if="props.pokemon.inDaycare"
+          title="Guardería"
+          description="Este Pokémon está en la guardería."
+        >
+          <div class="status-indicator daycare">
+            🥚
+          </div>
+        </PVTooltip>
+        <PVTooltip
+          v-if="props.pokemon.onDefense"
+          title="Defensa"
+          description="Este Pokémon está asignado a la defensa."
+        >
+          <div class="status-indicator defense">
+            🛡️
+          </div>
+        </PVTooltip>
+      </div>
     </div>
 
     <!-- Píldora de Insignias Centralizada -->
@@ -203,34 +237,6 @@ onUnmounted(() => {
 
     <!-- Sprite Section -->
     <div class="box-sprite-wrapper">
-      <PVTooltip
-        v-if="props.pokemon.onMission"
-        title="Misión"
-        description="Este Pokémon está en una misión activa."
-      >
-        <div class="status-indicator mission">
-          M
-        </div>
-      </PVTooltip>
-      <PVTooltip
-        v-if="props.pokemon.inDaycare"
-        title="Guardería"
-        description="Este Pokémon está en la guardería."
-      >
-        <div class="status-indicator daycare">
-          G
-        </div>
-      </PVTooltip>
-      <PVTooltip
-        v-if="props.pokemon.onDefense"
-        title="Defensa"
-        description="Este Pokémon está asignado a la defensa."
-      >
-        <div class="status-indicator defense">
-          D
-        </div>
-      </PVTooltip>
-      
       <PVSpriteFX
         :is-shiny="props.pokemon.isShiny"
         :is-guardian="props.pokemon.isGuardian"
@@ -332,7 +338,7 @@ onUnmounted(() => {
     @include pokemon-card-premium-tier;
   }
 
-  &.is-on-mission {
+  &.is-on-mission, &.is-busy {
     .box-card-sprite {
       will-change: transform, filter, opacity;
       filter: Grayscale(1);
@@ -342,6 +348,15 @@ onUnmounted(() => {
       will-change: transform, filter, opacity;
       filter: Grayscale(0.5);
       opacity: 0.8;
+    }
+  }
+
+  &.is-busy {
+    &.mode-release, &.mode-rocket, &.mode-select {
+      opacity: 0.4;
+      filter: Grayscale(1);
+      cursor: not-allowed;
+      pointer-events: none;
     }
   }
 

@@ -78,4 +78,67 @@ describe('BoxStore Modernization', () => {
     expect(pidgeyBox.name).toBe('Pidgey')
     expect(gs.state.box[0]).toBeNull()
   })
+
+  it('should block selection of busy Pokémon for release and black market sale', () => {
+    const box = useBoxStore()
+    const gs = useGameStore()
+
+    // Add busy status flags to box Pokémon
+    gs.state.box = [
+      { id: 'pidgey', name: 'Pidgey', level: 10, inDaycare: true } as unknown as Pokemon,
+      { id: 'rattata', name: 'Rattata', level: 5, onMission: true } as unknown as Pokemon,
+      { id: 'ekans', name: 'Ekans', level: 8, onDefense: true } as unknown as Pokemon,
+      { id: 'zubat', name: 'Zubat', level: 7 } as unknown as Pokemon // Available
+    ]
+
+    // Attempting to select busy Pokémon should be ignored
+    box.toggleBoxReleaseSelect(0)
+    box.toggleBoxReleaseSelect(1)
+    box.toggleBoxReleaseSelect(2)
+    box.toggleBoxReleaseSelect(3) // OK
+    expect(box.boxReleaseSelected).toEqual([3])
+
+    box.boxReleaseSelected = []
+
+    box.toggleBoxRocketSelect(0)
+    box.toggleBoxRocketSelect(1)
+    box.toggleBoxRocketSelect(2)
+    box.toggleBoxRocketSelect(3) // OK
+    expect(box.boxRocketSelected).toEqual([3])
+  })
+
+  it('should ignore/skip busy Pokémon during release and black market sale processing', () => {
+    const box = useBoxStore()
+    const gs = useGameStore()
+
+    // Force selection of busy Pokémon directly (e.g. testing store logic robustness)
+    gs.state.box = [
+      { id: 'pidgey', name: 'Pidgey', level: 10, inDaycare: true } as unknown as Pokemon,
+      { id: 'zubat', name: 'Zubat', level: 7 } as unknown as Pokemon
+    ]
+
+    // Force indexes 0 and 1 into selections
+    box.boxReleaseSelected = [0, 1]
+    const released = box.doBoxRelease()
+    
+    // Pidgey (0) should have been skipped, Zubat (1) released
+    expect(released).toEqual(['Zubat'])
+    expect(gs.state.box[0]?.id).toBe('pidgey') // Pidgey still in box
+    expect(gs.state.box.length).toBe(1)
+
+    // Reset box and try with black market sale
+    gs.state.box = [
+      { id: 'pidgey', name: 'Pidgey', level: 10, inDaycare: true, ivs: { hp: 10, atk: 10, def: 10, spa: 10, spd: 10, spe: 10 } } as unknown as Pokemon,
+      { id: 'zubat', name: 'Zubat', level: 7, ivs: { hp: 10, atk: 10, def: 10, spa: 10, spd: 10, spe: 10 } } as unknown as Pokemon
+    ]
+    box.boxRocketSelected = [0, 1]
+    const val = box.getRocketSellValue()
+    // The value should only calculate Zubat's price and ignore busy Pidgey
+    const expectedZubatVal = Math.floor((7 * 50 + (60 / 186) * 500) * 0.8)
+    expect(val).toBe(expectedZubatVal)
+
+    const sold = box.doBoxRocketSell()
+    expect(sold.count).toBe(1)
+    expect(gs.state.box[0]?.id).toBe('pidgey') // Pidgey still in box
+  })
 })

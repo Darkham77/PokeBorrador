@@ -125,6 +125,19 @@ onUnmounted(() => {
   stopPulse()
   gsap.ticker.remove(tickerFn)
 })
+
+const getCompatEmoji = (label: string) => {
+  if (!label) return ''
+  const emojiRegex = /^([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDC00-\uDFFF])/
+  const match = label.match(emojiRegex)
+  return match ? match[0] : ''
+}
+
+const getCompatText = (label: string) => {
+  if (!label) return ''
+  const emoji = getCompatEmoji(label)
+  return emoji ? label.replace(emoji, '').trim() : label
+}
 </script>
 
 <template>
@@ -135,7 +148,8 @@ onUnmounted(() => {
         :style="{ color: compatStyle.color }"
       >
         <div class="compat-label">
-          {{ compatStyle.label }}
+          <span v-if="getCompatEmoji(compatStyle.label)" class="compat-emoji">{{ getCompatEmoji(compatStyle.label) }}</span>
+          <span class="compat-text">{{ getCompatText(compatStyle.label) }}</span>
         </div>
         <div
           v-if="breedingStore.isBreeding"
@@ -146,7 +160,7 @@ onUnmounted(() => {
             {{ displayTime }}
           </template>
           <template v-else-if="!hasVigor">
-            <span class="timer-icon">💤</span>
+            <span class="timer-icon font-large">💤</span>
             <span style="color: #ef4444; font-weight: bold; text-shadow: 0 0 5px rgba(239, 68, 68, 0.4);">CANSADOS (SIN VIGOR)</span>
           </template>
           <template v-else>
@@ -242,17 +256,41 @@ onUnmounted(() => {
 
 .compat-indicator {
   text-align: center;
+  
   .compat-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
     font-size: 10px;
     font-weight: 800;
     margin-bottom: 4px;
     text-transform: uppercase;
+
+    .compat-emoji {
+      font-size: 26px;
+      line-height: 1;
+    }
   }
+
   .timer {
     @include pixelated;
     font-size: 10px;
     color: $white;
     margin-top: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    .timer-icon {
+      font-size: 26px;
+      line-height: 1;
+      
+      &.font-large {
+        font-size: 26px;
+      }
+    }
   }
 }
 

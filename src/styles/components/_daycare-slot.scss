@@ -57,32 +57,32 @@
 
 .poke-header {
   display: flex;
-  gap: 15px;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
   margin-bottom: 20px;
-
-  @media (max-width: 950px) {
-    gap: 10px;
-    margin-bottom: 10px;
-  }
 }
 
 .sprite-box {
-  width: 64px; height: 64px;
+  width: 80px; height: 80px;
   display: flex; align-items: center; justify-content: center;
   filter: Drop-Shadow(0 4px 6px Rgba(0, 0, 0, 0.35));
   will-change: transform, filter;
-  .pixel-sprite { width: 60px; height: 60px; @include pixelated; }
+  
+  .pixel-sprite { width: 76px; height: 76px; @include pixelated; }
 }
 
 .poke-info {
   flex: 1;
   display: flex;
   flex-direction: column;
+  align-items: center;
+  text-align: center;
 
   .p-name-stack-daycare {
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
+    align-items: center;
     gap: 2px;
     margin-bottom: 6px;
 
@@ -107,6 +107,7 @@
   .lv-gender-line {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 6px;
     margin-bottom: 6px;
     
@@ -116,17 +117,41 @@
     }
   }
 
-  .stats-line {
-    @include pixelated;
-    font-size: 8px;
-    color: $muted;
-    margin-bottom: 4px;
-    
-    .stats-values {
-      color: $green;
-      font-family: monospace;
-      font-size: 9px;
-      font-weight: bold;
+  .iv-grid-daycare {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 4px;
+    margin-top: 4px;
+    margin-bottom: 6px;
+    background: Rgba(0, 0, 0, 0.25);
+    padding: 6px;
+    border-radius: 8px;
+    border: 1px solid Rgba(255, 255, 255, 0.05);
+    width: 100%;
+    box-sizing: border-box;
+
+    .iv-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      background: Rgba(0, 0, 0, 0.2);
+      padding: 4px;
+      border-radius: 6px;
+      border: 1px solid Rgba(255, 255, 255, 0.03);
+
+      .label {
+        font-size: 7px;
+        color: Rgba(255, 255, 255, 0.4);
+        @include pixelated;
+      }
+
+      .val {
+        font-size: 10px;
+        font-weight: bold;
+        font-family: monospace;
+        color: $green;
+      }
     }
   }
 

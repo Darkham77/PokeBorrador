@@ -27,11 +27,15 @@ export function useTooltipPosition(
     const triggerCenter = rect.left + rect.width / 2
     isRightSide.value = triggerCenter > viewportWidth / 2
 
-    // --- 1. FLIPPING LOGIC (Vertical) ---
+    // --- 1. FLIPPING LOGIC (Vertical & Horizontal) ---
     if (pos === 'top' && rect.top - tipRect.height - gap < padding) {
       pos = 'bottom'
     } else if (pos === 'bottom' && rect.bottom + tipRect.height + gap > viewportHeight - padding) {
       pos = 'top'
+    } else if (pos === 'left' && rect.left - tipRect.width - gap < padding) {
+      pos = 'right'
+    } else if (pos === 'right' && rect.right + tipRect.width + gap > viewportWidth - padding) {
+      pos = 'left'
     }
     activePosition.value = pos
 

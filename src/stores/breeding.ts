@@ -159,6 +159,24 @@ export const useBreedingStore = defineStore('breeding', () => {
       return false;
     }
 
+    // Move to box if it was in the active team
+    const teamIdx = gameStore.state.team.findIndex((p: Pokemon | null) => p && p.uid === pokemon.uid);
+    if (teamIdx !== -1) {
+      if (gameStore.state.team.length <= 1) {
+        uiStore.notify('No puedes depositar a tu único Pokémon del equipo.', '⚠️');
+        return false;
+      }
+      const p = gameStore.state.team.splice(teamIdx, 1)[0];
+      if (p) {
+        // Auto-heal on storage
+        p.hp = p.maxHp;
+        p.status = null;
+        p.moves?.forEach((m) => { if (m) m.pp = m.maxPP });
+        gameStore.state.box.push(p);
+        gameStore.autoFillPvpTeam();
+      }
+    }
+
     pokemon.inDaycare = true;
     pokemon.daycareSlot = slotIndex;
     // Preserve deposited_at from the first deposit so the egg timer never resets

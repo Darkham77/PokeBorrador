@@ -216,6 +216,9 @@ export const useBoxStore = defineStore('box', () => {
   }
 
   function toggleBoxReleaseSelect(index: number) {
+    const p = gameStore.state.box[index]
+    if (p && (p.onMission || p.inDaycare || p.onDefense)) return
+
     const idx = boxReleaseSelected.value.indexOf(index)
     if (idx > -1) {
       boxReleaseSelected.value.splice(idx, 1)
@@ -231,6 +234,7 @@ export const useBoxStore = defineStore('box', () => {
     indices.forEach(i => {
       const p = gameStore.state.box[i]
       if (p) {
+        if (p.onMission || p.inDaycare || p.onDefense) return
         releasedNames.push(p.name)
         returnHeldItem(p)
         gameStore.state.box.splice(i, 1)
@@ -260,6 +264,9 @@ export const useBoxStore = defineStore('box', () => {
   }
 
   function toggleBoxRocketSelect(index: number) {
+    const p = gameStore.state.box[index]
+    if (p && (p.onMission || p.inDaycare || p.onDefense)) return
+
     const idx = boxRocketSelected.value.indexOf(index)
     if (idx > -1) {
       boxRocketSelected.value.splice(idx, 1)
@@ -272,7 +279,7 @@ export const useBoxStore = defineStore('box', () => {
     let total = 0
     boxRocketSelected.value.forEach(i => {
       const p = gameStore.state.box[i]
-      if (!p) return
+      if (!p || p.onMission || p.inDaycare || p.onDefense) return
       total += calculatePrice(p)
     })
     return total
@@ -280,12 +287,14 @@ export const useBoxStore = defineStore('box', () => {
 
   function doBoxRocketSell() {
     const value = getRocketSellValue()
-    const count = boxRocketSelected.value.length
     const indices = [...boxRocketSelected.value].sort((a, b) => b - a)
+    let soldCount = 0
 
     indices.forEach(i => {
       const p = gameStore.state.box[i]
       if (p) {
+        if (p.onMission || p.inDaycare || p.onDefense) return
+        soldCount++
         returnHeldItem(p)
         gameStore.state.box.splice(i, 1)
       }
@@ -293,14 +302,14 @@ export const useBoxStore = defineStore('box', () => {
 
     gameStore.state.money += value
     if (gameStore.state.classData) {
-      gameStore.state.classData.blackMarketSales = (gameStore.state.classData.blackMarketSales || 0) + count
+      gameStore.state.classData.blackMarketSales = (gameStore.state.classData.blackMarketSales || 0) + soldCount
     }
     
     boxRocketMode.value = false
     boxRocketSelected.value = []
     gameStore.autoFillPvpTeam()
     gameStore.scheduleSave()
-    return { value, count }
+    return { value, count: soldCount }
   }
 
   function movePokemonToBox(boxIndex: number, targetBoxIndex: number) {
@@ -460,6 +469,7 @@ export const useBoxStore = defineStore('box', () => {
     
     if (boxPoke.onMission) return { success: false, msg: 'En misión idle.' }
     if (boxPoke.inDaycare) return { success: false, msg: 'En la Guardería.' }
+    if (boxPoke.onDefense) return { success: false, msg: 'En Defensa Pasiva.' }
     
     gameStore.state.box.splice(boxIndex, 1)
     gameStore.state.team.push(boxPoke)
@@ -473,7 +483,7 @@ export const useBoxStore = defineStore('box', () => {
     const teamPoke = gameStore.state.team[teamIndex]
     if (!boxPoke || !teamPoke) return { success: false, msg: 'Pokémon no encontrado.' }
     
-    if (boxPoke.onMission || boxPoke.inDaycare) return { success: false, msg: 'Pokémon ocupado.' }
+    if (boxPoke.onMission || boxPoke.inDaycare || boxPoke.onDefense) return { success: false, msg: 'Pokémon ocupado.' }
     
     gameStore.state.box.splice(boxIndex, 1)
     const swapped = gameStore.state.team.splice(teamIndex, 1, boxPoke)[0]!

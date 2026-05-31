@@ -239,17 +239,6 @@ const hatchEgg = (egg: PokemonEgg) => {
     max-width: 320px;
   }
 
-  &:hover {
-    background: linear-gradient(135deg, Rgba(38, 20, 33, 0.8) 0%, Rgba(20, 8, 16, 0.96) 100%);
-    border-color: Rgba(255, 51, 102, 0.35);
-    transform: Translatey(-2px);
-    box-shadow: 0 6px 20px Rgba(255, 51, 102, 0.12), inset 0 0 15px Rgba(255, 51, 102, 0.08);
-  }
-
-  &:hover .egg-visual {
-    transform: Scale(1.1) Rotate(5deg);
-  }
-
   &.ready {
     border-color: Rgba(34, 197, 94, 0.35);
     background: linear-gradient(135deg, Rgba(20, 35, 25, 0.75) 0%, Rgba(8, 18, 12, 0.92) 100%);

@@ -238,11 +238,24 @@ const handleSellRocket = () => {
         </div>
       </div>
 
+      <!-- Warning label for busy Pokémon -->
+      <div 
+        v-if="pokemon?.onMission || pokemon?.inDaycare || pokemon?.onDefense" 
+        class="busy-warning-banner"
+      >
+        <span class="warning-icon">⚠️</span>
+        <span class="warning-text">
+          Este Pokémon está ocupado ({{ pokemon.inDaycare ? '🥚 Guardería' : pokemon.onMission ? '🧭 Misión' : '🛡️ Defensa' }}). 
+          Las acciones de equipo, venta y liberación están bloqueadas.
+        </span>
+      </div>
+
       <!-- Action Grid -->
       <div class="box-action-grid">
         <button 
           v-if="team.length < 6" 
           class="menu-action-btn success-btn" 
+          :disabled="pokemon?.onMission || pokemon?.inDaycare || pokemon?.onDefense"
           @click.stop="handleMoveToTeam"
         >
           <span class="icon">➕</span> AGREGAR AL EQUIPO
@@ -258,9 +271,12 @@ const handleSellRocket = () => {
               v-for="(t, i) in team"
               :key="t.uid"
               class="team-swap-card"
-              :class="{ 'is-premium-tier': getPokemonTier(t).tier === 'S' || getPokemonTier(t).tier === 'S+' }"
+              :class="{ 
+                'is-premium-tier': getPokemonTier(t).tier === 'S' || getPokemonTier(t).tier === 'S+',
+                'is-disabled': pokemon?.onMission || pokemon?.inDaycare || pokemon?.onDefense 
+              }"
               :style="{ '--tier-color': getPokemonTier(t).color }"
-              @click.stop="handleSwap(i as number)"
+              @click.stop="!(pokemon?.onMission || pokemon?.inDaycare || pokemon?.onDefense) && handleSwap(i as number)"
             >
               <!-- Tier Badge (Top Left) -->
               <div 
@@ -324,6 +340,7 @@ const handleSellRocket = () => {
         </button>
         <button
           class="menu-action-btn secondary-btn full-width"
+          :disabled="pokemon?.onMission || pokemon?.inDaycare || pokemon?.onDefense"
           @click.stop="handleRelease"
         >
           <span class="icon">⚡</span> LIBERAR
@@ -331,6 +348,7 @@ const handleSellRocket = () => {
         <button
           v-if="isRocketMode"
           class="menu-action-btn danger-btn full-width"
+          :disabled="pokemon?.onMission || pokemon?.inDaycare || pokemon?.onDefense"
           @click.stop="handleSellRocket"
         >
           <span class="icon">💀</span> VENDER MERCADO NEGRO
@@ -342,4 +360,26 @@ const handleSellRocket = () => {
 
 <style scoped lang="scss">
 @use "../../styles/components/box-menu" as *;
+
+.busy-warning-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: Rgba(239, 68, 68, 0.08);
+  border: 1px solid Rgba(239, 68, 68, 0.25);
+  border-radius: 12px;
+  padding: 10px 14px;
+  margin: 12px 16px;
+  
+  .warning-icon {
+    font-size: 16px;
+  }
+  
+  .warning-text {
+    font-size: 7px;
+    font-family: 'Press Start 2P', monospace;
+    line-height: 1.5;
+    color: #f87171;
+  }
+}
 </style>

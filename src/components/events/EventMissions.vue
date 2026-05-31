@@ -25,7 +25,7 @@ const getMatchingPokesForMission = (mission: DaycareMission) => {
   
   const targetId = mission.targetId;
   return allPokes.filter(p => {
-    if (p.onMission || p.inDaycare) return false;
+    if (p.onMission || p.inDaycare || p.onDefense) return false;
     if (p.id !== targetId) return false;
     
     const req = mission.requirement || { type: 'level', minLevel: 0 };
@@ -151,7 +151,7 @@ async function startClassMission(missionId: string) {
     
     const isRocket = cls === 'rocket';
     const filtered = allPokes.filter(p => {
-      if (p.onMission || p.inDaycare) return false;
+      if (p.onMission || p.inDaycare || p.onDefense) return false;
       if (isRocket) {
         return p.type === 'poison' || p.type2 === 'poison';
       }
@@ -180,6 +180,16 @@ async function startClassMission(missionId: string) {
       onConfirm: (selected: Pokemon[]) => {
         const p = selected?.[0];
         if (p) {
+          const teamIdx = gameStore.state.team.findIndex((tp: Pokemon | null) => tp && tp.uid === p.uid);
+          if (teamIdx !== -1) {
+            if (gameStore.state.team.length <= 1) {
+              uiStore.notify('No puedes enviar a tu único Pokémon del equipo.', '⚠️');
+              return;
+            }
+            const success = gameStore.sendToBox(teamIdx);
+            if (!success) return;
+          }
+
           const idx = gameStore.state.box.findIndex((bp: Pokemon | null) => bp && bp.uid === p.uid);
           if (idx !== -1) {
             classStore.startMission(missionId, { targetPokemonIdx: idx });

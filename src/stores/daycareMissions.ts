@@ -31,7 +31,7 @@ export const useDaycareMissionsStore = defineStore('daycareMissions', () => {
     return missions.filter(mission => {
       const targetId = mission.targetId;
       return allPokes.some(p => {
-        if (p.onMission || p.inDaycare) return false;
+        if (p.onMission || p.inDaycare || p.onDefense) return false;
         if (p.id !== targetId) return false;
         
         const req = mission.requirement || { type: 'level', minLevel: 0 };

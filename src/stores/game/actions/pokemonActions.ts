@@ -150,6 +150,39 @@ export function usePokemonActions(
   function sanitizeAll() {
     state.team.forEach(p => p && sanitizePokemon(p))
     if (state.box) state.box.forEach(p => p && sanitizePokemon(p))
+
+    // Migración automática: Mover Pokémon del equipo ocupados (guardería, misión, defensa) a la caja PC
+    const teamToKeep: Pokemon[] = []
+    const teamToMove: Pokemon[] = []
+    
+    state.team.forEach(p => {
+      if (!p) return
+      if (p.inDaycare || p.onMission || p.onDefense) {
+        teamToMove.push(p)
+      } else {
+        teamToKeep.push(p)
+      }
+    })
+
+    if (teamToMove.length > 0) {
+      // Si moverlos a todos dejaría el equipo completamente vacío, preservamos el primero ocupado en el equipo
+      if (teamToKeep.length === 0 && teamToMove.length > 0) {
+        const first = teamToMove.shift()
+        if (first) teamToKeep.push(first)
+      }
+
+      teamToMove.forEach(p => {
+        p.hp = p.maxHp
+        p.status = null
+        p.moves?.forEach(m => { if (m) m.pp = m.maxPP })
+        state.box.push(p)
+      })
+
+      state.team = teamToKeep
+      autoFillPvpTeam()
+      autoFillWarTeam()
+      scheduleSave()
+    }
     
     if (state.eggs && Array.isArray(state.eggs)) {
       state.eggs.forEach((egg: PokemonEgg) => {

@@ -287,8 +287,31 @@ const heldItemSprite = computed(() => {
               :class="pokemon.gender === 'M' ? 'male' : 'female'"
             >{{ genderIcon }}</span>
           </div>
-          <div class="stats-line">
-            IVS: <span class="stats-values">{{ pokemon.ivs.hp }}/{{ pokemon.ivs.atk }}/{{ pokemon.ivs.def }}/{{ pokemon.ivs.spa }}/{{ pokemon.ivs.spd }}/{{ pokemon.ivs.spe }}</span>
+          <div class="iv-grid-daycare">
+            <div class="iv-item">
+              <span class="label">HP</span>
+              <span class="val">{{ pokemon.ivs.hp }}</span>
+            </div>
+            <div class="iv-item">
+              <span class="label">ATK</span>
+              <span class="val">{{ pokemon.ivs.atk }}</span>
+            </div>
+            <div class="iv-item">
+              <span class="label">DEF</span>
+              <span class="val">{{ pokemon.ivs.def }}</span>
+            </div>
+            <div class="iv-item">
+              <span class="label">SPA</span>
+              <span class="val">{{ pokemon.ivs.spa }}</span>
+            </div>
+            <div class="iv-item">
+              <span class="label">SPD</span>
+              <span class="val">{{ pokemon.ivs.spd }}</span>
+            </div>
+            <div class="iv-item">
+              <span class="label">SPE</span>
+              <span class="val">{{ pokemon.ivs.spe }}</span>
+            </div>
           </div>
           <div class="nature-line">
             <PVTooltip
