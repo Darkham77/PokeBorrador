@@ -73,7 +73,27 @@ export async function executeFlee(ctx: BattleContext) {
         ctx.addLog('¡No pudiste escapar!', 'log-info', 'player')
         
         const { runEnemyAction } = await import('./battleTurn.ts')
+        
+        // FSM: Transicionar correctamente como si fuera un turno normal.
+        // Sin APPLY_MOVE, el watcher de useBattleAnimations limpia los asientos
+        // durante el ataque, suprimiendo el HUD y las animaciones de daño.
+        await ctx.fsm.transition(ctx.BATTLE_STATES.ACTIVE_BATTLE, ctx.BATTLE_SUBSTATES.APPLY_MOVE)
         await runEnemyAction(ctx)
+        await ctx.fsm.transition(ctx.BATTLE_STATES.ACTIVE_BATTLE, ctx.BATTLE_SUBSTATES.EVAL_HP)
+        
+        // Chequear si el jugador fue noqueado por el contraataque
+        if (ctx.activeBattle.value?.player && ctx.activeBattle.value.player.hp <= 0) {
+          await ctx.fsm.transition(ctx.BATTLE_STATES.ACTIVE_BATTLE, ctx.BATTLE_SUBSTATES.RESOLVE_PLAYER_FAINT)
+          await ctx.handleFaint('player')
+          ctx.isProcessing.value = false
+          return
+        }
+        
+        // Volver al estado de espera para restaurar HUD y badge activo del Pokémon
+        if (ctx.activeBattle.value && !ctx.activeBattle.value.over &&
+            ctx.fsm.currentState.value === ctx.BATTLE_STATES.ACTIVE_BATTLE) {
+          ctx.fsm.transition(ctx.BATTLE_STATES.ACTIVE_BATTLE, ctx.BATTLE_SUBSTATES.WAIT_INPUT)
+        }
       }
       ctx.isProcessing.value = false
     }

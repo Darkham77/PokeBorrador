@@ -82,11 +82,20 @@ export async function processFaint(ctx: BattleContext, side: 'player' | 'enemy')
       await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.DEFEAT_SCREEN)
       await terminateBattle(ctx, false)
     } else {
-      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.HAS_HEALTHY)
-      ctx.addLog('¡Elige a tu próximo Pokémon!', 'log-info', 'player')
-      ctx.faintedSides.value.delete('player')
-      ctx.uiStore.isBattleSwitchForced = true
-      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.SWITCH_MENU)
+      const isWild = !active.isTrainer && !active.isGym
+      const enemyHasHealthy = active.enemyTeam && active.enemyTeam.some((p: Pokemon) => p.hp > 0)
+      const enemyFaintedAndBattleEnds = active.enemy && active.enemy.hp <= 0 && (isWild || !enemyHasHealthy)
+
+      if (enemyFaintedAndBattleEnds) {
+        ctx.faintedSides.value.delete('player')
+        // En Double KO no forzamos cambio ni abrimos menú de cambio, ya que la batalla termina y terminateBattle reordenará el equipo
+      } else {
+        await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.HAS_HEALTHY)
+        ctx.addLog('¡Elige a tu próximo Pokémon!', 'log-info', 'player')
+        ctx.faintedSides.value.delete('player')
+        ctx.uiStore.isBattleSwitchForced = true
+        await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.SWITCH_MENU)
+      }
     }
   } else if (pokemon) {
     const isTr = active.isTrainer || active.isGym
@@ -169,6 +178,9 @@ export async function terminateBattle(ctx: BattleContext, win: boolean, fled = f
 
   active.over = true
   ctx.faintedSides.value.clear()
+  
+  const uiStore = useUIStore()
+  uiStore.isBattleSwitchForced = false
   
   const persistenceMode = active.persistenceMode as string || 'PERSISTENT'
   const isSingle = persistenceMode === 'SINGLE' || active.isTrainer || active.isGym
@@ -268,7 +280,6 @@ export async function terminateBattle(ctx: BattleContext, win: boolean, fled = f
   await ctx.waitForLogs()
   
   // Esperar a que el jugador termine de aprender técnicas en el modal
-  const uiStore = useUIStore()
   while (uiStore.learnQueue.length > 0 || uiStore.currentMoveToLearn) {
     await sleep(100)
   }
@@ -472,6 +483,7 @@ export async function calculateBattleRewards(ctx: BattleContext) {
       active.player.moves = teamPoke.moves ? teamPoke.moves.map(m => m ? ({ ...m }) : null) : []
     }
   }
+  // fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.EMPTY_WAIT)
 }
 
 /**

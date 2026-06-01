@@ -94,15 +94,23 @@ export async function executeTurn(store: BattleContext, moveIndex: number) {
 
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.EVAL_HP)
 
-    if (store.activeBattle.value?.player && store.activeBattle.value.player.hp <= 0) {
-      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.RESOLVE_PLAYER_FAINT)
-      await store.handleFaint('player')
-      break;
-    }
+    const playerFainted = store.activeBattle.value?.player && store.activeBattle.value.player.hp <= 0
+    const enemyFainted = store.activeBattle.value?.enemy && store.activeBattle.value.enemy.hp <= 0
 
-    if (store.activeBattle.value?.enemy && store.activeBattle.value.enemy.hp <= 0) {
-      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.RESOLVE_ENEMY_FAINT)
-      await store.handleFaint('enemy')
+    if (playerFainted || enemyFainted) {
+      if (playerFainted && enemyFainted) {
+        await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.RESOLVE_PLAYER_FAINT)
+        await store.handleFaint('player')
+        
+        await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.RESOLVE_ENEMY_FAINT)
+        await store.handleFaint('enemy')
+      } else if (playerFainted) {
+        await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.RESOLVE_PLAYER_FAINT)
+        await store.handleFaint('player')
+      } else {
+        await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.RESOLVE_ENEMY_FAINT)
+        await store.handleFaint('enemy')
+      }
       break;
     }
 

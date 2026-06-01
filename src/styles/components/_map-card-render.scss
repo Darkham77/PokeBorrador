@@ -106,8 +106,8 @@
   position: absolute;
   top: 58px; 
   bottom: 15px; 
-  left: 20px;
-  right: 20px;
+  left: 50px;  // Clears the 32px pills at left:6px + gap
+  right: 8px;  // Closer to the right border
   display: flex;
   align-items: center;
   justify-content: center;
@@ -278,9 +278,10 @@
 /* Miscellaneous */
 .dom-badge {
   @extend .map-pill;
-  position: absolute;
-  top: 103px;
-  left: 12px;
+  width: 32px;
+  min-width: 32px;
+  height: 32px;
+  padding: 0;
   font-size: 16px;
   display: flex !important;
   align-items: center !important;

@@ -1,8 +1,12 @@
 <script setup lang="ts">
 // [PureVue-Ignore-Length]
-import { computed, ref, onUnmounted, onMounted, watch, nextTick, type ComponentPublicInstance } from 'vue'
+import { computed, ref } from 'vue'
+import { gsap } from 'gsap'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import AtmosphereLayer from '@/components/common/AtmosphereLayer.vue'
+import MapCardHeader from './MapCardHeader.vue'
+import MapCardSpawns from './MapCardSpawns.vue'
+
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { MAP_ROUTE_MAPPING } from '@/data/map-assets'
@@ -12,69 +16,23 @@ import { useUIStore } from '@/stores/ui'
 import { useBattleStore } from '@/stores/battle'
 import { useGameStore } from '@/stores/game'
 import { useMapStore } from '@/stores/map'
+import { useModalStore } from '@/stores/modals'
+
 import { getRouteWeather, getWeatherMultiplier } from '@/logic/weatherUtils'
 import { getWeatherAnimSeed } from '@/logic/weather/weatherMath.ts'
 import { getMechanicalWeather, WEATHER_UI_METADATA, WEATHER_VISUAL_METADATA, WEATHER_REGISTRY } from '@/logic/weather/weatherRegistry'
 import { logger } from '@/logic/utils/logger'
-
 import { checkPlayerWinner, calculateSpawnGrid } from '@/logic/map/mapCardHelper'
-import { useModalStore } from '@/stores/modals'
 
-const modalStore = useModalStore()
-const pokeballTriggerRef = ref<HTMLElement | null>(null)
-
-const openRouteSpawnsModal = () => {
-  modalStore.open('RouteSpawns', {
-    map: props.map,
-    weather: computedWeather.value,
-    cycle: props.cycle
-  })
-}
-
-const onPokeballMouseEnter = () => {
-  if (uiStore.isLowPowerActive) return
-  if (pokeballTriggerRef.value) {
-    gsap.to(pokeballTriggerRef.value, {
-      x: -8,
-      y: -8,
-      scale: 1.35,
-      duration: 0.25,
-      ease: 'power2.out',
-      overwrite: 'auto'
-    })
-  }
-}
-
-const onPokeballMouseLeave = () => {
-  if (uiStore.isLowPowerActive) {
-    if (pokeballTriggerRef.value) {
-      gsap.set(pokeballTriggerRef.value, { clearProps: 'transform,x,y,scale' })
-    }
-    return
-  }
-  if (pokeballTriggerRef.value) {
-    gsap.to(pokeballTriggerRef.value, {
-      x: 0,
-      y: 0,
-      scale: 1,
-      duration: 0.25,
-      ease: 'power2.out',
-      overwrite: 'auto',
-      onComplete: () => {
-        gsap.set(pokeballTriggerRef.value, { clearProps: 'transform,x,y,scale' })
-      }
-    })
-  }
-}
-
-// Shared weather anim seed is imported from weatherMath
+import { useMapCardObservers } from '@/composables/map/useMapCardObservers'
+import { useMapCardSprites } from '@/composables/map/useMapCardSprites'
+import { useMapCardAnimations } from '@/composables/map/useMapCardAnimations'
 
 // Flare URLs for spawn auras
 const flare1Url = getAssetUrl(ASSET_TYPES.FX, 'flare_1')
 const flare2Url = getAssetUrl(ASSET_TYPES.FX, 'flare_2')
 
 import type { MapLocation } from '@/types/encounters'
-
 import type { DominanceInfo } from '@/types/stores'
 
 interface SpawnPool {
@@ -116,11 +74,27 @@ const uiStore = useUIStore()
 const battleStore = useBattleStore()
 const mapStore = useMapStore()
 const gameStore = useGameStore()
+const modalStore = useModalStore()
 
 const cardRef = ref<HTMLElement | null>(null)
+const bgRef = ref<HTMLElement | null>(null)
+const overlayRef = ref<HTMLElement | null>(null)
+const pokeballTriggerRef = ref<HTMLElement | null>(null)
+
+// Animation DOM references
+const spawnsRef = ref<InstanceType<typeof MapCardSpawns> | null>(null)
 
 const isPerformanceMode = computed(() => {
   return uiStore.isAnyBlockingModalOpen || battleStore.isBattleActive || uiStore.isDebugPerformanceMode
+})
+
+const windowWidthRef = computed(() => uiStore.windowWidth)
+
+// 1. Observers (Resize and Intersection)
+const { currentCols, isVisible } = useMapCardObservers(cardRef, windowWidthRef)
+
+const computedWeather = computed(() => {
+  return props.forcedWeather || mapStore.globalWeather || getRouteWeather(props.map.id, mapStore.currentSeason.id, mapStore.currentEpochHour, mapStore.currentCycle)
 })
 
 const imgPath = computed(() => {
@@ -143,10 +117,6 @@ const cycleName = computed(() => {
 
 const seasonName = computed(() => mapStore.currentSeason.label)
 const seasonEmoji = computed(() => mapStore.currentSeason.icon)
-
-const computedWeather = computed(() => {
-  return props.forcedWeather || mapStore.globalWeather || getRouteWeather(props.map.id, mapStore.currentSeason.id, mapStore.currentEpochHour, mapStore.currentCycle)
-})
 
 const weatherEmoji = computed(() => {
   const visual = WEATHER_VISUAL_METADATA[computedWeather.value as string]
@@ -183,172 +153,6 @@ const cardSeed = computed(() => {
   }, 0)
   return (sum % 100) / 100
 })
-
-const locationTagRef = ref<ComponentPublicInstance | null>(null)
-const factionPillRef = ref<ComponentPublicInstance | null>(null)
-const fishingPillRef = ref<HTMLElement | null>(null)
-const archaeologyPillRef = ref<HTMLElement | null>(null)
-const crownRef = ref<ComponentPublicInstance | null>(null)
-
-let pillContext: gsap.Context | null = null
-
-const initPillAnimations = () => {
-  if (pillContext) {
-    pillContext.revert()
-    pillContext = null
-  }
-
-  if (!isVisible.value || isPerformanceMode.value || uiStore.isLowPowerActive) {
-    return
-  }
-
-  pillContext = gsap.context(() => {
-    const seed = cardSeed.value
-
-    // 1. Weather Tag / Location Tag
-    const weatherEl = locationTagRef.value?.$el as HTMLElement | undefined
-    if (weatherEl) {
-      const weather = computedWeather.value
-      let type: 'glow' | 'drift' | 'shake' | '' = ''
-      if (['clear', 'sun', 'heatwave', 'cold', 'coldwave', 'sandstorm', 'dust_storm', 'intense_sun'].includes(weather)) {
-        type = 'glow'
-      } else if (['mist', 'fog', 'wind', 'strong_winds'].includes(weather)) {
-        type = 'drift'
-      } else if (['rain', 'heavy_rain', 'storm', 'thunderstorm', 'hail'].includes(weather)) {
-        type = 'shake'
-      }
-
-      if (type === 'glow') {
-        const tl = gsap.fromTo(weatherEl,
-          { filter: 'brightness(1.0)', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.4)' },
-          {
-            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.4), 0px 0px 8px rgba(255, 204, 0, 0.6)',
-            filter: 'brightness(1.2)',
-            duration: 1.5,
-            yoyo: true,
-            repeat: -1,
-            ease: 'sine.inOut'
-          }
-        )
-        tl.progress(seed)
-      } else if (type === 'drift') {
-        const tl = gsap.to(weatherEl, {
-          x: 3,
-          duration: 2.0,
-          yoyo: true,
-          repeat: -1,
-          ease: 'power1.inOut'
-        })
-        tl.progress(seed)
-      } else if (type === 'shake') {
-        const tl = gsap.timeline({ repeat: -1 })
-        tl.to(weatherEl, { rotation: 2, duration: 0.125, ease: 'power1.inOut' })
-          .to(weatherEl, { rotation: -2, duration: 0.25, ease: 'power1.inOut' })
-          .to(weatherEl, { rotation: 0, duration: 0.125, ease: 'power1.inOut' })
-        tl.progress(seed)
-      }
-    }
-
-    // 2. Faction Pill
-    const factionEl = factionPillRef.value?.$el as HTMLElement | undefined
-    if (factionEl) {
-      const winner = props.dominance?.winner
-      if (winner === 'union') {
-        const tl = gsap.fromTo(factionEl,
-          { rotation: 0, scale: 1, filter: 'brightness(1.0)' },
-          {
-            rotation: 10,
-            scale: 1.05,
-            filter: 'brightness(1.3)',
-            duration: 2.5,
-            yoyo: true,
-            repeat: -1,
-            ease: 'sine.inOut'
-          }
-        )
-        tl.progress(seed)
-      } else if (winner === 'poder') {
-        const tl = gsap.timeline({ repeat: -1 })
-        tl.fromTo(factionEl,
-          { scale: 1.0 },
-          { scale: 1.15, duration: 0.3, ease: 'power1.inOut' }
-        )
-        .to(factionEl, { scale: 1.0, duration: 0.3, ease: 'power1.inOut' })
-        .to(factionEl, { scale: 1.0, duration: 1.4 })
-        tl.progress(seed)
-      }
-    }
-
-    // 3. Fishing Pill
-    if (fishingPillRef.value) {
-      const tl = gsap.timeline({ repeat: -1 })
-      tl.to(fishingPillRef.value, { y: -8, rotation: 5, duration: 1.32, ease: 'sine.inOut' })
-        .to(fishingPillRef.value, { y: 2, rotation: -3, duration: 1.32, ease: 'sine.inOut' })
-        .to(fishingPillRef.value, { y: 0, rotation: 0, duration: 1.36, ease: 'sine.inOut' })
-      tl.progress(seed)
-    }
-
-    // 3.1 Archaeology Pill
-    if (archaeologyPillRef.value) {
-      const pickEl = archaeologyPillRef.value.querySelector('.pill-icon')
-      if (pickEl) {
-        // Usar la parte inferior derecha como eje (el mango)
-        gsap.set(pickEl, { transformOrigin: '80% 80%', display: 'inline-block' })
-        const swingTl = gsap.timeline({ repeat: -1 })
-        // Subir lento (rotación positiva para levantar el pico)
-        // Bajar rápido (rotación negativa para golpear)
-        swingTl.to(pickEl, { rotation: 25, duration: 0.8, ease: 'power1.out' }) // Subir lento
-               .to(pickEl, { rotation: -15, duration: 0.15, ease: 'power2.in' }) // Bajar rápido (golpe)
-               .to(pickEl, { rotation: 0, duration: 0.35, ease: 'sine.out' })   // Recuperar
-        swingTl.progress(seed)
-      }
-    }
-
-    // 4. Winner Crown - GPU-Accelerated Premium Floating & Mask Shine Animation
-    const crownEl = crownRef.value?.$el as HTMLElement | undefined
-    if (crownEl && !uiStore.isLowPowerActive) {
-      // Float animation for the entire badge
-      const floatTl = gsap.fromTo(crownEl,
-        { y: 0, scale: 1 },
-        {
-          y: -4,
-          scale: 1.05,
-          duration: 1.4,
-          yoyo: true,
-          repeat: -1,
-          ease: 'sine.inOut'
-        }
-      )
-      floatTl.progress(seed)
-
-      // Masked flare rotation and breathing pulse (Highly optimized, zero paint-repaints)
-      const shineEl = crownEl.querySelector('.crown-shine-aura') as HTMLElement | undefined
-      if (shineEl) {
-        // Continuous rotation
-        gsap.to(shineEl, {
-          rotation: 360,
-          duration: 10,
-          repeat: -1,
-          ease: 'none'
-        })
-
-        // Organic scale & opacity breathe (highly dramatic glowing range)
-        const breatheTl = gsap.fromTo(shineEl,
-          { scale: 0.8, opacity: 0.35 },
-          {
-            scale: 1.5,
-            opacity: 0.8,
-            duration: 1.8,
-            yoyo: true,
-            repeat: -1,
-            ease: 'sine.inOut'
-          }
-        )
-        breatheTl.progress(seed)
-      }
-    }
-  }, cardRef.value || undefined)
-}
 
 const getPokemonSprite = (id: string) => getAssetUrl(ASSET_TYPES.POKEMON, id)
 
@@ -396,29 +200,36 @@ const processedGuardian = computed(() => {
 
 const isPlayerWinner = computed(() => checkPlayerWinner(props.dominance?.winner || null, gameStore.state.faction))
 
-interface ProcessedSpawn {
-  id: string | null
-  key: string
-  name?: string
-  sprite?: string
-  isSeen?: boolean
-  isCaught?: boolean
-  isRare?: boolean
-  isAtmospheric?: boolean
-  isDebuffed?: boolean
-  tooltipTitle?: string
-  tooltipDesc?: string
-  seed?: number
-}
+const allSpawns = computed(() => [...props.spawnPool.generic, ...props.spawnPool.specific])
 
-const processedGrid = computed<ProcessedSpawn[]>(() => {
+const spawnGrid = computed(() => {
+  const weather = computedWeather.value
+  const cycle = props.cycle || 'day'
+  const wildList = props.map.wild?.[cycle] || []
+
+  const filteredSpawns = allSpawns.value.filter(id => {
+    const isVisitor = !!(props.map.weather?.[weather]?.visitors as Record<string, unknown>)?.[id]
+    const isExclusive = !!(props.map.weather?.[weather]?.exclusive as Record<string, unknown>)?.[id]
+    const isFishingActive = !!props.map.fishing?.pool?.includes(id)
+    const hasWildRestrictions = !!props.map.wild
+    const isWildActive = !hasWildRestrictions || wildList.includes(id) || isVisitor || isExclusive || isFishingActive
+
+    return isWildActive && getWeatherMultiplier(id, weather) > 0
+  })
+
+  const { rows, cols, totalSlots } = calculateSpawnGrid(filteredSpawns.length, currentCols.value)
+  const grid = new Array(totalSlots).fill(null)
+  filteredSpawns.forEach((id, index) => { grid[totalSlots - 1 - index] = id })
+  return { slots: grid, rows, cols }
+})
+
+const processedGrid = computed(() => {
   const gridData = spawnGrid.value
   const slots = gridData.slots || []
   const seenPokedex = gameStore.state.seenPokedex || []
   const caughtPokedex = gameStore.state.pokedex || []
-  
 
-  return slots.map((id: string | null, index: number): ProcessedSpawn => {
+  return slots.map((id: string | null, index: number) => {
     if (!id) return { id: null, key: `empty-${index}` }
     let isSeen = seenPokedex.includes(id) || caughtPokedex.includes(id)
     let isCaught = caughtPokedex.includes(id)
@@ -439,27 +250,23 @@ const processedGrid = computed<ProcessedSpawn[]>(() => {
     
     const emojiMap: Record<string, string> = { morning: '🌅', day: '🌞', dusk: '🌇', night: '🌙' }
     
-    // Detección Atmosférica temprana para el texto
     const weather = computedWeather.value
     const isVisitor = !!(props.map.weather?.[weather]?.visitors as Record<string, unknown>)?.[id]
     const isExclusive = !!(props.map.weather?.[weather]?.exclusive as Record<string, unknown>)?.[id]
 
     let timeText = ''
     
-    // 1. Información de Ciclo (Si es limitado y lo hemos visto)
     if (isLimited && isSeen) {
       const emojis = appearingCycles.map(c => emojiMap[c] || c).join('')
       timeText = `Aparición: ${emojis}`
     }
 
-    // 2. Información Atmosférica
     const multiplier = getWeatherMultiplier(id, weather)
     const isBoosted = !isVisitor && !isExclusive && multiplier > 1.0
     const isDebuffed = !isVisitor && !isExclusive && multiplier < 1.0 && multiplier > 0
     const isSpecialWeatherSpawn = isVisitor || isExclusive
-    const hasWeatherEffect = isSpecialWeatherSpawn || isBoosted || isDebuffed
 
-    if (hasWeatherEffect) {
+    if (isSpecialWeatherSpawn || isBoosted || isDebuffed) {
       if (isSeen) {
         const weatherTag = isVisitor ? 'Visitante' : (isExclusive ? 'Exclusivo' : (isBoosted ? 'Potenciado' : 'Debilitado'))
         const weatherLine = `${weatherEmoji.value} ${weatherTag} por el clima.`
@@ -469,7 +276,6 @@ const processedGrid = computed<ProcessedSpawn[]>(() => {
       }
     }
 
-    // 3. Fallback: Habitante común (Solo si no hay ciclo ni clima)
     if (!timeText) {
       timeText = 'Habitante común.'
     }
@@ -487,19 +293,35 @@ const processedGrid = computed<ProcessedSpawn[]>(() => {
       tooltipDesc: typeInfo ? `${typeInfo}\n${timeText}` : timeText, 
       seed: (id.split('').reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0) + index) / 100
     }
-
   })
 })
 
-const isVisible = ref(false)
+// 2. Sprites & Auras Processing
+const { processedSprites, guardianProcessedSprite, processedRareAura, processedAtmosAura } = useMapCardSprites(
+  processedGrid,
+  processedGuardian,
+  flare1Url,
+  flare2Url
+)
 
-import { getProcessedSprite, getProcessedAura } from '@/logic/utils/spriteOutliner'
+// Resolving HTML target reference from spawnsRef component child
+const spawnGridHtmlRef = computed(() => spawnsRef.value?.spawnGridRef || null)
 
-const processedSprites = ref<Record<string, string>>({})
-const guardianProcessedSprite = ref<string>('')
-const processedRareAura = ref<string>('')
-const processedAtmosAura = ref<string>('')
-
+// 3. Animations Handler
+useMapCardAnimations({
+  cardRef,
+  spawnGridRef: spawnGridHtmlRef,
+  isVisible,
+  isPerformanceMode,
+  isLowPowerActive: computed(() => uiStore.isLowPowerActive),
+  computedWeather,
+  isPlayerWinner,
+  cardSeed,
+  dominanceWinner: computed(() => props.dominance?.winner ?? undefined),
+  hasFishing: computed(() => props.map.fishing),
+  hasArchaeology: computed(() => props.map.archaeology),
+  spawnGridSlots: computed(() => spawnGrid.value.slots)
+})
 
 const keepWarm = computed(() => {
   const isMobileDevice = uiStore.windowWidth < 768
@@ -510,186 +332,38 @@ const showBg = computed(() => {
   return isVisible.value || keepWarm.value
 })
 
-import { useWeatherVisuals } from '@/composables/useWeatherVisuals'
-
-const { weatherOnlyFilter } = useWeatherVisuals({
-  weather: computedWeather,
-  cycle: computed(() => props.cycle)
+const lockReason = computed(() => {
+  if (props.isSafariLocked) return 'REQUIERE TICKET SAFARI'
+  if (gameStore.isSaveLocked && !uiStore.hasDismissedSessionLock) return 'SESIÓN BLOQUEADA'
+  if (!props.isLocked) return ''
+  const requiredBadges = props.map.badges || 0
+  if (props.badgeCount < requiredBadges) return `REQUIERE ${requiredBadges} MEDALLAS`
+  return 'BLOQUEADO'
 })
 
-const allSpawns = computed(() => [...props.spawnPool.generic, ...props.spawnPool.specific])
-const currentCols = ref(3)
-let resizeObserver: ResizeObserver | null = null
-let intersectionObserver: IntersectionObserver | null = null
+const isLocked = computed(() => {
+  if (props.isLocked) return true
+  if (gameStore.isSaveLocked && !uiStore.hasDismissedSessionLock) return true
+  return false
+})
 
-import { gsap } from 'gsap'
+const lockDescription = computed(() => {
+  if (props.isSafariLocked) return 'Necesitas un Ticket Safari para entrar a esta zona.'
+  if (gameStore.isSaveLocked && !uiStore.hasDismissedSessionLock) return 'Sesión activa en otra pestaña. Toma el control para habilitar el guardado.'
+  if (!props.isLocked) return ''
+  return `Consigue ${props.map.badges} medallas para acceder a esta zona.`
+})
 
-const spawnGridRef = ref<HTMLElement | null>(null)
-let auraContext: gsap.Context | null = null
-
-const initAuraAnimations = () => {
-  if (auraContext) auraContext.revert()
-  if (!spawnGridRef.value || !isVisible.value) return
-
-  auraContext = gsap.context((self: gsap.Context) => {
-    const AURA_CYCLE = 2.0
-    const wrappers = self.selector!('.sprite-wrapper') as HTMLElement[]
-
-    wrappers.forEach((el) => {
-      const isRare = el.classList.contains('rare-spawn')
-      const isAtmos = el.classList.contains('atmospheric-spawn')
-      
-      if (!isRare && !isAtmos) return
-
-      const seedAttr = el.style.getPropertyValue('--spawn-seed')
-      const seed = seedAttr ? parseFloat(seedAttr) : Math.random()
-      const baseDelay = (seed % 1) * AURA_CYCLE
-
-      // 1. Pokémon Pulse (Heartbeat) - Disabled in low power mode for performance
-      if (!uiStore.isLowPowerActive) {
-        const scaleMax = isAtmos ? 1.08 : 1.05
-        const tl = gsap.timeline({ repeat: -1, delay: baseDelay })
-        tl.to(el, { scale: scaleMax, duration: 0.4, ease: 'power2.out' })
-          .to(el, { scale: 1, duration: 0.8, ease: 'sine.inOut' })
-      }
-
-      // 2. Aura Effects (Siblings) - Enabled in both modes
-      const rareAura = el.parentElement?.querySelector('.rare-aura')
-      const atmosAura = el.parentElement?.querySelector('.atmospheric-aura')
-
-      if (rareAura || atmosAura) {
-        const auraTl = gsap.timeline({
-          repeat: -1,
-          delay: baseDelay
-        })
-
-        const duration = AURA_CYCLE / 2
-
-        if (uiStore.isLowPowerActive) {
-          // Low Power Mode: Static scale/rotation, only animate opacity
-          if (rareAura) gsap.set(rareAura, { scale: 2.2, rotation: 0 })
-          if (atmosAura) gsap.set(atmosAura, { scale: 2.2, rotation: 0 })
-
-          if (rareAura && atmosAura) {
-            // Contra-phase opacity animations
-            gsap.set(rareAura, { opacity: 0 })
-            gsap.set(atmosAura, { opacity: 0.9 })
-
-            auraTl.to(rareAura, { opacity: 1, duration: duration, ease: 'sine.inOut' }, 0)
-            auraTl.to(atmosAura, { opacity: 0, duration: duration, ease: 'sine.inOut' }, 0)
-            auraTl.to(rareAura, { opacity: 0, duration: duration, ease: 'sine.inOut' }, duration)
-            auraTl.to(atmosAura, { opacity: 0.9, duration: duration, ease: 'sine.inOut' }, duration)
-          } else {
-            if (rareAura) {
-              gsap.set(rareAura, { opacity: 0 })
-              auraTl.to(rareAura, { opacity: 1, duration: duration, ease: 'sine.inOut' }, 0)
-              auraTl.to(rareAura, { opacity: 0, duration: duration, ease: 'sine.inOut' }, duration)
-            }
-            if (atmosAura) {
-              gsap.set(atmosAura, { opacity: 0 })
-              auraTl.to(atmosAura, { opacity: 0.9, duration: duration, ease: 'sine.inOut' }, 0)
-              auraTl.to(atmosAura, { opacity: 0, duration: duration, ease: 'sine.inOut' }, duration)
-            }
-          }
-        } else {
-          // Normal Mode: Scale, rotate, and opacity animations
-          if (rareAura && atmosAura) {
-            // Both exist: strict contra-phase immediately
-            gsap.set(rareAura, { scale: 0.1, opacity: 0 })
-            gsap.set(atmosAura, { scale: 3.375, opacity: 0.9 })
-
-            // Rotate rareAura at start when at minimum size
-            auraTl.call(() => {
-              gsap.set(rareAura, { rotation: Math.random() * 360 })
-            }, [], 0)
-
-            auraTl.to(rareAura, {
-              scale: 3.375,
-              opacity: 1,
-              duration: duration,
-              ease: 'sine.inOut'
-            }, 0)
-
-            auraTl.to(atmosAura, {
-              scale: 0.1,
-              opacity: 0,
-              duration: duration,
-              ease: 'sine.inOut'
-            }, 0)
-
-            // Rotate atmosAura at middle when at minimum size
-            auraTl.call(() => {
-              gsap.set(atmosAura, { rotation: Math.random() * 360 })
-            }, [], duration)
-
-            auraTl.to(rareAura, {
-              scale: 0.1,
-              opacity: 0,
-              duration: duration,
-              ease: 'sine.inOut'
-            }, duration)
-
-            auraTl.to(atmosAura, {
-              scale: 3.375,
-              opacity: 0.9,
-              duration: duration,
-              ease: 'sine.inOut'
-            }, duration)
-          } else {
-            // Standard single aura pulse
-            if (rareAura) {
-              gsap.set(rareAura, { scale: 0.1, opacity: 0 })
-
-              auraTl.call(() => {
-                gsap.set(rareAura, { rotation: Math.random() * 360 })
-              }, [], 0)
-
-              auraTl.to(rareAura, {
-                scale: 3.375,
-                opacity: 1,
-                duration: duration,
-                ease: 'sine.inOut'
-              }, 0)
-
-              auraTl.to(rareAura, {
-                scale: 0.1,
-                opacity: 0,
-                duration: duration,
-                ease: 'sine.inOut'
-              }, duration)
-            }
-            if (atmosAura) {
-              gsap.set(atmosAura, { scale: 0.1, opacity: 0 })
-
-              auraTl.call(() => {
-                gsap.set(atmosAura, { rotation: Math.random() * 360 })
-              }, [], 0)
-
-              auraTl.to(atmosAura, {
-                scale: 3.375,
-                opacity: 0.9,
-                duration: duration,
-                ease: 'sine.inOut'
-              }, 0)
-
-              auraTl.to(atmosAura, {
-                scale: 0.1,
-                opacity: 0,
-                duration: duration,
-                ease: 'sine.inOut'
-              }, duration)
-            }
-          }
-        }
-      }
-    })
-  }, spawnGridRef.value)
+const openRouteSpawnsModal = () => {
+  modalStore.open('RouteSpawns', {
+    map: props.map,
+    weather: computedWeather.value,
+    cycle: props.cycle
+  })
 }
 
-const bgRef = ref<HTMLElement | null>(null)
-const overlayRef = ref<HTMLElement | null>(null)
+// Hover effects
 const isHovered = ref(false)
-
 const onMouseEnter = () => {
   if (isLocked.value || uiStore.isLowPowerActive || isPerformanceMode.value) return
   isHovered.value = true
@@ -773,194 +447,47 @@ const onMouseLeave = () => {
   }
 }
 
-onMounted(() => {
-  if (cardRef.value) {
-    resizeObserver = new ResizeObserver((entries) => {
-      const entry = entries[0]
-      if (!entry) return
-      const width = entry.contentRect.width
-      if (width > 350) currentCols.value = 4
-      else if (width > 200) currentCols.value = 3
-      else currentCols.value = 2
+const onPokeballMouseEnter = () => {
+  if (uiStore.isLowPowerActive) return
+  if (pokeballTriggerRef.value) {
+    gsap.to(pokeballTriggerRef.value, {
+      x: -8,
+      y: -8,
+      scale: 1.35,
+      duration: 0.25,
+      ease: 'power2.out',
+      overwrite: 'auto'
     })
-    resizeObserver.observe(cardRef.value)
-
-    const isMobileDevice = uiStore.windowWidth < 768
-    const marginValue = isMobileDevice ? '180px' : '1200px'
-
-    intersectionObserver = new IntersectionObserver((entries) => {
-      const entry = entries[0]
-      if (entry) {
-        isVisible.value = entry.isIntersecting
-        if (isVisible.value) {
-          gsap.killTweensOf(initAuraAnimations)
-          gsap.delayedCall(0.1, initAuraAnimations)
-        } else {
-          gsap.killTweensOf(initAuraAnimations)
-          if (auraContext) {
-            auraContext.revert()
-            auraContext = null
-          }
-        }
-      }
-    }, { 
-      rootMargin: marginValue, 
-      threshold: 0.01 
-    })
-    intersectionObserver.observe(cardRef.value)
-
-    nextTick(() => {
-      initPillAnimations()
-    })
-
-    // Pre-render global auras for spawns
-    try {
-      getProcessedAura(flare2Url, 'rgba(255, 0, 0, 0.9)', 1.5).then(url => {
-        processedRareAura.value = url
-      })
-      getProcessedAura(flare1Url, 'rgba(0, 255, 255, 0.85)', 1.5).then(url => {
-        processedAtmosAura.value = url
-      })
-    } catch (e) {
-      console.warn('[MapCard] Failed to pre-render auras:', e)
-    }
   }
-})
+}
 
-onUnmounted(() => {
-  if (resizeObserver) resizeObserver.disconnect()
-  if (intersectionObserver) intersectionObserver.disconnect()
-  if (auraContext) auraContext.revert()
-  if (pillContext) pillContext.revert()
-})
-
-
-
-const lockReason = computed(() => {
-  if (props.isSafariLocked) return 'REQUIERE TICKET SAFARI'
-  if (gameStore.isSaveLocked && !uiStore.hasDismissedSessionLock) return 'SESIÓN BLOQUEADA'
-  if (!props.isLocked) return ''
-  const requiredBadges = props.map.badges || 0
-  if (props.badgeCount < requiredBadges) return `REQUIERE ${requiredBadges} MEDALLAS`
-  return 'BLOQUEADO'
-})
-
-const isLocked = computed(() => {
-  if (props.isLocked) return true
-  if (gameStore.isSaveLocked && !uiStore.hasDismissedSessionLock) return true
-  return false
-})
-
-const lockDescription = computed(() => {
-  if (props.isSafariLocked) return 'Necesitas un Ticket Safari para entrar a esta zona.'
-  if (gameStore.isSaveLocked && !uiStore.hasDismissedSessionLock) return 'Sesión activa en otra pestaña. Toma el control para habilitar el guardado.'
-  if (!props.isLocked) return ''
-  return `Consigue ${props.map.badges} medallas para acceder a esta zona.`
-})
-
-const spawnGrid = computed(() => {
-  const weather = computedWeather.value
-  const cycle = props.cycle || 'day'
-  const wildList = props.map.wild?.[cycle] || []
-
-  // Filtrar Pokémon bloqueados por el clima (Multiplier = 0) o desactivados/fuera de hora (0% probabilidad)
-  const filteredSpawns = allSpawns.value.filter(id => {
-    const isVisitor = !!(props.map.weather?.[weather]?.visitors as Record<string, unknown>)?.[id]
-    const isExclusive = !!(props.map.weather?.[weather]?.exclusive as Record<string, unknown>)?.[id]
-    const isFishingActive = !!props.map.fishing?.pool?.includes(id)
-    const hasWildRestrictions = !!props.map.wild
-    const isWildActive = !hasWildRestrictions || wildList.includes(id) || isVisitor || isExclusive || isFishingActive
-
-    return isWildActive && getWeatherMultiplier(id, weather) > 0
-  })
-
-  const { rows, cols, totalSlots } = calculateSpawnGrid(filteredSpawns.length, currentCols.value)
-  const grid = new Array(totalSlots).fill(null)
-  filteredSpawns.forEach((id, index) => { grid[totalSlots - 1 - index] = id })
-  return { slots: grid, rows, cols }
-})
-
-watch(() => spawnGrid.value.slots, (newVal, oldVal) => {
-  if (oldVal && newVal.length === oldVal.length && newVal.every((val, i) => val === oldVal[i])) {
+const onPokeballMouseLeave = () => {
+  if (uiStore.isLowPowerActive) {
+    if (pokeballTriggerRef.value) {
+      gsap.set(pokeballTriggerRef.value, { clearProps: 'transform,x,y,scale' })
+    }
     return
   }
-  if (isVisible.value) {
-    gsap.killTweensOf(initAuraAnimations)
-    gsap.delayedCall(0.05, initAuraAnimations)
-  }
-}, { deep: false })
-
-watch(
-  [
-    isVisible,
-    isPerformanceMode,
-    () => uiStore.isLowPowerActive,
-    computedWeather,
-    () => props.dominance?.winner,
-    () => props.map.fishing,
-    () => props.map.archaeology,
-    isPlayerWinner
-  ],
-  () => {
-    nextTick(() => {
-      initPillAnimations()
-    })
-  },
-  { flush: 'post' }
-)
-
-watch(spawnGridRef, (newRef) => {
-  if (newRef && isVisible.value) {
-    gsap.killTweensOf(initAuraAnimations)
-    gsap.delayedCall(0.05, initAuraAnimations)
-  } else if (!newRef) {
-    if (auraContext) {
-      auraContext.revert()
-      auraContext = null
-    }
-  }
-}, { flush: 'post' })
-
-// Watch spawn grid to process and cache outlines
-watch(
-  () => processedGrid.value,
-  (newGrid) => {
-    if (!newGrid) return
-    newGrid.forEach(async (item) => {
-      if (!item.id || !item.sprite) return
-      const key = `${item.key}-${item.isCaught}`
-      if (processedSprites.value[key]) return
-
-      const type = !item.isCaught ? 'silhouette' : 'outline'
-      try {
-        const processed = await getProcessedSprite(item.sprite, type)
-        processedSprites.value[key] = processed
-      } catch (e) {
-        console.warn('[MapCard] Failed to process outline for spawn:', item.id, e)
+  if (pokeballTriggerRef.value) {
+    gsap.to(pokeballTriggerRef.value, {
+      x: 0,
+      y: 0,
+      scale: 1,
+      duration: 0.25,
+      ease: 'power2.out',
+      overwrite: 'auto',
+      onComplete: () => {
+        gsap.set(pokeballTriggerRef.value, { clearProps: 'transform,x,y,scale' })
       }
     })
-  },
-  { immediate: true, deep: true }
-)
+  }
+}
 
-// Watch guardian to process outline
-watch(
-  () => processedGuardian.value,
-  async (newGuardian) => {
-    if (!newGuardian || !newGuardian.sprite) {
-      guardianProcessedSprite.value = ''
-      return
-    }
-    const type = !newGuardian.isCaught ? 'silhouette' : 'outline'
-    try {
-      const processed = await getProcessedSprite(newGuardian.sprite, type)
-      guardianProcessedSprite.value = processed
-    } catch (e) {
-      console.warn('[MapCard] Failed to process outline for guardian:', newGuardian.id, e)
-    }
-  },
-  { immediate: true }
-)
+import { useWeatherVisuals } from '@/composables/useWeatherVisuals'
+const { weatherOnlyFilter } = useWeatherVisuals({
+  weather: computedWeather,
+  cycle: computed(() => props.cycle)
+})
 </script>
 
 <template>
@@ -995,7 +522,7 @@ watch(
         '--pre-rendered-atmos-aura': processedAtmosAura ? `url('${processedAtmosAura}')` : 'none'
       }"
     >
-      <!-- Real divs for background and overlay to support GSAP animations -->
+      <!-- Background and overlay -->
       <div 
         ref="bgRef"
         class="map-card-bg"
@@ -1064,23 +591,9 @@ watch(
         </span>
       </PVTooltip>
 
-      <!-- 3. Faction Status (Middle Left, below Guardian) -->
-      <PVTooltip
-        v-if="dominance?.winner && dominance?.winner !== 'none' && !isPerformanceMode && !isLocked && !isSafariLocked && isVisible"
-        ref="factionPillRef"
-        class="faction-status-pill"
-        title="DOMINIO FACCIÓN"
-        :description="`Controlado por ${dominance.winner === 'union' ? 'Unión' : 'Poder'}`"
-        position="top"
-      >
-        <div class="pill-content">
-          <span class="faction-emoji">
-            {{ dominance.winner === 'union' ? '⭐' : '✊' }}
-          </span>
-        </div>
-      </PVTooltip>
-
-      <!-- 4. Bottom Left Actions (Fishing & Archaeology) -->
+      <!-- 4. Bottom Left Actions — all 4 left pills in one container (grows upward from bottom) -->
+      <!-- DOM order (column-reverse): fishing → archaeology → faction → crown -->
+      <!-- Visual order from bottom: fishing, archaeology, faction, crown -->
       <div class="map-left-pills-container">
         <!-- Fishing Icon -->
         <PVTooltip
@@ -1113,108 +626,66 @@ watch(
             <span class="pill-icon">⛏️</span>
           </div>
         </PVTooltip>
-      </div>
 
-      <!-- 5. Spawns Grid (MOVED UP to be behind other UI elements) -->
-      <div
-        v-if="!isLocked && !isPerformanceMode && isVisible && !uiStore.hideMapPokemon"
-        class="location-spawns"
-      >
-        <div 
-          ref="spawnGridRef"
-          class="spawn-grid-container" 
-          :style="{ '--grid-cols': spawnGrid.cols, '--grid-rows': spawnGrid.rows }"
-          :class="{ 'show-debug-grid': uiStore.isDebugGridMode }"
+        <!-- Faction Status Pill -->
+        <PVTooltip
+          v-if="dominance?.winner && dominance?.winner !== 'none' && !isPerformanceMode && !isLocked && !isSafariLocked && isVisible"
+          ref="factionPillRef"
+          class="faction-status-pill"
+          title="DOMINIO FACCIÓN"
+          :description="`Controlado por ${dominance.winner === 'union' ? 'Unión' : 'Poder'}`"
+          position="top"
         >
-          <div
-            v-for="item in processedGrid"
-            :key="item.key"
-            class="spawn-slot"
-          >
-            <div
-              v-if="item.id"
-              class="spawn-content"
-            >
-              <!-- AURA DIVS (GSAP target) -->
-              <div
-                v-if="item.isRare"
-                class="aura-effect rare-aura"
-                :class="{ 
-                  'is-low-power': uiStore.isLowPowerActive,
-                  'is-pre-rendered': !!processedRareAura
-                }"
-              />
-              <div
-                v-if="item.isAtmospheric"
-                class="aura-effect atmospheric-aura"
-                :class="{ 
-                  'is-low-power': uiStore.isLowPowerActive,
-                  'is-pre-rendered': !!processedAtmosAura
-                }"
-              />
-
-              <div 
-                :class="['sprite-wrapper', { 
-                  'rare-spawn': item.isRare, 
-                  'atmospheric-spawn': item.isAtmospheric
-                }]"
-                :style="{ '--spawn-seed': item.seed }"
-              >
-                <PVTooltip
-                  :title="item.tooltipTitle"
-                  :description="item.tooltipDesc"
-                  position="top"
-                  class="spawn-tooltip-trigger"
-                >
-                  <div class="spawn-atmosphere-wrapper">
-                    <img
-                      :src="processedSprites[item.key + '-' + item.isCaught] || item.sprite"
-                      class="pixelated"
-                      :class="{ 
-                        'spawn-silhouette': !processedSprites[item.key + '-' + item.isCaught] && !item.isCaught,
-                        'is-pre-rendered': !!processedSprites[item.key + '-' + item.isCaught]
-                      }"
-                      @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
-                    >
-                  </div>
-                </PVTooltip>
-              </div>
-            </div>
+          <div class="pill-content">
+            <span class="faction-emoji">
+              {{ dominance.winner === 'union' ? '⭐' : '✊' }}
+            </span>
           </div>
-        </div>
+        </PVTooltip>
+
+        <!-- Winner Crown -->
+        <PVTooltip
+          v-if="isPlayerWinner && !isPerformanceMode && !isLocked && !isSafariLocked"
+          ref="crownRef"
+          class="dom-badge winning"
+          title="DOMINADO"
+          description="¡Bonus de captura activo por dominio de facción!"
+          position="top"
+        >
+          <div class="crown-glow-wrapper">
+            <div 
+              v-if="!uiStore.isLowPowerActive" 
+              class="crown-shine-aura" 
+            />
+            <span class="pill-content">👑</span>
+          </div>
+        </PVTooltip>
       </div>
 
-      <div
-        v-if="!isPerformanceMode"
-        class="location-header"
-      >
-        <div class="location-name">
-          {{ map.name }}
-        </div>
-        <div class="location-desc">
-          {{ map.desc }}
-        </div>
-      </div>
+      <!-- 5. Spawns Grid (Rendered using MapCardSpawns subcomponent) -->
+      <MapCardSpawns
+        ref="spawnsRef"
+        :is-locked="isLocked"
+        :is-performance-mode="isPerformanceMode"
+        :is-visible="isVisible"
+        :hide-map-pokemon="uiStore.hideMapPokemon"
+        :is-debug-grid-mode="uiStore.isDebugGridMode"
+        :spawn-grid="spawnGrid"
+        :processed-grid="processedGrid"
+        :processed-sprites="processedSprites"
+        :processed-rare-aura="processedRareAura"
+        :processed-atmos-aura="processedAtmosAura"
+        :is-low-power-active="uiStore.isLowPowerActive"
+      />
 
-      <!-- 6. Winner Crown (Bottom Right) -->
-      <PVTooltip
-        v-if="isPlayerWinner && !isPerformanceMode && !isLocked && !isSafariLocked"
-        ref="crownRef"
-        class="dom-badge winning"
-        title="DOMINADO"
-        description="¡Bonus de captura activo por dominio de facción!"
-        position="top"
-      >
-        <div class="crown-glow-wrapper">
-          <div 
-            v-if="!uiStore.isLowPowerActive" 
-            class="crown-shine-aura" 
-          />
-          <span class="pill-content">👑</span>
-        </div>
-      </PVTooltip>
+      <!-- 6. Map Name/Header -->
+      <MapCardHeader
+        :name="map.name"
+        :desc="map.desc || ''"
+        :is-performance-mode="isPerformanceMode"
+      />
 
-      <!-- 7. Spawns Report Pokéball Trigger (Bottom Right Corner) -->
+      <!-- 8. Spawns Report Pokéball Trigger (Bottom Right Corner) -->
       <PVTooltip
         v-if="!isLocked && !isSafariLocked && !isPerformanceMode"
         title="REPORTE DE ENCUENTROS"
@@ -1233,6 +704,8 @@ watch(
             :src="getAssetUrl(ASSET_TYPES.ITEM, 'poke-ball')"
             class="pokeball-icon"
             alt="Spawns"
+            @mouseenter="onPokeballMouseEnter"
+            @mouseleave="onPokeballMouseLeave"
           >
         </div>
       </PVTooltip>
@@ -1324,23 +797,7 @@ watch(
   }
 }
 
-.spawn-tooltip-trigger {
-  position: relative;
-  z-index: calc(var(--z-map-floor) + 1);
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  pointer-events: auto;
-}
-
 :deep(.dom-badge) {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  font-size: 16px !important;
-
   .crown-glow-wrapper {
     position: relative;
     width: 100%;
@@ -1357,11 +814,11 @@ watch(
     left: 50% !important;
     width: 38px;
     height: 38px;
-    margin-top: -21px !important; // Align with the crown emoji's visual vertical offset
+    margin-top: -21px !important;
     margin-left: -19px !important;
     background-color: Rgba(255, 215, 0, 0.8) !important;
     pointer-events: none;
-    z-index: calc(var(--z-base) - 1) !important; // Sit behind the crown
+    z-index: calc(var(--z-base) - 1) !important;
     opacity: 0.65;
     will-change: transform, opacity;
 

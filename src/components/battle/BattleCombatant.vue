@@ -692,13 +692,13 @@ watch(() => props.isShaking, (shaking) => {
   } 
   // Si NO hay Pokebola, animamos al Sprite del Pokémon (Daño en combate)
   else if (!props.isCaptureSuccess) {
-    if (shaking && spriteRotationRef.value) {
+    if (shaking && spriteRef.value) {
       const shakeDist = props.side === 'player' ? -10 : 10
-      // Usamos spriteRotationRef para que la sombra (que está fuera) NO parpadee ni se mueva
-      gsap.set(spriteRotationRef.value, { transition: "none" })
+      // Usamos spriteRef para asegurar que la animación se ejecute sin conflictos de clases de transform
+      gsap.set(spriteRef.value, { transition: "none" })
       
       // Movimiento físico
-      gsap.fromTo(spriteRotationRef.value,
+      gsap.fromTo(spriteRef.value,
         { x: 0 },
         { 
           x: shakeDist, 
@@ -706,7 +706,7 @@ watch(() => props.isShaking, (shaking) => {
           yoyo: true, 
           repeat: 5, 
           ease: 'power1.inOut',
-          onComplete: () => { if (spriteRotationRef.value) gsap.set(spriteRotationRef.value, { clearProps: "x,opacity,transition" }) }
+          onComplete: () => { if (spriteRef.value) gsap.set(spriteRef.value, { clearProps: "x,opacity,transition" }) }
         }
       )
 
@@ -719,7 +719,7 @@ watch(() => props.isShaking, (shaking) => {
         { t: 0.48, op: 1 }
       ]
       blinkPattern.forEach(b => {
-        tl.set(spriteRotationRef.value, { opacity: b.op }, b.t)
+        tl.set(spriteRef.value, { opacity: b.op }, b.t)
       })
     }
   }
@@ -737,10 +737,10 @@ watch(() => props.isBlinking, (blinking) => {
   } 
   // Si NO hay Pokebola, animamos al Sprite del Pokémon (Daño en combate)
   else if (!props.isCaptureSuccess) {
-    if (blinking && spriteRotationRef.value) {
+    if (blinking && spriteRef.value) {
       const shakeDist = props.side === 'player' ? -10 : 10
-      gsap.set(spriteRotationRef.value, { transition: "none" })
-      gsap.fromTo(spriteRotationRef.value,
+      gsap.set(spriteRef.value, { transition: "none" })
+      gsap.fromTo(spriteRef.value,
         { x: 0, filter: 'Brightness(1)' },
         { 
           x: shakeDist,
@@ -749,7 +749,7 @@ watch(() => props.isBlinking, (blinking) => {
           yoyo: true, 
           repeat: 5, 
           ease: 'power1.inOut',
-          onComplete: () => { if (spriteRotationRef.value) gsap.set(spriteRotationRef.value, { clearProps: "x,filter,transition" }) }
+          onComplete: () => { if (spriteRef.value) gsap.set(spriteRef.value, { clearProps: "x,filter,transition" }) }
         }
       )
     }

@@ -302,6 +302,7 @@ export function useBattleCaptureAnimations(
       slot.animState = 'catching'
       
       const pokemon = side === 'player' ? battleStore.player : toValue(enemyRef)
+      slot.pokemonUid = pokemon?.uid || null
       if (pokemon?.tags) {
         const ballTag = pokemon.tags.find(t => t.startsWith('ball:'))
         if (ballTag) {
@@ -323,6 +324,8 @@ export function useBattleCaptureAnimations(
         onComplete: () => {
           isFaintInProgress.value = false 
           faintedPokemonSnapshot.value = null 
+          slot.pokemonUid = null
+          slot.animState = null
         }
       })
     } else {

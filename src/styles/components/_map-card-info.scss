@@ -79,9 +79,20 @@
 
 .faction-status-pill {
   @extend .map-pill;
-  position: absolute;
-  top: 65px;
-  left: 12px;
+  width: 32px;
+  min-width: 32px;
+  height: 32px;
+  padding: 0;
+  
+  .pill-content {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+    height: 100% !important;
+    line-height: 1 !important;
+    transform: Translatey(-4px) !important;
+  }
   
   .faction-emoji {
     font-size: 16px;
@@ -96,8 +107,8 @@
 .location-tag {
   @extend .map-pill;
   position: absolute;
-  top: 12px;
-  right: 12px;
+  top: 6px;   // Aligned with guardian badge (top: 6px)
+  right: 8px; // Aligned with grid right edge (right: 8px)
   font-size: 18px;
   color: Rgba(255, 204, 0, 1);
 
@@ -113,18 +124,21 @@
 
 .map-left-pills-container {
   position: absolute;
-  bottom: 15px;
-  left: 12px;
+  bottom: 12px;
+  left: 6px; // Aligned with guardian badge (left: 6px)
   z-index: var(--z-map-ui) !important;
   display: flex;
   flex-direction: column-reverse;
-  gap: 8px;
+  gap: 3px; // Reduced gap so the stack stays away from the guardian
 }
 
 .fishing-pill-standalone,
-.archaeology-pill-standalone {
+.archaeology-pill-standalone,
+.faction-status-pill,
+.dom-badge {
   display: block;
 }
+
 
 .interactive-pill {
   @extend .map-pill;
