@@ -140,7 +140,8 @@ export const useMapStore = defineStore('map', () => {
           activeEvents: activeEvents.value,
           dominanceData: mapWinners.value,
           shinyMultiplier: eventStore.globalMultipliers?.shiny || 1,
-          weather: currentWeather.value
+          weather: currentWeather.value,
+          eventFishingBonus: eventStore.globalMultipliers?.fishing || 1
         })
 
 
@@ -186,19 +187,71 @@ export const useMapStore = defineStore('map', () => {
     const { SHOP_ITEMS } = await import('@/data/items.ts')
     const { getAssetUrl, ASSET_TYPES } = await import('@/logic/services/assetService.ts')
 
-    let rolls = 1
-    if (difficulty === 'medium') rolls = 2
-    else if (difficulty === 'hard') rolls = 3
-    else if (difficulty === 'expert') rolls = 4
+    let maxRolls = 1
+    if (difficulty === 'medium') maxRolls = 2
+    else if (difficulty === 'hard') maxRolls = 3
+    else if (difficulty === 'expert') maxRolls = 4
 
-    for (let r = 0; r < rolls; r++) {
-      // Determinar recompensa (45% Fósil, 25% Piedra Evo, 30% Mineral/Valioso)
-      const rand = Math.random() * 100
+    const categoryWeights = {
+      fossil: 45,
+      stone: 25,
+      common: 20,
+      rare: 10
+    }
+
+    const pickaxeType = gs.state.pickaxeSecs > 0 ? (gs.state.pickaxeType || 'standard') : null
+    const brushType = gs.state.brushSecs > 0 ? (gs.state.brushType || 'standard') : null
+
+    if (pickaxeType === 'good' || pickaxeType === 'super') {
+      const budget = pickaxeType === 'good' ? 500 : 1000
+      const affected = [
+        { key: 'rare', base: 10 },
+        { key: 'common', base: 20 },
+        { key: 'stone', base: 25 }
+      ]
+      let remaining = budget
+      for (let i = 0; i < affected.length; i++) {
+        const item = affected[i]!
+        let added = 0
+        if (i === affected.length - 1) {
+          added = remaining
+        } else {
+          added = Math.round(remaining * 0.5)
+        }
+        categoryWeights[item.key as 'rare' | 'common' | 'stone'] += added
+        remaining -= added
+      }
+    }
+
+    if (brushType === 'good' || brushType === 'super') {
+      const budget = brushType === 'good' ? 500 : 1000
+      categoryWeights.fossil += budget
+    }
+
+    const totalWeight = categoryWeights.fossil + categoryWeights.stone + categoryWeights.common + categoryWeights.rare
+
+    for (let r = 0; r < maxRolls; r++) {
+      if (r > 0 && Math.random() >= 0.5) {
+        continue // 50% chance for subsequent rolls
+      }
+
+      const rand = Math.random() * totalWeight
+      let selectedCategory: 'fossil' | 'stone' | 'common' | 'rare' = 'common'
+      
+      if (rand < categoryWeights.fossil) {
+        selectedCategory = 'fossil'
+      } else if (rand < categoryWeights.fossil + categoryWeights.stone) {
+        selectedCategory = 'stone'
+      } else if (rand < categoryWeights.fossil + categoryWeights.stone + categoryWeights.common) {
+        selectedCategory = 'common'
+      } else {
+        selectedCategory = 'rare'
+      }
+
       let rewardName = ''
       let rewardIcon = '💎'
 
-      if (rand < 45) {
-        // 45% Fósil basado en el pool de arqueología del mapa
+      if (selectedCategory === 'fossil') {
         const pool = loc?.archaeology?.pool || ['kabuto', 'omanyte']
         const selectedPoke = pool[Math.floor(Math.random() * pool.length)]
         if (selectedPoke === 'kabuto') {
@@ -211,8 +264,7 @@ export const useMapStore = defineStore('map', () => {
           rewardName = 'Ámbar Viejo'
           rewardIcon = '💎'
         }
-      } else if (rand < 70) {
-        // 25% Piedra evolutiva
+      } else if (selectedCategory === 'stone') {
         const stones = [
           { name: 'Piedra Fuego', icon: '🔥' },
           { name: 'Piedra Agua', icon: '💧' },
@@ -224,41 +276,35 @@ export const useMapStore = defineStore('map', () => {
         const stone = stones[Math.floor(Math.random() * stones.length)]!
         rewardName = stone.name
         rewardIcon = stone.icon
+      } else if (selectedCategory === 'common') {
+        const commons = [
+          { name: 'Perla', icon: '⚪' },
+          { name: 'Polvo Estelar', icon: '✨' },
+          { name: 'Mineral de Carbón', icon: '🪨' },
+          { name: 'Mineral de Cobre', icon: '🟫' },
+          { name: 'Mineral de Hierro', icon: '🧱' }
+        ]
+        const item = commons[Math.floor(Math.random() * commons.length)]!
+        rewardName = item.name
+        rewardIcon = item.icon
       } else {
-        // 30% Objeto Valioso / Mineral natural
-        const oreRand = Math.random() * 100
-        if (oreRand < 66) {
-          // 20% del total (comunes y minerales básicos)
-          const commons = [
-            { name: 'Perla', icon: '⚪' },
-            { name: 'Polvo Estelar', icon: '✨' },
-            { name: 'Mineral de Carbón', icon: '🪨' },
-            { name: 'Mineral de Cobre', icon: '🟫' },
-            { name: 'Mineral de Hierro', icon: '🧱' }
-          ]
-          const item = commons[Math.floor(Math.random() * commons.length)]!
-          rewardName = item.name
-          rewardIcon = item.icon
-        } else {
-          // 10% del total (valiosos raros y metales/gemas premium)
-          const rares = [
-            { name: 'Pepita', icon: '🟡' },
-            { name: 'Perla Grande', icon: '🔘' },
-            { name: 'Trozo Estrella', icon: '⭐' },
-            { name: 'Mineral de Plata', icon: '⬜' },
-            { name: 'Mineral de Oro', icon: '🟨' },
-            { name: 'Mineral de Wolframio', icon: '🌑' },
-            { name: 'Mineral de Uranio', icon: '🟢' },
-            { name: 'Mineral de Rubí', icon: '🔺' },
-            { name: 'Mineral de Zafiro', icon: '🔹' },
-            { name: 'Mineral de Esmeralda', icon: '💚' },
-            { name: 'Mineral de Topacio', icon: '🟡' },
-            { name: 'Mineral de Diamante', icon: '💎' }
-          ]
-          const item = rares[Math.floor(Math.random() * rares.length)]!
-          rewardName = item.name
-          rewardIcon = item.icon
-        }
+        const rares = [
+          { name: 'Pepita', icon: '🟡' },
+          { name: 'Perla Grande', icon: '🔘' },
+          { name: 'Trozo Estrella', icon: '⭐' },
+          { name: 'Mineral de Plata', icon: '⬜' },
+          { name: 'Mineral de Oro', icon: '🟨' },
+          { name: 'Mineral de Wolframio', icon: '🌑' },
+          { name: 'Mineral de Uranio', icon: '🟢' },
+          { name: 'Mineral de Rubí', icon: '🔺' },
+          { name: 'Mineral de Zafiro', icon: '🔹' },
+          { name: 'Mineral de Esmeralda', icon: '💚' },
+          { name: 'Mineral de Topacio', icon: '🟡' },
+          { name: 'Mineral de Diamante', icon: '💎' }
+        ]
+        const item = rares[Math.floor(Math.random() * rares.length)]!
+        rewardName = item.name
+        rewardIcon = item.icon
       }
 
       const itemData = SHOP_ITEMS.find(i => i.name.toLowerCase() === rewardName.toLowerCase())

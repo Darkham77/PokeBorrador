@@ -430,7 +430,7 @@ export async function calculateBattleRewards(ctx: BattleContext) {
         }
 
         // Sincronizar evolución por nivel
-        if (p.heldItem === 'Piedra Eterna') {
+        if (p.heldItem === 'everstone') {
           ctx.addLog(`${p.name} evitó evolucionar debido a la Piedra Eterna.`, 'log-info', p)
         } else {
           const { checkLevelUpEvolution } = await import('../evolutionLogic.ts')
@@ -596,7 +596,7 @@ export async function awardDebugExp(ctx: BattleContext) {
       }
 
       // Sincronizar evolución por nivel en debug
-      if (teamPoke.heldItem === 'Piedra Eterna') {
+      if (teamPoke.heldItem === 'everstone') {
         ctx.addLog(`${teamPoke.name} evitó evolucionar debido a la Piedra Eterna.`, 'log-info', teamPoke)
       } else {
         const { checkLevelUpEvolution } = await import('../evolutionLogic.ts')

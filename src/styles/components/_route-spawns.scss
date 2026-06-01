@@ -629,3 +629,22 @@
   }
 }
 
+// Table column width overrides for tables without 'Estado' (col-type)
+.fishing-table, .archaeology-table {
+  .col-pokemon {
+    width: 32% !important;
+  }
+  .col-types {
+    width: 18% !important;
+  }
+  .col-multiplier {
+    width: 22% !important;
+  }
+  .col-prob {
+    width: 18% !important;
+  }
+  .col-stats {
+    width: 10% !important;
+  }
+}
+

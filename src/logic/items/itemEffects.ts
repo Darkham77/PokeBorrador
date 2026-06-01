@@ -97,8 +97,15 @@ export const itemEffects: Record<string, (p: unknown) => ItemEffectResult> = {
   }),
 
   // --- Buffs Globales ---
-  'Caña de pescar': stateEffect((_state) => { useBuffsStore().addBuff('fishing-rod', 20 * 60); return { success: true, message: `activó una Caña de pescar (20 min)` }; }),
-  'Pico de excavación': stateEffect((_state) => { useBuffsStore().addBuff('pickaxe', 20 * 60); return { success: true, message: `activó un Pico de excavación (20 min)` }; }),
+  'Caña de pescar': stateEffect((_state) => { useBuffsStore().addBuff('fishing-rod', 20 * 60, 'standard'); return { success: true, message: `activó una Caña de pescar (20 min)` }; }),
+  'Caña Buena': stateEffect((_state) => { useBuffsStore().addBuff('fishing-rod', 40 * 60, 'good'); return { success: true, message: `activó una Caña Buena (40 min)` }; }),
+  'Supercaña': stateEffect((_state) => { useBuffsStore().addBuff('fishing-rod', 60 * 60, 'super'); return { success: true, message: `activó la Supercaña (60 min)` }; }),
+  'Pico de excavación': stateEffect((_state) => { useBuffsStore().addBuff('pickaxe', 20 * 60, 'standard'); return { success: true, message: `activó un Pico de excavación (20 min)` }; }),
+  'Pico Bueno': stateEffect((_state) => { useBuffsStore().addBuff('pickaxe', 40 * 60, 'good'); return { success: true, message: `activó un Pico Bueno (40 min)` }; }),
+  'Superpico': stateEffect((_state) => { useBuffsStore().addBuff('pickaxe', 60 * 60, 'super'); return { success: true, message: `activó el Superpico (60 min)` }; }),
+  'Pincel de excavación': stateEffect((_state) => { useBuffsStore().addBuff('brush', 20 * 60, 'standard'); return { success: true, message: `activó un Pincel de excavación (20 min)` }; }),
+  'Pincel Bueno': stateEffect((_state) => { useBuffsStore().addBuff('brush', 40 * 60, 'good'); return { success: true, message: `activó un Pincel Bueno (40 min)` }; }),
+  'Superpincel': stateEffect((_state) => { useBuffsStore().addBuff('brush', 60 * 60, 'super'); return { success: true, message: `activó el Superpincel (60 min)` }; }),
   'Repelente': stateEffect((_state) => { useBuffsStore().addBuff('repel', 5 * 60); return { success: true, message: `activó un Repelente (5 min)` }; }),
   'Superrepelente': stateEffect((_state) => { useBuffsStore().addBuff('repel', 15 * 60); return { success: true, message: `activó un Superrepelente (15 min)` }; }),
   'Máximo Repelente': stateEffect((_state) => { useBuffsStore().addBuff('repel', 30 * 60); return { success: true, message: `activó un Máximo Repelente (30 min)` }; }),

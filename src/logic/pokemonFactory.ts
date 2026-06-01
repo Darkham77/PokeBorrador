@@ -480,7 +480,7 @@ export function makePokemon(idVal: string | number, level: number, options: Poke
 export function levelUpPokemon(p: Pokemon): PokemonMove[] | null {
   if (p.level >= MAX_POKEMON_LEVEL) return [];
   // Everstone block
-  if (p.heldItem === 'Piedra Eterna') return null;
+  if (p.heldItem === 'everstone') return null;
 
   p.level++;
   if (p.level >= MAX_POKEMON_LEVEL) {

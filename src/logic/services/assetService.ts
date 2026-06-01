@@ -309,12 +309,13 @@ export const getAssetUrl = (type: AssetType, rawId: string | number, options: As
       const mappedAlias = itemAliases[normalizedInput] || itemAliases[idStr];
       const searchName = mappedAlias || idStr;
 
-      // 1. Check SHOP_ITEMS first by name or id
       const shopItem = SHOP_ITEMS.find(i => 
         i.name.toLowerCase() === searchName || 
         i.id.toLowerCase() === searchName ||
+        (i.sprite && i.sprite.toLowerCase() === searchName) ||
         i.name.toLowerCase() === idStr ||
-        i.id.toLowerCase() === idStr
+        i.id.toLowerCase() === idStr ||
+        (i.sprite && i.sprite.toLowerCase() === idStr)
       );
       
       const mappedId = shopItem 
@@ -334,7 +335,7 @@ export const getAssetUrl = (type: AssetType, rawId: string | number, options: As
                        mappedId.includes('fossil') ||
                        ['potion', 'revive', 'heal', 'ether', 'elixir', 'antidote', 'share', 'leftovers', 'bell', 'band', 'sash', 'lens', 'candy', 'up', 'egg', 'nugget', 'pearl', 'dust', 'piece', 'spoon', 'tag', 'powder', 'club', 'light', 'stick', 'ticket', 'radar', 'awakening', 'magnet'].some(k => mappedId.includes(k));
 
-      if (mappedId === 'fishing_rod' || mappedId === 'pickaxe') {
+      if (mappedId.startsWith('fishing_rod') || mappedId.startsWith('pickaxe') || mappedId.startsWith('brush')) {
         return resolveAsset(`/assets/sprites/tools/${mappedId}${extension}`);
       }
 

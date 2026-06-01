@@ -83,8 +83,8 @@ describe('Battle Stale Flow Safety Tests', () => {
     // Set a new enemy that should theoretically get damaged by weather (sandstorm)
     mockCtx.activeBattle.value!.enemy = { uid: 'zubat', name: 'Zubat', hp: 50, maxHp: 50, type: 'poison' } as unknown as Pokemon
     mockCtx.activeBattle.value!.weather = { type: 'sandstorm', visual: 'sandstorm', turns: 5 }
-    mockCtx.playerStages = { value: {} } as any
-    mockCtx.enemyStages = { value: {} } as any
+    mockCtx.playerStages = { value: {} } as unknown as import('vue').Ref<import('@/types/battle').BattleStages>
+    mockCtx.enemyStages = { value: {} } as unknown as import('vue').Ref<import('@/types/battle').BattleStages>
 
     await applyEndTurnEffects(mockCtx)
 

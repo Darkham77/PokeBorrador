@@ -119,3 +119,18 @@ body .pixelated {
   @include text-outline(var(--black, #000), 1px);
 }
 
+.tint-silver {
+  filter: Grayscale(1) Brightness(1.2) contrast(1.1) Drop-Shadow(0 4px 8px Rgba(0, 0, 0, 0.3)) !important;
+}
+
+.tint-gold {
+  filter: sepia(1) Saturate(12) hue-rotate(5deg) Brightness(0.95) contrast(1.2) Drop-Shadow(0 4px 8px Rgba(0, 0, 0, 0.3)) !important;
+}
+
+.tint-silver-blue {
+  filter: Saturate(0.8) hue-rotate(180deg) Brightness(1.2) contrast(1.1) Drop-Shadow(0 4px 8px Rgba(0, 0, 0, 0.3)) !important;
+}
+
+.tint-red-gold {
+  filter: Saturate(1.8) hue-rotate(330deg) Brightness(1.0) contrast(1.2) Drop-Shadow(0 4px 8px Rgba(0, 0, 0, 0.3)) !important;
+}

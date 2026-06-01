@@ -182,7 +182,19 @@ function normalizeData(state: GameState): GameState {
   if (!state) return state;
 
   if (state.fishingRodSecs === undefined) state.fishingRodSecs = 0;
+  if (state.fishingRodType === undefined) state.fishingRodType = null;
+  if (state.fishingRodType === ('silver' as unknown)) state.fishingRodType = 'good';
+  if (state.fishingRodType === ('gold' as unknown)) state.fishingRodType = 'super';
+  
   if (state.pickaxeSecs === undefined) state.pickaxeSecs = 0;
+  if (state.pickaxeType === undefined) state.pickaxeType = null;
+  if (state.pickaxeType === ('silver' as unknown)) state.pickaxeType = 'good';
+  if (state.pickaxeType === ('gold' as unknown)) state.pickaxeType = 'super';
+
+  if (state.brushSecs === undefined) state.brushSecs = 0;
+  if (state.brushType === undefined) state.brushType = null;
+  if (state.brushType === ('silver' as unknown)) state.brushType = 'good';
+  if (state.brushType === ('gold' as unknown)) state.brushType = 'super';
 
   // Ensure arrays exist
   if (!Array.isArray(state.team)) state.team = [];

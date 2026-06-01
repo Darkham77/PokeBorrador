@@ -88,7 +88,11 @@ export interface GameState {
   mewtwoTicketSecs: number;
   repelSecs: number;
   fishingRodSecs: number;
+  fishingRodType: 'standard' | 'good' | 'super' | null;
   pickaxeSecs: number;
+  pickaxeType: 'standard' | 'good' | 'super' | null;
+  brushSecs: number;
+  brushType: 'standard' | 'good' | 'super' | null;
   shinyBoostSecs: number;
   amuletCoinSecs: number;
   luckyEggSecs: number;

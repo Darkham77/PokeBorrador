@@ -8,7 +8,7 @@ import { useUIStore } from './ui.ts'
 import { safeStorage } from '@/logic/utils/storage'
 import { SHOP_ITEMS } from '@/data/items'
 import { itemEffects as ITEM_EFFECTS, getDynamicItemEffect } from '@/logic/items/itemEffects'
-import { isGlobalItem } from '../logic/providers/itemProvider.ts'
+import { isGlobalItem, getItemVirtualCategory } from '../logic/providers/itemProvider.ts'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import type { Pokemon, Move } from '@/types/pokemon'
 import type { ItemEffectResult } from '@/types/items'
@@ -63,7 +63,14 @@ function resolveNormalizedName(name: string): string {
     'lazodestino': 'Lazo Destino',
     'caramelovigor': 'Caramelo de vigor',
     'fishingrod': 'Caña de pescar',
-    'pickaxe': 'Pico de excavación'
+    'fishingrodgood': 'Caña Buena',
+    'fishingrodsuper': 'Supercaña',
+    'pickaxe': 'Pico de excavación',
+    'pickaxesilver': 'Pico Bueno',
+    'pickaxegold': 'Superpico',
+    'brush': 'Pincel de excavación',
+    'brushgood': 'Pincel Bueno',
+    'brushsuper': 'Superpincel'
   };
 
   return aliases[norm] || name;
@@ -166,7 +173,8 @@ export const useInventoryStore = defineStore('inventory', () => {
 
     return items.filter(item => {
       if (item.qty <= 0) return false
-      if (activeCategory.value !== 'todos' && activeCategory.value !== 'utilizables' && item.cat !== activeCategory.value) return false
+      const resolvedCat = getItemVirtualCategory(item)
+      if (activeCategory.value !== 'todos' && activeCategory.value !== 'utilizables' && resolvedCat !== activeCategory.value) return false
       if (searchQuery.value && !item.name.toLowerCase().includes(searchQuery.value.toLowerCase())) return false
       return true
     })
@@ -178,6 +186,9 @@ export const useInventoryStore = defineStore('inventory', () => {
     pokeballs: 'Balls',
     pociones: 'Cura',
     stones: 'Piedras',
+    minerals: 'Minerales y Fósiles',
+    purified: 'Materiales Purificados',
+    tools: 'Herramientas',
     held: 'Equipo',
     breeding: 'Crianza',
     especial: 'Otros'

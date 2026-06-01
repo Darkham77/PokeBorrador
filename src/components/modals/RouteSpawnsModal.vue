@@ -16,6 +16,7 @@ import { getWeatherMultiplier } from '@/logic/weatherUtils'
 import { useGameStore } from '@/stores/game'
 import { useEventStore } from '@/stores/events'
 import { useModalStore } from '@/stores/modals'
+import { useUIStore } from '@/stores/ui'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { getMechanicalWeather, WEATHER_UI_METADATA, WEATHER_VISUAL_METADATA, WEATHER_REGISTRY } from '@/logic/weather/weatherRegistry'
 import type { MapLocation } from '@/types/encounters'
@@ -50,6 +51,7 @@ const emit = defineEmits<{
 
 const gameStore = useGameStore()
 const eventStore = useEventStore()
+const uiStore = useUIStore()
 
 const cycleLabels: Record<string, string> = {
   morning: '🌅 Amanecer',
@@ -297,8 +299,18 @@ const wildSpawns = computed(() => {
 
     const diff = percentage - basePercentage
 
-    const isSeen = seenPokedex.includes(id) || caughtPokedex.includes(id)
-    const isCaught = caughtPokedex.includes(id)
+    let isSeen = seenPokedex.includes(id) || caughtPokedex.includes(id)
+    let isCaught = caughtPokedex.includes(id)
+
+    if (uiStore.debugPokedexMode === 'none') {
+      isSeen = false
+      isCaught = false
+    } else if (uiStore.debugPokedexMode === 'caught') {
+      isSeen = true
+      isCaught = true
+    } else if (uiStore.debugPokedexMode === 'seen') {
+      isSeen = true
+    }
     const data = isSeen ? pokemonDataProvider.getPokemonData(id) : null
     const name = isSeen ? (data?.name || id.toUpperCase()) : 'Desconocido'
     
@@ -439,6 +451,26 @@ const fishingSpawns = computed(() => {
     }
   }
 
+  // Apply Fishing Rod budget redistribution
+  const fishingType = (gameStore.state.fishingRodSecs || 0) > 0 ? (gameStore.state.fishingRodType || 'standard') : 'standard'
+  if ((fishingType === 'good' || fishingType === 'super') && pool.length > 0) {
+    let budget = fishingType === 'super' ? 1000 : 500
+    const indexedPool = pool.map((id, index) => ({ id, index, rate: rates[index] || 10 }))
+      .sort((a, b) => a.rate - b.rate)
+
+    for (let i = 0; i < indexedPool.length; i++) {
+      const item = indexedPool[i]!
+      if (i === indexedPool.length - 1) {
+        rates[item.index] = (rates[item.index] || 10) + budget
+        budget = 0
+      } else {
+        const portion = Math.round(budget / 2)
+        rates[item.index] = (rates[item.index] || 10) + portion
+        budget -= portion
+      }
+    }
+  }
+
   const totalRate = rates.reduce((sum, r) => sum + r, 0)
   const seenPokedex = gameStore.state.seenPokedex || []
   const caughtPokedex = gameStore.state.pokedex || []
@@ -459,8 +491,18 @@ const fishingSpawns = computed(() => {
 
     const diff = percentage - basePercentage
 
-    const isSeen = seenPokedex.includes(id) || caughtPokedex.includes(id)
-    const isCaught = caughtPokedex.includes(id)
+    let isSeen = seenPokedex.includes(id) || caughtPokedex.includes(id)
+    let isCaught = caughtPokedex.includes(id)
+
+    if (uiStore.debugPokedexMode === 'none') {
+      isSeen = false
+      isCaught = false
+    } else if (uiStore.debugPokedexMode === 'caught') {
+      isSeen = true
+      isCaught = true
+    } else if (uiStore.debugPokedexMode === 'seen') {
+      isSeen = true
+    }
     const data = isSeen ? pokemonDataProvider.getPokemonData(id) : null
     const name = isSeen ? (data?.name || id.toUpperCase()) : 'Desconocido'
 
@@ -552,7 +594,8 @@ const activeWeights = computed(() => {
   const weather = props.weather || 'clear'
   const isRainy = ['rain', 'heavy_rain', 'storm', 'thunderstorm'].includes(weather.toLowerCase())
   const climateFishingMultiplier = isRainy ? 1.20 : 1.0
-  const fishingBonus = climateFishingMultiplier
+  const eventFishingBonus = eventStore.globalMultipliers?.fishing || 1
+  const fishingBonus = eventFishingBonus * climateFishingMultiplier
 
   const groundWeight = 100
   
@@ -569,7 +612,7 @@ const activeWeights = computed(() => {
     const isCave = !!props.map.isCave
     const isMountain = !!props.map.isMountain
     archWeight = isCave ? 10 : (isMountain ? 5 : 0)
-    if ((gameStore.state.pickaxeSecs || 0) > 0) {
+    if ((gameStore.state.pickaxeSecs || 0) > 0 || (gameStore.state.brushSecs || 0) > 0) {
       archWeight += 600
     }
   }
@@ -665,27 +708,77 @@ const archaeologyRewards = computed(() => {
   const rates = props.map.archaeology.rates || []
   const totalRates = rates.reduce((sum, r) => sum + r, 0) || 1
 
+  const baseCategoryWeights = {
+    fossil: 45,
+    stone: 25,
+    common: 20,
+    rare: 10
+  }
+
+  const activeCategoryWeights = { ...baseCategoryWeights }
+
+  const pickaxeType = (gameStore.state.pickaxeSecs || 0) > 0 ? (gameStore.state.pickaxeType || 'standard') : null
+  const brushType = (gameStore.state.brushSecs || 0) > 0 ? (gameStore.state.brushType || 'standard') : null
+
+  if (pickaxeType === 'good' || pickaxeType === 'super') {
+    const budget = pickaxeType === 'good' ? 500 : 1000
+    const affected = [
+      { key: 'rare', base: 10 },
+      { key: 'common', base: 20 },
+      { key: 'stone', base: 25 }
+    ]
+    let remaining = budget
+    for (let i = 0; i < affected.length; i++) {
+      const item = affected[i]!
+      let added = 0
+      if (i === affected.length - 1) {
+        added = remaining
+      } else {
+        added = Math.round(remaining * 0.5)
+      }
+      activeCategoryWeights[item.key as 'rare' | 'common' | 'stone'] += added
+      remaining -= added
+    }
+  }
+
+  if (brushType === 'good' || brushType === 'super') {
+    const budget = brushType === 'good' ? 500 : 1000
+    activeCategoryWeights.fossil += budget
+  }
+
+  const baseTotal = baseCategoryWeights.fossil + baseCategoryWeights.stone + baseCategoryWeights.common + baseCategoryWeights.rare
+  const activeTotal = activeCategoryWeights.fossil + activeCategoryWeights.stone + activeCategoryWeights.common + activeCategoryWeights.rare
+
   const list: Array<{
     name: string
     type: string
     icon: string
     sprite: string
     percentage: number
+    basePercentage: number
     statusClass: string
     description?: string
+    baseWeight: number
+    activeWeight: number
+    addedWeight: number
+    baseTotalWeight: number
+    activeTotalWeight: number
   }> = []
 
-  // 1. Fósiles (45% total, distribuidos según rates)
   pool.forEach((id, index) => {
     const rate = rates[index] !== undefined ? rates[index]! : 10
-    const percentage = (rate / totalRates) * 45
+    const relativeRate = rate / totalRates
+
+    const baseFossilPct = relativeRate * baseCategoryWeights.fossil
+    const activeFossilPct = relativeRate * activeCategoryWeights.fossil
+
     let name = 'Ámbar Viejo'
     let icon = '💎'
     let sprite = getAssetUrl(ASSET_TYPES.ITEM, 'old_amber')
 
     if (id === 'kabuto') {
       name = 'Fósil Domo'
-      icon = '🐚'
+      icon = '🛡'
       sprite = getAssetUrl(ASSET_TYPES.ITEM, 'dome_fossil')
     } else if (id === 'omanyte') {
       name = 'Fósil Hélix'
@@ -693,51 +786,248 @@ const archaeologyRewards = computed(() => {
       sprite = getAssetUrl(ASSET_TYPES.ITEM, 'helix_fossil')
     }
 
+    const baseW = relativeRate * baseCategoryWeights.fossil
+    const activeW = relativeRate * activeCategoryWeights.fossil
+
     list.push({
       name,
       type: 'Fósil',
       icon,
       sprite,
-      percentage,
-      statusClass: 'common'
+      percentage: (activeFossilPct / activeTotal) * 100,
+      basePercentage: (baseFossilPct / baseTotal) * 100,
+      statusClass: 'common',
+      baseWeight: baseW,
+      activeWeight: activeW,
+      addedWeight: activeW - baseW,
+      baseTotalWeight: baseTotal,
+      activeTotalWeight: activeTotal
     })
   })
 
-  // 2. Piedras Evolutivas (25% total)
   list.push({
     name: 'Piedras Evolutivas',
     type: 'Evolución',
     icon: '⚡',
     sprite: getAssetUrl(ASSET_TYPES.ITEM, 'fire_stone'),
-    percentage: 25.0,
+    percentage: (activeCategoryWeights.stone / activeTotal) * 100,
+    basePercentage: (baseCategoryWeights.stone / baseTotal) * 100,
     statusClass: 'visitor',
-    description: 'Piedra Fuego, Piedra Agua, Piedra Trueno, Piedra Hoja, Piedra Lunar, Piedra Solar'
+    description: 'Piedra Fuego, Piedra Agua, Piedra Trueno, Piedra Hoja, Piedra Lunar, Piedra Solar',
+    baseWeight: baseCategoryWeights.stone,
+    activeWeight: activeCategoryWeights.stone,
+    addedWeight: activeCategoryWeights.stone - baseCategoryWeights.stone,
+    baseTotalWeight: baseTotal,
+    activeTotalWeight: activeTotal
   })
 
-  // 3. Minerales y Gemas Básicos (19.8% total)
   list.push({
     name: 'Minerales Comunes',
     type: 'Mineral',
     icon: '🪨',
     sprite: getAssetUrl(ASSET_TYPES.ITEM, 'ores/iron_ore'),
-    percentage: 19.8,
+    percentage: (activeCategoryWeights.common / activeTotal) * 100,
+    basePercentage: (baseCategoryWeights.common / baseTotal) * 100,
     statusClass: 'common',
-    description: 'Perla, Polvo Estelar, Carbón, Cobre, Hierro'
+    description: 'Perla, Polvo Estelar, Carbón, Cobre, Hierro',
+    baseWeight: baseCategoryWeights.common,
+    activeWeight: activeCategoryWeights.common,
+    addedWeight: activeCategoryWeights.common - baseCategoryWeights.common,
+    baseTotalWeight: baseTotal,
+    activeTotalWeight: activeTotal
   })
 
-  // 4. Minerales y Gemas Raros (10.2% total)
   list.push({
     name: 'Gemas y Metales Raros',
     type: 'Valioso',
     icon: '🟡',
     sprite: getAssetUrl(ASSET_TYPES.ITEM, 'ores/diamond_ore'),
-    percentage: 10.2,
+    percentage: (activeCategoryWeights.rare / activeTotal) * 100,
+    basePercentage: (baseCategoryWeights.rare / baseTotal) * 100,
     statusClass: 'exclusive',
-    description: 'Pepita, Perla Grande, Estrella, Plata, Oro, Wolframio, Uranio, Rubí, Zafiro, Esmeralda, Topacio, Diamante'
+    description: 'Pepita, Perla Grande, Estrella, Plata, Oro, Wolframio, Uranio, Rubí, Zafiro, Esmeralda, Topacio, Diamante',
+    baseWeight: baseCategoryWeights.rare,
+    activeWeight: activeCategoryWeights.rare,
+    addedWeight: activeCategoryWeights.rare - baseCategoryWeights.rare,
+    baseTotalWeight: baseTotal,
+    activeTotalWeight: activeTotal
   })
 
   return list
 })
+
+interface WildSpawnData {
+  id: string
+  name: string
+  basePercentage: number
+  percentage: number
+  multiplier: number
+  spawnType: string
+}
+
+function getWildSpawnTooltip(poke: WildSpawnData) {
+  const lines: string[] = []
+  lines.push(`Probabilidad Base: ${poke.basePercentage.toFixed(1)}%`)
+  if (poke.multiplier !== 1) {
+    const change = poke.multiplier > 1 ? 'Aumento por Clima' : 'Reducción por Clima'
+    lines.push(`• ${change}: x${poke.multiplier} (${props.weather})`)
+  }
+  if (poke.spawnType === 'Visitante') {
+    lines.push(`• Pokémon Visitante del clima: ${props.weather}`)
+  } else if (poke.spawnType === 'Exclusivo') {
+    lines.push(`• Pokémon Exclusivo del clima: ${props.weather}`)
+  }
+  const speciesEvent = eventStore.activeEvents.find(e => {
+    const cfg = (typeof e.config === 'string' ? JSON.parse(e.config) : e.config) as EventConfig | undefined
+    if (cfg?.species) {
+      return cfg.species.split(',').map((s: string) => s.trim().toLowerCase()).includes(poke.id)
+    }
+    return false
+  })
+  if (speciesEvent) {
+    const cfg = (typeof speciesEvent.config === 'string' ? JSON.parse(speciesEvent.config) : speciesEvent.config) as EventConfig | undefined
+    if (cfg?.speciesRateMult && cfg.speciesRateMult !== 1) {
+      lines.push(`• Evento Activo (${speciesEvent.name}): Multiplicador x${cfg.speciesRateMult}`)
+    }
+  }
+
+  // Shiny multipliers
+  const globalShiny = eventStore.globalMultipliers?.shiny || 1
+  if (globalShiny !== 1) {
+    lines.push(`• Evento Shiny Global: x${globalShiny.toFixed(1)} de probabilidad Shiny`)
+  }
+  const speciesBonuses = eventStore.getSpeciesBonuses(poke.id)
+  if (speciesBonuses && speciesBonuses.shiny !== 1) {
+    lines.push(`• Evento Shiny Especie: x${speciesBonuses.shiny.toFixed(1)} de probabilidad Shiny`)
+  }
+
+  return {
+    title: `DETALLES DE PROBABILIDAD`,
+    description: lines.join('\n')
+  }
+}
+
+interface FishingSpawnData {
+  id: string
+  name: string
+  basePercentage: number
+  percentage: number
+  multiplier: number
+  spawnType: string
+}
+
+function getFishingSpawnTooltip(poke: FishingSpawnData) {
+  const lines: string[] = []
+  lines.push(`Probabilidad Base: ${poke.basePercentage.toFixed(1)}%`)
+  const rodType = gameStore.state.fishingRodType
+  const rodSecs = gameStore.state.fishingRodSecs || 0
+  if (rodType && rodSecs > 0) {
+    const names: Record<string, string> = { standard: 'Caña de pescar', good: 'Caña Buena', super: 'Supercaña' }
+    const rodName = names[rodType] || 'Caña de pescar'
+    if (rodType === 'good') {
+      lines.push(`• ${rodName} activa: +500 pts distribuidos (más peso a comunes/raros)`)
+    } else if (rodType === 'super') {
+      lines.push(`• ${rodName} activa: +1000 pts distribuidos (más peso a comunes/raros) y aumenta la chance de Shiny x1.5`)
+    } else {
+      lines.push(`• ${rodName} activa.`)
+    }
+  }
+  const weather = props.weather || 'clear'
+  const isRainy = ['rain', 'heavy_rain', 'storm', 'thunderstorm'].includes(weather.toLowerCase())
+  if (isRainy) {
+    lines.push(`• Clima (Lluvia): x1.20 a la tasa de pesca general`)
+  }
+  if (poke.multiplier !== 1) {
+    const change = poke.multiplier > 1 ? 'Aumento por Clima' : 'Reducción por Clima'
+    lines.push(`• ${change} en especie: x${poke.multiplier} (${props.weather})`)
+  }
+  const eventFishingBonus = eventStore.globalMultipliers?.fishing || 1
+  if (eventFishingBonus !== 1) {
+    const activeFishingEvents = eventStore.activeEvents.filter(e => {
+      const cfg = (typeof e.config === 'string' ? JSON.parse(e.config) : e.config) as EventConfig | undefined
+      return cfg && cfg.fishingMult
+    })
+    const eventNames = activeFishingEvents.map(e => e.name).join(', ')
+    lines.push(`• Evento Semanal (${eventNames}): x${eventFishingBonus.toFixed(1)} de probabilidad general`)
+  }
+
+  // Shiny multipliers
+  const globalShiny = eventStore.globalMultipliers?.shiny || 1
+  if (globalShiny !== 1) {
+    lines.push(`• Evento Shiny Global: x${globalShiny.toFixed(1)} de probabilidad Shiny`)
+  }
+  const speciesBonuses = eventStore.getSpeciesBonuses(poke.id)
+  if (speciesBonuses && speciesBonuses.shiny !== 1) {
+    lines.push(`• Evento Shiny Especie: x${speciesBonuses.shiny.toFixed(1)} de probabilidad Shiny`)
+  }
+
+  return {
+    title: `DETALLES DE PESCA`,
+    description: lines.join('\n')
+  }
+}
+
+interface ArchaeologyRewardData {
+  name: string
+  type: string
+  basePercentage: number
+  percentage: number
+  baseWeight: number
+  activeWeight: number
+  addedWeight: number
+  baseTotalWeight: number
+  activeTotalWeight: number
+}
+
+function getArchaeologySpawnTooltip(reward: ArchaeologyRewardData) {
+  const lines: string[] = []
+
+  lines.push(`CÁLCULO DE PROBABILIDAD BASE:`)
+  lines.push(`• Peso Base del Grupo: ${reward.baseWeight.toFixed(1)} pts`)
+  lines.push(`• Peso Total Base Zona: ${reward.baseTotalWeight.toFixed(1)} pts`)
+  lines.push(`• Fórmula Base: (${reward.baseWeight.toFixed(1)} / ${reward.baseTotalWeight.toFixed(1)}) x 100 = ${reward.basePercentage.toFixed(1)}%`)
+  lines.push(``)
+
+  lines.push(`CÁLCULO DE PROBABILIDAD REAL:`)
+  lines.push(`• Peso Base: ${reward.baseWeight.toFixed(1)} pts`)
+  if (reward.addedWeight > 0) {
+    lines.push(`• Peso Añadido (Herramienta): +${reward.addedWeight.toFixed(1)} pts`)
+  }
+  lines.push(`• Peso Total Actual del Grupo: ${reward.activeWeight.toFixed(1)} pts`)
+  lines.push(`• Peso Total Acumulado Zona: ${reward.activeTotalWeight.toFixed(1)} pts`)
+  lines.push(`• Fórmula Real: (${reward.activeWeight.toFixed(1)} / ${reward.activeTotalWeight.toFixed(1)}) x 100 = ${reward.percentage.toFixed(1)}%`)
+  lines.push(``)
+
+  const pickaxeType = gameStore.state.pickaxeSecs > 0 ? gameStore.state.pickaxeType : null
+  const brushType = gameStore.state.brushSecs > 0 ? gameStore.state.brushType : null
+  if (reward.type === 'Fósil') {
+    if (brushType) {
+      const names: Record<string, string> = { standard: 'Pincel de excavación', good: 'Pincel Bueno', super: 'Superpincel' }
+      const toolName = names[brushType] || 'Pincel de excavación'
+      const budget = brushType === 'good' ? 500 : (brushType === 'super' ? 1000 : 0)
+      if (budget > 0) {
+        lines.push(`• ${toolName} activo: agrega +${budget} pts al peso total de Fósiles.`)
+      } else {
+        lines.push(`• ${toolName} activo.`)
+      }
+    }
+  } else {
+    if (pickaxeType) {
+      const names: Record<string, string> = { standard: 'Pico de excavación', good: 'Pico Bueno', super: 'Superpico' }
+      const toolName = names[pickaxeType] || 'Pico de excavación'
+      const budget = pickaxeType === 'good' ? 500 : (pickaxeType === 'super' ? 1000 : 0)
+      if (budget > 0) {
+        lines.push(`• ${toolName} activo: agrega +${budget} pts en total (+50% a Raros, +25% a Comunes, +25% a Piedras).`)
+      } else {
+        lines.push(`• ${toolName} activo.`)
+      }
+    }
+  }
+  return {
+    title: `DETALLES DE ARQUEOLOGÍA`,
+    description: lines.join('\n')
+  }
+}
 </script>
 
 <template>
@@ -1058,49 +1348,55 @@ const archaeologyRewards = computed(() => {
 
               <!-- Probability -->
               <div class="col-prob row-cell flex-align">
-                <div class="prob-bar-wrapper">
-                  <div class="prob-numerical">
-                    <span class="active-prob">
-                      {{ poke.percentage.toFixed(1) }}%
-                      <span
-                        v-if="poke.diff !== 0 && poke.spawnType !== 'Común'"
-                        :class="['diff-text', poke.diff > 0 ? 'boosted' : 'debuffed']"
-                      >
-                        ({{ poke.diff > 0 ? '+' : '' }}{{ poke.diff.toFixed(1) }}%)
+                <PVTooltip
+                  v-bind="getWildSpawnTooltip(poke)"
+                  tag="div"
+                  style="width: 100%;"
+                >
+                  <div class="prob-bar-wrapper">
+                    <div class="prob-numerical">
+                      <span class="active-prob">
+                        {{ poke.percentage.toFixed(1) }}%
+                        <span
+                          v-if="poke.diff !== 0 && poke.spawnType !== 'Común'"
+                          :class="['diff-text', poke.diff > 0 ? 'boosted' : 'debuffed']"
+                        >
+                          ({{ poke.diff > 0 ? '+' : '' }}{{ poke.diff.toFixed(1) }}%)
+                        </span>
                       </span>
-                    </span>
+                    </div>
+                    <div class="prob-visual-progress">
+                      <template v-if="poke.spawnType === 'Común'">
+                        <div
+                          class="fill base-fill"
+                          :style="{ width: `${poke.percentage * 2.5}%` }"
+                        />
+                      </template>
+                      <template v-else>
+                        <div
+                          v-if="poke.diff >= 0"
+                          class="fill base-fill"
+                          :style="{ width: `${poke.basePercentage * 2.5}%` }"
+                        />
+                        <div
+                          v-if="poke.diff > 0"
+                          class="fill extra-fill"
+                          :style="{ width: `${poke.diff * 2.5}%` }"
+                        />
+                        <div
+                          v-if="poke.diff < 0"
+                          class="fill base-fill-reduced"
+                          :style="{ width: `${poke.percentage * 2.5}%` }"
+                        />
+                        <div
+                          v-if="poke.diff < 0"
+                          class="fill lost-fill"
+                          :style="{ width: `${Math.abs(poke.diff) * 2.5}%` }"
+                        />
+                      </template>
+                    </div>
                   </div>
-                  <div class="prob-visual-progress">
-                    <template v-if="poke.spawnType === 'Común'">
-                      <div
-                        class="fill base-fill"
-                        :style="{ width: `${poke.percentage * 2.5}%` }"
-                      />
-                    </template>
-                    <template v-else>
-                      <div
-                        v-if="poke.diff >= 0"
-                        class="fill base-fill"
-                        :style="{ width: `${poke.basePercentage * 2.5}%` }"
-                      />
-                      <div
-                        v-if="poke.diff > 0"
-                        class="fill extra-fill"
-                        :style="{ width: `${poke.diff * 2.5}%` }"
-                      />
-                      <div
-                        v-if="poke.diff < 0"
-                        class="fill base-fill-reduced"
-                        :style="{ width: `${poke.percentage * 2.5}%` }"
-                      />
-                      <div
-                        v-if="poke.diff < 0"
-                        class="fill lost-fill"
-                        :style="{ width: `${Math.abs(poke.diff) * 2.5}%` }"
-                      />
-                    </template>
-                  </div>
-                </div>
+                </PVTooltip>
               </div>
 
               <!-- Base Stats -->
@@ -1133,16 +1429,13 @@ const archaeologyRewards = computed(() => {
             :class="getProbClass(activeFishingChance, baseFishingChance)"
           >(PROBABILIDAD: {{ activeFishingChance }}%)</span>
         </h3>
-        <div class="spawns-report-scroll">
+        <div class="spawns-report-scroll fishing-table">
           <div class="report-table-header">
             <div class="col-pokemon">
               Pokémon
             </div>
             <div class="col-types">
               Tipos
-            </div>
-            <div class="col-type">
-              Estado
             </div>
             <div class="col-multiplier">
               Clima
@@ -1205,18 +1498,6 @@ const archaeologyRewards = computed(() => {
                 >???</span>
               </div>
 
-              <!-- Spawn Status Type -->
-              <div class="col-type row-cell flex-align">
-                <PVTooltip
-                  :title="getStatusTooltip(poke.spawnType).title"
-                  :description="getStatusTooltip(poke.spawnType).desc"
-                >
-                  <span :class="['status-tag', poke.statusClass]">
-                    {{ poke.spawnType }}
-                  </span>
-                </PVTooltip>
-              </div>
-
               <!-- Climate Multiplier -->
               <div class="col-multiplier row-cell flex-align text-center">
                 <template v-if="poke.spawnType === 'Visitante' || poke.spawnType === 'Exclusivo'">
@@ -1237,26 +1518,24 @@ const archaeologyRewards = computed(() => {
 
               <!-- Probability -->
               <div class="col-prob row-cell flex-align">
-                <div class="prob-bar-wrapper">
-                  <div class="prob-numerical">
-                    <span class="active-prob">
-                      {{ poke.percentage.toFixed(1) }}%
-                      <span
-                        v-if="poke.diff !== 0 && poke.spawnType !== 'Pesca'"
-                        :class="['diff-text', poke.diff > 0 ? 'boosted' : 'debuffed']"
-                      >
-                        ({{ poke.diff > 0 ? '+' : '' }}{{ poke.diff.toFixed(1) }}%)
+                <PVTooltip
+                  v-bind="getFishingSpawnTooltip(poke)"
+                  tag="div"
+                  style="width: 100%;"
+                >
+                  <div class="prob-bar-wrapper">
+                    <div class="prob-numerical">
+                      <span class="active-prob">
+                        {{ poke.percentage.toFixed(1) }}%
+                        <span
+                          v-if="poke.diff !== 0"
+                          :class="['diff-text', poke.diff > 0 ? 'boosted' : 'debuffed']"
+                        >
+                          ({{ poke.diff > 0 ? '+' : '' }}{{ poke.diff.toFixed(1) }}%)
+                        </span>
                       </span>
-                    </span>
-                  </div>
-                  <div class="prob-visual-progress">
-                    <template v-if="poke.spawnType === 'Pesca'">
-                      <div
-                        class="fill base-fill"
-                        :style="{ width: `${poke.percentage * 2.5}%` }"
-                      />
-                    </template>
-                    <template v-else>
+                    </div>
+                    <div class="prob-visual-progress">
                       <div
                         v-if="poke.diff >= 0"
                         class="fill base-fill"
@@ -1277,9 +1556,9 @@ const archaeologyRewards = computed(() => {
                         class="fill lost-fill"
                         :style="{ width: `${Math.abs(poke.diff) * 2.5}%` }"
                       />
-                    </template>
+                    </div>
                   </div>
-                </div>
+                </PVTooltip>
               </div>
 
               <!-- Base Stats -->
@@ -1312,16 +1591,13 @@ const archaeologyRewards = computed(() => {
             :class="getProbClass(activeArchaeologyChance, baseArchaeologyChance)"
           >(PROBABILIDAD: {{ activeArchaeologyChance }}%)</span>
         </h3>
-        <div class="spawns-report-scroll">
+        <div class="spawns-report-scroll archaeology-table">
           <div class="report-table-header">
             <div class="col-pokemon">
               Objeto
             </div>
             <div class="col-types">
               Categoría
-            </div>
-            <div class="col-type">
-              Estado
             </div>
             <div class="col-multiplier">
               Detalles
@@ -1374,21 +1650,6 @@ const archaeologyRewards = computed(() => {
                 </PVTooltip>
               </div>
 
-              <!-- Status Tag -->
-              <div class="col-type row-cell flex-align">
-                <PVTooltip
-                  title="Método de Obtención"
-                  description="Este objeto se obtiene exclusivamente como recompensa al completar el minijuego de Arqueología."
-                >
-                  <span
-                    class="status-tag"
-                    :class="reward.statusClass"
-                  >
-                    Excavación
-                  </span>
-                </PVTooltip>
-              </div>
-
               <!-- Details/Description -->
               <div
                 class="col-multiplier row-cell flex-align"
@@ -1399,19 +1660,57 @@ const archaeologyRewards = computed(() => {
 
               <!-- Probability -->
               <div class="col-prob row-cell flex-align">
-                <div class="prob-bar-wrapper">
-                  <div class="prob-numerical">
-                    <span class="active-prob">
-                      {{ reward.percentage.toFixed(1) }}%
-                    </span>
+                <PVTooltip
+                  v-bind="getArchaeologySpawnTooltip(reward)"
+                  tag="div"
+                  style="width: 100%;"
+                >
+                  <div class="prob-bar-wrapper">
+                    <div class="prob-numerical">
+                      <span class="active-prob">
+                        {{ reward.percentage.toFixed(1) }}%
+                      </span>
+                      <span
+                        v-if="Math.abs(reward.percentage - reward.basePercentage) > 0.05"
+                        class="delta-text"
+                        :class="reward.percentage > reward.basePercentage ? 'positive' : 'negative'"
+                        style="font-size: 8px; margin-left: 4px;"
+                      >
+                        ({{ (reward.percentage > reward.basePercentage ? '+' : '') }}{{ (reward.percentage - reward.basePercentage).toFixed(1) }}%)
+                      </span>
+                    </div>
+                    <div class="prob-visual-progress">
+                      <template v-if="Math.abs(reward.percentage - reward.basePercentage) < 0.05">
+                        <div
+                          class="fill base-fill"
+                          :style="{ width: `${reward.percentage * 2.5}%` }"
+                        />
+                      </template>
+                      <template v-else>
+                        <div
+                          v-if="reward.percentage >= reward.basePercentage"
+                          class="fill base-fill"
+                          :style="{ width: `${reward.basePercentage * 2.5}%` }"
+                        />
+                        <div
+                          v-if="reward.percentage > reward.basePercentage"
+                          class="fill extra-fill"
+                          :style="{ width: `${(reward.percentage - reward.basePercentage) * 2.5}%` }"
+                        />
+                        <div
+                          v-if="reward.percentage < reward.basePercentage"
+                          class="fill base-fill-reduced"
+                          :style="{ width: `${reward.percentage * 2.5}%` }"
+                        />
+                        <div
+                          v-if="reward.percentage < reward.basePercentage"
+                          class="fill lost-fill"
+                          :style="{ width: `${(reward.basePercentage - reward.percentage) * 2.5}%` }"
+                        />
+                      </template>
+                    </div>
                   </div>
-                  <div class="prob-visual-progress">
-                    <div
-                      class="fill base-fill"
-                      :style="{ width: `${reward.percentage * 2.5}%` }"
-                    />
-                  </div>
-                </div>
+                </PVTooltip>
               </div>
 
               <!-- Stats placeholder alignment -->

@@ -390,29 +390,64 @@ export const SHOP_ITEMS = [
     desc: 'Aleja Pokémon salvajes de nivel inferior al tuyo durante 30 min.'
   },
   {
-    id: 'fishing_rod', cat: 'especial', sprite: 'fishing_rod', type: 'usable',
-    name: 'Caña de pescar', icon: '🎣', price: 15000, unlockLv: 1, tier: 'rare', market: true,
-    desc: 'Consumible. Aumenta la probabilidad de pesca al 95% durante 20 minutos.'
+    id: 'fishing_rod', cat: 'especial', sprite: 'fishing_rod-0', type: 'usable',
+    name: 'Caña de pescar', icon: '🎣', price: 15000, unlockLv: 1, tier: 'rare', market: true, trainerShop: true, bcPrice: 1500,
+    desc: 'Sube mucho la pesca por 20 min. Ver % exacto en el mapa.'
   },
   {
-    id: 'pickaxe', cat: 'especial', sprite: 'pickaxe', type: 'usable',
-    name: 'Pico de excavación', icon: '⛏️', price: 15000, unlockLv: 1, tier: 'rare', market: true,
-    desc: 'Consumible. Aumenta la probabilidad de arqueología al 95% durante 20 minutos.'
+    id: 'fishing_rod_good', cat: 'especial', sprite: 'fishing_rod-1', type: 'usable',
+    name: 'Caña Buena', icon: '🎣', price: 35000, unlockLv: 10, tier: 'rare', market: true, trainerShop: true, bcPrice: 3500,
+    desc: 'Sube la pesca por 40 min y bonifica la aparición de Pokémon raros (+500 pts).'
+  },
+  {
+    id: 'fishing_rod_super', cat: 'especial', sprite: 'fishing_rod-2', type: 'usable',
+    name: 'Supercaña', icon: '🎣', price: 65000, unlockLv: 20, tier: 'epic', market: true, trainerShop: true, bcPrice: 6500,
+    desc: 'Sube la pesca por 60 min, bonifica raros (+1000 pts) y aumenta la chance de Shiny x1.5.'
+  },
+  {
+    id: 'pickaxe', cat: 'especial', sprite: 'pickaxe-0', type: 'usable',
+    name: 'Pico de excavación', icon: '⛏️', price: 15000, unlockLv: 1, tier: 'rare', market: true, trainerShop: true, bcPrice: 1500,
+    desc: 'Sube la arqueología por 20 min. Ver % exacto en el mapa.'
+  },
+  {
+    id: 'pickaxe_silver', cat: 'especial', sprite: 'pickaxe-1', type: 'usable',
+    name: 'Pico Bueno', icon: '⛏️', price: 35000, unlockLv: 10, tier: 'rare', market: true, trainerShop: true, bcPrice: 3500,
+    desc: 'Sube la arqueología por 40 min. Bonifica minerales y gemas (+500 pts).'
+  },
+  {
+    id: 'pickaxe_gold', cat: 'especial', sprite: 'pickaxe-2', type: 'usable',
+    name: 'Superpico', icon: '⛏️', price: 65000, unlockLv: 20, tier: 'epic', market: true, trainerShop: true, bcPrice: 6500,
+    desc: 'Sube la arqueología por 60 min. Bonifica minerales y gemas (+1000 pts).'
+  },
+  {
+    id: 'brush', cat: 'especial', sprite: 'brush-0', type: 'usable',
+    name: 'Pincel de excavación', icon: '🖌️', price: 15000, unlockLv: 1, tier: 'rare', market: true, trainerShop: true, bcPrice: 1500,
+    desc: 'Sube la arqueología por 20 min. Bonifica fósiles.'
+  },
+  {
+    id: 'brush_good', cat: 'especial', sprite: 'brush-1', type: 'usable',
+    name: 'Pincel Bueno', icon: '🖌️', price: 35000, unlockLv: 10, tier: 'rare', market: true, trainerShop: true, bcPrice: 3500,
+    desc: 'Sube la arqueología por 40 min. Bonifica fósiles (+500 pts).'
+  },
+  {
+    id: 'brush_super', cat: 'especial', sprite: 'brush-2', type: 'usable',
+    name: 'Superpincel', icon: '🖌️', price: 65000, unlockLv: 20, tier: 'epic', market: true, trainerShop: true, bcPrice: 6500,
+    desc: 'Sube la arqueología por 60 min. Bonifica fósiles (+1000 pts).'
   },
   // ── FÓSILES ────────────────────────────────────────────────────────────────
   {
     id: 'helix_fossil', cat: 'especial', sprite: 'helix-fossil',
-    name: 'Fósil Hélix', icon: '🐚', price: 50000, unlockLv: 30, tier: 'rare', market: false, trainerShop: false,
+    name: 'Fósil Hélix', icon: '🐚', price: 50000, unlockLv: 30, tier: 'rare', market: true, trainerShop: true, bcPrice: 2000,
     desc: 'Un fósil de un Pokémon marino antiguo. Parece un caracol.'
   },
   {
     id: 'dome_fossil', cat: 'especial', sprite: 'dome-fossil',
-    name: 'Fósil Domo', icon: '🛡️', price: 50000, unlockLv: 30, tier: 'rare', market: false, trainerShop: false,
+    name: 'Fósil Domo', icon: '🛡️', price: 50000, unlockLv: 30, tier: 'rare', market: true, trainerShop: true, bcPrice: 2000,
     desc: 'Un fósil de un Pokémon prehistórico con caparazón rígido.'
   },
   {
     id: 'old_amber', cat: 'especial', sprite: 'old-amber',
-    name: 'Ámbar Viejo', icon: '💎', price: 75000, unlockLv: 30, tier: 'rare', market: false, trainerShop: false,
+    name: 'Ámbar Viejo', icon: '💎', price: 75000, unlockLv: 30, tier: 'rare', market: true, trainerShop: true, bcPrice: 3000,
     desc: 'Una pieza de ámbar que contiene material genético de un Pokémon volador antiguo.'
   },
   // ── VALUABLES ──────────────────────────────────────────────────────────────
@@ -444,118 +479,118 @@ export const SHOP_ITEMS = [
   // ── MINERALES Y GEMAS NATURALES (BRUTAS) ──────────────────────────────────
   {
     id: 'coal_ore', cat: 'especial', sprite: 'ores/coal_ore',
-    name: 'Mineral de Carbón', icon: '🪨', price: 200, market: false, trainerShop: false, tier: 'common',
+    name: 'Mineral de Carbón', icon: '🪨', price: 200, market: true, trainerShop: true, bcPrice: 10, unlockLv: 1, tier: 'common',
     desc: 'Un trozo de carbón mineral natural obtenido mediante excavación.'
   },
   {
     id: 'copper_ore', cat: 'especial', sprite: 'ores/copper_ore',
-    name: 'Mineral de Cobre', icon: '🟫', price: 600, market: false, trainerShop: false, tier: 'common',
+    name: 'Mineral de Cobre', icon: '🟫', price: 600, market: true, trainerShop: true, bcPrice: 20, unlockLv: 1, tier: 'common',
     desc: 'Una roca con vetas de cobre natural. Se vende tal cual o se purifica.'
   },
   {
     id: 'iron_ore', cat: 'especial', sprite: 'ores/iron_ore',
-    name: 'Mineral de Hierro', icon: '🧱', price: 1200, market: false, trainerShop: false, tier: 'common',
+    name: 'Mineral de Hierro', icon: '🧱', price: 1200, market: true, trainerShop: true, bcPrice: 40, unlockLv: 3, tier: 'common',
     desc: 'Roca rica en hierro natural sin refinar.'
   },
   {
     id: 'silver_ore', cat: 'especial', sprite: 'ores/silver_ore',
-    name: 'Mineral de Plata', icon: '⬜', price: 3000, market: false, trainerShop: false, tier: 'rare',
+    name: 'Mineral de Plata', icon: '⬜', price: 3000, market: true, trainerShop: true, bcPrice: 100, unlockLv: 5, tier: 'rare',
     desc: 'Plata en su estado mineral bruto. Muy valorada en el mercado.'
   },
   {
     id: 'gold_ore', cat: 'especial', sprite: 'ores/gold_ore',
-    name: 'Mineral de Oro', icon: '🟨', price: 6000, market: false, trainerShop: false, tier: 'rare',
+    name: 'Mineral de Oro', icon: '🟨', price: 6000, market: true, trainerShop: true, bcPrice: 200, unlockLv: 8, tier: 'rare',
     desc: 'Veta natural de oro en bruto. Muy codiciada.'
   },
   {
     id: 'tungsten_ore', cat: 'especial', sprite: 'ores/tungsten_ore',
-    name: 'Mineral de Wolframio', icon: '🌑', price: 2000, market: false, trainerShop: false, tier: 'rare',
+    name: 'Mineral de Wolframio', icon: '🌑', price: 2000, market: true, trainerShop: true, bcPrice: 70, unlockLv: 8, tier: 'rare',
     desc: 'Mineral de tungsteno/wolframio pesado y denso en su estado natural.'
   },
   {
     id: 'uranium_ore', cat: 'especial', sprite: 'ores/uranium_ore',
-    name: 'Mineral de Uranio', icon: '🟢', price: 6000, market: false, trainerShop: false, tier: 'epic',
+    name: 'Mineral de Uranio', icon: '🟢', price: 6000, market: true, trainerShop: true, bcPrice: 200, unlockLv: 12, tier: 'epic',
     desc: 'Mineral de uranio natural con un brillo verdoso misterioso.'
   },
   {
     id: 'rubi_ore', cat: 'especial', sprite: 'ores/rubi_ore',
-    name: 'Mineral de Rubí', icon: '🔺', price: 3000, market: false, trainerShop: false, tier: 'rare',
+    name: 'Mineral de Rubí', icon: '🔺', price: 3000, market: true, trainerShop: true, bcPrice: 100, unlockLv: 10, tier: 'rare',
     desc: 'Roca que incrusta un rubí en bruto sin tallar.'
   },
   {
     id: 'zaphire_ore', cat: 'especial', sprite: 'ores/zaphire_ore',
-    name: 'Mineral de Zafiro', icon: '🔹', price: 3000, market: false, trainerShop: false, tier: 'rare',
+    name: 'Mineral de Zafiro', icon: '🔹', price: 3000, market: true, trainerShop: true, bcPrice: 100, unlockLv: 10, tier: 'rare',
     desc: 'Roca que incrusta un zafiro en bruto sin tallar.'
   },
   {
     id: 'emmerald_ore', cat: 'especial', sprite: 'ores/emmerald_ore',
-    name: 'Mineral de Esmeralda', icon: '💚', price: 6000, market: false, trainerShop: false, tier: 'rare',
+    name: 'Mineral de Esmeralda', icon: '💚', price: 6000, market: true, trainerShop: true, bcPrice: 200, unlockLv: 15, tier: 'rare',
     desc: 'Roca que incrusta una esmeralda en bruto sin tallar.'
   },
   {
     id: 'topaz_ore', cat: 'especial', sprite: 'ores/topaz_ore',
-    name: 'Mineral de Topacio', icon: '🟡', price: 3000, market: false, trainerShop: false, tier: 'rare',
+    name: 'Mineral de Topacio', icon: '🟡', price: 3000, market: true, trainerShop: true, bcPrice: 100, unlockLv: 10, tier: 'rare',
     desc: 'Roca que incrusta un topacio en bruto sin tallar.'
   },
   {
     id: 'diamond_ore', cat: 'especial', sprite: 'ores/diamond_ore',
-    name: 'Mineral de Diamante', icon: '💎', price: 12000, market: false, trainerShop: false, tier: 'epic',
+    name: 'Mineral de Diamante', icon: '💎', price: 12000, market: true, trainerShop: true, bcPrice: 400, unlockLv: 20, tier: 'epic',
     desc: 'Un mineral extremadamente resistente que incrusta un diamante en bruto.'
   },
   // ── MINERALES Y GEMAS PURIFICADAS (REFINADAS) ──────────────────────────────
   {
     id: 'copper', cat: 'especial', sprite: 'ores/copper',
-    name: 'Lingote de Cobre', icon: '🟫', price: 1500, market: false, trainerShop: false, tier: 'rare',
+    name: 'Lingote de Cobre', icon: '🟫', price: 1500, market: true, trainerShop: true, bcPrice: 50, unlockLv: 5, tier: 'rare',
     desc: 'Cobre purificado y fundido en un lingote brillante.'
   },
   {
     id: 'iron', cat: 'especial', sprite: 'ores/iron',
-    name: 'Lingote de Hierro', icon: '🧱', price: 3000, market: false, trainerShop: false, tier: 'rare',
+    name: 'Lingote de Hierro', icon: '🧱', price: 3000, market: true, trainerShop: true, bcPrice: 100, unlockLv: 8, tier: 'rare',
     desc: 'Hierro refinado de alta resistencia listo para fundición.'
   },
   {
     id: 'silver', cat: 'especial', sprite: 'ores/silver',
-    name: 'Lingote de Plata', icon: '⬜', price: 7500, market: false, trainerShop: false, tier: 'epic',
+    name: 'Lingote de Plata', icon: '⬜', price: 7500, market: true, trainerShop: true, bcPrice: 250, unlockLv: 10, tier: 'epic',
     desc: 'Plata pura refinada con acabado brillante. De alto valor.'
   },
   {
     id: 'gold', cat: 'especial', sprite: 'ores/gold',
-    name: 'Lingote de Oro', icon: '🟨', price: 15000, market: false, trainerShop: false, tier: 'epic',
+    name: 'Lingote de Oro', icon: '🟨', price: 15000, market: true, trainerShop: true, bcPrice: 500, unlockLv: 12, tier: 'epic',
     desc: 'Oro puro refinado de 24 quilates fundido en un lingote.'
   },
   {
     id: 'tungsten', cat: 'especial', sprite: 'ores/tungsten',
-    name: 'Lingote de Wolframio', icon: '🌑', price: 5000, market: false, trainerShop: false, tier: 'epic',
+    name: 'Lingote de Wolframio', icon: '🌑', price: 5000, market: true, trainerShop: true, bcPrice: 180, unlockLv: 12, tier: 'epic',
     desc: 'Wolframio purificado de altísima densidad.'
   },
   {
     id: 'uranium', cat: 'especial', sprite: 'ores/uranium',
-    name: 'Lingote de Uranio', icon: '🟢', price: 15000, market: false, trainerShop: false, tier: 'legend',
+    name: 'Lingote de Uranio', icon: '🟢', price: 15000, market: true, trainerShop: true, bcPrice: 500, unlockLv: 18, tier: 'legend',
     desc: 'Lingote purificado de uranio denso y ligeramente brillante.'
   },
   {
     id: 'rubi', cat: 'especial', sprite: 'ores/rubi',
-    name: 'Rubí Pulido', icon: '🔴', price: 7500, market: false, trainerShop: false, tier: 'epic',
+    name: 'Rubí Pulido', icon: '🔴', price: 7500, market: true, trainerShop: true, bcPrice: 250, unlockLv: 15, tier: 'epic',
     desc: 'Un hermoso rubí tallado y pulido de color rojo intenso.'
   },
   {
     id: 'zaphire', cat: 'especial', sprite: 'ores/zaphire',
-    name: 'Zafiro Pulido', icon: '🔵', price: 7500, market: false, trainerShop: false, tier: 'epic',
+    name: 'Zafiro Pulido', icon: '🔵', price: 7500, market: true, trainerShop: true, bcPrice: 250, unlockLv: 15, tier: 'epic',
     desc: 'Un hermoso zafiro tallado y pulido de color azul profundo.'
   },
   {
     id: 'emmerald', cat: 'especial', sprite: 'ores/emmerald',
-    name: 'Esmeralda Pulida', icon: '🟢', price: 15000, market: false, trainerShop: false, tier: 'epic',
+    name: 'Esmeralda Pulida', icon: '🟢', price: 15000, market: true, trainerShop: true, bcPrice: 500, unlockLv: 20, tier: 'epic',
     desc: 'Una hermosa esmeralda tallada y pulida de color verde brillante.'
   },
   {
     id: 'topaz', cat: 'especial', sprite: 'ores/topaz',
-    name: 'Topacio Pulido', icon: '🟡', price: 7500, market: false, trainerShop: false, tier: 'epic',
+    name: 'Topacio Pulido', icon: '🟡', price: 7500, market: true, trainerShop: true, bcPrice: 250, unlockLv: 15, tier: 'epic',
     desc: 'Un hermoso topacio tallado y pulido con destellos dorados.'
   },
   {
     id: 'diamond', cat: 'especial', sprite: 'ores/diamond',
-    name: 'Diamante Pulido', icon: '💎', price: 30000, market: false, trainerShop: false, tier: 'legend',
+    name: 'Diamante Pulido', icon: '💎', price: 30000, market: true, trainerShop: true, bcPrice: 1000, unlockLv: 25, tier: 'legend',
     desc: 'Un diamante perfectamente facetado y pulido que refleja la luz.'
   },
   // ── SPECIAL HELD ITEMS ─────────────────────────────────────────────────────

@@ -317,8 +317,8 @@ watch(extraSacrifices, () => {
 
 .cloning-body {
   display: grid;
-  grid-template-columns: 240px 1fr;
-  gap: 24px;
+  grid-template-columns: 250px 1fr;
+  gap: 20px;
 
   @media (max-width: 820px) {
     grid-template-columns: 1fr;
@@ -339,17 +339,17 @@ watch(extraSacrifices, () => {
 .fossil-cards {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 
 .fossil-card {
   background: Rgba(255, 255, 255, 0.02);
   border: 1px solid Rgba(255, 255, 255, 0.06);
   border-radius: 12px;
-  padding: 14px;
+  padding: 10px 12px;
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 10px;
   cursor: pointer;
 
   &.active {
@@ -361,8 +361,8 @@ watch(extraSacrifices, () => {
 
 .fossil-icon-wrapper {
   position: relative;
-  width: 52px;
-  height: 52px;
+  width: 44px;
+  height: 44px;
   background: Rgba(0, 0, 0, 0.25);
   border: 1px solid Rgba(255, 255, 255, 0.05);
   border-radius: 8px;
@@ -372,8 +372,8 @@ watch(extraSacrifices, () => {
   flex-shrink: 0;
 
   .fossil-sprite {
-    width: 32px;
-    height: 32px;
+    width: 28px;
+    height: 28px;
     object-fit: contain;
     @include sprite-render;
   }
@@ -400,18 +400,18 @@ watch(extraSacrifices, () => {
 .fossil-info {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
   white-space: nowrap;
 
   .fossil-title {
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 700;
     color: #fff;
     white-space: nowrap;
   }
 
   .fossil-result {
-    font-size: 11px;
+    font-size: 10px;
     color: var(--gray);
     white-space: nowrap;
   }

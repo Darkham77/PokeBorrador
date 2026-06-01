@@ -188,14 +188,19 @@ const activeDetails = computed(() => {
     if (attacker.heldItem) {
       const h = attacker.heldItem
       const typeBoosters: Record<string, string> = {
-        'Carbón': 'fire', 'Imán': 'electric', 'Agua Mística': 'water',
-        'Semilla Milagro': 'grass', 'Cinturón Negro': 'fighting',
-        'Cuchara Torcida': 'psychic', 'Hechizo': 'ghost', 'Polvo Plata': 'bug',
-        'Flecha Venenosa': 'poison'
+        charcoal: 'fire',
+        magnet: 'electric',
+        mystic_water: 'water',
+        miracle_seed: 'grass',
+        black_belt: 'fighting',
+        twisted_spoon: 'psychic',
+        spell_tag: 'ghost',
+        silver_powder: 'bug',
+        poison_barb: 'poison'
       }
       let itemMult = 1
       if (typeBoosters[h] === moveType) itemMult = 1.2
-      if (h === 'Cinta Elegida' && m.cat === 'physical') itemMult = 1.5
+      if (h === 'choice_band' && m.cat === 'physical') itemMult = 1.5
       
       if (itemMult !== 1) {
         powerList.push({ label: `Objeto (${h})`, mult: itemMult })
@@ -321,7 +326,7 @@ const activeDetails = computed(() => {
 
   // 4. Critical hit rate
   let critRate = 0.0625
-  if (attacker.heldItem === 'Lente Zoom') critRate = 0.12
+  if (attacker.heldItem === 'scope_lens') critRate = 0.12
   if (attacker.focusEnergy) critRate = 0.25
   if (defender && (defender.ability === 'Caparazón' || defender.ability === 'Armadura Batalla')) {
     critRate = 0

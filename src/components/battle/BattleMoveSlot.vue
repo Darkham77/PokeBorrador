@@ -131,13 +131,18 @@ const finalPower = computed(() => {
   if (attacker.heldItem) {
     const h = attacker.heldItem
     const typeBoosters: Record<string, string> = {
-      'Carbón': 'fire', 'Imán': 'electric', 'Agua Mística': 'water',
-      'Semilla Milagro': 'grass', 'Cinturón Negro': 'fighting',
-      'Cuchara Torcida': 'psychic', 'Hechizo': 'ghost', 'Polvo Plata': 'bug',
-      'Flecha Venenosa': 'poison'
+      charcoal: 'fire',
+      magnet: 'electric',
+      mystic_water: 'water',
+      miracle_seed: 'grass',
+      black_belt: 'fighting',
+      twisted_spoon: 'psychic',
+      spell_tag: 'ghost',
+      silver_powder: 'bug',
+      poison_barb: 'poison'
     }
     if (typeBoosters[h] === moveType) itemMult = 1.2
-    if (h === 'Cinta Elegida' && md.cat === 'physical') itemMult = 1.5
+    if (h === 'choice_band' && md.cat === 'physical') itemMult = 1.5
   }
   power *= itemMult
 
@@ -260,7 +265,7 @@ const isDisabled = computed(() => {
   
   // Choice Item Logic
   const p = props.playerInfo
-  if (p && p.heldItem === 'Cinta Elegida') {
+  if (p && p.heldItem === 'choice_band') {
     const pk = p as Pokemon & { choiceMove?: string }
     if (pk.choiceMove && pk.choiceMove !== props.move.name) {
       return true

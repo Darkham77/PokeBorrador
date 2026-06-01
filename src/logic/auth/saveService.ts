@@ -67,7 +67,11 @@ export interface SaveData {
   mewtwoTicketSecs: number;
   repelSecs: number;
   fishingRodSecs: number;
+  fishingRodType: string | null;
   pickaxeSecs: number;
+  pickaxeType: string | null;
+  brushSecs: number;
+  brushType: string | null;
   shinyBoostSecs: number;
   amuletCoinSecs: number;
   luckyEggSecs: number;
@@ -221,7 +225,11 @@ export function serializeState(state: GameState): SaveData {
     mewtwoTicketSecs: state.mewtwoTicketSecs || 0,
     repelSecs: state.repelSecs || 0,
     fishingRodSecs: state.fishingRodSecs || 0,
+    fishingRodType: state.fishingRodType || null,
     pickaxeSecs: state.pickaxeSecs || 0,
+    pickaxeType: state.pickaxeType || null,
+    brushSecs: state.brushSecs || 0,
+    brushType: state.brushType || null,
     shinyBoostSecs: state.shinyBoostSecs || 0,
     amuletCoinSecs: state.amuletCoinSecs || 0,
     luckyEggSecs: state.luckyEggSecs || 0,

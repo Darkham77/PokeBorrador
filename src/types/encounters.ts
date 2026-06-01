@@ -76,7 +76,11 @@ export interface EncounterState {
   dailyGuardianCaptures?: string[];
   repelSecs?: number;
   fishingRodSecs?: number;
+  fishingRodType?: 'standard' | 'good' | 'super' | null;
   pickaxeSecs?: number;
+  pickaxeType?: 'standard' | 'good' | 'super' | null;
+  brushSecs?: number;
+  brushType?: 'standard' | 'good' | 'super' | null;
   incenseSecs?: number;
   incenseType?: string | null;
   team?: Pokemon[];

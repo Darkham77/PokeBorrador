@@ -16,6 +16,9 @@ const categories = computed(() => [
   { id: 'breeding', label: 'Crianza', icon: '🥚' },
   { id: 'held', label: 'Equipables', icon: '🎒' },
   { id: 'utility', label: 'Consumibles', icon: '💊' },
+  { id: 'tools', label: 'Herramientas', icon: '🛠️' },
+  { id: 'minerals', label: 'Minerales y Fósiles', icon: '🐚' },
+  { id: 'purified', label: 'Materiales Purificados', icon: '💎' },
   { id: 'booster', label: 'Mejoras', icon: '✨' },
   { id: 'especial', label: 'Discos / MTs', icon: '📀' }
 ])

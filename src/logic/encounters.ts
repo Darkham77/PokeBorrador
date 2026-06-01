@@ -200,7 +200,7 @@ export async function generateEncounter(locId: string, state: EncounterState, op
     const isCave = !!loc.isCave;
     const isMountain = !!loc.isMountain;
     archWeight = isCave ? 10 : (isMountain ? 5 : 0);
-    if ((state.pickaxeSecs || 0) > 0) {
+    if ((state.pickaxeSecs || 0) > 0 || (state.brushSecs || 0) > 0) {
       archWeight += 600;
     }
   }
@@ -214,6 +214,26 @@ export async function generateEncounter(locId: string, state: EncounterState, op
 
     // Ensure rates match pool length
     while (rates.length < pool.length) rates.push(10);
+
+    // Apply Fishing Rod budget redistribution
+    const fishingType = state.fishingRodType || 'standard';
+    if ((fishingType === 'good' || fishingType === 'super') && pool.length > 0) {
+      let budget = fishingType === 'super' ? 1000 : 500;
+      const indexedPool = pool.map((id, index) => ({ id, index, rate: rates[index] || 10 }))
+        .sort((a, b) => a.rate - b.rate);
+
+      for (let i = 0; i < indexedPool.length; i++) {
+        const item = indexedPool[i]!;
+        if (i === indexedPool.length - 1) {
+          rates[item.index] = (rates[item.index] || 10) + budget;
+          budget = 0;
+        } else {
+          const portion = Math.round(budget / 2);
+          rates[item.index] = (rates[item.index] || 10) + portion;
+          budget -= portion;
+        }
+      }
+    }
 
     // Apply Weather injections (visitors & exclusives) to fishing pool
     const wConfig = loc.weather?.[weather];
@@ -276,7 +296,8 @@ export async function generateEncounter(locId: string, state: EncounterState, op
     const rateVal = rates[rateIdx];
     const rarity = ((rateVal !== undefined ? rateVal : 0) / (totalRate || 1)) * 100;
 
-    const pokemon = makePokemon(selectedId, level, { shinyMultiplier: options.shinyMultiplier }) as Pokemon;
+    const shinyMult = (options.shinyMultiplier || 1) * (fishingType === 'super' ? 1.5 : 1.0);
+    const pokemon = makePokemon(selectedId, level, { shinyMultiplier: shinyMult }) as Pokemon;
     if (pokemon) {
       const weatherCfg = loc.weather?.[weather];
       const isVisitor = !!(weatherCfg?.visitors && (

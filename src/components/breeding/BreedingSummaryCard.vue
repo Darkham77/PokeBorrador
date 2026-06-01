@@ -27,20 +27,20 @@ const eggSpeciesName = computed(() => {
 })
 
 const powerMap: Record<string, { stat: string, label: string }> = {
-  'Pesa Recia': { stat: 'hp', label: 'PS' },
-  'Brazal Recio': { stat: 'atk', label: 'Ataque' },
-  'Cinto Recio': { stat: 'def', label: 'Defensa' },
-  'Lente Recia': { stat: 'spa', label: 'At. Especial' },
-  'Banda Recia': { stat: 'spd', label: 'Def. Especial' },
-  'Franja Recia': { stat: 'spe', label: 'Velocidad' }
+  power_weight: { stat: 'hp', label: 'PS' },
+  power_bracer: { stat: 'atk', label: 'Ataque' },
+  power_belt: { stat: 'def', label: 'Defensa' },
+  power_lens: { stat: 'spa', label: 'At. Especial' },
+  power_band: { stat: 'spd', label: 'Def. Especial' },
+  power_anklet: { stat: 'spe', label: 'Velocidad' }
 }
 
 const guaranteedNature = computed(() => {
-  if (props.itemA === 'Piedra Eterna' && props.itemB === 'Piedra Eterna') {
+  if (props.itemA === 'everstone' && props.itemB === 'everstone') {
     return `${props.parentA.nature} o ${props.parentB.nature} (50/50)`
   }
-  if (props.itemA === 'Piedra Eterna') return props.parentA.nature
-  if (props.itemB === 'Piedra Eterna') return props.parentB.nature
+  if (props.itemA === 'everstone') return props.parentA.nature
+  if (props.itemB === 'everstone') return props.parentB.nature
   return 'Aleatoria (1/25)'
 })
 

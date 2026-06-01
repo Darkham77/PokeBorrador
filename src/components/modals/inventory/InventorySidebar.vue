@@ -12,7 +12,10 @@ const categories = computed(() => {
     { id: 'utilizables', label: 'Utilizables', icon: '⭐' },
     { id: 'pokeballs', label: 'Balls', icon: '⚪' },
     { id: 'pociones', label: 'Cura', icon: '🧪' },
-    { id: 'stones', label: 'Piedras', icon: '💎' },
+    { id: 'stones', label: 'Piedras', icon: '🔮' },
+    { id: 'minerals', label: 'Minerales y Fósiles', icon: '🐚' },
+    { id: 'purified', label: 'Materiales Purificados', icon: '💎' },
+    { id: 'tools', label: 'Herramientas', icon: '🛠️' },
     { id: 'held', label: 'Equipo', icon: '🎒' },
     { id: 'breeding', label: 'Crianza', icon: '🥚' },
     { id: 'especial', label: 'Otros', icon: '✨' }

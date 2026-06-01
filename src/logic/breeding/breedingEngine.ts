@@ -82,12 +82,12 @@ export function calculateInheritance(pA: Pokemon, pB: Pokemon, itemA: string, it
   STATS.forEach(s => ivs[s] = Math.floor(Math.random() * 32))
   
   const powerMap: Record<string, keyof PokemonIVs> = {
-    'Pesa Recia': 'hp',
-    'Brazal Recio': 'atk',
-    'Cinto Recio': 'def',
-    'Lente Recia': 'spa',
-    'Banda Recia': 'spd',
-    'Franja Recia': 'spe'
+    power_weight: 'hp',
+    power_bracer: 'atk',
+    power_belt: 'def',
+    power_lens: 'spa',
+    power_band: 'spd',
+    power_anklet: 'spe'
   }
   
   const forcedA = powerMap[itemA]
@@ -99,7 +99,7 @@ export function calculateInheritance(pA: Pokemon, pB: Pokemon, itemA: string, it
     ivs[forcedB] = Math.random() < 0.5 ? pA.ivs[forcedB] : pB.ivs[forcedB]
   }
   
-  const hasDestinyKnot = itemA === 'Lazo Destino' || itemB === 'Lazo Destino'
+  const hasDestinyKnot = itemA === 'destiny_knot' || itemB === 'destiny_knot'
   const forcedCount = (forcedA && forcedB && forcedA !== forcedB) ? 2 : ((forcedA || forcedB) ? 1 : 0)
   
   // Criador hereda +1 stat adicional base
@@ -188,11 +188,11 @@ export function calculateShinyChance(pA: Pokemon, pB: Pokemon, standardRate: num
  * Determina la naturaleza heredada (Piedra Eterna).
  */
 export function inheritNature(pA: Pokemon, pB: Pokemon, itemA: string, itemB: string): string | null {
-  if (itemA === 'Piedra Eterna' && itemB === 'Piedra Eterna') {
+  if (itemA === 'everstone' && itemB === 'everstone') {
     return Math.random() < 0.5 ? pA.nature : pB.nature
   }
-  if (itemA === 'Piedra Eterna') return pA.nature
-  if (itemB === 'Piedra Eterna') return pB.nature
+  if (itemA === 'everstone') return pA.nature
+  if (itemB === 'everstone') return pB.nature
   
   // Si no hay piedra, la naturaleza será aleatoria (se manejará al crear el objeto Pokémon)
   return null
@@ -215,8 +215,8 @@ export function getGeneticsForecast(pA: Pokemon, pB: Pokemon, playerClass: strin
   const itemA = pA.heldItem || ''
   const itemB = pB.heldItem || ''
   
-  const hasEverstone = itemA === 'Piedra Eterna' || itemB === 'Piedra Eterna'
-  const hasDestinyKnot = itemA === 'Lazo Destino' || itemB === 'Lazo Destino'
+  const hasEverstone = itemA === 'everstone' || itemB === 'everstone'
+  const hasDestinyKnot = itemA === 'destiny_knot' || itemB === 'destiny_knot'
   const isForeign = pA.region !== pB.region || pA.ot_id !== pB.ot_id
   
   const ivCount = (hasDestinyKnot ? BREEDING_CONSTANTS.IV_INHERIT_DESTINY_KNOT : BREEDING_CONSTANTS.IV_INHERIT_DEFAULT) + (playerClass === 'criador' ? 1 : 0)

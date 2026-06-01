@@ -6,6 +6,7 @@ import { useShopStore } from '@/stores/shop'
 import { useGameStore } from '@/stores/game'
 import BaseModal from '@/components/common/BaseModal.vue'
 import { formatCurrency } from '@/logic/utils/formatters'
+import { getItemVirtualCategory } from '@/logic/providers/itemProvider'
 
 // Sub-components
 import BCShopSidebar from './bc-shop/BCShopSidebar.vue'
@@ -49,7 +50,8 @@ interface ShopItem {
 const filteredItems = computed<ShopItem[]>(() => {
   return (shopStore.SHOP_ITEMS as ShopItem[]).filter(item => {
     if (!item.trainerShop) return false
-    if (activeTab.value !== 'todos' && item.cat !== activeTab.value) return false
+    const resolvedCat = getItemVirtualCategory(item)
+    if (activeTab.value !== 'todos' && resolvedCat !== activeTab.value) return false
     if (search.value && !item.name.toLowerCase().includes(search.value.toLowerCase())) return false
     return true
   }).sort((a, b) => {

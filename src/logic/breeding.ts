@@ -135,8 +135,8 @@ export function calculateInheritance(pA: Pokemon, pB: Pokemon, itemA: string = '
   STATS.forEach(s => ivs[s] = Math.floor(Math.random() * 32));
   
   const powerMap: Record<string, typeof STATS[number]> = {
-    'Pesa Recia': 'hp', 'Brazal Recio': 'atk', 'Cinto Recio': 'def',
-    'Lente Recia': 'spa', 'Banda Recia': 'spd', 'Franja Recia': 'spe'
+    power_weight: 'hp', power_bracer: 'atk', power_belt: 'def',
+    power_lens: 'spa', power_band: 'spd', power_anklet: 'spe'
   };
   
   const forcedA = powerMap[itemA];

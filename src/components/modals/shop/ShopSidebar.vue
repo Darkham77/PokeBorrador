@@ -15,7 +15,10 @@ const categories = computed(() => [
   { id: 'todos', label: 'Todo', icon: '📦' },
   { id: 'pokeballs', label: 'Balls', icon: '⚪' },
   { id: 'pociones', label: 'Pociones', icon: '🧪' },
-  { id: 'stones', label: 'Piedras', icon: '💎' },
+  { id: 'stones', label: 'Piedras', icon: '🔮' },
+  { id: 'minerals', label: 'Minerales y Fósiles', icon: '🐚' },
+  { id: 'purified', label: 'Materiales Purificados', icon: '💎' },
+  { id: 'tools', label: 'Herramientas', icon: '🛠️' },
   { id: 'especial', label: 'Especial', icon: '✨' }
 ])
 
