@@ -1,4 +1,4 @@
-
+// [PureVue-Ignore-Length]
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import { useGameStore } from './game.ts';

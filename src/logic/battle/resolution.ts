@@ -296,6 +296,7 @@ export async function calculateBattleRewards(ctx: BattleContext) {
   const fsm = ctx.fsm
   
   await fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.DISTRIBUTE_XP)
+  // fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.EMPTY_WAIT)
   
   const isTr = active.isTrainer || active.isGym
   const locId = active.locationId

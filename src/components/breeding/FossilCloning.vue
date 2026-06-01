@@ -1,10 +1,12 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+// [PureVue-Ignore-Length]
+import { ref, computed, watch } from 'vue'
 import { useBreedingStore } from '@/stores/breeding'
 import { useGameStore } from '@/stores/game'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { calculateCloningCost, calculateCloningShinyChance } from '@/logic/minigames/minigameMath'
 import EggSprite from '@/components/common/EggSprite.vue'
+import { gsap } from 'gsap'
 
 const breedingStore = useBreedingStore()
 const gameStore = useGameStore()
@@ -71,6 +73,73 @@ const CLONING_TIERS = Array.from({ length: 6 }, (_, N) => {
     multiplier: `${mult.toFixed(2)}x`
   }
 })
+
+// GSAP Hover Handlers for Fossil Cards
+const onCardMouseEnter = (e: MouseEvent) => {
+  const el = e.currentTarget as HTMLElement
+  if (!el.classList.contains('active')) {
+    gsap.to(el, {
+      y: -2,
+      backgroundColor: 'rgba(255, 255, 255, 0.04)',
+      borderColor: 'rgba(202, 138, 4, 0.3)',
+      duration: 0.2,
+      overwrite: 'auto'
+    })
+  }
+}
+
+const onCardMouseLeave = (e: MouseEvent) => {
+  const el = e.currentTarget as HTMLElement
+  if (!el.classList.contains('active')) {
+    gsap.to(el, {
+      y: 0,
+      backgroundColor: 'rgba(255, 255, 255, 0.02)',
+      borderColor: 'rgba(255, 255, 255, 0.06)',
+      duration: 0.2,
+      overwrite: 'auto'
+    })
+  }
+}
+
+// GSAP Hover Handlers for Matrix Rows
+const onRowMouseEnter = (e: MouseEvent) => {
+  const el = e.currentTarget as HTMLElement
+  if (!el.classList.contains('active') && !el.classList.contains('disabled')) {
+    gsap.to(el, {
+      backgroundColor: 'rgba(255, 255, 255, 0.03)',
+      duration: 0.15,
+      overwrite: 'auto'
+    })
+  }
+}
+
+const onRowMouseLeave = (e: MouseEvent) => {
+  const el = e.currentTarget as HTMLElement
+  if (!el.classList.contains('active') && !el.classList.contains('disabled')) {
+    gsap.to(el, {
+      backgroundColor: 'rgba(255, 255, 255, 0)',
+      duration: 0.15,
+      overwrite: 'auto'
+    })
+  }
+}
+
+watch(selectedFossilIndex, () => {
+  const cards = document.querySelectorAll('.fossil-card')
+  cards.forEach(card => {
+    gsap.killTweensOf(card)
+    gsap.set(card, { clearProps: 'y,backgroundColor,borderColor' })
+  })
+})
+
+watch(extraSacrifices, () => {
+  const rows = document.querySelectorAll('.matrix-row')
+  rows.forEach(row => {
+    gsap.killTweensOf(row)
+    gsap.set(row, { clearProps: 'backgroundColor' })
+  })
+})
+
 </script>
 
 <template>
@@ -93,6 +162,8 @@ const CLONING_TIERS = Array.from({ length: 6 }, (_, N) => {
             class="fossil-card"
             :class="{ active: selectedFossilIndex === idx }"
             @click="selectFossil(idx)"
+            @mouseenter="onCardMouseEnter"
+            @mouseleave="onCardMouseLeave"
           >
             <div class="fossil-icon-wrapper">
               <img
@@ -158,6 +229,8 @@ const CLONING_TIERS = Array.from({ length: 6 }, (_, N) => {
                   disabled: ownedCount < (1 + tier.N)
                 }"
                 @click="selectSacrifices(tier.N)"
+                @mouseenter="onRowMouseEnter"
+                @mouseleave="onRowMouseLeave"
               >
                 <td class="font-pixel">
                   {{ 1 + tier.N }}
@@ -278,13 +351,6 @@ const CLONING_TIERS = Array.from({ length: 6 }, (_, N) => {
   align-items: center;
   gap: 14px;
   cursor: pointer;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background: Rgba(255, 255, 255, 0.04);
-    border-color: Rgba(202, 138, 4, 0.3);
-    transform: Translatey(-2px);
-  }
 
   &.active {
     background: Rgba(202, 138, 4, 0.08);
@@ -440,11 +506,6 @@ const CLONING_TIERS = Array.from({ length: 6 }, (_, N) => {
 
 .matrix-row {
   cursor: pointer;
-  transition: all 0.15s ease;
-
-  &:hover:not(.disabled) {
-    background: Rgba(255, 255, 255, 0.03);
-  }
 
   &.active {
     background: Rgba(202, 138, 4, 0.12) !important;

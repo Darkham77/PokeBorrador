@@ -85,8 +85,11 @@ export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'm
     // FASE: SEARCH_PHASE (Solo para salvajes normales)
     await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.PARALLEL_PREP)
     
-    if (ctx.upcomingPokemon.value) {
-      ctx.activeBattle.value.enemy = ctx.upcomingPokemon.value
+    if (!ctx.activeBattle.value._initialEnemy && ctx.upcomingPokemon.value) {
+      ctx.activeBattle.value._initialEnemy = { ...ctx.upcomingPokemon.value }
+    }
+    if (ctx.activeBattle.value._initialEnemy) {
+      ctx.activeBattle.value.enemy = ctx.activeBattle.value._initialEnemy
     }
     
     ctx.isProcessing.value = false

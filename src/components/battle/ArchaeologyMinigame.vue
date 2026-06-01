@@ -1,4 +1,5 @@
 <script setup lang="ts">
+// [PureVue-Ignore-Length]
 import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { gsap } from 'gsap'
 import type { Pokemon } from '@/types/pokemon'

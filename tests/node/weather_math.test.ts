@@ -15,6 +15,8 @@ import {
   hashString,
   getDayCyclePure,
   getRouteWeatherPure,
+  getSessionWeatherSeed,
+  getWeatherAnimSeed,
   type WeatherTable,
 } from '../../src/logic/weather/weatherMath.ts';
 
@@ -139,3 +141,31 @@ describe('getRouteWeatherPure', () => {
     assert.ok(typeof weather === 'string', 'Should return a string');
   });
 });
+
+// ── getWeatherAnimSeed & getSessionWeatherSeed ───────────────────────────────
+
+describe('getWeatherAnimSeed & getSessionWeatherSeed', () => {
+  it('getSessionWeatherSeed returns a numeric seed', () => {
+    const seed = getSessionWeatherSeed();
+    assert.strictEqual(typeof seed, 'number');
+    assert.ok(seed >= 0 && seed <= 1000);
+  });
+
+  it('getWeatherAnimSeed returns a value between 0 and 1', () => {
+    const seed = getWeatherAnimSeed('route1');
+    assert.ok(seed >= 0 && seed <= 1);
+  });
+
+  it('getWeatherAnimSeed is deterministic for same route', () => {
+    const seed1 = getWeatherAnimSeed('route1');
+    const seed2 = getWeatherAnimSeed('route1');
+    assert.strictEqual(seed1, seed2);
+  });
+
+  it('getWeatherAnimSeed is different for different routes', () => {
+    const seed1 = getWeatherAnimSeed('route1');
+    const seed2 = getWeatherAnimSeed('route2');
+    assert.notStrictEqual(seed1, seed2);
+  });
+});
+

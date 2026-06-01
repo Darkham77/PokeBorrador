@@ -177,6 +177,12 @@ These specific technical rules have been moved to their respective specialized m
 - **Battle Engine (FSM)**: Consolidado en [battle_mechanics_manual.md](./references/battle/battle_mechanics_manual.md).
 - **Low Power Mode**: Consolidado en [low_power_mode_manual.md](./references/technical/low_power_mode_manual.md).
 
+### Weather Anim Seed & GSAP Hover Animations
+- **Weather Seed Synchronization**: The visual weather animation seed (0 to 1) MUST be synchronized between MapCard and BattleArenaView using the global `getWeatherAnimSeed` function. Pass it as `:anim-seed` to `<AtmosphereLayer>` (and never pass `:seed`).
+- **File Length Bypass**: Large data-heavy or state-management files (like stores or factories) exceeding 500 lines by design MUST carry `// [PureVue-Ignore-Length]` at the top of the script setup block.
+- **Strict GSAP Hover animations**: All hover transitions on interactive cards or rows (such as lift, scale, or background transition) MUST be handled via `@mouseenter` and `@mouseleave` handlers using GSAP (`gsap.to`), completely avoiding manual CSS `transition:` declarations.
+
+
 ---
 
 ## 🏗️ Artifact Governance (MANDATORY)

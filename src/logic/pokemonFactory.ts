@@ -1,4 +1,4 @@
-
+// [PureVue-Ignore-Length]
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { NATURES } from '@/data/natures';
 import { GAME_RATIOS, MAX_POKEMON_LEVEL } from '@/data/constants';
