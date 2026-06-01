@@ -904,7 +904,7 @@ stateDiagram-v2
     }
 ```
 
-- **Search (Loop)**: Resets `over` state, clears old logs, but **persists** the camera and ground coordinates to avoid jumps.
+- **Search (Loop)**: Resets `over` state, but **persists** the battle logs and the camera and ground coordinates to avoid jumps. Battle logs MUST NOT be cleared when transitioning to `SEARCH_PHASE`; they remain visible so the player can review the previous battle outcome. Logs are only cleared when the player initiates a new battle sequence (pressing "COMBATIR", "PESCAR", or equivalent `initBattleSequence()` trigger).
 - **Return to Map**: Triggers the `EXIT_BATTLE` sequence. The `isBattleActive` flag MUST be cleared last to ensure all components can unmount cleanly without trying to read stale battle data.
 
 ## 🧹 State Hygiene & Phantom Animations
@@ -1147,3 +1147,17 @@ To ensure stability and 1:1 parity between visual execution and state flow:
 - **Minimum Climate Damage**: Force a minimum of `1 HP` on climate damage formulas using `Math.max(1, Math.floor(maxHp / 16))` to prevent confusing `0 HP` or `-0 HP` logs for low-level Pokémon.
 - **Stat Parsing Regular Expression**: Include numbers and underscores in regex patterns mapping stage adjustments (e.g., `/stat_(up|down)_(self|enemy)_([a-z0-9_]+)/`) to avoid truncating specific stats like `spe_2` into `SPE_`.
 - **Computed Rendering Optimization**: Avoid accessing direct database or metadata providers (like `pokemonDataProvider`) directly inside Vue template loops. Cache all resolved lookups in `<script setup>` using `computed` properties.
+
+---
+
+## 📝 Lessons Learned: FSM Async Guards (Stale Turn Hijacking)
+
+These patterns prevent asynchronous battle logic from interfering with subsequent encounters after a battle ends.
+
+- **`applyEndTurnEffects` Guard**: The function in `battleFlow.ts` MUST return early if `fsm.currentState.value !== BATTLE_STATES.ACTIVE_BATTLE`. Weather damage (e.g., Ola Frío, Granizo) or status tick effects from the previous battle can wake up asynchronously after the FSM has already transitioned to `SEARCH_PHASE`, applying damage to the next enemy and revealing its identity before the encounter animation.
+- **`processFaint` Guard**: The function in `resolution.ts` MUST check that the FSM is in `ACTIVE_BATTLE` before executing faint sequences. Allow `EXIT_BATTLE` as a permissible state only for unit test contexts. Without this guard, a deferred faint from a previous battle can affect the next opponent.
+- **`executeMove` / `useItemInBattle` Guard**: Both must verify `fsm.currentState.value === ACTIVE_BATTLE` before triggering turn sub-states like `WAIT_INPUT`. Stale async chains from the previous turn can otherwise set substates on the new encounter's FSM.
+- **`autoBattle` Watcher Scope**: The watcher in `BattleArenaControls.vue` MUST trigger **only** when substate is `BUSH_IDLE` or `SILHOUETTE_MODE`. Triggering on `PARALLEL_PREP` causes the auto-battle to skip the entire search layout (bushes, silhouettes), starting the new battle instantly without any visual search phase.
+- **`BUSH_IDLE` Immediate Transition**: `handleBattleFlowCompletion('search')` in `searchLoop.ts` MUST explicitly transition to `BUSH_IDLE` immediately after `PARALLEL_PREP` completes. This ensures the stable waiting state is set before the first reactive frame in which the `autoBattle` watcher fires.
+- **Money Sound Exclusion**: The money gain sound effect MUST NOT be played inside `calculateBattleRewards`. It was intentionally removed to decouple the audio cue from the rewards calculation cycle.
+

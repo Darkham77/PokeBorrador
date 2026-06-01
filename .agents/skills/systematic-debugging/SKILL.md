@@ -115,3 +115,5 @@ pm2 logs app-name --err --lines 100
 | **Not reproducing first** | Makes it impossible to verify the fix properly (fixing blindly). |
 | **Stopping at symptoms** | Leaves the underlying issue to resurface later (not finding root cause). |
 | **Fixing code but testing via HMR proxy** | When a Pinia store registers actions at startup (e.g., `window.__VITE_DEBUG__`), HMR reloads the module but the store's registered closures are NOT refreshed. The "fixed" code never runs. Solution: bypass the proxy and manipulate the store directly from the component, or do a full page refresh to re-run `init()`. |
+| **Modifying working animations without isolation** | When a bug is in FSM flow or async sequencing, avoid rewriting state assignments or reactive variables that feed working animations (e.g., team reorder Pokéballs, battle log display). Changes to `searchLoop.ts` or `resolution.ts` that rearrange team state before visual sequences complete will silently break those animations. Always isolate the broken flow first, verify existing animations still play, then patch. |
+
