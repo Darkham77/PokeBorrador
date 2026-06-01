@@ -79,6 +79,7 @@ We prioritize a deliberate contrast between modern, sleek UI shells and classic,
 - **Loading Orchestration Gate (Sync Bypass)**: The global loading veil MUST be managed via `v-if` based on `LoadingStore.isGateOpen`.
   - **CRITICAL**: To prevent infinite loops on authentication routes, the gate MUST be forced OPEN síncronamente in `App.vue` if `window.location.pathname === '/login'`, bypassing the standard `onMounted` flow.
   - **WHY**: Ensures the user can always escape a corrupted session or "loading data" loop by manually navigating to login.
+- **Visual Column Alignment & Layout Parity**: When sub-tables (like fishing) inherit standard layouts, ensure they use identical CSS column structures (e.g. including `col-type` for "Estado") and remove layout overrides that override width percentages. This ensures visual parity, vertical alignment, and prevents horizontal scrollbar overflow.
 
 - **PWA Integrity (Desktop-First Hybrid)**:
   - **Display Mode**: ALWAYS use `display: standalone` in the manifest. Avoid `fullscreen` to prevent desktop browsers from hiding scrollbars or misidentifying the app as mobile-only.
@@ -107,6 +108,7 @@ We prioritize a deliberate contrast between modern, sleek UI shells and classic,
 - **GPU Persistence Rule**: To prevent "snapping" from smooth to pixelated after CSS transitions (especially on environmental backgrounds), use `image-rendering: auto` explicitly in `smooth` mixins and force GPU layer persistence with `will-change: filter, transform;` and `transform: TranslateZ(0);`.
 - **Dynamic Variable Binding**: Context-dependent visual effects (glows, auras) MUST use dynamic CSS variables (e.g., `:style="{ '--type-color': color }"`) injected from the template to allow SCSS to remain generic.
 - **Silhouette Integrity**: When rendering "Search Mode" or silhouetted Pokémon, use a solid black appearance (`filter: Brightness(0)`). To ensure visibility against dark battle backgrounds, ALWAYS apply a subtle white `drop-shadow(0 0 1px white)`.
+- **Reactive Silhouette Invalidation**: When caching pre-rendered outline/silhouette sprites asynchronously, ensure the cache key is compounded with the reactivity state (e.g. `const key = `${item.key}-${item.isCaught}``). This forces the outline generator to correctly re-evaluate and render the colored outline when the caught debug status changes in the UI.
 - **Advanced SVG Silhouette (Subtraction Pattern)**: For pixel-perfect silhouettes with borders, use an SVG filter with a "Subtraction" algorithm:
   1. **Dilate** the SourceAlpha (e.g., 1.5px).
   2. **Subtract** the original SourceAlpha (`operator="out"`) to isolate the "ring".
@@ -315,6 +317,7 @@ To ensure technical information is accurate and consistent:
   - **Estructura**: `Aparición: [Horario] + [Modificador Clima]`.
   - **Ejemplo**: Si es un Pokémon de Noche potenciado por Lluvia, debe mostrar: `Aparición: 🌙 (Potenciado por: 🌧️)`.
   - **Visitantes**: Si es un visitante, el texto debe indicar explícitamente su origen climático para justificar su presencia fuera de su hábitat natural.
+- **Atmospheric Tooltip Translation & Net Delta Breakdown**: Probability and atmospheric tooltips must dynamically translate internal weather codes to their friendly Spanish equivalents using visual metadata. If the active probability deviates from the base probability, tooltips must provide a clear line item indicating the net delta value (e.g. `+4.0%`) and its structural cause (such as proportional redistribution from blocked/penalized species in the pool).
 - **Case-Insensitive Lookup**: Every query to `ABILITY_DATA` or `NATURE_DATA` MUST normalize keys (`.toLowerCase()`). This prevents visual failures if the Pokémon database uses "OSADO" and the manual uses "Osado".
 
 - **Full Descriptions**: Avoid placeholders. Tooltips MUST display the `.desc` field of the data object. If it doesn't exist, use an informative fallback like "Special ability of this Pokémon."
