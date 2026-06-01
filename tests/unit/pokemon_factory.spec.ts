@@ -108,7 +108,7 @@ describe('Pokemon Factory', () => {
 
     it('should block level up if holding Everstone (Piedra Eterna)', () => {
       const p = makePokemon('charmander', 5);
-      p!.heldItem = 'Piedra Eterna';
+      p!.heldItem = 'everstone';
       const res = levelUpPokemon(p!);
       expect(p!.level).toBe(5);
       expect(res).toBeNull();

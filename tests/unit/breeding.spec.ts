@@ -79,7 +79,7 @@ describe('Breeding Engine', () => {
     it('should inherit forced IV from Power Item', () => {
       const pA = { id: 'pA', ivs: { hp: 31, atk: 10, def: 10, spa: 10, spd: 10, spe: 10 } } as unknown as Pokemon
       const pB = { id: 'pB', ivs: { hp: 10, atk: 10, def: 10, spa: 10, spd: 10, spe: 10 } } as unknown as Pokemon
-      const res = calculateInheritance(pA, pB, 'Pesa Recia', '')
+      const res = calculateInheritance(pA, pB, 'power_weight', '')
       expect(res.hp).toBe(31)
     })
 
@@ -128,7 +128,7 @@ describe('Breeding Engine', () => {
 
   describe('getGeneticsForecast', () => {
     it('should return correct summary for UI', () => {
-      const pA = { id: 'pikachu', gender: 'F', moves: [{ name: 'volt_tackle' }], heldItem: 'Piedra Eterna' } as unknown as Pokemon
+      const pA = { id: 'pikachu', gender: 'F', moves: [{ name: 'volt_tackle' }], heldItem: 'everstone' } as unknown as Pokemon
       const pB = { id: 'pikachu', gender: 'M', moves: [] } as unknown as Pokemon
       const res = getGeneticsForecast(pA, pB, '')
       expect(res.natureGuaranteed).toBe(true)
