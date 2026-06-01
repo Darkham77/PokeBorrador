@@ -6,6 +6,7 @@ import { useWarStore } from '@/stores/war'
 import type { BattleContext } from '@/types/battleContext'
 import type { UIStore, MapStore, EventStore, WarStore } from '@/types/stores'
 import { logger } from '../utils/logger.ts'
+import type { Pokemon } from '@/types/pokemon'
 
 /**
  * Handles the completion of a battle flow (either going to map or search loop).
@@ -18,6 +19,10 @@ export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'm
   if (option === 'search' && ctx.activeBattle.value) {
     ctx.isProcessing.value = true
     
+    // 1. Limpiar el enemigo anterior de inmediato para evitar flashes visuales en color
+    ctx.activeBattle.value.enemy = null
+    ctx.activeBattle.value._initialEnemy = null
+    
     // Restablecer flags de minijuegos para la fase de búsqueda
     ctx.activeBattle.value.isFishing = false
     ctx.activeBattle.value.isArchaeology = false
@@ -27,7 +32,7 @@ export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'm
     
     const locId = ctx.activeBattle.value.locationId
     
-    // Generar el encuentro activo directo para esta búsqueda
+    // Generar el encuentro en segundo plano
     const mapStore = useMapStore() as unknown as MapStore
     const eventStore = useEventStore() as unknown as EventStore
     const warStore = useWarStore() as unknown as WarStore
@@ -38,16 +43,24 @@ export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'm
       forceEncounter: true
     }
     const encounter = await generateEncounter(locId, ctx.gs.state, encounterOptions)
+    
+    let isFishing = false
+    let isArchaeology = false
+    let generatedPoke: Pokemon | null = null
     if (encounter && (encounter.type === 'wild' || encounter.type === 'fishing' || encounter.type === 'archaeology' || encounter.type === 'guardian') && encounter.pokemon) {
-      ctx.activeBattle.value._initialEnemy = { ...encounter.pokemon }
-      ctx.activeBattle.value.enemy = { ...encounter.pokemon }
-      ctx.activeBattle.value.isFishing = encounter.type === 'fishing'
-      ctx.activeBattle.value.isArchaeology = encounter.type === 'archaeology'
+      generatedPoke = encounter.pokemon
+      isFishing = encounter.type === 'fishing'
+      isArchaeology = encounter.type === 'archaeology'
     }
 
     // Si el encuentro generado es un minijuego, lo jugamos de inmediato
-    const isMinigame = ctx.activeBattle.value.isFishing || ctx.activeBattle.value.isArchaeology
-    if (isMinigame) {
+    if (isFishing || isArchaeology) {
+      if (generatedPoke) {
+        ctx.activeBattle.value._initialEnemy = { ...generatedPoke }
+        ctx.activeBattle.value.enemy = { ...generatedPoke }
+      }
+      ctx.activeBattle.value.isFishing = isFishing
+      ctx.activeBattle.value.isArchaeology = isArchaeology
       ctx.isProcessing.value = false
       await fsm.transition(BATTLE_STATES.INITIALIZING)
       await fsm.transition(BATTLE_STATES.INITIALIZING, BATTLE_SUBSTATES.MINIGAME_CHECK)
@@ -59,6 +72,12 @@ export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'm
 
     // FASE: SEARCH_PHASE (Solo para salvajes normales)
     await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.PARALLEL_PREP)
+    
+    // Asignar el nuevo enemigo solo después de entrar en SEARCH_PHASE (donde la silueta/invisibilidad está activa)
+    if (generatedPoke) {
+      ctx.activeBattle.value._initialEnemy = { ...generatedPoke }
+      ctx.activeBattle.value.enemy = { ...generatedPoke }
+    }
     
     ctx.isProcessing.value = false
     return
