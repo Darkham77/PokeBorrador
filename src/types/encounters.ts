@@ -57,6 +57,8 @@ export interface MapLocation {
     [key: string]: {
       exclusive?: string[] | Record<string, number | undefined>;
       visitors?: string[] | Record<string, number | undefined>;
+      fishingExclusive?: string[] | Record<string, number | undefined>;
+      fishingVisitors?: string[] | Record<string, number | undefined>;
     } | undefined;
   };
 }

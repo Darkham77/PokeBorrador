@@ -235,25 +235,25 @@ export async function generateEncounter(locId: string, state: EncounterState, op
       }
     }
 
-    // Apply Weather injections (visitors & exclusives) to fishing pool
+    // Apply Weather injections (fishingExclusive & fishingVisitors) to fishing pool
     const wConfig = loc.weather?.[weather];
     if (weather && weather !== 'clear' && wConfig) {
-      if (wConfig.exclusive) {
-        const exclusives = Array.isArray(wConfig.exclusive) ? wConfig.exclusive : Object.keys(wConfig.exclusive);
+      if (wConfig.fishingExclusive) {
+        const exclusives = Array.isArray(wConfig.fishingExclusive) ? wConfig.fishingExclusive : Object.keys(wConfig.fishingExclusive);
         exclusives.forEach(id => {
           if (!pool.includes(id)) {
             pool.push(id);
-            const weight = Array.isArray(wConfig.exclusive) ? 5 : ((wConfig.exclusive as Record<string, number>)[id] || 5);
+            const weight = Array.isArray(wConfig.fishingExclusive) ? 5 : ((wConfig.fishingExclusive as Record<string, number>)[id] || 5);
             rates.push(weight || 5);
           }
         });
       }
-      if (wConfig.visitors) {
-        const visitors = Array.isArray(wConfig.visitors) ? wConfig.visitors : Object.keys(wConfig.visitors);
+      if (wConfig.fishingVisitors) {
+        const visitors = Array.isArray(wConfig.fishingVisitors) ? wConfig.fishingVisitors : Object.keys(wConfig.fishingVisitors);
         visitors.forEach(id => {
           if (!pool.includes(id)) {
             pool.push(id);
-            const weight = Array.isArray(wConfig.visitors) ? -10 : -((wConfig.visitors as Record<string, number>)[id] || 10);
+            const weight = Array.isArray(wConfig.fishingVisitors) ? -10 : -((wConfig.fishingVisitors as Record<string, number>)[id] || 10);
             rates.push(weight || -10);
           }
         });
@@ -264,7 +264,7 @@ export async function generateEncounter(locId: string, state: EncounterState, op
     if (weather && weather !== 'clear') {
       const visitorIndices = rates.map((r, i) => r < 0 ? i : -1).filter(i => i !== -1);
       const nativeIndices = rates.map((r, i) => r >= 0 ? i : -1).filter(i => i !== -1);
-      const exclusives = wConfig?.exclusive ? (Array.isArray(wConfig.exclusive) ? wConfig.exclusive : Object.keys(wConfig.exclusive)) : [];
+      const exclusives = wConfig?.fishingExclusive ? (Array.isArray(wConfig.fishingExclusive) ? wConfig.fishingExclusive : Object.keys(wConfig.fishingExclusive)) : [];
 
       nativeIndices.forEach(idx => {
         const spId = pool[idx];
@@ -278,7 +278,7 @@ export async function generateEncounter(locId: string, state: EncounterState, op
 
       if (visitorIndices.length > 0) {
         const totalNativeWeight = nativeIndices.reduce((sum, idx) => sum + (rates[idx] || 0), 0);
-        const visitorQuota = totalNativeWeight / 9; // 10% of total
+        const visitorQuota = totalNativeWeight / 9; // 10% weight
         const sumRelativeWeights = visitorIndices.reduce((sum, idx) => sum + Math.abs(rates[idx] || 0), 0);
         visitorIndices.forEach(idx => {
           const relativeWeight = Math.abs(rates[idx] || 0) / (sumRelativeWeights || 1);

@@ -399,25 +399,25 @@ const fishingSpawns = computed(() => {
   let rates = [...props.map.fishing.rates]
   while (rates.length < pool.length) rates.push(10)
 
-  // Apply Weather injections (visitors & exclusives) to fishing pool
+  // Apply Weather injections (fishingExclusive & fishingVisitors) to fishing pool
   const weatherCfg = props.map.weather?.[props.weather]
   if (props.weather && props.weather !== 'clear' && weatherCfg) {
-    if (weatherCfg.exclusive) {
-      const exclusives = Array.isArray(weatherCfg.exclusive) ? weatherCfg.exclusive : Object.keys(weatherCfg.exclusive)
+    if (weatherCfg.fishingExclusive) {
+      const exclusives = Array.isArray(weatherCfg.fishingExclusive) ? weatherCfg.fishingExclusive : Object.keys(weatherCfg.fishingExclusive)
       exclusives.forEach(id => {
         if (!pool.includes(id)) {
           pool.push(id)
-          const weight = Array.isArray(weatherCfg.exclusive) ? 5 : ((weatherCfg.exclusive as Record<string, number>)[id] || 5)
+          const weight = Array.isArray(weatherCfg.fishingExclusive) ? 5 : ((weatherCfg.fishingExclusive as Record<string, number>)[id] || 5)
           rates.push(weight)
         }
       })
     }
-    if (weatherCfg.visitors) {
-      const visitors = Array.isArray(weatherCfg.visitors) ? weatherCfg.visitors : Object.keys(weatherCfg.visitors)
+    if (weatherCfg.fishingVisitors) {
+      const visitors = Array.isArray(weatherCfg.fishingVisitors) ? weatherCfg.fishingVisitors : Object.keys(weatherCfg.fishingVisitors)
       visitors.forEach(id => {
         if (!pool.includes(id)) {
           pool.push(id)
-          const weight = Array.isArray(weatherCfg.visitors) ? -10 : -((weatherCfg.visitors as Record<string, number>)[id] || 10)
+          const weight = Array.isArray(weatherCfg.fishingVisitors) ? -10 : -((weatherCfg.fishingVisitors as Record<string, number>)[id] || 10)
           rates.push(weight)
         }
       })
@@ -428,7 +428,7 @@ const fishingSpawns = computed(() => {
   if (props.weather && props.weather !== 'clear') {
     const visitorIndices = rates.map((r, i) => r < 0 ? i : -1).filter(i => i !== -1)
     const nativeIndices = rates.map((r, i) => r >= 0 ? i : -1).filter(i => i !== -1)
-    const exclusives = weatherCfg?.exclusive ? (Array.isArray(weatherCfg.exclusive) ? weatherCfg.exclusive : Object.keys(weatherCfg.exclusive)) : []
+    const exclusives = weatherCfg?.fishingExclusive ? (Array.isArray(weatherCfg.fishingExclusive) ? weatherCfg.fishingExclusive : Object.keys(weatherCfg.fishingExclusive)) : []
 
     nativeIndices.forEach(idx => {
       const spId = pool[idx]
@@ -507,13 +507,13 @@ const fishingSpawns = computed(() => {
     const name = isSeen ? (data?.name || id.toUpperCase()) : 'Desconocido'
 
     // Status type mapping
-    const isVisitor = !!(weatherCfg?.visitors && (
-      (!Array.isArray(weatherCfg.visitors) && (weatherCfg.visitors as Record<string, number>)[id]) || 
-      (Array.isArray(weatherCfg.visitors) && weatherCfg.visitors.includes(id))
+    const isVisitor = !!(weatherCfg?.fishingVisitors && (
+      (!Array.isArray(weatherCfg.fishingVisitors) && (weatherCfg.fishingVisitors as Record<string, number>)[id]) || 
+      (Array.isArray(weatherCfg.fishingVisitors) && weatherCfg.fishingVisitors.includes(id))
     ))
-    const isExclusive = !!(weatherCfg?.exclusive && (
-      (!Array.isArray(weatherCfg.exclusive) && (weatherCfg.exclusive as Record<string, number>)[id]) || 
-      (Array.isArray(weatherCfg.exclusive) && weatherCfg.exclusive.includes(id))
+    const isExclusive = !!(weatherCfg?.fishingExclusive && (
+      (!Array.isArray(weatherCfg.fishingExclusive) && (weatherCfg.fishingExclusive as Record<string, number>)[id]) || 
+      (Array.isArray(weatherCfg.fishingExclusive) && weatherCfg.fishingExclusive.includes(id))
     ))
 
     const multiplier = getWeatherMultiplier(id, props.weather)
@@ -865,17 +865,38 @@ interface WildSpawnData {
   spawnType: string
 }
 
+function translateWeather(w: string): string {
+  const visual = WEATHER_VISUAL_METADATA[w]
+  if (visual) return visual.label
+  const mech = getMechanicalWeather(w)
+  return WEATHER_UI_METADATA[mech]?.label || w
+}
+
 function getWildSpawnTooltip(poke: WildSpawnData) {
   const lines: string[] = []
   lines.push(`Probabilidad Base: ${poke.basePercentage.toFixed(1)}%`)
   if (poke.multiplier !== 1) {
     const change = poke.multiplier > 1 ? 'Aumento por Clima' : 'Reducción por Clima'
-    lines.push(`• ${change}: x${poke.multiplier} (${props.weather})`)
+    const label = translateWeather(props.weather)
+    lines.push(`• ${change}: x${poke.multiplier} (${label})`)
   }
   if (poke.spawnType === 'Visitante') {
-    lines.push(`• Pokémon Visitante del clima: ${props.weather}`)
+    const label = translateWeather(props.weather)
+    const diffVal = poke.percentage - poke.basePercentage
+    lines.push(`• Pokémon Visitante del clima (${label}): +${diffVal.toFixed(1)}% de probabilidad activa`)
   } else if (poke.spawnType === 'Exclusivo') {
-    lines.push(`• Pokémon Exclusivo del clima: ${props.weather}`)
+    const label = translateWeather(props.weather)
+    const diffVal = poke.percentage - poke.basePercentage
+    lines.push(`• Pokémon Exclusivo del clima (${label}): +${diffVal.toFixed(1)}% de probabilidad activa`)
+  } else {
+    const diffVal = poke.percentage - poke.basePercentage
+    if (Math.abs(diffVal) > 0.05) {
+      const direction = diffVal > 0 ? 'Aumento' : 'Reducción'
+      const detail = diffVal > 0
+        ? 'redistribución proporcional al bloquearse, penalizarse o cambiar de hora otros Pokémon'
+        : 'redistribución proporcional al inyectarse nuevos Pokémon o potenciarse otros encuentros'
+      lines.push(`• ${direction} neto: ${diffVal > 0 ? '+' : ''}${diffVal.toFixed(1)}% (${detail})`)
+    }
   }
   const speciesEvent = eventStore.activeEvents.find(e => {
     const cfg = (typeof e.config === 'string' ? JSON.parse(e.config) : e.config) as EventConfig | undefined
@@ -939,7 +960,26 @@ function getFishingSpawnTooltip(poke: FishingSpawnData) {
   }
   if (poke.multiplier !== 1) {
     const change = poke.multiplier > 1 ? 'Aumento por Clima' : 'Reducción por Clima'
-    lines.push(`• ${change} en especie: x${poke.multiplier} (${props.weather})`)
+    const label = translateWeather(props.weather)
+    lines.push(`• ${change} en especie: x${poke.multiplier} (${label})`)
+  }
+  if (poke.spawnType === 'Visitante') {
+    const label = translateWeather(props.weather)
+    const diffVal = poke.percentage - poke.basePercentage
+    lines.push(`• Pokémon Visitante del clima (${label}): +${diffVal.toFixed(1)}% de probabilidad activa`)
+  } else if (poke.spawnType === 'Exclusivo') {
+    const label = translateWeather(props.weather)
+    const diffVal = poke.percentage - poke.basePercentage
+    lines.push(`• Pokémon Exclusivo del clima (${label}): +${diffVal.toFixed(1)}% de probabilidad activa`)
+  } else {
+    const diffVal = poke.percentage - poke.basePercentage
+    if (Math.abs(diffVal) > 0.05) {
+      const direction = diffVal > 0 ? 'Aumento' : 'Reducción'
+      const detail = diffVal > 0
+        ? 'redistribución proporcional al bloquearse, penalizarse o cambiar de hora otros Pokémon'
+        : 'redistribución proporcional al inyectarse nuevos Pokémon o potenciarse otros encuentros'
+      lines.push(`• ${direction} neto: ${diffVal > 0 ? '+' : ''}${diffVal.toFixed(1)}% (${detail})`)
+    }
   }
   const eventFishingBonus = eventStore.globalMultipliers?.fishing || 1
   if (eventFishingBonus !== 1) {
@@ -1437,6 +1477,9 @@ function getArchaeologySpawnTooltip(reward: ArchaeologyRewardData) {
             <div class="col-types">
               Tipos
             </div>
+            <div class="col-type">
+              Estado
+            </div>
             <div class="col-multiplier">
               Clima
             </div>
@@ -1496,6 +1539,18 @@ function getArchaeologySpawnTooltip(reward: ArchaeologyRewardData) {
                   v-else
                   class="hidden-info-placeholder"
                 >???</span>
+              </div>
+
+              <!-- Spawn Status Type -->
+              <div class="col-type row-cell flex-align">
+                <PVTooltip
+                  :title="getStatusTooltip(poke.spawnType).title"
+                  :description="getStatusTooltip(poke.spawnType).desc"
+                >
+                  <span :class="['status-tag', poke.statusClass]">
+                    {{ poke.spawnType }}
+                  </span>
+                </PVTooltip>
               </div>
 
               <!-- Climate Multiplier -->

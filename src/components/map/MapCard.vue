@@ -928,7 +928,7 @@ watch(
     if (!newGrid) return
     newGrid.forEach(async (item) => {
       if (!item.id || !item.sprite) return
-      const key = item.key
+      const key = `${item.key}-${item.isCaught}`
       if (processedSprites.value[key]) return
 
       const type = !item.isCaught ? 'silhouette' : 'outline'
@@ -1168,11 +1168,11 @@ watch(
                 >
                   <div class="spawn-atmosphere-wrapper">
                     <img
-                      :src="processedSprites[item.key] || item.sprite"
+                      :src="processedSprites[item.key + '-' + item.isCaught] || item.sprite"
                       class="pixelated"
                       :class="{ 
-                        'spawn-silhouette': !processedSprites[item.key] && !item.isCaught,
-                        'is-pre-rendered': !!processedSprites[item.key]
+                        'spawn-silhouette': !processedSprites[item.key + '-' + item.isCaught] && !item.isCaught,
+                        'is-pre-rendered': !!processedSprites[item.key + '-' + item.isCaught]
                       }"
                       @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
                     >
