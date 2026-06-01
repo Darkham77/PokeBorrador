@@ -22,6 +22,7 @@ export interface DaycareEgg {
   isShiny: boolean;
   cost: number;
   tint?: string;
+  isAncestral?: boolean;
   inherited_ivs?: {
     _scanned?: boolean;
     [key: string]: number | boolean | undefined;

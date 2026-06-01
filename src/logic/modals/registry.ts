@@ -24,7 +24,6 @@ export const MODAL_REGISTRY = {
   Arena: defineAsyncComponent(() => import('@/components/modals/ArenaModal.vue')),
   Library: defineAsyncComponent(() => import('@/components/LibraryModal.vue')),
   Cosmetics: defineAsyncComponent(() => import('@/components/modals/CosmeticsModal.vue')),
-  FossilRevival: defineAsyncComponent(() => import('@/components/modals/FossilRevivalModal.vue')),
   ClassSelection: defineAsyncComponent(() => import('@/components/modals/ClassSelectionModal.vue')),
   ClassMissions: defineAsyncComponent(() => import('@/components/modals/ClassMissionsModal.vue')),
   MoveLearning: defineAsyncComponent(() => import('@/components/modals/MoveLearningModal.vue')),

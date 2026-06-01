@@ -181,6 +181,9 @@ export async function loadBestSave(user: AuthUser | null, db: DBRouter): Promise
 function normalizeData(state: GameState): GameState {
   if (!state) return state;
 
+  if (state.fishingRodSecs === undefined) state.fishingRodSecs = 0;
+  if (state.pickaxeSecs === undefined) state.pickaxeSecs = 0;
+
   // Ensure arrays exist
   if (!Array.isArray(state.team)) state.team = [];
   if (!Array.isArray(state.box)) state.box = [];

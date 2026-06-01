@@ -89,6 +89,15 @@ export const useUIStore = defineStore('ui', () => {
     safeStorage.setItem('hide-map-pokemon', val ? 'true' : 'false')
   }
   
+  // Auto-battle Mode
+  const autoBattle = ref<boolean>(
+    safeStorage.getItem('auto-battle') === 'true'
+  )
+  function setAutoBattle(val: boolean) {
+    autoBattle.value = val
+    safeStorage.setItem('auto-battle', val ? 'true' : 'false')
+  }
+  
   // Team Management Debug Flags
   const pvpAutoFillDisabled = ref(false)
   const warAutoFillDisabled = ref(false)
@@ -106,7 +115,6 @@ export const useUIStore = defineStore('ui', () => {
   const activePokemonForNature = ref<Pokemon | null>(null)
   const activePokemonForPPUp = ref<Pokemon | null>(null)
   const activePokemonForAbility = ref<Pokemon | null>(null)
-  const activeFossil = ref<{ pokemon: Pokemon; itemName: string; sentTo: 'team' | 'box' } | null>(null)
   
   // Detalle data
   const selectedPokemon = ref<Pokemon | null>(null)
@@ -325,7 +333,6 @@ export const useUIStore = defineStore('ui', () => {
   const isNaturePatchOpen = createModalRef('NaturePatch')
   const isPPUpOpen = createModalRef('PPUp')
   const isAbilityPillOpen = createModalRef('AbilityPill')
-  const isFossilRevivalOpen = createModalRef('FossilRevival')
   const isHatchModalOpen = createModalRef('HatchModal')
   const isCosmeticsModalOpen = createModalRef('Cosmetics')
   const isFactionChoiceOpen = createModalRef('FactionChoice')
@@ -340,6 +347,8 @@ export const useUIStore = defineStore('ui', () => {
     setLowPowerMode,
     hideMapPokemon,
     setHideMapPokemon,
+    autoBattle,
+    setAutoBattle,
     isAnyFullscreenModalOpen,
     isPerformanceMode,
     isDebugPerformanceMode,
@@ -437,8 +446,6 @@ export const useUIStore = defineStore('ui', () => {
     activePokemonForPPUp,
     isAbilityPillOpen,
     activePokemonForAbility,
-    isFossilRevivalOpen,
-    activeFossil,
 
     isInventoryOpen,
     toggleInventory,

@@ -31,7 +31,7 @@ const handleImgError = (e: Event) => {
       <PVTooltip 
         v-for="buff in buffsStore.activeBuffs" 
         :key="buff.id" 
-        :title="buff.desc"
+        :title="`${buff.name} — ${buff.desc}`"
       >
         <div class="buff-badge">
           <img
@@ -41,7 +41,6 @@ const handleImgError = (e: Event) => {
             @error="handleImgError"
           >
           <div class="buff-info">
-            <span class="buff-name">{{ buff.name }}</span>
             <span class="buff-time">{{ formatTime(buff.secs) }}</span>
           </div>
         </div>
@@ -54,10 +53,10 @@ const handleImgError = (e: Event) => {
 @use "@/styles/core/tools" as *;
 
 .buffs-overlay {
-  position: absolute;
-  top: 80px; /* Below user bar */
-  left: 10px;
-  z-index: var(--z-base);
+  position: fixed;
+  top: 160px; /* Below user bar on all resolutions */
+  left: 16px;
+  z-index: calc(var(--z-hud) + var(--z-low)); /* Above HUD layout using standard variables */
   pointer-events: none; /* Let clicks pass through */
 }
 
@@ -71,7 +70,7 @@ const handleImgError = (e: Event) => {
   display: flex;
   align-items: center;
   background: Rgba(0, 0, 0, 0.9);
-  border: 1px solid Rgba(255, 255, 255, 0.1);
+  border: 1.5px solid var(--yellow, #ffd93d);
   border-radius: 12px;
   padding: 6px 10px;
   pointer-events: auto; /* Tooltip needs pointer */

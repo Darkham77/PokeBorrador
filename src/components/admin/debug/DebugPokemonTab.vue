@@ -12,6 +12,7 @@ interface ViteDebug {
   clearPvpTeam: () => void
   clearWarTeam: () => void
   forceStarterScreen: () => void
+  walkEggs: () => void
 }
 
 const getDebug = () => (window as unknown as { __VITE_DEBUG__: ViteDebug }).__VITE_DEBUG__
@@ -39,6 +40,10 @@ async function clearWarTeam() {
 
 async function forceStarterScreen() {
   getDebug().forceStarterScreen()
+}
+
+async function walkEggs() {
+  getDebug().walkEggs()
 }
 </script>
 
@@ -147,7 +152,7 @@ async function forceStarterScreen() {
         </div>
       </div>
 
-      <!-- Starter Reset -->
+      <!-- Starter Reset & Egg Walk -->
       <div class="debug-danger-zone no-border">
         <div class="button-row">
           <PVTooltip title="Fuerza la pantalla de elección de inicial para pruebas visuales">
@@ -156,6 +161,14 @@ async function forceStarterScreen() {
               @click.stop="forceStarterScreen"
             >
               ATRAPAR INICIAL
+            </button>
+          </PVTooltip>
+          <PVTooltip title="Caminar todos los huevos en la mochila hasta que estén listos para abrir">
+            <button
+              class="btn-vicio-secondary btn-vicio-sm"
+              @click.stop="walkEggs"
+            >
+              CAMINAR HUEVOS
             </button>
           </PVTooltip>
         </div>

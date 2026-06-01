@@ -40,6 +40,7 @@ export interface BattleState {
   weather: BattleWeather;
   turnCount: number;
   over: boolean;
+  fled?: boolean;
   turn?: 'player' | 'enemy' | null;
   isCapture?: boolean;
   escapeAttempts: number;

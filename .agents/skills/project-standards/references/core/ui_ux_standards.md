@@ -285,6 +285,8 @@ We prioritize a deliberate contrast between modern, sleek UI shells and classic,
 ### 4. Notifications & Toasts
 
 - **MANDATORY**: Toasts must occupy the highest layer (`z-index: 999,999`).
+- **Combat Log Sprite Rendering**: When logging combat events (like archaeology rewards or custom items) in `CombatLog`, pass the item name or identifier as `source` to automatically render the corresponding pixel-art icon from `getAssetUrl(ASSET_TYPES.ITEM, ...)`.
+- **Deduplicated Minigame Toast Notifications**: If a minigame (like fishing or archaeology) is executed in different contexts (like map modal vs. inline battle arena), ensure notification handlers (`uiStore.notify`) are not duplicated across the calling context (e.g., callbacks in `map.ts`) and the inline view components (e.g., `BattleArenaView.vue` handlers). One central handler or conditional check should be used to avoid stacking duplicate toasts for the same single failure/success event.
 
 ### 5. Global Tooltip Architecture (PVTooltip)
 

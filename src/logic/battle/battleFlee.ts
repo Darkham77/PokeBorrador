@@ -58,6 +58,13 @@ export async function executeFlee(ctx: BattleContext) {
         ctx.fsm.transition(ctx.BATTLE_STATES.ACTIVE_BATTLE, ctx.BATTLE_SUBSTATES.PLAY_ESCAPE_ANIM)
         gameBus.emit('PLAY_ESCAPE_ANIM', { side: 'player' })
         
+        if (ctx.animations?.awaitTween) {
+          await ctx.animations.awaitTween(`player-${p.uid}`)
+        } else {
+          const { gsapSleep } = await import('@/logic/utils/gsapHelpers')
+          await gsapSleep(800)
+        }
+        
         await ctx.endBattle(false, true)
       } else {
         if (ctx.activeBattle.value) ctx.activeBattle.value.escapeAttempts++

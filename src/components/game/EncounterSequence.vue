@@ -84,12 +84,18 @@ watch(() => props.show, async (newVal) => {
   }
 }, { immediate: true })
 
+const hasStarted = ref(false)
+
 const handleFishingStart = () => {
+  if (hasStarted.value) return
+  hasStarted.value = true
   if (props.onStart) props.onStart()
   emit('close')
 }
 
 const handleArchaeologyStart = () => {
+  if (hasStarted.value) return
+  hasStarted.value = true
   if (props.onStart) props.onStart()
   emit('close')
 }
@@ -151,10 +157,10 @@ const handleArchaeologyStart = () => {
           ¡Un Pokémon ha mordido el anzuelo!
         </div>
         <button 
-          class="fishing-btn" 
+          class="btn-fishing" 
           @click.stop="handleFishingStart"
         >
-          🎣 ¡MINIJUEGO DE PESCA!
+          <span class="icon">🎣</span> ¡MINIJUEGO DE PESCA!
         </button>
       </div>
     </BaseModal>
@@ -180,7 +186,7 @@ const handleArchaeologyStart = () => {
           ref="fishingIcon" 
           class="fishing-icon"
         >
-          🧱
+          ⛏️
         </div>
         <div
           class="fishing-title"
@@ -192,11 +198,10 @@ const handleArchaeologyStart = () => {
           ¡Se han encontrado rastros antiguos en la roca!
         </div>
         <button 
-          class="fishing-btn" 
-          style="background: linear-gradient(135deg, #eab308, #ca8a04); box-shadow: 0 4px 16px rgba(234, 179, 8, 0.5);"
+          class="btn-archaeology" 
           @click.stop="handleArchaeologyStart"
         >
-          ⛏️ ¡MINIJUEGO DE ARQUEOLOGÍA!
+          <span class="icon">⛏️</span> ¡MINIJUEGO DE ARQUEOLOGÍA!
         </button>
       </div>
     </BaseModal>
@@ -204,6 +209,7 @@ const handleArchaeologyStart = () => {
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
 @use '@/styles/core/tools' as *;
 
 .rival-sequence-wrapper {
@@ -264,23 +270,13 @@ const handleArchaeologyStart = () => {
   line-height: 1.6;
 }
 
-.fishing-btn {
-  @include pixelated;
-  font-size: 10px;
-  padding: 16px 32px;
-  border: none;
-  border-radius: 14px;
-  cursor: pointer;
-  background: linear-gradient(135deg, var(--blue), Rgba(37, 99, 235, 1));
-  color: var(--white);
-  box-shadow: 0 4px 16px Rgba(59, 130, 246, 0.5);
+.btn-fishing {
+  @include btn-vicio('info', 'md', true);
   margin-top: 12px;
-  width: 100%;
+}
 
-  &:hover {
-    transform: Translatey(-2px);
-    will-change: transform, filter, opacity;
-    filter: Brightness(1.1);
-  }
+.btn-archaeology {
+  @include btn-vicio('primary', 'md', true);
+  margin-top: 12px;
 }
 </style>

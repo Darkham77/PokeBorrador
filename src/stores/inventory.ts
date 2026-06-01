@@ -27,6 +27,18 @@ function resolveNormalizedName(name: string): string {
   const norm = name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '');
   
   const aliases: Record<string, string> = {
+    'potion': 'Poción',
+    'superpotion': 'Súper Poción',
+    'hyperpotion': 'Hiper Poción',
+    'maxpotion': 'Poción Máxima',
+    'firestone': 'Piedra Fuego',
+    'waterstone': 'Piedra Agua',
+    'thunderstone': 'Piedra Trueno',
+    'leafstone': 'Piedra Hoja',
+    'moonstone': 'Piedra Lunar',
+    'sunstone': 'Piedra Solar',
+    'vigorcandy': 'Caramelo de vigor',
+    'repel': 'Repelente',
     'iman': 'Imán',
     'elixir': 'Elixir',
     'subidapp': 'Subida de PP',
@@ -48,7 +60,9 @@ function resolveNormalizedName(name: string): string {
     'bayaoro': 'Baya de Oro',
     'piedraeterna': 'Piedra Eterna',
     'lazodestino': 'Lazo Destino',
-    'caramelovigor': 'Caramelo de vigor'
+    'caramelovigor': 'Caramelo de vigor',
+    'fishingrod': 'Caña de pescar',
+    'pickaxe': 'Pico de excavación'
   };
 
   return aliases[norm] || name;
@@ -66,8 +80,6 @@ export function isItemUsableOutsideCombat(item: { id: string; cat?: string; type
   if (cat === 'pokeballs') return false
 
   if (id && id.toLowerCase().startsWith('tm')) return true
-
-  if (id === 'helix_fossil' || id === 'dome_fossil' || id === 'old_amber') return true
 
   if (
     cat === 'pociones' ||
@@ -404,7 +416,7 @@ export const useInventoryStore = defineStore('inventory', () => {
 
     if (pokemon.inDaycare) {
       if (!item) return false
-      const isVigorRestorer = item.id === 'vigor_restorer' || item.id === 'caramelo_vigor' || item.name === 'Restaurador de Vigor' || item.name === 'Caramelo de vigor'
+      const isVigorRestorer = item.id === 'vigor_restorer' || item.id === 'vigor_candy' || item.id === 'caramelo_vigor' || item.name === 'Restaurador de Vigor' || item.name === 'Caramelo de vigor'
       const isBreedingHeld = item.cat === 'breeding'
       return !!(isVigorRestorer || isBreedingHeld)
     }

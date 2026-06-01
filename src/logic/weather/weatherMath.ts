@@ -86,3 +86,39 @@ export function getRouteWeatherPure(
 
   return 'clear';
 }
+
+// ── Global Session Weather Seed & AnimSeed ─────────────────────────────────────
+
+import { FIRE_RED_MAPS } from '../../data/maps.ts';
+
+let sessionWeatherSeed = 500;
+if (typeof window !== 'undefined') {
+  const win = window as unknown as { __WEATHER_SESSION_SEED__?: number };
+  if (win.__WEATHER_SESSION_SEED__ === undefined) {
+    win.__WEATHER_SESSION_SEED__ = Math.random() * 1000;
+  }
+  sessionWeatherSeed = win.__WEATHER_SESSION_SEED__;
+} else {
+  sessionWeatherSeed = Math.random() * 1000;
+}
+
+/**
+ * Gets the shared session weather seed.
+ */
+export function getSessionWeatherSeed(): number {
+  return sessionWeatherSeed;
+}
+
+/**
+ * Deterministically computes the weather animation seed (0 to 1) for a map,
+ * matching both map view and battle view.
+ */
+export function getWeatherAnimSeed(mapId: string): number {
+  const mapData = FIRE_RED_MAPS.find(m => m.id === mapId);
+  const keyString = mapData?.name || mapId;
+  const charSum = keyString.split('').reduce((acc, char, i) => {
+    return acc + (char.charCodeAt(0) * (i + 1));
+  }, 0);
+  return Math.abs((charSum + sessionWeatherSeed) % 1000) / 1000;
+}
+

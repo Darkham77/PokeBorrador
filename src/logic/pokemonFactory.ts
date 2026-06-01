@@ -10,34 +10,36 @@ import type { Pokemon, PokemonMove, PokemonIVs } from '@/types/pokemon';
 import { getExpNeededPure, calcStatsPure } from './pokemon/statsMath.ts';
 import { generateIvPure } from './pokemon/generationMath.ts';
 import { logger } from './utils/logger.ts';
+import { ABILITY_DATA } from '@/data/abilities';
+import { getItemById, getItemByName } from '@/data/items';
 
 
 /**
  * Probabilidades de items equipados en estado salvaje
  */
 const WILD_HELD_ITEMS: Record<string, { common?: string; rare?: string }> = {
-  butterfree: { rare: 'Polvo Plata' },
-  beedrill: { rare: 'Flecha Venenosa' },
-  pikachu: { common: 'Baya Aranja', rare: 'Bola Luminosa' },
-  meowth: { rare: 'Moneda Amuleto' },
-  abra: { rare: 'Cuchara Torcida' },
-  kadabra: { rare: 'Cuchara Torcida' },
-  machoke: { rare: 'Banda Focus' },
-  magneton: { rare: 'Imán' },
-  farfetchd: { rare: 'Palo' },
-  shellder: { common: 'Perla Grande', rare: 'Perla' },
-  cloyster: { common: 'Perla Grande', rare: 'Perla' },
-  haunter: { rare: 'Hechizo' },
-  gengar: { rare: 'Hechizo' },
-  cubone: { rare: 'Hueso Grueso' },
-  marowak: { rare: 'Hueso Grueso' },
-  chansey: { rare: 'Huevo Suerte' },
-  staryu: { common: 'Trozo Estrella', rare: 'Polvo Estelar' },
-  starmie: { common: 'Trozo Estrella', rare: 'Polvo Estelar' },
-  ditto: { rare: 'Polvo Metálico' },
-  snorlax: { rare: 'Restos' },
-  dragonair: { rare: 'Escama Dragón' },
-  dragonite: { rare: 'Escama Dragón' }
+  butterfree: { rare: 'silver_powder' },
+  beedrill: { rare: 'poison_barb' },
+  pikachu: { common: 'berry_bronze', rare: 'light_ball' },
+  meowth: { rare: 'amulet_coin' },
+  abra: { rare: 'twisted_spoon' },
+  kadabra: { rare: 'twisted_spoon' },
+  machoke: { rare: 'focus_sash' },
+  magneton: { rare: 'magnet' },
+  farfetchd: { rare: 'stick' },
+  shellder: { common: 'big_pearl', rare: 'pearl' },
+  cloyster: { common: 'big_pearl', rare: 'pearl' },
+  haunter: { rare: 'spell_tag' },
+  gengar: { rare: 'spell_tag' },
+  cubone: { rare: 'thick_club' },
+  marowak: { rare: 'thick_club' },
+  chansey: { rare: 'lucky_egg' },
+  staryu: { common: 'star_piece', rare: 'stardust' },
+  starmie: { common: 'star_piece', rare: 'stardust' },
+  ditto: { rare: 'metal_powder' },
+  snorlax: { rare: 'leftovers' },
+  dragonair: { rare: 'dragon_scale' },
+  dragonite: { rare: 'dragon_scale' }
 };
 
 const GENDERLESS = ['articuno', 'ditto', 'electrode', 'magnemite', 'magneton', 'mew', 'mewtwo', 'moltres', 'porygon', 'starmie', 'staryu', 'voltorb', 'zapdos'];
@@ -66,7 +68,7 @@ export function recalcPokemonStats(p: Pokemon): void {
   if (!base) return;
   
   const natureData = pokemonDataProvider.getNatureData(p.nature) || { up: null, down: null };
-  const isDittoMetalPowder = p.heldItem === 'Polvo Metálico' && p.id === 'ditto';
+  const isDittoMetalPowder = p.heldItem === 'metal_powder' && p.id === 'ditto';
 
   const calculated = calcStatsPure(
     p.level,
@@ -126,16 +128,88 @@ export function sanitizePokemon(p: Pokemon): void {
 
   // 1. Validar Habilidad
   if (p.ability) {
-    const abilityLower = p.ability.toLowerCase().trim();
-    if (abilityLower === 'escape') p.ability = 'Fuga';
-    else if (abilityLower === 'metamorfosis') p.ability = 'Mudar';
-    else if (abilityLower === 'electricidad estática' || abilityLower === 'electricidad estatica') p.ability = 'Electricidad estática';
+    const normalizeText = (text: string) => {
+      return text.toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[\s_-]+/g, '')
+        .trim();
+    };
+
+    const normAbility = normalizeText(p.ability);
+
+    const ABILITY_TRANSLATION_MAP: Record<string, string> = {
+      escape: 'Fuga',
+      metamorfosis: 'Mudar',
+      escudopolvo: 'Polvo escudo',
+      polvoescudo: 'Polvo escudo',
+      correcaminos: 'Fuga',
+      obstruir: 'Insonorizar',
+      escurridizo: 'Flexibilidad',
+      puntocura: 'Cura Natural',
+      chlorophyll: 'Clorofila',
+      overgrow: 'Espesura',
+      blaze: 'Mar llamas',
+      torrent: 'Torrente',
+      static: 'Electricidad estática',
+      puntotoxico: 'Punto tóxico',
+      vistalince: 'Vista lince',
+      focointerno: 'Foco interno',
+      nadorapido: 'Nado rápido',
+      velohumedo: 'Velo húmedo'
+    };
+
+    if (ABILITY_TRANSLATION_MAP[normAbility]) {
+      p.ability = ABILITY_TRANSLATION_MAP[normAbility];
+    } else {
+      const match = Object.keys(ABILITY_DATA).find(k => normalizeText(k) === normAbility);
+      if (match) {
+        p.ability = match;
+      }
+    }
   }
 
   const validAbilities = pokemonDataProvider.getSpeciesAbilities(p.id);
+  const normalizedValid = validAbilities.map(a => a.toLowerCase().trim());
+  if (p.ability) {
+    const currentLower = p.ability.toLowerCase().trim();
+    const index = normalizedValid.indexOf(currentLower);
+    if (index !== -1) {
+      p.ability = validAbilities[index];
+    }
+  }
+
   if (!p.ability || !validAbilities.includes(p.ability)) {
     logger.warn('Self-Healing', `Reparando habilidad inválida (${p.ability}) para ${p.id}`);
     p.ability = validAbilities[0] || 'Presión';
+  }
+
+  // 1b. Validar Objeto Equipado (heldItem)
+  if (p.heldItem) {
+    const legacyItemMap: Record<string, string> = {
+      pocion: 'potion',
+      super_pocion: 'super_potion',
+      hiper_pocion: 'hyper_potion',
+      pocion_max: 'max_potion',
+      piedra_fuego: 'fire_stone',
+      piedra_agua: 'water_stone',
+      piedra_trueno: 'thunder_stone',
+      piedra_hoja: 'leaf_stone',
+      piedra_luna: 'moon_stone',
+      piedra_solar: 'sun_stone',
+      caramelo_vigor: 'vigor_candy',
+      repelente: 'repel'
+    };
+    const norm = p.heldItem.toLowerCase().trim();
+    const mappedId = legacyItemMap[norm] || p.heldItem;
+
+    const itemData = getItemById(mappedId) || getItemByName(p.heldItem) || getItemById(p.heldItem);
+    if (itemData) {
+      p.heldItem = itemData.id;
+    } else {
+      logger.warn('Self-Healing', `Removiendo objeto equipado inválido (${p.heldItem}) para ${p.id}`);
+      p.heldItem = null;
+    }
   }
 
   // 2. Validar Movimientos
@@ -150,6 +224,42 @@ export function sanitizePokemon(p: Pokemon): void {
     // Resolve ID if missing
     if (!m.id && m.name) {
       m.id = pokemonDataProvider.resolveMoveId(m.name);
+    }
+
+    const LEGACY_ID_MAP: Record<string, string> = {
+      cuerpo_pesado: 'heavy_slam',
+      hiper_colmillo: 'hyper_fang',
+      patada_salto_alta: 'high_jump_kick',
+      pajaro_osado: 'brave_bird',
+      engullir: 'swallow',
+      somnifera: 'sleep_powder',
+      velocidad_extrema: 'extreme_speed',
+      mismodestino: 'destiny_bond',
+      pantalla_humo: 'smokescreen',
+      super_colmillo: 'super_fang',
+      huevo_bomba: 'egg_bomb',
+      hueso_rus: 'bone_rush',
+      mega_patada: 'mega_kick',
+      mega_puno: 'mega_punch',
+      pozo_venenoso: 'toxic_spikes',
+      vampiro: 'horn_leech',
+      psicocorte: 'psycho_cut',
+      arena: 'sand_attack',
+      minimizar: 'minimize',
+      golpe_karatazo: 'karate_chop',
+      mov_sismico: 'seismic_toss',
+      tajo_aereo: 'air_slash',
+      acidificacion: 'acid_armor',
+      recurrente: 'bullet_seed',
+      tormenta_de_arena: 'sandstorm'
+    };
+
+    if (m.id) {
+      const normalizedId = m.id.toLowerCase().replace(/[\s_-]+/g, '_').trim();
+      if (LEGACY_ID_MAP[normalizedId]) {
+        logger.warn('Self-Healing', `Migrando ID de movimiento legacy ${m.id} a ${LEGACY_ID_MAP[normalizedId]} para ${p.id}`);
+        m.id = LEGACY_ID_MAP[normalizedId];
+      }
     }
 
     // Si el ID es inválido, intentar recuperar o asignar 'tackle'
@@ -232,11 +342,11 @@ export function sanitizePokemon(p: Pokemon): void {
   }
   
   if (p.level === MAX_POKEMON_LEVEL) {
-    if (p.exp !== 0 || p.expNeeded !== Infinity) {
+    if (p.exp !== 0 || (p.expNeeded !== Infinity && p.expNeeded !== null && p.expNeeded !== undefined && p.expNeeded !== 0)) {
       logger.warn('Self-Healing', `Ajustando experiencia de nivel máximo para ${p.id}`);
-      p.exp = 0;
-      p.expNeeded = Infinity;
     }
+    p.exp = 0;
+    p.expNeeded = Infinity;
   } else {
     const maxExpAllowed = p.expNeeded - 1;
     if (p.exp > maxExpAllowed) {
@@ -373,7 +483,12 @@ export function levelUpPokemon(p: Pokemon): PokemonMove[] | null {
   if (p.heldItem === 'Piedra Eterna') return null;
 
   p.level++;
-  p.expNeeded = getExpNeeded(p.level);
+  if (p.level >= MAX_POKEMON_LEVEL) {
+    p.exp = 0;
+    p.expNeeded = Infinity;
+  } else {
+    p.expNeeded = getExpNeeded(p.level);
+  }
   const oldMaxHp = p.maxHp;
   recalcPokemonStats(p);
   const hpGain = p.maxHp - oldMaxHp;

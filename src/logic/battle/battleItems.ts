@@ -77,7 +77,12 @@ export async function handleItemUsage(itemName: string, p: Pokemon, e: Pokemon, 
       if (options.fsm) {
         await options.fsm.transition('ACTIVE_BATTLE', 'CATCH_SUCCESS')
       }
-      gameBus.emit('CATCH_SUCCESS', { side: 'enemy' })
+      if (options.ctx?.animations?.playCatchCelebration) {
+        await options.ctx.animations.playCatchCelebration('enemy')
+      } else {
+        gameBus.emit('CATCH_SUCCESS', { side: 'enemy' })
+        await awaitAnimation(gsap.delayedCall(1.5, () => {}))
+      }
       addLog(`¡Ya está! ¡${e.name} atrapado!`, 'log-catch', e)
       
       // Guardar el tipo de bola en los tags para persistencia visual

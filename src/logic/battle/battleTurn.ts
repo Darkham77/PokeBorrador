@@ -121,6 +121,15 @@ export async function executeTurn(store: BattleContext, moveIndex: number) {
   }
   
   if (store.activeBattle.value?.over) {
+    if (store.activeBattle.value.fled) {
+      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.PLAY_ESCAPE_ANIM)
+      if (store.animations?.awaitTween) {
+        await store.animations.awaitTween('escape-enemy')
+      } else {
+        await sleep(800)
+      }
+      await store.endBattle(false, true)
+    }
     return
   }
   

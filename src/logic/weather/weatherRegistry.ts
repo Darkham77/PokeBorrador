@@ -179,7 +179,7 @@ export const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
     mech: WEATHER_MECHANICAL.HAIL,
     label: 'GRANIZO',
     icon: '🌨️',
-    visual: 'blizzard',
+    visual: 'hail',
     description: 'Daña a tipos no Hielo cada turno. Penaliza Fuego, Bicho, Volador y Planta.',
     modifiers: { boost: ['ice'], debuff: ['fire', 'bug', 'flying', 'grass'] }
   },

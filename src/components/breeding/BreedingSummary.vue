@@ -148,7 +148,10 @@ const getCompatText = (label: string) => {
         :style="{ color: compatStyle.color }"
       >
         <div class="compat-label">
-          <span v-if="getCompatEmoji(compatStyle.label)" class="compat-emoji">{{ getCompatEmoji(compatStyle.label) }}</span>
+          <span
+            v-if="getCompatEmoji(compatStyle.label)"
+            class="compat-emoji"
+          >{{ getCompatEmoji(compatStyle.label) }}</span>
           <span class="compat-text">{{ getCompatText(compatStyle.label) }}</span>
         </div>
         <div

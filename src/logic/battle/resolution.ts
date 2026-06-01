@@ -102,6 +102,7 @@ export async function processFaint(ctx: BattleContext, side: 'player' | 'enemy')
       const nextEnemy = active.enemyTeam.find((p: Pokemon) => p.hp > 0)
       if (nextEnemy) {
         await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.STABILIZE_STAGE)
+        await sleep(200) // Pausa de limpieza orgánica reducida a 200ms
         
         const s = ctx.enemyStages.value
         ctx.enemyStages.value = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0, 
@@ -114,8 +115,12 @@ export async function processFaint(ctx: BattleContext, side: 'player' | 'enemy')
         await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.OCCUPY_SEAT)
         active.enemy = nextEnemy
         ctx.addLog(`¡Entrenador envía a ${nextEnemy.name}!`, 'log-enemy', 'enemy_trainer')
-        gameBus.emit('PLAY_SEND_OUT', { side: 'enemy', pokemon: nextEnemy })
-        await sleep(800)
+        
+        if (ctx.animations?.handleReleaseRequest) {
+          await ctx.animations.handleReleaseRequest({ side: 'enemy', pokemon: nextEnemy })
+        } else {
+          gameBus.emit('PLAY_SEND_OUT', { side: 'enemy', pokemon: nextEnemy })
+        }
         return
       }
     }
@@ -145,6 +150,42 @@ export async function terminateBattle(ctx: BattleContext, win: boolean, fled = f
   active.over = true
   ctx.faintedSides.value.clear()
   
+  const persistenceMode = active.persistenceMode as string || 'PERSISTENT'
+  const isSingle = persistenceMode === 'SINGLE' || active.isTrainer || active.isGym
+
+  syncAndPersist(ctx)
+
+  // 1. Ejecutamos animaciones de salida en paralelo para el jugador y el enemigo si siguen activos
+  if (fsm.currentState.value === BATTLE_STATES.ACTIVE_BATTLE) {
+    const playerExited = !isSingle
+      ? Promise.resolve() // En combate persistente de búsqueda el jugador NO se retira del escenario
+      : (active.player && active.player.hp > 0 && !fled && ctx.animations?.handleFaintAnim
+        ? ctx.animations.handleFaintAnim({ side: 'player', pokemon: active.player })
+        : Promise.resolve())
+
+    const enemyExited = active.enemy && active.enemy.hp > 0 && !fled && !active.isCapture && ctx.animations?.handleFaintAnim
+      ? ctx.animations.handleFaintAnim({ side: 'enemy', pokemon: active.enemy })
+      : Promise.resolve()
+
+    await Promise.all([playerExited, enemyExited])
+  }
+
+  // 2. Desvanecer la Poké Ball y vaciar el asiento del enemigo bajo ACTIVE_BATTLE
+  if (fsm.currentState.value === BATTLE_STATES.ACTIVE_BATTLE) {
+    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.FADEOUT_BALL)
+    if (active.isCapture && ctx.animations?.playBallFadeOut) {
+      await ctx.animations.playBallFadeOut('enemy')
+    }
+    
+    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.VACATE_SEAT)
+    if (active) active.enemy = null
+    if (active) active._initialEnemy = null
+  } else {
+    if (active) active.enemy = null
+    if (active) active._initialEnemy = null
+  }
+
+  // 3. Procesar recompensas (Transición a REWARDS_PHASE)
   if (win && !fled && !active.rewardsProcessed) {
     active.rewardsProcessed = true
     await calculateBattleRewards(ctx)
@@ -160,36 +201,6 @@ export async function terminateBattle(ctx: BattleContext, win: boolean, fled = f
     } catch (e) {
       console.error('Failed to reduce hatch timers:', e)
     }
-  }
-  
-  syncAndPersist(ctx)
-
-  // Ejecutamos animaciones de salida en paralelo para el jugador y el enemigo si siguen activos
-  if (fsm.currentState.value === BATTLE_STATES.ACTIVE_BATTLE) {
-    const playerExited = active.player && active.player.hp > 0 && ctx.animations?.handleFaintAnim
-      ? ctx.animations.handleFaintAnim({ side: 'player', pokemon: active.player })
-      : Promise.resolve()
-
-    const enemyExited = active.enemy && active.enemy.hp > 0 && ctx.animations?.handleFaintAnim
-      ? ctx.animations.handleFaintAnim({ side: 'enemy', pokemon: active.enemy })
-      : Promise.resolve()
-
-    await Promise.all([playerExited, enemyExited])
-  }
-
-  // Solo hacemos transición de finalización del enemigo si seguimos en ACTIVE_BATTLE
-  if (fsm.currentState.value === BATTLE_STATES.ACTIVE_BATTLE) {
-    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.FADEOUT_BALL)
-    if (active.isCapture && ctx.animations?.playBallFadeOut) {
-      await ctx.animations.playBallFadeOut('enemy')
-    }
-    
-    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.VACATE_SEAT)
-    if (active) active.enemy = null
-    if (active) active._initialEnemy = null
-  } else {
-    if (active) active.enemy = null
-    if (active) active._initialEnemy = null
   }
 
   await fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.CHECK_OUTCOME)
@@ -263,9 +274,6 @@ export async function terminateBattle(ctx: BattleContext, win: boolean, fled = f
     }
   }
 
-  const persistenceMode = active.persistenceMode as string || 'PERSISTENT'
-  const isSingle = persistenceMode === 'SINGLE' || active.isTrainer
-  
   await fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.CHECK_PERSISTENCE)
   
   if (!isSingle) {

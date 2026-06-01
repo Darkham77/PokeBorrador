@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed, watch } from 'vue'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
-import { recalcPokemonStats } from '@/logic/pokemonFactory'
+import { recalcPokemonStats, getExpNeeded } from '@/logic/pokemonFactory'
+import { MAX_POKEMON_LEVEL } from '@/data/constants'
 import { NATURE_DATA } from '@/data/natures'
 import { ABILITY_DATA } from '@/data/abilities'
 import { SHOP_ITEMS } from '@/data/items'
@@ -210,8 +211,21 @@ function updateActiveIV(stat: string, val: number) {
 
 watch(() => activePoke.value?.level, (newLv) => {
   if (!activePoke.value || !newLv) return
+  if (newLv > MAX_POKEMON_LEVEL) {
+    activePoke.value.level = MAX_POKEMON_LEVEL
+    newLv = MAX_POKEMON_LEVEL
+  }
   recalcPokemonStats(activePoke.value)
   activePoke.value.hp = activePoke.value.maxHp
+  if (newLv >= MAX_POKEMON_LEVEL) {
+    activePoke.value.exp = 0
+    activePoke.value.expNeeded = Infinity
+  } else {
+    activePoke.value.expNeeded = getExpNeeded(newLv)
+    if (activePoke.value.exp >= activePoke.value.expNeeded) {
+      activePoke.value.exp = activePoke.value.expNeeded - 1
+    }
+  }
 })
 </script>
 

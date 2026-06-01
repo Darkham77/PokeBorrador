@@ -202,6 +202,7 @@ const formatMult = (m: number) => {
         :exp-needed="p.expNeeded"
         :is-player="isPlayer"
         :is-scrambled="isScrambled"
+        :pokemon-uid="p.uid"
       />
 
       <!-- Contenedor de Estados Unificado -->

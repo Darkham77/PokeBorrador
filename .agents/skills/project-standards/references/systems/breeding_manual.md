@@ -45,4 +45,14 @@ The cost in PokéDollars scales according to the total number of perfect IVs (30
 - **Breeding Compatibility Emojis**: Emojis expressing breeding compatibility (e.g., compatibility rate indicators) must be rendered in dedicated wrappers and styled to a readable size (e.g., `26px`) rather than using default inline text font sizes (e.g., `10px`), ensuring high readability.
 - **Inner Sprite Hover Target**: For hover animations on Daycare elements (like rotation or pulse effects on eggs), coordinate GSAP transitions directly on the inner sprite graphic element (`.egg-sprite`) instead of the container wrapper (`.egg-visual`) to prevent rotating the entire background or other layout elements.
 
+## 7. Fossil DNA Cloning
+
+The cloning system allows recreating ancestral Pokémon (Omanyte, Kabuto, Aerodactyl) using fossils.
+
+- **Base Cost**: DNA cloning costs $3,000 for the base process.
+- **Fossil Sacrifices**: The player can sacrifice up to 6 extra fossils of the same type. Each extra fossil adds +$1,000 to the cost (up to $9,000 max).
+- **IV Reroll Formula**: The system performs `1 + N/2` independent IV rolls per stat (where `N` is the number of extra fossils, max 6) and keeps the highest value. Decimals (N = 1, 3, 5) guarantee the integer part and grant a 50% chance for an additional roll.
+- **Shiny Chance Boost**: Each extra fossil adds a +25% boost to the base Shiny probability, scaling as `1 + N * 0.25` (up to a 2.5x multiplier with 6 sacrifices).
+- **Daycare Lock**: Fossils cannot be used from the bag; DNA cloning must only be accessed and executed inside the Daycare interface.
+
 

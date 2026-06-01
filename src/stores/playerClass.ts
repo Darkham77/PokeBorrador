@@ -7,6 +7,7 @@ import { supabase } from '@/logic/supabase'
 import { useInventoryStore } from '@/stores/inventory'
 import { getClassModifier } from '@/logic/player/classEngine'
 import type { Pokemon } from '@/types/pokemon'
+import { MAX_POKEMON_LEVEL } from '@/data/constants'
 
 
 import { AVATAR_STYLES } from '@/data/cosmeticsData'
@@ -304,12 +305,18 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
       if (mission.targetPokemonIdx !== undefined) {
         const p = gameStore.state.box[mission.targetPokemonIdx]
         if (p) {
-          const blocks = (mission.endsAt - mission.startedAt) / (3600000 * 6) // bloques de 6h
-          const expGain = (25000 + (p.level || 1) * 1000) * blocks;
-          p.exp = (p.exp || 0) + expGain;
-          
           p.onMission = false;
-          msg += `¡${p.name} ganó ${expGain.toLocaleString()} EXP! 🏅`
+          if (p.level >= MAX_POKEMON_LEVEL) {
+            p.exp = 0;
+            p.expNeeded = Infinity;
+            msg += `¡${p.name} ya está en su nivel máximo! 🏅`
+          } else {
+            const blocks = (mission.endsAt - mission.startedAt) / (3600000 * 6) // bloques de 6h
+            const expGain = (25000 + (p.level || 1) * 1000) * blocks;
+            p.exp = (p.exp || 0) + expGain;
+            msg += `¡${p.name} ganó ${expGain.toLocaleString()} EXP! 🏅`
+            gameStore.checkLevelUp(p)
+          }
         }
       }
     } else if (cls === 'criador') {

@@ -181,11 +181,32 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
   await fsm.transition(BATTLE_STATES.INITIALIZING, BATTLE_SUBSTATES.SET_SEARCH_FLAG)
 
   if (wasSearching) {
+    ctx.upcomingPokemon.value = finalEnemyPoke
+    if (ctx.upcomingEncounterType) {
+      ctx.upcomingEncounterType.value = isFishing ? 'fishing' : (isArchaeology ? 'archaeology' : 'wild')
+    }
+
+    if (isFishing || isArchaeology) {
+      ctx.isIntroAnimating.value = false
+      if (ctx.activeBattle.value) {
+        ctx.activeBattle.value.enemy = finalEnemyPoke
+        ctx.activeBattle.value.isFishing = isFishing
+        ctx.activeBattle.value.isArchaeology = isArchaeology
+      }
+      await fsm.transition(BATTLE_STATES.INITIALIZING)
+      await fsm.transition(BATTLE_STATES.INITIALIZING, BATTLE_SUBSTATES.MINIGAME_CHECK)
+      return
+    }
+
     await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.PARALLEL_PREP)
     await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.UPDATE_BUTTON)
     await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.BUSH_VISIBLE)
     await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.SILHOUETTE_MODE)
-    if (ctx.activeBattle.value) ctx.activeBattle.value.enemy = finalEnemyPoke
+    if (ctx.activeBattle.value) {
+      ctx.activeBattle.value.enemy = finalEnemyPoke
+      ctx.activeBattle.value.isFishing = isFishing
+      ctx.activeBattle.value.isArchaeology = isArchaeology
+    }
     return 
   } else {
     await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.ENTRY_ANIM)
@@ -232,6 +253,8 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
     ctx.activeBattle.value.enemyUsedItem = false
     ctx.activeBattle.value.futureSightTurns = undefined
     ctx.activeBattle.value.futureSightTarget = null
+    ctx.activeBattle.value.isFishing = false
+    ctx.activeBattle.value.isArchaeology = false
   }
 
   // Clear volatile status on both sides
@@ -398,10 +421,13 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
     }
     
     generateEncounter(locationId || 'plains', ctx.gs.state, encounterOptions).then((encounter) => {
-      if (encounter && encounter.type === 'wild' && encounter.pokemon) {
+      if (encounter && (encounter.type === 'wild' || encounter.type === 'fishing' || encounter.type === 'archaeology' || encounter.type === 'guardian') && encounter.pokemon) {
         if (fsm.currentState.value !== BATTLE_STATES.EXIT_BATTLE) {
           // background update only, NO FSM transition here to avoid hijacking
           ctx.upcomingPokemon.value = encounter.pokemon
+          if (ctx.upcomingEncounterType) {
+            ctx.upcomingEncounterType.value = encounter.type as 'wild' | 'fishing' | 'archaeology' | 'guardian'
+          }
         }
       }
     })

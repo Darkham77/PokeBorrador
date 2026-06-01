@@ -153,6 +153,7 @@ Pokémon created by debug tools or legacy systems may lack critical properties (
 
 - **Mandatory**: Implement "Self-Healing" logic at centralization points (e.g., `recalcPokemonStats` in `pokemonFactory.ts`) to fill in missing data from `MOVE_DATA`.
 - **Level & Experience Cap**: Sanitization must enforce `MAX_POKEMON_LEVEL = 100`. If a Pokémon's level exceeds 100, it must be adjusted to 100. If it is exactly 100, its `exp` must be reset to `0` and `expNeeded` set to `Infinity`. If it is below 100 but `exp` is equal to or greater than `expNeeded`, `exp` must be clamped to `expNeeded - 1` to prevent corrupted states.
+- **Infinity JSON Serialization**: Because `JSON.stringify(Infinity)` serializes to `null`, `expNeeded` values mapped to `Infinity` for level 100 Pokémon will load as `null` or `0` from databases. The self-healing checker MUST silently restore these to `Infinity` without emitting warnings or triggering self-healing logs.
 
 ---
 

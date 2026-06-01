@@ -1,34 +1,56 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { gsap } from 'gsap'
 import BaseModal from '@/components/common/BaseModal.vue'
 import type { Pokemon } from '@/types/pokemon'
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
+
+const fossilSprite = computed(() => {
+  const idStr = String(props.pokemon?.id || '').toLowerCase()
+  if (idStr === 'kabuto' || idStr === 'kabutops') return getAssetUrl(ASSET_TYPES.ITEM, 'dome_fossil')
+  if (idStr === 'omanyte' || idStr === 'omastar') return getAssetUrl(ASSET_TYPES.ITEM, 'helix_fossil')
+  if (idStr === 'aerodactyl') return getAssetUrl(ASSET_TYPES.ITEM, 'old_amber')
+  return getAssetUrl(ASSET_TYPES.ITEM, 'helix_fossil') // Fallback
+})
 
 interface Props {
   show?: boolean
   pokemon: Pokemon
   rarity?: number
-  onWin?: (() => void) | null
+  onWin?: ((difficulty: string) => void) | null
   onFail?: (() => void) | null
+  onCloseCallback?: (() => void) | null
 }
 
 const props = withDefaults(defineProps<Props>(), {
   show: false,
   rarity: 0,
   onWin: null,
-  onFail: null
+  onFail: null,
+  onCloseCallback: null
 })
 
 const emit = defineEmits<{
-  (e: 'win'): void
+  (e: 'win', difficulty: string): void
   (e: 'fail'): void
   (e: 'close'): void
 }>()
 
-// Game configuration
-const gridSize = 5
-const maxEnergy = 10
-const totalFossilParts = 3
+// Game configuration and difficulties
+const DIFFICULTIES = {
+  easy: { grid: 5, energy: 12, parts: 3, label: 'Fácil', items: 1, color: '#4ade80' },
+  medium: { grid: 6, energy: 10, parts: 4, label: 'Medio', items: 2, color: '#facc15' },
+  hard: { grid: 7, energy: 8, parts: 5, label: 'Difícil', items: 3, color: '#fb923c' },
+  expert: { grid: 8, energy: 6, parts: 6, label: 'Experto', items: 4, color: '#f87171' }
+} as const
+
+type DifficultyKey = keyof typeof DIFFICULTIES
+
+// State
+const difficulty = ref<DifficultyKey>('easy')
+const gridSize = ref(5)
+const maxEnergy = ref(12)
+const totalFossilParts = ref(3)
 
 interface Tile {
   r: number
@@ -40,7 +62,7 @@ interface Tile {
 
 // State
 const grid = ref<Tile[]>([])
-const energy = ref(maxEnergy)
+const energy = ref(12)
 const fossilsFound = ref(0)
 const gameActive = ref(true)
 const feedback = ref('¡Excavá las rocas con cuidado!')
@@ -48,10 +70,33 @@ const isFailed = ref(false)
 
 // Initialize Game
 function initGame() {
+  // Determine difficulty automatically based on weighted probabilities & Pokemon rarity
+  const isRare = (props.rarity || 50) < 15
+  const randRoll = Math.random() * 100
+  let diff: DifficultyKey = 'easy'
+  
+  if (isRare) {
+    if (randRoll < 10) diff = 'easy'
+    else if (randRoll < 35) diff = 'medium'
+    else if (randRoll < 75) diff = 'hard'
+    else diff = 'expert'
+  } else {
+    if (randRoll < 40) diff = 'easy'
+    else if (randRoll < 70) diff = 'medium'
+    else if (randRoll < 90) diff = 'hard'
+    else diff = 'expert'
+  }
+  
+  difficulty.value = diff
+  const config = DIFFICULTIES[diff]
+  gridSize.value = config.grid
+  maxEnergy.value = config.energy
+  totalFossilParts.value = config.parts
+
   // Generate empty grid
   const tempGrid: Tile[] = []
-  for (let r = 0; r < gridSize; r++) {
-    for (let c = 0; c < gridSize; c++) {
+  for (let r = 0; r < gridSize.value; r++) {
+    for (let c = 0; c < gridSize.value; c++) {
       tempGrid.push({
         r,
         c,
@@ -62,24 +107,52 @@ function initGame() {
     }
   }
 
-  // Generate contiguous 3-block fossil (horizontal or vertical)
-  const isHorizontal = Math.random() < 0.5
-  let startR = 0
-  let startC = 0
-
-  if (isHorizontal) {
-    startR = Math.floor(Math.random() * gridSize)
-    startC = Math.floor(Math.random() * (gridSize - totalFossilParts + 1))
-  } else {
-    startR = Math.floor(Math.random() * (gridSize - totalFossilParts + 1))
-    startC = Math.floor(Math.random() * gridSize)
-  }
-
+  // Generate contiguous fossil shape using a DFS/random walk algorithm
   const fossilCoords = new Set<string>()
-  for (let i = 0; i < totalFossilParts; i++) {
-    const r = isHorizontal ? startR : startR + i
-    const c = isHorizontal ? startC + i : startC
-    fossilCoords.add(`${r},${c}`)
+  let currentR = Math.floor(Math.random() * gridSize.value)
+  let currentC = Math.floor(Math.random() * gridSize.value)
+  fossilCoords.add(`${currentR},${currentC}`)
+
+  const directions = [
+    { r: -1, c: 0 },
+    { r: 1, c: 0 },
+    { r: 0, c: -1 },
+    { r: 0, c: 1 }
+  ]
+
+  while (fossilCoords.size < totalFossilParts.value) {
+    const activeList = Array.from(fossilCoords).map(str => {
+      const parts = str.split(',')
+      const r = Number(parts[0] ?? 0)
+      const c = Number(parts[1] ?? 0)
+      return { r, c }
+    })
+
+    const candidates: { r: number; c: number }[] = []
+    for (const cell of activeList) {
+      for (const dir of directions) {
+        const nr = cell.r + dir.r
+        const nc = cell.c + dir.c
+        if (nr >= 0 && nr < gridSize.value && nc >= 0 && nc < gridSize.value) {
+          const key = `${nr},${nc}`
+          if (!fossilCoords.has(key)) {
+            candidates.push({ r: nr, c: nc })
+          }
+        }
+      }
+    }
+
+    if (candidates.length === 0) {
+      // Clear and restart in the extremely rare event of getting trapped
+      fossilCoords.clear()
+      currentR = Math.floor(Math.random() * gridSize.value)
+      currentC = Math.floor(Math.random() * gridSize.value)
+      fossilCoords.add(`${currentR},${currentC}`)
+      continue
+    }
+
+    const chosen = candidates[Math.floor(Math.random() * candidates.length)]!
+    fossilCoords.add(`${chosen.r},${chosen.c}`)
   }
 
   // Apply fossil flag
@@ -90,7 +163,7 @@ function initGame() {
   })
 
   grid.value = tempGrid
-  energy.value = maxEnergy
+  energy.value = maxEnergy.value
   fossilsFound.value = 0
   gameActive.value = true
   isFailed.value = false
@@ -116,7 +189,9 @@ function handleTileClick(tile: Tile) {
   if (!gameActive.value || tile.isDug) return
 
   tile.isDug = true
-  energy.value--
+  if (!tile.isFossil) {
+    energy.value--
+  }
 
   // Click Animation: Shake Grid slightly
   gsap.fromTo('.archaeology-grid', 
@@ -141,7 +216,7 @@ function handleTileClick(tile: Tile) {
       gsap.to(tileEl, { backgroundColor: '#fef08a', duration: 0.2, yoyo: true, repeat: 1 })
     }
 
-    if (fossilsFound.value >= totalFossilParts) {
+    if (fossilsFound.value >= totalFossilParts.value) {
       win()
       return
     }
@@ -158,7 +233,7 @@ function handleTileClick(tile: Tile) {
   }
 
   // Out of Energy Check
-  if (energy.value <= 0 && fossilsFound.value < totalFossilParts) {
+  if (energy.value <= 0 && fossilsFound.value < totalFossilParts.value) {
     fail()
   }
 }
@@ -175,8 +250,7 @@ function win() {
   })
 
   gsap.delayedCall(1.2, () => {
-    if (props.onWin) props.onWin()
-    emit('win')
+    emit('win', difficulty.value)
     emit('close')
   })
 }
@@ -195,7 +269,6 @@ function fail() {
   })
 
   gsap.delayedCall(1.2, () => {
-    if (props.onFail) props.onFail()
     emit('fail')
     emit('close')
   })
@@ -245,77 +318,92 @@ onMounted(() => {
 onUnmounted(() => {
   gameActive.value = false
 })
+
+const handleCloseModal = () => {
+  emit('close')
+  props.onCloseCallback?.()
+}
 </script>
 
 <template>
   <BaseModal
     :show="show"
-    type="fullscreen"
-    hide-header
-    :show-close-button="false"
+    title="EXCAVACIÓN ARQUEOLÓGICA"
+    title-color="#eab308"
+    header-background="rgba(43, 29, 14, 0.95)"
+    variant="retro"
     overlay="dark"
-    padding="raw"
-    :show-border="false"
+    max-width="420px"
+    @close="handleCloseModal"
   >
+    <template #header-icon>
+      ⛏️&nbsp;
+    </template>
     <div
-      class="archaeology-game-overlay"
+      class="archaeology-container"
       :class="{ fail: isFailed }"
     >
-      <div class="archaeology-container">
-        <div class="archaeology-header">
-          <h3 class="pixel-text">
-            ⛏️ EXCAVACIÓN ARQUEOLÓGICA
-          </h3>
-          <p>Encontrá el fósil de <span>3 piezas</span> oculto en las rocas.</p>
-        </div>
+      <div class="archaeology-header">
+        <p>Encontrá el fósil de <span>{{ totalFossilParts }} piezas</span> oculto en las rocas.</p>
+      </div>
 
-        <div class="stats-row">
-          <div class="stat-pill energy-counter">
-            ENERGÍA: {{ energy }}
-          </div>
-          <div class="stat-pill">
-            PIEZAS: {{ fossilsFound }} / {{ totalFossilParts }}
-          </div>
+      <div class="stats-row">
+        <div
+          class="stat-pill difficulty-pill"
+          :style="{ borderColor: DIFFICULTIES[difficulty].color, color: DIFFICULTIES[difficulty].color }"
+        >
+          {{ DIFFICULTIES[difficulty].label.toUpperCase() }}
         </div>
+        <div class="stat-pill energy-counter">
+          ENERGÍA: {{ energy }}
+        </div>
+        <div class="stat-pill">
+          PIEZAS: {{ fossilsFound }} / {{ totalFossilParts }}
+        </div>
+      </div>
 
-        <div class="archaeology-grid">
-          <div
-            v-for="tile in grid"
-            :key="`${tile.r}-${tile.c}`"
-            class="tile"
-            :class="{
-              'is-dug': tile.isDug,
-              'is-fossil': tile.isDug && tile.isFossil,
-              'is-empty': tile.isDug && !tile.isFossil,
-              'clue-hot': tile.isDug && tile.clue === 'HOT',
-              'clue-cold': tile.isDug && tile.clue === 'COLD'
-            }"
-            :data-coord="`${tile.r},${tile.c}`"
-            @mousedown.stop="handleTileClick(tile)"
-          >
-            <template v-if="tile.isDug">
-              <span
-                v-if="tile.isFossil"
-                class="fossil-icon"
-              >🦴</span>
-              <span
-                v-else-if="tile.clue === 'HOT'"
-                class="clue-tag hot"
-              >🔥</span>
-              <span
-                v-else-if="tile.clue === 'COLD'"
-                class="clue-tag cold"
-              >❄️</span>
-            </template>
-            <template v-else>
-              <div class="rock-texture" />
-            </template>
-          </div>
+      <div
+        class="archaeology-grid"
+        :style="{ gridTemplateColumns: `repeat(${gridSize}, 1fr)`, gridTemplateRows: `repeat(${gridSize}, 1fr)` }"
+      >
+        <div
+          v-for="tile in grid"
+          :key="`${tile.r}-${tile.c}`"
+          class="tile"
+          :class="{
+            'is-dug': tile.isDug,
+            'is-fossil': tile.isDug && tile.isFossil,
+            'is-empty': tile.isDug && !tile.isFossil,
+            'clue-hot': tile.isDug && tile.clue === 'HOT',
+            'clue-cold': tile.isDug && tile.clue === 'COLD'
+          }"
+          :data-coord="`${tile.r},${tile.c}`"
+          @mousedown.stop="handleTileClick(tile)"
+        >
+          <template v-if="tile.isDug">
+            <img
+              v-if="tile.isFossil"
+              :src="fossilSprite"
+              class="fossil-sprite pixelated"
+              alt="Fósil"
+            >
+            <span
+              v-else-if="tile.clue === 'HOT'"
+              class="clue-tag hot"
+            >🔥</span>
+            <span
+              v-else-if="tile.clue === 'COLD'"
+              class="clue-tag cold"
+            >❄️</span>
+          </template>
+          <template v-else>
+            <div class="rock-texture" />
+          </template>
         </div>
+      </div>
 
-        <div class="game-feedback pixel-text">
-          {{ feedback }}
-        </div>
+      <div class="game-feedback pixel-text">
+        {{ feedback }}
       </div>
     </div>
   </BaseModal>
@@ -324,33 +412,12 @@ onUnmounted(() => {
 <style scoped lang="scss">
 @use "@/styles/core/tools" as *;
 
-.archaeology-game-overlay {
-  position: fixed;
-  inset: 0;
-  background: Rgba(0, 0, 0, 0.85);
-  backdrop-filter: Blur(10px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  will-change: transform, filter, opacity;
-  @include gpu-layer;
-
-  &.fail {
-    background: Rgba(139, 92, 26, 0.9);
-  }
-}
-
 .archaeology-container {
   position: relative;
-  width: 90%;
-  max-width: 420px;
-  background: Rgba(43, 29, 14, 0.9);
-  border: 3px solid #ca8a04;
-  border-radius: 24px;
-  box-shadow: 0 0 40px Rgba(0, 0, 0, 0.6);
+  width: 100%;
   display: flex;
   flex-direction: column;
-  padding: 24px;
+  padding: 12px 8px 16px;
   align-items: center;
 }
 
@@ -376,20 +443,22 @@ onUnmounted(() => {
 
 .stats-row {
   display: flex;
-  gap: 16px;
+  gap: 8px;
   margin-bottom: 20px;
   width: 100%;
   justify-content: center;
+  flex-wrap: nowrap;
 }
 
 .stat-pill {
   @include pixelated;
-  font-size: 10px;
+  font-size: 8px;
   color: var(--white);
   background: Rgba(255, 255, 255, 0.05);
-  padding: 8px 16px;
+  padding: 6px 10px;
   border-radius: 12px;
   border: 1px solid Rgba(234, 179, 8, 0.3);
+  white-space: nowrap;
 }
 
 .archaeology-grid {
@@ -438,8 +507,11 @@ onUnmounted(() => {
   &.is-fossil {
     background: #fef08a;
     box-shadow: inset 0 0 10px #eab308;
-    .fossil-icon {
-      font-size: 24px;
+    .fossil-sprite {
+      width: 32px;
+      height: 32px;
+      object-fit: contain;
+      @include sprite-render;
       animation: pulse 1.5s infinite;
     }
   }

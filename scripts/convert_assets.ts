@@ -137,11 +137,14 @@ async function processFile(filePath: string) {
       environmentFiles.push(name);
     }
 
+    // Convertir relPath a POSIX nativamente para consistencia en base de datos y URLs
+    const posixRelPath = relPath.split(path.sep).join(path.posix.sep);
+
     // Calcular coordenadas de anclaje de Pokémon
-    const isPokemonSprite = relPath.toLowerCase().includes('sprites/pokemon') && 
-                            !relPath.toLowerCase().includes('sprites/pokemon/egg');
+    const isPokemonSprite = posixRelPath.toLowerCase().includes('sprites/pokemon') && 
+                            !posixRelPath.toLowerCase().includes('sprites/pokemon/egg');
     if (isPokemonSprite) {
-      const normalizedPath = '/' + relPath.replace(/^public\//, '').replace(/\.(png|jpg|jpeg|webp)$/i, '.webp').replace(/\\/g, '/');
+      const normalizedPath = '/' + posixRelPath.replace(/^public\//, '').replace(/\.(png|jpg|jpeg|webp)$/i, '.webp');
       const points = await calculateFeetPoints(filePath);
       pokemonFeetDatabase[normalizedPath] = points;
     }

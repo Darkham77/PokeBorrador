@@ -26,6 +26,7 @@ export function useItemOnPokemon(itemName: string, pokemon: Pokemon): { message:
  */
 export function isGlobalItem(itemName: string): boolean {
   const globalItems = [
+    'Caña de pescar', 'Pico de excavación',
     'Repelente', 'Superrepelente', 'Máximo Repelente',
     'Huevo Suerte Pequeño', 'Ticket Shiny', 'Moneda Amuleto',
     'Escáner de IVs', 'Ticket Safari', 'Ticket Cueva Celeste',

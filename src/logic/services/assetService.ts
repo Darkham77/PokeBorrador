@@ -15,6 +15,18 @@ const POKEAPI_ITEM_BASE = '/assets/sprites/items/';
  * ITEM_MAPPING: Maps internal item names to PokeAPI names.
  */
 const ITEM_MAPPING: Record<string, string> = {
+  'potion': 'potion',
+  'super_potion': 'super-potion',
+  'hyper_potion': 'hyper-potion',
+  'max_potion': 'max-potion',
+  'fire_stone': 'fire-stone',
+  'water_stone': 'water-stone',
+  'thunder_stone': 'thunder-stone',
+  'leaf_stone': 'leaf-stone',
+  'moon_stone': 'moon-stone',
+  'sun_stone': 'sun-stone',
+  'repel': 'repel',
+  'vigor_candy': 'rare-candy',
   'pocion': 'potion',
   'super_pocion': 'super-potion',
   'hiper_pocion': 'hyper-potion',
@@ -30,6 +42,7 @@ const ITEM_MAPPING: Record<string, string> = {
   'piedra_trueno': 'thunder-stone',
   'piedra_hoja': 'leaf-stone',
   'piedra_luna': 'moon-stone',
+  'piedra_solar': 'sun-stone',
   'pokeball': 'poke-ball',
   'pokéball': 'poke-ball',
   'superball': 'great-ball',
@@ -306,7 +319,7 @@ export const getAssetUrl = (type: AssetType, rawId: string | number, options: As
       
       const mappedId = shopItem 
         ? shopItem.sprite 
-        : (mappedAlias || ITEM_MAPPING[normalizedInput] || ITEM_MAPPING[idStr] || idStr.replace(/_/g, '-'));
+        : (mappedAlias || ITEM_MAPPING[normalizedInput] || ITEM_MAPPING[idStr] || (idStr.startsWith('ores/') ? idStr : idStr.replace(/_/g, '-')));
       
       // If it's found in SHOP_ITEMS, mapping, numeric, or a known PokeAPI slug pattern
       const isPokeAPI = shopItem !== undefined ||
@@ -320,6 +333,14 @@ export const getAssetUrl = (type: AssetType, rawId: string | number, options: As
                        mappedId.includes('repel') ||
                        mappedId.includes('fossil') ||
                        ['potion', 'revive', 'heal', 'ether', 'elixir', 'antidote', 'share', 'leftovers', 'bell', 'band', 'sash', 'lens', 'candy', 'up', 'egg', 'nugget', 'pearl', 'dust', 'piece', 'spoon', 'tag', 'powder', 'club', 'light', 'stick', 'ticket', 'radar', 'awakening', 'magnet'].some(k => mappedId.includes(k));
+
+      if (mappedId === 'fishing_rod' || mappedId === 'pickaxe') {
+        return resolveAsset(`/assets/sprites/tools/${mappedId}${extension}`);
+      }
+
+      if (mappedId.startsWith('ores/')) {
+        return resolveAsset(`/assets/sprites/${mappedId}${extension}`);
+      }
 
       if (isPokeAPI) {
         return resolveAsset(`${POKEAPI_ITEM_BASE}${mappedId}${extension}`);

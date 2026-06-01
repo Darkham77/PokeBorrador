@@ -221,6 +221,7 @@
       justify-content: space-between;
       align-items: center;
       font-size: 12px;
+      line-height: 1.4;
 
       .label {
         color: var(--gray);
@@ -376,6 +377,7 @@
   position: relative;
   width: 48px;
   height: 48px;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -419,6 +421,7 @@
   font-size: 10px;
   color: #fff;
   letter-spacing: 0.5px;
+  line-height: 1.4;
 }
 
 .unseen-tag {
@@ -594,3 +597,35 @@
   font-size: 10px;
   color: #fff;
 }
+
+// Encounter probability color utilities
+.bonus-text {
+  color: #30d158; // Verde — probabilidad aumentada (buff, clima, evento)
+  font-weight: bold;
+}
+
+.penalty-text {
+  color: #ff453a; // Rojo — probabilidad reducida (penalización, otro buff compite)
+}
+
+// Badge de probabilidad junto al título de sección
+.section-prob-badge {
+  display: inline-block;
+  font-family: var(--font-pixel);
+  font-size: 9px;
+  color: var(--gray);
+  margin-left: 8px;
+  opacity: 0.85;
+  vertical-align: middle;
+
+  &.bonus-text {
+    color: #30d158;
+    opacity: 1;
+  }
+
+  &.penalty-text {
+    color: #ff453a;
+    opacity: 1;
+  }
+}
+

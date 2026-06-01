@@ -49,6 +49,7 @@ export const FIRE_RED_MAPS = [
     wild: { morning: ['rattata', 'spearow', 'mankey', 'nidoran_m', 'nidoran_f'], day: ['rattata', 'spearow', 'mankey', 'nidoran_m', 'nidoran_f'], dusk: ['rattata', 'mankey'], night: ['rattata', 'mankey'] },
     rates: { morning: [30, 30, 10, 15, 15], day: [30, 30, 10, 15, 15], dusk: [50, 50], night: [70, 30] }, lv: [3, 5],
     fishing: { pool: ['magikarp', 'goldeen', 'poliwag'], rates: [40, 40, 20], lv: [1, 5] },
+    archaeology: { pool: ['kabuto', 'omanyte'], rates: [50, 50], lv: [3, 5] },
     weather: {
       storm: { visitors: { pikachu: 80, magnemite: 20 } },
       sun: { visitors: { ponyta: 100 } },
@@ -65,6 +66,7 @@ export const FIRE_RED_MAPS = [
     id: 'route3', name: 'Ruta 3', icon: '⛰️', badges: 1, desc: 'Hacia el Mt. Moon.', isMountain: true,
     wild: { morning: ['pidgey', 'spearow', 'jigglypuff', 'nidoran_m', 'nidoran_f', 'mankey'], day: ['pidgey', 'spearow', 'jigglypuff', 'nidoran_m', 'nidoran_f', 'mankey'], dusk: ['zubat', 'rattata', 'jigglypuff'], night: ['zubat', 'rattata', 'jigglypuff'] },
     rates: { morning: [30, 25, 15, 15, 10, 5], day: [30, 25, 15, 15, 10, 5], dusk: [50, 30, 20], night: [50, 30, 20] }, lv: [6, 12],
+    archaeology: { pool: ['kabuto', 'omanyte'], rates: [50, 50], lv: [6, 12] },
     weather: {
       sandstorm: { visitors: { geodude: 80, onix: 20 } },
       sun: { visitors: { growlithe: 100 } },
@@ -78,6 +80,7 @@ export const FIRE_RED_MAPS = [
     id: 'mt_moon', name: 'Mt. Moon', icon: '🌋', badges: 1, desc: 'Cueva de fósiles y Clefairy.', isCave: true, isMountain: true,
     wild: { morning: ['zubat', 'geodude', 'paras', 'clefairy'], day: ['zubat', 'geodude', 'paras', 'clefairy'], dusk: ['zubat', 'paras'], night: ['zubat', 'geodude', 'paras', 'clefairy'] },
     rates: { morning: [60, 25, 10, 5], day: [60, 25, 10, 5], dusk: [70, 30], night: [50, 30, 15, 5] }, lv: [8, 12],
+    archaeology: { pool: ['kabuto', 'omanyte'], rates: [50, 50], lv: [8, 12] },
     weather: {
       sandstorm: { visitors: { rhyhorn: 95 }, exclusive: { aerodactyl: 5 } },
       fog: { visitors: { gastly: 80, haunter: 20 } },
@@ -91,6 +94,7 @@ export const FIRE_RED_MAPS = [
     id: 'route4', name: 'Ruta 4', icon: '🍃', badges: 1, desc: 'Salida de la cueva.', isMountain: true,
     wild: { morning: ['rattata', 'spearow', 'ekans', 'sandshrew', 'mankey'], day: ['rattata', 'spearow', 'ekans', 'sandshrew', 'mankey'], dusk: ['rattata', 'ekans', 'mankey'], night: ['rattata', 'sandshrew', 'ekans'] },
     rates: { morning: [25, 25, 20, 20, 10], day: [25, 25, 20, 20, 10], dusk: [50, 30, 20], night: [50, 30, 20] }, lv: [10, 14],
+    archaeology: { pool: ['kabuto', 'omanyte'], rates: [50, 50], lv: [10, 14] },
     weather: {
       rain: { visitors: { psyduck: 70, goldeen: 30 } },
       sun: { visitors: { vulpix: 100 } },
@@ -185,6 +189,7 @@ export const FIRE_RED_MAPS = [
     id: 'route9', name: 'Ruta 9', icon: '⛰️', badges: 3, desc: 'Hacia el Túnel Roca.', isMountain: true,
     wild: { morning: ['spearow', 'rattata', 'ekans', 'sandshrew', 'nidoran_m', 'nidoran_f'], day: ['spearow', 'rattata', 'ekans', 'sandshrew', 'nidoran_m', 'nidoran_f'], dusk: ['zubat', 'rattata'], night: ['zubat', 'rattata'] },
     rates: { morning: [20, 20, 15, 15, 15, 15], day: [20, 20, 15, 15, 15, 15], dusk: [60, 40], night: [70, 30] }, lv: [14, 18],
+    archaeology: { pool: ['kabuto', 'omanyte'], rates: [50, 50], lv: [14, 18] },
     weather: {
       sandstorm: { visitors: { machop: 70, geodude: 30 } },
       sun: { visitors: { primeape: 100 } },
@@ -212,6 +217,7 @@ export const FIRE_RED_MAPS = [
     id: 'route10', name: 'Ruta 10', icon: '⚡', badges: 3, desc: 'Cerca de la Central Energía.', isMountain: true, isCoastal: true,
     wild: { morning: ['spearow', 'ekans', 'sandshrew', 'voltorb', 'magnemite'], day: ['spearow', 'ekans', 'sandshrew', 'voltorb', 'magnemite'], dusk: ['magnemite', 'voltorb'], night: ['magnemite', 'voltorb'] },
     rates: { morning: [20, 20, 20, 20, 20], day: [20, 20, 20, 20, 20], dusk: [50, 50], night: [60, 40] }, lv: [16, 20],
+    archaeology: { pool: ['kabuto', 'omanyte'], rates: [50, 50], lv: [16, 20] },
     weather: {
       storm: { visitors: { pikachu: 80, electabuzz: 20 } },
       rain: { visitors: { krabby: 100 } },
@@ -312,6 +318,7 @@ export const FIRE_RED_MAPS = [
     wild: { morning: ['seel', 'dewgong', 'shellder', 'horsea', 'krabby', 'golduck', 'slowbro', 'jynx'], day: ['seel', 'dewgong', 'shellder', 'horsea', 'krabby', 'golduck', 'slowbro', 'jynx'], dusk: ['seel', 'shellder'], night: ['seel', 'dewgong', 'staryu'] },
     rates: { morning: [20, 10, 15, 15, 15, 10, 10, 5], day: [20, 10, 15, 15, 15, 10, 10, 5], dusk: [60, 40], night: [50, 30, 20] }, lv: [30, 40],
     fishing: { pool: ['shellder', 'dewgong', 'tentacruel'], rates: [50, 25, 25], lv: [30, 40] },
+    archaeology: { pool: ['kabuto', 'omanyte', 'aerodactyl'], rates: [45, 45, 10], lv: [30, 40] },
     weather: {
       cold: { visitors: { cloyster: 90, lapras: 10 } },
       coldwave: { visitors: { cloyster: 85, lapras: 10 }, exclusive: { articuno: 5 } },
@@ -323,6 +330,7 @@ export const FIRE_RED_MAPS = [
     id: 'mansion', name: 'Mansión Pokémon', icon: '🏚️', badges: 7, desc: 'Laboratorio quemado.', isCave: true, isIndoors: true, isVolcanic: true,
     wild: { morning: ['koffing', 'weezing', 'grimer', 'muk', 'ponyta', 'rapidash', 'magmar', 'vulpix', 'growlithe'], day: ['koffing', 'weezing', 'grimer', 'muk', 'ponyta', 'rapidash', 'magmar', 'vulpix', 'growlithe'], dusk: ['koffing', 'grimer', 'magmar'], night: ['weezing', 'muk', 'magmar'] },
     rates: { morning: [15, 10, 15, 10, 15, 10, 5, 10, 10], day: [15, 10, 15, 10, 15, 10, 5, 10, 10], dusk: [40, 40, 20], night: [40, 40, 20] }, lv: [32, 38],
+    archaeology: { pool: ['aerodactyl'], rates: [100], lv: [32, 38] },
     weather: {
       sun: { visitors: { arcanine: 100 } },
       heatwave: { exclusive: { moltres: 5 } },
@@ -333,6 +341,7 @@ export const FIRE_RED_MAPS = [
     id: 'route23', name: 'Ruta 23', icon: '⛰️', badges: 8, desc: 'Acceso a Calle Victoria.', isMountain: true,
     wild: { morning: ['spearow', 'fearow', 'ekans', 'arbok', 'sandshrew', 'sandslash', 'mankey', 'primeape'], day: ['spearow', 'fearow', 'ekans', 'arbok', 'sandshrew', 'sandslash', 'mankey', 'primeape'], dusk: ['fearow', 'arbok'], night: ['sandslash', 'primeape'] },
     rates: { morning: [15, 10, 15, 10, 15, 10, 15, 10], day: [15, 10, 15, 10, 15, 10, 15, 10], dusk: [50, 50], night: [50, 50] }, lv: [40, 45],
+    archaeology: { pool: ['kabuto', 'omanyte', 'aerodactyl'], rates: [40, 40, 20], lv: [40, 45] },
     weather: {
       sandstorm: { visitors: { rhydon: 70, marowak: 30 } },
       storm: { visitors: { magneton: 100 } },
@@ -361,6 +370,7 @@ export const FIRE_RED_MAPS = [
     wild: { morning: ['kadabra', 'rhydon', 'golduck', 'magneton', 'parasect', 'venomoth', 'dragonair'], day: ['kadabra', 'rhydon', 'golduck', 'magneton', 'parasect', 'venomoth', 'dragonair'], dusk: ['kadabra', 'magneton'], night: ['kadabra', 'magneton', 'dragonite'] },
     rates: { morning: [15, 15, 15, 15, 15, 15, 10], day: [15, 15, 15, 15, 15, 15, 10], dusk: [50, 50], night: [40, 40, 20] }, lv: [50, 65],
     fishing: { pool: ['golduck', 'poliwhirl', 'gyarados'], rates: [50, 40, 10], lv: [30, 50] },
+    archaeology: { pool: ['kabuto', 'omanyte', 'aerodactyl'], rates: [35, 35, 30], lv: [50, 65] },
     weather: {
       fog: { visitors: { alakazam: 90, gengar: 9 }, exclusive: { mewtwo: 1 } },
       mist: { visitors: { ditto: 100 } }

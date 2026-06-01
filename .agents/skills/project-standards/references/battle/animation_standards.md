@@ -49,6 +49,7 @@ Aura effects and Shiny sparkles must apply the negative delay logic to ensure ea
 - **Dynamic Rotation**: Capture sparkles MUST include a high-velocity rotation (up to 720deg) during their parabolic expansion to increase visual impact.
 - **Dispersion Logic**: Sparkles should alternate directions or use randomized offsets (`--tx`, `--ty`, `--tf`) to ensure a balanced hemispheric dispersion around the target.
 - **Performance**: Use `Drop-Shadow` for glows instead of `box-shadow` to follow the object's polygonal silhouette.
+- **Audio Synthesis Volume**: To prevent extreme volume spikes during synthesized 8-bit sound effects (e.g. successful captures), individual note volume gains (in `playNote`/`playGlide`) MUST be kept low (between `0.10` and `0.20` gain), letting the centralized `masterGain` handle general scaling.
 
 ## 5. Tier S/S+ (High-IV) Pulsing
 
@@ -114,10 +115,11 @@ When an animation affects the flow of combat, it MUST block the state machine un
 - **CLI Bridge**: Every animation promise MUST be exposed to `window.__VITE_DEBUG__.battle.animations` to allow the IA and automated tests to wait for visual completion.
 
 ## 10. Animation State Hygiene
-
-Every global blocking state (e.g., `isIntroAnimating`) MUST have a guaranteed reset mechanism.
-
-- **Rule**: The cleanup (`flag = false`) MUST be called in the `onComplete` callback of the GSAP timeline.
+ 
+ Every global blocking state (e.g., `isIntroAnimating`) MUST have a guaranteed reset mechanism.
+ 
+ - **Rule**: The cleanup (`flag = false`) MUST be called in the `onComplete` callback of the GSAP timeline.
+ - **FSM State & Visual Synchronization**: Clear minigame active flags (e.g., `isFishing = false`, `isArchaeology = false`) and run visual reset routines (`resetAll()`) *before* executing FSM transitions (like completing the battle flow). This prevents race conditions and ensures visual state hygiene.
 
 ## 11. Aesthetic Reveal Delays (Shadow & Metadata)
 
@@ -207,6 +209,7 @@ To ensure a fast and dynamic game flow, the `ENCOUNTER_ANIM` phase follows a str
 - **Reveal Point**: The reveal transition starts at the **550ms** mark (`isWildSilhouetteHalfway`). At this point, the silhouette should begin to fade or swap to the colored sprite while the "emergence" bounce completes.
 - **Transition Integrity**: The silhouette state MUST be inclusive. It should trigger if the system is in `isSearching` mode OR if the previous battle is marked as `over` (transition phase). This ensures that proactive encounters sitting in the queue (e.g. after a Teleport) are correctly hidden even before the searching state is explicitly set.
 - **Visual Behavior**: The Pokémon performs a parabolic "jump" from the grass coordinates. Auxiliary elements like name labels and HP bars remain hidden until the end of this phase to maintain focus on the Pokémon's arrival.
+- **Shiny Sound Synchronization**: When a shiny Pokémon appears, the shiny chime (`PLAY_SOUND` event with `'shiny'`) MUST be dispatched synchronously in the `onComplete` callback of the entry reveal transition timeline, ensuring it triggers precisely as the colored sprite is fully unveiled.
 
 ## 21. Attack Category Normalization & Keyframes
 

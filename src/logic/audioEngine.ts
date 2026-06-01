@@ -124,10 +124,10 @@ export function playLevelUpSound(ctx: AudioContext, dest: AudioNode | null) {
  */
 export function playCaptureSuccessSound(ctx: AudioContext, dest: AudioNode | null) {
   const t = ctx.currentTime + 0.05;
-  playNote(ctx, dest, 392.00, t, 0.12, 0.35, 'square');
-  playNote(ctx, dest, 369.99, t + 0.12, 0.12, 0.35, 'square');
-  playNote(ctx, dest, 392.00, t + 0.24, 0.12, 0.35, 'square');
-  playNote(ctx, dest, 493.88, t + 0.36, 0.40, 0.40, 'square');
+  playNote(ctx, dest, 392.00, t, 0.12, 0.12, 'square');
+  playNote(ctx, dest, 369.99, t + 0.12, 0.12, 0.12, 'square');
+  playNote(ctx, dest, 392.00, t + 0.24, 0.12, 0.12, 'square');
+  playNote(ctx, dest, 493.88, t + 0.36, 0.40, 0.15, 'square');
 }
 
 /**

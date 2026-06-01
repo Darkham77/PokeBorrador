@@ -3,6 +3,7 @@ import { useAudioStore } from '@/stores/audio'
 import { useBattleStore } from '@/stores/battle'
 import type { Pokemon } from '@/types/pokemon'
 import { MAX_POKEMON_LEVEL } from '@/data/constants'
+import { levelUpPokemon } from '@/logic/pokemonFactory'
 
 import type { DebugSystem, DebugContext } from '@/stores/debug'
 
@@ -110,7 +111,9 @@ export function registerBattleTools(debug: DebugSystem, _context: DebugContext) 
         if (type === 'trainer_out') battle.trainerAnimState = 'out'
         if (type === 'levelUp') {
           const p = side === 'player' ? battle.state?.player : (battle.state?.enemy || battle.upcomingPokemon)
-          if (p && p.level < MAX_POKEMON_LEVEL) p.level++
+          if (p && p.level < MAX_POKEMON_LEVEL) {
+            levelUpPokemon(p)
+          }
         }
         return `Animación de UI ${type} disparada.`
       }

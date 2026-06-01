@@ -19,6 +19,8 @@ import { POKEMON_DB } from '@/data/pokemonDB';
 import { usePlayerClassStore } from './playerClass.ts';
 import { useEventStore } from './events.ts';
 import { useDaycareMissionsStore } from './daycareMissions.ts';
+import { useInventoryStore } from './inventory.ts';
+import { calculateCloningCost, calculateCloningRerolls, calculateCloningShinyChance } from '@/logic/minigames/minigameMath';
 import type { DaycareSlot, DaycareEgg, DaycareMission } from '@/types/breeding';
 import type { Pokemon, PokemonIVs } from '@/types/pokemon';
 
@@ -298,7 +300,8 @@ export const useBreedingStore = defineStore('breeding', () => {
       movesAtBirth: egg.movesAtBirth,
       abilitySlot: egg.abilityIndex,
       isShiny: egg.isShiny,
-      tint: egg.tint
+      tint: egg.tint,
+      isAncestral: egg.isAncestral
     });
     gameStore.state.eggs.push(eggToPush);
     gameStore.state.money -= egg.cost;
@@ -386,6 +389,85 @@ export const useBreedingStore = defineStore('breeding', () => {
     }
   }
 
+  function cloneFossil(fossilName: string, extraQty: number) {
+    if (warehouseEggs.value.length >= 30) {
+      uiStore.notify('El almacén de huevos está lleno.', '❌');
+      return;
+    }
+
+    const inventoryStore = useInventoryStore();
+    const count = gameStore.state.inventory[fossilName] || 0;
+    const requiredFossils = 1 + extraQty;
+
+    if (count < requiredFossils) {
+      uiStore.notify(`No tienes suficientes fósiles. Requieres ${requiredFossils} y tienes ${count}.`, '❌');
+      return;
+    }
+
+    const totalCost = calculateCloningCost(extraQty);
+    if (gameStore.state.money < totalCost) {
+      uiStore.notify(`No tienes suficiente dinero. Requieres ₽${totalCost.toLocaleString()} y tienes ₽${gameStore.state.money.toLocaleString()}.`, '💰');
+      return;
+    }
+
+    const FOSSIL_SPECIES_MAP: Record<string, string> = {
+      'Fósil Domo': 'kabuto',
+      'Fósil Hélix': 'omanyte',
+      'Ámbar Viejo': 'aerodactyl'
+    };
+    const speciesId = FOSSIL_SPECIES_MAP[fossilName];
+    if (!speciesId) {
+      uiStore.notify('Fósil no reconocido para clonar.', '❌');
+      return;
+    }
+
+    const rolls = calculateCloningRerolls(extraQty);
+    const rollIVs = (): PokemonIVs => ({
+      hp: Math.floor(Math.random() * 32),
+      atk: Math.floor(Math.random() * 32),
+      def: Math.floor(Math.random() * 32),
+      spa: Math.floor(Math.random() * 32),
+      spd: Math.floor(Math.random() * 32),
+      spe: Math.floor(Math.random() * 32)
+    });
+
+    let bestIVs = rollIVs();
+    let bestSum = bestIVs.hp + bestIVs.atk + bestIVs.def + bestIVs.spa + bestIVs.spd + bestIVs.spe;
+    for (let i = 1; i < rolls; i++) {
+      const currentIVs = rollIVs();
+      const currentSum = currentIVs.hp + currentIVs.atk + currentIVs.def + currentIVs.spa + currentIVs.spd + currentIVs.spe;
+      if (currentSum > bestSum) {
+        bestIVs = currentIVs;
+        bestSum = currentSum;
+      }
+    }
+
+    const shinyChance = calculateCloningShinyChance(extraQty);
+    const isShiny = Math.random() < shinyChance;
+
+    inventoryStore.removeItem(fossilName, requiredFossils);
+    gameStore.state.money -= totalCost;
+
+    const egg = eggFactory.createDaycareEgg({
+      species: speciesId,
+      ivs: bestIVs,
+      nature: 'Serio',
+      movesAtBirth: [],
+      abilityIndex: 0,
+      isShiny,
+      cost: 0, // Paid upfront
+      tint: 'rgba(139, 90, 43, 0.7)',
+      isAncestral: true,
+      steps: 2500
+    });
+
+    warehouseEggs.value.push(egg);
+    saveWarehouseEggs();
+
+    uiStore.notify(`¡Clonación exitosa! Huevo Ancestral de ${POKEMON_DB[speciesId as keyof typeof POKEMON_DB]?.name} creado.`, '🥚');
+    gameStore.scheduleSave();
+  }
+
   let bgPoller: gsap.core.Tween | null = null;
 
   function initBackgroundPoller() {
@@ -433,6 +515,7 @@ export const useBreedingStore = defineStore('breeding', () => {
     checkAndGenerateEgg,
     updateEggIvs,
     deleteEgg,
+    cloneFossil,
     initBackgroundPoller,
     cleanupBackgroundPoller,
     saveWarehouseEggs,

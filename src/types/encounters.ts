@@ -22,6 +22,12 @@ export interface MapLocation {
   isCave?: boolean;
   isIndoors?: boolean;
   isCrystalCave?: boolean;
+  isMountain?: boolean;
+  isPlains?: boolean;
+  isForest?: boolean;
+  isDesert?: boolean;
+  isSwamp?: boolean;
+  isCoastal?: boolean;
   wild?: {
     morning?: string[];
     day?: string[];
@@ -69,6 +75,8 @@ export interface EncounterState {
   faction: string | null;
   dailyGuardianCaptures?: string[];
   repelSecs?: number;
+  fishingRodSecs?: number;
+  pickaxeSecs?: number;
   incenseSecs?: number;
   incenseType?: string | null;
   team?: Pokemon[];

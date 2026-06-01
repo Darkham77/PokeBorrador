@@ -355,24 +355,23 @@ export function useBattleCaptureAnimations(
     return awaitAnimation(tl)
   }
 
-  const playBallFadeOut = (side: string) => {
+  const playBallFadeOut = async (side: string) => {
     const seat = getSeat(side)
-    if (!seat) return Promise.resolve()
+    if (!seat) return
     
-    const tl = createTimeline()
-    tl.add(() => {
-      seat.entry.isCaptureActive = false 
-      seat.exit.isCaptureActive = false 
-      seat.entry.animState = null
-      seat.exit.animState = null
-    })
-    tl.to({}, { duration: 0.4 })
-    tl.add(() => {
-      seat.entry.isAnimatingCapture = false
-      seat.exit.isAnimatingCapture = false
-      caughtPokemonSnapshot.value = null
-    })
-    return awaitAnimation(tl)
+    // Desencadenar la transición de salida en Vue cambiando las propiedades reactivas del asiento
+    seat.entry.isCaptureActive = false 
+    seat.exit.isCaptureActive = false 
+    seat.entry.animState = null
+    seat.exit.animState = null
+    
+    // Esperar el tween de GSAP de salida registrado por onBallLeave
+    await awaitTween(`ball-fadeout-${side}`)
+    
+    // Limpieza final tras completarse el desvanecimiento de GSAP
+    seat.entry.isAnimatingCapture = false
+    seat.exit.isAnimatingCapture = false
+    caughtPokemonSnapshot.value = null
   }
 
   const resetCaptureStates = () => {

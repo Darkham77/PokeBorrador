@@ -48,6 +48,13 @@ export function useTrainerActions(state: GameState, scheduleSave: () => Promise<
     const uiStore = useUIStore()
     const learnQueue: LearnItem[] = []
 
+    if (pokemon.level >= MAX_POKEMON_LEVEL) {
+      pokemon.exp = 0
+      pokemon.expNeeded = Infinity
+      scheduleSave()
+      return
+    }
+
     while (pokemon.exp >= pokemon.expNeeded && pokemon.level < MAX_POKEMON_LEVEL) {
       pokemon.exp -= pokemon.expNeeded
       const pendingMoves = levelUpPokemon(pokemon)

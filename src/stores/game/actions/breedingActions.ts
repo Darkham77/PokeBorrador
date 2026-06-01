@@ -45,14 +45,19 @@ export function useBreedingActions(
 
     if (!p) throw new Error(`Failed to create pokemon from egg ${speciesId}`)
 
+    if (egg.isAncestral) {
+      p.isAncestral = true
+    }
+
     if (egg.ivs) {
       p.ivs = { ...p.ivs, ...egg.ivs }
     }
     
-    if (egg.movesAtBirth) {
+    if (egg.movesAtBirth && egg.movesAtBirth.length > 0) {
       p.moves = egg.movesAtBirth.map(mName => {
         const mData = pokemonDataProvider.getMoveData(mName)
-        return { name: mName, pp: mData?.pp || 35, maxPP: mData?.pp || 35 }
+        const mId = mData?.id || pokemonDataProvider.resolveMoveId(mName) || mName
+        return { id: mId, name: mData?.name || mName, pp: mData?.pp || 35, maxPP: mData?.pp || 35 }
       })
     }
     

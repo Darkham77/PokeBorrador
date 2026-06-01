@@ -291,4 +291,26 @@ export function registerPokeTools(debug: DebugSystem, { game, ui, mapStore, bree
     },
     description: 'Escanea un huevo por ID/UID en almacén o mochila, o todos si se omite el argumento.'
   })
+
+  debug.register({
+    id: 'breeding-walk-eggs',
+    label: 'CAMINAR HUEVOS (CLI)',
+    command: 'walkEggs',
+    category: 'pokes',
+    action: () => {
+      const eggs = game.state.eggs || []
+      if (eggs.length === 0) {
+        ui.notify('No hay huevos en la mochila para caminar', '❌')
+        return
+      }
+      eggs.forEach(e => {
+        e.steps = 0
+        e.ready = true
+      })
+      ui.notify('¡Huevos en la mochila listos para eclosionar!', '🚶')
+      game.saveGame(false)
+    },
+    description: 'Reduce a 0 los pasos de todos los huevos en la mochila y los deja listos para abrir.'
+  })
 }
+

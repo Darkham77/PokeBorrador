@@ -10,6 +10,7 @@ import DaycareSlot from '@/components/breeding/DaycareSlot.vue'
 import BreedingSummary from '@/components/breeding/BreedingSummary.vue'
 import EggWarehouse from '@/components/breeding/EggWarehouse.vue'
 import IncubatingEggs from '@/components/breeding/IncubatingEggs.vue'
+import FossilCloning from '@/components/breeding/FossilCloning.vue'
 
 interface Props {
   show?: boolean
@@ -123,6 +124,13 @@ onMounted(() => {
       <div class="warehouse-section">
         <EggWarehouse />
       </div>
+
+      <div class="divider-line" />
+
+      <!-- Fossil Cloning Section (Archaeology Warehouse) -->
+      <div class="fossil-cloning-section">
+        <FossilCloning />
+      </div>
     </div>
   </BaseModal>
 </template>
@@ -138,6 +146,7 @@ onMounted(() => {
   gap: 24px;
   max-height: 80dvh;
   overflow-y: auto;
+  overflow-x: hidden;
   --daycare-pink: #ff3366;
 
   @media (max-width: 950px) {
@@ -254,8 +263,8 @@ onMounted(() => {
 }
 
 .divider-line {
-  height: 1px;
-  background: linear-gradient(to right, transparent, Rgba(255, 255, 255, 0.08), transparent);
+  border-top: 1px solid Rgba(255, 51, 102, 0.35);
+  width: 100%;
 }
 
 .warehouse-section {

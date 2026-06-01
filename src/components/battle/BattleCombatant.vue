@@ -139,8 +139,6 @@ const initIdleAnim = () => {
   const isTrapped = (props.animState as string) === 'trapped'
   const isCatching = props.animState === 'catching'
   
-  console.log(`[IdleAnim] ${props.pokemon.name}: status=${status}, isPara=${isPara}, isFrozen=${isFrozen}`)
-
   if (isFrozen || isPara || isConfused || isTrapped || isCatching) {
     gsap.killTweensOf(idleWrapperRef.value)
     gsap.set(idleWrapperRef.value, { y: 0, rotation: 0, scaleX: 1, scaleY: 1 })
@@ -278,6 +276,7 @@ const isBallVisible = computed(() => {
          props.isCaptureSuccess
 })
 
+const wasCaptured = ref(false)
 const internalBallId = ref('pokeball')
 const memorizedBallCoords = ref({ top: '90%', left: '50%' })
 
@@ -438,11 +437,12 @@ const triggerBallAnimation = (val: string | null) => {
       duration: 0.5,
       ease: "power2.inOut",
       onComplete: () => {
-        // Dejar el sprite listo para cuando reaparezca pero invisible
-        gsap.set(spriteRef.value, { x: 0, y: 0, scale: 1, filter: "none", clearProps: "transformOrigin" })
-        if (shadowWrapperRef.value) {
-          gsap.set(shadowWrapperRef.value, { clearProps: "display" })
+        // Mantener el sprite invisible: la Poké Ball ya está visible y el Pokémon está "atrapado".
+        // Solo la animación 'releasing' debe restaurar la visibilidad.
+        if (spriteRef.value) {
+          gsap.set(spriteRef.value, { x: 0, y: 0, scale: 0, opacity: 0, filter: "none", clearProps: "transformOrigin" })
         }
+        // La sombra también permanece oculta mientras el Pokémon esté en la Poké Ball
       }
     })
     
@@ -479,7 +479,9 @@ const triggerBallAnimation = (val: string | null) => {
       duration: 0.5,
       ease: "power2.inOut",
       onComplete: () => {
-        gsap.set(spriteRef.value, { clearProps: "filter,x,y,scale,opacity,transformOrigin" })
+        if (spriteRef.value) {
+          gsap.set(spriteRef.value, { clearProps: "filter,x,y,scale,opacity,transformOrigin" })
+        }
         if (shadowWrapperRef.value) {
           gsap.set(shadowWrapperRef.value, { clearProps: "display" })
         }
@@ -505,14 +507,6 @@ watch(() => {
   if (!props.isAttacking || !props.activeMove) return null
   return `${props.isAttacking}-${props.activeMove.name}-${props.activeMove.cat}`
 }, (newVal) => {
-  console.log('[BattleCombatant] isAttacking watch triggered:', {
-    side: props.side,
-    isAttacking: props.isAttacking,
-    move: props.activeMove ? { ...props.activeMove } : null,
-    spriteRef: !!spriteRef.value,
-    spriteRotationRef: !!spriteRotationRef.value,
-    animState: props.animState
-  })
   if (newVal && spriteRef.value) {
     const move = props.activeMove
     if (!move) return
@@ -660,14 +654,18 @@ watch(() => props.pokemon?.status, (newS, oldS) => {
         repeat: 3, 
         ease: "power1.inOut",
         onComplete: () => {
-          gsap.set(spriteRotationRef.value, { clearProps: "filter" })
+          if (spriteRotationRef.value) {
+            gsap.set(spriteRotationRef.value, { clearProps: "filter" })
+          }
         }
       }
     )
   } else if (!newS && oldS) {
     // Si se quita el estado, limpiamos el filtro inmediatamente para evitar contaminación
-    gsap.killTweensOf(spriteRotationRef.value, "filter")
-    gsap.set(spriteRotationRef.value, { clearProps: "filter" })
+    if (spriteRotationRef.value) {
+      gsap.killTweensOf(spriteRotationRef.value, "filter")
+      gsap.set(spriteRotationRef.value, { clearProps: "filter" })
+    }
   }
 })
 
@@ -708,7 +706,7 @@ watch(() => props.isShaking, (shaking) => {
           yoyo: true, 
           repeat: 5, 
           ease: 'power1.inOut',
-          onComplete: () => gsap.set(spriteRotationRef.value, { clearProps: "x,opacity,transition" })
+          onComplete: () => { if (spriteRotationRef.value) gsap.set(spriteRotationRef.value, { clearProps: "x,opacity,transition" }) }
         }
       )
 
@@ -751,7 +749,7 @@ watch(() => props.isBlinking, (blinking) => {
           yoyo: true, 
           repeat: 5, 
           ease: 'power1.inOut',
-          onComplete: () => gsap.set(spriteRotationRef.value, { clearProps: "x,filter,transition" })
+          onComplete: () => { if (spriteRotationRef.value) gsap.set(spriteRotationRef.value, { clearProps: "x,filter,transition" }) }
         }
       )
     }
@@ -776,13 +774,18 @@ watch(() => props.isHealing, (val) => {
       duration: 0.25,
       ease: "power1.in",
       onComplete: () => {
-        gsap.set(spriteRotationRef.value, { clearProps: "y,scale,filter,transition" })
+        if (spriteRotationRef.value) {
+          gsap.set(spriteRotationRef.value, { clearProps: "y,scale,filter,transition" })
+        }
       }
     })
   }
 })
 
 watch(() => props.isCaptureSuccess, (success) => {
+  if (success) {
+    wasCaptured.value = true
+  }
   if (!pokeballImgRef.value) return
   if (success) {
     successBlinkTween = gsap.fromTo(pokeballImgRef.value,
@@ -900,13 +903,15 @@ const onBallEnter = (el: Element, done: () => void) => {
 }
 
 const onBallLeave = (el: Element, done: () => void) => {
-  gsap.to(el, { 
+  const tween = gsap.to(el, { 
     opacity: 0, 
     scale: 0.8, 
     duration: 0.3,
     ease: 'power2.in', 
     onComplete: done 
   })
+  const animKey = `ball-fadeout-${props.side}`
+  gameBus.emit('REGISTER_TWEEN', { key: animKey, tween })
 }
 
 interface SmokeParticle {
@@ -927,7 +932,7 @@ const runEscapeAnimation = (type: 'teleport' | 'flee') => {
     gameBus.emit('PLAY_SOUND', 'flee')
     
     const tl = gsap.timeline()
-    tl.to(spriteRef.value, {
+    const tween = tl.to(spriteRef.value, {
       scaleY: 2.0,
       scaleX: 0.1,
       opacity: 0,
@@ -935,9 +940,13 @@ const runEscapeAnimation = (type: 'teleport' | 'flee') => {
       duration: 0.4,
       ease: 'power3.in',
       onComplete: () => {
-        gsap.set(spriteRef.value, { clearProps: 'opacity,scale,transform,filter' })
+        if (spriteRef.value) {
+          gsap.set(spriteRef.value, { clearProps: 'scale,transform,filter' })
+        }
       }
     })
+    const animKey = `escape-${props.side}`
+    gameBus.emit('REGISTER_TWEEN', { key: animKey, tween })
   } else {
     gameBus.emit('PLAY_SOUND', 'flee')
     
@@ -976,16 +985,20 @@ const runEscapeAnimation = (type: 'teleport' | 'flee') => {
     }
     requestAnimationFrame(updateTicker)
 
-    gsap.to(spriteRef.value, {
+    const tween = gsap.to(spriteRef.value, {
       x: 400,
       opacity: 0,
       scale: 0.7,
       duration: 0.45,
       ease: 'power2.in',
       onComplete: () => {
-        gsap.set(spriteRef.value, { clearProps: 'opacity,scale,transform,x' })
+        if (spriteRef.value) {
+          gsap.set(spriteRef.value, { clearProps: 'scale,transform,x' })
+        }
       }
     })
+    const animKey = `escape-${props.side}`
+    gameBus.emit('REGISTER_TWEEN', { key: animKey, tween })
   }
 }
 
@@ -1023,7 +1036,7 @@ onUnmounted(() => {
       :style="{ '--fx-scale': fxScale }"
       :class="[{ 
         'is-attacking': isAttacking,
-        'is-technical-hidden': hidden || animState === 'trapped' || isCaptureSuccess,
+        'is-technical-hidden': hidden || animState === 'trapped' || isCaptureSuccess || wasCaptured,
         'releasing': animState === 'releasing'
       }, getAttackAnimClass]"
     >

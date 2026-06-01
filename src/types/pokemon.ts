@@ -146,6 +146,7 @@ export interface Pokemon {
   futureSightDmg?: number;
   chargingMove?: Move | null;
   aura?: string;
+  isAncestral?: boolean;
 }
 
 export interface PokemonEgg {
@@ -168,4 +169,5 @@ export interface PokemonEgg {
     ivTotal: number;
   };
   tint?: string;
+  isAncestral?: boolean;
 }

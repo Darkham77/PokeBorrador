@@ -84,7 +84,10 @@ const handleClaim = (egg: DaycareEgg) => {
           <div class="name">
             {{ egg.inherited_ivs?._scanned ? getPokemonName(egg.species) : 'HUEVO POKÉMON' }}
           </div>
-          <div class="cost">
+          <div
+            v-if="egg.inherited_ivs?._cost"
+            class="cost"
+          >
             Costo: <span>₽{{ (egg.inherited_ivs?._cost || 0).toLocaleString() }}</span>
           </div>
         </div>

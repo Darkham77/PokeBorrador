@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, nextTick } from 'vue'
+import { ref, onMounted, onUnmounted, nextTick, computed } from 'vue'
 import { gsap } from 'gsap'
 import BaseModal from '@/components/common/BaseModal.vue'
 import type { Pokemon } from '@/types/pokemon'
@@ -22,6 +22,14 @@ const emit = defineEmits<{
   (e: 'success'): void
   (e: 'fail'): void
 }>()
+
+const difficulty = computed(() => {
+  const r = props.rarity
+  if (r <= 15) return { label: 'Experto', color: '#f87171' }
+  if (r <= 40) return { label: 'Difícil', color: '#fb923c' }
+  if (r <= 70) return { label: 'Medio', color: '#facc15' }
+  return { label: 'Fácil', color: '#4ade80' }
+})
 
 const gameActive = ref(true)
 const feedback = ref('')
@@ -222,9 +230,17 @@ onUnmounted(() => {
         </div>
       </div>
 
-      <!-- Counter -->
-      <div class="rhythm-counter pixel-text">
-        NOTAS: {{ clickedNotesCount }} / {{ totalNotes }}
+      <!-- Stats Row -->
+      <div class="stats-row">
+        <div
+          class="stat-pill difficulty-pill"
+          :style="{ borderColor: difficulty.color, color: difficulty.color }"
+        >
+          {{ difficulty.label.toUpperCase() }}
+        </div>
+        <div class="stat-pill rhythm-counter">
+          NOTAS: {{ clickedNotesCount }} / {{ totalNotes }}
+        </div>
       </div>
 
       <!-- Game Area (Fija 380x380 px) -->
@@ -305,11 +321,26 @@ onUnmounted(() => {
   }
 }
 
+.stats-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.stat-pill {
+  @include pixelated;
+  font-size: 10px;
+  color: #fff;
+  background: Rgba(255, 255, 255, 0.05);
+  padding: 6px 12px;
+  border-radius: 10px;
+  border: 1px solid Rgba(10, 132, 255, 0.3);
+}
+
 .rhythm-counter {
   text-align: center;
-  font-size: 12px;
+  font-size: 10px;
   color: #fff;
-  margin-bottom: 16px;
   letter-spacing: 1px;
 }
 

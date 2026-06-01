@@ -19,6 +19,10 @@ export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'm
   if (option === 'search' && ctx.activeBattle.value) {
     ctx.isProcessing.value = true
     
+    // Restablecer flags de minijuegos para la fase de búsqueda
+    ctx.activeBattle.value.isFishing = false
+    ctx.activeBattle.value.isArchaeology = false
+    
     // FASE: INITIALIZING
     fsm.transition(BATTLE_STATES.INITIALIZING)
     fsm.transition(BATTLE_STATES.INITIALIZING, BATTLE_SUBSTATES.CHECK_SLOTS)
@@ -30,8 +34,13 @@ export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'm
     // PROMOTE: Slot 2 -> Slot 1
     if (ctx.upcomingPokemon.value) {
       ctx.activeBattle.value._initialEnemy = { ...ctx.upcomingPokemon.value }
+      
+      // Consumimos el Slot 2 ya que pasa a ser el Slot 1 activo
+      ctx.upcomingPokemon.value = null
+      if (ctx.upcomingEncounterType) ctx.upcomingEncounterType.value = null
     }
-    // GEN_NEW_S2: Generar próximo encuentro si no hay uno en el slot
+
+    // GEN_NEW_S2: Generar próximo encuentro si no hay uno en el slot (Slot 2)
     if (!ctx.upcomingPokemon.value) {
       const mapStore = useMapStore() as unknown as MapStore
       const eventStore = useEventStore() as unknown as EventStore
@@ -43,24 +52,41 @@ export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'm
         forceEncounter: true
       }
       const encounter = await generateEncounter(locId, ctx.gs.state, encounterOptions)
-      if (encounter && (encounter.type === 'wild' || encounter.type === 'fishing' || encounter.type === 'guardian') && encounter.pokemon) {
+      if (encounter && (encounter.type === 'wild' || encounter.type === 'fishing' || encounter.type === 'archaeology' || encounter.type === 'guardian') && encounter.pokemon) {
         ctx.upcomingPokemon.value = encounter.pokemon
+        if (ctx.upcomingEncounterType) {
+          ctx.upcomingEncounterType.value = encounter.type as 'wild' | 'fishing' | 'archaeology' | 'guardian'
+        }
       }
     }
-    
-    if (ctx.upcomingPokemon.value) {
-      ctx.activeBattle.value._initialEnemy = { ...ctx.upcomingPokemon.value }
+
+    // Si el encuentro generado o existente en Slot 2 es un minijuego, lo promocionamos de inmediato para jugar
+    const nextType = ctx.upcomingEncounterType?.value || 'wild'
+    if (nextType === 'fishing' || nextType === 'archaeology') {
+      ctx.activeBattle.value.isFishing = nextType === 'fishing'
+      ctx.activeBattle.value.isArchaeology = nextType === 'archaeology'
+      if (ctx.upcomingPokemon.value) {
+        ctx.activeBattle.value._initialEnemy = ctx.upcomingPokemon.value
+        ctx.activeBattle.value.enemy = ctx.upcomingPokemon.value
+      }
+      // Consumimos el Slot 2
+      ctx.upcomingPokemon.value = null
+      if (ctx.upcomingEncounterType) ctx.upcomingEncounterType.value = null
+      
+      ctx.isProcessing.value = false
+      await fsm.transition(BATTLE_STATES.INITIALIZING)
+      await fsm.transition(BATTLE_STATES.INITIALIZING, BATTLE_SUBSTATES.MINIGAME_CHECK)
+      return
     }
 
     await fsm.transition(BATTLE_STATES.INITIALIZING, BATTLE_SUBSTATES.GEN_NEW_S2)
-
     await fsm.transition(BATTLE_STATES.INITIALIZING, BATTLE_SUBSTATES.PRELOAD_COORDS, 100)
 
-    // FASE: SEARCH_PHASE
+    // FASE: SEARCH_PHASE (Solo para salvajes normales)
     await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.PARALLEL_PREP)
     
     if (ctx.upcomingPokemon.value) {
-      ctx.activeBattle.value.enemy = { ...ctx.upcomingPokemon.value }
+      ctx.activeBattle.value.enemy = ctx.upcomingPokemon.value
     }
     
     ctx.isProcessing.value = false
@@ -92,27 +118,53 @@ export async function triggerNextEncounter(ctx: BattleContext) {
   }
   
   await fsm.transition(BATTLE_STATES.INITIALIZING)
-  if (ctx.activeBattle.value?.isFishing) {
-    fsm.transition(BATTLE_STATES.INITIALIZING, BATTLE_SUBSTATES.MINIGAME_CHECK)
+  const nextType = ctx.upcomingEncounterType?.value || 'wild'
+  if (nextType === 'fishing' || nextType === 'archaeology') {
+    await fsm.transition(BATTLE_STATES.INITIALIZING, BATTLE_SUBSTATES.MINIGAME_CHECK)
   }
-  fsm.transition(BATTLE_STATES.INITIALIZING, BATTLE_SUBSTATES.ENCOUNTER_ANIM)
+  await fsm.transition(BATTLE_STATES.INITIALIZING, BATTLE_SUBSTATES.ENCOUNTER_ANIM)
   
   const nextPoke = ctx.upcomingPokemon.value
   ctx.upcomingPokemon.value = null
+  if (ctx.upcomingEncounterType) ctx.upcomingEncounterType.value = null
   await ctx._startBattle(nextPoke, {
     locationId: locId,
     wasSearching: true,
-    isDebug: !!ctx.debugLoopPokemon.value
+    isDebug: !!ctx.debugLoopPokemon.value,
+    isFishing: nextType === 'fishing',
+    isArchaeology: nextType === 'archaeology'
   })
 }
 
-/**
- * Transition from SEARCH_PHASE to ACTIVE_BATTLE.
- */
 export async function startEncounter(ctx: BattleContext) {
+  const { BATTLE_STATES, BATTLE_SUBSTATES } = ctx
+  const fsm = ctx.fsm
+
+  const nextType = ctx.upcomingEncounterType?.value
+    || (ctx.activeBattle.value?.isFishing ? 'fishing' : '')
+    || (ctx.activeBattle.value?.isArchaeology ? 'archaeology' : '')
+    || 'wild'
+  const nextPoke = ctx.upcomingPokemon.value
+  const locId = ctx.activeBattle.value?.locationId || 'route1'
+
+  if (nextType === 'fishing' || nextType === 'archaeology') {
+    if (ctx.activeBattle.value) {
+      ctx.activeBattle.value.isFishing = nextType === 'fishing'
+      ctx.activeBattle.value.isArchaeology = nextType === 'archaeology'
+      if (nextPoke) {
+        ctx.activeBattle.value.enemy = { ...nextPoke }
+        ctx.activeBattle.value._initialEnemy = { ...nextPoke }
+      } else if (!ctx.activeBattle.value.enemy && ctx.activeBattle.value._initialEnemy) {
+        ctx.activeBattle.value.enemy = { ...ctx.activeBattle.value._initialEnemy }
+      }
+    }
+    await fsm.transition(BATTLE_STATES.INITIALIZING)
+    await fsm.transition(BATTLE_STATES.INITIALIZING, BATTLE_SUBSTATES.MINIGAME_CHECK)
+    return
+  }
+
   ctx.isIntroAnimating.value = true
   
-  const locId = ctx.activeBattle.value?.locationId || 'route1'
   const isTr = ctx.activeBattle.value?.isTrainer || false
   const trName = ctx.activeBattle.value?.trainerName || ''
   const isGym = ctx.activeBattle.value?.isGym || false

@@ -17,7 +17,15 @@ const uiStore = useUIStore()
           :key="n.id" 
           class="toast-item"
         >
-          <span class="toast-icon">{{ n.icon }}</span>
+          <img 
+            v-if="n.icon && (n.icon.includes('/') || n.icon.includes('.') || n.icon.startsWith('http'))"
+            :src="n.icon"
+            class="toast-icon-img"
+          >
+          <span
+            v-else
+            class="toast-icon"
+          >{{ n.icon }}</span>
           <span class="toast-msg">{{ n.msg }}</span>
         </div>
       </TransitionGroup>
@@ -66,6 +74,14 @@ const uiStore = useUIStore()
   
   .toast-icon {
     font-size: 16px;
+    flex-shrink: 0;
+  }
+
+  .toast-icon-img {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+    image-rendering: pixelated;
     flex-shrink: 0;
   }
   

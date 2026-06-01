@@ -14,6 +14,8 @@ import { useEventStore } from './events.ts'
 import type { Pokemon } from '@/types/pokemon'
 import type { Event } from '@/logic/events/eventEngine'
 import type { DayPhase, Season } from '@/logic/timeUtils'
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
+import type { MapLocation } from '@/types/encounters'
 
 export interface PendingAward {
   id: string;
@@ -150,10 +152,12 @@ export const useMapStore = defineStore('map', () => {
 
     // 4. Procesar Tipo de Encuentro
     const wildEnc = encounter as { type: string; pokemon: Pokemon; pts?: number; faction?: string; rarity?: number };
-    if (wildEnc.type === 'wild') {
+    if (wildEnc.type === 'wild' || wildEnc.type === 'fishing' || wildEnc.type === 'archaeology') {
       battleStore._startBattle(wildEnc.pokemon, { 
         locationId: locId,
-        wasSearching: true 
+        wasSearching: true,
+        isFishing: wildEnc.type === 'fishing',
+        isArchaeology: wildEnc.type === 'archaeology'
       })
     } else if (wildEnc.type === 'guardian') {
       // El componente MapView debe manejar la notificación visual o podemos dispararla aquí si es modal
@@ -169,42 +173,100 @@ export const useMapStore = defineStore('map', () => {
       // TODO: Implementar búsqueda de defensores reales desde Supabase
       // Por ahora notificamos
       uiStore.notify(`¡Defensor del Team ${wildEnc.faction?.toUpperCase()} detectado!`, '⚔️')
-    } else if (wildEnc.type === 'fishing') {
-      const { showFishingIntro, startFishingMinigame } = await import('@/logic/encounterUI')
-      showFishingIntro(wildEnc.pokemon, wildEnc.rarity || 50, () => {
-        startFishingMinigame(
-          wildEnc.pokemon,
-          wildEnc.rarity || 50,
-          () => {
-            battleStore._startBattle(wildEnc.pokemon, { 
-              locationId: locId,
-              wasSearching: true,
-              isFishing: true
-            })
-          },
-          () => {
-            uiStore.notify('El Pokémon escapó...', '💨')
-          }
-        )
-      })
-    } else if (wildEnc.type === 'archaeology') {
-      const { showArchaeologyIntro, startArchaeologyMinigame } = await import('@/logic/encounterUI')
-      showArchaeologyIntro(wildEnc.pokemon, wildEnc.rarity || 50, () => {
-        startArchaeologyMinigame(
-          wildEnc.pokemon,
-          wildEnc.rarity || 50,
-          () => {
-            battleStore._startBattle(wildEnc.pokemon, { 
-              locationId: locId,
-              wasSearching: true,
-              isArchaeology: true
-            })
-          },
-          () => {
-            uiStore.notify('El fósil se desmoronó...', '💨')
-          }
-        )
-      })
+    }
+  }
+
+  const triggerArchaeologyRewards = async (locId: string, difficulty?: string) => {
+    const mapsList = pokemonDataProvider.getMaps() as unknown as MapLocation[]
+    const loc = mapsList.find(m => m.id === locId)
+    const { useInventoryStore } = await import('./inventory.ts')
+    const inventoryStore = useInventoryStore()
+    const uiStore = useUIStore()
+    const battleStore = useBattleStore()
+    const { SHOP_ITEMS } = await import('@/data/items.ts')
+    const { getAssetUrl, ASSET_TYPES } = await import('@/logic/services/assetService.ts')
+
+    let rolls = 1
+    if (difficulty === 'medium') rolls = 2
+    else if (difficulty === 'hard') rolls = 3
+    else if (difficulty === 'expert') rolls = 4
+
+    for (let r = 0; r < rolls; r++) {
+      // Determinar recompensa (45% Fósil, 25% Piedra Evo, 30% Mineral/Valioso)
+      const rand = Math.random() * 100
+      let rewardName = ''
+      let rewardIcon = '💎'
+
+      if (rand < 45) {
+        // 45% Fósil basado en el pool de arqueología del mapa
+        const pool = loc?.archaeology?.pool || ['kabuto', 'omanyte']
+        const selectedPoke = pool[Math.floor(Math.random() * pool.length)]
+        if (selectedPoke === 'kabuto') {
+          rewardName = 'Fósil Domo'
+          rewardIcon = '🛡'
+        } else if (selectedPoke === 'omanyte') {
+          rewardName = 'Fósil Hélix'
+          rewardIcon = '🐚'
+        } else {
+          rewardName = 'Ámbar Viejo'
+          rewardIcon = '💎'
+        }
+      } else if (rand < 70) {
+        // 25% Piedra evolutiva
+        const stones = [
+          { name: 'Piedra Fuego', icon: '🔥' },
+          { name: 'Piedra Agua', icon: '💧' },
+          { name: 'Piedra Trueno', icon: '⚡' },
+          { name: 'Piedra Hoja', icon: '🌿' },
+          { name: 'Piedra Lunar', icon: '🌙' },
+          { name: 'Piedra Solar', icon: '☀️' }
+        ]
+        const stone = stones[Math.floor(Math.random() * stones.length)]!
+        rewardName = stone.name
+        rewardIcon = stone.icon
+      } else {
+        // 30% Objeto Valioso / Mineral natural
+        const oreRand = Math.random() * 100
+        if (oreRand < 66) {
+          // 20% del total (comunes y minerales básicos)
+          const commons = [
+            { name: 'Perla', icon: '⚪' },
+            { name: 'Polvo Estelar', icon: '✨' },
+            { name: 'Mineral de Carbón', icon: '🪨' },
+            { name: 'Mineral de Cobre', icon: '🟫' },
+            { name: 'Mineral de Hierro', icon: '🧱' }
+          ]
+          const item = commons[Math.floor(Math.random() * commons.length)]!
+          rewardName = item.name
+          rewardIcon = item.icon
+        } else {
+          // 10% del total (valiosos raros y metales/gemas premium)
+          const rares = [
+            { name: 'Pepita', icon: '🟡' },
+            { name: 'Perla Grande', icon: '🔘' },
+            { name: 'Trozo Estrella', icon: '⭐' },
+            { name: 'Mineral de Plata', icon: '⬜' },
+            { name: 'Mineral de Oro', icon: '🟨' },
+            { name: 'Mineral de Wolframio', icon: '🌑' },
+            { name: 'Mineral de Uranio', icon: '🟢' },
+            { name: 'Mineral de Rubí', icon: '🔺' },
+            { name: 'Mineral de Zafiro', icon: '🔹' },
+            { name: 'Mineral de Esmeralda', icon: '💚' },
+            { name: 'Mineral de Topacio', icon: '🟡' },
+            { name: 'Mineral de Diamante', icon: '💎' }
+          ]
+          const item = rares[Math.floor(Math.random() * rares.length)]!
+          rewardName = item.name
+          rewardIcon = item.icon
+        }
+      }
+
+      const itemData = SHOP_ITEMS.find(i => i.name.toLowerCase() === rewardName.toLowerCase())
+      const itemSprite = itemData ? getAssetUrl(ASSET_TYPES.ITEM, itemData.sprite) : rewardIcon
+
+      inventoryStore.addItem(rewardName, 1)
+      uiStore.notify(`¡Desenterraste un ${rewardName}!`, itemSprite)
+      battleStore.addLog(`¡Desenterraste un <strong style="color:var(--yellow);">${rewardName}</strong>!`, 'log-info', rewardName)
     }
   }
 
@@ -227,6 +289,7 @@ export const useMapStore = defineStore('map', () => {
     setGlobalWeather,
     setGlobalCycle,
     setGlobalSeason,
-    navigate
+    navigate,
+    triggerArchaeologyRewards
   }
 })

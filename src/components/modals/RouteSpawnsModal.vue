@@ -20,6 +20,7 @@ import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { getMechanicalWeather, WEATHER_UI_METADATA, WEATHER_VISUAL_METADATA, WEATHER_REGISTRY } from '@/logic/weather/weatherRegistry'
 import type { MapLocation } from '@/types/encounters'
 import type { EventConfig } from '@/logic/events/eventEngine'
+import { GAME_RATIOS } from '@/data/constants'
 
 interface ExtendedMapLocation extends MapLocation {
   isVolcanic?: boolean
@@ -546,8 +547,196 @@ const terrainTags = computed(() => {
   return tags.join(', ')
 })
 
-const isRainyWeather = computed(() => {
-  return ['rain', 'heavy_rain', 'storm', 'thunderstorm'].includes(props.weather.toLowerCase())
+
+const activeWeights = computed(() => {
+  const weather = props.weather || 'clear'
+  const isRainy = ['rain', 'heavy_rain', 'storm', 'thunderstorm'].includes(weather.toLowerCase())
+  const climateFishingMultiplier = isRainy ? 1.20 : 1.0
+  const fishingBonus = climateFishingMultiplier
+
+  const groundWeight = 100
+  
+  let fishingWeight = 0
+  if (props.map.fishing) {
+    fishingWeight = GAME_RATIOS.encounters.fishing * 100 * fishingBonus
+    if ((gameStore.state.fishingRodSecs || 0) > 0) {
+      fishingWeight += 600
+    }
+  }
+
+  let archWeight = 0
+  if (props.map.archaeology) {
+    const isCave = !!props.map.isCave
+    const isMountain = !!props.map.isMountain
+    archWeight = isCave ? 10 : (isMountain ? 5 : 0)
+    if ((gameStore.state.pickaxeSecs || 0) > 0) {
+      archWeight += 600
+    }
+  }
+
+  const totalWeight = groundWeight + fishingWeight + archWeight
+
+  // Base weights (no rain modifiers, no event bonuses, no buffs)
+  let baseFishingWeight = 0
+  if (props.map.fishing) {
+    baseFishingWeight = GAME_RATIOS.encounters.fishing * 100
+  }
+  let baseArchWeight = 0
+  if (props.map.archaeology) {
+    const isCave = !!props.map.isCave
+    const isMountain = !!props.map.isMountain
+    baseArchWeight = isCave ? 10 : (isMountain ? 5 : 0)
+  }
+  const baseTotalWeight = groundWeight + baseFishingWeight + baseArchWeight
+
+  return {
+    ground: groundWeight,
+    fishing: fishingWeight,
+    archaeology: archWeight,
+    total: totalWeight,
+    baseGround: groundWeight,
+    baseFishing: baseFishingWeight,
+    baseArchaeology: baseArchWeight,
+    baseTotal: baseTotalWeight
+  }
+})
+
+const activeFishingChance = computed(() => {
+  const w = activeWeights.value
+  if (w.total === 0 || !props.map.fishing) return 0
+  return Math.round((w.fishing / w.total) * 100)
+})
+
+const baseFishingChance = computed(() => {
+  const w = activeWeights.value
+  if (w.baseTotal === 0 || !props.map.fishing) return 0
+  return Math.round((w.baseFishing / w.baseTotal) * 100)
+})
+
+const activeArchaeologyChance = computed(() => {
+  const w = activeWeights.value
+  if (w.total === 0 || !props.map.archaeology) return 0
+  return Math.round((w.archaeology / w.total) * 100)
+})
+
+const baseArchaeologyChance = computed(() => {
+  const w = activeWeights.value
+  if (w.baseTotal === 0 || !props.map.archaeology) return 0
+  return Math.round((w.baseArchaeology / w.baseTotal) * 100)
+})
+
+const activeTerrestrialChance = computed(() => {
+  const w = activeWeights.value
+  if (w.total === 0) return 0
+  return Math.round((w.ground / w.total) * 100)
+})
+
+const baseTerrestrialChance = computed(() => {
+  const w = activeWeights.value
+  if (w.baseTotal === 0) return 0
+  return Math.round((w.baseGround / w.baseTotal) * 100)
+})
+
+const getProbClass = (active: number, base: number) => {
+  if (active > base) return 'bonus-text'
+  if (active < base) return 'penalty-text'
+  return ''
+}
+
+const getCategoryTooltip = (type: string) => {
+  switch (type) {
+    case 'Fósil':
+      return { title: 'Fósil Ancestral', desc: 'Fósil desenterrable que puede ser clonado en el Daycare para obtener Pokémon ancestrales.' }
+    case 'Evolución':
+      return { title: 'Piedra de Evolución', desc: 'Piedras especiales utilizadas para evolucionar ciertas especies de Pokémon.' }
+    case 'Mineral':
+      return { title: 'Mineral Común', desc: 'Material básico útil para vender en la tienda o refinar.' }
+    case 'Valioso':
+      return { title: 'Gemas y Metales Raros', desc: 'Objetos y gemas de alta rareza de gran valor comercial.' }
+    default:
+      return { title: 'Objeto de Arqueología', desc: 'Recompensa obtenible mediante la excavación en zonas de arqueología.' }
+  }
+}
+
+const archaeologyRewards = computed(() => {
+  if (!props.map.archaeology?.pool) return []
+
+  const pool = props.map.archaeology.pool
+  const rates = props.map.archaeology.rates || []
+  const totalRates = rates.reduce((sum, r) => sum + r, 0) || 1
+
+  const list: Array<{
+    name: string
+    type: string
+    icon: string
+    sprite: string
+    percentage: number
+    statusClass: string
+    description?: string
+  }> = []
+
+  // 1. Fósiles (45% total, distribuidos según rates)
+  pool.forEach((id, index) => {
+    const rate = rates[index] !== undefined ? rates[index]! : 10
+    const percentage = (rate / totalRates) * 45
+    let name = 'Ámbar Viejo'
+    let icon = '💎'
+    let sprite = getAssetUrl(ASSET_TYPES.ITEM, 'old_amber')
+
+    if (id === 'kabuto') {
+      name = 'Fósil Domo'
+      icon = '🐚'
+      sprite = getAssetUrl(ASSET_TYPES.ITEM, 'dome_fossil')
+    } else if (id === 'omanyte') {
+      name = 'Fósil Hélix'
+      icon = '🐚'
+      sprite = getAssetUrl(ASSET_TYPES.ITEM, 'helix_fossil')
+    }
+
+    list.push({
+      name,
+      type: 'Fósil',
+      icon,
+      sprite,
+      percentage,
+      statusClass: 'common'
+    })
+  })
+
+  // 2. Piedras Evolutivas (25% total)
+  list.push({
+    name: 'Piedras Evolutivas',
+    type: 'Evolución',
+    icon: '⚡',
+    sprite: getAssetUrl(ASSET_TYPES.ITEM, 'fire_stone'),
+    percentage: 25.0,
+    statusClass: 'visitor',
+    description: 'Piedra Fuego, Piedra Agua, Piedra Trueno, Piedra Hoja, Piedra Lunar, Piedra Solar'
+  })
+
+  // 3. Minerales y Gemas Básicos (19.8% total)
+  list.push({
+    name: 'Minerales Comunes',
+    type: 'Mineral',
+    icon: '🪨',
+    sprite: getAssetUrl(ASSET_TYPES.ITEM, 'ores/iron_ore'),
+    percentage: 19.8,
+    statusClass: 'common',
+    description: 'Perla, Polvo Estelar, Carbón, Cobre, Hierro'
+  })
+
+  // 4. Minerales y Gemas Raros (10.2% total)
+  list.push({
+    name: 'Gemas y Metales Raros',
+    type: 'Valioso',
+    icon: '🟡',
+    sprite: getAssetUrl(ASSET_TYPES.ITEM, 'ores/diamond_ore'),
+    percentage: 10.2,
+    statusClass: 'exclusive',
+    description: 'Pepita, Perla Grande, Estrella, Plata, Oro, Wolframio, Uranio, Rubí, Zafiro, Esmeralda, Topacio, Diamante'
+  })
+
+  return list
 })
 </script>
 
@@ -692,19 +881,32 @@ const isRainyWeather = computed(() => {
                 {{ terrainTags }}
               </span>
             </div>
+            <div class="terrain-item">
+              <span class="label">Caminar:</span>
+              <span class="value">
+                🚶 Caminando —
+                <b :class="getProbClass(activeTerrestrialChance, baseTerrestrialChance)">{{ activeTerrestrialChance }}%</b>
+                <span
+                  style="font-size: 9px; margin-left: 4px;"
+                  :class="getProbClass(activeTerrestrialChance, baseTerrestrialChance) || 'gray-text'"
+                >
+                  (Base: {{ baseTerrestrialChance }}%)
+                </span>
+              </span>
+            </div>
             <div
               v-if="map.fishing"
               class="terrain-item"
             >
               <span class="label">Pesca:</span>
               <span class="value">
-                🎣 Disponible (Nv. {{ map.fishing.lv[0] }}-{{ map.fishing.lv[1] }})
+                🎣 Nv. {{ map.fishing.lv[0] }}-{{ map.fishing.lv[1] }} —
+                <b :class="getProbClass(activeFishingChance, baseFishingChance)">{{ activeFishingChance }}%</b>
                 <span
-                  v-if="isRainyWeather"
-                  class="buffed-text"
-                  style="font-size: 9px; font-weight: bold; margin-left: 4px;"
+                  style="font-size: 9px; margin-left: 4px;"
+                  :class="getProbClass(activeFishingChance, baseFishingChance) || 'gray-text'"
                 >
-                  (+20% Clima)
+                  (Base: {{ baseFishingChance }}%)
                 </span>
               </span>
             </div>
@@ -715,6 +917,30 @@ const isRainyWeather = computed(() => {
               <span class="label">Pesca:</span>
               <span class="value gray-text">❌ No disponible</span>
             </div>
+
+            <div
+              v-if="map.archaeology"
+              class="terrain-item"
+            >
+              <span class="label">Arqueología:</span>
+              <span class="value">
+                ⛏️ Nv. {{ map.archaeology.lv[0] }}-{{ map.archaeology.lv[1] }} —
+                <b :class="getProbClass(activeArchaeologyChance, baseArchaeologyChance)">{{ activeArchaeologyChance }}%</b>
+                <span
+                  style="font-size: 9px; margin-left: 4px;"
+                  :class="getProbClass(activeArchaeologyChance, baseArchaeologyChance) || 'gray-text'"
+                >
+                  (Base: {{ baseArchaeologyChance }}%)
+                </span>
+              </span>
+            </div>
+            <div
+              v-else
+              class="terrain-item"
+            >
+              <span class="label">Arqueología:</span>
+              <span class="value gray-text">❌ No disponible</span>
+            </div>
           </div>
         </div>
       </div>
@@ -723,6 +949,10 @@ const isRainyWeather = computed(() => {
       <div class="spawns-section">
         <h3 class="section-title-pixel">
           🚶 ENCUENTROS TERRESTRES
+          <span
+            class="section-prob-badge"
+            :class="getProbClass(activeTerrestrialChance, baseTerrestrialChance)"
+          >(PROBABILIDAD: {{ activeTerrestrialChance }}%)</span>
         </h3>
         <div class="spawns-report-scroll">
           <div class="report-table-header">
@@ -899,12 +1129,9 @@ const isRainyWeather = computed(() => {
         <h3 class="section-title-pixel">
           🎣 ENCUENTROS DE PESCA
           <span
-            v-if="isRainyWeather"
-            class="buffed-text"
-            style="font-size: 9px; font-weight: bold; margin-left: 6px;"
-          >
-            (+20% Clima)
-          </span>
+            class="section-prob-badge"
+            :class="getProbClass(activeFishingChance, baseFishingChance)"
+          >(PROBABILIDAD: {{ activeFishingChance }}%)</span>
         </h3>
         <div class="spawns-report-scroll">
           <div class="report-table-header">
@@ -1014,13 +1241,43 @@ const isRainyWeather = computed(() => {
                   <div class="prob-numerical">
                     <span class="active-prob">
                       {{ poke.percentage.toFixed(1) }}%
+                      <span
+                        v-if="poke.diff !== 0 && poke.spawnType !== 'Pesca'"
+                        :class="['diff-text', poke.diff > 0 ? 'boosted' : 'debuffed']"
+                      >
+                        ({{ poke.diff > 0 ? '+' : '' }}{{ poke.diff.toFixed(1) }}%)
+                      </span>
                     </span>
                   </div>
                   <div class="prob-visual-progress">
-                    <div
-                      class="fill base-fill"
-                      :style="{ width: `${poke.percentage * 2.5}%` }"
-                    />
+                    <template v-if="poke.spawnType === 'Pesca'">
+                      <div
+                        class="fill base-fill"
+                        :style="{ width: `${poke.percentage * 2.5}%` }"
+                      />
+                    </template>
+                    <template v-else>
+                      <div
+                        v-if="poke.diff >= 0"
+                        class="fill base-fill"
+                        :style="{ width: `${poke.basePercentage * 2.5}%` }"
+                      />
+                      <div
+                        v-if="poke.diff > 0"
+                        class="fill extra-fill"
+                        :style="{ width: `${poke.diff * 2.5}%` }"
+                      />
+                      <div
+                        v-if="poke.diff < 0"
+                        class="fill base-fill-reduced"
+                        :style="{ width: `${poke.percentage * 2.5}%` }"
+                      />
+                      <div
+                        v-if="poke.diff < 0"
+                        class="fill lost-fill"
+                        :style="{ width: `${Math.abs(poke.diff) * 2.5}%` }"
+                      />
+                    </template>
                   </div>
                 </div>
               </div>
@@ -1037,6 +1294,129 @@ const isRainyWeather = computed(() => {
                   v-else
                   class="hidden-info-placeholder"
                 >???</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Archaeology Rewards List -->
+      <div
+        v-if="archaeologyRewards.length"
+        class="spawns-section"
+      >
+        <h3 class="section-title-pixel">
+          ⛏️ RECOMPENSAS DE ARQUEOLOGÍA
+          <span
+            class="section-prob-badge"
+            :class="getProbClass(activeArchaeologyChance, baseArchaeologyChance)"
+          >(PROBABILIDAD: {{ activeArchaeologyChance }}%)</span>
+        </h3>
+        <div class="spawns-report-scroll">
+          <div class="report-table-header">
+            <div class="col-pokemon">
+              Objeto
+            </div>
+            <div class="col-types">
+              Categoría
+            </div>
+            <div class="col-type">
+              Estado
+            </div>
+            <div class="col-multiplier">
+              Detalles
+            </div>
+            <div class="col-prob">
+              Prob. Real
+            </div>
+            <div class="col-stats">
+              -
+            </div>
+          </div>
+
+          <div class="report-rows">
+            <div
+              v-for="reward in archaeologyRewards"
+              :key="reward.name"
+              class="report-row"
+              :class="reward.statusClass"
+            >
+              <!-- Item Info -->
+              <div class="col-pokemon row-cell flex-align">
+                <div class="mini-sprite-wrapper">
+                  <img
+                    :src="reward.sprite"
+                    class="mini-sprite"
+                    style="object-fit: contain; width: 24px; height: 24px;"
+                  >
+                </div>
+                <div class="poke-name-wrap">
+                  <span
+                    class="poke-name"
+                    style="font-size: 11px; line-height: 1.4;"
+                  >{{ reward.name }}</span>
+                </div>
+              </div>
+
+              <!-- Category -->
+              <div class="col-types row-cell flex-align">
+                <PVTooltip
+                  :title="getCategoryTooltip(reward.type).title"
+                  :description="getCategoryTooltip(reward.type).desc"
+                >
+                  <span
+                    class="status-tag"
+                    :class="reward.statusClass"
+                    style="font-size: 9px; padding: 2px 4px;"
+                  >
+                    {{ reward.type }}
+                  </span>
+                </PVTooltip>
+              </div>
+
+              <!-- Status Tag -->
+              <div class="col-type row-cell flex-align">
+                <PVTooltip
+                  title="Método de Obtención"
+                  description="Este objeto se obtiene exclusivamente como recompensa al completar el minijuego de Arqueología."
+                >
+                  <span
+                    class="status-tag"
+                    :class="reward.statusClass"
+                  >
+                    Excavación
+                  </span>
+                </PVTooltip>
+              </div>
+
+              <!-- Details/Description -->
+              <div
+                class="col-multiplier row-cell flex-align"
+                style="font-size: 9px; opacity: 0.8; white-space: normal; line-height: 1.2;"
+              >
+                {{ reward.description || 'Fósil desenterrable en la zona' }}
+              </div>
+
+              <!-- Probability -->
+              <div class="col-prob row-cell flex-align">
+                <div class="prob-bar-wrapper">
+                  <div class="prob-numerical">
+                    <span class="active-prob">
+                      {{ reward.percentage.toFixed(1) }}%
+                    </span>
+                  </div>
+                  <div class="prob-visual-progress">
+                    <div
+                      class="fill base-fill"
+                      :style="{ width: `${reward.percentage * 2.5}%` }"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <!-- Stats placeholder alignment -->
+              <div class="col-stats row-cell flex-align text-center">
+                <span class="neutral-text">-</span>
               </div>
             </div>
           </div>

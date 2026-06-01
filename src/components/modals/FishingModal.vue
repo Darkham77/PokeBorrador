@@ -15,13 +15,15 @@ interface Props {
   rarity?: number // 1-100
   onWin?: (() => void) | null
   onFail?: (() => void) | null
+  onCloseCallback?: (() => void) | null
 }
 
 const props = withDefaults(defineProps<Props>(), {
   show: false,
   rarity: 50,
   onWin: null,
-  onFail: null
+  onFail: null,
+  onCloseCallback: null
 })
 
 const emit = defineEmits<{
@@ -34,6 +36,7 @@ const gameActive = ref(true)
 const feedback = ref('')
 
 let gameCall: gsap.core.Tween | null = null
+let iconTween: gsap.core.Tween | null = null
 const totalNotes = calculateFishingTotalNotes(props.rarity)
 const speedBase = calculateFishingSpeedBase(props.rarity)
 const hitWindow = calculateFishingHitWindow(props.rarity)
@@ -52,6 +55,7 @@ const clickedNotesCount = ref(0)
 const spawnedNotesCount = ref(0)
 const activePositions = ref<{ x: number; y: number }[]>([])
 const activeTweens = new Map<number, gsap.core.Tween[]>()
+const fishingIconRef = ref<HTMLElement | null>(null)
 
 const spawnNext = () => {
   if (!gameActive.value || spawnedNotesCount.value >= totalNotes) return
@@ -181,10 +185,8 @@ const finishGame = (success: boolean) => {
   activePositions.value = []
 
   if (success) {
-    if (props.onWin) props.onWin()
     emit('win')
   } else {
-    if (props.onFail) props.onFail()
     emit('fail')
   }
   emit('close')
@@ -193,41 +195,54 @@ const finishGame = (success: boolean) => {
 onMounted(() => {
   gsap.delayedCall(0.8, spawnNext)
 
-  gsap.to('.fishing-icon', {
-    y: -10,
-    duration: 1,
-    repeat: -1,
-    yoyo: true,
-    ease: 'sine.inOut'
+  nextTick(() => {
+    if (fishingIconRef.value) {
+      iconTween = gsap.to(fishingIconRef.value, {
+        y: -10,
+        duration: 1,
+        repeat: -1,
+        yoyo: true,
+        ease: 'sine.inOut'
+      })
+    }
   })
 })
 
 onUnmounted(() => {
   if (gameCall) gameCall.kill()
+  if (iconTween) iconTween.kill()
   activeTweens.forEach(tweens => tweens.forEach(t => t.kill()))
+  activeTweens.clear()
 })
+
+const handleCloseModal = () => {
+  emit('close')
+  props.onCloseCallback?.()
+}
 </script>
 
 <template>
   <BaseModal
     :show="show"
-    hide-header
-    :show-close-button="false"
+    title="RITMO DE PESCA"
+    title-color="var(--yellow)"
+    header-background="rgba(18, 19, 26, 0.95)"
+    variant="retro"
     overlay="dark"
-    padding="raw"
-    :show-border="false"
     max-width="440px"
+    @close="handleCloseModal"
   >
+    <template #header-icon>
+      <span
+        ref="fishingIconRef"
+        class="fishing-icon"
+        style="display: inline-block;"
+      >🎣</span>&nbsp;
+    </template>
     <div class="rhythm-container">
       <!-- Background / Hint -->
       <div class="fishing-hint">
-        <div class="fishing-icon">
-          🎣
-        </div>
         <div class="fishing-text">
-          <h3 class="pixel-text">
-            ¡RITMO DE PESCA!
-          </h3>
           <p>Hacé clic en las notas en orden <span>1, 2, 3...</span></p>
         </div>
       </div>
@@ -275,13 +290,9 @@ onUnmounted(() => {
 .rhythm-container {
   position: relative;
   width: 100%;
-  background: var(--card, #12131a);
-  border: 2px solid Rgba(10, 132, 255, 0.4);
-  border-radius: 28px;
-  box-shadow: 0 0 40px Rgba(0, 0, 0, 0.6);
   display: flex;
   flex-direction: column;
-  padding: 24px;
+  padding: 12px 8px 16px;
   align-items: center;
 }
 

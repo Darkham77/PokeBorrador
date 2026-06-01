@@ -1,13 +1,11 @@
 
 import { checkStoneEvolution } from '../evolutionLogic.ts';
 import { TM_COMPAT, GAME_TMS } from '../../data/pokedex.ts';
-import { useUIStore } from '@/stores/ui';
-import { useGameStore } from '@/stores/game';
 import { useBuffsStore } from '@/stores/buffs';
-import { makePokemon } from '../pokemonFactory.ts';
 import type { Pokemon } from '@/types/pokemon';
 import type { ItemEffectResult } from '@/types/items';
 import type { GameState } from '@/types/game';
+import { MAX_POKEMON_LEVEL } from '@/data/constants';
 
 interface TMData {
   id: string
@@ -66,7 +64,8 @@ export const itemEffects: Record<string, (p: unknown) => ItemEffectResult> = {
   
   // --- Buffs / Special ---
   'Caramelo Raro': pokeEffect((p) => {
-    if (p.level >= 100) return { success: false, message: 'Ya tiene el nivel máximo.' };
+    if (p.level >= MAX_POKEMON_LEVEL) return { success: false, message: 'Ya tiene el nivel máximo.' };
+    p.exp = p.expNeeded;
     return { success: true, message: `subió al nivel ${p.level + 1}`, resultType: 'levelup' };
   }),
   'Caramelo de vigor': pokeEffect((p) => {
@@ -98,6 +97,8 @@ export const itemEffects: Record<string, (p: unknown) => ItemEffectResult> = {
   }),
 
   // --- Buffs Globales ---
+  'Caña de pescar': stateEffect((_state) => { useBuffsStore().addBuff('fishing-rod', 20 * 60); return { success: true, message: `activó una Caña de pescar (20 min)` }; }),
+  'Pico de excavación': stateEffect((_state) => { useBuffsStore().addBuff('pickaxe', 20 * 60); return { success: true, message: `activó un Pico de excavación (20 min)` }; }),
   'Repelente': stateEffect((_state) => { useBuffsStore().addBuff('repel', 5 * 60); return { success: true, message: `activó un Repelente (5 min)` }; }),
   'Superrepelente': stateEffect((_state) => { useBuffsStore().addBuff('repel', 15 * 60); return { success: true, message: `activó un Superrepelente (15 min)` }; }),
   'Máximo Repelente': stateEffect((_state) => { useBuffsStore().addBuff('repel', 30 * 60); return { success: true, message: `activó un Máximo Repelente (30 min)` }; }),
@@ -114,26 +115,8 @@ export const itemEffects: Record<string, (p: unknown) => ItemEffectResult> = {
   'Incienso Planta': stateEffect((_state) => { useBuffsStore().addBuff('incense', 30 * 60, 'grass'); return { success: true, message: `activó el Incienso Planta (30 min)` }; }),
   'Incienso Normal': stateEffect((_state) => { useBuffsStore().addBuff('incense', 30 * 60, 'normal'); return { success: true, message: `activó el Incienso Normal (30 min)` }; }),
   'Incienso Fantasma': stateEffect((_state) => { useBuffsStore().addBuff('incense', 30 * 60, 'ghost'); return { success: true, message: `activó el Incienso Fantasma (30 min)` }; }),
-  'Incienso Psíquico': stateEffect((_state) => { useBuffsStore().addBuff('incense', 30 * 60, 'psychic'); return { success: true, message: `activó el Incienso Psíquico (30 min)` }; }),
-
-  // --- Fósiles ---
-  'Fósil Hélix': () => { return { success: true, message: reviveFossilTrigger('omanyte', 'Fósil Hélix') }; },
-  'Fósil Domo': () => { return { success: true, message: reviveFossilTrigger('kabuto', 'Fósil Domo') }; },
-  'Ámbar Viejo': () => { return { success: true, message: reviveFossilTrigger('aerodactyl', 'Ámbar Viejo') }; }
+  'Incienso Psíquico': stateEffect((_state) => { useBuffsStore().addBuff('incense', 30 * 60, 'psychic'); return { success: true, message: `activó el Incienso Psíquico (30 min)` }; })
 };
-
-function reviveFossilTrigger(pokemonId: string, itemName: string): string {
-  const gameStore = useGameStore();
-  const uiStore = useUIStore();
-  
-  const p = makePokemon(pokemonId, 1);
-  if (!p) return 'error';
-  const { target } = gameStore.addPokemon(p, { notify: false });
-  
-  uiStore.activeFossil = { pokemon: p, itemName, sentTo: target as 'team' | 'box' };
-  uiStore.isFossilRevivalOpen = true;
-  return 'iniciando restauración...';
-}
 
 /**
  * Gets effect for TMs and other dynamic items not in the main list

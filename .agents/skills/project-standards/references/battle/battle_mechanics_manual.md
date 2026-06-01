@@ -273,6 +273,8 @@ To ensure absolute continuity during proactive pre-generation and transitions, t
 - **Ground Recalculation**: Every new encounter (even with the same species) must trigger a fresh "Feet Detection" scan to prevent inheriting miscalculated ground-offsets from previous battles.
 - **Orphan Shadow Cleanup**: When a combatant is replaced (switch) or captured, the system MUST explicitly hide the previous `shadowId`. Relying on component unmounting is insufficient for the centralized store; active tracking of the `lastShadowId` is mandatory to prevent "orphan shadows" on the battlefield.
 - **Flying Species Exclusion**: Pokémon with "Flying Aesthetics" (`isFloating`) MUST NOT render environmental layers (bushes). The system must conditionally suppress the `visible` prop of `CombatGrass` based on the species' flight status to maintain visual logic.
+- **Auto-battle Watcher Safeguard**: Any automatic FSM transition trigger (such as auto-battle) that listens to state changes MUST verify that `isIntroAnimating` and `isProcessing` are both `false` before dispatching actions (e.g., `startEncounter()`) to prevent race conditions during startup sequences.
+- **FSM Flow Documentation Parity**: Any new FSM branch or transition check (such as `AUTO_BATTLE_CHECK`) MUST be fully mapped in the Mermaid state diagrams of this manual and declared in `BATTLE_SUBSTATES` inside `battleStateMachine.ts` to guarantee 1:1 parities and pass validation sweeps.
 
 ### 5. Poké Ball Rendering (RENDER BALL) & Persistent Anchors
 
@@ -443,7 +445,7 @@ stateDiagram-v2
 
 ### 2. Initialization Phase (Pre-Battle)
 
-Handles dynamic data generation and coordinate pre-loading in an asynchronous "thread" to maintain 60 FPS performance.
+Handles dynamic data generation and stale state cleanup in an asynchronous "thread" to maintain 60 FPS performance.
 
 ```mermaid
 stateDiagram-v2
@@ -453,14 +455,14 @@ stateDiagram-v2
         state ASYNC_THREAD {
             CHECK_CONTEXT --> GEN_TEAMS : "Generate AI Parties (from context tables)"
             GEN_TEAMS --> MARK_EVENT : "Identify Encounter Type (Wild, Fishing, NPC, etc.)"
-            MARK_EVENT --> PRELOAD_FINAL_COORDS : "Preload Coords for New/Uncached Teams"
-            PRELOAD_FINAL_COORDS --> SET_SEARCH_FLAG : "Set isSearching = true"
+            MARK_EVENT --> RESET_STALE_VARIABLES : "Reset Stale Context & Minigame Variables"
+            RESET_STALE_VARIABLES --> SET_SEARCH_FLAG : "Set isSearching = true"
             SET_SEARCH_FLAG --> [*]
         }
     }
     
     note right of ASYNC_THREAD: All generation logic occurs in a separate async process to protect FPS.
-    note right of PRELOAD_FINAL_COORDS: Only scans newly generated members or those missing from cache. MUST pre-calculate both 'feet' and 'shadow' anchors (critical for flyers).
+    note right of RESET_STALE_VARIABLES: MUST reset all active minigame flags (isFishing, isArchaeology) and stale context variables to prevent state leakages on new battles.
     note right of INITIALIZING: Seats 1-4 are active combatants depending on mode.
     note right of INITIALIZING: Team Slots hold the party data for each participant.
 ```
@@ -585,7 +587,7 @@ stateDiagram-v2
         CHECK_REMAINING --> REWARDS_PHASE: "No (All Enemy Teams Defeated)"
         
         state STABILIZE_STAGE {
-            [*] --> EMPTY_WAIT: "Wait 1.0s (Stage Clear)"
+            [*] --> EMPTY_WAIT: "Wait 0.2s (Stage Clear)"
             EMPTY_WAIT --> [*]
         }
         
@@ -641,6 +643,7 @@ stateDiagram-v2
 #### Experience Cap at Maximum Level
 
 To maintain combat mechanics integrity, experience distribution during the `DISTRIBUTE_XP` phase is strictly capped:
+
 - If a Pokémon has reached `MAX_POKEMON_LEVEL` (100), its `exp` is fixed to `0` and `expNeeded` is `Infinity`.
 - The engine blocks any experience gain (`gained = 0`) for this Pokémon, preventing level-up notifications, triggers, or UI modal locks associated with level changes.
 
@@ -651,29 +654,37 @@ Allows the player to find new encounters without closing the modal.
 ```mermaid
 stateDiagram-v2
     state SEARCH_PHASE {
-        [*] --> PARALLEL_PREP: "Data Ready (Pick First Members)"
+        [*] --> MINIGAME_CHECK : "Check Encounter Type"
+        
+        state MINIGAME_CHECK <<choice>>
+        MINIGAME_CHECK --> PLAY_MINIGAME : "isFishing || isArchaeology"
+        MINIGAME_CHECK --> PARALLEL_PREP : "isWild (Standard)"
+        
+        PLAY_MINIGAME --> MINIGAME_MODAL : "Open Modal"
+        
+        MINIGAME_MODAL --> EXIT_BATTLE : "Cancel / Close (Flee)"
+        MINIGAME_MODAL --> MINIGAME_RESULT : "Submit Game"
+        
+        state MINIGAME_RESULT <<choice>>
+        MINIGAME_RESULT --> ENCOUNTER_ANIM : "Success (Start Fight)"
+        MINIGAME_RESULT --> [*] : "Fail (Next Slot)"
         
         state PARALLEL_PREP {
-            [*] --> UPDATE_BUTTON: "Label Search/Challenge"
+            [*] --> UPDATE_BUTTON : "Label Search/Challenge"
             --
-            [*] --> ENTRY_ANIM: "Bushes / Silhouette Layer (All Active Enemy Seats)"
+            [*] --> ENTRY_ANIM : "Bushes / Silhouette Layer (All Active Enemy Seats)"
             --
-            [*] --> REORDER_TEAM: "Sync Active Fighters (All Player/Ally Seats)"
+            [*] --> REORDER_TEAM : "Sync Active Fighters (All Player/Ally Seats)"
         }
         
         PARALLEL_PREP --> BUSH_IDLE : "Control Panel Blocked"
         
-        state MINIGAME_CHECK <<choice>>
-        BUSH_IDLE --> MINIGAME_CHECK : "Click BATTLE / Clear Logs"
+        BUSH_IDLE --> ENCOUNTER_ANIM : "Click BATTLE / autoBattle == true"
         BUSH_IDLE --> EXIT_BATTLE : "Click RETURN TO MAP"
-        
-        MINIGAME_CHECK --> ENCOUNTER_ANIM : "Success (All Enemy Seats)"
-        MINIGAME_CHECK --> [*] : "Fail (Vanish) / Set isSearching = false"
         
         state ENCOUNTER_ANIM {
             [*] --> [*]
         }
-        note right of ENCOUNTER_ANIM: await
         ENCOUNTER_ANIM --> [*] : "Set isSearching = false"
     }
 ```
@@ -943,6 +954,8 @@ When a Pokémon successfully flees or switches via Teleport:
 2. If there are healthy members left, the `POKEMON_CALL` sequence sends out the next available Pokémon.
 3. If no healthy members remain, the system terminates the battle loop and exits safely.
 
+- **Flee Anim Safety**: When a Pokémon successfully flees (fled state is active), the standard faint/exit animation (`handleFaintAnim`) MUST NOT be executed for any surviving combatants during battle resolution, as the escape action already runs its own exit transition.
+
 *Note: Manual Fleeing (via Run Button) triggers `EXIT_BATTLE` directly and closes the modal, returning the player to the map. In wild battles, if the player chooses to run, the system must evaluate the escape chance based on the current generation formulas.*
 
 ## 📈 Level Up & Move Learning
@@ -1110,6 +1123,7 @@ The combat log container MUST remain isolated from administrative controls.
 ### 4. Bidirectional Engine Translation and Parity Sync
 
 To maintain strict competitive integrity inside the combat engine while offering a localized premium UI experience:
+
 - **Bidirectional Worker Translation**: When utilizing an engine written in English (e.g., `@pkmn/sim`) alongside a Spanish interface, you MUST implement deterministic bidirectional translator maps (such as `NATURE_MAP_ES_TO_EN` / `ABILITY_MAP_ES_TO_EN` and their dynamic inversions) inside the Web Worker thread (`ShowdownWorker.ts`).
 - **Translation Execution Flow**: Translate all Spanish user choices (types, moves, abilities, natures) to their corresponding English keys before submitting them to the simulator. Conversely, intercept all outputs and status frames from the simulator and translate them back to Spanish before propagating them to the Pinia store and the reactive HUD cards. This ensures perfect mathematical stat modifiers (+10%/-10% nature boosts, STAB calculations) apply correctly inside the simulator engine without causing UI leaks.
 
@@ -1133,5 +1147,3 @@ To ensure stability and 1:1 parity between visual execution and state flow:
 - **Minimum Climate Damage**: Force a minimum of `1 HP` on climate damage formulas using `Math.max(1, Math.floor(maxHp / 16))` to prevent confusing `0 HP` or `-0 HP` logs for low-level Pokémon.
 - **Stat Parsing Regular Expression**: Include numbers and underscores in regex patterns mapping stage adjustments (e.g., `/stat_(up|down)_(self|enemy)_([a-z0-9_]+)/`) to avoid truncating specific stats like `spe_2` into `SPE_`.
 - **Computed Rendering Optimization**: Avoid accessing direct database or metadata providers (like `pokemonDataProvider`) directly inside Vue template loops. Cache all resolved lookups in `<script setup>` using `computed` properties.
-
-

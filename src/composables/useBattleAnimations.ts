@@ -99,6 +99,10 @@ export function useBattleAnimations(
       isWildSilhouette.value = false
       isWildEntryAnimation.value = false
       wildRevealActive.value = false
+      const enemy = toValue(enemyRef)
+      if (enemy?.isShiny) {
+        gameBus.emit('PLAY_SOUND', 'shiny')
+      }
     })
     return awaitAnimation(tl)
   }
@@ -303,6 +307,10 @@ export function useBattleAnimations(
       onComplete: () => {
         isWildEntryAnimation.value = false
         isEmerging.value = false
+        const enemy = toValue(enemyRef)
+        if (enemy?.isShiny) {
+          gameBus.emit('PLAY_SOUND', 'shiny')
+        }
       }
     })
 

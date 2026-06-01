@@ -6,10 +6,11 @@ import { storeToRefs } from 'pinia'
 import { useBattleStore } from '@/stores/battle'
 import { useUIStore } from '@/stores/ui'
 import { useMapStore } from '@/stores/map'
-import { getVisualWeather } from '@/logic/weather/weatherRegistry'
+import { useModalStore } from '@/stores/modals'
+import { getRouteWeather } from '@/logic/weatherUtils'
+import { getWeatherAnimSeed } from '@/logic/weather/weatherMath.ts'
 import { useCombatCamera } from '@/composables/useCombatCamera'
 import { getCombatantPosition, WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator'
-import { getRouteWeather } from '@/logic/weatherUtils'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { logger } from '@/logic/utils/logger'
 import type { Pokemon } from '@/types/pokemon'
@@ -28,8 +29,6 @@ import BattleCombatant from './BattleCombatant.vue'
 import BattleInfoCard from './BattleInfoCard.vue'
 import CombatGrass from './CombatGrass.vue'
 import AtmosphereLayer from '@/components/common/AtmosphereLayer.vue'
-import FishingMinigame from './FishingMinigame.vue'
-import ArchaeologyMinigame from './ArchaeologyMinigame.vue'
 import CameraZoomControls from './CameraZoomControls.vue'
 
 const { BASE_ENTITY_SIZE_PLAYER, BASE_ENTITY_SIZE_ENEMY } = WORLD_CONSTANTS
@@ -86,7 +85,7 @@ const {
   playerAnimState,
   enemyAnimState,
   catchSparkles,
-  isIntroInProgress, triggerSearchEncounter, initListeners,
+  isIntroInProgress, initListeners,
   trainerAnimState, isTrainerVisible, isGlobalFadeActive,
   resetAll,
   getPokemonAnimState,
@@ -137,22 +136,15 @@ const {
 } = useBattleHud(animations, battleStore, enemy)
 
 const computedWeather = computed(() => {
-  // 1. Prioridad Absoluta: Clima de combate activo (Store de Batalla)
-  if (battleStore.state?.weather) {
-    const w = battleStore.state.weather
-    // Prioridad: Visual preservado -> Mapeo del tipo mecánico
-    return getVisualWeather(w.visual || w.type)
-  }
-  
-  // 2. Clima global de Eventos (Si no estamos en combate o no hay override)
+  // Fuente de verdad visual: siempre usar el clima ACTUAL del mapa (igual que la vista del mapa).
+  // El campo battle.weather.type sigue siendo la referencia mecánica para el motor de combate.
+  // Prioridad: Clima global de eventos > Clima determinístico de la ruta actual
   if (mapStore.globalWeather) return mapStore.globalWeather
-  
-  // 3. Clima determinístico de la ruta
   return getRouteWeather(battle.value?.locationId || 'route1', mapStore.currentSeason.id, mapStore.currentEpochHour, mapStore.currentCycle)
 })
 
 const atmosphereSeed = computed(() => {
-  return (battle.value?.locationId || 'route1').split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
+  return getWeatherAnimSeed(battle.value?.locationId || 'route1')
 })
 
 const { atmosphereFilter, weatherOnlyFilter } = useWeatherVisuals({
@@ -208,26 +200,130 @@ watch(
       battleStore.activeMove = null
       battleStore.enemyStages = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0, reflect: 0, lightScreen: 0, safeguard: 0, mist: 0, spikes: 0 }
     }
+
+    // MINIGAME_CHECK: Activar modales tradicionales a través del store global de modales
+    if (newSubState === 'MINIGAME_CHECK' && enemy.value) {
+      const modalStore = useModalStore()
+      if (battleStore.state?.isFishing) {
+        modalStore.open('Fishing', {
+          pokemon: enemy.value,
+          rarity: battle.value?.rarity || 50,
+          onWin: handleFishingSuccess,
+          onFail: handleFishingFail,
+          onCloseCallback: handleMinigameCancel
+        })
+      } else if (battleStore.state?.isArchaeology) {
+        modalStore.open('Archaeology', {
+          pokemon: enemy.value,
+          rarity: battle.value?.rarity || 50,
+          onWin: handleArchaeologySuccess,
+          onFail: handleArchaeologyFail,
+          onCloseCallback: handleMinigameCancel
+        })
+      }
+    }
   },
   { immediate: true }
 )
 
+const handleMinigameCancel = async () => {
+  logger.warn('BattleArenaView', 'Minigame CANCELLED by user')
+  if (battleStore.state) {
+    battleStore.state.isFishing = false
+    battleStore.state.isArchaeology = false
+  }
+  resetAll()
+  battleStore.attackerSide = null
+  battleStore.activeMove = null
+  battleStore.enemyStages = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0, reflect: 0, lightScreen: 0, safeguard: 0, mist: 0, spikes: 0 }
+  await battleStore.completeBattleFlow('map')
+}
+
 const handleFishingSuccess = async () => {
   logger.success('BattleArenaView', 'Fishing SUCCESS')
-  await triggerSearchEncounter()
+  const locId = battleStore.state?.locationId || 'route1'
+  if (battleStore.state) {
+    battleStore.state.isFishing = false
+    battleStore.state.isArchaeology = false
+  }
+  resetAll()
+  await battleStore.initBattle(locId, false, '', false, '', true)
+  await battleStore.startEncounter()
 }
 
 const handleFishingFail = async () => {
   logger.warn('BattleArenaView', 'Fishing FAIL')
+  const uiStore = useUIStore()
+  uiStore.notify('El Pokémon escapó...', '💨')
+  battleStore.addLog('El Pokémon escapó...', 'log-info')
+
+  // Limpiar flags de minijuego y estado visual ANTES de la transición FSM
+  if (battleStore.state) {
+    battleStore.state.isFishing = false
+    battleStore.state.isArchaeology = false
+  }
+  resetAll()
+  battleStore.attackerSide = null
+  battleStore.activeMove = null
+  battleStore.enemyStages = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0, reflect: 0, lightScreen: 0, safeguard: 0, mist: 0, spikes: 0 }
+
+  // Volver al bucle de búsqueda (searchLoop genera el próximo encuentro internamente)
+  await battleStore.completeBattleFlow('search')
 }
 
-const handleArchaeologySuccess = async () => {
-  logger.success('BattleArenaView', 'Archaeology SUCCESS')
-  await triggerSearchEncounter()
+const handleArchaeologySuccess = async (difficulty: string) => {
+  logger.success('BattleArenaView', `Archaeology SUCCESS: ${difficulty}`)
+  
+  const locId = battleStore.state?.locationId || 'route1'
+  await mapStore.triggerArchaeologyRewards(locId, difficulty)
+  
+  // Limpiar flags de minijuego y estado visual ANTES de la transición FSM
+  if (battleStore.state) {
+    battleStore.state.isArchaeology = false
+    battleStore.state.isFishing = false
+  }
+  resetAll()
+  battleStore.attackerSide = null
+  battleStore.activeMove = null
+  battleStore.enemyStages = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0, reflect: 0, lightScreen: 0, safeguard: 0, mist: 0, spikes: 0 }
+
+  // Volver al bucle de búsqueda (searchLoop genera el próximo encuentro internamente)
+  await battleStore.completeBattleFlow('search')
 }
 
 const handleArchaeologyFail = async () => {
   logger.warn('BattleArenaView', 'Archaeology FAIL')
+  
+  let fossilName = 'Ámbar Viejo'
+  let emoji = '💎'
+  if (enemy.value?.id === 'kabuto') {
+    fossilName = 'Fósil Domo'
+    emoji = '🛡'
+  } else if (enemy.value?.id === 'omanyte') {
+    fossilName = 'Fósil Hélix'
+    emoji = '🐚'
+  }
+  
+  const { SHOP_ITEMS } = await import('@/data/items')
+  const itemData = SHOP_ITEMS.find(i => i.name.toLowerCase() === fossilName.toLowerCase())
+  const itemSprite = itemData ? getAssetUrl(ASSET_TYPES.ITEM, itemData.sprite) : emoji
+
+  const uiStore = useUIStore()
+  uiStore.notify(`El ${fossilName} se desmoronó...`, itemSprite)
+  battleStore.addLog(`El ${fossilName} se desmoronó...`, 'log-info', fossilName)
+
+  // Limpiar flags de minijuego y estado visual ANTES de la transición FSM
+  if (battleStore.state) {
+    battleStore.state.isArchaeology = false
+    battleStore.state.isFishing = false
+  }
+  resetAll()
+  battleStore.attackerSide = null
+  battleStore.activeMove = null
+  battleStore.enemyStages = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0, reflect: 0, lightScreen: 0, safeguard: 0, mist: 0, spikes: 0 }
+
+  // Volver al bucle de búsqueda (searchLoop genera el próximo encuentro internamente)
+  await battleStore.completeBattleFlow('search')
 }
 
 
@@ -463,7 +559,7 @@ const onHudPlayerLeave = (el: Element, done: () => void) => {
       :season="mapStore.currentSeason.id"
       :is-performance-mode="uiStore.isPerformanceMode"
       :z-index="'calc(var(--z-base) + 20)'"
-      :seed="atmosphereSeed"
+      :anim-seed="atmosphereSeed"
       :is-visible="true"
     />
 
@@ -505,21 +601,7 @@ const onHudPlayerLeave = (el: Element, done: () => void) => {
       </Transition>
     </div>
 
-    <FishingMinigame
-      v-if="battleStore.fsm?.currentSubState === 'MINIGAME_CHECK' && enemy && battleStore.state?.isFishing"
-      :enemy="enemy"
-      :rarity="battle?.rarity || 50"
-      @success="handleFishingSuccess"
-      @fail="handleFishingFail"
-    />
-
-    <ArchaeologyMinigame
-      v-if="battleStore.fsm?.currentSubState === 'MINIGAME_CHECK' && enemy && battleStore.state?.isArchaeology"
-      :enemy="enemy"
-      :rarity="battle?.rarity || 50"
-      @success="handleArchaeologySuccess"
-      @fail="handleArchaeologyFail"
-    />
+    <!-- Los minijuegos de Pesca y Arqueología se disparan como modales tradicionales mediante ModalRegistry en el watcher FSM -->
 
     <!-- Controles de Zoom de Cámara -->
     <CameraZoomControls />

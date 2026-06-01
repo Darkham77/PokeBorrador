@@ -146,6 +146,38 @@ const handleZoomInput = (e: Event) => {
         </p>
       </div>
 
+      <div class="setting-section">
+        <label class="setting-label">
+          Auto-combatir:
+        </label>
+        <div class="power-buttons">
+          <button 
+            type="button"
+            class="power-btn" 
+            :class="{ active: uiStore.autoBattle }"
+            @click="uiStore.setAutoBattle(true)"
+          >
+            ACTIVADO
+          </button>
+          <button 
+            type="button"
+            class="power-btn" 
+            :class="{ active: !uiStore.autoBattle }"
+            @click="uiStore.setAutoBattle(false)"
+          >
+            DESACTIVADO
+          </button>
+        </div>
+        <p class="power-desc">
+          <span v-if="uiStore.autoBattle">
+            Los encuentros salvajes iniciarán el combate automáticamente sin preguntar si deseas combatir o volver al mapa.
+          </span>
+          <span v-else>
+            Pregunta si deseas combatir o volver al mapa al encontrar un Pokémon salvaje.
+          </span>
+        </p>
+      </div>
+
       <div class="settings-actions">
         <button 
           class="btn-vicio-primary btn-vicio-full"

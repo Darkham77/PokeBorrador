@@ -1,6 +1,7 @@
 import type { MoveAction } from '@/types/battle';
 import { STATUS_ACTIONS } from './statusActions.ts';
 import { logger } from '@/logic/utils/logger';
+import { gameBus } from '@/logic/gameBus';
 
 /**
  * Special Actions Dictionary.
@@ -32,6 +33,8 @@ export const SPECIAL_ACTIONS: Record<string, MoveAction> = {
     if (isPlayerAttacking) {
       if (!b.isTrainer && !b.isGym) {
         addLogFn(`¡El ${tgt.name} salvaje huyó asustado!`, 'log-player', tgt);
+        gameBus.emit('PLAY_ESCAPE_ANIM', { side: 'enemy', type: 'flee' });
+        b.fled = true;
         b.over = true;
       } else {
         const team = b.enemyTeam || [];
@@ -51,6 +54,8 @@ export const SPECIAL_ACTIONS: Record<string, MoveAction> = {
     } else {
       if (!b.isTrainer && !b.isGym) {
         addLogFn(`¡${src.name} expulsó a ${tgt.name} del combate!`, 'log-enemy', src);
+        gameBus.emit('PLAY_ESCAPE_ANIM', { side: 'player', type: 'flee' });
+        b.fled = true;
         b.over = true;
       } else {
         const team = b.playerTeam || [];
@@ -180,6 +185,8 @@ export const SPECIAL_ACTIONS: Record<string, MoveAction> = {
     
     if (isWild) {
       addLogFn(`¡${src.name} se teletransportó fuera del combate!`, 'log-info', src);
+      gameBus.emit('PLAY_ESCAPE_ANIM', { side: 'enemy', type: 'teleport' });
+      b.fled = true;
       b.over = true;
     } else {
       const isPlayer = (src.uid === b.player?.uid);
@@ -188,6 +195,8 @@ export const SPECIAL_ACTIONS: Record<string, MoveAction> = {
       
       if (aliveOthers.length === 0) {
         addLogFn(`¡${src.name} se teletransportó fuera del combate!`, 'log-info', src);
+        gameBus.emit('PLAY_ESCAPE_ANIM', { side: isPlayer ? 'player' : 'enemy', type: 'teleport' });
+        b.fled = true;
         b.over = true;
       } else {
         addLogFn(`¡${src.name} se teletransportó!`, 'log-info', src);

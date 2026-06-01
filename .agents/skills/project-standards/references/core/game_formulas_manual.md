@@ -349,3 +349,40 @@ Hit_Window = Math.max(100, 190 - (Difficulty_Factor / 1.3))
 ```
 
 - **Bounds**: Always returns a tolerance window between `113ms` (for rarity 1%, narrowest timing) and `189ms` (for rarity 100%, widest timing).
+
+---
+
+## ⛏️ Archaeology and Fossil Cloning
+
+### 1. Archaeology Encounter Rate
+Determines the probability of triggering an archaeological excavation when walking on a route based on its geographical tags:
+- **Caves** (`isCave`): **10%** (0.10)
+- **Mountains** (`isMountain && !isCave`): **5%** (0.05)
+- **Others**: **0%** (0.0)
+
+### 2. Archaeology Reward Distribution
+Upon winning the excavation minigame, the unburied item follows this distribution:
+- **Fossils (45%)**: Proportional weight based on the map's pool.
+- **Evolutionary Stones (25%)**: Equiprobable selection between Fire, Water, Thunder, Leaf, Moon, or Sun Stone.
+- **Ores and Gems (30%)**:
+  - **Common (20%)**: Selection between Pearl, Stardust, Coal, Copper, or Iron Ore.
+  - **Rare/Premium (10%)**: Nugget, Big Pearl, Star Piece, or raw Silver, Gold, Tungsten, Uranium, Ruby, Sapphire, Emerald, Topaz, or Diamond Ore.
+
+### 3. Daycare Cloning Cost
+Calculates the total cost in coins to perform a genetic cloning process in the Daycare using sacrifice fossils:
+```text
+Cost = 3000 + 1000 * N
+```
+_Where `N` is the amount of extra fossils sacrificed (clamped between 0 and 6)._
+
+### 4. Cloning IV Rerolls
+Calculates the number of independent IV rolls (selecting the highest value):
+- **Base rolls**: `1 + floor(N / 2)`
+- **Odd roll chance**: If `N` is odd (1, 3, 5), grants a **50% chance** of receiving an additional roll (`Math.random() < 0.5`).
+
+### 5. Cloning Shiny Multiplier
+Calculates the final Shiny rate inherited by the ancestral fossil egg:
+```text
+Shiny_Probability = (1 + 0.25 * N) / 4096
+```
+- **Cap**: The multiplier reaches up to **2.5x** (compared to the `1/4096` base rate) when sacrificing `6` additional fossils.

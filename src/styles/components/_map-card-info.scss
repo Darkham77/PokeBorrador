@@ -111,11 +111,19 @@
 
 .tag-locked { color: Rgba(255, 110, 110, 1); border-color: Rgba(255, 110, 110, 0.3); }
 
-.fishing-pill-standalone {
+.map-left-pills-container {
   position: absolute;
   bottom: 15px;
   left: 12px;
   z-index: var(--z-map-ui) !important;
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 8px;
+}
+
+.fishing-pill-standalone,
+.archaeology-pill-standalone {
+  display: block;
 }
 
 .interactive-pill {
@@ -129,5 +137,10 @@
   &.fishing-pill {
     color: Rgba(79, 172, 254, 1);
     border-color: Rgba(79, 172, 254, 0.4);
+  }
+
+  &.archaeology-pill {
+    color: Rgba(202, 138, 4, 1);
+    border-color: Rgba(202, 138, 4, 0.4);
   }
 }

@@ -142,3 +142,13 @@ To ensure data integrity and prevent visual desynchronization between the HUD an
 1. **Single Source of Truth (SSoT)**: Resource counters (especially Poké Balls and common items) MUST derive their totals dynamically from the full `inventory` state.
 2. **FORBIDDEN**: Relying on isolated state flags (e.g., `state.balls`) that are not automatically updated by inventory operations.
 3. **Aggregated Displays**: For resources with multiple types (Balls, Stones, etc.), the HUD pill displays the **sum** of all items in that category, while the associated tooltip provides the granular breakdown.
+
+---
+
+## 🕹️ Minigame & Modal Coordination
+
+To prevent logic desynchronization and ensure consistent state behavior across gameplay elements:
+
+1. **Parity of Duplicated Component Contexts**: When gameplay mechanics are split across multiple components or views (e.g., battle-specific `ArchaeologyMinigame.vue` and general-purpose `ArchaeologyModal.vue`), any logic-affecting rules, modifiers, or reward changes MUST be implemented consistently across all versions.
+2. **Modal Callback & Lifecycle Synchronization**: When introducing or refactoring cleanup actions (such as `onCloseCallback` or custom close hooks) inside standard modals, wrap the execution in a local handler (e.g., `handleCloseModal`) that triggers both the local event emits (like `@close`) and the external callbacks, maintaining clean parent-child orchestration.
+

@@ -174,6 +174,8 @@ Performance work is a post-functionality pass. Do not optimize before core behav
 - **Mandatory Child Component Registration**: In Vue 3 `<script setup>`, sub-components (extracted for modularity) DO NOT inherit global component registration from parent modals unless they are registered in the main application instance.
   - **REQUIRED**: Always explicitly import and register common components like `PVTooltip` or `BaseModal` inside the sub-component's `<script setup>` to prevent "undefined component" rendering errors.
 
+- **Vue 3 Dynamic Binding Event Duplication**: When binding props dynamically using `v-bind="modal.props"` in a modal system, properties starting with `on` (such as `onFail` or `onWin`) are automatically registered by Vue as both props and event listeners. If the component explicitly invokes `props.onFail()` AND `emit('fail')`, the callback executes twice. Rely solely on Vue's event emission and remove explicit prop callback execution to avoid double-firing.
+
 - **CLI-First Admin Delegation**: Administrative UI components (Debug panels, Event managers) MUST NOT manipulate stores or databases directly.
   - **Pattern**: `const save = () => window.__VITE_DEBUG__.saveEvent(data)`.
   - **Why**: Centralizes logic in `debugStore.ts`, ensures security wrappers are applied, and makes all actions programmatically accessible.
@@ -230,6 +232,7 @@ Performance work is a post-functionality pass. Do not optimize before core behav
 - **Post-Flush Watchers for Dynamic DOM Queries**: When a watcher triggers logic that queries the DOM (such as using `document.querySelectorAll` or refs to query elements rendered with `v-for` or `v-if`), standard watchers execute before virtual DOM updates are flushed to the real DOM. This causes query selectors to return stale or empty arrays.
   - **PATTERN**: Always specify `{ flush: 'post' }` in the watcher options, or wrap DOM-dependent queries inside `await nextTick()`.
   - **WHY**: Ensures that the browser DOM has settled with the latest template updates before the selection and animation logic (e.g., GSAP targets initialization) runs.
+- **ResizeObserver on Inner Scroll Containers (Auto-Scroll Panels)**: When implementing panels that must auto-scroll to the bottom upon receiving new entries or dynamic assets (like `BattleLog.vue`), attaching a `ResizeObserver` to the main scroll container (`logContainer`) is ineffective because its viewport size doesn't change when items are appended. Instead, observe the inner scroll content wrapper (e.g., `.log-scroll-inner` or `.chat-inner`). This ensures height updates (from appended nodes or delayed image loads) are captured, triggering the scroll adjust.
 
 
 ## 6) Final self-check before finishing

@@ -13,6 +13,7 @@ import { useBattleStore } from '@/stores/battle'
 import { useGameStore } from '@/stores/game'
 import { useMapStore } from '@/stores/map'
 import { getRouteWeather, getWeatherMultiplier } from '@/logic/weatherUtils'
+import { getWeatherAnimSeed } from '@/logic/weather/weatherMath.ts'
 import { getMechanicalWeather, WEATHER_UI_METADATA, WEATHER_VISUAL_METADATA, WEATHER_REGISTRY } from '@/logic/weather/weatherRegistry'
 import { logger } from '@/logic/utils/logger'
 
@@ -66,8 +67,7 @@ const onPokeballMouseLeave = () => {
   }
 }
 
-// Semilla aleatoria única para esta instancia de tarjeta en esta sesión
-const sessionWeatherSeed = Math.random() * 1000
+// Shared weather anim seed is imported from weatherMath
 
 // Flare URLs for spawn auras
 const flare1Url = getAssetUrl(ASSET_TYPES.FX, 'flare_1')
@@ -187,6 +187,7 @@ const cardSeed = computed(() => {
 const locationTagRef = ref<ComponentPublicInstance | null>(null)
 const factionPillRef = ref<ComponentPublicInstance | null>(null)
 const fishingPillRef = ref<HTMLElement | null>(null)
+const archaeologyPillRef = ref<HTMLElement | null>(null)
 const crownRef = ref<ComponentPublicInstance | null>(null)
 
 let pillContext: gsap.Context | null = null
@@ -285,6 +286,22 @@ const initPillAnimations = () => {
         .to(fishingPillRef.value, { y: 2, rotation: -3, duration: 1.32, ease: 'sine.inOut' })
         .to(fishingPillRef.value, { y: 0, rotation: 0, duration: 1.36, ease: 'sine.inOut' })
       tl.progress(seed)
+    }
+
+    // 3.1 Archaeology Pill
+    if (archaeologyPillRef.value) {
+      const pickEl = archaeologyPillRef.value.querySelector('.pill-icon')
+      if (pickEl) {
+        // Usar la parte inferior derecha como eje (el mango)
+        gsap.set(pickEl, { transformOrigin: '80% 80%', display: 'inline-block' })
+        const swingTl = gsap.timeline({ repeat: -1 })
+        // Subir lento (rotación positiva para levantar el pico)
+        // Bajar rápido (rotación negativa para golpear)
+        swingTl.to(pickEl, { rotation: 25, duration: 0.8, ease: 'power1.out' }) // Subir lento
+               .to(pickEl, { rotation: -15, duration: 0.15, ease: 'power2.in' }) // Bajar rápido (golpe)
+               .to(pickEl, { rotation: 0, duration: 0.35, ease: 'sine.out' })   // Recuperar
+        swingTl.progress(seed)
+      }
     }
 
     // 4. Winner Crown - GPU-Accelerated Premium Floating & Mask Shine Animation
@@ -881,6 +898,7 @@ watch(
     computedWeather,
     () => props.dominance?.winner,
     () => props.map.fishing,
+    () => props.map.archaeology,
     isPlayerWinner
   ],
   () => {
@@ -995,9 +1013,7 @@ watch(
         :is-low-power="uiStore.isLowPowerActive"
         :is-visible="isVisible"
         :is-locked="isLocked || isSafariLocked"
-        :anim-seed="Math.abs((props.map.name.split('').reduce((acc, char, i) => {
-          return acc + (char.charCodeAt(0) * (i + 1))
-        }, 0) + sessionWeatherSeed) % 1000) / 1000"
+        :anim-seed="getWeatherAnimSeed(props.map.id)"
       />
 
       <div
@@ -1064,21 +1080,40 @@ watch(
         </div>
       </PVTooltip>
 
-      <!-- 4. Fishing Icon (Bottom Left) -->
-      <PVTooltip
-        v-if="map.fishing && !isPerformanceMode && !isLocked && !isSafariLocked && isVisible"
-        class="fishing-pill-standalone"
-        title="PESCA"
-        description="¡Esta zona tiene agua! Puedes pescar Pokémon aquí."
-        position="top"
-      >
-        <div 
-          ref="fishingPillRef"
-          :class="['interactive-pill fishing-pill map-pill', { 'is-low-power': uiStore.isLowPowerActive }]"
+      <!-- 4. Bottom Left Actions (Fishing & Archaeology) -->
+      <div class="map-left-pills-container">
+        <!-- Fishing Icon -->
+        <PVTooltip
+          v-if="map.fishing && !isPerformanceMode && !isLocked && !isSafariLocked && isVisible"
+          class="fishing-pill-standalone"
+          title="PESCA"
+          description="¡Esta zona tiene agua! Puedes pescar Pokémon aquí."
+          position="top"
         >
-          <span class="pill-icon">🎣</span>
-        </div>
-      </PVTooltip>
+          <div 
+            ref="fishingPillRef"
+            :class="['interactive-pill fishing-pill map-pill', { 'is-low-power': uiStore.isLowPowerActive }]"
+          >
+            <span class="pill-icon">🎣</span>
+          </div>
+        </PVTooltip>
+
+        <!-- Archaeology Icon -->
+        <PVTooltip
+          v-if="map.archaeology && !isPerformanceMode && !isLocked && !isSafariLocked && isVisible"
+          class="archaeology-pill-standalone"
+          title="ARQUEOLOGÍA"
+          description="¡Esta zona tiene rocas antiguas! Puedes excavar fósiles y minerales aquí."
+          position="top"
+        >
+          <div 
+            ref="archaeologyPillRef"
+            :class="['interactive-pill archaeology-pill map-pill', { 'is-low-power': uiStore.isLowPowerActive }]"
+          >
+            <span class="pill-icon">⛏️</span>
+          </div>
+        </PVTooltip>
+      </div>
 
       <!-- 5. Spawns Grid (MOVED UP to be behind other UI elements) -->
       <div

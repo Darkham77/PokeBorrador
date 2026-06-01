@@ -284,6 +284,31 @@ export const libraryContent = {
       <li>🐚 <strong>Deerling y Sawsbuck</strong>: Sus pelajes cambian dinámicamente según el bioma geográfico actual donde cargues tu partida (Forma Primavera en valles, Verano en costas, Otoño en bosques, e Invierno en Sierra Napada).</li>
       <li>🐌 <strong>Evolución de Sliggoo a Goodra</strong>: Requiere alcanzar el nivel 50 en una zona exterior sujeta a Lluvia activa o Niebla densa.</li>
     </ul>
+  `,
+
+  arqueologia: `
+    <h1>Arqueología y Fósiles</h1>
+    <p>El subsuelo de Kanto oculta secretos del pasado Pokémon. En las zonas con montañas (5% de chance) o cuevas (10% de chance), verás aparecer el indicador de **Arqueología ⛏️**. Al interactuar, podrás jugar al minijuego de excavación para desenterrar fósiles, piedras evolutivas y valiosas gemas o minerales.</p>
+
+    <h3>Probabilidad de Recompensas</h3>
+    <p>Al limpiar con éxito las rocas en el minijuego de arqueología, se determina tu botín bajo la siguiente distribución:</p>
+    <ul>
+      <li>🐚 <strong>Fósiles (45%)</strong>: Recibes un fósil específico del pool de la ruta actual (Fósil Hélix, Fósil Domo o Ámbar Viejo).</li>
+      <li>⚡ <strong>Piedras Evolutivas (25%)</strong>: Una de las seis piedras elementales (Fuego, Agua, Trueno, Hoja, Lunar o Solar) elegida al azar de forma equiprobable.</li>
+      <li>🪨 <strong>Minerales y Gemas Comunes (20%)</strong>: Objetos de menor rareza como Carbón, Hierro, Cobre, Perla o Polvo Estelar.</li>
+      <li>🟡 <strong>Metales y Gemas Premium (10%)</strong>: Objetos de gran valor y utilidad como Pepita, Perla Grande, Trozo Estrella o minerales puros de Oro, Plata, Wolframio, Uranio, Rubí, Zafiro, Esmeralda, Topacio o Diamante.</li>
+    </ul>
+
+    <h3>Clonación Genética Ancestral (Guardería)</h3>
+    <p>En la sección **Crianza**, se ha habilitado el **Almacén de Fósiles** donde podrás revivir estas reliquias del pasado en la máquina de clonación. El proceso genera un Huevo Pokémon ancestral (color marrón) que eclosiona en el Pokémon correspondiente.</p>
+    
+    <h3>Fósiles de Sacrificio y Mejoras</h3>
+    <p>La clonación base cuesta **$3,000**. Sin embargo, puedes optar por sacrificar hasta **6 fósiles adicionales del mismo tipo** para mejorar genéticamente la clonación:</p>
+    <ul>
+      <li>💰 <strong>Costo Progresivo</strong>: Cada fósil extra suma **+$1,000** al costo total (desde $3,000 hasta un máximo de $9,000).</li>
+      <li>🧬 <strong>Rerolls de IVs</strong>: Obtienes <strong>1 + N/2</strong> tiradas de IVs por estadística (donde N es el número de fósiles de sacrificio). Si N es impar (1, 3, 5), se garantiza la parte entera y tienes un **50% de probabilidad** de obtener una tirada adicional. Se seleccionará el IV más alto de todas las tiradas.</li>
+      <li>✨ <strong>Shiny Boost (Variocolor)</strong>: Cada fósil de sacrificio suma un **+25% de probabilidad Shiny** a la tasa base (de 1/4096), alcanzando hasta un multiplicador de **2.5x** (con 6 fósiles).</li>
+    </ul>
   `
 }
 
@@ -298,5 +323,6 @@ export const libraryCategories = [
   { id: 'combate', label: '⚔️ Combate' },
   { id: 'guerra', label: '🛡️ Guerra' },
   { id: 'eventos', label: '📅 Eventos' },
-  { id: 'clima', label: '🌦️ Clima' }
+  { id: 'clima', label: '🌦️ Clima' },
+  { id: 'arqueologia', label: '⛏️ Arqueología' }
 ]

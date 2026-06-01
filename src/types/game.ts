@@ -87,6 +87,8 @@ export interface GameState {
   articunoTicketSecs: number;
   mewtwoTicketSecs: number;
   repelSecs: number;
+  fishingRodSecs: number;
+  pickaxeSecs: number;
   shinyBoostSecs: number;
   amuletCoinSecs: number;
   luckyEggSecs: number;

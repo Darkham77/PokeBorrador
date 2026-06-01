@@ -15,7 +15,7 @@ Apply when writing or reviewing GSAP code in Vue (or Nuxt), Svelte (or SvelteKit
 ## Principles (All Frameworks)
 
 - **Create** tweens and ScrollTriggers **after** the component’s DOM is available (e.g. onMounted, onMount).
-- **Kill or revert** them in the **unmount** (or equivalent) cleanup so nothing runs on detached nodes and there are no leaks.
+- **Kill or revert** them in the **unmount** (or equivalent) cleanup so nothing runs on detached nodes and there are no leaks. Always assign looping or persistent animations (like floating icons or cyclical loaders) to variables and explicitly call `.kill()` in `onUnmounted` or `onClose` along with `activeTweens.clear()` to prevent background leaks.
 - **Scope selectors** to the component root so `.box` and similar only match elements inside that component, not the rest of the page.
 
 ## Vue 3 (Composition API)

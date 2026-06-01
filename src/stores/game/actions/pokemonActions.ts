@@ -4,6 +4,7 @@ import { useUIStore } from '@/stores/ui'
 import { useLoadingStore } from '@/stores/loading'
 import type { GameState } from '@/types/game'
 import type { Pokemon, PokemonEgg } from '@/types/pokemon'
+import { SHOP_ITEMS } from '@/data/items'
 
 export function usePokemonActions(
   state: GameState, 
@@ -150,6 +151,47 @@ export function usePokemonActions(
   function sanitizeAll() {
     state.team.forEach(p => p && sanitizePokemon(p))
     if (state.box) state.box.forEach(p => p && sanitizePokemon(p))
+
+    // Inventory Self-Healing: convert IDs and legacy Spanish names to current official Spanish names
+    if (state.inventory) {
+      const healedInventory: Record<string, number> = {};
+      for (const [key, qty] of Object.entries(state.inventory)) {
+        let officialName = key;
+        
+        // Find in SHOP_ITEMS by name (case-insensitive) or id
+        const item = SHOP_ITEMS.find(i => 
+          i.name.toLowerCase() === key.toLowerCase() || 
+          i.id.toLowerCase() === key.toLowerCase()
+        );
+        
+        if (item) {
+          officialName = item.name;
+        } else {
+          // Check legacy item IDs manually if not matched
+          const legacyItemMap: Record<string, string> = {
+            pocion: 'Poción',
+            super_pocion: 'Súper Poción',
+            hiper_pocion: 'Hiper Poción',
+            pocion_max: 'Poción Máxima',
+            piedra_fuego: 'Piedra Fuego',
+            piedra_agua: 'Piedra Agua',
+            piedra_trueno: 'Piedra Trueno',
+            piedra_hoja: 'Piedra Hoja',
+            piedra_luna: 'Piedra Lunar',
+            piedra_solar: 'Piedra Solar',
+            caramelo_vigor: 'Caramelo de vigor',
+            repelente: 'Repelente'
+          };
+          const normKey = key.toLowerCase().trim();
+          if (legacyItemMap[normKey]) {
+            officialName = legacyItemMap[normKey];
+          }
+        }
+        
+        healedInventory[officialName] = (healedInventory[officialName] || 0) + qty;
+      }
+      state.inventory = healedInventory;
+    }
 
     // Migración automática: Mover Pokémon del equipo ocupados (guardería, misión, defensa) a la caja PC
     const teamToKeep: Pokemon[] = []

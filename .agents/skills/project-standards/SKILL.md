@@ -135,6 +135,7 @@ Consult these manuals for detailed implementation specifications:
     - **Extension-First Imports**: When running tests or scripts via `node --experimental-strip-types`, all internal imports MUST include the `.ts` extension (e.g., `import { foo } from './bar.ts'`) to ensure resolution by the native loader.
     - **Permissions**: All maintenance scripts MUST adhere to the Node.js Permission Model (`--permission`). Utility scripts performing fetch/read/write must be restricted to their necessary scopes (e.g., `--allow-net`, `--allow-fs`).
     - **Resource Management**: Use the `using` keyword (Explicit Resource Management) for DB connections and file handles.
+    - **Cross-Platform Path Standard**: For converting platform-specific filesystem paths (e.g., from `path.relative`) to POSIX format (such as browser URLs, assets keys, database indexes), you MUST use native split/join operations with separator tokens (`relPath.split(path.sep).join(path.posix.sep)`) instead of expressions or replace statements. This ensures that the generated output files (like JSON catalogs) remain identical and valid in browser environments across Windows, Linux, and macOS.
 - **Global Override Audit**: Global SCSS rules (especially in `src/styles/views/`) that use `!important` MUST be audited to ensure they do not sabotage component-level dynamic styling. Prefer using CSS variables for properties that change based on state to allow components to "own" their visual identity.
 
 ### 5. Integrity & Quality Enforcement

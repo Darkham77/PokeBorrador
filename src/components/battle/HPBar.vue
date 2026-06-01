@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, onMounted } from 'vue'
+import { ref, watch } from 'vue'
 import { gsap } from 'gsap'
 
 interface Props {
@@ -10,25 +10,21 @@ interface Props {
   expNeeded: number
   isPlayer?: boolean
   isScrambled?: boolean
+  pokemonUid?: string | null
 }
 
 const props = withDefaults(defineProps<Props>(), {
   isPlayer: false,
-  isScrambled: false
+  isScrambled: false,
+  pokemonUid: null
 })
 
-const displayHp = ref(0)
+const displayHp = ref(props.hp)
 const displayExpPct = ref((props.exp / props.expNeeded) * 100)
 const xpAnimationActive = ref(false)
 
-onMounted(() => {
-  // Sincronizar con la transición de aparición del HUD
-  gsap.to(displayHp, {
-    value: props.hp,
-    duration: 0.8,
-    ease: 'power2.out',
-    delay: 0.4
-  })
+watch(() => props.pokemonUid, () => {
+  displayHp.value = props.hp
 })
 
 watch(() => props.hp, (newHp) => {
@@ -77,7 +73,10 @@ const getHpClass = (pct: number) => {
 
 <template>
   <div class="hp-status">
-    <div class="hp-bar-outer">
+    <div
+      v-if="!isScrambled"
+      class="hp-bar-outer"
+    >
       <div
         class="hp-bar-inner"
         :class="getHpClass(getHpPct(displayHp, maxHp))"

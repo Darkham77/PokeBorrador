@@ -13,6 +13,7 @@ interface DaycareEggParams {
   cost: number;
   tint?: string;
   steps?: number;
+  isAncestral?: boolean;
 }
 
 interface PokemonEggParams {
@@ -25,6 +26,7 @@ interface PokemonEggParams {
   abilitySlot?: number;
   isShiny?: boolean;
   tint?: string;
+  isAncestral?: boolean;
 }
 
 /**
@@ -54,6 +56,7 @@ export const eggFactory = {
       isShiny: params.isShiny,
       cost: params.cost,
       tint: params.tint || undefined,
+      isAncestral: params.isAncestral || undefined,
       inherited_ivs: {
         _cost: params.cost,
         _scanned: false,
@@ -79,6 +82,7 @@ export const eggFactory = {
       abilitySlot: params.abilitySlot,
       isShiny: params.isShiny,
       tint: params.tint || undefined,
+      isAncestral: params.isAncestral || undefined,
     };
   },
 };

@@ -132,22 +132,22 @@ export const SHOP_ITEMS = [
   },
   // ── POCIONES ───────────────────────────────────────────────────────────────
   {
-    id: 'pocion', cat: 'pociones', sprite: 'potion',
+    id: 'potion', cat: 'pociones', sprite: 'potion',
     name: 'Poción', icon: '🧪', price: 200, unlockLv: 1, tier: 'common',
     desc: 'Restaura 20 HP a un Pokémon.'
   },
   {
-    id: 'super_pocion', cat: 'pociones', sprite: 'super-potion',
+    id: 'super_potion', cat: 'pociones', sprite: 'super-potion',
     name: 'Súper Poción', icon: '🔵', price: 600, unlockLv: 3, tier: 'rare',
     desc: 'Restaura 50 HP a un Pokémon.'
   },
   {
-    id: 'hiper_pocion', cat: 'pociones', sprite: 'hyper-potion',
+    id: 'hyper_potion', cat: 'pociones', sprite: 'hyper-potion',
     name: 'Hiper Poción', icon: '🟣', price: 1500, unlockLv: 8, tier: 'epic',
     desc: 'Restaura 200 HP a un Pokémon.'
   },
   {
-    id: 'pocion_max', cat: 'pociones', sprite: 'max-potion',
+    id: 'max_potion', cat: 'pociones', sprite: 'max-potion',
     name: 'Poción Máxima', icon: '💜', price: 2500, unlockLv: 12, tier: 'legend',
     desc: 'Restaura todo el HP de un Pokémon.'
   },
@@ -208,37 +208,37 @@ export const SHOP_ITEMS = [
   },
   // ── PIEDRAS DE EVOLUCIÓN ───────────────────────────────────────────────────
   {
-    id: 'piedra_fuego', cat: 'stones', sprite: 'fire-stone',
+    id: 'fire_stone', cat: 'stones', sprite: 'fire-stone',
     name: 'Piedra Fuego', icon: '🔥', price: 20000, unlockLv: 10, tier: 'rare',
     desc: 'Hace evolucionar a Vulpix, Growlithe, Eevee y otros Pokémon de Fuego.',
     type: 'stone', stoneType: 'fire'
   },
   {
-    id: 'piedra_agua', cat: 'stones', sprite: 'water-stone',
+    id: 'water_stone', cat: 'stones', sprite: 'water-stone',
     name: 'Piedra Agua', icon: '💧', price: 20000, unlockLv: 10, tier: 'rare',
     desc: 'Hace evolucionar a Poliwhirl, Shellder, Staryu y Eevee.',
     type: 'stone', stoneType: 'water'
   },
   {
-    id: 'piedra_trueno', cat: 'stones', sprite: 'thunder-stone',
+    id: 'thunder_stone', cat: 'stones', sprite: 'thunder-stone',
     name: 'Piedra Trueno', icon: '⚡', price: 20000, unlockLv: 10, tier: 'rare',
     desc: 'Hace evolucionar a Pikachu and Eevee.',
     type: 'stone', stoneType: 'thunder'
   },
   {
-    id: 'piedra_hoja', cat: 'stones', sprite: 'leaf-stone',
+    id: 'leaf_stone', cat: 'stones', sprite: 'leaf-stone',
     name: 'Piedra Hoja', icon: '🌿', price: 20000, unlockLv: 10, tier: 'rare',
     desc: 'Hace evolucionar a Gloom, Weepinbell, Exeggcute y Eevee.',
     type: 'stone', stoneType: 'leaf'
   },
   {
-    id: 'piedra_luna', cat: 'stones', sprite: 'moon-stone',
+    id: 'moon_stone', cat: 'stones', sprite: 'moon-stone',
     name: 'Piedra Lunar', icon: '🌙', price: 20000, unlockLv: 10, tier: 'epic',
     desc: 'Hace evolucionar a Nidorina, Nidorino, Clefairy y Jigglypuff.',
     type: 'stone', stoneType: 'moon'
   },
   {
-    id: 'piedra_solar', cat: 'stones', sprite: 'sun-stone',
+    id: 'sun_stone', cat: 'stones', sprite: 'sun-stone',
     name: 'Piedra Solar', icon: '☀️', price: 20000, unlockLv: 10, tier: 'rare',
     desc: 'Hace evolucionar a Gloom y Sunkern.',
     type: 'stone', stoneType: 'sun'
@@ -294,7 +294,7 @@ export const SHOP_ITEMS = [
     type: 'usable'
   },
   {
-    id: 'caramelo_vigor', cat: 'utility', sprite: 'rare-candy',
+    id: 'vigor_candy', cat: 'utility', sprite: 'rare-candy',
     name: 'Caramelo de vigor', icon: '⚡', price: 0, unlockLv: 10, tier: 'rare', market: false, trainerShop: true, bcPrice: 1500,
     desc: 'Restaura 1 punto de vigor a un Pokémon.'
   },
@@ -375,7 +375,7 @@ export const SHOP_ITEMS = [
     type: 'booster'
   },
   {
-    id: 'repelente', cat: 'utility', market: false, trainerShop: true, bcPrice: 500, sprite: 'repel',
+    id: 'repel', cat: 'utility', market: false, trainerShop: true, bcPrice: 500, sprite: 'repel',
     name: 'Repelente', icon: '🚫', price: 20000, unlockLv: 1, tier: 'common',
     desc: 'Aleja Pokémon salvajes de nivel inferior al tuyo durante 10 min.'
   },
@@ -388,6 +388,16 @@ export const SHOP_ITEMS = [
     id: 'max_repel', cat: 'utility', market: false, trainerShop: true, bcPrice: 1500, sprite: 'max-repel',
     name: 'Máximo Repelente', icon: '🚫', price: 60000, unlockLv: 22, tier: 'epic',
     desc: 'Aleja Pokémon salvajes de nivel inferior al tuyo durante 30 min.'
+  },
+  {
+    id: 'fishing_rod', cat: 'especial', sprite: 'fishing_rod', type: 'usable',
+    name: 'Caña de pescar', icon: '🎣', price: 15000, unlockLv: 1, tier: 'rare', market: true,
+    desc: 'Consumible. Aumenta la probabilidad de pesca al 95% durante 20 minutos.'
+  },
+  {
+    id: 'pickaxe', cat: 'especial', sprite: 'pickaxe', type: 'usable',
+    name: 'Pico de excavación', icon: '⛏️', price: 15000, unlockLv: 1, tier: 'rare', market: true,
+    desc: 'Consumible. Aumenta la probabilidad de arqueología al 95% durante 20 minutos.'
   },
   // ── FÓSILES ────────────────────────────────────────────────────────────────
   {
@@ -430,6 +440,123 @@ export const SHOP_ITEMS = [
     id: 'star_piece', cat: 'especial', sprite: 'star-piece',
     name: 'Trozo Estrella', icon: '⭐', price: 5000, market: false, trainerShop: false, tier: 'rare',
     desc: 'Un trozo de gema roja. Se vende a muy buen precio.'
+  },
+  // ── MINERALES Y GEMAS NATURALES (BRUTAS) ──────────────────────────────────
+  {
+    id: 'coal_ore', cat: 'especial', sprite: 'ores/coal_ore',
+    name: 'Mineral de Carbón', icon: '🪨', price: 200, market: false, trainerShop: false, tier: 'common',
+    desc: 'Un trozo de carbón mineral natural obtenido mediante excavación.'
+  },
+  {
+    id: 'copper_ore', cat: 'especial', sprite: 'ores/copper_ore',
+    name: 'Mineral de Cobre', icon: '🟫', price: 600, market: false, trainerShop: false, tier: 'common',
+    desc: 'Una roca con vetas de cobre natural. Se vende tal cual o se purifica.'
+  },
+  {
+    id: 'iron_ore', cat: 'especial', sprite: 'ores/iron_ore',
+    name: 'Mineral de Hierro', icon: '🧱', price: 1200, market: false, trainerShop: false, tier: 'common',
+    desc: 'Roca rica en hierro natural sin refinar.'
+  },
+  {
+    id: 'silver_ore', cat: 'especial', sprite: 'ores/silver_ore',
+    name: 'Mineral de Plata', icon: '⬜', price: 3000, market: false, trainerShop: false, tier: 'rare',
+    desc: 'Plata en su estado mineral bruto. Muy valorada en el mercado.'
+  },
+  {
+    id: 'gold_ore', cat: 'especial', sprite: 'ores/gold_ore',
+    name: 'Mineral de Oro', icon: '🟨', price: 6000, market: false, trainerShop: false, tier: 'rare',
+    desc: 'Veta natural de oro en bruto. Muy codiciada.'
+  },
+  {
+    id: 'tungsten_ore', cat: 'especial', sprite: 'ores/tungsten_ore',
+    name: 'Mineral de Wolframio', icon: '🌑', price: 2000, market: false, trainerShop: false, tier: 'rare',
+    desc: 'Mineral de tungsteno/wolframio pesado y denso en su estado natural.'
+  },
+  {
+    id: 'uranium_ore', cat: 'especial', sprite: 'ores/uranium_ore',
+    name: 'Mineral de Uranio', icon: '🟢', price: 6000, market: false, trainerShop: false, tier: 'epic',
+    desc: 'Mineral de uranio natural con un brillo verdoso misterioso.'
+  },
+  {
+    id: 'rubi_ore', cat: 'especial', sprite: 'ores/rubi_ore',
+    name: 'Mineral de Rubí', icon: '🔺', price: 3000, market: false, trainerShop: false, tier: 'rare',
+    desc: 'Roca que incrusta un rubí en bruto sin tallar.'
+  },
+  {
+    id: 'zaphire_ore', cat: 'especial', sprite: 'ores/zaphire_ore',
+    name: 'Mineral de Zafiro', icon: '🔹', price: 3000, market: false, trainerShop: false, tier: 'rare',
+    desc: 'Roca que incrusta un zafiro en bruto sin tallar.'
+  },
+  {
+    id: 'emmerald_ore', cat: 'especial', sprite: 'ores/emmerald_ore',
+    name: 'Mineral de Esmeralda', icon: '💚', price: 6000, market: false, trainerShop: false, tier: 'rare',
+    desc: 'Roca que incrusta una esmeralda en bruto sin tallar.'
+  },
+  {
+    id: 'topaz_ore', cat: 'especial', sprite: 'ores/topaz_ore',
+    name: 'Mineral de Topacio', icon: '🟡', price: 3000, market: false, trainerShop: false, tier: 'rare',
+    desc: 'Roca que incrusta un topacio en bruto sin tallar.'
+  },
+  {
+    id: 'diamond_ore', cat: 'especial', sprite: 'ores/diamond_ore',
+    name: 'Mineral de Diamante', icon: '💎', price: 12000, market: false, trainerShop: false, tier: 'epic',
+    desc: 'Un mineral extremadamente resistente que incrusta un diamante en bruto.'
+  },
+  // ── MINERALES Y GEMAS PURIFICADAS (REFINADAS) ──────────────────────────────
+  {
+    id: 'copper', cat: 'especial', sprite: 'ores/copper',
+    name: 'Lingote de Cobre', icon: '🟫', price: 1500, market: false, trainerShop: false, tier: 'rare',
+    desc: 'Cobre purificado y fundido en un lingote brillante.'
+  },
+  {
+    id: 'iron', cat: 'especial', sprite: 'ores/iron',
+    name: 'Lingote de Hierro', icon: '🧱', price: 3000, market: false, trainerShop: false, tier: 'rare',
+    desc: 'Hierro refinado de alta resistencia listo para fundición.'
+  },
+  {
+    id: 'silver', cat: 'especial', sprite: 'ores/silver',
+    name: 'Lingote de Plata', icon: '⬜', price: 7500, market: false, trainerShop: false, tier: 'epic',
+    desc: 'Plata pura refinada con acabado brillante. De alto valor.'
+  },
+  {
+    id: 'gold', cat: 'especial', sprite: 'ores/gold',
+    name: 'Lingote de Oro', icon: '🟨', price: 15000, market: false, trainerShop: false, tier: 'epic',
+    desc: 'Oro puro refinado de 24 quilates fundido en un lingote.'
+  },
+  {
+    id: 'tungsten', cat: 'especial', sprite: 'ores/tungsten',
+    name: 'Lingote de Wolframio', icon: '🌑', price: 5000, market: false, trainerShop: false, tier: 'epic',
+    desc: 'Wolframio purificado de altísima densidad.'
+  },
+  {
+    id: 'uranium', cat: 'especial', sprite: 'ores/uranium',
+    name: 'Lingote de Uranio', icon: '🟢', price: 15000, market: false, trainerShop: false, tier: 'legend',
+    desc: 'Lingote purificado de uranio denso y ligeramente brillante.'
+  },
+  {
+    id: 'rubi', cat: 'especial', sprite: 'ores/rubi',
+    name: 'Rubí Pulido', icon: '🔴', price: 7500, market: false, trainerShop: false, tier: 'epic',
+    desc: 'Un hermoso rubí tallado y pulido de color rojo intenso.'
+  },
+  {
+    id: 'zaphire', cat: 'especial', sprite: 'ores/zaphire',
+    name: 'Zafiro Pulido', icon: '🔵', price: 7500, market: false, trainerShop: false, tier: 'epic',
+    desc: 'Un hermoso zafiro tallado y pulido de color azul profundo.'
+  },
+  {
+    id: 'emmerald', cat: 'especial', sprite: 'ores/emmerald',
+    name: 'Esmeralda Pulida', icon: '🟢', price: 15000, market: false, trainerShop: false, tier: 'epic',
+    desc: 'Una hermosa esmeralda tallada y pulida de color verde brillante.'
+  },
+  {
+    id: 'topaz', cat: 'especial', sprite: 'ores/topaz',
+    name: 'Topacio Pulido', icon: '🟡', price: 7500, market: false, trainerShop: false, tier: 'epic',
+    desc: 'Un hermoso topacio tallado y pulido con destellos dorados.'
+  },
+  {
+    id: 'diamond', cat: 'especial', sprite: 'ores/diamond',
+    name: 'Diamante Pulido', icon: '💎', price: 30000, market: false, trainerShop: false, tier: 'legend',
+    desc: 'Un diamante perfectamente facetado y pulido que refleja la luz.'
   },
   // ── SPECIAL HELD ITEMS ─────────────────────────────────────────────────────
   {

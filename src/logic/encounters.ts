@@ -179,12 +179,36 @@ export async function generateEncounter(locId: string, state: EncounterState, op
     return { type: 'trainer' };
   }
 
-  // 3. Fishing Chance (if applicable)
+  // 3. Weighted Encounter Roll (Walking vs Fishing vs Archaeology)
   const weather = options.weather || 'clear';
   const isRainy = ['rain', 'heavy_rain', 'storm', 'thunderstorm'].includes(weather.toLowerCase());
   const climateFishingMultiplier = isRainy ? 1.20 : 1.0;
   const fishingBonus = (options.eventFishingBonus || 1) * climateFishingMultiplier;
-  if (loc.fishing && Math.random() < GAME_RATIOS.encounters.fishing * fishingBonus) {
+
+  const groundWeight = 100;
+
+  let fishingWeight = 0;
+  if (loc.fishing) {
+    fishingWeight = GAME_RATIOS.encounters.fishing * 100 * fishingBonus;
+    if ((state.fishingRodSecs || 0) > 0) {
+      fishingWeight += 600;
+    }
+  }
+
+  let archWeight = 0;
+  if (loc.archaeology) {
+    const isCave = !!loc.isCave;
+    const isMountain = !!loc.isMountain;
+    archWeight = isCave ? 10 : (isMountain ? 5 : 0);
+    if ((state.pickaxeSecs || 0) > 0) {
+      archWeight += 600;
+    }
+  }
+
+  const totalWeight = groundWeight + fishingWeight + archWeight;
+  const roll = Math.random() * totalWeight;
+
+  if (loc.fishing && roll < fishingWeight) {
     const pool = [...loc.fishing.pool];
     const rates = [...loc.fishing.rates];
 
@@ -279,10 +303,7 @@ export async function generateEncounter(locId: string, state: EncounterState, op
       pokemon,
       rarity 
     };
-  }
-
-  // 3.1 Archaeology Chance (if applicable)
-  if (loc.archaeology && Math.random() < 0.15) {
+  } else if (loc.archaeology && roll < fishingWeight + archWeight) {
     const archPool = loc.archaeology.pool;
     const archRates = loc.archaeology.rates;
     const selectedId = selectFromPool(archPool, archRates);

@@ -58,4 +58,20 @@ export function registerItemTools(debug: DebugSystem, { game, ui, breedingStore 
     },
     description: 'Elimina todas las misiones actuales de la guardería.'
   })
+
+  debug.register({
+    id: 'setup-cloning-test',
+    label: 'CONFIGURAR TEST CLONACIÓN',
+    command: 'setupCloningTest',
+    category: 'items',
+    action: () => {
+      game.state.money = 100000
+      game.state.inventory['Fósil Domo'] = 10
+      game.state.inventory['Fósil Hélix'] = 10
+      game.state.inventory['Ámbar Viejo'] = 10
+      ui.notify('Debug: $100K y 10x de cada fósil añadidos', '🧪')
+      game.saveGame(false)
+    },
+    description: 'Añade $100K y 10 unidades de cada fósil para testear la clonación.'
+  })
 }

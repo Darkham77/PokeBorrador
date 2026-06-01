@@ -100,6 +100,40 @@ watch(() => uiStore.isBattleSwitchForced, (val) => {
   }
 })
 
+// Auto-combatir: Inicia el encuentro automáticamente si está activado
+watch(() => [
+  battleStore.isSearching,
+  battleStore.currentSubState,
+  battleStore.isIntroAnimating,
+  battleStore.isProcessing,
+  uiStore.autoBattle
+] as const, ([isSearching, subState, isIntroAnimating, isProcessing, autoBattle]) => {
+  if (
+    autoBattle &&
+    isSearching &&
+    !isIntroAnimating &&
+    !isProcessing &&
+    ['WAIT_INPUT', 'BUSH_IDLE', 'PARALLEL_PREP', 'BUSH_VISIBLE', 'SILHOUETTE_MODE', 'GEN_NEW_S2'].includes(String(subState))
+  ) {
+    battleStore.startEncounter()
+  }
+}, { immediate: true })
+
+// Dynamic button text/emoji for fishing & archaeology encounters
+const encounterBtnEmoji = computed(() => {
+  const type = battleStore.upcomingEncounterType || 'wild'
+  if (type === 'fishing') return '🎣'
+  if (type === 'archaeology') return '⛏️'
+  return '⚔️'
+})
+
+const encounterBtnText = computed(() => {
+  const type = battleStore.upcomingEncounterType || 'wild'
+  if (type === 'fishing') return '¡PESCAR!'
+  if (type === 'archaeology') return '¡EXCAVAR!'
+  return '¡COMBATIR!'
+})
+
 // GSAP Transition Hooks
 const onEnter = (el: Element, done: () => void) => {
   gsap.fromTo(el, 
@@ -173,7 +207,7 @@ const onEnter = (el: Element, done: () => void) => {
           class="continue-btn-final fight-btn"
           @click.stop="battleStore.startEncounter()"
         >
-          <span class="btn-emoji">⚔️</span> ¡COMBATIR!
+          <span class="btn-emoji">{{ encounterBtnEmoji }}</span> {{ encounterBtnText }}
         </button>
         <button
           class="continue-btn-final map-btn"

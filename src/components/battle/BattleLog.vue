@@ -5,6 +5,7 @@ import { useBattleStore } from '@/stores/battle'
 
 const battleStore = useBattleStore()
 const logContainer = ref<HTMLDivElement | null>(null)
+const logInner = ref<HTMLDivElement | null>(null)
 
 const logs = computed(() => battleStore.battleLogs)
 
@@ -15,6 +16,7 @@ const scrollToBottom = async (isInstant = false) => {
   if (isInstant) {
     logContainer.value.scrollTop = logContainer.value.scrollHeight
   } else {
+    gsap.killTweensOf(logContainer.value)
     gsap.to(logContainer.value, {
       scrollTop: logContainer.value.scrollHeight,
       duration: 0.4,
@@ -23,35 +25,45 @@ const scrollToBottom = async (isInstant = false) => {
   }
 }
 
-// Watch both length and internal content changes
-watch(() => logs.value.length, (newLen, oldLen) => {
+const lastLogId = ref<number | null>(null)
+
+watch(logs, (newVal) => {
   scrollToBottom()
   
-  // Animate the last entry if it's a new one
-  if (newLen > oldLen) {
-    nextTick(() => {
-      const entries = logContainer.value?.querySelectorAll('.log-entry')
-      if (entries && entries.length > 0) {
-        const lastEntry = entries[entries.length - 1] as HTMLElement
-        gsap.killTweensOf(lastEntry)
-        gsap.fromTo(lastEntry, 
-          { opacity: 0, x: -20, filter: 'Blur(4px)' }, 
-          { opacity: 1, x: 0, filter: 'Blur(0px)', duration: 0.5, ease: 'back.out(1.2)' }
-        )
+  if (newVal && newVal.length > 0) {
+    const lastLog = newVal[newVal.length - 1]
+    if (lastLog && lastLog.id !== lastLogId.value) {
+      const isNew = lastLogId.value !== null
+      lastLogId.value = lastLog.id
+      
+      if (isNew) {
+        nextTick(() => {
+          const entries = logContainer.value?.querySelectorAll('.log-entry')
+          if (entries && entries.length > 0) {
+            const lastEntry = entries[entries.length - 1] as HTMLElement
+            gsap.killTweensOf(lastEntry)
+            gsap.fromTo(lastEntry, 
+              { opacity: 0, x: -20, filter: 'Blur(4px)' }, 
+              { opacity: 1, x: 0, filter: 'Blur(0px)', duration: 0.5, ease: 'back.out(1.2)' }
+            )
+          }
+        })
       }
-    })
+    }
+  } else {
+    lastLogId.value = null
   }
-}, { deep: false })
+}, { deep: true, immediate: true })
 
 const handleImgError = (e: Event) => {
   (e.target as HTMLImageElement).style.display = 'none'
 }
 
 onMounted(() => {
-  scrollToBottom()
-  if (logContainer.value) {
+  scrollToBottom(true)
+  if (logInner.value) {
     const observer = new ResizeObserver(() => scrollToBottom())
-    observer.observe(logContainer.value)
+    observer.observe(logInner.value)
   }
 })
 </script>
@@ -62,7 +74,10 @@ onMounted(() => {
     ref="logContainer"
     class="battle-log custom-scrollbar-vicio"
   >
-    <div class="log-scroll-inner">
+    <div
+      ref="logInner"
+      class="log-scroll-inner"
+    >
       <div 
         v-for="log in logs" 
         :key="log.id" 

@@ -13,6 +13,10 @@ import {
   calculateFishingTotalNotes,
   calculateFishingSpeedBase,
   calculateFishingHitWindow,
+  calculateArchaeologyEncounterRate,
+  calculateCloningCost,
+  calculateCloningRerolls,
+  calculateCloningShinyChance,
 } from '../../src/logic/minigames/minigameMath.ts';
 
 describe('Fishing Minigame Math Formulas', () => {
@@ -38,17 +42,17 @@ describe('Fishing Minigame Math Formulas', () => {
 
   describe('calculateFishingSpeedBase', () => {
     it('should clamp values at extreme rarities', () => {
-      // rarity 1 -> diffFactor = 100 -> 1100 - (100 * 7.5) = 350 -> clamped to 380
-      assert.strictEqual(calculateFishingSpeedBase(1), 380);
-      assert.strictEqual(calculateFishingSpeedBase(-5), 380);
-      // rarity 100 -> diffFactor = 1 -> 1100 - (1 * 7.5) = 1092.5
-      assert.strictEqual(calculateFishingSpeedBase(100), 1092.5);
-      assert.strictEqual(calculateFishingSpeedBase(150), 1092.5);
+      // rarity 1 -> diffFactor = 100 -> (1100 - (100 * 7.5) = 350 -> clamped to 380) * 1.1 = 418
+      assert.strictEqual(calculateFishingSpeedBase(1), 418);
+      assert.strictEqual(calculateFishingSpeedBase(-5), 418);
+      // rarity 100 -> diffFactor = 1 -> Math.round((1100 - (1 * 7.5) = 1092.5) * 1.1) = 1202
+      assert.strictEqual(calculateFishingSpeedBase(100), 1202);
+      assert.strictEqual(calculateFishingSpeedBase(150), 1202);
     });
 
     it('should correctly scale durations at intermediate rarities', () => {
-      // rarity 50 -> diffFactor = 51 -> 1100 - (51 * 7.5) = 1100 - 382.5 = 717.5
-      assert.strictEqual(calculateFishingSpeedBase(50), 717.5);
+      // rarity 50 -> diffFactor = 51 -> Math.round((1100 - (51 * 7.5) = 1100 - 382.5 = 717.5) * 1.1) = 789
+      assert.strictEqual(calculateFishingSpeedBase(50), 789);
     });
   });
 
@@ -65,6 +69,83 @@ describe('Fishing Minigame Math Formulas', () => {
     it('should calculate correct intermediate hit windows', () => {
       // rarity 50 -> diffFactor = 51 -> 190 - (51 / 1.3) = 190 - 39.23 = 150.77
       assert.ok(Math.abs(calculateFishingHitWindow(50) - 150.77) < 0.01);
+    });
+  });
+});
+
+describe('Archaeology and Fossil Cloning Math Formulas', () => {
+  describe('calculateArchaeologyEncounterRate', () => {
+    it('should return 10% for caves', () => {
+      assert.strictEqual(calculateArchaeologyEncounterRate(true, false), 0.10);
+      assert.strictEqual(calculateArchaeologyEncounterRate(true, true), 0.10); // Cave wins priority
+    });
+
+    it('should return 5% for mountains if not cave', () => {
+      assert.strictEqual(calculateArchaeologyEncounterRate(false, true), 0.05);
+    });
+
+    it('should return 0% for other biomes', () => {
+      assert.strictEqual(calculateArchaeologyEncounterRate(false, false), 0.00);
+    });
+  });
+
+  describe('calculateCloningCost', () => {
+    it('should return base cost for 0 extra fossils', () => {
+      assert.strictEqual(calculateCloningCost(0), 3000);
+    });
+
+    it('should scale cost with extra fossils', () => {
+      assert.strictEqual(calculateCloningCost(3), 6000);
+      assert.strictEqual(calculateCloningCost(6), 9000);
+    });
+
+    it('should clamp extra fossils at maximum of 6', () => {
+      assert.strictEqual(calculateCloningCost(8), 9000);
+    });
+
+    it('should clamp negative inputs to 0', () => {
+      assert.strictEqual(calculateCloningCost(-2), 3000);
+    });
+  });
+
+  describe('calculateCloningRerolls', () => {
+    it('should return 1 roll for 0 extra fossils', () => {
+      assert.strictEqual(calculateCloningRerolls(0), 1);
+    });
+
+    it('should return deterministic rolls for even extra fossils', () => {
+      assert.strictEqual(calculateCloningRerolls(2), 2); // 1 + 2/2 = 2
+      assert.strictEqual(calculateCloningRerolls(4), 3); // 1 + 4/2 = 3
+      assert.strictEqual(calculateCloningRerolls(6), 4); // 1 + 6/2 = 4
+    });
+
+    it('should grant extra roll with 50% chance for odd extra fossils', () => {
+      // Mock random returning < 0.5 (should trigger extra roll)
+      const randTrigger = () => 0.25;
+      assert.strictEqual(calculateCloningRerolls(1, randTrigger), 2); // 1 + floor(1/2) + 1 = 2
+      assert.strictEqual(calculateCloningRerolls(3, randTrigger), 3); // 1 + floor(3/2) + 1 = 3
+
+      // Mock random returning >= 0.5 (should NOT trigger extra roll)
+      const randNoTrigger = () => 0.75;
+      assert.strictEqual(calculateCloningRerolls(1, randNoTrigger), 1); // 1 + floor(1/2) = 1
+      assert.strictEqual(calculateCloningRerolls(3, randNoTrigger), 2); // 1 + floor(3/2) = 2
+    });
+  });
+
+  describe('calculateCloningShinyChance', () => {
+    it('should return base rate for 0 extra fossils', () => {
+      assert.strictEqual(calculateCloningShinyChance(0), 1 / 4096);
+    });
+
+    it('should increase shiny chance with extra fossils', () => {
+      // 3 extra fossils: 1 + 0.25 * 3 = 1.75x -> 1.75 / 4096
+      assert.strictEqual(calculateCloningShinyChance(3), 1.75 / 4096);
+      // 6 extra fossils: 1 + 0.25 * 6 = 2.5x -> 2.5 / 4096
+      assert.strictEqual(calculateCloningShinyChance(6), 2.5 / 4096);
+    });
+
+    it('should clamp extra fossils to maximum of 6', () => {
+      assert.strictEqual(calculateCloningShinyChance(8), 2.5 / 4096);
     });
   });
 });

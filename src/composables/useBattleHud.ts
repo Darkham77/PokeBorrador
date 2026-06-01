@@ -23,32 +23,51 @@ export function useBattleHud(
 
   /**
    * Determina si el HUD del enemigo debe estar oculto.
-   * REGLA MAESTRA: Asiento ocupado -> HUD Visible. Asiento vacío -> HUD Oculto.
+   * REGLA MAESTRA: Asiento ocupado (hay enemigo) -> HUD Visible. Asiento vacío -> HUD Oculto.
    */
   const isEnemyHudSuppressed = computed(() => {
-    const enemySeat = seats.value.seat2
-    const isEnemyCaptureActive = enemySeat?.entry.isCaptureActive || 
-                                 enemySeat?.entry.isAnimatingCapture || 
-                                 enemySeat?.exit.isCaptureActive || 
-                                 enemySeat?.exit.isAnimatingCapture
-    if (isEnemyCaptureActive) return false
     const s = toValue(battleStore.state)
-    // REGLA MAESTRA (Manual §4.UI): Asiento ocupado -> HUD visible. Asiento vacío -> HUD oculto.
-    return !s?.enemy && !s?._initialEnemy
+    const fsmState = toValue(battleStore.fsm?.currentState)
+
+    // El HUD se oculta para arqueología en combate. Durante búsqueda siempre está oculto de todos modos.
+    const isArchaeology = fsmState === 'SEARCH_PHASE'
+      ? (toValue(battleStore.upcomingEncounterType) === 'archaeology' || s?.isArchaeology || false)
+      : (s?.isArchaeology || false)
+      
+    if (isArchaeology) return true
+
+    // Comprobaciones basadas en el Asiento Enemigo (seat2)
+    const seat = seats.value.seat2
+    const isCapturing = seat?.entry.isCaptureActive || seat?.entry.isAnimatingCapture || 
+                        seat?.exit.isCaptureActive || seat?.exit.isAnimatingCapture ||
+                        seat?.entry.animState === 'catching' || seat?.exit.animState === 'catching'
+
+    const isFainted = (s?.enemy && s.enemy.hp <= 0) || 
+                      (isFaintInProgress.value && faintedPokemonSnapshot.value?.side === 'enemy')
+
+    if (isCapturing || isFainted) {
+      return true
+    }
+
+    return !s?.enemy
   })
 
-  /**
-   * Determina si el HUD del jugador debe estar oculto.
-   * REGLA MAESTRA: Asiento ocupado -> HUD Visible. Asiento vacío -> HUD Oculto.
-   */
   const isPlayerHudSuppressed = computed(() => {
-    const playerSeat = seats.value.seat1
-    const isPlayerCaptureActive = playerSeat?.entry.isCaptureActive || 
-                                  playerSeat?.entry.isAnimatingCapture || 
-                                  playerSeat?.exit.isCaptureActive || 
-                                  playerSeat?.exit.isAnimatingCapture
-    if (isPlayerCaptureActive) return false
-    return !toValue(battleStore.state)?.player
+    const s = toValue(battleStore.state)
+
+    // Comprobaciones basadas en el Asiento Jugador (seat1)
+    const seat = seats.value.seat1
+    const isCapturing = seat?.entry.isCaptureActive || seat?.entry.isAnimatingCapture || 
+                        seat?.exit.isCaptureActive || seat?.exit.isAnimatingCapture ||
+                        seat?.entry.animState === 'catching' || seat?.exit.animState === 'catching'
+
+    const isFainted = (s?.player && s.player.hp <= 0) || 
+                      (isFaintInProgress.value && faintedPokemonSnapshot.value?.side === 'player')
+
+    if (isCapturing || isFainted) {
+      return true
+    }
+    return !s?.player
   })
 
   /**
@@ -58,8 +77,7 @@ export function useBattleHud(
    */
   const activeEnemyHudData = computed(() => {
     const state = toValue(battleStore.fsm?.currentState)
-    const subState = toValue(battleStore.fsm?.currentSubState)
-    if (state === 'REWARDS_PHASE' && subState === 'EMPTY_WAIT') return null
+    if (state === 'REWARDS_PHASE' || state === 'LEVEL_UP_MODAL' || state === 'POST_BATTLE_STABILIZATION') return null
 
     // 1. Prioridad: Snapshot de captura (durante la animación de éxito) en asiento enemigo (seat2)
     const enemySeat = seats.value.seat2
@@ -148,7 +166,7 @@ export function useBattleHud(
     if (!sub) return false
     return [
       'PARALLEL_PREP', 'PARALLEL_ENTRY', 'SILHOUETTE_MODE', 'BUSH_IDLE', 
-      'ENTRY_ANIM', 'ENCOUNTER_ANIM', 'PARALLEL_JUMP'
+      'ENTRY_ANIM', 'ENCOUNTER_ANIM', 'PARALLEL_JUMP', 'MINIGAME_CHECK'
     ].includes(sub)
   })
 
@@ -195,8 +213,8 @@ export function useBattleHud(
     const state = toValue(battleStore.fsm?.currentState)
     const isTrainer = !isWildEncounter.value
     
-    // 1. Forzar ocultación en estados de promoción técnica (Slot 2 -> Slot 1)
-    if (sub === 'GEN_TEAMS') return true
+    // 1. Forzar ocultación en estados de promoción técnica (Slot 2 -> Slot 1) o durante el minijuego
+    if (sub === 'GEN_TEAMS' || sub === 'MINIGAME_CHECK') return true
     
     // 2. Si estamos en búsqueda, ocultar durante la generación técnica de datos
     if (state === 'SEARCH_PHASE') {

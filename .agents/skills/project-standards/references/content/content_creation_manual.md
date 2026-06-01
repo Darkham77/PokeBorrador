@@ -19,6 +19,7 @@ This manual details the protocols for adding new Pokémon, moves, abilities, and
 13. **Weather Token Consistency**: Always use the token **`snow`** for ice-based weather in metadata and encounter configs. The token `ice` is reserved for mechanical type references and must NOT be used as a weather ID to avoid registry mismatches.
 14. **Self-Healing Ability Mapping**: To prevent strict data validations from failing due to external datasets or local databases having non-standard or translated names (e.g., Spanish translations like `Escape`, `Metamorfosis`, or `Electricidad estática`), the data loading/recalculation pipeline MUST automatically normalize these values to standard strings (e.g., 'Fuga', 'Mudar', 'Electricidad estática') before strict schemas are validated.
 15. **Thematic and Unique Mission Descriptions**: Class deployment descriptions (e.g., basic, advanced, expert) MUST be unique and specific per duration (6h, 12h, 24h) and player class to ensure an immersive RPG experience and avoid repetitive placeholder text.
+16. **Strict English ID Policy**: All database keys and entity IDs (such as move IDs like `karate_chop`, item IDs, etc.) MUST strictly be written in English. Never mix languages within database keys or identifiers. Localized languages (Spanish, etc.) must only be used in display names, labels, or text descriptions for the UI.
 
 ---
 

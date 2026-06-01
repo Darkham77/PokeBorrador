@@ -11,6 +11,7 @@ import { usePlayerClassStore } from './playerClass.ts'
 import { useAudioStore } from './audio.ts'
 import { useMapStore } from './map.ts'
 import { useUIStore } from './ui.ts'
+import { useModalStore } from './modals.ts'
 import { createBattleStateMachine, BATTLE_STATES, BATTLE_SUBSTATES } from '../logic/battle/battleStateMachine.ts'
 import { clearVolatileStatus } from '../logic/battle/battleStatus.ts'
 import { startBattleSequence, initBattleSequence, restoreBattleState } from '../logic/battle/orchestrator.ts'
@@ -22,6 +23,7 @@ import { handleEntryAbilities, applyEndTurnEffects as executeEndTurnEffects } fr
 import { handleItemUsage } from '../logic/battle/battleItems.ts'
 import { executeFlee } from '../logic/battle/battleFlee.ts'
 import { setupBattleDebug } from '../logic/battle/battleDebug.ts'
+import { getMechanicalWeather } from '../logic/weather/weatherRegistry.ts'
 import { gameBus } from '@/logic/gameBus'
 import type { GameStore, EventStore, AudioStore, UIStore, BattleOptions } from '@/types/stores'
 import type { BattleContext } from '@/types/battleContext'
@@ -103,6 +105,7 @@ export const useBattleStore = defineStore('battle', () => {
   const playerStages = ref<BattleStages>({ ...INITIAL_STAGES })
   const enemyStages = ref<BattleStages>({ ...INITIAL_STAGES })
   const upcomingPokemon = ref<Pokemon | null>(null)
+  const upcomingEncounterType = ref<'wild' | 'fishing' | 'archaeology' | 'guardian' | null>(null)
   const debugLoopPokemon = ref<Pokemon | null>(null)
   const exitingPlayer = ref<Pokemon | null>(null)
   const exitingEnemy = ref<Pokemon | null>(null)
@@ -113,7 +116,31 @@ export const useBattleStore = defineStore('battle', () => {
   
   watch(() => mapStore.currentWeather, (newWeather) => {
     if (activeBattle.value && activeBattle.value.weather && activeBattle.value.weather.turns === -1) {
-      activeBattle.value.weather.type = newWeather || 'clear'
+      // Sincronizar tanto el tipo mecánico como el visual con el clima actual del mapa
+      activeBattle.value.weather.type = getMechanicalWeather(newWeather || 'clear')
+      activeBattle.value.weather.visual = newWeather || 'clear'
+    }
+  })
+
+  watch(() => [fsm.currentState.value, fsm.currentSubState.value], ([state, sub]) => {
+    if (
+      state === BATTLE_STATES.CONTEXT_SETUP ||
+      state === BATTLE_STATES.EXIT_BATTLE ||
+      sub === BATTLE_SUBSTATES.RESET_FLAGS
+    ) {
+      upcomingEncounterType.value = null
+      if (activeBattle.value) {
+        activeBattle.value.isFishing = false
+        activeBattle.value.isArchaeology = false
+      }
+      // Ensure minigame modals are closed on exit or reset
+      try {
+        const modalStore = useModalStore()
+        modalStore.close('Fishing')
+        modalStore.close('Archaeology')
+      } catch (e) {
+        logger.warn('BattleStore', 'Could not close minigame modals:', e)
+      }
     }
   })
 
@@ -141,6 +168,7 @@ export const useBattleStore = defineStore('battle', () => {
     isProcessing, 
     debugBinoculars, 
     upcomingPokemon, 
+    upcomingEncounterType,
     debugLoopPokemon,
     playerStages, 
     enemyStages, 
@@ -292,20 +320,7 @@ export const useBattleStore = defineStore('battle', () => {
       activeBattle.value.isCapture = true
       activeBattle.value.over = true 
       gs.addPokemon(castRes.pokemon || null, { notify: true })
-      
-      // Fase de Festejo (Phase 3 de la captura)
-      if (animations.value) {
-        await animations.value.playCatchCelebration('enemy')
-      }
-      
-      // Fase de Desvanecimiento (Phase 4 de la captura)
-      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.FADEOUT_BALL)
-      if (animations.value) await animations.value.playBallFadeOut('enemy')
-      
-      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.VACATE_SEAT)
-      activeBattle.value.enemy = null
       isProcessing.value = false
-      await fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.EMPTY_WAIT)
       await endBattle(true, false)
       return
     } else if (castRes.action !== 'fail') {
@@ -503,6 +518,7 @@ export const useBattleStore = defineStore('battle', () => {
     attackerSide,
     activeMove,
     upcomingPokemon,
+    upcomingEncounterType,
     exitingPlayer,
     exitingEnemy,
     animations,
@@ -527,6 +543,7 @@ export const useBattleStore = defineStore('battle', () => {
     applyEndTurnEffects,
     startBattle,
     _startBattle: startBattle,
+    initBattle,
     startEncounter: async () => await startEncounter(getContext()),
     executeSwitch: _executeSwitch
   }
