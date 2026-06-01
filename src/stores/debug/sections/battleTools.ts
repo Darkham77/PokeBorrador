@@ -95,7 +95,7 @@ export function registerBattleTools(debug: DebugSystem, _context: DebugContext) 
       if (type === 'escape_teleport' || type === 'escape_flee') {
         const escapeType = type === 'escape_teleport' ? 'teleport' : 'flee'
         const battle = useBattleStore()
-        const pokemon = side === 'player' ? battle.state?.player : (battle.isBattleActive && !battle.isSearching && battle.state?.enemy ? battle.state.enemy : (battle.upcomingPokemon || battle.state?.enemy))
+        const pokemon = side === 'player' ? battle.state?.player : battle.state?.enemy
         gameBus.emit('TRIGGER_COMBATANT_ESCAPE', { side, pokemon, type: escapeType })
         return `Efecto de escape ${escapeType} emitido para ${side}`
       }
@@ -110,7 +110,7 @@ export function registerBattleTools(debug: DebugSystem, _context: DebugContext) 
         if (type === 'trainer_in') battle.trainerAnimState = 'in'
         if (type === 'trainer_out') battle.trainerAnimState = 'out'
         if (type === 'levelUp') {
-          const p = side === 'player' ? battle.state?.player : (battle.state?.enemy || battle.upcomingPokemon)
+          const p = side === 'player' ? battle.state?.player : battle.state?.enemy
           if (p && p.level < MAX_POKEMON_LEVEL) {
             levelUpPokemon(p)
           }
@@ -143,9 +143,7 @@ export function registerBattleTools(debug: DebugSystem, _context: DebugContext) 
         const battle = useBattleStore()
         const poke = side === 'player' 
           ? battle.state?.player 
-          : (battle.isBattleActive && !battle.isSearching && battle.state?.enemy 
-              ? battle.state.enemy 
-              : (battle.upcomingPokemon || battle.state?.enemy))
+          : battle.state?.enemy
 
         if (poke) {
           if (status === 'null') {
@@ -161,8 +159,6 @@ export function registerBattleTools(debug: DebugSystem, _context: DebugContext) 
             battle.state.player = { ...poke }
           } else if (battle.state?.enemy && poke === battle.state.enemy) {
             battle.state.enemy = { ...battle.state.enemy }
-          } else if (battle.upcomingPokemon && poke === battle.upcomingPokemon) {
-            battle.upcomingPokemon = { ...battle.upcomingPokemon }
           }
         }
       })
@@ -179,9 +175,7 @@ export function registerBattleTools(debug: DebugSystem, _context: DebugContext) 
         const battle = useBattleStore()
         const poke = (side === 'player' 
           ? battle.state?.player 
-          : (battle.isBattleActive && !battle.isSearching && battle.state?.enemy 
-              ? battle.state.enemy 
-              : (battle.upcomingPokemon || battle.state?.enemy))) as (Pokemon & Record<string, unknown>) | undefined
+          : battle.state?.enemy) as (Pokemon & Record<string, unknown>) | undefined
 
         if (poke) {
           if (type === 'confused') poke.confused = (poke.confused || 0) > 0 ? 0 : 4
@@ -200,8 +194,6 @@ export function registerBattleTools(debug: DebugSystem, _context: DebugContext) 
             battle.state.player = { ...poke }
           } else if (battle.state?.enemy && poke === battle.state.enemy) {
             battle.state.enemy = { ...battle.state.enemy }
-          } else if (battle.upcomingPokemon && poke === battle.upcomingPokemon) {
-            battle.upcomingPokemon = { ...battle.upcomingPokemon }
           }
         }
       })

@@ -104,23 +104,24 @@
   }
 
   &.hail {
-    background: Rgba(176, 196, 222, 0.2);
+    background: Rgba(200, 230, 255, 0.2);
     & .hail-layer {
       position: absolute;
       inset: -100px;
       background-repeat: repeat;
-      background-image: url("data:image/svg+xml,%3Csvg width='128' height='128' viewBox='0 0 128 128' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23e0f7fa'%3E%3C!-- Rombo 1 --%3E%3Crect x='22' y='18' width='4' height='12'/%3E%3Crect x='18' y='22' width='12' height='4'/%3E%3C!-- Rombo 2 --%3E%3Crect x='82' y='40' width='3' height='9' opacity='0.8'/%3E%3Crect x='79' y='43' width='9' height='3' opacity='0.8'/%3E%3C!-- Rombo 3 --%3E%3Crect x='42' y='90' width='4' height='12' opacity='0.9'/%3E%3Crect x='38' y='94' width='12' height='4' opacity='0.9'/%3E%3C/g%3E%3C/svg%3E");
+      background-image: url("data:image/svg+xml,%3Csvg width='128' height='128' viewBox='0 0 128 128' xmlns='http://www.w3.org/2000/svg'%3E%3Crect x='10' y='10' width='4' height='4' fill='white' opacity='1'/%3E%3Crect x='70' y='40' width='3' height='3' fill='white' opacity='0.8'/%3E%3Crect x='40' y='90' width='4' height='4' fill='white' opacity='0.9'/%3E%3Crect x='110' y='110' width='3' height='3' fill='white' opacity='0.7'/%3E%3C/svg%3E");
       will-change: transform;
       image-rendering: pixelated;
     }
     & .layer-1 { 
-      opacity: 0.9; 
+      opacity: 1; 
       background-size: 128px 128px;
+      transform: translate3d(calc(var(--seed-x, 0) * 0.9px), calc(var(--seed-y, 0) * 0.9px), 0);
     }
     & .layer-2 { 
-      opacity: 0.4; 
+      opacity: 0.5; 
       background-size: 64px 64px; 
-      transform: translate3d(calc(var(--seed-x, 0) * 2px), calc(var(--seed-y, 0) * 2px), 0);
+      transform: translate3d(calc(var(--seed-x, 0) * 1.6px), calc(var(--seed-y, 0) * 1.6px), 0);
     }
   }
 
@@ -212,27 +213,5 @@
     & .layer-1 { opacity: 1; filter: contrast(1.2) Brightness(1.1); }
     & .layer-2 { opacity: 0.9; filter: contrast(1.1) Brightness(1.05); }
     .night & { opacity: 0.8; }
-  }
-
-  // Second Hail block
-  &.hail {
-    background: Rgba(200, 230, 255, 0.2);
-    & .hail-layer {
-      position: absolute;
-      inset: 0;
-      background-repeat: repeat;
-      background-image: url("data:image/svg+xml,%3Csvg width='128' height='128' viewBox='0 0 128 128' xmlns='http://www.w3.org/2000/svg'%3E%3Crect x='10' y='10' width='3' height='3' fill='white' opacity='1'/%3E%3Crect x='70' y='40' width='2' height='2' fill='white' opacity='0.8'/%3E%3Crect x='40' y='90' width='3' height='3' fill='white' opacity='0.9'/%3E%3Crect x='110' y='110' width='2' height='2' fill='white' opacity='0.7'/%3E%3C/svg%3E");
-      image-rendering: pixelated;
-    }
-    & .layer-1 { 
-      opacity: 1; 
-      background-size: 128px 128px; 
-      transform: translate3d(calc(var(--seed-x, 0) * 0.9px), calc(var(--seed-y, 0) * 0.9px), 0);
-    }
-    & .layer-2 {
-      opacity: 0.5;
-      background-size: 64px 64px;
-      transform: translate3d(calc(var(--seed-x, 0) * 1.6px), calc(var(--seed-y, 0) * 1.6px), 0);
-    }
   }
 }

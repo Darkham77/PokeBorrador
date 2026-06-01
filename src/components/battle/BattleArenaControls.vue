@@ -121,16 +121,14 @@ watch(() => [
 
 // Dynamic button text/emoji for fishing & archaeology encounters
 const encounterBtnEmoji = computed(() => {
-  const type = battleStore.upcomingEncounterType || 'wild'
-  if (type === 'fishing') return '🎣'
-  if (type === 'archaeology') return '⛏️'
+  if (battleStore.state?.isFishing) return '🎣'
+  if (battleStore.state?.isArchaeology) return '⛏️'
   return '⚔️'
 })
 
 const encounterBtnText = computed(() => {
-  const type = battleStore.upcomingEncounterType || 'wild'
-  if (type === 'fishing') return '¡PESCAR!'
-  if (type === 'archaeology') return '¡EXCAVAR!'
+  if (battleStore.state?.isFishing) return '¡PESCAR!'
+  if (battleStore.state?.isArchaeology) return '¡EXCAVAR!'
   return '¡COMBATIR!'
 })
 

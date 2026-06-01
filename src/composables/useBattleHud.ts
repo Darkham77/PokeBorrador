@@ -27,12 +27,8 @@ export function useBattleHud(
    */
   const isEnemyHudSuppressed = computed(() => {
     const s = toValue(battleStore.state)
-    const fsmState = toValue(battleStore.fsm?.currentState)
 
-    // El HUD se oculta para arqueología en combate. Durante búsqueda siempre está oculto de todos modos.
-    const isArchaeology = fsmState === 'SEARCH_PHASE'
-      ? (toValue(battleStore.upcomingEncounterType) === 'archaeology' || s?.isArchaeology || false)
-      : (s?.isArchaeology || false)
+    const isArchaeology = !!s?.isArchaeology
       
     if (isArchaeology) return true
 

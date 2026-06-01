@@ -7,7 +7,6 @@ import { useAudioStore } from '@/stores/audio'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import { PDEX_ORDER, GEN2_PDEX_ORDER } from '@/data/pokedex'
 import { gameBus } from '@/logic/gameBus'
-import type { Pokemon } from '@/types/pokemon'
 
 const ALL_PDEX = [...PDEX_ORDER, ...GEN2_PDEX_ORDER]
 
@@ -32,9 +31,7 @@ watch(() => battleStore.state?.player?.id, (newId) => {
 }, { immediate: true })
 
 const activeEnemyId = computed(() => {
-  const poke = (battleStore.isBattleActive && !battleStore.isSearching && battleStore.state?.enemy)
-    ? battleStore.state.enemy
-    : (battleStore.upcomingPokemon || battleStore.state?.enemy)
+  const poke = battleStore.state?.enemy
   return poke?.id || null
 })
 
@@ -147,26 +144,6 @@ const toggleSearchMode = async () => {
   } else {
      battleStore.fsm.transition(BATTLE_STATES.SEARCH_PHASE)
   }
-  
-  if (battleStore.isSearching && !battleStore.upcomingPokemon && battleStore.state?.locationId) {
-    const { generateEncounter } = await import('@/logic/encounters')
-    const mapStoreModule = await import('@/stores/map')
-    const eventStoreModule = await import('@/stores/events')
-    
-    const mapStore = mapStoreModule.useMapStore()
-    const eventStore = eventStoreModule.useEventStore()
-
-    const encounter = await generateEncounter(battleStore.state.locationId, gameStore.state, {
-      activeEvents: mapStore.activeEvents || [],
-      dominanceData: mapStore.mapWinners || {},
-      shinyMultiplier: eventStore.globalMultipliers?.shiny || 1,
-      forceEncounter: true
-    })
-    
-    if (encounter && encounter.type === 'wild' && 'pokemon' in encounter) {
-      battleStore.upcomingPokemon = { ...(encounter.pokemon as Pokemon) }
-    }
-  }
 }
 
 const updateVisualSwap = (side = 'enemy') => {
@@ -203,18 +180,13 @@ const toggleStatus = (side: string, type: string) => {
       battleStore.state.player = { ...p }
     }
   } else {
-    const poke = (battleStore.isBattleActive && !battleStore.isSearching && battleStore.state?.enemy)
-      ? battleStore.state.enemy
-      : (battleStore.upcomingPokemon || battleStore.state?.enemy)
-
+    const poke = battleStore.state?.enemy
     if (!poke) return
     if (type === 'shiny') poke.isShiny = !poke.isShiny
     if (type === 'guardian') poke.isGuardian = !poke.isGuardian
     
-    if (battleStore.state?.enemy && poke === battleStore.state.enemy) {
-      battleStore.state.enemy = { ...battleStore.state.enemy }
-    } else if (battleStore.upcomingPokemon && poke === battleStore.upcomingPokemon) {
-      battleStore.upcomingPokemon = { ...battleStore.upcomingPokemon }
+    if (battleStore.state) {
+      battleStore.state.enemy = { ...poke }
     }
   }
 }
@@ -339,14 +311,14 @@ const toggleStatus = (side: string, type: string) => {
       <div class="btn-grid">
         <button
           class="mini-btn"
-          :class="{ active: (battleStore.isBattleActive && !battleStore.isSearching && battleStore.state?.enemy ? battleStore.state.enemy.isShiny : (battleStore.upcomingPokemon?.isShiny || battleStore.state?.enemy?.isShiny)) }"
+          :class="{ active: battleStore.state?.enemy?.isShiny }"
           @click.stop="toggleStatus('enemy', 'shiny')"
         >
           SHINY
         </button>
         <button
           class="mini-btn"
-          :class="{ active: (battleStore.isBattleActive && !battleStore.isSearching && battleStore.state?.enemy ? battleStore.state.enemy.isGuardian : (battleStore.upcomingPokemon?.isGuardian || battleStore.state?.enemy?.isGuardian)) }"
+          :class="{ active: battleStore.state?.enemy?.isGuardian }"
           @click.stop="toggleStatus('enemy', 'guardian')"
         >
           GUARD

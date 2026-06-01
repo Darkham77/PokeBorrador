@@ -241,28 +241,14 @@ const initWeatherAnim = () => {
       if (layer1Ref.value) {
         const s1X = (seed1 * 1200) % 128
         const s1Y = (seed1 * 2200) % 128
-        gsap.set(layer1Ref.value, { backgroundPosition: `${s1X}px ${s1Y}px` })
-        
-        weatherTimeline.to(layer1Ref.value, {
-          backgroundPosition: '0px +=512px',
-          duration: 1.0 / speedVar,
-          repeat: -1,
-          ease: 'none'
-        }, 0)
+        applyParallaxLayer(layer1Ref.value, s1X, s1Y, 0, 512, 1.0 / speedVar)
       }
 
       if (layer2Ref.value && !props.isLowPower) {
-        const speedVar = 0.9 + (animSeed.value * 0.2)
+        const speedVar2 = 0.9 + (animSeed.value * 0.2)
         const s2X = (seed2 * 2800) % 64
         const s2Y = (seed2 * 3800) % 64
-        gsap.set(layer2Ref.value, { backgroundPosition: `${s2X}px ${s2Y}px` })
-        
-        weatherTimeline.to(layer2Ref.value, {
-          backgroundPosition: '0px +=512px',
-          duration: 1.5 / speedVar,
-          repeat: -1,
-          ease: 'none'
-        }, 0)
+        applyParallaxLayer(layer2Ref.value, s2X, s2Y, 0, 512, 1.5 / speedVar2)
       }
     }
   }

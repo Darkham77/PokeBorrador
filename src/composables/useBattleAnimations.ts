@@ -390,15 +390,6 @@ export function useBattleAnimations(
       resetCaptureStates()
     })
 
-    watch(() => battleStore.upcomingPokemon, (newVal) => {
-      const isSearchState = toValue(battleStore.fsm.currentState) === 'SEARCH_PHASE'
-      if (newVal && battleStore.isSearching && isSearchState) {
-        upcomingIsEmerging.value = true
-        const tl = createTimeline()
-        tl.to({}, { duration: 1.2 })
-        tl.add(() => { upcomingIsEmerging.value = false })
-      }
-    })
   }
 
   return {

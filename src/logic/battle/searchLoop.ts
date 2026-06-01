@@ -1,4 +1,3 @@
-
 import { generateEncounter } from '@/logic/encounters'
 import { useUIStore } from '@/stores/ui'
 import { useMapStore } from '@/stores/map'
@@ -24,73 +23,42 @@ export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'm
     ctx.activeBattle.value.isArchaeology = false
     
     // FASE: INITIALIZING
-    fsm.transition(BATTLE_STATES.INITIALIZING)
-    fsm.transition(BATTLE_STATES.INITIALIZING, BATTLE_SUBSTATES.CHECK_SLOTS)
-    fsm.transition(BATTLE_STATES.INITIALIZING, BATTLE_SUBSTATES.PROMOTE_AND_REPOPULATE)
-    fsm.transition(BATTLE_STATES.INITIALIZING, BATTLE_SUBSTATES.PROMOTE)
+    await fsm.transition(BATTLE_STATES.INITIALIZING)
     
     const locId = ctx.activeBattle.value.locationId
     
-    // PROMOTE: Slot 2 -> Slot 1
-    if (ctx.upcomingPokemon.value) {
-      ctx.activeBattle.value._initialEnemy = { ...ctx.upcomingPokemon.value }
-      
-      // Consumimos el Slot 2 ya que pasa a ser el Slot 1 activo
-      ctx.upcomingPokemon.value = null
-      if (ctx.upcomingEncounterType) ctx.upcomingEncounterType.value = null
+    // Generar el encuentro activo directo para esta búsqueda
+    const mapStore = useMapStore() as unknown as MapStore
+    const eventStore = useEventStore() as unknown as EventStore
+    const warStore = useWarStore() as unknown as WarStore
+    const encounterOptions = {
+      activeEvents: mapStore.activeEvents,
+      dominanceData: warStore.mapDominance,
+      shinyMultiplier: eventStore.globalMultipliers?.shiny || 1,
+      forceEncounter: true
+    }
+    const encounter = await generateEncounter(locId, ctx.gs.state, encounterOptions)
+    if (encounter && (encounter.type === 'wild' || encounter.type === 'fishing' || encounter.type === 'archaeology' || encounter.type === 'guardian') && encounter.pokemon) {
+      ctx.activeBattle.value._initialEnemy = { ...encounter.pokemon }
+      ctx.activeBattle.value.enemy = { ...encounter.pokemon }
+      ctx.activeBattle.value.isFishing = encounter.type === 'fishing'
+      ctx.activeBattle.value.isArchaeology = encounter.type === 'archaeology'
     }
 
-    // GEN_NEW_S2: Generar próximo encuentro si no hay uno en el slot (Slot 2)
-    if (!ctx.upcomingPokemon.value) {
-      const mapStore = useMapStore() as unknown as MapStore
-      const eventStore = useEventStore() as unknown as EventStore
-      const warStore = useWarStore() as unknown as WarStore
-      const encounterOptions = {
-        activeEvents: mapStore.activeEvents,
-        dominanceData: warStore.mapDominance,
-        shinyMultiplier: eventStore.globalMultipliers?.shiny || 1,
-        forceEncounter: true
-      }
-      const encounter = await generateEncounter(locId, ctx.gs.state, encounterOptions)
-      if (encounter && (encounter.type === 'wild' || encounter.type === 'fishing' || encounter.type === 'archaeology' || encounter.type === 'guardian') && encounter.pokemon) {
-        ctx.upcomingPokemon.value = encounter.pokemon
-        if (ctx.upcomingEncounterType) {
-          ctx.upcomingEncounterType.value = encounter.type as 'wild' | 'fishing' | 'archaeology' | 'guardian'
-        }
-      }
-    }
-
-    // Si el encuentro generado o existente en Slot 2 es un minijuego, lo promocionamos de inmediato para jugar
-    const nextType = ctx.upcomingEncounterType?.value || 'wild'
-    if (nextType === 'fishing' || nextType === 'archaeology') {
-      ctx.activeBattle.value.isFishing = nextType === 'fishing'
-      ctx.activeBattle.value.isArchaeology = nextType === 'archaeology'
-      if (ctx.upcomingPokemon.value) {
-        ctx.activeBattle.value._initialEnemy = ctx.upcomingPokemon.value
-        ctx.activeBattle.value.enemy = ctx.upcomingPokemon.value
-      }
-      // Consumimos el Slot 2
-      ctx.upcomingPokemon.value = null
-      if (ctx.upcomingEncounterType) ctx.upcomingEncounterType.value = null
-      
+    // Si el encuentro generado es un minijuego, lo jugamos de inmediato
+    const isMinigame = ctx.activeBattle.value.isFishing || ctx.activeBattle.value.isArchaeology
+    if (isMinigame) {
       ctx.isProcessing.value = false
       await fsm.transition(BATTLE_STATES.INITIALIZING)
       await fsm.transition(BATTLE_STATES.INITIALIZING, BATTLE_SUBSTATES.MINIGAME_CHECK)
       return
     }
 
-    await fsm.transition(BATTLE_STATES.INITIALIZING, BATTLE_SUBSTATES.GEN_NEW_S2)
+    await fsm.transition(BATTLE_STATES.INITIALIZING)
     await fsm.transition(BATTLE_STATES.INITIALIZING, BATTLE_SUBSTATES.PRELOAD_COORDS, 100)
 
     // FASE: SEARCH_PHASE (Solo para salvajes normales)
     await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.PARALLEL_PREP)
-    
-    if (!ctx.activeBattle.value._initialEnemy && ctx.upcomingPokemon.value) {
-      ctx.activeBattle.value._initialEnemy = { ...ctx.upcomingPokemon.value }
-    }
-    if (ctx.activeBattle.value._initialEnemy) {
-      ctx.activeBattle.value.enemy = ctx.activeBattle.value._initialEnemy
-    }
     
     ctx.isProcessing.value = false
     return
@@ -115,27 +83,25 @@ export async function triggerNextEncounter(ctx: BattleContext) {
   
   ctx.isProcessing.value = false
   const locId = ctx.activeBattle.value?.locationId
-  if (!ctx.upcomingPokemon.value || !locId) {
-    logger.warn('Battle', 'triggerNextEncounter: sin upcomingPokemon o locationId.')
+  const enemyPoke = ctx.activeBattle.value?.enemy
+  if (!enemyPoke || !locId) {
+    logger.warn('Battle', 'triggerNextEncounter: sin enemy o locationId.')
     return
   }
   
   await fsm.transition(BATTLE_STATES.INITIALIZING)
-  const nextType = ctx.upcomingEncounterType?.value || 'wild'
-  if (nextType === 'fishing' || nextType === 'archaeology') {
+  const isMinigame = ctx.activeBattle.value?.isFishing || ctx.activeBattle.value?.isArchaeology
+  if (isMinigame) {
     await fsm.transition(BATTLE_STATES.INITIALIZING, BATTLE_SUBSTATES.MINIGAME_CHECK)
   }
   await fsm.transition(BATTLE_STATES.INITIALIZING, BATTLE_SUBSTATES.ENCOUNTER_ANIM)
   
-  const nextPoke = ctx.upcomingPokemon.value
-  ctx.upcomingPokemon.value = null
-  if (ctx.upcomingEncounterType) ctx.upcomingEncounterType.value = null
-  await ctx._startBattle(nextPoke, {
+  await ctx._startBattle(enemyPoke, {
     locationId: locId,
     wasSearching: true,
     isDebug: !!ctx.debugLoopPokemon.value,
-    isFishing: nextType === 'fishing',
-    isArchaeology: nextType === 'archaeology'
+    isFishing: ctx.activeBattle.value?.isFishing,
+    isArchaeology: ctx.activeBattle.value?.isArchaeology
   })
 }
 
@@ -143,23 +109,14 @@ export async function startEncounter(ctx: BattleContext) {
   const { BATTLE_STATES, BATTLE_SUBSTATES } = ctx
   const fsm = ctx.fsm
 
-  const nextType = ctx.upcomingEncounterType?.value
-    || (ctx.activeBattle.value?.isFishing ? 'fishing' : '')
-    || (ctx.activeBattle.value?.isArchaeology ? 'archaeology' : '')
-    || 'wild'
-  const nextPoke = ctx.upcomingPokemon.value
+  const isMinigame = ctx.activeBattle.value?.isFishing || ctx.activeBattle.value?.isArchaeology
+  const enemyPoke = ctx.activeBattle.value?.enemy || ctx.activeBattle.value?._initialEnemy
   const locId = ctx.activeBattle.value?.locationId || 'route1'
 
-  if (nextType === 'fishing' || nextType === 'archaeology') {
-    if (ctx.activeBattle.value) {
-      ctx.activeBattle.value.isFishing = nextType === 'fishing'
-      ctx.activeBattle.value.isArchaeology = nextType === 'archaeology'
-      if (nextPoke) {
-        ctx.activeBattle.value.enemy = { ...nextPoke }
-        ctx.activeBattle.value._initialEnemy = { ...nextPoke }
-      } else if (!ctx.activeBattle.value.enemy && ctx.activeBattle.value._initialEnemy) {
-        ctx.activeBattle.value.enemy = { ...ctx.activeBattle.value._initialEnemy }
-      }
+  if (isMinigame) {
+    if (ctx.activeBattle.value && enemyPoke) {
+      ctx.activeBattle.value.enemy = { ...enemyPoke }
+      ctx.activeBattle.value._initialEnemy = { ...enemyPoke }
     }
     await fsm.transition(BATTLE_STATES.INITIALIZING)
     await fsm.transition(BATTLE_STATES.INITIALIZING, BATTLE_SUBSTATES.MINIGAME_CHECK)

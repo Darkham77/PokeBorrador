@@ -1,18 +1,15 @@
 import { gsapSleep as sleep } from '@/logic/utils/gsapHelpers'
 
-import { generateEncounter } from '@/logic/encounters'
 import { handleEntryAbilities } from './battleFlow.ts'
 import { getMechanicalWeather } from '../weather/weatherRegistry.ts'
 import { FIRE_RED_MAPS } from '@/data/maps'
 import { useUIStore } from '@/stores/ui'
 import { useMapStore } from '@/stores/map'
-import { useEventStore } from '@/stores/events'
-import { useWarStore } from '@/stores/war'
 import { logger } from '../utils/logger.ts'
 import type { BattleContext } from '@/types/battleContext'
 import type { Pokemon } from '@/types/pokemon'
 import type { BattleState, BattleStages, BattleLog } from '@/types/battle'
-import type { UIStore, MapStore, EventStore, WarStore } from '@/types/stores'
+import type { UIStore, MapStore } from '@/types/stores'
 
 export interface BattleOptions {
   isGym?: boolean;
@@ -82,9 +79,7 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
   
   const { sanitizePokemon } = await import('@/logic/pokemonFactory')
   const mapStore = useMapStore() as unknown as MapStore
-
-  const isFromUpcoming = wasSearching && ctx.upcomingPokemon.value && (ctx.upcomingPokemon.value.id === enemyPoke.id)
-  const finalEnemyPoke = isFromUpcoming ? ctx.upcomingPokemon.value as Pokemon : enemyPoke
+  const finalEnemyPoke = enemyPoke
 
   sanitizePokemon(playerPoke)
   sanitizePokemon(finalEnemyPoke)
@@ -181,10 +176,6 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
   await fsm.transition(BATTLE_STATES.INITIALIZING, BATTLE_SUBSTATES.SET_SEARCH_FLAG)
 
   if (wasSearching) {
-    ctx.upcomingPokemon.value = finalEnemyPoke
-    if (ctx.upcomingEncounterType) {
-      ctx.upcomingEncounterType.value = isFishing ? 'fishing' : (isArchaeology ? 'archaeology' : 'wild')
-    }
 
     if (isFishing || isArchaeology) {
       ctx.isIntroAnimating.value = false
@@ -408,30 +399,6 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
   handleEntryAbilities(initialPlayer, initialEnemy, ctx.playerStages.value, ctx.enemyStages.value, ctx.addLog)
   
   if (isTrainer || isGym) await ctx.gs.scheduleSave()
-  
-  if (!isTrainer && !isGym) {
-    const mapStore = useMapStore() as unknown as MapStore
-    const eventStore = useEventStore() as unknown as EventStore
-    const warStore = useWarStore() as unknown as WarStore
-    const encounterOptions = {
-      activeEvents: mapStore.activeEvents,
-      dominanceData: warStore.mapDominance,
-      shinyMultiplier: eventStore.globalMultipliers?.shiny || 1,
-      forceEncounter: true 
-    }
-    
-    generateEncounter(locationId || 'plains', ctx.gs.state, encounterOptions).then((encounter) => {
-      if (encounter && (encounter.type === 'wild' || encounter.type === 'fishing' || encounter.type === 'archaeology' || encounter.type === 'guardian') && encounter.pokemon) {
-        if (fsm.currentState.value !== BATTLE_STATES.EXIT_BATTLE) {
-          // background update only, NO FSM transition here to avoid hijacking
-          ctx.upcomingPokemon.value = encounter.pokemon
-          if (ctx.upcomingEncounterType) {
-            ctx.upcomingEncounterType.value = encounter.type as 'wild' | 'fishing' | 'archaeology' | 'guardian'
-          }
-        }
-      }
-    })
-  }
 
   ctx.isIntroAnimating.value = false
   await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT)

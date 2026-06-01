@@ -25,8 +25,6 @@ export interface BattleContext {
   isPvP: Ref<boolean>;
   isProcessing: Ref<boolean>;
   debugBinoculars: Ref<boolean>;
-  upcomingPokemon: Ref<Pokemon | null>;
-  upcomingEncounterType?: Ref<'wild' | 'fishing' | 'archaeology' | 'guardian' | null>;
   debugLoopPokemon: Ref<Pokemon | null>;
   playerStages: Ref<BattleStages>;
   enemyStages: Ref<BattleStages>;

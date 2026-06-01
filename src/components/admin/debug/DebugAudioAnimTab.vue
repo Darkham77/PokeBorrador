@@ -78,9 +78,7 @@ const isEffectActive = (type: string, category: string) => {
   const side = activeSide.value
   const poke = side === 'player' 
     ? battleStore.state?.player 
-    : (battleStore.isBattleActive && !battleStore.isSearching && battleStore.state?.enemy 
-        ? battleStore.state.enemy 
-        : (battleStore.upcomingPokemon || battleStore.state?.enemy))
+    : battleStore.state?.enemy
   const stages = side === 'player' ? battleStore.playerStages : battleStore.enemyStages
 
   if (category === 'status') return (poke as Pokemon | undefined)?.status === type

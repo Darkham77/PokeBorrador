@@ -2,7 +2,6 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { handleBattleFlowCompletion } from '@/logic/battle/searchLoop'
 import { BATTLE_STATES, BATTLE_SUBSTATES } from '@/logic/battle/battleStateMachine'
 import type { BattleContext } from '@/types/battleContext'
-import type { Pokemon } from '@/types/pokemon'
 
 vi.mock('@/logic/encounters', () => ({
   generateEncounter: vi.fn(async () => ({ type: 'wild', pokemon: { id: 16, name: 'Pidgey' } }))
@@ -29,7 +28,7 @@ vi.mock('@/stores/war', () => ({
   }))
 }))
 
-describe('searchLoop.js - handleBattleFlowCompletion', () => {
+describe('searchLoop.js - handleBattleFlowCompletion (Flujo Directo)', () => {
   let mockCtx: BattleContext
 
   beforeEach(() => {
@@ -38,11 +37,12 @@ describe('searchLoop.js - handleBattleFlowCompletion', () => {
         value: {
           locationId: 'route1',
           _initialEnemy: null,
-          enemy: null
+          enemy: null,
+          isFishing: false,
+          isArchaeology: false
         }
       },
-      upcomingPokemon: { value: null },
-      debugBinoculars: { value: false },
+      debugLoopPokemon: { value: null },
       isProcessing: { value: false },
       gs: { state: {} },
       fsm: {
@@ -57,21 +57,15 @@ describe('searchLoop.js - handleBattleFlowCompletion', () => {
     } as unknown as BattleContext
   })
 
-  it('should promote upcomingPokemon to _initialEnemy during search loop', async () => {
-    mockCtx.upcomingPokemon.value = { id: '19', name: 'Rattata' } as unknown as Pokemon
-    
+  it('should generate active encounter directly during search loop', async () => {
     await handleBattleFlowCompletion(mockCtx, 'search')
     
-    expect(mockCtx.activeBattle.value!._initialEnemy).toEqual(expect.objectContaining({ name: 'Rattata' }))
-    expect(mockCtx.fsm.transition).toHaveBeenCalledWith(BATTLE_STATES.INITIALIZING)
-  })
-
-  it('should generate new upcomingPokemon if slot is empty', async () => {
-    mockCtx.upcomingPokemon.value = null
-    
-    await handleBattleFlowCompletion(mockCtx, 'search')
-    expect(mockCtx.upcomingPokemon.value).toEqual(expect.objectContaining({ name: 'Pidgey' }))
-    // Note: handleBattleFlowCompletion with 'search' does NOT set activeBattle to null
+    // El encuentro activo se genera directamente y se asigna a _initialEnemy y enemy
     expect(mockCtx.activeBattle.value!._initialEnemy).toEqual(expect.objectContaining({ name: 'Pidgey' }))
+    expect(mockCtx.activeBattle.value!.enemy).toEqual(expect.objectContaining({ name: 'Pidgey' }))
+    
+    // Debe transicionar a INITIALIZING y luego a SEARCH_PHASE / PARALLEL_PREP
+    expect(mockCtx.fsm.transition).toHaveBeenCalledWith(BATTLE_STATES.INITIALIZING)
+    expect(mockCtx.fsm.transition).toHaveBeenCalledWith(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.PARALLEL_PREP)
   })
 })

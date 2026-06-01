@@ -104,8 +104,6 @@ export const useBattleStore = defineStore('battle', () => {
 
   const playerStages = ref<BattleStages>({ ...INITIAL_STAGES })
   const enemyStages = ref<BattleStages>({ ...INITIAL_STAGES })
-  const upcomingPokemon = ref<Pokemon | null>(null)
-  const upcomingEncounterType = ref<'wild' | 'fishing' | 'archaeology' | 'guardian' | null>(null)
   const debugLoopPokemon = ref<Pokemon | null>(null)
   const exitingPlayer = ref<Pokemon | null>(null)
   const exitingEnemy = ref<Pokemon | null>(null)
@@ -128,7 +126,6 @@ export const useBattleStore = defineStore('battle', () => {
       state === BATTLE_STATES.EXIT_BATTLE ||
       sub === BATTLE_SUBSTATES.RESET_FLAGS
     ) {
-      upcomingEncounterType.value = null
       if (activeBattle.value) {
         activeBattle.value.isFishing = false
         activeBattle.value.isArchaeology = false
@@ -167,8 +164,6 @@ export const useBattleStore = defineStore('battle', () => {
     isPvP,
     isProcessing, 
     debugBinoculars, 
-    upcomingPokemon, 
-    upcomingEncounterType,
     debugLoopPokemon,
     playerStages, 
     enemyStages, 
@@ -517,8 +512,6 @@ export const useBattleStore = defineStore('battle', () => {
     debugZoom,
     attackerSide,
     activeMove,
-    upcomingPokemon,
-    upcomingEncounterType,
     exitingPlayer,
     exitingEnemy,
     animations,
