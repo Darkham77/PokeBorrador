@@ -12,13 +12,15 @@ interface Props {
   instant?: boolean
   // ENCOUNTER_ANIM - Paso BUSHES_BACK: mueve la capa frontal detrás del sprite durante el salto
   forceBehind?: boolean
+  hideInstant?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
   locationId: 'route1',
   visible: true,
   instant: false,
-  forceBehind: false
+  forceBehind: false,
+  hideInstant: false
 })
 
 const handleImageError = (e: Event, family: string) => {
@@ -88,6 +90,11 @@ const onEnter = (el: Element, done: () => void) => {
 }
 
 const onLeave = (el: Element, done: () => void) => {
+  if (props.hideInstant) {
+    gsap.set(el, { opacity: 0 })
+    done()
+    return
+  }
   gsap.to(el, { 
     opacity: 0, 
     duration: 0.6, 

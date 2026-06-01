@@ -27,6 +27,7 @@ export async function executeFlee(ctx: BattleContext) {
         ctx.fsm.transition(ctx.fsm.currentState.value, ctx.BATTLE_SUBSTATES.ESCAPE_PROCESS)
         gameBus.emit('PLAY_ESCAPE_ANIM', { side: 'player' })
         
+        ctx.activeBattle.value.playerFled = true
         await ctx.endBattle(false, true)
         ctx.isProcessing.value = false
         return
@@ -65,6 +66,7 @@ export async function executeFlee(ctx: BattleContext) {
           await gsapSleep(800)
         }
         
+        ctx.activeBattle.value.playerFled = true
         await ctx.endBattle(false, true)
       } else {
         if (ctx.activeBattle.value) ctx.activeBattle.value.escapeAttempts++

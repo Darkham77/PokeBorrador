@@ -26,6 +26,9 @@ export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'm
     // Restablecer flags de minijuegos para la fase de búsqueda
     ctx.activeBattle.value.isFishing = false
     ctx.activeBattle.value.isArchaeology = false
+    ctx.activeBattle.value.rewardsProcessed = false
+    ctx.activeBattle.value.over = false
+    ctx.activeBattle.value._rewardCombatants = []
     
     // FASE: INITIALIZING
     await fsm.transition(BATTLE_STATES.INITIALIZING)
@@ -53,12 +56,13 @@ export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'm
       isArchaeology = encounter.type === 'archaeology'
     }
 
+    if (generatedPoke) {
+      ctx.activeBattle.value._initialEnemy = { ...generatedPoke }
+      ctx.activeBattle.value.enemy = { ...generatedPoke }
+    }
+
     // Si el encuentro generado es un minijuego, lo jugamos de inmediato
     if (isFishing || isArchaeology) {
-      if (generatedPoke) {
-        ctx.activeBattle.value._initialEnemy = { ...generatedPoke }
-        ctx.activeBattle.value.enemy = { ...generatedPoke }
-      }
       ctx.activeBattle.value.isFishing = isFishing
       ctx.activeBattle.value.isArchaeology = isArchaeology
       ctx.isProcessing.value = false
@@ -72,12 +76,7 @@ export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'm
 
     // FASE: SEARCH_PHASE (Solo para salvajes normales)
     await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.PARALLEL_PREP)
-    
-    // Asignar el nuevo enemigo solo después de entrar en SEARCH_PHASE (donde la silueta/invisibilidad está activa)
-    if (generatedPoke) {
-      ctx.activeBattle.value._initialEnemy = { ...generatedPoke }
-      ctx.activeBattle.value.enemy = { ...generatedPoke }
-    }
+    await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.BUSH_IDLE)
     
     ctx.isProcessing.value = false
     return

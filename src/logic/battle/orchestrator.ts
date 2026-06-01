@@ -96,6 +96,7 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
     player: null, 
     _initialEnemy: finalEnemyPoke,
     _initialPlayer: playerPoke,
+    _rewardCombatants: [],
     isGym, gymId, isTrainer, enemyTeam,
     trainerSprite: battleOptions.trainerSprite as string || undefined,
     playerTeam: ctx.gs.state.team,
@@ -246,7 +247,15 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
     ctx.activeBattle.value.futureSightTarget = null
     ctx.activeBattle.value.isFishing = false
     ctx.activeBattle.value.isArchaeology = false
+    ctx.activeBattle.value.rewardsProcessed = false
+    ctx.activeBattle.value._rewardCombatants = []
   }
+
+  // Reset stage variables, fainted sides and logs to prevent state leakages
+  ctx.playerStages.value = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0, reflect: 0, lightScreen: 0, safeguard: 0, mist: 0, spikes: 0 }
+  ctx.enemyStages.value = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0, reflect: 0, lightScreen: 0, safeguard: 0, mist: 0, spikes: 0 }
+  ctx.faintedSides.value.clear()
+  ctx.clearLogs()
 
   // Clear volatile status on both sides
   ctx.clearVolatileStatus(initialPlayer)

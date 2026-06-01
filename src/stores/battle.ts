@@ -277,7 +277,7 @@ export const useBattleStore = defineStore('battle', () => {
       if (!activeBattle.value.over) await applyEndTurnEffects()
       activeMove.value = null
       
-      if (activeBattle.value && !activeBattle.value.over) {
+      if (activeBattle.value && !activeBattle.value.over && fsm.currentState.value === BATTLE_STATES.ACTIVE_BATTLE) {
         fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ANIM_SYNC)
         fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.UPDATE_BUTTON)
         fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT)
@@ -347,7 +347,7 @@ export const useBattleStore = defineStore('battle', () => {
         return
       }
     }
-    if (activeBattle.value && !activeBattle.value.over) {
+    if (activeBattle.value && !activeBattle.value.over && fsm.currentState.value === BATTLE_STATES.ACTIVE_BATTLE) {
       fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT)
     }
     isProcessing.value = false

@@ -6,15 +6,27 @@ import { getBattleRewardModifiers } from '@/logic/war/bonusEngine'
 import { levelUpPokemon } from '@/logic/pokemonFactory'
 import type { BattleContext } from '@/types/battleContext'
 import type { Pokemon, PokemonMove } from '@/types/pokemon'
+import type { BattleState } from '@/types/battle.ts'
 import { useBreedingStore } from '@/stores/breeding'
 import { useUIStore } from '@/stores/ui'
+
+function registerRewardCombatant(active: BattleState) {
+  if (!active) return
+  if (!active._rewardCombatants) {
+    active._rewardCombatants = []
+  }
+  const e = active.enemy || active._initialEnemy
+  if (e && !active._rewardCombatants.some((p: Pokemon) => p.uid === e.uid)) {
+    active._rewardCombatants.push(e)
+  }
+}
 
 /**
  * Handles the fainting of a Pokémon.
  */
 export async function processFaint(ctx: BattleContext, side: 'player' | 'enemy') {
   const active = ctx.activeBattle.value;
-  if (!active) return;
+  if (!active || active.over || ['SEARCH_PHASE', 'REWARDS_PHASE'].includes(ctx.fsm.currentState.value)) return;
 
   const isPlayer = side === 'player'
   const { BATTLE_STATES, BATTLE_SUBSTATES } = ctx
@@ -92,7 +104,13 @@ export async function processFaint(ctx: BattleContext, side: 'player' | 'enemy')
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.PLAY_ENEMY_FAINT)
     
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.VACATE_SEAT)
-    active.enemy = null
+    if (active) {
+      registerRewardCombatant(active)
+      active.enemy = null
+      if (!isTr || !active.enemyTeam || !active.enemyTeam.some(p => p.hp > 0)) {
+        active._initialEnemy = null
+      }
+    }
 
     if (isTr && active.enemyTeam) {
       await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ENEMY_REPLACEMENT_SEQ)
@@ -127,7 +145,9 @@ export async function processFaint(ctx: BattleContext, side: 'player' | 'enemy')
     
     if (active) {
       active.over = true;
+      registerRewardCombatant(active)
       active.enemy = null;
+      active._initialEnemy = null;
     }
     ctx.faintedSides.value.add('enemy')
     await terminateBattle(ctx, true)
@@ -178,11 +198,17 @@ export async function terminateBattle(ctx: BattleContext, win: boolean, fled = f
     }
     
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.VACATE_SEAT)
-    if (active) active.enemy = null
-    if (active) active._initialEnemy = null
+    if (active) {
+      registerRewardCombatant(active)
+      active.enemy = null
+      active._initialEnemy = null
+    }
   } else {
-    if (active) active.enemy = null
-    if (active) active._initialEnemy = null
+    if (active) {
+      registerRewardCombatant(active)
+      active.enemy = null
+      active._initialEnemy = null
+    }
   }
 
   // 3. Procesar recompensas (Transición a REWARDS_PHASE)
@@ -218,10 +244,12 @@ export async function terminateBattle(ctx: BattleContext, win: boolean, fled = f
   }
 
   if (fled) {
+    if (active) active._initialEnemy = null
     await fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.WAIT_LOG_QUEUE_ONLY)
     await ctx.waitForLogs()
     
-    if (isSingle) {
+    const playerFled = active.playerFled || false
+    if (isSingle || playerFled) {
       await fsm.transition(BATTLE_STATES.EXIT_BATTLE, BATTLE_SUBSTATES.ENTRY_CHECK)
       await fsm.transition(BATTLE_STATES.EXIT_BATTLE, BATTLE_SUBSTATES.EXECUTE_CLEANUP)
       await fsm.transition(BATTLE_STATES.EXIT_BATTLE, BATTLE_SUBSTATES.CLEAR_UI)
@@ -280,6 +308,8 @@ export async function terminateBattle(ctx: BattleContext, win: boolean, fled = f
     }
   }
 
+  if (active) active._initialEnemy = null
+
   await fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.CHECK_PERSISTENCE)
   
   if (!isSingle) {
@@ -295,18 +325,20 @@ export async function terminateBattle(ctx: BattleContext, win: boolean, fled = f
 export async function calculateBattleRewards(ctx: BattleContext) {
   const active = ctx.activeBattle.value;
   if (!active) return;
-  const e = active.enemy || active._initialEnemy
-  if (!e) return
+
+  const combatants = active._rewardCombatants && active._rewardCombatants.length > 0 
+    ? active._rewardCombatants 
+    : (active.enemy || active._initialEnemy ? [active.enemy || active._initialEnemy] : []).filter(Boolean) as Pokemon[]
+  
+  if (combatants.length === 0) return;
 
   const { BATTLE_STATES, BATTLE_SUBSTATES } = ctx
   const fsm = ctx.fsm
   
   await fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.DISTRIBUTE_XP)
-  // fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.EMPTY_WAIT)
   
   const isTr = active.isTrainer || active.isGym
   const locId = active.locationId
-  const enemyRef = e
 
   // Update statistics
   if (!ctx.gs.state.stats) {
@@ -318,10 +350,10 @@ export async function calculateBattleRewards(ctx: BattleContext) {
     ctx.gs.state.stats.wins = (Number(ctx.gs.state.stats.wins) || 0) + 1
   }
 
-  if (enemyRef?.isGuardian) await ctx.warStore.addPoints(locId, 'guardian', true)
+  // Faction points using the primary opponent
+  const primaryEnemy = combatants[0]
+  if (primaryEnemy?.isGuardian) await ctx.warStore.addPoints(locId, 'guardian', true)
   else await ctx.warStore.addPoints(locId, isTr ? 'trainer_win' : 'wild_win', true)
-  
-  if (active.isCapture) await ctx.eventStore.submitCompetitionEntry(enemyRef, 'hourly_competition')
   
   if (active.isGym && active.gymId) {
     const gid = active.gymId
@@ -355,71 +387,74 @@ export async function calculateBattleRewards(ctx: BattleContext) {
     await ctx.gs.save(false)
   }
 
-  const baseExp = calculateBaseExp(e)
   const warMods = getBattleRewardModifiers(active.locationId, ctx.gs.state.faction, ctx.warStore.mapDominance)
   const totalExpMult = warMods.expMult + ((ctx.eventStore.globalMultipliers?.exp || 1) - 1)
   const classMult = ctx.classStore.getModifier('expMult', { isTrainer: active.isTrainer })
   const participantsSet = new Set(active.participants)
 
-  for (const p of ctx.gs.state.team) {
-    const reward = processExpGain(p, baseExp, participantsSet, {
-      isActive: p.uid === active.player?.uid,
-      classMult,
-      totalExpMult,
-      participantsSet
-    })
-    if (!reward) continue
-    ctx.addLog(`${p.name} ganó ${reward.gained} EXP.`, 'log-player', p)
-    
-    if (reward.levelUp) {
-      ctx.audio.levelUp()
-      
-      await fsm.transition(BATTLE_STATES.LEVEL_UP_MODAL, BATTLE_SUBSTATES.CHECK_PENDING)
-      
-      const allPendingMoves: PokemonMove[] = []
-      for (let i = 0; i < reward.levelsGained; i++) {
-        const pendingMoves = levelUpPokemon(p)
-        if (pendingMoves) {
-          allPendingMoves.push(...pendingMoves)
-        }
-      }
-      
-      ctx.addLog(`¡${p.name} subió al nivel ${p.level}!`, 'log-info', p)
+  for (const e of combatants) {
+    if (active.isCapture) await ctx.eventStore.submitCompetitionEntry(e, 'hourly_competition')
 
-      if (allPendingMoves.length > 0) {
-        await fsm.transition(BATTLE_STATES.LEVEL_UP_MODAL, BATTLE_SUBSTATES.SHOW_CHOICE)
-        p.pendingMoves = allPendingMoves
+    const baseExp = calculateBaseExp(e)
+    for (const p of ctx.gs.state.team) {
+      const reward = processExpGain(p, baseExp, participantsSet, {
+        isActive: p.uid === active.player?.uid,
+        classMult,
+        totalExpMult,
+        participantsSet
+      })
+      if (!reward) continue
+      ctx.addLog(`${p.name} ganó ${reward.gained} EXP.`, 'log-player', p)
+      
+      if (reward.levelUp) {
+        ctx.audio.levelUp()
         
-        const uiStore = useUIStore()
-        uiStore.addToLearnQueue(allPendingMoves.map(m => ({ pokemon: p, move: m })))
-      }
+        await fsm.transition(BATTLE_STATES.LEVEL_UP_MODAL, BATTLE_SUBSTATES.CHECK_PENDING)
+        
+        const allPendingMoves: PokemonMove[] = []
+        for (let i = 0; i < reward.levelsGained; i++) {
+          const pendingMoves = levelUpPokemon(p)
+          if (pendingMoves) {
+            allPendingMoves.push(...pendingMoves)
+          }
+        }
+        
+        ctx.addLog(`¡${p.name} subió al nivel ${p.level}!`, 'log-info', p)
 
-      // Sincronizar evolución por nivel
-      if (p.heldItem === 'Piedra Eterna') {
-        ctx.addLog(`${p.name} evitó evolucionar debido a la Piedra Eterna.`, 'log-info', p)
-      } else {
-        const { checkLevelUpEvolution } = await import('../evolutionLogic.ts')
-        const targetId = checkLevelUpEvolution(p)
-        if (targetId) {
+        if (allPendingMoves.length > 0) {
+          await fsm.transition(BATTLE_STATES.LEVEL_UP_MODAL, BATTLE_SUBSTATES.SHOW_CHOICE)
+          p.pendingMoves = allPendingMoves
+          
           const uiStore = useUIStore()
-          uiStore.startEvolution(p, targetId, '')
-          // Esperar síncronamente mientras el modal de evolución esté abierto
-          while (uiStore.isEvolutionOpen) {
-            await sleep(100)
+          uiStore.addToLearnQueue(allPendingMoves.map(m => ({ pokemon: p, move: m })))
+        }
+
+        // Sincronizar evolución por nivel
+        if (p.heldItem === 'Piedra Eterna') {
+          ctx.addLog(`${p.name} evitó evolucionar debido a la Piedra Eterna.`, 'log-info', p)
+        } else {
+          const { checkLevelUpEvolution } = await import('../evolutionLogic.ts')
+          const targetId = checkLevelUpEvolution(p)
+          if (targetId) {
+            const uiStore = useUIStore()
+            uiStore.startEvolution(p, targetId, '')
+            // Esperar síncronamente mientras el modal de evolución esté abierto
+            while (uiStore.isEvolutionOpen) {
+              await sleep(100)
+            }
           }
         }
       }
     }
-  }
 
-  const moneyGained = calculateMoneyGain(e, { 
-    bcMult: ctx.classStore.getModifier('bcMult', { isGym: active.isGym }), 
-    totalMoneyMult: warMods.moneyMult + ((ctx.eventStore.globalMultipliers?.money || 1) - 1) 
-  })
-  
-  ctx.gs.state.money += moneyGained
-  if (moneyGained > 0) ctx.audio.money()
-  ctx.addLog(`¡Ganaste ₽${moneyGained}!`, 'log-info', 'player')
+    const moneyGained = calculateMoneyGain(e, { 
+      bcMult: ctx.classStore.getModifier('bcMult', { isGym: active.isGym }), 
+      totalMoneyMult: warMods.moneyMult + ((ctx.eventStore.globalMultipliers?.money || 1) - 1) 
+    })
+    
+    ctx.gs.state.money += moneyGained
+    ctx.addLog(`¡Ganaste ₽${moneyGained}!`, 'log-info', 'player')
+  }
 
   if (active.player) {
     const teamPoke = ctx.gs.state.team.find((tp: Pokemon) => tp && tp.uid === active.player?.uid)

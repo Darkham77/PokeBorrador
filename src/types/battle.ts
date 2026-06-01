@@ -51,6 +51,7 @@ export interface BattleState {
   enemyTeam?: Pokemon[];
   _initialEnemy?: Pokemon | null;
   _initialPlayer?: Pokemon | null;
+  _rewardCombatants?: Pokemon[];
   isFishing?: boolean;
   isArchaeology?: boolean;
   lastDamage?: number;
@@ -65,6 +66,7 @@ export interface BattleState {
   isPvP?: boolean;
   difficulty?: 'easy' | 'normal' | 'hard';
   _lastActivePlayer?: Pokemon | null;
+  playerFled?: boolean;
 }
 
 export type BattleSource = Pokemon | 'player' | 'enemy_trainer' | 'enemy' | string;

@@ -115,8 +115,6 @@ export function useBattleAnimations(
 
       const subState = sub || ''
       const isCleanupState = [
-        'INITIALIZING', 
-        'SEARCH_PHASE', 
         'CONTEXT_SETUP', 
         'EXIT_BATTLE'
       ].includes(state) || subState === 'WAIT_INPUT'

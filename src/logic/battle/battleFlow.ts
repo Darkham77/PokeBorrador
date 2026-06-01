@@ -138,7 +138,7 @@ export async function applyEndTurnEffects(ctx: BattleContext) {
   const active = ctx.activeBattle.value
   const p = active?.player
   const e = active?.enemy
-  if (!p || !e || !active) return
+  if (!p || !e || !active || ctx.fsm.currentState.value !== 'ACTIVE_BATTLE') return
 
   const mapStore = useMapStore()
 

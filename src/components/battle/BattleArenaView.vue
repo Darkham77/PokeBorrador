@@ -445,6 +445,7 @@ const onHudPlayerLeave = (el: Element, done: () => void) => {
               :ground-y="enemyGroundY"
               :visible="shouldShowEncounterLayers && !enemyIsFloating"
               :instant="isInstantBush"
+              :hide-instant="enemyIsFloating"
             />
           </VirtualEntity>
 
@@ -519,6 +520,7 @@ const onHudPlayerLeave = (el: Element, done: () => void) => {
               :visible="shouldShowEncounterLayers && !enemyIsFloating"
               :instant="isInstantBush"
               :force-behind="bushIsBehind"
+              :hide-instant="enemyIsFloating"
             />
           </VirtualEntity>
 

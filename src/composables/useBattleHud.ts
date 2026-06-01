@@ -158,6 +158,11 @@ export function useBattleHud(
 
   const activeEnemyIsSilhouette = computed(() => {
     if (toValue(battleStore.isSilhouetteMode)) return true
+    const state = toValue(battleStore.fsm?.currentState)
+    if (state && ['INITIALIZING', 'SEARCH_PHASE', 'FIRST_INTRO'].includes(state)) {
+      const s = toValue(battleStore.state)
+      if (s && !s.isTrainer && !s.isGym) return true
+    }
     const sub = toValue(battleStore.fsm?.currentSubState)
     if (!sub) return false
     return [
@@ -248,11 +253,11 @@ export function useBattleHud(
 
     const fsmSub = toValue(battleStore.fsm?.currentSubState)
     // Mostrar capas (arbustos) en todos los estados de búsqueda y entrada salvaje plana
-    if (fsmSub && ['PARALLEL_ENTRY', 'PARALLEL_JUMP', 'ENTRY_ANIM', 'ENCOUNTER_ANIM', 'BUSH_IDLE', 'WILD_ENTRY', 'BUSH_FADE', 'REVEAL_COLORS'].includes(fsmSub)) {
+    if (['PARALLEL_ENTRY', 'PARALLEL_JUMP', 'ENTRY_ANIM', 'ENCOUNTER_ANIM', 'BUSH_IDLE', 'WILD_ENTRY', 'BUSH_FADE', 'REVEAL_COLORS'].includes(fsmSub || '')) {
       return isWildEncounter.value
     }
 
-    return isWildEncounter.value && (toValue(battleStore.isSearching) || animations.wildRevealActive.value)
+    return isWildEncounter.value && (battleStore.isSearching || animations.wildRevealActive.value)
   })
 
   return {

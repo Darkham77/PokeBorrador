@@ -113,7 +113,7 @@ watch(() => [
     isSearching &&
     !isIntroAnimating &&
     !isProcessing &&
-    ['WAIT_INPUT', 'BUSH_IDLE', 'PARALLEL_PREP', 'BUSH_VISIBLE', 'SILHOUETTE_MODE', 'GEN_NEW_S2'].includes(String(subState))
+    ['BUSH_IDLE', 'SILHOUETTE_MODE'].includes(String(subState))
   ) {
     battleStore.startEncounter()
   }
