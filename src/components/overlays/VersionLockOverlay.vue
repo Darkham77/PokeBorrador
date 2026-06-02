@@ -8,6 +8,7 @@ defineProps<{
 
 const emit = defineEmits<{
   retry: []
+  logout: []
 }>()
 </script>
 
@@ -29,6 +30,12 @@ const emit = defineEmits<{
         @click.stop="emit('retry')"
       >
         REINTENTAR
+      </button>
+      <button
+        class="action-btn secondary-btn"
+        @click.stop="emit('logout')"
+      >
+        VOLVER AL LOGIN
       </button>
     </template>
   </PVLoadingOverlay>
@@ -65,6 +72,19 @@ const emit = defineEmits<{
     color: Rgba(239, 68, 68, 1);
     box-shadow: 0 6px 0 Rgba(0, 0, 0, 0.2);
     border-color: $white;
+  }
+}
+
+.secondary-btn {
+  background: Rgba(255, 255, 255, 0.05);
+  border-color: Rgba(255, 255, 255, 0.2);
+  color: Rgba(255, 255, 255, 0.7);
+
+  &:hover {
+    background: Rgba(255, 255, 255, 0.15);
+    color: $white;
+    border-color: Rgba(255, 255, 255, 0.5);
+    box-shadow: 0 6px 0 Rgba(0, 0, 0, 0.2);
   }
 }
 </style>

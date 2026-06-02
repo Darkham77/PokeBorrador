@@ -246,6 +246,10 @@ const handleRetry = () => {
   window.location.reload()
 }
 
+const handleLogout = async () => {
+  await authStore.logout()
+}
+
 const handleReclaim = async () => {
   await gameStore.reclaimControl()
   dismissedLock.value = true
@@ -303,6 +307,7 @@ const onLoadingLeave = (el: Element, done: () => void) => {
           :client-version="dbVersionInfo?.client"
           :db-version="dbVersionInfo?.db"
           @retry="handleRetry"
+          @logout="handleLogout"
         />
       </Teleport>
 
