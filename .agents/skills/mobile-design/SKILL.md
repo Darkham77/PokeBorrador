@@ -99,6 +99,7 @@ allowed-tools: Read, Glob, Grep, Bash
 | **No error state** | User stuck, no recovery path | Show error with retry option |
 | **No offline handling** | Crash/block when network lost | Graceful degradation, cached data |
 | **Ignore platform conventions** | Users confused, muscle memory broken | iOS feels iOS, Android feels Android |
+| **Overlay without escape route** | User trapped if operation/connection fails | Include back/close/logout button on blocking modals |
 
 #### Security Sins
 
