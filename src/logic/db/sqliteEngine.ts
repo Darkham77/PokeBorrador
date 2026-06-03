@@ -1,3 +1,4 @@
+// fallow-ignore-file circular-dependencies
 /**
  * src/logic/db/sqliteEngine.ts
  * Unified SQL.js (SQLite WASM) Engine with IndexedDB Persistence.
@@ -36,7 +37,7 @@ let _initPromise: Promise<SQLiteDatabase | null> | null = null
 let _sqliteKey = 'pokevicio_sqlite_v2'
 let _isInMemory = false
 
-export { getFromIDB, setToIDB }
+
 
 export async function queryLocal(sql: string, params: unknown[] = []): Promise<Record<string, unknown>[]> {
   if (!_sqliteDb) await initSQLite()

@@ -37,7 +37,7 @@ const {
   hasActiveFilters, 
   processedBoxList, 
   resetFilters 
-} = useBoxFilters(computed(() => gs.value.box), currentBoxIndex)
+} = useBoxFilters(computed(() => gs.value.box))
 
 const maxCapacity = computed(() => (gs.value.boxCount || 4) * 50)
 

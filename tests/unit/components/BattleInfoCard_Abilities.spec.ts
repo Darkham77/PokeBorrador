@@ -35,7 +35,7 @@ vi.mock('@/logic/timeUtils', () => ({
   getDayCycle: vi.fn(() => 'day')
 }))
 
-vi.mock('@/logic/battle/weatherMapper', () => ({
+vi.mock('@/logic/weather/weatherRegistry', () => ({
   getMechanicalWeather: vi.fn((w) => w || 'clear'),
   WEATHER_MECHANICAL: {
     SUN: 'sun', RAIN: 'rain', SANDSTORM: 'sandstorm', SNOW: 'snow', HAIL: 'hail', FOG: 'fog', CLEAR: 'clear'

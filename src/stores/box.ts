@@ -1,34 +1,10 @@
-// [PureVue-Ignore-Length]
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { useGameStore } from './game.ts'
 import { useUIStore } from './ui.ts'
-import { getPokemonTier } from '@/logic/pokemon/tierEngine'
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { calculateRocketSellPrice as calculatePrice } from '@/logic/pokemonUtils'
+import { useBoxFilters } from '@/composables/useBoxFilters'
 import type { Pokemon } from '@/types/pokemon'
-
-export interface FilterState {
-  tier: string
-  type: string
-  levelMin: number
-  levelMax: number
-  ivTotalMin: number
-  ivTotalMax: number
-  ivAny31: boolean
-  ivMin: number
-  ivMax: number
-  bstMin: number
-  bstMax: number
-  ivHP: number
-  ivATK: number
-  ivDEF: number
-  ivSPA: number
-  ivSPD: number
-  ivSPE: number
-  search: string
-  isOpen: boolean
-}
 
 export const useBoxStore = defineStore('box', () => {
   const gameStore = useGameStore()
@@ -36,34 +12,10 @@ export const useBoxStore = defineStore('box', () => {
 
   // --- BOX STATE ---
   const currentBoxIndex = ref(0)
-  const boxSortMode = ref('none')
   const boxReleaseMode = ref(false)
   const boxReleaseSelected = ref<number[]>([]) // Indices
   const boxRocketMode = ref(false)
   const boxRocketSelected = ref<number[]>([]) // Indices
-
-  // --- FILTER STATE ---
-  const filters = ref<FilterState>({
-    tier: 'all',
-    type: 'all',
-    levelMin: 1,
-    levelMax: 100,
-    ivTotalMin: 0,
-    ivTotalMax: 186,
-    ivAny31: false,
-    ivMin: 0,
-    ivMax: 31,
-    bstMin: 0,
-    bstMax: 1000,
-    ivHP: 0,
-    ivATK: 0,
-    ivDEF: 0,
-    ivSPA: 0,
-    ivSPD: 0,
-    ivSPE: 0,
-    search: '',
-    isOpen: false
-  })
 
   // --- TEAM STATE ---
   const teamReleaseMode = ref(false)
@@ -71,139 +23,24 @@ export const useBoxStore = defineStore('box', () => {
   const teamRocketMode = ref(false)
   const teamRocketSelected = ref<number[]>([]) // Indices
 
+  // --- FILTERS & SORTING COMPOSABLE ---
+  const boxDataRef = computed(() => gameStore.state.box || [])
+  const {
+    filters,
+    sortMode: boxSortMode,
+    processedBoxList: filteredBox,
+    hasActiveFilters,
+    toggleFilters,
+    resetFilters,
+    setBoxSort
+  } = useBoxFilters(boxDataRef)
+
   // --- COMPUTED ---
-  const filteredBox = computed(() => {
-    if (!gameStore.state.box) return []
-    
-    let list = gameStore.state.box.map((p: Pokemon | null, i: number) => ({ p, i }))
-
-    // Apply Filters
-    list = list.filter(({ p }: { p: Pokemon | null }) => {
-      if (!p) return false // Skip empty slots
-      const f = filters.value
-      const ivs = p.ivs || { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 }
-      const totalIv = (ivs.hp || 0) + (ivs.atk || 0) + (ivs.def || 0) +
-                     (ivs.spa || 0) + (ivs.spd || 0) + (ivs.spe || 0)
-      
-      if (f.tier !== 'all' && getPokemonTier(p).tier !== f.tier) return false
-      if (f.type !== 'all' && p.type !== f.type) return false
-      if (p.level < f.levelMin || p.level > f.levelMax) return false
-      if (totalIv < f.ivTotalMin || totalIv > f.ivTotalMax) return false
-      if (f.ivAny31 && !Object.values(ivs).some(v => v === 31)) return false
-      
-      // Individual IV Range (All stats must be within range)
-      const allIvValues = [ivs.hp||0, ivs.atk||0, ivs.def||0, ivs.spa||0, ivs.spd||0, ivs.spe||0]
-      if (allIvValues.some(v => v < f.ivMin || v > f.ivMax)) return false
-
-      // Individual IV Filters (Specific stats)
-      if ((ivs.hp || 0) < f.ivHP) return false
-      if ((ivs.atk || 0) < f.ivATK) return false
-      if ((ivs.def || 0) < f.ivDEF) return false
-      if ((ivs.spa || 0) < f.ivSPA) return false
-      if ((ivs.spd || 0) < f.ivSPD) return false
-      if ((ivs.spe || 0) < f.ivSPE) return false
-
-      // TOTAL Filter (Species Base Stats + IVs)
-      const species = pokemonDataProvider.getPokemonData(p.id)
-      if (species) {
-        const bst = (species.hp || 0) + (species.atk || 0) + (species.def || 0) +
-                    (species.spa || 0) + (species.spd || 0) + (species.spe || 0)
-        const totalPower = bst + totalIv
-        if (totalPower < f.bstMin || totalPower > f.bstMax) return false
-      }
-
-      if (f.search) {
-        const query = f.search.toLowerCase()
-        const nameMatch = p.name.toLowerCase().includes(query)
-        const nickMatch = p.nickname?.toLowerCase().includes(query)
-        if (!nameMatch && !nickMatch) return false
-      }
-      
-      return true
-    })
-
-    // Apply Sorting
-    if (boxSortMode.value !== 'none') {
-      list.sort((a: { p: Pokemon | null; i: number }, b: { p: Pokemon | null; i: number }) => {
-        const pA = a.p as Pokemon;
-        const pB = b.p as Pokemon;
-        if (boxSortMode.value === 'level') return pB.level - pA.level;
-        if (boxSortMode.value === 'tier') return getPokemonTier(pB).total - getPokemonTier(pA).total;
-        if (boxSortMode.value === 'bst') {
-          const specA = pokemonDataProvider.getPokemonData(pA.id);
-          const specB = pokemonDataProvider.getPokemonData(pB.id);
-          const bstA = specA ? ((specA.hp || 0) + (specA.atk || 0) + (specA.def || 0) + (specA.spa || 0) + (specA.spd || 0) + (specA.spe || 0)) : 0;
-          const bstB = specB ? ((specB.hp || 0) + (specB.atk || 0) + (specB.def || 0) + (specB.spa || 0) + (specB.spd || 0) + (specB.spe || 0)) : 0;
-          
-          const ivsA = pA.ivs;
-          const totalIvsA = Object.values(ivsA).reduce((s: number, v) => s + (Number(v) || 0), 0);
-          const ivsB = pB.ivs;
-          const totalIvsB = Object.values(ivsB).reduce((s: number, v) => s + (Number(v) || 0), 0);
-          
-          return (bstB + totalIvsB) - (bstA + totalIvsA);
-        }
-        if (boxSortMode.value === 'type') return pA.type.localeCompare(pB.type);
-        // Pokedex sorting would need the order array, we'll keep it simple for now or import it
-        return 0
-      })
-    }
-
-    // Paginate by current box if no filters are active (optional, matching legacy behavior)
-    if (!hasActiveFilters.value && boxSortMode.value === 'none') {
-      const start = currentBoxIndex.value * 50
-      const end = start + 50
-      return list.slice(start, end)
-    }
-
-    return list
-  })
-
-  const hasActiveFilters = computed(() => {
-    const f = filters.value
-    return f.tier !== 'all' || f.type !== 'all' || f.levelMin > 1 || f.levelMax < 100 ||
-           f.ivTotalMin > 0 || f.ivTotalMax < 186 || f.ivAny31 || f.search !== '' ||
-           f.bstMin > 0 || f.bstMax < 1000 || f.ivHP > 0 || f.ivATK > 0 || f.ivDEF > 0 ||
-           f.ivSPA > 0 || f.ivSPD > 0 || f.ivSPE > 0 || f.ivMin > 0 || f.ivMax < 31
-  })
-
   const boxRocketSellValue = computed(() => getRocketSellValue())
 
   // --- ACTIONS ---
-  function toggleFilters() {
-    filters.value.isOpen = !filters.value.isOpen
-  }
-
-  function resetFilters() {
-    filters.value = {
-      tier: 'all',
-      type: 'all',
-      levelMin: 1,
-      levelMax: 100,
-      ivTotalMin: 0,
-      ivTotalMax: 186,
-      ivAny31: false,
-      ivMin: 0,
-      ivMax: 31,
-      bstMin: 0,
-      bstMax: 1000,
-      ivHP: 0,
-      ivATK: 0,
-      ivDEF: 0,
-      ivSPA: 0,
-      ivSPD: 0,
-      ivSPE: 0,
-      search: '',
-      isOpen: filters.value.isOpen
-    }
-    boxSortMode.value = 'none'
-  }
-
   function switchBox(index: number) {
     currentBoxIndex.value = index
-  }
-
-  function setBoxSort(mode: string) {
-    boxSortMode.value = mode
   }
 
   function toggleBoxReleaseMode() {
@@ -403,56 +240,6 @@ export const useBoxStore = defineStore('box', () => {
     }
   }
 
-  function toggleTeamRocketSelect(index: number) {
-    const idx = teamRocketSelected.value.indexOf(index)
-    if (idx > -1) {
-      teamRocketSelected.value.splice(idx, 1)
-    } else {
-      teamRocketSelected.value.push(index)
-    }
-  }
-
-  function confirmTeamRocketSell() {
-    const count = teamRocketSelected.value.length
-    if (count === 0) return
-
-    const team = gameStore.state.team || []
-    let totalGain = 0
-    teamRocketSelected.value.forEach(i => {
-      const p = team[i]
-      if (p) totalGain += calculatePrice(p)
-    })
-
-    uiStore.openConfirm({
-      title: 'Vender Pokémon (Team Rocket)',
-      message: `¿Vender ${count} Pokémon por ₽${totalGain.toLocaleString()}?`,
-      onConfirm: () => {
-        const indices = [...teamRocketSelected.value].sort((a, b) => b - a)
-        const names: string[] = []
-        
-        indices.forEach(i => {
-          const p = team[i]
-          if (p) {
-            names.push(p.name)
-            returnHeldItem(p)
-            team.splice(i, 1)
-          }
-        })
-
-        gameStore.state.money += totalGain
-        if (gameStore.state.classData) {
-          gameStore.state.classData.blackMarketSales = (gameStore.state.classData.blackMarketSales || 0) + count
-        }
-        
-        uiStore.notify(`¡${count} Pokémon vendidos por ₽${totalGain.toLocaleString()}! 🚀`, '🚀')
-        teamRocketMode.value = false
-        teamRocketSelected.value = []
-        gameStore.autoFillPvpTeam()
-        gameStore.scheduleSave()
-      }
-    })
-  }
-
   // Helpers
   function returnHeldItem(pokemon: Pokemon) {
     if (!pokemon || !pokemon.heldItem) return
@@ -515,6 +302,56 @@ export const useBoxStore = defineStore('box', () => {
     gameStore.state.boxCount = (gameStore.state.boxCount || 4) + 1
     gameStore.scheduleSave()
     return { success: true, boxNum: gameStore.state.boxCount }
+  }
+
+  function toggleTeamRocketSelect(index: number) {
+    const idx = teamRocketSelected.value.indexOf(index)
+    if (idx > -1) {
+      teamRocketSelected.value.splice(idx, 1)
+    } else {
+      teamRocketSelected.value.push(index)
+    }
+  }
+
+  function confirmTeamRocketSell() {
+    const count = teamRocketSelected.value.length
+    if (count === 0) return
+
+    const team = gameStore.state.team || []
+    let totalGain = 0
+    teamRocketSelected.value.forEach(i => {
+      const p = team[i]
+      if (p) totalGain += calculatePrice(p)
+    })
+
+    uiStore.openConfirm({
+      title: 'Vender Pokémon (Team Rocket)',
+      message: `¿Vender ${count} Pokémon por ₽${totalGain.toLocaleString()}?`,
+      onConfirm: () => {
+        const indices = [...teamRocketSelected.value].sort((a, b) => b - a)
+        const names: string[] = []
+        
+        indices.forEach(i => {
+          const p = team[i]
+          if (p) {
+            names.push(p.name)
+            returnHeldItem(p)
+            team.splice(i, 1)
+          }
+        })
+
+        gameStore.state.money += totalGain
+        if (gameStore.state.classData) {
+          gameStore.state.classData.blackMarketSales = (gameStore.state.classData.blackMarketSales || 0) + count
+        }
+        
+        uiStore.notify(`¡${count} Pokémon vendidos por ₽${totalGain.toLocaleString()}! 🚀`, '🚀')
+        teamRocketMode.value = false
+        teamRocketSelected.value = []
+        gameStore.autoFillPvpTeam()
+        gameStore.scheduleSave()
+      }
+    })
   }
 
   return {

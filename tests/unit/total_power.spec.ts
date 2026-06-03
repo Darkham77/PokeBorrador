@@ -34,7 +34,7 @@ describe('useBoxFilters - Total Power (BST + IVs)', () => {
   let filtersObj: ReturnType<typeof useBoxFilters>
 
   beforeEach(() => {
-    filtersObj = useBoxFilters(mockBox, ref(0))
+    filtersObj = useBoxFilters(mockBox)
     filtersObj.resetFilters()
   })
 

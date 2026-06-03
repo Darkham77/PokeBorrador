@@ -89,7 +89,7 @@ describe('Black Market (Team Rocket) Sales Logic', () => {
       // Price: floor((50 * 50 + 0) * 0.8) = 2500 * 0.8 = 2000
       
       let totalGain = 0
-      box.teamRocketSelected.forEach(i => {
+      box.teamRocketSelected.forEach((i: number) => {
         totalGain += calculateRocketSellPrice(gs.state.team[i] as Pokemon)
       })
       expect(totalGain).toBe(2000)

@@ -1,8 +1,8 @@
+// fallow-ignore-file circular-dependencies
 import { getMechanicalWeather, WEATHER_MECHANICAL, WEATHER_REGISTRY } from '../weather/weatherRegistry.ts'
 import type { Pokemon } from '@/types/pokemon'
 import type { BattleStages, LogFn, BattleWeather } from '@/types/battle'
 import { tickStatus, tickLeechSeed } from './battleStatus.ts'
-import { useMapStore } from '@/stores/map.ts'
 import type { BattleContext } from '@/types/battleContext'
 
 export function handleEntryAbilities(playerPoke: Pokemon, enemyPoke: Pokemon, playerStages: BattleStages, enemyStages: BattleStages, addLog: LogFn) {
@@ -84,7 +84,7 @@ export async function canAttack(pokemon: Pokemon, ctx: BattleContext) {
   return true
 }
 
-export async function applyEndTurnWeather(p: Pokemon, e: Pokemon, weather: BattleWeather | null, ctx: BattleContext) {
+async function applyEndTurnWeather(p: Pokemon, e: Pokemon, weather: BattleWeather | null, ctx: BattleContext) {
   const mechWeather = getMechanicalWeather(weather?.type);
   const wType = (weather?.visual || weather?.type || '').toLowerCase();
   const weatherLabel = WEATHER_REGISTRY[wType]?.label || 'CLIMA';
@@ -157,6 +157,7 @@ export async function applyEndTurnEffects(ctx: BattleContext) {
   const e = active?.enemy
   if (!p || !e || !active || ctx.fsm.currentState.value !== 'ACTIVE_BATTLE') return
 
+  const { useMapStore } = await import('@/stores/map.ts')
   const mapStore = useMapStore()
 
   if (active.futureSightTurns && active.futureSightTurns > 0) {

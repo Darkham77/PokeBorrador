@@ -8,7 +8,7 @@ import { useGameStore } from '@/stores/game'
 import type { Pokemon } from '@/types/pokemon'
 
 // Mock de assetService para evitar errores de red
-vi.mock('@/logic/assetService', () => ({
+vi.mock('@/logic/services/assetService', () => ({
   getAssetUrl: vi.fn((type, id) => `mock-url-${type}-${id}`),
   ASSET_TYPES: {
     POKEMON: 'pokemon',

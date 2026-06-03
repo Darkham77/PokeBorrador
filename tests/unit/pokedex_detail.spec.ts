@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { setActivePinia, createPinia } from 'pinia'
 import PokemonStatBar from '@/components/pokemon-detail/PokemonStatBar.vue'
@@ -23,8 +23,6 @@ describe('Pokedex Detail UI Components', () => {
     cw.ABILITY_DATA = {
       'Presión': { desc: 'Aumenta el consumo de PP del rival.' }
     }
-    // Mock SASS tools to avoid build errors in tests if any
-    vi.mock('@/styles/core/tools', () => ({}))
   })
 
   describe('PokemonStatBar', () => {

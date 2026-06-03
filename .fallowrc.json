@@ -1,25 +1,44 @@
 {
   "$schema": "https://raw.githubusercontent.com/fallow-rs/fallow/main/schema.json",
   "ignorePatterns": [
-    "backup_legacy_code/**"
+    "backup_legacy_code/**",
+    "showdown/**",
+    "scratch/**"
   ],
   "entry": [
     "src/index.{ts,tsx,js,jsx}",
     "src/main.{ts,tsx,js,jsx}"
   ],
   "duplicates": {
-    // Hide pair-only clones; focus on widespread copy-paste
-    // worth refactoring. Lower to 2 to report every duplicate pair.
     "minOccurrences": 3
-    // Common additions (uncomment to enable):
-    // "ignore": [
-    //   "**/lib/**",          // for repos that publish transpiled output to lib/
-    //   "**/legacy/**",       // for repos with legacy-build artifacts
-    //   "**/__generated__/**", // Relay, GraphQL Code Generator
-    //   "**/generated/**"     // OpenAPI, Protobuf codegen
-    // ]
   },
   "rules": {
     "unused-dependencies": "warn"
-  }
+  },
+  "ignoreExports": [
+    {
+      "file": "src/logic/pokedexConstants.ts",
+      "exports": ["POKEDEX_SPECIES_COUNT", "MAX_POKEDEX_ID", "GENERATION_COUNTS", "REGIONAL_POKEDEX_COUNT"]
+    },
+    {
+      "file": "src/logic/pvp/rankedEngine.ts",
+      "exports": ["RANKED_TIER_ORDER"]
+    },
+    {
+      "file": "src/stores/inventory.ts",
+      "exports": ["Item"]
+    },
+    {
+      "file": "src/data/items.ts",
+      "exports": ["MARKET_UNLOCKS"]
+    },
+    {
+      "file": "src/data/trainer.ts",
+      "exports": ["MARKET_UNLOCKS"]
+    },
+    {
+      "file": "src/logic/breeding/missionEngine.ts",
+      "exports": ["DaycareMission"]
+    }
+  ]
 }

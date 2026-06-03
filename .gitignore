@@ -25,3 +25,4 @@ supabase/generated/
 supabase/temp_supabase/
 database/temp/
 .fallow/
+scratch/

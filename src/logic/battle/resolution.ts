@@ -1,3 +1,4 @@
+// fallow-ignore-file circular-dependencies
 // [PureVue-Ignore-Length]
 import { gsapSleep as sleep } from '@/logic/utils/gsapHelpers'
 import { gameBus } from '@/logic/gameBus'
@@ -378,7 +379,7 @@ export async function terminateBattle(ctx: BattleContext, win: boolean, fled = f
 /**
  * Calculates and distributes XP and money rewards.
  */
-export async function calculateBattleRewards(ctx: BattleContext) {
+async function calculateBattleRewards(ctx: BattleContext) {
   const active = ctx.activeBattle.value;
   if (!active) return;
 
@@ -641,7 +642,7 @@ export async function calculateBattleRewards(ctx: BattleContext) {
 /**
  * Syncs team HP to GameStore.
  */
-export function syncTeamHP(ctx: BattleContext) {
+function syncTeamHP(ctx: BattleContext) {
   const active = ctx.activeBattle.value;
   if (!active) return;
   

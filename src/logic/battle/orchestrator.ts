@@ -1,11 +1,10 @@
+// fallow-ignore-file circular-dependencies
 import { gsapSleep as sleep } from '@/logic/utils/gsapHelpers'
 import { nextTick } from 'vue'
 
 import { handleEntryAbilities } from './battleFlow.ts'
 import { getMechanicalWeather } from '../weather/weatherRegistry.ts'
 import { FIRE_RED_MAPS } from '@/data/maps'
-import { useUIStore } from '@/stores/ui'
-import { useMapStore } from '@/stores/map'
 import { logger } from '../utils/logger.ts'
 import type { BattleContext } from '@/types/battleContext'
 import type { Pokemon } from '@/types/pokemon'
@@ -72,7 +71,8 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
 
   const playerPoke = ctx.gs.state.team.find((p) => p.hp > 0 && !p.onMission && !p.onDefense)
   if (!playerPoke) {
-    (useUIStore() as unknown as UIStore).notify('No tienes Pokémon sanos para combatir', '❌')
+    const { useUIStore } = await import('@/stores/ui')
+    ;(useUIStore() as unknown as UIStore).notify('No tienes Pokémon sanos para combatir', '❌')
     return
   }
 
@@ -85,6 +85,7 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
   const wasSearching = wasSearchingOpt !== null ? wasSearchingOpt : true
   
   const { sanitizePokemon } = await import('@/logic/pokemonFactory')
+  const { useMapStore } = await import('@/stores/map')
   const mapStore = useMapStore() as unknown as MapStore
   const finalEnemyPoke = enemyPoke
 
@@ -201,6 +202,7 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
     await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.PREPARATION)
     await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.AUTO_BATTLE_CHECK)
     
+    const { useUIStore } = await import('@/stores/ui')
     const uiStore = useUIStore() as unknown as UIStore
     const autoBattle = uiStore.autoBattle && !isTrainer
 

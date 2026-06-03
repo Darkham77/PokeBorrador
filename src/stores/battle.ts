@@ -1,3 +1,4 @@
+// fallow-ignore-file circular-dependencies
 // [PureVue-Ignore-Length]
 import { defineStore } from 'pinia'
 import { sleep } from '@/logic/timeUtils'
@@ -19,12 +20,12 @@ import { processFaint, terminateBattle, syncAndPersist } from '../logic/battle/r
 import { handleBattleFlowCompletion, triggerNextEncounter, startEncounter } from '../logic/battle/searchLoop.ts'
 import { formatBattleLog } from '../logic/battle/battleLogger.ts'
 import { executeTurn, runEnemyAction } from '../logic/battle/battleTurn.ts'
-import { handleEntryAbilities, applyEndTurnEffects as executeEndTurnEffects } from '../logic/battle/battleFlow.ts'
+import { applyEndTurnEffects as executeEndTurnEffects } from '../logic/battle/battleFlow.ts'
 import { handleItemUsage } from '../logic/battle/battleItems.ts'
 import { executeFlee } from '../logic/battle/battleFlee.ts'
 import { setupBattleDebug } from '../logic/battle/battleDebug.ts'
+import { executeSwitch as switchAction } from '../logic/battle/actions/switchAction.ts'
 import { getMechanicalWeather } from '../logic/weather/weatherRegistry.ts'
-import { gameBus } from '@/logic/gameBus'
 import type { GameStore, EventStore, AudioStore, UIStore, BattleOptions } from '@/types/stores'
 import type { BattleContext } from '@/types/battleContext'
 import type { Pokemon } from '@/types/pokemon'
@@ -368,105 +369,11 @@ export const useBattleStore = defineStore('battle', () => {
   const _executeSwitch = async (teamIndex: number, isForced = false) => {
     if (isProcessing.value && !isForced) return
     isProcessing.value = true
-    
-    await fsm.transition(BATTLE_STATES.REORDER_TEAM)
-    await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.FIND_HEALTHY)
-    
-    activeMove.value = null
-    attackerSide.value = null
-    
-    const newPoke = gs.state.team[teamIndex]
-    if (!newPoke || newPoke.hp <= 0) { isProcessing.value = false; return }
-    
-    await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.CHECK_ACTIVE_SEAT)
-    if (!activeBattle.value) { isProcessing.value = false; return }
-    const oldPoke = activeBattle.value.player
-    
-    if (oldPoke && oldPoke.uid === newPoke.uid) {
+    try {
+      await switchAction(getContext(), teamIndex, isForced)
+    } finally {
       isProcessing.value = false
-      return
     }
-
-    if (oldPoke && oldPoke.hp > 0) {
-      await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.SWITCHING)
-      addLog(`¡Bien hecho, ${oldPoke.name}! ¡Regresa!`, 'log-info', 'player')
-      addLog(`¡Envía a ${newPoke.name}!`, 'log-info', newPoke)
-      
-      exitingPlayer.value = oldPoke
-      activeBattle.value.player = newPoke
-      activeBattle.value.playerTeamIndex = teamIndex
-      clearVolatileStatus(oldPoke)
-
-      if (!activeBattle.value.participants.includes(newPoke.uid)) {
-        activeBattle.value.participants.push(newPoke.uid)
-      }
-
-      const withdrawPromise = animations.value?.handleCatchRequest
-        ? animations.value.handleCatchRequest({ side: 'player', pokemon: oldPoke })
-        : Promise.resolve()
-
-      const sendOutPromise = animations.value?.handleReleaseRequest
-        ? animations.value.handleReleaseRequest({ side: 'player', pokemon: newPoke })
-        : Promise.resolve()
-
-      await Promise.all([withdrawPromise, sendOutPromise])
-      exitingPlayer.value = null
-    } else {
-      await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.POKEMON_CALL)
-      activeBattle.value.player = newPoke
-      activeBattle.value.playerTeamIndex = teamIndex
-      
-      if (animations.value?.handleReleaseRequest) {
-        await animations.value.handleReleaseRequest({ side: 'player', pokemon: newPoke })
-      } else {
-        await sleep(800)
-      }
-    }
-    
-    if (!activeBattle.value.participants.includes(newPoke.uid)) {
-      activeBattle.value.participants.push(newPoke.uid)
-    }
-    
-    const s = playerStages.value
-    playerStages.value = { ...INITIAL_STAGES, 
-      reflect: s.reflect || 0, lightScreen: s.lightScreen || 0, safeguard: s.safeguard || 0, mist: s.mist || 0, spikes: s.spikes || 0 }
-    
-    addLog(`¡Adelante, ${newPoke.name}!`, 'log-player', newPoke)
-    await sleep(400)
-
-    if (playerStages.value.spikes > 0 && newPoke.type !== 'flying' && newPoke.type2 !== 'flying' && newPoke.ability !== 'Levitación') {
-      const dmg = Math.floor(newPoke.maxHp * (playerStages.value.spikes / 8))
-      newPoke.hp = Math.max(0, newPoke.hp - dmg)
-      addLog(`¡${newPoke.name} recibió daño por las púas!`, 'log-info', newPoke)
-      gameBus.emit('PLAY_SOUND', 'statusDamage')
-    }
-    
-    if (activeBattle.value && activeBattle.value.enemy) {
-      handleEntryAbilities(newPoke, activeBattle.value.enemy, playerStages.value, enemyStages.value, addLog)
-    }
-    persistBattle()
-    
-    if (typeof isForced !== 'undefined' && !isForced) {
-      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.APPLY_MOVE)
-      await runEnemyAction(getContext())
-      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.EVAL_HP)
-
-      if (activeBattle.value?.player && activeBattle.value.player.hp <= 0) {
-        await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.PLAYER_FAINT_SEQ)
-        await handleFaint('player')
-        isProcessing.value = false
-        return
-      }
-      if (activeBattle.value?.enemy && activeBattle.value.enemy.hp <= 0) {
-        await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ENEMY_REPLACEMENT_SEQ)
-        await handleFaint('enemy')
-        isProcessing.value = false
-        return
-      }
-    }
-    
-    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT)
-    isProcessing.value = false
   }
 
   const consumeItem = (itemName: string) => {

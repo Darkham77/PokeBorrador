@@ -2,7 +2,7 @@
 import { 
   EGG_GROUPS, 
   BABY_MAP 
-} from '@/data/breedingData';
+} from '@/logic/breeding/breedingData';
 import type { Pokemon, BreedingCompatibility, PokemonIVs } from '@/types/pokemon';
 
 /**
