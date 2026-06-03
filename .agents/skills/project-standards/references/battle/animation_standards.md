@@ -456,3 +456,14 @@ When changing the active combatant during state transitions (e.g. at battle reso
   3. Release the new healthy combatant (`handleReleaseRequest`).
   4. Run both in parallel using `Promise.all` and wait for their GSAP tweens to complete before clearing `exitingPlayer`.
   5. Only continue FSM state changes (e.g., transition to `SEARCH_PHASE` or `completeBattleFlow`) after the visual sequence completes.
+
+## 35. Stale Animation Tween Registry Hygiene
+
+When using local or global registries to track and await GSAP tweens (like `activeTweens` and `pendingTweenResolvers` accessed by `awaitTween`), you MUST clear these collections at the start or completion of a combat (e.g., in `resetCaptureStates`).
+- **Why**: Failure to reset registries causes `awaitTween()` calls in subsequent battles to immediately resolve with stale, completed tweens from previous combats, skipping the intended animation sequences entirely.
+
+## 36. Global Event Bus Listener Cleanups (Vue Lifecycle Hook)
+
+Event bus listeners registered inside composables or setup functions (e.g., `gameBus.on(...)`) must be tracked and removed when the parent Vue component is unmounted.
+- **Why**: Lingering event handlers cause memory leaks and accumulate duplicate callbacks on global event dispatchers, causing old state operations to execute concurrently in subsequent views. Use Vue's `onUnmounted` hook to execute desubscriptions (`cleanupListeners`).
+
