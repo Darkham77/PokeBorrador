@@ -27,7 +27,7 @@ describe('Battle Store - Log Side Detection', () => {
     battle.addLog('Test msg', 'log-info', 'player')
     
     expect(battle.battleLogs[0]!.side).toBe('player')
-    expect(battle.battleLogs[0]!.iconType).toBe('trainer')
+    expect(battle.battleLogs[0]!.iconType).toBe('player_avatar')
   })
 
   it('should assign "player" side when source is a pokemon in player team', () => {

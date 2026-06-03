@@ -22,7 +22,7 @@ describe('Battle Logger Utility', () => {
   it('should detect player trainer source', () => {
     const result = formatBattleLog('Hi', 'log-info', 'player' as unknown as Parameters<typeof formatBattleLog>[2], mockCtx as unknown as Parameters<typeof formatBattleLog>[3])
     expect(result.side).toBe('player')
-    expect(result.iconType).toBe('trainer')
+    expect(result.iconType).toBe('player_avatar')
   })
 
   it('should detect player pokemon source', () => {

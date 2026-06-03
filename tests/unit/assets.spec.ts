@@ -67,13 +67,13 @@ describe('AssetService & Resolver', () => {
   describe('AssetService: Trainer Routing', () => {
     it('debe usar activos locales para líderes de gimnasio (anteriormente externos)', () => {
       expect(getAssetUrl(ASSET_TYPES.TRAINER, 'brock'))
-        .toBe('/assets/sprites/trainers/brock_front.webp')
+        .toBe('/assets/sprites/npc/brock.webp')
     })
 
     it('debe usar activos locales para otros entrenadores (sin LOD)', () => {
       vi.stubGlobal('innerWidth', 400)
       expect(getAssetUrl(ASSET_TYPES.TRAINER, 'hero'))
-        .toBe('/assets/sprites/trainers/hero_front.webp')
+        .toBe('/assets/sprites/npc/hero.webp')
     })
   })
 
