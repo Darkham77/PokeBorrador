@@ -1,5 +1,6 @@
 /// <reference types="vitest" />
-import { defineConfig, type ViteDevServer } from 'vite'
+import { defineConfig } from 'vitest/config'
+import { type ViteDevServer } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import path from 'node:path'
 import { Temporal } from '@js-temporal/polyfill'
