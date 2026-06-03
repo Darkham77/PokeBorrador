@@ -14,6 +14,7 @@ interface ProfileRow {
   faction?: string
   nick_style?: string
   avatar_style?: string
+  gender?: string
 }
 
 interface GameSaveRow {
@@ -95,7 +96,8 @@ export const useLeaderboardStore = defineStore('leaderboard', () => {
             faction: p.faction,
             nick_style: p.nick_style,
             avatar_style: p.avatar_style,
-            isOnline: !!isOnline
+            isOnline: !!isOnline,
+            gender: p.gender || 'h'
           }
         })
       }

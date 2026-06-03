@@ -3,6 +3,7 @@
 
 export const INITIAL_STATE = {
   trainer: '',
+  gender: 'h',
   badges: 0,
   balls: 10,
   money: 3000,

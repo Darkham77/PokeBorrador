@@ -26,6 +26,7 @@ export interface SaveResult {
 
 export interface SaveData {
   trainer: string;
+  gender?: 'h' | 'm';
   badges: number;
   balls: number;
   money: number;
@@ -180,6 +181,7 @@ export function serializeState(state: GameState): SaveData {
 
   return {
     trainer: state.trainer,
+    gender: state.gender || 'h',
     badges: state.badges,
     balls: state.balls,
     money: state.money,
@@ -461,7 +463,8 @@ export async function saveGame(state: GameState, user: AuthUser, options: SaveOp
             faction: save_data.faction,
             avatar_style: save_data.avatar_style,
             nick_style: save_data.nick_style,
-            badges: save_data.badges || 0
+            badges: save_data.badges || 0,
+            gender: save_data.gender || 'h'
           }).eq('id', user.id);
         } else {
           await db.from('profiles').insert({
@@ -474,7 +477,8 @@ export async function saveGame(state: GameState, user: AuthUser, options: SaveOp
             avatar_style: save_data.avatar_style || '',
             nick_style: save_data.nick_style || '',
             badges: save_data.badges || 0,
-            role: 'user'
+            role: 'user',
+            gender: save_data.gender || 'h'
           });
         }
         logger.success('SAVE', 'Campos de perfil sincronizados en la base de datos.');

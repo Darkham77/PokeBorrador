@@ -22,6 +22,7 @@ interface ProfileRow {
   faction?: string
   nick_style?: string
   avatar_style?: string
+  gender?: string
 }
 
 interface GameSaveRow {
@@ -155,6 +156,7 @@ export const usePlayerSearchStore = defineStore('playerSearch', () => {
             faction: (save.faction as string) || p.faction || undefined,
             nick_style: (save.nick_style as string) || p.nick_style || '',
             avatar_style: (save.avatar_style as string) || p.avatar_style || '',
+            gender: (save.gender as string) || p.gender || 'h',
             status: rel ? (rel.status as string) : 'none',
             relId: rel ? (rel.id as string) : null,
             isRequester: rel ? rel.requester_id === authStore.user!.id : false

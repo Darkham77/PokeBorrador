@@ -47,6 +47,7 @@ export interface Friend {
   playerClass?: string;
   nick_style?: string;
   avatar_style?: string;
+  gender?: string;
   isOnline: boolean;
   lastSeen: Temporal.Instant | null;
 }
@@ -64,6 +65,7 @@ export interface PendingRequest {
     full_name?: string;
     nick_style?: string;
     avatar_style?: string;
+    gender?: string;
     save_data?: GameState;
   };
 }
@@ -76,6 +78,7 @@ export interface SearchResult {
   faction?: string;
   nick_style?: string;
   avatar_style?: string;
+  gender?: string;
   status: string;
   relId: string | null;
   isRequester: boolean;
@@ -91,6 +94,7 @@ export interface LeaderboardEntry {
   faction?: string;
   nick_style?: string;
   avatar_style?: string;
+  gender?: string;
   isOnline?: boolean;
 }
 
@@ -111,6 +115,7 @@ interface ProfileRow {
   faction?: string
   nick_style?: string
   avatar_style?: string
+  gender?: string
 }
 
 interface GameSaveRow {
@@ -214,6 +219,7 @@ export const useSocialStore = defineStore('social', () => {
             playerClass: (save.playerClass as string) || p?.player_class || 'entrenador',
             nick_style: (save.nick_style as string) || p?.nick_style || '',
             avatar_style: (save.avatar_style as string) || p?.avatar_style || '',
+            gender: (save.gender as string) || p?.gender || 'h',
             isOnline,
             lastSeen
           }
@@ -253,10 +259,11 @@ export const useSocialStore = defineStore('social', () => {
             nick_style: (save.nick_style as string) || p?.nick_style || '',
             trainer_level: (save.trainerLevel as number) || p?.trainer_level || 1,
             player_class: (save.playerClass as string) || p?.player_class || 'entrenador',
-            avatar_style: (save.avatar_style as string) || p?.avatar_style || ''
+            avatar_style: (save.avatar_style as string) || p?.avatar_style || '',
+            gender: (save.gender as string) || p?.gender || 'h'
           }
           return acc
-        }, {} as Record<string, { username: string; nick_style: string; trainer_level: number; player_class: string; avatar_style: string }>)
+        }, {} as Record<string, { username: string; nick_style: string; trainer_level: number; player_class: string; avatar_style: string; gender: string }>)
 
         pending.forEach((r: PendingRequest) => {
           const profInfo = profilesMap[r.requester_id]
@@ -268,7 +275,8 @@ export const useSocialStore = defineStore('social', () => {
               player_class: profInfo.player_class,
               playerClass: profInfo.player_class,
               level: profInfo.trainer_level,
-              avatar_style: profInfo.avatar_style
+              avatar_style: profInfo.avatar_style,
+              gender: profInfo.gender
             }
           }
         })

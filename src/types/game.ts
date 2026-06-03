@@ -44,6 +44,7 @@ export interface GymProgressEntry {
 
 export interface GameState {
   trainer: string;
+  gender?: 'h' | 'm';
   badges: number;
   balls: number;
   money: number;

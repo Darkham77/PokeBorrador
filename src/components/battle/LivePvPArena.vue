@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, watch } from 'vue'
 import { useLivePvPStore } from '@/stores/livePvP'
 import { useGameStore } from '@/stores/game'
 import { useAuthStore } from '@/stores/auth'
 import { useUIStore } from '@/stores/ui'
+import { useChatStore } from '@/stores/chat'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { PLAYER_CLASSES } from '@/data/playerClasses'
 import type { PvPBattleState } from '@/logic/pvp/pvpEngine'
@@ -12,13 +13,19 @@ const livePvP = useLivePvPStore()
 const auth = useAuthStore()
 const gameStore = useGameStore()
 const ui = useUIStore()
+const chatStore = useChatStore()
 
 const battle = computed(() => livePvP.battleState as unknown as PvPBattleState & { 
   active: boolean, 
+  opponentId: string | null,
   opponentAvatar?: string, 
   opponentName: string, 
   opponentElo: number,
   deadline: number | null
+})
+
+const opponentCosmetics = computed(() => {
+  return battle.value.opponentId ? chatStore.profileCosmetics[battle.value.opponentId] : null
 })
 
 // Local animations/visual state
@@ -27,14 +34,28 @@ const playerAvatarId = computed(() => {
   return (PLAYER_CLASSES as Record<string, { avatarSpriteId: string }>)[pClass]?.avatarSpriteId || 'red-lgpe'
 })
 
+const opponentClassId = computed(() => {
+  return opponentCosmetics.value?.player_class || null
+})
+
 const opponentAvatarId = computed(() => {
-  // En PvP real, esto vendría del estado de la batalla
+  if (opponentClassId.value) {
+    return (PLAYER_CLASSES as Record<string, { avatarSpriteId: string }>)[opponentClassId.value]?.avatarSpriteId || opponentClassId.value
+  }
   return battle.value.opponentAvatar || 'blue-gen3'
 })
 
 onMounted(() => {
-  // Sync logic if needed
+  if (battle.value.opponentId) {
+    chatStore.fetchMissingCosmetics([battle.value.opponentId])
+  }
 })
+
+watch(() => battle.value.opponentId, (newOpponentId) => {
+  if (newOpponentId) {
+    chatStore.fetchMissingCosmetics([newOpponentId])
+  }
+}, { immediate: true })
 
 function handleMove(moveIdx: number) {
   if (battle.value.phase !== 'choosing') return
@@ -77,7 +98,7 @@ function handleForfeit() {
           <!-- Avatar dynamic -->
           <div class="trainer-sprite-wrap">
             <img
-              :src="getAssetUrl(ASSET_TYPES.TRAINER, playerAvatarId)"
+              :src="getAssetUrl(ASSET_TYPES.TRAINER, playerAvatarId, { gender: gameStore.state.gender || 'h', trainerSuffix: 'front' })"
               class="trainer-img"
               @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
             >
@@ -214,7 +235,7 @@ function handleForfeit() {
           </div>
           <div class="trainer-sprite-wrap">
             <img
-              :src="getAssetUrl(ASSET_TYPES.TRAINER, opponentAvatarId)"
+              :src="getAssetUrl(ASSET_TYPES.TRAINER, opponentAvatarId, { gender: opponentCosmetics?.gender || 'h', trainerSuffix: 'front' })"
               class="trainer-img"
               @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
             >

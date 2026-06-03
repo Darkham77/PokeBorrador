@@ -5,6 +5,7 @@ import { useProfileStore } from '@/stores/profile'
 import { useGameStore } from '@/stores/game'
 import { useAuthStore } from '@/stores/auth'
 import BaseModal from '@/components/common/BaseModal.vue'
+import { gsap } from 'gsap'
 
 interface Props {
   show?: boolean
@@ -25,6 +26,23 @@ const authStore = useAuthStore()
 
 const newUsername = ref('')
 const isRenaming = ref(false)
+
+const toggleGender = (event: MouseEvent) => {
+  const currentGender = gameStore.state.gender || 'h'
+  const newGender = currentGender === 'h' ? 'm' : 'h'
+  
+  gsap.fromTo(event.currentTarget, 
+    { scale: 0.85 },
+    { scale: 1, duration: 0.3, ease: 'back.out(2)' }
+  )
+  
+  gameStore.updateState({ gender: newGender })
+  gameStore.save(false)
+  if (authStore.user) {
+    profileStore.syncProfileFromAuth(authStore.user, gameStore.state)
+  }
+  uiStore.notify(`Género cambiado a ${newGender === 'm' ? 'Mujer' : 'Hombre'}`, '✨')
+}
 
 onMounted(() => {
   newUsername.value = profileStore.profileData.username || gameStore.state.trainer || ''
@@ -130,14 +148,24 @@ const submitRename = async () => {
       </div>
 
       <div class="input-section">
-        <input 
-          v-model="newUsername"
-          type="text" 
-          class="vicio-input"
-          :disabled="!canRename || isRenaming"
-          placeholder="Ej: Red..."
-          maxlength="15"
-        >
+        <div class="input-row">
+          <input 
+            v-model="newUsername"
+            type="text" 
+            class="vicio-input"
+            :disabled="!canRename || isRenaming"
+            placeholder="Ej: Red..."
+            maxlength="15"
+          >
+          <button
+            class="gender-toggle-btn"
+            :class="[gameStore.state.gender === 'm' ? 'female' : 'male']"
+            title="Cambiar Género"
+            @click.prevent.stop="toggleGender"
+          >
+            {{ gameStore.state.gender === 'm' ? '♀️' : '♂️' }}
+          </button>
+        </div>
         
         <div
           v-if="!canRename"
@@ -197,25 +225,61 @@ const submitRename = async () => {
   flex-direction: column;
   gap: 8px;
 
-  .vicio-input {
+  .input-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+
+    .vicio-input {
+      flex: 1;
+      background: Rgba(0, 0, 0, 0.4);
+      border: 2px solid var(--blue);
+      border-radius: 6px;
+      color: var(--white);
+      padding: 10px 14px;
+      font-family: var(--font-pixel);
+      font-size: 14px;
+      outline: none;
+      text-align: center;
+      
+
+      &:focus {
+        border-color: var(--yellow);
+      }
+
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+    }
+  }
+
+  .gender-toggle-btn {
     background: Rgba(0, 0, 0, 0.4);
     border: 2px solid var(--blue);
     border-radius: 6px;
-    color: var(--white);
-    padding: 10px 14px;
-    font-family: var(--font-pixel);
-    font-size: 14px;
-    outline: none;
-    text-align: center;
-    
+    font-size: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 44px;
+    will-change: transform;
+    transition: border-color 0.2s;
 
-    &:focus {
+    &:hover {
       border-color: var(--yellow);
     }
 
-    &:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
+    &.male {
+      color: Rgba(59, 139, 255, 1);
+      text-shadow: 0 0 8px Rgba(59, 139, 255, 0.4);
+    }
+    &.female {
+      color: Rgba(255, 110, 255, 1);
+      text-shadow: 0 0 8px Rgba(255, 110, 255, 0.4);
     }
   }
 }

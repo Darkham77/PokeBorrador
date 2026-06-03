@@ -57,6 +57,7 @@ const handlePanelClick = (event: Event) => {
       :level="gs.trainerLevel"
       :avatar-style="gs.avatar_style || undefined"
       :size="48"
+      :gender="gs.gender || 'h'"
     >
       <template #overlay>
         <PVTooltip

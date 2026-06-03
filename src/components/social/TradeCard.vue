@@ -36,6 +36,7 @@ const getCosmetics = (userId: string) => {
       level: gameStore.state.trainerLevel || 1,
       avatar_style: gameStore.state.avatar_style || '',
       nick_style: gameStore.state.nick_style || '',
+      gender: gameStore.state.gender || 'h',
     };
   }
   const friend = socialStore.friends.find(f => f.id === userId);
@@ -46,9 +47,10 @@ const getCosmetics = (userId: string) => {
       level: friend.level,
       avatar_style: friend.avatar_style || '',
       nick_style: friend.nick_style || '',
+      gender: friend.gender || 'h',
     };
   }
-  return { username: 'Entrenador', playerClass: 'entrenador', level: 1, avatar_style: '', nick_style: '' };
+  return { username: 'Entrenador', playerClass: 'entrenador', level: 1, avatar_style: '', nick_style: '', gender: 'h' };
 };
 
 const participantId = computed(() =>
@@ -92,6 +94,7 @@ async function onClaim() {
           :level="cosmetics.level"
           :avatar-style="cosmetics.avatar_style || undefined"
           :size="36"
+          :gender="cosmetics.gender || 'h'"
           class="clickable-avatar"
           @click.stop="openProfile"
         />

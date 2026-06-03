@@ -6,14 +6,18 @@ import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 
 interface Props {
   classId?: string | null
+  playerClass?: string | null
   size?: number
   customBorder?: string | null
+  gender?: string | null
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  classId: null,
+  classId: undefined,
+  playerClass: undefined,
   size: 40,
-  customBorder: null
+  customBorder: null,
+  gender: null
 })
 
 interface PlayerClass {
@@ -25,7 +29,11 @@ interface PlayerClass {
 
 const gameStore = useGameStore();
 
-const activeClassId = computed(() => props.classId || gameStore.state.playerClass);
+const activeClassId = computed(() => {
+  if (props.classId !== undefined) return props.classId;
+  if (props.playerClass !== undefined) return props.playerClass;
+  return gameStore.state.playerClass;
+});
 const cls = computed(() => activeClassId.value ? (PLAYER_CLASSES as Record<string, PlayerClass>)[activeClassId.value] : null);
 
 const borderColor = computed(() => {
@@ -41,7 +49,8 @@ const shadowColor = computed(() => {
 const avatarUrl = computed(() => {
   if (!cls.value) return null;
   const spriteId = cls.value.avatarSpriteId || cls.value.id;
-  return getAssetUrl(ASSET_TYPES.TRAINER, spriteId, { trainerSuffix: 'avatar' });
+  const resolvedGender = props.gender || gameStore.state.gender || 'h';
+  return getAssetUrl(ASSET_TYPES.TRAINER, spriteId, { trainerSuffix: 'avatar', gender: resolvedGender });
 });
 
 const containerStyle = computed(() => ({

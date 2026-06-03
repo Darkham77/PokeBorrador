@@ -24,6 +24,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   faction TEXT,
   nick_style TEXT,
   avatar_style TEXT,
+  gender TEXT DEFAULT 'h',
   role TEXT DEFAULT 'user',
   elo_rating INTEGER DEFAULT 1000,
   pvp_wins INTEGER DEFAULT 0,

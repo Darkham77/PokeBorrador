@@ -132,7 +132,7 @@ export async function initSQLite(): Promise<SQLiteDatabase> {
       if (!db) throw new Error('Failed to create database');
 
       const tables = [
-        "profiles (id TEXT PRIMARY KEY, username TEXT, email TEXT, trainer_level INTEGER DEFAULT 1, player_class TEXT, faction TEXT, nick_style TEXT, avatar_style TEXT, role TEXT DEFAULT 'user', created_at TEXT, current_session_id TEXT)",
+        "profiles (id TEXT PRIMARY KEY, username TEXT, email TEXT, trainer_level INTEGER DEFAULT 1, player_class TEXT, faction TEXT, nick_style TEXT, avatar_style TEXT, gender TEXT DEFAULT 'h', role TEXT DEFAULT 'user', created_at TEXT, current_session_id TEXT)",
         "game_saves (user_id TEXT PRIMARY KEY, save_data TEXT, updated_at TEXT)",
         "friendships (id INTEGER PRIMARY KEY AUTOINCREMENT, requester_id TEXT, addressee_id TEXT, status TEXT, created_at TEXT DEFAULT (datetime('now')))",
         "battle_invites (id INTEGER PRIMARY KEY AUTOINCREMENT, sender_id TEXT, opponent_id TEXT, status TEXT, created_at TEXT DEFAULT (datetime('now')))",

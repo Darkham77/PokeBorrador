@@ -11,6 +11,7 @@ export interface ProfileCacheItem {
   trainer_level?: number;
   avatar_style?: string;
   nick_style?: string;
+  gender?: string;
 }
 
 export const useChatCosmeticsStore = defineStore('chatCosmetics', () => {
@@ -27,6 +28,7 @@ export const useChatCosmeticsStore = defineStore('chatCosmetics', () => {
       gameStore.state.trainerLevel,
       gameStore.state.avatar_style,
       gameStore.state.nick_style,
+      gameStore.state.gender,
       authStore.user?.id
     ],
     () => {
@@ -36,7 +38,8 @@ export const useChatCosmeticsStore = defineStore('chatCosmetics', () => {
           player_class: gameStore.state.playerClass || 'entrenador',
           trainer_level: gameStore.state.trainerLevel || 1,
           avatar_style: gameStore.state.avatar_style || '',
-          nick_style: gameStore.state.nick_style || ''
+          nick_style: gameStore.state.nick_style || '',
+          gender: gameStore.state.gender || 'h'
         }
       }
     },
@@ -54,7 +57,8 @@ export const useChatCosmeticsStore = defineStore('chatCosmetics', () => {
         player_class: gameStore.state.playerClass || 'entrenador',
         trainer_level: gameStore.state.trainerLevel || 1,
         avatar_style: gameStore.state.avatar_style || '',
-        nick_style: gameStore.state.nick_style || ''
+        nick_style: gameStore.state.nick_style || '',
+        gender: gameStore.state.gender || 'h'
       }
     }
 
@@ -74,10 +78,10 @@ export const useChatCosmeticsStore = defineStore('chatCosmetics', () => {
 
     try {
       const [profRes, saveRes] = await Promise.all([
-        db.from('profiles').select('id, username, player_class, trainer_level, avatar_style, nick_style').in('id', missingIds),
+        db.from('profiles').select('id, username, player_class, trainer_level, avatar_style, nick_style, gender').in('id', missingIds),
         db.from('game_saves').select('user_id, save_data').in('user_id', missingIds)
       ]) as [
-        { data: { id: string; username?: string | null; player_class?: string | null; trainer_level?: number | null; avatar_style?: string | null; nick_style?: string | null }[] | null, error: unknown },
+        { data: { id: string; username?: string | null; player_class?: string | null; trainer_level?: number | null; avatar_style?: string | null; nick_style?: string | null; gender?: string | null }[] | null, error: unknown },
         { data: { user_id: string; save_data?: unknown }[] | null, error: unknown }
       ]
 
@@ -99,7 +103,8 @@ export const useChatCosmeticsStore = defineStore('chatCosmetics', () => {
             player_class: (save.playerClass as string) || p?.player_class || 'entrenador',
             trainer_level: (save.trainerLevel as number) || p?.trainer_level || 1,
             avatar_style: (save.avatar_style as string) || p?.avatar_style || '',
-            nick_style: (save.nick_style as string) || p?.nick_style || ''
+            nick_style: (save.nick_style as string) || p?.nick_style || '',
+            gender: (save.gender as string) || p?.gender || 'h'
           }
         })
       }

@@ -1,7 +1,6 @@
 // [PureVue-Ignore-Length]
 <script setup lang="ts">
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import TrainerAvatar from '@/components/TrainerAvatar.vue'
 import { gsap } from 'gsap'
 import { type ClassDefinition } from '@/stores/playerClass'
 import { useModalStore } from '@/stores/modals'
@@ -30,8 +29,8 @@ const openMissionsModal = () => {
   modalStore.open('EventMissions')
 }
 
-const getTrainerSprite = (id: string | number | undefined) => {
-  return getAssetUrl(ASSET_TYPES.TRAINER, id as string, { trainerSuffix: 'front' });
+const getTrainerSprite = (id: string | number | undefined, gender: 'h' | 'm' = 'h') => {
+  return getAssetUrl(ASSET_TYPES.TRAINER, id as string, { trainerSuffix: 'front', gender });
 }
 
 const handleImageError = (e: Event) => {
@@ -110,19 +109,20 @@ const onAbilityMouseLeave = (event: MouseEvent) => {
     <aside class="dashboard-sidebar">
       <div class="avatar-box">
         <div class="avatar-glow" />
-        <img 
-          :src="getTrainerSprite(currentClass?.showdownSpriteId || currentClass?.id)"
-          class="trainer-big-img" 
-          @mouseenter="onTrainerMouseEnter"
-          @mouseleave="onTrainerMouseLeave"
-          @error="handleImageError"
-        >
-        <div class="avatar-mini-circle">
-          <TrainerAvatar
-            :player-class="currentClass?.id"
-            :level="trainerLevel"
-            :size="60"
-            class="avatar-pixel no-border"
+        <div class="trainers-wrap">
+          <img 
+            :src="getTrainerSprite(currentClass?.showdownSpriteId || currentClass?.id, 'h')"
+            class="trainer-big-img" 
+            @mouseenter="onTrainerMouseEnter"
+            @mouseleave="onTrainerMouseLeave"
+            @error="handleImageError"
+          />
+          <img 
+            :src="getTrainerSprite(currentClass?.showdownSpriteId || currentClass?.id, 'm')"
+            class="trainer-big-img" 
+            @mouseenter="onTrainerMouseEnter"
+            @mouseleave="onTrainerMouseLeave"
+            @error="handleImageError"
           />
         </div>
       </div>
@@ -293,14 +293,12 @@ const onAbilityMouseLeave = (event: MouseEvent) => {
       position: relative;
       width: 300px;
       height: 300px;
-      background: Rgba(0, 0, 0, 0.3);
-      border-radius: 32px;
-      border: 1px solid Rgba(255, 255, 255, 0.05);
+      background: transparent;
+      border: none;
       margin-bottom: 40px;
       display: flex;
       align-items: center;
       justify-content: center;
-      overflow: hidden;
       
       .avatar-glow {
         position: absolute;
@@ -309,39 +307,21 @@ const onAbilityMouseLeave = (event: MouseEvent) => {
         opacity: 0.1;
       }
       
-      .trainer-big-img {
-        height: 220px;
-        @include pixelated;
-        will-change: transform, filter, opacity;
-        filter: Drop-Shadow(0 20px 40px Rgba(0,0,0,0.8));
-        z-index: var(--z-base);
-      }
-
-      .avatar-mini-circle {
-        position: absolute;
-        top: 24px;
-        left: 24px;
-        width: 60px;
-        height: 60px;
-        background: Rgba(30, 41, 59, 1);
-        border: 3px solid var(--cls-color);
-        border-radius: 50%;
+      .trainers-wrap {
         display: flex;
         align-items: center;
         justify-content: center;
-        overflow: hidden;
         z-index: var(--z-base);
-        box-shadow: 0 8px 25px Rgba(0,0,0,0.6), 0 0 15px var(--cls-color)44;
 
-        .avatar-pixel {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
+        .trainer-big-img {
+          height: 220px;
           @include pixelated;
-          
-          &.no-border {
-            border: none !important;
-            box-shadow: none !important;
+          will-change: transform, filter, opacity;
+          filter: Drop-Shadow(0 15px 30px Rgba(0,0,0,0.8));
+          transition: transform 0.2s;
+
+          &:not(:first-child) {
+            margin-left: -50px;
           }
         }
       }
@@ -546,8 +526,13 @@ const onAbilityMouseLeave = (event: MouseEvent) => {
       margin-bottom: 24px;
       border-radius: 24px;
 
-      .trainer-big-img {
-        height: 150px;
+      .trainers-wrap {
+        .trainer-big-img {
+          height: 150px;
+          &:not(:first-child) {
+            margin-left: -35px;
+          }
+        }
       }
 
       .avatar-mini-circle {

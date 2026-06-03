@@ -24,3 +24,4 @@ supabase/docker/
 supabase/generated/
 supabase/temp_supabase/
 database/temp/
+.fallow/

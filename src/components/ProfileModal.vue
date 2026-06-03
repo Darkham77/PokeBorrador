@@ -8,6 +8,7 @@ import { usePlayerClassStore } from '@/stores/playerClass'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { Z_LAYERS } from '@/logic/constants/visuals'
 import { useModalStore } from '@/stores/modals'
+import gsap from 'gsap'
 
 // Components
 import BaseModal from '@/components/common/BaseModal.vue'
@@ -102,6 +103,24 @@ const handleResetEncounter = () => {
   }
 }
 
+const toggleGender = (event: MouseEvent) => {
+  const currentGender = gs.value.gender || 'h'
+  const newGender = currentGender === 'h' ? 'm' : 'h'
+  
+  const btn = event.currentTarget as HTMLElement
+  if (btn) {
+    gsap.fromTo(btn, 
+      { scale: 1 }, 
+      { scale: 1.4, duration: 0.15, yoyo: true, repeat: 1, ease: 'power2.inOut' }
+    )
+  }
+  
+  gameStore.updateState({ gender: newGender })
+  gameStore.save(false)
+  
+  uiStore.notify(`Género cambiado a ${newGender === 'm' ? 'Mujer' : 'Hombre'}`, '✨')
+}
+
 // Expose to template
 const getAssetUrlLocal = getAssetUrl
 const ASSET_TYPES_LOCAL = ASSET_TYPES
@@ -132,6 +151,7 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
               :level="gs.trainerLevel"
               :avatar-style="gs.avatar_style || undefined"
               :size="120"
+              :gender="gs.gender || 'h'"
             />
           </div>
           <div 
@@ -142,6 +162,14 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
               v-gsap-nick="gs.nick_style || 'normal'"
               :class="gs.nick_style || 'normal'"
             >{{ displayUsername }}</span>
+            <button
+              class="gender-toggle-btn"
+              :class="[gs.gender === 'm' ? 'female' : 'male']"
+              title="Cambiar Género"
+              @click.prevent.stop="toggleGender"
+            >
+              {{ gs.gender === 'm' ? '♀️' : '♂️' }}
+            </button>
             <a
               href="#"
               class="change-link"
@@ -315,6 +343,28 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
     justify-content: center;
     align-items: center;
     gap: 8px;
+    
+    .gender-toggle-btn {
+      background: transparent;
+      border: none;
+      font-size: 14px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2px;
+      line-height: 1;
+      will-change: transform;
+      
+      &.male {
+        color: rgba(59, 139, 255, 1);
+        text-shadow: 0 0 8px rgba(59, 139, 255, 0.4);
+      }
+      &.female {
+        color: rgba(255, 110, 255, 1);
+        text-shadow: 0 0 8px rgba(255, 110, 255, 0.4);
+      }
+    }
     
     .change-link {
       font-size: 8px;

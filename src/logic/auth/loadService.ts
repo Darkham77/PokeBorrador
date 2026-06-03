@@ -181,6 +181,7 @@ export async function loadBestSave(user: AuthUser | null, db: DBRouter): Promise
 function normalizeData(state: GameState): GameState {
   if (!state) return state;
 
+  if (!state.gender) state.gender = 'h';
   if (state.fishingRodSecs === undefined) state.fishingRodSecs = 0;
   if (state.fishingRodType === undefined) state.fishingRodType = null;
   if (state.fishingRodType === ('silver' as unknown)) state.fishingRodType = 'good';

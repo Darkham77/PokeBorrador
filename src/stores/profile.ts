@@ -19,6 +19,7 @@ export interface ProfileData {
   notificationHistory: NotificationItem[];
   lastSave: string;
   last_renamed_at?: string;
+  gender: 'h' | 'm';
 }
 
 export const useProfileStore = defineStore('profile', () => {
@@ -35,7 +36,8 @@ export const useProfileStore = defineStore('profile', () => {
     nick_style: '',
     notificationHistory: [],
     lastSave: 'Sin datos',
-    last_renamed_at: undefined
+    last_renamed_at: undefined,
+    gender: 'h'
   })
 
   function updateProfile(data: Partial<ProfileData>) {
@@ -78,7 +80,8 @@ export const useProfileStore = defineStore('profile', () => {
       stats: state.stats || {},
       faction: state.faction || null,
       notificationHistory: state.notificationHistory || [],
-      lastSave: lastSaveStr
+      lastSave: lastSaveStr,
+      gender: state.gender || 'h'
     })
   }
 

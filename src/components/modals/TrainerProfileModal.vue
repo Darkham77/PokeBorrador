@@ -40,6 +40,7 @@ interface ProfileRow {
   pvp_losses?: number | null
   elo_rating?: number | null
   created_at?: string | null
+  gender?: string | null
 }
 
 interface SaveStateData {
@@ -50,6 +51,7 @@ interface SaveStateData {
   avatar_style?: string
   nick_style?: string
   badges?: number
+  gender?: string
   defeatedGyms?: string[]
   pokedex?: unknown[]
   seenPokedex?: string[]
@@ -212,6 +214,14 @@ const nickStyle = computed(() => {
   const friend = props.userId ? socialStore.friends.find((f: Friend) => f.id === props.userId) : null
   if (friend?.nick_style !== undefined) return friend.nick_style
   return profile.value?.nick_style ?? saveState.value?.nick_style ?? ''
+})
+
+const gender = computed(() => {
+  const cached = props.userId ? chatStore.profileCosmetics[props.userId] : null
+  if (cached?.gender !== undefined) return cached.gender
+  const friend = props.userId ? socialStore.friends.find((f: Friend) => f.id === props.userId) : null
+  if (friend?.gender !== undefined) return friend.gender
+  return profile.value?.gender ?? saveState.value?.gender ?? 'h'
 })
 
 const badgesCount = computed(() => {
@@ -425,6 +435,7 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
               :level="trainerLevel"
               :avatar-style="avatarStyle"
               :size="120"
+              :gender="gender"
             />
           </div>
           <div

@@ -75,6 +75,7 @@ const formatRank = (index: number) => `#${index + 1}`;
             :player-class="row.playerClass" 
             :level="row.level"
             :size="32"
+            :gender="row.gender"
           />
           <div class="name-group">
             <span

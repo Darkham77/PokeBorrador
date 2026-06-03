@@ -10,6 +10,7 @@ interface Props {
   size?: number
   avatarStyle?: string
   borderOverride?: string | null
+  gender?: string | null
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -17,7 +18,8 @@ const props = withDefaults(defineProps<Props>(), {
   level: 1,
   size: 40,
   avatarStyle: '',
-  borderOverride: null
+  borderOverride: null,
+  gender: 'h'
 });
 
 interface PlayerClass {
@@ -123,14 +125,17 @@ const faceStyles = computed((): CSSProperties => {
 
   const bgSize = cls.value.faceScale || 'cover';
   const bgPos = cls.value.facePos || 'center';
-  const displayUrl = getAssetUrl(ASSET_TYPES.TRAINER, cls.value.avatarSpriteId || cls.value.id, { trainerSuffix: 'avatar' });
+  const displayUrl = getAssetUrl(ASSET_TYPES.TRAINER, cls.value.avatarSpriteId || cls.value.id, { 
+    trainerSuffix: 'avatar',
+    gender: props.gender || 'h'
+  });
 
   return {
     ...baseStyles,
-    backgroundColor: '#1e293b',
-    backgroundImage: `radial-gradient(circle, ${cls.value.color}44 0%, transparent 80%), url('${displayUrl}')`,
-    backgroundSize: `cover, ${bgSize}`,
-    backgroundPosition: `center, ${bgPos}`,
+    backgroundColor: cls.value.color,
+    backgroundImage: `url('${displayUrl}')`,
+    backgroundSize: bgSize,
+    backgroundPosition: bgPos,
     backgroundRepeat: 'no-repeat',
     imageRendering: 'pixelated',
     '--avatar-seed': Math.random()

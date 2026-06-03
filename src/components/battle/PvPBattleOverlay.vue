@@ -1,9 +1,9 @@
 <script setup lang="ts">
-
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { gsap } from 'gsap';
 import { useGameStore } from '@/stores/game';
 import { useLivePvPStore } from '@/stores/livePvP';
+import { useChatStore } from '@/stores/chat';
 
 // Sub-components
 import BattleLog from './BattleLog.vue';
@@ -13,7 +13,12 @@ import PlayerAvatar from '@/components/player/PlayerAvatar.vue';
 
 const gameStore = useGameStore();
 const livePvPStore = useLivePvPStore();
+const chatStore = useChatStore();
 const battle = computed(() => livePvPStore.battleState);
+
+const opponentCosmetics = computed(() => {
+  return battle.value.opponentId ? chatStore.profileCosmetics[battle.value.opponentId] : null;
+});
 
 const timeRemaining = ref(40);
 const timerRef = ref<HTMLElement | null>(null);
@@ -25,7 +30,16 @@ let spinTween: gsap.core.Tween | null = null;
 
 onMounted(() => {
   startTurnTimer();
+  if (battle.value.opponentId) {
+    chatStore.fetchMissingCosmetics([battle.value.opponentId]);
+  }
 });
+
+watch(() => battle.value.opponentId, (newOpponentId) => {
+  if (newOpponentId) {
+    chatStore.fetchMissingCosmetics([newOpponentId]);
+  }
+}, { immediate: true });
 
 onUnmounted(() => {
   stopTurnTimer();
@@ -120,6 +134,7 @@ watch(() => [livePvPStore.battleState.myPick, livePvPStore.battleState.enemyPick
         </div>
         <PlayerAvatar
           :player-class="gameStore.state.playerClass"
+          :gender="gameStore.state.gender || 'h'"
           :size="200"
           class="trainer-sprite"
         />
@@ -200,7 +215,8 @@ watch(() => [livePvPStore.battleState.myPick, livePvPStore.battleState.enemyPick
           RIVAL
         </div>
         <PlayerAvatar
-          :player-class="null"
+          :player-class="opponentCosmetics?.player_class || null"
+          :gender="opponentCosmetics?.gender || 'h'"
           :size="200"
           class="trainer-sprite"
         />

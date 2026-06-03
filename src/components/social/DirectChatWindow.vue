@@ -124,6 +124,7 @@ onMounted(() => {
               :player-class="chatStore.profileCosmetics[msg.senderId || '']?.player_class || msg.player_class" 
               :level="chatStore.profileCosmetics[msg.senderId || '']?.trainer_level || msg.trainer_level" 
               :avatar-style="chatStore.profileCosmetics[msg.senderId || '']?.avatar_style || undefined"
+              :gender="chatStore.profileCosmetics[msg.senderId || '']?.gender || msg.gender || 'h'"
               :size="32"
               class="clickable-avatar"
               @click.stop="openTrainerProfile(msg.senderId)"

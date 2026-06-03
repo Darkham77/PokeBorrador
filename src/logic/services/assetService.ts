@@ -155,6 +155,7 @@ export interface AssetOptions {
   back?: boolean; // Legacy fallback
   cycle?: 'morning' | 'day' | 'dusk' | 'night';
   trainerSuffix?: 'avatar' | 'front' | 'back';
+  gender?: 'h' | 'm' | string;
   isLowPower?: boolean;
   [key: string]: unknown;
 }
@@ -249,7 +250,8 @@ export const getAssetUrl = (type: AssetType, rawId: string | number, options: As
       const PLAYER_CLASSES_LIST = ['rocket', 'cazabichos', 'entrenador', 'criador'];
       if (PLAYER_CLASSES_LIST.includes(finalId)) {
         const suffix = options.trainerSuffix || (isBack ? 'back' : 'front');
-        return resolveAsset(`/assets/sprites/trainers/${finalId}_${suffix}${extension}`);
+        const gender = options.gender || 'h';
+        return resolveAsset(`/assets/sprites/trainers/${finalId}_${gender}_${suffix}${extension}`);
       }
 
       const NPC_MAPPING: Record<string, string> = {

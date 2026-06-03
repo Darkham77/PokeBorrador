@@ -21,6 +21,7 @@ export interface ChatMessage {
   created_at?: string;
   player_class?: string;
   trainer_level?: number;
+  gender?: string;
 }
 
 export interface PrivateChat {

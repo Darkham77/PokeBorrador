@@ -150,6 +150,7 @@ useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
                 :player-class="chatStore.profileCosmetics[msg.user_id || '']?.player_class || msg.player_class" 
                 :level="chatStore.profileCosmetics[msg.user_id || '']?.trainer_level || msg.trainer_level" 
                 :avatar-style="chatStore.profileCosmetics[msg.user_id || '']?.avatar_style || undefined"
+                :gender="chatStore.profileCosmetics[msg.user_id || '']?.gender || msg.gender || 'h'"
                 :size="32"
                 class="clickable-avatar"
                 @click.stop="openTrainerProfile(msg.user_id)"
