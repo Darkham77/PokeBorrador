@@ -2,12 +2,20 @@
 import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import { gsap } from 'gsap'
 import { useBattleStore } from '@/stores/battle'
+import { useGameStore } from '@/stores/game'
+import { PLAYER_CLASSES } from '@/data/playerClasses'
 
 const battleStore = useBattleStore()
+const gameStore = useGameStore()
 const logContainer = ref<HTMLDivElement | null>(null)
 const logInner = ref<HTMLDivElement | null>(null)
 
 const logs = computed(() => battleStore.battleLogs)
+
+const playerClassColor = computed(() => {
+  const pClass = gameStore.state.playerClass || 'entrenador'
+  return (PLAYER_CLASSES as Record<string, { color: string }>)[pClass]?.color || '#3b82f6'
+})
 
 const scrollToBottom = async (isInstant = false) => {
   await nextTick()
@@ -73,6 +81,7 @@ onMounted(() => {
   <div
     ref="logContainer"
     class="battle-log custom-scrollbar-vicio"
+    :style="{ '--player-class-color': playerClassColor }"
   >
     <div
       ref="logInner"
@@ -215,7 +224,7 @@ onMounted(() => {
         filter: none !important;
         border-radius: 4px;
         border: 1px solid Rgba(255, 255, 255, 0.1);
-        background: Rgba(0, 0, 0, 0.2) !important;
+        background-color: var(--player-class-color, Rgba(0, 0, 0, 0.2)) !important;
       }
     }
     
