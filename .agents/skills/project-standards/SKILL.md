@@ -89,6 +89,7 @@ Consult these manuals for detailed implementation specifications:
   - **Visual Configuration Extraction**: When modularizing massive visual components (Partículas, Auras) to comply with this rule, extract data dictionaries and configuration objects into external `.ts` files (e.g., `fx-configs.ts`) to keep the rendering logic clean.
 
 - **Zero-Invention**: Reuse `BaseModal`, `UnifiedCard`, and global mixins before creating ad-hoc styles.
+- **Precomputed Database Mapping for Performance**: When designing dictionaries or lookup tables that map entities to multiple traits or dynamic arrays (such as dialogue quotes based on personality traits), pre-flatten and precompute these combined pools at module load time (storing them in a direct key-value hash map) instead of flattening or resolving them dynamically on every query. This provides O(1) lookup speed, matches the architecture of `POKEMON_FEET_DATABASE`, and prevents garbage collection overhead during hot paths.
 - **Centralized Formatters**: All numeric formatting logic (currency, large numbers, suffixes) MUST be centralized in `src/logic/utils/formatters.ts`. Direct use of `toLocaleString()` in components for currency is deprecated in favor of `formatCurrency()`.
 - **Combat Status Localization**: Names for altered status effects (BURN, POISON, etc.) MUST be centralized in the Spanish `STATUS_NAME_MAP` within combat utilities. The use of literal strings for status names in UI components is strictly forbidden.
 - **Modal Lifecycle**: Synchronize performance mode with modal transitions.

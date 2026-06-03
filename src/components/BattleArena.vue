@@ -6,13 +6,15 @@ import { useBattleStore } from '@/stores/battle'
 import { useUIStore } from '@/stores/ui'
 import { useWindowListener } from '@/composables/useWindowListener'
 import { useMapStore } from '@/stores/map'
+import { useDebugStore } from '@/stores/debug'
 import { getRouteWeather } from '@/logic/weatherUtils'
 import { getMechanicalWeather, WEATHER_UI_METADATA, WEATHER_VISUAL_METADATA } from '@/logic/weather/weatherRegistry'
 
-const isDebugActive = typeof window !== 'undefined' && !!(window as unknown as { __VITE_DEBUG__?: unknown }).__VITE_DEBUG__
-const BattleDebugTools = isDebugActive 
-  ? defineAsyncComponent(() => import('./battle/BattleDebugTools.vue')) as Component
-  : null
+const debugStore = useDebugStore()
+const isDebugActive = computed(() => {
+  return debugStore.canAccess && typeof window !== 'undefined' && !!(window as unknown as { __VITE_DEBUG__?: unknown }).__VITE_DEBUG__
+})
+const BattleDebugTools = defineAsyncComponent(() => import('./battle/BattleDebugTools.vue')) as Component
 
 const battleStore = useBattleStore()
 const uiStore = useUIStore()

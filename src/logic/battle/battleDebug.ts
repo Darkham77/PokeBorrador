@@ -1,10 +1,14 @@
 import { logger } from '@/logic/utils/logger'
+import { useDebugStore } from '@/stores/debug'
 import type { BattleContext } from '@/types/battleContext'
 import type { Pokemon } from '@/types/pokemon'
 import type { BattleStages } from '@/types/battle'
 
 export function setupBattleDebug(ctx: BattleContext) {
   if (typeof window === 'undefined') return
+
+  const debugStore = useDebugStore()
+  if (!debugStore.canAccess) return
 
   const win = window as unknown as { 
     __VITE_DEBUG__: Record<string, unknown>;

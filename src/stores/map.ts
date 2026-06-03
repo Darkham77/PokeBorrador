@@ -193,7 +193,8 @@ export const useMapStore = defineStore('map', () => {
       const { makePokemon } = await import('@/logic/pokemonFactory')
 
       const isMaxCriminality = (gs.state.playerClass === 'rocket' && (gs.state.classData?.criminality ?? 0) >= 100)
-      const baseLv = currentMapData.value?.lv?.[0] || 5
+      const targetMap = maps.value.find(m => m.id === locId)
+      const baseLv = targetMap?.lv?.[0] || 5
 
       let tName = 'Entrenador'
       let tSprite = 'youngster'

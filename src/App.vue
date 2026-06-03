@@ -28,6 +28,7 @@ import { logger } from '@/logic/utils/logger'
 import { useProfileStore } from '@/stores/profile'
 import { useSocialStore } from '@/stores/social'
 import { useRoute } from 'vue-router'
+import { useBackNavigation } from '@/composables/useBackNavigation'
 
 const authStore = useAuthStore()
 const gameStore = useGameStore()
@@ -37,6 +38,10 @@ const socialStore = useSocialStore()
 const battleStore = useBattleStore()
 const loadingStore = useLoadingStore()
 const route = useRoute()
+
+// Initialize back navigation gesture handler for mobile/hardware back button
+useBackNavigation()
+
 const dbIncompatible = ref(false)
 const dbVersionInfo = ref<DBCompatibilityResponse | null>(null)
 // Mutex: prevents concurrent executions of initGameSession() caused by the

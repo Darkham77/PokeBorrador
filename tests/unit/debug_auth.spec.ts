@@ -70,7 +70,7 @@ describe('Debug System (Security & Auth)', () => {
       expect((window as unknown as Record<string, unknown>).__VITE_DEBUG__).toBeDefined()
     })
 
-    it('initializes window.__VITE_DEBUG__ only for authorized users (online admin)', () => {
+    it('removes window.__VITE_DEBUG__ even for admin users if online', () => {
       const auth = useAuthStore()
       auth.sessionMode = 'online'
       auth.user = { id: 'admin_id', role: 'admin', user_metadata: { username: 'admin_id' } } as unknown as AuthUser
@@ -78,7 +78,7 @@ describe('Debug System (Security & Auth)', () => {
       const debug = useDebugStore()
       debug.updateGlobalProxy()
       
-      expect((window as unknown as Record<string, unknown>).__VITE_DEBUG__).toBeDefined()
+      expect((window as unknown as Record<string, unknown>).__VITE_DEBUG__).toBeUndefined()
     })
 
     it('removes window.__VITE_DEBUG__ for unauthorized users (online regular user)', () => {

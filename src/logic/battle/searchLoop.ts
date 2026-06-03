@@ -1,6 +1,7 @@
 import { generateEncounter } from '@/logic/encounters'
 import { useUIStore } from '@/stores/ui'
 import { useMapStore } from '@/stores/map'
+import { getRandomQuoteForTrainer } from '@/data/trainerPhrases.ts'
 import { useEventStore } from '@/stores/events'
 import { useWarStore } from '@/stores/war'
 import type { BattleContext } from '@/types/battleContext'
@@ -93,9 +94,11 @@ export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'm
         let tSprite = 'youngster'
         const enemyTeam: Pokemon[] = []
 
+        let tQuote = '¡Prepárate para combatir! ¡No te lo pondré fácil!'
         if (isMaxCriminality) {
           tName = 'Oficial de Policía'
           tSprite = 'tamer'
+          tQuote = getRandomQuoteForTrainer('police')
           const criminality = ctx.gs.state.classData?.criminality || 100
           const excess = Math.max(0, criminality - 100)
           const bonusLv = Math.floor(excess / 50)
@@ -131,6 +134,7 @@ export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'm
           
           tName = t.name
           tSprite = t.sprite
+          tQuote = getRandomQuoteForTrainer(typeKey)
           const trainerLv = baseLv + 2
           const teamSize = Math.floor(Math.random() * 3) + 1
 
@@ -151,6 +155,7 @@ export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'm
           ctx.activeBattle.value.enemyTeam = enemyTeam
           ctx.activeBattle.value.trainerName = tName
           ctx.activeBattle.value.trainerSprite = tSprite
+          ctx.activeBattle.value.quote = tQuote
           ctx.activeBattle.value.isRival = false
         }
       } else if (encounter.type === 'rival') {

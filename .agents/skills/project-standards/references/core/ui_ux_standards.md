@@ -263,6 +263,7 @@ We prioritize a deliberate contrast between modern, sleek UI shells and classic,
   - **Implementation**: `BaseModal` must register its unique `instanceId` upon mounting/showing and calculate its `z-index` using `MODAL_BASE + (depth * MODAL_STEP)`.
   - **Closing Guard**: To prevent visual artifacts during transitions, the unregistration from the stack MUST be delayed (approx. 600ms) until the closing animation completes.
   - **Standalone Modals**: This protocol applies to BOTH stack-managed modals and standalone template-based modals to ensure "last-opened" always sits on top.
+- **Mobile Back Gesture Interception**: En dispositivos móviles/PWA, el gesto o botón atrás de hardware debe interceptarse utilizando el historial del navegador (`history.pushState`). Cada apertura de interfaz (modales, chats, HUD) incrementa el stack, empujando un estado del historial, de modo que el botón atrás cierre el elemento en orden LIFO en lugar de navegar fuera de la página o cerrar sesión. Si una interfaz se cierra manualmente, se debe llamar a `history.back()` sincronizadamente omitiendo el siguiente disparo de `popstate`.
 
 ### 2. Interaction in Locked States
 

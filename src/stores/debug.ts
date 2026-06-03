@@ -67,8 +67,7 @@ export const useDebugStore = defineStore('debug', () => {
   const tools = ref<DebugTool[]>([])
 
   const canAccess = computed(() => {
-    if (auth.sessionMode === 'offline') return true
-    return auth.user?.role === 'admin'
+    return auth.sessionMode === 'offline'
   })
 
   function securityCheck() {
