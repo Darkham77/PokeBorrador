@@ -233,6 +233,7 @@ Performance work is a post-functionality pass. Do not optimize before core behav
   - **PATTERN**: Always specify `{ flush: 'post' }` in the watcher options, or wrap DOM-dependent queries inside `await nextTick()`.
   - **WHY**: Ensures that the browser DOM has settled with the latest template updates before the selection and animation logic (e.g., GSAP targets initialization) runs.
 - **ResizeObserver on Inner Scroll Containers (Auto-Scroll Panels)**: When implementing panels that must auto-scroll to the bottom upon receiving new entries or dynamic assets (like `BattleLog.vue`), attaching a `ResizeObserver` to the main scroll container (`logContainer`) is ineffective because its viewport size doesn't change when items are appended. Instead, observe the inner scroll content wrapper (e.g., `.log-scroll-inner` or `.chat-inner`). This ensures height updates (from appended nodes or delayed image loads) are captured, triggering the scroll adjust.
+- **Dynamic Import of pure TypeScript Interfaces**: Do NOT use dynamic runtime imports (`const { MyInterface } = await import(...)`) for pure TypeScript interfaces or type aliases. Since interfaces and types have no runtime representation in JavaScript, this results in TS compiler and bundler errors (e.g., `TS2749` or `TS2339`). Always import interface types statically at the top of the file using `import type { MyInterface } from '...'`.
 
 
 ## 6) Final self-check before finishing

@@ -99,16 +99,16 @@ export async function executeTurn(store: BattleContext, moveIndex: number) {
 
     if (playerFainted || enemyFainted) {
       if (playerFainted && enemyFainted) {
-        await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.RESOLVE_PLAYER_FAINT)
+        await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.PLAYER_FAINT_SEQ)
         await store.handleFaint('player')
         
-        await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.RESOLVE_ENEMY_FAINT)
+        await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ENEMY_REPLACEMENT_SEQ)
         await store.handleFaint('enemy')
       } else if (playerFainted) {
-        await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.RESOLVE_PLAYER_FAINT)
+        await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.PLAYER_FAINT_SEQ)
         await store.handleFaint('player')
       } else {
-        await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.RESOLVE_ENEMY_FAINT)
+        await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ENEMY_REPLACEMENT_SEQ)
         await store.handleFaint('enemy')
       }
       break;
@@ -161,7 +161,7 @@ export async function runPlayerAction(store: BattleContext, moveIndex: number) {
     return
   }
   
-  if (!canAttack(p, store.addLog)) return
+  if (!await canAttack(p, store)) return
   
   if (p.furyCutterCount && move.effect !== 'fury_cutter') p.furyCutterCount = 0;
   p.destinyBond = false;
@@ -347,7 +347,7 @@ export async function runPlayerAction(store: BattleContext, moveIndex: number) {
     }
 
     if (executableMove.effect && hitsDealt > 0 && store.activeBattle.value) {
-      dispatchMoveEffect(executableMove.effect as string, p, e, store.playerStages.value, store.enemyStages.value, store.addLog, store)
+      await dispatchMoveEffect(executableMove.effect as string, p, e, store.playerStages.value, store.enemyStages.value, store.addLog, store)
     }
   } catch (err) {
     logger.error('Battle', `Error in runPlayerAction: ${(err as Error).message}`)
@@ -368,7 +368,7 @@ export async function runEnemyAction(store: BattleContext) {
   const fsm = store.fsm
   const { BATTLE_STATES, BATTLE_SUBSTATES } = store
 
-  if (!canAttack(e, store.addLog)) return
+  if (!await canAttack(e, store)) return
 
   const isWild = !store.activeBattle.value?.isTrainer && !store.activeBattle.value?.isGym
   
@@ -381,7 +381,6 @@ export async function runEnemyAction(store: BattleContext) {
       
       if (store.exitingEnemy) store.exitingEnemy.value = e
 
-      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.TRAINER_RETREAT)
       await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.POKEMON_RECALL)
       
       const withdrawPromise = store.animations?.handleCatchRequest
@@ -603,7 +602,7 @@ export async function runEnemyAction(store: BattleContext) {
     }
 
     if (executableMove.effect && hitsDealt > 0 && store.activeBattle.value) {
-      dispatchMoveEffect(executableMove.effect as string, e, p, store.enemyStages.value, store.playerStages.value, store.addLog, store)
+      await dispatchMoveEffect(executableMove.effect as string, e, p, store.enemyStages.value, store.playerStages.value, store.addLog, store)
     }
   } catch (err) {
     logger.error('Battle', `Error in runEnemyAction: ${(err as Error).message}`)

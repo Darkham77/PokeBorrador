@@ -32,6 +32,7 @@ export interface ClassDefinition {
   bonusLevels?: number[]
   penalties?: string[]
   showdownSpriteId?: string
+  avatarSpriteId?: string
 }
 
 interface ClassData {

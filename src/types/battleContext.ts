@@ -66,6 +66,8 @@ export interface BattleContext {
     triggerTrainerRetreat: () => Promise<void>;
     triggerPokemonCall: () => Promise<void>;
     handleHealRequest?: (detail: string | { side?: string }) => Promise<void>;
+    handleBlinkRequest?: (detail: string | { side?: string }) => Promise<void>;
     awaitTween?: (key: string) => Promise<void>;
+    resetAll?: () => void;
   };
 }

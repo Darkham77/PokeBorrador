@@ -1,0 +1,538 @@
+{
+  "totalTrainers": 78,
+  "totalNPCs": 1455,
+  "matchesCount": 72,
+  "unmatchedCount": 6,
+  "matches": [
+    {
+      "trainerFile": "acetrainer_avatar.png",
+      "npcFiles": [
+        "acetrainer.png"
+      ],
+      "hash": "8a8153a1cd685acb0d25060a2346eaa8"
+    },
+    {
+      "trainerFile": "acetrainer_front.png",
+      "npcFiles": [
+        "acetrainer.png"
+      ],
+      "hash": "8a8153a1cd685acb0d25060a2346eaa8"
+    },
+    {
+      "trainerFile": "beauty_avatar.png",
+      "npcFiles": [
+        "beauty.png"
+      ],
+      "hash": "5e8bb0f4803bd93d905b392a935dcd1b"
+    },
+    {
+      "trainerFile": "beauty_front.png",
+      "npcFiles": [
+        "beauty.png"
+      ],
+      "hash": "5e8bb0f4803bd93d905b392a935dcd1b"
+    },
+    {
+      "trainerFile": "biker_avatar.png",
+      "npcFiles": [
+        "biker.png"
+      ],
+      "hash": "3d14dd5bae09f6e35f8fa144fa76a7c1"
+    },
+    {
+      "trainerFile": "biker_front.png",
+      "npcFiles": [
+        "biker.png"
+      ],
+      "hash": "3d14dd5bae09f6e35f8fa144fa76a7c1"
+    },
+    {
+      "trainerFile": "birdkeeper_avatar.png",
+      "npcFiles": [
+        "birdkeeper.png"
+      ],
+      "hash": "e18c0df4ef4948167c0e91f3f631cedf"
+    },
+    {
+      "trainerFile": "birdkeeper_front.png",
+      "npcFiles": [
+        "birdkeeper.png"
+      ],
+      "hash": "e18c0df4ef4948167c0e91f3f631cedf"
+    },
+    {
+      "trainerFile": "blackbelt_avatar.png",
+      "npcFiles": [
+        "blackbelt.png"
+      ],
+      "hash": "ea7a10f67b33f15a86a386270ecc0d44"
+    },
+    {
+      "trainerFile": "blackbelt_front.png",
+      "npcFiles": [
+        "blackbelt.png"
+      ],
+      "hash": "ea7a10f67b33f15a86a386270ecc0d44"
+    },
+    {
+      "trainerFile": "blaine_avatar.png",
+      "npcFiles": [
+        "blaine.png"
+      ],
+      "hash": "df602731391cc2843a57269df024c9d3"
+    },
+    {
+      "trainerFile": "blaine_front.png",
+      "npcFiles": [
+        "blaine.png"
+      ],
+      "hash": "df602731391cc2843a57269df024c9d3"
+    },
+    {
+      "trainerFile": "blue_avatar.png",
+      "npcFiles": [
+        "blue-gen3.png"
+      ],
+      "hash": "50441c9ef4e6e2205dbe4077cd5f0131"
+    },
+    {
+      "trainerFile": "blue_front.png",
+      "npcFiles": [
+        "blue-gen3.png"
+      ],
+      "hash": "50441c9ef4e6e2205dbe4077cd5f0131"
+    },
+    {
+      "trainerFile": "brock_avatar.png",
+      "npcFiles": [
+        "brock.png"
+      ],
+      "hash": "81e2a19aaf5dc2e46543eb5856255f76"
+    },
+    {
+      "trainerFile": "brock_front.png",
+      "npcFiles": [
+        "brock.png"
+      ],
+      "hash": "81e2a19aaf5dc2e46543eb5856255f76"
+    },
+    {
+      "trainerFile": "burglar_avatar.png",
+      "npcFiles": [
+        "burglar.png"
+      ],
+      "hash": "fc841d4a46b10bc2b9bdfa5298a75fb9"
+    },
+    {
+      "trainerFile": "burglar_front.png",
+      "npcFiles": [
+        "burglar.png"
+      ],
+      "hash": "fc841d4a46b10bc2b9bdfa5298a75fb9"
+    },
+    {
+      "trainerFile": "cazabichos_front.png",
+      "npcFiles": [
+        "bugcatcher-gen6.png"
+      ],
+      "hash": "d99b5c501f781fd0a9f9d49654fdf3d4"
+    },
+    {
+      "trainerFile": "criador_front.png",
+      "npcFiles": [
+        "jacq.png"
+      ],
+      "hash": "10e7c26acdaedcf2547a7ade476fc7c6"
+    },
+    {
+      "trainerFile": "cyclist_avatar.png",
+      "npcFiles": [
+        "cyclist.png"
+      ],
+      "hash": "d3d6bc95115041f1662e65729e186a15"
+    },
+    {
+      "trainerFile": "cyclist_front.png",
+      "npcFiles": [
+        "cyclist.png"
+      ],
+      "hash": "d3d6bc95115041f1662e65729e186a15"
+    },
+    {
+      "trainerFile": "dragontamer_avatar.png",
+      "npcFiles": [
+        "dragontamer.png"
+      ],
+      "hash": "6c0f1aaa1b50b6601b9e8d94601d409a"
+    },
+    {
+      "trainerFile": "dragontamer_front.png",
+      "npcFiles": [
+        "dragontamer.png"
+      ],
+      "hash": "6c0f1aaa1b50b6601b9e8d94601d409a"
+    },
+    {
+      "trainerFile": "entrenador_front.png",
+      "npcFiles": [
+        "red-lgpe.png"
+      ],
+      "hash": "5b607f5c090ebda0f19aec1d091f715c"
+    },
+    {
+      "trainerFile": "erika_avatar.png",
+      "npcFiles": [
+        "erika.png"
+      ],
+      "hash": "183b5d2abf4e91e59c9434d96a9b60e4"
+    },
+    {
+      "trainerFile": "erika_front.png",
+      "npcFiles": [
+        "erika.png"
+      ],
+      "hash": "183b5d2abf4e91e59c9434d96a9b60e4"
+    },
+    {
+      "trainerFile": "gentleman_avatar.png",
+      "npcFiles": [
+        "gentleman.png"
+      ],
+      "hash": "799a6f447ee411589f6b729cabd1915d"
+    },
+    {
+      "trainerFile": "gentleman_front.png",
+      "npcFiles": [
+        "gentleman.png"
+      ],
+      "hash": "799a6f447ee411589f6b729cabd1915d"
+    },
+    {
+      "trainerFile": "giovanni_avatar.png",
+      "npcFiles": [
+        "giovanni.png"
+      ],
+      "hash": "56cf256ff81f425bf35174c4a04aa640"
+    },
+    {
+      "trainerFile": "giovanni_front.png",
+      "npcFiles": [
+        "giovanni.png"
+      ],
+      "hash": "56cf256ff81f425bf35174c4a04aa640"
+    },
+    {
+      "trainerFile": "hiker_avatar.png",
+      "npcFiles": [
+        "hiker.png"
+      ],
+      "hash": "125b73440b7ad41dfd7d72a106d19f3c"
+    },
+    {
+      "trainerFile": "hiker_front.png",
+      "npcFiles": [
+        "hiker.png"
+      ],
+      "hash": "125b73440b7ad41dfd7d72a106d19f3c"
+    },
+    {
+      "trainerFile": "juggler_avatar.png",
+      "npcFiles": [
+        "juggler.png"
+      ],
+      "hash": "11018832f8a1bfc3f5794cb75512b6e8"
+    },
+    {
+      "trainerFile": "juggler_front.png",
+      "npcFiles": [
+        "juggler.png"
+      ],
+      "hash": "11018832f8a1bfc3f5794cb75512b6e8"
+    },
+    {
+      "trainerFile": "koga_avatar.png",
+      "npcFiles": [
+        "koga.png"
+      ],
+      "hash": "5fd3cca00b1159d1a9bf1fe24d0ff76c"
+    },
+    {
+      "trainerFile": "koga_front.png",
+      "npcFiles": [
+        "koga.png"
+      ],
+      "hash": "5fd3cca00b1159d1a9bf1fe24d0ff76c"
+    },
+    {
+      "trainerFile": "lass_avatar.png",
+      "npcFiles": [
+        "lass.png"
+      ],
+      "hash": "4150ad7f955e73f938fdc002dc799dcb"
+    },
+    {
+      "trainerFile": "lass_front.png",
+      "npcFiles": [
+        "lass.png"
+      ],
+      "hash": "4150ad7f955e73f938fdc002dc799dcb"
+    },
+    {
+      "trainerFile": "ltsurge_avatar.png",
+      "npcFiles": [
+        "ltsurge.png"
+      ],
+      "hash": "028329e8ac40cb3b1d551b87184a1f8f"
+    },
+    {
+      "trainerFile": "ltsurge_front.png",
+      "npcFiles": [
+        "ltsurge.png"
+      ],
+      "hash": "028329e8ac40cb3b1d551b87184a1f8f"
+    },
+    {
+      "trainerFile": "misty_avatar.png",
+      "npcFiles": [
+        "misty.png"
+      ],
+      "hash": "dbd123cc0368108227edd0219e9ad01c"
+    },
+    {
+      "trainerFile": "misty_front.png",
+      "npcFiles": [
+        "misty.png"
+      ],
+      "hash": "dbd123cc0368108227edd0219e9ad01c"
+    },
+    {
+      "trainerFile": "picnicker_avatar.png",
+      "npcFiles": [
+        "picnicker.png"
+      ],
+      "hash": "bed9fa4dbbc2f9522b08b8825c26548f"
+    },
+    {
+      "trainerFile": "picnicker_front.png",
+      "npcFiles": [
+        "picnicker.png"
+      ],
+      "hash": "bed9fa4dbbc2f9522b08b8825c26548f"
+    },
+    {
+      "trainerFile": "psychic_avatar.png",
+      "npcFiles": [
+        "psychic.png"
+      ],
+      "hash": "bed0219aabf9e592d2663df4d37e2fb5"
+    },
+    {
+      "trainerFile": "psychic_front.png",
+      "npcFiles": [
+        "psychic.png"
+      ],
+      "hash": "bed0219aabf9e592d2663df4d37e2fb5"
+    },
+    {
+      "trainerFile": "richboy_avatar.png",
+      "npcFiles": [
+        "richboy.png"
+      ],
+      "hash": "6ba0e759b2d1b5602b22aade06ae3df6"
+    },
+    {
+      "trainerFile": "richboy_front.png",
+      "npcFiles": [
+        "richboy.png"
+      ],
+      "hash": "6ba0e759b2d1b5602b22aade06ae3df6"
+    },
+    {
+      "trainerFile": "rocket_front.png",
+      "npcFiles": [
+        "rainbowrocketgrunt.png"
+      ],
+      "hash": "e6ab93bbe600db111462707d4a55769f"
+    },
+    {
+      "trainerFile": "roughneck_avatar.png",
+      "npcFiles": [
+        "roughneck.png"
+      ],
+      "hash": "06c4296a1f3970e44a387d57fe5ba7c5"
+    },
+    {
+      "trainerFile": "roughneck_front.png",
+      "npcFiles": [
+        "roughneck.png"
+      ],
+      "hash": "06c4296a1f3970e44a387d57fe5ba7c5"
+    },
+    {
+      "trainerFile": "sabrina_avatar.png",
+      "npcFiles": [
+        "sabrina.png"
+      ],
+      "hash": "0c6547c18a608a13e96d0982dbb336d5"
+    },
+    {
+      "trainerFile": "sabrina_front.png",
+      "npcFiles": [
+        "sabrina.png"
+      ],
+      "hash": "0c6547c18a608a13e96d0982dbb336d5"
+    },
+    {
+      "trainerFile": "sailor_avatar.png",
+      "npcFiles": [
+        "sailor.png"
+      ],
+      "hash": "67949f0bf86789925a2cceb8dfe21aa2"
+    },
+    {
+      "trainerFile": "sailor_front.png",
+      "npcFiles": [
+        "sailor.png"
+      ],
+      "hash": "67949f0bf86789925a2cceb8dfe21aa2"
+    },
+    {
+      "trainerFile": "scientist_avatar.png",
+      "npcFiles": [
+        "scientist.png"
+      ],
+      "hash": "5097775d73af1557c2fd0fc40472c879"
+    },
+    {
+      "trainerFile": "scientist_front.png",
+      "npcFiles": [
+        "scientist.png"
+      ],
+      "hash": "5097775d73af1557c2fd0fc40472c879"
+    },
+    {
+      "trainerFile": "supernerd_avatar.png",
+      "npcFiles": [
+        "supernerd.png"
+      ],
+      "hash": "13d8b2150870e11ea14b12bb3ac749e0"
+    },
+    {
+      "trainerFile": "supernerd_front.png",
+      "npcFiles": [
+        "supernerd.png"
+      ],
+      "hash": "13d8b2150870e11ea14b12bb3ac749e0"
+    },
+    {
+      "trainerFile": "swimmer_avatar.png",
+      "npcFiles": [
+        "swimmer.png"
+      ],
+      "hash": "f87c0b8620bf409a3e48af44db83c5f8"
+    },
+    {
+      "trainerFile": "swimmer_front.png",
+      "npcFiles": [
+        "swimmer.png"
+      ],
+      "hash": "f87c0b8620bf409a3e48af44db83c5f8"
+    },
+    {
+      "trainerFile": "tamer_avatar.png",
+      "npcFiles": [
+        "tamer-gen3.png"
+      ],
+      "hash": "e3c58a91e7f6f3ac727b39ea34831581"
+    },
+    {
+      "trainerFile": "tamer_front.png",
+      "npcFiles": [
+        "tamer-gen3.png"
+      ],
+      "hash": "e3c58a91e7f6f3ac727b39ea34831581"
+    },
+    {
+      "trainerFile": "teamrocket_avatar.png",
+      "npcFiles": [
+        "teamrocket.png"
+      ],
+      "hash": "c1dff7a6a61a5bc2b20798c9e65122e8"
+    },
+    {
+      "trainerFile": "teamrocket_front.png",
+      "npcFiles": [
+        "teamrocket.png"
+      ],
+      "hash": "c1dff7a6a61a5bc2b20798c9e65122e8"
+    },
+    {
+      "trainerFile": "tuber_avatar.png",
+      "npcFiles": [
+        "tuber.png"
+      ],
+      "hash": "551688eace9d7534a09381b2104f8b9b"
+    },
+    {
+      "trainerFile": "tuber_front.png",
+      "npcFiles": [
+        "tuber.png"
+      ],
+      "hash": "551688eace9d7534a09381b2104f8b9b"
+    },
+    {
+      "trainerFile": "veteran_avatar.png",
+      "npcFiles": [
+        "veteran.png"
+      ],
+      "hash": "9745cbb0282f691d6527ee37ac66a653"
+    },
+    {
+      "trainerFile": "veteran_front.png",
+      "npcFiles": [
+        "veteran.png"
+      ],
+      "hash": "9745cbb0282f691d6527ee37ac66a653"
+    },
+    {
+      "trainerFile": "youngster_avatar.png",
+      "npcFiles": [
+        "youngster.png"
+      ],
+      "hash": "d1c82e6d39fb900d1916baaae7466505"
+    },
+    {
+      "trainerFile": "youngster_front.png",
+      "npcFiles": [
+        "youngster.png"
+      ],
+      "hash": "d1c82e6d39fb900d1916baaae7466505"
+    }
+  ],
+  "unmatched": [
+    {
+      "trainerFile": "camper_avatar.png",
+      "hash": "20680347c385023ac666d3e9f311ebfc"
+    },
+    {
+      "trainerFile": "camper_front.png",
+      "hash": "53eb57c3ce2017c9e74bc3331e87cdea"
+    },
+    {
+      "trainerFile": "cazabichos_avatar.png",
+      "hash": "b98255209335510903df80f300c66336"
+    },
+    {
+      "trainerFile": "criador_avatar.png",
+      "hash": "638b09b60d7aa2f41a12e2cee97beed1"
+    },
+    {
+      "trainerFile": "entrenador_avatar.png",
+      "hash": "22f3c20aef588cf99306ed3f0c7b77dd"
+    },
+    {
+      "trainerFile": "rocket_avatar.png",
+      "hash": "1c0dfd86df25a5eeab5dc8f1b43cb3dd"
+    }
+  ]
+}

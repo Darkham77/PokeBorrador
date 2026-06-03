@@ -18,6 +18,8 @@ export interface RewardOptions {
   participantsSet?: Set<string> | null;
   bcMult?: number;
   totalMoneyMult?: number;
+  isTrainer?: boolean;
+  isGym?: boolean;
 }
 
 export function processExpGain(p: Pokemon, baseExp: number, _participants: Set<string>, options: RewardOptions = {}) {
@@ -66,8 +68,10 @@ export function processExpGain(p: Pokemon, baseExp: number, _participants: Set<s
 }
 
 export function calculateMoneyGain(enemyPoke: Pokemon, options: RewardOptions = {}) {
-  const { bcMult = 1, totalMoneyMult = 1 } = options
-  const baseMoney = enemyPoke.level * 10 * bcMult
+  const { bcMult = 1, totalMoneyMult = 1, isTrainer = false, isGym = false } = options
+  const multiplier = (isTrainer || isGym) ? 20 : 2
+  const baseMoney = enemyPoke.level * multiplier * bcMult
   return Math.floor(baseMoney * totalMoneyMult)
 }
+
 

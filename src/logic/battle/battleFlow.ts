@@ -1,5 +1,4 @@
 import { getMechanicalWeather, WEATHER_MECHANICAL, WEATHER_REGISTRY } from '../weather/weatherRegistry.ts'
-import { gameBus } from '@/logic/gameBus'
 import type { Pokemon } from '@/types/pokemon'
 import type { BattleStages, LogFn, BattleWeather } from '@/types/battle'
 import { tickStatus, tickLeechSeed } from './battleStatus.ts'
@@ -19,7 +18,8 @@ export function handleEntryAbilities(playerPoke: Pokemon, enemyPoke: Pokemon, pl
   }
 }
 
-export function canAttack(pokemon: Pokemon, addLog: LogFn) {
+export async function canAttack(pokemon: Pokemon, ctx: BattleContext) {
+  const addLog = ctx.addLog
   if (pokemon.mustRecharge) {
     addLog(`¡${pokemon.name} tiene que recargar!`, 'log-info', pokemon)
     pokemon.mustRecharge = false
@@ -65,7 +65,11 @@ export function canAttack(pokemon: Pokemon, addLog: LogFn) {
         const selfDmg = Math.max(1, Math.floor(((2 * pokemon.level / 5 + 2) * 40 * (pokemon.atk || 10) / (pokemon.def || 10)) / 50) + 2)
         pokemon.hp = Math.max(0, pokemon.hp - selfDmg)
         addLog(`¡Tan confundido que se hirió a sí mismo! (-${selfDmg} HP)`, 'log-info', pokemon)
-        gameBus.emit('PLAY_SOUND', 'statusDamage')
+        
+        const side = pokemon.uid === ctx.activeBattle.value?.player?.uid ? 'player' : 'enemy'
+        if (ctx.animations?.handleBlinkRequest) {
+          await ctx.animations.handleBlinkRequest({ side })
+        }
         return false
       }
     }
@@ -80,24 +84,29 @@ export function canAttack(pokemon: Pokemon, addLog: LogFn) {
   return true
 }
 
-export function applyEndTurnWeather(p: Pokemon, e: Pokemon, weather: BattleWeather | null, addLog: LogFn) {
+export async function applyEndTurnWeather(p: Pokemon, e: Pokemon, weather: BattleWeather | null, ctx: BattleContext) {
   const mechWeather = getMechanicalWeather(weather?.type);
   const wType = (weather?.visual || weather?.type || '').toLowerCase();
   const weatherLabel = WEATHER_REGISTRY[wType]?.label || 'CLIMA';
+  const promises: Promise<void>[] = []
 
   if (mechWeather === WEATHER_MECHANICAL.SANDSTORM) {
     const isSandImmune = (poke: Pokemon) => ['rock', 'ground', 'steel'].includes(poke.type) || ['rock', 'ground', 'steel'].includes(poke.type2 || '')
     if (!isSandImmune(p)) {
       const dmg = Math.max(1, Math.floor(p.maxHp / 16))
       p.hp = Math.max(0, p.hp - dmg)
-      addLog(`¡El efecto de ${weatherLabel} daña a ${p.name}! (-${dmg} HP)`, 'log-player', p)
-      gameBus.emit('PLAY_SOUND', 'statusDamage')
+      ctx.addLog(`¡El efecto de ${weatherLabel} daña a ${p.name}! (-${dmg} HP)`, 'log-player', p)
+      if (ctx.animations?.handleBlinkRequest) {
+        promises.push(ctx.animations.handleBlinkRequest({ side: 'player' }))
+      }
     }
     if (!isSandImmune(e)) {
       const dmg = Math.max(1, Math.floor(e.maxHp / 16))
       e.hp = Math.max(0, e.hp - dmg)
-      addLog(`¡El efecto de ${weatherLabel} daña a ${e.name}! (-${dmg} HP)`, 'log-enemy', e)
-      gameBus.emit('PLAY_SOUND', 'statusDamage')
+      ctx.addLog(`¡El efecto de ${weatherLabel} daña a ${e.name}! (-${dmg} HP)`, 'log-enemy', e)
+      if (ctx.animations?.handleBlinkRequest) {
+        promises.push(ctx.animations.handleBlinkRequest({ side: 'enemy' }))
+      }
     }
   }
 
@@ -106,19 +115,19 @@ export function applyEndTurnWeather(p: Pokemon, e: Pokemon, weather: BattleWeath
     if (!isHailImmune(p)) {
       const dmg = Math.max(1, Math.floor(p.maxHp / 16))
       p.hp = Math.max(0, p.hp - dmg)
-      addLog(`¡El efecto de ${weatherLabel} daña a ${p.name}! (-${dmg} HP)`, 'log-player', p)
-      gameBus.emit('PLAY_SOUND', 'statusDamage')
+      ctx.addLog(`¡El efecto de ${weatherLabel} daña a ${p.name}! (-${dmg} HP)`, 'log-player', p)
+      if (ctx.animations?.handleBlinkRequest) {
+        promises.push(ctx.animations.handleBlinkRequest({ side: 'player' }))
+      }
     }
     if (!isHailImmune(e)) {
       const dmg = Math.max(1, Math.floor(e.maxHp / 16))
       e.hp = Math.max(0, e.hp - dmg)
-      addLog(`¡El efecto de ${weatherLabel} daña a ${e.name}! (-${dmg} HP)`, 'log-enemy', e)
-      gameBus.emit('PLAY_SOUND', 'statusDamage')
+      ctx.addLog(`¡El efecto de ${weatherLabel} daña a ${e.name}! (-${dmg} HP)`, 'log-enemy', e)
+      if (ctx.animations?.handleBlinkRequest) {
+        promises.push(ctx.animations.handleBlinkRequest({ side: 'enemy' }))
+      }
     }
-  }
-
-  if (mechWeather === WEATHER_MECHANICAL.SNOW) {
-    // La nieve normal NO hace daño residual (Gen 9)
   }
 
   // Poder Solar (Solar Power) Recoil
@@ -127,10 +136,18 @@ export function applyEndTurnWeather(p: Pokemon, e: Pokemon, weather: BattleWeath
       if (poke.ability === 'Poder solar' && poke.hp > 0) {
         const dmg = Math.max(1, Math.floor(poke.maxHp / 8));
         poke.hp = Math.max(0, poke.hp - dmg);
-        addLog(`¡${poke.name} sufre por el sol ardiente! (-${dmg} HP)`, 'log-info', poke);
-        gameBus.emit('PLAY_SOUND', 'statusDamage');
+        ctx.addLog(`¡${poke.name} sufre por el sol ardiente! (-${dmg} HP)`, 'log-info', poke);
+        
+        const side = poke.uid === ctx.activeBattle.value?.player?.uid ? 'player' : 'enemy'
+        if (ctx.animations?.handleBlinkRequest) {
+          promises.push(ctx.animations.handleBlinkRequest({ side }))
+        }
       }
     });
+  }
+
+  if (promises.length > 0) {
+    await Promise.all(promises)
   }
 }
 
@@ -150,15 +167,19 @@ export async function applyEndTurnEffects(ctx: BattleContext) {
         const dmg = Math.max(10, Math.floor(fsTarget.maxHp * 0.15))
         fsTarget.hp = Math.max(0, fsTarget.hp - dmg)
         ctx.addLog(`¡Se cumplió la premonición! ${fsTarget.name} recibió daño.`, 'log-info', fsTarget)
-        gameBus.emit('PLAY_SOUND', 'statusDamage')
+        
+        const side = fsTarget.uid === ctx.activeBattle.value?.player?.uid ? 'player' : 'enemy'
+        if (ctx.animations?.handleBlinkRequest) {
+          await ctx.animations.handleBlinkRequest({ side })
+        }
       }
     }
   }
 
-  tickStatus(p, ctx.addLog, 'player')
-  tickStatus(e, ctx.addLog, 'enemy')
-  tickLeechSeed(p, e, ctx.addLog)
-  tickLeechSeed(e, p, ctx.addLog)
+  await tickStatus(p, ctx, 'player')
+  await tickStatus(e, ctx, 'enemy')
+  await tickLeechSeed(p, e, ctx)
+  await tickLeechSeed(e, p, ctx)
   
   const w = active.weather
   if (w && w.turns > 0) {
@@ -188,7 +209,7 @@ export async function applyEndTurnEffects(ctx: BattleContext) {
     })
   })
 
-  applyEndTurnWeather(p, e, active.weather, ctx.addLog)
+  await applyEndTurnWeather(p, e, active.weather, ctx)
   
   if (p.hp <= 0) await ctx.handleFaint('player')
   if (ctx.isBattleActive.value && e.hp <= 0) await ctx.handleFaint('enemy')

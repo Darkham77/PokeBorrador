@@ -92,6 +92,14 @@ export const useDebugStore = defineStore('debug', () => {
     return true
   }
 
+  const trainerChance50 = ref(false)
+  const debugMultipliers = ref({
+    shiny: 1,
+    trainer: 1,
+    fishing: 1,
+    rival: 1
+  })
+
   function register(config: DebugTool) {
     if (tools.value.some(t => t.id === config.id)) return
     tools.value.push(config)
@@ -112,6 +120,11 @@ export const useDebugStore = defineStore('debug', () => {
     // Preserve existing sub-objects (e.g. .battle from setupBattleDebug).
     // Only add/update the flat tool commands without wiping the whole object.
     if (!window.__VITE_DEBUG__) window.__VITE_DEBUG__ = {}
+
+    // Bind reactive state directly to the window object so static logic can access them
+    const debugObj = window.__VITE_DEBUG__ as unknown as Record<string, unknown>
+    debugObj.trainerChance50 = trainerChance50.value
+    debugObj.multipliers = debugMultipliers.value
 
     tools.value.forEach(tool => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -152,6 +165,10 @@ export const useDebugStore = defineStore('debug', () => {
     }
   }
 
+  watch([trainerChance50, debugMultipliers], () => {
+    updateGlobalProxy()
+  }, { deep: true })
+
   watch(canAccess, () => updateGlobalProxy())
 
   init()
@@ -162,6 +179,8 @@ export const useDebugStore = defineStore('debug', () => {
     securityCheck,
     register,
     unregister,
-    updateGlobalProxy
+    updateGlobalProxy,
+    trainerChance50,
+    debugMultipliers
   }
 })

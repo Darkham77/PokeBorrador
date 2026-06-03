@@ -805,8 +805,7 @@ export const FIRE_RED_MAPS = [
       },
       "wind": {
         "visitors": {
-          "pidgey": 50,
-          "spearow": 50
+          "butterfree": 100
         }
       },
       "intense_sun": {
@@ -1218,7 +1217,7 @@ export const FIRE_RED_MAPS = [
       "mist": {
         "visitors": {
           "drowzee": 50,
-          "venonat": 50
+          "gastly": 50
         },
         "fishingVisitors": {
           "magikarp": 100
@@ -1256,8 +1255,7 @@ export const FIRE_RED_MAPS = [
       },
       "wind": {
         "visitors": {
-          "pidgey": 50,
-          "spearow": 50
+          "spearow": 100
         },
         "fishingVisitors": {
           "magikarp": 100
@@ -1384,7 +1382,7 @@ export const FIRE_RED_MAPS = [
       "mist": {
         "visitors": {
           "drowzee": 50,
-          "venonat": 50
+          "gastly": 50
         }
       },
       "intense_sun": {
@@ -1401,8 +1399,7 @@ export const FIRE_RED_MAPS = [
       },
       "wind": {
         "visitors": {
-          "pidgey": 50,
-          "spearow": 50
+          "spearow": 100
         }
       },
       "cold": {
@@ -1537,8 +1534,7 @@ export const FIRE_RED_MAPS = [
       },
       "intense_sun": {
         "visitors": {
-          "ponyta": 60,
-          "tangela": 40
+          "ponyta": 100
         }
       },
       "cold": {
@@ -1710,8 +1706,7 @@ export const FIRE_RED_MAPS = [
       },
       "intense_sun": {
         "visitors": {
-          "ponyta": 60,
-          "tangela": 40
+          "ponyta": 100
         },
         "fishingVisitors": {
           "magikarp": 80,
@@ -1825,7 +1820,7 @@ export const FIRE_RED_MAPS = [
       },
       "mist": {
         "visitors": {
-          "drowzee": 50,
+          "gastly": 50,
           "venonat": 50
         }
       },
@@ -2086,8 +2081,7 @@ export const FIRE_RED_MAPS = [
       },
       "wind": {
         "visitors": {
-          "pidgey": 50,
-          "spearow": 50
+          "pidgey": 100
         }
       },
       "intense_sun": {
@@ -3003,8 +2997,8 @@ export const FIRE_RED_MAPS = [
       },
       "rain": {
         "visitors": {
-          "bellsprout": 50,
-          "oddish": 50
+          "slowpoke": 50,
+          "poliwag": 50
         }
       },
       "intense_sun": {
@@ -3021,8 +3015,7 @@ export const FIRE_RED_MAPS = [
       },
       "wind": {
         "visitors": {
-          "pidgey": 50,
-          "spearow": 50
+          "spearow": 100
         }
       },
       "cold": {

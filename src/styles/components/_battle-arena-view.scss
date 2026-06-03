@@ -22,8 +22,8 @@
 
 .battle-info-container {
   position: absolute; inset: 0; z-index: calc(var(--z-base) + 30);
-  padding: 4cqw; display: flex; flex-direction: column; pointer-events: none;
-  @media (max-width: 600px) { padding: 2cqw; }
+  padding: 2cqw; display: flex; flex-direction: column; pointer-events: none;
+  @media (max-width: 600px) { padding: 1cqw; }
 }
 
 .combatant-info-wrap { pointer-events: auto; }
@@ -56,12 +56,168 @@
 
 .trainer-sprite-wrapper {
   width: 100%; height: 100%; display: flex; align-items: flex-end; justify-content: center;
-  padding-bottom: 10%; // Alineación base
+  padding-bottom: 5%; // Ajustado para centrar mejor
+}
+
+.pokemon-atmosphere-wrapper {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
 }
 
 .trainer-image {
-  height: 90%; width: auto; object-fit: contain;
+  height: 100%; width: auto; object-fit: contain;
   will-change: transform, filter, opacity;
-  filter: Drop-Shadow(0 4px 8px Rgba(0,0,0,0.5));
   @include pixelated;
+}
+
+.standing-trainer {
+  z-index: var(--z-map-spawns);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  opacity: 0.85;
+  will-change: transform, opacity;
+  pointer-events: none;
+  
+  .trainer-image {
+    height: 100%;
+    width: auto;
+    object-fit: contain;
+    @include pixelated;
+  }
+  
+  &.enemy-trainer {
+    transform: Scale(0.8);
+  }
+
+  &.player-trainer {
+    .trainer-image {
+      transform: Scale(1.1);
+    }
+  }
+}
+
+.retro-battle-dialog {
+  position: absolute;
+  left: 5%;
+  right: 5%;
+  bottom: 8%;
+  z-index: calc(var(--z-base) + 50);
+  pointer-events: all;
+  
+  .dialog-frame {
+    background: #141824;
+    border: 3px double Rgba(255, 255, 255, 0.6);
+    border-radius: 12px;
+    padding: 12px 18px;
+    box-shadow: 0 8px 24px Rgba(0, 0, 0, 0.8), inset 0 0 8px Rgba(255, 255, 255, 0.05);
+    color: white;
+    @include pixelated;
+    
+    .dialog-speaker {
+      font-size: 10px;
+      color: #ffb703;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      text-shadow: 1px 1px 0 #000;
+    }
+    
+    .dialog-text {
+      font-size: 9px;
+      line-height: 1.5;
+      color: #e5e7eb;
+      text-shadow: 1px 1px 0 #000;
+    }
+  }
+}
+
+.dialog-fade-enter-active, .dialog-fade-leave-active {
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.dialog-fade-enter-from, .dialog-fade-leave-to {
+  opacity: 0;
+  transform: Translatey(10px);
+}
+
+.debug-trainer-guide {
+  position: absolute;
+  inset: 0;
+  border: 2px solid cyan;
+  background-color: Rgba(0, 255, 255, 0.15);
+  box-sizing: border-box;
+  pointer-events: none;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  span {
+    color: cyan;
+    font-family: monospace;
+    font-size: 10px;
+    font-weight: bold;
+    text-shadow: 1px 1px 0 black;
+    pointer-events: none;
+  }
+}
+
+.dialog-bubble-entity {
+  z-index: calc(var(--z-base) + 50);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.speech-bubble {
+  position: relative;
+  background: white;
+  border: 8px solid #141824;
+  border-radius: 24px;
+  padding: 32px;
+  width: 100%;
+  max-width: 100%;
+  min-height: 180px;
+  box-sizing: border-box;
+  box-shadow: 12px 12px 0 Rgba(0, 0, 0, 0.15);
+  color: #141824;
+  @include pixelated;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  
+  .bubble-speaker {
+    font-size: 32px;
+    font-weight: bold;
+    color: #e76f51;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  
+  .bubble-text {
+    font-size: 24px;
+    line-height: 1.6;
+    color: #264653;
+  }
+  
+  // Rabillo del bocadillo saliendo del lateral derecho y apuntando al rival (en P2 ANCHOR)
+  .bubble-tail {
+    position: absolute;
+    right: -100px; // Brecha de 100px hasta la esquina del entrenador, solapando 8px
+    top: -26px; // Eleva el inicio de la flecha para que la punta coincida con el feetY del rival
+    width: 108px; // Largo exacto para conectar con la esquina izquierda del rival
+    height: 100px;
+    pointer-events: none;
+    z-index: 5;
+    
+    svg {
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+    }
+  }
 }

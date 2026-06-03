@@ -52,26 +52,27 @@ export const useBattleStore = defineStore('battle', () => {
   const faintedSides = ref(new Set<string>())
   
   const isBattleActive = computed(() => 
-    fsm.currentState.value === BATTLE_STATES.ACTIVE_BATTLE || 
-    fsm.currentState.value === BATTLE_STATES.REWARDS_PHASE ||
-    fsm.currentState.value === BATTLE_STATES.LEVEL_UP_MODAL ||
-    fsm.currentState.value === BATTLE_STATES.POST_BATTLE_STABILIZATION ||
-    fsm.currentState.value === BATTLE_STATES.REORDER_TEAM ||
-    fsm.currentState.value === BATTLE_STATES.FIRST_INTRO ||
-    fsm.currentState.value === BATTLE_STATES.INITIALIZING ||
-    fsm.currentState.value === BATTLE_STATES.SEARCH_PHASE
+    activeBattle.value !== null && (
+      fsm.currentState.value === BATTLE_STATES.ACTIVE_BATTLE || 
+      fsm.currentState.value === BATTLE_STATES.REWARDS_PHASE ||
+      fsm.currentState.value === BATTLE_STATES.LEVEL_UP_MODAL ||
+      fsm.currentState.value === BATTLE_STATES.REORDER_TEAM ||
+      fsm.currentState.value === BATTLE_STATES.FIRST_INTRO ||
+      fsm.currentState.value === BATTLE_STATES.INITIALIZING ||
+      fsm.currentState.value === BATTLE_STATES.SEARCH_PHASE ||
+      fsm.currentState.value === BATTLE_STATES.EXIT_BATTLE
+    )
   )
   const isFinishing = computed(() => 
     fsm.currentState.value === BATTLE_STATES.REWARDS_PHASE || 
     fsm.currentState.value === BATTLE_STATES.LEVEL_UP_MODAL ||
-    fsm.currentState.value === BATTLE_STATES.POST_BATTLE_STABILIZATION ||
-    fsm.currentSubState.value === BATTLE_SUBSTATES.ENEMY_FAINT ||
+    fsm.currentSubState.value === BATTLE_SUBSTATES.ENEMY_REPLACEMENT_SEQ ||
     fsm.currentSubState.value === BATTLE_SUBSTATES.PLAYER_FAINT_SEQ ||
     fsm.currentSubState.value === BATTLE_SUBSTATES.CATCH_SUCCESS
   )
   const isSearching = computed(() => fsm.currentState.value === BATTLE_STATES.SEARCH_PHASE)
   const isReadyToExit = computed(() => 
-    fsm.currentState.value === BATTLE_STATES.POST_BATTLE_STABILIZATION && 
+    fsm.currentState.value === BATTLE_STATES.EXIT_BATTLE && 
     fsm.currentSubState.value === BATTLE_SUBSTATES.DEFEAT_WAIT
   )
   const isIntroAnimating = ref(false)
@@ -335,13 +336,13 @@ export const useBattleStore = defineStore('battle', () => {
       await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.EVAL_HP)
 
       if (activeBattle.value?.player && activeBattle.value.player.hp <= 0) {
-        await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.RESOLVE_PLAYER_FAINT)
+        await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.PLAYER_FAINT_SEQ)
         await handleFaint('player')
         isProcessing.value = false
         return
       }
       if (activeBattle.value?.enemy && activeBattle.value.enemy.hp <= 0) {
-        await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.RESOLVE_ENEMY_FAINT)
+        await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ENEMY_REPLACEMENT_SEQ)
         await handleFaint('enemy')
         isProcessing.value = false
         return
@@ -451,13 +452,13 @@ export const useBattleStore = defineStore('battle', () => {
       await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.EVAL_HP)
 
       if (activeBattle.value?.player && activeBattle.value.player.hp <= 0) {
-        await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.RESOLVE_PLAYER_FAINT)
+        await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.PLAYER_FAINT_SEQ)
         await handleFaint('player')
         isProcessing.value = false
         return
       }
       if (activeBattle.value?.enemy && activeBattle.value.enemy.hp <= 0) {
-        await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.RESOLVE_ENEMY_FAINT)
+        await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ENEMY_REPLACEMENT_SEQ)
         await handleFaint('enemy')
         isProcessing.value = false
         return

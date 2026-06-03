@@ -22,6 +22,28 @@ export function registerBattleTools(debug: DebugSystem, _context: DebugContext) 
   })
 
   debug.register({
+    id: 'audio-play-victory-trainer',
+    label: 'SONIDO VICTORIA',
+    command: 'playVictoryTrainer',
+    description: 'Probar el sonido 8-bit de victoria contra entrenadores.',
+    action: () => {
+      audio.play('victoryTrainer')
+      return 'Sonido de victoria reproducido.'
+    }
+  })
+
+  debug.register({
+    id: 'audio-play-defeat-sound',
+    label: 'SONIDO DERROTA',
+    command: 'playDefeat',
+    description: 'Probar el sonido 8-bit de derrota.',
+    action: () => {
+      audio.play('defeat')
+      return 'Sonido de derrota reproducido.'
+    }
+  })
+
+  debug.register({
     id: 'audio-stop-all',
     label: 'DETENER AUDIO',
     command: 'stopAllAudio',

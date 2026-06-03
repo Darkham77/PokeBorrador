@@ -3,7 +3,7 @@ import { GameState } from './game.ts';
 import { Pokemon } from './pokemon.ts';
 import { BattleState, BattleStages, BattleLog } from './battle.ts';
 import { BattleStateName, BattleSubStateName } from '@/logic/battle/battleStateMachine';
-import { Event } from '@/logic/events/eventEngine';
+import { Event, GlobalMultipliers } from '@/logic/events/eventEngine';
 import { AuthUser } from './auth.ts';
 import { DBRouter } from '@/logic/db/dbRouter';
 import { DayPhase, Season } from '@/logic/timeUtils';
@@ -47,6 +47,8 @@ export interface BattleOptions {
   isDebug?: boolean;
   difficulty?: string;
   rewardTM?: string;
+  trainerSprite?: string;
+  isRival?: boolean;
 }
 
 export interface GameStore {
@@ -138,6 +140,8 @@ export interface UIStore {
   isAnyModalOpen: boolean;
   isAnyFullscreenModalOpen: boolean;
   openHudGroup: string | null;
+  autoBattle: boolean;
+  setAutoBattle: (val: boolean) => void;
   notify: (msg: string, icon?: string) => void;
   openConfirm: (options: ConfirmOptions) => void;
   openPrompt: (options: PromptOptions) => void;
@@ -178,12 +182,7 @@ export interface EventStore {
   activeEvents: Event[];
   pendingAwards: PendingAward[];
   isLoading: boolean;
-  globalMultipliers: {
-    shiny: number;
-    exp: number;
-    money: number;
-    catch: number;
-  };
+  globalMultipliers: Partial<GlobalMultipliers>;
   fetchEvents: () => Promise<void>;
   checkPendingAwards: () => Promise<void>;
   submitCompetitionEntry: (pokemon: Pokemon, eventId: string) => Promise<void>;
@@ -229,6 +228,8 @@ export interface AudioStore {
   money: () => void;
   faint: () => void;
   heal: () => void;
+  victoryTrainer: () => void;
+  defeat: () => void;
   notif: () => void;
   sentMsg: () => void;
   receivedMsg: () => void;

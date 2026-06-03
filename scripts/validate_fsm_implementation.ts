@@ -187,6 +187,30 @@ async function main() {
     errors.push(`[CHECK 9] Rama persistenceMode SINGLE no detectada en código.`);
   }
 
+  // 10. Referencias a Estados/Subestados Inexistentes (Código Basura)
+  fileData.forEach(file => {
+    const lines = file.content.split('\n');
+    lines.forEach((line, idx) => {
+      // 10a. Referencias explícitas por objeto BATTLE_STATES/BATTLE_SUBSTATES
+      const explicitMatches = line.matchAll(/\bBATTLE_(?:SUB)?STATES\.([A-Z0-9_]+)\b/g);
+      for (const match of explicitMatches) {
+        const stateName = match[1];
+        if (stateName && !allKeys.has(stateName)) {
+          errors.push(`[CHECK 10] Referencia explícita a estado inexistente en ${path.basename(file.path)}:${idx + 1}: BATTLE_(SUB)STATES.${stateName}`);
+        }
+      }
+
+      // 10b. Literales de texto en llamadas a FSM
+      const fsmCallMatches = line.matchAll(/(?:transition|isSubState|isState|currentState\.value\s*===\s*|currentState\s*===\s*|state\s*===\s*)\(\s*(?:[^,]+,\s*)?['"]([A-Z0-9_]+)['"]/g);
+      for (const match of fsmCallMatches) {
+        const stateName = match[1];
+        if (stateName && !allKeys.has(stateName) && !['SINGLE', 'PLAYER', 'ENEMY', 'ACTIVE'].includes(stateName)) {
+          errors.push(`[CHECK 10] Literal de FSM inexistente referenciado en ${path.basename(file.path)}:${idx + 1}: '${stateName}'`);
+        }
+      }
+    });
+  });
+
   console.log(`\n════════════════════════════════════`);
   console.log(`    FSM IMPLEMENTATION REPORT`);
   console.log(`════════════════════════════════════`);

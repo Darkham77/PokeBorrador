@@ -73,20 +73,85 @@ export function getEffectiveStat(pokemon: Pokemon, statKey: keyof Pokemon, stage
   );
 }
 
-/**
- * Detailed breakdown for UI tooltips.
- */
 export function getStatBreakdown(pokemon: Pokemon, statKey: keyof Pokemon, stages: Partial<BattleStages>, weather: BattleWeather | null) {
   const final = getEffectiveStat(pokemon, statKey, stages, weather);
-  const base = (pokemon[statKey] as number) || 10;
   
+  let base = (pokemon[statKey] as number) || 10;
+  if (statKey === 'spa' && !pokemon.spa) base = pokemon.atk ?? 10;
+  if (statKey === 'spd' && !pokemon.spd) base = pokemon.def ?? 10;
+
+  const wType = weather?.type ? weather.type.toLowerCase() : 'clear';
+  const pTypes = [pokemon.type?.toLowerCase(), pokemon.type2?.toLowerCase()];
+  
+  const WEATHER_MAP: Record<string, string> = {
+    sun: 'sun', heatwave: 'sun', intense_sun: 'sun',
+    rain: 'rain', storm: 'rain', heavy_rain: 'rain',
+    sandstorm: 'sandstorm', dust_storm: 'sandstorm',
+    snow: 'snow', hail: 'hail', blizzard: 'hail',
+    fog: 'fog', mist: 'fog',
+    wind: 'wind', strong_winds: 'wind',
+    clear: 'clear', thunderstorm: 'clear'
+  };
+  const mechWeather = WEATHER_MAP[wType] || 'clear';
+
+  let weatherMult = 1;
+  if (statKey === 'def') {
+    if ((mechWeather === 'snow' || mechWeather === 'hail') && pTypes.includes('ice')) {
+      weatherMult = 1.5;
+    }
+  }
+  if (statKey === 'spd') {
+    if (mechWeather === 'sandstorm' && pTypes.includes('rock')) {
+      weatherMult = 1.5;
+    }
+  }
+  if (statKey === 'spe') {
+    if (wType === 'coldwave' && !pTypes.includes('ice')) {
+      weatherMult = 0.5;
+    }
+  }
+
+  const stage = Math.max(-6, Math.min(6, (stages[statKey as keyof BattleStages] as number) || 0));
+  const stageMult = stage >= 0 ? (2 + stage) / 2 : 2 / (2 - stage);
+
+  let abilityMult = 1;
+  const ab = pokemon.ability;
+  const dayCycle = getDayCycle();
+  const isSun = mechWeather === 'sun' || (mechWeather === 'clear' && (dayCycle === 'day' || dayCycle === 'morning'));
+  const isRain = mechWeather === 'rain' || (mechWeather === 'clear' && (dayCycle === 'night' || dayCycle === 'dusk'));
+
+  if (statKey === 'atk') {
+    if (ab === 'Potencia' || ab === 'Energía pura') abilityMult = 2;
+    else if (ab === 'Agallas' && pokemon.status) abilityMult = 1.5;
+  }
+  if (statKey === 'def') {
+    if (ab === 'Escama especial' && pokemon.status) abilityMult = 1.5;
+  }
+  if (statKey === 'spa') {
+    if (ab === 'Poder solar' && isSun) abilityMult = 1.5;
+  }
+  if (statKey === 'spe') {
+    if (ab === 'Clorofila' && isSun) abilityMult = 2;
+    else if (ab === 'Nado rápido' && isRain) abilityMult = 2;
+    else if (ab === 'Ímpetu arena' && mechWeather === 'sandstorm') abilityMult = 2;
+    else if (ab === 'Quitanieves' && (mechWeather === 'snow' || mechWeather === 'hail')) abilityMult = 2;
+  }
+
+  let statusMult = 1;
+  if (statKey === 'spe' && pokemon.status === 'paralysis') {
+    statusMult = 0.5;
+  }
+  if (statKey === 'atk' && pokemon.status === 'burn' && ab !== 'Agallas') {
+    statusMult = 0.5;
+  }
+
   return {
     base,
     final,
-    weatherMult: final > base ? 1.5 : (final < base ? 0.5 : 1), // Simplified for UI
-    stageMult: 1, // Detailed stage math is inside battleMath
-    statusMult: 1,
-    abilityMult: 1
+    weatherMult,
+    stageMult,
+    statusMult,
+    abilityMult
   };
 }
 

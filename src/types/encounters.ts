@@ -3,7 +3,7 @@ import { Pokemon } from './pokemon.ts';
 import type { DominanceInfo } from './stores.ts';
 import type { Event } from '@/logic/events/eventEngine';
 
-export type EncounterType = 'wild' | 'trainer' | 'fishing' | 'guardian' | 'defender' | 'archaeology';
+export type EncounterType = 'wild' | 'trainer' | 'fishing' | 'guardian' | 'defender' | 'archaeology' | 'rival';
 
 export interface Encounter {
   type: EncounterType;
@@ -71,6 +71,7 @@ export interface EncounterOptions {
   dominanceData?: Record<string, DominanceInfo> | null;
   eventTrainerBonus?: number;
   eventFishingBonus?: number;
+  eventRivalBonus?: number;
 }
 
 export interface EncounterState {
@@ -88,4 +89,7 @@ export interface EncounterState {
   team?: Pokemon[];
   trainerChance?: number;
   eloRating?: number;
+  playerClass?: string | null;
+  classLevel?: number;
+  gymProgress?: Record<string, { easy: boolean; normal: boolean; hard: boolean; attempts: number }>;
 }

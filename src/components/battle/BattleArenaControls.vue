@@ -35,6 +35,12 @@ const isControlsDisabled = computed(() => {
          ['INITIALIZING', 'FIRST_INTRO', 'LEVEL_UP_MODAL', 'REWARDS_PHASE'].includes(s || ''))
 })
 
+const isRewardsWait = computed(() => 
+  battleStore.currentFsmState === 'REWARDS_PHASE' && 
+  battleStore.currentSubState === 'EMPTY_WAIT'
+)
+
+
 const execShowBattleSwitch = () => { 
   const isForced = uiStore.isBattleSwitchForced
   uiStore.isBattleSwitchForced = false
@@ -113,7 +119,7 @@ watch(() => [
     isSearching &&
     !isIntroAnimating &&
     !isProcessing &&
-    ['BUSH_IDLE', 'SILHOUETTE_MODE'].includes(String(subState))
+    ['COMBAT_OR_FLEE', 'SILHOUETTE_MODE'].includes(String(subState))
   ) {
     battleStore.startEncounter()
   }
@@ -195,7 +201,7 @@ const onEnter = (el: Element, done: () => void) => {
 
     <!-- Overlay de Finalización / Búsqueda (Cubre TODO el move-panel) -->
     <div
-      v-if="(battleStore.isSearching && ['WAIT_INPUT', 'BUSH_IDLE', 'PARALLEL_PREP', 'BUSH_VISIBLE', 'SILHOUETTE_MODE', 'GEN_NEW_S2'].includes(String(battleStore.currentSubState))) || battleStore.isReadyToExit"
+      v-if="!battleStore.isProcessing && ((battleStore.isSearching && ['WAIT_INPUT', 'COMBAT_OR_FLEE', 'PARALLEL_PREP', 'BUSH_VISIBLE', 'SILHOUETTE_MODE', 'GEN_NEW_S2'].includes(String(battleStore.currentSubState))) || battleStore.isReadyToExit || isRewardsWait)"
       class="battle-finish-overlay"
       :class="{ 'is-search-mode': battleStore.isSearching }"
     >
@@ -211,7 +217,12 @@ const onEnter = (el: Element, done: () => void) => {
           class="continue-btn-final map-btn"
           @click.stop="battleStore.completeBattleFlow('map')"
         >
-          <span class="btn-emoji">🗺️</span> VOLVER AL MAPA
+          <template v-if="battleStore.state?.isGym">
+            <span class="btn-emoji">🏆</span> VOLVER A GIMNASIOS
+          </template>
+          <template v-else>
+            <span class="btn-emoji">🗺️</span> VOLVER AL MAPA
+          </template>
         </button>
       </div>
     </div>

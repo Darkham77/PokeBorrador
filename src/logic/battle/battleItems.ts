@@ -27,7 +27,6 @@ export async function handleItemUsage(itemName: string, p: Pokemon, e: Pokemon, 
   const { 
     eventStore, 
     addLog, 
-    audio, 
     consumeItem 
   } = options
 
@@ -47,8 +46,6 @@ export async function handleItemUsage(itemName: string, p: Pokemon, e: Pokemon, 
     const eventCatchMult = eventStore.globalMultipliers?.catch || 1
     const { caught, shakes } = calculateCatchRate(e, itemName, eventCatchMult, options.ctx || {})
     
-    // 1. Animación de entrada (energía azul) — awaited via GSAP tween registration
-    audio.ballHit()
     if (options.ctx?.animations?.handleCatchRequest) {
       await options.ctx.animations.handleCatchRequest({ side: 'enemy', ballId: options.itemId || itemName })
     } else {
@@ -137,7 +134,6 @@ export async function handleItemUsage(itemName: string, p: Pokemon, e: Pokemon, 
     
     const res = useItemOnPokemon(itemName, p) as { success: boolean, message: string, pokemon: Pokemon } | null
     if (res) {
-      audio.heal()
       addLog(`¡${p.name} ${res.message}!`, 'log-info', itemName, 'player')
       consumeItem(itemName)
       

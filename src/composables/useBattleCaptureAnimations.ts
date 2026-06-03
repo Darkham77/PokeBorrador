@@ -84,7 +84,7 @@ export function useBattleCaptureAnimations(
   // Resolved immediately by the REGISTER_TWEEN handler when the component fires the event.
   const pendingTweenResolvers = new Map<string, () => void>()
 
-  gameBus.on('REGISTER_TWEEN', (e: Event) => {
+  const onRegisterTween = (e: Event) => {
     const data = (e as CustomEvent).detail
     if (data && data.key && data.tween) {
       activeTweens.set(data.key, data.tween)
@@ -95,7 +95,19 @@ export function useBattleCaptureAnimations(
         resolver()
       }
     }
-  })
+  }
+
+  const initListeners = () => {
+    cleanupListeners()
+    gameBus.on('REGISTER_TWEEN', onRegisterTween)
+  }
+
+  const cleanupListeners = () => {
+    gameBus.off('REGISTER_TWEEN', onRegisterTween)
+    activeTweens.clear()
+    pendingTweenResolvers.clear()
+  }
+
 
   /**
    * Awaits a GSAP tween registered by BattleCombatant via REGISTER_TWEEN.
@@ -168,6 +180,7 @@ export function useBattleCaptureAnimations(
     slot.pokemonUid = targetUid
     slot.isCaptureActive = false
     slot.animState = 'releasing'
+    gameBus.emit('PLAY_SOUND', 'ballHit')
 
     // Poll until the component mounts, registers the tween, and completes the animation.
     // Uses retry loop because newly-mounted BattleCombatant components have spriteRef=null
@@ -215,6 +228,7 @@ export function useBattleCaptureAnimations(
     slot.animState = 'catching'
     slot.isCaptureActive = false
     slot.isAnimatingCapture = true
+    gameBus.emit('PLAY_SOUND', 'ballHit')
 
     // Poll until the component registers the tween and the animation completes.
     const animKey = `${side}-${targetUid || 'active'}`
@@ -250,6 +264,9 @@ export function useBattleCaptureAnimations(
       seat.entry.isBlinking = true
       seat.exit.isBlinking = true
       const tl = createTimeline()
+      tl.add(() => {
+        gameBus.emit('PLAY_SOUND', 'statusDamage')
+      })
       tl.to({}, { duration: 0.48 })
       tl.add(() => { 
         seat.entry.isBlinking = false 
@@ -267,6 +284,9 @@ export function useBattleCaptureAnimations(
       seat.entry.isHealing = true
       seat.exit.isHealing = true
       const tl = createTimeline()
+      tl.add(() => {
+        gameBus.emit('PLAY_SOUND', 'heal')
+      })
       tl.to({}, { duration: 0.6 })
       tl.add(() => {
         seat.entry.isHealing = false
@@ -296,10 +316,16 @@ export function useBattleCaptureAnimations(
       
     isFaintInProgress.value = true
     const tl = createTimeline()
+    tl.add(() => {
+      gameBus.emit('PLAY_SOUND', 'faint')
+    })
     
     if (hasTrainer) {
       const slot = getSeat(side).exit
       slot.animState = 'catching'
+      tl.add(() => {
+        gameBus.emit('PLAY_SOUND', 'ballHit')
+      })
       
       const pokemon = side === 'player' ? battleStore.player : toValue(enemyRef)
       slot.pokemonUid = pokemon?.uid || null
@@ -381,6 +407,8 @@ export function useBattleCaptureAnimations(
     caughtPokemonSnapshot.value = null
     isFaintInProgress.value = false
     faintedPokemonSnapshot.value = null
+    activeTweens.clear()
+    pendingTweenResolvers.clear()
     
     Object.keys(seats.value).forEach(side => {
       const seat = seats.value[side]
@@ -442,6 +470,9 @@ export function useBattleCaptureAnimations(
     getPokemonIsShaking,
     getPokemonIsBlinking,
     getPokemonIsHealing,
-    awaitTween
+    awaitTween,
+    initListeners,
+    cleanupListeners
   }
+
 }

@@ -104,6 +104,25 @@ async function main() {
     errors.push(`Faltante en JS: ${s}`);
   });
 
+  // [CHECK 3] Constantes JS -> Nodos Mermaid (Búsqueda de Código Basura)
+  const IGNORED_JS_STATES = new Set([
+    'FIRST_INTRO',
+    'EXEC_TURN',
+    'ANIM_SYNC',
+    'WAIT_LOG_QUEUE',
+    'PRELOAD_COORDS',
+    'PRELOAD_FINAL_COORDS',
+    'PARALLEL_PREP',
+    'PARALLEL_ENTRY',
+    'VACATE_ALL_SEATS',
+    'WAIT_TIMER'
+  ]);
+
+  const undocumented = Array.from(jsKeys).filter(s => !mermaidStates.has(s) && !IGNORED_JS_STATES.has(s));
+  undocumented.forEach(s => {
+    errors.push(`Código basura / Indocumentado en JS: ${s} (No existe en los diagramas Mermaid del manual)`);
+  });
+
   // [CHECK 2] Transiciones Top-Level
   const topLevelRx = /export const BATTLE_STATES\s*=\s*\{([\s\S]*?)\}/;
   const tlm = fsmCode.match(topLevelRx);

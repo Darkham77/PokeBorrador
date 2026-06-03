@@ -54,7 +54,7 @@ describe('Battle Stale Flow Safety Tests', () => {
       gs: { state: {} },
       fsm: {
         currentState: { value: BATTLE_STATES.SEARCH_PHASE }, // La batalla ya terminó y estamos buscando
-        currentSubState: { value: BATTLE_SUBSTATES.BUSH_IDLE },
+        currentSubState: { value: BATTLE_SUBSTATES.COMBAT_OR_FLEE },
         transition: vi.fn(async (s, sub) => {
           mockCtx.fsm.currentState.value = s;
           if (sub) (mockCtx.fsm.currentSubState as { value: string | null }).value = sub;
@@ -92,7 +92,7 @@ describe('Battle Stale Flow Safety Tests', () => {
     expect(mockCtx.activeBattle.value!.enemy.hp).toBe(50)
   })
 
-  it('should transition to BUSH_IDLE when entering search phase and keep logs intact', async () => {
+  it('should transition to COMBAT_OR_FLEE when entering search phase and keep logs intact', async () => {
     // Configurar estado en ACTIVE_BATTLE
     mockCtx.fsm.currentState.value = BATTLE_STATES.ACTIVE_BATTLE
     
@@ -101,7 +101,7 @@ describe('Battle Stale Flow Safety Tests', () => {
     // No debe vaciar los logs para que permanezcan legibles durante la fase de búsqueda
     expect(mockCtx.clearLogs).not.toHaveBeenCalled()
     
-    // Debe transicionar a BUSH_IDLE al final del flujo de búsqueda
-    expect(mockCtx.fsm.transition).toHaveBeenCalledWith(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.BUSH_IDLE)
+    // Debe transicionar a COMBAT_OR_FLEE al final del flujo de búsqueda
+    expect(mockCtx.fsm.transition).toHaveBeenCalledWith(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.COMBAT_OR_FLEE)
   })
 })

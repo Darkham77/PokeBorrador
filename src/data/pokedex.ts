@@ -130,8 +130,8 @@ export const POKEMON_AESTHETICS = {
   unown: { floating: true },
   staryu: { floating: true },
   starmie: { floating: true },
-  porygon: { floating: true },
-  porygon2: { floating: true },
+  porygon: { floating: false },
+  porygon2: { floating: false },
   lugia: { floating: true },
   'ho-oh': { floating: true },
   articuno: { floating: true },
@@ -147,7 +147,9 @@ export const POKEMON_AESTHETICS = {
   yanma: { floating: true },
   gligar: { floating: true },
   mantine: { floating: true },
-  hoppip: { floating: false }
+  hoppip: { floating: false },
+  doduo: { floating: false },
+  dodrio: { floating: false }
 };
 
 

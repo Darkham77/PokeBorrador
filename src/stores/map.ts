@@ -73,6 +73,7 @@ export const useMapStore = defineStore('map', () => {
   const maps = ref(FIRE_RED_MAPS)
   const activeEvents = ref<Event[]>([])
   const lastNavigateTime = ref(0)
+  const lastTrainerChanceIncrementAt = ref(Temporal.Now.instant().epochMilliseconds)
   const dailyGuardianCaptures = ref<string[]>([])
   const mapWinners = ref<Record<string, import('@/types/stores').DominanceInfo>>({}) // locId -> winner
   const pendingAwards = ref<PendingAward[]>([])
@@ -106,6 +107,15 @@ export const useMapStore = defineStore('map', () => {
     const gs = useGameStore()
     const battleStore = useBattleStore()
     const uiStore = useUIStore()
+
+    // Pity timer logic: cada 2 minutos aumenta tChance en 5% (max 20%)
+    const elapsedPity = now - lastTrainerChanceIncrementAt.value
+    if (elapsedPity >= 120000) {
+      const increments = Math.floor(elapsedPity / 120000)
+      gs.state.trainerChance = Math.min(20, (gs.state.trainerChance || 5) + increments * 5)
+      lastTrainerChanceIncrementAt.value = now
+      logger.info('MapStore', `PITY: Trainer chance increased to ${gs.state.trainerChance}%`)
+    }
 
     // 1. Verificar salud del equipo
     const healthy = (gs.state.team as Pokemon[]).find(p => p.hp > 0 && !p.onMission && !p.onDefense)
@@ -174,6 +184,115 @@ export const useMapStore = defineStore('map', () => {
       // TODO: Implementar búsqueda de defensores reales desde Supabase
       // Por ahora notificamos
       uiStore.notify(`¡Defensor del Team ${wildEnc.faction?.toUpperCase()} detectado!`, '⚔️')
+    } else if (wildEnc.type === 'trainer') {
+      // Reset base trainer chance to 5%
+      gs.state.trainerChance = 5
+      lastTrainerChanceIncrementAt.value = now
+
+      const { getEvolvedForm } = await import('@/logic/evolutionLogic')
+      const { makePokemon } = await import('@/logic/pokemonFactory')
+
+      const isMaxCriminality = (gs.state.playerClass === 'rocket' && (gs.state.classData?.criminality ?? 0) >= 100)
+      const baseLv = currentMapData.value?.lv?.[0] || 5
+
+      let tName = 'Entrenador'
+      let tSprite = 'youngster'
+      const enemyTeam: Pokemon[] = []
+
+      if (isMaxCriminality) {
+        tName = 'Oficial de Policía'
+        tSprite = 'tamer'
+        const criminality = gs.state.classData?.criminality || 100
+        const excess = Math.max(0, criminality - 100)
+        const bonusLv = Math.floor(excess / 50)
+        const trainerLv = baseLv + 5 + bonusLv
+        const teamSize = Math.floor(Math.random() * 2) + 3 // 3-4 pokemon
+        const policePool = ['growlithe', 'arcanine', 'machoke', 'magneton', 'pidgeot']
+
+        for (let i = 0; i < teamSize; i++) {
+          const pIdBase = policePool[Math.floor(Math.random() * policePool.length)] || 'growlithe'
+          const pId = getEvolvedForm(pIdBase, trainerLv)
+          const p = makePokemon(pId, trainerLv) as Pokemon
+          if (p) {
+            (p as Pokemon & { _revealed?: boolean })._revealed = true
+            enemyTeam.push(p)
+          }
+        }
+      } else {
+        const TRAINER_TYPES = {
+          'caza_bichos': { name: 'Caza Bichos', sprite: 'cazabichos', pool: ['caterpie', 'metapod', 'weedle', 'kakuna', 'paras', 'venonat'] },
+          'ornitologo': { name: 'Ornitólogo', sprite: 'birdkeeper', pool: ['pidgey', 'spearow', 'doduo'] },
+          'cientifico': { name: 'Científico', sprite: 'scientist', pool: ['magnemite', 'voltorb', 'ditto', 'grimer'] },
+          'luchador': { name: 'Luchador', sprite: 'blackbelt', pool: ['mankey', 'machop'] },
+          'pescador': { name: 'Pescador', sprite: 'swimmer', pool: ['magikarp', 'goldeen', 'poliwag'] },
+          'nadador': { name: 'Nadador', sprite: 'swimmer', pool: ['psyduck', 'tentacool', 'staryu', 'horsea'] },
+          'domador': { name: 'Domador', sprite: 'tamer', pool: ['growlithe', 'vulpix', 'ponyta', 'ekans'] },
+          'medium': { name: 'Médium', sprite: 'psychic', pool: ['abra', 'drowzee'] },
+          'motorista': { name: 'Motorista', sprite: 'biker', pool: ['koffing', 'grimer', 'rattata'] },
+          'montanero': { name: 'Montañero', sprite: 'hiker', pool: ['geodude', 'sandshrew', 'rhyhorn'] }
+        } as const
+        const keys = Object.keys(TRAINER_TYPES) as Array<keyof typeof TRAINER_TYPES>
+        const typeKey = keys[Math.floor(Math.random() * keys.length)] || 'caza_bichos'
+        const t = TRAINER_TYPES[typeKey]
+        
+        tName = t.name
+        tSprite = t.sprite
+        const trainerLv = baseLv + 2
+        const teamSize = Math.floor(Math.random() * 3) + 1 // 1-3 pokemon
+
+        for (let i = 0; i < teamSize; i++) {
+          const pIdBase = t.pool[Math.floor(Math.random() * t.pool.length)] || 'rattata'
+          const pId = getEvolvedForm(pIdBase, trainerLv)
+          const p = makePokemon(pId, trainerLv) as Pokemon
+          if (p) {
+            (p as Pokemon & { _revealed?: boolean })._revealed = true
+            enemyTeam.push(p)
+          }
+        }
+      }
+
+      if (enemyTeam.length > 0 && enemyTeam[0]) {
+        battleStore._startBattle(enemyTeam[0], {
+          locationId: locId,
+          wasSearching: true,
+          isTrainer: true,
+          enemyTeam,
+          trainerName: tName,
+          trainerSprite: tSprite
+        })
+      }
+    } else if (wildEnc.type === 'rival') {
+      const { getEvolvedForm } = await import('@/logic/evolutionLogic')
+      const { makePokemon } = await import('@/logic/pokemonFactory')
+
+      const trainerNameVal = 'Rival Azul'
+      const trainerSpriteVal = 'blue'
+      
+      const teamSize = Math.max(3, gs.state.team.length || 1)
+      const avgLevel = gs.state.team.reduce((sum, p) => sum + p.level, 0) / (gs.state.team.length || 1)
+      const rivalLevel = Math.floor(avgLevel) + 2
+
+      const rivalPoolBase = ['pidgeot', 'alakazam', 'gyarados', 'arcanine', 'exeggutor', 'charizard']
+      const shuffledPool = [...rivalPoolBase].sort(() => Math.random() - 0.5).slice(0, teamSize)
+
+      const enemyTeam: Pokemon[] = shuffledPool.map(id => {
+        const species = getEvolvedForm(id, rivalLevel)
+        const p = makePokemon(species, rivalLevel) as Pokemon
+        if (p) (p as Pokemon & { _revealed?: boolean })._revealed = true
+        return p
+      }).filter((p): p is Pokemon => !!p)
+
+      if (enemyTeam.length > 0 && enemyTeam[0]) {
+        battleStore._startBattle(enemyTeam[0], {
+          locationId: locId,
+          wasSearching: true,
+          isTrainer: true,
+          enemyTeam,
+          trainerName: trainerNameVal,
+          trainerSprite: trainerSpriteVal,
+          isRival: true
+        })
+      }
     }
   }
 

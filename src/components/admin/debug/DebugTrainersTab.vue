@@ -4,6 +4,9 @@ import { ref, computed, onMounted } from 'vue'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { useBattleStore } from '@/stores/battle'
 import { useGameStore } from '@/stores/game'
+import { useDebugStore } from '@/stores/debug'
+
+const debugStore = useDebugStore()
 import { usePlayerClassStore } from '@/stores/playerClass'
 import { useModalStore } from '@/stores/modals'
 import { pokemonDebugService } from '@/logic/debug/pokemonDebugService'
@@ -170,6 +173,7 @@ function getPokeSpriteUrl(id: string, isShiny?: boolean) {
 }
 
 function generateRandomTeam() {
+  randomizeTrainer()
   const size = Math.max(1, Math.min(6, genTeamSize.value))
   const team: Pokemon[] = []
   const dbKeys = Object.keys(pokemonDataProvider.getPokemonDb())
@@ -296,6 +300,38 @@ onMounted(() => {
 
 <template>
   <div class="pokemon-debug-creator debug-grid trainer-debug-tab scrollbar">
+    <!-- Acceso Rápido para Iniciar Combate -->
+    <div
+      class="debug-card"
+      style="margin-bottom: -6px;"
+    >
+      <button 
+        class="battle-start-btn-debug"
+        style="width: 100%; height: 36px; font-weight: bold;"
+        @click.stop="startCombat"
+      >
+        ⚔️ INICIAR COMBATE
+      </button>
+    </div>
+
+    <!-- Simulación de Eventos y Probabilidades -->
+    <div class="debug-card">
+      <label>PROBABILIDADES Y SIMULACIÓN DE EVENTO</label>
+      <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 8px;">
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+          <span
+            class="field-label"
+            style="margin-bottom: 0;"
+          >Forzar 50% encuentros con entrenadores (Rutas)</span>
+          <input 
+            v-model="debugStore.trainerChance50" 
+            type="checkbox" 
+            style="width: 16px; height: 16px; cursor: pointer;"
+          >
+        </div>
+      </div>
+    </div>
+
     <!-- Section 1: Generation Settings -->
     <div class="debug-card">
       <label>GENERACIÓN RÁPIDA DE EQUIPO</label>
@@ -637,7 +673,6 @@ onMounted(() => {
       </div>
 
       <div
-        class="button-row"
         style="margin-top: 16px;"
       >
         <button 

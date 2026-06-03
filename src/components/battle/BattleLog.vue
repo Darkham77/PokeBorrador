@@ -182,20 +182,40 @@ onMounted(() => {
     // Estilos específicos para AVATAR (Entrenador)
     &.trainer {
       .log-icon {
+        width: 42px !important;
+        height: 42px !important;
+        max-width: none !important;
+        max-height: none !important;
+        object-fit: contain; 
+        position: absolute !important;
+        top: 50% !important;
+        left: 50% !important;
+        transform: Translate(-50%, -50%) !important;
+        will-change: transform, filter, opacity;
+        filter: Drop-Shadow(0 4px 8px Rgba(0,0,0,0.4)) !important;
+        border-radius: 0;
+        border: none !important;
+        background: transparent !important;
+      }
+    }
+
+    // Estilos para el Avatar del Jugador
+    &.player_avatar {
+      .log-icon {
         width: 28px !important;
         height: 28px !important;
         max-width: none !important;
         max-height: none !important;
         object-fit: cover; 
-        transform: none !important;
-        top: auto !important;
-        left: auto !important;
-        position: relative !important;
+        position: absolute !important;
+        top: 50% !important;
+        left: 50% !important;
+        transform: Translate(-50%, -50%) !important;
         will-change: transform, filter, opacity;
-  filter: none !important;
+        filter: none !important;
         border-radius: 4px;
-        border: 1px solid Rgba(255,255,255,0.1);
-        background: Rgba(0,0,0,0.2) !important;
+        border: 1px solid Rgba(255, 255, 255, 0.1);
+        background: Rgba(0, 0, 0, 0.2) !important;
       }
     }
     

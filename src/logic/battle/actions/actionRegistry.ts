@@ -22,7 +22,7 @@ type BattleAction = (
   tgtStages: BattleStages, 
   addLogFn: LogFn, 
   battleCtx: BattleContext
-) => void;
+) => Promise<void> | void;
 
 const ALL_ACTIONS: Record<string, BattleAction> = {
   ...STAT_ACTIONS,
@@ -37,7 +37,7 @@ const ALL_ACTIONS: Record<string, BattleAction> = {
  * Despacha un efecto de movimiento a la función correspondiente.
  * Maneja la probabilidad de activación (ej: burn_10).
  */
-export function dispatchMoveEffect(
+export async function dispatchMoveEffect(
   effect: string | null, 
   src: Pokemon, 
   tgt: Pokemon, 
@@ -91,11 +91,11 @@ export function dispatchMoveEffect(
         addLogFn(`¡${tgt.name} robó el efecto con Robo!`, 'log-info', tgt);
         tgt.snatching = false;
         // Execute action with swapped src/tgt
-        actionFn(tgt, src, tgtStages, srcStages, addLogFn, battleCtx);
+        await actionFn(tgt, src, tgtStages, srcStages, addLogFn, battleCtx);
         return;
       }
 
-      actionFn(src, tgt, srcStages, tgtStages, addLogFn, battleCtx);
+      await actionFn(src, tgt, srcStages, tgtStages, addLogFn, battleCtx);
     } catch (e) {
       logger.error('ActionRegistry', `Error executing ${effect}: ${(e as Error).message}`);
     }

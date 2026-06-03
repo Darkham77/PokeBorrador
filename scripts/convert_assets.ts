@@ -140,10 +140,12 @@ async function processFile(filePath: string) {
     // Convertir relPath a POSIX nativamente para consistencia en base de datos y URLs
     const posixRelPath = relPath.split(path.sep).join(path.posix.sep);
 
-    // Calcular coordenadas de anclaje de Pokémon
-    const isPokemonSprite = posixRelPath.toLowerCase().includes('sprites/pokemon') && 
-                            !posixRelPath.toLowerCase().includes('sprites/pokemon/egg');
-    if (isPokemonSprite) {
+    // Calcular coordenadas de anclaje de Pokémon y Entrenadores
+    const isSpriteWithFeet = (posixRelPath.toLowerCase().includes('sprites/pokemon') || 
+                              posixRelPath.toLowerCase().includes('sprites/trainers') ||
+                              posixRelPath.toLowerCase().includes('sprites/npc')) && 
+                             !posixRelPath.toLowerCase().includes('sprites/pokemon/egg');
+    if (isSpriteWithFeet) {
       const normalizedPath = '/' + posixRelPath.replace(/^public\//, '').replace(/\.(png|jpg|jpeg|webp)$/i, '.webp');
       const points = await calculateFeetPoints(filePath);
       pokemonFeetDatabase[normalizedPath] = points;
@@ -311,10 +313,30 @@ export const AVAILABLE_BATTLE_MAPS = ${JSON.stringify(battleMaps, null, 2)} as c
   await fs.mkdir(databaseDir, { recursive: true });
   const databasePath = path.join(databaseDir, 'pokemonFeetDatabase.ts');
 
-  // Ordenar las claves alfabéticamente para limpieza
-  const sortedDatabase: Record<string, { feetY: number; feetX: number }> = {};
+  // Empacar la base de datos para optimizar tamaño y carga
+  const packed: {
+    p: Record<string, [number, number]>;
+    n: Record<string, [number, number]>;
+    t: Record<string, [number, number]>;
+  } = {
+    p: {}, // pokemon
+    n: {}, // npc
+    t: {}  // trainers
+  };
+
+  // Ordenar las claves alfabéticamente para mantener consistencia
   for (const key of Object.keys(pokemonFeetDatabase).sort()) {
-    sortedDatabase[key] = pokemonFeetDatabase[key]!;
+    const val = pokemonFeetDatabase[key]!;
+    if (key.startsWith('/assets/sprites/pokemon/') && key.endsWith('.webp')) {
+      const subKey = key.slice('/assets/sprites/pokemon/'.length, -'.webp'.length);
+      packed.p[subKey] = [val.feetY, val.feetX];
+    } else if (key.startsWith('/assets/sprites/npc/') && key.endsWith('.webp')) {
+      const subKey = key.slice('/assets/sprites/npc/'.length, -'.webp'.length);
+      packed.n[subKey] = [val.feetY, val.feetX];
+    } else if (key.startsWith('/assets/sprites/trainers/') && key.endsWith('.webp')) {
+      const subKey = key.slice('/assets/sprites/trainers/'.length, -'.webp'.length);
+      packed.t[subKey] = [val.feetY, val.feetX];
+    }
   }
 
   const databaseContent = `/**
@@ -330,11 +352,26 @@ export interface FeetPoints {
   readonly feetX: number;
 }
 
-export const POKEMON_FEET_DATABASE: Readonly<Record<string, FeetPoints>> = ${JSON.stringify(sortedDatabase, null, 2)} as const;
+const PACKED_DATA: Record<string, Record<string, readonly [number, number]>> = ${JSON.stringify(packed)};
+
+export const POKEMON_FEET_DATABASE: Record<string, FeetPoints> = {};
+
+for (const [key, prefix] of [
+  ['p', '/assets/sprites/pokemon/'],
+  ['n', '/assets/sprites/npc/'],
+  ['t', '/assets/sprites/trainers/']
+] as const) {
+  const group = PACKED_DATA[key];
+  if (group) {
+    for (const [subKey, [y, x]] of Object.entries(group)) {
+      POKEMON_FEET_DATABASE[\`\${prefix}\${subKey}.webp\`] = { feetY: y, feetX: x };
+    }
+  }
+}
 `;
 
   await fs.writeFile(databasePath, databaseContent, 'utf-8');
-  console.log(styleText('green', `   [OK] Base de datos de anclaje generada con éxito (${Object.keys(sortedDatabase).length} sprites precalculados).`));
+  console.log(styleText('green', `   [OK] Base de datos de anclaje generada con éxito (${Object.keys(pokemonFeetDatabase).length} sprites precalculados).`));
 
   console.log(styleText('bold', '\n✨ Proceso de assets finalizado.\n'));
 }

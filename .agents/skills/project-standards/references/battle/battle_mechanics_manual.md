@@ -2,8 +2,7 @@
 
 This manual documents the internal workings of the battle engine, focusing on logic, state machines, and procedural rules.
 
-> [!NOTE]
-> All mathematical formulas (Damage, Escape, Stats) have been centralized in the [Game Formulas Manual](../core/game_formulas_manual.md).
+> [!NOTE] All mathematical formulas (Damage, Escape, Stats) have been centralized in the [Game Formulas Manual](../core/game_formulas_manual.md).
 
 ## 🏛️ Architecture: Seats vs. Team Slots
 
@@ -39,9 +38,9 @@ Each Seat has an associated **Team Slot** that contains the party data for that 
 
 ### 3. Transition Matrix
 
-| Event | Action on Seat | Action on Team Data |
-| :--- | :--- | :--- |
-| **New Battle** | `VACATE_ALL_SEATS` | Populate Team Slots |
+| Event                 | Action on Seat                     | Action on Team Data    |
+| :-------------------- | :--------------------------------- | :--------------------- |
+| **New Battle**        | `VACATE_ALL_SEATS`                 | Populate Team Slots    |
 | **Mid-Battle Switch** | `POKEMON_RECALL` -> `POKEMON_CALL` | No change to Team data |
 
 ---
@@ -118,12 +117,12 @@ All visual effects that represent a state change MUST return a Promise.
 
 Certain FSM states are designated as "Visual-Dependent":
 
-| FSM State | Visual Action | Post-Animation Logic |
-| :--- | :--- | :--- |
-| `ENCOUNTER_ANIM` | Jump & Silhouette Reveal | Unlock Move Selection |
-| `EVAL_HP` | HP Bar Drain & Shake | Check for Faint |
-| `RESOLVE_ENEMY_FAINT` | Faint Blink & Slide Down | Vacate Seat |
-| `CATCH_PROCESS` | PokéBall Wobble | Trigger Catch Success/Fail |
+| FSM State             | Visual Action            | Post-Animation Logic       |
+| :-------------------- | :----------------------- | :------------------------- |
+| `ENCOUNTER_ANIM`      | Jump & Silhouette Reveal | Unlock Move Selection      |
+| `EVAL_HP`             | HP Bar Drain & Shake     | Check for Faint            |
+| `RESOLVE_ENEMY_FAINT` | Faint Blink & Slide Down | Vacate Seat                |
+| `CATCH_PROCESS`       | PokéBall Wobble          | Trigger Catch Success/Fail |
 
 ### 3. CLI-First Testing
 
@@ -150,14 +149,14 @@ Only ONE primary status can affect a Pokémon at a time (except in special modes
 - **Paralysis (PAR)**: Reduces Speed to 25% AND has a **25% probability** of causing "Fully Paralyzed," skipping the turn.
 - **Sleep (SLP)**: Prevents the Pokémon from attacking for 1 to 3 turns. Turn count is managed via `pokemon.sleepTurns`.
 - **Freeze (FRZ)**: Prevents the Pokémon from attacking. At the start of each turn, there is a **20% probability** of thawing out.
-- **Type Immunity (Status Moves)**: Unlike older generations, status moves (category `status`) MUST respect type immunities. A Normal-type status move (e.g., *Gruñido*) will have NO EFFECT on a Ghost-type Pokémon. This logic is handled in `calculateDamage` by evaluating effectiveness before returning the result.
+- **Type Immunity (Status Moves)**: Unlike older generations, status moves (category `status`) MUST respect type immunities. A Normal-type status move (e.g., _Gruñido_) will have NO EFFECT on a Ghost-type Pokémon. This logic is handled in `calculateDamage` by evaluating effectiveness before returning the result.
 
 ### 2. Secondary Conditions (Stackable)
 
 These can coexist with primary status and other secondary effects:
 
 - **Confusion**: Lasts 2 to 5 turns. **FX**: 💫 floating particle + sprite wobble.
-- **Attraction**: Activated by moves like *Attract*. **FX**: ❤️ floating hearts.
+- **Attraction**: Activated by moves like _Attract_. **FX**: ❤️ floating hearts.
 - **Leech Seed**: Drains HP each turn. **FX**: 🌱 growing plants.
 - **Curse (Ghost)**: Drains 1/4 HP each turn. **FX**: 👻 floating ghost + dark aura.
 - **Trapped**: Cannot escape. **FX**: ⛓️ chains + jitter.
@@ -188,16 +187,16 @@ These can coexist with primary status and other secondary effects:
 
 - **Interaction Guard**: The switch action must be blocked if `isProcessing` or `isIntroAnimating` is true.
 - **Logic Sequence**:
-    1. Scan the team slot to find the **First Healthy Member** (HP > 0). Fainted members are ignored.
-    2. If the target is already in the seat, skip to end.
-    3. Invoke the `POKEMON_RECALL` modular protocol for the current occupant (if any).
-    4. **Wait Timer**: Execute a mandatory delay of **0.5 seconds**.
-    5. Swap the active reference in the store to the new healthy member.
-    6. **Differential Reset**:
-       - Clear stat stages and volatile status conditions.
-       - PRESERVE field effects (Reflect, Spikes, etc.).
-    7. Invoke the `POKEMON_CALL` modular protocol using the **cached shadow coordinates** of the entering member.
-    8. **Entry Hazard Application**: Apply hazards (Spikes) at the end of `ENERGY_RELEASE`.
+  1. Scan the team slot to find the **First Healthy Member** (HP > 0). Fainted members are ignored.
+  2. If the target is already in the seat, skip to end.
+  3. Invoke the `POKEMON_RECALL` modular protocol for the current occupant (if any).
+  4. **Wait Timer**: Execute a mandatory delay of **0.5 seconds**.
+  5. Swap the active reference in the store to the new healthy member.
+  6. **Differential Reset**:
+     - Clear stat stages and volatile status conditions.
+     - PRESERVE field effects (Reflect, Spikes, etc.).
+  7. Invoke the `POKEMON_CALL` modular protocol using the **cached shadow coordinates** of the entering member.
+  8. **Entry Hazard Application**: Apply hazards (Spikes) at the end of `ENERGY_RELEASE`.
 
 ### 2. Coordinate Synchronization & Poké Ball Alignment
 
@@ -285,7 +284,7 @@ To prevent the Poké Ball from "jumping" during withdrawal and sending sequences
 - **State Integrity**: This coordinate snapshot MUST persist until the animation sequence (Recall/Call) is fully finalized, even if the `activePokemon` reference in the seat changes or becomes `null`.
 
 ## 🏗️ Rendering Pipeline Stabilization
-  
+
 To ensure flicker-free state transitions, the battle engine must enforce visual atomicity:
 
 ### 1. Parallel Preloading (Combat Prep)
@@ -398,8 +397,8 @@ stateDiagram-v2
   - **Items**: Binoculars, Incenses, Fishing Rods, etc.
   - **Effect**: These items modify the weights or inject specific species into the pool before the generation phase begins.
 - **Cleanup & Pre-prep**: At the end of `CONTEXT_SETUP`, the engine MUST:
-    1. Execute `VACATE_ALL_SEATS`.
-    2. Execute `PRELOAD_COORDS` for **Already Defined Teams** (Real Players / Allies).
+  1. Execute `VACATE_ALL_SEATS`.
+  2. Execute `PRELOAD_COORDS` for **Already Defined Teams** (Real Players / Allies).
 - **Execution Rule**: The `generateEncounter()` logic MUST query the injected table before selecting the encounter parameters.
 - **Backward Compatibility**: If NO configuration or table is provided, the engine defaults to **100% WILD** and **PERSISTENT** mode.
 
@@ -417,29 +416,29 @@ The combat engine follows a strictly phased lifecycle. This high-level diagram s
 stateDiagram-v2
     [*] --> CONTEXT_SETUP : Injected Configuration
     CONTEXT_SETUP --> INITIALIZING : Context Injected
-    
+
     INITIALIZING --> SEARCH_PHASE : Teams Ready
-    
+
     REWARDS_PHASE --> LEVEL_UP_MODAL : Has Levels Gained
     LEVEL_UP_MODAL --> REWARDS_PHASE : Sequence Completed
-    
+
     REWARDS_PHASE --> CHECK_PERSISTENCE : Rewards Completed
-    
+
     state CHECK_PERSISTENCE <<choice>>
     CHECK_PERSISTENCE --> INITIALIZING : persistenceMode == PERSISTENT
     CHECK_PERSISTENCE --> EXIT_BATTLE : persistenceMode == SINGLE
-    
+
     ACTIVE_BATTLE --> EXIT_BATTLE : Defeat / Manual Flee
     ACTIVE_BATTLE --> REWARDS_PHASE : Victory / Capture
     ACTIVE_BATTLE --> LEVEL_UP_MODAL : Debug Level Up
     LEVEL_UP_MODAL --> ACTIVE_BATTLE : Debug Finished
-    
+
     SEARCH_PHASE --> ACTIVE_BATTLE : Start Encounter
     SEARCH_PHASE --> EXIT_BATTLE : Return to Map
     SEARCH_PHASE --> INITIALIZING : Fail Minigame
-    
+
     EXIT_BATTLE --> [*]
-    
+
     note left of CONTEXT_SETUP: Probabilities injected on area entry
 ```
 
@@ -451,7 +450,7 @@ Handles dynamic data generation and stale state cleanup in an asynchronous "thre
 stateDiagram-v2
     state INITIALIZING {
         [*] --> CHECK_CONTEXT : "Check Mode (1v1 / 2v2)"
-        
+
         state ASYNC_THREAD {
             CHECK_CONTEXT --> GEN_TEAMS : "Generate AI Parties (from context tables)"
             GEN_TEAMS --> MARK_EVENT : "Identify Encounter Type (Wild, Fishing, NPC, etc.)"
@@ -460,7 +459,7 @@ stateDiagram-v2
             SET_SEARCH_FLAG --> [*]
         }
     }
-    
+
     note right of ASYNC_THREAD: All generation logic occurs in a separate async process to protect FPS.
     note right of RESET_STALE_VARIABLES: MUST reset all active minigame flags (isFishing, isArchaeology) and stale context variables to prevent state leakages on new battles.
     note right of INITIALIZING: Seats 1-4 are active combatants depending on mode.
@@ -475,17 +474,15 @@ The core interaction cycle. It manages user input, turn execution, and terminal 
 stateDiagram-v2
     state ACTIVE_BATTLE {
         [*] --> WAIT_INPUT : "Intro / Encounter Anim Finished"
-        
+
         state WAIT_INPUT {
             [*] --> [*] : "Unlock Control Panel"
         }
-        
+
         WAIT_INPUT --> TURN_ENGINE : "↺ Action Selected / Block Control Panel"
         TURN_ENGINE --> WAIT_INPUT : "↺ Turn Finished / Unlock Control Panel"
-        
+
         note right of TURN_ENGINE: Sub-machine handling turn queue and resolutions
-        note right of APPLY_MOVE: await
-        note right of EVAL_HP: await
     }
 ```
 
@@ -498,35 +495,36 @@ stateDiagram-v2
     state TURN_ENGINE {
         [*] --> BUILD_QUEUE: "Sort Actions (Speed/Priority)"
         BUILD_QUEUE --> POP_ACTION: "Get next action"
-        
+
         POP_ACTION --> REORDER_TEAM: "Manual Switch"
         POP_ACTION --> CATCH_PROCESS: "Pokeball"
-        POP_ACTION --> APPLY_MOVE: "Attack/Item"
         POP_ACTION --> FLEE_ATTEMPT: "Manual Flee"
-        
+        POP_ACTION --> APPLY_MOVE: "Attack/Item"
+
         REORDER_TEAM --> EVAL_HP
-        APPLY_MOVE --> EVAL_HP
         CATCH_PROCESS --> EVAL_HP: "Catch Failed"
-        CATCH_PROCESS --> [*]: "Target Caught (Exit Engine)"
-        
         FLEE_ATTEMPT --> EVAL_HP: "↺ Flee Failed"
+        APPLY_MOVE --> EVAL_HP
+
+        CATCH_PROCESS --> [*]: "Target Caught (Exit Engine)"
         FLEE_ATTEMPT --> [*]: "Flee Success (Exit Engine)"
-        
+
         state EVAL_HP <<choice>>
-        EVAL_HP --> RESOLVE_PLAYER_FAINT: "Player fainted"
-        EVAL_HP --> RESOLVE_ENEMY_FAINT: "Enemy fainted"
-        EVAL_HP --> EVAL_CONTINUE: "Both alive"
-        
-        RESOLVE_PLAYER_FAINT --> PLAYER_FAINT_SEQ: "Trigger Recall"
+        EVAL_HP --> PLAYER_FAINT_SEQ: "Player fainted"
+        EVAL_HP --> ENEMY_REPLACEMENT_SEQ: "Enemy fainted"
+
+        ENEMY_REPLACEMENT_SEQ --> EVAL_CONTINUE: "↺ Loop"
         PLAYER_FAINT_SEQ --> EVAL_CONTINUE : "↺ Loop"
-        
-        RESOLVE_ENEMY_FAINT --> ENEMY_DEFEAT: "Trigger Animation"
-        note right of RESOLVE_ENEMY_FAINT: await
-        ENEMY_DEFEAT --> [*]: "Enemy KO (Exit Engine)"
-        
+        ENEMY_REPLACEMENT_SEQ --> [*]: "No remaining (Exit Engine)"
+
+        EVAL_HP --> EVAL_CONTINUE: "Both alive"
+
         state EVAL_CONTINUE <<choice>>
         EVAL_CONTINUE --> POP_ACTION: "↺ More actions queued"
         EVAL_CONTINUE --> [*]: "Queue empty"
+
+        note right of APPLY_MOVE: await
+        note right of EVAL_HP: await
     }
 ```
 
@@ -588,29 +586,42 @@ Handles the logic for switching between enemy team members after a knockout.
 ```mermaid
 stateDiagram-v2
     state ENEMY_REPLACEMENT_SEQ {
-        [*] --> CLEANUP_MEMORY: "Purge Stale Entity"
+        [*] --> TYPE_CHECK
+        state TYPE_CHECK <<choice>>
+        TYPE_CHECK --> ENEMY_DEFEAT : "isWild"
+        TYPE_CHECK --> POKEMON_RECALL : "isTrainer / isNpc"
+
+        ENEMY_DEFEAT --> CLEANUP_MEMORY
+        POKEMON_RECALL --> CLEANUP_MEMORY
+
         CLEANUP_MEMORY --> CHECK_REMAINING: "Has healthy members?"
-        
+
         state CHECK_REMAINING <<choice>>
         CHECK_REMAINING --> STABILIZE_STAGE: "Yes (Any Team Slot has HP > 0)"
-        CHECK_REMAINING --> REWARDS_PHASE: "No (All Enemy Teams Defeated)"
-        
+        CHECK_REMAINING --> [*]: "No (All Enemy Teams Defeated)"
+
         state STABILIZE_STAGE {
             [*] --> EMPTY_WAIT: "Wait 0.2s (Stage Clear)"
             EMPTY_WAIT --> [*]
         }
-        
+
         STABILIZE_STAGE --> AI_NEXT_PICK
-        
+
         state AI_NEXT_PICK {
             [*] --> SELECT_COUNTER: "SmartSelection Logic"
-            SELECT_COUNTER --> ENCOUNTER_ANIM : "Jump Entry"
+            SELECT_COUNTER --> NEXT_PICK_TYPE
+
+            state NEXT_PICK_TYPE <<choice>>
+            NEXT_PICK_TYPE --> ENCOUNTER_ANIM : "isWild (Jump Entry)"
+            NEXT_PICK_TYPE --> POKEMON_CALL : "isTrainer / isNpc (Sendout Anim)"
+
             ENCOUNTER_ANIM --> [*]
+            POKEMON_CALL --> [*]
         }
-        
-        AI_NEXT_PICK --> WAIT_INPUT: "Next Pokemon Ready"
+
+        AI_NEXT_PICK --> [*]: "Next Pokemon Ready"
     }
-    
+
     note right of AI_NEXT_PICK : "Smart Selection - IA prioritizes offensive type advantage over current player combatant"
 ```
 
@@ -623,13 +634,13 @@ stateDiagram-v2
     state REWARDS_PHASE {
         [*] --> CHECK_OUTCOME : Battle Ended
         state CHECK_OUTCOME <<choice>>
-        
+
         CHECK_OUTCOME --> DISTRIBUTE_XP : Victory / Capture
         CHECK_OUTCOME --> WAIT_LOG_QUEUE_ONLY : Target Escaped
-        
+
         DISTRIBUTE_XP --> LEVEL_UP_MODAL : Has Levels Gained
         DISTRIBUTE_XP --> EMPTY_WAIT : No Level Up
-        
+
         state LEVEL_UP_MODAL {
             [*] --> CHECK_PENDING: "Check Moves"
             CHECK_PENDING --> SHOW_CHOICE: "New Move"
@@ -637,16 +648,18 @@ stateDiagram-v2
             APPLY_MOVE --> CHECK_PENDING: "↺ Loop"
             CHECK_PENDING --> [*]
         }
-        
+
         LEVEL_UP_MODAL --> EMPTY_WAIT : Sequence Completed
         WAIT_LOG_QUEUE_ONLY --> [*] : End Phase
-        
+
         EMPTY_WAIT --> CHECK_PERSISTENCE : Check persistence
         state CHECK_PERSISTENCE <<choice>>
         CHECK_PERSISTENCE --> [*]
     }
-    
+
     note right of CHECK_OUTCOME: Skips XP and Level-up if enemy fled
+    note right of CHECK_PERSISTENCE: Route Trainer Battles in search mode (persistenceMode == PERSISTENT) are treated as non-single, automatically returning to search. Gym and PvP battles (persistenceMode == SINGLE) transition to EMPTY_WAIT and display the exit controls.
+
 ```
 
 #### Experience Cap at Maximum Level
@@ -663,34 +676,49 @@ Allows the player to find new encounters without closing the modal.
 ```mermaid
 stateDiagram-v2
     state SEARCH_PHASE {
+        state MINIGAME_CHECK <<choice>>
+        state "PLAY_MINIGAME" as PLAY_MINIGAME
+        state "MINIGAME_MODAL" as MINIGAME_MODAL
+        state "MINIGAME_RESULT" as MINIGAME_RESULT
+        state "PREPARATION" as PREPARATION
+        state "COMBAT_OR_FLEE" as COMBAT_OR_FLEE
+        state "ENCOUNTER_ANIM" as ENCOUNTER_ANIM
+
         [*] --> MINIGAME_CHECK : "Check Encounter Type"
-        
+
         state MINIGAME_CHECK <<choice>>
         MINIGAME_CHECK --> PLAY_MINIGAME : "isFishing || isArchaeology"
-        MINIGAME_CHECK --> PARALLEL_PREP : "isWild (Standard)"
-        
+        MINIGAME_CHECK --> PREPARATION : "Standard Encounter"
+
         PLAY_MINIGAME --> MINIGAME_MODAL : "Open Modal"
-        
+
         MINIGAME_MODAL --> EXIT_BATTLE : "Cancel / Close (Flee)"
         MINIGAME_MODAL --> MINIGAME_RESULT : "Submit Game"
-        
+
         state MINIGAME_RESULT <<choice>>
         MINIGAME_RESULT --> ENCOUNTER_ANIM : "Success (Start Fight)"
         MINIGAME_RESULT --> [*] : "Fail (Next Slot)"
-        
-        state PARALLEL_PREP {
-            [*] --> UPDATE_BUTTON : "Label Search/Challenge"
+
+        state PREPARATION {
+            [*] --> AUTO_BATTLE_CHECK
+            state AUTO_BATTLE_CHECK <<choice>>
+            AUTO_BATTLE_CHECK --> UPDATE_BUTTON : "autoBattle == false || isTrainer == true"
+            AUTO_BATTLE_CHECK --> [*] : "autoBattle == true && isTrainer == false"
+            UPDATE_BUTTON --> [*]
             --
-            [*] --> ENTRY_ANIM : "Bushes / Silhouette Layer (All Active Enemy Seats)"
+            [*] --> ENTRY_ANIM : "Prepare Visual Entry (All Active Enemy Seats)"
+            ENTRY_ANIM --> [*]
             --
             [*] --> REORDER_TEAM : "Sync Active Fighters (All Player/Ally Seats)"
+            REORDER_TEAM --> [*]
         }
-        
-        PARALLEL_PREP --> BUSH_IDLE : "Control Panel Blocked"
-        
-        BUSH_IDLE --> ENCOUNTER_ANIM : "Click BATTLE / autoBattle == true"
-        BUSH_IDLE --> EXIT_BATTLE : "Click RETURN TO MAP"
-        
+
+        PREPARATION --> COMBAT_OR_FLEE : "autoBattle == false || isTrainer == true"
+        PREPARATION --> ENCOUNTER_ANIM : "autoBattle == true && isTrainer == false"
+
+        COMBAT_OR_FLEE --> ENCOUNTER_ANIM : "Click BATTLE / CHALLENGE"
+        COMBAT_OR_FLEE --> EXIT_BATTLE : "Click RETURN TO MAP"
+
         state ENCOUNTER_ANIM {
             [*] --> [*]
         }
@@ -698,8 +726,7 @@ stateDiagram-v2
     }
 ```
 
-> [!NOTE]
-> **Search Interface**: Replaces standard combat HUD with "Search Again" and "Return to Map" buttons during `BUSH_IDLE`.
+> [!NOTE] **Search Interface**: Replaces standard combat HUD with "Search Again" and "Return to Map" buttons during `COMBAT_OR_FLEE`.
 >
 > **Participation**: For new encounters, the engine automatically selects the **FIRST healthy Pokémon** from each participant's Team Slot. In 2vs2, both enemy seats (2 & 4) and player/ally seats (1 & 3) trigger parallel entry and sync sequences.
 
@@ -710,8 +737,8 @@ To ensure a seamless user experience, the combat modal follows strict persistenc
 - **Single Instance Rule**: Once the combat modal is opened (via `FIRST_INTRO`), it MUST remain the active view throughout all subsequent states (`ACTIVE_BATTLE`, `REWARDS_PHASE`, `SEARCH_PHASE`).
 - **No Visual Restarts**: Clicking "Search" in `SEARCH_PHASE` MUST NOT close and reopen the modal. It simply triggers the `ENCOUNTER_ANIM` transition and proceeds to a new `ACTIVE_BATTLE` cycle within the same component instance.
 - **Terminal Exit Only**: The modal can ONLY be closed under two conditions:
-    1. **Return to Map**: Explicitly clicking the "Return to Map" button during `SEARCH_PHASE` (triggers `EXIT_BATTLE`).
-    2. **Fleeing**: Successfully escaping from a battle (triggers `EXIT_BATTLE` via the rewards/stabilization flow if no search is intended).
+  1. **Return to Map**: Explicitly clicking the "Return to Map" button during `SEARCH_PHASE` (triggers `EXIT_BATTLE`).
+  2. **Fleeing**: Successfully escaping from a battle (triggers `EXIT_BATTLE` via the rewards/stabilization flow if no search is intended).
 - **State Continuity**: Persistence of the modal ensures that reactive coordinates (`feetCache`) and camera settings remain stable between encounters, eliminating visual flickering.
 
 ### 8. Capture Timing Precision (Transition Protocol)
@@ -719,7 +746,7 @@ To ensure a seamless user experience, the combat modal follows strict persistenc
 To maintain a cinematic feel, the post-capture sequence follows a strictly timed protocol synchronized with the rewards flow:
 
 | Time | Event | Visual State |
-| :--- | :--- | :--- |
+| :-- | :-- | :-- |
 | **0.0s** | `CATCH_SUCCESS` | Sparkles start. Poké Ball visible & shaking. Enemy Sprite HIDDEN. The caught Pokémon MUST be added to the team or box (`addPokemon`) BEFORE the rewards transition. |
 | **Log Entry** | **Rewards Phase Start** | Sparkles end. Poké Ball despawns. All visual traces cleared. |
 | **Variable** | **XP & Gold Sync** | Stage is COMPLETELY EMPTY. No sprites, no balls, no HUDs. Wait for log queue to empty. |
@@ -743,24 +770,24 @@ Unlike wild Pokémon, owned Pokémon are never "left behind" on the battlefield.
 stateDiagram-v2
     state PLAYER_FAINT_SEQ {
         [*] --> RECALL_FLOW: "playerHP <= 0"
-        
+
         state RECALL_FLOW {
             [*] --> POKEMON_RECALL
         }
-        
+
         RECALL_FLOW --> CHECK_TEAM: "Recall Finished"
-        
+
         state CHECK_TEAM {
             [*] --> HAS_HEALTHY: "Any Player/Ally member HP > 0"
             [*] --> ALL_FAINTED: "All Player & Ally members HP <= 0"
         }
-        
+
         HAS_HEALTHY --> SWITCH_MENU : Open Selection
         note right of SWITCH_MENU: isBattleSwitchForced is true
-        
+
         SWITCH_MENU --> POKEMON_CALL : Pokemon Selected
         POKEMON_CALL --> [*] : Ready to Fight
-        
+
         ALL_FAINTED --> DEFEAT_SCREEN : Finalize Combat
         DEFEAT_SCREEN --> [*]
     }
@@ -780,11 +807,11 @@ stateDiagram-v2
     state REORDER_TEAM {
         [*] --> FIND_HEALTHY : "Scan Team Slot"
         FIND_HEALTHY --> CHECK_ACTIVE_SEAT : "Pick First with HP > 0"
-        
+
         state CHECK_ACTIVE_SEAT <<choice>>
         CHECK_ACTIVE_SEAT --> [*] : "Target Already in Seat"
         CHECK_ACTIVE_SEAT --> SWITCHING : "Seat Empty or Different Member"
-        
+
         state SWITCHING {
             [*] --> POKEMON_RECALL : "Recall incorrect/out-of-order Pokémon"
             --
@@ -803,7 +830,7 @@ stateDiagram-v2
         ENERGY_RECALL --> VACATE_SEAT: Free Seat
         VACATE_SEAT --> FADEOUT_BALL: "Disappear (0.3s)"
         FADEOUT_BALL --> [*]
-        
+
         note right of RENDER_BALL: MUST store the shadow coordinates PERSISTENTLY in the orchestrator. Uses the cached coordinates of the LEAVING member.
         note right of ENERGY_RECALL: Shrinking Blue Energy FX (Sprite -> Ball)
     }
@@ -820,7 +847,7 @@ stateDiagram-v2
         ENERGY_RELEASE --> POKEMON_APPEAR: Show_Sprite
         POKEMON_APPEAR --> FADEOUT_BALL: "Disappear (0.3s)"
         FADEOUT_BALL --> [*]
-        
+
         note right of RENDER_BALL: MUST capture and store the shadow coordinates PERSISTENTLY. Uses the cached coordinates of the ENTERING member.
         note right of ENERGY_RELEASE: Expanding Blue Energy FX (Ball -> Sprite)
     }
@@ -833,15 +860,16 @@ stateDiagram-v2
     state ENTRY_ANIM {
         [*] --> ENCOUNTER_TYPE_CHECK
         state ENCOUNTER_TYPE_CHECK <<choice>>
-        
+
         ENCOUNTER_TYPE_CHECK --> WILD_ENTRY: "WILD / FISHING"
         ENCOUNTER_TYPE_CHECK --> TRAINER_ENTRY: "TRAINER / NPC / LEADER"
-        
+
         state TRAINER_ENTRY {
-            [*] --> T_VISUAL: "Show Trainer Sprite (Visual Overlay)"
-            T_VISUAL --> [*]: "Seats 2 & 4 remain EMPTY"
+            [*] --> T_VISUAL: "Show Trainer Sprite (Visual Overlay) | Seats 2 & 4 remain EMPTY"
+            --
+            [*] --> SHOW_DIALOGS: "Fadein of SHOW_DIALOGS"
         }
-        
+
         state WILD_ENTRY {
             [*] --> BUSH_VISIBLE: "Z-Index Sandwich (Between layers)"
             --
@@ -857,21 +885,25 @@ stateDiagram-v2
     state ENCOUNTER_ANIM {
         [*] --> ENCOUNTER_TYPE_CHECK
         state ENCOUNTER_TYPE_CHECK <<choice>>
-        
+
         ENCOUNTER_TYPE_CHECK --> TRAINER_ENCOUNTER: "TRAINER / NPC / LEADER"
         ENCOUNTER_TYPE_CHECK --> WILD_ENCOUNTER: "WILD / FISHING"
 
         state TRAINER_ENCOUNTER {
-            [*] --> SHOW_DIALOGS: "Intro / Special Event Messages"
-            SHOW_DIALOGS --> TRAINER_RETREAT: "Accepted / Dialog Finished"
-            TRAINER_RETREAT --> POKEMON_CALL: "Calls Pokemon"
+            [*] --> RETREAT_AND_FADEOUT
+            state RETREAT_AND_FADEOUT {
+                [*] --> DIALOG_FADEOUT: "Dialogs Fadeout"
+                --
+                [*] --> T_RETREAT: "Trainer Retreats to combat position (side)"
+            }
+            RETREAT_AND_FADEOUT --> POKEMON_CALL: "Calls Pokemon (pokemon_call)"
             POKEMON_CALL --> [*]
         }
 
         state WILD_ENCOUNTER {
             [*] --> CHECK_BINOCULARS
             state CHECK_BINOCULARS <<choice>>
-            
+
             CHECK_BINOCULARS --> PARALLEL_JUMP: "Start Transition"
 
             state PARALLEL_JUMP {
@@ -881,7 +913,7 @@ stateDiagram-v2
                 --
                 [*] --> JUMP_COLOR: "Jump Color"
             }
-            
+
             PARALLEL_JUMP --> REVEAL_COLORS: "If No Binoculars"
             PARALLEL_JUMP --> [*]: "Finish"
         }
@@ -896,14 +928,14 @@ The **EXIT_BATTLE** sub-machine ensures the system returns to the map state with
 stateDiagram-v2
     state EXIT_BATTLE {
         [*] --> ENTRY_CHECK
-        
+
         state ENTRY_CHECK <<choice>>
         ENTRY_CHECK --> DEFEAT_WAIT: "Player Defeated"
         ENTRY_CHECK --> EXECUTE_CLEANUP: "Flee Confirmed / Direct Exit"
-        
+
         DEFEAT_WAIT --> EXECUTE_CLEANUP: "Click 'Return to Map'"
         note right of DEFEAT_WAIT: Forces interaction to leave combat
-        
+
         state EXECUTE_CLEANUP {
             [*] --> CLEAR_UI: "Hide HUDs & Logs"
             CLEAR_UI --> TRIGGER_CLOSE: "closeModal()"
@@ -929,9 +961,9 @@ To prevent "Phantom Animations" (e.g., a Pokémon performing a Dash when using a
 The battle engine uses a decoupled architecture where move effects are mapped to executable logic via the `ActionRegistry`.
 
 - **Action Dispatching Order**: The engine must follow a strict sequential order:
-    1. **Dynamic Interception**: Moves like Metronome or Mirror Move are resolved BEFORE damage calculation.
-    2. **Primary Damage**: Calculation and application of HP.
-    3. **Post-Action Effects**: Execution of Recoil, Drain, and Self-KO (Explosion) consuming the registered `lastDamage`.
+  1. **Dynamic Interception**: Moves like Metronome or Mirror Move are resolved BEFORE damage calculation.
+  2. **Primary Damage**: Calculation and application of HP.
+  3. **Post-Action Effects**: Execution of Recoil, Drain, and Self-KO (Explosion) consuming the registered `lastDamage`.
 - **Modular Implementation**: Logic for new effects should be grouped by type:
   - `statActions.ts`: For all stage modifiers (Atk, Def, etc.).
   - `fieldActions.ts`: For side-based effects (Screens, Weather, Hazards).
@@ -939,7 +971,7 @@ The battle engine uses a decoupled architecture where move effects are mapped to
   - `specialActions.ts`: For unique mechanics (Transform, Roar, Metronome).
 - **Source Propagation**: All action functions MUST receive and propagate the `src` and `tgt` objects to the `addLogFn` to maintain the visual link between the action and the combatant's sprite.
 - **Data Integrity (Move Sync)**: Moves in the player's team may have stale metadata. Before processing an effect, the engine MUST verify/sync the `effect` property from the `pokemonDataProvider` if it is missing or null.
-- **Battle Context (Team Access)**: Actions that force switches (e.g., *Roar*, *Whirlwind*) or involve team data MUST have access to `activeBattle.playerTeam`. This team reference is injected during battle initialization.
+- **Battle Context (Team Access)**: Actions that force switches (e.g., _Roar_, _Whirlwind_) or involve team data MUST have access to `activeBattle.playerTeam`. This team reference is injected during battle initialization.
 - **Technical Debugging Standard**:
   - **Technical Logs**: Internal dispatching details, target resolution, and technical blocks (e.g., "Stat already at -6") MUST use `console.log` or `console.warn` instead of the combat log.
   - **Game Logs**: Only "gameplay-relevant" failures (e.g., "Clear Body prevented the drop", "Type immunity") should be added to the user-facing `addLog`.
@@ -965,7 +997,7 @@ When a Pokémon successfully flees or switches via Teleport:
 
 - **Flee Anim Safety**: When a Pokémon successfully flees (fled state is active), the standard faint/exit animation (`handleFaintAnim`) MUST NOT be executed for any surviving combatants during battle resolution, as the escape action already runs its own exit transition.
 
-*Note: Manual Fleeing (via Run Button) triggers `EXIT_BATTLE` directly and closes the modal, returning the player to the map. In wild battles, if the player chooses to run, the system must evaluate the escape chance based on the current generation formulas.*
+_Note: Manual Fleeing (via Run Button) triggers `EXIT_BATTLE` directly and closes the modal, returning the player to the map. In wild battles, if the player chooses to run, the system must evaluate the escape chance based on the current generation formulas._
 
 ## 📈 Level Up & Move Learning
 
@@ -983,11 +1015,11 @@ If after processing the level it is detected that the Pokémon has moves pending
 
 1. **Modal Trigger**: The system transitions to the `LEVEL_UP_MODAL` state immediately after the `REWARDS_PHASE`.
 2. **User Choice**:
-    - If the Pokémon has < 4 moves: It is learned automatically or confirmation is requested.
-    - If the Pokémon has 4 moves: The player MUST choose a move to forget or cancel the new learning.
+   - If the Pokémon has < 4 moves: It is learned automatically or confirmation is requested.
+   - If the Pokémon has 4 moves: The player MUST choose a move to forget or cancel the new learning.
 3. **Recursive Check**: Since a Pokémon can level up several times at once (or learn multiple moves in the same level), the system must perform a recursive check within the `LEVEL_UP_MODAL`:
-    - If there are more pending moves -> Re-open modal with the next move.
-    - If there are no more moves -> Transition to `SEARCH_PHASE`.
+   - If there are more pending moves -> Re-open modal with the next move.
+   - If there are no more moves -> Transition to `SEARCH_PHASE`.
 
 ### 3. State Integrity
 
@@ -1006,7 +1038,7 @@ When implementing or modifying core logic functions that accept an `options` obj
 
   ```javascript
   import { globalFn } from '../utils';
-  
+
   export function coreLogic(data, options = {}) {
     const fn = options.fn || globalFn; // Safe fallback
     return fn(data);
@@ -1073,14 +1105,13 @@ To prevent implementation ambiguity, we distinguish between two core interface l
 
 To maintain search tension, Pokémon data disclosure is restricted during the initial encounter phase:
 
-| State / Substate | Requirement | Data Display |
-| :--- | :--- | :--- |
-| `ENTRY_ANIM`, `BUSH_IDLE`, `SILHOUETTE_MODE` | None | Scrambled (`?`) |
-| `ENTRY_ANIM`, `BUSH_IDLE`, `SILHOUETTE_MODE` | `inventory.binoculars > 0` | Full Data |
-| **All Other States** | None | Full Data |
+| State / Substate                                  | Requirement                | Data Display    |
+| :------------------------------------------------ | :------------------------- | :-------------- |
+| `ENTRY_ANIM`, `COMBAT_OR_FLEE`, `SILHOUETTE_MODE` | None                       | Scrambled (`?`) |
+| `ENTRY_ANIM`, `COMBAT_OR_FLEE`, `SILHOUETTE_MODE` | `inventory.binoculars > 0` | Full Data       |
+| **All Other States**                              | None                       | Full Data       |
 
-> [!IMPORTANT]
-> This rule applies globally to the `Combat HUD` component and must be evaluated reactively against the player's inventory and the current FSM substate.
+> [!IMPORTANT] This rule applies globally to the `Combat HUD` component and must be evaluated reactively against the player's inventory and the current FSM substate.
 
 #### 3.2.4 Control de Efectos Visuales (FX) en Combate
 
@@ -1166,7 +1197,6 @@ These patterns prevent asynchronous battle logic from interfering with subsequen
 - **`applyEndTurnEffects` Guard**: The function in `battleFlow.ts` MUST return early if `fsm.currentState.value !== BATTLE_STATES.ACTIVE_BATTLE`. Weather damage (e.g., Ola Frío, Granizo) or status tick effects from the previous battle can wake up asynchronously after the FSM has already transitioned to `SEARCH_PHASE`, applying damage to the next enemy and revealing its identity before the encounter animation.
 - **`processFaint` Guard**: The function in `resolution.ts` MUST check that the FSM is in `ACTIVE_BATTLE` before executing faint sequences. Allow `EXIT_BATTLE` as a permissible state only for unit test contexts. Without this guard, a deferred faint from a previous battle can affect the next opponent.
 - **`executeMove` / `useItemInBattle` Guard**: Both must verify `fsm.currentState.value === ACTIVE_BATTLE` before triggering turn sub-states like `WAIT_INPUT`. Stale async chains from the previous turn can otherwise set substates on the new encounter's FSM.
-- **`autoBattle` Watcher Scope**: The watcher in `BattleArenaControls.vue` MUST trigger **only** when substate is `BUSH_IDLE` or `SILHOUETTE_MODE`. Triggering on `PARALLEL_PREP` causes the auto-battle to skip the entire search layout (bushes, silhouettes), starting the new battle instantly without any visual search phase.
-- **`BUSH_IDLE` Immediate Transition**: `handleBattleFlowCompletion('search')` in `searchLoop.ts` MUST explicitly transition to `BUSH_IDLE` immediately after `PARALLEL_PREP` completes. This ensures the stable waiting state is set before the first reactive frame in which the `autoBattle` watcher fires.
+- **`autoBattle` Watcher Scope**: The watcher in `BattleArenaControls.vue` MUST trigger **only** when substate is `COMBAT_OR_FLEE` or `SILHOUETTE_MODE`. Triggering on `PARALLEL_PREP` causes the auto-battle to skip the entire search layout (bushes, silhouettes), starting the new battle instantly without any visual search phase.
+- **`COMBAT_OR_FLEE` Immediate Transition**: `handleBattleFlowCompletion('search')` in `searchLoop.ts` MUST explicitly transition to `COMBAT_OR_FLEE` immediately after `PARALLEL_PREP` completes. This ensures the stable waiting state is set before the first reactive frame in which the `autoBattle` watcher fires.
 - **Money Sound Exclusion**: The money gain sound effect MUST NOT be played inside `calculateBattleRewards`. It was intentionally removed to decouple the audio cue from the rewards calculation cycle.
-

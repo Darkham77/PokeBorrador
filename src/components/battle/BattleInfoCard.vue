@@ -96,8 +96,36 @@ const getBreakdown = (key: string) => {
 
 const formatMult = (m: number) => {
   if (m === 1) return ''
-  return ` x${m.toFixed(1)}`
+  const formatted = Number(m.toFixed(2))
+  return ` x${formatted}`
 }
+
+const showTeamBalls = computed(() => {
+  // En la presentación del entrenador (FIRST_INTRO) se muestra la fila de Pokéballs disponibles.
+  return battleStore.state?.isTrainer || battleStore.state?.isGym || battleStore.state?.isPvP
+})
+
+const teamBallsStatus = computed(() => {
+  if (!battleStore.state) return []
+  const team = props.isPlayer 
+    ? (battleStore.state.playerTeam || []) 
+    : (battleStore.state.enemyTeam || [])
+  
+  const statuses: ('active' | 'fainted' | 'empty')[] = []
+  for (let i = 0; i < 6; i++) {
+    if (i < team.length) {
+      const poke = team[i]
+      if (poke && poke.hp > 0) {
+        statuses.push('active')
+      } else {
+        statuses.push('fainted')
+      }
+    } else {
+      statuses.push('empty')
+    }
+  }
+  return statuses
+})
 </script>
 
 <template>
@@ -191,6 +219,19 @@ const formatMult = (m: number) => {
           :pokemon="p" 
           :size="p.type2 ? 'ssm' : 'sm'"
           class="poke-types"
+        />
+      </div>
+
+      <!-- Poké Balls Status Row for Trainers/NPCs/PvP -->
+      <div
+        v-if="showTeamBalls"
+        class="team-balls-row"
+      >
+        <div 
+          v-for="(status, idx) in teamBallsStatus" 
+          :key="idx"
+          class="ball-slot"
+          :class="status"
         />
       </div>
 
@@ -448,6 +489,47 @@ const formatMult = (m: number) => {
   @media (max-width: 600px) {
     width: 12px;
     height: 12px;
+  }
+}
+
+.team-balls-row {
+  display: flex;
+  gap: 6px;
+  margin-top: 4px;
+  margin-bottom: 4px;
+  padding: 2px 0;
+}
+
+.ball-slot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1px solid Rgba(0, 0, 0, 0.6);
+  position: relative;
+  box-sizing: border-box;
+  
+  &.active {
+    background: linear-gradient(180deg, #ff3e3e 50%, #ffffff 50%);
+    box-shadow: 0 0 5px Rgba(255, 62, 62, 0.6);
+  }
+  
+  &.fainted {
+    background: #555555;
+    &::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 0;
+      width: 100%;
+      height: 1px;
+      background: #ff0000;
+      transform: Translatey(-50%) Rotate(45deg);
+    }
+  }
+  
+  &.empty {
+    background: transparent;
+    border: 1px dashed Rgba(255, 255, 255, 0.3);
   }
 }
 </style>

@@ -7,6 +7,7 @@ This file defines the immutable DNA of the Poké Vicio project. Every AI agent i
 - **Internal Reasoning**: The agent should use the most efficient language for its internal processing (preferably English) when reasoning, planning, or analyzing code.
 - **User Interaction**: All direct communication via chat with the user (responses, explanations, questions) MUST be conducted exclusively in Spanish, maintaining the tone and context of the project.
 - **File & Documentation Editing**: When modifying any files (such as code files, skill files, technical manuals, `.md` files, or any documentation inside `.agents/`), the agent MUST explicitly verify the target file's primary language first. If the file is written in English, any changes or additions to that file MUST also be written in English. Do not mix languages within a single file.
+- **Clarification & Resolution (Zero-Waste Policy)**: Whenever there are any doubts, ambiguities, or unclear requirements regarding a task, the agent MUST recommend or trigger the `/grill-me` slash command to interview the user and resolve all issues before any implementation. Writing code based on assumptions, which leads to wasting tokens and developer time, is strictly prohibited.
 
 ## 1. Mandatory Skill Invocation
 

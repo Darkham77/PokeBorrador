@@ -45,6 +45,12 @@ export function useBattleHud(
       return true
     }
 
+    const isTrainerIntro = s?.isTrainer || s?.isGym || s?.isPvP
+    const isFirstIntroState = toValue(battleStore.fsm?.currentState) === 'FIRST_INTRO'
+    if (isTrainerIntro && isFirstIntroState) {
+      return false
+    }
+
     return !s?.enemy
   })
 
@@ -73,7 +79,7 @@ export function useBattleHud(
    */
   const activeEnemyHudData = computed(() => {
     const state = toValue(battleStore.fsm?.currentState)
-    if (state === 'REWARDS_PHASE' || state === 'LEVEL_UP_MODAL' || state === 'POST_BATTLE_STABILIZATION') return null
+    if (state === 'REWARDS_PHASE' || state === 'LEVEL_UP_MODAL') return null
 
     // 1. Prioridad: Snapshot de captura (durante la animación de éxito) en asiento enemigo (seat2)
     const enemySeat = seats.value.seat2
@@ -130,7 +136,7 @@ export function useBattleHud(
       'PARALLEL_PREP',
       'PARALLEL_ENTRY',
       'SILHOUETTE_MODE',
-      'BUSH_IDLE'
+      'COMBAT_OR_FLEE'
     ].includes(subState || '')
 
     return isSilhouetteSubstate
@@ -166,7 +172,7 @@ export function useBattleHud(
     const sub = toValue(battleStore.fsm?.currentSubState)
     if (!sub) return false
     return [
-      'PARALLEL_PREP', 'PARALLEL_ENTRY', 'SILHOUETTE_MODE', 'BUSH_IDLE', 
+      'PARALLEL_PREP', 'PARALLEL_ENTRY', 'BUSH_VISIBLE', 'SILHOUETTE_MODE', 'COMBAT_OR_FLEE', 
       'ENTRY_ANIM', 'ENCOUNTER_ANIM', 'PARALLEL_JUMP', 'MINIGAME_CHECK'
     ].includes(sub)
   })
@@ -186,7 +192,7 @@ export function useBattleHud(
   const isInstantBush = computed(() => {
     if (animations.isInitialLoad.value) return true
     const sub = toValue(battleStore.fsm?.currentSubState)
-    return toValue(battleStore.fsm?.currentState) === 'FIRST_INTRO' || sub === 'BUSH_VISIBLE'
+    return toValue(battleStore.fsm?.currentState) === 'FIRST_INTRO' || sub === 'PREPARATION' || sub === 'ENTRY_ANIM'
   })
 
   const enemyIsFloating = computed(() => {
@@ -204,15 +210,18 @@ export function useBattleHud(
   })
 
   const isWildEncounter = computed(() => {
-    if (toValue(battleStore.isSearching)) return true
     const state = toValue(battleStore.state)
-    return !!(state && !state.isTrainer && !state.isGym)
+    if (state) {
+      return !state.isTrainer && !state.isGym
+    }
+    return !!toValue(battleStore.isSearching)
   })
 
   const isEnemyTechnicalHidden = computed(() => {
     const sub = toValue(battleStore.fsm?.currentSubState)
     const state = toValue(battleStore.fsm?.currentState)
-    const isTrainer = !isWildEncounter.value
+    const battleState = toValue(battleStore.state)
+    const isTrainer = !!(battleState?.isTrainer || battleState?.isGym)
     
     // 1. Forzar ocultación en estados de promoción técnica (Slot 2 -> Slot 1) o durante el minijuego
     if (sub === 'GEN_TEAMS' || sub === 'MINIGAME_CHECK') return true
@@ -227,7 +236,15 @@ export function useBattleHud(
     }
 
     // 3. Ocultar mientras el entrenador es visible (Mood Visual)
-    const trainerVisibleStates = ['TRAINER_ENTRY', 'T_VISUAL', 'TRAINER_RETREAT', 'POKEMON_CALL', 'RENDER_BALL']
+    const trainerVisibleStates = [
+      'ENCOUNTER_TYPE_CHECK',
+      'TRAINER_ENTRY',
+      'T_VISUAL',
+      'SHOW_DIALOGS',
+      'TRAINER_ENCOUNTER',
+      'RETREAT_AND_FADEOUT',
+      'T_RETREAT'
+    ]
     if (isTrainer && trainerVisibleStates.includes(sub || '')) return true
     
     return false
@@ -253,7 +270,7 @@ export function useBattleHud(
 
     const fsmSub = toValue(battleStore.fsm?.currentSubState)
     // Mostrar capas (arbustos) en todos los estados de búsqueda y entrada salvaje plana
-    if (['PARALLEL_ENTRY', 'PARALLEL_JUMP', 'ENTRY_ANIM', 'ENCOUNTER_ANIM', 'BUSH_IDLE', 'WILD_ENTRY', 'BUSH_FADE', 'REVEAL_COLORS'].includes(fsmSub || '')) {
+    if (['PARALLEL_ENTRY', 'PARALLEL_JUMP', 'ENTRY_ANIM', 'ENCOUNTER_ANIM', 'COMBAT_OR_FLEE', 'WILD_ENTRY', 'BUSH_FADE', 'REVEAL_COLORS'].includes(fsmSub || '')) {
       return isWildEncounter.value
     }
 

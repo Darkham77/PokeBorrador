@@ -21,7 +21,6 @@ export async function executeFlee(ctx: BattleContext) {
       
       const isPreCombat = ctx.fsm.currentState.value !== ctx.BATTLE_STATES.ACTIVE_BATTLE
       if (isPreCombat) {
-        ctx.audio.flee()
         ctx.addLog('¡Escapaste sin problemas!', 'log-info', 'player')
         
         ctx.fsm.transition(ctx.fsm.currentState.value, ctx.BATTLE_SUBSTATES.ESCAPE_PROCESS)
@@ -52,7 +51,6 @@ export async function executeFlee(ctx: BattleContext) {
       )
 
       if (canEscape) {
-        ctx.audio.flee()
         ctx.addLog('¡Escapaste sin problemas!', 'log-info', 'player')
         
         ctx.fsm.transition(ctx.BATTLE_STATES.ACTIVE_BATTLE, ctx.BATTLE_SUBSTATES.ESCAPE_PROCESS)
@@ -83,7 +81,7 @@ export async function executeFlee(ctx: BattleContext) {
         
         // Chequear si el jugador fue noqueado por el contraataque
         if (ctx.activeBattle.value?.player && ctx.activeBattle.value.player.hp <= 0) {
-          await ctx.fsm.transition(ctx.BATTLE_STATES.ACTIVE_BATTLE, ctx.BATTLE_SUBSTATES.RESOLVE_PLAYER_FAINT)
+          await ctx.fsm.transition(ctx.BATTLE_STATES.ACTIVE_BATTLE, ctx.BATTLE_SUBSTATES.PLAYER_FAINT_SEQ)
           await ctx.handleFaint('player')
           ctx.isProcessing.value = false
           return

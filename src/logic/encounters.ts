@@ -115,6 +115,35 @@ export async function generateEncounter(locId: string, state: EncounterState, op
   const eventStore = useEventStore() as { activeEvents: GameEvent[] };
   const activeEvents = options.activeEvents || (eventStore.activeEvents || []) || [];
   const allMapIds = maps.map(m => m.id);
+
+  // 0. Debug: 50% trainer override
+  const win = (typeof window !== 'undefined' ? window : null) as unknown as Record<string, unknown>
+  const debug = win?.__VITE_DEBUG__ as Record<string, unknown> | undefined
+  if (!options.forceEncounter && debug?.trainerChance50) {
+    if (Math.random() < 0.50) {
+      return { type: 'trainer' };
+    }
+  }
+
+  // 0. Especial: Rival Azul
+  if (!options.forceEncounter) {
+    let rivalChance = GAME_RATIOS.encounters.rival;
+    const eventRivalBonus = options.eventRivalBonus || 1;
+    rivalChance *= eventRivalBonus;
+
+    // Aumento de probabilidad si es de clase Entrenador, nivel >= 20 y tiene todos los gimnasios derrotados en Difícil (Hard)
+    if (state.playerClass === 'entrenador' && (state.classLevel || 1) >= 20) {
+      const gymIds = ['pewter', 'cerulean', 'vermilion', 'celadon', 'fuchsia', 'saffron', 'cinnabar', 'viridian'];
+      const allGymsHard = gymIds.every(id => state.gymProgress?.[id]?.hard === true);
+      if (allGymsHard) {
+        rivalChance *= 2;
+      }
+    }
+
+    if (Math.random() < rivalChance) {
+      return { type: 'rival' };
+    }
+  }
   
   // 1. Especial: Fase de Dominancia (Finde) - Batallas de Defensores
   if (!isDisputePhase() && !options.forceEncounter) {

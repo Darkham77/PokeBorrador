@@ -1,6 +1,6 @@
 <!-- [PureVue-Ignore-Length] -->
 <script setup lang="ts">
-import { computed, watch, onMounted, provide, ref } from 'vue'
+import { computed, watch, onMounted, onUnmounted, provide, ref, nextTick } from 'vue'
 import { gsap } from 'gsap'
 import { storeToRefs } from 'pinia'
 import { useBattleStore } from '@/stores/battle'
@@ -14,6 +14,9 @@ import { getCombatantPosition, WORLD_CONSTANTS } from '@/logic/combat/spatialCoo
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { logger } from '@/logic/utils/logger'
 import type { Pokemon } from '@/types/pokemon'
+import { GYMS } from '@/data/gyms.ts'
+import { usePlayerClassStore } from '@/stores/playerClass.ts'
+import { POKEMON_FEET_DATABASE } from '@/data/pokemonFeetDatabase'
 
 // Composables
 import { useBattleShadows } from '@/composables/useBattleShadows'
@@ -31,7 +34,7 @@ import CombatGrass from './CombatGrass.vue'
 import AtmosphereLayer from '@/components/common/AtmosphereLayer.vue'
 import CameraZoomControls from './CameraZoomControls.vue'
 
-const { BASE_ENTITY_SIZE_PLAYER, BASE_ENTITY_SIZE_ENEMY } = WORLD_CONSTANTS
+const { BASE_ENTITY_SIZE_PLAYER, BASE_ENTITY_SIZE_ENEMY, OBJECT_SCALE } = WORLD_CONSTANTS
 
 const battleStore = useBattleStore()
 const { isSearching } = storeToRefs(battleStore)
@@ -51,6 +54,70 @@ const enemy = computed(() => battle.value?.enemy)
 const player = computed(() => battle.value?.player)
 const p1Pos = computed(() => getCombatantPosition('player'))
 const p2Pos = computed(() => getCombatantPosition('enemy'))
+
+const trainerShadowUrl = ref('')
+onMounted(() => {
+  if (typeof document !== 'undefined') {
+    const canvas = document.createElement('canvas')
+    canvas.width = 10
+    canvas.height = 7
+    const ctx = canvas.getContext('2d')
+    if (ctx) {
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.35)'
+      ctx.beginPath()
+      ctx.ellipse(5, 3.5, 5, 3.5, 0, 0, Math.PI * 2)
+      ctx.fill()
+      trainerShadowUrl.value = canvas.toDataURL('image/png')
+    }
+  }
+})
+
+const getTrainerShadowStyle = (spriteName: string, entitySize: number) => {
+  const url = getAssetUrl(ASSET_TYPES.TRAINER, spriteName)
+  let dbKey = url || ''
+  const base = import.meta.env.BASE_URL || '/'
+  if (base !== '/' && dbKey.startsWith(base)) {
+    dbKey = dbKey.slice(base.length - 1)
+  }
+  const cached = POKEMON_FEET_DATABASE[dbKey] || { feetY: 0.9, feetX: 0.5 }
+  
+  const widthPx = 0.7 * entitySize
+  const heightPx = entitySize * 0.08
+  const offsetX = (cached.feetX - 0.5) * entitySize
+
+  return {
+    position: 'absolute' as const,
+    backgroundImage: `url(${trainerShadowUrl.value})`,
+    backgroundSize: '100% 100%',
+    backgroundRepeat: 'no-repeat',
+    left: `calc(50% + ${offsetX}px)`,
+    top: `${cached.feetY * 100}%`,
+    width: `${widthPx}px`,
+    height: `${heightPx}px`,
+    transform: 'translate(-50%, -100%)',
+    zIndex: -1,
+    pointerEvents: 'none' as const
+  }
+}
+
+const classStore = usePlayerClassStore()
+
+const showStandingTrainers = computed(() => {
+  return battleStore.isBattleActive && 
+         battleStore.currentFsmState !== 'FIRST_INTRO' && 
+         battleStore.currentFsmState !== 'INITIALIZING' &&
+         !battleStore.isSearching
+})
+
+const trainerDialogText = computed(() => {
+  if (!battle.value) return ''
+  if (battle.value.isGym && battle.value.gymId) {
+    const gym = GYMS.find(g => g.id === battle.value?.gymId)
+    if (gym) return gym.quote
+  }
+  if (battle.value.quote) return battle.value.quote
+  return '¡Prepárate para combatir! ¡No te lo pondré fácil!'
+})
 
 // Inicializar Composables
 const { 
@@ -76,8 +143,10 @@ battleStore.animations = {
   triggerTrainerRetreat: animations.triggerTrainerRetreat,
   triggerPokemonCall: animations.triggerPokemonCall,
   handleHealRequest: animations.handleHealRequest,
+  handleBlinkRequest: animations.handleBlinkRequest,
   // Bridge de bloqueo de turnos: el motor espera la animación de ataque antes de continuar.
-  awaitTween: animations.awaitTween
+  awaitTween: animations.awaitTween,
+  resetAll: animations.resetAll
 }
 const {
   isInitialLoad,
@@ -85,7 +154,7 @@ const {
   playerAnimState,
   enemyAnimState,
   catchSparkles,
-  isIntroInProgress, initListeners,
+  isIntroInProgress, initListeners, cleanupListeners,
   trainerAnimState, isTrainerVisible, isGlobalFadeActive,
   resetAll,
   getPokemonAnimState,
@@ -93,7 +162,8 @@ const {
   getPokemonCaptureActive,
   getPokemonIsShaking,
   getPokemonIsBlinking,
-  getPokemonIsHealing
+  getPokemonIsHealing,
+  silhouetteOpacity
 } = animations
 
 const playerCombatants = computed(() => {
@@ -109,6 +179,13 @@ const playerCombatants = computed(() => {
 
 const enemyCombatants = computed(() => {
   const list: Pokemon[] = []
+  const isPreCombatTrainer = (battleStore.state?.isTrainer || battleStore.state?.isGym) && 
+    (battleStore.currentFsmState === 'SEARCH_PHASE' || battleStore.currentFsmState === 'INITIALIZING');
+    
+  if (isPreCombatTrainer) {
+    return list
+  }
+
   if (battleStore.exitingEnemy) {
     list.push(battleStore.exitingEnemy)
   }
@@ -346,14 +423,30 @@ onMounted(async () => {
   tl.add(() => { isInitialLoad.value = false })
 })
 
+onUnmounted(() => {
+  battleStore.animations = undefined
+  cleanupListeners()
+})
+
 // GSAP: Animación de Entrenador
-watch(trainerAnimState, (newState) => {
-  if (!trainerRef.value) return
-  gsap.killTweensOf(trainerRef.value)
+watch(trainerAnimState, async (newState) => {
+  if (!newState) return
+  await nextTick()
+  const el = trainerRef.value && '$el' in trainerRef.value ? (trainerRef.value as unknown as { $el: HTMLElement }).$el : (trainerRef.value as HTMLElement | null)
+  if (!el) return
+  gsap.killTweensOf(el)
   if (newState === 'entering') {
-    gsap.fromTo(trainerRef.value, { x: '150%', scale: 0.8, opacity: 0 }, { x: '0%', scale: 1, opacity: 1, duration: 0.8, ease: 'back.out(1.2)' })
+    gsap.fromTo(el, { x: '150%', scale: 0.8, opacity: 0 }, { x: '0%', scale: 1, opacity: 1, duration: 0.8, ease: 'back.out(1.2)' })
   } else if (newState === 'retreating') {
-    gsap.to(trainerRef.value, { x: '150%', scale: 0.8, opacity: 0, duration: 0.8, ease: 'power2.in' })
+    // Mover al entrenador a su lugar designado (300, -10) en unidades virtuales
+    gsap.to(el, { x: 300, y: -10, scale: 0.8, opacity: 0.85, duration: 0.8, ease: 'power2.inOut' })
+  }
+})
+
+watch(showStandingTrainers, (show) => {
+  if (show) {
+    isTrainerVisible.value = false
+    trainerAnimState.value = null
   }
 })
 
@@ -399,6 +492,18 @@ const onHudPlayerEnter = (el: Element, done: () => void) => {
 
 const onHudPlayerLeave = (el: Element, done: () => void) => {
   gsap.to(el, { opacity: 0, x: 20, scale: 0.98, duration: 0.4, ease: "power2.in", onComplete: done })
+}
+
+const onDialogBeforeEnter = (el: Element) => {
+  gsap.set(el, { opacity: 0, y: 15 })
+}
+
+const onDialogEnter = (el: Element, done: () => void) => {
+  gsap.to(el, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out", onComplete: done })
+}
+
+const onDialogLeave = (el: Element, done: () => void) => {
+  gsap.to(el, { opacity: 0, y: 10, duration: 0.3, ease: "power2.in", onComplete: done })
 }
 
 // Zoom controls are now managed by CameraZoomControls component
@@ -455,8 +560,8 @@ const onHudPlayerLeave = (el: Element, done: () => void) => {
             ref="trainerRef"
             :x="p2Pos.x"
             :y="p2Pos.y"
-            :w="BASE_ENTITY_SIZE_ENEMY"
-            :h="BASE_ENTITY_SIZE_ENEMY"
+            :w="BASE_ENTITY_SIZE_ENEMY * 0.8"
+            :h="BASE_ENTITY_SIZE_ENEMY * 0.8"
             class="trainer-entity"
           >
             <div class="trainer-sprite-wrapper">
@@ -470,6 +575,83 @@ const onHudPlayerLeave = (el: Element, done: () => void) => {
                   @error="(e: Event) => (e.target as HTMLImageElement).src = getAssetUrl(ASSET_TYPES.TRAINER, 'entrenador')"
                 >
               </div>
+            </div>
+            <!-- Floor Shadow (same technique as pokemon) -->
+            <div 
+              class="trainer-shadow"
+              :style="getTrainerShadowStyle(battle?.trainerSprite || battle?.trainerName || 'entrenador', BASE_ENTITY_SIZE_ENEMY * 0.8 * (OBJECT_SCALE || 2))"
+            />
+            <!-- Cyan box overlay when guides are active -->
+            <div
+              v-if="showGuides"
+              class="debug-trainer-guide"
+            >
+              <span>{{ Math.round(BASE_ENTITY_SIZE_ENEMY * 0.8 * (OBJECT_SCALE || 2)) }}x{{ Math.round(BASE_ENTITY_SIZE_ENEMY * 0.8 * (OBJECT_SCALE || 2)) }}</span>
+            </div>
+          </VirtualEntity>
+ 
+          <!-- Standing Enemy Trainer (During active combat) -->
+          <VirtualEntity
+            v-if="showStandingTrainers && (battle?.isTrainer || battle?.isGym || battle?.isPvP)"
+            :x="p2Pos.x + 300"
+            :y="p2Pos.y - 10"
+            :w="BASE_ENTITY_SIZE_ENEMY * 0.8"
+            :h="BASE_ENTITY_SIZE_ENEMY * 0.8"
+            class="standing-trainer enemy-trainer"
+          >
+            <div class="trainer-sprite-wrapper">
+              <div 
+                class="pokemon-atmosphere-wrapper"
+                :style="{ filter: 'var(--atmosphere-filter)' }"
+              >
+                <img 
+                  :src="getAssetUrl(ASSET_TYPES.TRAINER, battle?.trainerSprite || battle?.trainerName || 'entrenador')" 
+                  class="trainer-image"
+                  @error="(e: Event) => (e.target as HTMLImageElement).src = getAssetUrl(ASSET_TYPES.TRAINER, 'entrenador')"
+                >
+              </div>
+            </div>
+            <!-- Floor Shadow (same technique as pokemon) -->
+            <div 
+              class="trainer-shadow"
+              :style="getTrainerShadowStyle(battle?.trainerSprite || battle?.trainerName || 'entrenador', BASE_ENTITY_SIZE_ENEMY * 0.8 * (OBJECT_SCALE || 2))"
+            />
+            <!-- Cyan box overlay when guides are active -->
+            <div
+              v-if="showGuides"
+              class="debug-trainer-guide"
+            >
+              <span>{{ Math.round(BASE_ENTITY_SIZE_ENEMY * 0.8 * (OBJECT_SCALE || 2)) }}x{{ Math.round(BASE_ENTITY_SIZE_ENEMY * 0.8 * (OBJECT_SCALE || 2)) }}</span>
+            </div>
+          </VirtualEntity>
+
+          <!-- Standing Player Trainer (During active combat) - Disabled as requested since player trainer sprites are not present yet -->
+          <VirtualEntity
+            v-if="false"
+            :x="p1Pos.x - 120"
+            :y="p1Pos.y + 40"
+            :w="BASE_ENTITY_SIZE_PLAYER * 0.8"
+            :h="BASE_ENTITY_SIZE_PLAYER * 0.8"
+            class="standing-trainer player-trainer"
+          >
+            <div class="trainer-sprite-wrapper">
+              <div 
+                class="pokemon-atmosphere-wrapper"
+                :style="{ filter: 'var(--atmosphere-filter)' }"
+              >
+                <img 
+                  :src="getAssetUrl(ASSET_TYPES.TRAINER, classStore.currentClassDef?.avatarSpriteId || 'entrenador', { trainerSuffix: 'front' })" 
+                  class="trainer-image player-trainer-image"
+                  @error="(e: Event) => (e.target as HTMLImageElement).src = getAssetUrl(ASSET_TYPES.TRAINER, 'entrenador', { trainerSuffix: 'front' })"
+                >
+              </div>
+            </div>
+            <!-- Cyan box overlay when guides are active -->
+            <div
+              v-if="showGuides"
+              class="debug-trainer-guide"
+            >
+              <span>{{ Math.round(BASE_ENTITY_SIZE_PLAYER * 0.8) }}x{{ Math.round(BASE_ENTITY_SIZE_PLAYER * 0.8) }}</span>
             </div>
           </VirtualEntity>
 
@@ -501,6 +683,7 @@ const onHudPlayerLeave = (el: Element, done: () => void) => {
             :stages="battleStore.enemyStages"
             :hidden="isEnemyTechnicalHidden && p.uid === activeEnemyData?.uid"
             :has-seat="true"
+            :style="{ opacity: activeEnemyIsSilhouette && p.uid === activeEnemyData?.uid ? silhouetteOpacity : 1 }"
           />
 
           <!-- Arbustos Adelante --
@@ -550,6 +733,59 @@ const onHudPlayerLeave = (el: Element, done: () => void) => {
             :hidden="isPlayerTechnicalHidden && p.uid === player?.uid"
             :has-seat="true"
           />
+          <!-- Globo de diálogo en la zona del jugador (P1 ANCHOR) -->
+          <VirtualEntity
+            :x="p1Pos.x"
+            :y="p1Pos.y"
+            :w="BASE_ENTITY_SIZE_PLAYER"
+            :h="BASE_ENTITY_SIZE_PLAYER"
+            class="dialog-bubble-entity"
+          >
+            <Transition
+              :css="false"
+              appear
+              @before-enter="onDialogBeforeEnter"
+              @enter="onDialogEnter"
+              @leave="onDialogLeave"
+            >
+              <div
+                v-if="(battle?.isTrainer || battle?.isGym) && (
+                  (battleStore.currentFsmState === 'FIRST_INTRO' && (
+                    battleStore.currentSubState === 'SHOW_DIALOGS'
+                  )) ||
+                  (battleStore.currentFsmState === 'SEARCH_PHASE' && (
+                    battleStore.currentSubState === 'COMBAT_OR_FLEE'
+                  ))
+                )"
+                class="speech-bubble"
+              >
+                <div class="bubble-speaker">
+                  {{ battle?.trainerName || 'Entrenador' }}:
+                </div>
+                <div class="bubble-text">
+                  {{ trainerDialogText }}
+                </div>
+                <div class="bubble-tail">
+                  <svg
+                    viewBox="0 0 120 100"
+                    preserveAspectRatio="none"
+                  >
+                    <path
+                      d="M -10 40 L 115 2 L -10 80 Z"
+                      fill="white"
+                    />
+                    <path
+                      d="M 0 40 L 120 0 L 0 80"
+                      fill="none"
+                      stroke="#141824"
+                      stroke-width="8"
+                    />
+                    />
+                  </svg>
+                </div>
+              </div>
+            </Transition>
+          </VirtualEntity>
         </div>
       </VirtualSpace>
     </div>

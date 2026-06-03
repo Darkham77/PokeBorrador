@@ -52,10 +52,10 @@ export function formatBattleLog(msg: string, type: string, source: BattleSource,
       const cls = (PLAYER_CLASSES as Record<string, { avatarSpriteId: string }>)[gs.state.playerClass || ''];
       const spriteId = cls?.avatarSpriteId || gs.state.avatar_style || 'entrenador';
       icon = getAssetUrl(ASSET_TYPES.TRAINER, spriteId, { trainerSuffix: 'avatar' });
-      iconType = 'trainer';
+      iconType = 'player_avatar';
     } else if (source === 'enemy_trainer') {
       const spriteId = activeBattle?.trainerSprite || 'entrenador';
-      icon = getAssetUrl(ASSET_TYPES.TRAINER, spriteId, { trainerSuffix: 'avatar' });
+      icon = getAssetUrl(ASSET_TYPES.TRAINER, spriteId);
       iconType = 'trainer';
     } else if (typeof source === 'object' && source) {
       const poke = source as Partial<Pokemon>;
@@ -65,11 +65,17 @@ export function formatBattleLog(msg: string, type: string, source: BattleSource,
         iconType = 'pokemon';
       }
     } else if (typeof source === 'string') {
-      const sLower = source.toLowerCase();
-      const item = SHOP_ITEMS.find((i) => i.name.toLowerCase() === sLower || i.id.toLowerCase() === sLower);
-      const spriteId = item ? item.sprite : source;
-      icon = getAssetUrl(ASSET_TYPES.ITEM, spriteId);
-      iconType = 'item';
+      const isEmoji = /^\p{Emoji}/u.test(source) && source.length <= 4;
+      if (isEmoji) {
+        icon = source;
+        iconType = 'emoji';
+      } else {
+        const sLower = source.toLowerCase();
+        const item = SHOP_ITEMS.find((i) => i.name.toLowerCase() === sLower || i.id.toLowerCase() === sLower);
+        const spriteId = item ? item.sprite : source;
+        icon = getAssetUrl(ASSET_TYPES.ITEM, spriteId);
+        iconType = 'item';
+      }
     }
   }
 

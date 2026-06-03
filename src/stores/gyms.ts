@@ -18,6 +18,7 @@ interface Gym {
   typeColor: string;
   badge: string;
   badgeName: string;
+  sprite: string;
   quote: string;
   victoryQuote: string;
   rewardTM: string;
@@ -38,6 +39,7 @@ export const useGymsStore = defineStore('gyms', {
         id: 'pewter', name: 'Gimnasio Plateada', city: 'Ciudad Plateada',
         leader: 'Brock', type: 'rock', typeColor: '#c8a060',
         badge: '💎', badgeName: 'Medalla Roca',
+        sprite: 'brock',
         quote: '¡Mis Pokémon de roca tienen una defensa impenetrable!',
         victoryQuote: 'Hay muchos tipos de entrenadores en el mundo... Tú pareces ser uno con un gran futuro. Toma esto, te ayudará en tu viaje.',
         rewardTM: 'MT39 Tumba Rocas',
@@ -52,6 +54,7 @@ export const useGymsStore = defineStore('gyms', {
         id: 'cerulean', name: 'Gimnasio Celeste', city: 'Ciudad Celeste',
         leader: 'Misty', type: 'water', typeColor: '#3B8BFF',
         badge: '💧', badgeName: 'Medalla Cascada',
+        sprite: 'misty',
         quote: '¡Soy la chica sensacional del agua! ¡No te voy a perdonar!',
         victoryQuote: '¡Vaya! Eres mucho más fuerte de lo que pareces. Mi estrategia no fue suficiente... ¡Espero que esta MT te sea de utilidad!',
         rewardTM: 'MT03 Pulso Agua',
@@ -66,6 +69,7 @@ export const useGymsStore = defineStore('gyms', {
         id: 'vermilion', name: 'Gimnasio Carmín', city: 'Ciudad Carmín',
         leader: 'Lt. Surge', type: 'electric', typeColor: '#FFD93D',
         badge: '⚡', badgeName: 'Medalla Trueno',
+        sprite: 'ltsurge',
         quote: '¡La electricidad es el arma definitiva! ¡Nunca me han derrotado!',
         victoryQuote: '¡Maldita sea! ¡Me has dejado frito! Eres un recluta de primera, sí señor. ¡Lleva esto contigo al campo de batalla!',
         rewardTM: 'MT24 Rayo',
@@ -80,6 +84,7 @@ export const useGymsStore = defineStore('gyms', {
         id: 'celadon', name: 'Gimnasio Celadón', city: 'Ciudad Celadón',
         leader: 'Erika', type: 'grass', typeColor: '#6BCB77',
         badge: '🌿', badgeName: 'Medalla Arcoíris',
+        sprite: 'erika',
         quote: '¡Mis Pokémon de planta son tan hermosos como poderosos!',
         victoryQuote: 'Vaya, me has derrotado... Tu valor es admirable. Por favor, acepta esta humilde muestra de mi respeto.',
         rewardTM: 'MT19 Gigadrenado',
@@ -94,6 +99,7 @@ export const useGymsStore = defineStore('gyms', {
         id: 'fuchsia', name: 'Gimnasio Fucsia', city: 'Ciudad Fucsia',
         leader: 'Koga', type: 'poison', typeColor: '#C77DFF',
         badge: '☠️', badgeName: 'Medalla Alma',
+        sprite: 'koga',
         quote: '¡El veneno es el arma más elegante de un ninja Pokémon!',
         victoryQuote: '¡Jajaja! Mis técnicas ninja han sido superadas. Has demostrado una gran tenacidad. ¡Usa esta técnica secreta con sabiduría!',
         rewardTM: 'MT06 Tóxico',
@@ -108,6 +114,7 @@ export const useGymsStore = defineStore('gyms', {
         id: 'saffron', name: 'Gimnasio Azafrán', city: 'Ciudad Azafrán',
         leader: 'Sabrina', type: 'psychic', typeColor: '#FF793F',
         badge: '🔮', badgeName: 'Medalla Marsh',
+        sprite: 'sabrina',
         quote: '¡Puedo leer tu mente y ver cada uno de tus movimientos!',
         victoryQuote: 'Lo predije... Tu victoria estaba escrita en las estrellas. Toma esto, desarrolla tu fuerza interior tanto como la de tus Pokémon.',
         rewardTM: 'MT04 Paz Mental',
@@ -122,6 +129,7 @@ export const useGymsStore = defineStore('gyms', {
         id: 'cinnabar', name: 'Gimnasio Canela', city: 'Isla Canela',
         leader: 'Blaine', type: 'fire', typeColor: '#FF6B35',
         badge: '🔥', badgeName: 'Medalla Volcán',
+        sprite: 'blaine',
         quote: '¡Si no podés soportar el calor, ¡salí de mi gimnasio!',
         victoryQuote: '¡Fuego! ¡Me has quemado vivo! ¡Qué combate más ardiente! ¡Lleva esta MT y haz que tu pasión arda con la misma intensidad!',
         rewardTM: 'MT38 Llamarada',
@@ -136,6 +144,7 @@ export const useGymsStore = defineStore('gyms', {
         id: 'viridian', name: 'Gimnasio Verde', city: 'Ciudad Verde',
         leader: 'Giovanni', type: 'ground', typeColor: '#c8a060',
         badge: '🌍', badgeName: 'Medalla Tierra',
+        sprite: 'giovanni',
         quote: '¡Seré el último y más difícil obstáculo en tu camino!',
         victoryQuote: 'He perdido... Una vez más. Tu fuerza es incuestionable. No tengo nada más que enseñarte por ahora. Toma esto y sigue tu camino.',
         rewardTM: 'MT26 Terremoto',
@@ -176,8 +185,10 @@ export const useGymsStore = defineStore('gyms', {
 
       await battleStore.startBattle(mainEnemy, {
         isGym: true,
+        isTrainer: true,
         gymId: gym.id,
         trainerName: `Líder ${gym.leader}`,
+        trainerSprite: gym.sprite,
         enemyTeam: enemyTeam,
         locationId: 'gym',
         difficulty,

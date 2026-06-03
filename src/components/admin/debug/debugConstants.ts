@@ -24,7 +24,9 @@ export const DEBUG_SOUNDS: DebugItem[] = [
   { id: 'item', label: 'ITEM', icon: '🎒' },
   { id: 'wobble', label: 'WOBBLE', icon: '🫨' },
   { id: 'ballHit', label: 'HIT', icon: '🎯' },
-  { id: 'flee', label: 'ESCAPE', icon: '💨' }
+  { id: 'flee', label: 'ESCAPE', icon: '💨' },
+  { id: 'victoryTrainer', label: 'VIC. ENTRENADOR', icon: '🏆' },
+  { id: 'defeat', label: 'DERROTA', icon: '🥀' }
 ]
 
 export const DEBUG_STATUS_CONDITIONS: DebugItem[] = [

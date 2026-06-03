@@ -246,11 +246,52 @@ export const getAssetUrl = (type: AssetType, rawId: string | number, options: As
       // Other remote URLs fallback
       if (idStr.startsWith('http')) return idStr;
       
-      // Determine trainer suffix: default to 'front'
-      const suffix = options.trainerSuffix || (isBack ? 'back' : 'front');
+      const PLAYER_CLASSES_LIST = ['rocket', 'cazabichos', 'entrenador', 'criador'];
+      if (PLAYER_CLASSES_LIST.includes(finalId)) {
+        const suffix = options.trainerSuffix || (isBack ? 'back' : 'front');
+        return resolveAsset(`/assets/sprites/trainers/${finalId}_${suffix}${extension}`);
+      }
 
-      // Local assets (prioritized)
-      return resolveAsset(`/assets/sprites/trainers/${finalId}_${suffix}${extension}`);
+      const NPC_MAPPING: Record<string, string> = {
+        'brock': 'brock',
+        'misty': 'misty',
+        'ltsurge': 'ltsurge',
+        'erika': 'erika',
+        'koga': 'koga',
+        'sabrina': 'sabrina',
+        'blaine': 'blaine',
+        'giovanni': 'giovanni',
+        'blue': 'blue-gen3',
+        'youngster': 'youngster',
+        'lass': 'lass',
+        'picnicker': 'picnicker',
+        'camper': 'camper_b',
+        'hiker': 'hiker',
+        'sailor': 'sailor',
+        'scientist': 'scientist',
+        'juggler': 'juggler',
+        'blackbelt': 'blackbelt',
+        'swimmer': 'swimmer',
+        'tamer': 'tamer-gen3',
+        'birdkeeper': 'birdkeeper',
+        'psychic': 'psychic',
+        'gentleman': 'gentleman',
+        'richboy': 'richboy',
+        'tuber': 'tuber',
+        'cyclist': 'cyclist',
+        'roughneck': 'roughneck',
+        'biker': 'biker',
+        'teamrocket': 'teamrocket',
+        'beauty': 'beauty',
+        'supernerd': 'supernerd',
+        'burglar': 'burglar',
+        'dragontamer': 'dragontamer',
+        'acetrainer': 'acetrainer',
+        'veteran': 'veteran'
+      };
+
+      const npcId = NPC_MAPPING[finalId] || finalId;
+      return resolveAsset(`/assets/sprites/npc/${npcId}${extension}`);
     }
 
     case ASSET_TYPES.ENVIRONMENT:

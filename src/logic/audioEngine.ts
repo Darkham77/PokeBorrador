@@ -226,3 +226,28 @@ export function playStatusDamageSound(ctx: AudioContext, dest: AudioNode | null)
   playNoise(ctx, dest, t, 0.12, 0.25, 400); // Ruido sordo para el impacto
   playGlide(ctx, dest, 110, 55, t, 0.15, 0.2, 'square'); // Pulso bajo descendente
 }
+
+/**
+ * VICTORY TRAINER SOUND
+ */
+export function playVictoryTrainerSound(ctx: AudioContext, dest: AudioNode | null) {
+  const t = ctx.currentTime + 0.05;
+  const notes = [392.00, 523.25, 659.25, 783.99];
+  notes.forEach((freq, i) => {
+    playNote(ctx, dest, freq, t + i * 0.08, 0.08, 0.25, 'square');
+  });
+  playNote(ctx, dest, 1046.50, t + 0.32, 0.40, 0.25, 'square');
+}
+
+/**
+ * DEFEAT SOUND
+ */
+export function playDefeatSound(ctx: AudioContext, dest: AudioNode | null) {
+  const t = ctx.currentTime + 0.05;
+  const notes = [523.25, 415.30, 392.00];
+  notes.forEach((freq, i) => {
+    playNote(ctx, dest, freq, t + i * 0.15, 0.12, 0.25, 'square');
+  });
+  playGlide(ctx, dest, 369.99, 185.00, t + 0.45, 0.50, 0.25, 'sawtooth');
+  playNoise(ctx, dest, t + 0.45, 0.30, 0.15, 400);
+}

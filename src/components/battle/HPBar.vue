@@ -2,6 +2,8 @@
 import { ref, watch } from 'vue'
 import { gsap } from 'gsap'
 
+import { useAudioStore } from '@/stores/audio'
+
 interface Props {
   hp: number
   maxHp: number
@@ -18,6 +20,8 @@ const props = withDefaults(defineProps<Props>(), {
   isScrambled: false,
   pokemonUid: null
 })
+
+const audioStore = useAudioStore()
 
 const displayHp = ref(props.hp)
 const displayExpPct = ref((props.exp / props.expNeeded) * 100)
@@ -45,6 +49,7 @@ watch(() => props.level, (newLevel, oldLevel) => {
       ease: 'power2.in',
       onComplete: () => {
         displayExpPct.value = 0
+        audioStore.levelUp()
       }
     })
     .to(displayExpPct, {

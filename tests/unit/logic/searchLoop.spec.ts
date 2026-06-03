@@ -64,8 +64,8 @@ describe('searchLoop.js - handleBattleFlowCompletion (Flujo Directo)', () => {
     expect(mockCtx.activeBattle.value!._initialEnemy).toEqual(expect.objectContaining({ name: 'Pidgey' }))
     expect(mockCtx.activeBattle.value!.enemy).toEqual(expect.objectContaining({ name: 'Pidgey' }))
     
-    // Debe transicionar a INITIALIZING y luego a SEARCH_PHASE / PARALLEL_PREP
+    // Debe transicionar a INITIALIZING y luego a SEARCH_PHASE / PREPARATION
     expect(mockCtx.fsm.transition).toHaveBeenCalledWith(BATTLE_STATES.INITIALIZING)
-    expect(mockCtx.fsm.transition).toHaveBeenCalledWith(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.PARALLEL_PREP)
+    expect(mockCtx.fsm.transition).toHaveBeenCalledWith(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.PREPARATION)
   })
 })

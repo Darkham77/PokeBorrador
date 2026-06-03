@@ -1,4 +1,5 @@
 import { ref, computed, watch, toValue, type MaybeRefOrGetter } from 'vue'
+import { gsap } from 'gsap'
 import { gameBus } from '@/logic/gameBus'
 import { logger } from '@/logic/utils/logger'
 import { awaitAnimation, createTimeline } from '@/logic/utils/gsapHelpers'
@@ -56,6 +57,7 @@ export function useBattleAnimations(
   const upcomingIsEmerging = ref(false)
   const isWildSilhouetteHalfway = ref(false)
   const isInitialLoad = ref(true)
+  const silhouetteOpacity = ref(0)
 
   // 3. Trainer visual states
   const trainerAnimState = ref<string | null>(null) // 'entering' | 'retreating' | 'idle'
@@ -133,19 +135,45 @@ export function useBattleAnimations(
           wildRevealActive.value = true
           isWildEntryAnimation.value = false
           isEmerging.value = false
+          silhouetteOpacity.value = 0
+          trainerAnimState.value = null
+          isTrainerVisible.value = false
           break
 
         case 'PARALLEL_PREP':
         case 'PARALLEL_ENTRY':
-        case 'ENTRY_ANIM':
         case 'WILD_ENTRY':
-        case 'BUSH_IDLE':
-        case 'BUSH_VISIBLE':
+        case 'COMBAT_OR_FLEE':
         case 'SILHOUETTE_MODE':
           isWildSilhouette.value = true
           wildRevealActive.value = true
           isWildEntryAnimation.value = false
           break
+
+        case 'ENTRY_ANIM': {
+          isWildSilhouette.value = true
+          wildRevealActive.value = true
+          isWildEntryAnimation.value = false
+          
+          // GSAP: Animación reactiva de opacidad de la silueta si es salvaje (0.2s invisible, luego 0.4s fade-in)
+          const stateObj = battleStore.state
+          if (stateObj && !stateObj.isTrainer && !stateObj.isGym) {
+            silhouetteOpacity.value = 0
+            gsap.killTweensOf(silhouetteOpacity)
+            gsap.to(silhouetteOpacity, {
+              value: 1,
+              delay: 0.2,
+              duration: 0.4,
+              ease: 'power1.inOut'
+            })
+          } else if (stateObj && (stateObj.isTrainer || stateObj.isGym)) {
+            isWildSilhouette.value = false
+            wildRevealActive.value = false
+            isTrainerVisible.value = true
+            trainerAnimState.value = 'entering'
+          }
+          break
+        }
         
         case 'PARALLEL_JUMP':
         case 'ENCOUNTER_ANIM':
@@ -171,42 +199,16 @@ export function useBattleAnimations(
           isEmerging.value = false
           break
 
-        case 'POKEMON_CALL':
-        case 'ENERGY_RELEASE':
-          // Only set via FSM if no UID-tracked animation is already in progress
-          // (handleReleaseRequest manages this directly when switching)
-          if (!seats.value.seat1.entry.pokemonUid) {
-            seats.value.seat1.entry.animState = 'releasing'
-          }
-          break;
+         case 'TRAINER_ENTRY':
+         case 'T_VISUAL':
+           trainerAnimState.value = 'entering'
+           isTrainerVisible.value = true
+           break
 
-        case 'POKEMON_RECALL':
-        case 'ENERGY_RECALL':
-          // Only set via FSM if no UID-tracked animation is already in progress
-          // (handleCatchRequest manages this directly when switching)
-          if (!seats.value.seat1.exit.pokemonUid) {
-            seats.value.seat1.exit.animState = 'catching'
-          }
-          break;
-
-        case 'TRAINER_ENTRY':
-        case 'T_VISUAL':
-          // Visual state set reactively by the FSM watcher (fallback for direct substate transitions)
-          // Timing is now owned by triggerTrainerEntry() in the bridge
-          trainerAnimState.value = 'entering'
-          isTrainerVisible.value = true
-          break
-        case 'TRAINER_RETREAT':
-          if (trainerAnimState.value !== 'retreating') {
-            trainerAnimState.value = 'retreating'
-            const tl = createTimeline()
-            tl.to({}, { duration: 0.8 })
-            tl.add(() => {
-              isTrainerVisible.value = false
-              trainerAnimState.value = null
-            })
-          }
-          break
+         case 'T_RETREAT':
+         case 'RETREAT_AND_FADEOUT':
+           trainerAnimState.value = 'retreating'
+           break
 
         case 'EMPTY_WAIT':
           isEmerging.value = false
@@ -257,8 +259,8 @@ export function useBattleAnimations(
 
   const triggerTrainerDialogs = (): Promise<void> => {
     const tl = createTimeline()
-    // ~0.4s fade-in + ~0.8s minimum read time = 1.2s total
-    tl.to({}, { duration: 1.2 })
+    // ~0.4s fade-in + ~2.1s minimum read time = 2.5s total
+    tl.to({}, { duration: 2.5 })
     return awaitAnimation(tl)
   }
 
@@ -266,11 +268,7 @@ export function useBattleAnimations(
     trainerAnimState.value = 'retreating'
     const tl = createTimeline()
     tl.to({}, {
-      duration: 0.8,
-      onComplete: () => {
-        isTrainerVisible.value = false
-        trainerAnimState.value = null
-      }
+      duration: 0.8
     })
     return awaitAnimation(tl)
   }
@@ -325,34 +323,61 @@ export function useBattleAnimations(
     trainerAnimState.value = null
     isTrainerVisible.value = false
     resetCaptureStates()
+    gsap.killTweensOf(silhouetteOpacity)
+    silhouetteOpacity.value = 0
+  }
+
+  const registeredListeners: { event: string; callback: EventListener }[] = []
+
+  const addBusListener = (event: string, callback: EventListener) => {
+    gameBus.on(event, callback)
+    registeredListeners.push({ event, callback })
+  }
+
+  const cleanupListeners = () => {
+    if (captureAnims.cleanupListeners) {
+      captureAnims.cleanupListeners()
+    }
+    while (registeredListeners.length > 0) {
+      const entry = registeredListeners.pop()
+      if (entry) {
+        gameBus.off(entry.event, entry.callback)
+      }
+    }
   }
 
   const initListeners = () => {
-    gameBus.on('PLAY_CATCH_ENERGY', (e: Event) => handleCatchRequest((e as CustomEvent).detail))
-    gameBus.on('PLAY_WITHDRAW', (e: Event) => handleCatchRequest((e as CustomEvent).detail))
-    gameBus.on('PLAY_RELEASE_ENERGY', (e: Event) => handleReleaseRequest((e as CustomEvent).detail))
-    gameBus.on('PLAY_SEND_OUT', (e: Event) => handleReleaseRequest((e as CustomEvent).detail))
+    cleanupListeners()
+
+    if (captureAnims.initListeners) {
+      captureAnims.initListeners()
+    }
+
+    addBusListener('PLAY_CATCH_ENERGY', ((e: Event) => handleCatchRequest((e as CustomEvent).detail)) as EventListener)
+    addBusListener('PLAY_WITHDRAW', ((e: Event) => handleCatchRequest((e as CustomEvent).detail)) as EventListener)
+    addBusListener('PLAY_RELEASE_ENERGY', ((e: Event) => handleReleaseRequest((e as CustomEvent).detail)) as EventListener)
+    addBusListener('PLAY_SEND_OUT', ((e: Event) => handleReleaseRequest((e as CustomEvent).detail)) as EventListener)
     
-    gameBus.on('PLAY_DAMAGE', (e: Event) => handleShakeRequest((e as CustomEvent).detail))
-    gameBus.on('PLAY_BLINK', (e: Event) => handleBlinkRequest((e as CustomEvent).detail))
-    gameBus.on('PLAY_HEAL', (e: Event) => handleHealRequest((e as CustomEvent).detail))
+    addBusListener('PLAY_DAMAGE', ((e: Event) => handleShakeRequest((e as CustomEvent).detail)) as EventListener)
+    addBusListener('PLAY_BLINK', ((e: Event) => handleBlinkRequest((e as CustomEvent).detail)) as EventListener)
+    addBusListener('PLAY_HEAL', ((e: Event) => handleHealRequest((e as CustomEvent).detail)) as EventListener)
     
-    gameBus.on('CATCH_SHAKE', (e: Event) => {
+    addBusListener('CATCH_SHAKE', ((e: Event) => {
       handleShakeRequest((e as CustomEvent).detail)
       handleBlinkRequest((e as CustomEvent).detail)
-    })
+    }) as EventListener)
     
-    gameBus.on('CATCH_SUCCESS', (e: Event) => {
+    addBusListener('CATCH_SUCCESS', ((e: Event) => {
       const data = (e as CustomEvent).detail
       const side = typeof data === 'string' ? data : (data?.side || 'enemy')
       playCatchCelebration(side)
-    })
+    }) as EventListener)
     
-    gameBus.on('POKEMON_FAINT', (e: Event) => handleFaintAnim((e as CustomEvent).detail))
-    gameBus.on('PLAY_FAINT', (e: Event) => handleFaintAnim((e as CustomEvent).detail))
-    gameBus.on('ENCOUNTER_ANIM', () => triggerSearchEncounter())
+    addBusListener('POKEMON_FAINT', ((e: Event) => handleFaintAnim((e as CustomEvent).detail)) as EventListener)
+    addBusListener('PLAY_FAINT', ((e: Event) => handleFaintAnim((e as CustomEvent).detail)) as EventListener)
+    addBusListener('ENCOUNTER_ANIM', (() => triggerSearchEncounter()) as EventListener)
 
-    gameBus.on('PLAY_ESCAPE_ANIM', (e: Event) => {
+    addBusListener('PLAY_ESCAPE_ANIM', ((e: Event) => {
       const data = (e as CustomEvent).detail
       const side = typeof data === 'string' ? data : (data?.side || 'player')
       const isWild = !battleStore.state?.isTrainer && !battleStore.state?.isGym
@@ -365,15 +390,9 @@ export function useBattleAnimations(
         const pokemon = battleStore.state?.enemy
         gameBus.emit('TRIGGER_COMBATANT_ESCAPE', { side: 'enemy', pokemon, type })
       }
-    })
+    }) as EventListener)
 
-    // PLAY_ATTACK_ANIM: orquestación delegada completamente a battleTurn.ts.
-    // store.attackerSide.value y store.activeMove.value son seteados y limpiados
-    // de forma determinista por runPlayerAction/runEnemyAction via awaitTween.
-    // No se registra ningún listener aquí para evitar sobrescritura y carrera de limpieza.
-
-
-    gameBus.on('START_BATTLE', (_e) => {
+    addBusListener('START_BATTLE', ((_e: Event) => {
       Object.keys(seats.value).forEach(side => {
         const seat = seats.value[side]
         if (seat) {
@@ -386,12 +405,12 @@ export function useBattleAnimations(
         }
       })
       resetCaptureStates()
-    })
-
+    }) as EventListener)
   }
 
   return {
     isWildEntryAnimation,
+    silhouetteOpacity,
     isEmerging,
     isWildSilhouette,
     wildRevealActive,
@@ -428,6 +447,7 @@ export function useBattleAnimations(
     triggerPokemonCall,
     triggerCatchSparkles,
     initListeners,
+    cleanupListeners,
     isPlayerSpriteSuppressed,
     handleFaintAnim,
     handleCatchRequest,
@@ -442,6 +462,8 @@ export function useBattleAnimations(
     getPokemonIsBlinking,
     getPokemonIsHealing,
     handleHealRequest,
+    handleBlinkRequest,
     awaitTween
   }
+
 }

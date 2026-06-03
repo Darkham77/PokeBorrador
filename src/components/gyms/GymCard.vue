@@ -81,7 +81,8 @@ const handleMouseEnter = () => {
     y: -4,
     duration: 0.4,
     ease: 'back.out(1.7)',
-    borderColor: 'rgba(255, 255, 255, 0.4)'
+    borderColor: props.gym.typeColor,
+    boxShadow: `0 20px 60px rgba(0, 0, 0, 0.8), 0 0 15px ${props.gym.typeColor}33`
   })
   
   const sprite = cardRef.value.querySelector('.leader-sprite')
@@ -89,7 +90,7 @@ const handleMouseEnter = () => {
     gsap.to(sprite, {
       scale: 1.1,
       y: -5,
-      filter: 'drop-shadow(0 8px 15px rgba(0,0,0,0.6))',
+      filter: 'drop-shadow(0 15px 15px rgba(0,0,0,0.6))',
       duration: 0.4,
       ease: 'back.out(1.7)'
     })
@@ -103,7 +104,8 @@ const handleMouseLeave = () => {
     y: 0,
     duration: 0.4,
     ease: 'power2.out',
-    borderColor: 'rgba(255, 255, 255, 0.15)'
+    borderColor: 'rgba(255, 255, 255, 0.15)',
+    boxShadow: 'none'
   })
   
   const sprite = cardRef.value.querySelector('.leader-sprite')

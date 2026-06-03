@@ -5,6 +5,7 @@ import { useEventStore } from '@/stores/events'
 import { useWarStore } from '@/stores/war'
 import type { BattleContext } from '@/types/battleContext'
 import type { UIStore, MapStore, EventStore, WarStore } from '@/types/stores'
+import type { MapLocation } from '@/types/encounters'
 import { logger } from '../utils/logger.ts'
 import type { Pokemon } from '@/types/pokemon'
 
@@ -19,9 +20,13 @@ export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'm
   if (option === 'search' && ctx.activeBattle.value) {
     ctx.isProcessing.value = true
     
-    // 1. Limpiar el enemigo anterior de inmediato para evitar flashes visuales en color
+    // 1. Limpiar el enemigo anterior y restaurar estados de animación
     ctx.activeBattle.value.enemy = null
     ctx.activeBattle.value._initialEnemy = null
+    
+    if (ctx.animations?.resetAll) {
+      ctx.animations.resetAll()
+    }
     
     // Restablecer flags de minijuegos para la fase de búsqueda
     ctx.activeBattle.value.isFishing = false
@@ -29,6 +34,17 @@ export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'm
     ctx.activeBattle.value.rewardsProcessed = false
     ctx.activeBattle.value.over = false
     ctx.activeBattle.value._rewardCombatants = []
+    
+    // Restablecer flags de entrenador y gimnasio de inmediato
+    ctx.activeBattle.value.isGym = false
+    ctx.activeBattle.value.gymId = undefined
+    ctx.activeBattle.value.difficulty = undefined
+    ctx.activeBattle.value.rewardTM = undefined
+    ctx.activeBattle.value.isTrainer = false
+    ctx.activeBattle.value.enemyTeam = undefined
+    ctx.activeBattle.value.trainerName = undefined
+    ctx.activeBattle.value.trainerSprite = undefined
+    ctx.activeBattle.value.isRival = false
     
     // FASE: INITIALIZING
     await fsm.transition(BATTLE_STATES.INITIALIZING)
@@ -39,26 +55,156 @@ export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'm
     const mapStore = useMapStore() as unknown as MapStore
     const eventStore = useEventStore() as unknown as EventStore
     const warStore = useWarStore() as unknown as WarStore
+    const win = (typeof window !== 'undefined' ? window : null) as unknown as Record<string, unknown>
+    const debug = win?.__VITE_DEBUG__ as Record<string, unknown> | undefined
+    const debugMults = (debug?.multipliers as Record<string, number> | undefined) || {}
+
     const encounterOptions = {
       activeEvents: mapStore.activeEvents,
       dominanceData: warStore.mapDominance,
-      shinyMultiplier: eventStore.globalMultipliers?.shiny || 1,
-      forceEncounter: true
+      shinyMultiplier: (eventStore.globalMultipliers?.shiny || 1) * (debugMults.shiny || 1),
+      eventTrainerBonus: (eventStore.globalMultipliers?.trainer || 1) * (debugMults.trainer || 1),
+      eventFishingBonus: (eventStore.globalMultipliers?.fishing || 1) * (debugMults.fishing || 1),
+      eventRivalBonus: (eventStore.globalMultipliers?.rival || 1) * (debugMults.rival || 1)
     }
     const encounter = await generateEncounter(locId, ctx.gs.state, encounterOptions)
     
     let isFishing = false
     let isArchaeology = false
     let generatedPoke: Pokemon | null = null
-    if (encounter && (encounter.type === 'wild' || encounter.type === 'fishing' || encounter.type === 'archaeology' || encounter.type === 'guardian') && encounter.pokemon) {
-      generatedPoke = encounter.pokemon
-      isFishing = encounter.type === 'fishing'
-      isArchaeology = encounter.type === 'archaeology'
+
+    if (encounter) {
+      if (encounter.type === 'trainer') {
+        ctx.gs.state.trainerChance = 5
+        
+        const { getEvolvedForm } = await import('@/logic/evolutionLogic')
+        const { makePokemon } = await import('@/logic/pokemonFactory')
+        const { pokemonDataProvider } = await import('@/logic/providers/pokemonDataProvider')
+
+        const isMaxCriminality = (ctx.gs.state.playerClass === 'rocket' && (ctx.gs.state.classData?.criminality ?? 0) >= 100)
+        const mapsList = pokemonDataProvider.getMaps() as unknown as MapLocation[]
+        const currentMapData = mapsList.find(m => m.id === locId)
+        const baseLv = currentMapData?.lv?.[0] || 5
+
+        let tName = 'Entrenador'
+        let tSprite = 'youngster'
+        const enemyTeam: Pokemon[] = []
+
+        if (isMaxCriminality) {
+          tName = 'Oficial de Policía'
+          tSprite = 'tamer'
+          const criminality = ctx.gs.state.classData?.criminality || 100
+          const excess = Math.max(0, criminality - 100)
+          const bonusLv = Math.floor(excess / 50)
+          const trainerLv = baseLv + 5 + bonusLv
+          const teamSize = Math.floor(Math.random() * 2) + 3
+          const policePool = ['growlithe', 'arcanine', 'machoke', 'magneton', 'pidgeot']
+
+          for (let i = 0; i < teamSize; i++) {
+            const pIdBase = policePool[Math.floor(Math.random() * policePool.length)] || 'growlithe'
+            const pId = getEvolvedForm(pIdBase, trainerLv)
+            const p = makePokemon(pId, trainerLv) as Pokemon
+            if (p) {
+              (p as Pokemon & { _revealed?: boolean })._revealed = true
+              enemyTeam.push(p)
+            }
+          }
+        } else {
+          const TRAINER_TYPES = {
+            'caza_bichos': { name: 'Caza Bichos', sprite: 'cazabichos', pool: ['caterpie', 'metapod', 'weedle', 'kakuna', 'paras', 'venonat'] },
+            'ornitologo': { name: 'Ornitólogo', sprite: 'birdkeeper', pool: ['pidgey', 'spearow', 'doduo'] },
+            'cientifico': { name: 'Científico', sprite: 'scientist', pool: ['magnemite', 'voltorb', 'ditto', 'grimer'] },
+            'luchador': { name: 'Luchador', sprite: 'blackbelt', pool: ['mankey', 'machop'] },
+            'pescador': { name: 'Pescador', sprite: 'swimmer', pool: ['magikarp', 'goldeen', 'poliwag'] },
+            'nadador': { name: 'Nadador', sprite: 'swimmer', pool: ['psyduck', 'tentacool', 'staryu', 'horsea'] },
+            'domador': { name: 'Domador', sprite: 'tamer', pool: ['growlithe', 'vulpix', 'ponyta', 'ekans'] },
+            'medium': { name: 'Médium', sprite: 'psychic', pool: ['abra', 'drowzee'] },
+            'motorista': { name: 'Motorista', sprite: 'biker', pool: ['koffing', 'grimer', 'rattata'] },
+            'montanero': { name: 'Montañero', sprite: 'hiker', pool: ['geodude', 'sandshrew', 'rhyhorn'] }
+          } as const
+          const keys = Object.keys(TRAINER_TYPES) as Array<keyof typeof TRAINER_TYPES>
+          const typeKey = keys[Math.floor(Math.random() * keys.length)] || 'caza_bichos'
+          const t = TRAINER_TYPES[typeKey]
+          
+          tName = t.name
+          tSprite = t.sprite
+          const trainerLv = baseLv + 2
+          const teamSize = Math.floor(Math.random() * 3) + 1
+
+          for (let i = 0; i < teamSize; i++) {
+            const pIdBase = t.pool[Math.floor(Math.random() * t.pool.length)] || 'rattata'
+            const pId = getEvolvedForm(pIdBase, trainerLv)
+            const p = makePokemon(pId, trainerLv) as Pokemon
+            if (p) {
+              (p as Pokemon & { _revealed?: boolean })._revealed = true
+              enemyTeam.push(p)
+            }
+          }
+        }
+
+        if (enemyTeam.length > 0 && enemyTeam[0]) {
+          generatedPoke = enemyTeam[0]
+          ctx.activeBattle.value.isTrainer = true
+          ctx.activeBattle.value.enemyTeam = enemyTeam
+          ctx.activeBattle.value.trainerName = tName
+          ctx.activeBattle.value.trainerSprite = tSprite
+          ctx.activeBattle.value.isRival = false
+        }
+      } else if (encounter.type === 'rival') {
+        const { getEvolvedForm } = await import('@/logic/evolutionLogic')
+        const { makePokemon } = await import('@/logic/pokemonFactory')
+
+        const trainerNameVal = 'Rival Azul'
+        const trainerSpriteVal = 'blue'
+        
+        const teamSize = Math.max(3, ctx.gs.state.team.length || 1)
+        const avgLevel = ctx.gs.state.team.reduce((sum, p) => sum + p.level, 0) / (ctx.gs.state.team.length || 1)
+        const rivalLevel = Math.floor(avgLevel) + 2
+
+        const rivalPoolBase = ['pidgeot', 'alakazam', 'gyarados', 'arcanine', 'exeggutor', 'charizard']
+        const shuffledPool = [...rivalPoolBase].sort(() => Math.random() - 0.5).slice(0, teamSize)
+
+        const enemyTeam: Pokemon[] = shuffledPool.map(id => {
+          const species = getEvolvedForm(id, rivalLevel)
+          const p = makePokemon(species, rivalLevel) as Pokemon
+          if (p) (p as Pokemon & { _revealed?: boolean })._revealed = true
+          return p
+        }).filter((p): p is Pokemon => !!p)
+
+        if (enemyTeam.length > 0 && enemyTeam[0]) {
+          generatedPoke = enemyTeam[0]
+          ctx.activeBattle.value.isTrainer = true
+          ctx.activeBattle.value.enemyTeam = enemyTeam
+          ctx.activeBattle.value.trainerName = trainerNameVal
+          ctx.activeBattle.value.trainerSprite = trainerSpriteVal
+          ctx.activeBattle.value.isRival = true
+        }
+      } else {
+        // Limpiar parámetros de entrenador y gimnasio
+        ctx.activeBattle.value.isTrainer = false
+        ctx.activeBattle.value.enemyTeam = undefined
+        ctx.activeBattle.value.trainerName = undefined
+        ctx.activeBattle.value.trainerSprite = undefined
+        ctx.activeBattle.value.isRival = false
+        ctx.activeBattle.value.isGym = false
+        ctx.activeBattle.value.gymId = undefined
+        ctx.activeBattle.value.difficulty = undefined
+        ctx.activeBattle.value.rewardTM = undefined
+
+        if (encounter.pokemon) {
+          generatedPoke = encounter.pokemon
+          if (encounter.type === 'guardian') {
+            generatedPoke.isGuardian = true
+          }
+          isFishing = encounter.type === 'fishing'
+          isArchaeology = encounter.type === 'archaeology'
+        }
+      }
     }
 
     if (generatedPoke) {
-      ctx.activeBattle.value._initialEnemy = { ...generatedPoke }
-      ctx.activeBattle.value.enemy = { ...generatedPoke }
+      ctx.activeBattle.value._initialEnemy = generatedPoke
+      ctx.activeBattle.value.enemy = generatedPoke
     }
 
     // Si el encuentro generado es un minijuego, lo jugamos de inmediato
@@ -74,13 +220,36 @@ export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'm
     await fsm.transition(BATTLE_STATES.INITIALIZING)
     await fsm.transition(BATTLE_STATES.INITIALIZING, BATTLE_SUBSTATES.PRELOAD_COORDS, 100)
 
-    // FASE: SEARCH_PHASE (Solo para salvajes normales)
-    await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.PARALLEL_PREP)
-    await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.BUSH_IDLE)
+    await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.PREPARATION)
+    await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.AUTO_BATTLE_CHECK)
+    
+    const isTrainer = ctx.activeBattle.value?.isTrainer || ctx.activeBattle.value?.isGym || false
+    const uiStore = useUIStore() as unknown as UIStore
+    const autoBattle = uiStore.autoBattle && !isTrainer
+
+    if (!autoBattle) {
+      await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.UPDATE_BUTTON)
+    }
+    
+    await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.ENTRY_ANIM)
+    if (isTrainer) {
+      if (ctx.animations?.triggerTrainerEntry) {
+        await ctx.animations.triggerTrainerEntry()
+      }
+    }
+    await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.REORDER_TEAM)
+    
+    if (!autoBattle) {
+      await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.COMBAT_OR_FLEE)
+    } else {
+      await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.ENCOUNTER_ANIM)
+    }
     
     ctx.isProcessing.value = false
     return
   }
+
+  const isGym = ctx.activeBattle.value?.isGym || false
 
   fsm.transition(BATTLE_STATES.EXIT_BATTLE)
   ctx.activeBattle.value = null
@@ -88,7 +257,7 @@ export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'm
   ctx.clearLogs() 
 
   if (option === 'map') {
-    uiStore.activeTab = 'map'
+    uiStore.activeTab = isGym ? 'gyms' : 'map'
   }
 }
 

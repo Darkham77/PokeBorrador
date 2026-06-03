@@ -19,7 +19,7 @@ export const SPECIAL_ACTIONS: Record<string, MoveAction> = {
       addLogFn(`¡${tgt.name} ya está infectado!`, 'log-info', tgt);
     }
   },
-  'roar': (src, tgt, _srcStages, tgtStages, addLogFn, battleCtx) => {
+  'roar': async (src, tgt, _srcStages, tgtStages, addLogFn, battleCtx) => {
     const b = battleCtx?.activeBattle.value;
     if (!b) return;
     
@@ -29,6 +29,8 @@ export const SPECIAL_ACTIONS: Record<string, MoveAction> = {
     }
 
     const isPlayerAttacking = (src.uid === b.player?.uid);
+    const fsm = battleCtx.fsm;
+    const { BATTLE_STATES, BATTLE_SUBSTATES } = battleCtx;
     
     if (isPlayerAttacking) {
       if (!b.isTrainer && !b.isGym) {
@@ -45,11 +47,34 @@ export const SPECIAL_ACTIONS: Record<string, MoveAction> = {
         }
         const randomPick = aliveOthers[Math.floor(Math.random() * aliveOthers.length)] || null;
         addLogFn(`¡${tgt.name} fue expulsado del campo!`, 'log-player', 'player');
+        
+        battleCtx.exitingEnemy.value = tgt;
+        await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.POKEMON_RECALL);
+        
+        const withdrawPromise = battleCtx.animations?.handleCatchRequest
+          ? battleCtx.animations.handleCatchRequest({ side: 'enemy', pokemon: tgt })
+          : Promise.resolve();
+
         b.enemy = randomPick;
         Object.keys(tgtStages).forEach(k => {
           tgtStages[k] = 0;
         });
-        if (randomPick) addLogFn(`¡${randomPick.name} entra al combate!`, 'log-info', 'enemy_trainer');
+
+        await withdrawPromise;
+        
+        if (randomPick) {
+          addLogFn(`¡${randomPick.name} entra al combate!`, 'log-info', 'enemy_trainer');
+          await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.POKEMON_CALL);
+          await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.OCCUPY_SEAT);
+          if (battleCtx.animations?.handleReleaseRequest) {
+            await battleCtx.animations.handleReleaseRequest({ side: 'enemy', pokemon: randomPick });
+          } else {
+            gameBus.emit('PLAY_SEND_OUT', { side: 'enemy', pokemon: randomPick });
+            const { gsapSleep } = await import('@/logic/utils/gsapHelpers');
+            await gsapSleep(800);
+          }
+        }
+        battleCtx.exitingEnemy.value = null;
       }
     } else {
       if (!b.isTrainer && !b.isGym) {
@@ -66,11 +91,37 @@ export const SPECIAL_ACTIONS: Record<string, MoveAction> = {
         }
         const randomPick = aliveOthers[Math.floor(Math.random() * aliveOthers.length)] || null;
         addLogFn(`¡${tgt.name} fue expulsado del campo!`, 'log-enemy', 'enemy_trainer');
+        
+        battleCtx.exitingPlayer.value = tgt;
+        await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.POKEMON_RECALL);
+        
+        const withdrawPromise = battleCtx.animations?.handleCatchRequest
+          ? battleCtx.animations.handleCatchRequest({ side: 'player', pokemon: tgt })
+          : Promise.resolve();
+
         b.player = randomPick;
+        if (randomPick) {
+          b.playerTeamIndex = b.playerTeam?.findIndex(p => p.uid === randomPick.uid) ?? b.playerTeamIndex;
+        }
         Object.keys(tgtStages).forEach(k => {
           tgtStages[k] = 0;
         });
-        if (randomPick) addLogFn(`¡Envía a ${randomPick.name}!`, 'log-info', 'player');
+
+        await withdrawPromise;
+
+        if (randomPick) {
+          addLogFn(`¡Envía a ${randomPick.name}!`, 'log-info', 'player');
+          await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.POKEMON_CALL);
+          await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.OCCUPY_SEAT);
+          if (battleCtx.animations?.handleReleaseRequest) {
+            await battleCtx.animations.handleReleaseRequest({ side: 'player', pokemon: randomPick });
+          } else {
+            gameBus.emit('PLAY_SEND_OUT', { side: 'player', pokemon: randomPick });
+            const { gsapSleep } = await import('@/logic/utils/gsapHelpers');
+            await gsapSleep(800);
+          }
+        }
+        battleCtx.exitingPlayer.value = null;
       }
     }
   },
@@ -178,7 +229,7 @@ export const SPECIAL_ACTIONS: Record<string, MoveAction> = {
       addLogFn("¡Pero falló!", 'log-info', src);
     }
   },
-  'teleport': (src, _tgt, _srcStages, _tgtStages, addLogFn, battleCtx) => {
+  'teleport': async (src, _tgt, _srcStages, _tgtStages, addLogFn, battleCtx) => {
     const b = battleCtx?.activeBattle.value;
     if (!b) return;
     const isWild = !b.isTrainer && !b.isGym;
@@ -194,18 +245,57 @@ export const SPECIAL_ACTIONS: Record<string, MoveAction> = {
       const aliveOthers = (team || []).filter((p) => p.uid !== src.uid && p.hp > 0);
       
       if (aliveOthers.length === 0) {
-        addLogFn(`¡${src.name} se teletransportó fuera del combate!`, 'log-info', src);
-        gameBus.emit('PLAY_ESCAPE_ANIM', { side: isPlayer ? 'player' : 'enemy', type: 'teleport' });
-        b.fled = true;
-        b.over = true;
+        addLogFn(`¡${src.name} intentó teletransportarse!`, 'log-info', src);
+        addLogFn("¡Pero no hay nadie para sustituirle!", 'log-info', src);
       } else {
         addLogFn(`¡${src.name} se teletransportó!`, 'log-info', src);
+        const fsm = battleCtx.fsm;
+        const { BATTLE_STATES, BATTLE_SUBSTATES } = battleCtx;
+        
         if (!isPlayer) {
           const randomPick = aliveOthers[Math.floor(Math.random() * aliveOthers.length)] || null;
+          battleCtx.exitingEnemy.value = src;
+          
+          await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.POKEMON_RECALL);
+          const withdrawPromise = battleCtx.animations?.handleCatchRequest
+            ? battleCtx.animations.handleCatchRequest({ side: 'enemy', pokemon: src })
+            : Promise.resolve();
+            
           b.enemy = randomPick;
-          if (randomPick) addLogFn(`¡${randomPick.name} entra al combate!`, 'log-info', randomPick);
+          await withdrawPromise;
+          
+          if (randomPick) {
+            addLogFn(`¡${randomPick.name} entra al combate!`, 'log-info', randomPick);
+            await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.POKEMON_CALL);
+            await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.OCCUPY_SEAT);
+            if (battleCtx.animations?.handleReleaseRequest) {
+              await battleCtx.animations.handleReleaseRequest({ side: 'enemy', pokemon: randomPick });
+            } else {
+              gameBus.emit('PLAY_SEND_OUT', { side: 'enemy', pokemon: randomPick });
+              const { gsapSleep } = await import('@/logic/utils/gsapHelpers');
+              await gsapSleep(800);
+            }
+          }
+          battleCtx.exitingEnemy.value = null;
         } else {
-          addLogFn("¡Pero no hay nadie para sustituirle!", 'log-info', src);
+          battleCtx.exitingPlayer.value = src;
+          
+          await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.POKEMON_RECALL);
+          const withdrawPromise = battleCtx.animations?.handleCatchRequest
+            ? battleCtx.animations.handleCatchRequest({ side: 'player', pokemon: src })
+            : Promise.resolve();
+            
+          const keys = Object.keys(battleCtx.playerStages.value) as (keyof typeof battleCtx.playerStages.value)[];
+          keys.forEach(k => {
+            battleCtx.playerStages.value[k] = 0;
+          });
+          
+          await withdrawPromise;
+          battleCtx.exitingPlayer.value = null;
+          b.player = null;
+          
+          battleCtx.uiStore.isBattleSwitchForced = true;
+          await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.SWITCH_MENU);
         }
       }
     }

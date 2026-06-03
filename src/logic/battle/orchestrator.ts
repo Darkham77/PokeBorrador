@@ -25,6 +25,10 @@ export interface BattleOptions {
   isDebug?: boolean;
   over?: boolean;
   turn?: 'player' | 'enemy' | null;
+  trainerSprite?: string;
+  isRival?: boolean;
+  difficulty?: string;
+  rewardTM?: string;
 }
 
 /**
@@ -35,7 +39,9 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
   const { 
     isGym = false, gymId = undefined, locationId = 'plains', 
     isTrainer = false, enemyTeam = undefined, trainerName = 'Entrenador',
-    battleOptions = {}, isFishing = false, isArchaeology = false, wasSearching: wasSearchingOpt = null
+    battleOptions = {}, isFishing = false, isArchaeology = false, wasSearching: wasSearchingOpt = null,
+    trainerSprite = undefined, isRival = false,
+    difficulty = undefined, rewardTM = undefined
   } = options
 
   const map = FIRE_RED_MAPS.find(m => m.id === locationId)
@@ -97,8 +103,9 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
     _initialEnemy: finalEnemyPoke,
     _initialPlayer: playerPoke,
     _rewardCombatants: [],
-    isGym, gymId, isTrainer, enemyTeam,
-    trainerSprite: battleOptions.trainerSprite as string || undefined,
+    isGym, gymId, isTrainer, enemyTeam, difficulty: difficulty as 'easy' | 'normal' | 'hard' | undefined, rewardTM,
+    trainerSprite: trainerSprite || (battleOptions.trainerSprite as string) || undefined,
+    isRival: isRival || (battleOptions.isRival as boolean) || false,
     playerTeam: ctx.gs.state.team,
     trainerName, locationId,
     isCave: FIRE_RED_MAPS.find(m => m.id === locationId)?.isCave || false,
@@ -190,10 +197,30 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
       return
     }
 
-    await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.PARALLEL_PREP)
-    await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.UPDATE_BUTTON)
-    await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.BUSH_VISIBLE)
-    await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.SILHOUETTE_MODE)
+    await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.PREPARATION)
+    await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.AUTO_BATTLE_CHECK)
+    
+    const uiStore = useUIStore() as unknown as UIStore
+    const autoBattle = uiStore.autoBattle && !isTrainer
+
+    if (!autoBattle) {
+      await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.UPDATE_BUTTON)
+    }
+    
+    await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.ENTRY_ANIM)
+    if (isTrainer || isGym) {
+      if (ctx.animations?.triggerTrainerEntry) {
+        await ctx.animations.triggerTrainerEntry()
+      }
+    }
+    await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.REORDER_TEAM)
+    
+    if (!autoBattle) {
+      await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.COMBAT_OR_FLEE)
+    } else {
+      await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.ENCOUNTER_ANIM)
+    }
+
     if (ctx.activeBattle.value) {
       ctx.activeBattle.value.enemy = finalEnemyPoke
       ctx.activeBattle.value.isFishing = isFishing
@@ -273,7 +300,67 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
   const currentPlayer = ctx.activeBattle.value?.player
   const needsCall = !currentPlayer || (currentPlayer.uid !== initialPlayer.uid)
 
-  if (wasSearching) {
+  if (isTrainer || isGym) {
+    if (wasSearching) {
+      // Dialogue bubble fades out and trainer retreats in parallel during RETREAT_AND_FADEOUT
+      await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.TRAINER_ENCOUNTER)
+      await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.RETREAT_AND_FADEOUT)
+      
+      if (ctx.animations?.triggerTrainerRetreat) {
+        await ctx.animations.triggerTrainerRetreat()
+      }
+    } else {
+      await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.ENCOUNTER_TYPE_CHECK)
+      
+      await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.TRAINER_ENTRY)
+      if (ctx.animations?.triggerTrainerEntry) {
+        await ctx.animations.triggerTrainerEntry()
+      }
+
+      await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.SHOW_DIALOGS)
+      if (ctx.animations?.triggerTrainerDialogs) {
+        await ctx.animations.triggerTrainerDialogs()
+      }
+
+      await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.TRAINER_ENCOUNTER)
+      await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.RETREAT_AND_FADEOUT)
+      
+      if (ctx.animations?.triggerTrainerRetreat) {
+        await ctx.animations.triggerTrainerRetreat()
+      }
+    }
+
+    await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.POKEMON_CALL)
+    if (ctx.activeBattle.value) {
+      ctx.activeBattle.value.enemy = initialEnemy
+    }
+
+    const enemySendOutPromise = ctx.animations?.handleReleaseRequest
+      ? ctx.animations.handleReleaseRequest({ side: 'enemy', pokemon: initialEnemy })
+      : Promise.resolve()
+    await enemySendOutPromise
+
+    if (needsCall && ctx.activeBattle.value) {
+      const oldPoke = ctx.activeBattle.value.player
+      if (oldPoke && oldPoke.uid !== initialPlayer.uid) {
+        ctx.exitingPlayer.value = oldPoke
+      }
+      
+      ctx.activeBattle.value.player = initialPlayer
+      
+      const withdrawPromise = oldPoke && oldPoke.uid !== initialPlayer.uid && ctx.animations?.handleCatchRequest
+        ? ctx.animations.handleCatchRequest({ side: 'player', pokemon: oldPoke })
+        : Promise.resolve()
+        
+      const sendOutPromise = ctx.animations?.handleReleaseRequest
+        ? ctx.animations.handleReleaseRequest({ side: 'player', pokemon: initialPlayer })
+        : Promise.resolve()
+        
+      await Promise.all([withdrawPromise, sendOutPromise])
+      await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.POKEMON_CALL)
+      ctx.exitingPlayer.value = null
+    }
+  } else if (wasSearching) {
     await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.ENCOUNTER_TYPE_CHECK)
     await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.WILD_ENCOUNTER)
     await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.CHECK_BINOCULARS)
@@ -315,34 +402,10 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
     if (hasRealSwap) ctx.exitingPlayer.value = null
   } else {
     await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.ENCOUNTER_TYPE_CHECK)
-
-    if (isTrainer || isGym) {
-      await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.TRAINER_ENCOUNTER)
-      if (ctx.animations?.triggerTrainerEntry) {
-        await ctx.animations.triggerTrainerEntry()
-      }
-
-      await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.SHOW_DIALOGS)
-      if (ctx.animations?.triggerTrainerDialogs) {
-        await ctx.animations.triggerTrainerDialogs()
-      }
-
-      await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.TRAINER_RETREAT)
-      if (ctx.animations?.triggerTrainerRetreat) {
-        await ctx.animations.triggerTrainerRetreat()
-      }
-
-      await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.POKEMON_CALL)
-      if (ctx.animations?.triggerPokemonCall) {
-        await ctx.animations.triggerPokemonCall()
-      }
-      if (ctx.activeBattle.value) ctx.activeBattle.value.enemy = initialEnemy
-    } else {
-      await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.WILD_ENTRY)
-      await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.PARALLEL_PREP, 0)
-      await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.BUSH_VISIBLE)
-      await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.SILHOUETTE_MODE)
-    }
+    await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.WILD_ENTRY)
+    await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.PARALLEL_PREP, 0)
+    await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.BUSH_VISIBLE)
+    await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.SILHOUETTE_MODE)
 
     if (needsCall && ctx.activeBattle.value) {
       const oldPoke = ctx.activeBattle.value.player
@@ -360,8 +423,6 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
         ? ctx.animations.handleReleaseRequest({ side: 'player', pokemon: initialPlayer })
         : Promise.resolve()
         
-      // FSM transition moved AFTER animations complete so the watcher
-      // doesn't overwrite UID-tracked animState values mid-animation
       await Promise.all([withdrawPromise, sendOutPromise])
       await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.POKEMON_CALL)
       ctx.exitingPlayer.value = null

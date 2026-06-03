@@ -1,0 +1,254 @@
+{
+  "totalTest": 35,
+  "totalNPCs": 1456,
+  "matchesCount": 35,
+  "unmatchedCount": 0,
+  "matches": [
+    {
+      "testFile": "acetrainer_front.png",
+      "npcFiles": [
+        "acetrainer.png"
+      ],
+      "hash": "8a8153a1cd685acb0d25060a2346eaa8"
+    },
+    {
+      "testFile": "beauty_front.png",
+      "npcFiles": [
+        "beauty.png"
+      ],
+      "hash": "5e8bb0f4803bd93d905b392a935dcd1b"
+    },
+    {
+      "testFile": "biker_front.png",
+      "npcFiles": [
+        "biker.png"
+      ],
+      "hash": "3d14dd5bae09f6e35f8fa144fa76a7c1"
+    },
+    {
+      "testFile": "birdkeeper_front.png",
+      "npcFiles": [
+        "birdkeeper.png"
+      ],
+      "hash": "e18c0df4ef4948167c0e91f3f631cedf"
+    },
+    {
+      "testFile": "blackbelt_front.png",
+      "npcFiles": [
+        "blackbelt.png"
+      ],
+      "hash": "ea7a10f67b33f15a86a386270ecc0d44"
+    },
+    {
+      "testFile": "blaine_front.png",
+      "npcFiles": [
+        "blaine.png"
+      ],
+      "hash": "df602731391cc2843a57269df024c9d3"
+    },
+    {
+      "testFile": "blue_front.png",
+      "npcFiles": [
+        "blue-gen3.png"
+      ],
+      "hash": "50441c9ef4e6e2205dbe4077cd5f0131"
+    },
+    {
+      "testFile": "brock_front.png",
+      "npcFiles": [
+        "brock.png"
+      ],
+      "hash": "81e2a19aaf5dc2e46543eb5856255f76"
+    },
+    {
+      "testFile": "burglar_front.png",
+      "npcFiles": [
+        "burglar.png"
+      ],
+      "hash": "fc841d4a46b10bc2b9bdfa5298a75fb9"
+    },
+    {
+      "testFile": "camper_front.png",
+      "npcFiles": [
+        "camper_b.png"
+      ],
+      "hash": "53eb57c3ce2017c9e74bc3331e87cdea"
+    },
+    {
+      "testFile": "cyclist_front.png",
+      "npcFiles": [
+        "cyclist.png"
+      ],
+      "hash": "d3d6bc95115041f1662e65729e186a15"
+    },
+    {
+      "testFile": "dragontamer_front.png",
+      "npcFiles": [
+        "dragontamer.png"
+      ],
+      "hash": "6c0f1aaa1b50b6601b9e8d94601d409a"
+    },
+    {
+      "testFile": "erika_front.png",
+      "npcFiles": [
+        "erika.png"
+      ],
+      "hash": "183b5d2abf4e91e59c9434d96a9b60e4"
+    },
+    {
+      "testFile": "gentleman_front.png",
+      "npcFiles": [
+        "gentleman.png"
+      ],
+      "hash": "799a6f447ee411589f6b729cabd1915d"
+    },
+    {
+      "testFile": "giovanni_front.png",
+      "npcFiles": [
+        "giovanni.png"
+      ],
+      "hash": "56cf256ff81f425bf35174c4a04aa640"
+    },
+    {
+      "testFile": "hiker_front.png",
+      "npcFiles": [
+        "hiker.png"
+      ],
+      "hash": "125b73440b7ad41dfd7d72a106d19f3c"
+    },
+    {
+      "testFile": "juggler_front.png",
+      "npcFiles": [
+        "juggler.png"
+      ],
+      "hash": "11018832f8a1bfc3f5794cb75512b6e8"
+    },
+    {
+      "testFile": "koga_front.png",
+      "npcFiles": [
+        "koga.png"
+      ],
+      "hash": "5fd3cca00b1159d1a9bf1fe24d0ff76c"
+    },
+    {
+      "testFile": "lass_front.png",
+      "npcFiles": [
+        "lass.png"
+      ],
+      "hash": "4150ad7f955e73f938fdc002dc799dcb"
+    },
+    {
+      "testFile": "ltsurge_front.png",
+      "npcFiles": [
+        "ltsurge.png"
+      ],
+      "hash": "028329e8ac40cb3b1d551b87184a1f8f"
+    },
+    {
+      "testFile": "misty_front.png",
+      "npcFiles": [
+        "misty.png"
+      ],
+      "hash": "dbd123cc0368108227edd0219e9ad01c"
+    },
+    {
+      "testFile": "picnicker_front.png",
+      "npcFiles": [
+        "picnicker.png"
+      ],
+      "hash": "bed9fa4dbbc2f9522b08b8825c26548f"
+    },
+    {
+      "testFile": "psychic_front.png",
+      "npcFiles": [
+        "psychic.png"
+      ],
+      "hash": "bed0219aabf9e592d2663df4d37e2fb5"
+    },
+    {
+      "testFile": "richboy_front.png",
+      "npcFiles": [
+        "richboy.png"
+      ],
+      "hash": "6ba0e759b2d1b5602b22aade06ae3df6"
+    },
+    {
+      "testFile": "roughneck_front.png",
+      "npcFiles": [
+        "roughneck.png"
+      ],
+      "hash": "06c4296a1f3970e44a387d57fe5ba7c5"
+    },
+    {
+      "testFile": "sabrina_front.png",
+      "npcFiles": [
+        "sabrina.png"
+      ],
+      "hash": "0c6547c18a608a13e96d0982dbb336d5"
+    },
+    {
+      "testFile": "sailor_front.png",
+      "npcFiles": [
+        "sailor.png"
+      ],
+      "hash": "67949f0bf86789925a2cceb8dfe21aa2"
+    },
+    {
+      "testFile": "scientist_front.png",
+      "npcFiles": [
+        "scientist.png"
+      ],
+      "hash": "5097775d73af1557c2fd0fc40472c879"
+    },
+    {
+      "testFile": "supernerd_front.png",
+      "npcFiles": [
+        "supernerd.png"
+      ],
+      "hash": "13d8b2150870e11ea14b12bb3ac749e0"
+    },
+    {
+      "testFile": "swimmer_front.png",
+      "npcFiles": [
+        "swimmer.png"
+      ],
+      "hash": "f87c0b8620bf409a3e48af44db83c5f8"
+    },
+    {
+      "testFile": "tamer_front.png",
+      "npcFiles": [
+        "tamer-gen3.png"
+      ],
+      "hash": "e3c58a91e7f6f3ac727b39ea34831581"
+    },
+    {
+      "testFile": "teamrocket_front.png",
+      "npcFiles": [
+        "teamrocket.png"
+      ],
+      "hash": "c1dff7a6a61a5bc2b20798c9e65122e8"
+    },
+    {
+      "testFile": "tuber_front.png",
+      "npcFiles": [
+        "tuber.png"
+      ],
+      "hash": "551688eace9d7534a09381b2104f8b9b"
+    },
+    {
+      "testFile": "veteran_front.png",
+      "npcFiles": [
+        "veteran.png"
+      ],
+      "hash": "9745cbb0282f691d6527ee37ac66a653"
+    },
+    {
+      "testFile": "youngster_front.png",
+      "npcFiles": [
+        "youngster.png"
+      ],
+      "hash": "d1c82e6d39fb900d1916baaae7466505"
+    }
+  ],
+  "unmatched": []
+}

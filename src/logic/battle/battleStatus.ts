@@ -1,12 +1,10 @@
-
 /**
  * Módulo de gestión de Estados Alterados y Efectos de Turno
  * Portado de js/07_battle.js para cumplir con el estándar modular v6.
  */
 
-import { gameBus } from '@/logic/gameBus'
-
 import type { Pokemon, PokemonStatus } from '@/types/pokemon'
+import type { BattleContext } from '@/types/battleContext'
 
 export function getStatusIcon(status: PokemonStatus): string {
   if (!status) return '';
@@ -24,8 +22,11 @@ export function getStatusIcon(status: PokemonStatus): string {
  * Procesa los efectos permanentes y temporales al final del turno.
  * @returns {boolean} True si el Pokémon sigue en combate, False si se debilitó (aunque las funciones de daño usualmente no despachan muerte aquí)
  */
-export function tickStatus(pokemon: Pokemon, addLogFn: (msg: string, cls: string, target?: Pokemon) => void, role = 'info') {
+export async function tickStatus(pokemon: Pokemon, ctx: BattleContext, role: 'player' | 'enemy' | 'info' = 'info') {
   if (!pokemon) return false;
+  const addLogFn = ctx.addLog;
+  const side = role === 'player' ? 'player' : 'enemy';
+
   // 1. Efectos de control temporal
   if ((pokemon.disabledTurns ?? 0) > 0) {
     pokemon.disabledTurns = (pokemon.disabledTurns ?? 0) - 1;
@@ -68,7 +69,9 @@ export function tickStatus(pokemon: Pokemon, addLogFn: (msg: string, cls: string
       const dmg = Math.max(1, Math.floor(pokemon.maxHp / 8));
       pokemon.hp = Math.max(0, pokemon.hp - dmg);
       addLogFn(`¡${pokemon.name} sufre quemaduras! (-${dmg} HP)`, logCls, pokemon);
-      gameBus.emit('PLAY_SOUND', 'statusDamage');
+      if (ctx.animations?.handleBlinkRequest) {
+        await ctx.animations.handleBlinkRequest({ side });
+      }
       return true;
     }
     case 'poison': {
@@ -79,7 +82,9 @@ export function tickStatus(pokemon: Pokemon, addLogFn: (msg: string, cls: string
       }
       pokemon.hp = Math.max(0, pokemon.hp - dmg);
       addLogFn(`¡${pokemon.name} sufre el veneno! (-${dmg} HP)`, logCls, pokemon);
-      gameBus.emit('PLAY_SOUND', 'statusDamage');
+      if (ctx.animations?.handleBlinkRequest) {
+        await ctx.animations.handleBlinkRequest({ side });
+      }
       return true;
     }
   }
@@ -93,7 +98,9 @@ export function tickStatus(pokemon: Pokemon, addLogFn: (msg: string, cls: string
       const dmg = Math.max(1, Math.floor(pokemon.maxHp / 16));
       pokemon.hp = Math.max(0, pokemon.hp - dmg);
       addLogFn(`¡${pokemon.name} sufre por la atadura! (-${dmg} HP)`, 'log-info', pokemon);
-      gameBus.emit('PLAY_SOUND', 'statusDamage');
+      if (ctx.animations?.handleBlinkRequest) {
+        await ctx.animations.handleBlinkRequest({ side });
+      }
     }
   }
 
@@ -102,7 +109,9 @@ export function tickStatus(pokemon: Pokemon, addLogFn: (msg: string, cls: string
     const heal = Math.max(1, Math.floor(pokemon.maxHp / 16));
     pokemon.hp = Math.min(pokemon.maxHp, pokemon.hp + heal);
     addLogFn(`¡${pokemon.name} recuperó salud por sus raíces!`, 'log-info', pokemon);
-    gameBus.emit('PLAY_SOUND', 'heal');
+    if (ctx.animations?.handleHealRequest) {
+      await ctx.animations.handleHealRequest({ side });
+    }
   }
 
   // 5. Canto Mortal (Perish Song)
@@ -120,7 +129,9 @@ export function tickStatus(pokemon: Pokemon, addLogFn: (msg: string, cls: string
     const dmg = Math.max(1, Math.floor(pokemon.maxHp / 4));
     pokemon.hp = Math.max(0, pokemon.hp - dmg);
     addLogFn(`¡${pokemon.name} sufre por la maldición! (-${dmg} HP)`, 'log-info', pokemon);
-    gameBus.emit('PLAY_SOUND', 'statusDamage');
+    if (ctx.animations?.handleBlinkRequest) {
+      await ctx.animations.handleBlinkRequest({ side });
+    }
   }
 
   return false;
@@ -129,19 +140,32 @@ export function tickStatus(pokemon: Pokemon, addLogFn: (msg: string, cls: string
 /**
  * Procesa efectos de campo como Drenadoras.
  */
-export function tickLeechSeed(pokemon: Pokemon, opponent: Pokemon, addLogFn: (msg: string, cls: string, target?: Pokemon) => void) {
+export async function tickLeechSeed(pokemon: Pokemon, opponent: Pokemon, ctx: BattleContext) {
   if (!pokemon || !pokemon.seeded || pokemon.hp <= 0) return false;
+
+  const sideSelf = pokemon.uid === ctx.activeBattle.value?.player?.uid ? 'player' : 'enemy';
+  const sideOpp = opponent.uid === ctx.activeBattle.value?.player?.uid ? 'player' : 'enemy';
 
   const dmg = Math.max(1, Math.floor(pokemon.maxHp / 8));
   pokemon.hp = Math.max(0, pokemon.hp - dmg);
-  addLogFn(`¡Drenadoras resta salud a ${pokemon.name}! (-${dmg} HP)`, 'log-enemy', pokemon);
-  gameBus.emit('PLAY_SOUND', 'statusDamage');
+  ctx.addLog(`¡Drenadoras resta salud a ${pokemon.name}! (-${dmg} HP)`, 'log-enemy', pokemon);
+
+  const blinkPromise = ctx.animations?.handleBlinkRequest
+    ? ctx.animations.handleBlinkRequest({ side: sideSelf })
+    : Promise.resolve();
 
   if (opponent && opponent.hp > 0) {
     const heal = dmg;
     opponent.hp = Math.min(opponent.maxHp, opponent.hp + heal);
-    addLogFn(`¡${opponent.name} recuperó salud!`, 'log-info', opponent);
-    gameBus.emit('PLAY_SOUND', 'heal');
+    ctx.addLog(`¡${opponent.name} recuperó salud!`, 'log-info', opponent);
+    
+    const healPromise = ctx.animations?.handleHealRequest
+      ? ctx.animations.handleHealRequest({ side: sideOpp })
+      : Promise.resolve();
+      
+    await Promise.all([blinkPromise, healPromise]);
+  } else {
+    await blinkPromise;
   }
   
   return true;
@@ -173,4 +197,5 @@ export function clearVolatileStatus(poke: Pokemon) {
   poke.futureSightTurns = 0
   poke.futureSightDmg = 0
   poke.badPoison = 0
+  poke.chargingMove = null
 }

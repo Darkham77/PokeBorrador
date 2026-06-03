@@ -43,6 +43,7 @@ export interface BattleState {
   fled?: boolean;
   turn?: 'player' | 'enemy' | null;
   isCapture?: boolean;
+  isRival?: boolean;
   escapeAttempts: number;
   rarity?: number;
   futureSightTurns?: number;
@@ -67,6 +68,7 @@ export interface BattleState {
   difficulty?: 'easy' | 'normal' | 'hard';
   _lastActivePlayer?: Pokemon | null;
   playerFled?: boolean;
+  quote?: string;
 }
 
 export type BattleSource = Pokemon | 'player' | 'enemy_trainer' | 'enemy' | string;

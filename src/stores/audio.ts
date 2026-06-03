@@ -77,6 +77,8 @@ export const useAudioStore = defineStore('audio', () => {
       case 'wobble': engine.playWobbleSound(ctx, dest); break;
       case 'ballHit': engine.playBallHitSound(ctx, dest); break;
       case 'statusDamage': engine.playStatusDamageSound(ctx, dest); break;
+      case 'victoryTrainer': engine.playVictoryTrainerSound(ctx, dest); break;
+      case 'defeat': engine.playDefeatSound(ctx, dest); break;
     }
   };
 
@@ -101,6 +103,8 @@ export const useAudioStore = defineStore('audio', () => {
     wobble: () => play('wobble'),
     ballHit: () => play('ballHit'),
     statusDamage: () => play('statusDamage'),
+    victoryTrainer: () => play('victoryTrainer'),
+    defeat: () => play('defeat'),
     notif: () => play('item'),
     menuOpen: () => play('item'),
     menuClose: () => play('item')
