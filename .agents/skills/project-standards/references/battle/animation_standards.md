@@ -467,3 +467,9 @@ When using local or global registries to track and await GSAP tweens (like `acti
 Event bus listeners registered inside composables or setup functions (e.g., `gameBus.on(...)`) must be tracked and removed when the parent Vue component is unmounted.
 - **Why**: Lingering event handlers cause memory leaks and accumulate duplicate callbacks on global event dispatchers, causing old state operations to execute concurrently in subsequent views. Use Vue's `onUnmounted` hook to execute desubscriptions (`cleanupListeners`).
 
+## 37. Cover Z-Index Persistence & State Reset
+
+Environmental cover layers (such as front combat grass) that must transition behind a combatant upon its emergence MUST NOT depend solely on the transient duration of the jump animation.
+- **Rule**: Map the visibility state of the front cover to stay behind the combatant during active and post-combat FSM states (like `ACTIVE_BATTLE`, `LEVEL_UP_MODAL`, `REWARDS_PHASE`).
+- **Reset**: The cover must be reset to render in front of the combatant whenever transitioning back to the `INITIALIZING` state at the start of a subsequent search encounter.
+
