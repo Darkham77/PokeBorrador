@@ -176,7 +176,7 @@ onUnmounted(() => {
       <footer class="card-footer">
         <div class="timer-box">
           <span class="label">FINALIZA EN:</span>
-          <span class="value">{{ formatTime(event.ends_at || '') }}</span>
+          <span class="value">{{ formatTime(event.end_at || '') }}</span>
         </div>
         
         <button 

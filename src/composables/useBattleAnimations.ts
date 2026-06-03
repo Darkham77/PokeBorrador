@@ -122,7 +122,7 @@ export function useBattleAnimations(
       ].includes(state) || subState === 'WAIT_INPUT'
 
       if (isCleanupState) {
-        isGlobalFadeActive.value = (state === 'EXIT_BATTLE')
+        isGlobalFadeActive.value = (state === 'EXIT_BATTLE' && !['DEFEAT_SCREEN', 'DEFEAT_WAIT'].includes(String(subState)))
         resetAll()
         return
       }

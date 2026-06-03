@@ -1,4 +1,5 @@
 import { gsapSleep as sleep } from '@/logic/utils/gsapHelpers'
+import { nextTick } from 'vue'
 
 import { handleEntryAbilities } from './battleFlow.ts'
 import { getMechanicalWeather } from '../weather/weatherRegistry.ts'
@@ -218,7 +219,16 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
     if (!autoBattle) {
       await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.COMBAT_OR_FLEE)
     } else {
-      await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.ENCOUNTER_ANIM)
+      await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.COMBAT_OR_FLEE)
+      if (ctx.activeBattle.value) {
+        ctx.activeBattle.value.enemy = finalEnemyPoke
+        ctx.activeBattle.value.isFishing = isFishing
+        ctx.activeBattle.value.isArchaeology = isArchaeology
+      }
+      const { startEncounter } = await import('./searchLoop.ts')
+      await nextTick()
+      await startEncounter(ctx)
+      return
     }
 
     if (ctx.activeBattle.value) {

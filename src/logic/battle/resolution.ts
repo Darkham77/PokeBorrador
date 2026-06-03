@@ -221,9 +221,22 @@ export async function terminateBattle(ctx: BattleContext, win: boolean, fled = f
         ? ctx.animations.handleFaintAnim({ side: 'player', pokemon: active.player })
         : Promise.resolve())
 
-    const enemyExited = active.enemy && active.enemy.hp > 0 && !fled && !active.isCapture && ctx.animations?.handleFaintAnim
-      ? ctx.animations.handleFaintAnim({ side: 'enemy', pokemon: active.enemy })
-      : Promise.resolve()
+    let enemyExited: Promise<void> = Promise.resolve()
+    if (active.enemy && active.enemy.hp > 0 && !fled && !active.isCapture) {
+      if (win) {
+        enemyExited = Promise.resolve()
+      } else {
+        const isTr = active.isTrainer || active.isGym || active.isPvP
+        if (isTr) {
+          enemyExited = ctx.animations?.handleCatchRequest
+            ? ctx.animations.handleCatchRequest({ side: 'enemy', pokemon: active.enemy })
+            : Promise.resolve()
+        } else {
+          gameBus.emit('PLAY_ESCAPE_ANIM', { side: 'enemy', type: 'flee' })
+          enemyExited = sleep(1000)
+        }
+      }
+    }
 
     await Promise.all([playerExited, enemyExited])
   }

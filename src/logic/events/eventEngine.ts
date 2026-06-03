@@ -31,7 +31,7 @@ export interface Event {
   active: boolean;
   manual?: boolean;
   start_at?: string;
-  ends_at?: string;
+  end_at?: string;
   schedule?: string | Record<string, unknown>;
   config?: string | EventConfig;
 }
@@ -87,10 +87,10 @@ export function isEventActiveNow(event: Event, date: Date | InstanceType<typeof 
       ).toZonedDateTimeISO(GAME_TIMEZONE)
 
   // 1. Absolute date check
-  if (event.start_at && event.ends_at) {
+  if (event.start_at && event.end_at) {
     try {
       const start = Temporal.Instant.from(event.start_at)
-      const end = Temporal.Instant.from(event.ends_at)
+      const end = Temporal.Instant.from(event.end_at)
       const current = zdt.toInstant()
       
       if (Temporal.Instant.compare(current, start) >= 0 && Temporal.Instant.compare(current, end) <= 0) {

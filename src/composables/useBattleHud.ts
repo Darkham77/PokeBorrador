@@ -178,19 +178,24 @@ export function useBattleHud(
   })
 
   const bushIsBehind = computed(() => {
+    const state = toValue(battleStore.fsm?.currentState)
+    if (state && ['ACTIVE_BATTLE', 'LEVEL_UP_MODAL', 'REWARDS_PHASE'].includes(state)) {
+      return true
+    }
     const sub = toValue(battleStore.fsm?.currentSubState)
     if (!sub) return false
-    return animations.isEmerging.value || ['ENCOUNTER_ANIM', 'PARALLEL_JUMP', 'REVEAL_COLORS', 'BUSH_FADE'].includes(sub)
+    return animations.isEmerging.value && ['ENCOUNTER_ANIM', 'PARALLEL_JUMP', 'JUMP_SHADOW', 'REVEAL_COLORS', 'BUSH_FADE'].includes(sub)
   })
 
   const enemyIsJumping = computed(() => {
     const sub = toValue(battleStore.fsm?.currentSubState)
     if (!sub) return false
-    return animations.isEmerging.value || sub === 'ENCOUNTER_ANIM' || sub === 'PARALLEL_JUMP'
+    return animations.isEmerging.value && (sub === 'ENCOUNTER_ANIM' || sub === 'PARALLEL_JUMP' || sub === 'JUMP_SHADOW')
   })
 
   const isInstantBush = computed(() => {
     if (animations.isInitialLoad.value) return true
+    if (toValue(battleStore.isSearching)) return false
     const sub = toValue(battleStore.fsm?.currentSubState)
     return toValue(battleStore.fsm?.currentState) === 'FIRST_INTRO' || sub === 'PREPARATION' || sub === 'ENTRY_ANIM'
   })

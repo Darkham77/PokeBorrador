@@ -1,11 +1,12 @@
 
 
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { logger } from '@/logic/utils/logger'
 import { useAuthStore } from './auth.ts'
 import { useUIStore } from './ui.ts'
 import { useGameStore } from './game.ts'
+import { useMapStore } from './map.ts'
 import { isEventActiveNow, getGlobalMultipliers, getSpeciesBoosts, type Event as GameEvent } from '@/logic/events/eventEngine'
 import { getServerTime } from '@/logic/timeUtils'
 import type { Pokemon } from '@/types/pokemon'
@@ -15,12 +16,21 @@ export const useEventStore = defineStore('events', () => {
   const gameStore = useGameStore()
   const authStore = useAuthStore()
   const uiStore = useUIStore()
+  const mapStore = useMapStore()
 
   const allEvents = ref<GameEvent[]>([])
   const activeEvents = ref<GameEvent[]>([])
   const finishedEvents = ref<CompetitionResult[]>([])
   const pendingAwards = ref<PendingAward[]>([])
   const isLoading = ref(false)
+
+  // Watch for game cycle ticks to re-evaluate active events
+  watch(() => mapStore.currentEpochHour, (newVal, oldVal) => {
+    if (newVal !== oldVal) {
+      logger.info('Events', `Game cycle ticked (Epoch hour: ${newVal}). Refreshing active events...`)
+      fetchEvents()
+    }
+  })
 
   // Computed multipliers derived from active events
   const globalMultipliers = computed(() => getGlobalMultipliers(activeEvents.value))

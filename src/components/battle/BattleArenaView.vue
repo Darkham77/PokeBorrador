@@ -127,7 +127,7 @@ const {
 } = useBattleShadows()
 
 const animations = useBattleAnimations(battleStore, enemy)
-battleStore.animations = {
+const localAnimations = {
   triggerSearchEncounter: animations.triggerSearchEncounter,
   revealWildPokemon: animations.revealWildPokemon,
   triggerWildEmergence: animations.triggerWildEmergence,
@@ -148,6 +148,7 @@ battleStore.animations = {
   awaitTween: animations.awaitTween,
   resetAll: animations.resetAll
 }
+battleStore.animations = localAnimations
 const {
   isInitialLoad,
   isFaintInProgress, faintedPokemonSnapshot,
@@ -424,7 +425,9 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
-  battleStore.animations = undefined
+  if (battleStore.animations === localAnimations) {
+    battleStore.animations = undefined
+  }
   cleanupListeners()
 })
 

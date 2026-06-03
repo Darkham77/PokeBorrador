@@ -8,6 +8,7 @@ import type { UIStore, MapStore, EventStore, WarStore } from '@/types/stores'
 import type { MapLocation } from '@/types/encounters'
 import { logger } from '../utils/logger.ts'
 import type { Pokemon } from '@/types/pokemon'
+import { nextTick } from 'vue'
 
 /**
  * Handles the completion of a battle flow (either going to map or search loop).
@@ -45,6 +46,8 @@ export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'm
     ctx.activeBattle.value.trainerName = undefined
     ctx.activeBattle.value.trainerSprite = undefined
     ctx.activeBattle.value.isRival = false
+    
+    await nextTick()
     
     // FASE: INITIALIZING
     await fsm.transition(BATTLE_STATES.INITIALIZING)
@@ -241,11 +244,14 @@ export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'm
     
     if (!autoBattle) {
       await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.COMBAT_OR_FLEE)
+      ctx.isProcessing.value = false
     } else {
-      await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.ENCOUNTER_ANIM)
+      await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.COMBAT_OR_FLEE)
+      ctx.isProcessing.value = false
+      await nextTick()
+      await startEncounter(ctx)
     }
     
-    ctx.isProcessing.value = false
     return
   }
 
@@ -281,7 +287,6 @@ export async function triggerNextEncounter(ctx: BattleContext) {
   if (isMinigame) {
     await fsm.transition(BATTLE_STATES.INITIALIZING, BATTLE_SUBSTATES.MINIGAME_CHECK)
   }
-  await fsm.transition(BATTLE_STATES.INITIALIZING, BATTLE_SUBSTATES.ENCOUNTER_ANIM)
   
   await ctx._startBattle(enemyPoke, {
     locationId: locId,

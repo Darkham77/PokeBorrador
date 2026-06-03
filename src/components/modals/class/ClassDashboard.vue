@@ -116,14 +116,14 @@ const onAbilityMouseLeave = (event: MouseEvent) => {
             @mouseenter="onTrainerMouseEnter"
             @mouseleave="onTrainerMouseLeave"
             @error="handleImageError"
-          />
+          >
           <img 
             :src="getTrainerSprite(currentClass?.showdownSpriteId || currentClass?.id, 'm')"
             class="trainer-big-img" 
             @mouseenter="onTrainerMouseEnter"
             @mouseleave="onTrainerMouseLeave"
             @error="handleImageError"
-          />
+          >
         </div>
       </div>
 
