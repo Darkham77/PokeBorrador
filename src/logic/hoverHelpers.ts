@@ -1,4 +1,4 @@
-export const HOVER_VISUAL_BORDER_CLASSES = [
+const HOVER_VISUAL_BORDER_CLASSES = [
   'hud-nav-btn',
   'pc-banner',
   'egg-hud-card',
@@ -116,7 +116,7 @@ export function resolveCssColor(colorStr: string, element?: HTMLElement): string
 /**
  * Converts a hex color to a transparent rgba color string.
  */
-export function hexToRgba(hex: string, alpha: number): string {
+function hexToRgba(hex: string, alpha: number): string {
   let c = hex.replace('#', '').trim()
   if (c.length === 3) {
     const r = c.charAt(0)

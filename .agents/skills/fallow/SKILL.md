@@ -36,6 +36,9 @@ Reviews changed files (typically compared to `main` or another git ref) for intr
 npx fallow audit --changed-since main
 ```
 
+> [!NOTE]
+> Do not pass individual file paths directly as positional arguments to the root command (e.g. `npx fallow file.ts` returns an unrecognized subcommand error). Use `npx fallow audit` with `--base` or `--changed-since` ref to scope the analysis to the changed files.
+
 To output machine-readable JSON for automatic processing or grading:
 
 ```bash

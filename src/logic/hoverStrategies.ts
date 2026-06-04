@@ -1,9 +1,6 @@
 import { resolveCssColor, parseToRgba, hasVisualBorders } from './hoverHelpers.ts';
 
-export interface HoverContext {
-  el: HTMLElement;
-  isSubmenuBtn?: boolean;
-}
+
 
 export interface HoverValues {
   scale?: number;

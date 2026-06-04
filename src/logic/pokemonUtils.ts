@@ -1,7 +1,6 @@
 
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { getPokemonTier } from '@/logic/pokemon/tierEngine';
-import { getStatMultiplier, getAccuracyMultiplier } from '@/logic/pokemon/statEngine';
 import { getSpeciesHistory } from '@/logic/pokemon/evolutionEngine';
 import type { Pokemon, PokemonMove, PokemonIVs } from '@/types/pokemon';
 
@@ -249,16 +248,4 @@ export function getMoveDescription(name: string, md?: MoveBaseData | null): stri
   return "Causa daño al oponente sin efectos secundarios adicionales.";
 }
 
-/**
- * Get the multiplier for a stat stage (-6 to +6).
- */
-export function getStageMultiplier(stage: number): number {
-  return getStatMultiplier(stage);
-}
 
-/**
- * Get the multiplier for an accuracy/evasion stage (-6 to +6).
- */
-export function getAccStageMultiplier(stage: number): number {
-  return getAccuracyMultiplier(stage);
-}

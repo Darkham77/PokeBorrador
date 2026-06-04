@@ -2,7 +2,7 @@
  * tests/unit/pokemon_utils.spec.ts
  */
 import { describe, it, expect, vi } from 'vitest'
-import { getTypeEffectivenessMsg, getMoveDescription } from '@/logic/pokemonUtils'
+import { getTypeEffectivenessMsg, getMoveDescription, generateRandomIVs } from '@/logic/pokemonUtils'
 
 import type { MoveBaseData } from '@/types/database'
 
@@ -39,6 +39,19 @@ describe('Pokemon Utils Logic', () => {
     it('should return default message for normal status move', () => {
       const mockStatusMove = { cat: 'status' } as unknown as MoveBaseData
       expect(getMoveDescription('growl', mockStatusMove)).toBe('Un movimiento que causa un efecto de estado o alteración.')
+    })
+  })
+
+  describe('generateRandomIVs', () => {
+    it('should return random IVs between 0 and 31 for all stats', () => {
+      const ivs = generateRandomIVs()
+      expect(ivs).toBeDefined()
+      const stats: (keyof typeof ivs)[] = ['hp', 'atk', 'def', 'spa', 'spd', 'spe']
+      stats.forEach(stat => {
+        expect(ivs[stat]).toBeGreaterThanOrEqual(0)
+        expect(ivs[stat]).toBeLessThanOrEqual(31)
+        expect(Number.isInteger(ivs[stat])).toBe(true)
+      })
     })
   })
 })

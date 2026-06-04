@@ -27,6 +27,7 @@ It is MANDATORY to run the full verification chain before reporting a task as co
 ### Strict ESLint Compliance Rules
 
 - **Intent Comments in Empty Catch Blocks**: To comply with strict ESLint rules (`no-empty`), always include an explicit comment of intention (e.g., `catch { /* ignore */ }`) inside empty catch blocks designed to silence benign errors. Never leave a catch block completely empty.
+- **Unused Declarations and Compiler Strictness**: Avoid leaving unexported local variables, helpers, types, or interfaces unused in modified files. The strict TypeScript compiler check (`vue-tsc --noEmit`) will trigger `TS6133` or `TS6196` errors, causing type validation to fail. Either utilize the declarations or remove them entirely to keep type safety green.
 
 ### Python
 
