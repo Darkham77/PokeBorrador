@@ -186,11 +186,10 @@ onMounted(async () => {
   // 1. Init Global Error Handlers (Vue Bridge)
   initGlobalErrorHandlers()
 
-  // Verify if client version matches server version.json to prevent caching issues
-  try {
-    if (import.meta.env.DEV) {
-      return
-    }
+  // PWA version check — isolated IIFE so an early return never skips steps 2-5
+  await (async () => {
+    if (import.meta.env.DEV) return
+    try {
     const response = await fetch(`${import.meta.env.BASE_URL}version.json?t=${Date.now()}`, {
       cache: 'no-store'
     })
@@ -239,8 +238,7 @@ onMounted(async () => {
   } catch (e) {
     logger.error('App', 'Failed to check PWA version.json', (e as Error).message)
   }
-
-
+  })()
 
   // 2. Recuperar sesión (Autologin)
   if (isLoginPage.value || isSandboxPage.value) {
