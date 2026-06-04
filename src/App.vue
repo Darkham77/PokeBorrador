@@ -188,6 +188,9 @@ onMounted(async () => {
 
   // Verify if client version matches server version.json to prevent caching issues
   try {
+    if (import.meta.env.DEV) {
+      return
+    }
     const response = await fetch(`${import.meta.env.BASE_URL}version.json?t=${Date.now()}`, {
       cache: 'no-store'
     })
@@ -199,7 +202,8 @@ onMounted(async () => {
       const reloadKey = 'pokevicio_pwa_reload_attempted'
       if (clientVersion && serverVersion && clientVersion < serverVersion) {
         if (sessionStorage.getItem(reloadKey)) {
-          logger.warn('App', `PWA: Client version (${clientVersion}) is still older than server version (${serverVersion}) after reload. Bypassing infinite reload loop.`)
+          logger.warn('App', `PWA: Client version (${clientVersion}) is still older than server version (${serverVersion}) after reload. Bypassing infinite reload loop and showing manual update modal.`)
+          gameBus.emit('PWA_NEED_REFRESH')
         } else {
           logger.warn('App', `PWA: Client version (${clientVersion}) is older than server version (${serverVersion}). Unregistering SW, clearing caches and reloading...`)
           sessionStorage.setItem(reloadKey, 'true')

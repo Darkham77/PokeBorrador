@@ -239,6 +239,11 @@ const handleUpdate = async () => {
   }
 }
 
+const handleNeedRefresh = () => {
+  logger.info('PWA', 'Received PWA_NEED_REFRESH from GameBus. Showing update modal.')
+  needRefresh.value = true
+}
+
 const handleForceUpdate = () => {
   logger.info('PWA', 'Received FORCE_PWA_UPDATE from GameBus. Unregistering SW and reloading to force update...')
   if ('serviceWorker' in navigator) {
@@ -257,6 +262,7 @@ const handleForceUpdate = () => {
 
 onMounted(() => {
   gameBus.on('FORCE_PWA_UPDATE', handleForceUpdate)
+  gameBus.on('PWA_NEED_REFRESH', handleNeedRefresh)
   // Pequeño delay para no abrumar al cargar
   gsap.delayedCall(2, () => {
     if (canInstall.value && !authStore.user) {
@@ -267,6 +273,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   gameBus.off('FORCE_PWA_UPDATE', handleForceUpdate)
+  gameBus.off('PWA_NEED_REFRESH', handleNeedRefresh)
 })
 </script>
 
