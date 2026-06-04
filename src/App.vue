@@ -327,6 +327,14 @@ const handleRetry = () => {
 }
 
 const handleLogout = async () => {
+  // Reset all version/compatibility lock flags BEFORE logout so the login
+  // page renders cleanly instead of getting stuck on "CONECTANDO..."
+  appIncompatible.value = false
+  dbIncompatible.value = false
+  appVersionInfo.value = null
+  dbVersionInfo.value = null
+  loadingStore.clearAll()
+  loadingStore.markAppMounted()
   await authStore.logout()
 }
 
