@@ -341,7 +341,7 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   async function logout() {
-    logger.info('AuthStore', 'Iniciando cierre de sesión profundo...')
+    logger.info('AuthStore', 'Iniciando cierre de sesión...')
     try {
       if (sessionMode.value === 'online') {
         await supabase.auth.signOut()
@@ -352,7 +352,7 @@ export const useAuthStore = defineStore('auth', () => {
 
     safeStorage.removeItem('pokevicio_local_user')
     safeStorage.removeItem('pokevicio_session_mode')
-    
+
     user.value = null
     session.value = null
     sessionMode.value = 'online'
@@ -362,24 +362,14 @@ export const useAuthStore = defineStore('auth', () => {
     }
     connectionLost.value = false
     sessionConflict.value = false
-    
+
     sessionStorage.setItem('block_autologin', 'true')
-    
-    // FORZAR LIMPIEZA DE CACHÉ DEL SERVICE WORKER
-    // El problema principal es que el Service Worker está cacheando el index.html viejo
-    // que NO TENÍA los meta tags de PWA ni el width:100% que acabo de añadir.
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.getRegistrations().then(async (registrations) => {
-        for (const registration of registrations) {
-          await registration.unregister()
-        }
-        window.location.reload()
-      }).catch(() => {
-        window.location.reload()
-      })
-    } else {
-      window.location.reload()
-    }
+
+    // Reload the page to reset all reactive state cleanly.
+    // We do NOT unregister the Service Worker — that's what was breaking the
+    // PWA standalone mode. The SW stays registered so the app remains installable
+    // and the standalone layout is preserved across reloads.
+    window.location.reload()
   }
 
   function clearSessionLocal() {
