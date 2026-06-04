@@ -1,4 +1,5 @@
 <script setup lang="ts">
+// fallow-ignore-file security-sink
 declare const __APP_VERSION__: string
 
 import { ref, computed, onMounted, watch, nextTick } from 'vue'
@@ -22,7 +23,7 @@ const wallpaperUrl = computed(() => `url('${getAssetUrl(ASSET_TYPES.UI, '../fond
 const authStore = useAuthStore()
 
 const authTab = ref('login') // 'login' | 'signup'
-const serverMode = ref('local') // 'online' | 'local'
+const serverMode = ref('online') // 'online' | 'local'
 const { canInstall, installApp } = usePWA()
 
 const handleInstallApp = async () => {

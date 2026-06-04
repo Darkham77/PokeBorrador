@@ -1,6 +1,7 @@
 // [PureVue-Ignore-Length]
 <script setup lang="ts">
 import { computed, ref, onMounted, onUnmounted } from 'vue'
+import { gsap } from 'gsap'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import EggSprite from '@/components/common/EggSprite.vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
@@ -41,7 +42,7 @@ const emit = defineEmits<{
 const gameStore = useGameStore()
 const uiStore = useUIStore()
 const cooldownSecondsLeft = ref(0)
-let timerId: ReturnType<typeof setInterval> | null = null
+let cooldownTween: gsap.core.Tween | null = null
 
 const handleCooldownClick = () => {
   uiStore.notify(`El Centro Pokémon está cerrado por mantenimiento. Reabre en ${cooldownFormatted.value}.`, '🏥')
@@ -61,13 +62,19 @@ const updateCooldown = () => {
   cooldownSecondsLeft.value = 0
 }
 
-onMounted(() => {
+const tickCooldown = () => {
   updateCooldown()
-  timerId = setInterval(updateCooldown, 1000)
+  cooldownTween = gsap.delayedCall(1, tickCooldown)
+}
+
+onMounted(() => {
+  tickCooldown()
 })
 
 onUnmounted(() => {
-  if (timerId) clearInterval(timerId)
+  if (cooldownTween) {
+    cooldownTween.kill()
+  }
 })
 
 const cooldownFormatted = computed(() => {

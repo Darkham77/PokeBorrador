@@ -72,10 +72,11 @@ graph TD
 BEFORE touching any files or starting the verification cycle, you MUST perform an initial commit to safeguard the current state.
 
 1. **Analyze Diff and Status**: Run `git status` and `git diff` to analyze ALL modified and untracked files in the workspace since the last commit. You MUST NOT rely solely on the current conversation context.
-2. **Comprehensive Message**: You MUST review every single modified file's diff to understand the changes made (even those from previous sessions or manual edits).
-3. `git add .`
-4. **Commit Message**: Use the "Elegant Protocol" (Step 189) to describe the work performed. The message MUST capture all changes across all modified files in the workspace since the last commit, not just those related to the current conversation.
-5. **Why**: This ensures that even if an automated repair tool or linter modifies files, your original logic is preserved in the history and can be easily diffed.
+2. **Initial Project Health**: Run `npx fallow health --score` to capture and record the starting health score of the project before any modifications, edits, or verification/repair cycles are executed, in order to compare it with the final score at Step 3.5.
+3. **Comprehensive Message**: You MUST review every single modified file's diff to understand the changes made (even those from previous sessions or manual edits).
+4. `git add .`
+5. **Commit Message**: Use the "Elegant Protocol" (Step 189) to describe the work performed. The message MUST capture all changes across all modified files in the workspace since the last commit, not just those related to the current conversation.
+6. **Why**: This ensures that even if an automated repair tool or linter modifies files, your original logic is preserved in the history and can be easily diffed.
 
 ### 1. Task & Scratchpad Tracking (MANDATORY)
 

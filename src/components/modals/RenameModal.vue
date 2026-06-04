@@ -267,7 +267,6 @@ const submitRename = async () => {
     width: 48px;
     height: 44px;
     will-change: transform;
-    transition: border-color 0.2s;
 
     &:hover {
       border-color: var(--yellow);

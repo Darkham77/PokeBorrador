@@ -91,16 +91,13 @@ export function useParticleEngine() {
   }
 
   const initSystem = (elements: HTMLElement[], options: ParticleSystemOptions) => {
-    // Solo matamos los tweens de los elementos específicos que vamos a inicializar
-    elements.forEach(el => gsap.killTweensOf(el))
+    // Matamos todos los tweens y timelines registrados previamente en esta instancia para evitar fugas/acumulación
+    killAll()
     
-    // Limpiamos del array global los tweens que acabamos de matar para mantenerlo sano
-    for (let i = activeTweens.length - 1; i >= 0; i--) {
-      const tween = activeTweens[i]
-      if (tween && !tween.isActive()) {
-        activeTweens.splice(i, 1)
-      }
-    }
+    // Y por seguridad matamos cualquier tween individual remanente en los elementos
+    elements.forEach(el => {
+      if (el) gsap.killTweensOf(el)
+    })
     
     if (!elements.length) return
 

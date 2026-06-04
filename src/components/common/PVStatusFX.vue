@@ -36,6 +36,7 @@ const { initSystem: initStatusSystem, killAll: killStatusFX } = useParticleEngin
 
 const engines = new Map<string, ReturnType<typeof useParticleEngine>>()
 const activeUnifiedTypes = new Map<string, number>()
+const activeStatusType = ref<string>('')
 
 const allUnifiedTypes = [
   'shiny',
@@ -150,12 +151,18 @@ const applyGenericParticleSystem = (els: HTMLElement[], typeKey: string, engineI
   })
 }
 
-const initParticleAnim = (container: HTMLElement) => {
+const initParticleAnim = (container: HTMLElement, force = false) => {
   if (props.isSimplified) return
   const statusType = props.activeStatusEffects[0]?.type || ''
-  if (statusType) {
-    const els = Array.from(container.querySelectorAll('.status-particle:not(.secondary-status):not(.tactical-status):not(.field-status)')) as HTMLElement[]
-    applyGenericParticleSystem(els, statusType, initStatusSystem, { radius: props.radius, seed: props.animSeed })
+  
+  if (statusType !== activeStatusType.value || force) {
+    activeStatusType.value = statusType
+    if (statusType) {
+      const els = Array.from(container.querySelectorAll('.status-particle:not(.secondary-status):not(.tactical-status):not(.field-status)')) as HTMLElement[]
+      applyGenericParticleSystem(els, statusType, initStatusSystem, { radius: props.radius, seed: props.animSeed })
+    } else {
+      killStatusFX()
+    }
   }
 }
 
@@ -200,8 +207,11 @@ const syncUnifiedSystems = (container: HTMLElement, forceReset = false) => {
 const refreshAll = (forceReset = false) => {
   const container = rootRef.value?.closest('.pv-fx-wrapper') as HTMLElement
   if (!container) return
-  if (forceReset) killStatusFX()
-  initParticleAnim(container)
+  if (forceReset) {
+    killStatusFX()
+    activeStatusType.value = ''
+  }
+  initParticleAnim(container, forceReset)
   syncUnifiedSystems(container, forceReset)
 }
 

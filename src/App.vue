@@ -152,6 +152,7 @@ const initGameSession = async () => {
         } else if (appComp.error === 'OUTDATED_CLIENT') {
           logger.warn('App', `Cliente desactualizado (${appComp.client}) vs Servidor (${appComp.server}). Forzando actualización de PWA...`)
           gameBus.emit('FORCE_PWA_UPDATE')
+          return
         }
       }
       
@@ -334,7 +335,7 @@ const onLoadingLeave = (el: Element, done: () => void) => {
 
       <!-- Bloqueo por Versión de Compilación Vieja -->
       <Teleport
-        v-if="appIncompatible"
+        v-else-if="appIncompatible"
         to="body"
       >
         <AppVersionLockOverlay

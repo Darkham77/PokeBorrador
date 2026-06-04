@@ -133,13 +133,6 @@
   }
 }
 
-.dialog-fade-enter-active, .dialog-fade-leave-active {
-  transition: opacity 0.3s ease, transform 0.3s ease;
-}
-.dialog-fade-enter-from, .dialog-fade-leave-to {
-  opacity: 0;
-  transform: Translatey(10px);
-}
 
 .debug-trainer-guide {
   position: absolute;

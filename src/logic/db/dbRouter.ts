@@ -475,7 +475,10 @@ export async function checkAppVersionCompatibility(router: DBRouter): Promise<Ap
   }
 
   if (!serverVer) {
-    return { compatible: true, client: clientVer, server: clientVer };
+    if (router.mode === 'offline') {
+      return { compatible: true, client: clientVer, server: clientVer };
+    }
+    return { compatible: false, client: clientVer, server: 'v0.0.0', error: 'OUTDATED_SERVER' };
   }
 
   if (clientVer === serverVer) {

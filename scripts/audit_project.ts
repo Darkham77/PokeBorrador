@@ -12,6 +12,7 @@ import path from 'node:path';
 import { styleText } from 'node:util';
 import { enableCompileCache } from 'node:module';
 import { parseArgs } from 'node:util';
+import { execSync } from 'node:child_process';
 import { Z_LAYERS } from '../src/logic/constants/visuals.ts';
 
 enableCompileCache();
@@ -250,7 +251,37 @@ const zIndexAudit: AuditRule = {
     return `Z-Index hardcodeado fuera de estándar: '${match}'. Define una nueva capa en 'visuals.ts' o usa una existente.`;
   },
   severity: 'warning',
-  fixable: false
+  fix: (match: string) => {
+    const valMatch = match.match(/-?\d+/);
+    if (!valMatch) return match;
+    const val = parseInt(valMatch[0]);
+    
+    const entry = Z_VALUE_MAP[val];
+    if (entry) {
+      const key = entry.toLowerCase().replace(/_/g, '-');
+      return `z-index: var(--z-${key})`;
+    }
+
+    let nearestKey = '';
+    let minDiff = 11;
+    for (const [key, zVal] of Z_SORTED_ENTRIES) {
+      const diff = Math.abs(val - zVal);
+      if (diff < minDiff) {
+        minDiff = diff;
+        nearestKey = key;
+      }
+    }
+
+    if (nearestKey) {
+      const key = nearestKey.toLowerCase().replace(/_/g, '-');
+      const offset = val - Z_LAYERS[nearestKey as keyof typeof Z_LAYERS];
+      const sign = offset >= 0 ? '+' : '-';
+      return `z-index: calc(var(--z-${key}) ${sign} ${Math.abs(offset)})`;
+    }
+
+    return match;
+  },
+  fixable: true
 };
 
 const config = {
@@ -341,13 +372,39 @@ async function auditFile(filePath: string, fix: boolean): Promise<Violation[]> {
                      config.fileLength.ignorePattern?.test(content);
 
   if (!isDataFile) {
-    const lineCount = content.split('\n').length;
-    if (lineCount > 500) {
+    // Calcular SLOC real excluyendo comentarios y líneas vacías
+    let slocCount = 0;
+    let inBlockComment = false;
+    let inHtmlComment = false;
+    for (const line of content.split('\n')) {
+      const trimmed = line.trim();
+      if (trimmed === '') continue;
+      if (inBlockComment) {
+        if (trimmed.includes('*/')) inBlockComment = false;
+        continue;
+      }
+      if (inHtmlComment) {
+        if (trimmed.includes('-->')) inHtmlComment = false;
+        continue;
+      }
+      if (trimmed.startsWith('//')) continue;
+      if (trimmed.startsWith('/*')) {
+        if (!trimmed.includes('*/')) inBlockComment = true;
+        continue;
+      }
+      if (trimmed.startsWith('<!--')) {
+        if (!trimmed.includes('-->')) inHtmlComment = true;
+        continue;
+      }
+      slocCount++;
+    }
+
+    if (slocCount > 500) {
       violations.push({
         file: filePath,
-        line: lineCount,
-        message: `Mantenibilidad CRÍTICA: El archivo tiene ${lineCount} líneas. MÁXIMO PERMITIDO: 500. Es OBLIGATORIO fragmentar este componente (SRP) o extraer lógica a Composables.`,
-        context: `SLOC: ${lineCount}`,
+        line: slocCount,
+        message: `Mantenibilidad CRÍTICA: El archivo tiene ${slocCount} líneas reales de código (SLOC). MÁXIMO PERMITIDO: 500. Es OBLIGATORIO fragmentar este componente (SRP) o extraer lógica a Composables.`,
+        context: `SLOC: ${slocCount}`,
         severity: 'error',
         fixable: false
       });
@@ -476,13 +533,250 @@ async function checkZIndexConsistency(fix: boolean): Promise<string[]> {
   }
 }
 
+function getChangedFiles(ref: string): string[] {
+  try {
+    const output = execSync(`git diff --name-only ${ref}`, { encoding: 'utf8', stdio: ['pipe', 'pipe', 'ignore'] });
+    return output
+      .split('\n')
+      .map(f => f.trim())
+      .filter(f => f !== '' && AUDIT_EXTENSIONS.has(path.extname(f)) && !Array.from(IGNORE_DIRS).some(d => f.includes(d)))
+      .map(f => path.resolve(process.cwd(), f));
+  } catch (_e) {
+    console.log(styleText('yellow', `⚠️ No se pudo obtener la lista de archivos modificados desde git para ref: '${ref}'. Se auditará el proyecto completo.`));
+    return [];
+  }
+}
+
+interface FallowInstance {
+  path: string;
+  line: number;
+}
+interface FallowCloneGroup {
+  instances: FallowInstance[];
+  duplicated_tokens: number;
+}
+interface FallowFinding {
+  path: string;
+  line: number;
+  cwe?: number;
+  evidence?: string;
+  kind?: string;
+  function_name?: string;
+  cognitive?: number;
+  cyclomatic?: number;
+}
+interface FallowUnusedDep {
+  package_name: string;
+  path?: string;
+  line?: number;
+}
+interface FallowUnusedExport {
+  export_name: string;
+  path: string;
+  line?: number;
+}
+interface FallowUnusedFile {
+  path: string;
+}
+interface FallowDeadCode {
+  unused_dependencies?: FallowUnusedDep[];
+  unused_dev_dependencies?: FallowUnusedDep[];
+  unused_exports?: FallowUnusedExport[];
+  unused_files?: FallowUnusedFile[];
+}
+interface FallowComplexity {
+  findings?: FallowFinding[];
+}
+interface FallowAuditData {
+  clone_groups?: FallowCloneGroup[];
+  security_findings?: FallowFinding[];
+  dead_code?: FallowDeadCode;
+  complexity?: FallowComplexity;
+  findings?: FallowFinding[];
+  unused_dependencies?: FallowUnusedDep[];
+  unused_dev_dependencies?: FallowUnusedDep[];
+  unused_exports?: FallowUnusedExport[];
+  unused_files?: FallowUnusedFile[];
+}
+
+function runFallow(command: string, extraArgs: string[] = []): Violation[] {
+  const violations: Violation[] = [];
+  try {
+    const args = ['--format', 'json', ...extraArgs];
+    const cmd = `node ./node_modules/fallow/bin/fallow ${command} ${args.join(' ')}`;
+    const stdout = execSync(cmd, { encoding: 'utf8', stdio: ['pipe', 'pipe', 'ignore'], maxBuffer: 10 * 1024 * 1024 });
+    const jsonStart = stdout.indexOf('{');
+    if (jsonStart !== -1) {
+      const data = JSON.parse(stdout.substring(jsonStart)) as FallowAuditData;
+      violations.push(...mapFallowJson(command, data));
+    }
+  } catch (e: unknown) {
+    const err = e as { stdout?: Buffer; message?: string; stderr?: Buffer };
+    if (err.stdout) {
+      const stdoutStr = err.stdout.toString('utf8');
+      const jsonStart = stdoutStr.indexOf('{');
+      if (jsonStart !== -1) {
+        try {
+          const data = JSON.parse(stdoutStr.substring(jsonStart)) as FallowAuditData;
+          violations.push(...mapFallowJson(command, data));
+        } catch {
+          // Ignorar errores de parseo de JSON en salida de error
+        }
+      }
+    }
+    if (violations.length === 0) {
+      violations.push({
+        file: 'fallow',
+        line: 0,
+        message: `Error ejecutando fallow ${command}: ${err.message || String(e)} | Stderr: ${err.stderr || ''}`,
+        context: `fallow ${command}`,
+        severity: 'error',
+        fixable: false
+      });
+    }
+  }
+  return violations;
+}
+
+function mapFallowJson(command: string, data: FallowAuditData): Violation[] {
+  const violations: Violation[] = [];
+  if (command === 'dupes') {
+    const groups = data.clone_groups || [];
+    for (const g of groups) {
+      const instances = g.instances || [];
+      if (instances.length > 0) {
+        const first = instances[0];
+        if (first) {
+          const locations = instances.slice(1).map((i) => `${i.path}:${i.line}`).join(', ');
+          violations.push({
+            file: path.resolve(process.cwd(), first.path),
+            line: first.line,
+            message: `Código duplicado crítico: Encontradas ${instances.length} coincidencias de código idéntico. Ubicaciones: ${first.path}:${first.line}, ${locations}`,
+            context: `duplicación (${g.duplicated_tokens} tokens)`,
+            severity: 'error',
+            fixable: false
+          });
+        }
+      }
+    }
+  } else if (command === 'security') {
+    const findings = data.security_findings || [];
+    for (const f of findings) {
+      violations.push({
+        file: path.resolve(process.cwd(), f.path),
+        line: f.line,
+        message: `Vulnerabilidad de seguridad [CWE-${f.cwe}] en ${f.path}:${f.line} -> ${f.evidence}`,
+        context: f.kind || '',
+        severity: 'error',
+        fixable: false
+      });
+    }
+  } else if (command === 'audit') {
+    if (data.dead_code) {
+      const unusedDeps = [...(data.dead_code.unused_dependencies || []), ...(data.dead_code.unused_dev_dependencies || [])];
+      for (const d of unusedDeps) {
+        violations.push({
+          file: path.resolve(process.cwd(), d.path || 'package.json'),
+          line: d.line || 1,
+          message: `Sugerencia de calidad (Fallow): Dependencia no usada: '${d.package_name}'`,
+          context: d.package_name,
+          severity: 'warning',
+          fixable: false
+        });
+      }
+      const unusedExports = data.dead_code.unused_exports || [];
+      for (const x of unusedExports) {
+        violations.push({
+          file: path.resolve(process.cwd(), x.path),
+          line: x.line || 1,
+          message: `Sugerencia de calidad (Fallow): Export no usado: '${x.export_name}'`,
+          context: x.export_name,
+          severity: 'warning',
+          fixable: false
+        });
+      }
+      const unusedFiles = data.dead_code.unused_files || [];
+      for (const f of unusedFiles) {
+        violations.push({
+          file: path.resolve(process.cwd(), f.path),
+          line: 1,
+          message: `Sugerencia de calidad (Fallow): Archivo huérfano/no usado`,
+          context: f.path,
+          severity: 'warning',
+          fixable: false
+        });
+      }
+    }
+    if (data.complexity && data.complexity.findings) {
+      for (const f of data.complexity.findings) {
+        violations.push({
+          file: path.resolve(process.cwd(), f.path),
+          line: f.line,
+          message: `Sugerencia de complejidad (Fallow): Función '${f.function_name || ''}' alta complejidad (cognitiva: ${f.cognitive || 0}, ciclomática: ${f.cyclomatic || 0})`,
+          context: f.function_name || '',
+          severity: 'warning',
+          fixable: false
+        });
+      }
+    }
+  } else if (command === 'dead-code') {
+    const unusedDeps = [...(data.unused_dependencies || []), ...(data.unused_dev_dependencies || [])];
+    for (const d of unusedDeps) {
+      violations.push({
+        file: path.resolve(process.cwd(), d.path || 'package.json'),
+        line: d.line || 1,
+        message: `Sugerencia de calidad (Fallow): Dependencia no usada: '${d.package_name}'`,
+        context: d.package_name,
+        severity: 'warning',
+        fixable: false
+      });
+    }
+    const unusedExports = data.unused_exports || [];
+    for (const x of unusedExports) {
+      violations.push({
+        file: path.resolve(process.cwd(), x.path),
+        line: x.line || 1,
+        message: `Sugerencia de calidad (Fallow): Export no usado: '${x.export_name}'`,
+        context: x.export_name,
+        severity: 'warning',
+        fixable: false
+      });
+    }
+    const unusedFiles = data.unused_files || [];
+    for (const f of unusedFiles) {
+      violations.push({
+        file: path.resolve(process.cwd(), f.path),
+        line: 1,
+        message: `Sugerencia de calidad (Fallow): Archivo huérfano/no usado`,
+        context: f.path,
+        severity: 'warning',
+        fixable: false
+      });
+    }
+  } else if (command === 'health') {
+    const findings = data.findings || [];
+    for (const f of findings) {
+      violations.push({
+        file: path.resolve(process.cwd(), f.path),
+        line: f.line,
+        message: `Sugerencia de complejidad (Fallow): Función '${f.function_name || ''}' alta complejidad (cognitiva: ${f.cognitive || 0}, ciclomática: ${f.cyclomatic || 0})`,
+        context: f.function_name || '',
+        severity: 'warning',
+        fixable: false
+      });
+    }
+  }
+  return violations;
+}
+
 async function main() {
   const { values } = parseArgs({
     options: {
       fix: { type: 'boolean', short: 'f' },
       path: { type: 'string', short: 'p', default: '.' },
       output: { type: 'string', short: 'o' },
-      summary: { type: 'boolean', short: 's' }
+      summary: { type: 'boolean', short: 's' },
+      'changed-since': { type: 'string' }
     }
   });
   console.log(styleText('bold', '\n--- 🔎 POKE VICIO - INTELLIGENT AUDIT ---'));
@@ -495,10 +789,31 @@ async function main() {
     if (!values.fix) console.log(styleText('cyan', '  (Usa --fix para sincronizar automáticamente)'));
   }
 
-  const files = await getFilesToAudit(path.resolve(process.cwd(), values.path as string));
+  let files: string[] = [];
+  const changedSince = values['changed-since'] as string | undefined;
+  
+  if (changedSince) {
+    files = getChangedFiles(changedSince);
+    console.log(styleText('cyan', `Auditando solo archivos cambiados desde: '${changedSince}' (${files.length} archivos)`));
+  } else {
+    files = await getFilesToAudit(path.resolve(process.cwd(), values.path as string));
+  }
+
   let all: Violation[] = [];
   for (const f of files) {
     all = all.concat(await auditFile(f, !!values.fix));
+  }
+
+  // Integración de Fallow
+  console.log(styleText('cyan', '\nEjecutando análisis de Fallow...'));
+  if (changedSince) {
+    all = all.concat(runFallow('audit', ['--changed-since', changedSince]));
+    all = all.concat(runFallow('security', ['--changed-since', changedSince]));
+  } else {
+    all = all.concat(runFallow('dupes'));
+    all = all.concat(runFallow('security'));
+    all = all.concat(runFallow('dead-code'));
+    all = all.concat(runFallow('health'));
   }
 
   if (values.summary) {
@@ -523,7 +838,11 @@ async function main() {
       else if (v.message.includes('sin \'using\'')) type = 'Falta explicit resource (\'using\')';
       else if (v.message.includes('Animación manual')) type = 'Animación/Transición manual (GSAP)';
       else if (v.message.includes('Z-Index')) type = 'Z-Index fuera de estándar';
-      else if (v.message.includes('archivo tiene')) type = 'Largo de archivo (>300/500 líneas)';
+      else if (v.message.includes('archivo tiene') || v.message.includes('líneas reales')) type = 'Largo de archivo (>300/500 líneas)';
+      else if (v.message.includes('Código duplicado')) type = 'Fallow: Código duplicado';
+      else if (v.message.includes('Vulnerabilidad de seguridad')) type = 'Fallow: Vulnerabilidad de seguridad';
+      else if (v.message.includes('Sugerencia de calidad')) type = 'Fallow: Calidad / Dead Code';
+      else if (v.message.includes('Sugerencia de complejidad')) type = 'Fallow: Complejidad';
 
       typeGroups[type] = (typeGroups[type] || 0) + 1;
     }
@@ -567,6 +886,11 @@ async function main() {
       await fs.writeFile(outputPath, lines.join('\n'), 'utf-8');
     }
     console.log(styleText('cyan', `\n✨ Reporte completo escrito en: ${values.output}`));
+  }
+
+  // Salir con código de error si existen violaciones con severidad de error
+  if (all.some(v => v.severity === 'error')) {
+    process.exit(1);
   }
 }
 main();

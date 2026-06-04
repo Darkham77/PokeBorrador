@@ -478,3 +478,16 @@ Environmental cover layers (such as front combat grass) that must transition beh
 To prevent manual CSS animation audit failures, Vue `<TransitionGroup>` tags should be decoupled from CSS styles. Use the `:css="false"` property and handle animations using JavaScript hooks (`@enter` and `@leave`) powered by GSAP. Always trigger the Vue `done()` callback in the GSAP `onComplete` block to guarantee correct lifecycle coordination and prevent memory leaks or stuck nodes.
 
 
+## 39. GSAP Infinite Timelines and Tween Disposals
+
+Calling `gsap.killTweensOf(el)` only terminates individual active tweens bound to an element, but **does not kill or stop a parent infinite timeline** (`gsap.timeline({ repeat: -1 })`) hosting them. The empty parent timeline will continue to execute in GSAP's global ticker and fire its registered callbacks (such as `onRepeat`).
+- **Rule**: When re-initializing or disposing elements with repeating animations, ALWAYS explicitly call `.kill()` on the timeline or tween instances themselves (e.g. by centralizing disposals in an engine's `killAll()` method) to prevent phantom callbacks from triggering positioning logic and causing positional jumps or teleports on subsequent rendering cycles.
+
+
+## 40. High-Frequency UI Animation Re-initialization Prevention
+
+Repeatedly restarting particle or aura animations during high-frequency UI updates degrades rendering performance and risks timing collisions.
+- **Rule**: Store the active effect/state identifier in a local reactive reference (e.g., `activeStatusType`) and compare incoming status updates. Do NOT trigger a visual system re-initialization unless the status type has actually changed or a hard reset (`forceReset`) is explicitly requested.
+
+
+

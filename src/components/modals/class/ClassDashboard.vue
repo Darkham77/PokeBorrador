@@ -318,7 +318,6 @@ const onAbilityMouseLeave = (event: MouseEvent) => {
           @include pixelated;
           will-change: transform, filter, opacity;
           filter: Drop-Shadow(0 15px 30px Rgba(0,0,0,0.8));
-          transition: transform 0.2s;
 
           &:not(:first-child) {
             margin-left: -50px;
