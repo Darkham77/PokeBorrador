@@ -13,7 +13,7 @@ import { useModalStore } from '@/stores/modals'
 import type { DaycareMission } from '@/types/breeding'
 import type { Event as GameEvent } from '@/logic/events/eventEngine'
 import type { MapLocation } from '@/types/encounters'
-import { pokemonNeedsHealing } from '@/logic/economy/economyFormulas'
+import { pokemonNeedsHealing, calculatePokemonCenterCooldown } from '@/logic/economy/economyFormulas'
 import type { Pokemon } from '@/types/pokemon'
 import { useBreedingStore } from '@/stores/breeding'
 
@@ -45,6 +45,22 @@ const openCenter = () => {
   if (!needsHeal) {
     uiStore.notify('Tu equipo ya está en perfectas condiciones.', '💖')
     return
+  }
+
+  // Validación de Cooldown
+  const cooldownSecs = calculatePokemonCenterCooldown(gameStore.state.trainerLevel || 1)
+  if (cooldownSecs > 0 && gameStore.state.lastPokemonCenterHeal) {
+    const timeElapsed = Temporal.Now.instant().epochMilliseconds - gameStore.state.lastPokemonCenterHeal
+    const cooldownMs = cooldownSecs * 1000
+    if (timeElapsed < cooldownMs) {
+      const remainingMs = cooldownMs - timeElapsed
+      const totalRemainingSecs = Math.ceil(remainingMs / 1000)
+      const mins = Math.floor(totalRemainingSecs / 60)
+      const secs = totalRemainingSecs % 60
+      const formattedTime = `${mins}:${secs.toString().padStart(2, '0')}`
+      uiStore.notify(`El Centro Pokémon está en mantenimiento. Disponible en ${formattedTime}.`, '🏥')
+      return
+    }
   }
   
   modalStore.open('PokemonCenter')

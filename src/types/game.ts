@@ -70,6 +70,7 @@ export interface GameState {
   lastGymAttempts: Record<string, number>;
   battle: BattleState | null;
   starterChosen: boolean;
+  lastPokemonCenterHeal?: number;
   lastRankedSeason: string | null;
   nick_style: string | null;
   avatar_style: string | null;

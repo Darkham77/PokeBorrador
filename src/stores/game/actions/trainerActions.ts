@@ -41,6 +41,10 @@ export function useTrainerActions(state: GameState, scheduleSave: () => Promise<
       }
     }
 
+    if (currentRank) {
+      state.trainerExpNeeded = currentRank.expNeeded
+    }
+
     scheduleSave()
   }
 

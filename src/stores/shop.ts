@@ -157,6 +157,7 @@ export const useShopStore = defineStore('shop', () => {
     }
 
     gameStore.state.money -= costToCharge
+    gameStore.state.lastPokemonCenterHeal = Temporal.Now.instant().epochMilliseconds
     
     // Restore all pokemon in team
     gameStore.state.team.forEach((p: Pokemon | null) => {

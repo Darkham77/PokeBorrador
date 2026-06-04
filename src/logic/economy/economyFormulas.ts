@@ -57,3 +57,13 @@ export function calculateTotalHealCost(team: (Pokemon | null)[], trainerLevel: n
     return total;
   }, 0);
 }
+
+/**
+ * Calculates the Pokemon Center cooldown in seconds based on trainer level.
+ */
+export function calculatePokemonCenterCooldown(trainerLevel: number): number {
+  if (trainerLevel <= 1) return 0;
+  // Potencia: (nivel - 1)^1.5 * 5.5 segundos
+  return Math.floor(Math.pow(trainerLevel - 1, 1.5) * 5.5);
+}
+

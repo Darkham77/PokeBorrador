@@ -275,11 +275,6 @@ export const useBoxStore = defineStore('box', () => {
     gameStore.state.box.splice(boxIndex, 1)
     const swapped = gameStore.state.team.splice(teamIndex, 1, boxPoke)[0]!
     
-    // Auto-heal on storage
-    swapped.hp = swapped.maxHp
-    swapped.status = null
-    swapped.moves?.forEach((m) => { if (m) m.pp = m.maxPP })
-    
     gameStore.state.box.splice(boxIndex, 0, swapped)
     gameStore.autoFillPvpTeam()
     gameStore.scheduleSave()

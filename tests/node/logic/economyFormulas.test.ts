@@ -1,7 +1,7 @@
 
 import test from 'node:test';
 import assert from 'node:assert';
-import { calculateIndividualHealCost, calculateTotalHealCost } from '../../../src/logic/economy/economyFormulas.ts';
+import { calculateIndividualHealCost, calculateTotalHealCost, calculatePokemonCenterCooldown } from '../../../src/logic/economy/economyFormulas.ts';
 import type { Pokemon } from '../../../src/types/pokemon.ts';
 
 test('Economy Formulas - Individual Heal Cost (Rocket)', async (t) => {
@@ -59,5 +59,32 @@ test('Economy Formulas - Total Team Heal Cost', async (t) => {
     const team = [p3];
     const total = calculateTotalHealCost(team, 10, 'rocket');
     assert.strictEqual(total, 60);
+  });
+});
+
+test('Economy Formulas - Pokemon Center Cooldown', async (t) => {
+  await t.test('returns 0 for level <= 1', () => {
+    assert.strictEqual(calculatePokemonCenterCooldown(1), 0);
+    assert.strictEqual(calculatePokemonCenterCooldown(0), 0);
+  });
+
+  await t.test('calculates correct cooldown for level 2', () => {
+    // (2 - 1)^1.5 * 5.5 = 1 * 5.5 = 5.5 -> Math.floor = 5
+    assert.strictEqual(calculatePokemonCenterCooldown(2), 5);
+  });
+
+  await t.test('calculates correct cooldown for level 5', () => {
+    // (5 - 1)^1.5 * 5.5 = 4^1.5 * 5.5 = 8 * 5.5 = 44
+    assert.strictEqual(calculatePokemonCenterCooldown(5), 44);
+  });
+
+  await t.test('calculates correct cooldown for level 10', () => {
+    // (10 - 1)^1.5 * 5.5 = 9^1.5 * 5.5 = 27 * 5.5 = 148.5 -> Math.floor = 148
+    assert.strictEqual(calculatePokemonCenterCooldown(10), 148);
+  });
+
+  await t.test('calculates correct cooldown for level 30', () => {
+    // (30 - 1)^1.5 * 5.5 = 29^1.5 * 5.5 = 156.17 * 5.5 = 858.9 -> Math.floor = 858
+    assert.strictEqual(calculatePokemonCenterCooldown(30), 858);
   });
 });

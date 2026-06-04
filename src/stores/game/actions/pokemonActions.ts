@@ -114,12 +114,6 @@ export function usePokemonActions(
     }
     const p = state.team[index];
     if (!p) return false;
-    
-    // Heal on storage;
-    p.hp = p.maxHp;
-    p.status = null;
-    p.sleepTurns = 0;
-    p.moves?.forEach(m => { if (m) m.pp = m.maxPP })
 
     state.team.splice(index, 1)
     state.box.push(p)
@@ -214,9 +208,6 @@ export function usePokemonActions(
       }
 
       teamToMove.forEach(p => {
-        p.hp = p.maxHp
-        p.status = null
-        p.moves?.forEach(m => { if (m) m.pp = m.maxPP })
         state.box.push(p)
       })
 

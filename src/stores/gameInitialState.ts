@@ -29,6 +29,7 @@ export const INITIAL_STATE = {
   lastGymAttempts: {},
   battle: null,
   starterChosen: false,
+  lastPokemonCenterHeal: 0,
   lastRankedSeason: null,
   nick_style: null,
   avatar_style: null,

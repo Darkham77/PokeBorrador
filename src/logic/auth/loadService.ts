@@ -1,5 +1,6 @@
 
 import type { DBRouter } from '@/logic/db/dbRouter';
+import { TRAINER_RANKS } from '@/data/trainer';
 
 import { validateAndSanitize } from './saveService.ts';
 import type { Pokemon } from '@/types/pokemon';
@@ -181,6 +182,14 @@ export async function loadBestSave(user: AuthUser | null, db: DBRouter): Promise
 function normalizeData(state: GameState): GameState {
   if (!state) return state;
 
+  // Auto-heal trainerExpNeeded based on current trainerLevel
+  const level = state.trainerLevel || 1;
+  const idx = Math.min(level - 1, TRAINER_RANKS.length - 1);
+  const currentRank = TRAINER_RANKS[idx];
+  if (currentRank) {
+    state.trainerExpNeeded = currentRank.expNeeded;
+  }
+
   if (!state.gender) state.gender = 'h';
   if (state.fishingRodSecs === undefined) state.fishingRodSecs = 0;
   if (state.fishingRodType === undefined) state.fishingRodType = null;
@@ -264,6 +273,10 @@ function normalizeData(state: GameState): GameState {
     const allGymIds = ['pewter', 'cerulean', 'vermilion', 'celadon', 'fuchsia', 'saffron', 'cinnabar', 'viridian'];
     const count = Math.min(8, Math.max(0, state.badges));
     state.defeatedGyms = allGymIds.slice(0, count);
+  }
+
+  if (state.lastPokemonCenterHeal === undefined) {
+    state.lastPokemonCenterHeal = 0;
   }
 
   return state;

@@ -380,15 +380,16 @@ export function useBattleAnimations(
     addBusListener('PLAY_ESCAPE_ANIM', ((e: Event) => {
       const data = (e as CustomEvent).detail
       const side = typeof data === 'string' ? data : (data?.side || 'player')
-      const isWild = !battleStore.state?.isTrainer && !battleStore.state?.isGym
+      const stateVal = toValue(battleStore.state)
+      const isWild = stateVal ? (!stateVal.isTrainer && !stateVal.isGym) : true
       
       if (side === 'player' || !isWild) {
-        const pokemon = side === 'player' ? battleStore.state?.player : battleStore.state?.enemy
+        const pokemon = side === 'player' ? toValue(battleStore.player) : toValue(battleStore.enemy)
         handleCatchRequest({ side, pokemon: pokemon || undefined })
       } else {
         const type = data?.type || 'flee'
-        const pokemon = battleStore.state?.enemy
-        gameBus.emit('TRIGGER_COMBATANT_ESCAPE', { side: 'enemy', pokemon, type })
+        const pokemon = toValue(battleStore.enemy)
+        gameBus.emit('TRIGGER_COMBATANT_ESCAPE', { side: 'enemy', pokemon: pokemon || undefined, type })
       }
     }) as EventListener)
 

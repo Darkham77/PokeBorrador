@@ -230,6 +230,10 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
     if (extraData.targetPokemonIdx !== undefined) {
       const p = gameStore.state.box[extraData.targetPokemonIdx as number]
       if (p) {
+        if (p.hp <= 0) {
+          uiStore.notify('No puedes enviar un Pokémon debilitado a una misión.', '⚠️')
+          return
+        }
         const teamIdx = gameStore.state.team.findIndex((tp: Pokemon | null) => tp && tp.uid === p.uid)
         if (teamIdx !== -1) {
           if (gameStore.state.team.length <= 1) {
@@ -238,9 +242,6 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
           }
           const tp = gameStore.state.team.splice(teamIdx, 1)[0]
           if (tp) {
-            tp.hp = tp.maxHp
-            tp.status = null
-            tp.moves?.forEach((m) => { if (m) m.pp = m.maxPP })
             gameStore.state.box.push(tp)
             gameStore.autoFillPvpTeam()
             extraData.targetPokemonIdx = gameStore.state.box.findIndex((bp: Pokemon | null) => bp && bp.uid === tp.uid)

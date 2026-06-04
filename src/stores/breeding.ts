@@ -156,6 +156,11 @@ export const useBreedingStore = defineStore('breeding', () => {
   }
 
   async function deposit(pokemon: Pokemon, slotIndex: number) {
+    if (pokemon.hp <= 0) {
+      uiStore.notify('No puedes depositar un Pokémon debilitado en la Guardería.', '⚠️');
+      return false;
+    }
+
     if (pokemon.onMission || pokemon.onDefense) {
       uiStore.notify('Este Pokémon está ocupado.', '⚠️');
       return false;
@@ -170,10 +175,6 @@ export const useBreedingStore = defineStore('breeding', () => {
       }
       const p = gameStore.state.team.splice(teamIdx, 1)[0];
       if (p) {
-        // Auto-heal on storage
-        p.hp = p.maxHp;
-        p.status = null;
-        p.moves?.forEach((m) => { if (m) m.pp = m.maxPP });
         gameStore.state.box.push(p);
         gameStore.autoFillPvpTeam();
       }

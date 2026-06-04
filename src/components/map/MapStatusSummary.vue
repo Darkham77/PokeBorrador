@@ -1,8 +1,12 @@
 // [PureVue-Ignore-Length]
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, onMounted, onUnmounted } from 'vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import EggSprite from '@/components/common/EggSprite.vue'
+import PVTooltip from '@/components/common/PVTooltip.vue'
+import { useGameStore } from '@/stores/game'
+import { useUIStore } from '@/stores/ui'
+import { calculatePokemonCenterCooldown } from '@/logic/economy/economyFormulas'
 
 interface Props {
   missionsRemaining?: number
@@ -34,8 +38,49 @@ const emit = defineEmits<{
   (e: 'openEvent'): void
 }>()
 
+const gameStore = useGameStore()
+const uiStore = useUIStore()
+const cooldownSecondsLeft = ref(0)
+let timerId: ReturnType<typeof setInterval> | null = null
+
+const handleCooldownClick = () => {
+  uiStore.notify(`El Centro Pokémon está cerrado por mantenimiento. Reabre en ${cooldownFormatted.value}.`, '🏥')
+}
+
+const updateCooldown = () => {
+  const lastHeal = gameStore.state.lastPokemonCenterHeal || 0
+  const cooldownSecs = calculatePokemonCenterCooldown(gameStore.state.trainerLevel || 1)
+  if (cooldownSecs > 0 && lastHeal > 0) {
+    const elapsedMs = Temporal.Now.instant().epochMilliseconds - lastHeal
+    const remainingMs = (cooldownSecs * 1000) - elapsedMs
+    if (remainingMs > 0) {
+      cooldownSecondsLeft.value = Math.ceil(remainingMs / 1000)
+      return
+    }
+  }
+  cooldownSecondsLeft.value = 0
+}
+
+onMounted(() => {
+  updateCooldown()
+  timerId = setInterval(updateCooldown, 1000)
+})
+
+onUnmounted(() => {
+  if (timerId) clearInterval(timerId)
+})
+
+const cooldownFormatted = computed(() => {
+  const totalSecs = cooldownSecondsLeft.value
+  if (totalSecs <= 0) return ''
+  const mins = Math.floor(totalSecs / 60)
+  const secs = totalSecs % 60
+  return `${mins}:${secs.toString().padStart(2, '0')}`
+})
+
 const bannerUrl = computed(() => {
-  return getAssetUrl(ASSET_TYPES.BANNER, 'pokecenter_banner')
+  const assetName = cooldownSecondsLeft.value > 0 ? 'pokecenter_closed_banner' : 'pokecenter_banner'
+  return getAssetUrl(ASSET_TYPES.BANNER, assetName)
 })
 
 const bannerStyle = computed(() => ({
@@ -47,7 +92,39 @@ const bannerStyle = computed(() => ({
   <div class="pc-split-container">
     <!-- Carta Centro Pokémon (Izq: 50%) -->
     <div class="pc-left">
+      <!-- On Cooldown state (Disabled) -->
       <div
+        v-if="cooldownSecondsLeft > 0"
+        class="pokecenter-banner on-cooldown"
+        @click.stop="handleCooldownClick"
+      >
+        <div 
+          class="banner-bg" 
+          :style="bannerStyle"
+        />
+        <div class="banner-overlay">
+          <div class="banner-title">
+            ⚡ CENTRO POKÉMON
+          </div>
+          <div class="banner-desc">
+            Saná a tu equipo y restaurá todos sus PP al instante.
+          </div>
+        </div>
+        <PVTooltip 
+          title="Centro Pokémon en mantenimiento" 
+          description="Debes esperar a que termine el tiempo de enfriamiento para volver a curar gratis."
+          position="bottom"
+          class="banner-tag-tooltip"
+        >
+          <span class="banner-tag cooldown">
+            <span class="cooldown-emoji">⏱️</span> {{ cooldownFormatted }}
+          </span>
+        </PVTooltip>
+      </div>
+
+      <!-- Active state (Enabled) -->
+      <div
+        v-else
         v-gsap-hover="{ scale: 1.02, y: -6, duration: 0.25 }"
         class="pokecenter-banner"
         @click.stop="emit('openCenter')"
@@ -287,6 +364,16 @@ const bannerStyle = computed(() => ({
   &:hover {
     border-color: var(--yellow) !important;
   }
+
+  &.on-cooldown {
+    border-color: Rgba(107, 114, 128, 1) !important;
+    cursor: not-allowed;
+    
+    &:hover {
+      border-color: Rgba(107, 114, 128, 1) !important;
+      transform: none !important;
+    }
+  }
 }
 
 .banner-overlay {
@@ -318,6 +405,20 @@ const bannerStyle = computed(() => ({
   max-width: 90%;
 }
 
+.banner-tag-tooltip {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  z-index: calc(var(--z-base) + 4);
+
+  .banner-tag {
+    position: relative;
+    top: auto;
+    right: auto;
+    z-index: auto;
+  }
+}
+
 .banner-tag {
   position: absolute;
   top: 15px;
@@ -330,6 +431,23 @@ const bannerStyle = computed(() => ({
   font-size: 8px;
   box-shadow: 0 4px 10px Rgba(255,51,51,0.3);
   z-index: calc(var(--z-base) + 4);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+
+  &.cooldown {
+    background: Rgba(75, 85, 99, 1);
+    box-shadow: 0 4px 10px Rgba(75,85,99,0.3);
+  }
+
+  .cooldown-emoji {
+    font-size: 11px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    transform: Translatey(-1.5px);
+  }
 }
 
 .pc-banner-grid {

@@ -2,7 +2,7 @@
 <script setup lang="ts">
 
 
-import { ref, computed, watch, watchEffect, nextTick, onMounted, onUnmounted } from 'vue'
+import { ref, computed, watch, watchEffect, nextTick, onMounted, onUnmounted, toValue } from 'vue'
 import { gsap } from 'gsap'
 
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
@@ -1005,7 +1005,8 @@ const runEscapeAnimation = (type: 'teleport' | 'flee') => {
 const handleEscapeEvent = (e: Event) => {
   const data = (e as CustomEvent).detail
   if (data.side === props.side && (!data.pokemon || data.pokemon.uid === props.pokemon?.uid)) {
-    const isTrainerCombat = !!battleStore.state?.isTrainer || !!battleStore.state?.isGym
+    const stateVal = toValue(battleStore.state)
+    const isTrainerCombat = !!stateVal?.isTrainer || !!stateVal?.isGym
     if (isTrainerCombat) return
     runEscapeAnimation(data.type)
   }

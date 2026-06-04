@@ -184,6 +184,9 @@ export default defineConfig({
     port: 5173,
     allowedHosts: true,
     host : true,
+    watch: {
+      ignored: ['**/_raw-assets/**']
+    },
     /* hmr: {
       clientPort: 443,
     }, */

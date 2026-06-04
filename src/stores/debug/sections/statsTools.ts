@@ -1,4 +1,6 @@
 import type { DebugSystem, DebugContext } from '@/stores/debug'
+import { TRAINER_RANKS } from '@/data/trainer'
+
 
 export function registerStatsTools(debug: DebugSystem, { game, ui }: DebugContext) {
   debug.register({
@@ -34,6 +36,11 @@ export function registerStatsTools(debug: DebugSystem, { game, ui }: DebugContex
     category: 'stats',
     action: (val: number) => {
       game.state.trainerLevel = val
+      const idx = Math.min(val - 1, TRAINER_RANKS.length - 1)
+      const rank = TRAINER_RANKS[idx]
+      if (rank) {
+        game.state.trainerExpNeeded = rank.expNeeded
+      }
       ui.notify(`Debug: Nivel ajustado a ${val}`, '⭐')
       game.saveGame(false)
     },

@@ -100,6 +100,7 @@ export interface SaveData {
   warMyPtsLocal: Record<string, number>;
   notificationHistory: unknown[];
   marketSoldSeenIds: string[];
+  lastPokemonCenterHeal?: number;
   _last_updated?: number;
 }
 
@@ -258,7 +259,8 @@ export function serializeState(state: GameState): SaveData {
     warDailyCoins: (state.warDailyCoins || {}) as Record<string, number>,
     warMyPtsLocal: (state.warMyPtsLocal || {}) as Record<string, number>,
     notificationHistory: state.notificationHistory || [],
-    marketSoldSeenIds: state.marketSoldSeenIds || []
+    marketSoldSeenIds: state.marketSoldSeenIds || [],
+    lastPokemonCenterHeal: state.lastPokemonCenterHeal || 0
   };
 }
 
