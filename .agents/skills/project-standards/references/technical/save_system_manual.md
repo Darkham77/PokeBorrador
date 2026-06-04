@@ -65,7 +65,7 @@ If you modify the database schema, you MUST maintain parity across all layers:
 
 ---
 
-## 🔒 Session Conflicts & Authentication
+## 🔑 Login & Authentication Lifecycle
 
 ### 1. Atomic Auth Cleanup
 
@@ -80,6 +80,78 @@ Each browser tab generates a unique `SessionID`:
 
 - **Conflict Detection**: If a change in the `current_session_id` of the DB is detected from another tab, the current instance MUST immediately disable write permissions to prevent data corruption.
 - **Notification**: The `session-conflict` event must be triggered to warn the user.
+
+---
+
+## ⚙️ Version Compatibility Locks & PWA Updates
+
+```mermaid
+flowchart TD
+    Start[PWA Update Detected / Lockout] --> ActiveSession{¿Jugador en partida?<br>isReady == true}
+    ActiveSession -- Sí --> ClickUpdateActive[Usuario hace click en ACTUALIZAR AHORA]
+    ClickUpdateActive --> SafeLogout[Ejecutar authStore.logout<br>Guarda progreso, cierra sesión y recarga]
+    ActiveSession -- No --> ClickUpdateBlocked[Usuario hace click en ACTUALIZAR AHORA]
+    ClickUpdateBlocked --> CleanReload[Limpiar Cachés y SW. Recarga física]
+    SafeLogout --> ReloadPage[Recarga deslogueado]
+    ReloadPage --> ShowBlockedCard[Mostrar Cartel de Actualización en LoginView]
+    ShowBlockedCard --> ClickUpdateBlocked
+```
+
+### Secuencia de Inicio (Boot), Validación de Versión y Login
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Usuario
+    participant App as App.vue (Startup)
+    participant LoginView as LoginView.vue (Login)
+    participant DB as DBRouter / Servidor
+    participant GameStore as GameStore (Save/Load)
+    
+    Usuario->>App: Iniciar App (Boot / Recarga)
+    Note over App: Cargar sesión de Auth
+    alt Sesión activa detectada (Auto-Login)
+        App->>DB: checkAppVersionCompatibility()
+        DB-->>App: Retorna compatible o OUTDATED_CLIENT
+        alt compatible
+            App->>GameStore: loadGame() (Carga segura de datos)
+            GameStore-->>App: Carga exitosa
+            App->>Usuario: Entrar al juego (Listo)
+        else OUTDATED_CLIENT (Desactualizado)
+            Note over App: Bloquear carga de datos de partida
+            App->>Usuario: Mostrar PVLoadingOverlay "NUEVA VERSIÓN"
+            Usuario->>App: Presiona ACTUALIZAR AHORA
+            App->>Usuario: Limpiar SW/Cachés y forzar Recarga Física
+        end
+    else No hay sesión activa (Pantalla de Login)
+        App->>DB: checkAppVersionCompatibility()
+        DB-->>App: Retorna compatible o OUTDATED_CLIENT
+        alt OUTDATED_CLIENT
+            App->>LoginView: Cargar vista de Login (sin loading overlay)
+            Note over LoginView: Bloquear formulario y mostrar tarjeta "NUEVA VERSIÓN"
+            Usuario->>LoginView: Presiona ACTUALIZAR AHORA
+            LoginView->>Usuario: Limpiar SW/Cachés y forzar Recarga Física
+        else compatible
+            App->>Usuario: Mostrar Pantalla de Login normal
+            Usuario->>LoginView: Ingresar credenciales y Login
+            LoginView->>App: Recargar para iniciar sesión auto-check
+        end
+    end
+```
+
+### 1. Outdated Client Lockout Guard (`OUTDATED_CLIENT`)
+
+- **Rule**: It is STRICTLY FORBIDDEN to invoke `gameStore.save()` or any database persistence methods when the application is blocked on a compatibility lockout screen (such as startup loading checks where `gameStore.isReady === false` or version check returns `OUTDATED_CLIENT`).
+- **Data Safety**: Overwriting saves from an uninitialized or older codebase into a newer server schema will cause critical data loss. The update handler must directly unregister service workers, purge cache storage, and trigger a physical page reload.
+
+### 2. Development Mode Bypass
+
+- **Rule**: In development mode (`import.meta.env.DEV`), client-server compatibility checks must be ignored/bypassed. This avoids developer lockout in local testing environments when the database version has advanced beyond the client's current build version tag.
+
+### 3. The "Logout-Before-Update" Protocol
+
+- **Implementation**: If a service worker update is requested while the user is actively playing (`gameStore.isReady === true`), the system MUST NOT perform a background save directly from the updater. Instead, the update click triggers `authStore.logout()`, which handles saving the player's progress dynamically and safely before logging out and reloading.
+- **Manual Enforcement**: Every reload step redirects the user to the update card if still outdated, requiring explicit click interaction. Silent/automatic reloads are strictly forbidden.
 
 ---
 
@@ -171,21 +243,7 @@ Mobile browsers frequently suspend inactive tabs and silently drop network conne
 
 ---
 
-## 🌐 PWA Updates & Persistence
-
-To prevent data loss during background service worker updates:
-
-### 1. The "Save-Before-Update" Protocol
-
-- **Configuration**: `vite.config.ts` MUST use `registerType: 'prompt'`. Using `'autoUpdate'` is strictly FORBIDDEN as it can trigger reloads while the player is in an unsaved state.
-- **Implementation**: The update modal (`PWAManager.vue`) MUST call `gameStore.save(false)` before executing `updateServiceWorker(true)`.
-  - **Auto-Reload**: Always pass `true` to `updateServiceWorker(true)` to skip waiting and trigger an automatic page refresh.
-  - **Concurrent Clicks Prevention**: Disable the update button immediately after the first click and transition to a loading state to prevent the user from triggering multiple concurrent `gameStore.save()` calls.
-- **WHY**: Ensures that any progress made since the last 60s auto-save is persisted before the browser context is destroyed by the update, and prevents database write locks or data corruption from multiple parallel save operations.
-
----
-
-### 2. Asynchronous Object Integrity (Async Exit Guards)
+## 🛡️ Asynchronous Object Integrity (Async Exit Guards)
 
 Functions that involve `await` or `setTimeout` (especially in battle or menu transitions) MUST NOT assume that the base store object (e.g., `activeBattle.value`) still exists after the promise resolves.
 

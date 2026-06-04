@@ -61,7 +61,7 @@
 
     <!-- 3. Aviso de Actualización -->
     <BaseModal
-      :show="needRefresh"
+      :show="needRefresh && !isAppLoading"
       title="NUEVA VERSIÓN"
       variant="retro"
       :prevent-close="true"
@@ -100,10 +100,7 @@
 </template>
 
 <script setup lang="ts">
-
-
-
-import { ref, onMounted, onUnmounted, watch, type Ref } from 'vue'
+import { ref, onMounted, onUnmounted, watch, computed, type Ref } from 'vue'
 import { gsap } from 'gsap'
 import { usePWA } from '@/composables/usePWA'
 import { useAuthStore } from '@/stores/auth'
@@ -118,18 +115,34 @@ const authStore = useAuthStore()
 const audioStore = useAudioStore()
 const gameStore = useGameStore()
 const loadingStore = useLoadingStore()
-const { canInstall, installApp, needRefresh, updateServiceWorker } = usePWA() as { 
+
+const { 
+  canInstall, 
+  installApp, 
+  needRefresh, 
+  isUpdating, 
+  progress, 
+  progressText, 
+  handleUpdate 
+} = usePWA() as { 
   canInstall: Ref<boolean>; 
   installApp: () => Promise<boolean>; 
   needRefresh: Ref<boolean>; 
-  updateServiceWorker: (reload?: boolean) => Promise<void> 
+  isUpdating: Ref<boolean>;
+  progress: Ref<number>;
+  progressText: Ref<string>;
+  handleUpdate: () => Promise<void>;
 }
 
 const showInstallModal = ref(false)
 const showPermissionsModal = ref(false)
-const isUpdating = ref(false)
-const progress = ref(0)
-const progressText = ref('')
+
+const isAppLoading = computed(() => {
+  if (authStore.user) {
+    return !gameStore.isReady || !loadingStore.isGateOpen
+  }
+  return !loadingStore.isGateOpen
+})
 
 // Gestión de Instalación
 watch(canInstall, (val) => {
@@ -196,48 +209,6 @@ const handlePermissions = async () => {
   showPermissionsModal.value = false
 }
 
-// Gestión de Actualizaciones
-const handleUpdate = async () => {
-  // Prevent concurrent click updates
-  if (isUpdating.value) return
-  isUpdating.value = true
-  progress.value = 10
-  progressText.value = 'Iniciando guardado...'
-
-  // Intentar guardar el juego antes de recargar
-  if (authStore.user && gameStore.save) {
-    try {
-      progress.value = 30
-      progressText.value = 'Guardando progreso...'
-      await gameStore.save(false)
-      progress.value = 60
-      progressText.value = 'Progreso guardado.'
-      logger.success('PWA', 'Juego guardado antes de actualizar SW')
-    } catch (e) {
-      logger.error('PWA', `Error al guardar antes de actualizar: ${(e as Error).message}`)
-      progressText.value = 'Error al guardar. Continuando...'
-    }
-  }
-  
-  progress.value = 80
-  progressText.value = 'Aplicando actualización...'
-  
-  // Salvavidas (fail-safe): Si el Service Worker se queda colgado y no recarga la página en 3.5 segundos, forzamos la recarga física.
-  gsap.delayedCall(3.5, () => {
-    logger.warn('PWA', 'La actualización automática del SW excedió el tiempo límite. Forzando recarga.')
-    window.location.reload()
-  })
-
-  try {
-    await updateServiceWorker(true)
-    progress.value = 100
-    progressText.value = 'Reiniciando...'
-  } catch (e) {
-    logger.error('PWA', `Error al actualizar Service Worker: ${(e as Error).message}`)
-    // Fallback en caso de fallo crítico en la actualización del SW: recarga forzada
-    window.location.reload()
-  }
-}
 
 const handleNeedRefresh = () => {
   logger.info('PWA', 'Received PWA_NEED_REFRESH from GameBus. Showing update modal.')

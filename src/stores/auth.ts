@@ -342,6 +342,19 @@ export const useAuthStore = defineStore('auth', () => {
 
   async function logout() {
     logger.info('AuthStore', 'Iniciando cierre de sesión...')
+
+    // Safe preventative save if game is active
+    try {
+      const { useGameStore } = await import('./game')
+      const gameStore = useGameStore()
+      if (gameStore.isReady && gameStore.save) {
+        logger.info('AuthStore', 'Guardando partida de forma segura antes de cerrar sesión...')
+        await gameStore.save(false)
+      }
+    } catch (e) {
+      logger.warn('AuthStore', `Error al guardar antes de cerrar sesión: ${(e as Error).message}`)
+    }
+
     try {
       if (sessionMode.value === 'online') {
         await supabase.auth.signOut()

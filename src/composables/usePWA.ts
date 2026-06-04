@@ -1,6 +1,10 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { registerSW } from 'virtual:pwa-register'
 import { logger } from '@/logic/utils/logger'
+import { useAuthStore } from '@/stores/auth'
+import { useGameStore } from '@/stores/game'
+import { gsap } from 'gsap'
+import { gameBus } from '@/logic/gameBus'
 
 interface BeforeInstallPromptEvent extends Event {
   readonly platforms: string[];
@@ -11,28 +15,36 @@ interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>;
 }
 
-export function usePWA() {
-  const installEvent = ref<BeforeInstallPromptEvent | null>(null)
-  const canInstall = ref(false)
-  const isInstalled = ref(false)
+// Global Shared State
+const installEvent = ref<BeforeInstallPromptEvent | null>(null)
+const canInstall = ref(false)
+const isInstalled = ref(false)
+const needRefresh = ref(false)
+const isUpdating = ref(false)
+const isOutdatedClient = ref(false)
+const progress = ref(0)
+const progressText = ref('')
 
-  // Vite PWA auto-update logic (Manual reactivity for better compatibility)
-  const needRefresh = ref(false)
-  const updateServiceWorker = registerSW({
-    onNeedRefresh() {
-      needRefresh.value = true
-      logger.info('PWA', 'SW Update available')
-    },
-    onOfflineReady() {
-      logger.info('PWA', 'PWA Offline Ready')
-    },
-    onRegistered(r: ServiceWorkerRegistration | undefined) {
-      logger.debug('PWA', 'SW Registered:', r)
-    },
-    onRegisterError(error: unknown) {
-      logger.error('PWA', `SW registration error: ${(error as Error).message}`)
-    },
-  })
+const updateServiceWorker = registerSW({
+  onNeedRefresh() {
+    needRefresh.value = true
+    isOutdatedClient.value = false // SW background asset update is safe to proceed
+    logger.info('PWA', 'SW Update available')
+  },
+  onOfflineReady() {
+    logger.info('PWA', 'PWA Offline Ready')
+  },
+  onRegistered(r: ServiceWorkerRegistration | undefined) {
+    logger.debug('PWA', 'SW Registered:', r)
+  },
+  onRegisterError(error: unknown) {
+    logger.error('PWA', `SW registration error: ${(error as Error).message}`)
+  },
+})
+
+export function usePWA() {
+  const authStore = useAuthStore()
+  const gameStore = useGameStore()
 
   const handleInstallPrompt = (e: Event) => {
     const installEv = e as BeforeInstallPromptEvent
@@ -74,6 +86,64 @@ export function usePWA() {
     return false
   }
 
+  const handleUpdate = async (options?: { forceNoSave?: boolean }) => {
+    if (isUpdating.value) return
+    isUpdating.value = true
+    progress.value = 10
+    progressText.value = 'Iniciando...'
+
+    // If the game is loaded and ready, we trigger a safe logout to clean session state before reload.
+    if (authStore.user && gameStore.isReady && !options?.forceNoSave) {
+      progress.value = 40
+      progressText.value = 'Cerrando sesión de forma segura...'
+      try {
+        if (authStore.logout) {
+          await authStore.logout()
+          return // logout handles page reload
+        }
+      } catch (e) {
+        logger.error('PWA', `Error during logout on update: ${(e as Error).message}`)
+      }
+    }
+
+    progress.value = 80
+    progressText.value = 'Aplicando actualización...'
+    
+    // Fail-safe: force physical reload if SW doesn't reload the page in 3.5 seconds
+    gsap.delayedCall(3.5, () => {
+      logger.warn('PWA', 'La actualización automática del SW excedió el tiempo límite. Forzando recarga.')
+      window.location.reload()
+    })
+
+    try {
+      // Unregister Service Workers to bypass caching
+      if ('serviceWorker' in navigator) {
+        const registrations = await navigator.serviceWorker.getRegistrations()
+        for (const registration of registrations) {
+          await registration.unregister()
+        }
+      }
+      // Clear all cache storages
+      if ('caches' in window) {
+        const keys = await caches.keys()
+        for (const key of keys) {
+          await caches.delete(key)
+        }
+      }
+      progress.value = 100
+      progressText.value = 'Reiniciando...'
+      window.location.reload()
+    } catch (e) {
+      logger.error('PWA', `Error al actualizar Service Worker: ${(e as Error).message}`)
+      window.location.reload()
+    }
+  }
+
+  const handleNeedRefresh = () => {
+    isOutdatedClient.value = true
+    needRefresh.value = true
+  }
+
   onMounted(() => {
     window.addEventListener('beforeinstallprompt', handleInstallPrompt)
     window.addEventListener('appinstalled', () => {
@@ -82,11 +152,13 @@ export function usePWA() {
       installEvent.value = null
       logger.success('PWA', 'PWA installed successfully')
     })
+    gameBus.on('PWA_NEED_REFRESH', handleNeedRefresh)
     checkInstallState()
   })
 
   onUnmounted(() => {
     window.removeEventListener('beforeinstallprompt', handleInstallPrompt)
+    gameBus.off('PWA_NEED_REFRESH', handleNeedRefresh)
   })
 
   return {
@@ -94,6 +166,10 @@ export function usePWA() {
     isInstalled,
     installApp,
     needRefresh,
+    isUpdating,
+    progress,
+    progressText,
+    handleUpdate,
     updateServiceWorker
   }
 }

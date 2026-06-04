@@ -31,6 +31,7 @@ import { useProfileStore } from '@/stores/profile'
 import { useSocialStore } from '@/stores/social'
 import { useRoute } from 'vue-router'
 import { useBackNavigation } from '@/composables/useBackNavigation'
+import { usePWA } from '@/composables/usePWA'
 
 const authStore = useAuthStore()
 const gameStore = useGameStore()
@@ -40,6 +41,15 @@ const socialStore = useSocialStore()
 const battleStore = useBattleStore()
 const loadingStore = useLoadingStore()
 const route = useRoute()
+
+const { 
+  needRefresh, 
+  isUpdating, 
+  progress, 
+  progressText, 
+  handleUpdate 
+} = usePWA()
+
 
 // Initialize back navigation gesture handler for mobile/hardware back button
 useBackNavigation()
@@ -122,6 +132,10 @@ const isReadyToSeeGame = computed(() => {
 const showLoadingOverlay = computed(() => {
   if (dbIncompatible.value) return false
   if (isSandboxPage.value) return false
+  // Show global blocking overlay for updates only if the user is currently logged in/playing.
+  // If they are logged out (on the login page), we don't cover the screen with the global loading overlay,
+  // allowing the login view to render and present the update option inline.
+  if (needRefresh.value && authStore.user) return true
 
   if (isLoginPage.value) {
     return loadingInfo.value.active
@@ -369,12 +383,39 @@ const onLoadingLeave = (el: Element, done: () => void) => {
       >
         <PVLoadingOverlay
           v-if="showLoadingOverlay"
-          :title="loadingInfo.msg"
-          :message="loadingInfo.sub"
-          status-text="CONECTANDO..."
-          :icon="loadingInfo.icon"
+          :title="needRefresh ? 'NUEVA VERSIÓN' : loadingInfo.msg"
+          :message="needRefresh ? (gameStore.isReady ? '¡Hay una nueva actualización disponible! Se cerrará tu sesión para aplicar los cambios de forma segura.' : '¡Hay una nueva actualización disponible! Es necesario actualizar para mantener la compatibilidad con el servidor.') : loadingInfo.sub"
+          :status-text="needRefresh ? (isUpdating ? 'ACTUALIZANDO...' : 'ACTUALIZACIÓN REQUERIDA') : 'CONECTANDO...'"
+          :icon="needRefresh ? '🔄' : loadingInfo.icon"
+          :show-spinner="!needRefresh || isUpdating"
+          :theme="needRefresh ? 'warning' : 'default'"
           :card-class="loadingInfo.global ? 'global-overlay' : ''"
-        />
+        >
+          <template
+            v-if="needRefresh"
+            #actions
+          >
+            <div
+              v-if="isUpdating"
+              class="pwa-progress-wrapper"
+            >
+              <div class="pwa-progress-container">
+                <div
+                  class="pwa-progress-bar"
+                  :style="{ width: `${progress}%` }"
+                />
+              </div>
+              <span class="pwa-progress-text">{{ progressText }}</span>
+            </div>
+            <button
+              v-else
+              class="pv-button-retro"
+              @click.stop="() => handleUpdate()"
+            >
+              ACTUALIZAR AHORA
+            </button>
+          </template>
+        </PVLoadingOverlay>
       </Transition>
     </Teleport>
 
@@ -456,6 +497,64 @@ const onLoadingLeave = (el: Element, done: () => void) => {
   margin: 0;
   padding: 0;
   background: $darker;
+}
+
+.pwa-progress-wrapper {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.pwa-progress-container {
+  width: 100%;
+  height: 16px;
+  background: Rgba(0, 0, 0, 0.5);
+  border: 2px solid var(--yellow);
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+
+.pwa-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--yellow) 0%, #ffc107 100%);
+  box-shadow: 0 0 8px var(--yellow);
+}
+
+.pwa-progress-text {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
+  color: #fff;
+  text-shadow: 1px 1px 0 #000;
+  @include pixelated;
+}
+
+.pv-button-retro {
+  @include pixelated;
+  background: var(--yellow);
+  color: black;
+  border: none;
+  padding: 12px 24px;
+  font-size: 12px;
+  cursor: pointer;
+  
+  width: 100%;
+  border-radius: 4px;
+  box-shadow: 0 4px 0 #b39200;
+  margin-top: 15px;
+  
+  &:hover {
+    transform: Translatey(-2px);
+    box-shadow: 0 6px 0 #b39200;
+  }
+  
+  &:active {
+    transform: Translatey(2px);
+    box-shadow: 0 0 0 #b39200;
+  }
 }
 
 .zoom-target {
