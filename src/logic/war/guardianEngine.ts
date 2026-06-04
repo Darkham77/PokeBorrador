@@ -6,7 +6,7 @@
  * 
  * Absolute isolation: This module does not store state or connect to DB.
  */
-import { GAME_TIMEZONE } from '../timeUtils.ts'
+import { getArgDateString } from '../timeUtils.ts'
 
 
 export interface GuardianBase {
@@ -63,21 +63,7 @@ export function hashString(str: string): number {
   return Math.abs(hash)
 }
 
-/**
- * Gets a clean date string for the configured game timezone.
- * @param {Date} date 
- * @returns {string} YYYY-MM-DD
- */
-function getArgDateString(date: Date | Temporal.ZonedDateTime | Temporal.Instant = Temporal.Now.instant()): string {
-  const zdt = (date instanceof Temporal.ZonedDateTime)
-    ? date
-    : (date instanceof Date 
-        ? Temporal.Instant.fromEpochMilliseconds(date.getTime()) 
-        : (date instanceof Temporal.Instant ? date : Temporal.Now.instant())
-      ).toZonedDateTimeISO(GAME_TIMEZONE)
-    
-  return zdt.toPlainDate().toString();
-}
+
 
 /**
  * Calculates current conflict zones for a given date.

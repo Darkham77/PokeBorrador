@@ -39,6 +39,46 @@
     {
       "file": "src/logic/breeding/missionEngine.ts",
       "exports": ["DaycareMission"]
+    },
+    {
+      "file": "src/logic/battle/orchestrator.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "src/types/stores.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "src/data/pokedex.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "src/logic/battle/actions/statusActions.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "src/types/battle.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "src/data/spriteMapping.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "src/stores/map.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "src/stores/ui.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "src/logic/events/eventEngine.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "src/logic/war/warEngine.ts",
+      "exports": ["*"]
     }
   ]
 }

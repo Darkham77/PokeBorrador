@@ -31,21 +31,7 @@ export const WEEKLY_WIN_BONUS_COINS = 50
 
 
 
-/**
- * Gets a clean date string for the configured game timezone.
- * @param {Date | Temporal.ZonedDateTime} date 
- * @returns {string} YYYY-MM-DD
- */
-export function getArgDateString(date: Date | Temporal.ZonedDateTime | Temporal.Instant = Temporal.Now.instant()): string {
-  const zdt = (date instanceof Temporal.ZonedDateTime)
-    ? date
-    : (date instanceof Date 
-        ? Temporal.Instant.fromEpochMilliseconds(date.getTime()) 
-        : (date instanceof Temporal.Instant ? date : Temporal.Now.instant())
-      ).toZonedDateTimeISO(GAME_TIMEZONE)
-  
-  return zdt.toPlainDate().toString()
-}
+
 
 /**
  * Calculates the current week ID based on the ISO 8601 standard.

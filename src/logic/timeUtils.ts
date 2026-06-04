@@ -228,3 +228,17 @@ export function parseZonedTime(
   }
 }
 
+export function getArgDateString(
+  date: Date | Temporal.ZonedDateTime | Temporal.Instant = Temporal.Now.instant()
+): string {
+  const zdt = (date instanceof Temporal.ZonedDateTime)
+    ? date
+    : (date instanceof Date 
+        ? Temporal.Instant.fromEpochMilliseconds(date.getTime()) 
+        : (date instanceof Temporal.Instant ? date : Temporal.Now.instant())
+      ).toZonedDateTimeISO(GAME_TIMEZONE);
+    
+  return zdt.toPlainDate().toString();
+}
+
+

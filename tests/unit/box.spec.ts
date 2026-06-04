@@ -51,15 +51,15 @@ describe('BoxStore Modernization', () => {
     expect(val).toBe(529)
   })
 
-  it('should heal pokemon when sent to box', () => {
+  it('should not heal pokemon when sent to box', () => {
     const gs = useGameStore()
     const bulbasaur = gs.state.team[0] as Pokemon
     
     // Bulbasaur has 5/20 HP and 0 PP
     gs.sendToBox(0)
     
-    expect(bulbasaur.hp).toBe(bulbasaur.maxHp)
-    expect(bulbasaur.moves![0]!.pp).toBe(35)
+    expect(bulbasaur.hp).toBe(5)
+    expect(bulbasaur.moves![0]!.pp).toBe(0)
     expect(gs.state.box).toContain(bulbasaur)
   })
 

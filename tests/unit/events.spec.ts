@@ -18,7 +18,7 @@ describe('Event Engine Logic', () => {
     const event = { 
       active: true, 
       start_at: '2026-04-10T00:00:00Z', 
-      ends_at: '2026-04-20T00:00:00Z' 
+      end_at: '2026-04-20T00:00:00Z' 
     }
     const internalDate = Temporal.Instant.from('2026-04-15T12:00:00Z')
     const outsideDate = Temporal.Instant.from('2026-04-25T12:00:00Z')
