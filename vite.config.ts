@@ -85,8 +85,12 @@ function devDbImportPlugin() {
   }
 }
 
-// Leer timezone desde .env
+// Leer timezone desde .env (solo durante build)
 const getEnvTimezone = (): string => {
+  if (typeof process !== 'undefined' && process.env) {
+    if (process.env.VITE_TIMEZONE) return process.env.VITE_TIMEZONE;
+    if (process.env.TZ) return process.env.TZ;
+  }
   try {
     const envPath = path.resolve(__dirname, '.env')
     const envContent = fs.readFileSync(envPath, 'utf-8')
@@ -100,22 +104,39 @@ const getEnvTimezone = (): string => {
   return 'UTC'
 }
 
+// Calcular versión solo una vez al cargar el módulo,
+// pero SOLO escribir version.json en el hook buildStart (ver versionPlugin).
 const buildInstant = Temporal.Now.instant().toZonedDateTimeISO(getEnvTimezone());
-const appVersion = 'v' + buildInstant.toString().replace(/[:T-]/g, '.').split('.')[0] + 
+const appVersion = 'v' + buildInstant.toString().replace(/[:T-]/g, '.').split('.')[0] +
   '.' + buildInstant.month.toString().padStart(2, '0') +
   '.' + buildInstant.day.toString().padStart(2, '0') +
-  '.' + buildInstant.hour.toString().padStart(2, '0') + 
+  '.' + buildInstant.hour.toString().padStart(2, '0') +
   buildInstant.minute.toString().padStart(2, '0');
 
-// Write version to public/version.json for PWA version checking
-try {
-  const publicDir = path.resolve(__dirname, 'public');
-  if (!fs.existsSync(publicDir)) {
-    fs.mkdirSync(publicDir, { recursive: true });
+/**
+ * Plugin que escribe public/version.json ÚNICAMENTE durante `npm run build`.
+ * En modo dev o test, el archivo NO se toca para preservar la versión
+ * de la última compilación real desplegada en el servidor.
+ */
+function versionPlugin() {
+  return {
+    name: 'version-json-writer',
+    buildStart() {
+      try {
+        const publicDir = path.resolve(__dirname, 'public');
+        if (!fs.existsSync(publicDir)) {
+          fs.mkdirSync(publicDir, { recursive: true });
+        }
+        fs.writeFileSync(
+          path.resolve(publicDir, 'version.json'),
+          JSON.stringify({ version: appVersion }, null, 2)
+        );
+        console.log(`📦 [version] Versión de compilación registrada: ${appVersion}`);
+      } catch (e) {
+        console.error('Failed to write version.json:', e);
+      }
+    }
   }
-  fs.writeFileSync(path.resolve(publicDir, 'version.json'), JSON.stringify({ version: appVersion }, null, 2));
-} catch (e) {
-  console.error('Failed to write version.json:', e);
 }
 
 // Detect if building on GitHub Actions for GitHub Pages
@@ -131,6 +152,7 @@ export default defineConfig({
     migrationsPlugin(),
     devDbImportPlugin(),
     sassTrapsFixer(),
+    versionPlugin(),
     VitePWA({
       registerType: 'prompt',
       includeAssets: ['sql-wasm.wasm', 'assets/fondo/logo%203.webp'],
