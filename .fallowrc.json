@@ -3,7 +3,10 @@
   "ignorePatterns": [
     "backup_legacy_code/**",
     "showdown/**",
-    "scratch/**"
+    "scratch/**",
+    "scripts/**",
+    "supabase/**",
+    ".agents/**"
   ],
   "entry": [
     "src/index.{ts,tsx,js,jsx}",
