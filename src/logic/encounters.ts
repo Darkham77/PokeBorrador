@@ -435,6 +435,47 @@ function generateGroundEncounter(
 }
 
 /**
+ * Calculates weights for ground, fishing, and archaeology encounter methods.
+ */
+function calculateEncounterTypeWeights(
+  loc: MapLocation,
+  weather: string,
+  state: EncounterState,
+  options: EncounterOptions
+): { groundWeight: number; fishingWeight: number; archWeight: number; totalWeight: number } {
+  const isRainy = ['rain', 'heavy_rain', 'storm', 'thunderstorm'].includes(weather.toLowerCase());
+  const climateFishingMultiplier = isRainy ? 1.20 : 1.0;
+  const fishingBonus = (options.eventFishingBonus || 1) * climateFishingMultiplier;
+
+  const groundWeight = 100;
+
+  let fishingWeight = 0;
+  if (loc.fishing) {
+    fishingWeight = GAME_RATIOS.encounters.fishing * 100 * fishingBonus;
+    if ((state.fishingRodSecs || 0) > 0) {
+      fishingWeight += 600;
+    }
+  }
+
+  let archWeight = 0;
+  if (loc.archaeology) {
+    const isCave = !!loc.isCave;
+    const isMountain = !!loc.isMountain;
+    archWeight = isCave ? 10 : (isMountain ? 5 : 0);
+    if ((state.pickaxeSecs || 0) > 0 || (state.brushSecs || 0) > 0) {
+      archWeight += 600;
+    }
+  }
+
+  return {
+    groundWeight,
+    fishingWeight,
+    archWeight,
+    totalWeight: groundWeight + fishingWeight + archWeight
+  };
+}
+
+/**
  * Main logic to generate a wild encounter.
  * Decomposes complex logic flows into single-responsibility utilities.
  */
@@ -466,31 +507,7 @@ export async function generateEncounter(locId: string, state: EncounterState, op
 
   // 4. Weighted Encounter Roll (Walking vs Fishing vs Archaeology)
   const weather = options.weather || 'clear';
-  const isRainy = ['rain', 'heavy_rain', 'storm', 'thunderstorm'].includes(weather.toLowerCase());
-  const climateFishingMultiplier = isRainy ? 1.20 : 1.0;
-  const fishingBonus = (options.eventFishingBonus || 1) * climateFishingMultiplier;
-
-  const groundWeight = 100;
-
-  let fishingWeight = 0;
-  if (loc.fishing) {
-    fishingWeight = GAME_RATIOS.encounters.fishing * 100 * fishingBonus;
-    if ((state.fishingRodSecs || 0) > 0) {
-      fishingWeight += 600;
-    }
-  }
-
-  let archWeight = 0;
-  if (loc.archaeology) {
-    const isCave = !!loc.isCave;
-    const isMountain = !!loc.isMountain;
-    archWeight = isCave ? 10 : (isMountain ? 5 : 0);
-    if ((state.pickaxeSecs || 0) > 0 || (state.brushSecs || 0) > 0) {
-      archWeight += 600;
-    }
-  }
-
-  const totalWeight = groundWeight + fishingWeight + archWeight;
+  const { fishingWeight, archWeight, totalWeight } = calculateEncounterTypeWeights(loc, weather, state, options);
   const roll = Math.random() * totalWeight;
 
   if (loc.fishing && roll < fishingWeight) {
