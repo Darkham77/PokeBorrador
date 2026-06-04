@@ -196,6 +196,19 @@ Notify the user that the commits (Snapshot and Optimization) have been successfu
 
 - **MANUAL PUSH MANDATE**: You are FORBIDDEN from executing `git push`. You MUST inform the user that the local repository is clean and updated, and they should perform the `push` manually when ready.
 - **Zero Audit Failures**: The project is now fully migrated. Under NO circumstances are audit failures (SASS, Aesthetics, Length, FSM, Types, Lint) allowed in any commit. Every single commit must be 100% clean and compliant with the validation pipeline.
+- **DATABASE & REMOTE SYNCHRONIZATION ALERT**: You MUST display a prominent warning notice at the very end of your response to the user. Inform the user that they must push their changes to the remote repository and update the database schemas on the servers, or they will not be able to enter the game. Provide clear example commands for doing this:
+  - **Pushing changes to remote**:
+    ```bash
+    git push origin main
+    ```
+  - **Updating database on a specific server**:
+    ```bash
+    npm run servers:db:update -- --server=<profile>
+    ```
+  - **Updating database on all configured servers**:
+    ```bash
+    npm run servers:db:update -- --all
+    ```
 
 ## Commit Message Standards (The Elegant Protocol)
 
