@@ -4,7 +4,7 @@ import { gsap } from 'gsap'
 import { useAuthStore } from '@/stores/auth'
 import { useGameStore } from '@/stores/game'
 import { initGlobalErrorHandlers } from '@/logic/errorHandler'
-import { checkDBCompatibility, DBRouter, type DBCompatibilityResponse } from '@/logic/db/dbRouter'
+import { checkDBCompatibility, DBRouter, type DBCompatibilityResponse, checkAppVersionCompatibility, type AppCompatibilityResponse } from '@/logic/db/dbRouter'
 
 import MainGameView from '@/views/MainGameView.vue'
 import ErrorOverlay from '@/components/common/ErrorOverlay.vue'
@@ -17,7 +17,9 @@ import PWAManager from '@/components/common/PWAManager.vue'
 import SVGFilters from '@/components/common/SVGFilters.vue'
 import PVLoadingOverlay from '@/components/common/PVLoadingOverlay.vue'
 import VersionLockOverlay from '@/components/overlays/VersionLockOverlay.vue'
+import AppVersionLockOverlay from '@/components/overlays/AppVersionLockOverlay.vue'
 import SessionLockOverlay from '@/components/overlays/SessionLockOverlay.vue'
+import { gameBus } from '@/logic/gameBus'
 import { useUIStore } from '@/stores/ui'
 import { useBattleStore } from '@/stores/battle'
 import { useLoadingStore } from '@/stores/loading'
@@ -44,6 +46,8 @@ useBackNavigation()
 
 const dbIncompatible = ref(false)
 const dbVersionInfo = ref<DBCompatibilityResponse | null>(null)
+const appIncompatible = ref(false)
+const appVersionInfo = ref<AppCompatibilityResponse | null>(null)
 // Mutex: prevents concurrent executions of initGameSession() caused by the
 // watcher firing while onMounted's async call is still in progress.
 const isSessionInitializing = ref(false)
@@ -137,6 +141,18 @@ const initGameSession = async () => {
         dbIncompatible.value = true
         dbVersionInfo.value = comp
         return
+      }
+
+      const appComp = await checkAppVersionCompatibility(gameStore.db as unknown as DBRouter)
+      if (!appComp.compatible) {
+        appVersionInfo.value = appComp
+        if (appComp.error === 'OUTDATED_SERVER') {
+          appIncompatible.value = true
+          return
+        } else if (appComp.error === 'OUTDATED_CLIENT') {
+          logger.warn('App', `Cliente desactualizado (${appComp.client}) vs Servidor (${appComp.server}). Forzando actualización de PWA...`)
+          gameBus.emit('FORCE_PWA_UPDATE')
+        }
       }
       
       await gameStore.loadGame()
@@ -311,6 +327,19 @@ const onLoadingLeave = (el: Element, done: () => void) => {
         <VersionLockOverlay
           :client-version="dbVersionInfo?.client"
           :db-version="dbVersionInfo?.db"
+          @retry="handleRetry"
+          @logout="handleLogout"
+        />
+      </Teleport>
+
+      <!-- Bloqueo por Versión de Compilación Vieja -->
+      <Teleport
+        v-if="appIncompatible"
+        to="body"
+      >
+        <AppVersionLockOverlay
+          :client-version="appVersionInfo?.client"
+          :server-version="appVersionInfo?.server"
           @retry="handleRetry"
           @logout="handleLogout"
         />

@@ -101,6 +101,22 @@ const getEnvTimezone = (): string => {
 }
 
 const buildInstant = Temporal.Now.instant().toZonedDateTimeISO(getEnvTimezone());
+const appVersion = 'v' + buildInstant.toString().replace(/[:T-]/g, '.').split('.')[0] + 
+  '.' + buildInstant.month.toString().padStart(2, '0') +
+  '.' + buildInstant.day.toString().padStart(2, '0') +
+  '.' + buildInstant.hour.toString().padStart(2, '0') + 
+  buildInstant.minute.toString().padStart(2, '0');
+
+// Write version to public/version.json for PWA version checking
+try {
+  const publicDir = path.resolve(__dirname, 'public');
+  if (!fs.existsSync(publicDir)) {
+    fs.mkdirSync(publicDir, { recursive: true });
+  }
+  fs.writeFileSync(path.resolve(publicDir, 'version.json'), JSON.stringify({ version: appVersion }, null, 2));
+} catch (e) {
+  console.error('Failed to write version.json:', e);
+}
 
 // Detect if building on GitHub Actions for GitHub Pages
 const isGithubActions = !!process.env.GITHUB_ACTIONS
@@ -156,13 +172,7 @@ export default defineConfig({
   ],
   define: {
     __BUILD_TIME__: JSON.stringify(buildInstant.year.toString()),
-    __APP_VERSION__: JSON.stringify(
-      'v' + buildInstant.toString().replace(/[:T-]/g, '.').split('.')[0] + 
-      '.' + buildInstant.month.toString().padStart(2, '0') +
-      '.' + buildInstant.day.toString().padStart(2, '0') +
-      '.' + buildInstant.hour.toString().padStart(2, '0') + 
-      buildInstant.minute.toString().padStart(2, '0')
-    )
+    __APP_VERSION__: JSON.stringify(appVersion)
   },
   resolve: {
     alias: {

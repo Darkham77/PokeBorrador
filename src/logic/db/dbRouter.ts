@@ -429,3 +429,58 @@ export async function checkDBCompatibility(router: DBRouter): Promise<DBCompatib
     return { compatible: true, client: CLIENT_DB_VERSION, db: 0 };
   }
 }
+
+declare const __APP_VERSION__: string;
+
+export interface AppCompatibilityResponse {
+  compatible: boolean;
+  client: string;
+  server: string;
+  error?: 'OUTDATED_SERVER' | 'OUTDATED_CLIENT';
+}
+
+export async function checkAppVersionCompatibility(router: DBRouter): Promise<AppCompatibilityResponse> {
+  const clientVer = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : 'v0.5.0';
+  let serverVer = '';
+  
+  try {
+    const client = router.realClient;
+    if (router.mode === 'offline' || !client) {
+      const results = await queryLocal("SELECT value FROM system_config WHERE key = 'app_version'");
+      if (results.length > 0) {
+        const valObj = (results[0] as { value: unknown }).value;
+        serverVer = typeof valObj === 'string' ? valObj : (valObj as Record<string, string>)?.app_version || '';
+      }
+    } else {
+      const { data, error } = await client
+        .from('system_config')
+        .select('value')
+        .eq('key', 'app_version')
+        .maybeSingle();
+      if (!error && data && data.value) {
+        const valObj = data.value;
+        serverVer = typeof valObj === 'string' ? valObj : (valObj as Record<string, string>)?.app_version || '';
+      }
+    }
+  } catch (e) {
+    logger.error('DBRouter', 'App version check failed.', (e as Error).message);
+  }
+
+  if (!serverVer) {
+    // If not set yet on the database, consider compatible to avoid locking access
+    return { compatible: true, client: clientVer, server: clientVer };
+  }
+
+  // Compare versions lexicographically (format vYYYY.MM.DD.HHMM)
+  if (clientVer === serverVer) {
+    return { compatible: true, client: clientVer, server: serverVer };
+  }
+
+  if (clientVer > serverVer) {
+    // Client is newer than Server
+    return { compatible: false, client: clientVer, server: serverVer, error: 'OUTDATED_SERVER' };
+  } else {
+    // Client is older than Server
+    return { compatible: false, client: clientVer, server: serverVer, error: 'OUTDATED_CLIENT' };
+  }
+}

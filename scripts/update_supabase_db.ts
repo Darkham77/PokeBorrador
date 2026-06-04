@@ -189,6 +189,25 @@ export async function updateSupabaseDb() {
         `;
       }
 
+      // 5. Sincronizar app_version en system_config
+      let appVersion = 'v0.5.0';
+      try {
+        const verPath = path.resolve(process.cwd(), 'public/version.json');
+        const verContent = JSON.parse(await fsPromises.readFile(verPath, 'utf-8'));
+        if (verContent && verContent.version) {
+          appVersion = verContent.version;
+        }
+      } catch (_e) {
+        // Fallback
+      }
+      console.log(styleText('cyan', `🔄 Sincronizando app_version en system_config de [${profile}] a la versión: ${appVersion}`));
+      await sql`
+        INSERT INTO public.system_config (key, value) 
+        VALUES ('app_version', ${appVersion}::jsonb) 
+        ON CONFLICT (key) 
+        DO UPDATE SET value = EXCLUDED.value, updated_at = NOW()
+      `;
+
       if (patchesApplied === 0) {
         console.log(styleText('green', `✨ La base de datos de [${profile}] ya está completamente actualizada. No se requieren parches.`));
       } else {

@@ -103,7 +103,7 @@
 
 
 
-import { ref, onMounted, watch, type Ref } from 'vue'
+import { ref, onMounted, onUnmounted, watch, type Ref } from 'vue'
 import { gsap } from 'gsap'
 import { usePWA } from '@/composables/usePWA'
 import { useAuthStore } from '@/stores/auth'
@@ -111,6 +111,7 @@ import { useAudioStore } from '@/stores/audio'
 import { useGameStore } from '@/stores/game'
 import { useLoadingStore } from '@/stores/loading'
 import { logger } from '@/logic/utils/logger'
+import { gameBus } from '@/logic/gameBus'
 import BaseModal from './BaseModal.vue'
 
 const authStore = useAuthStore()
@@ -238,13 +239,23 @@ const handleUpdate = async () => {
   }
 }
 
+const handleForceUpdate = () => {
+  logger.info('PWA', 'Received FORCE_PWA_UPDATE from GameBus')
+  needRefresh.value = true
+}
+
 onMounted(() => {
+  gameBus.on('FORCE_PWA_UPDATE', handleForceUpdate)
   // Pequeño delay para no abrumar al cargar
   gsap.delayedCall(2, () => {
     if (canInstall.value && !authStore.user) {
       showInstallModal.value = true
     }
   })
+})
+
+onUnmounted(() => {
+  gameBus.off('FORCE_PWA_UPDATE', handleForceUpdate)
 })
 </script>
 

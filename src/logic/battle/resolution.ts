@@ -519,6 +519,7 @@ async function calculateBattleRewards(ctx: BattleContext) {
   const levelUpMap = new Map<string, { levelsGained: number; moves: PokemonMove[] }>()
   let totalMoneyGained = 0
   let totalCoinsGained = 0
+  let totalTrainerExpGained = 0
 
   const isGymRematch = active.isGym && active.gymId && ctx.gs.state.defeatedGyms.includes(active.gymId)
 
@@ -570,6 +571,10 @@ async function calculateBattleRewards(ctx: BattleContext) {
       coins = Math.floor(coins * eventMult)
       totalCoinsGained += coins
     }
+
+    // Trainer experience formula: isGym ? level * 5 : level * 2
+    const trainerExpGain = active.isGym ? (e.level * 5) : (e.level * 2)
+    totalTrainerExpGained += trainerExpGain
   }
 
   // Award consolidated rewards
@@ -579,6 +584,11 @@ async function calculateBattleRewards(ctx: BattleContext) {
   if (totalCoinsGained > 0) {
     ctx.gs.state.battleCoins = (ctx.gs.state.battleCoins || 0) + totalCoinsGained
     ctx.addLog(`¡Obtuviste ${totalCoinsGained} Battle Coins en total!`, 'log-info', 'player')
+  }
+
+  if (totalTrainerExpGained > 0) {
+    ctx.gs.addTrainerExp(totalTrainerExpGained)
+    ctx.addLog(`¡Ganaste ${totalTrainerExpGained} EXP de entrenador!`, 'log-info', 'player')
   }
 
   // Print consolidated EXP and trigger Level Ups

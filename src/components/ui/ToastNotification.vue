@@ -48,7 +48,7 @@ const uiStore = useUIStore()
 
   &.is-fullscreen-toast {
     top: 20px;
-    z-index: var(--z-max-value);
+    z-index: var(--z-critical);
   }
 }
 
@@ -93,7 +93,7 @@ const uiStore = useUIStore()
 /* Animations */
 .toast-enter-active,
 .toast-leave-active {
-  
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .toast-enter-from {
@@ -115,7 +115,7 @@ const uiStore = useUIStore()
     right: 20px;
     max-width: calc(100dvw - 40px);
     align-items: flex-end;
-    z-index: var(--z-max-value); // Ensure it's above EVERYTHING
+    z-index: var(--z-critical); // Ensure it's above EVERYTHING
   }
 }
 </style>
