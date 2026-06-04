@@ -53,7 +53,7 @@ describe('PokemonStatusSection - Tooltips', () => {
     const abilityTooltip = tooltips.find(t => t.props('title') === 'HABILIDAD')
     
     expect(abilityTooltip).toBeDefined()
-    expect(abilityTooltip!.props('description')).toContain('Puede envenenar al objetivo al mínimo contacto')
+    expect(abilityTooltip!.props('description')).toContain('• El contacto físico puede envenenar al rival (30%).')
   })
 
   it('should handle case-insensitive nature lookups', () => {

@@ -148,7 +148,7 @@
   background-color: Rgba(0, 255, 255, 0.15);
   box-sizing: border-box;
   pointer-events: none;
-  z-index: 9999;
+  z-index: calc(var(--z-overlay) - 1);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -210,7 +210,7 @@
     width: 108px; // Largo exacto para conectar con la esquina izquierda del rival
     height: 100px;
     pointer-events: none;
-    z-index: 5;
+    z-index: var(--z-map-grass-back);
     
     svg {
       width: 100%;

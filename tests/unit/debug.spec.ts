@@ -29,7 +29,7 @@ vi.mock('@/logic/supabase', () => ({
   }
 }))
 
-import { mockLocalStorage } from '../helpers/debugSetup'
+import { mockLocalStorage } from '../helpers/debugSetup.ts'
 
 mockLocalStorage()
 

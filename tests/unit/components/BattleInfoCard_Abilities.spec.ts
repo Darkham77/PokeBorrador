@@ -44,7 +44,7 @@ vi.mock('@/logic/weather/weatherRegistry', () => ({
   WEATHER_VISUAL_METADATA: {}
 }))
 
-import { mockLocalStorage } from '../../helpers/debugSetup'
+import { mockLocalStorage } from '../../helpers/debugSetup.ts'
 
 mockLocalStorage()
 
@@ -92,8 +92,8 @@ describe('BattleInfoCard - Ability Tooltips', () => {
     const abilityStatus = vs.find(s => s.icon === '🧠')
     
     expect(abilityStatus).toBeDefined()
-    expect(abilityStatus!.text).toContain('HABILIDAD: PUNTO TÓXICO')
-    expect(abilityStatus!.text).toContain('Puede envenenar al objetivo al mínimo contacto')
+    expect(abilityStatus!.text).toContain('HABILIDAD - PUNTO TÓXICO:')
+    expect(abilityStatus!.text).toContain('• El contacto físico puede envenenar al rival (30%).')
   })
 
   it('should handle case-insensitive ability names', async () => {
@@ -109,8 +109,8 @@ describe('BattleInfoCard - Ability Tooltips', () => {
     const abilityStatus = vs.find(s => s.icon === '🧠')
     
     expect(abilityStatus).toBeDefined()
-    expect(abilityStatus!.text).toContain('HABILIDAD: PUNTO TÓXICO')
-    expect(abilityStatus!.text).toContain('Puede envenenar al objetivo al mínimo contacto')
+    expect(abilityStatus!.text).toContain('HABILIDAD - PUNTO TÓXICO:')
+    expect(abilityStatus!.text).toContain('• El contacto físico puede envenenar al rival (30%).')
   })
 
   it('should show "Sin descripción disponible" for unknown abilities', async () => {

@@ -116,7 +116,7 @@ describe('Pokedex Detail UI Components', () => {
       const abilityTooltip = wrapper.find('.ability-card').getComponent(PVTooltip)
       
       expect(natureTooltip.props('description')).toBe('Sin efecto en estadísticas.')
-      expect(abilityTooltip.props('description')).toBe('Hace que el rival gaste el doble de PP al usar sus movimientos.')
+      expect(abilityTooltip.props('description')).toBe('• Fuerza al rival a consumir el doble de PP por ataque.')
     })
   })
 })

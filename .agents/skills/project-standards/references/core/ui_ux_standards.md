@@ -308,6 +308,7 @@ All tooltips MUST use the `PVTooltip.vue` system. Native HTML `title` attributes
 - **Scroll Behavior**: Tooltips MUST hide automatically as soon as the user initiates a `scroll`, `wheel`, or `touchmove` event. This prevents "floating" tooltips from losing their anchor during rapid navigation.
 - **Horizontal Edge Flipping**: Tooltips using `pos-left` or `pos-right` (horizontal alignment) MUST perform dynamic horizontal edge checking against the viewport boundary margins. If the tooltip's calculated horizontal boundaries overflow the viewport edges, the position must be dynamically flipped (e.g., from `left` to `right` or vice-versa) to prevent horizontal layout cutoff.
 - **Instant Touch Tooltips for Info Triggers**: For dedicated informational buttons (like the `?` move detail trigger), apply `touch-instant` to bypass the standard 500ms touch-hold delay. These tooltips must display immediately on `touchstart` and remain open after `touchend` until dismissed by a click/tap outside.
+- **Multi-line Modifiers (Indicator Lists)**: Tooltips presenting stat increases, decreases, or immunities MUST structure their description strings with newlines (`\n`) and start lines with dedicated modifier symbols (`▲` for buffs, `▼` for debuffs, `🚫` for immunities, `•` for neutral details). The tooltip parser (`PVTooltip.vue`) splits the text by line and automatically applies semantic styling (e.g. green for buffs, red for debuffs, yellow/gold for neutral/immunities) for a clean list look.
 
 ### 6. Data-Driven Tooltips (In-Game Manuals)
 
