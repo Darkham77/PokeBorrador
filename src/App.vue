@@ -153,8 +153,8 @@ const initGameSession = async () => {
           appIncompatible.value = true
           return
         } else if (appComp.error === 'OUTDATED_CLIENT') {
-          logger.warn('App', `Cliente desactualizado (${appComp.client}) vs Servidor (${appComp.server}). Forzando actualización de PWA...`)
-          gameBus.emit('FORCE_PWA_UPDATE')
+          logger.warn('App', `Cliente desactualizado (${appComp.client}) vs Servidor (${appComp.server}). Mostrando botón de actualización manual.`)
+          gameBus.emit('PWA_NEED_REFRESH')
           return
         }
       }
