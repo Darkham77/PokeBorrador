@@ -448,8 +448,17 @@ export async function checkAppVersionCompatibility(router: DBRouter): Promise<Ap
     if (router.mode === 'offline' || !client) {
       const results = await queryLocal("SELECT value FROM system_config WHERE key = 'app_version'");
       if (results.length > 0) {
-        const valObj = (results[0] as { value: unknown }).value;
-        serverVer = typeof valObj === 'string' ? valObj : (valObj as Record<string, string>)?.app_version || '';
+        let valObj = (results[0] as { value: unknown }).value;
+        if (typeof valObj === 'string') {
+          try {
+            valObj = JSON.parse(valObj);
+          } catch (_e) {}
+        }
+        if (typeof valObj === 'string') {
+          serverVer = valObj;
+        } else if (valObj && typeof valObj === 'object') {
+          serverVer = (valObj as Record<string, string>).app_version || '';
+        }
       }
     } else {
       const { data, error } = await client
@@ -458,8 +467,17 @@ export async function checkAppVersionCompatibility(router: DBRouter): Promise<Ap
         .eq('key', 'app_version')
         .maybeSingle();
       if (!error && data && data.value) {
-        const valObj = data.value;
-        serverVer = typeof valObj === 'string' ? valObj : (valObj as Record<string, string>)?.app_version || '';
+        let valObj = data.value;
+        if (typeof valObj === 'string') {
+          try {
+            valObj = JSON.parse(valObj);
+          } catch (_e) {}
+        }
+        if (typeof valObj === 'string') {
+          serverVer = valObj;
+        } else if (valObj && typeof valObj === 'object') {
+          serverVer = (valObj as Record<string, string>).app_version || '';
+        }
       }
     }
   } catch (e) {

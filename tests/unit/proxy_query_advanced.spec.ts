@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { DBRouter } from '@/logic/db/dbRouter';
+import { DBRouter, checkAppVersionCompatibility } from '@/logic/db/dbRouter';
 import { ProxyQuery } from '@/logic/db/proxyQuery';
 import { queryLocal } from '@/logic/db/sqliteEngine';
 
@@ -116,5 +116,23 @@ describe('ProxyQuery & DBRouter Advanced Features', () => {
     const res = await router.rpc('buy_listing_v2', { p_listing_id: 'list_123' });
     expect(res.error).toBeNull();
     expect((res.data as { money: number }).money).toBe(800);
+  });
+
+  it('should verify checkAppVersionCompatibility offline fallback with older client', async () => {
+    const clientVer = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : 'v0.5.0';
+    const serverVer = 'v2027.01.01.0000'; // definitely newer
+    vi.mocked(queryLocal).mockResolvedValueOnce([{ value: JSON.stringify({ app_version: serverVer }) }]);
+    const res = await checkAppVersionCompatibility(router);
+    expect(res.compatible).toBe(false);
+    expect(res.error).toBe('OUTDATED_CLIENT');
+  });
+
+  it('should verify checkAppVersionCompatibility matching versions', async () => {
+    const clientVer = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : 'v0.5.0';
+    vi.mocked(queryLocal).mockResolvedValueOnce([{ value: JSON.stringify({ app_version: clientVer }) }]);
+    const res = await checkAppVersionCompatibility(router);
+    expect(res.compatible).toBe(true);
+    expect(res.client).toBe(clientVer);
+    expect(res.server).toBe(clientVer);
   });
 });
