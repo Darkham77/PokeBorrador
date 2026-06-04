@@ -33,7 +33,7 @@ const battleItems = computed<BattleItem[]>(() => {
   Object.entries(inventory.value).forEach(([name, qty]) => {
     const count = qty as number
     if (count <= 0) return
-    const itemData = SHOP_ITEMS.find(i => i.name === name)
+    const itemData = SHOP_ITEMS.find(i => i.id === name || i.name === name)
     if (!itemData) return
     
     const isTrainer = battleStore.state?.isTrainer

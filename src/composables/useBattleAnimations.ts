@@ -2,10 +2,11 @@ import { ref, computed, watch, toValue, type MaybeRefOrGetter } from 'vue'
 import { gsap } from 'gsap'
 import { gameBus } from '@/logic/gameBus'
 import { logger } from '@/logic/utils/logger'
-import { awaitAnimation, createTimeline } from '@/logic/utils/gsapHelpers'
 import type { useBattleStore } from '@/stores/battle'
 import type { Pokemon } from '@/types/pokemon'
 import { useBattleCaptureAnimations } from '@/composables/useBattleCaptureAnimations'
+import { useBattleTrainerAnimations } from '@/composables/useBattleTrainerAnimations'
+import { useBattleWildAnimations } from '@/composables/useBattleWildAnimations'
 
 export function useBattleAnimations(
   battleStore: ReturnType<typeof useBattleStore>, 
@@ -49,19 +50,34 @@ export function useBattleAnimations(
     awaitTween
   } = captureAnims
 
-  // 2. Wild / Entry visual states
-  const isWildEntryAnimation = ref(false)
-  const isEmerging = ref(false)
-  const isWildSilhouette = ref(false)
-  const wildRevealActive = ref(false)
-  const upcomingIsEmerging = ref(false)
-  const isWildSilhouetteHalfway = ref(false)
-  const isInitialLoad = ref(true)
-  const silhouetteOpacity = ref(0)
+  // 2. Trainer Domain delegation
+  const trainerAnims = useBattleTrainerAnimations(seats)
+  const {
+    trainerAnimState,
+    isTrainerVisible,
+    triggerTrainerEntry,
+    triggerTrainerDialogs,
+    triggerTrainerRetreat,
+    triggerPokemonCall,
+    resetTrainerStates
+  } = trainerAnims
 
-  // 3. Trainer visual states
-  const trainerAnimState = ref<string | null>(null) // 'entering' | 'retreating' | 'idle'
-  const isTrainerVisible = ref(false)
+  // 3. Wild Domain delegation
+  const wildAnims = useBattleWildAnimations(enemyRef)
+  const {
+    isWildEntryAnimation,
+    isEmerging,
+    isWildSilhouette,
+    wildRevealActive,
+    upcomingIsEmerging,
+    isWildSilhouetteHalfway,
+    isInitialLoad,
+    silhouetteOpacity,
+    revealWildPokemon,
+    triggerWildEmergence,
+    triggerSearchEncounter,
+    resetWildStates
+  } = wildAnims
 
   // 4. Global transition
   const isGlobalFadeActive = ref(false)
@@ -81,33 +97,6 @@ export function useBattleAnimations(
   const isPlayerSpriteSuppressed = computed(() => {
     return !toValue(battleStore.player)
   })
-
-  const revealWildPokemon = async (isInstant = false) => {
-    if (isInstant) {
-      isWildSilhouette.value = false
-      isWildEntryAnimation.value = false
-      wildRevealActive.value = false
-      return
-    }
-
-    wildRevealActive.value = true
-    isWildSilhouette.value = true
-    isWildEntryAnimation.value = true
-    isEmerging.value = false 
-    
-    const tl = createTimeline()
-    tl.to({}, { duration: 0.6 })
-    tl.add(() => {
-      isWildSilhouette.value = false
-      isWildEntryAnimation.value = false
-      wildRevealActive.value = false
-      const enemy = toValue(enemyRef)
-      if (enemy?.isShiny) {
-        gameBus.emit('PLAY_SOUND', 'shiny')
-      }
-    })
-    return awaitAnimation(tl)
-  }
 
   // FSM Watcher for sync
   watch(
@@ -183,13 +172,7 @@ export function useBattleAnimations(
           isWildEntryAnimation.value = true
           wildRevealActive.value = true 
           isWildSilhouette.value = true
-          
-          if (!isEmerging.value) {
-            const tl = createTimeline()
-            tl.add(() => {
-              isEmerging.value = true
-            })
-          }
+          isEmerging.value = true
           break
         
         case 'REVEAL_COLORS':
@@ -227,7 +210,6 @@ export function useBattleAnimations(
           break
 
         case null:
-          // Only clear seats that don't have an active UID-tracked animation in progress
           Object.keys(seats.value).forEach(side => { 
             const seat = seats.value[side]
             if (seat) {
@@ -242,89 +224,10 @@ export function useBattleAnimations(
     }
   )
 
-  const triggerWildEmergence = () => Promise.resolve()
-
-  // --- Trainer flow bridge methods ---
-  // Each method returns a GSAP-backed Promise so the orchestrator can await
-  // real animation completion instead of guessing with hardcoded timers.
-
-  const triggerTrainerEntry = (): Promise<void> => {
-    trainerAnimState.value = 'entering'
-    isTrainerVisible.value = true
-    const tl = createTimeline()
-    // Allow ~1s for the trainer sprite slide-in to settle visually
-    tl.to({}, { duration: 1.0 })
-    return awaitAnimation(tl)
-  }
-
-  const triggerTrainerDialogs = (): Promise<void> => {
-    const tl = createTimeline()
-    // ~0.4s fade-in + ~2.1s minimum read time = 2.5s total
-    tl.to({}, { duration: 2.5 })
-    return awaitAnimation(tl)
-  }
-
-  const triggerTrainerRetreat = (): Promise<void> => {
-    trainerAnimState.value = 'retreating'
-    const tl = createTimeline()
-    tl.to({}, {
-      duration: 0.8
-    })
-    return awaitAnimation(tl)
-  }
-
-  const triggerPokemonCall = (): Promise<void> => {
-    seats.value.seat1.entry.animState = 'releasing'
-    const tl = createTimeline()
-    // Allow ~0.8s for the Poké Ball release animation
-    tl.to({}, { duration: 0.8 })
-    return awaitAnimation(tl)
-  }
-
-  const triggerSearchEncounter = () => {
-    const tl = createTimeline()
-    
-    isWildEntryAnimation.value = true
-    isEmerging.value = false
-
-    tl.to({}, { 
-      duration: 0.5, 
-      onStart: () => { isEmerging.value = true },
-      onComplete: () => { wildRevealActive.value = false }
-    })
-    
-    tl.to({}, {
-      duration: 0.4,
-      onComplete: () => { isWildSilhouette.value = false }
-    })
-
-    tl.to({}, {
-      duration: 0.3,
-      onComplete: () => {
-        isWildEntryAnimation.value = false
-        isEmerging.value = false
-        const enemy = toValue(enemyRef)
-        if (enemy?.isShiny) {
-          gameBus.emit('PLAY_SOUND', 'shiny')
-        }
-      }
-    })
-
-    return awaitAnimation(tl)
-  }
-
   const resetAll = () => {
-    isWildEntryAnimation.value = false
-    isEmerging.value = false
-    isWildSilhouette.value = false
-    wildRevealActive.value = false
-    upcomingIsEmerging.value = false
-    isInitialLoad.value = false
-    trainerAnimState.value = null
-    isTrainerVisible.value = false
+    resetWildStates()
+    resetTrainerStates()
     resetCaptureStates()
-    gsap.killTweensOf(silhouetteOpacity)
-    silhouetteOpacity.value = 0
   }
 
   const registeredListeners: { event: string; callback: EventListener }[] = []
@@ -466,5 +369,4 @@ export function useBattleAnimations(
     handleBlinkRequest,
     awaitTween
   }
-
 }

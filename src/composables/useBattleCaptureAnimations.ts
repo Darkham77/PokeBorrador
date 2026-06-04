@@ -1,10 +1,10 @@
 import { ref, computed, toValue, type MaybeRefOrGetter } from 'vue'
-import gsap from 'gsap'
 import { gameBus } from '@/logic/gameBus'
 import { awaitAnimation, createTimeline } from '@/logic/utils/gsapHelpers'
 import type { useBattleStore } from '@/stores/battle'
 import type { Pokemon } from '@/types/pokemon'
 import { useBattleSeats } from '@/composables/useBattleSeats'
+import { useBattleTweenRegistry } from '@/composables/useBattleTweenRegistry'
 
 export interface CatchSparkle {
   id: string;
@@ -30,6 +30,14 @@ export function useBattleCaptureAnimations(
     getSeat,
     getSeatProperty
   } = useBattleSeats()
+
+  const {
+    activeTweens,
+    pendingTweenResolvers,
+    initTweenRegistryListeners,
+    cleanupTweenRegistryListeners,
+    awaitTween
+  } = useBattleTweenRegistry()
 
   const playerAnimState = computed(() => seats.value.seat1.entry.animState)
   const enemyAnimState = computed(() => seats.value.seat2.entry.animState)
@@ -79,75 +87,13 @@ export function useBattleCaptureAnimations(
     return awaitAnimation(tl)
   }
 
-  const activeTweens = new Map<string, gsap.core.Tween | gsap.core.Timeline>()
-  // Pending resolvers: set when awaitTween is called before the component has mounted.
-  // Resolved immediately by the REGISTER_TWEEN handler when the component fires the event.
-  const pendingTweenResolvers = new Map<string, () => void>()
-
-  const onRegisterTween = (e: Event) => {
-    const data = (e as CustomEvent).detail
-    if (data && data.key && data.tween) {
-      activeTweens.set(data.key, data.tween)
-      // Unblock any awaitTween call that was already waiting for this key
-      const resolver = pendingTweenResolvers.get(data.key)
-      if (resolver) {
-        pendingTweenResolvers.delete(data.key)
-        resolver()
-      }
-    }
-  }
-
   const initListeners = () => {
-    cleanupListeners()
-    gameBus.on('REGISTER_TWEEN', onRegisterTween)
+    initTweenRegistryListeners()
   }
 
   const cleanupListeners = () => {
-    gameBus.off('REGISTER_TWEEN', onRegisterTween)
-    activeTweens.clear()
-    pendingTweenResolvers.clear()
+    cleanupTweenRegistryListeners()
   }
-
-
-  /**
-   * Awaits a GSAP tween registered by BattleCombatant via REGISTER_TWEEN.
-   *
-   * - If the tween is already registered (component was mounted): awaits it directly.
-   * - If not yet registered (component just mounting): blocks on an event-driven Promise
-   *   that resolves the instant the component fires REGISTER_TWEEN — no polling.
-   * - GSAP delayedCall acts as a 2-second safety fallback (not setTimeout).
-   */
-  const awaitTween = async (animKey: string): Promise<void> => {
-    // Fast path: tween already registered
-    const existing = activeTweens.get(animKey)
-    if (existing) {
-      await existing
-      activeTweens.delete(animKey)
-      return
-    }
-
-    // Slow path: wait for the component to fire REGISTER_TWEEN
-    const fallback = { timer: null as ReturnType<typeof gsap.delayedCall> | null }
-    await new Promise<void>(resolve => {
-      pendingTweenResolvers.set(animKey, resolve)
-      // Safety: if component never mounts or has no sprite, unblock after 2s via GSAP (not setTimeout)
-      fallback.timer = gsap.delayedCall(2, () => {
-        if (pendingTweenResolvers.has(animKey)) {
-          pendingTweenResolvers.delete(animKey)
-          resolve()
-        }
-      })
-    })
-    fallback.timer?.kill()
-
-    // Now await the actual GSAP tween (native GSAP coordination)
-    const tween = activeTweens.get(animKey)
-    if (tween) {
-      await tween
-      activeTweens.delete(animKey)
-    }
-  }
-
 
   const handleReleaseRequest = async (detail: string | { side?: string, pokemon?: Pokemon }) => {
     const side = typeof detail === 'string' ? detail : (detail?.side || 'player')
@@ -169,7 +115,6 @@ export function useBattleCaptureAnimations(
     const target = pokemon || (side === 'player' ? battleStore.player : toValue(enemyRef))
     const targetUid = pokemon?.uid || target?.uid || null
 
-    // Reset exit slot if this pokemon is breaking free/releasing from it
     if (exitSlot.pokemonUid === targetUid) {
       exitSlot.animState = null
       exitSlot.pokemonUid = null
@@ -182,9 +127,6 @@ export function useBattleCaptureAnimations(
     slot.animState = 'releasing'
     gameBus.emit('PLAY_SOUND', 'ballHit')
 
-    // Poll until the component mounts, registers the tween, and completes the animation.
-    // Uses retry loop because newly-mounted BattleCombatant components have spriteRef=null
-    // on the first animState watch tick, delaying tween registration by 1-2 frames.
     const animKey = `${side}-${targetUid || 'active'}`
     await awaitTween(animKey)
 
@@ -230,7 +172,6 @@ export function useBattleCaptureAnimations(
     slot.isAnimatingCapture = true
     gameBus.emit('PLAY_SOUND', 'ballHit')
 
-    // Poll until the component registers the tween and the animation completes.
     const animKey = `${side}-${targetUid || 'active'}`
     await awaitTween(animKey)
 
@@ -244,13 +185,11 @@ export function useBattleCaptureAnimations(
       seat.entry.isShaking = true 
       seat.exit.isShaking = true 
       const tl = createTimeline()
-      // La animación de balanceo físico de la Poké Ball en el componente dura 0.60s
       tl.to({}, { duration: 0.60 })
       tl.add(() => { 
         seat.entry.isShaking = false 
         seat.exit.isShaking = false 
       })
-      // Pausa dramática añadida al timeline de GSAP para sincronizar de forma pura
       tl.to({}, { duration: 0.40 })
       return awaitAnimation(tl)
     }
@@ -388,16 +327,13 @@ export function useBattleCaptureAnimations(
     const seat = getSeat(side)
     if (!seat) return
     
-    // Desencadenar la transición de salida en Vue cambiando las propiedades reactivas del asiento
     seat.entry.isCaptureActive = false 
     seat.exit.isCaptureActive = false 
     seat.entry.animState = null
     seat.exit.animState = null
     
-    // Esperar el tween de GSAP de salida registrado por onBallLeave
     await awaitTween(`ball-fadeout-${side}`)
     
-    // Limpieza final tras completarse el desvanecimiento de GSAP
     seat.entry.isAnimatingCapture = false
     seat.exit.isAnimatingCapture = false
     caughtPokemonSnapshot.value = null
@@ -474,5 +410,4 @@ export function useBattleCaptureAnimations(
     initListeners,
     cleanupListeners
   }
-
 }
