@@ -195,16 +195,41 @@ onMounted(async () => {
       const data = await response.json()
       const serverVersion = data.version
       const clientVersion = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : ''
+      
+      const reloadKey = 'pokevicio_pwa_reload_attempted'
       if (clientVersion && serverVersion && clientVersion < serverVersion) {
-        logger.warn('App', `PWA: Client version (${clientVersion}) is older than server version (${serverVersion}). Unregistering SW and reloading...`)
-        if ('serviceWorker' in navigator) {
-          const registrations = await navigator.serviceWorker.getRegistrations()
-          for (const registration of registrations) {
-            await registration.unregister()
+        if (sessionStorage.getItem(reloadKey)) {
+          logger.warn('App', `PWA: Client version (${clientVersion}) is still older than server version (${serverVersion}) after reload. Bypassing infinite reload loop.`)
+        } else {
+          logger.warn('App', `PWA: Client version (${clientVersion}) is older than server version (${serverVersion}). Unregistering SW, clearing caches and reloading...`)
+          sessionStorage.setItem(reloadKey, 'true')
+          
+          if ('caches' in window) {
+            try {
+              const keys = await caches.keys()
+              for (const key of keys) {
+                await caches.delete(key)
+              }
+            } catch (err) {
+              logger.debug('App', 'Caches cleanup skipped', err)
+            }
           }
+          
+          if ('serviceWorker' in navigator) {
+            try {
+              const registrations = await navigator.serviceWorker.getRegistrations()
+              for (const registration of registrations) {
+                await registration.unregister()
+              }
+            } catch (err) {
+              logger.debug('App', 'ServiceWorker cleanup skipped', err)
+            }
+          }
+          window.location.reload()
+          return
         }
-        window.location.reload()
-        return
+      } else {
+        sessionStorage.removeItem(reloadKey)
       }
     }
   } catch (e) {
