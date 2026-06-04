@@ -40,6 +40,7 @@ Accessing items via the combat sidebar HUD must mirror the full inventory logic:
 - **Immediate Action**: Direct use only for Pokéballs (targeting the enemy).
 - **Selection Flow**: For healing/buff items, ALWAYS verify `isValidTarget` first, then open `PokemonSelection` modal to pick the target.
 - **Consistency**: Never bypass the "Ask who to apply" step if the item target is the team.
+- **Item Lookup**: Always query items by both `id` and `name` (`item.id === key || item.name === key`) to match stored inventory items correctly and prevent target resolution failures.
 
 ### 3. Log Orchestration (Battle Mode)
 
