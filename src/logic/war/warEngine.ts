@@ -4,7 +4,7 @@
  * 
  * Absolute isolation: This module does not store state or connect to DB.
  */
-import { GAME_TIMEZONE } from '../timeUtils.ts'
+import { normalizeZonedDateTime } from '../timeUtils.ts'
 
 
 export const WAR_PTS_TABLE: Record<string, { win: number; lose: number }> = {
@@ -40,12 +40,7 @@ export const WEEKLY_WIN_BONUS_COINS = 50
  * @returns {string}
  */
 export function getWeekId(date: Date | Temporal.ZonedDateTime | Temporal.Instant = Temporal.Now.instant()): string {
-  const zdt = (date instanceof Temporal.ZonedDateTime)
-    ? date
-    : (date instanceof Date 
-        ? Temporal.Instant.fromEpochMilliseconds(date.getTime()) 
-        : (date instanceof Temporal.Instant ? date : Temporal.Now.instant())
-      ).toZonedDateTimeISO(GAME_TIMEZONE)
+  const zdt = normalizeZonedDateTime(date)
   
   return `${zdt.yearOfWeek}-W${String(zdt.weekOfYear).padStart(2, '0')}`
 }
@@ -70,12 +65,7 @@ export function getReconciledWeekIds(): string[] {
  * @returns {boolean}
  */
 export function isDisputePhase(date: Date | Temporal.ZonedDateTime | Temporal.Instant = Temporal.Now.instant()): boolean {
-  const zdt = (date instanceof Temporal.ZonedDateTime)
-    ? date
-    : (date instanceof Date 
-        ? Temporal.Instant.fromEpochMilliseconds(date.getTime()) 
-        : (date instanceof Temporal.Instant ? date : Temporal.Now.instant())
-      ).toZonedDateTimeISO(GAME_TIMEZONE)
+  const zdt = normalizeZonedDateTime(date)
   
   const day = zdt.dayOfWeek // 1 (Mon) to 7 (Sun)
   return (day >= 1 && day <= 5)
