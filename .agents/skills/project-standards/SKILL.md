@@ -155,6 +155,7 @@ The project uses a sophisticated audit and validation engine to ensure stability
 - **Zero-Warning Policy**: Zero errors and zero warnings are required for any core system component.
   - **Native TS Mandate**: The use of `tsx` or `ts-node` for running local utility scripts is STRICTLY PROHIBITED. All utility scripts and tests MUST run natively utilizing `node --experimental-strip-types` paired with Node.js 26+ sandboxed permissions flags.
   - **Module Prefix**: Use the `node:` prefix for all built-in module imports (e.g., `import fs from 'node:fs'`).
+- **PWA Cache Reversion & Self-Healing**: To prevent browsers from serving cached, outdated versions of the application (e.g., when navigation redirects are handled via `window.location.href`), the application MUST query a cache-busted `version.json` from the server on startup. If a client-side version mismatch (`client < server`) is detected, programmatically unregister all active service workers and force a hard reload (`window.location.reload()`) to refresh the workspace.
 - **Scratch Directory Mandate**: Any generated logs, text reports, summaries, or audit output files (regardless of file extension: `.txt`, `.log`, `.json`, etc.) created for review, debugging, or later study MUST be stored exclusively in the `scratch/` directory at the project root. Writing temporary report files, summaries, or logs in the project root, source directories, or any other arbitrary directory is strictly forbidden to preserve repository cleanliness.
 
 ### 6. TypeScript Integrity & Zero-Ignore Policy
