@@ -211,6 +211,7 @@ export const useAuthStore = defineStore('auth', () => {
       session.value = data.session
       user.value = data.user as unknown as AuthUser
       sessionMode.value = 'online'
+      safeStorage.setItem('pokevicio_session_mode', 'online')
       if (supabase && typeof supabase.setMode === 'function') {
         supabase.setMode('online')
       }
@@ -355,6 +356,7 @@ export const useAuthStore = defineStore('auth', () => {
     user.value = null
     session.value = null
     sessionMode.value = 'online'
+    safeStorage.setItem('pokevicio_session_mode', 'online')
     if (supabase && typeof supabase.setMode === 'function') {
       supabase.setMode('online')
     }
