@@ -240,8 +240,19 @@ const handleUpdate = async () => {
 }
 
 const handleForceUpdate = () => {
-  logger.info('PWA', 'Received FORCE_PWA_UPDATE from GameBus')
-  needRefresh.value = true
+  logger.info('PWA', 'Received FORCE_PWA_UPDATE from GameBus. Unregistering SW and reloading to force update...')
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistrations().then(async (registrations) => {
+      for (const registration of registrations) {
+        await registration.unregister()
+      }
+      window.location.reload()
+    }).catch(() => {
+      window.location.reload()
+    })
+  } else {
+    window.location.reload()
+  }
 }
 
 onMounted(() => {

@@ -44,6 +44,9 @@ const route = useRoute()
 // Initialize back navigation gesture handler for mobile/hardware back button
 useBackNavigation()
 
+declare const __APP_VERSION__: string
+
+
 const dbIncompatible = ref(false)
 const dbVersionInfo = ref<DBCompatibilityResponse | null>(null)
 const appIncompatible = ref(false)
@@ -182,6 +185,32 @@ useWindowListener('resize', updateScrollbarWidth)
 onMounted(async () => {
   // 1. Init Global Error Handlers (Vue Bridge)
   initGlobalErrorHandlers()
+
+  // Verify if client version matches server version.json to prevent caching issues
+  try {
+    const response = await fetch(`${import.meta.env.BASE_URL}version.json?t=${Date.now()}`, {
+      cache: 'no-store'
+    })
+    if (response.ok) {
+      const data = await response.json()
+      const serverVersion = data.version
+      const clientVersion = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : ''
+      if (clientVersion && serverVersion && clientVersion < serverVersion) {
+        logger.warn('App', `PWA: Client version (${clientVersion}) is older than server version (${serverVersion}). Unregistering SW and reloading...`)
+        if ('serviceWorker' in navigator) {
+          const registrations = await navigator.serviceWorker.getRegistrations()
+          for (const registration of registrations) {
+            await registration.unregister()
+          }
+        }
+        window.location.reload()
+        return
+      }
+    }
+  } catch (e) {
+    logger.error('App', 'Failed to check PWA version.json', (e as Error).message)
+  }
+
 
 
   // 2. Recuperar sesión (Autologin)
