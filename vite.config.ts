@@ -85,53 +85,75 @@ function devDbImportPlugin() {
   }
 }
 
-// Leer timezone desde .env (solo durante build)
-const getEnvTimezone = (): string => {
-  if (typeof process !== 'undefined' && process.env) {
-    if (process.env.VITE_TIMEZONE) return process.env.VITE_TIMEZONE;
-    if (process.env.TZ) return process.env.TZ;
-  }
+// ─── Version System ───────────────────────────────────────────────────────────
+// The developer's LOCAL build is the single source of truth for the version.
+// CI (GitHub Actions) MUST use the already-committed version.json, never
+// recalculate it, so that the deployed web app and the DB always match.
+
+const isCI = !!process.env.GITHUB_ACTIONS;
+
+/** Read the version already committed to public/version.json (used in CI). */
+function readCommittedVersion(): string {
   try {
-    const envPath = path.resolve(__dirname, '.env')
-    const envContent = fs.readFileSync(envPath, 'utf-8')
-    const match = envContent.match(/^VITE_TIMEZONE\s*=\s*(.+)$/m)
-    if (match && match[1]) {
-      return match[1].trim()
+    const verPath = path.resolve(__dirname, 'public', 'version.json');
+    const parsed: unknown = JSON.parse(fs.readFileSync(verPath, 'utf-8'));
+    if (parsed && typeof parsed === 'object' && 'version' in parsed && typeof (parsed as Record<string, unknown>).version === 'string') {
+      return (parsed as { version: string }).version;
     }
   } catch (_e) {
-    // Fallback si hay algún problema
+    // Silently ignore — fallback below
   }
-  return 'UTC'
+  return '';
 }
 
-// Calcular versión solo una vez al cargar el módulo,
-// pero SOLO escribir version.json en el hook buildStart (ver versionPlugin).
-const buildInstant = Temporal.Now.instant().toZonedDateTimeISO(getEnvTimezone());
-const appVersion = 'v' + buildInstant.toString().replace(/[:T-]/g, '.').split('.')[0] +
-  '.' + buildInstant.month.toString().padStart(2, '0') +
-  '.' + buildInstant.day.toString().padStart(2, '0') +
-  '.' + buildInstant.hour.toString().padStart(2, '0') +
-  buildInstant.minute.toString().padStart(2, '0');
+/** Compute a fresh version from current local time (used for local builds). */
+function computeLocalVersion(): string {
+  let tz = 'UTC';
+  if (process.env.VITE_TIMEZONE) tz = process.env.VITE_TIMEZONE;
+  else if (process.env.TZ) tz = process.env.TZ;
+  else {
+    try {
+      const envContent = fs.readFileSync(path.resolve(__dirname, '.env'), 'utf-8');
+      const m = envContent.match(/^VITE_TIMEZONE\s*=\s*(.+)$/m);
+      if (m?.[1]) tz = m[1].trim();
+    } catch (_e) {
+      // Silently ignore
+    }
+  }
+  const now = Temporal.Now.instant().toZonedDateTimeISO(tz);
+  return 'v' + now.year.toString() +
+    '.' + now.month.toString().padStart(2, '0') +
+    '.' + now.day.toString().padStart(2, '0') +
+    '.' + now.hour.toString().padStart(2, '0') +
+    now.minute.toString().padStart(2, '0');
+}
+
+// In CI: reuse the committed version. Locally: compute from current time.
+const appVersion: string = isCI
+  ? (readCommittedVersion() || computeLocalVersion())
+  : computeLocalVersion();
 
 /**
- * Plugin que escribe public/version.json ÚNICAMENTE durante `npm run build`.
- * En modo dev o test, el archivo NO se toca para preservar la versión
- * de la última compilación real desplegada en el servidor.
+ * Plugin que gestiona public/version.json:
+ * - LOCAL: escribe la versión recién calculada (fuente de verdad para el commit).
+ * - CI:    NO toca version.json; usa el ya commiteado por el desarrollador.
  */
 function versionPlugin() {
   return {
     name: 'version-json-writer',
     buildStart() {
+      if (isCI) {
+        console.log(`📦 [version] CI build — usando versión commiteada: ${appVersion}`);
+        return;
+      }
       try {
         const publicDir = path.resolve(__dirname, 'public');
-        if (!fs.existsSync(publicDir)) {
-          fs.mkdirSync(publicDir, { recursive: true });
-        }
+        if (!fs.existsSync(publicDir)) fs.mkdirSync(publicDir, { recursive: true });
         fs.writeFileSync(
           path.resolve(publicDir, 'version.json'),
           JSON.stringify({ version: appVersion }, null, 2)
         );
-        console.log(`📦 [version] Versión de compilación registrada: ${appVersion}`);
+        console.log(`📦 [version] Build local — versión registrada: ${appVersion}`);
       } catch (e) {
         console.error('Failed to write version.json:', e);
       }
@@ -193,7 +215,7 @@ export default defineConfig({
     })
   ],
   define: {
-    __BUILD_TIME__: JSON.stringify(buildInstant.year.toString()),
+    __BUILD_TIME__: JSON.stringify(appVersion.slice(1, 5)),
     __APP_VERSION__: JSON.stringify(appVersion)
   },
   resolve: {
