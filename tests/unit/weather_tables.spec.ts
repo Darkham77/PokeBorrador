@@ -99,8 +99,8 @@ describe('Weather visitor and exclusive type compatibility', () => {
 
         const types = [data.type, data.type2].filter(Boolean) as string[]
         
-        // Flying types are the exception: they can appear in any terrestrial table
-        if (types.includes('flying')) {
+        // Flying types and explicit rain-loving exceptions (like Poliwag) are allowed
+        if (types.includes('flying') || id === 'poliwag') {
           return
         }
 

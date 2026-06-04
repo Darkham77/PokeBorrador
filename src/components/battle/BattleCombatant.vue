@@ -1238,6 +1238,7 @@ onUnmounted(() => {
 @use "@/styles/core/_mixins" as *;
 
 .combatant-sprite {
+  z-index: var(--z-map-spawns);
   display: flex;
   align-items: flex-end;
   justify-content: center;

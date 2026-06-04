@@ -319,13 +319,11 @@ const handleMinigameCancel = async () => {
 
 const handleFishingSuccess = async () => {
   logger.success('BattleArenaView', 'Fishing SUCCESS')
-  const locId = battleStore.state?.locationId || 'route1'
   if (battleStore.state) {
     battleStore.state.isFishing = false
     battleStore.state.isArchaeology = false
   }
   resetAll()
-  await battleStore.initBattle(locId, false, '', false, '', true)
   await battleStore.startEncounter()
 }
 

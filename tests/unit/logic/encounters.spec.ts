@@ -147,10 +147,11 @@ describe('encounters.js', () => {
     let callCount = 0
     vi.spyOn(Math, 'random').mockImplementation(() => {
       callCount++
-      if (callCount === 1) return 0.99 // Dispute check: bypass
-      if (callCount === 2) return 0.99 // Trainer check: bypass (0.99 * 100 = 99)
-      if (callCount === 3) return 0.0001 // Fishing check: force trigger
-      if (callCount === 4) return 0.1 // selectFromPool
+      if (callCount === 1) return 0.99 // Rival check: bypass
+      if (callCount === 2) return 0.99 // Defender check: bypass
+      if (callCount === 3) return 0.99 // Trainer check: bypass (99 > tChance)
+      if (callCount === 4) return 0.0001 // Fishing check: force trigger (roll < fishingWeight)
+      if (callCount === 5) return 0.1 // selectFromPool
       return 0.5 // level calculation
     })
 

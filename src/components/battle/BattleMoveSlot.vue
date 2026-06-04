@@ -281,7 +281,13 @@ const updateGlow = () => {
   }
 
   const el = rootEl.value
-  if (!el || !props.move) return
+  if (!el) return
+
+  if (!props.move) {
+    // Reset shadow when slot is empty
+    gsap.set(el, { clearProps: 'boxShadow' })
+    return
+  }
 
   const mod = moveModifier.value
   if (mod === 'boosted') {
