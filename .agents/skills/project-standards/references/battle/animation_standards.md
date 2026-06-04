@@ -473,3 +473,8 @@ Environmental cover layers (such as front combat grass) that must transition beh
 - **Rule**: Map the visibility state of the front cover to stay behind the combatant during active and post-combat FSM states (like `ACTIVE_BATTLE`, `LEVEL_UP_MODAL`, `REWARDS_PHASE`).
 - **Reset**: The cover must be reset to render in front of the combatant whenever transitioning back to the `INITIALIZING` state at the start of a subsequent search encounter.
 
+## 38. Vue TransitionGroup GSAP Orchestration
+
+To prevent manual CSS animation audit failures, Vue `<TransitionGroup>` tags should be decoupled from CSS styles. Use the `:css="false"` property and handle animations using JavaScript hooks (`@enter` and `@leave`) powered by GSAP. Always trigger the Vue `done()` callback in the GSAP `onComplete` block to guarantee correct lifecycle coordination and prevent memory leaks or stuck nodes.
+
+

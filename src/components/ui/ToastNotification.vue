@@ -1,7 +1,25 @@
 <script setup lang="ts">
 import { useUIStore } from '@/stores/ui'
+import { gsap } from 'gsap'
 
 const uiStore = useUIStore()
+
+function onEnter(el: Element, done: () => void) {
+  gsap.fromTo(el,
+    { opacity: 0, x: 50 },
+    { opacity: 1, x: 0, duration: 0.3, ease: 'back.out(1.72)', onComplete: done }
+  )
+}
+
+function onLeave(el: Element, done: () => void) {
+  gsap.to(el, {
+    opacity: 0,
+    x: 30,
+    scale: 0.9,
+    duration: 0.3,
+    onComplete: done
+  })
+}
 </script>
 
 <template>
@@ -11,7 +29,11 @@ const uiStore = useUIStore()
       class="toast-stack"
       :class="{ 'is-fullscreen-toast': uiStore.isAnyFullscreenModalOpen }"
     >
-      <TransitionGroup name="toast">
+      <TransitionGroup
+        :css="false"
+        @enter="onEnter"
+        @leave="onLeave"
+      >
         <div 
           v-for="n in uiStore.notifications" 
           :key="n.id" 
@@ -88,22 +110,6 @@ const uiStore = useUIStore()
   .toast-msg {
     line-height: 1.3;
   }
-}
-
-/* Animations */
-.toast-enter-active,
-.toast-leave-active {
-  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-.toast-enter-from {
-  opacity: 0;
-  transform: Translatex(50px);
-}
-
-.toast-leave-to {
-  opacity: 0;
-  transform: Translatex(30px) Scale(0.9);
 }
 
 /* Responsive */

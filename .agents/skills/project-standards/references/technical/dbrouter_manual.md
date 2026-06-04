@@ -51,6 +51,10 @@ Allows advancing or delaying the engine time to test:
 
 In offline mode, changes are saved in memory and synchronized with the browser's file system using `persistSQLite()` at the end of each important operation (e.g., after catching a Pokémon).
 
+### 3. Robust App Version Verification
+
+When querying configuration values (like `app_version` in the `system_config` table) that can be stored as either raw strings or stringified JSON objects (e.g., `{"app_version": "v..."}`), use a robust parsing utility helper. This prevents runtime parsing crashes and client lockouts resulting from formatting discrepancies between the local SQLite engine and the online Supabase instance.
+
 ---
 
 ## 🚨 Usage Rules for Developers

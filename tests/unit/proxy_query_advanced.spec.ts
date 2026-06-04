@@ -3,6 +3,8 @@ import { DBRouter, checkAppVersionCompatibility } from '@/logic/db/dbRouter';
 import { ProxyQuery } from '@/logic/db/proxyQuery';
 import { queryLocal } from '@/logic/db/sqliteEngine';
 
+declare const __APP_VERSION__: string;
+
 vi.mock('@/logic/db/sqliteEngine', () => ({
   initSQLite: vi.fn(async () => ({
     run: vi.fn(),
@@ -119,7 +121,6 @@ describe('ProxyQuery & DBRouter Advanced Features', () => {
   });
 
   it('should verify checkAppVersionCompatibility offline fallback with older client', async () => {
-    const clientVer = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : 'v0.5.0';
     const serverVer = 'v2027.01.01.0000'; // definitely newer
     vi.mocked(queryLocal).mockResolvedValueOnce([{ value: JSON.stringify({ app_version: serverVer }) }]);
     const res = await checkAppVersionCompatibility(router);

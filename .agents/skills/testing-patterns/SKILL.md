@@ -171,6 +171,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash
 | **Prop-Based UI Testing** | For modern components (e.g., `PVTooltip`), verify **Props/Attributes** instead of searching for nested DOM elements. This avoids breakage when elements are **Teleported** or refactored internally. |
 | **Asset Resolution Parity** | When migrating assets from external to local, ALWAYS update the corresponding unit tests (e.g., `assets.spec.ts`) to verify the new local path resolution and `.webp` extension. |
 | **Sanitization & Recovery** | For "Self-Healing" systems (e.g., legacy data repair), ALWAYS add unit tests that simulate partially corrupt objects to verify successful recovery and prevent reference errors. |
+| **TypeScript Global Declarations** | Const globals defined in config files (like `__APP_VERSION__` in `vite.config.ts`) must be explicitly declared in tests using `declare const VAR: type;` to satisfy the TypeScript compiler during pre-commit checks (`vue-tsc --noEmit`). |
 
 ---
 

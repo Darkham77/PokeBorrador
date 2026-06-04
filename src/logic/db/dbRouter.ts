@@ -439,6 +439,16 @@ export interface AppCompatibilityResponse {
   error?: 'OUTDATED_SERVER' | 'OUTDATED_CLIENT';
 }
 
+function parseAppVersion(val: unknown): string {
+  if (!val) return '';
+  try {
+    const parsed = typeof val === 'string' ? JSON.parse(val) : val;
+    return typeof parsed === 'string' ? parsed : (parsed as Record<string, string>).app_version || '';
+  } catch {
+    return typeof val === 'string' ? val : '';
+  }
+}
+
 export async function checkAppVersionCompatibility(router: DBRouter): Promise<AppCompatibilityResponse> {
   const clientVer = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : 'v0.5.0';
   let serverVer = '';
@@ -448,17 +458,7 @@ export async function checkAppVersionCompatibility(router: DBRouter): Promise<Ap
     if (router.mode === 'offline' || !client) {
       const results = await queryLocal("SELECT value FROM system_config WHERE key = 'app_version'");
       if (results.length > 0) {
-        let valObj = (results[0] as { value: unknown }).value;
-        if (typeof valObj === 'string') {
-          try {
-            valObj = JSON.parse(valObj);
-          } catch (_e) {}
-        }
-        if (typeof valObj === 'string') {
-          serverVer = valObj;
-        } else if (valObj && typeof valObj === 'object') {
-          serverVer = (valObj as Record<string, string>).app_version || '';
-        }
+        serverVer = parseAppVersion((results[0] as { value: unknown }).value);
       }
     } else {
       const { data, error } = await client
@@ -467,17 +467,7 @@ export async function checkAppVersionCompatibility(router: DBRouter): Promise<Ap
         .eq('key', 'app_version')
         .maybeSingle();
       if (!error && data && data.value) {
-        let valObj = data.value;
-        if (typeof valObj === 'string') {
-          try {
-            valObj = JSON.parse(valObj);
-          } catch (_e) {}
-        }
-        if (typeof valObj === 'string') {
-          serverVer = valObj;
-        } else if (valObj && typeof valObj === 'object') {
-          serverVer = (valObj as Record<string, string>).app_version || '';
-        }
+        serverVer = parseAppVersion(data.value);
       }
     }
   } catch (e) {
@@ -485,20 +475,16 @@ export async function checkAppVersionCompatibility(router: DBRouter): Promise<Ap
   }
 
   if (!serverVer) {
-    // If not set yet on the database, consider compatible to avoid locking access
     return { compatible: true, client: clientVer, server: clientVer };
   }
 
-  // Compare versions lexicographically (format vYYYY.MM.DD.HHMM)
   if (clientVer === serverVer) {
     return { compatible: true, client: clientVer, server: serverVer };
   }
 
   if (clientVer > serverVer) {
-    // Client is newer than Server
     return { compatible: false, client: clientVer, server: serverVer, error: 'OUTDATED_SERVER' };
   } else {
-    // Client is older than Server
     return { compatible: false, client: clientVer, server: serverVer, error: 'OUTDATED_CLIENT' };
   }
 }
