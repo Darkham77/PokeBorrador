@@ -119,6 +119,22 @@ When deploying to a restricted NAS environment using Postgres 15+:
     /ip firewall mangle add chain=prerouting action=mark-routing new-routing-mark=to_ISP_1_franco passthrough=no src-address=192.168.88.200 src-port=8443 protocol=tcp connection-mark=ISP1-input comment="Parche Quirurgico - Supabase WAN1 Reply" place-before=[Excluir Router index]
     ```
 
+---
+
+## ⏱️ Timezone & Timestamp Responsibility Split
+
+The project uses `VITE_TIMEZONE` (e.g., `America/Argentina/Buenos_Aires`) in the `.env` file. Understanding **where this setting applies** prevents misdiagnosing timezone bugs:
+
+| Layer | Timezone | Behavior |
+| :--- | :--- | :--- |
+| **Vite build** (`vite.config.ts`) | `VITE_TIMEZONE` from `.env` | Formats the `appVersion` string (e.g., `v2026.06.04.1700`) using local time. This is the only place where `VITE_TIMEZONE` has effect. |
+| **PostgreSQL `TIMESTAMPTZ`** | UTC (internal) | Always stores in UTC regardless of session timezone. `NOW()` in upserts is correct and must **not** be replaced with a client-computed local timestamp. |
+| **Server update script** (`update_supabase_db.ts`) | N/A | Reads the pre-computed version string from `public/version.json` (written by Vite at build time) and uploads it as-is. It does not recalculate or reformat time. |
+
+The symptom of confusing these layers is attempting to change `NOW()` to a timezone-aware string in SQL, which is unnecessary and wrong. `TIMESTAMPTZ` handles timezone conversion transparently at query time.
+
+---
+
 - **ESLint Code Quality Standards**:
   - **Double-Quoted Dollar Signs**: Never escape dollar signs (`\$`) in regular double-quoted strings (`"..."`) or regex literals inside deployment scripts. Escaping them is only valid within template literals and will trigger ESLint `no-useless-escape` errors.
   - **Non-Empty Catch Blocks**: Avoid writing empty `catch {}` blocks in node scripts. Always add at least a descriptive comment (e.g., `// Silently ignore`) inside the catch block to satisfy ESLint `no-empty` rules.

@@ -28,6 +28,8 @@ jobs:
       - name: Build project
         run: npm run build
         env:
+          TZ: America/Argentina/Buenos_Aires
+          VITE_TIMEZONE: America/Argentina/Buenos_Aires
           SERVER_nas_franco_ID: ${{ secrets.SERVER_nas_franco_ID }}
           SERVER_nas_franco_NAME: ${{ secrets.SERVER_nas_franco_NAME }}
           SERVER_nas_franco_REGION: ${{ secrets.SERVER_nas_franco_REGION }}
