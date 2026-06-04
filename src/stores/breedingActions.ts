@@ -4,6 +4,7 @@ import { useInventoryStore } from './inventory.ts';
 import { eggFactory } from '@/logic/breeding/eggFactory';
 import { POKEMON_DB } from '@/data/pokemonDB';
 import { calculateCloningCost, calculateCloningRerolls, calculateCloningShinyChance } from '@/logic/minigames/minigameMath';
+import { generateRandomIVs } from '@/logic/pokemonUtils';
 import type { Pokemon, PokemonIVs } from '@/types/pokemon';
 import type { Ref } from 'vue';
 import type { DaycareEgg } from '@/types/breeding';
@@ -61,14 +62,7 @@ export function executeCloneFossil(
   }
 
   const rolls = calculateCloningRerolls(extraQty);
-  const rollIVs = (): PokemonIVs => ({
-    hp: Math.floor(Math.random() * 32),
-    atk: Math.floor(Math.random() * 32),
-    def: Math.floor(Math.random() * 32),
-    spa: Math.floor(Math.random() * 32),
-    spd: Math.floor(Math.random() * 32),
-    spe: Math.floor(Math.random() * 32)
-  });
+  const rollIVs = (): PokemonIVs => generateRandomIVs();
 
   let bestIVs = rollIVs();
   let bestSum = bestIVs.hp + bestIVs.atk + bestIVs.def + bestIVs.spa + bestIVs.spd + bestIVs.spe;

@@ -6,39 +6,15 @@ import { setActivePinia, createPinia } from 'pinia'
 import { useAuthStore } from '@/stores/auth'
 import { useDebugStore } from '@/stores/debug'
 import type { AuthUser } from '@/types/auth'
-
-// Stable mock object for chain calls
-const mockChain = {
-  select: vi.fn().mockReturnThis(),
-  update: vi.fn().mockReturnThis(),
-  upsert: vi.fn().mockImplementation(() => Promise.resolve({ data: null, error: null })),
-  eq: vi.fn().mockImplementation(() => Promise.resolve({ data: null, error: null })),
-  single: vi.fn().mockResolvedValue({ data: { is_banned: false } })
-}
-
-// Mock Supabase
-let mockTimeOffset = 0
-vi.mock('@/logic/supabase', () => ({
-  supabase: {
-    auth: {
-      getSession: vi.fn(() => Promise.resolve({ data: { session: null } })),
-      signInWithPassword: vi.fn(),
-      signOut: vi.fn()
-    },
-    from: vi.fn(() => mockChain),
-    channel: vi.fn(() => ({
-      on: vi.fn().mockReturnThis(),
-      subscribe: vi.fn()
-    })),
-    getTimeOffset: vi.fn(() => mockTimeOffset),
-    setTimeOffset: vi.fn((ms) => { mockTimeOffset = ms }),
-    setMockTime: vi.fn((d) => { mockTimeOffset = Temporal.Instant.fromEpochMilliseconds(d).epochMilliseconds - Temporal.Now.instant().epochMilliseconds }),
-    resetTime: vi.fn(() => { mockTimeOffset = 0 }),
-    rpc: vi.fn().mockResolvedValue({ data: { players_count: 10 }, error: null })
-  }
-}))
-
 import { mockLocalStorage } from '../helpers/debugSetup.ts'
+import { mockChain } from '../helpers/supabaseMock.ts'
+
+vi.mock('@/logic/supabase', async () => {
+  const { mockSupabase } = await import('../helpers/supabaseMock.ts')
+  return {
+    supabase: mockSupabase
+  }
+})
 
 mockLocalStorage()
 

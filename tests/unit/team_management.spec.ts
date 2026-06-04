@@ -16,6 +16,13 @@ describe('Team Management Logic', () => {
     gs.save = vi.fn()
   })
 
+  const populateTeam = (count = 4) => {
+    const gs = useGameStore()
+    for (let i = 1; i <= count; i++) {
+      gs.addPokemon({ uid: `p${i}`, name: `P${i}` } as unknown as Pokemon, { notify: false })
+    }
+  }
+
   it('should auto-fill PVP team when adding pokemons', () => {
     const gs = useGameStore()
     
@@ -56,9 +63,7 @@ describe('Team Management Logic', () => {
     const gs = useGameStore()
     
     // Have 4 pokemons (p1, p2, p3 in pvpTeam, p4 is reserve)
-    for (let i = 1; i <= 4; i++) {
-      gs.addPokemon({ uid: `p${i}`, name: `P${i}` } as unknown as Pokemon, { notify: false })
-    }
+    populateTeam()
 
     // Remove p2 (one of the PVP pokes)
     gs.removePokemon('p2')
@@ -73,9 +78,7 @@ describe('Team Management Logic', () => {
   it('should swap slots correctly', () => {
     const gs = useGameStore()
     
-    for (let i = 1; i <= 4; i++) {
-      gs.addPokemon({ uid: `p${i}`, name: `P${i}` } as unknown as Pokemon, { notify: false })
-    }
+    populateTeam()
 
     // Current: [p1, p2, p3]
     // Swap slot 1 (p2) for p4
@@ -87,9 +90,7 @@ describe('Team Management Logic', () => {
   it('should not allow duplicates in PVP team via swap', () => {
     const gs = useGameStore()
     
-    for (let i = 1; i <= 4; i++) {
-      gs.addPokemon({ uid: `p${i}`, name: `P${i}` } as unknown as Pokemon, { notify: false })
-    }
+    populateTeam()
 
     // Current: [p1, p2, p3]
     // Try to swap slot 1 (p2) for p1 (already in)

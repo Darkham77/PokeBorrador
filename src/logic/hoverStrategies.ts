@@ -1,4 +1,4 @@
-import { resolveCssColor, parseToRgba } from './hoverHelpers.ts';
+import { resolveCssColor, parseToRgba, hasVisualBorders } from './hoverHelpers.ts';
 
 export interface HoverContext {
   el: HTMLElement;
@@ -186,29 +186,12 @@ export function getHoverEnterStrategy(el: HTMLElement): HoverValues {
 }
 
 export function getHoverLeaveStrategy(el: HTMLElement) {
-  const hasVisualBorders = el.classList.contains('hud-nav-btn') ||
-    el.classList.contains('pc-banner') ||
-    el.classList.contains('egg-hud-card') ||
-    el.classList.contains('egg-card') ||
-    el.classList.contains('pokemon-display-card') ||
-    el.classList.contains('box-pokemon-card') ||
-    el.classList.contains('team-swap-card') ||
-    el.classList.contains('pokemon-summary-card') ||
-    el.classList.contains('unified-card') ||
-    el.classList.contains('list-item') ||
-    el.classList.contains('quick-item-card') ||
-    el.classList.contains('gym-card') ||
-    el.classList.contains('inventory-item-card') ||
-    el.classList.contains('shop-item-card') ||
-    el.classList.contains('bc-shop-item-card') ||
-    el.classList.contains('market-item-wrapper') ||
-    el.classList.contains('info-item') ||
-    (el.closest('.hud-submenu') && el.classList.contains('hud-nav-btn'));
+  const hasBorders = hasVisualBorders(el);
 
   let targetBorderColor: string | null = null;
   let targetBoxShadow: string | null = null;
 
-  if (hasVisualBorders) {
+  if (hasBorders) {
     targetBorderColor = 'rgba(255, 255, 255, 0.12)';
     targetBoxShadow = '0 10px 40px rgba(0, 0, 0, 0.8)';
 

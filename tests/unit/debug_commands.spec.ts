@@ -24,52 +24,17 @@ const callDebug = (cmd: string, ...args: unknown[]) => {
   return undefined;
 };
 
-// Stable mock object for chain calls
-const mockChain = {
-  select: vi.fn().mockReturnThis(),
-  update: vi.fn().mockReturnThis(),
-  upsert: vi.fn().mockImplementation(() => Promise.resolve({ data: null, error: null })),
-  eq: vi.fn().mockImplementation(() => Promise.resolve({ data: null, error: null })),
-  single: vi.fn().mockResolvedValue({ data: { is_banned: false } })
-}
+import { mockLocalStorage } from '../helpers/debugSetup.ts'
+import { mockChain } from '../helpers/supabaseMock.ts'
 
-// Mock Supabase
-let mockTimeOffset = 0
-vi.mock('@/logic/supabase', () => ({
-  supabase: {
-    auth: {
-      getSession: vi.fn(() => Promise.resolve({ data: { session: null } })),
-      signInWithPassword: vi.fn(),
-      signOut: vi.fn()
-    },
-    from: vi.fn(() => mockChain),
-    channel: vi.fn(() => ({
-      on: vi.fn().mockReturnThis(),
-      subscribe: vi.fn()
-    })),
-    getTimeOffset: vi.fn(() => mockTimeOffset),
-    setTimeOffset: vi.fn((ms) => { mockTimeOffset = ms }),
-    setMockTime: vi.fn((d) => { 
-      const target = d.includes('Z') ? Temporal.Instant.from(d) : Temporal.PlainDateTime.from(d).toZonedDateTime('UTC').toInstant();
-      mockTimeOffset = target.epochMilliseconds - Temporal.Now.instant().epochMilliseconds 
-    }),
-    resetTime: vi.fn(() => { mockTimeOffset = 0 }),
-    rpc: vi.fn().mockResolvedValue({ data: { players_count: 10 }, error: null })
+vi.mock('@/logic/supabase', async () => {
+  const { mockSupabase } = await import('../helpers/supabaseMock.ts')
+  return {
+    supabase: mockSupabase
   }
-}))
+})
 
-// Mock localStorage for environments where it's missing
-if (typeof localStorage === 'undefined') {
-  const store: Record<string, string> = {}
-  global.localStorage = {
-    getItem: (key: string) => store[key] || null,
-    setItem: (key: string, value: string) => { store[key] = value.toString() },
-    clear: () => { for (const key in store) delete store[key] },
-    removeItem: (key: string) => { delete store[key] },
-    length: 0,
-    key: (index: number) => Object.keys(store)[index] || null
-  } as unknown as Storage
-}
+mockLocalStorage()
 
 describe('Debug System (Commands & Tools)', () => {
   beforeEach(() => {

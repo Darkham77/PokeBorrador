@@ -3,7 +3,7 @@ import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { getPokemonTier } from '@/logic/pokemon/tierEngine';
 import { getStatMultiplier, getAccuracyMultiplier } from '@/logic/pokemon/statEngine';
 import { getSpeciesHistory } from '@/logic/pokemon/evolutionEngine';
-import type { Pokemon, PokemonMove } from '@/types/pokemon';
+import type { Pokemon, PokemonMove, PokemonIVs } from '@/types/pokemon';
 
 export { getPokemonTier };
 
@@ -17,6 +17,20 @@ export function calculateTotalPower(p: Pokemon): number {
   const ivs = p.ivs;
   const totalIvs = (ivs.hp || 0) + (ivs.atk || 0) + (ivs.def || 0) + (ivs.spa || 0) + (ivs.spd || 0) + (ivs.spe || 0);
   return bst + totalIvs;
+}
+
+/**
+ * Generates random IVs (0 to 31) for all stats.
+ */
+export function generateRandomIVs(): PokemonIVs {
+  return {
+    hp: Math.floor(Math.random() * 32),
+    atk: Math.floor(Math.random() * 32),
+    def: Math.floor(Math.random() * 32),
+    spa: Math.floor(Math.random() * 32),
+    spd: Math.floor(Math.random() * 32),
+    spe: Math.floor(Math.random() * 32)
+  };
 }
 
 /**

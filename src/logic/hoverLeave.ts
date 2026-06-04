@@ -1,5 +1,5 @@
 import { gsap } from 'gsap'
-import { is3DButton, getElementShadowColorAndDepth } from './hoverHelpers.ts'
+import { is3DButton, getElementShadowColorAndDepth, HOVER_DURATION_200MS_CLASSES, hasVisualBorders } from './hoverHelpers.ts'
 import { getHoverLeaveStrategy } from './hoverStrategies.ts'
 
 export function triggerLeave(el: HTMLElement) {
@@ -72,26 +72,9 @@ export function triggerLeave(el: HTMLElement) {
     }
   }
 
-  const hasVisualBorders = el.classList.contains('hud-nav-btn') ||
-    el.classList.contains('pc-banner') ||
-    el.classList.contains('egg-hud-card') ||
-    el.classList.contains('egg-card') ||
-    el.classList.contains('pokemon-display-card') ||
-    el.classList.contains('box-pokemon-card') ||
-    el.classList.contains('team-swap-card') ||
-    el.classList.contains('pokemon-summary-card') ||
-    el.classList.contains('unified-card') ||
-    el.classList.contains('list-item') ||
-    el.classList.contains('quick-item-card') ||
-    el.classList.contains('gym-card') ||
-    el.classList.contains('inventory-item-card') ||
-    el.classList.contains('shop-item-card') ||
-    el.classList.contains('bc-shop-item-card') ||
-    el.classList.contains('market-item-wrapper') ||
-    el.classList.contains('info-item') ||
-    (el.closest('.hud-submenu') && el.classList.contains('hud-nav-btn'))
+  const hasBorders = hasVisualBorders(el)
 
-  if (hasVisualBorders) {
+  if (hasBorders) {
     propsToClear += ',borderColor,boxShadow'
     const strategy = getHoverLeaveStrategy(el)
     targetBorderColor = strategy.targetBorderColor
@@ -127,26 +110,7 @@ export function triggerLeave(el: HTMLElement) {
   if (targetBorderColor) clearVars.borderColor = targetBorderColor
   if (targetBoxShadow) clearVars.boxShadow = targetBoxShadow
 
-  if (
-    el.classList.contains('pc-banner') || 
-    el.classList.contains('egg-hud-card') || 
-    el.classList.contains('egg-card') ||
-    el.classList.contains('pokemon-display-card') || 
-    el.classList.contains('box-pokemon-card') || 
-    el.classList.contains('team-swap-card') ||
-    el.classList.contains('pokemon-summary-card') ||
-    el.classList.contains('unified-card') ||
-    el.classList.contains('friend-card') ||
-    el.classList.contains('map-row') ||
-    el.classList.contains('shop-item-card') ||
-    el.classList.contains('bc-shop-item-card') ||
-    el.classList.contains('market-item-wrapper') ||
-    el.classList.contains('list-item') ||
-    el.classList.contains('quick-item-card') ||
-    el.classList.contains('gym-card') ||
-    el.classList.contains('inventory-item-card') ||
-    el.classList.contains('info-item')
-  ) {
+  if (HOVER_DURATION_200MS_CLASSES.some(cls => el.classList.contains(cls))) {
     clearVars.duration = 0.2
   }
 

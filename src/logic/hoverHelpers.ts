@@ -1,4 +1,49 @@
+export const HOVER_VISUAL_BORDER_CLASSES = [
+  'hud-nav-btn',
+  'pc-banner',
+  'egg-hud-card',
+  'egg-card',
+  'pokemon-display-card',
+  'box-pokemon-card',
+  'team-swap-card',
+  'pokemon-summary-card',
+  'unified-card',
+  'list-item',
+  'quick-item-card',
+  'gym-card',
+  'inventory-item-card',
+  'shop-item-card',
+  'bc-shop-item-card',
+  'market-item-wrapper',
+  'info-item'
+]
 
+export const HOVER_DURATION_200MS_CLASSES = [
+  'pc-banner',
+  'egg-hud-card',
+  'egg-card',
+  'pokemon-display-card',
+  'box-pokemon-card',
+  'team-swap-card',
+  'pokemon-summary-card',
+  'unified-card',
+  'friend-card',
+  'map-row',
+  'shop-item-card',
+  'bc-shop-item-card',
+  'market-item-wrapper',
+  'list-item',
+  'quick-item-card',
+  'gym-card',
+  'inventory-item-card',
+  'info-item'
+]
+
+export function hasVisualBorders(el: HTMLElement): boolean {
+  if (HOVER_VISUAL_BORDER_CLASSES.some(cls => el.classList.contains(cls))) return true
+  if (el.closest('.hud-submenu') && el.classList.contains('hud-nav-btn')) return true
+  return false
+}
 
 /**
  * Resolves a CSS variable string like var(--blue) to its corresponding hex/rgb color code.

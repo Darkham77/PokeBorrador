@@ -87,6 +87,14 @@ describe('Game Store - loadGame with Timeout & Retries', () => {
     loadBestSaveMock = loadServiceModule.loadBestSave as unknown as import('vitest').Mock
   })
 
+  const runTimeoutSession = async () => {
+    const gameStore = useGameStore()
+    loadBestSaveMock.mockReturnValue(new Promise(() => {}))
+    const loadPromise = gameStore.loadGame()
+    await vi.advanceTimersByTimeAsync(20000)
+    await loadPromise
+  }
+
   afterEach(() => {
     vi.useRealTimers()
     vi.unstubAllGlobals()
@@ -120,25 +128,17 @@ describe('Game Store - loadGame with Timeout & Retries', () => {
   })
 
   it('debe reintentar y dar timeout final si loadBestSave tarda más de 8 segundos y recargar si está online', async () => {
-    const gameStore = useGameStore()
     const authStore = useAuthStore()
     const loadingStore = useLoadingStore()
 
     authStore.user = { id: 'user123', user_metadata: { username: 'User123' } } as unknown as NonNullable<typeof authStore.user>
-    loadBestSaveMock.mockReturnValue(new Promise(() => {}))
-
-    const loadPromise = gameStore.loadGame()
-
-    // Avanzar tiempo suficiente para 2 intentos de 8s + 1.5s espera
-    await vi.advanceTimersByTimeAsync(20000)
-    await loadPromise
+    await runTimeoutSession()
 
     expect(loadingStore.current!.message).toBe('Red inestable...')
     expect(window.location.reload).toHaveBeenCalledTimes(1)
   })
 
   it('debe reintentar y dar timeout final si está offline esperando señal', async () => {
-    const gameStore = useGameStore()
     const authStore = useAuthStore()
     const loadingStore = useLoadingStore()
 
@@ -150,12 +150,7 @@ describe('Game Store - loadGame with Timeout & Retries', () => {
     })
 
     const addEventSpy = vi.spyOn(window, 'addEventListener')
-    loadBestSaveMock.mockReturnValue(new Promise(() => {}))
-
-    const loadPromise = gameStore.loadGame()
-
-    await vi.advanceTimersByTimeAsync(20000)
-    await loadPromise
+    await runTimeoutSession()
 
     expect(loadingStore.current!.message).toBe('Sin conexión a Internet')
     expect(window.location.reload).not.toHaveBeenCalled()
@@ -163,7 +158,6 @@ describe('Game Store - loadGame with Timeout & Retries', () => {
   })
 
   it('debe evitar bucles infinitos de recarga si ya se recargó antes', async () => {
-    const gameStore = useGameStore()
     const authStore = useAuthStore()
     const loadingStore = useLoadingStore()
 
@@ -171,19 +165,13 @@ describe('Game Store - loadGame with Timeout & Retries', () => {
     
     // Simular que ya se recargó una vez
     sessionStorage.setItem('load_retry_count', '1')
-    loadBestSaveMock.mockReturnValue(new Promise(() => {}))
-
-    const loadPromise = gameStore.loadGame()
-
-    await vi.advanceTimersByTimeAsync(20000)
-    await loadPromise
+    await runTimeoutSession()
 
     expect(loadingStore.current!.message).toBe('Error de conexión')
     expect(window.location.reload).not.toHaveBeenCalled()
   })
 
   it('debe cerrar sesión y redirigir si se alcanzan 10 intentos fallidos', async () => {
-    const gameStore = useGameStore()
     const authStore = useAuthStore()
     const loadingStore = useLoadingStore()
 
@@ -192,12 +180,7 @@ describe('Game Store - loadGame with Timeout & Retries', () => {
     
     // Simular que ya se reintentó 9 veces
     sessionStorage.setItem('load_retry_count', '9')
-    loadBestSaveMock.mockReturnValue(new Promise(() => {}))
-
-    const loadPromise = gameStore.loadGame()
-
-    await vi.advanceTimersByTimeAsync(20000)
-    await loadPromise
+    await runTimeoutSession()
 
     expect(loadingStore.current!.message).toBe('Error de conexión persistente')
     expect(authStore.logout).toHaveBeenCalled()

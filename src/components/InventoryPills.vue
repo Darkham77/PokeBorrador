@@ -150,16 +150,20 @@ const fitText = async (el: HTMLElement | null, baseSize: number) => {
   el.style.maxWidth = prevMaxWidth
 }
 
-// Observador para cambios de tamaño (mobile resize / orientation)
-let resizeObserver: ResizeObserver | null = null
-
-// Observadores para disparar el ajuste cuando cambien los datos
-watch([money, battleCoins, medals, balls, eggCount], () => {
+const fitAllPills = () => {
   fitText(moneyRef.value, 14)
   fitText(bcRef.value, 14)
   fitText(badgeRef.value, 14)
   fitText(ballRef.value, 14)
   fitText(eggRef.value, 14)
+}
+
+// Observador para cambios de tamaño (mobile resize / orientation)
+let resizeObserver: ResizeObserver | null = null
+
+// Observadores para disparar el ajuste cuando cambien los datos
+watch([money, battleCoins, medals, balls, eggCount], () => {
+  fitAllPills()
 }, { deep: true })
 
 onMounted(async () => {
@@ -169,20 +173,12 @@ onMounted(async () => {
   await nextTick()
   
   // Ejecución inicial
-  fitText(moneyRef.value, 14)
-  fitText(bcRef.value, 14)
-  fitText(badgeRef.value, 14)
-  fitText(ballRef.value, 14)
-  fitText(eggRef.value, 14)
+  fitAllPills()
 
   // Configurar observer en el contenedor HUD
   if (moneyRef.value?.closest('.hud-items')) {
     resizeObserver = new ResizeObserver(() => {
-      fitText(moneyRef.value, 14)
-      fitText(bcRef.value, 14)
-      fitText(badgeRef.value, 14)
-      fitText(ballRef.value, 14)
-      fitText(eggRef.value, 14)
+      fitAllPills()
     })
     resizeObserver.observe(moneyRef.value.closest('.hud-items')!)
   }

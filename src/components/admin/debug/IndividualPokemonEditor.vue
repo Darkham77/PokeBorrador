@@ -2,6 +2,7 @@
 import { computed, watch } from 'vue'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { recalcPokemonStats, getExpNeeded } from '@/logic/pokemonFactory'
+import { generateRandomIVs } from '@/logic/pokemonUtils'
 import { MAX_POKEMON_LEVEL } from '@/data/constants'
 import { NATURE_DATA } from '@/data/natures'
 import { ABILITY_DATA } from '@/data/abilities'
@@ -136,14 +137,7 @@ function randomizeActiveAbility() {
 }
 
 function randomizeActiveIVs() {
-  activePoke.value.ivs = {
-    hp: Math.floor(Math.random() * 32),
-    atk: Math.floor(Math.random() * 32),
-    def: Math.floor(Math.random() * 32),
-    spa: Math.floor(Math.random() * 32),
-    spd: Math.floor(Math.random() * 32),
-    spe: Math.floor(Math.random() * 32)
-  }
+  activePoke.value.ivs = generateRandomIVs()
   recalcPokemonStats(activePoke.value)
 }
 

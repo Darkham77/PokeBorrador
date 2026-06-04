@@ -124,6 +124,8 @@ You MUST run these commands and fix EVERY issue until a clean pass is achieved.
     - `npm run validate:types`
     - `npm run lint`
     - `npx fallow health --score` (Verify overall project health score has not regressed)
+    - `npx fallow dupes --fail-on-issues` (Ensure zero duplicate/clone issues)
+    - `npx fallow security --fail-on-issues` (Ensure zero security candidate issues)
     - `npm run test`
     - `npm run build`
 

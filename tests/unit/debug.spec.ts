@@ -5,31 +5,15 @@ import { useAuthStore } from '@/stores/auth'
 import { useGameStore } from '@/stores/game'
 import type { AuthUser } from '@/types/auth'
 
-// Stable mock object for chain calls
-const mockChain = {
-  select: vi.fn().mockReturnThis(),
-  update: vi.fn().mockReturnThis(),
-  eq: vi.fn().mockReturnThis(),
-  single: vi.fn().mockResolvedValue({ data: { is_banned: false } })
-}
-
-// Mock Supabase
-vi.mock('@/logic/supabase', () => ({
-  supabase: {
-    auth: {
-      getSession: vi.fn(() => Promise.resolve({ data: { session: null } })),
-      signInWithPassword: vi.fn(),
-      signOut: vi.fn()
-    },
-    from: vi.fn(() => mockChain),
-    channel: vi.fn(() => ({
-      on: vi.fn().mockReturnThis(),
-      subscribe: vi.fn()
-    }))
-  }
-}))
-
 import { mockLocalStorage } from '../helpers/debugSetup.ts'
+import { mockChain } from '../helpers/supabaseMock.ts'
+
+vi.mock('@/logic/supabase', async () => {
+  const { mockSupabase } = await import('../helpers/supabaseMock.ts')
+  return {
+    supabase: mockSupabase
+  }
+})
 
 mockLocalStorage()
 

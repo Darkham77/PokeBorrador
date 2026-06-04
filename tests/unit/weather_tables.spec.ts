@@ -44,6 +44,12 @@ describe('Weather tables coverage and integrity', () => {
 })
 
 describe('Weather visitor and exclusive type compatibility', () => {
+  const getAndValidatePokemon = (id: string) => {
+    const data = pokemonDataProvider.getPokemonData(id)
+    expect(data, `Pokémon ${id} no está registrado`).toBeDefined()
+    return data
+  }
+
   it('should ensure all weather fishing pool encounters (exclusives and visitors) have at least one Water type', () => {
     FIRE_RED_MAPS.forEach((map: MapLocation) => {
       // Weather fishing exclusives and visitors
@@ -58,8 +64,7 @@ describe('Weather visitor and exclusive type compatibility', () => {
               ? wCfg.fishingExclusive
               : Object.keys(wCfg.fishingExclusive)
             list.forEach((id: string) => {
-              const data = pokemonDataProvider.getPokemonData(id)
-              expect(data, `Pokémon ${id} no está registrado`).toBeDefined()
+              const data = getAndValidatePokemon(id)
               if (!data) return
               const types = [data.type, data.type2].filter(Boolean) as string[]
               expect(
@@ -74,8 +79,7 @@ describe('Weather visitor and exclusive type compatibility', () => {
               ? wCfg.fishingVisitors
               : Object.keys(wCfg.fishingVisitors)
             list.forEach((id: string) => {
-              const data = pokemonDataProvider.getPokemonData(id)
-              expect(data, `Pokémon ${id} no está registrado`).toBeDefined()
+              const data = getAndValidatePokemon(id)
               if (!data) return
               const types = [data.type, data.type2].filter(Boolean) as string[]
               expect(
@@ -93,8 +97,7 @@ describe('Weather visitor and exclusive type compatibility', () => {
     FIRE_RED_MAPS.forEach((map: MapLocation) => {
       // Helper to validate a terrestrial pokemon
       const validateTerrestrial = (id: string, context: string) => {
-        const data = pokemonDataProvider.getPokemonData(id)
-        expect(data, `Pokémon ${id} no está registrado`).toBeDefined()
+        const data = getAndValidatePokemon(id)
         if (!data) return
 
         const types = [data.type, data.type2].filter(Boolean) as string[]

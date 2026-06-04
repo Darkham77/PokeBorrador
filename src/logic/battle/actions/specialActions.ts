@@ -1,7 +1,34 @@
-import type { MoveAction } from '@/types/battle';
+import type { MoveAction, LogFn } from '@/types/battle';
+import type { BattleContext } from '@/types/battleContext';
+import type { Pokemon } from '@/types/pokemon';
 import { STATUS_ACTIONS } from './statusActions.ts';
 import { logger } from '@/logic/utils/logger';
 import { gameBus } from '@/logic/gameBus';
+
+/**
+ * Helper to transition and execute the release sequence when a Pokemon is sent into battle.
+ */
+async function callPokemonToBattle(
+  side: 'player' | 'enemy',
+  pokemon: Pokemon,
+  logMsg: string,
+  logTarget: Pokemon | string | null,
+  addLogFn: LogFn,
+  battleCtx: BattleContext
+) {
+  const fsm = battleCtx.fsm;
+  const { BATTLE_STATES, BATTLE_SUBSTATES } = battleCtx;
+  addLogFn(logMsg, 'log-info', logTarget);
+  await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.POKEMON_CALL);
+  await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.OCCUPY_SEAT);
+  if (battleCtx.animations?.handleReleaseRequest) {
+    await battleCtx.animations.handleReleaseRequest({ side, pokemon });
+  } else {
+    gameBus.emit('PLAY_SEND_OUT', { side, pokemon });
+    const { gsapSleep } = await import('@/logic/utils/gsapHelpers');
+    await gsapSleep(800);
+  }
+}
 
 /**
  * Special Actions Dictionary.
@@ -62,17 +89,15 @@ export const SPECIAL_ACTIONS: Record<string, MoveAction> = {
 
         await withdrawPromise;
         
-        if (randomPick) {
-          addLogFn(`¡${randomPick.name} entra al combate!`, 'log-info', 'enemy_trainer');
-          await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.POKEMON_CALL);
-          await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.OCCUPY_SEAT);
-          if (battleCtx.animations?.handleReleaseRequest) {
-            await battleCtx.animations.handleReleaseRequest({ side: 'enemy', pokemon: randomPick });
-          } else {
-            gameBus.emit('PLAY_SEND_OUT', { side: 'enemy', pokemon: randomPick });
-            const { gsapSleep } = await import('@/logic/utils/gsapHelpers');
-            await gsapSleep(800);
-          }
+        if (randomPick && battleCtx) {
+          await callPokemonToBattle(
+            'enemy',
+            randomPick,
+            `¡${randomPick.name} entra al combate!`,
+            'enemy_trainer',
+            addLogFn,
+            battleCtx
+          );
         }
         battleCtx.exitingEnemy.value = null;
       }
@@ -109,17 +134,15 @@ export const SPECIAL_ACTIONS: Record<string, MoveAction> = {
 
         await withdrawPromise;
 
-        if (randomPick) {
-          addLogFn(`¡Envía a ${randomPick.name}!`, 'log-info', 'player');
-          await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.POKEMON_CALL);
-          await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.OCCUPY_SEAT);
-          if (battleCtx.animations?.handleReleaseRequest) {
-            await battleCtx.animations.handleReleaseRequest({ side: 'player', pokemon: randomPick });
-          } else {
-            gameBus.emit('PLAY_SEND_OUT', { side: 'player', pokemon: randomPick });
-            const { gsapSleep } = await import('@/logic/utils/gsapHelpers');
-            await gsapSleep(800);
-          }
+        if (randomPick && battleCtx) {
+          await callPokemonToBattle(
+            'player',
+            randomPick,
+            `¡Envía a ${randomPick.name}!`,
+            'player',
+            addLogFn,
+            battleCtx
+          );
         }
         battleCtx.exitingPlayer.value = null;
       }
@@ -264,17 +287,15 @@ export const SPECIAL_ACTIONS: Record<string, MoveAction> = {
           b.enemy = randomPick;
           await withdrawPromise;
           
-          if (randomPick) {
-            addLogFn(`¡${randomPick.name} entra al combate!`, 'log-info', randomPick);
-            await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.POKEMON_CALL);
-            await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.OCCUPY_SEAT);
-            if (battleCtx.animations?.handleReleaseRequest) {
-              await battleCtx.animations.handleReleaseRequest({ side: 'enemy', pokemon: randomPick });
-            } else {
-              gameBus.emit('PLAY_SEND_OUT', { side: 'enemy', pokemon: randomPick });
-              const { gsapSleep } = await import('@/logic/utils/gsapHelpers');
-              await gsapSleep(800);
-            }
+          if (randomPick && battleCtx) {
+            await callPokemonToBattle(
+              'enemy',
+              randomPick,
+              `¡${randomPick.name} entra al combate!`,
+              randomPick,
+              addLogFn,
+              battleCtx
+            );
           }
           battleCtx.exitingEnemy.value = null;
         } else {

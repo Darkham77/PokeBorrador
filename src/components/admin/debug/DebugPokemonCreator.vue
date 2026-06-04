@@ -2,6 +2,7 @@
 // [PureVue-Ignore-Length]
 import { ref, computed, onMounted, watch } from 'vue'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
+import { generateRandomIVs } from '@/logic/pokemonUtils'
 import { NATURE_DATA } from '@/data/natures'
 import { ABILITY_DATA } from '@/data/abilities'
 import PokemonBaseStats from './PokemonBaseStats.vue'
@@ -11,6 +12,7 @@ import PVTooltip from '@/components/common/PVTooltip.vue'
 import PokemonPreview from './PokemonPreview.vue'
 import DebugSearchSelect from './DebugSearchSelect.vue'
 import type { MapLocation } from '@/types/encounters'
+import type { PokemonIVs } from '@/types/pokemon'
 
 interface PokemonConfig {
   id: string
@@ -24,7 +26,7 @@ interface PokemonConfig {
   friendship: number
   heldItem: string
   mapId: string
-  ivs: Record<string, number>
+  ivs: PokemonIVs
   moves: (string | null)[]
   protocol: string
 }
@@ -200,14 +202,7 @@ function randomizeLevel() {
 }
 
 function randomizeIVs() {
-  config.value.ivs = {
-    hp: Math.floor(Math.random() * 32),
-    atk: Math.floor(Math.random() * 32),
-    def: Math.floor(Math.random() * 32),
-    spa: Math.floor(Math.random() * 32),
-    spd: Math.floor(Math.random() * 32),
-    spe: Math.floor(Math.random() * 32)
-  }
+  config.value.ivs = generateRandomIVs()
 }
 
 function randomizeNature() {
@@ -401,7 +396,7 @@ onMounted(() => {
             </PVTooltip>
           </div>
           <PokemonIVEditor 
-            :ivs="config.ivs" 
+            :ivs="config.ivs as unknown as Record<string, number>" 
             @update:iv="(stat: string, val: number) => (config.ivs)[stat] = val" 
           />
         </div>
