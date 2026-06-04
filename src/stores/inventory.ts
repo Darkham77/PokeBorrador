@@ -1,17 +1,18 @@
-// [PureVue-Ignore-Length]
 import { defineStore } from 'pinia'
 import { ref, computed, watch } from 'vue'
 import { useGameStore } from './game.ts'
-import type { GameState } from '@/types/game'
-import { useBattleStore } from './battle.ts'
 import { useUIStore } from './ui.ts'
 import { safeStorage } from '@/logic/utils/storage'
 import { SHOP_ITEMS } from '@/data/items'
-import { itemEffects as ITEM_EFFECTS, getDynamicItemEffect } from '@/logic/items/itemEffects'
 import { isGlobalItem, getItemVirtualCategory } from '../logic/providers/itemProvider.ts'
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
-import type { Pokemon, Move } from '@/types/pokemon'
+import type { Pokemon } from '@/types/pokemon'
 import type { ItemEffectResult } from '@/types/items'
+import { executeUseItem } from './inventoryUseAction.ts'
+import {
+  resolveNormalizedName,
+  findInventoryKey as helperFindInventoryKey,
+  isItemUsableOn as helperIsItemUsableOn
+} from './inventoryHelpers.ts'
 
 export interface Item {
   name: string;
@@ -22,58 +23,6 @@ export interface Item {
   sprite?: string;
   desc?: string;
   price?: number;
-}
-
-function resolveNormalizedName(name: string): string {
-  const norm = name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '');
-  
-  const aliases: Record<string, string> = {
-    'potion': 'Poción',
-    'superpotion': 'Súper Poción',
-    'hyperpotion': 'Hiper Poción',
-    'maxpotion': 'Poción Máxima',
-    'firestone': 'Piedra Fuego',
-    'waterstone': 'Piedra Agua',
-    'thunderstone': 'Piedra Trueno',
-    'leafstone': 'Piedra Hoja',
-    'moonstone': 'Piedra Lunar',
-    'sunstone': 'Piedra Solar',
-    'vigorcandy': 'Caramelo de vigor',
-    'repel': 'Repelente',
-    'iman': 'Imán',
-    'elixir': 'Elixir',
-    'subidapp': 'Subida de PP',
-    'mttoxico': 'MT06 Tóxico',
-    'ocasoball': 'Ocaso Ball',
-    'turnoball': 'Turno Ball',
-    'ultraball': 'Ultra Ball',
-    'masterball': 'Master Ball',
-    'superball': 'Súper Ball',
-    'brazalrecio': 'Brazal Recio',
-    'brazalrecia': 'Brazal Recio',
-    'cintorecio': 'Cinto Recio',
-    'cintorecia': 'Cinto Recio',
-    'pesarecia': 'Pesa Recia',
-    'bandarecia': 'Banda Recia',
-    'lenterecia': 'Lente Recia',
-    'franjarecia': 'Franja Recia',
-    'bayadeoro': 'Baya de Oro',
-    'bayaoro': 'Baya de Oro',
-    'piedraeterna': 'Piedra Eterna',
-    'lazodestino': 'Lazo Destino',
-    'caramelovigor': 'Caramelo de vigor',
-    'fishingrod': 'Caña de pescar',
-    'fishingrodgood': 'Caña Buena',
-    'fishingrodsuper': 'Supercaña',
-    'pickaxe': 'Pico de excavación',
-    'pickaxesilver': 'Pico Bueno',
-    'pickaxegold': 'Superpico',
-    'brush': 'Pincel de excavación',
-    'brushgood': 'Pincel Bueno',
-    'brushsuper': 'Superpincel'
-  };
-
-  return aliases[norm] || name;
 }
 
 export function isItemUsableOutsideCombat(item: { id: string; cat?: string; type?: string } | null | undefined): boolean {
@@ -117,24 +66,8 @@ export const useInventoryStore = defineStore('inventory', () => {
     safeStorage.setItem('inventory_last_tab', newVal)
   })
 
-  // We no longer force "utilizables" category on target change 
-  // to respect the user's last selected tab as requested.
-
   function findInventoryKey(name: string): string | null {
-    const inv = gameStore.state.inventory || {}
-    if (inv[name] !== undefined) return name
-
-    const targetOfficial = resolveNormalizedName(name)
-    const targetOfficialNorm = targetOfficial.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '');
-
-    for (const key of Object.keys(inv)) {
-      const keyOfficial = resolveNormalizedName(key)
-      const keyOfficialNorm = keyOfficial.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '');
-      if (keyOfficialNorm === targetOfficialNorm) {
-        return key
-      }
-    }
-    return null
+    return helperFindInventoryKey(gameStore, name)
   }
 
   // --- GETTERS ---
@@ -154,7 +87,7 @@ export const useInventoryStore = defineStore('inventory', () => {
         const list = target.context === 'team' ? gameStore.state.team : gameStore.state.box
         const pokemon = list[target.index]
         if (pokemon) {
-          items = items.filter(item => isItemUsableOn(item.name, pokemon))
+          items = items.filter(item => helperIsItemUsableOn(item.name, pokemon))
         }
       } else {
         items = items.filter(item => {
@@ -166,7 +99,7 @@ export const useInventoryStore = defineStore('inventory', () => {
           const isHeld = item.cat === 'held' || item.type === 'held' || (item.cat === 'breeding' && item.id !== 'vigor_restorer' && !item.id.includes('berry'))
           if (isHeld) return (gameStore.state.team || []).length > 0
 
-          return (gameStore.state.team || []).some((pokemon: Pokemon) => isItemUsableOn(item.name, pokemon))
+          return (gameStore.state.team || []).some((pokemon: Pokemon) => helperIsItemUsableOn(item.name, pokemon))
         })
       }
     }
@@ -290,11 +223,6 @@ export const useInventoryStore = defineStore('inventory', () => {
     gameStore.save(false)
   }
 
-  /**
-   * Processes multiple actions in a single save cycle to ensure reactivity and performance.
-   * @param {Map<string, number>} itemMap - name -> quantity
-   * @param {string} mode - 'sell' | 'release'
-   */
   async function processBatchAction(itemMap: Map<string, number>, mode: 'sell' | 'release') {
     let totalGain = 0
     const inventory = gameStore.state.inventory || {}
@@ -324,135 +252,7 @@ export const useInventoryStore = defineStore('inventory', () => {
 
   // --- ITEM ACTIONS ---
   function useItem(itemName: string, context: 'team' | 'box' | null = null, index: number | null = null): ItemEffectResult {
-    const list = context === 'team' ? gameStore.state.team : gameStore.state.box
-    const pokemon = index !== null ? (list as Pokemon[])[index] : null
-    
-    const officialName = resolveNormalizedName(itemName)
-
-    // --- INTEGRACIÓN CON COMBATE (Prioridad Absoluta) ---
-    const battleStore = useBattleStore()
-    if (battleStore.isBattleActive && !battleStore.isProcessing) {
-      battleStore.useItemInBattle(officialName, context === 'team' ? index : null)
-      return { success: true, message: 'Usando objeto en combate...' }
-    }
-
-    // --- LÓGICA FUERA DE COMBATE ---
-    // Global items (Repels, etc.)
-    if (isGlobalItem(officialName)) {
-      const effectFn = (ITEM_EFFECTS as Record<string, (p: GameState) => ItemEffectResult>)[officialName]
-      if (!effectFn) return { success: false, message: 'Efecto global no implementado.' }
-      
-      const result = effectFn(gameStore.state)
-      if (result.success) {
-        consumeItem(officialName)
-        gameStore.save(false)
-      }
-      return result
-    }
-
-    if (!pokemon) return { success: false, message: 'Seleccioná un Pokémon.' }
-
-    const effectFn = (ITEM_EFFECTS as Record<string, (p: Pokemon) => ItemEffectResult>)[officialName]
-    let result: ItemEffectResult | null;
-
-    if (effectFn) {
-      result = effectFn(pokemon)
-    } else {
-      result = getDynamicItemEffect(officialName, pokemon)
-    }
-
-    if (!result || !result.success) {
-      return result || { success: false, message: 'Este objeto no tiene efecto.' }
-    }
-
-    // --- DEFERRED LOGIC & SPECIAL EFFECTS ---
-    if (result.resultType === 'relearner') {
-      uiStore.activePokemonForRelearner = pokemon
-      uiStore.isMoveRelearnerOpen = true
-    } else if (result.resultType === 'evolution') {
-      uiStore.startEvolution(pokemon, result.targetId || '', officialName)
-    } else if (result.resultType === 'levelup') {
-      gameStore.checkLevelUp(pokemon)
-    } else if (result.resultType === 'learn_move') {
-      const moveName = result.moveName || ''
-      const moveData = pokemonDataProvider.getMoveData(moveName)
-      const moveObj = { 
-        name: moveName, 
-        pp: moveData?.pp || 35, 
-        maxPP: moveData?.pp || 35 
-      }
-
-      if (pokemon.moves.length < 4) {
-        pokemon.moves.push(moveObj as Move)
-        uiStore.notify(`¡${pokemon.name} aprendió ${moveName}!`, '📖')
-      } else {
-        uiStore.addToLearnQueue({ pokemon, move: moveObj as Move })
-      }
-    } else if (result.resultType === 'nature_patch') {
-      uiStore.activePokemonForNature = pokemon
-      uiStore.isNaturePatchOpen = true
-    } else if (result.resultType === 'pp_up') {
-      uiStore.activePokemonForPPUp = pokemon
-      uiStore.isPPUpOpen = true
-    } else if (result.resultType === 'ability_pill') {
-      uiStore.activePokemonForAbility = pokemon
-      uiStore.isAbilityPillOpen = true
-    }
-
-    // --- FINAL PERSISTENCE ---
-    consumeItem(officialName)
-    gameStore.save(false)
-
-    return result
-  }
-
-  function consumeItem(itemName: string) {
-    const inv = gameStore.state.inventory
-    if (!inv) return
-    const actualKey = findInventoryKey(itemName)
-    if (actualKey && inv[actualKey]) {
-      inv[actualKey]--
-      if (inv[actualKey] <= 0) {
-        delete inv[actualKey]
-      }
-      gameStore.state.inventory = { ...inv } // Force reactivity
-    }
-  }
-
-  function isItemUsableOn(itemName: string, pokemon: Pokemon) {
-    if (!pokemon) return false
-    const officialName = resolveNormalizedName(itemName)
-    if (isGlobalItem(officialName)) return false
-
-    const item = SHOP_ITEMS.find(i => i.name === officialName)
-
-    if (pokemon.inDaycare) {
-      if (!item) return false
-      const isVigorRestorer = item.id === 'vigor_restorer' || item.id === 'vigor_candy' || item.id === 'caramelo_vigor' || item.name === 'Restaurador de Vigor' || item.name === 'Caramelo de vigor'
-      const isBreedingHeld = item.cat === 'breeding'
-      return !!(isVigorRestorer || isBreedingHeld)
-    }
-
-    // Check if it's a held item or breeding held item (always equippable)
-    if (item && (
-      item.cat === 'held' || 
-      item.type === 'held' || 
-      (item.cat === 'breeding' && item.id !== 'vigor_restorer' && !item.id.includes('berry'))
-    )) return true
-
-    // Deep clone to avoid side effects during check
-    const p = JSON.parse(JSON.stringify(pokemon))
-
-    // Check main effects
-    const effectFn = ITEM_EFFECTS[officialName]
-    if (effectFn) {
-      const res = effectFn(p)
-      return res && res.success
-    }
-
-    // Check dynamic effects (TMs, stones)
-    const dynamicRes = getDynamicItemEffect(officialName, p)
-    return dynamicRes && dynamicRes.success
+    return executeUseItem(itemName, context, index)
   }
 
   function equipItem(itemName: string, context: 'team' | 'box', index: number) {

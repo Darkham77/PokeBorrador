@@ -1,6 +1,7 @@
 
 import { describe, it, expect, vi } from 'vitest'
-import { getRouteWeather, mulberry32, getWeatherMultiplier } from '@/logic/weatherUtils'
+import { getRouteWeather, getWeatherMultiplier } from '@/logic/weatherUtils'
+import { mulberry32 } from '@/logic/utils/math'
 
 // Mock the weather tables
 vi.mock('@/data/weather-tables', () => ({

@@ -7,6 +7,7 @@ import { useBattleStore } from '@/stores/battle'
 import { useUIStore } from '@/stores/ui'
 import { useMapStore } from '@/stores/map'
 import { useModalStore } from '@/stores/modals'
+import { useGameStore } from '@/stores/game'
 import { getRouteWeather } from '@/logic/weatherUtils'
 import { getWeatherAnimSeed } from '@/logic/weather/weatherMath.ts'
 import { useCombatCamera } from '@/composables/useCombatCamera'
@@ -72,12 +73,16 @@ onMounted(() => {
   }
 })
 
-const getTrainerShadowStyle = (spriteName: string, entitySize: number) => {
-  const url = getAssetUrl(ASSET_TYPES.TRAINER, spriteName)
-  let dbKey = url || ''
+const getTrainerShadowStyle = (spriteUrl: string, entitySize: number) => {
+  let dbKey = spriteUrl || ''
   const base = import.meta.env.BASE_URL || '/'
   if (base !== '/' && dbKey.startsWith(base)) {
     dbKey = dbKey.slice(base.length - 1)
+  }
+  try {
+    dbKey = decodeURIComponent(dbKey)
+  } catch (_e) {
+    // Ignore decode error
   }
   const cached = POKEMON_FEET_DATABASE[dbKey] || { feetY: 0.9, feetX: 0.5 }
   
@@ -94,13 +99,22 @@ const getTrainerShadowStyle = (spriteName: string, entitySize: number) => {
     top: `${cached.feetY * 100}%`,
     width: `${widthPx}px`,
     height: `${heightPx}px`,
-    transform: 'translate(-50%, -100%)',
+    transform: 'translate(-50%, -75%)', // Shadow shifted 25% up
     zIndex: -1,
     pointerEvents: 'none' as const
   }
 }
 
 const classStore = usePlayerClassStore()
+const gameStore = useGameStore()
+
+// URL del sprite de espalda del jugador con género dinámico
+const playerBackSpriteUrl = computed(() => {
+  const spriteId = classStore.currentClassDef?.avatarSpriteId || classStore.currentClassDef?.id || 'entrenador'
+  const gender = gameStore.state.gender || 'h'
+  return getAssetUrl(ASSET_TYPES.TRAINER, spriteId, { trainerSuffix: 'back', gender })
+})
+
 
 const showStandingTrainers = computed(() => {
   return battleStore.isBattleActive && 
@@ -580,7 +594,7 @@ const onDialogLeave = (el: Element, done: () => void) => {
             <!-- Floor Shadow (same technique as pokemon) -->
             <div 
               class="trainer-shadow"
-              :style="getTrainerShadowStyle(battle?.trainerSprite || battle?.trainerName || 'entrenador', BASE_ENTITY_SIZE_ENEMY * 0.8 * (OBJECT_SCALE || 2))"
+              :style="getTrainerShadowStyle(getAssetUrl(ASSET_TYPES.TRAINER, battle?.trainerSprite || battle?.trainerName || 'entrenador'), BASE_ENTITY_SIZE_ENEMY * 0.8 * (OBJECT_SCALE || 2))"
             />
             <!-- Cyan box overlay when guides are active -->
             <div
@@ -615,7 +629,7 @@ const onDialogLeave = (el: Element, done: () => void) => {
             <!-- Floor Shadow (same technique as pokemon) -->
             <div 
               class="trainer-shadow"
-              :style="getTrainerShadowStyle(battle?.trainerSprite || battle?.trainerName || 'entrenador', BASE_ENTITY_SIZE_ENEMY * 0.8 * (OBJECT_SCALE || 2))"
+              :style="getTrainerShadowStyle(getAssetUrl(ASSET_TYPES.TRAINER, battle?.trainerSprite || battle?.trainerName || 'entrenador'), BASE_ENTITY_SIZE_ENEMY * 0.8 * (OBJECT_SCALE || 2))"
             />
             <!-- Cyan box overlay when guides are active -->
             <div
@@ -626,13 +640,12 @@ const onDialogLeave = (el: Element, done: () => void) => {
             </div>
           </VirtualEntity>
 
-          <!-- Standing Player Trainer (During active combat) - Disabled as requested since player trainer sprites are not present yet -->
+          <!-- Standing Player Trainer (_back) - Siempre visible. Escalado al tamaño del juego usando BASE_ENTITY_SIZE_PLAYER como referencia de altura, proporción 65:165. -->
           <VirtualEntity
-            v-if="false"
-            :x="p1Pos.x - 120"
-            :y="p1Pos.y + 40"
-            :w="BASE_ENTITY_SIZE_PLAYER * 0.8"
-            :h="BASE_ENTITY_SIZE_PLAYER * 0.8"
+            :x="WORLD_CONSTANTS.SAFE_ZONE_X - Math.round(BASE_ENTITY_SIZE_PLAYER * 65 / 165) * OBJECT_SCALE"
+            :y="WORLD_CONSTANTS.SAFE_ZONE_Y + WORLD_CONSTANTS.SAFE_ZONE_HEIGHT - BASE_ENTITY_SIZE_PLAYER"
+            :w="Math.round(BASE_ENTITY_SIZE_PLAYER * 65 / 165)"
+            :h="BASE_ENTITY_SIZE_PLAYER"
             class="standing-trainer player-trainer"
           >
             <div class="trainer-sprite-wrapper">
@@ -641,18 +654,23 @@ const onDialogLeave = (el: Element, done: () => void) => {
                 :style="{ filter: 'var(--atmosphere-filter)' }"
               >
                 <img 
-                  :src="getAssetUrl(ASSET_TYPES.TRAINER, classStore.currentClassDef?.avatarSpriteId || 'entrenador', { trainerSuffix: 'front' })" 
+                  :src="playerBackSpriteUrl"
                   class="trainer-image player-trainer-image"
-                  @error="(e: Event) => (e.target as HTMLImageElement).src = getAssetUrl(ASSET_TYPES.TRAINER, 'entrenador', { trainerSuffix: 'front' })"
+                  @error="(e: Event) => { (e.target as HTMLImageElement).src = getAssetUrl(ASSET_TYPES.TRAINER, 'entrenador', { trainerSuffix: 'back', gender: gameStore.state.gender || 'h' }) }"
                 >
               </div>
             </div>
+            <!-- Floor Shadow: CENTER del sprite de sombra anclado en (feetX, feetY) del sprite -->
+            <div 
+              class="trainer-shadow"
+              :style="getTrainerShadowStyle(playerBackSpriteUrl, Math.round(BASE_ENTITY_SIZE_PLAYER * 65 / 165) * OBJECT_SCALE * 2.5)"
+            />
             <!-- Cyan box overlay when guides are active -->
             <div
               v-if="showGuides"
               class="debug-trainer-guide"
             >
-              <span>{{ Math.round(BASE_ENTITY_SIZE_PLAYER * 0.8) }}x{{ Math.round(BASE_ENTITY_SIZE_PLAYER * 0.8) }}</span>
+              <span>{{ Math.round(BASE_ENTITY_SIZE_PLAYER * 65 / 165) * OBJECT_SCALE }}x{{ BASE_ENTITY_SIZE_PLAYER * OBJECT_SCALE }}</span>
             </div>
           </VirtualEntity>
 

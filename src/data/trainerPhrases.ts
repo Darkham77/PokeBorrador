@@ -2,7 +2,7 @@
  * Database of trainer personality traits and phrases.
  */
 
-export const TRAINER_PHRASES: Record<string, string[]> = {
+const TRAINER_PHRASES: Record<string, string[]> = {
   timido: [
     "B-bueno... si insistes, supongo que podemos combatir...",
     "Espero no hacerlo demasiado mal... ¡allá voy!",
@@ -181,7 +181,7 @@ export const TRAINER_PHRASES: Record<string, string[]> = {
   ]
 };
 
-export const TRAINER_PERSONALITIES: Record<string, string[]> = {
+const TRAINER_PERSONALITIES: Record<string, string[]> = {
   caza_bichos: ["timido", "entusiasta"],
   ornitologo: ["audaz", "entusiasta"],
   cientifico: ["inteligente", "relajado"],
@@ -196,7 +196,7 @@ export const TRAINER_PERSONALITIES: Record<string, string[]> = {
 };
 
 // Precompute combined phrases for each trainer type key at module loading time
-export const PRECOMPUTED_TRAINER_PHRASES: Record<string, string[]> = {};
+const PRECOMPUTED_TRAINER_PHRASES: Record<string, string[]> = {};
 
 for (const [trainerType, personalities] of Object.entries(TRAINER_PERSONALITIES)) {
   const quotes: string[] = [];

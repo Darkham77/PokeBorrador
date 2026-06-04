@@ -147,6 +147,7 @@ export interface Pokemon {
   chargingMove?: Move | null;
   aura?: string;
   isAncestral?: boolean;
+  choiceMove?: string;
 }
 
 export interface PokemonEgg {

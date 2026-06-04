@@ -267,18 +267,20 @@ const {
             :key="item.label"
             class="breakdown-item"
           >
-            <span :class="item.mult >= 1 ? 'boosted' : 'penalized'">{{ item.mult >= 1 ? '▲' : '▼' }}</span>
-            POT: {{ item.label }} <span :class="item.mult > 1 ? 'boosted' : 'penalized'">x{{ item.mult.toFixed(2).replace('.00', '') }}</span>
+            <span :class="item.mult > 1 ? 'boosted' : (item.mult < 1 ? 'penalized' : '')">
+              {{ item.mult > 1 ? '▲' : (item.mult < 1 ? '▼' : '•') }}
+            </span>
+            POT: {{ item.label }} <span :class="item.mult > 1 ? 'boosted' : (item.mult < 1 ? 'penalized' : '')">x{{ item.mult.toFixed(2).replace('.00', '') }}</span>
           </div>
           <div
             v-for="item in activeDetails.accuracy.list"
             :key="item.label"
             class="breakdown-item"
           >
-            <span :class="((typeof item.mult === 'number' && item.mult >= 1) || item.mult === '100%') ? 'boosted' : 'penalized'">
-              {{ ((typeof item.mult === 'number' && item.mult >= 1) || item.mult === '100%') ? '▲' : '▼' }}
+            <span :class="((typeof item.mult === 'number' && item.mult > 1) || item.mult === '100%') ? 'boosted' : (typeof item.mult === 'number' && item.mult < 1 ? 'penalized' : '')">
+              {{ ((typeof item.mult === 'number' && item.mult > 1) || item.mult === '100%') ? '▲' : (typeof item.mult === 'number' && item.mult < 1 ? '▼' : '•') }}
             </span>
-            PREC: {{ item.label }} <span :class="(typeof item.mult === 'number' && item.mult > 1) || item.mult === '100%' ? 'boosted' : 'penalized'">
+            PREC: {{ item.label }} <span :class="(typeof item.mult === 'number' && item.mult > 1) || item.mult === '100%' ? 'boosted' : (typeof item.mult === 'number' && item.mult < 1 ? 'penalized' : '')">
               {{ typeof item.mult === 'number' ? `x${item.mult.toFixed(2).replace('.00', '')}` : item.mult }}
             </span>
           </div>
@@ -488,7 +490,7 @@ const {
 
 .status-grid-2col {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(105px, 1fr));
   gap: 4px;
 }
 
@@ -513,8 +515,10 @@ const {
     font-size: 8px;
     font-weight: bold;
     color: white;
-    white-space: nowrap;
+    word-break: normal;
+    overflow-wrap: break-word;
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: 3px;
 

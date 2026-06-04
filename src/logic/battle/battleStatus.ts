@@ -198,4 +198,5 @@ export function clearVolatileStatus(poke: Pokemon) {
   poke.futureSightDmg = 0
   poke.badPoison = 0
   poke.chargingMove = null
+  poke.choiceMove = undefined
 }

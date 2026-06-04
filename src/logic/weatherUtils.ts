@@ -1,17 +1,17 @@
 import { ROUTE_WEATHER_TABLES } from '@/data/weather-tables';
-import { getServerTime, getDayCycle } from '@/logic/timeUtils';
+import { getDayCycle } from '@/logic/timeUtils';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { WEATHER_REGISTRY } from './weather/weatherRegistry';
 
 type WeatherProbabilityTable = Record<string, number>;
 type SeasonWeatherTable = Record<string, WeatherProbabilityTable>;
 
-export const WEATHER_BUFF_MULTIPLIER = 1.5;
-export const WEATHER_DEBUFF_MULTIPLIER = 0.4;
-export const WEATHER_BLOCK_MULTIPLIER = 0;
+const WEATHER_BUFF_MULTIPLIER = 1.5;
+const WEATHER_DEBUFF_MULTIPLIER = 0.4;
+const WEATHER_BLOCK_MULTIPLIER = 0;
 
 import { mulberry32, hashString } from './utils/math.ts';
-export { mulberry32, hashString };
+
 
 
 
@@ -64,13 +64,6 @@ export function getRouteWeather(mapId: string, seasonId: string, epochHour: numb
   
   // Fallback in case table probabilities don't sum to 100 or something goes wrong
   return 'clear'; 
-}
-
-/**
- * Gets the current epoch hour for deterministic math.
- */
-export function getCurrentEpochHour(): number {
-  return Math.floor(getServerTime() / 3600000);
 }
 
 /**

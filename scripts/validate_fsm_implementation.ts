@@ -3,7 +3,8 @@
  */
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { styleText, parseArgs } from 'node:util';
+import { styleText } from 'node:util';
+import { setupValidation } from './lib/validationBase.ts';
 
 const SRC_ROOT = path.resolve(process.cwd(), 'src');
 const MANUAL_PATH = path.resolve(process.cwd(), '.agents/skills/project-standards/references/battle/battle_mechanics_manual.md');
@@ -79,25 +80,12 @@ function parseFsmConstants(fsmCode: string) {
 }
 
 async function main() {
-  const { values } = parseArgs({
-    options: {
-      output: { type: 'string', short: 'o' },
-      summary: { type: 'boolean', short: 's' }
-    }
+  const validator = setupValidation({
+    title: 'FSM IMPLEMENTATION VALIDATOR',
+    requiredFiles: [MANUAL_PATH, FSM_PATH]
   });
 
-  const sep = (c = '─') => c.repeat(60);
-  console.log(styleText('bold', '\n' + sep('═')));
-  console.log(styleText('bold', '🛡️  VALIDADOR FSM: IMPLEMENTACIÓN v7.6'));
-  console.log(sep('═'));
-
-  try {
-    await fs.access(MANUAL_PATH);
-    await fs.access(FSM_PATH);
-  } catch {
-    console.error(styleText('red', `❌ Archivos requeridos no encontrados.`));
-    process.exit(1);
-  }
+  await validator.checkFiles();
 
   const manualCode = await fs.readFile(MANUAL_PATH, 'utf-8');
   const fsmCode = await fs.readFile(FSM_PATH, 'utf-8');
@@ -211,60 +199,16 @@ async function main() {
     });
   });
 
-  console.log(`\n════════════════════════════════════`);
-  console.log(`    FSM IMPLEMENTATION REPORT`);
-  console.log(`════════════════════════════════════`);
-  console.log(`📂 Archivos escaneados:   ${fileData.length}`);
-  console.log(`🧜 Estados Mermaid:       ${mermaidStates.size}`);
-  console.log(`⚙️ Constantes FSM:        ${allKeys.size}`);
-  console.log(`⚙️ Subestados:            ${substates.size}`);
-  console.log(`════════════════════════════════════\n`);
-
-  if (values.output) {
-    const outputPath = path.resolve(process.cwd(), values.output as string);
-    const lines = [
-      `--- FSM IMPLEMENTATION REPORT ---`,
-      `Archivos escaneados:   ${fileData.length}`,
-      `Estados Mermaid:       ${mermaidStates.size}`,
-      `Constantes FSM:        ${allKeys.size}`,
-      `Subestados:            ${substates.size}`,
-      `\nErrors (${errors.length}):`,
-      ...errors.map(e => `  - ${e}`),
-      `\nWarnings (${warnings.length}):`,
-      ...warnings.map(w => `  - ${w}`)
-    ];
-    await fs.writeFile(outputPath, lines.join('\n'), 'utf-8');
-    console.log(styleText('cyan', `\n✨ Reporte completo escrito en: ${values.output}`));
-  }
-
-  if (values.summary) {
-    console.log(styleText('cyan', `\n[INFO] Modo resumen activo: ${errors.length} errores, ${warnings.length} advertencias.`));
-  } else {
-    if (warnings.length) {
-      console.log(styleText('yellow', `⚠️  ADVERTENCIAS (${warnings.length}):`));
-      const limit = 30;
-      warnings.slice(0, limit).forEach(w => console.log(`   ${w}`));
-      if (warnings.length > limit) {
-        console.log(styleText('cyan', `   ... y ${warnings.length - limit} advertencias más (usa -o para ver todas)`));
-      }
-      console.log('');
-    }
-
-    if (errors.length) {
-      console.log(styleText('red', `❌ ERRORES (${errors.length}):`));
-      const limit = 30;
-      errors.slice(0, limit).forEach(e => console.log(`   ${e}`));
-      if (errors.length > limit) {
-        console.log(styleText('cyan', `   ... y ${errors.length - limit} errores más (usa -o para ver todos)`));
-      }
-    } else {
-      console.log(styleText('green', '✅ Todos los checks de implementación de la FSM pasaron con éxito.'));
-    }
-  }
-
-  if (errors.length > 0) {
-    process.exit(1);
-  }
+  await validator.finish(
+    {
+      'Archivos escaneados': fileData.length,
+      'Estados Mermaid': mermaidStates.size,
+      'Constantes FSM': allKeys.size,
+      'Subestados': substates.size
+    },
+    errors,
+    warnings
+  );
 }
 
 main().catch(err => {

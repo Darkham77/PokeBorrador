@@ -78,7 +78,6 @@
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  opacity: 0.85;
   will-change: transform, opacity;
   pointer-events: none;
   
@@ -91,12 +90,11 @@
   
   &.enemy-trainer {
     transform: Scale(0.8);
+    opacity: 0.85;
   }
 
   &.player-trainer {
-    .trainer-image {
-      transform: Scale(1.1);
-    }
+    // No extra transform needed — VirtualEntity sets the correct size
   }
 }
 

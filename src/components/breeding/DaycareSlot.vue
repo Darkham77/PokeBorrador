@@ -43,11 +43,13 @@ const isHoveringItem = ref(false)
 const handleSlotMouseEnter = () => {
   if (!props.pokemon) {
     if (slotBorderTween) slotBorderTween.kill()
-    slotBorderTween = gsap.to(slotRef.value, {
-      borderColor: '#ffd700',
-      duration: 0.3,
-      ease: 'power2.out'
-    })
+    if (slotRef.value) {
+      slotBorderTween = gsap.to(slotRef.value, {
+        borderColor: '#ffd700',
+        duration: 0.3,
+        ease: 'power2.out'
+      })
+    }
 
     const plusIcon = slotRef.value?.querySelector('.plus-icon')
     if (plusIcon) {
@@ -61,11 +63,13 @@ const handleSlotMouseEnter = () => {
     }
   } else {
     if (slotBorderTween) slotBorderTween.kill()
-    slotBorderTween = gsap.to(slotRef.value, {
-      borderColor: 'rgba(255, 255, 255, 0.15)',
-      duration: 0.3,
-      ease: 'power2.out'
-    })
+    if (slotRef.value) {
+      slotBorderTween = gsap.to(slotRef.value, {
+        borderColor: 'rgba(255, 255, 255, 0.15)',
+        duration: 0.3,
+        ease: 'power2.out'
+      })
+    }
 
     const spriteBox = slotRef.value?.querySelector('.sprite-box')
     if (spriteBox) {
@@ -81,11 +85,13 @@ const handleSlotMouseEnter = () => {
 
 const handleSlotMouseLeave = () => {
   if (slotBorderTween) slotBorderTween.kill()
-  slotBorderTween = gsap.to(slotRef.value, {
-    borderColor: 'rgba(255, 255, 255, 0.06)',
-    duration: 0.3,
-    ease: 'power2.out'
-  })
+  if (slotRef.value) {
+    slotBorderTween = gsap.to(slotRef.value, {
+      borderColor: 'rgba(255, 255, 255, 0.06)',
+      duration: 0.3,
+      ease: 'power2.out'
+    })
+  }
 
   if (!props.pokemon) {
     const plusIcon = slotRef.value?.querySelector('.plus-icon')
@@ -114,43 +120,51 @@ const handleSlotMouseLeave = () => {
 const handleItemMouseEnter = () => {
   isHoveringItem.value = true
   if (itemTween) itemTween.kill()
-  itemTween = gsap.to(itemStatusRef.value, {
-    scale: 1.02,
-    filter: 'Brightness(1.15)',
-    duration: 0.2,
-    ease: 'power2.out'
-  })
+  if (itemStatusRef.value) {
+    itemTween = gsap.to(itemStatusRef.value, {
+      scale: 1.02,
+      filter: 'brightness(1.15)',
+      duration: 0.2,
+      ease: 'power2.out'
+    })
+  }
 }
 
 const handleItemMouseLeave = () => {
   isHoveringItem.value = false
   if (itemTween) itemTween.kill()
-  itemTween = gsap.to(itemStatusRef.value, {
-    scale: 1,
-    filter: 'Brightness(1)',
-    duration: 0.2,
-    ease: 'power2.out'
-  })
+  if (itemStatusRef.value) {
+    itemTween = gsap.to(itemStatusRef.value, {
+      scale: 1,
+      filter: 'brightness(1)',
+      duration: 0.2,
+      ease: 'power2.out'
+    })
+  }
 }
 
 const handleItemMouseDown = () => {
   if (itemTween) itemTween.kill()
-  itemTween = gsap.to(itemStatusRef.value, {
-    scale: 0.98,
-    filter: 'Brightness(1.15)',
-    duration: 0.1,
-    ease: 'power2.out'
-  })
+  if (itemStatusRef.value) {
+    itemTween = gsap.to(itemStatusRef.value, {
+      scale: 0.98,
+      filter: 'brightness(1.15)',
+      duration: 0.1,
+      ease: 'power2.out'
+    })
+  }
 }
 
 const handleItemMouseUp = () => {
   if (itemTween) itemTween.kill()
-  itemTween = gsap.to(itemStatusRef.value, {
-    scale: isHoveringItem.value ? 1.02 : 1,
-    filter: isHoveringItem.value ? 'Brightness(1.15)' : 'Brightness(1)',
-    duration: 0.1,
-    ease: 'power2.out'
-  })
+  if (itemStatusRef.value) {
+    itemTween = gsap.to(itemStatusRef.value, {
+      scale: isHoveringItem.value ? 1.02 : 1,
+      filter: isHoveringItem.value ? 'brightness(1.15)' : 'brightness(1)',
+      duration: 0.1,
+      ease: 'power2.out'
+    })
+  }
 }
 
 watch(() => props.pokemon, () => {

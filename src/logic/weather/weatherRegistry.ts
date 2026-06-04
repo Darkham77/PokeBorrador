@@ -75,7 +75,7 @@ export const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
     label: 'SOL',
     icon: '☀️',
     visual: 'sun',
-    description: 'Potencia Fuego (x1.5), debilita Agua/Hielo (x0.4). Rayo Solar sin carga.',
+    description: 'Día Soleado:\n▲ Potencia Fuego (x1.5)\n▼ Potencia Agua y Hielo (x0.4)\n⚡ Rayo Solar sin carga',
     modifiers: { boost: ['fire', 'grass', 'ground'], debuff: ['water', 'ice'] }
   },
   'heatwave': {
@@ -84,7 +84,7 @@ export const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
     label: 'OLA CALOR',
     icon: '🔥',
     visual: 'heatwave',
-    description: 'Calor extremo. Potencia Fuego (x1.5). Bloquea Hielo y Planta (x0). El Agua se penaliza.',
+    description: 'Ola de calor extremo:\n▲ Potencia Fuego (x1.5)\n▼ Potencia Agua (x0.4)\n🚫 Inmune a Hielo y Planta (x0)',
     modifiers: { boost: ['fire', 'ground'], block: ['ice', 'grass'], debuff: ['water'] }
   },
   'intense_sun': {
@@ -93,7 +93,7 @@ export const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
     label: 'SOL INTENSO',
     icon: '🔆',
     visual: 'intense_sun',
-    description: 'Sol abrasador. Potencia Fuego/Planta. Bloquea Agua y Hielo (x0).',
+    description: 'Sol abrasador:\n▲ Potencia Fuego y Planta (x1.5)\n🚫 Inmune a Agua y Hielo (x0)',
     modifiers: { boost: ['grass', 'fire'], block: ['water', 'ice'] }
   },
 
@@ -104,7 +104,7 @@ export const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
     label: 'LLUVIA',
     icon: '🌧️',
     visual: 'rain',
-    description: 'Potencia Agua/Bicho (x1.5), debilita Fuego/Roca (x0.4). Trueno nunca falla.',
+    description: 'Lluvia constante:\n▲ Potencia Agua y Bicho (x1.5)\n▼ Potencia Fuego y Roca (x0.4)\n⚡ Trueno 100% precisión',
     modifiers: { boost: ['water', 'bug', 'electric'], debuff: ['fire', 'rock', 'ground'] }
   },
   'storm': {
@@ -113,7 +113,7 @@ export const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
     label: 'TORMENTA',
     icon: '⛈️',
     visual: 'storm',
-    description: 'Tormenta eléctrica. Potencia Agua/Dragón. Bloquea Fuego, Volador y Bicho (x0).',
+    description: 'Tormenta eléctrica:\n▲ Potencia Agua, Eléctrico y Dragón (x1.5)\n🚫 Inmune a Fuego, Volador y Bicho (x0)',
     modifiers: { boost: ['water', 'electric', 'dragon'], block: ['fire', 'flying', 'bug'], debuff: ['rock', 'ground'] }
   },
   'thunderstorm': {
@@ -122,7 +122,7 @@ export const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
     label: 'T. ELÉCTRICA',
     icon: '🌩️',
     visual: 'thunderstorm',
-    description: 'Fuerte actividad eléctrica. Potencia Eléctrico/Dragón. No afecta al Fuego.',
+    description: 'Tormenta con rayos:\n▲ Potencia Eléctrico y Dragón (x1.5)\n▼ Potencia Roca y Tierra (x0.4)',
     modifiers: { boost: ['electric', 'dragon'], debuff: ['rock', 'ground'] }
   },
   'heavy_rain': {
@@ -131,7 +131,7 @@ export const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
     label: 'LLUVIA FUERTE',
     icon: '☔',
     visual: 'heavy_rain',
-    description: 'Lluvia torrencial. Potencia Agua. Bloquea Fuego (x0).',
+    description: 'Lluvia torrencial:\n▲ Potencia Agua (x1.5)\n🚫 Inmune a Fuego (x0)',
     modifiers: { boost: ['water'], block: ['fire'], debuff: ['rock', 'ground'] }
   },
 
@@ -142,7 +142,7 @@ export const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
     label: 'T. ARENA',
     icon: '🏜️',
     visual: 'sandstorm',
-    description: 'Daña a tipos no Tierra/Roca/Acero. Sube un 50% la Def. Especial de los tipo Roca.',
+    description: 'Tormenta de arena:\n▲ Def. Especial tipo Roca (+50%)\n▼ Daña por turno a no Tierra/Roca/Acero',
     modifiers: { boost: ['rock', 'ground', 'steel'], debuff: ['flying', 'bug', 'fire'] }
   },
   'dust_storm': {
@@ -151,7 +151,7 @@ export const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
     label: 'T. POLVO',
     icon: '🌪️',
     visual: 'dust_storm',
-    description: 'Visibilidad nula. Daña por turno. Bloquea Volador (x0) y penaliza Bicho.',
+    description: 'Tormenta de polvo:\n▼ Potencia Bicho y Fuego (x0.4)\n🚫 Inmune a Volador (x0)\n▼ Daña por turno',
     modifiers: { boost: ['rock', 'ground'], block: ['flying'], debuff: ['bug'] }
   },
 
@@ -162,7 +162,7 @@ export const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
     label: 'NIEVE',
     icon: '❄️',
     visual: 'snow',
-    description: 'Sube un 50% la Defensa de los tipo Hielo. Ventisca nunca falla.',
+    description: 'Nevada:\n▲ Defensa tipo Hielo (+50%)\n⚡ Ventisca 100% precisión',
     modifiers: { boost: ['ice', 'steel'], debuff: ['fire', 'bug', 'flying'] }
   },
   'cold': {
@@ -171,7 +171,7 @@ export const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
     label: 'FRÍO',
     icon: '❄️',
     visual: 'cold',
-    description: 'Ambiente gélido. Potencia Hielo. Penaliza Bicho y Planta.',
+    description: 'Ambiente gélido:\n▲ Potencia Hielo (x1.5)\n▼ Potencia Bicho y Planta (x0.4)',
     modifiers: { boost: ['ice'], debuff: ['grass', 'bug'] }
   },
   'hail': {
@@ -180,7 +180,7 @@ export const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
     label: 'GRANIZO',
     icon: '🌨️',
     visual: 'hail',
-    description: 'Daña a tipos no Hielo cada turno. Penaliza Fuego, Bicho, Volador y Planta.',
+    description: 'Granizada:\n▼ Potencia Fuego, Bicho, Volador y Planta (x0.4)\n▼ Daña por turno a no Hielo',
     modifiers: { boost: ['ice'], debuff: ['fire', 'bug', 'flying', 'grass'] }
   },
   'blizzard': {
@@ -189,7 +189,7 @@ export const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
     label: 'VENTISCA',
     icon: '🌬️',
     visual: 'blizzard',
-    description: 'Tormenta de nieve. Daña por turno. Bloquea Fuego, Planta, Bicho y Volador (x0).',
+    description: 'Tempestad gélida:\n▲ Potencia Hielo (x1.5)\n🚫 Inmune a Fuego, Planta, Bicho y Volador (x0)\n▼ Daña por turno',
     modifiers: { boost: ['ice'], block: ['fire', 'grass', 'bug', 'flying'], debuff: ['steel', 'rock'] }
   },
   'coldwave': {
@@ -198,7 +198,7 @@ export const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
     label: 'OLA FRÍO',
     icon: '🥶',
     visual: 'coldwave',
-    description: 'Frío extremo. Daña por turno y reduce Velocidad (50%). Bloquea Bicho y Planta (x0).',
+    description: 'Frío extremo:\n▼ Velocidad general (-50%)\n🚫 Inmune a Bicho y Planta (x0)\n▼ Daña por turno',
     modifiers: { boost: ['ice'], block: ['grass', 'bug'], debuff: ['fire', 'flying'] }
   },
 
@@ -209,7 +209,7 @@ export const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
     label: 'NIEBLA',
     icon: '🌫️',
     visual: 'fog',
-    description: 'Niebla densa. Potencia Fantasma/Siniestro. Reduce drásticamente la precisión.',
+    description: 'Niebla densa:\n▲ Potencia Fantasma y Siniestro (x1.5)\n▼ Precisión de ataques (al 60%)',
     modifiers: { boost: ['ghost', 'psychic', 'dark'], debuff: ['flying'] }
   },
   'mist': {
@@ -218,7 +218,7 @@ export const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
     label: 'BRUMA',
     icon: '💨',
     visual: 'mist',
-    description: 'Humedad mágica. Potencia Hada/Agua. Penaliza Fuego.',
+    description: 'Bruma mágica (Niebla):\n▲ Potencia Hada y Agua (x1.5)\n▼ Potencia Fuego (x0.4)\n▼ Precisión de ataques (al 60%)',
     modifiers: { boost: ['fairy', 'water'], debuff: ['fire'] }
   },
 
@@ -229,7 +229,7 @@ export const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
     label: 'VIENTO',
     icon: '🍃',
     visual: 'wind',
-    description: 'Brisa constante. Potencia Volador/Psíquico. Penaliza Tierra.',
+    description: 'Viento constante:\n▲ Potencia Volador, Bicho y Psíquico (x1.5)\n▼ Potencia Tierra (x0.4)',
     modifiers: { boost: ['flying', 'bug', 'psychic'], debuff: ['ground'] }
   },
   'strong_winds': {
@@ -238,7 +238,7 @@ export const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
     label: 'V. FUERTES',
     icon: '🌀',
     visual: 'strong_winds',
-    description: 'Corrientes Delta. Elimina debilidades Volador. Bloquea Bicho y Tierra (x0).',
+    description: 'Corrientes Delta:\n▲ Elimina debilidades de Volador\n🚫 Inmune a Bicho y Tierra (x0)',
     modifiers: { boost: ['flying', 'dragon', 'psychic'], block: ['bug', 'ground'] }
   }
 };

@@ -251,23 +251,6 @@ export interface AuthStore {
   sessionConflict: boolean;
   logout: () => Promise<void>;
 }
-
-export interface LoadingStore {
-  start: (id: string, message?: string, subMessage?: string, isGlobal?: boolean) => void;
-  finish: (id: string) => void;
-  clearAll: () => void;
-}
-
-export interface SocialStore {
-  notifications: { friends: number; trades: number; battles: number; total: number };
-  refreshNotificationCount: () => Promise<void>;
-}
-
-export interface ShopStore {
-  buyItem: (itemId: string, qty: number) => Promise<void>;
-  sellItem: (itemId: string, qty: number) => Promise<void>;
-}
-
 export interface TradeOffer {
   id: string;
   sender_id: string;
@@ -283,26 +266,3 @@ export interface TradeOffer {
   created_at: string;
 }
 
-export interface TradeStore {
-  tradeTarget: { id: string; username: string } | null;
-  tradeFriendSave: GameState | null;
-  tradeOfferPoke: Pokemon | null;
-  tradeRequestPoke: Pokemon | null;
-  tradeOfferItems: Record<string, number>;
-  tradeRequestItems: Record<string, number>;
-  pendingIncoming: TradeOffer[];
-  pendingOutgoing: TradeOffer[];
-  pendingAccepted: TradeOffer[];
-  lockedUids: Set<string>;
-  subscribeTradeNotifs: () => Promise<void>;
-  refreshPendingTrades: () => Promise<void>;
-  openTradeModal: (friendId: string, friendUsername: string) => Promise<void>;
-  sendTradeOffer: (options: { isGift: boolean; offerMoney: number; requestMoney: number; message: string }) => Promise<boolean>;
-  acceptTrade: (tradeId: string | number) => Promise<boolean>;
-  rejectTrade: (tradeId: string | number) => Promise<void>;
-  claimTrade: (tradeId: string | number) => Promise<void>;
-}
-
-export interface PvPStore {
-  updateElo: (won: boolean) => Promise<number>;
-}

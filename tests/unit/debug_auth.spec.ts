@@ -38,18 +38,9 @@ vi.mock('@/logic/supabase', () => ({
   }
 }))
 
-// Mock localStorage for environments where it's missing
-if (typeof localStorage === 'undefined') {
-  const store: Record<string, string> = {}
-  global.localStorage = {
-    getItem: (key: string): string | null => store[key] || null,
-    setItem: (key: string, value: string): void => { store[key] = value.toString() },
-    clear: (): void => { for (const key in store) delete store[key] },
-    removeItem: (key: string): void => { delete store[key] },
-    length: 0,
-    key: (_index: number): string | null => null
-  }
-}
+import { mockLocalStorage } from '../helpers/debugSetup'
+
+mockLocalStorage()
 
 describe('Debug System (Security & Auth)', () => {
   beforeEach(() => {

@@ -186,16 +186,28 @@ const handleTriggerClick = (event: MouseEvent) => {
   })
 }
 
-const descriptionSegments = computed(() => {
+const descriptionLines = computed(() => {
   if (!props.description) return []
-  const symbolsRegex = /(▲|▼|↑|↓|⬆|⬇|🔼|🔽|🔺|🔻|🔴|🟢|ℹ️|⚡|✨|⚠️|⭐|🛡️|♂️|♀️|🌸|☀️|🍂|❄️|🌅|🌇|🌙|🏙️|🌉|🌧️|🌫️|🌨️|🏜️|🔥|💨|🍃)/gu
-  const parts = props.description.split(symbolsRegex)
-  
-  return parts.filter(p => p !== undefined && p !== '').map(p => {
-    const isSymbol = symbolsRegex.test(p)
+  return props.description.split('\n').map(line => {
+    const trimmed = line.trim()
+    const match = trimmed.match(/^([▲▼⚡🚫•])\s*(.*)$/u)
+    if (match) {
+      return {
+        hasBullet: true,
+        bullet: match[1],
+        text: match[2],
+        isBoost: match[1] === '▲',
+        isDebuff: match[1] === '▼',
+        isNeutral: match[1] === '•' || match[1] === '⚡' || match[1] === '🚫'
+      }
+    }
     return {
-      text: p,
-      isSymbol
+      hasBullet: false,
+      text: line,
+      bullet: '',
+      isBoost: false,
+      isDebuff: false,
+      isNeutral: false
     }
   })
 })
@@ -339,20 +351,23 @@ onUnmounted(() => {
                 v-if="description"
                 class="pv-tooltip-desc"
               >
-                <template
-                  v-for="(seg, idx) in descriptionSegments"
+                <div
+                  v-for="(line, idx) in descriptionLines"
                   :key="idx"
+                  class="tooltip-line"
+                  :class="{ 
+                    'has-bullet': line.hasBullet,
+                    'is-boost': line.isBoost,
+                    'is-debuff': line.isDebuff,
+                    'is-neutral': line.isNeutral
+                  }"
                 >
                   <span
-                    v-if="seg.isSymbol"
-                    class="symbol-align"
-                    :class="{ 
-                      'is-boost': seg.text === '▲' || seg.text === '↑' || seg.text === '⬆' || seg.text === '🔼' || seg.text === '🔺',
-                      'is-debuff': seg.text === '▼' || seg.text === '↓' || seg.text === '⬇' || seg.text === '🔽' || seg.text === '🔻'
-                    }"
-                  >{{ seg.text }}</span>
-                  <template v-else>{{ seg.text }}</template>
-                </template>
+                    v-if="line.hasBullet"
+                    class="bullet-icon"
+                  >{{ line.bullet }}</span>
+                  <span class="line-text">{{ line.text }}</span>
+                </div>
               </span>
               <slot name="content" />
             </div>

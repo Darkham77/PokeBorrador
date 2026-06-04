@@ -1,12 +1,11 @@
 
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
-import { getPokemonTier, BOX_TIER_CONFIG } from '@/logic/pokemon/tierEngine';
+import { getPokemonTier } from '@/logic/pokemon/tierEngine';
 import { getStatMultiplier, getAccuracyMultiplier } from '@/logic/pokemon/statEngine';
-import { getTypeEffectiveness } from '@/logic/pokemon/typeEngine';
 import { getSpeciesHistory } from '@/logic/pokemon/evolutionEngine';
 import type { Pokemon, PokemonMove } from '@/types/pokemon';
 
-export { getPokemonTier, BOX_TIER_CONFIG, getSpeciesHistory };
+export { getPokemonTier };
 
 /**
  * Calculates the total power of a pokemon (BST + total IVs).
@@ -30,16 +29,7 @@ export function calculateRocketSellPrice(p: Pokemon): number {
   // Formula: (Level * 50 + (Total IVs / 186) * 500) * 0.8 (Rocket Cut)
   return Math.floor((p.level * 50 + (totalIvs / 186) * 500) * 0.8);
 }
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import type { LearnsetMove, MoveBaseData } from '@/types/database';
-
-export function getSpriteUrl(id: string, isShiny: boolean = false): string {
-  return getAssetUrl(ASSET_TYPES.POKEMON, id, { isShiny });
-}
-
-export function getBackSpriteUrl(id: string, isShiny: boolean = false): string {
-  return getAssetUrl(ASSET_TYPES.POKEMON, id, { isShiny, isBack: true });
-}
 
 /**
  * Get moves a pokemon knows at a given level (up to 4, most recent)
@@ -100,10 +90,6 @@ export function getMovesAtLevel(id: string, level: number): PokemonMove[] {
   });
 }
 
-/**
- * Get type effectiveness multiplier
- */
-export { getTypeEffectiveness };
 
 /**
  * Get type effectiveness message

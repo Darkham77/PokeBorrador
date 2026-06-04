@@ -11,11 +11,8 @@
 
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { styleText, parseArgs } from 'node:util';
-import { enableCompileCache } from 'node:module';
-import { printConsoleHeader, printConsoleSummary, writeReportFile } from './lib/reportUtils.ts';
-
-enableCompileCache();
+import { styleText } from 'node:util';
+import { setupValidation } from './lib/validationBase.ts';
 
 // Runtime permission check
 if (process.permission && !process.permission.has('fs.read', process.cwd())) {
@@ -41,22 +38,12 @@ interface ShopItem {
 }
 
 async function main() {
-  const { values } = parseArgs({
-    options: {
-      output: { type: 'string', short: 'o' },
-      summary: { type: 'boolean', short: 's' }
-    }
+  const validator = setupValidation({
+    title: 'ITEM INTEGRITY VALIDATOR',
+    requiredFiles: [SHOP_FILE, BATTLE_FILE]
   });
 
-  printConsoleHeader('ITEM INTEGRITY VALIDATOR');
-
-  try {
-    await fs.access(SHOP_FILE);
-    await fs.access(BATTLE_FILE);
-  } catch {
-    console.error(styleText('red', `❌ Required files not found.\n   - ${SHOP_FILE}\n   - ${BATTLE_FILE}`));
-    process.exit(1);
-  }
+  await validator.checkFiles();
 
   const shopContent   = await fs.readFile(SHOP_FILE, 'utf8');
   const battleContent = await fs.readFile(BATTLE_FILE, 'utf8');
@@ -159,25 +146,14 @@ async function main() {
     }
   });
 
-  const summaryData = {
-    title: 'ITEM INTEGRITY REPORT',
-    scannedMetrics: {
+  await validator.finish(
+    {
       'SHOP_ITEMS scanned': shopItems.length,
       'HEALING_ITEMS scanned': healingItems.size
     },
     errors,
     warnings
-  };
-
-  printConsoleSummary(summaryData, !values.summary);
-
-  if (values.output) {
-    await writeReportFile(values.output as string, summaryData);
-  }
-
-  if (errors.length > 0) {
-    process.exit(1);
-  }
+  );
 }
 
 main().catch(err => {

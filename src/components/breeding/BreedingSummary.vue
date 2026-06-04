@@ -6,6 +6,7 @@ import { getGeneticsForecast, type GeneticsForecast } from '@/logic/breeding/bre
 import { COMPAT_TEXT } from '@/data/breeding/breedingConstants'
 import gsap from 'gsap'
 import PVTooltip from '@/components/common/PVTooltip.vue'
+import { getServerTime } from '@/logic/timeUtils'
 
 const breedingStore = useBreedingStore()
 const classStore = usePlayerClassStore()
@@ -91,7 +92,7 @@ const compatStyle = computed(() => {
 
 const formatMs = (ms: number | null): string => {
   if (!ms) return '--:--'
-  const left = Math.max(0, Math.floor((ms - Temporal.Now.instant().epochMilliseconds) / 1000))
+  const left = Math.max(0, Math.floor((ms - getServerTime()) / 1000))
   const m = String(Math.floor(left / 60)).padStart(2, '0')
   const s = String(left % 60).padStart(2, '0')
   return `${m}:${s}`
@@ -105,7 +106,7 @@ const tickerFn = () => {
   
   // Capa 3: Check in real-time if timer hit zero while active
   if (breedingStore.isBreeding && breedingStore.nextEggTime) {
-    const nowMs = Temporal.Now.instant().epochMilliseconds
+    const nowMs = getServerTime()
     if (nowMs >= breedingStore.nextEggTime) {
       breedingStore.checkAndGenerateEgg()
     }

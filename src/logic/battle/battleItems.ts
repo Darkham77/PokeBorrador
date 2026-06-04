@@ -146,6 +146,8 @@ export async function handleItemUsage(itemName: string, p: Pokemon, e: Pokemon, 
           // Fallback: esperar via GSAP delayedCall
           await awaitAnimation(gsap.delayedCall(0.6, () => { /* heal sync */ }))
         }
+      } else {
+        options.audio.play('heal')
       }
 
       return { action: 'heal', pokemon: res.pokemon }

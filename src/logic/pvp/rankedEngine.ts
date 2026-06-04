@@ -18,9 +18,9 @@ export interface RankedRules {
 }
 
 export const RANKED_TIER_ORDER = ['Bronce', 'Plata', 'Oro', 'Platino', 'Diamante', 'Maestro'];
-export const RANKED_MAX_TIER_GAP = 1;
+const RANKED_MAX_TIER_GAP = 1;
 
-export const RANKED_TIERS: Record<string, EloTier> = {
+const RANKED_TIERS: Record<string, EloTier> = {
   BRONCE:   { id: 'bronce',   name: 'Bronce',   minElo: 0,    color: '#c8a060', icon: '🥉' },
   PLATA:    { id: 'plata',    name: 'Plata',    minElo: 1200, color: '#9E9E9E', icon: '🥈' },
   ORO:      { id: 'oro',      name: 'Oro',      minElo: 1600, color: '#FFB800', icon: '🥇' },
@@ -45,7 +45,7 @@ export function getEloTier(elo: number | string): EloTier {
 /**
  * Returns the index of the tier for gap comparison.
  */
-export function getEloTierIndex(elo: number | string): number {
+function getEloTierIndex(elo: number | string): number {
   const tier = getEloTier(elo);
   return RANKED_TIER_ORDER.indexOf(tier.name);
 }

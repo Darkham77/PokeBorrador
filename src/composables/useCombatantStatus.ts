@@ -6,6 +6,78 @@ import { getDayCycle } from '@/logic/timeUtils'
 import { ABILITY_DATA } from '@/data/abilities'
 import { getStatMultiplier } from '@/logic/battle/battleEngine'
 import type { Pokemon } from '@/types/pokemon'
+import { VOLATILE_STATUS_LIST, CYCLE_WEATHER_DEFAULTS } from '@/data/volatileStatusMap'
+
+function formatAbilityDescription(desc: string): string {
+  const lines: string[] = []
+  
+  const boostRegexes = [
+    /aumenta la velocidad/i,
+    /aumenta el ataque/i,
+    /aumenta la defensa/i,
+    /aumenta la precisión/i,
+    /potencia el/i,
+    /sube el/i,
+    /potencia los/i,
+    /aumenta.*un\s*\d+%/i
+  ]
+
+  const debuffRegexes = [
+    /reduce/i,
+    /baja/i,
+    /debilita/i,
+    /pierde hp/i
+  ]
+
+  const blockRegexes = [
+    /evita/i,
+    /inmunidad/i,
+    /impide/i,
+    /protege/i
+  ]
+
+  if (/[▲▼⚡🚫•]/u.test(desc)) {
+    return desc
+  }
+
+  const sentences = desc.split(/(?<=[.!?])\s+/)
+  for (const sentence of sentences) {
+    const trimmed = sentence.trim()
+    if (!trimmed) continue
+
+    let matched = false
+    for (const rx of blockRegexes) {
+      if (rx.test(trimmed)) {
+        lines.push(`🚫 ${trimmed}`)
+        matched = true
+        break
+      }
+    }
+    if (matched) continue
+
+    for (const rx of boostRegexes) {
+      if (rx.test(trimmed)) {
+        lines.push(`▲ ${trimmed}`)
+        matched = true
+        break
+      }
+    }
+    if (matched) continue
+
+    for (const rx of debuffRegexes) {
+      if (rx.test(trimmed)) {
+        lines.push(`▼ ${trimmed}`)
+        matched = true
+        break
+      }
+    }
+    if (matched) continue
+
+    lines.push(`• ${trimmed}`)
+  }
+
+  return lines.join('\n')
+}
 
 export interface UnifiedStatus {
   id: string
@@ -68,15 +140,51 @@ export function useCombatantStatus(
       let isAbBoosted = false
       const abEntry = (ABILITY_DATA as Record<string, { desc: string }>)[ab] || Object.entries(ABILITY_DATA).find(([k]) => k.toLowerCase() === ab.toLowerCase())?.[1]
       const abDescription = abEntry?.desc || 'Sin descripción disponible.'
-      let abText = `HABILIDAD: ${ab.toUpperCase()}. ${abDescription}`
 
       const isSunActive = mechWeather === WEATHER_MECHANICAL.SUN || (mechWeather === WEATHER_MECHANICAL.CLEAR && (cycle === 'day' || cycle === 'morning'))
       const isRainActive = mechWeather === WEATHER_MECHANICAL.RAIN || (mechWeather === WEATHER_MECHANICAL.CLEAR && (cycle === 'night' || cycle === 'dusk'))
 
-      if (ab === 'Clorofila' && isSunActive) { isAbBoosted = true; abText += ' (ACTIVA por el sol/horario)' }
-      if (ab === 'Nado rápido' && isRainActive) { isAbBoosted = true; abText += ' (ACTIVA por la lluvia/horario)' }
-      if (ab === 'Ímpetu arena' && mechWeather === WEATHER_MECHANICAL.SANDSTORM) { isAbBoosted = true; abText += ' (ACTIVA por la arena)' }
-      if (ab === 'Quitanieves' && (mechWeather === WEATHER_MECHANICAL.SNOW || mechWeather === WEATHER_MECHANICAL.HAIL)) { isAbBoosted = true; abText += ' (ACTIVA por la nieve)' }
+      let statusMsg = ''
+      if (ab === 'Clorofila' && isSunActive) { isAbBoosted = true; statusMsg = ' (Activa por Sol/Día)' }
+      if (ab === 'Nado rápido' && isRainActive) { isAbBoosted = true; statusMsg = ' (Activa por Lluvia/Noche)' }
+      if (ab === 'Ímpetu arena' && mechWeather === WEATHER_MECHANICAL.SANDSTORM) { isAbBoosted = true; statusMsg = ' (Activa por Arena)' }
+      if (ab === 'Quitanieves' && (mechWeather === WEATHER_MECHANICAL.SNOW || mechWeather === WEATHER_MECHANICAL.HAIL)) { isAbBoosted = true; statusMsg = ' (Activa por Nieve)' }
+
+      let formattedDesc = abDescription
+      const lowerAb = ab.toLowerCase()
+      if (lowerAb === 'espesura') {
+        formattedDesc = '▲ Potencia Planta (+50%) a 1/3 HP o menos'
+      } else if (lowerAb === 'mar llamas') {
+        formattedDesc = '▲ Potencia Fuego (+50%) a 1/3 HP o menos'
+      } else if (lowerAb === 'torrente') {
+        formattedDesc = '▲ Potencia Agua (+50%) a 1/3 HP o menos'
+      } else if (lowerAb === 'enjambre') {
+        formattedDesc = '▲ Potencia Bicho (+50%) a 1/3 HP o menos'
+      } else if (lowerAb === 'clorofila') {
+        formattedDesc = `▲ Velocidad duplica (x2.0) bajo Sol${statusMsg}`
+      } else if (lowerAb === 'nado rápido') {
+        formattedDesc = `▲ Velocidad duplica (x2.0) bajo Lluvia${statusMsg}`
+      } else if (lowerAb === 'lluvia ligera') {
+        formattedDesc = `▲ Velocidad duplica (x2.0) bajo Lluvia/Noche${statusMsg}`
+      } else if (lowerAb === 'ráfaga') {
+        formattedDesc = '▲ Velocidad triplica (x3.0) a 1/3 HP o menos'
+      } else if (lowerAb === 'poder solar') {
+        formattedDesc = '▲ At. Especial sube (+50%) bajo Sol\n▼ Pierde HP por turno bajo Sol'
+      } else if (lowerAb === 'gloria' || lowerAb === 'agallas') {
+        formattedDesc = '▲ Ataque sube (+50%) con problema de estado'
+      } else if (lowerAb === 'levitación') {
+        formattedDesc = '🚫 Inmune a ataques tipo Tierra'
+      } else if (lowerAb === 'absorbe fuego') {
+        formattedDesc = '🚫 Inmune a ataques tipo Fuego\n▲ Potencia ataques de Fuego al recibir uno'
+      } else if (lowerAb === 'absorbe agua') {
+        formattedDesc = '🚫 Inmune a ataques tipo Agua\n▲ Recupera 25% HP al recibir uno'
+      } else if (lowerAb === 'absorbe voltio') {
+        formattedDesc = '🚫 Inmune a ataques tipo Eléctrico\n▲ Recupera 25% HP al recibir uno'
+      } else {
+        formattedDesc = formatAbilityDescription(abDescription)
+      }
+
+      const abText = `HABILIDAD - ${ab.toUpperCase()}:\n${formattedDesc}`
 
       list.push({ 
         icon: '🧠', 
@@ -86,30 +194,26 @@ export function useCombatantStatus(
     }
 
     // 1. Estados Propios del Pokémon
-    if (target.confused) list.push({ icon: '🌀', text: 'CONFUNDIDO: Puede golpearse a sí mismo.' })
-    if (target.attracted) list.push({ icon: '❤️', text: 'ENAMORADO: Puede no atacar por atracción.' })
-    if (target.cursed) list.push({ icon: '👻', text: 'MALDITO: Pierde 1/4 HP cada turno.' })
-    if (target.seeded) list.push({ icon: '🌱', text: 'DRENADORAS: Pierde HP cada turno y cura al rival.' })
-    if (target.badPoison) list.push({ icon: '☣️', text: 'TÓXICO: El daño del veneno aumenta cada turno.' })
-    if (target.endure) list.push({ icon: '🛡️', text: 'AGUANTE: Sobrevivirá el próximo golpe fatal.' })
-    if (target.trapped) list.push({ icon: '🪤', text: 'ATRAPADO: No puede escapar del combate.' })
-    if (target.disabledTurns && target.disabledTurns > 0) list.push({ icon: '🚫', text: `ANULADO: Un movimiento está bloqueado (${target.disabledTurns}t).` })
-    if (target.encoreTurns && target.encoreTurns > 0) list.push({ icon: '🔁', text: `OTRA VEZ: Repite el mismo movimiento (${target.encoreTurns}t).` })
-    if (target.tauntTurns && target.tauntTurns > 0) list.push({ icon: '🤐', text: `MOFA: No puede usar movimientos de estado (${target.tauntTurns}t).` })
-    if (target.flinched) list.push({ icon: '💫', text: 'RETROCEDER: No puede atacar este turno.' })
-    if (target.protect || target.detect) list.push({ icon: '🛡️', text: 'PROTECCIÓN: Evita el daño este turno.' })
-    if (target.substitute && target.substitute > 0) list.push({ icon: '🎭', text: `SUSTITUTO: Un señuelo de ${target.substitute} HP recibe el daño.` })
-    if (target.destinyBond) list.push({ icon: '🔗', text: 'MISMODESTINO: Si el usuario cae, el rival también.' })
-    if (target.perishSongCount !== undefined && target.perishSongCount > 0) list.push({ icon: '⏳', text: `CANTO MORTAL: El Pokémon caerá en ${target.perishSongCount} turnos.` })
-    if (target.ingrain) list.push({ icon: '🌳', text: 'ARRAIGO: Recupera HP cada turno pero no puede ser retirado.' })
-    if (target.focusEnergy) list.push({ icon: '🎯', text: 'FOCO ENERGÍA: Aumenta la probabilidad de golpes críticos.' })
-    if (target.lockOn) list.push({ icon: '👁️', text: 'FIJAR BLANCO: El próximo ataque no fallará.' })
-    if (target.isTransformed) list.push({ icon: '✨', text: 'TRANSFORMADO: Copia la apariencia y ataques del rival.' })
-    if (target.rageActive) list.push({ icon: '💢', text: 'FURIA: Su Ataque sube al recibir daño.' })
-    if (target.snatching) list.push({ icon: '🧤', text: 'ROBO: Robará el próximo movimiento de estado beneficioso.' })
-    if (target.tormentActive) list.push({ icon: '😒', text: 'TORMENTO: No puede usar el mismo movimiento dos veces.' })
-    if (target.mustRecharge) list.push({ icon: '🔋', text: 'RECARGA: Debe descansar el próximo turno.' })
-    if (target.bound && target.bound > 0) list.push({ icon: '⛓️', text: `ATADURA: Sufre daño por atrapamiento (${target.bound}t).` })
+    for (const def of VOLATILE_STATUS_LIST) {
+      const val = target[def.prop as keyof Pokemon];
+      if (!val) continue;
+
+      if (def.isCounter) {
+        const num = Number(val);
+        if (num > 0) {
+          let customText = `${def.text} (${num}t).`;
+          if (def.prop === 'substitute') {
+            customText = `SUSTITUTO: Un señuelo de ${num} HP recibe el daño.`;
+          } else if (def.prop === 'perishSongCount') {
+            customText = `CANTO MORTAL: El Pokémon caerá en ${num} turnos.`;
+          }
+          list.push({ icon: def.icon, text: customText });
+        }
+      } else {
+        list.push({ icon: def.icon, text: def.text });
+      }
+    }
+
 
     // 2. Efectos de Campo (Side-based)
     const stages = isPlayerVal.value ? battleStore.playerStages : battleStore.enemyStages
@@ -174,12 +278,7 @@ export function useCombatantStatus(
         list.push({ icon: config.icon, text: `${config.label}: ${config.description}` })
       }
     } else if (cycleAffects) {
-      const cycleData = ({
-        morning: { icon: '🌅', label: 'MAÑANA', desc: 'Bonifica movimientos FUEGO (1.2x) y habilidades solares.' },
-        day: { icon: '☀️', label: 'DÍA', desc: 'Bonifica movimientos FUEGO (1.2x) y habilidades solares.' },
-        dusk: { icon: '🌆', label: 'OCASO', desc: 'Bonifica movimientos AGUA (1.2x) y habilidades nocturnas.' },
-        night: { icon: '🌙', label: 'NOCHE', desc: 'Bonifica movimientos AGUA (1.2x) y habilidades nocturnas.' }
-      } as Record<string, { icon: string; label: string; desc: string }>)[cycle]
+      const cycleData = (CYCLE_WEATHER_DEFAULTS as Record<string, { icon: string; label: string; desc: string }>)[cycle]
       if (cycleData) {
         list.push({ icon: cycleData.icon, text: `HORARIO (${cycleData.label}): ${cycleData.desc}` })
       }
@@ -218,12 +317,15 @@ export function useCombatantStatus(
 
     // 2. Estados Volátiles
     volatileStatuses.value.forEach((vs, idx) => {
-      const parts = vs.text?.split(':') || []
+      const text = vs.text || ''
+      const firstColonIndex = text.indexOf(':')
+      const title = firstColonIndex !== -1 ? text.slice(0, firstColonIndex).trim() : ''
+      const description = firstColonIndex !== -1 ? text.slice(firstColonIndex + 1).trim() : text
       list.push({
         id: `volatile-${idx}`,
         emoji: vs.icon,
-        title: parts[0]?.trim() || '',
-        description: parts[1]?.trim() || vs.text || '',
+        title: title || '',
+        description: description || text || '',
         class: 'volatile',
         isBoosted: vs.isBoosted
       })

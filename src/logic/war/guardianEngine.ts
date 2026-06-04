@@ -20,7 +20,7 @@ export interface GuardianData extends GuardianBase {
   isGuardian: boolean;
 }
 
-export const GUARDIAN_POOL: Record<string, GuardianBase[]> = {
+const GUARDIAN_POOL: Record<string, GuardianBase[]> = {
   common: [
     { id: 'arcanine',   lv: 45, pts: 150 }, { id: 'pidgeot',    lv: 42, pts: 150 },
     { id: 'nidoking',   lv: 44, pts: 150 }, { id: 'nidoqueen',  lv: 44, pts: 150 },
@@ -54,7 +54,7 @@ export const GUARDIAN_CHANCE = 0.015
  * @param {string} str 
  * @returns {number}
  */
-export function hashString(str: string): number {
+function hashString(str: string): number {
   let hash = 0
   for (let i = 0; i < str.length; i++) {
     hash = ((hash << 5) - hash) + str.charCodeAt(i)

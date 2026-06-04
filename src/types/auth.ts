@@ -12,9 +12,3 @@ export interface AuthUser {
 }
 
 export type SessionMode = 'online' | 'offline';
-
-export type PVPQueue = 'casual' | 'ranked';
-
-export type ShopIndex = number;
-
-export type PlayerClassIndex = number;

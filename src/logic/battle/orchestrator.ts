@@ -296,9 +296,13 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
   ctx.faintedSides.value.clear()
   ctx.clearLogs()
 
-  // Clear volatile status on both sides
-  ctx.clearVolatileStatus(initialPlayer)
-  ctx.clearVolatileStatus(initialEnemy)
+  // Clear volatile status on all player team members and the initial enemy
+  ctx.gs.state.team.forEach((p: Pokemon) => {
+    if (p) ctx.clearVolatileStatus(p)
+  })
+  if (initialEnemy) {
+    ctx.clearVolatileStatus(initialEnemy)
+  }
 
   ctx.isIntroAnimating.value = true
   await fsm.transition(BATTLE_STATES.INITIALIZING, BATTLE_SUBSTATES.PRELOAD_FINAL_COORDS)

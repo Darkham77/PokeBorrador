@@ -181,7 +181,14 @@ export function calculateMovePower(
       };
       let itemMult = 1;
       if (typeBoosters[h] === moveType) itemMult = 1.2;
-      if (h === 'choice_band' && move.cat === 'physical') itemMult = 1.5;
+      
+      if (h === 'choice_band') {
+        if (move.cat === 'physical') {
+          itemMult = 1.5;
+        } else {
+          powerList.push({ label: 'Objeto (choice_band - Solo Físico)', mult: 1.0 });
+        }
+      }
 
       if (itemMult !== 1) {
         powerList.push({ label: `Objeto (${h})`, mult: itemMult });

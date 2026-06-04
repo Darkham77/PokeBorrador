@@ -114,7 +114,8 @@ You MUST run these commands and fix EVERY issue until a clean pass is achieved.
 3.  **Manual Repair Discovery (THE REPORT)**:
     - Review the output of `audit:full` (or the generated report files) again.
     - Identify all warnings/errors that `:fix` DID NOT resolve (e.g., `gpuGaps`, `legacyDates`, `zIndexAudit`).
-    - **MANDATORY**: List these issues in your response to the user as a "Technical Debt Report" before proceeding to fix them manually.
+    - **Targeted Fallow Audit**: Run `npx fallow` on the specific files modified or added in this commit attempt (you can list these files using `git status` or `git diff --name-only HEAD`). To prevent context saturation, direct the output of fallow commands to files inside the `scratch/` directory (e.g., `npx fallow > scratch/fallow_report.txt` or filtering specific files) and analyze the reports using `view_file`. Check if these modified files introduce any new unused exports, dead code, or exceed complexity thresholds.
+    - **MANDATORY**: List all these issues, audit warnings, lint errors, AND Fallow recommendations for the modified files in your response to the user as a "Technical Debt Report" before proceeding to fix them manually.
 4.  **Manual Repair Phase**:
     - Fix each identified issue manually in the code.
     - If a `z-index` is hardcoded, find the correct variable in `visuals.ts`.
@@ -122,6 +123,7 @@ You MUST run these commands and fix EVERY issue until a clean pass is achieved.
 5.  **Final Validation Pass**:
     - `npm run validate:types`
     - `npm run lint`
+    - `npx fallow health --score` (Verify overall project health score has not regressed)
     - `npm run test`
     - `npm run build`
 

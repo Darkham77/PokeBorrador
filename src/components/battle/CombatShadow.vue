@@ -52,7 +52,7 @@ const shadowStyle = computed(() => {
     width: `${widthPx}px`,
     height: `${heightPx}px`,
     opacity: (visible && !isFlying) ? 1 : (visible && isFlying) ? 0.6 : 0,
-    transform: `Translate(-50%, -50%) ${isFlying ? 'Translatey(15px) Scale(0.8)' : 'Scale(1)'}`
+    transform: `translate(-50%, -50%) ${isFlying ? 'translateY(15px) scale(0.8)' : 'scale(1)'}`
   }
 })
 </script>

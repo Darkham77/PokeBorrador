@@ -9,10 +9,8 @@
 
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { styleText, parseArgs } from 'node:util';
-import { enableCompileCache } from 'node:module';
-
-enableCompileCache();
+import { styleText } from 'node:util';
+import { setupValidation } from './lib/validationBase.ts';
 
 interface PokeApiListResponse {
   results: Array<{ name: string; url: string }>;
@@ -63,9 +61,9 @@ async function getPokeApiAbilities(): Promise<PokeApiAbility[]> {
     for (let i = 0; i < listResp.results.length; i += chunkSize) {
       const chunk = listResp.results.slice(i, i + chunkSize);
       const promises = chunk.map(async (entry: { url: string }) => {
-        const res = await fetch(entry.url);
-        if (!res.ok) return null;
-        return res.json() as Promise<PokeApiAbility>;
+         const res = await fetch(entry.url);
+         if (!res.ok) return null;
+         return res.json() as Promise<PokeApiAbility>;
       });
       
       const chunkResults = await Promise.all(promises);
@@ -84,21 +82,12 @@ async function getPokeApiAbilities(): Promise<PokeApiAbility[]> {
 }
 
 async function main() {
-  const { values } = parseArgs({
-    options: {
-      output: { type: 'string', short: 'o' },
-      summary: { type: 'boolean', short: 's' }
-    }
+  const validator = setupValidation({
+    title: 'POKEMON ABILITY VALIDATOR',
+    requiredFiles: [DATA_FILE]
   });
 
-  console.log(styleText('bold', '\n--- 🛡️  POKEMON ABILITY VALIDATOR ---'));
-
-  try {
-    await fs.access(DATA_FILE);
-  } catch {
-    console.error(styleText('red', `❌ Archivo no encontrado: ${DATA_FILE}`));
-    process.exit(1);
-  }
+  await validator.checkFiles();
 
   const content = await fs.readFile(DATA_FILE, 'utf8');
 
@@ -188,57 +177,14 @@ async function main() {
     }
   });
 
-  console.log(`\n════════════════════════════════════`);
-  console.log(`    REPORTE DE INTEGRIDAD DE HABILIDADES`);
-  console.log(`════════════════════════════════════`);
-  console.log(`📦 Habilidades únicas detectadas: ${gameAbilities.size}`);
-  console.log(`📝 Habilidades en ABILITY_DATA:    ${Object.keys(abilityData).length}`);
-  console.log(`════════════════════════════════════\n`);
-
-  if (values.output) {
-    const outputPath = path.resolve(process.cwd(), values.output as string);
-    const lines = [
-      `--- REPORTE DE INTEGRIDAD DE HABILIDADES ---`,
-      `Habilidades únicas detectadas: ${gameAbilities.size}`,
-      `Habilidades en ABILITY_DATA:    ${Object.keys(abilityData).length}`,
-      `\nErrores (${errors.length}):`,
-      ...errors.map(e => `  - ${e}`),
-      `\nAdvertencias (${warnings.length}):`,
-      ...warnings.map(w => `  - ${w}`)
-    ];
-    await fs.writeFile(outputPath, lines.join('\n'), 'utf-8');
-    console.log(styleText('cyan', `\n✨ Reporte completo escrito en: ${values.output}`));
-  }
-
-  if (values.summary) {
-    console.log(styleText('cyan', `\n[INFO] Modo resumen activo: ${errors.length} errores, ${warnings.length} advertencias.`));
-  } else {
-    if (warnings.length) {
-      console.log(styleText('yellow', `⚠️  ADVERTENCIAS (${warnings.length}):`));
-      const limit = 30;
-      warnings.slice(0, limit).forEach(w => console.log(`   ${w}`));
-      if (warnings.length > limit) {
-        console.log(styleText('cyan', `   ... y ${warnings.length - limit} advertencias más (usa -o para ver todas)`));
-      }
-      console.log('');
-    }
-
-    if (errors.length) {
-      console.log(styleText('red', `❌ ERRORES (${errors.length}):`));
-      const limit = 30;
-      errors.slice(0, limit).forEach(e => console.log(`   ${e}`));
-      if (errors.length > limit) {
-        console.log(styleText('cyan', `   ... y ${errors.length - limit} errores más (usa -o para ver todos)`));
-      }
-      console.log('\n' + styleText('red', 'Corrige estos errores para asegurar la estabilidad del motor de batalla.'));
-    } else {
-      console.log(styleText('green', '✅ Todas las habilidades pasaron la validación de integridad.'));
-    }
-  }
-
-  if (errors.length > 0) {
-    process.exit(1);
-  }
+  await validator.finish(
+    {
+      'Habilidades únicas detectadas': gameAbilities.size,
+      'Habilidades en ABILITY_DATA': Object.keys(abilityData).length
+    },
+    errors,
+    warnings
+  );
 }
 
 main().catch(err => {

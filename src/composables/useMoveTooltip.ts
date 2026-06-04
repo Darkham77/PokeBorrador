@@ -26,7 +26,34 @@ export function useMoveTooltip(moveInput: MaybeRefOrGetter<Move>) {
     const move = toValue(moveInput);
     const weather = battleStore.state?.weather?.type;
     const cycle = getDayCycle();
-    return calculateMoveModifierInfo(move, weather, cycle);
+    const attacker = battleStore.state?.player;
+
+    let info = calculateMoveModifierInfo(move, weather, cycle);
+
+    if (attacker && attacker.heldItem === 'choice_band') {
+      const moveIdLookup = move.id || (move.name ? pokemonDataProvider.resolveMoveId(move.name) : '');
+      const md = (MOVE_DATA as Record<string, { cat?: string }>)[moveIdLookup] || {};
+      const category = move.cat || md.cat || 'physical';
+      const isPhysical = category === 'physical';
+
+      if (attacker.choiceMove && attacker.choiceMove !== move.name) {
+        info = { type: 'penalized', text: `Bloqueado por Cinta Elegida (Elegiste: ${attacker.choiceMove}).` };
+      } else if (isPhysical) {
+        if (!info) {
+          info = { type: 'boosted', text: 'Objeto: Cinta Elegida (+50% Potencia Física, bloquea movimiento).' };
+        } else {
+          info = { ...info, text: `${info.text} | Cinta Elegida (+50% Potencia, bloqueo)` };
+        }
+      } else {
+        if (!info) {
+          info = { type: 'boosted', text: 'Objeto: Cinta Elegida (Bloquea a este movimiento si se selecciona).' };
+        } else {
+          info = { ...info, text: `${info.text} | Cinta Elegida (Bloqueo)` };
+        }
+      }
+    }
+
+    return info;
   });
 
   const activeDetails = computed(() => {

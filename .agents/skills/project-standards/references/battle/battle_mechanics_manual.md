@@ -195,6 +195,7 @@ These can coexist with primary status and other secondary effects:
   6. **Differential Reset**:
      - Clear stat stages and volatile status conditions.
      - PRESERVE field effects (Reflect, Spikes, etc.).
+  - **Battle-Start Full Team Clear**: At the beginning of every new battle (`initBattleSequence`), `clearVolatileStatus` MUST be called on ALL members of the player's team (not just the active lead). Failing to do so causes volatile states like `choiceMove` (Choice Band lock) to persist into the next battle for benched Pokémon, creating invisible state leakage that is impossible to diagnose from the UI.
   7. Invoke the `POKEMON_CALL` modular protocol using the **cached shadow coordinates** of the entering member.
   8. **Entry Hazard Application**: Apply hazards (Spikes) at the end of `ENERGY_RELEASE`.
 
@@ -252,6 +253,7 @@ To ensure absolute continuity during proactive pre-generation and transitions, t
 - **Technical Tooltip (❓)**: Stat visualization is activated via a technical help trigger (`?` index).
 - **Admin Privilege Logic**: Access to these tools is automatically managed by detecting `DBRouter.isLocalMode()`.
 - **Stat Attribution**: Stat changes must be clearly linked to the source combatant via the battle log to prevent UI ambiguity.
+- **Neutral Modifier Rendering (x1.00)**: In breakdown lists for the move tooltip (`MoveTooltip.vue`), modifiers with a multiplier of exactly `1.00` (i.e., item is present but has no effect on this move category) MUST be rendered with a neutral bullet `•` and no color class, NOT with a green `▲` (boosted) indicator. This prevents false positives like showing the Choice Band as boosting a Special move. The rule is: `mult > 1` → `▲` boosted; `mult < 1` → `▼` penalized; `mult === 1` → `•` neutral.
 
 ### 3. Rewards & Stabilization
 
@@ -1201,3 +1203,21 @@ These patterns prevent asynchronous battle logic from interfering with subsequen
 - **`autoBattle` Watcher Scope**: The watcher in `BattleArenaControls.vue` MUST trigger **only** when substate is `COMBAT_OR_FLEE` or `SILHOUETTE_MODE`. Triggering on `PARALLEL_PREP` causes the auto-battle to skip the entire search layout (bushes, silhouettes), starting the new battle instantly without any visual search phase.
 - **`COMBAT_OR_FLEE` Immediate Transition**: `handleBattleFlowCompletion('search')` in `searchLoop.ts` MUST explicitly transition to `COMBAT_OR_FLEE` immediately after `PARALLEL_PREP` completes. This ensures the stable waiting state is set before the first reactive frame in which the `autoBattle` watcher fires.
 - **Money Sound Exclusion**: The money gain sound effect MUST NOT be played inside `calculateBattleRewards`. It was intentionally removed to decouple the audio cue from the rewards calculation cycle.
+
+---
+
+## 📝 Lessons Learned: Held Items & Volatile State
+
+### Choice Band (choice_band) Dual-Mechanic
+
+The Choice Band has two independent mechanics that players and developers must not confuse:
+
+- **Passive Power Boost (Constant)**: +50% Physical Attack multiplier applied to all Physical-category moves from turn 0 of the battle. This boost is always active regardless of whether the Pokémon has already attacked. It appears in the move breakdown tooltip as `Objeto (choice_band) x1.50` for Physical moves.
+- **Move Lock (Conditional)**: Registered the moment the Pokémon **executes** its first move in the battle via `attacker.choiceMove = move.name` in `moveExecutor.ts`. Once set, all moves other than `choiceMove` are disabled in the UI (`isDisabled` in `BattleMoveSlot.vue`) and penalized in the tooltip. The lock is cleared only when the Pokémon is withdrawn (`clearVolatileStatus`) or the battle ends.
+- **Special/Status Moves**: The Choice Band does NOT boost Special or Status moves. For those, the tooltip entry renders as `•` (neutral, `x1.00`) to visually confirm the item is equipped but inactive for this move type. It still applies the lock mechanic.
+
+### Volatile Status Team-Wide Cleanup
+
+- **Root Pattern**: `clearVolatileStatus()` clears fields like `choiceMove`, `confused`, `seeded`, `substitute`, etc. defined in `battleStatus.ts`. It MUST be applied to the **entire player team** on every `initBattleSequence` call, not only the leading Pokémon. Benched Pokémon that participated in a previous battle retain their volatile state until explicitly cleared.
+- **Implementation**: In `orchestrator.ts`, use `ctx.gs.state.team.forEach(p => { if (p) ctx.clearVolatileStatus(p) })` instead of only clearing `initialPlayer`.
+- **Why it matters**: A Pokémon with a stale `choiceMove` will enter the next battle with all its non-choice moves already disabled — a silent bug that is extremely hard to detect via the UI alone.
