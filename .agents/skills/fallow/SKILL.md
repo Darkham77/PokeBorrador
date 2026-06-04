@@ -131,3 +131,10 @@ Fallow is integrated directly into the workspace's NPM auditing scripts:
 - **`npm run audit:summary`**: Executes the project's native audit summary and automatically follows up with **`npx fallow --summary`**.
 - **`npm run audit:fallow:summary`**: Runs a quick summary of Fallow diagnostics to avoid cluttering the terminal.
 - **`npm run audit:fallow:report`**: Exports the complete human-readable Fallow audit report to the safe directory `scratch/fallow_report.txt` for deeper study.
+
+---
+
+## Node 26+ Programmatic & Configuration Practices
+
+- **Programmatic Sandbox Spawning**: When running Fallow programmatically from scripts under Node.js 26+ restricted permission flags (`--permission`), execute Fallow via the local binary `node ./node_modules/fallow/bin/fallow --format json` instead of `npx` to prevent access errors to global directories. Always configure a large buffer size (`maxBuffer: 10 * 1024 * 1024` or more) when capturing the stdout to avoid `ENOBUFS` buffer overflow errors on large codebases.
+- **Dependency & Export Ignores**: Backend/test libraries (like `postgres` or `@pkmn/sim`) not imported in client bundles but declared in `package.json` must be added to `"ignoreDependencies"` in `.fallowrc.json`. Dynamic catalogs, mappings, and factory files must have their exports ignored under `"ignoreExports"` to avoid false positive dead code warnings.
