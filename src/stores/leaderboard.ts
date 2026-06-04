@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { useGameStore } from './game.ts'
 import { logger } from '@/logic/utils/logger'
+import { parseInstantSafe } from '@/logic/timeUtils'
 import type { LeaderboardEntry } from './social.ts'
 
 interface ProfileRow {
@@ -23,32 +24,6 @@ interface GameSaveRow {
   updated_at: string
 }
 
-function parseInstantSafe(val: unknown): Temporal.Instant | null {
-  if (!val) return null
-  try {
-    if (typeof val === 'number') {
-      return Temporal.Instant.fromEpochMilliseconds(val)
-    }
-    if (typeof val === 'string') {
-      const trimmed = val.trim()
-      const num = Number(trimmed)
-      if (!isNaN(num) && trimmed.length > 8) {
-        return Temporal.Instant.fromEpochMilliseconds(num)
-      }
-      let isoStr = trimmed
-      if (isoStr.includes(' ') && !isoStr.includes('T')) {
-        isoStr = isoStr.replace(' ', 'T')
-      }
-      if (!isoStr.endsWith('Z') && !isoStr.includes('+') && !isoStr.includes('-')) {
-        isoStr += 'Z'
-      }
-      return Temporal.Instant.from(isoStr)
-    }
-    return null
-  } catch (_e) {
-    return null
-  }
-}
 
 export const useLeaderboardStore = defineStore('leaderboard', () => {
   const gameStore = useGameStore()

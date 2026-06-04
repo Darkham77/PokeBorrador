@@ -10,34 +10,9 @@ import { useChatStore } from './chat.ts'
 import { useLeaderboardStore } from './leaderboard.ts'
 import { usePlayerSearchStore } from './playerSearch.ts'
 import { logger } from '@/logic/utils/logger'
-import { GameState } from '@/types/game'
+import { parseInstantSafe } from '@/logic/timeUtils'
+import type { GameState } from '@/types/game'
 
-function parseInstantSafe(val: unknown): Temporal.Instant | null {
-  if (!val) return null
-  try {
-    if (typeof val === 'number') {
-      return Temporal.Instant.fromEpochMilliseconds(val)
-    }
-    if (typeof val === 'string') {
-      const trimmed = val.trim()
-      const num = Number(trimmed)
-      if (!isNaN(num) && trimmed.length > 8) {
-        return Temporal.Instant.fromEpochMilliseconds(num)
-      }
-      let isoStr = trimmed
-      if (isoStr.includes(' ') && !isoStr.includes('T')) {
-        isoStr = isoStr.replace(' ', 'T')
-      }
-      if (!isoStr.endsWith('Z') && !isoStr.includes('+') && !isoStr.includes('-')) {
-        isoStr += 'Z'
-      }
-      return Temporal.Instant.from(isoStr)
-    }
-    return null
-  } catch (_e) {
-    return null
-  }
-}
 
 export interface Friend {
   id: string;
