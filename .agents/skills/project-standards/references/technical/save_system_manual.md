@@ -150,7 +150,7 @@ sequenceDiagram
 
 ### 3. The "Logout-Before-Update" Protocol
 
-- **Implementation**: If a service worker update is requested while the user is actively playing (`gameStore.isReady === true`), the system MUST NOT perform a background save directly from the updater. Instead, the update click triggers `authStore.logout()`, which handles saving the player's progress dynamically and safely before logging out and reloading.
+- **Implementation**: If a service worker update is requested while the user is actively playing (`gameStore.isReady === true`), the system MUST NOT perform a background save directly from the updater, nor should it allow the user to trigger the installation/update directly from inside the active game session (to prevent session or save data corruption). Instead, the system displays a blocking loading overlay presenting only a "CERRAR SESIÓN" (Logout) button. Clicking this button triggers `handleLogout()`, which safely persists all player progress, clears session flags, and logs the user out. Once redirected to the login screen, the user will be presented with the PWA update prompt inline to trigger the update safely.
 - **Manual Enforcement**: Every reload step redirects the user to the update card if still outdated, requiring explicit click interaction. Silent/automatic reloads are strictly forbidden.
 
 ---
