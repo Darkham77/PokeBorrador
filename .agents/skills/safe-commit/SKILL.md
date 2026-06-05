@@ -100,6 +100,9 @@ Review all modified files in `src/logic/`.
 You MUST run these commands and fix EVERY issue until a clean pass is achieved. 
 
 > [!IMPORTANT]
+> **Trivial Changes Validation Exemption**: Do NOT run heavy linting, type-checking, or full audits for trivial, single-word, or single-character modifications (e.g. changing `true` to `false` or updating comments) to conserve system resources and development speed.
+
+> [!IMPORTANT]
 > **Pre-existing Warnings**: If the audit (Lint, Types, SASS) reveals warnings or errors in files you did not modify, you ARE RESPONSIBLE for fixing them before committing. A "Safe Commit" means a 100% clean repository state, not just for your changes.
 
 **THE MANDATORY AUDIT PIPELINE:**

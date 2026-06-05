@@ -15,6 +15,7 @@ Vue Router best practices, common gotchas, and navigation patterns.
 - Navigation guard making API calls without awaiting → See [router-guard-async-await-pattern](references/router-guard-async-await-pattern.md)
 - Users trapped in infinite redirect loops → See [router-navigation-guard-infinite-loop](references/router-navigation-guard-infinite-loop.md)
 - Navigation guard using deprecated next() function → See [router-navigation-guard-next-deprecated](references/router-navigation-guard-next-deprecated.md)
+- Navigation guards executing session resets with page reloads → Return `true` (or allow the target path to resolve) instead of returning `false` to ensure the browser's URL successfully transitions to the target route before the reload completes, preventing route navigation cancellation.
 
 ### Route Lifecycle
 

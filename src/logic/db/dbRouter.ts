@@ -485,8 +485,8 @@ export async function checkAppVersionCompatibility(router: DBRouter): Promise<Ap
     return { compatible: true, client: clientVer, server: serverVer };
   }
 
-  // Allow bypass in local development mode to prevent dev lockout
-  if (import.meta.env.DEV) {
+  // Allow bypass in local development mode to prevent dev lockout, except during tests
+  if (import.meta.env.DEV && !(typeof process !== 'undefined' && process.env.VITEST)) {
     logger.warn('DBRouter', `[DEV] Mismatch de versión ignorado en modo desarrollo (Cliente: ${clientVer} vs Servidor: ${serverVer})`);
     return { compatible: true, client: clientVer, server: serverVer };
   }

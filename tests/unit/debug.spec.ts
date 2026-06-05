@@ -68,6 +68,8 @@ describe('Debug & Security System', () => {
     
     expect(result).toBe(false)
     expect(supabase.from).toHaveBeenCalledWith('profiles')
+    // Wait a brief delay for async signOut to be triggered after dynamic imports in auth.logout
+    await new Promise(resolve => setTimeout(resolve, 50))
     expect(supabase.auth.signOut).toHaveBeenCalled()
   })
 
