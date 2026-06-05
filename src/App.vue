@@ -45,10 +45,7 @@ const route = useRoute()
 
 const { 
   needRefresh, 
-  isUpdating, 
-  progress, 
-  progressText, 
-  handleUpdate 
+  isUpdating 
 } = usePWA()
 
 
@@ -355,7 +352,7 @@ const onLoadingLeave = (el: Element, done: () => void) => {
         <PVLoadingOverlay
           v-if="showLoadingOverlay"
           :title="needRefresh ? 'NUEVA VERSIÓN' : loadingInfo.msg"
-          :message="needRefresh ? (gameStore.isReady ? '¡Hay una nueva actualización disponible! Se cerrará tu sesión para aplicar los cambios de forma segura.' : '¡Hay una nueva actualización disponible! Es necesario actualizar para mantener la compatibilidad con el servidor.') : loadingInfo.sub"
+          :message="needRefresh ? (gameStore.isReady ? '¡Hay una nueva versión disponible! Para evitar la corrupción de datos en tu partida guardada, debes cerrar tu sesión e instalar la actualización de forma segura desde la pantalla de inicio.' : '¡Hay una nueva versión disponible! Es necesario cerrar tu sesión para poder instalarla y mantener la compatibilidad con el servidor.') : loadingInfo.sub"
           :status-text="needRefresh ? (isUpdating ? 'ACTUALIZANDO...' : 'ACTUALIZACIÓN REQUERIDA') : 'CONECTANDO...'"
           :icon="needRefresh ? '🔄' : loadingInfo.icon"
           :show-spinner="!needRefresh || isUpdating"
@@ -366,24 +363,11 @@ const onLoadingLeave = (el: Element, done: () => void) => {
             v-if="needRefresh"
             #actions
           >
-            <div
-              v-if="isUpdating"
-              class="pwa-progress-wrapper"
-            >
-              <div class="pwa-progress-container">
-                <div
-                  class="pwa-progress-bar"
-                  :style="{ width: `${progress}%` }"
-                />
-              </div>
-              <span class="pwa-progress-text">{{ progressText }}</span>
-            </div>
             <button
-              v-else
               class="pv-button-retro"
-              @click.stop="() => handleUpdate()"
+              @click.stop="handleLogout"
             >
-              ACTUALIZAR AHORA
+              CERRAR SESIÓN
             </button>
           </template>
         </PVLoadingOverlay>

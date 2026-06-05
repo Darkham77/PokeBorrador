@@ -1,18 +1,14 @@
 
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { gsap } from 'gsap'
 import { useModalStore } from './modals.ts'
 import { useBattleStore } from './battle.ts'
 import { useLoadingStore } from '@/stores/loading'
 import { safeStorage } from '@/logic/utils/storage'
+import { useNotificationStore, type UINotification } from './notifications.ts'
 import type { Pokemon, Move } from '@/types/pokemon'
 
-export interface UINotification {
-  id: string | number;
-  msg: string;
-  icon: string;
-}
+export type { UINotification };
 
 export interface EvolutionData {
   pokemon: Pokemon;
@@ -47,10 +43,11 @@ export const useUIStore = defineStore('ui', () => {
     get: () => _selectedBoxIndex.value,
     set: (val) => { _selectedBoxIndex.value = val }
   })
+  const notificationStore = useNotificationStore()
   const pokemonSelectionConfig = ref<PokemonSelectionConfig>({})
   
   // Notifications
-  const notifications = ref<UINotification[]>([])
+  const notifications = computed(() => notificationStore.notifications)
   
   const isDebugPerformanceMode = ref(false)
   const isSimplifiedModalsMode = ref(false) // Forzado vía debug
@@ -191,40 +188,7 @@ export const useUIStore = defineStore('ui', () => {
     else modalStore.open('Inventory')
   }
 
-  function notify(msg: string, icon: string = '🔔') {
-    const id = Temporal.Now.instant().epochMilliseconds + Math.random().toString(36).substr(2, 9)
-    notifications.value.push({ id, msg, icon })
-
-    // Save to game store history for persistence and display in profile
-    import('@/stores/game').then(m => {
-      const gameStore = m.useGameStore()
-      if (gameStore && gameStore.state) {
-        if (!gameStore.state.notificationHistory) {
-          gameStore.state.notificationHistory = []
-        }
-        const cleanMsg = msg.replace(/<[^>]*>/g, '').trim()
-        gameStore.state.notificationHistory.push({
-          id,
-          type: 'general',
-          title: icon || '🔔',
-          message: cleanMsg,
-          timestamp: Temporal.Now.instant().epochMilliseconds,
-          read: false,
-          meta: { icon }
-        })
-        if (gameStore.state.notificationHistory.length > 10) {
-          gameStore.state.notificationHistory.shift()
-        }
-        gameStore.scheduleSave()
-      }
-    }).catch((err: unknown) => {
-      throw new Error(`[notify] Failed to persist notification to history: ${String(err)}`)
-    })
-
-    gsap.delayedCall(4.0, () => {
-      notifications.value = notifications.value.filter(n => n.id !== id)
-    })
-  }
+  const notify = notificationStore.notify
 
   const isAnyFullscreenModalOpen = computed(() => {
     const modalStore = useModalStore()

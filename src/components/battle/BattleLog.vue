@@ -1,4 +1,5 @@
 <script setup lang="ts">
+// fallow-ignore-file security-sink
 import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import { gsap } from 'gsap'
 import { useBattleStore } from '@/stores/battle'

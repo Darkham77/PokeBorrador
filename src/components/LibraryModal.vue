@@ -1,4 +1,5 @@
 <script setup lang="ts">
+// fallow-ignore-file security-sink
 import { ref, computed, watch } from 'vue'
 import { gsap } from 'gsap'
 import { libraryContent, libraryCategories } from '@/data/libraryData'

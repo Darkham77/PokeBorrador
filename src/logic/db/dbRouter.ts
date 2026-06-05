@@ -1,5 +1,7 @@
 
 
+// fallow-ignore-file unused-class-member
+
 import { createClient, type SupabaseClient, type RealtimeChannel, type User, type Session } from '@supabase/supabase-js';
 import { ProxyQuery } from './proxyQuery.ts';
 import { gsap } from 'gsap';

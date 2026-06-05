@@ -6,6 +6,7 @@ import type {
   PureDamageOptions,
   PureDamageResult
 } from './battleMathTypes.ts';
+import { TYPE_CHART, type PokemonType } from '../../data/types.ts';
 
 export const CURRENT_GENERATION = 2;
 export const ACTIVE_RULE_SET = 2;
@@ -20,28 +21,6 @@ export const STAGE_MULTIPLIERS_ACC: Record<string, number> = {
   '0': 1.0, '1': 1.33, '2': 1.66, '3': 2.0, '4': 2.33, '5': 2.66, '6': 3.0
 };
 
-// ── Type Effectiveness Chart ───────────────────────────────────────────────────
-
-const TYPE_CHART: Record<string, Record<string, number>> = {
-  normal:   { rock: 0.5, ghost: 0, steel: 0.5 },
-  fire:     { fire: 0.5, water: 0.5, grass: 2, ice: 2, bug: 2, rock: 0.5, dragon: 0.5, steel: 2 },
-  water:    { fire: 2, water: 0.5, grass: 0.5, ground: 2, rock: 2, dragon: 0.5 },
-  grass:    { fire: 0.5, water: 2, grass: 0.5, poison: 0.5, ground: 2, flying: 0.5, bug: 0.5, rock: 2, dragon: 0.5, steel: 0.5 },
-  electric: { water: 2, electric: 0.5, grass: 0.5, ground: 0, flying: 2, dragon: 0.5 },
-  ice:      { fire: 0.5, water: 0.5, grass: 2, ice: 0.5, ground: 2, flying: 2, dragon: 2, steel: 0.5 },
-  fighting: { normal: 2, ice: 2, poison: 0.5, flying: 0.5, psychic: 0.5, bug: 0.5, rock: 2, ghost: 0, dark: 2, steel: 2, fairy: 0.5 },
-  poison:   { grass: 2, poison: 0.5, ground: 0.5, rock: 0.5, ghost: 0.5, steel: 0, fairy: 2 },
-  ground:   { fire: 2, electric: 2, grass: 0.5, poison: 2, flying: 0, bug: 0.5, rock: 2, steel: 2 },
-  flying:   { grass: 2, electric: 0.5, fighting: 2, bug: 2, rock: 0.5, steel: 0.5 },
-  psychic:  { fighting: 2, poison: 2, psychic: 0.5, dark: 0, steel: 0.5 },
-  bug:      { fire: 0.5, grass: 2, fighting: 0.5, poison: 0.5, flying: 0.5, psychic: 2, ghost: 0.5, dark: 2, steel: 0.5, fairy: 0.5 },
-  rock:     { fire: 2, ice: 2, fighting: 0.5, ground: 0.5, flying: 2, bug: 2, steel: 0.5 },
-  ghost:    { normal: 0, psychic: 2, ghost: 2, dark: 0.5 },
-  dragon:   { dragon: 2, steel: 0.5, fairy: 0 },
-  dark:     { fighting: 0.5, psychic: 2, ghost: 2, dark: 0.5, fairy: 0.5 },
-  steel:    { fire: 0.5, water: 0.5, electric: 0.5, ice: 2, rock: 2, steel: 0.5, fairy: 2 },
-  fairy:    { fire: 0.5, fighting: 2, poison: 0.5, dragon: 2, dark: 2, steel: 0.5 }
-};
 
 const WEATHER_KEYS = { SUN: 'sun', RAIN: 'rain', SANDSTORM: 'sandstorm', SNOW: 'snow', HAIL: 'hail', FOG: 'fog', WIND: 'wind', CLEAR: 'clear' } as const;
 
@@ -65,8 +44,8 @@ function getMechWeather(type: string | null | undefined): string {
 function getTypeEff(moveType: string | undefined, defType: string | undefined, scrapy = false): number {
   if (!moveType || !defType) return 1;
   if (scrapy && defType === 'ghost' && (moveType === 'normal' || moveType === 'fighting')) return 1;
-  const row = TYPE_CHART[moveType.toLowerCase()];
-  return row ? (row[defType.toLowerCase()] ?? 1) : 1;
+  const row = TYPE_CHART[moveType.toLowerCase() as PokemonType];
+  return row ? (row[defType.toLowerCase() as PokemonType] ?? 1) : 1;
 }
 
 function getCombinedEff(moveType: string, defender: PurePokemon, attacker: PurePokemon | null = null, weather: string | null = null): number {

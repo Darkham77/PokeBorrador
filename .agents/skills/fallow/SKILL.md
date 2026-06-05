@@ -94,11 +94,21 @@ Key flags:
 
 ### 6. Automatic Fixes
 
-Preview or apply safe automatic cleanup of unused exports or dead code:
+Fallow supports safe automatic cleanup of unused exports or dead code:
+
+```bash
+npx fallow fix
+```
+
+> [!IMPORTANT]
+> Because this project utilizes dynamic loading, router interfaces, and public APIs, running automatic fixes (`npx fallow fix`) can strip the `export` keyword from those entries and break TypeScript compilation or routing.
+> To prevent this, you **MUST** manually add surgical, specific export exceptions one by one in `.fallowrc.json` under `"ignoreExports"`.
+> The use of wildcard `*` exclusions is strictly forbidden. Every dynamic or public export that needs to be preserved must be added individually.
+
+Preview or dry-run cleanup:
 
 ```bash
 npx fallow fix --dry-run
-npx fallow fix
 ```
 
 ### 7. Explanation of Rules
@@ -137,4 +147,4 @@ Fallow is integrated directly into the workspace's NPM auditing scripts:
 ## Node 26+ Programmatic & Configuration Practices
 
 - **Programmatic Sandbox Spawning**: When running Fallow programmatically from scripts under Node.js 26+ restricted permission flags (`--permission`), execute Fallow via the local binary `node ./node_modules/fallow/bin/fallow --format json` instead of `npx` to prevent access errors to global directories. Always configure a large buffer size (`maxBuffer: 10 * 1024 * 1024` or more) when capturing the stdout to avoid `ENOBUFS` buffer overflow errors on large codebases.
-- **Dependency & Export Ignores**: Backend/test libraries (like `postgres` or `@pkmn/sim`) not imported in client bundles but declared in `package.json` must be added to `"ignoreDependencies"` in `.fallowrc.json`. Dynamic catalogs, mappings, and factory files must have their exports ignored under `"ignoreExports"` to avoid false positive dead code warnings.
+- **Dependency & Export Ignores**: Backend/test libraries (like `postgres` or `@pkmn/sim`) not imported in client bundles but declared in `package.json` must be added to `"ignoreDependencies"` in `.fallowrc.json`. Legitimate unused exports (for public APIs, dynamic loading, or shared data structures) MUST be added surgically one by one in `.fallowrc.json` under `"ignoreExports"`. **The use of wildcards (`*`) to ignore entire files is strictly prohibited** to ensure Fallow continues auditing code health in those modules.

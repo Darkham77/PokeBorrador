@@ -1,4 +1,3 @@
-// fallow-ignore-file circular-dependencies
 import { getMechanicalWeather, WEATHER_MECHANICAL, WEATHER_REGISTRY } from '../weather/weatherRegistry.ts'
 import type { Pokemon } from '@/types/pokemon'
 import type { BattleStages, LogFn, BattleWeather } from '@/types/battle'
