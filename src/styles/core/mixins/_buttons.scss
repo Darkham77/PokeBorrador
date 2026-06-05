@@ -110,6 +110,10 @@
   background: $bg-render;
   color: $text;
   
+  @if $text == #fff {
+    text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
+  }
+
   $depth: 4px;
   @if $size == 'sm' { $depth: 3px; }
 

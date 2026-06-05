@@ -32,7 +32,7 @@
 
 .hatch-focus-area {
   position: absolute;
-  top: 35%;
+  top: 42%;
   left: 50%;
   transform: Translate(-50%, -50%);
   width: 190px;
@@ -40,11 +40,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
 .hatch-info-area {
   position: absolute;
-  top: calc(35% + 95px); // Colocado exactamente debajo del área del huevo/Pokémon
+  top: calc(42% + 95px); // Colocado exactamente debajo del área del huevo/Pokémon
   left: 50%;
   transform: Translatex(-50%);
   width: 100%;

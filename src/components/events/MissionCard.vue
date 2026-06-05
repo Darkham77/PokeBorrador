@@ -169,6 +169,7 @@ const handleImgError = (e: Event) => {
   padding: 4px 8px;
   border-radius: 4px;
   border: 1px solid #000000;
+  text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
 }
 
 .trainer-section {

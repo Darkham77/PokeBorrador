@@ -83,6 +83,12 @@ function applyAnimation(el: HTMLElement, options: string | GsapLoopOptions) {
   delete extraVars.duration;
   delete extraVars.ease;
   delete extraVars.active;
+  delete extraVars.scale;
+  delete extraVars.color;
+  delete extraVars.boxShadow;
+  delete extraVars.y;
+  delete extraVars.rotation;
+  delete extraVars.opacity;
 
   let anim: gsap.core.Tween | gsap.core.Timeline | null = null;
 
@@ -121,12 +127,22 @@ function applyAnimation(el: HTMLElement, options: string | GsapLoopOptions) {
       break;
     }
 
-    case 'blink':
-      anim = gsap.fromTo(el,
-        { opacity: 1 },
-        { opacity: optObj.opacity !== undefined ? optObj.opacity : 0.3, duration, yoyo: true, repeat: -1, ease, ...extraVars }
-      );
+    case 'blink': {
+      const hasText = el.innerText && el.innerText.trim().length > 0;
+      if (hasText) {
+        const origColor = window.getComputedStyle(el).color || '#ffffff';
+        anim = gsap.fromTo(el,
+          { color: origColor },
+          { color: '#888888', duration, yoyo: true, repeat: -1, ease, ...extraVars }
+        );
+      } else {
+        anim = gsap.fromTo(el,
+          { opacity: 1 },
+          { opacity: optObj.opacity !== undefined ? optObj.opacity : 0.75, duration, yoyo: true, repeat: -1, ease, ...extraVars }
+        );
+      }
       break;
+    }
 
     case 'blink-red':
       anim = gsap.fromTo(el,

@@ -433,16 +433,6 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
       align-items: center;
       justify-content: center;
       gap: 4px;
-      background: Rgba(168, 85, 247, 0.15) !important;
-      border: 2px solid Rgba(168, 85, 247, 0.4) !important;
-      color: #c084fc !important;
-      text-shadow: 0 0 6px Rgba(168, 85, 247, 0.4);
-      
-      &:hover {
-        background: Rgba(168, 85, 247, 0.25) !important;
-        border-color: Rgba(168, 85, 247, 0.6) !important;
-        color: #d8b4fe !important;
-      }
     }
   }
 }

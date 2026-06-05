@@ -367,6 +367,7 @@ async function startClassMission(missionId: string) {
       border-radius: 4px;
       @include pixelated;
       border: 1px solid #000000;
+      text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
     }
   }
 
