@@ -48,6 +48,7 @@ const serverStatus = ref<'checking' | 'online' | 'offline'>('checking')
 const serverStatusDetail = ref('')
 const selectedServerId = ref('')
 const isOnline = computed(() => authStore.isOnline)
+const sessionExpired = ref(false)
 
 const appVersion = __APP_VERSION__
 
@@ -153,6 +154,15 @@ onMounted(() => {
   selectedServerId.value = storedServer || DEFAULT_SERVER.id
   switchServer(selectedServerId.value)
   checkServerHealth()
+
+  // CHECK LOGOUT REASON
+  const logoutReason = sessionStorage.getItem('pokevicio_logout_reason')
+  if (logoutReason) {
+    sessionStorage.removeItem('pokevicio_logout_reason')
+    if (logoutReason === 'session_invalidated') {
+      sessionExpired.value = true
+    }
+  }
 
   if (authStore.user) {
     logger.warn('Login', 'Usuario ya logueado detectado en ruta /login. Forzando logout para resetear estado.')
@@ -293,9 +303,36 @@ const handleServerChange = () => {
         Te reto a dejar de jugarlo
       </div>
 
+      <!-- CARTEL DE SESIÓN EXPIRADA / RESTAURADA -->
+      <div
+        v-if="sessionExpired"
+        class="auth-pwa-update-panel"
+        style="background: rgba(255, 68, 68, 0.1); border-color: #ff4444; box-shadow: 0 0 15px rgba(255, 68, 68, 0.2);"
+      >
+        <div class="update-icon">
+          ⚠️
+        </div>
+        <div
+          class="update-title"
+          style="color: #ff4444; text-shadow: 0 0 5px rgba(255, 68, 68, 0.4);"
+        >
+          SESIÓN EXPIRADA
+        </div>
+        <div class="update-message">
+          Tu sesión ha expirado o la base de datos fue restaurada. Es necesario reiniciar la sesión para continuar jugando de forma segura.
+        </div>
+        <button 
+          class="pv-button-retro update-btn" 
+          style="background: #ff4444; color: white; box-shadow: 0 4px 0 #b30000;"
+          @click.stop="sessionExpired = false"
+        >
+          INICIAR SESIÓN
+        </button>
+      </div>
+
       <!-- CARTEL DE ACTUALIZACIÓN MANUAL EN LOGIN -->
       <div
-        v-if="needRefresh"
+        v-else-if="needRefresh"
         class="auth-pwa-update-panel"
       >
         <div class="update-icon">

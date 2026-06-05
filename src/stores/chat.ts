@@ -92,8 +92,13 @@ export const useChatStore = defineStore('chat', () => {
             m.user_id === row.user_id &&
             m.message === row.message
           )
-          if (idx !== -1) {
-            globalMessages.value.splice(idx, 1, row as unknown as ChatMessage)
+          if (idx !== -1 && globalMessages.value[idx]) {
+            // Preserve the numeric optimistic ID so Vue doesn't re-animate the element on key change
+            const updatedRow = {
+              ...row,
+              id: globalMessages.value[idx].id
+            } as unknown as ChatMessage
+            globalMessages.value.splice(idx, 1, updatedRow)
           }
           return
         }
@@ -134,23 +139,27 @@ export const useChatStore = defineStore('chat', () => {
       trainer_level: gameStore.state.trainerLevel || 1
     }
 
+    // Immediate optimistic push before the async insert to prevent race conditions with Realtime
+    const optimisticId = Temporal.Now.instant().epochMilliseconds
+    const optimisticRow = {
+      id: optimisticId,
+      ...payload,
+      created_at: Temporal.Now.instant().toString()
+    }
+    globalMessages.value.push(optimisticRow as unknown as ChatMessage)
+    if (globalMessages.value.length > 50) globalMessages.value.shift()
+    fetchMissingCosmetics(authStore.user?.id ? [authStore.user.id] : [])
+
+    audioStore.sentMsg() // Sound on immediate send
+
     const { error } = await gameStore.db.from('global_chat_messages').insert(payload)
     if (error) {
       logger.error('Chat', `Global message error: ${(error as Error).message}`)
-    } else {
-      audioStore.sentMsg(); // Sonido al enviar satisfactoriamente
-      
-      // Push optimista inmediato: el mensaje propio aparece al instante sin esperar Realtime.
-      // En modo online, el handler de Realtime luego lo reemplaza con el registro definitivo de Supabase.
-      // En modo offline, no hay Realtime, así que este push es el único.
-      const optimisticRow = {
-        id: Temporal.Now.instant().epochMilliseconds, // ID temporal numérico; el handler lo reemplaza si llega Realtime
-        ...payload,
-        created_at: Temporal.Now.instant().toString()
+      // If there is an error, remove the optimistic message from list
+      const idx = globalMessages.value.findIndex(m => m.id === optimisticId)
+      if (idx !== -1) {
+        globalMessages.value.splice(idx, 1)
       }
-      globalMessages.value.push(optimisticRow as unknown as ChatMessage)
-      if (globalMessages.value.length > 50) globalMessages.value.shift()
-      fetchMissingCosmetics(authStore.user?.id ? [authStore.user.id] : [])
     }
   }
 

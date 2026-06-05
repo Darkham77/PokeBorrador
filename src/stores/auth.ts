@@ -120,6 +120,7 @@ export const useAuthStore = defineStore('auth', () => {
           }
         }
         
+        let sessionValid = true
         if (data?.session?.user) {
           session.value = data.session
           user.value = data.session.user as unknown as AuthUser
@@ -131,21 +132,33 @@ export const useAuthStore = defineStore('auth', () => {
             // Registrar sesión en DB para unicidad con timeout (10s)
             try {
               const updatePromise = supabase.from('profiles').update({ current_session_id: sessionId.value }).eq('id', user.value?.id)
-              await Promise.race([updatePromise, new Promise((_, reject) => gsap.delayedCall(10, () => reject(new Error('UPDATE_TIMEOUT'))))])
+              const updateRes = await Promise.race([updatePromise, new Promise((_, reject) => gsap.delayedCall(10, () => reject(new Error('UPDATE_TIMEOUT'))))]) as { error?: { message?: string; status?: number; code?: string } | null }
+              const updateError = updateRes?.error
+              if (updateError) {
+                logger.error('Auth', `Session ID update failed: ${updateError.message} (${updateError.status})`)
+                if (updateError.status === 401 || updateError.code === 'PGRST301' || updateError.message?.toLowerCase().includes('jwt') || updateError.message?.toLowerCase().includes('invalid')) {
+                  sessionValid = false
+                }
+              }
             } catch (e) {
               logger.warn('Auth', `Session ID update failed or timed out: ${(e as Error).message}`)
             }
           }
 
-          startSessionMonitoring()
-          
-          if (!isLocalId) {
+          if (sessionValid && !isLocalId) {
             // Fetch profile meta con timeout (10s)
             try {
               const profilePromise = supabase.from('profiles').select('db_version, is_banned, ban_reason').eq('id', user.value?.id).single()
-              const { data: profile } = await Promise.race([profilePromise, new Promise((_, reject) => setTimeout(() => reject(new Error('FETCH_TIMEOUT')), 10000))]) as { data: { db_version: number, is_banned: boolean, ban_reason: string | null } | null }
+              const profileRes = await Promise.race([profilePromise, new Promise((_, reject) => setTimeout(() => reject(new Error('FETCH_TIMEOUT')), 10000))]) as { data: { db_version: number, is_banned: boolean, ban_reason: string | null } | null, error?: { message?: string; status?: number; code?: string } | null }
+              const profile = profileRes.data
+              const profileError = profileRes.error
               
-              if (profile && user.value) {
+              if (profileError) {
+                logger.error('Auth', `Profile fetch failed: ${profileError.message} (${profileError.status})`)
+                if (profileError.status === 401 || profileError.code === 'PGRST301' || profileError.message?.toLowerCase().includes('jwt') || profileError.message?.toLowerCase().includes('invalid')) {
+                  sessionValid = false
+                }
+              } else if (profile && user.value) {
                 user.value.db_version = profile.db_version || 1
                 if (profile.is_banned) {
                   isBanned.value = true
@@ -158,9 +171,16 @@ export const useAuthStore = defineStore('auth', () => {
               logger.warn('Auth', `Profile fetch failed or timed out: ${(e as Error).message}`)
               if (user.value && !user.value.db_version) user.value.db_version = 1
             }
-          } else {
-            if (user.value && !user.value.db_version) user.value.db_version = 1
+          } else if (!isLocalId) {
+            logger.error('Auth', 'Session validation failed. Forcing logout with warning.')
+            sessionStorage.setItem('pokevicio_logout_reason', 'session_invalidated')
+            await logout()
+            return
           }
+
+          startSessionMonitoring()
+          
+          if (user.value && !user.value.db_version) user.value.db_version = 1
 
           // Sync time only for online session
           syncServerTime()
@@ -217,14 +237,26 @@ export const useAuthStore = defineStore('auth', () => {
       }
       
       // Registrar sesión
-      await supabase.from('profiles').update({ current_session_id: sessionId.value }).eq('id', data.user.id)
+      const updateRes = await supabase.from('profiles').update({ current_session_id: sessionId.value }).eq('id', data.user.id) as { error?: { message?: string } | null }
+      const updateError = updateRes?.error
+      if (updateError) {
+        logger.error('Auth', `Login session update failed: ${updateError.message}`)
+        throw new Error(`Error de verificación de sesión: ${updateError.message || 'Error desconocido'}`)
+      }
       
       interface ProfileData {
         db_version: number;
         is_banned: boolean;
         ban_reason: string | null;
       }
-      const { data: profile } = await supabase.from('profiles').select('db_version, is_banned, ban_reason').eq('id', data.user.id).single() as { data: ProfileData | null }
+      const profileRes = await supabase.from('profiles').select('db_version, is_banned, ban_reason').eq('id', data.user.id).single() as { data: ProfileData | null, error?: { message?: string } | null }
+      const profile = profileRes.data
+      const profileError = profileRes.error
+      
+      if (profileError) {
+        logger.error('Auth', `Login profile fetch failed: ${profileError.message}`)
+        throw new Error(`Error de perfil: ${profileError.message || 'Error de lectura de perfil'}`)
+      }
       
       if (profile?.is_banned) {
         isBanned.value = true
