@@ -334,6 +334,7 @@ function hatchEgg(egg: PokemonEgg): void {
 .egg-status {
   @include pixelated;
   font-size: 7px;
+  line-height: 1.4;
   letter-spacing: 1px;
   color: var(--gray);
 
@@ -366,6 +367,8 @@ function hatchEgg(egg: PokemonEgg): void {
 .steps-remaining {
   @include pixelated;
   font-size: 7px;
+  line-height: 1.6;
+  padding-top: 1px;
   color: Rgba(148, 163, 184, 0.6);
   white-space: nowrap;
   overflow: hidden;

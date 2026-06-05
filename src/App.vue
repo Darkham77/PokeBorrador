@@ -1,4 +1,5 @@
 <script setup lang="ts">
+// fallow-ignore-file security-sink
 import { onMounted, ref, computed, watch } from 'vue'
 import { gsap } from 'gsap'
 import { useAuthStore } from '@/stores/auth'
@@ -204,7 +205,9 @@ onMounted(async () => {
   await (async () => {
     if (import.meta.env.DEV) return
     try {
-    const response = await fetch(`${import.meta.env.BASE_URL}version.json?t=${Date.now()}`, {
+    const verUrl = new URL(`${import.meta.env.BASE_URL}version.json`, window.location.origin)
+    verUrl.searchParams.set('t', Temporal.Now.instant().epochMilliseconds.toString())
+    const response = await fetch(verUrl, {
       cache: 'no-store'
     })
     if (response.ok) {

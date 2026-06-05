@@ -281,6 +281,15 @@ watch(isOnline, (online) => {
   }
 }, { immediate: true })
 
+const animatedProgress = ref(0)
+watch(progress, (newVal) => {
+  gsap.to(animatedProgress, {
+    value: newVal,
+    duration: 0.3,
+    overwrite: 'auto'
+  })
+})
+
 const handleServerChange = () => {
   switchServer(selectedServerId.value)
   checkServerHealth()
@@ -352,7 +361,7 @@ const handleServerChange = () => {
           <div class="pwa-progress-container">
             <div
               class="pwa-progress-bar"
-              :style="{ width: `${progress}%` }"
+              :style="{ width: `${animatedProgress}%` }"
             />
           </div>
           <span class="pwa-progress-text">{{ progressText }}</span>
@@ -489,146 +498,5 @@ const handleServerChange = () => {
 
 #auth-screen {
   background-image: v-bind(wallpaperUrl);
-}
-
-.auth-pwa-install {
-  margin-bottom: 10px;
-  
-  .pwa-install-btn {
-    @include btn-vicio('primary', 'sm', false);
-  }
-}
-
-.server-list-container {
-  margin-bottom: 16px;
-  
-  .label-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 8px;
-  }
-
-  .server-label {
-    display: block;
-    @include pixelated;
-    font-size: 8px;
-    color: Rgba(255, 255, 255, 0.4);
-    text-transform: uppercase;
-  }
-
-  .status-indicator {
-    @include pixelated;
-    font-size: 8px;
-    padding: 2px 6px;
-    border-radius: 4px;
-    
-    &.checking { color: $yellow; }
-    &.online { 
-      color: #00ff00;
-      text-shadow: 0 0 5px Rgba(0, 255, 0, 0.5);
-    }
-    &.offline { color: #ff4444; }
-  }
-}
-
-.internet-alert {
-  background: Rgba(255, 68, 68, 0.2);
-  border: 1px solid #ff4444;
-  color: #ff4444;
-  @include pixelated;
-  font-size: 10px;
-  padding: 12px;
-  border-radius: 10px;
-  margin-bottom: 16px;
-  text-align: center;
-  will-change: opacity;
-}
-
-.server-select {
-  cursor: pointer;
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 16px center;
-  padding-right: 40px !important;
-  border-color: Rgba(255, 255, 255, 0.2);
-  
-  option {
-    background: #1a1a1a;
-    color: white;
-  }
-}
-
-.auth-pwa-update-panel {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  padding: 20px 10px;
-  background: Rgba(255, 170, 0, 0.1);
-  border: 2px solid #ffaa00;
-  box-shadow: 0 0 15px Rgba(255, 170, 0, 0.2);
-  border-radius: 8px;
-  margin: 15px 0;
-
-  .update-icon {
-    font-size: 32px;
-    margin-bottom: 12px;
-  }
-
-  .update-title {
-    @include pixelated;
-    font-size: 14px;
-    color: #ffaa00;
-    margin-bottom: 12px;
-    text-shadow: 0 0 5px Rgba(255, 170, 0, 0.4);
-  }
-
-  .update-message {
-    font-size: 11px;
-    color: #ffffff;
-    line-height: 1.5;
-    margin-bottom: 20px;
-    font-family: inherit;
-  }
-
-  .update-btn {
-    @include btn-vicio('warning', 'md', false);
-    width: 100%;
-    margin-top: 10px;
-  }
-
-  .pwa-progress-wrapper {
-    width: 100%;
-    margin-top: 15px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .pwa-progress-container {
-    width: 100%;
-    height: 12px;
-    background: #111;
-    border: 2px solid #333;
-    border-radius: 6px;
-    overflow: hidden;
-    position: relative;
-  }
-
-  .pwa-progress-bar {
-    height: 100%;
-    background: linear-gradient(90deg, #ffaa00, #ffd400);
-    box-shadow: 0 0 8px #ffaa00;
-    transition: width 0.3s ease;
-  }
-
-  .pwa-progress-text {
-    @include pixelated;
-    font-size: 8px;
-    color: #ffaa00;
-  }
 }
 </style>

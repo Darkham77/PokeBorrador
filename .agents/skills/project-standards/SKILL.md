@@ -61,6 +61,7 @@ Consult these manuals for detailed implementation specifications:
 - **Retro Heart**: Pixel Art and Sharp typography (`Press Start 2P`) for game content.
 - **Pixel-Perfect**: Pixelated elements (sprites, items, badges) MUST use `@include pixelated`. This mixin handles browser fallbacks and typography sharpening. Typography for stats and headers must always be pixelated.
 - **Overlapping Sprite Stacking (Cards Deck)**: In retro-modern flex lists or reward displays, use negative margins (e.g. `margin-left: -16px` on sibling `.item-sprite` elements) to create a high-density, overlapping deck structure. Accompany this with a smooth hover micro-animation using GSAP transitions or CSS `:hover` that slightly scales (`scale(1.2)`), lifts (`translateY(-4px)`), and elevates the z-index (`z-index: 10`) of the targeted sprite to provide premium tactile feedback.
+- **Retro Font Layout Clipping Prevention**: When styling pixelated text elements utilizing custom fonts like `Press Start 2P` in containers with `overflow: hidden`, you MUST set `line-height` to at least `1.5` or `1.6` and add a slight `padding-top` (e.g. `1px` or `2px`). This ensures that the browser does not clip or distort the top of numerical characters or labels.
 - **Maquetación y Detalles UI**: Las reglas específicas de maquetación (como alineaciones de Emojis en Windows, overrides de dropdowns select, y reglas de CSS Grid) han sido modularizadas en [ui_ux_standards.md](./references/core/ui_ux_standards.md).
 
 ### 2. GPU & Rendering
@@ -80,6 +81,7 @@ Consult these manuals for detailed implementation specifications:
 - **UI Tab Integrity**: To prevent unwanted vertical scroll indicators (arrows) in horizontal tab bars with `overflow-x: auto`, you MUST apply `overflow-y: hidden` and `flex-shrink: 0`. This avoids layout calculation errors caused by vertical padding or sub-pixel overflow.
 
 - **Deterministic Orchestration**: Visual sequences MUST return a Promise (using `awaitAnimation` or GSAP timelines) so the state machine can synchronize state changes with visual completion.
+- **GSAP for Progress Indicators**: Do not use manual CSS `transition:` definitions to animate progress bars. Instead, use a reactive ref observed via a Vue watch handler paired with GSAP (`gsap.to`) to animate progress values smoothly and deterministically.
 - **CLI-Ready Visuals**: Every animation MUST be triggerable via `window.__VITE_DEBUG__.battle.animations` (or the corresponding debug bridge) to allow headless verification.
 
 ### 3. Modularity & Hierarchy
@@ -153,6 +155,8 @@ The project uses a sophisticated audit and validation engine to ensure stability
   - **Semantic Validation**: Synchronizes Moves, Abilities, and Items against PokeAPI/Official Data to prevent data drift.
   - **FSM Mastery (`validate:fsm`)**: Ensura 1:1 parity between battle logic and FSM documentation (diagrams, implementation, flow).
 - **Zero-Warning Policy**: Zero errors and zero warnings are required for any core system component.
+  - **Fallow False-Positive Security Bypass**: Local HTTP fetch requests (e.g., querying local `version.json` in `App.vue`) that trigger Fallow's security engine (CWE-918 / tainted-sink) must be resolved by placing the `// fallow-ignore-file security-sink` comment at the top of the Vue `<script>` setup block.
+  - **Unused Import Prevention**: To satisfy strict TypeScript compiler checks (`vue-tsc --noEmit`), always prune unused imports (such as `ref`, `watch`) from Vue components after refactoring or extracting code blocks.
   - **Native TS Mandate**: The use of `tsx` or `ts-node` for running local utility scripts is STRICTLY PROHIBITED. All utility scripts and tests MUST run natively utilizing `node --experimental-strip-types` paired with Node.js 26+ sandboxed permissions flags.
   - **Module Prefix**: Use the `node:` prefix for all built-in module imports (e.g., `import fs from 'node:fs'`).
 - **PWA Cache Reversion & Self-Healing**: To prevent browsers from serving cached, outdated versions of the application, the application MUST query a cache-busted `version.json` from the server on startup. If a client-side version mismatch (`client < server`) is detected, automatic or silent background updates and reloads are strictly forbidden. The system must block operations, present the warning card/dialog, and require the user to manually click "ACTUALIZAR AHORA" to programmatically unregister active service workers, purge cache storage, and force the reload.
