@@ -45,7 +45,7 @@ const ARCHETYPE_KEYWORDS: Record<NpcArchetype, string[]> = {
   default: ['youngster', 'lass', 'camper', 'picnicker', 'schoolkid', 'entrenador', 'player', 'rival', 'blue', 'red']
 };
 
-import { ARCHETYPE_SPRITES } from '@/data/npcSpriteCatalog';
+import { ARCHETYPE_SPRITES } from '../../data/npcSpriteCatalog.ts';
 
 /**
  * Classifies a trainer's sprite ID or name into an NpcArchetype.
