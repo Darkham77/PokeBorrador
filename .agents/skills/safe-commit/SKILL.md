@@ -118,7 +118,7 @@ You MUST run these commands and fix EVERY issue until a clean pass is achieved.
 3.  **Manual Repair Discovery (THE REPORT)**:
     - Review the output of `audit:full` (or the generated report files) again.
     - Identify all warnings/errors that `:fix` DID NOT resolve (e.g., `gpuGaps`, `legacyDates`, `zIndexAudit`).
-    - **Targeted Fallow Audit**: Run `npx fallow` on the specific files modified or added in this commit attempt (you can list these files using `git status` or `git diff --name-only HEAD`). To prevent context saturation, direct the output of fallow commands to files inside the `scratch/` directory (e.g., `npx fallow > scratch/fallow_report.txt` or filtering specific files) and analyze the reports using `view_file`. Check if these modified files introduce any new unused exports, dead code, or exceed complexity thresholds.
+    - **Targeted Fallow Audit**: Run `npx fallow audit --changed-since HEAD~1` to audit the changes introduced in this commit (comparing against the pre-snapshot state, since HEAD is the snapshot commit). To prevent context saturation, direct the output to a file inside the `scratch/` directory: `npx fallow audit --changed-since HEAD~1 > scratch/fallow_report.txt`. Use `view_file` to analyze the report and ensure that the modified/introduced code does not introduce new dead code, unused exports, duplication, or excessive complexity.
     - **MANDATORY**: List all these issues, audit warnings, lint errors, AND Fallow recommendations for the modified files in your response to the user as a "Technical Debt Report" before proceeding to fix them manually.
 4.  **Manual Repair Phase**:
     - Fix each identified issue manually in the code.
@@ -127,7 +127,7 @@ You MUST run these commands and fix EVERY issue until a clean pass is achieved.
 5.  **Final Validation Pass**:
     - `npm run validate:types`
     - `npm run lint`
-    - `npx fallow health --score` (Verify overall project health score has not regressed)
+    - **Health Regression Check**: Run `npx fallow health --score` to capture the final health score and compare it explicitly with the starting health score captured in Step 0.2. If the final score has regressed (i.e. is lower than the starting health score), this is a validation failure. You MUST identify the complexity hotspots or issues introduced by your changes, refactor them, and re-run the validation until the health score is equal to or greater than the baseline starting score.
     - `npx fallow dupes --fail-on-issues` (Ensure zero duplicate/clone issues)
     - `npx fallow security --fail-on-issues` (Ensure zero security candidate issues)
     - `npm run test`
