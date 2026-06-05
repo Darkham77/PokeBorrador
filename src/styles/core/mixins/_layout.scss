@@ -42,14 +42,23 @@
   -webkit-backface-visibility: hidden !important;
   backface-visibility: hidden !important;
   
-  // Pixel Art Rendering
-  image-rendering: -webkit-optimize-contrast !important;
-  #{"image-rendering"}: crisp-edges !important;
-  image-rendering: pixelated !important;
-  -ms-interpolation-mode: nearest-neighbor !important;
-  
   // Core pixel font mapping
   font-family: var(--font-pixel, 'Press Start 2P'), 'Arial', sans-serif !important;
+}
+
+@mixin pixelated-proportional {
+  // Typography sharpening (Aggressive anti-blur)
+  -webkit-font-smoothing: none !important;
+  -moz-osx-font-smoothing: grayscale !important;
+  #{"font-smooth"}: never !important;
+  text-rendering: optimizeSpeed !important;
+  font-variant-ligatures: none !important;
+  -webkit-text-stroke: 0px !important;
+  -webkit-backface-visibility: hidden !important;
+  backface-visibility: hidden !important;
+  
+  // Core proportional pixel font mapping (No bitmap-like pixel scaling)
+  font-family: var(--font-pixel-proportional, 'DotGothic16'), 'Arial', sans-serif !important;
 }
 
 @mixin tooltip-premium {

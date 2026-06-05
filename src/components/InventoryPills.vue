@@ -142,7 +142,7 @@ const fitText = async (el: HTMLElement | null, baseSize: number) => {
   // Iteramos hasta que quepa o lleguemos al mínimo legible
   let attempts = 0
   while (el.scrollWidth > maxW && size > 4 && attempts < 20) {
-    size -= 0.5
+    size -= 1
     el.style.fontSize = `${size}px`
     attempts++
   }

@@ -150,33 +150,6 @@ const handleFactionChoice = () => {
   uiStore.open('FactionChoice')
 }
 
-const handleResetEncounter = () => {
-  // Legacy logic: window.resetEncounters?.()
-  const win = window as unknown as { resetEncounters?: () => void }
-  if (typeof win.resetEncounters === 'function') {
-    win.resetEncounters()
-    uiStore.notify('Encuentros reseteados', '⚠️')
-  }
-}
-
-const toggleGender = (event: MouseEvent) => {
-  const currentGender = gs.value.gender || 'h'
-  const newGender = currentGender === 'h' ? 'm' : 'h'
-  
-  const btn = event.currentTarget as HTMLElement
-  if (btn) {
-    gsap.fromTo(btn, 
-      { scale: 1 }, 
-      { scale: 1.4, duration: 0.15, yoyo: true, repeat: 1, ease: 'power2.inOut' }
-    )
-  }
-  
-  gameStore.updateState({ gender: newGender })
-  gameStore.save(false)
-  
-  uiStore.notify(`Género cambiado a ${newGender === 'm' ? 'Mujer' : 'Hombre'}`, '✨')
-}
-
 const xpBarRef = ref<HTMLElement | null>(null)
 let stripesTween: gsap.core.Tween | null = null
 let widthTween: gsap.core.Tween | null = null
@@ -255,43 +228,88 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
               :gender="gs.gender || 'h'"
             />
           </div>
-          <div 
-            id="profile-username"
-            class="profile-username"
-          >
-            <span
-              v-gsap-nick="gs.nick_style || 'normal'"
-              :class="gs.nick_style || 'normal'"
-            >{{ displayUsername }}</span>
+          <div class="identity-details-card">
+            <!-- Nombre -->
+            <div class="detail-row name-row">
+              <span class="label">NOMBRE:</span>
+              <div class="value-wrap">
+                <span
+                  v-gsap-nick="gs.nick_style || 'normal'"
+                  :class="gs.nick_style || 'normal'"
+                  class="value name-val"
+                >{{ displayUsername }}</span>
+              </div>
+              <button
+                class="row-action-btn"
+                @click.prevent.stop="openRename"
+              >
+                CAMBIAR
+              </button>
+            </div>
+
+            <!-- Email -->
+            <div class="detail-row">
+              <span class="label">EMAIL:</span>
+              <span class="value">{{ authStore.user?.email || profileData.email }}</span>
+              <div class="row-spacer" />
+            </div>
+
+            <!-- Clase -->
+            <div class="detail-row">
+              <span class="label">CLASE:</span>
+              <span 
+                class="value class-val"
+                :style="{ color: classStore.currentClassDef?.color }"
+              >
+                {{ classStore.currentClassDef?.name || 'SIN CLASE' }}
+              </span>
+              <button
+                class="row-action-btn"
+                @click.prevent.stop="modalStore.open(classStore.playerClass ? 'ClassMissions' : 'ClassSelection')"
+              >
+                {{ classStore.playerClass ? 'GESTIONAR' : 'ELEGIR' }}
+              </button>
+            </div>
+
+            <!-- Bando -->
+            <div class="detail-row">
+              <span class="label">BANDO:</span>
+              <div class="value-wrap">
+                <img
+                  v-if="gs.faction"
+                  :src="getAssetUrlLocal(ASSET_TYPES_LOCAL.FACTION, gs.faction)"
+                  class="faction-img-mini"
+                  @error="(e: Event) => { if (e.target) (e.target as HTMLImageElement).style.display = 'none' }"
+                >
+                <span 
+                  class="value class-val"
+                  :style="{ color: factionColor }"
+                >
+                  {{ factionLabel }}
+                </span>
+              </div>
+              <button
+                class="row-action-btn"
+                @click.prevent.stop="handleFactionChoice"
+              >
+                {{ gs.faction ? 'CAMBIAR' : 'ELEGIR' }}
+              </button>
+            </div>
+          </div>
+
+          <div class="identity-actions-row">
             <button
-              class="gender-toggle-btn"
-              :class="[gs.gender === 'm' ? 'female' : 'male']"
-              title="Cambiar Género"
-              @click.prevent.stop="toggleGender"
+              class="cosmetics-btn"
+              @click.stop="handleEditProfile"
             >
-              {{ gs.gender === 'm' ? '♀️' : '♂️' }}
+              <i class="fas fa-paint-brush" /> CAMBIAR COSMETICOS
             </button>
-            <a
-              href="#"
-              class="change-link"
-              title="Cambiar Nombre"
-              @click.prevent.stop="openRename"
+            <button
+              class="class-mgmt-btn"
+              @click.stop="modalStore.open(classStore.playerClass ? 'ClassMissions' : 'ClassSelection')"
             >
-              ✏️ CAMBIAR
-            </a>
-          </div>
-          <div
-            id="profile-email"
-            class="profile-email"
-          >
-            {{ authStore.user?.email || profileData.email }}
-          </div>
-          <div
-            v-if="classStore.currentClassDef"
-            class="profile-profession"
-            :style="{ color: classStore.currentClassDef.color }"
-          >
-            {{ classStore.currentClassDef.name }}
+              <i class="fas fa-graduation-cap" /> GESTIÓN DE CLASE
+            </button>
           </div>
         </div>
 
@@ -341,35 +359,7 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
           </div>
         </div>
 
-        <!-- Faction -->
-        <div class="profile-section-card faction-card">
-          <div class="section-label">
-            BANDO
-          </div>
-          <div class="faction-row">
-            <div
-              id="player-faction-badge"
-              class="faction-badge"
-              :style="{ color: factionColor }"
-            >
-              <img
-                v-if="gs.faction"
-                :src="getAssetUrlLocal(ASSET_TYPES_LOCAL.FACTION, gs.faction)"
-                class="faction-img"
-                @error="(e: Event) => { if (e.target) (e.target as HTMLImageElement).style.display = 'none' }"
-              >
-              {{ factionLabel }}
-            </div>
-            <a
-              id="change-faction-btn"
-              href="#"
-              class="change-link"
-              @click.prevent.stop="handleFactionChoice"
-            >
-              🔗 {{ gs.faction ? 'CAMBIAR' : 'ELEGIR' }}
-            </a>
-          </div>
-        </div>
+
 
         <!-- Stats Grid -->
         <ProfileStatsGrid 
@@ -404,23 +394,6 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
           >
             <i class="fas fa-sign-out-alt" /> CERRAR SESIÓN
           </button>
-          <button
-            class="edit-btn-legacy"
-            @click.stop="handleEditProfile"
-          >
-            <i class="fas fa-edit" /> EDITAR PERFIL
-          </button>
-          <div class="reset-wrap-legacy">
-            <button
-              class="reset-btn-legacy"
-              @click.stop="handleResetEncounter"
-            >
-              <i class="fas fa-redo" /> RESETEAR ENCUENTROS
-            </button>
-            <div class="hint-text-legacy">
-              Si solo te aparecen entrenadores, usa este botón.
-            </div>
-          </div>
         </div>
       </div>
     </section>
@@ -467,7 +440,7 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 32px 0 20px;
+  padding: 32px 0 0;
   background: transparent;
   border: none;
 
@@ -481,61 +454,139 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
     border-radius: 50%;
   }
 
-  .profile-username {
-    @include pixelated;
-    font-size: 20px;
-    text-align: center;
-    margin-bottom: 4px;
+  .identity-details-card {
     display: flex;
-    justify-content: center;
-    align-items: center;
+    flex-direction: column;
+    width: 100%;
+    align-self: stretch;
+    background: Rgba(0, 0, 0, 0.2);
+    border: 1px solid Rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    padding: 6px 14px;
+    .detail-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid Rgba(255, 255, 255, 0.03);
+      min-height: 36px;
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      &.name-row {
+        min-height: 44px;
+      }
+
+      .label {
+        @include pixelated;
+        font-size: 8px;
+        color: Rgba(255, 255, 255, 0.3);
+        letter-spacing: 0.5px;
+        width: 80px;
+        flex-shrink: 0;
+        text-align: left;
+      }
+
+      .value-wrap {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex: 1;
+        min-width: 0;
+      }
+
+      .value {
+        @include pixelated;
+        font-size: 8px;
+        color: var(--white);
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        text-align: left;
+
+        &.name-val {
+          font-size: 14px;
+          font-weight: bold;
+        }
+
+        &.class-val {
+          font-weight: bold;
+          text-transform: uppercase;
+        }
+      }
+
+      .faction-img-mini {
+        width: 16px;
+        height: 16px;
+        object-fit: contain;
+        flex-shrink: 0;
+        margin-right: 4px;
+      }
+
+      .row-action-btn {
+        background: transparent;
+        border: 1px solid Rgba(255, 255, 255, 0.15);
+        border-radius: 4px;
+        color: var(--yellow);
+        padding: 4px 8px;
+        font-size: 7px;
+        cursor: pointer;
+        @include pixelated;
+        flex-shrink: 0;
+        
+        &:hover {
+          background: Rgba(255, 255, 255, 0.05);
+          border-color: var(--yellow);
+        }
+      }
+
+      .row-spacer {
+        width: 48px;
+        flex-shrink: 0;
+      }
+    }
+  }
+
+  .identity-actions-row {
+    display: flex;
     gap: 8px;
-    
-    .gender-toggle-btn {
-      background: transparent;
-      border: none;
-      font-size: 14px;
-      cursor: pointer;
-      display: inline-flex;
+    width: 100%;
+    margin-top: 16px;
+    align-self: stretch;
+
+    .cosmetics-btn {
+      flex: 1;
+      @include btn-vicio('primary', 'sm', true);
+      font-size: 8px;
+      display: flex;
       align-items: center;
       justify-content: center;
-      padding: 2px;
-      line-height: 1;
-      will-change: transform;
-      
-      &.male {
-        color: Rgba(59, 139, 255, 1);
-        text-shadow: 0 0 8px Rgba(59, 139, 255, 0.4);
-      }
-      &.female {
-        color: Rgba(255, 110, 255, 1);
-        text-shadow: 0 0 8px Rgba(255, 110, 255, 0.4);
-      }
+      gap: 4px;
     }
-    
-    .change-link {
+
+    .class-mgmt-btn {
+      flex: 1;
+      @include btn-vicio('secondary', 'sm', true);
       font-size: 8px;
-      color: var(--yellow);
-      text-decoration: none;
-      font-weight: normal;
-      text-shadow: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      background: Rgba(168, 85, 247, 0.15) !important;
+      border: 2px solid Rgba(168, 85, 247, 0.4) !important;
+      color: #c084fc !important;
+      text-shadow: 0 0 6px Rgba(168, 85, 247, 0.4);
       
-      &:hover { text-decoration: underline; }
+      &:hover {
+        background: Rgba(168, 85, 247, 0.25) !important;
+        border-color: Rgba(168, 85, 247, 0.6) !important;
+        color: #d8b4fe !important;
+      }
     }
-  }
-
-  .profile-email {
-    font-size: 12px;
-    color: Rgba(255, 255, 255, 0.4);
-    @include pixelated;
-    margin-bottom: 8px;
-  }
-
-  .profile-profession {
-    font-size: 10px;
-    @include pixelated;
-    text-transform: uppercase;
-    @include pixelated;
   }
 }
 
@@ -552,35 +603,6 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
     margin-bottom: 16px;
     letter-spacing: 1px;
     @include pixelated;
-  }
-}
-
-.faction-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-
-  .faction-badge {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    font-weight: 700;
-    font-size: 14px;
-
-    .faction-img {
-      width: 24px;
-      height: 24px;
-    }
-  }
-
-  .change-link {
-    @include pixelated;
-    font-size: 8px;
-    color: var(--yellow);
-    text-decoration: none;
-    @include pixelated;
-    
-    &:hover { text-decoration: underline; }
   }
 }
 

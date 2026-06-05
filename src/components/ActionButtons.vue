@@ -53,12 +53,12 @@ const uiStore = useUIStore()
   min-width: 48px;
 
   span:not(:first-child) {
-    font-size: 6px !important; // Aggressive reduction
+    font-size: 9px !important; // Clean and legible size
     font-weight: normal !important;
-    @include pixelated;
+    @include pixelated-proportional;
     color: Rgba(255, 255, 255, 0.7);
     text-transform: uppercase;
-    letter-spacing: 0px;
+    letter-spacing: 0.5px;
     margin-top: 4px;
     display: block;
     line-height: 1;

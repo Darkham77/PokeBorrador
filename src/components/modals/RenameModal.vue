@@ -26,26 +26,19 @@ const authStore = useAuthStore()
 
 const newUsername = ref('')
 const isRenaming = ref(false)
+const selectedGender = ref<'h' | 'm'>('h')
 
-const toggleGender = (event: MouseEvent) => {
-  const currentGender = gameStore.state.gender || 'h'
-  const newGender = currentGender === 'h' ? 'm' : 'h'
-  
+const setGender = (newGender: 'h' | 'm', event: MouseEvent) => {
   gsap.fromTo(event.currentTarget, 
     { scale: 0.85 },
     { scale: 1, duration: 0.3, ease: 'back.out(2)' }
   )
-  
-  gameStore.updateState({ gender: newGender })
-  gameStore.save(false)
-  if (authStore.user) {
-    profileStore.syncProfileFromAuth(authStore.user, gameStore.state)
-  }
-  uiStore.notify(`Género cambiado a ${newGender === 'm' ? 'Mujer' : 'Hombre'}`, '✨')
+  selectedGender.value = newGender
 }
 
 onMounted(() => {
   newUsername.value = profileStore.profileData.username || gameStore.state.trainer || ''
+  selectedGender.value = gameStore.state.gender || 'h'
 })
 
 const daysUntilRename = computed(() => {
@@ -65,65 +58,79 @@ const daysUntilRename = computed(() => {
 const canRename = computed(() => daysUntilRename.value === 0)
 
 const submitRename = async () => {
-  if (!canRename.value) {
-    uiStore.notify(`Faltan ${daysUntilRename.value} días para poder cambiar de nombre.`, '⏳')
-    return
-  }
-  
   const targetName = newUsername.value.trim()
+  const currentName = profileStore.profileData.username || gameStore.state.trainer
+  const genderChanged = selectedGender.value !== gameStore.state.gender
+  const nameChanged = targetName !== currentName
+
   if (!targetName || targetName.length < 3 || targetName.length > 15) {
     uiStore.notify('El nombre debe tener entre 3 y 15 caracteres.', '⚠️')
     return
   }
-  
-  const currentName = profileStore.profileData.username || gameStore.state.trainer
-  if (targetName === currentName) {
-    uiStore.notify('El nombre es idéntico al actual.', '⚠️')
+
+  if (!nameChanged && !genderChanged) {
+    uiStore.notify('No se detectaron cambios.', '⚠️')
     return
   }
 
   isRenaming.value = true
   
   try {
-    const isLocal = authStore.sessionMode === 'offline' || authStore.user?.id.startsWith('local_')
-    
-    if (!isLocal) {
-      const res = await gameStore.db.rpc('change_username', { new_username: targetName })
-      if (res.error) {
-        const errorMsg = typeof res.error === 'string' ? res.error : ((res.error as { message: string } | null)?.message || 'Error al cambiar el nombre')
-        uiStore.notify(errorMsg, '⚠️')
+    if (nameChanged) {
+      if (!canRename.value) {
+        uiStore.notify(`Faltan ${daysUntilRename.value} días para poder cambiar de nombre.`, '⏳')
         isRenaming.value = false
         return
       }
-    }
 
-    // Bloque de éxito común para local y remoto
-    uiStore.notify('¡Nombre cambiado con éxito!', '✨')
-    gameStore.state.trainer = targetName
-    gameStore.save(false)
-    profileStore.updateProfile({ 
-      username: targetName, 
-      last_renamed_at: Temporal.Now.instant().toString() 
-    })
-    
-    if (authStore.user?.id.startsWith('local_')) {
-      const localUserStr = localStorage.getItem('pokevicio_local_user')
-      if (localUserStr) {
-        const lu = JSON.parse(localUserStr)
-        if (!lu.user_metadata) lu.user_metadata = {}
-        lu.user_metadata.username = targetName
-        localStorage.setItem('pokevicio_local_user', JSON.stringify(lu))
-      } else {
-        localStorage.setItem('pokevicio_local_user', JSON.stringify({
-          id: authStore.user.id,
-          email: authStore.user?.email || 'entrenador@local',
-          user_metadata: { username: targetName }
-        }))
+      const isLocal = authStore.sessionMode === 'offline' || authStore.user?.id.startsWith('local_')
+      
+      if (!isLocal) {
+        const res = await gameStore.db.rpc('change_username', { new_username: targetName })
+        if (res.error) {
+          const errorMsg = typeof res.error === 'string' ? res.error : ((res.error as { message: string } | null)?.message || 'Error al cambiar el nombre')
+          uiStore.notify(errorMsg, '⚠️')
+          isRenaming.value = false
+          return
+        }
+      }
+
+      gameStore.state.trainer = targetName
+      profileStore.updateProfile({ 
+        username: targetName, 
+        last_renamed_at: Temporal.Now.instant().toString() 
+      })
+      
+      if (authStore.user?.id.startsWith('local_')) {
+        const localUserStr = localStorage.getItem('pokevicio_local_user')
+        if (localUserStr) {
+          const lu = JSON.parse(localUserStr)
+          if (!lu.user_metadata) lu.user_metadata = {}
+          lu.user_metadata.username = targetName
+          localStorage.setItem('pokevicio_local_user', JSON.stringify(lu))
+        } else {
+          localStorage.setItem('pokevicio_local_user', JSON.stringify({
+            id: authStore.user.id,
+            email: authStore.user?.email || 'entrenador@local',
+            user_metadata: { username: targetName }
+          }))
+        }
       }
     }
+
+    if (genderChanged) {
+      gameStore.updateState({ gender: selectedGender.value })
+    }
+
+    gameStore.save(false)
+    if (authStore.user) {
+      profileStore.syncProfileFromAuth(authStore.user, gameStore.state)
+    }
+
+    uiStore.notify('Cambios guardados con éxito.', '✨')
     emit('close')
   } catch (_e: unknown) {
-    uiStore.notify('Error al cambiar el nombre.', '⚠️')
+    uiStore.notify('Error al guardar los cambios.', '⚠️')
   } finally {
     isRenaming.value = false
   }
@@ -157,13 +164,22 @@ const submitRename = async () => {
             placeholder="Ej: Red..."
             maxlength="15"
           >
+        </div>
+
+        <div class="gender-selection-row">
           <button
-            class="gender-toggle-btn"
-            :class="[gameStore.state.gender === 'm' ? 'female' : 'male']"
-            title="Cambiar Género"
-            @click.prevent.stop="toggleGender"
+            class="gender-select-btn male"
+            :class="{ active: selectedGender === 'h' }"
+            @click.prevent.stop="setGender('h', $event)"
           >
-            {{ gameStore.state.gender === 'm' ? '♀️' : '♂️' }}
+            ♂️ MASCULINO
+          </button>
+          <button
+            class="gender-select-btn female"
+            :class="{ active: selectedGender === 'm' }"
+            @click.prevent.stop="setGender('m', $event)"
+          >
+            ♀️ FEMENINO
           </button>
         </div>
         
@@ -255,30 +271,52 @@ const submitRename = async () => {
     }
   }
 
-  .gender-toggle-btn {
-    background: Rgba(0, 0, 0, 0.4);
-    border: 2px solid var(--blue);
-    border-radius: 6px;
-    font-size: 20px;
-    cursor: pointer;
+  .gender-selection-row {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 48px;
-    height: 44px;
-    will-change: transform;
+    gap: 12px;
+    width: 100%;
+    margin-top: 4px;
 
-    &:hover {
-      border-color: var(--yellow);
-    }
+    .gender-select-btn {
+      flex: 1;
+      background: Rgba(0, 0, 0, 0.4);
+      border: 2px solid Rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+      padding: 10px;
+      font-size: 11px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      color: Rgba(255, 255, 255, 0.6);
+      will-change: transform;
+      @include pixelated;
 
-    &.male {
-      color: Rgba(59, 139, 255, 1);
-      text-shadow: 0 0 8px Rgba(59, 139, 255, 0.4);
-    }
-    &.female {
-      color: Rgba(255, 110, 255, 1);
-      text-shadow: 0 0 8px Rgba(255, 110, 255, 0.4);
+      &:hover {
+        border-color: Rgba(255, 255, 255, 0.3);
+        color: var(--white);
+      }
+
+      &.male {
+        &.active {
+          border-color: Rgba(59, 139, 255, 1);
+          background: Rgba(59, 139, 255, 0.15);
+          color: Rgba(59, 139, 255, 1);
+          text-shadow: 0 0 8px Rgba(59, 139, 255, 0.4);
+          box-shadow: 0 0 12px Rgba(59, 139, 255, 0.1);
+        }
+      }
+
+      &.female {
+        &.active {
+          border-color: Rgba(255, 110, 255, 1);
+          background: Rgba(255, 110, 255, 0.15);
+          color: Rgba(255, 110, 255, 1);
+          text-shadow: 0 0 8px Rgba(255, 110, 255, 0.4);
+          box-shadow: 0 0 12px Rgba(255, 110, 255, 0.1);
+        }
+      }
     }
   }
 }

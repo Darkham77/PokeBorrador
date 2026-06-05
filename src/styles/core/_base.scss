@@ -8,7 +8,6 @@
 html, body {
   height: 100%;
   overflow: hidden !important;
-  @include pixelated;
 }
 
 body {
@@ -40,7 +39,6 @@ body {
   height: 100%;
   box-sizing: border-box;
   overflow: hidden !important;
-  @include pixelated; // Sprite/Asset enforcement without global font distortion
   padding: 0;
 }
 
@@ -95,7 +93,14 @@ body .pixelated {
   font-smooth: never !important;
   text-rendering: optimizeSpeed !important;
   -webkit-text-stroke: 0px !important;
+}
+
+// Crisp nearest-neighbor interpolation for game elements only
+img, canvas, .pixelated-img, .sprite, [class*="sprite-"] {
+  image-rendering: -webkit-optimize-contrast !important;
+  #{"image-rendering"}: crisp-edges !important;
   image-rendering: pixelated !important;
+  -ms-interpolation-mode: nearest-neighbor !important;
 }
 
 // Global Scrollbar Utility

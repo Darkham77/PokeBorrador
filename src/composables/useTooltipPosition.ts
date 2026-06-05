@@ -82,7 +82,7 @@ export function useTooltipPosition(
     
     coords.value = { 
       top: Math.round(top), 
-      left: Math.round(left), 
+      left: typeof left === 'number' ? Math.round(left) : left, 
       right: 'auto' 
     }
   }
