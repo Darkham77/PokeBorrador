@@ -12,8 +12,8 @@
   position: absolute;
   z-index: var(--z-critical); // Above everything
   pointer-events: none !important;
-  min-width: 120px;
-  max-width: 320px;
+  min-width: calc(120px * var(--app-zoom, 1));
+  max-width: calc(320px * var(--app-zoom, 1));
   width: max-content;
   
   &.pos-top {
@@ -33,7 +33,8 @@
 .tooltip-animate-wrapper {
   @include tooltip-premium;
   position: relative;
-  will-change: transform, opacity;
+  zoom: var(--app-zoom, 1);
+  will-change: transform, opacity, zoom;
   
   .tooltip-content {
     display: flex;

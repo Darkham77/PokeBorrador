@@ -44,6 +44,9 @@
     will-change: filter, opacity;
     
     @include pixelated;
+    image-rendering: -webkit-optimize-contrast !important;
+    #{"image-rendering"}: crisp-edges !important;
+    image-rendering: pixelated !important;
     -webkit-backface-visibility: visible !important;
     backface-visibility: visible !important;
     -ms-interpolation-mode: nearest-neighbor !important;

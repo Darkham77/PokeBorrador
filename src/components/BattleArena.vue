@@ -271,10 +271,14 @@ const handleClose = () => {
 
 
 <style lang="scss">
-/* Ultra-specific override to kill scrolls even in fullscreen padding-raw mode */
-.base-modal-root .type-fullscreen.battle-arena-modal,
-.base-modal-root .type-center.battle-arena-modal {
-  .base-modal-card {
+.base-modal-root .type-center .base-modal-card.battle-arena-modal {
+  width: calc(1600px * var(--app-zoom, 1)) !important;
+  max-width: 95dvw !important;
+}
+
+.base-modal-root .type-fullscreen,
+.base-modal-root .type-center {
+  .base-modal-card.battle-arena-modal {
     overflow: hidden !important;
     background: #1c2135 !important; 
     background-image: Radial-Gradient(circle at 0% 0%, Rgba(255, 255, 255, 0.12) 0%, Transparent 70%) !important;
@@ -294,8 +298,6 @@ const handleClose = () => {
       overflow: hidden !important;
       overflow-y: hidden !important;
       overflow-x: hidden !important;
-      
-      /* Extra safety for GPU layers */
       contain: content;
     }
   }
@@ -366,7 +368,7 @@ const handleClose = () => {
 
   @media (min-width: 1081px) {
     display: grid;
-    grid-template-columns: 320px 1fr;
+    grid-template-columns: calc(320px * var(--app-zoom, 1)) 1fr;
     grid-template-rows: 1fr auto;
     grid-template-areas: 
       "log arena"
@@ -383,6 +385,8 @@ const handleClose = () => {
 
 .battle-log-wrapper {
   grid-area: log;
+  zoom: var(--app-zoom, 1);
+  will-change: zoom;
   display: flex;
   flex-direction: column;
   position: relative;
@@ -447,6 +451,8 @@ const handleClose = () => {
 }
 :deep(#move-panel) { 
   grid-area: moves; 
+  zoom: var(--app-zoom, 1);
+  will-change: zoom;
   z-index: var(--z-hud); 
   border-top: 1px solid Rgba(255, 255, 255, 0.2);
   box-shadow: inset 0 10px 20px Rgba(0, 0, 0, 0.4);
