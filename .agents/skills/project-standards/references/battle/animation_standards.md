@@ -489,5 +489,14 @@ Calling `gsap.killTweensOf(el)` only terminates individual active tweens bound t
 Repeatedly restarting particle or aura animations during high-frequency UI updates degrades rendering performance and risks timing collisions.
 - **Rule**: Store the active effect/state identifier in a local reactive reference (e.g., `activeStatusType`) and compare incoming status updates. Do NOT trigger a visual system re-initialization unless the status type has actually changed or a hard reset (`forceReset`) is explicitly requested.
 
+## 41. `v-gsap-loop` Directive: Blink Color Over Opacity for Text Elements
+
+The `blink` effect of the `gsapLoop.ts` directive (`v-gsap-loop="'blink'"`) MUST NOT animate `opacity` on elements that contain text (buttons, labels, pills).
+
+- **Why**: Reducing opacity to values like `0.3` makes the text transparent and completely unreadable. This violates the legibility standards of the project and breaks the Hybrid Retro-Modern aesthetic.
+- **Correct Behavior (Text Elements)**: The directive detects elements containing text (`el.innerText`) and animates the CSS `color` property between the element's original computed color and a dimmed grey (`#888888`). This creates a visible "dimming" pulse without ever hiding the text.
+- **Correct Behavior (Non-Text Elements)**: For elements without text (icons, sprites), opacity is clamped to a minimum of `0.75` to prevent full transparency.
+- **Implementation Reference**: `src/directives/gsapLoop.ts` — `applyAnimation` switch-case `'blink'`.
+
 
 
