@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { ref } from 'vue'
+import { gsap } from 'gsap'
+
 defineProps<{
   avatar: string
   isAvatarUrl?: boolean
@@ -17,6 +20,54 @@ defineEmits<{
   (e: 'action'): void
 }>()
 
+const cardRef = ref<HTMLElement | null>(null)
+
+const handleMouseEnter = () => {
+  if (!cardRef.value) return
+  gsap.to(cardRef.value, {
+    scale: 1.02,
+    y: -4,
+    duration: 0.4,
+    ease: 'back.out(1.7)',
+    borderColor: 'rgba(255, 255, 255, 0.25)',
+    boxShadow: '0 20px 40px rgba(0, 0, 0, 0.6), 0 0 15px rgba(255, 255, 255, 0.1)'
+  })
+
+  const sprite = cardRef.value.querySelector('.trainer-avatar img')
+  if (sprite) {
+    gsap.to(sprite, {
+      scale: 1.15,
+      y: -6,
+      filter: 'drop-shadow(0 15px 15px rgba(0,0,0,0.6))',
+      duration: 0.4,
+      ease: 'back.out(1.7)'
+    })
+  }
+}
+
+const handleMouseLeave = () => {
+  if (!cardRef.value) return
+  gsap.to(cardRef.value, {
+    scale: 1,
+    y: 0,
+    duration: 0.4,
+    ease: 'power2.out',
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    boxShadow: 'none'
+  })
+
+  const sprite = cardRef.value.querySelector('.trainer-avatar img')
+  if (sprite) {
+    gsap.to(sprite, {
+      scale: 1,
+      y: 0,
+      filter: 'none',
+      duration: 0.4,
+      ease: 'power2.out'
+    })
+  }
+}
+
 const handleImgError = (e: Event) => {
   const target = e.target as HTMLImageElement;
   target.style.display = 'none';
@@ -27,8 +78,11 @@ const handleImgError = (e: Event) => {
 
 <template>
   <div 
+    ref="cardRef"
     class="mission-card"
     :class="{ completed: isCompleted }"
+    @mouseenter="handleMouseEnter"
+    @mouseleave="handleMouseLeave"
   >
     <div
       v-if="isCompleted && completedBadgeText"
@@ -96,6 +150,7 @@ const handleImgError = (e: Event) => {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  will-change: transform, border-color, box-shadow;
   
   &.completed {
     border-color: Rgba(34, 197, 94, 0.4);
@@ -109,12 +164,11 @@ const handleImgError = (e: Event) => {
   right: 8px;
   background: Rgba(34, 197, 94, 1);
   color: white;
-  font-size: 8px;
+  font-size: 9px;
   @include pixelated;
   padding: 4px 8px;
   border-radius: 4px;
   border: 1px solid #000000;
-  text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
 }
 
 .trainer-section {
@@ -122,20 +176,22 @@ const handleImgError = (e: Event) => {
   gap: 16px;
   
   .trainer-avatar {
-    width: 48px;
-    height: 48px;
+    width: 96px;
+    height: 96px;
     background: Rgba(0, 0, 0, 0.2);
     border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 24px;
+    font-size: 48px;
+    overflow: visible; // Allow image zoom shadow/scaling to overflow slightly within bounds
 
     img {
       width: 100%;
       height: 100%;
       object-fit: contain;
       @include pixelated;
+      will-change: transform, filter;
     }
 
     .pixelated { @include pixelated; }

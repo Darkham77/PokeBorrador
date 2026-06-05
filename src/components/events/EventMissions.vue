@@ -361,13 +361,12 @@ async function startClassMission(missionId: string) {
     .class-level-badge {
       background: var(--class-color);
       color: white;
-      font-size: 8px;
+      font-size: 9px;
       font-weight: 800;
-      padding: 2px 6px;
+      padding: 3px 8px;
       border-radius: 4px;
       @include pixelated;
       border: 1px solid #000000;
-      text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
     }
   }
 

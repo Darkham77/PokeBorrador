@@ -5,6 +5,7 @@
  */
 
 import { POKEMON_DB } from '@/data/pokemonDB';
+import { getSpritesForArchetype, type NpcArchetype } from '@/logic/utils/npcSpriteRouter';
 import type { Pokemon, PokemonIVs } from '@/types/pokemon';
 
 export interface MissionRequirement {
@@ -93,6 +94,41 @@ const MISSION_DIALOGUES_BASE: Record<string, string[]> = {
     "¡Escalando perdí a mi ${pokemon}! ¿Me das uno con ${req}?",
     "¡Rocas y más rocas! Necesito un ${pokemon} con ${req} para avanzar."
   ],
+  'rocket': [
+    "¡Eh, tú! Pásame ese ${pokemon} con ${req} o atente a las consecuencias...",
+    "El Team Rocket necesita un ${pokemon} que tenga ${req}. ¡Entrégamelo!",
+    "¡Silencio! ¿Tienes un ${pokemon} con ${req}? Lo confiscaremos por el bien de la organización."
+  ],
+  'criador': [
+    "¡Hola! Estoy buscando un ${pokemon} con ${req} para cuidarlo en la guardería.",
+    "¿Podrías dejarme un ${pokemon} con ${req}? Quiero estudiar su crecimiento.",
+    "Un ${pokemon} con ${req} sería perfecto para criar con mis otros compañeros."
+  ],
+  'aristocrata': [
+    "Disculpe las molestias, pero busco un distinguido ${pokemon} con ${req}.",
+    "Mi linaje exige solo lo mejor. Tráigame un ${pokemon} con ${req}, por favor.",
+    "Deseo adquirir un ejemplar de ${pokemon} que posea ${req}. ¿Tiene uno a la mano?"
+  ],
+  'ranger': [
+    "Patrullando la zona me vendría excelente un ${pokemon} con ${req}.",
+    "Protegemos la naturaleza. ¿Tienes un ${pokemon} con ${req} para ayudar en la ruta?",
+    "¡Alerta de conservación! Buscamos un ${pokemon} con ${req} para monitoreo."
+  ],
+  'pokefan': [
+    "¡Ayyy! ¡Quiero ver un ${pokemon} súper adorable con ${req}!",
+    "¡Mi colección de peluches no basta, necesito un ${pokemon} real con ${req}!",
+    "¡El ${pokemon} con ${req} es el más lindo de todos! ¿Me dejas verlo?"
+  ],
+  'artista': [
+    "¡La belleza de un ${pokemon} con ${req} inspirará mi próxima obra!",
+    "Busco plasmar en mi lienzo a un ${pokemon} que tenga ${req}.",
+    "¡Qué elegancia! Necesito un ${pokemon} con ${req} para completar mi coreografía."
+  ],
+  'trainers': [
+    "Busco poner a prueba mi estrategia. ¿Tienes un ${pokemon} con ${req}?",
+    "Un verdadero maestro busca la perfección. Tráeme un ${pokemon} con ${req}.",
+    "Demuestra tu valía. Consígueme un ${pokemon} con ${req} para nuestro duelo teórico."
+  ],
   'default': [
     "Necesito un ${pokemon} con ${req} con urgencia. ¿Podrás ayudarme?",
     "¿Podrías traerme un ${pokemon} que tenga ${req}?",
@@ -110,7 +146,14 @@ const TRAINER_TYPES: Record<string, { name: string; sprite: string }> = {
   'domador': { name: 'Domador', sprite: 'tamer' },
   'medium': { name: 'Medium', sprite: 'entrenador' },
   'motorista': { name: 'Motorista', sprite: 'teamrocket' },
-  'montanero': { name: 'Montañero', sprite: 'tamer' }
+  'montanero': { name: 'Montañero', sprite: 'tamer' },
+  'rocket': { name: 'Recluta Rocket', sprite: 'rocketgrunt' },
+  'criador': { name: 'Criador Pokémon', sprite: 'pokemonbreeder' },
+  'aristocrata': { name: 'Aristócrata', sprite: 'gentleman' },
+  'ranger': { name: 'Ranger Pokémon', sprite: 'pokemonranger' },
+  'pokefan': { name: 'Pokéfan', sprite: 'pokefan' },
+  'artista': { name: 'Artista', sprite: 'artist' },
+  'trainers': { name: 'Entrenador Élite', sprite: 'youngster-masters' }
 };
 
 const NATURES = ['Audaz', 'Firme', 'Pícaro', 'Manso', 'Serio', 'Osado', 'Plácido', 'Agitado', 'Jovial', 'Ingenuo', 'Modesto', 'Moderado', 'Raro', 'Dócil', 'Tímido', 'Activo', 'Alocado', 'Tranquilo', 'Grosero', 'Cauto'];
@@ -179,6 +222,12 @@ export function generateMission(trainerLevel: number, dateStr: string): DaycareM
   const tKey = tKeys[Math.floor(Math.random() * tKeys.length)] || 'caza_bichos';
   const trainer = TRAINER_TYPES[tKey] || TRAINER_TYPES['caza_bichos'] as { name: string; sprite: string };
 
+  const archetypeSprites = getSpritesForArchetype(tKey as NpcArchetype);
+  const chosenSprite = archetypeSprites[Math.floor(Math.random() * archetypeSprites.length)];
+  if (!chosenSprite) {
+    throw new Error(`[missionEngine] generateMission failed: no sprites found for archetype ${tKey}`);
+  }
+
   const targetName = (POKEMON_DB as Record<string, { name: string } | undefined>)[targetId]?.name || targetId;
   const templates = MISSION_DIALOGUES_BASE[tKey] || MISSION_DIALOGUES_BASE['default'] || [];
   const template = templates[Math.floor(Math.random() * templates.length)] || '...';
@@ -193,7 +242,7 @@ export function generateMission(trainerLevel: number, dateStr: string): DaycareM
     completed: false,
     trainerType: tKey,
     trainerName: trainer.name,
-    trainerSprite: trainer.sprite, // This is now just an ID like 'cazabichos'
+    trainerSprite: chosenSprite,
     dialogue
   };
 }

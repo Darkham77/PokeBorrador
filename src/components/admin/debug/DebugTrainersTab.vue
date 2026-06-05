@@ -5,6 +5,7 @@ import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { useBattleStore } from '@/stores/battle'
 import { useGameStore } from '@/stores/game'
 import { useDebugStore } from '@/stores/debug'
+import { getSpritesForArchetype, type NpcArchetype } from '@/logic/utils/npcSpriteRouter'
 
 const debugStore = useDebugStore()
 import { usePlayerClassStore } from '@/stores/playerClass'
@@ -92,6 +93,75 @@ const trainerSprite = ref('youngster')
 const enemyTeam = ref<Pokemon[]>([])
 const selectedPokeIndex = ref<number | null>(null)
 
+// Theme Presets and Pools
+const selectedPreset = ref('random')
+const ARCHETYPE_PRESETS = [
+  { id: 'random', name: 'Al Azar (Total)' },
+  { id: 'caza_bichos', name: 'Caza Bichos' },
+  { id: 'ornitologo', name: 'Ornitólogo' },
+  { id: 'cientifico', name: 'Científico' },
+  { id: 'luchador', name: 'Luchador' },
+  { id: 'pescador', name: 'Pescador' },
+  { id: 'nadador', name: 'Nadador' },
+  { id: 'domador', name: 'Domador' },
+  { id: 'medium', name: 'Médium' },
+  { id: 'motorista', name: 'Motorista' },
+  { id: 'montanero', name: 'Montañero' },
+  { id: 'rocket', name: 'Recluta Rocket' },
+  { id: 'criador', name: 'Criador Pokémon' },
+  { id: 'aristocrata', name: 'Aristócrata' },
+  { id: 'ranger', name: 'Ranger' },
+  { id: 'pokefan', name: 'Pokéfan' },
+  { id: 'artista', name: 'Artista' },
+  { id: 'trainers', name: 'Entrenador Élite' }
+]
+
+const ARCHETYPE_POOLS: Record<string, string[]> = {
+  caza_bichos: ['caterpie', 'metapod', 'weedle', 'kakuna', 'paras', 'venonat'],
+  ornitologo: ['pidgey', 'spearow', 'doduo'],
+  cientifico: ['magnemite', 'voltorb', 'ditto', 'grimer'],
+  luchador: ['mankey', 'machop'],
+  pescador: ['magikarp', 'goldeen', 'poliwag'],
+  nadador: ['psyduck', 'tentacool', 'staryu', 'horsea'],
+  domador: ['growlithe', 'vulpix', 'ponyta', 'ekans'],
+  medium: ['abra', 'drowzee'],
+  motorista: ['koffing', 'grimer', 'rattata'],
+  montanero: ['geodude', 'sandshrew', 'rhyhorn'],
+  rocket: ['koffing', 'ekans', 'zubat', 'rattata', 'meowth', 'drowzee', 'machop', 'grimer'],
+  criador: ['eevee', 'pidgey', 'oddish', 'bellsprout', 'growlithe', 'poliwag', 'caterpie', 'weedle'],
+  aristocrata: ['meowth', 'growlithe', 'eevee', 'clefairy', 'jigglypuff', 'vulpix'],
+  ranger: ['nidoran_f', 'nidoran_m', 'oddish', 'bellsprout', 'paras', 'tangela', 'exeggcute'],
+  pokefan: ['pikachu', 'jigglypuff', 'clefairy', 'meowth', 'eevee', 'psyduck'],
+  artista: ['bellsprout', 'vulpix', 'oddish', 'jigglypuff', 'clefairy'],
+  trainers: ['dragonite', 'charizard', 'alakazam', 'machamp', 'gengar', 'lapras']
+}
+
+function generateThemedTrainerName(archetype: string): string {
+  const firstNames = ['Ramón', 'Pedro', 'Roberto', 'Carlos', 'Andrés', 'Elías', 'Hugo', 'Lucas', 'Paco', 'Tomás', 'Sofía', 'Lucía', 'Sara', 'María', 'Elena', 'Laura', 'Ana', 'Carmen', 'Clara', 'Marta']
+  const rName = firstNames[Math.floor(Math.random() * firstNames.length)]
+  const prefixes: Record<string, string> = {
+    caza_bichos: 'Cazabichos',
+    ornitologo: 'Ornitólogo',
+    cientifico: 'Científico',
+    luchador: 'Luchador',
+    pescador: 'Pescador',
+    nadador: 'Nadador',
+    domador: 'Domador',
+    medium: 'Médium',
+    motorista: 'Motorista',
+    montanero: 'Montañero',
+    rocket: 'Recluta Rocket',
+    criador: 'Criador',
+    aristocrata: 'Gentleman',
+    ranger: 'Ranger',
+    pokefan: 'Pokéfan',
+    artista: 'Artista',
+    trainers: 'As'
+  }
+  const prefix = prefixes[archetype] || 'Entrenador'
+  return `${prefix} ${rName}`
+}
+
 // Combat configuration
 const combatLocationType = ref<'map' | 'gym'>('map')
 const selectedMapId = ref('route1')
@@ -173,24 +243,47 @@ function getPokeSpriteUrl(id: string, isShiny?: boolean) {
 }
 
 function generateRandomTeam() {
-  randomizeTrainer()
   const size = Math.max(1, Math.min(6, genTeamSize.value))
   const team: Pokemon[] = []
-  const dbKeys = Object.keys(pokemonDataProvider.getPokemonDb())
 
-  for (let i = 0; i < size; i++) {
-    const randomSpecies = dbKeys[Math.floor(Math.random() * dbKeys.length)] || 'bulbasaur'
-    const level = Math.floor(Math.random() * (genMaxLevel.value - genMinLevel.value + 1)) + genMinLevel.value
-    const isShiny = genForceShiny.value || Math.random() < 0.05
+  if (selectedPreset.value === 'random') {
+    randomizeTrainer()
+    const dbKeys = Object.keys(pokemonDataProvider.getPokemonDb())
+    for (let i = 0; i < size; i++) {
+      const randomSpecies = dbKeys[Math.floor(Math.random() * dbKeys.length)] || 'bulbasaur'
+      const level = Math.floor(Math.random() * (genMaxLevel.value - genMinLevel.value + 1)) + genMinLevel.value
+      const isShiny = genForceShiny.value || Math.random() < 0.05
+      const p = pokemonDebugService.generate({
+        id: randomSpecies,
+        level: Math.max(1, Math.min(100, level)),
+        isShiny
+      })
+      if (p) {
+        p.isGuardian = Math.random() < genGuardianProb.value
+        team.push(p)
+      }
+    }
+  } else {
+    const archetype = selectedPreset.value
+    trainerName.value = generateThemedTrainerName(archetype)
 
-    const p = pokemonDebugService.generate({
-      id: randomSpecies,
-      level: Math.max(1, Math.min(100, level)),
-      isShiny
-    })
-    if (p) {
-      p.isGuardian = Math.random() < genGuardianProb.value
-      team.push(p)
+    const availableSprites = getSpritesForArchetype(archetype as NpcArchetype)
+    trainerSprite.value = availableSprites[Math.floor(Math.random() * availableSprites.length)] || 'entrenador'
+
+    const pool = ARCHETYPE_POOLS[archetype] || ['rattata']
+    for (let i = 0; i < size; i++) {
+      const randomSpecies = pool[Math.floor(Math.random() * pool.length)] || 'rattata'
+      const level = Math.floor(Math.random() * (genMaxLevel.value - genMinLevel.value + 1)) + genMinLevel.value
+      const isShiny = genForceShiny.value || Math.random() < 0.05
+      const p = pokemonDebugService.generate({
+        id: randomSpecies,
+        level: Math.max(1, Math.min(100, level)),
+        isShiny
+      })
+      if (p) {
+        p.isGuardian = Math.random() < genGuardianProb.value
+        team.push(p)
+      }
     }
   }
 
@@ -398,6 +491,22 @@ onMounted(() => {
             min="1" 
             max="100"
           >
+        </div>
+
+        <div
+          class="input-group vertical"
+          style="grid-column: span 2;"
+        >
+          <span class="field-label">Tema / Arquetipo (Preset)</span>
+          <select v-model="selectedPreset">
+            <option 
+              v-for="p in ARCHETYPE_PRESETS" 
+              :key="p.id" 
+              :value="p.id"
+            >
+              {{ p.name }}
+            </option>
+          </select>
         </div>
       </div>
 

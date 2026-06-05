@@ -33,7 +33,7 @@ onMounted(() => {
   <BaseModal
     :show="show"
     :type="isSmallScreen ? 'fullscreen' : 'center'"
-    :max-width="isSmallScreen ? '100dvw' : '650px'"
+    :max-width="isSmallScreen ? '100dvw' : '850px'"
     :height="isSmallScreen ? '100dvh' : 'auto'"
     variant="retro"
     padding="raw"

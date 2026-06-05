@@ -159,7 +159,7 @@ const TRAINER_PHRASES: Record<string, string[]> = {
   ],
   relajado: [
     "Bueno, no hay prisa... hagamos un combate tranquilo, ¿te parece?",
-    "Ganar o perder da igual, lo importante es disfrutar del paisaje.",
+    "Ganar o perder da igual, lo important es disfrutar del paisaje.",
     "Qué pereza... pero en fin, un combate rápido no viene mal.",
     "Tomémonos las cosas con calma... ¡mis Pokémon van a su propio ritmo!",
     "¿Combatir? Claro, por qué no... después de una buena siesta.",
@@ -192,7 +192,14 @@ const TRAINER_PERSONALITIES: Record<string, string[]> = {
   medium: ["misterioso", "inteligente"],
   motorista: ["agresivo", "competitivo"],
   montanero: ["relajado", "audaz"],
-  police: ["competitivo", "inteligente"]
+  police: ["competitivo", "inteligente"],
+  rocket: ["agresivo", "competitivo"],
+  criador: ["relajado", "entusiasta"],
+  aristocrata: ["inteligente", "relajado"],
+  ranger: ["audaz", "relajado"],
+  pokefan: ["entusiasta", "timido"],
+  artista: ["misterioso", "entusiasta"],
+  trainers: ["competitivo", "inteligente"]
 };
 
 // Precompute combined phrases for each trainer type key at module loading time

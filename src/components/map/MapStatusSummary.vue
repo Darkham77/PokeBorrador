@@ -156,7 +156,7 @@ const bannerStyle = computed(() => ({
       <div class="pc-banner-grid">
         <!-- 1. Evento -->
         <div
-          v-gsap-hover="{ scale: 1.02, y: -4, duration: 0.25 }"
+          v-gsap-hover="{ y: -4, duration: 0.25 }"
           class="pc-banner event-banner"
           :class="{ active: rivalEventActive }"
           :style="{ '--card-seed': 0.2 }"
@@ -185,7 +185,7 @@ const bannerStyle = computed(() => ({
 
         <!-- 2. Misiones -->
         <div
-          v-gsap-hover="{ scale: 1.02, y: -4, duration: 0.25 }"
+          v-gsap-hover="{ y: -4, duration: 0.25 }"
           class="pc-banner"
           @click.stop="emit('openTab', 'daycare-missions')"
         >
@@ -211,9 +211,9 @@ const bannerStyle = computed(() => ({
                   class="sprite-container"
                 >
                   <img
-                    :src="getAssetUrl(ASSET_TYPES.TRAINER, spriteId, { trainerSuffix: 'avatar' })"
+                    :src="getAssetUrl(ASSET_TYPES.TRAINER, spriteId)"
                     class="pixelated"
-                    @error="(e: Event) => { (e.target as HTMLImageElement).style.display = 'none'; ((e.target as HTMLImageElement).nextSibling as HTMLElement).style.display = 'flex' }"
+                    @error="(e: Event) => { (e.target as HTMLImageElement).style.display = 'none'; ((e.target as HTMLImageElement).nextElementSibling as HTMLElement).style.display = 'flex' }"
                   >
                   <div
                     class="sprite-fallback"
@@ -235,7 +235,7 @@ const bannerStyle = computed(() => ({
 
         <!-- 3. Gimnasios -->
         <div
-          v-gsap-hover="{ scale: 1.02, y: -4, duration: 0.25 }"
+          v-gsap-hover="{ y: -4, duration: 0.25 }"
           class="pc-banner"
           @click.stop="emit('openTab', 'gyms')"
         >
@@ -255,13 +255,17 @@ const bannerStyle = computed(() => ({
                 class="pc-banner-spawns"
               >
                 <!-- Limit to 4 sprites + counter -->
-                <img
+                <div
                   v-for="(spriteId, i) in gymSprites.slice(0, 4)"
                   :key="i"
-                  :src="getAssetUrl(ASSET_TYPES.TRAINER, spriteId, { trainerSuffix: 'avatar' })"
-                  class="pixelated"
-                  @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
+                  class="sprite-container"
                 >
+                  <img
+                    :src="getAssetUrl(ASSET_TYPES.TRAINER, spriteId)"
+                    class="pixelated"
+                    @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
+                  >
+                </div>
                 <div 
                   v-if="gymSprites.length > 4" 
                   class="sprite-counter"
@@ -275,7 +279,7 @@ const bannerStyle = computed(() => ({
 
         <!-- 4. Crianza -->
         <div
-          v-gsap-hover="{ scale: 1.02, y: -4, duration: 0.25 }"
+          v-gsap-hover="{ y: -4, duration: 0.25 }"
           class="pc-banner"
           @click.stop="emit('openTab', 'daycare')"
         >

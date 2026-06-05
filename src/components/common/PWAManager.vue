@@ -1,34 +1,6 @@
 <template>
   <div class="pwa-manager-container">
-    <!-- 1. Modal de Instalación (Proactivo antes del Login) -->
-    <BaseModal
-      :show="showInstallModal"
-      title="INSTALAR APP"
-      variant="retro"
-      :show-close-button="true"
-      @close="closeInstallModal"
-    >
-      <div class="pwa-modal-content">
-        <div class="pwa-icon-large">
-          <img
-            src="/assets/fondo/logo 3.webp"
-            alt="Poké Vicio Logo"
-            @error="e => { (e.target as HTMLImageElement).style.display = 'none' }"
-          >
-        </div>
-        <p class="pwa-description">
-          ¡Juega a Poké Vicio en pantalla completa instalando la WebApp oficial!
-        </p>
-        <button
-          class="pv-button-retro"
-          @click.stop="handleInstall"
-        >
-          INSTALAR AHORA
-        </button>
-      </div>
-    </BaseModal>
-
-    <!-- 2. Modal de Permisos (Sonido y Notificaciones) -->
+    <!-- 1. Modal de Permisos (Sonido y Notificaciones) -->
     <BaseModal
       :show="showPermissionsModal"
       title="PERMISOS REQUERIDOS"
@@ -62,9 +34,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, watch, type Ref } from 'vue'
-import { gsap } from 'gsap'
-import { usePWA } from '@/composables/usePWA'
+import { ref, watch, onMounted, onUnmounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useAudioStore } from '@/stores/audio'
 import { useLoadingStore } from '@/stores/loading'
@@ -76,39 +46,7 @@ const authStore = useAuthStore()
 const audioStore = useAudioStore()
 const loadingStore = useLoadingStore()
 
-const { 
-  canInstall, 
-  installApp
-} = usePWA() as { 
-  canInstall: Ref<boolean>; 
-  installApp: () => Promise<boolean>;
-}
-
-const showInstallModal = ref(false)
 const showPermissionsModal = ref(false)
-
-// Gestión de Instalación
-watch(canInstall, (val) => {
-  if (val && !authStore.user) {
-    // Si podemos instalar y no está logueado, sugerimos instalación
-    const dismissed = localStorage.getItem('pwa_install_dismissed')
-    if (!dismissed) {
-      showInstallModal.value = true
-    }
-  }
-})
-
-const closeInstallModal = () => {
-  showInstallModal.value = false
-  localStorage.setItem('pwa_install_dismissed', Temporal.Now.instant().epochMilliseconds.toString())
-}
-
-const handleInstall = async () => {
-  const success = await installApp()
-  if (success) {
-    showInstallModal.value = false
-  }
-}
 
 // Gestión de Permisos
 const checkPermissions = () => {
@@ -170,12 +108,6 @@ const handleForceUpdate = () => {
 
 onMounted(() => {
   gameBus.on('FORCE_PWA_UPDATE', handleForceUpdate)
-  // Pequeño delay para no abrumar al cargar
-  gsap.delayedCall(2, () => {
-    if (canInstall.value && !authStore.user) {
-      showInstallModal.value = true
-    }
-  })
 })
 
 onUnmounted(() => {

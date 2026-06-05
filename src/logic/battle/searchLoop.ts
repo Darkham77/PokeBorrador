@@ -10,6 +10,7 @@ import type { MapLocation } from '@/types/encounters'
 import { logger } from '../utils/logger.ts'
 import type { Pokemon } from '@/types/pokemon'
 import { nextTick } from 'vue'
+import { getSpritesForArchetype } from '@/logic/utils/npcSpriteRouter'
 
 /**
  * Handles the completion of a battle flow (either going to map or search loop).
@@ -126,14 +127,25 @@ export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'm
             'domador': { name: 'Domador', sprite: 'tamer', pool: ['growlithe', 'vulpix', 'ponyta', 'ekans'] },
             'medium': { name: 'Médium', sprite: 'psychic', pool: ['abra', 'drowzee'] },
             'motorista': { name: 'Motorista', sprite: 'biker', pool: ['koffing', 'grimer', 'rattata'] },
-            'montanero': { name: 'Montañero', sprite: 'hiker', pool: ['geodude', 'sandshrew', 'rhyhorn'] }
+            'montanero': { name: 'Montañero', sprite: 'hiker', pool: ['geodude', 'sandshrew', 'rhyhorn'] },
+            'rocket': { name: 'Recluta Rocket', sprite: 'rocketgrunt', pool: ['koffing', 'ekans', 'zubat', 'rattata', 'meowth', 'drowzee', 'machop', 'grimer'] },
+            'criador': { name: 'Criador Pokémon', sprite: 'pokemonbreeder', pool: ['eevee', 'pidgey', 'oddish', 'bellsprout', 'growlithe', 'poliwag', 'caterpie', 'weedle'] },
+            'aristocrata': { name: 'Aristócrata', sprite: 'gentleman', pool: ['meowth', 'growlithe', 'eevee', 'clefairy', 'jigglypuff', 'vulpix'] },
+            'ranger': { name: 'Ranger Pokémon', sprite: 'pokemonranger', pool: ['nidoran_f', 'nidoran_m', 'oddish', 'bellsprout', 'paras', 'tangela', 'exeggcute'] },
+            'pokefan': { name: 'Pokéfan', sprite: 'pokefan', pool: ['pikachu', 'jigglypuff', 'clefairy', 'meowth', 'eevee', 'psyduck'] },
+            'artista': { name: 'Artista', sprite: 'artist', pool: ['bellsprout', 'vulpix', 'oddish', 'jigglypuff', 'clefairy'] },
+            'trainers': { name: 'Entrenador Élite', sprite: 'youngster-masters', pool: ['dragonite', 'charizard', 'alakazam', 'machamp', 'gengar', 'lapras'] }
           } as const
           const keys = Object.keys(TRAINER_TYPES) as Array<keyof typeof TRAINER_TYPES>
           const typeKey = keys[Math.floor(Math.random() * keys.length)] || 'caza_bichos'
           const t = TRAINER_TYPES[typeKey]
-          
           tName = t.name
-          tSprite = t.sprite
+          const availableSprites = getSpritesForArchetype(typeKey)
+          const chosenSprite = availableSprites[Math.floor(Math.random() * availableSprites.length)]
+          if (!chosenSprite) {
+            throw new Error(`[searchLoop] Failed to find sprites for archetype: ${typeKey}`)
+          }
+          tSprite = chosenSprite
           tQuote = getRandomQuoteForTrainer(typeKey)
           const trainerLv = baseLv + 2
           const teamSize = Math.floor(Math.random() * 3) + 1

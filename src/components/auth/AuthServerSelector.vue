@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { nextTick } from 'vue'
 import { gsap } from 'gsap'
 
 interface Props {
@@ -16,7 +17,7 @@ function handleServerTabEnter(e: MouseEvent) {
   if (!tab.classList.contains('active')) {
     gsap.to(tab, {
       color: 'var(--blue)',
-      backgroundColor: 'Rgba(59, 139, 255, 0.08)',
+      backgroundColor: 'rgba(59, 139, 255, 0.08)',
       duration: 0.2
     })
   }
@@ -33,8 +34,10 @@ function handleServerTabLeave(e: MouseEvent) {
   }
 }
 
-function selectTab(value: string) {
+async function selectTab(value: string) {
   emit('update:modelValue', value)
+  await nextTick()
+  gsap.killTweensOf('.login-server-tab')
   gsap.set('.login-server-tab', { clearProps: 'all' })
 }
 </script>

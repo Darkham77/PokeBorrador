@@ -373,6 +373,124 @@ for (const [key, prefix] of [
   await fs.writeFile(databasePath, databaseContent, 'utf-8');
   console.log(styleText('green', `   [OK] Base de datos de anclaje generada con éxito (${Object.keys(pokemonFeetDatabase).length} sprites precalculados).`));
 
+  // Autogenerar catálogo de sprites de NPC/Entrenadores por arquetipo en src/data/npcSpriteCatalog.ts
+  console.log(styleText('yellow', `\n   📦 Generando catálogo de sprites de NPCs en src/data/npcSpriteCatalog.ts...`));
+  const npcCatalogPath = path.resolve(process.cwd(), 'src', 'data', 'npcSpriteCatalog.ts');
+  
+  const ARCHETYPE_KEYWORDS_LOCAL = {
+    trainers: ['master'],
+    caza_bichos: ['bugcatcher', 'bugmaniac', 'bug', 'bichos', 'cazabichos'],
+    ornitologo: ['birdkeeper', 'ornitologo', 'pajaro'],
+    cientifico: ['scientist', 'supernerd', 'cientifico', 'nerd', 'doctor'],
+    luchador: ['blackbelt', 'battlegirl', 'crushgirl', 'luchador', 'fight', 'crasherwake', 'bea', 'bruno', 'chuck'],
+    pescador: ['fisherman', 'fisher', 'pescador', 'marlon'],
+    nadador: ['swimmer', 'nadador', 'diver', 'freediver'],
+    domador: ['tamer', 'domador', 'roughneck', 'tamer-gen3'],
+    medium: ['psychic', 'medium', 'channeler', 'hexmaniac', 'sabrina', 'morty', 'ghost', 'furisodegirl'],
+    motorista: ['biker', 'cueball', 'delinquent', 'punk', 'motorista', 'hooligan'],
+    montanero: ['hiker', 'ruinmaniac', 'montanero', 'brock', 'roark', 'clay'],
+    rocket: ['rocket', 'grunt', 'giovanni', 'petrel', 'proton', 'ariana', 'archer', 'rainbowrocket'],
+    criador: ['breeder', 'criador', 'nursery', 'nurseryaide', 'caretaker'],
+    aristocrata: ['gentleman', 'lady', 'madame', 'richboy', 'butler'],
+    ranger: ['ranger', 'pokemonranger'],
+    pokefan: ['pokefan', 'pokekid'],
+    artista: ['beauty', 'artist', 'dancer', 'model'],
+    default: ['youngster', 'lass', 'camper', 'picnicker', 'schoolkid', 'entrenador', 'player', 'rival', 'blue', 'red']
+  };
+
+  const catalogLists: Record<string, string[]> = {
+    caza_bichos: [],
+    ornitologo: [],
+    cientifico: [],
+    luchador: [],
+    pescador: [],
+    nadador: [],
+    domador: [],
+    medium: [],
+    motorista: [],
+    montanero: [],
+    rocket: [],
+    criador: [],
+    aristocrata: [],
+    ranger: [],
+    pokefan: [],
+    artista: [],
+    trainers: [],
+    default: []
+  };
+
+  const npcSourceDir = path.resolve(SOURCE_DIR, 'public', 'assets', 'sprites', 'npc');
+
+  async function scanAndClassify(dirPath: string) {
+    try {
+      const entries = await fs.readdir(dirPath);
+      for (const entry of entries) {
+        const ext = path.extname(entry).toLowerCase();
+        if (['.png', '.jpg', '.jpeg', '.webp'].includes(ext)) {
+          // Filtrar cualquier avatar o back (solo queremos cuerpo completo front)
+          if (/_avatar|_back/i.test(entry)) continue;
+
+          const baseName = path.parse(entry).name;
+          const normalized = baseName.toLowerCase().replace(/[-_]/g, '');
+
+          // Clasificación
+          let classified = false;
+          for (const [archetype, keywords] of Object.entries(ARCHETYPE_KEYWORDS_LOCAL)) {
+            for (const keyword of keywords) {
+              if (normalized.includes(keyword)) {
+                if (keyword === 'bea' && normalized.includes('beauty')) continue;
+                catalogLists[archetype]!.push(baseName);
+                classified = true;
+                break;
+              }
+            }
+            if (classified) break;
+          }
+
+          if (!classified) {
+            // Heurísticas fallback
+            if (['acerola', 'allister', 'fantina'].some(n => normalized.includes(n))) {
+              catalogLists.medium!.push(baseName);
+            } else if (['adaman', 'irida', 'arezu', 'mai'].some(n => normalized.includes(n))) {
+              catalogLists.default!.push(baseName);
+            } else if (['lance', 'drake', 'dragontamer'].some(n => normalized.includes(n))) {
+              catalogLists.domador!.push(baseName);
+            } else if (['koga', 'janine', 'ninja'].some(n => normalized.includes(n))) {
+              catalogLists.luchador!.push(baseName);
+            } else {
+              catalogLists.default!.push(baseName);
+            }
+          }
+        }
+      }
+    } catch (err) {
+      console.log(styleText('yellow', `   ⚠️ Warning: No se pudo escanear el directorio ${dirPath}: ${(err as Error).message}`));
+    }
+  }
+
+  await scanAndClassify(npcSourceDir);
+
+  // Ordenar y eliminar duplicados de cada lista
+  for (const key of Object.keys(catalogLists)) {
+    catalogLists[key] = Array.from(new Set(catalogLists[key])).sort();
+    // Prevenir listas vacías con un fallback default por si acaso
+    if (catalogLists[key]!.length === 0) {
+      catalogLists[key] = key === 'default' ? ['entrenador_h_front'] : ['entrenador_h_front'];
+    }
+  }
+
+  const npcCatalogContent = `/**
+ * src/data/npcSpriteCatalog.ts
+ * 
+ * ARCHIVO AUTOGENERADO POR scripts/convert_assets.ts - NO MODIFICAR MANUALMENTE
+ */
+
+export const ARCHETYPE_SPRITES = ${JSON.stringify(catalogLists)} as const;
+`;
+
+  await fs.writeFile(npcCatalogPath, npcCatalogContent, 'utf-8');
+  console.log(styleText('green', `   [OK] Catálogo de sprites de NPCs generado con éxito en src/data/npcSpriteCatalog.ts.`));
+
   console.log(styleText('bold', '\n✨ Proceso de assets finalizado.\n'));
 }
 
