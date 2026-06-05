@@ -58,54 +58,15 @@
         </button>
       </div>
     </BaseModal>
-
-    <!-- 3. Aviso de Actualización -->
-    <BaseModal
-      :show="needRefresh && !isAppLoading"
-      title="NUEVA VERSIÓN"
-      variant="retro"
-      :prevent-close="true"
-      :show-close-button="false"
-    >
-      <div class="pwa-modal-content">
-        <p class="pwa-description">
-          ¡Hay una nueva actualización disponible! Es necesario actualizar para mantener la compatibilidad con el servidor.
-        </p>
-        <div class="update-warning">
-          Se guardará tu progreso antes de reiniciar.
-        </div>
-        
-        <div
-          v-if="isUpdating"
-          class="pwa-progress-wrapper"
-        >
-          <div class="pwa-progress-container">
-            <div
-              class="pwa-progress-bar"
-              :style="{ width: `${progress}%` }"
-            />
-          </div>
-          <span class="pwa-progress-text">{{ progressText }}</span>
-        </div>
-        <button
-          v-else
-          class="pv-button-retro"
-          @click.stop="handleUpdate"
-        >
-          ACTUALIZAR AHORA
-        </button>
-      </div>
-    </BaseModal>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, watch, computed, type Ref } from 'vue'
+import { ref, onMounted, onUnmounted, watch, type Ref } from 'vue'
 import { gsap } from 'gsap'
 import { usePWA } from '@/composables/usePWA'
 import { useAuthStore } from '@/stores/auth'
 import { useAudioStore } from '@/stores/audio'
-import { useGameStore } from '@/stores/game'
 import { useLoadingStore } from '@/stores/loading'
 import { logger } from '@/logic/utils/logger'
 import { gameBus } from '@/logic/gameBus'
@@ -113,36 +74,18 @@ import BaseModal from './BaseModal.vue'
 
 const authStore = useAuthStore()
 const audioStore = useAudioStore()
-const gameStore = useGameStore()
 const loadingStore = useLoadingStore()
 
 const { 
   canInstall, 
-  installApp, 
-  needRefresh, 
-  isUpdating, 
-  progress, 
-  progressText, 
-  handleUpdate 
+  installApp
 } = usePWA() as { 
   canInstall: Ref<boolean>; 
-  installApp: () => Promise<boolean>; 
-  needRefresh: Ref<boolean>; 
-  isUpdating: Ref<boolean>;
-  progress: Ref<number>;
-  progressText: Ref<string>;
-  handleUpdate: () => Promise<void>;
+  installApp: () => Promise<boolean>;
 }
 
 const showInstallModal = ref(false)
 const showPermissionsModal = ref(false)
-
-const isAppLoading = computed(() => {
-  if (authStore.user) {
-    return !gameStore.isReady || !loadingStore.isGateOpen
-  }
-  return !loadingStore.isGateOpen
-})
 
 // Gestión de Instalación
 watch(canInstall, (val) => {
@@ -209,12 +152,6 @@ const handlePermissions = async () => {
   showPermissionsModal.value = false
 }
 
-
-const handleNeedRefresh = () => {
-  logger.info('PWA', 'Received PWA_NEED_REFRESH from GameBus. Showing update modal.')
-  needRefresh.value = true
-}
-
 const handleForceUpdate = () => {
   logger.info('PWA', 'Received FORCE_PWA_UPDATE from GameBus. Unregistering SW and reloading to force update...')
   if ('serviceWorker' in navigator) {
@@ -233,7 +170,6 @@ const handleForceUpdate = () => {
 
 onMounted(() => {
   gameBus.on('FORCE_PWA_UPDATE', handleForceUpdate)
-  gameBus.on('PWA_NEED_REFRESH', handleNeedRefresh)
   // Pequeño delay para no abrumar al cargar
   gsap.delayedCall(2, () => {
     if (canInstall.value && !authStore.user) {
@@ -244,7 +180,6 @@ onMounted(() => {
 
 onUnmounted(() => {
   gameBus.off('FORCE_PWA_UPDATE', handleForceUpdate)
-  gameBus.off('PWA_NEED_REFRESH', handleNeedRefresh)
 })
 </script>
 
@@ -306,13 +241,6 @@ onUnmounted(() => {
   }
 }
 
-.update-warning {
-  font-size: 11px;
-  color: var(--yellow);
-  font-style: italic;
-  opacity: 0.8;
-}
-
 .pv-button-retro {
   @include pixelated;
   background: var(--yellow);
@@ -335,38 +263,5 @@ onUnmounted(() => {
     transform: Translatey(2px);
     box-shadow: 0 0 0 #b39200;
   }
-}
-
-.pwa-progress-wrapper {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-}
-
-.pwa-progress-container {
-  width: 100%;
-  height: 16px;
-  background: Rgba(0, 0, 0, 0.5);
-  border: 2px solid var(--yellow);
-  border-radius: 4px;
-  overflow: hidden;
-  position: relative;
-}
-
-.pwa-progress-bar {
-  height: 100%;
-  background: linear-gradient(90deg, var(--yellow) 0%, #ffc107 100%);
-  box-shadow: 0 0 8px var(--yellow);
-  
-}
-
-.pwa-progress-text {
-  font-family: 'Press Start 2P', monospace;
-  font-size: 8px;
-  color: #fff;
-  text-shadow: 1px 1px 0 #000;
-  @include pixelated;
 }
 </style>
