@@ -16,11 +16,27 @@ const props = withDefaults(defineProps<Props>(), {
   history: () => []
 })
 
-
 const isHistoryOpen = computed({
   get: () => uiStore.isHistoryOpen,
   set: (val: boolean) => { uiStore.isHistoryOpen = val }
 })
+
+/** Returns the best available icon from a potentially legacy-shaped entry. */
+function getIcon(n: NotificationItem): string {
+  const metaIcon = n.meta?.['icon']
+  if (typeof metaIcon === 'string' && metaIcon) return metaIcon
+  return '🔔'
+}
+
+/** Returns the display text, falling back to message. */
+function getText(n: NotificationItem): string {
+  return n.message ?? ''
+}
+
+/** Returns the best available timestamp. */
+function getTimestamp(n: NotificationItem): number {
+  return n.timestamp ?? 0
+}
 </script>
 
 <template>
@@ -46,13 +62,18 @@ const isHistoryOpen = computed({
         :key="n.id"
         class="notification-entry-legacy"
       >
-        <span class="notif-icon">{{ (n.meta?.icon as string) || '🔔' }}</span>
+        <span class="notif-icon">{{ getIcon(n) }}</span>
         <div class="notif-body">
           <div class="notif-text">
-            <strong>{{ n.title }}</strong>: {{ n.message }}
+            <template v-if="n.title">
+              <strong>{{ n.title }}</strong>: {{ getText(n) }}
+            </template>
+            <template v-else>
+              {{ getText(n) }}
+            </template>
           </div>
           <div class="notif-time">
-            {{ formatTime(n.timestamp) }}
+            {{ formatTime(getTimestamp(n)) }}
           </div>
         </div>
       </div>
