@@ -96,7 +96,7 @@ body .pixelated {
 }
 
 // Crisp nearest-neighbor interpolation for game elements only
-img, canvas, .pixelated-img, .sprite, [class*="sprite-"] {
+img, canvas, .pixelated-img, .sprite, [class*="sprite-"], .banner-bg, [class*="-banner"] {
   image-rendering: -webkit-optimize-contrast !important;
   #{"image-rendering"}: crisp-edges !important;
   image-rendering: pixelated !important;

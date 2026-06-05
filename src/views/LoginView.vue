@@ -69,7 +69,7 @@ const handleLogin = async () => {
   error.value = null
   try {
     await authStore.login(email.value, password.value)
-    window.location.href = import.meta.env.BASE_URL
+    window.location.replace(import.meta.env.BASE_URL)
   } catch (err: unknown) {
     error.value = getFriendlyErrorMessage(err)
   } finally {
@@ -138,7 +138,7 @@ const handleLocalLogin = async () => {
   try {
     await authStore.localLogin(username.value)
     gsap.delayedCall(0.8, () => {
-      window.location.href = import.meta.env.BASE_URL
+      window.location.replace(import.meta.env.BASE_URL)
     })
   } catch (_err) {
     error.value = 'Error al entrar en modo local'

@@ -78,9 +78,13 @@ router.beforeEach(async (to, _from) => {
   // 3. Preventative cleaning for direct access to /login
   if (to.path === '/login') {
     if (authStore.user) {
-      logger.info('Router', 'Usuario logueado intentando entrar a /login. Forzando logout limpio.');
+      if (_from.name) {
+        logger.info('Router', 'Usuario logueado intentando entrar a /login vía gestos/historial. Redirigiendo al juego.');
+        return '/';
+      }
+      logger.warn('Router', 'Usuario logueado intentando entrar a /login de forma directa. Forzando logout limpio.');
       authStore.logout(); // Deep logout handles clean redirect via page reload
-      return false;
+      return true;
     } else {
       safeStorage.removeItem('pokevicio_local_user');
       safeStorage.removeItem('pokevicio_session_mode');

@@ -51,9 +51,9 @@ export async function adminSupabaseUsers() {
   const newEmailArg = getArg('--new-email');
   const usernameArg = getArg('--username');
 
-  if (!serverArg || !actionArg || !emailArg) {
+  if (!serverArg || !actionArg || (!emailArg && !usernameArg)) {
     console.log(styleText('yellow', '⚠️  Faltan argumentos obligatorios. Uso requerido:'));
-    console.log(styleText('cyan', `npm run servers:db:admin -- --server=<perfil> --action=<accion> --email=<email>`));
+    console.log(styleText('cyan', `npm run servers:db:admin -- --server=<perfil> --action=<accion> [--email=<email> | --username=<username>]`));
     console.log(styleText('gray', '\nAcciones disponibles:'));
     console.log(styleText('gray', '  --action=unban             : Desbanea una cuenta de usuario.'));
     console.log(styleText('gray', '  --action=set-password      : Cambia la contraseña (requiere --password=<nueva_pass>).'));
@@ -99,36 +99,63 @@ export async function adminSupabaseUsers() {
   const sql = postgres(dbUrl, { ssl: isSupabaseCloud ? 'require' : false, max: 1 });
 
   try {
-    console.log(styleText('cyan', `👤 Usuario objetivo: ${emailArg}`));
+    let targetEmail = emailArg || null;
+    let targetUsername = usernameArg || null;
+
+    // Resolver identificadores desde la base de datos si falta alguno
+    if (targetUsername && !targetEmail) {
+      const existing = await sql`
+        SELECT email FROM public.profiles WHERE username = ${targetUsername} LIMIT 1;
+      `;
+      if (existing.length > 0 && existing[0]?.email) {
+        targetEmail = existing[0].email;
+      }
+    } else if (targetEmail && !targetUsername) {
+      const existing = await sql`
+        SELECT username FROM public.profiles WHERE email = ${targetEmail} LIMIT 1;
+      `;
+      if (existing.length > 0 && existing[0]?.username) {
+        targetUsername = existing[0].username;
+      }
+    }
+
+    const displayName = targetEmail || targetUsername || '';
+    console.log(styleText('cyan', `👤 Identificador objetivo: ${displayName}`));
 
     if (actionArg === 'unban') {
       const res = await sql`
         UPDATE public.profiles
         SET is_banned = false, ban_reason = NULL
-        WHERE email = ${emailArg};
+        WHERE email = ${targetEmail} OR username = ${targetUsername};
       `;
       if (res.count === 0) {
-        console.log(styleText('yellow', `⚠️  No se encontró ningún usuario con el correo "${emailArg}" en la tabla profiles.`));
+        console.log(styleText('yellow', `⚠️  No se encontró ningún usuario con "${displayName}" en la tabla profiles.`));
       } else {
-        console.log(styleText('green', `✔️ Cuenta de "${emailArg}" desbaneada exitosamente.`));
+        console.log(styleText('green', `✔️ Cuenta de "${displayName}" desbaneada exitosamente.`));
       }
 
     } else if (actionArg === 'set-password') {
+      if (!targetEmail) {
+        throw new Error('La acción set-password requiere un correo electrónico asociado al usuario.');
+      }
       if (!passwordArg) {
         throw new Error('La acción set-password requiere el argumento --password=<nueva_pass>');
       }
       const res = await sql`
         UPDATE auth.users
         SET encrypted_password = crypt(${passwordArg}, gen_salt('bf'))
-        WHERE email = ${emailArg};
+        WHERE email = ${targetEmail};
       `;
       if (res.count === 0) {
-        console.log(styleText('yellow', `⚠️  No se encontró ningún usuario con el correo "${emailArg}" en auth.users.`));
+        console.log(styleText('yellow', `⚠️  No se encontró ningún usuario con el correo "${targetEmail}" en auth.users.`));
       } else {
-        console.log(styleText('green', `✔️ Contraseña de "${emailArg}" actualizada exitosamente.`));
+        console.log(styleText('green', `✔️ Contraseña de "${targetEmail}" actualizada exitosamente.`));
       }
 
     } else if (actionArg === 'set-email') {
+      if (!targetEmail) {
+        throw new Error('La acción set-email requiere un correo actual.');
+      }
       if (!newEmailArg) {
         throw new Error('La acción set-email requiere el argumento --new-email=<nuevo_email>');
       }
@@ -136,21 +163,24 @@ export async function adminSupabaseUsers() {
         const resAuth = await tx`
           UPDATE auth.users
           SET email = ${newEmailArg}, email_confirmed_at = NOW()
-          WHERE email = ${emailArg};
+          WHERE email = ${targetEmail};
         `;
         const resProfile = await tx`
           UPDATE public.profiles
           SET email = ${newEmailArg}
-          WHERE email = ${emailArg};
+          WHERE email = ${targetEmail};
         `;
         if (resAuth.count === 0 && resProfile.count === 0) {
-          console.log(styleText('yellow', `⚠️  No se encontró ningún usuario con el correo "${emailArg}".`));
+          console.log(styleText('yellow', `⚠️  No se encontró ningún usuario con el correo "${targetEmail}".`));
         } else {
-          console.log(styleText('green', `✔️ Correo actualizado exitosamente de "${emailArg}" a "${newEmailArg}".`));
+          console.log(styleText('green', `✔️ Correo actualizado exitosamente de "${targetEmail}" a "${newEmailArg}".`));
         }
       });
 
     } else if (actionArg === 'set-username') {
+      if (!targetEmail) {
+        throw new Error('La acción set-username requiere un correo electrónico asociado al usuario.');
+      }
       if (!usernameArg) {
         throw new Error('La acción set-username requiere el argumento --username=<nombre>');
       }
@@ -158,12 +188,12 @@ export async function adminSupabaseUsers() {
         const res = await sql`
           UPDATE public.profiles
           SET username = ${usernameArg}
-          WHERE email = ${emailArg};
+          WHERE email = ${targetEmail};
         `;
         if (res.count === 0) {
-          console.log(styleText('yellow', `⚠️  No se encontró ningún usuario con el correo "${emailArg}" en la tabla profiles.`));
+          console.log(styleText('yellow', `⚠️  No se encontró ningún usuario con el correo "${targetEmail}" en la tabla profiles.`));
         } else {
-          console.log(styleText('green', `✔️ Nombre de entrenador de "${emailArg}" actualizado exitosamente a "${usernameArg}".`));
+          console.log(styleText('green', `✔️ Nombre de entrenador de "${targetEmail}" actualizado exitosamente a "${usernameArg}".`));
         }
       } catch (uErr: unknown) {
         if ((uErr as Error).message.includes('unique') || (uErr as Error).message.includes('violates unique constraint')) {
@@ -173,15 +203,26 @@ export async function adminSupabaseUsers() {
       }
 
     } else if (actionArg === 'promote') {
-      const res = await sql`
-        UPDATE public.profiles
-        SET role = 'admin'
-        WHERE email = ${emailArg};
-      `;
-      if (res.count === 0) {
-        console.log(styleText('yellow', `⚠️  No se encontró ningún usuario con el correo "${emailArg}" en la tabla profiles.`));
+      let userFound = false;
+      if (targetEmail || targetUsername) {
+        const check = await sql`
+          SELECT id FROM public.profiles 
+          WHERE (${targetEmail}::text IS NOT NULL AND email = ${targetEmail})
+             OR (${targetUsername}::text IS NOT NULL AND username = ${targetUsername});
+        `;
+        userFound = check.length > 0;
+      }
+
+      if (userFound) {
+        await sql`
+          UPDATE public.profiles
+          SET role = 'admin'
+          WHERE (${targetEmail}::text IS NOT NULL AND email = ${targetEmail})
+             OR (${targetUsername}::text IS NOT NULL AND username = ${targetUsername});
+        `;
+        console.log(styleText('green', `✔️ Usuario "${displayName}" promovido exitosamente a rol de ADMINISTRADOR (admin).`));
       } else {
-        console.log(styleText('green', `✔️ Usuario "${emailArg}" promovido exitosamente a rol de ADMINISTRADOR (admin).`));
+        throw new Error(`El usuario "${displayName}" no existe en la base de datos.`);
       }
 
     } else {
