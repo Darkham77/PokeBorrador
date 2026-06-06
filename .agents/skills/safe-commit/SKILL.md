@@ -118,7 +118,9 @@ You MUST run these commands and fix EVERY issue until a clean pass is achieved.
 3.  **Manual Repair Discovery (THE REPORT)**:
     - Review the output of `audit:full` (or the generated report files) again.
     - Identify all warnings/errors that `:fix` DID NOT resolve (e.g., `gpuGaps`, `legacyDates`, `zIndexAudit`).
-    - **Targeted Fallow Audit**: Run `npx fallow audit --changed-since HEAD~1` to audit the changes introduced in this commit (comparing against the pre-snapshot state, since HEAD is the snapshot commit). To prevent context saturation, direct the output to a file inside the `scratch/` directory: `npx fallow audit --changed-since HEAD~1 > scratch/fallow_report.txt`. Use `view_file` to analyze the report and ensure that the modified/introduced code does not introduce new dead code, unused exports, duplication, or excessive complexity.
+    - **Targeted Fallow Audit**: Always compare against the remote main branch on GitHub (`origin/main`) to capture all local unpushed/unverified changes (including the snapshot commit and any bad commits made prior to running `/safe-commit`):
+      - Run `git fetch origin main` to ensure the local ref for `origin/main` is up to date with GitHub.
+      - Run `npx fallow audit --changed-since origin/main` to audit the changes. To prevent context saturation, direct the output to a file inside the `scratch/` directory: `npx fallow audit --changed-since origin/main > scratch/fallow_report.txt`. Use `view_file` to analyze the report and ensure that the modified/introduced code does not introduce new dead code, unused exports, duplication, or excessive complexity.
     - **MANDATORY**: List all these issues, audit warnings, lint errors, AND Fallow recommendations for the modified files in your response to the user as a "Technical Debt Report" before proceeding to fix them manually.
 4.  **Manual Repair Phase**:
     - Fix each identified issue manually in the code.

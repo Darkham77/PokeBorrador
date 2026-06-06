@@ -548,8 +548,10 @@ function getChangedFiles(ref: string): string[] {
 }
 
 interface FallowInstance {
-  path: string;
-  line: number;
+  path?: string;
+  file?: string;
+  line?: number;
+  start_line?: number;
 }
 interface FallowCloneGroup {
   instances: FallowInstance[];
@@ -647,11 +649,13 @@ function mapFallowJson(command: string, data: FallowAuditData): Violation[] {
       if (instances.length > 0) {
         const first = instances[0];
         if (first) {
-          const locations = instances.slice(1).map((i) => `${i.path}:${i.line}`).join(', ');
+          const firstPath = first.file || first.path || '';
+          const firstLine = first.start_line || first.line || 0;
+          const locations = instances.slice(1).map((i) => `${i.file || i.path || ''}:${i.start_line || i.line || 0}`).join(', ');
           violations.push({
-            file: path.resolve(process.cwd(), first.path),
-            line: first.line,
-            message: `Código duplicado crítico: Encontradas ${instances.length} coincidencias de código idéntico. Ubicaciones: ${first.path}:${first.line}, ${locations}`,
+            file: path.resolve(process.cwd(), firstPath),
+            line: firstLine,
+            message: `Código duplicado crítico: Encontradas ${instances.length} coincidencias de código idéntico. Ubicaciones: ${firstPath}:${firstLine}, ${locations}`,
             context: `duplicación (${g.duplicated_tokens} tokens)`,
             severity: 'error',
             fixable: false

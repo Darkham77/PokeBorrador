@@ -112,7 +112,7 @@ export function usePWA() {
     const forceCacheBustingReload = () => {
       try {
         const url = new URL(window.location.href)
-        url.searchParams.set('t', Date.now().toString())
+        url.searchParams.set('t', Temporal.Now.instant().epochMilliseconds.toString())
         window.location.replace(url.toString())
       } catch {
         window.location.reload()

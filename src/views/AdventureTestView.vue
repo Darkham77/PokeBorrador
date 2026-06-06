@@ -853,6 +853,7 @@ function generateTrainerEncounter(mapData: MapLocation) {
   const teamSize = Math.floor(Math.random() * 3) + 1
   
   const enemyTeam: Pokemon[] = []
+  // fallow-ignore-next-line code-duplication
   for (let i = 0; i < teamSize; i++) {
     const pIdBase = t.pool[Math.floor(Math.random() * t.pool.length)] || 'rattata'
     const pId = getEvolvedForm(pIdBase, trainerLv)

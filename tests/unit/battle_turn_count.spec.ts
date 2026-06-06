@@ -6,7 +6,6 @@ import { setActivePinia, createPinia } from 'pinia'
 import { useBattleStore } from '@/stores/battle'
 import { useGameStore } from '@/stores/game'
 import type { Pokemon } from '@/types/pokemon'
-import type { Ref } from 'vue'
 
 // Mock dependencies
 vi.mock('@/logic/services/assetService', () => ({
@@ -119,7 +118,7 @@ describe('Battle Store - Turn Count Logic', () => {
     } as unknown as Pokemon
 
     await battle._startBattle(enemy, { locationId: 'route1', wasSearching: true })
-    expect((battle.fsm.currentState as unknown as Ref<string>).value).toBe('SEARCH_PHASE')
+    expect(battle.currentFsmState).toBe('SEARCH_PHASE')
   })
 })
 
