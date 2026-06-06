@@ -109,10 +109,20 @@ export function usePWA() {
     progress.value = 80
     progressText.value = 'Aplicando actualización...'
     
+    const forceCacheBustingReload = () => {
+      try {
+        const url = new URL(window.location.href)
+        url.searchParams.set('t', Date.now().toString())
+        window.location.replace(url.toString())
+      } catch {
+        window.location.reload()
+      }
+    }
+
     // Fail-safe: force physical reload if SW doesn't reload the page in 3.5 seconds
     gsap.delayedCall(3.5, () => {
       logger.warn('PWA', 'La actualización automática del SW excedió el tiempo límite. Forzando recarga.')
-      window.location.reload()
+      forceCacheBustingReload()
     })
 
     try {
@@ -132,10 +142,10 @@ export function usePWA() {
       }
       progress.value = 100
       progressText.value = 'Reiniciando...'
-      window.location.reload()
+      forceCacheBustingReload()
     } catch (e) {
       logger.error('PWA', `Error al actualizar Service Worker: ${(e as Error).message}`)
-      window.location.reload()
+      forceCacheBustingReload()
     }
   }
 
