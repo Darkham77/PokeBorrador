@@ -21,6 +21,8 @@ import { getEncounterPool } from '@/logic/encounters'
 import { getRouteWeather } from '@/logic/weatherUtils'
 import { BATTLE_STATES } from '@/logic/battle/battleStateMachine'
 import { useAdventureCamera } from '@/composables/adventure/useAdventureCamera'
+import { gsapHover as vGsapHover } from '@/directives/gsapHover'
+import { gsapLoop as vGsapLoop } from '@/directives/gsapLoop'
 import MapCard from '@/components/map/MapCard.vue'
 import ArchaeologyModal from '@/components/modals/ArchaeologyModal.vue'
 import FishingModal from '@/components/modals/FishingModal.vue'
@@ -1413,6 +1415,7 @@ const healActiveTeam = () => {
       <!-- Banner de Advertencia de Equipo sin Pokémon con Vida -->
       <div 
         v-if="!hasHealthyTeam" 
+        v-gsap-loop="'pulse-shadow'"
         class="adv-team-warning-banner"
       >
         <span class="warning-icon">⚠️</span>
@@ -1426,6 +1429,7 @@ const healActiveTeam = () => {
             <button
               v-for="conn in adjacentConnections.left"
               :key="conn.target"
+              v-gsap-hover
               class="adv-manual-btn"
               :disabled="isTraveling || !hasHealthyTeam"
               @click="startManualTravel(conn.target)"
@@ -1451,6 +1455,7 @@ const healActiveTeam = () => {
               <button
                 v-for="conn in adjacentConnections.top"
                 :key="conn.target"
+                v-gsap-hover
                 class="adv-manual-btn"
                 :disabled="isTraveling || !hasHealthyTeam"
                 @click="startManualTravel(conn.target)"
@@ -1490,6 +1495,7 @@ const healActiveTeam = () => {
                 class="adv-card-actions-overlay"
               >
                 <button 
+                  v-gsap-hover
                   class="adv-action-btn explore-btn"
                   :disabled="!hasHealthyTeam"
                   @click="triggerExplore"
@@ -1498,6 +1504,7 @@ const healActiveTeam = () => {
                 </button>
                 <button 
                   v-if="POKEMON_CENTER_NODES.has(originMap)"
+                  v-gsap-hover
                   class="adv-action-btn heal-btn"
                   @click="triggerHeal"
                 >
@@ -1510,6 +1517,7 @@ const healActiveTeam = () => {
               <button
                 v-for="conn in adjacentConnections.bottom"
                 :key="conn.target"
+                v-gsap-hover
                 class="adv-manual-btn"
                 :disabled="isTraveling || !hasHealthyTeam"
                 @click="startManualTravel(conn.target)"
@@ -1535,6 +1543,7 @@ const healActiveTeam = () => {
             <button
               v-for="conn in adjacentConnections.right"
               :key="conn.target"
+              v-gsap-hover
               class="adv-manual-btn"
               :disabled="isTraveling || !hasHealthyTeam"
               @click="startManualTravel(conn.target)"
@@ -1685,7 +1694,7 @@ const healActiveTeam = () => {
                         width: `${Math.max(0, Math.min(100, (pkmn.hp / pkmn.maxHp) * 100))}%`, 
                         backgroundColor: (pkmn.hp / pkmn.maxHp) > 0.5 ? '#4caf50' : (pkmn.hp / pkmn.maxHp) > 0.2 ? '#ff9800' : '#f44336' 
                       }"
-                      style="height: 100%; transition: width 0.3s ease;"
+                      style="height: 100%; /* transition removed for GSAP */"
                     />
                   </div>
                 </div>
@@ -1832,12 +1841,14 @@ const healActiveTeam = () => {
         >
           <div class="adv-zoom-controls">
             <button
+              v-gsap-hover
               class="adv-zoom-btn"
               @click.stop="handleZoomIn"
             >
               ➕
             </button>
             <button
+              v-gsap-hover
               class="adv-zoom-btn"
               @click.stop="handleZoomOut"
             >
@@ -1898,6 +1909,7 @@ const healActiveTeam = () => {
                 }"
               >
                 <div
+                  v-gsap-hover
                   class="adv-mo-icon-bubble"
                   :class="{ 'mo-unlocked': activeHMs.has(edge.mo) }"
                 >
@@ -1926,7 +1938,10 @@ const healActiveTeam = () => {
                   '--world-overlay-scale': worldOverlayScale,
                 }"
               >
-                <div class="adv-pc-icon-bubble">
+                <div
+                  v-gsap-loop="'pulse-shadow'"
+                  class="adv-pc-icon-bubble"
+                >
                   🏥
                 </div>
               </div>
@@ -2205,7 +2220,7 @@ const healActiveTeam = () => {
 <style scoped lang="scss">
 .adv-test-container {
   width: 100%;
-  height: 100vh;
+  height: 100dvh;
   box-sizing: border-box;
   padding: 16px;
   background-color: #0b0c10;
@@ -2213,7 +2228,7 @@ const healActiveTeam = () => {
   font-family: 'Press Start 2P', monospace;
   overflow: hidden;
   position: relative;
-  z-index: 10;
+  z-index: var(--z-map-spawns);
   display: flex;
   flex-direction: column;
 }
@@ -2418,7 +2433,7 @@ const healActiveTeam = () => {
   justify-content: center;
   align-items: center;
   gap: 12px;
-  z-index: 20;
+  z-index: var(--z-map-ui);
   background: Rgba(0, 0, 0, 0.4);
   border-radius: 16px;
   pointer-events: none;
@@ -2438,7 +2453,7 @@ const healActiveTeam = () => {
   font-family: 'Press Start 2P', monospace;
   font-size: 10px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  /* transition removed for GSAP */
   box-shadow: 0 4px 0 #1f2833;
 
   &:hover {
@@ -2509,7 +2524,7 @@ const healActiveTeam = () => {
   align-items: center;
   gap: 4px;
   min-width: 80px;
-  transition: all 0.2s ease;
+  /* transition removed for GSAP */
   font-family: 'Press Start 2P', monospace;
 
   &:hover:not(:disabled) {
@@ -2623,17 +2638,17 @@ const healActiveTeam = () => {
   width: 100%;
   height: 100%;
   pointer-events: none;
-  z-index: 1;
+  z-index: var(--z-map-floor);
 }
 
 .adv-map-card-node {
   position: absolute;
-  z-index: 2;
-  transition: transform 0.2s;
+  z-index: calc(var(--z-map-floor) + 1);
+  /* transition removed for GSAP */
   pointer-events: auto;
   
   &.is-current {
-    z-index: 10;
+    z-index: var(--z-map-spawns);
     transform: Scale(1.05);
     box-shadow: 0 0 20px Rgba(69, 243, 255, 0.5);
   }
@@ -2646,7 +2661,7 @@ const healActiveTeam = () => {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  z-index: 10;
+  z-index: var(--z-map-spawns);
 }
 
 .adv-zoom-btn {
@@ -2662,7 +2677,7 @@ const healActiveTeam = () => {
   justify-content: center;
   font-size: 14px;
   box-shadow: 0 4px 0 #1f2833;
-  transition: all 0.1s;
+  /* transition removed for GSAP */
   &:hover {
     background-color: #2a3444;
     transform: Translatey(-2px);
@@ -2794,7 +2809,7 @@ const healActiveTeam = () => {
   stroke-width: 14; /* Ancho cómodo de carretera */
   stroke-linecap: round;
   opacity: 0.6;
-  transition: stroke 0.3s, stroke-width 0.3s, opacity 0.3s;
+  /* transition removed for GSAP */
 }
 .edge-line.edge-on-path {
   stroke: #eab308; /* Oro/amarillo brillante para el viaje */
@@ -2821,7 +2836,7 @@ const healActiveTeam = () => {
 .adv-mo-obstacle-overlay {
   position: absolute;
   transform: Translate(-50%, -50%) Scale(var(--world-overlay-scale, 1));
-  z-index: 5;
+  z-index: var(--z-map-grass-back);
   pointer-events: auto;
 }
 
@@ -2836,7 +2851,7 @@ const healActiveTeam = () => {
   justify-content: center;
   cursor: pointer;
   box-shadow: 0 4px 10px Rgba(0, 0, 0, 0.5);
-  transition: transform 0.2s ease, border-color 0.3s, box-shadow 0.3s;
+  /* transition removed for GSAP */
   position: relative;
 
   &:hover {
@@ -2861,7 +2876,7 @@ const healActiveTeam = () => {
 .adv-pokemon-center-overlay {
   position: absolute;
   transform: Translate(-50%, -50%) Scale(var(--world-overlay-scale, 1));
-  z-index: 6;
+  z-index: calc(var(--z-map-grass-back) + 1);
   pointer-events: none;
 }
 
@@ -2876,19 +2891,7 @@ const healActiveTeam = () => {
   justify-content: center;
   font-size: 16px;
   box-shadow: 0 0 15px Rgba(255, 105, 180, 0.8), inset 0 0 10px Rgba(255, 255, 255, 0.5);
-  animation: pulse-pink 1.5s infinite;
-}
-
-@keyframes pulse-pink {
-  0% {
-    box-shadow: 0 0 0 0 rgba(255, 105, 180, 0.7), inset 0 0 10px rgba(255, 255, 255, 0.5);
-  }
-  70% {
-    box-shadow: 0 0 0 15px rgba(255, 105, 180, 0), inset 0 0 10px rgba(255, 255, 255, 0.5);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(255, 105, 180, 0), inset 0 0 10px rgba(255, 255, 255, 0.5);
-  }
+  /* animation removed */
 }
 
 .adv-mo-tooltip {
@@ -2907,10 +2910,10 @@ const healActiveTeam = () => {
   line-height: 1.4;
   opacity: 0;
   visibility: hidden;
-  transition: opacity 0.2s, transform 0.2s, visibility 0.2s;
+  /* transition removed for GSAP */
   pointer-events: none;
   box-shadow: 0 6px 20px Rgba(0,0,0,0.8);
-  z-index: 100;
+  z-index: var(--z-modal-step);
   text-align: center;
 
   .tooltip-title {
@@ -2931,8 +2934,8 @@ const healActiveTeam = () => {
 /* ─── Map Nodes (Cards) ─── */
 .adv-map-card-node {
   position: absolute;
-  z-index: 2;
-  transition: box-shadow 0.3s ease, border-color 0.3s ease;
+  z-index: calc(var(--z-map-floor) + 1);
+  /* transition removed for GSAP */
   border-radius: 12px;
   border: 4px solid transparent;
 
@@ -2960,7 +2963,7 @@ const healActiveTeam = () => {
   width: 24px;
   height: 24px;
   transform: Translate(-50%, -50%); /* Centered on node coordinate */
-  z-index: 10;
+  z-index: var(--z-map-spawns);
   pointer-events: none;
 
   .marker-dot {
@@ -3005,7 +3008,7 @@ const healActiveTeam = () => {
   border: 2px solid #45f3ff;
   padding: 10px 24px;
   border-radius: 30px;
-  z-index: 100;
+  z-index: var(--z-modal-step);
   box-shadow: 0 0 24px Rgba(69, 243, 255, 0.3);
   min-width: 320px;
 }
@@ -3039,7 +3042,7 @@ const healActiveTeam = () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 200;
+  z-index: var(--z-modal-blocking);
 }
 
 .adv-event-modal-card {
@@ -3113,12 +3116,7 @@ const healActiveTeam = () => {
   display: flex;
   align-items: center;
   gap: 15px;
-  animation: pulse-border 2s infinite ease-in-out;
-}
-
-@keyframes pulse-border {
-  0%, 100% { border-color: #ff3333; box-shadow: 0 0 15px Rgba(255, 51, 51, 0.3); }
-  50% { border-color: #aa1111; box-shadow: 0 0 5px Rgba(255, 51, 51, 0.1); }
+  /* animation removed */
 }
 
 .warning-icon {
