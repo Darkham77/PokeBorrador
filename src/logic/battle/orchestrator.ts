@@ -4,6 +4,7 @@ import { nextTick } from 'vue'
 
 import { handleEntryAbilities } from './battleFlow.ts'
 import { getMechanicalWeather } from '../weather/weatherRegistry.ts'
+import { getMapBiomeAndTags } from './biomeHelper.ts'
 import { FIRE_RED_MAPS } from '@/data/maps'
 import { logger } from '../utils/logger.ts'
 import type { BattleContext } from '@/types/battleContext'
@@ -46,29 +47,8 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
     difficulty = undefined, rewardTM = undefined, cannotEscape = false
   } = options
 
-  const map = FIRE_RED_MAPS.find(m => m.id === locationId)
-  let activeBiome = 'isPlains'
-  const mapTags: string[] = []
-  if (map) {
-    const hierarchy = [
-      'isArctic', 'isIndoors', 'isUrban', 'isVolcanic', 'isCrystalCave', 'isCave',
-      'isDesert', 'isSwamp', 'isMountain',
-      'isCoastal', 'isForest', 'isPlains'
-    ];
-    for (const key of hierarchy) {
-      if ((map as Record<string, unknown>)[key]) {
-        activeBiome = key;
-        break;
-      }
-    }
-    for (const key of hierarchy) {
-      if ((map as Record<string, unknown>)[key]) {
-        mapTags.push(key)
-      }
-    }
-  }
+  const { activeBiome, mapTags } = getMapBiomeAndTags(locationId)
   const tagsStr = mapTags.join(', ') || 'ninguno'
-
   logger.info('Orchestrator', `startBattleSequence starting... Biome: ${activeBiome} (Tags: ${tagsStr}) for location: ${locationId}`, { isTrainer, isGym, wasSearchingOpt })
 
   const playerPoke = ctx.gs.state.team.find((p) => p.hp > 0 && !p.onMission && !p.onDefense)
@@ -273,7 +253,7 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
  * Visual initialization and first turn setup.
  */
 export async function initBattleSequence(ctx: BattleContext, options: BattleOptions & { initialEnemy: Pokemon | null, initialPlayer: Pokemon | null }) {
-  const { locationId, isTrainer, trainerName, isGym, wasSearching, initialEnemy, initialPlayer } = options
+  const { locationId = 'plains', isTrainer, trainerName, isGym, wasSearching, initialEnemy, initialPlayer } = options
   if (!initialPlayer || !initialEnemy) return;
   const { BATTLE_STATES, BATTLE_SUBSTATES } = ctx
   const fsm = ctx.fsm
@@ -458,29 +438,7 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
   ctx.attackerSide.value = null
   ctx.activeMove.value = null
   
-  // Log active biome and map properties
-  const map = FIRE_RED_MAPS.find(m => m.id === locationId)
-  let activeBiome = 'isPlains'
-  const mapTags: string[] = []
-  if (map) {
-    const hierarchy = [
-      'isArctic', 'isIndoors', 'isUrban', 'isVolcanic', 'isCrystalCave', 'isCave',
-      'isDesert', 'isSwamp', 'isMountain',
-      'isCoastal', 'isForest', 'isPlains'
-    ];
-    for (const key of hierarchy) {
-      if ((map as Record<string, unknown>)[key]) {
-        activeBiome = key;
-        break;
-      }
-    }
-    for (const key of hierarchy) {
-      if ((map as Record<string, unknown>)[key]) {
-        mapTags.push(key)
-      }
-    }
-  }
-
+  const { activeBiome, mapTags } = getMapBiomeAndTags(locationId)
   const startMsg = isTrainer || isGym 
     ? `¡${trainerName} te desafía!` 
     : `¡Un ${initialEnemy.name} salvaje apareció!`

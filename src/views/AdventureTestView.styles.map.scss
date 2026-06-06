@@ -1,0 +1,540 @@
+/* ─── Map Area (Lower Section) ─── */
+.adv-viewport-camera {
+  flex: 1;
+  background-color: #0a0e14;
+  border: 3px solid #1f2833;
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+  box-sizing: border-box;
+  cursor: grab;
+  user-select: none;
+  &:active {
+    cursor: grabbing;
+  }
+  &.is-dragging {
+    cursor: grabbing;
+  }
+}
+
+.adv-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background-color: #0d121d;
+  background-image: 
+    radial-gradient(#1f2833 1px, transparent 1px),
+    radial-gradient(#1f2833 1px, transparent 1px);
+  background-size: 40px 40px;
+  background-position: 0 0, 20px 20px;
+  will-change: transform;
+}
+
+.adv-connections-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: var(--z-map-floor);
+}
+
+.adv-map-card-node {
+  position: absolute;
+  z-index: calc(var(--z-map-floor) + 1);
+  pointer-events: auto;
+  
+  &.is-current {
+    z-index: var(--z-map-spawns);
+    transform: scale(1.05);
+    box-shadow: 0 0 20px rgba(69, 243, 255, 0.5);
+  }
+}
+
+.adv-zoom-controls {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: var(--z-map-spawns);
+}
+
+.adv-zoom-btn {
+  background-color: #151b26;
+  border: 2px solid #45f3ff;
+  color: #fff;
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  box-shadow: 0 4px 0 #1f2833;
+  &:hover {
+    background-color: #2a3444;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 0 #1f2833;
+  }
+  &:active {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 #1f2833;
+  }
+}
+
+/* ─── Detail Panel Internal Scroll ─── */
+.adv-detail-scroll-container {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+  padding-right: 4px;
+}
+
+.adv-detail-desc {
+  font-size: 7px;
+  line-height: 1.6;
+  color: #8899aa;
+  margin: 0 0 10px 0;
+}
+
+.adv-detail-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 7px;
+  span:first-child {
+    color: #66fcf1;
+  }
+  span:last-child {
+    color: #fff;
+  }
+}
+
+.adv-weather-pill-sm {
+  background-color: #ffd60a;
+  color: #000;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 6px;
+}
+
+.adv-detail-wild {
+  margin-top: 8px;
+  padding-top: 6px;
+  border-top: 1px dashed #1f2833;
+}
+
+.adv-detail-label {
+  font-size: 7px;
+  color: #66fcf1;
+}
+
+.adv-wild-cycles {
+  margin-top: 4px;
+}
+
+.adv-wild-cycle {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin-bottom: 4px;
+  .cycle-icon { font-size: 9px; flex-shrink: 0; }
+  .cycle-list {
+    font-size: 6px;
+    color: #c5c6c7;
+    line-height: 1.4;
+    word-break: break-word;
+  }
+}
+
+.adv-weather-visitors {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.adv-visitor-tag {
+  font-size: 6px;
+  background-color: rgba(102, 252, 241, 0.12);
+  border: 1px solid #45f3ff;
+  color: #66fcf1;
+  padding: 2px 4px;
+  border-radius: 3px;
+}
+
+.adv-detail-terrain {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.terrain-tag {
+  font-size: 6px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  border: 1px solid;
+}
+
+.terrain-plains { background-color: rgba(76, 175, 80, 0.15); border-color: #4caf50; color: #81c784; }
+.terrain-forest { background-color: rgba(27, 94, 32, 0.2); border-color: #2e7d32; color: #66bb6a; }
+.terrain-mountain { background-color: rgba(121, 85, 72, 0.2); border-color: #795548; color: #a1887f; }
+.terrain-center { background-color: rgba(233, 30, 99, 0.15); border-color: #e91e63; color: #f06292; }
+
+.adv-detail-empty {
+  font-size: 7px;
+  color: #556;
+  text-align: center;
+  padding: 16px 0;
+}
+
+/* ─── Edges (Dirt Roads) ─── */
+.edge-line {
+  stroke: #614126;
+  stroke-width: 14;
+  stroke-linecap: round;
+  opacity: 0.6;
+}
+.edge-line.edge-on-path {
+  stroke: #eab308;
+  stroke-width: 18;
+  opacity: 0.95;
+  filter: drop-shadow(0 0 8px rgba(234, 179, 8, 0.8));
+}
+.edge-line.edge-mo {
+  stroke-dasharray: 8 6;
+  stroke: #2e5984;
+}
+.edge-line.edge-blocked {
+  stroke: #451a03;
+  stroke-width: 8;
+  opacity: 0.4;
+}
+.edge-line.edge-mo.edge-on-path {
+  stroke: #06b6d4;
+  opacity: 0.95;
+  filter: drop-shadow(0 0 8px rgba(6, 182, 212, 0.8));
+}
+
+/* ─── MO Obstacle Bubbles & Tooltips ─── */
+.adv-mo-obstacle-overlay {
+  position: absolute;
+  transform: translate(-50%, -50%) scale(var(--world-overlay-scale, 1));
+  z-index: var(--z-map-grass-back);
+  pointer-events: auto;
+}
+
+.adv-mo-icon-bubble {
+  width: 32px;
+  height: 32px;
+  background: #1f1f2e;
+  border: 2px solid #ef4444;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+  position: relative;
+
+  &:hover {
+    transform: scale(1.15);
+    .adv-mo-tooltip {
+      opacity: 1;
+      visibility: visible;
+      transform: translateX(-50%) translateY(-10px);
+    }
+  }
+
+  &.mo-unlocked {
+    border-color: #22c55e;
+    box-shadow: 0 0 10px rgba(34, 197, 94, 0.5);
+  }
+
+  .bubble-emoji {
+    font-size: 14px;
+  }
+}
+
+.adv-pokemon-center-overlay {
+  position: absolute;
+  transform: translate(-50%, -50%) scale(var(--world-overlay-scale, 1));
+  z-index: calc(var(--z-map-grass-back) + 1);
+  pointer-events: none;
+}
+
+.adv-pc-icon-bubble {
+  width: 32px;
+  height: 32px;
+  background: #ff69b4;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  box-shadow: 0 0 15px rgba(255, 105, 180, 0.8), inset 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+.adv-mo-tooltip {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(0);
+  background: rgba(15, 15, 25, 0.95);
+  border: 2px solid #eab308;
+  border-radius: 8px;
+  padding: 8px;
+  width: 200px;
+  color: #dfcbb5;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 6px;
+  line-height: 1.4;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.8);
+  z-index: var(--z-modal-step);
+  text-align: center;
+
+  .tooltip-title {
+    color: #ffcb05;
+    font-weight: bold;
+    display: block;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+  }
+
+  .tooltip-desc {
+    margin: 0;
+    font-size: 5px;
+    color: #ccc;
+  }
+}
+
+/* ─── Map Nodes (Cards) ─── */
+.adv-map-card-node {
+  position: absolute;
+  z-index: calc(var(--z-map-floor) + 1);
+  border-radius: 12px;
+  border: 4px solid transparent;
+
+  &.is-on-path {
+    border-color: #66fcf1;
+    box-shadow: 0 0 15px rgba(102, 252, 241, 0.4);
+  }
+  &.is-origin {
+    border-color: #44ff44;
+    box-shadow: 0 0 15px rgba(68, 255, 68, 0.4);
+  }
+  &.is-destination {
+    border-color: #ff4444;
+    box-shadow: 0 0 15px rgba(255, 68, 68, 0.4);
+  }
+  &.is-current {
+    border-color: #ffd60a;
+    box-shadow: 0 0 20px rgba(255, 214, 10, 0.6);
+  }
+}
+
+/* ─── Travel Marker ─── */
+.adv-travel-marker {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  transform: translate(-50%, -50%);
+  z-index: var(--z-map-spawns);
+  pointer-events: none;
+
+  .marker-dot {
+    width: 12px;
+    height: 12px;
+    margin-top: -6px;
+    margin-left: -6px;
+    top: 50%;
+    left: 50%;
+    background-color: #ffd60a;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    box-shadow: 0 0 8px rgba(255, 214, 10, 0.8);
+    position: absolute;
+  }
+
+  .marker-glow {
+    position: absolute;
+    width: 36px;
+    height: 36px;
+    margin-top: -18px;
+    margin-left: -18px;
+    top: 50%;
+    left: 50%;
+    border: 2px solid #ffd60a;
+    border-radius: 50%;
+    transform-origin: center center;
+  }
+}
+
+/* ─── Floating Progress Bar ─── */
+.adv-floating-progress {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background-color: rgba(11, 12, 16, 0.95);
+  border: 2px solid #45f3ff;
+  padding: 10px 24px;
+  border-radius: 30px;
+  z-index: var(--z-modal-step);
+  box-shadow: 0 0 24px rgba(69, 243, 255, 0.3);
+  min-width: 320px;
+}
+
+.adv-progress-bar {
+  flex: 1;
+  height: 12px;
+  background-color: #111;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid #45f3ff;
+}
+
+.adv-progress-fill {
+  height: 100%;
+  background-color: #66fcf1;
+  box-shadow: 0 0 8px #66fcf1;
+}
+
+.adv-progress-text {
+  font-size: 9px;
+  color: #66fcf1;
+  white-space: nowrap;
+}
+
+/* ─── Event Modal ─── */
+.adv-event-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--z-modal-blocking);
+}
+
+.adv-event-modal-card {
+  background-color: #151b26;
+  border: 3px solid #ff3333;
+  padding: 30px;
+  border-radius: 12px;
+  max-width: 500px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 0 0 40px rgba(255, 51, 51, 0.4), inset 0 0 30px rgba(0, 0, 0, 0.4);
+
+  .adv-event-title {
+    color: #ff3333;
+    font-size: 12px;
+    margin: 0 0 14px 0;
+    text-shadow: 0 0 8px rgba(255, 51, 51, 0.5);
+  }
+  .adv-event-desc {
+    font-size: 8px;
+    line-height: 1.7;
+    margin: 0 0 18px 0;
+    color: #c5c6c7;
+  }
+  .adv-mo-status {
+    font-size: 8px;
+    margin-bottom: 18px;
+  }
+  .adv-mo-badge {
+    background-color: #ff3333;
+    color: #fff;
+    padding: 3px 8px;
+    border-radius: 3px;
+    &.ok { background-color: #00cc00; }
+  }
+}
+
+.adv-btn-resolve {
+  width: 100%;
+  padding: 12px;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 9px;
+  cursor: pointer;
+  border-radius: 6px;
+  border: none;
+}
+
+/* ─── Console ─── */
+.adv-log-lines {
+  flex: 1;
+  overflow-y: auto;
+  font-size: 7px;
+  line-height: 1.5;
+  min-height: 0;
+  padding-right: 4px;
+}
+
+.adv-log-line {
+  margin-bottom: 4px;
+  color: #c5c6c7;
+}
+
+/* ─── Team Warning Banner ─── */
+.adv-team-warning-banner {
+  background: linear-gradient(135deg, #420f12 0%, #1c0608 100%);
+  border: 2px solid #ff3333;
+  box-shadow: 0 0 15px rgba(255, 51, 51, 0.3);
+  padding: 12px 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.warning-icon {
+  font-size: 20px;
+}
+
+.warning-text {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
+  line-height: 1.5;
+  color: #ffb3b3;
+}
+
+/* Custom disabled states for buttons */
+.adv-manual-btn:disabled,
+.adv-action-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed !important;
+  filter: grayscale(1);
+  box-shadow: none !important;
+}
+
+@media (max-width: 900px) {
+  .adv-control-panel-bottom {
+    flex-direction: column;
+    overflow-y: auto;
+  }
+  .adv-column {
+    flex: none;
+    width: 100%;
+  }
+}

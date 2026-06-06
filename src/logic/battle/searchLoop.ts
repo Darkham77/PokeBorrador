@@ -84,8 +84,7 @@ export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'm
       if (encounter.type === 'trainer') {
         ctx.gs.state.trainerChance = 5
         
-        const { getEvolvedForm } = await import('@/logic/evolutionLogic')
-        const { makePokemon } = await import('@/logic/pokemonFactory')
+        const { buildTrainerTeam } = await import('./trainerFactory')
         const { pokemonDataProvider } = await import('@/logic/providers/pokemonDataProvider')
 
         const isMaxCriminality = (ctx.gs.state.playerClass === 'rocket' && (ctx.gs.state.classData?.criminality ?? 0) >= 100)
@@ -109,15 +108,8 @@ export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'm
           const teamSize = Math.floor(Math.random() * 2) + 3
           const policePool = ['growlithe', 'arcanine', 'machoke', 'magneton', 'pidgeot']
 
-          for (let i = 0; i < teamSize; i++) {
-            const pIdBase = policePool[Math.floor(Math.random() * policePool.length)] || 'growlithe'
-            const pId = getEvolvedForm(pIdBase, trainerLv)
-            const p = makePokemon(pId, trainerLv) as Pokemon
-            if (p) {
-              (p as Pokemon & { _revealed?: boolean })._revealed = true
-              enemyTeam.push(p)
-            }
-          }
+          const team = await buildTrainerTeam(policePool, trainerLv, teamSize)
+          enemyTeam.push(...team)
         } else {
           const TRAINER_TYPES = {
             'caza_bichos': { name: 'Caza Bichos', sprite: 'cazabichos', pool: ['caterpie', 'metapod', 'weedle', 'kakuna', 'paras', 'venonat'] },
@@ -152,16 +144,9 @@ export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'm
           const trainerLv = baseLv + 2
           const teamSize = Math.floor(Math.random() * 3) + 1
 
-          // fallow-ignore-next-line code-duplication
-          for (let i = 0; i < teamSize; i++) {
-            const pIdBase = t.pool[Math.floor(Math.random() * t.pool.length)] || 'rattata'
-            const pId = getEvolvedForm(pIdBase, trainerLv)
-            const p = makePokemon(pId, trainerLv) as Pokemon
-            if (p) {
-              (p as Pokemon & { _revealed?: boolean })._revealed = true
-              enemyTeam.push(p)
-            }
-          }
+          const { buildTrainerTeam } = await import('./trainerFactory')
+          const team = await buildTrainerTeam(t.pool, trainerLv, teamSize)
+          enemyTeam.push(...team)
         }
 
         if (enemyTeam.length > 0 && enemyTeam[0]) {
