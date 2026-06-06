@@ -49,6 +49,8 @@ export interface BattleOptions {
   rewardTM?: string;
   trainerSprite?: string;
   isRival?: boolean;
+  persistenceMode?: string;
+  cannotEscape?: boolean;
 }
 
 export interface GameStore {

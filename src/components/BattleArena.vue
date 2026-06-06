@@ -192,6 +192,7 @@ const handleClose = () => {
     overlay="dark"
     close-button-variant="yellow-solid"
     :prevent-close="battleStore.isProcessing"
+    :show-close-button="((!!battleStore.state?.wasSearching || !!battleStore.state?.isGym) && !battleStore.state?.cannotEscape) || battleStore.isFinishing"
     :close-on-click-outside="false"
     :hide-header="true"
     padding="raw"

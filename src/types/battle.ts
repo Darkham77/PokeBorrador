@@ -69,6 +69,8 @@ export interface BattleState {
   _lastActivePlayer?: Pokemon | null;
   playerFled?: boolean;
   quote?: string;
+  wasSearching?: boolean;
+  cannotEscape?: boolean;
 }
 
 export type BattleSource = Pokemon | 'player' | 'enemy_trainer' | 'enemy' | string;

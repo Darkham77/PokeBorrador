@@ -39,7 +39,9 @@ describe('searchLoop.js - handleBattleFlowCompletion (Flujo Directo)', () => {
           _initialEnemy: null,
           enemy: null,
           isFishing: false,
-          isArchaeology: false
+          isArchaeology: false,
+          fled: true,
+          playerFled: true
         }
       },
       debugLoopPokemon: { value: null },
@@ -67,5 +69,12 @@ describe('searchLoop.js - handleBattleFlowCompletion (Flujo Directo)', () => {
     // Debe transicionar a INITIALIZING y luego a SEARCH_PHASE / PREPARATION
     expect(mockCtx.fsm.transition).toHaveBeenCalledWith(BATTLE_STATES.INITIALIZING)
     expect(mockCtx.fsm.transition).toHaveBeenCalledWith(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.PREPARATION)
+  })
+
+  it('should clear escape flags before returning to the search loop', async () => {
+    await handleBattleFlowCompletion(mockCtx, 'search')
+
+    expect(mockCtx.activeBattle.value!.fled).toBe(false)
+    expect(mockCtx.activeBattle.value!.playerFled).toBe(false)
   })
 })

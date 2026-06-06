@@ -207,13 +207,14 @@ const onEnter = (el: Element, done: () => void) => {
     >
       <div class="finish-actions-group">
         <button
-          v-if="battleStore.isSearching"
+          v-if="battleStore.isSearching && (battleStore.state?.wasSearching !== false)"
           class="continue-btn-final fight-btn"
           @click.stop="battleStore.startEncounter()"
         >
           <span class="btn-emoji">{{ encounterBtnEmoji }}</span> {{ encounterBtnText }}
         </button>
         <button
+          v-if="battleStore.state?.wasSearching !== false || battleStore.state?.isGym || battleStore.isReadyToExit || isRewardsWait"
           class="continue-btn-final map-btn"
           @click.stop="battleStore.completeBattleFlow('map')"
         >

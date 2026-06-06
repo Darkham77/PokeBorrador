@@ -13,13 +13,19 @@ export function useSaveActions(
   state: GameState, 
   authStore: { user: AuthUser | null, logout?: () => Promise<void> }, 
   db: Ref<DBRouter>, 
-  updateState: (data: GameState) => void
+  updateState: (data: GameState) => void,
+  isSandboxActive: Ref<boolean>
 ) {
   const uiStore = useUIStore()
   const loadingStore = useLoadingStore()
 
   async function loadGame() {
     loadingStore.start('game_data', 'Cargando datos...', 'Leyendo partida guardada', false, '📂')
+    
+    if (isSandboxActive.value) {
+      loadingStore.finish('game_data')
+      return { success: true }
+    }
     
     if (!authStore.user) {
       return { success: true, guest: true }
@@ -143,7 +149,13 @@ export function useSaveActions(
   }
 
   async function save(showNotif = true) {
-    if (!authStore.user) return
+    if (isSandboxActive.value) {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('pvs_sandbox_save', JSON.stringify(state))
+      }
+      return { success: true }
+    }
+    if (!authStore.user) return { success: false }
     
     // Check session lock (Last-In-Wins)
     const { isSaveLocked } = await import('@/logic/auth/sessionHub')
@@ -175,6 +187,7 @@ export function useSaveActions(
         }
       }
     }
+    return result || { success: false }
   }
 
   async function scheduleSave() {
@@ -182,6 +195,7 @@ export function useSaveActions(
   }
 
   async function claimAsset(claimId: string | number) {
+    if (isSandboxActive.value) return false
     if (!authStore.user || !db.value) return false
     try {
       const { data, error } = await db.value.rpc('claim_asset_v2', { p_claim_id: claimId })
@@ -200,6 +214,7 @@ export function useSaveActions(
   }
 
   async function fetchClaimQueue() {
+    if (isSandboxActive.value) return
     if (!authStore.user || !db.value) return
     const { data, error } = await db.value.from('claim_queue')
       .select('*')

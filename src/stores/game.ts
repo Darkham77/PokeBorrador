@@ -26,6 +26,8 @@ export const useGameStore = defineStore('game', () => {
   const isEngineReady = ref(false)
   const isSaveLocked = ref(false)
   const isReady = computed(() => isDataLoaded.value && isEngineReady.value)
+  const isSandboxActive = ref(false)
+  const realStateBackup = ref<GameState | null>(null)
 
   function updateState(newData: Partial<GameState>) {
     if (newData.team && newData.team.length > 0) newData.starterChosen = true
@@ -45,7 +47,13 @@ export const useGameStore = defineStore('game', () => {
   // --- ACTIONS INITIALIZATION ---
   
   // 1. Save Actions (Basics needed for others)
-  const { loadGame: rawLoad, save, scheduleSave, claimAsset, fetchClaimQueue } = useSaveActions(state, authStore, db as Ref<DBRouter>, updateState)
+  const { loadGame: rawLoad, save, scheduleSave, claimAsset, fetchClaimQueue } = useSaveActions(
+    state, 
+    authStore, 
+    db as Ref<DBRouter>, 
+    updateState, 
+    isSandboxActive
+  )
 
   // 2. Team Actions (Special teams management)
   const { autoFillPvpTeam, swapPvpSlot, reorderPvpTeam, autoFillWarTeam, swapWarSlot, reorderWarTeam } = useTeamActions(state, scheduleSave)
@@ -108,6 +116,57 @@ export const useGameStore = defineStore('game', () => {
     isSaveLocked.value = false
   }
 
+  function enterSandboxMode() {
+    if (isSandboxActive.value) return
+    realStateBackup.value = JSON.parse(JSON.stringify(state))
+    
+    // Limpiar el estado actual y cargar el guardado del sandbox si existe
+    Object.keys(state).forEach(key => {
+      delete (state as Record<string, unknown>)[key]
+    })
+    
+    let initialSandbox = JSON.parse(JSON.stringify(INITIAL_STATE))
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('pvs_sandbox_save')
+      if (saved) {
+        try {
+          initialSandbox = JSON.parse(saved)
+        } catch (e) {
+          logger.error('SANDBOX', 'Error parsing sandbox save, using initial state:', e)
+        }
+      }
+    }
+    
+    Object.assign(state, initialSandbox)
+    isSandboxActive.value = true
+    logger.info('SANDBOX', 'Modo Sandbox activado para Test Aventura. Partida real respaldada.')
+  }
+
+  function exitSandboxMode() {
+    if (!isSandboxActive.value) return
+    
+    // Guardar el estado del sandbox localmente antes de salir
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('pvs_sandbox_save', JSON.stringify(state))
+    }
+    
+    // Limpiar y restaurar la partida real
+    Object.keys(state).forEach(key => {
+      delete (state as Record<string, unknown>)[key]
+    })
+    
+    if (realStateBackup.value) {
+      Object.assign(state, realStateBackup.value)
+      realStateBackup.value = null
+    } else {
+      Object.assign(state, JSON.parse(JSON.stringify(INITIAL_STATE)))
+    }
+    
+    isDataLoaded.value = false // Reset data loaded so real save gets fetched when entering normal game
+    isSandboxActive.value = false
+    logger.info('SANDBOX', 'Modo Sandbox desactivado. Partida real restaurada.')
+  }
+
   // --- WATCHERS ---
   watch(() => state.team.length, (newLen, oldLen) => {
     if (newLen > oldLen && state.pvpTeam.length < 3) autoFillPvpTeam()
@@ -148,6 +207,9 @@ export const useGameStore = defineStore('game', () => {
     togglePokeTag,
     executeHatch,
     reclaimControl,
-    saveGame: save // Alias
+    saveGame: save, // Alias
+    isSandboxActive,
+    enterSandboxMode,
+    exitSandboxMode
   }
 })

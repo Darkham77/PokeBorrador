@@ -54,6 +54,7 @@ export const useBattleStore = defineStore('battle', () => {
   
   const isBattleActive = computed(() => 
     activeBattle.value !== null && (
+      fsm.currentState.value === BATTLE_STATES.CONTEXT_SETUP ||
       fsm.currentState.value === BATTLE_STATES.ACTIVE_BATTLE || 
       fsm.currentState.value === BATTLE_STATES.REWARDS_PHASE ||
       fsm.currentState.value === BATTLE_STATES.LEVEL_UP_MODAL ||

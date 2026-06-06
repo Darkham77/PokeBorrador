@@ -36,6 +36,8 @@ export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'm
     ctx.activeBattle.value.isArchaeology = false
     ctx.activeBattle.value.rewardsProcessed = false
     ctx.activeBattle.value.over = false
+    ctx.activeBattle.value.fled = false
+    ctx.activeBattle.value.playerFled = false
     ctx.activeBattle.value._rewardCombatants = []
     
     // Restablecer flags de entrenador y gimnasio de inmediato

@@ -5,6 +5,10 @@ export async function executeFlee(ctx: BattleContext) {
   if (ctx.isProcessing.value) return
 
   const active = ctx.activeBattle.value
+  if (active && active.cannotEscape) {
+    ctx.addLog('¡No puedes escapar de este combate!', 'log-error', 'player')
+    return
+  }
   if (active && (active.isTrainer || active.isGym)) {
     ctx.addLog('¡No puedes huir de un combate de entrenador!', 'log-error', 'player')
     return

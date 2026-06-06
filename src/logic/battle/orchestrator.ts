@@ -29,6 +29,8 @@ export interface BattleOptions {
   isRival?: boolean;
   difficulty?: string;
   rewardTM?: string;
+  cannotEscape?: boolean;
+  persistenceMode?: string;
 }
 
 /**
@@ -41,7 +43,7 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
     isTrainer = false, enemyTeam = undefined, trainerName = 'Entrenador',
     battleOptions = {}, isFishing = false, isArchaeology = false, wasSearching: wasSearchingOpt = null,
     trainerSprite = undefined, isRival = false,
-    difficulty = undefined, rewardTM = undefined
+    difficulty = undefined, rewardTM = undefined, cannotEscape = false
   } = options
 
   const map = FIRE_RED_MAPS.find(m => m.id === locationId)
@@ -83,6 +85,7 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
   }
 
   const wasSearching = wasSearchingOpt !== null ? wasSearchingOpt : true
+  logger.info('Orchestrator', `wasSearching evaluated: ${wasSearching} (wasSearchingOpt: ${wasSearchingOpt})`)
   
   const { sanitizePokemon } = await import('@/logic/pokemonFactory')
   const { useMapStore } = await import('@/stores/map')
@@ -115,6 +118,8 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
     isCrystalCave: FIRE_RED_MAPS.find(m => m.id === locationId)?.isCrystalCave || false,
     turn: 'player', turnCount: 1, over: false,
     isFishing, isArchaeology, rarity,
+    wasSearching,
+    cannotEscape: cannotEscape || (battleOptions.cannotEscape as boolean) || false,
     weather: { 
       type: getMechanicalWeather(mapStore.currentWeather), 
       visual: mapStore.currentWeather, 
@@ -184,6 +189,7 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
   await fsm.transition(BATTLE_STATES.INITIALIZING, BATTLE_SUBSTATES.MARK_EVENT)
   await fsm.transition(BATTLE_STATES.INITIALIZING, BATTLE_SUBSTATES.PRELOAD_FINAL_COORDS, 0)
   await fsm.transition(BATTLE_STATES.INITIALIZING, BATTLE_SUBSTATES.SET_SEARCH_FLAG)
+  logger.info('Orchestrator', `reached after SET_SEARCH_FLAG transition. wasSearching = ${wasSearching}`)
 
   if (wasSearching) {
 

@@ -48,6 +48,11 @@ const router = createRouter({
           component: () => import('@/views/BagView.vue'),
         }
       ]
+    },
+    {
+      path: '/test-aventura',
+      name: 'test-aventura',
+      component: () => import('@/views/AdventureTestView.vue')
     }
   ],
 })

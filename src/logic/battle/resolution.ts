@@ -369,10 +369,13 @@ export async function terminateBattle(ctx: BattleContext, win: boolean, fled = f
 
   await fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.CHECK_PERSISTENCE)
   
-  if (!isSingle) {
+  if (!isSingle && active.wasSearching !== false) {
     await ctx.completeBattleFlow('search')
   } else {
     await fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.EMPTY_WAIT)
+    if (active.wasSearching === false) {
+      await ctx.completeBattleFlow('map')
+    }
   }
 }
 
