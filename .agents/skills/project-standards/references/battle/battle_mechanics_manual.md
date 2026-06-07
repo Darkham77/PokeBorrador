@@ -470,6 +470,18 @@ stateDiagram-v2
     note right of INITIALIZING: Team Slots hold the party data for each participant.
 ```
 
+#### `wasSearching` — Entry Path Bifurcation Rule
+
+After `INITIALIZING`, the `wasSearching` flag determines which visual entry path the orchestrator takes:
+
+| `wasSearching` | Entry path | Shows `¡COMBATIR!` button? | Use case |
+|---|---|---|---|
+| `true` (default) | `SEARCH_PHASE → COMBAT_OR_FLEE` | ✅ Yes | Wild encounters, Trainer/Gym battles |
+| `false` | `FIRST_INTRO` directly | ❌ No — battle starts immediately | Internal/debug forced battles |
+
+> [!CAUTION]
+> **Never pass `wasSearching: false` for Gym or Trainer battles.** Doing so skips `SEARCH_PHASE` entirely, which means the `¡COMBATIR!` / `¡DESAFIAR!` button never appears and the battle starts without user confirmation.
+
 ### 3. Active Battle Loop
 
 The core interaction cycle. It manages user input, turn execution, and terminal sequences like fainting or capture.
@@ -540,6 +552,7 @@ stateDiagram-v2
 2. **Bypass Mid-Battle Switch Menu**: If the battle is ending due to the enemy's defeat (e.g., wild battle or last trainer Pokémon fainted) during a Double KO, the player faint sequence MUST NOT trigger `isBattleSwitchForced = true` or transition to the `SWITCH_MENU` state. The battle terminates cleanly, and the post-battle reordering team logic will automatically and safely deploy the next healthy Pokémon.
 3. **Clean Switch Flags**: At the start of `terminateBattle`, the `isBattleSwitchForced` flag in `uiStore` MUST be reset to `false` to guarantee that no stale flags lock up the interface or prevent future manual switch operations.
 4. **FSM Flow Parity Workaround**: If a static FSM validation script reports a transition gap (such as `DISTRIBUTE_XP -> EMPTY_WAIT`) because the code executes them across different scopes or physical positions, include a commented-out FSM transition statement matching the expected pattern in the target function. This satisfies static analysis without adding dead execution code.
+5. **`playerExited` — Player Never Recalled on Victory**: The `playerExited` promise in `terminateBattle` MUST always resolve immediately (`Promise.resolve()`) regardless of battle type. The player's Pokémon sprite MUST remain visible in its seat after a victory — it must never be recalled or fainted programmatically. Only the **enemy** runs a recall (`handleCatchRequest`) or faint (`handleFaintAnim`) animation. The player navigates away voluntarily via the exit button, at which point the view unmounts naturally.
 
 #### Catch Process
 
@@ -745,6 +758,18 @@ To ensure a seamless user experience, the combat modal follows strict persistenc
   1. **Return to Map**: Explicitly clicking the "Return to Map" button during `SEARCH_PHASE` (triggers `EXIT_BATTLE`).
   2. **Fleeing**: Successfully escaping from a battle (triggers `EXIT_BATTLE` via the rewards/stabilization flow if no search is intended).
 - **State Continuity**: Persistence of the modal ensures that reactive coordinates (`feetCache`) and camera settings remain stable between encounters, eliminating visual flickering.
+
+#### `isSingle` Exit Protocol
+
+Battles where `isSingle === true` (i.e. `isGym`, `isPvP`, or `persistenceMode === 'SINGLE'`) follow a **user-driven exit** protocol:
+
+1. After rewards, `resolution.ts` transitions to `REWARDS_PHASE / EMPTY_WAIT` and **returns immediately** — it does NOT call `completeBattleFlow()` programmatically.
+2. The `BattleArenaControls` overlay becomes visible because `isRewardsWait` is `true` (`REWARDS_PHASE + EMPTY_WAIT`).
+3. The **"🏆 VOLVER A GIMNASIOS"** (or **"🗺️ VOLVER AL MAPA"**) button appears because `isGym === true`.
+4. `completeBattleFlow('map')` is called **only** when the player clicks that button — never automatically.
+
+> [!CAUTION]
+> **Never call `completeBattleFlow()` from within `resolution.ts` for `isSingle` battles.** Doing so closes the battle screen before the player can read the combat log, which breaks UX. The button click is the sole trigger for exit.
 
 ### 8. Capture Timing Precision (Transition Protocol)
 
