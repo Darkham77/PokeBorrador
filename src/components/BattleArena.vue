@@ -4,7 +4,6 @@ import { ref, computed, watch, defineAsyncComponent, type Component, onMounted, 
 import { gsap } from 'gsap'
 import { useBattleStore } from '@/stores/battle'
 import { useUIStore } from '@/stores/ui'
-import { useWindowListener } from '@/composables/useWindowListener'
 import { useMapStore } from '@/stores/map'
 import { useDebugStore } from '@/stores/debug'
 import { getRouteWeather } from '@/logic/weatherUtils'
@@ -21,10 +20,10 @@ const uiStore = useUIStore()
 const mapStore = useMapStore()
 
 // Responsive logic
-const isSmallScreen = ref(window.innerWidth <= 1080)
-useWindowListener('resize', () => {
-  isSmallScreen.value = window.innerWidth <= 1080
+const isSmallScreen = computed(() => {
+  return (uiStore.windowWidth / uiStore.appZoom) < 950
 })
+
 
 // Sub-components
 import BattleLog from './battle/BattleLog.vue'
@@ -191,8 +190,8 @@ const handleClose = () => {
     variant="modern"
     overlay="dark"
     close-button-variant="yellow-solid"
-    :prevent-close="battleStore.isProcessing"
-    :show-close-button="((!!battleStore.state?.wasSearching || !!battleStore.state?.isGym) && !battleStore.state?.cannotEscape) || battleStore.isFinishing"
+    :prevent-close="battleStore.isProcessing || (!!battleStore.state?.cannotEscape && !battleStore.isFinishing)"
+    :show-close-button="(!battleStore.state?.isTrainer && !battleStore.state?.isGym) || battleStore.isFinishing"
     :close-on-click-outside="false"
     :hide-header="true"
     padding="raw"
@@ -367,7 +366,7 @@ const handleClose = () => {
   overflow: hidden; 
   background: Linear-Gradient(180deg, Rgba(255, 255, 255, 0.03) 0%, Transparent 100%);
 
-  @media (min-width: 1081px) {
+  .battle-screen-grid:not(.is-fullscreen) & {
     display: grid;
     grid-template-columns: calc(320px * var(--app-zoom, 1)) 1fr;
     grid-template-rows: 1fr auto;
@@ -403,7 +402,7 @@ const handleClose = () => {
     box-shadow: inset -10px 0 20px Rgba(0, 0, 0, 0.3);
   }
   
-  @media (max-width: 1080px) {
+  .battle-screen-grid.is-fullscreen & {
     flex: none;
     height: 90px;
     min-height: 72px;
@@ -414,7 +413,7 @@ const handleClose = () => {
     }
   }
 
-  @media (min-width: 1081px) {
+  .battle-screen-grid:not(.is-fullscreen) & {
     height: 100%;
     .battle-log {
       height: 100%;
@@ -445,7 +444,7 @@ const handleClose = () => {
   flex: 1; // Unificar crecimiento para evitar tirones
   object-fit: contain;
 
-  @media (max-width: 1080px) {
+  .battle-screen-grid.is-fullscreen & {
      flex: 1; // Crece para ocupar todo el espacio superior
      height: auto !important;
   }

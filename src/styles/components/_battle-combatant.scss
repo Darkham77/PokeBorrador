@@ -1,0 +1,250 @@
+@use "@/styles/core/_mixins" as *;
+
+.combatant-sprite {
+  z-index: var(--z-map-spawns);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  @include pixelated;
+  overflow: visible;
+
+  .sprite-animator, 
+  .sprite-rotation-layer, 
+  .sprite-idle-wrapper,
+  :deep(.pv-fx-wrapper) {
+    width: 100% !important;
+    height: 100% !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform-origin: bottom center;
+  }
+
+  // Las sparkles shiny son hijos del sprite-idle-wrapper, que tiene scaleX/scaleY asincrónicos
+  // en la animación idle. Esto distorsiona las estrellas. Usamos isolation para crear un
+  // contexto de apilamiento propio que neutraliza el scale heredado del padre.
+  :deep(.pv-fx-shiny-overlay) {
+    isolation: isolate;
+  }
+
+  :deep(.pv-fx-shiny-overlay .sparkle) {
+    transform-origin: center center !important;
+  }
+
+  .pokemon-atmosphere-wrapper {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: visible;
+  }
+
+  .pokemon-combat-image {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center;
+    @include pixelated;
+    &.is-silhouette { 
+      @include pokemon-silhouette;
+    }
+  }
+}
+
+// Overlay de debug que NO debe afectar el layout del flex container
+.guide-real-size {
+  position: absolute;
+  top: 0;
+  left: 0;
+  border: 1px dashed rgba(255, 100, 0, 0.7);
+  pointer-events: none;
+  z-index: var(--z-navigation);
+
+  span {
+    position: absolute;
+    bottom: 2px;
+    right: 4px;
+    font-size: 9px;
+    color: rgba(255, 180, 0, 1);
+    background: rgba(0, 0, 0, 0.6);
+    padding: 1px 3px;
+    @include pixelated;
+  }
+}
+
+.sprite-animator {
+  position: relative;
+  z-index: var(--z-map-spawns);
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  overflow: visible;
+
+  &.fainted {
+    .sprite-idle-wrapper {
+      pointer-events: none;
+    }
+  }
+
+  &.is-technical-hidden {
+    opacity: 0 !important;
+    pointer-events: none;
+  }
+
+  &.releasing {
+    opacity: 0;
+    transform: scale(0);
+  }
+}
+
+.sprite-rotation-layer {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  overflow: visible;
+  z-index: var(--z-map-spawns);
+
+  &.is-floating-species { 
+    transform: translateY(-40px);
+    @media (max-width: 690px) { transform: translateY(-18px); } 
+  }
+}
+
+.energy-catching {
+  transform-origin: 50% var(--shadow-y, 90%);
+  pointer-events: none;
+}
+
+.energy-releasing {
+  transform-origin: 50% var(--shadow-y, 90%);
+}
+
+.trapped-pokeball {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%) translateY(-85%);
+  width: calc(var(--obj-scale, 1) * 40px);
+  height: calc(var(--obj-scale, 1) * 40px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--z-map-ui);
+  pointer-events: none;
+  @include pixelated;
+  overflow: visible;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    transform-origin: 50% 70%;
+  }
+}
+
+.pokeball-shadow {
+  position: absolute;
+  top: 85%;
+  left: 50%;
+  transform: translateX(-50%) translateY(-50%);
+  width: 70%;
+  height: 15%;
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  @include pixelated;
+  z-index: calc(var(--z-base) - 1);
+  pointer-events: none;
+  opacity: 0.8;
+}
+
+.catch-success-sparkles {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  pointer-events: none;
+  z-index: var(--z-low);
+  overflow: visible;
+
+  .sparkle {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    display: block;
+    font-size: calc(var(--obj-scale, 1) * 12px);
+    @include pixelated;
+    will-change: transform, filter, opacity;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    .shiny-asset-mini {
+      width: 24px;
+      height: 24px;
+      object-fit: contain;
+      filter: sepia(1) saturate(12) hue-rotate(-15deg) brightness(1.1);
+      @include pixelated;
+    }
+  }
+}
+
+.ground-effects-container {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%) translateY(-50%);
+  width: 100%;
+  height: 20px;
+  pointer-events: none;
+  z-index: calc(var(--z-map-spawns) + 5); 
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.ground-fx {
+  position: absolute;
+  display: flex;
+  gap: 8px;
+  
+  &.spikes {
+    .spike-item {
+      font-size: calc(var(--fx-scale, 1) * 28px);
+      display: inline-block;
+      will-change: transform, filter, opacity;
+      filter: drop-shadow(0 2px 2px rgba(0,0,0,0.3));
+    }
+  }
+  
+  &.ingrain {
+    .root-item {
+      font-size: calc(var(--fx-scale, 1) * 42px);
+      display: inline-block;
+      transform: translateY(5px);
+    }
+  }
+}
+
+.smoke-particles-container {
+  position: absolute;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: var(--z-map-ui);
+  overflow: visible;
+}
+
+.smoke-particle {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  background: #e5e7eb;
+  border-radius: 50%;
+  box-shadow: 0 0 6px rgba(156, 163, 175, 0.6);
+  opacity: 0.8;
+  pointer-events: none;
+  will-change: transform, opacity;
+  @include pixelated;
+}

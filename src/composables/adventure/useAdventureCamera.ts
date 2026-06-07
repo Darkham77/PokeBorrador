@@ -171,19 +171,15 @@ export function useAdventureCamera(options: CameraOptions) {
 
   function onPointerUp() {
     isDragging.value = false
-  }
-
-  function zoomIn(getTarget?: () => { x: number, y: number } | undefined) {
+  }  function zoomIn(getTarget?: () => { x: number, y: number } | undefined) {
     const targetScale = Math.min(cameraScale.value + 0.25, 2)
     if (cameraScale.value === targetScale) return
+    const target = getTarget ? getTarget() : null
     gsap.to(cameraScale, {
       value: targetScale,
       duration: 0.3,
       onUpdate: () => {
-        if (getTarget) {
-          const t = getTarget()
-          if (t) jumpToPoint(t.x, t.y)
-        }
+        if (target) jumpToPoint(target.x, target.y)
       }
     })
   }
@@ -191,14 +187,12 @@ export function useAdventureCamera(options: CameraOptions) {
   function zoomOut(getTarget?: () => { x: number, y: number } | undefined) {
     const targetScale = Math.max(cameraScale.value - 0.25, 0.25)
     if (cameraScale.value === targetScale) return
+    const target = getTarget ? getTarget() : null
     gsap.to(cameraScale, {
       value: targetScale,
       duration: 0.3,
       onUpdate: () => {
-        if (getTarget) {
-          const t = getTarget()
-          if (t) jumpToPoint(t.x, t.y)
-        }
+        if (target) jumpToPoint(target.x, target.y)
       }
     })
   }

@@ -1,0 +1,312 @@
+// [PureVue-Ignore-Length]
+@use "@/styles/core/tools" as *;
+
+.trainer-debug-tab {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  height: 100%;
+}
+
+.debug-divider {
+  display: block !important;
+  border: 0 !important;
+  height: 2px !important;
+  min-height: 2px !important;
+  background: Rgba(255, 255, 255, 0.15) !important;
+  margin: 18px 0 !important;
+  width: 100% !important;
+}
+
+.flex-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.section-header-row {
+  margin-bottom: 8px;
+}
+
+.danger-text {
+  color: #ef4444;
+}
+
+.field-label {
+  font-family: var(--font-pixel, monospace);
+  font-size: 8px;
+  color: Rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+  display: inline-block;
+  margin-bottom: 2px;
+}
+
+.crime-pct {
+  @include pixelated;
+  font-size: 10px;
+  font-weight: bold;
+}
+
+.crime-sim-slider-row {
+  margin-top: 4px;
+  width: 100%;
+  
+  .slider-crime {
+    width: 100%;
+    accent-color: #ef4444;
+  }
+}
+
+.crime-info-fallback {
+  font-size: 8px;
+  color: $muted;
+  margin-top: 6px;
+}
+
+.trainer-sprite-preview {
+  width: 64px;
+  height: 64px;
+  background: Rgba(0, 0, 0, 0.4);
+  border: 1px solid Rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  
+  .trainer-sprite-img {
+    max-width: 56px;
+    max-height: 56px;
+    object-fit: contain;
+    @include pixelated;
+  }
+}
+
+.gen-params-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.cop-preset-btn {
+  background: Rgba(59, 139, 255, 0.15);
+  border-color: Rgba(59, 139, 255, 0.3);
+  color: #5ea2ff;
+
+  &:hover {
+    background: #3b8bff;
+    color: white;
+  }
+}
+
+.team-grid-layout {
+  display: flex !important;
+  overflow-x: auto !important;
+  gap: 8px !important;
+  margin-top: 8px !important;
+  padding-bottom: 8px !important;
+  width: 100% !important;
+
+  // Custom scrollbar styling
+  &::-webkit-scrollbar {
+    height: 4px !important;
+  }
+  &::-webkit-scrollbar-track {
+    background: Rgba(0, 0, 0, 0.2) !important;
+    border-radius: 4px !important;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: Rgba(255, 255, 255, 0.1) !important;
+    border-radius: 4px !important;
+    &:hover {
+      background: Rgba(255, 255, 255, 0.2) !important;
+    }
+  }
+}
+
+.team-poke-card {
+  flex: 0 0 74px !important;
+  background: Rgba(255, 255, 255, 0.02);
+  border: 1px solid Rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  padding: 6px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  
+  &:hover {
+    background: Rgba(255, 255, 255, 0.05);
+    border-color: Rgba(255, 255, 255, 0.15);
+  }
+
+  &.active {
+    background: Rgba(124, 58, 237, 0.1);
+    border-color: var(--vicio-primary);
+  }
+
+  .card-top {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    position: relative;
+  }
+
+  .poke-sprite {
+    width: 48px;
+    height: 48px;
+    object-fit: contain;
+    @include pixelated;
+  }
+
+  .btn-delete-poke {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    background: Rgba(239, 68, 68, 0.1);
+    border: none;
+    color: #ef4444;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    cursor: pointer;
+
+    &:hover {
+      background: #ef4444;
+      color: white;
+    }
+  }
+
+  .card-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    margin-top: 4px;
+    
+    .name {
+      font-size: 9px;
+      font-weight: bold;
+      color: white;
+      text-align: center;
+      width: 100%;
+    }
+    
+    .level {
+      font-size: 7px;
+      color: $muted;
+      margin-top: 2px;
+    }
+  }
+}
+
+.truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.input-group.vertical {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+  
+  input, select {
+    background: Rgba(0, 0, 0, 0.4);
+    border: 1px solid Rgba(255, 255, 255, 0.1);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 11px;
+    outline: none;
+    width: 100%;
+    box-sizing: border-box;
+    
+    &:focus {
+      border-color: var(--vicio-primary);
+    }
+  }
+  
+  select {
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='Rgba(255,255,255,0.7)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px;
+    padding-right: 36px;
+    cursor: pointer;
+    
+    option {
+      background: #12131a;
+      color: white;
+    }
+  }
+}
+
+.gym-fields-flex {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sim-diff-btn {
+  @include pixelated;
+  font-size: 8px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid Rgba(255, 255, 255, 0.15);
+  background: Rgba(0, 0, 0, 0.4);
+  color: var(--gray);
+  cursor: pointer;
+
+  &.active {
+    background: Rgba(255, 255, 255, 0.05);
+    color: var(--white);
+    &.easy { border-color: Rgba(34, 197, 94, 0.5); color: #22c55e; }
+    &.normal { border-color: Rgba(255, 215, 0, 0.5); color: #ffd700; }
+    &.hard { border-color: Rgba(239, 68, 68, 0.5); color: #ef4444; }
+  }
+}
+
+.battle-start-btn-debug {
+  background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+  color: white;
+  box-shadow: 0 8px 25px Rgba(239, 68, 68, 0.4);
+  border: 1px solid Rgba(255, 255, 255, 0.2);
+  @include btn-vicio('danger', 'sm', true);
+
+  &:hover {
+    box-shadow: 0 12px 30px Rgba(239, 68, 68, 0.6);
+  }
+}
+
+.btn-vicio-secondary {
+  @include btn-vicio('secondary', 'sm');
+  width: auto !important;
+  height: 24px !important;
+  padding: 0 10px !important;
+  font-size: 8px !important;
+}
+
+.btn-vicio-primary {
+  @include btn-vicio('primary', 'sm');
+  width: auto !important;
+  height: 24px !important;
+  padding: 0 10px !important;
+  font-size: 8px !important;
+}
+
+.btn-vicio-success {
+  @include btn-vicio('success', 'sm');
+  width: auto !important;
+  height: 30px !important;
+  padding: 0 16px !important;
+  font-size: 9px !important;
+}

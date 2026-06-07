@@ -1,12 +1,11 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { useUIStore } from '@/stores/ui'
+import { onMounted, computed } from 'vue'
 import { gsap } from 'gsap'
 import BaseModal from '@/components/common/BaseModal.vue'
 import EventCard from './EventCard.vue'
 import { useEventStore } from '@/stores/events'
 import { storeToRefs } from 'pinia'
-import { useWindowListener } from '@/composables/useWindowListener'
-
 interface Props {
   show?: boolean
 }
@@ -22,9 +21,8 @@ const emit = defineEmits<{
 const eventStore = useEventStore()
 const { activeEvents, pendingAwards, isLoading } = storeToRefs(eventStore)
 
-const isSmallScreen = ref(window.innerWidth <= 950)
-const handleResize = () => { isSmallScreen.value = window.innerWidth <= 950 }
-useWindowListener('resize', handleResize)
+const ui = useUIStore()
+const isSmallScreen = computed(() => ui.isSmallScreen)
 
 const onBtnHover = (event: MouseEvent, isEntering: boolean) => {
   const btn = event.currentTarget as HTMLElement

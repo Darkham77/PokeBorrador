@@ -51,6 +51,7 @@ export interface BattleOptions {
   isRival?: boolean;
   persistenceMode?: string;
   cannotEscape?: boolean;
+  trainerQuote?: string;
 }
 
 export interface GameStore {
@@ -266,5 +267,14 @@ export interface TradeOffer {
   message: string;
   status: 'pending' | 'accepted' | 'rejected' | 'claimed';
   created_at: string;
+}
+
+export interface InventoryStore {
+  addItem: (itemName: string, qty?: number) => void;
+  removeItem: (itemName: string, qty?: number) => void;
+}
+
+export interface ShopStore {
+  healAllPokemon: (cost?: number) => void;
 }
 

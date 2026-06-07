@@ -4,16 +4,16 @@
     {
       "id": 0,
       "name": "migrate-time-logic",
-      "prompt": "Migrate the time system from the legacy API (api/time.js in the backup) to a Vue Composable in src/composables/useTime.js. Ensure that timezone rules are maintained exactly as before.",
+      "prompt": "Migrate the time system from the legacy API style to a Vue Composable in src/composables/useTime.js. Ensure that timezone rules are maintained exactly as before.",
       "expected_output": "A new src/composables/useTime.js file encapsulating the legacy API logic using Composition API, adhering to the 500-line limit and Vue standards.",
-      "files": ["backup_legacy_code/api/time.js"]
+      "files": []
     },
     {
       "id": 1,
       "name": "restore-ui-parity",
-      "prompt": "Restore the original aesthetics of the gym leader cards based on style selectors from backup_legacy_code/style_v5.css. Update src/components/gyms/GymCard.vue to look 1:1 with the original version, allowing only improvements in hover transitions using GPU transforms.",
+      "prompt": "Restore the original aesthetics of the gym leader cards based on the legacy style requirements. Update src/components/gyms/GymCard.vue to look 1:1 with the original version, allowing only improvements in hover transitions using GPU transforms.",
       "expected_output": "Updated GymCard.vue with SCSS styles that replicate the legacy appearance without modifying base colors or sizes, but optimizing animations.",
-      "files": ["backup_legacy_code/style_v5.css", "src/components/gyms/GymCard.vue"]
+      "files": ["src/components/gyms/GymCard.vue"]
     }
   ]
 }

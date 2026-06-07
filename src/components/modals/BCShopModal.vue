@@ -1,7 +1,7 @@
 <script setup lang="ts">
+import { useUIStore } from '@/stores/ui'
 import { ref, computed, watch, nextTick } from 'vue'
 import { gsap } from 'gsap'
-import { useWindowListener } from '@/composables/useWindowListener'
 import { useShopStore } from '@/stores/shop'
 import { useGameStore } from '@/stores/game'
 import BaseModal from '@/components/common/BaseModal.vue'
@@ -27,9 +27,8 @@ const emit = defineEmits<{
 const shopStore = useShopStore()
 const gameStore = useGameStore()
 
-const isSmallScreen = ref(window.innerWidth <= 950)
-const handleResize = () => { isSmallScreen.value = window.innerWidth <= 950 }
-useWindowListener('resize', handleResize)
+const ui = useUIStore()
+const isSmallScreen = computed(() => ui.isSmallScreen)
 
 const activeTab = ref('todos')
 const search = ref('')

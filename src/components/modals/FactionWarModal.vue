@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { useUIStore } from '@/stores/ui'
+import { computed, onMounted, watch } from 'vue'
 import gsap from 'gsap'
 import BaseModal from '@/components/common/BaseModal.vue'
 import { useWarStore } from '@/stores/war'
 import { useGameStore } from '@/stores/game'
 import { useModalStore } from '@/stores/modals'
-import { useWindowListener } from '@/composables/useWindowListener'
 import WarDashboard from '@/components/war/WarDashboard.vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
@@ -33,11 +33,8 @@ const warStore = useWarStore()
 const gameStore = useGameStore()
 const modalStore = useModalStore()
 
-const isSmallScreen = ref(window.innerWidth <= 950)
-const handleResize = () => {
-  isSmallScreen.value = window.innerWidth <= 950
-}
-useWindowListener('resize', handleResize)
+const ui = useUIStore()
+const isSmallScreen = computed(() => ui.isSmallScreen)
 
 onMounted(async () => {
   await warStore.loadWarData()

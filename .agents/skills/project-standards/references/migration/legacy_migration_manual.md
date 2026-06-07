@@ -4,8 +4,7 @@ This manual governs the process of modernizing pre-Vue code into the current Pok
 
 ## 📂 Reference Sources
 
-- The original code is located in `backup_legacy_code/`.
-- Use it to compare battle formulas, visual assets, or behaviors that have suffered regressions in the Vue version.
+- Use legacy references to compare battle formulas, visual assets, or behaviors that have suffered regressions in the Vue version.
 
 ---
 
@@ -25,7 +24,7 @@ This manual governs the process of modernizing pre-Vue code into the current Pok
 
 After migrating a critical module (e.g., the box system or inventory):
 
-- Compare behavior with the legacy unit test script: `node backup_legacy_code/unit_test_battle.ts`.
+- Compare behavior with legacy test cases if available.
 - Verify that the save state persists correctly between versions.
 
 ---

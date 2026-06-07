@@ -25,11 +25,11 @@
   "ignoreExports": [
     {
       "file": "src/logic/pokedexConstants.ts",
-      "exports": ["POKEDEX_SPECIES_COUNT", "MAX_POKEDEX_ID", "GENERATION_COUNTS", "REGIONAL_POKEDEX_COUNT"]
+      "exports": ["POKEDEX_SPECIES_COUNT", "MAX_POKEDEX_ID", "GENERATION_COUNTS", "REGIONAL_POKEDEX_COUNT", "GAME_TMS", "TM_COMPAT"]
     },
     {
       "file": "src/logic/pvp/rankedEngine.ts",
-      "exports": ["RANKED_TIER_ORDER"]
+      "exports": ["RANKED_TIER_ORDER", "validateTeamForRanked"]
     },
     {
       "file": "src/stores/inventory.ts",
@@ -37,7 +37,7 @@
     },
     {
       "file": "src/data/items.ts",
-      "exports": ["MARKET_UNLOCKS"]
+      "exports": ["MARKET_UNLOCKS", "MARKET_CAT_ORDER"]
     },
     {
       "file": "src/data/trainer.ts",
@@ -46,6 +46,178 @@
     {
       "file": "src/logic/breeding/missionEngine.ts",
       "exports": ["DaycareMission"]
+    },
+    {
+      "file": "src/data/constants.ts",
+      "exports": ["STAGE_MULT", "ACC_STAGE_MULT"]
+    },
+    {
+      "file": "src/data/playerClasses.ts",
+      "exports": ["REPUTATION_SHOP_ITEMS"]
+    },
+    {
+      "file": "src/data/pokedex.ts",
+      "exports": ["PDEX_TYPE_COLORS", "POKEMON_SPRITE_IDS"]
+    },
+    {
+      "file": "src/data/rankedData.ts",
+      "exports": ["RANKED_TIER_ORDER", "RANKED_TYPES", "RANKED_TYPE_META"]
+    },
+    {
+      "file": "src/data/spriteMapping.ts",
+      "exports": ["POKEMON_SPRITE_IDS"]
+    },
+    {
+      "file": "src/data/types.ts",
+      "exports": ["TYPE_TRANSLATIONS"]
+    },
+    {
+      "file": "src/logic/auth/saveService.ts",
+      "exports": ["serializeState", "isValidState"]
+    },
+    {
+      "file": "src/logic/auth/sessionHub.ts",
+      "exports": ["getSessionId"]
+    },
+    {
+      "file": "src/logic/battle/ai/battleAI.ts",
+      "exports": ["scoreMove", "getBattleAITools"]
+    },
+    {
+      "file": "src/logic/battle/battleEngine.ts",
+      "exports": ["getTypeEffectiveness", "getEffectiveStat", "getAbilityMultiplier"]
+    },
+    {
+      "file": "src/logic/battle/battleFormulas.ts",
+      "exports": ["getMoveCategory"]
+    },
+    {
+      "file": "src/logic/battle/battleStatus.ts",
+      "exports": ["getStatusIcon"]
+    },
+    {
+      "file": "src/logic/battle/damageMath.ts",
+      "exports": ["CURRENT_GENERATION", "STAGE_MULTIPLIERS_ACC"]
+    },
+    {
+      "file": "src/logic/breeding/breedingData.ts",
+      "exports": ["EGG_GROUP_TRANSLATIONS"]
+    },
+    {
+      "file": "src/logic/breeding/hatchAuras.ts",
+      "exports": ["TYPE_AURA_COLORS"]
+    },
+    {
+      "file": "src/logic/constants/tags.ts",
+      "exports": ["TAG_DEFINITIONS"]
+    },
+    {
+      "file": "src/logic/db/dbRouter.ts",
+      "exports": ["CLIENT_DB_VERSION"]
+    },
+    {
+      "file": "src/logic/db/sqliteEngine.ts",
+      "exports": ["db"]
+    },
+    {
+      "file": "src/logic/economy/economyFormulas.ts",
+      "exports": ["HEAL_COST_TIER_MULTIPLIERS"]
+    },
+    {
+      "file": "src/logic/encounterUI.ts",
+      "exports": ["triggerRivalSequence"]
+    },
+    {
+      "file": "src/logic/encounters.ts",
+      "exports": ["selectFromPool"]
+    },
+    {
+      "file": "src/logic/environment/bushLibrary.ts",
+      "exports": ["BUSH_ANIMATION_MAPPING", "getAnimationTypeForFamily"]
+    },
+    {
+      "file": "src/logic/events/eventEngine.ts",
+      "exports": ["isNewEntryBetter"]
+    },
+    {
+      "file": "src/logic/evolutionLogic.ts",
+      "exports": ["checkTradeEvolution"]
+    },
+    {
+      "file": "src/logic/gym/gymEngine.ts",
+      "exports": ["GYM_RATIOS"]
+    },
+    {
+      "file": "src/logic/player/classEngine.ts",
+      "exports": ["getMissionCostInfo"]
+    },
+    {
+      "file": "src/logic/pokemon/statEngine.ts",
+      "exports": ["STAGE_MULT", "ACC_STAGE_MULT"]
+    },
+    {
+      "file": "src/logic/pokemon/typeEngine.ts",
+      "exports": ["getTypeEffectiveness"]
+    },
+    {
+      "file": "src/logic/pokemonFactory.ts",
+      "exports": ["assignGender", "ensurePokemonGender"]
+    },
+    {
+      "file": "src/logic/providers/itemProvider.ts",
+      "exports": ["ITEM_EFFECTS"]
+    },
+    {
+      "file": "src/logic/services/assetService.ts",
+      "exports": ["useAssets"]
+    },
+    {
+      "file": "src/logic/supabase.ts",
+      "exports": ["default"]
+    },
+    {
+      "file": "src/logic/timeUtils.ts",
+      "exports": ["getServerInstant", "getGMT3Date"]
+    },
+    {
+      "file": "src/logic/utils/assetResolver.ts",
+      "exports": ["currentLODSuffix", "useAssetResolver"]
+    },
+    {
+      "file": "src/logic/utils/gsapHelpers.ts",
+      "exports": ["killTweens"]
+    },
+    {
+      "file": "src/logic/utils/logger.ts",
+      "exports": ["default"]
+    },
+    {
+      "file": "src/logic/utils/opfsStorage.ts",
+      "exports": ["getOpfsFile", "deleteOpfsFile", "listBackups"]
+    },
+    {
+      "file": "src/logic/utils/storage.ts",
+      "exports": ["default"]
+    },
+    {
+      "file": "src/logic/war/guardianEngine.ts",
+      "exports": ["getConflictZones", "simulateLocalDominance"]
+    },
+    {
+      "file": "src/logic/war/warEngine.ts",
+      "exports": ["WAR_PTS_TABLE", "getReconciledWeekIds"]
+    },
+    {
+      "file": "src/logic/weather/weatherRegistry.ts",
+      "exports": ["getVisualWeather"]
+    },
+    {
+      "file": "src/stores/pvp.ts",
+      "exports": ["RANKED_REWARD_MILESTONES", "RANKED_REWARD_TIER_MARKS"]
+    },
+    {
+      "file": "test aventura/kantoGraph.ts",
+      "exports": ["getGraphEdges"]
     }
   ]
 }

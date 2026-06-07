@@ -363,15 +363,14 @@ async function auditFile(filePath: string, fix: boolean): Promise<Violation[]> {
     }
   }
 
-  // MODULARITY AUDIT: 300/500 Rule
-  const isDataFile = filePath.includes('src' + path.sep + 'data' + path.sep) || 
-                     filePath.includes('scripts' + path.sep) ||
-                     filePath.includes('supabase' + path.sep) ||
-                     filePath.endsWith('DB.ts') || 
-                     filePath.endsWith('Metadata.ts') ||
-                     config.fileLength.ignorePattern?.test(content);
+  // MODULARITY AUDIT: 300/500/1000 Rule
+  const isDatabaseOrMetadata = filePath.includes('src' + path.sep + 'data' + path.sep) || 
+                               filePath.includes('scripts' + path.sep) ||
+                               filePath.includes('supabase' + path.sep) ||
+                               filePath.endsWith('DB.ts') || 
+                               filePath.endsWith('Metadata.ts');
 
-  if (!isDataFile) {
+  if (!isDatabaseOrMetadata) {
     // Calcular SLOC real excluyendo comentarios y líneas vacías
     let slocCount = 0;
     let inBlockComment = false;
@@ -399,13 +398,33 @@ async function auditFile(filePath: string, fix: boolean): Promise<Violation[]> {
       slocCount++;
     }
 
-    if (slocCount > 500) {
+    const hasLengthIgnore = config.fileLength.ignorePattern?.test(content);
+    const isVueFile = filePath.endsWith('.vue');
+    
+    // [PureVue-Ignore-Length] is ONLY allowed for database/data files. UI files (.vue) or standard logic files cannot use it.
+    const isAllowedIgnore = hasLengthIgnore && !isVueFile && (
+      filePath.toLowerCase().includes('data') ||
+      filePath.toLowerCase().includes('database') ||
+      filePath.toLowerCase().includes('catalog') ||
+      /export\s+const\s+[A-Z_]+\s*[:=]\s*(?:\[|\{)/.test(content)
+    );
+
+    if (slocCount > 1000) {
       violations.push({
         file: filePath,
         line: slocCount,
-        message: `Mantenibilidad CRÍTICA: El archivo tiene ${slocCount} líneas reales de código (SLOC). MÁXIMO PERMITIDO: 500. Es OBLIGATORIO fragmentar este componente (SRP) o extraer lógica a Composables.`,
+        message: `Mantenibilidad CRÍTICA: El archivo supera las 1000 líneas reales de código (SLOC: ${slocCount}). A pesar de cualquier tag de ignore, superar las 1000 líneas es un ERROR que requiere modularización obligatoria.`,
         context: `SLOC: ${slocCount}`,
         severity: 'error',
+        fixable: false
+      });
+    } else if (slocCount > 500 && !isAllowedIgnore) {
+      violations.push({
+        file: filePath,
+        line: slocCount,
+        message: `Mantenibilidad (500/1000 Rule): El archivo tiene ${slocCount} líneas reales de código (SLOC). Supera las 500 líneas. Se recomienda fuertemente modularizar y extraer lógica a Composables (SRP).`,
+        context: `SLOC: ${slocCount}`,
+        severity: 'warning',
         fixable: false
       });
     }

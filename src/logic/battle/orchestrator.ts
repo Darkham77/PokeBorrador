@@ -32,6 +32,7 @@ export interface BattleOptions {
   rewardTM?: string;
   cannotEscape?: boolean;
   persistenceMode?: string;
+  trainerQuote?: string;
 }
 
 /**
@@ -44,7 +45,8 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
     isTrainer = false, enemyTeam = undefined, trainerName = 'Entrenador',
     battleOptions = {}, isFishing = false, isArchaeology = false, wasSearching: wasSearchingOpt = null,
     trainerSprite = undefined, isRival = false,
-    difficulty = undefined, rewardTM = undefined, cannotEscape = false
+    difficulty = undefined, rewardTM = undefined, cannotEscape = false,
+    trainerQuote = undefined
   } = options
 
   const { activeBiome, mapTags } = getMapBiomeAndTags(locationId)
@@ -93,6 +95,7 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
     isRival: isRival || (battleOptions.isRival as boolean) || false,
     playerTeam: ctx.gs.state.team,
     trainerName, locationId,
+    quote: trainerQuote || (battleOptions.quote as string) || undefined,
     isCave: FIRE_RED_MAPS.find(m => m.id === locationId)?.isCave || false,
     isIndoors: FIRE_RED_MAPS.find(m => m.id === locationId)?.isIndoors || false,
     isCrystalCave: FIRE_RED_MAPS.find(m => m.id === locationId)?.isCrystalCave || false,
@@ -126,7 +129,9 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
 
   // PROTOCOLO DE ASIENTOS
   if (ctx.activeBattle.value) {
-    ctx.activeBattle.value.enemy = null 
+    // Si es combate salvaje, el Pokémon enemigo ya ocupa el asiento desde el inicio.
+    // Si es entrenador o gimnasio, el asiento inicia vacío hasta el envío visual (POKEMON_CALL).
+    ctx.activeBattle.value.enemy = (!isTrainer && !isGym) ? finalEnemyPoke : null 
     
     const currentP = ctx.activeBattle.value.player
     const team = (ctx.gs.state.team as Pokemon[]) || []
@@ -225,22 +230,10 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
       ctx.activeBattle.value.isArchaeology = isArchaeology
     }
     return 
-  } else {
-    await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.ENTRY_ANIM)
-    await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.ENCOUNTER_TYPE_CHECK)
-    
-    if (isTrainer || isGym) {
-      await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.TRAINER_ENTRY)
-      await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.T_VISUAL)
-      if (ctx.animations?.triggerTrainerEntry) {
-        await ctx.animations.triggerTrainerEntry()
-      }
-    } else {
-      await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.WILD_ENTRY)
-      if (ctx.activeBattle.value) ctx.activeBattle.value.enemy = finalEnemyPoke
-    }
   }
 
+  // Si wasSearching es false, llamamos primero a initBattleSequence (que maneja el PRELOAD_FINAL_COORDS en INITIALIZING)
+  // antes de avanzar al flujo visual de FIRST_INTRO.
   logger.info('Orchestrator', 'Calling initBattleSequence...');
   await initBattleSequence(ctx, { 
     locationId, isTrainer, trainerName, isGym, gymId, wasSearching,
@@ -253,10 +246,18 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
  * Visual initialization and first turn setup.
  */
 export async function initBattleSequence(ctx: BattleContext, options: BattleOptions & { initialEnemy: Pokemon | null, initialPlayer: Pokemon | null }) {
-  const { locationId = 'plains', isTrainer, trainerName, isGym, wasSearching, initialEnemy, initialPlayer } = options
+  const { initialEnemy, initialPlayer } = options
   if (!initialPlayer || !initialEnemy) return;
   const { BATTLE_STATES, BATTLE_SUBSTATES } = ctx
   const fsm = ctx.fsm
+
+  // Leemos TODA la configuración del combate estrictamente del estado inyectado en CONTEXT_SETUP
+  const battleState = ctx.activeBattle.value
+  const locationId = battleState?.locationId || 'plains'
+  const isTrainer = !!battleState?.isTrainer
+  const isGym = !!battleState?.isGym
+  const wasSearching = !!battleState?.wasSearching
+  const trainerName = battleState?.trainerName
 
   // Reset activeBattle state fields if reusing object
   if (ctx.activeBattle.value) {
@@ -292,6 +293,12 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
 
   ctx.isIntroAnimating.value = true
   await fsm.transition(BATTLE_STATES.INITIALIZING, BATTLE_SUBSTATES.PRELOAD_FINAL_COORDS)
+
+  // Si wasSearching es false, transicionamos explícitamente a FIRST_INTRO en la máquina de estados 
+  // para cumplir con la secuencia jerárquica del manual antes de ejecutar animaciones
+  if (!wasSearching) {
+    await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.ENTRY_ANIM)
+  }
 
   // Esperar a que la vista (BattleArenaView) se monte y registre las funciones de animación
   for (let i = 0; i < 40; i++) {
@@ -408,6 +415,10 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
     await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.PARALLEL_PREP, 0)
     await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.BUSH_VISIBLE)
     await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.SILHOUETTE_MODE)
+
+    if (ctx.activeBattle.value) {
+      ctx.activeBattle.value.enemy = initialEnemy
+    }
 
     if (needsCall && ctx.activeBattle.value) {
       const oldPoke = ctx.activeBattle.value.player

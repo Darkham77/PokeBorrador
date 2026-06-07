@@ -1,3 +1,4 @@
+import { TRAINER_TYPES } from '@/data/trainerTypes'
 import { generateEncounter } from '@/logic/encounters'
 import { useUIStore } from '@/stores/ui'
 import { useMapStore } from '@/stores/map'
@@ -111,25 +112,6 @@ export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'm
           const team = await buildTrainerTeam(policePool, trainerLv, teamSize)
           enemyTeam.push(...team)
         } else {
-          const TRAINER_TYPES = {
-            'caza_bichos': { name: 'Caza Bichos', sprite: 'cazabichos', pool: ['caterpie', 'metapod', 'weedle', 'kakuna', 'paras', 'venonat'] },
-            'ornitologo': { name: 'Ornitólogo', sprite: 'birdkeeper', pool: ['pidgey', 'spearow', 'doduo'] },
-            'cientifico': { name: 'Científico', sprite: 'scientist', pool: ['magnemite', 'voltorb', 'ditto', 'grimer'] },
-            'luchador': { name: 'Luchador', sprite: 'blackbelt', pool: ['mankey', 'machop'] },
-            'pescador': { name: 'Pescador', sprite: 'swimmer', pool: ['magikarp', 'goldeen', 'poliwag'] },
-            'nadador': { name: 'Nadador', sprite: 'swimmer', pool: ['psyduck', 'tentacool', 'staryu', 'horsea'] },
-            'domador': { name: 'Domador', sprite: 'tamer', pool: ['growlithe', 'vulpix', 'ponyta', 'ekans'] },
-            'medium': { name: 'Médium', sprite: 'psychic', pool: ['abra', 'drowzee'] },
-            'motorista': { name: 'Motorista', sprite: 'biker', pool: ['koffing', 'grimer', 'rattata'] },
-            'montanero': { name: 'Montañero', sprite: 'hiker', pool: ['geodude', 'sandshrew', 'rhyhorn'] },
-            'rocket': { name: 'Recluta Rocket', sprite: 'rocketgrunt', pool: ['koffing', 'ekans', 'zubat', 'rattata', 'meowth', 'drowzee', 'machop', 'grimer'] },
-            'criador': { name: 'Criador Pokémon', sprite: 'pokemonbreeder', pool: ['eevee', 'pidgey', 'oddish', 'bellsprout', 'growlithe', 'poliwag', 'caterpie', 'weedle'] },
-            'aristocrata': { name: 'Aristócrata', sprite: 'gentleman', pool: ['meowth', 'growlithe', 'eevee', 'clefairy', 'jigglypuff', 'vulpix'] },
-            'ranger': { name: 'Ranger Pokémon', sprite: 'pokemonranger', pool: ['nidoran_f', 'nidoran_m', 'oddish', 'bellsprout', 'paras', 'tangela', 'exeggcute'] },
-            'pokefan': { name: 'Pokéfan', sprite: 'pokefan', pool: ['pikachu', 'jigglypuff', 'clefairy', 'meowth', 'eevee', 'psyduck'] },
-            'artista': { name: 'Artista', sprite: 'artist', pool: ['bellsprout', 'vulpix', 'oddish', 'jigglypuff', 'clefairy'] },
-            'trainers': { name: 'Entrenador Élite', sprite: 'youngster-masters', pool: ['dragonite', 'charizard', 'alakazam', 'machamp', 'gengar', 'lapras'] }
-          } as const
           const keys = Object.keys(TRAINER_TYPES) as Array<keyof typeof TRAINER_TYPES>
           const typeKey = keys[Math.floor(Math.random() * keys.length)] || 'caza_bichos'
           const t = TRAINER_TYPES[typeKey]
@@ -308,7 +290,6 @@ export async function startEncounter(ctx: BattleContext) {
 
   const isMinigame = ctx.activeBattle.value?.isFishing || ctx.activeBattle.value?.isArchaeology
   const enemyPoke = ctx.activeBattle.value?.enemy || ctx.activeBattle.value?._initialEnemy
-  const locId = ctx.activeBattle.value?.locationId || 'route1'
 
   if (isMinigame) {
     if (ctx.activeBattle.value && enemyPoke) {
@@ -322,12 +303,7 @@ export async function startEncounter(ctx: BattleContext) {
 
   ctx.isIntroAnimating.value = true
   
-  const isTr = ctx.activeBattle.value?.isTrainer || false
-  const trName = ctx.activeBattle.value?.trainerName || ''
-  const isGym = ctx.activeBattle.value?.isGym || false
-  const gymId = ctx.activeBattle.value?.gymId || ''
-  
-  await ctx.initBattle(locId, isTr, trName, isGym, gymId, true);
+  await ctx.initBattle();
   
   ctx.isIntroAnimating.value = false
 }

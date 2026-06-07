@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { useWindowListener } from '@/composables/useWindowListener'
+import { computed } from 'vue'
 import { useUIStore } from '@/stores/ui'
 import { usePlayerClassStore } from '@/stores/playerClass'
 import { useGameStore } from '@/stores/game'
@@ -27,9 +26,8 @@ const uiStore = useUIStore()
 const classStore = usePlayerClassStore()
 const gameStore = useGameStore()
 
-const isSmallScreen = ref(window.innerWidth <= 950)
-const handleResize = () => { isSmallScreen.value = window.innerWidth <= 950 }
-useWindowListener('resize', handleResize)
+const ui = useUIStore()
+const isSmallScreen = computed(() => ui.isSmallScreen)
 
 const currentClass = computed(() => classStore.currentClassDef)
 const trainerLevel = computed(() => gameStore.state.trainerLevel || 1)

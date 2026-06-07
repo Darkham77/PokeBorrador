@@ -1,10 +1,9 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useBreedingStore } from '@/stores/breeding'
 import { useUIStore } from '@/stores/ui'
 import { useModalStore } from '@/stores/modals'
 import type { Pokemon } from '@/types/pokemon'
-import { useWindowListener } from '@/composables/useWindowListener'
 import BaseModal from '@/components/common/BaseModal.vue'
 import DaycareSlot from '@/components/breeding/DaycareSlot.vue'
 import BreedingSummary from '@/components/breeding/BreedingSummary.vue'
@@ -28,9 +27,7 @@ const breedingStore = useBreedingStore()
 const uiStore = useUIStore()
 const modalStore = useModalStore()
 
-const isSmallScreen = ref(typeof window !== 'undefined' ? window.innerWidth <= 950 : false)
-const handleResize = () => { isSmallScreen.value = window.innerWidth <= 950 }
-useWindowListener('resize', handleResize)
+const isSmallScreen = computed(() => uiStore.isSmallScreen)
 
 const openPicker = (slotIdx: number) => {
   modalStore.open('PokemonSelection', {

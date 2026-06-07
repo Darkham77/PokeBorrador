@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
+import { useUIStore } from '@/stores/ui'
+import { ref, onMounted, onUnmounted, watch, nextTick, computed } from 'vue'
 import { gsap } from 'gsap'
 import { useAuthStore } from '@/stores/auth'
 import { useGameStore } from '@/stores/game'
 import { useGTSStore } from '@/stores/gts'
-import { useWindowListener } from '@/composables/useWindowListener'
 import BaseModal from '@/components/common/BaseModal.vue'
 import { formatCurrency } from '@/logic/utils/formatters'
 
@@ -32,11 +32,8 @@ const gtsStore = useGTSStore()
 
 const activeTab = ref('explore') // 'explore' | 'publish' | 'my_items'
 
-const isSmallScreen = ref(window.innerWidth <= 950)
-const handleResize = () => {
-  isSmallScreen.value = window.innerWidth <= 950
-}
-useWindowListener('resize', handleResize)
+const ui = useUIStore()
+const isSmallScreen = computed(() => ui.isSmallScreen)
 
 const TABS = [
   { id: 'explore', label: 'EXPLORAR', icon: '🔍' },

@@ -15,8 +15,21 @@ interface Position {
   y: number
 }
 
+export function isFlying(pokemon: Pokemon | null | undefined): boolean {
+  if (!pokemon || !pokemon.id) return false
+  const data = pokemonDataProvider.getPokemonData(pokemon.id)
+  if (!data) return false
+  if (data.isFloating !== undefined) return data.isFloating
+  
+  const types: string[] = []
+  if (data.type) types.push(data.type.toLowerCase())
+  if (data.type2) types.push(data.type2.toLowerCase())
+  return types.includes('flying')
+}
+
 export function useBattleShadows() {
   const shadowStore = useCombatShadowStore()
+
 
   // Claves únicas para las sombras en el store
   const currentPlayerShadowKey = ref<string | null>(null)
@@ -38,17 +51,9 @@ export function useBattleShadows() {
     return `${side}_${pokemon.id}`
   }
 
-  const isFlying = (pokemon: Pokemon | null) => {
-    if (!pokemon || !pokemon.id) return false
-    const data = pokemonDataProvider.getPokemonData(pokemon.id)
-    if (!data) return false
-    if (data.isFloating !== undefined) return data.isFloating
-    
-    const types: string[] = []
-    if (data.type) types.push(data.type.toLowerCase())
-    if (data.type2) types.push(data.type2.toLowerCase())
-    return types.includes('flying')
-  }
+
+
+
 
   // Sincronizar visibilidad y posición de la sombra enemiga
   const syncEnemyShadow = async (visible: boolean, data: Pokemon | null, pos: Position, animState: unknown) => {

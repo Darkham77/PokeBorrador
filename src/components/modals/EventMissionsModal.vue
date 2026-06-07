@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { useUIStore } from '@/stores/ui'
+import { onMounted, computed } from 'vue';
 import BaseModal from '@/components/common/BaseModal.vue';
 import EventMissions from '@/components/events/EventMissions.vue';
 import { useBreedingStore } from '@/stores/breeding';
-import { useWindowListener } from '@/composables/useWindowListener';
 
 interface Props {
   show?: boolean;
@@ -15,9 +15,8 @@ withDefaults(defineProps<Props>(), {
 
 const breedingStore = useBreedingStore();
 
-const isSmallScreen = ref(window.innerWidth <= 950);
-const handleResize = () => { isSmallScreen.value = window.innerWidth <= 950; };
-useWindowListener('resize', handleResize);
+const ui = useUIStore()
+const isSmallScreen = computed(() => ui.isSmallScreen)
 
 const emit = defineEmits<{
   close: []

@@ -9,6 +9,8 @@ import { syncServerTime, getServerTime } from '@/logic/timeUtils';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { SHOP_ITEMS } from '@/data/items.ts';
 import { logger } from '@/logic/utils/logger';
+import { TRAINER_TYPES } from '@/data/trainerTypes';
+import { getRandomQuoteForTrainer } from '@/data/trainerPhrases';
 import type { Pokemon } from '@/types/pokemon';
 import type { MapLocation } from '@/types/encounters';
 
@@ -127,11 +129,13 @@ export async function executeNavigation(
 
     let tName = 'Entrenador';
     let tSprite = 'youngster';
+    let tQuote = '¡Prepárate para combatir! ¡No te lo pondré fácil!';
     const enemyTeam: Pokemon[] = [];
 
     if (isMaxCriminality) {
       tName = 'Oficial de Policía';
       tSprite = 'tamer';
+      tQuote = getRandomQuoteForTrainer('police');
       const criminality = gs.state.classData?.criminality || 100;
       const excess = Math.max(0, criminality - 100);
       const bonusLv = Math.floor(excess / 50);
@@ -142,29 +146,18 @@ export async function executeNavigation(
       const team = await buildTrainerTeam(policePool, trainerLv, teamSize);
       enemyTeam.push(...team);
     } else {
-      const TRAINER_TYPES = {
-        'caza_bichos': { name: 'Caza Bichos', sprite: 'cazabichos', pool: ['caterpie', 'metapod', 'weedle', 'kakuna', 'paras', 'venonat'] },
-        'ornitologo': { name: 'Ornitólogo', sprite: 'birdkeeper', pool: ['pidgey', 'spearow', 'doduo'] },
-        'cientifico': { name: 'Científico', sprite: 'scientist', pool: ['magnemite', 'voltorb', 'ditto', 'grimer'] },
-        'luchador': { name: 'Luchador', sprite: 'blackbelt', pool: ['mankey', 'machop'] },
-        'pescador': { name: 'Pescador', sprite: 'swimmer', pool: ['magikarp', 'goldeen', 'poliwag'] },
-        'nadador': { name: 'Nadador', sprite: 'swimmer', pool: ['psyduck', 'tentacool', 'staryu', 'horsea'] },
-        'domador': { name: 'Domador', sprite: 'tamer', pool: ['growlithe', 'vulpix', 'ponyta', 'ekans'] },
-        'medium': { name: 'Médium', sprite: 'psychic', pool: ['abra', 'drowzee'] },
-        'motorista': { name: 'Motorista', sprite: 'biker', pool: ['koffing', 'grimer', 'rattata'] },
-        'montanero': { name: 'Montañero', sprite: 'hiker', pool: ['geodude', 'sandshrew', 'rhyhorn'] }
-      } as const;
       const keys = Object.keys(TRAINER_TYPES) as Array<keyof typeof TRAINER_TYPES>;
       const typeKey = keys[Math.floor(Math.random() * keys.length)] || 'caza_bichos';
       const t = TRAINER_TYPES[typeKey];
       
       tName = t.name;
       tSprite = t.sprite;
+      tQuote = getRandomQuoteForTrainer(typeKey);
       const trainerLv = baseLv + 2;
       const teamSize = Math.floor(Math.random() * 3) + 1;
 
       const { buildTrainerTeam } = await import('@/logic/battle/trainerFactory');
-      const team = await buildTrainerTeam(t.pool, trainerLv, teamSize);
+      const team = await buildTrainerTeam(t.pool as unknown as string[], trainerLv, teamSize);
       enemyTeam.push(...team);
     }
 
@@ -175,7 +168,8 @@ export async function executeNavigation(
         isTrainer: true,
         enemyTeam,
         trainerName: tName,
-        trainerSprite: tSprite
+        trainerSprite: tSprite,
+        trainerQuote: tQuote
       });
     }
   } else if (wildEnc.type === 'rival') {

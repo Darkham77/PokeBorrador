@@ -1,6 +1,6 @@
 ---
 name: project-standards
-description: Core governance for the Poké Vicio project. Enforces Hybrid Retro-Modern identity, 300/500-line modularity (SRP focus), Zero-Warning SASS/Vue standards, input standardization, financial layouts, and Zero-Ignore TypeScript policy. Strictly prohibits the use of timers (setTimeout) or reactive state variables for animation coordination in favor of GSAP timelines and promises. Includes diagnostic scripts for automated auditing (viewport, GPU, items). For ANY task involving the battle engine or FSM transitions, you MUST use validate_fsm_diagrams.ts, validate_fsm_implementation.ts, and validate_fsm_flow_parity.ts to ensure 1:1 parity with documentation and zero race conditions. Acts as a Navigation Hub to access technical manuals.
+description: Core governance for the Poké Vicio project. Enforces Hybrid Retro-Modern identity, 500/1000-line modularity (SRP focus), Zero-Warning SASS/Vue standards, input standardization, financial layouts, and Zero-Ignore TypeScript policy. Strictly prohibits the use of timers (setTimeout) or reactive state variables for animation coordination in favor of GSAP timelines and promises. Includes diagnostic scripts for automated auditing (viewport, GPU, items). For ANY task involving the battle engine or FSM transitions, you MUST use validate_fsm_diagrams.ts, validate_fsm_implementation.ts, and validate_fsm_flow_parity.ts to ensure 1:1 parity with documentation and zero race conditions. Acts as a Navigation Hub to access technical manuals.
 ---
 
 # Project Standards (Lean Core)
@@ -88,7 +88,7 @@ Consult these manuals for detailed implementation specifications:
 
 ### 3. Modularity & Hierarchy
 
-- **300/500-Line Rule**: Modularization MUST be proactive. Files exceeding **300 lines** should be reviewed for logic extraction into Composables (SRP focus). No logic or style file may exceed **500 lines**. This limit is calculated based on logical lines of code (SLOC), completely ignoring comments (`//`, `/* */`, `<!-- -->`) and blank lines.
+- **500/1000-Line Rule**: Modularization is recommended for files exceeding **500 lines** (triggers a quality warning). No logic or style file may exceed **1000 lines** (hard limit, exceeding is a critical error). This limit is calculated based on logical lines of code (SLOC), completely ignoring comments (`//`, `/* */`, `<!-- -->`) and blank lines.
   - _Exemption_: Massive databases, metadata files (`*Metadata.ts`, `*DB.ts`), and modules in `src/data/` are exempt to maintain data cohesion.
   - **Visual Configuration Extraction**: When modularizing massive visual components (Partículas, Auras) to comply with this rule, extract data dictionaries and configuration objects into external `.ts` files (e.g., `fx-configs.ts`) to keep the rendering logic clean.
 
@@ -195,7 +195,7 @@ These specific technical rules have been moved to their respective specialized m
 
 ### Weather Anim Seed & GSAP Hover Animations
 - **Weather Seed Synchronization**: The visual weather animation seed (0 to 1) MUST be synchronized between MapCard and BattleArenaView using the global `getWeatherAnimSeed` function. Pass it as `:anim-seed` to `<AtmosphereLayer>` (and never pass `:seed`).
-- **File Length Bypass**: Large data-heavy or state-management files (like stores or factories) exceeding 500 lines by design MUST carry `// [PureVue-Ignore-Length]` at the top of the script setup block.
+- **File Length Bypass**: Large data-heavy or state-management files (like stores or factories) exceeding 500 lines by design but under 1000 lines MUST carry `// [PureVue-Ignore-Length]` at the top of the script setup block. Note that Vue components and logic files are strictly prohibited from using this bypass to exceed 1000 lines.
 - **Strict GSAP Hover animations**: All hover transitions on interactive cards or rows (such as lift, scale, or background transition) MUST be handled via `@mouseenter` and `@mouseleave` handlers using GSAP (`gsap.to`), completely avoiding manual CSS `transition:` declarations.
 
 

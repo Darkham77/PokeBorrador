@@ -2,7 +2,6 @@
 
 import { ref, computed, reactive, watch, nextTick } from 'vue'
 import { gsap } from 'gsap'
-import { useWindowListener } from '@/composables/useWindowListener'
 import { useGameStore } from '@/stores/game'
 import { useInventoryStore, type Item } from '@/stores/inventory'
 import { useUIStore } from '@/stores/ui'
@@ -44,9 +43,8 @@ const uiStore = useUIStore()
 const inventoryStore = useInventoryStore()
 const modalStore = useModalStore()
 
-const isSmallScreen = ref(window.innerWidth <= 950)
-const handleResize = () => { isSmallScreen.value = window.innerWidth <= 950 }
-useWindowListener('resize', handleResize)
+const ui = useUIStore()
+const isSmallScreen = computed(() => ui.isSmallScreen)
 
 // Battle/Target Auto-category selection moved below filteredItems to avoid ReferenceError
 

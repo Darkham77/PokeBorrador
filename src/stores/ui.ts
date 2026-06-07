@@ -63,6 +63,10 @@ export const useUIStore = defineStore('ui', () => {
     })
   }
 
+  const isSmallScreen = computed(() => {
+    return (windowWidth.value / appZoom.value) <= 950
+  })
+
   // Low Power Mode
   const lowPowerMode = ref<'auto' | 'enabled' | 'disabled'>(
     (safeStorage.getItem('low-power-mode') as 'auto' | 'enabled' | 'disabled') || 'auto'
@@ -195,7 +199,7 @@ export const useUIStore = defineStore('ui', () => {
     const battleStore = useBattleStore()
     
     // Check if battle is active and we are in mobile/fullscreen mode (<= 950px)
-    const isBattleFullscreen = battleStore.isBattleActive && windowWidth.value <= 950
+    const isBattleFullscreen = battleStore.isBattleActive && isSmallScreen.value
     const isStackFullscreen = modalStore.stack.some(m => (m.props.type === 'fullscreen' || m.props.maxHeight === '100dvh') && !m.closing)
     
     return isBattleFullscreen || isStackFullscreen
@@ -333,6 +337,7 @@ export const useUIStore = defineStore('ui', () => {
     isAnyModalOpen,
     isAnyBlockingModalOpen,
     windowWidth,
+    isSmallScreen,
     lowPowerMode,
     isLowPowerActive,
     setLowPowerMode,

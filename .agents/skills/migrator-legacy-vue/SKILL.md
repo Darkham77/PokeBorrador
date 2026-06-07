@@ -1,11 +1,11 @@
 ---
 name: migrator-legacy-vue
-description: MANDATORY skill for migrating legacy code from `backup_legacy_code/` to Vue 3. Triggers when user asks to "migrate", "modernize", or "restore" legacy features. Guarantees 1:1 visual parity, strict project standards, and MANDATORY unit testing for ALL changes and components.
+description: MANDATORY skill for migrating legacy code to Vue 3. Triggers when user asks to "migrate", "modernize", or "restore" legacy features. Guarantees 1:1 visual parity, strict project standards, and MANDATORY unit testing for ALL changes and components.
 ---
 
 # Migrator Legacy Vue
 
-Goal: Port and **MODERNIZE** legacy JavaScript/CSS/HTML logic from the `backup_legacy_code` archive into the modern Vue 3 architecture. While visual fidelity must be absolute, the underlying code **MUST** be updated to meet all current project standards.
+Goal: Port and **MODERNIZE** legacy JavaScript/CSS/HTML logic into the modern Vue 3 architecture. While visual fidelity must be absolute, the underlying code **MUST** be updated to meet all current project standards.
 
 ## Core Mandate: Visual Parity 1:1
 
@@ -20,10 +20,10 @@ Every migration task **MUST** follow these phases. Do not skip any phase.
 
 ### Phase 1: Deep Audit & Comparison
 
-1. Locate the legacy source in `backup_legacy_code/`.
+1. Locate the legacy source (if available or described).
 2. **Read the Tracker**: Consult [migration_tracker.md](docs/migration_tracker.md) to understand the current progress and pending items.
    - **IMPORTANT**: Use it as a **GUIDE**, not as absolute truth. Always verify the actual codebase state.
-3. Compare with the current state in `src/` using `@/legacy-code-reference`.
+3. Compare with the current state in `src/`.
 4. Identify missing logic, styles, or assets.
 
 ### Phase 2: Architectural Plan
@@ -71,7 +71,7 @@ Legacy code **MUST** be modified during migration to comply with all current pro
 - **Type Safety**: Use TypeScript where possible or JSDoc if the project is JS-only.
 - **Mandatory Unit Testing**: No migration is complete without verified unit tests for **ALL** changes. Whether it's a simple UI component or complex battle logic, you **MUST** provide a test suite that covers edge cases and confirms parity with the original legacy behavior. This is not optional and must be done for every single migrated file.
 - **Legacy View Cleanup**: When migrating a feature from a tab-based or inline legacy view to a modern Vue modal, you **MUST** physically remove the old view component from the main layout. Failure to do so can result in "ghost" UI rendering at the bottom of the screen or state conflicts between the old and new systems.
-- **Migration Tracking Mandate**: To prevent logic loss and maintain project oversight, every file migrated from `backup_legacy_code/` **MUST** be registered in the **Migration Tracker Table** (`docs/migration_tracker.md`).
+- **Migration Tracking Mandate**: To prevent logic loss and maintain project oversight, every migrated file **MUST** be registered in the **Migration Tracker Table** (`docs/migration_tracker.md`).
   - **Required Columns**: `Original File`, `Vue Module/Composable`, `Status/Coverage`, `Notes`.
   - **Status**: Flag as "100%" only when all logic, styles, and assets are fully verified and **TESTED** (with passing unit tests). If legacy features are missing, they **MUST** be noted.
 - **Prohibition of Hybrid Phases**:

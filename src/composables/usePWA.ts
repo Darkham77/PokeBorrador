@@ -110,7 +110,15 @@ export function usePWA() {
     progressText.value = 'Aplicando actualización...'
     
     const forceCacheBustingReload = () => {
-      window.location.reload()
+      try {
+        const url = new URL(window.location.href)
+        url.searchParams.set('t', Temporal.Now.instant().epochMilliseconds.toString())
+        const target = `${url.pathname}${url.search}${url.hash}`
+        // fallow-ignore-next-line security-sink
+        window.location.replace(target)
+      } catch {
+        window.location.reload()
+      }
     }
 
     // Fail-safe: force physical reload if SW doesn't reload the page in 3.5 seconds

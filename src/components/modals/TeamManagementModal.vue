@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import gsap from 'gsap'
-import { useWindowListener } from '@/composables/useWindowListener'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 import { useBoxStore } from '@/stores/box'
@@ -13,9 +12,8 @@ import type { Pokemon } from '@/types/pokemon'
 const gameStore = useGameStore()
 const uiStore = useUIStore()
 
-const isSmallScreen = ref(window.innerWidth <= 950)
-const handleResize = () => { isSmallScreen.value = window.innerWidth <= 950 }
-useWindowListener('resize', handleResize)
+const ui = useUIStore()
+const isSmallScreen = computed(() => ui.isSmallScreen)
 
 const activeTab = ref('adventure') // 'adventure', 'pvp', 'war'
 

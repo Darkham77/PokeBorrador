@@ -4,7 +4,6 @@ import { usePvPStore } from '@/stores/pvp'
 import { useLivePvPStore } from '@/stores/livePvP'
 import { useAuthStore } from '@/stores/auth'
 import { useUIStore } from '@/stores/ui'
-import { useWindowListener } from '@/composables/useWindowListener'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue'
 import BaseModal from '@/components/common/BaseModal.vue'
@@ -38,11 +37,7 @@ watch(() => pvp.eloTier?.id, () => {
 })
 
 // Responsiveness setup
-const isSmallScreen = ref(window.innerWidth <= 950)
-const handleResize = () => {
-  isSmallScreen.value = window.innerWidth <= 950
-}
-useWindowListener('resize', handleResize)
+const isSmallScreen = computed(() => ui.isSmallScreen)
 
 onMounted(async () => {
   await pvp.loadPvPData()

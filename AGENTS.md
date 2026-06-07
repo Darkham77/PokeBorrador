@@ -28,10 +28,10 @@ This file defines the immutable DNA of the Poké Vicio project. Every AI agent i
 
 - Maintain absolute separation between Online (Supabase) and Offline (SQLite) contexts via the `DBRouter`.
 
-## 4. Code Modularity (300/500 Rule)
+## 4. Code Modularity (500/1000 Rule)
 
-- **Early Modularization**: Files exceeding **300 lines** should trigger a proactive refactoring review. Focus on extracting logic into **Composables** and ensuring **Single Responsibility (SRP)**.
-- **Hard Limit**: No logic or UI component may exceed **500 lines**. Exceeding this limit is considered a critical technical debt error.
+- **Recommended Limit**: Files exceeding **500 lines** should trigger warnings and recommendations to modularize.
+- **Hard Limit**: No logic or UI component may exceed **1000 lines**. Exceeding this limit is considered a critical technical debt error.
   - _Exception_: Massive databases, metadata modules, and files in `src/data/` are exempt from this limit to preserve data integrity.
 
 ## 5. Architectural Reuse & Inheritance

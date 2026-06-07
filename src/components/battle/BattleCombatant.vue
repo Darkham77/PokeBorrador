@@ -1,40 +1,21 @@
-// [PureVue-Ignore-Length]
 <script setup lang="ts">
-
-
-import { ref, computed, watch, watchEffect, nextTick, onMounted, onUnmounted, toValue } from 'vue'
-import { gsap } from 'gsap'
-
+import { ref } from 'vue'
+import gsap from 'gsap'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import VirtualEntity from './VirtualEntity.vue'
 import CombatShadow from './CombatShadow.vue'
 import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
-import { useCombatShadowStore } from '@/stores/combatShadows'
-import { useBattleStore } from '@/stores/battle'
-import { gameBus } from '@/logic/gameBus'
-import { WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator'
-
 import type { Pokemon } from '@/types/pokemon'
 import type { BattleStages } from '@/types/battle'
-
-// Caché persistente para las Pokéballs y coordenadas de energía por lado de combate
-const pokeballCoordsCache = new Map<string, { top: string; left: string }>()
-const rawCoordsCache = new Map<string, { x: number; y: number }>()
+import { useBattleCombatantAnims, onSparkleEnter, onBallEnter, onBallLeave } from './useBattleCombatantAnims'
+import { useBattleCombatantState, type SparkleData } from './useBattleCombatantState'
 
 // Referencias DOM
 const spriteRef = ref<HTMLElement | null>(null)
 const spriteRotationRef = ref<HTMLElement | null>(null)
 const shadowWrapperRef = ref<HTMLElement | null>(null)
-
-interface SparkleData {
-  id: string | number
-  tx: number
-  ty: number
-  tf: number
-  scale: number
-  delay: string
-}
+const pokeballImgRef = ref<HTMLImageElement | null>(null)
+const idleWrapperRef = ref<HTMLElement | null>(null)
 
 interface Props {
   side: 'player' | 'enemy'
@@ -82,6 +63,7 @@ const props = withDefaults(defineProps<Props>(), {
   isEmerging: false,
   suppressFX: false,
   hidden: false,
+  hasSeat: false,
   stages: () => ({}),
   targetPosition: null
 })
@@ -91,766 +73,53 @@ const emit = defineEmits<{
   (e: 'animationEnd', type: 'attack' | 'faint' | 'damage'): void
 }>()
 
-const naturalSize = ref({ w: 0, h: 0 })
-const idleWrapperRef = ref<HTMLElement | null>(null)
-const seatKey = computed(() => `${props.side}-${props.position.x}-${props.position.y}`)
-const cacheKey = computed(() => {
-  if (props.pokemon) {
-    return props.pokemon.uid || `${props.side}-${props.pokemon.id}`
-  }
-  return seatKey.value
-})
-let idleTween: gsap.core.Tween | null = null
+// Consumir el estado extraído en el composable
+const {
+  naturalSize,
+  cacheKey,
+  isFloating,
+  isEnemy,
+  imageUrl,
+  getAttackAnimClass,
+  pokeballShadowUrl,
+  localGroundY,
+  fxScale,
+  fxRadius,
+  isBallVisible,
+  wasCaptured,
+  internalBallId,
+  memorizedBallCoords,
+  getSpriteFeetOrigin,
+  getBallTargetCoords,
+  rawCoordsCache,
+  handleImageError,
+  handleBallError,
+  handleLoad,
+  smokeParticles
+} = useBattleCombatantState(props, emit, spriteRef)
 
-
-const isPlayer = computed(() => props.side === 'player')
-const isEnemy = computed(() => props.side === 'enemy')
-
-const imageUrl = computed(() => {
-  if (!props.pokemon) return ''
-  return getAssetUrl(ASSET_TYPES.POKEMON, props.pokemon.id, { 
-    isShiny: !!props.pokemon.isShiny, 
-    isBack: isPlayer.value 
-  })
-})
-
-const isFloating = computed(() => {
-  if (!props.pokemon) return false
-  const data = pokemonDataProvider.getPokemonData(props.pokemon.id)
-  if (!data) return false
-  if (data.isFloating !== undefined) return data.isFloating
-  const types: string[] = []
-  if (data.type) types.push(data.type.toLowerCase())
-  if (data.type2) types.push(data.type2.toLowerCase())
-  return types.includes('flying')
-})
-
-const initIdleAnim = () => {
-  if (!idleWrapperRef.value || !props.pokemon) return
-  if (idleTween) {
-    idleTween.kill()
-    idleTween = null
-  }
-
-  const status = props.pokemon.status?.toLowerCase() || ''
-  const isFrozen = status === 'freeze' || status === '🧊'
-  const isPara = status.includes('paraly') || status.includes('para') || status === '⚡'
-  const isConfused = (props.pokemon.confused || 0) > 0
-  const isTrapped = (props.animState as string) === 'trapped'
-  const isCatching = props.animState === 'catching'
-  
-  if (isFrozen || isPara || isConfused || isTrapped || isCatching) {
-    gsap.killTweensOf(idleWrapperRef.value)
-    gsap.set(idleWrapperRef.value, { y: 0, rotation: 0, scaleX: 1, scaleY: 1 })
-    return
-  }
-
-  if (isFloating.value) {
-    // Floating Animation with Random Values per cycle using repeatRefresh
-    idleTween = gsap.to(idleWrapperRef.value, {
-      y: () => `-${10 + Math.random() * 6}%`,
-      rotation: () => (Math.random() > 0.5 ? 1 : -1) * (1 + Math.random() * 4),
-      duration: () => 2 + Math.random() * 1,
-      repeat: -1,
-      yoyo: true,
-      repeatRefresh: true,
-      ease: 'sine.inOut'
-    })
-  } else {
-    // Subtle Ground Animation
-    idleTween = gsap.to(idleWrapperRef.value, {
-      scaleX: () => 1.01 + Math.random() * 0.02,
-      scaleY: () => 0.97 + Math.random() * 0.02,
-      rotation: () => (Math.random() > 0.5 ? 1 : -1) * (0.5 + Math.random() * 1),
-      duration: () => 1.5 + Math.random() * 0.5,
-      repeat: -1,
-      yoyo: true,
-      repeatRefresh: true,
-      ease: 'sine.inOut'
-    })
-  }
-}
-
-watchEffect(() => {
-  // Rastreamos dependencias explícitamente para el watchEffect
-  void props.pokemon?.status
-  void props.pokemon?.confused
-  void props.animState
-  void isFloating.value
-  
-  if (idleWrapperRef.value) {
-    initIdleAnim()
-  }
-})
-
-watch(idleWrapperRef, (el) => {
-  if (el) initIdleAnim()
-})
-
-const handleLoad = (e: Event) => {
-  const target = e.target as HTMLImageElement
-  naturalSize.value = { w: target.naturalWidth, h: target.naturalHeight }
-  emit('load', naturalSize.value)
-}
-
-const getAttackAnimClass = computed(() => {
-  if (!props.isAttacking || !props.activeMove) return ''
-  const move = props.activeMove
-  if (move.side !== props.side) return ''
-  if (move.cat === 'physical') return 'atk-physical'
-  if (move.cat === 'special') return 'atk-special'
-  if (move.cat === 'status') return 'atk-status'
-  return 'atk-default'
-})
+// Inicializar animaciones de combate
+useBattleCombatantAnims(
+  props,
+  spriteRef,
+  spriteRotationRef,
+  shadowWrapperRef,
+  pokeballImgRef,
+  idleWrapperRef,
+  cacheKey,
+  getSpriteFeetOrigin,
+  getBallTargetCoords,
+  rawCoordsCache,
+  wasCaptured
+)
 
 const virtualStyle = { width: '100%', height: '100%' }
 
-const pokeballShadowUrl = computed(() => {
-  if (typeof document === 'undefined') return ''
-  const w = 10, h = 7
-  const canvas = document.createElement('canvas')
-  canvas.width = w; canvas.height = h
-  const ctx = canvas.getContext('2d')
-  if (!ctx) return ''
-  ctx.fillStyle = 'Rgba(0, 0, 0, 0.45)'
-  ctx.beginPath()
-  ctx.ellipse(w / 2, h / 2, w / 2, h / 2, 0, 0, Math.PI * 2)
-  ctx.fill()
-  return `url(${canvas.toDataURL('image/png')})`
-})
-
-const shadowStore = useCombatShadowStore()
-const battleStore = useBattleStore()
-const currentShadow = computed(() => props.shadowKey ? shadowStore.activeShadows.get(props.shadowKey) : null)
-
-const localGroundY = computed(() => {
-  const shadow = currentShadow.value
-  if (shadow && shadow.feetY !== undefined) {
-    return `${shadow.feetY * 100}%`
-  }
-  const cached = pokeballCoordsCache.get(cacheKey.value)
-  if (cached) return cached.top
-  return props.groundY
-})
-
-const fxScale = computed(() => props.baseSize / 100)
-
-const fxRadius = computed(() => {
-  const shadow = currentShadow.value
-  if (shadow && shadow.feetY !== undefined) {
-    // Distancia del centro (0.5) a los pies (feetY) convertido a %
-    const dist = Math.abs(shadow.feetY - 0.5)
-    return Math.max(15, Math.min(80, dist * 100))
-  }
-  return 40
-})
-
-const stickyCoords = computed(() => {
-  const shadow = currentShadow.value
-  let left = '50%'
-  let top = localGroundY.value
-  
-  if (shadow) {
-    const scale = (WORLD_CONSTANTS as { OBJECT_SCALE: number }).OBJECT_SCALE || 2
-    const entitySize = props.baseSize * scale
-
-    if (shadow.feetX !== undefined) {
-      const offsetX = (shadow.feetX - 0.5) * entitySize
-      left = `calc(50% + ${offsetX}px)`
-    }
-  } else {
-    const cached = pokeballCoordsCache.get(cacheKey.value)
-    if (cached) {
-      left = cached.left
-      top = cached.top
-    }
-  }
-  
-  return { top, left }
-})
-
-const isBallVisible = computed(() => {
-  return props.animState === 'trapped' || 
-         props.animState === 'catching' || 
-         props.animState === 'releasing' || 
-         props.isCaptureSuccess
-})
-
-const wasCaptured = ref(false)
-const internalBallId = ref('pokeball')
-const memorizedBallCoords = ref({ top: '90%', left: '50%' })
-
-const getSpriteFeetOrigin = () => {
-  const shadow = currentShadow.value
-  const scale = (WORLD_CONSTANTS as { OBJECT_SCALE: number }).OBJECT_SCALE || 2
-  const entitySize = props.baseSize * scale
-  const feetX = shadow?.feetX ?? 0.5
-  const offsetX = (feetX - 0.5) * entitySize
-  
-  let floatOffset = 0
-  if (isFloating.value) {
-    const isMobile = typeof window !== 'undefined' && window.innerWidth <= 690
-    floatOffset = isMobile ? 18 : 40
-  }
-  
-  // El origen de la escala son exactamente los pies del sprite (desplazados hacia arriba si flota)
-  return `calc(50% + ${offsetX}px) calc(${localGroundY.value} - ${floatOffset}px)`
+const handleBallLeave = (el: Element, done: () => void) => {
+  onBallLeave(el, props.side, done)
 }
 
-const getBallTargetCoords = () => {
-  const scale = (WORLD_CONSTANTS as { OBJECT_SCALE: number }).OBJECT_SCALE || 2
-  const containerHeight = props.baseSize * scale
-  
-  let floatOffset = 0
-  if (isFloating.value) {
-    const isMobile = typeof window !== 'undefined' && window.innerWidth <= 690
-    floatOffset = isMobile ? 18 : 40
-  }
-  
-  const ballHeight = 40 * scale
-  
-  // Distancia del ground Y respecto al bottom del contenedor (100%)
-  const groundPct = parseFloat(localGroundY.value) / 100
-  const groundOffsetFromBottom = containerHeight * (groundPct - 1)
-  
-  // Alineación horizontal
-  const shadow = currentShadow.value
-  let targetX = 0
-  if (shadow && shadow.feetX !== undefined) {
-    targetX = (shadow.feetX - 0.5) * (props.baseSize * scale)
-  }
-  
-  // Y es la posición de la Poké Ball respecto al bottom del contenedor
-  const targetY = groundOffsetFromBottom - (ballHeight * 0.35) + floatOffset
-  
-  return { x: targetX, y: targetY }
-}
-
-watch(() => [isBallVisible.value, stickyCoords.value] as const, ([visible]) => {
-  if (visible) {
-    internalBallId.value = props.ballId || 'pokeball'
-    const newCoords = { ...stickyCoords.value }
-    memorizedBallCoords.value = newCoords
-    pokeballCoordsCache.set(cacheKey.value, newCoords)
-    rawCoordsCache.set(cacheKey.value, getBallTargetCoords())
-  } else {
-    const cached = pokeballCoordsCache.get(cacheKey.value)
-    if (cached) {
-      memorizedBallCoords.value = { ...cached }
-    }
-  }
-}, { immediate: true, deep: true })
-
-const handleImageError = (e: Event) => {
-  (e.target as HTMLImageElement).src = getAssetUrl(ASSET_TYPES.ENVIRONMENT, 'bush-1')
-}
-
-const handleBallError = (e: Event) => {
-  (e.target as HTMLImageElement).src = getAssetUrl(ASSET_TYPES.ITEM, 'pokeball')
-}
-
-
-
-
-watch(() => props.isEmerging, (val) => {
-  if (val && spriteRef.value) {
-    const tl = gsap.timeline()
-    tl.to(spriteRef.value, { y: 8, scaleX: 1.2, scaleY: 0.75, duration: 0.1, ease: "power1.in" })
-      .to(spriteRef.value, { y: -60, scaleX: 0.85, scaleY: 1.2, duration: 0.3, ease: "power2.out" })
-      .to(spriteRef.value, { y: 0, scaleX: 1.1, scaleY: 0.9, duration: 0.2, ease: "bounce.out" })
-      .to(spriteRef.value, { scaleX: 1, scaleY: 1, duration: 0.1 })
-  }
-})
-
-watch(() => props.isFainting, (val) => {
-  if (val && spriteRef.value) {
-    const tl = gsap.timeline()
-    
-    // Desactivamos la transition CSS nativa de .sprite-animator (que era de 0.8s y causaba el fade en vez del parpadeo)
-    gsap.set(spriteRef.value, { transition: "none" })
-    
-    // 1. Ocultar la sombra instantáneamente
-    if (shadowWrapperRef.value) {
-      gsap.set(shadowWrapperRef.value, { display: "none" })
-    }
-
-    // Marca de inicio de caída
-    tl.addLabel("fallStart")
-
-    // 2. Caer
-    tl.to(spriteRef.value, { 
-      y: 60, 
-      duration: 1.0, 
-      ease: "power2.in" 
-    }, "fallStart") 
-    
-    // 3. Patrón de parpadeos de frecuencia constante
-    const blinkPattern = [
-      { t: 0.05, op: 0 }, { t: 0.13, op: 1 },
-      { t: 0.21, op: 0 }, { t: 0.29, op: 1 },
-      { t: 0.37, op: 0 }, { t: 0.45, op: 1 },
-      { t: 0.53, op: 0 }, { t: 0.61, op: 1 },
-      { t: 0.69, op: 0 }, { t: 0.77, op: 1 },
-      { t: 0.85, op: 0 }, { t: 0.93, op: 1 },
-      { t: 0.98, op: 0 } // Queda totalmente invisible al terminar la caída
-    ]
-
-    blinkPattern.forEach(b => {
-      tl.set(spriteRef.value, { opacity: b.op }, `fallStart+=${b.t}`)
-    })
-  } else if (!val && spriteRef.value) {
-    // Al finalizar el estado de debilitamiento, limpiamos todo (incluyendo la anulación de transition)
-    gsap.set(spriteRef.value, { clearProps: "opacity,y,transition" })
-    if (shadowWrapperRef.value) {
-      gsap.set(shadowWrapperRef.value, { clearProps: "display" })
-    }
-  }
-})
-
-const triggerBallAnimation = (val: string | null) => {
-  if (!spriteRef.value || !val) return
-  
-  if (val === 'catching') {
-    const origin = getSpriteFeetOrigin()
-    const cachedRaw = rawCoordsCache.get(cacheKey.value)
-    const coords = cachedRaw || getBallTargetCoords()
-    
-    // Ocultar la sombra wrapper inmediatamente cuando empieza la animación
-    if (shadowWrapperRef.value) {
-      gsap.set(shadowWrapperRef.value, { display: "none" })
-    }
-    
-    gsap.killTweensOf(spriteRef.value)
-    
-    // Forzamos el filtro de energía azul, brillo (glow) y pivote en el centro
-    gsap.set(spriteRef.value, { 
-      transformOrigin: origin,
-      filter: "url(#pixel-energy-optimized)" 
-    })
-    
-    // Succión hacia la Poké Ball con GSAP determinista utilizando los pies como centro
-    const tween = gsap.to(spriteRef.value, {
-      x: coords.x,
-      y: coords.y,
-      scale: 0,
-      opacity: 0,
-      duration: 0.5,
-      ease: "power2.inOut",
-      onComplete: () => {
-        // Mantener el sprite invisible: la Poké Ball ya está visible y el Pokémon está "atrapado".
-        // Solo la animación 'releasing' debe restaurar la visibilidad.
-        if (spriteRef.value) {
-          gsap.set(spriteRef.value, { x: 0, y: 0, scale: 0, opacity: 0, filter: "none", clearProps: "transformOrigin" })
-        }
-        // La sombra también permanece oculta mientras el Pokémon esté en la Poké Ball
-      }
-    })
-    
-    const animKey = `${props.side}-${props.pokemon?.uid || 'active'}`
-    gameBus.emit('REGISTER_TWEEN', { key: animKey, tween })
-  } else if (val === 'releasing') {
-    const origin = getSpriteFeetOrigin()
-    const cachedRaw = rawCoordsCache.get(cacheKey.value)
-    const coords = cachedRaw || getBallTargetCoords()
-    
-    // Ocultar la sombra al liberar, reaparecerá al completarse
-    if (shadowWrapperRef.value) {
-      gsap.set(shadowWrapperRef.value, { display: "none" })
-    }
-    
-    gsap.killTweensOf(spriteRef.value)
-    
-    // Empezamos desde la Poké Ball, escala 0, con filtro de energía, opacidad 0 y pivote en el centro
-    gsap.set(spriteRef.value, { 
-      transformOrigin: origin,
-      x: coords.x, 
-      y: coords.y, 
-      scale: 0, 
-      opacity: 0, 
-      filter: "url(#pixel-energy-optimized)" 
-    })
-    
-    // Expansión suave y retorno al estado original
-    const tween = gsap.to(spriteRef.value, {
-      x: 0,
-      y: 0,
-      scale: 1,
-      opacity: 1,
-      duration: 0.5,
-      ease: "power2.inOut",
-      onComplete: () => {
-        if (spriteRef.value) {
-          gsap.set(spriteRef.value, { clearProps: "filter,x,y,scale,opacity,transformOrigin" })
-        }
-        if (shadowWrapperRef.value) {
-          gsap.set(shadowWrapperRef.value, { clearProps: "display" })
-        }
-      }
-    })
-
-    const animKey = `${props.side}-${props.pokemon?.uid || 'active'}`
-    gameBus.emit('REGISTER_TWEEN', { key: animKey, tween })
-  }
-}
-
-watch(() => props.animState, (val) => {
-  nextTick(() => triggerBallAnimation(val))
-}, { immediate: true })
-
-watch(spriteRef, (newEl) => {
-  if (newEl) {
-    nextTick(() => triggerBallAnimation(props.animState))
-  }
-})
-
-watch(() => {
-  if (!props.isAttacking || !props.activeMove) return null
-  return `${props.isAttacking}-${props.activeMove.name}-${props.activeMove.cat}`
-}, (newVal) => {
-  if (newVal && spriteRef.value) {
-    const move = props.activeMove
-    if (!move) return
-    const isPlayerSide = props.side === 'player'
-    const cat = move.cat
-    const tl = gsap.timeline()
-    
-    // Calcular vector hacia el objetivo (si no hay objetivo, usar dirección lateral por defecto)
-    let nx = isPlayerSide ? 1 : -1
-    let ny = isPlayerSide ? -0.5 : 0.5
-    
-    if (props.targetPosition) {
-      const scale = (WORLD_CONSTANTS as { OBJECT_SCALE: number }).OBJECT_SCALE || 2
-      const mySize = props.baseSize * scale
-      // Deducimos el tamaño base del objetivo usando las constantes
-      const targetBase = isPlayerSide ? (WORLD_CONSTANTS as { BASE_ENTITY_SIZE_ENEMY: number }).BASE_ENTITY_SIZE_ENEMY : (WORLD_CONSTANTS as { BASE_ENTITY_SIZE_PLAYER: number }).BASE_ENTITY_SIZE_PLAYER
-      const targetSize = targetBase * scale
-      
-      const myCenterX = props.position.x + (mySize / 2)
-      const myCenterY = props.position.y + (mySize / 2)
-      
-      const targetCenterX = props.targetPosition.x + (targetSize / 2)
-      const targetCenterY = props.targetPosition.y + (targetSize / 2)
-
-      const dx = targetCenterX - myCenterX
-      const dy = targetCenterY - myCenterY
-      const length = Math.sqrt(dx * dx + dy * dy)
-      if (length > 0) {
-        nx = dx / length
-        ny = dy / length
-      }
-    }
-    
-    if (move.selfKO || cat === 'selfKO') {
-      // Secuencia de explosión (GSAP)
-      const shakeTimeline = gsap.timeline()
-      for (let i = 0; i < 8; i++) {
-        const shakeX = (Math.random() - 0.5) * 30
-        const shakeY = (Math.random() - 0.5) * 30
-        shakeTimeline.to(spriteRef.value, {
-          x: shakeX,
-          y: shakeY,
-          duration: 0.05,
-          ease: "none"
-        })
-      }
-      tl.add(shakeTimeline)
-      
-      tl.add(() => {
-        gameBus.emit('PLAY_SOUND', 'faint')
-      })
-
-      tl.to(spriteRef.value, {
-        scale: 1.6,
-        filter: "Brightness(1.8) Drop-Shadow(0 0 25px #ff4500)",
-        duration: 0.25,
-        ease: "power2.out"
-      })
-      
-      tl.to(spriteRef.value, {
-        scale: 0,
-        opacity: 0,
-        filter: "Brightness(3) Drop-Shadow(0 0 35px #ffffff)",
-        duration: 0.35,
-        ease: "power2.in"
-      })
-
-      tl.to(spriteRef.value, {
-        x: 0,
-        y: 0,
-        scale: 1,
-        opacity: 1,
-        filter: "Brightness(1)",
-        clearProps: "all",
-        duration: 0.01
-      })
-    } else if (cat === 'physical' || !cat) {
-      const dashDist = 60
-      const prepDist = -15
-      
-      tl.to(spriteRef.value, { x: nx * prepDist, y: ny * prepDist, duration: 0.1 })
-        .to(spriteRef.value, { x: nx * dashDist, y: ny * dashDist, scale: 1.1, duration: 0.15, ease: "power2.out" })
-        .to(spriteRef.value, { x: 0, y: 0, scale: 1, duration: 0.15, ease: "power1.inOut" })
-    } else if (cat === 'special') {
-      const pulseDist = 15
-      tl.fromTo(spriteRef.value, 
-        { filter: "Brightness(1)", x: 0, y: 0, scale: 1 },
-        { 
-          x: nx * pulseDist, 
-          y: ny * pulseDist, 
-          scale: 1.15, 
-          filter: "Brightness(1.4)", 
-          duration: 0.2, 
-          yoyo: true, 
-          repeat: 1,
-          ease: "power2.out"
-        }
-      )
-    } else if (cat === 'status') {
-      // Calculamos la rotación según la inclinación del vector para que parezca apuntar al objetivo
-      const rot = isPlayerSide ? 12 : -12
-      tl.fromTo(spriteRotationRef.value, 
-        { filter: "Brightness(1)", rotation: 0, scale: 1 },
-        { 
-          rotation: rot, 
-          scale: 1.1, 
-          filter: "Brightness(1.2)", 
-          duration: 0.2, 
-          yoyo: true, 
-          repeat: 1,
-          ease: "power2.out"
-        }
-      )
-    }
-    
-    // Natively register the GSAP attack timeline so the turn engine can await it
-    const animKey = `attack-${props.side}`
-    gameBus.emit('REGISTER_TWEEN', { key: animKey, tween: tl })
-  }
-})
-
-// --- ANIMACIONES DE ESTADO (FLASH) ---
-watch(() => props.pokemon?.status, (newS, oldS) => {
-  if (!spriteRotationRef.value) return
-
-  if (newS && newS !== oldS) {
-    const statusColors: Record<string, string> = {
-      burn: '#ff4500',
-      poison: '#9400d3',
-      paralysis: '#ffd700',
-      freeze: '#00ffff',
-      sleep: '#ffffff'
-    }
-    const color = statusColors[newS] || '#ffffff'
-    
-    // Matamos cualquier flash previo antes de iniciar uno nuevo
-    gsap.killTweensOf(spriteRotationRef.value, "filter")
-    
-    gsap.fromTo(spriteRotationRef.value,
-      { filter: `Drop-Shadow(0 0 0px ${color}) Brightness(1)` },
-      { 
-        filter: `Drop-Shadow(0 0 20px ${color}) Brightness(2)`, 
-        duration: 0.25, 
-        yoyo: true, 
-        repeat: 3, 
-        ease: "power1.inOut",
-        onComplete: () => {
-          if (spriteRotationRef.value) {
-            gsap.set(spriteRotationRef.value, { clearProps: "filter" })
-          }
-        }
-      }
-    )
-  } else if (!newS && oldS) {
-    // Si se quita el estado, limpiamos el filtro inmediatamente para evitar contaminación
-    if (spriteRotationRef.value) {
-      gsap.killTweensOf(spriteRotationRef.value, "filter")
-      gsap.set(spriteRotationRef.value, { clearProps: "filter" })
-    }
-  }
-})
-
-
-// Pokéball & Captures GSAP
-const pokeballImgRef = ref<HTMLImageElement | null>(null)
-let successBlinkTween: gsap.core.Tween | null = null
-
-watch(() => props.isShaking, (shaking) => {
-  // Si hay una Pokebola visible, la animamos a ella
-  if (pokeballImgRef.value) {
-    if (shaking) {
-      gameBus.emit('PLAY_SOUND', 'wobble')
-      gsap.to(pokeballImgRef.value, {
-        keyframes: [
-          { rotation: 18, duration: 0.08, ease: 'power1.out' },
-          { rotation: -18, duration: 0.16, ease: 'power1.inOut' },
-          { rotation: 12, duration: 0.14, ease: 'power1.inOut' },
-          { rotation: -12, duration: 0.14, ease: 'power1.inOut' },
-          { rotation: 0, duration: 0.08, ease: 'power1.in' }
-        ]
-      })
-    }
-  } 
-  // Si NO hay Pokebola, animamos al Sprite del Pokémon (Daño en combate)
-  else if (!props.isCaptureSuccess) {
-    if (shaking && spriteRef.value) {
-      const shakeDist = props.side === 'player' ? -10 : 10
-      // Usamos spriteRef para asegurar que la animación se ejecute sin conflictos de clases de transform
-      gsap.set(spriteRef.value, { transition: "none" })
-      
-      // Movimiento físico
-      gsap.fromTo(spriteRef.value,
-        { x: 0 },
-        { 
-          x: shakeDist, 
-          duration: 0.08, 
-          yoyo: true, 
-          repeat: 5, 
-          ease: 'power1.inOut',
-          onComplete: () => { if (spriteRef.value) gsap.set(spriteRef.value, { clearProps: "x,opacity,transition" }) }
-        }
-      )
-
-      // Flicker de daño (como debilitamiento pero más corto)
-      const tl = gsap.timeline()
-      const blinkPattern = [
-        { t: 0.00, op: 0 }, { t: 0.08, op: 1 },
-        { t: 0.16, op: 0 }, { t: 0.24, op: 1 },
-        { t: 0.32, op: 0 }, { t: 0.40, op: 1 },
-        { t: 0.48, op: 1 }
-      ]
-      blinkPattern.forEach(b => {
-        tl.set(spriteRef.value, { opacity: b.op }, b.t)
-      })
-    }
-  }
-})
-
-watch(() => props.isBlinking, (blinking) => {
-  // Si hay una Pokebola visible, la animamos a ella
-  if (pokeballImgRef.value) {
-    if (blinking) {
-      gsap.fromTo(pokeballImgRef.value,
-        { filter: 'Brightness(1)' },
-        { filter: 'Brightness(2) Hue-Rotate(10deg)', duration: 0.2, yoyo: true, repeat: 1, ease: 'power1.inOut' }
-      )
-    }
-  } 
-  // Si NO hay Pokebola, animamos al Sprite del Pokémon (Daño en combate)
-  else if (!props.isCaptureSuccess) {
-    if (blinking && spriteRef.value) {
-      const shakeDist = props.side === 'player' ? -10 : 10
-      gsap.set(spriteRef.value, { transition: "none" })
-      gsap.fromTo(spriteRef.value,
-        { x: 0, filter: 'Brightness(1)' },
-        { 
-          x: shakeDist,
-          filter: 'Brightness(2)', 
-          duration: 0.08, 
-          yoyo: true, 
-          repeat: 5, 
-          ease: 'power1.inOut',
-          onComplete: () => { if (spriteRef.value) gsap.set(spriteRef.value, { clearProps: "x,filter,transition" }) }
-        }
-      )
-    }
-  }
-})
-
-watch(() => props.isHealing, (val) => {
-  if (val && spriteRotationRef.value) {
-    gsap.set(spriteRotationRef.value, { transition: "none" })
-    const tl = gsap.timeline()
-    tl.to(spriteRotationRef.value, {
-      y: -15,
-      scale: 1.08,
-      filter: "brightness(1.4) sepia(0.8) hue-rotate(300deg) saturate(2)",
-      duration: 0.25,
-      ease: "power1.out"
-    })
-    .to(spriteRotationRef.value, {
-      y: 0,
-      scale: 1,
-      filter: "brightness(1) sepia(0) hue-rotate(0deg) saturate(1)",
-      duration: 0.25,
-      ease: "power1.in",
-      onComplete: () => {
-        if (spriteRotationRef.value) {
-          gsap.set(spriteRotationRef.value, { clearProps: "y,scale,filter,transition" })
-        }
-      }
-    })
-  }
-})
-
-watch(() => props.isCaptureSuccess, (success) => {
-  if (success) {
-    wasCaptured.value = true
-  }
-  if (!pokeballImgRef.value) return
-  if (success) {
-    successBlinkTween = gsap.fromTo(pokeballImgRef.value,
-      { filter: 'Brightness(1)' },
-      { filter: 'Brightness(1.8) Sepia(0.5) Hue-Rotate(-10deg)', duration: 0.25, yoyo: true, repeat: -1, ease: 'power1.inOut' }
-    )
-  } else {
-    if (successBlinkTween) {
-      successBlinkTween.kill()
-      successBlinkTween = null
-    }
-    gsap.set(pokeballImgRef.value, { clearProps: 'filter' })
-  }
-})
-
-const onSparkleEnter = (el: Element, done: () => void) => {
-  const htmlEl = el as HTMLElement
-  const tx = parseFloat(htmlEl.dataset.tx || '0')
-  const ty = parseFloat(htmlEl.dataset.ty || '0')
-  const tf = parseFloat(htmlEl.dataset.tf || '0')
-  const delay = parseFloat((htmlEl.dataset.delay || '0s').replace('s', ''))
-  const scale = parseFloat(htmlEl.dataset.scale || '1')
-
-  // Reset inicial forzado para evitar flashes o estados quietos
-  gsap.set(htmlEl, { 
-    x: 0, 
-    y: 0, 
-    xPercent: -50, 
-    yPercent: -50, 
-    scale: 0, 
-    opacity: 1,
-    rotation: 0
-  })
-
-  // Animación Horizontal y Rotación (Toda la duración)
-  gsap.to(htmlEl, {
-    x: tx,
-    rotation: 720,
-    duration: 0.8,
-    delay: delay,
-    ease: 'power1.out'
-  })
-
-  // Fase 1: Salto hacia arriba (Fountain Up)
-  gsap.to(htmlEl, {
-    y: ty,
-    scale: scale,
-    duration: 0.3,
-    delay: delay,
-    ease: 'power2.out',
-    onComplete: () => {
-      // Fase 2: Caída y desvanecimiento (Fountain Down)
-      gsap.to(htmlEl, {
-        y: tf,
-        opacity: 0,
-        duration: 0.5,
-        ease: 'power2.in',
-        onComplete: done
-      })
-    }
-  })
-}
-
-
-
+// Ground Pop Hooks
 const onGroundPopEnter = (el: Element, done: () => void) => {
   const isSpikes = el.classList.contains('spikes')
   gsap.fromTo(el,
@@ -879,7 +148,7 @@ const onGroundPopEnter = (el: Element, done: () => void) => {
            gsap.to(el.querySelectorAll('.root-item'), {
              y: 2,
              scale: 1.03,
-             filter: 'Brightness(1.2)',
+             filter: 'brightness(1.2)',
              duration: 1.5,
              yoyo: true,
              repeat: -1,
@@ -894,131 +163,6 @@ const onGroundPopEnter = (el: Element, done: () => void) => {
 const onGroundPopLeave = (el: Element, done: () => void) => {
   gsap.to(el, { scale: 0, opacity: 0, duration: 0.3, onComplete: done })
 }
-
-const onBallEnter = (el: Element, done: () => void) => {
-  gsap.fromTo(el, 
-    { opacity: 0, scale: 0.5 }, 
-    { opacity: 1, scale: 1, duration: 0.4, ease: 'back.out(1.7)', onComplete: done }
-  )
-}
-
-const onBallLeave = (el: Element, done: () => void) => {
-  const tween = gsap.to(el, { 
-    opacity: 0, 
-    scale: 0.8, 
-    duration: 0.3,
-    ease: 'power2.in', 
-    onComplete: done 
-  })
-  const animKey = `ball-fadeout-${props.side}`
-  gameBus.emit('REGISTER_TWEEN', { key: animKey, tween })
-}
-
-interface SmokeParticle {
-  id: string | number
-  x: number
-  y: number
-  vx: number
-  vy: number
-  scale: number
-  opacity: number
-}
-const smokeParticles = ref<SmokeParticle[]>([])
-
-const runEscapeAnimation = (type: 'teleport' | 'flee') => {
-  if (!spriteRef.value) return
-
-  if (type === 'teleport') {
-    gameBus.emit('PLAY_SOUND', 'flee')
-    
-    const tl = gsap.timeline()
-    const tween = tl.to(spriteRef.value, {
-      scaleY: 2.0,
-      scaleX: 0.1,
-      opacity: 0,
-      filter: 'brightness(3) contrast(1.5)',
-      duration: 0.4,
-      ease: 'power3.in',
-      onComplete: () => {
-        if (spriteRef.value) {
-          gsap.set(spriteRef.value, { clearProps: 'scale,transform,filter' })
-        }
-      }
-    })
-    const animKey = `escape-${props.side}`
-    gameBus.emit('REGISTER_TWEEN', { key: animKey, tween })
-  } else {
-    gameBus.emit('PLAY_SOUND', 'flee')
-    
-    const count = 15
-    const list: SmokeParticle[] = []
-    for (let i = 0; i < count; i++) {
-      const angle = Math.random() * Math.PI * 2
-      const speed = 1.5 + Math.random() * 3
-      list.push({
-        id: `smoke-${Temporal.Now.instant().epochMilliseconds}-${i}-${Math.random()}`,
-        x: 0,
-        y: -10,
-        vx: Math.cos(angle) * speed,
-        vy: Math.sin(angle) * speed - 1.5,
-        scale: 1.0 + Math.random() * 1.5,
-        opacity: 0.9
-      })
-    }
-    smokeParticles.value = list
-
-    const updateTicker = () => {
-      let active = false
-      smokeParticles.value.forEach(p => {
-        p.x += p.vx
-        p.y += p.vy
-        p.opacity -= 0.03
-        p.scale += 0.02
-        if (p.opacity > 0) active = true
-      })
-      
-      if (active) {
-        requestAnimationFrame(updateTicker)
-      } else {
-        smokeParticles.value = []
-      }
-    }
-    requestAnimationFrame(updateTicker)
-
-    const tween = gsap.to(spriteRef.value, {
-      x: 400,
-      opacity: 0,
-      scale: 0.7,
-      duration: 0.45,
-      ease: 'power2.in',
-      onComplete: () => {
-        if (spriteRef.value) {
-          gsap.set(spriteRef.value, { clearProps: 'scale,transform,x' })
-        }
-      }
-    })
-    const animKey = `escape-${props.side}`
-    gameBus.emit('REGISTER_TWEEN', { key: animKey, tween })
-  }
-}
-
-const handleEscapeEvent = (e: Event) => {
-  const data = (e as CustomEvent).detail
-  if (data.side === props.side && (!data.pokemon || data.pokemon.uid === props.pokemon?.uid)) {
-    const stateVal = toValue(battleStore.state)
-    const isTrainerCombat = !!stateVal?.isTrainer || !!stateVal?.isGym
-    if (isTrainerCombat) return
-    runEscapeAnimation(data.type)
-  }
-}
-
-onMounted(() => {
-  gameBus.on('TRIGGER_COMBATANT_ESCAPE', handleEscapeEvent)
-})
-
-onUnmounted(() => {
-  gameBus.off('TRIGGER_COMBATANT_ESCAPE', handleEscapeEvent)
-})
 </script>
 
 <template>
@@ -1041,7 +185,7 @@ onUnmounted(() => {
         'releasing': animState === 'releasing'
       }, getAttackAnimClass]"
     >
-      <!-- Sombra integrada (Sigue el dash pero no el flotado) -->
+      <!-- Sombra integrada -->
       <div
         ref="shadowWrapperRef"
         class="combat-shadow-wrapper"
@@ -1053,7 +197,7 @@ onUnmounted(() => {
         />
       </div>
 
-      <!-- Capa de Efectos de Suelo (Sigue la sombra, ignora el float) -->
+      <!-- Capa de Efectos de Suelo -->
       <div 
         class="ground-effects-container"
         :style="{ top: localGroundY }"
@@ -1159,7 +303,6 @@ onUnmounted(() => {
           >
             <span>{{ naturalSize.w }}x{{ naturalSize.h }}</span>
           </div>
-          <!-- NOTE: guide-real-size must be position:absolute (see styles) to avoid flex layout shifts -->
         </div>
       </div>
     </div>
@@ -1168,7 +311,7 @@ onUnmounted(() => {
     <Transition 
       :css="false"
       @enter="onBallEnter" 
-      @leave="onBallLeave"
+      @leave="handleBallLeave"
     >
       <div
         v-if="isBallVisible"
@@ -1188,7 +331,7 @@ onUnmounted(() => {
           :style="{ backgroundImage: pokeballShadowUrl }"
         />
 
-        <!-- Success Sparkles (Centradas en la bola) -->
+        <!-- Success Sparkles -->
         <TransitionGroup 
           tag="div"
           class="catch-success-sparkles"
@@ -1234,255 +377,4 @@ onUnmounted(() => {
   </VirtualEntity>
 </template>
 
-<style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
-
-.combatant-sprite {
-  z-index: var(--z-map-spawns);
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  @include pixelated;
-  overflow: visible;
-
-  .sprite-animator, 
-  .sprite-rotation-layer, 
-  .sprite-idle-wrapper,
-  :deep(.pv-fx-wrapper) {
-    width: 100% !important;
-    height: 100% !important;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transform-origin: bottom center;
-  }
-
-  // Las sparkles shiny son hijos del sprite-idle-wrapper, que tiene scaleX/scaleY asincrónicos
-  // en la animación idle. Esto distorsiona las estrellas. Usamos isolation para crear un
-  // contexto de apilamiento propio que neutraliza el scale heredado del padre.
-  :deep(.pv-fx-shiny-overlay) {
-    isolation: isolate;
-  }
-
-  :deep(.pv-fx-shiny-overlay .sparkle) {
-    transform-origin: center center !important;
-  }
-
-  .pokemon-atmosphere-wrapper {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: visible;
-  }
-
-    .pokemon-combat-image {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      object-position: center;
-      @include pixelated;
-      &.is-silhouette { 
-        @include pokemon-silhouette;
-      }
-    }
-}
-
-// Overlay de debug que NO debe afectar el layout del flex container
-.guide-real-size {
-  position: absolute;
-  top: 0;
-  left: 0;
-  border: 1px dashed Rgba(255, 100, 0, 0.7);
-  pointer-events: none;
-  z-index: var(--z-navigation);
-
-  span {
-    position: absolute;
-    bottom: 2px;
-    right: 4px;
-    font-size: 9px;
-    color: Rgba(255, 180, 0, 1);
-    background: Rgba(0, 0, 0, 0.6);
-    padding: 1px 3px;
-    @include pixelated;
-  }
-}
-
-.sprite-animator {
-  position: relative;
-  z-index: var(--z-map-spawns);
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  overflow: visible;
-
-  &.fainted {
-    .sprite-idle-wrapper {
-      pointer-events: none;
-    }
-  }
-
-  &.is-technical-hidden {
-    opacity: 0 !important;
-    pointer-events: none;
-  }
-
-  &.releasing {
-    opacity: 0;
-    transform: Scale(0);
-  }
-}
-
-.sprite-rotation-layer {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  overflow: visible;
-  z-index: var(--z-map-spawns);
-
-  &.is-floating-species { 
-    transform: Translatey(-40px);
-    @media (max-width: 690px) { transform: Translatey(-18px); } 
-  }
-}
-
-.energy-catching {
-  transform-origin: 50% var(--shadow-y, 90%);
-  pointer-events: none;
-}
-
-.energy-releasing {
-  transform-origin: 50% var(--shadow-y, 90%);
-}
-
-.trapped-pokeball {
-  position: absolute;
-  left: 50%;
-  transform: Translatex(-50%) Translatey(-85%);
-  width: calc(var(--obj-scale, 1) * 40px);
-  height: calc(var(--obj-scale, 1) * 40px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: var(--z-map-ui);
-  pointer-events: none;
-  @include pixelated;
-  overflow: visible;
-
-  img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    transform-origin: 50% 70%;
-  }
-}
-
-.pokeball-shadow {
-  position: absolute;
-  top: 85%;
-  left: 50%;
-  transform: Translatex(-50%) Translatey(-50%);
-  width: 70%;
-  height: 15%;
-  background-size: 100% 100%;
-  background-repeat: no-repeat;
-  @include pixelated;
-  z-index: calc(var(--z-base) - 1);
-  pointer-events: none;
-  opacity: 0.8;
-}
-
-.catch-success-sparkles {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  pointer-events: none;
-  z-index: var(--z-low);
-  overflow: visible;
-
-  .sparkle {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    display: block;
-    font-size: calc(var(--obj-scale, 1) * 12px);
-    @include pixelated;
-    will-change: transform, filter, opacity;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    .shiny-asset-mini {
-      width: 24px;
-      height: 24px;
-      object-fit: contain;
-      filter: sepia(1) Saturate(12) hue-rotate(-15deg) Brightness(1.1);
-      @include pixelated;
-    }
-  }
-}
-
-.ground-effects-container {
-  position: absolute;
-  left: 50%;
-  transform: Translatex(-50%) Translatey(-50%);
-  width: 100%;
-  height: 20px;
-  pointer-events: none;
-  z-index: calc(var(--z-map-spawns) + 5); 
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.ground-fx {
-  position: absolute;
-  display: flex;
-  gap: 8px;
-  
-  &.spikes {
-    .spike-item {
-      font-size: calc(var(--fx-scale, 1) * 28px);
-      display: inline-block;
-      will-change: transform, filter, opacity;
-  filter: Drop-Shadow(0 2px 2px Rgba(0,0,0,0.3));
-    }
-  }
-  
-  &.ingrain {
-    .root-item {
-      font-size: calc(var(--fx-scale, 1) * 42px);
-      display: inline-block;
-      transform: Translatey(5px);
-    }
-  }
-}
-
-.smoke-particles-container {
-  position: absolute;
-  left: 50%;
-  transform: Translate(-50%, -50%);
-  pointer-events: none;
-  z-index: var(--z-map-ui);
-  overflow: visible;
-}
-
-.smoke-particle {
-  position: absolute;
-  width: 14px;
-  height: 14px;
-  background: #e5e7eb;
-  border-radius: 50%;
-  box-shadow: 0 0 6px Rgba(156, 163, 175, 0.6);
-  opacity: 0.8;
-  pointer-events: none;
-  will-change: transform, opacity;
-  @include pixelated;
-}
-</style>
+<style scoped lang="scss" src="@/styles/components/_battle-combatant.scss"></style>

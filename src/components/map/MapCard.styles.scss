@@ -1,0 +1,170 @@
+// [PureVue-Ignore-Length]
+@use "@/styles/components/map-card-weather" as *;
+
+.sprite-wrapper {
+  position: relative;
+  z-index: calc(var(--z-map-floor) + 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.aura-effect {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: auto;
+  height: 95%;
+  aspect-ratio: 1 / 1;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: var(--z-map-floor);
+  opacity: 0;
+  image-rendering: auto !important;
+  will-change: transform, opacity;
+  
+  // Mask properties to colorize monochrome assets on the fly
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+
+  &.rare-aura {
+    z-index: calc(var(--z-map-floor) + 1);
+    
+    &:not(.is-pre-rendered) {
+      -webkit-mask-image: var(--flare-2-url);
+      mask-image: var(--flare-2-url);
+      background-color: Rgba(255, 0, 0, 0.9);
+      filter: Blur(1.5px);
+    }
+
+    &.is-pre-rendered {
+      background-image: var(--pre-rendered-rare-aura);
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      background-color: transparent;
+      filter: none !important;
+    }
+
+    &.is-low-power {
+      filter: none !important;
+    }
+  }
+
+  &.atmospheric-aura {
+    z-index: var(--z-map-floor);
+    
+    &:not(.is-pre-rendered) {
+      -webkit-mask-image: var(--flare-1-url);
+      mask-image: var(--flare-1-url);
+      background-color: Rgba(0, 255, 255, 0.85);
+      filter: Blur(1.5px);
+    }
+
+    &.is-pre-rendered {
+      background-image: var(--pre-rendered-atmos-aura);
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      background-color: transparent;
+      filter: none !important;
+    }
+
+    &.is-low-power {
+      filter: none !important;
+    }
+  }
+}
+
+:deep(.dom-badge) {
+  .crown-glow-wrapper {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: var(--z-map-floor);
+  }
+
+  .crown-shine-aura {
+    position: absolute;
+    top: 50% !important;
+    left: 50% !important;
+    width: 38px;
+    height: 38px;
+    margin-top: -21px !important;
+    margin-left: -19px !important;
+    background-color: Rgba(255, 215, 0, 0.8) !important;
+    pointer-events: none;
+    z-index: calc(var(--z-base) - 1) !important;
+    opacity: 0.65;
+    will-change: transform, opacity;
+
+    -webkit-mask-image: var(--flare-1-url);
+    mask-image: var(--flare-1-url);
+    -webkit-mask-size: contain;
+    mask-size: contain;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    mask-position: center;
+  }
+
+  .pill-content {
+    position: relative;
+    z-index: var(--z-map-floor);
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+    height: 100% !important;
+    line-height: 1 !important;
+    text-align: center !important;
+    transform: Translatey(-4px) !important;
+  }
+}
+
+.map-card-wrapper {
+  position: relative;
+  height: 220px;
+  width: 100%;
+  overflow: visible;
+}
+
+.pokeball-route-tooltip {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  z-index: var(--z-map-ui);
+  pointer-events: none;
+}
+
+.pokeball-route-trigger {
+  position: absolute;
+  bottom: -12px;
+  right: -12px;
+  width: 48px;
+  height: 48px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+  will-change: transform;
+  z-index: var(--z-map-ui);
+
+  .pokeball-icon {
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+    @include sprite-render;
+    filter: Drop-Shadow(0 2px 4px Rgba(0, 0, 0, 0.5));
+  }
+}

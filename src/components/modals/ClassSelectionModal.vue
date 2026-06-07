@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { useUIStore } from '@/stores/ui'
+import { computed } from 'vue';
 import { gsap } from 'gsap';
-import { useWindowListener } from '@/composables/useWindowListener';
 import { usePlayerClassStore } from '@/stores/playerClass';
 import { PLAYER_CLASSES } from '@/data/playerClasses';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
@@ -25,9 +25,8 @@ const emit = defineEmits<{
 defineOptions({ inheritAttrs: false });
 
 const classStore = usePlayerClassStore();
-const isSmallScreen = ref(window.innerWidth <= 950);
-const handleResize = () => { isSmallScreen.value = window.innerWidth <= 950 };
-useWindowListener('resize', handleResize);
+const ui = useUIStore()
+const isSmallScreen = computed(() => ui.isSmallScreen)
 
 const close = () => { 
   emit('close');

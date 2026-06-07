@@ -428,8 +428,8 @@ stateDiagram-v2
     REWARDS_PHASE --> CHECK_PERSISTENCE : Rewards Completed
 
     state CHECK_PERSISTENCE <<choice>>
-    CHECK_PERSISTENCE --> INITIALIZING : persistenceMode == PERSISTENT
-    CHECK_PERSISTENCE --> EXIT_BATTLE : persistenceMode == SINGLE
+    CHECK_PERSISTENCE --> INITIALIZING : persistenceMode == PERSISTENT and wasSearching == true
+    CHECK_PERSISTENCE --> EXIT_BATTLE : persistenceMode == SINGLE (isSingle) OR wasSearching == false
 
     ACTIVE_BATTLE --> EXIT_BATTLE : Defeat / Manual Flee
     ACTIVE_BATTLE --> REWARDS_PHASE : Victory / Capture
@@ -443,6 +443,7 @@ stateDiagram-v2
     EXIT_BATTLE --> [*]
 
     note left of CONTEXT_SETUP: Probabilities injected on area entry
+    note right of CHECK_PERSISTENCE: isSingle battles (Gym, PvP, wasSearching==false) skip team reorder animation and go directly to EXIT_BATTLE via completeBattleFlow('map'). PERSISTENT battles with wasSearching==true return to search loop via completeBattleFlow('search').
 ```
 
 ### 2. Initialization Phase (Pre-Battle)
@@ -657,11 +658,12 @@ stateDiagram-v2
 
         EMPTY_WAIT --> CHECK_PERSISTENCE : Check persistence
         state CHECK_PERSISTENCE <<choice>>
-        CHECK_PERSISTENCE --> [*]
+        CHECK_PERSISTENCE --> [*] : isSingle == true → STOP at EMPTY_WAIT (user clicks button)
+        CHECK_PERSISTENCE --> [*] : isSingle == false, wasSearching == true → completeBattleFlow('search')
     }
 
     note right of CHECK_OUTCOME: Skips XP and Level-up if enemy fled
-    note right of CHECK_PERSISTENCE: Route Trainer Battles in search mode (persistenceMode == PERSISTENT) are treated as non-single, automatically returning to search. Gym and PvP battles (persistenceMode == SINGLE) transition to EMPTY_WAIT and display the exit controls.
+    note right of CHECK_PERSISTENCE: isSingle is true when persistenceMode=='SINGLE' OR isGym==true OR isPvP==true. isSingle battles SKIP the animated team reorder sequence and park the FSM at EMPTY_WAIT. The overlay shows the 'VOLVER A GIMNASIOS' / 'VOLVER AL MAPA' button. completeBattleFlow('map') is called ONLY when the player clicks the button — never automatically. Route Trainer Battles in search mode (PERSISTENT, wasSearching==true) call completeBattleFlow('search') after the animated reorder.
 
 ```
 

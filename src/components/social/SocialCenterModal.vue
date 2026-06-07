@@ -1,6 +1,7 @@
 <script setup lang="ts">
+import { useUIStore } from '@/stores/ui'
 
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted, watch, computed } from 'vue';
 import { useSocialStore } from '@/stores/social';
 import { useTradeStore } from '@/stores/trade';
 import { useGameStore } from '@/stores/game';
@@ -9,7 +10,6 @@ import SocialFriendsTab from './SocialFriendsTab.vue';
 import SocialRequestsTab from './SocialRequestsTab.vue';
 import SocialSearchTab from './SocialSearchTab.vue';
 import SocialTradesTab from './SocialTradesTab.vue';
-import { useWindowListener } from '@/composables/useWindowListener';
 
 interface Props {
   show?: boolean;
@@ -38,9 +38,8 @@ watch(activeTab, () => {
   }
 });
 
-const isSmallScreen = ref(window.innerWidth <= 950);
-const handleResize = () => { isSmallScreen.value = window.innerWidth <= 950; };
-useWindowListener('resize', handleResize);
+const ui = useUIStore()
+const isSmallScreen = computed(() => ui.isSmallScreen)
 
 const emit = defineEmits<{
   close: []

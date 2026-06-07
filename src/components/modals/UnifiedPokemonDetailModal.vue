@@ -1,7 +1,6 @@
 <script setup lang="ts">
 // Universal Pokémon info panel (Pokedex + Instance)
 import { ref, computed } from 'vue'
-import { useWindowListener } from '@/composables/useWindowListener'
 import { useUIStore } from '@/stores/ui'
 import { useGameStore } from '@/stores/game'
 import { usePokemonDetail } from '@/composables/usePokemonDetail'
@@ -67,9 +66,8 @@ const {
 } = usePokemonDetail(props as { pokemon: Pokemon | null, speciesId: string })
 
 // --- LOCAL UI STATE ---
-const isSmallScreen = ref(window.innerWidth <= 950)
-const handleResize = () => { isSmallScreen.value = window.innerWidth <= 950 }
-useWindowListener('resize', handleResize)
+const ui = useUIStore()
+const isSmallScreen = computed(() => ui.isSmallScreen)
 
 const activeTab = ref('summary')
 

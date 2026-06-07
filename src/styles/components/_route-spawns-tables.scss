@@ -1,0 +1,402 @@
+/* [PureVue-Ignore-Length] */
+@use "@/styles/core/_mixins" as *;
+@use "@/styles/core/tools" as *;
+
+.spawns-report-scroll {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid Rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  background: Rgba(0, 0, 0, 0.2);
+  overscroll-behavior-x: contain !important;
+  touch-action: pan-x pan-y !important;
+  padding-bottom: 10px; // Espacio para que el scrollbar horizontal no se reporte
+
+  &::-webkit-scrollbar {
+    height: 10px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: Rgba(0, 0, 0, 0.2);
+    border-radius: 6px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--modal-accent, var(--yellow-dark, #8b6d11));
+    border-radius: 6px;
+    border: 1px solid Rgba(255, 255, 255, 0.1);
+
+    &:hover {
+      filter: Brightness(1.2);
+    }
+  }
+
+  @supports (scrollbar-width: thin) {
+    scrollbar-width: thin;
+    scrollbar-color: var(--modal-accent, var(--yellow-dark, #8b6d11)) Rgba(0, 0, 0, 0.2);
+  }
+}
+
+.report-table-header {
+  display: flex;
+  padding: 12px 16px;
+  background: Rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid Rgba(255, 255, 255, 0.08);
+  font-family: var(--font-pixel);
+  font-size: 9px;
+  color: var(--yellow);
+  text-transform: uppercase;
+  min-width: 680px; // Evita que se encojan las columnas en mobile
+}
+
+.report-rows {
+  display: flex;
+  flex-direction: column;
+  min-width: 680px; // Alineado con la cabecera
+}
+
+.report-row {
+  display: flex;
+  align-items: center;
+  padding: 8px 16px;
+  border-bottom: 1px solid Rgba(255, 255, 255, 0.04);
+  min-width: 680px; // Mantiene el mismo ancho mínimo
+
+  &:hover {
+    background-color: Rgba(255, 255, 255, 0.02);
+  }
+
+  &.is-unseen {
+    opacity: 0.65;
+  }
+
+  &.blocked {
+    opacity: 0.4;
+    background: Rgba(0, 0, 0, 0.3);
+  }
+}
+
+// Columns Widths
+.col-pokemon {
+  width: 28%;
+  flex-shrink: 0;
+}
+
+.col-types {
+  width: 16%;
+  flex-shrink: 0;
+}
+
+.col-type {
+  width: 14%;
+  flex-shrink: 0;
+}
+
+.col-multiplier {
+  width: 16%;
+  flex-shrink: 0;
+}
+
+.col-prob {
+  width: 16%;
+  flex-shrink: 0;
+}
+
+.col-stats {
+  width: 10%;
+  flex-shrink: 0;
+  text-align: center;
+}
+
+// Cell styling
+.row-cell {
+  display: flex;
+  align-items: center;
+}
+
+.flex-align {
+  align-items: center;
+}
+
+.text-center {
+  justify-content: center;
+  text-align: center;
+}
+
+// Mini Sprite & Caught indicator
+.mini-sprite-wrapper {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: Rgba(255, 255, 255, 0.03);
+  border-radius: 6px;
+  border: 1px solid Rgba(255, 255, 255, 0.05);
+  margin-right: 12px;
+
+  .mini-sprite {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+    @include sprite-render;
+
+    &.spawn-silhouette {
+      @include pokemon-silhouette;
+      opacity: 0.55;
+    }
+  }
+
+  .unknown-placeholder {
+    font-family: var(--font-pixel);
+    font-size: 16px;
+    color: var(--gray);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+  }
+}
+
+.poke-name-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.poke-name {
+  font-family: var(--font-pixel);
+  font-size: 10px;
+  color: #fff;
+  letter-spacing: 0.5px;
+  line-height: 1.4;
+}
+
+.unseen-tag {
+  font-size: 7px;
+  font-family: var(--font-pixel);
+  color: #ff453a;
+  background: Rgba(255, 69, 58, 0.1);
+  padding: 1px 4px;
+  border-radius: 2px;
+  width: fit-content;
+}
+
+.hidden-info-placeholder {
+  color: var(--gray);
+  font-size: 11px;
+  font-style: italic;
+}
+
+// Status Tags
+.status-tag {
+  font-family: var(--font-pixel);
+  font-size: 8px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  border: 1px solid transparent;
+
+  &.common {
+    background: Rgba(134, 134, 139, 0.1);
+    color: var(--gray);
+    border-color: Rgba(134, 134, 139, 0.2);
+  }
+
+  &.visitor {
+    background: Rgba(191, 90, 242, 0.15);
+    color: #bf5af2;
+    border-color: Rgba(191, 90, 242, 0.3);
+    box-shadow: 0 0 8px Rgba(191, 90, 242, 0.2);
+  }
+
+  &.exclusive {
+    background: Rgba(255, 214, 10, 0.15);
+    color: #ffd60a;
+    border-color: Rgba(255, 214, 10, 0.3);
+    box-shadow: 0 0 8px Rgba(255, 214, 10, 0.2);
+  }
+
+  &.buffed {
+    background: Rgba(50, 215, 75, 0.15);
+    color: #32d74b;
+    border-color: Rgba(50, 215, 75, 0.3);
+  }
+
+  &.debuffed {
+    background: Rgba(255, 69, 58, 0.15);
+    color: #ff453a;
+    border-color: Rgba(255, 69, 58, 0.3);
+  }
+
+  &.blocked {
+    background: Rgba(0, 0, 0, 0.5);
+    color: #86868b;
+    border-color: Rgba(255, 255, 255, 0.1);
+  }
+}
+
+// Multipliers
+.mult-value {
+  font-family: var(--font-pixel);
+  font-size: 8px;
+  padding: 2px 6px;
+  border-radius: 3px;
+
+  &.visitor-text, &.exclusive-text {
+    color: #fff;
+    background: Rgba(255, 255, 255, 0.1);
+  }
+
+  &.buffed-text {
+    color: #32d74b;
+    font-weight: bold;
+  }
+
+  &.debuffed-text {
+    color: #ff453a;
+  }
+
+  &.block-text {
+    color: var(--gray);
+    font-size: 7px;
+    text-transform: uppercase;
+  }
+
+  &.neutral-text {
+    color: var(--gray);
+  }
+}
+
+// Probability Display
+.prob-bar-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  padding-right: 8px;
+}
+
+.prob-numerical {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  .active-prob {
+    font-family: var(--font-pixel);
+    font-size: 8px; // Reducido para que entre sin saltar de línea
+    color: #fff;
+    white-space: nowrap; // Evita que se divida en 2 renglones
+
+    .diff-text {
+      font-size: 7px;
+      white-space: nowrap;
+      margin-left: 2px;
+      display: inline-block;
+
+      &.boosted {
+        color: #30d158;
+      }
+      &.debuffed {
+        color: #ff453a;
+      }
+    }
+  }
+}
+
+.prob-visual-progress {
+  height: 6px;
+  background: Rgba(255, 255, 255, 0.05);
+  border-radius: 3px;
+  overflow: hidden;
+  border: 1px solid Rgba(255, 255, 255, 0.1);
+  display: flex;
+
+  .fill {
+    height: 100%;
+    
+    &.base-fill {
+      background: #3a86ff; // Azul base para probabilidad estándar no alterada
+      border-radius: 3px 0 0 3px;
+    }
+
+    &.base-fill-reduced {
+      background: #3a86ff; // Azul base reducido por penalización
+      border-radius: 3px 0 0 3px;
+    }
+
+    &.extra-fill {
+      background: #30d158; // Verde para la probabilidad extra ganada por clima
+      border-radius: 0 3px 3px 0;
+      box-shadow: 0 0 4px Rgba(48, 209, 88, 0.5);
+    }
+
+    &.lost-fill {
+      background: Rgba(255, 69, 58, 0.45); // Rojo translúcido indicando probabilidad perdida
+      border-radius: 0 3px 3px 0;
+      border-left: 1px dashed Rgba(255, 69, 58, 0.6);
+    }
+  }
+}
+
+// Stats Column
+.stat-total-value {
+  font-family: var(--font-pixel);
+  font-size: 10px;
+  color: #fff;
+}
+
+// Encounter probability color utilities
+.bonus-text {
+  color: #30d158; // Verde — probabilidad aumentada (buff, clima, evento)
+  font-weight: bold;
+}
+
+.penalty-text {
+  color: #ff453a; // Rojo — probabilidad reducida (penalización, otro buff compite)
+}
+
+// Badge de probabilidad junto al título de sección
+.section-prob-badge {
+  display: inline-block;
+  font-family: var(--font-pixel);
+  font-size: 9px;
+  color: var(--gray);
+  margin-left: 8px;
+  opacity: 0.85;
+  vertical-align: middle;
+
+  &.bonus-text {
+    color: #30d158;
+    opacity: 1;
+  }
+
+  &.penalty-text {
+    color: #ff453a;
+    opacity: 1;
+  }
+}
+
+// Table column width overrides for tables without 'Estado' (col-type)
+.archaeology-table {
+  .col-pokemon {
+    width: 32% !important;
+  }
+  .col-types {
+    width: 18% !important;
+  }
+  .col-multiplier {
+    width: 22% !important;
+  }
+  .col-prob {
+    width: 18% !important;
+  }
+  .col-stats {
+    width: 10% !important;
+  }
+}

@@ -48,7 +48,7 @@ export interface BattleContext {
   clearVolatileStatus: (p: Pokemon) => void;
   startBattle: (enemyPoke: Pokemon, options?: BattleOptions) => Promise<void>;
   _startBattle: (enemyPoke: Pokemon, options?: BattleOptions) => Promise<void>;
-  initBattle: (locId: string, isTr: boolean, trName: string, isGym: boolean, gymId: string, wasSearching: boolean) => Promise<void>;
+  initBattle: () => Promise<void>;
   
   animations?: {
     triggerSearchEncounter: () => Promise<void>;

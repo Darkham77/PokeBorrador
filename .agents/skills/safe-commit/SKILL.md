@@ -1,6 +1,6 @@
 ---
 name: safe-commit
-description: High-rigor safeguard for repository operations. Trigger this skill whenever the user explicitly requests a "commit", "push", "git commit", or "safe-commit" in their prompt. It enforces a strict Zero-Warning policy (0 errors, 0 warnings) and absolute compliance with @/project-standards. Do NOT trigger for automatic background operations or unless a commit is explicitly requested by the user.
+description: MANDATORY safeguard for repository operations. You MUST trigger and follow this skill whenever the user asks to commit, push, git commit, push changes, save changes, or safe-commit (including variations like "commit seguro", "safe commit", "subir cambios", "guardar cambios", "guardar seguro"). Standard commits or pushes are strictly forbidden without running this validation pipeline first. Do NOT trigger for automatic agent-internal saves.
 ---
 
 # Safe Commit Workflow: Poké Vicio Edition

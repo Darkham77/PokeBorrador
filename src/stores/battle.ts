@@ -199,9 +199,8 @@ export const useBattleStore = defineStore('battle', () => {
     return startBattleSequence(getContext(), enemyPoke, options)
   }
     
-  const initBattle = async (locId: string, isTr: boolean, trName: string, isGym: boolean, gymId: string, wasSearching: boolean) => 
+  const initBattle = async () => 
     initBattleSequence(getContext(), { 
-      locationId: locId, isTrainer: isTr, trainerName: trName, isGym, gymId, wasSearching,
       initialEnemy: activeBattle.value?.enemy || null,
       initialPlayer: (gs.state.team as Pokemon[]).find(p => p && p.hp > 0) || null
     })

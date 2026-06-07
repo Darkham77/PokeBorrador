@@ -1,0 +1,58 @@
+// [PureVue-Ignore-Length]
+@use "@/styles/components/map-card-weather" as *;
+
+.dust-only {
+  opacity: 0.6 !important; // Aumentado para visibilidad
+  filter: Grayscale(0.2) contrast(1.1); // Recuperado parte del color original
+  will-change: transform, opacity;
+  transform: translate3d(0,0,0);
+  z-index: calc(10 * 1);
+}
+
+.leaf-element {
+  position: absolute;
+  width: 8px;
+  height: 6px;
+  background: linear-gradient(135deg, #4ade80, #166534);
+  border-radius: 50% 0 50% 0;
+  opacity: 0.8;
+  pointer-events: none;
+  z-index: calc(var(--z-low) * 1); // Asegurar visibilidad sobre la lluvia
+  will-change: transform, opacity;
+  transform: translate3d(0,0,0); // GPU Promotion
+  // Eliminado Drop-Shadow para optimización GPU
+}
+
+// Estilos delegados a _map-card-weather.scss
+
+.lightning-flash-overlay {
+  position: absolute;
+  inset: 0;
+  background: white;
+  opacity: 0;
+  z-index: calc(5 * 1); // Por debajo del rayo (que tiene 10)
+  will-change: opacity;
+  image-rendering: pixelated;
+  pointer-events: none;
+}
+
+// Eliminado leaf-fall antiguo para evitar conflictos con GSAP
+
+.atmosphere-container {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: calc(var(--atmo-z, 0) * 1); 
+  overflow: hidden;
+  container-type: size; // Permite usar cqw/cqh para las hojas
+  contain: layout style paint; // Optimización equilibrada: aisla el renderizado sin forzar buffers rígidos
+  backface-visibility: hidden;
+}
+
+// Override shared z-index for combat context
+// Capas de clima (Niebla, Bruma, Calor)
+
+:deep(.weather-overlay) {
+  z-index: calc(var(--atmo-z-final, var(--atmo-z, 0)) * 1) !important;
+  transform: scaleX(var(--atmo-dir, 1));
+}
