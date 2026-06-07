@@ -68,12 +68,12 @@ describe('Auth Store', () => {
       error: null 
     })
 
-    await auth.signup('test@pkv.io', 'pass123', 'TrainerTest')
+    await auth.signup('test@pkv.io', 'pass123', 'TrainerTest', 'h')
     
     expect(supabase.auth.signUp).toHaveBeenCalledWith({
       email: 'test@pkv.io',
       password: 'pass123',
-      options: { data: { username: 'TrainerTest' } }
+      options: { data: { username: 'TrainerTest', gender: 'h' } }
     })
     expect(supabase.from).toHaveBeenCalledWith('profiles')
   })

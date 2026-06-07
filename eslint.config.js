@@ -53,9 +53,8 @@ export default tseslint.config(
       'dev-dist/**',
       'node_modules/**',
       'scratch/**',
-      'public/js/**',
       'tmp/**',
-      'docs/archives/_js_backup/**',
+      '.agents/skills/gsap-core/resources/**',
     ],
   },
 );

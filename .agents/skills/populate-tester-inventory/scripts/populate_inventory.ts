@@ -10,7 +10,7 @@ const __dirname = path.dirname(__filename);
  * Usage: node .agents/skills/populate-tester-inventory/scripts/populate_inventory.js
  */
 
-const SAVE_PATH = path.join(__dirname, '../../../../src/data/state.json'); // Legacy local state if used
+const _SAVE_PATH = path.join(__dirname, '../../../../src/data/state.json'); // Legacy local state if used
 
 function populateInventory() {
     console.log("Populating tester inventory...");

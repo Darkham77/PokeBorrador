@@ -63,7 +63,7 @@ async function getSpanishName(url: string, type: 'moves' | 'abilities' | 'specie
     const name = esEntry ? esEntry.name : null;
     if (name && cache) cache[url] = name;
     return name;
-  } catch (e) {
+  } catch (_e) {
     return null;
   }
 }
