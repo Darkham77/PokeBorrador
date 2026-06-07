@@ -17,6 +17,7 @@ import AuthServerSelector from '@/components/auth/AuthServerSelector.vue'
 import AuthOnlineLogin from '@/components/auth/AuthOnlineLogin.vue'
 import AuthOnlineSignup from '@/components/auth/AuthOnlineSignup.vue'
 import AuthLocalLogin from '@/components/auth/AuthLocalLogin.vue'
+import AuthLocalSignup from '@/components/auth/AuthLocalSignup.vue'
 
 const wallpaperUrl = computed(() => `url('${getAssetUrl(ASSET_TYPES.UI, '../fondo/WALLPAPER')}')`)
 
@@ -137,12 +138,33 @@ const handleLocalLogin = async () => {
   loading.value = true
   error.value = null
   try {
-    await authStore.localLogin(username.value, gender.value)
+    // Login: el género se carga desde la partida guardada en el store
+    await authStore.localLogin(username.value)
     gsap.delayedCall(0.8, () => {
       window.location.replace(import.meta.env.BASE_URL)
     })
   } catch (_err) {
     error.value = 'Error al entrar en modo local'
+  } finally {
+    loading.value = false
+  }
+}
+
+const handleLocalSignup = async () => {
+  if (!username.value) {
+    error.value = 'Ingresa un nickname'
+    return
+  }
+  loading.value = true
+  error.value = null
+  try {
+    // Signup: se crea una nueva partida con el género elegido
+    await authStore.localLogin(username.value, gender.value)
+    gsap.delayedCall(0.8, () => {
+      window.location.replace(import.meta.env.BASE_URL)
+    })
+  } catch (_err) {
+    error.value = 'Error al crear partida local'
   } finally {
     loading.value = false
   }
@@ -450,11 +472,19 @@ const handleServerChange = () => {
 
           <!-- LOCAL LOGIN -->
           <AuthLocalLogin
-            v-if="serverMode === 'local'"
+            v-if="serverMode === 'local' && authTab === 'login'"
+            v-model:username-value="username"
+            :loading="loading"
+            @local-login="handleLocalLogin"
+          />
+
+          <!-- LOCAL SIGNUP -->
+          <AuthLocalSignup
+            v-if="serverMode === 'local' && authTab === 'signup'"
             v-model:username-value="username"
             v-model:gender-value="gender"
             :loading="loading"
-            @local-login="handleLocalLogin"
+            @local-signup="handleLocalSignup"
           />
 
           <!-- SIGNUP -->
