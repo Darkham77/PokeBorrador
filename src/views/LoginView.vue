@@ -41,6 +41,7 @@ const handleInstallApp = async () => {
 const username = ref('')
 const email = ref('')
 const password = ref('')
+const gender = ref<'h' | 'm'>('h')
 const error = ref<string | null>(null)
 const success = ref<string | null>(null)
 const loading = ref(false)
@@ -118,7 +119,7 @@ const handleSignup = async () => {
   loading.value = true
   error.value = null
   try {
-    await authStore.signup(email.value, password.value, username.value)
+    await authStore.signup(email.value, password.value, username.value, gender.value)
     success.value = '¡Cuenta creada! Revisa tu email para confirmar.'
     authTab.value = 'login'
   } catch (err: unknown) {
@@ -136,7 +137,7 @@ const handleLocalLogin = async () => {
   loading.value = true
   error.value = null
   try {
-    await authStore.localLogin(username.value)
+    await authStore.localLogin(username.value, gender.value)
     gsap.delayedCall(0.8, () => {
       window.location.replace(import.meta.env.BASE_URL)
     })
@@ -451,6 +452,7 @@ const handleServerChange = () => {
           <AuthLocalLogin
             v-if="serverMode === 'local'"
             v-model:username-value="username"
+            v-model:gender-value="gender"
             :loading="loading"
             @local-login="handleLocalLogin"
           />
@@ -461,6 +463,7 @@ const handleServerChange = () => {
             v-model:username-value="username"
             v-model:email-value="email"
             v-model:password-value="password"
+            v-model:gender-value="gender"
             :loading="loading"
             @signup="handleSignup"
           />

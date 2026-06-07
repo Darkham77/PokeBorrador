@@ -148,8 +148,8 @@ export const useAuthStore = defineStore('auth', () => {
           if (sessionValid && !isLocalId) {
             // Fetch profile meta con timeout (10s)
             try {
-              const profilePromise = supabase.from('profiles').select('db_version, is_banned, ban_reason').eq('id', user.value?.id).single()
-              const profileRes = await Promise.race([profilePromise, new Promise((_, reject) => setTimeout(() => reject(new Error('FETCH_TIMEOUT')), 10000))]) as { data: { db_version: number, is_banned: boolean, ban_reason: string | null } | null, error?: { message?: string; status?: number; code?: string } | null }
+              const profilePromise = supabase.from('profiles').select('db_version, is_banned, ban_reason, gender').eq('id', user.value?.id).single()
+              const profileRes = await Promise.race([profilePromise, new Promise((_, reject) => setTimeout(() => reject(new Error('FETCH_TIMEOUT')), 10000))]) as { data: { db_version: number, is_banned: boolean, ban_reason: string | null, gender: 'h' | 'm' } | null, error?: { message?: string; status?: number; code?: string } | null }
               const profile = profileRes.data
               const profileError = profileRes.error
               
@@ -160,6 +160,7 @@ export const useAuthStore = defineStore('auth', () => {
                 }
               } else if (profile && user.value) {
                 user.value.db_version = profile.db_version || 1
+                user.value.user_metadata.gender = profile.gender || 'h'
                 if (profile.is_banned) {
                   isBanned.value = true
                   banReason.value = profile.ban_reason || 'Uso indebido de la plataforma'
@@ -248,8 +249,9 @@ export const useAuthStore = defineStore('auth', () => {
         db_version: number;
         is_banned: boolean;
         ban_reason: string | null;
+        gender?: 'h' | 'm';
       }
-      const profileRes = await supabase.from('profiles').select('db_version, is_banned, ban_reason').eq('id', data.user.id).single() as { data: ProfileData | null, error?: { message?: string } | null }
+      const profileRes = await supabase.from('profiles').select('db_version, is_banned, ban_reason, gender').eq('id', data.user.id).single() as { data: ProfileData | null, error?: { message?: string } | null }
       const profile = profileRes.data
       const profileError = profileRes.error
       
@@ -267,7 +269,10 @@ export const useAuthStore = defineStore('auth', () => {
         throw new Error('BAN:' + banReason.value)
       }
 
-      if (profile && user.value) user.value.db_version = profile.db_version || 1
+      if (profile && user.value) {
+        user.value.db_version = profile.db_version || 1
+        user.value.user_metadata.gender = profile.gender || 'h'
+      }
       
       startSessionMonitoring()
       syncServerTime()
@@ -277,11 +282,11 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  async function signup(email: string, password: string, username: string) {
+  async function signup(email: string, password: string, username: string, gender: 'h' | 'm' = 'h') {
     const { data, error } = await supabase.auth.signUp({ 
       email, 
       password, 
-      options: { data: { username } } 
+      options: { data: { username, gender } } 
     })
     if (error) throw error
     if (!data.user) throw new Error('No user created')
@@ -291,6 +296,7 @@ export const useAuthStore = defineStore('auth', () => {
       id: data.user.id, 
       username, 
       email, 
+      gender,
       created_at: Temporal.Now.instant().toString() 
     })
     
@@ -342,7 +348,7 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
 
-  async function localLogin(name: string) {
+  async function localLogin(name: string, gender: 'h' | 'm' = 'h') {
     loading.value = true
     const loadingStore = useLoadingStore()
     loadingStore.start('auth_action', 'Entrando como invitado...', 'Preparando partida local', true, '🎮')
@@ -350,7 +356,7 @@ export const useAuthStore = defineStore('auth', () => {
       const userData = {
         id: 'local_' + name.toLowerCase().replace(/\s+/g, '_'),
         email: name + '@local',
-        user_metadata: { full_name: name, username: name }
+        user_metadata: { full_name: name, username: name, gender }
       }
       user.value = userData as AuthUser
       sessionMode.value = 'offline'

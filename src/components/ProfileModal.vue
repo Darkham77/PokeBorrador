@@ -136,7 +136,15 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
                   v-gsap-nick="gs.nick_style || 'normal'"
                   :class="gs.nick_style || 'normal'"
                   class="value name-val"
-                >{{ displayUsername }}</span>
+                >
+                  {{ displayUsername }}
+                  <span
+                    class="gender-symbol"
+                    :class="gs.gender === 'm' ? 'female' : 'male'"
+                  >
+                    {{ gs.gender === 'm' ? '♀' : '♂' }}
+                  </span>
+                </span>
               </div>
               <button
                 class="row-action-btn"
@@ -368,11 +376,31 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
           font-size: 14px;
           font-weight: bold;
           overflow: visible;
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
         }
 
         &.class-val {
           font-weight: bold;
           text-transform: uppercase;
+        }
+
+        .gender-symbol {
+          font-family: inherit;
+          font-size: 14px;
+          font-weight: bold;
+          margin-left: 4px;
+          
+          &.male {
+            color: Rgba(59, 139, 255, 1);
+            text-shadow: 0 0 5px Rgba(59, 139, 255, 0.5);
+          }
+          
+          &.female {
+            color: Rgba(255, 110, 255, 1);
+            text-shadow: 0 0 5px Rgba(255, 110, 255, 0.5);
+          }
         }
       }
 

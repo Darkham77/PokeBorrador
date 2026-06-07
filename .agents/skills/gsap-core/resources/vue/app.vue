@@ -30,18 +30,45 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div ref="container" :style="{ padding: '2rem' }">
+  <div
+    ref="container"
+    :style="{ padding: '2rem' }"
+  >
     <h1>GSAP Vue 3 — gsap.context + scope + cleanup</h1>
 
-    <div class="box" :style="{ width: '80px', height: '80px', background: '#0fa', borderRadius: '8px', marginBottom: '1rem', visibility: 'hidden' }" />
+    <div
+      class="box"
+      :style="{ width: '80px', height: '80px', background: '#0fa', borderRadius: '8px', marginBottom: '1rem', visibility: 'hidden' }"
+    />
 
-    <div class="item" :style="{ margin: '0.5rem 0' }">Item 1</div>
-    <div class="item" :style="{ margin: '0.5rem 0' }">Item 2</div>
-    <div class="item" :style="{ margin: '0.5rem 0' }">Item 3</div>
+    <div
+      class="item"
+      :style="{ margin: '0.5rem 0' }"
+    >
+      Item 1
+    </div>
+    <div
+      class="item"
+      :style="{ margin: '0.5rem 0' }"
+    >
+      Item 2
+    </div>
+    <div
+      class="item"
+      :style="{ margin: '0.5rem 0' }"
+    >
+      Item 3
+    </div>
 
-    <div class="scroll-section" :style="{ height: '150vh', marginTop: '2rem', background: '#f0f0f0', padding: '1rem' }">
+    <div
+      class="scroll-section"
+      :style="{ height: '150vh', marginTop: '2rem', background: '#f0f0f0', padding: '1rem' }"
+    >
       <p>Scroll down to trigger the timeline</p>
-      <div class="scroll-box" :style="{ width: '60px', height: '60px', background: '#f0a', borderRadius: '8px', marginTop: '1rem' }" />
+      <div
+        class="scroll-box"
+        :style="{ width: '60px', height: '60px', background: '#f0a', borderRadius: '8px', marginTop: '1rem' }"
+      />
     </div>
   </div>
 </template>

@@ -57,18 +57,22 @@ const daysUntilRename = computed(() => {
 
 const canRename = computed(() => daysUntilRename.value === 0)
 
-const submitRename = async () => {
+const nameChanged = computed(() => {
   const targetName = newUsername.value.trim()
   const currentName = profileStore.profileData.username || gameStore.state.trainer
+  return targetName !== currentName
+})
+
+const submitRename = async () => {
+  const targetName = newUsername.value.trim()
   const genderChanged = selectedGender.value !== gameStore.state.gender
-  const nameChanged = targetName !== currentName
 
   if (!targetName || targetName.length < 3 || targetName.length > 15) {
     uiStore.notify('El nombre debe tener entre 3 y 15 caracteres.', '⚠️')
     return
   }
 
-  if (!nameChanged && !genderChanged) {
+  if (!nameChanged.value && !genderChanged) {
     uiStore.notify('No se detectaron cambios.', '⚠️')
     return
   }
@@ -76,7 +80,7 @@ const submitRename = async () => {
   isRenaming.value = true
   
   try {
-    if (nameChanged) {
+    if (nameChanged.value) {
       if (!canRename.value) {
         uiStore.notify(`Faltan ${daysUntilRename.value} días para poder cambiar de nombre.`, '⏳')
         isRenaming.value = false
@@ -201,7 +205,7 @@ const submitRename = async () => {
         </button>
         <button 
           class="btn-vicio-primary apply-btn"
-          :disabled="!canRename || isRenaming || !newUsername.trim()"
+          :disabled="isRenaming || !newUsername.trim() || (nameChanged && !canRename)"
           @click="submitRename"
         >
           {{ isRenaming ? 'GUARDANDO...' : 'CONFIRMAR' }}

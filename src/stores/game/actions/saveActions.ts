@@ -142,6 +142,7 @@ export function useSaveActions(
       }
     } else if (!data && authStore.user) {
       state.trainer = authStore.user.user_metadata?.username || 'Entrenador'
+      state.gender = authStore.user.user_metadata?.gender || 'h'
     }
     
     loadingStore.finish('game_data')

@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, onUnmounted } from "vue";
+import { onMounted } from "vue";
 
 const { gsap, ScrollTrigger, lazyLoadPlugin } = useGSAP();
 

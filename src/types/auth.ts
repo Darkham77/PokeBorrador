@@ -5,6 +5,7 @@ export interface AuthUser {
     username: string;
     full_name?: string;
     role?: string;
+    gender?: 'h' | 'm';
   };
   last_save_id?: string;
   db_version?: number;

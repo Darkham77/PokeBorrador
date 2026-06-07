@@ -6,6 +6,7 @@ interface Props {
   usernameValue: string
   emailValue: string
   passwordValue: string
+  genderValue: 'h' | 'm'
 }
 
 defineProps<Props>()
@@ -14,6 +15,7 @@ const emit = defineEmits<{
   (e: 'update:usernameValue', val: string): void
   (e: 'update:emailValue', val: string): void
   (e: 'update:passwordValue', val: string): void
+  (e: 'update:genderValue', val: 'h' | 'm'): void
   (e: 'signup'): void
 }>()
 
@@ -40,6 +42,24 @@ const {
       @mouseenter="handleInputEnter"
       @mouseleave="handleInputLeave"
     >
+    
+    <div class="gender-selection-row">
+      <button
+        class="gender-select-btn male"
+        :class="{ active: genderValue === 'h' }"
+        @click.prevent.stop="emit('update:genderValue', 'h')"
+      >
+        ♂️ MASCULINO
+      </button>
+      <button
+        class="gender-select-btn female"
+        :class="{ active: genderValue === 'm' }"
+        @click.prevent.stop="emit('update:genderValue', 'm')"
+      >
+        ♀️ FEMENINO
+      </button>
+    </div>
+
     <input
       :value="emailValue"
       class="auth-input"
@@ -75,7 +95,62 @@ const {
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
+@use "@/styles/core/tools" as *;
+
 .online-signup-form {
   width: 100%;
+}
+
+.gender-selection-row {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  margin-bottom: 12px;
+  margin-top: 4px;
+
+  .gender-select-btn {
+    flex: 1;
+    background: Rgba(0, 0, 0, 0.4);
+    border: 2px solid Rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 10px;
+    font-size: 11px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    color: Rgba(255, 255, 255, 0.6);
+    font-family: inherit;
+    font-weight: bold;
+    will-change: transform;
+    @include pixelated;
+
+    &:hover {
+      border-color: Rgba(255, 255, 255, 0.3);
+      color: var(--white);
+    }
+
+    &.male {
+      &.active {
+        border-color: Rgba(59, 139, 255, 1);
+        background: Rgba(59, 139, 255, 0.15);
+        color: Rgba(59, 139, 255, 1);
+        text-shadow: 0 0 8px Rgba(59, 139, 255, 0.4);
+        box-shadow: 0 0 12px Rgba(59, 139, 255, 0.1);
+      }
+    }
+
+    &.female {
+      &.active {
+        border-color: Rgba(255, 110, 255, 1);
+        background: Rgba(255, 110, 255, 0.15);
+        color: Rgba(255, 110, 255, 1);
+        text-shadow: 0 0 8px Rgba(255, 110, 255, 0.4);
+        box-shadow: 0 0 12px Rgba(255, 110, 255, 0.1);
+      }
+    }
+  }
 }
 </style>

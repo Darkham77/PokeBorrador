@@ -18,7 +18,7 @@
   padding: 20px;
   overflow-y: auto;
   scrollbar-gutter: stable;
-  font-family: 'Nunito', sans-serif;
+  font-family: var(--font-pixel), sans-serif;
 }
 
 .login-background-stars {
@@ -132,13 +132,13 @@
   padding: 10px;
   text-align: center;
   cursor: pointer;
-  font-size: 13px;
+  font-size: 9px;
   font-weight: 700;
   background: transparent;
   border: none;
   color: var(--gray);
   will-change: color;
-  font-family: 'Nunito', sans-serif;
+  font-family: var(--font-pixel), sans-serif;
 
   &.active {
     background: var(--purple);
@@ -148,13 +148,14 @@
 
 .auth-input {
   width: 100%;
-  padding: 12px 16px;
+  padding: 10px 14px;
   background: Rgba(255, 255, 255, 0.06);
   border: 1px solid Rgba(255, 255, 255, 0.12);
   border-radius: 12px;
   color: var(--text);
-  font-size: 14px;
-  font-family: 'Nunito', sans-serif;
+  font-size: 12px;
+  font-family: var(--font-pixel), sans-serif;
+  line-height: 1.5;
   margin-bottom: 12px;
   will-change: border-color;
   outline: none;
@@ -165,6 +166,7 @@
 
   &::placeholder {
     color: var(--gray);
+    line-height: 1.5;
   }
 }
 
@@ -263,7 +265,7 @@
 
 .login-server-tab {
   flex: 1;
-  padding: 10px;
+  padding: 8px;
   text-align: center;
   cursor: pointer;
   @include pixelated;
@@ -283,9 +285,9 @@
 
 .auth-loading-text {
   text-align: center;
-  padding: 16px;
+  padding: 12px;
   color: var(--gray);
-  font-size: 13px;
+  font-size: 8px;
 }
 
 .auth-version-footer {
@@ -358,6 +360,7 @@
   background-position: right 16px center;
   padding-right: 40px !important;
   border-color: Rgba(255, 255, 255, 0.2);
+  font-size: 10px;
   
   option {
     background: #1a1a1a;
