@@ -139,6 +139,7 @@
   color: var(--gray);
   will-change: color;
   font-family: var(--font-pixel), sans-serif;
+  text-transform: uppercase;
 
   &.active {
     background: var(--purple);
@@ -275,6 +276,7 @@
   color: var(--gray);
   will-change: color, background-color;
   letter-spacing: 1px;
+  text-transform: uppercase;
 
   &.active {
     background: Linear-Gradient(135deg, var(--blue), var(--purple));
