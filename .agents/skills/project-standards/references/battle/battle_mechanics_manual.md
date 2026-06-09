@@ -195,9 +195,9 @@ These can coexist with primary status and other secondary effects:
   6. **Differential Reset**:
      - Clear stat stages and volatile status conditions.
      - PRESERVE field effects (Reflect, Spikes, etc.).
-  - **Battle-Start Full Team Clear**: At the beginning of every new battle (`initBattleSequence`), `clearVolatileStatus` MUST be called on ALL members of the player's team (not just the active lead). Failing to do so causes volatile states like `choiceMove` (Choice Band lock) to persist into the next battle for benched Pokémon, creating invisible state leakage that is impossible to diagnose from the UI.
-  7. Invoke the `POKEMON_CALL` modular protocol using the **cached shadow coordinates** of the entering member.
-  8. **Entry Hazard Application**: Apply hazards (Spikes) at the end of `ENERGY_RELEASE`.
+  7. - **Battle-Start Full Team Clear**: At the beginning of every new battle (`initBattleSequence`), `clearVolatileStatus` MUST be called on ALL members of the player's team (not just the active lead). Failing to do so causes volatile states like `choiceMove` (Choice Band lock) to persist into the next battle for benched Pokémon, creating invisible state leakage that is impossible to diagnose from the UI.
+  8. Invoke the `POKEMON_CALL` modular protocol using the **cached shadow coordinates** of the entering member.
+  9. **Entry Hazard Application**: Apply hazards (Spikes) at the end of `ENERGY_RELEASE`.
 
 ### 2. Coordinate Synchronization & Poké Ball Alignment
 
@@ -475,7 +475,7 @@ stateDiagram-v2
 After `INITIALIZING`, the `wasSearching` flag determines which visual entry path the orchestrator takes:
 
 | `wasSearching` | Entry path | Shows `¡COMBATIR!` button? | Use case |
-|---|---|---|---|
+| :--- | :--- | :--- | :--- |
 | `true` (default) | `SEARCH_PHASE → COMBAT_OR_FLEE` | ✅ Yes | Wild encounters, Trainer/Gym battles |
 | `false` | `FIRST_INTRO` directly | ❌ No — battle starts immediately | Internal/debug forced battles |
 

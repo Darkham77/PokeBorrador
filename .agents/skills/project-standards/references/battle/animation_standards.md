@@ -115,11 +115,11 @@ When an animation affects the flow of combat, it MUST block the state machine un
 - **CLI Bridge**: Every animation promise MUST be exposed to `window.__VITE_DEBUG__.battle.animations` to allow the IA and automated tests to wait for visual completion.
 
 ## 10. Animation State Hygiene
- 
+
  Every global blocking state (e.g., `isIntroAnimating`) MUST have a guaranteed reset mechanism.
- 
- - **Rule**: The cleanup (`flag = false`) MUST be called in the `onComplete` callback of the GSAP timeline.
- - **FSM State & Visual Synchronization**: Clear minigame active flags (e.g., `isFishing = false`, `isArchaeology = false`) and run visual reset routines (`resetAll()`) *before* executing FSM transitions (like completing the battle flow). This prevents race conditions and ensures visual state hygiene.
+
+- **Rule**: The cleanup (`flag = false`) MUST be called in the `onComplete` callback of the GSAP timeline.
+- **FSM State & Visual Synchronization**: Clear minigame active flags (e.g., `isFishing = false`, `isArchaeology = false`) and run visual reset routines (`resetAll()`) *before* executing FSM transitions (like completing the battle flow). This prevents race conditions and ensures visual state hygiene.
 
 ## 11. Aesthetic Reveal Delays (Shadow & Metadata)
 
@@ -344,6 +344,7 @@ To maintain premium tactical feedback, elements in a selected (`.selected`) or a
 ## 27. GSAP Callback Reference Null Safety
 
 To prevent the `GSAP target null not found` console warnings when a component starts to unmount during hover or exit animations (e.g., `MapCard.vue`), all asynchronous GSAP callbacks (`onComplete`, `onStart`, `onUpdate`) MUST check that the target DOM references are not null before performing mutations or applying styles.
+
 - **Rule**: Wrap callback operations in null checks: `if (elementRef.value) { ... }`.
 
 ## 28. Vue Transitions and Manual CSS Animations in Minigames
@@ -353,22 +354,29 @@ To prevent violating the zero-manual-animations rule, standard CSS transition de
 ## 29. Advanced GSAP & CSS Interoperability Guidelines
 
 ### GSAP Centering & CSS Transforms Clashing
+
 Avoid centering absolute elements with `transform: translate(-50%, -50%)` in CSS if GSAP is animating properties like `rotation` or `scale`. GSAP overrides the inline `transform` property, displacing the element. Center elements mathematically using absolute coordinates (`top: 50%; left: 50%`) and negative margins (`margin-top`, `margin-left`), leaving `transform` completely free for GSAP.
 
 ### GPU-Accelerated Mask Shines
+
 To animate glowing weather rings, shiny rings, or winner badge flares, use CSS `mask-image` with standard `rotation`/`scale`/`opacity` properties instead of animating `filter: drop-shadow()` or `filter: blur()`. This shifts all calculations entirely to the GPU compositor layer, yielding 0 repaint cost.
 
 ### GSAP Loading Spinner Watcher
+
 To satisfy the GSAP-only animation mandate for loading spinners without using manual CSS `@keyframes`, animate spinner rotation continuously using a GSAP tween reactively triggered inside a watch handler of the store loading state (e.g., `leaderboardLoading`) in `nextTick`.
 
 ### Filter Cleanup Mandate
+
 Temporary visual effects (flashes, pulses) MUST use GSAP's `onComplete` with `clearProps: "filter"` to ensure no residual 0px filters remain as base layers.
 
 ### GSAP Target Prevention for Conditional Elements (v-if)
+
 To prevent `GSAP target not found` console warnings on elements that are rendered conditionally (e.g., using Vue's `v-if` or elements removed during rapid state/prop updates), always verify the presence of the target elements in the DOM using `document.querySelector` before creating tweens or calling cleanup methods like `gsap.set(target, { clearProps: 'all' })`.
 
 ### Decoupling Concurrent GSAP Animations on a Single Target
+
 Animating different properties on the same target simultaneously (such as a cyclical idle floating/levitation motion and an interactive click wobble/shake) can cause conflicts in the `transform` property calculations, leading to positional jumping, snaps, or freezes.
+
 - **Solution**: Decouple the animations by applying the passive/idle animation to a parent wrapper container (e.g., `.wrapper`) and the active/interactive wobble animation to the child element itself (e.g., `.sprite`).
 
 ## 30. `isFloating` Truthiness vs. Existence Check
@@ -410,7 +418,6 @@ gsap.to(sprite, { scale: 1, duration: 0.4, ease: "back.out(1.2)" }) // releasing
 
 - **Why**: `back.out()` spends extra time in the overshoot phase (scale > 1) before settling. Even with equal `duration`, users perceive this as a longer, slower animation compared to a clean `power2.inOut`.
 
-
 ## 33. FSM Transition Timing: Animation Bridge Pattern (Trainer Flow)
 
 When the battle orchestrator needs to advance through FSM states that have associated GSAP animations, it MUST `await` the animation's Promise through the `ctx.animations` bridge instead of using hardcoded timer delays. Timer delays (`sleep(1500)`) are brittle because they decouple timing from the animation that justifies it.
@@ -439,6 +446,7 @@ if (ctx.animations?.triggerTrainerDialogs) await ctx.animations.triggerTrainerDi
 ### Extending the bridge
 
 To add a new synchronizable animation phase:
+
 1. Add a method in `useBattleAnimations.ts` that returns `awaitAnimation(tl)`.
 2. Declare its signature in `BattleContext.animations` (`battleContext.ts`).
 3. Register it in the `battleStore.animations = { ... }` block in `BattleArenaView.vue`.
@@ -448,7 +456,7 @@ The `ctx.animations?.method` optional-chaining guard is required because the bri
 
 ## 34. Sequential Animation Orchestration (Animated Reordering)
 
-When changing the active combatant during state transitions (e.g. at battle resolution before returning to the search loop), the change MUST NOT be executed instantaneously. 
+When changing the active combatant during state transitions (e.g. at battle resolution before returning to the search loop), the change MUST NOT be executed instantaneously.
 
 - **Orchestration**: The swap must be coordinated as a sequential animation flow:
   1. Set the outgoing combatant as `exitingPlayer`.
@@ -460,16 +468,19 @@ When changing the active combatant during state transitions (e.g. at battle reso
 ## 35. Stale Animation Tween Registry Hygiene
 
 When using local or global registries to track and await GSAP tweens (like `activeTweens` and `pendingTweenResolvers` accessed by `awaitTween`), you MUST clear these collections at the start or completion of a combat (e.g., in `resetCaptureStates`).
+
 - **Why**: Failure to reset registries causes `awaitTween()` calls in subsequent battles to immediately resolve with stale, completed tweens from previous combats, skipping the intended animation sequences entirely.
 
 ## 36. Global Event Bus Listener Cleanups (Vue Lifecycle Hook)
 
 Event bus listeners registered inside composables or setup functions (e.g., `gameBus.on(...)`) must be tracked and removed when the parent Vue component is unmounted.
+
 - **Why**: Lingering event handlers cause memory leaks and accumulate duplicate callbacks on global event dispatchers, causing old state operations to execute concurrently in subsequent views. Use Vue's `onUnmounted` hook to execute desubscriptions (`cleanupListeners`).
 
 ## 37. Cover Z-Index Persistence & State Reset
 
 Environmental cover layers (such as front combat grass) that must transition behind a combatant upon its emergence MUST NOT depend solely on the transient duration of the jump animation.
+
 - **Rule**: Map the visibility state of the front cover to stay behind the combatant during active and post-combat FSM states (like `ACTIVE_BATTLE`, `LEVEL_UP_MODAL`, `REWARDS_PHASE`).
 - **Reset**: The cover must be reset to render in front of the combatant whenever transitioning back to the `INITIALIZING` state at the start of a subsequent search encounter.
 
@@ -477,16 +488,16 @@ Environmental cover layers (such as front combat grass) that must transition beh
 
 To prevent manual CSS animation audit failures, Vue `<TransitionGroup>` tags should be decoupled from CSS styles. Use the `:css="false"` property and handle animations using JavaScript hooks (`@enter` and `@leave`) powered by GSAP. Always trigger the Vue `done()` callback in the GSAP `onComplete` block to guarantee correct lifecycle coordination and prevent memory leaks or stuck nodes.
 
-
 ## 39. GSAP Infinite Timelines and Tween Disposals
 
 Calling `gsap.killTweensOf(el)` only terminates individual active tweens bound to an element, but **does not kill or stop a parent infinite timeline** (`gsap.timeline({ repeat: -1 })`) hosting them. The empty parent timeline will continue to execute in GSAP's global ticker and fire its registered callbacks (such as `onRepeat`).
-- **Rule**: When re-initializing or disposing elements with repeating animations, ALWAYS explicitly call `.kill()` on the timeline or tween instances themselves (e.g. by centralizing disposals in an engine's `killAll()` method) to prevent phantom callbacks from triggering positioning logic and causing positional jumps or teleports on subsequent rendering cycles.
 
+- **Rule**: When re-initializing or disposing elements with repeating animations, ALWAYS explicitly call `.kill()` on the timeline or tween instances themselves (e.g. by centralizing disposals in an engine's `killAll()` method) to prevent phantom callbacks from triggering positioning logic and causing positional jumps or teleports on subsequent rendering cycles.
 
 ## 40. High-Frequency UI Animation Re-initialization Prevention
 
 Repeatedly restarting particle or aura animations during high-frequency UI updates degrades rendering performance and risks timing collisions.
+
 - **Rule**: Store the active effect/state identifier in a local reactive reference (e.g., `activeStatusType`) and compare incoming status updates. Do NOT trigger a visual system re-initialization unless the status type has actually changed or a hard reset (`forceReset`) is explicitly requested.
 
 ## 41. `v-gsap-loop` Directive: Blink Color Over Opacity for Text Elements
@@ -497,6 +508,3 @@ The `blink` effect of the `gsapLoop.ts` directive (`v-gsap-loop="'blink'"`) MUST
 - **Correct Behavior (Text Elements)**: The directive detects elements containing text (`el.innerText`) and animates the CSS `color` property between the element's original computed color and a dimmed grey (`#888888`). This creates a visible "dimming" pulse without ever hiding the text.
 - **Correct Behavior (Non-Text Elements)**: For elements without text (icons, sprites), opacity is clamped to a minimum of `0.75` to prevent full transparency.
 - **Implementation Reference**: `src/directives/gsapLoop.ts` — `applyAnimation` switch-case `'blink'`.
-
-
-

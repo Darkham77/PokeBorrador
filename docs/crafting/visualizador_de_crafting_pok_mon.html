@@ -1,0 +1,1452 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Visualizador de Crafting Pokémon Pro</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            slate: {
+              950: '#020617'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Estilos de scrollbar personalizados premium */
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #020617;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #1e293b;
+      border-radius: 3px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #334155;
+    }
+  </style>
+</head>
+<body class="h-full bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-indigo-500 selection:text-white overflow-hidden">
+
+  <!-- ========================================== -->
+  <!-- HEADER DE LA APP                           -->
+  <!-- ========================================== -->
+  <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-40 px-6 py-4 flex flex-col md:flex-row items-center justify-between gap-4 shrink-0">
+    <div class="flex items-center gap-3">
+      <div class="p-2.5 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl shadow-lg shadow-indigo-500/20">
+        <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+        </svg>
+      </div>
+      <div>
+        <h1 class="text-xl font-bold tracking-tight bg-gradient-to-r from-red-500 via-indigo-400 to-purple-500 bg-clip-text text-transparent">
+          Visualizador de Crafting Pokémon Pro (Vanilla)
+        </h1>
+        <p class="text-xs text-slate-400 font-medium">Estaciones Silph/Devon, refinado de aleaciones sin marcas y auditoría de uso completa</p>
+      </div>
+    </div>
+
+    <!-- Indicador de Cola Activa -->
+    <div id="queue-indicator" class="hidden flex items-center gap-2 bg-indigo-500/10 border border-indigo-500/20 px-3 py-1.5 rounded-lg text-xs">
+      <span class="animate-pulse w-2 h-2 rounded-full bg-indigo-400"></span>
+      <span id="queue-indicator-count" class="text-indigo-300 font-semibold">0</span>
+      <span class="text-indigo-200/80">Objetos en Cola</span>
+    </div>
+  </header>
+
+  <!-- ========================================== -->
+  <!-- CUERPO PRINCIPAL                           -->
+  <!-- ========================================== -->
+  <main class="flex-1 flex flex-col lg:flex-row overflow-hidden">
+    
+    <!-- PANEL IZQUIERDO: LISTADO Y FILTRADO -->
+    <section class="w-full lg:w-1/3 xl:w-1/4 border-r border-slate-800 bg-slate-900/30 flex flex-col h-[40vh] lg:h-full shrink-0">
+      
+      <!-- Controles de Filtrado -->
+      <div class="p-4 border-b border-slate-800 bg-slate-900/50 space-y-3">
+        <!-- Buscador -->
+        <div class="relative">
+          <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </span>
+          <input
+            id="sidebar-search"
+            type="text"
+            placeholder="Buscar por objeto..."
+            class="w-full bg-slate-950 border border-slate-800 rounded-lg pl-9 pr-4 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500/70 focus:ring-1 focus:ring-indigo-500/30 transition-colors"
+          />
+        </div>
+
+        <!-- Categorías -->
+        <div>
+          <label class="text-[10px] uppercase tracking-wider text-slate-400 font-bold block mb-1">Categoría de Inventario</label>
+          <select
+            id="sidebar-cat-filter"
+            class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-300 focus:outline-none focus:border-indigo-500"
+          >
+            <!-- Renderizado dinámicamente -->
+          </select>
+        </div>
+
+        <!-- Tiers -->
+        <div>
+          <label class="text-[10px] uppercase tracking-wider text-slate-400 font-bold block mb-1">Nivel de Proceso (Tier)</label>
+          <select
+            id="sidebar-tier-filter"
+            class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-300 focus:outline-none focus:border-indigo-500"
+          >
+            <option value="all">Todos los Tiers</option>
+            <option value="3">Tier 3: Maquinarias y Productos</option>
+            <option value="2">Tier 2: Componentes Integrados</option>
+            <option value="1">Tier 1: Refinados Directos</option>
+            <option value="0">Tier 0: Materias Base / Ores / Botánica</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Barra de Resultados -->
+      <div class="px-4 py-2 bg-slate-950/60 border-b border-slate-800/80 flex justify-between items-center text-[11px] text-slate-400 font-medium shrink-0">
+        <span>Resultados: <strong id="sidebar-results-count" class="text-slate-200">0</strong></span>
+        <span class="text-emerald-400 font-semibold">100% Usados (T0, T1, T2)</span>
+      </div>
+
+      <!-- Lista de Objetos Scrollable -->
+      <div id="sidebar-items-list" class="flex-1 overflow-y-auto divide-y divide-slate-900 custom-scrollbar p-2">
+        <!-- Renderizado dinámico -->
+      </div>
+    </section>
+
+    <!-- PANEL CENTRAL Y DERECHO: INTERFAZ DE CRAFTEO -->
+    <section class="flex-1 flex flex-col overflow-hidden">
+      
+      <!-- Detalle del Objeto Seleccionado -->
+      <div id="detail-header-panel" class="bg-slate-900/40 border-b border-slate-800 p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+        <!-- Renderizado dinámico -->
+      </div>
+
+      <!-- Menú de Vistas (Pestañas) -->
+      <div class="border-b border-slate-800 bg-slate-900/10 px-6 py-2 flex items-center justify-between flex-wrap gap-2 text-xs shrink-0">
+        <div class="flex gap-1.5">
+          <button id="tab-btn-tree" class="tab-btn px-4 py-2 rounded-md font-bold transition-all bg-indigo-600 text-white">
+            🌲 Vista del Árbol
+          </button>
+          <button id="tab-btn-raw" class="tab-btn px-4 py-2 rounded-md font-bold transition-all text-slate-400 hover:text-slate-100 bg-slate-900/60 border border-slate-800">
+            ⛏️ Desglose a Nivel 0
+          </button>
+          <button id="tab-btn-usage" class="tab-btn px-4 py-2 rounded-md font-bold transition-all text-slate-400 hover:text-slate-100 bg-slate-900/60 border border-slate-800">
+            📊 Reporte de Usos de la BD
+          </button>
+        </div>
+
+        <!-- Selectores de visualización del Árbol (Solo visibles en pestaña Árbol) -->
+        <div id="tree-mode-selectors" class="flex items-center gap-1.5 bg-slate-950 border border-slate-800 p-1 rounded-lg">
+          <button id="mode-btn-interactive" class="mode-btn px-3 py-1.5 rounded font-bold bg-indigo-500/20 text-indigo-300">
+            Conexión Horizontal
+          </button>
+          <button id="mode-btn-indent" class="mode-btn px-3 py-1.5 rounded font-bold text-slate-400 hover:text-slate-100">
+            Árbol Escalonado
+          </button>
+        </div>
+      </div>
+
+      <!-- Contenedor del Display Activo -->
+      <div class="flex-1 overflow-y-auto p-6 bg-slate-950 flex flex-col gap-6 custom-scrollbar">
+        
+        <!-- Pestaña 1: Árbol (Grafos) -->
+        <div id="tab-content-tree" class="tab-pane flex-1 flex flex-col">
+          <!-- Consejo de Navegación -->
+          <div id="tree-tip" class="text-xs text-slate-400 border border-slate-800 bg-slate-900/20 px-4 py-2.5 rounded-lg flex items-center gap-2 mb-4 shrink-0">
+            <svg class="w-4 h-4 text-indigo-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>Consejo: Haz clic en cualquier ingrediente o subcomponente del árbol para redirigir la visualización y examinar su receta jerárquica.</span>
+          </div>
+
+          <!-- Contenedores de renderizado de grafos -->
+          <div id="tree-graph-interactive" class="flex-1 border border-slate-800/80 rounded-xl bg-slate-900/15 overflow-x-auto p-8 flex items-center justify-center min-h-[350px]">
+            <!-- Grafo horizontal -->
+          </div>
+          <div id="tree-graph-indent" class="hidden flex-1 border border-slate-800/80 rounded-xl bg-slate-900/15 p-6 min-h-[350px]">
+            <h4 class="text-sm font-bold text-slate-300 mb-4 uppercase tracking-wider">Flujo de Componentes Escalonados</h4>
+            <div id="indent-tree-root" class="pl-2"></div>
+          </div>
+          <div id="tree-graph-empty" class="hidden flex-1 flex flex-col items-center justify-center text-center p-12 bg-slate-900/10 rounded-2xl border border-slate-800/40">
+            <!-- Caso base o no fabricable -->
+          </div>
+        </div>
+
+        <!-- Pestaña 2: Desglose Raw -->
+        <div id="tab-content-raw" class="tab-pane hidden flex flex-col gap-6">
+          <div>
+            <h3 class="text-lg font-bold text-slate-100">Cálculo de Desglose Bruto Total</h3>
+            <p class="text-xs text-slate-400 mt-1">Suma consolidada de todas las materias primas del Tier 0 (botánicas, líquidas y minerales) requeridas tras procesar, fundir y destilar.</p>
+          </div>
+          <div id="raw-breakdown-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-4">
+            <!-- Cajas de materiales Tier 0 -->
+          </div>
+          <!-- Sugerencia de progresión -->
+          <div class="border border-slate-800/80 rounded-xl bg-indigo-950/10 p-6 flex flex-col md:flex-row items-center justify-between gap-6">
+            <div class="space-y-2">
+              <h4 class="text-md font-bold text-indigo-400">¿Quieres agilizar la recolección de materiales?</h4>
+              <p class="text-xs text-slate-300 max-w-xl">
+                Para recolectar estos materiales brutos con mayor rapidez, te aconsejamos fabricar y equipar herramientas avanzadas de Tier 3 como el <strong>Pico Bueno</strong> o el <strong>Superpico</strong> para minerales, y el <strong>Pincel de Excavación</strong> para fósiles en el mapa.
+              </p>
+            </div>
+            <button onclick="focusOnItem('pickaxe_silver')" class="bg-slate-900 hover:bg-slate-800 text-indigo-300 border border-slate-800 font-bold text-xs px-4 py-2.5 rounded-lg shrink-0 transition-colors">
+              Ver Crafteo de Herramientas
+            </button>
+          </div>
+        </div>
+
+        <!-- Pestaña 3: Reporte de Usos -->
+        <div id="tab-content-usage" class="tab-pane hidden flex flex-col gap-6">
+          <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-slate-900/40 p-4 border border-slate-800 rounded-xl">
+            <div>
+              <h3 class="text-lg font-bold text-slate-100 flex items-center gap-2">
+                <span>📊</span> Tabla de Usos en Fórmulas del Juego
+              </h3>
+              <p class="text-xs text-slate-400 mt-1">
+                Muestra en cuántas recetas de crafteo diferentes de la base de datos se utiliza activamente cada elemento.
+              </p>
+            </div>
+            <div class="flex gap-2 self-stretch md:self-auto flex-wrap">
+              <button onclick="exportMarkdown()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs px-4 py-2.5 rounded-lg flex items-center gap-2 transition-all justify-center flex-1 md:flex-none">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                Exportar .md
+              </button>
+              <button onclick="exportHTML()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs px-4 py-2.5 rounded-lg flex items-center gap-2 transition-all justify-center flex-1 md:flex-none">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                Exportar .html
+              </button>
+            </div>
+          </div>
+
+          <!-- Buscador de la tabla -->
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6M3 10a7 7 0 1114 0 7 7 0 01-14 0z" />
+              </svg>
+            </span>
+            <input
+              id="usage-table-search"
+              type="text"
+              placeholder="Filtrar tabla por nombre, ID o categoría..."
+              class="w-full bg-slate-900/60 border border-slate-800 rounded-lg pl-9 pr-4 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
+            />
+          </div>
+
+          <!-- Tabla de usos -->
+          <div class="border border-slate-800 rounded-xl overflow-hidden bg-slate-900/20 max-h-[400px] overflow-y-auto custom-scrollbar">
+            <table class="w-full text-left text-xs border-collapse">
+              <thead class="bg-slate-950/80 text-slate-300 font-bold uppercase tracking-wider sticky top-0 backdrop-blur">
+                <tr>
+                  <th class="p-3.5 border-b border-slate-800">Objeto</th>
+                  <th class="p-3.5 border-b border-slate-800">ID en Código</th>
+                  <th class="p-3.5 border-b border-slate-800 text-center">Tier</th>
+                  <th class="p-3.5 border-b border-slate-800">Categoría</th>
+                  <th class="p-3.5 border-b border-slate-800 text-center">Nº de Recetas que lo usan</th>
+                  <th class="p-3.5 border-b border-slate-800 text-center">Acción</th>
+                </tr>
+              </thead>
+              <tbody id="usage-table-body" class="divide-y divide-slate-800/60">
+                <!-- Se inyecta dinámicamente -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Nota de Auditoría -->
+          <div class="p-4 bg-indigo-950/15 border border-indigo-500/20 rounded-xl text-xs text-indigo-300 space-y-1 shrink-0">
+            <p class="font-bold flex items-center gap-1.5 text-indigo-200">
+              <span>💡</span> Nota del Diseñador de Sistema:
+            </p>
+            <p>
+              Ningún material primario (Tier 0), refinado/aleación (Tier 1) o componente intermedio (Tier 2) posee 0 usos. Todos han sido enlazados como ingredientes lógicos para la manufactura de Pokéballs, consumibles de Silph Co. o herramientas mecánicas de Devon Corporation.
+            </p>
+          </div>
+        </div>
+
+        <!-- Simulador de Cola de Producción (Cart de crafteo) -->
+        <div id="mass-crafting-panel" class="shrink-0">
+          <!-- Renderizado dinámico -->
+        </div>
+
+      </div>
+    </section>
+  </main>
+
+  <!-- ========================================== -->
+  <!-- FOOTER                                     -->
+  <!-- ========================================== -->
+  <footer class="border-t border-slate-900 bg-slate-950 px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500 font-medium shrink-0">
+    <div>
+      <span>Creador de Árboles Pokémon • Base de Datos Unificada Pure HTML/JS</span>
+    </div>
+    <div class="flex gap-4">
+      <span id="footer-total-items">0 Objetos Totales</span>
+      <span>5 Estaciones de Trabajo</span>
+      <span>Mínimo 2 ingredientes por receta</span>
+    </div>
+  </footer>
+
+  <!-- ============================================================================ -->
+  <!-- VANILLA JAVASCRIPT STATE ENGINE & DATABASE MIGRATION                         -->
+  <!-- ============================================================================ -->
+  <script>
+    // Configuración inicial de datos estáticos
+    const TM_DATA_RAW = {
+      1: ['Puño Certero', 'Lucha', '✊', 'Enseña Puño Certero. Requiere concentración.'],
+      2: ['Garra Dragón', 'Dragón', '🐉', 'Enseña Garra Dragón. Poderoso ataque de tipo Dragón.'],
+      3: ['Pulso Agua', 'Agua', '💧', 'Enseña Pulso Agua. Puede confundir al rival.'],
+      4: ['Paz Mental', 'Psíquico', '🧠', 'Enseña Paz Mental. Sube At. Esp. y Def. Esp.'],
+      5: ['Rugido', 'Normal', '🦁', 'Enseña Rugido. Ahuyenta al rival.'],
+      6: ['Tóxico', 'Veneno', '☠️', 'Enseña Tóxico. Envenena gravemente al rival.'],
+      7: ['Granizo', 'Hielo', '❄️', 'Enseña Granizo. Crea una tormenta de hielo.'],
+      8: ['Corpulencia', 'Lucha', '💪', 'Enseña Corpulencia. Sube Ataque y Defensa.'],
+      9: ['Recurrente', 'Planta', '🌱', 'Enseña Recurrente. Ataca 2-5 veces.'],
+      10: ['Poder Oculto', 'Normal', '🔮', 'Enseña Poder Oculto. El tipo varía según el Pokémon.'],
+      11: ['Día Soleado', 'Fuego', '☀️', 'Enseña Día Soleado. Despierta un sol radiante.'],
+      12: ['Mofa', 'Siniestro', '🤫', 'Enseña Mofa. Impide movimientos de estado.'],
+      13: ['Rayo Hielo', 'Hielo', '🧊', 'Enseña Rayo Hielo. Puede congelar al rival.'],
+      14: ['Ventisca', 'Hielo', '🌬️', 'Enseña Ventisca. Poderoso ataque de hielo.'],
+      15: ['Hiperrayo', 'Normal', '💥', 'Enseña Hiperrayo. Potencia máxima, requiere descanso.'],
+      16: ['Pantalla de Luz', 'Psíquico', '🛡️', 'Enseña Pantalla de Luz. Reduce daño especial.'],
+      17: ['Protección', 'Normal', '🛡️', 'Enseña Protección. Evita ataques ese turno.'],
+      18: ['Danza Lluvia', 'Agua', '🌧️', 'Enseña Danza Lluvia. Invoca la lluvia.'],
+      19: ['Gigadrenado', 'Planta', '🍷', 'Enseña Gigadrenado. Roba vida al rival.'],
+      20: ['Velo Sagrado', 'Normal', '👼', 'Enseña Velo Sagrado. Protege de estados.'],
+      21: ['Frustración', 'Normal', '💢', 'Enseña Frustración. Más fuerte si te odia.'],
+      22: ['Rayo Solar', 'Planta', '🌿', 'Enseña Rayo Solar. Tarda un turno en cargar.'],
+      23: ['Cola Férrea', 'Acero', '🔩', 'Enseña Cola Férrea. Puede bajar la defensa.'],
+      24: ['Rayo', 'Eléctrico', '⚡', 'Enseña Rayo. Ataque eléctrico fiable.'],
+      25: ['Trueno', 'Eléctrico', '⛈️', 'Enseña Trueno. Máximo poder, poca precisión.'],
+      26: ['Terremoto', 'Tierra', '🌋', 'Enseña Terremoto. El mejor ataque de tierra.'],
+      27: ['Retribución', 'Normal', '💖', 'Enseña Retribución. Más fuerte si te quiere.'],
+      28: ['Excavar', 'Tierra', '🕳️', 'Enseña Excavar. Se oculta bajo tierra.'],
+      29: ['Psíquico', 'Psíquico', '👁️', 'Enseña Psíquico. El mejor ataque psíquico.'],
+      30: ['Bola Sombra', 'Fantasma', '👻', 'Enseña Bola Sombra. Gran ataque de tipo Fantasma.'],
+      31: ['Demolición', 'Lucha', '🥋', 'Enseña Demolición. Destruye pantallas.'],
+      32: ['Doble Equipo', 'Normal', '👥', 'Enseña Doble Equipo. Sube la evasión.'],
+      33: ['Reflejo', 'Psíquico', '🪞', 'Enseña Reflejo. Reduce daño físico.'],
+      34: ['Onda Voltio', 'Eléctrico', '🔌', 'Enseña Onda Voltio. Nunca falla.'],
+      35: ['Lanzallamas', 'Fuego', '🔥', 'Enseña Lanzallamas. Ataque ígneo fiable.'],
+      36: ['Bomba Lodo', 'Veneno', '💩', 'Enseña Bomba Lodo. Puede envenenar.'],
+      37: ['Tormenta de Arena', 'Roca', '🌪️', 'Enseña T. Arena. Tormenta de arena.'],
+      38: ['Llamarada', 'Fuego', '☄️', 'Enseña Llamarada. Máximo poder de fuego.'],
+      39: ['Tumba Rocas', 'Roca', '🪨', 'Enseña Tumba Rocas. Baja la velocidad.'],
+      40: ['Golpe Aéreo', 'Volador', '🦅', 'Enseña Golpe Aéreo. Nunca falla.'],
+      41: ['Tormento', 'Siniestro', '😈', 'Enseña Tormento. Impide repetir ataques.'],
+      42: ['Imagen', 'Normal', '🎭', 'Enseña Imagen. Se potencia con estados.'],
+      43: ['Daño Secreto', 'Normal', '㊙️', 'Enseña Daño Secreto. Efecto según terreno.'],
+      44: ['Descanso', 'Psíquico', '😴', 'Enseña Descanso. Duerme y cura HP.'],
+      45: ['Atracción', 'Normal', '😍', 'Enseña Atracción. Enamora al rival.'],
+      46: ['Ladrón', 'Siniestro', '🥷', 'Enseña Ladrón. Puede robar el item.'],
+      47: ['Ala de Acero', 'Acero', '⚔️', 'Enseña Ala de Acero. Puede subir defensa.'],
+      48: ['Intercambio', 'Psíquico', '🔄', 'Enseña Intercambio. Cambia habilidades.'],
+      49: ['Robo', 'Siniestro', '🐈', 'Enseña Robo. Robo el efecto positivo.'],
+      50: ['Sofoco', 'Fuego', '🥵', 'Enseña Sofoco. Máximo poder, baja At. Esp.']
+    };
+
+    const STATIC_ITEMS = [
+      // TIER 0: MATERIALES BASE RECOLECTABLES
+      { id: 'coal_ore', cat: 'ores', name: 'Mineral de Carbón', icon: '🪨', tier: 0, desc: 'Combustible fósil de alta densidad. Común en cuevas y minas de Kanto.' },
+      { id: 'copper_ore', cat: 'ores', name: 'Mineral de Cobre', icon: '🟫', tier: 0, desc: 'Mineral metálico conductor. Base para el cableado electrónico.' },
+      { id: 'iron_ore', cat: 'ores', name: 'Mineral de Hierro', icon: '🧱', tier: 0, desc: 'Materia prima indispensable para armazones pesados y estructuras mecánicas.' },
+      { id: 'silver_ore', cat: 'ores', name: 'Mineral de Plata', icon: '⬜', tier: 0, desc: 'Mineral conductor premium para microchips de alto rendimiento.' },
+      { id: 'gold_ore', cat: 'ores', name: 'Mineral de Oro', icon: '🟨', tier: 0, desc: 'Metal precioso inalterable usado para contactos electrónicos de precisión.' },
+      { id: 'tungsten_ore', cat: 'ores', name: 'Mineral de Wolframio', icon: '🌑', tier: 0, desc: 'Mineral denso de alto punto de fusión para blindajes térmicos de alta tecnología.' },
+      { id: 'uranium_ore', cat: 'ores', name: 'Mineral de Uranio', icon: '🟢', tier: 0, desc: 'Isótopo de energía nuclear para alimentar sistemas lógicos ultra avanzados.' },
+      { id: 'rubi_ore', cat: 'ores', name: 'Rubí Bruto', icon: '🔺', tier: 0, desc: 'Gema volcánica sin tallar, canalizadora de ondas de tipo Fuego.' },
+      { id: 'zaphire_ore', cat: 'ores', name: 'Zafiro Bruto', icon: '🔹', tier: 0, desc: 'Gema marina sin pulir, con alta resonancia con energías de tipo Agua.' },
+      { id: 'emmerald_ore', cat: 'ores', name: 'Esmeralda Bruta', icon: '💚', tier: 0, desc: 'Gema forestal en bruto, óptima para potenciar flujos bioenergéticos Planta.' },
+      { id: 'topaz_ore', cat: 'ores', name: 'Topacio Bruto', icon: '💛', tier: 0, desc: 'Cristal conductivo ideal para el almacenamiento de energía Eléctrica.' },
+      { id: 'diamond_ore', cat: 'ores', name: 'Diamante Bruto', icon: '💎', tier: 0, desc: 'Estructura cristalina de dureza legendaria para lentes y focalización.' },
+      { id: 'tin_ore', cat: 'ores', name: 'Mineral de Estaño', icon: '⚪', tier: 0, desc: 'Metal blando indispensable para soldaduras delicadas de circuitos.' },
+      { id: 'nickel_ore', cat: 'ores', name: 'Mineral de Níquel', icon: '🪙', tier: 0, desc: 'Metal anticorrosivo para el templado de acero en componentes de combate.' },
+      { id: 'stardust', cat: 'ores', name: 'Polvo Estelar', icon: '✨', tier: 0, desc: 'Materia cósmica radiante caída de los Clefairy. Catalizador atómico universal.' },
+      { id: 'ice_crystal', cat: 'ores', name: 'Cristal de Hielo', icon: '❄️', tier: 0, desc: 'Cristal de baja temperatura que nunca se derrite. Extraído de la Cueva Helada.' },
+      { id: 'sand_silica', cat: 'ores', name: 'Arena de Sílice', icon: '⏳', tier: 0, desc: 'Arena de cuarzo refinada para el soplado de matraces y viales de vidrio.' },
+
+      // TIER 0: ORGÁNICOS, FLUIDOS Y BOTÁNICOS
+      { id: 'fresh_water', cat: 'ores', name: 'Agua de Manantial', icon: '💧', tier: 0, desc: 'Agua pura sin refinar del monte sagrado. Base líquida para toda la farmacia del juego.' },
+      { id: 'combee_honey', cat: 'ores', name: 'Miel de Combee', icon: '🍯', tier: 0, desc: 'Miel viscosa silvestre recolectada por Combee. El mejor aglutinante dulce.' },
+      { id: 'pecha_berry_wild', cat: 'ores', name: 'Baya Meloc Silvestre', icon: '🍑', tier: 0, desc: 'Fruta rica en agentes antitóxicos naturales, indispensable para antídotos.' },
+      { id: 'revive_root', cat: 'ores', name: 'Raíz Revivir', icon: '🥕', tier: 0, desc: 'Raíz silvestre hiperamarga con propiedades de regeneración celular instantánea.' },
+      { id: 'tiny_mushroom', cat: 'ores', name: 'Mini Seta', icon: '🍄', tier: 0, desc: 'Esporas fúngicas activas de Paras que aceleran las reacciones químicas.' },
+      { id: 'energy_powder', cat: 'ores', name: 'Polvo Energía', icon: '🌿', tier: 0, desc: 'Hojas amargas pulverizadas para ungüentos y reconstituyentes tradicionales.' },
+      { id: 'herb_rare', cat: 'ores', name: 'Brote de Hierba Mental', icon: '🌱', tier: 0, desc: 'Brotes vegetales escasos y estimulantes usados en la medicina de alto espectro.' },
+      { id: 'berry_sugar', cat: 'ores', name: 'Néctar de Baya Dulce', icon: '🍬', tier: 0, desc: 'Azúcares concentrados exprimidos de bayas maduras para endulzar caramelos.' },
+      { id: 'apricorn_red', cat: 'ores', name: 'Bonguri Rojo', icon: '🍒', tier: 0, desc: 'Fruto clásico de corteza leñosa. Base de la Pokéball tradicional.' },
+      { id: 'apricorn_blue', cat: 'ores', name: 'Bonguri Azul', icon: '🫐', tier: 0, desc: 'Fruto leñoso azul con conductividad acuática natural.' },
+      { id: 'apricorn_yellow', cat: 'ores', name: 'Bonguri Amarillo', icon: '🍋', tier: 0, desc: 'Bonguri amarillo rico en propiedades aislantes estáticas.' },
+      { id: 'cloth', cat: 'ores', name: 'Tela de Algodón Cottonee', icon: '🧵', tier: 0, desc: 'Fibras naturales hiladas a partir del vellón de Cottonee.' },
+      { id: 'leather_strip', cat: 'ores', name: 'Correa de Cuero de Tauros', icon: '👞', tier: 0, desc: 'Cuero curtido súper resistente obtenido del rancho de Alola.' },
+      { id: 'sweet_sap', cat: 'ores', name: 'Savia Dulce de Árbol', icon: '🪵', tier: 0, desc: 'Savia resinosa de árboles frutales. Actúa como adhesivo orgánico elástico.' },
+      { id: 'rubber_compound', cat: 'ores', name: 'Goma de Exudado de Oddish', icon: '🩹', tier: 0, desc: 'Látex elástico vegetal extraído de raíces para juntas herméticas.' },
+      { id: 'paint_pigment', cat: 'ores', name: 'Polvo Smeargle', icon: '🎨', tier: 0, desc: 'Pigmento de color natural de alta viscosidad para lacado de Pokéballs.' },
+      { id: 'bone_fragment', cat: 'ores', name: 'Hueso de Marowak Fósil', icon: '🦴', tier: 0, desc: 'Estructuras óseas fosilizadas muy tenaces para mangos y held items.' },
+      { id: 'food_scraps', cat: 'ores', name: 'Sobras Orgánicas', icon: '🍏', tier: 0, desc: 'Desechos biológicos dulces ideales como sustrato fertilizante.' },
+
+      // PIEDRAS DE EVOLUCIÓN & FÓSILES (TIER 0 - NO FABRICABLES)
+      { id: 'fire_stone', cat: 'stones', name: 'Piedra Fuego', icon: '🔥', tier: 0, price: 20000, desc: 'Piedra evolutiva ardiente. Se encuentra explorando zonas volcánicas profundas.' },
+      { id: 'water_stone', cat: 'stones', name: 'Piedra Agua', icon: '💧', tier: 0, price: 20000, desc: 'Piedra evolutiva cristalina. Hallada buceando en arrecifes o lagos profundos.' },
+      { id: 'thunder_stone', cat: 'stones', name: 'Piedra Trueno', icon: '⚡', tier: 0, price: 20000, desc: 'Piedra evolutiva cargada de iones estáticos en plantas generadoras.' },
+      { id: 'leaf_stone', cat: 'stones', name: 'Piedra Hoja', icon: '🌿', tier: 0, price: 20000, desc: 'Piedra evolutiva con siluetas de hojas, oculta en bosques densos.' },
+      { id: 'moon_stone', cat: 'stones', name: 'Piedra Lunar', icon: '🌙', tier: 0, price: 20000, desc: 'Piedra pálida misteriosa que cayó del espacio. Abundante en zonas de cráteres.' },
+      { id: 'sun_stone', cat: 'stones', name: 'Piedra Solar', icon: '☀️', tier: 0, price: 20000, desc: 'Piedra brillante que irradia luz solar, oculta en cañones áridos.' },
+      { id: 'helix_fossil', cat: 'especial', name: 'Fósil Hélix', icon: '🐚', tier: 0, price: 50000, desc: 'Un fósil marino antiguo desenterrable mediante excavación subterránea profunda.' },
+      { id: 'dome_fossil', cat: 'especial', name: 'Fósil Domo', icon: '🛡️', tier: 0, price: 50000, desc: 'Fósil prehistórico de caparazón rígido de Kabuto.' },
+      { id: 'old_amber', cat: 'especial', name: 'Ámbar Viejo', icon: '💎', tier: 0, price: 75000, desc: 'Ámbar prehistórico que contiene ADN fósil de Aerodactyl.' },
+      { id: 'nugget', cat: 'especial', name: 'Pepita', icon: '🟡', tier: 0, price: 5000, desc: 'Bloque de oro puro sin procesar. Véndelo para obtener dinero.' },
+      { id: 'pearl', cat: 'especial', name: 'Perla de Shellder', icon: '⚪', tier: 0, price: 1000, desc: 'Gema nacarada obtenida de Shellder marinos.' },
+      { id: 'big_pearl', cat: 'especial', name: 'Perla Grande', icon: '🔘', tier: 0, price: 4000, desc: 'Gran perla marina cotizada por joyeros avanzados.' },
+      { id: 'star_piece', cat: 'especial', name: 'Trozo Estrella', icon: '⭐', tier: 0, price: 5000, desc: 'Fragmento mineral espacial rojo brillante caído con meteoritos nocturnos.' },
+
+      // TIER 1: REFINADOS Y ALEACIONES GENÉRICOS (SIN MARCA)
+      { id: 'coal', cat: 'refined', name: 'Carbón Purificado', icon: '🔥', tier: 1, station: 'smelter', desc: 'Carbón libre de azufre para alimentar hornos industriales a temperaturas extremas.', ingredients: [{ id: 'coal_ore', qty: 2 }, { id: 'stardust', qty: 1 }] },
+      { id: 'copper', cat: 'refined', name: 'Lingote de Cobre', icon: '🟫', tier: 1, station: 'smelter', desc: 'Cobre purificado libre de impurezas. Excelente conductor de energía.', ingredients: [{ id: 'copper_ore', qty: 2 }, { id: 'stardust', qty: 1 }] },
+      { id: 'iron', cat: 'refined', name: 'Lingote de Hierro', icon: '🧱', tier: 1, station: 'smelter', desc: 'Acero de alta resistencia estructural para chasis de Pokéballs y herramientas.', ingredients: [{ id: 'iron_ore', qty: 2 }, { id: 'stardust', qty: 1 }] },
+      { id: 'silver', cat: 'refined', name: 'Lingote de Plata', icon: '⬜', tier: 1, station: 'smelter', desc: 'Plata refinada brillante para conexiones de precisión analógicas.', ingredients: [{ id: 'silver_ore', qty: 2 }, { id: 'stardust', qty: 1 }] },
+      { id: 'gold', cat: 'refined', name: 'Lingote de Oro', icon: '🟨', tier: 1, station: 'smelter', desc: 'Oro puro para conexiones de bajísima resistencia y microprocesadores cuánticos.', ingredients: [{ id: 'gold_ore', qty: 2 }, { id: 'stardust', qty: 1 }] },
+      { id: 'tungsten', cat: 'refined', name: 'Lingote de Wolframio', icon: '🌑', tier: 1, station: 'smelter', desc: 'Wolframio de alta densidad para soportar esfuerzos severos en herramientas pesadas.', ingredients: [{ id: 'tungsten_ore', qty: 2 }, { id: 'gem_fragment', qty: 1 }] },
+      { id: 'uranium', cat: 'refined', name: 'Lingote de Uranio', icon: '🟢', tier: 1, station: 'smelter', desc: 'Uranio enriquecido herméticamente para fuentes de energía autónomas.', ingredients: [{ id: 'uranium_ore', qty: 2 }, { id: 'ice_crystal', qty: 1 }] },
+      { id: 'tin', cat: 'refined', name: 'Lingote de Estaño', icon: '⚪', tier: 1, station: 'smelter', desc: 'Estaño refinado ideal para microsoldadura de circuitos impresos.', ingredients: [{ id: 'tin_ore', qty: 2 }, { id: 'stardust', qty: 1 }] },
+      { id: 'nickel', cat: 'refined', name: 'Lingote de Níquel', icon: '🪙', tier: 1, station: 'smelter', desc: 'Metal de níquel de gran resistencia estructural para blindajes.', ingredients: [{ id: 'nickel_ore', qty: 2 }, { id: 'stardust', qty: 1 }] },
+      
+      { id: 'steel_alloy', cat: 'refined', name: 'Aleación de Acero', icon: '🔩', tier: 1, station: 'smelter', desc: 'Compuesto refinado de hierro fundido con carbón. Base para estructuras mecánicas pesadas.', ingredients: [{ id: 'iron_ore', qty: 1 }, { id: 'coal_ore', qty: 1 }, { id: 'stardust', qty: 1 }] },
+      { id: 'electrum_alloy', cat: 'refined', name: 'Aleación de Electrum', icon: '⚡', tier: 1, station: 'smelter', desc: 'Aleación noble de oro y plata de conductividad eléctrica perfecta para componentes lógicos avanzados.', ingredients: [{ id: 'gold_ore', qty: 1 }, { id: 'silver_ore', qty: 1 }, { id: 'stardust', qty: 1 }] },
+      { id: 'bronze_alloy', cat: 'refined', name: 'Aleación de Bronce', icon: '🥉', tier: 1, station: 'smelter', desc: 'Fusión de cobre y estaño que dota de flexibilidad y gran resistencia a la corrosión.', ingredients: [{ id: 'copper_ore', qty: 1 }, { id: 'tin_ore', qty: 1 }, { id: 'stardust', qty: 1 }] },
+      { id: 'hardened_alloy', cat: 'refined', name: 'Aleación Templada', icon: '🌑', tier: 1, station: 'smelter', desc: 'Superaleación termoestable de wolframio y níquel diseñada para resistir presiones subatómicas colosales.', ingredients: [{ id: 'tungsten_ore', qty: 1 }, { id: 'nickel_ore', qty: 1 }, { id: 'stardust', qty: 1 }] },
+
+      { id: 'rubi', cat: 'refined', name: 'Rubí Pulido', icon: '🔴', tier: 1, station: 'lapidary_wheel', desc: 'Rubí tallado para enfocar calor y refracción térmica en sensores.', ingredients: [{ id: 'rubi_ore', qty: 3 }, { id: 'gold', qty: 1 }] },
+      { id: 'zaphire', cat: 'refined', name: 'Zafiro Pulido', icon: '🔵', tier: 1, station: 'lapidary_wheel', desc: 'Zafiro de talla fina para focalización y sensores cuánticos.', ingredients: [{ id: 'zaphire_ore', qty: 3 }, { id: 'silver', qty: 1 }] },
+      { id: 'emmerald', cat: 'refined', name: 'Esmeralda Pulida', icon: '🟢', tier: 1, station: 'lapidary_wheel', desc: 'Esmeralda pulida para canalizar bio-resistencia botánica.', ingredients: [{ id: 'emmerald_ore', qty: 3 }, { id: 'copper', qty: 1 }] },
+      { id: 'topaz', cat: 'refined', name: 'Topacio Pulido', icon: '🟡', tier: 1, station: 'lapidary_wheel', desc: 'Topacio facetado para amplificar campos magnéticos de imanes y acumuladores.', ingredients: [{ id: 'topaz_ore', qty: 3 }, { id: 'tungsten', qty: 1 }] },
+      { id: 'diamond', cat: 'refined', name: 'Diamante Pulido', icon: '💎', tier: 1, station: 'lapidary_wheel', desc: 'Diamante de refracción óptica pura para lentes de escáneres e IVs.', ingredients: [{ id: 'diamond_ore', qty: 3 }, { id: 'gold', qty: 1 }] },
+
+      // TIER 2: COMPONENTES TECNOLÓGICOS Y BOTÁNICOS (GENÉRICOS - SIN MARCAS)
+      { id: 'glass_bottle', cat: 'components', name: 'Botella de Vidrio', icon: '🏺', tier: 2, station: 'smelter', desc: 'Vial de vidrio neutro soplado a alta temperatura para contener medicinas y elixires.', ingredients: [{ id: 'sand_silica', qty: 2 }, { id: 'coal', qty: 1 }] },
+      { id: 'chemical_base', cat: 'components', name: 'Solvente Sintético', icon: '🧪', tier: 2, station: 'alembic_lab', desc: 'Líquido neutro ultra-filtrado a partir de agua fresca y esporas de setas.', ingredients: [{ id: 'fresh_water', qty: 2 }, { id: 'tiny_mushroom', qty: 2 }, { id: 'stardust', qty: 1 }] },
+      { id: 'medicinal_extract', cat: 'components', name: 'Extracto Herbal Concentrado', icon: '🍯', tier: 2, station: 'alembic_lab', desc: 'Brebaje amargo hiper-concentrado a partir de raíces y polvos de energía.', ingredients: [{ id: 'energy_powder', qty: 2 }, { id: 'revive_root', qty: 1 }, { id: 'chemical_base', qty: 1 }] },
+      { id: 'sweet_syrup', cat: 'components', name: 'Sirope de Bayas Silvestres', icon: '🥤', tier: 2, station: 'cooking_pot', desc: 'Jarabe espeso de alta fructosa exprimido y templado en la licuadora industrial.', ingredients: [{ id: 'berry_sugar', qty: 2 }, { id: 'combee_honey', qty: 1 }, { id: 'fresh_water', qty: 1 }] },
+      { id: 'antidote_reactive', cat: 'components', name: 'Reactivo Antitoxinas', icon: '🧪', tier: 2, station: 'alembic_lab', desc: 'Fórmula que anula venenos biológicos sintetizada a partir de bayas Meloc y esporas fúngicas.', ingredients: [{ id: 'pecha_berry_wild', qty: 2 }, { id: 'tiny_mushroom', qty: 1 }, { id: 'fresh_water', qty: 1 }] },
+      { id: 'organic_fertilizer', cat: 'components', name: 'Fertilizante Orgánico', icon: '🟤', tier: 2, station: 'cooking_pot', desc: 'Abono ultra-nutritivo fermentado para agilizar el cultivo de bayas exóticas.', ingredients: [{ id: 'food_scraps', qty: 2 }, { id: 'energy_powder', qty: 2 }, { id: 'sweet_sap', qty: 1 }] },
+      { id: 'bronze_nectar', cat: 'components', name: 'Jarabe Cobrizo', icon: '🟫', tier: 2, station: 'alembic_lab', desc: 'Esencia herbal con micronutrientes de cobre para fortalecer raíces de bayas de bronce.', ingredients: [{ id: 'sweet_syrup', qty: 1 }, { id: 'copper_ore', qty: 2 }, { id: 'stardust', qty: 1 }] },
+      { id: 'silver_nectar', cat: 'components', name: 'Jarabe Argénteo', icon: '⬜', tier: 2, station: 'alembic_lab', desc: 'Filtro dulce de bayas enriquecido con iones de perlas purificadas.', ingredients: [{ id: 'sweet_syrup', qty: 1 }, { id: 'pearl', qty: 2 }, { id: 'stardust', qty: 1 }] },
+      { id: 'golden_nectar', cat: 'components', name: 'Jarabe de Oro Puro', icon: '🟨', tier: 2, station: 'alembic_lab', desc: 'Concentrado botánico de lujo infundido con partículas de oro en suspensión.', ingredients: [{ id: 'sweet_syrup', qty: 1 }, { id: 'gold_ore', qty: 2 }, { id: 'stardust', qty: 1 }] },
+      { id: 'red_dye', cat: 'components', name: 'Barniz Rojo', icon: '🧪🔴', tier: 2, station: 'cooking_pot', desc: 'Resina selladora roja para revestimientos y carcasas. Elaborado con Bonguris rojos.', ingredients: [{ id: 'paint_pigment', qty: 1 }, { id: 'apricorn_red', qty: 1 }, { id: 'sweet_sap', qty: 1 }] },
+      { id: 'woven_thread', cat: 'components', name: 'Cordel de Algodón', icon: '🧵', tier: 2, station: 'assembly_bench', desc: 'Hilo elástico súper tenaz trenzado con algodón y cuero.', ingredients: [{ id: 'cloth', qty: 2 }, { id: 'leather_strip', qty: 1 }] },
+      { id: 'reinforced_strap', cat: 'components', name: 'Correa de Cuero Reforzada', icon: '🎗️', tier: 2, station: 'assembly_bench', desc: 'Correa de sujeción para pesas y held items.', ingredients: [{ id: 'leather_strip', qty: 2 }, { id: 'rubber_gasket', qty: 1 }] },
+      { id: 'calibrated_weight', cat: 'components', name: 'Contrapeso de Hierro', icon: '🏋️', tier: 2, station: 'assembly_bench', desc: 'Bloque calibrado de acero magnético para balancear pesas de esfuerzo.', ingredients: [{ id: 'steel_alloy', qty: 1 }, { id: 'spring', qty: 1 }] },
+      { id: 'petrified_sap', cat: 'components', name: 'Savia Fosilizada', icon: '🪵', tier: 2, station: 'cooking_pot', desc: 'Savia de resina endurecida térmicamente para la fijación de componentes orgánicos.', ingredients: [{ id: 'sweet_sap', qty: 2 }, { id: 'coal', qty: 1 }] },
+      { id: 'spring', cat: 'components', name: 'Resorte de Presión', icon: '🌀', tier: 2, station: 'assembly_bench', desc: 'Resorte micromecánico elástico para gatillos e interruptores.', ingredients: [{ id: 'steel_alloy', qty: 1 }, { id: 'stardust', qty: 1 }] },
+      { id: 'rubber_gasket', cat: 'components', name: 'Junta de Estanqueidad', icon: '⭕', tier: 2, station: 'assembly_bench', desc: 'Sello hermético para evitar fugas de energía elemental. Utiliza Bonguris amarillos aislantes.', ingredients: [{ id: 'rubber_compound', qty: 1 }, { id: 'apricorn_yellow', qty: 1 }, { id: 'coal', qty: 1 }] },
+      { id: 'plastic_shell', cat: 'components', name: 'Carcasa de Polímero', icon: '📦', tier: 2, station: 'assembly_bench', desc: 'Semisfera ligera moldeada con Bonguri rojo para el ensamble de Pokéballs.', ingredients: [{ id: 'sweet_sap', qty: 1 }, { id: 'apricorn_red', qty: 1 }, { id: 'stardust', qty: 1 }] },
+      { id: 'reinforced_plastic_shell', cat: 'components', name: 'Carcasa Reforzada', icon: '🛡️', tier: 2, station: 'assembly_bench', desc: 'Carcasa robusta reforzada con wolframio para capturas exigentes.', ingredients: [{ id: 'plastic_shell', qty: 2 }, { id: 'rubber_gasket', qty: 1 }, { id: 'tungsten', qty: 1 }] },
+      { id: 'paint_coating', cat: 'components', name: 'Laca Protectora Pulida', icon: '🎨', tier: 2, station: 'assembly_bench', desc: 'Barniz impermeabilizante coloreado con Bonguri azul para Pokéballs avanzadas.', ingredients: [{ id: 'paint_pigment', qty: 1 }, { id: 'apricorn_blue', qty: 1 }, { id: 'sweet_sap', qty: 1 }, { id: 'stardust', qty: 1 }] },
+      { id: 'metal_frame', cat: 'components', name: 'Soporte Metálico', icon: '🏗️', tier: 2, station: 'assembly_bench', desc: 'Estructura rígida de aleación ligera para herramientas y aparatos.', ingredients: [{ id: 'steel_alloy', qty: 1 }, { id: 'bronze_alloy', qty: 1 }, { id: 'stardust', qty: 1 }] },
+      { id: 'reinforced_metal_frame', cat: 'components', name: 'Soporte Metálico Reforzado', icon: '🚡', tier: 2, station: 'assembly_bench', desc: 'Estructura blindada con aleación templada para esfuerzos severos.', ingredients: [{ id: 'metal_frame', qty: 1 }, { id: 'hardened_alloy', qty: 1 }, { id: 'stardust', qty: 1 }] },
+      { id: 'electronics_module', cat: 'components', name: 'Módulo Electrónico', icon: '💾', tier: 2, station: 'assembly_bench', desc: 'Circuito lógico integrado básico para Pokéballs de primer rango.', ingredients: [{ id: 'bronze_alloy', qty: 1 }, { id: 'spring', qty: 1 }, { id: 'stardust', qty: 1 }] },
+      { id: 'advanced_electronics_module', cat: 'components', name: 'Módulo Avanzado', icon: '🎛️', tier: 2, station: 'assembly_bench', desc: 'Microchip cuántico para digitalización rápida de datos.', ingredients: [{ id: 'electrum_alloy', qty: 1 }, { id: 'spring', qty: 1 }, { id: 'gem_fragment', qty: 1 }] },
+      { id: 'industrial_electronics', cat: 'components', name: 'Placa Lógica Industrial', icon: '📟', tier: 2, station: 'assembly_bench', desc: 'Microprocesador blindado contra interferencias electromagnéticas extremas.', ingredients: [{ id: 'hardened_alloy', qty: 1 }, { id: 'electrum_alloy', qty: 1 }, { id: 'spring', qty: 1 }] },
+      { id: 'chemical_essence', cat: 'components', name: 'Esencia Cristalizada Activa', icon: '🔮', tier: 2, station: 'alembic_lab', desc: 'Extracto destilado de bayas puras estabilizado con polvo de gemas.', ingredients: [{ id: 'chemical_base', qty: 2 }, { id: 'gem_fragment', qty: 1 }, { id: 'stardust', qty: 1 }] },
+      { id: 'chemical_resuscitant', cat: 'components', name: 'Sustancia Vigorizante', icon: '⚡', tier: 2, station: 'alembic_lab', desc: 'Compuesto medicinal de alto impacto celular para el tratamiento de debilitamiento.', ingredients: [{ id: 'chemical_base', qty: 1 }, { id: 'herb_rare', qty: 2 }, { id: 'bone_fragment', qty: 1 }] },
+      { id: 'optical_lens', cat: 'components', name: 'Lente Holográfica', icon: '🔍', tier: 2, station: 'assembly_bench', desc: 'Lente de diamante pulido para el enfoque del visor de Pokédex y escáneres de rango.', ingredients: [{ id: 'diamond', qty: 1 }, { id: 'glass_bottle', qty: 1 }, { id: 'stardust', qty: 1 }] },
+      { id: 'sensor_crystal', cat: 'components', name: 'Cristal Receptor', icon: '📡', tier: 2, station: 'assembly_bench', desc: 'Sensor ultrasensible para detectar firmas electromagnéticas elementales.', ingredients: [{ id: 'gem_fragment', qty: 1 }, { id: 'ice_crystal', qty: 1 }, { id: 'stardust', qty: 1 }] },
+      { id: 'metal_container', cat: 'components', name: 'Contenedor Estanco', icon: '🛢️', tier: 2, station: 'assembly_bench', desc: 'Lata de aluminio con junta elástica para almacenar fluidos volátiles.', ingredients: [{ id: 'iron', qty: 1 }, { id: 'copper', qty: 1 }, { id: 'rubber_gasket', qty: 1 }] },
+      { id: 'reinforced_container', cat: 'components', name: 'Matraz Criogénico', icon: '🧊', tier: 2, station: 'assembly_bench', desc: 'Contenedor blindado capaz de resistir vacíos energéticos cuánticos.', ingredients: [{ id: 'metal_container', qty: 2 }, { id: 'tungsten', qty: 1 }, { id: 'diamond', qty: 1 }] },
+
+      // TIER 3: MAQUINARIAS DE TRABAJO (REUSABLES / CON MARCA)
+      { id: 'smelter', cat: 'especial', name: 'Fundidora de Inducción Devon', icon: '🌋', tier: 3, price: 10000, station: 'assembly_bench', desc: 'Maquinaria pesada de Devon Corporation para fundir menas en lingotes y aleaciones puras.', ingredients: [{ id: 'iron', qty: 3 }, { id: 'coal', qty: 3 }, { id: 'sand_silica', qty: 2 }] },
+      { id: 'lapidary_wheel', cat: 'especial', name: 'Talladora Holográfica de Rustboro', icon: '💎', tier: 3, price: 12000, station: 'assembly_bench', desc: 'Aparato industrial con láser de calibración óptica para pulir gemas y diamantes en bruto.', ingredients: [{ id: 'iron', qty: 2 }, { id: 'spring', qty: 1 }, { id: 'sand_silica', qty: 2 }] },
+      { id: 'alembic_lab', cat: 'especial', name: 'Sintetizador Farmacéutico Silph Co.', icon: '🧪', tier: 3, price: 15000, station: 'assembly_bench', desc: 'Laboratorio avanzado de Silph Co. para el filtrado, dilución y envasado de pociones clínicas.', ingredients: [{ id: 'glass_bottle', qty: 2 }, { id: 'copper', qty: 2 }, { id: 'rubber_gasket', qty: 1 }] },
+      { id: 'assembly_bench', cat: 'especial', name: 'Ensambladora Robótica Silph Co.', icon: '🛠️', tier: 3, price: 8000, station: 'assembly_bench', desc: 'Mesa de ensamble micro-electrónico y robótico de Silph Co. para carcasas de Pokéballs y herramientas.', ingredients: [{ id: 'metal_frame', qty: 1 }, { id: 'iron', qty: 2 }, { id: 'rubber_gasket', qty: 1 }] },
+      { id: 'cooking_pot', cat: 'especial', name: 'Licuadora de Bayas Industrial', icon: '🍳', tier: 3, price: 5000, station: 'assembly_bench', desc: 'Prensa e integrador térmico para caramelos, siropes y néctares de cultivo de Hoenn. Reusable.', ingredients: [{ id: 'iron', qty: 3 }, { id: 'sweet_sap', qty: 1 }, { id: 'fresh_water', qty: 1 }] },
+
+      // TIER 3: PRODUCTOS FINALES (POKÉBALLS)
+      { id: 'pokeball', cat: 'pokeballs', name: 'Pokéball de Silph Co.', icon: '⚪', tier: 3, price: 200, station: 'assembly_bench', desc: 'Dispositivo estándar de Silph Co. para capturar especies salvajes.', ingredients: [{ id: 'plastic_shell', qty: 1 }, { id: 'electronics_module', qty: 1 }, { id: 'spring', qty: 1 }, { id: 'rubber_gasket', qty: 1 }, { id: 'copper', qty: 1 }] },
+      { id: 'great_ball', cat: 'pokeballs', name: 'Súper Ball de Silph Co.', icon: '🔵', tier: 3, price: 500, station: 'assembly_bench', desc: 'Eficacia x1.5 superior a la Pokéball normal.', ingredients: [{ id: 'plastic_shell', qty: 1 }, { id: 'electronics_module', qty: 1 }, { id: 'spring', qty: 1 }, { id: 'copper', qty: 2 }, { id: 'paint_coating', qty: 1 }] },
+      { id: 'ultra_ball', cat: 'pokeballs', name: 'Ultra Ball de Devon Corp.', icon: '⚫', tier: 3, price: 1000, station: 'assembly_bench', desc: 'Dispositivo Devon Corp de máxima tasa de captura común.', ingredients: [{ id: 'reinforced_plastic_shell', qty: 1 }, { id: 'advanced_electronics_module', qty: 1 }, { id: 'spring', qty: 1 }, { id: 'copper', qty: 2 }, { id: 'rubber_gasket', qty: 1 }] },
+      { id: 'net_ball', cat: 'pokeballs', name: 'Red Ball de Silph Co.', icon: '🕸️', tier: 3, price: 800, station: 'assembly_bench', desc: 'Efectiva contra Pokémon de tipos Agua y Bicho. Utiliza Bonguri Azul en su laca.', ingredients: [{ id: 'plastic_shell', qty: 1 }, { id: 'electronics_module', qty: 1 }, { id: 'spring', qty: 1 }, { id: 'apricorn_blue', qty: 1 }, { id: 'cloth', qty: 1 }] },
+      { id: 'dusk_ball', cat: 'pokeballs', name: 'Ocaso Ball de Devon Corp.', icon: '🌑', tier: 3, price: 800, station: 'assembly_bench', desc: 'Efectividad multiplicada en cuevas, subterráneos o durante la noche.', ingredients: [{ id: 'reinforced_plastic_shell', qty: 1 }, { id: 'electronics_module', qty: 1 }, { id: 'spring', qty: 1 }, { id: 'paint_coating', qty: 1 }, { id: 'coal', qty: 1 }] },
+      { id: 'timer_ball', cat: 'pokeballs', name: 'Turno Ball de Devon Corp.', icon: '⏱️', tier: 3, price: 800, station: 'assembly_bench', desc: 'Aumenta su rendimiento gradualmente según los turnos de batalla. Incorpora Bonguri Amarillo.', ingredients: [{ id: 'plastic_shell', qty: 1 }, { id: 'advanced_electronics_module', qty: 1 }, { id: 'spring', qty: 1 }, { id: 'apricorn_yellow', qty: 1 }, { id: 'sensor_crystal', qty: 1 }] },
+      { id: 'master_ball', cat: 'pokeballs', name: 'Master Ball de Silph Co.', icon: '🟣', tier: 3, price: 100000, station: 'assembly_bench', desc: 'El dispositivo infalible definitivo de Silph Co. Captura garantizada al 100%.', ingredients: [{ id: 'advanced_electronics_module', qty: 2 }, { id: 'reinforced_container', qty: 1 }, { id: 'gold', qty: 3 }, { id: 'silver', qty: 2 }, { id: 'uranium', qty: 1 }] },
+
+      // TIER 3: PRODUCTOS FINALES (POCIONES Y CURATIVAS)
+      { id: 'potion', cat: 'pociones', name: 'Poción Silph Co.', icon: '🧪', tier: 3, price: 200, station: 'alembic_lab', desc: 'Restaura 20 HP. Solvente purificado enriquecido con polvo medicinal tradicional.', ingredients: [{ id: 'glass_bottle', qty: 1 }, { id: 'fresh_water', qty: 2 }, { id: 'energy_powder', qty: 2 }] },
+      { id: 'super_potion', cat: 'pociones', name: 'Súper Poción Silph Co.', icon: '🧪🔵', tier: 3, price: 600, station: 'alembic_lab', desc: 'Restaura 50 HP. Fórmula mejorada con extracto herbal puro destilado.', ingredients: [{ id: 'potion', qty: 1 }, { id: 'medicinal_extract', qty: 1 }, { id: 'fresh_water', qty: 1 }] },
+      { id: 'hyper_potion', cat: 'pociones', name: 'Hiper Poción Silph Co.', icon: '🧪🟣', tier: 3, price: 1500, station: 'alembic_lab', desc: 'Restaura 200 HP. Solución con esencias de gema para cicatrización molecular.', ingredients: [{ id: 'super_potion', qty: 1 }, { id: 'medicinal_extract', qty: 2 }, { id: 'gem_fragment', qty: 1 }] },
+      { id: 'max_potion', cat: 'pociones', name: 'Poción Máxima Silph Co.', icon: '💜', tier: 3, price: 2500, station: 'alembic_lab', desc: 'Restaura todo el HP del Pokémon. Enriquecido con polvo de diamante refractario.', ingredients: [{ id: 'hyper_potion', qty: 1 }, { id: 'medicinal_extract', qty: 2 }, { id: 'diamond', qty: 1 }] },
+      { id: 'refresco', cat: 'pociones', name: 'Refresco Mt. Moon', icon: '🥤', tier: 3, price: 300, station: 'cooking_pot', desc: 'Bebida gasificada carbonatada. Restaura 60 HP. Sirope de bayas y agua mineral fresca.', ingredients: [{ id: 'glass_bottle', qty: 1 }, { id: 'sweet_syrup', qty: 1 }, { id: 'fresh_water', qty: 1 }] },
+      { id: 'limonada', cat: 'pociones', name: 'Limonada de Azulona', icon: '🍋', tier: 3, price: 350, station: 'cooking_pot', desc: 'Bebida cítrica herbal de Kanto. Restaura 80 HP.', ingredients: [{ id: 'glass_bottle', qty: 1 }, { id: 'sweet_syrup', qty: 1 }, { id: 'energy_powder', qty: 1 }, { id: 'fresh_water', qty: 1 }] },
+      { id: 'revivir', cat: 'pociones', name: 'Revivir Silph Co.', icon: '❤️', tier: 3, price: 2000, station: 'alembic_lab', desc: 'Revive con la mitad del HP. Reactivador vital celular de Silph Co.', ingredients: [{ id: 'glass_bottle', qty: 1 }, { id: 'chemical_resuscitant', qty: 1 }, { id: 'medicinal_extract', qty: 1 }] },
+      { id: 'revivir_max', cat: 'pociones', name: 'Revivir Máximo Silph Co.', icon: '💖', tier: 3, price: 3000, station: 'alembic_lab', desc: 'Revive a un Pokémon con HP completo. Dispersión catalizadora de diamante.', ingredients: [{ id: 'revivir', qty: 1 }, { id: 'chemical_resuscitant', qty: 1 }, { id: 'diamond', qty: 1 }] },
+      { id: 'antidoto', cat: 'pociones', name: 'Antídoto Pokémart', icon: '💚', tier: 3, price: 100, station: 'alembic_lab', desc: 'Cura el envenenamiento utilizando suero reactivo de Baya Meloc.', ingredients: [{ id: 'glass_bottle', qty: 1 }, { id: 'antidote_reactive', qty: 1 }, { id: 'energy_powder', qty: 1 }] },
+      { id: 'quemadura', cat: 'pociones', name: 'Cura Quemadura Pokémart', icon: '🧊', tier: 3, price: 250, station: 'alembic_lab', desc: 'Alivia quemaduras severas mediante una suspensión endotérmica con cristales de hielo.', ingredients: [{ id: 'glass_bottle', qty: 1 }, { id: 'chemical_base', qty: 1 }, { id: 'ice_crystal', qty: 1 }] },
+      { id: 'despertar', cat: 'pociones', name: 'Despertar Pokémart', icon: '☕', tier: 3, price: 250, station: 'alembic_lab', desc: 'Despierta a un Pokémon dormido. Disolución con infusión estimulante de carbón activo.', ingredients: [{ id: 'glass_bottle', qty: 1 }, { id: 'chemical_base', qty: 1 }, { id: 'coal', qty: 1 }, { id: 'energy_powder', qty: 1 }] },
+      { id: 'cura_total', cat: 'pociones', name: 'Cura Total Silph Co.', icon: '✨', tier: 3, price: 600, station: 'alembic_lab', desc: 'Cura todos los estados alterados. Fusión de reactivo antitoxinas y esencias medicinales.', ingredients: [{ id: 'glass_bottle', qty: 1 }, { id: 'antidote_reactive', qty: 1 }, { id: 'medicinal_extract', qty: 1 }, { id: 'stardust', qty: 1 }] },
+      { id: 'elixir', cat: 'pociones', name: 'Éter Pokémart', icon: '💎', tier: 3, price: 1200, station: 'alembic_lab', desc: 'Restaura 10 PP de un movimiento.', ingredients: [{ id: 'glass_bottle', qty: 1 }, { id: 'chemical_base', qty: 1 }, { id: 'stardust', qty: 2 }] },
+      { id: 'elixir_item', cat: 'pociones', name: 'Elixir Pokémart', icon: '🧪', tier: 3, price: 3000, station: 'alembic_lab', desc: 'Restaura 10 PP de todos los movimientos.', ingredients: [{ id: 'elixir', qty: 1 }, { id: 'chemical_essence', qty: 1 }] },
+      { id: 'elixir_max', cat: 'pociones', name: 'Elixir Máximo Pokémart', icon: '🌟', tier: 3, price: 4500, station: 'alembic_lab', desc: 'Restaura todos los PP de todos los movimientos.', ingredients: [{ id: 'elixir_item', qty: 1 }, { id: 'chemical_essence', qty: 1 }, { id: 'diamond', qty: 1 }] },
+
+      // TIER 3: HELD ITEMS EQUIPABLES Y CRIANZA
+      { id: 'exp_share', cat: 'held', name: 'Compartir EXP Devon', icon: '🎒', tier: 3, price: 4000, station: 'assembly_bench', desc: 'El portador gana experiencia pasiva por telemetría cuántica de Devon Corporation.', ingredients: [{ id: 'metal_frame', qty: 1 }, { id: 'optical_lens', qty: 1 }, { id: 'spring', qty: 1 }, { id: 'copper', qty: 1 }] },
+      { id: 'leftovers', cat: 'held', name: 'Restos Orgánicos', icon: '🍖', tier: 3, price: 15000, station: 'assembly_bench', desc: 'Restaura HP en combate gradualmente. Sobras alimenticias conservadas al vacío en algodón Cottonee.', ingredients: [{ id: 'food_scraps', qty: 2 }, { id: 'cloth', qty: 1 }, { id: 'leather_strip', qty: 1 }] },
+      { id: 'shell_bell', cat: 'held', name: 'Cascabel Concha de Sinnoh', icon: '🔔', tier: 3, price: 15000, station: 'assembly_bench', desc: 'Recupera HP proporcional al golpear. Campanilla acústica forjada con fósiles marinos.', ingredients: [{ id: 'metal_container', qty: 1 }, { id: 'helix_fossil', qty: 1 }, { id: 'spring', qty: 1 }, { id: 'silver', qty: 1 }] },
+      { id: 'choice_band', cat: 'held', name: 'Cinta Elegida de Alola', icon: '🎀', tier: 3, price: 18000, station: 'assembly_bench', desc: 'Sube un 50% el Ataque limitando el uso a un movimiento. Banda de algodón teñida.', ingredients: [{ id: 'woven_thread', qty: 2 }, { id: 'red_dye', qty: 1 }, { id: 'spring', qty: 1 }] },
+      { id: 'focus_sash', cat: 'held', name: 'Banda Focus de Kanto', icon: '🎗️', tier: 3, price: 18000, station: 'assembly_bench', desc: 'Evita un KO directo si el portador tenía el HP completo. Tejido Cottonee resistente.', ingredients: [{ id: 'woven_thread', qty: 2 }, { id: 'red_dye', qty: 1 }, { id: 'stardust', qty: 1 }] },
+      { id: 'scope_lens', cat: 'held', name: 'Lente Zoom Devon', icon: '🔍', tier: 3, price: 12000, station: 'assembly_bench', desc: 'Aumenta la probabilidad de golpes críticos enfocando puntos vulnerables de la fisonomía rival.', ingredients: [{ id: 'optical_lens', qty: 1 }, { id: 'sensor_crystal', qty: 1 }, { id: 'metal_frame', qty: 1 }, { id: 'silver', qty: 1 }] },
+      { id: 'magnet', cat: 'held', name: 'Imán Devon', icon: '🧲', tier: 3, price: 10000, station: 'assembly_bench', desc: 'Sube un 20% los movimientos Eléctricos. Núcleo imantado bobinado en cobre puro.', ingredients: [{ id: 'iron', qty: 1 }, { id: 'copper', qty: 1 }, { id: 'electronics_module', qty: 1 }] },
+      { id: 'light_ball', cat: 'held', name: 'Bola Luminosa', icon: '⚡', tier: 3, price: 15000, station: 'assembly_bench', desc: 'Esfera estática para Pikachu. Cristalizador de cuarzo con núcleo de topacio brillante.', ingredients: [{ id: 'glass_bottle', qty: 1 }, { id: 'thunder_stone', qty: 1 }, { id: 'stardust', qty: 1 }] },
+      { id: 'thick_club', cat: 'held', name: 'Hueso Grueso', icon: '🦴', tier: 3, price: 12000, station: 'assembly_bench', desc: 'Duplica el ataque de Cubone. Estructura ósea unida y endurecida con savia resinosa.', ingredients: [{ id: 'bone_fragment', qty: 2 }, { id: 'iron', qty: 1 }, { id: 'sweet_sap', qty: 1 }] },
+      { id: 'stick', cat: 'held', name: 'Palo de Farfetch\'d', icon: '🎋', tier: 3, price: 5000, station: 'cooking_pot', desc: 'Puerro denso para Farfetch\'d. Tallo botánico endurecido con savia resinosa hervida con azúcar.', ingredients: [{ id: 'sweet_sap', qty: 2 }, { id: 'energy_powder', qty: 1 }, { id: 'berry_sugar', qty: 1 }] },
+      { id: 'metal_powder', cat: 'held', name: 'Polvo Metálico', icon: '✨', tier: 3, price: 9000, station: 'assembly_bench', desc: 'Duplica la Defensa de Ditto. Limaduras finas suspendidas en polvo cósmico.', ingredients: [{ id: 'iron_ore', qty: 2 }, { id: 'silver_ore', qty: 1 }, { id: 'stardust', qty: 2 }] },
+      { id: 'twisted_spoon', cat: 'held', name: 'Cuchara Torcida', icon: '🥄', tier: 3, price: 10000, station: 'assembly_bench', desc: 'Aumenta un 20% el tipo Psíquico. Cubierto pulido de plata pura moldeado.', ingredients: [{ id: 'silver', qty: 1 }, { id: 'sensor_crystal', qty: 1 }, { id: 'gem_fragment', qty: 1 }] },
+      { id: 'spell_tag', cat: 'held', name: 'Hechizo Espiritual', icon: '📜', tier: 3, price: 10000, station: 'assembly_bench', desc: 'Inscripción que eleva ataques Fantasma. Escrita sobre lino Cottonee con barniz rojo.', ingredients: [{ id: 'woven_thread', qty: 2 }, { id: 'red_dye', qty: 1 }, { id: 'stardust', qty: 1 }] },
+
+      // TIER 3: HERRAMIENTAS DE EXPLORACIÓN / EXCAVACIÓN / PESCA
+      { id: 'fishing_rod', cat: 'especial', name: 'Caña de Pescar Devon', icon: '🎣', tier: 3, price: 15000, station: 'assembly_bench', desc: 'Caña de pescar básica de Devon Corp para pescar en muelles comunes.', ingredients: [{ id: 'iron', qty: 2 }, { id: 'woven_thread', qty: 1 }, { id: 'sweet_sap', qty: 1 }] },
+      { id: 'fishing_rod_good', cat: 'especial', name: 'Caña Buena Devon', icon: '🎣🥈', tier: 3, price: 35000, station: 'assembly_bench', desc: 'Caña con puntera de plata Devon para capturar especies medianamente raras.', ingredients: [{ id: 'fishing_rod', qty: 1 }, { id: 'silver', qty: 2 }, { id: 'spring', qty: 1 }] },
+      { id: 'fishing_rod_super', cat: 'especial', name: 'Supercaña Gremial', icon: '🎣🥇', tier: 3, price: 65000, station: 'assembly_bench', desc: 'La caña legendaria. Núcleo de oro y sensor óptico para especies brillantes (Shiny).', ingredients: [{ id: 'fishing_rod_good', qty: 1 }, { id: 'gold', qty: 2 }, { id: 'sensor_crystal', qty: 1 }] },
+      { id: 'pickaxe', cat: 'especial', name: 'Pico de Excavación', icon: '⛏️', tier: 3, price: 15000, station: 'assembly_bench', desc: 'Pico de acero para excavación en el Subsuelo de Sinnoh.', ingredients: [{ id: 'iron', qty: 2 }, { id: 'leather_strip', qty: 1 }, { id: 'metal_frame', qty: 1 }] },
+      { id: 'pickaxe_silver', cat: 'especial', name: 'Pico Bueno', icon: '⛏️⬜', tier: 3, price: 35000, station: 'assembly_bench', desc: 'Pico balanceado de aleación argéntea. Incrementa la extracción de gemas.', ingredients: [{ id: 'pickaxe', qty: 1 }, { id: 'silver', qty: 2 }, { id: 'tungsten', qty: 1 }] },
+      { id: 'pickaxe_gold', cat: 'especial', name: 'Superpico de Sinnoh', icon: '⛏️🟨', tier: 3, price: 65000, station: 'assembly_bench', desc: 'Herramienta geológica premium para desenterrar minerales legendarios y fósiles intactos.', ingredients: [{ id: 'pickaxe_silver', qty: 1 }, { id: 'gold', qty: 2 }, { id: 'diamond', qty: 1 }] },
+      { id: 'brush', cat: 'especial', name: 'Pincel de Excavación', icon: '🖌️', tier: 3, price: 15000, station: 'assembly_bench', desc: 'Pincel arqueológico de cerdas Cottonee tejidas sobre hueso de Marowak.', ingredients: [{ id: 'woven_thread', qty: 2 }, { id: 'sweet_sap', qty: 1 }, { id: 'bone_fragment', qty: 1 }] },
+      { id: 'brush_good', cat: 'especial', name: 'Pincel Bueno', icon: '🖌️🥈', tier: 3, price: 35000, station: 'assembly_bench', desc: 'Pincel fino de arqueología de alto espectro. Mayor ratio de preservación fósil.', ingredients: [{ id: 'brush', qty: 1 }, { id: 'silver', qty: 2 }, { id: 'stardust', qty: 1 }] },
+      { id: 'brush_super', cat: 'especial', name: 'Superpincel de Kanto', icon: '🖌️🥇', tier: 3, price: 65000, station: 'assembly_bench', desc: 'Pincel de precisión quirúrgica con filamentos de oro. Evita cualquier microfractura fósil.', ingredients: [{ id: 'brush_good', qty: 1 }, { id: 'gold', qty: 2 }, { id: 'gem_fragment', qty: 1 }] },
+
+      // TIER 3: OBJETOS DE CRIANZA Y HERENCIA
+      { id: 'berry_bronze', cat: 'held', name: 'Baya de Bronce', icon: '🥉', tier: 3, price: 5000, station: 'cooking_pot', desc: 'Acelera la gestación un 10%. Cultivada con abono y jarabe cobrizo.', ingredients: [{ id: 'bronze_nectar', qty: 1 }, { id: 'organic_fertilizer', qty: 1 }] },
+      { id: 'berry_silver', cat: 'held', name: 'Baya de Plata', icon: '🥈', tier: 3, price: 15000, station: 'cooking_pot', desc: 'Acelera la gestación un 30%. Cultivada con abono y néctar argénteo.', ingredients: [{ id: 'silver_nectar', qty: 1 }, { id: 'organic_fertilizer', qty: 1 }] },
+      { id: 'berry_gold', cat: 'held', name: 'Baya de Oro', icon: '🥇', tier: 3, price: 25000, station: 'cooking_pot', desc: 'Acelera la gestación un 50%. Nutre la baya con néctar áureo y azúcar de baya.', ingredients: [{ id: 'golden_nectar', qty: 1 }, { id: 'organic_fertilizer', qty: 1 }, { id: 'berry_sugar', qty: 1 }] },
+      { id: 'everstone', cat: 'held', name: 'Piedra Eterna Conservada', icon: '🪨', tier: 3, price: 10000, station: 'cooking_pot', desc: 'Garantiza la herencia de la naturaleza de los padres. Mineral en bruto solidificado con savia fosilizada.', ingredients: [{ id: 'petrified_sap', qty: 1 }, { id: 'iron_ore', qty: 2 }, { id: 'stardust', qty: 1 }] },
+      { id: 'destiny_knot', cat: 'held', name: 'Lazo Destino Pulido', icon: '🧶', tier: 3, price: 24000, station: 'assembly_bench', desc: 'Hereda 5 IVs perfectos combinados de los padres. Tejiendo hilo Cottonee teñido de rojo vivo.', ingredients: [{ id: 'woven_thread', qty: 2 }, { id: 'red_dye', qty: 1 }, { id: 'gem_fragment', qty: 1 }] },
+      { id: 'vigor_restorer', cat: 'held', name: 'Restaurador de Vigor', icon: '⚡', tier: 3, price: 50000, station: 'cooking_pot', desc: 'Restaura el vigor de cría de Pokémon ancianos. Caramelo Raro disuelto con esencias e hidrocarbohidratos.', ingredients: [{ id: 'rare_candy', qty: 1 }, { id: 'berry_sugar', qty: 2 }, { id: 'gem_fragment', qty: 1 }, { id: 'stardust', qty: 1 }] },
+      { id: 'power_weight', cat: 'held', name: 'Pesa Recia de Hoenn', icon: '🏋️', tier: 3, price: 12000, station: 'assembly_bench', desc: 'Fuerza la herencia perfecta del IV de HP. Contrapeso acoplado con correa elástica.', ingredients: [{ id: 'calibrated_weight', qty: 1 }, { id: 'reinforced_strap', qty: 1 }] },
+      { id: 'power_bracer', cat: 'held', name: 'Brazal Recio de Hoenn', icon: '🥊', tier: 3, price: 12000, station: 'assembly_bench', desc: 'Fuerza la herencia perfecta del IV de Ataque.', ingredients: [{ id: 'reinforced_metal_frame', qty: 1 }, { id: 'reinforced_strap', qty: 1 }] },
+      { id: 'power_belt', cat: 'held', name: 'Cinto Recio de Hoenn', icon: '🛡️', tier: 3, price: 12000, station: 'assembly_bench', desc: 'Fuerza la herencia perfecta del IV de Defensa. Forjado con fósiles y correa elástica.', ingredients: [{ id: 'reinforced_strap', qty: 1 }, { id: 'dome_fossil', qty: 1 }, { id: 'iron', qty: 1 }] },
+      { id: 'power_lens', cat: 'held', name: 'Lente Recia de Hoenn', icon: '🔍', tier: 3, price: 12000, station: 'assembly_bench', desc: 'Fuerza la herencia perfecta del IV de Ataque Especial.', ingredients: [{ id: 'optical_lens', qty: 1 }, { id: 'reinforced_strap', qty: 1 }] },
+      { id: 'power_band', cat: 'held', name: 'Banda Recia de Hoenn', icon: '🎗️', tier: 3, price: 12000, station: 'assembly_bench', desc: 'Fuerza la herencia perfecta del IV de Defensa Especial.', ingredients: [{ id: 'woven_thread', qty: 1 }, { id: 'reinforced_strap', qty: 1 }, { id: 'spring', qty: 1 }] },
+      { id: 'power_anklet', cat: 'held', name: 'Franja Recia de Hoenn', icon: '👢', tier: 3, price: 12000, station: 'assembly_bench', desc: 'Fuerza la herencia perfecta del IV de Velocidad.', ingredients: [{ id: 'reinforced_strap', qty: 1 }, { id: 'spring', qty: 1 }, { id: 'nickel', qty: 1 }] },
+
+      // TIER 3: REPELENTES, INCIENSOS Y APOTECARIA (CON USO DE GEMAS T1)
+      { id: 'repel', cat: 'utility', name: 'Repelente Pokémart', icon: '🚫', tier: 3, price: 2000, station: 'alembic_lab', desc: 'Mantiene lejos a Pokémon de nivel inferior durante 10 min. Destilado químico de resina botánica.', ingredients: [{ id: 'glass_bottle', qty: 1 }, { id: 'energy_powder', qty: 2 }, { id: 'sweet_sap', qty: 1 }] },
+      { id: 'super_repel', cat: 'utility', name: 'Superrepelente Pokémart', icon: '🚫🔵', tier: 3, price: 4000, station: 'alembic_lab', desc: 'Mantiene lejos a Pokémon de nivel inferior durante 20 min.', ingredients: [{ id: 'glass_bottle', qty: 1 }, { id: 'herb_rare', qty: 2 }, { id: 'chemical_base', qty: 1 }] },
+      { id: 'max_repel', cat: 'utility', name: 'Máximo Repelente Pokémart', icon: '🚫🟣', tier: 3, price: 6000, station: 'alembic_lab', desc: 'Mantiene lejos a Pokémon de nivel inferior durante 30 min.', ingredients: [{ id: 'glass_bottle', qty: 1 }, { id: 'herb_rare', qty: 3 }, { id: 'chemical_essence', qty: 1 }] },
+      { id: 'ability_pill', cat: 'utility', name: 'Cápsula Habilidad Silph Co.', icon: '💊', tier: 3, price: 30000, station: 'alembic_lab', desc: 'Permite alternar entre las habilidades estándar disponibles.', ingredients: [{ id: 'plastic_shell', qty: 1 }, { id: 'chemical_essence', qty: 2 }, { id: 'stardust', qty: 1 }] },
+      { id: 'nature_patch', cat: 'utility', name: 'Parche Naturaleza Silph Co.', icon: '🌿', tier: 3, price: 30000, station: 'alembic_lab', desc: 'Modifica de manera sintética la naturaleza de un Pokémon.', ingredients: [{ id: 'herb_rare', qty: 2 }, { id: 'sweet_sap', qty: 1 }, { id: 'stardust', qty: 1 }] },
+      { id: 'incense_fire', cat: 'utility', name: 'Incienso Fuego', icon: '🔥', tier: 3, price: 15000, station: 'cooking_pot', desc: 'Atrae Pokémon Tipo Fuego. Quema de esencias de Rubí Pulido, Carbón y Piedra Fuego.', ingredients: [{ id: 'metal_container', qty: 1 }, { id: 'fire_stone', qty: 1 }, { id: 'coal', qty: 1 }, { id: 'rubi', qty: 1 }] },
+      { id: 'incense_water', cat: 'utility', name: 'Incienso Agua', icon: '💧', tier: 3, price: 15000, station: 'cooking_pot', desc: 'Atrae Pokémon Tipo Agua. Solución de Zafiro Pulido y Piedras de agua con cristales helados.', ingredients: [{ id: 'metal_container', qty: 1 }, { id: 'water_stone', qty: 1 }, { id: 'ice_crystal', qty: 1 }, { id: 'zaphire', qty: 1 }] },
+      { id: 'incense_grass', cat: 'utility', name: 'Incienso Planta', icon: '🌿', tier: 3, price: 15000, station: 'cooking_pot', desc: 'Fragancia botánica que estimula el encuentro de Pokémon Tipo Planta. Incorpora Esmeralda Pulida.', ingredients: [{ id: 'metal_container', qty: 1 }, { id: 'leaf_stone', qty: 1 }, { id: 'sweet_sap', qty: 1 }, { id: 'emmerald', qty: 1 }] },
+      { id: 'incense_normal', cat: 'utility', name: 'Incienso Normal', icon: '⚪', tier: 3, price: 15000, station: 'cooking_pot', desc: 'Fragancia neutra para atraer Pokémon comunes.', ingredients: [{ id: 'metal_container', qty: 1 }, { id: 'herb_rare', qty: 2 }, { id: 'stardust', qty: 1 }] },
+      { id: 'incense_ghost', cat: 'utility', name: 'Incienso Fantasma', icon: '👻', tier: 3, price: 15000, station: 'cooking_pot', desc: 'Fragancia densa que estimula el encuentro de Pokémon Tipo Fantasma. Contiene Piedras Lunares.', ingredients: [{ id: 'metal_container', qty: 1 }, { id: 'moon_stone', qty: 1 }, { id: 'paint_coating', qty: 1 }] },
+      { id: 'incense_psychic', cat: 'utility', name: 'Incienso Psíquico', icon: '🔮', tier: 3, price: 15000, station: 'cooking_pot', desc: 'Aroma espiritual que estimula el encuentro de Pokémon Tipo Psíquico. Incorpora Topacio Pulido.', ingredients: [{ id: 'metal_container', qty: 1 }, { id: 'sun_stone', qty: 1 }, { id: 'sensor_crystal', qty: 1 }, { id: 'topaz', qty: 1 }] },
+
+      // CONSUMIBLES AVANZADOS
+      { id: 'rare_candy', cat: 'utility', name: 'Caramelo Raro Silph Co.', icon: '🍬', tier: 3, price: 20000, station: 'cooking_pot', desc: 'Sube un nivel instantáneamente. Sirope de bayas y néctares espesado con polvos estelares.', ingredients: [{ id: 'sweet_syrup', qty: 2 }, { id: 'medicinal_extract', qty: 1 }, { id: 'stardust', qty: 2 }] },
+      { id: 'vigor_candy', cat: 'utility', name: 'Caramelo Vigor Silph Co.', icon: '⚡', tier: 3, price: 15000, station: 'cooking_pot', desc: 'Sana un punto de vigor de inmediato. Sirope dulce concentrado con reactivos de energía.', ingredients: [{ id: 'sweet_syrup', qty: 2 }, { id: 'chemical_resuscitant', qty: 1 }] },
+      { id: 'move_relearner', cat: 'utility', name: 'Corazón Escama Especial', icon: '🧠', tier: 3, price: 10000, station: 'assembly_bench', desc: 'Ofrenda para recordar movimientos olvidados en Luvdisc. Requiere de fósiles marinos antiguos.', ingredients: [{ id: 'helix_fossil', qty: 1 }, { id: 'zaphire', qty: 1 }, { id: 'stardust', qty: 1 }] },
+      { id: 'ticket_shiny', cat: 'utility', name: 'Ticket Shiny de Liga', icon: '✨', tier: 3, price: 50000, station: 'assembly_bench', desc: 'Atractor electromagnético de radiación variocolor (1 Hora). Combina Piedras Solares y Pepitas de Oro.', ingredients: [{ id: 'sun_stone', qty: 1 }, { id: 'nugget', qty: 1 }, { id: 'stardust', qty: 2 }] },
+      { id: 'ticket_safari', cat: 'utility', name: 'Ticket Safari de Kanto', icon: '🦁', tier: 3, price: 20000, station: 'assembly_bench', desc: 'Pase de entrada temporal para la Zona Safari de Kanto.', ingredients: [{ id: 'silver', qty: 2 }, { id: 'leather_strip', qty: 1 }, { id: 'paint_coating', qty: 1 }] },
+      { id: 'ticket_cerulean', cat: 'utility', name: 'Ticket Cueva Celeste', icon: '🌌', tier: 3, price: 40000, station: 'assembly_bench', desc: 'Pase de entrada premium para la Cueva Celeste.', ingredients: [{ id: 'tungsten', qty: 2 }, { id: 'zaphire', qty: 1 }, { id: 'sensor_crystal', qty: 1 }] },
+      { id: 'pp_up', cat: 'utility', name: 'Subida de PP Silph Co.', icon: '📈', tier: 3, price: 12000, station: 'alembic_lab', desc: 'Sube un 20% el PP de un movimiento. Esencia botánica exótica concentrada.', ingredients: [{ id: 'herb_rare', qty: 2 }, { id: 'gem_fragment', qty: 1 }, { id: 'stardust', qty: 1 }] },
+      { id: 'lucky_egg', cat: 'utility', name: 'Huevo Suerte Silph Co.', icon: '🥚', tier: 3, price: 30000, station: 'assembly_bench', desc: 'Multiplica la experiencia obtenida un 50%. Envoltorio de oro sobre microesferas y gemas celestes.', ingredients: [{ id: 'star_piece', qty: 1 }, { id: 'gem_fragment', qty: 2 }, { id: 'gold', qty: 1 }] },
+      { id: 'iv_scanner', cat: 'utility', name: 'Escáner de IVs Devon', icon: '🔍', tier: 3, price: 25000, station: 'assembly_bench', desc: 'Revela los valores individuales de potencial (IVs) de Pokémon salvajes. Incorpora Placa de Lógica Industrial.', ingredients: [{ id: 'optical_lens', qty: 1 }, { id: 'old_amber', qty: 1 }, { id: 'industrial_electronics', qty: 1 }, { id: 'silver', qty: 1 }] },
+
+      // PASES DE EVENTOS ESPECIALES CRAFTEABLES
+      { id: 'ticket_articuno', cat: 'utility', name: 'Pase de Evento Articuno', icon: '❄️', tier: 3, price: 15000, station: 'alembic_lab', desc: 'Pase criogénico que despierta la mística de Articuno en las Islas Espuma.', ingredients: [{ id: 'ice_crystal', qty: 3 }, { id: 'silver_nectar', qty: 1 }, { id: 'stardust', qty: 2 }] },
+      { id: 'ticket_mewtwo', cat: 'utility', name: 'Pase de Evento Mewtwo', icon: '✨', tier: 3, price: 40000, station: 'alembic_lab', desc: 'Pase de evento que abre el reactor profundo de la Cueva Celeste.', ingredients: [{ id: 'uranium', qty: 1 }, { id: 'golden_nectar', qty: 1 }, { id: 'sensor_crystal', qty: 1 }] },
+
+      // ACCESORIOS DE FORTUNA
+      { id: 'amulet_coin', cat: 'utility', name: 'Moneda Amuleto Especial', icon: '💰', tier: 3, price: 25000, station: 'assembly_bench', desc: 'Duplica las ganancias en batallas. Fusión de oro, soporte de precisión y una Perla Grande de alta pureza.', ingredients: [{ id: 'gold', qty: 2 }, { id: 'metal_frame', qty: 1 }, { id: 'stardust', qty: 1 }, { id: 'big_pearl', qty: 1 }] }
+    ];
+
+    // Generador programático de las 50 MTs
+    const generatedTMs = Object.entries(TM_DATA_RAW).map(([num, data]) => {
+      const paddedNum = num.padStart(2, '0');
+      return {
+        id: `tm${paddedNum}`,
+        cat: 'tms',
+        name: `MT${paddedNum} ${data[0]}`,
+        icon: '📀',
+        tier: 3,
+        price: 3000,
+        desc: `${data[3]} Tipo: ${data[1]} ${data[2]}`
+      };
+    });
+
+    // Base de datos consolidada final
+    const SHOP_ITEMS = [...STATIC_ITEMS, ...generatedTMs];
+
+    // Categorías de inventario estructuradas
+    const CATEGORIES = {
+      todos: 'Ver Todos',
+      pokeballs: 'Pokéballs',
+      pociones: 'Pociones y Bebidas',
+      stones: 'Piedras de Evolución (Tier 0)',
+      held: 'Objetos Equipables & Crianza',
+      utility: 'Consumibles & Utilidad',
+      especial: 'Herramientas & Maquinarias',
+      tms: 'Discos Técnicos (MTs)',
+      components: 'Componentes (Tier 2)',
+      refined: 'Refinados & Aleaciones (T1)',
+      ores: 'Materias Primas (Tier 0)'
+    };
+
+    // Estaciones de crafteo
+    const STATION_INFO = {
+      smelter: { name: 'Fundidora de Inducción Devon', icon: '🌋', color: 'text-orange-400 bg-orange-500/10 border-orange-500/30 shadow-orange-500/10' },
+      lapidary_wheel: { name: 'Talladora Holográfica de Rustboro', icon: '💎', color: 'text-cyan-400 bg-cyan-500/10 border-cyan-500/30 shadow-cyan-500/10' },
+      alembic_lab: { name: 'Sintetizador Farmacéutico Silph Co.', icon: '🧪', color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30 shadow-emerald-500/10' },
+      assembly_bench: { name: 'Ensambladora Robótica Silph Co.', icon: '🛠️', color: 'text-indigo-400 bg-indigo-500/10 border-indigo-500/30 shadow-indigo-500/10' },
+      cooking_pot: { name: 'Licuadora de Bayas Industrial', icon: '🍳', color: 'text-amber-400 bg-amber-500/10 border-amber-500/30 shadow-amber-500/10' }
+    };
+
+    // ==========================================
+    // VARIABLES DE ESTADO                       //
+    // ==========================================
+    let state = {
+      selectedId: 'pokeball',
+      search: '',
+      catFilter: 'todos',
+      tierFilter: 'all',
+      activeTab: 'tree', // 'tree', 'raw', 'usage'
+      graphMode: 'interactive', // 'interactive', 'indent'
+      queue: [], // [{ id, qty }]
+      tableSearch: ''
+    };
+
+    // ==========================================
+    // MOTOR DE AUDITORÍA DE RECETAS              //
+    // ==========================================
+    const usageCounts = {};
+    function calculateDatabaseUsage() {
+      SHOP_ITEMS.forEach(item => {
+        usageCounts[item.id] = 0;
+      });
+      SHOP_ITEMS.forEach(item => {
+        if (item.ingredients) {
+          item.ingredients.forEach(ing => {
+            if (usageCounts[ing.id] !== undefined) {
+              usageCounts[ing.id] += 1;
+            }
+          });
+        }
+      });
+    }
+
+    // ==========================================
+    // DESGLOSE RECURSIVO A TIER 0               //
+    // ==========================================
+    function calculateRawMaterials(itemId, multiplier = 1) {
+      const item = SHOP_ITEMS.find(x => x.id === itemId);
+      if (!item) return {};
+      if (!item.ingredients || item.ingredients.length === 0) {
+        return { [itemId]: multiplier };
+      }
+      const aggregated = {};
+      item.ingredients.forEach(ing => {
+        const subMaterials = calculateRawMaterials(ing.id, ing.qty * multiplier);
+        Object.entries(subMaterials).forEach(([subId, qty]) => {
+          aggregated[subId] = (aggregated[subId] || 0) + qty;
+        });
+      });
+      return aggregated;
+    }
+
+    // ==========================================
+    // UTILERÍA DE VISTA / ESTILOS                //
+    // ==========================================
+    function getBadgeStyles(tier) {
+      switch (tier) {
+        case 3: return 'bg-amber-500/10 text-amber-400 border-amber-500/30';
+        case 2: return 'bg-purple-500/10 text-purple-400 border-purple-500/30';
+        case 1: return 'bg-blue-500/10 text-blue-400 border-blue-500/30';
+        default: return 'bg-slate-500/10 text-slate-400 border-slate-500/30';
+      }
+    }
+
+    function getBadgeText(tier) {
+      switch (tier) {
+        case 3: return 'Tier 3: Fabricado';
+        case 2: return 'Tier 2: Componente';
+        case 1: return 'Tier 1: Refinado';
+        default: return 'Tier 0: Recolección Base';
+      }
+    }
+
+    // ==========================================
+    // RENDERIZADO DEL SIDEBAR DE FILTROS        //
+    // ==========================================
+    function renderSidebar() {
+      const listContainer = document.getElementById('sidebar-items-list');
+      const searchVal = state.search.toLowerCase();
+      
+      const filtered = SHOP_ITEMS.filter(item => {
+        const matchesSearch = item.name.toLowerCase().includes(searchVal) || 
+                              item.id.toLowerCase().includes(searchVal) || 
+                              item.desc.toLowerCase().includes(searchVal);
+        const matchesCat = state.catFilter === 'todos' || item.cat === state.catFilter;
+        const matchesTier = state.tierFilter === 'all' || item.tier === parseInt(state.tierFilter, 10);
+        return matchesSearch && matchesCat && matchesTier;
+      });
+
+      document.getElementById('sidebar-results-count').innerText = filtered.length;
+
+      let html = '';
+      if (filtered.length === 0) {
+        html = `
+          <div class="p-8 text-center text-slate-500 space-y-2">
+            <svg class="w-8 h-8 mx-auto text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+            </svg>
+            <p class="text-sm">Ningún objeto coincide.</p>
+          </div>`;
+      } else {
+        filtered.forEach(item => {
+          const isSelected = item.id === state.selectedId;
+          const station = item.station ? STATION_INFO[item.station] : null;
+          const bgClass = isSelected 
+            ? 'bg-gradient-to-r from-slate-900 to-indigo-950/40 border border-indigo-500/30 shadow-md shadow-indigo-500/5' 
+            : 'border border-transparent hover:bg-slate-900/60 hover:border-slate-800';
+          const titleColor = isSelected ? 'text-indigo-300' : 'text-slate-100';
+
+          html += `
+            <button onclick="focusOnItem('${item.id}')" class="w-full text-left p-3 rounded-lg flex items-start gap-3 transition-all ${bgClass} mb-1">
+              <span class="text-2xl p-1.5 bg-slate-950 border border-slate-800/80 rounded-lg flex items-center justify-center min-w-[44px] h-[44px]">
+                ${item.icon}
+              </span>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center justify-between gap-1.5">
+                  <span class="font-bold text-sm truncate ${titleColor}">${item.name}</span>
+                  <span class="text-[10px] px-1.5 py-0.5 rounded border font-medium whitespace-nowrap ${getBadgeStyles(item.tier)}">
+                    T${item.tier}
+                  </span>
+                </div>
+                <p class="text-xs text-slate-400 truncate mt-1">${item.desc}</p>
+                <div class="flex items-center gap-1.5 mt-2 flex-wrap">
+                  ${item.ingredients && item.ingredients.length > 0 
+                    ? `<span class="bg-slate-950 px-1.5 py-0.5 rounded border border-slate-800 text-[9px] font-mono text-slate-400">${item.ingredients.length} componentes</span>`
+                    : `<span class="text-[9px] bg-slate-950 text-slate-500 border border-dashed border-slate-800 px-1.5 py-0.5 rounded font-semibold uppercase">Recolectable</span>`
+                  }
+                  ${station 
+                    ? `<span class="text-[9px] px-1.5 py-0.5 rounded-md border font-semibold flex items-center gap-1 ${station.color}">
+                        <span>${station.icon}</span>
+                        <span>${station.name}</span>
+                       </span>`
+                    : ''
+                  }
+                </div>
+              </div>
+            </button>`;
+        });
+      }
+      listContainer.innerHTML = html;
+    }
+
+    // ==========================================
+    // RENDERIZADO DE LA CABECERA DE DETALLES     //
+    // ==========================================
+    function renderDetailHeader() {
+      const panel = document.getElementById('detail-header-panel');
+      const item = SHOP_ITEMS.find(x => x.id === state.selectedId) || SHOP_ITEMS[0];
+      const station = item.station ? STATION_INFO[item.station] : null;
+
+      let actionButton = '';
+      if (item.ingredients && item.ingredients.length > 0) {
+        actionButton = `
+          <button onclick="addToQueue('${item.id}')" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs px-4 py-2.5 rounded-lg flex items-center gap-2 transition-colors active:translate-y-0.5 shadow-md shadow-indigo-600/10">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+            </svg>
+            Agregar a la Cola
+          </button>`;
+      }
+
+      let priceTag = '';
+      if (item.price) {
+        priceTag = `
+          <div class="bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-right">
+            <div class="text-[10px] text-slate-500 font-bold uppercase">Valor de Mercado</div>
+            <div class="text-amber-500 font-bold text-sm">${item.price.toLocaleString()} ₽</div>
+          </div>`;
+      }
+
+      panel.innerHTML = `
+        <div class="flex items-center gap-4">
+          <span class="text-4xl p-4 bg-slate-950 border border-slate-800 rounded-2xl flex items-center justify-center shadow-lg shadow-black/40">
+            ${item.icon}
+          </span>
+          <div>
+            <div class="flex items-center gap-2 flex-wrap">
+              <h2 class="text-2xl font-black text-slate-100 tracking-tight">${item.name}</h2>
+              <span class="text-xs px-2.5 py-0.5 rounded-full border font-semibold ${getBadgeStyles(item.tier)}">
+                ${getBadgeText(item.tier)}
+              </span>
+              <span class="text-xs bg-slate-950 border border-slate-800 text-slate-400 px-2.5 py-0.5 rounded-full font-medium">
+                Categoría: ${CATEGORIES[item.cat]}
+              </span>
+            </div>
+            <p class="text-sm text-slate-300 mt-2 max-w-2xl">${item.desc}</p>
+            ${station 
+              ? `<div class="flex items-center gap-2 mt-3">
+                  <span class="text-xs text-slate-400">Estación Requerida:</span>
+                  <span class="text-xs px-2.5 py-1 rounded-lg border font-semibold flex items-center gap-1.5 ${station.color}">
+                    <span>${station.icon}</span>
+                    <span>${station.name}</span>
+                  </span>
+                 </div>`
+              : ''
+            }
+          </div>
+        </div>
+        <div class="flex items-center gap-2 self-start md:self-center">
+          ${actionButton}
+          ${priceTag}
+        </div>`;
+    }
+
+    // ==========================================
+    // RENDERIZADO DEL GRAFO INTERACTIVO          //
+    // ==========================================
+    function renderInteractiveGraph() {
+      const container = document.getElementById('tree-graph-interactive');
+      const item = SHOP_ITEMS.find(x => x.id === state.selectedId) || SHOP_ITEMS[0];
+
+      if (!item.ingredients || item.ingredients.length === 0) {
+        return;
+      }
+
+      const stationHtml = item.station 
+        ? `<span class="text-[9px] mt-2 inline-block px-2 py-0.5 rounded-full border font-bold ${STATION_INFO[item.station].color}">
+            ${STATION_INFO[item.station].icon} ${STATION_INFO[item.station].name}
+           </span>`
+        : '';
+
+      let ingredientsHtml = '';
+      item.ingredients.forEach(ing => {
+        const ingItem = SHOP_ITEMS.find(x => x.id === ing.id);
+        if (!ingItem) return;
+        
+        ingredientsHtml += `
+          <div class="bg-slate-900/90 border border-slate-800 hover:border-indigo-500/50 hover:shadow-lg hover:shadow-indigo-500/5 p-4 rounded-xl flex items-center justify-between gap-4 transition-all">
+            <button onclick="focusOnItem('${ingItem.id}')" class="flex items-center gap-3 text-left group min-w-0">
+              <span class="text-2xl p-2 bg-slate-950 border border-slate-800 rounded-lg group-hover:scale-105 transition-transform shrink-0">
+                ${ingItem.icon}
+              </span>
+              <div class="min-w-0">
+                <span class="font-extrabold text-xs text-indigo-300 group-hover:text-indigo-200 truncate block">
+                  ${ingItem.name}
+                </span>
+                <p class="text-[10px] text-slate-400 truncate mt-0.5 max-w-[150px]">${ingItem.desc}</p>
+              </div>
+            </button>
+            <div class="flex flex-col items-end shrink-0">
+              <span class="bg-slate-950 text-amber-400 border border-slate-800 text-[10px] font-black px-2.5 py-1 rounded">
+                Cantidad: x${ing.qty}
+              </span>
+              <span class="text-[9px] mt-1 font-bold ${ingItem.tier === 3 ? 'text-amber-400' : ingItem.tier === 2 ? 'text-purple-400' : ingItem.tier === 1 ? 'text-blue-400' : 'text-slate-400'}">
+                Tier ${ingItem.tier}
+              </span>
+            </div>
+          </div>`;
+      });
+
+      container.innerHTML = `
+        <div class="flex flex-col md:flex-row items-center justify-center gap-12 py-6 relative w-full">
+          <!-- Columna Padre -->
+          <div class="flex flex-col items-center shrink-0 z-10">
+            <div class="p-1 bg-gradient-to-br from-indigo-500 via-purple-600 to-pink-500 rounded-2xl shadow-xl shadow-indigo-500/10">
+              <div class="bg-slate-950 px-5 py-4 rounded-xl border border-slate-800 text-center min-w-[220px]">
+                <span class="text-4xl block mb-2">${item.icon}</span>
+                <div class="text-xs text-slate-400 font-bold uppercase tracking-wider mb-1">Producto Principal</div>
+                <h3 class="font-extrabold text-sm text-slate-100">${item.name}</h3>
+                ${stationHtml}
+              </div>
+            </div>
+          </div>
+
+          <!-- Flecha divisora -->
+          <div class="hidden md:block shrink-0 -mx-6 text-indigo-500/40">
+            <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+            </svg>
+          </div>
+
+          <!-- Columna Hijos -->
+          <div class="flex flex-col gap-4 z-10 w-full max-w-sm md:max-w-none">
+            ${ingredientsHtml}
+          </div>
+
+          <!-- Línea decorativa de fondo -->
+          <div class="absolute hidden md:block w-full h-[2px] bg-indigo-500/5 left-0 top-1/2 -z-0"></div>
+        </div>`;
+    }
+
+    // ==========================================
+    // RENDERIZADO DEL ÁRBOL RECURSIVO           //
+    // ==========================================
+    function buildIndentedTreeHTML(itemId, quantity, depth = 0) {
+      const item = SHOP_ITEMS.find(x => x.id === itemId);
+      if (!item) return '';
+
+      const hasIngredients = item.ingredients && item.ingredients.length > 0;
+      const paddingLeft = depth * 28;
+
+      let elementHtml = `
+        <div class="flex flex-col select-none">
+          <div class="flex items-center gap-2 py-1.5 group" style="padding-left: ${paddingLeft}px">
+            ${depth > 0 ? `<span class="text-slate-700 font-mono -ml-5 mr-1 font-light">└──</span>` : ''}
+            <button onclick="focusOnItem('${item.id}')" class="px-3 py-1.5 rounded-lg border flex items-center gap-2 text-xs transition-all ${
+              hasIngredients 
+                ? 'bg-slate-900/60 border-slate-800/80 hover:border-indigo-500/50' 
+                : 'bg-slate-950 border-slate-900/60 text-slate-400'
+            }">
+              <span class="text-sm">${item.icon}</span>
+              <span class="font-semibold ${hasIngredients ? 'text-slate-100 group-hover:text-indigo-300' : 'text-slate-400'}">
+                ${item.name}
+              </span>
+              <span class="text-[10px] bg-slate-950 px-1.5 py-0.2 rounded border border-slate-800 text-amber-500 font-black">
+                x${quantity}
+              </span>
+              <span class="text-[9px] text-slate-500">Tier ${item.tier}</span>
+            </button>
+          </div>
+        </div>`;
+
+      if (hasIngredients) {
+        item.ingredients.forEach(ing => {
+          elementHtml += buildIndentedTreeHTML(ing.id, ing.qty * quantity, depth + 1);
+        });
+      }
+      return elementHtml;
+    }
+
+    function renderIndentedTree() {
+      const container = document.getElementById('indent-tree-root');
+      container.innerHTML = buildIndentedTreeHTML(state.selectedId, 1, 0);
+    }
+
+    // ==========================================
+    // MANEJO DE SECCIÓN GRAFOS (VACÍO/LLENO)     //
+    // ==========================================
+    function renderTreeTab() {
+      const item = SHOP_ITEMS.find(x => x.id === state.selectedId) || SHOP_ITEMS[0];
+      const hasIngredients = item.ingredients && item.ingredients.length > 0;
+
+      const interactiveContainer = document.getElementById('tree-graph-interactive');
+      const indentContainer = document.getElementById('tree-graph-indent');
+      const emptyContainer = document.getElementById('tree-graph-empty');
+      const selectors = document.getElementById('tree-mode-selectors');
+
+      if (!hasIngredients) {
+        selectors.classList.add('hidden');
+        interactiveContainer.classList.add('hidden');
+        indentContainer.classList.add('hidden');
+        emptyContainer.classList.remove('hidden');
+
+        let subMsg = '';
+        if (item.cat === 'stones') {
+          subMsg = 'Esta <strong>Piedra de Evolución</strong> es un mineral elemental primario de Tier 0. No se fabrica. Se desentierra explorando fisuras elementales y cuevas volcánicas/acuáticas en el mapa.';
+        } else if (item.cat === 'ores') {
+          subMsg = 'Este objeto es un <strong>Material Base (Tier 0)</strong> recolectable del mapa de juego. No requiere recetas, se obtiene mediante exploración, minería o recolección botánica directa de bayas y néctar.';
+        } else if (item.cat === 'especial' && item.tier === 0) {
+          subMsg = 'Este <strong>Fósil antiguo</strong> o resto geológico se desentierra únicamente en cuevas subterráneas utilizando herramientas de minería de alta precisión.';
+        } else {
+          subMsg = 'Este objeto es un ítem de tienda o premio de liga que <strong>no se puede fabricar</strong> mediante recetas ordinarias; consíguelo en misiones, torneos o Pokémarts autorizados.';
+        }
+
+        emptyContainer.innerHTML = `
+          <span class="text-5xl mb-4 bg-slate-950 p-4 border border-slate-800 rounded-full">${item.icon}</span>
+          <h3 class="text-lg font-bold text-slate-100">${item.name}</h3>
+          <p class="text-sm text-slate-400 mt-2 max-w-md">${subMsg}</p>`;
+      } else {
+        selectors.classList.remove('hidden');
+        emptyContainer.classList.add('hidden');
+        
+        if (state.graphMode === 'interactive') {
+          interactiveContainer.classList.remove('hidden');
+          indentContainer.classList.add('hidden');
+          renderInteractiveGraph();
+        } else {
+          interactiveContainer.classList.add('hidden');
+          indentContainer.classList.remove('hidden');
+          renderIndentedTree();
+        }
+      }
+    }
+
+    // ==========================================
+    // RENDERIZADO DEL DESGLOSE RECURSIVO        //
+    // ==========================================
+    function renderRawBreakdownTab() {
+      const grid = document.getElementById('raw-breakdown-grid');
+      const breakdown = rawBreakdownForSelected;
+
+      if (Object.keys(breakdown).length === 1 && Object.keys(breakdown)[0] === state.selectedId) {
+        grid.className = 'block';
+        grid.innerHTML = `
+          <div class="p-8 text-center text-slate-500 bg-slate-900/10 border border-slate-800/60 rounded-xl">
+            No aplicable: El objeto ya es una Materia Prima o Recurso de Tier 0.
+          </div>`;
+        return;
+      }
+
+      grid.className = 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-4';
+      let html = '';
+      Object.entries(breakdown).forEach(([rawId, qty]) => {
+        const rItem = SHOP_ITEMS.find(x => x.id === rawId);
+        if (!rItem) return;
+        html += `
+          <div class="bg-slate-900/50 border border-slate-800/60 hover:border-slate-700 rounded-xl p-4 flex items-center gap-3 transition-colors">
+            <span class="text-3xl p-2 bg-slate-950 border border-slate-800 rounded-lg flex items-center justify-center">
+              ${rItem.icon}
+            </span>
+            <div class="min-w-0">
+              <div class="text-xs text-slate-400 font-medium truncate">${rItem.name}</div>
+              <div class="text-xl font-black text-white mt-1">x${qty}</div>
+            </div>
+          </div>`;
+      });
+      grid.innerHTML = html;
+    }
+
+    // ==========================================
+    // RENDERIZADO DEL REPORTE DE USOS           //
+    // ==========================================
+    function renderUsageTab() {
+      const tbody = document.getElementById('usage-table-body');
+      const tableSearchVal = state.tableSearch.toLowerCase();
+
+      const filtered = SHOP_ITEMS.filter(item => {
+        return item.name.toLowerCase().includes(tableSearchVal) ||
+               item.id.toLowerCase().includes(tableSearchVal) ||
+               (CATEGORIES[item.cat] || '').toLowerCase().includes(tableSearchVal);
+      });
+
+      let html = '';
+      filtered.forEach(item => {
+        const usage = usageCounts[item.id] || 0;
+        const isPrimaryOrComp = item.tier < 3;
+        
+        const usageBadge = isPrimaryOrComp
+          ? `<span class="inline-block px-2.5 py-0.5 rounded font-black text-xs ${
+              usage > 0 
+                ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' 
+                : 'bg-rose-500/15 text-rose-400 border border-rose-500/20 animate-pulse'
+            }">${usage} Usos</span>`
+          : `<span class="text-[10px] text-slate-500 italic bg-slate-950 px-2 py-0.5 border border-slate-900 rounded font-semibold">Producto Final</span>`;
+
+        html += `
+          <tr class="hover:bg-slate-900/40 transition-colors">
+            <td class="p-3 flex items-center gap-2.5">
+              <span class="text-xl p-1 bg-slate-950 border border-slate-800/80 rounded flex items-center justify-center w-8 h-8">
+                ${item.icon}
+              </span>
+              <span class="font-extrabold text-slate-100">${item.name}</span>
+            </td>
+            <td class="p-3">
+              <code class="bg-slate-950 px-2 py-0.5 rounded border border-slate-800 text-slate-400 font-mono">${item.id}</code>
+            </td>
+            <td class="p-3 text-center">
+              <span class="text-[10px] px-2 py-0.5 rounded border font-semibold ${getBadgeStyles(item.tier)}">
+                T${item.tier}
+              </span>
+            </td>
+            <td class="p-3 text-slate-300 font-medium">
+              ${CATEGORIES[item.cat] || item.cat}
+            </td>
+            <td class="p-3 text-center">
+              ${usageBadge}
+            </td>
+            <td class="p-3 text-center">
+              <button onclick="focusOnItem('${item.id}'); switchTab('tree');" class="text-indigo-400 hover:text-indigo-300 bg-indigo-500/10 border border-indigo-500/25 px-2.5 py-1 rounded-md font-bold transition-all">
+                Ver Receta
+              </button>
+            </td>
+          </tr>`;
+      });
+      tbody.innerHTML = html;
+    }
+
+    // ==========================================
+    // RENDERIZADO DEL SIMULADOR DE COLA          //
+    // ==========================================
+    function renderMassCrafting() {
+      const panel = document.getElementById('mass-crafting-panel');
+      const queueCountEl = document.getElementById('queue-indicator-count');
+      const queueIndicator = document.getElementById('queue-indicator');
+
+      if (state.queue.length === 0) {
+        queueIndicator.classList.add('hidden');
+        panel.innerHTML = `
+          <div class="border border-dashed border-slate-800 bg-slate-950/20 p-8 rounded-2xl text-center space-y-3">
+            <div class="text-3xl">⚙️</div>
+            <h4 class="text-sm font-bold text-slate-300">Simulador de Fabricación en Masa</h4>
+            <p class="text-xs text-slate-500 max-w-sm mx-auto">
+              ¿Planeas una sesión larga de farmeo? Agrega múltiples Pokéballs, Pociones u objetos a la cola para calcular todos los minerales y elementos orgánicos requeridos de forma agregada.
+            </p>
+          </div>`;
+        return;
+      }
+
+      queueIndicator.classList.remove('hidden');
+      queueCountEl.innerText = state.queue.length;
+
+      // Calcular consolidado Tier 0
+      const consolidatedBreakdown = {};
+      state.queue.forEach(item => {
+        const sub = calculateRawMaterials(item.id, item.qty);
+        Object.entries(sub).forEach(([subId, qty]) => {
+          consolidatedBreakdown[subId] = (consolidatedBreakdown[subId] || 0) + qty;
+        });
+      });
+
+      // HTML de los objetos en cola
+      let queueItemsHtml = '';
+      state.queue.forEach(item => {
+        const info = SHOP_ITEMS.find(x => x.id === item.id);
+        if (!info) return;
+
+        queueItemsHtml += `
+          <div class="bg-slate-950 border border-slate-900 rounded-lg p-2 flex items-center justify-between gap-3">
+            <button onclick="focusOnItem('${info.id}')" class="flex items-center gap-2 text-left group min-w-0">
+              <span class="text-lg">${info.icon}</span>
+              <span class="text-xs font-bold text-slate-200 group-hover:text-indigo-400 truncate">${info.name}</span>
+            </button>
+            <div class="flex items-center gap-1">
+              <button onclick="updateQueueQty('${item.id}', ${item.qty - 1})" class="w-6 h-6 rounded bg-slate-900 hover:bg-slate-800 text-xs font-bold flex items-center justify-center border border-slate-800">-</button>
+              <span class="text-xs font-mono font-bold w-6 text-center text-slate-100">${item.qty}</span>
+              <button onclick="updateQueueQty('${item.id}', ${item.qty + 1})" class="w-6 h-6 rounded bg-slate-900 hover:bg-slate-800 text-xs font-bold flex items-center justify-center border border-slate-800">+</button>
+              <button onclick="updateQueueQty('${item.id}', 0)" class="w-6 h-6 rounded bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs font-bold flex items-center justify-center border border-red-500/10 ml-1.5">🗑️</button>
+            </div>
+          </div>`;
+      });
+
+      // HTML del consolidado base
+      let rawAggregatedHtml = '';
+      Object.entries(consolidatedBreakdown).forEach(([rawId, qty]) => {
+        const rItem = SHOP_ITEMS.find(x => x.id === rawId);
+        if (!rItem) return;
+
+        rawAggregatedHtml += `
+          <div class="bg-slate-950 border border-slate-900 rounded-lg p-2 flex items-center gap-2">
+            <span class="text-lg shrink-0">${rItem.icon}</span>
+            <div class="min-w-0">
+              <div class="text-[10px] text-slate-400 font-medium truncate">${rItem.name}</div>
+              <div class="text-xs font-black text-slate-100 mt-0.5">x${qty}</div>
+            </div>
+          </div>`;
+      });
+
+      panel.innerHTML = `
+        <div class="border border-indigo-500/20 rounded-2xl bg-indigo-950/5 overflow-hidden flex flex-col gap-4 p-6">
+          <div class="flex items-center justify-between border-b border-slate-800 pb-4 flex-wrap gap-2">
+            <div>
+              <h3 class="text-lg font-black text-slate-100 flex items-center gap-2">
+                <span>⚙️</span> Cola de Fabricación de Lotes
+              </h3>
+              <p class="text-xs text-slate-400 mt-1">Calcula los requisitos netos agregados para producir en masa tus ítems.</p>
+            </div>
+            <button onclick="clearQueue()" class="text-xs font-bold text-red-400 bg-red-500/15 hover:bg-red-500/25 border border-red-500/20 px-3 py-1.5 rounded-lg transition-all">
+              Limpiar Cola
+            </button>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Lado Izquierdo: Configuración de la Cola -->
+            <div class="bg-slate-900/30 border border-slate-800 rounded-xl p-4 space-y-3 max-h-[220px] overflow-y-auto custom-scrollbar">
+              <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Objetos a Fabricar</div>
+              <div class="space-y-2">
+                ${queueItemsHtml}
+              </div>
+            </div>
+
+            <!-- Lado Derecho: Suma de materiales base -->
+            <div class="bg-slate-900/30 border border-slate-800 rounded-xl p-4 flex flex-col gap-3">
+              <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Materiales Orgánicos / Minerales Requeridos (Tier 0)</div>
+              <div id="queue-raw-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-2 overflow-y-auto max-h-[160px] custom-scrollbar p-1">
+                ${rawAggregatedHtml}
+              </div>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    // ==========================================
+    // EXPORTADORES (MD & HTML INTERACTIVO)       //
+    // ==========================================
+    function exportMarkdown() {
+      let md = `# Reporte Completo de Usos - Sistema de Crafting Pokémon\n\n`;
+      md += `Este archivo contiene la auditoría completa de los objetos de la base de datos, su nivel de procesamiento (Tier), categoría y cuántas recetas los utilizan activamente como ingredientes.\n\n`;
+      md += `| Icono | ID del Objeto | Nombre del Objeto | Tier | Categoría | Recetas donde se usa |\n`;
+      md += `| :---: | :--- | :--- | :---: | :--- | :---: |\n`;
+
+      SHOP_ITEMS.forEach(item => {
+        const usage = usageCounts[item.id] || 0;
+        md += `| ${item.icon} | \`${item.id}\` | ${item.name} | Tier ${item.tier} | ${CATEGORIES[item.cat] || item.cat} | **${usage}** |\n`;
+      });
+
+      md += `\n\n*Reporte autogenerado por el Visualizador de Crafting Pokémon Pro.*`;
+
+      const blob = new Blob([md], { type: 'text/markdown;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'reporte_usos_crafting_pokemon.md');
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    function exportHTML() {
+      let htmlContent = `<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reporte de Usos - Sistema de Crafting Pokémon</title>
+  <script src="https://cdn.tailwindcss.com"><\/script>
+  <style>
+    body { background-color: #020617; color: #f8fafc; }
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: #020617; }
+    ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #334155; }
+  </style>
+</head>
+<body class="p-8 font-sans">
+  <div class="max-w-6xl mx-auto space-y-6">
+    <div class="border-b border-slate-800 pb-4">
+      <h1 class="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-indigo-400 to-purple-500">
+        Reporte de Usos - Sistema de Crafting Pokémon
+      </h1>
+      <p class="text-sm text-slate-400 mt-2">
+        Auditoría de todos los objetos en la base de datos, indicando su nivel de procesamiento (Tier) y en cuántas recetas activas se consumen.
+      </p>
+    </div>
+    
+    <div class="border border-slate-800 rounded-xl overflow-hidden bg-slate-900/20">
+      <table class="w-full text-left text-xs border-collapse">
+        <thead class="bg-slate-950 text-slate-300 font-bold uppercase tracking-wider">
+          <tr>
+            <th class="p-4 border-b border-slate-800">Objeto</th>
+            <th class="p-4 border-b border-slate-800">ID en Código</th>
+            <th class="p-4 border-b border-slate-800 text-center">Tier</th>
+            <th class="p-4 border-b border-slate-800">Categoría</th>
+            <th class="p-4 border-b border-slate-800 text-center">Recetas que lo usan</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-800/60">`;
+
+      SHOP_ITEMS.forEach(item => {
+        const usage = usageCounts[item.id] || 0;
+        const isPrimaryOrComp = item.tier < 3;
+        
+        const badgeClass = item.tier === 3 
+          ? 'bg-amber-500/10 text-amber-400 border-amber-500/30' 
+          : item.tier === 2 
+            ? 'bg-purple-500/10 text-purple-400 border-purple-500/30' 
+            : item.tier === 1 
+              ? 'bg-blue-500/10 text-blue-400 border-blue-500/30' 
+              : 'bg-slate-500/10 text-slate-400 border-slate-500/30';
+
+        const usageBadge = isPrimaryOrComp
+          ? `<span class="inline-block px-2.5 py-0.5 rounded font-black text-xs ${
+              usage > 0 
+                ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' 
+                : 'bg-rose-500/15 text-rose-400 border border-rose-500/20'
+            }">${usage} Usos</span>`
+          : `<span class="text-[10px] text-slate-500 italic bg-slate-950 px-2 py-0.5 border border-slate-900 rounded font-semibold">${usage > 0 ? `${usage} Usos` : 'Producto Final'}</span>`;
+
+        htmlContent += `
+          <tr class="hover:bg-slate-900/40 transition-colors">
+            <td class="p-4 flex items-center gap-3">
+              <span class="text-xl p-1 bg-slate-950 border border-slate-800 rounded flex items-center justify-center w-8 h-8">
+                ${item.icon}
+              </span>
+              <span class="font-extrabold text-slate-100">${item.name}</span>
+            </td>
+            <td class="p-4">
+              <code class="bg-slate-950 px-2 py-0.5 rounded border border-slate-800 text-slate-400 font-mono">
+                ${item.id}
+              </code>
+            </td>
+            <td class="p-4 text-center">
+              <span class="text-[10px] px-2 py-0.5 rounded border font-semibold ${badgeClass}">
+                Tier ${item.tier}
+              </span>
+            </td>
+            <td class="p-4 text-slate-300 font-medium">
+              ${CATEGORIES[item.cat] || item.cat}
+            </td>
+            <td class="p-4 text-center">
+              ${usageBadge}
+            </td>
+          </tr>`;
+      });
+
+      htmlContent += `
+        </tbody>
+      </table>
+    </div>
+    <footer class="text-center text-xs text-slate-500 pt-4 border-t border-slate-900">
+      <p>Reporte autogenerado el 2026-06-09 por el Visualizador de Crafting Pokémon Pro.</p>
+    </footer>
+  </div>
+</body>
+</html>`;
+
+      const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'reporte_usos_crafting_pokemon.html');
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    // ==========================================
+    // CONTROLADORES DE ACCIONES DE INTERFAZ       //
+    // ==========================================
+    function focusOnItem(id) {
+      state.selectedId = id;
+      rawBreakdownForSelected = calculateRawMaterials(id, 1);
+      renderSidebar();
+      renderDetailHeader();
+      renderTreeTab();
+      renderRawBreakdownTab();
+    }
+
+    function switchTab(tabId) {
+      state.activeTab = tabId;
+
+      // Actualizar estilos de los botones de pestañas
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.className = "tab-btn px-4 py-2 rounded-md font-bold transition-all text-slate-400 hover:text-slate-100 bg-slate-900/60 border border-slate-800";
+      });
+      const activeBtn = document.getElementById(`tab-btn-${tabId}`);
+      activeBtn.className = "tab-btn px-4 py-2 rounded-md font-bold transition-all bg-indigo-600 text-white";
+
+      // Mostrar/ocultar paneles correspondientes
+      document.querySelectorAll('.tab-pane').forEach(panel => panel.classList.add('hidden'));
+      document.getElementById(`tab-content-${tabId}`).classList.remove('hidden');
+
+      const selectors = document.getElementById('tree-mode-selectors');
+      if (tabId === 'tree') {
+        selectors.classList.remove('hidden');
+        renderTreeTab();
+      } else {
+        selectors.classList.add('hidden');
+        if (tabId === 'raw') renderRawBreakdownTab();
+        if (tabId === 'usage') renderUsageTab();
+      }
+    }
+
+    function switchGraphMode(mode) {
+      state.graphMode = mode;
+      document.querySelectorAll('.mode-btn').forEach(btn => {
+        btn.className = "mode-btn px-3 py-1.5 rounded font-bold text-slate-400 hover:text-slate-100";
+      });
+      const activeBtn = document.getElementById(`mode-btn-${mode}`);
+      activeBtn.className = "mode-btn px-3 py-1.5 rounded font-bold bg-indigo-500/20 text-indigo-300";
+      renderTreeTab();
+    }
+
+    function addToQueue(id) {
+      const existing = state.queue.find(x => x.id === id);
+      if (existing) {
+        existing.qty += 1;
+      } else {
+        state.queue.push({ id, qty: 1 });
+      }
+      renderMassCrafting();
+    }
+
+    function updateQueueQty(id, qty) {
+      if (qty <= 0) {
+        state.queue = state.queue.filter(x => x.id !== id);
+      } else {
+        const item = state.queue.find(x => x.id === id);
+        if (item) item.qty = qty;
+      }
+      renderMassCrafting();
+    }
+
+    function clearQueue() {
+      state.queue = [];
+      renderMassCrafting();
+    }
+
+    // ==========================================
+    // INICIALIZADOR DE LA APLICACIÓN             //
+    // ==========================================
+    let rawBreakdownForSelected = {};
+
+    window.onload = function() {
+      calculateDatabaseUsage();
+
+      // Cargar selectores de categorías en barra lateral
+      const selectCat = document.getElementById('sidebar-cat-filter');
+      let optionsCat = '';
+      Object.entries(CATEGORIES).forEach(([key, label]) => {
+        optionsCat += `<option value="${key}">${label}</option>`;
+      });
+      selectCat.innerHTML = optionsCat;
+
+      // Hooks de Event Listeners
+      document.getElementById('sidebar-search').addEventListener('input', (e) => {
+        state.search = e.target.value;
+        renderSidebar();
+      });
+
+      document.getElementById('sidebar-cat-filter').addEventListener('change', (e) => {
+        state.catFilter = e.target.value;
+        renderSidebar();
+      });
+
+      document.getElementById('sidebar-tier-filter').addEventListener('change', (e) => {
+        state.tierFilter = e.target.value;
+        renderSidebar();
+      });
+
+      document.getElementById('usage-table-search').addEventListener('input', (e) => {
+        state.tableSearch = e.target.value;
+        renderUsageTab();
+      });
+
+      document.getElementById('tab-btn-tree').addEventListener('click', () => switchTab('tree'));
+      document.getElementById('tab-btn-raw').addEventListener('click', () => switchTab('raw'));
+      document.getElementById('tab-btn-usage').addEventListener('click', () => switchTab('usage'));
+
+      document.getElementById('mode-btn-interactive').addEventListener('click', () => switchGraphMode('interactive'));
+      document.getElementById('mode-btn-indent').addEventListener('click', () => switchGraphMode('indent'));
+
+      // Renderizar el footer
+      document.getElementById('footer-total-items').innerText = `${SHOP_ITEMS.length} Objetos Totales`;
+
+      // Carga inicial de datos de Pokéball por defecto
+      focusOnItem('pokeball');
+      renderMassCrafting();
+    };
+  </script>
+</body>
+</html>
