@@ -1,5 +1,5 @@
 import { gsap } from 'gsap'
-import { is3DButton, getElementShadowColorAndDepth } from './hoverHelpers.ts'
+import { is3DButton, getElementShadowColorAndDepth, resolveCssColor, parseToRgba } from './hoverHelpers.ts'
 import { getHoverEnterStrategy } from './hoverStrategies.ts'
 
 export function triggerEnter(el: HTMLElement) {
@@ -22,10 +22,11 @@ export function triggerEnter(el: HTMLElement) {
   let borderColor: string | null = null
   let boxShadow: string | null = null
 
-  const isButtonElement = el.tagName === 'BUTTON' || 
+  const isButtonElement = (el.tagName === 'BUTTON' || 
     el.classList.contains('btn-confirm') || 
     el.classList.contains('btn-cancel') || 
-    el.getAttribute('role') === 'button'
+    el.getAttribute('role') === 'button') &&
+    !el.classList.contains('hud-sq-btn')
 
   if (isButtonElement) {
     const isCloseBtn = el.classList.contains('modal-close-btn') || el.classList.contains('modal-close-btn-floating')
@@ -151,13 +152,38 @@ export function triggerEnter(el: HTMLElement) {
         overwrite: 'auto'
       })
     }
-  } else if (el.classList.contains('inventory-item-card')) {
+  } else if (el.classList.contains('inventory-item-card') || el.classList.contains('quick-item-card')) {
     const sprite = el.querySelector('.item-sprite')
     if (sprite) {
       gsap.to(sprite, {
-        scale: 1.1,
+        scale: 1.3,
         duration: 0.3,
         ease: 'power2.out',
+        overwrite: 'auto'
+      })
+    }
+    const glow = el.querySelector('.item-bg-glow')
+    if (glow) {
+      const color = el.style.getPropertyValue('--tier-color') || 'rgba(148, 163, 184, 0.45)';
+      const resolvedColor = resolveCssColor(color, el);
+      const hoverGlowColor = parseToRgba(resolvedColor, 0.35, el);
+      gsap.to(glow, {
+        backgroundImage: `radial-gradient(circle, ${hoverGlowColor} 0%, transparent 70%)`,
+        scale: 1.35,
+        opacity: 1,
+        duration: 0.2,
+        ease: 'power2.out',
+        overwrite: 'auto'
+      })
+    }
+  } else if (el.classList.contains('shop-item-card') || el.classList.contains('bc-shop-item-card') || el.classList.contains('war-shop-item-card')) {
+    const img = el.querySelector('.item-visual-box img')
+    if (img) {
+      gsap.to(img, {
+        scale: 1.25,
+        y: -4,
+        duration: 0.3,
+        ease: 'back.out(1.7)',
         overwrite: 'auto'
       })
     }

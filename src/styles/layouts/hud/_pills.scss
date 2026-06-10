@@ -94,11 +94,6 @@
   color: var(--white);
 }
 
-.hud-pill:hover,
-.hud-sq-btn:hover {
-  background: Rgba(30, 41, 59, 0.8);
-  transform: Translatey(-2px);
-}
 
 .hud-container .hud-pill {
   @include hud-pill-base;
@@ -155,10 +150,10 @@
   align-items: center;
   background: Rgba(255, 255, 255, 0.05);
   border: 1px solid Rgba(255, 255, 255, 0.1);
-  color: var(--white);
   width: 50px;
   height: 50px;
   border-radius: 12px;
+  color: var(--white);
   @include will-animate(transform, box-shadow, border-color);
   
   cursor: pointer;
@@ -171,6 +166,9 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    line-height: 1 !important;
+    margin: 0 !important;
+    padding: 0 !important;
     font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif !important;
   }
 
@@ -182,16 +180,9 @@
     color: Rgba(255, 255, 255, 0.7);
     letter-spacing: 0;
     white-space: nowrap;
-  }
-
-  &:hover {
-    background: Rgba(255, 255, 255, 0.12);
-    border-color: Rgba(255, 255, 255, 0.2);
-    box-shadow: none;
-    z-index: var(--z-base);
-    transform: none;
-    
-    span:not(:first-child) { color: var(--white); }
+    line-height: 1 !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
 
   &:active {
@@ -199,8 +190,12 @@
   }
 
   &.active {
-    border-color: var(--yellow);
-    color: var(--yellow);
-    span:not(:first-child) { color: var(--yellow); }
+    border-color: var(--yellow) !important;
+    color: var(--yellow) !important;
+    box-shadow: 
+      0 20px 40px Rgba(0, 0, 0, 0.6),
+      inset 0 30px 60px -20px color-mix(in srgb, var(--yellow), transparent 80%),
+      0 0 20px color-mix(in srgb, var(--yellow), transparent 70%) !important;
+    span:not(:first-child) { color: var(--yellow) !important; }
   }
 }

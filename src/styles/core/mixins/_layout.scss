@@ -41,9 +41,8 @@
   -webkit-text-stroke: 0px !important; // Prevent subtle font weight blurring
   -webkit-backface-visibility: hidden !important;
   backface-visibility: hidden !important;
-  
   // Core pixel font mapping
-  font-family: var(--font-pixel, 'Pokemon FireRed LeafGreen'), 'Press Start 2P', 'DotGothic16', monospace !important;
+  font-family: var(--font-pixel) !important;
 }
 
 @mixin pixelated-proportional {
@@ -58,7 +57,7 @@
   backface-visibility: hidden !important;
   
   // Core proportional pixel font mapping (No bitmap-like pixel scaling)
-  font-family: var(--font-pixel-proportional, 'Pokemon FireRed LeafGreen'), 'Press Start 2P', 'DotGothic16', monospace !important;
+  font-family: var(--font-pixel-proportional) !important;
 }
 
 @mixin tooltip-premium {

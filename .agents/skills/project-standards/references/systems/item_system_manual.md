@@ -13,8 +13,9 @@ Defines how the item looks and how much it costs.
 ```js
 {
   id: 'snake_case_id',
+  craftingTier: 0|1|2|3, // Numeric processing tier level
   name: 'Visible Name',
-  cat: 'healing|held|tm|breeding|special|stone',
+  cat: 'healing|held|tm|breeding|special|stone|stones',
   sprite: 'URL_pixel_art',
   icon: 'emoji',
   price: 1000,
@@ -120,3 +121,5 @@ To provide clear visual feedback without redundancy, item usage logs must be spl
 - **UI & Combat Category Parity**: Category names used in database items (e.g., `potions`, `combat_held`, `breeding_held`, `tools`, `machinery`, `tms`) must be matched strictly across HUD components (like `BattleQuickBag.vue`), action controls (like `BattleArenaControls.vue`), and market filters (like `MarketFilters.vue`) to prevent filtering and visibility bugs.
 - **Physical Sprite Validation**: Every item sprite path in the database must point to a physically existing image file. The integrity validator script (`validate_items.ts`) performs disk existence checks (`fs.existsSync`) to prevent broken images.
 - **Material Localized Terminology**: The word 'Tier' is strictly forbidden in user-facing HUD components, pills, and tooltips. Instead, utilize localized Spanish terms to categorize materials: 'Materia Prima' (Tier 0), 'Material Refinado' (Tier 1), and 'Componentes' (Tier 2).
+- **Explicit Numeric Crafting Tier**: Every item in `src/data/items.ts` must have a numeric `craftingTier` property (0 for Raw Materials/Stones, 1 for Refined Materials, 2 for Components, 3 for finished Products). Do not guess or derive the processing stage of an item from its sprite path or category string in store/UI logic.
+- **Dual Tab Visibility**: Items of Tiers 0, 1, and 2 that are consumable, usable, or equipable must show up in both the Materials and Products tabs in the inventory. Under the Materials tab, their categories are mapped dynamically according to their tier (`raw_material` for Tier 0, `refined_material` for Tier 1, `component` for Tier 2) so they show up under their respective sidebar filters (e.g. stones under Materia Prima). Under the Products tab, they keep or adjust to their specific product subcategories (e.g. `'stones'` or `'potions'`).

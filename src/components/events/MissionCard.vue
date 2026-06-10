@@ -195,6 +195,17 @@ const handleImgError = (e: Event) => {
       will-change: transform, filter;
     }
 
+    .avatar-placeholder {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+      line-height: 1;
+      position: relative;
+      top: -4px;
+    }
+
     .pixelated { @include pixelated; }
   }
   
@@ -233,7 +244,17 @@ const handleImgError = (e: Event) => {
   align-items: center;
   gap: 12px;
 
-  .reward-icon { font-size: 24px; }
+  .reward-icon {
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    top: -3px;
+  }
   .reward-info {
     display: flex;
     flex-direction: column;

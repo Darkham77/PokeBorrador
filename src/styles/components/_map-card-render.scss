@@ -2,9 +2,7 @@
 // src/styles/components/_map-card-render.scss
 @use 'sass:string';
 @use '../core/tools' as *;
-
 @use './map-card-info';
-
 
 .map-card {
   position: relative;
@@ -280,7 +278,7 @@
 
 /* Miscellaneous */
 .dom-badge {
-  @extend .map-pill;
+  @include map-pill-base;
   width: 32px;
   min-width: 32px;
   height: 32px;

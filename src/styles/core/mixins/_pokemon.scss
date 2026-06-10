@@ -107,7 +107,7 @@
   background-image: Linear-Gradient(135deg, Rgba(255, 255, 255, 0.22) 0%, Rgba(255, 255, 255, 0) 50%, Rgba(0, 0, 0, 0.3) 100%);
   background-clip: padding-box;
   @include text-outline(#000, 1px);
-  font-family: var(--font-pixel, 'Press Start 2P', monospace);
+  font-family: var(--font-pixel);
   white-space: nowrap;
 }
 
@@ -117,7 +117,7 @@
   justify-content: center;
   padding: 2px 6px; 
   border-radius: 10px;
-  font-family: var(--font-pixel, 'Press Start 2P', monospace);
+  font-family: var(--font-pixel);
   font-size: $size;
   color: white;
   text-transform: uppercase;

@@ -97,14 +97,14 @@ const healActiveTeam = () => {
       <div style="display: flex; gap: 4px; width: 100%;">
         <button 
           class="adv-hm-btn" 
-          style="flex: 1; font-size: 6px; padding: 4px; font-family: 'Press Start 2P', monospace;"
+          style="flex: 1; font-size: 6px; padding: 4px; font-family: var(--font-pixel);"
           @click="injectTestTeam"
         >
           🐣 Inyectar Equipo
         </button>
         <button 
           class="adv-hm-btn" 
-          style="flex: 1; font-size: 6px; padding: 4px; font-family: 'Press Start 2P', monospace;"
+          style="flex: 1; font-size: 6px; padding: 4px; font-family: var(--font-pixel);"
           @click="healActiveTeam"
         >
           🏥 Curar Todo
@@ -160,7 +160,7 @@ const healActiveTeam = () => {
 
         <div 
           v-if="!gameStore.state.team || gameStore.state.team.length === 0"
-          style="color: #888; font-size: 8px; text-align: center; padding: 12px; font-family: 'Press Start 2P', monospace;"
+          style="color: #888; font-size: 8px; text-align: center; padding: 12px; font-family: var(--font-pixel);"
         >
           Tu equipo está vacío. ¡Usa Inyectar Equipo!
         </div>
@@ -180,7 +180,7 @@ const healActiveTeam = () => {
       </h3>
       <button 
         class="adv-hm-btn" 
-        style="width: 100%; font-size: 8px; padding: 4px; font-family: 'Press Start 2P', monospace;"
+        style="width: 100%; font-size: 8px; padding: 4px; font-family: var(--font-pixel);"
         @click="clearTestItems"
       >
         🗑️ Limpiar Test Items
@@ -193,7 +193,7 @@ const healActiveTeam = () => {
           class="adv-cheat-item-row"
           style="display: flex; align-items: center; justify-content: space-between; font-size: 8px; background: rgba(0,0,0,0.2); padding: 4px; border-radius: 4px;"
         >
-          <span style="font-family: 'Press Start 2P', monospace;">🚲 Bici ({{ gameStore.state.inventory?.['bicycle'] || 0 }})</span>
+          <span style="font-family: var(--font-pixel);">🚲 Bici ({{ gameStore.state.inventory?.['bicycle'] || 0 }})</span>
           <div style="display: flex; gap: 2px;">
             <button
               class="adv-hm-btn"
@@ -217,7 +217,7 @@ const healActiveTeam = () => {
           class="adv-cheat-item-row" 
           style="display: flex; align-items: center; justify-content: space-between; font-size: 8px; background: rgba(0,0,0,0.2); padding: 4px; border-radius: 4px;"
         >
-          <span style="font-family: 'Press Start 2P', monospace; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; max-width: 120px;">
+          <span style="font-family: var(--font-pixel); text-overflow: ellipsis; overflow: hidden; white-space: nowrap; max-width: 120px;">
             {{ item.icon }} {{ item.name }} ({{ gameStore.state.inventory?.[item.id] || 0 }})
           </span>
           <div style="display: flex; gap: 2px; flex-shrink: 0;">

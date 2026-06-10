@@ -6,6 +6,7 @@
   inset: 0;
   display: block;
   pointer-events: none; // Ensure the root doesn't block clicks/scrolls
+  zoom: var(--modal-zoom, var(--app-zoom, 1));
 }
 
 .modal-overlay {

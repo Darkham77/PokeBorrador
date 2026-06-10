@@ -24,7 +24,7 @@ export function getHoverEnterStrategy(el: HTMLElement): HoverValues {
       scale: 1,
       y: 0,
       x: 6,
-      duration: 0.15,
+      duration: 0.1,
       ease: 'power1.out',
       borderColor: resolvedColor,
       boxShadow: `0 0 0 2px ${resolvedColor}, 0 0 15px ${parseToRgba(resolvedColor, 0.3, el)}`
@@ -36,37 +36,82 @@ export function getHoverEnterStrategy(el: HTMLElement): HoverValues {
     return {
       scale: 1.03,
       y: -1.5,
-      duration: 0.15,
+      duration: 0.1,
       borderColor: yellowResolved,
       boxShadow: `0 0 0 2px ${yellowResolved}, 0 0 15px ${parseToRgba(yellowResolved, 0.4, el)}`
     };
   }
 
-  if (el.classList.contains('pc-banner')) {
-    const hasEventYellow = el.classList.contains('event-banner') && el.classList.contains('active');
-    const borderColor = hasEventYellow ? resolveCssColor('var(--yellow)', el) : 'rgba(255, 255, 255, 0.2)';
+  if (el.classList.contains('hud-sq-btn')) {
+    const yellowResolved = resolveCssColor('var(--yellow)', el);
+    const glow20 = parseToRgba(yellowResolved, 0.2, el);
+    const glow30 = parseToRgba(yellowResolved, 0.3, el);
     return {
-      scale: 1,
-      x: 4,
-      y: 0,
-      duration: 0.2,
+      scale: 1.05,
+      y: -2,
+      duration: 0.1,
+      ease: 'power1.out',
+      borderColor: yellowResolved,
+      boxShadow: `0 20px 40px rgba(0, 0, 0, 0.6), inset 0 30px 60px -20px ${glow20}, 0 0 20px ${glow30}`
+    };
+  }
+
+  if (el.classList.contains('pokecenter-banner')) {
+    if (el.classList.contains('on-cooldown')) return { scale: 1, y: 0, duration: 0.1 };
+    const yellowResolved = resolveCssColor('var(--yellow)', el);
+    const glow20 = parseToRgba(yellowResolved, 0.2, el);
+    const glow30 = parseToRgba(yellowResolved, 0.3, el);
+    return {
+      scale: 1.02,
+      y: -6,
+      duration: 0.15,
       ease: 'power2.out',
-      borderColor,
-      boxShadow: 'none'
+      borderColor: yellowResolved,
+      boxShadow: `0 20px 40px rgba(0, 0, 0, 0.6), inset 0 30px 60px -20px ${glow20}, 0 0 20px ${glow30}`
+    };
+  }
+
+  if (el.classList.contains('pc-banner')) {
+    const yellowResolved = resolveCssColor('var(--yellow)', el);
+    const glow20 = parseToRgba(yellowResolved, 0.2, el);
+    const glow30 = parseToRgba(yellowResolved, 0.3, el);
+    return {
+      scale: 1.02,
+      y: -4,
+      duration: 0.12,
+      ease: 'power2.out',
+      borderColor: yellowResolved,
+      boxShadow: `0 20px 40px rgba(0, 0, 0, 0.6), inset 0 30px 60px -20px ${glow20}, 0 0 20px ${glow30}`
     };
   }
 
   if (el.classList.contains('quick-item-card')) {
-    const yellowResolved = resolveCssColor('var(--yellow)', el);
-    const glow80 = parseToRgba(yellowResolved, 0.2, el);
-    const glow70 = parseToRgba(yellowResolved, 0.3, el);
+    // Read tier from CSS class and amplify it on hover
+    let borderColor: string | null = null;
+    let boxShadow: string | null = null;
+
+    if (el.classList.contains('tier-rare')) {
+      borderColor = 'rgba(59, 130, 246, 0.85)';
+      boxShadow = '0 0 16px rgba(59, 130, 246, 0.35), inset 0 0 0 1px rgba(59, 130, 246, 0.85), inset 0 0 10px rgba(59, 130, 246, 0.15)';
+    } else if (el.classList.contains('tier-epic')) {
+      borderColor = 'rgba(168, 85, 247, 0.85)';
+      boxShadow = '0 0 16px rgba(168, 85, 247, 0.35), inset 0 0 0 1px rgba(168, 85, 247, 0.85), inset 0 0 10px rgba(168, 85, 247, 0.15)';
+    } else if (el.classList.contains('tier-legend')) {
+      borderColor = 'rgba(245, 158, 11, 0.95)';
+      boxShadow = '0 0 20px rgba(245, 158, 11, 0.4), inset 0 0 0 1px rgba(245, 158, 11, 0.95), inset 0 0 12px rgba(245, 158, 11, 0.2)';
+    } else {
+      // tier-common: subtle white glow
+      borderColor = 'rgba(255, 255, 255, 0.35)';
+      boxShadow = '0 0 12px rgba(255, 255, 255, 0.12), inset 0 0 0 1px rgba(255, 255, 255, 0.35)';
+    }
+
     return {
       scale: 1.02,
       y: -4,
-      duration: 0.2,
+      duration: 0.12,
       ease: 'power2.out',
-      borderColor: yellowResolved,
-      boxShadow: `0 20px 40px rgba(0, 0, 0, 0.6), inset 0 30px 60px -20px ${glow80}, 0 0 20px ${glow70}`
+      borderColor,
+      boxShadow
     };
   }
 
@@ -80,17 +125,29 @@ export function getHoverEnterStrategy(el: HTMLElement): HoverValues {
     };
   }
 
+  if (el.classList.contains('inventory-item-card')) {
+    const color = el.style.getPropertyValue('--tier-color') || 'rgba(148, 163, 184, 0.45)';
+    const resolvedColor = resolveCssColor(color, el);
+    const glow80 = parseToRgba(resolvedColor, 0.2, el);
+    const glow70 = parseToRgba(resolvedColor, 0.35, el);
+    return {
+      scale: 1.08,
+      y: -7,
+      duration: 0.12,
+      ease: 'power2.out',
+      borderColor: resolvedColor,
+      boxShadow: `0 0 16px ${glow70}, inset 0 0 0 1px ${resolvedColor}, inset 0 0 10px ${glow80}`
+    };
+  }
+
   if (
-    el.classList.contains('egg-hud-card') || 
-    el.classList.contains('egg-card') ||
-    el.classList.contains('pokemon-display-card') || 
-    el.classList.contains('box-pokemon-card') || 
+    el.classList.contains('box-pokemon-card') ||
+    el.classList.contains('pokemon-display-card') ||
     el.classList.contains('team-swap-card') ||
     el.classList.contains('pokemon-summary-card') ||
     el.classList.contains('unified-card') ||
     el.classList.contains('list-item') ||
-    el.classList.contains('gym-card') ||
-    el.classList.contains('inventory-item-card')
+    el.classList.contains('gym-card')
   ) {
     const color = el.classList.contains('gym-card')
       ? 'var(--red)'
@@ -101,38 +158,24 @@ export function getHoverEnterStrategy(el: HTMLElement): HoverValues {
     return {
       scale: 1.02,
       y: -3,
-      duration: 0.2,
+      duration: 0.12,
       ease: 'power2.out',
       borderColor: resolvedColor,
       boxShadow: `0 20px 40px rgba(0, 0, 0, 0.6), inset 0 30px 60px -20px ${glow80}, 0 0 20px ${glow70}`
     };
   }
 
-  if (el.classList.contains('shop-item-card') || el.classList.contains('market-item-wrapper')) {
-    const yellowResolved = resolveCssColor('var(--yellow)', el);
-    const glow10 = parseToRgba(yellowResolved, 0.1, el);
-    const glow15 = parseToRgba(yellowResolved, 0.15, el);
+  if (
+    el.classList.contains('shop-item-card') || 
+    el.classList.contains('bc-shop-item-card') || 
+    el.classList.contains('war-shop-item-card') || 
+    el.classList.contains('market-item-wrapper')
+  ) {
     return {
       scale: 1.02,
       y: -6,
-      duration: 0.25,
-      ease: 'power2.out',
-      borderColor: yellowResolved,
-      boxShadow: `0 20px 40px rgba(0, 0, 0, 0.6), inset 0 30px 60px -20px ${glow10}, 0 0 20px ${glow15}`
-    };
-  }
-
-  if (el.classList.contains('bc-shop-item-card')) {
-    const purpleColor = '#c084fc';
-    const glow10 = parseToRgba(purpleColor, 0.1, el);
-    const glow15 = parseToRgba(purpleColor, 0.15, el);
-    return {
-      scale: 1.02,
-      y: -6,
-      duration: 0.25,
-      ease: 'power2.out',
-      borderColor: purpleColor,
-      boxShadow: `0 20px 40px rgba(0, 0, 0, 0.6), inset 0 30px 60px -20px ${glow10}, 0 0 20px ${glow15}`
+      duration: 0.15,
+      ease: 'power2.out'
     };
   }
 
@@ -192,6 +235,42 @@ export function getHoverLeaveStrategy(el: HTMLElement) {
     targetBorderColor = 'rgba(255, 255, 255, 0.12)';
     targetBoxShadow = '0 10px 40px rgba(0, 0, 0, 0.8)';
 
+    // Restore exact tier colors for inventory-item-card
+    if (el.classList.contains('inventory-item-card')) {
+      if (el.classList.contains('selected')) {
+        const blueResolved = resolveCssColor('var(--blue)', el);
+        targetBorderColor = blueResolved;
+        targetBoxShadow = `inset 0 0 0 4px ${blueResolved}, 0 0 20px ${parseToRgba(blueResolved, 0.4, el)}`;
+      } else {
+        const color = el.style.getPropertyValue('--tier-color') || 'rgba(148, 163, 184, 0.45)';
+        const resolvedColor = resolveCssColor(color, el);
+        const glow15 = parseToRgba(resolvedColor, 0.15, el);
+        const glow05 = parseToRgba(resolvedColor, 0.05, el);
+        targetBorderColor = resolvedColor;
+        targetBoxShadow = `0 0 10px ${glow15}, inset 0 0 6px ${glow05}`;
+      }
+      return { targetBorderColor, targetBoxShadow };
+    }
+
+    // Restore exact tier colors for quick-item-card
+    if (el.classList.contains('quick-item-card')) {
+      if (el.classList.contains('tier-rare')) {
+        targetBorderColor = 'rgba(59, 130, 246, 0.55)';
+        targetBoxShadow = '0 0 10px rgba(59, 130, 246, 0.2), inset 0 0 6px rgba(59, 130, 246, 0.08)';
+      } else if (el.classList.contains('tier-epic')) {
+        targetBorderColor = 'rgba(168, 85, 247, 0.55)';
+        targetBoxShadow = '0 0 10px rgba(168, 85, 247, 0.2), inset 0 0 6px rgba(168, 85, 247, 0.08)';
+      } else if (el.classList.contains('tier-legend')) {
+        targetBorderColor = 'rgba(245, 158, 11, 0.65)';
+        targetBoxShadow = '0 0 12px rgba(245, 158, 11, 0.25), inset 0 0 8px rgba(245, 158, 11, 0.1)';
+      } else {
+        // tier-common: back to default border
+        targetBorderColor = 'rgba(255, 255, 255, 0.1)';
+        targetBoxShadow = null;
+      }
+      return { targetBorderColor, targetBoxShadow };
+    }
+
     if (
       el.classList.contains('pokemon-display-card') ||
       el.classList.contains('box-pokemon-card') ||
@@ -215,15 +294,13 @@ export function getHoverLeaveStrategy(el: HTMLElement) {
       }
     } else if (el.classList.contains('pc-banner')) {
       if (el.classList.contains('event-banner') && el.classList.contains('active')) {
-        targetBorderColor = resolveCssColor('rgba(255, 214, 10, 0.8)', el);
-        targetBoxShadow = '0 10px 30px rgba(0, 0, 0, 0.6), 0 0 20px rgba(255, 214, 10, 0.25)';
+        const yellowResolved = resolveCssColor('var(--yellow)', el);
+        targetBorderColor = yellowResolved;
+        targetBoxShadow = `0 10px 30px rgba(0, 0, 0, 0.6), 0 0 20px ${parseToRgba(yellowResolved, 0.25, el)}`;
       } else {
-        targetBorderColor = 'rgba(255, 255, 255, 0.08)';
-        targetBoxShadow = 'none';
+        targetBorderColor = 'rgba(255, 255, 255, 0.1)';
+        targetBoxShadow = '0 8px 30px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.12), inset 0 -1px 2px rgba(0, 0, 0, 0.3)';
       }
-    } else if (el.classList.contains('quick-item-card')) {
-      targetBorderColor = 'rgba(255, 255, 255, 0.1)';
-      targetBoxShadow = 'none';
     } else if (el.classList.contains('active')) {
       if (el.classList.contains('hud-nav-btn')) {
         const yellowResolved = resolveCssColor('var(--yellow)', el);
@@ -233,12 +310,6 @@ export function getHoverLeaveStrategy(el: HTMLElement) {
     } else if (el.classList.contains('hud-nav-btn')) {
       targetBorderColor = 'rgba(255, 255, 255, 0.08)';
       targetBoxShadow = '0 6px 16px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.12)';
-    } else if (el.classList.contains('inventory-item-card')) {
-      if (el.classList.contains('tier-rare')) targetBorderColor = 'rgba(59, 130, 246, 0.2)';
-      else if (el.classList.contains('tier-epic')) targetBorderColor = 'rgba(168, 85, 247, 0.2)';
-      else if (el.classList.contains('tier-legend')) targetBorderColor = 'rgba(245, 158, 11, 0.2)';
-      else targetBorderColor = 'rgba(255, 255, 255, 0.05)';
-      targetBoxShadow = '0 10px 40px rgba(0, 0, 0, 0.8)';
     } else if (el.classList.contains('gym-card')) {
       targetBorderColor = 'rgba(255, 255, 255, 0.08)';
       targetBoxShadow = '0 4px 20px rgba(0, 0, 0, 0.3)';
@@ -253,12 +324,20 @@ export function getHoverLeaveStrategy(el: HTMLElement) {
     } else if (el.classList.contains('egg-card')) {
       targetBorderColor = 'rgba(255, 255, 255, 0.08)';
       targetBoxShadow = '0 8px 24px rgba(0, 0, 0, 0.45), inset 0 1px 1px rgba(255, 255, 255, 0.06)';
-    } else if (el.classList.contains('shop-item-card') || el.classList.contains('market-item-wrapper')) {
-      targetBorderColor = 'rgba(255, 255, 255, 0.08)';
-      targetBoxShadow = '0 10px 30px rgba(0, 0, 0, 0.5)';
-    } else if (el.classList.contains('bc-shop-item-card')) {
-      targetBorderColor = 'rgba(255, 255, 255, 0.08)';
-      targetBoxShadow = '0 10px 30px rgba(0, 0, 0, 0.5)';
+    } else if (el.classList.contains('pokecenter-banner')) {
+      targetBorderColor = 'rgba(255, 0, 127, 1)';
+      targetBoxShadow = '0 10px 40px rgba(0, 0, 0, 0.6), inset 0 0 15px rgba(0, 0, 0, 0.5)';
+    } else if (el.classList.contains('hud-sq-btn')) {
+      if (el.classList.contains('active')) {
+        const yellowResolved = resolveCssColor('var(--yellow)', el);
+        const glow20 = parseToRgba(yellowResolved, 0.2, el);
+        const glow30 = parseToRgba(yellowResolved, 0.3, el);
+        targetBorderColor = yellowResolved;
+        targetBoxShadow = `0 20px 40px rgba(0, 0, 0, 0.6), inset 0 30px 60px -20px ${glow20}, 0 0 20px ${glow30}`;
+      } else {
+        targetBorderColor = 'rgba(255, 255, 255, 0.1)';
+        targetBoxShadow = 'none';
+      }
     } else if (el.classList.contains('info-item')) {
       targetBorderColor = 'rgba(255, 255, 255, 0.05)';
       targetBoxShadow = 'inset 0 1px 1px rgba(255, 255, 255, 0.05)';

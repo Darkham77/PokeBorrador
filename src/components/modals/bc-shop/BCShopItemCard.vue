@@ -11,6 +11,7 @@ interface ShopItem {
   name: string
   cat: string
   bcPrice?: number
+  price?: number
   desc: string
   sprite: string
   unlockLv?: number
@@ -33,8 +34,13 @@ const isUnlocked = computed(() => {
   return (gameStore.state.trainerLevel || 1) >= (props.item.unlockLv || 1)
 })
 
+const itemBCPrice = computed(() => {
+  if (props.item.bcPrice !== undefined) return props.item.bcPrice
+  return props.item.price ? Math.ceil(props.item.price / 30) : 0
+})
+
 const hasEnoughBC = computed(() => {
-  return (gameStore.state.battleCoins || 0) >= (props.item.bcPrice || 0)
+  return (gameStore.state.battleCoins || 0) >= itemBCPrice.value
 })
 
 const buy = () => {
@@ -48,6 +54,16 @@ const buy = () => {
   }
   shopStore.buyItemBC(props.item.id)
 }
+
+const tierLabel = computed(() => {
+  const labels: Record<string, string> = {
+    common: 'COMÚN',
+    rare: 'RARO',
+    epic: 'ÉPICO',
+    legend: 'LEGENDARIO'
+  }
+  return labels[props.item.tier || 'common']
+})
 
 const handleImageError = (e: Event) => {
   if (e.target) {
@@ -67,7 +83,7 @@ const handleImageError = (e: Event) => {
       class="tier-tag"
       :class="'tier-' + item.tier"
     >
-      {{ item.tier.toUpperCase() }}
+      {{ tierLabel }}
     </span>
 
     <div class="item-card-top">
@@ -95,7 +111,7 @@ const handleImageError = (e: Event) => {
         </h4>
         <div class="item-price-wrapper">
           <i class="fas fa-coins currency-symbol" />
-          <span class="price-val">{{ formatCurrency(item.bcPrice || 0) }} BC</span>
+          <span class="price-val">{{ formatCurrency(itemBCPrice) }} BC</span>
         </div>
       </div>
     </div>

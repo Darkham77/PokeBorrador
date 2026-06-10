@@ -88,19 +88,21 @@ export const useShopStore = defineStore('shop', () => {
 
   function buyItemBC(itemId: string) {
     const item = SHOP_ITEMS.find(i => i.id === itemId)
-    if (!item || !item.trainerShop) return
+    if (!item || !item.showInBCShop) return
+
+    const bcPrice = item.bcPrice || 0
 
     if (gameStore.state.trainerLevel < (item.unlockLv || 1)) {
       uiStore.notify('¡Ítem bloqueado!', '🔒')
       return
     }
 
-    if ((gameStore.state.battleCoins || 0) < (item.bcPrice || 0)) {
+    if ((gameStore.state.battleCoins || 0) < bcPrice) {
       uiStore.notify('¡No tenés suficientes Battle Coins!', '💰')
       return
     }
 
-    gameStore.state.battleCoins = (gameStore.state.battleCoins || 0) - (item.bcPrice || 0)
+    gameStore.state.battleCoins = (gameStore.state.battleCoins || 0) - bcPrice
     gameStore.state.inventory[item.name] = (gameStore.state.inventory[item.name] || 0) + 1
     
     if (item.cat === 'pokeballs') {
@@ -108,27 +110,28 @@ export const useShopStore = defineStore('shop', () => {
        gameStore.state.balls = (gameStore.state.balls || 0) + Math.floor(1 * mult)
     }
 
-    
     uiStore.notify(`¡Compraste ${item.name}!`, '🏅')
     gameStore.scheduleSave()
   }
 
   function buyItemWar(itemId: string) {
     const item = SHOP_ITEMS.find(i => i.id === itemId)
-    if (!item || (item.warPrice || 0) <= 0) return
+    if (!item || !item.showInWarShop) return
+
+    const warPrice = item.warPrice || 0
 
     if (gameStore.state.trainerLevel < (item.unlockLv || 1)) {
       uiStore.notify('¡Ítem bloqueado!', '🔒')
       return
     }
 
-    if ((warStore.warCoins || 0) < (item.warPrice || 0)) {
+    if ((warStore.warCoins || 0) < warPrice) {
       uiStore.notify('¡No tenés suficientes Monedas de Guerra!', '⚡')
       return
     }
 
     // Deduct coins
-    warStore.warCoins -= (item.warPrice || 0)
+    warStore.warCoins -= warPrice
     gameStore.state.warCoins = warStore.warCoins
     
     // Add to inventory
@@ -204,7 +207,7 @@ export const useShopStore = defineStore('shop', () => {
     const daily = gameStore.state.classData.blackMarketDaily
 
     if (daily.date !== today) {
-      const possibleItems = SHOP_ITEMS.filter(i => i.trainerShop === true && (i.bcPrice || 0) > 0)
+      const possibleItems = SHOP_ITEMS.filter(i => i.showInBCShop === true && (i.bcPrice || 0) > 0)
       const shuffled = [...possibleItems].sort(() => 0.5 - Math.random())
       const bmd = gameStore.state.classData?.blackMarketDaily
       if (bmd) {

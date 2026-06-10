@@ -161,7 +161,7 @@ const close = () => {
           @click.stop="activeTab = tab.id"
         >
           <div class="cat-icon-frame">
-            <span>{{ tab.icon }}</span>
+            <span class="cat-icon">{{ tab.icon }}</span>
           </div>
           <span class="cat-label">{{ tab.label }}</span>
           

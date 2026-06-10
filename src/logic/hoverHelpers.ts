@@ -1,6 +1,8 @@
 const HOVER_VISUAL_BORDER_CLASSES = [
   'hud-nav-btn',
   'pc-banner',
+  'pokecenter-banner',
+  'hud-sq-btn',
   'egg-hud-card',
   'egg-card',
   'pokemon-display-card',
@@ -14,12 +16,14 @@ const HOVER_VISUAL_BORDER_CLASSES = [
   'inventory-item-card',
   'shop-item-card',
   'bc-shop-item-card',
+  'war-shop-item-card',
   'market-item-wrapper',
   'info-item'
 ]
 
 export const HOVER_DURATION_200MS_CLASSES = [
   'pc-banner',
+  'pokecenter-banner',
   'egg-hud-card',
   'egg-card',
   'pokemon-display-card',
@@ -31,6 +35,7 @@ export const HOVER_DURATION_200MS_CLASSES = [
   'map-row',
   'shop-item-card',
   'bc-shop-item-card',
+  'war-shop-item-card',
   'market-item-wrapper',
   'list-item',
   'quick-item-card',

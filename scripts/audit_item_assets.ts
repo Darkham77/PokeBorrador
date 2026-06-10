@@ -141,10 +141,10 @@ async function main() {
 
     // Classify shops
     const shops: string[] = [];
-    if (item.market !== false) {
+    if (item.showInNormalShop !== false) {
       shops.push('Poké Market (Local)');
     }
-    if (item.trainerShop === true) {
+    if (item.showInBCShop === true) {
       shops.push('BC Shop (Battle Club)');
     }
 

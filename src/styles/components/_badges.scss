@@ -25,7 +25,7 @@
   // High-contrast solid black outline for maximum legibility
   background-clip: padding-box;
   text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
-  font-family: var(--font-pixel, 'Press Start 2P', monospace);
+  font-family: var(--font-pixel);
   
   // Per-size vertical centering
   line-height: 14px;
@@ -131,6 +131,8 @@
   font-size: 16px; // Much larger as requested
   font-weight: 900;
   will-change: transform, filter;
+  position: relative;
+  top: -2px;
   
   // Style: White color with solid black outline (like name font)
   color: white !important;
@@ -167,6 +169,11 @@
   align-items: center;
   justify-content: center;
   font-size: 16px;
+  width: 20px;
+  height: 20px;
+  line-height: 1;
+  position: relative;
+  top: -2.5px;
   @include pixelated;
   will-change: transform, filter;
 
@@ -185,7 +192,7 @@
     font-size: 8px;
     margin-left: 1px;
     font-weight: bold;
-    font-family: var(--font-pixel, 'Press Start 2P', monospace);
+    font-family: var(--font-pixel);
     @include pixelated;
     
     &.up {
@@ -204,6 +211,9 @@
 
   @media (max-width: 600px) {
     font-size: 12px;
+    width: 15px;
+    height: 15px;
+    top: -1.5px;
   }
 }
 // 7. SOURCE TAGS (TEAM/BOX)
@@ -228,4 +238,83 @@
 
 .source-tag {
   @include source-tag;
+}
+
+.map-pill {
+  @include map-pill-base;
+}
+
+.faction-status-pill {
+  @extend .map-pill;
+  width: 32px;
+  min-width: 32px;
+  height: 32px;
+  padding: 0;
+  
+  .pill-content {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+    height: 100% !important;
+    line-height: 1 !important;
+    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif !important;
+    transform: none !important;
+  }
+  
+  .faction-emoji {
+    font-size: 16px;
+    filter: Drop-Shadow(0 2px 4px Rgba(0, 0, 0, 0.5));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+.location-tag {
+  @extend .map-pill;
+  font-size: 18px;
+  color: Rgba(255, 204, 0, 1);
+
+  .pill-content {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+    height: 100% !important;
+    line-height: 1 !important;
+    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif !important;
+    transform: none !important;
+  }
+
+  .tag-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    filter: Drop-Shadow(0 2px 4px Rgba(0, 0, 0, 0.5));
+  }
+}
+
+.interactive-pill {
+  @extend .map-pill;
+  
+  .pill-content {
+    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif !important;
+    transform: none !important;
+  }
+  
+  .pill-icon {
+    font-size: 18px;
+    filter: Drop-Shadow(0 2px 4px Rgba(0, 0, 0, 0.5));
+  }
+
+  &.fishing-pill {
+    color: Rgba(79, 172, 254, 1);
+    border-color: Rgba(79, 172, 254, 0.4);
+  }
+
+  &.archaeology-pill {
+    color: Rgba(202, 138, 4, 1);
+    border-color: Rgba(202, 138, 4, 0.4);
+  }
 }

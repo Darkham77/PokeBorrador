@@ -5,7 +5,7 @@
   padding: 16px;
   background-color: #0b0c10;
   color: #c5c6c7;
-  font-family: 'Press Start 2P', monospace;
+  font-family: var(--font-pixel);
   overflow: hidden;
   position: relative;
   z-index: var(--z-map-spawns);
@@ -20,7 +20,7 @@
   h1 {
     color: #ffd60a;
     font-size: 16px;
-    text-shadow: 0 0 10px rgba(255, 214, 10, 0.5);
+    text-shadow: 0 0 10px Rgba(255, 214, 10, 0.5);
     margin: 0;
   }
 }
@@ -37,7 +37,7 @@
 .adv-panel {
   background-color: #151b26;
   border: 3px solid #45f3ff;
-  box-shadow: 0 0 16px rgba(69, 243, 255, 0.12);
+  box-shadow: 0 0 16px Rgba(69, 243, 255, 0.12);
   padding: 16px;
   border-radius: 8px;
   box-sizing: border-box;
@@ -66,7 +66,7 @@
     border: 2px solid #45f3ff;
     color: #fff;
     padding: 6px;
-    font-family: 'Press Start 2P', monospace;
+    font-family: var(--font-pixel);
     font-size: 7px;
     border-radius: 4px;
     box-sizing: border-box;
@@ -105,15 +105,15 @@
   color: #45f3ff;
   padding: 6px 2px;
   font-size: 6px;
-  font-family: 'Press Start 2P', monospace;
+  font-family: var(--font-pixel);
   cursor: pointer;
   border-radius: 4px;
   box-sizing: border-box;
   &.active {
     border-color: #ffd60a;
     color: #ffd60a;
-    background-color: rgba(255, 214, 10, 0.15);
-    box-shadow: 0 0 10px rgba(255, 214, 10, 0.4);
+    background-color: Rgba(255, 214, 10, 0.15);
+    box-shadow: 0 0 10px Rgba(255, 214, 10, 0.4);
   }
 }
 
@@ -122,7 +122,7 @@
   button {
     width: 100%;
     padding: 10px;
-    font-family: 'Press Start 2P', monospace;
+    font-family: var(--font-pixel);
     font-size: 9px;
     cursor: pointer;
     border-radius: 6px;
@@ -156,7 +156,7 @@
   box-shadow: 0 4px 0 #cc6600;
   width: 100%;
   padding: 10px;
-  font-family: 'Press Start 2P', monospace;
+  font-family: var(--font-pixel);
   font-size: 9px;
   cursor: pointer;
   border-radius: 6px;

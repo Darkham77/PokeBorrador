@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { computed, watch } from 'vue'
 import { useInventoryStore } from '@/stores/inventory'
 import { useGameStore } from '@/stores/game'
 import { formatCurrency } from '@/logic/utils/formatters'
@@ -10,13 +10,17 @@ const inventoryStore = useInventoryStore()
 const gameStore = useGameStore()
 
 // Niveles superiores de categorización
-const activeMainTab = ref<'productos' | 'materiales'>('productos')
+const activeMainTab = computed({
+  get: () => inventoryStore.activeMainTab,
+  set: (val) => { inventoryStore.activeMainTab = val }
+})
 
 // Definición de subcategorías por pestaña principal
 const subcategoriesByMainTab = {
   productos: [
     { id: 'todos', label: 'Todo', icon: '📦' },
     { id: 'utilizables', label: 'Utilizables', icon: '💊' },
+    { id: 'stones', label: 'Piedras', icon: '💎' },
     { id: 'pokeballs', label: 'Pokéballs', icon: '⚪' },
     { id: 'potions', label: 'Curativos', icon: '🧪' },
     { id: 'combat_held', label: 'Held Combate', icon: '🎒' },
@@ -44,18 +48,7 @@ watch(activeMainTab, () => {
 })
 
 const filteredBagItems = computed(() => {
-  const allItems = inventoryStore.bagItems
-  return allItems.filter(item => {
-    // Si la pestaña principal es 'productos', deben ser tier 3 (o no tener tier, por defecto tier 3 es producto)
-    // Si la pestaña principal es 'materiales', deben ser tier 0, 1 o 2 (o sea, raw_material, refined_material, component)
-    const cat = item.cat || 'otros'
-    const isMaterialCat = ['raw_material', 'refined_material', 'component'].includes(cat)
-    if (activeMainTab.value === 'materiales') {
-      return isMaterialCat
-    } else {
-      return !isMaterialCat
-    }
-  })
+  return inventoryStore.bagItems
 })
 
 const onUseItem = (name: string) => {
@@ -67,32 +60,8 @@ const onMainTabClick = (tabId: 'productos' | 'materiales') => {
   activeMainTab.value = tabId
 }
 
-const onTabClick = (catId: string, event: MouseEvent) => {
+const onTabClick = (catId: string) => {
   inventoryStore.activeCategory = catId
-  const target = event.currentTarget as HTMLElement
-  
-  const tabs = target.parentElement?.querySelectorAll('.tab-btn')
-  if (tabs) {
-    tabs.forEach(tab => {
-      if (tab !== target) {
-        gsap.to(tab, {
-          backgroundColor: 'rgba(255, 255, 255, 0.05)',
-          color: 'var(--gray)',
-          borderColor: 'rgba(255, 255, 255, 0.1)',
-          duration: 0.2,
-          overwrite: 'auto'
-        })
-      }
-    })
-  }
-  
-  gsap.to(target, {
-    backgroundColor: 'var(--purple)',
-    color: 'var(--white)',
-    borderColor: 'var(--purple-light)',
-    duration: 0.2,
-    overwrite: 'auto'
-  })
 }
 
 const onItemClick = (itemName: string, qty: number, event: MouseEvent) => {
@@ -205,7 +174,7 @@ const onMainTabMouseLeave = (event: MouseEvent) => {
             v-for="cat in currentSubcategories" 
             :key="cat.id"
             :class="['tab-btn', { active: inventoryStore.activeCategory === cat.id }]"
-            @click.stop="onTabClick(cat.id, $event)"
+            @click.stop="onTabClick(cat.id)"
           >
             {{ cat.label }}
           </button>
@@ -406,12 +375,19 @@ const onMainTabMouseLeave = (event: MouseEvent) => {
   color: var(--gray);
   font-size: 11px;
   cursor: pointer;
-}
 
-.tab-btn.active {
-  background: var(--purple);
-  color: var(--white);
-  border-color: var(--purple-light);
+  &:hover:not(.active) {
+    background: Rgba(255, 255, 255, 0.1);
+    color: var(--white);
+    border-color: Rgba(255, 255, 255, 0.2);
+  }
+
+  &.active {
+    background: var(--purple);
+    color: var(--white);
+    border-color: var(--purple-light);
+    box-shadow: 0 0 10px Rgba(168, 85, 247, 0.3);
+  }
 }
 
 .items-wrapper {

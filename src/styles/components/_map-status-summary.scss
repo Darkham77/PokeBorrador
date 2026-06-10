@@ -40,7 +40,7 @@
   cursor: pointer;
   
   box-shadow: 0 10px 40px Rgba(0,0,0,0.6), inset 0 0 15px Rgba(0,0,0,0.5);
-  border: 4px solid Rgba(255, 0, 127, 1) !important;
+  border: 4px solid Rgba(255, 0, 127, 1);
   overflow: hidden; // Crucial para que la imagen siga la curva
   
   .banner-bg {
@@ -64,18 +64,9 @@
     border-radius: 16px;
   }
 
-  &:hover {
-    border-color: var(--yellow) !important;
-  }
-
   &.on-cooldown {
     border-color: Rgba(107, 114, 128, 1) !important;
     cursor: not-allowed;
-    
-    &:hover {
-      border-color: Rgba(107, 114, 128, 1) !important;
-      transform: none !important;
-    }
   }
 }
 
@@ -186,12 +177,6 @@
   transform: Translatez(0);
   backface-visibility: hidden;
   will-change: transform, background;
-
-  &:hover {
-    background: Rgba(255, 255, 255, 0.12);
-    border-color: var(--yellow);
-    z-index: calc(var(--z-base) + 5);
-  }
 
   &::after {
     content: '';

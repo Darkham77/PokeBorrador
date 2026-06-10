@@ -151,12 +151,13 @@
       height: 120px;
       @include pokemon-sprite-base-standard;
       will-change: transform;
+      margin-bottom: -12px; // Push sprite down to absorb blank canvas space at the bottom
     }
   }
 
   & .pokemon-info {
     text-align: center;
-    margin-bottom: 6px;
+    margin-bottom: 4px;
     margin-top: 0px; 
     position: relative;
     z-index: var(--z-base);
@@ -170,10 +171,10 @@
       align-items: center;
       justify-content: center;
       gap: 8px;
-      margin-bottom: 8px;
+      margin-bottom: 4px; // Reduced from 8px
 
       &.has-nickname {
-        margin-bottom: 4px;
+        margin-bottom: 2px; // Reduced from 4px
       }
 
       .pdc-name-stack {
@@ -205,7 +206,7 @@
     }
 
     .pdc-types {
-      margin-bottom: 10px;
+      margin-bottom: 6px; // Reduced from 10px
     }
 
     .level-line {
@@ -213,12 +214,12 @@
       align-items: center;
       justify-content: center;
       gap: 8px;
-      margin-bottom: 6px;
+      margin-bottom: 4px; // Reduced from 6px
     }
   }
 
   & .hp-container {
-    margin-top: 6px;
+    margin-top: 4px; // Reduced from 6px
 
     .hp-bar-outer {
       height: 8px;

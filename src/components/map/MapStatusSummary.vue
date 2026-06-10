@@ -131,7 +131,6 @@ const bannerStyle = computed(() => ({
       <!-- Active state (Enabled) -->
       <div
         v-else
-        v-gsap-hover="{ scale: 1.02, y: -6, duration: 0.25 }"
         class="pokecenter-banner"
         @click.stop="emit('openCenter')"
       >
@@ -156,7 +155,6 @@ const bannerStyle = computed(() => ({
       <div class="pc-banner-grid">
         <!-- 1. Evento -->
         <div
-          v-gsap-hover="{ y: -4, duration: 0.25 }"
           class="pc-banner event-banner"
           :class="{ active: rivalEventActive }"
           :style="{ '--card-seed': 0.2 }"
@@ -185,7 +183,6 @@ const bannerStyle = computed(() => ({
 
         <!-- 2. Misiones -->
         <div
-          v-gsap-hover="{ y: -4, duration: 0.25 }"
           class="pc-banner"
           @click.stop="emit('openTab', 'daycare-missions')"
         >
@@ -235,7 +232,6 @@ const bannerStyle = computed(() => ({
 
         <!-- 3. Gimnasios -->
         <div
-          v-gsap-hover="{ y: -4, duration: 0.25 }"
           class="pc-banner"
           @click.stop="emit('openTab', 'gyms')"
         >
@@ -279,7 +275,6 @@ const bannerStyle = computed(() => ({
 
         <!-- 4. Crianza -->
         <div
-          v-gsap-hover="{ y: -4, duration: 0.25 }"
           class="pc-banner"
           @click.stop="emit('openTab', 'daycare')"
         >
@@ -305,4 +300,5 @@ const bannerStyle = computed(() => ({
   </div>
 </template>
 
+<!-- HMR Touch comment to force reload styles v2 -->
 <style scoped lang="scss" src="@/styles/components/_map-status-summary.scss"></style>

@@ -298,7 +298,7 @@
   padding: 8px;
   width: 200px;
   color: #dfcbb5;
-  font-family: 'Press Start 2P', monospace;
+  font-family: var(--font-pixel);
   font-size: 6px;
   line-height: 1.4;
   opacity: 0;
@@ -473,7 +473,7 @@
 .adv-btn-resolve {
   width: 100%;
   padding: 12px;
-  font-family: 'Press Start 2P', monospace;
+  font-family: var(--font-pixel);
   font-size: 9px;
   cursor: pointer;
   border-radius: 6px;
@@ -513,7 +513,7 @@
 }
 
 .warning-text {
-  font-family: 'Press Start 2P', monospace;
+  font-family: var(--font-pixel);
   font-size: 8px;
   line-height: 1.5;
   color: #ffb3b3;

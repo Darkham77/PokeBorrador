@@ -91,6 +91,13 @@ const isPremiumTier = computed(() => props.pokemon && (tierInfo.value.tier === '
 
 const tierColorRgb = computed(() => tierInfo.value?.rgb || '30, 41, 59')
 
+const computedTypePillSize = computed(() => {
+  if (props.pokemon && props.pokemon.type && props.pokemon.type2) {
+    return 'ssm'
+  }
+  return props.typePillSize
+})
+
 // --- ANIMACIONES DE GSAP ---
 const animatedHpRatio = ref(hpRatio.value)
 watch(hpRatio, (newVal) => {
@@ -261,7 +268,7 @@ onUnmounted(() => {
       </div>
       <PokemonTypePills 
         :pokemon="props.pokemon" 
-        :size="props.typePillSize"
+        :size="computedTypePillSize"
         class="box-types"
       />
       <div class="stats-column">

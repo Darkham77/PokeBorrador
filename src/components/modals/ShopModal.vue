@@ -46,11 +46,12 @@ interface ShopItem {
   sprite: string
   unlockLv?: number
   market?: boolean
+  showInNormalShop?: boolean
 }
 
 const filteredItems = computed<ShopItem[]>(() => {
   return (shopStore.SHOP_ITEMS as ShopItem[]).filter(item => {
-    if (item.market === false) return false
+    if (!item.showInNormalShop) return false
     const resolvedCat = item.cat || 'otros'
     const isMaterialCat = ['raw_material', 'refined_material', 'component'].includes(resolvedCat)
     if (activeMainTab.value === 'materiales') {
@@ -67,7 +68,7 @@ const filteredItems = computed<ShopItem[]>(() => {
 const availableCategories = computed<string[]>(() => {
   const cats = new Set<string>()
   for (const item of (shopStore.SHOP_ITEMS as ShopItem[])) {
-    if (item.market === false) continue
+    if (!item.showInNormalShop) continue
     cats.add(item.cat || 'otros')
   }
   return Array.from(cats)
@@ -79,15 +80,24 @@ const animateGrid = () => {
     const cards = document.querySelectorAll('.shop-item-card')
     if (cards.length > 0) {
       gsap.killTweensOf(cards)
-      gsap.fromTo(cards, 
+      
+      const maxAnimate = Math.min(cards.length, 24)
+      const cardsToAnimate = Array.from(cards).slice(0, maxAnimate)
+      const remainingCards = Array.from(cards).slice(maxAnimate)
+      
+      if (remainingCards.length > 0) {
+        gsap.set(remainingCards, { opacity: 1, y: 0, scale: 1 })
+      }
+      
+      gsap.fromTo(cardsToAnimate, 
         { opacity: 0, y: 15, scale: 0.95 },
         { 
           opacity: 1, 
           y: 0, 
           scale: 1, 
-          duration: 0.3, 
-          stagger: 0.03, 
-          ease: 'power2.out',
+          duration: 0.2, 
+          stagger: 0.01, 
+          ease: 'power1.out',
           clearProps: 'transform,scale'
         }
       )
@@ -156,6 +166,7 @@ const close = () => {
         v-model:active-category="activeTab"
         :main-tab="activeMainTab"
         :available-categories="availableCategories"
+        accent-color="var(--yellow)"
       />
 
       <!-- Contenido Principal -->

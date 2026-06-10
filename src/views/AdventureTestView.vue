@@ -200,7 +200,7 @@ onMounted(() => {
             <!-- Active Passives List -->
             <div
               class="adv-passives-list"
-              style="display: flex; flex-direction: column; gap: 4px; font-size: 8px; font-family: 'Press Start 2P', monospace;"
+              style="display: flex; flex-direction: column; gap: 4px; font-size: 8px; font-family: var(--font-pixel);"
             >
               <div
                 v-for="passive in activeTeamPassives.list"
@@ -227,7 +227,7 @@ onMounted(() => {
                 v-for="move in availableActiveMoves"
                 :key="move.pokemonUid + move.moveName"
                 class="adv-hm-btn"
-                style="display: flex; align-items: center; justify-content: space-between; font-size: 8px; font-family: 'Press Start 2P', monospace; padding: 4px 6px; width: 100%; text-align: left;"
+                style="display: flex; align-items: center; justify-content: space-between; font-size: 8px; font-family: var(--font-pixel); padding: 4px 6px; width: 100%; text-align: left;"
                 :disabled="move.pp <= 0"
                 @click="useActiveRouteMove(move.pokemonUid, move.moveName)"
               >
@@ -259,7 +259,7 @@ onMounted(() => {
             <button
               v-if="isTraveling"
               class="adv-btn-danger"
-              style="margin-top: 10px; width: 100%; padding: 8px; font-family: 'Press Start 2P', monospace; font-size: 8px;"
+              style="margin-top: 10px; width: 100%; padding: 8px; font-family: var(--font-pixel); font-size: 8px;"
               @click="cancelTravel"
             >
               Cancelar Viaje 🛑
@@ -472,7 +472,7 @@ onMounted(() => {
     >
       <div
         v-if="activeEvent"
-        style="display: flex; flex-direction: column; gap: 12px; font-family: 'Press Start 2P', monospace; font-size: 8px; text-align: center;"
+        style="display: flex; flex-direction: column; gap: 12px; font-family: var(--font-pixel); font-size: 8px; text-align: center;"
       >
         <p
           class="adv-event-desc"

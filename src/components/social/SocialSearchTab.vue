@@ -404,7 +404,7 @@ watch(() => socialStore.searchResults, () => {
   align-items: center;
   justify-content: center;
   text-align: center;
-  font-family: 'Press Start 2P', 'Courier New', Courier, monospace, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  font-family: var(--font-pixel), "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
   font-size: 8px;
   padding: 8px 12px;
   border-radius: 8px;

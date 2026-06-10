@@ -62,7 +62,9 @@ const weatherName = computed(() => {
   return WEATHER_UI_METADATA[mech]?.label || 'Normal'
 })
 
-const envPillRef = ref<HTMLElement | null>(null)
+import type { ComponentPublicInstance } from 'vue'
+
+const envPillRef = ref<ComponentPublicInstance | HTMLElement | null>(null)
 let pillContext: gsap.Context | null = null
 
 const initBattlePillAnimation = () => {
@@ -76,7 +78,8 @@ const initBattlePillAnimation = () => {
   }
 
   pillContext = gsap.context(() => {
-    const el = envPillRef.value
+    const refVal = envPillRef.value
+    const el = refVal ? (refVal instanceof HTMLElement ? refVal : (refVal.$el as HTMLElement | null)) : null
     if (el) {
       const weather = computedWeather.value
       let type: 'glow' | 'drift' | 'shake' | '' = ''
@@ -157,20 +160,6 @@ watch(() => battleStore.isBattleActive, (active) => {
   else document.body.classList.remove('in-battle') // [PureVue-Ignore]
 }, { immediate: true })
 
-const handleMouseEnter = (event: MouseEvent) => {
-  const el = event.currentTarget as HTMLElement
-  if (el) {
-    gsap.to(el, { scale: 1.3, y: -2, duration: 0.2, ease: 'back.out(1.5)', overwrite: 'auto' })
-  }
-}
-
-const handleMouseLeave = (event: MouseEvent) => {
-  const el = event.currentTarget as HTMLElement
-  if (el) {
-    gsap.to(el, { scale: 1, y: 0, duration: 0.2, ease: 'power2.out', overwrite: 'auto' })
-  }
-}
-
 const handleClose = () => {
   if (battleStore.isFinishing) {
     battleStore.completeBattleFlow('map')
@@ -196,38 +185,22 @@ const handleClose = () => {
     :hide-header="true"
     padding="raw"
     custom-class="battle-arena-modal"
+    disable-zoom
+    disable-auto-grow
     @close="handleClose"
   >
     <div class="battle-header-actions">
-      <div 
+      <PVTooltip
         ref="envPillRef"
-        class="environment-pill"
+        class="location-tag tag-wild"
+        :title="'ESTADO AMBIENTAL'"
+        :description="`Ciclo: ${cycleName}\nEstación: ${seasonName}\nClima: ${weatherName}`"
+        position="top"
       >
-        <PVTooltip :title="`Hora: ${cycleName}`">
-          <span 
-            class="env-icon hover-bounce"
-            @mouseenter="handleMouseEnter"
-            @mouseleave="handleMouseLeave"
-          >{{ cycleEmoji }}</span>
-        </PVTooltip>
-        <PVTooltip :title="`Estación: ${seasonName}`">
-          <span 
-            class="env-icon hover-bounce"
-            @mouseenter="handleMouseEnter"
-            @mouseleave="handleMouseLeave"
-          >{{ seasonEmoji }}</span>
-        </PVTooltip>
-        <PVTooltip
-          v-if="weatherEmoji"
-          :title="`Clima: ${weatherName}`"
-        >
-          <span 
-            class="env-icon hover-bounce"
-            @mouseenter="handleMouseEnter"
-            @mouseleave="handleMouseLeave"
-          >{{ weatherEmoji }}</span>
-        </PVTooltip>
-      </div>
+        <span class="pill-content">
+          {{ cycleEmoji + seasonEmoji + weatherEmoji }}
+        </span>
+      </PVTooltip>
     </div>
 
     <div
@@ -318,22 +291,11 @@ const handleClose = () => {
   pointer-events: auto;
 }
 
-.environment-pill {
-  @include shell-premium(Rgba(0, 0, 0, 0.6));
-  padding: 6px 12px;
-  border-radius: 20px;
-  display: flex;
-  gap: 8px;
-  border: 1px solid Rgba(255, 255, 255, 0.1);
-  box-shadow: 0 4px 15px Rgba(0, 0, 0, 0.4);
-  
-  .env-icon {
-    font-size: 16px;
-    will-change: transform, filter, opacity;
-    filter: Drop-Shadow(0 2px 4px Rgba(0, 0, 0, 0.5));
-    cursor: pointer;
-  }
+.location-tag {
+  cursor: pointer;
 }
+
+
 
 
 .battle-screen-grid {

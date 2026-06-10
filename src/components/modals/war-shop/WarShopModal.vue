@@ -7,6 +7,8 @@ import { useGameStore } from '@/stores/game'
 import BaseModal from '@/components/common/BaseModal.vue'
 import WarShopItemCard from './WarShopItemCard.vue'
 
+import type { ShopItem } from '@/types/items'
+
 const uiStore = useUIStore()
 const warStore = useWarStore()
 const gameStore = useGameStore()
@@ -16,12 +18,14 @@ const isOpen = computed({
   set: (val: boolean) => { uiStore.isWarShopOpen = val }
 })
 
+const isSmallScreen = computed(() => uiStore.isSmallScreen)
+
 const warItems = computed(() => {
   const coins = warStore.warCoins || 0
   const trainerLevel = gameStore.state.trainerLevel || 1
 
-  return SHOP_ITEMS
-    .filter(item => (item.warPrice || 0) > 0)
+  return (SHOP_ITEMS as unknown as ShopItem[])
+    .filter(item => !!item.showInWarShop)
     .slice()
     .sort((a, b) => {
       const aUnlocked = trainerLevel >= (a.unlockLv || 1)
@@ -71,26 +75,49 @@ if (typeof window !== 'undefined') {
 <template>
   <BaseModal
     :show="isOpen"
-    title="🛒 TIENDA DE GUERRA"
-    title-color="#ef4444"
-    header-background="rgba(20, 10, 10, 0.9)"
+    :type="isSmallScreen ? 'fullscreen' : 'center'"
+    :max-width="isSmallScreen ? '100dvw' : '850px'"
     variant="retro"
-    padding="md"
-    max-width="850px"
+    padding="raw"
     accent-color="#ef4444"
+    header-background="rgba(20, 10, 10, 0.9)"
     @close="closeWarShop"
   >
-    <div class="war-shop-container">
-      <!-- Balance Header -->
-      <div class="war-shop-header">
-        <div class="balance-badge">
-          <i class="fa-solid fa-bolt-lightning" />
-          <span class="label">MIS MONEDAS:</span>
-          <span class="value">{{ warStore.warCoins }}</span>
+    <!-- Premium Header -->
+    <template #header>
+      <div class="war-shop-modal-header">
+        <div class="war-shop-title-group">
+          <span class="title-icon">🚩</span>
+          <div class="title-text-wrap">
+            <span class="main-title">TIENDA DE GUERRA</span>
+            <span class="sub-title">CANJE DE MONEDAS FACCIONARIAS</span>
+          </div>
         </div>
-        <p class="war-shop-hint">
-          Gana monedas participando en la Dominancia de Kanto.
-        </p>
+        
+        <div class="header-stats">
+          <!-- Monedas -->
+          <div class="stat-node coins">
+            <span class="shop-stat-label">MIS MONEDAS</span>
+            <span class="value">
+              <i class="fa-solid fa-bolt-lightning currency-icon-red" />
+              {{ warStore.warCoins }}
+            </span>
+          </div>
+
+          <!-- Nivel Entrenador -->
+          <div class="stat-node level">
+            <span class="shop-stat-label">NIVEL ENTRENADOR</span>
+            <span class="value">Nv. {{ gameStore.state.trainerLevel }}</span>
+          </div>
+        </div>
+      </div>
+    </template>
+
+    <div class="war-shop-container">
+      <!-- Hint Message Banner -->
+      <div class="war-shop-hint-banner">
+        <span class="info-icon">ℹ️</span>
+        <span class="hint-text">Gana monedas participando en la Dominancia de Kanto.</span>
       </div>
 
       <!-- Items Grid -->
@@ -128,6 +155,7 @@ if (typeof window !== 'undefined') {
   gap: 20px;
   max-height: 70dvh;
   overflow-y: auto;
+  padding: 16px 0 0 0; // Top padding below the header line
   padding-right: 4px;
 
   &::-webkit-scrollbar {
@@ -142,56 +170,33 @@ if (typeof window !== 'undefined') {
   }
 }
 
-.war-shop-header {
-  text-align: center;
-  padding: 16px;
-  background: linear-gradient(to bottom, Rgba(239, 68, 68, 0.1), transparent);
-  border-radius: 16px;
-  border: 1px solid Rgba(239, 68, 68, 0.1);
-}
-
-.balance-badge {
-  display: inline-flex;
+.war-shop-hint-banner {
+  display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 8px 20px;
-  background: Rgba(0, 0, 0, 0.4);
-  border: 1px solid #ef4444;
-  border-radius: 20px;
-  box-shadow: 0 0 20px Rgba(239, 68, 68, 0.2);
-
-  i {
+  gap: 12px;
+  padding: 12px 16px;
+  background: Rgba(239, 68, 68, 0.05);
+  border: 1px solid Rgba(239, 68, 68, 0.1);
+  border-radius: 12px;
+  margin: 0 16px;
+  
+  .info-icon {
     color: #ef4444;
-    font-size: 16px;
-    filter: Drop-Shadow(0 0 5px #ef4444);
-  }
-
-  .label {
-    font-family: 'Press Start 2P', monospace;
-    font-size: 10px;
-    color: #94a3b8;
-  }
-
-  .value {
-    font-family: 'Press Start 2P', monospace;
     font-size: 14px;
-    color: #fff;
-    text-shadow: 0 0 10px Rgba(255, 255, 255, 0.5);
   }
-}
-
-.war-shop-hint {
-  margin: 12px 0 0;
-  font-size: 11px;
-  color: #64748b;
-  font-style: italic;
+  
+  .hint-text {
+    font-size: 11px;
+    color: #cbd5e1;
+    font-style: italic;
+  }
 }
 
 .war-items-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 12px;
-  padding-bottom: 20px;
+  padding: 10px 16px 20px 16px; // Headroom padding for hover scale/translate
 
   @media (max-width: 820px) {
     grid-template-columns: 1fr;
@@ -202,7 +207,7 @@ if (typeof window !== 'undefined') {
   text-align: center;
   padding: 60px 20px;
   color: #4b5563;
-  font-family: 'Press Start 2P', monospace;
+  font-family: var(--font-pixel);
   font-size: 10px;
 }
 
@@ -222,7 +227,7 @@ if (typeof window !== 'undefined') {
   }
 
   .footer-text {
-    font-family: 'Press Start 2P', monospace;
+    font-family: var(--font-pixel);
     font-size: 7px;
     color: #ef4444;
     white-space: nowrap;

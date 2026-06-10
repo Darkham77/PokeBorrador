@@ -19,6 +19,11 @@
   position: relative;
   box-sizing: border-box;
 
+  @media (min-height: 900px) {
+    height: 100%;
+    max-height: none;
+  }
+
   @include responsive(950px) {
     flex-direction: column;
     height: 100%;
@@ -111,7 +116,7 @@
     flex-shrink: 0;
 
     // Fix: bypass pixel font's size-adjust so emoji centers in the frame
-    .cat-icon {
+    .cat-icon, span, i {
       display: flex;
       align-items: center;
       justify-content: center;
@@ -181,17 +186,18 @@
 
     &.active {
       color: $accent-color;
-      border-color: transparent;
+      border-color: color-mix(in srgb, #{$accent-color} 20%, transparent);
+      background: color-mix(in srgb, #{$accent-color} 8%, transparent);
       
       .cat-icon-frame {
-        background: Rgba($accent-color, 0.1);
+        background: color-mix(in srgb, #{$accent-color} 12%, transparent);
         border-color: transparent;
-        box-shadow: 0 0 15px Rgba($accent-color, 0.05);
+        box-shadow: 0 0 15px color-mix(in srgb, #{$accent-color} 5%, transparent);
       }
 
       .cat-label {
         opacity: 1;
-        text-shadow: 0 0 10px Rgba($accent-color, 0.3);
+        text-shadow: 0 0 10px color-mix(in srgb, #{$accent-color} 30%, transparent);
       }
 
       .active-indicator {
@@ -290,12 +296,20 @@
   }
 }
 
-/**
- * Standard Shop Card Hover Effect
- * Unified elevation and glow effect.
- */
 @mixin shop-card-hover($accent-color: var(--yellow), $variant: 'full') {
   @include premium-card-hover($accent-color, 1.02, -6px, $variant);
+
+  &:hover:not(.locked):not(.disabled) {
+    @if $variant == 'full' {
+      border-color: #{$accent-color};
+      box-shadow: 
+        0 20px 40px Rgba(0, 0, 0, 0.6),
+        inset 0 30px 60px -20px color-mix(in srgb, #{$accent-color} 10%, transparent),
+        0 0 20px color-mix(in srgb, #{$accent-color} 15%, transparent);
+    } @else {
+      box-shadow: 0 15px 35px Rgba(0, 0, 0, 0.5);
+    }
+  }
 }
 
 /**

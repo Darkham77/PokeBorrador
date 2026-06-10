@@ -6,9 +6,13 @@ interface Props {
   activeCategory: string
   mainTab: 'productos' | 'materiales'
   availableCategories?: string[]
+  accentColor?: string
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  availableCategories: undefined,
+  accentColor: 'var(--yellow)'
+})
 
 const emit = defineEmits<{
   (e: 'update:activeCategory', category: string): void
@@ -23,6 +27,7 @@ const categories = computed(() => {
   ] : [
     { id: 'todos', label: 'Todos', icon: '📦' },
     { id: 'utilizables', label: 'Utilizables', icon: '⭐' },
+    { id: 'stones', label: CATEGORY_LABELS.stones || 'Piedras', icon: '💎' },
     { id: 'pokeballs', label: CATEGORY_LABELS.pokeballs, icon: '⚪' },
     { id: 'potions', label: CATEGORY_LABELS.potions, icon: '🧪' },
     { id: 'combat_held', label: CATEGORY_LABELS.combat_held, icon: '🎒' },
@@ -53,6 +58,10 @@ watch(() => categories.value, (newCats) => {
     emit('update:activeCategory', 'todos')
   }
 }, { immediate: true })
+
+const sidebarBorderColor = computed(() => {
+  return `color-mix(in srgb, ${props.accentColor} 15%, transparent)`
+})
 </script>
 
 <template>
@@ -78,11 +87,11 @@ watch(() => categories.value, (newCats) => {
 @use "@/styles/core/_mixins" as *;
 
 .unified-sidebar {
-  @include shop-sidebar(v-bind('props.mainTab === "productos" ? "Rgba(168, 85, 247, 0.15)" : "Rgba(59, 130, 246, 0.15)"'));
+  @include shop-sidebar(v-bind('sidebarBorderColor'));
   scrollbar-width: thin;
 }
 
 .cat-btn {
-  @include shop-sidebar-button(v-bind('props.mainTab === "productos" ? "#c084fc" : "var(--yellow)"'));
+  @include shop-sidebar-button(v-bind('props.accentColor'));
 }
 </style>

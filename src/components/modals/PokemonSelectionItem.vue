@@ -277,7 +277,7 @@ function handleClick() {
   flex-direction: row;
   align-items: center;
   gap: 10px;
-  margin-top: 8px;
+  margin-top: 2px;
   width: 100%;
 
   .hp-label {

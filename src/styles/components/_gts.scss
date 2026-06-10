@@ -47,6 +47,10 @@
   @include shop-shell;
   height: 680px;
 
+  @media (min-height: 900px) {
+    height: 100%;
+  }
+
   .gts-sidebar {
     @include shop-sidebar;
 

@@ -11,6 +11,10 @@ export interface Item {
   market?: boolean;
   trainerShop?: boolean;
   bcPrice?: number;
+  warPrice?: number;
+  showInNormalShop?: boolean;
+  showInBCShop?: boolean;
+  showInWarShop?: boolean;
   unlockLv?: number;
   tier?: string;
   icon?: string;

@@ -57,7 +57,10 @@ const itemActionMenu = ref<Item | null>(null) // { item, type: 'sell'|'release'|
 
 
 // Niveles superiores de categorización
-const activeMainTab = ref<'productos' | 'materiales'>('productos')
+const activeMainTab = computed({
+  get: () => inventoryStore.activeMainTab,
+  set: (val) => { inventoryStore.activeMainTab = val }
+})
 
 // Observar cambio en pestaña principal para resetear la subcategoría
 watch(activeMainTab, () => {
@@ -67,16 +70,7 @@ watch(activeMainTab, () => {
 // Getters
 const modalWidth = computed(() => props.battleMode ? '480px' : '800px')
 const filteredItems = computed<Item[]>(() => {
-  const allItems = (inventoryStore.bagItems as Item[]) || []
-  return allItems.filter(item => {
-    const cat = item.cat || 'otros'
-    const isMaterialCat = ['raw_material', 'refined_material', 'component'].includes(cat)
-    if (activeMainTab.value === 'materiales') {
-      return isMaterialCat
-    } else {
-      return !isMaterialCat
-    }
-  })
+  return (inventoryStore.bagItems as Item[]) || []
 })
 
 // Local items state to handle smooth transitions on tab switches
@@ -421,6 +415,7 @@ const { onBeforeEnter, onEnter, onLeave } = useGridTransitions(isCategorySwitchi
         v-if="!battleMode"
         v-model:active-category="inventoryStore.activeCategory"
         :main-tab="activeMainTab"
+        accent-color="var(--red)"
       />
 
       <!-- MAIN CONTENT -->

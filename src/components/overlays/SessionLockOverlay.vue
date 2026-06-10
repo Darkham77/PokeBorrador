@@ -59,7 +59,7 @@ const emit = defineEmits<{
   padding: 16px;
   background: Rgba(255, 255, 255, 0.1);
   font-size: 10px;
-  font-family: 'Press Start 2P', monospace;
+  font-family: var(--font-pixel);
   font-weight: bold;
   border-radius: 12px;
   box-shadow: 0 4px 0 Rgba(0, 0, 0, 0.3);
@@ -84,7 +84,7 @@ const emit = defineEmits<{
 .risk-btn {
   background: none;
   border: none;
-  font-family: 'Press Start 2P', monospace;
+  font-family: var(--font-pixel);
   font-size: 8px;
   color: $white;
   opacity: 0.5;

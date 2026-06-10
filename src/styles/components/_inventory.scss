@@ -29,9 +29,14 @@
   @include shop-shell;
 
   @media (min-width: 951px) {
-    height: auto;
+    height: 600px;
     min-height: 480px;
     max-height: 600px;
+
+    @media (min-height: 900px) {
+      height: 100%;
+      max-height: none;
+    }
   }
 }
 

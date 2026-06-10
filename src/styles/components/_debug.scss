@@ -75,7 +75,8 @@
   }
 
   button {
-    @include btn-vicio('secondary', 'sm');
+    @include btn-vicio-base;
+    @include btn-vicio-size('sm');
     flex: 0 0 auto;
     width: auto;
     min-width: 60px;
@@ -84,14 +85,18 @@
     align-items: center;
     justify-content: center;
     
+    &:not([class*="btn-vicio-"]) {
+      @include btn-vicio-variant('secondary', 'sm');
+    }
+    
     &.faction-btn {
-      &.power { @include btn-vicio('danger', 'sm'); }
-      &.union { @include btn-vicio('info', 'sm'); }
-      &.neutral { @include btn-vicio('neutral', 'sm'); }
+      &.power { @include btn-vicio-variant('danger', 'sm'); }
+      &.union { @include btn-vicio-variant('info', 'sm'); }
+      &.neutral { @include btn-vicio-variant('neutral', 'sm'); }
     }
     
     &.small-btn {
-      @include btn-vicio('secondary', 'sm');
+      @include btn-vicio-variant('secondary', 'sm');
     }
   }
 }

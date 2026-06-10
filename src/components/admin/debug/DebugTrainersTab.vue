@@ -3,7 +3,7 @@ import { onMounted } from 'vue'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { getAssetUrl, ASSET_TYPES, POKEMON_SPRITE_IDS } from '@/logic/services/assetService'
 import IndividualPokemonEditor from './IndividualPokemonEditor.vue'
-import { useDebugTrainers, TRAINER_SPRITES, ARCHETYPE_PRESETS } from './useDebugTrainers'
+import { useDebugTrainers, ARCHETYPE_PRESETS } from './useDebugTrainers'
 
 const {
   trainerName,
@@ -33,6 +33,7 @@ const {
   addPokemonToTeam,
   removePokemonFromTeam,
   startCombat,
+  availableSpriteList,
   debugStore
 } = useDebugTrainers()
 
@@ -249,11 +250,11 @@ onMounted(() => {
             </div>
             <select v-model="trainerSprite">
               <option 
-                v-for="s in TRAINER_SPRITES" 
+                v-for="s in availableSpriteList" 
                 :key="s.id" 
                 :value="s.id"
               >
-                {{ s.name }} ({{ s.id }})
+                {{ s.label }}
               </option>
             </select>
           </div>

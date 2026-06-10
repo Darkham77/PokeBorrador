@@ -79,7 +79,7 @@ async function handleLogout() {
   padding: 16px;
   background: Rgba(255, 255, 255, 0.1);
   font-size: 11px;
-  font-family: 'Press Start 2P', monospace;
+  font-family: var(--font-pixel);
   font-weight: 900;
   border-radius: 16px;
   border: none;

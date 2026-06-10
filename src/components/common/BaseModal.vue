@@ -3,7 +3,7 @@
     <div
       v-if="localShow"
       class="base-modal-root"
-      :style="{ zIndex: computedZIndex }"
+      :style="{ zIndex: computedZIndex, '--modal-zoom': disableZoom ? 1 : (uiStore.appZoom || 1) }"
     >
       <!-- Background Overlay -->
       <Transition
@@ -201,7 +201,9 @@ const props = defineProps({
     default: 'transparent',
     validator: (val: string) => ['transparent', 'solid', 'yellow-solid'].includes(val)
   },
-  accentColor: { type: String, default: 'var(--yellow)' }
+  accentColor: { type: String, default: 'var(--yellow)' },
+  disableZoom: { type: Boolean, default: false },
+  disableAutoGrow: { type: Boolean, default: false }
 })
 
 const emit = defineEmits(['close', 'confirm', 'cancel', 'submit'])
@@ -323,22 +325,45 @@ const onContentLeave = (el: Element, done: () => void) => {
 const cardStyles = computed(() => {
   if (props.type === 'fullscreen') return {}
   
+  const zoomFactor = props.disableZoom ? 1 : (uiStore.appZoom || 1)
+
+  const isLargeModal = !props.disableAutoGrow && (
+                        (props.id === 'inventory' && props.maxWidth !== '480px') || 
+                        props.id === 'shop' || 
+                        props.id === 'bc-shop' || 
+                        props.id === 'war-shop' || 
+                        props.id === 'market' ||
+                        props.id === 'box' ||
+                        props.maxWidth === '900px' || 
+                        props.maxWidth === '850px' ||
+                        props.maxWidth === '800px'
+                      )
+
+  // If it's a large non-combat modal and the viewport height is significant, expand dimensions
+  const useLargeScreenRules = isLargeModal && typeof window !== 'undefined' && window.innerHeight >= 900
+
+  // We scale the dvh/vh height target under the zoom so the physical screen occupancy remains constant
+  const resolvedHeight = useLargeScreenRules ? `${80 / zoomFactor}dvh` : props.height
+  const resolvedMaxHeight = useLargeScreenRules ? `${90 / zoomFactor}dvh` : props.maxHeight
+  const resolvedMaxWidth = useLargeScreenRules ? '1100px' : props.maxWidth
+  
+  // Clamping physical sizes to maximum 95% of screen viewport
   const styles: Record<string, string> = { 
     width: '100%',
-    maxWidth: props.maxWidth,
-    height: props.height,
-    maxHeight: props.maxHeight,
+    maxWidth: `min(${resolvedMaxWidth}, ${95 / zoomFactor}dvw)`,
+    height: resolvedHeight,
+    maxHeight: `min(${resolvedMaxHeight}, ${95 / zoomFactor}dvh)`,
     '--modal-accent': props.accentColor
   }
 
   // Si es un panel lateral, el maxWidth también controla el width base
   if (['left', 'right', 'side', 'side-left', 'side-right'].includes(props.type)) {
-    styles.width = props.maxWidth
+    styles.width = `min(${resolvedMaxWidth}, ${95 / zoomFactor}dvw)`
     
-    // Si está pegado al borde, forzamos altura completa
+    // Si está pegado al borde, forzamos altura completa (clamped if needed, stuck matches screen height)
     if (computedPositionMode.value === 'stuck') {
-      styles.height = '100dvh'
-      styles.maxHeight = '100dvh'
+      styles.height = `${100 / zoomFactor}dvh`
+      styles.maxHeight = `${100 / zoomFactor}dvh`
     }
   }
 

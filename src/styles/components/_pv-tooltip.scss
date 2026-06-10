@@ -1,8 +1,10 @@
 @use "@/styles/core/tools" as *;
 
 .pv-tooltip-wrapper {
-  display: inline-flex;
-  align-items: center;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  line-height: 1 !important;
   -webkit-touch-callout: none !important;
   -webkit-user-select: none !important;
   user-select: none !important;

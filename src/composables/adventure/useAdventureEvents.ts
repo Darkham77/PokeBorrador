@@ -13,6 +13,7 @@ import { useMapStore } from '@/stores/map'
 
 import { TRAINER_TYPES } from '@/data/trainerTypes'
 import { getRandomQuoteForTrainer } from '@/data/trainerPhrases'
+import { getSpritesForArchetype } from '@/logic/utils/npcSpriteRouter'
 
 interface AdventureEventsConfig {
   isTraveling: Ref<boolean>
@@ -69,12 +70,16 @@ export function useAdventureEvents(config: AdventureEventsConfig) {
     const trainerLv = baseLv + 2
     const teamSize = Math.floor(Math.random() * 3) + 1
     
+    // Pick a random sprite from the full archetype catalog (not just the hardcoded fallback)
+    const archetypeSprites = getSpritesForArchetype(t.archetype)
+    const trainerSprite = archetypeSprites[Math.floor(Math.random() * archetypeSprites.length)] || t.sprite
+
     const { buildTrainerTeam } = await import('@/logic/battle/trainerFactory')
     const enemyTeam = await buildTrainerTeam(t.pool as unknown as string[], trainerLv, teamSize)
     const quote = getRandomQuoteForTrainer(typeKey)
     return {
       trainerName: t.name,
-      trainerSprite: t.sprite,
+      trainerSprite,
       enemyTeam,
       quote
     }

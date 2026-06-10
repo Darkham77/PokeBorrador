@@ -15,6 +15,7 @@ interface ShopItem {
   sprite: string
   unlockLv?: number
   market?: boolean
+  tier?: string
 }
 
 interface Props {
@@ -47,6 +48,16 @@ const isModifiedPrice = computed(() => priceModifier.value !== 1.0)
 
 const quantity = computed(() => shopStore.getQuantity(props.item.id))
 
+const tierLabel = computed(() => {
+  const labels: Record<string, string> = {
+    common: 'COMÚN',
+    rare: 'RARO',
+    epic: 'ÉPICO',
+    legend: 'LEGENDARIO'
+  }
+  return labels[props.item.tier || 'common']
+})
+
 const handleQuantityChange = (e: Event) => {
   if (e.target) {
     const val = Number((e.target as HTMLInputElement).value)
@@ -78,6 +89,15 @@ const handleImageError = (e: Event) => {
     class="shop-item-card"
     :class="{ locked: !isUnlocked }"
   >
+    <!-- Tier Tag (Retro Style) -->
+    <span
+      v-if="item.tier"
+      class="tier-tag"
+      :class="'tier-' + item.tier"
+    >
+      {{ tierLabel }}
+    </span>
+
     <div class="item-card-top">
       <div class="item-visual-box">
         <img

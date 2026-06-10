@@ -1,9 +1,9 @@
 // src/styles/tokens/_typography.scss
 @use 'sass:map';
 
-$font-pixel:   'Pokemon FireRed LeafGreen', 'Press Start 2P', 'DotGothic16', monospace;
-$font-pixel-proportional: 'Pokemon FireRed LeafGreen', 'Press Start 2P', 'DotGothic16', monospace;
-$font-ui:      'Pokemon FireRed LeafGreen';
+$font-pixel:   'Pokemon FireRed LeafGreen', monospace;
+$font-pixel-proportional: 'Pokemon FireRed LeafGreen', monospace;
+$font-ui:      'Pokemon FireRed LeafGreen', monospace;
 $font-future:  'Orbitron', sans-serif;
 $font-classic: 'Cinzel', serif;
 $font-display: 'Rajdhani', sans-serif;

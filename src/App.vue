@@ -485,7 +485,7 @@ const onLoadingLeave = (el: Element, done: () => void) => {
 }
 
 .pwa-progress-text {
-  font-family: 'Press Start 2P', monospace;
+  font-family: var(--font-pixel);
   font-size: 8px;
   color: #fff;
   text-shadow: 1px 1px 0 #000;

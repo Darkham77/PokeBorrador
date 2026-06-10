@@ -118,9 +118,15 @@
   @include shop-item-card(#c084fc);
   &:hover:not(.locked) { @include shop-card-hover(#c084fc); }
 
-  .item-price-wrapper .price-val {
-    color: #c084fc !important;
-    text-shadow: 0 0 10px Rgba(168, 85, 247, 0.4) !important;
+  .item-price-wrapper {
+    .currency-symbol {
+      color: #c084fc !important;
+      filter: Drop-Shadow(0 0 5px Rgba(168, 85, 247, 0.6)) !important;
+    }
+    .price-val {
+      color: #c084fc !important;
+      text-shadow: 0 0 10px Rgba(168, 85, 247, 0.4) !important;
+    }
   }
 
   .item-actions .buy-btn {
@@ -130,7 +136,67 @@
       background: linear-gradient(135deg, #a855f7 0%, #7c3aed 100%) !important;
     }
   }
+}
 
+.war-shop-item-card {
+  @include shop-item-card(#ef4444);
+  background: Rgba(20, 10, 10, 0.8) !important; // keep thematic dark background
+  border: 1px solid Rgba(239, 68, 68, 0.2);
+  border-radius: 12px;
+  padding: 12px;
+  backdrop-filter: Blur(10px);
+  &:hover:not(.locked) { @include shop-card-hover(#ef4444); }
+
+  .item-price-wrapper {
+    color: #ef4444 !important;
+    .currency-symbol {
+      color: #ef4444 !important;
+      filter: Drop-Shadow(0 0 5px Rgba(239, 68, 68, 0.5));
+    }
+    .price-val {
+      color: #ef4444 !important;
+    }
+  }
+
+  .btn-war-buy {
+    width: 100%;
+    padding: 10px;
+    background: linear-gradient(135deg, #ef4444 0%, #991b1b 100%);
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-family: var(--font-pixel);
+    font-size: 9px;
+    cursor: pointer;
+    box-shadow: 0 4px 12px Rgba(239, 68, 68, 0.2);
+    will-change: transform, box-shadow;
+
+    &:hover:not(:disabled) {
+      box-shadow: 0 6px 20px Rgba(239, 68, 68, 0.4);
+    }
+
+    &:disabled {
+      background: #1f2937;
+      color: #4b5563;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+  }
+
+  .btn-war-locked {
+    width: 100%;
+    padding: 10px;
+    background: #111827;
+    border: 1px dashed #374151;
+    border-radius: 8px;
+    color: #4b5563;
+    font-family: var(--font-pixel);
+    font-size: 9px;
+    cursor: not-allowed;
+  }
+}
+
+.shop-item-card, .bc-shop-item-card, .war-shop-item-card {
   .tier-tag {
     position: absolute;
     top: 12px;
@@ -147,9 +213,7 @@
     &.tier-epic { background: Rgba(168, 85, 247, 0.08); color: #c084fc; border: 1px solid Rgba(168, 85, 247, 0.15); }
     &.tier-legend { background: Rgba(234, 179, 8, 0.08); color: #facc15; border: 1px solid Rgba(234, 179, 8, 0.15); }
   }
-}
 
-.shop-item-card, .bc-shop-item-card {
   &.locked {
     opacity: 0.6;
     will-change: transform, filter, opacity;
@@ -439,4 +503,35 @@
     }
   }
 }
+
+/* ── WAR SHOP PREMIUM STYLES ────────────────────────────────────────────────── */
+
+.war-shop-modal-header {
+  @include shop-header;
+
+  .war-shop-title-group {
+    @include shop-header-title(#ef4444);
+  }
+
+  .header-stats {
+    display: flex;
+    gap: 24px;
+
+    .stat-node {
+      @include shop-header-stat(#ef4444);
+      
+      &.coins .value { 
+        @extend .colored; 
+        .currency-icon-red {
+          color: #ef4444;
+          filter: Drop-Shadow(0 0 5px Rgba(239, 68, 68, 0.5));
+          font-size: 14px;
+          margin-right: 4px;
+        }
+      }
+      &.level .value { @extend .colored; color: var(--yellow); }
+    }
+  }
+}
+
 

@@ -117,3 +117,62 @@ export function consumeItem(gameStore: ReturnType<typeof useGameStore>, itemName
     gameStore.state.inventory = { ...inv };
   }
 }
+
+export function getItemTier(item: { cat?: string; sprite?: string; craftingTier?: number }): number {
+  if (item.craftingTier !== undefined) return item.craftingTier;
+  const cat = item.cat || 'otros';
+  if (cat === 'raw_material' || item.sprite?.includes('crafting/tier0/')) return 0;
+  if (cat === 'refined_material' || item.sprite?.includes('crafting/tier1/')) return 1;
+  if (cat === 'component' || item.sprite?.includes('crafting/tier2/')) return 2;
+  return 3;
+}
+
+export function isItemProduct(item: { name: string; cat?: string; type?: string; id?: string; sprite?: string }): boolean {
+  if (getItemTier(item) === 3) return true;
+
+  const cat = item.cat;
+  const type = item.type;
+  const id = item.id;
+
+  if (
+    cat === 'potions' ||
+    cat === 'pokeballs' ||
+    cat === 'stones' ||
+    cat === 'combat_held' ||
+    cat === 'breeding_held' ||
+    type === 'stone' ||
+    type === 'held' ||
+    type === 'usable' ||
+    type === 'booster' ||
+    cat === 'tools' ||
+    cat === 'tms'
+  ) {
+    return true;
+  }
+
+  const officialName = resolveNormalizedName(item.name);
+  if (ITEM_EFFECTS[officialName]) return true;
+  if (item.name.toLowerCase().match(/m[tt]\d+/)) return true;
+  if (id?.toLowerCase().startsWith('tm')) return true;
+
+  return false;
+}
+
+export function getAdjustedProductCategory(item: { name: string; cat?: string; id?: string }): string {
+  const cat = item.cat || 'otros';
+
+  if (!['raw_material', 'refined_material', 'component'].includes(cat)) {
+    return cat;
+  }
+
+  const id = item.id || '';
+  if (id.includes('stone') || item.name.toLowerCase().includes('piedra')) {
+    return 'stones';
+  }
+
+  if (id.includes('root') || id.includes('revive') || item.name.toLowerCase().includes('pocion') || item.name.toLowerCase().includes('revivir')) {
+    return 'potions';
+  }
+
+  return 'otros';
+}

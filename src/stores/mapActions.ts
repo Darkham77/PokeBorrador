@@ -11,6 +11,7 @@ import { SHOP_ITEMS } from '@/data/items.ts';
 import { logger } from '@/logic/utils/logger';
 import { TRAINER_TYPES } from '@/data/trainerTypes';
 import { getRandomQuoteForTrainer } from '@/data/trainerPhrases';
+import { getSpritesForArchetype } from '@/logic/utils/npcSpriteRouter';
 import type { Pokemon } from '@/types/pokemon';
 import type { MapLocation } from '@/types/encounters';
 
@@ -151,7 +152,9 @@ export async function executeNavigation(
       const t = TRAINER_TYPES[typeKey];
       
       tName = t.name;
-      tSprite = t.sprite;
+      // Pick a random sprite from the full archetype catalog (not just the hardcoded fallback)
+      const archetypeSprites = getSpritesForArchetype(t.archetype);
+      tSprite = archetypeSprites[Math.floor(Math.random() * archetypeSprites.length)] || t.sprite;
       tQuote = getRandomQuoteForTrainer(typeKey);
       const trainerLv = baseLv + 2;
       const teamSize = Math.floor(Math.random() * 3) + 1;

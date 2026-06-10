@@ -78,24 +78,24 @@ const handleZoomInput = (e: Event) => {
         <div class="power-buttons">
           <button 
             type="button"
-            class="power-btn" 
-            :class="{ active: uiStore.lowPowerMode === 'auto' }"
+            class="btn-vicio-sm" 
+            :class="uiStore.lowPowerMode === 'auto' ? 'btn-vicio-primary' : 'btn-vicio-neutral'"
             @click="uiStore.setLowPowerMode('auto')"
           >
             AUTO
           </button>
           <button 
             type="button"
-            class="power-btn" 
-            :class="{ active: uiStore.lowPowerMode === 'enabled' }"
+            class="btn-vicio-sm" 
+            :class="uiStore.lowPowerMode === 'enabled' ? 'btn-vicio-primary' : 'btn-vicio-neutral'"
             @click="uiStore.setLowPowerMode('enabled')"
           >
             ACTIVADO
           </button>
           <button 
             type="button"
-            class="power-btn" 
-            :class="{ active: uiStore.lowPowerMode === 'disabled' }"
+            class="btn-vicio-sm" 
+            :class="uiStore.lowPowerMode === 'disabled' ? 'btn-vicio-primary' : 'btn-vicio-neutral'"
             @click="uiStore.setLowPowerMode('disabled')"
           >
             DESACTIVADO
@@ -121,16 +121,16 @@ const handleZoomInput = (e: Event) => {
         <div class="power-buttons">
           <button 
             type="button"
-            class="power-btn" 
-            :class="{ active: uiStore.hideMapPokemon }"
+            class="btn-vicio-sm" 
+            :class="uiStore.hideMapPokemon ? 'btn-vicio-primary' : 'btn-vicio-neutral'"
             @click="uiStore.setHideMapPokemon(true)"
           >
             ACTIVADO
           </button>
           <button 
             type="button"
-            class="power-btn" 
-            :class="{ active: !uiStore.hideMapPokemon }"
+            class="btn-vicio-sm" 
+            :class="!uiStore.hideMapPokemon ? 'btn-vicio-primary' : 'btn-vicio-neutral'"
             @click="uiStore.setHideMapPokemon(false)"
           >
             DESACTIVADO
@@ -153,16 +153,16 @@ const handleZoomInput = (e: Event) => {
         <div class="power-buttons">
           <button 
             type="button"
-            class="power-btn" 
-            :class="{ active: uiStore.autoBattle }"
+            class="btn-vicio-sm" 
+            :class="uiStore.autoBattle ? 'btn-vicio-primary' : 'btn-vicio-neutral'"
             @click="uiStore.setAutoBattle(true)"
           >
             ACTIVADO
           </button>
           <button 
             type="button"
-            class="power-btn" 
-            :class="{ active: !uiStore.autoBattle }"
+            class="btn-vicio-sm" 
+            :class="!uiStore.autoBattle ? 'btn-vicio-primary' : 'btn-vicio-neutral'"
             @click="uiStore.setAutoBattle(false)"
           >
             DESACTIVADO
@@ -248,30 +248,9 @@ const handleZoomInput = (e: Event) => {
   display: flex;
   gap: 8px;
   width: 100%;
-}
 
-.power-btn {
-  flex: 1;
-  background: Rgba(255, 255, 255, 0.05);
-  border: 2px solid Rgba(255, 255, 255, 0.1);
-  color: var(--white);
-  padding: 8px 4px;
-  font-size: 9px;
-  font-weight: 800;
-  cursor: pointer;
-  @include pixelated;
-  
-
-  &:hover {
-    background: Rgba(255, 255, 255, 0.1);
-    border-color: Rgba(255, 255, 255, 0.2);
-  }
-
-  &.active {
-    background: var(--yellow);
-    border-color: var(--yellow);
-    color: #1a1c2e;
-    box-shadow: 0 0 8px var(--yellow);
+  button {
+    flex: 1;
   }
 }
 

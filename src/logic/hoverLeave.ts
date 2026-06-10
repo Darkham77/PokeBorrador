@@ -1,5 +1,5 @@
 import { gsap } from 'gsap'
-import { is3DButton, getElementShadowColorAndDepth, HOVER_DURATION_200MS_CLASSES, hasVisualBorders } from './hoverHelpers.ts'
+import { is3DButton, getElementShadowColorAndDepth, HOVER_DURATION_200MS_CLASSES, hasVisualBorders, resolveCssColor, parseToRgba } from './hoverHelpers.ts'
 import { getHoverLeaveStrategy } from './hoverStrategies.ts'
 
 export function triggerLeave(el: HTMLElement) {
@@ -13,7 +13,6 @@ export function triggerLeave(el: HTMLElement) {
   let propsToClear = 'transform,scale,y'
   const hasXTranslation = el.classList.contains('friend-card') || 
     el.classList.contains('map-row') || 
-    el.classList.contains('pc-banner') || 
     (el.closest('.hud-submenu') && el.classList.contains('hud-nav-btn')) ||
     isRetro
 
@@ -89,7 +88,7 @@ export function triggerLeave(el: HTMLElement) {
   const clearVars: gsap.TweenVars = {
     scale: targetScale,
     y: 0,
-    duration: 0.15,
+    duration: 0.1,
     ease: 'power1.out',
     overwrite: 'auto',
     onComplete: () => {
@@ -103,7 +102,7 @@ export function triggerLeave(el: HTMLElement) {
 
   if (el.classList.contains('btn-catch-ball')) {
     clearVars.rotation = 0
-    clearVars.duration = 0.2
+    clearVars.duration = 0.15
     clearVars.ease = 'power2.out'
   }
 
@@ -111,7 +110,7 @@ export function triggerLeave(el: HTMLElement) {
   if (targetBoxShadow) clearVars.boxShadow = targetBoxShadow
 
   if (HOVER_DURATION_200MS_CLASSES.some(cls => el.classList.contains(cls))) {
-    clearVars.duration = 0.2
+    clearVars.duration = 0.12
   }
 
   gsap.to(el, clearVars)
@@ -144,7 +143,7 @@ export function triggerLeave(el: HTMLElement) {
         }
       })
     }
-  } else if (el.classList.contains('inventory-item-card')) {
+  } else if (el.classList.contains('inventory-item-card') || el.classList.contains('quick-item-card')) {
     const sprite = el.querySelector('.item-sprite')
     if (sprite) {
       gsap.to(sprite, {
@@ -154,6 +153,34 @@ export function triggerLeave(el: HTMLElement) {
         overwrite: 'auto',
         onComplete: () => {
           gsap.set(sprite, { clearProps: 'transform,scale' })
+        }
+      })
+    }
+    const glow = el.querySelector('.item-bg-glow')
+    if (glow) {
+      const color = el.style.getPropertyValue('--tier-color') || 'rgba(148, 163, 184, 0.45)';
+      const resolvedColor = resolveCssColor(color, el);
+      const baseGlowColor = parseToRgba(resolvedColor, 0.18, el);
+      gsap.to(glow, {
+        backgroundImage: `radial-gradient(circle, ${baseGlowColor} 0%, transparent 70%)`,
+        scale: 0.8,
+        opacity: 0.7,
+        duration: 0.2,
+        ease: 'power2.out',
+        overwrite: 'auto'
+      })
+    }
+  } else if (el.classList.contains('shop-item-card') || el.classList.contains('bc-shop-item-card') || el.classList.contains('war-shop-item-card')) {
+    const img = el.querySelector('.item-visual-box img')
+    if (img) {
+      gsap.to(img, {
+        scale: 1,
+        y: 0,
+        duration: 0.15,
+        ease: 'power1.out',
+        overwrite: 'auto',
+        onComplete: () => {
+          gsap.set(img, { clearProps: 'transform,scale,y' })
         }
       })
     }

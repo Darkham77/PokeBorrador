@@ -377,7 +377,7 @@ const handleSellRocket = () => {
   
   .warning-text {
     font-size: 7px;
-    font-family: 'Press Start 2P', monospace;
+    font-family: var(--font-pixel);
     line-height: 1.5;
     color: #f87171;
   }

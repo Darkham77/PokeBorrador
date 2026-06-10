@@ -43,87 +43,11 @@
   text-align: center;
 }
 
-// Shared Map Pill Style (Standardized)
-.map-pill {
-  width: auto;
-  min-width: 32px;
-  height: 32px;
-  padding: 0 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: $black !important;
-  border: 1px solid Rgba(255, 255, 255, 0.2);
-  border-radius: 8px;
-  box-shadow: 0 4px 12px Rgba(0, 0, 0, 0.4);
-  z-index: var(--z-map-ui) !important; /* Standardized Layer (+10 vs Spawns) */
-  pointer-events: auto;
-  
-
-  .pill-content {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    height: 100%;
-    line-height: 1;
-    transform: Translatey(-4px) !important;
-  }
-
-  &:hover {
-    background: $black !important;
-    border-color: Rgba(255, 255, 255, 0.4);
-    z-index: var(--z-map-ui) !important;
-  }
-}
-
-.faction-status-pill {
-  @extend .map-pill;
-  width: 32px;
-  min-width: 32px;
-  height: 32px;
-  padding: 0;
-  
-  .pill-content {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    width: 100% !important;
-    height: 100% !important;
-    line-height: 1 !important;
-    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif !important;
-    transform: none !important;
-  }
-  
-  .faction-emoji {
-    font-size: 16px;
-    filter: Drop-Shadow(0 2px 4px Rgba(0, 0, 0, 0.5));
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-}
-
-/* Cycle Pill (Top Right) */
+// Map Card Specific Layout Overrides for Pills
 .location-tag {
-  @extend .map-pill;
   position: absolute;
   top: 6px;   // Aligned with guardian badge (top: 6px)
   right: 8px; // Aligned with grid right edge (right: 8px)
-  font-size: 18px;
-  color: Rgba(255, 204, 0, 1);
-
-  .pill-content {
-    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif !important;
-    transform: none !important;
-  }
-
-  .tag-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    filter: Drop-Shadow(0 2px 4px Rgba(0, 0, 0, 0.5));
-  }
 }
 
 .tag-locked { color: Rgba(255, 110, 110, 1); border-color: Rgba(255, 110, 110, 0.3); }
@@ -145,27 +69,3 @@
   display: block;
 }
 
-
-.interactive-pill {
-  @extend .map-pill;
-  
-  .pill-content {
-    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif !important;
-    transform: none !important;
-  }
-  
-  .pill-icon {
-    font-size: 18px;
-    filter: Drop-Shadow(0 2px 4px Rgba(0, 0, 0, 0.5));
-  }
-
-  &.fishing-pill {
-    color: Rgba(79, 172, 254, 1);
-    border-color: Rgba(79, 172, 254, 0.4);
-  }
-
-  &.archaeology-pill {
-    color: Rgba(202, 138, 4, 1);
-    border-color: Rgba(202, 138, 4, 0.4);
-  }
-}

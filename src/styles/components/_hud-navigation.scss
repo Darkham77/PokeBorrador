@@ -103,17 +103,17 @@
   position: absolute;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 6px !important;
   background: linear-gradient(180deg, #161a2e 0%, #0a0c14 100%);
   border: 1px solid Rgba(255, 255, 255, 0.15);
   border-radius: 14px;
-  padding: 8px;
+  padding: 6px !important;
   z-index: var(--z-modal);
   width: max-content !important;
   min-width: 0 !important;
   align-items: stretch !important;
   box-shadow: 0 20px 50px Rgba(0, 0, 0, 0.7);
-  overflow: visible;
+  overflow: visible !important;
 
   &::before {
     content: '';
@@ -149,22 +149,31 @@
   align-items: center !important;
   width: 100% !important;
   min-width: unset !important;
-  padding: 10px 14px;
-  gap: 10px;
+  height: auto !important;
+  padding: 7px 11px !important;
+  gap: 10px !important;
   background: Rgba(255, 255, 255, 0.05);
   border: 1px solid Rgba(255, 255, 255, 0.1);
   border-radius: 10px;
   white-space: nowrap;
-  
+
   &:hover { 
-    background: Rgba(255, 255, 255, 0.1); 
+    background: Rgba(255, 255, 255, 0.1) !important; 
+    border-color: var(--yellow) !important;
+    box-shadow: 
+      0 20px 40px Rgba(0, 0, 0, 0.6),
+      inset 0 30px 60px -20px color-mix(in srgb, var(--yellow), transparent 80%),
+      0 0 20px color-mix(in srgb, var(--yellow), transparent 70%) !important;
     z-index: var(--z-base);
   }
   
   &.active {
     background: Rgba(255, 204, 0, 0.12);
-    border-color: var(--yellow);
-    box-shadow: 0 0 0 2px var(--yellow), 0 0 25px Rgba(255, 214, 10, 0.4), inset 0 0 10px Rgba(255, 214, 10, 0.1);
+    border-color: var(--yellow) !important;
+    box-shadow: 
+      0 20px 40px Rgba(0, 0, 0, 0.6),
+      inset 0 30px 60px -20px color-mix(in srgb, var(--yellow), transparent 80%),
+      0 0 20px color-mix(in srgb, var(--yellow), transparent 70%) !important;
   }
 
   .icon {
@@ -172,6 +181,9 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    line-height: 1 !important;
+    margin: 0 !important;
+    padding: 0 !important;
     // Override pixel font so size-adjust:128% does NOT inflate the emoji line-box
     font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif !important;
   }
@@ -179,12 +191,20 @@
     font-size: 8px; 
     color: $white;
     white-space: nowrap;
+    line-height: 1 !important;
+    margin: 0 !important;
+    padding: 0 !important;
     @include pixelated;
   }
   
   &.active .nav-item-label { color: var(--yellow); }
 
   &.war-shop-nav-btn:hover {
+    border-color: var(--red) !important;
+    box-shadow: 
+      0 20px 40px Rgba(0, 0, 0, 0.6),
+      inset 0 30px 60px -20px color-mix(in srgb, var(--red), transparent 80%),
+      0 0 20px color-mix(in srgb, var(--red), transparent 70%) !important;
     .nav-item-label { color: var(--red); }
   }
 }

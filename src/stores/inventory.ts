@@ -11,7 +11,10 @@ import { executeUseItem } from './inventoryUseAction.ts'
 import {
   resolveNormalizedName,
   findInventoryKey as helperFindInventoryKey,
-  isItemUsableOn as helperIsItemUsableOn
+  isItemUsableOn as helperIsItemUsableOn,
+  getItemTier,
+  isItemProduct,
+  getAdjustedProductCategory
 } from './inventoryHelpers.ts'
 
 export interface Item {
@@ -23,6 +26,7 @@ export interface Item {
   sprite?: string;
   desc?: string;
   price?: number;
+  craftingTier?: number;
 }
 
 export function isItemUsableOutsideCombat(item: { id: string; cat?: string; type?: string } | null | undefined): boolean {
@@ -57,6 +61,7 @@ export const useInventoryStore = defineStore('inventory', () => {
   // --- BAG STATE ---
   const bagSellMode = ref(false)
   const bagSellSelected = ref<Record<string, number>>({}) // { itemName: quantity }
+  const activeMainTab = ref<'productos' | 'materiales'>('productos')
   const activeCategory = ref(safeStorage.getItem('inventory_last_tab') || 'todos')
   const searchQuery = ref('')
 
@@ -78,6 +83,28 @@ export const useInventoryStore = defineStore('inventory', () => {
         if (!item) return { name, qty, id: name, cat: 'otros', sprite: name, desc: 'Objeto desconocido' } as Item
         return { ...item, qty, name } as Item
       })
+
+    // Filter by main tab
+    if (activeMainTab.value === 'materiales') {
+      items = items
+        .filter(item => getItemTier(item) < 3)
+        .map(item => {
+          const tier = getItemTier(item)
+          let cat = item.cat
+          if (tier === 0) cat = 'raw_material'
+          else if (tier === 1) cat = 'refined_material'
+          else if (tier === 2) cat = 'component'
+          return { ...item, cat }
+        })
+    } else {
+      // Tab is productos
+      items = items
+        .filter(item => getItemTier(item) === 3 || isItemProduct(item))
+        .map(item => ({
+          ...item,
+          cat: getAdjustedProductCategory(item)
+        }))
+    }
 
     if (activeCategory.value === 'utilizables') {
       const target = uiStore.inventoryTarget
@@ -121,6 +148,7 @@ export const useInventoryStore = defineStore('inventory', () => {
     // Productos
     pokeballs: 'Pokéballs',
     potions: 'Curativos',
+    stones: 'Piedras',
     combat_held: 'Equipables',
     breeding_held: 'Crianza',
     machinery: 'Maquinaria',
@@ -304,6 +332,7 @@ export const useInventoryStore = defineStore('inventory', () => {
     // Bag
     bagSellMode,
     bagSellSelected,
+    activeMainTab,
     activeCategory,
     searchQuery,
     bagItems,

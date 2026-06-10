@@ -59,7 +59,7 @@ const activeTravelModifiers = computed(() => {
     variant="retro"
     @close="emit('cancel')"
   >
-    <div style="display: flex; flex-direction: column; gap: 12px; font-family: 'Press Start 2P', monospace;">
+    <div style="display: flex; flex-direction: column; gap: 12px; font-family: var(--font-pixel);">
       <div style="display: flex; gap: 12px; overflow: hidden; flex: 1;">
         <!-- Left Column: Active Buffs Preview -->
         <div style="flex: 1; background: rgba(0,0,0,0.3); border: 2px solid #3c5aa6; padding: 10px; border-radius: 4px; display: flex; flex-direction: column; gap: 8px;">

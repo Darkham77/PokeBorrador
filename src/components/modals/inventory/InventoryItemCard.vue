@@ -47,6 +47,12 @@ const tierLabel = computed(() => {
   return labels[props.item.tier || 'common']
 })
 
+// Prepend tier label to tooltip description
+const tierTooltipDesc = computed(() => {
+  const tier = `• ${tierLabel.value}`
+  return props.item.desc ? `${tier}\n${props.item.desc}` : tier
+})
+
 const itemIcon = computed(() => {
   if (props.item.sprite) return getAssetUrl(ASSET_TYPES.ITEM, props.item.sprite)
   return null
@@ -71,10 +77,31 @@ const tierColor = computed(() => {
   if (tier === 'rare') return '#3b82f6'
   if (tier === 'epic') return '#a855f7'
   if (tier === 'legend') return 'var(--yellow)'
-  return 'var(--yellow)'
+  return '#94a3b8'
 })
 
 // ── WATCHERS FOR SELECTION STATE ─────────────────────────────────────────────
+const getBaseColors = () => {
+  const tier = props.item.tier || 'common'
+  let baseBorderColor = 'rgba(148, 163, 184, 0.45)'
+  let baseBoxShadow = '0 0 10px rgba(148, 163, 184, 0.15), inset 0 0 6px rgba(148, 163, 184, 0.05)'
+  let baseGlow = 'radial-gradient(circle, rgba(148, 163, 184, 0.12) 0%, transparent 70%)'
+  
+  if (tier === 'rare') {
+    baseBorderColor = 'rgba(59, 130, 246, 0.55)'
+    baseBoxShadow = '0 0 10px rgba(59, 130, 246, 0.2), inset 0 0 6px rgba(59, 130, 246, 0.08)'
+    baseGlow = 'radial-gradient(circle, rgba(59, 130, 246, 0.18) 0%, transparent 70%)'
+  } else if (tier === 'epic') {
+    baseBorderColor = 'rgba(168, 85, 247, 0.55)'
+    baseBoxShadow = '0 0 10px rgba(168, 85, 247, 0.2), inset 0 0 6px rgba(168, 85, 247, 0.08)'
+    baseGlow = 'radial-gradient(circle, rgba(168, 85, 247, 0.18) 0%, transparent 70%)'
+  } else if (tier === 'legend') {
+    baseBorderColor = 'rgba(245, 158, 11, 0.65)'
+    baseBoxShadow = '0 0 12px rgba(245, 158, 11, 0.25), inset 0 0 8px rgba(245, 158, 11, 0.1)'
+    baseGlow = 'radial-gradient(circle, rgba(245, 158, 11, 0.2) 0%, transparent 70%)'
+  }
+  return { baseBorderColor, baseBoxShadow, baseGlow }
+}
 
 watch(() => props.isSelected, (newVal) => {
   if (!cardRef.value) return
@@ -87,7 +114,8 @@ watch(() => props.isSelected, (newVal) => {
       borderColor: 'var(--blue)',
       boxShadow: 'inset 0 0 0 4px var(--blue), 0 0 20px Rgba(10, 132, 255, 0.4)',
       duration: 0.2,
-      ease: 'power2.out'
+      ease: 'power2.out',
+      overwrite: 'auto'
     })
     if (checkBox) {
       gsap.to(checkBox, {
@@ -95,24 +123,22 @@ watch(() => props.isSelected, (newVal) => {
         borderColor: 'var(--yellow)',
         boxShadow: '0 0 10px Rgba(255, 214, 10, 0.5)',
         duration: 0.2,
-        ease: 'power2.out'
+        ease: 'power2.out',
+        overwrite: 'auto'
       })
     }
   } else {
     // Reset to base state
-    const tier = props.item.tier || 'common'
-    let baseBorderColor = 'Rgba(255, 255, 255, 0.05)'
-    if (tier === 'rare') baseBorderColor = 'Rgba(59, 130, 246, 0.2)'
-    else if (tier === 'epic') baseBorderColor = 'Rgba(168, 85, 247, 0.2)'
-    else if (tier === 'legend') baseBorderColor = 'Rgba(245, 158, 11, 0.2)'
+    const { baseBorderColor, baseBoxShadow } = getBaseColors()
 
     gsap.to(cardRef.value, {
       y: 0,
       scale: 1,
       borderColor: baseBorderColor,
-      boxShadow: '0 10px 40px Rgba(0, 0, 0, 0.8)',
-      duration: 0.4,
-      ease: 'power2.out'
+      boxShadow: baseBoxShadow,
+      duration: 0.2,
+      ease: 'power2.out',
+      overwrite: 'auto'
     })
     if (checkBox) {
       gsap.to(checkBox, {
@@ -120,27 +146,46 @@ watch(() => props.isSelected, (newVal) => {
         borderColor: 'Rgba(255, 255, 255, 0.2)',
         boxShadow: 'none',
         duration: 0.2,
-        ease: 'power2.out'
+        ease: 'power2.out',
+        overwrite: 'auto'
       })
     }
   }
 }, { immediate: true })
 
 onMounted(() => {
-  // Apply initial states if selected at mount
-  if (props.isSelected && cardRef.value) {
-    gsap.set(cardRef.value, {
-      scale: 0.98,
-      borderColor: 'var(--blue)',
-      boxShadow: 'inset 0 0 0 4px var(--blue), 0 0 20px Rgba(10, 132, 255, 0.4)'
-    })
-    const checkBox = cardRef.value.querySelector('.check-box')
-    if (checkBox) {
-      gsap.set(checkBox, {
-        backgroundColor: 'var(--yellow)',
-        borderColor: 'var(--yellow)',
-        boxShadow: '0 0 10px Rgba(255, 214, 10, 0.5)'
+  // Apply initial states
+  if (cardRef.value) {
+    const { baseBorderColor, baseBoxShadow, baseGlow } = getBaseColors()
+    
+    if (props.isSelected) {
+      gsap.set(cardRef.value, {
+        scale: 0.98,
+        borderColor: 'var(--blue)',
+        boxShadow: 'inset 0 0 0 4px var(--blue), 0 0 20px rgba(10, 132, 255, 0.4)'
       })
+      const checkBox = cardRef.value.querySelector('.check-box')
+      if (checkBox) {
+        gsap.set(checkBox, {
+          backgroundColor: 'var(--yellow)',
+          borderColor: 'var(--yellow)',
+          boxShadow: '0 0 10px rgba(255, 214, 10, 0.5)'
+        })
+      }
+    } else {
+      // Set precise initial style for the tier to prevent unstyled flash before hover
+      gsap.set(cardRef.value, {
+        borderColor: baseBorderColor,
+        boxShadow: baseBoxShadow
+      })
+      const glow = cardRef.value.querySelector('.item-bg-glow')
+      if (glow) {
+        gsap.set(glow, {
+          backgroundImage: baseGlow,
+          scale: 0.8,
+          opacity: 0.7
+        })
+      }
     }
   }
 })
@@ -160,15 +205,10 @@ onMounted(() => {
   >
     <PVTooltip
       :title="item.name"
-      :description="item.desc"
+      :description="tierTooltipDesc"
       position="top"
       class="card-tooltip-trigger"
     >
-      <!-- TIER BADGE -->
-      <div class="item-tier-badge">
-        {{ tierLabel }}
-      </div>
-
       <!-- ICON AREA -->
       <div class="item-visual-wrap">
         <div class="item-bg-glow" />
@@ -232,6 +272,7 @@ onMounted(() => {
   cursor: pointer;
   container-type: inline-size;
 
+
   :deep(.card-tooltip-trigger) {
     display: flex !important;
     flex-direction: column;
@@ -253,44 +294,32 @@ onMounted(() => {
     opacity: 0.4; // Consistent base sheen
     pointer-events: none;
     z-index: var(--z-map-floor);
+    border-radius: inherit;
   }
   
-  // TIER VARIANTS
+  // TIER VARIANTS — borders always visible, no badge needed
+  &.tier-common {
+    border-color: Rgba(148, 163, 184, 0.45);
+    box-shadow: 0 0 10px Rgba(148, 163, 184, 0.15), inset 0 0 6px Rgba(148, 163, 184, 0.05);
+    .item-bg-glow { background: radial-gradient(circle, Rgba(148, 163, 184, 0.12) 0%, transparent 70%); }
+  }
+
   &.tier-rare {
-    border-color: Rgba(59, 130, 246, 0.2);
-    .item-tier-badge { color: #3b82f6; }
-    .item-bg-glow { background: radial-gradient(circle, Rgba(59, 130, 246, 0.15) 0%, transparent 70%); }
+    border-color: Rgba(59, 130, 246, 0.55);
+    box-shadow: 0 0 10px Rgba(59, 130, 246, 0.2), inset 0 0 6px Rgba(59, 130, 246, 0.08);
+    .item-bg-glow { background: radial-gradient(circle, Rgba(59, 130, 246, 0.18) 0%, transparent 70%); }
   }
 
   &.tier-epic {
-    border-color: Rgba(168, 85, 247, 0.2);
-    .item-tier-badge { color: #a855f7; }
-    .item-bg-glow { background: radial-gradient(circle, Rgba(168, 85, 247, 0.15) 0%, transparent 70%); }
+    border-color: Rgba(168, 85, 247, 0.55);
+    box-shadow: 0 0 10px Rgba(168, 85, 247, 0.2), inset 0 0 6px Rgba(168, 85, 247, 0.08);
+    .item-bg-glow { background: radial-gradient(circle, Rgba(168, 85, 247, 0.18) 0%, transparent 70%); }
   }
 
   &.tier-legend {
-    border-color: Rgba(245, 158, 11, 0.2);
-    .item-tier-badge { color: var(--yellow); }
-    .item-bg-glow { background: radial-gradient(circle, Rgba(245, 158, 11, 0.15) 0%, transparent 70%); }
-  }
-
-  .item-tier-badge {
-    position: absolute;
-    top: clamp(4px, 6cqw, 8px);
-    left: clamp(4px, 6cqw, 8px);
-    padding: clamp(1px, 2cqw, 2px) clamp(3px, 5cqw, 6px);
-    background: Rgba(0, 0, 0, 0.4);
-    border: 1px solid Rgba(255, 255, 255, 0.1);
-    border-radius: 4px;
-    @include pixelated;
-    font-size: clamp(8px, 6cqw, 10px);
-    color: Rgba(255, 255, 255, 0.6);
-    z-index: var(--z-low);
-    max-width: calc(100% - 16px);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    box-sizing: border-box;
+    border-color: Rgba(245, 158, 11, 0.65);
+    box-shadow: 0 0 12px Rgba(245, 158, 11, 0.25), inset 0 0 8px Rgba(245, 158, 11, 0.1);
+    .item-bg-glow { background: radial-gradient(circle, Rgba(245, 158, 11, 0.2) 0%, transparent 70%); }
   }
 
   .item-visual-wrap {

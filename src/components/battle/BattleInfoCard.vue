@@ -356,13 +356,18 @@ const teamBallsStatus = computed(() => {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  margin-top: 4px;
+  margin-top: 0;
+  height: 20px;
+  align-items: center;
 
   @media (max-width: 600px) {
     gap: 4px;
-    margin-top: 4px;
+    margin-top: 0;
+    height: 15px;
   }
 }
+
+
 
 
 

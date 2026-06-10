@@ -24,6 +24,7 @@ interface BattleItem {
   cat: string
   sprite: string
   qty: number
+  tier?: 'common' | 'rare' | 'epic' | 'legend'
 }
 
 const inventory = computed(() => gameStore.state.inventory || {})
@@ -38,7 +39,11 @@ const battleItems = computed<BattleItem[]>(() => {
     
     const isTrainer = battleStore.state?.isTrainer
     if (itemData.cat === 'pociones' || itemData.cat === 'potions' || (itemData.cat === 'pokeballs' && !isTrainer)) {
-      items.push({ ...itemData, qty: count })
+      items.push({ 
+        ...itemData, 
+        qty: count,
+        tier: itemData.tier as 'common' | 'rare' | 'epic' | 'legend'
+      })
     }
   })
   
@@ -104,7 +109,7 @@ const handleUseItem = (item: BattleItem) => {
       <div
         v-for="item in battleItems"
         :key="item.id"
-        class="quick-item-card"
+        :class="['quick-item-card', 'tier-' + (item.tier || 'common')]"
         @click.stop="handleUseItem(item)"
       >
         <PVTooltip
@@ -113,6 +118,7 @@ const handleUseItem = (item: BattleItem) => {
           position="left"
         >
           <div class="card-inner">
+            <div class="item-bg-glow" />
             <div class="item-sprite-wrap">
               <img 
                 :src="getAssetUrl(ASSET_TYPES.ITEM, item.sprite)" 
@@ -151,7 +157,6 @@ const handleUseItem = (item: BattleItem) => {
   overflow-y: auto !important;
   @include gpu-layer;
   @include smooth-scroll;
-  @include smooth-scroll;
 }
 
 .quick-bag-grid {
@@ -167,8 +172,8 @@ const handleUseItem = (item: BattleItem) => {
 }
 
 .quick-item-card {
-  @include premium-card-hover(var(--yellow), 1.02, -4px);
   position: relative;
+  z-index: calc(var(--z-base) + 1);
   background: Rgba(30, 41, 59, 0.8);
   border: 1px solid Rgba(255, 255, 255, 0.1);
   border-radius: 12px; 
@@ -189,6 +194,25 @@ const handleUseItem = (item: BattleItem) => {
     pointer-events: none;
     border-radius: inherit; // Mantener la forma
   }
+
+  // TIER VARIANTS — base borders, GSAP handles hover amplification
+  &.tier-rare {
+    border-color: Rgba(59, 130, 246, 0.55);
+    box-shadow: 0 0 10px Rgba(59, 130, 246, 0.2), inset 0 0 6px Rgba(59, 130, 246, 0.08);
+    .item-bg-glow { background: Radial-Gradient(circle, Rgba(59, 130, 246, 0.18) 0%, Transparent 70%); }
+  }
+
+  &.tier-epic {
+    border-color: Rgba(168, 85, 247, 0.55);
+    box-shadow: 0 0 10px Rgba(168, 85, 247, 0.2), inset 0 0 6px Rgba(168, 85, 247, 0.08);
+    .item-bg-glow { background: Radial-Gradient(circle, Rgba(168, 85, 247, 0.18) 0%, Transparent 70%); }
+  }
+
+  &.tier-legend {
+    border-color: Rgba(245, 158, 11, 0.65);
+    box-shadow: 0 0 12px Rgba(245, 158, 11, 0.25), inset 0 0 8px Rgba(245, 158, 11, 0.1);
+    .item-bg-glow { background: Radial-Gradient(circle, Rgba(245, 158, 11, 0.2) 0%, Transparent 70%); }
+  }
 }
 
 .card-inner {
@@ -199,6 +223,16 @@ const handleUseItem = (item: BattleItem) => {
   align-items: center;
   justify-content: center;
   position: relative;
+  
+  .item-bg-glow {
+    position: absolute;
+    width: 60%;
+    height: 60%;
+    background: Radial-Gradient(circle, Rgba(255, 255, 255, 0.1) 0%, Transparent 70%);
+    will-change: transform, filter, opacity;
+    filter: Blur(5px);
+    z-index: var(--z-base);
+  }
 }
 
 .item-sprite-wrap {
@@ -224,9 +258,7 @@ const handleUseItem = (item: BattleItem) => {
   }
 }
 
-.quick-item-card:hover .item-sprite {
-  transform: Scale(1.1); 
-}
+// Sprite scale handled entirely by GSAP in hoverEnter.ts / hoverLeave.ts
 
 .item-qty-badge {
   position: absolute;

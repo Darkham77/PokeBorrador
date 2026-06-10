@@ -4,10 +4,12 @@ import { useBattleStore } from '@/stores/battle'
 import { useGameStore } from '@/stores/game'
 import { useDebugStore } from '@/stores/debug'
 import { getSpritesForArchetype, type NpcArchetype } from '@/logic/utils/npcSpriteRouter'
+import { ARCHETYPE_SPRITES } from '@/data/npcSpriteCatalog'
 import { usePlayerClassStore } from '@/stores/playerClass'
 import { useModalStore } from '@/stores/modals'
 import { pokemonDebugService } from '@/logic/debug/pokemonDebugService'
 import { GYMS } from '@/data/gyms'
+import { TRAINER_TYPES } from '@/data/trainerTypes'
 import type { Pokemon } from '@/types/pokemon'
 import type { MapLocation } from '@/types/encounters'
 import type { BattleOptions } from '@/types/stores'
@@ -34,47 +36,8 @@ export interface ExtendedBattleOptions {
   battleOptions?: Record<string, unknown>
 }
 
-export const TRAINER_SPRITES = [
-  { id: 'youngster', name: 'Joven' },
-  { id: 'lass', name: 'Chica' },
-  { id: 'cazabichos', name: 'Cazabichos' },
-  { id: 'picnicker', name: 'Dominguera' },
-  { id: 'camper', name: 'Campista' },
-  { id: 'hiker', name: 'Montañero' },
-  { id: 'sailor', name: 'Marinero' },
-  { id: 'scientist', name: 'Científico' },
-  { id: 'juggler', name: 'Malabarista' },
-  { id: 'blackbelt', name: 'Kárateka' },
-  { id: 'swimmer', name: 'Nadador' },
-  { id: 'tamer', name: 'Domador' },
-  { id: 'birdkeeper', name: 'Ornitólogo' },
-  { id: 'psychic', name: 'Médium' },
-  { id: 'gentleman', name: 'Caballero' },
-  { id: 'richboy', name: 'Niño Rico' },
-  { id: 'tuber', name: 'Playero' },
-  { id: 'cyclist', name: 'Ciclista' },
-  { id: 'roughneck', name: 'Macarra' },
-  { id: 'biker', name: 'Motorista' },
-  { id: 'teamrocket', name: 'Recluta Rocket' },
-  { id: 'rocket', name: 'Rocket' },
-  { id: 'beauty', name: 'Bella' },
-  { id: 'supernerd', name: 'Supernerd' },
-  { id: 'burglar', name: 'Ladrón' },
-  { id: 'dragontamer', name: 'Domadragones' },
-  { id: 'acetrainer', name: 'Entrenador Guay' },
-  { id: 'veteran', name: 'Veterano' },
-  { id: 'entrenador', name: 'Entrenador genérico' },
-  { id: 'criador', name: 'Criador genérico' },
-  { id: 'brock', name: 'Líder Brock' },
-  { id: 'misty', name: 'Líder Misty' },
-  { id: 'ltsurge', name: 'Líder Lt. Surge' },
-  { id: 'erika', name: 'Líder Erika' },
-  { id: 'koga', name: 'Líder Koga' },
-  { id: 'sabrina', name: 'Líder Sabrina' },
-  { id: 'blaine', name: 'Líder Blaine' },
-  { id: 'giovanni', name: 'Líder Giovanni' },
-  { id: 'blue', name: 'Rival Azul' }
-]
+// TRAINER_SPRITES removed — use ARCHETYPE_SPRITES from npcSpriteCatalog for dynamic selection.
+// Use getSpritesForArchetype(archetype) to get the full list for a given archetype.
 
 export const ARCHETYPE_PRESETS = [
   { id: 'random', name: 'Al Azar (Total)' },
@@ -97,25 +60,8 @@ export const ARCHETYPE_PRESETS = [
   { id: 'trainers', name: 'Entrenador Élite' }
 ]
 
-export const ARCHETYPE_POOLS: Record<string, string[]> = {
-  caza_bichos: ['caterpie', 'metapod', 'weedle', 'kakuna', 'paras', 'venonat'],
-  ornitologo: ['pidgey', 'spearow', 'doduo'],
-  cientifico: ['magnemite', 'voltorb', 'ditto', 'grimer'],
-  luchador: ['mankey', 'machop'],
-  pescador: ['magikarp', 'goldeen', 'poliwag'],
-  nadador: ['psyduck', 'tentacool', 'staryu', 'horsea'],
-  domador: ['growlithe', 'vulpix', 'ponyta', 'ekans'],
-  medium: ['abra', 'drowzee'],
-  motorista: ['koffing', 'grimer', 'rattata'],
-  montanero: ['geodude', 'sandshrew', 'rhyhorn'],
-  rocket: ['koffing', 'ekans', 'zubat', 'rattata', 'meowth', 'drowzee', 'machop', 'grimer'],
-  criador: ['eevee', 'pidgey', 'oddish', 'bellsprout', 'growlithe', 'poliwag', 'caterpie', 'weedle'],
-  aristocrata: ['meowth', 'growlithe', 'eevee', 'clefairy', 'jigglypuff', 'vulpix'],
-  ranger: ['nidoran_f', 'nidoran_m', 'oddish', 'bellsprout', 'paras', 'tangela', 'exeggcute'],
-  pokefan: ['pikachu', 'jigglypuff', 'clefairy', 'meowth', 'eevee', 'psyduck'],
-  artista: ['bellsprout', 'vulpix', 'oddish', 'jigglypuff', 'clefairy'],
-  trainers: ['dragonite', 'charizard', 'alakazam', 'machamp', 'gengar', 'lapras']
-}
+// All sprites across all archetypes, flattened — used for totally random selection
+const ALL_CATALOG_SPRITES: readonly string[] = (Object.values(ARCHETYPE_SPRITES) as ReadonlyArray<readonly string[]>).flat()
 
 export function useDebugTrainers() {
   const battleStore = useBattleStore()
@@ -155,6 +101,15 @@ export function useDebugTrainers() {
   const allMapsList = computed(() => {
     const maps = pokemonDataProvider.getMaps() as unknown as MapLocation[]
     return maps.map(m => ({ id: m.id, name: m.name || m.id }))
+  })
+
+  // Dynamic list of sprites for the current preset — used by the sprite <select> in the UI
+  const availableSpriteList = computed<{ id: string; label: string }[]>(() => {
+    const preset = selectedPreset.value
+    const sprites = preset !== 'random'
+      ? getSpritesForArchetype(preset as NpcArchetype)
+      : ALL_CATALOG_SPRITES
+    return (sprites as readonly string[]).map(id => ({ id, label: id }))
   })
 
   const gymList = computed(() => {
@@ -209,9 +164,13 @@ export function useDebugTrainers() {
   }
 
   function randomizeTrainerSprite() {
-    const randomSprite = TRAINER_SPRITES[Math.floor(Math.random() * TRAINER_SPRITES.length)]
-    if (randomSprite) {
-      trainerSprite.value = randomSprite.id
+    if (selectedPreset.value !== 'random') {
+      // Use the full archetype catalog for the selected archetype
+      const sprites = getSpritesForArchetype(selectedPreset.value as NpcArchetype)
+      trainerSprite.value = sprites[Math.floor(Math.random() * sprites.length)] || 'youngster'
+    } else {
+      // Pick from ALL sprites across all archetypes
+      trainerSprite.value = ALL_CATALOG_SPRITES[Math.floor(Math.random() * ALL_CATALOG_SPRITES.length)] || 'youngster'
     }
   }
 
@@ -241,9 +200,9 @@ export function useDebugTrainers() {
       trainerName.value = generateThemedTrainerName(archetype)
 
       const availableSprites = getSpritesForArchetype(archetype as NpcArchetype)
-      trainerSprite.value = availableSprites[Math.floor(Math.random() * availableSprites.length)] || 'entrenador'
+      trainerSprite.value = availableSprites[Math.floor(Math.random() * availableSprites.length)] || 'youngster'
 
-      const pool = ARCHETYPE_POOLS[archetype] || ['rattata']
+      const pool: string[] = [...(TRAINER_TYPES[archetype as keyof typeof TRAINER_TYPES]?.pool ?? ['rattata'])]
       for (let i = 0; i < size; i++) {
         const randomSpecies = pool[Math.floor(Math.random() * pool.length)] || 'rattata'
         const level = Math.floor(Math.random() * (genMaxLevel.value - genMinLevel.value + 1)) + genMinLevel.value
@@ -371,6 +330,7 @@ export function useDebugTrainers() {
     allMapsList,
     gymList,
     activePoke,
+    availableSpriteList,
     randomizeTrainer,
     randomizeTrainerName,
     randomizeTrainerSprite,
