@@ -80,6 +80,8 @@ To prevent layout collapse in scrollable flex containers (Common in Debug and Gr
   }
   ```
 
+- **Adaptiveness in Tall Modals (min-height >= 900px)**: When viewport height is significant and modals are expanded, container structures (such as `shop-shell` or custom inventory shells) must override fixed heights (e.g. `height: 600px`) using `@media (min-height: 900px)` to apply `height: 100%; max-height: none`. This allows nested flex grids to fill the expanded parent card layout dynamically.
+
 - **Divider Collapse in `flex-direction: column`**: An empty `<div>` used as a visual separator inside a `display: flex; flex-direction: column` container is treated as a flex item with zero intrinsic size, causing it to collapse to `0px` height and become invisible.
   - **Fix**: Force it out of the flex flow:
     ```scss
