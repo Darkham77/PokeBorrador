@@ -129,6 +129,28 @@ const onSellModeMouseLeave = (event: MouseEvent) => {
     overwrite: 'auto'
   })
 }
+
+const onMainTabMouseEnter = (event: MouseEvent) => {
+  const target = event.currentTarget as HTMLElement
+  if (!target.classList.contains('active')) {
+    gsap.to(target, {
+      color: '#ffffff',
+      duration: 0.2,
+      overwrite: 'auto'
+    })
+  }
+}
+
+const onMainTabMouseLeave = (event: MouseEvent) => {
+  const target = event.currentTarget as HTMLElement
+  if (!target.classList.contains('active')) {
+    gsap.to(target, {
+      color: 'var(--gray)',
+      duration: 0.2,
+      overwrite: 'auto'
+    })
+  }
+}
 </script>
 
 <template>
@@ -151,6 +173,8 @@ const onSellModeMouseLeave = (event: MouseEvent) => {
           class="main-tab-btn"
           :class="{ active: activeMainTab === 'productos' }"
           @click.stop="onMainTabClick('productos')"
+          @mouseenter="onMainTabMouseEnter"
+          @mouseleave="onMainTabMouseLeave"
         >
           Productos
         </button>
@@ -158,10 +182,13 @@ const onSellModeMouseLeave = (event: MouseEvent) => {
           class="main-tab-btn"
           :class="{ active: activeMainTab === 'materiales' }"
           @click.stop="onMainTabClick('materiales')"
+          @mouseenter="onMainTabMouseEnter"
+          @mouseleave="onMainTabMouseLeave"
         >
           Materiales
         </button>
       </div>
+
 
       <!-- Search & Tabs -->
       <div class="controls-section">
@@ -292,7 +319,6 @@ const onSellModeMouseLeave = (event: MouseEvent) => {
   padding: 8px 16px;
   cursor: pointer;
   @include pixelated;
-  transition: all 0.2s ease;
   position: relative;
 
   &:hover {

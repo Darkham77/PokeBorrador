@@ -52,7 +52,7 @@ describe('HUD Components', () => {
       const wrapper = mount(HUD_Navigation)
       
       // Click Mochila
-      const bagBtn = wrapper.findAll('.hud-nav-btn').find(b => b.text().includes('MOCHILA'))
+      const bagBtn = wrapper.findAll('button').find(b => b.text().includes('MOCHILA'))
       await bagBtn!.trigger('click')
       expect(spy).toHaveBeenCalledWith('Inventory')
 
@@ -61,7 +61,7 @@ describe('HUD Components', () => {
       await wrapper.vm.$nextTick()
 
       // Click Market Submenu Item
-      const marketSubmenuBtn = wrapper.findAll('.hud-nav-btn').find(b => b.text().includes('LOCAL'))
+      const marketSubmenuBtn = wrapper.findAll('button').find(b => b.text().includes('LOCAL'))
       await marketSubmenuBtn!.trigger('click')
       expect(spy).toHaveBeenCalledWith('Shop')
     })
