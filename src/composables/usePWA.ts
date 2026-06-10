@@ -109,7 +109,34 @@ export function usePWA() {
     progress.value = 80
     progressText.value = 'Aplicando actualización...'
     
-    const forceCacheBustingReload = () => {
+    const forceCacheBustingReload = async () => {
+      try {
+        const baseUrl = import.meta.env.BASE_URL || '/'
+        const mainUrls = [
+          window.location.origin + baseUrl,
+          window.location.origin + baseUrl + 'index.html',
+          window.location.href
+        ]
+        
+        // Force refresh browser HTTP cache for the main documents/assets
+        for (const url of mainUrls) {
+          try {
+            await fetch(url, {
+              headers: { 
+                'Pragma': 'no-cache', 
+                'Cache-Control': 'no-cache' 
+              },
+              cache: 'reload',
+              mode: 'no-cors'
+            })
+          } catch (e) {
+            logger.warn('PWA', `Could not force-refresh HTTP cache for ${url}:`, e)
+          }
+        }
+      } catch (e) {
+        logger.error('PWA', 'Error during HTTP cache reload sequence:', e)
+      }
+
       try {
         const url = new URL(window.location.href)
         url.searchParams.set('t', Temporal.Now.instant().epochMilliseconds.toString())
@@ -144,10 +171,10 @@ export function usePWA() {
       }
       progress.value = 100
       progressText.value = 'Reiniciando...'
-      forceCacheBustingReload()
+      await forceCacheBustingReload()
     } catch (e) {
       logger.error('PWA', `Error al actualizar Service Worker: ${(e as Error).message}`)
-      forceCacheBustingReload()
+      await forceCacheBustingReload()
     }
   }
 
