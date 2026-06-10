@@ -12,12 +12,12 @@ const gameStore = useGameStore()
 
 // Fossil definitions
 const FOSSILS = [
-  { name: 'Fósil Domo', sprite: 'dome-fossil', pokemon: 'Kabuto' },
-  { name: 'Fósil Hélix', sprite: 'helix-fossil', pokemon: 'Omanyte' },
-  { name: 'Ámbar Viejo', sprite: 'old-amber', pokemon: 'Aerodactyl' }
+  { name: 'Fósil Domo', sprite: 'dome_fossil', pokemon: 'Kabuto' },
+  { name: 'Fósil Hélix', sprite: 'helix_fossil', pokemon: 'Omanyte' },
+  { name: 'Ámbar Viejo', sprite: 'old_amber', pokemon: 'Aerodactyl' }
 ]
 
-const defaultFossil = { name: 'Fósil Domo', sprite: 'dome-fossil', pokemon: 'Kabuto' }
+const defaultFossil = { name: 'Fósil Domo', sprite: 'dome_fossil', pokemon: 'Kabuto' }
 const selectedFossilIndex = ref(0)
 const extraSacrifices = ref(0)
 

@@ -44,6 +44,7 @@
 
   .pv-tooltip-title {
     @include pixelated;
+    font-family: var(--font-pixel, 'Pokemon FireRed LeafGreen') !important;
     font-size: 8px;
     color: var(--yellow);
     text-shadow: 1px 1px 0px Rgba(0, 0, 0, 0.5);
@@ -62,6 +63,7 @@
 
   .pv-tooltip-desc {
     @include pixelated;
+    font-family: var(--font-pixel, 'Pokemon FireRed LeafGreen') !important;
     display: block;
     color: Rgba(241, 245, 249, 0.9);
     font-size: 8px; 

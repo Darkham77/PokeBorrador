@@ -53,14 +53,14 @@ describe('AssetService & Resolver', () => {
   })
 
   describe('AssetService: Item Routing', () => {
-    it('debe mapear nombres internos a IDs de PokeAPI (localizado)', () => {
-      expect(getAssetUrl(ASSET_TYPES.ITEM, 'super_pocion'))
-        .toBe('/assets/sprites/items/super-potion.webp')
+    it('debe resolver la URL del sprite a partir de su ID de ítem en inglés', () => {
+      expect(getAssetUrl(ASSET_TYPES.ITEM, 'super_potion'))
+        .toBe('/assets/sprites/crafting/tier3/super_potion.webp')
     })
 
-    it('debe usar fallback local para ítems no mapeados o custom', () => {
-      expect(getAssetUrl(ASSET_TYPES.ITEM, 'medalla_roca'))
-        .toBe('/assets/items/medalla_roca.webp')
+    it('debe devolver la ruta estándar en tier3 si no está en SHOP_ITEMS', () => {
+      expect(getAssetUrl(ASSET_TYPES.ITEM, 'custom_item'))
+        .toBe('/assets/sprites/crafting/tier3/custom_item.webp')
     })
   })
 

@@ -85,7 +85,7 @@ const execTryCatch = () => {
 const execShowBattleBag = () => { 
   modalStore.open('Inventory', { 
     battleMode: true, 
-    initialCategory: 'pociones' 
+    initialCategory: 'potions' 
   })
 }
 
@@ -211,7 +211,8 @@ const onEnter = (el: Element, done: () => void) => {
           class="continue-btn-final fight-btn"
           @click.stop="battleStore.startEncounter()"
         >
-          <span class="btn-emoji">{{ encounterBtnEmoji }}</span> {{ encounterBtnText }}
+          <span class="btn-emoji">{{ encounterBtnEmoji }}</span>
+          <span class="btn-text">{{ encounterBtnText }}</span>
         </button>
         <button
           v-if="battleStore.state?.wasSearching !== false || battleStore.state?.isGym || battleStore.isReadyToExit || isRewardsWait"
@@ -219,10 +220,12 @@ const onEnter = (el: Element, done: () => void) => {
           @click.stop="battleStore.completeBattleFlow('map')"
         >
           <template v-if="battleStore.state?.isGym">
-            <span class="btn-emoji">🏆</span> VOLVER A GIMNASIOS
+            <span class="btn-emoji">🏆</span>
+            <span class="btn-text">VOLVER A GIMNASIOS</span>
           </template>
           <template v-else>
-            <span class="btn-emoji">🗺️</span> VOLVER AL MAPA
+            <span class="btn-emoji">🗺️</span>
+            <span class="btn-text">VOLVER AL MAPA</span>
           </template>
         </button>
       </div>
@@ -378,10 +381,16 @@ const onEnter = (el: Element, done: () => void) => {
     align-items: center;
     justify-content: center;
     will-change: transform, filter, opacity;
-  filter: Drop-Shadow(0 2px 4px Rgba(0,0,0,0.3));
+    filter: Drop-Shadow(0 2px 4px Rgba(0,0,0,0.3));
     position: relative;
     top: -1px;
     flex-shrink: 0;
+  }
+
+  .btn-text {
+    display: inline-flex;
+    align-items: center;
+    line-height: 1;
   }
 }
 

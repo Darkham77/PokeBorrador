@@ -6,10 +6,9 @@ import { useShopStore } from '@/stores/shop'
 import { useGameStore } from '@/stores/game'
 import BaseModal from '@/components/common/BaseModal.vue'
 import { formatCurrency } from '@/logic/utils/formatters'
-import { getItemVirtualCategory } from '@/logic/providers/itemProvider'
 
 // Sub-components
-import ShopSidebar from './shop/ShopSidebar.vue'
+import UnifiedSidebar from '@/components/common/UnifiedSidebar.vue'
 import ShopItemCard from './shop/ShopItemCard.vue'
 
 interface Props {
@@ -32,6 +31,9 @@ const gameStore = useGameStore()
 const ui = useUIStore()
 const isSmallScreen = computed(() => ui.isSmallScreen)
 
+// Niveles superiores de categorización
+const activeMainTab = ref<'productos' | 'materiales'>('productos')
+
 const activeTab = ref(props.initialCategory || 'todos')
 const search = ref('')
 
@@ -49,11 +51,26 @@ interface ShopItem {
 const filteredItems = computed<ShopItem[]>(() => {
   return (shopStore.SHOP_ITEMS as ShopItem[]).filter(item => {
     if (item.market === false) return false
-    const resolvedCat = getItemVirtualCategory(item)
+    const resolvedCat = item.cat || 'otros'
+    const isMaterialCat = ['raw_material', 'refined_material', 'component'].includes(resolvedCat)
+    if (activeMainTab.value === 'materiales') {
+      if (!isMaterialCat) return false
+    } else {
+      if (isMaterialCat) return false
+    }
     if (activeTab.value !== 'todos' && resolvedCat !== activeTab.value) return false
     if (search.value && !item.name.toLowerCase().includes(search.value.toLowerCase())) return false
     return true
   })
+})
+
+const availableCategories = computed<string[]>(() => {
+  const cats = new Set<string>()
+  for (const item of (shopStore.SHOP_ITEMS as ShopItem[])) {
+    if (item.market === false) continue
+    cats.add(item.cat || 'otros')
+  }
+  return Array.from(cats)
 })
 
 // Orquestación de animaciones GSAP para la rejilla de objetos
@@ -135,10 +152,32 @@ const close = () => {
 
     <div class="shop-modal-container">
       <!-- Sidebar de Categorías -->
-      <ShopSidebar v-model:active-category="activeTab" />
+      <UnifiedSidebar
+        v-model:active-category="activeTab"
+        :main-tab="activeMainTab"
+        :available-categories="availableCategories"
+      />
 
       <!-- Contenido Principal -->
       <div class="shop-main">
+        <!-- Pestañas Principales en el modal de Tienda -->
+        <div class="modal-main-tabs">
+          <button 
+            class="modal-tab-btn" 
+            :class="{ active: activeMainTab === 'productos' }" 
+            @click.stop="activeMainTab = 'productos'"
+          >
+            Productos
+          </button>
+          <button 
+            class="modal-tab-btn" 
+            :class="{ active: activeMainTab === 'materiales' }" 
+            @click.stop="activeMainTab = 'materiales'"
+          >
+            Materiales
+          </button>
+        </div>
+
         <!-- Buscador de Objetos -->
         <div class="shop-search-wrapper">
           <div class="search-input-container">
@@ -181,3 +220,38 @@ const close = () => {
     </div>
   </BaseModal>
 </template>
+
+<style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
+
+.modal-main-tabs {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+  align-items: center;
+}
+
+.modal-tab-btn {
+  background: Rgba(255, 255, 255, 0.03);
+  border: 1px solid Rgba(255, 255, 255, 0.08);
+  color: var(--gray);
+  font-size: 11px;
+  padding: 6px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  @include pixelated;
+
+  &:hover {
+    color: var(--white);
+    background: Rgba(255, 255, 255, 0.06);
+  }
+
+  &.active {
+    color: var(--white);
+    background: var(--yellow);
+    border-color: var(--yellow-light);
+    box-shadow: 0 0 8px Rgba(234, 179, 8, 0.4);
+    text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
+  }
+}
+</style>

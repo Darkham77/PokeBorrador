@@ -43,7 +43,7 @@
   backface-visibility: hidden !important;
   
   // Core pixel font mapping
-  font-family: var(--font-pixel, 'Press Start 2P'), 'Arial', sans-serif !important;
+  font-family: var(--font-pixel, 'Pokemon FireRed LeafGreen'), 'Press Start 2P', 'DotGothic16', monospace !important;
 }
 
 @mixin pixelated-proportional {
@@ -58,7 +58,7 @@
   backface-visibility: hidden !important;
   
   // Core proportional pixel font mapping (No bitmap-like pixel scaling)
-  font-family: var(--font-pixel-proportional, 'DotGothic16'), 'Arial', sans-serif !important;
+  font-family: var(--font-pixel-proportional, 'Pokemon FireRed LeafGreen'), 'Press Start 2P', 'DotGothic16', monospace !important;
 }
 
 @mixin tooltip-premium {
@@ -71,7 +71,7 @@
   color: white;
   
   // High-fidelity pixel isolation
-  font-family: 'Press Start 2P', 'Arial', sans-serif !important;
+  font-family: 'Pokemon FireRed LeafGreen' !important;
   font-size: 8px !important; // Original size
   line-height: 1.4 !important;
   letter-spacing: 0 !important;

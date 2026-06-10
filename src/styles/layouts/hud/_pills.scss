@@ -105,7 +105,10 @@
 
   i, span:first-child { 
     font-size: 18px;
-    &.currency-icon-money { font-size: 22px; }
+    &.currency-icon-money { 
+      font-size: 22px; 
+      font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif !important;
+    }
     margin-bottom: 0px;
     @include flex-center;
     height: 24px;
@@ -150,7 +153,7 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  @include shell-premium(Rgba(15, 23, 42, 0.95));
+  background: Rgba(255, 255, 255, 0.05);
   border: 1px solid Rgba(255, 255, 255, 0.1);
   color: var(--white);
   width: 50px;
@@ -159,17 +162,21 @@
   @include will-animate(transform, box-shadow, border-color);
   
   cursor: pointer;
-  padding: 4px;
-  gap: 2px;
+  padding: 8px 6px;
+  gap: 6px; // 6px de separación entre emoji y texto
   container-type: inline-size;
   
-  span:first-child {
-    font-size: 18px;
+  span:first-child, i {
+    font-size: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif !important;
   }
 
   span:not(:first-child) {
     @include pixelated;
-    font-size: clamp(6px, 14cqw, 8px);
+    font-size: 7px !important;
     font-weight: 400;
     text-transform: uppercase;
     color: Rgba(255, 255, 255, 0.7);
@@ -178,12 +185,17 @@
   }
 
   &:hover {
-    background: Rgba(30, 41, 59, 0.8);
-    transform: Translatey(-2px);
+    background: Rgba(255, 255, 255, 0.12);
     border-color: Rgba(255, 255, 255, 0.2);
-    box-shadow: 0 4px 12px Rgba(0, 0, 0, 0.3);
+    box-shadow: none;
+    z-index: var(--z-base);
+    transform: none;
     
     span:not(:first-child) { color: var(--white); }
+  }
+
+  &:active {
+    transform: Scale(0.95);
   }
 
   &.active {

@@ -153,7 +153,8 @@ const TRAINER_TYPES: Record<string, { name: string; sprite: string }> = {
   'ranger': { name: 'Ranger Pokémon', sprite: 'pokemonranger' },
   'pokefan': { name: 'Pokéfan', sprite: 'pokefan' },
   'artista': { name: 'Artista', sprite: 'artist' },
-  'trainers': { name: 'Entrenador Élite', sprite: 'youngster-masters' }
+  'trainers': { name: 'Entrenador Élite', sprite: 'youngster-masters' },
+  'default': { name: 'Joven', sprite: 'youngster' }
 };
 
 const NATURES = ['Audaz', 'Firme', 'Pícaro', 'Manso', 'Serio', 'Osado', 'Plácido', 'Agitado', 'Jovial', 'Ingenuo', 'Modesto', 'Moderado', 'Raro', 'Dócil', 'Tímido', 'Activo', 'Alocado', 'Tranquilo', 'Grosero', 'Cauto'];

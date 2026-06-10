@@ -6,10 +6,9 @@ import { useShopStore } from '@/stores/shop'
 import { useGameStore } from '@/stores/game'
 import BaseModal from '@/components/common/BaseModal.vue'
 import { formatCurrency } from '@/logic/utils/formatters'
-import { getItemVirtualCategory } from '@/logic/providers/itemProvider'
 
-// Sub-components
-import BCShopSidebar from './bc-shop/BCShopSidebar.vue'
+
+import UnifiedSidebar from '@/components/common/UnifiedSidebar.vue'
 import BCShopItemCard from './bc-shop/BCShopItemCard.vue'
 
 interface Props {
@@ -30,6 +29,9 @@ const gameStore = useGameStore()
 const ui = useUIStore()
 const isSmallScreen = computed(() => ui.isSmallScreen)
 
+// Niveles superiores de categorización
+const activeMainTab = ref<'productos' | 'materiales'>('productos')
+
 const activeTab = ref('todos')
 const search = ref('')
 
@@ -49,7 +51,13 @@ interface ShopItem {
 const filteredItems = computed<ShopItem[]>(() => {
   return (shopStore.SHOP_ITEMS as ShopItem[]).filter(item => {
     if (!item.trainerShop) return false
-    const resolvedCat = getItemVirtualCategory(item)
+    const resolvedCat = item.cat || 'otros'
+    const isMaterialCat = ['raw_material', 'refined_material', 'component'].includes(resolvedCat)
+    if (activeMainTab.value === 'materiales') {
+      if (!isMaterialCat) return false
+    } else {
+      if (isMaterialCat) return false
+    }
     if (activeTab.value !== 'todos' && resolvedCat !== activeTab.value) return false
     if (search.value && !item.name.toLowerCase().includes(search.value.toLowerCase())) return false
     return true
@@ -59,6 +67,15 @@ const filteredItems = computed<ShopItem[]>(() => {
     if (aLocked !== bLocked) return aLocked - bLocked
     return (a.unlockLv || 1) - (b.unlockLv || 1)
   })
+})
+
+const availableCategories = computed<string[]>(() => {
+  const cats = new Set<string>()
+  for (const item of (shopStore.SHOP_ITEMS as ShopItem[])) {
+    if (!item.trainerShop) continue
+    cats.add(item.cat || 'otros')
+  }
+  return Array.from(cats)
 })
 
 // GSAP animations orchestration for item grid
@@ -142,12 +159,34 @@ const close = () => {
       </div>
     </template>
 
-    <div class="bc-shop-modal-container">
-      <!-- Categories Sidebar -->
-      <BCShopSidebar v-model:active-category="activeTab" />
+    <div class="shop-modal-container">
+      <!-- Sidebar de Categorías -->
+      <UnifiedSidebar
+        v-model:active-category="activeTab"
+        :main-tab="activeMainTab"
+        :available-categories="availableCategories"
+      />
 
       <!-- Main Content Area -->
       <div class="shop-main">
+        <!-- Pestañas Principales en el modal de Tienda BC -->
+        <div class="modal-main-tabs">
+          <button 
+            class="modal-tab-btn" 
+            :class="{ active: activeMainTab === 'productos' }" 
+            @click.stop="activeMainTab = 'productos'"
+          >
+            Productos
+          </button>
+          <button 
+            class="modal-tab-btn" 
+            :class="{ active: activeMainTab === 'materiales' }" 
+            @click.stop="activeMainTab = 'materiales'"
+          >
+            Materiales
+          </button>
+        </div>
+
         <!-- Object Search Bar -->
         <div class="shop-search-wrapper">
           <div class="search-input-container">
@@ -190,3 +229,38 @@ const close = () => {
     </div>
   </BaseModal>
 </template>
+
+<style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
+
+.modal-main-tabs {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+  align-items: center;
+}
+
+.modal-tab-btn {
+  background: Rgba(255, 255, 255, 0.03);
+  border: 1px solid Rgba(255, 255, 255, 0.08);
+  color: var(--gray);
+  font-size: 11px;
+  padding: 6px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  @include pixelated;
+
+  &:hover {
+    color: var(--white);
+    background: Rgba(255, 255, 255, 0.06);
+  }
+
+  &.active {
+    color: var(--white);
+    background: var(--purple);
+    border-color: var(--purple-light);
+    box-shadow: 0 0 8px Rgba(168, 85, 247, 0.4);
+    text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
+  }
+}
+</style>

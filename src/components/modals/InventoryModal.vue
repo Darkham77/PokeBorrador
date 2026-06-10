@@ -15,7 +15,7 @@ import { isGlobalItem } from '@/logic/providers/itemProvider'
 import type { Pokemon } from '@/types/pokemon'
 
 // Sub-components
-import InventorySidebar from './inventory/InventorySidebar.vue'
+import UnifiedSidebar from '@/components/common/UnifiedSidebar.vue'
 import InventoryItemCard from './inventory/InventoryItemCard.vue'
 import { useGridTransitions } from '@/composables/useGridTransitions'
 import InventoryControls from './inventory/InventoryControls.vue'
@@ -56,9 +56,28 @@ const itemActionMenu = ref<Item | null>(null) // { item, type: 'sell'|'release'|
 
 
 
+// Niveles superiores de categorización
+const activeMainTab = ref<'productos' | 'materiales'>('productos')
+
+// Observar cambio en pestaña principal para resetear la subcategoría
+watch(activeMainTab, () => {
+  inventoryStore.activeCategory = 'todos'
+})
+
 // Getters
 const modalWidth = computed(() => props.battleMode ? '480px' : '800px')
-const filteredItems = computed<Item[]>(() => (inventoryStore.bagItems as Item[]) || [])
+const filteredItems = computed<Item[]>(() => {
+  const allItems = (inventoryStore.bagItems as Item[]) || []
+  return allItems.filter(item => {
+    const cat = item.cat || 'otros'
+    const isMaterialCat = ['raw_material', 'refined_material', 'component'].includes(cat)
+    if (activeMainTab.value === 'materiales') {
+      return isMaterialCat
+    } else {
+      return !isMaterialCat
+    }
+  })
+})
 
 // Local items state to handle smooth transitions on tab switches
 const displayedItems = ref<Item[]>([])
@@ -71,10 +90,17 @@ watch(() => props.show, (val) => {
   if (val) {
     if (props.initialCategory) {
       inventoryStore.activeCategory = props.initialCategory
+      if (['raw_material', 'refined_material', 'component'].includes(props.initialCategory)) {
+        activeMainTab.value = 'materiales'
+      } else {
+        activeMainTab.value = 'productos'
+      }
     } else if (uiStore.inventoryTarget) {
       inventoryStore.activeCategory = 'utilizables'
+      activeMainTab.value = 'productos'
     } else if (props.battleMode) {
-      inventoryStore.activeCategory = 'pociones'
+      inventoryStore.activeCategory = 'potions'
+      activeMainTab.value = 'productos'
     }
     displayedItems.value = [...filteredItems.value]
     
@@ -88,7 +114,7 @@ watch(() => props.show, (val) => {
   }
 }, { immediate: true })
 
-watch(() => [inventoryStore.activeCategory, inventoryStore.searchQuery], async ([newCat, newQuery]) => {
+watch(() => [inventoryStore.activeCategory, inventoryStore.searchQuery, activeMainTab.value], async ([newCat, newQuery]) => {
   const gridEl = document.querySelector('.inventory-grid-wrapper')
   if (gridEl) {
     isCategorySwitching.value = true
@@ -391,10 +417,35 @@ const { onBeforeEnter, onEnter, onLeave } = useGridTransitions(isCategorySwitchi
       :class="{ 'is-battle-mode': battleMode }"
     >
       <!-- SIDEBAR (Hidden in battle mode) -->
-      <InventorySidebar v-if="!battleMode" />
+      <UnifiedSidebar
+        v-if="!battleMode"
+        v-model:active-category="inventoryStore.activeCategory"
+        :main-tab="activeMainTab"
+      />
 
       <!-- MAIN CONTENT -->
       <div class="inventory-main">
+        <!-- Pestañas Principales en el modal de Mochila -->
+        <div
+          v-if="!battleMode"
+          class="modal-main-tabs"
+        >
+          <button 
+            class="modal-tab-btn" 
+            :class="{ active: activeMainTab === 'productos' }" 
+            @click.stop="activeMainTab = 'productos'"
+          >
+            Productos
+          </button>
+          <button 
+            class="modal-tab-btn" 
+            :class="{ active: activeMainTab === 'materiales' }" 
+            @click.stop="activeMainTab = 'materiales'"
+          >
+            Materiales
+          </button>
+        </div>
+
         <!-- CONTROLS (Hidden in battle mode) -->
         <InventoryControls 
           v-if="!battleMode"
@@ -479,6 +530,37 @@ const { onBeforeEnter, onEnter, onLeave } = useGridTransitions(isCategorySwitchi
 
   :deep(.item-premium-grid) {
     grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)) !important;
+  }
+}
+
+.modal-main-tabs {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+  align-items: center;
+}
+
+.modal-tab-btn {
+  background: Rgba(255, 255, 255, 0.03);
+  border: 1px solid Rgba(255, 255, 255, 0.08);
+  color: var(--gray);
+  font-size: 11px;
+  padding: 6px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  @include pixelated;
+
+  &:hover {
+    color: var(--white);
+    background: Rgba(255, 255, 255, 0.06);
+  }
+
+  &.active {
+    color: var(--white);
+    background: var(--red);
+    border-color: var(--red-light);
+    box-shadow: 0 0 8px Rgba(239, 68, 68, 0.4);
+    text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
   }
 }
 </style>

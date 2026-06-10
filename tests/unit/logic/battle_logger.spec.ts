@@ -50,7 +50,7 @@ describe('Battle Logger Utility', () => {
     // Usamos 'potion' que es el ID en data/items.ts
     const result = formatBattleLog('Used potion', 'log-info', 'potion' as unknown as Parameters<typeof formatBattleLog>[2], mockCtx as unknown as Parameters<typeof formatBattleLog>[3])
     expect(result.iconType).toBe('item')
-    expect(result.icon).toContain('item-potion')
+    expect(result.icon).toContain('potion')
   })
 
   it('should fallback to attackerSide if source is unknown', () => {

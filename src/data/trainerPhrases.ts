@@ -199,7 +199,8 @@ const TRAINER_PERSONALITIES: Record<string, string[]> = {
   ranger: ["audaz", "relajado"],
   pokefan: ["entusiasta", "timido"],
   artista: ["misterioso", "entusiasta"],
-  trainers: ["competitivo", "inteligente"]
+  trainers: ["competitivo", "inteligente"],
+  default: ["entusiasta", "competitivo"]
 };
 
 // Precompute combined phrases for each trainer type key at module loading time
@@ -222,9 +223,13 @@ for (const [trainerType, personalities] of Object.entries(TRAINER_PERSONALITIES)
 export function getRandomQuoteForTrainer(trainerTypeKey: string): string {
   const quotes = PRECOMPUTED_TRAINER_PHRASES[trainerTypeKey];
   if (!quotes || quotes.length === 0) {
-    return "¡Prepárate para combatir! ¡No te lo pondré fácil!";
+    throw new Error(`Missing custom phrases or personality for trainer type "${trainerTypeKey}" in trainerPhrases.ts`);
   }
 
   const randomIndex = Math.floor(Math.random() * quotes.length);
-  return quotes[randomIndex] || "¡Prepárate para combatir! ¡No te lo pondré fácil!";
+  const quote = quotes[randomIndex];
+  if (!quote) {
+    throw new Error(`Empty quote resolved at index ${randomIndex} for trainer type "${trainerTypeKey}"`);
+  }
+  return quote;
 }

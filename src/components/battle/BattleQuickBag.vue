@@ -37,13 +37,15 @@ const battleItems = computed<BattleItem[]>(() => {
     if (!itemData) return
     
     const isTrainer = battleStore.state?.isTrainer
-    if (itemData.cat === 'pociones' || (itemData.cat === 'pokeballs' && !isTrainer)) {
+    if (itemData.cat === 'pociones' || itemData.cat === 'potions' || (itemData.cat === 'pokeballs' && !isTrainer)) {
       items.push({ ...itemData, qty: count })
     }
   })
   
   return items.sort((a, b) => {
-    if (a.cat !== b.cat) return a.cat === 'pociones' ? -1 : 1
+    const isAPotion = a.cat === 'pociones' || a.cat === 'potions'
+    const isBPotion = b.cat === 'pociones' || b.cat === 'potions'
+    if (isAPotion !== isBPotion) return isAPotion ? -1 : 1
     return a.name.localeCompare(b.name)
   })
 })

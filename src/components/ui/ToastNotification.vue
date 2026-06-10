@@ -88,15 +88,19 @@ function onLeave(el: Element, done: () => void) {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-family: 'Inter', 'Nunito', sans-serif;
+  font-family: var(--font-ui);
   color: white;
-  font-size: 13px;
+  font-size: 10px;
   font-weight: 600;
-  letter-spacing: -0.2px;
+  letter-spacing: 0px;
   
   .toast-icon {
-    font-size: 16px;
+    font-size: 18px;
     flex-shrink: 0;
+    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .toast-icon-img {

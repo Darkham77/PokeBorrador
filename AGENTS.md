@@ -58,6 +58,7 @@ This file defines the immutable DNA of the Poké Vicio project. Every AI agent i
 - **Mandatory Confirmation**: Before executing any git operation that involves a rollback, reset, or destructive change (e.g., `git reset --hard`, `git checkout .`, `git clean`), the agent MUST explicitly ask the user for confirmation.
 - **Explicit Command Disclosure**: The confirmation request MUST include the exact command(s) that are about to be executed so the user can review them.
 - **Safety First**: Rollbacks are high-risk operations. Never assume the user wants a destructive revert without a clear, final "Yes" from their side.
+- **Massive Script Execution on Uncommitted Files**: Before running any massive or bulk modification script (e.g., code formatters, batch replacements, refactoring utilities) on files that have uncommitted changes, the agent MUST either propose committing the current changes first, or make temporary backups of the targeted files inside the `scratch/` directory to ensure they can be recovered if something breaks.
 
 ## 9. Output Directory Integrity (Scratch Folder)
 

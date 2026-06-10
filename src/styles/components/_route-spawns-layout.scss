@@ -218,18 +218,27 @@
 
     .terrain-item {
       display: flex;
-      justify-content: space-between;
+      flex-direction: row;
       align-items: center;
-      font-size: 12px;
-      line-height: 1.4;
+      gap: 12px;
+      font-size: 9px; // Reducido para evitar el overlap y respetar el pixel font
+      line-height: 1.6;
+      @include pixelated;
 
       .label {
         color: var(--gray);
+        min-width: 90px;
+        flex-shrink: 0;
+        text-align: left;
       }
 
       .value {
         color: #fff;
         font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 4px;
 
         &.gray-text {
           color: var(--gray);

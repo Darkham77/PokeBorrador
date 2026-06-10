@@ -4,7 +4,7 @@ import { useGameStore } from './game.ts'
 import { useUIStore } from './ui.ts'
 import { safeStorage } from '@/logic/utils/storage'
 import { SHOP_ITEMS } from '@/data/items'
-import { isGlobalItem, getItemVirtualCategory } from '../logic/providers/itemProvider.ts'
+import { isGlobalItem } from '../logic/providers/itemProvider.ts'
 import type { Pokemon } from '@/types/pokemon'
 import type { ItemEffectResult } from '@/types/items'
 import { executeUseItem } from './inventoryUseAction.ts'
@@ -39,12 +39,10 @@ export function isItemUsableOutsideCombat(item: { id: string; cat?: string; type
   if (id && id.toLowerCase().startsWith('tm')) return true
 
   if (
-    cat === 'pociones' ||
+    cat === 'potions' ||
     cat === 'stones' || type === 'stone' ||
-    cat === 'held' || type === 'held' ||
-    cat === 'booster' || type === 'booster' ||
-    cat === 'utility' || type === 'usable' ||
-    cat === 'breeding'
+    cat === 'combat_held' || cat === 'breeding_held' || type === 'held' ||
+    cat === 'tools' || type === 'booster' || type === 'usable'
   ) {
     return true
   }
@@ -96,7 +94,7 @@ export const useInventoryStore = defineStore('inventory', () => {
           const officialName = resolveNormalizedName(item.name)
           if (isGlobalItem(officialName)) return true
 
-          const isHeld = item.cat === 'held' || item.type === 'held' || (item.cat === 'breeding' && item.id !== 'vigor_restorer' && !item.id.includes('berry'))
+          const isHeld = item.cat === 'combat_held' || item.cat === 'breeding_held' || item.type === 'held'
           if (isHeld) return (gameStore.state.team || []).length > 0
 
           return (gameStore.state.team || []).some((pokemon: Pokemon) => helperIsItemUsableOn(item.name, pokemon))
@@ -106,7 +104,7 @@ export const useInventoryStore = defineStore('inventory', () => {
 
     return items.filter(item => {
       if (item.qty <= 0) return false
-      const resolvedCat = getItemVirtualCategory(item)
+      const resolvedCat = item.cat || 'otros'
       if (activeCategory.value !== 'todos' && activeCategory.value !== 'utilizables' && resolvedCat !== activeCategory.value) return false
       if (searchQuery.value && !item.name.toLowerCase().includes(searchQuery.value.toLowerCase())) return false
       return true
@@ -116,15 +114,19 @@ export const useInventoryStore = defineStore('inventory', () => {
   const CATEGORY_LABELS = {
     utilizables: 'Utilizables',
     todos: 'Todos',
-    pokeballs: 'Balls',
-    pociones: 'Cura',
-    stones: 'Piedras',
-    minerals: 'Minerales y Fósiles',
-    purified: 'Materiales Purificados',
+    // Materiales
+    raw_material: 'Materia Prima',
+    refined_material: 'Materia Refinada',
+    component: 'Componentes',
+    // Productos
+    pokeballs: 'Pokéballs',
+    potions: 'Curativos',
+    combat_held: 'Equipables',
+    breeding_held: 'Crianza',
+    machinery: 'Maquinaria',
     tools: 'Herramientas',
-    held: 'Equipo',
-    breeding: 'Crianza',
-    especial: 'Otros'
+    tms: 'Discos MT',
+    otros: 'Otros'
   }
 
   // --- BAG ACTIONS ---

@@ -25,24 +25,24 @@ export type NpcArchetype =
 
 // Mapping of archetypes to keywords found in sprite filenames or NPC names
 const ARCHETYPE_KEYWORDS: Record<NpcArchetype, string[]> = {
-  trainers: ['master'],
-  caza_bichos: ['bugcatcher', 'bugmaniac', 'bug', 'bichos', 'cazabichos'],
-  ornitologo: ['birdkeeper', 'ornitologo', 'pajaro'],
-  cientifico: ['scientist', 'supernerd', 'cientifico', 'nerd', 'doctor'],
-  luchador: ['blackbelt', 'battlegirl', 'crushgirl', 'luchador', 'fight', 'crasherwake', 'bea', 'bruno', 'chuck'],
-  pescador: ['fisherman', 'fisher', 'pescador', 'marlon'],
-  nadador: ['swimmer', 'nadador', 'diver', 'freediver'],
-  domador: ['tamer', 'domador', 'roughneck', 'tamer-gen3'],
-  medium: ['psychic', 'medium', 'channeler', 'hexmaniac', 'sabrina', 'morty', 'ghost', 'furisodegirl'],
-  motorista: ['biker', 'cueball', 'delinquent', 'punk', 'motorista', 'hooligan'],
-  montanero: ['hiker', 'ruinmaniac', 'montanero', 'brock', 'roark', 'clay'],
-  rocket: ['rocket', 'grunt', 'giovanni', 'petrel', 'proton', 'ariana', 'archer', 'rainbowrocket'],
-  criador: ['breeder', 'criador', 'nursery', 'nurseryaide', 'caretaker'],
-  aristocrata: ['gentleman', 'lady', 'madame', 'richboy', 'butler'],
+  trainers: ['master', 'alder', 'arven', 'ash', 'barry', 'bianca', 'blue', 'brendan', 'calem', 'candela', 'carmine', 'cheren', 'cynthia', 'diantha', 'elaine', 'elio', 'ethan', 'geeta', 'gladion', 'gloria', 'green', 'hau', 'hilbert', 'hilda', 'hop', 'hugh', 'ingo', 'iris', 'kieran', 'kris', 'leaf', 'leon', 'lucas', 'lyra', 'marnie', 'may', 'nate', 'nemona', 'palmer', 'red', 'rei', 'rosa', 'roy', 'selene', 'serena', 'steven', 'trace', 'victor', 'volo', 'wally'],
+  caza_bichos: ['bugcatcher', 'bugmaniac', 'bug', 'bichos', 'cazabichos', 'aaron', 'katy', 'bugsy', 'burgh'],
+  ornitologo: ['birdkeeper', 'ornitologo', 'pajaro', 'falkner', 'kahili', 'skyla', 'skytrainer', 'winona', 'pilot'],
+  cientifico: ['scientist', 'supernerd', 'cientifico', 'nerd', 'doctor', 'blaine', 'briar', 'clemont', 'colress', 'elm', 'juniper', 'kukui', 'laventon', 'magnolia', 'miriam', 'molayne', 'nurse', 'oak', 'raifort', 'rowan', 'sada', 'salvatore', 'samsonoak', 'sonia', 'sophocles', 'sycamore', 'thorton', 'turo'],
+  luchador: ['blackbelt', 'battlegirl', 'crushgirl', 'luchador', 'fight', 'crasherwake', 'bea', 'bruno', 'chuck', 'atticus', 'brawly', 'dendra', 'eri', 'greta', 'hala', 'korrina', 'marshal', 'mustard', 'securitycorps', 'theroyal', 'wikstrom', 'zisu'],
+  pescador: ['fisherman', 'fisher', 'pescador', 'marlon', 'sailor', 'lana'],
+  nadador: ['swimmer', 'nadador', 'diver', 'freediver', 'candice', 'juan', 'lorelei', 'misty', 'nessa', 'surfer', 'wallace'],
+  domador: ['tamer', 'domador', 'roughneck', 'tamer-gen3', 'clair', 'drasna', 'drayden', 'drayton', 'hassel', 'lucy', 'ryuki', 'zinnia'],
+  medium: ['psychic', 'medium', 'channeler', 'hexmaniac', 'sabrina', 'morty', 'ghost', 'furisodegirl', 'avery', 'bede', 'caitlin', 'liza', 'lucian', 'olympia', 'shauntal', 'tate', 'will'],
+  motorista: ['biker', 'cueball', 'delinquent', 'punk', 'motorista', 'hooligan', 'cyclist', 'giacomo', 'mela', 'piers', 'roxie', 'ruffian', 'streetthug'],
+  montanero: ['hiker', 'ruinmaniac', 'montanero', 'brock', 'roark', 'clay', 'bertha', 'gordie', 'grant', 'olivia', 'peonia', 'peony', 'roxanne', 'worker', 'rika'],
+  rocket: ['rocket', 'grunt', 'giovanni', 'petrel', 'proton', 'ariana', 'archer', 'rainbowrocket', 'archie', 'cliff', 'courtney', 'cyrus', 'faba', 'ghetsis', 'guzma', 'jupiter', 'lusamine', 'lysandre', 'mable', 'malva', 'mars', 'matt', 'maxie', 'oleana', 'plumeria', 'rood', 'saturn', 'shadowtriad', 'shelly', 'sierra', 'tabitha', 'xerosic', 'zinzolin'],
+  criador: ['breeder', 'criador', 'nursery', 'nurseryaide', 'caretaker', 'cheryl', 'cilan', 'milo', 'ramos', 'rancher'],
+  aristocrata: ['gentleman', 'lady', 'madame', 'richboy', 'butler', 'darach', 'officeworker', 'ortega', 'rose', 'siebold'],
   ranger: ['ranger', 'pokemonranger'],
   pokefan: ['pokefan', 'pokekid'],
-  artista: ['beauty', 'artist', 'dancer', 'model'],
-  default: ['youngster', 'lass', 'camper', 'picnicker', 'schoolkid', 'entrenador', 'player', 'rival', 'blue', 'red']
+  artista: ['beauty', 'artist', 'dancer', 'model', 'elesa', 'lisia', 'mina', 'painter', 'perrin', 'risingstar', 'rollerskater', 'tierno', 'tucker', 'tuli', 'tulip', 'valerie', 'viola'],
+  default: ['youngster', 'lass', 'camper', 'picnicker', 'schoolkid', 'entrenador', 'player', 'rival']
 };
 
 import { ARCHETYPE_SPRITES } from '../../data/npcSpriteCatalog.ts';

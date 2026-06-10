@@ -9,120 +9,8 @@ import { SHOP_ITEMS } from '@/data/items';
  * POKEAPI_BASE: Now local paths for downloaded sprites.
  */
 const POKEAPI_BASE = '/assets/sprites/pokemon/';
-const POKEAPI_ITEM_BASE = '/assets/sprites/items/';
 
-/**
- * ITEM_MAPPING: Maps internal item names to PokeAPI names.
- */
-const ITEM_MAPPING: Record<string, string> = {
-  'potion': 'potion',
-  'super_potion': 'super-potion',
-  'hyper_potion': 'hyper-potion',
-  'max_potion': 'max-potion',
-  'fire_stone': 'fire-stone',
-  'water_stone': 'water-stone',
-  'thunder_stone': 'thunder-stone',
-  'leaf_stone': 'leaf-stone',
-  'moon_stone': 'moon-stone',
-  'sun_stone': 'sun-stone',
-  'repel': 'repel',
-  'vigor_candy': 'rare-candy',
-  'pocion': 'potion',
-  'super_pocion': 'super-potion',
-  'hiper_pocion': 'hyper-potion',
-  'pocion_max': 'max-potion',
-  'revivir_max': 'max-revive',
-  'quemadura': 'burn-heal',
-  'despertar': 'awakening',
-  'cura_total': 'full-heal',
-  'elixir': 'elixir',
-  'elixir_max': 'max-elixir',
-  'piedra_fuego': 'fire-stone',
-  'piedra_agua': 'water-stone',
-  'piedra_trueno': 'thunder-stone',
-  'piedra_hoja': 'leaf-stone',
-  'piedra_luna': 'moon-stone',
-  'piedra_solar': 'sun-stone',
-  'pokeball': 'poke-ball',
-  'pokéball': 'poke-ball',
-  'superball': 'great-ball',
-  'greatball': 'great-ball',
-  'super-ball': 'great-ball',
-  'super ball': 'great-ball',
-  'súper ball': 'great-ball',
-  'ultraball': 'ultra-ball',
-  'ultra-ball': 'ultra-ball',
-  'ultra ball': 'ultra-ball',
-  'masterball': 'master-ball',
-  'master-ball': 'master-ball',
-  'master ball': 'master-ball',
-  'netball': 'net-ball',
-  'net-ball': 'net-ball',
-  'duskball': 'dusk-ball',
-  'dusk-ball': 'dusk-ball',
-  'turnoball': 'timer-ball',
-  'timerball': 'timer-ball',
-  'timer-ball': 'timer-ball',
-  'turno ball': 'timer-ball',
-  'repelente': 'repel',
-  'super_repel': 'super-repel',
-  'max_repel': 'max-repel',
-  'huevo_suerte': 'lucky-egg',
-  'huevo_suerte_pequeño': 'lucky-egg',
-  'compartir_exp': 'exp-share',
-  'restos': 'leftovers',
-  'cascabel_concha': 'shell-bell',
-  'cinta_elegida': 'choice-band',
-  'banda_focus': 'focus-sash',
-  'lente_zoom': 'scope-lens',
-  'caramelo_raro': 'rare-candy',
-  'subida_de_pp': 'pp-up',
-  'moneda_amuleto': 'amulet-coin',
-  'bola_luminosa': 'light-ball',
-  'hueso_grueso': 'thick-club',
-  'palo': 'stick',
-  'polvo_metálico': 'metal-powder',
-  'cuchara_torcida': 'twisted-spoon',
-  'hechizo': 'spell-tag',
-  'pesa_recia': 'power-weight',
-  'brazal_recia': 'power-bracer',
-  'cinto_recia': 'power-belt',
-  'lente_recia': 'power-lens',
-  'banda_recia': 'power-band',
-  'franja_recia': 'power-anklet',
-  'lazo_destino': 'destiny-knot',
-  'piedra_eterna': 'everstone',
-  'restaurador_vigor': 'rare-candy',
-  'lemonade': 'lemonade',
-  'refresco': 'soda-pop',
-  'limonada': 'lemonade',
-  'iman': 'magnet',
-  'subida_pp': 'pp-up',
-  'mt_toxico': 'tm-poison',
-  'ocaso_ball': 'dusk-ball',
-  'turno_ball': 'timer-ball',
-  'ultra_ball': 'ultra-ball',
-  'master_ball': 'master-ball',
-  'super_ball': 'great-ball',
-  'brazal_recio': 'power-bracer',
-  'baya_de_oro': 'lum-berry',
-  'baya_oro': 'lum-berry',
-  'carbon': 'charcoal',
-  'carbón': 'charcoal',
-  'agua_mistica': 'mystic-water',
-  'agua_mística': 'mystic-water',
-  'semilla_milagro': 'miracle-seed',
-  'colmillodragon': 'dragon-fang',
-  'colmillodragón': 'dragon-fang',
-  'escama_dragon': 'dragon-scale',
-  'escama_dragón': 'dragon-scale',
-  'polvo_plata': 'silver-powder',
-  'flecha_venenosa': 'poison-barb',
-  'trozo_estrella': 'star-piece',
-  'polvo_estelar': 'stardust',
-  'perla_grande': 'big-pearl',
-  'perla': 'pearl'
-};
+
 
 /**
  * ASSET_TYPES: Supported categories for the Asset Service.
@@ -327,71 +215,20 @@ export const getAssetUrl = (type: AssetType, rawId: string | number, options: As
 
     case ASSET_TYPES.ITEM: {
       const idStr = String(id).toLowerCase();
-      const normalizedInput = idStr.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[\s-]/g, '_');
       
-      const itemAliases: Record<string, string> = {
-        'iman': 'magnet',
-        'elixir': 'elixir',
-        'subida_pp': 'pp-up',
-        'mt_toxico': 'tm-poison',
-        'ocaso_ball': 'dusk-ball',
-        'turno_ball': 'timer-ball',
-        'ultra_ball': 'ultra-ball',
-        'master_ball': 'master-ball',
-        'super_ball': 'great-ball',
-        'brazal_recio': 'power-bracer',
-        'cinto_recio': 'power-belt',
-        'pesa_recia': 'power-weight',
-        'banda_recia': 'power-band',
-        'lente_recia': 'power-lens',
-        'franja_recia': 'power-anklet',
-        'baya_de_oro': 'lum-berry',
-        'baya_oro': 'lum-berry'
-      };
-
-      const mappedAlias = itemAliases[normalizedInput] || itemAliases[idStr];
-      const searchName = mappedAlias || idStr;
-
-      const shopItem = SHOP_ITEMS.find(i => 
-        i.name.toLowerCase() === searchName || 
-        i.id.toLowerCase() === searchName ||
-        (i.sprite && i.sprite.toLowerCase() === searchName) ||
-        i.name.toLowerCase() === idStr ||
-        i.id.toLowerCase() === idStr ||
-        (i.sprite && i.sprite.toLowerCase() === idStr)
-      );
-      
-      const mappedId = shopItem 
-        ? shopItem.sprite 
-        : (mappedAlias || ITEM_MAPPING[normalizedInput] || ITEM_MAPPING[idStr] || (idStr.startsWith('ores/') ? idStr : idStr.replace(/_/g, '-')));
-      
-      // If it's found in SHOP_ITEMS, mapping, numeric, or a known PokeAPI slug pattern
-      const isPokeAPI = shopItem !== undefined ||
-                       mappedAlias !== undefined ||
-                       (ITEM_MAPPING[normalizedInput] !== undefined) || 
-                       (ITEM_MAPPING[idStr] !== undefined) || 
-                       !isNaN(Number(mappedId)) || 
-                       (mappedId.includes('-') && !idStr.startsWith('medalla')) || 
-                       mappedId.includes('ball') || 
-                       mappedId.includes('stone') ||
-                       mappedId.includes('repel') ||
-                       mappedId.includes('fossil') ||
-                       ['potion', 'revive', 'heal', 'ether', 'elixir', 'antidote', 'share', 'leftovers', 'bell', 'band', 'sash', 'lens', 'candy', 'up', 'egg', 'nugget', 'pearl', 'dust', 'piece', 'spoon', 'tag', 'powder', 'club', 'light', 'stick', 'ticket', 'radar', 'awakening', 'magnet'].some(k => mappedId.includes(k));
-
-      if (mappedId.startsWith('fishing_rod') || mappedId.startsWith('pickaxe') || mappedId.startsWith('brush')) {
-        return resolveAsset(`/assets/sprites/tools/${mappedId}${extension}`);
-      }
-
-      if (mappedId.startsWith('ores/')) {
-        return resolveAsset(`/assets/sprites/${mappedId}${extension}`);
-      }
-
-      if (isPokeAPI) {
-        return resolveAsset(`${POKEAPI_ITEM_BASE}${mappedId}${extension}`);
+      // Direct matching if they passed the full sprite path directly
+      if (idStr.startsWith('crafting/') || idStr.startsWith('ores/') || idStr.startsWith('tools/')) {
+        return resolveAsset(`/assets/sprites/${idStr}${extension}`);
       }
       
-      // Local fallback
-      return resolveAsset(`/assets/items/${idStr}${extension}`);
+      // Match by ID against SHOP_ITEMS
+      const shopItem = SHOP_ITEMS.find(i => i.id === idStr);
+      if (shopItem) {
+        return resolveAsset(`/assets/sprites/${shopItem.sprite}${extension}`);
+      }
+      
+      // No fallback! Return standard tier3 location
+      return resolveAsset(`/assets/sprites/crafting/tier3/${idStr}${extension}`);
     }
 
     case ASSET_TYPES.BADGE:

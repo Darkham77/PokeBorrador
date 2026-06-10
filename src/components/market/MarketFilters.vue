@@ -22,7 +22,19 @@ const types = [
 ]
 
 const categories = [
-  'all', 'pokeballs', 'pociones', 'stones', 'held', 'booster', 'especial'
+  { value: 'all', label: 'Todo' },
+  { value: 'pokeballs', label: 'Pokéballs' },
+  { value: 'potions', label: 'Curativos' },
+  { value: 'stones', label: 'Piedras' },
+  { value: 'combat_held', label: 'Combate' },
+  { value: 'breeding_held', label: 'Crianza' },
+  { value: 'machinery', label: 'Maquinaria' },
+  { value: 'tools', label: 'Herramientas' },
+  { value: 'tms', label: 'MTs' },
+  { value: 'raw_material', label: 'M. Prima' },
+  { value: 'refined_material', label: 'M. Refinado' },
+  { value: 'component', label: 'Componente' },
+  { value: 'otros', label: 'Otros' }
 ]
 
 const tiers = ['all', 'S+', 'S', 'A', 'B', 'C', 'D', 'F']
@@ -180,12 +192,12 @@ const getTypeEmoji = (type: string) => {
           <div class="tags-grid">
             <button
               v-for="c in categories"
-              :key="c"
+              :key="c.value"
               class="tag-btn"
-              :class="{ active: filters.itemCat === c }"
-              @click.stop="setFilter('itemCat', c)"
+              :class="{ active: filters.itemCat === c.value }"
+              @click.stop="setFilter('itemCat', c.value)"
             >
-              {{ c === 'all' ? 'Todo' : c }}
+              {{ c.label }}
             </button>
           </div>
         </div>

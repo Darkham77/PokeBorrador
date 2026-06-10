@@ -486,7 +486,7 @@ const { weatherOnlyFilter } = useWeatherVisuals({
           @mouseleave="onPokeballMouseLeave"
         >
           <img
-            :src="getAssetUrl(ASSET_TYPES.ITEM, 'poke-ball')"
+            :src="getAssetUrl(ASSET_TYPES.ITEM, 'pokeball')"
             class="pokeball-icon"
             alt="Spawns"
             @mouseenter="onPokeballMouseEnter"

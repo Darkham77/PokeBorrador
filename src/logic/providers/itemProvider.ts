@@ -40,53 +40,5 @@ export function isGlobalItem(itemName: string): boolean {
   return globalItems.includes(itemName);
 }
 
-/**
- * Categorizes items into virtual categories: tools, minerals (including fossils, excluding evolutionary stones), or their base category.
- */
-export function getItemVirtualCategory(item: { name: string; id: string; cat?: string }): string {
-  const itemCat = item.cat || 'otros';
-  // Guard: Only items in the 'especial' category can be categorized as tools or minerals
-  if (itemCat !== 'especial') {
-    return itemCat;
-  }
-
-  const name = item.name.toLowerCase();
-  const id = item.id.toLowerCase();
-
-  // 1. Check if it's a Tool (Herramientas)
-  if (
-    id.includes('pickaxe') || id.includes('brush') || id.includes('fishing_rod') ||
-    name.includes('pico') || name.includes('pincel') || name.includes('caña')
-  ) {
-    return 'tools';
-  }
-
-  // 2. Check if it's a Purified Material (Materiales Purificados)
-  if (
-    name.includes('lingote') || name.includes('pulido') || name.includes('pulida') ||
-    id.startsWith('polished_') ||
-    ['copper', 'iron', 'silver', 'gold', 'tungsten', 'uranium'].includes(id)
-  ) {
-    return 'purified';
-  }
-
-  // 3. Check if it's a Mineral or Fossil (excluding evolutionary stones)
-  const isEvolutionStone = (name.startsWith('piedra ') && !name.includes('preciosa') && !name.includes('mineral')) || 
-                           (id.endsWith('_stone') && !id.includes('ore'));
-
-  if (!isEvolutionStone) {
-    if (
-      id.includes('fossil') || id.includes('amber') || id.includes('nugget') ||
-      id.includes('pearl') || id.includes('stardust') || id.includes('star_piece') ||
-      id.endsWith('_ore') ||
-      name.includes('fósil') || name.includes('mineral') || name.includes('pepita') ||
-      name.includes('perla') || name.includes('polvo estelar') || name.includes('trozo estrella') ||
-      name.includes('ámbar viejo')
-    ) {
-      return 'minerals';
-    }
-  }
-
-  return itemCat;
-}
+// getItemVirtualCategory removed as it is now obsolete.
 

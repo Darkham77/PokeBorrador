@@ -56,6 +56,10 @@ export const itemEffects: Record<string, (p: unknown) => ItemEffectResult> = {
   'Piedra Hoja': pokeEffect((p) => handleStone(p, 'Piedra Hoja')),
   'Piedra Lunar': pokeEffect((p) => handleStone(p, 'Piedra Lunar')),
   'Piedra Solar': pokeEffect((p) => handleStone(p, 'Piedra Solar')),
+  'Piedra Alba': pokeEffect((p) => handleStone(p, 'Piedra Alba')),
+  'Piedra Crepúsculo': pokeEffect((p) => handleStone(p, 'Piedra Crepúsculo')),
+  'Piedra Hielo': pokeEffect((p) => handleStone(p, 'Piedra Hielo')),
+  'Piedra Día': pokeEffect((p) => handleStone(p, 'Piedra Día')),
 
   // --- PP & Stats ---
   'Éter': pokeEffect((p) => restorePP(p, 10)),
@@ -94,6 +98,17 @@ export const itemEffects: Record<string, (p: unknown) => ItemEffectResult> = {
   }),
   'Subida de PP': pokeEffect((_p) => {
     return { success: true, message: 'selecciona un movimiento para mejorar', deferred: true, resultType: 'pp_up' };
+  }),
+  'Restaurar Todo': pokeEffect((p) => {
+    const hpRes = healHp(p, p.maxHp);
+    const statusRes = curaTotal(p);
+    if (!hpRes.success && !statusRes.success) {
+      return { success: false, message: 'El HP ya está lleno y no tiene problemas de estado.' };
+    }
+    return { success: true, message: 'recuperó todo su HP y se curó de sus problemas de estado.' };
+  }),
+  'Máximo PP': pokeEffect((_p) => {
+    return { success: true, message: 'selecciona un movimiento para maximizar sus PP', deferred: true, resultType: 'pp_max' };
   }),
 
   // --- Buffs Globales ---

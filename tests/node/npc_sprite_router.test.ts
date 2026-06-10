@@ -15,6 +15,7 @@ import {
   resolveNpcSprite,
   type NpcArchetype
 } from '../../src/logic/utils/npcSpriteRouter.ts';
+import { getRandomQuoteForTrainer } from '../../src/data/trainerPhrases.ts';
 
 describe('NPC Sprite Router Classification', () => {
   it('correctly classifies Bugcatcher as caza_bichos', () => {
@@ -25,8 +26,8 @@ describe('NPC Sprite Router Classification', () => {
     assert.strictEqual(classifyNpcArchetype('birdkeeper-gen4dp'), 'ornitologo');
   });
 
-  it('correctly classifies avery as default (ensures no "ave" false positive)', () => {
-    assert.strictEqual(classifyNpcArchetype('avery'), 'default');
+  it('correctly classifies avery as medium', () => {
+    assert.strictEqual(classifyNpcArchetype('avery'), 'medium');
   });
 
   it('correctly classifies beauty as artista (ensures "bea" exclusion)', () => {
@@ -42,12 +43,63 @@ describe('NPC Sprite Router Classification', () => {
   });
 });
 
+import { ARCHETYPE_SPRITES } from '../../src/data/npcSpriteCatalog.ts';
+import { TRAINER_TYPES } from '../../src/data/trainerTypes.ts';
+
+describe('NPC Sprite Catalog Coverage & Encounter Group Parity', () => {
+  it('ensures every sprite in the catalog is correctly classified to its parent archetype', () => {
+    for (const [archetype, sprites] of Object.entries(ARCHETYPE_SPRITES)) {
+      for (const sprite of sprites) {
+        const classified = classifyNpcArchetype(sprite);
+        assert.strictEqual(
+          classified,
+          archetype,
+          `Sprite "${sprite}" from catalog under "${archetype}" classified as "${classified}" instead.`
+        );
+      }
+    }
+  });
+
+  it('ensures every catalog archetype is registered in encounter trainer types', () => {
+    const trainerKeys = Object.keys(TRAINER_TYPES);
+    for (const archetype of Object.keys(ARCHETYPE_SPRITES)) {
+      assert.ok(
+        trainerKeys.includes(archetype),
+        `Archetype "${archetype}" exists in sprite catalog but not in TRAINER_TYPES`
+      );
+    }
+  });
+
+  it('ensures all trainer types have non-empty pools and precomputed phrases/personality', () => {
+    for (const [key, t] of Object.entries(TRAINER_TYPES)) {
+      // 1. Verify pool
+      assert.ok(
+        t.pool && t.pool.length > 0,
+        `Trainer type "${key}" has an empty or missing Pokémon pool`
+      );
+      
+      // 2. Verify phrases/personality
+      const quote = getRandomQuoteForTrainer(key);
+      assert.ok(
+        quote && typeof quote === 'string' && quote.length > 0,
+        `Trainer type "${key}" is missing custom phrases or personalities in trainerPhrases.ts`
+      );
+    }
+  });
+});
+
 describe('NPC Sprite Catalog and Fallback Errors', () => {
   it('throws an error when querying a non-existent or empty archetype', () => {
     assert.throws(() => {
       // Cast invalid key to trigger potential missing logic
       getSpritesForArchetype('non_existent' as unknown as NpcArchetype);
     }, /No sprites found in catalog for archetype/);
+  });
+
+  it('throws an error when querying quotes for a non-existent trainer type', () => {
+    assert.throws(() => {
+      getRandomQuoteForTrainer('non_existent');
+    }, /Missing custom phrases or personality for trainer type/);
   });
 
   it('resolves a valid sprite directly', () => {
@@ -62,3 +114,4 @@ describe('NPC Sprite Catalog and Fallback Errors', () => {
     assert.notStrictEqual(resolved, 'unknown_beauty');
   });
 });
+

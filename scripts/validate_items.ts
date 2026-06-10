@@ -10,6 +10,7 @@
  */
 
 import fs from 'node:fs/promises';
+import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { styleText } from 'node:util';
 import { setupValidation } from './lib/validationBase.ts';
@@ -94,12 +95,12 @@ async function main() {
   const errors: string[]   = [];
   const warnings: string[] = [];
 
-  const MUST_BE_USABLE     = ['pociones', 'utility', 'booster', 'stones'];
-  const MUST_NOT_BE_USABLE = ['held', 'pokeballs', 'breeding'];
+  const MUST_BE_USABLE     = ['pociones', 'potions', 'utility', 'booster', 'stones', 'stone'];
+  const MUST_NOT_BE_USABLE = ['held', 'combat_held', 'pokeballs', 'breeding', 'breeding_held', 'raw_material', 'refined_material', 'component', 'machinery', 'tms'];
   const REQUIRED_FIELDS    = ['id', 'name', 'cat', 'sprite', 'icon', 'desc', 'price'];
   const VALID_CATS         = [
-    'pociones', 'utility', 'booster', 'especial', 'held', 'pokeballs', 'stones', 'breeding',
-    'healing', 'tm', 'special', 'stone'
+    'pociones', 'potions', 'utility', 'tools', 'booster', 'especial', 'held', 'combat_held', 'pokeballs', 'stones', 'stone', 'breeding', 'breeding_held',
+    'healing', 'tm', 'special', 'raw_material', 'refined_material', 'component', 'machinery', 'tms', 'otros'
   ];
 
   shopItems.forEach(item => {
@@ -111,6 +112,13 @@ async function main() {
         errors.push(`${tag} Missing required field: '${f}'`);
       }
     });
+    
+    if (item.sprite) {
+      const physicalPath = path.resolve(process.cwd(), 'public/assets/sprites', `${item.sprite}.webp`);
+      if (!existsSync(physicalPath)) {
+        errors.push(`${tag} Sprite file does not exist: '${physicalPath}'`);
+      }
+    }
 
     if (item.cat && !VALID_CATS.includes(item.cat)) {
       errors.push(`${tag} Unknown category: '${item.cat}'`);
@@ -129,8 +137,8 @@ async function main() {
       }
     }
 
-    if (item.cat === 'held' && item.type !== 'held') {
-      errors.push(`${tag} cat='held' but missing 'type: held'.`);
+    if ((item.cat === 'held' || item.cat === 'combat_held') && item.type !== 'held') {
+      errors.push(`${tag} cat='${item.cat}' but missing 'type: held'.`);
     }
 
     // TMs are handled dynamically in getDynamicItemEffect, so they don't need to be in the main object

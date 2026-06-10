@@ -9,6 +9,7 @@ import { useGTSStore } from '@/stores/gts'
 import { useBreedingStore } from '@/stores/breeding'
 import { useEventStore } from '@/stores/events'
 import EggSprite from '@/components/common/EggSprite.vue'
+import PVHUDButton from '@/components/common/PVHUDButton.vue'
 
 interface Props {
   position?: string
@@ -138,31 +139,29 @@ const beforeEnter = (el: Element) => {
     xPercent: -50,
     y: props.position === 'top' ? -20 : 20,
     scale: 0.8,
-    transformOrigin: props.position === 'top' ? 'top center' : 'bottom center'
+    transformOrigin: '50% 50%'
   })
 }
 
 const enter = (el: Element, done: () => void) => {
-  gsap.to(el, { 
-    opacity: 1, 
-    xPercent: -50,
+  gsap.to(el, {
+    opacity: 1,
     y: 0,
     scale: 1,
-    duration: 0.12, 
-    ease: 'power2.out',
-    onComplete: done 
+    duration: 0.2,
+    ease: 'back.out(1.2)',
+    onComplete: done
   })
 }
 
 const leave = (el: Element, done: () => void) => {
-  gsap.to(el, { 
-    opacity: 0, 
-    xPercent: -50,
-    y: props.position === 'top' ? -10 : 10,
-    scale: 0.9,
-    duration: 0.1, 
+  gsap.to(el, {
+    opacity: 0,
+    y: props.position === 'top' ? -15 : 15,
+    scale: 0.85,
+    duration: 0.15,
     ease: 'power2.in',
-    onComplete: done 
+    onComplete: done
   })
 }
 
@@ -182,15 +181,17 @@ onUnmounted(() => {
     :class="[`pos-${position}`]"
   >
     <!-- 1. MAPA -->
-    <button
-      class="hud-nav-btn map-btn"
-      :class="{ active: activeTab === 'map' }"
+    <PVHUDButton
+      custom-class="map-btn"
+      :active="activeTab === 'map'"
       data-tab="map"
       @click.stop="handleTabChange('map')"
     >
-      <span class="icon">🗺️</span>
-      <span class="nav-item-label">MAPA</span>
-    </button>
+      <template #icon>
+        🗺️
+      </template>
+      MAPA
+    </PVHUDButton>
 
     <!-- 2. POKÉMON (Grupo) -->
     <div 
@@ -198,18 +199,17 @@ onUnmounted(() => {
       @mouseenter="handleMouseEnter('POKEMON')"
       @mouseleave="handleMouseLeave('POKEMON')"
     >
-      <button
-        class="hud-nav-btn group-btn"
-        :class="{ active: ['box', 'pokedex'].includes(activeTab) || uiStore.openHudGroup === 'POKEMON' || modalStore.isOpen('TeamManagement') || modalStore.isOpen('EventMissions') || modalStore.isOpen('DaycareMissions') }"
+      <PVHUDButton
+        custom-class="group-btn"
+        :active="['box', 'pokedex'].includes(activeTab) || uiStore.openHudGroup === 'POKEMON' || modalStore.isOpen('TeamManagement') || modalStore.isOpen('EventMissions') || modalStore.isOpen('DaycareMissions')"
+        :badge-value="breedingStore.fulfillableMissionsCount"
         @click.stop="toggleGroupMenu('POKEMON')"
       >
-        <span class="icon">⚡</span>
-        <span class="nav-item-label">POKÉMON</span>
-        <span
-          v-if="breedingStore.fulfillableMissionsCount > 0"
-          class="badge-pill"
-        >{{ breedingStore.fulfillableMissionsCount }}</span>
-      </button>
+        <template #icon>
+          ⚡
+        </template>
+        POKÉMON
+      </PVHUDButton>
       
       <Transition
         :css="false"
@@ -221,80 +221,82 @@ onUnmounted(() => {
           v-if="uiStore.openHudGroup === 'POKEMON'"
           class="hud-submenu"
         >
-          <button
-            class="hud-nav-btn"
-            :class="{ active: modalStore.isOpen('TeamManagement') }"
+          <PVHUDButton
+            :active="modalStore.isOpen('TeamManagement')"
             @click.stop="handleTabChange('team', $event); uiStore.openHudGroup = null"
           >
-            <span class="icon">⚡</span><span class="nav-item-label">EQUIPO</span>
-          </button>
-          <button
-            class="hud-nav-btn"
-            :class="{ active: activeTab === 'box' }"
+            <template #icon>
+              ⚡
+            </template>
+            EQUIPO
+          </PVHUDButton>
+          <PVHUDButton
+            :active="activeTab === 'box'"
             @click.stop="handleTabChange('box', $event); uiStore.openHudGroup = null"
           >
-            <span class="icon">📦</span><span class="nav-item-label">CAJA PC</span>
-          </button>
-          <button
-            class="hud-nav-btn"
-            :class="{ active: modalStore.isOpen('EventMissions') || modalStore.isOpen('DaycareMissions') }"
+            <template #icon>
+              📦
+            </template>
+            CAJA PC
+          </PVHUDButton>
+          <PVHUDButton
+            :active="modalStore.isOpen('EventMissions') || modalStore.isOpen('DaycareMissions')"
+            :badge-value="breedingStore.fulfillableMissionsCount"
             @click.stop="handleTabChange('missions'); uiStore.openHudGroup = null"
           >
-            <span class="icon">📜</span><span class="nav-item-label">MISIONES</span>
-            <span
-              v-if="breedingStore.fulfillableMissionsCount > 0"
-              class="badge-pill"
-            >{{ breedingStore.fulfillableMissionsCount }}</span>
-          </button>
-          <button
-            class="hud-nav-btn"
-            :class="{ active: activeTab === 'pokedex' }"
+            <template #icon>
+              📜
+            </template>
+            MISIONES
+          </PVHUDButton>
+          <PVHUDButton
+            :active="activeTab === 'pokedex'"
             @click.stop="handleTabChange('pokedex', $event); uiStore.openHudGroup = null"
           >
-            <span class="icon">📖</span><span class="nav-item-label">POKÉDEX</span>
-          </button>
+            <template #icon>
+              📖
+            </template>
+            POKÉDEX
+          </PVHUDButton>
         </div>
       </Transition>
     </div>
 
     <!-- 3. MOCHILA -->
-    <button
-      class="hud-nav-btn"
-      :class="{ active: modalStore.isOpen('Inventory') }"
+    <PVHUDButton
+      :active="modalStore.isOpen('Inventory')"
       @click.stop="handleTabChange('bag')"
     >
-      <span class="icon">🎒</span>
-      <span class="nav-item-label">MOCHILA</span>
-    </button>
+      <template #icon>
+        🎒
+      </template>
+      MOCHILA
+    </PVHUDButton>
     
     <!-- 4. GIMS -->
-    <button
-      class="hud-nav-btn"
-      :class="{ active: activeTab === 'gyms' }"
+    <PVHUDButton
+      :active="activeTab === 'gyms'"
       @click.stop="handleTabChange('gyms')"
     >
-      <span class="icon">🏆</span>
-      <span class="nav-item-label">GIMS</span>
-    </button>
+      <template #icon>
+        🏆
+      </template>
+      GIMS
+    </PVHUDButton>
 
     <!-- 5. CRIANZA -->
-    <button
-      class="hud-nav-btn relative-box"
-      :class="{ active: activeTab === 'daycare' }"
+    <PVHUDButton
+      :active="activeTab === 'daycare'"
+      :badge-value="readyEggsCount"
       @click.stop="handleTabChange('daycare')"
     >
-      <span class="icon">
-        <EggSprite
-          size="20"
-          style="display: inline-flex; justify-content: center; align-items: center;"
-        />
-      </span>
-      <span class="nav-item-label">CRIANZA</span>
-      <span
-        v-if="readyEggsCount > 0"
-        class="badge-pill"
-      >{{ readyEggsCount }}</span>
-    </button>
+      <template #icon>
+        <span style="display: inline-flex; justify-content: center; align-items: center; width: 100%;">
+          <EggSprite size="20" />
+        </span>
+      </template>
+      CRIANZA
+    </PVHUDButton>
 
     <!-- 6. MARKET (Grupo) -->
     <div 
@@ -302,18 +304,17 @@ onUnmounted(() => {
       @mouseenter="handleMouseEnter('MARKET')"
       @mouseleave="handleMouseLeave('MARKET')"
     >
-      <button
-        class="hud-nav-btn group-btn"
-        :class="{ active: uiStore.openHudGroup === 'MARKET' || modalStore.isOpen('GlobalMarket') || modalStore.isOpen('Shop') || modalStore.isOpen('BCShop') || modalStore.isOpen('WarShop') }"
+      <PVHUDButton
+        custom-class="group-btn"
+        :active="uiStore.openHudGroup === 'MARKET' || modalStore.isOpen('GlobalMarket') || modalStore.isOpen('Shop') || modalStore.isOpen('BCShop') || modalStore.isOpen('WarShop')"
+        :badge-value="gtsStore.unseenSalesCount"
         @click.stop="toggleGroupMenu('MARKET')"
       >
-        <span class="icon">🏪</span>
-        <span class="nav-item-label">MARKET</span>
-        <span
-          v-if="gtsStore.unseenSalesCount > 0"
-          class="badge-pill"
-        >{{ gtsStore.unseenSalesCount }}</span>
-      </button>
+        <template #icon>
+          🏪
+        </template>
+        MARKET
+      </PVHUDButton>
       
       <Transition
         :css="false"
@@ -325,38 +326,44 @@ onUnmounted(() => {
           v-if="uiStore.openHudGroup === 'MARKET'"
           class="hud-submenu"
         >
-          <button
-            class="hud-nav-btn"
-            :class="{ active: modalStore.isOpen('GlobalMarket') }"
+          <PVHUDButton
+            :active="modalStore.isOpen('GlobalMarket')"
+            :badge-value="gtsStore.unseenSalesCount"
             @click.stop="handleTabChange('online-market'); uiStore.openHudGroup = null"
           >
-            <span class="icon">🌎</span><span class="nav-item-label">GLOBAL</span>
-            <span
-              v-if="gtsStore.unseenSalesCount > 0"
-              class="badge-pill"
-            >{{ gtsStore.unseenSalesCount }}</span>
-          </button>
-          <button
-            class="hud-nav-btn"
-            :class="{ active: modalStore.isOpen('Shop') }"
+            <template #icon>
+              🌎
+            </template>
+            GLOBAL
+          </PVHUDButton>
+          <PVHUDButton
+            :active="modalStore.isOpen('Shop')"
             @click.stop="handleTabChange('market'); uiStore.openHudGroup = null"
           >
-            <span class="icon">🛒</span><span class="nav-item-label">LOCAL</span>
-          </button>
-          <button
-            class="hud-nav-btn"
-            :class="{ active: modalStore.isOpen('BCShop') }"
+            <template #icon>
+              🛒
+            </template>
+            LOCAL
+          </PVHUDButton>
+          <PVHUDButton
+            :active="modalStore.isOpen('BCShop')"
             @click.stop="handleTabChange('trainer-shop'); uiStore.openHudGroup = null"
           >
-            <span class="icon">🎖️</span><span class="nav-item-label">BC SHOP</span>
-          </button>
-          <button
-            class="hud-nav-btn war-shop-nav-btn"
-            :class="{ active: modalStore.isOpen('WarShop') }"
+            <template #icon>
+              🎖️
+            </template>
+            BC SHOP
+          </PVHUDButton>
+          <PVHUDButton
+            custom-class="war-shop-nav-btn"
+            :active="modalStore.isOpen('WarShop')"
             @click.stop="handleTabChange('war-shop'); uiStore.openHudGroup = null"
           >
-            <span class="icon">🚩</span><span class="nav-item-label">GUERRA</span>
-          </button>
+            <template #icon>
+              🚩
+            </template>
+            GUERRA
+          </PVHUDButton>
         </div>
       </Transition>
     </div>
@@ -367,18 +374,17 @@ onUnmounted(() => {
       @mouseenter="handleMouseEnter('SOCIAL')"
       @mouseleave="handleMouseLeave('SOCIAL')"
     >
-      <button
-        class="hud-nav-btn group-btn"
-        :class="{ active: modalStore.isOpen('Arena') || modalStore.isOpen('Ranking') || uiStore.openHudGroup === 'SOCIAL' || modalStore.isOpen('SocialCenter') || modalStore.isOpen('WorldEvents') || modalStore.isOpen('FactionWar') }"
+      <PVHUDButton
+        custom-class="group-btn"
+        :active="modalStore.isOpen('Arena') || modalStore.isOpen('Ranking') || uiStore.openHudGroup === 'SOCIAL' || modalStore.isOpen('SocialCenter') || modalStore.isOpen('WorldEvents') || modalStore.isOpen('FactionWar')"
+        :badge-value="totalSocialNotifications"
         @click.stop="toggleGroupMenu('SOCIAL')"
       >
-        <span class="icon">👪</span>
-        <span class="nav-item-label">SOCIAL</span>
-        <span
-          v-if="totalSocialNotifications > 0"
-          class="badge-pill"
-        >{{ totalSocialNotifications }}</span>
-      </button>
+        <template #icon>
+          👪
+        </template>
+        SOCIAL
+      </PVHUDButton>
 
       <Transition
         :css="false"
@@ -390,59 +396,60 @@ onUnmounted(() => {
           v-if="uiStore.openHudGroup === 'SOCIAL'"
           class="hud-submenu"
         >
-          <button
-            class="hud-nav-btn"
-            :class="{ active: modalStore.isOpen('SocialCenter') }"
+          <PVHUDButton
+            :active="modalStore.isOpen('SocialCenter')"
+            :badge-value="socialStore.notifications.chats + socialStore.notifications.friends + socialStore.notifications.trades + gameStore.state.claimQueue.length"
             @click.stop="handleTabChange('friends'); uiStore.openHudGroup = null"
           >
-            <span class="icon">🤝</span><span class="nav-item-label">AMIGOS</span>
-            <span
-              v-if="(socialStore.notifications.chats + socialStore.notifications.friends + socialStore.notifications.trades + gameStore.state.claimQueue.length) > 0"
-              class="badge-pill"
-            >{{ socialStore.notifications.chats + socialStore.notifications.friends + socialStore.notifications.trades + gameStore.state.claimQueue.length }}</span>
-          </button>
+            <template #icon>
+              🤝
+            </template>
+            AMIGOS
+          </PVHUDButton>
 
-          <button
-            class="hud-nav-btn"
-            :class="{ active: modalStore.isOpen('Arena') }"
+          <PVHUDButton
+            :active="modalStore.isOpen('Arena')"
+            :badge-value="socialStore.notifications.battles"
             @click.stop="handleTabChange('arena'); uiStore.openHudGroup = null"
           >
-            <span class="icon">🏟️</span><span class="nav-item-label">ARENA</span>
-            <span
-              v-if="socialStore.notifications.battles > 0"
-              class="badge-pill"
-            >{{ socialStore.notifications.battles }}</span>
-          </button>
-          <button
-            class="hud-nav-btn"
-            :class="{ active: modalStore.isOpen('Ranking') }"
+            <template #icon>
+              🏟️
+            </template>
+            ARENA
+          </PVHUDButton>
+          <PVHUDButton
+            :active="modalStore.isOpen('Ranking')"
             @click.stop="handleTabChange('ranking'); uiStore.openHudGroup = null"
           >
-            <span class="icon">🏅</span><span class="nav-item-label">RANKING</span>
-          </button>
-          <button
-            class="hud-nav-btn"
-            :class="{ active: modalStore.isOpen('FactionWar') }"
+            <template #icon>
+              🏅
+            </template>
+            RANKING
+          </PVHUDButton>
+          <PVHUDButton
+            :active="modalStore.isOpen('FactionWar')"
             @click.stop="modalStore.open('FactionWar'); uiStore.openHudGroup = null"
           >
-            <span class="icon">⚔️</span><span class="nav-item-label">DOMINANCIA</span>
-          </button>
-          <button
-            class="hud-nav-btn"
-            :class="{ active: modalStore.isOpen('WorldEvents') }"
+            <template #icon>
+              ⚔️
+            </template>
+            DOMINANCIA
+          </PVHUDButton>
+          <PVHUDButton
+            :active="modalStore.isOpen('WorldEvents')"
+            :badge-value="eventStore.pendingAwards.length"
             @click.stop="modalStore.open('WorldEvents'); uiStore.openHudGroup = null"
           >
-            <span class="icon">🎁</span><span class="nav-item-label">EVENTOS</span>
-            <span
-              v-if="eventStore.pendingAwards.length > 0"
-              class="badge-pill"
-            >{{ eventStore.pendingAwards.length }}</span>
-          </button>
+            <template #icon>
+              🎁
+            </template>
+            EVENTOS
+          </PVHUDButton>
         </div>
       </Transition>
     </div>
   </div>
 </template>
 
-<style scoped lang="scss" src="@/styles/components/_hud-navigation.scss"></style>
 
+<style scoped lang="scss" src="@/styles/components/_hud-navigation.scss"></style>

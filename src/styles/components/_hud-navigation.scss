@@ -33,58 +33,48 @@
     
     // Reflection parent is handled by position: fixed in parent/mobile class
 
-    .hud-nav-btn {
-      flex-direction: column;
-      gap: 4px;
-      min-width: 50px;
-
-      @media (max-width: 480px) {
-        min-width: 38px;
-        padding: 6px 2px;
-
-        .icon {
-          font-size: 14px;
-        }
-        .nav-item-label {
-          font-size: 7px;
-        }
-      }
-    }
-
     /* CRITICAL: Ensure submenus are NOT clipped */
     overflow: visible !important;
   }
 }
 
 .hud-nav-btn {
-  background: Rgba(255,255,255,0.05);
-  border: 1px solid Rgba(255,255,255,0.1);
+  background: Rgba(255, 255, 255, 0.05);
+  border: 1px solid Rgba(255, 255, 255, 0.1);
   border-radius: 12px;
-  padding: 8px 12px;
+  padding: 8px 6px;
   color: $white;
   cursor: pointer;
   display: flex;
-  flex-direction: row;
+  flex-direction: column; // Unificado a columna (icono arriba, texto abajo)
   align-items: center;
-  gap: 8px;
-  min-width: 60px;
-  
+  justify-content: center;
+  gap: 6px; // Separación estandarizada
+  width: 50px;
+  height: 50px;
+  min-width: 50px;
   position: relative;
 
-  padding: 8px 12px;
-  
-  .icon { font-size: 16px; }
+  .icon {
+    font-size: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    // Override pixel font so size-adjust:128% does NOT inflate the emoji line-box
+    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif !important;
+  }
   .nav-item-label {
     @include pixelated;
     font-weight: 400;
-    font-size: clamp(6px, 12cqw, 8px);
+    font-size: 7px !important;
     color: Rgba(255, 255, 255, 0.75);
-    @include pixelated;
     white-space: nowrap;
+    text-transform: uppercase;
   }
 
   &:hover {
     background: Rgba(255, 255, 255, 0.12);
+    border-color: Rgba(255, 255, 255, 0.2);
     z-index: var(--z-base);
   }
   
@@ -177,7 +167,14 @@
     box-shadow: 0 0 0 2px var(--yellow), 0 0 25px Rgba(255, 214, 10, 0.4), inset 0 0 10px Rgba(255, 214, 10, 0.1);
   }
 
-  .icon { font-size: 14px; }
+  .icon {
+    font-size: 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    // Override pixel font so size-adjust:128% does NOT inflate the emoji line-box
+    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif !important;
+  }
   .nav-item-label { 
     font-size: 8px; 
     color: $white;

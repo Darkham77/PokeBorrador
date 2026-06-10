@@ -1,33 +1,46 @@
 <script setup lang="ts">
 import { useUIStore } from '@/stores/ui'
+import PVHUDButton from '@/components/common/PVHUDButton.vue'
 const uiStore = useUIStore()
 </script>
 
 <template>
-  <div v-bind="$attrs">
-    <button
+  <div
+    class="action-buttons"
+    v-bind="$attrs"
+  >
+    <PVHUDButton
       id="hud-profile-btn"
-      class="hud-sq-btn"
+      :active="uiStore.isProfileOpen"
       @click.stop="uiStore.toggleProfile()"
     >
-      <span>👤</span><span>Perfil</span>
-    </button>
+      <template #icon>
+        👤
+      </template>
+      Perfil
+    </PVHUDButton>
 
-    <button
+    <PVHUDButton
       id="hud-settings-btn"
-      class="hud-sq-btn"
+      :active="uiStore.isSettingsOpen"
       @click.stop="uiStore.toggleSettings()"
     >
-      <span>⚙️</span><span>Ajustes</span>
-    </button>
+      <template #icon>
+        ⚙️
+      </template>
+      Ajustes
+    </PVHUDButton>
 
-    <button
+    <PVHUDButton
       id="hud-library-btn"
-      class="hud-sq-btn"
+      :active="uiStore.isLibraryOpen"
       @click.stop="uiStore.toggleLibrary()"
     >
-      <span>📖</span><span>Libro</span>
-    </button>
+      <template #icon>
+        📖
+      </template>
+      Libro
+    </PVHUDButton>
   </div>
 </template>
 
@@ -37,47 +50,6 @@ const uiStore = useUIStore()
 .action-buttons {
   display: flex;
   gap: 8px;
-}
-
-.hud-sq-btn {
-  @include flex-center;
-  flex-direction: column;
-  gap: 4px;
-  background: Rgba(255, 255, 255, 0.05);
-  border: 1px solid Rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  padding: 8px;
-  color: $white;
-  cursor: pointer;
-  
-  min-width: 48px;
-
-  span:not(:first-child) {
-    font-size: 9px !important; // Clean and legible size
-    font-weight: normal !important;
-    @include pixelated-proportional;
-    color: Rgba(255, 255, 255, 0.7);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-top: 4px;
-    display: block;
-    line-height: 1;
-  }
-
-  &:hover {
-    background: Rgba(255, 255, 255, 0.12);
-    border-color: var(--yellow);
-    box-shadow: 
-      0 0 0 2px var(--yellow),
-      0 0 15px Rgba(255, 214, 10, 0.4);
-    z-index: var(--z-base);
-    transform: Translatey(-2px);
-    
-    span:last-child { color: $white; opacity: 1; }
-  }
-
-  &:active {
-    transform: Scale(0.95);
-  }
+  align-items: center;
 }
 </style>

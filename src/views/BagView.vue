@@ -1,7 +1,7 @@
 <script setup lang="ts">
+import { ref, computed, watch } from 'vue'
 import { useInventoryStore } from '@/stores/inventory'
 import { useGameStore } from '@/stores/game'
-import { ITEM_CATEGORIES, CATEGORY_LABELS } from '@/data/items'
 import { formatCurrency } from '@/logic/utils/formatters'
 import { gsap } from 'gsap'
 import BagItemCard from '@/components/inventory/BagItemCard.vue'
@@ -9,16 +9,64 @@ import BagItemCard from '@/components/inventory/BagItemCard.vue'
 const inventoryStore = useInventoryStore()
 const gameStore = useGameStore()
 
-const categories = ITEM_CATEGORIES.map(id => ({
-  id,
-  label: (CATEGORY_LABELS as Record<string, string>)[id] || id
-}))
+// Niveles superiores de categorización
+const activeMainTab = ref<'productos' | 'materiales'>('productos')
+
+// Definición de subcategorías por pestaña principal
+const subcategoriesByMainTab = {
+  productos: [
+    { id: 'todos', label: 'Todo', icon: '📦' },
+    { id: 'utilizables', label: 'Utilizables', icon: '💊' },
+    { id: 'pokeballs', label: 'Pokéballs', icon: '⚪' },
+    { id: 'potions', label: 'Curativos', icon: '🧪' },
+    { id: 'combat_held', label: 'Held Combate', icon: '🎒' },
+    { id: 'breeding_held', label: 'Crianza', icon: '🥚' },
+    { id: 'machinery', label: 'Maquinaria', icon: '🏭' },
+    { id: 'tools', label: 'Herramientas', icon: '🛠️' },
+    { id: 'tms', label: 'Discos MT', icon: '📀' },
+    { id: 'otros', label: 'Otros', icon: '✨' }
+  ],
+  materiales: [
+    { id: 'todos', label: 'Todo', icon: '📦' },
+    { id: 'raw_material', label: 'Materia Prima', icon: '🪵' },
+    { id: 'refined_material', label: 'Materia Refinada', icon: '🪙' },
+    { id: 'component', label: 'Componentes', icon: '⚙️' }
+  ]
+}
+
+const currentSubcategories = computed(() => {
+  return subcategoriesByMainTab[activeMainTab.value]
+})
+
+// Observar cambio en pestaña principal para resetear la subcategoría
+watch(activeMainTab, () => {
+  inventoryStore.activeCategory = 'todos'
+})
+
+const filteredBagItems = computed(() => {
+  const allItems = inventoryStore.bagItems
+  return allItems.filter(item => {
+    // Si la pestaña principal es 'productos', deben ser tier 3 (o no tener tier, por defecto tier 3 es producto)
+    // Si la pestaña principal es 'materiales', deben ser tier 0, 1 o 2 (o sea, raw_material, refined_material, component)
+    const cat = item.cat || 'otros'
+    const isMaterialCat = ['raw_material', 'refined_material', 'component'].includes(cat)
+    if (activeMainTab.value === 'materiales') {
+      return isMaterialCat
+    } else {
+      return !isMaterialCat
+    }
+  })
+})
 
 const onUseItem = (name: string) => {
   inventoryStore.useItem(name)
 }
 
 // GSAP Interactions
+const onMainTabClick = (tabId: 'productos' | 'materiales') => {
+  activeMainTab.value = tabId
+}
+
 const onTabClick = (catId: string, event: MouseEvent) => {
   inventoryStore.activeCategory = catId
   const target = event.currentTarget as HTMLElement
@@ -97,6 +145,24 @@ const onSellModeMouseLeave = (event: MouseEvent) => {
         </div>
       </div>
 
+      <!-- Top-Level Tabs -->
+      <div class="main-tabs-row">
+        <button
+          class="main-tab-btn"
+          :class="{ active: activeMainTab === 'productos' }"
+          @click.stop="onMainTabClick('productos')"
+        >
+          Productos
+        </button>
+        <button
+          class="main-tab-btn"
+          :class="{ active: activeMainTab === 'materiales' }"
+          @click.stop="onMainTabClick('materiales')"
+        >
+          Materiales
+        </button>
+      </div>
+
       <!-- Search & Tabs -->
       <div class="controls-section">
         <div class="search-bar">
@@ -109,7 +175,7 @@ const onSellModeMouseLeave = (event: MouseEvent) => {
         </div>
         <div class="tabs-row scroll-hide">
           <button 
-            v-for="cat in categories" 
+            v-for="cat in currentSubcategories" 
             :key="cat.id"
             :class="['tab-btn', { active: inventoryStore.activeCategory === cat.id }]"
             @click.stop="onTabClick(cat.id, $event)"
@@ -147,7 +213,7 @@ const onSellModeMouseLeave = (event: MouseEvent) => {
       <!-- Items Grid -->
       <div class="items-wrapper scroll-custom">
         <div
-          v-if="inventoryStore.bagItems.length === 0"
+          v-if="filteredBagItems.length === 0"
           class="empty-state"
         >
           <span class="empty-icon">🔍</span>
@@ -159,7 +225,7 @@ const onSellModeMouseLeave = (event: MouseEvent) => {
           class="items-grid"
         >
           <BagItemCard
-            v-for="item in inventoryStore.bagItems"
+            v-for="item in filteredBagItems"
             :key="item.name"
             :item="item"
             :is-selected="!!inventoryStore.bagSellSelected[item.name]"
@@ -209,6 +275,46 @@ const onSellModeMouseLeave = (event: MouseEvent) => {
   flex-direction: column;
   min-height: 0;
   gap: 20px;
+}
+
+.main-tabs-row {
+  display: flex;
+  gap: 12px;
+  border-bottom: 2px solid Rgba(255, 255, 255, 0.05);
+  padding-bottom: 8px;
+}
+
+.main-tab-btn {
+  background: transparent;
+  border: none;
+  color: var(--gray);
+  font-size: 14px;
+  padding: 8px 16px;
+  cursor: pointer;
+  @include pixelated;
+  transition: all 0.2s ease;
+  position: relative;
+
+  &:hover {
+    color: var(--white);
+  }
+
+  &.active {
+    color: var(--purple-light);
+    font-weight: bold;
+
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: var(--purple);
+      border-radius: 2px;
+      box-shadow: 0 0 8px var(--purple-light);
+    }
+  }
 }
 
 .bag-header {

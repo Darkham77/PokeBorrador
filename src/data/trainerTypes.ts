@@ -25,7 +25,8 @@ export const TRAINER_TYPES = {
   'ranger': { name: 'Ranger Pokémon', sprite: 'pokemonranger', pool: ['nidoran_f', 'nidoran_m', 'oddish', 'bellsprout', 'paras', 'tangela', 'exeggcute'] },
   'pokefan': { name: 'Pokéfan', sprite: 'pokefan', pool: ['pikachu', 'jigglypuff', 'clefairy', 'meowth', 'eevee', 'psyduck'] },
   'artista': { name: 'Artista', sprite: 'artist', pool: ['bellsprout', 'vulpix', 'oddish', 'jigglypuff', 'clefairy'] },
-  'trainers': { name: 'Entrenador Élite', sprite: 'youngster-masters', pool: ['dragonite', 'charizard', 'alakazam', 'machamp', 'gengar', 'lapras'] }
+  'trainers': { name: 'Entrenador Élite', sprite: 'youngster-masters', pool: ['dragonite', 'charizard', 'alakazam', 'machamp', 'gengar', 'lapras'] },
+  'default': { name: 'Joven', sprite: 'youngster', pool: ['rattata', 'pidgey', 'spearow', 'ekans', 'sandshrew', 'zubat'] }
 } as const;
 
 export type TrainerTypeKey = keyof typeof TRAINER_TYPES;

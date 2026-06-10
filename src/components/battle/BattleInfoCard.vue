@@ -156,7 +156,7 @@ const teamBallsStatus = computed(() => {
         </div>
         <img
           v-if="!isPlayer && p.caught"
-          :src="getAssetUrl(ASSET_TYPES.ITEM, 'poke-ball')"
+          :src="getAssetUrl(ASSET_TYPES.ITEM, 'pokeball')"
           class="caught-icon"
           @error="e => (e.target as HTMLImageElement).style.display = 'none'"
         >

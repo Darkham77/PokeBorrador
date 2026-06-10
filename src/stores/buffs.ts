@@ -132,7 +132,7 @@ export const useBuffsStore = defineStore('buffs', () => {
         secs: s.fishingRodSecs, 
         name: `🎣 ${fName}`, 
         desc: descText, 
-        icon: getAssetUrl(ASSET_TYPES.ITEM, `fishing_rod-${type === 'standard' ? '0' : (type === 'good' ? '1' : '2')}`),
+        icon: getAssetUrl(ASSET_TYPES.ITEM, `fishing_rod_${type === 'standard' ? '0' : (type === 'good' ? '1' : '2')}`),
         tier: type
       })
     }
@@ -150,7 +150,7 @@ export const useBuffsStore = defineStore('buffs', () => {
         secs: s.pickaxeSecs, 
         name: `⛏️ ${pName}`, 
         desc: descText, 
-        icon: getAssetUrl(ASSET_TYPES.ITEM, `pickaxe-${type === 'standard' ? '0' : (type === 'good' ? '1' : '2')}`),
+        icon: getAssetUrl(ASSET_TYPES.ITEM, `pickaxe_${type === 'standard' ? '0' : (type === 'good' ? '1' : '2')}`),
         tier: type
       })
     }
@@ -168,24 +168,24 @@ export const useBuffsStore = defineStore('buffs', () => {
         secs: s.brushSecs, 
         name: `🖌️ ${bName}`, 
         desc: descText, 
-        icon: getAssetUrl(ASSET_TYPES.ITEM, `brush-${type === 'standard' ? '0' : (type === 'good' ? '1' : '2')}`),
+        icon: getAssetUrl(ASSET_TYPES.ITEM, `brush_${type === 'standard' ? '0' : (type === 'good' ? '1' : '2')}`),
         tier: type
       })
     }
-    if (s.shinyBoostSecs > 0) list.push({ id: 'shiny', secs: s.shinyBoostSecs, name: '✨ Ticket Shiny', desc: 'Aumenta la probabilidad de encontrar Pokémon shiny.', icon: getAssetUrl(ASSET_TYPES.ITEM, 'eon-ticket') })
-    if (s.amuletCoinSecs > 0) list.push({ id: 'amulet', secs: s.amuletCoinSecs, name: '💰 Moneda Amuleto', desc: 'Duplica el dinero ganado en combate.', icon: getAssetUrl(ASSET_TYPES.ITEM, 'amulet-coin') })
-    if (s.luckyEggSecs > 0) list.push({ id: 'lucky-egg', secs: s.luckyEggSecs, name: '🥚 Huevo Suerte Pequeño', desc: 'Aumenta la EXP ganada en un 50% durante 30 minutos.', icon: getAssetUrl(ASSET_TYPES.ITEM, 'lucky-egg') })
-    if (s.safariTicketSecs > 0) list.push({ id: 'safari', secs: s.safariTicketSecs, name: '🎫 Ticket Safari', desc: 'Permite entrar a la Zona Safari.', icon: getAssetUrl(ASSET_TYPES.ITEM, 'eon-ticket') })
-    if (s.ceruleanTicketSecs > 0) list.push({ id: 'cerulean', secs: s.ceruleanTicketSecs, name: '🌀 Ticket Cueva Celeste', desc: 'Permite entrar a la Cueva Celeste.', icon: getAssetUrl(ASSET_TYPES.ITEM, 'eon-ticket') })
-    if (s.articunoTicketSecs > 0) list.push({ id: 'articuno', secs: s.articunoTicketSecs, name: '❄️ Ticket Articuno', desc: 'Permite entrar a las Islas Espuma.', icon: getAssetUrl(ASSET_TYPES.ITEM, 'eon-ticket') })
-    if (s.mewtwoTicketSecs > 0) list.push({ id: 'mewtwo', secs: s.mewtwoTicketSecs, name: '🧬 Ticket Mewtwo', desc: 'Permite entrar a la Cueva Celeste (Mewtwo).', icon: getAssetUrl(ASSET_TYPES.ITEM, 'eon-ticket') })
-    if (s.ivScannerSecs > 0) list.push({ id: 'iv-scanner', secs: s.ivScannerSecs, name: '🔍 Escáner de IVs', desc: 'Muestra los IVs totales de Pokémon salvajes.', icon: getAssetUrl(ASSET_TYPES.ITEM, 'poke-radar') })
+    if (s.shinyBoostSecs > 0) list.push({ id: 'shiny', secs: s.shinyBoostSecs, name: '✨ Ticket Shiny', desc: 'Aumenta la probabilidad de encontrar Pokémon shiny.', icon: getAssetUrl(ASSET_TYPES.ITEM, 'eon_ticket') })
+    if (s.amuletCoinSecs > 0) list.push({ id: 'amulet', secs: s.amuletCoinSecs, name: '💰 Moneda Amuleto', desc: 'Duplica el dinero ganado en combate.', icon: getAssetUrl(ASSET_TYPES.ITEM, 'amulet_coin') })
+    if (s.luckyEggSecs > 0) list.push({ id: 'lucky-egg', secs: s.luckyEggSecs, name: '🥚 Huevo Suerte Pequeño', desc: 'Aumenta la EXP ganada en un 50% durante 30 minutos.', icon: getAssetUrl(ASSET_TYPES.ITEM, 'lucky_egg') })
+    if (s.safariTicketSecs > 0) list.push({ id: 'safari', secs: s.safariTicketSecs, name: '🎫 Ticket Safari', desc: 'Permite entrar a la Zona Safari.', icon: getAssetUrl(ASSET_TYPES.ITEM, 'eon_ticket') })
+    if (s.ceruleanTicketSecs > 0) list.push({ id: 'cerulean', secs: s.ceruleanTicketSecs, name: '🌀 Ticket Cueva Celeste', desc: 'Permite entrar a la Cueva Celeste.', icon: getAssetUrl(ASSET_TYPES.ITEM, 'eon_ticket') })
+    if (s.articunoTicketSecs > 0) list.push({ id: 'articuno', secs: s.articunoTicketSecs, name: '❄️ Ticket Articuno', desc: 'Permite entrar a las Islas Espuma.', icon: getAssetUrl(ASSET_TYPES.ITEM, 'eon_ticket') })
+    if (s.mewtwoTicketSecs > 0) list.push({ id: 'mewtwo', secs: s.mewtwoTicketSecs, name: '🧬 Ticket Mewtwo', desc: 'Permite entrar a la Cueva Celeste (Mewtwo).', icon: getAssetUrl(ASSET_TYPES.ITEM, 'eon_ticket') })
+    if (s.ivScannerSecs > 0) list.push({ id: 'iv-scanner', secs: s.ivScannerSecs, name: '🔍 Escáner de IVs', desc: 'Muestra los IVs totales de Pokémon salvajes.', icon: getAssetUrl(ASSET_TYPES.ITEM, 'poke_radar') })
     
     if (s.incenseSecs > 0) {
       const types: Record<string, string> = { fire: 'Fuego', water: 'Agua', grass: 'Planta', normal: 'Normal', ghost: 'Fantasma', psychic: 'Psíquico' }
-      const sprites: Record<string, string> = { fire: 'incense', water: 'sea-incense', grass: 'rose-incense', normal: 'luck-incense', ghost: 'pure-incense', psychic: 'odd-incense' }
+      const sprites: Record<string, string> = { fire: 'luck_incense', water: 'luck_incense', grass: 'luck_incense', normal: 'luck_incense', ghost: 'luck_incense', psychic: 'luck_incense' }
       const tName = types[s.incenseType || ''] || 'Desconocido'
-      const tSprite = sprites[s.incenseType || ''] || 'incense'
+      const tSprite = sprites[s.incenseType || ''] || 'luck_incense'
       list.push({ 
         id: 'incense', 
         secs: s.incenseSecs, 

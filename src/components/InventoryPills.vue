@@ -9,6 +9,7 @@ import PVTooltip from '@/components/common/PVTooltip.vue'
 import { formatCurrency } from '@/logic/utils/formatters'
 import { SHOP_ITEMS } from '@/data/items'
 import EggSprite from '@/components/common/EggSprite.vue'
+import { resolveNormalizedName } from '@/stores/inventoryHelpers'
 
 const _gameStore = useGameStore()
 const _uiStore = useUIStore()
@@ -24,6 +25,7 @@ const bcRef = ref<HTMLElement | null>(null)
 const badgeRef = ref<HTMLElement | null>(null)
 const ballRef = ref<HTMLElement | null>(null)
 const eggRef = ref<HTMLElement | null>(null)
+const materialsRef = ref<HTMLElement | null>(null)
 
 const medals = computed(() => _gameStore.state.badges || 0)
 const eggCount = computed(() => (_gameStore.state.eggs || []).length)
@@ -119,6 +121,76 @@ const ballsBreakdown = computed(() => {
 })
 
 /**
+ * Materiales de Tier 0, 1 y 2 en la mochila
+ */
+const materialItems = computed(() => {
+  const inventory = _gameStore.state.inventory || {}
+  const list: { name: string; qty: number; tier: number; icon: string }[] = []
+  
+  for (const [key, qty] of Object.entries(inventory)) {
+    const count = qty as number
+    if (count <= 0) continue
+    const officialName = resolveNormalizedName(key)
+    const found = SHOP_ITEMS.find(i => i.name === officialName || i.id === officialName)
+    if (found) {
+      let tier: number | null = null
+      if (found.cat === 'raw_material' || found.sprite?.includes('crafting/tier0/')) {
+        tier = 0
+      } else if (found.cat === 'refined_material' || found.sprite?.includes('crafting/tier1/')) {
+        tier = 1
+      } else if (found.cat === 'component' || found.sprite?.includes('crafting/tier2/')) {
+        tier = 2
+      }
+      
+      if (tier !== null) {
+        list.push({
+          name: found.name,
+          qty: count,
+          tier,
+          icon: found.icon || '📦'
+        })
+      }
+    }
+  }
+  return list
+})
+
+const totalMaterials = computed(() => {
+  return materialItems.value.reduce((sum, item) => sum + item.qty, 0)
+})
+
+const materialsBreakdown = computed(() => {
+  const t0 = materialItems.value.filter(i => i.tier === 0)
+  const t1 = materialItems.value.filter(i => i.tier === 1)
+  const t2 = materialItems.value.filter(i => i.tier === 2)
+  
+  if (materialItems.value.length === 0) {
+    return 'No tienes materiales en la mochila.\n\nExplora o excava para recolectar.'
+  }
+  
+  const lines: string[] = []
+  
+  if (t0.length > 0) {
+    lines.push('Materia Prima:')
+    t0.forEach(i => lines.push(`• ${i.icon} ${i.name}: ${i.qty}`))
+  }
+  
+  if (t1.length > 0) {
+    if (lines.length > 0) lines.push('')
+    lines.push('Material Refinado:')
+    t1.forEach(i => lines.push(`• ${i.icon} ${i.name}: ${i.qty}`))
+  }
+  
+  if (t2.length > 0) {
+    if (lines.length > 0) lines.push('')
+    lines.push('Componentes:')
+    t2.forEach(i => lines.push(`• ${i.icon} ${i.name}: ${i.qty}`))
+  }
+  
+  return lines.join('\n')
+})
+
+/**
  * Ajusta el tamaño de fuente de un elemento para que quepa en su contenedor
  */
 const fitText = async (el: HTMLElement | null, baseSize: number) => {
@@ -156,13 +228,14 @@ const fitAllPills = () => {
   fitText(badgeRef.value, 14)
   fitText(ballRef.value, 14)
   fitText(eggRef.value, 14)
+  fitText(materialsRef.value, 14)
 }
 
 // Observador para cambios de tamaño (mobile resize / orientation)
 let resizeObserver: ResizeObserver | null = null
 
 // Observadores para disparar el ajuste cuando cambien los datos
-watch([money, battleCoins, medals, balls, eggCount], () => {
+watch([money, battleCoins, medals, balls, eggCount, totalMaterials], () => {
   fitAllPills()
 }, { deep: true })
 
@@ -296,6 +369,26 @@ onUnmounted(() => {
         >{{ formatCurrency(eggCount) }}</span>
       </div>
     </PVTooltip>
+
+    <!-- MATERIALES -->
+    <PVTooltip
+      title="⚡ MATERIALES"
+      :description="materialsBreakdown"
+      position="bottom"
+    >
+      <div
+        id="hud-materials-container"
+        class="hud-pill materials-pill clickable-pill"
+        @click.stop="modalStore.open('Inventory', { initialCategory: 'raw_material' })"
+      >
+        <span class="materials-icon">🎒</span>
+        <span
+          id="materials-count"
+          ref="materialsRef"
+          class="pill-value"
+        >{{ formatCurrency(totalMaterials) }}</span>
+      </div>
+    </PVTooltip>
   </div>
 </template>
 
@@ -376,6 +469,14 @@ onUnmounted(() => {
       text-shadow: 0 0 8px Rgba($coin-gold, 0.4);
     }
   }
+
+  &.materials-pill {
+    border-color: Rgba($gray, 0.3);
+    .pill-value, .materials-icon {
+      color: var(--silver);
+      text-shadow: 0 0 8px Rgba(#94a3b8, 0.4);
+    }
+  }
 }
 
 .currency-icon-money {
@@ -385,6 +486,11 @@ onUnmounted(() => {
 
 .currency-icon-bc {
   font-size: 16px;
+}
+
+.materials-icon {
+  font-size: 18px;
+  margin-bottom: 2px;
 }
 
 .ball-icon-wrap {

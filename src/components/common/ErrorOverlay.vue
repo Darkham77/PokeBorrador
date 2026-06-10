@@ -177,8 +177,7 @@ const transitionHooks = useGsapTransition({
   -webkit-will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
   backdrop-filter: Blur(10px);
-  @include gpu-layer;
-  font-family: 'Nunito', sans-serif;
+  font-family: var(--font-ui);
   @include gpu-layer;
 }
 

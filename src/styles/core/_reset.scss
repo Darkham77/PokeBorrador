@@ -1,11 +1,22 @@
 // src/styles/core/_reset.scss
 @use 'tools' as *;
 
-@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Orbitron:wght@400;700;900&family=Cinzel:wght@400;700;900&family=Rajdhani:wght@300;500;700;900&family=Nunito:wght@400;700;900&display=swap');
+@font-face {
+  font-family: 'Pokemon FireRed LeafGreen';
+  src: url('/fonts/pokemon-firered-leafgreen-font.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+  size-adjust: 128%;
+}
+
+// Google Fonts no longer imported here — 'Pokemon FireRed LeafGreen' is served locally via /public/fonts/
+// 'Press Start 2P' kept as pixel fallback via _variables.scss if needed
 
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
+
 

@@ -11,7 +11,7 @@ html, body {
 }
 
 body {
-  font-family: 'Nunito', sans-serif;
+  font-family: var(--font-ui);
   color: $text;
   height: 100%;
   margin: 0;
@@ -20,6 +20,13 @@ body {
   -webkit-user-select: none;
   user-select: none;
   background-color: var(--darker); // Pitch black backdrop
+  
+  // Aggressive anti-blur for the global pixel font
+  -webkit-font-smoothing: none !important;
+  -moz-osx-font-smoothing: grayscale !important;
+  #{"font-smooth"}: never !important;
+  text-rendering: optimizeSpeed !important;
+  -webkit-text-stroke: 0px !important;
 
   &.modal-open {
     overflow: hidden !important;
@@ -71,12 +78,14 @@ h1, h2, h3, h4, h5, h6,
 .pill-value, 
 .font-pixel, 
 .pixelated,
+[style*="Pokemon FireRed LeafGreen"],
 [style*="Press Start 2P"],
 [style*="Silkscreen"],
 [style*="VT323"] {
   // Only apply pixelated mixin if it has the class or specific font
   &.pixelated, 
   &.font-pixel, 
+  &[style*="Pokemon FireRed LeafGreen"],
   &[style*="Press Start 2P"],
   &[style*="Silkscreen"],
   &[style*="VT323"] {
@@ -85,6 +94,7 @@ h1, h2, h3, h4, h5, h6,
 }
 
 // Ultra-aggressive global override for pixel fonts to prevent browser smoothing
+[style*="Pokemon FireRed LeafGreen"],
 [style*="Press Start 2P"], 
 .font-pixel, 
 body .pixelated {
@@ -102,6 +112,35 @@ img, canvas, .pixelated-img, .sprite, [class*="sprite-"], .banner-bg, [class*="-
   image-rendering: pixelated !important;
   -ms-interpolation-mode: nearest-neighbor !important;
 }
+
+// ─── Global Emoji Centering Fix ──────────────────────────────────────────────
+// The pixel font ('Pokemon FireRed LeafGreen') has size-adjust:128%.
+// This inflates the em-square of ANY span that inherits it, making the line-box
+// ~31px tall even at font-size:16px. Emoji (rendered by the system emoji font)
+// then align to the BASELINE of that tall line-box, appearing visually lower.
+//
+// Fix: any span/div that is exclusively an emoji/icon container inherits
+// emoji-only fonts so the em-square is normal and the parent flex centers it correctly.
+// This rule targets ALL icon containers across the app without touching components.
+// ─────────────────────────────────────────────────────────────────────────────
+.icon,
+.cat-icon,
+.toast-icon,
+.btn-emoji,
+.weather-emoji,
+.desc-line-icon,
+.admin-icon-btn,
+.faction-emoji,
+[class*="close-btn"]:not(img):not(.pixelated),
+[class$="-icon"]:not(img):not(.pixelated):not([class*="sprite"]) {
+  font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  line-height: 1 !important;
+}
+
+
 
 // Global Scrollbar Utility
 .custom-scrollbar-vicio {

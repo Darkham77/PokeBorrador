@@ -91,7 +91,8 @@
     width: 100% !important;
     height: 100% !important;
     line-height: 1 !important;
-    transform: Translatey(-4px) !important;
+    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif !important;
+    transform: none !important;
   }
   
   .faction-emoji {
@@ -111,6 +112,11 @@
   right: 8px; // Aligned with grid right edge (right: 8px)
   font-size: 18px;
   color: Rgba(255, 204, 0, 1);
+
+  .pill-content {
+    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif !important;
+    transform: none !important;
+  }
 
   .tag-icon {
     display: flex;
@@ -142,6 +148,11 @@
 
 .interactive-pill {
   @extend .map-pill;
+  
+  .pill-content {
+    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif !important;
+    transform: none !important;
+  }
   
   .pill-icon {
     font-size: 18px;
