@@ -1,0 +1,29 @@
+# Purpose
+
+Manage local/offline database schemas, seeds, and SQL migration logic.
+
+## Ownership
+
+Backend / Database Engineers.
+
+## Local Contracts
+
+- DBRouter coordination for local persistence.
+- Zero Postgres PL/pgSQL constructs in local migrations.
+
+## Work Guidance
+
+- Client-side SQLite WASM engines do not support PG constructs (`CREATE FUNCTION`, `DROP FUNCTION`). The schema translator must intercept and strip these statements to keep migration files clean.
+- Ensure all SQLite files are generated and tested locally before committing.
+- Do not run heavy SQL tests on trivial modifications.
+
+## Verification
+
+- Run `npm run validate:sql` to verify database schemas against the SQLite local environment.
+
+## Child DOX Index
+
+- `backups/` - Database backups.
+- `migrations/` - Schema versioning migrations.
+- `schemas/` - Full schema definitions.
+- `temp/` - Work temporary cache.

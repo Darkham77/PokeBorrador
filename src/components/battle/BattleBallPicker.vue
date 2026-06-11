@@ -200,6 +200,7 @@ onUnmounted(() => {
     </div>
 
     <button
+      v-gsap-hover="{ scale: 1.12, rotation: 5, y: 0 }"
       class="btn-catch-ball"
       :class="{ 'is-active': isBallMenuOpen }"
       :disabled="battleStore.isProcessing || props.isFinishing || battleStore.isIntroAnimating || battleStore.state?.isTrainer"
@@ -264,7 +265,7 @@ onUnmounted(() => {
   }
 
   &.is-active {
-    transform: Scale(0.9);
+    transform: Scale(0.9) !important;
     border-color: #ff453a !important;
   }
 
@@ -357,7 +358,7 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 8px 12px;
+  padding: 6px 12px;
   background: Rgba(255, 255, 255, 0.01);
   border: 1px solid transparent;
   border-radius: 12px;
@@ -370,18 +371,18 @@ onUnmounted(() => {
   
 
   .ball-sprite-wrapper {
-    width: 36px;
-    height: 36px;
+    width: 44px;
+    height: 44px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: transparent;
+    background: Rgba(255, 255, 255, 0.03);
     border-radius: 8px;
     flex-shrink: 0;
 
     .ball-icon-mini {
-      width: 28px;
-      height: 28px;
+      width: 36px;
+      height: 36px;
       @include m.pixelated;
       will-change: transform;
       filter: Drop-Shadow(0 4px 6px Rgba(0,0,0,0.5));
@@ -391,6 +392,8 @@ onUnmounted(() => {
   .ball-info {
     flex: 1;
     min-width: 0;
+    display: flex;
+    align-items: center;
     
     .ball-name {
       font-size: 8px;
@@ -402,7 +405,9 @@ onUnmounted(() => {
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      line-height: 1.2;
+      line-height: 1;
+      display: inline-flex;
+      align-items: center;
     }
   }
 
@@ -413,6 +418,8 @@ onUnmounted(() => {
     @include m.pixelated;
     margin-right: 4px;
     flex-shrink: 0;
+    display: flex;
+    align-items: center;
   }
 
   .ball-action-arrow {
@@ -420,6 +427,8 @@ onUnmounted(() => {
     color: #ffd60a;
     opacity: 0.3;
     flex-shrink: 0;
+    display: flex;
+    align-items: center;
   }
 
   &:hover {

@@ -44,7 +44,7 @@ describe('Shop Store', () => {
     shop.buyItem('pokeball');
     
     expect(game.state.money).toBe(1000 - (price * 2));
-    expect(game.state.inventory[item.name]).toBe(2);
+    expect(game.state.inventory[item.id]).toBe(2);
     expect(ui.notify).toHaveBeenCalledWith(expect.stringContaining('Compraste x2'), item.icon);
   });
 
@@ -75,7 +75,7 @@ describe('Shop Store', () => {
     shop.buyItemBC(item.id);
     
     expect(game.state.battleCoins).toBe(5000 - 4800);
-    expect(game.state.inventory[item.name]).toBe(1);
+    expect(game.state.inventory[item.id]).toBe(1);
   });
 
   it('restores HP and PP when healing all pokemon', () => {

@@ -54,13 +54,14 @@ const close = () => {
 
 const useStone = (stoneName: string, toId: string) => {
   if (!pokemon.value) return;
-  const currentQty = gameStore.state.inventory[stoneName];
+  const stoneId = getStoneInfo(stoneName).id || stoneName;
+  const currentQty = gameStore.state.inventory[stoneId];
   if (!currentQty || currentQty <= 0) return;
 
   // Consume item
-  gameStore.state.inventory[stoneName] = currentQty - 1;
-  if (gameStore.state.inventory[stoneName] <= 0) {
-    delete gameStore.state.inventory[stoneName];
+  gameStore.state.inventory[stoneId] = currentQty - 1;
+  if (gameStore.state.inventory[stoneId] <= 0) {
+    delete gameStore.state.inventory[stoneId];
   }
 
   close();
@@ -82,7 +83,7 @@ watch(options, () => {
 });
 
 const getStoneInfo = (name: string) => {
-  return SHOP_ITEMS.find(i => i.name === name) || { icon: '💎', sprite: '' };
+  return SHOP_ITEMS.find(i => i.name === name) || { icon: '💎', sprite: '', id: name };
 };
 
 const getPokemonName = (id: string) => {
@@ -110,7 +111,7 @@ const getPokemonName = (id: string) => {
           v-for="opt in options" 
           :key="opt.stone"
           class="stone-option-vicio"
-          :class="{ disabled: (gameStore.state.inventory[opt.stone] || 0) <= 0 }"
+          :class="{ disabled: (gameStore.state.inventory[getStoneInfo(opt.stone).id || opt.stone] || 0) <= 0 }"
         >
           <div class="stone-sprite-box">
             <img 
@@ -130,13 +131,13 @@ const getPokemonName = (id: string) => {
               {{ opt.stone }}
             </div>
             <div class="evo-target">
-              → {{ getPokemonName(opt.to) }} &nbsp;·&nbsp; x{{ gameStore.state.inventory[opt.stone] || 0 }}
+              → {{ getPokemonName(opt.to) }} &nbsp;·&nbsp; x{{ gameStore.state.inventory[getStoneInfo(opt.stone).id || opt.stone] || 0 }}
             </div>
           </div>
 
           <button 
             class="use-btn-vicio"
-            :disabled="(gameStore.state.inventory[opt.stone] || 0) <= 0"
+            :disabled="(gameStore.state.inventory[getStoneInfo(opt.stone).id || opt.stone] || 0) <= 0"
             @click.stop="useStone(opt.stone, opt.to)"
           >
             USAR

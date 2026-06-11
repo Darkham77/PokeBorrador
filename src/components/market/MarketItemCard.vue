@@ -3,6 +3,7 @@ import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 
 interface InventoryItem {
+  id: string
   name: string
   qty: number
   desc: string
@@ -37,9 +38,9 @@ const _getAssetUrl = getAssetUrl
     >
       <div class="item-visual">
         <img 
-          :src="_getAssetUrl(_ASSET_TYPES.ITEM, item.name)" 
+          :src="_getAssetUrl(_ASSET_TYPES.ITEM, item.id)" 
           class="i-sprite pixelated"
-          @error="(e: Event) => (e.target as HTMLImageElement).src = _getAssetUrl(_ASSET_TYPES.ITEM, 'Poción')"
+          @error="(e: Event) => (e.target as HTMLImageElement).src = _getAssetUrl(_ASSET_TYPES.ITEM, 'potion')"
         >
       </div>
       <div class="item-details">
@@ -50,7 +51,18 @@ const _getAssetUrl = getAssetUrl
       </div>
       <div class="selection-indicator">
         <div class="check-circle">
-          <span v-if="isSelected">✓</span>
+          <svg
+            v-if="isSelected"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="4"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="checkmark-svg"
+          >
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
         </div>
       </div>
     </PVTooltip>
@@ -151,6 +163,13 @@ const _getAssetUrl = getAssetUrl
       align-items: center;
       justify-content: center;
       font-size: 10px;
+
+      .checkmark-svg {
+        width: 65%;
+        height: 65%;
+        stroke: currentColor;
+        display: block;
+      }
     }
   }
 }

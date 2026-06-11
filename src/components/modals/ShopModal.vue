@@ -6,6 +6,7 @@ import { useShopStore } from '@/stores/shop'
 import { useGameStore } from '@/stores/game'
 import BaseModal from '@/components/common/BaseModal.vue'
 import { formatCurrency } from '@/logic/utils/formatters'
+import SortControls from '@/components/common/SortControls.vue'
 
 // Sub-components
 import UnifiedSidebar from '@/components/common/UnifiedSidebar.vue'
@@ -36,6 +37,8 @@ const activeMainTab = ref<'productos' | 'materiales'>('productos')
 
 const activeTab = ref(props.initialCategory || 'todos')
 const search = ref('')
+const sortKey = ref<'name' | 'price' | 'rarity'>('name')
+const sortOrder = ref<'asc' | 'desc'>('asc')
 
 interface ShopItem {
   id: string
@@ -50,7 +53,7 @@ interface ShopItem {
 }
 
 const filteredItems = computed<ShopItem[]>(() => {
-  return (shopStore.SHOP_ITEMS as ShopItem[]).filter(item => {
+  const items = (shopStore.SHOP_ITEMS as ShopItem[]).filter(item => {
     if (!item.showInNormalShop) return false
     const resolvedCat = item.cat || 'otros'
     const isMaterialCat = ['raw_material', 'refined_material', 'component'].includes(resolvedCat)
@@ -62,6 +65,21 @@ const filteredItems = computed<ShopItem[]>(() => {
     if (activeTab.value !== 'todos' && resolvedCat !== activeTab.value) return false
     if (search.value && !item.name.toLowerCase().includes(search.value.toLowerCase())) return false
     return true
+  })
+
+  return [...items].sort((a, b) => {
+    let comp = 0
+    if (sortKey.value === 'price') {
+      comp = (a.price || 0) - (b.price || 0)
+    } else if (sortKey.value === 'rarity') {
+      const tiers: Record<string, number> = { common: 0, rare: 1, epic: 2, legend: 3 }
+      const aT = tiers[(a as {tier?: string}).tier || 'common'] ?? 0
+      const bT = tiers[(b as {tier?: string}).tier || 'common'] ?? 0
+      comp = bT - aT
+    } else {
+      comp = a.name.localeCompare(b.name)
+    }
+    return sortOrder.value === 'asc' ? comp : -comp
   })
 })
 
@@ -200,6 +218,10 @@ const close = () => {
               class="shop-search-bar"
             >
           </div>
+          <SortControls
+            v-model="sortKey"
+            v-model:sort-order="sortOrder"
+          />
         </div>
 
         <!-- Rejilla de Objetos -->

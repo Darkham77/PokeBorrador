@@ -64,6 +64,8 @@
     background: Rgba(255, 255, 255, 0.05);
     color: var(--white);
     position: relative;
+    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif !important;
+    line-height: 1 !important;
 
     &:hover:not(:disabled) { transform: Scale(1.1); }
     &:disabled {

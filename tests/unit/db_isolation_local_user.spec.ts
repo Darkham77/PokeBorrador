@@ -39,7 +39,7 @@ describe('Database Isolation for Local User', () => {
       })
     } as unknown as DBRouter
 
-    const user = { id: 'local_user' } as AuthUser
+    const user = { id: 'local_user', db_version: 3 } as AuthUser
 
     const result = await loadBestSave(user, mockDb)
     expect(result.data).toBeNull()
@@ -57,7 +57,7 @@ describe('Database Isolation for Local User', () => {
       })
     } as unknown as DBRouter
 
-    const user = { id: 'local_user' } as AuthUser
+    const user = { id: 'local_user', db_version: 3 } as AuthUser
     const state = { trainer: 'Ash', pokemon: [] } as unknown as GameState
 
     const result = await saveGame(state, user, { db: mockDb, skipRemote: false })
@@ -89,7 +89,7 @@ describe('Database Isolation for Local User', () => {
       })
     } as unknown as DBRouter
 
-    const user = { id: 'test_user', email: 'test@example.com' } as AuthUser
+    const user = { id: 'test_user', email: 'test@example.com', db_version: 3 } as AuthUser
     const state = { trainer: 'Ash', pokemon: [] } as unknown as GameState
 
     // Start first save (will block on writeOpfsFile)

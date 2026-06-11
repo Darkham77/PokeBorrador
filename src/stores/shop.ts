@@ -74,7 +74,7 @@ export const useShopStore = defineStore('shop', () => {
 
     // Process purchase
     gameStore.state.money -= total
-    gameStore.state.inventory[item.name] = (gameStore.state.inventory[item.name] || 0) + qty
+    gameStore.state.inventory[item.id] = (gameStore.state.inventory[item.id] || 0) + qty
     
     // Process special category effects (like balls count)
     if (item.cat === 'pokeballs') {
@@ -103,7 +103,7 @@ export const useShopStore = defineStore('shop', () => {
     }
 
     gameStore.state.battleCoins = (gameStore.state.battleCoins || 0) - bcPrice
-    gameStore.state.inventory[item.name] = (gameStore.state.inventory[item.name] || 0) + 1
+    gameStore.state.inventory[item.id] = (gameStore.state.inventory[item.id] || 0) + 1
     
     if (item.cat === 'pokeballs') {
        const mult = item.id === 'great_ball' ? 1.5 : (item.id === 'ultra_ball' ? 2 : 1)
@@ -135,7 +135,7 @@ export const useShopStore = defineStore('shop', () => {
     gameStore.state.warCoins = warStore.warCoins
     
     // Add to inventory
-    gameStore.state.inventory[item.name] = (gameStore.state.inventory[item.name] || 0) + 1
+    gameStore.state.inventory[item.id] = (gameStore.state.inventory[item.id] || 0) + 1
     
     uiStore.notify(`¡Compraste ${item.name}!`, '⚔️')
     gameStore.scheduleSave()
@@ -246,7 +246,7 @@ export const useShopStore = defineStore('shop', () => {
     daily.purchased.push(itemId)
     
     // Add to inventory
-    gameStore.state.inventory[item.name] = (gameStore.state.inventory[item.name] || 0) + 1
+    gameStore.state.inventory[item.id] = (gameStore.state.inventory[item.id] || 0) + 1
     
     useUIStore().notify(`¡Compraste ${item.name} en el Mercado Negro! 🚀`, '💰')
     gameStore.scheduleSave()

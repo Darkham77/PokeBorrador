@@ -1,6 +1,8 @@
 
 import { itemEffects } from '../items/itemEffects.ts';
 import type { Pokemon } from '@/types/pokemon';
+import { SHOP_ITEMS } from '@/data/items';
+import type { Item } from '@/types/items';
 
 /**
  * Proveedor Central de Lógica de Objetos
@@ -14,30 +16,42 @@ export const ITEM_EFFECTS = itemEffects;
  * @returns {any|null} Resultado del uso o null si no tuvo efecto.
  */
 export function useItemOnPokemon(itemName: string, pokemon: Pokemon): { message: string; pokemon: Pokemon } | null {
-  const effectFn = ITEM_EFFECTS[itemName];
+  const itemId = itemName.toLowerCase();
+
+  // Validate item exists in SHOP_ITEMS
+  const isTM = itemId.startsWith('tm') || itemId.startsWith('mt');
+  const itemExists = isTM || SHOP_ITEMS.some(i => i.id === itemId);
+  if (!itemExists) {
+    throw new Error(`[ItemProvider] Intento de usar un objeto inexistente: ${itemName}`);
+  }
+
+  const effectFn = ITEM_EFFECTS[itemId];
   if (!effectFn) return null;
   
   const result = effectFn(pokemon);
   return result.success ? { message: result.message, pokemon } : null;
 }
 
-/**
- * Verifica si un objeto es de uso global (ej: Repelente).
- */
 export function isGlobalItem(itemName: string): boolean {
-  const globalItems = [
-    'Caña de pescar', 'Caña Buena', 'Supercaña',
-    'Pico de excavación', 'Pico Bueno', 'Superpico',
-    'Pincel de excavación', 'Pincel Bueno', 'Superpincel',
-    'Repelente', 'Superrepelente', 'Máximo Repelente',
-    'Huevo Suerte Pequeño', 'Ticket Shiny', 'Moneda Amuleto',
-    'Escáner de IVs', 'Ticket Safari', 'Ticket Cueva Celeste',
-    'Ticket Articuno', 'Ticket Mewtwo', 'Incienso Fuego',
-    'Incienso Agua', 'Incienso Planta', 'Incienso Normal',
-    'Incienso Fantasma', 'Incienso Psíquico',
-    'Fósil Hélix', 'Fósil Domo', 'Ámbar Viejo'
-  ];
-  return globalItems.includes(itemName);
+  const itemId = itemName.toLowerCase();
+  const item = SHOP_ITEMS.find(i => i.id === itemId) as Item | undefined;
+  if (!item) return false;
+  return !!(
+    item.isGlobal || 
+    item.globalItem || 
+    (item.cat === 'tools' && item.type === 'usable') || 
+    (item.cat === 'otros' && (
+      item.type === 'booster' || 
+      item.type === 'usable' || 
+      item.id.includes('ticket') || 
+      item.id.includes('incense') || 
+      item.id.includes('fossil') || 
+      item.id === 'old_amber' ||
+      item.id === 'repel' ||
+      item.id === 'super_repel' ||
+      item.id === 'max_repel'
+    ))
+  );
 }
 
 // getItemVirtualCategory removed as it is now obsolete.

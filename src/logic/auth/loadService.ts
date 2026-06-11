@@ -26,6 +26,11 @@ export interface LoadResult {
 export async function loadBestSave(user: AuthUser | null, db: DBRouter): Promise<LoadResult> {
   if (!user) return { data: null, issues: [], lastSaveId: null, isNewerThanCloud: false };
 
+  if ((user.db_version || 1) < 3) {
+    logger.error('LOAD', `La cuenta del usuario (versión ${user.db_version || 1}) no está migrada a v3. Abortando carga.`);
+    throw new Error('La partida requiere actualización de seguridad (v3). Contacta al administrador.');
+  }
+
   let cloudSaveRow: { save_data: GameState; updated_at: string; last_save_id: string } | null = null;
   let finalSaveData: GameState | null = null;
 

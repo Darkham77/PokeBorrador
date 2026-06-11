@@ -297,6 +297,7 @@ export const useAuthStore = defineStore('auth', () => {
       username, 
       email, 
       gender,
+      db_version: 3,
       created_at: Temporal.Now.instant().toString() 
     })
     
@@ -356,7 +357,8 @@ export const useAuthStore = defineStore('auth', () => {
       const userData = {
         id: 'local_' + name.toLowerCase().replace(/\s+/g, '_'),
         email: name + '@local',
-        user_metadata: { full_name: name, username: name, gender }
+        user_metadata: { full_name: name, username: name, gender },
+        db_version: 3
       }
       user.value = userData as AuthUser
       sessionMode.value = 'offline'

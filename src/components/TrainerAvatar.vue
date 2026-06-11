@@ -487,6 +487,17 @@ watch(() => hasFrame.value, () => {
   position: relative;
 }
 
+.avatar-face-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  width: 100%;
+  height: 100%;
+  font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif !important;
+  line-height: 1 !important;
+}
+
 .avatar-frame-bg {
   position: absolute;
   pointer-events: none;

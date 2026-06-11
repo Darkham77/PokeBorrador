@@ -144,6 +144,7 @@
 }
 
 .hud-sq-btn {
+  position: relative;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -172,7 +173,7 @@
     font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif !important;
   }
 
-  span:not(:first-child) {
+  span:not(:first-child):not(.hud-notification-badge) {
     @include pixelated;
     font-size: 7px !important;
     font-weight: 400;
@@ -196,6 +197,26 @@
       0 20px 40px Rgba(0, 0, 0, 0.6),
       inset 0 30px 60px -20px color-mix(in srgb, var(--yellow), transparent 80%),
       0 0 20px color-mix(in srgb, var(--yellow), transparent 70%) !important;
-    span:not(:first-child) { color: var(--yellow) !important; }
+    span:not(:first-child):not(.hud-notification-badge) { color: var(--yellow) !important; }
   }
+}
+
+.hud-notification-badge {
+  position: absolute !important;
+  top: -4px !important;
+  right: -4px !important;
+  background: #ef4444 !important;
+  color: white !important;
+  border: none !important;
+  @include pixelated;
+  font-size: 7px !important;
+  padding: 4px 6px !important;
+  border-radius: 8px !important;
+  box-shadow: 0 2px 8px Rgba(239, 68, 68, 0.4) !important;
+  line-height: 1 !important;
+  width: auto !important;
+  height: auto !important;
+  min-width: unset !important;
+  display: inline-block !important;
+  z-index: 10 !important;
 }

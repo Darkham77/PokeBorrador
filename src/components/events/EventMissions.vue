@@ -333,8 +333,12 @@ async function startClassMission(missionId: string) {
   grid-template-columns: 1fr;
   gap: 16px;
   
-  @media (min-width: 640px) {
+  @media (min-width: 600px) {
     grid-template-columns: 1fr 1fr;
+  }
+  
+  @media (min-width: 950px) {
+    grid-template-columns: 1fr 1fr 1fr;
   }
 }
 

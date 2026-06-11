@@ -146,11 +146,11 @@ export function usePokemonActions(
     state.team.forEach(p => p && sanitizePokemon(p))
     if (state.box) state.box.forEach(p => p && sanitizePokemon(p))
 
-    // Inventory Self-Healing: convert IDs and legacy Spanish names to current official Spanish names
+    // Inventory Self-Healing: convert legacy Spanish names to current official English IDs
     if (state.inventory) {
       const healedInventory: Record<string, number> = {};
       for (const [key, qty] of Object.entries(state.inventory)) {
-        let officialName = key;
+        let officialId = key;
         
         // Find in SHOP_ITEMS by name (case-insensitive) or id
         const item = SHOP_ITEMS.find(i => 
@@ -159,30 +159,10 @@ export function usePokemonActions(
         );
         
         if (item) {
-          officialName = item.name;
-        } else {
-          // Check legacy item IDs manually if not matched
-          const legacyItemMap: Record<string, string> = {
-            pocion: 'Poción',
-            super_pocion: 'Súper Poción',
-            hiper_pocion: 'Hiper Poción',
-            pocion_max: 'Poción Máxima',
-            piedra_fuego: 'Piedra Fuego',
-            piedra_agua: 'Piedra Agua',
-            piedra_trueno: 'Piedra Trueno',
-            piedra_hoja: 'Piedra Hoja',
-            piedra_luna: 'Piedra Lunar',
-            piedra_solar: 'Piedra Solar',
-            caramelo_vigor: 'Caramelo de vigor',
-            repelente: 'Repelente'
-          };
-          const normKey = key.toLowerCase().trim();
-          if (legacyItemMap[normKey]) {
-            officialName = legacyItemMap[normKey];
-          }
+          officialId = item.id;
         }
         
-        healedInventory[officialName] = (healedInventory[officialName] || 0) + qty;
+        healedInventory[officialId] = (healedInventory[officialId] || 0) + qty;
       }
       state.inventory = healedInventory;
     }

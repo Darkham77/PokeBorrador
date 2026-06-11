@@ -26,6 +26,8 @@ export interface Item {
   type?: string;
   stoneType?: string;
   heldEffect?: string;
+  isGlobal?: boolean;
+  globalItem?: boolean;
 }
 
 export type ShopItem = Item; // Alias for now as they share same structure in data/items.ts

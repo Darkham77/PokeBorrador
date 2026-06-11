@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import { useInventoryStore } from '@/stores/inventory'
 import PVTooltip from '@/components/common/PVTooltip.vue'
+import SortControls from '@/components/common/SortControls.vue'
 
 interface Props {
   multiSelectMode?: string | null
@@ -36,20 +37,27 @@ const startMode = (mode: string) => {
     <!-- SEARCH BAR -->
     <div class="search-section">
       <div class="search-wrapper">
-        <span class="search-icon">🔍</span>
-        <input
-          v-model="searchQuery"
-          type="text"
-          placeholder="Buscar objeto..."
-          class="premium-search-input"
-        >
-        <button
-          v-if="searchQuery"
-          class="clear-btn"
-          @click.stop="searchQuery = ''"
-        >
-          ×
-        </button>
+        <div class="search-input-wrap">
+          <span class="search-icon">🔍</span>
+          <input
+            v-model="searchQuery"
+            type="text"
+            placeholder="Buscar objeto..."
+            class="premium-search-input"
+          >
+          <button
+            v-if="searchQuery"
+            class="clear-btn"
+            @click.stop="searchQuery = ''"
+          >
+            ×
+          </button>
+        </div>
+        <!-- SORT CONTROLS: inline with search bar -->
+        <SortControls
+          v-model="inventoryStore.currentSort"
+          v-model:sort-order="inventoryStore.currentSortOrder"
+        />
       </div>
     </div>
 
@@ -128,49 +136,63 @@ const startMode = (mode: string) => {
 
 .search-section {
   flex: 1;
-  max-width: 300px;
+  min-width: 0;
 
   .search-wrapper {
-    position: relative;
     display: flex;
     align-items: center;
-    
-    .search-icon {
-      position: absolute;
-      left: 12px;
-      font-size: 14px;
-      opacity: 0.5;
-    }
+    gap: 6px;
 
-    .premium-search-input {
-      width: 100%;
-      background: Rgba(0, 0, 0, 0.2);
-      border: 1px solid Rgba(255, 255, 255, 0.1);
-      border-radius: 10px;
-      padding: 8px 36px 8px 36px;
-      color: white;
-      font-size: 13px;
-      
+    // Input + clear-btn group
+    .search-input-wrap {
+      flex: 1;
+      min-width: 0;
+      position: relative;
+      display: flex;
+      align-items: center;
 
-      &:focus {
-        background: Rgba(0, 0, 0, 0.4);
-        border-color: var(--yellow);
-        box-shadow: 0 0 15px Rgba(255, 214, 10, 0.1);
-        outline: none;
+      .search-icon {
+        position: absolute;
+        left: 10px;
+        font-size: 13px;
+        opacity: 0.5;
+        pointer-events: none;
+        display: flex;
+        align-items: center;
+        line-height: 1;
+        font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif !important;
       }
-    }
 
-    .clear-btn {
-      position: absolute;
-      right: 10px;
-      background: none;
-      border: none;
-      color: Rgba(255, 255, 255, 0.5);
-      font-size: 18px;
-      cursor: pointer;
-      line-height: 1;
-      
-      &:hover { color: white; }
+      .premium-search-input {
+        width: 100%;
+        background: Rgba(0, 0, 0, 0.2);
+        border: 1px solid Rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+        padding: 7px 30px 7px 30px;
+        color: white;
+        font-size: 12px;
+
+        &:focus {
+          background: Rgba(0, 0, 0, 0.4);
+          border-color: var(--yellow);
+          box-shadow: 0 0 12px Rgba(255, 214, 10, 0.1);
+          outline: none;
+        }
+      }
+
+      .clear-btn {
+        position: absolute;
+        right: 8px;
+        background: none;
+        border: none;
+        color: Rgba(255, 255, 255, 0.5);
+        font-size: 16px;
+        cursor: pointer;
+        line-height: 1;
+        padding: 0;
+
+        &:hover { color: white; }
+      }
     }
   }
 }

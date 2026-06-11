@@ -228,7 +228,10 @@ function getGenderClass(gender: string) {
         :class="{ 'has-nickname': pokemon.nickname }"
       >
         <div class="pdc-name-stack">
-          <span class="pdc-pokemon-name">{{ pokemon.nickname || pokemon.name }}</span>
+          <span
+            class="pdc-pokemon-name"
+            :class="{ 'is-species': !pokemon.nickname }"
+          >{{ pokemon.nickname || pokemon.name }}</span>
           <span
             v-if="pokemon.nickname"
             class="pdc-species-subtitle"

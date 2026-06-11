@@ -10,8 +10,10 @@ export function registerItemTools(debug: DebugSystem, { game, ui, breedingStore 
     command: 'addItem',
     category: 'items',
     action: (name: string, qty = 10) => {
-      game.state.inventory[name] = ((game.state.inventory[name] as number) || 0) + qty
-      ui.notify(`Debug: +${qty} ${name}`, '🎒')
+      const item = SHOP_ITEMS.find(i => i.name === name || i.id === name)
+      const key = item ? item.id : name
+      game.state.inventory[key] = ((game.state.inventory[key] as number) || 0) + qty
+      ui.notify(`Debug: +${qty} ${item ? item.name : name}`, '🎒')
       game.saveGame(false)
     },
     description: 'Añade una cantidad de un item a la mochila.'
@@ -24,7 +26,7 @@ export function registerItemTools(debug: DebugSystem, { game, ui, breedingStore 
     category: 'items',
     action: (qty = 50) => {
       SHOP_ITEMS.forEach(item => {
-        game.state.inventory[item.name as keyof typeof game.state.inventory] = qty
+        game.state.inventory[item.id] = qty
       })
       ui.notify(`Debug: Mochila llena (${SHOP_ITEMS.length} tipos de objetos)`, '🎒')
       game.saveGame(false)
@@ -66,9 +68,9 @@ export function registerItemTools(debug: DebugSystem, { game, ui, breedingStore 
     category: 'items',
     action: () => {
       game.state.money = 100000
-      game.state.inventory['Fósil Domo'] = 10
-      game.state.inventory['Fósil Hélix'] = 10
-      game.state.inventory['Ámbar Viejo'] = 10
+      game.state.inventory['dome_fossil'] = 10
+      game.state.inventory['helix_fossil'] = 10
+      game.state.inventory['old_amber'] = 10
       ui.notify('Debug: $100K y 10x de cada fósil añadidos', '🧪')
       game.saveGame(false)
     },

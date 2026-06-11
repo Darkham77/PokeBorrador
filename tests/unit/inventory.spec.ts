@@ -26,8 +26,8 @@ describe('Inventory Store', () => {
     const gameStore = useGameStore()
     gameStore.state = {
       inventory: {
-        'Pokéball': 10,
-        'Poción': 5
+        'pokeball': 10,
+        'potion': 5
       },
       money: 1000,
       eggs: []
@@ -59,14 +59,14 @@ describe('Inventory Store', () => {
     const store = useInventoryStore()
     store.addItem('Pokéball', 5)
     const gameStore = useGameStore()
-    expect(gameStore.state.inventory['Pokéball']).toBe(15)
+    expect(gameStore.state.inventory['pokeball']).toBe(15)
   })
 
   it('removes items correctly', () => {
     const store = useInventoryStore()
     store.removeItem('Poción', 2)
     const gameStore = useGameStore()
-    expect(gameStore.state.inventory['Poción']).toBe(3)
+    expect(gameStore.state.inventory['potion']).toBe(3)
   })
 
   it('sells items correctly', () => {
@@ -76,7 +76,7 @@ describe('Inventory Store', () => {
     
     // Pokéball price is usually 200, sell price 100
     store.sellItem('Pokéball', 1)
-    expect(gameStore.state.inventory['Pokéball']).toBe(9)
+    expect(gameStore.state.inventory['pokeball']).toBe(9)
     expect(gameStore.state.money).toBeGreaterThan(initialMoney)
   })
 
@@ -93,7 +93,7 @@ describe('Inventory Store', () => {
     
     store.confirmBagSell()
     expect(store.bagSellMode).toBe(false)
-    expect(useGameStore().state.inventory['Pokéball']).toBeUndefined()
+    expect(useGameStore().state.inventory['pokeball']).toBeUndefined()
   })
 
   it('consumes items on use', () => {
@@ -106,21 +106,21 @@ describe('Inventory Store', () => {
     // Pokéball usually fails if not in battle context, but let's check consumption
     // Actually useItem logic handles many cases.
     
-    store.addItem('Poción', 1)
-    store.useItem('Poción', 'team', 0)
-    expect(gameStore.state.inventory['Poción']).toBe(5) // Had 5 + 1 - 1 = 5
+    store.addItem('potion', 1)
+    store.useItem('potion', 'team', 0)
+    expect(gameStore.state.inventory['potion']).toBe(5) // Had 5 + 1 - 1 = 5
   })
 
   it('sells specific quantity correctly', () => {
     const store = useInventoryStore()
     const gameStore = useGameStore()
-    gameStore.state.inventory['Pokéball'] = 50
+    gameStore.state.inventory['pokeball'] = 50
     const initialMoney = gameStore.state.money
     
     // Pokéball price 200 -> sell 100
     store.sellItem('Pokéball', 10)
     
-    expect(gameStore.state.inventory['Pokéball']).toBe(40)
+    expect(gameStore.state.inventory['pokeball']).toBe(40)
     expect(gameStore.state.money).toBe(initialMoney + 1000)
   })
 
@@ -130,23 +130,23 @@ describe('Inventory Store', () => {
 
     // Setup mismatched keys
     gameStore.state.inventory = {
-      'Subida PP': 2,
-      'MT Tóxico': 1,
-      'Imán': 3,
-      'Elixir': 5
+      'pp_up': 2,
+      'tm06': 1,
+      'magnet': 3,
+      'elixir_item': 5
     }
 
     // Try adding "Subida de PP" (which is official name for Subida PP)
     store.addItem('Subida de PP', 1)
-    expect(gameStore.state.inventory['Subida PP']).toBe(3)
+    expect(gameStore.state.inventory['pp_up']).toBe(3)
 
     // Try removing "MT06 Tóxico" (which is official name for MT Tóxico)
     store.removeItem('MT06 Tóxico', 1)
-    expect(gameStore.state.inventory['MT Tóxico']).toBeUndefined()
+    expect(gameStore.state.inventory['tm06']).toBeUndefined()
 
     // Try selling "Imán" using alias "iman"
     store.sellItem('iman', 1)
-    expect(gameStore.state.inventory['Imán']).toBe(2)
+    expect(gameStore.state.inventory['magnet']).toBe(2)
 
     // Check bagItems calculated properties are mapped to official SHOP_ITEMS definitions
     const bagItems = store.bagItems

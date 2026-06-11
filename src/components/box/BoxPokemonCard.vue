@@ -264,7 +264,10 @@ onUnmounted(() => {
     <!-- Info Footer -->
     <div class="card-info">
       <div class="box-pokemon-name-row">
-        <span class="box-pokemon-name">{{ props.pokemon.nickname || props.pokemon.name }}</span>
+        <span
+          class="box-pokemon-name"
+          :class="{ 'is-species': !props.pokemon.nickname }"
+        >{{ props.pokemon.nickname || props.pokemon.name }}</span>
       </div>
       <PokemonTypePills 
         :pokemon="props.pokemon" 
@@ -319,7 +322,18 @@ onUnmounted(() => {
         class="check-box"
         :class="{ checked: props.isSelected }"
       >
-        <span v-if="props.isSelected">✓</span>
+        <svg
+          v-if="props.isSelected"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="4"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="checkmark-svg"
+        >
+          <polyline points="20 6 9 17 4 12" />
+        </svg>
       </div>
     </div>
 

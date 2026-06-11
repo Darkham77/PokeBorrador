@@ -157,7 +157,7 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
             <!-- Email -->
             <div class="detail-row">
               <span class="label">EMAIL:</span>
-              <span class="value">{{ authStore.user?.email || profileData.email }}</span>
+              <span class="value email-val">{{ authStore.user?.email || profileData.email }}</span>
               <div class="row-spacer" />
             </div>
 
@@ -371,6 +371,11 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
         text-overflow: ellipsis;
         white-space: nowrap;
         text-align: left;
+
+        &.email-val {
+          font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+          font-size: 11px;
+        }
 
         &.name-val {
           font-size: 14px;

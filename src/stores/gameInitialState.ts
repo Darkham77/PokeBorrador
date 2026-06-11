@@ -13,7 +13,7 @@ export const INITIAL_STATE = {
   trainerLevel: 1,
   trainerExp: 0,
   trainerExpNeeded: 100,
-  inventory: { 'Poción': 3, 'Pokéball': 10 },
+  inventory: { potion: 3, pokeball: 10 },
   map: {
     currentMap: 'route1',
     region: 'kanto',

@@ -87,7 +87,7 @@
     
     // Floating panels height management
     & .base-modal-card {
-      max-height: 95dvh !important;
+      max-height: calc(95dvh / var(--modal-zoom, 1)) !important;
     }
   }
 

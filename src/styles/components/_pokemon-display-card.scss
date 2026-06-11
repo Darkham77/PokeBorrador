@@ -188,9 +188,12 @@
         @include pixelated;
         font-size: 8px;
         color: white;
-        text-transform: uppercase;
         letter-spacing: 0.5px;
         text-shadow: 0 2px 4px Rgba(0, 0, 0, 0.8), 0 0 10px Rgba(0,0,0,0.5);
+        
+        &.is-species {
+          text-transform: uppercase;
+        }
       }
 
       .pdc-species-subtitle {

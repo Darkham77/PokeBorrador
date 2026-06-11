@@ -54,6 +54,9 @@ const ivTotal = computed(() => {
   return (ivs.hp || 0) + (ivs.atk || 0) + (ivs.def || 0) + (ivs.spa || 0) + (ivs.spd || 0) + (ivs.spe || 0)
 })
 const isPremiumTier = computed(() => tierData.value.tier === 'S' || tierData.value.tier === 'S+')
+const typesCount = computed(() => {
+  return [props.item.pokemon.type, props.item.pokemon.type2].filter(Boolean).length
+})
 
 const listCompatibility = computed(() => {
   if (!props.isDaycareContext) return null
@@ -127,7 +130,10 @@ function handleClick() {
       <div class="top-line">
         <div class="name-group">
           <div class="ps-name-stack">
-            <span class="name">{{ item.pokemon.nickname || item.pokemon.name?.replace(/[♂♀]/g, '').trim() || 'Desconocido' }}</span>
+            <span
+              class="name"
+              :class="{ 'is-species': !item.pokemon.nickname }"
+            >{{ item.pokemon.nickname || item.pokemon.name?.replace(/[♂♀]/g, '').trim() || 'Desconocido' }}</span>
             <span
               v-if="item.pokemon.nickname"
               class="sel-species-subtitle"
@@ -151,26 +157,31 @@ function handleClick() {
         </div>
 
         <div class="actions-right">
+          <PVTooltip
+            :title="item._source === 'team' ? 'Equipo' : (item._source === 'box' ? 'Caja de PC' : 'Mercado')"
+            :description="item._source === 'team' ? 'Este Pokémon está en tu equipo activo.' : (item._source === 'box' ? 'Este Pokémon está guardado en tu caja.' : 'Este Pokémon está en el mercado.')"
+            position="top"
+          >
+            <span
+              class="source-symbol"
+              :class="item._source"
+            >
+              {{ item._source === 'team' ? '⚔️' : (item._source === 'box' ? '📦' : '🛒') }}
+            </span>
+          </PVTooltip>
           <span class="m-badge-tier">{{ tierData.tier }}</span>
         </div>
       </div>
       <div class="bottom-info">
-        <div class="info-row types-line">
+        <div class="info-row stats-line">
           <div class="sel-types-row">
             <PokemonTypeTag
               v-for="t in [item.pokemon.type, item.pokemon.type2].filter(Boolean)" 
               :key="String(t)"
               :type="String(t)"
-              size="sm"
+              :size="typesCount > 1 ? 'ssm' : 'sm'"
             />
           </div>
-          <span
-            class="source-tag"
-            :class="item._source"
-          >{{ item._source === 'team' ? 'EQUIPO' : (item._source === 'box' ? 'CAJA' : 'MERCADO') }}</span>
-        </div>
-
-        <div class="info-row stats-line">
           <span class="m-badge-level">Nv. {{ item.pokemon.level ?? 1 }}</span>
           <span
             v-if="item.pokemon.ivs"
@@ -237,7 +248,18 @@ function handleClick() {
       class="selection-indicator"
     >
       <div class="check-circle">
-        <span v-if="isSelected">✓</span>
+        <svg
+          v-if="isSelected"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="4"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="checkmark-svg"
+        >
+          <polyline points="20 6 9 17 4 12" />
+        </svg>
       </div>
     </div>
   </div>
@@ -245,6 +267,23 @@ function handleClick() {
 
 <style scoped lang="scss">
 @use "@/styles/components/badges" as *;
+
+.source-symbol {
+  font-size: 14px;
+  line-height: 1 !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif !important;
+  margin-right: 2px;
+}
+
+.sel-types-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
 
 .list-item {
   @include premium-card-hover(var(--tier-color, $blue), 1.02, -5px);

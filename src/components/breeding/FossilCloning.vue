@@ -28,7 +28,7 @@ const activeFossil = computed<{ name: string; sprite: string; pokemon: string }>
 
 const ownedCount = computed(() => {
   if (!gameStore.state?.inventory) return 0
-  return gameStore.state.inventory[activeFossil.value.name] || 0
+  return gameStore.state.inventory[activeFossil.value.sprite] || 0
 })
 
 const selectFossil = (idx: number) => {
@@ -52,7 +52,7 @@ const canClone = computed(() => {
 
 const handleClone = () => {
   if (!canClone.value) return
-  breedingStore.cloneFossil(activeFossil.value.name, extraSacrifices.value)
+  breedingStore.cloneFossil(activeFossil.value.sprite, extraSacrifices.value)
   extraSacrifices.value = 0 // Reset
 }
 
@@ -172,9 +172,9 @@ watch(extraSacrifices, () => {
               >
               <div 
                 class="fossil-count"
-                :class="{ empty: !((gameStore.state?.inventory?.[fossil.name] || 0) > 0) }"
+                :class="{ empty: !((gameStore.state?.inventory?.[fossil.sprite] || 0) > 0) }"
               >
-                {{ gameStore.state?.inventory?.[fossil.name] || 0 }}
+                {{ gameStore.state?.inventory?.[fossil.sprite] || 0 }}
               </div>
             </div>
             <div class="fossil-info">

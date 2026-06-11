@@ -29,7 +29,7 @@ describe('Shop & Healing Logic', () => {
       shopStore.buyItem('pokeball')
       
       expect(gameStore.state.money).toBe(1000 - 240)
-      expect(gameStore.state.inventory['Pokéball']).toBe(11) // Starts at 10 in INITIAL_STATE
+      expect(gameStore.state.inventory['pokeball']).toBe(11) // Starts at 10 in INITIAL_STATE
     })
 
     it('blocks items below required trainer level', () => {
@@ -42,7 +42,7 @@ describe('Shop & Healing Logic', () => {
       shopStore.buyItem('ultra_ball')
       
       expect(uiStore.notify).toHaveBeenCalledWith(expect.stringContaining('bloqueado'), '🔒')
-      expect(gameStore.state.inventory['Ultra Ball']).toBeUndefined()
+      expect(gameStore.state.inventory['ultra_ball']).toBeUndefined()
     })
   })
 
@@ -59,7 +59,7 @@ describe('Shop & Healing Logic', () => {
       shopStore.buyItemBC('leftovers')
 
       expect(gameStore.state.battleCoins).toBe(5000 - 4500)
-      expect(gameStore.state.inventory['Restos']).toBe(1)
+      expect(gameStore.state.inventory['leftovers']).toBe(1)
       expect(uiStore.notify).toHaveBeenCalledWith('¡Compraste Restos!', '🏅')
     })
 
@@ -75,7 +75,7 @@ describe('Shop & Healing Logic', () => {
       shopStore.buyItemBC('leftovers')
 
       expect(gameStore.state.battleCoins).toBe(5000)
-      expect(gameStore.state.inventory['Restos']).toBeUndefined()
+      expect(gameStore.state.inventory['leftovers']).toBeUndefined()
       expect(uiStore.notify).toHaveBeenCalledWith('¡Ítem bloqueado!', '🔒')
     })
 
@@ -91,7 +91,7 @@ describe('Shop & Healing Logic', () => {
       shopStore.buyItemBC('leftovers')
 
       expect(gameStore.state.battleCoins).toBe(1000)
-      expect(gameStore.state.inventory['Restos']).toBeUndefined()
+      expect(gameStore.state.inventory['leftovers']).toBeUndefined()
       expect(uiStore.notify).toHaveBeenCalledWith('¡No tenés suficientes Battle Coins!', '💰')
     })
   })
@@ -164,7 +164,7 @@ describe('Shop & Healing Logic', () => {
       shopStore.buyBlackMarketItem(item.id)
       
       expect(gameStore.state.money).toBe(expectedMoney)
-      expect(gameStore.state.inventory[item.name]).toBe(1)
+      expect(gameStore.state.inventory[item.id]).toBe(1)
       expect(gameStore.state.classData.blackMarketDaily.purchased).toContain(item.id)
     })
   })

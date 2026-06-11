@@ -22,7 +22,7 @@ export function calculateBreedingCost(pA: Pokemon, pB: Pokemon): number {
 }
 
 export function executeCloneFossil(
-  fossilName: string,
+  fossilId: string,
   extraQty: number,
   warehouseEggs: Ref<DaycareEgg[]>,
   saveWarehouseEggs: () => void
@@ -36,7 +36,7 @@ export function executeCloneFossil(
     return;
   }
 
-  const count = gameStore.state.inventory[fossilName] || 0;
+  const count = gameStore.state.inventory[fossilId] || 0;
   const requiredFossils = 1 + extraQty;
 
   if (count < requiredFossils) {
@@ -51,11 +51,14 @@ export function executeCloneFossil(
   }
 
   const FOSSIL_SPECIES_MAP: Record<string, string> = {
+    'dome_fossil': 'kabuto',
+    'helix_fossil': 'omanyte',
+    'old_amber': 'aerodactyl',
     'Fósil Domo': 'kabuto',
     'Fósil Hélix': 'omanyte',
     'Ámbar Viejo': 'aerodactyl'
   };
-  const speciesId = FOSSIL_SPECIES_MAP[fossilName];
+  const speciesId = FOSSIL_SPECIES_MAP[fossilId];
   if (!speciesId) {
     uiStore.notify('Fósil no reconocido para clonar.', '❌');
     return;
@@ -78,7 +81,7 @@ export function executeCloneFossil(
   const shinyChance = calculateCloningShinyChance(extraQty);
   const isShiny = Math.random() < shinyChance;
 
-  inventoryStore.removeItem(fossilName, requiredFossils);
+  inventoryStore.removeItem(fossilId, requiredFossils);
   gameStore.state.money -= totalCost;
 
   const egg = eggFactory.createDaycareEgg({

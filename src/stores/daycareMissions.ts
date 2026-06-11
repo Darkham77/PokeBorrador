@@ -110,7 +110,7 @@ export const useDaycareMissionsStore = defineStore('daycareMissions', () => {
 
     mission.completed = true;
     const inv = gameStore.state.inventory as Record<string, number>;
-    inv[mission.reward.name] = (inv[mission.reward.name] || 0) + mission.reward.qty;
+    inv[mission.reward.id] = (inv[mission.reward.id] || 0) + mission.reward.qty;
     
     uiStore.notify(`¡Misión completada! Recibiste ${mission.reward.name} x${mission.reward.qty}`, mission.reward.icon);
     gameStore.scheduleSave();

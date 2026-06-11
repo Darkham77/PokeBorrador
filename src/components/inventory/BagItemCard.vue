@@ -4,7 +4,7 @@ import { gsap } from 'gsap'
 import { Z_LAYERS } from '@/logic/constants/visuals'
 
 const props = defineProps<{
-  item: { name: string; qty: number | string }
+  item: { id?: string; name: string; qty: number | string }
   isSelected: boolean
   sellMode: boolean
   sellQty?: number
@@ -56,7 +56,7 @@ const onItemMouseLeave = (event: MouseEvent) => {
         {{ item.qty }}
       </div>
       <img
-        :src="getItemSpriteUrl(item.name)"
+        :src="getItemSpriteUrl(item.id || item.name)"
         :alt="item.name"
         class="item-sprite"
         @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"

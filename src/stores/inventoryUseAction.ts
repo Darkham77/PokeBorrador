@@ -4,11 +4,12 @@ import { useBattleStore } from './battle.ts';
 import { itemEffects as ITEM_EFFECTS, getDynamicItemEffect } from '@/logic/items/itemEffects';
 import { isGlobalItem } from '../logic/providers/itemProvider.ts';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
-import { resolveNormalizedName, consumeItem } from './inventoryHelpers.ts';
+import { consumeItem } from './inventoryHelpers.ts';
 import type { Pokemon, Move } from '@/types/pokemon';
 import type { ItemEffectResult } from '@/types/items';
 import { useAudioStore } from './audio.ts';
 import type { GameState } from '@/types/game';
+import { SHOP_ITEMS } from '@/data/items';
 
 export function executeUseItem(
   itemName: string,
@@ -19,25 +20,32 @@ export function executeUseItem(
   const uiStore = useUIStore();
   const battleStore = useBattleStore();
 
+  const itemId = itemName.toLowerCase();
+  
+  // Verify item exists in SHOP_ITEMS catalog or is a TM
+  const isTM = itemId.startsWith('tm') || itemId.startsWith('mt');
+  const itemExists = isTM || SHOP_ITEMS.some(i => i.id === itemId);
+  if (!itemExists) {
+    throw new Error(`[InventoryStore] Intento de usar un objeto inexistente: ${itemName}`);
+  }
+
   const list = context === 'team' ? gameStore.state.team : gameStore.state.box;
   const pokemon = index !== null ? (list as Pokemon[])[index] : null;
-  const officialName = resolveNormalizedName(itemName);
 
   // Combat check
   if (battleStore.isBattleActive && !battleStore.isProcessing) {
-    battleStore.useItemInBattle(officialName, context === 'team' ? index : null);
+    battleStore.useItemInBattle(itemId, context === 'team' ? index : null);
     return { success: true, message: 'Usando objeto en combate...' };
   }
 
-
   // Global items
-  if (isGlobalItem(officialName)) {
-    const effectFn = (ITEM_EFFECTS as Record<string, (p: GameState) => ItemEffectResult>)[officialName];
+  if (isGlobalItem(itemId)) {
+    const effectFn = (ITEM_EFFECTS as Record<string, (p: GameState) => ItemEffectResult>)[itemId];
     if (!effectFn) return { success: false, message: 'Efecto global no implementado.' };
     
     const result = effectFn(gameStore.state);
     if (result.success) {
-      consumeItem(gameStore, officialName);
+      consumeItem(gameStore, itemId);
       gameStore.save(false);
     }
     return result;
@@ -45,13 +53,13 @@ export function executeUseItem(
 
   if (!pokemon) return { success: false, message: 'Seleccioná un Pokémon.' };
 
-  const effectFn = (ITEM_EFFECTS as Record<string, (p: Pokemon) => ItemEffectResult>)[officialName];
+  const effectFn = (ITEM_EFFECTS as Record<string, (p: Pokemon) => ItemEffectResult>)[itemId];
   let result: ItemEffectResult | null;
 
   if (effectFn) {
     result = effectFn(pokemon);
   } else {
-    result = getDynamicItemEffect(officialName, pokemon);
+    result = getDynamicItemEffect(itemId, pokemon);
   }
 
   if (!result || !result.success) {
@@ -63,7 +71,7 @@ export function executeUseItem(
     uiStore.activePokemonForRelearner = pokemon;
     uiStore.isMoveRelearnerOpen = true;
   } else if (result.resultType === 'evolution') {
-    uiStore.startEvolution(pokemon, result.targetId || '', officialName);
+    uiStore.startEvolution(pokemon, result.targetId || '', itemId);
   } else if (result.resultType === 'levelup') {
     gameStore.checkLevelUp(pokemon);
   } else if (result.resultType === 'learn_move') {
@@ -92,16 +100,16 @@ export function executeUseItem(
     uiStore.isAbilityPillOpen = true;
   }
 
-  consumeItem(gameStore, officialName);
+  consumeItem(gameStore, itemId);
   gameStore.save(false);
 
   const audioStore = useAudioStore();
   const healItems = [
-    'Poción', 'Súper Poción', 'Hiper Poción', 'Poción Máxima',
-    'Revivir', 'Revivir Máximo', 'Antídoto', 'Cura Quemadura',
-    'Despertar', 'Cura Total', 'Refresco', 'Limonada'
+    'potion', 'super_potion', 'hyper_potion', 'max_potion',
+    'revive', 'revive_max', 'antidote', 'burn_heal',
+    'awakening', 'full_heal', 'soda_pop', 'lemonade'
   ];
-  if (healItems.includes(officialName)) {
+  if (healItems.includes(itemId)) {
     audioStore.play('heal');
   } else {
     audioStore.play('item');

@@ -6,6 +6,7 @@ import { useShopStore } from '@/stores/shop'
 import { useGameStore } from '@/stores/game'
 import BaseModal from '@/components/common/BaseModal.vue'
 import { formatCurrency } from '@/logic/utils/formatters'
+import SortControls from '@/components/common/SortControls.vue'
 
 
 import UnifiedSidebar from '@/components/common/UnifiedSidebar.vue'
@@ -34,6 +35,8 @@ const activeMainTab = ref<'productos' | 'materiales'>('productos')
 
 const activeTab = ref('todos')
 const search = ref('')
+const sortKey = ref<'name' | 'price' | 'rarity'>('name')
+const sortOrder = ref<'asc' | 'desc'>('asc')
 
 interface ShopItem {
   id: string
@@ -53,7 +56,7 @@ interface ShopItem {
 }
 
 const filteredItems = computed<ShopItem[]>(() => {
-  return (shopStore.SHOP_ITEMS as ShopItem[]).filter(item => {
+  const items = (shopStore.SHOP_ITEMS as ShopItem[]).filter(item => {
     if (!item.showInBCShop) return false
 
     const resolvedCat = item.cat || 'otros'
@@ -66,11 +69,23 @@ const filteredItems = computed<ShopItem[]>(() => {
     if (activeTab.value !== 'todos' && resolvedCat !== activeTab.value) return false
     if (search.value && !item.name.toLowerCase().includes(search.value.toLowerCase())) return false
     return true
-  }).sort((a, b) => {
-    const aLocked = (gameStore.state.trainerLevel || 1) < (a.unlockLv || 1) ? 1 : 0
-    const bLocked = (gameStore.state.trainerLevel || 1) < (b.unlockLv || 1) ? 1 : 0
-    if (aLocked !== bLocked) return aLocked - bLocked
-    return (a.unlockLv || 1) - (b.unlockLv || 1)
+  })
+
+  return [...items].sort((a, b) => {
+    let comp = 0
+    if (sortKey.value === 'price') {
+      const aPrice = a.bcPrice ?? a.price ?? 0
+      const bPrice = b.bcPrice ?? b.price ?? 0
+      comp = aPrice - bPrice
+    } else if (sortKey.value === 'rarity') {
+      const tiers: Record<string, number> = { common: 0, rare: 1, epic: 2, legend: 3 }
+      const aT = tiers[a.tier || 'common'] ?? 0
+      const bT = tiers[b.tier || 'common'] ?? 0
+      comp = bT - aT
+    } else {
+      comp = a.name.localeCompare(b.name)
+    }
+    return sortOrder.value === 'asc' ? comp : -comp
   })
 })
 
@@ -213,6 +228,53 @@ const close = () => {
               class="shop-search-bar"
             >
           </div>
+          <SortControls
+            v-model="sortKey"
+            v-model:sort-order="sortOrder"
+            accent-color="#c084fc"
+          >
+            <template #price-icon>
+              <!-- Coin stack SVG — same technique as the star, no FA dependency -->
+              <svg
+                viewBox="0 0 24 24"
+                class="coin-stack-icon"
+                fill="currentColor"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <!-- Bottom coin -->
+                <ellipse
+                  cx="12"
+                  cy="17"
+                  rx="8"
+                  ry="3"
+                  opacity="0.7"
+                />
+                <!-- Middle coin -->
+                <ellipse
+                  cx="12"
+                  cy="13"
+                  rx="8"
+                  ry="3"
+                  opacity="0.85"
+                />
+                <!-- Top coin -->
+                <ellipse
+                  cx="12"
+                  cy="9"
+                  rx="8"
+                  ry="3"
+                />
+                <!-- Vertical sides connecting coins -->
+                <rect
+                  x="4"
+                  y="9"
+                  width="16"
+                  height="4"
+                  opacity="0"
+                />
+              </svg>
+            </template>
+          </SortControls>
         </div>
 
         <!-- Items Grid -->

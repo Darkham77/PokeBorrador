@@ -112,26 +112,7 @@ export async function ensureSchemaIntegrity(db: SQLiteDatabase): Promise<void> {
     db.run("UPDATE global_chat_messages SET user_id = 'local_ash' WHERE username = 'ash'")
     db.run("UPDATE global_chat_messages SET user_id = 'local_entrenador' WHERE username = 'Entrenador' OR username = 'entrenador'")
     
-    // Repair local dev profiles that defaulted to Entrenador
-    db.run("UPDATE profiles SET username = 'Ash' WHERE id = 'local_ash' AND username = 'Entrenador'")
-    
-    // Seed default profiles for local testing
-    db.run("INSERT OR IGNORE INTO profiles (id, username, trainer_level, player_class, nick_style, avatar_style, badges) VALUES ('local_ash', 'Ash', 10, 'entrenador', 'nick-style-gold', 'av-fire', 0)")
-    db.run("INSERT OR IGNORE INTO profiles (id, username, trainer_level, player_class, nick_style, avatar_style, badges) VALUES ('local_entrenador', 'Entrenador', 5, 'entrenador', 'nt-class-criador', 'av-class-criador', 0)")
-    db.run("INSERT OR IGNORE INTO game_saves (user_id, save_data, updated_at) VALUES ('local_ash', '{\"trainer\":\"Ash\",\"trainerLevel\":10,\"playerClass\":\"entrenador\",\"nick_style\":\"nick-style-gold\",\"avatar_style\":\"av-fire\"}', datetime('now'))")
-    db.run("INSERT OR IGNORE INTO game_saves (user_id, save_data, updated_at) VALUES ('local_entrenador', '{\"trainer\":\"Entrenador\",\"trainerLevel\":5,\"playerClass\":\"entrenador\",\"nick_style\":\"nt-class-criador\",\"avatar_style\":\"av-class-criador\"}', datetime('now'))")
-    
-    // Update existing profiles to preventively set cosmetics if they were seeded previously without them
-    db.run("UPDATE profiles SET avatar_style = 'av-fire' WHERE id = 'local_ash' AND (avatar_style IS NULL OR avatar_style = '')")
-    db.run("UPDATE profiles SET nick_style = 'nick-style-gold' WHERE id = 'local_ash' AND (nick_style IS NULL OR nick_style = '')")
-    db.run("UPDATE profiles SET avatar_style = 'av-class-criador' WHERE id = 'local_entrenador' AND (avatar_style IS NULL OR avatar_style = '')")
-    db.run("UPDATE profiles SET nick_style = 'nt-class-criador' WHERE id = 'local_entrenador' AND (nick_style IS NULL OR nick_style = '')")
-    
-    // Update existing game_saves to preventively set cosmetics if they were saved previously without them
-    db.run("UPDATE game_saves SET save_data = '{\"trainer\":\"Ash\",\"trainerLevel\":10,\"playerClass\":\"entrenador\",\"nick_style\":\"nick-style-gold\",\"avatar_style\":\"av-fire\"}' WHERE user_id = 'local_ash' AND (save_data NOT LIKE '%avatar_style%')")
-    db.run("UPDATE game_saves SET save_data = '{\"trainer\":\"Entrenador\",\"trainerLevel\":5,\"playerClass\":\"entrenador\",\"nick_style\":\"nt-class-criador\",\"avatar_style\":\"av-class-criador\"}' WHERE user_id = 'local_entrenador' AND (save_data NOT LIKE '%avatar_style%')")
-
-    logger.info('SQLite', 'Legacy global chat columns migrated and aligned successfully.')
+    logger.info('SQLite', 'Legacy global chat columns migrated and aligned successfully.');
   } catch (_err: unknown) {
     // Columns or table might not exist or be loaded yet, which is safe to ignore
   }
@@ -146,19 +127,19 @@ export async function ensureSchemaIntegrity(db: SQLiteDatabase): Promise<void> {
         const rawSave = row[1] as string
         if (!userId || !rawSave) continue
         
+        let saveData: Record<string, unknown> = {}
+        try {
+          if (typeof rawSave === 'string') {
+            saveData = JSON.parse(rawSave) as Record<string, unknown>
+          }
+        } catch (_) {
+          continue
+        }
+        
         // Check if profile exists
         const profRes = db.exec("SELECT id FROM profiles WHERE id = ?", [userId])
         if (profRes.length === 0) {
           logger.info('SQLite', `Auto-repair: Creating missing profile for user ${userId} from save_data`)
-          
-          let saveData: Record<string, unknown> = {}
-          try {
-            if (typeof rawSave === 'string') {
-              saveData = JSON.parse(rawSave) as Record<string, unknown>
-            }
-          } catch (_) {
-            continue
-          }
           const fallbackName = userId.startsWith('local_') ? userId.replace('local_', '') : 'Entrenador'
           const capitalizedFallback = fallbackName.charAt(0).toUpperCase() + fallbackName.slice(1)
           const username = (saveData.trainer as string) || capitalizedFallback
@@ -170,10 +151,13 @@ export async function ensureSchemaIntegrity(db: SQLiteDatabase): Promise<void> {
           
           const badges = (saveData.badges as number) || 0
           db.run(
-            `INSERT INTO profiles (id, username, trainer_level, player_class, faction, avatar_style, nick_style, badges) 
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+            `INSERT INTO profiles (id, username, trainer_level, player_class, faction, avatar_style, nick_style, badges, db_version) 
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, 3)`,
             [userId, username, trainerLevel, playerClass, faction, avatarStyle, nickStyle, badges]
           )
+        } else {
+          // Force set version 3 for profiles during repair check
+          db.run("UPDATE profiles SET db_version = 3 WHERE id = ?", [userId])
         }
       }
     }

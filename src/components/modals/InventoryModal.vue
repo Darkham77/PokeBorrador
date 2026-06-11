@@ -467,6 +467,7 @@ const { onBeforeEnter, onEnter, onLeave } = useGridTransitions(isCategorySwitchi
               :item="item"
               :is-selected="selectedItems.has(item.name)"
               :multi-select-mode="!!multiSelectMode"
+              :sell-mode="multiSelectMode === 'sell'"
               @click.stop="handleItemClick(item)"
             />
           </TransitionGroup>

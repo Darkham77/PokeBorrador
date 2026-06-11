@@ -28,7 +28,7 @@ const emit = defineEmits<{
     </span>
     <span
       v-if="badgeValue > 0"
-      class="badge-pill"
+      class="hud-notification-badge"
     >
       {{ badgeValue }}
     </span>

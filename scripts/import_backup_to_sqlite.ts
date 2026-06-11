@@ -3,6 +3,7 @@ import { DatabaseSync } from 'node:sqlite';
 import fs from 'node:fs';
 import path from 'node:path';
 import { TABLES_SCHEMA } from '../src/logic/db/schema.ts';
+import { SHOP_ITEMS } from '../src/data/items.ts';
 
 console.log('\n--- 📥 IMPORTADOR DE RESPALDOS A SQLITE LOCAL ---');
 
@@ -200,11 +201,101 @@ function transformRow(
     if (tableName === 'game_saves' && col === 'save_data') {
       try {
         const parsed = typeof val === 'string' ? JSON.parse(val) : val;
+        
+        // Migrate inventory keys to IDs if present
+        if (parsed && parsed.inventory && typeof parsed.inventory === 'object') {
+          // Resolve standard names using resolved normalized strings (matching test_migration_unit mapping)
+          const resolveNormalizedName = (name: string): string => {
+            const norm = name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '');
+            const aliases: Record<string, string> = {
+              'potion': 'Poción',
+              'pocion': 'Poción',
+              'pocian': 'Poción',
+              'pociaon': 'Poción',
+              'superpotion': 'Súper Poción',
+              'superpocion': 'Súper Poción',
+              'hyperpotion': 'Hiper Poción',
+              'hiperpocion': 'Hiper Poción',
+              'maxpotion': 'Poción Máxima',
+              'pocionmaxima': 'Poción Máxima',
+              'firestone': 'Piedra Fuego',
+              'waterstone': 'Piedra Agua',
+              'thunderstone': 'Piedra Trueno',
+              'leafstone': 'Piedra Hoja',
+              'moonstone': 'Piedra Lunar',
+              'sunstone': 'Piedra Solar',
+              'vigorcandy': 'Caramelo de vigor',
+              'repel': 'Repelente',
+              'iman': 'Imán',
+              'elixir': 'Elixir',
+              'subidapp': 'Subida de PP',
+              'subidadepp': 'Subida de PP',
+              'mttoxico': 'MT06 Tóxico',
+              'ocasoball': 'Ocaso Ball',
+              'turnoball': 'Turno Ball',
+              'ultraball': 'Ultra Ball',
+              'masterball': 'Master Ball',
+              'superball': 'Súper Ball',
+              'pokeball': 'Pokéball',
+              'pokaball': 'Pokéball',
+              'brazalrecio': 'Brazal Recio',
+              'brazalrecia': 'Brazal Recio',
+              'cintorecio': 'Cinto Recio',
+              'cintorecia': 'Cinto Recio',
+              'pesarecia': 'Pesa Recia',
+              'bandarecia': 'Banda Recia',
+              'lenterecia': 'Lente Recia',
+              'franjarecia': 'Franja Recia',
+              'bayadeoro': 'Baya de Oro',
+              'bayaoro': 'Baya de Oro',
+              'piedraeterna': 'Piedra Eterna',
+              'lazodestino': 'Lazo Destino',
+              'caramelovigor': 'Caramelo de vigor',
+              'fishingrod': 'Caña de pescar',
+              'fishingrodgood': 'Caña Buena',
+              'fishingrodsuper': 'Supercaña',
+              'pickaxe': 'Pico de excavación',
+              'pickaxesilver': 'Pico Bueno',
+              'pickaxegold': 'Superpico',
+              'brush': 'Pincel de excavación',
+              'brushgood': 'Pincel Buena',
+              'brushsuper': 'Superpincel',
+              'carbon': 'Carbón vegetal',
+              'carbonvegetal': 'Carbón vegetal'
+            };
+            return aliases[norm] || name;
+          };
+
+          const itemMapping: Record<string, string> = {};
+          for (const item of SHOP_ITEMS) {
+            itemMapping[item.name] = item.id;
+          }
+          const validIds = new Set<string>(SHOP_ITEMS.map(i => i.id));
+          validIds.add('bicycle');
+
+          const newInv: Record<string, number> = {};
+          for (const [key, qty] of Object.entries(parsed.inventory)) {
+            const resolvedName = resolveNormalizedName(key);
+            let mappedId = itemMapping[resolvedName];
+            if (!mappedId) {
+              if (validIds.has(key)) {
+                mappedId = key;
+              } else {
+                throw new Error(`Item no reconocido en save local: "${key}"`);
+              }
+            }
+            newInv[mappedId] = qty as number;
+          }
+          parsed.inventory = newInv;
+        }
+
         const transformed = replaceUserIds(parsed, mapping);
         val = JSON.stringify(transformed);
       } catch {
         val = replaceUserIds(val, mapping);
       }
+    } else if (tableName === 'profiles' && col === 'db_version') {
+      val = 3;
     } else if (tableName === 'market_listings' && col === 'data') {
       try {
         const parsed = typeof val === 'string' ? JSON.parse(val) : val;

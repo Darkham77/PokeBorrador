@@ -9,9 +9,18 @@ export function resolveNormalizedName(name: string): string {
   
   const aliases: Record<string, string> = {
     'potion': 'Poción',
+    'pocion': 'Poción',
+    'pocian': 'Poción',
+    'pociaon': 'Poción',
+    'pokeball': 'Pokéball',
+    'pokaball': 'Pokéball',
+    'carbon': 'Carbón vegetal',
     'superpotion': 'Súper Poción',
+    'superpocion': 'Súper Poción',
     'hyperpotion': 'Hiper Poción',
+    'hiperpocion': 'Hiper Poción',
     'maxpotion': 'Poción Máxima',
+    'pocionmaxima': 'Poción Máxima',
     'firestone': 'Piedra Fuego',
     'waterstone': 'Piedra Agua',
     'thunderstone': 'Piedra Trueno',
@@ -50,13 +59,24 @@ export function resolveNormalizedName(name: string): string {
     'pickaxegold': 'Superpico',
     'brush': 'Pincel de excavación',
     'brushgood': 'Pincel Bueno',
-    'brushsuper': 'Superpincel'
+    'brushsuper': 'Superpincel',
+    'naturepatch': 'Parche de naturaleza',
+    'ppup': 'Subida de PP',
+    'tm06': 'MT06 Tóxico'
   };
 
   return aliases[norm] || name;
 }
 
 export function findInventoryKey(gameStore: ReturnType<typeof useGameStore>, name: string): string | null {
+  const item = SHOP_ITEMS.find(i => 
+    i.id.toLowerCase() === name.toLowerCase() || 
+    i.name.toLowerCase() === name.toLowerCase() ||
+    i.id.toLowerCase() === resolveNormalizedName(name).toLowerCase() ||
+    i.name.toLowerCase() === resolveNormalizedName(name).toLowerCase()
+  );
+  if (item) return item.id;
+
   const inv = gameStore.state.inventory || {};
   if (inv[name] !== undefined) return name;
 
@@ -64,7 +84,8 @@ export function findInventoryKey(gameStore: ReturnType<typeof useGameStore>, nam
   const targetOfficialNorm = targetOfficial.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '');
 
   for (const key of Object.keys(inv)) {
-    const keyOfficial = resolveNormalizedName(key);
+    const keyItem = SHOP_ITEMS.find(i => i.id === key);
+    const keyOfficial = keyItem ? keyItem.name : key;
     const keyOfficialNorm = keyOfficial.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '');
     if (keyOfficialNorm === targetOfficialNorm) {
       return key;
@@ -75,14 +96,14 @@ export function findInventoryKey(gameStore: ReturnType<typeof useGameStore>, nam
 
 export function isItemUsableOn(itemName: string, pokemon: Pokemon) {
   if (!pokemon) return false;
-  const officialName = resolveNormalizedName(itemName);
-  if (isGlobalItem(officialName)) return false;
+  const itemId = itemName.toLowerCase();
+  if (isGlobalItem(itemId)) return false;
 
-  const item = SHOP_ITEMS.find(i => i.name === officialName);
+  const item = SHOP_ITEMS.find(i => i.id === itemId);
 
   if (pokemon.inDaycare) {
     if (!item) return false;
-    const isVigorRestorer = item.id === 'vigor_restorer' || item.id === 'vigor_candy' || item.id === 'caramelo_vigor' || item.name === 'Restaurador de Vigor' || item.name === 'Caramelo de vigor';
+    const isVigorRestorer = item.id === 'vigor_restorer' || item.id === 'vigor_candy';
     const isBreedingHeld = item.cat === 'breeding';
     return !!(isVigorRestorer || isBreedingHeld);
   }
@@ -95,20 +116,21 @@ export function isItemUsableOn(itemName: string, pokemon: Pokemon) {
 
   const p = JSON.parse(JSON.stringify(pokemon));
 
-  const effectFn = ITEM_EFFECTS[officialName];
+  const effectFn = ITEM_EFFECTS[itemId];
   if (effectFn) {
     const res = effectFn(p);
     return res && res.success;
   }
 
-  const dynamicRes = getDynamicItemEffect(officialName, p);
+  const dynamicRes = getDynamicItemEffect(itemId, p);
   return dynamicRes && dynamicRes.success;
 }
 
 export function consumeItem(gameStore: ReturnType<typeof useGameStore>, itemName: string) {
   const inv = gameStore.state.inventory;
   if (!inv) return;
-  const actualKey = findInventoryKey(gameStore, itemName);
+  const itemId = itemName.toLowerCase();
+  const actualKey = findInventoryKey(gameStore, itemId);
   if (actualKey && inv[actualKey]) {
     inv[actualKey]--;
     if (inv[actualKey] <= 0) {

@@ -27,6 +27,7 @@ export interface Item {
   desc?: string;
   price?: number;
   craftingTier?: number;
+  tier?: 'common' | 'rare' | 'epic' | 'legend';
 }
 
 export function isItemUsableOutsideCombat(item: { id: string; cat?: string; type?: string } | null | undefined): boolean {
@@ -64,6 +65,8 @@ export const useInventoryStore = defineStore('inventory', () => {
   const activeMainTab = ref<'productos' | 'materiales'>('productos')
   const activeCategory = ref(safeStorage.getItem('inventory_last_tab') || 'todos')
   const searchQuery = ref('')
+  const currentSort = ref<'name' | 'price' | 'rarity'>('name')
+  const currentSortOrder = ref<'asc' | 'desc'>('asc')
 
   watch(activeCategory, (newVal) => {
     safeStorage.setItem('inventory_last_tab', newVal)
@@ -77,11 +80,10 @@ export const useInventoryStore = defineStore('inventory', () => {
   const bagItems = computed(() => {
     const inventory = gameStore.state.inventory || {}
     let items: Item[] = Object.entries(inventory)
-      .map(([name, qty]) => {
-        const officialName = resolveNormalizedName(name)
-        const item = SHOP_ITEMS.find(i => i.name === officialName)
-        if (!item) return { name, qty, id: name, cat: 'otros', sprite: name, desc: 'Objeto desconocido' } as Item
-        return { ...item, qty, name } as Item
+      .map(([id, qty]) => {
+        const item = SHOP_ITEMS.find(i => i.id === id) || (id === 'bicycle' ? { id: 'bicycle', name: 'Bicicleta', sprite: 'tools/bicycle', desc: 'Bicicleta para moverte rápido.', cat: 'tools' } : null)
+        if (!item) return { name: id, qty, id, cat: 'otros', sprite: id, desc: 'Objeto desconocido' } as Item
+        return { ...item, qty, name: item.name } as Item
       })
 
     // Filter by main tab
@@ -129,13 +131,32 @@ export const useInventoryStore = defineStore('inventory', () => {
       }
     }
 
-    return items.filter(item => {
+    // Filter items first
+    const result = items.filter(item => {
       if (item.qty <= 0) return false
       const resolvedCat = item.cat || 'otros'
       if (activeCategory.value !== 'todos' && activeCategory.value !== 'utilizables' && resolvedCat !== activeCategory.value) return false
       if (searchQuery.value && !item.name.toLowerCase().includes(searchQuery.value.toLowerCase())) return false
       return true
     })
+
+    // Sort items
+    result.sort((a, b) => {
+      let comp = 0
+      if (currentSort.value === 'price') {
+        comp = (a.price || 0) - (b.price || 0)
+      } else if (currentSort.value === 'rarity') {
+        const tiers: Record<string, number> = { common: 0, rare: 1, epic: 2, legend: 3 }
+        const aVal = tiers[a.tier || 'common'] ?? 0
+        const bVal = tiers[b.tier || 'common'] ?? 0
+        comp = bVal - aVal
+      } else {
+        comp = a.name.localeCompare(b.name)
+      }
+      return currentSortOrder.value === 'asc' ? comp : -comp
+    })
+
+    return result
   })
 
   const CATEGORY_LABELS = {
@@ -335,6 +356,8 @@ export const useInventoryStore = defineStore('inventory', () => {
     activeMainTab,
     activeCategory,
     searchQuery,
+    currentSort,
+    currentSortOrder,
     bagItems,
     CATEGORY_LABELS,
     toggleBagSellMode,

@@ -207,9 +207,19 @@
       0 0 20px color-mix(in srgb, var(--red), transparent 70%) !important;
     .nav-item-label { color: var(--red); }
   }
+
+  .hud-notification-badge {
+    position: static !important;
+    margin-left: auto !important;
+    margin-right: -4px !important;
+    transform: none !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
 }
 
-.badge-pill {
+.hud-notification-badge {
   position: absolute;
   top: -4px;
   right: -4px;

@@ -201,9 +201,8 @@ const handleImgError = (e: Event) => {
       justify-content: center;
       width: 100%;
       height: 100%;
-      line-height: 1;
-      position: relative;
-      top: -4px;
+      line-height: 1 !important;
+      font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif !important;
     }
 
     .pixelated { @include pixelated; }
@@ -248,12 +247,11 @@ const handleImgError = (e: Event) => {
     font-size: 24px;
     width: 24px;
     height: 24px;
-    line-height: 1;
+    line-height: 1 !important;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    position: relative;
-    top: -3px;
+    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif !important;
   }
   .reward-info {
     display: flex;

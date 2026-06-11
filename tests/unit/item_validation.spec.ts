@@ -13,26 +13,26 @@ describe('Item Target Validation (isValidTarget)', () => {
   } as unknown as Pokemon;
 
   it('should return true for Potions if HP is low', () => {
-    expect(isValidTarget('Poción', mockPokemon)).toBe(true);
+    expect(isValidTarget('potion', mockPokemon)).toBe(true);
   });
 
   it('should return false for Potions if HP is full', () => {
     const fullHpPokemon = { ...mockPokemon, hp: 40 } as unknown as Pokemon;
-    expect(isValidTarget('Poción', fullHpPokemon)).toBe(false);
+    expect(isValidTarget('potion', fullHpPokemon)).toBe(false);
   });
 
   it('should return true for Antidote if poisoned', () => {
     const poisonedPokemon = { ...mockPokemon, status: 'poison' } as unknown as Pokemon;
-    expect(isValidTarget('Antídoto', poisonedPokemon)).toBe(true);
+    expect(isValidTarget('antidoto', poisonedPokemon)).toBe(true);
   });
 
   it('should return false for Antidote if not poisoned', () => {
-    expect(isValidTarget('Antídoto', mockPokemon)).toBe(false);
+    expect(isValidTarget('antidoto', mockPokemon)).toBe(false);
   });
 
   it('should not mutate the original pokemon during check', () => {
     const originalHp = mockPokemon.hp;
-    isValidTarget('Poción', mockPokemon);
+    isValidTarget('potion', mockPokemon);
     expect(mockPokemon.hp).toBe(originalHp);
   });
 

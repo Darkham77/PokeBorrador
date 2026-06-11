@@ -132,8 +132,8 @@ export function useSaveActions(
         uiStore.notify(`¡Bienvenido, ${state.trainer || authStore.user.user_metadata?.username}!`, '👋')
       }
 
-      if (authStore.user && (authStore.user.db_version || 0) < 2) {
-        authStore.user.db_version = 2
+      if (authStore.user && (authStore.user.db_version || 0) < 3) {
+        authStore.user.db_version = 3
       }
 
       if (isNewerThanCloud) {
@@ -143,6 +143,8 @@ export function useSaveActions(
     } else if (!data && authStore.user) {
       state.trainer = authStore.user.user_metadata?.username || 'Entrenador'
       state.gender = authStore.user.user_metadata?.gender || 'h'
+      // Guardar inmediatamente la partida inicial en la base de datos local
+      save(false)
     }
     
     loadingStore.finish('game_data')
@@ -176,7 +178,7 @@ export function useSaveActions(
     }) as { success: boolean, migrated?: boolean, lastSaveId?: string, rollback?: boolean, outOfSync?: boolean, error?: string, remote?: boolean }
 
     if (result) {
-      if (result.migrated) authStore.user.db_version = 2
+      if (result.migrated) authStore.user.db_version = 3
       if (result.lastSaveId) authStore.user.last_save_id = result.lastSaveId
       
       if (result.rollback && db.value) {

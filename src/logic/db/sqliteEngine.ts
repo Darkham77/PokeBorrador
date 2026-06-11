@@ -187,16 +187,18 @@ async function runMigrations(): Promise<void> {
     // Fail silently in node test context
   }
   
-  for (const m of DATABASE_MIGRATIONS as { id: string, sql: string }[]) {
+  for (const m of DATABASE_MIGRATIONS as { id: string, sql: string, sqlite_sql?: string }[]) {
     if (!applied.includes(m.id)) {
       logger.info('SQLite', `Applying migration: ${m.id}`)
       if (loadingStore) {
         loadingStore.start('db_migration', 'Actualizando Base de Datos...', `Aplicando: ${m.id}`, false, '⚙️')
       }
       try {
-        const statements = splitSQLStatements(m.sql)
+        const sqlSource = m.sqlite_sql !== undefined ? m.sqlite_sql : m.sql
+        const isSqliteSpec = m.sqlite_sql !== undefined
+        const statements = splitSQLStatements(sqlSource)
         statements.forEach(stmt => {
-          const sql = translatePostgresToSqlite(stmt)
+          const sql = isSqliteSpec ? stmt : translatePostgresToSqlite(stmt)
           if (sql) {
             try {
               if (_sqliteDb) _sqliteDb.run(sql)

@@ -12,17 +12,20 @@ interface InventoryItem {
   icon?: string
   qty: number
   tier?: 'common' | 'rare' | 'epic' | 'legend'
+  price?: number
 }
 
 interface Props {
   item: InventoryItem
   isSelected?: boolean
   multiSelectMode?: boolean
+  sellMode?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
   isSelected: false,
-  multiSelectMode: false
+  multiSelectMode: false,
+  sellMode: false
 })
 
 defineEmits<{
@@ -240,6 +243,15 @@ onMounted(() => {
         <span class="item-name">{{ item.name }}</span>
       </div>
 
+      <!-- SELL PRICE FLOATING PILL -->
+      <div
+        v-if="sellMode"
+        class="sell-price-pill"
+      >
+        <span class="pill-icon">₱</span>
+        <span class="pill-amount">{{ Math.floor((item.price || 0) * 0.5).toLocaleString() }}</span>
+      </div>
+
       <!-- SELECTION INDICATOR -->
       <div
         v-if="multiSelectMode"
@@ -249,7 +261,18 @@ onMounted(() => {
           class="check-box"
           :class="{ checked: isSelected }"
         >
-          <span v-if="isSelected">✓</span>
+          <svg
+            v-if="isSelected"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="4"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="checkmark-svg"
+          >
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
         </div>
       </div>
     </PVTooltip>
@@ -263,7 +286,7 @@ onMounted(() => {
   @include card-premium(16px);
   width: 100%;
   min-width: 0; // Fix grid cell overflow
-  aspect-ratio: 1 / 1.1;
+  aspect-ratio: 1 / 1.15; // Adjusted slightly for pricing space
   align-self: start; // Prevent vertical stretch
   position: relative;
   overflow: visible !important; // Permitir que el badge respire por debajo
@@ -394,11 +417,12 @@ onMounted(() => {
   .item-footer {
     width: 100%;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     padding-top: clamp(2px, 3cqw, 4px);
     border-top: 1px solid Rgba(255, 255, 255, 0.05);
-    height: 2.4em; // Fixed footer height for visual grid alignment
+    height: 3.2em;
     box-sizing: border-box;
 
     .item-name {
@@ -407,15 +431,50 @@ onMounted(() => {
       line-clamp: 2;
       -webkit-box-orient: vertical;
       @include pixelated;
-      line-height: 1.1;
+      line-height: 1.3;
       color: Rgba(255, 255, 255, 0.9);
       overflow: hidden;
       text-overflow: ellipsis;
-      white-space: normal; // Ensure wrapping is enabled
+      white-space: normal;
       overflow-wrap: break-word;
       word-break: normal;
       width: 100%;
       text-align: center;
+    }
+  }
+
+  // Floating sell price pill — overflows below card (overflow: visible on parent)
+  .sell-price-pill {
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: Translatex(-50%);
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    background: linear-gradient(135deg, #15803d, #166534);
+    border: 1px solid #22c55e;
+    border-radius: 99px;
+    padding: clamp(2px, 2cqw, 3px) clamp(6px, 8cqw, 10px);
+    box-shadow: 0 2px 10px Rgba(34, 197, 94, 0.45), 0 0 0 1px Rgba(34, 197, 94, 0.15);
+    white-space: nowrap;
+    z-index: calc(var(--z-low) + 2);
+    pointer-events: none;
+
+    .pill-icon {
+      font-size: clamp(7px, 7cqw, 9px);
+      color: #86efac;
+      line-height: 1;
+      font-family: sans-serif !important;
+    }
+
+    .pill-amount {
+      @include pixelated;
+      font-size: clamp(6.5px, 7cqw, 8.5px);
+      font-weight: 900;
+      color: #dcfce7;
+      line-height: 1;
+      letter-spacing: 0.03em;
     }
   }
 
@@ -431,10 +490,22 @@ onMounted(() => {
       background: Rgba(0, 0, 0, 0.4);
       border: 1px solid Rgba(255, 255, 255, 0.2);
       border-radius: 4px;
-      display: flex;
+      display: inline-flex;
       align-items: center;
       justify-content: center;
       will-change: background-color, border-color, box-shadow;
+      color: white;
+
+      .checkmark-svg {
+        width: 70%;
+        height: 70%;
+        stroke: currentColor;
+        display: block;
+      }
+
+      &.checked {
+        color: #000000 !important;
+      }
     }
   }
 }

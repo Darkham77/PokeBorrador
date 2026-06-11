@@ -246,7 +246,7 @@ onUnmounted(() => {
             <span class="nav-item-label">MISIONES</span>
             <span
               v-if="breedingStore.fulfillableMissionsCount > 0"
-              class="badge-pill"
+              class="hud-notification-badge"
             >
               {{ breedingStore.fulfillableMissionsCount }}
             </span>
@@ -336,7 +336,7 @@ onUnmounted(() => {
             <span class="nav-item-label">GLOBAL</span>
             <span
               v-if="gtsStore.unseenSalesCount > 0"
-              class="badge-pill"
+              class="hud-notification-badge"
             >
               {{ gtsStore.unseenSalesCount }}
             </span>
@@ -406,7 +406,7 @@ onUnmounted(() => {
             <span class="nav-item-label">AMIGOS</span>
             <span
               v-if="(socialStore.notifications.chats + socialStore.notifications.friends + socialStore.notifications.trades + gameStore.state.claimQueue.length) > 0"
-              class="badge-pill"
+              class="hud-notification-badge"
             >
               {{ socialStore.notifications.chats + socialStore.notifications.friends + socialStore.notifications.trades + gameStore.state.claimQueue.length }}
             </span>
@@ -421,7 +421,7 @@ onUnmounted(() => {
             <span class="nav-item-label">ARENA</span>
             <span
               v-if="socialStore.notifications.battles > 0"
-              class="badge-pill"
+              class="hud-notification-badge"
             >
               {{ socialStore.notifications.battles }}
             </span>
@@ -451,7 +451,7 @@ onUnmounted(() => {
             <span class="nav-item-label">EVENTOS</span>
             <span
               v-if="eventStore.pendingAwards.length > 0"
-              class="badge-pill"
+              class="hud-notification-badge"
             >
               {{ eventStore.pendingAwards.length }}
             </span>

@@ -104,11 +104,14 @@
       font-size: 8px;
       color: var(--white);
       margin-bottom: 4px;
-      text-transform: uppercase;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
       display: block;
+
+      &.is-species {
+        text-transform: uppercase;
+      }
     }
 
     .stats-column {
@@ -153,12 +156,17 @@
       will-change: opacity;
       @include gpu-layer;
 
+      .checkmark-svg {
+        width: 65%;
+        height: 65%;
+        stroke: currentColor;
+        display: block;
+      }
+
       &.checked {
         background: var(--red);
         border-color: var(--red);
         color: white;
-        font-weight: 900;
-        font-size: 14px;
         box-shadow: 0 0 15px Rgba(239, 68, 68, 0.5);
         transform: Scale(1.1);
       }

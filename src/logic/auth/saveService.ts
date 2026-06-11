@@ -389,10 +389,10 @@ export async function saveGame(state: GameState, user: AuthUser, options: SaveOp
 
     // VERSIONED SECURITY LOGIC
     const currentVersion = options.userVersion || 1;
-    const isLegacy = currentVersion < 2;
+    const isLegacy = currentVersion < 3;
 
     // IF Duplicates found AND we are ONLINE AND NOT LEGACY -> Protocol ROLLBACK
-    // Legacy accounts (v1) get a "graceful cleanup" on their first save
+    // Legacy accounts (v1/v2) get a "graceful cleanup" on their first save
     if (hadDuplicates && db && db.mode === 'online' && !isLegacy) {
       logger.error('SAVE', 'Duplicados críticos detectados en v2+. Iniciando ROLLBACK.', issues);
       try {
@@ -480,7 +480,8 @@ export async function saveGame(state: GameState, user: AuthUser, options: SaveOp
             nick_style: save_data.nick_style || '',
             badges: save_data.badges || 0,
             role: 'user',
-            gender: save_data.gender || 'h'
+            gender: save_data.gender || 'h',
+            db_version: 3
           });
         }
         logger.success('SAVE', 'Campos de perfil sincronizados en la base de datos.');
@@ -488,20 +489,20 @@ export async function saveGame(state: GameState, user: AuthUser, options: SaveOp
         logger.warn('SAVE', `Error al sincronizar campos del perfil: ${(e as Error).message}`);
       }
 
-      // IF successful migration save, we MUST update the user's version to v2
+      // IF successful migration save, we MUST update the user's version to v3
       let migrated = false;
       if (isLegacy) {
         try {
-          await db.from('profiles').update({ db_version: 2 }).eq('id', user.id);
+          await db.from('profiles').update({ db_version: 3 }).eq('id', user.id);
           migrated = true;
-          logger.success('SAVE', 'Account migrated to db_version v2');
+          logger.success('SAVE', 'Account migrated to db_version v3');
         } catch(e) {
           logger.warn('SAVE', `Migration update failed: ${(e as Error).message}`);
         }
       }
 
       if (showNotif && notifyFn) {
-        if (migrated) notifyFn('¡Cuenta migrada a Seguridad v2!', '✨');
+        if (migrated) notifyFn('¡Cuenta migrada a Seguridad v3!', '✨');
         else if (hadDuplicates) notifyFn('Cache saneada (duplicados eliminados)', '🛡️');
         else notifyFn('Juego Guardado', '💾');
       }

@@ -24,7 +24,7 @@ const localStorageMock = (() => {
 Object.defineProperty(window, 'localStorage', { value: localStorageMock });
 
 describe('Auth Load Service (Migration v2)', () => {
-  const mockUser = { id: 'test_user', email: 'test@pkv.io', user_metadata: { username: 'test_user' } } as unknown as AuthUser;
+  const mockUser = { id: 'test_user', email: 'test@pkv.io', db_version: 3, user_metadata: { username: 'test_user' } } as unknown as AuthUser;
   let db: DBRouter;
 
   beforeEach(async () => {

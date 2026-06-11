@@ -225,13 +225,20 @@ const handleItemImageError = (e: Event) => {
     
     color: var(--badge-color, #ccc);
     font-weight: 900;
-    line-height: 1;
+    line-height: 1 !important;
     text-align: center;
+
+    &:not(.is-iv31) {
+      font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif !important;
+    }
 
     // NORMALIZACIÓN VISUAL ESTÁNDAR (MD, LG, XL)
     &.is-shiny { font-size: 0.85em; } 
-    &.is-iv31 { font-size: 0.75em; letter-spacing: -0.5px; font-weight: 900; }
-    &.is-fav { font-size: 0.75em; }
+    &.is-iv31 { font-size: 0.75em; letter-spacing: -0.5px; font-weight: 900; font-family: var(--font-pixel) !important; @include pixelated; }
+    &.is-fav { 
+      font-size: 0.68em; 
+      transform: Translatey(-0.5px); 
+    }
     &.is-breed { font-size: 1.76em; } 
     &.is-competitive { font-size: 1.54em; } 
     &.is-box { font-size: 1.54em; } 

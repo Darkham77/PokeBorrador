@@ -12,6 +12,7 @@ const game = useGameStore()
 const gtsStore = useGTSStore()
 
 interface InventoryItem {
+  id: string
   name: string
   qty: number
   desc: string
@@ -41,9 +42,10 @@ const inventory = computed<InventoryItem[]>(() => {
         (i) => i.name.toLowerCase() === name.toLowerCase() || i.id.toLowerCase() === name.toLowerCase()
       )
       return {
+        id: dbItem?.id ?? name.toLowerCase().replace(/\s+/g, '_'),
         name,
         qty,
-        desc: dbItem?.desc || 'Objeto sin descripción.'
+        desc: dbItem?.desc ?? 'Objeto sin descripción.'
       }
     })
 })
