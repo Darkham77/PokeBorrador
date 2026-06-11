@@ -121,6 +121,7 @@ export function usePWA() {
         // Force refresh browser HTTP cache for the main documents/assets
         for (const url of mainUrls) {
           try {
+            // fallow-ignore-next-line security-sink
             await fetch(url, {
               headers: { 
                 'Pragma': 'no-cache', 

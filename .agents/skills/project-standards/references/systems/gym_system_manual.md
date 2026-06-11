@@ -40,3 +40,4 @@ Each gym can be faced in three difficulties:
 3. **Rewards**: The `rewardTM` is granted only on the first victory. In rematches, scaled money and XP are granted according to the difficulty using the internal `gymProgress` scaling factors.
 4. **Progress Persistence**: Wins are tracked independently per difficulty in `game.state.gymProgress[gymId]`. A "Completed" status requires defeating the leader in all 3 modes.
 5. **Dynamic UI Feedback**: Gym cards MUST show the estimated XP/Money rewards for the selected difficulty to set player expectations before the challenge.
+6. **Difficulty Localization**: Gym card layouts and rematch views must translate difficulty levels to their localized Spanish representation (`FÁCIL`, `NORMAL`, `DIFÍCIL`) when rendering labels and victory statuses to ensure UI language consistency.

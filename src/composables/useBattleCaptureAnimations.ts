@@ -140,15 +140,18 @@ export function useBattleCaptureAnimations(
     const slot = getSeat(side).exit
 
     if (typeof detail === 'object' && detail?.ballId) {
-      slot.ballId = detail.ballId.toLowerCase()
+      slot.ballId = detail.ballId
     } else if (pokemon?.tags) {
       const ballTag = pokemon.tags.find(t => t.startsWith('ball:'))
       if (ballTag) {
         const id = ballTag.split(':')[1]
         if (id) slot.ballId = id
+        else throw new Error(`[useBattleCaptureAnimations] Invalid ball tag format on pokemon uid=${pokemon.uid}: "${ballTag}"`)
+      } else {
+        throw new Error(`[useBattleCaptureAnimations] Pokemon uid=${pokemon.uid} has no ball: tag in its tags array`)
       }
     } else {
-      slot.ballId = 'pokeball'
+      throw new Error(`[useBattleCaptureAnimations] handleCatchRequest called with no ballId and no pokemon tags — cannot determine pokeball`)
     }
     
     const target = pokemon || (side === 'player' ? battleStore.player : toValue(enemyRef))
@@ -262,9 +265,12 @@ export function useBattleCaptureAnimations(
         if (ballTag) {
           const id = ballTag.split(':')[1]
           if (id) slot.ballId = id
+          else throw new Error(`[useBattleCaptureAnimations] Invalid ball tag format during faint for pokemon uid=${pokemon?.uid}: "${ballTag}"`)
+        } else {
+          throw new Error(`[useBattleCaptureAnimations] Pokemon uid=${pokemon?.uid} has no ball: tag in its tags during faint animation`)
         }
       } else {
-        slot.ballId = 'pokeball'
+        throw new Error(`[useBattleCaptureAnimations] handleFaintAnim called with no pokeball tag on pokemon uid=${pokemon?.uid}`)
       }
 
       tl.to({}, {

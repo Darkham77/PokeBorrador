@@ -67,10 +67,10 @@ export const itemEffects: Record<string, (p: unknown) => ItemEffectResult> = {
   'leaf_stone': pokeEffect((p) => handleStone(p, 'Piedra Hoja')),
   'moon_stone': pokeEffect((p) => handleStone(p, 'Piedra Lunar')),
   'sun_stone': pokeEffect((p) => handleStone(p, 'Piedra Solar')),
-  'alba_stone': pokeEffect((p) => handleStone(p, 'Piedra Alba')),
+  'dawn_stone': pokeEffect((p) => handleStone(p, 'Piedra Alba')),
   'dusk_stone': pokeEffect((p) => handleStone(p, 'Piedra Crepúsculo')),
   'ice_stone': pokeEffect((p) => handleStone(p, 'Piedra Hielo')),
-  'day_stone': pokeEffect((p) => handleStone(p, 'Piedra Día')),
+  'shiny_stone': pokeEffect((p) => handleStone(p, 'Piedra Día')),
 
   // --- PP & Stats ---
   'ether': pokeEffect((p) => restorePP(p, 10)),
@@ -109,7 +109,7 @@ export const itemEffects: Record<string, (p: unknown) => ItemEffectResult> = {
   'pp_up': pokeEffect((_p) => {
     return { success: true, message: 'selecciona un movimiento para mejorar', deferred: true, resultType: 'pp_up' };
   }),
-  'restore_all': pokeEffect((p) => {
+  'full_restore': pokeEffect((p) => {
     const hpRes = healHp(p, p.maxHp);
     const statusRes = curaTotal(p);
     if (!hpRes.success && !statusRes.success) {

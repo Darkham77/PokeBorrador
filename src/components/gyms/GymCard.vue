@@ -236,7 +236,7 @@ const handleBtnLeave = (e: MouseEvent) => {
             v-if="isDefeated"
             class="won-tag"
           >
-            ✅ VICTORIA OBTENIDA en {{ selectedDifficulty.toUpperCase() }}
+            ✅ VICTORIA OBTENIDA en {{ selectedDifficulty === 'easy' ? 'FÁCIL' : selectedDifficulty === 'normal' ? 'NORMAL' : 'DIFÍCIL' }}
           </div>
 
           <button
