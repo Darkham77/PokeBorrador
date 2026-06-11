@@ -7,24 +7,17 @@ import { useGameStore } from '@/stores/game'
 import { useAuthStore } from '@/stores/auth'
 import type { MarketListing } from '@/logic/market'
 import { formatCurrency } from '@/logic/utils/formatters'
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { formatDisplayDate } from '@/logic/timeUtils'
+import { getItemById } from '@/data/items'
 
 import PokemonSelectionItem from '@/components/modals/PokemonSelectionItem.vue'
 import type { Pokemon } from '@/types/pokemon'
 
+import { getPokemonTotalPower } from '@/logic/pokemon/pokemonSelectionFilter.ts'
+
 const game = useGameStore()
 const gtsStore = useGTSStore()
 const auth = useAuthStore()
-
-function getPokemonTotalPower(p: Pokemon) {
-  if (!p) return 0
-  const base = pokemonDataProvider.getPokemonData(p.id)
-  const baseTot = base ? (base.hp + base.atk + base.def + base.spa + base.spd + base.spe) : 0
-  const ivs = p.ivs || { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 }
-  const totalIvs = (ivs.hp || 0) + (ivs.atk || 0) + (ivs.def || 0) + (ivs.spa || 0) + (ivs.spd || 0) + (ivs.spe || 0)
-  return baseTot + totalIvs
-}
 
 const listings = computed(() => gtsStore.filteredListings)
 
@@ -98,7 +91,7 @@ const formatTime = formatDisplayDate
               >
             </div>
             <div class="item-details">
-              <span class="i-name">{{ item.data.name }}</span>
+              <span class="i-name">{{ getItemById(item.data.name || '')?.name || item.data.name }}</span>
               <div class="i-meta">
                 <span class="i-qty">CANTIDAD: x{{ item.data.qty || 1 }}</span>
               </div>
@@ -207,7 +200,16 @@ const formatTime = formatDisplayDate
 
     .item-details {
       flex: 1;
-      .i-name { font-size: 13px; font-weight: bold; color: var(--white); display: block; margin-bottom: 4px; }
+      .i-name {
+        @include pixelated;
+        font-size: 9px;
+        font-weight: bold;
+        color: var(--white);
+        display: block;
+        margin-bottom: 4px;
+        line-height: 1.5;
+        padding-top: 2px;
+      }
       .i-qty { font-size: 8px; @include pixelated; color: $muted; }
     }
   }

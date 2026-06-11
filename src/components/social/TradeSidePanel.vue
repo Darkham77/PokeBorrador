@@ -46,7 +46,7 @@ const mappedItems = computed(() => {
       const dbItem = getItemByName(name) || getItemById(name)
       return {
         id: dbItem?.id || name,
-        name,
+        name: dbItem?.name || name,
         qty,
         desc: dbItem?.desc || '',
         sprite: dbItem?.sprite || dbItem?.id || name,
@@ -101,38 +101,38 @@ const mappedItems = computed(() => {
     >
       <div
         v-for="item in mappedItems"
-        :key="item.name"
+        :key="item.id"
         class="item-card-wrapper"
       >
         <InventoryItemCard
           :item="item"
-          :is-selected="!!selectedItems[item.name]"
-          @click.stop="emit('toggle-item', item.name)"
+          :is-selected="!!selectedItems[item.id]"
+          @click.stop="emit('toggle-item', item.id)"
         />
         <!-- Quantity control overlay when selected -->
         <div
-          v-if="selectedItems[item.name]"
+          v-if="selectedItems[item.id]"
           class="qty-control-overlay"
           @click.stop
         >
           <button
             class="qty-btn dec"
-            :disabled="(selectedItems[item.name] ?? 0) <= 1"
-            @click="emit('update-item-qty', item.name, (selectedItems[item.name] ?? 0) - 1)"
+            :disabled="(selectedItems[item.id] ?? 0) <= 1"
+            @click="emit('update-item-qty', item.id, (selectedItems[item.id] ?? 0) - 1)"
           >
             -
           </button>
-          <span class="qty-val">{{ selectedItems[item.name] ?? 0 }}</span>
+          <span class="qty-val">{{ selectedItems[item.id] ?? 0 }}</span>
           <button
             class="qty-btn inc"
-            :disabled="(selectedItems[item.name] ?? 0) >= item.qty"
-            @click="emit('update-item-qty', item.name, (selectedItems[item.name] ?? 0) + 1)"
+            :disabled="(selectedItems[item.id] ?? 0) >= item.qty"
+            @click="emit('update-item-qty', item.id, (selectedItems[item.id] ?? 0) + 1)"
           >
             +
           </button>
           <button
             class="qty-btn remove"
-            @click="emit('toggle-item', item.name)"
+            @click="emit('toggle-item', item.id)"
           >
             ×
           </button>

@@ -9,6 +9,7 @@ import TradeSidePanel from './social/TradeSidePanel.vue'
 import TradeFooter from './social/TradeFooter.vue'
 import type { Pokemon } from '@/types/pokemon'
 import { gsap } from 'gsap'
+import { getItemById, getItemByName } from '@/data/items'
 
 interface Props {
   show?: boolean
@@ -167,7 +168,10 @@ watch(() => props.show, async (newVal) => {
 const offerSummary = computed(() => {
   const lines: string[] = []
   if (tradeStore.tradeOfferPoke) lines.push(tradeStore.tradeOfferPoke.name)
-  Object.entries(tradeStore.tradeOfferItems).forEach(([name, qty]) => lines.push(`${name} x${qty}`))
+  Object.entries(tradeStore.tradeOfferItems).forEach(([name, qty]) => {
+    const dbItem = getItemById(name) || getItemByName(name)
+    lines.push(`${dbItem?.name || name} x${qty}`)
+  })
   if (offerMoney.value > 0) lines.push(`₽${offerMoney.value.toLocaleString()}`)
   return lines.length ? lines.join(', ') : 'Vacío'
 })
@@ -176,7 +180,10 @@ const requestSummary = computed(() => {
   if (isGift.value) return '🎁 REGALO'
   const lines: string[] = []
   if (tradeStore.tradeRequestPoke) lines.push(tradeStore.tradeRequestPoke.name)
-  Object.entries(tradeStore.tradeRequestItems).forEach(([name, qty]) => lines.push(`${name} x${qty}`))
+  Object.entries(tradeStore.tradeRequestItems).forEach(([name, qty]) => {
+    const dbItem = getItemById(name) || getItemByName(name)
+    lines.push(`${dbItem?.name || name} x${qty}`)
+  })
   if (requestMoney.value > 0) lines.push(`₽${requestMoney.value.toLocaleString()}`)
   return lines.length ? lines.join(', ') : 'Nada (¿Es un regalo?)'
 })

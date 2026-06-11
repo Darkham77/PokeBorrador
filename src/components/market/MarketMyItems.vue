@@ -3,27 +3,20 @@
 import { computed } from 'vue'
 import { useGTSStore } from '@/stores/gts'
 import { formatCurrency } from '@/logic/utils/formatters'
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import PokemonSelectionItem from '@/components/modals/PokemonSelectionItem.vue'
 import type { Pokemon } from '@/types/pokemon'
 import { formatDisplayDate } from '@/logic/timeUtils'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { useUIStore } from '@/stores/ui'
+import { getItemById } from '@/data/items'
+
+import { getPokemonTotalPower } from '@/logic/pokemon/pokemonSelectionFilter.ts'
 
 const gtsStore = useGTSStore()
 const uiStore = useUIStore()
 
 const activeListings = computed(() => gtsStore.activeMyListings)
 const history = computed(() => gtsStore.salesHistory)
-
-function getPokemonTotalPower(p: Pokemon) {
-  if (!p) return 0
-  const base = pokemonDataProvider.getPokemonData(p.id)
-  const baseTot = base ? (base.hp + base.atk + base.def + base.spa + base.spd + base.spe) : 0
-  const ivs = p.ivs || { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 }
-  const totalIvs = (ivs.hp || 0) + (ivs.atk || 0) + (ivs.def || 0) + (ivs.spa || 0) + (ivs.spd || 0) + (ivs.spe || 0)
-  return baseTot + totalIvs
-}
 
 function handleCancel(listingId: string) {
   console.log('[GTS] UI: handleCancel disparado para ID:', listingId)
@@ -104,7 +97,7 @@ const formatTime = formatDisplayDate
               >
             </div>
             <div class="card-info">
-              <span class="name">{{ item.data.name }}</span>
+              <span class="name">{{ getItemById(item.data.name || '')?.name || item.data.name }}</span>
               <div class="i-meta">
                 <span class="qty">CANTIDAD: x{{ item.data.qty || 1 }}</span>
                 <span class="price">₽{{ formatCurrency(item.price) }}</span>
@@ -144,7 +137,7 @@ const formatTime = formatDisplayDate
         >
           <div class="sale-info">
             <span class="date">{{ formatTime(sale.created_at) }}</span>
-            <span class="item-name">Vendido: <strong>{{ sale.data.name }}</strong></span>
+            <span class="item-name">Vendido: <strong>{{ getItemById(sale.data.name || '')?.name || sale.data.name }}</strong></span>
           </div>
           <div class="sale-value">
             <span class="net-gain">+ ₽{{ formatCurrency(sale.price * (1 - gtsStore.MARKET_FEE)) }}</span>
@@ -266,7 +259,18 @@ const formatTime = formatDisplayDate
     display: flex;
     flex-direction: column;
     min-width: 0;
-    .name { font-size: 13px; font-weight: bold; color: var(--white); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px; }
+    .name {
+      @include pixelated;
+      font-size: 9px;
+      font-weight: bold;
+      color: var(--white);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 4px;
+      line-height: 1.5;
+      padding-top: 2px;
+    }
     .i-meta {
       display: flex;
       gap: 10px;
@@ -298,7 +302,14 @@ const formatTime = formatDisplayDate
     flex-direction: column;
     gap: 4px;
     .date { font-size: 10px; color: $muted; }
-    .item-name { font-size: 13px; color: var(--white); strong { color: Rgba(56, 189, 248, 1); } }
+    .item-name {
+      @include pixelated;
+      font-size: 9px;
+      color: var(--white);
+      line-height: 1.5;
+      padding-top: 2px;
+      strong { color: Rgba(56, 189, 248, 1); }
+    }
   }
 
   .sale-value {

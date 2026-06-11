@@ -2,11 +2,13 @@
 import { ref, computed, watch } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useGTSStore } from '@/stores/gts'
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { getItemById, getItemByName } from '@/data/items'
 import PokemonSelectionItem from '../modals/PokemonSelectionItem.vue'
+import PokemonSelectionFilters from '../modals/PokemonSelectionFilters.vue'
+import SortControls from '@/components/common/SortControls.vue'
 import MarketItemCard from './MarketItemCard.vue'
 import type { Pokemon } from '@/types/pokemon'
+import { filterAndSortPokemon, getPokemonTotalPower } from '@/logic/pokemon/pokemonSelectionFilter.ts'
 
 const game = useGameStore()
 const gtsStore = useGTSStore()
@@ -16,11 +18,25 @@ interface InventoryItem {
   name: string
   qty: number
   desc: string
+  price: number
+  tier: 'common' | 'rare' | 'epic' | 'legend'
 }
 
 const activeMode = ref<'pokemon' | 'item'>('pokemon')
 const selection = ref<Pokemon | InventoryItem | null>(null)
 const price = ref(1000)
+
+// Pokémon Filters
+const searchQuery = ref('')
+const sortBy = ref('recent')
+const sortOrder = ref('desc')
+const activeTags = ref<string[]>([])
+const filterCompatibleOnly = ref(false)
+
+// Item Filters
+const itemSearchQuery = ref('')
+const itemSortKey = ref<'name' | 'price' | 'rarity'>('name')
+const itemSortOrder = ref<'asc' | 'desc'>('asc')
 
 const availablePokemon = computed(() => {
   const team = (game.state.team || [])
@@ -34,6 +50,15 @@ const availablePokemon = computed(() => {
   return [...team, ...box]
 })
 
+const filteredAndSortedPokemon = computed(() => {
+  return filterAndSortPokemon(availablePokemon.value, {
+    searchQuery: searchQuery.value,
+    sortBy: sortBy.value,
+    sortOrder: sortOrder.value,
+    activeTags: activeTags.value
+  })
+})
+
 const inventory = computed<InventoryItem[]>(() => {
   return Object.entries(game.state.inventory as Record<string, number>)
     .filter(([_name, qty]) => qty > 0)
@@ -41,22 +66,70 @@ const inventory = computed<InventoryItem[]>(() => {
       const dbItem = getItemByName(name) || getItemById(name)
       return {
         id: dbItem?.id ?? name.toLowerCase().replace(/\s+/g, '_'),
-        name,
+        name: dbItem?.name ?? name,
         qty,
-        desc: dbItem?.desc ?? 'Objeto sin descripción.'
+        desc: dbItem?.desc ?? 'Objeto sin descripción.',
+        price: dbItem?.price || 0,
+        tier: (dbItem?.tier as 'common' | 'rare' | 'epic' | 'legend') || 'common'
       }
     })
 })
 
-function getPokemonTotalPower(p: Pokemon) {
-  if (!p) return 0
-  const base = pokemonDataProvider.getPokemonData(p.id)
-  const TOT = base ? (base.hp + base.atk + base.def + base.spa + base.spd + base.spe) : 0
+// Calculate GTS Pricing stats mapping for active items
+const gtsStatsMap = computed(() => {
+  const map: Record<string, { min: number; max: number; avg: number }> = {}
+  const itemListings = gtsStore.listings.filter(l => l.listing_type === 'item' && l.data)
   
-  const ivs = p.ivs || { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 }
-  const totalIvs = (ivs.hp || 0) + (ivs.atk || 0) + (ivs.def || 0) + (ivs.spa || 0) + (ivs.spd || 0) + (ivs.spe || 0)
-  return TOT + totalIvs
-}
+  const grouped: Record<string, number[]> = {}
+  for (const listing of itemListings) {
+    const nameStr = listing.data.name || listing.data.id
+    if (!nameStr) continue
+    const itemId = String(nameStr)
+    const qty = Number(listing.data.qty) || 1
+    const unitPrice = listing.price / qty
+    
+    if (!grouped[itemId]) {
+      grouped[itemId] = []
+    }
+    grouped[itemId].push(unitPrice)
+  }
+  
+  for (const [itemId, prices] of Object.entries(grouped)) {
+    const min = Math.min(...prices)
+    const max = Math.max(...prices)
+    const avg = prices.reduce((sum, p) => sum + p, 0) / prices.length
+    map[itemId] = { min, max, avg }
+  }
+  
+  return map
+})
+
+const filteredAndSortedInventory = computed(() => {
+  let list = [...inventory.value]
+
+  // Filter
+  if (itemSearchQuery.value.trim()) {
+    const q = itemSearchQuery.value.toLowerCase().trim()
+    list = list.filter(item => item.name.toLowerCase().includes(q))
+  }
+
+  // Sort
+  list.sort((a, b) => {
+    let comparison = 0
+    if (itemSortKey.value === 'name') {
+      comparison = a.name.localeCompare(b.name)
+    } else if (itemSortKey.value === 'price') {
+      comparison = (a.price || 0) - (b.price || 0)
+    } else if (itemSortKey.value === 'rarity') {
+      const tierMap = { common: 0, rare: 1, epic: 2, legend: 3 }
+      comparison = (tierMap[a.tier || 'common'] || 0) - (tierMap[b.tier || 'common'] || 0)
+    }
+
+    return itemSortOrder.value === 'asc' ? comparison : -comparison
+  })
+
+  return list
+})
 
 const itemQty = ref(1)
 
@@ -64,7 +137,7 @@ async function handlePublish() {
   if (!selection.value || price.value < 1) return
   
   const publishData = activeMode.value === 'item' && 'qty' in selection.value
-    ? { name: selection.value.name, qty: itemQty.value }
+    ? { name: selection.value.id, qty: itemQty.value }
     : selection.value
   
   const success = await gtsStore.publishListing(activeMode.value, publishData, price.value)
@@ -78,10 +151,10 @@ async function handlePublish() {
 
 function updateSuggestedPrice() {
   if (activeMode.value === 'item' && selection.value && 'qty' in selection.value) {
-    const nameStr = selection.value.name
+    const nameStr = selection.value.id
     const shopItem = getItemByName(nameStr) || getItemById(nameStr)
     if (shopItem && shopItem.price > 0) {
-      price.value = shopItem.price * itemQty.value
+      price.value = Math.floor(shopItem.price * 0.5) * itemQty.value
     } else {
       price.value = 1000
     }
@@ -131,10 +204,48 @@ const net = computed(() => price.value - fee.value)
     <div class="main-split">
       <!-- Selector List -->
       <div class="selection-container">
+        <!-- Pokémon Filters -->
+        <PokemonSelectionFilters
+          v-if="activeMode === 'pokemon'"
+          v-model:search-query="searchQuery"
+          v-model:sort-by="sortBy"
+          v-model:sort-order="sortOrder"
+          v-model:active-tags="activeTags"
+          v-model:filter-compatible-only="filterCompatibleOnly"
+        />
+
+        <!-- Item Filters -->
+        <div
+          v-else
+          class="market-publish-filters"
+        >
+          <div class="ps-search-row">
+            <span class="ps-search-icon">🔍</span>
+            <input
+              v-model="itemSearchQuery"
+              type="text"
+              placeholder="Buscar por nombre..."
+              class="ps-search-input"
+            >
+            <button
+              v-if="itemSearchQuery"
+              class="ps-clear-search"
+              @click.stop="itemSearchQuery = ''"
+            >
+              ✕
+            </button>
+          </div>
+          <SortControls
+            v-model="itemSortKey"
+            v-model:sort-order="itemSortOrder"
+            accent-color="var(--blue)"
+          />
+        </div>
+
         <div class="selection-list ps-vertical-list custom-scrollbar">
           <template v-if="activeMode === 'pokemon'">
             <PokemonSelectionItem 
-              v-for="item in availablePokemon"
+              v-for="item in filteredAndSortedPokemon"
               :key="item.pokemon.uid"
               :item="item"
               :is-selected="!!(selection && 'uid' in selection && selection.uid === item.pokemon.uid)"
@@ -143,26 +254,27 @@ const net = computed(() => price.value - fee.value)
               @select="selectItem(item.pokemon)"
             />
             <div
-              v-if="availablePokemon.length === 0"
+              v-if="filteredAndSortedPokemon.length === 0"
               class="empty-list"
             >
-              No tienes Pokémon disponibles para vender.
+              No tienes Pokémon que coincidan con la búsqueda.
             </div>
           </template>
 
           <template v-else>
             <MarketItemCard
-              v-for="i in inventory"
-              :key="i.name"
+              v-for="i in filteredAndSortedInventory"
+              :key="i.id"
               :item="i"
-              :is-selected="!!(selection && 'name' in selection && selection.name === i.name)"
+              :is-selected="!!(selection && 'id' in selection && selection.id === i.id)"
+              :gts-stats="gtsStatsMap[i.id]"
               @select="selectItem(i)"
             />
             <div
-              v-if="inventory.length === 0"
+              v-if="filteredAndSortedInventory.length === 0"
               class="empty-list"
             >
-              No tienes objetos para vender.
+              No tienes objetos que coincidan con la búsqueda.
             </div>
           </template>
         </div>
@@ -451,5 +563,18 @@ const net = computed(() => price.value - fee.value)
 
 
   .empty-list { text-align: center; padding: 40px; color: $muted; font-size: 12px; }
+
+  .market-publish-filters {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 20px;
+    margin-bottom: 6px;
+    
+    .ps-search-row {
+      flex: 1;
+      margin-bottom: 0;
+    }
+  }
 }
 </style>

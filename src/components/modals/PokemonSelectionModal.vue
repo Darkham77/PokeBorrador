@@ -7,14 +7,14 @@ import { useGameStore } from '@/stores/game'
 import { useModalStore } from '@/stores/modals'
 import { safeStorage } from '@/logic/utils/storage'
 import BaseModal from '@/components/common/BaseModal.vue'
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
-import { hasPokemonTag } from '@/logic/constants/tags'
 import { logger } from '@/logic/utils/logger'
 import { useBreedingStore } from '@/stores/breeding'
 import { checkCompatibility } from '@/logic/breeding/breedingEngine'
 import PokemonSelectionItem from './PokemonSelectionItem.vue'
 import PokemonSelectionFilters from './PokemonSelectionFilters.vue'
 import type { Pokemon } from '@/types/pokemon'
+
+import { filterAndSortPokemon, getPokemonTotalPower } from '@/logic/pokemon/pokemonSelectionFilter.ts'
 
 const uiStore = useUIStore()
 const gameStore = useGameStore()
@@ -107,17 +107,7 @@ watch([sortBy, sortOrder, activeTags, searchQuery], () => {
   }))
 }, { deep: true })
 
-const getPokemonTotalPower = (p: Pokemon) => {
-  if (!p) return 0
-  const base = pokemonDataProvider.getPokemonData(p.id)
-  const TOT = base ? (base.hp + base.atk + base.def + base.spa + base.spd + base.spe) : 0
-  
-  const ivs = p.ivs || { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 }
-  const totalIvs = (ivs.hp || 0) + (ivs.atk || 0) + (ivs.def || 0) + (ivs.spa || 0) + (ivs.spd || 0) + (ivs.spe || 0)
-  return TOT + totalIvs
-}
-
-const availablePokemon = computed<{ pokemon: Pokemon, _source: 'team' | 'box', index: number }[]>(() => {
+const availablePokemon = computed<{ pokemon: Pokemon, _source: 'team' | 'box' | 'market', index: number }[]>(() => {
   const box = (gameStore.state.box || []) as (Pokemon | null)[]
   const team = (gameStore.state.team || []) as (Pokemon | null)[]
   
@@ -162,73 +152,32 @@ const availablePokemon = computed<{ pokemon: Pokemon, _source: 'team' | 'box', i
       : boxItems
   }
 
-  const filtered = sourceList.filter(item => {
+  // Filter out busy/invalid status
+  const validSourceList = sourceList.filter(item => {
     const p = item.pokemon
-    if (!p) return false
-    if (p.onMission || p.inDaycare || p.onDefense) return false
-    if (props.isBattleSwitch && props.activePokemonUid === p.uid) return false
-    if (props.isBattleSwitch && p.hp <= 0 && !props.allowDead) return false
-    
-    // Filter by specific allowed IDs
-    if (props.allowedIds && !props.allowedIds.includes(p.uid)) return false
-    
-    if (searchQuery.value) {
-      const q = searchQuery.value.toLowerCase()
-      const matchName = p.name?.toLowerCase().includes(q)
-      const matchNick = p.nickname?.toLowerCase().includes(q)
-      const matchId = String(p.id).includes(q)
-      if (!matchName && !matchNick && !matchId) return false
-    }
-
-    if (props.excludeUids && props.excludeUids.includes(p.uid)) return false
-    
-    if (activeTags.value.length > 0) {
-      if (!activeTags.value.every(tag => {
-        if (tag === 'shiny') return p.isShiny
-        if (tag === 'team') return item._source === 'team'
-        if (tag === 'box') return item._source === 'box'
-        return hasPokemonTag(p, tag)
-      })) return false
-    }
-
-    if (props.isDaycareContext && filterCompatibleOnly.value && otherDaycarePokemon.value) {
-      const compat = checkCompatibility(p, otherDaycarePokemon.value)
-      if (!compat || compat.level === 0) return false
-    }
-
-    return true
+    return p && !p.onMission && !p.inDaycare && !p.onDefense
   })
 
-  return filtered.sort((a, b) => {
-    const pA = a.pokemon
-    const pB = b.pokemon
-    let valA: number, valB: number
-
-    if (sortBy.value === 'level') {
-      valA = pA.level || 0
-      valB = pB.level || 0
-    } else if (sortBy.value === 'ivs') {
-      const sum = (ivs: Pokemon['ivs']) => {
-        const obj = ivs || { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 }
-        return (obj.hp || 0) + (obj.atk || 0) + (obj.def || 0) + (obj.spa || 0) + (obj.spd || 0) + (obj.spe || 0)
-      }
-      valA = sum(pA.ivs)
-      valB = sum(pB.ivs)
-    } else if (sortBy.value === 'TOT') {
-      valA = getPokemonTotalPower(pA)
-      valB = getPokemonTotalPower(pB)
-    } else {
-      valA = pA.obtainedAt || ((a._source === 'box' ? 1000 : 0) + a.index)
-      valB = pB.obtainedAt || ((b._source === 'box' ? 1000 : 0) + b.index)
-    }
-
-    if (valA === valB) {
-      return sortOrder.value === 'desc' 
-        ? b.pokemon.uid.localeCompare(a.pokemon.uid) 
-        : a.pokemon.uid.localeCompare(b.pokemon.uid)
-    }
-    return sortOrder.value === 'desc' ? valB - valA : valA - valB
+  let result = filterAndSortPokemon(validSourceList, {
+    searchQuery: searchQuery.value,
+    sortBy: sortBy.value,
+    sortOrder: sortOrder.value,
+    activeTags: activeTags.value,
+    excludeUids: props.excludeUids,
+    allowedIds: props.allowedIds,
+    isBattleSwitch: props.isBattleSwitch,
+    activePokemonUid: props.activePokemonUid,
+    allowDead: props.allowDead
   })
+
+  if (props.isDaycareContext && filterCompatibleOnly.value && otherDaycarePokemon.value) {
+    result = result.filter(item => {
+      const compat = checkCompatibility(item.pokemon, otherDaycarePokemon.value!)
+      return compat && compat.level > 0
+    })
+  }
+
+  return result
 })
 
 function toggleSelection(item: { pokemon: Pokemon, _source: 'team' | 'box' | 'market', index: number }) {
