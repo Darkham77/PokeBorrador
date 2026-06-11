@@ -125,3 +125,13 @@ To provide clear visual feedback without redundancy, item usage logs must be spl
 - **Dual Tab Visibility**: Items of Tiers 0, 1, and 2 that are consumable, usable, or equipable must show up in both the Materials and Products tabs in the inventory. Under the Materials tab, their categories are mapped dynamically according to their tier (`raw_material` for Tier 0, `refined_material` for Tier 1, `component` for Tier 2) so they show up under their respective sidebar filters (e.g. stones under Materia Prima). Under the Products tab, they keep or adjust to their specific product subcategories (e.g. `'stones'` or `'potions'`).
 - **English ID Logic Standard for Items & Rewards**: For all logical checks, formulas, or data validations involving inventory and equipped items, daily missions, and arena rewards, ALWAYS compare and query against their standardized English database IDs (e.g., `'exp_share'`, `'everstone'`, `'destiny_knot'`, `'choice_band'`). The sanitization system normalizes equipped items and rewards to their English ID representations. Spanish names (e.g., `"Compartir EXP"`) should be reserved strictly for visual UI rendering.
 - **Pokéball ID and Sprite Loading**: Pokéball identifiers (e.g., `great_ball`, `ultra_ball`, `dusk_ball`) must be handled using their exact, lowercase database IDs. You must not apply destructive sanitizations (such as removing underscores `_`) in transition or animation paths, as doing so breaks item database lookup and causes sprite loading failures.
+
+---
+
+## 💰 GTS & Pricing Rules
+
+- **GTS Pricing Statistics**: Item minimum, average, and maximum prices are calculated reactively from active listings in the GTS store by calculating the price-per-unit (`listing.price / listing.data.qty`) grouped by item ID.
+- **Rarity Highlight Aesthetics**: Highlighting item rarity (tiers) is done using a `.item-bg-glow` container with a radial gradient matching the tier color (rare = `#3b82f6`, epic = `#a855f7`, legend = `var(--yellow)`) placed behind the clean item sprite. Cards should avoid having a dark background or container behind the sprite.
+- **Price Pills Grid Layout**: To prevent overlapping text in list views, display the stock count and the official purchase shop price (`TIENDA: ₱[price]`) on the top line, and the GTS statistics pills (MIN, PROM, MAX) on a separate line below it.
+- **Suggested Market Price**: When publishing items to the GTS, default the initial suggested price input in the form to the shop sell price (50% of the shop purchase price) to match the value players get when selling directly to standard shops.
+
