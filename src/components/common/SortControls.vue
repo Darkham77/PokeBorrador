@@ -124,7 +124,6 @@ const setSort = (key: SortKey) => {
   border-radius: 7px;
   color: Rgba(255, 255, 255, 0.5);
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s, color 0.15s;
   font-family: inherit;
   line-height: 1;
 
