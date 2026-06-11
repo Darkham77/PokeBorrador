@@ -3,7 +3,7 @@ import { ref, computed, watch } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useGTSStore } from '@/stores/gts'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
-import { SHOP_ITEMS } from '@/data/items'
+import { getItemById, getItemByName } from '@/data/items'
 import PokemonSelectionItem from '../modals/PokemonSelectionItem.vue'
 import MarketItemCard from './MarketItemCard.vue'
 import type { Pokemon } from '@/types/pokemon'
@@ -38,9 +38,7 @@ const inventory = computed<InventoryItem[]>(() => {
   return Object.entries(game.state.inventory as Record<string, number>)
     .filter(([_name, qty]) => qty > 0)
     .map(([name, qty]) => {
-      const dbItem = SHOP_ITEMS.find(
-        (i) => i.name.toLowerCase() === name.toLowerCase() || i.id.toLowerCase() === name.toLowerCase()
-      )
+      const dbItem = getItemByName(name) || getItemById(name)
       return {
         id: dbItem?.id ?? name.toLowerCase().replace(/\s+/g, '_'),
         name,
@@ -80,8 +78,8 @@ async function handlePublish() {
 
 function updateSuggestedPrice() {
   if (activeMode.value === 'item' && selection.value && 'qty' in selection.value) {
-    const nameStr = selection.value.name.toLowerCase()
-    const shopItem = SHOP_ITEMS.find(i => i.name.toLowerCase() === nameStr || i.id.toLowerCase() === nameStr)
+    const nameStr = selection.value.name
+    const shopItem = getItemByName(nameStr) || getItemById(nameStr)
     if (shopItem && shopItem.price > 0) {
       price.value = shopItem.price * itemQty.value
     } else {

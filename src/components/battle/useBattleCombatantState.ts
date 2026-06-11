@@ -143,7 +143,7 @@ export function useBattleCombatantState(
   });
 
   const displaySize = computed(() => {
-    const sideMultiplier = props.side === 'enemy' ? 1.8 : 1.5;
+    const sideMultiplier = props.side === 'enemy' ? 2 : 1.5;
     return Math.round(props.baseSize * scaleFactor.value * sideMultiplier);
   });
 
@@ -160,6 +160,12 @@ export function useBattleCombatantState(
     if (isFloating.value) {
       return { feetX: 0.5, feetY: 0.9 };
     }
+    if (isAnimated.value && animatedMeta.value) {
+      return {
+        feetX: animatedMeta.value.feetX ?? 0.5,
+        feetY: animatedMeta.value.feetY ?? 0.9
+      };
+    }
     const url = imageUrl.value;
     if (!url) return { feetX: 0.5, feetY: 0.9 };
     
@@ -175,9 +181,15 @@ export function useBattleCombatantState(
     }
     
     const dbPoints = POKEMON_FEET_DATABASE[key];
+    if (!dbPoints) {
+      if (key.toLowerCase().includes('egg')) {
+        return { feetX: 0.5, feetY: 0.9 };
+      }
+      throw new Error(`[PokemonFeetDatabase] Sprite key "${key}" not found in POKEMON_FEET_DATABASE. Did you forget to compile assets? Run "npm run assets:convert".`);
+    }
     return {
-      feetX: dbPoints?.feetX ?? 0.5,
-      feetY: dbPoints?.feetY ?? 0.9
+      feetX: dbPoints.feetX,
+      feetY: dbPoints.feetY
     };
   });
 
@@ -319,8 +331,8 @@ export function useBattleCombatantState(
     (e.target as HTMLImageElement).src = getAssetUrl(ASSET_TYPES.ENVIRONMENT, 'bush-1');
   };
 
-  const handleBallError = (e: Event) => {
-    (e.target as HTMLImageElement).src = getAssetUrl(ASSET_TYPES.ITEM, 'pokeball');
+  const handleBallError = () => {
+    throw new Error(`[BattleCombatant] Failed to load Pokeball image asset for ID: ${props.ballId}`);
   };
 
   const handleLoad = (e: Event) => {

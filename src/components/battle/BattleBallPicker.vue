@@ -2,7 +2,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useBattleStore } from '@/stores/battle'
-import { SHOP_ITEMS } from '@/data/items'
+import { getItemById } from '@/data/items'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import { gsap } from 'gsap'
@@ -35,19 +35,19 @@ const menuRef = ref<HTMLElement | null>(null)
 const availableBalls = computed(() => {
   const inventory = gameStore.state.inventory || {}
   return Object.entries(inventory)
-    .filter(([name, qty]) => {
+    .filter(([id, qty]) => {
       if (typeof qty !== 'number' || qty <= 0) return false
-      const item = SHOP_ITEMS.find(i => i.name === name)
+      const item = getItemById(id)
       return item && item.cat === 'pokeballs'
     })
-    .map(([name, qty]) => {
-      const item = SHOP_ITEMS.find(i => i.name === name)
+    .map(([id, qty]) => {
+      const item = getItemById(id)
       return {
-        name,
+        name: item ? item.name : id,
         qty: qty as number,
         price: (item as { price?: number })?.price || 0,
         sprite: (item as { sprite: string }).sprite,
-        id: (item as { id: string }).id,
+        id: id,
         desc: (item as { desc?: string }).desc || ''
       }
     })
@@ -64,7 +64,7 @@ const toggleBallMenu = () => {
 
   if (availableBalls.value.length === 1 && !isBallMenuOpen.value) {
     const ball = availableBalls.value[0]
-    if (ball) emit('select-ball', ball.name)
+    if (ball) emit('select-ball', ball.id)
     return
   }
 
@@ -87,21 +87,20 @@ const openMenu = () => {
     transformOrigin: 'bottom center'
   })
 
+  const container = menuRef.value?.querySelector('.menu-items-container')
+  if (container) {
+    (container as HTMLElement).scrollTop = (container as HTMLElement).scrollHeight
+  }
+
   tl.to(menuRef.value, {
     scale: 1,
     opacity: 1,
     y: 0,
     duration: 0.25, // Double speed (from 0.5)
     ease: 'back.out(1.7)',
-    onComplete: () => {
-      // Auto-scroll to bottom to focus cheapest ball
-      const container = menuRef.value?.querySelector('.menu-items-container')
+    onStart: () => {
       if (container) {
-        gsap.to(container, {
-          scrollTo: { y: (container as HTMLElement).scrollHeight },
-          duration: 0.3, // Double speed (from 0.6)
-          ease: 'power2.inOut'
-        })
+        (container as HTMLElement).scrollTop = (container as HTMLElement).scrollHeight
       }
     }
   })
@@ -125,8 +124,8 @@ const closeMenu = () => {
   })
 }
 
-const selectBall = (ballName: string) => {
-  emit('select-ball', ballName)
+const selectBall = (ballId: string) => {
+  emit('select-ball', ballId)
   closeMenu()
 }
 
@@ -175,7 +174,7 @@ onUnmounted(() => {
         >
           <button
             class="ball-option-item"
-            @click.stop="selectBall(ball.name)"
+            @click.stop="selectBall(ball.id)"
           >
             <div class="ball-sprite-wrapper">
               <img 
@@ -312,6 +311,8 @@ onUnmounted(() => {
   flex-direction: column;
   gap: 12px;
   width: 260px;
+  max-height: calc(75dvh / var(--app-zoom, 1));
+  min-height: 0; // Force proper flexbox child shrinking
   z-index: var(--z-max);
   pointer-events: auto;
   &::after {
@@ -321,13 +322,14 @@ onUnmounted(() => {
     border-radius: inherit;
     border: 1px solid Rgba(255, 255, 255, 0.2);
     pointer-events: none;
-    box-shadow: Inset 0 0 15px Rgba(255, 255, 255, 0.05);
+    box-shadow: inset 0 0 15px Rgba(255, 255, 255, 0.05);
   }
 }
 
 .menu-header {
   padding: 0 8px 8px;
   border-bottom: 1px solid Rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
   
   .header-label {
     font-size: 7px;
@@ -342,15 +344,36 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  max-height: calc(100dvh - 200px); // Expand to top of screen
+  flex: 1;
   overflow-y: auto;
-  overflow-x: hidden; // Evitar scrollbar horizontal por variaciones de subpíxeles o scrollbars verticales
-  padding: 2px; // Space for hover outlines
-  @include m.smooth-scroll;
+  overflow-x: hidden;
+  padding: 2px;
+  scrollbar-width: thin;
+  scrollbar-color: Rgba(255, 255, 255, 0.4) Rgba(0, 0, 0, 0.25);
+  scroll-behavior: auto !important;
+
+  // Custom retro scrollbar
+  &::-webkit-scrollbar {
+    width: 6px;
+    display: block !important;
+  }
+  &::-webkit-scrollbar-track {
+    background: Rgba(0, 0, 0, 0.2);
+    border-radius: 3px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: Rgba(255, 255, 255, 0.4);
+    border-radius: 3px;
+    border: 1px solid Rgba(0, 0, 0, 0.2);
+    &:hover {
+      background: Rgba(255, 255, 255, 0.55);
+    }
+  }
 
   .ball-tooltip-wrapper {
     width: 100%;
     display: block;
+    flex-shrink: 0;
   }
 }
 

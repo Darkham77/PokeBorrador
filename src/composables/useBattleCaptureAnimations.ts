@@ -140,18 +140,7 @@ export function useBattleCaptureAnimations(
     const slot = getSeat(side).exit
 
     if (typeof detail === 'object' && detail?.ballId) {
-      const id = detail.ballId.toLowerCase()
-        .replace(/ /g, '')
-        .replace(/[áàäâ]/g, 'a')
-        .replace(/[éèëê]/g, 'e')
-        .replace(/[íìïî]/g, 'i')
-        .replace(/[óòöô]/g, 'o')
-        .replace(/[úùüû]/g, 'u')
-        .replace(/bola/g, 'ball')
-        .replace(/_/g, '') 
-        .replace(/superball/g, 'greatball')
-      
-      slot.ballId = id
+      slot.ballId = detail.ballId.toLowerCase()
     } else if (pokemon?.tags) {
       const ballTag = pokemon.tags.find(t => t.startsWith('ball:'))
       if (ballTag) {

@@ -167,9 +167,10 @@ onMounted(() => {
 }
 
 .log-entry {
-  font-family: 'Inter', sans-serif;
-  font-size: 13px;
-  line-height: 1.6;
+  font-family: var(--font-pixel), monospace;
+  font-size: 10px;
+  line-height: 1.4;
+  @include pixelated;
   color: Rgba(255,255,255,0.9);
   padding-bottom: 4px;
   border-bottom: 1px solid Rgba(255,255,255,0.05);
@@ -283,7 +284,7 @@ onMounted(() => {
   }
 
   @media (max-width: 560px) {
-    font-size: 11px !important;
+    font-size: 8px !important;
     padding: 2px 0 !important;
     margin: 0 !important;
     line-height: 1.3 !important;

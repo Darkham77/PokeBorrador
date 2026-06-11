@@ -3,7 +3,7 @@ import { POKEMON_SPRITE_IDS } from '@/logic/pokedexConstants';
 export { POKEMON_SPRITE_IDS };
 import { resolveAsset } from '../utils/assetResolver.ts';
 import { MAPS_WITH_CYCLES } from '@/data/map-assets';
-import { SHOP_ITEMS } from '@/data/items';
+import { getItemById } from '@/data/items';
 
 /**
  * POKEAPI_BASE: Now local paths for downloaded sprites.
@@ -230,7 +230,7 @@ export const getAssetUrl = (type: AssetType, rawId: string | number, options: As
       }
       
       // Match by ID against SHOP_ITEMS
-      const shopItem = SHOP_ITEMS.find(i => i.id === idStr);
+      const shopItem = getItemById(idStr);
       if (shopItem) {
         return resolveAsset(`/assets/sprites/${shopItem.sprite}${extension}`);
       }

@@ -4,7 +4,7 @@ import { useUIStore } from '@/stores/ui'
 import { useLoadingStore } from '@/stores/loading'
 import type { GameState } from '@/types/game'
 import type { Pokemon, PokemonEgg } from '@/types/pokemon'
-import { SHOP_ITEMS } from '@/data/items'
+import { getItemByName, getItemById } from '@/data/items'
 
 export function usePokemonActions(
   state: GameState, 
@@ -152,11 +152,8 @@ export function usePokemonActions(
       for (const [key, qty] of Object.entries(state.inventory)) {
         let officialId = key;
         
-        // Find in SHOP_ITEMS by name (case-insensitive) or id
-        const item = SHOP_ITEMS.find(i => 
-          i.name.toLowerCase() === key.toLowerCase() || 
-          i.id.toLowerCase() === key.toLowerCase()
-        );
+        // Find in SHOP_ITEMS by name or id
+        const item = getItemByName(key) || getItemById(key);
         
         if (item) {
           officialId = item.id;

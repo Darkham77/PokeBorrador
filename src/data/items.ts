@@ -1371,3 +1371,7 @@ export const SHOP_ITEMS = [
 
 export const getItemByName = (name: string) => SHOP_ITEMS.find(i => i.name === name);
 export const getItemById = (id: string) => SHOP_ITEMS.find(i => i.id === id);
+export const getItemName = (id: string): string => {
+  const item = getItemById(id);
+  return item ? item.name : id;
+};

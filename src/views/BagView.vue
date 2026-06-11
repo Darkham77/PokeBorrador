@@ -51,8 +51,8 @@ const filteredBagItems = computed(() => {
   return inventoryStore.bagItems
 })
 
-const onUseItem = (name: string) => {
-  inventoryStore.useItem(name)
+const onUseItem = (itemId: string) => {
+  inventoryStore.useItem(itemId)
 }
 
 // GSAP Interactions

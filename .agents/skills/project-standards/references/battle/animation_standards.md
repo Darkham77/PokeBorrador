@@ -16,6 +16,8 @@ To prevent positional "jumping" or flickering during entrance animations:
 
 - **Rule**: Every combatant must have its `groundY` and `shadow` coordinates pre-loaded into the store BEFORE the `isVisible` flag is set.
 - **Implementation**: Use the `preloadCombatCoords` workflow to scan sprites in the background while the UI is still blocked or during the transition phase.
+- **Visual Scale Multiplier Alignment**: When positioning combatant sprites under size scaling multipliers (e.g., side size multipliers scaling containers from `1.8` to `2.0`), all vertical/horizontal coordinate calculations (such as `feetY` / `feetX` for aligning the sprite base with its shadow) MUST be scaled proportionally to the virtual container's multiplied dimensions.
+- **Strict Coordinate Presence and Error Assertion**: Resolving sprite coordinates (e.g. looking up a sprite path in `POKEMON_FEET_DATABASE`) MUST NOT use silent defaults if the entry is missing. Throw a descriptive runtime `Error` or halt with an explicit exception immediately if a coordinate is missing. Silent fallbacks hide misalignments and cause visual bugs (e.g. sprites floating in mid-air).
 
 ## 1. Phase Shift (Seed-based De-synchronization)
 

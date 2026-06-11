@@ -7,7 +7,7 @@ import { FIRE_RED_MAPS } from '@/data/maps';
 import { generateEncounter } from '@/logic/encounters';
 import { syncServerTime, getServerTime } from '@/logic/timeUtils';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
-import { SHOP_ITEMS } from '@/data/items.ts';
+import { getItemByName } from '@/data/items.ts';
 import { logger } from '@/logic/utils/logger';
 import { TRAINER_TYPES } from '@/data/trainerTypes';
 import { getRandomQuoteForTrainer } from '@/data/trainerPhrases';
@@ -338,7 +338,7 @@ export async function executeArchaeologyRewards(locId: string, gs: ReturnType<ty
       rewardIcon = item.icon;
     }
 
-    const itemData = SHOP_ITEMS.find(i => i.name.toLowerCase() === rewardName.toLowerCase());
+    const itemData = getItemByName(rewardName);
     const itemSprite = itemData ? getAssetUrl(ASSET_TYPES.ITEM, itemData.sprite) : rewardIcon;
 
     inventoryStore.addItem(rewardName, 1);

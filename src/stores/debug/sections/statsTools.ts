@@ -108,7 +108,7 @@ export function registerStatsTools(debug: DebugSystem, { game, ui }: DebugContex
       }
 
       // Guardar progreso específico por dificultad
-      if (!game.state.gymProgress[gymId]) {
+      if (!game.state.gymProgress[gymId] || typeof game.state.gymProgress[gymId] !== 'object') {
         game.state.gymProgress[gymId] = { easy: false, normal: false, hard: false, attempts: 0 }
       }
       const progress = game.state.gymProgress[gymId]

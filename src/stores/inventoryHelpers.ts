@@ -1,5 +1,5 @@
 import { useGameStore } from './game.ts';
-import { SHOP_ITEMS } from '@/data/items';
+import { getItemByName, getItemById } from '@/data/items';
 import { itemEffects as ITEM_EFFECTS, getDynamicItemEffect } from '@/logic/items/itemEffects';
 import { isGlobalItem } from '../logic/providers/itemProvider.ts';
 import type { Pokemon } from '@/types/pokemon';
@@ -69,12 +69,7 @@ export function resolveNormalizedName(name: string): string {
 }
 
 export function findInventoryKey(gameStore: ReturnType<typeof useGameStore>, name: string): string | null {
-  const item = SHOP_ITEMS.find(i => 
-    i.id.toLowerCase() === name.toLowerCase() || 
-    i.name.toLowerCase() === name.toLowerCase() ||
-    i.id.toLowerCase() === resolveNormalizedName(name).toLowerCase() ||
-    i.name.toLowerCase() === resolveNormalizedName(name).toLowerCase()
-  );
+  const item = getItemById(name) || getItemByName(name) || getItemById(resolveNormalizedName(name)) || getItemByName(resolveNormalizedName(name));
   if (item) return item.id;
 
   const inv = gameStore.state.inventory || {};
@@ -84,7 +79,7 @@ export function findInventoryKey(gameStore: ReturnType<typeof useGameStore>, nam
   const targetOfficialNorm = targetOfficial.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '');
 
   for (const key of Object.keys(inv)) {
-    const keyItem = SHOP_ITEMS.find(i => i.id === key);
+    const keyItem = getItemById(key);
     const keyOfficial = keyItem ? keyItem.name : key;
     const keyOfficialNorm = keyOfficial.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '');
     if (keyOfficialNorm === targetOfficialNorm) {
@@ -98,12 +93,12 @@ export function isItemUsableOn(itemName: string, pokemon: Pokemon) {
   if (!pokemon) return false;
   
   // Resolve Spanish names to their English ID if necessary
-  const dbItem = SHOP_ITEMS.find(i => i.id.toLowerCase() === itemName.toLowerCase() || i.name.toLowerCase() === itemName.toLowerCase());
+  const dbItem = getItemByName(itemName) || getItemById(itemName);
   const itemId = dbItem ? dbItem.id : itemName.toLowerCase();
   
   if (isGlobalItem(itemId)) return false;
 
-  const item = SHOP_ITEMS.find(i => i.id === itemId);
+  const item = getItemById(itemId);
 
   if (pokemon.inDaycare) {
     if (!item) return false;

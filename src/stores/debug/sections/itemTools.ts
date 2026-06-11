@@ -1,5 +1,5 @@
 
-import { SHOP_ITEMS } from '@/data/items'
+import { getItemByName, getItemById, SHOP_ITEMS } from '@/data/items'
 
 import type { DebugSystem, DebugContext } from '@/stores/debug'
 
@@ -10,7 +10,7 @@ export function registerItemTools(debug: DebugSystem, { game, ui, breedingStore 
     command: 'addItem',
     category: 'items',
     action: (name: string, qty = 10) => {
-      const item = SHOP_ITEMS.find(i => i.name === name || i.id === name)
+      const item = getItemByName(name) || getItemById(name)
       const key = item ? item.id : name
       game.state.inventory[key] = ((game.state.inventory[key] as number) || 0) + qty
       ui.notify(`Debug: +${qty} ${item ? item.name : name}`, '🎒')

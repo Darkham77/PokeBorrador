@@ -397,8 +397,8 @@ const handleArchaeologyFail = async () => {
     emoji = '🐚'
   }
   
-  const { SHOP_ITEMS } = await import('@/data/items')
-  const itemData = SHOP_ITEMS.find(i => i.name.toLowerCase() === fossilName.toLowerCase())
+  const { getItemByName } = await import('@/data/items')
+  const itemData = getItemByName(fossilName)
   const itemSprite = itemData ? getAssetUrl(ASSET_TYPES.ITEM, itemData.sprite) : emoji
 
   const uiStore = useUIStore()

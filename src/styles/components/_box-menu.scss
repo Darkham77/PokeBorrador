@@ -6,6 +6,28 @@
   gap: 16px;
   min-width: 340px;
   padding: 16px;
+  max-height: 85vh;
+  overflow-y: auto;
+
+  & > * {
+    flex-shrink: 0;
+  }
+
+  // Custom retro scrollbar
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  &::-webkit-scrollbar-track {
+    background: Rgba(0, 0, 0, 0.2);
+    border-radius: 3px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: Rgba(255, 255, 255, 0.25);
+    border-radius: 3px;
+    &:hover {
+      background: Rgba(255, 255, 255, 0.4);
+    }
+  }
 
   @include responsive(768px) {
     min-width: 100%;

@@ -5,7 +5,7 @@ import { useBattleStore } from '@/stores/battle'
 import { useUIStore } from '@/stores/ui'
 import { useModalStore } from '@/stores/modals'
 import { useInventoryStore } from '@/stores/inventory'
-import { SHOP_ITEMS } from '@/data/items'
+import { getItemById, getItemByName } from '@/data/items'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { isValidTarget } from '@/logic/items/itemEffects'
 import PVTooltip from '@/components/common/PVTooltip.vue'
@@ -34,7 +34,7 @@ const battleItems = computed<BattleItem[]>(() => {
   Object.entries(inventory.value).forEach(([name, qty]) => {
     const count = qty as number
     if (count <= 0) return
-    const itemData = SHOP_ITEMS.find(i => i.id === name || i.name === name)
+    const itemData = getItemById(name) || getItemByName(name)
     if (!itemData) return
     
     const isTrainer = battleStore.state?.isTrainer
@@ -58,12 +58,12 @@ const battleItems = computed<BattleItem[]>(() => {
 const handleUseItem = (item: BattleItem) => {
   if (battleStore.isProcessing || battleStore.isIntroAnimating) return
 
-  const dbItem = SHOP_ITEMS.find(i => i.id === item.id || i.name === item.name)
+  const dbItem = getItemById(item.id)
   if (!dbItem) return
 
   // 1. Pokéballs: Uso directo
   if (dbItem.cat === 'pokeballs') {
-    battleStore.useItemInBattle(dbItem.name, null, dbItem.id)
+    battleStore.useItemInBattle(dbItem.id)
     return
   }
 
@@ -88,7 +88,7 @@ const handleUseItem = (item: BattleItem) => {
       if (selectedPokes && selectedPokes.length > 0) {
         const index = (gameStore.state.team || []).findIndex(p => p.uid === selectedPokes[0]!.uid)
         if (index !== -1) {
-          const res = inventoryStore.useItem(dbItem.name, 'team', index)
+          const res = inventoryStore.useItem(dbItem.id, 'team', index)
           if (res.success) {
             uiStore.notify(res.message, '✨')
           } else {

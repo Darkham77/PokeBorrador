@@ -5,7 +5,7 @@ import { useGameStore } from './game.ts'
 import { useUIStore } from './ui.ts'
 import { useWarStore } from './war.ts'
 import type { Pokemon, Move } from '@/types/pokemon'
-import { SHOP_ITEMS, ITEM_CATEGORIES, CATEGORY_LABELS } from '@/data/items'
+import { getItemById, SHOP_ITEMS, ITEM_CATEGORIES, CATEGORY_LABELS } from '@/data/items'
 import { PLAYER_CLASSES } from '@/data/playerClasses'
 import { TRAINER_RANKS } from '@/data/trainer'
 import { calculateTotalHealCost } from '@/logic/economy/economyFormulas'
@@ -53,7 +53,7 @@ export const useShopStore = defineStore('shop', () => {
   }
 
   function buyItem(itemId: string) {
-    const item = SHOP_ITEMS.find(i => i.id === itemId)
+    const item = getItemById(itemId)
     if (!item) return
     
     if (gameStore.state.trainerLevel < (item.unlockLv || 1)) {
@@ -87,7 +87,7 @@ export const useShopStore = defineStore('shop', () => {
   }
 
   function buyItemBC(itemId: string) {
-    const item = SHOP_ITEMS.find(i => i.id === itemId)
+    const item = getItemById(itemId)
     if (!item || !item.showInBCShop) return
 
     const bcPrice = item.bcPrice || 0
@@ -115,7 +115,7 @@ export const useShopStore = defineStore('shop', () => {
   }
 
   function buyItemWar(itemId: string) {
-    const item = SHOP_ITEMS.find(i => i.id === itemId)
+    const item = getItemById(itemId)
     if (!item || !item.showInWarShop) return
 
     const warPrice = item.warPrice || 0
@@ -218,7 +218,7 @@ export const useShopStore = defineStore('shop', () => {
       gameStore.scheduleSave()
     }
     
-    return daily.items.map((id: string) => SHOP_ITEMS.find(i => i.id === id)).filter(Boolean)
+    return daily.items.map((id: string) => getItemById(id)).filter(Boolean)
   }
 
   function buyBlackMarketItem(itemId: string) {
@@ -231,7 +231,7 @@ export const useShopStore = defineStore('shop', () => {
       return
     }
 
-    const item = SHOP_ITEMS.find(i => i.id === itemId)
+    const item = getItemById(itemId)
     if (!item) return
 
     const discount = PLAYER_CLASSES.rocket.modifiers?.shopDiscount || 0.20

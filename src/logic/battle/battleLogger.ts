@@ -5,7 +5,7 @@
  */
 
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
-import { SHOP_ITEMS } from '@/data/items';
+import { getItemByName, getItemById } from '@/data/items';
 import { PLAYER_CLASSES } from '@/data/playerClasses';
 import { logger } from '../utils/logger.ts';
 import type { Pokemon } from '@/types/pokemon';
@@ -70,8 +70,7 @@ export function formatBattleLog(msg: string, type: string, source: BattleSource,
         icon = source;
         iconType = 'emoji';
       } else {
-        const sLower = source.toLowerCase();
-        const item = SHOP_ITEMS.find((i) => i.name.toLowerCase() === sLower || i.id.toLowerCase() === sLower);
+        const item = getItemById(source) || getItemByName(source);
         const spriteId = item ? item.sprite : source;
         icon = getAssetUrl(ASSET_TYPES.ITEM, spriteId);
         iconType = 'item';

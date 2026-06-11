@@ -188,7 +188,7 @@ const onEnter = (el: Element, done: () => void) => {
             @bag="execShowBattleBag"
             @run="battleStore.flee"
             @catch="execTryCatch"
-            @select-ball="(name) => battleStore.useItemInBattle(name)"
+            @select-ball="(id) => battleStore.useItemInBattle(id)"
           />
         </div>
 

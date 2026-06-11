@@ -7,7 +7,7 @@ import { useModalStore } from '@/stores/modals'
 import { useBreedingStore } from '@/stores/breeding'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import { formatCurrency } from '@/logic/utils/formatters'
-import { SHOP_ITEMS } from '@/data/items'
+import { getItemById, getItemByName } from '@/data/items'
 import EggSprite from '@/components/common/EggSprite.vue'
 import { resolveNormalizedName } from '@/stores/inventoryHelpers'
 
@@ -95,7 +95,7 @@ const ballsList = computed(() => {
     .map(([name, qty]) => {
       const count = qty as number
       if (count <= 0) return null
-      const found = SHOP_ITEMS.find(i => i.name === name)
+      const found = getItemByName(name) || getItemById(name)
       if (found?.cat === 'pokeballs' || name.toLowerCase().includes('ball')) {
         return { name, qty: count }
       }
@@ -131,7 +131,7 @@ const materialItems = computed(() => {
     const count = qty as number
     if (count <= 0) continue
     const officialName = resolveNormalizedName(key)
-    const found = SHOP_ITEMS.find(i => i.name === officialName || i.id === officialName)
+    const found = getItemByName(officialName) || getItemById(officialName)
     if (found) {
       let tier: number | null = null
       if (found.cat === 'raw_material' || found.sprite?.includes('crafting/tier0/')) {

@@ -4,7 +4,7 @@ import { gsap } from 'gsap';
 import { useGameStore } from '@/stores/game';
 import { useUIStore } from '@/stores/ui';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
-import { SHOP_ITEMS } from '@/data/items';
+import { getItemByName, getItemById } from '@/data/items';
 import type { ClaimItem } from '@/types/game';
 
 interface PokemonAssetData {
@@ -45,7 +45,7 @@ const getAssetIcon = (asset: ClaimItem['asset_data']) => {
   if (asset.type === 'money') return getAssetUrl(ASSET_TYPES.ITEM, 'nugget');
   if (asset.type === 'item') {
     const itemData = asset.data as unknown as ItemAssetData;
-    const dbItem = SHOP_ITEMS.find(i => i.name === itemData.name || i.id === itemData.name);
+    const dbItem = getItemByName(itemData.name) || getItemById(itemData.name);
     const slug = dbItem?.sprite || dbItem?.id || itemData.name;
     return getAssetUrl(ASSET_TYPES.ITEM, slug);
   }

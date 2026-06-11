@@ -1,7 +1,7 @@
 
 import { itemEffects } from '../items/itemEffects.ts';
 import type { Pokemon } from '@/types/pokemon';
-import { SHOP_ITEMS } from '@/data/items';
+import { getItemById } from '@/data/items';
 import type { Item } from '@/types/items';
 
 /**
@@ -20,7 +20,7 @@ export function useItemOnPokemon(itemName: string, pokemon: Pokemon): { message:
 
   // Validate item exists in SHOP_ITEMS
   const isTM = itemId.startsWith('tm') || itemId.startsWith('mt');
-  const itemExists = isTM || SHOP_ITEMS.some(i => i.id === itemId);
+  const itemExists = isTM || !!getItemById(itemId);
   if (!itemExists) {
     throw new Error(`[ItemProvider] Intento de usar un objeto inexistente: ${itemName}`);
   }
@@ -34,7 +34,7 @@ export function useItemOnPokemon(itemName: string, pokemon: Pokemon): { message:
 
 export function isGlobalItem(itemName: string): boolean {
   const itemId = itemName.toLowerCase();
-  const item = SHOP_ITEMS.find(i => i.id === itemId) as Item | undefined;
+  const item = getItemById(itemId) as Item | undefined;
   if (!item) return false;
   return !!(
     item.isGlobal || 

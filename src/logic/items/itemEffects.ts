@@ -6,9 +6,8 @@ import type { Pokemon } from '@/types/pokemon';
 import type { ItemEffectResult } from '@/types/items';
 import type { GameState } from '@/types/game';
 import { MAX_POKEMON_LEVEL } from '@/data/constants';
-import { SHOP_ITEMS } from '../../data/items.ts';
+import { getItemByName, getItemById } from '../../data/items.ts';
 
-import type { Item } from '@/types/items';
 
 interface TMData {
   id: string
@@ -25,12 +24,12 @@ export const isValidTarget = (itemName: string, pokemon: Pokemon): boolean => {
   if (!pokemon) return false;
   
   // Resolve Spanish names to their English ID if necessary
-  const dbItem = SHOP_ITEMS.find((i: Item) => i.id.toLowerCase() === itemName.toLowerCase() || i.name.toLowerCase() === itemName.toLowerCase());
+  const dbItem = getItemByName(itemName) || getItemById(itemName);
   const resolvedId = dbItem ? dbItem.id : itemName;
 
   // Ensure the item ID exists in SHOP_ITEMS (or is a valid TM)
   const isTM = resolvedId.toLowerCase().startsWith('tm') || resolvedId.toLowerCase().startsWith('mt');
-  const itemExists = isTM || SHOP_ITEMS.some((i: Item) => i.id === resolvedId);
+  const itemExists = isTM || !!getItemById(resolvedId);
   if (!itemExists) {
     throw new Error(`[ItemEffects] Intento de validar un objeto inexistente: ${itemName}`);
   }

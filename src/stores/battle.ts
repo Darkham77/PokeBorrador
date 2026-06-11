@@ -13,6 +13,7 @@ import { useAudioStore } from './audio.ts'
 import { useMapStore } from './map.ts'
 import { useUIStore } from './ui.ts'
 import { useModalStore } from './modals.ts'
+import { useErrorStore } from './errorStore.ts'
 import { createBattleStateMachine, BATTLE_STATES, BATTLE_SUBSTATES } from '../logic/battle/battleStateMachine.ts'
 import { clearVolatileStatus } from '../logic/battle/battleStatus.ts'
 import { startBattleSequence, initBattleSequence, restoreBattleState } from '../logic/battle/orchestrator.ts'
@@ -287,6 +288,7 @@ export const useBattleStore = defineStore('battle', () => {
     } catch (error) {
       logger.error('BattleStore', `Error executing move index ${moveIndex}: ${(error as Error).message}`, error)
       addLog('¡Ocurrió un error al ejecutar el movimiento!', 'log-error')
+      useErrorStore().setError(error, { type: 'Battle Engine Error', source: `battleStore.executeMove(index:${moveIndex})` })
     } finally {
       isProcessing.value = false
     }
@@ -296,63 +298,70 @@ export const useBattleStore = defineStore('battle', () => {
 
   const handleFaint = async (side: 'player' | 'enemy') => await processFaint(getContext(), side)
 
-  const useItemInBattle = async (itemName: string, targetIndex: number | null = null, itemId?: string) => {
+  const useItemInBattle = async (itemId: string, targetIndex: number | null = null) => {
     if (isProcessing.value || !isBattleActive.value || !activeBattle.value) return
     isProcessing.value = true
     
-    const targetPoke = (targetIndex !== null) ? gs.state.team[targetIndex] : activeBattle.value.player
-    if (!targetPoke) { isProcessing.value = false; return }
+    try {
+      const targetPoke = (targetIndex !== null) ? gs.state.team[targetIndex] : activeBattle.value.player
+      if (!targetPoke) { isProcessing.value = false; return }
 
-    attackerSide.value = 'player'
-    if (!activeBattle.value || !activeBattle.value.enemy) { isProcessing.value = false; return }
-    
-    const res = await handleItemUsage(itemName, targetPoke, activeBattle.value.enemy, { 
-      eventStore, addLog, audio, consumeItem, ctx: getContext(), fsm, itemId
-    })
-    attackerSide.value = null
-    activeMove.value = null
-    
-    const castRes = res as { action: string, pokemon?: Pokemon }
-    if (castRes.action === 'capture') {
-      activeBattle.value.isCapture = true
-      activeBattle.value.over = true 
-      gs.addPokemon(castRes.pokemon || null, { notify: true })
-      isProcessing.value = false
-      await endBattle(true, false)
-      return
-    } else if (castRes.action !== 'fail') {
-      if (castRes.pokemon && activeBattle.value?.player) {
-        const isTargetActive = (targetIndex === null || targetIndex === activeBattle.value.playerTeamIndex)
-        if (isTargetActive) {
-          activeBattle.value.player = { ...castRes.pokemon }
-          syncTeamHP()
+      attackerSide.value = 'player'
+      if (!activeBattle.value || !activeBattle.value.enemy) { isProcessing.value = false; return }
+      
+      const res = await handleItemUsage(itemId, targetPoke, activeBattle.value.enemy, { 
+        eventStore, addLog, audio, consumeItem, ctx: getContext(), fsm, itemId
+      })
+      attackerSide.value = null
+      activeMove.value = null
+      
+      const castRes = res as { action: string, pokemon?: Pokemon }
+      if (castRes.action === 'capture') {
+        activeBattle.value.isCapture = true
+        activeBattle.value.over = true 
+        gs.addPokemon(castRes.pokemon || null, { notify: true })
+        isProcessing.value = false
+        await endBattle(true, false)
+        return
+      } else if (castRes.action !== 'fail') {
+        if (castRes.pokemon && activeBattle.value?.player) {
+          const isTargetActive = (targetIndex === null || targetIndex === activeBattle.value.playerTeamIndex)
+          if (isTargetActive) {
+            activeBattle.value.player = { ...castRes.pokemon }
+            syncTeamHP()
+          }
+        }
+        persistBattle()
+        if (castRes.action === 'heal') {
+          await sleep(800)
+        }
+        await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.APPLY_MOVE)
+        await runEnemyAction(getContext())
+        await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.EVAL_HP)
+
+        if (activeBattle.value?.player && activeBattle.value.player.hp <= 0) {
+          await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.PLAYER_FAINT_SEQ)
+          await handleFaint('player')
+          isProcessing.value = false
+          return
+        }
+        if (activeBattle.value?.enemy && activeBattle.value.enemy.hp <= 0) {
+          await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ENEMY_REPLACEMENT_SEQ)
+          await handleFaint('enemy')
+          isProcessing.value = false
+          return
         }
       }
-      persistBattle()
-      if (castRes.action === 'heal') {
-        await sleep(800)
+      if (activeBattle.value && !activeBattle.value.over && fsm.currentState.value === BATTLE_STATES.ACTIVE_BATTLE) {
+        fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT)
       }
-      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.APPLY_MOVE)
-      await runEnemyAction(getContext())
-      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.EVAL_HP)
-
-      if (activeBattle.value?.player && activeBattle.value.player.hp <= 0) {
-        await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.PLAYER_FAINT_SEQ)
-        await handleFaint('player')
-        isProcessing.value = false
-        return
-      }
-      if (activeBattle.value?.enemy && activeBattle.value.enemy.hp <= 0) {
-        await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ENEMY_REPLACEMENT_SEQ)
-        await handleFaint('enemy')
-        isProcessing.value = false
-        return
-      }
+    } catch (error) {
+      logger.error('BattleStore', `Error using item in battle: ${(error as Error).message}`, error)
+      addLog('¡Ocurrió un error al usar el objeto!', 'log-error')
+      useErrorStore().setError(error, { type: 'Battle Item Error', source: 'battleStore.useItemInBattle' })
+    } finally {
+      isProcessing.value = false
     }
-    if (activeBattle.value && !activeBattle.value.over && fsm.currentState.value === BATTLE_STATES.ACTIVE_BATTLE) {
-      fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT)
-    }
-    isProcessing.value = false
   }
   const endBattle = async (win: boolean, fled: boolean) => {
     logger.info('BattleStore', `endBattle called. Win: ${win}, Fled: ${fled}`)
@@ -371,6 +380,10 @@ export const useBattleStore = defineStore('battle', () => {
     isProcessing.value = true
     try {
       await switchAction(getContext(), teamIndex, isForced)
+    } catch (error) {
+      logger.error('BattleStore', `Error switching pokemon: ${(error as Error).message}`, error)
+      addLog('¡Ocurrió un error al cambiar de Pokémon!', 'log-error')
+      useErrorStore().setError(error, { type: 'Battle Switch Error', source: 'battleStore.executeSwitch' })
     } finally {
       isProcessing.value = false
     }
@@ -434,7 +447,14 @@ export const useBattleStore = defineStore('battle', () => {
     clearLogs,
     executeMove,
     persistBattle,
-    flee: async () => await executeFlee(getContext()),
+    flee: async () => {
+      try {
+        await executeFlee(getContext())
+      } catch (error) {
+        logger.error('BattleStore', `Error fleeing from battle: ${(error as Error).message}`, error)
+        useErrorStore().setError(error, { type: 'Battle Flee Error', source: 'battleStore.flee' })
+      }
+    },
     completeBattleFlow: (option?: string) => completeBattleFlow(option),
     triggerSearchEncounter,
     setFinishing: (cb: () => void) => { fsm.transition(BATTLE_STATES.REWARDS_PHASE); battleEndCallback.value = cb },

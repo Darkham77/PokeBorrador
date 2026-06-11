@@ -83,7 +83,7 @@ const emit = defineEmits<{
 }
 
 .box-buy-new-btn {
-  @include btn-vicio('warning', 'sm', false);
+  @include btn-vicio('primary', 'sm', false);
   margin-left: 8px;
   height: 32px;
   font-size: 7px;

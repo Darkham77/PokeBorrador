@@ -71,7 +71,7 @@ export async function calculateBattleRewards(ctx: BattleContext) {
     }
 
     // Registrar progreso específico por dificultad
-    if (!ctx.gs.state.gymProgress[gid]) {
+    if (!ctx.gs.state.gymProgress[gid] || typeof ctx.gs.state.gymProgress[gid] !== 'object') {
       ctx.gs.state.gymProgress[gid] = { easy: false, normal: false, hard: false, attempts: 0 }
     }
     const prog = ctx.gs.state.gymProgress[gid]

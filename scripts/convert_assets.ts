@@ -182,19 +182,37 @@ async function calculateFeetPointsWorker(filePath: string): Promise<{ feetY: num
       return { feetY: 0.9, feetX: 0.5 };
     }
 
-    let minX = width;
+    const size = Math.min(width, height);
+    let minX = size;
     let maxX = 0;
     let lowestY = -1;
 
+    // Scan the first frame to find bounding box in X
     for (let y = 0; y < height; y++) {
-      for (let x = 0; x < width; x++) {
+      for (let x = 0; x < size; x++) {
         const index = (y * width + x) * channels;
         const alpha = data[index + 3] ?? 0;
         if (alpha > 50) {
           if (x < minX) minX = x;
           if (x > maxX) maxX = x;
-          if (y > lowestY) lowestY = y;
         }
+      }
+    }
+
+    // Scan from bottom to top in the first frame to find the lowest non-empty pixel row (feetY)
+    for (let y = height - 1; y >= 0; y--) {
+      let rowHasOpaque = false;
+      for (let x = 0; x < size; x++) {
+        const index = (y * width + x) * channels;
+        const alpha = data[index + 3] ?? 0;
+        if (alpha > 50) {
+          rowHasOpaque = true;
+          break;
+        }
+      }
+      if (rowHasOpaque) {
+        lowestY = y;
+        break;
       }
     }
 
@@ -202,7 +220,7 @@ async function calculateFeetPointsWorker(filePath: string): Promise<{ feetY: num
       const centerX = (minX + maxX) / 2;
       return {
         feetY: Number((lowestY / height).toFixed(4)),
-        feetX: Number((centerX / width).toFixed(4))
+        feetX: Number((centerX / size).toFixed(4))
       };
     }
   } catch {
@@ -248,7 +266,25 @@ async function handleAnalyzeAnimated(filePath: string) {
           if (x > maxX) maxX = x;
           if (y < minY) minY = y;
           if (y > maxY) maxY = y;
-          if (y > lowestY) lowestY = y;
+        }
+      }
+    }
+
+    if (hasOpaque) {
+      // Scan from bottom to top to find the first non-empty pixel row (lowestY)
+      for (let y = size - 1; y >= 0; y--) {
+        let rowHasOpaque = false;
+        for (let x = 0; x < size; x++) {
+          const idx = (y * size + x) * channels;
+          const alpha = channels >= 4 ? (data[idx + 3] ?? 0) : 255;
+          if (alpha > 50) {
+            rowHasOpaque = true;
+            break;
+          }
+        }
+        if (rowHasOpaque) {
+          lowestY = y;
+          break;
         }
       }
     }

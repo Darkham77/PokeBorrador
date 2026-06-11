@@ -9,7 +9,7 @@ import { useBattleStore } from '@/stores/battle'
 import { useModalStore } from '@/stores/modals'
 import BaseModal from '@/components/common/BaseModal.vue'
 import { formatCurrency } from '@/logic/utils/formatters'
-import { SHOP_ITEMS } from '@/data/items'
+import { getItemById } from '@/data/items'
 import { isValidTarget } from '@/logic/items/itemEffects'
 import { isGlobalItem } from '@/logic/providers/itemProvider'
 import type { Pokemon } from '@/types/pokemon'
@@ -188,7 +188,7 @@ const handleActionSelect = (type: string) => {
   if (!item) return
   
   if (type === 'use') {
-    const dbItem = SHOP_ITEMS.find(i => i.id === item.id || i.name === item.name)
+    const dbItem = getItemById(item.id)
     
     if (!dbItem) {
       uiStore.notify(`Error: Objeto "${item.name}" no reconocido.`, '⚠️')
@@ -295,7 +295,7 @@ const handleMultiExecute = async () => {
   let estimatedGain = 0
   if (mode === 'sell') {
     for (const [id, qty] of selectedItems.entries()) {
-      const itemInfo = SHOP_ITEMS.find(i => i.id === id)
+      const itemInfo = getItemById(id)
       if (itemInfo) estimatedGain += Math.floor((itemInfo.price || 0) * 0.5) * qty
     }
   }

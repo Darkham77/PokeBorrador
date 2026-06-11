@@ -15,7 +15,7 @@ const emit = defineEmits<{
   (e: 'bag'): void
   (e: 'run'): void
   (e: 'catch'): void
-  (e: 'select-ball', ballName: string): void
+  (e: 'select-ball', ballId: string): void
 }>()
 
 const battleStore = useBattleStore()
@@ -40,7 +40,7 @@ const battleStore = useBattleStore()
 
       <BattleBallPicker 
         :is-finishing="props.isFinishing"
-        @select-ball="(name: string) => emit('select-ball', name)"
+        @select-ball="(id: string) => emit('select-ball', id)"
         @catch="emit('catch')"
       />
 

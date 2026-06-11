@@ -12,6 +12,7 @@ import type { Pokemon } from '@/types/pokemon'
 import type { EventStore, AudioStore, BattleStore } from '@/types/stores'
 import type { LogFn } from '@/types/battle'
 import type { BattleContext } from '@/types/battleContext'
+import { getItemName } from '@/data/items'
 
 interface ItemUsageOptions {
   eventStore: EventStore;
@@ -30,6 +31,7 @@ export async function handleItemUsage(itemName: string, p: Pokemon, e: Pokemon, 
     consumeItem 
   } = options
 
+  const displayName = getItemName(itemName)
   const nameLower = itemName.toLowerCase()
   const isBall = nameLower.includes('ball') || nameLower.includes('bola')
 
@@ -37,8 +39,8 @@ export async function handleItemUsage(itemName: string, p: Pokemon, e: Pokemon, 
     if (options.fsm) {
       await options.fsm.transition('ACTIVE_BATTLE', 'CATCH_PROCESS')
     }
-    addLog(`Usaste ${itemName}`, 'log-info', 'player')
-    addLog(`¡Has lanzado una ${itemName}!`, 'log-catch', itemName, 'player')
+    addLog(`Usaste ${displayName}`, 'log-info', 'player')
+    addLog(`¡Has lanzado una ${displayName}!`, 'log-catch', itemName, 'player')
     
     // El ítem se consume inmediatamente al lanzarse
     consumeItem(itemName)
@@ -130,7 +132,7 @@ export async function handleItemUsage(itemName: string, p: Pokemon, e: Pokemon, 
     }
   } else {
     // Ítem de curación
-    addLog(`Usaste ${itemName}`, 'log-info', 'player')
+    addLog(`Usaste ${displayName}`, 'log-info', 'player')
     
     const res = useItemOnPokemon(itemName, p) as { success: boolean, message: string, pokemon: Pokemon } | null
     if (res) {

@@ -2,7 +2,7 @@
 import { computed } from 'vue'
 import BaseModal from '@/components/common/BaseModal.vue'
 import { useUIStore } from '@/stores/ui'
-import { SHOP_ITEMS } from '@/data/items'
+import { getItemById } from '@/data/items'
 import { isItemUsableOutsideCombat } from '@/stores/inventory'
 import type { Item } from '@/stores/inventory'
 
@@ -25,14 +25,14 @@ const uiStore = useUIStore()
 
 const isItemUsableOrEquippable = computed(() => {
   if (!props.item) return false
-  const dbItem = SHOP_ITEMS.find(i => i.id === props.item?.id || i.name === props.item?.name)
+  const dbItem = getItemById(props.item.id)
   if (!dbItem) return false
   return isItemUsableOutsideCombat(dbItem)
 })
 
 const isItemHeld = computed(() => {
   if (!props.item) return false
-  const dbItem = SHOP_ITEMS.find(i => i.id === props.item?.id || i.name === props.item?.name)
+  const dbItem = getItemById(props.item.id)
   if (!dbItem) return false
   return dbItem.cat === 'held' || dbItem.type === 'held' || (dbItem.cat === 'breeding' && dbItem.id !== 'vigor_restorer' && !dbItem.id.includes('berry'))
 })

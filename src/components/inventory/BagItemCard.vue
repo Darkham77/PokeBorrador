@@ -4,14 +4,14 @@ import { gsap } from 'gsap'
 import { Z_LAYERS } from '@/logic/constants/visuals'
 
 const props = defineProps<{
-  item: { id?: string; name: string; qty: number | string }
+  item: { id: string; name: string; qty: number | string }
   isSelected: boolean
   sellMode: boolean
   sellQty?: number
 }>()
 
 const emit = defineEmits<{
-  (e: 'use', name: string): void
+  (e: 'use', itemId: string): void
   (e: 'click', event: MouseEvent): void
   (e: 'qtyClick'): void
   (e: 'updateQty', val: number | string): void
@@ -75,7 +75,7 @@ const onItemMouseLeave = (event: MouseEvent) => {
     >
       <button
         class="use-btn"
-        @click.stop="emit('use', item.name)"
+        @click.stop="emit('use', item.id)"
       >
         USAR
       </button>
