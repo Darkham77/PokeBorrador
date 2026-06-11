@@ -73,7 +73,7 @@ describe('Item Reactivity & Integrity', () => {
   })
 
   it('should clear status and return the modified pokemon object', () => {
-    const result = useItemOnPokemon('antidoto', mockPokemon)
+    const result = useItemOnPokemon('antidote', mockPokemon)
     
     expect(result).toBeDefined()
     expect(result!.pokemon.status).toBeNull()

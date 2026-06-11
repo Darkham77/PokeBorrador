@@ -230,6 +230,10 @@ To prevent glowing FX (Shiny sparkles, Guardian auras, Status particles) and UI 
 
 > [!IMPORTANT] Background images MUST NEVER be touched by cycle-based post-processing. If a map looks too bright at night, the solution is to adjust the `_noche.webp` texture, NOT the CSS filter.
 
+### 9.4 Cave and Interior Visual Bypass
+
+In battle views (e.g. `BattleArenaView`), if the active battle location is a cave (`isCave` or `isCrystalCave`), all visual atmosphere filters (cycles, weather effects, and weather animations) must be completely bypassed to prevent outdoor environmental lighting and climate rendering inside underground/enclosed spaces.
+
 ---
 
 ## 12. Biome Classification System

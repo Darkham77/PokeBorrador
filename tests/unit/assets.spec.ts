@@ -16,22 +16,22 @@ describe('AssetService & Resolver', () => {
   describe('AssetService: Pokemon Routing', () => {
     it('debe resolver sprites base desde PokeAPI usando el mapeo interno (localizado)', () => {
       expect(getAssetUrl(ASSET_TYPES.POKEMON, 'bulbasaur'))
-        .toBe('/assets/sprites/pokemon/1.webp')
+        .toBe('/assets/sprites/pokemon/static/1.webp')
     })
 
     it('debe soportar variantes Shiny (localizado)', () => {
       expect(getAssetUrl(ASSET_TYPES.POKEMON, 'pikachu', { isShiny: true }))
-        .toBe('/assets/sprites/pokemon/shiny/25.webp')
+        .toBe('/assets/sprites/pokemon/static/shiny/25.webp')
     })
 
     it('debe soportar variantes de espalda (Back) (localizado)', () => {
       expect(getAssetUrl(ASSET_TYPES.POKEMON, 'mew', { isBack: true }))
-        .toBe('/assets/sprites/pokemon/back/151.webp')
+        .toBe('/assets/sprites/pokemon/static/back/151.webp')
     })
 
     it('debe combinar Shiny + Back correctamente (localizado)', () => {
       expect(getAssetUrl(ASSET_TYPES.POKEMON, 'charizard', { isShiny: true, isBack: true }))
-        .toBe('/assets/sprites/pokemon/back/shiny/6.webp')
+        .toBe('/assets/sprites/pokemon/static/back/shiny/6.webp')
     })
 
     it('debe manejar huevos como ítems especiales (localizado)', () => {
