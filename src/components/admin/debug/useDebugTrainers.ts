@@ -39,25 +39,10 @@ export interface ExtendedBattleOptions {
 // TRAINER_SPRITES removed — use ARCHETYPE_SPRITES from npcSpriteCatalog for dynamic selection.
 // Use getSpritesForArchetype(archetype) to get the full list for a given archetype.
 
+// Derivado de TRAINER_TYPES para evitar duplicación — si se añade un arquetipo allí, aparece aquí automáticamente
 export const ARCHETYPE_PRESETS = [
   { id: 'random', name: 'Al Azar (Total)' },
-  { id: 'caza_bichos', name: 'Caza Bichos' },
-  { id: 'ornitologo', name: 'Ornitólogo' },
-  { id: 'cientifico', name: 'Científico' },
-  { id: 'luchador', name: 'Luchador' },
-  { id: 'pescador', name: 'Pescador' },
-  { id: 'nadador', name: 'Nadador' },
-  { id: 'domador', name: 'Domador' },
-  { id: 'medium', name: 'Médium' },
-  { id: 'motorista', name: 'Motorista' },
-  { id: 'montanero', name: 'Montañero' },
-  { id: 'rocket', name: 'Recluta Rocket' },
-  { id: 'criador', name: 'Criador Pokémon' },
-  { id: 'aristocrata', name: 'Aristócrata' },
-  { id: 'ranger', name: 'Ranger' },
-  { id: 'pokefan', name: 'Pokéfan' },
-  { id: 'artista', name: 'Artista' },
-  { id: 'trainers', name: 'Entrenador Élite' }
+  ...Object.entries(TRAINER_TYPES).map(([id, def]) => ({ id, name: def.name }))
 ]
 
 // All sprites across all archetypes, flattened — used for totally random selection
@@ -124,26 +109,7 @@ export function useDebugTrainers() {
   function generateThemedTrainerName(archetype: string): string {
     const firstNames = ['Ramón', 'Pedro', 'Roberto', 'Carlos', 'Andrés', 'Elías', 'Hugo', 'Lucas', 'Paco', 'Tomás', 'Sofía', 'Lucía', 'Sara', 'María', 'Elena', 'Laura', 'Ana', 'Carmen', 'Clara', 'Marta']
     const rName = firstNames[Math.floor(Math.random() * firstNames.length)]
-    const prefixes: Record<string, string> = {
-      caza_bichos: 'Cazabichos',
-      ornitologo: 'Ornitólogo',
-      cientifico: 'Científico',
-      luchador: 'Luchador',
-      pescador: 'Pescador',
-      nadador: 'Nadador',
-      domador: 'Domador',
-      medium: 'Médium',
-      motorista: 'Motorista',
-      montanero: 'Montañero',
-      rocket: 'Recluta Rocket',
-      criador: 'Criador',
-      aristocrata: 'Gentleman',
-      ranger: 'Ranger',
-      pokefan: 'Pokéfan',
-      artista: 'Artista',
-      trainers: 'As'
-    }
-    const prefix = prefixes[archetype] || 'Entrenador'
+    const prefix = TRAINER_TYPES[archetype as keyof typeof TRAINER_TYPES]?.name ?? 'Entrenador'
     return `${prefix} ${rName}`
   }
 

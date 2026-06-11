@@ -14,6 +14,7 @@ import sharp from 'sharp';
 import { styleText } from 'node:util';
 import { enableCompileCache } from 'node:module';
 import { MAP_ROUTE_MAPPING } from '../src/data/map-assets.ts';
+import { TRAINER_TYPES } from '../src/data/trainerTypes.ts';
 
 // Speed up execution
 enableCompileCache();
@@ -652,26 +653,10 @@ for (const [key, prefix] of [
     default: ['youngster', 'lass', 'camper', 'picnicker', 'schoolkid', 'entrenador', 'player', 'rival']
   };
 
-  const catalogLists: Record<string, string[]> = {
-    caza_bichos: [],
-    ornitologo: [],
-    cientifico: [],
-    luchador: [],
-    pescador: [],
-    nadador: [],
-    domador: [],
-    medium: [],
-    motorista: [],
-    montanero: [],
-    rocket: [],
-    criador: [],
-    aristocrata: [],
-    ranger: [],
-    pokefan: [],
-    artista: [],
-    trainers: [],
-    default: []
-  };
+  // Las claves se derivan de TRAINER_TYPES para mantener sincronía automática
+  const catalogLists: Record<string, string[]> = Object.fromEntries(
+    Object.keys(TRAINER_TYPES).map(key => [key, []])
+  );
 
   const npcSourceDir = path.resolve(SOURCE_DIR, 'public', 'assets', 'sprites', 'npc');
 
