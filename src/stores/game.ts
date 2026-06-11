@@ -81,6 +81,37 @@ export const useGameStore = defineStore('game', () => {
       
       // Sanitize all pokemon to update types/metadata from DB
       sanitizeAll()
+
+      // Migrar llaves de inventario antiguas a IDs en inglés estándar
+      if (state.inventory) {
+        const OLD_ID_MAP: Record<string, string> = {
+          'revivir': 'revive',
+          'revivir_max': 'revive_max',
+          'antidoto': 'antidote',
+          'quemadura': 'burn_heal',
+          'despertar': 'awakening',
+          'cura_total': 'full_heal',
+          'refresco': 'soda_pop',
+          'limonada': 'lemonade',
+          'elixir': 'ether',
+          'elixir_item': 'elixir'
+        }
+        let changed = false
+        const migratedInv: Record<string, number> = {}
+        for (const [key, qty] of Object.entries(state.inventory)) {
+          const targetKey = OLD_ID_MAP[key]
+          if (targetKey) {
+            migratedInv[targetKey] = (migratedInv[targetKey] || 0) + (qty as number)
+            changed = true
+          } else {
+            migratedInv[key] = (migratedInv[key] || 0) + (qty as number)
+          }
+        }
+        if (changed) {
+          state.inventory = migratedInv
+          scheduleSave()
+        }
+      }
       // Initialize Session Hub for multi-tab/device locking
       if (authStore.user) {
         const { initSessionHub } = await import('@/logic/auth/sessionHub')

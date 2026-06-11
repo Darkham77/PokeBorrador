@@ -29,7 +29,7 @@
     "migrations:generate": "node --permission --experimental-strip-types --allow-fs-read=. --allow-fs-write=. scripts/generate_migrations.ts",
     "validate:sql": "node --permission --experimental-strip-types --allow-fs-read=. --allow-fs-write=. scripts/validate_sql_migrations.ts",
     "assets:download": "node --permission --experimental-strip-types --allow-fs-read=. --allow-fs-write=. --allow-net=raw.githubusercontent.com,play.pokemonshowdown.com scripts/download_assets.ts",
-    "assets:convert": "node --permission --experimental-strip-types --allow-addons --allow-fs-read=. --allow-fs-write=. scripts/convert_assets.ts",
+    "assets:convert": "node --permission --experimental-strip-types --allow-worker --allow-addons --allow-fs-read=. --allow-fs-write=. scripts/convert_assets.ts",
     "audit": "node --permission --experimental-strip-types --allow-fs-read=. --allow-fs-write=. --allow-child-process scripts/audit_project.ts",
     "audit:changed": "npm run audit -- --changed-since main",
     "audit:fix": "node --permission --experimental-strip-types --allow-fs-read=. --allow-fs-write=. --allow-child-process scripts/audit_project.ts --fix",

@@ -67,12 +67,12 @@ const itemFontSize = computed(() => {
   const maxWordLength = Math.max(...words.map(w => w.length))
   const totalLength = name.length
   
-  const divisor = Math.max(maxWordLength, totalLength / 2.1)
+  const divisor = Math.max(maxWordLength, totalLength / 1.7)
   
-  const minFontSize = divisor >= 10 ? 4.5 : (divisor >= 8 ? 5.2 : 6.2)
-  const maxFontSize = 10
+  const minFontSize = 7
+  const maxFontSize = 9.5
   
-  return `clamp(${minFontSize}px, calc(72cqw / ${divisor}), ${maxFontSize}px)`
+  return `clamp(${minFontSize}px, calc(80cqw / ${divisor}), ${maxFontSize}px)`
 })
 
 const tierColor = computed(() => {
@@ -286,7 +286,7 @@ onMounted(() => {
   @include card-premium(16px);
   width: 100%;
   min-width: 0; // Fix grid cell overflow
-  aspect-ratio: 1 / 1.15; // Adjusted slightly for pricing space
+  aspect-ratio: 1 / 1.35; // Adjusted for descriptive name space
   align-self: start; // Prevent vertical stretch
   position: relative;
   overflow: visible !important; // Permitir que el badge respire por debajo
@@ -422,7 +422,7 @@ onMounted(() => {
     justify-content: center;
     padding-top: clamp(2px, 3cqw, 4px);
     border-top: 1px solid Rgba(255, 255, 255, 0.05);
-    height: 3.2em;
+    height: 3.8em;
     box-sizing: border-box;
 
     .item-name {
@@ -431,7 +431,9 @@ onMounted(() => {
       line-clamp: 2;
       -webkit-box-orient: vertical;
       @include pixelated;
-      line-height: 1.3;
+      line-height: 1.45;
+      padding-top: 2px;
+      padding-bottom: 2px;
       color: Rgba(255, 255, 255, 0.9);
       overflow: hidden;
       text-overflow: ellipsis;

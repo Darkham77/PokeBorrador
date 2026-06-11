@@ -5,6 +5,7 @@ import { WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator'
 
 interface Props {
   shadowId: string
+  spriteSize?: number
 }
 
 const props = defineProps<Props>()
@@ -37,14 +38,15 @@ const shadowStyle = computed(() => {
   if (!shadow.value) return { opacity: 0 }
   
   const { feetX, entitySize, isFlying, visible } = shadow.value
+  const size = props.spriteSize || entitySize
   
-  // Dimensions: Relative to entity size
+  // Dimensions: Relative to the active sprite size
   const widthPercent = parseFloat(shadow.value.width) || 70
-  const widthPx = (widthPercent / 100) * entitySize
-  const heightPx = entitySize * 0.08
+  const widthPx = (widthPercent / 100) * size
+  const heightPx = size * 0.08
   
   // Desfase horizontal relativo al centro (50%)
-  const offsetX = (feetX - 0.5) * entitySize
+  const offsetX = (feetX - 0.5) * size
 
   return {
     backgroundImage: `url(${shadowUrl})`,

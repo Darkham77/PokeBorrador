@@ -10,8 +10,7 @@
 
   .sprite-animator, 
   .sprite-rotation-layer, 
-  .sprite-idle-wrapper,
-  :deep(.pv-fx-wrapper) {
+  .sprite-idle-wrapper {
     width: 100% !important;
     height: 100% !important;
     display: flex;
@@ -40,6 +39,37 @@
     overflow: visible;
   }
 
+  // Debug: radio centrado en el propio sprite (dentro de pokemon-atmosphere-wrapper)
+  .debug-poke-radius-sprite {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: Translate(-50%, -50%);
+    border: 3px solid #00ffff;
+    background: Rgba(0, 255, 255, 0.15);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    .debug-poke-radius-label {
+      position: absolute;
+      top: -14px;
+      left: 50%;
+      transform: Translatex(-50%) Scale(calc(1 / var(--camera-scale, 1)));
+      transform-origin: center bottom;
+      background: Rgba(0, 0, 0, 0.85);
+      color: #00ffff;
+      font-size: 9px;
+      padding: 1px 4px;
+      border-radius: 2px;
+      white-space: nowrap;
+      border: 1px solid #00ffff;
+    }
+  }
+
   .pokemon-combat-image {
     width: 100%;
     height: 100%;
@@ -57,7 +87,7 @@
   position: absolute;
   top: 0;
   left: 0;
-  border: 1px dashed rgba(255, 100, 0, 0.7);
+  border: 1px dashed Rgba(255, 100, 0, 0.7);
   pointer-events: none;
   z-index: var(--z-navigation);
 
@@ -66,10 +96,12 @@
     bottom: 2px;
     right: 4px;
     font-size: 9px;
-    color: rgba(255, 180, 0, 1);
-    background: rgba(0, 0, 0, 0.6);
+    color: Rgba(255, 180, 0, 1);
+    background: Rgba(0, 0, 0, 0.6);
     padding: 1px 3px;
     @include pixelated;
+    transform: Scale(calc(1 / var(--camera-scale, 1)));
+    transform-origin: bottom right;
   }
 }
 
@@ -96,7 +128,7 @@
 
   &.releasing {
     opacity: 0;
-    transform: scale(0);
+    transform: Scale(0);
   }
 }
 
@@ -110,8 +142,8 @@
   z-index: var(--z-map-spawns);
 
   &.is-floating-species { 
-    transform: translateY(-40px);
-    @media (max-width: 690px) { transform: translateY(-18px); } 
+    transform: Translatey(-40px);
+    @media (max-width: 690px) { transform: Translatey(-18px); } 
   }
 }
 
@@ -127,7 +159,7 @@
 .trapped-pokeball {
   position: absolute;
   left: 50%;
-  transform: translateX(-50%) translateY(-85%);
+  transform: Translatex(-50%) Translatey(-85%);
   width: calc(var(--obj-scale, 1) * 40px);
   height: calc(var(--obj-scale, 1) * 40px);
   display: flex;
@@ -150,7 +182,7 @@
   position: absolute;
   top: 85%;
   left: 50%;
-  transform: translateX(-50%) translateY(-50%);
+  transform: Translatex(-50%) Translatey(-50%);
   width: 70%;
   height: 15%;
   background-size: 100% 100%;
@@ -185,7 +217,7 @@
       width: 24px;
       height: 24px;
       object-fit: contain;
-      filter: sepia(1) saturate(12) hue-rotate(-15deg) brightness(1.1);
+      filter: sepia(1) Saturate(12) hue-rotate(-15deg) Brightness(1.1);
       @include pixelated;
     }
   }
@@ -194,7 +226,7 @@
 .ground-effects-container {
   position: absolute;
   left: 50%;
-  transform: translateX(-50%) translateY(-50%);
+  transform: Translatex(-50%) Translatey(-50%);
   width: 100%;
   height: 20px;
   pointer-events: none;
@@ -214,7 +246,7 @@
       font-size: calc(var(--fx-scale, 1) * 28px);
       display: inline-block;
       will-change: transform, filter, opacity;
-      filter: drop-shadow(0 2px 2px rgba(0,0,0,0.3));
+      filter: Drop-Shadow(0 2px 2px Rgba(0,0,0,0.3));
     }
   }
   
@@ -222,7 +254,7 @@
     .root-item {
       font-size: calc(var(--fx-scale, 1) * 42px);
       display: inline-block;
-      transform: translateY(5px);
+      transform: Translatey(5px);
     }
   }
 }
@@ -230,7 +262,7 @@
 .smoke-particles-container {
   position: absolute;
   left: 50%;
-  transform: translate(-50%, -50%);
+  transform: Translate(-50%, -50%);
   pointer-events: none;
   z-index: var(--z-map-ui);
   overflow: visible;
@@ -242,7 +274,7 @@
   height: 14px;
   background: #e5e7eb;
   border-radius: 50%;
-  box-shadow: 0 0 6px rgba(156, 163, 175, 0.6);
+  box-shadow: 0 0 6px Rgba(156, 163, 175, 0.6);
   opacity: 0.8;
   pointer-events: none;
   will-change: transform, opacity;

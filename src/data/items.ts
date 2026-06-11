@@ -140,43 +140,43 @@ export const SHOP_ITEMS = [
     desc: 'Restaura todo el HP de un Pokémon.'
   },
   {
-    id: 'refresco', craftingTier: 3, cat: 'potions', sprite: 'crafting/tier3/soda_pop', name: 'Refresco', icon: '🥤', price: 300, bcPrice: 10, warPrice: 1, unlockLv: 4, tier: 'common', showInNormalShop: true, showInBCShop: true, showInWarShop: false,
+    id: 'soda_pop', craftingTier: 3, cat: 'potions', sprite: 'crafting/tier3/soda_pop', name: 'Refresco', icon: '🥤', price: 300, bcPrice: 10, warPrice: 1, unlockLv: 4, tier: 'common', showInNormalShop: true, showInBCShop: true, showInWarShop: false,
     desc: 'Restaura 60 HP a un Pokémon.'
   },
   {
-    id: 'limonada', craftingTier: 3, cat: 'potions', sprite: 'crafting/tier3/lemonade', name: 'Limonada', icon: '🍋', price: 350, bcPrice: 12, warPrice: 2, unlockLv: 5, tier: 'common', showInNormalShop: true, showInBCShop: true, showInWarShop: false,
+    id: 'lemonade', craftingTier: 3, cat: 'potions', sprite: 'crafting/tier3/lemonade', name: 'Limonada', icon: '🍋', price: 350, bcPrice: 12, warPrice: 2, unlockLv: 5, tier: 'common', showInNormalShop: true, showInBCShop: true, showInWarShop: false,
     desc: 'Restaura 80 HP a un Pokémon.'
   },
   {
-    id: 'revivir', craftingTier: 3, cat: 'potions', sprite: 'crafting/tier3/revive', name: 'Revivir', icon: '❤️', price: 2000, bcPrice: 67, warPrice: 7, unlockLv: 8, tier: 'epic', showInNormalShop: true, showInBCShop: true, showInWarShop: false,
+    id: 'revive', craftingTier: 3, cat: 'potions', sprite: 'crafting/tier3/revive', name: 'Revivir', icon: '❤️', price: 2000, bcPrice: 67, warPrice: 7, unlockLv: 8, tier: 'epic', showInNormalShop: true, showInBCShop: true, showInWarShop: false,
     desc: 'Revive a un Pokémon debilitado con la mitad del HP.'
   },
   {
-    id: 'revivir_max', craftingTier: 3, cat: 'potions', sprite: 'crafting/tier3/max_revive', name: 'Revivir Máximo', icon: '💖', price: 3000, bcPrice: 100, warPrice: 10, unlockLv: 15, tier: 'legend', showInNormalShop: true, showInBCShop: true, showInWarShop: false,
+    id: 'revive_max', craftingTier: 3, cat: 'potions', sprite: 'crafting/tier3/max_revive', name: 'Revivir Máximo', icon: '💖', price: 3000, bcPrice: 100, warPrice: 10, unlockLv: 15, tier: 'legend', showInNormalShop: true, showInBCShop: true, showInWarShop: false,
     desc: 'Revive a un Pokémon debilitado con el HP al máximo.'
   },
   {
-    id: 'antidoto', craftingTier: 3, cat: 'potions', sprite: 'crafting/tier3/antidote', name: 'Antídoto', icon: '💚', price: 100, bcPrice: 4, warPrice: 1, unlockLv: 1, tier: 'common', showInNormalShop: true, showInBCShop: true, showInWarShop: false,
+    id: 'antidote', craftingTier: 3, cat: 'potions', sprite: 'crafting/tier3/antidote', name: 'Antídoto', icon: '💚', price: 100, bcPrice: 4, warPrice: 1, unlockLv: 1, tier: 'common', showInNormalShop: true, showInBCShop: true, showInWarShop: false,
     desc: 'Cura el envenenamiento de un Pokémon.'
   },
   {
-    id: 'quemadura', craftingTier: 3, cat: 'potions', sprite: 'crafting/tier3/burn_heal', name: 'Cura Quemadura', icon: '🧊', price: 250, bcPrice: 9, warPrice: 1, unlockLv: 2, tier: 'common', showInNormalShop: true, showInBCShop: true, showInWarShop: false,
+    id: 'burn_heal', craftingTier: 3, cat: 'potions', sprite: 'crafting/tier3/burn_heal', name: 'Cura Quemadura', icon: '🧊', price: 250, bcPrice: 9, warPrice: 1, unlockLv: 2, tier: 'common', showInNormalShop: true, showInBCShop: true, showInWarShop: false,
     desc: 'Cura la quemadura de un Pokémon.'
   },
   {
-    id: 'despertar', craftingTier: 3, cat: 'potions', sprite: 'crafting/tier3/awakening', name: 'Despertar', icon: '☕', price: 250, bcPrice: 9, warPrice: 1, unlockLv: 1, tier: 'common', showInNormalShop: true, showInBCShop: true, showInWarShop: false,
+    id: 'awakening', craftingTier: 3, cat: 'potions', sprite: 'crafting/tier3/awakening', name: 'Despertar', icon: '☕', price: 250, bcPrice: 9, warPrice: 1, unlockLv: 1, tier: 'common', showInNormalShop: true, showInBCShop: true, showInWarShop: false,
     desc: 'Despierta a un Pokémon dormido.'
   },
   {
-    id: 'cura_total', craftingTier: 3, cat: 'potions', sprite: 'crafting/tier3/full_heal', name: 'Cura Total', icon: '✨', price: 600, bcPrice: 20, warPrice: 2, unlockLv: 5, tier: 'rare', showInNormalShop: true, showInBCShop: true, showInWarShop: false,
+    id: 'full_heal', craftingTier: 3, cat: 'potions', sprite: 'crafting/tier3/full_heal', name: 'Cura Total', icon: '✨', price: 600, bcPrice: 20, warPrice: 2, unlockLv: 5, tier: 'rare', showInNormalShop: true, showInBCShop: true, showInWarShop: false,
     desc: 'Cura todos los estados alterados de un Pokémon.'
   },
   {
-    id: 'elixir', craftingTier: 3, cat: 'potions', sprite: 'crafting/tier3/ether', name: 'Éter', icon: '💎', price: 1200, bcPrice: 40, warPrice: 4, unlockLv: 5, tier: 'rare', showInNormalShop: true, showInBCShop: true, showInWarShop: false,
+    id: 'ether', craftingTier: 3, cat: 'potions', sprite: 'crafting/tier3/ether', name: 'Éter', icon: '💎', price: 1200, bcPrice: 40, warPrice: 4, unlockLv: 5, tier: 'rare', showInNormalShop: true, showInBCShop: true, showInWarShop: false,
     desc: 'Restaura 10 PP de un movimiento.'
   },
   {
-    id: 'elixir_item', craftingTier: 3, cat: 'potions', sprite: 'crafting/tier3/elixir', name: 'Elixir', icon: '🧪', price: 3000, bcPrice: 100, warPrice: 10, unlockLv: 10, tier: 'rare', showInNormalShop: true, showInBCShop: true, showInWarShop: false,
+    id: 'elixir', craftingTier: 3, cat: 'potions', sprite: 'crafting/tier3/elixir', name: 'Elixir', icon: '🧪', price: 3000, bcPrice: 100, warPrice: 10, unlockLv: 10, tier: 'rare', showInNormalShop: true, showInBCShop: true, showInWarShop: false,
     desc: 'Restaura 10 PP de todos los movimientos.'
   },
   {

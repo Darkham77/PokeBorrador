@@ -164,11 +164,11 @@ const selectedObjectsTotal = computed(() => Array.from(selectedItems.values()).r
 // Handlers
 const handleItemClick = (item: Item) => {
   if (multiSelectMode.value) {
-    if (selectedItems.has(item.name)) {
-      selectedItems.delete(item.name)
+    if (selectedItems.has(item.id)) {
+      selectedItems.delete(item.id)
     } else {
       // Auto-select the entire stack for bulk actions
-      selectedItems.set(item.name, item.qty)
+      selectedItems.set(item.id, item.qty)
     }
     return
   }
@@ -199,7 +199,7 @@ const handleActionSelect = (type: string) => {
     // Battle Mode: Handle Pokeballs directly
     if (props.battleMode && dbItem.cat === 'pokeballs') {
       const battleStore = useBattleStore()
-      battleStore.useItemInBattle(dbItem.name)
+      battleStore.useItemInBattle(dbItem.id)
       itemActionMenu.value = null
       close()
       return
@@ -208,14 +208,14 @@ const handleActionSelect = (type: string) => {
     if (uiStore.inventoryTarget) {
       // Logic for pre-selected target
       if (dbItem.cat === 'held' || dbItem.type === 'held' || (dbItem.cat === 'breeding' && dbItem.id !== 'vigor_restorer' && !dbItem.id.includes('berry'))) {
-        const success = inventoryStore.equipItem(dbItem.name, uiStore.inventoryTarget.context, uiStore.inventoryTarget.index)
+        const success = inventoryStore.equipItem(dbItem.id, uiStore.inventoryTarget.context, uiStore.inventoryTarget.index)
         if (success) {
           uiStore.notify(`¡${dbItem.name} equipado!`, '🎒')
           uiStore.toggleInventory() // Close inventory after equipping
         }
         else uiStore.notify(`No se pudo equipar`, '⚠️')
       } else {
-        const res = inventoryStore.useItem(dbItem.name, uiStore.inventoryTarget.context, uiStore.inventoryTarget.index)
+        const res = inventoryStore.useItem(dbItem.id, uiStore.inventoryTarget.context, uiStore.inventoryTarget.index)
         if (res.success) uiStore.notify(res.message, '✨')
         else uiStore.notify(res.message, '⚠️')
       }
@@ -225,8 +225,8 @@ const handleActionSelect = (type: string) => {
     }
 
     // Outside combat targetless actions
-    if (isGlobalItem(dbItem.name)) {
-      const res = inventoryStore.useItem(dbItem.name)
+    if (isGlobalItem(dbItem.id)) {
+      const res = inventoryStore.useItem(dbItem.id)
       if (res.success) uiStore.notify(res.message, '✨')
       else uiStore.notify(res.message, '⚠️')
       itemActionMenu.value = null
@@ -236,7 +236,7 @@ const handleActionSelect = (type: string) => {
     const isHeld = dbItem.cat === 'held' || dbItem.type === 'held' || (dbItem.cat === 'breeding' && dbItem.id !== 'vigor_restorer' && !dbItem.id.includes('berry'))
     const validTargets = isHeld
       ? (gameStore.state.team || [])
-      : (gameStore.state.team || []).filter((p: Pokemon) => isValidTarget(dbItem.name, p))
+      : (gameStore.state.team || []).filter((p: Pokemon) => isValidTarget(dbItem.id, p))
     
     if (validTargets.length === 0) {
       if (isHeld) {
@@ -261,11 +261,11 @@ const handleActionSelect = (type: string) => {
           const index = (gameStore.state.team || []).findIndex((p: Pokemon) => p.uid === selected[0]!.uid)
           if (index !== -1) {
             if (isHeld) {
-              const success = inventoryStore.equipItem(dbItem.name, 'team', index)
+              const success = inventoryStore.equipItem(dbItem.id, 'team', index)
               if (success) uiStore.notify(`¡${dbItem.name} equipado!`, '🎒')
               else uiStore.notify(`No se pudo equipar`, '⚠️')
             } else {
-              const res = inventoryStore.useItem(dbItem.name, 'team', index)
+              const res = inventoryStore.useItem(dbItem.id, 'team', index)
               if (res.success) {
                 uiStore.notify(res.message, '✨')
                 if (props.battleMode) close() // Close inventory ONLY on success in battle
@@ -294,8 +294,8 @@ const handleMultiExecute = async () => {
   
   let estimatedGain = 0
   if (mode === 'sell') {
-    for (const [name, qty] of selectedItems.entries()) {
-      const itemInfo = SHOP_ITEMS.find(i => i.name === name)
+    for (const [id, qty] of selectedItems.entries()) {
+      const itemInfo = SHOP_ITEMS.find(i => i.id === id)
       if (itemInfo) estimatedGain += Math.floor((itemInfo.price || 0) * 0.5) * qty
     }
   }
@@ -328,11 +328,11 @@ const handleMultiExecute = async () => {
 
 const handleQuantityConfirm = async (qty: number) => {
   if (quantitySelectionItem.value) {
-    const itemName = quantitySelectionItem.value.name
+    const itemId = quantitySelectionItem.value.id
     
     // If NOT in a persistent multi-select session (single action), execute immediately
     if (selectedItems.size === 0) {
-      const singleMap = new Map([[itemName, qty]])
+      const singleMap = new Map([[itemId, qty]])
       const mode = multiSelectMode.value
       if (mode) {
         const totalGain = await inventoryStore.processBatchAction(singleMap, mode as 'sell' | 'release')
@@ -344,7 +344,7 @@ const handleQuantityConfirm = async (qty: number) => {
       multiSelectMode.value = null
     } else {
       // In a persistent multi-select session, just add to selection
-      selectedItems.set(itemName, qty)
+      selectedItems.set(itemId, qty)
     }
     
     quantitySelectionItem.value = null
@@ -463,9 +463,9 @@ const { onBeforeEnter, onEnter, onLeave } = useGridTransitions(isCategorySwitchi
           >
             <InventoryItemCard
               v-for="item in displayedItems"
-              :key="item.name"
+              :key="item.id"
               :item="item"
-              :is-selected="selectedItems.has(item.name)"
+              :is-selected="selectedItems.has(item.id)"
               :multi-select-mode="!!multiSelectMode"
               :sell-mode="multiSelectMode === 'sell'"
               @click.stop="handleItemClick(item)"

@@ -49,7 +49,7 @@
 .fade-overlay-enter-from, .fade-overlay-leave-to { opacity: 0; }
 
 .trainer-entity {
-  z-index: var(--z-map-spawns);
+  z-index: calc(var(--z-map-spawns) + 1) !important;
   display: flex; align-items: flex-end; justify-content: center;
   will-change: transform, opacity;
 }
@@ -74,7 +74,6 @@
 }
 
 .standing-trainer {
-  z-index: var(--z-map-spawns);
   display: flex;
   align-items: flex-end;
   justify-content: center;
@@ -89,13 +88,24 @@
   }
   
   &.enemy-trainer {
+    z-index: calc(var(--z-map-spawns) + 1) !important;
     transform: Scale(0.8);
     opacity: 0.85;
   }
 
   &.player-trainer {
+    z-index: calc(var(--z-map-spawns) + 4) !important;
     // No extra transform needed — VirtualEntity sets the correct size
   }
+}
+
+// Z-Index hierarchy for Pokémon combatants
+:deep(.combatant-sprite.enemy-side-sprite) {
+  z-index: calc(var(--z-map-spawns) + 2) !important;
+}
+
+:deep(.combatant-sprite.player-side-sprite) {
+  z-index: calc(var(--z-map-spawns) + 3) !important;
 }
 
 .retro-battle-dialog {
@@ -153,6 +163,8 @@
     font-weight: bold;
     text-shadow: 1px 1px 0 black;
     pointer-events: none;
+    transform: Scale(calc(1 / var(--camera-scale, 1)));
+    transform-origin: center center;
   }
 }
 

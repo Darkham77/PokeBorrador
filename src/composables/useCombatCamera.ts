@@ -46,10 +46,11 @@ export function useCombatCamera(viewportRef: Ref<HTMLElement | null>) {
     left: '0',
     width: `${WORLD_CONSTANTS.MAP_WIDTH}px`,
     height: `${WORLD_CONSTANTS.MAP_HEIGHT}px`,
-    transform: `Translate(${tx.value}px, ${ty.value}px) scale(${scale.value})`,
+    transform: `translate(${tx.value}px, ${ty.value}px) scale(${scale.value})`,
     transformOrigin: '0 0',
     willChange: 'transform',
     // Inyectamos escalas estandarizadas para uso en CSS
+    '--camera-scale': scale.value,
     '--obj-scale': WORLD_CONSTANTS.OBJECT_SCALE,
     '--bush-size': WORLD_CONSTANTS.BUSH_SIZE,
     '--preview-size': WORLD_CONSTANTS.PREVIEW_SIZE

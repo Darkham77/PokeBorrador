@@ -14,19 +14,56 @@ const battleStore = useBattleStore()
 const gameStore = useGameStore()
 const audio = useAudioStore()
 
-const visualEnemyId = ref(1)
-const visualPlayerId = ref(1)
+const playerBaseId = ref('1')
+const playerVariant = ref('')
+const playerGender = ref('')
 
-const getPokedexIndex = (pokemonId?: string | null) => {
-  if (!pokemonId) return 1
-  const idx = ALL_PDEX.indexOf(pokemonId)
-  return idx === -1 ? 1 : idx + 1
+const enemyBaseId = ref('1')
+const enemyVariant = ref('')
+const enemyGender = ref('')
+
+const deconstructPokemonId = (fullId: string) => {
+  const parts = fullId.split('_')
+  const baseId = parts[0] || '1'
+  let variant = ''
+  let gender = ''
+
+  if (parts.length === 3) {
+    variant = parts[1] || ''
+    gender = parts[2] || ''
+  } else if (parts.length === 2) {
+    const lastPart = (parts[1] || '').toLowerCase()
+    if (lastPart === 'm' || lastPart === 'f') {
+      gender = lastPart
+    } else {
+      variant = parts[1] || ''
+    }
+  }
+
+  return { baseId, variant, gender }
+}
+
+const constructPokemonId = (baseId: string, variant: string, gender: string) => {
+  let id = baseId.trim().toLowerCase()
+  const cleanVariant = variant.trim().toLowerCase()
+  const cleanGender = gender.trim().toLowerCase()
+
+  if (cleanVariant) {
+    id += `_${cleanVariant}`
+  }
+  if (cleanGender) {
+    id += `_${cleanGender}`
+  }
+  return id
 }
 
 // Sincronizar inputs bidireccionalmente con los pokemones en combate
 watch(() => battleStore.state?.player?.id, (newId) => {
   if (newId) {
-    visualPlayerId.value = getPokedexIndex(newId)
+    const { baseId, variant, gender } = deconstructPokemonId(newId)
+    playerBaseId.value = baseId
+    playerVariant.value = variant
+    playerGender.value = gender
   }
 }, { immediate: true })
 
@@ -37,7 +74,10 @@ const activeEnemyId = computed(() => {
 
 watch(activeEnemyId, (newId) => {
   if (newId) {
-    visualEnemyId.value = getPokedexIndex(newId)
+    const { baseId, variant, gender } = deconstructPokemonId(newId)
+    enemyBaseId.value = baseId
+    enemyVariant.value = variant
+    enemyGender.value = gender
   }
 }, { immediate: true })
 
@@ -147,8 +187,20 @@ const toggleSearchMode = async () => {
 }
 
 const updateVisualSwap = (side = 'enemy') => {
-  const num = side === 'player' ? visualPlayerId.value : visualEnemyId.value
-  const targetId = (ALL_PDEX[Math.max(0, num - 1)] || ALL_PDEX[0]) as string
+  const baseIdVal = side === 'player' ? playerBaseId.value : enemyBaseId.value
+  const variantVal = side === 'player' ? playerVariant.value : enemyVariant.value
+  const genderVal = side === 'player' ? playerGender.value : enemyGender.value
+
+  let targetBase = baseIdVal.trim().toLowerCase()
+  if (!/^\d+$/.test(targetBase)) {
+    const idx = ALL_PDEX.indexOf(targetBase)
+    if (idx !== -1) {
+      targetBase = String(idx + 1)
+    }
+  }
+
+  const targetId = constructPokemonId(targetBase, variantVal, genderVal)
+
   if (side === 'player' && battleStore.state?.player) {
     battleStore.state.player.id = targetId
     battleStore.state.player = { ...battleStore.state.player }
@@ -159,14 +211,30 @@ const updateVisualSwap = (side = 'enemy') => {
 }
 
 const incrementSwap = (side = 'enemy') => {
-  if (side === 'player') visualPlayerId.value++
-  else visualEnemyId.value++
+  const baseIdRef = side === 'player' ? playerBaseId : enemyBaseId
+  const current = baseIdRef.value.trim()
+  
+  let num = parseInt(current, 10)
+  if (isNaN(num)) {
+    const idx = ALL_PDEX.indexOf(current.toLowerCase())
+    num = idx !== -1 ? idx + 1 : 1
+  }
+  
+  baseIdRef.value = String(num + 1)
   updateVisualSwap(side)
 }
 
 const decrementSwap = (side = 'enemy') => {
-  if (side === 'player') { if (visualPlayerId.value > 1) visualPlayerId.value-- }
-  else { if (visualEnemyId.value > 1) visualEnemyId.value-- }
+  const baseIdRef = side === 'player' ? playerBaseId : enemyBaseId
+  const current = baseIdRef.value.trim()
+
+  let num = parseInt(current, 10)
+  if (isNaN(num)) {
+    const idx = ALL_PDEX.indexOf(current.toLowerCase())
+    num = idx !== -1 ? idx + 1 : 1
+  }
+  
+  baseIdRef.value = String(Math.max(1, num - 1))
   updateVisualSwap(side)
 }
 
@@ -280,26 +348,55 @@ const toggleStatus = (side: string, type: string) => {
           GUARD
         </button>
       </div>
-      <div class="swap-controls mt-1">
-        <button
-          class="swap-btn"
-          @click.stop="decrementSwap('player')"
-        >
-          -
-        </button>
+      <div class="swap-controls-triple mt-1">
+        <div class="base-swap-group">
+          <button
+            class="swap-btn"
+            @click.stop="decrementSwap('player')"
+          >
+            -
+          </button>
+          <input
+            v-model="playerBaseId"
+            type="text"
+            class="swap-input base-id-input"
+            placeholder="ID/Name"
+            @change="updateVisualSwap('player')"
+            @click.stop
+          >
+          <button
+            class="swap-btn"
+            @click.stop="incrementSwap('player')"
+          >
+            +
+          </button>
+        </div>
         <input
-          v-model.number="visualPlayerId"
-          type="number"
-          class="swap-input"
+          v-model="playerVariant"
+          type="text"
+          class="swap-input-mini variant-input"
+          placeholder="Var"
+          title="Variante (ej. 1, mega, alola)"
           @change="updateVisualSwap('player')"
           @click.stop
         >
-        <button
-          class="swap-btn"
-          @click.stop="incrementSwap('player')"
+        <select
+          v-model="playerGender"
+          class="swap-select-mini gender-input"
+          title="Género"
+          @change="updateVisualSwap('player')"
+          @click.stop
         >
-          +
-        </button>
+          <option value="">
+            Gender
+          </option>
+          <option value="m">
+            M
+          </option>
+          <option value="f">
+            F
+          </option>
+        </select>
       </div>
     </div>
 
@@ -324,26 +421,55 @@ const toggleStatus = (side: string, type: string) => {
           GUARD
         </button>
       </div>
-      <div class="swap-controls mt-1">
-        <button
-          class="swap-btn"
-          @click.stop="decrementSwap('enemy')"
-        >
-          -
-        </button>
+      <div class="swap-controls-triple mt-1">
+        <div class="base-swap-group">
+          <button
+            class="swap-btn"
+            @click.stop="decrementSwap('enemy')"
+          >
+            -
+          </button>
+          <input
+            v-model="enemyBaseId"
+            type="text"
+            class="swap-input base-id-input"
+            placeholder="ID/Name"
+            @change="updateVisualSwap('enemy')"
+            @click.stop
+          >
+          <button
+            class="swap-btn"
+            @click.stop="incrementSwap('enemy')"
+          >
+            +
+          </button>
+        </div>
         <input
-          v-model.number="visualEnemyId"
-          type="number"
-          class="swap-input"
+          v-model="enemyVariant"
+          type="text"
+          class="swap-input-mini variant-input"
+          placeholder="Var"
+          title="Variante (ej. 1, mega, alola)"
           @change="updateVisualSwap('enemy')"
           @click.stop
         >
-        <button
-          class="swap-btn"
-          @click.stop="incrementSwap('enemy')"
+        <select
+          v-model="enemyGender"
+          class="swap-select-mini gender-input"
+          title="Género"
+          @change="updateVisualSwap('enemy')"
+          @click.stop
         >
-          +
-        </button>
+          <option value="">
+            Gender
+          </option>
+          <option value="m">
+            M
+          </option>
+          <option value="f">
+            F
+          </option>
+        </select>
       </div>
       <button
         class="debug-btn catch-btn"
@@ -397,3 +523,81 @@ const toggleStatus = (side: string, type: string) => {
 </template>
 
 <style scoped lang="scss" src="@/styles/components/_debug-action-panel.scss"></style>
+
+<style scoped lang="scss">
+.swap-controls-triple {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  width: 100%;
+  height: 24px;
+}
+
+.base-swap-group {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  flex: 1.5;
+  background: #000;
+  border: 1px solid Rgba(255, 255, 255, 0.4);
+  border-radius: 2px;
+}
+
+.base-swap-group .swap-btn {
+  @include btn-vicio('default', 'xs', true);
+  width: 20px !important;
+  height: 100% !important;
+  font-size: 10px;
+  padding: 0 !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  flex-shrink: 0;
+}
+
+.base-id-input {
+  width: 100%;
+  height: 100%;
+  background: transparent !important;
+  border: none !important;
+  color: white;
+  @include pixelated;
+  font-size: 10px;
+  text-align: center;
+  border-radius: 0 !important;
+  min-width: 0;
+  flex: 1;
+}
+
+.swap-input-mini {
+  flex: 0.6;
+  min-width: 0;
+  height: 100%;
+  background: #000;
+  border: 1px solid Rgba(255, 255, 255, 0.4);
+  border-radius: 2px;
+  color: #fff;
+  text-align: center;
+  font-size: 10px;
+  @include pixelated;
+}
+
+.swap-select-mini {
+  flex: 0.9;
+  min-width: 0;
+  height: 100%;
+  background: #000;
+  border: 1px solid Rgba(255, 255, 255, 0.4);
+  border-radius: 2px;
+  color: #fff;
+  font-size: 8px;
+  @include pixelated;
+  cursor: pointer;
+  text-align: center;
+
+  option {
+    background: #14141e;
+    color: #fff;
+  }
+}
+</style>

@@ -77,53 +77,53 @@ const initBattlePillAnimation = () => {
     return
   }
 
+  const refVal = envPillRef.value
+  const el = refVal ? (refVal instanceof HTMLElement ? refVal : (refVal.$el as HTMLElement | null)) : null
+  if (!el) return
+
   pillContext = gsap.context(() => {
-    const refVal = envPillRef.value
-    const el = refVal ? (refVal instanceof HTMLElement ? refVal : (refVal.$el as HTMLElement | null)) : null
-    if (el) {
-      const weather = computedWeather.value
-      let type: 'glow' | 'drift' | 'shake' | '' = ''
-      if (['clear', 'sun', 'heatwave', 'cold', 'coldwave', 'sandstorm', 'dust_storm', 'intense_sun'].includes(weather)) {
-        type = 'glow'
-      } else if (['mist', 'fog', 'wind', 'strong_winds'].includes(weather)) {
-        type = 'drift'
-      } else if (['rain', 'heavy_rain', 'storm', 'thunderstorm', 'hail'].includes(weather)) {
-        type = 'shake'
-      }
+    const weather = computedWeather.value
+    let type: 'glow' | 'drift' | 'shake' | '' = ''
+    if (['clear', 'sun', 'heatwave', 'cold', 'coldwave', 'sandstorm', 'dust_storm', 'intense_sun'].includes(weather)) {
+      type = 'glow'
+    } else if (['mist', 'fog', 'wind', 'strong_winds'].includes(weather)) {
+      type = 'drift'
+    } else if (['rain', 'heavy_rain', 'storm', 'thunderstorm', 'hail'].includes(weather)) {
+      type = 'shake'
+    }
 
-      const seed = 0.5
+    const seed = 0.5
 
-      if (type === 'glow') {
-        const tl = gsap.fromTo(el,
-          { filter: 'brightness(1.0)', boxShadow: '0 4px 15px rgba(0, 0, 0, 0.4)' },
-          {
-            boxShadow: '0 4px 15px rgba(0, 0, 0, 0.4), 0px 0px 8px rgba(255, 204, 0, 0.6)',
-            filter: 'brightness(1.2)',
-            duration: 1.5,
-            yoyo: true,
-            repeat: -1,
-            ease: 'sine.inOut'
-          }
-        )
-        tl.progress(seed)
-      } else if (type === 'drift') {
-        const tl = gsap.to(el, {
-          x: 3,
-          duration: 2.0,
+    if (type === 'glow') {
+      const tl = gsap.fromTo(el,
+        { filter: 'brightness(1.0)', boxShadow: '0 4px 15px rgba(0, 0, 0, 0.4)' },
+        {
+          boxShadow: '0 4px 15px rgba(0, 0, 0, 0.4), 0px 0px 8px rgba(255, 204, 0, 0.6)',
+          filter: 'brightness(1.2)',
+          duration: 1.5,
           yoyo: true,
           repeat: -1,
-          ease: 'power1.inOut'
-        })
-        tl.progress(seed)
-      } else if (type === 'shake') {
-        const tl = gsap.timeline({ repeat: -1 })
-        tl.to(el, { rotation: 2, duration: 0.125, ease: 'power1.inOut' })
-          .to(el, { rotation: -2, duration: 0.25, ease: 'power1.inOut' })
-          .to(el, { rotation: 0, duration: 0.125, ease: 'power1.inOut' })
-        tl.progress(seed)
-      }
+          ease: 'sine.inOut'
+        }
+      )
+      tl.progress(seed)
+    } else if (type === 'drift') {
+      const tl = gsap.to(el, {
+        x: 3,
+        duration: 2.0,
+        yoyo: true,
+        repeat: -1,
+        ease: 'power1.inOut'
+      })
+      tl.progress(seed)
+    } else if (type === 'shake') {
+      const tl = gsap.timeline({ repeat: -1 })
+      tl.to(el, { rotation: 2, duration: 0.125, ease: 'power1.inOut' })
+        .to(el, { rotation: -2, duration: 0.25, ease: 'power1.inOut' })
+        .to(el, { rotation: 0, duration: 0.125, ease: 'power1.inOut' })
+      tl.progress(seed)
     }
-  }, envPillRef.value || undefined)
+  }, el)
 }
 
 onMounted(() => {
@@ -419,7 +419,9 @@ const handleClose = () => {
   border-top: 1px solid Rgba(255, 255, 255, 0.2);
   box-shadow: inset 0 10px 20px Rgba(0, 0, 0, 0.4);
   margin-top: -1px; // Solapamiento para evitar fugas de luz
-  min-height: 180px;
+  min-height: 192px;
+  max-height: 192px;
+  height: 192px;
 }
 
 </style>

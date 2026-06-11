@@ -116,7 +116,6 @@ body.is-battle-active {
   }
 }
 
-/* ===== GUIAS DE SEGURIDAD (DEBUG) ===== */
 .camera-debug-guides {
   position: absolute;
   inset: 0;
@@ -139,6 +138,8 @@ body.is-battle-active {
       padding: 4px 8px;
       @include pixelated;
       text-shadow: none;
+      transform: Scale(calc(1 / var(--camera-scale, 1)));
+      transform-origin: left bottom;
     }
   }
 
@@ -147,11 +148,22 @@ body.is-battle-active {
     border: 4px solid red;
     background: Rgba(255, 0, 0, 0.2);
     
+    &::after {
+      position: absolute;
+      top: 5px;
+      left: 5px;
+      color: white;
+      font-size: 8px;
+      @include pixelated;
+      transform: Scale(calc(1 / var(--camera-scale, 1)));
+      transform-origin: left top;
+    }
+    
     &.p1 { 
-      &::after { content: 'P1 ANCHOR'; position: absolute; top: 5px; left: 5px; color: white; font-size: 8px; @include pixelated; }
+      &::after { content: 'P1 ANCHOR'; }
     }
     &.p2 { 
-      &::after { content: 'P2 ANCHOR'; position: absolute; top: 5px; left: 5px; color: white; font-size: 8px; @include pixelated; }
+      &::after { content: 'P2 ANCHOR'; }
     }
   }
 
@@ -175,6 +187,8 @@ body.is-battle-active {
       z-index: var(--z-low);
       box-shadow: 0 0 30px black;
       border: 4px solid white;
+      transform: Scale(calc(1 / var(--camera-scale, 1)));
+      transform-origin: left top;
     }
   }
 }

@@ -154,7 +154,7 @@ export function useParticleEngine() {
         let shouldBeVisible = true
         if (options.activeRange) {
           const [min, max] = options.activeRange
-          const activeCount = elements.filter(e => e !== el && gsap.getProperty(e, 'visibility') === 'visible').length
+          const activeCount = elements.filter(e => e !== el && e.style.visibility === 'visible').length
           
           if (activeCount >= max) {
             shouldBeVisible = false
@@ -164,22 +164,11 @@ export function useParticleEngine() {
             shouldBeVisible = Math.random() > 0.4
           }
           
-          // SEGURIDAD: Solo ocultamos si la partícula está en un punto de "baja visibilidad"
-          // para evitar desapariciones bruscas en mitad de un pulso de escala/opacidad.
-          const currentScale = gsap.getProperty(el, 'scale') as number
-          const currentOpacity = gsap.getProperty(el, 'opacity') as number
-          const isSafeToHide = currentScale < 0.3 || currentOpacity < 0.3
-          
-          if (!shouldBeVisible && !isSafeToHide) {
-             // Si el sistema quiere ocultarla pero no es seguro, la dejamos visible un ciclo más
-             shouldBeVisible = true
-          }
-
-          const wasHidden = gsap.getProperty(el, 'visibility') === 'hidden'
+          const wasHidden = el.style.visibility === 'hidden'
           
           gsap.set(el, { 
             visibility: shouldBeVisible ? 'visible' : 'hidden',
-            opacity: shouldBeVisible ? (gsap.getProperty(el, 'opacity') === 0 ? 1 : undefined) : 0
+            opacity: shouldBeVisible ? 1 : 0
           })
 
           // Si la partícula acaba de "nacer" (pasa de hidden a visible), reiniciamos sus tweens

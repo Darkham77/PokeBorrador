@@ -21,19 +21,21 @@ interface TMData {
  * Returns { success: boolean, message: string, resultType?: string }
  */
 
-/**
- * Checks if an item can be applied to a pokemon without actually applying it.
- */
 export const isValidTarget = (itemName: string, pokemon: Pokemon): boolean => {
   if (!pokemon) return false;
+  
+  // Resolve Spanish names to their English ID if necessary
+  const dbItem = SHOP_ITEMS.find((i: Item) => i.id.toLowerCase() === itemName.toLowerCase() || i.name.toLowerCase() === itemName.toLowerCase());
+  const resolvedId = dbItem ? dbItem.id : itemName;
+
   // Ensure the item ID exists in SHOP_ITEMS (or is a valid TM)
-  const isTM = itemName.toLowerCase().startsWith('tm') || itemName.toLowerCase().startsWith('mt');
-  const itemExists = isTM || SHOP_ITEMS.some((i: Item) => i.id === itemName);
+  const isTM = resolvedId.toLowerCase().startsWith('tm') || resolvedId.toLowerCase().startsWith('mt');
+  const itemExists = isTM || SHOP_ITEMS.some((i: Item) => i.id === resolvedId);
   if (!itemExists) {
     throw new Error(`[ItemEffects] Intento de validar un objeto inexistente: ${itemName}`);
   }
 
-  const effect = (itemEffects as Record<string, (p: Pokemon | GameState) => ItemEffectResult>)[itemName] || ((p: Pokemon) => getDynamicItemEffect(itemName, p));
+  const effect = (itemEffects as Record<string, (p: Pokemon | GameState) => ItemEffectResult>)[resolvedId] || ((p: Pokemon) => getDynamicItemEffect(resolvedId, p));
   if (typeof effect !== 'function') return false;
 
   // Clone to avoid mutation during check
@@ -52,7 +54,7 @@ export const itemEffects: Record<string, (p: unknown) => ItemEffectResult> = {
   'max_potion': pokeEffect((p) => healHp(p, p.maxHp)),
   'revive': pokeEffect((p) => revive(p, Math.floor(p.maxHp / 2))),
   'revive_max': pokeEffect((p) => revive(p, p.maxHp)),
-  'antidoto': pokeEffect((p) => clearStatus(p, 'poison')),
+  'antidote': pokeEffect((p) => clearStatus(p, 'poison')),
   'burn_heal': pokeEffect((p) => clearStatus(p, 'burn')),
   'awakening': pokeEffect((p) => clearStatus(p, 'sleep')),
   'full_heal': pokeEffect((p) => curaTotal(p)),

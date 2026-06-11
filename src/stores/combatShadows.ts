@@ -31,15 +31,22 @@ export const useCombatShadowStore = defineStore('combatShadows', () => {
 
   function getCleanDatabaseKey(url: string): string {
     if (!url) return ''
+    let key = url
     const base = import.meta.env.BASE_URL || '/'
     if (base !== '/' && url.startsWith(base)) {
-      return url.slice(base.length - 1)
+      key = url.slice(base.length - 1)
     }
-    return url
+    try {
+      return decodeURIComponent(key)
+    } catch (_e) {
+      return key
+    }
   }
 
   async function detectFeetPoints(url: string): Promise<FeetPoints> {
-    if (!url) return { feetY: 0.9, feetX: 0.5 }
+    if (!url) {
+      throw new Error(`[PokemonFeetDatabase] Cannot detect feet points: url is empty or undefined.`);
+    }
     const key = getCleanDatabaseKey(url)
     const points = POKEMON_FEET_DATABASE[key]
     if (!points) {

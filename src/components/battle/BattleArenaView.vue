@@ -245,11 +245,14 @@ const { atmosphereFilter, weatherOnlyFilter } = useWeatherVisuals({
 })
 
 // Unified Style Orchestration to prevent reactivity breaks in templates
-const arenaContentStyles = computed(() => ({
-  ...cameraStyles.value,
-  '--atmosphere-filter': atmosphereFilter.value,
-  '--weather-filter': weatherOnlyFilter.value
-}))
+const arenaContentStyles = computed(() => {
+  const isCave = !!(battle.value?.isCave || battle.value?.isCrystalCave)
+  return {
+    ...cameraStyles.value,
+    '--atmosphere-filter': isCave ? 'none' : atmosphereFilter.value,
+    '--weather-filter': isCave ? 'none' : weatherOnlyFilter.value
+  }
+})
 
 // Watchers de Sincronización
 // Watcher para sincronizar sombras (Jugador y Enemigo)

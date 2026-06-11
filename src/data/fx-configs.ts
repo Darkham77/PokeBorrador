@@ -33,15 +33,20 @@ export interface EffectSettings {
   rotation?: number
 }
 
-export const resolveEffectSettings = (typeKey: string, ar: number, options: { isField?: boolean, isSimplified?: boolean, isBattle?: boolean } = {}): EffectSettings => {
+export const resolveEffectSettings = (typeKey: string, ar: number, options: { isField?: boolean, isSimplified?: boolean, isBattle?: boolean, spriteScale?: number } = {}): EffectSettings => {
   const isField = options.isField || ['reflect', 'lightscreen', 'safeguard', 'mist', 'spikes'].includes(typeKey)
   const isFeetEffect = ['seed', 'trapped', 'bound', 'ingrain', 'seeded'].includes(typeKey)
   const isHeadEffect = ['sleep', 'confusion', 'attract', 'confused'].includes(typeKey)
 
   // 1. Helper para rango dinámico basado en radio
   const getDynamicRange = (base: [number, number]) => {
-    const ratio = ar / 40
+    const baseRadius = options.isBattle ? ar / 1.5 : ar
+    const ratio = baseRadius / 40
     let scaleFactor = Math.max(0.15, Math.min(2.5, Math.pow(ratio, 2)))
+
+    if (options.spriteScale !== undefined) {
+      scaleFactor *= options.spriteScale
+    }
     
     // Reducción extra para miniaturas (fuera de batalla o modo simplificado)
     if (typeKey === 'shiny' && (options.isSimplified || !options.isBattle)) {
@@ -57,11 +62,11 @@ export const resolveEffectSettings = (typeKey: string, ar: number, options: { is
   // 2. CONFIGURACIÓN CENTRALIZADA E INDEPENDIENTE
   const configs: Record<string, Partial<EffectSettings>> = {
     burn: { mult: 1.0, activeRange: getDynamicRange([12, 18]), useFade: false, duration: 1.2, randomizeVars: { min: 0.6, max: 2.0 } },
-    freeze: { mult: 0.4, activeRange: getDynamicRange([4, 6]), useFade: false, duration: 3.0 , randomizeVars: { min: 1.0, max: 2.0 } },
+    freeze: { mult: 0.4, activeRange: getDynamicRange([1, 2]), useFade: false, duration: 3.0 , randomizeVars: { min: 1.0, max: 2.0 } },
     sleep: { mult: 1.0, activeRange: getDynamicRange([1, 2]), useFade: true, duration: 3.0, randomizeVars: { min: 1.0, max: 2.0 } },
     paralysis: { mult: 1.0, activeRange: getDynamicRange([6, 10]), useFade: true, duration: 0.3, randomizeVars: { min: 1.0, max: 2.0 } },
-    poison: { mult: 0.8, activeRange: getDynamicRange([4, 6]), useFade: true, duration: 3.0, randomizeVars: { min: 1.0, max: 2.0 } },
-    toxic: { mult: 0.8, activeRange: getDynamicRange([4, 6]), useFade: true, duration: 3.0 },
+    poison: { mult: 0.8, activeRange: getDynamicRange([1, 2]), useFade: true, duration: 3.0, randomizeVars: { min: 1.0, max: 2.0 } },
+    toxic: { mult: 0.8, activeRange: getDynamicRange([1, 2]), useFade: true, duration: 3.0 },
     confusion: { mult: 0.8, activeRange: getDynamicRange([1, 2]), useFade: true, wobble: true, duration: 6.0 },
     confused: { mult: 0.8, activeRange: getDynamicRange([1, 2]), useFade: true, wobble: true, duration: 6.0 },
     attracted: { mult: 0.8, activeRange: getDynamicRange([4, 6]), useFade: true, duration: 4.0, randomizeVars: { min: 1.0, max: 2.0 } },
@@ -108,8 +113,7 @@ export const resolveEffectSettings = (typeKey: string, ar: number, options: { is
   }
   
   // 4. Área de dispersión
-  const isClose = ['burn', 'poison', 'toxic', 'mist'].includes(typeKey)
-  const factor = (typeKey === 'paralysis') ? 1.3 : (isHeadEffect ? 0.4 : (isClose ? 0.7 : 1.0))
+  const factor = (typeKey === 'paralysis') ? 1.3 : (isHeadEffect ? 0.4 : 1.0)
   const maxRadius = isField ? (typeKey === 'mist' ? 25 : 45) : ar * factor
   
   const area: ParticleArea = (isFeetEffect) 

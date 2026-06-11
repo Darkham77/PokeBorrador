@@ -124,13 +124,13 @@ async function main() {
       errors.push(`${tag} Unknown category: '${item.cat}'`);
     }
 
-    if (item.cat && MUST_BE_USABLE.includes(item.cat) && item.name && !healingItems.has(item.name)) {
-      if (!item.name.startsWith('MT')) {
-        errors.push(`${tag} cat='${item.cat}' but '${item.name}' has no entry in HEALING_ITEMS.`);
+    if (item.cat && MUST_BE_USABLE.includes(item.cat) && item.id && !healingItems.has(item.id)) {
+      if (!item.name?.startsWith('MT')) {
+        errors.push(`${tag} cat='${item.cat}' but '${item.id}' has no entry in HEALING_ITEMS.`);
       }
     }
 
-    if (item.cat && MUST_NOT_BE_USABLE.includes(item.cat) && item.name && healingItems.has(item.name)) {
+    if (item.cat && MUST_NOT_BE_USABLE.includes(item.cat) && item.id && healingItems.has(item.id)) {
       // 'Restaurador de Vigor' (vigor_restorer) is a breeding item that is explicitly usable to restore vigor
       if (item.id !== 'vigor_restorer') {
         errors.push(`${tag} cat='${item.cat}' should NOT be in HEALING_ITEMS.`);
@@ -145,12 +145,12 @@ async function main() {
     if (item.name?.startsWith('MT')) return;
   });
   
-  const shopItemNames = new Set(shopItems.map(i => i.name));
+  const shopItemIds = new Set(shopItems.map(i => i.id));
 
-  healingItems.forEach(name => {
-    if (name.startsWith('MT')) return;
-    if (!shopItemNames.has(name)) {
-      warnings.push(`[PHANTOM] '${name}' is in HEALING_ITEMS but has NO entry in SHOP_ITEMS.`);
+  healingItems.forEach(id => {
+    if (id.startsWith('MT')) return;
+    if (!shopItemIds.has(id)) {
+      warnings.push(`[PHANTOM] '${id}' is in HEALING_ITEMS but has NO entry in SHOP_ITEMS.`);
     }
   });
 

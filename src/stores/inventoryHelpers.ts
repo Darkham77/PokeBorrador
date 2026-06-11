@@ -96,7 +96,11 @@ export function findInventoryKey(gameStore: ReturnType<typeof useGameStore>, nam
 
 export function isItemUsableOn(itemName: string, pokemon: Pokemon) {
   if (!pokemon) return false;
-  const itemId = itemName.toLowerCase();
+  
+  // Resolve Spanish names to their English ID if necessary
+  const dbItem = SHOP_ITEMS.find(i => i.id.toLowerCase() === itemName.toLowerCase() || i.name.toLowerCase() === itemName.toLowerCase());
+  const itemId = dbItem ? dbItem.id : itemName.toLowerCase();
+  
   if (isGlobalItem(itemId)) return false;
 
   const item = SHOP_ITEMS.find(i => i.id === itemId);

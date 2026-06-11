@@ -85,6 +85,7 @@ function devDbImportPlugin() {
   }
 }
 
+
 // ─── Version System ───────────────────────────────────────────────────────────
 // The developer's LOCAL build is the single source of truth for the version.
 // CI (GitHub Actions) MUST use the already-committed version.json, never
@@ -239,7 +240,7 @@ export default defineConfig({
     allowedHosts: true,
     host : true,
     watch: {
-      ignored: ['**/_raw-assets/**']
+      ignored: ['**/_raw-assets/**', '**/sprite_test/**']
     },
     /* hmr: {
       clientPort: 443,

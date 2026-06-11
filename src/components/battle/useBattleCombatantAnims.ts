@@ -179,7 +179,7 @@ export function useBattleCombatantAnims(
         ease: "power2.inOut",
         onComplete: () => {
           if (spriteRef.value) {
-            gsap.set(spriteRef.value, { clearProps: "filter,x,y,scale,opacity,transformOrigin" })
+            gsap.set(spriteRef.value, { clearProps: "transform,filter,transformOrigin,opacity" })
           }
           if (shadowWrapperRef.value) {
             gsap.set(shadowWrapperRef.value, { clearProps: "display" })
@@ -204,7 +204,13 @@ export function useBattleCombatantAnims(
 
   watch(() => props.isEmerging, (val) => {
     if (val && spriteRef.value) {
-      const tl = gsap.timeline()
+      const tl = gsap.timeline({
+        onComplete: () => {
+          if (spriteRef.value) {
+            gsap.set(spriteRef.value, { clearProps: "transform" })
+          }
+        }
+      })
       tl.to(spriteRef.value, { y: 8, scaleX: 1.2, scaleY: 0.75, duration: 0.1, ease: "power1.in" })
         .to(spriteRef.value, { y: -60, scaleX: 0.85, scaleY: 1.2, duration: 0.3, ease: "power2.out" })
         .to(spriteRef.value, { y: 0, scaleX: 1.1, scaleY: 0.9, duration: 0.2, ease: "bounce.out" })

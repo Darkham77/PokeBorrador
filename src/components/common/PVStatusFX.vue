@@ -54,7 +54,7 @@ const getEngine = (type: string) => engines.get(type)!
 const applyGenericParticleSystem = (els: HTMLElement[], typeKey: string, engineInit: (els: HTMLElement[], options: ParticleSystemOptions) => void, options: { isField?: boolean, seed?: number, radius: number }) => {
   if (!els || els.length === 0) return
   
-  const settings = resolveEffectSettings(typeKey, options.radius, { isField: options.isField, isSimplified: props.isSimplified, isBattle: props.isBattle })
+  const settings = resolveEffectSettings(typeKey, options.radius, { isField: options.isField, isSimplified: props.isSimplified, isBattle: props.isBattle, spriteScale: props.spriteScale })
   
   engineInit(els, {
     seed: options.seed,

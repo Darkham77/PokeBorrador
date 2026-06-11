@@ -303,9 +303,14 @@ const onEnter = (el: Element, done: () => void) => {
   height: 0;        // No contribuye a la altura del move-panel; esa la define controls-content
   min-height: 100%; // Se estira al alto del contenedor vía align-items: stretch del padre
   overflow-y: auto; // Scrollbar cuando Pokémon o items no caben
-  overflow-x: hidden;
+  overflow-x: hidden !important;
   border-left: 1px solid Rgba(255, 255, 255, 0.05);
   border-right: 1px solid Rgba(255, 255, 255, 0.05);
+
+  &::-webkit-scrollbar:horizontal {
+    display: none !important;
+    height: 0 !important;
+  }
   
   &.zone-team { 
     // 6×115px (tarjetas) + 5×6px (gaps) + 8px (padding grid) + 17px (scrollbar) = 745px

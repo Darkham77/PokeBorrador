@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch, nextTick, onUnmounted } from 'vue'
 import gsap from 'gsap'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import VirtualEntity from './VirtualEntity.vue'
@@ -46,7 +46,7 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   pokemon: null,
-  groundY: '90%',
+  groundY: '75%',
   shadowKey: null,
   animState: null,
   ballId: 'pokeball',
@@ -85,6 +85,7 @@ const {
   localGroundY,
   fxScale,
   fxRadius,
+  debugShowPokeRadius,
   isBallVisible,
   wasCaptured,
   internalBallId,
@@ -95,8 +96,59 @@ const {
   handleImageError,
   handleBallError,
   handleLoad,
-  smokeParticles
+  smokeParticles,
+  isAnimated,
+  frames,
+  displaySize,
+  feetPoints
 } = useBattleCombatantState(props, emit, spriteRef)
+
+const animTween = ref<gsap.core.Tween | null>(null)
+
+const animateSpritesheet = () => {
+  if (animTween.value) {
+    animTween.value.kill()
+    animTween.value = null
+  }
+  if (!isAnimated.value || !spriteRef.value) return
+
+  const imgEl = spriteRef.value.querySelector('.pokemon-combat-image') as HTMLElement
+  if (!imgEl) return
+
+  // Reset offset first to first frame
+  gsap.set(imgEl, { x: 0, xPercent: 0 })
+
+  if (props.pokemon?.status === 'freeze' || props.pokemon?.status === 'sleep') {
+    // If frozen or asleep, keep the first frame fixed and do not start animation
+    return
+  }
+
+  const totalFrames = frames.value
+  if (totalFrames <= 1) return
+
+  const endXPercent = -((totalFrames - 1) / totalFrames) * 100
+  const duration = totalFrames / 5 // 5 FPS (half speed)
+
+  animTween.value = gsap.to(imgEl, {
+    xPercent: endXPercent,
+    ease: `steps(${totalFrames - 1})`,
+    duration,
+    repeat: -1,
+    runBackwards: false
+  })
+}
+
+watch([isAnimated, frames, cacheKey, displaySize, () => props.pokemon?.status], () => {
+  nextTick(() => {
+    animateSpritesheet()
+  })
+}, { immediate: true })
+
+onUnmounted(() => {
+  if (animTween.value) {
+    animTween.value.kill()
+  }
+})
 
 // Inicializar animaciones de combate
 useBattleCombatantAnims(
@@ -113,7 +165,7 @@ useBattleCombatantAnims(
   wasCaptured
 )
 
-const virtualStyle = { width: '100%', height: '100%' }
+
 
 const handleBallLeave = (el: Element, done: () => void) => {
   onBallLeave(el, props.side, done)
@@ -193,6 +245,7 @@ const onGroundPopLeave = (el: Element, done: () => void) => {
         <CombatShadow 
           v-if="shadowKey" 
           :shadow-id="shadowKey" 
+          :sprite-size="displaySize * 2"
           :style="{ '--shadow-y': localGroundY }"
         />
       </div>
@@ -276,33 +329,106 @@ const onGroundPopLeave = (el: Element, done: () => void) => {
             :has-mist="(stages.mist || 0) > 0"
             :vibrant="true"
             :sparkle-count="8"
-            :radius="fxRadius"
+            :radius="fxRadius * 1.5"
             :sprite-scale="fxScale"
-            :style="virtualStyle"
+            :style="{
+              width: (displaySize * 2) + 'px',
+              height: (displaySize * 2) + 'px',
+              position: 'absolute',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              top: `calc(${localGroundY} - ${feetPoints.feetY * displaySize * 2}px)`
+            }"
             :is-battle="true"
           >
+            <!-- Wrapper exterior: solo hereda tamaño y posición del parent PVSpriteFX (que es el wrapper) -->
             <div 
               class="pokemon-atmosphere-wrapper"
-              :style="{ filter: isSilhouette ? 'none' : 'var(--atmosphere-filter)' }"
+              :style="{
+                width: '100%',
+                height: '100%',
+                minWidth: '0',
+                minHeight: '0',
+                overflow: 'visible',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: isAnimated ? 'flex-start' : 'center'
+              }"
             >
-              <img
-                class="pokemon-combat-image"
-                :class="{ 'is-silhouette': isSilhouette }"
-                :src="imageUrl"
-                @load="handleLoad"
-                @error="handleImageError"
+              <!-- Wrapper para estados (recibe filtros en PVSpriteFX) -->
+              <div
+                class="pokemon-sprite-status-wrapper"
+                :style="{
+                  width: '100%',
+                  height: '100%',
+                  minWidth: '0',
+                  minHeight: '0',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: isAnimated ? 'flex-start' : 'center',
+                  overflow: isAnimated ? 'hidden' : 'visible'
+                }"
               >
+                <!-- Para sprites animados: img dentro del wrapper que tiene overflow:hidden -->
+                <img
+                  v-if="isAnimated"
+                  class="pokemon-combat-image"
+                  :class="{ 'is-silhouette': isSilhouette }"
+                  :src="imageUrl"
+                  :style="{
+                    filter: isSilhouette ? 'none' : 'var(--atmosphere-filter)',
+                    width: (frames * 100) + '%',
+                    maxWidth: 'none',
+                    height: '100%',
+                    objectFit: 'fill',
+                    objectPosition: 'left center',
+                    flexShrink: 0
+                  }"
+                  @load="handleLoad"
+                  @error="handleImageError"
+                >
+
+                <!-- Sprite estático: img directamente -->
+                <img
+                  v-else
+                  class="pokemon-combat-image"
+                  :class="{ 'is-silhouette': isSilhouette }"
+                  :src="imageUrl"
+                  :style="{ filter: isSilhouette ? 'none' : 'var(--atmosphere-filter)' }"
+                  @load="handleLoad"
+                  @error="handleImageError"
+                >
+              </div>
+
+              <!-- Guía de tamaño real (Debug) -->
+              <div 
+                v-if="showGuides && naturalSize.w > 0" 
+                class="guide-real-size"
+                :style="isAnimated ? {
+                  width: '100%',
+                  height: '100%'
+                } : {
+                  width: naturalSize.w + 'px',
+                  height: naturalSize.h + 'px'
+                }"
+              >
+                <span v-if="isAnimated">{{ Math.round(displaySize) }}x{{ Math.round(displaySize) }}</span>
+                <span v-else>{{ naturalSize.w }}x{{ naturalSize.h }}</span>
+              </div>
+
+              <!-- Radio del Pokémon (Debug) — centrado DENTRO del wrapper del sprite -->
+              <div
+                v-if="debugShowPokeRadius"
+                class="debug-poke-radius-sprite"
+                :style="{
+                  width: (fxRadius * 2) + '%',
+                  height: (fxRadius * 2) + '%'
+                }"
+              >
+                <span class="debug-poke-radius-label">POKE (Radius: {{ fxRadius.toFixed(1) }}%)</span>
+              </div>
             </div>
           </PVSpriteFX>
-
-          <!-- Guía de tamaño real (Debug) -->
-          <div 
-            v-if="showGuides && naturalSize.w > 0" 
-            class="guide-real-size"
-            :style="{ width: naturalSize.w + 'px', height: naturalSize.h + 'px' }"
-          >
-            <span>{{ naturalSize.w }}x{{ naturalSize.h }}</span>
-          </div>
         </div>
       </div>
     </div>

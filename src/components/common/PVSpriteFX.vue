@@ -118,7 +118,9 @@ const activeTweens: gsap.core.Tween[] = []
 
 const refreshPersistentFX = (retryCount = 0) => {
   if (!spriteLayerRef.value) return
-  const target = spriteLayerRef.value.querySelector('img')
+  const statusWrapper = spriteLayerRef.value.querySelector('.pokemon-sprite-status-wrapper') as HTMLElement
+  const img = spriteLayerRef.value.querySelector('img') as HTMLElement
+  const target = statusWrapper || img
   if (!target && retryCount < 3) {
     const t = gsap.delayedCall(0.1, () => refreshPersistentFX(retryCount + 1))
     activeTweens.push(t)
@@ -192,7 +194,7 @@ const allActiveFXDebug = computed(() => {
   if (!battleStore.debugShowFxRadius) return []
   const effects = [...activeStatusEffects.value, ...secondaryEffects.value, ...tacticalEffects.value, ...fieldEffects.value]
   return effects.map((fx: FXData) => {
-    const settings = resolveEffectSettings(fx.type, props.radius, { isField: fx.isField })
+    const settings = resolveEffectSettings(fx.type, props.radius, { isField: fx.isField, isSimplified: isSimplified.value, isBattle: props.isBattle, spriteScale: props.spriteScale })
     const shape = settings.shape; const offset = settings.offset || { x: 0, y: 0 }; 
     const area = settings.area as { x: [number, number], y?: [number, number] }
     const style: Record<string, string> = { 
@@ -251,15 +253,7 @@ const allActiveFXDebug = computed(() => {
       :is-battle="isBattle"
     />
 
-    <!-- DEBUG GUIDES -->
-    <template v-if="battleStore.debugShowPokeRadius">
-      <div
-        class="debug-guide debug-poke-radius"
-        :style="{ width: (props.radius * 2) + '%', height: (props.radius * 2) + '%' }"
-      >
-        <span class="label">POKE (Radius: {{ props.radius.toFixed(1) }}%)</span>
-      </div>
-    </template>
+    <!-- DEBUG GUIDES (FX radii only — Pokémon body radius is rendered inside BattleCombatant) -->
     <template v-if="battleStore.debugShowFxRadius">
       <div
         v-for="fx in allActiveFXDebug"
@@ -283,6 +277,7 @@ const allActiveFXDebug = computed(() => {
 }
 .pv-fx-sprite-layer {
   position: relative; display: flex; align-items: center; justify-content: center;
+  width: 100%; height: 100%;
   z-index: calc(v-bind('Z_LAYERS.MAP_SPAWNS') + 2);
   will-change: transform, filter, opacity;
 }
@@ -292,7 +287,9 @@ const allActiveFXDebug = computed(() => {
   display: flex; align-items: center; justify-content: center; @include pixelated;
   .label {
     position: absolute; top: -12px; background: Rgba(0, 0, 0, 0.8); color: white;
-    font-size: 6px; padding: 1px 4px; border-radius: 2px; white-space: nowrap;
+    font-size: 9px; padding: 1px 4px; border-radius: 2px; white-space: nowrap;
+    transform: Scale(calc(1 / var(--camera-scale, 1)));
+    transform-origin: center bottom;
   }
   &.debug-poke-radius {
     border-color: #00ffff; background: Rgba(0, 255, 255, 0.35); border: 3px solid #00ffff;

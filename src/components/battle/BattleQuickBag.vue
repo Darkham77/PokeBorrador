@@ -68,7 +68,7 @@ const handleUseItem = (item: BattleItem) => {
   }
 
   // 2. Objetos de Selección: Buscar objetivos válidos
-  const validTargets = (gameStore.state.team || []).filter(p => isValidTarget(dbItem.name, p))
+  const validTargets = (gameStore.state.team || []).filter(p => isValidTarget(dbItem.id, p))
   
   if (validTargets.length === 0) {
     uiStore.notify(`Este objeto no tiene objetivos válidos en tu equipo`, '🎒')
@@ -155,8 +155,14 @@ const handleUseItem = (item: BattleItem) => {
   height: auto !important;
   min-height: 100%; // Fix flex scroll collapse
   overflow-y: auto !important;
+  overflow-x: hidden !important;
   @include gpu-layer;
   @include smooth-scroll;
+
+  &::-webkit-scrollbar:horizontal {
+    display: none !important;
+    height: 0 !important;
+  }
 }
 
 .quick-bag-grid {
@@ -164,7 +170,7 @@ const handleUseItem = (item: BattleItem) => {
   grid-template-columns: repeat(auto-fill, 76px); // Rellena con más columnas de 76px si el espacio lo permite
   gap: 8px;
   width: 100%;
-  padding: 12px 6px 6px 6px;
+  padding: 12px 10px 10px 10px;
   justify-content: center;
   align-content: start;
   min-height: 100%;

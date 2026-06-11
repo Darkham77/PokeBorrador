@@ -114,7 +114,7 @@ export const useInventoryStore = defineStore('inventory', () => {
         const list = target.context === 'team' ? gameStore.state.team : gameStore.state.box
         const pokemon = list[target.index]
         if (pokemon) {
-          items = items.filter(item => helperIsItemUsableOn(item.name, pokemon))
+          items = items.filter(item => helperIsItemUsableOn(item.id, pokemon))
         }
       } else {
         items = items.filter(item => {
@@ -126,7 +126,7 @@ export const useInventoryStore = defineStore('inventory', () => {
           const isHeld = item.cat === 'combat_held' || item.cat === 'breeding_held' || item.type === 'held'
           if (isHeld) return (gameStore.state.team || []).length > 0
 
-          return (gameStore.state.team || []).some((pokemon: Pokemon) => helperIsItemUsableOn(item.name, pokemon))
+          return (gameStore.state.team || []).some((pokemon: Pokemon) => helperIsItemUsableOn(item.id, pokemon))
         })
       }
     }

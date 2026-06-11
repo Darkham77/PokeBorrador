@@ -2,11 +2,18 @@ import { ref, computed, watch, onUnmounted } from 'vue'
 import { useCombatShadowStore } from '@/stores/combatShadows'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { POKEMON_FEET_DATABASE } from '@/data/pokemonFeetDatabase'
+import { ANIMATED_SPRITE_DATABASE } from '@/data/animatedSpriteDatabase'
 
 import { WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import type { Pokemon } from '@/types/pokemon'
 import { logger } from '@/logic/utils/logger'
+
+function checkAnimated(pokemonId: string | null | undefined): boolean {
+  if (!pokemonId) return false
+  const baseId = pokemonId.toLowerCase()
+  return !!ANIMATED_SPRITE_DATABASE[baseId]
+}
 
 const { ENTITY_SIZE_PLAYER, ENTITY_SIZE_ENEMY } = WORLD_CONSTANTS
 
@@ -30,6 +37,13 @@ export function isFlying(pokemon: Pokemon | null | undefined): boolean {
 export function useBattleShadows() {
   const shadowStore = useCombatShadowStore()
 
+  const getShadowWidth = (pokemonId: string | number, isBack: boolean): string => {
+    const key = String(pokemonId) + (isBack ? '_back' : '')
+    const meta = ANIMATED_SPRITE_DATABASE[key] || ANIMATED_SPRITE_DATABASE[String(pokemonId)] || null
+    const bodyRadius = meta?.bodyRadius ?? 0.4
+    return `${bodyRadius * 250}%` // bodyRadius * 2.5 (representing radius + 25%)
+  }
+
 
   // Claves únicas para las sombras en el store
   const currentPlayerShadowKey = ref<string | null>(null)
@@ -39,8 +53,8 @@ export function useBattleShadows() {
   const lastPlayerShadowId = ref<string | null>(null)
 
   // Coordenadas de "suelo" persistentes para evitar saltos
-  const stableEnemyGroundY = ref('90%')
-  const stablePlayerGroundY = ref('90%')
+  const stableEnemyGroundY = ref('75%')
+  const stablePlayerGroundY = ref('75%')
 
   const enemyGroundY = computed(() => stableEnemyGroundY.value)
   const playerGroundY = computed(() => stablePlayerGroundY.value)
@@ -61,19 +75,22 @@ export function useBattleShadows() {
     
     // Inicializar coordenadas inmediatamente si el asiento está ocupado por un pokemon
     if (data) {
-      const url = getAssetUrl(ASSET_TYPES.POKEMON, data.id, { isShiny: data.isShiny, isBack: false })
+      const url = getAssetUrl(ASSET_TYPES.POKEMON, data.id, { isShiny: data.isShiny, isBack: false, isAnimated: checkAnimated(data.id) })
       let dbKey = url || ''
       const base = import.meta.env.BASE_URL || '/'
       if (base !== '/' && dbKey.startsWith(base)) {
         dbKey = dbKey.slice(base.length - 1)
       }
+      try {
+        dbKey = decodeURIComponent(dbKey)
+      } catch (_e) {
+        // Fallback to original key if malformed
+      }
       const cached = dbKey ? POKEMON_FEET_DATABASE[dbKey] : null
       if (!cached) {
         throw new Error(`[PokemonFeetDatabase] Sprite key "${dbKey}" not found in POKEMON_FEET_DATABASE. Did you forget to compile assets? Run "npm run assets:convert".`)
       }
-      const isFlyingPoke = isFlying(data)
-      
-      stableEnemyGroundY.value = isFlyingPoke ? '90%' : `${cached.feetY * 100}%`
+      stableEnemyGroundY.value = '75%'
     }
 
     // Limpieza de sombras huérfanas si el ID cambia (evita duplicados al capturar/cambiar)
@@ -97,7 +114,8 @@ export function useBattleShadows() {
         entityY: pos.y,
         entitySize: ENTITY_SIZE_ENEMY,
         isFlying: isFlying(data),
-        spriteUrl: getAssetUrl(ASSET_TYPES.POKEMON, data.id, { isShiny: data.isShiny, isBack: false }),
+        spriteUrl: getAssetUrl(ASSET_TYPES.POKEMON, data.id, { isShiny: data.isShiny, isBack: false, isAnimated: checkAnimated(data.id) }),
+        width: getShadowWidth(data.id, false),
         visible: true
       })
     }
@@ -109,19 +127,22 @@ export function useBattleShadows() {
 
     // Inicializar coordenadas inmediatamente si el asiento está ocupado por un pokemon
     if (pokemon) {
-      const url = getAssetUrl(ASSET_TYPES.POKEMON, pokemon.id, { isShiny: pokemon.isShiny, isBack: true })
+      const url = getAssetUrl(ASSET_TYPES.POKEMON, pokemon.id, { isShiny: pokemon.isShiny, isBack: true, isAnimated: checkAnimated(pokemon.id) })
       let dbKey = url || ''
       const base = import.meta.env.BASE_URL || '/'
       if (base !== '/' && dbKey.startsWith(base)) {
         dbKey = dbKey.slice(base.length - 1)
       }
+      try {
+        dbKey = decodeURIComponent(dbKey)
+      } catch (_e) {
+        // Fallback to original key if malformed
+      }
       const cached = dbKey ? POKEMON_FEET_DATABASE[dbKey] : null
       if (!cached) {
         throw new Error(`[PokemonFeetDatabase] Sprite key "${dbKey}" not found in POKEMON_FEET_DATABASE. Did you forget to compile assets? Run "npm run assets:convert".`)
       }
-      const isFlyingPoke = isFlying(pokemon)
-
-      stablePlayerGroundY.value = isFlyingPoke ? '90%' : `${cached.feetY * 100}%`
+      stablePlayerGroundY.value = '75%'
     }
 
     // Limpieza de sombras huérfanas
@@ -145,34 +166,27 @@ export function useBattleShadows() {
         entityY: pos.y,
         entitySize: ENTITY_SIZE_PLAYER,
         isFlying: isFlying(pokemon),
-        spriteUrl: getAssetUrl(ASSET_TYPES.POKEMON, pokemon.id, { isShiny: pokemon.isShiny, isBack: true }),
+        spriteUrl: getAssetUrl(ASSET_TYPES.POKEMON, pokemon.id, { isShiny: pokemon.isShiny, isBack: true, isAnimated: checkAnimated(pokemon.id) }),
+        width: getShadowWidth(pokemon.id, true),
         visible: true
       })
     }
   }
 
-  // Watchers de actualización de feetY basados en el store
-  watch(() => shadowStore.activeShadows.get(currentEnemyShadowKey.value || ''), (shadow) => {
-    if (shadow) stableEnemyGroundY.value = `${shadow.feetY * 100}%`
-  }, { deep: true })
-
-  watch(() => shadowStore.activeShadows.get(currentPlayerShadowKey.value || ''), (shadow) => {
-    if (shadow) stablePlayerGroundY.value = `${shadow.feetY * 100}%`
-  }, { deep: true })
-
-  // Solo resetear si no hay un shadowKey válido (limpieza profunda)
+  // Ground line is fixed at 75% — watchers based on shadow.feetY were removed because
+  // feetY represents the foot position WITHIN the sprite, not the ground line in the entity box.
   watch(currentEnemyShadowKey, (val) => {
-    if (!val) stableEnemyGroundY.value = '90%'
+    if (!val) stableEnemyGroundY.value = '75%'
   })
   watch(currentPlayerShadowKey, (val) => {
-    if (!val) stablePlayerGroundY.value = '90%'
+    if (!val) stablePlayerGroundY.value = '75%'
   })
 
   const preloadTeamFeet = async (team: Pokemon[], side: string) => {
     if (!team || !Array.isArray(team)) return
     const tasks = team.map(p => {
       const isBack = side === 'player'
-      const url = getAssetUrl(ASSET_TYPES.POKEMON, p.id, { isShiny: p.isShiny, isBack })
+      const url = getAssetUrl(ASSET_TYPES.POKEMON, p.id, { isShiny: p.isShiny, isBack, isAnimated: checkAnimated(p.id) })
       return shadowStore.detectFeetPoints(url)
     })
     return Promise.all(tasks)
@@ -195,7 +209,7 @@ export function useBattleShadows() {
     if (p1Data) {
       const shadowId = getStableShadowId(p1Data, 'player')
       currentPlayerShadowKey.value = shadowId
-      const url = getAssetUrl(ASSET_TYPES.POKEMON, p1Data.id, { isShiny: p1Data.isShiny, isBack: true })
+      const url = getAssetUrl(ASSET_TYPES.POKEMON, p1Data.id, { isShiny: p1Data.isShiny, isBack: true, isAnimated: checkAnimated(p1Data.id) })
       if (shadowId) {
         tasks.push(shadowStore.requestShadow(shadowId, {
           side: 'player',
@@ -204,6 +218,7 @@ export function useBattleShadows() {
           entitySize: ENTITY_SIZE_PLAYER,
           isFlying: isFlying(p1Data),
           spriteUrl: url,
+          width: getShadowWidth(p1Data.id, true),
           visible: true
         }))
       }
@@ -212,7 +227,7 @@ export function useBattleShadows() {
     if (p2Data) {
       const shadowId = getStableShadowId(p2Data, 'enemy')
       currentEnemyShadowKey.value = shadowId
-      const url = getAssetUrl(ASSET_TYPES.POKEMON, p2Data.id, { isShiny: p2Data.isShiny, isBack: false })
+      const url = getAssetUrl(ASSET_TYPES.POKEMON, p2Data.id, { isShiny: p2Data.isShiny, isBack: false, isAnimated: checkAnimated(p2Data.id) })
       if (shadowId) {
         tasks.push(shadowStore.requestShadow(shadowId, {
           side: 'enemy',
@@ -221,6 +236,7 @@ export function useBattleShadows() {
           entitySize: ENTITY_SIZE_ENEMY,
           isFlying: isFlying(p2Data),
           spriteUrl: url,
+          width: getShadowWidth(p2Data.id, false),
           visible: true
         }))
       }

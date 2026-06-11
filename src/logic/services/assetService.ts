@@ -8,7 +8,7 @@ import { SHOP_ITEMS } from '@/data/items';
 /**
  * POKEAPI_BASE: Now local paths for downloaded sprites.
  */
-const POKEAPI_BASE = '/assets/sprites/pokemon/';
+const POKEAPI_BASE = '/assets/sprites/pokemon/static/';
 
 
 
@@ -41,6 +41,8 @@ export interface AssetOptions {
   shiny?: boolean; // Legacy fallback
   isBack?: boolean;
   back?: boolean; // Legacy fallback
+  isAnimated?: boolean;
+  animated?: boolean;
   cycle?: 'morning' | 'day' | 'dusk' | 'night';
   trainerSuffix?: 'avatar' | 'front' | 'back';
   gender?: 'h' | 'm' | string;
@@ -82,6 +84,12 @@ export const getAssetUrl = (type: AssetType, rawId: string | number, options: As
       const num = (POKEMON_SPRITE_IDS as Record<string, number>)[stringId] || id;
       if (typeof id === 'string' && id.toLowerCase().startsWith('egg')) return resolveAsset(`/assets/sprites/egg${extension}`);
       
+      if (options.isAnimated || options.animated) {
+        const sideDir = isBack ? 'Back' : 'Front';
+        const shinyDir = isShiny ? ' shiny' : '';
+        return resolveAsset(`/assets/sprites/pokemon/animated/${sideDir}${shinyDir}/${num}${extension}`);
+      }
+
       const folder = isShiny ? 'shiny/' : '';
       const back = isBack ? 'back/' : '';
       return resolveAsset(`${POKEAPI_BASE}${back}${folder}${num}${extension}`);
