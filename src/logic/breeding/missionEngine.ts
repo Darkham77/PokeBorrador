@@ -5,6 +5,7 @@
  */
 
 import { POKEMON_DB } from '@/data/pokemonDB';
+import { TRAINER_TYPES, type TrainerTypeKey } from '@/data/trainerTypes';
 import { getSpritesForArchetype, type NpcArchetype } from '@/logic/utils/npcSpriteRouter';
 import type { Pokemon, PokemonIVs } from '@/types/pokemon';
 
@@ -136,26 +137,6 @@ const MISSION_DIALOGUES_BASE: Record<string, string[]> = {
   ]
 };
 
-const TRAINER_TYPES: Record<string, { name: string; sprite: string }> = {
-  'caza_bichos': { name: 'Cazabichos', sprite: 'cazabichos' },
-  'ornitologo': { name: 'Ornitólogo', sprite: 'entrenador' },
-  'cientifico': { name: 'Científico', sprite: 'criador' },
-  'luchador': { name: 'Luchador', sprite: 'entrenador' },
-  'pescador': { name: 'Pescador', sprite: 'tamer' },
-  'nadador': { name: 'Nadador', sprite: 'tamer' },
-  'domador': { name: 'Domador', sprite: 'tamer' },
-  'medium': { name: 'Medium', sprite: 'entrenador' },
-  'motorista': { name: 'Motorista', sprite: 'teamrocket' },
-  'montanero': { name: 'Montañero', sprite: 'tamer' },
-  'rocket': { name: 'Recluta Rocket', sprite: 'rocketgrunt' },
-  'criador': { name: 'Criador Pokémon', sprite: 'pokemonbreeder' },
-  'aristocrata': { name: 'Aristócrata', sprite: 'gentleman' },
-  'ranger': { name: 'Ranger Pokémon', sprite: 'pokemonranger' },
-  'pokefan': { name: 'Pokéfan', sprite: 'pokefan' },
-  'artista': { name: 'Artista', sprite: 'artist' },
-  'trainers': { name: 'Entrenador Élite', sprite: 'youngster-masters' },
-  'default': { name: 'Joven', sprite: 'youngster' }
-};
 
 const NATURES = ['Audaz', 'Firme', 'Pícaro', 'Manso', 'Serio', 'Osado', 'Plácido', 'Agitado', 'Jovial', 'Ingenuo', 'Modesto', 'Moderado', 'Raro', 'Dócil', 'Tímido', 'Activo', 'Alocado', 'Tranquilo', 'Grosero', 'Cauto'];
 
@@ -221,7 +202,7 @@ export function generateMission(trainerLevel: number, dateStr: string): DaycareM
   const reward = possibleRewards[Math.floor(Math.random() * possibleRewards.length)] || possibleRewards[0] as MissionReward;
   const tKeys = Object.keys(TRAINER_TYPES);
   const tKey = tKeys[Math.floor(Math.random() * tKeys.length)] || 'caza_bichos';
-  const trainer = TRAINER_TYPES[tKey] || TRAINER_TYPES['caza_bichos'] as { name: string; sprite: string };
+  const trainer = TRAINER_TYPES[tKey as TrainerTypeKey] ?? TRAINER_TYPES['caza_bichos'];
 
   const archetypeSprites = getSpritesForArchetype(tKey as NpcArchetype);
   const chosenSprite = archetypeSprites[Math.floor(Math.random() * archetypeSprites.length)];
