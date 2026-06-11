@@ -5,6 +5,7 @@ import { createPinia, type Pinia } from 'pinia'
 import App from './App.vue'
 import router from './router'
 import '@/styles/_index.scss'
+import { useErrorStore } from '@/stores/errorStore'
 
 declare global {
   interface Window {
@@ -39,9 +40,23 @@ app.directive('gsap-hover', gsapHover)
 app.use(pinia)
 app.use(router)
 
+app.config.errorHandler = (err, _instance, info) => {
+  try {
+    const errorStore = useErrorStore(pinia)
+    errorStore.setError(err, {
+      type: 'Vue Render Error',
+      source: info
+    })
+  } catch (e) {
+    console.error('Failed to log Vue error to errorStore:', e)
+  }
+  console.error(err)
+}
+
 app.mount('#app')
 window.pwa_app_mounted = true
 
 // Initialize global hover animations
 initGlobalHoverSystem()
+
 
