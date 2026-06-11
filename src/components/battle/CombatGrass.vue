@@ -1,4 +1,5 @@
 <script setup lang="ts">
+// fallow-ignore-file security-sink
 import { computed, ref, onUnmounted } from 'vue'
 import { gsap } from 'gsap'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'

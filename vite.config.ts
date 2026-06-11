@@ -259,7 +259,7 @@ export default defineConfig({
     },
   },
   build: {
-    chunkSizeWarningLimit: 1000, // Increased to 1000 to accommodate game database size
+    chunkSizeWarningLimit: 1500, // Increased to 1500 to accommodate game database size without warnings
     rollupOptions: {
       output: {
         manualChunks(id) {

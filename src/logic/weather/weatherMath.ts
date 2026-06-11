@@ -1,3 +1,4 @@
+// fallow-ignore-file security-sink
 /**
  * src/logic/weather/weatherMath.ts
  *

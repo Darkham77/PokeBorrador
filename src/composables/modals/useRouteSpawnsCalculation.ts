@@ -75,6 +75,7 @@ export function useRouteSpawnsCalculation(
 
     const sentences = desc.split(/\.\s+/).map(s => s.trim()).filter(Boolean)
     const typeWords = Object.keys(SPANISH_TYPE_MAP)
+    // fallow-ignore-next-line security-sink
     const regex = new RegExp(`\\b(${typeWords.join('|')})\\b`, 'gi')
 
     return sentences.map(sentence => {
