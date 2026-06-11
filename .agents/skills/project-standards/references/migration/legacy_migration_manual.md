@@ -27,9 +27,16 @@ After migrating a critical module (e.g., the box system or inventory):
 - Compare behavior with legacy test cases if available.
 - Verify that the save state persists correctly between versions.
 
+### 4. Architectural Parity & Animation Coordination
+
+When modernizing complex interactive screens or mini-games (e.g., Fossil Cloning, Daycare, etc.):
+- **Reactivity Model**: Always use Vue 3 Composition API (`<script setup>`) with strict types, avoiding legacy options-api wrappers or untyped structures.
+- **Workflow Coordination**: Visual state progressions and animations MUST be synchronized via GSAP timelines and promises, avoiding any mixing of standard CSS transitions or manual `setTimeout` timers to prevent race conditions during state transitions.
+
 ---
 
 ## 🚨 Reference Rules
 
 - **Prohibition of "Islands"**: Do not create new styling systems if a global mixin exists in `src/assets/styles/`.
 - **Change Detection**: If you discover legacy logic that contradicts current standards (e.g., an obsolete damage calculation), ALWAYS prioritize the standard documented in `project-standards`.
+

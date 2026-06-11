@@ -98,6 +98,11 @@ PostgreSQL triggers call external functions (`EXECUTE FUNCTION`). SQLite trigger
 
 - **Policy**: Complex business logic should be handled in the Javascript layer (`../../../../src/logic/db/dbRouter.ts`) rather than database triggers when targeting hybrid environments.
 
+### 4. Migration Seeding & Standard English IDs
+
+All seed data in migration SQL files (including daily missions, items, and arena rewards) MUST use standardized English identifiers. Never insert Spanish terms as unique database keys/IDs, ensuring full alignment with the application's English ID logic standards.
+
 ## Testing & Validation
 
 All new SQL patterns MUST be added to the unit test suite in `../../../../tests/unit/db_translation.spec.ts`.
+

@@ -671,5 +671,11 @@ The project's audit engine (`audit_project.ts`) flags any CSS `transition:` prop
 
 - **Why**: `will-change` hints the GPU to promote the layer without introducing a time-based animation. This satisfies the audit, keeps the hover feel snappy, and avoids the overhead of GSAP for a simple toggle state.
 
+- **Minigame & Specialized Screens Mandate**: For complex custom interface screens (such as Fossil Cloning, Breeding, etc.):
+  1. **Reactivity**: Strictly use Vue 3 `<script setup>` and Composition API.
+  2. **Template Cleanliness**: Ensure that no heavy logic or database routing happens inside templates.
+  3. **GSAP Animations**: Visual sequences, state transitions, and step effects MUST be fully orchestrated using GSAP timelines and promises, avoiding any mixing of standard CSS animations or manual setTimeout calls for timing coordination.
+
+
 
 
