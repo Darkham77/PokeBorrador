@@ -19,6 +19,7 @@ import ProfileNotifications from '@/components/profile/ProfileNotifications.vue'
 import ProfileTradeNotifs from '@/components/profile/ProfileTradeNotifs.vue'
 import ProfileXpCard from '@/components/profile/ProfileXpCard.vue'
 import ProfileAchievementsGrid from '@/components/profile/ProfileAchievementsGrid.vue'
+import ProfilePokedexCard from '@/components/profile/ProfilePokedexCard.vue'
 import { formatCurrency } from '@/logic/utils/formatters'
 
 interface Props {
@@ -63,7 +64,9 @@ const {
   reputation,
   captureStreak,
   totalWarPoints,
-  warCoins
+  warCoins,
+  pokedexCaught,
+  pokedexSeen
 } = useTrainerProfile(() => authStore.user?.id)
 
 const formatNum = (num: number | string | unknown) => formatCurrency(Number(num || 0))
@@ -165,6 +168,22 @@ const handleEditProfile = () => {
   uiStore.open('Cosmetics')
 }
 
+const handleAvatarEnter = (e: MouseEvent) => {
+  gsap.to(e.currentTarget, {
+    scale: 1.05,
+    duration: 0.2,
+    ease: 'power2.out'
+  })
+}
+
+const handleAvatarLeave = (e: MouseEvent) => {
+  gsap.to(e.currentTarget, {
+    scale: 1,
+    duration: 0.2,
+    ease: 'power2.out'
+  })
+}
+
 const handleFactionChoice = () => {
   uiStore.open('FactionChoice')
 }
@@ -193,7 +212,12 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
       <div class="profile-body-premium">
         <!-- Identity Section -->
         <div class="profile-identity-card">
-          <div class="avatar-wrap">
+          <div 
+            class="avatar-wrap"
+            @click.stop="handleEditProfile"
+            @mouseenter="handleAvatarEnter"
+            @mouseleave="handleAvatarLeave"
+          >
             <TrainerAvatar
               :player-class="gs.playerClass"
               :level="gs.trainerLevel"
@@ -297,6 +321,12 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
 
         <!-- Experiencia -->
         <ProfileXpCard />
+
+        <!-- Pokedex Progress -->
+        <ProfilePokedexCard 
+          :pokedex-caught="pokedexCaught" 
+          :pokedex-seen="pokedexSeen" 
+        />
 
 
 
@@ -508,6 +538,7 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
     position: relative;
     z-index: calc(v-bind('Z_LAYERS.BASE') + 1);
     border-radius: 50%;
+    cursor: pointer;
   }
 
   .identity-details-card {

@@ -63,7 +63,6 @@ const formatNum = (num: number) => formatCurrency(num)
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 12px;
-  margin-bottom: 24px;
 }
 
 .legacy-stat-item {

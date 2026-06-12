@@ -9,6 +9,7 @@ import TrainerAvatar from '@/components/TrainerAvatar.vue'
 import ProfileStatsGrid from '@/components/profile/ProfileStatsGrid.vue'
 import ProfileAchievementsGrid from '@/components/profile/ProfileAchievementsGrid.vue'
 import ProfileXpCard from '@/components/profile/ProfileXpCard.vue'
+import ProfilePokedexCard from '@/components/profile/ProfilePokedexCard.vue'
 import { useTrainerProfile } from './useTrainerProfile'
 
 interface Props {
@@ -289,33 +290,6 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
           </div>
         </div>
 
-        <!-- Pokedex Progress -->
-        <div class="profile-section-card pokedex-card">
-          <div class="section-label">
-            PROGRESO DE POKÉDEX
-          </div>
-          <div class="pokedex-stats">
-            <div class="pokedex-stat">
-              <span class="pokedex-val">{{ pokedexCaught }}</span>
-              <span class="pokedex-lbl">Capturados</span>
-            </div>
-            <div class="pokedex-stat">
-              <span class="pokedex-val">{{ pokedexSeen }}</span>
-              <span class="pokedex-lbl">Vistos</span>
-            </div>
-          </div>
-          <div class="pokedex-bar-container">
-            <div 
-              class="pokedex-bar-progress" 
-              :style="{ width: Math.min(100, (pokedexCaught / 151) * 100) + '%' }" 
-            />
-          </div>
-          <div class="pokedex-footer">
-            <span>Gen I Total: 151</span>
-            <span>{{ Math.round((pokedexCaught / 151) * 100) }}% Completado</span>
-          </div>
-        </div>
-
         <!-- Experiencia -->
         <ProfileXpCard 
           :level="trainerLevel" 
@@ -324,6 +298,12 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
           :class-id="playerClass" 
           :class-color="classDef?.color || 'var(--purple)'"
           :hide-unlocks="true"
+        />
+
+        <!-- Pokedex Progress -->
+        <ProfilePokedexCard 
+          :pokedex-caught="pokedexCaught" 
+          :pokedex-seen="pokedexSeen" 
         />
 
         <!-- Stats Grid -->
