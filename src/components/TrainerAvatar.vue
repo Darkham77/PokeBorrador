@@ -11,6 +11,15 @@ interface Props {
   avatarStyle?: string
   borderOverride?: string | null
   gender?: string | null
+  profile?: {
+    playerClass?: string | null
+    player_class?: string | null
+    level?: number | null
+    trainer_level?: number | null
+    avatarStyle?: string | null
+    avatar_style?: string | null
+    gender?: string | null
+  } | null
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -19,7 +28,36 @@ const props = withDefaults(defineProps<Props>(), {
   size: 40,
   avatarStyle: '',
   borderOverride: null,
-  gender: 'h'
+  gender: 'h',
+  profile: null
+});
+
+const resolvedPlayerClass = computed(() => {
+  if (props.profile) {
+    return props.profile.playerClass || props.profile.player_class || props.playerClass;
+  }
+  return props.playerClass;
+});
+
+const resolvedLevel = computed(() => {
+  if (props.profile) {
+    return props.profile.level || props.profile.trainer_level || props.level;
+  }
+  return props.level;
+});
+
+const resolvedAvatarStyle = computed(() => {
+  if (props.profile) {
+    return props.profile.avatarStyle || props.profile.avatar_style || props.avatarStyle;
+  }
+  return props.avatarStyle;
+});
+
+const resolvedGender = computed(() => {
+  if (props.profile) {
+    return props.profile.gender || props.gender;
+  }
+  return props.gender;
 });
 
 interface PlayerClass {
@@ -32,8 +70,9 @@ interface PlayerClass {
 }
 
 const cls = computed(() => {
-  if (!props.playerClass) return null;
-  return (PLAYER_CLASSES as Record<string, PlayerClass>)[props.playerClass] || null;
+  const pClass = resolvedPlayerClass.value;
+  if (!pClass) return null;
+  return (PLAYER_CLASSES as Record<string, PlayerClass>)[pClass] || null;
 });
 
 const borderColor = computed(() => {
@@ -47,31 +86,34 @@ const shadowColor = computed(() => {
 });
 
 const avatarClass = computed(() => {
-  if (!props.avatarStyle || 
-      props.avatarStyle === 'null' || 
-      props.avatarStyle === 'undefined' || 
-      props.avatarStyle === 'none' || 
-      props.avatarStyle === 'default' || 
-      props.avatarStyle === 'sin-marco' || 
-      !props.avatarStyle.trim()) {
+  const style = resolvedAvatarStyle.value;
+  if (!style || 
+      style === 'null' || 
+      style === 'undefined' || 
+      style === 'none' || 
+      style === 'default' || 
+      style === 'sin-marco' || 
+      !style.trim()) {
     return '';
   }
-  return ` ${props.avatarStyle}`;
+  return ` ${style}`;
 });
 
 const hasFrame = computed(() => {
-  return !!(props.avatarStyle && 
-         props.avatarStyle !== 'null' && 
-         props.avatarStyle !== 'undefined' && 
-         props.avatarStyle !== 'none' && 
-         props.avatarStyle !== 'default' && 
-         props.avatarStyle !== 'sin-marco' && 
-         props.avatarStyle.trim());
+  const style = resolvedAvatarStyle.value;
+  return !!(style && 
+         style !== 'null' && 
+         style !== 'undefined' && 
+         style !== 'none' && 
+         style !== 'default' && 
+         style !== 'sin-marco' && 
+         style.trim());
 });
 
 const isSquare = computed(() => {
   if (!hasFrame.value) return false;
-  return props.avatarStyle.includes('sq');
+  const style = resolvedAvatarStyle.value;
+  return style ? style.includes('sq') : false;
 });
 
 // Outer container styles
@@ -127,7 +169,7 @@ const faceStyles = computed((): CSSProperties => {
   const bgPos = cls.value.facePos || 'center';
   const displayUrl = getAssetUrl(ASSET_TYPES.TRAINER, cls.value.avatarSpriteId || cls.value.id, { 
     trainerSuffix: 'avatar',
-    gender: props.gender || 'h'
+    gender: resolvedGender.value || 'h'
   });
 
   return {
@@ -335,7 +377,7 @@ function initAnimations() {
   if (!containerRef.value) return;
   observer.observe(containerRef.value);
 
-  const styleClass = props.avatarStyle || '';
+  const styleClass = resolvedAvatarStyle.value || '';
   if (!styleClass.trim()) return;
 
   const cleanStyle = styleClass
@@ -442,7 +484,7 @@ onUnmounted(() => {
   cleanAnimations();
 });
 
-watch(() => props.avatarStyle, () => {
+watch(() => resolvedAvatarStyle.value, () => {
   nextTick(() => {
     initAnimations();
   });
@@ -452,6 +494,10 @@ watch(() => hasFrame.value, () => {
   nextTick(() => {
     initAnimations();
   });
+});
+
+defineExpose({
+  resolvedLevel
 });
 </script>
 

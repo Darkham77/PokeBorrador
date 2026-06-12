@@ -18,7 +18,8 @@ const HOVER_VISUAL_BORDER_CLASSES = [
   'bc-shop-item-card',
   'war-shop-item-card',
   'market-item-wrapper',
-  'info-item'
+  'info-item',
+  'trainer-card'
 ]
 
 export const HOVER_DURATION_200MS_CLASSES = [
@@ -32,6 +33,7 @@ export const HOVER_DURATION_200MS_CLASSES = [
   'pokemon-summary-card',
   'unified-card',
   'friend-card',
+  'trainer-card',
   'map-row',
   'shop-item-card',
   'bc-shop-item-card',

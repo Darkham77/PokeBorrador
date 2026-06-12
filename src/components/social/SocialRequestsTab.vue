@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { onMounted, ref, watch, nextTick } from 'vue'
-import { useSocialStore } from '@/stores/social'
+import { useSocialStore, type PendingRequest } from '@/stores/social'
 import { useUIStore } from '@/stores/ui'
-import TrainerAvatar from '@/components/TrainerAvatar.vue'
+import TrainerCard from './TrainerCard.vue'
 import { gsap } from 'gsap'
 
 const socialStore = useSocialStore()
@@ -13,10 +13,24 @@ function openTrainerProfile(userId: string) {
   uiStore.open('TrainerProfile', { userId })
 }
 
+const getProfileForRequest = (req: PendingRequest) => {
+  const p = req.profiles;
+  return {
+    id: req.requester_id,
+    username: p?.username || 'Entrenador',
+    level: p?.level || p?.trainer_level || 1,
+    playerClass: p?.playerClass || p?.player_class || 'Entrenador',
+    faction: p?.full_name || null,
+    nick_style: p?.save_data?.nick_style || p?.nick_style || 'normal',
+    avatar_style: p?.avatar_style || null,
+    gender: p?.gender || null
+  }
+}
+
 function animateCards() {
   nextTick(() => {
     if (!listRef.value) return
-    const cards = listRef.value.querySelectorAll('.request-card')
+    const cards = listRef.value.querySelectorAll('.trainer-card')
     if (cards.length > 0) {
       listRef.value.classList.add('tab-mounting')
       gsap.killTweensOf(cards)
@@ -40,9 +54,9 @@ onMounted(() => {
   animateCards()
 })
 
-watch(() => socialStore.pendingRequests, () => {
+watch(() => socialStore.pendingRequests.map((r) => r.id).join(','), () => {
   animateCards()
-}, { deep: true })
+})
 </script>
 
 <template>
@@ -62,46 +76,35 @@ watch(() => socialStore.pendingRequests, () => {
       ref="listRef"
       class="requests-list"
     >
-      <div
+      <TrainerCard
         v-for="req in socialStore.pendingRequests"
         :key="req.id"
-        class="request-card"
+        :profile="getProfileForRequest(req)"
+        :avatar-size="36"
+        variant="pending"
+        @click-profile="openTrainerProfile"
       >
-        <div class="request-info">
-          <TrainerAvatar 
-            :player-class="req.profiles?.save_data?.playerClass || req.profiles?.playerClass || req.profiles?.player_class || 'Entrenador'" 
-            :level="req.profiles?.save_data?.trainerLevel || req.profiles?.level || req.profiles?.trainer_level || 1" 
-            :avatar-style="req.profiles?.avatar_style || req.profiles?.save_data?.avatar_style || undefined"
-            :gender="req.profiles?.gender || req.profiles?.save_data?.gender || 'h'"
-            :size="36"
-            class="clickable-avatar"
-            @click.stop="openTrainerProfile(req.requester_id)"
-          />
-          <div class="text">
-            <span 
-              v-gsap-nick="req.profiles?.save_data?.nick_style || req.profiles?.nick_style || 'normal'"
-              class="username clickable-username"
-              :class="req.profiles?.save_data?.nick_style || req.profiles?.nick_style || 'normal'"
-              @click.stop="openTrainerProfile(req.requester_id)"
-            >{{ req.profiles?.username }}</span>
-            quiere ser tu amigo
+        <template #subtext>
+          quiere ser tu amigo
+        </template>
+
+        <template #actions>
+          <div class="request-btns">
+            <button
+              class="btn-vicio-success btn-vicio-sm"
+              @click.stop="socialStore.respondRequest(req.id, 'accepted')"
+            >
+              ACEPTAR
+            </button>
+            <button
+              class="btn-vicio-danger btn-vicio-sm reject-btn"
+              @click.stop="socialStore.respondRequest(req.id, 'rejected')"
+            >
+              ×
+            </button>
           </div>
-        </div>
-        <div class="request-btns">
-          <button
-            class="btn-vicio-success btn-vicio-sm"
-            @click.stop="socialStore.respondRequest(req.id, 'accepted')"
-          >
-            ACEPTAR
-          </button>
-          <button
-            class="btn-vicio-danger btn-vicio-sm reject-btn"
-            @click.stop="socialStore.respondRequest(req.id, 'rejected')"
-          >
-            ×
-          </button>
-        </div>
-      </div>
+        </template>
+      </TrainerCard>
     </div>
   </div>
 </template>

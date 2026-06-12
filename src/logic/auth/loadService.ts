@@ -26,6 +26,16 @@ export interface LoadResult {
 export async function loadBestSave(user: AuthUser | null, db: DBRouter): Promise<LoadResult> {
   if (!user) return { data: null, issues: [], lastSaveId: null, isNewerThanCloud: false };
 
+  // En este punto el DBRouter está inicializado y migrado, consultamos la versión real de la cuenta en profiles
+  try {
+    const { data: profile } = await db.from('profiles').select('db_version').eq('id', user.id).single() as { data: { db_version: number } | null };
+    if (profile && profile.db_version) {
+      user.db_version = profile.db_version;
+    }
+  } catch (e) {
+    logger.warn('LOAD', `No se pudo consultar el db_version de profiles: ${(e as Error).message}`);
+  }
+
   if ((user.db_version || 1) < 3) {
     logger.error('LOAD', `La cuenta del usuario (versión ${user.db_version || 1}) no está migrada a v3. Abortando carga.`);
     throw new Error('La partida requiere actualización de seguridad (v3). Contacta al administrador.');

@@ -4,7 +4,7 @@ import { useSocialStore } from '@/stores/social'
 import { useChatStore } from '@/stores/chat'
 import { useTradeStore } from '@/stores/trade'
 import { useUIStore } from '@/stores/ui'
-import TrainerAvatar from '@/components/TrainerAvatar.vue'
+import TrainerCard from './TrainerCard.vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import { gsap } from 'gsap'
 
@@ -55,7 +55,7 @@ const getUnreadCount = (friendId: string | number) => {
 function animateCards() {
   nextTick(() => {
     if (!listRef.value) return
-    const cards = listRef.value.querySelectorAll('.friend-card')
+    const cards = listRef.value.querySelectorAll('.trainer-card')
     if (cards.length > 0) {
       gsap.killTweensOf(cards)
       gsap.from(cards, {
@@ -107,126 +107,82 @@ defineEmits<{
       ref="listRef"
       class="friends-list"
     >
-      <div
+      <TrainerCard
         v-for="friend in filteredFriends"
         :key="friend.id"
-        class="friend-card"
+        :profile="friend"
+        :avatar-size="44"
+        @click-profile="openTrainerProfile"
       >
-        <div class="friend-main">
-          <TrainerAvatar 
-            :player-class="friend.playerClass" 
-            :level="friend.level" 
-            :avatar-style="friend.avatar_style || undefined"
-            :gender="friend.gender"
-            :size="44"
-            class="clickable-avatar"
-            @click.stop="openTrainerProfile(friend.id)"
-          >
-            <template #overlay>
-              <div
-                class="status-dot"
-                :class="{ online: friend.isOnline }"
-              />
-            </template>
-          </TrainerAvatar>
-          
-          <div class="friend-info">
-            <div
-              v-gsap-nick="friend.nick_style || 'normal'"
-              class="name clickable-username"
-              :class="friend.nick_style || 'normal'"
-              @click.stop="openTrainerProfile(friend.id)"
+        <template #avatar-overlay>
+          <div
+            class="status-dot"
+            :class="{ online: friend.isOnline }"
+          />
+        </template>
+
+        <template #actions>
+          <div class="friend-actions">
+            <PVTooltip
+              title="CHAT"
+              description="Enviar mensaje privado."
+              position="top"
             >
-              {{ friend.username }}
-            </div>
-            <div class="meta">
-              Nv.{{ friend.level }} • {{ 
-                (!friend.playerClass || friend.playerClass === 'null' || friend.playerClass === 'undefined' || friend.playerClass === 'Null' || friend.playerClass === 'NULL') 
-                  ? 'SIN CLASE' 
-                  : (friend.playerClass === 'entrenador' 
-                    ? 'Entrenador' 
-                    : (friend.playerClass === 'rocket' 
-                      ? 'Equipo Rocket' 
-                      : (friend.playerClass === 'cazabichos' 
-                        ? 'Cazabichos' 
-                        : (friend.playerClass === 'criador' 
-                          ? 'Criador' 
-                          : friend.playerClass.toUpperCase()))))
-              }} • {{
-                (!friend.faction || friend.faction === 'null' || friend.faction === 'undefined' || friend.faction === 'Null' || friend.faction === 'NULL' || friend.faction.trim() === '' || friend.faction.toLowerCase() === 'none')
-                  ? 'SIN BANDO'
-                  : (friend.faction.toLowerCase() === 'union'
-                    ? 'Bando Unión'
-                    : (friend.faction.toLowerCase() === 'poder'
-                      ? 'Bando Poder'
-                      : (friend.faction.toLowerCase() === 'rocket'
-                        ? 'Bando Rocket'
-                        : friend.faction.toUpperCase())))
-              }}
-            </div>
+              <button
+                class="action-btn chat"
+                :disabled="isChatActive(friend.id)"
+                @click.stop="openChat(friend)"
+              >
+                💬
+                <span 
+                  v-if="getUnreadCount(friend.id) > 0" 
+                  class="chat-badge"
+                >{{ getUnreadCount(friend.id) }}</span>
+              </button>
+            </PVTooltip>
+
+            <PVTooltip
+              title="INTERCAMBIO"
+              description="Solicitar comercio Pokémon."
+              position="top"
+            >
+              <button
+                class="action-btn trade"
+                @click.stop="openTrade(friend)"
+              >
+                🔄
+              </button>
+            </PVTooltip>
+
+            <PVTooltip
+              title="DESAFÍO (NO DISPONIBLE)"
+              description="Los combates PvP en vivo no están disponibles actualmente."
+              position="top"
+            >
+              <button
+                class="action-btn battle"
+                disabled
+                @click.stop
+              >
+                ⚔️
+              </button>
+            </PVTooltip>
+
+            <PVTooltip
+              title="ELIMINAR"
+              description="Quitar de tu lista de amigos."
+              position="top"
+            >
+              <button
+                class="action-btn remove"
+                @click.stop="confirmRemoveFriend(friend)"
+              >
+                ×
+              </button>
+            </PVTooltip>
           </div>
-        </div>
-
-        <div class="friend-actions">
-          <PVTooltip
-            title="CHAT"
-            description="Enviar mensaje privado."
-            position="top"
-          >
-            <button
-              class="action-btn chat"
-              :disabled="isChatActive(friend.id)"
-              @click.stop="openChat(friend)"
-            >
-              💬
-              <span 
-                v-if="getUnreadCount(friend.id) > 0" 
-                class="chat-badge"
-              >{{ getUnreadCount(friend.id) }}</span>
-            </button>
-          </PVTooltip>
-
-          <PVTooltip
-            title="INTERCAMBIO"
-            description="Solicitar comercio Pokémon."
-            position="top"
-          >
-            <button
-              class="action-btn trade"
-              @click.stop="openTrade(friend)"
-            >
-              🔄
-            </button>
-          </PVTooltip>
-
-          <PVTooltip
-            title="DESAFÍO (NO DISPONIBLE)"
-            description="Los combates PvP en vivo no están disponibles actualmente."
-            position="top"
-          >
-            <button
-              class="action-btn battle"
-              disabled
-              @click.stop
-            >
-              ⚔️
-            </button>
-          </PVTooltip>
-
-          <PVTooltip
-            title="ELIMINAR"
-            description="Quitar de tu lista de amigos."
-            position="top"
-          >
-            <button
-              class="action-btn remove"
-              @click.stop="confirmRemoveFriend(friend)"
-            >
-              ×
-            </button>
-          </PVTooltip>
-        </div>
-      </div>
+        </template>
+      </TrainerCard>
     </div>
   </div>
 </template>

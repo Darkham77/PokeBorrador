@@ -12,6 +12,7 @@ export function triggerLeave(el: HTMLElement) {
 
   let propsToClear = 'transform,scale,y'
   const hasXTranslation = el.classList.contains('friend-card') || 
+    el.classList.contains('trainer-card') || 
     el.classList.contains('map-row') || 
     (el.closest('.hud-submenu') && el.classList.contains('hud-nav-btn')) ||
     isRetro

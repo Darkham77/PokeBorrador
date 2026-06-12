@@ -521,6 +521,7 @@ export async function saveGame(state: GameState, user: AuthUser, options: SaveOp
             db_version: 3
           });
         }
+        user.db_version = 3;
         logger.success('SAVE', 'Campos de perfil sincronizados en la base de datos.');
       } catch (e) {
         logger.warn('SAVE', `Error al sincronizar campos del perfil: ${(e as Error).message}`);
@@ -531,6 +532,7 @@ export async function saveGame(state: GameState, user: AuthUser, options: SaveOp
       if (isLegacy) {
         try {
           await db.from('profiles').update({ db_version: 3 }).eq('id', user.id);
+          user.db_version = 3;
           migrated = true;
           logger.success('SAVE', 'Account migrated to db_version v3');
         } catch(e) {

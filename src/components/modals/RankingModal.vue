@@ -348,10 +348,7 @@ watch(() => socialStore.leaderboardLoading, (newVal) => {
             <!-- Avatar -->
             <div class="avatar-container">
               <TrainerAvatar
-                :player-class="player.playerClass"
-                :level="player.level"
-                :avatar-style="player.avatar_style"
-                :gender="player.gender || 'h'"
+                :profile="player"
                 :size="38"
               >
                 <template #overlay>

@@ -2,7 +2,7 @@
 import { ref, onMounted, watch, nextTick } from 'vue'
 import { useSocialStore } from '@/stores/social'
 import { useUIStore } from '@/stores/ui'
-import TrainerAvatar from '@/components/TrainerAvatar.vue'
+import TrainerCard from './TrainerCard.vue'
 import { gsap } from 'gsap'
 
 const socialStore = useSocialStore()
@@ -11,23 +11,6 @@ const searchQuery = ref('')
 const filterClass = ref('')
 const filterFaction = ref('')
 const listRef = ref<HTMLElement | null>(null)
-
-const isFactionValid = (faction: string | undefined | null) => {
-  return !!(faction && faction !== 'null' && faction !== 'NULL' && faction !== 'undefined' && faction.trim() !== '' && faction.toLowerCase() !== 'none')
-}
-
-const getFactionLabel = (faction: string | undefined | null) => {
-  if (!faction) return ''
-  const labels: Record<string, string> = {
-    'union': 'Unión',
-    'poder': 'Poder',
-    'rocket': 'Rocket',
-    'magma': 'Magma',
-    'aqua': 'Aqua',
-    'galactic': 'Galactic'
-  }
-  return labels[faction.toLowerCase()] || faction
-}
 
 function openTrainerProfile(userId: string) {
   uiStore.open('TrainerProfile', { userId })
@@ -47,7 +30,7 @@ async function handleSearch() {
 function animateCards() {
   nextTick(() => {
     if (!listRef.value) return
-    const cards = listRef.value.querySelectorAll('.search-card')
+    const cards = listRef.value.querySelectorAll('.trainer-card')
     if (cards.length > 0) {
       listRef.value.classList.add('tab-mounting')
       gsap.killTweensOf(cards)
@@ -104,9 +87,9 @@ watch([filterClass, filterFaction], () => {
   handleSearch()
 })
 
-watch(() => socialStore.searchResults, () => {
+watch(() => socialStore.searchResults.map((p) => p.id).join(','), () => {
   animateCards()
-}, { deep: true })
+})
 </script>
 
 <template>
@@ -180,72 +163,47 @@ watch(() => socialStore.searchResults, () => {
       ref="listRef"
       class="search-results"
     >
-      <div
+      <TrainerCard
         v-for="player in socialStore.searchResults"
         :key="player.id"
-        class="search-card"
+        :profile="player"
+        :avatar-size="40"
+        @click-profile="openTrainerProfile"
       >
-        <TrainerAvatar 
-          :player-class="player.playerClass" 
-          :level="player.level" 
-          :avatar-style="player.avatar_style"
-          :gender="player.gender || 'h'"
-          :size="40"
-          class="clickable-avatar"
-          @click.stop="openTrainerProfile(player.id)"
-        />
-        <div class="player-info">
-          <div 
-            v-gsap-nick="player.nick_style || 'normal'"
-            class="name clickable-username"
-            :class="player.nick_style || 'normal'"
-            @click.stop="openTrainerProfile(player.id)"
-          >
-            {{ player.username }}
-          </div>
-          <div class="meta">
-            Nv.{{ player.level }} • {{ (player.playerClass && player.playerClass !== 'null' && player.playerClass !== 'Null' && player.playerClass !== 'NULL') ? player.playerClass : 'Entrenador' }}
-            <span
-              v-if="isFactionValid(player.faction)"
-              :class="player.faction + '-text-small'"
+        <template #actions>
+          <div class="search-actions">
+            <button 
+              v-if="player.status === 'none'" 
+              class="btn-vicio-secondary btn-vicio-sm" 
+              @click.stop="socialStore.sendFriendRequest(player.id)"
             >
-              • Team {{ getFactionLabel(player.faction) }}
+              ➕ ENVIAR
+            </button>
+            
+            <button 
+              v-else-if="player.status === 'pending' && !player.isRequester"
+              class="btn-vicio-success btn-vicio-sm" 
+              @click.stop="player.relId && socialStore.respondRequest(player.relId, 'accepted')"
+            >
+              ✓ ACEPTAR
+            </button>
+
+            <span
+              v-else-if="player.status === 'pending' && player.isRequester"
+              class="status-badge pending"
+            >
+              ⏳ ENVIADA
+            </span>
+
+            <span
+              v-else-if="player.status === 'accepted'"
+              class="status-badge friend"
+            >
+              ✅ AMIGO
             </span>
           </div>
-        </div>
-        
-        <div class="search-actions">
-          <button 
-            v-if="player.status === 'none'" 
-            class="btn-vicio-secondary btn-vicio-sm" 
-            @click.stop="socialStore.sendFriendRequest(player.id)"
-          >
-            ➕ ENVIAR
-          </button>
-          
-          <button 
-            v-else-if="player.status === 'pending' && !player.isRequester"
-            class="btn-vicio-success btn-vicio-sm" 
-            @click.stop="player.relId && socialStore.respondRequest(player.relId, 'accepted')"
-          >
-            ✓ ACEPTAR
-          </button>
-
-          <span
-            v-else-if="player.status === 'pending' && player.isRequester"
-            class="status-badge pending"
-          >
-            ⏳ ENVIADA
-          </span>
-
-          <span
-            v-else-if="player.status === 'accepted'"
-            class="status-badge friend"
-          >
-            ✅ AMIGO
-          </span>
-        </div>
-      </div>
+        </template>
+      </TrainerCard>
     </div>
   </div>
 </template>

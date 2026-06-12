@@ -122,16 +122,18 @@ export const useAuthStore = defineStore('auth', () => {
         
         let sessionValid = true
         if (data?.session?.user) {
-          session.value = data.session
-          user.value = data.session.user as unknown as AuthUser
-          sessionMode.value = 'online'
+          const rawUser = data.session.user as unknown as AuthUser
+          const isLocalId = rawUser?.id === 'local_user' || rawUser?.id?.startsWith('local_')
           
-          const isLocalId = user.value?.id === 'local_user' || user.value?.id?.startsWith('local_')
-          
+          let dbVersion = 1
+          let userGender = 'h'
+          let isUserBanned = false
+          let banMsg = 'Uso indebido de la plataforma'
+
           if (!isLocalId) {
             // Registrar sesión en DB para unicidad con timeout (10s)
             try {
-              const updatePromise = supabase.from('profiles').update({ current_session_id: sessionId.value }).eq('id', user.value?.id)
+              const updatePromise = supabase.from('profiles').update({ current_session_id: sessionId.value }).eq('id', rawUser?.id)
               const updateRes = await Promise.race([updatePromise, new Promise((_, reject) => gsap.delayedCall(10, () => reject(new Error('UPDATE_TIMEOUT'))))]) as { error?: { message?: string; status?: number; code?: string } | null }
               const updateError = updateRes?.error
               if (updateError) {
@@ -148,8 +150,8 @@ export const useAuthStore = defineStore('auth', () => {
           if (sessionValid && !isLocalId) {
             // Fetch profile meta con timeout (10s)
             try {
-              const profilePromise = supabase.from('profiles').select('db_version, is_banned, ban_reason, gender').eq('id', user.value?.id).single()
-              const profileRes = await Promise.race([profilePromise, new Promise((_, reject) => setTimeout(() => reject(new Error('FETCH_TIMEOUT')), 10000))]) as { data: { db_version: number, is_banned: boolean, ban_reason: string | null, gender: 'h' | 'm' } | null, error?: { message?: string; status?: number; code?: string } | null }
+              const profilePromise = supabase.from('profiles').select('db_version, is_banned, ban_reason, gender').eq('id', rawUser?.id).single()
+              const profileRes = await Promise.race([profilePromise, new Promise((_, reject) => setTimeout(() => reject(new Error('FETCH_TIMEOUT')), 10000))]) as { data: { db_version: number; is_banned: boolean; ban_reason: string | null; gender: 'h' | 'm' } | null; error?: { message?: string; status?: number; code?: string } | null }
               const profile = profileRes.data
               const profileError = profileRes.error
               
@@ -158,31 +160,43 @@ export const useAuthStore = defineStore('auth', () => {
                 if (profileError.status === 401 || profileError.code === 'PGRST301' || profileError.message?.toLowerCase().includes('jwt') || profileError.message?.toLowerCase().includes('invalid')) {
                   sessionValid = false
                 }
-              } else if (profile && user.value) {
-                user.value.db_version = profile.db_version || 1
-                user.value.user_metadata.gender = profile.gender || 'h'
+              } else if (profile) {
+                dbVersion = profile.db_version || 1
+                userGender = profile.gender || 'h'
                 if (profile.is_banned) {
-                  isBanned.value = true
-                  banReason.value = profile.ban_reason || 'Uso indebido de la plataforma'
-                  logout() // Force out
-                  return
+                  isUserBanned = true
+                  banMsg = profile.ban_reason || 'Uso indebido de la plataforma'
                 }
               }
             } catch (e) {
               logger.warn('Auth', `Profile fetch failed or timed out: ${(e as Error).message}`)
-              if (user.value && !user.value.db_version) user.value.db_version = 1
             }
-          } else if (!isLocalId) {
+          }
+
+          if (isUserBanned) {
+            isBanned.value = true
+            banReason.value = banMsg
+            await logout()
+            return
+          }
+
+          if (!sessionValid && !isLocalId) {
             logger.error('Auth', 'Session validation failed. Forcing logout with warning.')
             sessionStorage.setItem('pokevicio_logout_reason', 'session_invalidated')
             await logout()
             return
           }
 
+          // Build and assign the fully-configured user object AT THE VERY END
+          rawUser.db_version = dbVersion
+          rawUser.user_metadata.gender = userGender as 'h' | 'm'
+
+          session.value = data.session
+          user.value = rawUser
+          sessionMode.value = 'online'
+
           startSessionMonitoring()
           
-          if (user.value && !user.value.db_version) user.value.db_version = 1
-
           // Sync time only for online session
           syncServerTime()
           return // Finalizamos con éxito online

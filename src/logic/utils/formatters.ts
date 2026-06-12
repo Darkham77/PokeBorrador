@@ -16,3 +16,42 @@ export const formatCurrency = (val: number, threshold: number = 999999): string 
   }
   return (val || 0).toLocaleString()
 }
+
+/**
+ * Traduce y formatea el nombre de la clase de entrenador.
+ */
+export const formatPlayerClass = (playerClass: string | null | undefined): string => {
+  if (!playerClass || 
+      playerClass === 'null' || 
+      playerClass === 'undefined' || 
+      playerClass === 'Null' || 
+      playerClass === 'NULL' || 
+      !playerClass.trim()) {
+    return 'SIN CLASE'
+  }
+  const clean = playerClass.toLowerCase().trim()
+  if (clean === 'entrenador') return 'Entrenador'
+  if (clean === 'rocket') return 'Equipo Rocket'
+  if (clean === 'cazabichos') return 'Cazabichos'
+  if (clean === 'criador') return 'Criador'
+  return playerClass.toUpperCase()
+}
+
+/**
+ * Traduce y formatea el nombre del bando (facción) del entrenador.
+ */
+export const formatFaction = (faction: string | null | undefined): string => {
+  if (!faction || 
+      faction === 'null' || 
+      faction === 'undefined' || 
+      faction === 'Null' || 
+      faction === 'NULL' || 
+      !faction.trim() || 
+      faction.toLowerCase() === 'none') {
+    return 'SIN BANDO'
+  }
+  const clean = faction.toLowerCase().trim()
+  if (clean === 'union') return 'Bando Unión'
+  if (clean === 'poder') return 'Bando Poder'
+  return faction.toUpperCase()
+}

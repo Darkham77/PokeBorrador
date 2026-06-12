@@ -178,8 +178,10 @@ export function getHoverEnterStrategy(el: HTMLElement): HoverValues {
     };
   }
 
-  if (el.classList.contains('friend-card') || el.classList.contains('map-row')) {
-    return { scale: 1, y: 0, x: 4, duration: 0.2, ease: 'power2.out' };
+  if (el.classList.contains('trainer-card') || el.classList.contains('friend-card') || el.classList.contains('map-row')) {
+    const isPending = el.classList.contains('pending');
+    const border = isPending ? 'rgba(157, 78, 221, 0.45)' : 'rgba(255, 255, 255, 0.3)';
+    return { scale: 1, y: 0, x: 4, duration: 0.2, ease: 'power2.out', borderColor: border };
   }
 
   if (el.classList.contains('hud-pill')) {
@@ -231,6 +233,13 @@ export function getHoverLeaveStrategy(el: HTMLElement) {
   let targetBoxShadow: string | null = null;
 
   if (hasBorders) {
+    if (el.classList.contains('trainer-card')) {
+      const isPending = el.classList.contains('pending');
+      targetBorderColor = isPending ? 'rgba(157, 78, 221, 0.25)' : 'rgba(255, 255, 255, 0.1)';
+      targetBoxShadow = null;
+      return { targetBorderColor, targetBoxShadow };
+    }
+
     targetBorderColor = 'rgba(255, 255, 255, 0.12)';
     targetBoxShadow = '0 10px 40px rgba(0, 0, 0, 0.8)';
 
