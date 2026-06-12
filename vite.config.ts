@@ -207,24 +207,38 @@ export default defineConfig({
       workbox: {
         cleanupOutdatedCaches: true,
         // CRITICAL: Only precache app shell (JS, CSS, HTML, fonts, wasm).
-        // NEVER precache game sprites/images here — there are ~20k image files
-        // in public/assets/. Precaching them all would block SW installation
-        // indefinitely and cause an infinite update loop.
+        // NEVER precache game sprites/images or audio here — there are ~20k
+        // image files in public/assets/. Precaching them all would block SW
+        // installation indefinitely and cause an infinite update loop.
         globPatterns: ['**/*.{js,css,html,ico,woff2,wasm}'],
         maximumFileSizeToCacheInBytes: 8 * 1024 * 1024,
-        // Game images are cached on-demand via runtime caching (CacheFirst).
-        // This means: the first time the user views a sprite it downloads and
-        // caches it; subsequent views use the cache instantly. Much faster than
-        // trying to pre-download every single sprite at install time.
+        // Game images and audio are cached on-demand via runtime caching.
+        // First access downloads and caches; subsequent accesses serve from
+        // cache instantly. This avoids blocking SW installation.
         runtimeCaching: [
           {
-            // Match all game image assets under /assets/ path
+            // All game image assets (sprites, icons, backgrounds)
             urlPattern: /\/assets\/.*\.(png|webp|svg|gif|jpg|jpeg)(\?.*)?$/i,
             handler: 'CacheFirst',
             options: {
-              cacheName: 'game-assets-v1',
+              cacheName: 'game-images-v1',
               expiration: {
                 maxEntries: 25000,
+                maxAgeSeconds: 60 * 60 * 24 * 90 // 90 days
+              },
+              cacheableResponse: {
+                statuses: [0, 200]
+              }
+            }
+          },
+          {
+            // All game audio assets (music tracks, SFX files: mp3, ogg, wav, midi, m4a, flac, aac)
+            urlPattern: /\/assets\/.*\.(mp3|ogg|wav|mid|midi|m4a|flac|aac)(\?.*)?$/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'game-audio-v1',
+              expiration: {
+                maxEntries: 500,
                 maxAgeSeconds: 60 * 60 * 24 * 90 // 90 days
               },
               cacheableResponse: {
