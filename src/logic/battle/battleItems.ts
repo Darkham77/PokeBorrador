@@ -42,6 +42,14 @@ export async function handleItemUsage(itemName: string, p: Pokemon, e: Pokemon, 
     addLog(`Usaste ${displayName}`, 'log-info', 'player')
     addLog(`¡Has lanzado una ${displayName}!`, 'log-catch', itemName, 'player')
     
+    // Registrar intento de captura
+    if (options.ctx?.gs?.state) {
+      if (!options.ctx.gs.state.stats) {
+        options.ctx.gs.state.stats = {}
+      }
+      options.ctx.gs.state.stats.captureAttempts = (Number(options.ctx.gs.state.stats.captureAttempts) || 0) + 1
+    }
+
     // El ítem se consume inmediatamente al lanzarse
     consumeItem(itemName)
 
@@ -71,6 +79,14 @@ export async function handleItemUsage(itemName: string, p: Pokemon, e: Pokemon, 
     }
 
     if (caught) {
+      // Registrar captura exitosa
+      if (options.ctx?.gs?.state) {
+        if (!options.ctx.gs.state.stats) {
+          options.ctx.gs.state.stats = {}
+        }
+        options.ctx.gs.state.stats.captureSuccesses = (Number(options.ctx.gs.state.stats.captureSuccesses) || 0) + 1
+      }
+
       // Pausa dramática antes del click de éxito — orquestada por GSAP, nunca setTimeout
       await awaitAnimation(gsap.delayedCall(0.5, () => { /* dramatic pause */ }))
       if (options.fsm) {

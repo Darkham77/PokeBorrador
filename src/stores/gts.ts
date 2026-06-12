@@ -101,12 +101,22 @@ export const useGTSStore = defineStore('gts', () => {
 
     // Check for new sales
     if (history.data && history.data.length > 0) {
+      let updatedStats = false
       history.data.forEach(sale => {
         if (!isMarketSoldSeen(sale.id, game.state)) {
           ui.notify(`¡Tu ${sale.data.name} se vendió por ₽${sale.price.toLocaleString()}!`, '💰')
           markMarketSoldSeen(sale.id, game.state)
+          
+          if (!game.state.stats) {
+            game.state.stats = {}
+          }
+          game.state.stats.tradeVolume = (Number(game.state.stats.tradeVolume) || 0) + 1
+          updatedStats = true
         }
       })
+      if (updatedStats) {
+        game.save(false)
+      }
     }
   }
 
@@ -127,6 +137,13 @@ export const useGTSStore = defineStore('gts', () => {
         if (payload.new?.status === 'sold' && payload.old?.status !== 'sold') {
           ui.notify('¡ Venta realizada en el GTS !', '💰')
           audio.money()
+          
+          if (!game.state.stats) {
+            game.state.stats = {}
+          }
+          game.state.stats.tradeVolume = (Number(game.state.stats.tradeVolume) || 0) + 1
+          game.save(false)
+          
           fetchUserData()
         }
       })
@@ -161,6 +178,12 @@ export const useGTSStore = defineStore('gts', () => {
 
       if (newSave) {
         game.updateState(newSave)
+        
+        if (!game.state.stats) {
+          game.state.stats = {}
+        }
+        game.state.stats.tradeVolume = (Number(game.state.stats.tradeVolume) || 0) + 1
+        await game.save(false)
         
         ui.notify('¡ Compra exitosa ! Objeto enviado a tus Reclamos.', '✅')
         await game.fetchClaimQueue()

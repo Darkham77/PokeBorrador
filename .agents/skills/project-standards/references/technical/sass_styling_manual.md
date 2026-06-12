@@ -169,14 +169,14 @@ All game-specific content **MUST** be strictly Pixel Art to preserve the game's 
 - **Scaling Standards**:
   - **Grid Oversize**: Use **1.5x** scaling (e.g., `min-width: 60px` for a 40px slot) for item sprites in combat grids. Combined with `overflow: hidden` on parent cards, this creates a high-fidelity "clipping" effect.
 - **Typography (Game Data)**: We maintain a strict hierarchy between "Game Heart" and "Modern Shell" typography.
-  - **MANDATORY Pixel Fonts**: `Press Start 2P`, `VT323`, or `Silkscreen` (Google Fonts).
+  - **MANDATORY Pixel Fonts**: `Pokemon FireRed LeafGreen` (or `VT323`/`Silkscreen` ONLY if special characters like `@` or extra symbols are strictly required).
   - **MANDATORY Mixin**: Any element using a pixel font **MUST** include `@include pixelated;` to disable browser font-smoothing (`font-smooth: never`) and ensure sharp edges.
 
 | UI Level | Element Type | Style Requirement | Recommended Font |
 | :--- | :--- | :--- | :--- |
-| **Game Heart** | Pokémon Names, Stats, Level, Moves | **PIXELATED** (Sharp) | `Press Start 2P` |
-| **Game Heart** | Battle Log, Dialogs, NPC names | **PIXELATED** (Sharp) | `VT323` / `Silkscreen` |
-| **Game Heart** | Modal Headers (Titles), Tab Labels | **PIXELATED** (Sharp) | `Press Start 2P` |
+| **Game Heart** | Pokémon Names, Stats, Level, Moves | **PIXELATED** (Sharp) | `Pokemon FireRed LeafGreen` |
+| **Game Heart** | Battle Log, Dialogs, NPC names | **PIXELATED** (Sharp) | `Pokemon FireRed LeafGreen` (fallback to `VT323` / `Silkscreen` only for special characters) |
+| **Game Heart** | Modal Headers (Titles), Tab Labels | **PIXELATED** (Sharp) | `Pokemon FireRed LeafGreen` |
 | **Modern Shell** | Secondary Info, Settings, Debug Consoles | **SMOOTH** (Antialiased) | `Outfit` / `Inter` |
 | **Modern Shell** | Technical Logs, Trade History, Credits | **SMOOTH** (Antialiased) | `Outfit` / `Inter` |
 
@@ -200,7 +200,7 @@ If you detect a "smooth" modern aesthetic used for game content, you **MUST** is
 >
 > **Proposed Refactor:**
 >
-> - Wrap the icons/text in a container with `font-family: 'Press Start 2P'` or `image-rendering: pixelated`.
+> - Wrap the icons/text in a container with `font-family: 'Pokemon FireRed LeafGreen'` or `image-rendering: pixelated`.
 > - Replace `[SVG Icon]` with the corresponding Pixel Art asset from `@/assets/icons/pixel/`.
 
 ---
@@ -210,7 +210,7 @@ If you detect a "smooth" modern aesthetic used for game content, you **MUST** is
 When refactoring legacy or generic components:
 
 1. **Frame Solidification**: Apply high-contrast solid backgrounds and HSL shadows to the parent container.
-2. **Heart Pixelation**: Apply `image-rendering: pixelated` to all static images. Replace smooth typography with `Press Start 2P`.
+2. **Heart Pixelation**: Apply `image-rendering: pixelated` to all static images. Replace smooth typography with `Pokemon FireRed LeafGreen`.
 3. **Contrast Verification**: Ensure the background is sharp/smooth (Modern) while the active game elements are crisp/pixelated (Retro).
 
 ---

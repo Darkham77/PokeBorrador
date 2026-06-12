@@ -18,6 +18,7 @@ export function useSaveActions(
 ) {
   const uiStore = useUIStore()
   const loadingStore = useLoadingStore()
+  let sessionStartTime: number | null = null;
 
   async function loadGame() {
     loadingStore.start('game_data', 'Cargando datos...', 'Leyendo partida guardada', false, '📂')
@@ -123,6 +124,7 @@ export function useSaveActions(
         data.trainer = authStore.user.user_metadata.username
       }
       updateState(data)
+      sessionStartTime = Temporal.Now.instant().epochMilliseconds
       authStore.user.last_save_id = lastSaveId || undefined
       
       if (issues && issues.length > 0) {
@@ -143,6 +145,7 @@ export function useSaveActions(
     } else if (!data && authStore.user) {
       state.trainer = authStore.user.user_metadata?.username || 'Entrenador'
       state.gender = authStore.user.user_metadata?.gender || 'h'
+      sessionStartTime = Temporal.Now.instant().epochMilliseconds
       // Guardar inmediatamente la partida inicial en la base de datos local
       save(false)
     }
@@ -159,6 +162,17 @@ export function useSaveActions(
       return { success: true }
     }
     if (!authStore.user) return { success: false }
+
+    if (sessionStartTime !== null) {
+      const now = Temporal.Now.instant().epochMilliseconds;
+      const elapsedSecs = Math.floor((now - sessionStartTime) / 1000);
+      if (elapsedSecs > 0) {
+        state.playtime = (state.playtime || 0) + elapsedSecs;
+        sessionStartTime = now;
+      }
+    } else {
+      sessionStartTime = Temporal.Now.instant().epochMilliseconds;
+    }
     
     // Check session lock (Last-In-Wins)
     const { isSaveLocked } = await import('@/logic/auth/sessionHub')

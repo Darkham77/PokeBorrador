@@ -40,6 +40,7 @@ const touchStartX = ref(0)
 const touchStartY = ref(0)
 const touchDeltaX = ref(0)
 const touchDeltaY = ref(0)
+const lastTouchOverIndex = ref<number | null>(null)
 
 const touchDragStyle = computed(() => {
   if (!isTouchDragging.value) return {}
@@ -87,6 +88,7 @@ function handleTouchStart(e: TouchEvent) {
   touchStartY.value = touch.clientY
   touchDeltaX.value = 0
   touchDeltaY.value = 0
+  lastTouchOverIndex.value = null
   isTouchDragging.value = false
   
   const el = slotRef.value
@@ -142,9 +144,11 @@ function handleTouchMove(e: TouchEvent) {
 
     if (slot && slot.dataset.index !== undefined) {
       const targetIndex = parseInt(slot.dataset.index)
+      lastTouchOverIndex.value = targetIndex
       // Emit event so parent can manage the "over" state
       emit('drag-over', targetIndex)
     } else {
+      lastTouchOverIndex.value = null
       emit('drag-over', null)
     }
   } else {
@@ -174,8 +178,14 @@ function handleTouchEnd(e: TouchEvent) {
     
     if (el) el.style.pointerEvents = 'auto'
     
+    let targetIndex: number | null = null
     if (slot && slot.dataset.index !== undefined) {
-      const targetIndex = parseInt(slot.dataset.index)
+      targetIndex = parseInt(slot.dataset.index)
+    } else if (lastTouchOverIndex.value !== null) {
+      targetIndex = lastTouchOverIndex.value
+    }
+    
+    if (targetIndex !== null) {
       emit('drop-pokemon', targetIndex)
     } else {
       emit('drag-end')
@@ -184,6 +194,7 @@ function handleTouchEnd(e: TouchEvent) {
     isTouchDragging.value = false
     touchDeltaX.value = 0
     touchDeltaY.value = 0
+    lastTouchOverIndex.value = null
   }
 }
 

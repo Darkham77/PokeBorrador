@@ -19,13 +19,33 @@ export interface ProfileRow {
   elo_rating?: number | null
   created_at?: string | null
   gender?: string | null
+  playtime?: number | null
+  last_played_at?: string | null
+  ranked_max_elo?: number | null
+  class_level?: number | null
+  box_count?: number | null
+  pvp_draws?: number | null
+  longest_streak?: number | null
+  shiny_count?: number | null
+  max_damage?: number | null
+  total_battles?: number | null
+  trade_volume?: number | null
+  capture_attempts?: number | null
+  capture_successes?: number | null
 }
 
 export interface SaveStateData {
   trainer?: string
+  playtime?: number
+  classLevel?: number
+  rankedMaxElo?: number
+  box?: unknown[]
+  team?: unknown[]
   faction?: string | null
   playerClass?: string | null
   trainerLevel?: number
+  trainerExp?: number
+  trainerExpNeeded?: number
   avatar_style?: string
   nick_style?: string
   badges?: number
@@ -37,13 +57,21 @@ export interface SaveStateData {
     trainersDefeated?: number
     wins?: number
     losses?: number
+    maxDamage?: number
+    totalBattles?: number
+    tradeVolume?: number
+    captureAttempts?: number
+    captureSuccesses?: number
   }
   pvpStats?: {
     wins?: number
     losses?: number
+    draws?: number
   }
   eloRating?: number
   warCoins?: number
+  money?: number
+  battleCoins?: number
   classData?: {
     criminality?: number
     reputation?: number
@@ -280,6 +308,83 @@ export function useTrainerProfile(getUserId: () => string | null | undefined) {
     return 'rgba(148, 163, 184, 1)'
   })
 
+  const playtimeHours = computed(() => {
+    const secs = profile.value?.playtime ?? saveState.value?.playtime ?? 0
+    return Math.floor(secs / 3600)
+  })
+
+  const createdAt = computed(() => {
+    return profile.value?.created_at || (isOwnProfile.value ? Temporal.Now.instant().toString() : null)
+  })
+
+  const lastPlayedAt = computed(() => {
+    return profile.value?.last_played_at || null
+  })
+
+  const rankedMaxElo = computed(() => {
+    return profile.value?.ranked_max_elo ?? saveState.value?.rankedMaxElo ?? 1000
+  })
+
+  const classLevel = computed(() => {
+    return profile.value?.class_level ?? saveState.value?.classLevel ?? 1
+  })
+
+  const boxCount = computed(() => {
+    return profile.value?.box_count ?? saveState.value?.box?.length ?? 0
+  })
+
+  const pvpDraws = computed(() => {
+    return profile.value?.pvp_draws ?? saveState.value?.pvpStats?.draws ?? 0
+  })
+
+  const longestStreak = computed(() => {
+    return profile.value?.longest_streak ?? saveState.value?.classData?.longestStreak ?? 0
+  })
+
+  const shinyCount = computed(() => {
+    if (profile.value?.shiny_count !== undefined && profile.value?.shiny_count !== null) {
+      return profile.value.shiny_count
+    }
+    const teamShinies = ((saveState.value?.team || []) as { isShiny?: boolean }[]).filter(p => p.isShiny).length
+    const boxShinies = ((saveState.value?.box || []) as { isShiny?: boolean }[]).filter(p => p.isShiny).length
+    return teamShinies + boxShinies
+  })
+
+  const maxDamage = computed(() => {
+    return profile.value?.max_damage ?? saveState.value?.stats?.maxDamage ?? 0
+  })
+
+  const totalBattles = computed(() => {
+    return profile.value?.total_battles ?? saveState.value?.stats?.totalBattles ?? 0
+  })
+
+  const tradeVolume = computed(() => {
+    return profile.value?.trade_volume ?? saveState.value?.stats?.tradeVolume ?? 0
+  })
+
+  const captureAttempts = computed(() => {
+    return profile.value?.capture_attempts ?? saveState.value?.stats?.captureAttempts ?? 0
+  })
+
+  const captureSuccesses = computed(() => {
+    return profile.value?.capture_successes ?? saveState.value?.stats?.captureSuccesses ?? 0
+  })
+
+  const captureEfficiency = computed(() => {
+    const attempts = captureAttempts.value
+    const successes = captureSuccesses.value
+    if (attempts <= 0) return 0
+    return Math.round((successes / attempts) * 100)
+  })
+
+  const money = computed(() => {
+    return saveState.value?.money ?? 0
+  })
+
+  const battleCoinsCount = computed(() => {
+    return saveState.value?.battleCoins ?? 0
+  })
+
   return {
     loading,
     profile,
@@ -310,6 +415,23 @@ export function useTrainerProfile(getUserId: () => string | null | undefined) {
     isGymDefeated,
     factionLabel,
     factionColor,
+    playtimeHours,
+    createdAt,
+    lastPlayedAt,
+    rankedMaxElo,
+    classLevel,
+    boxCount,
+    pvpDraws,
+    longestStreak,
+    shinyCount,
+    maxDamage,
+    totalBattles,
+    tradeVolume,
+    captureAttempts,
+    captureSuccesses,
+    captureEfficiency,
+    money,
+    battleCoinsCount,
     fetchData
   }
 }

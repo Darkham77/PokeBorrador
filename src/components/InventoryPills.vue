@@ -219,7 +219,7 @@ const fitText = async (el: HTMLElement | null, baseSize: number) => {
   const maxW = parent.clientWidth - 8 
   
   const text = el.textContent || el.innerText || '';
-  const fontFamily = '"Press Start 2P", Nunito, sans-serif';
+  const fontFamily = '"Pokemon FireRed LeafGreen", monospace';
   let size = baseSize;
   
   // Realizamos las mediciones en CPU (Canvas virtual)
@@ -263,6 +263,13 @@ onMounted(async () => {
   
   // Ejecución inicial
   fitAllPills()
+
+  // Re-evaluar una vez que la fuente física esté totalmente lista
+  if (typeof document !== 'undefined' && document.fonts) {
+    document.fonts.ready.then(() => {
+      fitAllPills()
+    })
+  }
 
   // Configurar observer en el contenedor HUD
   if (moneyRef.value?.closest('.hud-items')) {

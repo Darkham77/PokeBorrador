@@ -21,6 +21,8 @@ To prevent initialization race conditions (TDZ) and ensure reactive stability:
 - **MANDATORY Error Mapping (Friendly Errors)**: All technical network or database errors (e.g., 401, 503, connection timeouts) MUST be processed through `getFriendlyErrorMessage`.
   - **Goal**: Translate cryptic messages ("Unauthorized", "Network Error") into narrative-friendly phrases (e.g., "¡El servidor está en mantenimiento! Inténtalo más tarde 🚧").
 - **No Silent Failures (Explicit Error Reporting)**: Critical game-loop actions (like battle progression, item usage, or asset database lookups) MUST NEVER fail silently or log silently to the console only. If a failure occurs or a key resource (like precomputed sprite coordinates) is missing, explicitly throw a runtime `Error` or trigger a visual error modal. This guarantees that mobile players (who cannot access browser consoles) are visually notified of errors.
+- **Console Interception Safety (Recursion Guard)**: When globally intercepting `console.error` to bridge errors into visual modal stores (e.g. `errorStore.setError`), you MUST implement a local guard flag (`isHandlingError`) to bypass the interceptor during error logging execution. This prevents nested calls from causing an infinite recursion loop (`RangeError: Maximum call stack size exceeded`).
+- **Clean Console Error Parsing**: When parsing raw log parameters from intercepted `console.error` arguments, detect if the first parameter contains `%c` style markers. If present, parse the marker count, strip the `%c` tokens, and slice/ignore the corresponding number of trailing styling arguments to avoid displaying raw DevTools CSS styles in the user-facing error message.
 - **Permissive Health Diagnostics**: In server health-check logic ("ping"), 4xx HTTP codes MUST be interpreted as **ONLINE**.
   - **Reasoning**: A 401/403 response confirms that the server is alive and responding, even if credentials are missing. Only 5xx codes or network timeouts should trigger an "OFFLINE" status.
 - **Modularity**: Adhere to the **500-line rule** for all UI components. If a view exceeds this, logic must be extracted to composables or sub-components.
@@ -91,7 +93,7 @@ We prioritize a deliberate contrast between modern, sleek UI shells and classic,
     - **Desktop Rule**: On screens > 1410px, the bottom nav is HIDDEN unless `isHudHidden` is true (scroll-down).
     - **Implementation**: Sync using a `.hud-visible-active` class on the container that forces `display: flex !important`.
   - **Permission Persistence**: Persist PWA setup and notification permission states in `localStorage` to avoid re-triggering intrusive setup modals on every session.
-  - **Visual Update Feedback**: During a PWA system update, the modal MUST show a retro-styled progress bar (e.g., bordered with `var(--yellow)`, utilizing the `'Press Start 2P'` font, and a dynamic progress width) accompanied by a descriptive text status (e.g. "Guardando progreso...", "Aplicando actualización...") to prevent visual lock/freeze.
+  - **Visual Update Feedback**: During a PWA system update, the modal MUST show a retro-styled progress bar (e.g., bordered with `var(--yellow)`, utilizing the `'Pokemon FireRed LeafGreen'` font, and a dynamic progress width) accompanied by a descriptive text status (e.g. "Guardando progreso...", "Aplicando actualización...") to prevent visual lock/freeze.
   - **The "Deep Reset" Mandate (Resolution Sync)**: Transitions from Login/Title screens to the main game MUST be handled via physical reload (`window.location.href = import.meta.env.BASE_URL`) instead of SPA navigation (`router.push`).
     - **WHY**: Standalone PWA windows frequently glitch their internal viewport dimensions (`100dvh`) during internal navigation. A physical reload forces a hardware-level re-sync of the viewport and manifest state.
     - **WHY (GitHub Pages)**: Hardcoding `'/'` breaks GitHub Pages deployments where the app lives at a subpath (e.g., `/Pokemon-Online/`). Always use `import.meta.env.BASE_URL` which resolves to the correct base path in all environments (`'/'` locally, `'/Pokemon-Online/'` on GH Pages).
@@ -130,7 +132,7 @@ We prioritize a deliberate contrast between modern, sleek UI shells and classic,
 
 ### 2. Pixel-Perfect Typography (Sharpness Mandate)
 
-- **Grid Alignment**: Pixel fonts (especially `Press Start 2P`) SHOULD use sizes that maintain aesthetic balance. While multiples of 8px are technically perfect, intermediate sizes (10px, 11px) are allowed for readability.
+- **Grid Alignment**: Pixel fonts (especially `Pokemon FireRed LeafGreen`) SHOULD use sizes that maintain aesthetic balance. While multiples of 8px are technically perfect, intermediate sizes (10px, 11px) are allowed for readability.
 - **Anti-Alias Ban**: ALWAYS apply `@include pixelated;` to pixel fonts to force `-webkit-font-smoothing: none !important`.
 - **Anti-Blur Technique (Aggressive)**: For pixel fonts at non-standard sizes (e.g., 11px), apply `transform: translateZ(0)` and `font-smooth: never !important` to force integer pixel rendering and prevent browser smoothing.
 - **FORBIDDEN**:
@@ -138,8 +140,9 @@ We prioritize a deliberate contrast between modern, sleek UI shells and classic,
 - **Centering**: Use **Flexbox/Grid** for centering. Avoid `transform: translate(-50%, -50%)` as it causes subpixel blurring in Chrome. Combine any unavoidable `Translatey/x` with `translateZ(0)` to maintain GPU layer stability during motion.
 - **Emoji/Icon Optical Centering**: When rendering inline emojis or symbols alongside pixel fonts, wrap them in a dedicated span (e.g. `.emoji`) with `display: inline-flex` (or `inline-block`) and apply a vertical translation of `-2px` to `-3.5px` (depending on the font size) to align them visually with the baseline of pixel glyphs.
 - **Emoji Alignment inside Flex Badges**: Avoid declaring fixed `height` restrictions (e.g. `height: 10px`) on emoji wrapper elements inside badges using `display: inline-flex; align-items: center;`. This shrinks the content box of larger emojis relative to their font size, causing visual clipping and downwards misalignment. Remove fixed height restrictions on emoji children and use a clean vertical shift (`transform: translateY(...)`) for precise centering.
-- **Line-Height for Wrapped Pixel Text**: When using pixelated fonts (like `Press Start 2P`), text wrapping can lead to extremely tight vertical spacing where lines overlap or touch. Always specify a generous `line-height` of `1.4` to `1.6` for multiline text containers to ensure proper legibility and vertical breathing room.
+- **Line-Height for Wrapped Pixel Text**: When using pixelated fonts (like `Pokemon FireRed LeafGreen`), text wrapping can lead to extremely tight vertical spacing where lines overlap or touch. Always specify a generous `line-height` of `1.4` to `1.6` for multiline text containers to ensure proper legibility and vertical breathing room.
 - **BST Aesthetics**: Game-world data (Stats, IVs, Levels) MUST prioritize these sharp pixelated tokens to reinforce the "Retro Heart".
+- **Technical/Special Character Exception**: For debugging consoles, developer detail overlays, technical logs, or cases requiring special character glyphs (such as `@`, brackets, or JSON formatting), you are permitted to use standard monospace fonts (e.g. `Courier New`, monospace) or alternative pixel fonts (like `VT323` or `Silkscreen`) to ensure readability.
 - **Stat Color Standardization**:
   - **Level (NV)**: Purple (`#a855f7`).
   - **Stats/IVs**: Green (`#4ade80`).
@@ -303,7 +306,7 @@ All tooltips MUST use the `PVTooltip.vue` system. Native HTML `title` attributes
 
 - **Hybrid Engine**: Uses a "Flip-then-Nudge" algorithm. It first attempts to flip the position (e.g., from top to bottom) if there's no space, then "nudges" the coordinates to stay within a 10px safety margin of the viewport edges.
 - **Anchor-Aware Arrows**: The tooltip arrow MUST remain aligned with the trigger element's center. When the box is nudged, use the `--arrow-x` and `--arrow-y` CSS variables to offset the arrow appropriately.
-- **Visual Standard**: Tooltips must use `'Press Start 2P'` for titles, solid dark backgrounds for maximum contrast, and a **2px solid var(--yellow)** border for a "Vintage Premium" look.
+- **Visual Standard**: Tooltips must use `'Pokemon FireRed LeafGreen'` for titles, solid dark backgrounds for maximum contrast, and a **2px solid var(--yellow)** border for a "Vintage Premium" look.
 - **Emoji Centering & Spacing**:
   - ALWAYS use `Translatey(-2px)` for optical centering of emojis when using pixelated fonts.
   - NEVER join multiple emojis with space characters (`join(' ')`) as the fixed-width pixel font space is disproportionately wide. Join them directly (`join('')`) and rely on CSS margins (`2px`).
@@ -357,7 +360,7 @@ Standardized via the `@mixin btn-vicio-primary` and `.btn-vicio-primary` class:
 - **Interaction**:
   - **Hover**: 1px upward translation (`TranslateY(-1px)`) and subtle brightness boost.
   - **Active**: 2px downward translation (`TranslateY(2px)`) with shadow reduction to 2px, simulating a physical press.
-- **Typography**: Must use `'Press Start 2P'` with `@include pixelated`.
+- **Typography**: Must use `'Pokemon FireRed LeafGreen'` with `@include pixelated`.
 - **Constraint**: Primary action buttons (yellow) MUST follow this pattern to maintain visual parity.
 - **Uniform Button Standardization**: Important action buttons (such as faction selection or faction war actions) must always leverage standard `btn-vicio` mixins (e.g. via SASS `@include btn-vicio(...)` or classes like `.btn-vicio-primary`) instead of introducing custom, one-off styling declarations or custom classes like `.retro-btn`.
 - **Active State Unification**: Selected/Active buttons (`.active`) MUST preserve their 3D shadow depth. Use a 2px white solid border and a selection glow (`box-shadow`), but keep the dark bottom shadow to avoid a "flat" or "broken" look.

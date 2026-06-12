@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { gsap } from 'gsap'
 import { useUIStore } from '@/stores/ui'
 import { useGameStore } from '@/stores/game'
 import { useAuthStore } from '@/stores/auth'
@@ -8,6 +9,7 @@ import { usePlayerClassStore } from '@/stores/playerClass'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { Z_LAYERS } from '@/logic/constants/visuals'
 import { useModalStore } from '@/stores/modals'
+import { useTrainerProfile } from '@/components/modals/useTrainerProfile'
 
 // Components
 import BaseModal from '@/components/common/BaseModal.vue'
@@ -16,6 +18,8 @@ import ProfileStatsGrid from '@/components/profile/ProfileStatsGrid.vue'
 import ProfileNotifications from '@/components/profile/ProfileNotifications.vue'
 import ProfileTradeNotifs from '@/components/profile/ProfileTradeNotifs.vue'
 import ProfileXpCard from '@/components/profile/ProfileXpCard.vue'
+import ProfileAchievementsGrid from '@/components/profile/ProfileAchievementsGrid.vue'
+import { formatCurrency } from '@/logic/utils/formatters'
 
 interface Props {
   show?: boolean
@@ -42,6 +46,77 @@ const classStore = usePlayerClassStore()
 const gs = computed(() => gameStore.state)
 const profileData = computed(() => profileStore.profileData)
 
+const {
+  playtimeHours,
+  createdAt,
+  rankedMaxElo,
+  boxCount,
+  longestStreak,
+  shinyCount,
+  maxDamage,
+  totalBattles,
+  tradeVolume,
+  captureEfficiency,
+  faction,
+  playerClass,
+  criminality,
+  reputation,
+  captureStreak,
+  totalWarPoints,
+  warCoins
+} = useTrainerProfile(() => authStore.user?.id)
+
+const formatNum = (num: number | string | unknown) => formatCurrency(Number(num || 0))
+
+const formatDate = (isoStr: string | null | undefined) => {
+  if (!isoStr) return '---'
+  try {
+    const inst = Temporal.Instant.from(isoStr)
+    const date = new Date(inst.epochMilliseconds)
+    return date.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' })
+  } catch (_) {
+    return '---'
+  }
+}
+
+const handleStatEnter = (e: MouseEvent) => {
+  gsap.to(e.currentTarget, {
+    y: -2,
+    backgroundColor: 'rgba(30, 41, 59, 0.5)',
+    borderColor: 'rgba(255, 214, 10, 0.2)',
+    boxShadow: '0 0 0 1px rgba(255, 214, 10, 0.2)',
+    duration: 0.2,
+    ease: 'power2.out'
+  })
+}
+
+const handleStatLeave = (e: MouseEvent) => {
+  const el = e.currentTarget as HTMLElement
+  let baseBorderColor = 'rgba(255, 255, 255, 0.05)'
+  let baseBackground = 'rgba(15, 23, 42, 0.95)'
+  
+  if (el.classList.contains('pvp')) {
+    baseBorderColor = 'rgba(236, 72, 153, 0.2)'
+    baseBackground = 'linear-gradient(135deg, rgba(236, 72, 153, 0.05) 0%, rgba(15, 23, 42, 0.4) 100%)'
+  } else if (el.classList.contains('highlight-war-points')) {
+    baseBorderColor = 'rgba(59, 130, 246, 0.2)'
+    baseBackground = 'linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(15, 23, 42, 0.4) 100%)'
+  } else if (el.classList.contains('highlight-war-coins')) {
+    baseBorderColor = 'rgba(251, 191, 36, 0.2)'
+    baseBackground = 'linear-gradient(135deg, rgba(251, 191, 36, 0.05) 0%, rgba(15, 23, 42, 0.4) 100%)'
+  }
+
+  gsap.to(el, {
+    y: 0,
+    background: baseBackground,
+    borderColor: baseBorderColor,
+    boxShadow: 'none',
+    duration: 0.2,
+    ease: 'power2.out',
+    clearProps: 'y,background,borderColor,boxShadow'
+  })
+}
+
 const factionLabel = computed(() => {
   const f = gs.value.faction
   if (!f) return 'Sin Bando'
@@ -53,10 +128,10 @@ const factionLabel = computed(() => {
 
 const factionColor = computed(() => {
   const f = gs.value.faction
-  if (f === 'union') return 'Rgba(59, 130, 246, 1)'
-  if (f === 'poder') return 'Rgba(239, 68, 68, 1)'
-  if (f === 'rocket') return 'Rgba(148, 163, 184, 1)'
-  return 'Rgba(148, 163, 184, 1)'
+  if (f === 'union') return '#3b82f6'
+  if (f === 'poder') return '#ef4444'
+  if (f === 'rocket') return '#94a3b8'
+  return '#94a3b8'
 })
 
 const trainerName = computed(() => {
@@ -234,6 +309,123 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
           :battle-coins="gs.battleCoins || profileData.battleCoins"
         />
 
+        <!-- Faction War Contribution -->
+        <div
+          v-if="faction"
+          class="profile-section-card war-card"
+        >
+          <div class="section-label">
+            GUERRA DE BANDOS
+          </div>
+          <div class="stats-grid">
+            <div
+              class="stat-item highlight-war-points"
+              @mouseenter="handleStatEnter"
+              @mouseleave="handleStatLeave"
+            >
+              <span class="stat-val">
+                <i class="fas fa-shield-alt icon-war" />
+                {{ formatNum(totalWarPoints) }}
+              </span>
+              <span class="stat-lbl">Puntos de Guerra</span>
+            </div>
+            <div
+              class="stat-item highlight-war-coins"
+              @mouseenter="handleStatEnter"
+              @mouseleave="handleStatLeave"
+            >
+              <span class="stat-val">
+                <i class="fas fa-coins icon-war-coin" />
+                {{ formatNum(warCoins) }}
+              </span>
+              <span class="stat-lbl">Monedas de Guerra</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Class Custom Details -->
+        <div
+          v-if="playerClass"
+          class="profile-section-card class-details-card"
+        >
+          <div class="section-label">
+            ESPECIALIZACIÓN DE CLASE
+          </div>
+          <div class="stats-grid">
+            <div
+              v-if="playerClass === 'rocket'"
+              class="stat-item"
+              @mouseenter="handleStatEnter"
+              @mouseleave="handleStatLeave"
+            >
+              <span class="stat-val danger-text">{{ criminality }}%</span>
+              <span class="stat-lbl">Criminalidad</span>
+            </div>
+            <div
+              v-else
+              class="stat-item"
+              @mouseenter="handleStatEnter"
+              @mouseleave="handleStatLeave"
+            >
+              <span class="stat-val primary-text">{{ reputation }}</span>
+              <span class="stat-lbl">Reputación</span>
+            </div>
+            <div
+              class="stat-item"
+              @mouseenter="handleStatEnter"
+              @mouseleave="handleStatLeave"
+            >
+              <span class="stat-val yellow-text">{{ captureStreak }}</span>
+              <span class="stat-lbl">Mayor Racha</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Historial de Actividad -->
+        <div class="profile-section-card activity-card">
+          <div class="section-label">
+            HISTORIAL DE ACTIVIDAD
+          </div>
+          <div class="stats-grid">
+            <div
+              class="stat-item"
+              @mouseenter="handleStatEnter"
+              @mouseleave="handleStatLeave"
+            >
+              <span class="stat-val yellow-text">{{ playtimeHours }}h</span>
+              <span class="stat-lbl">Tiempo Jugado</span>
+            </div>
+            <div
+              class="stat-item"
+              @mouseenter="handleStatEnter"
+              @mouseleave="handleStatLeave"
+            >
+              <span class="stat-val">{{ formatDate(createdAt) }}</span>
+              <span class="stat-lbl">Miembro Desde</span>
+            </div>
+            <div
+              class="stat-item"
+              @mouseenter="handleStatEnter"
+              @mouseleave="handleStatLeave"
+            >
+              <span class="stat-val">Activo Ahora</span>
+              <span class="stat-lbl">Última Partida</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Logros de Entrenador -->
+        <ProfileAchievementsGrid
+          :ranked-max-elo="rankedMaxElo"
+          :box-count="boxCount"
+          :shiny-count="shinyCount"
+          :longest-streak="longestStreak"
+          :max-damage="maxDamage"
+          :total-battles="totalBattles"
+          :trade-volume="tradeVolume"
+          :capture-efficiency="captureEfficiency"
+        />
+
         <!-- Save Info -->
         <div class="profile-section-card save-card">
           <div class="section-label">
@@ -389,6 +581,7 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
         &.class-val {
           font-weight: bold;
           text-transform: uppercase;
+          @include pixelated;
         }
 
         .gender-symbol {
@@ -559,4 +752,76 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
   }
 }
 
+/* Stats grids */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.stat-item {
+  background: Rgba(15, 23, 42, 0.95);
+  border: 1px solid Rgba(255, 255, 255, 0.05);
+  border-radius: 18px;
+  padding: 16px 12px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  @include gpu-layer;
+
+  &.pvp {
+    background: linear-gradient(135deg, Rgba(236, 72, 153, 0.05) 0%, Rgba(15, 23, 42, 0.4) 100%);
+    border-color: Rgba(236, 72, 153, 0.2);
+
+    .stat-val.ELO {
+      color: #f472b6;
+      text-shadow: 0 0 10px Rgba(236, 72, 153, 0.4);
+    }
+  }
+
+  &.highlight-war-points {
+    background: linear-gradient(135deg, Rgba(59, 130, 246, 0.05) 0%, Rgba(15, 23, 42, 0.4) 100%);
+    border-color: Rgba(59, 130, 246, 0.2);
+
+    .stat-val, .icon-war {
+      color: #60a5fa;
+      text-shadow: 0 0 10px Rgba(59, 130, 246, 0.4);
+    }
+  }
+
+  &.highlight-war-coins {
+    background: linear-gradient(135deg, Rgba(251, 191, 36, 0.05) 0%, Rgba(15, 23, 42, 0.4) 100%);
+    border-color: Rgba(251, 191, 36, 0.2);
+
+    .stat-val, .icon-war-coin {
+      color: #fbbf24;
+      text-shadow: 0 0 10px Rgba(251, 191, 36, 0.4);
+    }
+  }
+}
+
+.stat-val {
+  @include pixelated;
+  font-size: 14px;
+  color: var(--white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.stat-lbl {
+  @include pixelated;
+  font-size: 6px;
+  color: Rgba(255, 255, 255, 0.3);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Colors & Helpers */
+.danger-text { color: #f87171 !important; text-shadow: 0 0 10px Rgba(239, 68, 68, 0.4); }
+.primary-text { color: #60a5fa !important; text-shadow: 0 0 10px Rgba(59, 130, 246, 0.4); }
+.yellow-text { color: #fbbf24 !important; text-shadow: 0 0 10px Rgba(251, 191, 36, 0.4); }
+.shiny-text { color: #fbbf24 !important; text-shadow: 0 0 10px Rgba(251, 191, 36, 0.4); }
 </style>

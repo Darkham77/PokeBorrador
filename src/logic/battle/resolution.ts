@@ -191,6 +191,11 @@ export async function terminateBattle(ctx: BattleContext, win: boolean, fled = f
 
   active.over = true
   ctx.faintedSides.value.clear()
+
+  if (!ctx.gs.state.stats) {
+    ctx.gs.state.stats = {}
+  }
+  ctx.gs.state.stats.totalBattles = (Number(ctx.gs.state.stats.totalBattles) || 0) + 1
   
   const uiStore = useUIStore()
   uiStore.isBattleSwitchForced = false

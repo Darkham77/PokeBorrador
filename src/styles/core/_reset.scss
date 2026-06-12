@@ -10,8 +10,7 @@
   size-adjust: 128%;
 }
 
-// Google Fonts no longer imported here — 'Pokemon FireRed LeafGreen' is served locally via /public/fonts/
-// 'Press Start 2P' kept as pixel fallback via _variables.scss if needed
+// 'Pokemon FireRed LeafGreen' is the sole pixel font and is served locally via /public/fonts/
 
 * {
   margin: 0;

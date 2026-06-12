@@ -15,7 +15,7 @@ Frontend UI Developers / UI Designers.
 
 - Use `@include pixelated` for retro assets (sprites, badges) to keep them sharp.
 - Set container `image-rendering: pixelated` when rendering canvas or pixelated backgrounds.
-- Prevent font layout clipping on pixelated fonts (`Press Start 2P`) by setting `line-height` to at least `1.5` or `1.6` and adding top padding.
+- Prevent font layout clipping on pixelated fonts (`Pokemon FireRed LeafGreen`) by setting `line-height` to at least `1.5` or `1.6` and adding top padding.
 - Implement micro-animations and state hover transitions exclusively using GSAP timelines/tweens in `@mouseenter` and `@mouseleave` handlers. CSS `transition` and `@keyframes` are forbidden for dynamic state transitions.
 - Teleported tooltips must scale the inner wrapper, not the parent, to avoid breaking absolute calculations.
 

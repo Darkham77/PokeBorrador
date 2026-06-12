@@ -7,6 +7,7 @@ import { useAuthStore } from './auth.ts'
 import { useUIStore } from './ui.ts'
 import { useGameStore } from './game.ts'
 import { useMapStore } from './map.ts'
+import { useErrorStore } from './errorStore.ts'
 import { isEventActiveNow, getGlobalMultipliers, getSpeciesBoosts, type Event as GameEvent } from '@/logic/events/eventEngine'
 import { getServerTime } from '@/logic/timeUtils'
 import type { Pokemon } from '@/types/pokemon'
@@ -94,28 +95,42 @@ export const useEventStore = defineStore('events', () => {
       const db = gameStore.db
       if (!db) return
 
-      const { data: profile, error: pErr } = await db.from('profiles').select('elo_rating').eq('id', authStore.user.id).single() as unknown as { data: { elo_rating: number } | null, error: { message: string } | null }
-      if (pErr || !profile) {
-        uiStore.notify('Error al verificar rango', '❌')
-        return
-      }
-      
-      const { data: entry, error } = await db.from('competition_entries').insert({
+      const totalIvs = Object.values(pokemon.ivs || {}).reduce((a: number, b) => a + (typeof b === 'number' ? b : 0), 0)
+      const entryData = {
         event_id: eventId,
         player_id: authStore.user.id,
-        pokemon_uid: pokemon.uid,
-        score: pokemon.pts || 0,
-        elo: profile.elo_rating || 1000
-      }).select().single() as unknown as { data: { ok: boolean } | null, error: { message: string } | null }
+        player_name: gameStore.state.trainer || 'Trainer',
+        player_email: authStore.user.email,
+        data: {
+          pokemon_uid: pokemon.uid,
+          pokemon_name: pokemon.name,
+          ivs: pokemon.ivs,
+          total_ivs: totalIvs,
+          level: pokemon.level,
+          isShiny: pokemon.isShiny || false,
+          score: pokemon.pts || 0
+        },
+        submitted_at: Temporal.Now.instant().toString()
+      }
+      
+      const { data: entry, error } = await db.from('competition_entries').upsert(entryData, {
+        onConflict: 'event_id, player_id'
+      }).select().single() as unknown as { data: { id: string } | null, error: { message: string } | null }
       
       if (error || !entry) {
-        uiStore.notify('Error al registrar Pokémon: ' + (error?.message || 'Error desconocido'), '❌')
+        useErrorStore().setError(new Error(error?.message || 'Error al registrar Pokémon en concurso semanal'), {
+          type: 'Competition Entry Database Error',
+          source: 'submitCompetitionEntry'
+        })
       } else {
         uiStore.notify('¡Pokémon registrado exitosamente!', '✅')
       }
     } catch (e) {
       logger.error('Events', `Error submitting entry: ${(e as Error).message}`)
-      uiStore.notify('Error al inscribir en el concurso.', '❌')
+      useErrorStore().setError(e, {
+        type: 'Competition Entry Exception',
+        source: 'submitCompetitionEntry'
+      })
     }
   }
 

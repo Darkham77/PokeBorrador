@@ -380,7 +380,7 @@ El proyecto usa un sistema de espejado (mirroring) para optimizar imágenes auto
 Por identidad visual, el "corazón" del juego es pixelado, pero el "shell" (la interfaz exterior) es moderno.
 
 - **Por defecto**: Todos los assets se tratan como pixelados.
-- **Tipografía (Corazón)**: Nombres de Pokémon, Stats, Diálogos y Títulos de Modales **DEBEN** usar fuentes pixeladas (`Press Start 2P`, `VT323`) y el mixin `@include pixelated;` para evitar suavizados borrosos del navegador.
+- **Tipografía (Corazón)**: Nombres de Pokémon, Stats, Diálogos y Títulos de Modales **DEBEN** usar fuentes pixeladas (`Pokemon FireRed LeafGreen`, `VT323`) y el mixin `@include pixelated;` para evitar suavizados borrosos del navegador.
 - **Tipografía (Shell)**: Menús de configuración, logs técnicos y créditos pueden usar fuentes suaves (`Outfit`, `Inter`).
 - **Especificación**: Si necesitás asegurar que algo se vea pixel-perfect, usá el mixin `@include pixelated;` en el SCSS.
 - **Excepciones**: Para logos premium o elementos que deban verse suaves, usá `@include smooth;` (esto aplica `image-rendering: auto`).

@@ -241,6 +241,7 @@ const transitionHooks = useGsapTransition({
   font-weight: 700;
   color: Rgba(255, 128, 128, 1);
   font-size: 13px;
+  font-family: 'Courier New', Courier, monospace;
 }
 
 .error-sub-title {

@@ -31,6 +31,7 @@
   width: 100%;
   max-width: 700px;
   align-items: stretch;
+  justify-items: center;
   
   @media (max-width: 1024px) {
     grid-template-columns: repeat(3, 1fr);
@@ -52,13 +53,15 @@
   @include gpu-layer;
   border: 1.5px solid Rgba(255, 255, 255, 0.1);
   border-radius: 24px;
-  padding: 30px 20px;
+  padding: 24px 16px;
   cursor: pointer;
   position: relative;
-  overflow: hidden;
+  overflow: visible; // Allowed overflow for sprites
   display: flex;
   flex-direction: column;
   align-items: center;
+  width: 100%;
+  max-width: 180px;
 
   &::before {
     content: '';
@@ -68,9 +71,9 @@
     z-index: var(--z-base);
   }
 
-  &.grass::before { background: Radial-Gradient(circle at 50% 0%, Rgba($green, 0.25), transparent 70%); }
-  &.fire::before { background: Radial-Gradient(circle at 50% 0%, Rgba($red, 0.25), transparent 70%); }
-  &.water::before { background: Radial-Gradient(circle at 50% 0%, Rgba($blue, 0.25), transparent 70%); }
+  &.grass::before { background: radial-gradient(circle at 50% 0%, Rgba($green, 0.25), transparent 70%); }
+  &.fire::before { background: radial-gradient(circle at 50% 0%, Rgba($red, 0.25), transparent 70%); }
+  &.water::before { background: radial-gradient(circle at 50% 0%, Rgba($blue, 0.25), transparent 70%); }
 
   & > * { position: relative; z-index: var(--z-base); }
 }
@@ -79,16 +82,16 @@
 .starter-name {
   font-family: $font-pixel;
   font-size: 10px;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .starter-type {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
-  padding: 4px 12px;
+  padding: 3px 10px;
   border-radius: 20px;
   display: inline-block;
-  margin-top: 4px;
+  margin-top: 2px;
 
   &.type-grass { background: Rgba($green, 0.12); color: $green; }
   &.type-fire { background: Rgba($red, 0.12); color: $red; }
@@ -96,23 +99,53 @@
 }
 
 .starter-stats {
-  margin-top: 16px;
-  padding-top: 16px;
+  margin-top: 12px;
+  padding-top: 12px;
   border-top: 1px solid Rgba(255, 255, 255, 0.05);
   width: 100%;
 }
 
 .stat-mini {
-  font-size: 11px;
+  font-size: 10px;
   color: $gray;
   display: flex;
   justify-content: space-between;
-  margin: 4px 0;
+  margin: 2px 0;
   
   span:last-child {
     color: $white;
     font-family: $font-pixel;
+    font-size: 8px;
+  }
+}
+
+// Low-height or small viewports responsive layout adjustments
+@media (max-height: 850px), (max-width: 600px) {
+  .title-sub {
+    margin-bottom: 20px;
+  }
+  
+  .starter-grid {
+    margin: 15px auto;
+    gap: 10px;
+  }
+
+  .starter-card {
+    padding: 12px 10px;
+    border-radius: 16px;
+  }
+
+  .starter-stats {
+    margin-top: 8px;
+    padding-top: 8px;
+  }
+
+  .stat-mini {
+    margin: 1px 0;
     font-size: 9px;
+    span:last-child {
+      font-size: 7px;
+    }
   }
 }
 

@@ -208,6 +208,16 @@ export async function executeMoveAction(
     }
 
     if (totalDamageDealt > 0) {
+      if (side === 'player') {
+        if (!store.gs.state.stats) {
+          store.gs.state.stats = {}
+        }
+        const currentMax = Number(store.gs.state.stats.maxDamage) || 0
+        if (totalDamageDealt > currentMax) {
+          store.gs.state.stats.maxDamage = totalDamageDealt
+        }
+      }
+
       if (executableMove.recoil) {
         const recoilDiv = typeof executableMove.recoil === 'number' ? executableMove.recoil : 2
         const recoilDmg = Math.floor(totalDamageDealt / recoilDiv)

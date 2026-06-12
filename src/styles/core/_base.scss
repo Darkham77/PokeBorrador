@@ -79,14 +79,12 @@ h1, h2, h3, h4, h5, h6,
 .font-pixel, 
 .pixelated,
 [style*="Pokemon FireRed LeafGreen"],
-[style*="Press Start 2P"],
 [style*="Silkscreen"],
 [style*="VT323"] {
   // Only apply pixelated mixin if it has the class or specific font
   &.pixelated, 
   &.font-pixel, 
   &[style*="Pokemon FireRed LeafGreen"],
-  &[style*="Press Start 2P"],
   &[style*="Silkscreen"],
   &[style*="VT323"] {
     @include pixelated;
@@ -95,7 +93,6 @@ h1, h2, h3, h4, h5, h6,
 
 // Ultra-aggressive global override for pixel fonts to prevent browser smoothing
 [style*="Pokemon FireRed LeafGreen"],
-[style*="Press Start 2P"], 
 .font-pixel, 
 body .pixelated {
   -webkit-font-smoothing: none !important;

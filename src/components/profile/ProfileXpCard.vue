@@ -5,28 +5,51 @@ import { usePlayerClassStore, type ClassDefinition } from '@/stores/playerClass'
 import { PLAYER_CLASSES, CLASS_MISSIONS } from '@/data/playerClasses'
 import gsap from 'gsap'
 
+interface Props {
+  level?: number
+  exp?: number
+  expNeeded?: number
+  classId?: string | null
+  classColor?: string
+  hideUnlocks?: boolean
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  level: undefined,
+  exp: undefined,
+  expNeeded: undefined,
+  classId: undefined,
+  classColor: undefined,
+  hideUnlocks: false
+})
+
 const gameStore = useGameStore()
 const classStore = usePlayerClassStore()
 const gs = computed(() => gameStore.state)
 
+const currentLevel = computed(() => props.level !== undefined ? props.level : (gs.value.trainerLevel || 1))
+const currentExp = computed(() => props.exp !== undefined ? props.exp : (gs.value.trainerExp || 0))
+const currentExpNeeded = computed(() => props.expNeeded !== undefined ? props.expNeeded : (gs.value.trainerExpNeeded || 100))
+
 const trainerExpPct = computed(() => {
-  const needed = gs.value.trainerExpNeeded || 0
+  const needed = currentExpNeeded.value
   if (needed === 0) return 0
-  return Math.min(100, ((gs.value.trainerExp || 0) / needed) * 100)
+  return Math.min(100, (currentExp.value / needed) * 100)
 })
 
 const xpRemaining = computed(() => {
-  const needed = gs.value.trainerExpNeeded || 0
-  return Math.max(0, needed - (gs.value.trainerExp || 0))
+  return Math.max(0, currentExpNeeded.value - currentExp.value)
 })
 
 const nextLevel = computed(() => {
-  return (gs.value.trainerLevel || 1) + 1
+  return currentLevel.value + 1
 })
 
 const nextClassUnlocks = computed(() => {
-  const currentClassId = gs.value.playerClass
-  const currentLevel = gs.value.trainerLevel || 1
+  if (props.hideUnlocks) return []
+  
+  const currentClassId = props.classId !== undefined ? props.classId : gs.value.playerClass
+  const cLevel = currentLevel.value
   if (!currentClassId) return []
 
   const classDef = (PLAYER_CLASSES as Record<string, ClassDefinition>)[currentClassId]
@@ -39,7 +62,7 @@ const nextClassUnlocks = computed(() => {
     const levels = classDef.bonusLevels
     classDef.bonuses.forEach((bonus: string, index: number) => {
       const reqLv = levels[index]
-      if (reqLv !== undefined && reqLv > currentLevel) {
+      if (reqLv !== undefined && reqLv > cLevel) {
         unlocks.push({
           level: reqLv,
           desc: bonus,
@@ -51,7 +74,7 @@ const nextClassUnlocks = computed(() => {
 
   // 2. Idle missions
   CLASS_MISSIONS.forEach(mission => {
-    if (mission.reqLv > currentLevel) {
+    if (mission.reqLv > cLevel) {
       unlocks.push({
         level: mission.reqLv,
         desc: mission.name,
@@ -117,7 +140,7 @@ watch(trainerExpPct, (newPct) => {
     </div>
     <div class="xp-details">
       <div class="xp-numbers">
-        <span class="xp-current">{{ gs.trainerExp || 0 }} / {{ gs.trainerExpNeeded || 100 }} EXP</span>
+        <span class="xp-current">{{ currentExp }} / {{ currentExpNeeded }} EXP</span>
         <span class="xp-percent">{{ Math.round(trainerExpPct) }}%</span>
       </div>
       
@@ -126,12 +149,12 @@ watch(trainerExpPct, (newPct) => {
         <div 
           ref="xpBarRef"
           class="xp-bar-fill"
-          :style="{ backgroundColor: classStore.currentClassDef?.color || 'var(--purple)' }"
+          :style="{ backgroundColor: props.classColor || classStore.currentClassDef?.color || 'var(--purple)' }"
         />
       </div>
       
       <div class="xp-remaining-text">
-        Faltan <strong :style="{ color: classStore.currentClassDef?.color || '#a855f7' }"> {{ xpRemaining }} EXP </strong> para el Nivel <strong>{{ nextLevel }}</strong>
+        Faltan <strong :style="{ color: props.classColor || classStore.currentClassDef?.color || '#a855f7' }"> {{ xpRemaining }} EXP </strong> para el Nivel <strong>{{ nextLevel }}</strong>
       </div>
     </div>
 
@@ -162,14 +185,14 @@ watch(trainerExpPct, (newPct) => {
 
 .profile-section-card {
   padding: 20px;
-  background: rgba(255, 255, 255, 0.02);
+  background: Rgba(255, 255, 255, 0.02);
   border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid Rgba(255, 255, 255, 0.05);
 
   .section-label {
     @include pixelated;
     font-size: 8px;
-    color: rgba(255, 255, 255, 0.3);
+    color: Rgba(255, 255, 255, 0.3);
     margin-bottom: 16px;
     letter-spacing: 1px;
   }
@@ -197,14 +220,14 @@ watch(trainerExpPct, (newPct) => {
   }
 
   .xp-percent {
-    color: rgba(255, 255, 255, 0.6);
+    color: Rgba(255, 255, 255, 0.6);
   }
 
   .xp-bar-container {
     width: 100%;
     height: 10px;
-    background: rgba(0, 0, 0, 0.4);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: Rgba(0, 0, 0, 0.4);
+    border: 1px solid Rgba(255, 255, 255, 0.1);
     border-radius: 6px;
     overflow: hidden;
     position: relative;
@@ -213,13 +236,13 @@ watch(trainerExpPct, (newPct) => {
   .xp-bar-fill {
     height: 100%;
     border-radius: 5px;
-    background-image: linear-gradient(90deg, rgba(255,255,255,0.15) 25%, transparent 25%, transparent 50%, rgba(255,255,255,0.15) 50%, rgba(255,255,255,0.15) 75%, transparent 75%, transparent);
+    background-image: linear-gradient(90deg, Rgba(255,255,255,0.15) 25%, transparent 25%, transparent 50%, Rgba(255,255,255,0.15) 50%, Rgba(255,255,255,0.15) 75%, transparent 75%, transparent);
     background-size: 20px 20px;
   }
 
   .xp-remaining-text {
     font-size: 11px;
-    color: rgba(255, 255, 255, 0.6);
+    color: Rgba(255, 255, 255, 0.6);
     line-height: 1.4;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
 
@@ -231,13 +254,13 @@ watch(trainerExpPct, (newPct) => {
   .xp-unlocks {
     margin-top: 16px;
     padding-top: 12px;
-    border-top: 1px dashed rgba(255, 255, 255, 0.08);
+    border-top: 1px dashed Rgba(255, 255, 255, 0.08);
   }
 
   .unlocks-title {
     font-size: 11px;
     font-weight: 600;
-    color: rgba(255, 255, 255, 0.7);
+    color: Rgba(255, 255, 255, 0.7);
     margin-bottom: 8px;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
   }
@@ -256,7 +279,7 @@ watch(trainerExpPct, (newPct) => {
     align-items: center;
     gap: 8px;
     font-size: 11px;
-    color: rgba(203, 213, 225, 0.85);
+    color: Rgba(203, 213, 225, 0.85);
     line-height: 1.4;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
   }
@@ -264,7 +287,7 @@ watch(trainerExpPct, (newPct) => {
   .unlock-lvl {
     @include pixelated;
     font-size: 7px;
-    background: rgba(255, 255, 255, 0.1);
+    background: Rgba(255, 255, 255, 0.1);
     color: var(--yellow);
     border-radius: 4px;
     padding: 2px 4px;

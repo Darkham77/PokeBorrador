@@ -101,6 +101,7 @@ export interface SaveData {
   notificationHistory: unknown[];
   marketSoldSeenIds: string[];
   lastPokemonCenterHeal?: number;
+  playtime?: number;
   _last_updated?: number;
 }
 
@@ -260,7 +261,8 @@ export function serializeState(state: GameState): SaveData {
     warMyPtsLocal: (state.warMyPtsLocal || {}) as Record<string, number>,
     notificationHistory: state.notificationHistory || [],
     marketSoldSeenIds: state.marketSoldSeenIds || [],
-    lastPokemonCenterHeal: state.lastPokemonCenterHeal || 0
+    lastPokemonCenterHeal: state.lastPokemonCenterHeal || 0,
+    playtime: state.playtime || 0
   };
 }
 
@@ -457,6 +459,14 @@ export async function saveGame(state: GameState, user: AuthUser, options: SaveOp
         const { data: existingProf } = await db.from('profiles').select('id').eq('id', user.id).maybeSingle();
         const finalUsername = save_data.trainer || user.user_metadata?.username || 'Entrenador';
         
+        const shinyCount = ((save_data.team || []).filter(p => p.isShiny).length) + ((save_data.box || []).filter(p => p.isShiny).length);
+        const statsRecord = (save_data.stats || {}) as Record<string, unknown>;
+        const maxDamage = Number(statsRecord.maxDamage) || 0;
+        const totalBattles = Number(statsRecord.totalBattles) || 0;
+        const tradeVolume = Number(statsRecord.tradeVolume) || 0;
+        const captureAttempts = Number(statsRecord.captureAttempts) || 0;
+        const captureSuccesses = Number(statsRecord.captureSuccesses) || 0;
+
         if (existingProf) {
           await db.from('profiles').update({
             username: finalUsername,
@@ -466,7 +476,20 @@ export async function saveGame(state: GameState, user: AuthUser, options: SaveOp
             avatar_style: save_data.avatar_style,
             nick_style: save_data.nick_style,
             badges: save_data.badges || 0,
-            gender: save_data.gender || 'h'
+            gender: save_data.gender || 'h',
+            playtime: save_data.playtime || 0,
+            last_played_at: Temporal.Now.instant().toString(),
+            ranked_max_elo: save_data.rankedMaxElo || 1000,
+            class_level: save_data.classLevel || 1,
+            box_count: (save_data.box || []).length,
+            pvp_draws: save_data.pvpStats?.draws || 0,
+            longest_streak: save_data.classData?.longestStreak || 0,
+            shiny_count: shinyCount,
+            max_damage: maxDamage,
+            total_battles: totalBattles,
+            trade_volume: tradeVolume,
+            capture_attempts: captureAttempts,
+            capture_successes: captureSuccesses
           }).eq('id', user.id);
         } else {
           await db.from('profiles').insert({
@@ -481,6 +504,20 @@ export async function saveGame(state: GameState, user: AuthUser, options: SaveOp
             badges: save_data.badges || 0,
             role: 'user',
             gender: save_data.gender || 'h',
+            playtime: save_data.playtime || 0,
+            created_at: Temporal.Now.instant().toString(),
+            last_played_at: Temporal.Now.instant().toString(),
+            ranked_max_elo: save_data.rankedMaxElo || 1000,
+            class_level: save_data.classLevel || 1,
+            box_count: (save_data.box || []).length,
+            pvp_draws: save_data.pvpStats?.draws || 0,
+            longest_streak: save_data.classData?.longestStreak || 0,
+            shiny_count: shinyCount,
+            max_damage: maxDamage,
+            total_battles: totalBattles,
+            trade_volume: tradeVolume,
+            capture_attempts: captureAttempts,
+            capture_successes: captureSuccesses,
             db_version: 3
           });
         }

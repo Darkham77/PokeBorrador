@@ -6,6 +6,9 @@ import { formatCurrency } from '@/logic/utils/formatters'
 import { useModalStore } from '@/stores/modals'
 import BaseModal from '@/components/common/BaseModal.vue'
 import TrainerAvatar from '@/components/TrainerAvatar.vue'
+import ProfileStatsGrid from '@/components/profile/ProfileStatsGrid.vue'
+import ProfileAchievementsGrid from '@/components/profile/ProfileAchievementsGrid.vue'
+import ProfileXpCard from '@/components/profile/ProfileXpCard.vue'
 import { useTrainerProfile } from './useTrainerProfile'
 
 interface Props {
@@ -41,9 +44,6 @@ const {
   pokedexSeen,
   trainersDefeated,
   wildWins,
-  pvpWins,
-  pvpLosses,
-  eloRating,
   warCoins,
   criminality,
   reputation,
@@ -52,8 +52,34 @@ const {
   isGymDefeated,
   factionLabel,
   factionColor,
+  playtimeHours,
+  createdAt,
+  lastPlayedAt,
+  rankedMaxElo,
+  classLevel,
+  boxCount,
+  longestStreak,
+  shinyCount,
+  maxDamage,
+  totalBattles,
+  tradeVolume,
+  captureEfficiency,
+  money,
+  battleCoinsCount,
+  saveState,
   fetchData
 } = useTrainerProfile(() => props.userId)
+
+const formatDate = (isoStr: string | null | undefined) => {
+  if (!isoStr) return '---'
+  try {
+    const inst = Temporal.Instant.from(isoStr)
+    const date = new Date(inst.epochMilliseconds)
+    return date.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' })
+  } catch (_) {
+    return '---'
+  }
+}
 
 const openRename = () => {
   modalStore.open('Rename')
@@ -216,7 +242,7 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
             class="profile-profession"
             :style="{ color: classDef.color }"
           >
-            {{ classDef.name }} • LV. {{ trainerLevel }}
+            {{ classDef.name }} • LV. {{ classLevel }}
           </div>
         </div>
 
@@ -290,46 +316,24 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
           </div>
         </div>
 
-        <!-- Combat & Arena Stats -->
-        <div class="profile-section-card stats-card">
-          <div class="section-label">
-            ESTADÍSTICAS DE COMBATE
-          </div>
-          <div class="stats-grid">
-            <div
-              class="stat-item"
-              @mouseenter="handleStatEnter"
-              @mouseleave="handleStatLeave"
-            >
-              <span class="stat-val">{{ trainersDefeated }}</span>
-              <span class="stat-lbl">Entr. Derrotados</span>
-            </div>
-            <div
-              class="stat-item"
-              @mouseenter="handleStatEnter"
-              @mouseleave="handleStatLeave"
-            >
-              <span class="stat-val">{{ wildWins }}</span>
-              <span class="stat-lbl">Vics. Salvaje</span>
-            </div>
-            <div
-              class="stat-item pvp"
-              @mouseenter="handleStatEnter"
-              @mouseleave="handleStatLeave"
-            >
-              <span class="stat-val ELO">{{ eloRating }}</span>
-              <span class="stat-lbl">Puntos ELO</span>
-            </div>
-            <div
-              class="stat-item pvp"
-              @mouseenter="handleStatEnter"
-              @mouseleave="handleStatLeave"
-            >
-              <span class="stat-val">{{ pvpWins }} - {{ pvpLosses }}</span>
-              <span class="stat-lbl">Récord PvP (V-D)</span>
-            </div>
-          </div>
-        </div>
+        <!-- Experiencia -->
+        <ProfileXpCard 
+          :level="trainerLevel" 
+          :exp="saveState?.trainerExp ?? 0" 
+          :exp-needed="saveState?.trainerExpNeeded ?? 100" 
+          :class-id="playerClass" 
+          :class-color="classDef?.color || 'var(--purple)'"
+          :hide-unlocks="true"
+        />
+
+        <!-- Stats Grid -->
+        <ProfileStatsGrid 
+          :stats="{ wins: wildWins, trainersDefeated: trainersDefeated }" 
+          :level="trainerLevel"
+          :badges="badgesCount"
+          :money="money"
+          :battle-coins="battleCoinsCount"
+        />
 
         <!-- Faction War Contribution -->
         <div
@@ -402,6 +406,51 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
             </div>
           </div>
         </div>
+
+        <!-- Historial de Actividad -->
+        <div class="profile-section-card activity-card">
+          <div class="section-label">
+            HISTORIAL DE ACTIVIDAD
+          </div>
+          <div class="stats-grid">
+            <div
+              class="stat-item"
+              @mouseenter="handleStatEnter"
+              @mouseleave="handleStatLeave"
+            >
+              <span class="stat-val yellow-text">{{ playtimeHours }}h</span>
+              <span class="stat-lbl">Tiempo Jugado</span>
+            </div>
+            <div
+              class="stat-item"
+              @mouseenter="handleStatEnter"
+              @mouseleave="handleStatLeave"
+            >
+              <span class="stat-val">{{ formatDate(createdAt) }}</span>
+              <span class="stat-lbl">Miembro Desde</span>
+            </div>
+            <div
+              class="stat-item"
+              @mouseenter="handleStatEnter"
+              @mouseleave="handleStatLeave"
+            >
+              <span class="stat-val">{{ isOwnProfile ? 'Activo Ahora' : formatDate(lastPlayedAt) }}</span>
+              <span class="stat-lbl">Última Partida</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Logros de Entrenador -->
+        <ProfileAchievementsGrid
+          :ranked-max-elo="rankedMaxElo"
+          :box-count="boxCount"
+          :shiny-count="shinyCount"
+          :longest-streak="longestStreak"
+          :max-damage="maxDamage"
+          :total-battles="totalBattles"
+          :trade-volume="tradeVolume"
+          :capture-efficiency="captureEfficiency"
+        />
       </div>
     </section>
   </BaseModal>

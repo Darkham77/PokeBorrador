@@ -252,4 +252,36 @@ const handleMouseLeave = (event: MouseEvent) => {
   opacity: 0.8;
   text-align: center;
 }
+
+@media (max-height: 850px), (max-width: 600px) {
+  .title-description {
+    margin-bottom: 15px;
+    font-size: 12px;
+  }
+  
+  .starter-img-container {
+    height: 90px;
+    margin-bottom: 4px;
+    position: relative;
+    overflow: visible;
+  }
+  
+  .starter-sprite {
+    width: 160px;
+    height: 160px;
+    position: absolute;
+    top: 50%;
+    transform: Translatey(-55%);
+  }
+  
+  .title-footer {
+    margin-top: 15px;
+    gap: 8px;
+  }
+  
+  .logout-btn-trigger {
+    padding: 10px 20px;
+    min-width: 180px;
+  }
+}
 </style>

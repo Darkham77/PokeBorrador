@@ -17,7 +17,7 @@ This file defines the immutable DNA of the Poké Vicio project. Every AI agent i
 ## 2. Core Identity: Hybrid Retro-Modern
 
 - **Modern UI Shell**: Premium gradients, relief effects, shining borders, fluid transitions.
-- **Pixel Art Heart**: All game content, sprites, and typography MUST be pixelated.
+- **Pixel Art Heart**: All game content, sprites, and typography MUST be pixelated (using 'Pokemon FireRed LeafGreen' as the primary font, except in technical logs, debugger tools, console error modals, or special cases where special characters like '@' are required; in such cases, standard monospaced/smooth fonts or alternative pixel fonts like 'VT323'/'Silkscreen' are allowed).
 - **SASS Integrity**: SASS function capitalization is handled **automatically** by the Vite plugin (`vite-plugin-sass-traps.ts`) during HMR and build. Therefore, developers and agents can write standard lowercase CSS filters/transforms, and Vite will automatically format and capitalize them. No manual capitalization is required.
 - **GPU Efficiency**: Strict use of Texture Atlases and Object Pooling (Phaser).
 - **Game Performance First**: This is a high-fidelity web video game. All UI and logic implementations MUST prioritize GPU-accelerated rendering and FPS stability. Optimize workflows and filter chains (e.g., `pokemon-outline-performance`) to ensure maximum fluidity without compromising visual quality.
