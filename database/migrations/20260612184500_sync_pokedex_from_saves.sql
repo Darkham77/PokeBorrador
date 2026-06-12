@@ -86,7 +86,18 @@ BEGIN
     );
 
     UPDATE public.game_saves
-    SET save_data = v_save_data
+    SET save_data = v_save_data,
+        last_save_id = gen_random_uuid()
     WHERE user_id = r.user_id;
   END LOOP;
+
+  -- Actualizar versión del esquema en profiles
+  UPDATE public.profiles SET db_version = 5;
+  ALTER TABLE public.profiles ALTER COLUMN db_version SET DEFAULT 5;
 END $$;
+
+INSERT INTO public.system_config (key, value) VALUES ('db_version', '20260612184500'::jsonb)
+ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW();
+
+-- Rotar last_save_id para TODOS los jugadores para forzar desincronización y recarga limpia
+UPDATE public.game_saves SET last_save_id = gen_random_uuid();

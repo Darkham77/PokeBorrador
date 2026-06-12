@@ -34,7 +34,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   current_session_id TEXT,
   is_banned BOOLEAN DEFAULT FALSE,
   ban_reason TEXT,
-  db_version INTEGER DEFAULT 1,
+  db_version INTEGER DEFAULT 5,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
