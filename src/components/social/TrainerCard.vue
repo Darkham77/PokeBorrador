@@ -111,7 +111,7 @@ function onClickProfile() {
   box-sizing: border-box;
   width: 100%;
   cursor: pointer;
-  transition: background-color 0.2s ease, border-color 0.2s ease;
+
 
   &.normal {
     background: Rgba(255, 255, 255, 0.03);

@@ -689,6 +689,14 @@ When designing card grids or summary cards (e.g. PC Box menu slots, item lists) 
 - **Use Visual Transform Scale**: Apply `transform: scale(X)` (e.g., `transform: scale(1.5);` for 50% enlargement) directly to the target `<img>` or inner sprite container.
 - **Enable Card Overflow**: Specify `overflow: visible;` on the parent card wrapper to allow the scaled sprite to overflow visually without altering the boundaries or layout calculations of adjacent elements.
 
+### 30. GSAP Hover Border Registration and Clean-up
+
+When using the global GSAP hover engine to animate borders or box-shadows on interactive cards, lists, or containers:
+- **Registry Mandate**: The component's base class (e.g., `trainer-card`) MUST be registered in the `HOVER_VISUAL_BORDER_CLASSES` array within `src/logic/hoverHelpers.ts`.
+- **Why**: The hover leave engine (`triggerLeave` in `hoverLeave.ts`) relies on `hasVisualBorders` to detect if the element has custom borders. If the class is not registered, the engine will skip cleaning up the border properties on mouse leave, leaving the hover styles stuck (e.g., permanently white or colored).
+- **GSAP and CSS Conflict Avoidance**: Ensure the CSS stylesheet does not declare `transition: border-color` or custom `:hover` border colors that fight with GSAP's style injections.
+
+
 
 
 

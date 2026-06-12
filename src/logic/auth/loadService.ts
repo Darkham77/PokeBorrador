@@ -27,13 +27,16 @@ export async function loadBestSave(user: AuthUser | null, db: DBRouter): Promise
   if (!user) return { data: null, issues: [], lastSaveId: null, isNewerThanCloud: false };
 
   // En este punto el DBRouter está inicializado y migrado, consultamos la versión real de la cuenta en profiles
-  try {
-    const { data: profile } = await db.from('profiles').select('db_version').eq('id', user.id).single() as { data: { db_version: number } | null };
-    if (profile && profile.db_version) {
-      user.db_version = profile.db_version;
+  const isLocalUser = user.id === 'local_user' || user.id.startsWith('local_');
+  if (!isLocalUser) {
+    try {
+      const { data: profile } = await db.from('profiles').select('db_version').eq('id', user.id).single() as { data: { db_version: number } | null };
+      if (profile && profile.db_version) {
+        user.db_version = profile.db_version;
+      }
+    } catch (e) {
+      logger.warn('LOAD', `No se pudo consultar el db_version de profiles: ${(e as Error).message}`);
     }
-  } catch (e) {
-    logger.warn('LOAD', `No se pudo consultar el db_version de profiles: ${(e as Error).message}`);
   }
 
   if ((user.db_version || 1) < 3) {
