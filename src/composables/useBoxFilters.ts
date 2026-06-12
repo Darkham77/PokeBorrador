@@ -2,6 +2,7 @@ import { ref, computed, type Ref } from 'vue'
 import { getPokemonTier } from '@/logic/pokemon/tierEngine'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import type { Pokemon } from '@/types/pokemon'
+import { PDEX_ORDER } from '@/data/pokedex'
 
 export interface FilterState {
   tier: string
@@ -142,6 +143,18 @@ export function useBoxFilters(box: Ref<(Pokemon | null)[]>) {
           result = (bstB + totalIvsB) - (bstA + totalIvsA);
         }
         else if (sortMode.value === 'type') result = pA.type.localeCompare(pB.type);
+        else if (sortMode.value === 'recent') {
+          const tA = pA.obtainedAt || a.index || 0;
+          const tB = pB.obtainedAt || b.index || 0;
+          result = tB - tA;
+        }
+        else if (sortMode.value === 'pokedex') {
+          const indexA = PDEX_ORDER.indexOf(pA.id);
+          const indexB = PDEX_ORDER.indexOf(pB.id);
+          const idxA = indexA === -1 ? 9999 : indexA;
+          const idxB = indexB === -1 ? 9999 : indexB;
+          result = idxB - idxA;
+        }
         
         return sortDirection.value === 'asc' ? -result : result
       })

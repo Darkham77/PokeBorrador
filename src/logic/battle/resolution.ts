@@ -200,6 +200,14 @@ export async function terminateBattle(ctx: BattleContext, win: boolean, fled = f
   const uiStore = useUIStore()
   uiStore.isBattleSwitchForced = false
   
+  // Reset criminality if fighting police officer
+  if (active.trainerName === 'Oficial de Policía') {
+    if (ctx.gs.state.playerClass === 'rocket' && ctx.gs.state.classData) {
+      ctx.gs.state.classData.criminality = 0
+      uiStore.notify("Tu nivel de criminalidad ha vuelto a cero.", "🚔")
+    }
+  }
+  
   const persistenceMode = active.persistenceMode as string || 'PERSISTENT'
   const isSingle = persistenceMode === 'SINGLE' || active.isGym || active.isPvP
 
