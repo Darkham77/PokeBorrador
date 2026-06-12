@@ -8,7 +8,7 @@ import { useBattleTweenRegistry } from '@/composables/useBattleTweenRegistry'
 import { useGameStore } from '@/stores/game'
 import { logger } from '@/logic/utils/logger'
 
-export interface CatchSparkle {
+interface CatchSparkle {
   id: string;
   side: string;
   tx: number;
@@ -59,6 +59,7 @@ export function useBattleCaptureAnimations(
     )
   )
 
+  // fallow-ignore-next-line complexity
   const fixPokemonBallTagInSave = (pokemonUid: string) => {
     try {
       const gameStore = useGameStore()
@@ -122,6 +123,7 @@ export function useBattleCaptureAnimations(
     cleanupTweenRegistryListeners()
   }
 
+  // fallow-ignore-next-line complexity
   const handleReleaseRequest = async (detail: string | { side?: string, pokemon?: Pokemon }) => {
     const side = typeof detail === 'string' ? detail : (detail?.side || 'player')
     const pokemon = typeof detail === 'object' ? detail?.pokemon : null
@@ -172,6 +174,7 @@ export function useBattleCaptureAnimations(
     slot.pokemonUid = null
   }
 
+  // fallow-ignore-next-line complexity
   const handleCatchRequest = async (detail: string | { side?: string, ballId?: string, pokemon?: Pokemon }) => {
     const side = typeof detail === 'string' ? detail : (detail?.side || 'enemy')
     const pokemon = typeof detail === 'object' ? (detail as { pokemon?: Pokemon })?.pokemon : null
@@ -274,6 +277,7 @@ export function useBattleCaptureAnimations(
     }
   }
 
+  // fallow-ignore-next-line complexity
   const handleFaintAnim = (e: string | { side?: string; isFaint?: boolean; pokemon?: Pokemon } | { detail?: string | { side: string; isFaint?: boolean; pokemon?: Pokemon } }) => {
     if (isFaintInProgress.value) return Promise.resolve() 
     

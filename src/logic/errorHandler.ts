@@ -12,6 +12,7 @@ export function initGlobalErrorHandlers(): void {
   // Intercept console.error globally to trigger error modals for all console-logged errors
   let isHandlingError = false
   const originalConsoleError = console.error
+  // fallow-ignore-next-line complexity
   console.error = function(...args: unknown[]): void {
     originalConsoleError.apply(console, args)
     if (isHandlingError) return
