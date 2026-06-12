@@ -201,8 +201,7 @@ onUnmounted(() => {
   height: 100%;
   pointer-events: none;
   overflow: visible;
-  filter: var(--atmosphere-filter, Brightness(1) Contrast(1));
-  will-change: filter;
+  filter: var(--atmosphere-filter, Brightness(1) contrast(1));
 
   &.layer-back { z-index: calc(var(--z-map-spawns) - 5); }
   // ENCOUNTER_ANIM BUSHES_BACK: cuando forceBehind, la capa front se mueve detrás del sprite
@@ -226,12 +225,11 @@ onUnmounted(() => {
   width: calc(var(--bush-size, 60px) * 1px);
   height: calc(var(--bush-size, 60px) * 1px);
   @include pixelated;
-  will-change: transform;
 
-  &.tint-desert .pixel-bush { filter: Sepia(0.5) Saturate(0.7) Hue-rotate(10deg) Brightness(0.95); }
-  &.tint-swamp .pixel-bush  { filter: Brightness(0.75) Saturate(1.2) Hue-rotate(20deg); }
-  &.tint-arctic .pixel-bush { filter: Saturate(0) Brightness(1.8) Contrast(1.15); }
-  &.tint-cave .pixel-bush   { filter: Sepia(0.3) Saturate(0.95) Hue-rotate(-15deg) Brightness(0.9); }
+  &.tint-desert .pixel-bush { filter: sepia(0.5) Saturate(0.7) hue-rotate(10deg) Brightness(0.95); }
+  &.tint-swamp .pixel-bush  { filter: Brightness(0.75) Saturate(1.2) hue-rotate(20deg); }
+  &.tint-arctic .pixel-bush { filter: Saturate(0) Brightness(1.8) contrast(1.15); }
+  &.tint-cave .pixel-bush   { filter: sepia(0.3) Saturate(0.95) hue-rotate(-15deg) Brightness(0.9); }
 }
 
 .pixel-bush { 
@@ -240,6 +238,5 @@ onUnmounted(() => {
   object-fit: contain; 
   backface-visibility: hidden;
   transform-origin: bottom center;
-  will-change: transform;
 }
 </style>

@@ -190,8 +190,23 @@ const materialsBreakdown = computed(() => {
   return lines.join('\n')
 })
 
+// Global offscreen canvas for measuring text dimensions without triggering layout reflows
+let measureCanvas: HTMLCanvasElement | null = null;
+
+const getTextWidth = (text: string, fontSpec: string): number => {
+  if (!measureCanvas && typeof document !== 'undefined') {
+    measureCanvas = document.createElement('canvas');
+  }
+  if (!measureCanvas) return 0;
+  const ctx = measureCanvas.getContext('2d');
+  if (!ctx) return 0;
+  ctx.font = fontSpec;
+  return ctx.measureText(text).width;
+};
+
 /**
  * Ajusta el tamaño de fuente de un elemento para que quepa en su contenedor
+ * utilizando mediciones en CPU sin forzar recalculaciones geométricas del DOM.
  */
 const fitText = async (el: HTMLElement | null, baseSize: number) => {
   if (!el) return
@@ -201,25 +216,26 @@ const fitText = async (el: HTMLElement | null, baseSize: number) => {
   if (!parent) return
   
   // Margen de seguridad para el icono y padding (pills tienen ~65px total)
-  // En pantallas chicas el pill puede ser más angosto por flex/zoom
   const maxW = parent.clientWidth - 8 
   
-  let size = baseSize
-  el.style.fontSize = `${size}px`
+  const text = el.textContent || el.innerText || '';
+  const fontFamily = '"Press Start 2P", Nunito, sans-serif';
+  let size = baseSize;
   
-  // Aseguramos que el elemento pueda medir su scrollWidth sin restricciones temporales
-  const prevMaxWidth = el.style.maxWidth
-  el.style.maxWidth = 'none'
-  
-  // Iteramos hasta que quepa o lleguemos al mínimo legible
+  // Realizamos las mediciones en CPU (Canvas virtual)
   let attempts = 0
-  while (el.scrollWidth > maxW && size > 4 && attempts < 20) {
-    size -= 1
-    el.style.fontSize = `${size}px`
-    attempts++
+  while (size > 4 && attempts < 20) {
+    const fontSpec = `bold ${size}px ${fontFamily}`;
+    const width = getTextWidth(text, fontSpec);
+    if (width <= maxW) {
+      break;
+    }
+    size -= 1;
+    attempts++;
   }
   
-  el.style.maxWidth = prevMaxWidth
+  // Realizamos un único cambio en el DOM al finalizar
+  el.style.fontSize = `${size}px`
 }
 
 const fitAllPills = () => {

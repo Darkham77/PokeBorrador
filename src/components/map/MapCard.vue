@@ -1,6 +1,6 @@
 <script setup lang="ts">
 // [PureVue-Ignore-Length]
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { gsap } from 'gsap'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import AtmosphereLayer from '@/components/common/AtmosphereLayer.vue'
@@ -273,6 +273,17 @@ const { weatherOnlyFilter } = useWeatherVisuals({
   weather: computedWeather,
   cycle: computed(() => props.cycle)
 })
+
+// Dynamic preloading for LCP map backgrounds using JS Image (avoids strict Chrome link preload warnings)
+watch(
+  imgPath,
+  (newUrl) => {
+    if (!newUrl) return
+    const img = new Image()
+    img.src = newUrl
+  },
+  { immediate: true }
+)
 </script>
 
 <template>

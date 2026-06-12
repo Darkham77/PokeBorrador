@@ -105,7 +105,7 @@
   gap: 32px;
   cursor: pointer;
   position: relative;
-  overflow: hidden;
+  overflow: visible;
   border-color: var(--tier-color, Rgba(255, 255, 255, 0.1));
 
   @include responsive(768px) {
@@ -131,6 +131,8 @@
       @include sprite-render;
       will-change: transform, filter, opacity;
       filter: Drop-Shadow(0 15px 25px Rgba(0,0,0,0.5));
+      transform: Scale(1.5);
+      transform-origin: center center;
     }
   }
 
@@ -237,7 +239,7 @@
   align-items: center;
   cursor: pointer;
   position: relative;
-  overflow: hidden;
+  overflow: visible;
   border-color: var(--tier-color, Rgba(255, 255, 255, 0.1));
 
   &.is-premium-tier {
@@ -288,6 +290,8 @@
       @include sprite-render;
       will-change: transform, filter, opacity;
       filter: Drop-Shadow(0 4px 8px Rgba(0,0,0,0.4));
+      transform: Scale(1.5);
+      transform-origin: center center;
     }
   }
 

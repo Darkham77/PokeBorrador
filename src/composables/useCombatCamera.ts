@@ -22,10 +22,7 @@ export function useCombatCamera(viewportRef: Ref<HTMLElement | null>) {
   const debugZoom = computed(() => battleStore.debugZoom)
 
   watch(debugZoom, () => {
-    if (viewportRef.value) {
-      const rect = viewportRef.value.getBoundingClientRect()
-      updateCamera(rect.width, rect.height)
-    }
+    updateCamera(vpWidth.value, vpHeight.value)
   })
 
   // Computed Styles
@@ -105,8 +102,13 @@ export function useCombatCamera(viewportRef: Ref<HTMLElement | null>) {
 
     if (viewportRef.value) {
       resizeObserver.observe(viewportRef.value)
-      const rect = viewportRef.value.getBoundingClientRect()
-      updateCamera(rect.width, rect.height)
+      // Evitamos getBoundingClientRect() para prevenir Forced Reflows.
+      // Usamos clientWidth/clientHeight como inicialización estática no-bloqueante.
+      const w = viewportRef.value.clientWidth || 1000
+      const h = viewportRef.value.clientHeight || 766
+      vpWidth.value = w
+      vpHeight.value = h
+      updateCamera(w, h)
     }
 
     onToggleGuides = () => {
@@ -115,10 +117,7 @@ export function useCombatCamera(viewportRef: Ref<HTMLElement | null>) {
 
     onToggleZoom = () => {
       battleStore.debugZoom = battleStore.debugZoom === 1 ? 0.4 : 1
-      if (viewportRef.value) {
-        const rect = viewportRef.value.getBoundingClientRect()
-        updateCamera(rect.width, rect.height)
-      }
+      updateCamera(vpWidth.value, vpHeight.value)
     }
 
     gameBus.on('TOGGLE_CAMERA_GUIDES', onToggleGuides)

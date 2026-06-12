@@ -1,8 +1,69 @@
 const outlineCache = new Map<string, string>();
 const processingCache = new Map<string, Promise<string>>();
 
+const auraCache = new Map<string, string>();
+const auraProcessingCache = new Map<string, Promise<string>>();
+
+// Web Worker state management
+let spriteWorker: Worker | null = null;
+let jobCounter = 0;
+const pendingJobs = new Map<
+  number,
+  {
+    resolve: (val: string) => void;
+    reject: (err: Error) => void;
+    originalUrl: string;
+  }
+>();
+
 /**
- * Loads an image from a URL and returns an HTMLImageElement.
+ * Instantiates the Web Worker lazily and configures message handling.
+ */
+function getWorker(): Worker | null {
+  if (typeof window === 'undefined' || !window.Worker || !window.OffscreenCanvas) {
+    return null;
+  }
+  
+  if (!spriteWorker) {
+    try {
+      spriteWorker = new Worker(
+        new URL('./spriteOutliner.worker.ts', import.meta.url),
+        { type: 'module' }
+      );
+      
+      spriteWorker.onmessage = (event) => {
+        const { jobId, success, blob, error } = event.data;
+        const job = pendingJobs.get(jobId);
+        if (!job) return;
+        
+        pendingJobs.delete(jobId);
+        if (success && blob) {
+          try {
+            const objectUrl = URL.createObjectURL(blob);
+            job.resolve(objectUrl);
+          } catch (urlErr) {
+            console.warn('[SpriteOutliner] Failed to create object URL:', urlErr);
+            job.resolve(job.originalUrl);
+          }
+        } else {
+          console.warn('[SpriteOutliner] Worker job failed, using fallback:', error);
+          job.resolve(job.originalUrl);
+        }
+      };
+      
+      spriteWorker.onerror = (err) => {
+        console.error('[SpriteOutliner] Web Worker error occurred:', err);
+      };
+    } catch (err) {
+      console.warn('[SpriteOutliner] Failed to initialize Web Worker, falling back:', err);
+      spriteWorker = null;
+    }
+  }
+  return spriteWorker;
+}
+
+/**
+ * Loads an image from a URL and returns an HTMLImageElement (Fallback only).
  */
 function loadImage(url: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
@@ -15,8 +76,65 @@ function loadImage(url: string): Promise<HTMLImageElement> {
 }
 
 /**
- * Generates an outlined or silhouette version of a sprite dynamically using Canvas.
- * Caches the result to avoid redundant processing.
+ * Fallback sprite processor executing canvas operations in the main thread.
+ * Used only when Web Workers or OffscreenCanvas are unavailable.
+ */
+async function processSpriteFallback(
+  originalUrl: string,
+  type: 'outline' | 'silhouette'
+): Promise<string> {
+  const img = await loadImage(originalUrl);
+  
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  if (!ctx) throw new Error('Could not get 2D context from canvas');
+
+  const r = type === 'silhouette' ? 1 : 3;
+  const padding = type === 'silhouette' ? 4 : r;
+  
+  canvas.width = img.naturalWidth + padding * 2;
+  canvas.height = img.naturalHeight + padding * 2;
+
+  const tempCanvas = document.createElement('canvas');
+  tempCanvas.width = img.naturalWidth;
+  tempCanvas.height = img.naturalHeight;
+  const tempCtx = tempCanvas.getContext('2d');
+  if (!tempCtx) throw new Error('Could not get 2D context from temp canvas');
+
+  tempCtx.drawImage(img, 0, 0);
+  tempCtx.globalCompositeOperation = 'source-in';
+  tempCtx.fillStyle = type === 'silhouette' ? '#ffffff' : '#000000';
+  tempCtx.fillRect(0, 0, img.naturalWidth, img.naturalHeight);
+
+  if (type === 'silhouette') {
+    ctx.filter = 'blur(2px)';
+  }
+  
+  for (let x = -r; x <= r; x++) {
+    for (let y = -r; y <= r; y++) {
+      if (x * x + y * y > r * r) continue;
+      ctx.drawImage(tempCanvas, padding + x, padding + y);
+    }
+  }
+
+  if (type === 'silhouette') {
+    ctx.filter = 'none';
+  }
+
+  if (type === 'silhouette') {
+    tempCtx.fillStyle = '#000000';
+    tempCtx.fillRect(0, 0, img.naturalWidth, img.naturalHeight);
+    ctx.drawImage(tempCanvas, padding, padding);
+  } else {
+    ctx.drawImage(img, padding, padding);
+  }
+
+  return canvas.toDataURL('image/png');
+}
+
+/**
+ * Generates an outlined or silhouette version of a sprite dynamically.
+ * Delegates work to a Web Worker, falling back to main-thread canvas if unavailable.
  */
 export function getProcessedSprite(
   originalUrl: string,
@@ -24,89 +142,44 @@ export function getProcessedSprite(
 ): Promise<string> {
   const cacheKey = `${originalUrl}-${type}`;
 
-  // 1. Check in memory cache
+  // 1. Check in-memory session cache
   if (outlineCache.has(cacheKey)) {
     return Promise.resolve(outlineCache.get(cacheKey)!);
   }
 
-  // 2. Check if already processing to avoid concurrent redundant calculations
+  // 2. Check if already processing
   if (processingCache.has(cacheKey)) {
     return processingCache.get(cacheKey)!;
   }
 
   const promise = (async () => {
     try {
-      const img = await loadImage(originalUrl);
+      const worker = getWorker();
+      let resultUrl = '';
       
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      if (!ctx) {
-        throw new Error('Could not get 2D context from canvas');
-      }
-
-      // Radius is 3px for outlines (matching standard pixel-outline-optimized-3px)
-      // Radius is 1px for silhouettes (matching standard pixel-silhouette-optimized)
-      const r = type === 'silhouette' ? 1 : 3;
-      
-      // Add extra padding for silhouettes to accommodate Gaussian blur without clipping
-      const padding = type === 'silhouette' ? 4 : r;
-      
-      canvas.width = img.naturalWidth + padding * 2;
-      canvas.height = img.naturalHeight + padding * 2;
-
-      // 1. Create solid color mask of the original image
-      const tempCanvas = document.createElement('canvas');
-      tempCanvas.width = img.naturalWidth;
-      tempCanvas.height = img.naturalHeight;
-      const tempCtx = tempCanvas.getContext('2d');
-      if (!tempCtx) {
-        throw new Error('Could not get 2D context from temp canvas');
-      }
-
-      tempCtx.drawImage(img, 0, 0);
-      tempCtx.globalCompositeOperation = 'source-in';
-      
-      // White outline for silhouette, black outline for normal
-      tempCtx.fillStyle = type === 'silhouette' ? '#ffffff' : '#000000';
-      tempCtx.fillRect(0, 0, img.naturalWidth, img.naturalHeight);
-
-      // 2. Draw the mask offset at all positions inside the circular dilation radius
-      if (type === 'silhouette') {
-        // Apply 2px blur for a more pronounced glow
-        ctx.filter = 'blur(2px)';
-      }
-      
-      for (let x = -r; x <= r; x++) {
-        for (let y = -r; y <= r; y++) {
-          if (x * x + y * y > r * r) continue;
-          ctx.drawImage(tempCanvas, padding + x, padding + y);
-        }
-      }
-
-      if (type === 'silhouette') {
-        ctx.filter = 'none';
-      }
-
-      // 3. Draw the center/body
-      if (type === 'silhouette') {
-        // For silhouettes, fill the inner body with solid black (sharp, no blur)
-        tempCtx.fillStyle = '#000000';
-        tempCtx.fillRect(0, 0, img.naturalWidth, img.naturalHeight);
-        ctx.drawImage(tempCanvas, padding, padding);
+      if (worker) {
+        // Delegate to Web Worker asynchronously
+        resultUrl = await new Promise<string>((resolve, reject) => {
+          const jobId = ++jobCounter;
+          pendingJobs.set(jobId, { resolve, reject, originalUrl });
+          worker.postMessage({
+            jobId,
+            action: 'sprite',
+            url: originalUrl,
+            type
+          });
+        });
       } else {
-        // For normal outlines, draw the original colored sprite in the center
-        ctx.drawImage(img, padding, padding);
+        // Main thread fallback (e.g. JSDom / tests)
+        resultUrl = await processSpriteFallback(originalUrl, type);
       }
-
-      const resultUrl = canvas.toDataURL('image/png');
+      
       outlineCache.set(cacheKey, resultUrl);
       return resultUrl;
     } catch (error) {
-      // Fallback to original URL on load/processing failure
       console.warn('[SpriteOutliner] Failed to generate outline for:', originalUrl, error);
       return originalUrl;
     } finally {
-      // Clean processing cache since memory cache now has the result
       processingCache.delete(cacheKey);
     }
   })();
@@ -115,12 +188,46 @@ export function getProcessedSprite(
   return promise;
 }
 
-const auraCache = new Map<string, string>();
-const auraProcessingCache = new Map<string, Promise<string>>();
+/**
+ * Fallback aura processor executing canvas operations in the main thread.
+ * Used only when Web Workers or OffscreenCanvas are unavailable.
+ */
+async function processAuraFallback(
+  maskUrl: string,
+  fillColor: string,
+  blurRadius: number
+): Promise<string> {
+  const img = await loadImage(maskUrl);
+  
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  if (!ctx) throw new Error('Could not get 2D context from canvas');
+
+  const padding = Math.ceil(blurRadius * 2) + 2;
+  canvas.width = img.naturalWidth + padding * 2;
+  canvas.height = img.naturalHeight + padding * 2;
+
+  const tempCanvas = document.createElement('canvas');
+  tempCanvas.width = img.naturalWidth;
+  tempCanvas.height = img.naturalHeight;
+  const tempCtx = tempCanvas.getContext('2d');
+  if (!tempCtx) throw new Error('Could not get 2D context from temp canvas');
+
+  tempCtx.drawImage(img, 0, 0);
+  tempCtx.globalCompositeOperation = 'source-in';
+  tempCtx.fillStyle = fillColor;
+  tempCtx.fillRect(0, 0, img.naturalWidth, img.naturalHeight);
+
+  ctx.filter = `blur(${blurRadius}px)`;
+  ctx.drawImage(tempCanvas, padding, padding);
+  ctx.filter = 'none';
+
+  return canvas.toDataURL('image/png');
+}
 
 /**
  * Pre-renders an aura with color and Gaussian blur from a monochrome mask texture.
- * Caches the result globally to avoid duplicate rendering across components.
+ * Delegates to a Web Worker if available, falling back to main-thread canvas.
  */
 export function getProcessedAura(
   maskUrl: string,
@@ -139,44 +246,32 @@ export function getProcessedAura(
 
   const promise = (async () => {
     try {
-      const img = await loadImage(maskUrl);
+      const worker = getWorker();
+      let resultUrl = '';
       
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      if (!ctx) {
-        throw new Error('Could not get 2D context from canvas');
+      if (worker) {
+        // Delegate to Web Worker asynchronously
+        resultUrl = await new Promise<string>((resolve, reject) => {
+          const jobId = ++jobCounter;
+          pendingJobs.set(jobId, { resolve, reject, originalUrl: maskUrl });
+          worker.postMessage({
+            jobId,
+            action: 'aura',
+            url: maskUrl,
+            fillColor,
+            blurRadius
+          });
+        });
+      } else {
+        // Main thread fallback (e.g. JSDom / tests)
+        resultUrl = await processAuraFallback(maskUrl, fillColor, blurRadius);
       }
-
-      // Add padding to avoid clipping the blurred edges of the aura (typically blurRadius * 2)
-      const padding = Math.ceil(blurRadius * 2) + 2;
-      canvas.width = img.naturalWidth + padding * 2;
-      canvas.height = img.naturalHeight + padding * 2;
-
-      // 1. Create a colorized mask on a temp canvas
-      const tempCanvas = document.createElement('canvas');
-      tempCanvas.width = img.naturalWidth;
-      tempCanvas.height = img.naturalHeight;
-      const tempCtx = tempCanvas.getContext('2d');
-      if (!tempCtx) {
-        throw new Error('Could not get 2D context from temp canvas');
-      }
-
-      tempCtx.drawImage(img, 0, 0);
-      tempCtx.globalCompositeOperation = 'source-in';
-      tempCtx.fillStyle = fillColor;
-      tempCtx.fillRect(0, 0, img.naturalWidth, img.naturalHeight);
-
-      // 2. Draw the colorized mask onto the main canvas with a Gaussian blur filter
-      ctx.filter = `blur(${blurRadius}px)`;
-      ctx.drawImage(tempCanvas, padding, padding);
-      ctx.filter = 'none';
-
-      const resultUrl = canvas.toDataURL('image/png');
+      
       auraCache.set(cacheKey, resultUrl);
       return resultUrl;
     } catch (error) {
       console.warn('[SpriteOutliner] Failed to generate processed aura:', maskUrl, error);
-      return maskUrl; // Fallback to original monochrome texture URL
+      return maskUrl;
     } finally {
       auraProcessingCache.delete(cacheKey);
     }
@@ -185,3 +280,4 @@ export function getProcessedAura(
   auraProcessingCache.set(cacheKey, promise);
   return promise;
 }
+
