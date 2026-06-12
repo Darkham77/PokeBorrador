@@ -98,8 +98,7 @@ export function usePWA() {
       progressText.value = 'Cerrando sesión de forma segura...'
       try {
         if (authStore.logout) {
-          await authStore.logout()
-          return // logout handles page reload
+          await authStore.logout(true)
         }
       } catch (e) {
         logger.error('PWA', `Error during logout on update: ${(e as Error).message}`)
@@ -112,10 +111,14 @@ export function usePWA() {
     const forceCacheBustingReload = async () => {
       try {
         const baseUrl = import.meta.env.BASE_URL || '/'
+        const cacheBuster = Temporal.Now.instant().epochMilliseconds.toString()
         const mainUrls = [
           window.location.origin + baseUrl,
           window.location.origin + baseUrl + 'index.html',
-          window.location.href
+          window.location.origin + baseUrl + 'version.json',
+          window.location.origin + baseUrl + '?t=' + cacheBuster,
+          window.location.origin + baseUrl + 'index.html?t=' + cacheBuster,
+          window.location.origin + baseUrl + 'version.json?t=' + cacheBuster
         ]
         
         // Force refresh browser HTTP cache for the main documents/assets
@@ -139,9 +142,9 @@ export function usePWA() {
       }
 
       try {
-        const url = new URL(window.location.href)
-        url.searchParams.set('t', Temporal.Now.instant().epochMilliseconds.toString())
-        const target = `${url.pathname}${url.search}${url.hash}`
+        const baseUrl = import.meta.env.BASE_URL || '/'
+        const cacheBuster = Temporal.Now.instant().epochMilliseconds.toString()
+        const target = `${window.location.origin}${baseUrl}?t=${cacheBuster}`
         // fallow-ignore-next-line security-sink
         window.location.replace(target)
       } catch {

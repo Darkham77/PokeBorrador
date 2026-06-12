@@ -394,7 +394,7 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  async function logout() {
+  async function logout(preventReload = false) {
     logger.info('AuthStore', 'Iniciando cierre de sesión...')
 
     // Safe preventative save if game is active
@@ -436,7 +436,9 @@ export const useAuthStore = defineStore('auth', () => {
     // We do NOT unregister the Service Worker — that's what was breaking the
     // PWA standalone mode. The SW stays registered so the app remains installable
     // and the standalone layout is preserved across reloads.
-    window.location.reload()
+    if (!preventReload) {
+      window.location.reload()
+    }
   }
 
   function clearSessionLocal() {
