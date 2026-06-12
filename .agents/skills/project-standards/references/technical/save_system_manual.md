@@ -45,6 +45,13 @@ When reading files from OPFS (e.g., local saves or SQLite binary storage):
 - **Creation Flag**: When opening a file for reading, ALWAYS set `{ create: false }` in `getFileHandle`. Using `{ create: true }` on a missing file creates an empty 0-byte file, causing subsequent JSON parsers to crash with `Unexpected end of JSON input`.
 - **Zero-Byte & NotFound Handling**: Gracefully handle `NotFoundError` and files with `size === 0` by returning `null` or default state instead of throwing exceptions.
 
+### 7. Database Migration Concurrency Lock
+
+When applying SQL migrations that update user save progress or profiles in Supabase:
+
+- **ID Rotation**: You MUST always update and rotate the `last_save_id` of all affected players in `game_saves` to a new random UUID (e.g. `UPDATE public.game_saves SET last_save_id = gen_random_uuid();`).
+- **Why**: This forces players currently online to fail their next auto-save attempt with `OUT_OF_SYNC`. The client-side engine will capture this error, fetch the fresh migrated state from the database, and reload/hydrate the memory without losing player progress. This prevents active client tabs from silently overwriting server-side migrations.
+
 ---
 
 ## 🏗️ Data Architecture (DBRouter)
