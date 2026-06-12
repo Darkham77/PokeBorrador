@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, nextTick, onUnmounted, computed } from 'vue'
+import { ref, watch, nextTick, onUnmounted } from 'vue'
 import gsap from 'gsap'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import VirtualEntity from './VirtualEntity.vue'
@@ -107,37 +107,26 @@ const {
 
 const animTween = ref<gsap.core.Timeline | gsap.core.Tween | null>(null)
 const currentMode = ref<'idle' | 'variation'>('idle')
-const currentImageUrl = ref('')
+const idleImageUrl = ref('')
+const variationImageUrl = ref('')
 
-// Desacoplar el ancho del DOM de la reactividad inmediata del cambio de modo en GSAP
-const currentFrames = computed(() => {
-  if (!props.pokemon) return 1
-  return currentMode.value === 'variation' ? (variationMeta.value?.frames ?? 1) : frames.value
-})
-
-let pendingAnimation: (() => void) | null = null
-
-const onImageLoad = () => {
-  if (pendingAnimation) {
-    const fn = pendingAnimation
-    pendingAnimation = null
-    fn()
-  }
-}
+// Variables de ciclos de animación de spritesheet
 
 let idleCyclesTarget = Math.floor(Math.random() * 2) + 3 // 3 o 4 ciclos
 
-// Actualizar reactivamente e iniciar la animación de spritesheet
 watch([idleKey, () => props.pokemon?.isShiny, () => props.pokemon?.status, isAnimated], () => {
   idleCyclesTarget = Math.floor(Math.random() * 2) + 3
-  pendingAnimation = null
   currentMode.value = 'idle' // Forzar reinicio al estado de reposo (idle) al cambiar de Pokémon o estado
   if (!props.pokemon) return
-  currentImageUrl.value = getAssetUrl(ASSET_TYPES.POKEMON, props.pokemon.id, {
+
+  const baseAssetUrl = getAssetUrl(ASSET_TYPES.POKEMON, props.pokemon.id, {
     isShiny: !!props.pokemon.isShiny,
     isBack: props.side === 'player',
     isAnimated: true,
-  }).replace(/\/(\d+)([^/]*)\.webp$/i, (_: string, num: string, suff: string) => `/${num}i${suff}.webp`)
+  })
+
+  idleImageUrl.value = baseAssetUrl.replace(/\/(\d+)([^/]*)\.webp$/i, (_: string, num: string, suff: string) => `/${num}i${suff}.webp`)
+  variationImageUrl.value = baseAssetUrl.replace(/\/(\d+)([^/]*)\.webp$/i, (_: string, num: string, suff: string) => `/${num}v${suff}.webp`)
 
   nextTick(() => {
     animateSpritesheet()
@@ -145,7 +134,6 @@ watch([idleKey, () => props.pokemon?.isShiny, () => props.pokemon?.status, isAni
 }, { immediate: true })
 
 const animateSpritesheet = () => {
-  pendingAnimation = null
   if (animTween.value) {
     animTween.value.kill()
     animTween.value = null
@@ -158,14 +146,10 @@ const animateSpritesheet = () => {
   // Si está congelado o dormido, forzar primer frame del idle y detener animación
   if (props.pokemon?.status === 'freeze' || props.pokemon?.status === 'sleep') {
     currentMode.value = 'idle'
-    if (props.pokemon) {
-      currentImageUrl.value = getAssetUrl(ASSET_TYPES.POKEMON, props.pokemon.id, {
-        isShiny: !!props.pokemon.isShiny,
-        isBack: props.side === 'player',
-        isAnimated: true,
-      }).replace(/\/(\d+)([^/]*)\.webp$/i, (_: string, num: string, suff: string) => `/${num}i${suff}.webp`)
+    const imgEl = spriteRef.value.querySelector('.pokemon-image-idle') as HTMLElement
+    if (imgEl) {
+      gsap.set(imgEl, { x: 0, xPercent: 0 })
     }
-    gsap.set(imgEl, { x: 0, xPercent: 0 })
     return
   }
 
@@ -177,18 +161,12 @@ const animateSpritesheet = () => {
     }
     if (!props.pokemon) return
 
-    const baseAssetUrl = getAssetUrl(ASSET_TYPES.POKEMON, props.pokemon.id, {
-      isShiny: !!props.pokemon.isShiny,
-      isBack: props.side === 'player',
-      isAnimated: true,
-    })
-
-    const mode = currentMode.value === 'idle' ? 'i' : 'v'
-    const targetUrl = baseAssetUrl.replace(/\/(\d+)([^/]*)\.webp$/i, (_: string, num: string, suff: string) => `/${num}${mode}${suff}.webp`)
-
     const startTween = () => {
       if (!spriteRef.value) return
-      const imgEl = spriteRef.value.querySelector('.pokemon-combat-image') as HTMLElement
+      
+      // Apuntamos específicamente a la imagen correspondiente al modo actual
+      const activeClass = currentMode.value === 'idle' ? '.pokemon-image-idle' : '.pokemon-image-variation'
+      const imgEl = spriteRef.value.querySelector(activeClass) as HTMLElement
       if (!imgEl) return
 
       const totalFrames = currentMode.value === 'idle' 
@@ -198,8 +176,10 @@ const animateSpritesheet = () => {
       // Si el modo actual no tiene frames o es variación y no hay variación, volvemos a idle
       if (totalFrames <= 1 || (currentMode.value === 'variation' && !variationMeta.value)) {
         currentMode.value = 'idle'
-        currentImageUrl.value = baseAssetUrl.replace(/\/(\d+)([^/]*)\.webp$/i, (_: string, num: string, suff: string) => `/${num}i${suff}.webp`)
-        gsap.set(imgEl, { x: 0, xPercent: 0 })
+        const idleImg = spriteRef.value.querySelector('.pokemon-image-idle') as HTMLElement
+        if (idleImg) {
+          gsap.set(idleImg, { x: 0, xPercent: 0 })
+        }
         return
       }
 
@@ -238,28 +218,8 @@ const animateSpritesheet = () => {
       animTween.value = tl;
     }
 
-    if (currentImageUrl.value !== targetUrl) {
-      pendingAnimation = startTween
-      currentImageUrl.value = targetUrl
-      
-      // Control por si la imagen se recupera instantáneamente del caché del navegador sin gatillar @load
-      nextTick(() => {
-        const imgEl = spriteRef.value?.querySelector('.pokemon-combat-image') as HTMLImageElement | null
-        if (imgEl && imgEl.complete && imgEl.naturalWidth > 0 && pendingAnimation === startTween) {
-          pendingAnimation = null
-          startTween()
-        }
-      })
-    } else {
-      const imgEl = spriteRef.value?.querySelector('.pokemon-combat-image') as HTMLImageElement | null
-      const isLoaded = imgEl && imgEl.complete && imgEl.naturalWidth > 0
-      if (isLoaded) {
-        // Al no haber cambio de URL, el DOM ya tiene la imagen y el ancho correctos; iniciamos directamente
-        startTween()
-      } else {
-        pendingAnimation = startTween
-      }
-    }
+    // Como ambas imágenes ya están renderizadas en el DOM, no necesitamos esperar un onload asíncrono
+    startTween()
   }
 
   playMode()
@@ -487,27 +447,67 @@ const onGroundPopLeave = (el: Element, done: () => void) => {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: isAnimated ? 'flex-start' : 'center',
-                  overflow: isAnimated ? 'hidden' : 'visible'
+                  overflow: isAnimated ? 'hidden' : 'visible',
+                  position: 'relative'
                 }"
               >
-                <!-- Para sprites animados: img dentro del wrapper que tiene overflow:hidden -->
-                <img
-                  v-if="isAnimated"
-                  class="pokemon-combat-image"
-                  :class="{ 'is-silhouette': isSilhouette }"
-                  :src="currentImageUrl"
-                  :style="{
-                    filter: isSilhouette ? 'none' : 'var(--atmosphere-filter)',
-                    width: (currentFrames * 100) + '%',
-                    maxWidth: 'none',
-                    height: '100%',
-                    objectFit: 'fill',
-                    objectPosition: 'left center',
-                    flexShrink: 0
-                  }"
-                  @load="(e: Event) => { handleLoad(e); onImageLoad(); }"
-                  @error="handleImageError"
-                >
+                <!-- Para sprites animados: Renderizamos ambos simultáneamente si existen para evitar parpadeos y demoras de swapping de src -->
+                <template v-if="isAnimated">
+                  <!-- Imagen IDLE (i) -->
+                  <img
+                    class="pokemon-combat-image pokemon-image-idle"
+                    :class="{ 
+                      'is-silhouette': isSilhouette,
+                      'active-mode': currentMode === 'idle'
+                    }"
+                    :src="idleImageUrl"
+                    :style="{
+                      filter: isSilhouette ? 'none' : 'var(--atmosphere-filter)',
+                      width: (frames * 100) + '%',
+                      maxWidth: 'none',
+                      height: '100%',
+                      objectFit: 'fill',
+                      objectPosition: 'left center',
+                      flexShrink: 0,
+                      position: 'absolute',
+                      left: 0,
+                      top: 0,
+                      opacity: currentMode === 'idle' ? 1 : 0,
+                      pointerEvents: currentMode === 'idle' ? 'auto' : 'none',
+                      visibility: currentMode === 'idle' ? 'visible' : 'hidden'
+                    }"
+                    @load="handleLoad"
+                    @error="handleImageError"
+                  >
+
+                  <!-- Imagen VARIACIÓN (v) -->
+                  <img
+                    v-if="variationMeta && variationMeta.frames > 1"
+                    class="pokemon-combat-image pokemon-image-variation"
+                    :class="{ 
+                      'is-silhouette': isSilhouette,
+                      'active-mode': currentMode === 'variation'
+                    }"
+                    :src="variationImageUrl"
+                    :style="{
+                      filter: isSilhouette ? 'none' : 'var(--atmosphere-filter)',
+                      width: (variationMeta.frames * 100) + '%',
+                      maxWidth: 'none',
+                      height: '100%',
+                      objectFit: 'fill',
+                      objectPosition: 'left center',
+                      flexShrink: 0,
+                      position: 'absolute',
+                      left: 0,
+                      top: 0,
+                      opacity: currentMode === 'variation' ? 1 : 0,
+                      pointerEvents: currentMode === 'variation' ? 'auto' : 'none',
+                      visibility: currentMode === 'variation' ? 'visible' : 'hidden'
+                    }"
+                    @load="handleLoad"
+                    @error="handleImageError"
+                  >
+                </template>
 
                 <!-- Sprite estático: img directamente -->
                 <img
