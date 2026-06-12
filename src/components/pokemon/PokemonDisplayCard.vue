@@ -35,6 +35,7 @@ const emit = defineEmits<{
   click: []
   openDetail: [index: number]
   openItem: [index: number]
+  unequipItem: [index: number]
   sendToBox: [index: number]
   select: [index: number]
   'toggle-tag': [tagId: string]
@@ -286,11 +287,19 @@ function getGenderClass(gender: string) {
           class="footer-btn item-btn"
           @click.stop="emit('openItem', index)"
         >
-          <span class="emoji">🎒</span> OBJETO
+          <span class="emoji">🎒</span> USAR OBJETO
+        </button>
+        <button
+          v-if="actions.includes('item') && pokemon.heldItem"
+          class="footer-btn unequip-btn"
+          @click.stop="emit('unequipItem', index)"
+        >
+          <span class="emoji">❌</span> QUITAR OBJETO
         </button>
         <button
           v-if="actions.includes('details')"
           class="footer-btn data-btn"
+          :class="{ 'full-width-btn': pokemon.heldItem }"
           @click.stop="emit('openDetail', index)"
         >
           <span class="emoji">📊</span> DATOS

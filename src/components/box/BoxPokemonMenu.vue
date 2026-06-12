@@ -3,6 +3,8 @@ import { computed } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 import { useBoxStore } from '@/stores/box'
+import { useInventoryStore } from '@/stores/inventory'
+import { getItemById, getItemByName } from '@/data/items'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { NATURE_DATA } from '@/data/natures'
 import { ABILITY_DATA } from '@/data/abilities'
@@ -69,6 +71,16 @@ const handleUseItem = () => {
   // to avoid circular dependency issues with uiStore.toggleInventory
   uiStore.inventoryTarget = { context: 'box', index: props.boxIndex }
   useModalStore().open('Inventory')
+}
+
+const handleUnequipItem = () => {
+  const inventoryStore = useInventoryStore()
+  const unequipped = inventoryStore.unequipItem('box', props.boxIndex)
+  if (unequipped) {
+    const itemData = getItemById(unequipped) || getItemByName(unequipped)
+    const displayName = itemData ? itemData.name : unequipped.toUpperCase().replace(/_/g, ' ')
+    uiStore.notify(`¡Se ha quitado el objeto: ${displayName}!`, '🎒')
+  }
 }
 
 const handleMoveToBox = () => {
@@ -331,6 +343,13 @@ const handleSellRocket = () => {
           @click.stop="handleUseItem"
         >
           <span class="icon">🎒</span> USAR OBJETO
+        </button>
+        <button
+          v-if="pokemon?.heldItem"
+          class="menu-action-btn danger-btn"
+          @click.stop="handleUnequipItem"
+        >
+          <span class="icon">❌</span> QUITAR OBJETO
         </button>
         <button
           class="menu-action-btn"

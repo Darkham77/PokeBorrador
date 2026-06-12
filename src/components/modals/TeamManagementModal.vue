@@ -4,6 +4,8 @@ import gsap from 'gsap'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 import { useBoxStore } from '@/stores/box'
+import { useInventoryStore } from '@/stores/inventory'
+import { getItemById, getItemByName } from '@/data/items'
 import BaseModal from '@/components/common/BaseModal.vue'
 import UnifiedTeamSlot from '@/components/team/UnifiedTeamSlot.vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
@@ -109,6 +111,32 @@ function openItem(pokemon: Pokemon | null) {
   idx = box.findIndex((p) => p && p.uid === pokemon.uid)
   if (idx > -1) {
     uiStore.toggleInventory('box', idx)
+  }
+}
+
+function unequipItem(pokemon: Pokemon | null) {
+  if (!pokemon) return
+  const inventoryStore = useInventoryStore()
+  const team = (gameStore.state.team || []) as (Pokemon | null)[]
+  let idx = team.findIndex((p) => p && p.uid === pokemon.uid)
+  if (idx > -1) {
+    const unequipped = inventoryStore.unequipItem('team', idx)
+    if (unequipped) {
+      const itemData = getItemById(unequipped) || getItemByName(unequipped)
+      const displayName = itemData ? itemData.name : unequipped.toUpperCase().replace(/_/g, ' ')
+      uiStore.notify(`¡Se ha quitado el objeto: ${displayName}!`, '🎒')
+    }
+    return
+  }
+  const box = (gameStore.state.box || []) as (Pokemon | null)[]
+  idx = box.findIndex((p) => p && p.uid === pokemon.uid)
+  if (idx > -1) {
+    const unequipped = inventoryStore.unequipItem('box', idx)
+    if (unequipped) {
+      const itemData = getItemById(unequipped) || getItemByName(unequipped)
+      const displayName = itemData ? itemData.name : unequipped.toUpperCase().replace(/_/g, ' ')
+      uiStore.notify(`¡Se ha quitado el objeto: ${displayName}!`, '🎒')
+    }
   }
 }
 
@@ -284,6 +312,7 @@ function selectAdventure(_slotIndex: number) {
             :is-touch-over="touchOverIndex === i"
             @open-detail="openDetail(p)"
             @open-item="openItem(p)"
+            @unequip-item="unequipItem(p)"
             @send-to-box="sendToBox(p)"
             @select="selectAdventure"
             @drag-start="handleDragStart"
@@ -315,6 +344,7 @@ function selectAdventure(_slotIndex: number) {
             is-pvp
             @open-detail="openDetail(p)"
             @open-item="openItem(p)"
+            @unequip-item="unequipItem(p)"
             @select="selectPvp(i)"
             @drag-start="handleDragStart"
             @drag-over="(idx) => touchOverIndex = idx"
@@ -345,6 +375,7 @@ function selectAdventure(_slotIndex: number) {
             is-pvp
             @open-detail="openDetail(p)"
             @open-item="openItem(p)"
+            @unequip-item="unequipItem(p)"
             @select="selectWar(i)"
             @drag-start="handleDragStart"
             @drag-over="(idx) => touchOverIndex = idx"

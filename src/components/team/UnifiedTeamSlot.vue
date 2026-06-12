@@ -26,6 +26,7 @@ const emit = defineEmits<{
   select: [index: number]
   'open-detail': [index: number]
   'open-item': [index: number]
+  'unequip-item': [index: number]
   'send-to-box': [index: number]
   'drag-start': [index: number]
   'drag-over': [index: number | null]
@@ -367,6 +368,7 @@ onUnmounted(() => {
         disable-card-click
         @open-detail="emit('open-detail', index)"
         @open-item="emit('open-item', index)"
+        @unequip-item="emit('unequip-item', index)"
         @send-to-box="emit('send-to-box', index)"
         @select="emit('select', index)"
       />
