@@ -206,9 +206,33 @@ export default defineConfig({
       },
       workbox: {
         cleanupOutdatedCaches: true,
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,woff2}'],
-        // Aumentamos el límite de tamaño para assets grandes si los hay (e.g. ShowdownWorker)
-        maximumFileSizeToCacheInBytes: 8 * 1024 * 1024
+        // CRITICAL: Only precache app shell (JS, CSS, HTML, fonts, wasm).
+        // NEVER precache game sprites/images here — there are ~20k image files
+        // in public/assets/. Precaching them all would block SW installation
+        // indefinitely and cause an infinite update loop.
+        globPatterns: ['**/*.{js,css,html,ico,woff2,wasm}'],
+        maximumFileSizeToCacheInBytes: 8 * 1024 * 1024,
+        // Game images are cached on-demand via runtime caching (CacheFirst).
+        // This means: the first time the user views a sprite it downloads and
+        // caches it; subsequent views use the cache instantly. Much faster than
+        // trying to pre-download every single sprite at install time.
+        runtimeCaching: [
+          {
+            // Match all game image assets under /assets/ path
+            urlPattern: /\/assets\/.*\.(png|webp|svg|gif|jpg|jpeg)(\?.*)?$/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'game-assets-v1',
+              expiration: {
+                maxEntries: 25000,
+                maxAgeSeconds: 60 * 60 * 24 * 90 // 90 days
+              },
+              cacheableResponse: {
+                statuses: [0, 200]
+              }
+            }
+          }
+        ]
       },
       devOptions: {
         enabled: true
