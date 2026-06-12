@@ -10,6 +10,7 @@ import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { Z_LAYERS } from '@/logic/constants/visuals'
 import { useModalStore } from '@/stores/modals'
 import { useTrainerProfile } from '@/components/modals/useTrainerProfile'
+import { useStatHover } from '@/composables/useStatHover'
 
 // Components
 import BaseModal from '@/components/common/BaseModal.vue'
@@ -82,43 +83,7 @@ const formatDate = (isoStr: string | null | undefined) => {
   }
 }
 
-const handleStatEnter = (e: MouseEvent) => {
-  gsap.to(e.currentTarget, {
-    y: -2,
-    backgroundColor: 'rgba(30, 41, 59, 0.5)',
-    borderColor: 'rgba(255, 214, 10, 0.2)',
-    boxShadow: '0 0 0 1px rgba(255, 214, 10, 0.2)',
-    duration: 0.2,
-    ease: 'power2.out'
-  })
-}
-
-const handleStatLeave = (e: MouseEvent) => {
-  const el = e.currentTarget as HTMLElement
-  let baseBorderColor = 'rgba(255, 255, 255, 0.05)'
-  let baseBackground = 'rgba(15, 23, 42, 0.95)'
-  
-  if (el.classList.contains('pvp')) {
-    baseBorderColor = 'rgba(236, 72, 153, 0.2)'
-    baseBackground = 'linear-gradient(135deg, rgba(236, 72, 153, 0.05) 0%, rgba(15, 23, 42, 0.4) 100%)'
-  } else if (el.classList.contains('highlight-war-points')) {
-    baseBorderColor = 'rgba(59, 130, 246, 0.2)'
-    baseBackground = 'linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(15, 23, 42, 0.4) 100%)'
-  } else if (el.classList.contains('highlight-war-coins')) {
-    baseBorderColor = 'rgba(251, 191, 36, 0.2)'
-    baseBackground = 'linear-gradient(135deg, rgba(251, 191, 36, 0.05) 0%, rgba(15, 23, 42, 0.4) 100%)'
-  }
-
-  gsap.to(el, {
-    y: 0,
-    background: baseBackground,
-    borderColor: baseBorderColor,
-    boxShadow: 'none',
-    duration: 0.2,
-    ease: 'power2.out',
-    clearProps: 'y,background,borderColor,boxShadow'
-  })
-}
+const { handleStatEnter, handleStatLeave } = useStatHover()
 
 const factionLabel = computed(() => {
   const f = gs.value.faction

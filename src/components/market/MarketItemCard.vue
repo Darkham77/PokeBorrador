@@ -233,7 +233,7 @@ const tierColor = computed(() => {
       position: absolute;
       width: 100%;
       height: 100%;
-      z-index: 1;
+      z-index: var(--z-map-floor);
       opacity: 0.95;
       pointer-events: none;
       filter: Blur(2px);
@@ -243,7 +243,7 @@ const tierColor = computed(() => {
       width: 32px;
       height: 32px;
       object-fit: contain;
-      z-index: 2;
+      z-index: calc(var(--z-map-floor) + 1);
       filter: Drop-Shadow(0 2px 4px Rgba(0, 0, 0, 0.4));
     }
   }

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useStatHover } from '@/composables/useStatHover'
+
 interface Props {
   rankedMaxElo: number
   boxCount: number
@@ -12,21 +14,7 @@ interface Props {
 
 defineProps<Props>()
 
-const handleStatEnter = (e: MouseEvent) => {
-  const el = e.currentTarget as HTMLElement
-  el.style.transform = 'translateY(-2px)'
-  el.style.backgroundColor = 'rgba(30, 41, 59, 0.5)'
-  el.style.borderColor = 'rgba(255, 214, 10, 0.2)'
-  el.style.boxShadow = '0 0 0 1px rgba(255, 214, 10, 0.2)'
-}
-
-const handleStatLeave = (e: MouseEvent) => {
-  const el = e.currentTarget as HTMLElement
-  el.style.transform = ''
-  el.style.backgroundColor = ''
-  el.style.borderColor = ''
-  el.style.boxShadow = ''
-}
+const { handleStatEnter, handleStatLeave } = useStatHover()
 </script>
 
 <template>
@@ -138,7 +126,6 @@ const handleStatLeave = (e: MouseEvent) => {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  transition: transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
   @include gpu-layer;
 
   &.highlight-war-coins {
