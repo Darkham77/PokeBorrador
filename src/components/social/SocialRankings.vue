@@ -99,6 +99,8 @@ const isFactionValid = (faction: string | undefined | null) => {
             <TrainerAvatar 
               :player-class="player.playerClass" 
               :level="player.level" 
+              :avatar-style="player.avatar_style"
+              :gender="player.gender || 'h'"
               :size="36" 
             />
             <div

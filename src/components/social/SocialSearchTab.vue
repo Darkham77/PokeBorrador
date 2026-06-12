@@ -189,6 +189,7 @@ watch(() => socialStore.searchResults, () => {
           :player-class="player.playerClass" 
           :level="player.level" 
           :avatar-style="player.avatar_style"
+          :gender="player.gender || 'h'"
           :size="40"
           class="clickable-avatar"
           @click.stop="openTrainerProfile(player.id)"

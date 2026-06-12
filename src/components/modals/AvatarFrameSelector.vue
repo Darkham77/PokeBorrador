@@ -142,6 +142,9 @@ const selectAvatar = (style: AvatarStyle) => {
           <TrainerAvatar
             :size="64"
             :avatar-style="style.class"
+            :player-class="gameStore.state.playerClass"
+            :level="gameStore.state.trainerLevel"
+            :gender="gameStore.state.gender"
           />
         </div>
         <div class="style-meta">
@@ -181,10 +184,10 @@ const selectAvatar = (style: AvatarStyle) => {
     h3 { font-size: 18px; color: var(--white); font-weight: 700; }
     .badge {
       font-size: 9px;
-      background: rgba(255, 255, 255, 0.05);
+      background: Rgba(255, 255, 255, 0.05);
       padding: 2px 8px;
       border-radius: 4px;
-      color: rgba(148, 163, 184, 1);
+      color: Rgba(148, 163, 184, 1);
       font-weight: 800;
     }
   }
@@ -202,8 +205,8 @@ const selectAvatar = (style: AvatarStyle) => {
 }
 
 .style-card {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: Rgba(255, 255, 255, 0.03);
+  border: 1px solid Rgba(255, 255, 255, 0.05);
   border-radius: 16px;
   padding: 20px;
   display: flex;
@@ -215,28 +218,28 @@ const selectAvatar = (style: AvatarStyle) => {
   position: relative;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.06);
-    transform: translateY(-4px);
-    border-color: rgba(255, 255, 255, 0.1);
+    background: Rgba(255, 255, 255, 0.06);
+    transform: Translatey(-4px);
+    border-color: Rgba(255, 255, 255, 0.1);
   }
 
   &.active {
-    background: rgba(59, 130, 246, 0.08);
-    border-color: rgba(59, 130, 246, 1);
-    box-shadow: 0 0 20px rgba(59, 130, 246, 0.15);
+    background: Rgba(59, 130, 246, 0.08);
+    border-color: Rgba(59, 130, 246, 1);
+    box-shadow: 0 0 20px Rgba(59, 130, 246, 0.15);
   }
 
   &.locked {
     opacity: 0.6;
-    filter: grayscale(0.85);
+    filter: Grayscale(0.85);
     cursor: not-allowed;
-    background: rgba(0, 0, 0, 0.25);
-    border-color: rgba(255, 255, 255, 0.03);
+    background: Rgba(0, 0, 0, 0.25);
+    border-color: Rgba(255, 255, 255, 0.03);
     
     &:hover {
       transform: none;
-      background: rgba(0, 0, 0, 0.25);
-      border-color: rgba(255, 255, 255, 0.03);
+      background: Rgba(0, 0, 0, 0.25);
+      border-color: Rgba(255, 255, 255, 0.03);
     }
   }
 
@@ -250,13 +253,13 @@ const selectAvatar = (style: AvatarStyle) => {
     .style-name {
       display: block;
       font-size: 11px;
-      color: rgba(148, 163, 184, 1);
+      color: Rgba(148, 163, 184, 1);
       font-weight: 600;
     }
     
     .status-tag {
       font-size: 9px;
-      color: rgba(59, 130, 246, 1);
+      color: Rgba(59, 130, 246, 1);
       font-weight: 800;
       display: block;
     }
@@ -271,50 +274,50 @@ const selectAvatar = (style: AvatarStyle) => {
 
       &.locked {
         color: #ef4444;
-        background: rgba(239, 68, 68, 0.1);
-        border: 1px solid rgba(239, 68, 68, 0.25);
+        background: Rgba(239, 68, 68, 0.1);
+        border: 1px solid Rgba(239, 68, 68, 0.25);
       }
 
       &.unlocked {
         color: #4ade80;
-        background: rgba(34, 197, 94, 0.15);
-        border: 1px solid rgba(34, 197, 94, 0.3);
+        background: Rgba(34, 197, 94, 0.15);
+        border: 1px solid Rgba(34, 197, 94, 0.3);
       }
 
       &.cazabichos {
         color: #22c55e !important;
-        background: rgba(34, 197, 94, 0.1) !important;
-        border: 1px solid rgba(34, 197, 94, 0.3) !important;
+        background: Rgba(34, 197, 94, 0.1) !important;
+        border: 1px solid Rgba(34, 197, 94, 0.3) !important;
       }
 
       &.criador {
         color: #a855f7 !important;
-        background: rgba(168, 85, 247, 0.1) !important;
-        border: 1px solid rgba(168, 85, 247, 0.3) !important;
+        background: Rgba(168, 85, 247, 0.1) !important;
+        border: 1px solid Rgba(168, 85, 247, 0.3) !important;
       }
 
       &.rocket {
         color: #ef4444 !important;
-        background: rgba(239, 68, 68, 0.1) !important;
-        border: 1px solid rgba(239, 68, 68, 0.3) !important;
+        background: Rgba(239, 68, 68, 0.1) !important;
+        border: 1px solid Rgba(239, 68, 68, 0.3) !important;
       }
 
       &.entrenador {
         color: #3b82f6 !important;
-        background: rgba(59, 130, 246, 0.1) !important;
-        border: 1px solid rgba(59, 130, 246, 0.3) !important;
+        background: Rgba(59, 130, 246, 0.1) !important;
+        border: 1px solid Rgba(59, 130, 246, 0.3) !important;
       }
 
       &.union {
         color: #00d2ff !important;
-        background: rgba(0, 210, 255, 0.15) !important;
-        border: 1px solid rgba(0, 210, 255, 0.3) !important;
+        background: Rgba(0, 210, 255, 0.15) !important;
+        border: 1px solid Rgba(0, 210, 255, 0.3) !important;
       }
 
       &.poder {
         color: #ff3300 !important;
-        background: rgba(255, 51, 0, 0.15) !important;
-        border: 1px solid rgba(255, 51, 0, 0.3) !important;
+        background: Rgba(255, 51, 0, 0.15) !important;
+        border: 1px solid Rgba(255, 51, 0, 0.3) !important;
       }
     }
   }
@@ -332,10 +335,10 @@ const selectAvatar = (style: AvatarStyle) => {
   align-items: center;
   gap: 8px;
   margin-bottom: 20px;
-  background: rgba(0, 0, 0, 0.2);
+  background: Rgba(0, 0, 0, 0.2);
   padding: 4px;
   border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid Rgba(255, 255, 255, 0.05);
   width: fit-content;
 }
 
@@ -355,14 +358,14 @@ const selectAvatar = (style: AvatarStyle) => {
 
   &:hover {
     color: #f1f5f9;
-    background: rgba(255, 255, 255, 0.03);
+    background: Rgba(255, 255, 255, 0.03);
   }
 
   &.active {
     color: #ffffff;
-    background: rgba(59, 130, 246, 0.2);
-    border: 1px solid rgba(59, 130, 246, 0.3);
-    box-shadow: 0 0 10px rgba(59, 130, 246, 0.1);
+    background: Rgba(59, 130, 246, 0.2);
+    border: 1px solid Rgba(59, 130, 246, 0.3);
+    box-shadow: 0 0 10px Rgba(59, 130, 246, 0.1);
   }
 }
 </style>

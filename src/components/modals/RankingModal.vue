@@ -351,6 +351,7 @@ watch(() => socialStore.leaderboardLoading, (newVal) => {
                 :player-class="player.playerClass"
                 :level="player.level"
                 :avatar-style="player.avatar_style"
+                :gender="player.gender || 'h'"
                 :size="38"
               >
                 <template #overlay>

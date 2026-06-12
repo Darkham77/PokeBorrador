@@ -72,6 +72,7 @@ watch(() => socialStore.pendingRequests, () => {
             :player-class="req.profiles?.save_data?.playerClass || req.profiles?.playerClass || req.profiles?.player_class || 'Entrenador'" 
             :level="req.profiles?.save_data?.trainerLevel || req.profiles?.level || req.profiles?.trainer_level || 1" 
             :avatar-style="req.profiles?.avatar_style || req.profiles?.save_data?.avatar_style || undefined"
+            :gender="req.profiles?.gender || req.profiles?.save_data?.gender || 'h'"
             :size="36"
             class="clickable-avatar"
             @click.stop="openTrainerProfile(req.requester_id)"

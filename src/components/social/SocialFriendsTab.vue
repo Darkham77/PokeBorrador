@@ -117,6 +117,7 @@ defineEmits<{
             :player-class="friend.playerClass" 
             :level="friend.level" 
             :avatar-style="friend.avatar_style || undefined"
+            :gender="friend.gender"
             :size="44"
             class="clickable-avatar"
             @click.stop="openTrainerProfile(friend.id)"
@@ -155,11 +156,11 @@ defineEmits<{
                 (!friend.faction || friend.faction === 'null' || friend.faction === 'undefined' || friend.faction === 'Null' || friend.faction === 'NULL' || friend.faction.trim() === '' || friend.faction.toLowerCase() === 'none')
                   ? 'SIN BANDO'
                   : (friend.faction.toLowerCase() === 'union'
-                    ? 'Equipo Unión'
+                    ? 'Bando Unión'
                     : (friend.faction.toLowerCase() === 'poder'
-                      ? 'Equipo Poder'
+                      ? 'Bando Poder'
                       : (friend.faction.toLowerCase() === 'rocket'
-                        ? 'Equipo Rocket'
+                        ? 'Bando Rocket'
                         : friend.faction.toUpperCase())))
               }}
             </div>
