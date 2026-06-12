@@ -217,14 +217,13 @@ const animateSpritesheet = () => {
       const tl = gsap.timeline({
         onComplete: () => {
           if (!props.pokemon) return
+          // Hacemos el cambio de modo síncronamente antes de volver a llamar a playMode
           if (currentMode.value === 'idle' && variationMeta.value && variationMeta.value.frames > 1) {
             currentMode.value = 'variation'
             idleCyclesTarget = Math.floor(Math.random() * 2) + 3
           } else {
             currentMode.value = 'idle'
           }
-          // El reset se hace síncronamente antes de invocar la re-evaluación del modo
-          gsap.set(imgEl, { x: 0, xPercent: 0 });
           playMode()
         }
       });
@@ -255,8 +254,8 @@ const animateSpritesheet = () => {
       const imgEl = spriteRef.value?.querySelector('.pokemon-combat-image') as HTMLImageElement | null
       const isLoaded = imgEl && imgEl.complete && imgEl.naturalWidth > 0
       if (isLoaded) {
-        // Usamos nextTick para dar tiempo a que Vue actualice el DOM con el currentFrames correspondiente antes de iniciar el Tween
-        nextTick(startTween)
+        // Al no haber cambio de URL, el DOM ya tiene la imagen y el ancho correctos; iniciamos directamente
+        startTween()
       } else {
         pendingAnimation = startTween
       }
