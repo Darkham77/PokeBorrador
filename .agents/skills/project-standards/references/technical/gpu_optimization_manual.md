@@ -100,3 +100,15 @@ To maintain image quality and prevent color contamination from environmental day
   - **Pokémon Spawns & Combatants**: Use the **Isolation Wrapper Pattern**. Apply `weatherOnlyFilter` or `atmosphereFilter` only to a wrapper around the base `img` to keep FX (Shiny sparkles, Guardian auras, Status particles) and debug layers clean and vibrant.
 - **Source of Truth**: See [time_system_manual.md](../core/time_system_manual.md) for the implementation matrix.
 
+---
+
+## 8. Layout Thrashing & High-Density Layer Containment
+
+To guarantee smooth main-thread processing and prevent GPU compositor exhaustion:
+
+- **Zero getBoundingClientRect in High-Frequency Cycles**: Querying element dimensions via `getBoundingClientRect()` or properties like `offsetWidth` during reactive updates, animations, or resize observers forces synchronous layout recalculation (Forced Reflow). Always cache dimensions reactively (e.g. using `ResizeObserver` parameters to update local reactive width/height refs) and read from memory instead of querying the DOM.
+- **clientWidth/clientHeight for Non-Blocking Mounts**: For initial loading offsets or testing environments, prefer lightweight, non-blocking `clientWidth`/`clientHeight` queries at the beginning of `onMounted` before any active animations run.
+- **Avoid will-change on High-Density Elements**: Do NOT apply `will-change: transform` or `will-change: filter` to multiple small, dense nodes (e.g., individual combat grass/bush blades or small particles). Doing so triggers a GPU layer explosion that stalls the compositor. Promote only the large, moving parent container (e.g., the camera viewport).
+- **CSS Containment**: Apply `contain: paint layout;` to complex animated wrappers (such as the battle arena container) to isolate style recalculations and repaints to that subtree.
+
+

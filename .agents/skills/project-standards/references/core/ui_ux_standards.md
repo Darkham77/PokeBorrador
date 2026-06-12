@@ -678,6 +678,15 @@ The project's audit engine (`audit_project.ts`) flags any CSS `transition:` prop
   2. **Template Cleanliness**: Ensure that no heavy logic or database routing happens inside templates.
   3. **GSAP Animations**: Visual sequences, state transitions, and step effects MUST be fully orchestrated using GSAP timelines and promises, avoiding any mixing of standard CSS animations or manual setTimeout calls for timing coordination.
 
+### 29. Visual Sprite Scaling & Layout Preservation
+
+When designing card grids or summary cards (e.g. PC Box menu slots, item lists) that require dynamic hover scaling or permanent enlargement of entity sprites:
+
+- **Do NOT Resize Parent Containers**: Never increase the physical `width` or `height` of parent wrappers (like `.sprite-box` or `.ts-sprite-box`) to scale up sprites, as this alters the flex/grid layout flow and shifts surrounding components.
+- **Use Visual Transform Scale**: Apply `transform: scale(X)` (e.g., `transform: scale(1.5);` for 50% enlargement) directly to the target `<img>` or inner sprite container.
+- **Enable Card Overflow**: Specify `overflow: visible;` on the parent card wrapper to allow the scaled sprite to overflow visually without altering the boundaries or layout calculations of adjacent elements.
+
+
 
 
 

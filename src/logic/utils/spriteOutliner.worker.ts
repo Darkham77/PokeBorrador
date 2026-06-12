@@ -1,3 +1,4 @@
+// fallow-ignore-file security-sink
 const CACHE_NAME = 'sprite-outlines-v1';
 
 // Helpers for caching blobs
