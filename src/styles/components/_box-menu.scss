@@ -203,7 +203,7 @@
   &.success-btn { @include btn-vicio('success', 'sm', true); }
 
   &.full-width {
-    grid-column: span 2;
+    grid-column: span 3;
     @include responsive(480px) {
       grid-column: span 1;
     }
@@ -303,7 +303,7 @@
 
 .footer-actions {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 12px;
   margin-top: 8px;
 

@@ -290,8 +290,9 @@ function getGenderClass(gender: string) {
           <span class="emoji">🎒</span> USAR OBJETO
         </button>
         <button
-          v-if="actions.includes('item') && pokemon.heldItem"
+          v-if="actions.includes('item')"
           class="footer-btn unequip-btn"
+          :disabled="!pokemon.heldItem"
           @click.stop="emit('unequipItem', index)"
         >
           <span class="emoji">❌</span> QUITAR OBJETO
@@ -299,7 +300,6 @@ function getGenderClass(gender: string) {
         <button
           v-if="actions.includes('details')"
           class="footer-btn data-btn"
-          :class="{ 'full-width-btn': pokemon.heldItem }"
           @click.stop="emit('openDetail', index)"
         >
           <span class="emoji">📊</span> DATOS

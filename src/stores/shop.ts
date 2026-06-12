@@ -10,6 +10,8 @@ import { PLAYER_CLASSES } from '@/data/playerClasses'
 import { TRAINER_RANKS } from '@/data/trainer'
 import { calculateTotalHealCost } from '@/logic/economy/economyFormulas'
 
+import { clearVolatileStatus } from '@/logic/battle/battleStatus'
+
 export const useShopStore = defineStore('shop', () => {
   const gameStore = useGameStore()
   const uiStore = useUIStore()
@@ -167,6 +169,7 @@ export const useShopStore = defineStore('shop', () => {
       if (!p) return;
       p.hp = p.maxHp;
       p.status = null;
+      clearVolatileStatus(p);
       if (p.moves) {
         p.moves.forEach((m: Move | null) => {
           if (m) m.pp = m.maxPP || 20;

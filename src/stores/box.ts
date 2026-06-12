@@ -6,6 +6,8 @@ import { calculateRocketSellPrice as calculatePrice } from '@/logic/pokemonUtils
 import { useBoxFilters } from '@/composables/useBoxFilters'
 import type { Pokemon } from '@/types/pokemon'
 
+import { usePlayerClassStore } from './playerClass.ts'
+
 export const useBoxStore = defineStore('box', () => {
   const gameStore = useGameStore()
   const uiStore = useUIStore()
@@ -140,6 +142,11 @@ export const useBoxStore = defineStore('box', () => {
     gameStore.state.money += value
     if (gameStore.state.classData) {
       gameStore.state.classData.blackMarketSales = (gameStore.state.classData.blackMarketSales || 0) + soldCount
+    }
+
+    const classStore = usePlayerClassStore()
+    if (soldCount > 0) {
+      classStore.addCriminality(soldCount * 10)
     }
     
     boxRocketMode.value = false

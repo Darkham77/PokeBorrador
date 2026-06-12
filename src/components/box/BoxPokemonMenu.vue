@@ -345,8 +345,8 @@ const handleSellRocket = () => {
           <span class="icon">🎒</span> USAR OBJETO
         </button>
         <button
-          v-if="pokemon?.heldItem"
           class="menu-action-btn danger-btn"
+          :disabled="!pokemon?.heldItem"
           @click.stop="handleUnequipItem"
         >
           <span class="icon">❌</span> QUITAR OBJETO

@@ -199,4 +199,5 @@ export function clearVolatileStatus(poke: Pokemon) {
   poke.badPoison = 0
   poke.chargingMove = null
   poke.choiceMove = undefined
+  poke.thrashTurns = 0
 }
