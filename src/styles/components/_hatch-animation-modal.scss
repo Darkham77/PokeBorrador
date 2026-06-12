@@ -32,7 +32,7 @@
 
 .hatch-focus-area {
   position: absolute;
-  top: 42%;
+  top: 38%;
   left: 50%;
   transform: Translate(-50%, -50%);
   width: 190px;
@@ -45,7 +45,8 @@
 
 .hatch-info-area {
   position: absolute;
-  top: calc(42% + 95px); // Colocado exactamente debajo del área del huevo/Pokémon
+  top: calc(38% + 95px);
+  bottom: 16px;
   left: 50%;
   transform: Translatex(-50%);
   width: 100%;
@@ -55,6 +56,20 @@
   align-items: center;
   padding: 0 20px;
   box-sizing: border-box;
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  /* Estilización premium de barra de scroll para no romper estética */
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+  &::-webkit-scrollbar-track {
+    background: Rgba(0, 0, 0, 0.05);
+  }
+  &::-webkit-scrollbar-thumb {
+    background: Rgba(255, 255, 255, 0.15);
+    border-radius: 2px;
+  }
 }
 
 .reveal-info-wrapper {

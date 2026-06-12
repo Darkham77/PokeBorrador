@@ -8,11 +8,16 @@ import { NATURE_DATA } from '@/data/natures'
 import { ABILITY_DATA } from '@/data/abilities'
 import type { Pokemon } from '@/types/pokemon'
 
+import { getPokemonTier } from '@/logic/pokemon/tierEngine'
+import { computed } from 'vue'
+
 interface Props {
   pokemon: Pokemon
 }
 
-defineProps<Props>()
+const props = defineProps<Props>()
+
+const tierInfo = computed(() => getPokemonTier(props.pokemon))
 
 const getNatureInfo = (nature: string) => {
   if (!nature) return { desc: 'Sin datos de naturaleza.' }
@@ -63,6 +68,15 @@ const getAbilityDesc = (ability: string) => {
         <span>SPE: {{ pokemon.ivs?.spe }}</span>
       </span>
     </div>
+    <div class="stat-row">
+      <span class="label">Grado IVs:</span>
+      <span
+        class="val tier-badge"
+        :style="{ color: tierInfo.color }"
+      >
+        {{ tierInfo.tier }} ({{ tierInfo.total }}/186)
+      </span>
+    </div>
   </div>
 </template>
 
@@ -71,8 +85,8 @@ const getAbilityDesc = (ability: string) => {
 @use "@/styles/core/variables" as *;
 
 .stats-card {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1.5px solid rgba(255, 255, 255, 0.1);
+  background: Rgba(255, 255, 255, 0.04);
+  border: 1.5px solid Rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   padding: 16px 20px;
   margin-top: 16px;
@@ -86,7 +100,7 @@ const getAbilityDesc = (ability: string) => {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 10px;
-    border-bottom: 1px dashed rgba(255, 255, 255, 0.06);
+    border-bottom: 1px dashed Rgba(255, 255, 255, 0.06);
     padding-bottom: 8px;
 
     &:last-child {
@@ -108,7 +122,7 @@ const getAbilityDesc = (ability: string) => {
       font-weight: bold;
 
       &.interactive-val {
-        border-bottom: 1px dotted rgba(255, 255, 255, 0.3);
+        border-bottom: 1px dotted Rgba(255, 255, 255, 0.3);
         cursor: help;
         display: inline-block;
 
