@@ -207,18 +207,17 @@ export function useBattleCombatantAnims(
   })
 
   watch(() => props.isEmerging, (val) => {
-    if (val && spriteRef.value) {
+    const target = idleWrapperRef.value || spriteRef.value
+    if (val && target) {
       const tl = gsap.timeline({
         onComplete: () => {
-          if (spriteRef.value) {
-            gsap.set(spriteRef.value, { clearProps: "transform" })
-          }
+          gsap.set(target, { clearProps: "transform" })
         }
       })
-      tl.to(spriteRef.value, { y: 8, scaleX: 1.2, scaleY: 0.75, duration: 0.1, ease: "power1.in" })
-        .to(spriteRef.value, { y: -60, scaleX: 0.85, scaleY: 1.2, duration: 0.3, ease: "power2.out" })
-        .to(spriteRef.value, { y: 0, scaleX: 1.1, scaleY: 0.9, duration: 0.2, ease: "bounce.out" })
-        .to(spriteRef.value, { scaleX: 1, scaleY: 1, duration: 0.1 })
+      tl.to(target, { y: 8, scaleX: 1.2, scaleY: 0.75, duration: 0.1, ease: "power1.in" })
+        .to(target, { y: -60, scaleX: 0.85, scaleY: 1.2, duration: 0.3, ease: "power2.out" })
+        .to(target, { y: 0, scaleX: 1.1, scaleY: 0.9, duration: 0.2, ease: "bounce.out" })
+        .to(target, { scaleX: 1, scaleY: 1, duration: 0.1 })
     }
   })
 

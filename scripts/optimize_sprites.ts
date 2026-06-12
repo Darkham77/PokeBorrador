@@ -111,6 +111,7 @@ if (!isMainThread) {
       length: number;
       repeats: number;
       firstOccurrenceIndex: number;
+      score?: number;
     }
     const candidates: CandidateCycle[] = [];
 
@@ -184,10 +185,10 @@ if (!isMainThread) {
           totalFramesInCycle += trans.originalIndices.length;
         }
       }
-      (c as any).score = totalFramesInCycle;
+      c.score = totalFramesInCycle;
     });
 
-    candidates.sort((a, b) => ((b as any).score - (a as any).score) || b.repeats - a.repeats || b.length - a.length);
+    candidates.sort((a, b) => ((b.score ?? 0) - (a.score ?? 0)) || b.repeats - a.repeats || b.length - a.length);
     const idleCandidate = candidates[0]!;
 
     const idleStart = 0;
