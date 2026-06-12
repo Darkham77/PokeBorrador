@@ -85,11 +85,14 @@ export const useEventStore = defineStore('events', () => {
     return (ev as unknown as { multiplier: number }).multiplier || 1
   }
 
-  /**
-   * Submits a competitive entry to an active event.
-   */
   async function submitCompetitionEntry(pokemon: Pokemon, eventId: string) {
     if (!authStore.user || authStore.sessionMode === 'offline') return
+    
+    // Check if the event is active before attempting database submit
+    if (!isEventActive(eventId)) {
+      logger.info('Events', `Submission skipped: event ${eventId} is not active.`)
+      return
+    }
     
     try {
       const db = gameStore.db
@@ -118,7 +121,12 @@ export const useEventStore = defineStore('events', () => {
       }).select().single() as unknown as { data: { id: string } | null, error: { message: string } | null }
       
       if (error || !entry) {
-        useErrorStore().setError(new Error(error?.message || 'Error al registrar Pokémon en concurso semanal'), {
+        const dbError = new Error(error?.message || 'Error al registrar Pokémon en concurso semanal')
+        // Force populating stack property by capturing current stack trace
+        if (Error.captureStackTrace) {
+          Error.captureStackTrace(dbError, submitCompetitionEntry)
+        }
+        useErrorStore().setError(dbError, {
           type: 'Competition Entry Database Error',
           source: 'submitCompetitionEntry'
         })

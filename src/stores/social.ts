@@ -20,6 +20,7 @@ export interface Friend {
   level: number;
   badges: number;
   playerClass?: string;
+  faction?: string;
   nick_style?: string;
   avatar_style?: string;
   gender?: string;
@@ -191,7 +192,8 @@ export const useSocialStore = defineStore('social', () => {
             username,
             level: (save.trainerLevel as number) || p?.trainer_level || 1,
             badges: typeof save.badges === 'object' ? Object.keys(save.badges).length : ((save.badges as number) || 0),
-            playerClass: (save.playerClass as string) || p?.player_class || 'entrenador',
+            playerClass: (save.playerClass as string) || p?.player_class || '',
+            faction: (save.faction as string) || p?.faction || '',
             nick_style: (save.nick_style as string) || p?.nick_style || '',
             avatar_style: (save.avatar_style as string) || p?.avatar_style || '',
             gender: (save.gender as string) || p?.gender || 'h',

@@ -139,7 +139,29 @@ defineEmits<{
               {{ friend.username }}
             </div>
             <div class="meta">
-              Nv.{{ friend.level }} • {{ friend.playerClass || 'Entrenador' }}
+              Nv.{{ friend.level }} • {{ 
+                (!friend.playerClass || friend.playerClass === 'null' || friend.playerClass === 'undefined' || friend.playerClass === 'Null' || friend.playerClass === 'NULL') 
+                  ? 'SIN CLASE' 
+                  : (friend.playerClass === 'entrenador' 
+                    ? 'Entrenador' 
+                    : (friend.playerClass === 'rocket' 
+                      ? 'Equipo Rocket' 
+                      : (friend.playerClass === 'cazabichos' 
+                        ? 'Cazabichos' 
+                        : (friend.playerClass === 'criador' 
+                          ? 'Criador' 
+                          : friend.playerClass.toUpperCase()))))
+              }} • {{
+                (!friend.faction || friend.faction === 'null' || friend.faction === 'undefined' || friend.faction === 'Null' || friend.faction === 'NULL' || friend.faction.trim() === '' || friend.faction.toLowerCase() === 'none')
+                  ? 'SIN BANDO'
+                  : (friend.faction.toLowerCase() === 'union'
+                    ? 'Equipo Unión'
+                    : (friend.faction.toLowerCase() === 'poder'
+                      ? 'Equipo Poder'
+                      : (friend.faction.toLowerCase() === 'rocket'
+                        ? 'Equipo Rocket'
+                        : friend.faction.toUpperCase())))
+              }}
             </div>
           </div>
         </div>

@@ -58,7 +58,6 @@ const {
   createdAt,
   lastPlayedAt,
   rankedMaxElo,
-  classLevel,
   boxCount,
   longestStreak,
   shinyCount,
@@ -209,7 +208,7 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
             class="profile-profession"
             :style="{ color: classDef.color }"
           >
-            {{ classDef.name }} • LV. {{ classLevel }}
+            {{ classDef.name }} • LV. {{ trainerLevel }}
           </div>
         </div>
 

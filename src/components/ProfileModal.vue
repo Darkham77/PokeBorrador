@@ -491,12 +491,12 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 32px 0 0;
+  padding: 16px 0 0;
   background: transparent;
   border: none;
 
   .avatar-wrap {
-    margin-bottom: 24px;
+    margin-bottom: 16px;
     display: flex;
     justify-content: center;
     align-items: center;
