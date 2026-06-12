@@ -24,16 +24,23 @@ export function initGlobalErrorHandlers(): void {
           source: 'console.error'
         })
       } else {
-        // Clean console formatting (%c and trailing styles) from logger messages
+        // Map all raw arguments to strings without discarding styling arguments or arrays
         let message = ''
         const first = args[0]
         if (typeof first === 'string' && first.includes('%c')) {
-          const styleCount = (first.match(/%c/g) || []).length
+          // Keep the message raw, but remove styling tags %c while preserving all following arguments (e.g. metadata objects/arrays)
           const cleanFirst = first.replace(/%c/g, '')
-          const remainingArgs = args.slice(1 + styleCount)
-          message = [cleanFirst, ...remainingArgs.map(arg => typeof arg === 'object' ? JSON.stringify(arg) : String(arg))].join(' ')
+          const styleCount = (first.match(/%c/g) || []).length
+          const nonStyleArgs = args.slice(1 + styleCount)
+          message = [cleanFirst, ...nonStyleArgs.map(arg => {
+            if (arg instanceof Error) return arg.message + '\n' + arg.stack
+            return typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
+          })].join(' ')
         } else {
-          message = args.map(arg => typeof arg === 'object' ? JSON.stringify(arg) : String(arg)).join(' ')
+          message = args.map(arg => {
+            if (arg instanceof Error) return arg.message + '\n' + arg.stack
+            return typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
+          }).join(' ')
         }
         errorStore.setError(message, {
           type: 'Console Error',
