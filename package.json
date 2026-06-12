@@ -18,7 +18,7 @@
     "test:all": "npm run test:node && npm run test",
     "lint": "npm run validate:types && eslint . --fix && npm run lint:md",
     "lint:analyze": "eslint . -f json -o lint-results.json || node analyze_lint.cjs",
-    "lint:md": "markdownlint \"**/*.md\" --ignore \"node_modules/**\" --ignore \"dist/**\" --ignore \"dev-dist/**\" --ignore \"backup_legacy_code/**\" --ignore \"supabase/**\" --ignore \"docs/media/**\" --fix",
+    "lint:md": "markdownlint \"**/*.md\" --ignore \"node_modules/**\" --ignore \"dist/**\" --ignore \"dev-dist/**\" --ignore \"backup_legacy_code/**\" --ignore \"supabase/**\" --ignore \"docs/media/**\" --ignore \"scratch/**\" --fix",
     "servers:configure": "node --permission --experimental-strip-types --allow-fs-read=. --allow-fs-write=. scripts/configure_official_servers.ts",
     "servers:db:update": "node --permission --experimental-strip-types --allow-fs-read=. --allow-net scripts/update_supabase_db.ts",
     "servers:db:backup": "node --permission --experimental-strip-types --allow-fs-read=. --allow-fs-write=. --allow-net scripts/backup_supabase_db.ts",

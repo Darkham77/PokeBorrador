@@ -95,6 +95,8 @@ To prevent layout collapse in scrollable flex containers (Common in Debug and Gr
     ```
   - **Why**: `display: block !important` prevents the parent flex context from controlling the element's size, allowing `height` and `min-height` to take effect.
 
+- **CSS Grid Card Width Overrides**: When displaying interactive cards (such as shops, markets, or box grids) inside a responsive CSS Grid, avoid applying hardcoded static width or `max-width` overrides directly to the card elements to restrict their dimensions. Doing so creates empty vertical/horizontal alignment gaps and causes layout shifting when hover scale animations are triggered. Allow cards to fill grid cells naturally, and delegate layout containment to the parent CSS Grid container.
+
 > [!IMPORTANT]
 > **VUE COMPONENT RULE**: Interpolation `#{}` only works inside `<style lang="scss">`. If you apply this fix to a `.vue` file, you **MUST** ensure the style block has the `lang="scss"` attribute.
 

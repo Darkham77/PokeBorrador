@@ -194,13 +194,9 @@ if (typeof window !== 'undefined') {
 
 .war-items-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 12px;
   padding: 10px 16px 20px 16px; // Headroom padding for hover scale/translate
-
-  @media (max-width: 820px) {
-    grid-template-columns: 1fr;
-  }
 }
 
 .empty-state {

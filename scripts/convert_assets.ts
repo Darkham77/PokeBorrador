@@ -401,9 +401,13 @@ async function main() {
     process.exit(1);
   }
 
-  // Limpieza determinista: borrar public/assets antes de reconstruir
+  // Limpieza determinista: borrar public/assets antes de reconstruir (no fatal si está bloqueado)
   console.log(styleText('yellow', `   🧹 Limpiando ${path.relative(process.cwd(), PUBLIC_ASSETS_DIR)}...`));
-  await fs.rm(PUBLIC_ASSETS_DIR, { recursive: true, force: true });
+  try {
+    await fs.rm(PUBLIC_ASSETS_DIR, { recursive: true, force: true });
+  } catch (err) {
+    console.log(styleText('yellow', `   ⚠️ Warning: No se pudo limpiar public/assets por completo (${(err as Error).message}). Se continuará con la sobreescritura de archivos.`));
+  }
   await fs.mkdir(PUBLIC_ASSETS_DIR, { recursive: true });
 
   const files = await getFilesToConvert(SOURCE_DIR);
@@ -580,6 +584,18 @@ export const AVAILABLE_BATTLE_MAPS = ${JSON.stringify(battleMaps, null, 2)} as c
     t: {}
   };
 
+  // Copiar pies de variaciones de sus correspondientes idles en pokemonFeetDatabase
+  for (const key of Object.keys(pokemonFeetDatabase)) {
+    const isVariation = key.includes('v') && (key.includes('/animated/Front') || key.includes('/animated/Back'));
+    if (isVariation) {
+      const idleKey = key.replace(/v/, 'i');
+      const idleVal = pokemonFeetDatabase[idleKey];
+      if (idleVal) {
+        pokemonFeetDatabase[key] = idleVal;
+      }
+    }
+  }
+
   for (const key of Object.keys(pokemonFeetDatabase).sort()) {
     const val = pokemonFeetDatabase[key]!;
     if (key.startsWith('/assets/sprites/pokemon/') && key.endsWith('.webp')) {
@@ -726,6 +742,7 @@ export const ARCHETYPE_SPRITES = ${JSON.stringify(catalogLists)} as const;
   const ANIMATED_FRONT_DIR = path.resolve(process.cwd(), 'public', 'assets', 'sprites', 'pokemon', 'animated', 'Front');
   const ANIMATED_BACK_DIR = path.resolve(process.cwd(), 'public', 'assets', 'sprites', 'pokemon', 'animated', 'Back');
   const animatedDbData: Record<string, AnimatedSpriteData> = {};
+  const animatedVariationFrames: Record<string, number> = {};
   let maxAnimatedSizeFront = 0;
   let maxAnimatedSizeBack = 0;
 
@@ -762,6 +779,7 @@ export const ARCHETYPE_SPRITES = ${JSON.stringify(catalogLists)} as const;
       const key = isBackFile ? `${res.spriteKey}_back` : res.spriteKey;
       
       animatedDbData[key] = res.animatedData;
+
       if (isBackFile) {
         if (res.animatedData.size > maxAnimatedSizeBack) {
           maxAnimatedSizeBack = res.animatedData.size;
@@ -769,6 +787,30 @@ export const ARCHETYPE_SPRITES = ${JSON.stringify(catalogLists)} as const;
       } else {
         if (res.animatedData.size > maxAnimatedSizeFront) {
           maxAnimatedSizeFront = res.animatedData.size;
+        }
+      }
+
+      const isVariation = res.spriteKey.includes('v');
+      if (isVariation) {
+        animatedVariationFrames[key] = res.animatedData.frames;
+      }
+    }
+
+    // Segunda pasada: ajustar los pies de las variaciones copiándolos del idle correspondiente
+    for (const key of Object.keys(animatedDbData)) {
+      const isVariation = key.includes('v');
+      if (isVariation) {
+        const idleKey = key.replace(/v/, 'i');
+        const idleData = animatedDbData[idleKey];
+        if (idleData) {
+          const varData = animatedDbData[key]!;
+          animatedDbData[key] = {
+            ...varData,
+            feetY: idleData.feetY,
+            feetX: idleData.feetX
+          };
+        } else {
+          console.log(styleText('yellow', `      [WARN] No se encontró el idle correspondiente (${idleKey}) para la variación ${key}. Se usarán sus propios pies calculados.`));
         }
       }
     }
@@ -784,6 +826,13 @@ export const ARCHETYPE_SPRITES = ${JSON.stringify(catalogLists)} as const;
       Object.entries(animatedDbData)
         .sort(([a], [b]) => a.localeCompare(b, undefined, { numeric: true }))
         .map(([k, v]) => [k, [v.frames, v.size, v.feetY, v.feetX, v.bodyH, v.bodyW, v.bodyRadius]])
+    )
+  );
+
+  const animatedVariationFramesSerialized = JSON.stringify(
+    Object.fromEntries(
+      Object.entries(animatedVariationFrames)
+        .sort(([a], [b]) => a.localeCompare(b, undefined, { numeric: true }))
     )
   );
 
@@ -829,6 +878,9 @@ export const ARCHETYPE_SPRITES = ${JSON.stringify(catalogLists)} as const;
     '    { frames, size, feetY, feetX, bodyH, bodyW, bodyRadius }',
     '  ])',
     ');',
+    '',
+    `/** Variation frame counts to keep variation sprites out of coordinate databases */`,
+    `export const ANIMATED_VARIATION_FRAMES: Record<string, number> = ${animatedVariationFramesSerialized};`,
     '',
   ].join('\n');
 

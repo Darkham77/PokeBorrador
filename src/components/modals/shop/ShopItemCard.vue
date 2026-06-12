@@ -77,6 +77,14 @@ const buy = () => {
   shopStore.buyItem(props.item.id)
 }
 
+const tierColor = computed(() => {
+  const tier = props.item.tier || 'common'
+  if (tier === 'rare') return '#3b82f6'
+  if (tier === 'epic') return '#a855f7'
+  if (tier === 'legend') return 'var(--yellow)'
+  return '#94a3b8'
+})
+
 const handleImageError = (e: Event) => {
   if (e.target) {
     (e.target as HTMLImageElement).style.display = 'none'
@@ -87,7 +95,8 @@ const handleImageError = (e: Event) => {
 <template>
   <div 
     class="shop-item-card"
-    :class="{ locked: !isUnlocked }"
+    :class="[{ locked: !isUnlocked }, 'tier-' + (item.tier || 'common')]"
+    :style="{ '--tier-color': tierColor }"
   >
     <!-- Tier Tag (Retro Style) -->
     <span

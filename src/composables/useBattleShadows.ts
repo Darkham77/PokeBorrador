@@ -9,10 +9,47 @@ import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import type { Pokemon } from '@/types/pokemon'
 import { logger } from '@/logic/utils/logger'
 
+function resolveAnimatedKey(pokemonId: string | number | null | undefined, isBack = false): string | null {
+  if (!pokemonId) return null
+  const strId = String(pokemonId).toLowerCase()
+  const match = strId.match(/^(\d+)(.*)$/)
+  if (!match) return null
+  const numId = match[1]!
+  const suffix = match[2]!
+  const backSuffix = isBack ? '_back' : ''
+
+  const cand = `${numId}i${suffix}`
+  if (ANIMATED_SPRITE_DATABASE[`${cand}${backSuffix}`]) {
+    return `${cand}${backSuffix}`
+  }
+  if (ANIMATED_SPRITE_DATABASE[cand]) {
+    return cand
+  }
+  
+  // Fallback to check candidates without 'i'
+  const rawCand = `${numId}${suffix}`
+  if (ANIMATED_SPRITE_DATABASE[`${rawCand}${backSuffix}`]) {
+    return `${rawCand}${backSuffix}`
+  }
+  if (ANIMATED_SPRITE_DATABASE[rawCand]) {
+    return rawCand
+  }
+
+  return null
+}
+
 function checkAnimated(pokemonId: string | null | undefined): boolean {
   if (!pokemonId) return false
-  const baseId = pokemonId.toLowerCase()
-  return !!ANIMATED_SPRITE_DATABASE[baseId]
+  return !!resolveAnimatedKey(pokemonId, false) || !!resolveAnimatedKey(pokemonId, true)
+}
+
+function getFinalSpriteUrl(pokemonId: string | number, isShiny: boolean, isBack: boolean): string {
+  const isAnim = checkAnimated(String(pokemonId))
+  const url = getAssetUrl(ASSET_TYPES.POKEMON, pokemonId, { isShiny, isBack, isAnimated: isAnim })
+  if (isAnim && url) {
+    return url.replace(/\/(\d+)([^/]*)\.webp$/i, (_: string, num: string, suff: string) => `/${num}i${suff}.webp`)
+  }
+  return url
 }
 
 const { ENTITY_SIZE_PLAYER, ENTITY_SIZE_ENEMY } = WORLD_CONSTANTS
@@ -38,8 +75,8 @@ export function useBattleShadows() {
   const shadowStore = useCombatShadowStore()
 
   const getShadowWidth = (pokemonId: string | number, isBack: boolean): string => {
-    const key = String(pokemonId) + (isBack ? '_back' : '')
-    const meta = ANIMATED_SPRITE_DATABASE[key] || ANIMATED_SPRITE_DATABASE[String(pokemonId)] || null
+    const animKey = resolveAnimatedKey(pokemonId, isBack) || resolveAnimatedKey(pokemonId, !isBack)
+    const meta = animKey ? ANIMATED_SPRITE_DATABASE[animKey] : null
     const bodyRadius = meta?.bodyRadius ?? 0.4
     return `${bodyRadius * 250}%` // bodyRadius * 2.5 (representing radius + 25%)
   }
@@ -75,7 +112,7 @@ export function useBattleShadows() {
     
     // Inicializar coordenadas inmediatamente si el asiento está ocupado por un pokemon
     if (data) {
-      const url = getAssetUrl(ASSET_TYPES.POKEMON, data.id, { isShiny: data.isShiny, isBack: false, isAnimated: checkAnimated(data.id) })
+      const url = getFinalSpriteUrl(data.id, !!data.isShiny, false)
       let dbKey = url || ''
       const base = import.meta.env.BASE_URL || '/'
       if (base !== '/' && dbKey.startsWith(base)) {
@@ -114,8 +151,8 @@ export function useBattleShadows() {
         entityY: pos.y,
         entitySize: ENTITY_SIZE_ENEMY,
         isFlying: isFlying(data),
-        spriteUrl: getAssetUrl(ASSET_TYPES.POKEMON, data.id, { isShiny: data.isShiny, isBack: false, isAnimated: checkAnimated(data.id) }),
-        width: getShadowWidth(data.id, false),
+        spriteUrl: data ? getFinalSpriteUrl(data.id, !!data.isShiny, false) : '',
+        width: data ? getShadowWidth(data.id, false) : '100%',
         visible: true
       })
     }
@@ -127,7 +164,7 @@ export function useBattleShadows() {
 
     // Inicializar coordenadas inmediatamente si el asiento está ocupado por un pokemon
     if (pokemon) {
-      const url = getAssetUrl(ASSET_TYPES.POKEMON, pokemon.id, { isShiny: pokemon.isShiny, isBack: true, isAnimated: checkAnimated(pokemon.id) })
+      const url = getFinalSpriteUrl(pokemon.id, !!pokemon.isShiny, true)
       let dbKey = url || ''
       const base = import.meta.env.BASE_URL || '/'
       if (base !== '/' && dbKey.startsWith(base)) {
@@ -166,7 +203,7 @@ export function useBattleShadows() {
         entityY: pos.y,
         entitySize: ENTITY_SIZE_PLAYER,
         isFlying: isFlying(pokemon),
-        spriteUrl: getAssetUrl(ASSET_TYPES.POKEMON, pokemon.id, { isShiny: pokemon.isShiny, isBack: true, isAnimated: checkAnimated(pokemon.id) }),
+        spriteUrl: pokemon ? getFinalSpriteUrl(pokemon.id, !!pokemon.isShiny, true) : '',
         width: getShadowWidth(pokemon.id, true),
         visible: true
       })
@@ -186,7 +223,7 @@ export function useBattleShadows() {
     if (!team || !Array.isArray(team)) return
     const tasks = team.map(p => {
       const isBack = side === 'player'
-      const url = getAssetUrl(ASSET_TYPES.POKEMON, p.id, { isShiny: p.isShiny, isBack, isAnimated: checkAnimated(p.id) })
+      const url = getFinalSpriteUrl(p.id, !!p.isShiny, isBack)
       return shadowStore.detectFeetPoints(url)
     })
     return Promise.all(tasks)
@@ -209,7 +246,7 @@ export function useBattleShadows() {
     if (p1Data) {
       const shadowId = getStableShadowId(p1Data, 'player')
       currentPlayerShadowKey.value = shadowId
-      const url = getAssetUrl(ASSET_TYPES.POKEMON, p1Data.id, { isShiny: p1Data.isShiny, isBack: true, isAnimated: checkAnimated(p1Data.id) })
+      const url = getFinalSpriteUrl(p1Data.id, !!p1Data.isShiny, true)
       if (shadowId) {
         tasks.push(shadowStore.requestShadow(shadowId, {
           side: 'player',
@@ -227,7 +264,7 @@ export function useBattleShadows() {
     if (p2Data) {
       const shadowId = getStableShadowId(p2Data, 'enemy')
       currentEnemyShadowKey.value = shadowId
-      const url = getAssetUrl(ASSET_TYPES.POKEMON, p2Data.id, { isShiny: p2Data.isShiny, isBack: false, isAnimated: checkAnimated(p2Data.id) })
+      const url = getFinalSpriteUrl(p2Data.id, !!p2Data.isShiny, false)
       if (shadowId) {
         tasks.push(shadowStore.requestShadow(shadowId, {
           side: 'enemy',

@@ -77,6 +77,7 @@ To provide a premium feel without compromising usability on small screens, scali
 - **Compact (Mobile < 420px)**: Reduce the scaling factor to `Scale(1.02)` or `Scale(1.03)`.
 - **WHY**: Large scales on mobile frequently cause the element to overlap critical UI edges or trigger unintended horizontal scrolling (clipping).
 - **Implementation**: Use CSS Media Queries inside the component's scoped styles to override the `Scale()` factor at the standard **420px** breakpoint.
+- **GSAP Hover CSS Conflict Avoidance**: When animating interactive hover effects with GSAP (such as scaling, shadows, or borders), do NOT define static CSS `:hover` states or transitions on the same properties in SASS/CSS. This causes interpolation clashes between GSAP inline styles and CSS stylesheets, resulting in rendering artifacts (e.g., box-shadow blur leaking beyond border-radius). Always completely delegate interaction states of these properties to GSAP event listeners.
 
 ## 7. DOM-Independent State Phases (Transitions & v-show)
 

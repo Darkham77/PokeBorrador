@@ -39,6 +39,7 @@ All heavy components or those that animate frequently must be promoted to a GPU 
   - **Detection**: Run `.agents/skills/project-standards/scripts/audit/detect_outline_traps.py` to identify legacy outlines that require migration to SVG.
 - **Will-Change**: Use `@include will-animate(transform, opacity)` only on elements with constant animations (e.g., auras, Shiny pulses). Do not abuse, as it consumes video memory.
 - **GSAP Movement vs Opacity**: For high-density particle weather (e.g., Dust Storm), prioritize constant opacity combined with movement over pulsing opacity to minimize GPU recomposition cycles and maintain stability.
+- **Backdrop-Filter Scale Leak**: When applying `backdrop-filter: blur(...)` to card components that scale dynamically on hover/transforms, WebKit/Blink browsers can trigger GPU compositing bugs where the blurred region overflows as a sharp rectangle, ignoring `border-radius`. To prevent this leak, avoid combining `backdrop-filter` with transforms on the same component. Use standard masking techniques (e.g. `mask-image` or strict composite clipping) or keep the filter container separate.
 
 ## 3. Smooth Scroll & Gutter
 

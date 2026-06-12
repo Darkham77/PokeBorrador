@@ -86,32 +86,21 @@ export function getHoverEnterStrategy(el: HTMLElement): HoverValues {
   }
 
   if (el.classList.contains('quick-item-card')) {
-    // Read tier from CSS class and amplify it on hover
-    let borderColor: string | null = null;
-    let boxShadow: string | null = null;
-
-    if (el.classList.contains('tier-rare')) {
-      borderColor = 'rgba(59, 130, 246, 0.85)';
-      boxShadow = '0 0 16px rgba(59, 130, 246, 0.35), inset 0 0 0 1px rgba(59, 130, 246, 0.85), inset 0 0 10px rgba(59, 130, 246, 0.15)';
-    } else if (el.classList.contains('tier-epic')) {
-      borderColor = 'rgba(168, 85, 247, 0.85)';
-      boxShadow = '0 0 16px rgba(168, 85, 247, 0.35), inset 0 0 0 1px rgba(168, 85, 247, 0.85), inset 0 0 10px rgba(168, 85, 247, 0.15)';
-    } else if (el.classList.contains('tier-legend')) {
-      borderColor = 'rgba(245, 158, 11, 0.95)';
-      boxShadow = '0 0 20px rgba(245, 158, 11, 0.4), inset 0 0 0 1px rgba(245, 158, 11, 0.95), inset 0 0 12px rgba(245, 158, 11, 0.2)';
-    } else {
-      // tier-common: subtle white glow
-      borderColor = 'rgba(255, 255, 255, 0.35)';
-      boxShadow = '0 0 12px rgba(255, 255, 255, 0.12), inset 0 0 0 1px rgba(255, 255, 255, 0.35)';
-    }
-
+    const color = el.style.getPropertyValue('--tier-color') || 
+                  (el.classList.contains('tier-rare') ? 'rgba(59, 130, 246, 0.85)' :
+                   el.classList.contains('tier-epic') ? 'rgba(168, 85, 247, 0.85)' :
+                   el.classList.contains('tier-legend') ? 'rgba(245, 158, 11, 0.95)' :
+                   'rgba(255, 255, 255, 0.35)');
+    const resolvedColor = resolveCssColor(color, el);
+    const glow80 = parseToRgba(resolvedColor, 0.2, el);
+    const glow70 = parseToRgba(resolvedColor, 0.3, el);
     return {
       scale: 1.02,
       y: -4,
       duration: 0.12,
       ease: 'power2.out',
-      borderColor,
-      boxShadow
+      borderColor: resolvedColor,
+      boxShadow: `0 20px 40px rgba(0, 0, 0, 0.6), inset 0 30px 60px -20px ${glow80}, 0 0 20px ${glow70}`
     };
   }
 
@@ -171,11 +160,21 @@ export function getHoverEnterStrategy(el: HTMLElement): HoverValues {
     el.classList.contains('war-shop-item-card') || 
     el.classList.contains('market-item-wrapper')
   ) {
+    const color = el.style.getPropertyValue('--tier-color') || 
+                  (el.classList.contains('tier-rare') ? 'rgba(59, 130, 246, 0.85)' :
+                   el.classList.contains('tier-epic') ? 'rgba(168, 85, 247, 0.85)' :
+                   el.classList.contains('tier-legend') ? 'rgba(245, 158, 11, 0.95)' :
+                   'rgba(148, 163, 184, 0.45)');
+    const resolvedColor = resolveCssColor(color, el);
+    const glow80 = parseToRgba(resolvedColor, 0.2, el);
+    const glow70 = parseToRgba(resolvedColor, 0.3, el);
     return {
       scale: 1.02,
       y: -6,
       duration: 0.15,
-      ease: 'power2.out'
+      ease: 'power2.out',
+      borderColor: resolvedColor,
+      boxShadow: `0 20px 40px rgba(0, 0, 0, 0.6), inset 0 30px 60px -20px ${glow80}, 0 0 20px ${glow70}`
     };
   }
 

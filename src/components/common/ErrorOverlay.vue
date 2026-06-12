@@ -1,6 +1,7 @@
 <script setup lang="ts">
 
 import { ref } from 'vue'
+import gsap from 'gsap'
 import { useGsapTransition } from '@/composables/useGsapTransition'
 import { useErrorStore } from '@/stores/errorStore'
 import { useGameStore } from '@/stores/game'

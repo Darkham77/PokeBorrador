@@ -5,6 +5,7 @@ import {
   ANIMATED_SPRITE_DATABASE,
   MAX_ANIMATED_SPRITE_SIZE_FRONT,
   MAX_ANIMATED_SPRITE_SIZE_BACK,
+  ANIMATED_VARIATION_FRAMES,
 } from '@/data/animatedSpriteDatabase';
 import { POKEMON_FEET_DATABASE } from '@/data/pokemonFeetDatabase';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
@@ -106,32 +107,85 @@ export function useBattleCombatantState(
     return String(num);
   });
 
-  const animatedKey = computed(() => {
+  const idleKey = computed(() => {
     if (!spriteKey.value) return null;
-    const baseId = spriteKey.value;
+    const match = spriteKey.value.match(/^(\d+)(.*)$/);
+    if (!match) return null;
+    const numId = match[1]!;
+    const suffix = match[2]!;
     const isFemale = props.pokemon?.gender === 'F';
-    const backSuffix = isPlayer.value ? '_back' : '';
 
-    if (isFemale && ANIMATED_SPRITE_DATABASE[`${baseId}_f${backSuffix}`]) {
-      return `${baseId}_f${backSuffix}`;
-    }
-    if (ANIMATED_SPRITE_DATABASE[`${baseId}${backSuffix}`]) {
-      return `${baseId}${backSuffix}`;
-    }
-    if (isFemale && ANIMATED_SPRITE_DATABASE[`${baseId}_f`]) {
-      return `${baseId}_f`;
-    }
-    if (ANIMATED_SPRITE_DATABASE[baseId]) {
-      return baseId;
+    const candidates = [`${numId}i${suffix}`, `${numId}${suffix}`];
+    for (const cand of candidates) {
+      if (isPlayer.value) {
+        if (isFemale && ANIMATED_SPRITE_DATABASE[`${cand}_f_back`]) {
+          return `${cand}_f_back`;
+        }
+        if (ANIMATED_SPRITE_DATABASE[`${cand}_back`]) {
+          return `${cand}_back`;
+        }
+      } else {
+        if (isFemale && ANIMATED_SPRITE_DATABASE[`${cand}_f`]) {
+          return `${cand}_f`;
+        }
+        if (ANIMATED_SPRITE_DATABASE[cand]) {
+          return cand;
+        }
+      }
     }
     return null;
   });
 
-  const isAnimated = computed(() => !!animatedKey.value);
+  const variationKey = computed(() => {
+    if (!spriteKey.value) return null;
+    const match = spriteKey.value.match(/^(\d+)(.*)$/);
+    if (!match) return null;
+    const numId = match[1]!;
+    const suffix = match[2]!;
+    const isFemale = props.pokemon?.gender === 'F';
+
+    const cand = `${numId}v${suffix}`;
+    if (isPlayer.value) {
+      if (isFemale && ANIMATED_VARIATION_FRAMES[`${cand}_f_back`] !== undefined) {
+        return `${cand}_f_back`;
+      }
+      if (ANIMATED_VARIATION_FRAMES[`${cand}_back`] !== undefined) {
+        return `${cand}_back`;
+      }
+    } else {
+      if (isFemale && ANIMATED_VARIATION_FRAMES[`${cand}_f`] !== undefined) {
+        return `${cand}_f`;
+      }
+      if (ANIMATED_VARIATION_FRAMES[cand] !== undefined) {
+        return cand;
+      }
+    }
+    return null;
+  });
+
+  const isAnimated = computed(() => !!idleKey.value);
 
   const animatedMeta = computed(() => {
-    if (!animatedKey.value) return null;
-    return ANIMATED_SPRITE_DATABASE[animatedKey.value] || null;
+    if (!idleKey.value) return null;
+    return ANIMATED_SPRITE_DATABASE[idleKey.value] || null;
+  });
+
+  const variationMeta = computed(() => {
+    if (!variationKey.value) return null;
+    const directMeta = ANIMATED_SPRITE_DATABASE[variationKey.value];
+    if (directMeta) return directMeta;
+
+    if (!animatedMeta.value) return null;
+    const frames = ANIMATED_VARIATION_FRAMES[variationKey.value] || 0;
+    return {
+      frames,
+      size: animatedMeta.value.size,
+      feetY: animatedMeta.value.feetY,
+      feetX: animatedMeta.value.feetX,
+      bodyH: animatedMeta.value.bodyH,
+      bodyW: animatedMeta.value.bodyW,
+      bodyRadius: animatedMeta.value.bodyRadius
+    };
   });
 
   const frames = computed(() => animatedMeta.value?.frames ?? 1);
@@ -182,9 +236,6 @@ export function useBattleCombatantState(
     
     const dbPoints = POKEMON_FEET_DATABASE[key];
     if (!dbPoints) {
-      if (key.toLowerCase().includes('egg')) {
-        return { feetX: 0.5, feetY: 0.9 };
-      }
       throw new Error(`[PokemonFeetDatabase] Sprite key "${key}" not found in POKEMON_FEET_DATABASE. Did you forget to compile assets? Run "npm run assets:convert".`);
     }
     return {
@@ -236,7 +287,7 @@ export function useBattleCombatantState(
 
   const fxRadius = computed(() => {
     if (!animatedMeta.value) {
-      throw new Error(`[useBattleCombatantState] Animated metadata not found for pokemon ID: ${props.pokemon?.id}`);
+      return 25;
     }
     if (animatedMeta.value.bodyRadius === undefined) {
       throw new Error(`[useBattleCombatantState] bodyRadius is not defined in animated database for: ${props.pokemon?.id}`);
@@ -470,5 +521,8 @@ export function useBattleCombatantState(
     displaySize,
     currentShadow,
     feetPoints,
+    idleKey,
+    variationKey,
+    variationMeta
   };
 }

@@ -39,6 +39,7 @@ Consult these manuals for detailed implementation specifications:
 | **Low Power Mode**       | [low_power_mode_manual.md](./references/technical/low_power_mode_manual.md)               |
 | **SASS & Styling**       | [sass_styling_manual.md](./references/technical/sass_styling_manual.md)                   |
 | **Asset Pipeline**       | [asset_service_manual.md](./references/technical/asset_service_manual.md)                 |
+| **Animated Sprites**     | [animated_sprites_manual.md](./references/technical/animated_sprites_manual.md)           |
 | **Map & Spawns**         | [spawn_grid_manual.md](./references/systems/spawn_grid_manual.md)                         |
 | **Combat Camera**        | [combat_camera_manual.md](./references/battle/combat_camera_manual.md)                    |
 | **Dependencies**         | [dependency_management_manual.md](./references/technical/dependency_management_manual.md) |
@@ -170,6 +171,8 @@ The project uses a sophisticated audit and validation engine to ensure stability
   - **Dynamic Import Failures Handling**: In-flight dynamic component resolution failures (such as `TypeError: Failed to fetch dynamically imported module` or CSS preload errors) must not fail silently. You MUST register a global Vue error handler (`app.config.errorHandler`) to catch these rendering cycle exceptions and forward them to the error store.
   - **Network & Chunk Error Routing**: When connection or module chunk loading errors are caught by `setError`, the store MUST skip the standard game crash overlay and emit a `PWA_NEED_REFRESH` event on the `gameBus` to display the existing manual update overlay, allowing users to log out safely to download the new assets.
 - **Scratch Directory Mandate**: Any generated logs, text reports, summaries, or audit output files (regardless of file extension: `.txt`, `.log`, `.json`, etc.) created for review, debugging, or later study MUST be stored exclusively in the `scratch/` directory at the project root. Writing temporary report files, summaries, or logs in the project root, source directories, or any other arbitrary directory is strictly forbidden to preserve repository cleanliness.
+- **Preserve Command Scope**: When requested to run a command with a delimited scope (e.g. `optimize_sprites --all`), you MUST execute exactly that command or script. Avoid running broader or global lifecycle scripts (like `npm run assets:convert`) that might trigger extensive rebuilding or side effects beyond the requested task.
+- **Destructive Operations Approval**: Running global or massive commands that clean directories, purge optimized final assets, or carry data loss risks (e.g., `npm run assets:convert` which clears `public/assets` on launch) is strictly prohibited unless explicitly requested or approved by the user. If an operation could result in data loss if interrupted, always prompt the user first.
 
 ### 6. TypeScript Integrity & Zero-Ignore Policy
 

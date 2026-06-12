@@ -99,6 +99,14 @@ const handleUseItem = (item: BattleItem) => {
     }
   })
 }
+
+const getTierColor = (tier?: string) => {
+  const t = tier || 'common'
+  if (t === 'rare') return '#3b82f6'
+  if (t === 'epic') return '#a855f7'
+  if (t === 'legend') return 'var(--yellow)'
+  return '#94a3b8'
+}
 </script>
 
 <template>
@@ -110,6 +118,7 @@ const handleUseItem = (item: BattleItem) => {
         v-for="item in battleItems"
         :key="item.id"
         :class="['quick-item-card', 'tier-' + (item.tier || 'common')]"
+        :style="{ '--tier-color': getTierColor(item.tier) }"
         @click.stop="handleUseItem(item)"
       >
         <PVTooltip

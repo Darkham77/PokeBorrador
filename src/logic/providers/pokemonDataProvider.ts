@@ -7,7 +7,7 @@ import { GYMS } from '@/data/gyms';
 import { FIRE_RED_MAPS } from '@/data/maps';
 import { NATURE_DATA } from '@/data/natures';
 import { SPECIES_METADATA } from '@/data/speciesMetadata';
-import { POKEMON_AESTHETICS } from '@/data/pokedex';
+import { POKEMON_AESTHETICS, POKEMON_SPRITE_IDS } from '@/data/pokedex';
 
 import { getSpriteUrl, getBackSpriteUrl } from '@/data/spriteMapping';
 import type { 
@@ -35,6 +35,11 @@ const _moveData = shallowRef(MOVE_DATA as Record<string, MoveBaseData>);
 const _speciesMetadata = shallowRef(SPECIES_METADATA as Record<string, SpeciesMetadata>);
 const _pokemonAesthetics = shallowRef(POKEMON_AESTHETICS as Record<string, PokemonAesthetics>);
 
+/** Mapa inverso: número sprite → nombre canónico (ej: 12 → "butterfree") */
+const SPRITE_ID_TO_NAME: Record<number, string> = Object.fromEntries(
+  Object.entries(POKEMON_SPRITE_IDS).map(([name, num]) => [num, name])
+);
+
 /**
  * Realiza una copia profunda de un objeto para evitar mutaciones accidentales.
  */
@@ -50,7 +55,13 @@ export const pokemonDataProvider = {
      */
     getPokemonData(id: string): PokemonData | null {
         if (!id) return null;
-        const normalizedId = String(id).toLowerCase();
+        let normalizedId = String(id).toLowerCase();
+
+        // Si el ID es numérico, resolverlo al nombre canónico usando el mapa inverso
+        const asNum = parseInt(normalizedId, 10);
+        if (!isNaN(asNum) && String(asNum) === normalizedId && SPRITE_ID_TO_NAME[asNum]) {
+            normalizedId = SPRITE_ID_TO_NAME[asNum];
+        }
         const dbData = _pokemonDb.value[normalizedId];
         
         // Merge metadata if available

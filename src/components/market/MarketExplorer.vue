@@ -28,7 +28,23 @@ function handleBuy(listing: MarketListing) {
 // formatTime is now centralized in timeUtils.ts as formatDisplayDate
 const formatTime = formatDisplayDate
 
+function getTierLabel(tier?: string) {
+  const labels: Record<string, string> = {
+    common: 'COMÚN',
+    rare: 'RARO',
+    epic: 'ÉPICO',
+    legend: 'LEGENDARIO'
+  }
+  return labels[tier || 'common']
+}
 
+function getTierColor(tier?: string) {
+  const t = tier || 'common'
+  if (t === 'rare') return '#3b82f6'
+  if (t === 'epic') return '#a855f7'
+  if (t === 'legend') return 'var(--yellow)'
+  return '#94a3b8'
+}
 </script>
 
 <template>
@@ -62,7 +78,11 @@ const formatTime = formatDisplayDate
         v-for="item in listings" 
         :key="item.id"
         class="market-item-wrapper"
-        :class="[item.listing_type]"
+        :class="[
+          item.listing_type,
+          item.listing_type === 'item' ? 'tier-' + (getItemById(item.data.name || '')?.tier || 'common') : ''
+        ]"
+        :style="item.listing_type === 'item' ? { '--tier-color': getTierColor(getItemById(item.data.name || '')?.tier) } : {}"
       >
         <div class="seller-tag">
           <span class="s-name">👤 {{ item.seller_name }}</span>
@@ -82,6 +102,14 @@ const formatTime = formatDisplayDate
           />
         </template>
         <template v-else>
+          <!-- Tier Tag (Retro Style) -->
+          <span
+            class="tier-tag"
+            :class="'tier-' + (getItemById(item.data.name || '')?.tier || 'common')"
+          >
+            {{ getTierLabel(getItemById(item.data.name || '')?.tier) }}
+          </span>
+
           <div class="explorer-item-card">
             <div class="item-visual">
               <img 

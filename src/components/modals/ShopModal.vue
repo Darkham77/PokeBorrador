@@ -280,11 +280,12 @@ const close = () => {
   }
 
   &.active {
-    color: var(--white);
+    color: #000000;
+    font-weight: bold;
     background: var(--yellow);
     border-color: var(--yellow-light);
     box-shadow: 0 0 8px Rgba(234, 179, 8, 0.4);
-    text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
+    text-shadow: none;
   }
 }
 </style>

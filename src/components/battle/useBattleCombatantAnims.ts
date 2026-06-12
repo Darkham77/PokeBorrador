@@ -77,13 +77,16 @@ export function useBattleCombatantAnims(
     const isTrapped = (props.animState as string) === 'trapped'
     const isCatching = props.animState === 'catching'
     
+    // Reset existing transforms before starting new tweens to prevent properties persisting between states
+    gsap.killTweensOf(idleWrapperRef.value)
+
     if (isFrozen || isPara || isConfused || isTrapped || isCatching) {
-      gsap.killTweensOf(idleWrapperRef.value)
       gsap.set(idleWrapperRef.value, { y: 0, rotation: 0, scaleX: 1, scaleY: 1 })
       return
     }
 
     if (isFloating.value) {
+      gsap.set(idleWrapperRef.value, { scaleX: 1, scaleY: 1 })
       idleTween = gsap.to(idleWrapperRef.value, {
         y: () => `-${10 + Math.random() * 6}%`,
         rotation: () => (Math.random() > 0.5 ? 1 : -1) * (1 + Math.random() * 4),
@@ -94,6 +97,7 @@ export function useBattleCombatantAnims(
         ease: 'sine.inOut'
       })
     } else {
+      gsap.set(idleWrapperRef.value, { y: 0 })
       idleTween = gsap.to(idleWrapperRef.value, {
         scaleX: () => 1.01 + Math.random() * 0.02,
         scaleY: () => 0.97 + Math.random() * 0.02,

@@ -298,18 +298,6 @@
 
 @mixin shop-card-hover($accent-color: var(--yellow), $variant: 'full') {
   @include premium-card-hover($accent-color, 1.02, -6px, $variant);
-
-  &:hover:not(.locked):not(.disabled) {
-    @if $variant == 'full' {
-      border-color: #{$accent-color};
-      box-shadow: 
-        0 20px 40px Rgba(0, 0, 0, 0.6),
-        inset 0 30px 60px -20px color-mix(in srgb, #{$accent-color} 10%, transparent),
-        0 0 20px color-mix(in srgb, #{$accent-color} 15%, transparent);
-    } @else {
-      box-shadow: 0 15px 35px Rgba(0, 0, 0, 0.5);
-    }
-  }
 }
 
 /**

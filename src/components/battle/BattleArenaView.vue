@@ -680,7 +680,7 @@ const onDialogLeave = (el: Element, done: () => void) => {
           <!-- Enemigo -->
           <BattleCombatant
             v-for="p in enemyCombatants"
-            :key="`enemy-${p.uid || p.id}`"
+            :key="`enemy-seat-${p.uid || 'active'}`"
             side="enemy"
             :pokemon="p"
             :position="p2Pos"
@@ -732,7 +732,7 @@ const onDialogLeave = (el: Element, done: () => void) => {
           <!-- Jugador -->
           <BattleCombatant
             v-for="p in playerCombatants"
-            :key="`player-${p.uid || p.id}`"
+            :key="`player-seat-${p.uid || 'active'}`"
             side="player"
             :pokemon="p"
             :position="p1Pos"

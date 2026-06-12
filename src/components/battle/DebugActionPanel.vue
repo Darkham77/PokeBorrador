@@ -5,8 +5,11 @@ import { useBattleStore } from '@/stores/battle'
 import { useGameStore } from '@/stores/game'
 import { useAudioStore } from '@/stores/audio'
 import PVTooltip from '@/components/common/PVTooltip.vue'
-import { PDEX_ORDER, GEN2_PDEX_ORDER } from '@/data/pokedex'
+import { PDEX_ORDER, GEN2_PDEX_ORDER, POKEMON_SPRITE_IDS } from '@/data/pokedex'
 import { gameBus } from '@/logic/gameBus'
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
+import { ANIMATED_SPRITE_DATABASE } from '@/data/animatedSpriteDatabase'
+import { POKEMON_FEET_DATABASE } from '@/data/pokemonFeetDatabase'
 
 const ALL_PDEX = [...PDEX_ORDER, ...GEN2_PDEX_ORDER]
 
@@ -22,25 +25,47 @@ const enemyBaseId = ref('1')
 const enemyVariant = ref('')
 const enemyGender = ref('')
 
-const deconstructPokemonId = (fullId: string) => {
+const resolveToSpriteNumber = (fullId: string): { numId: string; rest: string[] } => {
   const parts = fullId.split('_')
-  const baseId = parts[0] || '1'
-  let variant = ''
-  let gender = ''
+  const spriteIds = POKEMON_SPRITE_IDS as Record<string, number>
 
-  if (parts.length === 3) {
-    variant = parts[1] || ''
-    gender = parts[2] || ''
-  } else if (parts.length === 2) {
-    const lastPart = (parts[1] || '').toLowerCase()
-    if (lastPart === 'm' || lastPart === 'f') {
-      gender = lastPart
-    } else {
-      variant = parts[1] || ''
+  // Try progressively shorter prefixes to find a POKEMON_SPRITE_IDS match
+  // e.g. "nidoran_f_1" -> try "nidoran_f_1", "nidoran_f", "nidoran"
+  for (let i = parts.length; i >= 1; i--) {
+    const candidate = parts.slice(0, i).join('_').toLowerCase()
+    if (spriteIds[candidate] !== undefined) {
+      return { numId: String(spriteIds[candidate]), rest: parts.slice(i) }
     }
   }
 
-  return { baseId, variant, gender }
+  // Fallback: if parts[0] is already a number, use it directly
+  if (parts[0] !== undefined && /^\d+$/.test(parts[0])) {
+    return { numId: parts[0], rest: parts.slice(1) }
+  }
+
+  // Last resort: ALL_PDEX position lookup on the first part
+  const idx = ALL_PDEX.indexOf((parts[0] || '').toLowerCase())
+  return { numId: idx !== -1 ? String(idx + 1) : '1', rest: parts.slice(1) }
+}
+
+const deconstructPokemonId = (fullId: string) => {
+  const { numId, rest } = resolveToSpriteNumber(fullId)
+  let variant = ''
+  let gender = ''
+
+  if (rest.length === 2) {
+    variant = rest[0] || ''
+    gender = rest[1] || ''
+  } else if (rest.length === 1) {
+    const lastPart = (rest[0] || '').toLowerCase()
+    if (lastPart === 'm' || lastPart === 'f') {
+      gender = lastPart
+    } else {
+      variant = rest[0] || ''
+    }
+  }
+
+  return { baseId: numId, variant, gender }
 }
 
 const constructPokemonId = (baseId: string, variant: string, gender: string) => {
@@ -188,10 +213,10 @@ const toggleSearchMode = async () => {
 
 const updateVisualSwap = (side = 'enemy') => {
   const baseIdVal = side === 'player' ? playerBaseId.value : enemyBaseId.value
-  const variantVal = side === 'player' ? playerVariant.value : enemyVariant.value
+  const rawVariantVal = side === 'player' ? playerVariant.value : enemyVariant.value
   const genderVal = side === 'player' ? playerGender.value : enemyGender.value
 
-  let targetBase = baseIdVal.trim().toLowerCase()
+  let targetBase = String(baseIdVal ?? '').trim().toLowerCase()
   if (!/^\d+$/.test(targetBase)) {
     const idx = ALL_PDEX.indexOf(targetBase)
     if (idx !== -1) {
@@ -199,7 +224,65 @@ const updateVisualSwap = (side = 'enemy') => {
     }
   }
 
+  // Si el valor de la variante es "0" o contiene solo espacios, lo ignoramos para no generar "_0"
+  const cleanVar = String(rawVariantVal ?? '').trim().toLowerCase()
+  const variantVal = (cleanVar === '0' || cleanVar === '') ? '' : cleanVar
+
   const targetId = constructPokemonId(targetBase, variantVal, genderVal)
+
+  // VALIDACIÓN ESTRICTA: Lanza error ANTES de mutar el estado si el ID resultante es inválido
+  // Esto previene que se asigne un ID no válido y se rompa el ciclo de render de Vue 3
+  const isFemale = genderVal.toLowerCase() === 'f'
+  const isBack = side === 'player'
+  const candIdle = `${targetBase}i${variantVal ? '_' + variantVal : ''}`
+  const candSimple = `${targetBase}${variantVal ? '_' + variantVal : ''}`
+
+  let animatedKey = ''
+  if (isBack) {
+    if (isFemale && ANIMATED_SPRITE_DATABASE[`${candIdle}_f_back`]) {
+      animatedKey = `${candIdle}_f_back`
+    } else if (ANIMATED_SPRITE_DATABASE[`${candIdle}_back`]) {
+      animatedKey = `${candIdle}_back`
+    } else if (isFemale && ANIMATED_SPRITE_DATABASE[`${candSimple}_f_back`]) {
+      animatedKey = `${candSimple}_f_back`
+    } else if (ANIMATED_SPRITE_DATABASE[`${candSimple}_back`]) {
+      animatedKey = `${candSimple}_back`
+    }
+  } else {
+    if (isFemale && ANIMATED_SPRITE_DATABASE[`${candIdle}_f`]) {
+      animatedKey = `${candIdle}_f`
+    } else if (ANIMATED_SPRITE_DATABASE[candIdle]) {
+      animatedKey = candIdle
+    } else if (isFemale && ANIMATED_SPRITE_DATABASE[`${candSimple}_f`]) {
+      animatedKey = `${candSimple}_f`
+    } else if (ANIMATED_SPRITE_DATABASE[candSimple]) {
+      animatedKey = candSimple
+    }
+  }
+
+  // Si no es un sprite animado conocido, comprobar que existirá en POKEMON_FEET_DATABASE
+  if (!animatedKey) {
+    const targetUrl = getAssetUrl(ASSET_TYPES.POKEMON, targetId, {
+      isShiny: side === 'player' ? !!battleStore.state?.player?.isShiny : !!battleStore.state?.enemy?.isShiny,
+      isBack: isBack,
+      isAnimated: false
+    })
+    
+    let dbKey = targetUrl
+    const baseUrl = import.meta.env.BASE_URL || '/'
+    if (baseUrl !== '/' && targetUrl.startsWith(baseUrl)) {
+      dbKey = targetUrl.slice(baseUrl.length - 1)
+    }
+    try {
+      dbKey = decodeURIComponent(dbKey)
+    } catch (_e) {
+      // ignore
+    }
+
+    if (!POKEMON_FEET_DATABASE[dbKey]) {
+      throw new Error(`[DebugActionPanel] El ID de Pokémon generado "${targetId}" (ruta: "${dbKey}") no existe en POKEMON_FEET_DATABASE ni en ANIMATED_SPRITE_DATABASE.`);
+    }
+  }
 
   if (side === 'player' && battleStore.state?.player) {
     battleStore.state.player.id = targetId
@@ -212,7 +295,7 @@ const updateVisualSwap = (side = 'enemy') => {
 
 const incrementSwap = (side = 'enemy') => {
   const baseIdRef = side === 'player' ? playerBaseId : enemyBaseId
-  const current = baseIdRef.value.trim()
+  const current = String(baseIdRef.value ?? '').trim()
   
   let num = parseInt(current, 10)
   if (isNaN(num)) {
@@ -226,7 +309,7 @@ const incrementSwap = (side = 'enemy') => {
 
 const decrementSwap = (side = 'enemy') => {
   const baseIdRef = side === 'player' ? playerBaseId : enemyBaseId
-  const current = baseIdRef.value.trim()
+  const current = String(baseIdRef.value ?? '').trim()
 
   let num = parseInt(current, 10)
   if (isNaN(num)) {
@@ -358,9 +441,10 @@ const toggleStatus = (side: string, type: string) => {
           </button>
           <input
             v-model="playerBaseId"
-            type="text"
+            type="number"
+            min="1"
             class="swap-input base-id-input"
-            placeholder="ID/Name"
+            placeholder="#"
             @change="updateVisualSwap('player')"
             @click.stop
           >
@@ -431,9 +515,10 @@ const toggleStatus = (side: string, type: string) => {
           </button>
           <input
             v-model="enemyBaseId"
-            type="text"
+            type="number"
+            min="1"
             class="swap-input base-id-input"
-            placeholder="ID/Name"
+            placeholder="#"
             @change="updateVisualSwap('enemy')"
             @click.stop
           >

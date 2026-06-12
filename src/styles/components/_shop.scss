@@ -153,7 +153,6 @@
   border: 1px solid Rgba(239, 68, 68, 0.2);
   border-radius: 12px;
   padding: 12px;
-  backdrop-filter: Blur(10px);
   &:hover:not(.locked) { @include shop-card-hover(#ef4444); }
 
   .item-price-wrapper {
@@ -205,7 +204,27 @@
   }
 }
 
-.shop-item-card, .bc-shop-item-card, .war-shop-item-card {
+.shop-item-card, .bc-shop-item-card, .war-shop-item-card, .market-item-wrapper {
+  mask-image: -webkit-radial-gradient(white, black);
+  -webkit-mask-image: -webkit-radial-gradient(white, black);
+
+  &.tier-common {
+    border-color: Rgba(148, 163, 184, 0.25);
+    background: Rgba(148, 163, 184, 0.03) !important;
+  }
+  &.tier-rare {
+    border-color: Rgba(59, 130, 246, 0.35);
+    background: Rgba(59, 130, 246, 0.05) !important;
+  }
+  &.tier-epic {
+    border-color: Rgba(168, 85, 247, 0.35);
+    background: Rgba(168, 85, 247, 0.05) !important;
+  }
+  &.tier-legend {
+    border-color: Rgba(245, 158, 11, 0.45);
+    background: Rgba(245, 158, 11, 0.06) !important;
+  }
+
   .tier-tag {
     position: absolute;
     top: 12px;
@@ -220,7 +239,7 @@
     &.tier-common { background: Rgba(148, 163, 184, 0.08); color: #94a3b8; border: 1px solid Rgba(148, 163, 184, 0.15); }
     &.tier-rare { background: Rgba(59, 130, 246, 0.08); color: #60a5fa; border: 1px solid Rgba(59, 130, 246, 0.15); }
     &.tier-epic { background: Rgba(168, 85, 247, 0.08); color: #c084fc; border: 1px solid Rgba(168, 85, 247, 0.15); }
-    &.tier-legend { background: Rgba(234, 179, 8, 0.08); color: #facc15; border: 1px solid Rgba(234, 179, 8, 0.15); }
+    &.tier-legend { background: var(--yellow); color: #000000; font-weight: bold; border: 1px solid var(--yellow-light); }
   }
 
   &.locked {

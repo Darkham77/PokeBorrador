@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, nextTick, onUnmounted } from 'vue'
+import { ref, watch, nextTick, onUnmounted, computed } from 'vue'
 import gsap from 'gsap'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import VirtualEntity from './VirtualEntity.vue'
@@ -100,12 +100,52 @@ const {
   isAnimated,
   frames,
   displaySize,
-  feetPoints
+  feetPoints,
+  idleKey,
+  variationMeta
 } = useBattleCombatantState(props, emit, spriteRef)
 
-const animTween = ref<gsap.core.Tween | null>(null)
+const animTween = ref<gsap.core.Timeline | gsap.core.Tween | null>(null)
+const currentMode = ref<'idle' | 'variation'>('idle')
+const currentImageUrl = ref('')
+
+// Desacoplar el ancho del DOM de la reactividad inmediata del cambio de modo en GSAP
+const currentFrames = computed(() => {
+  if (!props.pokemon) return 1
+  return currentMode.value === 'variation' ? (variationMeta.value?.frames ?? 1) : frames.value
+})
+
+let pendingAnimation: (() => void) | null = null
+
+const onImageLoad = () => {
+  if (pendingAnimation) {
+    const fn = pendingAnimation
+    pendingAnimation = null
+    fn()
+  }
+}
+
+let idleCyclesTarget = Math.floor(Math.random() * 2) + 3 // 3 o 4 ciclos
+
+// Actualizar reactivamente e iniciar la animación de spritesheet
+watch([idleKey, () => props.pokemon?.isShiny, () => props.pokemon?.status, isAnimated], () => {
+  idleCyclesTarget = Math.floor(Math.random() * 2) + 3
+  pendingAnimation = null
+  currentMode.value = 'idle' // Forzar reinicio al estado de reposo (idle) al cambiar de Pokémon o estado
+  if (!props.pokemon) return
+  currentImageUrl.value = getAssetUrl(ASSET_TYPES.POKEMON, props.pokemon.id, {
+    isShiny: !!props.pokemon.isShiny,
+    isBack: props.side === 'player',
+    isAnimated: true,
+  }).replace(/\/(\d+)([^/]*)\.webp$/i, (_: string, num: string, suff: string) => `/${num}i${suff}.webp`)
+
+  nextTick(() => {
+    animateSpritesheet()
+  })
+}, { immediate: true })
 
 const animateSpritesheet = () => {
+  pendingAnimation = null
   if (animTween.value) {
     animTween.value.kill()
     animTween.value = null
@@ -115,34 +155,113 @@ const animateSpritesheet = () => {
   const imgEl = spriteRef.value.querySelector('.pokemon-combat-image') as HTMLElement
   if (!imgEl) return
 
-  // Reset offset first to first frame
-  gsap.set(imgEl, { x: 0, xPercent: 0 })
-
+  // Si está congelado o dormido, forzar primer frame del idle y detener animación
   if (props.pokemon?.status === 'freeze' || props.pokemon?.status === 'sleep') {
-    // If frozen or asleep, keep the first frame fixed and do not start animation
+    currentMode.value = 'idle'
+    if (props.pokemon) {
+      currentImageUrl.value = getAssetUrl(ASSET_TYPES.POKEMON, props.pokemon.id, {
+        isShiny: !!props.pokemon.isShiny,
+        isBack: props.side === 'player',
+        isAnimated: true,
+      }).replace(/\/(\d+)([^/]*)\.webp$/i, (_: string, num: string, suff: string) => `/${num}i${suff}.webp`)
+    }
+    gsap.set(imgEl, { x: 0, xPercent: 0 })
     return
   }
 
-  const totalFrames = frames.value
-  if (totalFrames <= 1) return
+  const playMode = () => {
+    if (animTween.value) {
+      animTween.value.kill()
+      animTween.value = null
+    }
+    if (!props.pokemon) return
 
-  const endXPercent = -((totalFrames - 1) / totalFrames) * 100
-  const duration = totalFrames / 5 // 5 FPS (half speed)
+    const baseAssetUrl = getAssetUrl(ASSET_TYPES.POKEMON, props.pokemon.id, {
+      isShiny: !!props.pokemon.isShiny,
+      isBack: props.side === 'player',
+      isAnimated: true,
+    })
 
-  animTween.value = gsap.to(imgEl, {
-    xPercent: endXPercent,
-    ease: `steps(${totalFrames - 1})`,
-    duration,
-    repeat: -1,
-    runBackwards: false
-  })
+    const mode = currentMode.value === 'idle' ? 'i' : 'v'
+    const targetUrl = baseAssetUrl.replace(/\/(\d+)([^/]*)\.webp$/i, (_: string, num: string, suff: string) => `/${num}${mode}${suff}.webp`)
+
+    const startTween = () => {
+      if (!spriteRef.value) return
+      const imgEl = spriteRef.value.querySelector('.pokemon-combat-image') as HTMLElement
+      if (!imgEl) return
+
+      const totalFrames = currentMode.value === 'idle' 
+        ? (frames.value) 
+        : (variationMeta.value?.frames ?? 0)
+
+      // Si el modo actual no tiene frames o es variación y no hay variación, volvemos a idle
+      if (totalFrames <= 1 || (currentMode.value === 'variation' && !variationMeta.value)) {
+        currentMode.value = 'idle'
+        currentImageUrl.value = baseAssetUrl.replace(/\/(\d+)([^/]*)\.webp$/i, (_: string, num: string, suff: string) => `/${num}i${suff}.webp`)
+        gsap.set(imgEl, { x: 0, xPercent: 0 })
+        return
+      }
+
+      // Resetear posición de frame y limpiar transformaciones para evitar deformación temporal
+      gsap.killTweensOf(imgEl);
+      gsap.set(imgEl, { clearProps: 'x,xPercent,transform' });
+      gsap.set(imgEl, { x: 0, xPercent: 0 });
+
+      const endXPercent = -((totalFrames - 1) / totalFrames) * 100
+      const fps = currentMode.value === 'idle' ? 8 : 10;
+      const duration = totalFrames / fps;
+      const repeatCount = currentMode.value === 'idle' ? (idleCyclesTarget - 1) : 0
+
+      // Orquestación robusta usando Timeline de GSAP para garantizar atomicidad en transiciones y evitar parpadeos (glitches de 1-frame)
+      const tl = gsap.timeline({
+        onComplete: () => {
+          if (currentMode.value === 'idle' && variationMeta.value && variationMeta.value.frames > 1) {
+            currentMode.value = 'variation'
+            idleCyclesTarget = Math.floor(Math.random() * 2) + 3
+          } else {
+            currentMode.value = 'idle'
+          }
+          // El reset se hace síncronamente antes de invocar la re-evaluación del modo
+          gsap.set(imgEl, { x: 0, xPercent: 0 });
+          playMode()
+        }
+      });
+
+      tl.to(imgEl, {
+        xPercent: endXPercent,
+        ease: `steps(${totalFrames - 1})`,
+        duration,
+        repeat: repeatCount
+      });
+
+      animTween.value = tl;
+    }
+
+    if (currentImageUrl.value !== targetUrl) {
+      pendingAnimation = startTween
+      currentImageUrl.value = targetUrl
+      
+      // Control por si la imagen se recupera instantáneamente del caché del navegador sin gatillar @load
+      nextTick(() => {
+        const imgEl = spriteRef.value?.querySelector('.pokemon-combat-image') as HTMLImageElement | null
+        if (imgEl && imgEl.complete && imgEl.naturalWidth > 0 && pendingAnimation === startTween) {
+          pendingAnimation = null
+          startTween()
+        }
+      })
+    } else {
+      const imgEl = spriteRef.value?.querySelector('.pokemon-combat-image') as HTMLImageElement | null
+      const isLoaded = imgEl && imgEl.complete && imgEl.naturalWidth > 0
+      if (isLoaded) {
+        nextTick(startTween)
+      } else {
+        pendingAnimation = startTween
+      }
+    }
+  }
+
+  playMode()
 }
-
-watch([isAnimated, frames, cacheKey, displaySize, () => props.pokemon?.status], () => {
-  nextTick(() => {
-    animateSpritesheet()
-  })
-}, { immediate: true })
 
 onUnmounted(() => {
   if (animTween.value) {
@@ -374,17 +493,17 @@ const onGroundPopLeave = (el: Element, done: () => void) => {
                   v-if="isAnimated"
                   class="pokemon-combat-image"
                   :class="{ 'is-silhouette': isSilhouette }"
-                  :src="imageUrl"
+                  :src="currentImageUrl"
                   :style="{
                     filter: isSilhouette ? 'none' : 'var(--atmosphere-filter)',
-                    width: (frames * 100) + '%',
+                    width: (currentFrames * 100) + '%',
                     maxWidth: 'none',
                     height: '100%',
                     objectFit: 'fill',
                     objectPosition: 'left center',
                     flexShrink: 0
                   }"
-                  @load="handleLoad"
+                  @load="(e: Event) => { handleLoad(e); onImageLoad(); }"
                   @error="handleImageError"
                 >
 
