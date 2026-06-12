@@ -5,6 +5,7 @@ import { useWarStore } from '@/stores/war'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
+import { getItemTierLabel, getItemTierColor } from '@/logic/utils/itemTierResolver'
 
 interface ShopItem {
   id: string
@@ -47,23 +48,9 @@ const buy = () => {
   shopStore.buyItemWar(props.item.id)
 }
 
-const tierLabel = computed(() => {
-  const labels: Record<string, string> = {
-    common: 'COMÚN',
-    rare: 'RARO',
-    epic: 'ÉPICO',
-    legend: 'LEGENDARIO'
-  }
-  return labels[props.item.tier || 'common']
-})
+const tierLabel = computed(() => getItemTierLabel(props.item.tier))
 
-const tierColor = computed(() => {
-  const tier = props.item.tier || 'common'
-  if (tier === 'rare') return '#3b82f6'
-  if (tier === 'epic') return '#a855f7'
-  if (tier === 'legend') return 'var(--yellow)'
-  return '#94a3b8'
-})
+const tierColor = computed(() => getItemTierColor(props.item.tier))
 
 const handleImageError = (e: Event) => {
   if (e.target) {

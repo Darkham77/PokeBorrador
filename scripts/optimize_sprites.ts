@@ -25,7 +25,7 @@ interface AnimationAnalysisResult {
 // CÓDIGO DEL WORKER (HILO SECUNDARIO DE PROCESAMIENTO INDEPENDIENTE)
 // -----------------------------------------------------------------------------
 if (!isMainThread) {
-  const { fileName, removeOriginal } = workerData;
+  const { fileName } = workerData;
 
   const analyzeVariantImage = async (
     varSourcePath: string,
@@ -191,8 +191,8 @@ if (!isMainThread) {
     const idleCandidate = candidates[0]!;
 
     const idleStart = 0;
-    const lastTransIdx = idleCandidate.firstOccurrenceIndex + (idleCandidate.length * idleCandidate.repeats) - 1;
-    const idleEnd = transitions[lastTransIdx]!.originalIndices[transitions[lastTransIdx]!.originalIndices.length - 1]!;
+    // const lastTransIdx = idleCandidate.firstOccurrenceIndex + (idleCandidate.length * idleCandidate.repeats) - 1;
+    // const idleEnd = transitions[lastTransIdx]!.originalIndices[transitions[lastTransIdx]!.originalIndices.length - 1]!;
 
     const firstCycleEndTransIdx = idleCandidate.firstOccurrenceIndex + idleCandidate.length - 1;
     const firstCycleEnd = transitions[firstCycleEndTransIdx]!.originalIndices[transitions[firstCycleEndTransIdx]!.originalIndices.length - 1]!;

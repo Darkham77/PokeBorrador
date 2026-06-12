@@ -3,6 +3,7 @@ import { ref, computed, watch, onMounted } from 'vue'
 import { gsap } from 'gsap'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import PVTooltip from '@/components/common/PVTooltip.vue'
+import { getItemTierLabel, getItemTierColor } from '@/logic/utils/itemTierResolver'
 
 interface InventoryItem {
   id: string
@@ -40,15 +41,7 @@ watch(() => props.item.sprite, () => {
 })
 
 const tierClass = computed(() => `tier-${props.item.tier || 'common'}`)
-const tierLabel = computed(() => {
-  const labels: Record<string, string> = {
-    common: 'Común',
-    rare: 'Raro',
-    epic: 'Épico',
-    legend: 'Legendario'
-  }
-  return labels[props.item.tier || 'common']
-})
+const tierLabel = computed(() => getItemTierLabel(props.item.tier))
 
 // Prepend tier label to tooltip description
 const tierTooltipDesc = computed(() => {
@@ -75,13 +68,7 @@ const itemFontSize = computed(() => {
   return `clamp(${minFontSize}px, calc(80cqw / ${divisor}), ${maxFontSize}px)`
 })
 
-const tierColor = computed(() => {
-  const tier = props.item.tier || 'common'
-  if (tier === 'rare') return '#3b82f6'
-  if (tier === 'epic') return '#a855f7'
-  if (tier === 'legend') return 'var(--yellow)'
-  return '#94a3b8'
-})
+const tierColor = computed(() => getItemTierColor(props.item.tier))
 
 // ── WATCHERS FOR SELECTION STATE ─────────────────────────────────────────────
 const getBaseColors = () => {

@@ -170,6 +170,7 @@ const animateSpritesheet = () => {
   }
 
   const playMode = () => {
+    // 1. Limpiar timelines previos y detener todas las llamadas a onComplete
     if (animTween.value) {
       animTween.value.kill()
       animTween.value = null
@@ -215,6 +216,7 @@ const animateSpritesheet = () => {
       // Orquestación robusta usando Timeline de GSAP para garantizar atomicidad en transiciones y evitar parpadeos (glitches de 1-frame)
       const tl = gsap.timeline({
         onComplete: () => {
+          if (!props.pokemon) return
           if (currentMode.value === 'idle' && variationMeta.value && variationMeta.value.frames > 1) {
             currentMode.value = 'variation'
             idleCyclesTarget = Math.floor(Math.random() * 2) + 3
@@ -253,6 +255,7 @@ const animateSpritesheet = () => {
       const imgEl = spriteRef.value?.querySelector('.pokemon-combat-image') as HTMLImageElement | null
       const isLoaded = imgEl && imgEl.complete && imgEl.naturalWidth > 0
       if (isLoaded) {
+        // Usamos nextTick para dar tiempo a que Vue actualice el DOM con el currentFrames correspondiente antes de iniciar el Tween
         nextTick(startTween)
       } else {
         pendingAnimation = startTween
