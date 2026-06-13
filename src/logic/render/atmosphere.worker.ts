@@ -13,6 +13,7 @@ interface AtmosphereParams {
 
 let canvas: OffscreenCanvas | null = null;
 let ctx: OffscreenCanvasRenderingContext2D | null = null;
+let isPaused = false;
 let params: AtmosphereParams = {
   weather: 'clear',
   isLowPower: false,
@@ -29,6 +30,7 @@ const textureOffsets = {
 };
 
 function render(time: number) {
+  if (isPaused) return;
   const localCanvas = canvas;
   const localCtx = ctx;
   if (!localCanvas || !localCtx) return;
@@ -194,6 +196,18 @@ self.onmessage = async (event: MessageEvent) => {
     }
     case 'UPDATE_PARAMS': {
       params = { ...params, ...payload };
+      break;
+    }
+    case 'PAUSE': {
+      isPaused = true;
+      break;
+    }
+    case 'RESUME': {
+      if (isPaused) {
+        isPaused = false;
+        lastTime = performance.now();
+        requestAnimationFrame(render);
+      }
       break;
     }
   }

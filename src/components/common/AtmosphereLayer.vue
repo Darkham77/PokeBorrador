@@ -415,18 +415,22 @@ const initWeatherAnim = () => {
   }
 }
 
-const cleanUpAtmosphere = () => {
+const cleanUpAtmosphere = (keepWorker = false) => {
   if (atmosphereContext) {
     atmosphereContext.revert()
     atmosphereContext = null
   }
   weatherTimeline = null
   lightningTimer = null
-  destroyWorker()
+  if (!keepWorker) {
+    destroyWorker()
+  } else if (worker) {
+    worker.postMessage({ type: 'PAUSE' })
+  }
 }
 
 const initAtmosphere = () => {
-  cleanUpAtmosphere()
+  cleanUpAtmosphere(true)
   
   if (!props.isVisible || props.isPerformanceMode || props.isLocked || props.weather === 'clear') {
     return
@@ -446,7 +450,7 @@ watch(
     () => props.isPerformanceMode,
     () => props.animSeed
   ],
-  async ([visible, , , perfMode]) => {
+  async ([visible, weather, , perfMode]) => {
     if (visible && !perfMode) {
       await nextTick()
       await nextTick()
@@ -454,7 +458,9 @@ watch(
         initAtmosphere()
       }
     } else {
-      cleanUpAtmosphere()
+      const canvasWeathers = ['fog', 'mist', 'wind', 'strong_winds', 'dust_storm', 'sandstorm']
+      const keepWorker = !perfMode && canvasWeathers.includes(weather)
+      cleanUpAtmosphere(keepWorker)
     }
   },
   { flush: 'post' }
@@ -575,7 +581,8 @@ const weatherOverlayStyles = computed(() => {
     :style="{ zIndex: zIndex }"
   >
     <div
-      v-if="!isPerformanceMode && isVisible && weather !== 'clear' && !isLocked"
+      v-if="!isPerformanceMode && weather !== 'clear' && !isLocked"
+      v-show="isVisible"
       class="weather-overlay"
       :class="[weather, props.cycle, { 'is-performance': isPerformanceMode }]"
       :style="weatherOverlayStyles"
