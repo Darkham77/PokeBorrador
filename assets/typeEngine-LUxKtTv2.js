@@ -1,0 +1,1 @@
+import{d as e}from"./game-data-CPuFBvEl.js";function t(t,n,r=null){if(!t||!n||r?.ability===`Intrépido`&&n.toLowerCase()===`ghost`&&(t.toLowerCase()===`normal`||t.toLowerCase()===`fighting`))return 1;let i=e[t.toLowerCase()];return i?i[n.toLowerCase()]??1:1}function n(e,n,r=null){let i=t(e,n.type,r);return n.type2&&(i*=t(e,n.type2,r)),i}export{t as n,n as t};

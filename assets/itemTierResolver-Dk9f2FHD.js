@@ -1,1 +1,0 @@
-const e={common:"COMÚN",rare:"RARO",epic:"ÉPICO",legend:"LEGENDARIO"},n={common:"#94a3b8",rare:"#3b82f6",epic:"#a855f7",legend:"var(--yellow)"};function c(o){return e[o||"common"]||e.common}function m(o){return n[o||"common"]||n.common}export{m as a,c as g};

@@ -1,0 +1,1 @@
+import{t as e}from"./ArchaeologyModal-DvHCQopt.js";export{e as default};
