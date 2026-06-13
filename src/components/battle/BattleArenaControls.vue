@@ -215,7 +215,7 @@ const onEnter = (el: Element, done: () => void) => {
           <span class="btn-text">{{ encounterBtnText }}</span>
         </button>
         <button
-          v-if="(battleStore.state?.wasSearching !== false || battleStore.state?.isGym || battleStore.isReadyToExit || isRewardsWait) && !(battleStore.isSearching && battleStore.state?.trainerName === 'Oficial de Policía')"
+          v-if="(battleStore.isReadyToExit || isRewardsWait) || (battleStore.isSearching && battleStore.state?.wasSearching !== false && !battleStore.state?.isTrainer && !battleStore.state?.isGym && !battleStore.state?.cannotEscape)"
           class="continue-btn-final map-btn"
           @click.stop="battleStore.completeBattleFlow('map')"
         >
