@@ -112,4 +112,12 @@ To guarantee smooth main-thread processing and prevent GPU compositor exhaustion
 - **Avoid will-change on High-Density Elements**: Do NOT apply `will-change: transform` or `will-change: filter` to multiple small, dense nodes (e.g., individual combat grass/bush blades or small particles). Doing so triggers a GPU layer explosion that stalls the compositor. Promote only the large, moving parent container (e.g., the camera viewport).
 - **CSS Containment**: Apply `contain: paint layout;` to complex animated wrappers (such as the battle arena container) to isolate style recalculations and repaints to that subtree.
 
+## 9. Web Worker & OffscreenCanvas Lifecycle Management
+
+To prevent resource leakages and redundant thread compilation overhead in views utilizing dynamic canvas contexts (such as scrolling maps):
+
+- **Canvas Preservation via v-show**: When a view hosting an OffscreenCanvas container goes off-screen (e.g. scrolled out of the viewport), prefer using `v-show` instead of `v-if` to hide it. This keeps the `<canvas>` DOM element mounted and preserves the transferred canvas rendering context, avoiding the need to perform a full thread reconstruction when returning to view.
+- **Worker Bucle Pausing**: Do not terminate workers dynamically on high-frequency visibility events (like scrolling). Instead, implement `PAUSE` and `RESUME` message handlers within the Web Worker to stop the `requestAnimationFrame` render loop while off-screen and restart it dynamically when visible, completely avoiding redundant `new Worker()` instantations and compilation Blobs.
+
+
 
