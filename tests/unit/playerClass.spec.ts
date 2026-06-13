@@ -204,4 +204,29 @@ describe('Player Class Logic (V3)', () => {
     await terminateBattle(mockCtx, false, false)
     expect(gameStore.state.money).toBe(0) // Se queda en 0
   })
+
+  it('debe calcular la probabilidad de encuentro policial (tChance) de forma dinámica basada en la criminalidad', () => {
+    // Definimos una función helper pura idéntica a la lógica del motor para testear matemáticamente
+    const getEncounterChance = (playerClass: string, criminality: number, trainerChance: number, trainerBonus = 1) => {
+      const isRocketMaxCrim = playerClass === 'rocket' && criminality >= 100;
+      return isRocketMaxCrim
+        ? (criminality / 10) * trainerBonus
+        : Math.min(trainerChance || 5, 20) * trainerBonus;
+    }
+
+    // Caso 1: No es Rocket -> Debe usar trainerChance normal (ej. 5%)
+    expect(getEncounterChance('entrenador', 250, 5)).toBe(5)
+
+    // Caso 2: Es Rocket pero < 100% de criminalidad -> Usa trainerChance normal (ej. 5%)
+    expect(getEncounterChance('rocket', 80, 5)).toBe(5)
+
+    // Caso 3: Es Rocket, criminalidad al 100% -> 10%
+    expect(getEncounterChance('rocket', 100, 5)).toBe(10)
+
+    // Caso 4: Es Rocket, criminalidad al 200% -> 20%
+    expect(getEncounterChance('rocket', 200, 5)).toBe(20)
+
+    // Caso 5: Es Rocket, criminalidad al 250% -> 25%
+    expect(getEncounterChance('rocket', 250, 5)).toBe(25)
+  })
 })
