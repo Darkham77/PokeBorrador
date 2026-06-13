@@ -256,7 +256,13 @@ export async function generateEncounter(locId: string, state: EncounterState, op
 
   // 3. Base Trainer Chance
   const trainerBonus = options.eventTrainerBonus || 1;
-  const tChance = Math.min(state.trainerChance || GAME_RATIOS.encounters.trainerBase, GAME_RATIOS.encounters.trainerMax) * trainerBonus;
+  const criminality = state.classData?.criminality || 0;
+  const isRocketMaxCrim = state.playerClass === 'rocket' && criminality >= 100;
+  
+  const tChance = isRocketMaxCrim
+    ? (criminality / 10) * trainerBonus
+    : Math.min(state.trainerChance || GAME_RATIOS.encounters.trainerBase, GAME_RATIOS.encounters.trainerMax) * trainerBonus;
+
   if (!options.forceEncounter && Math.random() * 100 < tChance) {
     return { type: 'trainer' };
   }
