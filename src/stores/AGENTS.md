@@ -26,5 +26,5 @@ State Architects / Frontend Developers.
 
 ## Child DOX Index
 
-- `debug/` - Stores managing offline CLI state injectors.
-- `game/` - Primary loops, save game state manager.
+- [debug/](./debug/): Stores managing offline CLI state injectors.
+- [game/](./game/): Primary loops, save game state manager.

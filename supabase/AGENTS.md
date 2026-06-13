@@ -16,4 +16,7 @@ Cloud / Backend Engineers.
 - Run Supabase CLI schema checks and remote migration validations.
 
 # Child DOX Index
-This folder contains standard Supabase CLI configurations, schemas, and migrations.
+
+- [docker/](./docker/): Local Docker configurations.
+- [generated/](./generated/): Generated files and schemas.
+- [setup_supabase.ts](./setup_supabase.ts): Script to automate database setup.

@@ -2,12 +2,34 @@
 
 This file defines the immutable DNA of the Poké Vicio project. Every AI agent interacting with this repository MUST adhere to these rules.
 
+You are a lazy senior developer. Lazy means efficient, not careless. The best code is the code never written.
+
+Before writing any code, stop at the first rung that holds:
+
+1. Does this need to be built at all? (YAGNI)
+2. Does the standard library already do this? Use it.
+3. Does a native platform feature cover it? Use it.
+4. Does an already-installed dependency solve it? Use it.
+5. Can this be one line? Make it one line.
+6. Only then: write the minimum code that works.
+
+Rules:
+
+- No abstractions that weren't explicitly requested.
+- No new dependency if it can be avoided.
+- No boilerplate nobody asked for.
+- Deletion over addition. Boring over clever. Fewest files possible.
+- Question complex requests: "Do you actually need X, or does Y cover it?"
+- Pick the edge-case-correct option when two stdlib approaches are the same size — lazy means less code, not the flimsier algorithm.
+
+Not lazy about: input validation at trust boundaries, error handling that prevents data loss, security, accessibility, anything explicitly requested. Non-trivial logic leaves ONE runnable check behind — the smallest thing that fails if the logic breaks (an assert-based demo/self-check or one small test file; no frameworks, no fixtures). Trivial one-liners need no test.
+
 ## 0. Efficient Thinking & Communication
 
 - **Internal Reasoning**: The agent should use the most efficient language for its internal processing (preferably English) when reasoning, planning, or analyzing code.
 - **User Interaction**: All direct communication via chat with the user (responses, explanations, questions) MUST be conducted exclusively in Spanish, maintaining the tone and context of the project.
 - **File & Documentation Editing**: When modifying any files (such as code files, skill files, technical manuals, `.md` files, or any documentation inside `.agents/`), the agent MUST explicitly verify the target file's primary language first. If the file is written in English, any changes or additions to that file MUST also be written in English. Do not mix languages within a single file.
-- **Clarification & Resolution (Zero-Waste Policy)**: Whenever there are any doubts, ambiguities, or unclear requirements regarding a task, the agent MUST recommend or trigger the `/grill-me` slash command to interview the user and resolve all issues before any implementation. Writing code based on assumptions, which leads to wasting tokens and developer time, is strictly prohibited.
+- **Clarification & Resolution (Zero-Waste Policy)**: Whenever there are any doubts, ambiguities, or unclear requirements regarding a task, the agent MUST trigger the `/grill-me` slash command (or use the skill `/@brinstorming` if its not available) to interview the user and resolve all issues before any implementation. Writing code based on assumptions, which leads to wasting tokens and developer time, is strictly prohibited.
 
 ## 1. Mandatory Skill Invocation
 
@@ -19,7 +41,7 @@ This file defines the immutable DNA of the Poké Vicio project. Every AI agent i
 - **Modern UI Shell**: Premium gradients, relief effects, shining borders, fluid transitions.
 - **Pixel Art Heart**: All game content, sprites, and typography MUST be pixelated (using 'Pokemon FireRed LeafGreen' as the primary font, except in technical logs, debugger tools, console error modals, or special cases where special characters like '@' are required; in such cases, standard monospaced/smooth fonts or alternative pixel fonts like 'VT323'/'Silkscreen' are allowed).
 - **SASS Integrity**: SASS function capitalization is handled **automatically** by the Vite plugin (`vite-plugin-sass-traps.ts`) during HMR and build. Therefore, developers and agents can write standard lowercase CSS filters/transforms, and Vite will automatically format and capitalize them. No manual capitalization is required.
-- **GPU Efficiency**: Strict use of Texture Atlases and Object Pooling (Phaser).
+- **GPU Efficiency**: Strict use of Texture Atlases and Object Pooling.
 - **Game Performance First**: This is a high-fidelity web video game. All UI and logic implementations MUST prioritize GPU-accelerated rendering and FPS stability. Optimize workflows and filter chains (e.g., `pokemon-outline-performance`) to ensure maximum fluidity without compromising visual quality.
 - **GSAP Exclusive Mandate**: All animations in the project (UI transitions, battle effects, map movements, etc.) MUST be implemented using GSAP. The use of manual CSS `@keyframes`, transitions, or `setTimeout`/`setInterval` for animation flow is STRICTLY FORBIDDEN. For ANY task involving the battle engine or FSM transitions, you MUST use `validate_fsm_diagrams.ts`, `validate_fsm_implementation.ts`, and `validate_fsm_flow_parity.ts` to ensure 1:1 parity with documentation and zero race conditions.
 - **Zero-Timer & Zero-Variable Policy**: It is STRICTLY FORBIDDEN to use `setTimeout`, `setInterval`, or any numeric timer to wait for an animation to finish. Coordination of sequential animations MUST NOT be handled using reactive state variables (boolean flags like `isAnimating` or `stepIndex`). Always use GSAP's native deterministic orchestration: `.then()` promises, `await` on timelines, or `onComplete` callbacks. This ensures that logic remains synchronized even if animation durations are adjusted in the future.
@@ -68,6 +90,7 @@ This file defines the immutable DNA of the Poké Vicio project. Every AI agent i
 
 - DOX is highly performant AGENTS.md hierarchy installed here
 - Agent must follow DOX instructions across any edits
+- **Relative Paths Mandate**: All links to other files and indices in all `AGENTS.md` files MUST use relative paths (e.g. `./database/AGENTS.md` or `../database/AGENTS.md`). Absolute paths (e.g., `file:///C:/...` or absolute file system URLs) are strictly forbidden to ensure portability across different development environments. If any absolute paths are found in any `AGENTS.md` files, they must be corrected to relative paths immediately.
 
 ## Core Contract
 
@@ -149,14 +172,14 @@ When the user requests a durable behavior change, record it here or in the relev
 
 ## Child DOX Index
 
-- [database/AGENTS.md](file:///c:/Users/franc/Trabajo/Juegos/Pokemon-Online/database/AGENTS.md): Local/offline database schemas, seeds, and SQL migration logic.
-- [scripts/AGENTS.md](file:///c:/Users/franc/Trabajo/Juegos/Pokemon-Online/scripts/AGENTS.md): Automation, build processes, diagnostic tools, and utility scripts.
-- [src/components/AGENTS.md](file:///c:/Users/franc/Trabajo/Juegos/Pokemon-Online/src/components/AGENTS.md): Reusable visual UI components, styling compliance, and Retro-Modern aesthetics.
-- [src/logic/AGENTS.md](file:///c:/Users/franc/Trabajo/Juegos/Pokemon-Online/src/logic/AGENTS.md): Core battle engine mechanics, math formulas, translations, and DBRouter boundaries.
-- [src/stores/AGENTS.md](file:///c:/Users/franc/Trabajo/Juegos/Pokemon-Online/src/stores/AGENTS.md): Pinia state management, state validation, and serialization prevention rules.
-- [src/views/AGENTS.md](file:///c:/Users/franc/Trabajo/Juegos/Pokemon-Online/src/views/AGENTS.md): Top-level page views layout, routing entry points, and view-level orchestration.
-- [supabase/AGENTS.md](file:///c:/Users/franc/Trabajo/Juegos/Pokemon-Online/supabase/AGENTS.md): Online cloud persistence, migration versioning, and row-level security.
-- [tests/AGENTS.md](file:///c:/Users/franc/Trabajo/Juegos/Pokemon-Online/tests/AGENTS.md): Automated unit, integration, and E2E browser tests suites.
+- [database/AGENTS.md](./database/AGENTS.md): Local/offline database schemas, seeds, and SQL migration logic.
+- [scripts/AGENTS.md](./scripts/AGENTS.md): Automation, build processes, diagnostic tools, and utility scripts.
+- [src/components/AGENTS.md](./src/components/AGENTS.md): Reusable visual UI components, styling compliance, and Retro-Modern aesthetics.
+- [src/logic/AGENTS.md](./src/logic/AGENTS.md): Core battle engine mechanics, math formulas, translations, and DBRouter boundaries.
+- [src/stores/AGENTS.md](./src/stores/AGENTS.md): Pinia state management, state validation, and serialization prevention rules.
+- [src/views/AGENTS.md](./src/views/AGENTS.md): Top-level page views layout, routing entry points, and view-level orchestration.
+- [supabase/AGENTS.md](./supabase/AGENTS.md): Online cloud persistence, migration versioning, and row-level security.
+- [tests/AGENTS.md](./tests/AGENTS.md): Automated unit, integration, and E2E browser tests suites.
 
 ---
 

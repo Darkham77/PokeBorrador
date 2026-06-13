@@ -23,7 +23,7 @@ Backend / Database Engineers.
 
 ## Child DOX Index
 
-- `backups/` - Database backups.
-- `migrations/` - Schema versioning migrations.
-- `schemas/` - Full schema definitions.
-- `temp/` - Work temporary cache.
+- [backups/](./backups/): Database backups.
+- [migrations/](./migrations/): Schema versioning migrations.
+- [schemas/](./schemas/): Full schema definitions.
+- [temp/](./temp/): Work temporary cache.

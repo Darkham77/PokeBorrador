@@ -24,5 +24,5 @@ QA / Automation Engineers.
 
 ## Child DOX Index
 
-- `node/` - Pure logic tests running under the native Node.js runner.
-- `unit/` - Unit tests for Vue components and stores.
+- [node/](./node/): Pure logic tests running under the native Node.js runner.
+- [unit/](./unit/): Unit tests for Vue components and stores.

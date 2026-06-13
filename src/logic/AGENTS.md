@@ -27,27 +27,27 @@ Logic Developers / Game Designers.
 
 ## Child DOX Index
 
-- `auth/` - Local and online authentication routers.
-- `battle/` - FSM orchestrators, combat engine, moves database.
-- `breeding/` - Breeding formulas, daycare constraints.
-- `combat/` - Active combat math and status handlers.
-- `constants/` - System constants and registries.
-- `db/` - DBRouter database adapter.
-- `debug/` - Offline console state injector.
-- `economy/` - Shops, prices, and balance formulas.
-- `environment/` - Weather cycles, map settings.
-- `events/` - In-game events triggers.
-- `gym/` - Gym requirements and rematch mechanics.
-- `inventory/` - Inventory logic and usage validation.
-- `items/` - Item behavior databases.
-- `map/` - Spawn systems, grid cells mapping.
-- `minigames/` - Casino/minigame math.
-- `modals/` - Modal orchestration queues.
-- `player/` - Trainer metadata and class handlers.
-- `pokemon/` - Pokemon stats growth, factories, and sanitization.
-- `providers/` - Showdown move translation providers.
-- `pvp/` - Matchmaking routers, network sync.
-- `services/` - External assets and network API managers.
-- `utils/` - Shared formatting libraries.
-- `war/` - Factions point calculators.
-- `weather/` - Weather effects multipliers.
+- [auth/](./auth/): Local and online authentication routers.
+- [battle/](./battle/): FSM orchestrators, combat engine, moves database.
+- [breeding/](./breeding/): Breeding formulas, daycare constraints.
+- [combat/](./combat/): Active combat math and status handlers.
+- [constants/](./constants/): System constants and registries.
+- [db/](./db/): DBRouter database adapter.
+- [debug/](./debug/): Offline console state injector.
+- [economy/](./economy/): Shops, prices, and balance formulas.
+- [environment/](./environment/): Weather cycles, map settings.
+- [events/](./events/): In-game events triggers.
+- [gym/](./gym/): Gym requirements and rematch mechanics.
+- [inventory/](./inventory/): Inventory logic and usage validation.
+- [items/](./items/): Item behavior databases.
+- [map/](./map/): Spawn systems, grid cells mapping.
+- [minigames/](./minigames/): Casino/minigame math.
+- [modals/](./modals/): Modal orchestration queues.
+- [player/](./player/): Trainer metadata and class handlers.
+- [pokemon/](./pokemon/): Pokemon stats growth, factories, and sanitization.
+- [providers/](./providers/): Showdown move translation providers.
+- [pvp/](./pvp/): Matchmaking routers, network sync.
+- [services/](./services/): External assets and network API managers.
+- [utils/](./utils/): Shared formatting libraries.
+- [war/](./war/): Factions point calculators.
+- [weather/](./weather/): Weather effects multipliers.

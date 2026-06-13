@@ -8,7 +8,7 @@ Frontend UI Developers / UI Designers.
 
 ## Local Contracts
 
-- Strict compliance with [ui_ux_standards.md](file:///c:/Users/franc/Trabajo/Juegos/Pokemon-Online/.agents/skills/project-standards/references/core/ui_ux_standards.md) and [sass_styling_manual.md](file:///c:/Users/franc/Trabajo/Juegos/Pokemon-Online/.agents/skills/project-standards/references/technical/sass_styling_manual.md).
+- Strict compliance with [ui_ux_standards.md](../../.agents/skills/project-standards/references/core/ui_ux_standards.md) and [sass_styling_manual.md](../../.agents/skills/project-standards/references/technical/sass_styling_manual.md).
 - Zero template-level database queries or heavy computations.
 
 ## Work Guidance
@@ -28,28 +28,28 @@ Frontend UI Developers / UI Designers.
 
 This folder contains:
 
-- `admin/` - Administrative debugging HUD controls.
-- `adventure/` - Exploration, map grids, and movement.
-- `auth/` - Separate login and signup views (no gender selector in login).
-- `battle/` - Phaser canvases, arena controls, and FSM HUD layers.
-- `box/` - Box grids and storage management.
-- `breeding/` - Daycare, eggs, and dynamic visual matrices.
-- `common/` - Reusable UI base elements (modals, buttons, cards).
-- `events/` - Event visual notifications and animations.
-- `evolution/` - Evolution visual sequences and modals.
-- `game/` - Core canvas, overlays, and game-loop interfaces.
-- `gyms/` - Gym status, badge grid, and rematches.
-- `inventory/` - Inventory item slots and description cards.
-- `map/` - Overworld map visuals.
-- `market/` - Shop grids and GTS trade interface.
-- `modals/` - Teleported modals extending `BaseModal`.
-- `overlays/` - Screen-wide overlays (loading gates).
-- `pokedex/` - Pokedex list, filters, and detail sheets.
-- `pokemon/` - Sibling sprite overlap arrays.
-- `pokemon-detail/` - Pokemon stats, movesets, and grade frames.
-- `profile/` - Trainer profiles and customizing skins.
-- `shared/` - Shared layouts and layout shells.
-- `social/` - Friends, private messages, and chat lists.
-- `team/` - Team builder, drag-and-drop slots, and grid lists.
-- `ui/` - Layout panels, menus, and navigation tabs.
-- `war/` - Faction control grids and war status cards.
+- [admin/](./admin/): Administrative debugging HUD controls.
+- [adventure/](./adventure/): Exploration, map grids, and movement.
+- [auth/](./auth/): Separate login and signup views (no gender selector in login).
+- [battle/](./battle/): Phaser canvases, arena controls, and FSM HUD layers.
+- [box/](./box/): Box grids and storage management.
+- [breeding/](./breeding/): Daycare, eggs, and dynamic visual matrices.
+- [common/](./common/): Reusable UI base elements (modals, buttons, cards).
+- [events/](./events/): Event visual notifications and animations.
+- [evolution/](./evolution/): Evolution visual sequences and modals.
+- [game/](./game/): Core canvas, overlays, and game-loop interfaces.
+- [gyms/](./gyms/): Gym status, badge grid, and rematches.
+- [inventory/](./inventory/): Inventory item slots and description cards.
+- [map/](./map/): Overworld map visuals.
+- [market/](./market/): Shop grids and GTS trade interface.
+- [modals/](./modals/): Teleported modals extending `BaseModal`.
+- [overlays/](./overlays/): Screen-wide overlays (loading gates).
+- [pokedex/](./pokedex/): Pokedex list, filters, and detail sheets.
+- [pokemon/](./pokemon/): Sibling sprite overlap arrays.
+- [pokemon-detail/](./pokemon-detail/): Pokemon stats, movesets, and grade frames.
+- [profile/](./profile/): Trainer profiles and customizing skins.
+- [shared/](./shared/): Shared layouts and layout shells.
+- [social/](./social/): Friends, private messages, and chat lists.
+- [team/](./team/): Team builder, drag-and-drop slots, and grid lists.
+- [ui/](./ui/): Layout panels, menus, and navigation tabs.
+- [war/](./war/): Faction control grids and war status cards.
