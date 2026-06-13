@@ -4,12 +4,14 @@ import globals from 'globals';
 import unusedImports from 'eslint-plugin-unused-imports';
 import tseslint from 'typescript-eslint';
 import vuejsAccessibility from 'eslint-plugin-vuejs-accessibility';
+import pluginSecurity from 'eslint-plugin-security';
 
 export default tseslint.config(
   js.configs.recommended,
   ...tseslint.configs.recommended,
   ...pluginVue.configs['flat/recommended'],
   ...vuejsAccessibility.configs['flat/recommended'],
+  pluginSecurity.configs.recommended,
   {
     plugins: {
       'unused-imports': unusedImports,

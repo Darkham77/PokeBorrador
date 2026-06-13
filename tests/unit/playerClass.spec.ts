@@ -8,6 +8,7 @@ import { setActivePinia, createPinia } from 'pinia'
 import { usePlayerClassStore } from '@/stores/playerClass'
 import { useGameStore } from '@/stores/game'
 import type { Pokemon } from '@/types/pokemon'
+import type { BattleContext } from '@/types/battleContext'
 
 vi.mock('@/logic/supabase', () => ({
   supabase: {
@@ -164,7 +165,7 @@ describe('Player Class Logic (V3)', () => {
       addLog: vi.fn(),
       waitForLogs: vi.fn().mockResolvedValue(true),
       completeBattleFlow: vi.fn()
-    } as unknown as any
+    } as unknown as BattleContext
 
     // Caso 1: Nivel 10, Criminalidad 100% -> Debe cobrar 8000
     gameStore.state.playerClass = 'rocket'
@@ -182,7 +183,9 @@ describe('Player Class Logic (V3)', () => {
     gameStore.state.money = 20000
 
     // Restauramos el estado del mock de batalla
-    mockCtx.activeBattle.value.over = false
+    if (mockCtx.activeBattle.value) {
+      mockCtx.activeBattle.value.over = false
+    }
     await terminateBattle(mockCtx, false, false)
     expect(gameStore.state.money).toBe(18000) // 20000 - 2000
 
@@ -191,7 +194,9 @@ describe('Player Class Logic (V3)', () => {
     gameStore.state.classData.criminality = 200
     gameStore.state.money = 20000
 
-    mockCtx.activeBattle.value.over = false
+    if (mockCtx.activeBattle.value) {
+      mockCtx.activeBattle.value.over = false
+    }
     await terminateBattle(mockCtx, false, false)
     expect(gameStore.state.money).toBe(4000) // 20000 - 16000
 
@@ -200,7 +205,9 @@ describe('Player Class Logic (V3)', () => {
     gameStore.state.classData.criminality = 100
     gameStore.state.money = 50000
 
-    mockCtx.activeBattle.value.over = false
+    if (mockCtx.activeBattle.value) {
+      mockCtx.activeBattle.value.over = false
+    }
     await terminateBattle(mockCtx, false, false)
     expect(gameStore.state.money).toBe(0) // Se queda en 0
   })
