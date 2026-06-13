@@ -192,7 +192,8 @@ export const useGymsStore = defineStore('gyms', {
         enemyTeam: enemyTeam,
         locationId: 'gym',
         difficulty,
-        rewardTM: gym.rewardTM
+        rewardTM: gym.rewardTM,
+        cannotEscape: true
       })
     }
   }

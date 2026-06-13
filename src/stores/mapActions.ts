@@ -172,7 +172,8 @@ export async function executeNavigation(
         enemyTeam,
         trainerName: tName,
         trainerSprite: tSprite,
-        trainerQuote: tQuote
+        trainerQuote: tQuote,
+        cannotEscape: true
       });
     }
   } else if (wildEnc.type === 'rival') {
@@ -204,7 +205,8 @@ export async function executeNavigation(
         enemyTeam,
         trainerName: trainerNameVal,
         trainerSprite: trainerSpriteVal,
-        isRival: true
+        isRival: true,
+        cannotEscape: true
       });
     }
   }

@@ -295,7 +295,7 @@ export function useAdventureEvents(config: AdventureEventsConfig) {
           trainerSprite: evt.trainerSprite,
           trainerQuote: evt.quote,
           persistenceMode: config.isTraveling.value ? 'SINGLE' : undefined,
-          cannotEscape: config.isTraveling.value
+          cannotEscape: true
         })
       } else {
         let wild = evt.wildPokemon
