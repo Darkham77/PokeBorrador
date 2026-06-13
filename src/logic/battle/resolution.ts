@@ -200,9 +200,26 @@ export async function terminateBattle(ctx: BattleContext, win: boolean, fled = f
   const uiStore = useUIStore()
   uiStore.isBattleSwitchForced = false
   
-  // Reset criminality if fighting police officer
+  // Reset criminality & apply bail if fighting police officer
   if (active.trainerName === 'Oficial de Policía') {
     if (ctx.gs.state.playerClass === 'rocket' && ctx.gs.state.classData) {
+      const criminality = ctx.gs.state.classData.criminality || 0
+      
+      // Si el jugador pierde contra la policía (derrota), se le cobra fianza
+      if (!win && !fled) {
+        const classLevel = ctx.gs.state.classLevel || 1
+        const bailAmount = Math.floor(Math.pow(classLevel, 2) * 80 * (criminality / 100))
+        
+        if (bailAmount > 0) {
+          const prevMoney = ctx.gs.state.money || 0
+          ctx.gs.state.money = Math.max(0, prevMoney - bailAmount)
+          const moneyPaid = prevMoney - ctx.gs.state.money
+          
+          ctx.addLog(`¡Bajo arresto! Pagaste ₽${moneyPaid} de fianza.`, 'log-error', 'player')
+          uiStore.notify(`Fianza pagada: ₽${moneyPaid}`, '🚨')
+        }
+      }
+      
       ctx.gs.state.classData.criminality = 0
       uiStore.notify("Tu nivel de criminalidad ha vuelto a cero.", "🚔")
     }

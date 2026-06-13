@@ -19,6 +19,16 @@ const activeTab = computed(() => uiStore.activeTab)
 // Solo se muestra en la pestaña de mapa para el equipo rocket y si no estamos en modo performance
 const isVisible = computed(() => isRocket.value && activeTab.value === 'map' && !isPerformanceMode.value)
 const isMax = computed(() => criminality.value >= 100)
+const percentLabelText = computed(() => {
+  if (criminality.value > 100) {
+    const excess = criminality.value - 100
+    const bonusLv = Math.floor(excess / 50)
+    if (bonusLv > 0) {
+      return `${criminality.value}% (+${bonusLv} LV)`
+    }
+  }
+  return `${criminality.value}%`
+})
 </script>
 
 <template>
@@ -34,7 +44,7 @@ const isMax = computed(() => criminality.value >= 100)
         <div 
           v-gsap-loop="{ effect: 'blink-red', duration: 0.5, active: isMax }"
           class="bar-fill" 
-          :style="{ height: criminality + '%' }"
+          :style="{ height: Math.min(100, criminality) + '%' }"
         >
           <div
             v-if="isMax"
@@ -43,7 +53,7 @@ const isMax = computed(() => criminality.value >= 100)
         </div>
       </div>
       <div class="percent-label">
-        {{ criminality }}%
+        {{ percentLabelText }}
       </div>
     </div>
   </Transition>

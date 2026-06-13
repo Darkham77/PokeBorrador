@@ -212,7 +212,7 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
     if (playerClass.value !== 'rocket' || amount <= 0) return
     const currentData = gameStore.state.classData as ClassData
     const prev = currentData.criminality || 0
-    currentData.criminality = Math.min(100, prev + amount)
+    currentData.criminality = prev + amount
     
     if (prev < 100 && currentData.criminality >= 100) {
       uiStore.notify("¡Nivel de criminalidad máximo! La policía te busca.", "🚔")

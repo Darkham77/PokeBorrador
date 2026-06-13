@@ -91,8 +91,8 @@ describe('Player Class Logic (V3)', () => {
     
     expect(gameStore.state.classData.criminality).toBe(20)
     
-    classStore.addCriminality(90) // Total 110 -> Caps at 100
-    expect(gameStore.state.classData.criminality).toBe(100)
+    classStore.addCriminality(90) // Total 110 -> Sin límite artificial
+    expect(gameStore.state.classData.criminality).toBe(110)
   })
 
   it('debe sacrificar al Pokémon y devolver el item en misiones Rocket', async () => {
@@ -128,5 +128,80 @@ describe('Player Class Logic (V3)', () => {
     // Activar PvP
     gameStore.state.activeBattle = { isPvP: true } as unknown as typeof gameStore.state.activeBattle
     expect(classStore.getModifier('expMult')).toBe(1.0)
+  })
+
+  it('debe aplicar la fianza de policía correctamente en la derrota según nivel y criminalidad', async () => {
+    const gameStore = useGameStore()
+    const { terminateBattle } = await import('@/logic/battle/resolution')
+    const { BATTLE_STATES, BATTLE_SUBSTATES } = await import('@/logic/battle/battleStateMachine')
+
+    // Mock minimal de BattleContext
+    const mockFsm = {
+      currentState: { value: BATTLE_STATES.ACTIVE_BATTLE },
+      currentSubState: { value: BATTLE_SUBSTATES.CHECK_OUTCOME },
+      transition: vi.fn()
+    }
+    const mockCtx = {
+      gs: gameStore,
+      fsm: mockFsm,
+      BATTLE_STATES,
+      BATTLE_SUBSTATES,
+      audio: {
+        defeat: vi.fn(),
+        victoryTrainer: vi.fn()
+      },
+      activeBattle: {
+        value: {
+          trainerName: 'Oficial de Policía',
+          persistenceMode: 'PERSISTENT',
+          over: false,
+          classData: gameStore.state.classData
+        }
+      },
+      faintedSides: { value: new Set<string>(), clear: vi.fn(), add: vi.fn() },
+      enemyStages: { value: {} },
+      animations: {},
+      addLog: vi.fn(),
+      waitForLogs: vi.fn().mockResolvedValue(true),
+      completeBattleFlow: vi.fn()
+    } as unknown as any
+
+    // Caso 1: Nivel 10, Criminalidad 100% -> Debe cobrar 8000
+    gameStore.state.playerClass = 'rocket'
+    gameStore.state.classLevel = 10
+    gameStore.state.classData.criminality = 100
+    gameStore.state.money = 200000
+
+    await terminateBattle(mockCtx, false, false) // Derrota (win = false, fled = false)
+    expect(gameStore.state.money).toBe(192000) // 200000 - 8000
+    expect(gameStore.state.classData.criminality).toBe(0) // Se limpia la criminalidad
+
+    // Caso 2: Nivel 5, Criminalidad 100% -> Debe cobrar 2000
+    gameStore.state.classLevel = 5
+    gameStore.state.classData.criminality = 100
+    gameStore.state.money = 20000
+
+    // Restauramos el estado del mock de batalla
+    mockCtx.activeBattle.value.over = false
+    await terminateBattle(mockCtx, false, false)
+    expect(gameStore.state.money).toBe(18000) // 20000 - 2000
+
+    // Caso 3: Nivel 10, Criminalidad 200% -> Debe cobrar 16000
+    gameStore.state.classLevel = 10
+    gameStore.state.classData.criminality = 200
+    gameStore.state.money = 20000
+
+    mockCtx.activeBattle.value.over = false
+    await terminateBattle(mockCtx, false, false)
+    expect(gameStore.state.money).toBe(4000) // 20000 - 16000
+
+    // Caso 4: Bancarrota (Nivel 30, Criminalidad 100% -> ₽72000, pero jugador sólo tiene ₽50000)
+    gameStore.state.classLevel = 30
+    gameStore.state.classData.criminality = 100
+    gameStore.state.money = 50000
+
+    mockCtx.activeBattle.value.over = false
+    await terminateBattle(mockCtx, false, false)
+    expect(gameStore.state.money).toBe(0) // Se queda en 0
   })
 })
