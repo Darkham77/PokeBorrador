@@ -298,6 +298,15 @@ export default defineConfig({
   build: {
     chunkSizeWarningLimit: 1500, // Increased to 1500 to accommodate game database size without warnings
     rollupOptions: {
+      onwarn(warning, warn) {
+        if (warning.code === 'EVAL' && warning.id?.includes('node_modules')) {
+          return;
+        }
+        if (warning.code === 'INEFFECTIVE_DYNAMIC_IMPORT') {
+          return;
+        }
+        warn(warning);
+      },
       output: {
         manualChunks(id) {
           if (id.includes('node_modules/vue') || id.includes('node_modules/pinia') || id.includes('node_modules/vue-router')) {
