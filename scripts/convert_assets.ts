@@ -665,6 +665,7 @@ for (const [key, prefix] of [
     aristocrata: ['gentleman', 'lady', 'madame', 'richboy', 'butler', 'darach', 'officeworker', 'ortega', 'rose', 'siebold'],
     ranger: ['ranger', 'pokemonranger'],
     pokefan: ['pokefan', 'pokekid'],
+    policeman: ['policeman', 'police', 'policia'],
     artista: ['beauty', 'artist', 'dancer', 'model', 'elesa', 'lisia', 'mina', 'painter', 'perrin', 'risingstar', 'rollerskater', 'tierno', 'tucker', 'tuli', 'tulip', 'valerie', 'viola'],
     default: ['youngster', 'lass', 'camper', 'picnicker', 'schoolkid', 'entrenador', 'player', 'rival']
   };

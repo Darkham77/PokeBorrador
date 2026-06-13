@@ -4,7 +4,7 @@
     "composite": false,
     "noEmit": true,
     "forceConsistentCasingInFileNames": true,
-    "types": ["node", "@js-temporal/polyfill"]
+    "types": ["node"]
   },
   "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue", "scripts/**/*.ts", "tests/**/*.ts", "tests/**/*.tsx", "vite.config.ts"]
 }

@@ -84,3 +84,9 @@ Guardian Pokémon utilize a **Double Dice Roll** algorithm. Two random values ar
 If a map is under the total control of the player's faction, the **Dominance Bonus** activates:
 
 - **Effect**: All wild Pokémon caught on that map have a guaranteed floor of **15 IVs** across all stats.
+
+## 7. Police and Criminality Encounters
+
+For players belonging to the Team Rocket class, reaching maximum criminality (100% or higher) triggers combat encounters with the police:
+- **Archetype and Sprite Selection**: The system utilizes the dedicated `policeman` archetype. Instead of fallback sprites (e.g., `tamer`), it dynamically selects a random sprite from the policeman catalog pool (`policeman`, `policeman-gen4`, `policeman-gen7`, `policeman-gen8`) to provide visual variety.
+- **Encounter Stats**: Level scaling is derived from the map's base level plus an incremental level bonus scaled by criminality exceeding 100%.

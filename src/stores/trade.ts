@@ -7,6 +7,7 @@ import { useSocialStore } from './social.ts'
 import { useAudioStore } from './audio.ts'
 import { useLoadingStore } from './loading.ts'
 import { logger } from '@/logic/utils/logger'
+import { validateTradeOffer } from '@/logic/validation/schemas'
 import type { 
   TradeOffer
 } from '@/types/stores'
@@ -71,9 +72,21 @@ export const useTradeStore = defineStore('trade', () => {
       db.from('trade_offers').select('*').eq('sender_id', authStore.user.id).eq('status', 'accepted') as unknown as Promise<{ data: TradeOffer[] | null }>
     ])
 
-    pendingIncoming.value = incomingRes.data || []
-    pendingOutgoing.value = outgoingRes.data || []
-    pendingAccepted.value = acceptedRes.data || []
+    const validateOffers = (offers: TradeOffer[] | null): TradeOffer[] => {
+      if (!offers) return []
+      return offers.filter(o => {
+        const v = validateTradeOffer(o)
+        if (!v.success) {
+          logger.error('TRADE', 'Oferta de intercambio inválida omitida de la lista:', v.issues)
+          return false
+        }
+        return true
+      })
+    }
+
+    pendingIncoming.value = validateOffers(incomingRes.data)
+    pendingOutgoing.value = validateOffers(outgoingRes.data)
+    pendingAccepted.value = validateOffers(acceptedRes.data)
     
     // Sincronizar contador en socialStore
     await socialStore.refreshNotificationCount()

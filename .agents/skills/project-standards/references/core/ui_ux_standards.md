@@ -147,7 +147,7 @@ We prioritize a deliberate contrast between modern, sleek UI shells and classic,
 - **Line-Height for Wrapped Pixel Text**: When using pixelated fonts (like `Pokemon FireRed LeafGreen`), text wrapping can lead to extremely tight vertical spacing where lines overlap or touch. Always specify a generous `line-height` of `1.4` to `1.6` for multiline text containers to ensure proper legibility and vertical breathing room.
 - **BST Aesthetics**: Game-world data (Stats, IVs, Levels) MUST prioritize these sharp pixelated tokens to reinforce the "Retro Heart".
 - **Technical/Special Character Exception**: For debugging consoles, developer detail overlays, technical logs, or cases requiring special character glyphs (such as `@`, `#`, brackets, or JSON formatting), you are permitted to use standard monospace fonts (e.g. `Courier New`, monospace) or alternative pixel fonts (like `VT323` or `Silkscreen`) to ensure readability.
-- **Primary Font Special Character Ban**: The primary pixel font (`Pokemon FireRed LeafGreen`) does NOT contain glyphs for special characters like `#` or `@`. Using them with the primary font causes visual corruption. You MUST use alternative fonts (such as `VT323` or standard monospace) whenever rendering strings containing these symbols (e.g., Pokedex number `#001`).
+- **Primary Font Special Character Ban**: The primary pixel font (`Pokemon FireRed LeafGreen`) does NOT contain glyphs for special characters like `#`, `@`, or `[` (square brackets). Using them with the primary font causes visual corruption. You MUST use alternative fonts (such as `VT323` or standard monospace) whenever rendering strings containing these symbols (e.g., Pokedex number `#001` or debug tags `[DEBUG]`).
 - **Stat Color Standardization**:
   - **Level (NV)**: Purple (`#a855f7`).
   - **Stats/IVs**: Green (`#4ade80`).
@@ -700,6 +700,12 @@ When using the global GSAP hover engine to animate borders or box-shadows on int
 - **Registry Mandate**: The component's base class (e.g., `trainer-card`) MUST be registered in the `HOVER_VISUAL_BORDER_CLASSES` array within `src/logic/hoverHelpers.ts`.
 - **Why**: The hover leave engine (`triggerLeave` in `hoverLeave.ts`) relies on `hasVisualBorders` to detect if the element has custom borders. If the class is not registered, the engine will skip cleaning up the border properties on mouse leave, leaving the hover styles stuck (e.g., permanently white or colored).
 - **GSAP and CSS Conflict Avoidance**: Ensure the CSS stylesheet does not declare `transition: border-color` or custom `:hover` border colors that fight with GSAP's style injections.
+
+### 31. Aesthetic Scaling of Status Badges and HUD Overlapping Prevention
+
+When displaying multiple status badges or condition tags side by side (e.g., status/buff rows in combat HUD panels):
+- **Dynamic Width & Alignment**: Status badges (`.m-status-tag`) containing text/number overlays (e.g., stage value modifiers `▲1`, `▼2`) must use `min-width` (e.g., `16px` on desktop, `12px` on mobile) and `width: auto` instead of fixed widths. This prevents stage numbers from overflowing and overlapping adjacent badges.
+- **Compact Spacing**: Use zero padding (`padding: 0`) and small flex gap settings (e.g., `gap: 3px` on desktop, `gap: 2px` on mobile) on the parent container (`.status-container`) to keep status rows compact, tight, and aligned, expanding dynamically only when numeric modifiers are active.
 
 
 

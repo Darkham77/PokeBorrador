@@ -99,17 +99,19 @@ export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'm
 
         let tQuote = '¡Prepárate para combatir! ¡No te lo pondré fácil!'
         if (isMaxCriminality) {
-          tName = 'Oficial de Policía'
-          tSprite = 'tamer'
-          tQuote = getRandomQuoteForTrainer('police')
+          const t = TRAINER_TYPES['policeman']
+          tName = t.name
+          const availableSprites = getSpritesForArchetype('policeman')
+          const chosenSprite = availableSprites[Math.floor(Math.random() * availableSprites.length)]
+          tSprite = chosenSprite || t.sprite
+          tQuote = getRandomQuoteForTrainer('policeman')
           const criminality = ctx.gs.state.classData?.criminality || 100
           const excess = Math.max(0, criminality - 100)
           const bonusLv = Math.floor(excess / 50)
           const trainerLv = baseLv + 5 + bonusLv
           const teamSize = Math.floor(Math.random() * 2) + 3
-          const policePool = ['growlithe', 'arcanine', 'machoke', 'magneton', 'pidgeot']
 
-          const team = await buildTrainerTeam(policePool, trainerLv, teamSize)
+          const team = await buildTrainerTeam(t.pool, trainerLv, teamSize)
           enemyTeam.push(...team)
         } else {
           const keys = Object.keys(TRAINER_TYPES) as Array<keyof typeof TRAINER_TYPES>

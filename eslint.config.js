@@ -3,11 +3,13 @@ import pluginVue from 'eslint-plugin-vue';
 import globals from 'globals';
 import unusedImports from 'eslint-plugin-unused-imports';
 import tseslint from 'typescript-eslint';
+import vuejsAccessibility from 'eslint-plugin-vuejs-accessibility';
 
 export default tseslint.config(
   js.configs.recommended,
   ...tseslint.configs.recommended,
   ...pluginVue.configs['flat/recommended'],
+  ...vuejsAccessibility.configs['flat/recommended'],
   {
     plugins: {
       'unused-imports': unusedImports,
@@ -32,6 +34,19 @@ export default tseslint.config(
       ],
       'no-console': 'off',
       'no-undef': 'off', // TS ya maneja el chequeo de no-undef
+      // Configurar reglas de accesibilidad como advertencias para evitar romper el build de código legacy
+      'vuejs-accessibility/form-control-has-label': 'warn',
+      'vuejs-accessibility/label-has-for': 'warn',
+      'vuejs-accessibility/click-events-have-key-events': 'warn',
+      'vuejs-accessibility/no-static-element-interactions': 'warn',
+      'vuejs-accessibility/mouse-events-have-key-events': 'warn',
+      'vuejs-accessibility/alt-text': 'warn',
+      'vuejs-accessibility/no-autofocus': 'warn',
+      'vuejs-accessibility/no-onchange': 'warn',
+      'vuejs-accessibility/no-redundant-roles': 'warn',
+      'vuejs-accessibility/interactive-supports-focus': 'warn',
+      'vuejs-accessibility/heading-has-content': 'warn',
+      'vuejs-accessibility/anchor-has-content': 'warn',
     },
     languageOptions: {
       ecmaVersion: 'latest',

@@ -1,14 +1,5 @@
 import { vi, beforeEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
-import { Temporal } from '@js-temporal/polyfill'
-
-// Force Temporal polyfill in tests to allow Vitest's vi.useFakeTimers() to work
-// (Native Temporal in Node 26+ is not currently mocked by Vitest)
-Object.defineProperty(globalThis, 'Temporal', {
-  value: Temporal,
-  writable: true,
-  configurable: true
-});
 
 /**
  * tests/vitest.setup.ts
@@ -19,6 +10,32 @@ Object.defineProperty(globalThis, 'Temporal', {
 beforeEach(() => {
   setActivePinia(createPinia())
 })
+
+// Mock Temporal.Now to work with Vitest fake timers (which mock Date.now)
+if (typeof globalThis.Temporal !== 'undefined') {
+  const originalNow = globalThis.Temporal.Now;
+  const mockedNow = {
+    ...originalNow,
+    instant: () => globalThis.Temporal.Instant.fromEpochMilliseconds(Date.now()),
+    zonedDateTimeISO: (tz?: string) => {
+      const instant = globalThis.Temporal.Instant.fromEpochMilliseconds(Date.now());
+      return instant.toZonedDateTimeISO(tz || 'UTC');
+    },
+    plainDateTimeISO: (tz?: string) => {
+      const instant = globalThis.Temporal.Instant.fromEpochMilliseconds(Date.now());
+      return instant.toZonedDateTimeISO(tz || 'UTC').toPlainDateTime();
+    },
+    plainDateISO: (tz?: string) => {
+      const instant = globalThis.Temporal.Instant.fromEpochMilliseconds(Date.now());
+      return instant.toZonedDateTimeISO(tz || 'UTC').toPlainDate();
+    }
+  };
+  Object.defineProperty(globalThis.Temporal, 'Now', {
+    value: mockedNow,
+    writable: true,
+    configurable: true
+  });
+}
 
 // Mock ResizeObserver (Missing in JSDOM)
 class ResizeObserverMock {

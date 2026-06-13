@@ -192,7 +192,7 @@ const TRAINER_PERSONALITIES: Record<string, string[]> = {
   medium: ["misterioso", "inteligente"],
   motorista: ["agresivo", "competitivo"],
   montanero: ["relajado", "audaz"],
-  police: ["competitivo", "inteligente"],
+  policeman: ["competitivo", "inteligente"],
   rocket: ["agresivo", "competitivo"],
   criador: ["relajado", "entusiasta"],
   aristocrata: ["inteligente", "relajado"],

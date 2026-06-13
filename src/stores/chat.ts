@@ -10,6 +10,7 @@ import { useChatCosmeticsStore } from './chatCosmetics.ts'
 import { useChatPrivateStore, type ChatMessage } from './chatPrivate.ts'
 
 import type { RealtimeChannel } from '@supabase/supabase-js'
+import { validateChatMessage } from '@/logic/validation/schemas'
 
 export const useChatStore = defineStore('chat', () => {
   const authStore = useAuthStore()
@@ -69,6 +70,12 @@ export const useChatStore = defineStore('chat', () => {
         schema: 'public',
         table: 'global_chat_messages'
       }, ({ new: row }: { new: Record<string, unknown> }) => {
+        const validation = validateChatMessage(row)
+        if (!validation.success) {
+          logger.error('Chat', 'Mensaje de chat entrante inválido omitido por esquema incorrecto', validation.issues)
+          return
+        }
+
         // Deduplicar por ID real de Supabase
         const alreadyById = globalMessages.value.some(m => m.id !== undefined && m.id === row.id)
         if (alreadyById) return

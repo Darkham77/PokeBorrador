@@ -20,6 +20,7 @@ export type NpcArchetype =
   | 'aristocrata'   // Gentleman / Lady / Madame / Rich Boy
   | 'ranger'        // Pokemon Ranger
   | 'pokefan'       // Pokefan
+  | 'policeman'     // Police officer
   | 'artista'       // Beauty / Dancer / Model / Artist
   | 'default';      // Youngster / Lass / Camper / Picnicker
 
@@ -41,6 +42,7 @@ const ARCHETYPE_KEYWORDS: Record<NpcArchetype, string[]> = {
   aristocrata: ['gentleman', 'lady', 'madame', 'richboy', 'butler', 'darach', 'officeworker', 'ortega', 'rose', 'siebold'],
   ranger: ['ranger', 'pokemonranger'],
   pokefan: ['pokefan', 'pokekid'],
+  policeman: ['policeman', 'police', 'policia'],
   artista: ['beauty', 'artist', 'dancer', 'model', 'elesa', 'lisia', 'mina', 'painter', 'perrin', 'risingstar', 'rollerskater', 'tierno', 'tucker', 'tuli', 'tulip', 'valerie', 'viola'],
   default: ['youngster', 'lass', 'camper', 'picnicker', 'schoolkid', 'entrenador', 'player', 'rival']
 };

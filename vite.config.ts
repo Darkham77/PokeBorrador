@@ -3,7 +3,6 @@ import { defineConfig } from 'vitest/config'
 import { type ViteDevServer } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import path from 'node:path'
-import { Temporal } from '@js-temporal/polyfill'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 
 
@@ -327,7 +326,7 @@ export default defineConfig({
     // Only drop non-critical logs in production
     drop: process.env.NODE_ENV === 'production' ? ['debugger'] : [],
     pure: process.env.NODE_ENV === 'production' ? ['console.log', 'console.info', 'console.debug'] : [],
-  },
+  } as import('vite').ESBuildOptions & { charset?: 'utf8' },
   test: {
     globals: true,
     environment: 'jsdom',

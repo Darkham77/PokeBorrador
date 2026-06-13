@@ -11,6 +11,7 @@ import { writeOpfsFile } from '@/logic/utils/opfsStorage';
 import { logger } from '@/logic/utils/logger';
 import type { DBRouter } from '@/logic/db/dbRouter';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+import { validateUserProfile } from '@/logic/validation/schemas';
 
 export interface SaveResult {
   success?: boolean;
@@ -459,6 +460,19 @@ export async function saveGame(state: GameState, user: AuthUser, options: SaveOp
         const { data: existingProf } = await db.from('profiles').select('id').eq('id', user.id).maybeSingle();
         const finalUsername = save_data.trainer || user.user_metadata?.username || 'Entrenador';
         
+        const profileValidation = validateUserProfile({
+          id: user.id,
+          username: finalUsername,
+          level: save_data.trainerLevel,
+          is_banned: false,
+          coins: save_data.money
+        });
+
+        if (!profileValidation.success) {
+          logger.warn('SAVE', 'Sincronización de perfil abortada por validación de esquema fallida:', profileValidation.issues);
+          throw new Error('Datos del perfil inválidos: ' + (profileValidation.issues[0]?.message || 'Esquema incorrecto'));
+        }
+
         const shinyCount = ((save_data.team || []).filter(p => p.isShiny).length) + ((save_data.box || []).filter(p => p.isShiny).length);
         const statsRecord = (save_data.stats || {}) as Record<string, unknown>;
         const maxDamage = Number(statsRecord.maxDamage) || 0;

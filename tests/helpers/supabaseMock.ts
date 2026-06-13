@@ -1,5 +1,4 @@
 import { vi } from 'vitest'
-import { Temporal } from '@js-temporal/polyfill'
 
 // Stable mock object for chain calls
 export const mockChain = {

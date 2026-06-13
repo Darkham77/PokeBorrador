@@ -29,14 +29,30 @@ declare global {
     constructor(format: 'gzip' | 'deflate' | 'deflate-raw');
   }
 
-  // Temporal API (Stage 3 Proposal) is handled by @js-temporal/polyfill
-  const Temporal: typeof import('@js-temporal/polyfill').Temporal;
+  // Temporal API (Stage 3 Proposal / Native in modern environments)
   namespace Temporal {
-    export type Instant = import('@js-temporal/polyfill').Temporal.Instant;
-    export type ZonedDateTime = import('@js-temporal/polyfill').Temporal.ZonedDateTime;
-    export type Duration = import('@js-temporal/polyfill').Temporal.Duration;
-    export type PlainDate = import('@js-temporal/polyfill').Temporal.PlainDate;
-    export type PlainTime = import('@js-temporal/polyfill').Temporal.PlainTime;
+    export interface Instant {
+      epochMilliseconds: number;
+      toString(): string;
+    }
+    export interface ZonedDateTime {
+      epochMilliseconds: number;
+      toInstant(): Instant;
+      toString(): string;
+    }
+    export interface Duration {
+      total(options: { unit: 'milliseconds' | 'seconds' | 'minutes' | 'hours' | 'days' }): number;
+      toString(): string;
+    }
+    export interface PlainDate {
+      toString(): string;
+    }
+    export interface PlainTime {
+      toString(): string;
+    }
+    export class Now {
+      static instant(): Instant;
+    }
   }
 
   // Node 26+ / ESNext Collection Methods (V8 14.6)

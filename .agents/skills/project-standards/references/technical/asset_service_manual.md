@@ -138,6 +138,12 @@ To ensure visual consistency between terrestrial and flying Pokémon, the follow
 - Shadows must be integrated into the animation container to follow Dash and Attack movements.
 - Shadow visibility must be synchronized with the Pokémon's opacity during capture/faint sequences.
 
+## ⚙️ NPC Sprite Pipeline & Catalog
+
+The NPC sprite catalog (`npcSpriteCatalog.ts`) is automatically generated from the raw images in the assets folder via `scripts/convert_assets.ts`:
+- **Archetype Synchronization**: To introduce new trainer categories or custom NPC archetypes, ensure you map the new archetype name and its parsing keywords to `ARCHETYPE_KEYWORDS_LOCAL` in `convert_assets.ts`.
+- **Automatic Matching**: The script scans files in `_raw-assets/public/assets/sprites/npc/` matching filenames containing the keywords, classifying them, and exporting them in `npcSpriteCatalog.ts` under the new archetype key.
+
 ---
 
 ## 📦 PWA Caching & Configuration (VitePWA)

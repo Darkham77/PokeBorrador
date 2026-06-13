@@ -6,6 +6,7 @@ import { useGameStore } from '@/stores/game'
 import { useAuthStore } from '@/stores/auth'
 import BaseModal from '@/components/common/BaseModal.vue'
 import { gsap } from 'gsap'
+import { validateTrainerName } from '@/logic/validation/schemas'
 
 interface Props {
   show?: boolean
@@ -67,8 +68,10 @@ const submitRename = async () => {
   const targetName = newUsername.value.trim()
   const genderChanged = selectedGender.value !== gameStore.state.gender
 
-  if (!targetName || targetName.length < 3 || targetName.length > 15) {
-    uiStore.notify('El nombre debe tener entre 3 y 15 caracteres.', '⚠️')
+  const validation = validateTrainerName(targetName)
+  if (!validation.success) {
+    const errorMsg = validation.issues[0]?.message || 'El nombre debe tener entre 3 y 15 caracteres.'
+    uiStore.notify(errorMsg, '⚠️')
     return
   }
 
