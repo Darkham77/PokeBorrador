@@ -186,7 +186,14 @@
       display: flex; align-items: center; justify-content: center;
       font-size: 14px; 
     }
-    .ability-content { flex: 1; p { font-size: 13px; color: Rgba(203, 213, 225, 1); margin: 0; } }
+    .ability-content {
+      flex: 1;
+      :deep(.pv-tooltip-wrapper) {
+        display: block !important;
+        line-height: 1.5 !important;
+      }
+      p { font-size: 13px; color: Rgba(203, 213, 225, 1); margin: 0; }
+    }
     .ability-help {
       width: 20px; height: 20px;
       display: flex; align-items: center; justify-content: center;

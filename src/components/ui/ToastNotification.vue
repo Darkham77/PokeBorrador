@@ -42,6 +42,7 @@ function onLeave(el: Element, done: () => void) {
           <img 
             v-if="n.icon && (n.icon.includes('/') || n.icon.includes('.') || n.icon.startsWith('http'))"
             :src="n.icon"
+            alt=""
             class="toast-icon-img"
           >
           <span
@@ -69,7 +70,7 @@ function onLeave(el: Element, done: () => void) {
   @include gpu-layer;
 
   &.is-fullscreen-toast {
-    top: 20px;
+    top: 90px;
     z-index: var(--z-critical);
   }
 }
@@ -119,7 +120,7 @@ function onLeave(el: Element, done: () => void) {
 /* Responsive */
 @media (max-width: 800px) {
   .toast-stack {
-    top: 20px;
+    top: 90px;
     bottom: auto;
     left: auto;
     right: 20px;

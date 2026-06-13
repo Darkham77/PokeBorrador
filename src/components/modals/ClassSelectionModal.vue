@@ -6,6 +6,7 @@ import { usePlayerClassStore } from '@/stores/playerClass';
 import { PLAYER_CLASSES } from '@/data/playerClasses';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import BaseModal from '@/components/common/BaseModal.vue';
+import PVTooltip from '@/components/common/PVTooltip.vue';
 
 interface Props {
   show?: boolean
@@ -175,7 +176,14 @@ const onCardHover = (event: MouseEvent, isEntering: boolean) => {
                   v-for="(bonus, idx) in cls.bonuses"
                   :key="idx"
                 >
-                  {{ bonus }}
+                  <PVTooltip
+                    :description="cls.technicalBonuses?.[idx] || 'Información no disponible.'"
+                    position="top"
+                    :delay="100"
+                    style="cursor: help;"
+                  >
+                    <span>{{ bonus }}</span>
+                  </PVTooltip>
                 </li>
               </ul>
             </div>
@@ -187,7 +195,14 @@ const onCardHover = (event: MouseEvent, isEntering: boolean) => {
                   v-for="(penalty, idx) in cls.penalties"
                   :key="idx"
                 >
-                  {{ penalty }}
+                  <PVTooltip
+                    :description="cls.technicalPenalties?.[idx] || 'Información no disponible.'"
+                    position="top"
+                    :delay="100"
+                    style="cursor: help;"
+                  >
+                    <span>{{ penalty }}</span>
+                  </PVTooltip>
                 </li>
               </ul>
             </div>
@@ -379,6 +394,11 @@ const onCardHover = (event: MouseEvent, isEntering: boolean) => {
           position: absolute;
           left: 0;
           color: Rgba(255, 255, 255, 0.3);
+        }
+        
+        :deep(.pv-tooltip-wrapper) {
+          display: inline !important;
+          line-height: 1.4 !important;
         }
       }
     }

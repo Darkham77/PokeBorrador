@@ -3,6 +3,7 @@ import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { gsap } from 'gsap'
 import { type ClassDefinition } from '@/stores/playerClass'
 import { useModalStore } from '@/stores/modals'
+import PVTooltip from '@/components/common/PVTooltip.vue'
 
 interface Props {
   currentClass?: ClassDefinition | null
@@ -171,9 +172,16 @@ const onAbilityMouseLeave = (event: MouseEvent) => {
               {{ (currentClass?.bonusLevels?.[Number(idx)] || 1) <= trainerLevel ? '✅' : '🔒' }}
             </div>
             <div class="ability-content">
-              <p :class="{ 'text-locked': (currentClass?.bonusLevels?.[Number(idx)] || 1) > trainerLevel }">
-                {{ bonus }}
-              </p>
+              <PVTooltip
+                :description="currentClass?.technicalBonuses?.[Number(idx)] || 'Información no disponible.'"
+                position="top"
+                :delay="100"
+                style="cursor: help; display: block; width: 100%;"
+              >
+                <p :class="{ 'text-locked': (currentClass?.bonusLevels?.[Number(idx)] || 1) > trainerLevel }">
+                  {{ bonus }}
+                </p>
+              </PVTooltip>
               <span
                 v-if="(currentClass?.bonusLevels?.[Number(idx)] || 1) > trainerLevel"
                 class="req-hint"
@@ -209,7 +217,14 @@ const onAbilityMouseLeave = (event: MouseEvent) => {
               ❌
             </div>
             <div class="ability-content">
-              <p>{{ penalty }}</p>
+              <PVTooltip
+                :description="currentClass?.technicalPenalties?.[Number(idx)] || 'Información no disponible.'"
+                position="top"
+                :delay="100"
+                style="cursor: help; display: block; width: 100%;"
+              >
+                <p>{{ penalty }}</p>
+              </PVTooltip>
             </div>
           </div>
         </div>

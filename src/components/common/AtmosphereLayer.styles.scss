@@ -56,3 +56,30 @@
   z-index: calc(var(--atmo-z-final, var(--atmo-z, 0)) * 1) !important;
   transform: scaleX(var(--atmo-dir, 1));
 }
+
+.weather-canvas {
+  position: absolute;
+  inset: -100px;
+  width: calc(100% + 200px);
+  height: calc(100% + 200px);
+  pointer-events: none;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  -webkit-optimize-contrast: active;
+  z-index: calc(var(--z-base) + 1);
+}
+
+.weather-overlay {
+  &.fog .weather-canvas {
+    filter: contrast(1.4) Brightness(1.15);
+  }
+  &.dust_storm .weather-canvas {
+    filter: sepia(1) Saturate(2.4) Brightness(0.48) contrast(1.9);
+  }
+  &.sandstorm .weather-canvas {
+    filter: sepia(1) Saturate(1.9) Brightness(0.68) contrast(1.55);
+  }
+  &.strong_winds .weather-canvas {
+    filter: sepia(1) Saturate(1.5) Brightness(0.8) contrast(1.1) Blur(2px);
+  }
+}

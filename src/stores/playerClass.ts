@@ -31,6 +31,8 @@ export interface ClassDefinition {
   bonuses?: string[]
   bonusLevels?: number[]
   penalties?: string[]
+  technicalBonuses?: string[]
+  technicalPenalties?: string[]
   showdownSpriteId?: string
   avatarSpriteId?: string
 }
