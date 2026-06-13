@@ -91,5 +91,10 @@ export interface EncounterState {
   eloRating?: number;
   playerClass?: string | null;
   classLevel?: number;
+  classData?: {
+    criminality?: number;
+    blackMarketSales?: number;
+    [key: string]: unknown;
+  };
   gymProgress?: Record<string, { easy: boolean; normal: boolean; hard: boolean; attempts: number }>;
 }
