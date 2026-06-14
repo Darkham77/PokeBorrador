@@ -396,14 +396,14 @@ const currentSprite = computed(() => pokemonDataProvider.getSpriteUrl(config.val
         </PVTooltip>
           
         <PVTooltip
-          title="Añadir huevo al inventario"
-          description="Genera un huevo (sin eclosionar) en tu mochila con los stats configurados."
+          title="Añadir huevo listo (1 paso)"
+          description="Genera un huevo en tu mochila que eclosionará al dar el siguiente paso."
         >
           <button
             class="btn-vicio-primary secondary"
             @click.stop="executeAction('egg_silent')"
           >
-            AÑADIR HUEVO
+            CAMINAR HUEVO
           </button>
         </PVTooltip>
           

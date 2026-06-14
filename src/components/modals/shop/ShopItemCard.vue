@@ -136,6 +136,15 @@ const handleImageError = (e: Event) => {
     </p>
 
     <div class="item-actions">
+      <!-- Total Price Display (Only if quantity > 1) -->
+      <div 
+        v-if="quantity > 1" 
+        class="item-total-price-tag"
+      >
+        <span class="total-label">Total:</span>
+        <span class="total-val">₽{{ formatCurrency(finalPrice * quantity) }}</span>
+      </div>
+
       <!-- Quantity controls (Disabled if locked) -->
       <div class="qty-ctrl-group">
         <button 

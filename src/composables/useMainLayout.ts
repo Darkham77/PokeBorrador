@@ -1,4 +1,4 @@
-import { ref, type Ref, type ComponentPublicInstance } from 'vue'
+import { ref, onMounted, onUnmounted, type Ref, type ComponentPublicInstance } from 'vue'
 import { useUIStore } from '@/stores/ui'
 import { useGameStore } from '@/stores/game'
 import { useWindowListener, useDocumentListener } from '@/composables/useWindowListener'
@@ -29,9 +29,7 @@ export function useMainLayout(
     }
   }
 
-  // 2. Scroll logic - Disabled to keep HUD permanently visible
-
-  // 3. Height calculation logic
+  // 2. Height calculation logic
   let isUpdatingHeight = false
   function updateHudHeight() {
     if (isUpdatingHeight) return
@@ -65,12 +63,36 @@ export function useMainLayout(
     })
   }
 
+  // ResizeObserver to detect layout shifts and dynamically recalculate heights
+  let resizeObserver: ResizeObserver | null = null
+
+  onMounted(() => {
+    updateHudHeight()
+    
+    if (typeof ResizeObserver !== 'undefined') {
+      resizeObserver = new ResizeObserver(() => {
+        updateHudHeight()
+      })
+      if (innerHudRef.value) resizeObserver.observe(innerHudRef.value)
+      if (hudRef.value) resizeObserver.observe(hudRef.value)
+      
+      const bottomValue = hudBottomRef.value
+      const bottomEl = (bottomValue && '$el' in bottomValue) ? (bottomValue.$el as HTMLElement) : (bottomValue as HTMLElement | null)
+      if (bottomEl) resizeObserver.observe(bottomEl)
+    }
+  })
+
+  onUnmounted(() => {
+    if (resizeObserver) {
+      resizeObserver.disconnect()
+    }
+  })
+
   // Lifecycle listeners
   useWindowListener('resize', () => {
     updateHudHeight()
   }, { passive: true })
 
-  // Scroll listener removed to keep HUD permanently visible
   useDocumentListener('click', handleOutsideClick as EventListener)
 
   return {

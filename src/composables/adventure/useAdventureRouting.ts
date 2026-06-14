@@ -7,6 +7,7 @@ import { useGameStore } from '@/stores/game'
 import { useMapStore } from '@/stores/map'
 import { useShopStore } from '@/stores/shop'
 import { useInventoryStore } from '@/stores/inventory'
+import { useBuffsStore } from '@/stores/buffs'
 
 export function useAdventureRouting(options: {
   gameStore: ReturnType<typeof useGameStore>
@@ -204,6 +205,18 @@ export function useAdventureRouting(options: {
     selectedTravelItems.value.forEach(itemId => {
       options.inventoryStore.removeItem(itemId, 1)
       options.travelLog.value.push(`🎒 Consumido: -1x ${itemId} de tu mochila real.`)
+      
+      const buffsStore = useBuffsStore()
+      if (itemId === 'repel') buffsStore.addBuff('repel', 5 * 60)
+      else if (itemId === 'super_repel') buffsStore.addBuff('repel', 15 * 60)
+      else if (itemId === 'max_repel') buffsStore.addBuff('repel', 30 * 60)
+      else if (itemId === 'lucky_egg') buffsStore.addBuff('lucky-egg', 30 * 60)
+      else if (itemId === 'amulet_coin') buffsStore.addBuff('amulet', 60 * 60)
+      else if (itemId === 'ticket_shiny') buffsStore.addBuff('shiny', 60 * 60)
+      else if (itemId.startsWith('incense_')) {
+        const type = itemId.split('_')[1]
+        buffsStore.addBuff('incense', 30 * 60, type)
+      }
     })
     
     showPreTravelModal.value = false

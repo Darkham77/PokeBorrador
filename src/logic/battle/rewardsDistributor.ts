@@ -154,7 +154,12 @@ export async function calculateBattleRewards(ctx: BattleContext) {
   }
 
   const warMods = getBattleRewardModifiers(active.locationId, ctx.gs.state.faction, ctx.warStore.mapDominance)
-  const totalExpMult = warMods.expMult + ((ctx.eventStore.globalMultipliers?.exp || 1) - 1)
+  let totalExpMult = warMods.expMult + ((ctx.eventStore.globalMultipliers?.exp || 1) - 1)
+  
+  if ((ctx.gs.state.luckyEggSecs || 0) > 0) {
+    totalExpMult *= 1.5
+  }
+
   const classMult = ctx.classStore.getModifier('expMult', { isTrainer: active.isTrainer })
   const participantsSet = new Set(active.participants)
 
@@ -198,12 +203,16 @@ export async function calculateBattleRewards(ctx: BattleContext) {
       }
     }
 
-    const moneyGained = calculateMoneyGain(e, { 
+    let moneyGained = calculateMoneyGain(e, { 
       bcMult: ctx.classStore.getModifier('bcMult', { isGym: active.isGym }), 
       totalMoneyMult: warMods.moneyMult + ((ctx.eventStore.globalMultipliers?.money || 1) - 1),
       isTrainer: active.isTrainer,
       isGym: active.isGym
     })
+    
+    if ((ctx.gs.state.amuletCoinSecs || 0) > 0) {
+      moneyGained *= 2
+    }
     
     totalMoneyGained += moneyGained
 
@@ -254,6 +263,12 @@ export async function calculateBattleRewards(ctx: BattleContext) {
 
   // Award consolidated rewards
   ctx.gs.state.money += totalMoneyGained
+  if ((ctx.gs.state.amuletCoinSecs || 0) > 0) {
+    ctx.addLog('¡Moneda Amuleto duplicó el dinero obtenido!', 'log-success', 'player')
+  }
+  if ((ctx.gs.state.luckyEggSecs || 0) > 0) {
+    ctx.addLog('¡Huevo Suerte aumentó un 50% la EXP obtenida!', 'log-success', 'player')
+  }
   ctx.addLog(`¡Ganaste ₽${totalMoneyGained} en total!`, 'log-info', 'player')
 
   if (totalCoinsGained > 0) {

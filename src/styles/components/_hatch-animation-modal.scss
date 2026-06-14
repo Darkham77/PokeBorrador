@@ -103,6 +103,14 @@
   will-change: transform, opacity;
   image-rendering: auto !important;
 
+  // GPU acceleration forces
+  -webkit-transform: translate3d(0, 0, 0);
+  transform: translate3d(0, 0, 0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  -webkit-perspective: 1000px;
+  perspective: 1000px;
+
   -webkit-mask-size: contain;
   mask-size: contain;
   -webkit-mask-repeat: no-repeat;
@@ -110,6 +118,10 @@
   -webkit-mask-position: center;
   mask-position: center;
   filter: Blur(1.5px);
+
+  @media (max-width: 768px) {
+    filter: none !important;
+  }
 
   &.rare-aura {
     z-index: calc(var(--z-base) + 1);
@@ -140,6 +152,10 @@
   will-change: transform, filter;
   filter: Drop-Shadow(0 0 20px Rgba(255, 255, 255, 0.25));
 
+  @media (max-width: 768px) {
+    filter: none !important;
+  }
+
   &.egg-sprite-emoji {
     font-size: 90px;
     line-height: 1;
@@ -148,6 +164,10 @@
     justify-content: center;
     user-select: none;
     filter: Drop-Shadow(0 0 25px Rgba(255, 255, 255, 0.35));
+
+    @media (max-width: 768px) {
+      filter: none !important;
+    }
   }
 }
 
@@ -305,3 +325,4 @@
   border-radius: 50%;
   @include gpu-layer;
 }
+

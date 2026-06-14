@@ -73,7 +73,7 @@ defineEmits<{
   justify-content: space-between;
   gap: 24px;
   border: 1px solid Rgba(255, 255, 255, 0.05);
-  margin-bottom: 24px;
+  margin-bottom: 0;
   @include gpu-layer;
 
   @include responsive(950px) {
@@ -169,6 +169,11 @@ defineEmits<{
   flex: 0 1 300px;
   display: flex;
   align-items: center;
+
+  @include responsive(950px) {
+    flex: none;
+    width: 100%;
+  }
 
   .pdex-search-icon {
     position: absolute;

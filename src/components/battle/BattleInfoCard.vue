@@ -305,15 +305,28 @@ const teamBallsStatus = computed(() => {
         v-if="isIvScannerActive && !isPlayer && !isScrambled && !battleStore.state?.isTrainer && !battleStore.state?.isGym && !battleStore.state?.isPvP"
         class="iv-scanner-radar-hud"
       >
-        <span class="hud-label">RADAR IV</span>
-        <span class="hud-value">{{ ivTotal }}/186</span>
-        <span 
-          v-if="pokemonTierInfo" 
-          class="hud-grade-badge" 
-          :style="{ '--tier-color': pokemonTierInfo.color, '--tier-bg': pokemonTierInfo.bg }"
+        <div class="hud-main-info">
+          <span class="hud-label">RADAR IV</span>
+          <span class="hud-value">{{ ivTotal }}/186</span>
+          <span 
+            v-if="pokemonTierInfo" 
+            class="hud-grade-badge" 
+            :style="{ '--tier-color': pokemonTierInfo.color, '--tier-bg': pokemonTierInfo.bg }"
+          >
+            GRADO {{ pokemonTierInfo.tier }}
+          </span>
+        </div>
+        <div
+          v-if="p.ivs"
+          class="hud-ivs-grid"
         >
-          GRADO {{ pokemonTierInfo.tier }}
-        </span>
+          <span>HP:{{ p.ivs.hp }}</span>
+          <span>ATK:{{ p.ivs.atk }}</span>
+          <span>DEF:{{ p.ivs.def }}</span>
+          <span>SPA:{{ p.ivs.spa }}</span>
+          <span>SPD:{{ p.ivs.spd }}</span>
+          <span>SPE:{{ p.ivs.spe }}</span>
+        </div>
       </div>
     </div>
   </div>
@@ -599,10 +612,24 @@ const teamBallsStatus = computed(() => {
   border: 1px solid Rgba(0, 255, 204, 0.25);
   border-radius: 8px;
   display: flex;
-  align-items: center;
-  gap: 8px;
+  flex-direction: column;
+  gap: 4px;
   width: fit-content;
   line-height: 1;
+
+  .hud-main-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .hud-ivs-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px 6px;
+    font-size: 7px;
+    color: #a7f3d0;
+  }
 
   .hud-label {
     color: Rgba(255, 255, 255, 0.6);

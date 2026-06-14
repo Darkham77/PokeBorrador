@@ -50,7 +50,7 @@ defineProps<Props>()
   padding: 12px 24px;
   border-radius: 20px;
   border: 1px solid Rgba(255, 255, 255, 0.05);
-  margin-bottom: 24px;
+  margin-bottom: 0;
   @include gpu-layer;
   @include shell-premium;
 

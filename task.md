@@ -12,6 +12,8 @@
   - [x] Penalización de captura rara, Ruta Oficial y Rival Doble.
   - [x] Tienda de Reputación (`ReputationShopModal.vue` y HUD de tiendas).
   - [x] Render de Reputación en `ProfileStatsGrid.vue`.
+  - [x] 4. Precios totales acumulados en Tiendas (ShopItemCard.vue, BCShopItemCard.vue, WarShopItemCard.vue) y toasts de dinero independientes en `shop.ts`
+  - [x] 5. Mostrar 6 IVs en BattleInfoCard.vue y EggWarehouse.vue, y añadir opción "TIRAR" en el almacén de huevos
 - [x] Fase 4: Implementación de Mecánicas de Criador (Vigor y Escáner)
   - [x] Vigor al eclosionar y Predecir Naturaleza en HUD.
   - [x] Escáner diario en huevos con fecha guardada persistentemente en la cuenta.

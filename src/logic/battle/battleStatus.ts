@@ -200,4 +200,12 @@ export function clearVolatileStatus(poke: Pokemon) {
   poke.chargingMove = null
   poke.choiceMove = undefined
   poke.thrashTurns = 0
+  poke.mustRecharge = false
+  poke.endure = false
+  poke.trapped = false
+  poke.isTransformed = false
+  poke.rageActive = false
+  poke.snatching = false
+  poke.tormentActive = false
+  poke.bound = 0
 }

@@ -359,7 +359,7 @@ export const useBreedingStore = defineStore('breeding', () => {
   }
 
   function reduceHatchTimers(activity: 'battle' | 'capture' | 'gym') {
-    const REDUCTIONS = { battle: 2 * 60000, capture: 3 * 60000, gym: 10 * 60000 };
+    const REDUCTIONS = { battle: 2, capture: 3, gym: 10 };
     const reduction = REDUCTIONS[activity] || 0;
     if (reduction === 0) return;
 
@@ -369,7 +369,7 @@ export const useBreedingStore = defineStore('breeding', () => {
     let newlyReady = false;
     eggs.forEach((egg) => {
       if (!egg.ready && egg.steps > 0) {
-        egg.steps = Math.max(0, egg.steps - (reduction / 1000));
+        egg.steps = Math.max(0, egg.steps - reduction);
         if (egg.steps === 0) {
           egg.ready = true;
           newlyReady = true;

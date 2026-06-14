@@ -263,20 +263,6 @@ const handleEggClick = () => {
 
         // Animaciones de las auras concéntricas en contra-fase
         if (rareAuraRef.value && atmosAuraRef.value) {
-          // Rotaciones opuestas continuas
-          gsap.to(rareAuraRef.value, {
-            rotation: 360,
-            duration: 15,
-            repeat: -1,
-            ease: 'none'
-          })
-          gsap.to(atmosAuraRef.value, {
-            rotation: -360,
-            duration: 15,
-            repeat: -1,
-            ease: 'none'
-          })
-
           // Respiración concéntrica de escalas y opacidad (contra-fase)
           gsap.fromTo(rareAuraRef.value,
             { scale: 0.8, opacity: 0.3 },

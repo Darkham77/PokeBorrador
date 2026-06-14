@@ -145,6 +145,10 @@
       background: linear-gradient(135deg, #a855f7 0%, #7c3aed 100%) !important;
     }
   }
+
+  .item-total-price-tag .total-val {
+    color: #c084fc !important;
+  }
 }
 
 .war-shop-item-card {
@@ -201,6 +205,10 @@
     font-family: var(--font-pixel);
     font-size: 9px;
     cursor: not-allowed;
+  }
+
+  .item-total-price-tag .total-val {
+    color: #ef4444 !important;
   }
 }
 
@@ -360,8 +368,34 @@
   .item-actions {
     display: flex;
     justify-content: flex-end;
+    align-items: center;
     gap: 8px;
     margin-top: auto;
+    
+    .item-total-price-tag {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: center;
+      margin-right: auto;
+      line-height: 1.1;
+
+      .total-label {
+        @include pixelated;
+        font-size: 6px;
+        color: Rgba(255, 255, 255, 0.4);
+        text-transform: uppercase;
+        margin-bottom: 2px;
+      }
+
+      .total-val {
+        @include pixelated;
+        font-size: 11px;
+        color: var(--yellow);
+        font-weight: 800;
+        letter-spacing: 0.5px;
+      }
+    }
     
     .qty-ctrl-group {
       display: flex;
@@ -647,6 +681,10 @@
       color: #fbbf24;
       filter: Drop-Shadow(0 0 5px Rgba(251, 191, 36, 0.5));
     }
+  }
+
+  .item-total-price-tag .total-val {
+    color: #3b82f6 !important;
   }
 }
 

@@ -7,6 +7,7 @@ import { useLoadingStore } from '@/stores/loading'
 import { safeStorage } from '@/logic/utils/storage'
 import { useNotificationStore, type UINotification } from './notifications.ts'
 import type { Pokemon, Move } from '@/types/pokemon'
+import { MODAL_METADATA } from '@/logic/modals/registry'
 
 export type { UINotification };
 
@@ -73,6 +74,12 @@ export const useUIStore = defineStore('ui', () => {
   )
   const isLowPowerActive = computed(() => {
     if (lowPowerMode.value === 'enabled') return true
+    
+    // Force low power mode during custom modals that obscure the background (e.g. HatchAnimation, Evolution)
+    const modalStore = useModalStore()
+    if (modalStore.stack.some(m => MODAL_METADATA[m.name]?.obscuresBackground)) return true
+    
+    if (isAnyBlockingModalOpen.value) return true // Force low power mode when a modal is open to pause background renders
     if (lowPowerMode.value === 'disabled') return false
     return windowWidth.value < 768
   })
@@ -200,7 +207,10 @@ export const useUIStore = defineStore('ui', () => {
     
     // Check if battle is active and we are in mobile/fullscreen mode (<= 950px)
     const isBattleFullscreen = battleStore.isBattleActive && isSmallScreen.value
-    const isStackFullscreen = modalStore.stack.some(m => (m.props.type === 'fullscreen' || m.props.maxHeight === '100dvh') && !m.closing)
+    const isStackFullscreen = modalStore.stack.some(m => 
+      MODAL_METADATA[m.name]?.isFullscreen || 
+      ((m.props.type === 'fullscreen' || m.props.maxHeight === '100dvh') && !m.closing)
+    )
     
     return isBattleFullscreen || isStackFullscreen
   })

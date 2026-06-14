@@ -25,11 +25,14 @@
     min-width: 0;
 
     @media (max-width: 768px) {
+      flex: 1 1 100%;
       flex-wrap: wrap;
       gap: 12px;
       
-      & .box-search-wrapper {
-        flex-basis: 100%;
+      .box-search-wrapper {
+        flex: 1 1 100%;
+        width: 100%;
+        min-width: 0;
         order: -1;
       }
     }

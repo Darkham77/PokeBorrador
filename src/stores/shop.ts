@@ -85,6 +85,7 @@ export const useShopStore = defineStore('shop', () => {
     }
 
     uiStore.notify(`¡Compraste x${qty} ${item.name}!`, item.icon)
+    uiStore.notify(`Gastaste ₽${total.toLocaleString()}`, '💸')
     gameStore.scheduleSave()
   }
 
@@ -113,6 +114,7 @@ export const useShopStore = defineStore('shop', () => {
     }
 
     uiStore.notify(`¡Compraste ${item.name}!`, '🏅')
+    uiStore.notify(`Gastaste ${bcPrice} BC`, '🪙')
     gameStore.scheduleSave()
   }
 
@@ -140,6 +142,7 @@ export const useShopStore = defineStore('shop', () => {
     gameStore.state.inventory[item.id] = (gameStore.state.inventory[item.id] || 0) + 1
     
     uiStore.notify(`¡Compraste ${item.name}!`, '⚔️')
+    uiStore.notify(`Gastaste ${warPrice} Monedas de Guerra`, '⚡')
     gameStore.scheduleSave()
   }
 

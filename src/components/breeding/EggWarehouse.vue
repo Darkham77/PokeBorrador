@@ -107,6 +107,20 @@ const handleClaim = (egg: DaycareEgg) => {
     }
   });
 };
+
+const handleDeleteEgg = (egg: DaycareEgg) => {
+  const isScanned = !!egg.inherited_ivs?._scanned;
+  const displayName = isScanned ? `huevo de ${getPokemonName(egg.species)}` : 'Huevo Pokémon';
+  uiStore.openConfirm({
+    title: '⚠️ TIRAR HUEVO',
+    message: `¿Estás seguro de que deseas tirar este ${displayName}? Esta acción no se puede deshacer y liberarás el espacio en el almacén.`,
+    confirmText: 'SÍ, TIRAR',
+    cancelText: 'CANCELAR',
+    onConfirm: () => {
+      breedingStore.deleteEgg(egg.id);
+    }
+  });
+};
 </script>
 
 <template>
@@ -154,6 +168,16 @@ const handleClaim = (egg: DaycareEgg) => {
         class="egg-card"
         @click.stop="handleClaim(egg)"
       >
+        <!-- Trash button to discard egg (only if scanned) -->
+        <button 
+          v-if="egg.inherited_ivs?._scanned"
+          class="egg-trash-btn"
+          title="Tirar huevo"
+          @click.stop="handleDeleteEgg(egg)"
+        >
+          <span class="icon">🗑️</span>
+        </button>
+
         <div class="egg-visual">
           <div class="egg-sprite">
             <EggSprite
@@ -195,7 +219,24 @@ const handleClaim = (egg: DaycareEgg) => {
             v-if="egg.inherited_ivs?._scanned && egg.ivs"
             class="egg-scanned-ivs"
           >
-            IVs: HP:{{ egg.ivs.hp }} A:{{ egg.ivs.atk }} D:{{ egg.ivs.def }} S:{{ egg.ivs.spe }}
+            <div class="iv-stat">
+              <span>HP</span>{{ egg.ivs.hp }}
+            </div>
+            <div class="iv-stat">
+              <span>ATK</span>{{ egg.ivs.atk }}
+            </div>
+            <div class="iv-stat">
+              <span>DEF</span>{{ egg.ivs.def }}
+            </div>
+            <div class="iv-stat">
+              <span>SPA</span>{{ egg.ivs.spa }}
+            </div>
+            <div class="iv-stat">
+              <span>SPD</span>{{ egg.ivs.spd }}
+            </div>
+            <div class="iv-stat">
+              <span>SPE</span>{{ egg.ivs.spe }}
+            </div>
           </div>
           <div
             v-if="egg.inherited_ivs?._cost"
@@ -289,16 +330,29 @@ const handleClaim = (egg: DaycareEgg) => {
   gap: 12px;
   position: relative;
   cursor: pointer;
-  
   overflow: hidden;
+  transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
+  
+  .egg-visual,
+  .egg-info {
+    transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
+  }
 
   &:hover {
-    background: Rgba(255, 255, 255, 0.06);
-    border-color: Rgba($pokecenter-pink, 0.4);
+    background: Rgba(255, 255, 255, 0.05);
+    border-color: Rgba($pokecenter-pink, 0.5);
     transform: Translatey(-4px);
+    box-shadow: 0 8px 24px Rgba($pokecenter-pink, 0.15);
+    
+    .egg-visual,
+    .egg-info {
+      opacity: 0;
+      transform: Translatey(-8px) Scale(0.95);
+    }
     
     .egg-hover-action {
-      transform: Translatey(0);
+      opacity: 1;
+      transform: Translate(-50%, -50%) Scale(1);
     }
   }
 }
@@ -367,13 +421,30 @@ const handleClaim = (egg: DaycareEgg) => {
   }
 
   .egg-scanned-ivs {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 4px;
     font-size: 8px;
-    color: #fbbf24;
     @include pixelated;
     margin-top: 2px;
     background: Rgba(0, 0, 0, 0.3);
-    padding: 2px 4px;
-    border-radius: 4px;
+    padding: 6px;
+    border-radius: 6px;
+    border: 1px solid Rgba(255, 255, 255, 0.05);
+
+    .iv-stat {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: #fbbf24;
+      line-height: 1.2;
+
+      span {
+        color: Rgba(255, 255, 255, 0.4);
+        font-size: 7px;
+        margin-bottom: 1px;
+      }
+    }
   }
 
   .egg-grade-container {
@@ -400,16 +471,47 @@ const handleClaim = (egg: DaycareEgg) => {
 
 .egg-hover-action {
   position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: $pokecenter-pink;
+  top: 50%;
+  left: 50%;
+  transform: Translate(-50%, -50%) Scale(0.85);
+  opacity: 0;
+  background: linear-gradient(135deg, $pokecenter-pink 0%, color-mix(in srgb, $pokecenter-pink 80%, black) 100%);
   color: $white;
   @include pixelated;
-  font-size: 8px;
-  padding: 8px 0;
+  font-size: 9px;
+  padding: 8px 16px;
+  border-radius: 8px;
   text-align: center;
-  transform: Translatey(100%);
-  
+  box-shadow: 0 4px 15px Rgba($pokecenter-pink, 0.4);
+  transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  pointer-events: none;
+  z-index: 5;
+  white-space: nowrap;
+  border: 1px solid Rgba(255, 255, 255, 0.1);
+}
+
+.egg-trash-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: Rgba(239, 68, 68, 0.15);
+  border: 1px solid Rgba(239, 68, 68, 0.4);
+  color: #f87171;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  cursor: pointer;
+  z-index: 10;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: Rgba(239, 68, 68, 0.4);
+    color: #ffffff;
+    transform: Scale(1.1);
+  }
 }
 </style>

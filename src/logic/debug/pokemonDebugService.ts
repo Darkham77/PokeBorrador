@@ -141,7 +141,7 @@ export const pokemonDebugService = {
           id: p.id,
           name: 'Huevo Pokémon',
           isEgg: true,
-          steps: 100, // Low steps for quick debug testing
+          steps: 1, // 1 step remaining for quick debug testing
           ivs: p.ivs,
           nature: p.nature,
           movesAtBirth: p.moves.map(m => m?.name || '???'),

@@ -6,10 +6,14 @@
   min-height: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--ui-v-gap);
+  gap: 16px;
   @include gpu-layer;
   pointer-events: auto !important;
   z-index: var(--z-base);
+
+  @include responsive(950px) {
+    gap: 10px;
+  }
 }
 
 .pokedex-header {
@@ -128,7 +132,13 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
   gap: 16px;
-  padding-bottom: 250px;
+  padding-bottom: 120px;
+
+  @include responsive(950px) {
+    padding-bottom: 100px;
+    grid-template-columns: repeat(auto-fill, minmax(105px, 1fr));
+    gap: 8px;
+  }
 }
 
 .pdx-pokemon-card {

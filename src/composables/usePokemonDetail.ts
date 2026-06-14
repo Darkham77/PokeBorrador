@@ -148,7 +148,8 @@ export function usePokemonDetail(propsRefs: Record<string, MaybeRefOrGetter<unkn
   const moveDetails = computed(() => {
     if (!species.value || !species.value.learnset) return []
     return species.value.learnset.map(m => {
-      const data = (MOVE_DATA as Record<string, MoveBaseData | undefined>)[m.name]
+      const resolvedId = pokemonDataProvider.resolveMoveId(m.name)
+      const data = (MOVE_DATA as Record<string, MoveBaseData | undefined>)[resolvedId]
       const basePP = data?.pp || 35
       return {
         level: m.lv,
@@ -167,7 +168,8 @@ export function usePokemonDetail(propsRefs: Record<string, MaybeRefOrGetter<unkn
     if (!isInstance.value || !targetPokemon.value?.moves) return []
     return targetPokemon.value.moves.map((m: Pokemon['moves'][number]) => {
       if (!m) return null
-      const data = (MOVE_DATA as Record<string, MoveBaseData | undefined>)[m.name]
+      const resolvedId = pokemonDataProvider.resolveMoveId(m.name)
+      const data = (MOVE_DATA as Record<string, MoveBaseData | undefined>)[resolvedId]
       return { ...m, ...(data || {}) }
     }).filter((m: unknown): m is (Pokemon['moves'][number] & Partial<MoveBaseData>) => m !== null)
   })

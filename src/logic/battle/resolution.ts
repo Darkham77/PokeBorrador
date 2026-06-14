@@ -6,6 +6,7 @@ import type { Pokemon } from '@/types/pokemon'
 import { useBreedingStore } from '@/stores/breeding'
 import { useUIStore } from '@/stores/ui'
 import { calculateBattleRewards, registerRewardCombatant } from './rewardsDistributor.ts'
+import { clearVolatileStatus } from './battleStatus'
 export { awardDebugExp } from './rewardsDistributor.ts'
 
 /**
@@ -191,6 +192,13 @@ export async function terminateBattle(ctx: BattleContext, win: boolean, fled = f
 
   active.over = true
   ctx.faintedSides.value.clear()
+
+  // Limpiar todos los estados volátiles del equipo al terminar la batalla
+  if (ctx.gs.state.team) {
+    ctx.gs.state.team.forEach((p: Pokemon | null) => {
+      if (p) clearVolatileStatus(p)
+    })
+  }
 
   if (!ctx.gs.state.stats) {
     ctx.gs.state.stats = {}
