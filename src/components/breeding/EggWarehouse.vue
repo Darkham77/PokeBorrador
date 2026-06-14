@@ -121,6 +121,84 @@ const handleDeleteEgg = (egg: DaycareEgg) => {
     }
   });
 };
+
+const handleCardMouseEnter = (e: MouseEvent) => {
+  const el = e.currentTarget as HTMLElement;
+  gsap.to(el, {
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderColor: 'rgba(244, 63, 94, 0.5)',
+    y: -4,
+    boxShadow: '0 8px 24px rgba(244, 63, 94, 0.15)',
+    duration: 0.25,
+    ease: 'power2.out',
+    overwrite: 'auto'
+  });
+  
+  const visual = el.querySelector('.egg-visual');
+  const info = el.querySelector('.egg-info');
+  const action = el.querySelector('.egg-hover-action');
+  
+  if (visual) {
+    gsap.to(visual, { opacity: 0, y: -8, scale: 0.95, duration: 0.25, ease: 'power2.out', overwrite: 'auto' });
+  }
+  if (info) {
+    gsap.to(info, { opacity: 0, y: -8, scale: 0.95, duration: 0.25, ease: 'power2.out', overwrite: 'auto' });
+  }
+  if (action) {
+    gsap.to(action, { opacity: 1, scale: 1, duration: 0.25, ease: 'power2.out', overwrite: 'auto' });
+  }
+};
+
+const handleCardMouseLeave = (e: MouseEvent) => {
+  const el = e.currentTarget as HTMLElement;
+  gsap.to(el, {
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    y: 0,
+    boxShadow: 'none',
+    duration: 0.25,
+    ease: 'power2.out',
+    overwrite: 'auto'
+  });
+  
+  const visual = el.querySelector('.egg-visual');
+  const info = el.querySelector('.egg-info');
+  const action = el.querySelector('.egg-hover-action');
+  
+  if (visual) {
+    gsap.to(visual, { opacity: 1, y: 0, scale: 1, duration: 0.25, ease: 'power2.out', overwrite: 'auto' });
+  }
+  if (info) {
+    gsap.to(info, { opacity: 1, y: 0, scale: 1, duration: 0.25, ease: 'power2.out', overwrite: 'auto' });
+  }
+  if (action) {
+    gsap.to(action, { opacity: 0, scale: 0.85, duration: 0.25, ease: 'power2.out', overwrite: 'auto' });
+  }
+};
+
+const handleTrashMouseEnter = (e: MouseEvent) => {
+  const el = e.currentTarget as HTMLElement;
+  gsap.to(el, {
+    backgroundColor: 'rgba(239, 68, 68, 0.4)',
+    color: '#ffffff',
+    scale: 1.1,
+    duration: 0.2,
+    ease: 'power2.out',
+    overwrite: 'auto'
+  });
+};
+
+const handleTrashMouseLeave = (e: MouseEvent) => {
+  const el = e.currentTarget as HTMLElement;
+  gsap.to(el, {
+    backgroundColor: 'rgba(239, 68, 68, 0.15)',
+    color: '#f87171',
+    scale: 1.0,
+    duration: 0.2,
+    ease: 'power2.out',
+    overwrite: 'auto'
+  });
+};
 </script>
 
 <template>
@@ -167,6 +245,8 @@ const handleDeleteEgg = (egg: DaycareEgg) => {
         :key="egg.id" 
         class="egg-card"
         @click.stop="handleClaim(egg)"
+        @mouseenter="handleCardMouseEnter"
+        @mouseleave="handleCardMouseLeave"
       >
         <!-- Trash button to discard egg (only if scanned) -->
         <button 
@@ -174,6 +254,8 @@ const handleDeleteEgg = (egg: DaycareEgg) => {
           class="egg-trash-btn"
           title="Tirar huevo"
           @click.stop="handleDeleteEgg(egg)"
+          @mouseenter="handleTrashMouseEnter"
+          @mouseleave="handleTrashMouseLeave"
         >
           <span class="icon">🗑️</span>
         </button>
@@ -331,30 +413,6 @@ const handleDeleteEgg = (egg: DaycareEgg) => {
   position: relative;
   cursor: pointer;
   overflow: hidden;
-  transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
-  
-  .egg-visual,
-  .egg-info {
-    transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
-  }
-
-  &:hover {
-    background: Rgba(255, 255, 255, 0.05);
-    border-color: Rgba($pokecenter-pink, 0.5);
-    transform: Translatey(-4px);
-    box-shadow: 0 8px 24px Rgba($pokecenter-pink, 0.15);
-    
-    .egg-visual,
-    .egg-info {
-      opacity: 0;
-      transform: Translatey(-8px) Scale(0.95);
-    }
-    
-    .egg-hover-action {
-      opacity: 1;
-      transform: Translate(-50%, -50%) Scale(1);
-    }
-  }
 }
 
 .egg-visual {
@@ -483,7 +541,6 @@ const handleDeleteEgg = (egg: DaycareEgg) => {
   border-radius: 8px;
   text-align: center;
   box-shadow: 0 4px 15px Rgba($pokecenter-pink, 0.4);
-  transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   pointer-events: none;
   z-index: 5;
   white-space: nowrap;
@@ -506,12 +563,5 @@ const handleDeleteEgg = (egg: DaycareEgg) => {
   font-size: 10px;
   cursor: pointer;
   z-index: 10;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background: Rgba(239, 68, 68, 0.4);
-    color: #ffffff;
-    transform: Scale(1.1);
-  }
 }
 </style>
