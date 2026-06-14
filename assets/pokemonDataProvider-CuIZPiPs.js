@@ -1,0 +1,1 @@
+import{t as e}from"./pokemonDataProvider-CTghTVwS.js";export{e as pokemonDataProvider};
