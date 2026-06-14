@@ -234,7 +234,7 @@ export function useMapCardState(props: MapCardProps, currentCols: Ref<number>, i
         sprite: getAssetUrl(ASSET_TYPES.POKEMON, id), 
         isSeen, 
         isCaught, 
-        isRare: (rate <= 5) || isExclusive, 
+        isRare: (rate > 0 && rate <= 2) || isExclusive, 
         isAtmospheric: isSpecialWeatherSpawn, 
         tooltipTitle: name, 
         tooltipDesc: typeInfo ? `${typeInfo}\n${timeText}` : timeText, 

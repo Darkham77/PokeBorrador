@@ -68,7 +68,18 @@ export function calculateCatchRate(pokemon: PurePokemon, rawBallType = 'poke-bal
   const curHp = pokemon.hp ?? 10;
   const maxHp = pokemon.maxHp ?? 10;
   const hpFactor = (3 * maxHp - 2 * curHp) / (3 * maxHp);
-  const catchRate = pokemon.catchRate ?? 45;
+  let catchRate = pokemon.catchRate ?? 45;
+
+  // Modificadores de Clase
+  if (ctx.playerClass === 'cazabichos' && ctx.activeTeam) {
+    const { calculateBugSymmetryBonus } = require('../player/classMath'); // Dynamic import for compatibility
+    const bugBonus = calculateBugSymmetryBonus(ctx.activeTeam);
+    catchRate = Math.floor(catchRate * bugBonus);
+  } else if (ctx.playerClass === 'entrenador' && ctx.ivTotal !== undefined) {
+    const { calculateTrainerCatchRateModifier } = require('../player/classMath');
+    catchRate = calculateTrainerCatchRateModifier(catchRate, ctx.ivTotal);
+  }
+
   const statusMult = (pokemon.status === 'sleep' || pokemon.status === 'freeze') ? 2.0 : 
                      (pokemon.status ? 1.5 : 1.0);
 

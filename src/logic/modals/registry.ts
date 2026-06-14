@@ -12,6 +12,7 @@ export const MODAL_REGISTRY = {
   Shop: defineAsyncComponent(() => import('@/components/modals/ShopModal.vue')),
   GlobalMarket: defineAsyncComponent(() => import('@/components/modals/GlobalMarketModal.vue')),
   BCShop: defineAsyncComponent(() => import('@/components/modals/BCShopModal.vue')),
+  ReputationShop: defineAsyncComponent(() => import('@/components/modals/ReputationShopModal.vue')),
   PokemonCenter: defineAsyncComponent(() => import('@/components/modals/HealModal.vue')),
   Inventory: defineAsyncComponent(() => import('@/components/modals/InventoryModal.vue')),
   PokemonDetail: defineAsyncComponent(() => import('@/components/modals/UnifiedPokemonDetailModal.vue')),

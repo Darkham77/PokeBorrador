@@ -319,6 +319,27 @@ export const useBattleStore = defineStore('battle', () => {
       if (castRes.action === 'capture') {
         activeBattle.value.isCapture = true
         activeBattle.value.over = true 
+        
+        // Cazabichos: Red Maestra (20% chance to duplicate captured bug Pokemon)
+        if (gs.state.playerClass === 'cazabichos' && castRes.pokemon) {
+          const cap = castRes.pokemon;
+          const t1 = String(cap.type || '').toLowerCase();
+          const t2 = String(cap.type2 || '').toLowerCase();
+          const isBug = t1 === 'bug' || t1 === 'bicho' || t2 === 'bug' || t2 === 'bicho';
+          
+          if (isBug && Math.random() < 0.20) {
+            const { makePokemon } = await import('@/logic/pokemonFactory');
+            const clone = makePokemon(cap.id || cap.name, cap.level || 5);
+            if (clone) {
+              clone.caught = true;
+              clone.nickname = cap.nickname;
+              gs.state.box.push(clone);
+              addLog(`¡Red Maestra duplicó la captura! Se envió una copia de ${clone.name} a la caja.`, 'log-success', 'player');
+              uiStore.notify(`¡Captura duplicada! Copia de ${clone.name} en la caja`, '🕸️');
+            }
+          }
+        }
+
         gs.addPokemon(castRes.pokemon || null, { notify: true })
         isProcessing.value = false
         await endBattle(true, false)

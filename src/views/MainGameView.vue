@@ -1,14 +1,12 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, defineAsyncComponent, watch, nextTick } from 'vue'
 import { gsap } from 'gsap'
-import { useDocumentListener } from '@/composables/useWindowListener'
 import { useBodyClass } from '@/composables/useBodyClass'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 import { useBattleStore } from '@/stores/battle'
 import { useWarStore } from '@/stores/war'
 import { useEventStore } from '@/stores/events'
-import { useAudioStore } from '@/stores/audio'
 import { useLivePvPStore } from '@/stores/livePvP'
 import { useBreedingStore } from '@/stores/breeding'
 import { useLoadingStore } from '@/stores/loading'
@@ -46,7 +44,6 @@ const battleStore = useBattleStore()
 const chatStore = useChatStore()
 const warStore = useWarStore()
 const eventStore = useEventStore()
-const audioStore = useAudioStore()
 const livePvP = useLivePvPStore()
 const breedingStore = useBreedingStore()
 
@@ -108,14 +105,6 @@ watch(() => gs.value.starterChosen, (val) => {
   }
 }, { immediate: true })
 
-// Initialize audio context on first user interaction
-const initAudio = () => {
-  audioStore.init()
-  document.removeEventListener('click', initAudio)
-  document.removeEventListener('keydown', initAudio)
-}
-useDocumentListener('click', initAudio, { once: true })
-useDocumentListener('keydown', initAudio, { once: true })
 </script>
 
 <template>

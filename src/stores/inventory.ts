@@ -120,8 +120,8 @@ export const useInventoryStore = defineStore('inventory', () => {
         items = items.filter(item => {
           if (!isItemUsableOutsideCombat(item)) return false
           
-          const officialName = resolveNormalizedName(item.name)
-          if (isGlobalItem(officialName)) return true
+          if (isGlobalItem(item.id)) return true
+
 
           const isHeld = item.cat === 'combat_held' || item.cat === 'breeding_held' || item.type === 'held'
           if (isHeld) return (gameStore.state.team || []).length > 0

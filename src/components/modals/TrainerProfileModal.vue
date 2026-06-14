@@ -58,6 +58,9 @@ const {
   createdAt,
   lastPlayedAt,
   rankedMaxElo,
+  classLevel,
+  classXP,
+  classXPNeeded,
   boxCount,
   longestStreak,
   shinyCount,
@@ -263,6 +266,17 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
           :class-id="playerClass" 
           :class-color="classDef?.color || 'var(--purple)'"
           :hide-unlocks="true"
+          title="Nivel y Experiencia Cuenta"
+        />
+
+        <ProfileXpCard 
+          v-if="playerClass && playerClass !== 'none' && playerClass !== 'undefined' && classDef"
+          :level="classLevel"
+          :exp="classXP"
+          :exp-needed="classXPNeeded"
+          :class-id="playerClass"
+          :class-color="classDef?.color || 'var(--purple)'"
+          :title="`Nivel y Experiencia Clase (${classDef?.name})`"
         />
 
         <!-- Pokedex Progress -->
@@ -333,7 +347,7 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
               <span class="stat-lbl">Criminalidad</span>
             </div>
             <div
-              v-else
+              v-else-if="playerClass === 'entrenador'"
               class="stat-item"
               @mouseenter="handleStatEnter"
               @mouseleave="handleStatLeave"

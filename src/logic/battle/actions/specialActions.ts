@@ -432,12 +432,56 @@ export const SPECIAL_ACTIONS: Record<string, MoveAction> = {
     tgt.heldItem = temp;
     addLogFn(`¡${src.name} y ${tgt.name} intercambiaron objetos!`, 'log-info', src);
   },
-  'steal_item': (src, tgt, _srcStages, _tgtStages, addLogFn) => {
+  'steal_item': (src, tgt, _srcStages, _tgtStages, addLogFn, battleCtx) => {
     if (tgt.heldItem && !src.heldItem) {
-      src.heldItem = tgt.heldItem;
       const stolenItem = tgt.heldItem;
+      src.heldItem = stolenItem;
       tgt.heldItem = null;
       addLogFn(`¡${src.name} robó ${stolenItem} de ${tgt.name}!`, 'log-info', src);
+
+      // Play steal sound
+      import('@/stores/audio').then(m => m.useAudioStore().steal()).catch(() => {});
+
+      const b = battleCtx?.activeBattle.value;
+      if (b && battleCtx.gs) {
+        const isPlayerSrc = (src.uid === b.player?.uid);
+        const isPlayerTgt = (tgt.uid === b.player?.uid);
+        
+        if (isPlayerSrc) {
+          if (!battleCtx.gs.state.inventory) battleCtx.gs.state.inventory = {};
+          battleCtx.gs.state.inventory[stolenItem] = (battleCtx.gs.state.inventory[stolenItem] || 0) + 1;
+          
+          import('@/data/items').then(m => {
+            const itemDef = m.getItemByName(stolenItem) || m.getItemById(stolenItem);
+            const displayName = itemDef?.name || stolenItem;
+            battleCtx.uiStore.notify(`¡Robaste un ${displayName}!`, '🎒');
+          }).catch(() => {
+            battleCtx.uiStore.notify(`¡Robaste un ${stolenItem}!`, '🎒');
+          });
+        } else if (isPlayerTgt) {
+          import('@/data/items').then(m => {
+            const itemDef = m.getItemByName(stolenItem) || m.getItemById(stolenItem);
+            const displayName = itemDef?.name || stolenItem;
+            battleCtx.uiStore.notify(`¡Te robaron tu ${displayName}!`, '💸');
+          }).catch(() => {
+            battleCtx.uiStore.notify(`¡Te robaron tu ${stolenItem}!`, '💸');
+          });
+        }
+      }
+    }
+  },
+  'pay_day': (src, _tgt, _srcStages, _tgtStages, addLogFn, battleCtx) => {
+    const b = battleCtx?.activeBattle.value;
+    if (b && battleCtx.gs) {
+      const isPlayerSrc = (src.uid === b.player?.uid);
+      if (isPlayerSrc) {
+        const amount = (src.level || 5) * 5;
+        battleCtx.gs.state.money = (battleCtx.gs.state.money || 0) + amount;
+        addLogFn(`¡Monedas esparcidas por todas partes! Se obtuvieron ₽${amount}.`, 'log-success', src);
+        
+        import('@/stores/audio').then(m => m.useAudioStore().steal()).catch(() => {});
+        battleCtx.uiStore.notify(`¡Robaste/Obtuviste ₽${amount}!`, '💰');
+      }
     }
   },
   'skill_swap': (src, tgt, _srcStages, _tgtStages, addLogFn) => {

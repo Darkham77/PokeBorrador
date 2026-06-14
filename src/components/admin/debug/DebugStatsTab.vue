@@ -14,7 +14,8 @@ interface ViteDebugBridge {
   resetBadges: () => void;
   setDominance: (faction: string) => void;
   setFaction: (faction: string) => void;
-  setPlayerClass: (cls: string) => void;
+  setBattleCoins: (val: number) => void;
+  setWarCoins: (val: number) => void;
 }
 
 const game = useGameStore()
@@ -24,6 +25,8 @@ const gymsStore = useGymsStore()
 const debugMoney = ref(10000)
 const debugElo = ref(pvp.elo)
 const debugLevel = ref(game.state.trainerLevel)
+const debugBattleCoins = ref(game.state.battleCoins || 0)
+const debugWarCoins = ref(game.state.warCoins || 0)
 const currentForcedFaction = ref('none')
 const simDifficulty = ref('easy')
 
@@ -49,6 +52,8 @@ const addMoney = () => {
 }
 const setElo = () => getDebugBridge().setElo(debugElo.value)
 const setLevel = () => getDebugBridge().setLevel(debugLevel.value)
+const setBattleCoins = () => getDebugBridge().setBattleCoins(debugBattleCoins.value)
+const setWarCoins = () => getDebugBridge().setWarCoins(debugWarCoins.value)
 const forceDominance = (f: string) => {
   getDebugBridge().setDominance(f);
   currentForcedFaction.value = f
@@ -56,10 +61,6 @@ const forceDominance = (f: string) => {
 
 function setFaction(f: string) {
   getDebugBridge().setFaction(f)
-}
-
-function setPlayerClass(c: string) {
-  getDebugBridge().setPlayerClass(c)
 }
 </script>
 
@@ -109,6 +110,38 @@ function setPlayerClass(c: string) {
         </PVTooltip>
       </div>
     </div>
+
+    <div class="debug-card">
+      <label>Battle Coins (BC)</label>
+      <div class="input-group">
+        <input
+          v-model="debugBattleCoins"
+          type="number"
+        >
+        <PVTooltip title="Establece tus Battle Coins (BC).">
+          <button @click.stop="setBattleCoins">
+            FIJAR
+          </button>
+        </PVTooltip>
+      </div>
+    </div>
+
+    <div class="debug-card">
+      <label>Monedas de Guerra</label>
+      <div class="input-group">
+        <input
+          v-model="debugWarCoins"
+          type="number"
+        >
+        <PVTooltip title="Establece tus Monedas de Guerra.">
+          <button @click.stop="setWarCoins">
+            FIJAR
+          </button>
+        </PVTooltip>
+      </div>
+    </div>
+
+
 
     <div class="debug-card badges-debug-card">
       <div class="card-header-flex">
@@ -218,33 +251,6 @@ function setPlayerClass(c: string) {
             @click.stop="setFaction('none')"
           >
             LIBRE
-          </button>
-        </PVTooltip>
-      </div>
-    </div>
-
-    <div class="debug-card">
-      <label>Clase Jugador</label>
-      <div class="button-row wrap">
-        <PVTooltip
-          v-for="c in ['entrenador', 'criador', 'cazabichos', 'rocket']"
-          :key="c"
-          :title="`Cambiar tu clase a ${c.toUpperCase()}.`"
-        >
-          <button
-            class="small-btn"
-            :class="{ active: game.state.playerClass === c }"
-            @click.stop="setPlayerClass(c)"
-          >
-            {{ c.toUpperCase() }}
-          </button>
-        </PVTooltip>
-        <PVTooltip title="Resetear tu clase de jugador.">
-          <button
-            class="small-btn"
-            @click.stop="setPlayerClass('none')"
-          >
-            RESETEAR
           </button>
         </PVTooltip>
       </div>

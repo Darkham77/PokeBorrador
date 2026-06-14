@@ -12,6 +12,7 @@ interface Props {
   classId?: string | null
   classColor?: string
   hideUnlocks?: boolean
+  title?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -20,7 +21,8 @@ const props = withDefaults(defineProps<Props>(), {
   expNeeded: undefined,
   classId: undefined,
   classColor: undefined,
-  hideUnlocks: false
+  hideUnlocks: false,
+  title: 'NIVEL Y EXPERIENCIA'
 })
 
 const gameStore = useGameStore()
@@ -28,21 +30,26 @@ const classStore = usePlayerClassStore()
 const gs = computed(() => gameStore.state)
 
 const currentLevel = computed(() => props.level !== undefined ? props.level : (gs.value.trainerLevel || 1))
-const currentExp = computed(() => props.exp !== undefined ? props.exp : (gs.value.trainerExp || 0))
-const currentExpNeeded = computed(() => props.expNeeded !== undefined ? props.expNeeded : (gs.value.trainerExpNeeded || 100))
+const currentExp = computed(() => props.level !== undefined && props.level >= 30 ? 0 : (props.exp !== undefined ? props.exp : (gs.value.trainerExp || 0)))
+const currentExpNeeded = computed(() => {
+  if (currentLevel.value >= 30) return 0
+  return props.expNeeded !== undefined ? props.expNeeded : (gs.value.trainerExpNeeded || 100)
+})
 
 const trainerExpPct = computed(() => {
+  if (currentLevel.value >= 30) return 100
   const needed = currentExpNeeded.value
   if (needed === 0) return 0
   return Math.min(100, (currentExp.value / needed) * 100)
 })
 
 const xpRemaining = computed(() => {
+  if (currentLevel.value >= 30) return 0
   return Math.max(0, currentExpNeeded.value - currentExp.value)
 })
 
 const nextLevel = computed(() => {
-  return currentLevel.value + 1
+  return Math.min(30, currentLevel.value + 1)
 })
 
 const nextClassUnlocks = computed(() => {
@@ -136,13 +143,20 @@ watch(trainerExpPct, (newPct) => {
 <template>
   <div class="profile-section-card xp-card">
     <div class="section-label">
-      NIVEL Y EXPERIENCIA
+      {{ props.title.toUpperCase() }}
     </div>
-    <div class="xp-details">
-      <div class="xp-numbers">
-        <span class="xp-current">{{ currentExp }} / {{ currentExpNeeded }} EXP</span>
-        <span class="xp-percent">{{ Math.round(trainerExpPct) }}%</span>
-      </div>
+      <div class="xp-details">
+        <div class="xp-numbers">
+          <span class="xp-current">
+            <template v-if="currentLevel >= 30">
+              MÁXIMO NIVEL
+            </template>
+            <template v-else>
+              {{ currentExp }} / {{ currentExpNeeded }} EXP
+            </template>
+          </span>
+          <span class="xp-percent">{{ Math.round(trainerExpPct) }}%</span>
+        </div>
       
       <!-- Progress Bar -->
       <div class="xp-bar-container">
@@ -154,7 +168,12 @@ watch(trainerExpPct, (newPct) => {
       </div>
       
       <div class="xp-remaining-text">
-        Faltan <strong :style="{ color: props.classColor || classStore.currentClassDef?.color || '#a855f7' }"> {{ xpRemaining }} EXP </strong> para el Nivel <strong>{{ nextLevel }}</strong>
+        <template v-if="currentLevel >= 30">
+          <strong :style="{ color: props.classColor || classStore.currentClassDef?.color || '#a855f7' }">¡NIVEL MÁXIMO ALCANZADO!</strong>
+        </template>
+        <template v-else>
+          Faltan <strong :style="{ color: props.classColor || classStore.currentClassDef?.color || '#a855f7' }"> {{ xpRemaining }} EXP </strong> para el Nivel <strong>{{ nextLevel }}</strong>
+        </template>
       </div>
     </div>
 

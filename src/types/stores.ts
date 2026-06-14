@@ -48,6 +48,7 @@ export interface BattleOptions {
   difficulty?: string;
   rewardTM?: string;
   trainerSprite?: string;
+  trainerArchetype?: string;
   isRival?: boolean;
   persistenceMode?: string;
   cannotEscape?: boolean;
@@ -222,6 +223,7 @@ export interface PlayerClassStore {
   playerClass: string | null;
   classLevel: number;
   getModifier: (type: string, context?: Record<string, unknown>) => number;
+  addCriminality: (amount: number) => void;
 }
 
 export interface AudioStore {
@@ -243,6 +245,8 @@ export interface AudioStore {
   evolution: () => void;
   menuOpen: () => void;
   menuClose: () => void;
+  steal: () => void;
+  siren: () => void;
 }
 
 export interface AuthStore {

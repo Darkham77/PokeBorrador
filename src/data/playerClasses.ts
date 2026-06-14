@@ -146,7 +146,7 @@ export const PLAYER_CLASSES = {
       '🥚 Incubación Rápida: Los pasos para eclosionar se reducen un 25%.',
       '❤️ Vigor: 15% de chance de recuperar vigor tras eclosionar.',
       '👁️ Predecir Naturaleza: Permite ver la naturaleza del Pokémon rival en batalla.',
-      '🔍 Escáner de Huevos: Visualiza y gestiona IVs/Naturaleza post-eclosión.'
+      '🔍 Escáner de Huevos: Escanea y revela los IVs y el Grado de un Huevo del Almacén (1 vez al día).'
     ],
     bonusLevels: [1, 1, 5, 5, 20],
     penalties: [
@@ -165,7 +165,7 @@ export const PLAYER_CLASSES = {
       "El contador de pasos requerido para que un huevo eclosione se reduce en un 25%.",
       "Cada eclosión tiene un 15% de posibilidad de recuperar 1 punto de vigor en uno de los padres en la guardería.",
       "Muestra la Naturaleza (Modificadores de Stats) del Pokémon rival directamente en el HUD de batalla.",
-      "Tras eclosionar un huevo, selecciona otro huevo para conocer su genética. Permite conservarlo con un recordatorio en pantalla para gestionar su eclosión."
+      "Permite revelar por completo la genética (IVs y Grado de IVs) de un huevo depositado en el Almacén de la Guardería. Limitado a un escaneo diario."
     ],
     technicalPenalties: [
       "Tu enfoque en la genética te aleja del fragor de la batalla (x0.90 EXP global).",

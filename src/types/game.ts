@@ -117,7 +117,10 @@ export interface GameState {
     blackMarketDaily: { date: string; items: string[]; purchased: string[] };
     activeMission?: unknown;
     extortedRouteId?: string | null;
+    extortedRouteTimestamp?: string | null;
+    lastEggScanDate?: string | null;
     officialRouteId?: string | null;
+    officialRouteTimestamp?: string | null;
     kitCaptures?: number;
   };
   faction: string | null;

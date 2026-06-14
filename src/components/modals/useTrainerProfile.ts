@@ -4,6 +4,7 @@ import { PLAYER_CLASSES } from '@/data/playerClasses'
 import { useAuthStore } from '@/stores/auth'
 import { useChatStore } from '@/stores/chat'
 import { useSocialStore, type Friend } from '@/stores/social'
+import { getXPNeededForClassLevel } from '@/logic/player/classMath'
 
 export interface ProfileRow {
   id: string
@@ -23,6 +24,7 @@ export interface ProfileRow {
   last_played_at?: string | null
   ranked_max_elo?: number | null
   class_level?: number | null
+  class_xp?: number | null
   box_count?: number | null
   pvp_draws?: number | null
   longest_streak?: number | null
@@ -38,6 +40,7 @@ export interface SaveStateData {
   trainer?: string
   playtime?: number
   classLevel?: number
+  classXP?: number
   rankedMaxElo?: number
   box?: unknown[]
   team?: unknown[]
@@ -329,6 +332,14 @@ export function useTrainerProfile(getUserId: () => string | null | undefined) {
     return profile.value?.class_level ?? saveState.value?.classLevel ?? 1
   })
 
+  const classXP = computed(() => {
+    return profile.value?.class_xp ?? saveState.value?.classXP ?? 0
+  })
+
+  const classXPNeeded = computed(() => {
+    return getXPNeededForClassLevel(classLevel.value)
+  })
+
   const boxCount = computed(() => {
     return profile.value?.box_count ?? saveState.value?.box?.length ?? 0
   })
@@ -420,6 +431,8 @@ export function useTrainerProfile(getUserId: () => string | null | undefined) {
     lastPlayedAt,
     rankedMaxElo,
     classLevel,
+    classXP,
+    classXPNeeded,
     boxCount,
     pvpDraws,
     longestStreak,

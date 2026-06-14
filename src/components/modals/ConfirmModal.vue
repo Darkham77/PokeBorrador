@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ref } from 'vue'
 import BaseModal from '@/components/common/BaseModal.vue'
 
 interface Props {
@@ -9,9 +10,11 @@ interface Props {
   cancelText?: string
   type?: string
   variant?: string
+  onConfirm?: () => void
+  onCancel?: () => void
 }
 
-withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<Props>(), {
   show: false,
   title: '¿ESTÁS SEGURO?',
   message: '',
@@ -27,7 +30,11 @@ const emit = defineEmits<{
   (e: 'close'): void
 }>()
 
+const clicked = ref(false)
+
 const handleConfirm = () => {
+  if (clicked.value) return
+  clicked.value = true
   emit('confirm')
   emit('close')
 }
@@ -62,6 +69,7 @@ const handleCancel = () => {
         <button 
           class="btn-confirm" 
           :class="{ 'is-danger': type === 'danger' }"
+          :disabled="clicked"
           @click.stop="handleConfirm"
         >
           {{ confirmText }}

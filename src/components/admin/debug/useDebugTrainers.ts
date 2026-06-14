@@ -58,6 +58,7 @@ export function useDebugTrainers() {
   const trainerName = ref('Entrenador Vicio')
   const trainerSprite = ref('youngster')
   const enemyTeam = ref<Pokemon[]>([])
+  const trainerArchetype = ref<string | undefined>(undefined)
   const selectedPokeIndex = ref<number | null>(null)
   const selectedPreset = ref('random')
 
@@ -145,6 +146,7 @@ export function useDebugTrainers() {
     const team: Pokemon[] = []
 
     if (selectedPreset.value === 'random') {
+      trainerArchetype.value = undefined
       randomizeTrainer()
       const dbKeys = Object.keys(pokemonDataProvider.getPokemonDb())
       for (let i = 0; i < size; i++) {
@@ -163,6 +165,7 @@ export function useDebugTrainers() {
       }
     } else {
       const archetype = selectedPreset.value
+      trainerArchetype.value = TRAINER_TYPES[archetype as keyof typeof TRAINER_TYPES]?.archetype || archetype
       trainerName.value = generateThemedTrainerName(archetype)
 
       const availableSprites = getSpritesForArchetype(archetype as NpcArchetype)
@@ -192,6 +195,7 @@ export function useDebugTrainers() {
   function loadPolicePreset() {
     trainerName.value = 'Oficial de Policía'
     trainerSprite.value = 'tamer'
+    trainerArchetype.value = 'policeman'
     combatLocationType.value = 'map'
 
     const pool = ['growlithe', 'arcanine', 'machoke', 'magneton', 'pidgeot']
@@ -268,7 +272,8 @@ export function useDebugTrainers() {
       difficulty: isGym ? gymDifficulty.value : undefined,
       rewardTM: rewardTMVal,
       battleOptions: {
-        trainerSprite: trainerSprite.value
+        trainerSprite: trainerSprite.value,
+        trainerArchetype: trainerArchetype.value
       }
     }
 

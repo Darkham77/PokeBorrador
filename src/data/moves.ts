@@ -69,7 +69,7 @@ export const MOVE_DATA: Record<string, MoveBaseData> = {
   'rage': { id: 'rage', name: 'Furia',  power: 20, acc: 100, type: 'normal', cat: 'physical', pp: 20, effect: 'rage'  },
   'leer': { id: 'leer', name: 'Malicioso',  power: 0, acc: 100, type: 'normal', cat: 'status', pp: 30, effect: 'stat_down_enemy_def'  },
   'screech': { id: 'screech', name: 'Chirrido',  power: 0, acc: 85, type: 'normal', cat: 'status', pp: 40, effect: 'stat_down_enemy_def_2', sound: true  },
-  'pay_day': { id: 'pay_day', name: 'Día de Pago',  power: 40, acc: 100, type: 'normal', cat: 'physical', pp: 20  },
+  'pay_day': { id: 'pay_day', name: 'Día de Pago',  power: 40, acc: 100, type: 'normal', cat: 'physical', pp: 20, effect: 'pay_day'  },
   'feint_attack': { id: 'feint_attack', name: 'Finta',  power: 60, acc: 1000, type: 'dark', cat: 'physical', pp: 20, effect: 'always_hits'  },
   'psicocontrol': { id: 'psicocontrol', name: 'Psicocontrol',  power: 0, acc: 100, type: 'psychic', cat: 'status', pp: 10, effect: 'psych_up'  },
   'bide': { id: 'bide', name: 'Venganza',  power: 60, acc: 100, type: 'fighting', cat: 'physical', pp: 10  },

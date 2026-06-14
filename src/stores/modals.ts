@@ -19,10 +19,12 @@ export interface Modal {
 export const useModalStore = defineStore('modals', () => {
   const stack = ref<Modal[]>([])
 
-  /**
-   * Opens a modal by name from the registry.
-   */
   const open = (name: string, props: Record<string, unknown> = {}) => {
+    if ((name === 'Confirm' || name === 'Prompt') && isOpen(name)) {
+      logger.warn('ModalStore', `Modal "${name}" is already open. Ignoring duplicate request.`)
+      return null
+    }
+
     const registryKey = Object.keys(MODAL_REGISTRY).find(
       key => key.toLowerCase() === name.toLowerCase()
     )

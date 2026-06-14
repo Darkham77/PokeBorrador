@@ -1,20 +1,101 @@
 <script setup lang="ts">
 import { useBreedingStore } from '@/stores/breeding';
 import { useUIStore } from '@/stores/ui';
+import { useGameStore } from '@/stores/game';
 import { POKEMON_DB } from '@/data/pokemonDB';
 import type { DaycareEgg } from '@/types/breeding';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import EggSprite from '@/components/common/EggSprite.vue';
 
+import { getPokemonTier } from '@/logic/pokemon/tierEngine';
+import { ref, onMounted, onUnmounted } from 'vue';
+
 const breedingStore = useBreedingStore();
 const uiStore = useUIStore();
+const gameStore = useGameStore();
 
 const getPokemonName = (id: string) => (POKEMON_DB as Record<string, { name: string }>)[id]?.name || 'Huevo';
+
+const getEggTierInfo = (egg: DaycareEgg) => {
+  if (!egg.ivs) return null;
+  // getPokemonTier expects Partial<Pokemon>
+  return getPokemonTier({ ivs: egg.ivs });
+};
+
+// Cooldown countdown for scanner (Available 1 time per day)
+const cooldownText = ref('');
+let cooldownInterval: number | null = null;
+
+const checkCooldown = () => {
+  if (gameStore.state.playerClass !== 'criador') {
+    cooldownText.value = '';
+    return;
+  }
+  const lastScan = gameStore.state.classData?.lastEggScanDate;
+  if (!lastScan) {
+    cooldownText.value = '';
+    return;
+  }
+
+  const todayStr = Temporal.Now.instant().toString().split('T')[0] || '';
+  if (!lastScan.startsWith(todayStr)) {
+    cooldownText.value = '';
+    return;
+  }
+
+  // Last scan was today, so we wait until midnight of the local day (or tomorrow morning)
+  // Let's compute the remaining time until tomorrow starts
+  const now = Temporal.Now.zonedDateTimeISO();
+  const tomorrow = now.add({ days: 1 }).with({ hour: 0, minute: 0, second: 0, millisecond: 0 });
+  const duration = now.until(tomorrow);
+
+  const hours = String(duration.hours).padStart(2, '0');
+  const minutes = String(duration.minutes).padStart(2, '0');
+  const seconds = String(duration.seconds).padStart(2, '0');
+
+  cooldownText.value = `ESCANER IV EN COOLDOWN: ${hours}:${minutes}:${seconds}`;
+};
+
+onMounted(() => {
+  checkCooldown();
+  cooldownInterval = window.setInterval(checkCooldown, 1000);
+});
+
+onUnmounted(() => {
+  if (cooldownInterval) clearInterval(cooldownInterval);
+});
 
 const handleClaim = (egg: DaycareEgg) => {
   const cost = egg.inherited_ivs?._cost as number || 0;
   const isScanned = !!egg.inherited_ivs?._scanned;
   const displayName = isScanned ? `huevo de ${getPokemonName(egg.species)}` : 'Huevo Pokémon';
+  
+  const lastScan = gameStore.state.classData?.lastEggScanDate;
+  const todayStr = Temporal.Now.instant().toString().split('T')[0] || '';
+  const canScan = gameStore.state.playerClass === 'criador' && (!lastScan || !lastScan.startsWith(todayStr));
+
+  if (canScan && !isScanned) {
+    uiStore.openConfirm({
+      title: '🧬 ACCIÓN DE CRIADOR',
+      message: `¿Qué deseas hacer con este Huevo Pokémon?\n\nPuedes escanear sus IVs (disponible 1 vez por día) o recogerlo para caminar hoy.`,
+      confirmText: 'ESCANEAR IVs',
+      cancelText: 'RECOGER HUEVO',
+      onConfirm: () => {
+        breedingStore.scanEgg(egg.id);
+      },
+      onCancel: () => {
+        uiStore.openConfirm({
+          title: 'RECOGER HUEVO',
+          message: `¿Quieres recoger este Huevo Pokémon por ₽${cost.toLocaleString()}?`,
+          onConfirm: () => {
+            breedingStore.claimEgg(egg.id);
+          }
+        });
+      }
+    });
+    return;
+  }
+
   uiStore.openConfirm({
     title: 'RECOGER HUEVO',
     message: `¿Quieres recoger este ${displayName} por ₽${cost.toLocaleString()}?`,
@@ -31,6 +112,12 @@ const handleClaim = (egg: DaycareEgg) => {
       <div class="info">
         <h3>Almacén de Huevos</h3>
         <p>Huevos esperando a ser recogidos</p>
+        <div 
+          v-if="cooldownText" 
+          class="scanner-cooldown-text"
+        >
+          {{ cooldownText }}
+        </div>
       </div>
       <div
         class="count-badge"
@@ -51,7 +138,7 @@ const handleClaim = (egg: DaycareEgg) => {
           class="egg-sprite-empty"
         >
       </div>
-      <p>El almacén está vacío. ¡Pon a criar a tus Pokémon!</p>
+      <p>El almacén está vacío. ¡Put a criar a tus Pokémon!</p>
     </div>
 
     <div
@@ -84,6 +171,29 @@ const handleClaim = (egg: DaycareEgg) => {
           <div class="name">
             {{ egg.inherited_ivs?._scanned ? getPokemonName(egg.species) : 'HUEVO POKÉMON' }}
           </div>
+          
+          <!-- Colored IV Grade Badge -->
+          <div
+            v-if="egg.inherited_ivs?._scanned && getEggTierInfo(egg)"
+            class="egg-grade-container"
+          >
+            <span 
+              class="egg-grade-badge" 
+              :style="{ 
+                '--tier-color': getEggTierInfo(egg)!.color, 
+                '--tier-bg': getEggTierInfo(egg)!.bg 
+              }"
+            >
+              GRADO {{ getEggTierInfo(egg)!.tier }}
+            </span>
+          </div>
+
+          <div
+            v-if="egg.inherited_ivs?._scanned && egg.ivs"
+            class="egg-scanned-ivs"
+          >
+            IVs: HP:{{ egg.ivs.hp }} A:{{ egg.ivs.atk }} D:{{ egg.ivs.def }} S:{{ egg.ivs.spe }}
+          </div>
           <div
             v-if="egg.inherited_ivs?._cost"
             class="cost"
@@ -114,6 +224,18 @@ const handleClaim = (egg: DaycareEgg) => {
   
   h3 { @include pixelated; font-size: 10px; color: $pokecenter-pink; margin-bottom: 6px; }
   p { font-size: 12px; color: $muted; }
+
+  .scanner-cooldown-text {
+    @include pixelated;
+    font-size: 8px;
+    color: #ef4444;
+    margin-top: 4px;
+    background: Rgba(239, 68, 68, 0.1);
+    border: 1px solid Rgba(239, 68, 68, 0.3);
+    padding: 2px 6px;
+    border-radius: 4px;
+    display: inline-block;
+  }
 }
 
 .count-badge {
@@ -239,6 +361,37 @@ const handleClaim = (egg: DaycareEgg) => {
       font-weight: 800;
       font-size: 11px;
     }
+  }
+
+  .egg-scanned-ivs {
+    font-size: 8px;
+    color: #fbbf24;
+    @include pixelated;
+    margin-top: 2px;
+    background: Rgba(0, 0, 0, 0.3);
+    padding: 2px 4px;
+    border-radius: 4px;
+  }
+
+  .egg-grade-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 2px;
+    margin-bottom: 2px;
+  }
+
+  .egg-grade-badge {
+    @include pixelated;
+    font-size: 8px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: var(--tier-bg);
+    border: 1px solid var(--tier-color);
+    color: var(--tier-color);
+    font-weight: bold;
+    box-shadow: 0 0 6px var(--tier-bg);
+    display: inline-block;
+    line-height: 1;
   }
 }
 

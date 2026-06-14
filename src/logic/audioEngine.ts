@@ -251,3 +251,27 @@ export function playDefeatSound(ctx: AudioContext, dest: AudioNode | null) {
   playGlide(ctx, dest, 369.99, 185.00, t + 0.45, 0.50, 0.25, 'sawtooth');
   playNoise(ctx, dest, t + 0.45, 0.30, 0.15, 400);
 }
+
+/**
+ * STEAL SOUND (Retro cartoon sliding/gliding frequency)
+ */
+export function playStealSound(ctx: AudioContext, dest: AudioNode | null) {
+  const t = ctx.currentTime + 0.05;
+  // Two swift rising slide sweeps to sound sneaky
+  playGlide(ctx, dest, 440, 880, t, 0.12, 0.25, 'triangle');
+  playGlide(ctx, dest, 554, 1109, t + 0.08, 0.12, 0.25, 'triangle');
+}
+
+/**
+ * SIREN SOUND (Police sirens alternating pitch)
+ */
+export function playSirenSound(ctx: AudioContext, dest: AudioNode | null) {
+  const t = ctx.currentTime + 0.05;
+  // Alternating high and low slides (siren wail)
+  playGlide(ctx, dest, 600, 900, t, 0.25, 0.2, 'sawtooth');
+  playGlide(ctx, dest, 900, 600, t + 0.25, 0.25, 0.2, 'sawtooth');
+  playGlide(ctx, dest, 600, 900, t + 0.5, 0.25, 0.2, 'sawtooth');
+  playGlide(ctx, dest, 900, 600, t + 0.75, 0.25, 0.2, 'sawtooth');
+}
+
+

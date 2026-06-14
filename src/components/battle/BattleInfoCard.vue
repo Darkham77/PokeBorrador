@@ -12,6 +12,7 @@ import { getStatBreakdown } from '@/logic/battle/battleEngine'
 import { useCombatantStatus } from '@/composables/useCombatantStatus'
 
 import type { Pokemon } from '@/types/pokemon'
+import { getPokemonTier } from '@/logic/pokemon/tierEngine'
 
 interface Props {
   pokemon?: Pokemon | null
@@ -28,6 +29,22 @@ const props = withDefaults(defineProps<Props>(), {
 const p = computed(() => props.pokemon as Pokemon)
 const battleStore = useBattleStore()
 const profileStore = useProfileStore()
+import { useGameStore } from '@/stores/game'
+const gameStore = useGameStore()
+
+const ivTotal = computed(() => {
+  if (!p.value || !p.value.ivs) return 0
+  return (p.value.ivs.hp || 0) + (p.value.ivs.atk || 0) + (p.value.ivs.def || 0) + (p.value.ivs.spa || 0) + (p.value.ivs.spd || 0) + (p.value.ivs.spe || 0)
+})
+
+const pokemonTierInfo = computed(() => {
+  if (!p.value) return null
+  return getPokemonTier(p.value)
+})
+
+const isIvScannerActive = computed(() => {
+  return (gameStore.state.ivScannerSecs || 0) > 0
+})
 
 const isAdmin = computed(() => {
   const win = window as unknown as { __ADMIN_DEBUG__: boolean }
@@ -214,6 +231,12 @@ const teamBallsStatus = computed(() => {
         <div class="poke-level m-badge-level">
           Nv. {{ isScrambled ? '??' : p.level }}
         </div>
+        <div
+          v-if="!isPlayer && !isScrambled && gameStore.state.playerClass === 'criador'"
+          class="m-badge-nature"
+        >
+          {{ p.nature || 'Serio' }}
+        </div>
         <PokemonTypePills 
           v-if="!isScrambled"
           :pokemon="p" 
@@ -275,6 +298,22 @@ const teamBallsStatus = computed(() => {
             </span>
           </div>
         </PVTooltip>
+      </div>
+
+      <!-- Escáner de IVs Activo (debajo de estados, solo para Pokémon salvaje rival) -->
+      <div 
+        v-if="isIvScannerActive && !isPlayer && !isScrambled && !battleStore.state?.isTrainer && !battleStore.state?.isGym && !battleStore.state?.isPvP"
+        class="iv-scanner-radar-hud"
+      >
+        <span class="hud-label">RADAR IV</span>
+        <span class="hud-value">{{ ivTotal }}/186</span>
+        <span 
+          v-if="pokemonTierInfo" 
+          class="hud-grade-badge" 
+          :style="{ '--tier-color': pokemonTierInfo.color, '--tier-bg': pokemonTierInfo.bg }"
+        >
+          GRADO {{ pokemonTierInfo.tier }}
+        </span>
       </div>
     </div>
   </div>
@@ -350,6 +389,17 @@ const teamBallsStatus = computed(() => {
 .m-badge-level {
   @include pixelated;
   font-size: 8px;
+}
+
+.m-badge-nature {
+  background: Rgba(234, 179, 8, 0.15);
+  border: 1px solid Rgba(234, 179, 8, 0.4);
+  color: #fef08a;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 8px;
+  @include pixelated;
+  text-transform: uppercase;
 }
 
 .status-container {
@@ -535,6 +585,47 @@ const teamBallsStatus = computed(() => {
   &.empty {
     background: transparent;
     border: 1px dashed Rgba(255, 255, 255, 0.3);
+  }
+}
+
+.iv-scanner-radar-hud {
+  @include pixelated;
+  font-size: 8px;
+  color: #00ffcc;
+  text-shadow: 1px 1px 0 #000;
+  margin-top: 6px;
+  padding: 4px 8px;
+  background: Rgba(0, 255, 204, 0.05);
+  border: 1px solid Rgba(0, 255, 204, 0.25);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  line-height: 1;
+
+  .hud-label {
+    color: Rgba(255, 255, 255, 0.6);
+    font-size: 7px;
+    letter-spacing: 0.5px;
+  }
+
+  .hud-value {
+    color: #ffffff;
+    font-weight: bold;
+  }
+
+  .hud-grade-badge {
+    font-size: 8px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: var(--tier-bg);
+    border: 1px solid var(--tier-color);
+    color: var(--tier-color);
+    text-shadow: none;
+    font-weight: bold;
+    box-shadow: 0 0 6px var(--tier-bg);
+    display: inline-block;
   }
 }
 </style>

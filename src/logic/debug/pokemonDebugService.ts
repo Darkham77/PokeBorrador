@@ -168,6 +168,31 @@ export const pokemonDebugService = {
         break;
       }
 
+      case 'egg_warehouse': {
+        // Protocol: Add DaycareEgg directly to Daycare Warehouse (almacén)
+        const { useBreedingStore } = await import('@/stores/breeding');
+        const breedingStore = useBreedingStore();
+        
+        const { eggFactory } = await import('@/logic/breeding/eggFactory');
+        const egg = eggFactory.createDaycareEgg({
+          species: p.id,
+          ivs: p.ivs,
+          nature: p.nature,
+          movesAtBirth: p.moves.map(m => m?.name || '???'),
+          abilityIndex: (p as Pokemon & { abilityIndex?: number }).abilityIndex || 0,
+          isShiny: !!p.isShiny,
+          cost: 0
+        });
+        
+        breedingStore.warehouseEggs.push(egg);
+        if (breedingStore.saveWarehouseEggs) {
+          breedingStore.saveWarehouseEggs();
+        }
+        
+        ui.notify(`[DEBUG] Huevo de ${p.name} añadido al almacén de la guardería`, '🥚');
+        break;
+      }
+
       case 'hatch_anim':
       case 'egg_anim':
         // Protocol: Visual hatching sequence (VUE MIGRATED)

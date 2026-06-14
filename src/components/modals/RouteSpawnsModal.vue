@@ -1,4 +1,8 @@
 <script setup lang="ts">
+import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { gsap } from 'gsap'
+import { useGameStore } from '@/stores/game'
+import { useUIStore } from '@/stores/ui'
 import BaseModal from '@/components/common/BaseModal.vue'
 import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue'
 import { useModalStore } from '@/stores/modals'
@@ -22,6 +26,168 @@ const emit = defineEmits<{
 }>()
 
 const modalStore = useModalStore()
+const gameStore = useGameStore()
+const uiStore = useUIStore()
+
+const playerClass = computed(() => gameStore.state.playerClass)
+
+const isOfficialRouteActive = computed(() => {
+  if (playerClass.value !== 'entrenador') return false
+  if (!props.map.id.startsWith('route')) return false
+  const classData = gameStore.state.classData || {}
+  if (classData.officialRouteId !== props.map.id) return false
+  const now = Temporal.Now.instant().epochMilliseconds
+  const timestamp = Number(classData.officialRouteTimestamp || 0)
+  return (now - timestamp) <= 30 * 60 * 1000
+})
+
+const isExtortedRouteActive = computed(() => {
+  if (playerClass.value !== 'rocket') return false
+  if (!props.map.id.startsWith('route')) return false
+  const classData = gameStore.state.classData || {}
+  if (classData.extortedRouteId !== props.map.id) return false
+  const now = Temporal.Now.instant().epochMilliseconds
+  const timestamp = Number(classData.extortedRouteTimestamp || 0)
+  return (now - timestamp) <= 24 * 3600 * 1000
+})
+
+const activeExtortedRouteId = computed(() => {
+  if (playerClass.value !== 'rocket') return null
+  const classData = gameStore.state.classData || {}
+  if (!classData.extortedRouteId) return null
+  const now = Temporal.Now.instant().epochMilliseconds
+  const timestamp = Number(classData.extortedRouteTimestamp || 0)
+  if ((now - timestamp) > 24 * 3600 * 1000) return null
+  return classData.extortedRouteId
+})
+
+const isOfficialRouteOnCooldown = computed(() => {
+  if (playerClass.value !== 'entrenador') return false
+  const classData = gameStore.state.classData || {}
+  const timestamp = Number(classData.officialRouteTimestamp || 0)
+  if (!timestamp) return false
+  const now = Temporal.Now.instant().epochMilliseconds
+  return (now - timestamp) <= 24 * 3600 * 1000
+})
+
+const cooldownRemainingText = computed(() => {
+  if (!isOfficialRouteOnCooldown.value) return ''
+  const classData = gameStore.state.classData || {}
+  const timestamp = Number(classData.officialRouteTimestamp || 0)
+  const now = Temporal.Now.instant().epochMilliseconds
+  const diff = (24 * 3600 * 1000) - (now - timestamp)
+  if (diff <= 0) return ''
+  const hours = Math.floor(diff / (3600 * 1000))
+  const mins = Math.floor((diff % (3600 * 1000)) / (60 * 1000))
+  return `${hours}h ${mins}m`
+})
+
+const timeRemainingText = ref('')
+let timerTween: gsap.core.Tween | null = null
+
+const tickTime = () => {
+  const classData = gameStore.state.classData || {}
+  const now = Temporal.Now.instant().epochMilliseconds
+
+  if (playerClass.value === 'rocket' && classData.extortedRouteId === props.map.id) {
+    const timestamp = Number(classData.extortedRouteTimestamp || 0)
+    const diff = (24 * 3600 * 1000) - (now - timestamp)
+    if (diff > 0) {
+      const hours = Math.floor(diff / (3600 * 1000))
+      const mins = Math.floor((diff % (3600 * 1000)) / (60 * 1000))
+      const secs = Math.floor((diff % (60 * 1000)) / 1000)
+      timeRemainingText.value = `${hours}h ${mins}m ${secs}s`
+    } else {
+      timeRemainingText.value = ''
+    }
+  } else if (playerClass.value === 'entrenador' && classData.officialRouteId === props.map.id) {
+    const timestamp = Number(classData.officialRouteTimestamp || 0)
+    const diff = (30 * 60 * 1000) - (now - timestamp)
+    if (diff > 0) {
+      const mins = Math.floor(diff / (60 * 1000))
+      const secs = Math.floor((diff % (60 * 1000)) / 1000)
+      timeRemainingText.value = `${mins}m ${secs}s`
+    } else {
+      timeRemainingText.value = ''
+    }
+  } else {
+    timeRemainingText.value = ''
+  }
+
+  timerTween = gsap.delayedCall(1, tickTime)
+}
+
+onMounted(() => {
+  tickTime()
+})
+
+onUnmounted(() => {
+  if (timerTween) {
+    timerTween.kill()
+  }
+})
+
+const toggleExtortion = () => {
+  if (modalStore.isOpen('Confirm')) return
+  const id = props.map.id
+  const now = Temporal.Now.instant().epochMilliseconds
+
+  modalStore.open('Confirm', {
+    title: '🏴‍☠️ RUTA DE EXTORSISÓN',
+    message: `REGLAS DE EXTORSISÓN:\n\n1. Al extorsionar una ruta, tomarás control de ella por las próximas 24 horas.\n2. Los pesos (₽) ganados contra entrenadores (NPCs) en esta ruta se multiplicarán por x1.5.\n3. Solo puedes extorsionar una ruta a la vez.\n\n¿Quieres extorsionar la ${props.map.name.toUpperCase()} hoy?`,
+    confirmText: 'EXTORSIONAR',
+    cancelText: 'CANCELAR',
+    variant: 'retro',
+    onConfirm: async () => {
+      if (!gameStore.state.classData) {
+        gameStore.state.classData = {
+          captureStreak: 0,
+          longestStreak: 0,
+          reputation: 0,
+          blackMarketSales: 0,
+          criminality: 0,
+          blackMarketDaily: { date: '', items: [], purchased: [] }
+        }
+      }
+      gameStore.state.classData.extortedRouteId = id
+      gameStore.state.classData.extortedRouteTimestamp = String(now)
+      uiStore.notify(`¡Has tomado control y extorsionado la ${props.map.name}!`, '💰')
+      await gameStore.save(false)
+      tickTime()
+    }
+  })
+}
+
+const toggleOfficialRoute = () => {
+  if (modalStore.isOpen('Confirm')) return
+  const id = props.map.id
+  const now = Temporal.Now.instant().epochMilliseconds
+
+  modalStore.open('Confirm', {
+    title: '📍 RUTA OFICIAL',
+    message: `REGLAS DE RUTA OFICIAL:\n\n1. La Ruta Oficial te permite declarar una zona de patrullaje especial.\n2. Durante los próximos 30 minutos, cada combate ganado aquí otorgará +1 punto de Reputación.\n3. Solo puedes marcar una ruta oficial una vez cada 24 horas.\n\n¿Quieres marcar la ${props.map.name.toUpperCase()} como tu Ruta Oficial?`,
+    confirmText: 'ESTABLECER',
+    cancelText: 'CANCELAR',
+    variant: 'retro',
+    onConfirm: async () => {
+      if (!gameStore.state.classData) {
+        gameStore.state.classData = {
+          captureStreak: 0,
+          longestStreak: 0,
+          reputation: 0,
+          blackMarketSales: 0,
+          criminality: 0,
+          blackMarketDaily: { date: '', items: [], purchased: [] }
+        }
+      }
+      gameStore.state.classData.officialRouteId = id
+      gameStore.state.classData.officialRouteTimestamp = String(now)
+      uiStore.notify(`¡Estableciste la ${props.map.name} como tu Ruta Oficial!`, '📍')
+      await gameStore.save(false)
+      tickTime()
+    }
+  })
+}
 
 const openPokemonDetail = (speciesId: string, isSeen: boolean) => {
   if (!isSeen) return
@@ -200,6 +366,27 @@ const {
                 {{ terrainTags }}
               </span>
             </div>
+            
+            <!-- Active special route bonus indicators in route stats -->
+            <div
+              v-if="isOfficialRouteActive"
+              class="terrain-item benefit-active-item"
+            >
+              <span class="label text-primary">📍 Ruta Oficial:</span>
+              <span class="value text-primary font-bold">
+                +1 REP por victoria (Restan: {{ timeRemainingText }})
+              </span>
+            </div>
+            <div
+              v-if="isExtortedRouteActive"
+              class="terrain-item benefit-active-item"
+            >
+              <span class="label text-danger">🏴‍☠️ Extorsionada:</span>
+              <span class="value text-danger font-bold">
+                x1.5 ₽ por victoria (Restan: {{ timeRemainingText }})
+              </span>
+            </div>
+
             <div class="terrain-item">
               <span class="label">Caminar:</span>
               <span class="value">
@@ -260,6 +447,46 @@ const {
               <span class="label">Arqueología:</span>
               <span class="value gray-text">❌ No disponible</span>
             </div>
+
+            <!-- Class specific button actions in RouteSpawnsModal -->
+            <div
+              v-if="map.id.startsWith('route')"
+              class="class-actions-container"
+            >
+              <!-- Entrenador activation action -->
+              <template v-if="playerClass === 'entrenador'">
+                <div
+                  v-if="isOfficialRouteOnCooldown && !isOfficialRouteActive"
+                  class="cooldown-tag"
+                >
+                  📍 Cooldown Oficial: {{ cooldownRemainingText }}
+                </div>
+                <button
+                  v-else-if="!isOfficialRouteActive"
+                  class="btn-vicio-info btn-vicio-sm w-full btn-establish-route"
+                  @click.stop="toggleOfficialRoute"
+                >
+                  📍 MARCAR RUTA OFICIAL
+                </button>
+              </template>
+
+              <!-- Rocket activation action -->
+              <template v-if="playerClass === 'rocket'">
+                <div
+                  v-if="activeExtortedRouteId && activeExtortedRouteId !== map.id"
+                  class="cooldown-tag"
+                >
+                  🏴‍☠️ Ya extorsionaste otra ruta hoy
+                </div>
+                <button
+                  v-else-if="!isExtortedRouteActive"
+                  class="btn-vicio-danger btn-vicio-sm w-full btn-establish-route"
+                  @click.stop="toggleExtortion"
+                >
+                  🏴‍☠️ EXTORSIONAR RUTA
+                </button>
+              </template>
+            </div>
           </div>
         </div>
       </div>
@@ -314,4 +541,3 @@ const {
 </template>
 
 <style src="./RouteSpawnsModal.styles.scss" scoped lang="scss"></style>
-

@@ -27,6 +27,7 @@ export interface BattleOptions {
   over?: boolean;
   turn?: 'player' | 'enemy' | null;
   trainerSprite?: string;
+  trainerArchetype?: string;
   isRival?: boolean;
   difficulty?: string;
   rewardTM?: string;
@@ -44,7 +45,7 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
     isGym = false, gymId = undefined, locationId = 'plains', 
     isTrainer = false, enemyTeam = undefined, trainerName = 'Entrenador',
     battleOptions = {}, isFishing = false, isArchaeology = false, wasSearching: wasSearchingOpt = null,
-    trainerSprite = undefined, isRival = false,
+    trainerSprite = undefined, trainerArchetype = undefined, isRival = false,
     difficulty = undefined, rewardTM = undefined, cannotEscape = false,
     trainerQuote = undefined
   } = options
@@ -92,6 +93,7 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
     _rewardCombatants: [],
     isGym, gymId, isTrainer, enemyTeam, difficulty: difficulty as 'easy' | 'normal' | 'hard' | undefined, rewardTM,
     trainerSprite: trainerSprite || (battleOptions.trainerSprite as string) || undefined,
+    trainerArchetype: trainerArchetype || (battleOptions.trainerArchetype as string) || undefined,
     isRival: isRival || (battleOptions.isRival as boolean) || false,
     playerTeam: ctx.gs.state.team,
     trainerName, locationId,
@@ -209,6 +211,10 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
     }
     await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.REORDER_TEAM)
     
+    if (ctx.activeBattle.value?.trainerArchetype === 'policeman') {
+      ctx.audio.siren()
+    }
+
     if (!autoBattle) {
       await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.COMBAT_OR_FLEE)
     } else {
@@ -327,6 +333,10 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
       }
 
       await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.SHOW_DIALOGS)
+      if (battleState?.trainerArchetype === 'policeman') {
+        ctx.audio.siren()
+      }
+
       if (ctx.animations?.triggerTrainerDialogs) {
         await ctx.animations.triggerTrainerDialogs()
       }
@@ -460,6 +470,124 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
   handleEntryAbilities(initialPlayer, initialEnemy, ctx.playerStages.value, ctx.enemyStages.value, ctx.addLog)
   
   if (isTrainer || isGym) await ctx.gs.scheduleSave()
+
+  // Team Rocket: Robo Rápido
+  if (ctx.gs.state.playerClass === 'rocket' && (isTrainer || isGym)) {
+    const { calculateQuickStealChance } = await import('@/logic/player/classMath');
+    const level = ctx.classStore.classLevel;
+    const stealChance = calculateQuickStealChance(level);
+    if (Math.random() < stealChance) {
+      // Intentar robar
+      const criminalItems = ['potion', 'super_potion', 'revive', 'full_heal', 'poke_radar', 'pokeball', 'greatball'];
+      const stolenItem = criminalItems[Math.floor(Math.random() * criminalItems.length)];
+      if (stolenItem) {
+        
+        // Agregar al inventario
+        if (!ctx.gs.state.inventory) ctx.gs.state.inventory = {};
+        ctx.gs.state.inventory[stolenItem] = (ctx.gs.state.inventory[stolenItem] || 0) + 1;
+        
+        // Criminalidad +10
+        ctx.classStore.addCriminality(10);
+        
+        const { getItemById } = await import('@/data/items');
+        const itemDef = getItemById(stolenItem);
+        const itemName = itemDef?.name || stolenItem;
+        
+        // Mensaje y Notificación
+        ctx.addLog(`¡Robo Rápido exitoso! Le robaste un ${itemName} a tu oponente.`, 'log-success', 'player');
+        ctx.uiStore.notify(`¡Robaste un ${itemName}! (+10 criminalidad)`, '🏴‍☠️');
+        
+        // Sonido retro de robo
+        ctx.audio.steal();
+      }
+    }
+  }
+
+  // Team Rocket ENEMIGO: Robo al jugador
+  if ((isTrainer || isGym) && battleState?.trainerSprite) {
+    const { classifyNpcArchetype } = await import('@/logic/utils/npcSpriteRouter');
+    const npcArchetype = classifyNpcArchetype(battleState.trainerSprite || trainerName || '');
+    if (npcArchetype === 'rocket') {
+      const enemyTeam = ctx.activeBattle.value?.enemyTeam || [];
+      const avgLevel = enemyTeam.length > 0 
+        ? Math.round(enemyTeam.reduce((acc, pl) => acc + (pl.level || 5), 0) / enemyTeam.length)
+        : 5;
+      
+      const { calculateQuickStealChance, calculateMaxNpcRobberyLimit } = await import('@/logic/player/classMath');
+      const stealChance = calculateQuickStealChance(avgLevel); // Utiliza el mismo rango de probabilidad (15-30%)
+      if (Math.random() < stealChance) {
+        const maxLimit = calculateMaxNpcRobberyLimit(avgLevel);
+        const playerInventory = ctx.gs.state.inventory || {};
+        
+        const { getItemByName, getItemById } = await import('@/data/items');
+        
+        const availableItems = Object.keys(playerInventory).filter(k => {
+          if ((playerInventory[k] || 0) <= 0) return false;
+          const itemDef = getItemByName(k) || getItemById(k);
+          return itemDef && (itemDef.cat === 'potions' || itemDef.cat === 'pokeballs');
+        });
+        
+        const itemsLimit = maxLimit * 0.5;
+        let stolenTotalCost = 0;
+        const stolenItems: Record<string, number> = {};
+        
+        if (availableItems.length > 0) {
+          const shuffledItems = [...availableItems].sort(() => Math.random() - 0.5);
+          for (const itemId of shuffledItems) {
+            if (stolenTotalCost >= itemsLimit) break;
+            
+            const itemDef = getItemByName(itemId) || getItemById(itemId);
+            const itemPrice = itemDef?.price || 100;
+            const availableQty = playerInventory[itemId] || 0;
+            
+            const remainingItemsBudget = itemsLimit - stolenTotalCost;
+            const maxQtyToStealBasedOnBudget = Math.floor(remainingItemsBudget / itemPrice);
+            
+            if (maxQtyToStealBasedOnBudget >= 1 && availableQty > 0) {
+              const maxQtyAllowed = Math.min(availableQty, maxQtyToStealBasedOnBudget);
+              const qtyToSteal = Math.floor(Math.random() * maxQtyAllowed) + 1;
+              
+              playerInventory[itemId] = availableQty - qtyToSteal;
+              stolenItems[itemId] = (stolenItems[itemId] || 0) + qtyToSteal;
+              stolenTotalCost += qtyToSteal * itemPrice;
+            }
+          }
+        }
+        
+        const remainingLimit = maxLimit - stolenTotalCost;
+        const playerMoney = ctx.gs.state.money || 0;
+        const moneyToSteal = Math.min(playerMoney, remainingLimit);
+        
+        if (moneyToSteal > 0) {
+          ctx.gs.state.money = playerMoney - moneyToSteal;
+          stolenTotalCost += moneyToSteal;
+        }
+        
+        if (stolenTotalCost > 0) {
+          if (ctx.activeBattle.value) {
+            (ctx.activeBattle.value as any).stolenResources = {
+              money: moneyToSteal,
+              items: stolenItems
+            };
+          }
+          
+          ctx.addLog(`¡El Team Rocket te ha emboscado! Te robaron recursos por valor de ₽${stolenTotalCost.toLocaleString()}.`, 'log-error', 'enemy');
+          
+          if (moneyToSteal > 0) {
+            ctx.uiStore.notify(`¡Te robaron ₽${moneyToSteal}!`, '💸');
+          }
+          
+          for (const [itemId, qty] of Object.entries(stolenItems)) {
+            const itemDef = getItemByName(itemId) || getItemById(itemId);
+            const displayName = itemDef?.name || itemId;
+            ctx.uiStore.notify(`¡Te robaron ${qty}x ${displayName}!`, '🎒');
+          }
+          
+          ctx.audio.steal();
+        }
+      }
+    }
+  }
 
   ctx.isIntroAnimating.value = false
   await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT)

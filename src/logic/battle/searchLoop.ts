@@ -57,7 +57,7 @@ export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'm
     // FASE: INITIALIZING
     await fsm.transition(BATTLE_STATES.INITIALIZING)
     
-    const locId = ctx.activeBattle.value.locationId
+    const locId = ctx.activeBattle.value.locationId || ''
     
     // Generar el encuentro en segundo plano
     const mapStore = useMapStore() as unknown as MapStore
@@ -75,7 +75,30 @@ export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'm
       eventFishingBonus: (eventStore.globalMultipliers?.fishing || 1) * (debugMults.fishing || 1),
       eventRivalBonus: (eventStore.globalMultipliers?.rival || 1) * (debugMults.rival || 1)
     }
-    const encounter = await generateEncounter(locId, ctx.gs.state, encounterOptions)
+    
+    let encounter = null
+    
+    // Cazabichos: Aroma Atractivo (0.5% chance for Scyther/Pinsir spawn)
+    if (ctx.gs.state.playerClass === 'cazabichos' && Math.random() < 0.005) {
+      const { makePokemon } = await import('@/logic/pokemonFactory')
+      const { pokemonDataProvider } = await import('@/logic/providers/pokemonDataProvider')
+      const mapsList = pokemonDataProvider.getMaps() as unknown as MapLocation[]
+      const currentMapData = mapsList.find(m => m.id === (locId || ''))
+      const minLv = currentMapData?.lv?.[0] || 5
+      const maxLv = currentMapData?.lv?.[1] || minLv
+      const level = Math.floor(Math.random() * (maxLv - minLv + 1)) + minLv
+      const bugs = ['scyther', 'pinsir']
+      const chosenBug = bugs[Math.floor(Math.random() * bugs.length)]
+      const generatedBug = makePokemon(chosenBug || '', level)
+      if (generatedBug) {
+        encounter = { type: 'wild', pokemon: generatedBug }
+        ctx.uiStore.notify(`¡Aroma Atractivo atrajo a un ${generatedBug.name} salvaje!`, '🐝')
+      }
+    }
+    
+    if (!encounter) {
+      encounter = await generateEncounter(locId || '', ctx.gs.state, encounterOptions)
+    }
     
     let isFishing = false
     let isArchaeology = false
@@ -90,7 +113,7 @@ export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'm
 
         const isMaxCriminality = (ctx.gs.state.playerClass === 'rocket' && (ctx.gs.state.classData?.criminality ?? 0) >= 100)
         const mapsList = pokemonDataProvider.getMaps() as unknown as MapLocation[]
-        const currentMapData = mapsList.find(m => m.id === locId)
+        const currentMapData = mapsList.find(m => m.id === (locId || ''))
         const baseLv = currentMapData?.lv?.[0] || 5
 
         let tName = 'Entrenador'
@@ -98,6 +121,7 @@ export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'm
         const enemyTeam: Pokemon[] = []
 
         let tQuote = '¡Prepárate para combatir! ¡No te lo pondré fácil!'
+        let typeKey: keyof typeof TRAINER_TYPES = 'default'
         if (isMaxCriminality) {
           const t = TRAINER_TYPES['policeman']
           tName = t.name
@@ -105,6 +129,7 @@ export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'm
           const chosenSprite = availableSprites[Math.floor(Math.random() * availableSprites.length)]
           tSprite = chosenSprite || t.sprite
           tQuote = getRandomQuoteForTrainer('policeman')
+
           const criminality = ctx.gs.state.classData?.criminality || 100
           const excess = Math.max(0, criminality - 100)
           const bonusLv = Math.floor(excess / 50)
@@ -115,7 +140,7 @@ export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'm
           enemyTeam.push(...team)
         } else {
           const keys = Object.keys(TRAINER_TYPES) as Array<keyof typeof TRAINER_TYPES>
-          const typeKey = keys[Math.floor(Math.random() * keys.length)] || 'caza_bichos'
+          typeKey = keys[Math.floor(Math.random() * keys.length)] || 'caza_bichos'
           const t = TRAINER_TYPES[typeKey]
           tName = t.name
           const availableSprites = getSpritesForArchetype(typeKey)
@@ -139,6 +164,7 @@ export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'm
           ctx.activeBattle.value.enemyTeam = enemyTeam
           ctx.activeBattle.value.trainerName = tName
           ctx.activeBattle.value.trainerSprite = tSprite
+          ctx.activeBattle.value.trainerArchetype = isMaxCriminality ? 'policeman' : TRAINER_TYPES[typeKey].archetype
           ctx.activeBattle.value.quote = tQuote
           ctx.activeBattle.value.isRival = false
         }
@@ -169,6 +195,7 @@ export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'm
           ctx.activeBattle.value.enemyTeam = enemyTeam
           ctx.activeBattle.value.trainerName = trainerNameVal
           ctx.activeBattle.value.trainerSprite = trainerSpriteVal
+          ctx.activeBattle.value.trainerArchetype = 'trainers'
           ctx.activeBattle.value.isRival = true
         }
       } else {
@@ -230,13 +257,15 @@ export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'm
       }
     }
     await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.REORDER_TEAM)
-    
-    if (!autoBattle) {
-      await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.COMBAT_OR_FLEE)
-      ctx.isProcessing.value = false
-    } else {
-      await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.COMBAT_OR_FLEE)
-      ctx.isProcessing.value = false
+
+    if (ctx.activeBattle.value?.trainerArchetype === 'policeman') {
+      ctx.audio.siren()
+    }
+
+    await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.COMBAT_OR_FLEE)
+    ctx.isProcessing.value = false
+
+    if (autoBattle) {
       await nextTick()
       await startEncounter(ctx)
     }

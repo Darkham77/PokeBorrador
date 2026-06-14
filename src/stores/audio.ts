@@ -79,6 +79,8 @@ export const useAudioStore = defineStore('audio', () => {
       case 'statusDamage': engine.playStatusDamageSound(ctx, dest); break;
       case 'victoryTrainer': engine.playVictoryTrainerSound(ctx, dest); break;
       case 'defeat': engine.playDefeatSound(ctx, dest); break;
+      case 'steal': engine.playStealSound(ctx, dest); break;
+      case 'siren': engine.playSirenSound(ctx, dest); break;
     }
   };
 
@@ -105,6 +107,8 @@ export const useAudioStore = defineStore('audio', () => {
     statusDamage: () => play('statusDamage'),
     victoryTrainer: () => play('victoryTrainer'),
     defeat: () => play('defeat'),
+    steal: () => play('steal'),
+    siren: () => play('siren'),
     notif: () => play('item'),
     menuOpen: () => play('item'),
     menuClose: () => play('item')

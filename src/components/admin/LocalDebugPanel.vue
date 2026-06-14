@@ -5,6 +5,7 @@ import { useAuthStore } from '@/stores/auth'
 
 // Sub-components
 import DebugStatsTab from './debug/DebugStatsTab.vue'
+import DebugClassTab from './debug/DebugClassTab.vue'
 import DebugItemsTab from './debug/DebugItemsTab.vue'
 import DebugPokemonTab from './debug/DebugPokemonTab.vue'
 import DebugTimeTab from './debug/DebugTimeTab.vue'
@@ -81,6 +82,7 @@ const selectedCategory = ref('stats')
           <PVTooltip
             v-for="cat in [
               { id: 'stats', label: 'STATS', desc: 'Atributos del jugador, dinero, elo y facción.' },
+              { id: 'class', label: 'CLASE', desc: 'Control de clase del jugador, nivel y reputación.' },
               { id: 'items', label: 'ITEMS', desc: 'Añadir objetos al inventario.' },
               { id: 'pokes', label: 'POKES', desc: 'Gestión de Pokedex y equipo.' },
               { id: 'trainers', label: 'ENTREN', desc: 'Simular combates contra entrenadores, policías y líderes.' },
@@ -107,6 +109,9 @@ const selectedCategory = ref('stats')
         >
           <DebugStatsTab
             v-if="selectedCategory === 'stats'"
+          />
+          <DebugClassTab
+            v-if="selectedCategory === 'class'"
           />
           <DebugItemsTab
             v-if="selectedCategory === 'items'"

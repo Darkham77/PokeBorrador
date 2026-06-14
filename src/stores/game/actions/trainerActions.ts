@@ -4,6 +4,7 @@ import { gsap } from 'gsap'
 import { levelUpPokemon } from '@/logic/pokemonFactory'
 import { useUIStore, type LearnItem } from '@/stores/ui'
 import { useEventStore } from '@/stores/events'
+import { usePlayerClassStore } from '@/stores/playerClass'
 import type { GameState } from '@/types/game'
 import type { Pokemon } from '@/types/pokemon'
 
@@ -21,6 +22,11 @@ export function useTrainerActions(state: GameState, scheduleSave: () => Promise<
     if (totalMult > 1) amount = Math.round(amount * totalMult)
     
     state.trainerExp += amount
+    
+    // Sumar XP a la clase activa también
+    const classStore = usePlayerClassStore()
+    classStore.addXP(amount)
+    
     const MAX_LEVEL = 30
     
     let currentRank = getTrainerRank()

@@ -93,9 +93,14 @@ const compatStyle = computed(() => {
 const formatMs = (ms: number | null): string => {
   if (!ms) return '--:--'
   const left = Math.max(0, Math.floor((ms - getServerTime()) / 1000))
-  const m = String(Math.floor(left / 60)).padStart(2, '0')
-  const s = String(left % 60).padStart(2, '0')
-  return `${m}:${s}`
+  const h = Math.floor(left / 3600)
+  const m = Math.floor((left % 3600) / 60)
+  const s = left % 60
+  
+  if (h > 0) {
+    return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`
+  }
+  return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`
 }
 
 // Ticker GSAP: actualiza el display del timer cada frame sin setInterval

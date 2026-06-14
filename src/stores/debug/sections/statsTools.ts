@@ -48,6 +48,74 @@ export function registerStatsTools(debug: DebugSystem, { game, ui }: DebugContex
   })
 
   debug.register({
+    id: 'stats-set-class-level',
+    label: 'SET CLASS LEVEL',
+    command: 'setClassLevel',
+    category: 'stats',
+    action: (val: number) => {
+      game.state.classLevel = val
+      ui.notify(`Debug: Nivel de clase ajustado a ${val}`, '🎓')
+      game.saveGame(false)
+    },
+    description: 'Establece el nivel de la clase activa del jugador.'
+  })
+
+  debug.register({
+    id: 'stats-set-reputation',
+    label: 'SET REPUTATION',
+    command: 'setReputation',
+    category: 'stats',
+    action: (val: number) => {
+      if (!game.state.classData) {
+        game.state.classData = {
+          captureStreak: 0,
+          longestStreak: 0,
+          reputation: 0,
+          blackMarketSales: 0,
+          criminality: 0,
+          blackMarketDaily: { date: '', items: [], purchased: [] }
+        }
+      }
+      game.state.classData.reputation = val
+      ui.notify(`Debug: Reputación ajustada a ${val}`, '🎖️')
+      game.saveGame(false)
+    },
+    description: 'Establece la reputación del jugador.'
+  })
+
+  debug.register({
+    id: 'stats-set-battle-coins',
+    label: 'SET BATTLE COINS',
+    command: 'setBattleCoins',
+    category: 'stats',
+    action: (val: number) => {
+      game.state.battleCoins = val
+      ui.notify(`Debug: Battle Coins ajustados a ${val}`, '🪙')
+      game.saveGame(false)
+    },
+    description: 'Establece las Battle Coins (BC) del jugador.'
+  })
+
+  debug.register({
+    id: 'stats-set-war-coins',
+    label: 'SET WAR COINS',
+    command: 'setWarCoins',
+    category: 'stats',
+    action: (val: number) => {
+      game.state.warCoins = val
+      import('@/stores/war').then(({ useWarStore }) => {
+        try {
+          const warStore = useWarStore()
+          warStore.warCoins = val
+        } catch (_) {}
+      })
+      ui.notify(`Debug: Monedas de Guerra ajustadas a ${val}`, '⚡')
+      game.saveGame(false)
+    },
+    description: 'Establece las Monedas de Guerra del jugador.'
+  })
+
+  debug.register({
     id: 'stats-set-elo',
     label: 'SET ELO',
     command: 'setElo',
@@ -171,5 +239,26 @@ export function registerStatsTools(debug: DebugSystem, { game, ui }: DebugContex
       game.saveGame(false)
     },
     description: 'Establece la clase activa del jugador.'
+  })
+
+  debug.register({
+    id: 'stats-clear-cooldowns',
+    label: 'CLEAR CLASS COOLDOWNS',
+    command: 'clearClassCooldowns',
+    category: 'stats',
+    action: () => {
+      if (game.state.classData) {
+        game.state.classData.lastEggScanDate = null
+        game.state.classData.extortedRouteId = null
+        game.state.classData.extortedRouteTimestamp = null
+        game.state.classData.officialRouteId = null
+        game.state.classData.officialRouteTimestamp = null
+        // Also clear active mission cooldowns if any
+        game.state.classData.activeMission = null
+      }
+      ui.notify('Debug: Cooldowns de clases eliminados con éxito.', '⚡')
+      game.saveGame(false)
+    },
+    description: 'Elimina todos los cooldowns activos de cualquier clase (escaneo de IVs, extorsión, rutas preferidas, misiones).'
   })
 }

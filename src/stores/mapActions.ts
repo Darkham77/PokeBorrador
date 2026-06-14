@@ -133,6 +133,7 @@ export async function executeNavigation(
     let tQuote = '¡Prepárate para combatir! ¡No te lo pondré fácil!';
     const enemyTeam: Pokemon[] = [];
 
+    let typeKey: keyof typeof TRAINER_TYPES = 'default';
     if (isMaxCriminality) {
       const t = TRAINER_TYPES['policeman'];
       tName = t.name;
@@ -150,7 +151,7 @@ export async function executeNavigation(
       enemyTeam.push(...team);
     } else {
       const keys = Object.keys(TRAINER_TYPES) as Array<keyof typeof TRAINER_TYPES>;
-      const typeKey = keys[Math.floor(Math.random() * keys.length)] || 'caza_bichos';
+      typeKey = keys[Math.floor(Math.random() * keys.length)] || 'caza_bichos';
       const t = TRAINER_TYPES[typeKey];
       
       tName = t.name;
@@ -174,6 +175,7 @@ export async function executeNavigation(
         enemyTeam,
         trainerName: tName,
         trainerSprite: tSprite,
+        trainerArchetype: isMaxCriminality ? 'policeman' : TRAINER_TYPES[typeKey].archetype,
         trainerQuote: tQuote,
         cannotEscape: true
       });
@@ -207,6 +209,7 @@ export async function executeNavigation(
         enemyTeam,
         trainerName: trainerNameVal,
         trainerSprite: trainerSpriteVal,
+        trainerArchetype: 'trainers',
         isRival: true,
         cannotEscape: true
       });

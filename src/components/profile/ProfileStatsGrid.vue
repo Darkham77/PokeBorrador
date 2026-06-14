@@ -12,12 +12,9 @@ interface Props {
   battleCoins?: number
 }
 
-import { formatCurrency } from '@/logic/utils/formatters'
+defineProps<Props>()
 
-withDefaults(defineProps<Props>(), {
-  money: 0,
-  battleCoins: 0
-})
+import { formatCurrency } from '@/logic/utils/formatters'
 
 const formatNum = (num: number) => formatCurrency(num)
 </script>
@@ -43,14 +40,14 @@ const formatNum = (num: number) => formatCurrency(num)
     <div class="legacy-stat-item highlight money">
       <span class="legacy-stat-val">
         <span class="currency-icon-money">₽</span>
-        {{ formatNum(money) }}
+        {{ formatNum(money ?? 0) }}
       </span>
       <span class="legacy-stat-lbl">Dinero</span>
     </div>
     <div class="legacy-stat-item highlight bc">
       <span class="legacy-stat-val">
         <i class="fas fa-coins currency-icon-bc" />
-        {{ formatNum(battleCoins) }}
+        {{ formatNum(battleCoins ?? 0) }}
       </span>
       <span class="legacy-stat-lbl">Battle Coins</span>
     </div>
@@ -110,6 +107,19 @@ const formatNum = (num: number) => formatCurrency(num)
         color: $purple;
       }
     }
+
+    &.reputation {
+      background: linear-gradient(135deg, Rgba(74, 222, 128, 0.05) 0%, Rgba(15, 23, 42, 0.4) 100%);
+      border-color: Rgba(74, 222, 128, 0.2);
+      
+      .legacy-stat-val {
+        color: #4ade80;
+        text-shadow: 0 0 10px Rgba(74, 222, 128, 0.5);
+      }
+      .currency-icon-rep {
+        color: #fbbf24;
+      }
+    }
   }
 }
 
@@ -133,3 +143,4 @@ const formatNum = (num: number) => formatCurrency(num)
   @include pixelated;
 }
 </style>
+

@@ -8,6 +8,7 @@ import { useInventoryStore } from '@/stores/inventory'
 import { getClassModifier } from '@/logic/player/classEngine'
 import type { Pokemon } from '@/types/pokemon'
 import { MAX_POKEMON_LEVEL } from '@/data/constants'
+import { getXPNeededForClassLevel } from '@/logic/player/classMath'
 
 
 import { AVATAR_STYLES } from '@/data/cosmeticsData'
@@ -46,6 +47,8 @@ interface ClassData {
   activeMission?: ActiveMission | null
   blackMarketDaily?: { date: string, items: unknown[], purchased: unknown[] }
   extortedRouteId?: string | null
+  extortedRouteTimestamp?: string | null
+  lastEggScanDate?: string | null
   officialRouteId?: string | null
   kitCaptures?: number
 }
@@ -62,6 +65,7 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
   const playerClass = computed(() => gameStore.state.playerClass)
   const classLevel = computed(() => gameStore.state.classLevel || 1)
   const classXP = computed(() => gameStore.state.classXP || 0)
+  const classXPNeeded = computed(() => getXPNeededForClassLevel(classLevel.value))
   const classData = computed<ClassData>(() => (gameStore.state.classData as unknown as ClassData) || {})
   
   const currentClassDef = computed<ClassDefinition | null>(() => {
@@ -200,11 +204,21 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
   }
 
   /**
-   * Incrementa XP de clase (se sincroniza con el nivel de entrenador por ahora, como en legacy).
+   * Incrementa XP de clase y maneja las subidas de nivel.
    */
   function addXP(amount: number) {
     if (!playerClass.value || amount <= 0) return
-    gameStore.addTrainerExp(amount)
+    
+    gameStore.state.classXP = (gameStore.state.classXP || 0) + amount
+    const MAX_CLASS_LEVEL = 30
+    
+    let xpNeeded = getXPNeededForClassLevel(gameStore.state.classLevel)
+    while (gameStore.state.classXP >= xpNeeded && gameStore.state.classLevel < MAX_CLASS_LEVEL) {
+      gameStore.state.classXP -= xpNeeded
+      gameStore.state.classLevel = (gameStore.state.classLevel || 1) + 1
+      uiStore.notify(`¡Tu clase ${currentClassDef.value?.name || ''} subió al Nivel ${gameStore.state.classLevel}!`, '🎓')
+      xpNeeded = getXPNeededForClassLevel(gameStore.state.classLevel)
+    }
   }
 
   /**
@@ -360,6 +374,7 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
     playerClass,
     classLevel,
     classXP,
+    classXPNeeded,
     classData,
     currentClassDef,
     activeMission,

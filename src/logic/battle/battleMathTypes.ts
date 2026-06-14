@@ -70,4 +70,8 @@ export interface PureCatchOptions {
   turnCount?: number;
   cycle?: string;
   isCave?: boolean;
+  playerClass?: string | null;
+  classLevel?: number;
+  activeTeam?: { type1: string; type2?: string | null }[];
+  ivTotal?: number;
 }

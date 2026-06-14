@@ -418,6 +418,18 @@ const currentSprite = computed(() => pokemonDataProvider.getSpriteUrl(config.val
             HUEVO ANIM.
           </button>
         </PVTooltip>
+
+        <PVTooltip
+          title="Añadir huevo al almacén"
+          description="Genera un huevo directamente en el almacén de la guardería (sin tener que caminar)."
+        >
+          <button
+            class="btn-vicio-primary secondary"
+            @click.stop="executeAction('egg_warehouse')"
+          >
+            HUEVO ALMACÉN
+          </button>
+        </PVTooltip>
           
         <PVTooltip
           title="Iniciar encuentro"

@@ -26,6 +26,7 @@ import { useBattleStore } from '@/stores/battle'
 import { useLoadingStore } from '@/stores/loading'
 import { useBodyClass } from '@/composables/useBodyClass'
 import { useWindowListener } from '@/composables/useWindowListener'
+import { useAudioStore } from '@/stores/audio'
 import { logger } from '@/logic/utils/logger'
 
 import { useProfileStore } from '@/stores/profile'
@@ -242,6 +243,17 @@ onMounted(async () => {
   
   // 5. Calculate scrollbar width for responsive positioning
   updateScrollbarWidth()
+
+  // 6. Initialize audio context on first user interaction globally
+  const audioStore = useAudioStore()
+  const initAudio = () => {
+    audioStore.init()
+    audioStore.resume()
+    document.removeEventListener('click', initAudio, { capture: true })
+    document.removeEventListener('keydown', initAudio, { capture: true })
+  }
+  document.addEventListener('click', initAudio, { once: true, capture: true })
+  document.addEventListener('keydown', initAudio, { once: true, capture: true })
 })
 
 // Sincronizar estado de la partida reactivamente al cambiar de ruta o usuario

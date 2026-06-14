@@ -68,6 +68,25 @@ export function useBreedingActions(
     state.eggs = state.eggs.filter(e => e.uid !== egg.uid)
     addPokemon(p, { notify: false })
 
+    // Criador: Eclosión Vigor (15% chance to restore vigor to a daycare parent)
+    if (state.playerClass === 'criador' && Math.random() < 0.15) {
+      try {
+        const breedingStore = (await import('@/stores/breeding')).useBreedingStore()
+        const healthyParents = breedingStore.slots.filter(s => s && s.pokemon)
+        if (healthyParents.length > 0) {
+          const chosenSlot = healthyParents[Math.floor(Math.random() * healthyParents.length)]
+          if (chosenSlot && chosenSlot.pokemon) {
+            const parent = chosenSlot.pokemon
+            const prevVigor = parent.vigor ?? 20
+            parent.vigor = Math.min(20, prevVigor + 5)
+            useUIStore().notify(`¡Eclosión Vigorosa! Su progenitor ${parent.name} recuperó +5 de vigor.`, '❤️')
+          }
+        }
+      } catch (e) {
+        console.error('Failed to restore parent vigor:', e)
+      }
+    }
+
     await scheduleSave()
     return p
   }

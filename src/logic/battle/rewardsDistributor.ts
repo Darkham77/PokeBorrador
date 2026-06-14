@@ -221,6 +221,37 @@ export async function calculateBattleRewards(ctx: BattleContext) {
     totalTrainerExpGained += trainerExpGain
   }
 
+  // Multiplicador de extorsión del Team Rocket (x1.5 ₽ en ruta extorsionada)
+  if (ctx.gs.state.playerClass === 'rocket' && ctx.gs.state.classData?.extortedRouteId === active.locationId) {
+    const extTimestamp = Number(ctx.gs.state.classData?.extortedRouteTimestamp || 0)
+    const now = Temporal.Now.instant().epochMilliseconds
+    if (now - extTimestamp <= 24 * 3600 * 1000) {
+      const bonusMoney = Math.floor(totalMoneyGained * 0.5)
+      totalMoneyGained += bonusMoney
+      ctx.addLog(`¡Extorsión activa (+50% ₽)! +₽${bonusMoney}`, 'log-info', 'player')
+    }
+  }
+
+  // Lógica de Ruta Oficial del Entrenador (+1 Reputación por combate ganado durante 30 mins)
+  if (ctx.gs.state.playerClass === 'entrenador' && ctx.gs.state.classData?.officialRouteId === active.locationId) {
+    const offTimestamp = Number(ctx.gs.state.classData?.officialRouteTimestamp || 0)
+    const now = Temporal.Now.instant().epochMilliseconds
+    if (now - offTimestamp <= 30 * 60 * 1000) {
+      if (!ctx.gs.state.classData) {
+        ctx.gs.state.classData = {
+          captureStreak: 0,
+          longestStreak: 0,
+          reputation: 0,
+          blackMarketSales: 0,
+          criminality: 0,
+          blackMarketDaily: { date: '', items: [], purchased: [] }
+        }
+      }
+      ctx.gs.state.classData.reputation = (Number(ctx.gs.state.classData.reputation) || 0) + 1
+      ctx.addLog('¡Ruta Oficial activa! Ganaste +1 de Reputación.', 'log-success', 'player')
+    }
+  }
+
   // Award consolidated rewards
   ctx.gs.state.money += totalMoneyGained
   ctx.addLog(`¡Ganaste ₽${totalMoneyGained} en total!`, 'log-info', 'player')

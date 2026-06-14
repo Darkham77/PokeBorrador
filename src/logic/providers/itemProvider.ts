@@ -39,7 +39,8 @@ export function isGlobalItem(itemName: string): boolean {
   return !!(
     item.isGlobal || 
     item.globalItem || 
-    (item.cat === 'tools' && item.type === 'usable') || 
+    item.id === 'iv_scanner' ||
+    (item.cat === 'tools' && (item.type === 'usable' || item.type === 'booster')) || 
     (item.cat === 'otros' && (
       item.type === 'booster' || 
       item.type === 'usable' || 

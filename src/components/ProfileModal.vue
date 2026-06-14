@@ -285,7 +285,20 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
         </div>
 
         <!-- Experiencia -->
-        <ProfileXpCard />
+        <ProfileXpCard
+          title="Nivel y Experiencia Cuenta"
+          :hide-unlocks="true"
+        />
+
+        <ProfileXpCard 
+          v-if="classStore.playerClass && classStore.playerClass !== 'none' && classStore.playerClass !== 'undefined' && classStore.currentClassDef"
+          :level="classStore.classLevel"
+          :exp="classStore.classXP"
+          :exp-needed="classStore.classXPNeeded"
+          :class-id="classStore.playerClass"
+          :class-color="classStore.currentClassDef?.color"
+          :title="`Nivel y Experiencia Clase (${classStore.currentClassDef?.name})`"
+        />
 
         <!-- Pokedex Progress -->
         <ProfilePokedexCard 
@@ -357,7 +370,7 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
               <span class="stat-lbl">Criminalidad</span>
             </div>
             <div
-              v-else
+              v-else-if="playerClass === 'entrenador'"
               class="stat-item"
               @mouseenter="handleStatEnter"
               @mouseleave="handleStatLeave"

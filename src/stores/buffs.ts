@@ -106,7 +106,7 @@ export const useBuffsStore = defineStore('buffs', () => {
     else if (buffName === 'cerulean') s.ceruleanTicketSecs = (s.ceruleanTicketSecs || 0) + seconds
     else if (buffName === 'articuno') s.articunoTicketSecs = (s.articunoTicketSecs || 0) + seconds
     else if (buffName === 'mewtwo') s.mewtwoTicketSecs = (s.mewtwoTicketSecs || 0) + seconds
-    else if (buffName === 'iv-scanner') s.ivScannerSecs = (s.ivScannerSecs || 0) + seconds
+    else if (buffName === 'iv-scanner') s.ivScannerSecs = seconds
     else if (buffName === 'incense') {
       s.incenseSecs = (s.incenseSecs || 0) + seconds
       if (extraData) s.incenseType = extraData

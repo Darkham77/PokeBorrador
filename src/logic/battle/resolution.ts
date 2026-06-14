@@ -218,6 +218,29 @@ export async function terminateBattle(ctx: BattleContext, win: boolean, fled = f
           ctx.addLog(`¡Bajo arresto! Pagaste ₽${moneyPaid} de fianza.`, 'log-error', 'player')
           uiStore.notify(`Fianza pagada: ₽${moneyPaid}`, '🚨')
         }
+      } else if (win && !fled) {
+        // Al ganarle al Oficial, 5% de chance de robar uno de sus Pokémon
+        if (Math.random() < 0.05) {
+          const pool = active.enemyTeam || [];
+          if (pool.length > 0) {
+            const stolen = pool[Math.floor(Math.random() * pool.length)];
+            if (stolen) {
+              const { makePokemon } = await import('@/logic/pokemonFactory');
+              const clone = makePokemon(stolen.id || stolen.name, stolen.level || 5);
+              if (clone) {
+                clone.caught = true;
+                ctx.gs.state.box.push(clone);
+                
+                ctx.addLog(`¡Robaste el ${clone.name} del Oficial de Policía!`, 'log-success', 'player');
+                uiStore.notify(`¡Robaste un ${clone.name}!`, '🏴‍☠️');
+                
+                // Disparar sonido retro de robo
+                const audioStore = await import('@/stores/audio').then(m => m.useAudioStore());
+                audioStore.steal();
+              }
+            }
+          }
+        }
       }
       
       ctx.gs.state.classData.criminality = 0
@@ -288,6 +311,32 @@ export async function terminateBattle(ctx: BattleContext, win: boolean, fled = f
       ctx.audio.victoryTrainer()
     }
     await calculateBattleRewards(ctx)
+    
+    // Recuperar recursos robados por el Team Rocket
+    if ((active as any).stolenResources) {
+      const stolen = (active as any).stolenResources;
+      if (stolen.money && stolen.money > 0) {
+        ctx.gs.state.money = (ctx.gs.state.money || 0) + stolen.money;
+        ctx.addLog(`¡Recuperaste tu dinero robado! +₽${stolen.money}`, 'log-success', 'player');
+        uiStore.notify(`¡Recuperaste ₽${stolen.money}!`, '💰');
+      }
+      if (stolen.items) {
+        const { getItemByName, getItemById } = await import('@/data/items');
+        for (const [itemId, qty] of Object.entries(stolen.items)) {
+          if (qty && (qty as number) > 0) {
+            if (!ctx.gs.state.inventory) ctx.gs.state.inventory = {};
+            ctx.gs.state.inventory[itemId] = (ctx.gs.state.inventory[itemId] || 0) + (qty as number);
+            
+            const itemDef = getItemByName(itemId) || getItemById(itemId);
+            const displayName = itemDef?.name || itemId;
+            ctx.addLog(`¡Recuperaste tu objeto robado: ${displayName}!`, 'log-success', 'player');
+            uiStore.notify(`¡Recuperaste ${qty}x ${displayName}!`, '🎒');
+          }
+        }
+      }
+      delete (active as any).stolenResources;
+    }
+
     try {
       const breedingStore = useBreedingStore()
       if (active.isGym) {

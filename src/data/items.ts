@@ -508,7 +508,7 @@ export const SHOP_ITEMS = [
     desc: 'Aumenta la probabilidad de que aparezca Mewtwo en la Cueva Celeste (30 min).'
   },
   {
-    id: 'iv_scanner', craftingTier: 3, cat: 'otros', sprite: 'crafting/tier3/poke_radar', name: 'Escáner de IVs', icon: '🔍', price: 0, bcPrice: 0, warPrice: 0, unlockLv: 1, tier: 'epic', type: 'booster', showInNormalShop: false, showInBCShop: true, showInWarShop: false,
+    id: 'iv_scanner', craftingTier: 3, cat: 'tools', sprite: 'crafting/tier3/poke_radar', name: 'Escáner de IVs', icon: '🔍', price: 0, bcPrice: 0, warPrice: 0, unlockLv: 1, tier: 'epic', type: 'booster', showInNormalShop: false, showInBCShop: true, showInWarShop: false,
     desc: 'Revela los IVs totales de los Pokémon salvajes durante 1 hora.'
   },
   {

@@ -92,6 +92,13 @@ export interface SaveData {
     reputation: number;
     blackMarketSales: number;
     criminality: number;
+    blackMarketDaily?: { date: string; items: string[]; purchased: string[] };
+    activeMission?: unknown;
+    extortedRouteId?: string | null;
+    extortedRouteTimestamp?: string | null;
+    lastEggScanDate?: string | null;
+    officialRouteId?: string | null;
+    kitCaptures?: number;
   };
   faction: string | null;
   warCoins: number;
@@ -252,7 +259,12 @@ export function serializeState(state: GameState): SaveData {
       longestStreak: 0,
       reputation: 0,
       blackMarketSales: 0,
-      criminality: 0
+      criminality: 0,
+      extortedRouteId: null,
+      extortedRouteTimestamp: null,
+      lastEggScanDate: null,
+      officialRouteId: null,
+      kitCaptures: 0
     },
     faction: state.faction || null,
     warCoins: state.warCoins || 0,

@@ -9,12 +9,14 @@ interface Props {
   currentClass?: ClassDefinition | null
   trainerLevel?: number
   trainerRank?: string
+  classLevel?: number
 }
 
 withDefaults(defineProps<Props>(), {
   currentClass: null,
   trainerLevel: 1,
-  trainerRank: 'Novato'
+  trainerRank: 'Novato',
+  classLevel: 1
 })
 
 const modalStore = useModalStore()
@@ -144,8 +146,25 @@ const onAbilityMouseLeave = (event: MouseEvent) => {
             🎖️
           </div>
           <div class="card-text">
-            <span class="label">NIVEL ENTRENADOR</span>
+            <span class="label">NIVEL CUENTA</span>
             <span class="value">Nv. {{ trainerLevel }}</span>
+          </div>
+        </div>
+
+        <div 
+          class="rank-card level"
+          @mouseenter="onRankCardMouseEnter"
+          @mouseleave="onRankCardMouseLeave"
+        >
+          <div class="card-icon">
+            🎓
+          </div>
+          <div class="card-text">
+            <span class="label">NIVEL CLASE</span>
+            <span
+              class="value"
+              :style="{ color: currentClass?.color || 'var(--yellow)' }"
+            >Nv. {{ classLevel }}</span>
           </div>
         </div>
       </div>
@@ -172,16 +191,9 @@ const onAbilityMouseLeave = (event: MouseEvent) => {
               {{ (currentClass?.bonusLevels?.[Number(idx)] || 1) <= trainerLevel ? '✅' : '🔒' }}
             </div>
             <div class="ability-content">
-              <PVTooltip
-                :description="currentClass?.technicalBonuses?.[Number(idx)] || 'Información no disponible.'"
-                position="top"
-                :delay="100"
-                style="cursor: help; display: block; width: 100%;"
-              >
-                <p :class="{ 'text-locked': (currentClass?.bonusLevels?.[Number(idx)] || 1) > trainerLevel }">
-                  {{ bonus }}
-                </p>
-              </PVTooltip>
+              <p :class="{ 'text-locked': (currentClass?.bonusLevels?.[Number(idx)] || 1) > trainerLevel }">
+                {{ bonus }}
+              </p>
               <span
                 v-if="(currentClass?.bonusLevels?.[Number(idx)] || 1) > trainerLevel"
                 class="req-hint"
@@ -195,6 +207,14 @@ const onAbilityMouseLeave = (event: MouseEvent) => {
             >
               NV. {{ currentClass?.bonusLevels?.[Number(idx)] }}
             </div>
+            <PVTooltip
+              :description="currentClass?.technicalBonuses?.[Number(idx)] || 'Información no disponible.'"
+              position="top"
+              :delay="100"
+              style="cursor: help;"
+            >
+              <span class="ability-help">❓</span>
+            </PVTooltip>
           </div>
         </div>
       </section>
@@ -217,15 +237,16 @@ const onAbilityMouseLeave = (event: MouseEvent) => {
               ❌
             </div>
             <div class="ability-content">
-              <PVTooltip
-                :description="currentClass?.technicalPenalties?.[Number(idx)] || 'Información no disponible.'"
-                position="top"
-                :delay="100"
-                style="cursor: help; display: block; width: 100%;"
-              >
-                <p>{{ penalty }}</p>
-              </PVTooltip>
+              <p>{{ penalty }}</p>
             </div>
+            <PVTooltip
+              :description="currentClass?.technicalPenalties?.[Number(idx)] || 'Información no disponible.'"
+              position="top"
+              :delay="100"
+              style="cursor: help;"
+            >
+              <span class="ability-help">❓</span>
+            </PVTooltip>
           </div>
         </div>
       </section>

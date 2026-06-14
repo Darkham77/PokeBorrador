@@ -308,14 +308,36 @@ export const useBreedingStore = defineStore('breeding', () => {
       return;
     }
     
+    // Cooldown diario
+    const lastScan = gameStore.state.classData?.lastEggScanDate;
+    const todayStr = Temporal.Now.instant().toString().split('T')[0] || '';
+    if (lastScan && lastScan.startsWith(todayStr)) {
+      uiStore.notify('Ya has usado el escáner de IVs hoy.', '⚠️');
+      return;
+    }
+    
     const egg = warehouseEggs.value.find((e) => e.id === eggId);
     if (!egg) return;
 
     if (egg.ivs) {
       if (!egg.inherited_ivs) egg.inherited_ivs = { };
       egg.inherited_ivs._scanned = true;
+      
+      if (!gameStore.state.classData) {
+        gameStore.state.classData = {
+          captureStreak: 0,
+          longestStreak: 0,
+          reputation: 0,
+          blackMarketSales: 0,
+          criminality: 0,
+          blackMarketDaily: { date: '', items: [], purchased: [] }
+        };
+      }
+      gameStore.state.classData.lastEggScanDate = Temporal.Now.instant().toString();
+      
       saveWarehouseEggs();
-      uiStore.notify(`¡Huevo de ${POKEMON_DB[egg.species as keyof typeof POKEMON_DB]?.name} escaneado!`, '🔍');
+      const name = (POKEMON_DB as Record<string, { name: string }>)[egg.species]?.name || 'Huevo';
+      uiStore.notify(`¡Huevo de ${name} escaneado!`, '🔍');
       gameStore.scheduleSave();
     }
   }

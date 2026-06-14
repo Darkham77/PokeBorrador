@@ -78,6 +78,11 @@ const handleTabChange = (tab: string, _event?: Event) => {
     return
   }
 
+  if (tab === 'reputation-shop') {
+    modalStore.open('ReputationShop')
+    return
+  }
+
   if (tab === 'war-shop') {
     uiStore.isWarShopOpen = true
     return
@@ -307,7 +312,7 @@ onUnmounted(() => {
     >
       <PVHUDButton
         custom-class="group-btn"
-        :active="uiStore.openHudGroup === 'MARKET' || modalStore.isOpen('GlobalMarket') || modalStore.isOpen('Shop') || modalStore.isOpen('BCShop') || modalStore.isOpen('WarShop')"
+        :active="uiStore.openHudGroup === 'MARKET' || modalStore.isOpen('GlobalMarket') || modalStore.isOpen('Shop') || modalStore.isOpen('BCShop') || modalStore.isOpen('WarShop') || modalStore.isOpen('ReputationShop')"
         :badge-value="gtsStore.unseenSalesCount"
         @click.stop="toggleGroupMenu('MARKET')"
       >
@@ -356,6 +361,15 @@ onUnmounted(() => {
           >
             <span class="icon">🎖️</span>
             <span class="nav-item-label">BC SHOP</span>
+          </button>
+          <button
+            v-if="gameStore.state.playerClass === 'entrenador'"
+            class="hud-nav-btn rep-shop-nav-btn"
+            :class="{ active: modalStore.isOpen('ReputationShop') }"
+            @click.stop="handleTabChange('reputation-shop'); uiStore.openHudGroup = null"
+          >
+            <span class="icon">★</span>
+            <span class="nav-item-label">REPUTACIÓN</span>
           </button>
           <button
             class="hud-nav-btn war-shop-nav-btn"

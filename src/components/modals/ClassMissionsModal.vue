@@ -31,6 +31,7 @@ const isSmallScreen = computed(() => ui.isSmallScreen)
 
 const currentClass = computed(() => classStore.currentClassDef)
 const trainerLevel = computed(() => gameStore.state.trainerLevel || 1)
+const classLevel = computed(() => classStore.classLevel)
 const trainerRank = computed(() => getEloTier(gameStore.state.eloRating).name)
 
 const close = () => { emit('close') }
@@ -60,6 +61,7 @@ const handleSelect = () => {
       <ClassDashboard
         :current-class="currentClass"
         :trainer-level="trainerLevel"
+        :class-level="classLevel"
         :trainer-rank="trainerRank"
         @change-class="handleSelect"
         @close="close"

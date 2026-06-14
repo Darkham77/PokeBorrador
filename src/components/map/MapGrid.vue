@@ -19,7 +19,7 @@ interface Props {
   cycle?: 'morning' | 'day' | 'dusk' | 'night'
   weather?: string
   playerClass?: string
-  classData?: { extortedRouteId?: string | null }
+  classData?: { extortedRouteId?: string | null; officialRouteId?: string | null }
   safariTicketSecs?: number
   ceruleanTicketSecs?: number
   dominanceData?: Record<string, import('@/types/stores').DominanceInfo>
@@ -123,7 +123,7 @@ const getDominanceForMap = (mapId: string) => {
       :forced-weather="getMapData(loc).weather"
       :badge-count="badgeCount"
       :dominance="getDominanceForMap(loc.id)"
-      :is-rocket-extorted="playerClass === 'rocket' && classData?.extortedRouteId === loc.id"
+      :is-rocket-extorted="(playerClass === 'rocket' && classData?.extortedRouteId === loc.id) || (playerClass === 'entrenador' && classData?.officialRouteId === loc.id)"
       :spawn-pool="getMapData(loc)"
       @navigate="emit('navigate', $event)"
     />

@@ -58,7 +58,10 @@ export const INITIAL_STATE = {
     reputation: 0,
     blackMarketSales: 0,
     criminality: 0,
-    blackMarketDaily: { date: '', items: [], purchased: [] }
+    blackMarketDaily: { date: '', items: [], purchased: [] },
+    extortedRouteId: null,
+    extortedRouteTimestamp: null,
+    lastEggScanDate: null
   },
   faction: null,
   warCoins: 0,

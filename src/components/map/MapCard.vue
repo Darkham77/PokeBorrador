@@ -307,7 +307,8 @@ watch(
         'safari-locked': isSafariLocked,
         'is-low-power': uiStore.isLowPowerActive,
         'performance-mode': isPerformanceMode,
-        'is-hovered': isHovered
+        'is-hovered': isHovered,
+        'is-rocket-extorted': isRocketExtorted
       }]"
       :style="{ 
         '--weather-only-filter': weatherOnlyFilter,
