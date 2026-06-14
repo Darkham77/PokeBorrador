@@ -1,10 +1,13 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { ref, computed, watch, nextTick } from 'vue'
+import { gsap } from 'gsap'
 import { useUIStore } from '@/stores/ui'
 import { useWarStore } from '@/stores/war'
 import { SHOP_ITEMS } from '@/data/items'
 import { useGameStore } from '@/stores/game'
 import BaseModal from '@/components/common/BaseModal.vue'
+import UnifiedSidebar from '@/components/common/UnifiedSidebar.vue'
+import SortControls from '@/components/common/SortControls.vue'
 import WarShopItemCard from './WarShopItemCard.vue'
 
 import type { ShopItem } from '@/types/items'
@@ -20,14 +23,34 @@ const isOpen = computed({
 
 const isSmallScreen = computed(() => uiStore.isSmallScreen)
 
-const warItems = computed(() => {
+const activeTab = ref('todos')
+const search = ref('')
+const sortKey = ref<'name' | 'price' | 'rarity'>('name')
+const sortOrder = ref<'asc' | 'desc'>('asc')
+
+const filteredItems = computed<ShopItem[]>(() => {
   const coins = warStore.warCoins || 0
   const trainerLevel = gameStore.state.trainerLevel || 1
 
-  return (SHOP_ITEMS as unknown as ShopItem[])
-    .filter(item => !!item.showInWarShop)
-    .slice()
-    .sort((a, b) => {
+  const items = (SHOP_ITEMS as unknown as ShopItem[]).filter(item => {
+    if (!item.showInWarShop) return false
+    const resolvedCat = item.cat || 'otros'
+    if (activeTab.value !== 'todos' && resolvedCat !== activeTab.value) return false
+    if (search.value && !item.name.toLowerCase().includes(search.value.toLowerCase())) return false
+    return true
+  })
+
+  return [...items].sort((a, b) => {
+    let comp = 0
+    if (sortKey.value === 'price') {
+      comp = (a.warPrice || 0) - (b.warPrice || 0)
+    } else if (sortKey.value === 'rarity') {
+      const tiers: Record<string, number> = { common: 0, rare: 1, epic: 2, legend: 3 }
+      const aT = tiers[a.tier || 'common'] ?? 0
+      const bT = tiers[b.tier || 'common'] ?? 0
+      comp = bT - aT
+    } else {
+      // Default auto sorting (by unlock level and affordability if not overridden)
       const aUnlocked = trainerLevel >= (a.unlockLv || 1)
       const bUnlocked = trainerLevel >= (b.unlockLv || 1)
       const aAffordable = coins >= (a.warPrice || 0)
@@ -37,16 +60,59 @@ const warItems = computed(() => {
       const bCanBuy = bUnlocked && bAffordable
 
       if (aCanBuy !== bCanBuy) {
-        return aCanBuy ? -1 : 1
+        comp = aCanBuy ? -1 : 1
+      } else if (aUnlocked !== bUnlocked) {
+        comp = aUnlocked ? -1 : 1
+      } else if ((a.unlockLv || 1) !== (b.unlockLv || 1)) {
+        comp = (a.unlockLv || 1) - (b.unlockLv || 1)
+      } else {
+        comp = (a.warPrice || 0) - (b.warPrice || 0)
       }
-      if (aUnlocked !== bUnlocked) {
-        return aUnlocked ? -1 : 1
-      }
-      if ((a.unlockLv || 1) !== (b.unlockLv || 1)) {
-        return (a.unlockLv || 1) - (b.unlockLv || 1)
-      }
-      return (a.warPrice || 0) - (b.warPrice || 0)
-    })
+    }
+    return sortOrder.value === 'asc' ? comp : -comp
+  })
+})
+
+const availableCategories = computed<string[]>(() => {
+  const cats = new Set<string>()
+  for (const item of (SHOP_ITEMS as unknown as ShopItem[])) {
+    if (!item.showInWarShop) continue
+    cats.add(item.cat || 'otros')
+  }
+  return Array.from(cats)
+})
+
+const animateGrid = () => {
+  nextTick(() => {
+    const cards = document.querySelectorAll('.war-shop-item-card')
+    if (cards.length > 0) {
+      gsap.killTweensOf(cards)
+      gsap.fromTo(cards, 
+        { opacity: 0, y: 15, scale: 0.95 },
+        { 
+          opacity: 1, 
+          y: 0, 
+          scale: 1, 
+          duration: 0.2, 
+          stagger: 0.02, 
+          ease: 'power1.out',
+          clearProps: 'transform,scale'
+        }
+      )
+    }
+  })
+}
+
+watch([activeTab, search], () => {
+  animateGrid()
+})
+
+watch(() => isOpen.value, (val) => {
+  if (val) {
+    activeTab.value = 'todos'
+    search.value = ''
+    animateGrid()
+  }
 })
 
 const closeWarShop = () => {
@@ -76,7 +142,7 @@ if (typeof window !== 'undefined') {
   <BaseModal
     :show="isOpen"
     :type="isSmallScreen ? 'fullscreen' : 'center'"
-    :max-width="isSmallScreen ? '100dvw' : '850px'"
+    :max-width="isSmallScreen ? '100dvw' : '900px'"
     variant="retro"
     padding="raw"
     accent-color="#ef4444"
@@ -113,63 +179,79 @@ if (typeof window !== 'undefined') {
       </div>
     </template>
 
-    <div class="war-shop-container">
-      <!-- Hint Message Banner -->
-      <div class="war-shop-hint-banner">
-        <span class="info-icon">ℹ️</span>
-        <span class="hint-text">Gana monedas participando en la Dominancia de Kanto.</span>
-      </div>
+    <div class="shop-modal-container">
+      <!-- Sidebar de Categorías -->
+      <UnifiedSidebar
+        v-model:active-category="activeTab"
+        main-tab="productos"
+        :available-categories="availableCategories"
+        accent-color="#ef4444"
+      />
 
-      <!-- Items Grid -->
-      <div class="war-items-grid">
-        <WarShopItemCard
-          v-for="item in warItems"
-          :key="item.id"
-          :item="item"
-        />
-      </div>
+      <!-- Contenido Principal -->
+      <div class="shop-main">
+        <!-- Buscador de Objetos -->
+        <div class="shop-search-wrapper">
+          <div class="search-input-container">
+            <span class="search-icon">🔍</span>
+            <input 
+              v-model="search" 
+              type="text" 
+              placeholder="Buscar artículo de guerra..." 
+              class="shop-search-bar"
+            >
+          </div>
+          <SortControls
+            v-model="sortKey"
+            v-model:sort-order="sortOrder"
+            accent-color="#ef4444"
+          >
+            <template #price-icon>
+              <i
+                class="fa-solid fa-bolt-lightning sort-label"
+                style="font-size: 8px; line-height: 1; color: #ef4444;"
+              />
+            </template>
+          </SortControls>
+        </div>
 
-      <!-- Empty State -->
-      <div 
-        v-if="warItems.length === 0"
-        class="empty-state"
-      >
-        <p>No hay artículos disponibles en este momento.</p>
+        <!-- Rejilla de Objetos -->
+        <div class="shop-grid-wrapper custom-scrollbar">
+          <!-- Hint Message Banner -->
+          <div class="war-shop-hint-banner">
+            <span class="info-icon">ℹ️</span>
+            <span class="hint-text">Gana monedas participando en la Dominancia de Kanto.</span>
+          </div>
+
+          <div 
+            v-if="filteredItems.length > 0"
+            class="shop-premium-grid"
+          >
+            <WarShopItemCard
+              v-for="item in filteredItems"
+              :key="item.id"
+              :item="item"
+            />
+          </div>
+
+          <!-- Empty State -->
+          <div
+            v-else
+            class="shop-empty-state"
+          >
+            <span class="empty-icon">🔍</span>
+            <div class="empty-text">
+              <h3>Sin resultados</h3>
+              <p>Prueba con otros términos de búsqueda en esta sección</p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
-
-    <template #footer>
-      <div class="war-shop-footer">
-        <div class="footer-decoration" />
-        <span class="footer-text">TIENDA EXCLUSIVA DE FACCIONES</span>
-        <div class="footer-decoration" />
-      </div>
-    </template>
   </BaseModal>
 </template>
 
 <style scoped lang="scss">
-.war-shop-container {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  max-height: 70dvh;
-  overflow-y: auto;
-  padding: 16px 0 0 0; // Top padding below the header line
-  padding-right: 4px;
-
-  &::-webkit-scrollbar {
-    width: 4px;
-  }
-  &::-webkit-scrollbar-track {
-    background: Rgba(255, 255, 255, 0.05);
-  }
-  &::-webkit-scrollbar-thumb {
-    background: #ef4444;
-    border-radius: 2px;
-  }
-}
-
 .war-shop-hint-banner {
   display: flex;
   align-items: center;
@@ -178,56 +260,19 @@ if (typeof window !== 'undefined') {
   background: Rgba(239, 68, 68, 0.05);
   border: 1px solid Rgba(239, 68, 68, 0.1);
   border-radius: 12px;
-  margin: 0 16px;
+  margin-bottom: 16px;
   
   .info-icon {
     color: #ef4444;
     font-size: 14px;
+    display: flex;
+    align-items: center;
   }
   
   .hint-text {
     font-size: 11px;
     color: #cbd5e1;
     font-style: italic;
-  }
-}
-
-.war-items-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 12px;
-  padding: 10px 16px 20px 16px; // Headroom padding for hover scale/translate
-}
-
-.empty-state {
-  text-align: center;
-  padding: 60px 20px;
-  color: #4b5563;
-  font-family: var(--font-pixel);
-  font-size: 10px;
-}
-
-.war-shop-footer {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 15px;
-  padding: 10px 0;
-  opacity: 0.6;
-
-  .footer-decoration {
-    flex: 1;
-    height: 1px;
-    background: linear-gradient(to right, transparent, #ef4444, transparent);
-  }
-
-  .footer-text {
-    font-family: var(--font-pixel);
-    font-size: 7px;
-    color: #ef4444;
-    white-space: nowrap;
-    letter-spacing: 1px;
   }
 }
 </style>

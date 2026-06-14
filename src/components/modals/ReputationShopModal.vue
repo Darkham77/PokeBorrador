@@ -5,8 +5,8 @@ import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 import BaseModal from '@/components/common/BaseModal.vue'
 import UnifiedSidebar from '@/components/common/UnifiedSidebar.vue'
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import { getItemTierLabel, getItemTierColor } from '@/logic/utils/itemTierResolver'
+import SortControls from '@/components/common/SortControls.vue'
+import ReputationShopItemCard from './reputation-shop/ReputationShopItemCard.vue'
 
 interface Props {
   show?: boolean
@@ -112,12 +112,29 @@ const reputation = computed(() => {
 
 const activeTab = ref('todos')
 const search = ref('')
+const sortKey = ref<'name' | 'price' | 'rarity'>('name')
+const sortOrder = ref<'asc' | 'desc'>('asc')
 
 const filteredItems = computed<ReputationShopItem[]>(() => {
-  return REPUTATION_SHOP_ITEMS.filter(item => {
+  const items = REPUTATION_SHOP_ITEMS.filter(item => {
     if (activeTab.value !== 'todos' && item.cat !== activeTab.value) return false
     if (search.value && !item.name.toLowerCase().includes(search.value.toLowerCase())) return false
     return true
+  })
+
+  return [...items].sort((a, b) => {
+    let comp = 0
+    if (sortKey.value === 'price') {
+      comp = (a.repCost || 0) - (b.repCost || 0)
+    } else if (sortKey.value === 'rarity') {
+      const tiers: Record<string, number> = { common: 0, rare: 1, epic: 2, legend: 3 }
+      const aT = tiers[a.tier || 'common'] ?? 0
+      const bT = tiers[b.tier || 'common'] ?? 0
+      comp = bT - aT
+    } else {
+      comp = a.name.localeCompare(b.name)
+    }
+    return sortOrder.value === 'asc' ? comp : -comp
   })
 })
 
@@ -128,52 +145,6 @@ const availableCategories = computed<string[]>(() => {
   }
   return Array.from(cats)
 })
-
-const buy = async (item: ReputationShopItem) => {
-  if (gameStore.state.playerClass !== 'entrenador') {
-    uiStore.notify('Solo los Entrenadores pueden comprar en esta tienda.', '🔒')
-    return
-  }
-
-  if (reputation.value < item.repCost) {
-    uiStore.notify('No tienes suficiente Reputación.', '⚠️')
-    return
-  }
-
-  // Deduct cost and add reward
-  if (!gameStore.state.classData) {
-    gameStore.state.classData = {
-      captureStreak: 0,
-      longestStreak: 0,
-      reputation: 0,
-      blackMarketSales: 0,
-      criminality: 0,
-      blackMarketDaily: { date: '', items: [], purchased: [] }
-    }
-  }
-  gameStore.state.classData.reputation = reputation.value - item.repCost
-
-  if (!gameStore.state.inventory) {
-    gameStore.state.inventory = {}
-  }
-  gameStore.state.inventory[item.givesId] = (gameStore.state.inventory[item.givesId] || 0) + item.givesQty
-
-  // Extra handling for Poke Balls
-  if (item.givesId === 'ultra_ball') {
-    gameStore.state.balls = (gameStore.state.balls || 0) + item.givesQty
-  }
-
-  // Chiptune/audio notification
-  try {
-    const audioStore = await import('@/stores/audio').then(m => m.useAudioStore())
-    audioStore.victoryTrainer ? audioStore.victoryTrainer() : null
-  } catch (e) {
-    console.error('Audio trigger error:', e)
-  }
-
-  uiStore.notify(`¡Canjeaste ${item.name}!`, '🏆')
-  gameStore.scheduleSave()
-}
 
 const animateGrid = () => {
   nextTick(() => {
@@ -251,7 +222,7 @@ const close = () => {
       </div>
     </template>
 
-    <div class="rep-shop-modal-container">
+    <div class="shop-modal-container">
       <!-- Sidebar de Categorías -->
       <UnifiedSidebar
         v-model:active-category="activeTab"
@@ -273,6 +244,22 @@ const close = () => {
               class="shop-search-bar"
             >
           </div>
+          <SortControls
+            v-model="sortKey"
+            v-model:sort-order="sortOrder"
+            accent-color="#3b82f6"
+          >
+            <template #price-icon>
+              <!-- Center star vertically using SVG -->
+              <svg
+                viewBox="0 0 24 24"
+                style="width: 10px; height: 10px; display: block;"
+                fill="currentColor"
+              >
+                <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
+              </svg>
+            </template>
+          </SortControls>
         </div>
 
         <!-- Rejilla de Objetos -->
@@ -281,55 +268,11 @@ const close = () => {
             v-if="filteredItems.length > 0"
             class="rep-shop-premium-grid"
           >
-            <div 
-              v-for="item in filteredItems" 
+            <ReputationShopItemCard
+              v-for="item in filteredItems"
               :key="item.id"
-              class="rep-shop-item-card"
-              :class="['tier-' + item.tier, { 'insufficient-funds': reputation < item.repCost }]"
-              :style="{ '--tier-color': getItemTierColor(item.tier) }"
-            >
-              <!-- Tier Tag -->
-              <span
-                class="tier-tag"
-                :class="'tier-' + item.tier"
-              >
-                {{ getItemTierLabel(item.tier) }}
-              </span>
-
-              <div class="item-card-top">
-                <div class="item-visual-box">
-                  <img
-                    :src="getAssetUrl(ASSET_TYPES.ITEM, item.sprite)"
-                    :alt="item.name"
-                    @error="(e) => (e.target as HTMLImageElement).style.display = 'none'"
-                  >
-                </div>
-
-                <div class="item-meta-box">
-                  <h4 class="item-name">
-                    {{ item.name }}
-                  </h4>
-                  <div class="item-price-wrapper rep-price">
-                    <span class="rep-star-icon">★</span>
-                    <span class="price-val">{{ item.repCost }} REP</span>
-                  </div>
-                </div>
-              </div>
-
-              <p class="item-desc">
-                {{ item.desc }}
-              </p>
-
-              <div class="item-actions">
-                <button
-                  class="btn-vicio-info btn-vicio-sm w-full"
-                  :disabled="reputation < item.repCost"
-                  @click.stop="buy(item)"
-                >
-                  {{ reputation >= item.repCost ? 'CANJEAR' : 'SIN REPUTACIÓN' }}
-                </button>
-              </div>
-            </div>
+              :item="item"
+            />
           </div>
 
           <!-- Empty State -->
@@ -350,10 +293,4 @@ const close = () => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
-
-.rep-shop-modal-container {
-  height: 65dvh;
-  max-height: 650px;
-}
 </style>

@@ -205,6 +205,8 @@ export default defineConfig({
       },
       workbox: {
         cleanupOutdatedCaches: true,
+        skipWaiting: false,
+        clientsClaim: true,
         // CRITICAL: Only precache app shell (JS, CSS, HTML, fonts, wasm).
         // NEVER precache game sprites/images or audio here — there are ~20k
         // image files in public/assets/. Precaching them all would block SW

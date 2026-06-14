@@ -107,7 +107,7 @@ export function usePWA() {
 
     progress.value = 80
     progressText.value = 'Aplicando actualización...'
-    
+
     const forceCacheBustingReload = async () => {
       try {
         const baseUrl = import.meta.env.BASE_URL || '/'
@@ -159,20 +159,44 @@ export function usePWA() {
     })
 
     try {
-      // Unregister Service Workers to bypass caching
-      if ('serviceWorker' in navigator) {
-        const registrations = await navigator.serviceWorker.getRegistrations()
-        for (const registration of registrations) {
-          await registration.unregister()
+      // --- STEP 1: Activate the waiting SW via SKIP_WAITING so it takes control ---
+      // This is the critical fix: updateServiceWorker() posts { type: 'SKIP_WAITING' }
+      // to the SW in waiting state. Without this, the OLD SW keeps intercepting
+      // navigations and serving the old cached JS, causing the infinite update loop.
+      if (!isOutdatedClient.value) {
+        // SW update path: a new SW is waiting, activate it.
+        // The 'controllerchange' event fires when the new SW takes control.
+        // We do the cache-busting reload ONLY after the new SW is in control,
+        // so that it serves the fresh JS bundle, not the old cached one.
+        await new Promise<void>((resolve) => {
+          const onControllerChange = () => {
+            navigator.serviceWorker.removeEventListener('controllerchange', onControllerChange)
+            resolve()
+          }
+          navigator.serviceWorker.addEventListener('controllerchange', onControllerChange)
+          updateServiceWorker() // triggers skipWaiting on the waiting SW
+        })
+      } else {
+        // version.json path: no waiting SW, do full manual cleanup.
+        if ('serviceWorker' in navigator) {
+          const registrations = await navigator.serviceWorker.getRegistrations()
+          for (const registration of registrations) {
+            await registration.unregister()
+          }
         }
       }
-      // Clear all cache storages
+
+      // --- STEP 2: Clear app-shell caches (NOT game data caches) ---
       if ('caches' in window) {
         const keys = await caches.keys()
         for (const key of keys) {
-          await caches.delete(key)
+          // Preserve game data caches (images/audio), only wipe app-shell
+          if (!key.startsWith('game-images') && !key.startsWith('game-audio')) {
+            await caches.delete(key)
+          }
         }
       }
+
       progress.value = 100
       progressText.value = 'Reiniciando...'
       await forceCacheBustingReload()

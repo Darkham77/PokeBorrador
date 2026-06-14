@@ -4,6 +4,7 @@ import type {
   PureBattleWeather
 } from './battleMathTypes.ts';
 import { getEffectiveStat } from './damageMath.ts';
+import { calculateBugSymmetryBonus, calculateTrainerCatchRateModifier } from '../player/classMath.ts';
 
 const WEATHER_KEYS = { SUN: 'sun', RAIN: 'rain', SANDSTORM: 'sandstorm', SNOW: 'snow', HAIL: 'hail', FOG: 'fog', WIND: 'wind', CLEAR: 'clear' } as const;
 
@@ -72,11 +73,9 @@ export function calculateCatchRate(pokemon: PurePokemon, rawBallType = 'poke-bal
 
   // Modificadores de Clase
   if (ctx.playerClass === 'cazabichos' && ctx.activeTeam) {
-    const { calculateBugSymmetryBonus } = require('../player/classMath'); // Dynamic import for compatibility
     const bugBonus = calculateBugSymmetryBonus(ctx.activeTeam);
     catchRate = Math.floor(catchRate * bugBonus);
   } else if (ctx.playerClass === 'entrenador' && ctx.ivTotal !== undefined) {
-    const { calculateTrainerCatchRateModifier } = require('../player/classMath');
     catchRate = calculateTrainerCatchRateModifier(catchRate, ctx.ivTotal);
   }
 

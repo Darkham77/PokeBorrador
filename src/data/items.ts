@@ -272,27 +272,27 @@ export const SHOP_ITEMS = [
     desc: 'Aumenta la probabilidad de raros en la Cueva Celeste durante 30 min.'
   },
   {
-    id: 'incense_fire', craftingTier: 3, cat: 'otros', sprite: 'crafting/tier3/luck_incense', name: 'Incienso Fuego', icon: '🔥', price: 45000, bcPrice: 1500, warPrice: 150, unlockLv: 10, tier: 'rare', showInNormalShop: false, showInBCShop: false, showInWarShop: true,
+    id: 'incense_fire', craftingTier: 3, cat: 'tools', sprite: 'crafting/tier3/luck_incense', name: 'Incienso Fuego', icon: '🔥', price: 45000, bcPrice: 1500, warPrice: 150, unlockLv: 10, tier: 'rare', showInNormalShop: false, showInBCShop: false, showInWarShop: true,
     desc: 'Aumenta la aparición de Pokémon de tipo Fuego durante 30 min.'
   },
   {
-    id: 'incense_water', craftingTier: 3, cat: 'otros', sprite: 'crafting/tier3/luck_incense', name: 'Incienso Agua', icon: '💧', price: 45000, bcPrice: 1500, warPrice: 150, unlockLv: 10, tier: 'rare', showInNormalShop: false, showInBCShop: false, showInWarShop: true,
+    id: 'incense_water', craftingTier: 3, cat: 'tools', sprite: 'crafting/tier3/luck_incense', name: 'Incienso Agua', icon: '💧', price: 45000, bcPrice: 1500, warPrice: 150, unlockLv: 10, tier: 'rare', showInNormalShop: false, showInBCShop: false, showInWarShop: true,
     desc: 'Aumenta la aparición de Pokémon de tipo Agua durante 30 min.'
   },
   {
-    id: 'incense_grass', craftingTier: 3, cat: 'otros', sprite: 'crafting/tier3/luck_incense', name: 'Incienso Planta', icon: '🌿', price: 45000, bcPrice: 1500, warPrice: 150, unlockLv: 10, tier: 'rare', showInNormalShop: false, showInBCShop: false, showInWarShop: true,
+    id: 'incense_grass', craftingTier: 3, cat: 'tools', sprite: 'crafting/tier3/luck_incense', name: 'Incienso Planta', icon: '🌿', price: 45000, bcPrice: 1500, warPrice: 150, unlockLv: 10, tier: 'rare', showInNormalShop: false, showInBCShop: false, showInWarShop: true,
     desc: 'Aumenta la aparición de Pokémon de tipo Planta durante 30 min.'
   },
   {
-    id: 'incense_normal', craftingTier: 3, cat: 'otros', sprite: 'crafting/tier3/luck_incense', name: 'Incienso Normal', icon: '⚪', price: 45000, bcPrice: 1500, warPrice: 150, unlockLv: 10, tier: 'rare', showInNormalShop: false, showInBCShop: false, showInWarShop: true,
+    id: 'incense_normal', craftingTier: 3, cat: 'tools', sprite: 'crafting/tier3/luck_incense', name: 'Incienso Normal', icon: '⚪', price: 45000, bcPrice: 1500, warPrice: 150, unlockLv: 10, tier: 'rare', showInNormalShop: false, showInBCShop: false, showInWarShop: true,
     desc: 'Aumenta la aparición de Pokémon de tipo Normal durante 30 min.'
   },
   {
-    id: 'incense_ghost', craftingTier: 3, cat: 'otros', sprite: 'crafting/tier3/luck_incense', name: 'Incienso Fantasma', icon: '👻', price: 45000, bcPrice: 1500, warPrice: 150, unlockLv: 10, tier: 'rare', showInNormalShop: false, showInBCShop: false, showInWarShop: true,
+    id: 'incense_ghost', craftingTier: 3, cat: 'tools', sprite: 'crafting/tier3/luck_incense', name: 'Incienso Fantasma', icon: '👻', price: 45000, bcPrice: 1500, warPrice: 150, unlockLv: 10, tier: 'rare', showInNormalShop: false, showInBCShop: false, showInWarShop: true,
     desc: 'Aumenta la aparición de Pokémon de tipo Fantasma durante 30 min.'
   },
   {
-    id: 'incense_psychic', craftingTier: 3, cat: 'otros', sprite: 'crafting/tier3/luck_incense', name: 'Incienso Psíquico', icon: '🔮', price: 45000, bcPrice: 1500, warPrice: 150, unlockLv: 10, tier: 'rare', showInNormalShop: false, showInBCShop: false, showInWarShop: true,
+    id: 'incense_psychic', craftingTier: 3, cat: 'tools', sprite: 'crafting/tier3/luck_incense', name: 'Incienso Psíquico', icon: '🔮', price: 45000, bcPrice: 1500, warPrice: 150, unlockLv: 10, tier: 'rare', showInNormalShop: false, showInBCShop: false, showInWarShop: true,
     desc: 'Aumenta la aparición de Pokémon de tipo Psíquico durante 30 min.'
   },
   {

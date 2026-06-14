@@ -107,7 +107,9 @@ export function registerStatsTools(debug: DebugSystem, { game, ui }: DebugContex
         try {
           const warStore = useWarStore()
           warStore.warCoins = val
-        } catch (_) {}
+        } catch (e) {
+          console.warn('Failed to update ELO in warStore:', e)
+        }
       })
       ui.notify(`Debug: Monedas de Guerra ajustadas a ${val}`, '⚡')
       game.saveGame(false)

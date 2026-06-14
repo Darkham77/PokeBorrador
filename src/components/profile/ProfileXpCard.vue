@@ -145,18 +145,18 @@ watch(trainerExpPct, (newPct) => {
     <div class="section-label">
       {{ props.title.toUpperCase() }}
     </div>
-      <div class="xp-details">
-        <div class="xp-numbers">
-          <span class="xp-current">
-            <template v-if="currentLevel >= 30">
-              MÁXIMO NIVEL
-            </template>
-            <template v-else>
-              {{ currentExp }} / {{ currentExpNeeded }} EXP
-            </template>
-          </span>
-          <span class="xp-percent">{{ Math.round(trainerExpPct) }}%</span>
-        </div>
+    <div class="xp-details">
+      <div class="xp-numbers">
+        <span class="xp-current">
+          <template v-if="currentLevel >= 30">
+            MÁXIMO NIVEL
+          </template>
+          <template v-else>
+            {{ currentExp }} / {{ currentExpNeeded }} EXP
+          </template>
+        </span>
+        <span class="xp-percent">{{ Math.round(trainerExpPct) }}%</span>
+      </div>
       
       <!-- Progress Bar -->
       <div class="xp-bar-container">

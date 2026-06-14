@@ -72,6 +72,10 @@ export interface BattleState {
   quote?: string;
   wasSearching?: boolean;
   cannotEscape?: boolean;
+  stolenResources?: {
+    money: number;
+    items: Record<string, number>;
+  };
 }
 
 export type BattleSource = Pokemon | 'player' | 'enemy_trainer' | 'enemy' | string;

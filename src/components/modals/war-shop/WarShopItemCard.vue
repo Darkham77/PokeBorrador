@@ -111,7 +111,7 @@ const handleImageError = (e: Event) => {
     <div class="item-actions">
       <button
         v-if="isUnlocked"
-        class="btn-war-buy"
+        class="btn-vicio-danger btn-vicio-sm w-full"
         :disabled="!hasEnoughCoins"
         @click.stop="buy"
       >
@@ -119,7 +119,7 @@ const handleImageError = (e: Event) => {
       </button>
       <button
         v-else
-        class="btn-war-locked"
+        class="btn-vicio-neutral btn-vicio-sm w-full"
         disabled
       >
         BLOQUEADO

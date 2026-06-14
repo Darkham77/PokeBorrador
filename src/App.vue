@@ -46,7 +46,8 @@ const route = useRoute()
 
 const { 
   needRefresh, 
-  isUpdating 
+  isUpdating,
+  handleUpdate
 } = usePWA()
 
 
@@ -382,9 +383,9 @@ const onLoadingLeave = (el: Element, done: () => void) => {
           >
             <button
               class="pv-button-retro"
-              @click.stop="handleLogout"
+              @click.stop="handleUpdate()"
             >
-              CERRAR SESIÓN
+              CERRAR SESIÓN Y ACTUALIZAR
             </button>
           </template>
         </PVLoadingOverlay>

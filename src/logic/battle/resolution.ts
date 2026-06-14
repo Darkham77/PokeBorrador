@@ -313,8 +313,8 @@ export async function terminateBattle(ctx: BattleContext, win: boolean, fled = f
     await calculateBattleRewards(ctx)
     
     // Recuperar recursos robados por el Team Rocket
-    if ((active as any).stolenResources) {
-      const stolen = (active as any).stolenResources;
+    if (active.stolenResources) {
+      const stolen = active.stolenResources;
       if (stolen.money && stolen.money > 0) {
         ctx.gs.state.money = (ctx.gs.state.money || 0) + stolen.money;
         ctx.addLog(`¡Recuperaste tu dinero robado! +₽${stolen.money}`, 'log-success', 'player');
@@ -334,7 +334,7 @@ export async function terminateBattle(ctx: BattleContext, win: boolean, fled = f
           }
         }
       }
-      delete (active as any).stolenResources;
+      delete active.stolenResources;
     }
 
     try {

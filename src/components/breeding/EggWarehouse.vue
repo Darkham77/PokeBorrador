@@ -9,6 +9,7 @@ import EggSprite from '@/components/common/EggSprite.vue';
 
 import { getPokemonTier } from '@/logic/pokemon/tierEngine';
 import { ref, onMounted, onUnmounted } from 'vue';
+import { gsap } from 'gsap';
 
 const breedingStore = useBreedingStore();
 const uiStore = useUIStore();
@@ -24,7 +25,7 @@ const getEggTierInfo = (egg: DaycareEgg) => {
 
 // Cooldown countdown for scanner (Available 1 time per day)
 const cooldownText = ref('');
-let cooldownInterval: number | null = null;
+let cooldownTicker: gsap.core.Tween | null = null;
 
 const checkCooldown = () => {
   if (gameStore.state.playerClass !== 'criador') {
@@ -54,15 +55,17 @@ const checkCooldown = () => {
   const seconds = String(duration.seconds).padStart(2, '0');
 
   cooldownText.value = `ESCANER IV EN COOLDOWN: ${hours}:${minutes}:${seconds}`;
+
+  // Schedule next update using GSAP delayedCall recursively
+  cooldownTicker = gsap.delayedCall(1, checkCooldown);
 };
 
 onMounted(() => {
   checkCooldown();
-  cooldownInterval = window.setInterval(checkCooldown, 1000);
 });
 
 onUnmounted(() => {
-  if (cooldownInterval) clearInterval(cooldownInterval);
+  if (cooldownTicker) cooldownTicker.kill();
 });
 
 const handleClaim = (egg: DaycareEgg) => {

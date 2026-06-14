@@ -565,7 +565,7 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
         
         if (stolenTotalCost > 0) {
           if (ctx.activeBattle.value) {
-            (ctx.activeBattle.value as any).stolenResources = {
+            ctx.activeBattle.value.stolenResources = {
               money: moneyToSteal,
               items: stolenItems
             };
