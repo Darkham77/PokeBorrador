@@ -1,1 +1,0 @@
-import{t as e}from"./supabase-CQG5kDSm.js";export{e as default,e as supabase};
