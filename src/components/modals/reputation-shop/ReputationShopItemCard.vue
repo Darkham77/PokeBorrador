@@ -81,9 +81,10 @@ const buy = async () => {
 const tierLabel = computed(() => getItemTierLabel(props.item.tier))
 const tierColor = computed(() => getItemTierColor(props.item.tier))
 
-const handleImageError = (e: Event) => {
-  if (e.target) {
-    (e.target as HTMLImageElement).style.display = 'none'
+const handleImageError = (ev: Event) => {
+  const el = ev.target as HTMLImageElement
+  if (el) {
+    el.style.display = 'none'
   }
 }
 </script>
