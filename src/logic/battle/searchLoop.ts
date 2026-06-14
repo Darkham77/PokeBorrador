@@ -51,6 +51,7 @@ export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'm
     ctx.activeBattle.value.trainerName = undefined
     ctx.activeBattle.value.trainerSprite = undefined
     ctx.activeBattle.value.isRival = false
+    ctx.activeBattle.value.cannotEscape = false
     
     await nextTick()
     
