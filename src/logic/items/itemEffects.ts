@@ -60,6 +60,7 @@ export const itemEffects: Record<string, (p: unknown) => ItemEffectResult> = {
   'ice_heal': pokeEffect((p) => clearStatus(p, 'freeze')),
   'full_heal': pokeEffect((p) => curaTotal(p)),
   'soda_pop': pokeEffect((p) => healHp(p, 60)),
+  'fresh_water': pokeEffect((p) => healHp(p, 30)),
   'lemonade': pokeEffect((p) => healHp(p, 80)),
 
   // --- Evolutions ---

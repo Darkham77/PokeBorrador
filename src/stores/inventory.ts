@@ -5,6 +5,7 @@ import { useUIStore } from './ui.ts'
 import { safeStorage } from '@/logic/utils/storage'
 import { getItemById, getItemByName } from '@/data/items'
 import { isGlobalItem } from '../logic/providers/itemProvider.ts'
+import { useBattleStore } from './battle.ts'
 import type { Pokemon } from '@/types/pokemon'
 import type { ItemEffectResult } from '@/types/items'
 import { executeUseItem } from './inventoryUseAction.ts'
@@ -28,6 +29,7 @@ export interface Item {
   price?: number;
   craftingTier?: number;
   tier?: 'common' | 'rare' | 'epic' | 'legend';
+  nonCombat?: boolean;
 }
 
 export function isItemUsableOutsideCombat(item: { id: string; cat?: string; type?: string } | null | undefined): boolean {
@@ -110,11 +112,16 @@ export const useInventoryStore = defineStore('inventory', () => {
 
     if (activeCategory.value === 'utilizables') {
       const target = uiStore.inventoryTarget
+      const isBattleActive = useBattleStore().isBattleActive
       if (target) {
         const list = target.context === 'team' ? gameStore.state.team : gameStore.state.box
         const pokemon = list[target.index]
         if (pokemon) {
-          items = items.filter(item => helperIsItemUsableOn(item.id, pokemon))
+          items = items.filter(item => {
+            const dbItem = getItemById(item.id)
+            if (isBattleActive && dbItem?.nonCombat) return false
+            return helperIsItemUsableOn(item.id, pokemon)
+          })
         }
       } else {
         items = items.filter(item => {
@@ -125,6 +132,9 @@ export const useInventoryStore = defineStore('inventory', () => {
 
           const isHeld = item.cat === 'combat_held' || item.cat === 'breeding_held' || item.type === 'held'
           if (isHeld) return (gameStore.state.team || []).length > 0
+
+          const dbItem = getItemById(item.id)
+          if (isBattleActive && dbItem?.nonCombat) return false
 
           return (gameStore.state.team || []).some((pokemon: Pokemon) => helperIsItemUsableOn(item.id, pokemon))
         })

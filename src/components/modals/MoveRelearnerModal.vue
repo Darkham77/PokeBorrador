@@ -4,24 +4,28 @@ import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 import { POKEMON_DB } from '@/data/pokemonDB'
 import { EVOLUTION_TABLE } from '@/data/evolutionData'
+import { MOVE_DATA } from '@/data/moves'
 import BaseModal from '@/components/common/BaseModal.vue'
+import BattleMoveSlot from '@/components/battle/BattleMoveSlot.vue'
 import type { Pokemon, Move } from '@/types/pokemon'
 
 interface LearnsetEntry {
   lv: number
   name: string
   pp: number
+  id?: string
   fromId?: string
 }
 
 interface Props {
   show?: boolean
-  pokemon: Pokemon | null
+  pokemon?: Pokemon | null
   onLearned?: (success: boolean) => void
 }
 
 const props = withDefaults(defineProps<Props>(), {
   show: false,
+  pokemon: null,
   onLearned: () => {}
 })
 
@@ -32,8 +36,10 @@ const emit = defineEmits<{
 const gameStore = useGameStore()
 const uiStore = useUIStore()
 
+const pokemon = computed(() => props.pokemon || uiStore.activePokemonForRelearner)
+
 const forgottenMoves = computed(() => {
-  const p = props.pokemon
+  const p = pokemon.value
   if (!p) return []
   
   const learnedMoves = p.moves.filter(m => !!m).map((m) => (m as Move).name)
@@ -68,41 +74,64 @@ const forgottenMoves = computed(() => {
   return possibleMoves.sort((a, b) => (a.lv || 0) - (b.lv || 0))
 })
 
+const getMoveFullData = (mv: LearnsetEntry): Move => {
+  const base = mv.id ? MOVE_DATA[mv.id] : null
+  return {
+    name: mv.name,
+    pp: base?.pp ?? mv.pp,
+    maxPP: base?.pp ?? mv.pp,
+    type: base?.type ?? 'normal',
+    cat: (base?.cat as 'physical' | 'special' | 'status') ?? 'physical',
+    power: base?.power ?? 0,
+    acc: base?.acc ?? 100,
+    effect: base?.effect
+  } as Move
+}
+
 const handleRelearn = (move: LearnsetEntry) => {
-  const p = props.pokemon
+  const p = pokemon.value
   if (!p) return
   
-  const itemName = 'Recordador de Movimientos'
+  const itemId = 'move_relearner'
   const inventory = gameStore.state.inventory as Record<string, number>
   
-  if (!inventory[itemName]) {
+  if (!inventory[itemId]) {
     uiStore.notify('No tienes Recordadores de Movimientos.', '⚠️')
     return
   }
 
+  const moveData = getMoveFullData(move)
+
   // If moves < 4, just add it
   if (p.moves.length < 4) {
-    p.moves.push({ name: move.name, pp: move.pp, maxPP: move.pp })
-    consumeItem(itemName)
-    uiStore.notify(`¡${p.name} recordó ${move.name.toUpperCase()}!`, '🧠')
+    p.moves.push({ name: moveData.name, pp: moveData.pp, maxPP: moveData.pp })
+    consumeItem(itemId)
+    uiStore.notify(`¡${p.name} recordó ${moveData.name.toUpperCase()}!`, '🧠')
     props.onLearned(true)
-    emit('close')
+    handleClose()
   } else {
-    // If moves == 4, we need to forget one
+    // If moves == 4, we need to forget one. Consume only on completion!
     uiStore.addToLearnQueue({ 
       pokemon: p, 
-      move: { name: move.name, pp: move.pp, maxPP: move.pp } as Move 
+      move: { name: moveData.name, pp: moveData.pp, maxPP: moveData.pp } as Move,
+      onComplete: () => {
+        consumeItem(itemId)
+      }
     })
-    consumeItem(itemName)
     props.onLearned(true)
-    emit('close')
+    handleClose()
   }
 }
 
-const consumeItem = (name: string) => {
+const handleClose = () => {
+  uiStore.activePokemonForRelearner = null
+  emit('close')
+}
+
+const consumeItem = (id: string) => {
   const inventory = gameStore.state.inventory as Record<string, number>
-  if (inventory[name]) inventory[name]--
-  if (inventory[name] !== undefined && inventory[name] <= 0) delete inventory[name]
+  if (inventory[id]) inventory[id]--
+  if (inventory[id] !== undefined && inventory[id] <= 0) delete inventory[id]
   gameStore.save()
 }
 </script>
@@ -111,9 +140,9 @@ const consumeItem = (name: string) => {
   <BaseModal
     :show="show && !!pokemon"
     title="RECORDADOR DE MOVIMIENTOS"
-    max-width="400px"
+    max-width="480px"
     variant="retro"
-    @close="emit('close')"
+    @close="handleClose"
   >
     <div class="relearner-content">
       <p class="relearner-help">
@@ -128,27 +157,26 @@ const consumeItem = (name: string) => {
           No hay movimientos olvidados para este nivel.
         </div>
 
-        <button 
-          v-for="mv in forgottenMoves" 
+        <div 
+          v-for="(mv, idx) in forgottenMoves" 
           :key="mv.name"
-          class="move-row-vicio"
-          @click.stop="handleRelearn(mv)"
+          class="move-slot-row-relearner"
         >
-          <div class="move-info">
-            <span class="move-name">{{ mv.name }}</span>
-            <span class="move-lv m-badge-level">Nv. {{ mv.lv || '—' }}</span>
-          </div>
-          <div class="move-pp">
-            PP {{ mv.pp }}/{{ mv.pp }}
-          </div>
-        </button>
+          <BattleMoveSlot
+            :move="getMoveFullData(mv)"
+            :index="idx"
+            :player-info="pokemon"
+            :can-reorder="false"
+            @use-move="handleRelearn(mv)"
+          />
+        </div>
       </div>
     </div>
 
     <template #footer>
       <button
         class="btn-vicio-secondary btn-vicio-full"
-        @click.stop="emit('close')"
+        @click.stop="handleClose"
       >
         CANCELAR
       </button>
@@ -168,60 +196,25 @@ const consumeItem = (name: string) => {
   font-size: 13px;
   color: Rgba(255, 255, 255, 0.6);
   text-align: center;
-  margin-bottom: 24px;
+  margin-bottom: 16px;
   line-height: 1.4;
 }
 
 .moves-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  max-height: 350px;
+  gap: 12px;
+  max-height: 380px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 6px 12px;
   @include smooth-scroll;
 }
 
-.move-row-vicio {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: Rgba(155, 77, 255, 0.05);
-  border: 1px solid Rgba(155, 77, 255, 0.1);
-  border-radius: 12px;
-  padding: 14px 18px;
-  color: var(--white);
-  cursor: pointer;
-  
-  text-align: left;
-
-  &:hover {
-    background: Rgba(155, 77, 255, 0.15);
-    border-color: var(--purple-light);
-    transform: Translatex(4px);
-    
-    .move-name { color: var(--purple-light); }
-  }
-
-  .move-info {
-    display: flex;
-    flex-direction: column;
-    .move-name { 
-      @include pixelated;
-      font-size: 9px;
-      margin-bottom: 4px;
-      @include gpu-layer;
-    }
-    .move-lv { 
-      font-size: 10px; 
-      color: Rgba(255, 255, 255, 0.4);
-    }
-  }
-
-  .move-pp {
-    @include pixelated;
-    font-size: 8px;
-    color: var(--purple-light);
-    @include pixelated;
-  }
+.move-slot-row-relearner {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 4px 6px;
 }
 
 .empty-msg {

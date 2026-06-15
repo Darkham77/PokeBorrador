@@ -32,6 +32,8 @@ export interface PokemonSelectionConfig {
 export interface LearnItem {
   pokemon: Pokemon;
   move: Move;
+  onComplete?: () => void;
+  onCancel?: () => void;
 }
 
 export const useUIStore = defineStore('ui', () => {

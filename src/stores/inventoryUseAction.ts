@@ -26,13 +26,18 @@ export function executeUseItem(
     
     // Verify item exists in SHOP_ITEMS catalog or is a TM
     const isTM = itemId.startsWith('tm') || itemId.startsWith('mt');
-    const itemExists = isTM || SHOP_ITEMS.some(i => i.id === itemId);
+    const dbItem = SHOP_ITEMS.find(i => i.id === itemId);
+    const itemExists = isTM || !!dbItem;
     if (!itemExists) {
       throw new Error(`[InventoryStore] Intento de usar un objeto inexistente: ${itemName}`);
     }
 
     const list = context === 'team' ? gameStore.state.team : gameStore.state.box;
     const pokemon = index !== null ? (list as Pokemon[])[index] : null;
+
+    if (battleStore.isBattleActive && dbItem?.nonCombat) {
+      return { success: false, message: 'Este objeto no se puede usar en combate.' };
+    }
 
     // Combat check
     if (battleStore.isBattleActive && !battleStore.isProcessing) {
@@ -69,9 +74,12 @@ export function executeUseItem(
     }
 
     // Post effects
+    let shouldConsumeImmediately = true;
+
     if (result.resultType === 'relearner') {
       uiStore.activePokemonForRelearner = pokemon;
       uiStore.isMoveRelearnerOpen = true;
+      shouldConsumeImmediately = false; // Handled by MoveRelearnerModal
     } else if (result.resultType === 'evolution') {
       uiStore.startEvolution(pokemon, result.targetId || '', itemId);
     } else if (result.resultType === 'levelup') {
@@ -89,7 +97,15 @@ export function executeUseItem(
         pokemon.moves.push(moveObj as Move);
         uiStore.notify(`¡${pokemon.name} aprendió ${moveName}!`, '📖');
       } else {
-        uiStore.addToLearnQueue({ pokemon, move: moveObj as Move });
+        shouldConsumeImmediately = false;
+        uiStore.addToLearnQueue({ 
+          pokemon, 
+          move: moveObj as Move,
+          onComplete: () => {
+            consumeItem(gameStore, itemId);
+            gameStore.save(false);
+          }
+        });
       }
     } else if (result.resultType === 'nature_patch') {
       uiStore.activePokemonForNature = pokemon;
@@ -103,8 +119,10 @@ export function executeUseItem(
       uiStore.isAbilityPillOpen = true;
     }
 
-    consumeItem(gameStore, itemId);
-    gameStore.save(false);
+    if (shouldConsumeImmediately) {
+      consumeItem(gameStore, itemId);
+      gameStore.save(false);
+    }
 
     const audioStore = useAudioStore();
     const healItems = [

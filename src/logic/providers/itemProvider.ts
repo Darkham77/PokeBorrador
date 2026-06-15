@@ -34,6 +34,9 @@ export function useItemOnPokemon(itemName: string, pokemon: Pokemon): { message:
 
 export function isGlobalItem(itemName: string): boolean {
   const itemId = itemName.toLowerCase();
+  const targetPokemonItems = ['nature_patch', 'ability_pill', 'vigor_candy', 'move_relearner'];
+  if (targetPokemonItems.includes(itemId)) return false;
+
   const item = getItemById(itemId) as Item | undefined;
   if (!item) return false;
   return !!(

@@ -141,11 +141,11 @@ export const SHOP_ITEMS = [
   },
   {
     id: 'soda_pop', craftingTier: 3, cat: 'potions', sprite: 'crafting/tier3/soda_pop', name: 'Refresco', icon: '🥤', price: 300, bcPrice: 10, warPrice: 1, unlockLv: 4, tier: 'common', showInNormalShop: true, showInBCShop: true, showInWarShop: false,
-    desc: 'Restaura 60 HP a un Pokémon.'
+    desc: 'Restaura 60 HP a un Pokémon.', nonCombat: true
   },
   {
     id: 'lemonade', craftingTier: 3, cat: 'potions', sprite: 'crafting/tier3/lemonade', name: 'Limonada', icon: '🍋', price: 350, bcPrice: 12, warPrice: 2, unlockLv: 5, tier: 'common', showInNormalShop: true, showInBCShop: true, showInWarShop: false,
-    desc: 'Restaura 80 HP a un Pokémon.'
+    desc: 'Restaura 80 HP a un Pokémon.', nonCombat: true
   },
   {
     id: 'revive', craftingTier: 3, cat: 'potions', sprite: 'crafting/tier3/revive', name: 'Revivir', icon: '❤️', price: 2000, bcPrice: 67, warPrice: 7, unlockLv: 8, tier: 'epic', showInNormalShop: true, showInBCShop: true, showInWarShop: false,
@@ -781,7 +781,7 @@ export const SHOP_ITEMS = [
   },
   {
     id: 'fresh_water', craftingTier: 0, cat: 'raw_material', sprite: 'crafting/tier0/fresh_water', name: 'Agua Fresca', icon: '🥤', price: 200, bcPrice: 7, warPrice: 1, unlockLv: 1, tier: 'common', showInNormalShop: true, showInBCShop: true, showInWarShop: false,
-    desc: 'Agua mineral pura, excelente hidratante.'
+    desc: 'Agua mineral pura, excelente hidratante.', nonCombat: true
   },
   {
     id: 'herb_rare', craftingTier: 0, cat: 'raw_material', sprite: 'crafting/tier0/herb_rare', name: 'Hierba Rara', icon: '🌿', price: 500, bcPrice: 17, warPrice: 2, unlockLv: 1, tier: 'common', showInNormalShop: true, showInBCShop: true, showInWarShop: false,

@@ -26,12 +26,20 @@ const handleReplace = (slotIndex: number) => {
   pokemon.value.moves[slotIndex] = { ...newMove.value }
   
   uiStore.notify(`¡${pokemon.value.name} olvidó ${oldMoveName} y aprendió ${newMove.value.name}!`, '📖')
+  
+  if (currentData.value?.onComplete) {
+    currentData.value.onComplete()
+  }
   uiStore.finishMoveLearning()
 }
 
 const handleForget = () => {
   if (!pokemon.value || !newMove.value) return
   uiStore.notify(`¡${pokemon.value.name} no aprendió ${newMove.value.name}!`, '📖')
+  
+  if (currentData.value?.onCancel) {
+    currentData.value.onCancel()
+  }
   uiStore.finishMoveLearning()
 }
 </script>
