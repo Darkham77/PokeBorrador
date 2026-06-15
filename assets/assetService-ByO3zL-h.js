@@ -1,1 +1,0 @@
-import{D as e,O as t}from"./game-data-DRSq8fsP.js";export{e as ASSET_TYPES,t as getAssetUrl};
