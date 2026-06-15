@@ -51,6 +51,7 @@ export interface PureDamageOptions {
   defStages?: number;
   weather?: PureBattleWeather | null;
   magnitudeSet?: boolean;
+  isGym?: boolean;
 }
 
 export interface PureDamageResult {

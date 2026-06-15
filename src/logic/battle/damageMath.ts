@@ -126,9 +126,10 @@ export function getEffectiveStat(
   statKey: keyof PurePokemon,
   stages: PureBattleStages,
   weather: PureBattleWeather | null,
-  dayCycle: 'morning' | 'day' | 'dusk' | 'night' = 'day'
+  dayCycle: 'morning' | 'day' | 'dusk' | 'night' = 'day',
+  isGym: boolean = false
 ): number {
-  const mechWeather = getMechWeather(weather?.type);
+  const mechWeather = isGym ? 'clear' : getMechWeather(weather?.type);
 
   let baseVal = (pokemon[statKey] as number) || 10;
   if (statKey === 'spa' && !pokemon.spa) baseVal = pokemon.atk ?? 10;
@@ -152,14 +153,14 @@ export function getEffectiveStat(
   let val = Math.floor(baseVal * stageMult);
 
   // Weather: Coldwave speed reduction (50% for non-ice)
-  if (statKey === "spe" && weather?.type === "coldwave" && pokemon.type !== "ice" && pokemon.type2 !== "ice") {
+  if (!isGym && statKey === "spe" && weather?.type === "coldwave" && pokemon.type !== "ice" && pokemon.type2 !== "ice") {
     val = Math.floor(val * 0.5);
   }
 
   // Ability + status modifiers
   const ab = pokemon.ability;
-  const isSun  = mechWeather === WEATHER_KEYS.SUN  || (mechWeather === WEATHER_KEYS.CLEAR && (dayCycle === 'day' || dayCycle === 'morning'));
-  const isRain  = mechWeather === WEATHER_KEYS.RAIN || (mechWeather === WEATHER_KEYS.CLEAR && (dayCycle === 'night' || dayCycle === 'dusk'));
+  const isSun  = !isGym && (mechWeather === WEATHER_KEYS.SUN  || (mechWeather === WEATHER_KEYS.CLEAR && (dayCycle === 'day' || dayCycle === 'morning')));
+  const isRain  = !isGym && (mechWeather === WEATHER_KEYS.RAIN || (mechWeather === WEATHER_KEYS.CLEAR && (dayCycle === 'night' || dayCycle === 'dusk')));
 
   if (statKey === 'atk') {
     let abilMult = 1;
@@ -240,8 +241,9 @@ export function calculateDamagePure(
 
   const critMult = isCrit ? (ACTIVE_RULE_SET === 2 ? 2.0 : 1.5) : 1;
 
-  const A = getEffectiveStat(attacker, isPhysical ? 'atk' : 'spa', aStages, weather, dayCycle);
-  const D = getEffectiveStat(defender, isPhysical ? 'def' : 'spd', dStages, weather, dayCycle);
+  const isGym = ctx.isGym || false;
+  const A = getEffectiveStat(attacker, isPhysical ? 'atk' : 'spa', aStages, weather, dayCycle, isGym);
+  const D = getEffectiveStat(defender, isPhysical ? 'def' : 'spd', dStages, weather, dayCycle, isGym);
 
   const baseDamage = Math.floor(((2 * attacker.level / 5 + 2) * power * A / D) / 50) + 2;
 
@@ -279,7 +281,7 @@ export function calculateDamagePure(
 
   // Weather multiplier
   let weatherMult = 1;
-  if (weather && weather.turns !== 0) {
+  if (!isGym && weather && weather.turns !== 0) {
     const wType = weather.type.toLowerCase();
     if (mechWeather === WEATHER_KEYS.SUN) {
       if (moveType === 'fire')  weatherMult = 1.5;
@@ -296,13 +298,13 @@ export function calculateDamagePure(
   if (move.id === 'solar_beam' && weather && weather.turns !== 0) {
     const isSun = mechWeather === WEATHER_KEYS.SUN;
     const isClear = mechWeather === WEATHER_KEYS.CLEAR && weather.type !== 'thunderstorm';
-    if (!isSun && !isClear) {
+    if (!isGym && !isSun && !isClear) {
       weatherMult *= 0.5;
     }
   }
 
   // Day cycle bonus on clear weather
-  if (weatherMult === 1 && (mechWeather === WEATHER_KEYS.CLEAR || !weather)) {
+  if (!isGym && weatherMult === 1 && (mechWeather === WEATHER_KEYS.CLEAR || !weather)) {
     if ((dayCycle === 'day' || dayCycle === 'morning') && moveType === 'fire')  weatherMult = 1.2;
     if ((dayCycle === 'night' || dayCycle === 'dusk')  && moveType === 'water') weatherMult = 1.2;
   }

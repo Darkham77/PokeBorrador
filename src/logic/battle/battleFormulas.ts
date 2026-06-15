@@ -20,18 +20,23 @@ import type { Pokemon, Move } from '@/types/pokemon';
 import type { BattleStages, BattleWeather } from '@/types/battle';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 
+import { useBattleStore } from '@/stores/battle';
+
+import type { DayPhase } from '@/logic/timeUtils';
+
 export interface DamageOptions {
   atkStages?: number;
   defStages?: number;
   weather?: BattleWeather | null;
   magnitudeSet?: boolean;
-  cycle?: string;
+  cycle?: DayPhase;
+  isGym?: boolean;
 }
 
 export interface CatchOptions {
   weather?: BattleWeather | null;
   turnCount?: number;
-  cycle?: string;
+  cycle?: DayPhase;
   isCave?: boolean;
 }
 
@@ -65,23 +70,48 @@ function toPureWeather(w: BattleWeather | null | undefined): PureBattleWeather |
 // ── Exported Functions ───────────────────────────────────────────────────────
 
 export function getEffectiveStat(pokemon: Pokemon, statKey: keyof Pokemon, stages: Partial<BattleStages>, weather: BattleWeather | null) {
+  let activeWeather = weather;
+  let isGym = false;
+  try {
+    const battleStore = useBattleStore();
+    if (battleStore.state?.isGym) {
+      activeWeather = null;
+      isGym = true;
+    }
+  } catch (e) {
+    // Pinia not initialized or similar
+  }
+
   return pureGetEffectiveStat(
     toPurePoke(pokemon),
     statKey as keyof PurePokemon,
     stages as PureBattleStages,
-    toPureWeather(weather),
-    getDayCycle()
+    toPureWeather(activeWeather),
+    getDayCycle(),
+    isGym
   );
 }
 
 export function getStatBreakdown(pokemon: Pokemon, statKey: keyof Pokemon, stages: Partial<BattleStages>, weather: BattleWeather | null) {
-  const final = getEffectiveStat(pokemon, statKey, stages, weather);
+  let activeWeather = weather;
+  let isGym = false;
+  try {
+    const battleStore = useBattleStore();
+    if (battleStore.state?.isGym) {
+      activeWeather = null;
+      isGym = true;
+    }
+  } catch (e) {
+    // Pinia not initialized
+  }
+
+  const final = getEffectiveStat(pokemon, statKey, stages, activeWeather);
   
   let base = (pokemon[statKey] as number) || 10;
   if (statKey === 'spa' && !pokemon.spa) base = pokemon.atk ?? 10;
   if (statKey === 'spd' && !pokemon.spd) base = pokemon.def ?? 10;
 
-  const wType = weather?.type ? weather.type.toLowerCase() : 'clear';
+  const wType = activeWeather?.type ? activeWeather.type.toLowerCase() : 'clear';
   const pTypes = [pokemon.type?.toLowerCase(), pokemon.type2?.toLowerCase()];
   
   const WEATHER_MAP: Record<string, string> = {
@@ -117,9 +147,9 @@ export function getStatBreakdown(pokemon: Pokemon, statKey: keyof Pokemon, stage
 
   let abilityMult = 1;
   const ab = pokemon.ability;
-  const dayCycle = getDayCycle();
-  const isSun = mechWeather === 'sun' || (mechWeather === 'clear' && (dayCycle === 'day' || dayCycle === 'morning'));
-  const isRain = mechWeather === 'rain' || (mechWeather === 'clear' && (dayCycle === 'night' || dayCycle === 'dusk'));
+  const activeCycle = getDayCycle();
+  const isSun = !isGym && (mechWeather === 'sun' || (mechWeather === 'clear' && (activeCycle === 'day' || activeCycle === 'morning')));
+  const isRain = !isGym && (mechWeather === 'rain' || (mechWeather === 'clear' && (activeCycle === 'night' || activeCycle === 'dusk')));
 
   if (statKey === 'atk') {
     if (ab === 'Potencia' || ab === 'Energía pura') abilityMult = 2;
@@ -157,16 +187,29 @@ export function getStatBreakdown(pokemon: Pokemon, statKey: keyof Pokemon, stage
 }
 
 export function calculateDamage(attacker: Pokemon, defender: Pokemon, move: Partial<Move>, ctx: DamageOptions = {}) {
+  let activeWeather = ctx.weather;
+  let isGym = false;
+  try {
+    const battleStore = useBattleStore();
+    if (battleStore.state?.isGym) {
+      activeWeather = null;
+      isGym = true;
+    }
+  } catch (e) {
+    // Pinia not initialized
+  }
+
   const pureRes = calculateDamagePure(
     toPurePoke(attacker),
     toPurePoke(defender),
     toPureMove(move),
     { 
-      weather: toPureWeather(ctx.weather),
+      weather: toPureWeather(activeWeather),
       atkStages: ctx.atkStages,
-      defStages: ctx.defStages
+      defStages: ctx.defStages,
+      isGym
     },
-    (ctx.cycle || getDayCycle()) as 'morning' | 'day' | 'dusk' | 'night'
+    ctx.cycle || getDayCycle()
   );
 
   return {
@@ -177,12 +220,22 @@ export function calculateDamage(attacker: Pokemon, defender: Pokemon, move: Part
 }
 
 export function calculateCatchRate(pokemon: Pokemon, rawBallType = 'poke-ball', eventCatchMult = 1, ctx: CatchOptions = {}) {
+  let activeWeather = ctx.weather;
+  try {
+    const battleStore = useBattleStore();
+    if (battleStore.state?.isGym) {
+      activeWeather = null;
+    }
+  } catch (e) {
+    // Pinia not initialized
+  }
+
   return pureCalculateCatchRate(
     toPurePoke(pokemon),
     rawBallType,
     eventCatchMult,
     { 
-      weather: toPureWeather(ctx.weather),
+      weather: toPureWeather(activeWeather),
       turnCount: ctx.turnCount,
       cycle: ctx.cycle || getDayCycle(),
       isCave: ctx.isCave
@@ -191,11 +244,21 @@ export function calculateCatchRate(pokemon: Pokemon, rawBallType = 'poke-ball', 
 }
 
 export function calculateEscapeChance(playerPoke: Pokemon, wildPoke: Pokemon, attempts: number, ctx: EscapeOptions = {}) {
+  let activeWeather = ctx.weather;
+  try {
+    const battleStore = useBattleStore();
+    if (battleStore.state?.isGym) {
+      activeWeather = null;
+    }
+  } catch (e) {
+    // Pinia not initialized
+  }
+
   return pureCalculateEscapeChance(
     toPurePoke(playerPoke),
     toPurePoke(wildPoke),
     attempts,
-    toPureWeather(ctx.weather)
+    toPureWeather(activeWeather)
   );
 }
 

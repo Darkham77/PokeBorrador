@@ -472,7 +472,7 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
   if (isTrainer || isGym) await ctx.gs.scheduleSave()
 
   // Team Rocket: Robo Rápido
-  if (ctx.gs.state.playerClass === 'rocket' && (isTrainer || isGym)) {
+  if (ctx.gs.state.playerClass === 'rocket' && isTrainer && !isGym) {
     const { calculateQuickStealChance } = await import('@/logic/player/classMath');
     const level = ctx.classStore.classLevel;
     const stealChance = calculateQuickStealChance(level);
@@ -504,7 +504,7 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
   }
 
   // Team Rocket ENEMIGO: Robo al jugador
-  if ((isTrainer || isGym) && battleState?.trainerSprite) {
+  if (isTrainer && !isGym && battleState?.trainerSprite) {
     const { classifyNpcArchetype } = await import('@/logic/utils/npcSpriteRouter');
     const npcArchetype = classifyNpcArchetype(battleState.trainerSprite || trainerName || '');
     if (npcArchetype === 'rocket') {
