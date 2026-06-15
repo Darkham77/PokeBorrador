@@ -160,7 +160,15 @@ describe('Legendary Vigor Daycare Block & DB Migration', () => {
       tormenta_de_arena: 'sandstorm'
     }
 
-    const migratePoke = (p: any) => {
+    interface MockPoke {
+      id?: string
+      vigor?: number
+      heldItem?: string
+      ability?: string
+      moves?: { id: string; name: string }[]
+    }
+
+    const migratePoke = (p: MockPoke) => {
       if (!p) return
       
       // 1. Force legendary vigor to 0
@@ -172,7 +180,7 @@ describe('Legendary Vigor Daycare Block & DB Migration', () => {
       if (p.heldItem) {
         const itemKey = p.heldItem.toLowerCase().trim()
         if (legacyItemMap[itemKey]) {
-          p.heldItem = legacyItemMap[itemKey]
+          p.heldItem = legacyItemMap[itemKey]!
         }
       }
       
@@ -180,17 +188,17 @@ describe('Legendary Vigor Daycare Block & DB Migration', () => {
       if (p.ability) {
         const abKey = p.ability.toLowerCase().trim()
         if (legacyAbilityMap[abKey]) {
-          p.ability = legacyAbilityMap[abKey]
+          p.ability = legacyAbilityMap[abKey]!
         }
       }
       
       // 4. Map moves
       if (p.moves && Array.isArray(p.moves)) {
-        p.moves.forEach((m: any) => {
+        p.moves.forEach((m: { id: string; name: string }) => {
           if (m && m.id) {
             const moveKey = m.id.toLowerCase().replace(/[\s_-]+/g, '_').trim()
             if (legacyMoveMap[moveKey]) {
-              m.id = legacyMoveMap[moveKey]
+              m.id = legacyMoveMap[moveKey]!
             }
           }
         })
