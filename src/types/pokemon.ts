@@ -148,6 +148,7 @@ export interface Pokemon {
   aura?: string;
   isAncestral?: boolean;
   choiceMove?: string;
+  originalDitto?: Partial<Pokemon>;
 }
 
 export interface PokemonEgg {
@@ -171,4 +172,6 @@ export interface PokemonEgg {
   };
   tint?: string;
   isAncestral?: boolean;
+  color?: string;
+  isNpc?: boolean;
 }

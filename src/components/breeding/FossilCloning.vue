@@ -50,9 +50,20 @@ const canClone = computed(() => {
   return hasEnoughFossils.value && hasEnoughMoney.value
 })
 
+const showFailureTooltip = ref(false)
+
 const handleClone = () => {
   if (!canClone.value) return
-  breedingStore.cloneFossil(activeFossil.value.sprite, extraSacrifices.value)
+  const success = breedingStore.cloneFossil(activeFossil.value.sprite, extraSacrifices.value)
+  if (!success) {
+    showFailureTooltip.value = true
+    gsap.killTweensOf(showFailureTooltip)
+    gsap.delayedCall(3, () => {
+      showFailureTooltip.value = false
+    })
+  } else {
+    showFailureTooltip.value = false
+  }
   extraSacrifices.value = 0 // Reset
 }
 
@@ -69,7 +80,8 @@ const CLONING_TIERS = Array.from({ length: 6 }, (_, N) => {
     cost: c,
     rolls: rollsText,
     shinyPercent: (shinyRate * 100).toFixed(4),
-    multiplier: `${mult.toFixed(2)}x`
+    multiplier: `${mult.toFixed(2)}x`,
+    successPercent: 5 * (1 + N)
   }
 })
 
@@ -215,6 +227,7 @@ watch(extraSacrifices, () => {
                 <th>Fósiles</th>
                 <th>Intentos IVs</th>
                 <th>Prob. Shiny</th>
+                <th>Éxito</th>
                 <th>Costo (₽)</th>
               </tr>
             </thead>
@@ -239,6 +252,9 @@ watch(extraSacrifices, () => {
                 </td>
                 <td class="font-pixel shiny-cell">
                   {{ tier.shinyPercent }}% <span class="mult-label">{{ tier.multiplier }}</span>
+                </td>
+                <td class="font-pixel text-center">
+                  {{ tier.successPercent }}%
                 </td>
                 <td class="font-pixel cost-cell">
                   ₽{{ tier.cost.toLocaleString() }}
@@ -271,15 +287,23 @@ watch(extraSacrifices, () => {
         </div>
 
         <!-- Action Button -->
-        <button
-          class="btn-clone"
-          :disabled="!canClone"
-          @click="handleClone"
-        >
-          <span v-if="!hasEnoughFossils"><span class="icon">❌</span> FÓSILES INSUFICIENTES</span>
-          <span v-else-if="!hasEnoughMoney"><span class="icon">💰</span> DINERO INSUFICIENTE</span>
-          <span v-else><span class="icon">🧬</span> INICIAR CLONACIÓN GENÉTICA</span>
-        </button>
+        <div class="action-wrapper">
+          <div
+            v-if="showFailureTooltip"
+            class="failure-tooltip font-pixel"
+          >
+            ⚠️ ¡EXTRACCIÓN FALLIDA! Recursos consumidos.
+          </div>
+          <button
+            class="btn-clone"
+            :disabled="!canClone"
+            @click="handleClone"
+          >
+            <span v-if="!hasEnoughFossils"><span class="icon">❌</span> FÓSILES INSUFICIENTES</span>
+            <span v-else-if="!hasEnoughMoney"><span class="icon">💰</span> DINERO INSUFICIENTE</span>
+            <span v-else><span class="icon">🧬</span> INICIAR CLONACIÓN GENÉTICA</span>
+          </button>
+        </div>
       </div>
     </div>
   </div>

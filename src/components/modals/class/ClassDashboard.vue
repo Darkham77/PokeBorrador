@@ -183,22 +183,22 @@ const onAbilityMouseLeave = (event: MouseEvent) => {
             v-for="(bonus, idx) in currentClass?.bonuses" 
             :key="idx"
             class="ability-item"
-            :class="{ locked: (currentClass?.bonusLevels?.[Number(idx)] || 1) > trainerLevel }"
+            :class="{ locked: (currentClass?.bonusLevels?.[Number(idx)] || 1) > classLevel }"
             @mouseenter="onAbilityMouseEnter"
             @mouseleave="onAbilityMouseLeave"
           >
             <div class="ability-checkbox">
-              {{ (currentClass?.bonusLevels?.[Number(idx)] || 1) <= trainerLevel ? '✅' : '🔒' }}
+              {{ (currentClass?.bonusLevels?.[Number(idx)] || 1) <= classLevel ? '✅' : '🔒' }}
             </div>
             <div class="ability-content">
-              <p :class="{ 'text-locked': (currentClass?.bonusLevels?.[Number(idx)] || 1) > trainerLevel }">
+              <p :class="{ 'text-locked': (currentClass?.bonusLevels?.[Number(idx)] || 1) > classLevel }">
                 {{ bonus }}
               </p>
               <span
-                v-if="(currentClass?.bonusLevels?.[Number(idx)] || 1) > trainerLevel"
+                v-if="(currentClass?.bonusLevels?.[Number(idx)] || 1) > classLevel"
                 class="req-hint"
               >
-                Requiere Nivel de Entrenador {{ currentClass?.bonusLevels?.[Number(idx)] }}
+                Requiere Nivel de Clase {{ currentClass?.bonusLevels?.[Number(idx)] }}
               </span>
             </div>
             <div 

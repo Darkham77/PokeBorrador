@@ -106,8 +106,8 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
     wasSearching,
     cannotEscape: cannotEscape || (battleOptions.cannotEscape as boolean) || false,
     weather: { 
-      type: getMechanicalWeather(mapStore.currentWeather), 
-      visual: mapStore.currentWeather, 
+      type: isGym ? 'clear' : getMechanicalWeather(mapStore.currentWeather), 
+      visual: isGym ? 'clear' : mapStore.currentWeather, 
       turns: -1 
     },
     playerTeamIndex: ctx.gs.state.team.indexOf(playerPoke),
@@ -478,7 +478,7 @@ export async function initBattleSequence(ctx: BattleContext, options: BattleOpti
     const stealChance = calculateQuickStealChance(level);
     if (Math.random() < stealChance) {
       // Intentar robar
-      const criminalItems = ['potion', 'super_potion', 'revive', 'full_heal', 'poke_radar', 'pokeball', 'greatball'];
+      const criminalItems = ['potion', 'super_potion', 'revive', 'full_heal', 'pokeball', 'great_ball'];
       const stolenItem = criminalItems[Math.floor(Math.random() * criminalItems.length)];
       if (stolenItem) {
         

@@ -1,19 +1,24 @@
 # Tareas de Clase y Tienda
 
-- [x] Fase 1: Creación del Módulo de Fórmulas y Test Unitarios (`classMath.ts`)
-  - [x] Crear `src/logic/player/classMath.ts` con funciones de lógica pura.
-  - [x] Crear `tests/node/classMath.test.ts` con tests unitarios.
-  - [x] Ejecutar tests usando `npm run test:node`.
-- [x] Fase 2: Implementación de Mecánicas del Team Rocket y Cazabichos
-  - [x] Extorsión de Ruta: Modal de confirmación al entrar a una ruta y marco verde en el mapa (válido por 24h).
-  - [x] Robo Rápido y Robo al Oficial con Toast + Sonido de robo único.
-  - [x] Sinergia Bicho, Aroma Atractivo y Red Maestra para el Cazabichos.
-- [x] Fase 3: Implementación de Mecánicas de Entrenador (Tienda y HUD)
-  - [x] Penalización de captura rara, Ruta Oficial y Rival Doble.
-  - [x] Tienda de Reputación (`ReputationShopModal.vue` y HUD de tiendas).
-  - [x] Render de Reputación en `ProfileStatsGrid.vue`.
-  - [x] 4. Precios totales acumulados en Tiendas (ShopItemCard.vue, BCShopItemCard.vue, WarShopItemCard.vue) y toasts de dinero independientes en `shop.ts`
-  - [x] 5. Mostrar 6 IVs en BattleInfoCard.vue y EggWarehouse.vue, y añadir opción "TIRAR" en el almacén de huevos
+- [ ] Punto 1: Corrección de IDs de Ítems en Gimnasios y Robos
+- [ ] Punto 2: Legendarios con Vigor 0, Bloqueo de Crianza y Parche de Migración
+- [x] Punto 3: Antiparaliz en Tienda por 200 ₽
+- [ ] Punto 4: Captura de Ditto Transformado (Preservación de Estado Original)
+- [ ] Punto 5: Clima y Horario Neutros en Gimnasios
+- [ ] Punto 6: Huevos Celestes de NPC con 5% de Bebés Gen 2
+- [ ] Punto 7: Aparición del Arquetipo Policía en Tirada Independiente
+- [ ] Punto 8: Cálculo de Beneficios por Nivel de Clase (en vez de Cuenta)
+- [ ] Punto 9: Alineación de Niveles de Pesca con la Ruta
+- [ ] Punto 10: Bloqueo de Habilidades Pasivas de Robo Rocket en Gimnasios
+- [ ] Punto 11: Pasos de Eclosión de Crianza al Azar entre 250 y 300
+- [x] Puntos 12 y 16: Selección de Habilidad para PP Máx e Integridad de Items
+- [ ] Punto 13: Tooltips Activos en Selección de Reemplazo de Habilidades
+- [ ] Punto 14: Slot Único de Huevo de NPC Caminando
+- [x] Punto 15: Éxito en Fósiles (5% por fósil), Falla con Tooltip y Consumo de Recursos
+- [x] Punto 17: Nombres de Objetos en logs de robo (specialActions.ts)
+- [ ] Verificación: Auditoría Estática y Lintersn `ProfileStatsGrid.vue`.
+- [x] 4. Precios totales acumulados en Tiendas (ShopItemCard.vue, BCShopItemCard.vue, WarShopItemCard.vue) y toasts de dinero independientes en `shop.ts`
+- [x] 5. Mostrar 6 IVs en BattleInfoCard.vue y EggWarehouse.vue, y añadir opción "TIRAR" en el almacén de huevos
 - [x] Fase 4: Implementación de Mecánicas de Criador (Vigor y Escáner)
   - [x] Vigor al eclosionar y Predecir Naturaleza en HUD.
   - [x] Escáner diario en huevos con fecha guardada persistentemente en la cuenta.

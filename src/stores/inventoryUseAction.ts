@@ -94,8 +94,9 @@ export function executeUseItem(
     } else if (result.resultType === 'nature_patch') {
       uiStore.activePokemonForNature = pokemon;
       uiStore.isNaturePatchOpen = true;
-    } else if (result.resultType === 'pp_up') {
+    } else if (result.resultType === 'pp_up' || result.resultType === 'pp_max') {
       uiStore.activePokemonForPPUp = pokemon;
+      uiStore.activeItemForPPUp = itemId;
       uiStore.isPPUpOpen = true;
     } else if (result.resultType === 'ability_pill') {
       uiStore.activePokemonForAbility = pokemon;
@@ -109,7 +110,7 @@ export function executeUseItem(
     const healItems = [
       'potion', 'super_potion', 'hyper_potion', 'max_potion',
       'revive', 'revive_max', 'antidote', 'burn_heal',
-      'awakening', 'full_heal', 'soda_pop', 'lemonade'
+      'paralyze_heal', 'awakening', 'ice_heal', 'full_heal', 'soda_pop', 'lemonade'
     ];
     if (healItems.includes(itemId)) {
       audioStore.play('heal');

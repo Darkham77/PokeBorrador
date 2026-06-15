@@ -27,6 +27,8 @@ interface PokemonEggParams {
   isShiny?: boolean;
   tint?: string;
   isAncestral?: boolean;
+  color?: string;
+  isNpc?: boolean;
 }
 
 /**
@@ -46,7 +48,7 @@ export const eggFactory = {
       name: 'Huevo Pokémon',
       level: 1,
       isEgg: true,
-      steps: params.steps ?? 2500,
+      steps: params.steps ?? (Math.floor(Math.random() * 51) + 250),
       mother_id: params.motherId || '',
       deposited_at: Temporal.Now.instant().toString(),
       ivs: params.ivs,
@@ -70,12 +72,13 @@ export const eggFactory = {
   createPokemonEgg(params: PokemonEggParams): PokemonEgg {
     const timestamp = Temporal.Now.instant().epochMilliseconds;
     const eggUid = params.uid || `${params.species}-${timestamp}`;
+    const steps = params.steps ?? (Math.floor(Math.random() * 51) + 250);
 
     return {
       uid: eggUid,
       id: params.species,
-      steps: params.steps ?? 2500,
-      ready: (params.steps ?? 2500) <= 0,
+      steps: steps,
+      ready: steps <= 0,
       ivs: params.ivs,
       nature: params.nature,
       movesAtBirth: params.movesAtBirth,
@@ -83,6 +86,8 @@ export const eggFactory = {
       isShiny: params.isShiny,
       tint: params.tint || undefined,
       isAncestral: params.isAncestral || undefined,
+      color: params.color || undefined,
+      isNpc: params.isNpc || undefined,
     };
   },
 };

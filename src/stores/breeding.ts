@@ -150,6 +150,15 @@ export const useBreedingStore = defineStore('breeding', () => {
       return false;
     }
 
+    const legendaries = new Set([
+      'articuno', 'zapdos', 'moltres', 'mewtwo', 'mew',
+      'raikou', 'entei', 'suicune', 'lugia', 'ho_oh', 'ho-oh', 'celebi'
+    ]);
+    if (pokemon.id && legendaries.has(pokemon.id.toLowerCase())) {
+      uiStore.notify('Los Pokémon legendarios no pueden reproducirse en la Guardería.', '⚠️');
+      return false;
+    }
+
     if (pokemon.onMission || pokemon.onDefense) {
       uiStore.notify('Este Pokémon está ocupado.', '⚠️');
       return false;
@@ -402,7 +411,7 @@ export const useBreedingStore = defineStore('breeding', () => {
   }
 
   function cloneFossil(fossilName: string, extraQty: number) {
-    executeCloneFossil(fossilName, extraQty, warehouseEggs, saveWarehouseEggs);
+    return executeCloneFossil(fossilName, extraQty, warehouseEggs, saveWarehouseEggs);
   }
 
   let bgPoller: gsap.core.Tween | null = null;

@@ -12,6 +12,7 @@ import { logger } from '@/logic/utils/logger';
 import type { DBRouter } from '@/logic/db/dbRouter';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { validateUserProfile } from '@/logic/validation/schemas';
+import { sanitizePokemon } from '@/logic/pokemonFactory';
 
 export interface SaveResult {
   success?: boolean;
@@ -337,12 +338,14 @@ export function validateAndSanitize(data: SaveData): { valid: boolean, data: Sav
     data.team.forEach((p) => {
       checkPoke(p, 'equipo');
       sanitizeMoves(p);
+      sanitizePokemon(p);
     });
   }
   if (data.box) {
     data.box.forEach((p) => {
       checkPoke(p, 'caja');
       sanitizeMoves(p);
+      sanitizePokemon(p);
     });
   }
 

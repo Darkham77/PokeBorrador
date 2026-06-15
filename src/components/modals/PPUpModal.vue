@@ -9,6 +9,7 @@ import type { Move } from '@/types/pokemon'
 const uiStore = useUIStore()
 const gameStore = useGameStore()
 
+const isPPMax = computed(() => uiStore.activeItemForPPUp === 'pp_max')
 const ppPokemon = computed(() => uiStore.activePokemonForPPUp)
 
 const getPPProgressWidth = (move: Move | null) => {
@@ -35,27 +36,35 @@ const handleApplyPPUp = (moveIndex: string | number) => {
     return
   }
   
-  const increase = Math.floor(basePP * 0.2)
-  move.maxPP = Math.min(maxPossible, move.maxPP + increase)
-  move.pp = Math.min(move.maxPP, move.pp + increase)
+  if (isPPMax.value) {
+    move.maxPP = maxPossible
+    move.pp = maxPossible
+    uiStore.notify(`¡Los PP de ${move.name} se maximizaron!`, '📈')
+  } else {
+    const increase = Math.floor(basePP * 0.2)
+    move.maxPP = Math.min(maxPossible, move.maxPP + increase)
+    move.pp = Math.min(move.maxPP, move.pp + increase)
+    uiStore.notify(`¡Los PP de ${move.name} aumentaron!`, '📈')
+  }
   
-  uiStore.notify(`¡Los PP de ${move.name} aumentaron!`, '📈')
   uiStore.isPPUpOpen = false
   uiStore.activePokemonForPPUp = null
+  uiStore.activeItemForPPUp = null
   gameStore.save()
 }
 
 const close = () => {
   uiStore.isPPUpOpen = false
+  uiStore.activeItemForPPUp = null
 }
 </script>
 
 <template>
   <BaseModal
     :show="true"
-    title="SUBIDA DE PP"
-    title-color="Rgba(96, 165, 250, 1)"
-    header-background="Rgba(26, 26, 46, 1)"
+    :title="isPPMax ? 'MÁXIMO PP' : 'SUBIDA DE PP'"
+    title-color="rgba(96, 165, 250, 1)"
+    header-background="rgba(26, 26, 46, 1)"
     max-width="400px"
     @close="close"
   >

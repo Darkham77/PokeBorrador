@@ -173,7 +173,11 @@ export function registerStatsTools(debug: DebugSystem, { game, ui }: DebugContex
         
         const tm = gym.rewardTM
         if (tm) {
-          game.state.inventory[tm] = (game.state.inventory[tm] || 0) + 1
+          import('@/data/items').then(({ getItemByName, getItemById }) => {
+            const itemObj = getItemByName(tm) || getItemById(tm)
+            const tmId = itemObj ? itemObj.id : tm.toLowerCase().replace(/\s+/g, '_')
+            game.state.inventory[tmId] = (game.state.inventory[tmId] || 0) + 1
+          })
         }
       }
 

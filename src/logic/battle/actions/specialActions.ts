@@ -4,6 +4,7 @@ import type { Pokemon } from '@/types/pokemon';
 import { STATUS_ACTIONS } from './statusActions.ts';
 import { logger } from '@/logic/utils/logger';
 import { gameBus } from '@/logic/gameBus';
+import { getItemById } from '@/data/items';
 
 /**
  * Helper to transition and execute the release sequence when a Pokemon is sent into battle.
@@ -172,6 +173,27 @@ export const SPECIAL_ACTIONS: Record<string, MoveAction> = {
   },
   'transform': (src, tgt, _srcStages, _tgtStages, addLogFn) => {
     const originalName = src.name;
+    if (!src.originalDitto) {
+      src.originalDitto = {
+        id: src.id,
+        name: src.name,
+        type: src.type,
+        type2: src.type2,
+        atk: src.atk,
+        def: src.def,
+        spa: src.spa,
+        spd: src.spd,
+        spe: src.spe,
+        moves: src.moves ? src.moves.map(m => m ? { ...m } : null) : [],
+        ivs: src.ivs ? { ...src.ivs } : undefined,
+        isShiny: src.isShiny,
+        level: src.level,
+        nature: src.nature,
+        ability: src.ability,
+        hp: src.hp,
+        maxHp: src.maxHp
+      };
+    }
     src.id = tgt.id;
     src.name = tgt.name;
     src.type = tgt.type;
@@ -437,7 +459,9 @@ export const SPECIAL_ACTIONS: Record<string, MoveAction> = {
       const stolenItem = tgt.heldItem;
       src.heldItem = stolenItem;
       tgt.heldItem = null;
-      addLogFn(`¡${src.name} robó ${stolenItem} de ${tgt.name}!`, 'log-info', src);
+      const itemDef = getItemById(stolenItem);
+      const displayName = itemDef?.name || stolenItem;
+      addLogFn(`¡${src.name} robó ${displayName} de ${tgt.name}!`, 'log-info', src);
 
       // Play steal sound
       import('@/stores/audio').then(m => m.useAudioStore().steal()).catch(() => {});
@@ -451,21 +475,13 @@ export const SPECIAL_ACTIONS: Record<string, MoveAction> = {
           if (!battleCtx.gs.state.inventory) battleCtx.gs.state.inventory = {};
           battleCtx.gs.state.inventory[stolenItem] = (battleCtx.gs.state.inventory[stolenItem] || 0) + 1;
           
-          import('@/data/items').then(m => {
-            const itemDef = m.getItemByName(stolenItem) || m.getItemById(stolenItem);
-            const displayName = itemDef?.name || stolenItem;
-            battleCtx.uiStore.notify(`¡Robaste un ${displayName}!`, '🎒');
-          }).catch(() => {
-            battleCtx.uiStore.notify(`¡Robaste un ${stolenItem}!`, '🎒');
-          });
+          const itemDef = getItemById(stolenItem);
+          const displayName = itemDef?.name || stolenItem;
+          battleCtx.uiStore.notify(`¡Robaste un ${displayName}!`, '🎒');
         } else if (isPlayerTgt) {
-          import('@/data/items').then(m => {
-            const itemDef = m.getItemByName(stolenItem) || m.getItemById(stolenItem);
-            const displayName = itemDef?.name || stolenItem;
-            battleCtx.uiStore.notify(`¡Te robaron tu ${displayName}!`, '💸');
-          }).catch(() => {
-            battleCtx.uiStore.notify(`¡Te robaron tu ${stolenItem}!`, '💸');
-          });
+          const itemDef = getItemById(stolenItem);
+          const displayName = itemDef?.name || stolenItem;
+          battleCtx.uiStore.notify(`¡Te robaron tu ${displayName}!`, '💸');
         }
       }
     }

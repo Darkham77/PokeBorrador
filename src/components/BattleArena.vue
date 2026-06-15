@@ -189,7 +189,10 @@ const handleClose = () => {
     disable-auto-grow
     @close="handleClose"
   >
-    <div class="battle-header-actions">
+    <div
+      v-if="!battle?.isGym"
+      class="battle-header-actions"
+    >
       <PVTooltip
         ref="envPillRef"
         class="location-tag tag-wild"

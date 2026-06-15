@@ -25,6 +25,7 @@ export interface DamageOptions {
   defStages?: number;
   weather?: BattleWeather | null;
   magnitudeSet?: boolean;
+  cycle?: string;
 }
 
 export interface CatchOptions {
@@ -165,7 +166,7 @@ export function calculateDamage(attacker: Pokemon, defender: Pokemon, move: Part
       atkStages: ctx.atkStages,
       defStages: ctx.defStages
     },
-    getDayCycle()
+    (ctx.cycle || getDayCycle()) as 'morning' | 'day' | 'dusk' | 'night'
   );
 
   return {

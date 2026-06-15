@@ -4,6 +4,7 @@ import { getBattleRewardModifiers } from '@/logic/war/bonusEngine'
 import type { BattleContext } from '@/types/battleContext'
 import type { Pokemon, PokemonMove } from '@/types/pokemon'
 import { useUIStore } from '@/stores/ui'
+import { getItemByName, getItemById } from '@/data/items'
 
 import type { BattleState } from '@/types/battle.ts'
 
@@ -64,8 +65,10 @@ export async function calculateBattleRewards(ctx: BattleContext) {
       ctx.gs.state.defeatedGyms.push(gid); ctx.gs.state.badges++
       if (active.rewardTM) { 
         const tm = active.rewardTM
-        ctx.gs.state.inventory[tm] = (ctx.gs.state.inventory[tm] || 0) + 1
-        ctx.addLog(`¡Recibiste la ${tm}!`, 'log-info', tm) 
+        const itemObj = getItemByName(tm) || getItemById(tm)
+        const tmId = itemObj ? itemObj.id : tm.toLowerCase().replace(/\s+/g, '_')
+        ctx.gs.state.inventory[tmId] = (ctx.gs.state.inventory[tmId] || 0) + 1
+        ctx.addLog(`¡Recibiste la ${itemObj?.name || tm}!`, 'log-info', tmId) 
       }
       ctx.uiStore.notify(`¡Ganaste la medalla del Gimnasio ${gid}!`, '🏆')
     }
@@ -104,9 +107,11 @@ export async function calculateBattleRewards(ctx: BattleContext) {
 
               // 2. Award TM
               if (tmReward) {
-                ctx.gs.state.inventory[tmReward] = (ctx.gs.state.inventory[tmReward] || 0) + 1
-                ctx.addLog(`¡Bono de Gimnasio: Recibiste la ${tmReward}!`, 'log-success', tmReward)
-                ctx.uiStore.notify(`¡Obtuviste ${tmReward}!`, '🎒')
+                const itemObj = getItemByName(tmReward) || getItemById(tmReward)
+                const tmId = itemObj ? itemObj.id : tmReward.toLowerCase().replace(/\s+/g, '_')
+                ctx.gs.state.inventory[tmId] = (ctx.gs.state.inventory[tmId] || 0) + 1
+                ctx.addLog(`¡Bono de Gimnasio: Recibiste la ${itemObj?.name || tmReward}!`, 'log-success', tmId)
+                ctx.uiStore.notify(`¡Obtuviste ${itemObj?.name || tmReward}!`, '🎒')
               }
 
               // 3. Award EXP (distributed)

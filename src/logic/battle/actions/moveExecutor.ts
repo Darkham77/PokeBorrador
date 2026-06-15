@@ -114,7 +114,7 @@ export async function executeMoveAction(
       const evaStage = defenderStages.eva || 0
       const weather = store.activeBattle.value?.weather?.type
       const mechWeather = getMechanicalWeather(weather)
-      const cycle = getDayCycle()
+      const cycle = store.activeBattle.value?.isGym ? 'day' : getDayCycle()
       const isRaining = mechWeather === WEATHER_MECHANICAL.RAIN
       const isSunnyActive = mechWeather === WEATHER_MECHANICAL.SUN || (mechWeather === WEATHER_MECHANICAL.CLEAR && (cycle === 'day' || cycle === 'morning'))
       const isRainActive = isRaining || (mechWeather === WEATHER_MECHANICAL.CLEAR && (cycle === 'night' || cycle === 'dusk'))
@@ -162,7 +162,8 @@ export async function executeMoveAction(
       const result = calculateDamage(attacker, defender, executableMove, {
         atkStages: attackerStages.atk,
         defStages: defenderStages.def,
-        weather: store.activeBattle.value?.weather
+        weather: store.activeBattle.value?.weather,
+        cycle: store.activeBattle.value?.isGym ? 'day' : undefined
       })
 
       if (result.isNoEffect) {

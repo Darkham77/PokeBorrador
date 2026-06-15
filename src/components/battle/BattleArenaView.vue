@@ -228,6 +228,7 @@ const {
 } = useBattleHud(animations, battleStore, enemy)
 
 const computedWeather = computed(() => {
+  if (battle.value?.isGym) return 'clear'
   // Fuente de verdad visual: siempre usar el clima ACTUAL del mapa (igual que la vista del mapa).
   // El campo battle.weather.type sigue siendo la referencia mecánica para el motor de combate.
   // Prioridad: Clima global de eventos > Clima determinístico de la ruta actual
@@ -241,7 +242,7 @@ const atmosphereSeed = computed(() => {
 
 const { atmosphereFilter, weatherOnlyFilter } = useWeatherVisuals({
   weather: computedWeather,
-  cycle: computed(() => mapStore.currentCycle)
+  cycle: computed(() => battle.value?.isGym ? 'neutral' : mapStore.currentCycle)
 })
 
 // Unified Style Orchestration to prevent reactivity breaks in templates
@@ -801,7 +802,6 @@ const onDialogLeave = (el: Element, done: () => void) => {
                       fill="none"
                       stroke="#141824"
                       stroke-width="8"
-                    />
                     />
                   </svg>
                 </div>

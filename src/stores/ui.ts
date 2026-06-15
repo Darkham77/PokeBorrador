@@ -122,6 +122,7 @@ export const useUIStore = defineStore('ui', () => {
   const learnQueue = ref<LearnItem[]>([])
   const activePokemonForNature = ref<Pokemon | null>(null)
   const activePokemonForPPUp = ref<Pokemon | null>(null)
+  const activeItemForPPUp = ref<string | null>(null)
   const activePokemonForAbility = ref<Pokemon | null>(null)
   
   // Detalle data
@@ -450,6 +451,7 @@ export const useUIStore = defineStore('ui', () => {
     activePokemonForNature,
     isPPUpOpen,
     activePokemonForPPUp,
+    activeItemForPPUp,
     isAbilityPillOpen,
     activePokemonForAbility,
 

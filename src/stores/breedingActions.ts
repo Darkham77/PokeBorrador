@@ -26,14 +26,14 @@ export function executeCloneFossil(
   extraQty: number,
   warehouseEggs: Ref<DaycareEgg[]>,
   saveWarehouseEggs: () => void
-) {
+): boolean {
   const gameStore = useGameStore();
   const uiStore = useUIStore();
   const inventoryStore = useInventoryStore();
 
   if (warehouseEggs.value.length >= 30) {
     uiStore.notify('El almacén de huevos está lleno.', '❌');
-    return;
+    return false;
   }
 
   const count = gameStore.state.inventory[fossilId] || 0;
@@ -41,13 +41,13 @@ export function executeCloneFossil(
 
   if (count < requiredFossils) {
     uiStore.notify(`No tienes suficientes fósiles. Requieres ${requiredFossils} y tienes ${count}.`, '❌');
-    return;
+    return false;
   }
 
   const totalCost = calculateCloningCost(extraQty);
   if (gameStore.state.money < totalCost) {
     uiStore.notify(`No tienes suficiente dinero. Requieres ₽${totalCost.toLocaleString()} y tienes ₽${gameStore.state.money.toLocaleString()}.`, '💰');
-    return;
+    return false;
   }
 
   const FOSSIL_SPECIES_MAP: Record<string, string> = {
@@ -61,7 +61,21 @@ export function executeCloneFossil(
   const speciesId = FOSSIL_SPECIES_MAP[fossilId];
   if (!speciesId) {
     uiStore.notify('Fósil no reconocido para clonar.', '❌');
-    return;
+    return false;
+  }
+
+  // Consume resources first
+  inventoryStore.removeItem(fossilId, requiredFossils);
+  gameStore.state.money -= totalCost;
+
+  // Roll success (5% per fossil consumed)
+  const successChance = 0.05 * requiredFossils;
+  const isSuccess = Math.random() < successChance;
+
+  if (!isSuccess) {
+    uiStore.notify('La extracción de ADN del fósil ha fallado.', '⚠️');
+    gameStore.scheduleSave();
+    return false;
   }
 
   const rolls = calculateCloningRerolls(extraQty);
@@ -81,9 +95,6 @@ export function executeCloneFossil(
   const shinyChance = calculateCloningShinyChance(extraQty);
   const isShiny = Math.random() < shinyChance;
 
-  inventoryStore.removeItem(fossilId, requiredFossils);
-  gameStore.state.money -= totalCost;
-
   const egg = eggFactory.createDaycareEgg({
     species: speciesId,
     ivs: bestIVs,
@@ -102,4 +113,5 @@ export function executeCloneFossil(
 
   uiStore.notify(`¡Clonación exitosa! Huevo Ancestral de ${POKEMON_DB[speciesId as keyof typeof POKEMON_DB]?.name} creado.`, '🥚');
   gameStore.scheduleSave();
+  return true;
 }

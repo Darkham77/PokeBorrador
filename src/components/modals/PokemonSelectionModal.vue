@@ -170,6 +170,16 @@ const availablePokemon = computed<{ pokemon: Pokemon, _source: 'team' | 'box' | 
     allowDead: props.allowDead
   })
 
+  if (props.isDaycareContext) {
+    const legendaries = new Set([
+      'articuno', 'zapdos', 'moltres', 'mewtwo', 'mew',
+      'raikou', 'entei', 'suicune', 'lugia', 'ho_oh', 'ho-oh', 'celebi'
+    ]);
+    result = result.filter(item => {
+      return !item.pokemon.id || !legendaries.has(item.pokemon.id.toLowerCase());
+    });
+  }
+
   if (props.isDaycareContext && filterCompatibleOnly.value && otherDaycarePokemon.value) {
     result = result.filter(item => {
       const compat = checkCompatibility(item.pokemon, otherDaycarePokemon.value!)

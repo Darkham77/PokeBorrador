@@ -164,8 +164,16 @@ export const SHOP_ITEMS = [
     desc: 'Cura la quemadura de un Pokémon.'
   },
   {
+    id: 'paralyze_heal', craftingTier: 3, cat: 'potions', sprite: 'crafting/tier3/heal_paralyze', name: 'Antiparaliz', icon: '💛', price: 200, bcPrice: 7, warPrice: 1, unlockLv: 1, tier: 'common', showInNormalShop: true, showInBCShop: true, showInWarShop: false,
+    desc: 'Cura la parálisis de un Pokémon.'
+  },
+  {
     id: 'awakening', craftingTier: 3, cat: 'potions', sprite: 'crafting/tier3/awakening', name: 'Despertar', icon: '☕', price: 250, bcPrice: 9, warPrice: 1, unlockLv: 1, tier: 'common', showInNormalShop: true, showInBCShop: true, showInWarShop: false,
     desc: 'Despierta a un Pokémon dormido.'
+  },
+  {
+    id: 'ice_heal', craftingTier: 3, cat: 'potions', sprite: 'crafting/tier3/ice_heal', name: 'Anticongelante', icon: '❄️', price: 250, bcPrice: 9, warPrice: 1, unlockLv: 2, tier: 'common', showInNormalShop: true, showInBCShop: true, showInWarShop: false,
+    desc: 'Cura el congelamiento de un Pokémon.'
   },
   {
     id: 'full_heal', craftingTier: 3, cat: 'potions', sprite: 'crafting/tier3/full_heal', name: 'Cura Total', icon: '✨', price: 600, bcPrice: 20, warPrice: 2, unlockLv: 5, tier: 'rare', showInNormalShop: true, showInBCShop: true, showInWarShop: false,
@@ -240,19 +248,19 @@ export const SHOP_ITEMS = [
     desc: 'Sube un nivel a cualquier Pokémon del equipo al instante.'
   },
   {
-    id: 'vigor_candy', craftingTier: 3, cat: 'otros', sprite: 'crafting/tier3/rare_candy', name: 'Caramelo de vigor', icon: '⚡', price: 45000, bcPrice: 1500, warPrice: 150, unlockLv: 10, tier: 'rare', showInNormalShop: false, showInBCShop: true, showInWarShop: false,
+    id: 'vigor_candy', craftingTier: 3, cat: 'otros', sprite: 'crafting/tier3/rare_candy', name: 'Caramelo de vigor', icon: '⚡', price: 45000, bcPrice: 1500, warPrice: 150, unlockLv: 10, tier: 'rare', type: 'usable', showInNormalShop: false, showInBCShop: true, showInWarShop: false,
     desc: 'Restaura 1 punto de vigor a un Pokémon.'
   },
   {
-    id: 'move_relearner', craftingTier: 0, cat: 'otros', sprite: 'crafting/tier0/heart_scale', name: 'Recordador de Movimientos', icon: '🧠', price: 60000, bcPrice: 2000, warPrice: 200, unlockLv: 10, tier: 'rare', showInNormalShop: false, showInBCShop: true, showInWarShop: false,
+    id: 'move_relearner', craftingTier: 3, cat: 'otros', sprite: 'crafting/tier0/heart_scale', name: 'Recordador de Movimientos', icon: '🧠', price: 60000, bcPrice: 2000, warPrice: 200, unlockLv: 10, tier: 'rare', type: 'usable', showInNormalShop: false, showInBCShop: true, showInWarShop: false,
     desc: 'Permite a un Pokémon recordar un movimiento olvidado.'
   },
   {
-    id: 'nature_patch', craftingTier: 3, cat: 'otros', sprite: 'crafting/tier3/ability_capsule', name: 'Parche de naturaleza', icon: '🌿', price: 90000, bcPrice: 3000, warPrice: 300, unlockLv: 15, tier: 'epic', showInNormalShop: false, showInBCShop: true, showInWarShop: false,
+    id: 'nature_patch', craftingTier: 3, cat: 'otros', sprite: 'crafting/tier3/ability_capsule', name: 'Parche de naturaleza', icon: '🌿', price: 90000, bcPrice: 3000, warPrice: 300, unlockLv: 15, tier: 'epic', type: 'usable', showInNormalShop: false, showInBCShop: true, showInWarShop: false,
     desc: 'Permite cambiar la naturaleza de un Pokémon.'
   },
   {
-    id: 'ability_pill', craftingTier: 3, cat: 'otros', sprite: 'crafting/tier3/ability_capsule', name: 'Píldora de cambio de habilidad', icon: '💊', price: 90000, bcPrice: 3000, warPrice: 300, unlockLv: 15, tier: 'epic', showInNormalShop: false, showInBCShop: true, showInWarShop: false,
+    id: 'ability_pill', craftingTier: 3, cat: 'otros', sprite: 'crafting/tier3/ability_capsule', name: 'Píldora de cambio de habilidad', icon: '💊', price: 90000, bcPrice: 3000, warPrice: 300, unlockLv: 15, tier: 'epic', type: 'usable', showInNormalShop: false, showInBCShop: true, showInWarShop: false,
     desc: 'Permite cambiar la habilidad de un Pokémon si tiene más de una.'
   },
   {

@@ -116,6 +116,29 @@ export async function handleItemUsage(itemName: string, p: Pokemon, e: Pokemon, 
         e.tags.push(`ball:${normalizedBallId}`)
       }
 
+      if (e.isTransformed && e.originalDitto) {
+        const orig = e.originalDitto as Pokemon;
+        e.id = orig.id;
+        e.name = orig.name;
+        e.type = orig.type;
+        e.type2 = orig.type2;
+        e.atk = orig.atk;
+        e.def = orig.def;
+        e.spa = orig.spa;
+        e.spd = orig.spd;
+        e.spe = orig.spe;
+        e.moves = orig.moves;
+        e.ivs = orig.ivs;
+        e.isShiny = orig.isShiny;
+        e.level = orig.level;
+        e.nature = orig.nature;
+        e.ability = orig.ability;
+        e.hp = orig.hp;
+        e.maxHp = orig.maxHp;
+        e.isTransformed = false;
+        e.originalDitto = undefined;
+      }
+
       // Captured!
       if (options.fsm) {
         options.fsm.transition('ACTIVE_BATTLE', 'ADD_TO_STORAGE')

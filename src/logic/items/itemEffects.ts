@@ -56,6 +56,7 @@ export const itemEffects: Record<string, (p: unknown) => ItemEffectResult> = {
   'antidote': pokeEffect((p) => clearStatus(p, 'poison')),
   'burn_heal': pokeEffect((p) => clearStatus(p, 'burn')),
   'awakening': pokeEffect((p) => clearStatus(p, 'sleep')),
+  'ice_heal': pokeEffect((p) => clearStatus(p, 'freeze')),
   'full_heal': pokeEffect((p) => curaTotal(p)),
   'soda_pop': pokeEffect((p) => healHp(p, 60)),
   'lemonade': pokeEffect((p) => healHp(p, 80)),
